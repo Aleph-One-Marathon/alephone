@@ -11,8 +11,8 @@
 #include "config.h"
 #endif
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_byteorder.h>
+#include <SDL.h>
+#include <SDL_byteorder.h>
 #include <string>
 
 #define DEBUG

@@ -142,6 +142,7 @@ long parse_keymap(void)
 	// Handle the selected input controller
 	if (input_preferences->input_device != _keyboard_or_game_pad) {
 		fixed delta_yaw, delta_pitch, delta_velocity;
+		mouse_idle(input_preferences->input_device);
 		test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
 		flags = mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
 	}
@@ -247,7 +248,7 @@ void set_keys_to_match_preferences(void)
 
 typedef bool (*timer_func)(void);
 
-static Uint32 timer_callback(Uint32 interval, void *param)
+static uint32 timer_callback(uint32 interval, void *param)
 {
 	((timer_func)param)();
 	return interval;

@@ -12,13 +12,13 @@ See the file "COPYING" that is included in the distribution for details.
 SYSTEM REQUIREMENTS
 -------------------
 
-Aleph One/SDL has so far only been developed and tested on Linux/i386 and
-BeOS/x86 R5. It will not work on other operating systems, and may not work on
-architectures other than i386, PowerPC and 680x0 because there are still some
-portablilty problems with the code (mainly data alignment problems and
-assumptions that sizeof(long) = sizeof(void *) = 4, which are not yet
-completely removed). You are, however, invited to test or fix it to run on
-other systems.
+Aleph One/SDL has so far only been developed and tested on Linux/i386,
+FreeBSD 4.x/i386 and BeOS/x86 R5. It will not work on other operating
+systems, and may not work on architectures other than i386, PowerPC and
+680x0 because there are still some portablilty problems with the code
+(mainly data alignment problems and assumptions that sizeof(long) =
+sizeof(void *) = 4, which are not yet completely removed). You are, however,
+invited to test or fix it to run on other systems.
 
 
 PREREQUISITES
@@ -199,7 +199,7 @@ keyboard; all keys are mapped by position):
 
   In-game (mouse control on):
     W       - Walk forward
-    S       - Walk backward
+    X       - Walk backward
 
     A       - Sidestep left
     D       - Sidestep right
@@ -214,7 +214,7 @@ keyboard; all keys are mapped by position):
     C       - Select previous weapon
     Z       - Select next weapon
 
-    X       - Action (open doors, flip switches, log in to computer terminals)
+    S       - Action (open doors, flip switches, log in to computer terminals)
 
     Shift   - Walk slowly/swim
 

@@ -45,7 +45,7 @@ template<class T> void byte_swap_object_list(T *object_list, int num_objects, _b
 
 
 #if defined(SDL)
-#include <SDL/SDL_endian.h>
+#include <SDL_endian.h>
 #elif defined(mac)
 #define SDL_SwapBE16(x) (x)
 #define SDL_SwapBE32(x) (x)

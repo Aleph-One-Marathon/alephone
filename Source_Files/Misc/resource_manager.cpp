@@ -4,7 +4,7 @@
  *  Written in 2000 by Christian Bauer
  */
 
-#include <SDL/SDL_endian.h>
+#include <SDL_endian.h>
 
 #include "cseries.h"
 #include "resource_manager.h"

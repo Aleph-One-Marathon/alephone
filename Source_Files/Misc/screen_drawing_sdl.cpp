@@ -17,7 +17,7 @@
 #include "ColorParser.h"
 #include "FileHandler.h"
 
-#include <SDL/SDL_endian.h>
+#include <SDL_endian.h>
 #include <string.h>
 #include <map>
 

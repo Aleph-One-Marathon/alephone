@@ -9,7 +9,6 @@
 #include "FileHandler.h"
 #include "resource_manager.h"
 
-#include <SDL/SDL.h>
 #include <string.h>
 
 #include "map.h"
@@ -278,7 +277,7 @@ static void initialize_application(void)
 #else
 	graphics_preferences->screen_mode.acceleration = _no_acceleration;
 #endif
-	Get_OGL_ConfigureData().Flags = OGL_Flag_ZBuffer | OGL_Flag_LiqSeeThru | OGL_Flag_Fader | OGL_Flag_FlatStatic;
+	Get_OGL_ConfigureData().Flags = OGL_Flag_ZBuffer | OGL_Flag_LiqSeeThru | OGL_Flag_Fader | OGL_Flag_FlatStatic | OGL_Flag_Map;
 	write_preferences();
 
 	initialize_sound_manager(sound_preferences);
@@ -311,14 +310,14 @@ static void initialize_application(void)
 #endif
 	if (input_preferences->input_device == _mouse_yaw_pitch) {
 		static short mouse_keys[] = {
-			SDLK_w, SDLK_s, SDLK_LEFT, SDLK_RIGHT,		// moving/turning
+			SDLK_w, SDLK_x, SDLK_LEFT, SDLK_RIGHT,		// moving/turning
 			SDLK_a, SDLK_d,								// sidestepping
 			SDLK_q, SDLK_e,								// horizontal looking
 			SDLK_UP, SDLK_DOWN, SDLK_KP0,				// vertical looking
 			SDLK_c, SDLK_z,								// weapon cycling
 			SDLK_RETURN, SDLK_SPACE,					// weapon trigger
 			SDLK_LMETA, SDLK_LSHIFT, SDLK_LCTRL,		// modifiers
-			SDLK_x,										// action trigger
+			SDLK_s,										// action trigger
 			SDLK_TAB,									// map
 			SDLK_BACKQUOTE								// microphone
 		};
@@ -387,7 +386,7 @@ void global_idle_proc(void)
  *  Main event loop
  */
 
-const Uint32 TICKS_BETWEEN_EVENT_POLL = 167;
+const Uint32 TICKS_BETWEEN_EVENT_POLL = 167;	// 6 Hz
 
 static void main_event_loop(void)
 {
@@ -458,6 +457,7 @@ static void main_event_loop(void)
 		}
 
 		idle_game_state();
+//		mouse_idle(input_preferences->input_device);
 	}
 }
 
