@@ -30,6 +30,11 @@ May 28, 2000 (Loren Petrich): Added support for buffering the Heads-Up Display
 
 Jul 2, 2000 (Loren Petrich):
 	The HUD is now always buffered
+
+Jul 16, 2001 (Loren Petrich):
+	Using "temporary" as storage space for count_text and weapon_name;
+	it is 256 bytes long, which should be more than enough for most text.
+	This fixes the long-weapon-name bug.
 */
 
 #include "cseries.h"
@@ -770,7 +775,7 @@ static void update_weapon_panel(
 		// LP addition: display needs to be updated
 		ForceUpdate = true;
 		
-		char weapon_name[90];
+		char *weapon_name = temporary;
 		struct weapon_interface_data *definition;
 		screen_rectangle *destination= get_interface_rectangle(_weapon_display_rect);
 		screen_rectangle source;
@@ -1207,7 +1212,7 @@ static void draw_inventory_item(
 	bool valid_in_this_environment)
 {
 	screen_rectangle destination, text_destination;
-	char count_text[10];
+	char *count_text = temporary;
 	short color;
 
 	calculate_inventory_rectangle_from_offset(&destination, offset);
