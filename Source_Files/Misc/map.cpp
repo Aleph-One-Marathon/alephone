@@ -172,7 +172,7 @@ void allocate_map_memory(
 	medias= (struct media_data *) malloc(sizeof(struct media_data)*MAXIMUM_MEDIAS_PER_MAP);
 	assert(objects&&monsters&&effects&&projectiles&&lights&&medias);
 
-	memset(&map_structure_memory, 0, sizeof(map_structure_memory));
+	obj_clear(map_structure_memory);
 	reallocate_map_structure_memory(DEFAULT_MAP_MEMORY_SIZE);
 
 	platforms= (struct platform_data *) malloc(MAXIMUM_PLATFORMS_PER_MAP*sizeof(struct platform_data));
@@ -194,7 +194,7 @@ void allocate_map_memory(
 void initialize_map_for_new_game(
 	void)
 {
-	memset(dynamic_world, 0, sizeof(struct dynamic_data));
+	obj_clear(*dynamic_world);
 
 	initialize_players();
 	initialize_monsters();
@@ -219,7 +219,7 @@ void initialize_map_for_new_level(
 	total_civilians= dynamic_world->total_civilian_count + dynamic_world->current_civilian_count;
 	total_causalties= dynamic_world->total_civilian_causalties + dynamic_world->current_civilian_causalties;
 	game_information= dynamic_world->game_information;
-	memset(dynamic_world, 0, sizeof(struct dynamic_data));
+	obj_clear(*dynamic_world);
 	dynamic_world->game_information= game_information;
 	dynamic_world->player_count= player_count;
 	dynamic_world->tick_count= tick_count;
@@ -229,14 +229,14 @@ void initialize_map_for_new_level(
 	dynamic_world->speaking_player_index= NONE;
 	dynamic_world->garbage_object_count= 0;
 
-	memset(static_world, 0, sizeof(struct static_data));
+	obj_clear(*static_world);
 
-	memset(effects, 0, sizeof(struct effect_data)*MAXIMUM_EFFECTS_PER_MAP);
-	memset(projectiles, 0, sizeof(struct projectile_data)*MAXIMUM_PROJECTILES_PER_MAP);
-	memset(monsters, 0, sizeof(struct monster_data)*MAXIMUM_MONSTERS_PER_MAP);
-	memset(objects, 0, sizeof(struct object_data)*MAXIMUM_OBJECTS_PER_MAP);
-	memset(lights, 0, sizeof(struct light_data)*MAXIMUM_LIGHTS_PER_MAP);
-	memset(medias, 0, sizeof(struct media_data)*MAXIMUM_MEDIAS_PER_MAP);
+	objlist_clear(effects, MAXIMUM_EFFECTS_PER_MAP);
+	objlist_clear(projectiles, MAXIMUM_PROJECTILES_PER_MAP);
+	objlist_clear(monsters, MAXIMUM_MONSTERS_PER_MAP);
+	objlist_clear(objects, MAXIMUM_OBJECTS_PER_MAP);
+	objlist_clear(lights, MAXIMUM_LIGHTS_PER_MAP);
+	objlist_clear(medias, MAXIMUM_MEDIAS_PER_MAP);
 
 	/* Note that these pointers just point into a larger structure, so this is not a bad thing */
 	map_polygons= NULL;
