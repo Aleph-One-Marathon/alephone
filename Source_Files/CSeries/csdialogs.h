@@ -30,13 +30,20 @@ Sept-Nov 2001 (Woody Zenfell): approximate emulations of originally Mac OS-only 
 #define iOK					1
 #define iCANCEL				2
 
+#ifdef SDL_RFORK_HACK
+//AS thinks this is a great hack
+#define dialog CHEESEOFDEATH
+#define DialogPtr mDialogPtr
+#include <Dialogs.h>
+#undef dialog
+#undef DialogPtr
+#endif 
 
-#ifdef	mac
+#if defined(mac)
 
 #define CONTROL_INACTIVE	kControlInactivePart
 #define CONTROL_ACTIVE		kControlNoPart
-
-#else//!mac
+#else //!mac
 
 class dialog;
 
@@ -45,7 +52,7 @@ typedef	dialog*	DialogPtr;
 #define	CONTROL_INACTIVE	0
 #define	CONTROL_ACTIVE		1
 
-#endif//!mac
+#endif //!mac
 
 
 // (ZZZ:) Prototypes for both platforms.  I think I wrote some of these (on both platforms)
