@@ -29,6 +29,9 @@ Mar 19, 2001 (Loren Petrich):
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added accessors for datafields now opaque in Carbon
+
+ Aug 6, 2003 (Woody Zenfell):
+	Minor tweaks to screen_printf() mechanism (safer; resets when screen_reset called)
 */
 
 #include <stdarg.h>
@@ -37,7 +40,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #define DESIRED_SCREEN_HEIGHT 480
 
 // Biggest possible of those defined
-#define MAXIMUM_WORLD_WIDTH 1600
+#define MAXIMUM_WORLD_WIDTH 1900
 #define MAXIMUM_WORLD_HEIGHT 1200
 
 #define DEFAULT_WORLD_WIDTH 640
@@ -162,7 +165,11 @@ void reset_screen()
 	world_view->horizontal_scale= 1, world_view->vertical_scale= 1;
 	
 	// LP change:
-	ResetFieldOfView();	
+	ResetFieldOfView();
+
+	// ZZZ: reset screen_printf's
+	for(int i = 0; i < NumScreenMessages; i++)
+		Messages[i].TimeRemaining = 0;
 }
 
 // LP change: resets field of view to whatever the player had had when reviving
@@ -588,6 +595,8 @@ void screen_printf(const char *format, ...)
 	va_list list;
 
 	va_start(list,format);
-	vsprintf(Message.Text,format,list);
+	// ZZZ: [v]sprintf is evil, generally: hard to guarantee you don't overflow target buffer
+	// using [v]snprintf instead
+	vsnprintf(Message.Text,sizeof(Message.Text),format,list);
 	va_end(list);
 }
