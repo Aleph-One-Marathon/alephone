@@ -139,12 +139,8 @@ static void draw_picture(LoadedResource &PictRsrc);
 void initialize_images_manager(void)
 {
 	FileSpecifier file;
-#ifdef mac
-	file.SetToApp();
-	file.SetName(getcstr(temporary, strFILENAMES, filenameIMAGES),_typecode_images);
-#else
-	file.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameIMAGES));
-#endif
+	file.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameIMAGES)); // _typecode_images
+	
 	if (!file.Exists())
 		alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 

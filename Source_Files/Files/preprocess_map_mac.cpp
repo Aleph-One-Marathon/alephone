@@ -101,29 +101,25 @@ static void add_overhead_thumbnail(FileSpecifier &File);
 
 void get_default_map_spec(FileSpecifier& File)
 {
-	File.SetToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP),_typecode_scenario);
+	File.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP)); // _typecode_scenario
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 }
 
 void get_default_physics_spec(FileSpecifier& File)
 {
-	File.SetToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL),_typecode_physics);
+	File.SetNameWithPath(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL)); // _typecode_physics
 	// Don't care if it does not exist
 }
 
 void get_default_shapes_spec(FileSpecifier& File)
 {
-	File.SetToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameSHAPES8),_typecode_shapes);
+	File.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameSHAPES8)); // _typecode_shapes
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 }
 
 void get_default_sounds_spec(FileSpecifier& File)
 {
-	File.SetToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameSOUNDS8),_typecode_sounds);
+	File.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameSOUNDS8)); // _typecode_sounds
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 }
 

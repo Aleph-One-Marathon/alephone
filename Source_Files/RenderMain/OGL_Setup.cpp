@@ -555,9 +555,6 @@ void OGL_TextureOptionsBase::Load()
 		
 		// Load the normal image if it has a filename specified for it
 		if (!StringPresent(NormalColors)) throw 0;
-#ifdef mac
-		if (!File.SetToApp()) throw 0;
-#endif
 		if (!File.SetNameWithPath(&NormalColors[0])) throw 0;
 		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Colors)) throw 0;
 	}
@@ -571,9 +568,6 @@ void OGL_TextureOptionsBase::Load()
 	{
 		// Load the normal mask if it has a filename specified for it
 		if (!StringPresent(NormalMask)) throw 0;
-#ifdef mac
-		if (!File.SetToApp()) throw 0;
-#endif
 		if (!File.SetNameWithPath(&NormalMask[0])) throw 0;
 		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Opacity)) throw 0;
 	}
@@ -590,18 +584,12 @@ void OGL_TextureOptionsBase::Load()
 		
 		// Load the glow image if it has a filename specified for it
 		if (!StringPresent(GlowColors)) throw 0;
-#ifdef mac
-		if (!File.SetToApp()) throw 0;
-#endif
 		if (!File.SetNameWithPath(&GlowColors[0])) throw 0;
 		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Colors)) throw 0;
 		
 		// Load the glow mask if it has a filename specified for it;
 		// only loaded if an image has been loaded for it
 		if (!StringPresent(GlowMask)) throw 0;
-#ifdef mac
-		if (!File.SetToApp()) throw 0;
-#endif
 		if (!File.SetNameWithPath(&GlowMask[0])) throw 0;
 		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Opacity)) throw 0;
 	}
@@ -763,9 +751,6 @@ void OGL_ModelData::Load()
 	Model.Clear();
 	
 	if (!StringPresent(ModelFile)) return;
-#ifdef mac
-	if (!File.SetToApp()) return;
-#endif
 	if (!File.SetNameWithPath(&ModelFile[0])) return;
 
 	bool Success = false;
@@ -790,9 +775,6 @@ void OGL_ModelData::Load()
 		try
 		{
 			if (!StringPresent(ModelFile1)) throw 0;
-#ifdef mac
-			if (!File.SetToApp()) throw 0;
-#endif
 			if (!File.SetNameWithPath(&ModelFile1[0])) throw 0;
 			if (!LoadModel_Dim3(File, Model, LoadModelDim3_Rest)) throw 0;
 		}
@@ -802,9 +784,6 @@ void OGL_ModelData::Load()
 		try
 		{
 			if (!StringPresent(ModelFile2)) throw 0;
-#ifdef mac
-			if (!File.SetToApp()) throw 0;
-#endif
 			if (!File.SetNameWithPath(&ModelFile2[0])) throw 0;
 			if (!LoadModel_Dim3(File, Model, LoadModelDim3_Rest)) throw 0;
 		}

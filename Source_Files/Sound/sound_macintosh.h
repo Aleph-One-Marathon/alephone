@@ -402,9 +402,6 @@ static byte *read_sound_from_file(
 		{
 			// Load only if necessary
 			if (SndOpts->Sound.IsLoaded()) throw 0;
-#ifdef mac
-			if (!File.SetToApp()) throw 0;
-#endif
 			if (!File.SetNameWithPath(&SndOpts->File[0])) throw 0;
 			if (!SndOpts->Sound.Load(File)) throw 0;
 		}
