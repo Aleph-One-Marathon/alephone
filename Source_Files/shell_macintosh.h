@@ -673,8 +673,19 @@ void handle_game_key(
 			
 			case 0x1b:
 				// "Escape" posts a "quit" event
-				do_menu_item_command(mGame,iQuitGame,false);
-				// PostLocalEvent(LocalEvent_Quit);
+				// ZZZ: changing to make a little friendlier, like the SDL version
+				if(!player_controlling_game())
+					do_menu_item_command(mGame, iQuitGame, false);
+				else {
+					if(get_ticks_since_local_player_in_terminal() > 1 * TICKS_PER_SECOND) {
+						if(!game_is_networked) {
+							do_menu_item_command(mGame, iQuitGame, false);
+						}
+						else {
+							screen_printf("If you wish to quit, press Command+Q.");
+						}
+					}
+				}
 				break;
 						
 			default: // well, let's check the function keys then, using the keycodes.
