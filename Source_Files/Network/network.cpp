@@ -2224,7 +2224,7 @@ static long NetPacketSize(
         // Since NetPacketSize is ONLY used to compute a size value for calls to NetBuildRingPacket, and
         // NetBuildRingPacket is ONLY called with a value computed by NetPacketSize, this is safe - I will
         // alter NetBuildRingPacket to expect this different value.
-	return size + sizeof(NetPacket_NET); // add the other stuff in the packet.
+	return size;
 }
 
 /*
