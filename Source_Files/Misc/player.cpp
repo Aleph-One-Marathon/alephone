@@ -295,7 +295,7 @@ void allocate_player_memory(
 	short i;
 
 	/* allocate space for all our players */
-	players= (struct player_data *) malloc(sizeof(struct player_data)*MAXIMUM_NUMBER_OF_PLAYERS);
+	players= new player_data[MAXIMUM_NUMBER_OF_PLAYERS];
 	assert(players);
 
 #ifdef BETA
@@ -303,8 +303,8 @@ void allocate_player_memory(
 #endif
 
 	/* allocate space for our action queue headers and the queues themselves */
-	action_queues= (struct action_queue *) malloc(sizeof(struct action_queue)*MAXIMUM_NUMBER_OF_PLAYERS);
-	action_queue_buffer= (long *) malloc(sizeof(long)*MAXIMUM_NUMBER_OF_PLAYERS*ACTION_QUEUE_BUFFER_DIAMETER);
+	action_queues= new action_queue[MAXIMUM_NUMBER_OF_PLAYERS];
+	action_queue_buffer= new long[MAXIMUM_NUMBER_OF_PLAYERS*ACTION_QUEUE_BUFFER_DIAMETER];
 	assert(action_queues&&action_queue_buffer);
 	
 	/* tell the queues where their buffers are */
