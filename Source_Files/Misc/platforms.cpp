@@ -828,7 +828,8 @@ static void adjust_platform_endpoint_and_line_heights(
 		short j;
 		
 		/* adjust line heights and set proper line transparency and solidity */
-		if (polygon->adjacent_polygon_indexes[i]!=NONE)
+		// Skip this step if polygon or line indexes were not found
+		if (polygon->adjacent_polygon_indexes[i]!=NONE && polygon_indexes && line_indexes)
 		{
 			adjacent_polygon= get_polygon_data(polygon->adjacent_polygon_indexes[i]);
 			line->highest_adjacent_floor= MAX(polygon->floor_height, adjacent_polygon->floor_height);
