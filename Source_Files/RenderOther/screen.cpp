@@ -460,8 +460,6 @@ static CGSetDisplayTransferByTable_Type CGSetDisplayTransferByTable_Ptr = NULL;
 // Loads the above symbol
 static void LoadCoreGraphicsFader();
 
-// A function for loading a framework bundle
-static OSStatus LoadFrameworkBundle(CFStringRef framework, CFBundleRef *bundlePtr);
 #endif
 
 
@@ -3069,104 +3067,19 @@ static float GetFreqFromName(Str255 Name)
 // Loads the symbol for calling CGSetDisplayTransferByTable()
 static void LoadCoreGraphicsFader()
 {
+	// To avoid repeating it unnecessarily
 	static bool AlreadyCalled = false;
 	
-	// No need to repeat it
-	if (AlreadyCalled) return;
+	if (!AlreadyCalled)
+	{
+		CGSetDisplayTransferByTable_Ptr = (CGSetDisplayTransferByTable_Type)
+			GetSystemFunctionPointer(CFSTR("CGSetDisplayTransferByTable"));
 	
-	AlreadyCalled = true;
-	
-	// Get the bundle that contains CoreGraphics
-	OSStatus err;
-	CFBundleRef sysBundle = NULL;
-	err = LoadFrameworkBundle(CFSTR("ApplicationServices.framework"), &sysBundle);
-	
-	if (err != noErr || sysBundle == NULL) return;
-	
-	CGSetDisplayTransferByTable_Ptr = (CGSetDisplayTransferByTable_Type)
-		CFBundleGetFunctionPointerForName(sysBundle,
-			CFSTR("CGSetDisplayTransferByTable"));
+		AlreadyCalled = true;
+	}
 }
 
 
-// Cribbed from some of Apple's sample code -- CallMachOFramework.c
-// For locating a Mach-O bundle for some CFM code,
-// like this Carbon/Classic code
-static OSStatus LoadFrameworkBundle(CFStringRef framework, CFBundleRef *bundlePtr)
-	// This routine finds a the named framework and creates a CFBundle 
-	// object for it.  It looks for the framework in the frameworks folder, 
-	// as defined by the Folder Manager.  Currently this is 
-	// "/System/Library/Frameworks", but we recommend that you avoid hard coded 
-	// paths to ensure future compatibility.
-	//
-	// You might think that you could use CFBundleGetBundleWithIdentifier but 
-	// that only finds bundles that are already loaded into your context. 
-	// That would work in the case of the System framework but it wouldn't 
-	// work if you're using some other, less-obvious, framework.
-{
-	OSStatus  err;
-	FSRef   frameworksFolderRef;
-	CFURLRef baseURL;
-	CFURLRef bundleURL;
-	
-	//MoreAssertQ(bundlePtr != nil);
-	
-	*bundlePtr = nil;
-	
-	baseURL = nil;
-	bundleURL = nil;
-	
-	// Find the frameworks folder and create a URL for it.
-	
-	err = FSFindFolder(kOnAppropriateDisk, kFrameworksFolderType, true, &frameworksFolderRef);
-	if (err == noErr) {
-		baseURL = CFURLCreateFromFSRef(kCFAllocatorSystemDefault, &frameworksFolderRef);
-		if (baseURL == nil) {
-			err = coreFoundationUnknownErr;
-		}
-	}
-	
-	// Append the name of the framework to the URL.
-	
-	if (err == noErr) {
-		bundleURL = CFURLCreateCopyAppendingPathComponent(kCFAllocatorSystemDefault, baseURL, framework, false);
-		if (bundleURL == nil) {
-			err = coreFoundationUnknownErr;
-		}
-	}
-	
-	// Create a bundle based on that URL and load the bundle into memory.
-	// We never unload the bundle, which is reasonable in this case because 
-	// the sample assumes that you'll be calling functions from this 
-	// framework throughout the life of your application.
-	
-	if (err == noErr) {
-		*bundlePtr = CFBundleCreate(kCFAllocatorSystemDefault, bundleURL);
-		if (*bundlePtr == nil) {
-			err = coreFoundationUnknownErr;
-		}
-	}
-	if (err == noErr) {
-		if ( ! CFBundleLoadExecutable( *bundlePtr ) ) {
-			err = coreFoundationUnknownErr;
-		}
-	}
-
-	// Clean up.
-	
-	if (err != noErr && *bundlePtr != nil) {
-		CFRelease(*bundlePtr);
-		*bundlePtr = nil;
-	}
-	if (bundleURL != nil) {
-		CFRelease(bundleURL);
-	} 
-	if (baseURL != nil) {
-		CFRelease(baseURL);
-	} 
-	
-	return err;
-} 
 
 #endif
 
