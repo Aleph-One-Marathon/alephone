@@ -358,14 +358,7 @@ bool configure_key_setup(
 	KeyboardHandlerData HandlerData;
 	HandlerData.KeyCodes = keycodes;
 	
-	// From Br'fin's keyboard event handler
-	const int NumKeyboardEvents = 3;
-	const EventTypeSpec KeyboardEvents[NumKeyboardEvents] = {
-		{kEventClassKeyboard, kEventRawKeyDown},
-		{kEventClassKeyboard, kEventRawKeyModifiersChanged},
-		{kEventClassKeyboard, kEventRawKeyRepeat}
-	};
-	EventHandlerUPP KeyboardHandlerUPP = NewEventHandlerUPP(KeyboardHandler);
+	AutoKeyboardWatcher Watcher(KeyboardHandler);
 	
 	KeyboardControlHandlerData CtrlData[NUMBER_OF_KEY_ITEMS];
 	for (int k=0; k<NUMBER_OF_KEY_ITEMS; k++)
@@ -373,10 +366,7 @@ bool configure_key_setup(
 		HandlerData.KeyCtrls[k] = GetCtrlFromWindow(Window(), 0, FIRST_KEY_ITEM + k);
 		CtrlData[k].HDPtr = &HandlerData;
 		CtrlData[k].Which = k;
-		InstallControlEventHandler(
-			HandlerData.KeyCtrls[k], KeyboardHandlerUPP,
-			NumKeyboardEvents, KeyboardEvents,
-			CtrlData + k, NULL);
+		Watcher.Watch(HandlerData.KeyCtrls[k], CtrlData + k);
 	}
 	
 	HandlerData.CodesToControls();
@@ -386,8 +376,6 @@ bool configure_key_setup(
 	HandlerData.SetPopup();
 	
 	bool IsOK = RunModalDialog(Window(), true, KeyboardDialogHandler, &HandlerData);
-	
-	DisposeEventHandlerUPP(KeyboardHandlerUPP);
 	
 	return IsOK;
 }
