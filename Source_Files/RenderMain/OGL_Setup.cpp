@@ -196,6 +196,7 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 #endif
 
         Data.AnisotropyLevel = 0.0; // off
+	Data.Multisamples = 0; // off
 	
 	Data.VoidColor = rgb_black;			// Self-explanatory
 	for (int il=0; il<4; il++)

@@ -165,6 +165,7 @@ struct OGL_ConfigureData
 	
 	// Anisotropy setting
 	float AnisotropyLevel;
+  int16 Multisamples;
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();

@@ -250,6 +250,13 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+#if SDL_VERSION_ATLEAST(1,2,6)
+		if (Get_OGL_ConfigureData().Multisamples > 0) {
+		  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+		  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
+				      Get_OGL_ConfigureData().Multisamples);
+		}
+#endif
 	} else
 		flags |= SDL_HWSURFACE | SDL_HWPALETTE;
 #else
