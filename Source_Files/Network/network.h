@@ -69,10 +69,8 @@ enum // base network speeds
 enum
 {
 	_appletalk_ring_network_version = 10,
-	_ip_ring_network_version = 15,
-	_ip_star_network_version = 16,
-
-	kMinimumNetworkVersionForGracefulUnknownStreamPackets = 11
+	_ip_ring_network_version = 17,
+	_ip_star_network_version = 18,
 };
 
 typedef struct game_info
@@ -163,7 +161,7 @@ enum { // NetGatherPlayer results
 struct prospective_joiner_info {
 	uint16 network_version;
 	uint16 stream_id;
-	char name[MAX_NET_PLAYER_NAME_LENGTH];
+	unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
 };
 
 int NetGatherPlayer(

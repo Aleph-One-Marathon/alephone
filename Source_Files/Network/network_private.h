@@ -196,7 +196,8 @@ struct NetPlayer
 
 	bool net_dead; // only valid if you are the server.
 
-	uint8 player_data[MAXIMUM_PLAYER_DATA_SIZE];
+  //uint8 player_data[MAXIMUM_PLAYER_DATA_SIZE];
+  player_info player_data;
 };
 typedef struct NetPlayer NetPlayer, *NetPlayerPtr;
 
@@ -207,7 +208,8 @@ struct NetTopology
 	
 	int16 nextIdentifier;
 	
-	uint8 game_data[MAXIMUM_GAME_DATA_SIZE];
+  //uint8 game_data[MAXIMUM_GAME_DATA_SIZE];
+  game_info game_data;
 	
 	struct NetPlayer players[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 };

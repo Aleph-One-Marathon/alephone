@@ -42,31 +42,6 @@
 
 
 
-// LP: All the packed net-packet structs have been turned into wrappers for plain bytes
-
-const int SIZEOF_game_info = MAX_LEVEL_NAME_LENGTH + 25;
-
-struct game_info_NET
-{
-	uint8 data[SIZEOF_game_info];
-};
-
-extern void netcpy(game_info_NET* dest, const game_info* src);
-extern void netcpy(game_info* dest, const game_info_NET* src);
-
-
-
-const int SIZEOF_player_info = MAX_NET_PLAYER_NAME_LENGTH + LONG_SERIAL_NUMBER_LENGTH + 7;
-
-struct player_info_NET {
-	uint8 data[SIZEOF_player_info];
-};
-
-extern void netcpy(player_info_NET* dest, const player_info* src);
-extern void netcpy(player_info* dest, const player_info_NET* src);
-
-
-
 // Note: no further interpretation/manipulation of a packet is attempted here.  That's up
 // to whomever actually deals with receiving and interpreting the packet (though they will
 // probably make use of the netcpy's for the next couple structures below).
@@ -98,7 +73,6 @@ struct NetPacket_NET
 
 extern void netcpy(NetPacket_NET* dest, const NetPacket* src);
 extern void netcpy(NetPacket* dest, const NetPacket_NET* src);
-
 
 
 // For action flags - note length is in bytes, not number of flags.  This is 'bidirectional',
@@ -141,67 +115,6 @@ struct IPaddress_NET {
 extern void netcpy(IPaddress_NET* dest, const IPaddress* src);
 extern void netcpy(IPaddress* dest, const IPaddress_NET* src);
 
-
-// ZZZ fix: a NetPlayer holds a player_info, not general player data as might be implied
-//const int SIZEOF_NetPlayer = 2*SIZEOF_IPaddress + MAXIMUM_PLAYER_DATA_SIZE + 3;
-const int SIZEOF_NetPlayer = 2*SIZEOF_IPaddress + SIZEOF_player_info + 5;
-
-struct NetPlayer_NET {
-	uint8 data[SIZEOF_NetPlayer];
-};
-
-extern void netcpy(NetPlayer_NET* dest, const NetPlayer* src);
-extern void netcpy(NetPlayer* dest, const NetPlayer_NET* src);
-
-
-// ZZZ fix: NetTopology holds game_info, not general unformatted game data as it might appear.
-//const int SIZEOF_NetTopology = MAXIMUM_GAME_DATA_SIZE +
-//	MAXIMUM_NUMBER_OF_NETWORK_PLAYERS*SIZEOF_NetPlayer + 6;
-const int SIZEOF_NetTopology = SIZEOF_game_info + MAXIMUM_NUMBER_OF_NETWORK_PLAYERS*SIZEOF_NetPlayer + 6;
-
-struct NetTopology_NET
-{
-	uint8 data[SIZEOF_NetTopology];
-};
-
-extern void netcpy(NetTopology_NET* dest, const NetTopology* src);
-extern void netcpy(NetTopology* dest, const NetTopology_NET* src);
-
-
-
-const int SIZEOF_gather_player_data = 2;
-
-struct gather_player_data_NET {
-	uint8 data[SIZEOF_gather_player_data];
-};
-
-extern void netcpy(gather_player_data_NET* dest, const gather_player_data* src);
-extern void netcpy(gather_player_data* dest, const gather_player_data_NET* src);
-
-
-
-const int SIZEOF_accept_gather_data = SIZEOF_NetPlayer + 1;
-
-struct accept_gather_data_NET {
-	uint8 data[SIZEOF_accept_gather_data];
-};
-
-extern void netcpy(accept_gather_data_NET* dest, const accept_gather_data* src);
-extern void netcpy(accept_gather_data* dest, const accept_gather_data_NET* src);
-
-
-#ifdef NETWORK_CHAT
-const int SIZEOF_NetChatMessage = CHAT_MESSAGE_TEXT_BUFFER_SIZE + 2;
-
-struct NetChatMessage_NET {
-    uint8 data[SIZEOF_NetChatMessage];
-};
-
-extern void netcpy(NetChatMessage_NET* dest, const NetChatMessage* src);
-extern void netcpy(NetChatMessage* dest, const NetChatMessage_NET* src);
-#endif
-
-
 const int SIZEOF_network_audio_header = 8;
 
 struct network_audio_header_NET {
@@ -210,15 +123,5 @@ struct network_audio_header_NET {
 
 extern void netcpy(network_audio_header_NET* dest, const network_audio_header* src);
 extern void netcpy(network_audio_header* dest, const network_audio_header_NET* src);
-
-
-const int SIZEOF_prospective_joiner_info = MAX_NET_PLAYER_NAME_LENGTH + 4;
-
-struct prospective_joiner_info_NET {
-    uint8 data[SIZEOF_prospective_joiner_info];
-};
-
-extern void netcpy(prospective_joiner_info_NET* dest, const prospective_joiner_info* src);
-extern void netcpy(prospective_joiner_info* dest, const prospective_joiner_info_NET* src);
 
 #endif//NETWORK_DATA_FORMATS_H
