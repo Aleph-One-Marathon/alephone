@@ -891,7 +891,7 @@ struct wad_data *inflate_flat_data(
 	StreamToValue(S,Length);
 	
 	S = unpack_wad_header(S,header,1);
-	assert((S - data) == SIZEOF_encapsulated_wad_data);
+	assert((S - (byte *)data) == SIZEOF_encapsulated_wad_data);
 	// obj_copy(*header, (d->header));
 
 	raw_length= calculate_raw_wad_length(header, buffer);
