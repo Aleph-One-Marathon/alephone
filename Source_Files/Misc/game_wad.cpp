@@ -489,10 +489,11 @@ bool new_game(
 	game_is_networked= network;
 	
 	/* If we want to save it, this is an untitled map.. */
-#if defined(mac)
+#if defined(mac) || defined(SDL_RFORK_HACK)
 	revert_game_data.SavedGame.SetToApp();
 	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),_typecode_savegame);
-#elif defined(SDL)
+#endif
+#if defined(SDL) && !defined(SDL_RFORK_HACK)
 	revert_game_data.SavedGame.SetToSavedGamesDir();
 	revert_game_data.SavedGame += getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME);
 #endif
@@ -1227,7 +1228,7 @@ bool save_game_file(FileSpecifier& File)
 	DirectorySpecifier TempFileDir;
 	File.ToDirectory(TempFileDir);
 	TempFile.FromDirectory(TempFileDir);
-#ifdef mac
+#if defined(mac) || defined(SDL_RFORK_HACK)
 	TempFile.SetName("savetemp.dat",NONE);
 #else
 	TempFile.AddPart("savetemp.dat");

@@ -30,7 +30,7 @@ Aug 28, 2000 (Loren Petrich):
 	Put these functions into the FileFinder object; eradicated the "param_block->" code, etc.
 	and did other things to abstract it.
 */
-
+#if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
 #include "macintosh_cseries.h"
 #include <string.h> /* For memset */
 #include <stdlib.h>
@@ -192,3 +192,4 @@ static int alphabetical_names(
 	return (IUCompString(((FSSpec const *)a)->name, ((FSSpec const *)b)->name)); 
 }
 */
+#endif

@@ -40,7 +40,7 @@ Jun 13, 2001 (Loren Petrich):
 	The write dialogs are designed to be used with safe saves,
 	so they will not delete the previous files
 */
-
+#if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
 #include <string.h>
 #include <Aliases.h>
 #include <Folders.h>
@@ -1142,3 +1142,4 @@ bool ParsePath_MacOS(const char *NameWithPath, FSSpec &Spec, bool WantDirectory)
 		return false;
 }
 
+#endif

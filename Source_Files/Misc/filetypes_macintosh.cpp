@@ -37,7 +37,7 @@ Nov 29, 2000 (Loren Petrich):
 Mar 14, 2001 (Loren Petrich):
 	Added a music filetype
 */
-
+#if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
 #include <string.h>
 #include "tags.h"
 
@@ -62,6 +62,8 @@ static OSType typecodes[NUMBER_OF_TYPECODES] = {
 // Initializer: loads from resource fork
 void initialize_typecodes()
 {
+#ifndef SDL_RFORK_HACK
+//AS: Mac OS X SDL doesn't get custom typecodes for now. Nobody ever used them, anyway. Maybe we can have magic number checking or something?
 	Handle FTypHdl = GetResource('FTyp',128);
 	if (FTypHdl == NULL) return;
 	int FTHSize = GetHandleSize(FTypHdl);
@@ -70,6 +72,7 @@ void initialize_typecodes()
 	memcpy(typecodes,*FTypHdl,FTHSize);
 	HUnlock(FTypHdl);
 	ReleaseResource(FTypHdl);
+#endif
 }
 
 
@@ -80,3 +83,4 @@ OSType get_typecode(int which)
 	else if (which >= NUMBER_OF_TYPECODES) return '????';
 	return typecodes[which];
 }
+#endif

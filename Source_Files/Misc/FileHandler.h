@@ -39,7 +39,15 @@ Dec 7, 2000 (Loren Petrich):
 	Added a MacOS-specific file-creation function that allows direct specification
 	of type and creator codes
 */
+#ifdef SDL_RFORK_HACK
+#undef SDL
+#define mac
+#endif
 
+#ifdef mac
+#include <Files.h>
+#include <Resources.h>
+#endif
 
 // For the filetypes
 #include "tags.h"
@@ -163,14 +171,15 @@ public:
 
 	Handle GetHandle(bool DoDetach = false)
 		{Handle ret = RsrcHandle; if (DoDetach) Detach(); return ret;}
-	
+#endif
+#if defined(mac) && !defined(SDL_RFORK_HACK)
 	// Gets some suitable default color table
 	void GetSystemColorTable()
 		{Unload(); RsrcHandle = Handle(GetCTable(8));}
-
+#endif
+#if defined(mac)
 private:
-	Handle RsrcHandle;
-	
+	Handle RsrcHandle;	
 #elif defined(SDL)
 
 	void *p;		// Pointer to resource data (malloc()ed)
@@ -429,7 +438,7 @@ private:
 
 #elif defined(SDL)
 
-	FileSpecifier() : err(0) {}
+	FileSpecifier();
 	FileSpecifier(const string &s) : name(s), err(0) {canonicalize_path();}
 	FileSpecifier(const char *s) : name(s), err(0) {canonicalize_path();}
 	FileSpecifier(const FileSpecifier &other) : name(other.name), err(other.err) {}
@@ -469,4 +478,8 @@ private:
 #endif
 };
 
+#endif
+#ifdef SDL_RFORK_HACK
+#define SDL
+#undef mac
 #endif

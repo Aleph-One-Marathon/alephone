@@ -24,7 +24,7 @@
  *
  *  Written in 2000 by Christian Bauer
  */
-
+#ifndef SDL_RFORK_HACK
 #include "cseries.h"
 #include "FileHandler.h"
 #include "resource_manager.h"
@@ -326,7 +326,8 @@ bool OpenedResourceFile::Close()
 /*
  *  File specification
  */
-
+//AS: Constructor moved here to fix linking errors
+FileSpecifier::FileSpecifier(): err(0) {}
 const FileSpecifier &FileSpecifier::operator=(const FileSpecifier &other)
 {
 	if (this != &other) {
@@ -625,9 +626,9 @@ void FileSpecifier::ToDirectory(DirectorySpecifier &dir)
 }
 
 // Set file specifier from directory specifier
-void FileSpecifier::FromDirectory(DirectorySpecifier &dir)
+void FileSpecifier::FromDirectory(DirectorySpecifier &Dir)
 {
-	name = dir.name;
+	name = Dir.name;
 }
 
 // Canonicalize path
@@ -744,3 +745,4 @@ bool FileSpecifier::CopyContents(FileSpecifier &source_name)
 		Delete();
 	return err == 0;
 }
+#endif
