@@ -262,15 +262,15 @@ void mouse_idle(
 		_fixed vy= - INTEGER_TO_FIXED(where.v-center.v)/(ticks_elapsed*MAXIMUM_MOUSE_VELOCITY);
 
 		// ZZZ: mouse inversion
-		if (input_preferences->modifiers & _inputmod_invert_mouse)
+		if (TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse))
 			vy *= -1;
 
+		// LP: modified for doing each axis separately;
 		// ZZZ: scale input by sensitivity
-		if(input_preferences->sensitivity != FIXED_ONE) {
-			float   theScalingFactor = ((float) input_preferences->sensitivity) / ((float) FIXED_ONE);
-			vx = (_fixed) (theScalingFactor * vx);
-			vy = (_fixed) (theScalingFactor * vy);
-		}
+		if (input_preferences->sens_horizontal != FIXED_ONE)
+			vx = _fixed((float(input_preferences->sens_horizontal)*vx)/float(FIXED_ONE));
+		if (input_preferences->sens_vertical != FIXED_ONE)
+			vy = _fixed((float(input_preferences->sens_vertical)*vy)/float(FIXED_ONE));
 
 		/* pin and do nonlinearity */
 		vx= PIN(vx, -FIXED_ONE/2, FIXED_ONE/2), vx>>= 1, vx*= (vx<0) ? -vx : vx, vx>>= 14;
