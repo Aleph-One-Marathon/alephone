@@ -80,7 +80,7 @@ public:
         {
                 assert(!mChildren.empty());
                 int32 theCapacity = INT_MAX;
-                for(typename ChildrenCollection::iterator i = mChildren.begin(); i != mChildren.end(); i++)
+                for(typename ChildrenCollection::const_iterator i = mChildren.begin(); i != mChildren.end(); i++)
                 {
                         int32 theSingleCapacity = (*i)->availableCapacity();
                         if(theSingleCapacity < theCapacity)

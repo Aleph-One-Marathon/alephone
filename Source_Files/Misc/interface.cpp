@@ -1170,11 +1170,13 @@ void display_main_menu(
 // Kludge for Carbon/Classic -- when exiting a main-menu dialog box, redisplay 
 static void ForceRepaintMenuDisplay()
 {
+#ifdef mac
 	if (!system_information->has_ten || system_information->machine_is_bluebox)
 	{
 		if (get_game_state() == _display_main_menu)
 			display_screen(MAIN_MENU_BASE);
 	}
+#endif
 }
 
 

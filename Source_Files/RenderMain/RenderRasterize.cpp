@@ -64,7 +64,7 @@ void RenderRasterizerClass::render_tree()
 	assert(view);	// Idiot-proofing
 	assert(RSPtr);
 	assert(RasPtr);
-	sorted_node_data *node;
+	vector<sorted_node_data>::iterator node;
 	// LP: reference to simplify the code
 	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
@@ -72,7 +72,7 @@ void RenderRasterizerClass::render_tree()
 	bool SeeThruLiquids = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_LiqSeeThru);
 	
 	/* walls, ceilings, interior objects, floors, exterior objects for all nodes, back to front */
-	for (node= &SortedNodes.front(); node <= &SortedNodes.back(); ++node)
+	for (node= SortedNodes.begin(); node != SortedNodes.end(); ++node)
 	{
 		polygon_data *polygon= get_polygon_data(node->polygon_index);
 		clipping_window_data *window;
