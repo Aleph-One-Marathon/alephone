@@ -1216,7 +1216,11 @@ bool save_game_file(FileSpecifier& File)
 	DirectorySpecifier TempFileDir;
 	File.ToDirectory(TempFileDir);
 	TempFile.FromDirectory(TempFileDir);
+#ifdef mac
 	TempFile.SetName("savetemp.dat",NONE);
+#else
+	TempFile.AddPart("savetemp.dat");
+#endif
 	
 	/* Fill in the default wad header */
 	fill_default_wad_header(TempFile, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);

@@ -480,7 +480,7 @@ Unix:
 BeOS:
   /boot/home/config/settings/Aleph One/Aleph One Preferences
 
-Prefs:
+Windows:
   "Prefs\<user name>\Aleph One Preferences" in the Aleph One application
   directory
 

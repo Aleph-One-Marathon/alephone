@@ -330,14 +330,14 @@ bool FileSpecifier::CreateDirectory()
 #if defined(__unix__) || defined(__BEOS__)
 
 	err = 0;
-	if (mkdir(name.c_str(), 0777) < 0)
+	if (mkdir(GetPath(), 0777) < 0)
 		err = errno;
 	return err == 0;
 
 #elif defined (__WIN32__)
 
 	err = 0;
-	if (mkdir(name.c_str()) < 0)
+	if (mkdir(GetPath()) < 0)
 		err = errno;
 	return err == 0;
 
@@ -351,7 +351,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 {
 	OFile.Close();
 
-	SDL_RWops *f = OFile.f = SDL_RWFromFile(name.c_str(), Writable ? "wb" : "rb");
+	SDL_RWops *f = OFile.f = SDL_RWFromFile(GetPath(), Writable ? "wb" : "rb");
 	err = f ? 0 : errno;
 	if (f == NULL) {
 		set_game_error(systemError, err);
@@ -400,7 +400,7 @@ bool FileSpecifier::Exists()
 
 	// Check whether the file is readable
 	err = 0;
-	if (access(name.c_str(), R_OK) < 0)
+	if (access(GetPath(), R_OK) < 0)
 		err = errno;
 	return err == 0;
 
@@ -416,7 +416,7 @@ TimeType FileSpecifier::GetDate()
 
 	struct stat st;
 	err = 0;
-	if (stat(name.c_str(), &st) < 0) {
+	if (stat(GetPath(), &st) < 0) {
 		err = errno;
 		return 0;
 	}
@@ -500,11 +500,30 @@ bool FileSpecifier::GetFreeSpace(unsigned long &FreeSpace)
 	return true;
 }
 
+// Exchange two files
+bool FileSpecifier::Exchange(FileSpecifier &other)
+{
+	// Create temporary name (this is cheap, we should make sure that the
+	// name is not already in use...)
+	FileSpecifier tmp;
+	ToDirectory(tmp);
+	tmp.AddPart("exchange_tmp_file");
+
+	err = 0;
+	if (rename(GetPath(), tmp.GetPath()) < 0)
+		err = errno;
+	else if (rename(other.GetPath(), GetPath()) < 0)
+		err = errno;
+	else if (rename(tmp.GetPath(), other.GetPath()) < 0)
+		err = errno;
+	return err == 0;
+}
+
 // Delete file
 bool FileSpecifier::Delete()
 {
 	err = 0;
-	if (remove(name.c_str()) < 0)
+	if (remove(GetPath()) < 0)
 		err = errno;
 	return err == 0;
 }
@@ -616,6 +635,19 @@ void FileSpecifier::SplitPath(string &base, string &part) const
 #endif
 }
 
+// Fill file specifier with base name
+void FileSpecifier::ToDirectory(DirectorySpecifier &dir)
+{
+	string part;
+	SplitPath(dir, part);
+}
+
+// Set file specifier from directory specifier
+void FileSpecifier::FromDirectory(DirectorySpecifier &dir)
+{
+	name = dir.name;
+}
+
 // Canonicalize path
 void FileSpecifier::canonicalize_path(void)
 {
@@ -651,7 +683,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 
 #ifndef __MVCPP__
 
-	DIR *d = opendir(name.c_str());
+	DIR *d = opendir(GetPath());
 	if (d == NULL) {
 		err = errno;
 		return false;
@@ -662,7 +694,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 			FileSpecifier full_path = name;
 			full_path += de->d_name;
 			struct stat st;
-			if (stat(full_path.name.c_str(), &st) == 0)
+			if (stat(full_path.GetPath(), &st) == 0)
 				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false));
 		}
 		de = readdir(d);

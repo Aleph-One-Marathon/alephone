@@ -324,6 +324,10 @@ public:
 	// Returns whether or not the setting was successful
 	bool SetNameWithPath(const char *NameWithPath);
 
+	// Move the directory specification
+	void ToDirectory(DirectorySpecifier& Dir);
+	void FromDirectory(DirectorySpecifier& Dir);
+
 	// These functions take an appropriate one of the typecodes used earlier;
 	// this is to try to cover the cases of both typecode attributes
 	// and typecode suffixes.
@@ -394,10 +398,6 @@ public:
 	bool SetToApp();
 	bool SetParentToPreferences();
 
-	// Move the directory specification
-	void ToDirectory(DirectorySpecifier& Dir);
-	void FromDirectory(DirectorySpecifier& Dir);
-
 	// The error:
 	OSErr GetError() {return Err;}
 	
@@ -431,7 +431,7 @@ private:
 	FileSpecifier operator+(const char *part) const {FileSpecifier a(name); a.AddPart(string(part)); return a;}
 
 	void SplitPath(string &base, string &part) const;
-	void SplitPath(FileSpecifier &base, string &part) const {string b; SplitPath(b, part); base = b;}
+	void SplitPath(DirectorySpecifier &base, string &part) const {string b; SplitPath(b, part); base = b;}
 
 	bool CreateDirectory();
 	bool ReadDirectory(vector<dir_entry> &vec);

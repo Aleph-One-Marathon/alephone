@@ -266,9 +266,10 @@ struct channel_data
 
 	unsigned long start_tick;
 
+	LoadedSound *SndPtr;	// For external-file sounds; set whenever a sound is active
+
 #if defined(mac)
 	SndChannelPtr channel;
-	LoadedSound *SndPtr;	// For external-file sounds; set whenever a sound is active
 #elif defined(SDL)
 	void *channel;
 #endif

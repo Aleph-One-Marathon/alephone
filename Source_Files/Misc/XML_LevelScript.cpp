@@ -165,12 +165,7 @@ static void SetupLSParseTree()
 void LoadLevelScripts(FileSpecifier& MapFile)
 {
 	// Because all the files are to live in the map file's parent directory
-#ifdef mac
 	MapFile.ToDirectory(MapParentDir);
-#else
-	string part;
-	MapFile.SplitPath(MapParentDir, part);
-#endif
 	
 	// Get rid of the previous level script
 	LevelScripts.clear();
@@ -313,13 +308,8 @@ void GeneralRunScript(int LevelIndex)
 		case LevelScriptCommand::Music:
 			{
 				FileSpecifier MusicFile;
-#ifdef mac
 				MusicFile.FromDirectory(MapParentDir);
 				if (MusicFile.SetNameWithPath(&Cmd.FileSpec[0]))
-#else
-				MusicFile = MapParentDir + &Cmd.FileSpec[0];
-				if (MusicFile.Exists())
-#endif
 					Playlist.push_back(MusicFile);
 			}
 			break;
@@ -354,13 +344,9 @@ void FindMovieInScript(int LevelIndex)
 		{
 		case LevelScriptCommand::Movie:
 			{
-#ifdef mac
 				MovieFile.FromDirectory(MapParentDir);
 				MovieFileExists = MovieFile.SetNameWithPath(&Cmd.FileSpec[0]);
-#else
-				MovieFile = MapParentDir + &Cmd.FileSpec[0];
-				MovieFileExists = MovieFile.Exists();
-#endif
+
 				// Set the size only if there was a movie file here
 				if (MovieFileExists)
 					MovieSize = Cmd.Size;

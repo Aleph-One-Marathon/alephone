@@ -534,7 +534,7 @@ static void instantiate_sound_variables(struct sound_variables *variables, struc
  *  Start sound playback (asynchronously)
  */
 
-static void buffer_sound(struct channel_data *channel, short sound_index, _fixed pitch)
+static void buffer_sound(struct channel_data *channel, short sound_index, _fixed pitch, bool ext_play_immed)
 {
 	struct sound_definition *definition = get_sound_definition(sound_index);
 	if (!definition)
@@ -956,4 +956,19 @@ static void sound_callback(void *usr, uint8 *stream, int len)
 		else
 			calc_buffer((int8 *)stream, len, false);
 	}
+}
+
+
+/*
+ *  External sounds stuff (unimplemented)
+ */
+
+bool LoadedSound::Load(FileSpecifier &file)
+{
+	return false;
+}
+
+bool LoadedSound::Unload()
+{
+	return true;
 }
