@@ -42,7 +42,7 @@ protected:
 	// All these must be filled out:
 	// Character data to be parsed:
 	char *Buffer;
-	// Number of bytes to
+	// Number of bytes to read
 	int BufLen;
 	// Whether the current buffer is the last one
 	bool LastOne;
