@@ -1920,7 +1920,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		SetProjectionType(Projection_Screen);
 	
 	bool Suppress_Z_Buffer = false;
-	GLfloat Color[3];
+	GLfloat Color[4];
 	DoLightingAndBlending(RenderRectangle,TMgr.IsBlended(),Color,Suppress_Z_Buffer);
 	glColor4fv(Color);
 	
