@@ -140,7 +140,7 @@ For example, the filenames are specified in this fashion:
 This kind of element specifies stuff used in the heads-up display (HUD).
 It has one attribute, "motion_sensor", which is <a name="#boolean">boolean</a>,
 and which indicates whether or not the motion sensor will be active.
-It also contains three kinds of child elements:
+It also contains these kinds of child elements:
 <ul>
 <li>&lt;rect&gt;, with all interface rectangles;
 it contains the attributes
@@ -155,7 +155,10 @@ All of them are mandatory.
 The interface rectangles have the meanings listed below.
 <li>&lt;color&gt;, for all interface colors; it is indexed.
 For more on specifying colors, go <a href="#color">here</a>.
-The interfaces colors have the meanings listed below.
+The interface colors have the meanings listed below.
+<li>&lt;font&gt;, for all interface fonts; it is indexed.
+For more on specifying fonts, go <a href="#font">here</a>.
+The interface fonts have the meanings listed below.
 <li>&lt;weapon&gt;, for the weapon display;
 it contains the attributes
 <ul>
@@ -251,6 +254,17 @@ Here is a list of all the interface colors:
 <li>Computer Blue Text
 </ol>
 
+Here is a list of all the interface fonts:
+<ol type=1 start=1000>
+<li>Interface
+<li>Weapon Name
+<li>Player Name
+<li>Interface Item Count
+<li>Terminal
+<li>Terminal Title
+<li>Network Statistics
+</ol>
+
 Here is a list of all the weapon displays:
 <ol type=1 start=1000>
 <li>Knife (seems to be a placeholder for wielding no weapon)
@@ -288,12 +302,16 @@ has attribute "motion_sensor" with value "false".
 <h3><a name="ovhdmap">Overhead-Map Element: &lt;overhead_map&gt;</a></h3>
 
 This kind of element is for setting up overhead-map features.
-It has an attribute of "mode", which has possible values:
+It can have an attribute of "mode", which has possible values:
 <ol type=1 start=1000>
 <li>Normal: automapping is cumulative (the default)
 <li>Currently visible only
 <li>All
 </ol>
+<p>
+
+It can also have the attribute "title_offset", whose value is how many pixels downward
+to offset the title text.
 <p>
 
 One can assign various types to monsters; they can either never show up,
@@ -327,6 +345,19 @@ this elements have an attribute of "on", which is a
 </ul>
 <p>
 
+Lines can be specified with the element &lt;line&gt;, which has these attributes,
+all mandatory:
+<ul>
+<li>type:
+<ol type=1 start=1000>
+<li>Wall (solid)
+<li>Elevation (not solid; floor on one side higher than on the other side)
+<li>Control panel
+</ol>
+<li>scale: 0 is minimum map scale and 3 is maximum map scale
+<li>width: width value in pixels
+</ul>
+
 Colors can be specified with the element &lt;color&gt;, which is indexed;
 For more on specifying colors, go <a href="#color">here</a>.
 Here are what the colors are:
@@ -352,6 +383,17 @@ Here are what the colors are:
 <li>Path
 </ol>
 <p>
+
+Fonts can be specified with the element &lt;font&gt;, which is indexed;
+For more on specifying fonts, go <a href="#font">here</a>.
+Here are what the fonts are:
+<ol type=1 start=1000>
+<li>Annotation at scale 0 (lowest)
+<li>Annotation at scale 1
+<li>Annotation at scale 2
+<li>Annotation at scale 3 (highest)
+<li>Map title
+</ol>
 
 One can disable it by specifying that the top-level element
 <a href="#view">&lt;view&gt;</a>
@@ -877,17 +919,23 @@ an engine tick is 1/30 second.
 <h3><a name="view">View Element: &lt;view&gt;</a></h3>
 
 This kind of element specifies various view features.
-It has these attributes, which are all<a name="#boolean">boolean</a>:
+It has these attributes:
 <ul>
-<li>map: indicates whether or not to show the overhead map (default: true)
+<li>map: indicates whether or not to show the overhead map (<a name="#boolean">boolean</a>; default: true)
 <li>fold_effect: indicates whether or not to make the field of view stretch horizontally
-and squeeze vertically as one teleports (default: true)
+and squeeze vertically as one teleports (<a name="#boolean">boolean</a>; default: true)
 <li>static_effect: indicates whether or not to make teleporting objects have the sparkling
-"static" effect and whether they get squeezed horizontally as they teleport (default: true)
+"static" effect and whether they get squeezed horizontally as they teleport (<a name="#boolean">boolean</a>; default: true)
+<li>sound_teleport_in: the sound ID for the otherwise-hardcoded teleport-in sound
+<li>sound_teleport_out: the sound ID for the otherwise-hardcoded teleport-out sound
 </ul>
 <p>
-This element also has the child element &lt;fov&gt;,
-which is for setting field-of-view features.
+This element has the child elements &lt;font&gt;, for setting on-screen-display fonts
+and &lt;fov&gt;, which is for setting field-of-view features.
+<p>
+
+The default on-screen font is "Monaco", size 12, normal style;
+for more on setting fonts, go <a name="#font">here</a>.
 <p>
 
 Field-of-view features are set with child element &lt;fov&gt;,
@@ -1173,7 +1221,8 @@ This kind of element is for modifying the OpenGL rendering.
 Currently, only modifications of texture rendering are implemented,
 with opacity control and texture substitution.
 
-This element has two kinds of child elements, &lt;txtr_clear&gt; and &lt;texture&gt;.
+This element has these kinds of child elements, &lt;txtr_clear&gt;, &lt;texture&gt;,
+and &lt;fog&gt;.
 <p>
 
 The first one, &lt;txtr_clear&gt;, clears the landscape options,
@@ -1231,6 +1280,15 @@ in these cases.
 I've put both of them in because they behave somewhat differently;
 max has the same strength for saturated colors as for grays,
 while mean has less strength for saturated colors than for grays.
+<p>
+
+The third one, &lt;fog&gt;, has these attributes:
+<ul>
+<li>on: (<a name="#boolean">boolean</a>; default: false)
+<li>depth: the fog depth in World Units (default: 8)
+</ul>
+and a <a href="#color">color</a> subelement, which indicates the fog color
+(default: gray [red = green = blue = 0.5]).
 <p>
 
 <hr>
@@ -1293,7 +1351,7 @@ the first one is index 0.
 The element &lt;end&gt; specifies a script that is for the end of a game;
 The element &lt;default&gt; specifies a script that is for the entire map file;
 it is executed before a level's script is executed, for rather obvious reasons.
-The element &lt;restore&gt is intended to restore parameters to their A1 defaults
+The element &lt;restore&gt; is intended to restore parameters to their A1 defaults
 when switching to another map file; this is done because the parameters that the MML parser sets
 are set in a "sticky" fashion,
 and because saving and restoring default values inside the code
@@ -1332,6 +1390,7 @@ meaning that any of these formats can be used:
 <li>Microsoft's WAVE
 <li>MP3
 <li>MIDI
+</ul>
 <p>
 
 Finally, the &lt;end_screens&gt; element is for specifying which PICT resources
@@ -1396,6 +1455,38 @@ Damage features are set with these attributes, which are all optional.
 <li>scale (1 = identity scaling)
 </ul>
 <p>
+
+<h4><a name="font">Fonts</a></h4>
+
+Fonts are specified with the element &lt;font&gt;
+like colors, fonts may be either indexed (being list members), or non-indexed (being in isolation).
+<ul>
+<li>index (mandatory if indexed; must be absent if not indexed)
+<li>name: the font name; it can be a series of names separated by commas or semicolons,
+much like HTML font specifications.
+If a series of the names, the engine will look for a font with the first name,
+and then the second, and so forth, until it finds such a font.
+<li>size: the font size in points (standard unit)
+<li>style: the font style, which follows MacOS conventions; it is the sum of whichever of these
+attributes are used:
+<ul>
+<li>1: Bold
+<li>2: Italic
+<li>4: Underline
+<li>8: Outline
+<li>16: Shadow
+<li>32: Condense
+<li>64: Extend
+</ul>
+Normal is none of these attributes, or 0.
+</ul>
+None of the font attributes proper are mandatory.
+This example sets font 4 to the default font for the computer terminals.
+<pre>
+&lt;font index="4" name="Courier" size="12" style="0"/&gt;
+</pre>
+<p>
+
 
 <h4><a name="boolean">Boolean data</a></h4>
 
