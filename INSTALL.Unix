@@ -9,8 +9,17 @@ As implied by its name, Aleph One/SDL requires the Simple DirectMedia Layer
 If you didn't install SDL from source, you have to install the "SDL-devel"
 package to compile Aleph One.
 
-You also have to install the "SDL_image" library which can be found in the
-"Libraries" section of the SDL site.
+You also have to install the "SDL_image" and "SDL_net" libraries which can be
+found in the "Libraries" section of the SDL site.
+
+Support for Lua scripting, which may be required by some scenarios, requires
+you to have Lua installed. The source is available from the official Lua site:
+
+  http://www.lua.org
+
+Precompiled RPM packages of Lua can be downloaded from:
+
+  http://www.mupsych.org/~rrt/Lua
 
 
 Installing the program

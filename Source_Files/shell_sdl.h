@@ -199,6 +199,12 @@ int main(int argc, char **argv)
 	  "GNU Library General Public License.\n"
 	  "For details, see the file COPYING.SDL.\n"
 #endif
+#ifdef HAVE_SDL_NET
+	  "\nBuilt with network play enabled.\n"
+#endif
+#ifdef HAVE_LUA
+	  "\nBuilt with Lua scripting enabled.\n"
+#endif
     );
 
 	// Parse arguments

@@ -2,7 +2,11 @@
 Created 5-20-03 by Matthew Hielscher
 Controls the loading and execution of Lua scripts.
 */
+
 static int dummy;
+
+#include "cseries.h"
+
 #ifdef HAVE_LUA
 extern "C"
 {
@@ -14,7 +18,6 @@ extern "C"
 #include <string>
 using namespace std;
 
-#include "cseries.h"
 #include "screen.h"
 #include "tags.h"
 #include "player.h"
@@ -1854,4 +1857,5 @@ bool UseLuaCameras()
     }
     return using_lua_cameras;
 }
+
 #endif

@@ -32,6 +32,8 @@
 #    define A1_VERSION_MINOR_PLATFORM "Windows"
 #   elif defined(__APPLE__)
 #    define A1_VERSION_MINOR_PLATFORM "Mac OS X"
+#   elif defined(TARGET_PLATFORM)
+#    define A1_VERSION_MINOR_PLATFORM TARGET_PLATFORM
 // add more minor platforms (and/or a general way of getting GNU-style arch/OS stuff) here
 #   endif
 

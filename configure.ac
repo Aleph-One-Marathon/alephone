@@ -49,6 +49,18 @@ AC_CHECK_HEADERS(SDL_net.h, [
 ])
 AM_CONDITIONAL(HAVE_SDL_NET, test x$ac_cv_lib_SDL_net_SDLNet_Init = xyes)
 
+dnl Check for Lua.
+AC_CHECK_HEADERS(lua.h, [
+  AC_CHECK_HEADERS(lualib.h, [
+    AC_CHECK_LIB(lua, lua_open, [
+      AC_CHECK_LIB(lualib, luaL_loadbuffer, [
+        LIBS="$LIBS -llua -llualib"
+        AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
+      ], [], [-llua])
+    ])
+  ])
+])
+
 dnl Figure out which OpenGL library to use
 case "$target" in
   *-*-cygwin* | *-*-mingw32*)
@@ -95,6 +107,9 @@ if [[ "x$enable_opengl" = "xyes" ]]; then
   fi
 fi
 
+dnl Set target system name.
+AC_DEFINE_UNQUOTED(TARGET_PLATFORM, "$target_os $target_cpu", [Target platform name])
+
 dnl Generate Makefiles.
 AC_OUTPUT([
 Makefile
@@ -105,6 +120,7 @@ Source_Files/Expat/Makefile
 Source_Files/Files/Makefile
 Source_Files/GameWorld/Makefile
 Source_Files/Input/Makefile
+Source_Files/Lua/Makefile
 Source_Files/Misc/Makefile
 Source_Files/ModelView/Makefile
 Source_Files/Network/Makefile
