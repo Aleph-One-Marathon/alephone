@@ -133,10 +133,10 @@ void debug_print_weapon_status(void);
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_player_weapon_data(uint8 *Stream, int Count = 1);
-uint8 *pack_player_weapon_data(uint8 *Stream, int Count = 1);
-uint8 *unpack_weapon_definition(uint8 *Stream, int Count = 1);
-uint8 *pack_weapon_definition(uint8 *Stream, int Count = 1);
+uint8 *unpack_player_weapon_data(uint8 *Stream, int Count);
+uint8 *pack_player_weapon_data(uint8 *Stream, int Count);
+uint8 *unpack_weapon_definition(uint8 *Stream, int Count);
+uint8 *pack_weapon_definition(uint8 *Stream, int Count);
 
 // LP additions: get number of weapon types;
 int get_number_of_weapon_types();
