@@ -4,8 +4,8 @@
 ## makefile-engine will do all of the hard work for you.  This handles both
 ## Intel and PowerPC builds of the BeOS.
 
-# Get version number from configure.in
-version := $(shell grep <configure.in INIT_AUTOMAKE | sed -e 's/.*\[//' -e 's/\].*//')
+# Get version number from configure.ac
+version := $(shell grep <configure.ac INIT_AUTOMAKE | sed -e 's/.*\[//' -e 's/\].*//')
 
 ## Application Specific Settings ---------------------------------------------
 
@@ -56,7 +56,7 @@ SRCS=\
   $(FI)/crc.cpp $(FI)/FileHandler_SDL.cpp $(FI)/find_files_sdl.cpp \
   $(FI)/game_wad.cpp $(FI)/import_definitions.cpp $(FI)/preprocess_map_sdl.cpp \
   $(FI)/resource_manager.cpp $(FI)/wad.cpp $(FI)/wad_prefs.cpp \
-  $(FI)/wad_sdl.cpp \
+  $(FI)/wad_sdl.cpp $(FI)/Packing.cpp \
   \
   $(GW)/devices.cpp $(GW)/dynamic_limits.cpp $(GW)/effects.cpp \
   $(GW)/flood_map.cpp $(GW)/items.cpp $(GW)/lightsource.cpp \
@@ -72,6 +72,7 @@ SRCS=\
   $(MI)/preferences.cpp $(MI)/preferences_widgets_sdl.cpp \
   $(MI)/sdl_dialogs.cpp $(MI)/sdl_widgets.cpp \
   $(MI)/thread_priority_sdl_dummy.cpp $(MI)/vbl.cpp $(MI)/vbl_sdl.cpp \
+  $(MI)/DefaultStringSets.cpp $(MI)/Logging.cpp \
   \
   $(MV)/Model3D.cpp $(MV)/ModelRenderer.cpp $(MV)/Dim3_Loader.cpp \
   $(MV)/StudioLoader.cpp $(MV)/WavefrontLoader.cpp \
@@ -82,6 +83,7 @@ SRCS=\
   $(NW)/network_microphone_sdl_dummy.cpp $(NW)/network_speaker_sdl.cpp \
   $(NW)/network_stream.cpp $(NW)/network_tcp.cpp $(NW)/network_udp.cpp \
   $(NW)/SDL_netx.cpp $(NW)/SSLP_limited.cpp \
+  $(NW)/network_microphone_shared.cpp $(NW)/network_speaker_shared.cpp \
   \
   $(PF)/script_instructions.cpp $(PF)/script_parser.cpp $(PF)/scripting.cpp \
   \
