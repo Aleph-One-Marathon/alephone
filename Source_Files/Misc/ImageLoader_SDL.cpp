@@ -54,10 +54,14 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 	}
 
 	// Load image to surface
+#ifndef SDL_RFORK_HACK
 #ifdef HAVE_SDL_IMAGE
 	SDL_Surface *s = IMG_Load(File.GetPath());
 #else
 	SDL_Surface *s = SDL_LoadBMP(File.GetPath());
+#endif
+#else
+SDL_Surface *s = NULL;
 #endif
 	if (s == NULL)
 		return false;
