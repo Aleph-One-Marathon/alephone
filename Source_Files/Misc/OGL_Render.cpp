@@ -71,6 +71,9 @@ Aug 10, 2000:
 	when an OpenGL context is created. This will make it easier to change
 	the fog color and depth on the fly. Also, the presence flag, the depth, and the color
 	were made nonstatic so that Pfhortran can see them.
+
+Sep 21, 2000:
+	Added partial transparency to static mode
 */
 
 #include <string.h>
@@ -299,13 +302,13 @@ GLfloat FogDepth = 1;
 
 
 // Stipple patterns for that static look
-// 3 color channels * 32*32 array of bits
+// (3 color channels + 1 alpha channel) * 32*32 array of bits
 const int StatPatLen = 32;
-static GLuint StaticPatterns[3][StatPatLen];
+static GLuint StaticPatterns[4][StatPatLen];
 
-// Alternative: flat static
+// Alternative: partially-transparent flat static
 static bool UseFlatStatic;
-static uint16 FlatStaticColor[3];
+static uint16 FlatStaticColor[4];
 
 // The randomizer for the static-effect pixels
 static GM_Random StaticRandom;
@@ -647,9 +650,12 @@ bool OGL_StartMain()
 			FlatStaticColor[c] = StaticRandom.KISS() + StaticRandom.LFIB4();
 		*/
 	} else {
+		// Moved this down to where it is actually used
+		/*
 		for (int c=0; c<3; c++)
 			for (int n=0; n<StatPatLen; n++)
 				StaticPatterns[c][n] = StaticRandom.KISS() + StaticRandom.LFIB4();
+		*/
 	}
 		
 	return true;
@@ -1852,22 +1858,48 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	{
 		if (UseFlatStatic)
 		{
-			// Per-sprite coloring
+			// Per-sprite coloring; be sure to add the transparency in appropriate fashion
 			for (int c=0; c<3; c++)
 				FlatStaticColor[c] = StaticRandom.KISS() + StaticRandom.LFIB4();
+			FlatStaticColor[3] = 65535 - RenderRectangle.transfer_data;
 			
 			// Do flat-color version of static effect
-			glColor3usv(FlatStaticColor);
+			glDisable(GL_ALPHA_TEST);
+			glEnable(GL_BLEND);
+			glColor4usv(FlatStaticColor);
 			glDrawArrays(GL_POLYGON,0,4);
 			
 		} else {
 			// Do multitextured stippling to create the static effect
 			
+			// The colors:
+			for (int c=0; c<3; c++)
+				for (int n=0; n<StatPatLen; n++)
+					StaticPatterns[c][n] = StaticRandom.KISS() + StaticRandom.LFIB4();
+			
+			// The alpha channel:
+			for (int n=0; n<StatPatLen; n++)
+			{
+				int32 Val = 0;
+				for (int k=0; k<32; k++)
+				{
+					// Have to do this for every bit to get the proper probability distribution
+					Val <<= 1;
+					uint16 RandSamp = uint16(StaticRandom.KISS());
+					Val |= (RandSamp >= RenderRectangle.transfer_data) ? 1 : 0;
+				}
+				// Premultiply the stipple-color values by the alpha
+				for (int c=0; c<3; c++)
+					StaticPatterns[c][n] &= Val;
+				StaticPatterns[3][n] = Val;
+			}
+			
 			// First pass: base color (black)
+			glEnable(GL_POLYGON_STIPPLE);
 			glColor3f(0,0,0);
+			glPolygonStipple((byte *)StaticPatterns[3]);
 			glDrawArrays(GL_POLYGON,0,4);
 			
-			glEnable(GL_POLYGON_STIPPLE);
 			glEnable(GL_COLOR_LOGIC_OP);
 			
 			// Paint the appropriate color component in
