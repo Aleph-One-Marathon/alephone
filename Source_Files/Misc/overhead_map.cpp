@@ -253,14 +253,14 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 	{
 		{{0, 65535, 0},
 		{
-			{kFontIDMonaco, styleBold, 5},
-			{kFontIDMonaco, styleBold, 9},
-			{kFontIDMonaco, styleBold, 12},
-			{kFontIDMonaco, styleBold, 18}
+			{"Monaco", 5, FontSpecifier::Bold},
+			{"Monaco", 9, FontSpecifier::Bold},
+			{"Monaco", 12, FontSpecifier::Bold},
+			{"Monaco", 18, FontSpecifier::Bold},
 		}}
 	},
 	// Map name (color, font)
-	{{0, 65535, 0}, {kFontIDMonaco, styleNormal, 18}, 25},
+	{{0, 65535, 0}, {"Monaco", 18, FontSpecifier::Normal}, 25},
 	// Path color
 	{65535, 65535, 65535},
 	// What to show (aliens, items, projectiles, paths)
@@ -544,6 +544,83 @@ static XML_OvhdMapBooleanParser
 	ShowItemsParser("items"),
 	ShowProjectilesParser("projectiles"),
 	ShowPathsParser("paths");
+
+
+// Parser for living monsters
+class XML_LineWidthParser: public XML_ElementParser
+{
+	bool IsPresent[3];
+	short Type, Scale, Width;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+		
+	XML_LineWidthParser(): XML_ElementParser("line") {}
+};
+
+bool XML_LineWidthParser::Start()
+{
+	for (int k=0; k<3; k++)
+		IsPresent[k] = false;
+	return true;
+}
+
+bool XML_LineWidthParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"type") == 0)
+	{
+		// The permissible values, 0, 1, and 2, are line, elevation, and control panel
+		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(NUMBER_OF_LINE_DEFINITIONS-1)))
+		{
+			IsPresent[0] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"scale") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Scale,short(0),short(OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE)))
+		{
+			IsPresent[1] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"width") == 0)
+	{
+		if (ReadNumericalValue(Value,"%hd",Width))
+		{
+			IsPresent[2] = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_LineWidthParser::AttributesDone()
+{
+	// Verify...
+	bool AllPresent = true;
+	for (int k=0; k<3; k++)
+		AllPresent = AllPresent && IsPresent[k];
+	
+	if (!AllPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	// Put into place
+	OvhdMap_ConfigData.line_definitions[Type].pen_sizes[Scale] = Width;
+		
+	return true;
+}
+
+static XML_LineWidthParser LineWidthParser;
 	
 
 // Subclassed to set the color objects appropriately
@@ -551,13 +628,17 @@ const int TOTAL_NUMBER_OF_COLORS =
 	NUMBER_OF_POLYGON_COLORS + NUMBER_OF_LINE_DEFINITIONS +
 	NUMBER_OF_THINGS + NUMBER_OF_ANNOTATION_DEFINITIONS + 2;
 
+const int TOTAL_NUMBER_OF_FONTS = 
+	NUMBER_OF_ANNOTATION_DEFINITIONS*(OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE + 1) + 1;
+
 class XML_OvhdMapParser: public XML_ElementParser
 {
 	// Extras are:
 	// annotation color
 	// map-title color
 	// path color
-	rgb_color Colors[2*TOTAL_NUMBER_OF_COLORS];
+	rgb_color Colors[TOTAL_NUMBER_OF_COLORS];
+	FontSpecifier Fonts[TOTAL_NUMBER_OF_FONTS];
 	
 public:
 	bool Start();
@@ -589,7 +670,6 @@ bool XML_OvhdMapParser::Start()
 	for (int k=0; k<NUMBER_OF_THINGS; k++)
 		*(ColorPtr++) = (ThingDefPtr++)->color;
 	
-
 	annotation_definition *NoteDefPtr = OvhdMap_ConfigData.annotation_definitions;
 	for (int k=0; k<NUMBER_OF_ANNOTATION_DEFINITIONS; k++)
 		*(ColorPtr++) = (NoteDefPtr++)->color;
@@ -597,7 +677,25 @@ bool XML_OvhdMapParser::Start()
 	*(ColorPtr++) = OvhdMap_ConfigData.map_name_data.color;
 	*(ColorPtr++) = OvhdMap_ConfigData.path_color;
 	
+	assert(ColorPtr == Colors + TOTAL_NUMBER_OF_COLORS);
+	
 	Color_SetArray(Colors,TOTAL_NUMBER_OF_COLORS);
+	
+	// Copy in the fonts
+	FontSpecifier *FontPtr = Fonts;
+	
+	NoteDefPtr = OvhdMap_ConfigData.annotation_definitions;
+	for (int k=0; k<NUMBER_OF_ANNOTATION_DEFINITIONS; k++)
+	{
+		FontSpecifier *NoteFontPtr = NoteDefPtr[k].Fonts;
+		for (int s=0; s<=OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE; s++)
+			*(FontPtr++) = *(NoteFontPtr++);
+	}
+	*(FontPtr++) = OvhdMap_ConfigData.map_name_data.Font;
+	
+	assert(FontPtr == Fonts + TOTAL_NUMBER_OF_FONTS);
+	
+	Font_SetArray(Fonts,TOTAL_NUMBER_OF_FONTS);
 	
 	return true;
 }
@@ -606,11 +704,11 @@ bool XML_OvhdMapParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (strcmp(Tag,"mode") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",OverheadMapMode,short(0),short(NUMBER_OF_OVERHEAD_MAP_MODES-1)))
-		{
-			return true;
-		}
-		else return false;
+		return (ReadBoundedNumericalValue(Value,"%hd",OverheadMapMode,short(0),short(NUMBER_OF_OVERHEAD_MAP_MODES-1)));
+	}
+	else if (strcmp(Tag,"title_offset") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",OvhdMap_ConfigData.map_name_data.offset_down));
 	}
 	UnrecognizedTag();
 	return false;
@@ -649,6 +747,22 @@ bool XML_OvhdMapParser::End()
 	OvhdMap_ConfigData.map_name_data.color = *(ColorPtr++);
 	OvhdMap_ConfigData.path_color = *(ColorPtr++);
 		
+	assert(ColorPtr == Colors + TOTAL_NUMBER_OF_COLORS);
+	
+	// Copy out the fonts
+	FontSpecifier *FontPtr = Fonts;
+
+	NoteDefPtr = OvhdMap_ConfigData.annotation_definitions;
+	for (int k=0; k<NUMBER_OF_ANNOTATION_DEFINITIONS; k++)
+	{
+		FontSpecifier *NoteFontPtr = NoteDefPtr[k].Fonts;
+		for (int s=0; s<=OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE; s++)
+			*(NoteFontPtr++) = *(FontPtr++);
+	}
+	OvhdMap_ConfigData.map_name_data.Font = *(FontPtr++);
+	
+	assert(FontPtr == Fonts + TOTAL_NUMBER_OF_FONTS);
+
 	return true;
 }
 
@@ -664,7 +778,9 @@ XML_ElementParser *OverheadMap_GetParser()
 	OvhdMapParser.AddChild(&ShowItemsParser);
 	OvhdMapParser.AddChild(&ShowProjectilesParser);
 	OvhdMapParser.AddChild(&ShowPathsParser);
+	OvhdMapParser.AddChild(&LineWidthParser);
 	OvhdMapParser.AddChild(Color_GetParser());
+	OvhdMapParser.AddChild(Font_GetParser());
 	
 	return &OvhdMapParser;
 }
