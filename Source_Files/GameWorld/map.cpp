@@ -880,8 +880,10 @@ void set_object_shape_and_transfer_mode(
 	if (object->shape!=shape)
 	{
 		struct shape_animation_data *animation= get_shape_animation_data(shape);
-		assert(animation);
-
+		// Quit if a nonexistent animation
+		// assert(animation);
+		if (!animation) return;
+		
 		object->shape= shape;
 		if (animation->transfer_mode!=_xfer_normal || object->transfer_mode==NONE) object->transfer_phase= 0;
 		object->sequence= BUILD_SEQUENCE(0, 1);
