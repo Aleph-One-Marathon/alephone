@@ -1574,7 +1574,7 @@ static void select_next_best_weapon(
 	short player_index)
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
-	unsigned index, current_weapon_index;
+	int index, current_weapon_index;
 	
 	/* Find where we are in the array. */
 	current_weapon_index= find_weapon_power_index(player_weapons->current_weapon);
