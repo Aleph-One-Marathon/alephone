@@ -488,15 +488,15 @@ void set_indexed_directory_offset_and_length(
 	// LP: should be correct for packing also
 	if (header->version>=WADFILE_SUPPORTS_OVERLAYS)
 	{
-		uint8 buffer[SIZEOF_old_directory_entry];
-		memcpy(buffer,data_ptr,SIZEOF_old_directory_entry);
-		unpack_old_directory_entry(buffer,(old_directory_entry *)data_ptr,1);
-	}
-	else
-	{
 		uint8 buffer[SIZEOF_directory_entry];
 		memcpy(buffer,data_ptr,SIZEOF_directory_entry);
 		unpack_directory_entry(buffer,(directory_entry *)data_ptr,1);
+	}
+	else
+	{
+		uint8 buffer[SIZEOF_old_directory_entry];
+		memcpy(buffer,data_ptr,SIZEOF_old_directory_entry);
+		unpack_old_directory_entry(buffer,(old_directory_entry *)data_ptr,1);
 	}
 }
 
