@@ -53,6 +53,7 @@ Apr 30, 2002 (Loren Petrich):
 
 #include "XML_ElementParser.h"
 #include "XML_DataBlock.h"
+#include "ColorParser.h"
 
 #include "tags.h"
 
@@ -140,9 +141,6 @@ static bool validate_input_preferences(input_preferences_data *preferences);
 static void default_environment_preferences(environment_preferences_data *preferences);
 static bool validate_environment_preferences(environment_preferences_data *preferences);
 
-// For writing out boolean values
-inline const char *BoolString(bool B) {return (B ? "true" : "false");}
-
 
 // Include platform-specific file
 #if defined(mac)
@@ -150,6 +148,28 @@ inline const char *BoolString(bool B) {return (B ? "true" : "false");}
 #elif defined(SDL)
 #include "preferences_sdl.h"
 #endif
+
+
+
+// For writing out boolean values
+const char *BoolString(bool B) {return (B ? "true" : "false");}
+
+// For writing out color values
+const float CNorm = 1/float(65535);	// Maximum uint16
+
+template<class CType> void WriteColor(FILE *F,
+	const char *Prefix, CType& Color, const char *Suffix)
+{
+	fprintf(F,"%s<color red=\"%f\" green=\"%f\" blue=\"%f\"/>%s",
+		Prefix,CNorm*Color.red,CNorm*Color.green,CNorm*Color.blue,Suffix);
+}
+
+template<class CType> void WriteColorWithIndex(FILE *F,
+	const char *Prefix, int Index, CType& Color, const char *Suffix)
+{
+	fprintf(F,"%s<color index=\"%d\" red=\"%f\" green=\"%f\" blue=\"%f\"/>%s",
+		Prefix,Index,CNorm*Color.red,CNorm*Color.green,CNorm*Color.blue,Suffix);
+}
 
 
 /*
@@ -336,7 +356,24 @@ void write_preferences(
 	fprintf(F,"  devspec_height=\"%hd\"\n",graphics_preferences->device_spec.height);
 	fprintf(F,"  frequency=\"%f\"\n",graphics_preferences->refresh_frequency);
 #endif
-	fprintf(F,"/>\n\n");
+	fprintf(F,"  ogl_flags=\"%hu\"\n",graphics_preferences->OGL_Configure.Flags);
+	fprintf(F,">\n");
+	fprintf(F,"  <void>\n");
+	WriteColor(F,"    ",graphics_preferences->OGL_Configure.VoidColor,"\n");
+	fprintf(F,"  </void>\n");
+	fprintf(F,"  <landscapes>\n");
+	for (int i=0; i<4; i++)
+		for (int j=0; j<2; j++)
+			WriteColorWithIndex(F,"    ",(2*i+j),
+				graphics_preferences->OGL_Configure.LscpColors[i][j],"\n");
+	fprintf(F,"  </landscapes>\n");
+	for (int k=0; k<OGL_NUMBER_OF_TEXTURE_TYPES; k++)
+	{
+		OGL_Texture_Configure& TxtrConfig = graphics_preferences->OGL_Configure.TxtrConfigList[k];
+		fprintf(F,"  <texture index=\"%d\" near_filter=\"%d\" far_filter=\"%d\" resolution=\"%d\" color_format=\"%d\"/>\n",
+			k, int(TxtrConfig.NearFilter), int(TxtrConfig.FarFilter), int(TxtrConfig.Resolution), int(TxtrConfig.ColorFormat));
+	}
+	fprintf(F,"</graphics>\n\n");
 	
 	fprintf(F,"<player\n");
 	fprintf(F,"  color=\"%hd\"\n",player_preferences->color);
@@ -344,7 +381,16 @@ void write_preferences(
 	fprintf(F,"  last_time_ran=\"%u\"\n",player_preferences->last_time_ran);
 	fprintf(F,"  difficulty=\"%hd\"\n",player_preferences->difficulty_level);
 	fprintf(F,"  bkgd_music=\"%s\"\n",BoolString(player_preferences->background_music_on));
-	fprintf(F,"/>\n\n");
+	fprintf(F,">\n");
+	ChaseCamData& ChaseCam = player_preferences->ChaseCam;
+	fprintf(F,"  <chase_cam behind=\"%hd\" upward=\"%hd\" rightward=\"%hd\" flags=\"%hd\"/>\n",
+		ChaseCam.Behind, ChaseCam.Upward, ChaseCam.Rightward, ChaseCam.Flags);
+	CrosshairData& Crosshairs = player_preferences->Crosshairs;
+	fprintf(F,"  <crosshairs thickness=\"%hd\" from_center=\"%hd\" length=\"%hd\">\n",
+		Crosshairs.Thickness, Crosshairs.FromCenter, Crosshairs.Length);
+	WriteColor(F,"    ",Crosshairs.Color,"\n");
+	fprintf(F,"  </crosshairs>\n");
+	fprintf(F,"</player>\n\n");
 	
 	fprintf(F,"<input\n");
 	fprintf(F,"  device=\"%hd\"\n",input_preferences->input_device);
@@ -861,6 +907,186 @@ bool dont_switch_to_new_weapon() {
 // These parsers are intended to work correctly on both Mac and SDL prefs files;
 // including one crossing over to the other platform (uninterpreted fields become defaults)
 
+// To get around both RGBColor and rgb_color being used in the code
+template<class CType1, class CType2> void CopyColor(CType1& Dest, CType2& Src)
+{
+	Dest.red = Src.red;
+	Dest.green = Src.green;
+	Dest.blue = Src.blue;
+}
+
+
+class XML_VoidPrefsParser: public XML_ElementParser
+{
+	rgb_color Color;
+
+public:
+	bool Start();
+	bool End();
+
+	XML_VoidPrefsParser(): XML_ElementParser("void") {}
+};
+
+bool XML_VoidPrefsParser::Start()
+{
+	CopyColor(Color,graphics_preferences->OGL_Configure.VoidColor);
+	
+	Color_SetArray(&Color);
+	
+	return true;
+}
+
+bool XML_VoidPrefsParser::End()
+{
+	CopyColor(graphics_preferences->OGL_Configure.VoidColor,Color);
+
+	return true;
+}
+
+static XML_VoidPrefsParser VoidPrefsParser;
+
+
+class XML_LandscapePrefsParser: public XML_ElementParser
+{
+	rgb_color Colors[8];
+
+public:
+	bool Start();
+	bool End();
+
+	XML_LandscapePrefsParser(): XML_ElementParser("landscapes") {}
+};
+
+bool XML_LandscapePrefsParser::Start()
+{
+	for (int i=0; i<4; i++)
+		for (int j=0; j<2; j++)
+			CopyColor(Colors[2*i+j],graphics_preferences->OGL_Configure.LscpColors[i][j]);
+	
+	Color_SetArray(Colors,8);
+	
+	return true;
+}
+
+bool XML_LandscapePrefsParser::End()
+{
+	for (int i=0; i<4; i++)
+		for (int j=0; j<2; j++)
+			CopyColor(graphics_preferences->OGL_Configure.LscpColors[i][j],Colors[2*i+j]);
+
+	return true;
+}
+
+static XML_LandscapePrefsParser LandscapePrefsParser;
+
+
+class XML_TexturePrefsParser: public XML_ElementParser
+{
+	bool IndexPresent, ValuesPresent[4];
+	int16 Index;
+	uint16 Values[4];
+	
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+
+	XML_TexturePrefsParser(): XML_ElementParser("texture") {}
+};
+
+bool XML_TexturePrefsParser::Start()
+{
+	IndexPresent = false;
+	for (int k=0; k<4; k++)
+		ValuesPresent[k] = false;
+	
+	return true;
+}
+
+bool XML_TexturePrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"index"))
+	{
+		if (ReadBoundedInt16Value(Value,Index,0,OGL_NUMBER_OF_TEXTURE_TYPES-1))
+		{
+			IndexPresent = true;
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"near_filter"))
+	{
+		if (ReadUInt16Value(Value,Values[0]))
+		{
+			ValuesPresent[0] = true;
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"far_filter"))
+	{
+		if (ReadUInt16Value(Value,Values[1]))
+		{
+			ValuesPresent[1] = true;
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"resolution"))
+	{
+		if (ReadUInt16Value(Value,Values[2]))
+		{
+			ValuesPresent[2] = true;
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"color_format"))
+	{
+		if (ReadUInt16Value(Value,Values[3]))
+		{
+			ValuesPresent[3] = true;
+			return true;
+		}
+		else
+			return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+
+bool XML_TexturePrefsParser::AttributesDone()
+{
+	// Verify...
+	if (!IndexPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	if (ValuesPresent[0])
+		graphics_preferences->OGL_Configure.TxtrConfigList[Index].NearFilter = Values[0];
+	
+	if (ValuesPresent[1])
+		graphics_preferences->OGL_Configure.TxtrConfigList[Index].FarFilter = Values[1];
+	
+	if (ValuesPresent[2])
+		graphics_preferences->OGL_Configure.TxtrConfigList[Index].Resolution = Values[2];
+	
+	if (ValuesPresent[3])
+		graphics_preferences->OGL_Configure.TxtrConfigList[Index].ColorFormat = Values[3];
+	
+	return true;
+}
+
+static XML_TexturePrefsParser TexturePrefsParser;
+
+
 class XML_GraphicsPrefsParser: public XML_ElementParser
 {
 public:
@@ -943,11 +1169,97 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 		return true;
 #endif
 	}
+	else if (StringsEqual(Tag,"ogl_flags"))
+	{
+		return ReadUInt16Value(Value,graphics_preferences->OGL_Configure.Flags);
+	}
 	UnrecognizedTag();
 	return false;
 }
 
 static XML_GraphicsPrefsParser GraphicsPrefsParser;
+
+
+
+class XML_ChaseCamPrefsParser: public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+
+	XML_ChaseCamPrefsParser(): XML_ElementParser("chase_cam") {}
+};
+
+bool XML_ChaseCamPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"behind"))
+	{
+		return ReadInt16Value(Value,player_preferences->ChaseCam.Behind);
+	}
+	else if (StringsEqual(Tag,"upward"))
+	{
+		return ReadInt16Value(Value,player_preferences->ChaseCam.Upward);
+	}
+	else if (StringsEqual(Tag,"rightward"))
+	{
+		return ReadInt16Value(Value,player_preferences->ChaseCam.Rightward);
+	}
+	else if (StringsEqual(Tag,"flags"))
+	{
+		return ReadInt16Value(Value,player_preferences->ChaseCam.Flags);
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_ChaseCamPrefsParser ChaseCamPrefsParser;
+
+
+class XML_CrosshairsPrefsParser: public XML_ElementParser
+{
+	rgb_color Color;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool End();
+
+	XML_CrosshairsPrefsParser(): XML_ElementParser("crosshairs") {}
+};
+
+bool XML_CrosshairsPrefsParser::Start()
+{
+	CopyColor(Color,player_preferences->Crosshairs.Color);
+	Color_SetArray(&Color);
+
+	return true;
+}
+
+bool XML_CrosshairsPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"thickness"))
+	{
+		return ReadInt16Value(Value,player_preferences->Crosshairs.Thickness);
+	}
+	else if (StringsEqual(Tag,"from_center"))
+	{
+		return ReadInt16Value(Value,player_preferences->Crosshairs.FromCenter);
+	}
+	else if (StringsEqual(Tag,"length"))
+	{
+		return ReadInt16Value(Value,player_preferences->Crosshairs.Length);
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_CrosshairsPrefsParser::End()
+{
+	CopyColor(player_preferences->Crosshairs.Color,Color);
+
+	return true;
+}
+
+static XML_CrosshairsPrefsParser CrosshairsPrefsParser;
 
 
 class XML_PlayerPrefsParser: public XML_ElementParser
@@ -1220,14 +1532,28 @@ void SetupPrefsParseTree()
 {
 	// Add the root object here
 	PrefsRootParser.AddChild(&MarathonPrefsParser);
-
+	
 	// Add all the others
+	
+	VoidPrefsParser.AddChild(Color_GetParser());
+	GraphicsPrefsParser.AddChild(&VoidPrefsParser);
+	LandscapePrefsParser.AddChild(Color_GetParser());
+	GraphicsPrefsParser.AddChild(&LandscapePrefsParser);
+	GraphicsPrefsParser.AddChild(&TexturePrefsParser);
 	MarathonPrefsParser.AddChild(&GraphicsPrefsParser);
+	
+	PlayerPrefsParser.AddChild(&ChaseCamPrefsParser);
+	CrosshairsPrefsParser.AddChild(Color_GetParser());
+	PlayerPrefsParser.AddChild(&CrosshairsPrefsParser);
 	MarathonPrefsParser.AddChild(&PlayerPrefsParser);
+	
 	InputPrefsParser.AddChild(&MacKeyPrefsParser);
 	InputPrefsParser.AddChild(&SDLKeyPrefsParser);
 	MarathonPrefsParser.AddChild(&InputPrefsParser);
+	
 	MarathonPrefsParser.AddChild(&SoundPrefsParser);
+	
 	MarathonPrefsParser.AddChild(&NetworkPrefsParser);
+	
 	MarathonPrefsParser.AddChild(&EnvironmentPrefsParser);
 }
