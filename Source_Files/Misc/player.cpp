@@ -64,6 +64,9 @@ Jun 11, 2000 (Loren Petrich):
 
 Jun 15, 2000 (Loren Petrich):
 	Added support for Chris Pruett's Pfhortran
+
+Jun 28, 2000 (Loren Petrich):
+	Generalized the invincibility-powerup vulnerability and added XML support for that
 */
 
 #include "cseries.h"
@@ -136,6 +139,9 @@ fixed PlayerSelfLuminosity = FIXED_ONE_HALF;
 // oxygen change is set equal to depletion or replenishment,
 // whichever one is appropriate for the environment (vacuum/liquid vs. normal air)
 static short OxygenDepletion = 1, OxygenReplenishment = 0, OxygenChange = 0;
+
+// LP addition: invincibility-powerup vulnerability
+static short Vulnerability = _damage_fusion_bolt;
 				
 /* ---------- structures */
 
@@ -617,8 +623,10 @@ void damage_player(
 	struct damage_response_definition *definition;
 
 	(void) (aggressor_type);
-
-	if (player->invincibility_duration && damage->type!=_damage_fusion_bolt)
+	
+	// LP change: made this more general
+	if (player->invincibility_duration && damage->type!=Vulnerability)
+	// if (player->invincibility_duration && damage->type!=_damage_fusion_bolt)
 	{
 		damage_type= _damage_absorbed;
 	}
@@ -2057,6 +2065,10 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"oxygen_replenish") == 0)
 	{
 		return (ReadNumericalValue(Value,"%hd",OxygenReplenishment));
+	}
+	else if (strcmp(Tag,"vulnerability") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Vulnerability,short(NONE),short(NUMBER_OF_DAMAGE_TYPES-1)));
 	}
 	UnrecognizedTag();
 	return false;
