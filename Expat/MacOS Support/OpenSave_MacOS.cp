@@ -63,13 +63,6 @@ char *OpenFile(struct OpenParameters *OpenParms) {
 
 char *SaveFile(struct SaveParameters *SaveParms) {
 	
-	// Pascalize the prompt and default strings for the MacOS:
-	Str31 PasPrompt, PasDefault;
-	PasPrompt[0] = 0;
-	PasDefault[0] = 0;
-	if (SaveParms->Prompt != 0) C2Pas((byte *)SaveParms->Prompt,PasPrompt,31);
-	if (SaveParms->DefaultName != 0) C2Pas((byte *)SaveParms->DefaultName,PasDefault,31);
-
 	// LP: AlexJLS's Nav Services code, somewhat modified
 	NavDialogOptions opts;
 	NavGetDefaultDialogOptions(&opts);
