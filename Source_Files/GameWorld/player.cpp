@@ -107,6 +107,9 @@ Feb 20, 2002 (Woody Zenfell):
     Ripped action_queue support out into new ActionQueues class (see ActionQueues.h)
     Providing pointer gRealActionQueues to help others find the set of queues they are
     accustomed to using.
+
+May 20, 2002 (Woody Zenfell):
+    get_ticks_since_local_player_in_terminal() mechanism
 */
 
 #include "cseries.h"
@@ -461,11 +464,25 @@ void reset_player_queues(
 // ZZZ: get_action_queue_size() replaced by ActionQueues::countActionFlags()
 
 
+// ZZZ addition: keep track of the number of ticks since the local player was in terminal mode
+// Note this mechanism is not very careful; should not be used for _important_ decisions.
+static int  sLocalPlayerTicksSinceTerminal = 1 * TICKS_PER_MINUTE;
+
+int
+get_ticks_since_local_player_in_terminal() {
+    return sLocalPlayerTicksSinceTerminal;
+}
+
 /* assumes ¶t==1 tick */
 void update_players(ActionQueues* inActionQueuesToUse)
 {
 	struct player_data *player;
 	short player_index;
+
+    // ZZZ: update ticks-since-terminal stuff
+    sLocalPlayerTicksSinceTerminal++;
+    if(player_in_terminal_mode(local_player_index))
+        sLocalPlayerTicksSinceTerminal = 0;
 	
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{

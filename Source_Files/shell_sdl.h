@@ -901,13 +901,20 @@ static void handle_game_key(const SDL_Event &event)
 	}
 
 	switch (key) {
-#if 0
-		// Disabled because it interferes with the function of ESC in
-		// terminals - CB
-        case SDLK_ESCAPE:   // (ZZZ) Quit gesture
-            do_menu_item_command(mGame, iQuitGame, false);
+        case SDLK_ESCAPE:   // (ZZZ) Quit gesture (now safer)
+            if(!player_controlling_game())
+                do_menu_item_command(mGame, iQuitGame, false);
+            else {
+                if(get_ticks_since_local_player_in_terminal() > 1 * TICKS_PER_SECOND) {
+                    if(!game_is_networked) {
+                        do_menu_item_command(mGame, iQuitGame, false);
+                    }
+                    else {
+                        screen_printf("If you wish to quit, press Alt+Q.");
+                    }
+                }
+            }
             break;
-#endif
 
 		case SDLK_PERIOD:		// Sound volume up
 			changed_prefs = adjust_sound_volume_up(sound_preferences, _snd_adjust_volume);

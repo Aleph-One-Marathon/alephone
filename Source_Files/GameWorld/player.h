@@ -57,6 +57,9 @@ Oct 21, 2001 (Woody Zenfell):
 
 Feb 20, 2002 (Woody Zenfell):
     Support for multiple sets of action queues (including gRealActionQueues)
+
+May 20, 2002 (Woody Zenfell):
+    Can now find out how long since local player used a terminal
 */
 
 // LP additions: stuff that this file needs
@@ -475,6 +478,10 @@ uint8 *pack_physics_constants(uint8 *Stream, int Count);
 
 // LP addition: get number of physics models (restricted sense)
 int get_number_of_physics_models();
+
+// ZZZ addition: get number of ticks (NOT measured carefully, beware)
+// since local player was in terminal mode.
+int get_ticks_since_local_player_in_terminal();
 
 // XML-parser support
 XML_ElementParser *Player_GetParser();

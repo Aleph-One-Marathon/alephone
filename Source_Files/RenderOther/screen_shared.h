@@ -561,7 +561,7 @@ void screen_printf(char *format, ...)
 		MostRecentMessage += NumScreenMessages;
 	ScreenMessage& Message = Messages[MostRecentMessage];
 	
-	Message.TimeRemaining = 3*MACHINE_TICKS_PER_SECOND;
+	Message.TimeRemaining = 3*TICKS_PER_SECOND;
 
 	va_list list;
 
