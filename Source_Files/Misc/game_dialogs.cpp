@@ -60,31 +60,15 @@ enum {
 /* ----------- code */
 #ifdef USES_NIBS
 
-// The data is a pointer to the button hit to exit
-
-static void Quit_NoSave_Handler(int ID, void *Data)
-{
-	int *IDPtr = (int *)(Data);
-	*IDPtr = ID;
-}
-
 bool quit_without_saving(
 	void)
 {
-	OSErr err;
-	
 	// Get the window
-	WindowRef Window;
-	err = CreateWindowFromNib(GUI_Nib,Window_Game_Quit_NoSave,&Window);
-	vassert(err == noErr, csprintf(temporary,"CreateWindowFromNib error: %hd",err));
+	AutoNibWindow Window(GUI_Nib,Window_Game_Quit_NoSave);
 	
-	int ItemHit;
-	
-	RunModalDialog(Window, Quit_NoSave_Handler, &ItemHit);
-	
-	DisposeWindow(Window);
-	
-	return (ItemHit == iOK) ? true : false;
+	bool HitOK = RunModalDialog(Window());
+		
+	return HitOK;
 }
 
 #else

@@ -147,27 +147,6 @@ void do_preferences(
 }
 
 #ifdef USES_NIBS
-struct LevelNumberData
-{
-	ControlRef MenuCtrl;
-	short LevelNumber;
-};
-
-static void LevelNumberHandler(int ID, void *Data)
-{
-	LevelNumberData *DPtr = (LevelNumberData *)(Data);
-	
-	switch(ID)
-	{
-	case iOK:
-		DPtr->LevelNumber = GetControl32BitValue(DPtr->MenuCtrl) - 1;
-		break;
-		
-	case iCANCEL:
-		DPtr->LevelNumber = NONE;
-		break;
-	}
-}
 
 static bool LevelNumberMenuBuilder(
 	int indx, Str255 ItemName, bool &ThisIsInitial, void *BuildMenuData)
@@ -187,28 +166,20 @@ static bool LevelNumberMenuBuilder(
 
 short get_level_number_from_user(
 	void)
-{
-	OSErr err;
-	
+{	
 	// Get the window
-	WindowRef Window;
-	err = CreateWindowFromNib(GUI_Nib,Window_Game_Goto_Level,&Window);
-	vassert(err == noErr, csprintf(temporary,"CreateWindowFromNib error: %hd",err));
+	AutoNibWindow Window(GUI_Nib,Window_Game_Goto_Level);
 	
 	// Set up the popup menu
-	ControlRef MenuCtrl = GetCtrlFromWindow(Window, 0, iLEVEL_SELECTOR);
+	ControlRef MenuCtrl = GetCtrlFromWindow(Window(), 0, iLEVEL_SELECTOR);
 	
-	BuildMenu(MenuCtrl, LevelNumberMenuBuilder, NULL);
+	BuildMenu(MenuCtrl, LevelNumberMenuBuilder);
 	
-	LevelNumberData Data;
-	Data.MenuCtrl = MenuCtrl;
-	Data.LevelNumber = NONE;
-	
-	RunModalDialog(Window, LevelNumberHandler, &Data);
+	short LevelNumber = RunModalDialog(Window()) ?
+		(GetControl32BitValue(MenuCtrl) - 1) :
+		NONE;
 
-	DisposeWindow(Window);
-
-	return Data.LevelNumber;
+	return LevelNumber;
 }
 #else
 short get_level_number_from_user(
