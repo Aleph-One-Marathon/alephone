@@ -21,6 +21,10 @@
 	April 15, 2000
 	
 	This is the base-class implementation of these objects
+
+Dec 25, 2001 (Loren Petrich)
+	Made StringsEqual case-independent for the purpose of making parsing of
+	XML element names and attribute names case-independent.
 */
 
 #include "cseries.h"
@@ -29,6 +33,28 @@
 #include <ctype.h>
 #include "XML_ElementParser.h"
 
+
+bool StringsEqual(const char *String1, const char *String2, int MaxStrLen)
+{
+	// Convert and do the comparison by hand:
+	const char *S1 = String1;
+	const char *S2 = String2;
+	
+	for (int k=0; k<MaxStrLen; k++, S1++, S2++)
+	{
+		// Make the characters the same case
+		char c1 = toupper(*S1);
+		char c2 = toupper(*S2);
+		
+		// Compare!
+		if (c1 == 0 && c2 == 0) return true;	// All in both strings equal
+		else if (c1 != c2) return false;		// At least one unequal
+		// else equal but non-terminating; continue comparing
+	}
+	
+	// All those within the length range are equal
+	return true;
+}
 
 bool XML_ElementParser::ReadInt16Value(const char *String, int16& Value)
 {
@@ -106,32 +132,32 @@ bool XML_ElementParser::ReadBooleanValueAsBool(const char *String, bool& Value)
 
 bool XML_GetBooleanValue(const char *String, bool &Value)
 {
-	if (strcmp(String,"1") == 0)
+	if (StringsEqual(String,"1") == 0)
 	{
 		Value = true;
 		return true;
 	}
-	else if (strcmp(String,"t") == 0)
+	else if (StringsEqual(String,"t") == 0)
 	{
 		Value = true;
 		return true;
 	}
-	else if (strcmp(String,"true") == 0)
+	else if (StringsEqual(String,"true") == 0)
 	{
 		Value = true;
 		return true;
 	}
-	else if (strcmp(String,"0") == 0)
+	else if (StringsEqual(String,"0") == 0)
 	{
 		Value = false;
 		return true;
 	}
-	else if (strcmp(String,"f") == 0)
+	else if (StringsEqual(String,"f") == 0)
 	{
 		Value = false;
 		return true;
 	}
-	else if (strcmp(String,"false") == 0)
+	else if (StringsEqual(String,"false") == 0)
 	{
 		Value = false;
 		return true;

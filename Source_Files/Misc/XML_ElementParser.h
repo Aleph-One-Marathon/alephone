@@ -30,6 +30,10 @@
 
 Oct 13, 2000 (Loren Petrich)
 	Changed to STL container
+
+Dec 25, 2001 (Loren Petrich)
+	Made StringsEqual case-independent for the purpose of making parsing of
+	XML element names and attribute names case-independent.
 */
 
 
@@ -41,10 +45,10 @@ using namespace std;
 
 extern bool XML_GetBooleanValue(const char *String, bool &Value);
 
-inline bool StringsEqual(const char *String1, const char *String2)
-{
-	return (strcmp(String1,String2) == 0);
-}
+// This function is case-insensitive, so there will be no need
+// to specify capital and small versions of search-target strings.
+// The default maximum length is a reasonable one for most likely element and attribute names
+bool StringsEqual(const char *String1, const char *String2, int MaxStrLen = 32);
 
 
 class XML_ElementParser
