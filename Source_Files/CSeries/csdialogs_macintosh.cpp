@@ -517,6 +517,53 @@ GetListBoxListHandle( ControlHandle control, ListHandle* list )
 
 #include "csalerts.h"
 
+ControlRef GetCtrlFromWindow(WindowRef DlgWindow, uint32 Signature, uint32 ID)
+{
+	OSStatus err;
+	
+	// Set up the popup menu
+	ControlID CtrlID;
+	CtrlID.signature = Signature;
+	CtrlID.id = ID;
+	
+	ControlRef Ctrl;
+	err = GetControlByID(DlgWindow,&CtrlID,&Ctrl);
+	vassert(err == noErr, csprintf(temporary,"GetControlByID error for sig and id: %d - %d %d",err,Signature,ID));
+	assert(Ctrl);
+	
+	return Ctrl;	
+}
+
+#include <stdio.h>
+
+void BuildMenu(ControlRef MenuCtrl, bool (*BuildMenuItem)(int,uint8 *,bool &,void *), void *BuildMenuData)
+{
+	// Extract the menu
+	MenuRef Menu = GetControlPopupMenuHandle(MenuCtrl);
+	assert(Menu);
+	
+	// Get rid of old contents
+	while(CountMenuItems(Menu)) DeleteMenuItem(Menu, 1);
+	
+	if(!BuildMenuItem) return;
+	
+	int Initial = 1;
+	
+	Str255 ItemName;
+	for(int indx=1; indx<=255; indx++)
+	{
+		bool ThisIsInitial = false;
+		if (!BuildMenuItem(indx,ItemName,ThisIsInitial,BuildMenuData)) break;
+		if (ThisIsInitial) Initial = indx;
+		
+		AppendMenu(Menu, "\pReplace Me");
+		SetMenuItemText(Menu, indx, ItemName);
+	}
+	
+	SetControl32BitMaximum(MenuCtrl,CountMenuItems(Menu));
+	SetControl32BitValue(MenuCtrl, Initial);
+}
+
 struct ModalDialogHandlerData
 {
 	WindowRef DlgWindow;
@@ -529,19 +576,20 @@ static pascal OSStatus ModalDialogHandler(
 {
 	(void)(HandlerCallRef);
 	
-	OSErr err;
+	OSStatus err;
 	ControlRef Control;
 	err = GetEventParameter(Event,
 		kEventParamDirectObject,typeControlRef,
 		NULL, sizeof(ControlRef), NULL, &Control);
-	vassert(err == noErr, csprintf(temporary,"GetEventParameter error: %hd",err));
+	vassert(err == noErr, csprintf(temporary,"GetEventParameter error: %d",err));
 	
 	ControlID CtrlID;
 	err = GetControlID(Control,&CtrlID);
-	vassert(err == noErr, csprintf(temporary,"GetControlID error: %hd",err));
+	vassert(err == noErr, csprintf(temporary,"GetControlID error: %d",err));
 
 	ModalDialogHandlerData *HDPtr = (ModalDialogHandlerData *)(Data);
-	HDPtr->DlgHandler(CtrlID.id,HDPtr->DlgData);
+	if (HDPtr->DlgHandler)
+		HDPtr->DlgHandler(CtrlID.id,HDPtr->DlgData);
 	
 	if (CtrlID.id == iOK || CtrlID.id == iCANCEL)
 	{
@@ -558,7 +606,7 @@ static pascal OSStatus ModalDialogHandler(
 //   Dialog handler; will respond to every hit of a control item
 void RunModalDialog(WindowRef DlgWindow, void (*DlgHandler)(int,void *), void *DlgData)
 {
-	OSErr err;
+	OSStatus err;
 	ModalDialogHandlerData HandlerData;
 	HandlerData.DlgWindow = DlgWindow;
 	HandlerData.DlgHandler = DlgHandler;
@@ -574,7 +622,7 @@ void RunModalDialog(WindowRef DlgWindow, void (*DlgHandler)(int,void *), void *D
 	err = InstallWindowEventHandler(DlgWindow, HandlerUPP,
 		NumEventTypes, EventTypes,
 		&HandlerData, NULL);
-	vassert(err == noErr, csprintf(temporary,"InstallWindowEventHandler error: %hd",err));
+	vassert(err == noErr, csprintf(temporary,"InstallWindowEventHandler error: %d",err));
 
 	ShowWindow(DlgWindow);
 	RunAppModalLoopForWindow(DlgWindow);

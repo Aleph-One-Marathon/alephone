@@ -148,14 +148,36 @@ extern void set_dialog_header_proc(
 // For Carbon-events dialogs
 #ifdef USES_NIBS
 
+// Gets a control reference from:
+//   Window reference
+//   Signature (check the Interface Builder)
+//   Control ID (check the Interface Builder)
+ControlRef GetCtrlFromWindow(WindowRef DlgWindow, uint32 Signature, uint32 ID);
+
+// Builds a popup menu with the help of:
+//   The menu's control ref
+//   Menu-builder callback; uses
+//     Menu-item number, starting from 1
+//     Pascal string, receives name of menu item
+//     Boolean, receives whether this item should be initially selected
+//     User data
+//   Returns boolean:
+//     True: use the string and the initial-selection boolean
+//     False: ignore both and stop adding menu items
+//   Default for initial value is 1
+void BuildMenu(ControlRef MenuCtrl, bool (*BuildMenuItem)(int,uint8 *,bool &,void *), void *BuildMenuData);
+
 // Runs a modal dialog; needs:
 //   Dialog window
-//   Dialog handler; uses the ID of the control hit and the user data
+//   Dialog handler; uses
+//     ID of the control hit
+//     User data
 //   Dialog user data; passed to the dialog handler
 // There are always two special dialog numbers: iOK (1) and iCANCEL (2)
 void RunModalDialog(WindowRef DlgWindow, void (*DlgHandler)(int,void *), void *DlgData);
 
 #endif
+
 #endif//mac
 
 
