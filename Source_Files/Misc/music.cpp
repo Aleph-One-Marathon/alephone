@@ -24,6 +24,9 @@ Oct 12, 2000 (Loren Petrich):
 
 Oct 14, 2000 (Loren Petrich):
 	Added support for per-level music that is specified in a level script
+
+Mar 14, 2001 (Loren Petrich):
+	Added use of old music player in case the music file's typecode was the "official" Marathon one
 */
 
 /*
@@ -121,12 +124,15 @@ static double MusicVolume = 0;				// 0 to 1
 static double MusicVolumeChange = 0;		// Change per tick [TickCount()]
 static long MostRecentUpdateTicks = 0;
 static bool IsLooped = false;				// Whether or not it repeats endlessly
+static bool UsingOldPlayer = false;			// So as to be able to play 'mus2' files.
 
 // This returns a value from between 0 and 1
 static double GetOverallMusicVolume();
 // Turned into a form more useful for QT
 inline short GetQTMusicVolume() {return short(double(0x100)*GetOverallMusicVolume()*MusicVolume + 0.5);}
 
+// Whether one should use the "new" music player to play anything.
+inline bool UseNewPlayer() {return machine_has_quicktime() && !UsingOldPlayer;}
 
 /* ----------------- local prototypes */
 static void shutdown_music_handler(void);
@@ -144,7 +150,7 @@ static void PreloadMusic();
 
 void PreloadLevelMusic()
 {
-	if (!machine_has_quicktime()) return;
+	if (!UseNewPlayer()) return;
 	
 	stop_music();
 	
@@ -159,7 +165,7 @@ void PreloadLevelMusic()
 
 void PlayMusic(FileSpecifier& SongFile)
 {
-	if (!machine_has_quicktime()) return;
+	if (!UseNewPlayer()) return;
 
 	if (QTMusicMovie)
 	{
@@ -224,13 +230,22 @@ void PreloadMusic()
 bool initialize_music_handler(FileSpecifier& SongFile)
 //	FileDesc *song_file)
 {
+	// In case the old player doesn't get initialized...
+	music_state.initialized= false;
+	
+	// Check on whether we'll be using it
+	UsingOldPlayer = (SongFile.GetType() == _typecode_music);
+	
 	// LP: using Quicktime to play the movie if available
-	if (machine_has_quicktime())
+	if (UseNewPlayer())
 	{
 		// Will need to remember what introductory music file
 		IntroMusicFile = SongFile;
 		return true;
 	}
+	
+	// Just in case the initial music was skipped and we want to go straight to a level...
+	UsingOldPlayer = false;
 
 	short song_file_refnum;
 	OSErr error;
@@ -241,7 +256,7 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 	// LP addition: resolving music file if it was an alias
 	// Boolean is_folder, was_aliased;
 	// ResolveAliasFile((FSSpec *)song_file, true, &is_folder, &was_aliased);
-		
+	
 	/* Does the file exist? */
 	// LP change: using a file object
 	// error= FSpOpenDF((FSSpec *) song_file, fsRdPerm, &song_file_refnum);
@@ -295,7 +310,7 @@ void free_music_channel(
 	void)
 {
 	// Who cares about this if QT is present?
-	if (machine_has_quicktime()) return;
+	if (UseNewPlayer()) return;
 	
 	if (music_state.initialized && music_state.channel)
 	{
@@ -310,9 +325,12 @@ void free_music_channel(
 void queue_song(
 	short song_index)
 {
+	// Test for using the old player: whether it had been inited
+	UsingOldPlayer = music_state.initialized;
+
 	// This routine plays only the introductory song;
 	// it is looped, and will repeat unless stopped by something
-	if (machine_has_quicktime())
+	if (UseNewPlayer())
 	{
 		PlayMusic(IntroMusicFile);
 		IsLooped = true;
@@ -355,7 +373,7 @@ void queue_song(
 void fade_out_music(
 	short duration)
 {
-	if (machine_has_quicktime())
+	if (UseNewPlayer())
 	{
 		MusicVolumeChange = - 1.0/duration;
 		return;
@@ -377,7 +395,7 @@ void music_idle_proc(
 	void)
 {
 	// Quicktime: what could be easier?
-	if (machine_has_quicktime())
+	if (UseNewPlayer())
 	{
 		// Start preloaded music
 		if (QTMusicMovie && QTMMPreloaded)
@@ -524,6 +542,8 @@ void music_idle_proc(
 						music_state.phase= song->restart_delay;
 					} else {
 						music_state.state= _no_song_playing;
+						// Set up for doing level music, which needs the new player
+						UsingOldPlayer = false;
 					}
 					music_state.flags &= ~_song_completed;
 				}
@@ -538,7 +558,7 @@ void music_idle_proc(
 void stop_music(
 	void)
 {
-	if (machine_has_quicktime())
+	if (UseNewPlayer())
 	{
 		if (QTMusicMovie && QTMMPlaying)
 		{
@@ -562,11 +582,14 @@ void stop_music(
 		delete []music_state.sound_buffer;
 		music_state.sound_buffer= NULL;
 	}
+	
+	// Set up for doing level music, which needs the new player
+	UsingOldPlayer = false;
 }
 
 void pause_music(bool pause)
 {
-	if (machine_has_quicktime())
+	if (UseNewPlayer())
 	{
 		if (QTMusicMovie && QTMMPlaying)
 		{
@@ -611,7 +634,7 @@ void pause_music(bool pause)
 
 bool music_playing(void)
 {
-	if (machine_has_quicktime()) return QTMMPlaying;
+	if (UseNewPlayer()) return QTMMPlaying;
 		
 	bool playing= false;
 	
@@ -628,7 +651,7 @@ bool music_playing(void)
 static void shutdown_music_handler(
 	void)
 {
-	if (machine_has_quicktime()) return;
+	if (UseNewPlayer()) return;
 	
 	if(music_state.initialized)
 	{
