@@ -2056,6 +2056,22 @@ bool RenderModelSetup(rectangle_definition& RenderRectangle)
 	if (RenderRectangle.clip_top >= RenderRectangle.y1) return false;
 	if (RenderRectangle.clip_bottom <= RenderRectangle.y0) return false;
 	
+	// Find an animated model's vertex positions and normals:
+	short ModelSequence = RenderRectangle.ModelSequence;
+	if (ModelSequence >= 0)
+	{
+		int NumFrames = ModelPtr->Model.NumSeqFrames(ModelSequence);
+		if (NumFrames > 0)
+		{
+			short ModelFrame = PIN(RenderRectangle.ModelFrame,0,NumFrames-1);
+			ModelPtr->Model.FindPositions(ModelSequence,ModelFrame);
+		}
+		else
+			ModelPtr->Model.FindPositions();	// Fallback: neutral
+	}
+	else
+		ModelPtr->Model.FindPositions();	// Fallback: neutral (will do nothing for static models)
+	
 	// For finding the clip planes: 0, 1, 2, 3, and 4
 	bool ClipLeft = false, ClipRight = false, ClipTop = false, ClipBottom = false, ClipLiquid = false;
 	GLdouble ClipPlane[4] = {0,0,0,0};

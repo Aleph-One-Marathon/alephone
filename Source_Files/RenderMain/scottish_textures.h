@@ -136,6 +136,7 @@ struct rectangle_definition
 	// For the convenience of the OpenGL 3D-model renderer
 	_fixed ceiling_light;		// The ambient_shade is the floor light
 	OGL_ModelData *ModelPtr;
+	short ModelSequence, ModelFrame;	// For animated models
 	world_point3d Position;		// In overall world coordinates
 	short ProjDistance;			// Of centroid, from view plane
 	short Azimuth;				// Facing angle

@@ -339,8 +339,9 @@ enum
 class OGL_ModelData: public OGL_SkinManager
 {
 public:
-	// Name of the model file
-	vector<char> ModelFile;
+	// Name of the model file;
+	// there are two extra names here for handling ggadwa's Dim3 multiple files
+	vector<char> ModelFile, ModelFile1, ModelFile2;
 	
 	// Type of model-file data (guess the model-file type if empty)
 	vector<char> ModelType;
@@ -375,8 +376,9 @@ public:
 };
 
 
-// Returns NULL if a collectiona and sequence do not have an associated model
-OGL_ModelData *OGL_GetModelData(short Collection, short Sequence);
+// Returns NULL if a collectiona and sequence do not have an associated model;
+// also returns which model sequence was found (
+OGL_ModelData *OGL_GetModelData(short Collection, short Sequence, short& ModelSequence);
 
 
 // Resets all model skins; arg is whether to clear OpenGL textures

@@ -322,14 +322,23 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 static OGL_ModelData DefaultModelData;
 static OGL_SkinData DefaultSkinData;
 
+
+// For mapping Marathon-physics sequences onto model sequences
+struct SequenceMapEntry
+{
+	int16 Sequence;
+	int16 ModelSequence;
+};
+
+
 // Store model-data stuff in a set of STL vectors
 struct ModelDataEntry
 {
-	// Which sequence to apply to:
-	// For models to be mapped to multiple sequences,
-	// such as animated models,
-	// this will need to be more complicated
+	// Which Marathon-engine sequence gets translated into this model,
+	// if static, or the neutral sequence, if dynamic
 	short Sequence;
+	
+	vector<SequenceMapEntry> SequenceMap;
 	
 	// Make a member for more convenient access
 	OGL_ModelData ModelData;
@@ -342,12 +351,19 @@ struct ModelDataEntry
 // to speed up searching
 static vector<ModelDataEntry> MdlList[NUMBER_OF_COLLECTIONS];
 
+// Will look up both the model index and its sequence
+struct ModelHashEntry
+{
+	int16 ModelIndex;
+	int16 ModelSeqTabIndex;
+};
+
 // Model-data hash table for extra-fast searching:
-static vector<int16> MdlHash[NUMBER_OF_COLLECTIONS];
+static vector<ModelHashEntry> MdlHash[NUMBER_OF_COLLECTIONS];
 
 // Hash-table size and function
 const int MdlHashSize = 1 << 8;
-const int MdlHashMask = TOHashSize - 1;
+const int MdlHashMask = MdlHashSize - 1;
 inline uint8 MdlHashFunc(short Sequence)
 {
 	// E-Z
@@ -368,8 +384,12 @@ static void MdlDeleteAll()
 	for (int c=0; c<NUMBER_OF_COLLECTIONS; c++) MdlDelete(c);
 }
 
-OGL_ModelData *OGL_GetModelData(short Collection, short Sequence)
+
+OGL_ModelData *OGL_GetModelData(short Collection, short Sequence, short& ModelSequence)
 {
+	// Model is neutral unless specified otherwise
+	ModelSequence = NONE;
+	
 	if (!OGL_IsActive()) return NULL;
 	
 	// Initialize the hash table if necessary
@@ -381,13 +401,26 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence)
 	
 	// Set up a *reference* to the appropriate hashtable entry;
 	// this makes setting this entry a bit more convenient
-	int16& HashVal = MdlHash[Collection][MdlHashFunc(Sequence)];
+	ModelHashEntry& HashVal = MdlHash[Collection][MdlHashFunc(Sequence)];
 	
 	// Check to see if the model-data entry is correct;
 	// if it is, then we're done.
-	if (HashVal != NONE)
+	if (HashVal.ModelIndex != NONE)
 	{
-		vector<ModelDataEntry>::iterator MdlIter = MdlList[Collection].begin() + HashVal;
+		// First, check in the sequence-map table
+		vector<ModelDataEntry>::iterator MdlIter = MdlList[Collection].begin() + HashVal.ModelIndex;
+		short MSTIndex = HashVal.ModelSeqTabIndex;
+		if (MSTIndex >= 0 && MSTIndex < MdlIter->SequenceMap.size())
+		{
+			vector<SequenceMapEntry>::iterator SMIter = MdlIter->SequenceMap.begin() + MSTIndex;
+			if (SMIter->Sequence == Sequence)
+			{
+				ModelSequence = SMIter->ModelSequence;
+				return MdlIter->ModelData.ModelPresent() ? &MdlIter->ModelData : NULL;
+			}
+		}
+		
+		// Now check the neutral sequence
 		if (MdlIter->Sequence == Sequence)
 		{
 			return MdlIter->ModelData.ModelPresent() ? &MdlIter->ModelData : NULL;
@@ -400,9 +433,25 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence)
 	int16 Indx = 0;
 	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++, Indx++)
 	{
+		// First, search the sequence-map table
+		int16 SMIndx = 0;
+		vector<SequenceMapEntry>& SM = MdlIter->SequenceMap;
+		for (vector<SequenceMapEntry>::iterator SMIter = SM.begin(); SMIter < SM.end(); SMIter++, SMIndx++)
+		{
+			if (SMIter->Sequence == Sequence)
+			{
+				HashVal.ModelIndex = Indx;
+				HashVal.ModelSeqTabIndex = SMIndx;
+				ModelSequence = SMIter->ModelSequence;
+				return MdlIter->ModelData.ModelPresent() ? &MdlIter->ModelData : NULL;
+			}
+		}
+		
+		// Now check the neutral sequence
 		if (MdlIter->Sequence == Sequence)
 		{
-			HashVal = Indx;
+			HashVal.ModelIndex = Indx;
+			HashVal.ModelSeqTabIndex = NONE;
 			return MdlIter->ModelData.ModelPresent() ? &MdlIter->ModelData : NULL;
 		}
 	}
@@ -684,8 +733,11 @@ static void MatMult(const GLfloat Mat1[3][3], const GLfloat Mat2[3][3], GLfloat 
 static void MatScalMult(GLfloat Mat[3][3], const GLfloat Scale)
 {
 	for (int k=0; k<3; k++)
+	{
+		GLfloat *MatRow = Mat[k];
 		for (int l=0; l<3; l++)
-			Mat[k][l] *= Scale;
+			MatRow[l] *= Scale;
+	}
 }
 
 // Src -> Dest vector (cannot be the same location)
@@ -693,9 +745,10 @@ static void MatVecMult(const GLfloat Mat[3][3], const GLfloat *SrcVec, GLfloat *
 {
 	for (int k=0; k<3; k++)
 	{
+		const GLfloat *MatRow = Mat[k];
 		GLfloat Sum = 0;
 		for (int l=0; l<3; l++)
-			Sum += Mat[k][l]*SrcVec[l];
+			Sum += MatRow[l]*SrcVec[l];
 		DestVec[k] = Sum;
 	}
 }
@@ -709,7 +762,7 @@ void OGL_ModelData::Load()
 	FileSpecifier File;
 	Model.Clear();
 	
-	if (!StringPresent(ModelFile)) return;;
+	if (!StringPresent(ModelFile)) return;
 #ifdef mac
 	if (!File.SetToApp()) return;
 #endif
@@ -730,8 +783,33 @@ void OGL_ModelData::Load()
 	}
 	else if (StringsEqual(Type,"dim3",4))
 	{
-		// Brian Barnes's "Dim3" model format (first pass)
+		// Brian Barnes's "Dim3" model format (first pass: model geometry)
 		Success = LoadModel_Dim3(File, Model, LoadModelDim3_First);
+		
+		// Second and third passes: frames and sequences
+		try
+		{
+			if (!StringPresent(ModelFile1)) throw 0;
+#ifdef mac
+			if (!File.SetToApp()) throw 0;
+#endif
+			if (!File.SetNameWithPath(&ModelFile1[0])) throw 0;
+			if (!LoadModel_Dim3(File, Model, LoadModelDim3_Rest)) throw 0;
+		}
+		catch(...)
+		{}
+		//
+		try
+		{
+			if (!StringPresent(ModelFile2)) throw 0;
+#ifdef mac
+			if (!File.SetToApp()) throw 0;
+#endif
+			if (!File.SetNameWithPath(&ModelFile2[0])) throw 0;
+			if (!LoadModel_Dim3(File, Model, LoadModelDim3_Rest)) throw 0;
+		}
+		catch(...)
+		{}
 	}
 #if defined(mac) && !defined(TARGET_API_MAC_CARBON)
 	else if (StringsEqual(Type,"qd3d") || StringsEqual(Type,"3dmf") || StringsEqual(Type,"quesa"))
@@ -788,30 +866,95 @@ void OGL_ModelData::Load()
 	MatScalMult(NewRotMatrix,Scale);			// For the position vertices
 	if (Scale < 0) MatScalMult(RotMatrix,-1);	// For the normals
 	
-	int NumVerts = Model.Positions.size()/3;
-	
-	for (int k=0; k<NumVerts; k++)
+	// Is model animated or static?
+	// Test by trying to find neutral positions (useful for working with the normals later on)
+	if (Model.FindPositions())
 	{
-		GLfloat *Pos = Model.PosBase() + 3*k;
-		GLfloat NewPos[3];
-		MatVecMult(NewRotMatrix,Pos,NewPos);	// Has the scaling
-		Pos[0] = NewPos[0] + XShift;
-		Pos[1] = NewPos[1] + YShift;
-		Pos[2] = NewPos[2] + ZShift;
+		// Copy over the vector and normal transformation matrices:
+		for (int k=0; k<3; k++)
+			for (int l=0; l<3; l++)
+			{
+				Model.TransformPos.M[k][l] = NewRotMatrix[k][l];
+				Model.TransformNorm.M[k][l] = RotMatrix[k][l];
+			}
+		
+		Model.TransformPos.M[0][3] = XShift;
+		Model.TransformPos.M[1][3] = YShift;
+		Model.TransformPos.M[2][3] = ZShift;
+		
+		// Find the transformed bounding box:
+		bool RestOfCorners = false;
+		GLfloat NewBoundingBox[2][3];
+		// The indices i1, i2, and i3 are for selecting which of the box's two principal corners
+		// to get coordinates from
+		for (int i1=0; i1<2; i1++)
+		{
+			GLfloat X = Model.BoundingBox[i1][0];
+			for (int i2=0; i2<2; i2++)
+			{
+				GLfloat Y = Model.BoundingBox[i2][0];
+				for (int i3=0; i3<2; i3++)
+				{
+					GLfloat Z = Model.BoundingBox[i3][0];
+					
+					GLfloat Corner[3];
+					for (int ic=0; ic<3; ic++)
+					{
+						GLfloat *Row = Model.TransformPos.M[ic];
+						Corner[ic] = Row[0]*X + Row[1]*Y + Row[2]*Z + Row[3];
+					}
+					
+					if (RestOfCorners)
+					{
+						// Find minimum and maximum for each coordinate
+						for (int ic=0; ic<3; ic++)
+						{
+							NewBoundingBox[0][ic] = min(NewBoundingBox[0][ic],Corner[ic]);
+							NewBoundingBox[1][ic] = max(NewBoundingBox[1][ic],Corner[ic]);
+						}
+					}
+					else
+					{
+						// Simply copy it in:
+						for (int ic=0; ic<3; ic++)
+							NewBoundingBox[0][ic] = NewBoundingBox[1][ic] = Corner[ic];
+						RestOfCorners = true;
+					}
+				}
+			}
+		}
+		
+		for (int ic=0; ic<2; ic++)
+			objlist_copy(Model.BoundingBox[ic],NewBoundingBox[ic],3);
 	}
-	
-	int NumNorms = Model.Normals.size()/3;
-	for (int k=0; k<NumNorms; k++)
+	else
 	{
-		GLfloat *Norms = Model.NormBase() + 3*k;
-		GLfloat NewNorms[3];
-		MatVecMult(RotMatrix,Norms,NewNorms);	// Not scaled
-		objlist_copy(Norms,NewNorms,3);
+		// Static model
+		int NumVerts = Model.Positions.size()/3;
+		
+		for (int k=0; k<NumVerts; k++)
+		{
+			GLfloat *Pos = Model.PosBase() + 3*k;
+			GLfloat NewPos[3];
+			MatVecMult(NewRotMatrix,Pos,NewPos);	// Has the scaling
+			Pos[0] = NewPos[0] + XShift;
+			Pos[1] = NewPos[1] + YShift;
+			Pos[2] = NewPos[2] + ZShift;
+		}
+		
+		int NumNorms = Model.Normals.size()/3;
+		for (int k=0; k<NumNorms; k++)
+		{
+			GLfloat *Norms = Model.NormBase() + 3*k;
+			GLfloat NewNorms[3];
+			MatVecMult(RotMatrix,Norms,NewNorms);	// Not scaled
+			objlist_copy(Norms,NewNorms,3);
+		}	
+	
+		// So as to be consistent with the new points
+		Model.FindBoundingBox();
 	}	
 	
-	// Will need this to find bounding rectangles
-	// and to normalize the normals
-	Model.FindBoundingBox();
 	Model.AdjustNormals(NormalType,NormalSplit);
 	
 	// Don't forget the skins
@@ -1216,6 +1359,71 @@ bool XML_SkinDataParser::AttributesDone()
 static XML_SkinDataParser SkinDataParser;
 
 
+// For mapping Marathon-engine sequences onto model sequences
+class XML_SequenceMapParser: public XML_ElementParser
+{
+	bool SeqIsPresent, ModelSeqIsPresent;
+	SequenceMapEntry Data;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	vector<SequenceMapEntry> *SeqMapPtr;
+
+	XML_SequenceMapParser(): XML_ElementParser("seq_map") {}
+};
+
+bool XML_SequenceMapParser::Start()
+{
+	Data.Sequence = Data.ModelSequence = NONE;
+	SeqIsPresent = ModelSeqIsPresent = false;		
+	return true;
+}
+
+bool XML_SequenceMapParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"seq"))
+	{
+		if (ReadBoundedInt16Value(Value,Data.Sequence,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
+		{
+			SeqIsPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag,"model_seq"))
+	{
+		if (ReadBoundedInt16Value(Value,Data.ModelSequence,NONE,MAXIMUM_SHAPES_PER_COLLECTION-1))
+		{
+			ModelSeqIsPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_SequenceMapParser::AttributesDone()
+{
+	// Verify...
+	if (!SeqIsPresent || !ModelSeqIsPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	// Add the entry
+	vector<SequenceMapEntry>& SeqMap = *SeqMapPtr;
+	SeqMap.push_back(Data);
+	return true;
+}
+
+static XML_SequenceMapParser SequenceMapParser;
+
+
 class XML_MdlClearParser: public XML_ElementParser
 {
 	bool IsPresent;
@@ -1265,8 +1473,9 @@ static XML_MdlClearParser Mdl_ClearParser;
 
 class XML_ModelDataParser: public XML_ElementParser
 {
-	bool CollIsPresent, SeqIsPresent;
+	bool CollIsPresent;
 	short Collection, Sequence;
+	vector<SequenceMapEntry> SequenceMap;
 	
 	OGL_ModelData Data;
 
@@ -1282,10 +1491,15 @@ public:
 bool XML_ModelDataParser::Start()
 {
 	Data = DefaultModelData;
-	CollIsPresent = SeqIsPresent = false;
+	CollIsPresent = false;
+	Sequence = NONE;
+	SequenceMap.clear();
 	
 	// For doing the model skins
 	SkinDataParser.SkinDataPtr = &Data.SkinData;
+	
+	// For doing the sequence mapping
+	SequenceMapParser.SeqMapPtr = &SequenceMap;
 		
 	return true;
 }
@@ -1303,12 +1517,7 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"seq"))
 	{
-		if (ReadBoundedInt16Value(Value,Sequence,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
-		{
-			SeqIsPresent = true;
-			return true;
-		}
-		else return false;
+		return (ReadBoundedInt16Value(Value,Sequence,0,MAXIMUM_SHAPES_PER_COLLECTION-1));
 	}
 	else if (StringsEqual(Tag,"scale"))
 	{
@@ -1365,6 +1574,20 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 		memcpy(&Data.ModelFile[0],Value,nchars);
 		return true;
 	}
+	else if (StringsEqual(Tag,"file1"))
+	{
+		int nchars = strlen(Value)+1;
+		Data.ModelFile1.resize(nchars);
+		memcpy(&Data.ModelFile1[0],Value,nchars);
+		return true;
+	}
+	else if (StringsEqual(Tag,"file2"))
+	{
+		int nchars = strlen(Value)+1;
+		Data.ModelFile2.resize(nchars);
+		memcpy(&Data.ModelFile2[0],Value,nchars);
+		return true;
+	}
 	else if (StringsEqual(Tag,"type"))
 	{
 		int nchars = strlen(Value)+1;
@@ -1379,7 +1602,7 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 bool XML_ModelDataParser::AttributesDone()
 {
 	// Verify...
-	if (!CollIsPresent || !SeqIsPresent)
+	if (!CollIsPresent)
 	{
 		AttribsMissing();
 		return false;
@@ -1395,17 +1618,34 @@ bool XML_ModelDataParser::End()
 	vector<ModelDataEntry>& ML = MdlList[Collection];
 	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
 	{
-		if (MdlIter->Sequence == Sequence)
+		// Run a gauntlet of equality tests
+		if (MdlIter->Sequence != Sequence) continue;
+		
+		if (MdlIter->SequenceMap.size() != SequenceMap.size()) continue;
+		
+		// Ought to sort, then compare, for correct results
+		bool AllEqual = true;
+		for (int q=0; q<SequenceMap.size(); q++)
 		{
-			// Replace the data
-			MdlIter->ModelData = Data;
-			return true;
+			SequenceMapEntry& MS = MdlIter->SequenceMap[q];
+			SequenceMapEntry& S = SequenceMap[q];
+			if (MS.Sequence != S.Sequence || MS.ModelSequence != S.ModelSequence)
+			{
+				AllEqual = false;
+				break;
+			}
 		}
+		if (!AllEqual) continue;
+		
+		// Replace the data; it passed the tests
+		MdlIter->ModelData = Data;
+		return true;
 	}
 	
 	// If not, then add a new frame entry
 	ModelDataEntry DataEntry;
 	DataEntry.Sequence = Sequence;
+	DataEntry.SequenceMap.swap(SequenceMap);	// Quick transfer of contents in desired direction
 	DataEntry.ModelData = Data;
 	ML.push_back(DataEntry);
 	
@@ -1415,6 +1655,7 @@ bool XML_ModelDataParser::End()
 static XML_ModelDataParser ModelDataParser;
 
 #endif // def HAVE_OPENGL
+
 
 class XML_FogParser: public XML_ElementParser
 {
@@ -1488,6 +1729,7 @@ XML_ElementParser *OpenGL_GetParser()
 	
 #ifdef HAVE_OPENGL
 	ModelDataParser.AddChild(&SkinDataParser);
+	ModelDataParser.AddChild(&SequenceMapParser);
 	OpenGL_Parser.AddChild(&ModelDataParser);
 	OpenGL_Parser.AddChild(&Mdl_ClearParser);
 #endif

@@ -196,8 +196,9 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			
 #ifdef HAVE_OPENGL
 			// Find which 3D model will take the place of this sprite, if any
+			short ModelSequence;
 			OGL_ModelData *ModelPtr =
-				OGL_GetModelData(GET_COLLECTION(data.collection_code),GET_DESCRIPTOR_SHAPE(object->shape));
+				OGL_GetModelData(GET_COLLECTION(data.collection_code),GET_DESCRIPTOR_SHAPE(object->shape),ModelSequence);
 #endif
 			
 			shape_information= rescale_shape_information(
@@ -316,6 +317,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				render_object->rectangle.ModelPtr = ModelPtr;
 				if (ModelPtr)
 				{
+					render_object->rectangle.ModelSequence = ModelSequence;
+					render_object->rectangle.ModelFrame = data.Frame;
 					render_object->rectangle.Position = object->location;
 					render_object->rectangle.Azimuth = object->facing;
 					render_object->rectangle.Scale = Scale;
