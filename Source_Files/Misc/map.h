@@ -10,6 +10,17 @@ Feb 10, 2000 (Loren Petrich):
 
 Jul 1, 2000 (Loren Petrich):
 	Made all the accessors inline
+
+[Loren Petrich: notes moved here]
+MAP_ACCESSORS.C
+Friday, June 3, 1994 12:10:10 PM
+
+Thursday, June 16, 1994 7:32:13 PM
+	if DEBUG is defined, this file is empty.
+
+Jul 1, 2000 (Loren Petrich):
+	moved all its contens out to map.h
+[End moved notes]
 */
 
 #include "world.h"
