@@ -101,7 +101,9 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 # else
 #   include <GL/gl.h>
 #   include <GL/glu.h>
-#   include <GL/glext.h>
+#   ifdef HAVE_GL_GLEXT_H
+#     include <GL/glext.h>
+#   endif
 # endif
 #endif
 
@@ -1203,6 +1205,7 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 		// Walls are tiled in both direction
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+#if defined(GL_TEXTURE_MAX_ANISOTROPY_EXT)
                 // enable anisotropic filtering
                 {
                     float anisoLevel = Get_OGL_ConfigureData().AnisotropyLevel;
@@ -1212,6 +1215,7 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
                         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0F + ((anisoLevel-1.0F)/15.0F)*(max_aniso-1.0F));
                     }
                 }
+#endif
 		break;
 		
 	case OGL_Txtr_Landscape:

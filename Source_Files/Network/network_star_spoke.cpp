@@ -765,7 +765,7 @@ spoke_tick()
 			if(i == sLocalPlayerIndex)
 				continue;
 			
-			NetworkPlayer_spoke& thePlayer = sNetworkPlayers.at(i);
+			NetworkPlayer_spoke& thePlayer = sNetworkPlayers[i];
 			
 			if(!thePlayer.mZombie)
 			{

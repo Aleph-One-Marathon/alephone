@@ -444,7 +444,7 @@ hub_check_for_completion()
 	bool someoneStillActive = false;
 	for(size_t i = 0; i < sNetworkPlayers.size(); i++)
 	{
-		NetworkPlayer_hub& thePlayer = sNetworkPlayers.at(i);
+		NetworkPlayer_hub& thePlayer = sNetworkPlayers[i];
 		if(thePlayer.mConnected && thePlayer.mSmallestUnacknowledgedTick < sSmallestPostGameTick)
 		{
 			someoneStillActive = true;

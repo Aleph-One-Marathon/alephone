@@ -25,18 +25,22 @@
 
 #ifndef __MWERKS__
 
-#include	<sys/types.h>
+#include <sys/types.h>
 
 #if defined(WIN32)
-# include	<winsock.h>
+# include <winsock.h>
 #elif defined(__BEOS__)
-# include	<sys/socket.h>
-# include	<netinet/in.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
 #else
-# include	<sys/socket.h>
-# include	<netinet/in.h>
-# include	<net/if.h>
-# include	<sys/ioctl.h>
+# include <unistd.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <net/if.h>
+# if defined(__svr4__)
+#  define BSD_COMP 1 // This is required to get SIOC* under Solaris
+# endif
+# include <sys/ioctl.h>
 #endif
 
 #endif
@@ -89,7 +93,7 @@ SDLNetx_EnableBroadcast(UDPsocket inSocket) {
     if(theSocketFD < 0)
         return 0;
 
-#if defined(__BEOS__) || defined(__MWERKS__) || defined(__MWERKS__)
+#if defined(__BEOS__) || defined(__MWERKS__)
 	// Neither possible nor necessary
 	return 0;
 #else
