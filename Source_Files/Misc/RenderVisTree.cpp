@@ -11,6 +11,9 @@
 Sep. 15, 2000 (Loren Petrich):
 	Fixed stale-pointer bug in cast_render_ray() by using index instead of pointer to parent node.
 	Added some code to keep parent and ParentIndex in sync.
+	
+Oct 13, 2000
+	LP: replaced GrowableLists and ResizableLists with STL vectors
 */
 
 #include "cseries.h"
@@ -63,13 +66,17 @@ inline void INITIALIZE_NODE(node_data *node, short node_polygon_index, uint16 no
 
 // Inits everything
 RenderVisTreeClass::RenderVisTreeClass():
-	PolygonQueue(POLYGON_QUEUE_SIZE),
-	EndpointClips(MAXIMUM_ENDPOINT_CLIPS),
-	LineClips(MAXIMUM_LINE_CLIPS),
-	ClippingWindows(MAXIMUM_CLIPPING_WINDOWS),
+	/*
+	
+	*/
 	Nodes(MAXIMUM_NODES),
 	view(NULL)	// Idiot-proofing
-{}
+{
+	PolygonQueue.reserve(POLYGON_QUEUE_SIZE);
+	EndpointClips.reserve(MAXIMUM_ENDPOINT_CLIPS);
+	LineClips.reserve(MAXIMUM_LINE_CLIPS);
+	ClippingWindows.reserve(MAXIMUM_CLIPPING_WINDOWS);
+}
 
 
 // Resizes all the objects defined inside
@@ -85,10 +92,10 @@ void RenderVisTreeClass::PUSH_POLYGON_INDEX(short polygon_index)
 	if (!TEST_RENDER_FLAG(polygon_index, _polygon_is_visible))
 	{
 		// Grow the list only if necessary
-		if (polygon_queue_size < PolygonQueue.GetLength())
+		if (polygon_queue_size < PolygonQueue.size())
 			PolygonQueue[polygon_queue_size]= polygon_index;
 		else
-			assert(PolygonQueue.Add(polygon_index));
+			PolygonQueue.push_back(polygon_index);
 		polygon_queue_size++;
 		
 		// polygon_queue[polygon_queue_size++]= polygon_index;
@@ -736,7 +743,7 @@ void RenderVisTreeClass::initialize_clip_data()
 	}
 
 	// LP change:
-	ClippingWindows.ResetLength();
+	ClippingWindows.clear();
 	/*
 	next_clipping_window_index= 0;
 	next_clipping_window= clipping_windows;
@@ -750,8 +757,10 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	uint16 clip_flags)
 {
 	// LP addition: extend the line-clip list
-	assert(LineClips.Add());
-	unsigned int Length = LineClips.GetLength();
+	line_clip_data Dummy;
+	Dummy.flags = 0;			// Fake initialization to shut up CW
+	LineClips.push_back(Dummy);
+	unsigned int Length = LineClips.size();
 	assert(Length <= 32767);
 	short LastIndex = Length-1;
 	
@@ -875,8 +884,10 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	uint16 clip_flags)
 {
 	// LP addition: extend the endpoint-clip list
-	assert(EndpointClips.Add());
-	unsigned int Length = EndpointClips.GetLength();
+	endpoint_clip_data Dummy;
+	Dummy.flags = 0;			// Fake initialization to shut up CW
+	EndpointClips.push_back(Dummy);
+	unsigned int Length = EndpointClips.size();
 	assert(Length <= 32767);
 	short LastIndex = Length-1;
 
@@ -932,14 +943,18 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 // LP addition: resetters for some of the lists:
 void RenderVisTreeClass::ResetEndpointClips(void)
 {
-	EndpointClips.ResetLength();
+	EndpointClips.clear();
+	endpoint_clip_data Dummy;
+	Dummy.flags = 0;			// Fake initialization to shut up CW
 	for (int k=0; k<NUMBER_OF_INITIAL_ENDPOINT_CLIPS; k++)
-		EndpointClips.Add();
+		EndpointClips.push_back(Dummy);
 }
 
 void RenderVisTreeClass::ResetLineClips(void)
 {
-	LineClips.ResetLength();
+	LineClips.clear();
+	line_clip_data Dummy;
+	Dummy.flags = 0;			// Fake initialization to shut up CW
 	for (int k=0; k<NUMBER_OF_INITIAL_LINE_CLIPS; k++)
-		LineClips.Add();
+		LineClips.push_back(Dummy);
 }

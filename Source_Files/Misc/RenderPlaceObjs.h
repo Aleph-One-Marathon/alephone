@@ -12,10 +12,9 @@
 	Made [view_data *view] a member and removed it as an argument
 	
 Oct 13, 2000
-	LP: replaced ResizableList with STL vector class
+	LP: replaced GrowableLists and ResizableLists with STL vectors
 */
 
-#include "GrowableList.h"
 #include <vector.h>
 #include "world.h"
 #include "interface.h"
@@ -66,7 +65,7 @@ public:
 	// LP additions: growable list of render objects; these are all the inhabitants
 	// Length changed in build_render_object()
 	// keep SortedNodes in sync
-	GrowableList<render_object_data> RenderObjects;
+	vector<render_object_data> RenderObjects;
 	
 	// Pointers to view and calculated visibility tree and sorted polygons
 	view_data *view;

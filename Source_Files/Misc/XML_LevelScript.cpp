@@ -5,6 +5,9 @@
 
 	The reason for a separate object is that it will be necessary to execute certain commands
 	only on certain levels.
+	
+Oct 13, 2000 (Loren Petrich)
+	Converted the in-memory script data into Standard Template Library vectors
 */
 
 #include <vector.h>

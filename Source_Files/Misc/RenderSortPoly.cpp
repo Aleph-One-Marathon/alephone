@@ -10,6 +10,9 @@
 
 Sept. 15, 2000 (Loren Petrich)
 	Changed a dprintf/assert to a vassert in build_clipping_windows()
+	
+Oct 13, 2000
+	LP: replaced GrowableLists and ResizableLists with STL vectors
 */
 
 #include "cseries.h"
@@ -34,12 +37,13 @@ enum /* build_clipping_window() window states */
 
 
 RenderSortPolyClass::RenderSortPolyClass():
-	SortedNodes(MAXIMUM_SORTED_NODES),
-	AccumulatedEndpointClips(MAXIMUM_CLIPS_PER_NODE),
-	AccumulatedLineClips(MAXIMUM_CLIPS_PER_NODE),
 	view(NULL),	// Idiot-proofing
 	RVPtr(NULL)
-{}
+{
+	SortedNodes.reserve(MAXIMUM_SORTED_NODES);
+	AccumulatedEndpointClips.reserve(MAXIMUM_CLIPS_PER_NODE);
+	AccumulatedLineClips.reserve(MAXIMUM_CLIPS_PER_NODE);
+}
 
 
 // Resizes all the objects defined inside
@@ -54,7 +58,7 @@ void RenderSortPolyClass::Resize(int NumPolygons)
 void RenderSortPolyClass::initialize_sorted_render_tree()
 {
 	// LP change: sorted nodes a growable list
-	SortedNodes.ResetLength();
+	SortedNodes.clear();
 	/*
 	sorted_node_count= 0;
 	next_sorted_node= sorted_nodes;
@@ -221,12 +225,18 @@ void RenderSortPolyClass::sort_render_tree()
 //			dprintf("removed polygon #%d (#%d aliases)", leaf->polygon_index, alias_count);
 			
 			// LP change:
-			int Length = SortedNodes.GetLength();
-			// Will memory get swapped?
-			bool DoSwap = Length >= SortedNodes.GetCapacity();
-			assert(SortedNodes.Add());
-			// Update dependent quantities; Length is original length
-			if (DoSwap) {
+			int Length = SortedNodes.size();
+			POINTER_DATA OldSNPointer = POINTER_CAST(&SortedNodes.front());
+				
+			// Add a dummy object and check if the pointer got changed
+			sorted_node_data Dummy;
+			Dummy.polygon_index = NONE;			// Fake initialization to shut up CW
+			SortedNodes.push_back(Dummy);
+			POINTER_DATA NewSNPointer = POINTER_CAST(&SortedNodes.front());
+				
+			if (NewSNPointer != OldSNPointer)
+			{
+				// Update what uses the sorted-node pointers
 				for (int k=0; k<Length; k++) {
 					sorted_node = &SortedNodes[k];
 					polygon_index_to_sorted_node[sorted_node->polygon_index]= sorted_node;
@@ -293,8 +303,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	// short node_count)
 {
 	// LP change: growable lists
-	AccumulatedLineClips.ResetLength();
-	AccumulatedEndpointClips.ResetLength();
+	AccumulatedLineClips.clear();
+	AccumulatedEndpointClips.clear();
 	// short accumulated_line_clip_count= 0, accumulated_endpoint_clip_count= 0;
 	// struct line_clip_data *accumulated_line_clips[MAXIMUM_CLIPS_PER_NODE];
 	// struct endpoint_clip_data *accumulated_endpoint_clips[MAXIMUM_CLIPS_PER_NODE];
@@ -305,9 +315,9 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	short x0, x1; /* ignoring what clipping parameters we’ve gotten, this is the left and right borders of this node on the screen */
 	short i, j;
 	// LP: references to simplify the code
-	GrowableList<endpoint_clip_data>& EndpointClips = RVPtr->EndpointClips;
-	GrowableList<line_clip_data>& LineClips = RVPtr->LineClips;
-	GrowableList<clipping_window_data>& ClippingWindows = RVPtr->ClippingWindows;
+	vector<endpoint_clip_data>& EndpointClips = RVPtr->EndpointClips;
+	vector<line_clip_data>& LineClips = RVPtr->LineClips;
+	vector<clipping_window_data>& ClippingWindows = RVPtr->ClippingWindows;
 	vector<short>& endpoint_x_coordinates = RVPtr->endpoint_x_coordinates;
 	
 	/* calculate x0,x1 (real left and right borders of this node) in case the left and right borders
@@ -340,9 +350,9 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	/* add left, top and bottom of screen */
 	// LP change:
 	endpoint_clip_data *EndpointClipPtr = &EndpointClips[indexLEFT_SIDE_OF_SCREEN];
-	assert(AccumulatedEndpointClips.Add(EndpointClipPtr));
+	AccumulatedEndpointClips.push_back(EndpointClipPtr);
 	line_clip_data *LineClipPtr = &LineClips[indexTOP_AND_BOTTOM_OF_SCREEN];
-	assert(AccumulatedLineClips.Add(LineClipPtr));
+	AccumulatedLineClips.push_back(LineClipPtr);
 	/*
 	accumulated_endpoint_clips[accumulated_endpoint_clip_count++]= endpoint_clips + indexLEFT_SIDE_OF_SCREEN;
 	accumulated_line_clips[accumulated_line_clip_count++]= line_clips + indexTOP_AND_BOTTOM_OF_SCREEN;
@@ -367,7 +377,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				// endpoint= endpoint_clips + node->clipping_endpoints[i];
 				
 				// LP change:
-				for (j= 0;j<AccumulatedEndpointClips.GetLength();++j)
+				for (j= 0;j<AccumulatedEndpointClips.size();++j)
 				// for (j= 0;j<accumulated_endpoint_clip_count;++j)
 				{
 					// LP change:
@@ -388,9 +398,9 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				{
 					/* expand the array, if necessary, and add the new endpoint */
 					// LP change:
-					int Length = AccumulatedEndpointClips.GetLength();
-					assert(AccumulatedEndpointClips.Add());
-					assert(AccumulatedEndpointClips.GetLength() <= 32767);		// Originally a short value
+					int Length = AccumulatedEndpointClips.size();
+					AccumulatedEndpointClips.push_back(NULL);
+					assert(AccumulatedEndpointClips.size() <= 32767);		// Originally a short value
 					if (j!=Length) memmove(&AccumulatedEndpointClips[j+1], &AccumulatedEndpointClips[j],
 						(Length-j)*sizeof(endpoint_clip_data *));
 					AccumulatedEndpointClips[j]= endpoint;
@@ -413,11 +423,11 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				// line= line_clips + node->clipping_lines[i];
 				
 				// LP change:
-				for (j= 0;j<AccumulatedLineClips.GetLength();++j) if (AccumulatedLineClips[j]==line) break; /* found duplicate */
-				if (j==AccumulatedLineClips.GetLength()) /* if the line was not a duplicate */
+				for (j= 0;j<AccumulatedLineClips.size();++j) if (AccumulatedLineClips[j]==line) break; /* found duplicate */
+				if (j==AccumulatedLineClips.size()) /* if the line was not a duplicate */
 				{
-					assert(AccumulatedLineClips.Add(line));
-					assert(AccumulatedLineClips.GetLength() <= 32767);		// Originally a short value
+					AccumulatedLineClips.push_back(line);
+					assert(AccumulatedLineClips.size() <= 32767);		// Originally a short value
 				}
 				/*
 				for (j= 0;j<accumulated_line_clip_count;++j) if (accumulated_line_clips[j]==line) break; *//* found duplicate *//*
@@ -437,7 +447,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	/* add right side of screen */
 	// LP change:
 	EndpointClipPtr = &EndpointClips[indexRIGHT_SIDE_OF_SCREEN];
-	assert(AccumulatedEndpointClips.Add(EndpointClipPtr));
+	AccumulatedEndpointClips.push_back(EndpointClipPtr);
 	// assert(accumulated_endpoint_clip_count<MAXIMUM_CLIPS_PER_NODE);
 	// accumulated_endpoint_clips[accumulated_endpoint_clip_count++]= endpoint_clips + indexRIGHT_SIDE_OF_SCREEN;
 
@@ -447,7 +457,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 		endpoint_clip_data *left_clip, *right_clip;
 
 		// LP change:
-		for (i= 0;i<AccumulatedEndpointClips.GetLength();++i)
+		for (i= 0;i<AccumulatedEndpointClips.size();++i)
 		// for (i= 0;i<accumulated_endpoint_clip_count;++i)
 		{
 			// LP change:
@@ -492,23 +502,25 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				if (left_clip->x<view->screen_width && right_clip->x>0 && left_clip->x<right_clip->x)
 				{
 					// LP change: clipping windows are in growable list
-					int Length = ClippingWindows.GetLength();
-					POINTER_DATA OldCWPointer;
-					// Will memory get swapped?
-					bool DoSwap = Length >= ClippingWindows.GetCapacity();
-					if (DoSwap) OldCWPointer = POINTER_CAST(ClippingWindows.Begin());
-					assert(ClippingWindows.Add());
-					if (DoSwap)
+					int Length = ClippingWindows.size();
+					POINTER_DATA OldCWPointer = POINTER_CAST(&ClippingWindows.front());
+					
+					// Add a dummy object and check if the pointer got changed
+					clipping_window_data Dummy;
+					Dummy.next_window = NULL;			// Fake initialization to shut up CW
+					ClippingWindows.push_back(Dummy);
+					POINTER_DATA NewCWPointer = POINTER_CAST(&ClippingWindows.front());
+				
+					if (NewCWPointer != OldCWPointer)
 					{
 						// Get the clipping windows and sorted nodes into sync; no render objects yet
-						POINTER_DATA NewCWPointer = POINTER_CAST(ClippingWindows.Begin());
-						for (int k=0; k<ClippingWindows.GetLength(); k++)
+						for (int k=0; k<Length; k++)
 						{
 							clipping_window_data &ClippingWindow = ClippingWindows[k];
 							if (ClippingWindow.next_window != NULL)
 								ClippingWindow.next_window = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(ClippingWindow.next_window) - OldCWPointer));
 						}
-						for (int k=0; k<SortedNodes.GetLength(); k++)
+						for (int k=0; k<SortedNodes.size(); k++)
 						{
 							sorted_node_data &SortedNode = SortedNodes[k];
 							if (SortedNode.clipping_windows != NULL)
@@ -533,7 +545,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					window->x0= left_clip->x, window->x1= right_clip->x;
 					window->left= left_clip->vector;
 					window->right= right_clip->vector;
-					calculate_vertical_clip_data(AccumulatedLineClips.Begin(), AccumulatedLineClips.GetLength(), window,
+					calculate_vertical_clip_data(&AccumulatedLineClips.front(), AccumulatedLineClips.size(), window,
 						MAX(x0, window->x0), MIN(x1, window->x1));
 					/*
 					calculate_vertical_clip_data(accumulated_line_clips, accumulated_line_clip_count, window,

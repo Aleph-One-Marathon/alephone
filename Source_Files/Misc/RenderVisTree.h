@@ -15,6 +15,9 @@ Sep. 11, 2000 (Loren Petrich):
 
 Sep. 15, 2000 (Loren Petrich):
 	Fixed stale-pointer bug in cast_render_ray() by using index instead of pointer to parent node
+	
+Oct 13, 2000
+	LP: replaced GrowableLists and ResizableLists with STL vectors
 */
 
 #include "GrowableList.h"
@@ -138,7 +141,7 @@ class RenderVisTreeClass
 	// Auxiliary data and routines:
 	
 	// Polygon queue now a growable list; its working size is maintained separately
-	GrowableList<short> PolygonQueue;
+	vector<short> PolygonQueue;
 	short polygon_queue_size;
 	
 	/* translates from map indexes to clip indexes, only valid if appropriate render flag is set */
@@ -181,20 +184,20 @@ public:
 	/* every time we find a unique endpoint which clips something, we build one of these for it */
 	// LP addition: growable list
 	// Length changed in calculate_endpoint_clipping_information() and ResetEndpointClips()
-	GrowableList<endpoint_clip_data> EndpointClips;
+	vector<endpoint_clip_data> EndpointClips;
 
 	/* every time we find a unique line which clips something, we build one of these for it (notice
 		the translation table from line_indexes on the map to line_clip_indexes in our table for when
 		we cross the same clip line again */
 	// LP addition: growable list
 	// Length changed in calculate_line_clipping_information() and ResetLineClips()
-	GrowableList<line_clip_data> LineClips;
+	vector<line_clip_data> LineClips;
 
 	// Growable list of clipping windows
 	// Length changed in build_clipping_windows(), initialize_clip_data(),
 	// and build_aggregate_render_object_clipping_window();
 	// keep sorted-node clipping-window pointers in sync with render-object ones
-	GrowableList<clipping_window_data> ClippingWindows;
+	vector<clipping_window_data> ClippingWindows;
 	
 	// Growable list of node_data values
 	// Length changed in cast_render_ray() and initialize_render_tree()

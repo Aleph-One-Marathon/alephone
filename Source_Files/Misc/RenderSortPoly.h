@@ -13,9 +13,11 @@
 	
 Oct 13, 2000
 	LP: replaced ResizableList with STL vector class
+	
+Oct 13, 2000
+	LP: replaced GrowableLists and ResizableLists with STL vectors
 */
 
-#include "GrowableList.h"
 #include <vector.h>
 #include "world.h"
 #include "render.h"
@@ -54,12 +56,12 @@ public:
 	// LP additions: growable list of sorted nodes
 	// Length changed in initialize_sorted_render_tree() and sort_render_tree()
 	// When being built, the render objects are yet to be listed
-	GrowableList<sorted_node_data> SortedNodes;
+	vector<sorted_node_data> SortedNodes;
 	
 	// LP addition: growable lists of accumulations of endpoint and line clips
 	// used in build_clipping_windows()
-	GrowableList<endpoint_clip_data *> AccumulatedEndpointClips;
-	GrowableList<line_clip_data *> AccumulatedLineClips;
+	vector<endpoint_clip_data *> AccumulatedEndpointClips;
+	vector<line_clip_data *> AccumulatedLineClips;
 
 	// Pointers to view and calculated visibility tree
 	view_data *view;

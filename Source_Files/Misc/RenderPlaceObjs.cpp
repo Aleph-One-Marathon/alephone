@@ -10,6 +10,9 @@
 
 Sep 2, 2000 (Loren Petrich):
 	Added some idiot-proofing, since the shapes accessor now returns NULL for nonexistent bitmaps
+	
+Oct 13, 2000
+	LP: replaced GrowableLists and ResizableLists with STL vectors
 */
 
 #include "cseries.h"
@@ -29,11 +32,10 @@ Sep 2, 2000 (Loren Petrich):
 
 // Inits everything
 RenderPlaceObjsClass::RenderPlaceObjsClass():
-	RenderObjects(MAXIMUM_RENDER_OBJECTS),
 	view(NULL),	// Idiot-proofing
 	RVPtr(NULL),
 	RSPtr(NULL)
-{}
+{RenderObjects.reserve(MAXIMUM_RENDER_OBJECTS);}
 
 
 /* ---------- initializing, building and sorting the object list */
@@ -41,7 +43,7 @@ RenderPlaceObjsClass::RenderPlaceObjsClass():
 void RenderPlaceObjsClass::initialize_render_object_list()
 {
 	// LP change: using growable list
-	RenderObjects.ResetLength();
+	RenderObjects.clear();
 	/*
 	render_object_count= 0;
 	next_render_object= render_objects;
@@ -60,12 +62,12 @@ void RenderPlaceObjsClass::build_render_object_list()
 	assert(RSPtr);
 	sorted_node_data *sorted_node;
 	// LP: reference to simplify the code
-	GrowableList<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
+	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 
 	initialize_render_object_list();
 	
 	// LP change:
-	for (sorted_node= SortedNodes.RevBegin();sorted_node>SortedNodes.RevEnd();--sorted_node)
+	for (sorted_node = &SortedNodes.back(); sorted_node >= &SortedNodes.front(); --sorted_node)
 	// for (sorted_node= next_sorted_node-1;sorted_node>=sorted_nodes;--sorted_node)
 	{
 		polygon_data *polygon= get_polygon_data(sorted_node->polygon_index);
@@ -104,11 +106,11 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 	render_object_data *render_object= NULL;
 	object_data *object= get_object_data(object_index);
 	// LP: reference to simplify the code
-	GrowableList<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
+	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
 	// LP change: removed upper limit on number (restored it later)
 	// if (!OBJECT_IS_INVISIBLE(object))
-	if (!OBJECT_IS_INVISIBLE(object) && RenderObjects.GetLength()<get_dynamic_limit(_dynamic_limit_rendered))
+	if (!OBJECT_IS_INVISIBLE(object) && RenderObjects.size()<get_dynamic_limit(_dynamic_limit_rendered))
 	{
 		// LP change: made this more long-distance-friendly
 		long_point3d transformed_origin;
@@ -168,23 +170,25 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			if (x0<x1 && y0<y1)
 			{
 				// LP Change:
-				int Length = RenderObjects.GetLength();
-				POINTER_DATA OldROPointer;
-				// Will memory get swapped?
-				bool DoSwap = Length >= RenderObjects.GetCapacity();
-				if (DoSwap) OldROPointer = POINTER_CAST(RenderObjects.Begin());
-				assert(RenderObjects.Add());
-				if (DoSwap)
+				int Length = RenderObjects.size();
+				POINTER_DATA OldROPointer = POINTER_CAST(&RenderObjects.front());
+				
+				// Add a dummy object and check if the pointer got changed
+				render_object_data Dummy;
+				Dummy.node = NULL;				// Fake initialization to shut up CW
+				RenderObjects.push_back(Dummy);
+				POINTER_DATA NewROPointer = POINTER_CAST(&RenderObjects.front());
+				
+				if (NewROPointer != OldROPointer)
 				{
 					// Get the render objects and sorted nodes into sync
-					POINTER_DATA NewROPointer = POINTER_CAST(RenderObjects.Begin());
-					for (int k=0; k<RenderObjects.GetLength(); k++)
+					for (int k=0; k<Length; k++)
 					{
 						render_object_data &RenderObject = RenderObjects[k];
 						if (RenderObject.next_object != NULL)
 							RenderObject.next_object = (render_object_data *)(NewROPointer + (POINTER_CAST(RenderObject.next_object) - OldROPointer));
 					}
-					for (int k=0; k<SortedNodes.GetLength(); k++)
+					for (int k=0; k<SortedNodes.size(); k++)
 					{
 						sorted_node_data &SortedNode = SortedNodes[k];
 						if (SortedNode.interior_objects != NULL)
@@ -306,7 +310,7 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	sorted_node_data *desired_node;
 	short i;
 	// LP: reference to simplify the code
-	GrowableList<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
+	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 
 	/* find the last render_object in the given list of new objects */
 	for (last_new_render_object= new_render_object;
@@ -316,7 +320,7 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 
 	/* find the two objects we must be lie between */
 	// LP change:
-	for (render_object= RenderObjects.Begin(); render_object<RenderObjects.End(); ++render_object)
+	for (render_object = &RenderObjects.front(); render_object <= &RenderObjects.back(); ++render_object)
 	// for (render_object= render_objects; render_object<new_render_object; ++render_object)
 	{
 		/* if these two objects intersect... */
@@ -348,7 +352,7 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 		we cross and therefore the latest one in the sorted node list) */
 	desired_node= base_nodes[0];
 	for (i= 1; i<base_node_count; ++i) if (base_nodes[i]>desired_node) desired_node= base_nodes[i];
-	assert(desired_node>=SortedNodes.Begin() && desired_node<SortedNodes.End());
+	assert((desired_node >= &SortedNodes.front()) && (desired_node <= &SortedNodes.back()));
 	// assert(desired_node>=sorted_nodes && desired_node<next_sorted_node);
 	
 	/* adjust desired node based on the nodes of the deep and shallow render object; only
@@ -576,8 +580,8 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 {
 	clipping_window_data *first_window= NULL;
 	// LP: references to simplify the code
-	GrowableList<clipping_window_data>& ClippingWindows = RVPtr->ClippingWindows;
-	GrowableList<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
+	vector<clipping_window_data>& ClippingWindows = RVPtr->ClippingWindows;
+	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
 	if (base_node_count==1)
 	{
@@ -644,30 +648,32 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 				{
 					/* allocate it */
 					// LP Change:
-					int Length = ClippingWindows.GetLength();
-					POINTER_DATA OldCWPointer;
-					// Will memory get swapped?
-					bool DoSwap = Length >= ClippingWindows.GetCapacity();
-					if (DoSwap) OldCWPointer = POINTER_CAST(ClippingWindows.Begin());
-					assert(ClippingWindows.Add());
-					if (DoSwap)
+					int Length = ClippingWindows.size();
+					POINTER_DATA OldCWPointer = POINTER_CAST(&ClippingWindows.front());
+					
+					// Add a dummy object and check if the pointer got changed
+					clipping_window_data Dummy;
+					Dummy.next_window = NULL;			// Fake initialization to shut up CW
+					ClippingWindows.push_back(Dummy);
+					POINTER_DATA NewCWPointer = POINTER_CAST(&ClippingWindows.front());
+				
+					if (NewCWPointer != OldCWPointer)
 					{
 						// Get the sorted nodes into sync
 						// Also, the render objects and the parent window
-						POINTER_DATA NewCWPointer = POINTER_CAST(ClippingWindows.Begin());
-						for (int k=0; k<ClippingWindows.GetLength(); k++)
+						for (int k=0; k<Length; k++)
 						{
 							clipping_window_data &ClippingWindow = ClippingWindows[k];
 							if (ClippingWindow.next_window != NULL)
 								ClippingWindow.next_window = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(ClippingWindow.next_window) - OldCWPointer));
 						}
-						for (int k=0; k<SortedNodes.GetLength(); k++)
+						for (int k=0; k<SortedNodes.size(); k++)
 						{
 							sorted_node_data &SortedNode = SortedNodes[k];
 							if (SortedNode.clipping_windows != NULL)
 								SortedNode.clipping_windows = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(SortedNode.clipping_windows) - OldCWPointer));
 						}
-						for (int k=0; k<RenderObjects.GetLength(); k++)
+						for (int k=0; k<RenderObjects.size(); k++)
 						{
 							render_object_data &RenderObject = RenderObjects[k];
 							if (RenderObject.clipping_windows != NULL)

@@ -49,14 +49,14 @@ void RenderRasterizerClass::render_tree()
 	assert(RasPtr);
 	sorted_node_data *node;
 	// LP: reference to simplify the code
-	GrowableList<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
+	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
 	// LP change: added support for semitransparent liquids
 	bool SeeThruLiquids = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_LiqSeeThru) != 0;
 	
 	/* walls, ceilings, interior objects, floors, exterior objects for all nodes, back to front */
 	// LP change:
-	for (node= SortedNodes.Begin(); node<SortedNodes.End(); ++node)
+	for (node= &SortedNodes.front(); node <= &SortedNodes.back(); ++node)
 	// for (node= sorted_nodes; node<next_sorted_node; ++node)
 	{
 		polygon_data *polygon= get_polygon_data(node->polygon_index);
