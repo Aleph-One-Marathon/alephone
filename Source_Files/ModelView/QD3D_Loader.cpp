@@ -100,12 +100,24 @@ bool ColorsPresent = false;
 
 struct FullVertexData
 {
-	GLfloat Position[3];
-	GLfloat TxtrCoord[2];
-	GLfloat Normal[3];
-	GLfloat Color[3];
+	// For speeding up working with it
+	enum
+	{
+		POS_BASE = 0,		// 3 position components
+		TC_BASE = 3,		// 2 txtr-coord components
+		NORM_BASE = 5,		// 3 normal components
+		COLOR_BASE = 8,		// 3 color components
+		SIZE = 11
+	};
+	GLfloat Data[SIZE];
 };
 static vector<FullVertexData> FullVertexList;
+
+// For deciding whether vertices are coincident
+static GLfloat Thresholds[FullVertexData::SIZE];
+
+// Function for testing two indexed vertices:
+static int CompareVertices(const void *VI1, const void *VI2);
 
 static void StartAccumulatingVertices();
 static void GetVerticesIntoModel(Model3D& Model);
@@ -401,9 +413,10 @@ TQ3Status TriangulatorGeometry_Triangle(TQ3ViewObject View, void *PrivateData,
 		obj_clear(FullVertex);
 		
 		const TQ3Vertex3D& Vertex = TriangleData->vertices[k];
-		FullVertex.Position[0] = Vertex.point.x;
-		FullVertex.Position[1] = Vertex.point.y;
-		FullVertex.Position[2] = Vertex.point.z;
+		GLfloat *FV_Pos = FullVertex.Data + FullVertexData::POS_BASE;
+		FV_Pos[0] = Vertex.point.x;
+		FV_Pos[1] = Vertex.point.y;
+		FV_Pos[2] = Vertex.point.z;
 		
 		TQ3Param2D TxtrCoord;
 		TQ3Boolean TxtrCoord_Present =
@@ -422,8 +435,9 @@ TQ3Status TriangulatorGeometry_Triangle(TQ3ViewObject View, void *PrivateData,
 		
 		if (TxtrCoordsPresent)
 		{
-			FullVertex.TxtrCoord[0] = TxtrCoord.u;
-			FullVertex.TxtrCoord[1] = TxtrCoord.v;
+			GLfloat *FV_TC = FullVertex.Data + FullVertexData::TC_BASE;
+			FV_TC[0] = TxtrCoord.u;
+			FV_TC[1] = TxtrCoord.v;
 		}
 		
 		TQ3Vector3D Normal;
@@ -436,9 +450,10 @@ TQ3Status TriangulatorGeometry_Triangle(TQ3ViewObject View, void *PrivateData,
 		
 		if (NormalsPresent)
 		{
-			FullVertex.Normal[0] = Normal.x;
-			FullVertex.Normal[1] = Normal.y;
-			FullVertex.Normal[2] = Normal.z;
+			GLfloat *FV_Norm = FullVertex.Data + FullVertexData::NORM_BASE;
+			FV_Norm[0] = Normal.x;
+			FV_Norm[1] = Normal.y;
+			FV_Norm[2] = Normal.z;
 		}
 		
 		TQ3ColorRGB Color;
@@ -453,9 +468,10 @@ TQ3Status TriangulatorGeometry_Triangle(TQ3ViewObject View, void *PrivateData,
 		
 		if (ColorsPresent)
 		{
-			FullVertex.Color[0] = Color.r;
-			FullVertex.Color[1] = Color.g;
-			FullVertex.Color[2] = Color.b;
+			GLfloat *FV_Color = FullVertex.Data + FullVertexData::COLOR_BASE;
+			FV_Color[0] = Color.r;
+			FV_Color[1] = Color.g;
+			FV_Color[2] = Color.b;
 		}
 		FullVertexList.push_back(FullVertex);
 	}
@@ -475,52 +491,151 @@ void StartAccumulatingVertices()
 
 void GetVerticesIntoModel(Model3D& Model)
 {
-	int NumVertices = FullVertexList.size();
-	Model.Positions.resize(3*NumVertices);
-	if (TxtrCoordsPresent)
-		Model.TxtrCoords.resize(2*NumVertices);
-	if (NormalsPresent)
-		Model.Normals.resize(3*NumVertices);
-	if (ColorsPresent)
-		Model.Colors.resize(3*NumVertices);
-	Model.VertIndices.resize(NumVertices);
+	// Search for redundant vertices -- if there are any vertices to look for
+	if (FullVertexList.empty()) return;
 	
-	// Need to optimize the model by getting rid of redundant vertices;
-	// will search for them by index-sorting them,
-	// which will be done parameter by parameter.
+	// First, index-sort them
 	
-	for (int k=0; k<NumVertices; k++)
+	// Set up for index sorting by finding the position range
+	// (this code is a bit smarter than BG's 3DMF Mapper code for doing that);
+	// this is unnecessary for the other vertex data
+	GLfloat PosMin[3], PosMax[3];
+	for (int c=0; c<3; c++)
+		PosMin[c] = PosMax[c] = FullVertexList[0].Data[FullVertexData::POS_BASE+c];
+	
+	int OldNumVertices = FullVertexList.size();
+	for (int k=0; k<OldNumVertices; k++)
 	{
-		FullVertexData& FullVertex = FullVertexList[k];
-		
-		GLfloat *Position = &Model.Positions[3*k];
+		GLfloat *Pos = FullVertexList[0].Data + FullVertexData::POS_BASE;
 		for (int c=0; c<3; c++)
-			Position[c] = FullVertex.Position[c];
+		{
+			GLfloat PC = Pos[c];
+			PosMin[c] = MIN(PosMin[c],PC);
+			PosMax[c] = MAX(PosMax[c],PC);
+		}
+	}
+	const GLfloat ThresholdConstant = 0.001;
+	for (int c=0; c<3; c++)
+		Thresholds[FullVertexData::POS_BASE+c] = ThresholdConstant*(PosMax[c]-PosMin[c]);
+	for (int c=0; c<2; c++)
+		Thresholds[FullVertexData::TC_BASE+c] = ThresholdConstant;
+	for (int c=0; c<3; c++)
+		Thresholds[FullVertexData::NORM_BASE+c] = ThresholdConstant;
+	for (int c=0; c<3; c++)
+		Thresholds[FullVertexData::COLOR_BASE+c] = ThresholdConstant;
+
+	// Now the actual sorting
+	vector<int> Indices(OldNumVertices);
+	for (int k=0; k<Indices.size(); k++)
+		Indices[k] = k;
+	
+	// STL sort may be slow
+	qsort(&Indices[0],OldNumVertices,sizeof(int),CompareVertices);
+	
+	// Set up vertex ranks in place; count the distinct vertices.
+	// Also, use the first one of a non-distinct set in sorted order
+	// as the new vertex
+	Model.VertIndices.resize(OldNumVertices);
+	vector<int> VertexSelect;
+	VertexSelect.resize(OldNumVertices);
+	
+	int TopRank = 0;
+	int PrevIndex = Indices[0];
+	VertexSelect[TopRank] = PrevIndex;
+	Model.VertIndices[PrevIndex] = TopRank;
+	for (int k=1; k<OldNumVertices; k++)
+	{
+		int CurrIndex = Indices[k];
+		if (CompareVertices(&PrevIndex,&CurrIndex) != 0)
+		{
+			TopRank++;
+			VertexSelect[TopRank] = CurrIndex;
+		}
+		Model.VertIndices[CurrIndex] = TopRank;
+		PrevIndex = CurrIndex;
+	}
+	int NewNumVertices = TopRank + 1;
+	
+	// Fill up the rest of model arrays
+	Model.Positions.resize(3*NewNumVertices);
+	GLfloat *PosPtr = &Model.Positions[0];
+	
+	GLfloat *TCPtr = NULL;
+	if (TxtrCoordsPresent)
+	{
+		Model.TxtrCoords.resize(2*NewNumVertices);
+		TCPtr = &Model.TxtrCoords[0];
+	}
+	
+	GLfloat *NormPtr = NULL;
+	if (NormalsPresent)
+	{
+		Model.Normals.resize(3*NewNumVertices);
+		NormPtr = &Model.Normals[0];
+	}
+	
+	GLfloat *ColorPtr = NULL;
+	if (ColorsPresent)
+	{
+		Model.Colors.resize(3*NewNumVertices);
+		ColorPtr = &Model.Colors[0];
+	}
+	
+	for (int k=0; k<NewNumVertices; k++)
+	{
+		FullVertexData& FullVertex = FullVertexList[VertexSelect[k]];
+		
+		GLfloat *Pos = FullVertex.Data + FullVertexData::POS_BASE;
+		for (int c=0; c<3; c++)
+			*(PosPtr++) = *(Pos++);
 		
 		if (TxtrCoordsPresent)
 		{
-			GLfloat *TxtrCoord = &Model.TxtrCoords[2*k];
-			for (int c=0; c<3; c++)
-				TxtrCoord[c] = FullVertex.TxtrCoord[c];
+			GLfloat *TC = FullVertex.Data + FullVertexData::TC_BASE;
+			for (int c=0; c<2; c++)
+				*(TCPtr++) = *(TC++);	
 		}
 		
 		if (NormalsPresent)
 		{
-			GLfloat *Normal = &Model.Normals[3*k];
+			GLfloat *Norm = FullVertex.Data + FullVertexData::NORM_BASE;
 			for (int c=0; c<3; c++)
-				Normal[c] = FullVertex.Normal[c];
+				*(NormPtr++) = *(Norm++);	
 		}
 		
 		if (ColorsPresent)
 		{
-			GLfloat *Color = &Model.Colors[3*k];
+			GLfloat *Color = FullVertex.Data + FullVertexData::COLOR_BASE;
 			for (int c=0; c<3; c++)
-				Color[c] = FullVertex.Color[c];
+				*(ColorPtr++) = *(Color++);	
 		}
-		
-		Model.VertIndices[k] = k;
 	}
 	
 	// All done!
 	FullVertexList.clear();
+}
+
+int CompareVertices(const void *VI1, const void *VI2)
+{
+	int *IP1 = (int *)VI1;
+	int *IP2 = (int *)VI2;
+	GLfloat *Data1 = FullVertexList[*IP1].Data;
+	GLfloat *Data2 = FullVertexList[*IP2].Data;
+	GLfloat *ThrPtr = Thresholds;
+	
+	// Compare the components one at a time; this will give a reasonable sort order
+	for (int c=0; c<FullVertexData::SIZE; c++)
+	{
+		// Make the operation exactly reversible
+		GLfloat DVal1 = *Data1;
+		GLfloat DVal2 = *Data2;
+		GLfloat Thr = *ThrPtr;
+		if (DVal1 > DVal2 + Thr) return -1;
+		else if (DVal2 > DVal1 + Thr) return 1;
+		Data1++;
+		Data2++;
+		ThrPtr++;
+	}
+	// All within range
+	return 0;
 }
