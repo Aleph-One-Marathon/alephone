@@ -17,6 +17,9 @@ July 1, 2000 (Loren Petrich):
 
 Aug 29, 2000 (Loren Petrich):
 	Added packing and unpacking routines
+
+Feb 8, 2001 (Loren Petrich):
+	Fixed liquid-count bug in parallel with similar bug in map.cpp
 */
 
 #include "cseries.h"
@@ -252,13 +255,14 @@ if (force_update || !(dynamic_world->tick_count&definition->shape_frequency))
 }
 
 // LP addition: count number of media types used,
-// for better Infinity compatibility when saving games
+// for better Infinity compatibility when saving games.
+// Fixed countdown bug in parallel with similar bug in map.cpp
 short count_number_of_medias_used()
 {
-	short number_used = 0;
+	short number_used = MAXIMUM_MEDIAS_PER_MAP; // Take care of the case of all slots being used
 	for (short media_index=MAXIMUM_MEDIAS_PER_MAP-1; media_index>=0; media_index--)
 	{
-		if (SLOT_IS_USED(medias + media_index))
+		if (!SLOT_IS_USED(medias + media_index))
 		{
 			number_used = media_index + 1;
 			break;

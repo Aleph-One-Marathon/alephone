@@ -61,6 +61,12 @@ Nov 19, 2000 (Loren Petrich):
 	the landscape textures, and also stuff for loading the various texture environments.
 	Each one of these has slots for several collection ID's to load; one can use a converted M1 map
 	directly with this approach.
+
+Feb 8, 2001 (Loren Petrich):
+	Had not too long ago changed many of the arrays into dynamically-allocated ones, thus ending the
+	limits on the numbers of points, lines, polygons, etc.
+	Fixed a *serious* bug in the calculation of the "dynamic world" quantities in recalculate_map_counts() --
+	there are some count-down loops, but they ought to count down to the last used entity, not the last unused one.
 */
 
 /*
@@ -1685,32 +1691,34 @@ void recalculate_map_counts(
 	struct light_data *light;
 	short count;
 	
+	// LP: fixed serious bug in the counting logic
+	
 	for (count=MAXIMUM_OBJECTS_PER_MAP,object=objects+MAXIMUM_OBJECTS_PER_MAP-1;
-			count>0&&SLOT_IS_USED(object);
+			count>0&&(!SLOT_IS_USED(object));
 			--count,--object)
 		;
 	dynamic_world->object_count= count;
 	
 	for (count=MAXIMUM_MONSTERS_PER_MAP,monster=monsters+MAXIMUM_MONSTERS_PER_MAP-1;
-			count>0&&SLOT_IS_USED(monster);
+			count>0&&(!SLOT_IS_USED(monster));
 			--count,--monster)
 		;
 	dynamic_world->monster_count= count;
 	
 	for (count=MAXIMUM_PROJECTILES_PER_MAP,projectile=projectiles+MAXIMUM_PROJECTILES_PER_MAP-1;
-			count>0&&SLOT_IS_USED(projectile);
+			count>0&&(!SLOT_IS_USED(projectile));
 			--count,--projectile)
 		;
 	dynamic_world->projectile_count= count;
 	
 	for (count=MAXIMUM_EFFECTS_PER_MAP,effect=effects+MAXIMUM_EFFECTS_PER_MAP-1;
-			count>0&&SLOT_IS_USED(effect);
+			count>0&&(!SLOT_IS_USED(effect));
 			--count,--effect)
 		;
 	dynamic_world->effect_count= count;
 	
 	for (count=MAXIMUM_LIGHTS_PER_MAP,light=lights+MAXIMUM_LIGHTS_PER_MAP-1;
-			count>0&&SLOT_IS_USED(light);
+			count>0&&(!SLOT_IS_USED(light));
 			--count,--light)
 		;
 	dynamic_world->light_count= count;
