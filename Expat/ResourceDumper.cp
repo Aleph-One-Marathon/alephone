@@ -97,7 +97,7 @@ int main()
 			bool ExtraSpaceBeforeEnd = false;
 			for (int k=0; k<StrLen; k++)
 			{
-				char Char = *(CharPtr++);
+				unsigned char Char = *(CharPtr++);
 				ExtraSpaceBeforeEnd = false;
 				switch(Char)
 				{
@@ -116,21 +116,23 @@ int main()
 				case '"':
 					fprintf(fptr,"&quot;");
 					break;
-				case 'ª':
-					fprintf(fptr,"[TM]");
-					break;
-				case '§':
-					fprintf(fptr,"b");
-					break;
 				default:
-					fprintf(fptr,"%c",Char);
+					if (Char >= 0x80)
+					{
+						// UTF-8 encoding
+						unsigned char Char1 = 0xc0 + (Char >> 6);
+						unsigned char Char2 = 0x80 + (Char & 0x3f);
+						fprintf(fptr,"%c%c",Char1,Char2);
+					}
+					else
+						fprintf(fptr,"%c",Char);
 				}
 				// Upper-byte-set characters
-				if (Char & 0x80) ExtraSpaceBeforeEnd = true;
+				//if (Char & 0x80) ExtraSpaceBeforeEnd = true;
 			}
 			// Space put in if necessary
-			if (ExtraSpaceBeforeEnd)
-				fprintf(fptr," ");
+			//if (ExtraSpaceBeforeEnd)
+			//	fprintf(fptr," ");
 			fprintf(fptr,"</string>\n");
 		}
 		
