@@ -20,7 +20,7 @@
 */
 
 /*
- *  sound_sdl.cpp - Sound/music management, SDL specific stuff (included by mysound.cpp)
+ *  sound_sdl.h - Sound/music management, SDL specific stuff (included by mysound.cpp)
  *
  *  Written in 2000 by Christian Bauer
  *
@@ -41,7 +41,7 @@
 
 // ZZZ: define this if you don't want to bring DirectShow into the mix
 // (e.g. if you can't build because you don't have the SDK)
-#define WIN32_DISABLE_MUSIC
+#undef WIN32_DISABLE_MUSIC
 
 // Number of sound channels used by Aleph One sound manager
 const int SM_SOUND_CHANNELS = MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHANNELS;
