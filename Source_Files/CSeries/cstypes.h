@@ -56,4 +56,9 @@ typedef unsigned char boolean;
 #define TRUE true
 #endif
 
+// Distinction between Loren Petrich's and Christian Bauer's code;
+// define whichever one is appropriate
+#define LP
+#undef CB
+
 #endif
