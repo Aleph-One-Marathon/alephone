@@ -991,11 +991,17 @@ void darken_world_window(void)
 		glPopAttrib();
 
 		SDL_GL_SwapBuffers();
+		return;
 	}
 #endif
 
 	// Get black pixel value
 	uint32 pixel = SDL_MapRGB(main_surface->format, 0, 0, 0);
+
+	// Lock surface
+	if (SDL_MUSTLOCK(main_surface))
+		if (SDL_LockSurface(main_surface) < 0)
+			return;
 
 	// Draw pattern
 	switch (main_surface->format->BytesPerPixel) {
@@ -1009,6 +1015,10 @@ void darken_world_window(void)
 			draw_pattern_rect((pixel32 *)main_surface->pixels, main_surface->pitch, pixel, r);
 			break;
 	}
+
+	// Unlock surface
+	if (SDL_MUSTLOCK(main_surface))
+		SDL_UnlockSurface(main_surface);
 
 	SDL_UpdateRects(main_surface, 1, &r);
 }
