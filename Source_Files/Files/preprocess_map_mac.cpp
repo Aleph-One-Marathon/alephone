@@ -461,6 +461,7 @@ static void add_overhead_thumbnail(
 	AEDisposeDesc(&aeFileSpec);
 	KillPicture(preview);	
 	KillPicture(picture);
+	DisposeRgn(clip_region);
 
 	SetGWorld(old_gworld, old_device);
 }
