@@ -182,11 +182,15 @@ uint32 parse_keymap(
 	if(input_preferences->input_device==_input_sprocket_only || input_preferences->input_device==_keyboard_or_game_pad)
 		flags = InputSprocketTestElements();
 	/******************************************************************************************/
-
-	/* parse the keymap */	
-	for (i=0;i<NUMBER_OF_STANDARD_KEY_DEFINITIONS;++i,++key)
+	
+	/* parse the keymap */
+	// LP: don't do if in input-sprocket-only mode
+	if (!ISp_IsUsingKeyboard())
 	{
-		if (*((byte*)key_map + key->offset) & key->mask) flags|= key->action_flag;
+		for (i=0;i<NUMBER_OF_STANDARD_KEY_DEFINITIONS;++i,++key)
+		{
+			if (*((byte*)key_map + key->offset) & key->mask) flags|= key->action_flag;
+		}
 	}
 
 	/* post-process the keymap */
