@@ -148,6 +148,9 @@ ActionQueue *get_player_recording_queue(
 }
 #endif
 
+// Used in script_instructions.cpp in Pfhortran
+void IncrementHeartbeat() {heartbeat_count++;}
+
 /* ---------- private prototypes */
 static void remove_input_controller(void);
 static void precalculate_key_information(void);
