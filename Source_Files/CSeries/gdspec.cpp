@@ -158,10 +158,21 @@ bool EqualGDSpec(
 }
 
 short GetSlotFromGDevice(
-	GDHandle dev)
+	GDHandle cur_dev)
 {
 #if defined(TARGET_API_MAC_CARBON)
-	return NONE;
+	short count= 0;
+	GDHandle dev;
+	for (dev=GetDeviceList(); dev; dev=GetNextDevice(dev), ++count) {
+		if (!TestDeviceAttribute(dev,screenDevice)
+				|| !TestDeviceAttribute(dev,screenActive))
+			continue;
+		if(dev == cur_dev)
+		{
+			break;
+		}
+	}
+	return count;
 #else
 	return (*(AuxDCEHandle)GetDCtlEntry((*dev)->gdRefNum))->dCtlSlot;
 #endif
