@@ -45,6 +45,9 @@ Feb 5, 2003 (Woody Zenfell):
 
 Apr 10, 2003 (Woody Zenfell):
     Join hinting and autogathering have Preferences entries now
+
+ August 27, 2003 (Woody Zenfell):
+	SDL UI for selecting netscript
  */
 
 #include "cseries.h"
@@ -550,6 +553,23 @@ select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber) {
 }
 
 
+void
+set_dialog_netscript_file(DialogPtr inDialog, const FileSpecifier& inFile)
+{
+	w_file_chooser* theChooser = dynamic_cast<w_file_chooser*>(inDialog->get_widget_by_id(iCHOOSE_SCRIPT));
+
+	theChooser->set_file(inFile);
+}
+
+const FileSpecifier&
+get_dialog_netscript_file(DialogPtr inDialog)
+{
+	w_file_chooser* theChooser = dynamic_cast<w_file_chooser*>(inDialog->get_widget_by_id(iCHOOSE_SCRIPT));
+
+	return theChooser->get_file();
+}
+
+
 static void
 respond_to_net_game_type_change(w_select* inWidget) {
         // Get the newly-selected game type and calculate stringset ID
@@ -629,6 +649,17 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
         type_w->set_identifier(iGAME_TYPE);
         type_w->set_selection_changed_callback(respond_to_net_game_type_change);
 	d.add(type_w);
+
+	w_enabling_toggle* use_netscript_w = new w_enabling_toggle("Use Netscript", false);
+	use_netscript_w->set_identifier(iUSE_SCRIPT);
+	d.add(use_netscript_w);
+	
+	w_file_chooser* netscript_file_w = new w_file_chooser("Netscript", "SELECT NETSCRIPT", _typecode_netscript);
+	netscript_file_w->set_identifier(iCHOOSE_SCRIPT);
+	netscript_file_w->set_full_width();
+	d.add(netscript_file_w);
+
+	use_netscript_w->add_dependent_widget(netscript_file_w);
 
     // Could eventually store this path in network_preferences somewhere, so to have separate map file
     // prefs for single- and multi-player.
@@ -714,8 +745,8 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 	d.add(cancel_w);
 
         fill_in_game_setup_dialog(&d, player_information, false, inResumingGame);
-    
-        if(inResumingGame)
+
+	if(inResumingGame)
         {
                 // If resuming, they shouldn't be allowed to change the Map file
                 // (this should go in fill_in_game_setup_dialog() if the Mac version gets a Map file selector)
