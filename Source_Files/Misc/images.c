@@ -8,6 +8,9 @@ Feb. 4, 2000 (Loren Petrich):
 
 Feb. 5, 2000 (Loren Petrich):
 	Better handling of case of no scenario-file resource fork
+
+Aug 21, 2000 (Loren Petrich):
+	Added object-oriented file handling
 */
 
 #include "macintosh_cseries.h"
@@ -16,15 +19,18 @@ Feb. 5, 2000 (Loren Petrich):
 
 #include "interface.h"
 #include "shell.h"
-#include "portable_files.h"
+// #include "portable_files.h"
 #include "images.h"
 #include "screen.h" // for build_direct_color_table
 
 extern short interface_bit_depth;
 extern WindowPtr screen_window;
 
-static short images_file_handle= NONE;
-static short scenario_file_handle= NONE;
+// Adding resource-file objects
+static OpenedResourceFile ImagesResources;
+static OpenedResourceFile ScenarioResources;
+// static short images_file_handle= NONE;
+// static short scenario_file_handle= NONE;
 
 enum {
 	_images_file_delta16= 1000,
@@ -37,12 +43,22 @@ enum {
 static void shutdown_images_handler(void);
 static short determine_pict_resource_id(OSType pict_resource_type, short base_id,
 	short delta16, short delta32);
-static void draw_picture(PicHandle picture);
+static void draw_picture(LoadedResource& PictRsrc);
+// static void draw_picture(PicHandle picture);
 
 /* ------------- code */
 void initialize_images_manager(
 	void)
 {
+	FileSpecifier File;
+	File.SetFileToApp();
+	File.SetName(getcstr(temporary, strFILENAMES, filenameIMAGES),FileSpecifier::C_Images);
+	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+	
+	if (!File.Open(ImagesResources))
+		alert_user(fatalError, strERRORS, badExtraFileLocations, File.GetError());
+	
+	/*
 	FSSpec file;
 	OSErr error;
 
@@ -64,29 +80,45 @@ void initialize_images_manager(
 	{
 		atexit(shutdown_images_handler);
 	}
+	*/
+	
+	atexit(shutdown_images_handler);
 }
 
-PicHandle get_picture_resource_from_images(
-	short base_resource)
+bool get_picture_resource_from_images(short base_resource, LoadedResource& PictRsrc)
+// PicHandle get_picture_resource_from_images(
+// 	short base_resource)
 {
-	short old_resfile;
-	PicHandle picture;
+	// short old_resfile;
+	// PicHandle picture;
 	
-	assert(images_file_handle != NONE);
-	old_resfile= CurResFile();
-	UseResFile(images_file_handle);
-	picture= (PicHandle) Get1Resource('PICT', 
-		determine_pict_resource_id('PICT', base_resource,
-		_images_file_delta16, _images_file_delta32));
+	assert(ImagesResources.IsOpen());
+	ImagesResources.Push();
+	
+	short RsrcID = determine_pict_resource_id('PICT', base_resource,
+		_images_file_delta16, _images_file_delta32);
+	bool Success = ImagesResources.Get('PICT',RsrcID,PictRsrc);
+	
+	// assert(images_file_handle != NONE);
+	// old_resfile= CurResFile();
+	// UseResFile(images_file_handle);
+	// picture= (PicHandle) Get1Resource('PICT', 
+	//	determine_pict_resource_id('PICT', base_resource,
+	//	_images_file_delta16, _images_file_delta32));
 //	if (picture) HNoPurge((Handle)picture);
-	UseResFile(old_resfile);
+	// UseResFile(old_resfile);
+	ImagesResources.Pop();
 	
-	return picture;
+	return Success;
+	// return picture;
 }
 
-void set_scenario_images_file(
-	FileDesc *file)
+void set_scenario_images_file(FileSpecifier& File)
+//	FileDesc *file)
 {
+
+	File.Open(ScenarioResources);
+	/*
 	static boolean installed= FALSE;
 	boolean was_aliased, is_folder; 
 
@@ -100,46 +132,77 @@ void set_scenario_images_file(
 	scenario_file_handle= FSpOpenResFile((FSSpec *) file, fsRdPerm);
 	// LP change: no need to bomb out
 	// assert(!ResError());
-
+	*/
+	
 	return;
 }
 
-SndListHandle get_sound_resource_from_scenario(
-	short resource_number)
+bool get_sound_resource_from_scenario(short resource_number, LoadedResource& SoundRsrc)
+// SndListHandle get_sound_resource_from_scenario(
+//	short resource_number)
 {
-	SndListHandle sound_handle;
-	short old_resfile;
+	// SndListHandle sound_handle;
+	// short old_resfile;
+
+	if (!ScenarioResources.IsOpen()) return false;	
+	ScenarioResources.Push();
+
+	bool Success = ScenarioResources.Get('snd ', resource_number, SoundRsrc);
 	
+	// Trying to keep this HNoPurge, for whatever reason
+	if (Success)
+	{
+		Handle SndHdl = SoundRsrc.GetHandle();
+		if (SndHdl) HNoPurge(SndHdl);
+	}
 	// LP: more graceful degradation
-	if (scenario_file_handle == NONE) return NULL;
+	// if (scenario_file_handle == NONE) return NULL;
 	// assert(scenario_file_handle != NONE);
-	old_resfile= CurResFile();
-	UseResFile(scenario_file_handle);
-	sound_handle= (SndListHandle) Get1Resource('snd ', resource_number);
-	if (sound_handle) HNoPurge((Handle)sound_handle);
-	UseResFile(old_resfile);
+	// old_resfile= CurResFile();
+	// UseResFile(scenario_file_handle);
+	// sound_handle= (SndListHandle) Get1Resource('snd ', resource_number);
+	// if (sound_handle) HNoPurge((Handle)sound_handle);
+	// UseResFile(old_resfile);
 	
-	return sound_handle;
+	ScenarioResources.Pop();
+	
+	// return sound_handle;
+	return Success;
 }
 
-PicHandle get_picture_resource_from_scenario(
-	short base_resource)
+bool get_picture_resource_from_scenario(short base_resource, LoadedResource& PictRsrc)
+// PicHandle get_picture_resource_from_scenario(
+// 	short base_resource)
 {
-	short old_resfile;
+	// short old_resfile;
 	PicHandle picture;
+
+	if (!ScenarioResources.IsOpen()) return NULL;
+	ScenarioResources.Push();
 	
+	short RsrcID = determine_pict_resource_id('PICT', base_resource,
+		_images_file_delta16, _images_file_delta32);
+	bool Success = ScenarioResources.Get('PICT',RsrcID,PictRsrc);
+	
+	// Trying to keep this HNoPurge, for whatever reason
+	if (Success)
+	{
+		Handle PictHdl = PictRsrc.GetHandle();
+		if (PictHdl) HNoPurge(PictHdl);
+	}
 	// LP: more graceful degradation
-	if (scenario_file_handle == NONE) return NULL;
+	// if (scenario_file_handle == NONE) return NULL;
 	// assert(scenario_file_handle != NONE);
-	old_resfile= CurResFile();
-	UseResFile(scenario_file_handle);
-	picture= (PicHandle) Get1Resource('PICT', 
-		determine_pict_resource_id('PICT', base_resource,
-			_scenario_file_delta16, _scenario_file_delta32));
-	if (picture) HNoPurge((Handle)picture);
-	UseResFile(old_resfile);
+	// old_resfile= CurResFile();
+	// UseResFile(scenario_file_handle);
+	// picture= (PicHandle) Get1Resource('PICT', 
+	//	determine_pict_resource_id('PICT', base_resource,
+	//		_scenario_file_delta16, _scenario_file_delta32));
+	// if (picture) HNoPurge((Handle)picture);
+	// UseResFile(old_resfile);
 	
-	return picture;
+	return Success;
+	// return picture;
 }
 
 struct color_table *calculate_picture_clut(
@@ -188,6 +251,10 @@ struct color_table *build_8bit_system_color_table(
 boolean images_picture_exists(
 	short base_resource)
 {
+	LoadedResource PictRsrc;
+	return get_picture_resource_from_images(base_resource,PictRsrc);
+	
+	/*
 	PicHandle picture= get_picture_resource_from_images(base_resource);
 	boolean exists= FALSE;
 	
@@ -196,13 +263,18 @@ boolean images_picture_exists(
 		exists= TRUE;
 		ReleaseResource((Handle) picture);
 	}
-
+	
 	return exists;
+	*/
 }
 
 boolean scenario_picture_exists(
 	short base_resource)
 {
+	LoadedResource PictRsrc;
+	return get_picture_resource_from_images(base_resource,PictRsrc);
+	
+	/*
 	PicHandle picture= get_picture_resource_from_scenario(base_resource);
 	boolean exists= FALSE;
 	
@@ -213,15 +285,21 @@ boolean scenario_picture_exists(
 	}
 
 	return exists;
+	*/
 }
 
 void draw_full_screen_pict_resource_from_images(
 	short pict_resource_number)
 {
+	LoadedResource PictRsrc;
+	get_picture_resource_from_images(pict_resource_number,PictRsrc);
+	draw_picture(PictRsrc);
+	/*
 	PicHandle picture;
 
 	picture= get_picture_resource_from_images(pict_resource_number);
 	draw_picture(picture);
+	*/
 	
 	return;
 }
@@ -229,10 +307,16 @@ void draw_full_screen_pict_resource_from_images(
 void draw_full_screen_pict_resource_from_scenario(
 	short pict_resource_number)
 {
+	LoadedResource PictRsrc;
+	get_picture_resource_from_scenario(pict_resource_number,PictRsrc);
+	draw_picture(PictRsrc);
+	/*
+	LoadedResource PictRsrc;
 	PicHandle picture;
 	
 	picture= get_picture_resource_from_scenario(pict_resource_number);
 	draw_picture(picture);
+	*/
 	
 	return;
 }
@@ -244,10 +328,15 @@ void scroll_full_screen_pict_resource_from_scenario(
 	short pict_resource_number,
 	boolean text_block)
 {
-	PicHandle picture= get_picture_resource_from_scenario(pict_resource_number);
+	LoadedResource PictRsrc;
+	get_picture_resource_from_scenario(pict_resource_number, PictRsrc);
+	// PicHandle picture= get_picture_resource_from_scenario(pict_resource_number);
 	
-	if (picture)
+	// if (picture)
+	if (PictRsrc.IsLoaded())
 	{
+		PicHandle picture = PicHandle(PictRsrc.GetHandle());
+	
 		short picture_width= RECTANGLE_WIDTH(&(*picture)->picFrame);
 		short picture_height= RECTANGLE_HEIGHT(&(*picture)->picFrame);
 		short screen_width= 640; //RECTANGLE_WIDTH(&screen_window->portRect);
@@ -434,22 +523,31 @@ static short determine_pict_resource_id(
 static void shutdown_images_handler(
 	void)
 {
+	ScenarioResources.Close();
+	ImagesResources.Close();
+	
+	/*
 	CloseResFile(images_file_handle);
 	if(scenario_file_handle!=NONE)
 	{
 		CloseResFile(scenario_file_handle);
 	}
+	*/
 	
 	return;
 }
 
-static void draw_picture(
-	PicHandle picture)
+static void draw_picture(LoadedResource& PictRsrc)
+//	PicHandle picture)
 {
 	WindowPtr window= screen_window;
 	
-	if (picture)
+	// if (picture)
+	if (PictRsrc.IsLoaded())
 	{
+		// Don't detach the picture handle here
+		PicHandle picture = PicHandle(PictRsrc.GetHandle());
+	
 		Rect bounds;
 		GrafPtr old_port;
 		
@@ -487,7 +585,8 @@ static void draw_picture(
 		ValidRect(&window->portRect);
 		SetPort(old_port);
 		
-		if (!(HGetState((Handle)picture) & 0x40)) ReleaseResource((Handle) picture);
+		// Don't unload the picture here
+		// if (!(HGetState((Handle)picture) & 0x40)) ReleaseResource((Handle) picture);
 	}
 
 	return;

@@ -7,6 +7,12 @@ Feb 6, 2000 (Loren Petrich):
 
 Feb 14, 2000 (Loren Petrich):
 	Changed it to read 'FTyp' resource 128
+
+Aug 21, 2000 (Loren Petrich):
+	Added preferences typecode
+	
+Aug 21, 2000 (Loren Petrich):
+	Added images typecode
 */
 
 #include <string.h>
@@ -23,7 +29,9 @@ static OSType typecodes[NUMBER_OF_TYPECODES] = {
 	 'phy°',	// Physics typecode: originally 'phy2'; changed for M° compatibility
 	 'shp°',	// Shapes typecode: originally 'shp2'; changed for M° compatibility
 	 'snd°',	// Sounds typecode: originally 'snd2'; changed for M° compatibility
-	 'pat°'		// Patch typecode: originally 'pat2'; changed for M° compatibility
+	 'pat°',	// Patch typecode: originally 'pat2'; changed for M° compatibility
+	 'img2',	// Images typecode
+	 'pref'		// Preferences typecode
 };
 
 
@@ -32,7 +40,7 @@ void initialize_typecodes()
 {
 	Handle FTypHdl = GetResource('FTyp',128);
 	if (FTypHdl == NULL) return;
-	if (GetHandleSize(FTypHdl) != sizeof(typecodes)) return;
+	if (GetHandleSize(FTypHdl) > sizeof(typecodes)) return;
 	HLock(FTypHdl);
 	memcpy(typecodes,*FTypHdl,sizeof(typecodes));
 	HUnlock(FTypHdl);

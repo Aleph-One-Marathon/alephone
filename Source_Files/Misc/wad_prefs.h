@@ -6,13 +6,16 @@
 	 wad_prefs.h
 	 Wednesday, March 22, 1995 12:08:36 AM- rdm created.
 
+Aug 21, 2000 (Loren Petrich):
+	Added object-oriented file handling
 */
 
 /* Open the file, and allocate whatever internal structures are necessary in the */
 /*  preferences pointer.. */
-boolean w_open_preferences_file(
-	unsigned char *prefName, 
-	unsigned long preferences_file_type); // ostype for mac, extension for dos
+// LP: using abstract type defined in class FileSpecifier
+boolean w_open_preferences_file(char *PrefName, int Type);
+// 	unsigned char *prefName, 
+// 	unsigned long preferences_file_type); // ostype for mac, extension for dos
 
 typedef void (*prefs_initializer)(void *prefs);
 typedef boolean (*prefs_validater)(void *prefs);
@@ -28,7 +31,8 @@ void w_write_preferences_file(void);
 /* ------ local structures */
 /* This is the structure used internally */
 struct preferences_info {
-	FileDesc pref_file;
+	FileSpecifier PrefsFile;
+	// FileDesc pref_file;
 	struct wad_data *wad;
 };
 
