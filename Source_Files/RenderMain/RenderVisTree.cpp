@@ -43,8 +43,8 @@ Oct 13, 2000
 #define POLYGON_QUEUE_SIZE 256
 #define MAXIMUM_NODES 512
 #define MAXIMUM_LINE_CLIPS 256
-#define MAXIMUM_ENDPOINT_CLIPS 64
-#define MAXIMUM_CLIPPING_WINDOWS 128
+#define MAXIMUM_ENDPOINT_CLIPS 128
+#define MAXIMUM_CLIPPING_WINDOWS 192
 
 
 
@@ -259,19 +259,19 @@ void RenderVisTreeClass::cast_render_ray(
 					{
 						node_data &Node = Nodes[k];
 						// If NULL, then these pointers were already copied.
-						if (Node.parent != NULL)
+						if (Node.parent)
 							Node.parent = (node_data *)(NewNodePointer + (POINTER_CAST(Node.parent) - OldNodePointer));
-						if (Node.reference != NULL)
+						if (Node.reference)
 							Node.reference = (node_data **)(NewNodePointer + (POINTER_CAST(Node.reference) - OldNodePointer));
-						if (Node.siblings != NULL)
+						if (Node.siblings)
 							Node.siblings = (node_data *)(NewNodePointer + (POINTER_CAST(Node.siblings) - OldNodePointer));
-						if (Node.children != NULL)
+						if (Node.children)
 							Node.children = (node_data *)(NewNodePointer + (POINTER_CAST(Node.children) - OldNodePointer));
-						if (Node.PS_Greater != NULL)
+						if (Node.PS_Greater)
 							Node.PS_Greater = (node_data *)(NewNodePointer + (POINTER_CAST(Node.PS_Greater) - OldNodePointer));
-						if (Node.PS_Less != NULL)
+						if (Node.PS_Less)
 							Node.PS_Less = (node_data *)(NewNodePointer + (POINTER_CAST(Node.PS_Less) - OldNodePointer));
-						if (Node.PS_Shared != NULL)
+						if (Node.PS_Shared)
 							Node.PS_Shared = (node_data *)(NewNodePointer + (POINTER_CAST(Node.PS_Shared) - OldNodePointer));
 					}
 					
@@ -428,82 +428,76 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(long(vertex->x)-long(origin->x))*_vector->j - CROSSPROD_TYPE(long(vertex->y)-long(origin->y))*_vector->i;
 		
 //		dprintf("p#%d, e#%d:#%d, SGN(cp)=#%d, state=#%d", *polygon_index, vertex_index, polygon->endpoint_indexes[vertex_index], SGN(cross_product), state);
-		
-		switch (SGN(cross_product))
+		if (cross_product < 0)
 		{
-			case 1: /* endpoint is on the left side of our vector */
-				switch (state)
-				{
-					case _looking_for_first_nonzero_vertex:
-						/* search clockwise for transition (left to right) */
-						state= _looking_clockwise_for_right_vertex;
-						// LP change: resetting loop test
-						initial_vertex_index = vertex_index;
-						changed_state = true;
-						break;
-					
-					case _looking_counterclockwise_for_left_vertex: /* found the transition we were looking for */
-						next_polygon_index= polygon->adjacent_polygon_indexes[vertex_index];
-						crossed_line_index= polygon->line_indexes[vertex_index];
-						crossed_side_index= polygon->side_indexes[vertex_index];
-					case _looking_for_next_nonzero_vertex: /* next_polygon_index already set */
-						state= NONE;
-						break;
-				}
+		    switch (state)
+		    {
+			case _looking_for_first_nonzero_vertex:
+			    /* search counterclockwise for transition (right to left) */
+			    state= _looking_counterclockwise_for_left_vertex;
+			    vertex_delta= -1;
+			    // LP change: resetting loop test
+			    initial_vertex_index = vertex_index;
+			    changed_state = true;
+			    break;
+
+			case _looking_clockwise_for_right_vertex: /* found the transition we were looking for */
+			{
+			    short i= WRAP_LOW(vertex_index, polygon->vertex_count-1);
+			    next_polygon_index= polygon->adjacent_polygon_indexes[i];
+			    crossed_line_index= polygon->line_indexes[i];
+			    crossed_side_index= polygon->side_indexes[i];
+			}
+			case _looking_for_next_nonzero_vertex: /* next_polygon_index already set */
+			    state= NONE;
+			    break;
+		    }
+		} else if (cross_product > 0)
+		{
+		    switch (state)
+		    {
+			case _looking_for_first_nonzero_vertex:
+			    /* search clockwise for transition (left to right) */
+			    state= _looking_clockwise_for_right_vertex;
+			    // LP change: resetting loop test
+			    initial_vertex_index = vertex_index;
+			    changed_state = true;
+			    break;
+
+			case _looking_counterclockwise_for_left_vertex: /* found the transition we were looking for */
+			    next_polygon_index= polygon->adjacent_polygon_indexes[vertex_index];
+			    crossed_line_index= polygon->line_indexes[vertex_index];
+			    crossed_side_index= polygon->side_indexes[vertex_index];
+			case _looking_for_next_nonzero_vertex: /* next_polygon_index already set */
+			    state= NONE;
+			    break;
+		    }
+		} else
+		{
+		    if (state!=_looking_for_first_nonzero_vertex)
+		    {
+			if (endpoint_index==*clipping_endpoint_index) passed_through_solid_vertex= true;
+
+			/* if we think we know whatÕs on the other side of this zero (these zeros)
+			change the state: if we donÕt find what weÕre looking for then the polygon
+			is entirely on one side of the line or the other (except for this vertex),
+			in any case we need to call decide_where_vertex_leads() to find out whatÕs
+			on the other side of this vertex */
+			switch (state)
+			{
+			    case _looking_clockwise_for_right_vertex:
+			    case _looking_counterclockwise_for_left_vertex:
+				next_polygon_index= *polygon_index;
+				clip_flags|= decide_where_vertex_leads(&next_polygon_index, &crossed_line_index, &crossed_side_index,
+					   vertex_index, origin, _vector, clip_flags, bias);
+				state= _looking_for_next_nonzero_vertex;
+				// LP change: resetting loop test
+				initial_vertex_index = vertex_index;
+				changed_state = true;
 				break;
-			
-			case 0: /* endpoint lies directly on our vector */
-				if (state!=_looking_for_first_nonzero_vertex)
-				{
-					if (endpoint_index==*clipping_endpoint_index) passed_through_solid_vertex= true;
-					
-					/* if we think we know whatÕs on the other side of this zero (these zeros)
-						change the state: if we donÕt find what weÕre looking for then the polygon
-						is entirely on one side of the line or the other (except for this vertex),
-						in any case we need to call decide_where_vertex_leads() to find out whatÕs
-						on the other side of this vertex */
-					switch (state)
-					{
-						case _looking_clockwise_for_right_vertex:
-						case _looking_counterclockwise_for_left_vertex:
-							next_polygon_index= *polygon_index;
-							clip_flags|= decide_where_vertex_leads(&next_polygon_index, &crossed_line_index, &crossed_side_index,
-								vertex_index, origin, _vector, clip_flags, bias);
-							state= _looking_for_next_nonzero_vertex;
-							// LP change: resetting loop test
-							initial_vertex_index = vertex_index;
-							changed_state = true;
-							break;
-					}
-				}
-				break;
-			
-			case -1: /* endpoint is on the right side of our vector */
-				switch (state)
-				{
-					case _looking_for_first_nonzero_vertex:
-						/* search counterclockwise for transition (right to left) */
-						state= _looking_counterclockwise_for_left_vertex;
-						vertex_delta= -1;
-						// LP change: resetting loop test
-						initial_vertex_index = vertex_index;
-						changed_state = true;
-						break;
-					
-					case _looking_clockwise_for_right_vertex: /* found the transition we were looking for */
-						{
-							short i= WRAP_LOW(vertex_index, polygon->vertex_count-1);
-							next_polygon_index= polygon->adjacent_polygon_indexes[i];
-							crossed_line_index= polygon->line_indexes[i];
-							crossed_side_index= polygon->side_indexes[i];
-						}
-					case _looking_for_next_nonzero_vertex: /* next_polygon_index already set */
-						state= NONE;
-						break;
-				}
-				break;
+			}
+		    }
 		}
-		
 		/* adjust vertex_index (clockwise or counterclockwise, depending on vertex_delta) */
 		vertex_index= (vertex_delta<0) ? WRAP_LOW(vertex_index, polygon->vertex_count-1) :
 			WRAP_HIGH(vertex_index, polygon->vertex_count-1);
