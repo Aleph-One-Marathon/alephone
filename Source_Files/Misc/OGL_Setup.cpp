@@ -21,6 +21,10 @@ Nov 12, 2000 (Loren Petrich):
 	Implemented texture substitution, also moved pixel-opacity editing into here;
 	the code is carefully constructed to assume RGBA byte order whether integers are
 	big- or little-endian.
+
+Nov 18, 2000 (Loren Petrich):
+	Added support for glow mapping; constrained it to only be present
+	when a normal texture is present, and to have the same size
 */
 
 #include <vector.h>
@@ -219,6 +223,8 @@ void OGL_LoadImages(int Collection)
 	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
 	{
 		FileSpecifier File;
+		
+		// Load the normal image with alpha channel
 		try
 		{
 			// Load the normal image if it has a filename specified for it
@@ -240,7 +246,45 @@ void OGL_LoadImages(int Collection)
 		}
 		catch(...)
 		{}
-		TOIter->OptionsData.GlowImg.Clear();
+		
+		// Load the glow image with alpha channel
+		try
+		{
+			// Load the glow image if it has a filename specified for it
+			if (!(TOIter->OptionsData.GlowColors.size() > 1)) throw 0;
+#ifdef mac
+			if (!File.SetToApp()) throw 0;
+#endif
+			if (!File.SetNameWithPath(&TOIter->OptionsData.GlowColors[0])) throw 0;
+			if (!LoadImageFromFile(TOIter->OptionsData.GlowImg,File,ImageLoader_Colors)) throw 0;
+			
+			// Load the glow mask if it has a filename specified for it;
+			// only loaded if an image has been loaded for it
+			if (!(TOIter->OptionsData.GlowMask.size() > 1)) throw 0;
+#ifdef mac
+			if (!File.SetToApp()) throw 0;
+#endif
+			if (!File.SetNameWithPath(&TOIter->OptionsData.GlowMask[0])) throw 0;
+			if (!LoadImageFromFile(TOIter->OptionsData.GlowImg,File,ImageLoader_Opacity)) throw 0;
+		}
+		catch(...)
+		{}
+		
+		// The rest of the code is made simpler by these constraints:
+		// that the glow texture only be present if the normal texture is also present,
+		// and that the normal and glow textures have the same dimensions
+		if (TOIter->OptionsData.NormalImg.IsPresent())
+		{
+			int W0 = TOIter->OptionsData.NormalImg.GetWidth();
+			int W1 = TOIter->OptionsData.GlowImg.GetWidth();
+			int H0 = TOIter->OptionsData.NormalImg.GetHeight();
+			int H1 = TOIter->OptionsData.GlowImg.GetHeight();
+			if ((W1 != W0) || (H1 != H0)) TOIter->OptionsData.GlowImg.Clear();
+		}
+		else
+		{
+			TOIter->OptionsData.GlowImg.Clear();
+		}
 	}
 }
 void OGL_UnloadImages(int Collection)
