@@ -9,6 +9,7 @@
 
 #include "script_parser.h"
 #include "script_instructions.h"
+#include "FileHandler.h"
 
 // The max number of 'blats', string units, that a single line can contain
 // label: instruction op1, op2, op3  == 5 blats
@@ -18,6 +19,10 @@
 // The name of the Pfhortran Language Def File.  Path could be included here.
 
 #define LANGDEFPATH "Pfhortran Language Definition"
+
+#ifdef SDL
+extern FileObject global_data_dir;
+#endif
 
 
 enum /* symbol modes */
@@ -104,7 +109,14 @@ bool init_pfhortran(void)
 	
 	pfhortran_is_on = false;	// In case we have some errors
 	
-	if ((lang_def=fopen(LANGDEFPATH,"r"))==NULL)
+#ifdef SDL
+	FileObject lang_def_path = global_data_dir;
+	lang_def_path.AddPart(LANGDEFPATH);
+	lang_def = fopen(lang_def_path.name.c_str(), "r");
+#else
+	lang_def = fopen(LANGDEFPATH,"r");
+#endif
+	if (lang_def == NULL)
 		return false;
 	
 	// init the instruction hash
