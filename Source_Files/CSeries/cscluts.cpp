@@ -35,10 +35,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "cscluts.h"
 #include "FileHandler.h"
 
-extern RGBColor rgb_black={0x0000,0x0000,0x0000};
-extern RGBColor rgb_white={0xFFFF,0xFFFF,0xFFFF};
+RGBColor rgb_black={0x0000,0x0000,0x0000};
+RGBColor rgb_white={0xFFFF,0xFFFF,0xFFFF};
 
-extern RGBColor system_colors[NUM_SYSTEM_COLORS] =
+RGBColor system_colors[NUM_SYSTEM_COLORS] =
 {
 	{0x2666,0x2666,0x2666},
 	{0xD999,0xD999,0xD999}

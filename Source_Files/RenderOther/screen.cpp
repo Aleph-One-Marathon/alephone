@@ -488,6 +488,8 @@ void initialize_screen(
 
 #if defined(TARGET_API_MAC_CARBON)
 		screen_window= GetNewCWindow(windGAME_WINDOW, NULL, (WindowPtr) -1);
+          //AS: slight speedup; disable shadow
+          ChangeWindowAttributes(screen_window,kWindowNoShadowAttribute,0);
 #else
 		screen_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
 		assert(screen_window);

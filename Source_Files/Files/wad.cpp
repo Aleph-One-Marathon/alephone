@@ -212,11 +212,9 @@ struct wad_data *read_indexed_wad_from_file(
 						read_wad= convert_wad_from_raw(header, raw_wad, 0, length);
 					} else {
 						read_wad= convert_wad_from_raw_modifiable(header, raw_wad, length);
-
-						/* Free it! */
-						free(raw_wad);
 					}
-					
+                        //AS: fixed memory leak
+                        free(raw_wad);
 					if(!read_wad)
 					{
 						/* Error.. */
