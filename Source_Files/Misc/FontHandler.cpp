@@ -30,6 +30,7 @@ bool FontSpecifier::operator==(FontSpecifier& F)
 	if (strncmp(NameSet,F.NameSet,NameSetLen) != 0) return false;
 	if (Size != F.Size) return false;
 	if (Style != F.Style) return false;
+	if (strncmp(File,F.File,NameSetLen) != 0) return false;
 	return true;
 }
 
@@ -38,6 +39,7 @@ FontSpecifier& FontSpecifier::operator=(FontSpecifier& F)
 	memcpy(NameSet,F.NameSet,NameSetLen);
 	Size = F.Size;
 	Style = F.Style;
+	memcpy(File,F.File,NameSetLen);
 	return *this;
 }
 
