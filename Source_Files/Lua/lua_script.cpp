@@ -5,6 +5,9 @@ Controls the loading and execution of Lua scripts.
 Matthew Hielscher, 05-28-03
     Changed the error code to be much more graceful (no more quitting after an error)
     Also incorporated tiennou's functions
+    
+tiennou, 06/23/03
+    Added stuff on platforms (speed, heights, movement), terminals (text index), &polygon (heights).
 */
 
 // cseries defines HAVE_LUA on A1/SDL
@@ -2520,15 +2523,15 @@ static int L_Set_Platform_Floor_Height(lua_State *L)
     }
 
     int polygon_index = static_cast<int>(lua_tonumber(L,1));
-    world_distance height;
     struct polygon_data *polygon = get_polygon_data(short(polygon_index));
     if (polygon && polygon->type == _polygon_is_platform);
     {
 	struct platform_data *platform = get_platform_data(polygon->permutation);
 	if (platform)
 	{
-	    height = static_cast<int16>(lua_tonumber(L,2));
-	    platform->floor_height = (height*WORLD_ONE);
+	    platform->floor_height = (double)lua_tonumber(L,2)*WORLD_ONE;
+	    adjust_platform_endpoint_and_line_heights(polygon->permutation);
+	    adjust_platform_for_media(polygon->permutation, false);
 	}
     }
     return 0;
@@ -2543,15 +2546,15 @@ static int L_Set_Platform_Ceiling_Height(lua_State *L)
     }
 
     int polygon_index = static_cast<int>(lua_tonumber(L,1));
-    world_distance height;
     struct polygon_data *polygon = get_polygon_data(short(polygon_index));
     if (polygon && polygon->type == _polygon_is_platform);
     {
 	struct platform_data *platform = get_platform_data(polygon->permutation);
 	if (platform)
 	{
-	    height = static_cast<int16>(lua_tonumber(L,2));
-	    platform->ceiling_height = (height*WORLD_ONE);
+	    platform->ceiling_height = (double)lua_tonumber(L,2)*WORLD_ONE;
+	    adjust_platform_endpoint_and_line_heights(polygon->permutation);
+	    adjust_platform_for_media(polygon->permutation, false);
 	}
     }
     return 0;
@@ -2664,6 +2667,89 @@ static int L_Set_Terminal_Text_Number(lua_State *L)
     return 0;
 }
 
+static int L_Get_Polygon_Floor_Height(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_polygon_floor_height: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon)
+    {
+	lua_pushnumber(L, (double)polygon->floor_height/WORLD_ONE);
+	return 1;
+    }
+    return 0;
+}
+
+static int L_Set_Polygon_Floor_Height(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {
+        lua_pushstring(L, "set_polygon_floor_height: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon)
+    {
+	polygon->floor_height = (double)lua_tonumber(L,2)*WORLD_ONE;
+	for(short i = 0; i<polygon->vertex_count;++i)
+	{
+	    recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
+	    recalculate_redundant_line_data(polygon->line_indexes[i]);
+	}
+    }
+    return 0;
+
+}
+
+static int L_Get_Polygon_Ceiling_Height(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_polygon_ceiling_height: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon)
+    {
+	lua_pushnumber(L, (double)polygon->ceiling_height/WORLD_ONE);
+	return 1;
+    }
+    return 0;
+
+}
+
+static int L_Set_Polygon_Ceiling_Height(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {
+        lua_pushstring(L, "set_polygon_ceiling_height: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon)
+    {
+	polygon->ceiling_height = (double)lua_tonumber(L,2)*WORLD_ONE;
+	for(short i = 0; i<polygon->vertex_count;++i)
+	{
+	    recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
+	    recalculate_redundant_line_data(polygon->line_indexes[i]);
+	}
+    }
+    return 0;
+
+}
+
 void RegisterLuaFunctions()
 {
     lua_register(state, "local_player_index", L_Local_Player_Index);
@@ -2756,6 +2842,10 @@ void RegisterLuaFunctions()
     lua_register(state, "start_fade", L_Start_Fade);
     lua_register(state, "get_terminal_text_number", L_Get_Terminal_Text_Number);
     lua_register(state, "set_terminal_text_number", L_Set_Terminal_Text_Number);
+    lua_register(state, "get_polygon_floor_height", L_Get_Polygon_Floor_Height);
+    lua_register(state, "get_polygon_ceiling_height", L_Get_Polygon_Ceiling_Height);
+    lua_register(state, "set_polygon_floor_height", L_Set_Polygon_Floor_Height);
+    lua_register(state, "set_polygon_ceiling_height", L_Set_Polygon_Ceiling_Height);
 }
 
 void DeclareLuaConstants()
