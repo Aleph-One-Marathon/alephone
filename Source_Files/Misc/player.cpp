@@ -308,8 +308,13 @@ static short calculate_player_team(short base_team);
 
 static void try_and_strip_player_items(short player_index);
 
-// LP addition:
+// LP additions:
 static void ReplenishPlayerOxygen(short player_index, uint32 action_flags);
+
+// From AlexJLS patch; monster data necessary so that player as monster can be activated
+// to make guided missiles work
+static void adjust_player_physics(monster_data *me);
+
 
 /* ---------- code */
 
@@ -388,15 +393,6 @@ short new_player(
 	/* give the player his initial items */
 	give_player_initial_items(player_index);
 	try_and_strip_player_items(player_index);
-	
-	// AlexJLS patch: make the player active, so guided weapons can work
-	monster_data *me = get_monster_data(player->monster_index);
-	SET_MONSTER_ACTIVE_STATUS(me,true);
-	
-	// LP: Fix the player physics so that guided missiles will work correctly
-	SetPlayerViewAttribs(PlayerHalfVisualArc, PlayerHalfVertVisualArc,
-		short(WORLD_ONE*PlayerVisualRange+0.5),
-		short(WORLD_ONE*PlayerDarkVisualRange+0.5));
 	
 	return player_index;
 }
@@ -1656,6 +1652,10 @@ static void recreate_player(
 	// in screen.c, we find that it's the current player whose view gets rendered
 	if (player_index == current_player_index) ChaseCam_Reset();
 	
+	// Done here so that players' missiles will always be guided
+	// if they are intended to be guided
+	adjust_player_physics(get_monster_data(player->monster_index));
+		
 	return;
 }
 
@@ -1972,6 +1972,23 @@ static void try_and_strip_player_items(
 	}
 	
 	return;
+}
+
+
+void adjust_player_physics(monster_data *me)
+{	
+	// LP: Fix the player physics so that guided missiles will work correctly
+	if (PlayerShotsGuided)
+	{
+		// AlexJLS patch: make this player active, so guided weapons can work
+		SET_MONSTER_ACTIVE_STATUS(me,true);
+		
+		// Gets called once for every player character created or re-created;
+		// that seems to be OK
+		SetPlayerViewAttribs(PlayerHalfVisualArc, PlayerHalfVertVisualArc,
+			short(WORLD_ONE*PlayerVisualRange+0.5),
+			short(WORLD_ONE*PlayerDarkVisualRange+0.5));
+	}
 }
 
 
