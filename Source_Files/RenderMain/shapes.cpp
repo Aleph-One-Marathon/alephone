@@ -849,15 +849,20 @@ struct shape_information_data *extended_get_shape_information(
 	short collection_code,
 	short low_level_shape_index)
 {
+    if((collection_code < 0) || (collection_code >= NUMBER_OF_COLLECTIONS)) return NULL;
+    if(low_level_shape_index < 0) return NULL;
 	short collection_index= GET_COLLECTION(collection_code);
 	struct low_level_shape_definition *low_level_shape;
 
 	low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
 
 #ifdef HAVE_OPENGL
+        if (!low_level_shape) return NULL;
 	// Try to get the texture options to use for a substituted image;
 	// a scale of <= 0 will be assumed to be "don't do the adjustment".
 	if (!OGL_IsActive()) return (struct shape_information_data *) low_level_shape;
+    else
+    {
 	short clut_index= GET_COLLECTION_CLUT(collection_code);
 	short bitmap_index = low_level_shape->bitmap_index;
 	OGL_TextureOptions *TxtrOpts = OGL_GetTextureOptions(collection_index,clut_index,bitmap_index);
@@ -873,9 +878,9 @@ struct shape_information_data *extended_get_shape_information(
 	AdjustedFrame.world_bottom = low_level_shape->world_top - TxtrOpts->Bottom;
 	
 	return (struct shape_information_data *) &AdjustedFrame;
-#else
-	return (struct shape_information_data *) low_level_shape;
+    }
 #endif
+	return (struct shape_information_data *) low_level_shape;
 }
 
 void process_collection_sounds(
