@@ -226,7 +226,9 @@ struct Model3D
 	// when a vertex-source array, bones, frames, and sequences are present.
 	// No arguments is for the model's neutral position (uses only source array);
 	// this is also the case for bad frame and sequence indices.
-	void FindPositions();
+	
+	// Returns whether vertex-source data was used (present in animated models)
+	bool FindPositions();
 	
 	// Returns whether or not the index was within range.
 	bool FindPositions(GLshort FrameIndex);

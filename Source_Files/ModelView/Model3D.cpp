@@ -445,8 +445,14 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 	// which is the case for boned models.
 	if (!VtxSources.empty())
 	{
-		NormSources.resize(Normals.size());
-		objlist_copy(NormSrcBase(),NormBase(),NormSources.size());
+		int NormSize = Normals.size();
+		if (NormSize > 0)
+		{
+			NormSources.resize(NormSize);
+			objlist_copy(NormSrcBase(),NormBase(),NormSize);
+		}
+		else
+			NormSources.clear();
 	}
 	else
 		NormSources.clear();
@@ -600,11 +606,11 @@ void Model3D::BuildInverseVSIndices()
 }
 
 
-// Neutral case
-void Model3D::FindPositions()
+// Neutral case: returns whether vertex-source data was used (present in animated models)
+bool Model3D::FindPositions()
 {
 	// Positions already there
-	if (VtxSrcIndices.empty()) return;
+	if (VtxSrcIndices.empty()) return false;
 	
 	// Straight copy of the vertices:
 	
@@ -638,6 +644,8 @@ void Model3D::FindPositions()
 	// Copy in the normals
 	Normals.resize(NormSources.size());
 	objlist_copy(NormBase(),NormSrcBase(),NormSources.size());
+	
+	return true;
 }
 
 // Frame case
