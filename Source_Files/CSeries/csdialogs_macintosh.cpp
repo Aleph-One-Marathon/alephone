@@ -622,7 +622,7 @@ static pascal OSStatus ModalDialogHandler(
 		HDPtr->DlgHandler(Ctrl,HDPtr->DlgData);
 	
 	// For quitting the dialog box
-	if (Ctrl.ID.id == iOK || Ctrl.ID.id == iCANCEL)
+	if (Ctrl.ID.signature == 0 && (Ctrl.ID.id == iOK || Ctrl.ID.id == iCANCEL))
 	{
 		// Which one pressed
 		HDPtr->IsOK = (Ctrl.ID.id == iOK);
