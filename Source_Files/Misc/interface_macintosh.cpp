@@ -11,6 +11,10 @@ Mar 19, 2000 (Loren Petrich):
 
 Oct 12, 2000 (Loren Petrich):
 	Moved Quicktime init to shell_macintosh.cpp
+
+Nov 25, 2000 (Loren Petrich):
+	Added support for movies played at the beginning of any level,
+	at the request of Jesse Simko
 */
 
 #include "macintosh_cseries.h"
@@ -39,6 +43,8 @@ Oct 12, 2000 (Loren Petrich):
 #include "images.h"
 
 #include "interface_menus.h"
+
+#include "XML_LevelScript.h"
 
 #ifdef env68k
 	#pragma segment macintosh_
@@ -680,14 +686,26 @@ void set_drawing_clip_rectangle(
 void show_movie(
 	short index)
 {
-	if(index==0) /* Only one valid.. */
+	// LP: can do this with any index
+	// if(index==0) /* Only one valid.. */
 	{
 		if(machine_has_quicktime())
 		{
 			FSSpec movie_spec; // <===== fill in based on index!
 			OSErr err= noErr;
-		
-			err= get_file_spec(&movie_spec, strFILENAMES, filenameMOVIE, strPATHS);
+			
+			FileSpecifier *File = GetLevelMovie();
+			if (File)
+			{
+				movie_spec = File->GetSpec();
+			}
+			else if (index == 0)
+			{	
+				err= get_file_spec(&movie_spec, strFILENAMES, filenameMOVIE, strPATHS);
+			}
+			else
+				err = fnfErr;
+			
 			if(!err)
 			{
 				// Quicktime initialized in shell_macintosh.h

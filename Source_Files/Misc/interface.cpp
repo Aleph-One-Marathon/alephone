@@ -44,6 +44,9 @@ Aug 12, 2000 (Loren Petrich):
 Aug 24, 2000 (Loren Petrich):
 	Added source selector to calculate_picture_clut(), in order to better deal with
 	object-oriented file handlers
+
+Nov 25, 2000 (Loren Petrich):
+	Added support for movies that start at any level, including at the end of a game
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -86,7 +89,8 @@ extern TP2PerfGlobals perf_globals;
 #include "render.h"
 #include "OGL_Render.h"
 
-// To tell it to stop playing
+// To tell it to stop playing,
+// and also to run the end-game script
 #include "XML_LevelScript.h"
 
 #ifdef env68k
@@ -140,12 +144,17 @@ extern TP2PerfGlobals perf_globals;
 #define NUMBER_OF_CHAPTER_HEADINGS 0
 #define CHAPTER_HEADING_DURATION (7*MACHINE_TICKS_PER_SECOND)
 
-#if defined(DEBUG) || !defined(DEMO)
+// For exiting the Marathon app
+// #if defined(DEBUG) || !defined(DEMO)
 #define NUMBER_OF_FINAL_SCREENS 0
-#else
-#define NUMBER_OF_FINAL_SCREENS 1
-#endif
+// #else
+// #define NUMBER_OF_FINAL_SCREENS 1
+// #endif
 #define FINAL_SCREEN_DURATION (INDEFINATE_TIME_DELAY)
+
+// This is a fake level index for the end of the game
+const short FAKE_END_LEVEL_INDEX = 99;
+
 
 /* ------------- structures */
 struct game_state {
@@ -1028,8 +1037,10 @@ static void display_epilogue(
 	game_state.current_screen= 0;
 	game_state.last_ticks_on_idle= machine_tick_count();
 	
-	hide_cursor();	
-	try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+99, true, true);
+	hide_cursor();
+	FindEndMovie();
+	show_movie(FAKE_END_LEVEL_INDEX);	
+	try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+FAKE_END_LEVEL_INDEX, true, true);
 	show_cursor();
 	
 	return;
@@ -1098,6 +1109,8 @@ static void transfer_to_new_level(
 	if(success)
 	{
 		set_keyboard_controller_status(false);
+		FindLevelMovie(entry.level_number);
+		show_movie(entry.level_number);
 		if (!game_is_networked) try_and_display_chapter_screen(CHAPTER_SCREEN_BASE + level_number, true, false);
 		success= goto_level(&entry, false);
 		set_keyboard_controller_status(true);
@@ -1301,6 +1314,7 @@ static bool begin_game(
 		/* Try to display the first chapter screen.. */
 		if (user != _network_player && user != _demo)
 		{
+			FindLevelMovie(entry.level_number);
 			show_movie(entry.level_number);
 			try_and_display_chapter_screen(CHAPTER_SCREEN_BASE + entry.level_number, false, false);
 		}

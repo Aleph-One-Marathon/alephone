@@ -7,6 +7,9 @@
 
 	The reason for a separate object is that it will be necessary to execute certain commands
 	only on certain levels.
+
+Nov 25, 2000 (Loren Petrich)
+	Added support for specifying movies for levels, as Jesse Simko had requested
 */
 
 
@@ -18,6 +21,9 @@ void LoadLevelScripts(FileSpecifier& MapFile);
 // Runs a script for some level; loads Pfhortran,
 // runs level-specific MML...
 void RunLevelScript(int LevelIndex);
+
+// Intended to be run at the end of a game
+void RunEndScript();
 
 // Intended for restoring old parameter values, because MML sets values at a variety
 // of different places, and it may be easier to simply set stuff back to defaults
@@ -35,6 +41,14 @@ void StopLevelMusic();
 // A NULL pointer means no music to play
 FileSpecifier *GetLevelMusic();
 
-// Needs chapter-screen and chapter-sound-selection functions
+// Finds the level movie and the end movie, to be used in show_movie()
+// The first is for some level,
+// while the second is for the end of a game
+void FindLevelMovie(short index);
+void FindEndMovie();
+
+// Gets the pointer of a movie to play at a level, as a pointer to the file specifier.
+// A NULL pointer means no movie to play
+FileSpecifier *GetLevelMovie();
 
 #endif

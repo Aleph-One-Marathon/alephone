@@ -8,6 +8,10 @@
 	
 Oct 13, 2000 (Loren Petrich)
 	Converted the in-memory script data into Standard Template Library vectors
+
+Nov 25, 2000 (Loren Petrich)
+	Added support for specifying movies for levels, as Jesse Simko had requested.
+	Also added end-of-game support.
 */
 
 #include <vector.h>
@@ -29,8 +33,7 @@ struct LevelScriptCommand
 		MML,
 		Pfhortran,
 		Music,
-		Screen,
-		Sound
+		Movie
 	};
 	int Type;
 	
@@ -55,10 +58,12 @@ struct LevelScriptCommand
 
 struct LevelScriptHeader
 {
-	// Special pseudo-levels: restoration of previous parameters and defaults for this map file
+	// Special pseudo-levels: restoration of previous parameters, defaults for this map file,
+	// and the end of the game
 	enum {
-		Restore = -2,
-		Default = -1
+		Restore = -3,
+		Default = -2,
+		End = -1
 	};
 	int Level;
 	
@@ -97,6 +102,10 @@ static DirectorySpecifier MapParentDir;
 // so as to do the dummy Pfhortran if none was found
 static bool PfhortranFound = false;
 
+// Movie filespec and whether it points to a real file
+static FileSpecifier MovieFile;
+static bool MovieFileExists = false;
+
 
 // The level-script parsers are separate from the main MML ones,
 // because they operate on per-level data.
@@ -107,12 +116,16 @@ static XML_ElementParser LevelScriptSetParser("marathon_levels");
 
 // Get parsers for other stuff
 static XML_ElementParser *LevelScript_GetParser();
+static XML_ElementParser *EndLevelScript_GetParser();
 static XML_ElementParser *DefaultLevelScript_GetParser();
 static XML_ElementParser *RestoreLevelScript_GetParser();
 
 
 // This is for searching for a script and running it -- works for pseudo-levels
 static void GeneralRunScript(int LevelIndex);
+
+// Similar generic function for movies
+static void FindMovieInScript(int LevelIndex);
 
 
 static void SetupLSParseTree()
@@ -127,6 +140,7 @@ static void SetupLSParseTree()
 	LSRootParser.AddChild(&LevelScriptSetParser);
 	
 	LevelScriptSetParser.AddChild(LevelScript_GetParser());
+	LevelScriptSetParser.AddChild(EndLevelScript_GetParser());
 	LevelScriptSetParser.AddChild(DefaultLevelScript_GetParser());
 	LevelScriptSetParser.AddChild(RestoreLevelScript_GetParser());
 }
@@ -191,11 +205,19 @@ void RunLevelScript(int LevelIndex)
 	if (!PfhortranFound) load_script_data(NULL,0);
 }
 
+// Intended to be run at the end of a game
+void RunEndScript()
+{
+	GeneralRunScript(LevelScriptHeader::Default);
+	GeneralRunScript(LevelScriptHeader::End);
+}
+
 // Intended for restoring old parameter values, because MML sets values at a variety
 // of different places, and it may be easier to simply set stuff back to defaults
 // by including those defaults in the script.
 void RunRestorationScript()
 {
+	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelScriptHeader::Restore);
 }
 
@@ -279,6 +301,46 @@ void GeneralRunScript(int LevelIndex)
 					Playlist.push_back(MusicFile);
 			}
 			break;
+		
+		// The movie info is handled separately 
+		}
+	}
+}
+
+
+
+// Search for level script and then run it
+void FindMovieInScript(int LevelIndex)
+{
+	// Find the pointer to the current script
+	CurrScriptPtr = NULL;
+	for (vector<LevelScriptHeader>::iterator ScriptIter = LevelScripts.begin(); ScriptIter < LevelScripts.end(); ScriptIter++)
+	{
+		if (ScriptIter->Level == LevelIndex)
+		{
+			CurrScriptPtr = &(*ScriptIter);	// Iterator to pointer
+			break;
+		}
+	}
+	if (!CurrScriptPtr) return;
+		
+	for (int k=0; k<CurrScriptPtr->Commands.size(); k++)
+	{
+		LevelScriptCommand& Cmd = CurrScriptPtr->Commands[k];
+				
+		switch(Cmd.Type)
+		{
+		case LevelScriptCommand::Movie:
+			{
+#ifdef mac
+				MovieFile.FromDirectory(MapParentDir);
+				MovieFileExists = MovieFile.SetNameWithPath(&Cmd.FileSpec[0]);
+#else
+				MovieFile = MapParentDir + &Cmd.FileSpec[0];
+				MovieFileExists = MovieFile.Exists();
+#endif
+			}
+			break;
 		}
 	}
 }
@@ -308,6 +370,34 @@ FileSpecifier *GetLevelMusic()
 	else if (SongNumber >= NumSongs) SongNumber = 0;
 	
 	return &Playlist[SongNumber++];
+}
+
+// Movie functions
+
+// Finds the level movie and the end movie, to be used in show_movie()
+// The first is for some level,
+// while the second is for the end of a game
+void FindLevelMovie(short index)
+{
+	MovieFileExists = false;
+	FindMovieInScript(LevelScriptHeader::Default);
+	FindMovieInScript(index);
+}
+
+void FindEndMovie()
+{
+	MovieFileExists = false;
+	FindMovieInScript(LevelScriptHeader::Default);
+	FindMovieInScript(LevelScriptHeader::End);
+}
+
+
+FileSpecifier *GetLevelMovie()
+{
+	if (MovieFileExists)
+		return &MovieFile;
+	else
+		return NULL;
 }
 
 
@@ -371,6 +461,7 @@ bool XML_LSCommandParser::AttributesDone()
 static XML_LSCommandParser MMLParser("mml",LevelScriptCommand::MML);
 static XML_LSCommandParser PfhortranParser("pfhortran",LevelScriptCommand::Pfhortran);
 static XML_LSCommandParser MusicParser("music",LevelScriptCommand::Music);
+static XML_LSCommandParser MovieParser("movie",LevelScriptCommand::Movie);
 
 class XML_RandomOrderParser: public XML_ElementParser
 {
@@ -405,6 +496,7 @@ static void AddScriptCommands(XML_ElementParser& ElementParser)
 	ElementParser.AddChild(&PfhortranParser);
 	ElementParser.AddChild(&MusicParser);
 	ElementParser.AddChild(&RandomOrderParser);
+	ElementParser.AddChild(&MovieParser);
 }
 
 
@@ -495,6 +587,7 @@ public:
 };
 
 static XML_SpecialLevelScriptParser
+	EndScriptParser("end",LevelScriptHeader::End),
 	DefaultScriptParser("default",LevelScriptHeader::Default),
 	RestoreScriptParser("restore",LevelScriptHeader::Restore);
 
@@ -505,6 +598,12 @@ XML_ElementParser *LevelScript_GetParser()
 	AddScriptCommands(LevelScriptParser);
 
 	return &LevelScriptParser;
+}
+XML_ElementParser *EndLevelScript_GetParser()
+{
+	AddScriptCommands(EndScriptParser);
+
+	return &EndScriptParser;
 }
 XML_ElementParser *DefaultLevelScript_GetParser()
 {
