@@ -166,6 +166,7 @@ extern long first_frame_tick, frame_count; /* for determining frame rate */
 unsigned long LocalEventFlags = 0;
 
 static bool HasQuicktime = false;
+static bool HasNavServices = false;
 
 // Where the MacOS Toolbox (or some equivalent) has been inited
 // Necessary to to indicate whether or not to create a dialog box.
@@ -183,11 +184,11 @@ static void initialize_application_heap(void);
 static void initialize_system_information(void);
 static void initialize_core_events(void);
 static void initialize_marathon_music_handler(void);
-static pascal OSErr handle_open_document(AppleEvent *event, AppleEvent *reply, long myRefCon);
-static pascal OSErr handle_quit_application(AppleEvent *event, AppleEvent *reply, long myRefCon);
-static pascal OSErr handle_print_document(AppleEvent *event, AppleEvent *reply, long myRefCon);
-static pascal OSErr handle_open_application(AppleEvent *event, AppleEvent *reply, long myRefCon);
-static OSErr required_appleevent_check(AppleEvent *event);
+static pascal OSErr handle_open_document(const AppleEvent *event, AppleEvent *reply, long myRefCon);
+static pascal OSErr handle_quit_application(const AppleEvent *event, AppleEvent *reply, long myRefCon);
+static pascal OSErr handle_print_document(const AppleEvent *event, AppleEvent *reply, long myRefCon);
+static pascal OSErr handle_open_application(const AppleEvent *event, AppleEvent *reply, long myRefCon);
+static OSErr required_appleevent_check(const AppleEvent *event);
 
 static void marathon_dialog_header_proc(DialogPtr dialog, Rect *frame);
 
@@ -293,6 +294,12 @@ static void initialize_application_heap(
 		}
 	}
 	
+	if ((void*)NavLoad != (void*)kUnresolvedCFragSymbolAddress)
+	{
+		NavLoad();
+		HasNavServices = true;
+	}
+
 	// The MacOS Toolbox has now been started up!
 	AppServicesInited = true;
 	
@@ -708,11 +715,12 @@ static void initialize_core_events(
 		AEEventHandlerUPP print_document_proc;
 		AEEventHandlerUPP open_application_proc;
 		OSErr err;
-
-		open_document_proc= NewAEEventHandlerProc(handle_open_document);
-		quit_application_proc= NewAEEventHandlerProc(handle_quit_application);
-		print_document_proc= NewAEEventHandlerProc(handle_print_document);
-		open_application_proc= NewAEEventHandlerProc(handle_open_application);
+		
+		// Changed ending from "Proc" to "UPP"
+		open_document_proc= NewAEEventHandlerUPP(handle_open_document);
+		quit_application_proc= NewAEEventHandlerUPP(handle_quit_application);
+		print_document_proc= NewAEEventHandlerUPP(handle_print_document);
+		open_application_proc= NewAEEventHandlerUPP(handle_open_application);
 		assert(open_document_proc && quit_application_proc 
 			&& print_document_proc && open_application_proc);
 	
@@ -735,7 +743,7 @@ static void initialize_core_events(
 }
 
 static pascal OSErr handle_open_document(
-	AppleEvent *event, 
+	const AppleEvent *event, 
 	AppleEvent *reply, 
 	long myRefCon)
 {
@@ -819,7 +827,7 @@ static pascal OSErr handle_open_document(
 }
 
 static pascal OSErr handle_quit_application(
-	AppleEvent *event, 
+	const AppleEvent *event, 
 	AppleEvent *reply, 
 	long myRefCon)
 {
@@ -834,7 +842,7 @@ static pascal OSErr handle_quit_application(
 }
 
 static pascal OSErr handle_print_document(
-	AppleEvent *event, 
+	const AppleEvent *event, 
 	AppleEvent *reply, 
 	long myRefCon)
 {
@@ -844,7 +852,7 @@ static pascal OSErr handle_print_document(
 }
 
 static pascal OSErr handle_open_application(
-	AppleEvent *event, 
+	const AppleEvent *event, 
 	AppleEvent *reply, 
 	long myRefCon)
 {
@@ -858,7 +866,7 @@ static pascal OSErr handle_open_application(
 }
 
 static OSErr required_appleevent_check(
-	AppleEvent *event)
+	const AppleEvent *event)
 {
 	OSErr err;
 	DescType typeCode;
@@ -1342,9 +1350,14 @@ void PostOSEventFromLocal()
 
 /* ----------- PRIVATE CODE */
 /* Should be in shell.h and shell.c */
-bool machine_has_quicktime(void) 
+bool machine_has_quicktime() 
 {
 	return HasQuicktime;
+}
+
+bool machine_has_nav_services()
+{
+	return HasNavServices;
 }
 
 

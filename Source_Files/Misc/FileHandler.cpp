@@ -23,6 +23,7 @@ Feb 15, 2001 (Loren Petrich):
 #include <string.h>
 #include <Aliases.h>
 #include <Folders.h>
+#include <Navigation.h>
 #include "cseries.h"
 #include "game_errors.h"
 #include "shell.h"
@@ -476,12 +477,98 @@ bool FileSpecifier::Open(OpenedResourceFile& OFile, bool Writable)
 	return true;
 }
 
+// Navigation Services extra routines
+
+// LP: AlexJLS's Nav Services code:
+pascal void NavIdler(NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, void *callBackUD)
+{
+	global_idle_proc();
+}
+
+// LP: AlexJLS's Nav Services code, somewhat modified
+//Function stolen from MPFileCopy
+static OSStatus ExtractSingleItem(const NavReplyRecord *reply, FSSpec *item)
+	// This item extracts a single FSRef from a NavReplyRecord.
+	// Nav makes it really easy to support 'odoc', but a real pain
+	// to support other things.  *sigh*
+{
+	OSStatus err;
+	SInt32 itemCount;
+	FSSpec fss, fss2;
+	AEKeyword junkKeyword;
+	DescType junkType;
+	Size junkSize;
+
+	obj_clear(fss);
+	obj_clear(fss2);
+	
+	//MoreAssertQ((AECountItems(&reply->selection, &itemCount) == noErr) && (itemCount == 1));
+	
+	err = AEGetNthPtr(&reply->selection, 1, typeFSS, &junkKeyword, &junkType, &fss, sizeof(fss), &junkSize);
+	if (err == noErr) {
+		//MoreAssertQ(junkType == typeFSS);
+		//MoreAssertQ(junkSize == sizeof(FSSpec));
+		
+		// We call FSMakeFSSpec because sometimes Nav is braindead
+		// and gives us an invalid FSSpec (where the name is empty).
+		// While FSpMakeFSRef seems to handle that (and the file system
+		// engineers assure me that that will keep working (at least
+		// on traditional Mac OS) because of the potential for breaking
+		// existing applications), I'm still wary of doing this so
+		// I regularise the FSSpec by feeding it through FSMakeFSSpec.
+		
+		FSMakeFSSpec(fss.vRefNum,fss.parID,fss.name,item);
+		/*if (err == noErr) {
+			err = FSpMakeFSRef(&fss, item);
+		}*/
+	}
+	return err;
+}
 
 // These calls are for creating dialog boxes to set the filespec
 // A null pointer means an empty string
 
 bool FileSpecifier::ReadDialog(int Type, char *Prompt)
 {
+	// For those who use return as the action key, queued returns can cause unwanted saves
+	FlushEvents(everyEvent,0);
+	
+	if (machine_has_nav_services())
+	{
+	
+	// LP: AlexJLS's Nav Services code, somewhat modified
+	NavTypeListHandle list= (NavTypeListHandle)NewHandleClear(sizeof(NavTypeList));
+	HLock((Handle)list);
+	(**list).componentSignature = get_typecode(_typecode_creator);
+	if (InRange(Type))
+	{
+		(**list).osTypeCount = 1;
+		(**list).osType[0] = get_typecode(Type);
+	}
+	else
+		(**list).osTypeCount = 0;
+	
+	NavDialogOptions opts;
+	NavGetDefaultDialogOptions(&opts);
+	if (Prompt)
+		CString_ToFilename(Prompt,opts.message);
+	opts.dialogOptionFlags = kNavNoTypePopup | kNavAllowPreviews;
+	
+	NavReplyRecord reply;
+	NavEventUPP evUPP= NewNavEventUPP(NavIdler);
+	NavGetFile(NULL,&reply,&opts,evUPP,NULL,NULL,list,NULL);
+	DisposeNavEventUPP(evUPP);
+	DisposeHandle((Handle)list);
+		
+	if (!reply.validRecord) return false;
+	
+	FSSpec temp;
+	obj_clear(temp);
+	ExtractSingleItem(&reply,&temp);
+	SetSpec(temp);
+	
+	} else {
+	
 	StandardFileReply Reply;
 	short NumTypes;
 	SFTypeList TypeList;
@@ -497,11 +584,46 @@ bool FileSpecifier::ReadDialog(int Type, char *Prompt)
 	if (!Reply.sfGood) return false;
 	
 	SetSpec(Reply.sfFile);
+	
+	}
+	
 	return true;
 }
 
+// Haven't been able to find his in the CodeWarrior 6 headers
+const int kNavDontConfirmReplacement = 0;
+
 bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 {
+	// For those who use return as the action key, queued returns can cause unwanted saves
+	FlushEvents(everyEvent,0);
+	
+	if (machine_has_nav_services())
+	{
+	
+	// LP: AlexJLS's Nav Services code, somewhat modified
+	NavDialogOptions opts;
+	NavGetDefaultDialogOptions(&opts);
+	if (Prompt)
+		CString_ToFilename(Prompt,opts.message);
+	if (DefaultName)
+		CString_ToFilename(DefaultName,opts.savedFileName);
+	opts.dialogOptionFlags &= ~(kNavDontConfirmReplacement | kNavAllowStationery);
+	
+	NavReplyRecord reply;
+	NavEventUPP evUPP= NewNavEventUPP(NavIdler);
+	NavPutFile(NULL,&reply,&opts,evUPP,get_typecode(Type),get_typecode(_typecode_creator),NULL);
+	DisposeNavEventUPP(evUPP);
+	
+	if (!reply.validRecord) return false;
+	
+	FSSpec temp;
+	obj_clear(temp);
+	ExtractSingleItem(&reply,&temp);
+	SetSpec(temp);
+	
+	} else {
+	
 	Str31 PasPrompt, PasDefaultName;
 	StandardFileReply Reply;
 	
@@ -521,6 +643,8 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 	
 	if (Reply.sfReplacing)
 		FSpDelete(&Spec);
+	
+	}
 	
 	return true;
 }
@@ -625,6 +749,35 @@ static pascal short custom_put_hook(
 
 bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 {
+	// For those who use return as the action key, queued returns can cause unwanted saves
+	FlushEvents(everyEvent,0);
+	
+	if (machine_has_nav_services())
+	{
+	
+	// LP: AlexJLS's Nav Services code, somewhat modified
+	NavDialogOptions opts;
+	NavGetDefaultDialogOptions(&opts);
+	if (Prompt)
+		CString_ToFilename(Prompt,opts.message);
+	if (DefaultName)
+		CString_ToFilename(DefaultName,opts.savedFileName);
+	opts.dialogOptionFlags &= ~(kNavDontConfirmReplacement | kNavAllowStationery);
+	
+	NavReplyRecord reply;
+	NavEventUPP evUPP= NewNavEventUPP(NavIdler);
+	NavPutFile(NULL,&reply,&opts,evUPP,get_typecode(Type),get_typecode(_typecode_creator),NULL);
+	DisposeNavEventUPP(evUPP);
+	
+	if (!reply.validRecord) return false;
+	
+	FSSpec temp;
+	obj_clear(temp);
+	ExtractSingleItem(&reply,&temp);
+	SetSpec(temp);
+	
+	} else {
+	
 	Str31 PasPrompt, PasDefaultName;
 	StandardFileReply Reply;
 	if (Prompt)
@@ -643,9 +796,6 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 	dlgHook= NewDlgHookYDProc(custom_put_hook);
 	assert(dlgHook);
 	
-	// For those who use return as the action key, queued returns can cause unwanted saves
-	FlushEvents(everyEvent,0);
-	
 	/* The drawback of this method-> I don't get a New Folder button. */
 	/* If this is terribly annoying, I will add the Sys7 only code. */
 	CustomPutFile(PasPrompt, 
@@ -660,6 +810,8 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 	
 	if (Reply.sfReplacing)
 		FSpDelete(&Spec);
+	
+	}
 	
 	return true;
 }

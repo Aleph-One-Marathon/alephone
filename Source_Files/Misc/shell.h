@@ -113,8 +113,10 @@ extern struct system_information_data *system_information;
 void global_idle_proc(void);
 
 #ifdef mac
+// LP: added Navigation-Services detection
 void handle_game_key(EventRecord *event, short key);
-bool machine_has_quicktime(void);
+bool machine_has_quicktime();
+bool machine_has_nav_services();
 #endif
 
 // LP addition for handling XML stuff:
