@@ -349,9 +349,9 @@ static struct wad_data *build_save_game_wad(struct wad_header *header, long *len
 static void allocate_map_for_counts(short polygon_count, short side_count,
 	short endpoint_count, short line_count, long terminal_data_length);
 static void load_points(byte *points, short count);
-static void load_lines(saved_line *lines, short count);
-static void load_sides(saved_side *sides, short count, short version);
-static void load_polygons(saved_poly *polys, short count, short version);
+static void load_lines(byte *lines, short count);
+static void load_sides(byte *sides, short count, short version);
+static void load_polygons(byte *polys, short count, short version);
 static void load_lights(saved_static_light *_lights, short count, short version);
 static void load_annotations(saved_annotation *annotations, short count);
 static void load_objects(saved_object *map_objects, short count);
@@ -1008,8 +1008,7 @@ void allocate_map_for_counts(
 }
 
 void load_points(
-	byte* points,
-	// saved_map_pt *points, 
+	byte *points,
 	short count)
 {
 	short loop;
@@ -1033,24 +1032,27 @@ void load_points(
 }
 
 void load_lines(
-	saved_line *lines, 
+	byte *lines, 
 	short count)
 {
-	short loop;
+	// short loop;
 
 	assert(count>=0 && count<=MAXIMUM_LINES_PER_MAP);
-
+	
+	unpack_line_data(lines,map_lines,count);
+	/*
 	for(loop=0; loop<count; ++loop)
 	{
 		map_lines[loop]= *lines;
 		byte_swap_object(map_lines[loop], _bs_line_data);
 		++lines;
 	}
+	*/
 	dynamic_world->line_count= count;
 }
 
 void load_sides(
-	saved_side *sides, 
+	byte *sides, 
 	short count,
 	short version)
 {
@@ -1058,6 +1060,9 @@ void load_sides(
 	
 	assert(count>=0 && count<=MAXIMUM_SIDES_PER_MAP);
 
+	unpack_side_data(sides,map_sides,count);
+
+#if 0
 	for(loop=0; loop<count; ++loop)
 	{
 #ifdef LP
@@ -1075,7 +1080,10 @@ void load_sides(
 		byte_swap_object(map_sides[loop], _bs_side_data);
 #endif
 #endif
+#endif
 
+	for(loop=0; loop<count; ++loop)
+	{
 		if(version==MARATHON_ONE_DATA_VERSION)
 		{
 			map_sides[loop].transparent_texture.texture= NONE;
@@ -1088,20 +1096,23 @@ void load_sides(
 }
 
 void load_polygons(
-	saved_poly *polys, 
+	byte *polys, 
 	short count,
 	short version)
 {
 	short loop;
 
 	assert(count>=0 && count<=MAXIMUM_POLYGONS_PER_MAP);
-
+	
+	unpack_polygon_data(polys,map_polygons,count);
+	/*
 	for(loop=0; loop<count; ++loop)
 	{
 		map_polygons[loop]= *polys;
 		byte_swap_object(map_polygons[loop], _bs_polygon_data);
 		++polys;
 	}
+	*/
 	dynamic_world->polygon_count= count;
 
 	/* Allow for backward compatibility! */
@@ -1371,14 +1382,6 @@ boolean load_game_from_file(FileSpecifier& File)
 	assert(sizeof(ambient_sound_image_data) == SIZEOF_ambient_sound_image_data);
 	assert(sizeof(random_sound_image_data) == SIZEOF_random_sound_image_data);
 	assert(sizeof(endpoint_data) == SIZEOF_endpoint_data);
-	assert(sizeof(line_data) == SIZEOF_line_data);
-#ifdef LP
-	assert(sizeof(saved_side) == SIZEOF_side_data);
-#endif
-#ifdef CB
-	assert(sizeof(saved_side) == SIZEOF_saved_side);
-#endif
-	assert(sizeof(polygon_data) == SIZEOF_polygon_data);
 	assert(sizeof(object_frequency_definition) == SIZEOF_object_frequency_definition);
 	assert(sizeof(static_data) == SIZEOF_static_data);
 #ifdef LP
@@ -1669,12 +1672,15 @@ boolean process_map_wad(
 		load_points(data, count);
 	} else {
 		data= (unsigned char *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
-		count= data_length/sizeof(struct endpoint_data);
+		count= data_length/SIZEOF_endpoint_data;
 		assert(count>=0 && count<MAXIMUM_ENDPOINTS_PER_MAP);
 
 		/* Slam! */
+		unpack_endpoint_data(data,map_endpoints,count);
+		/*
 		memcpy(map_endpoints, data, count*sizeof(endpoint_data));
 		byte_swap_object_list(map_endpoints, count, _bs_endpoint_data);
+		*/
 		dynamic_world->endpoint_count= count;
 
 		is_preprocessed_map= TRUE;
@@ -1682,15 +1688,15 @@ boolean process_map_wad(
 
 	/* Extract lines */
 	data= (unsigned char *)extract_type_from_wad(wad, LINE_TAG, &data_length);
-	load_lines((saved_line *) data, data_length/sizeof(saved_line));
+	load_lines(data, data_length/SIZEOF_line_data);
 
 	/* Order is important! */
 	data= (unsigned char *)extract_type_from_wad(wad, SIDE_TAG, &data_length);
-	load_sides((saved_side *) data, data_length/sizeof(saved_side), version);
+	load_sides(data, data_length/SIZEOF_side_data, version);
 
 	/* Extract polygons */
 	data= (unsigned char *)extract_type_from_wad(wad, POLYGON_TAG, &data_length);
-	load_polygons((saved_poly *) data, data_length/sizeof(saved_poly), version);
+	load_polygons(data, data_length/SIZEOF_polygon_data, version);
 
 	/* Extract the lightsources */
 	if(!restoring_game)
