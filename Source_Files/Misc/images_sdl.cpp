@@ -132,6 +132,17 @@ static void uncompress_rle32(const uint8 *src, int row_bytes, uint8 *dst, int ds
 
 static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int depth, int height, int pack_type)
 {
+	// Depths <8 have to be color expanded to depth 8 after uncompressing,
+	// so we uncompress into a temporary buffer
+	uint8 *orig_dst = dst;
+	int orig_dst_pitch = dst_pitch;
+	if (depth < 8) {
+		dst = (uint8 *)malloc(row_bytes * height);
+		dst_pitch = row_bytes;
+		if (dst == NULL)
+			return;
+	}
+
 	if (row_bytes < 8) {
 
 		// Uncompressed data
@@ -140,7 +151,7 @@ static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int 
 	} else {
 
 		// Compressed data
-		if (depth == 8) {
+		if (depth <= 8) {
 			uncompress_rle8(src, row_bytes, dst, dst_pitch, height);
 		} else {
 			if (pack_type == 0) {
@@ -168,6 +179,53 @@ static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int 
 					break;
 			}
 		}
+	}
+
+	// Color expansion 1/2/4->8 bits
+	if (depth < 8) {
+		uint8 *p = dst;
+		uint8 *q = orig_dst;
+		switch (depth) {
+			case 1:
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<row_bytes; x++) {
+						uint8 b = *p++;
+						q[x*8+0] = (b & 0x80) ? 0x01 : 0x00;
+						q[x*8+1] = (b & 0x40) ? 0x01 : 0x00;
+						q[x*8+2] = (b & 0x20) ? 0x01 : 0x00;
+						q[x*8+3] = (b & 0x10) ? 0x01 : 0x00;
+						q[x*8+4] = (b & 0x08) ? 0x01 : 0x00;
+						q[x*8+5] = (b & 0x04) ? 0x01 : 0x00;
+						q[x*8+6] = (b & 0x02) ? 0x01 : 0x00;
+						q[x*8+7] = (b & 0x01) ? 0x01 : 0x00;
+					}
+					q += orig_dst_pitch;
+				}
+				break;
+			case 2:
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<row_bytes; x++) {
+						uint8 b = *p++;
+						q[x*4+0] = (b >> 6) & 0x03;
+						q[x*4+1] = (b >> 4) & 0x03;
+						q[x*4+2] = (b >> 2) & 0x03;
+						q[x*4+3] = b & 0x03;
+					}
+					q += orig_dst_pitch;
+				}
+				break;
+			case 4:
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<row_bytes; x++) {
+						uint8 b = *p++;
+						q[x*2+0] = (b >> 4) & 0x0f;
+						q[x*2+1] = b & 0x0f;
+					}
+					q += orig_dst_pitch;
+				}
+				break;
+		}
+		free(dst);
 	}
 }
 
@@ -297,22 +355,35 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 
 				// Allocate surface for picture
 				uint32 Rmask, Gmask, Bmask;
+				int surface_depth;
 				switch (pixel_size) {
+					case 1:
+					case 2:
+					case 4:
+					case 8:
+						Rmask = Gmask = Bmask = 0xff;
+						surface_depth = 8;	// SDL surfaces must be at least 8 bits depth, so we expand 1/2/4-bit pictures to 8-bit
+						break;
 					case 16:
 						Rmask = 0x7c00;
 						Gmask = 0x03e0;
 						Bmask = 0x001f;
+						surface_depth = 16;
 						break;
 					case 32:
 						Rmask = 0x00ff0000;
 						Gmask = 0x0000ff00;
 						Bmask = 0x000000ff;
+						surface_depth = 32;
 						break;
 					default:
-						Rmask = Gmask = Bmask = 0xff;
+						fprintf(stderr, "Unsupported PICT depth %d\n", pixel_size);
+						done = true;
 						break;
 				}
-				s = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, pixel_size, Rmask, Gmask, Bmask, 0);
+				if (done)
+					break;
+				s = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, surface_depth, Rmask, Gmask, Bmask, 0);
 				if (s == NULL) {
 					done = true;
 					break;

@@ -307,7 +307,7 @@ static void update_fps_display(SDL_Surface *s)
 		}
 		else
 		{
-			sprintf(fps, "%3.2ffps", (FRAME_SAMPLE_SIZE*60)/(float)(ticks-frame_ticks[frame_index]));
+			sprintf(fps, "%3.2ffps", (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks-frame_ticks[frame_index]));
 		}
 		
 		FontSpecifier& Font = GetOnScreenFont();

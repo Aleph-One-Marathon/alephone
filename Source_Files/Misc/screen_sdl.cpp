@@ -42,8 +42,6 @@
 // Global variables
 static SDL_Surface *main_surface;	// Main (display) surface
 
-// static const sdl_font_info *info_display_font = NULL;
-
 // Rendering buffer for the main view, the overhead map, and the terminals.
 // The HUD has a separate buffer.
 // It is initialized to NULL so as to allow its initing to be lazy.
@@ -108,11 +106,6 @@ void initialize_screen(struct screen_mode_data *mode)
 		world_view->horizontal_scale = 1;
 		world_view->vertical_scale = 1;
 		world_view->tunnel_vision_active = false;
-
-		// Load font for FPS/position display
-		// Now handled in ViewControl.h
-		// static const TextSpec monaco_spec = {kFontIDMonaco, styleNormal, 12};
-		// info_display_font = load_font(monaco_spec);
 
 	} else {
 

@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+February 6, 2001
+ - implemented support for 1/2/4-bit PICTs
+ - fixed bug in FPS calculation
+
 February 5, 2001
  - added image-loading facilities (requires SDL_image to load anthing other
    than BMP)
