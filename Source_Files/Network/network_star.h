@@ -29,9 +29,14 @@
 
 #include "sdl_network.h"
 
-#include "map.h" // TICKS_PER_SECOND
-#include "player.h" // GetRealActionQueues
-#include "interface.h" // process_action_flags (despite paf() being defined in vbl.*)
+// We avoid including half the world just to get TICKS_PER_SECOND for standalone hub...
+#ifndef A1_NETWORK_STANDALONE_HUB
+# include "map.h" // TICKS_PER_SECOND
+#else
+enum {
+	TICKS_PER_SECOND = 30
+};
+#endif
 
 #include <stdio.h>
 
@@ -52,22 +57,6 @@ enum {
 typedef uint32 action_flags_t;	// (should be elsewhere)
 typedef ConcreteTickBasedCircularQueue<action_flags_t> TickBasedActionQueue;
 typedef WritableTickBasedCircularQueue<action_flags_t> WritableTickBasedActionQueue;
-
-
-// This is a bit hacky yeah, we really ought to check both RealActionQueues and the recording queues, etc.
-template <typename tValueType>
-class LegacyActionQueueToTickBasedQueueAdapter : public WritableTickBasedCircularQueue<tValueType> {
-public:
-        explicit LegacyActionQueueToTickBasedQueueAdapter(int inTargetPlayerIndex) : mPlayerIndex(inTargetPlayerIndex) { reset(0); }
-        void reset(int32 inTick) { mWriteTick = inTick; GetRealActionQueues()->resetQueue(mPlayerIndex); }
-        int32 availableCapacity() const { return GetRealActionQueues()->availableCapacity(mPlayerIndex); }
-        void enqueue(const tValueType& inFlags) { process_action_flags(mPlayerIndex, static_cast<const uint32 *>(&inFlags), 1);  ++mWriteTick; }
-        int32 getWriteTick() const { return mWriteTick; }
-
-protected:
-        int 	mPlayerIndex;
-        int32	mWriteTick;
-};
 
 
 class XML_ElementParser;
