@@ -1742,6 +1742,7 @@ static bool begin_game(
 				} else {
 					game_state.current_netgame_allows_microphone= false;
 				}
+				game_information.cheat_flags = network_game_info->cheat_flags;
 
 				is_networked= true;
 				record_game= true;

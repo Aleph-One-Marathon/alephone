@@ -29,6 +29,7 @@
 #include "map.h"
 #include "player.h"
 #include "ChaseCam.h"
+#include "network.h"
 
 #include <limits.h>
 
@@ -47,20 +48,22 @@ static short CC_Polygon, CC_Yaw, CC_Pitch;
 // this is done to avoid loading the player sprites if it cannot be.
 bool ChaseCam_CanExist()
 {
-	return !TEST_FLAG(GetChaseCamData().Flags,_ChaseCam_NeverActive);
+  return !TEST_FLAG(GetChaseCamData().Flags,_ChaseCam_NeverActive);
 }
 
 
 // All these functions return the chase cam's state (true: active; false: inactive)
 bool ChaseCam_IsActive()
 {
-	if (!ChaseCam_CanExist()) return false;
-	return _ChaseCam_IsActive;
+  if (!NetAllowBehindview()) return false;
+  if (!ChaseCam_CanExist()) return false;
+  return _ChaseCam_IsActive;
 }
 bool ChaseCam_SetActive(bool NewState)
 {
-	if (!ChaseCam_CanExist()) return false;
-	return (_ChaseCam_IsActive = (NewState != 0));
+  if (!NetAllowBehindview()) return false;
+  if (!ChaseCam_CanExist()) return false;
+  return (_ChaseCam_IsActive = (NewState != 0));
 }
 
 // This function initializes the chase cam for a game

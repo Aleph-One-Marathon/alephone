@@ -56,6 +56,7 @@
 #include "scripting.h"
 #include "screen_drawing.h"
 #include "mouse.h"
+#include "network.h"
 
 #include "sdl_fonts.h"
 
@@ -534,7 +535,8 @@ void render_screen(short ticks_elapsed)
 
 	// Render crosshairs
 	if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
-		if (Crosshairs_IsActive())
+	  if (NetAllowCrosshair())
+	    if (Crosshairs_IsActive())
 #ifdef HAVE_OPENGL
 			if (!OGL_RenderCrosshairs())
 #endif

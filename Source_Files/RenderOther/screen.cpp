@@ -1101,9 +1101,10 @@ void render_screen(
 			
 			// Don't show the crosshairs when either the overhead map or the terminal is active
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
-				if (Crosshairs_IsActive())
-					if (!OGL_RenderCrosshairs())
-						Crosshairs_Render((GrafPtr)world_pixels);
+			  if (NetAllowCrosshair())
+			    if (Crosshairs_IsActive())
+			      if (!OGL_RenderCrosshairs())
+				Crosshairs_Render((GrafPtr)world_pixels);
 // #ifndef DIRECT_SCREEN_TEST
 			// LP change: put in OpenGL buffer swapping when the main view or the overhead map
 			// are being rendered in OpenGL.

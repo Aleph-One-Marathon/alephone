@@ -856,6 +856,13 @@ enum /* game options.. */
 	_overhead_map_shows_projectiles= 0x8000
 };
 
+enum /* cheat flags */
+  {
+    _allow_crosshair = 0x0001,
+    _allow_tunnel_vision = 0x0002,
+    _allow_behindview = 0x0004,
+  };
+
 enum // specifies how the user completed the level. saved in dynamic_data
 {
 	_level_unfinished, 
@@ -893,6 +900,7 @@ struct game_data
 	int32 game_time_remaining;  
 	int16 game_type; /* One of previous enum's */
 	int16 game_options;
+        int16 cheat_flags;
 	int16 kill_limit;
 	int16 initial_random_seed;
 	int16 difficulty_level;
