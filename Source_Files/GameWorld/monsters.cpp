@@ -1357,7 +1357,7 @@ void damage_monsters_in_radius(
 	for (size_t i=0;i<object_count;++i)
 	{
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
-                if (object->permutation == aggressor_index) {
+                if (GET_GAME_TYPE() == _game_of_tag && object->permutation == aggressor_index) {
                         // damage the aggressor last, so tag suicides are handled correctly
                         aggressor = object;
                 } else {

@@ -87,6 +87,9 @@ Jan 6, 2001 (Loren Petrich):
 
 Feb 1, 2001 (Loren Petrich):
 	Added fix for firing-animation wraparound; prevent_wrap is true for those animations also.
+
+Apr 10, 2003 (Woody Zenfell):
+        Fixed bug where dropping the skull made two of them (had this really been in there for almost 3 years??)
 */
 
 #include "cseries.h"
@@ -820,7 +823,6 @@ void update_player_weapons(
 							short origin_polygon, item_type;
 
 							//START Benad
-							//assert(ball_color!=NONE);
 							if (ball_color != NONE)
 							{
 								item_type= ball_color+BALL_ITEM_BASE;
@@ -833,14 +835,6 @@ void update_player_weapons(
 								destroy_current_weapon(player_index);
 							}
 							// END Benad
-							item_type= ball_color+BALL_ITEM_BASE;
-
-							calculate_weapon_origin_and_vector(player_index, _primary_weapon, 
-								&origin, &_vector, &origin_polygon, 0);
-
-							drop_the_ball(&origin, origin_polygon, player->monster_index, 
-								_monster_marine, item_type);
-							destroy_current_weapon(player_index);
 						} 
 
 						if(which_trigger==_primary_weapon)

@@ -19,6 +19,9 @@
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
+
+April 22, 2003 (Woody Zenfell):
+        Now dumping alert text etc. with Logging as well
 */
 
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
@@ -35,6 +38,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "csalerts.h"
 #include "csstrings.h"
 
+#include "Logging.h"
+#include "TextStrings.h"
+
 static Str255 alert_text;
 
 void alert_user(
@@ -50,10 +56,12 @@ void alert_user(
 	InitCursor();
 	switch (severity) {
 	case infoError:
+                logError1("alert: %s",TS_GetCString(resid,item));
 		Alert(129,NULL);
 		break;
 	case fatalError:
 	default:
+                logFatal1("fatal alert: %s",TS_GetCString(resid,item));
 		Alert(128,NULL);
 		exit(1);
 	}
@@ -71,11 +79,13 @@ void vpause(
 	memcpy(alert_text+1,message,len);
 	ParamText(alert_text,"\p","\p","\p");
 	InitCursor();
+        logWarning1("vpause: %s", message);
 	Alert(129,NULL);
 }
 
 void halt(void)
 {
+        logFatal("halt called");
 	Debugger();
 	exit(1);
 }
@@ -92,6 +102,7 @@ void vhalt(
 	memcpy(alert_text+1,message,len);
 	ParamText(alert_text,"\p","\p","\p");
 	InitCursor();
+        logFatal1("vhalt: %s", message);
 	Alert(128,NULL);
 	exit(1);
 }

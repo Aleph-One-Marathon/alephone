@@ -26,12 +26,16 @@ Oct 24, 2001 (Loren Petrich):
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added CopyCStringToPascal for Carbon, in place of c2pstr
+
+April 15, 2003 (Woody Zenfell):
+        Made XML interpretation error reporting less obnoxious (uses Logging)
 */
 
 
 #include <string.h>
 #include "cseries.h"
 #include "XML_DataBlock.h"
+#include "Logging.h"
 
 
 #ifdef mac
@@ -98,22 +102,10 @@ const int MaxErrorsToShow = 7;
 // Reports an interpretation error
 void XML_DataBlock::ReportInterpretError(const char *ErrorString)
 {
-#ifdef mac
-# if defined(USE_CARBON_ACCESSORS)
-	CopyCStringToPascal(ErrorString, (unsigned char *)temporary);
-# else
-	strncpy(temporary,ErrorString,255);
-	c2pstr(temporary);
-# endif
-	ParamText(ptemporary,0,0,0);
-	if (GetNumInterpretErrors() < MaxErrorsToShow)
-		Alert(NonFatalErrorAlert,NULL);
-#endif
-
-#ifdef SDL
-	if (GetNumInterpretErrors() < MaxErrorsToShow)
-		fprintf(stderr, ErrorString);
-#endif
+        if(GetNumInterpretErrors() < MaxErrorsToShow)
+                logAnomaly1("%s", ErrorString);
+        else if(GetNumInterpretErrors() == MaxErrorsToShow)
+                logAnomaly("(more errors not shown)");
 }
 
 // Requests aborting of parsing (reasonable if there were lots of errors)

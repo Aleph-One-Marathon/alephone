@@ -417,6 +417,9 @@ void get_default_physics_spec(FileSpecifier& File);
 void get_default_sounds_spec(FileSpecifier& File);
 void get_default_shapes_spec(FileSpecifier& File);
 bool get_default_theme_spec(FileSpecifier& File);
+// ZZZ addition: since Mac versions now search for any candidate files instead of picking
+// by name, new interface to search for all simultaneously instead of duplicating effort.
+void get_default_file_specs(FileSpecifier* outMapSpec, FileSpecifier* outShapesSpec, FileSpecifier* outSoundsSpec, FileSpecifier* outPhysicsSpec);
 
 // LP change: resets field of view to whatever the player had had when reviving
 void ResetFieldOfView();

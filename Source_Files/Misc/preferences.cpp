@@ -32,7 +32,12 @@ May 16, 2002 (Woody Zenfell):
 Jul 21, 2002 (Loren Petrich):
 	AS had added some code to fix the OSX preferences behavior;
 	I modified it so that it would not be used in the Classic version
-*/
+
+Apr 10-22, 2003 (Woody Zenfell):
+        Join hinting and autogathering have Preferences entries now
+        Being less obnoxious with unrecognized Prefs stuff
+        Macintosh Enviroprefs popup style can be set in Preferences file
+ */
 
 /*
  *  preferences.cpp - Preferences handling
@@ -65,6 +70,7 @@ Jul 21, 2002 (Loren Petrich):
 #include "ColorParser.h"
 
 #include "tags.h"
+#include "Logging.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -203,7 +209,9 @@ void WriteXML_FSSpec(FILE *F, const char *Indent, int Index, FSSpec& Spec);
 void initialize_preferences(
 	void)
 {
-	// In case this function gets called more than once...
+        logContext("initializing preferences");
+
+        // In case this function gets called more than once...
 	if (!PrefsInited)
 	{
 		SetupPrefsParseTree();
@@ -260,11 +268,10 @@ void initialize_preferences(
                         if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
                         {
 #if defined(mac)
-                            ParamText("\pThere were preferences-file parsing errors",0,0,0);
-                            Alert(FatalErrorAlert,NULL);
-                            ExitToShell();
+                            ParamText("\pThere were preferences-file parsing errors (see Aleph One Log.txt for details)",0,0,0);
+                            Alert(NonFatalErrorAlert,NULL);
 #elif defined(SDL)
-                            fprintf(stderr, "There were preferences-file parsing errors\n");
+                            fprintf(stderr, "There were preferences-file parsing errors (see Aleph One Log.txt for details)\n");
 #endif
                         }
                     }
@@ -396,6 +403,7 @@ void write_preferences(
 	fprintf(F,"  frequency=\"%f\"\n",graphics_preferences->refresh_frequency);
 #endif
 	fprintf(F,"  ogl_flags=\"%hu\"\n",graphics_preferences->OGL_Configure.Flags);
+        fprintf(F,"  experimental_rendering=\"%s\"\n",BoolString(graphics_preferences->experimental_rendering));
 	fprintf(F,">\n");
 	fprintf(F,"  <void>\n");
 	WriteColor(F,"    ",graphics_preferences->OGL_Configure.VoidColor,"\n");
@@ -471,6 +479,9 @@ void write_preferences(
 	fprintf(F,"  time_limit=\"%d\"\n",network_preferences->time_limit);
 	fprintf(F,"  kill_limit=\"%hd\"\n",network_preferences->kill_limit);
 	fprintf(F,"  entry_point=\"%hd\"\n",network_preferences->entry_point);
+        fprintf(F,"  autogather=\"%s\"\n",BoolString(network_preferences->autogather));
+        fprintf(F,"  join_by_address=\"%s\"\n",BoolString(network_preferences->join_by_address));
+        WriteXML_CString(F, "  join_address=\"",network_preferences->join_address,256,"\"\n");        
 	fprintf(F,"/>\n\n");
 	
 	fprintf(F,"<environment\n");
@@ -485,6 +496,8 @@ void write_preferences(
 	fprintf(F,"  physics_checksum=\"%u\"\n",environment_preferences->physics_checksum);
 	fprintf(F,"  shapes_mod_date=\"%u\"\n",uint32(environment_preferences->shapes_mod_date));
 	fprintf(F,"  sounds_mod_date=\"%u\"\n",uint32(environment_preferences->sounds_mod_date));
+        fprintf(F,"  group_by_directory=\"%s\"\n",BoolString(environment_preferences->group_by_directory));
+        fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
 	fprintf(F,">\n");
 #ifdef mac
 	WriteXML_FSSpec(F,"  ",0,environment_preferences->map_file);
@@ -622,6 +635,8 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.draw_every_other_line= false;
 	
 	OGL_SetDefaults(preferences->OGL_Configure);
+
+        preferences->experimental_rendering= false;
 }
 
 static void default_serial_number_preferences(serial_number_data *preferences)
@@ -647,6 +662,9 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->kill_limit = 10;
 	preferences->entry_point= 0;
 	preferences->game_type= _game_of_kill_monsters;
+        preferences->autogather= false;
+        preferences->join_by_address= false;
+        obj_clear(preferences->join_address);
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -705,46 +723,53 @@ static void default_environment_preferences(environment_preferences_data *prefer
 //	void *preferences)
 {
 //	struct environment_preferences_data *prefs= (struct environment_preferences_data *)preferences;
-
+    
 	obj_set(*preferences, NONE);
 
-	FileSpecifier DefaultFile;
-	
-	get_default_map_spec(DefaultFile);
-	preferences->map_checksum= read_wad_file_checksum(DefaultFile);
+        FileSpecifier DefaultMapFile;
+        FileSpecifier DefaultShapesFile;
+        FileSpecifier DefaultSoundsFile;
+        FileSpecifier DefaultPhysicsFile;
+    
 #ifdef mac
-	obj_copy(preferences->map_file, DefaultFile.GetSpec());
+        // Can use "all in one" routine
+        get_default_file_specs(&DefaultMapFile, &DefaultShapesFile, &DefaultSoundsFile, &DefaultPhysicsFile);
 #else
-	strncpy(preferences->map_file, DefaultFile.GetPath(), 256);
+	get_default_map_spec(DefaultMapFile);
+        get_default_physics_spec(DefaultPhysicsFile);
+        get_default_shapes_spec(DefaultShapesFile);
+        get_default_sounds_spec(DefaultSoundsFile);
+#endif
+                
+        preferences->map_checksum= read_wad_file_checksum(DefaultMapFile);
+#ifdef mac
+	obj_copy(preferences->map_file, DefaultMapFile.GetSpec());
+#else
+	strncpy(preferences->map_file, DefaultMapFile.GetPath(), 256);
 	preferences->map_file[255] = 0;
 #endif
 	
-	get_default_physics_spec(DefaultFile);
-	preferences->physics_checksum= read_wad_file_checksum(DefaultFile);
+	preferences->physics_checksum= read_wad_file_checksum(DefaultPhysicsFile);
 #ifdef mac
-	obj_copy(preferences->physics_file, DefaultFile.GetSpec());
+	obj_copy(preferences->physics_file, DefaultPhysicsFile.GetSpec());
 #else
-	strncpy(preferences->physics_file, DefaultFile.GetPath(), 256);
+	strncpy(preferences->physics_file, DefaultPhysicsFile.GetPath(), 256);
 	preferences->physics_file[255] = 0;
 #endif
 	
-	get_default_shapes_spec(DefaultFile);
-	
-	preferences->shapes_mod_date = DefaultFile.GetDate();
+	preferences->shapes_mod_date = DefaultShapesFile.GetDate();
 #ifdef mac
-	obj_copy(preferences->shapes_file, DefaultFile.GetSpec());
+	obj_copy(preferences->shapes_file, DefaultShapesFile.GetSpec());
 #else
-	strncpy(preferences->shapes_file, DefaultFile.GetPath(), 256);
+	strncpy(preferences->shapes_file, DefaultShapesFile.GetPath(), 256);
 	preferences->shapes_file[255] = 0;
 #endif
 
-	get_default_sounds_spec(DefaultFile);
-	
-	preferences->sounds_mod_date = DefaultFile.GetDate();
+	preferences->sounds_mod_date = DefaultSoundsFile.GetDate();
 #ifdef mac
-	obj_copy(preferences->sounds_file, DefaultFile.GetSpec());
+	obj_copy(preferences->sounds_file, DefaultSoundsFile.GetSpec());
 #else
-	strncpy(preferences->sounds_file, DefaultFile.GetPath(), 256);
+	strncpy(preferences->sounds_file, DefaultSoundsFile.GetPath(), 256);
 	preferences->sounds_file[255] = 0;
 #endif
 
@@ -753,6 +778,9 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	strncpy(preferences->theme_dir, DefaultFile.GetPath(), 256);
 	preferences->theme_dir[255] = 0;
 #endif
+
+        preferences->group_by_directory = true;
+        preferences->reduce_singletons = true;
 }
 
 
@@ -849,6 +877,8 @@ static bool validate_network_preferences(network_preferences_data *preferences)
 		preferences->game_type= _game_of_kill_monsters;
 		changed= true;
 	}
+
+        // ZZZ: is this relevant anymore now with XML prefs?  if so, should validate autogather, join_by_address, and join_address.
 	
 	return changed;
 }
@@ -1362,6 +1392,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	{
 		return ReadUInt16Value(Value,graphics_preferences->OGL_Configure.Flags);
 	}
+        else if (StringsEqual(Tag,"experimental_rendering"))
+        {
+                return ReadBooleanValue(Value,graphics_preferences->experimental_rendering);
+        }
 	UnrecognizedTag();
 	return false;
 }
@@ -1693,6 +1727,20 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return ReadInt16Value(Value,network_preferences->entry_point);
 	}
+        else if (StringsEqual(Tag,"autogather"))
+        {
+                return ReadBooleanValue(Value,network_preferences->autogather);
+        }
+        else if (StringsEqual(Tag,"join_by_address"))
+        {
+                return ReadBooleanValue(Value,network_preferences->join_by_address);
+        }
+        else if (StringsEqual(Tag,"join_address"))
+        {
+                DeUTF8_C(Value,strlen(Value),network_preferences->join_address,255);
+                return true;
+        }
+    
 	UnrecognizedTag();
 	return false;
 }
@@ -1893,6 +1941,14 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 		else
 			return false;
 	}
+        else if (StringsEqual(Tag,"group_by_directory"))
+        {
+                return ReadBooleanValue(Value,environment_preferences->group_by_directory);
+        }
+        else if (StringsEqual(Tag,"reduce_singletons"))
+        {
+                return ReadBooleanValue(Value,environment_preferences->reduce_singletons);
+        }
 	UnrecognizedTag();
 	return false;
 }

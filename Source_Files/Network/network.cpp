@@ -3175,7 +3175,10 @@ long NetGetNetTime(
     // The effect is to get the game engine to drain the player_queues more smoothly than they would
     // if we returned status_localNetTime.
     // Later: adding 1 in an effort to decrease lag (is this a good idea?)
-    return status->localNetTime - sCurrentAdaptiveLatency + 1;
+    // Later than that: getting rid of that "+1", need to subtract sCurrentAdaptiveLatency and that's that.
+    // Unless rings are taking less than a tick-time to get around, in which case we need not introduce
+    // any latency, which is why we special-case that.
+    return status->localNetTime - (sCurrentAdaptiveLatency > 1 ? sCurrentAdaptiveLatency : 0);
 #else
 	return status->localNetTime - 2*status->action_flags_per_packet - status->update_latency;
 #endif
@@ -3712,7 +3715,7 @@ short NetUpdateJoinState(
                                         topology->players[localPlayerIndex].net_dead= false;
                                         
                                         /* Confirm. */
-                                        new_player_data.accepted= kResumeNetgameSavvyJoinerAccepted;
+                                        new_player_data.accepted= kStateOfTheArtJoinerAccepted;
                                         obj_copy(new_player_data.player, topology->players[localPlayerIndex]);
 
                                         netcpy(&new_player_data_NET, &new_player_data);
@@ -3989,8 +3992,23 @@ int NetGatherPlayer(
 
 					if(new_player_data->accepted)
 					{
+                                                // ZZZ: these decisions ought to be made at a higher level
+                                                //  this is getting ugly.
                                                 // ZZZ: cannot gather a "naive" player into a resume-game
                                                 if(resuming_saved_game && new_player_data->accepted < kResumeNetgameSavvyJoinerAccepted)
+                                                {
+                                                        theResult = kGatheredUnacceptablePlayer;
+                                                }
+
+                                                // ZZZ: to play tag or ball with new, fixed rules,
+                                                // gathered player must use new rules too. (unfortunately
+                                                // this won't catch the other way around when old gatherer
+                                                // gathers new joiner, but better than nothing)
+                                                // Oh, behavior with aliens off has changed also.
+                                                int16 net_game_type = ((game_info*)topology->game_data)->net_game_type;
+                                                bool aliens = (((game_info*)topology->game_data)->game_options & _monsters_replenish) != 0;
+
+                                                if(new_player_data->accepted < kFixedTagAndBallJoinerAccepted && (net_game_type == _game_of_tag || net_game_type == _game_of_kill_man_with_ball || !aliens))
                                                 {
                                                         theResult = kGatheredUnacceptablePlayer;
                                                 }

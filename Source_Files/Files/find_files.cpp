@@ -29,6 +29,9 @@ Aug 25, 2000 (Loren Petrich):
 Aug 28, 2000 (Loren Petrich):
 	Put these functions into the FileFinder object; eradicated the "param_block->" code, etc.
 	and did other things to abstract it.
+
+April 22, 2003 (Woody Zenfell):
+        Added "directory_change_callback" and the ability to abort _callback_only traversals.
 */
 
 #if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
@@ -97,8 +100,11 @@ bool FileFinder::Enumerate(DirectorySpecifier& Dir)
 	
 	pb.hFileInfo.ioVRefNum= Dir.Get_vRefNum();
 	pb.hFileInfo.ioNamePtr= temp_file.name;
+
+        // ZZZ addition
+        bool KeepGoing = true;
 			
-	for(Err= noErr, index=1; count<max && Err==noErr; index++) 
+	for(Err= noErr, index=1; count<max && Err==noErr && KeepGoing; index++) 
 	{
 		pb.hFileInfo.ioDirID= Dir.Get_parID();
 		pb.hFileInfo.ioFDirIndex= index;
@@ -109,16 +115,28 @@ bool FileFinder::Enumerate(DirectorySpecifier& Dir)
 			if ((pb.hFileInfo.ioFlAttrib & 16) && (flags & _ff_recurse))
 			{
 				/* Recurse, if you really want to... */
-				
-				// Set up volume info
-				DirectorySpecifier SubDir = Dir;
-				// Change the directory
-				SubDir.Set_parID(pb.dirInfo.ioDrDirID);
-				// Go!
-				Enumerate(SubDir);
-				// Reset the temporary file's directory to what's appropriate here
-				// (it's global to this object)
-				TempFile.FromDirectory(Dir);
+
+                                // ZZZ addition: callback on directory change if desired
+                                if(directory_change_callback != NULL)
+                                        KeepGoing = directory_change_callback(TempFile, true, (flags & _ff_callback_with_catinfo) ? &pb : user_data);
+
+                                if(KeepGoing)
+                                {
+                                        // Set up volume info
+                                        DirectorySpecifier SubDir = Dir;
+                                        // Change the directory
+                                        SubDir.Set_parID(pb.dirInfo.ioDrDirID);
+                                        // Go!
+                                        Enumerate(SubDir);
+                                        // Reset the temporary file's directory to what's appropriate here
+                                        // (it's global to this object)
+                                        TempFile.FromDirectory(Dir);
+
+                                        // ZZZ addition: callback on directory change if desired
+                                        if(directory_change_callback != NULL)
+                                                KeepGoing = directory_change_callback(TempFile, false, (flags & _ff_callback_with_catinfo) ? &pb : user_data);
+
+                                }                                        
 				
 			} else {
 				/* Add.. */
@@ -130,7 +148,6 @@ bool FileFinder::Enumerate(DirectorySpecifier& Dir)
 					{
 						case _fill_buffer:
 							if(!callback || callback(TempFile, user_data))
-							// if(!callback || callback(&temp_file, user_data))
 							{
 								/* Copy it in.. */
 								buffer[count++] = TempFile;
@@ -139,14 +156,7 @@ bool FileFinder::Enumerate(DirectorySpecifier& Dir)
 							
 						case _callback_only:
 							assert(callback);
-							if(flags & _ff_callback_with_catinfo)
-							{
-								callback(TempFile, &pb);
-								// callback(&temp_file, &pb);
-							} else {
-								callback(TempFile, user_data);
-								// callback(&temp_file, user_data);
-							}
+                                                                KeepGoing = callback(TempFile, (flags & _ff_callback_with_catinfo) ? &pb : user_data);
 							break;
 							
 						default:

@@ -39,6 +39,10 @@ Mar 14, 2001 (Loren Petrich):
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
+
+April 16, 2003 (Woody Zenfell):
+        Can now map multiple Mac OS file types to a single A1 typecode
+        (will let enviroprefs find M2-typed stuff)
 */
 #if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
 #if defined(TARGET_API_MAC_CARBON)
@@ -46,6 +50,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #endif
 #include <string.h>
 #include "tags.h"
+#include <map>
+
+using std::map;
 
 
 // Global: typecode list
@@ -64,6 +71,37 @@ static OSType typecodes[NUMBER_OF_TYPECODES] = {
 	 'mus2'		// Music typecode
 };
 
+struct file_type_to_a1_typecode_rec
+{
+        OSType	file_type;
+        int	typecode;
+};
+
+static file_type_to_a1_typecode_rec additional_typecodes[] =
+{
+        // Additional mappings to let M2 files be found in Environment prefs etc.
+        { 'sga2', _typecode_savegame },
+        { 'fil2', _typecode_film },
+        { 'phy2', _typecode_physics },
+        { 'shp2', _typecode_shapes },
+        { 'snd2', _typecode_sounds },
+        { 'pat2', _typecode_patch },
+
+        // Additional mappings in case A1 wants its own filetypes at some point
+        { 'sceA', _typecode_savegame },
+        { 'sgaA', _typecode_savegame },
+        { 'filA', _typecode_film },
+        { 'phyA', _typecode_physics },
+        { 'shpA', _typecode_shapes },
+        { 'sndA', _typecode_sounds },
+        { 'patA', _typecode_patch }
+};
+
+static const int NUMBER_OF_ADDITIONAL_TYPECODES = sizeof(additional_typecodes) / sizeof(additional_typecodes[0]);
+
+typedef map<OSType, int> file_type_to_a1_typecode_t;
+static file_type_to_a1_typecode_t file_type_to_a1_typecode;
+
 
 // Initializer: loads from resource fork
 void initialize_typecodes()
@@ -79,6 +117,17 @@ void initialize_typecodes()
 	HUnlock(FTypHdl);
 	ReleaseResource(FTypHdl);
 #endif
+        file_type_to_a1_typecode.clear();
+        
+        for(int i = 0; i < NUMBER_OF_TYPECODES; i++)
+        {
+                file_type_to_a1_typecode[typecodes[i]] = i;
+        }
+
+        for(int i = 0; i < NUMBER_OF_ADDITIONAL_TYPECODES; i++)
+        {
+                file_type_to_a1_typecode[additional_typecodes[i].file_type] = additional_typecodes[i].typecode;
+        }
 }
 
 
@@ -95,5 +144,17 @@ void set_typecode(int which, OSType _type)
 	if (which < 0) return;
 	else if (which > NUMBER_OF_TYPECODES) return;
 	else typecodes[which] = _type;
+}
+
+OSType
+get_typecode_for_file_type(OSType inType)
+{
+        assert(!file_type_to_a1_typecode.empty());
+
+        file_type_to_a1_typecode_t::iterator entry = file_type_to_a1_typecode.find(inType);
+        if(entry == file_type_to_a1_typecode.end())
+                return NONE;
+        else
+                return entry->second;
 }
 #endif

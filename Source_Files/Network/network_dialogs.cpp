@@ -57,7 +57,10 @@ Mar 8, 2002 (Woody Zenfell):
     
 Feb 12, 2003 (Woody Zenfell):
     Support for resuming netgames (optionally get game options from saved-game not prefs, optionally don't save options into prefs)
-*/
+
+Apr 10, 2003 (Woody Zenfell):
+    Join hinting and autogathering have Preferences entries now
+ */
 
 #include	"cseries.h"
 #include	"map.h"
@@ -67,12 +70,6 @@ Feb 12, 2003 (Woody Zenfell):
 #include	"network_dialogs.h"
 #include	"network_games.h"
 #include    "player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
-
-#if HAVE_SDL_NET
-// JTP: Shared join information. Here because it can be shared with Carbon/SDL networking
-bool	sUserWantsJoinHinting				   = false;
-char	sJoinHintingAddress[kJoinHintingAddressLength + 1] = "";
-#endif
 
 static uint16 get_dialog_game_options(DialogPtr dialog, short game_type);
 static void set_dialog_game_options(DialogPtr dialog, uint16 game_options);
@@ -231,11 +228,13 @@ extract_setup_dialog_information(
                         network_preferences->game_is_untimed = false;	
                 }
                 network_preferences->kill_limit = game_information->kill_limit;
-        
-                write_preferences();
         }
 
-	/* Don't save the preferences of their team... */
+        // We write the preferences here (instead of inside the if) because they may have changed
+        // their player name/color/etc. and we do want to save that change.
+        write_preferences();
+
+        /* Don't save the preferences of their team... */
 	if(game_information->game_options & _force_unique_teams)
 	{
 		player_information->team= player_information->color;

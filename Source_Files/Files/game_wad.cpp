@@ -1737,6 +1737,7 @@ static void load_redundant_map_data(
 			/* Only warn the gatherer.. */
 			if(!game_is_networked || (game_is_networked && local_player_index==0))
 			{
+                                show_cursor();
 				alert_user(infoError, strERRORS, warningExternalMapsFile, -1);
 				// LP addition: makes the game look normal
 				hide_cursor();

@@ -1025,12 +1025,8 @@ int FileSpecifier::GetType()
 	if (Err != noErr) return NONE;
 	
 	OSType MacType = FileInfo.fdType;
-	
-	for (int k=0; k<NUMBER_OF_TYPECODES; k++)
-	{
-		if (MacType == get_typecode(k)) return k;
-	}
-	return NONE;
+
+        return get_typecode_for_file_type(MacType);
 }
 	
 // How many bytes are free in the disk that the file lives in?

@@ -84,7 +84,11 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 	Fixed non-display of network player name in Player Dialog
+
+April 19, 2003 (Woody Zenfell):
+        Environment prefs now can show many more items; elements labelled by containing folder
 */
+
 #if defined(TARGET_API_MAC_CARBON)
     #include <CoreServices/CoreServices.h>
 #endif
@@ -92,6 +96,14 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #ifdef env68k
 	#pragma segment dialogs
 #endif
+
+#include <map>
+#include <vector>
+#include <algorithm>
+
+using std::map;
+using std::vector;
+using std::sort;
 
 // ZZZ: moved constants to preferences.h for sharing between versions
 
@@ -113,7 +125,7 @@ static void set_popup_enabled_state(DialogPtr dialog, short item_number, short i
 static void setup_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void hit_environment_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
 static bool teardown_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
-static void fill_in_popup_with_filetype(DialogPtr dialog, short item, int type, unsigned long checksum);
+static void fill_in_popup_with_filetype(DialogPtr dialog, short item, int type, unsigned long checksum, const FSSpec& file);
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
 static bool allocate_extensions_memory(void);
 static void free_extensions_memory(void);
@@ -786,19 +798,50 @@ static bool teardown_input_dialog(
 }
 
 /* ------------------ environment preferences */
-#define MAXIMUM_FIND_FILES (128)
+// ZZZ: we should now feel better about setting this quite high, since our use
+// of vectors should mean we only use what memory we need.  OTOH I feel we may
+// as well leave this in with a quite-high limit, just to guard against any
+// infinite-recursion-type glitches etc.
+#define MAXIMUM_FIND_FILES (8192)
 
+// ZZZ: changing the way all this works so we can label groups of elements by their folder name.
 struct file_description {
 	// This is now the _typecode_stuff specified in tags.h (abstract file typing)
 	int file_type;
 	unsigned long checksum;
 	unsigned long parent_checksum;
+        int directory_index;
+        FileSpecifier file;
 };
 
-static FileSpecifier *accessory_files= NULL;
-static struct file_description *file_descriptions= NULL;
-static short accessory_file_count= 0;
+/*
+struct directory_with_parent {
+        FileSpecifier directory;
+        int parent_index;
+};
+*/
+
+// Holds, for our purposes, names of directories and tree information
+static vector<FileSpecifier> directories;
+
+// Holds indices into 'directories'; used during directory tree traversal
+// to establish correct 'directory_index' values for the file_descriptions.
+static vector<int> current_directory_stack;
+
+// Information about each actual file found along the way, 
+static vector<file_description> file_descriptions;
+
+// Maps typecode to vector of indices into file_descriptions
+// if index == NONE, means item should not be selectable (disabled folder title, separator, etc.)
+static map<int, vector<int> > menu_items;
+
+// Maps directory index to vector of indices into file_descriptions
+typedef map<int, vector<int> > files_by_directory_type;
+typedef map<int, files_by_directory_type> files_by_directory_by_typecode_type;
+files_by_directory_by_typecode_type files_by_directory_by_typecode;
+
 static bool physics_valid= true;
+
 
 static void setup_environment_dialog(
 	DialogPtr dialog,
@@ -815,13 +858,13 @@ static void setup_environment_dialog(
 
 		/* Fill in the extensions.. */
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iMAP, first_item),
-			_typecode_scenario, preferences->map_checksum);
+			_typecode_scenario, preferences->map_checksum, preferences->map_file);
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iPHYSICS, first_item),
-			_typecode_physics, preferences->physics_checksum);
+			_typecode_physics, preferences->physics_checksum, preferences->physics_file);
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iSHAPES, first_item),
-			_typecode_shapes, preferences->shapes_mod_date);
+			_typecode_shapes, preferences->shapes_mod_date, preferences->shapes_file);
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iSOUNDS, first_item),
-			_typecode_sounds, preferences->sounds_mod_date);
+			_typecode_sounds, preferences->sounds_mod_date, preferences->sounds_file);
 
 #if defined(USE_CARBON_ACCESSORS)
 		Cursor arrow;
@@ -961,43 +1004,80 @@ static void set_popup_enabled_state(
 #endif
 }
 
+static void
+clear_extensions_state()
+{
+        files_by_directory_by_typecode.clear();
+        file_descriptions.clear();
+        directories.clear();
+        current_directory_stack.clear();
+        menu_items.clear();
+}
+
 static bool allocate_extensions_memory(
 	void)
 {
-	bool success;
+        // ZZZ: now using vector to hold these, no pre-allocation
 
-	assert(!accessory_files);
-	assert(!file_descriptions);
+        // Make sure there's nothing stale hanging around
+        clear_extensions_state();
 
-	accessory_file_count= 0;
-	// A lot prettier than the original mallocs...
-	accessory_files= new FileSpecifier[MAXIMUM_FIND_FILES];
-	file_descriptions= new file_description[MAXIMUM_FIND_FILES];
-	if(file_descriptions && accessory_files)
-	{
-		success= true;
-	} else {
-		if(file_descriptions) delete []file_descriptions;
-		if(accessory_files) delete []accessory_files;
-		accessory_files= NULL;
-		file_descriptions= NULL;
-		success= false;
-	}
-	
-	return success;
+        // current directory stack will use NONE for A1's root directory
+        current_directory_stack.push_back(NONE);
+        
+        return true;
 }
 
 static void free_extensions_memory(
 	void)
 {
-	assert(accessory_files);
-	assert(file_descriptions);
+        // ZZZ: now using vector to hold these, no explicit alloc/free
+        // (though we could I suppose ask these vectors to jettison their storage
+        //  if we're worried about them taking up space the game needs)
 
-	delete []file_descriptions;
-	delete []accessory_files;
-	accessory_files= NULL;
-	file_descriptions= NULL;
-	accessory_file_count= 0;
+        // Make sure there's nothing stale hanging around
+        clear_extensions_state();
+}
+
+static bool
+directory_change_callback(FileSpecifier& File, bool EnteringDirectory, void* data)
+{
+        if(EnteringDirectory)
+        {
+//                directory_with_parent theEntry;
+//                theEntry.directory = File;
+//                theEntry.parent_index = current_directory_stack.back();
+                current_directory_stack.push_back(directories.size());
+                directories.push_back(File);
+        }
+        else
+        {
+                // Since we shouldn't ever exit the root directory,
+                assert(current_directory_stack.back() != NONE);
+                assert(current_directory_stack.size() > 1);
+
+                if(environment_preferences->reduce_singletons)
+                {
+                        for(files_by_directory_by_typecode_type::iterator ti = files_by_directory_by_typecode.begin();
+                            ti != files_by_directory_by_typecode.end();
+                            ti++)
+                        {
+                                files_by_directory_type& files_by_directory = ti->second;
+                        
+                                files_by_directory_type::iterator i = files_by_directory.find(current_directory_stack.back());
+                                if(i != files_by_directory.end() && i->second.size() == 1)
+                                {
+                                        files_by_directory[*(current_directory_stack.rbegin() + 1)].push_back(i->second[0]);
+                                        files_by_directory.erase(i);
+                                }
+                        }
+                }
+                
+                current_directory_stack.pop_back();
+        }
+
+        // Keep going
+        return true;
 }
 
 static bool file_is_extension_and_add_callback(
@@ -1007,11 +1087,11 @@ static bool file_is_extension_and_add_callback(
 	unsigned long checksum;
 	CInfoPBRec *pb= (CInfoPBRec *) data;
 	
-	assert(accessory_files);
-	assert(file_descriptions);
-
-	if(accessory_file_count<MAXIMUM_FIND_FILES)
+	if(file_descriptions.size()<MAXIMUM_FIND_FILES)
 	{
+                bool should_insert = false;
+                file_description element_to_insert;
+                
 		// LP change, since the filetypes are no longer constants
 		int Filetype = File.GetType();
 		if (Filetype == _typecode_scenario || Filetype == _typecode_physics)
@@ -1020,42 +1100,48 @@ static bool file_is_extension_and_add_callback(
 			// checksum= read_wad_file_checksum((FileDesc *) file);
 			if(checksum != NONE) /* error. */
 			{
-				accessory_files[accessory_file_count]= File;
-				// accessory_files[accessory_file_count]= *file;
-				file_descriptions[accessory_file_count].file_type= Filetype;
-				// file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
-				file_descriptions[accessory_file_count++].checksum= checksum;
-			}
+                                element_to_insert.file= File;
+                                element_to_insert.file_type= Filetype;
+                                element_to_insert.checksum= checksum;
+                                element_to_insert.directory_index= current_directory_stack.back();
+                                should_insert = true;
+                        }
 		}
 		else if (Filetype == _typecode_patch)
 		{
 			checksum= read_wad_file_checksum(File);
-			// checksum= read_wad_file_checksum((FileDesc *) file);
 			if(checksum != NONE) /* error. */
 			{
-				unsigned long parent_checksum;
-				
-				parent_checksum= read_wad_file_parent_checksum(File);
-				// parent_checksum= read_wad_file_parent_checksum((FileDesc *) file);
-				accessory_files[accessory_file_count]= File;
-				// accessory_files[accessory_file_count]= *file;
-				file_descriptions[accessory_file_count].file_type= Filetype;
-				// file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
-				file_descriptions[accessory_file_count++].checksum= checksum;
-				file_descriptions[accessory_file_count++].parent_checksum= parent_checksum;
+				unsigned long parent_checksum= read_wad_file_parent_checksum(File);
+                                element_to_insert.file= File;
+                                element_to_insert.file_type= Filetype;
+                                element_to_insert.checksum= checksum;
+                                element_to_insert.parent_checksum= parent_checksum;
+                                element_to_insert.directory_index= current_directory_stack.back();
+                                should_insert = true;
+                                // ZZZ note: the code I'm replacing inserted two file_descriptions[] entries here;
+                                // that behavior seemed erroneous to me so I'm doing otherwise.
+                                // (besides, I don't think we use "patch" files anyway, so...)
 			}
 		}
 		else if (Filetype == _typecode_shapes || Filetype == _typecode_sounds)
-		{		
-			accessory_files[accessory_file_count]= File;
-			// accessory_files[accessory_file_count]= *file;
-			file_descriptions[accessory_file_count].file_type= Filetype;
-			// file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
-			file_descriptions[accessory_file_count++].checksum= pb->hFileInfo.ioFlMdDat;
+		{
+                        element_to_insert.file= File;
+                        element_to_insert.file_type= Filetype;
+                        element_to_insert.checksum=  pb->hFileInfo.ioFlMdDat;
+                        element_to_insert.directory_index= current_directory_stack.back();
+                        should_insert = true;
 		}
+
+                if(should_insert)
+                {
+                        files_by_directory_by_typecode[element_to_insert.file_type][current_directory_stack.back()].push_back(file_descriptions.size());
+                        file_descriptions.push_back(element_to_insert);
+                }
 	}
-	
-	return false;
+
+        // Keep looking...
+	return true;
 }
 
 static void build_extensions_list(
@@ -1088,26 +1174,80 @@ static void search_from_directory(DirectorySpecifier& BaseDir)
 	pb.buffer= NULL;
 	pb.max= MAXIMUM_FIND_FILES;
 	pb.callback= file_is_extension_and_add_callback;
+        pb.directory_change_callback= environment_preferences->group_by_directory ? directory_change_callback : NULL;
 	pb.user_data= NULL;
 	pb.count= 0;
 
 	vassert(pb.Find(), csprintf(temporary, "Error: %d", pb.GetError()));
 }
 
+static bool
+FSSpecs_equal(const FSSpec& spec1, const FSSpec& spec2)
+{
+        return spec1.vRefNum == spec2.vRefNum && spec1.parID == spec2.parID && memcmp(spec1.name, spec2.name, spec1.name[0] + 1) == 0;
+}
+
+static inline int
+pstrcmp(const unsigned char* s1, const unsigned char* s2)
+{
+        int theResult = memcmp(&(s1[1]), &(s2[1]), min(s1[0], s2[0]));
+        if(theResult == 0)
+        {
+                theResult = (s1[0] < s2[0]) ? -1 : ((s1[0] == s2[0]) ? 0 : 1);
+        }
+        return theResult;
+}
+
+class indexed_file_description_less : public binary_function<int, int, bool> {
+public:
+        operator()(int d1, int d2)
+        {
+                return pstrcmp(file_descriptions[d1].file.GetSpec().name, file_descriptions[d2].file.GetSpec().name) < 0;
+        }
+};
+
+class indexed_directory_less : public binary_function<int, int, bool> {
+public:
+        operator()(int d1, int d2)
+        {
+                return pstrcmp(directories[d1].GetSpec().name, directories[d2].GetSpec().name) < 0;
+        }
+};
+
 /* Note that we are going to assume that things don't change while they are in this */
 /*  dialog- ie no one is copying files to their machine, etc. */
 // Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
+// ZZZ: this now tries to match by both file and checksum, in case there are multiple
+// files with the same checksum (e.g. lots of map files created with non-checksum-aware
+// Map editors).  The idea is if we find a "good match" (same file and same checksum)
+// we prefer that.  If we find a "file_match" (same file only), we take that next.
+// If we have neither a file_match nor a good_match, then if there are any with the
+// correct checksum, we choose one of those (the last one, currently).  If there are
+// no matches for either the file or the checksum, we select the first one we find.
+// Originally, the Bungie code attempted neither good_match nor file_match functionality.
+// Hmm, since there ought to be only one possible file_match, it's probably a bit
+// much to have both file_match and good_match.  Oh well.
 static void fill_in_popup_with_filetype(
 	DialogPtr dialog, 
 	short item,
 	int type,
-	unsigned long checksum)
+	unsigned long checksum,
+        const FSSpec& file)
 {
 	MenuHandle menu;
-	short index, value= NONE;
+        short index;
+        short value= NONE;
+        short file_match_value= NONE;
+        bool good_match= false;
 	ControlHandle control;
 	short item_type, count;
 	Rect bounds;
+
+        // if our housekeeping vector for some reason isn't empty, empty it
+        menu_items[type].clear();
+        
+        // insert NONE at index 0 to account for Mac OS 1-based indexing
+        menu_items[type].push_back(NONE);
 
 	/* Get the menu */
 	menu= get_popup_menu_handle(dialog, item);
@@ -1119,36 +1259,97 @@ static void fill_in_popup_with_filetype(
 	while(CountMItems(menu)) DeleteMenuItem(menu, 1);
 #endif
 
-	assert(file_descriptions);
-	for(index= 0; index<accessory_file_count; ++index)
-	{
-		if(file_descriptions[index].file_type==type)
-		{
-			AppendMenu(menu, "\p ");
-#if defined(TARGET_API_MAC_CARBON)
-			SetMenuItemText(menu, CountMenuItems(menu), accessory_files[index].GetSpec().name);
+        count = 0;
+        
+        // Note one more option for this area would be like "coalesce on directory name"
+        // so if a user had Marathon 2:Map Folder:(whole bunch of maps) and Marathon Infinity:Map Folder:(whole bunch of maps)
+        // they would all land in one group called Map Folder.  Alternatively, we could
+        // name the two separate groups (as we generate now) by their parents' names, e.g.
+        // Marathon 2:Map Folder and Marathon Infinity:Map Folder.  We'd do that though
+        // probably only when there's a group-name collision.
+        // As James Willson points out, much of this complexity can be thrown out if we
+        // just let users pick using a standard get file box.  In that case, we'd probably
+        // retain the popup (as an alternative), but as a totally flat, sorted-by-Map-name list.
+
+        // In fact the real solution (for network game players) is to expand the Levels popup in
+        // Setup Network Game to show levels from all available Map files (perhaps grouped by Map
+        // file).  But that's for another day... and maybe another person.  :)
+        
+        
+        // Sort groups
+        // I think NONE should always appear first, but not taking any chances (i.e. forcing it to)
+        vector<int> sorted_directory_indices;
+        sorted_directory_indices.push_back(NONE);
+
+        files_by_directory_type& files_by_directory = files_by_directory_by_typecode[type];
+        
+        for(files_by_directory_type::iterator i = files_by_directory.begin(); i != files_by_directory.end(); i++)
+        {
+                if(i->first != NONE)
+                {
+                        sorted_directory_indices.push_back(i->first);
+                }
+        }
+
+        sort(sorted_directory_indices.begin() + 1, sorted_directory_indices.end(), indexed_directory_less());
+        
+        // Loop over groups
+        for(int i = 0; i < sorted_directory_indices.size(); i++)
+        {
+                int index = sorted_directory_indices[i];
+                if(index != NONE)
+                {
+                        AppendMenu(menu, "\p ");
+                        count++;
+                        
+                        SetMenuItemText(menu, count, directories[index].GetSpec().name);
+#if TARGET_API_MAC_CARBON
+                        DisableMenuItem(menu, count);
 #else
-			SetMenuItemText(menu, CountMItems(menu), accessory_files[index].GetSpec().name);
+                        DisableItem(menu, count);
 #endif
 
-			if(file_descriptions[index].checksum==checksum)
+                        // record this menu item as unusable
+                        menu_items[type].push_back(NONE);
+                }
+
+                vector<int>& file_indices = files_by_directory[index];
+
+                // Sort group items
+                sort(file_indices.begin(), file_indices.end(), indexed_file_description_less());
+                
+                // Loop over items within group
+                for(int j = 0; j < file_indices.size(); j++)
+                {
+                        file_description& description = file_descriptions[file_indices[j]];
+
+                        AppendMenu(menu, "\p ");
+                        count++;
+                        
+                        SetMenuItemText(menu, count, description.file.GetSpec().name);
+
+                        // record this menu item
+                        menu_items[type].push_back(file_indices[j]);
+
+                        bool specs_equal = FSSpecs_equal(description.file.GetSpec(), file);
+        
+                        if(!good_match && description.checksum==checksum)
 			{
-#if defined(TARGET_API_MAC_CARBON)
-				value= CountMenuItems(menu);
-#else
-				value= CountMItems(menu);
-#endif
+				value= count;
+
+                                if(specs_equal)
+                                        good_match = true;
 			}
+
+                        if(!good_match && specs_equal)
+                        {
+                                file_match_value= count;
+                        }                                
 		}
 	} 
 
 	/* Set the max value */
 	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
-#if defined(TARGET_API_MAC_CARBON)
-	count= CountMenuItems(menu);
-#else
-	count= CountMItems(menu);
-#endif
 
 	if(count==0)
 	{
@@ -1160,17 +1361,28 @@ static void fill_in_popup_with_filetype(
 			value= 1;
 			physics_valid= false;
 			count++;
+                        menu_items[type].push_back(NONE);
 		}
 	} 
 	
 	SetControlMaximum(control, count);
-	
+
+        if(!good_match && file_match_value != NONE)
+                value = file_match_value;
+        
 	if(value != NONE)
 	{
 		SetControlValue(control, value);
 	} else {
 		/* Select the default one, somehow.. */
-		SetControlValue(control, 1);
+                for(int i = 1; i < count; i++)
+                {
+                        if(menu_items[type][i] != NONE)
+                        {
+                                SetControlValue(control, i);
+                                break;
+                        }
+                }
 	}
 }
 
@@ -1180,7 +1392,6 @@ static unsigned long find_checksum_and_file_spec_from_dialog(
 	uint32 type,
 	FSSpec *file)
 {
-	short index;
 	ControlHandle control;
 	short item_type, value;
 	Rect bounds;
@@ -1189,19 +1400,12 @@ static unsigned long find_checksum_and_file_spec_from_dialog(
 	/* Get the dialog item hit */
 	GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
 	value= GetControlValue(control);
-	
-	for(index= 0; index<accessory_file_count; ++index)
-	{
-		if(file_descriptions[index].file_type==type)
-		{
-			if(!--value)
-			{
-				/* This is it */
-				*file= accessory_files[index].GetSpec();
-				checksum= file_descriptions[index].checksum;
-			}
-		}
-	}
+
+        int index= menu_items[type][value];
+        assert(index != NONE);
+
+        *file= file_descriptions[index].file.GetSpec();
+        checksum= file_descriptions[index].checksum;
 
 	return checksum;
 }
@@ -1210,7 +1414,7 @@ static void SetToLoneFile(uint32 Type, FSSpec& File, unsigned long& Checksum)
 {
 	int LoneFileIndex = NONE;	// Null value (-1)
 	
-	for (int index=0; index<accessory_file_count; index++)
+	for (int index=0; index<file_descriptions.size(); index++)
 	{
 		if (file_descriptions[index].file_type == Type)
 		{
@@ -1226,7 +1430,7 @@ static void SetToLoneFile(uint32 Type, FSSpec& File, unsigned long& Checksum)
 	// Do the setting
 	if (LoneFileIndex != NONE)
 	{
-		File = accessory_files[LoneFileIndex].GetSpec();
+		File = file_descriptions[LoneFileIndex].file.GetSpec();
 		Checksum = file_descriptions[LoneFileIndex].checksum;
 	}
 }

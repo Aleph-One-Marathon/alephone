@@ -73,8 +73,11 @@ public:
 
 	/* Callback	functions, if returns true, you add it.  If */
 	/*  callback==NULL, adds all found.							<-  */
+        // ZZZ semantics change: if _callback_only and callback returns false, terminate the enumeration
 	bool (*callback)(FileSpecifier& File, void *data);
 	void *user_data;		/* Passed to callback above.		<-  */
+        // ZZZ addition: will be called when entering and leaving a subdirectory
+        bool (*directory_change_callback)(FileSpecifier& Directory, bool EnteringDirectory, void* data);
 	
 	// Clears out the memory contents
 	void Clear();

@@ -89,6 +89,7 @@ void initialize_typecodes();
 // Accessors
 uint32 get_typecode(int which);
 void set_typecode(int which, uint32 _type);
+OSType get_typecode_for_file_type(OSType inType);
 
 // These are no longer constants, which will cause trouble for switch/case constructions
 // These have been eliminated in favor of using the above enum of abstracted filetypes

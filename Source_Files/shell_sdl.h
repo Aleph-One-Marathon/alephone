@@ -107,6 +107,8 @@ void free_and_unlock_memory(void);
 
 #include "alephversion.h"
 
+#include "Logging.h"
+
 
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
@@ -483,6 +485,7 @@ void alert_user(short severity, short resid, short item, OSErr error)
 {
 	char str[256];
 	getcstr(str, resid, item);
+        GetCurrentLogger()->logMessage(logDomain, severity == infoError ? logErrorLevel : logFatalLevel, __FILE__, __LINE__, "%s: %s (%d)", severity == infoError ? "alert" : "fatal alert", str, error);
 	if (SDL_GetVideoSurface() == NULL) {
 		fprintf (stderr, "%s: %s (error %d)\n", severity == infoError ? "INFO" : "FATAL", str, error);
 	} else {

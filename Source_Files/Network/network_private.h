@@ -280,7 +280,11 @@ struct gather_player_data {
 // 1 on accept, never 2; old code interprets any nonzero 'accepted' as an accept.)
 enum {
         kNaiveJoinerAccepted = 1,
-        kResumeNetgameSavvyJoinerAccepted = 2
+        kResumeNetgameSavvyJoinerAccepted = 2,	// build knows how to resume saved games as netgames
+        kFixedTagAndBallJoinerAccepted = 3,	// build lacks multiple-ball-drop bug and tag-suicide bug
+
+        // this should always be updated to match the current best (unless our build isn't up to spec)
+        kStateOfTheArtJoinerAccepted = kFixedTagAndBallJoinerAccepted
 };
 
 struct accept_gather_data {

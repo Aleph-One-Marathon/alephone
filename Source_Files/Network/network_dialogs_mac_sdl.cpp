@@ -153,13 +153,10 @@ static void draw_beveled_text_box(bool inset, Rect *box, short bevel_size, RGBCo
 // ZZZ: moved a few static functions to network_dialogs.h so we can share
 
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
-///* static */ void setup_dialog_for_game_type(DialogPtr dialog, short game_type);
 static void draw_player_box_with_team(Rect *rectangle, short player_index);
 
 static void setup_network_speed_for_join(DialogPtr dialog);
 static void setup_network_speed_for_gather(DialogPtr dialog);
-/* static */ void setup_for_untimed_game(DialogPtr dialog);
-/* static */ void setup_for_timed_game(DialogPtr dialog);
 static short get_game_duration_radio(DialogPtr dialog);
 
 static void lost_player_callback(const SSLP_ServiceInstance* player);
@@ -438,11 +435,21 @@ int network_join(
 		SetDialogItem(dialog, iPLAYER_DISPLAY_AREA, kUserDialogItem|kItemDisableBit,
 			(Handle)update_player_list_item_upp, &item_rect);
 
+#if TARGET_API_MAC_CARBON
+                CopyCStringToPascal(network_preferences->join_address, ptemporary);
+#else
+                strncpy(temporary, network_preferences->join_address, 256);
+                c2pstr(temporary);
+#endif
+                copy_pstring_to_text_field(dialog, iJOIN_BY_HOST_ADDRESS, ptemporary);
+
+                modify_boolean_control(dialog, iJOIN_BY_HOST, NONE, network_preferences->join_by_address);
+
 		// JTP: Requires control embedding
 		// I would have put these in a pane by themselves if I could have figured out
 		// how to without having a visible group box
-		modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL,   sUserWantsJoinHinting?CONTROL_ACTIVE:CONTROL_INACTIVE);
-		modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, sUserWantsJoinHinting?CONTROL_ACTIVE:CONTROL_INACTIVE);
+		modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL,   network_preferences->join_by_address?CONTROL_ACTIVE:CONTROL_INACTIVE);
+		modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, network_preferences->join_by_address?CONTROL_ACTIVE:CONTROL_INACTIVE);
 
 #ifdef USE_MODEM	
 		/* Adjust the transport layer using what's available */
@@ -472,29 +479,29 @@ int network_join(
 					myPlayerInfo.color= GetControlValue((ControlHandle) item_handle) - 1;
 					myPlayerInfo.desired_color= myPlayerInfo.color;
 					memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
-					if(get_dialog_control_value(dialog, iJOIN_BY_HOST))
+					if(get_boolean_control_value(dialog, iJOIN_BY_HOST))
 					{
-						sUserWantsJoinHinting = true;
+						network_preferences->join_by_address = true;
 						GetDialogItem(dialog, iJOIN_BY_HOST_ADDRESS, &item_type, &item_handle, &item_rect);
 						GetDialogItemText(item_handle, ptemporary);
 						if (*temporary > kJoinHintingAddressLength)
 							*temporary = kJoinHintingAddressLength;
 #if defined(TARGET_API_MAC_CARBON)
-						CopyPascalStringToC(ptemporary, sJoinHintingAddress);
+						CopyPascalStringToC(ptemporary, network_preferences->join_address);
 #else
-						pstrcpy((unsigned char *)sJoinHintingAddress, ptemporary); 
-						p2cstr((unsigned char *)sJoinHintingAddress);
+						pstrcpy((unsigned char *)network_preferences->join_address, ptemporary); 
+						p2cstr((unsigned char *)network_preferences->join_address);
 #endif
 					}
 					else
-						sUserWantsJoinHinting = false;
+						network_preferences->join_by_address = false;
 #if !defined(TARGET_API_MAC_CARBON)
 					// Aqua will handle if we're unresponseive
 					SetCursor(*GetCursor(watchCursor));
 #endif
 					did_join= NetGameJoin(myPlayerInfo.name, PLAYER_TYPE, (void *) &myPlayerInfo, sizeof(myPlayerInfo), 
 						MARATHON_NETWORK_VERSION,
-						sUserWantsJoinHinting ? sJoinHintingAddress : NULL
+						network_preferences->join_by_address ? network_preferences->join_address : NULL
 						);
 					
 #if !defined(USE_CARBON_ACCESSORS)
@@ -940,11 +947,6 @@ bool check_setup_information(
 // ZZZ: moved this function to csdialogs_macintosh.cpp, and made one like it for csdialogs_sdl.cpp
 
 // JTP: Routines initially copied from network_dialogs_sdl.cpp
-
-// This could be stored in prefs I guess, but we'll just hold onto it in the short term.
-// Note interestingly that it's only used to hold the value between dialog boxes; it's not kept updated
-// during a dialog's run.
-static bool	sUserWantsAutogather = false;
 
 #warning SDL Autogather unhandled - Non critical
 #if 0

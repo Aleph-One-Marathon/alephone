@@ -48,6 +48,11 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 Feb 16, 2002 (Br'fin (Jeremy Parsons)):
 	Removed enums for long removed standard file preview junk
 	Replaced creation of old preview junk with NavigationServices preview junk
+
+Apr 22, 2003 (Woody Zenfell):
+        Reworked default-support-files getting; searches A1's tree for the first match rather
+        than giving Map, Shapes, Sounds, Physics Model special status.  Means no more need
+        to have those files alongside A1 application!
 */
 
 #include "macintosh_cseries.h"
@@ -62,6 +67,7 @@ Feb 16, 2002 (Br'fin (Jeremy Parsons)):
 #include "game_window.h"
 #include "game_errors.h"
 #include "FileHandler.h"
+#include "find_files.h"
 
 #include "tags.h"
 #include "wad.h"
@@ -101,27 +107,152 @@ static void add_overhead_thumbnail(FileSpecifier &File);
 
 void get_default_map_spec(FileSpecifier& File)
 {
-	File.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP)); // _typecode_scenario
-	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+        get_default_file_specs(&File, NULL, NULL, NULL);
 }
 
 void get_default_physics_spec(FileSpecifier& File)
 {
-	File.SetNameWithPath(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL)); // _typecode_physics
-	// Don't care if it does not exist
+        get_default_file_specs(NULL, NULL, NULL, &File);
 }
 
 void get_default_shapes_spec(FileSpecifier& File)
 {
-	File.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameSHAPES8)); // _typecode_shapes
-	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+        get_default_file_specs(NULL, &File, NULL, NULL);
 }
 
 void get_default_sounds_spec(FileSpecifier& File)
 {
-	File.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameSOUNDS8)); // _typecode_sounds
-	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+        get_default_file_specs(NULL, NULL, &File, NULL);
 }
+
+struct file_type_to_find_rec
+{
+        int		type;
+        bool 		found;
+        FileSpecifier	file;
+        FileSpecifier*	output_file;
+};
+
+static int file_typecodes_to_find[] =
+{
+        _typecode_scenario,
+        _typecode_shapes,
+        _typecode_sounds,
+        _typecode_physics
+};
+
+static const int NUMBER_OF_FILE_TYPECODES_TO_FIND = sizeof(file_typecodes_to_find) / sizeof(file_typecodes_to_find[0]);
+
+static file_type_to_find_rec file_types_to_find[NUMBER_OF_FILE_TYPECODES_TO_FIND];
+
+// ZZZ: code lifted and slightly altered from preferences_macintosh.h
+static bool found_some_file_callback(
+                                               FileSpecifier& File,
+                                               void *data)
+{
+        bool FoundAll = true;
+        int Filetype = File.GetType();
+        for(int i = 0; i < NUMBER_OF_FILE_TYPECODES_TO_FIND; i++)
+        {
+                if(!file_types_to_find[i].found && Filetype == file_types_to_find[i].type)
+                {
+                        file_types_to_find[i].found = true;
+                        file_types_to_find[i].file = File;
+                }
+                FoundAll &= file_types_to_find[i].found;
+        }
+
+        // Return value indicates whether we want to continue the search
+        return !FoundAll;
+}
+
+static void search_from_directory(DirectorySpecifier& BaseDir)
+//	FSSpec *file)
+{
+        FileFinder pb;
+
+        pb.Clear();
+        pb.version= 0;
+        // LP change: always recurse
+        pb.flags= _ff_recurse | _ff_callback_with_catinfo;
+#if 0
+#ifdef FINAL
+        pb.flags= _ff_recurse | _ff_callback_with_catinfo;
+#else
+        pb.flags= _ff_callback_with_catinfo;
+#endif
+#endif
+        pb.search_type= _callback_only;
+        pb.BaseDir = BaseDir;
+        pb.Type= WILDCARD_TYPE;
+        pb.buffer= NULL;
+        pb.max= 32767; // maximum
+        pb.callback= found_some_file_callback;
+        pb.user_data= NULL;
+        pb.count= 0;
+
+        vassert(pb.Find(), csprintf(temporary, "Error: %d", pb.GetError()));
+}
+
+// ZZZ new function finds any or all default files at once.
+// default file is now the first matching file of correct type (no more "Map", "Shapes", "Sounds", etc.)
+void get_default_file_specs(FileSpecifier* outMapSpec, FileSpecifier* outShapesSpec, FileSpecifier* outSoundsSpec, FileSpecifier* outPhysicsSpec)
+{
+        for(int i = 0; i < NUMBER_OF_FILE_TYPECODES_TO_FIND; i++)
+        {
+                file_types_to_find[i].type = file_typecodes_to_find[i];
+                
+                // Set up to find what the caller is looking for (anything not NULL)
+                switch(file_types_to_find[i].type)
+                {
+                        case _typecode_scenario:
+                                file_types_to_find[i].output_file = outMapSpec;
+                                break;
+                        case _typecode_shapes:
+                                file_types_to_find[i].output_file = outShapesSpec;
+                                break;
+                        case _typecode_sounds:
+                                file_types_to_find[i].output_file = outSoundsSpec;
+                                break;
+                        case _typecode_physics:
+                                file_types_to_find[i].output_file = outPhysicsSpec;
+                                break;
+                        default:
+                                assert(false);
+                                break;
+                }
+
+                file_types_to_find[i].found = (file_types_to_find[i].output_file == NULL);
+        }
+
+        // Do the search
+        DirectorySpecifier BaseDir;
+        Files_GetRootDirectory(BaseDir);
+        search_from_directory(BaseDir);
+
+        // Write out the results and determine whether we found the required files.
+        bool FoundAllRequired = true;
+        for(int i = 0; i < NUMBER_OF_FILE_TYPECODES_TO_FIND; i++)
+        {
+                if(file_types_to_find[i].found)
+                {
+                        if(file_types_to_find[i].output_file != NULL)
+                                *(file_types_to_find[i].output_file) = file_types_to_find[i].file;
+                }
+                else
+                {
+                        // We don't care if we don't find physics file
+                        if(file_types_to_find[i].type != _typecode_physics)
+                                FoundAllRequired = false;
+                }
+        }
+
+        if(!FoundAllRequired)
+        {
+                // This will also exit the application.
+                alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+        }
+}        
 
 
 // extern "C" {

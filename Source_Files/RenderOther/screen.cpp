@@ -168,6 +168,9 @@ Feb 24, 2002 (Loren Petrich):
 
 Apr 29, 2002 (Loren Petrich):
 	Added automatic setting of screen resolution on request
+
+Apr 22, 2003 (Woody Zenfell):
+        Enabling use of OGL_DrawHUD(); reducing unnecessary OGL_SwapBuffers()
 */
 
 /*
@@ -209,6 +212,9 @@ Apr 29, 2002 (Loren Petrich):
 
 //CP addition: scripting support
 #include "scripting.h"
+
+// ZZZ: egads, this stuff just keeps getting hairier
+extern bool OGL_HUDActive;
 
 #ifdef env68k
 #pragma segment screen
@@ -963,8 +969,14 @@ void render_screen(
 		OGL_MapActive = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Map);
 	else
 		OGL_MapActive = false;
-	
-	render_view(world_view, world_pixels_structure);
+
+        // Is HUD to be drawn with OpenGL?
+        if (OGL_IsActive())
+                OGL_HUDActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_HUD);
+        else
+                OGL_HUDActive = false;
+
+        render_view(world_view, world_pixels_structure);
 	
 	switch (screen_mode.acceleration)
 	{
@@ -986,14 +998,11 @@ void render_screen(
 			// LP change: put in OpenGL buffer swapping when the main view or the overhead map
 			// are being rendered in OpenGL.
 			// Otherwise, if OpenGL is active, then blit the software rendering to the screen.
-			bool OGL_WasUsed;
 			bool Use_OGL_2D;
-			OGL_WasUsed = false;
 			Use_OGL_2D = OGL_Get2D();
 			if ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 			{
 				// Main or map view already rendered
-				OGL_WasUsed = OGL_SwapBuffers();
 			}
 			else
 			{
@@ -1002,48 +1011,59 @@ void render_screen(
 #if defined(USE_CARBON_ACCESSORS)
 				Rect portRect;
 				GetPortBounds(world_pixels, &portRect);
-				OGL_WasUsed = OGL_Copy2D(world_pixels, portRect, portRect,true,true);
+				OGL_Copy2D(world_pixels, portRect, portRect,true,false);
 #else
-				OGL_WasUsed = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,true,true);
+				OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,true,false);
 #endif
 			}
-			if (!OGL_WasUsed) update_screen(BufferRect,ViewRect,HighResolution);
-			if (HUD_RenderRequest)
-			{
-				if (Use_OGL_2D)
-				{
-					// This horrid-looking resizing does manage to get the HUD to work properly...
-					struct DownwardOffsetSet
-					{
-						short Top, Bottom;
-					};
-					// Formula: 1st value = 40 + (3/16)*(true 1st value)
-					const DownwardOffsetSet OGL_DownwardOffsets[NUMBER_OF_VIEW_SIZES] =
-					{
-						{160, 480},		//  _320_160_HUD
-						{160, 480},		//  _480_240_HUD
-						{160, 480},		//  _640_320_HUD
-						{160, 480},		//  _640_480
-						{190, 600},		//  _800_400_HUD
-						{190, 600},		//  _800_600
-						{232, 768},		// _1024_512_HUD
-						{232, 768},		// _1024_768
-						{280, 1024},	// _1280_640_HUD
-						{280, 1024},	// _1280_1024
-						{340, 1200},	// _1600_800_HUD
-						{340, 1200},	// _1600_1200
-					};
-					const DownwardOffsetSet& Set = OGL_DownwardOffsets[msize];
-					HUD_DestRect.top = Set.Top;
-					HUD_DestRect.bottom = Set.Bottom;
-					// Paint on the back buffer and flip it to the front
-					OGL_SetWindow(ScreenRect,HUD_DestRect,true);
-					OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,true,true);
-				}
-				else
-					DrawHUD(HUD_SourceRect,HUD_DestRect);
-				HUD_RenderRequest = false;
-			}
+			if (!OGL_IsActive())
+                                update_screen(BufferRect,ViewRect,HighResolution);
+
+                        if(OGL_HUDActive)
+                        {
+                                OGL_SetWindow(ScreenRect,ScreenRect,true);
+                                OGL_DrawHUD(HUD_DestRect, ticks_elapsed);
+                        }
+                        else {
+                                if (HUD_RenderRequest)
+                                {
+                                        if (Use_OGL_2D)
+                                        {
+                                                // This horrid-looking resizing does manage to get the HUD to work properly...
+                                                struct DownwardOffsetSet
+                                                {
+                                                        short Top, Bottom;
+                                                };
+                                                // Formula: 1st value = 40 + (3/16)*(true 1st value)
+                                                const DownwardOffsetSet OGL_DownwardOffsets[NUMBER_OF_VIEW_SIZES] =
+                                                {
+                                                        {160, 480},		//  _320_160_HUD
+                                                        {160, 480},		//  _480_240_HUD
+                                                        {160, 480},		//  _640_320_HUD
+                                                        {160, 480},		//  _640_480
+                                                        {190, 600},		//  _800_400_HUD
+                                                        {190, 600},		//  _800_600
+                                                        {232, 768},		// _1024_512_HUD
+                                                        {232, 768},		// _1024_768
+                                                        {280, 1024},	// _1280_640_HUD
+                                                        {280, 1024},	// _1280_1024
+                                                        {340, 1200},	// _1600_800_HUD
+                                                        {340, 1200},	// _1600_1200
+                                                };
+                                                const DownwardOffsetSet& Set = OGL_DownwardOffsets[msize];
+                                                HUD_DestRect.top = Set.Top;
+                                                HUD_DestRect.bottom = Set.Bottom;
+                                                // Paint on the back buffer and flip it to the front
+                                                OGL_SetWindow(ScreenRect,HUD_DestRect,true);
+                                                OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,true,false);
+                                        }
+                                        else
+                                                DrawHUD(HUD_SourceRect,HUD_DestRect);
+                                        HUD_RenderRequest = false;
+                                }
+                        }
+
+                        if(OGL_IsActive()) OGL_SwapBuffers();
 // #endif
 			break;
 		

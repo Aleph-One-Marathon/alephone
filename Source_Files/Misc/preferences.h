@@ -43,7 +43,10 @@ Oct 22, 2001 (Woody Zenfell):
 
 May 16, 2002 (Woody Zenfell):
     New control option "don't auto-recenter view"
-*/
+
+Apr 10, 2003 (Woody Zenfell):
+    Join hinting and autogathering have Preferences entries now
+ */
 
 #include "interface.h"
 #include "ChaseCam.h"
@@ -63,6 +66,10 @@ struct graphics_preferences_data
 #endif
 	// LP change: added OpenGL support
 	OGL_ConfigureData OGL_Configure;
+
+        // ZZZ addition: intended to be enabled by user hand-editing file (no UI),
+        // for testing things not ready for prime time
+        bool experimental_rendering;
 };
 
 struct serial_number_data
@@ -84,16 +91,14 @@ struct network_preferences_data
 	int32 time_limit;
 	int16 kill_limit;
 	int16 entry_point;
+        bool autogather;
+        bool join_by_address;
+        char join_address[256];
 };
 
 struct player_preferences_data
 {
-// ZZZ: We will always use a Pstring here so we can share routines more effectively
-#if 1 //was ifdef mac
 	unsigned char name[PREFERENCES_NAME_LENGTH+1];
-#else
-	char name[PREFERENCES_NAME_LENGTH+1];
-#endif
 	int16 color;
 	int16 team;
 	uint32 last_time_ran;
@@ -147,6 +152,10 @@ struct environment_preferences_data
 #ifdef SDL
 	char theme_dir[256];
 #endif
+        // ZZZ: these aren't really environment preferences, but
+        // preferences that affect the environment preferences dialog
+        bool group_by_directory;	// if not, display popup as one giant flat list
+        bool reduce_singletons;		// make groups of a single element part of a larger parent group
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

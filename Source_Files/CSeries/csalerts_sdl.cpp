@@ -22,11 +22,16 @@
  *  csalerts_sdl.cpp - Game alerts and debugging support, SDL implementation
  *
  *  Written in 2000 by Christian Bauer
+
+April 22, 2003 (Woody Zenfell):
+        Now dumping alert text etc. with Logging as well
  */
 
 #include "cseries.h"
 
 #include <stdio.h>
+
+#include "Logging.h"
 
 extern "C" void debugger(const char *message);
 
@@ -37,6 +42,7 @@ extern "C" void debugger(const char *message);
 
 void pause_debug(void)
 {
+        logNote("pause_debug called");
 	fprintf(stderr, "pause\n");
 }
 
@@ -47,6 +53,7 @@ void pause_debug(void)
 
 void vpause(char *message)
 {
+        logWarning1("vpause: %s", message);
 	fprintf(stderr, "vpause %s\n", message);
 }
 
@@ -57,6 +64,7 @@ void vpause(char *message)
 
 void halt(void)
 {
+        logFatal("halt called");
 	fprintf(stderr, "halt\n");
 	abort();
 }
@@ -68,6 +76,7 @@ void halt(void)
 
 void vhalt(char *message)
 {
+        logFatal1("vhalt: %s", message);
 	fprintf(stderr, "vhalt %s\n", message);
 	abort();
 }
