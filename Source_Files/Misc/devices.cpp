@@ -441,14 +441,25 @@ void try_and_toggle_control_panel(
 							SET_CONTROL_PANEL_STATUS(side, state);
 							set_control_panel_texture(side);
 						}
+						//CP Addition: Script Hook; LP: this and its successors made consistent with change_panel_state()
+						activate_tag_switch_trap(side->control_panel_permutation);
+						
 						break;
 					case _panel_is_light_switch:
 						state= !state;
 						make_sound= set_light_status(side->control_panel_permutation, state);
+						
+						//CP Addition: Script Hook
+						activate_light_switch_trap(side->control_panel_permutation);
+						
 						break;
 					case _panel_is_platform_switch:
 						state= !state;
 						make_sound= try_and_change_platform_state(get_polygon_data(side->control_panel_permutation)->permutation, state);
+						
+						//CP Addition: Script Hook
+						activate_platform_switch_trap(side->control_panel_permutation);
+						
 						break;
 				}
 				
