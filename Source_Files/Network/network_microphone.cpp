@@ -112,7 +112,7 @@ bool has_sound_input_capability(
 		}
 	}
 
-	return is_capable;
+	return false; //AS: mic doesn't work, so this disables the code
 }
 
 OSErr open_network_microphone(
