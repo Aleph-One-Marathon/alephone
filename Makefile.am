@@ -5,7 +5,7 @@ SUBDIRS = Source_Files tools data
 # Requires automake 1.4
 AUTOMAKE_OPTIONS = 1.4 foreign
 
-EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix Makefile.BeOS \
+EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows Makefile.BeOS \
   docs/MML.html docs/Cheat_Codes
 
 dist-hook: AlephOne.spec
