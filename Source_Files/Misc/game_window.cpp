@@ -77,6 +77,16 @@ Jul 16, 2001 (Loren Petrich):
 #include "FontHandler.h"
 #include "screen.h"
 
+
+#ifdef HAVE_OPENGL
+# if defined (__APPLE__) && defined (__MACH__)
+#  include <OpenGL/gl.h>
+# else
+#  include <GL/gl.h>
+# endif
+#endif
+
+
 #ifdef env68k
 	#pragma segment screen
 #endif

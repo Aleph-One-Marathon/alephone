@@ -97,6 +97,11 @@ Aug 31, 2000 (Loren Petrich):
 
 Apr 27, 2001 (Loren Petrich):
 	Made player guided missiles optional
+        
+Oct 21, 2001 (Woody Zenfell):
+        Made player_shape_definitions available to the rest of the system -
+        in particular, so that SDL network dialog widgets can use it to render
+        player icons.
 */
 
 #include "cseries.h"
@@ -194,17 +199,7 @@ struct action_queue /* 8 bytes */
 	uint32 *buffer;
 };
 
-struct player_shape_definitions
-{
-	short collection;
-
-	short dying_hard, dying_soft;
-	short dead_hard, dead_soft;
-	short legs[NUMBER_OF_PLAYER_ACTIONS]; /* stationary, walking, running, sliding, airborne */
-	short torsos[PLAYER_TORSO_SHAPE_COUNT]; /* NONE, ..., double pistols */
-	short charging_torsos[PLAYER_TORSO_SHAPE_COUNT]; /* NONE, ..., double pistols */
-	short firing_torsos[PLAYER_TORSO_SHAPE_COUNT]; /* NONE, ..., double pistols */
-};
+// ZZZ: moved struct player_shape_information to player.h for sharing
 
 struct damage_response_definition
 {
@@ -848,6 +843,11 @@ void mark_player_collections(
 	mark_interface_collections(loading);
 	
 	return;
+}
+
+player_shape_definitions*
+get_player_shape_definitions() {
+    return &player_shapes;
 }
 
 void set_local_player_index(

@@ -54,8 +54,9 @@ Jan 14, 2001 (Loren Petrich):
 
 struct screen_rectangle;
 
-struct FontSpecifier
+class FontSpecifier
 {
+public:
 	enum {
 		// How many characters
 		NameSetLen = 64

@@ -80,8 +80,13 @@ static void keyboard_dialog(void *arg);
  *  Get user name
  */
 
-static void get_name_from_system(char *name)
+// ZZZ: changed to return a pstring
+static void get_name_from_system(unsigned char *outName)
 {
+    // ZZZ: skipping usual string safety pickiness, I'm tired tonight.
+    // Hope caller's buffer is big enough.
+    char* name = (char*) outName;
+
 #if defined(unix) || defined(__BEOS__) || (defined (__APPLE__) && defined (__MACH__))
 
 	char *login = getlogin();
@@ -101,6 +106,9 @@ static void get_name_from_system(char *name)
 #else
 #error get_name_from_system() not implemented for this platform
 #endif
+
+    // ZZZ: this operates in-place.
+    a1_c2pstr(name);
 }
 
 
@@ -157,9 +165,15 @@ void handle_preferences(void)
  *  Player dialog
  */
 
-static const char *level_labels[6] = {
+// ZZZ change: now gotten from MML (StringSet)
+/*static const char *level_labels[6] = {
 	"Kindergarten", "Easy", "Normal", "Major Damage", "Total Carnage", NULL
 };
+*/
+enum {
+    kDifficultyLevelsStringSetID	= 145
+};
+// XXX (ZZZ): that constant is duplicated in network_dialogs_sdl.cpp; should be shared in a header somewhere.
 
 static void player_dialog(void *arg)
 {
@@ -167,21 +181,40 @@ static void player_dialog(void *arg)
 
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
-	w_select *level_w = new w_select("Difficulty", player_preferences->difficulty_level, level_labels);
+	
+        d.add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR));
+	
+        d.add(new w_spacer());
+	
+        w_select *level_w = new w_select("Difficulty", player_preferences->difficulty_level, NULL /*level_labels*/);
+        level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
 	d.add(level_w);
+        
 	d.add(new w_spacer());
-	d.add(new w_static_text("Network Appearance"));
-	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, player_preferences->name);
-	d.add(name_w);
-	w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
+	
+        d.add(new w_static_text("Appearance"));
+
+    // ZZZ change: use Pstring in the preferences.
+	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
+	name_w->set_identifier(iNAME);
+        name_w->set_enter_pressed_callback(dialog_try_ok);
+        name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
+    d.add(name_w);
+
+    w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
 	d.add(pcolor_w);
 	w_player_color *tcolor_w = new w_player_color("Team Color", player_preferences->team);
 	d.add(tcolor_w);
-	d.add(new w_spacer());
-	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
+	
+        d.add(new w_spacer());
+        
+	w_left_button* ok_button = new w_left_button("ACCEPT", dialog_ok, &d);
+        ok_button->set_identifier(iOK);
+        d.add(ok_button);
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+        // ZZZ: we don't do this earlier because it (indirectly) invokes the name_typing collback, which needs iOK.
+        copy_pstring_to_text_field(&d, iNAME, player_preferences->name);
 
 	// Clear screen
 	clear_screen();
@@ -190,11 +223,21 @@ static void player_dialog(void *arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
+        // ZZZ: changed to use Pstring in preferences.
 		const char *name = name_w->get_text();
+        /*
 		if (strcmp(name, player_preferences->name)) {
 			strcpy(player_preferences->name, name);
 			changed = true;
 		}
+        */
+        unsigned char theOldNameP[PREFERENCES_NAME_LENGTH+1];
+        pstrncpy(theOldNameP, player_preferences->name, PREFERENCES_NAME_LENGTH+1);
+        char*   theOldName = a1_p2cstr(theOldNameP);
+        if(strcmp(name, theOldName)) {
+            copy_pstring_from_text_field(&d, iNAME, player_preferences->name);
+            changed = true;
+        }
 
 		int level = level_w->get_selection();
 		if (level != player_preferences->difficulty_level) {

@@ -177,6 +177,7 @@ int main(int argc, char **argv)
 		"http://source.bungie.org/\n\n"
 		"Original code by Bungie Software <http://www.bungie.com/>\n"
 		"Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
+		"TCP/IP networking by Woody Zenfell\n"
 	    "Expat XML library by James Clark\n"
 		"SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n\n"
 		"This is free software with ABSOLUTELY NO WARRANTY.\n"

@@ -1,4 +1,5 @@
 /*
+ *  network_lookup_sdl.cpp - Network entity lookup functions, SDL implementation
 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
@@ -21,21 +22,78 @@
 /*
  *  network_lookup_sdl.cpp - Network entity lookup functions, SDL implementation
  *
- *  Written in 2000 by Christian Bauer
+ *  Created in 2000 by Christian Bauer (skeletal)
+ *
+ *  Actual code (SSLP-based) written in September 2001 by Woody Zenfell, III.
+ *
  */
 
-#include "cseries.h"
-#include "sdl_network.h"
+#include 	"cseries.h"
+#include 	"sdl_network.h"
+
+#include	"SSLP_API.h"
+
+// ZZZ: Note: I have taken some pains to make sure lookup and name registration accept P-strings, and do the right thing
+// (i.e. make a 'hybrid string') so the C-style SSLP code works.  I hope this makes it easier to port this code back into
+// the MacOS "classic" version, should somebody want to do that.  (Would want to implement NetLookupOpen with the Mac-style
+// interface, and manage lists etc.  Code to do that sort of thing in SDL version is inside the found_players widget.)
+
+
+// FILE-LOCAL TYPES
+
+
+// FILE-LOCAL STORAGE
+static	bool	sNameRegistered		= false;
+static	bool	sLookupInProgress	= false;
+
+
+// Helper function: make the "\p%s%d", type, version string C-string compatible and truncate it to fit
+static void
+NetLookup_BuildTypeString(char* outDest, const unsigned char* inType, short inVersion) {
+    unsigned char theLength = inType[0];
+    
+    // Make Pstring Cstring-compatible - we truncate to SSLP_MAX_TYPE_LENGTH - 8 string length.
+    if(theLength > SSLP_MAX_TYPE_LENGTH - 8)
+        theLength = SSLP_MAX_TYPE_LENGTH - 8;
+    
+    // This leaves room for length byte, terminating null, and longest 'short' string (-32768).
+
+    // Length byte will be written last
+    
+    // Type string characters (this is the part that gets truncated if necessary)
+    memcpy(&outDest[1], &inType[1], theLength);
+    
+    // Version as string
+    sprintf(&outDest[theLength + 1], "%hd", inVersion);
+
+    // sprintf null-terminates the string for us.
+
+	// OK, now that we know the correct length, go back and write it
+	outDest[0] = strlen(&outDest[1]);
+}
 
 
 /*
  *  Start lookup
  */
 
-OSErr NetLookupOpen(unsigned char *name, unsigned char *type, unsigned char *zone, short version, lookupUpdateProcPtr updateProc, lookupFilterProcPtr filterProc)
+OSErr NetLookupOpen_SSLP(const unsigned char *type, short version,
+        SSLP_Service_Instance_Status_Changed_Callback foundInstance,
+        SSLP_Service_Instance_Status_Changed_Callback lostInstance,
+        SSLP_Service_Instance_Status_Changed_Callback nameChanged)
 {
-printf("NetLookupOpen %s, %s, %s, %d\n", name, type, zone, version);
-	return 0;
+//    printf("NetLookupOpen_SSLP %d\n", version);
+
+    char theType[SSLP_MAX_TYPE_LENGTH];
+
+    NetLookup_BuildTypeString(theType, type, version);
+
+    // Want to hear about service instances.
+    SSLP_Locate_Service_Instances(theType, foundInstance, lostInstance, nameChanged);
+    
+    sLookupInProgress = true;
+    
+    return 0;
 }
 
 
@@ -45,7 +103,14 @@ printf("NetLookupOpen %s, %s, %s, %d\n", name, type, zone, version);
 
 void NetLookupClose(void)
 {
-printf("NetLookupClose\n");
+//    printf("NetLookupClose\n");
+
+    if(sLookupInProgress) {
+        // No longer interested in hearing about service instances.
+        SSLP_Stop_Locating_Service_Instances(NULL);
+        
+        sLookupInProgress = false;
+    }
 }
 
 
@@ -55,7 +120,7 @@ printf("NetLookupClose\n");
 
 void NetLookupRemove(short index)
 {
-printf("NetLookupRemove %d\n", index);
+//    printf("NetLookupRemove %d\n", index);
 }
 
 
@@ -65,7 +130,7 @@ printf("NetLookupRemove %d\n", index);
 
 void NetLookupInformation(short index, AddrBlock *address, EntityName *entity)
 {
-printf("NetLookupInformation %d\n", index);
+//    printf("NetLookupInformation %d\n", index);
 }
 
 
@@ -75,7 +140,7 @@ printf("NetLookupInformation %d\n", index);
 
 void NetLookupUpdate(void)
 {
-printf("NetLookupUpdate\n");
+//    printf("NetLookupUpdate\n");
 }
 
 
@@ -83,10 +148,49 @@ printf("NetLookupUpdate\n");
  *  Register entity
  */
 
-OSErr NetRegisterName(unsigned char *name, unsigned char *type, short version, short socketNumber)
+OSErr NetRegisterName(const unsigned char *name, const unsigned char *type, short version, short socketNumber,
+					  const char* hint_addr_string)
 {
-printf("NetRegisterName %s, %s, %d, %d\n", name, type, version, socketNumber);
-	return 0;
+//    printf("NetRegisterName %d, %d\n", version, socketNumber);
+
+    // Construct a service-instance for the player
+    struct SSLP_ServiceInstance	thePlayer;
+
+    NetLookup_BuildTypeString(thePlayer.sslps_type, type, version);
+
+    // Truncate and copy Pstring name; add a terminating null for C-friendliness.
+    unsigned char theLength = name[0];
+    if(theLength > SSLP_MAX_NAME_LENGTH - 2)
+        theLength = SSLP_MAX_NAME_LENGTH - 2;
+    
+    thePlayer.sslps_name[0] = theLength;
+    memcpy(&thePlayer.sslps_name[1], &name[1], theLength);
+    thePlayer.sslps_name[theLength + 1] = '\0';
+
+    thePlayer.sslps_address.host = 0;
+    thePlayer.sslps_address.port = socketNumber;
+    
+    // Publish it
+    SSLP_Allow_Service_Discovery(&thePlayer);
+    
+    sNameRegistered = true;
+
+	// If we're supposed to hint, resolve the address string and start hinting.
+	if(hint_addr_string != NULL) {
+		IPaddress	theAddress;
+
+		// SDL_net declares ResolveAddress without "const" on the char; we can't guarantee
+		// our caller that it will remain const unless we protect it like this.
+		char*		theStringCopy = strdup(hint_addr_string);
+
+		if(SDLNet_ResolveHost(&theAddress, theStringCopy, 0) == 0) {
+			SSLP_Hint_Service_Discovery(&thePlayer, &theAddress);
+		}
+
+		free(theStringCopy);
+	}
+    
+    return 0;
 }
 
 
@@ -96,6 +200,14 @@ printf("NetRegisterName %s, %s, %d, %d\n", name, type, version, socketNumber);
 
 OSErr NetUnRegisterName(void)
 {
-printf("NetUnRegisterName\n");
-	return 0;
+//    printf("NetUnRegisterName\n");
+
+    if(sNameRegistered) {
+        // Stop publishing player name (we can get away with NULL, meaning "all", since we only publish one at a time)
+        SSLP_Disallow_Service_Discovery(NULL);
+    
+        sNameRegistered = false;
+    }
+
+    return 0;
 }

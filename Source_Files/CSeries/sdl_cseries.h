@@ -1,4 +1,5 @@
 /*
+ *  sdl_cseries.h - Unix-specific defines for CSeries library
 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
@@ -17,8 +18,6 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-*/
-/*
  *  sdl_cseries.h - Unix-specific defines for CSeries library
  *
  *  Written in 2000 by Christian Bauer
@@ -29,6 +28,8 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#else
+#define VERSION "unknown version"
 #endif
 
 #include <SDL.h>
@@ -102,6 +103,7 @@ const int kFontIDCourier = 22;
 #include "csfonts.h"
 #include "cspixels.h"
 #include "csalerts.h"
+#include "csdialogs.h"
 #include "csmisc.h"
 
 #endif

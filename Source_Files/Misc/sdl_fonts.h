@@ -41,8 +41,8 @@ class sdl_font_info {
 	friend void unload_font(sdl_font_info *font);
 
 public:
-	sdl_font_info() : ref_count(0), first_character(0), last_character(0),
-		ascent(0), descent(0), leading(0), pixmap(NULL) {}
+	sdl_font_info() : first_character(0), last_character(0),
+		ascent(0), descent(0), leading(0), pixmap(NULL), ref_count(0) {}
 	~sdl_font_info() {if (pixmap) free(pixmap);}
 
 	int get_ascent(void) const {return ascent;}

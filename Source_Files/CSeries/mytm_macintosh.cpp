@@ -1,5 +1,6 @@
 /*
-
+ * mytm_macintosh.cpp (was mytm.cpp)
+ 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
  
@@ -17,13 +18,15 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-*/
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
-/*
+
 	Changes:
 
 Jan 30, 2000 (Loren Petrich)
 	Did some typecasts
+        
+Oct 15, 2001 (Woody Zenfell)
+        Renamed this to mytm_macintosh.cpp (from mytm.cpp), so I can also make a mytm_sdl.cpp
 */
 
 #include <stdlib.h>

@@ -1,4 +1,5 @@
 /*
+ *  network_udp.cpp - UDP network functions (corresponds to AppleTalk DDP)
 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
@@ -22,15 +23,76 @@
  *  network_udp.cpp - UDP network functions (corresponds to AppleTalk DDP)
  *
  *  Written in 2000 by Christian Bauer
+ *
+ *  Sept-Nov 2001 (Woody Zenfell): a few additions to implement socket-listening thread.
  */
 
 #include "cseries.h"
 #include "sdl_network.h"
+#include	"network_private.h"
+
+#include	<SDL_thread.h>
+
+#include	"thread_priority_sdl.h"
 
 
-// Global variables
-static UDPpacket *ddpPacketBuffer = NULL;
-static UDPsocket socket = NULL;
+// Global variables (most comments and "sSomething" variables are ZZZ)
+// Storage for incoming packet data
+static UDPpacket*		sUDPPacketBuffer	= NULL;
+
+// Storage for the DDP packet we pass back to the handler proc
+static DDPPacketBuffer		ddpPacketBuffer;
+
+// Keep track of our one sending/receiving socket
+static UDPsocket 		socket			= NULL;
+
+// Keep track of the function to call when we receive data
+static PacketHandlerProcPtr	sPacketHandler		= NULL;
+
+// Keep track of the receiving thread
+static SDL_Thread*		sReceivingThread	= NULL;
+
+// See if the receiving thread should exit
+static volatile bool		sKeepListening		= false;
+
+
+// ZZZ: the socket listening thread loops in this function.  It calls the registered
+// packet handler when it gets something.
+static int
+receive_thread_function(void*) {
+    static	SDLNet_SocketSet	sSocketSet	= NULL;
+    
+    // Is it safe to do this in the non-main thread?
+    sSocketSet = SDLNet_AllocSocketSet(1);
+    SDLNet_UDP_AddSocket(sSocketSet, socket);
+
+    while(true) {
+        // We listen with a timeout so we can shut ourselves down when needed.
+        int theResult = SDLNet_CheckSockets(sSocketSet, 1000);
+        
+        if(!sKeepListening)
+            break;
+        
+        if(theResult > 0) {
+            theResult = SDLNet_UDP_Recv(socket, sUDPPacketBuffer);
+            if(theResult > 0) {
+                ddpPacketBuffer.protocolType	= kPROTOCOL_TYPE;
+                ddpPacketBuffer.sourceAddress	= sUDPPacketBuffer->address;
+                ddpPacketBuffer.datagramSize	= sUDPPacketBuffer->len;
+                
+                // Hope the other guy is done using whatever's in there!
+                // (As I recall, all uses happen in sPacketHandler and its progeny, so we should be fine.)
+                memcpy(ddpPacketBuffer.datagramData, sUDPPacketBuffer->data, sUDPPacketBuffer->len);
+                
+                sPacketHandler(&ddpPacketBuffer);
+            }
+        }
+    }
+    
+    SDLNet_FreeSocketSet(sSocketSet);
+    
+    return 0;
+}
 
 
 /*
@@ -39,14 +101,14 @@ static UDPsocket socket = NULL;
 
 OSErr NetDDPOpen(void)
 {
-printf("NetDDPOpen\n");
+//printf("NetDDPOpen\n");
 	// nothing to do
 	return 0;
 }
 
 OSErr NetDDPClose(void)
 {
-printf("NetDDPClose\n");
+//printf("NetDDPClose\n");
 	// nothing to do
 	return 0;
 }
@@ -55,26 +117,45 @@ printf("NetDDPClose\n");
 /*
  *  Open socket
  */
-
+// Most of this function by ZZZ.
 OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
 {
-printf("NetDDPOpenSocket\n");
+//printf("NetDDPOpenSocket\n");
 	assert(packetHandler);
 
-	// Allocate packet buffer
-	assert(!ddpPacketBuffer);
-	ddpPacketBuffer = SDLNet_AllocPacket(ddpMaxData);
-	if (ddpPacketBuffer == NULL)
+	// Allocate packet buffer (this is Christian's part)
+	assert(!sUDPPacketBuffer);
+	sUDPPacketBuffer = SDLNet_AllocPacket(ddpMaxData);
+	if (sUDPPacketBuffer == NULL)
 		return -1;
 
-	// Open socket
+        //PORTGUESS
+	// Open socket (SDLNet_Open seems to like port in host byte order)
+        // NOTE: only SDLNet_UDP_Open wants port in host byte order.  All other uses of port in SDL_net
+        // are in network byte order.
+        // Note further that if, in the future, this behavior of SDL_net is deemed buggy, and it's altered
+        // to take a network byte order port, this DEFAULT_PORT will need to be changed to SDL_SwapBE16(DEFAULT_PORT).
+        // Final note: At my suggestion, Sam Lantinga to update the SDL_net documentation to indicate that this is
+        // the only place in SDL_net that the port is used in host byte order.  So it will probably stay this way!
 	socket = SDLNet_UDP_Open(DEFAULT_PORT);
 	if (socket == NULL) {
-		SDLNet_FreePacket(ddpPacketBuffer);
-		ddpPacketBuffer = NULL;
+		SDLNet_FreePacket(sUDPPacketBuffer);
+		sUDPPacketBuffer = NULL;
 		return -1;
 	}
-	*portNumber = DEFAULT_PORT;
+        
+        // Set up receiver
+        sKeepListening		= true;
+        sPacketHandler		= packetHandler;
+        sReceivingThread	= SDL_CreateThread(receive_thread_function, NULL);
+
+        // Set receiving thread priority very high
+        bool	theResult = BoostThreadPriority(sReceivingThread);
+        if(theResult == false)
+            printf("warning: BoostThreadPriority() failed; network performance may suffer\n");
+        
+        //PORTGUESS but we should generally keep port in network order, I think?
+	*portNumber = SDL_SwapBE16(DEFAULT_PORT);
 	return 0;
 }
 
@@ -85,10 +166,18 @@ printf("NetDDPOpenSocket\n");
 
 OSErr NetDDPCloseSocket(short portNumber)
 {
-printf("NetDDPCloseSocket\n");
-	if (ddpPacketBuffer) {
-		SDLNet_FreePacket(ddpPacketBuffer);
-		ddpPacketBuffer = NULL;
+//printf("NetDDPCloseSocket\n");
+        // ZZZ: shut down receiving thread
+        if(sReceivingThread) {
+            sKeepListening	= false;
+            SDL_WaitThread(sReceivingThread, NULL);
+            sReceivingThread	= NULL;
+        }
+
+        // (CB's code follows)
+	if (sUDPPacketBuffer) {
+		SDLNet_FreePacket(sUDPPacketBuffer);
+		sUDPPacketBuffer = NULL;
 
 		SDLNet_UDP_Close(socket);
 		socket = NULL;
@@ -103,7 +192,7 @@ printf("NetDDPCloseSocket\n");
 
 DDPFramePtr NetDDPNewFrame(void)
 {
-printf("NetDDPNewFrame\n");
+//printf("NetDDPNewFrame\n");
 	DDPFramePtr frame = (DDPFramePtr)malloc(sizeof(DDPFrame));
 	if (frame) {
 		memset(frame, 0, sizeof(DDPFrame));
@@ -119,7 +208,7 @@ printf("NetDDPNewFrame\n");
 
 void NetDDPDisposeFrame(DDPFramePtr frame)
 {
-printf("NetDDPDisposeFrame\n");
+//printf("NetDDPDisposeFrame\n");
 	if (frame)
 		free(frame);
 }
@@ -131,12 +220,12 @@ printf("NetDDPDisposeFrame\n");
 
 OSErr NetDDPSendFrame(DDPFramePtr frame, AddrBlock *address, short protocolType, short port)
 {
-printf("NetDDPSendFrame\n");
+//printf("NetDDPSendFrame\n");
 	assert(frame->data_size <= ddpMaxData);
 
-	ddpPacketBuffer->channel = -1;
-	memcpy(ddpPacketBuffer->data, frame->data, frame->data_size);
-	ddpPacketBuffer->len = frame->data_size;
-	ddpPacketBuffer->address = *address;
-	return SDLNet_UDP_Send(socket, -1, ddpPacketBuffer) ? 0 : -1;
+	sUDPPacketBuffer->channel = -1;
+	memcpy(sUDPPacketBuffer->data, frame->data, frame->data_size);
+	sUDPPacketBuffer->len = frame->data_size;
+	sUDPPacketBuffer->address = *address;
+	return SDLNet_UDP_Send(socket, -1, sUDPPacketBuffer) ? 0 : -1;
 }

@@ -219,7 +219,6 @@ static void *get_collection_tint_tables(short collection_index, short tint_index
 static void *collection_offset(struct collection_definition *definition, long offset);
 static struct rgb_color_value *get_collection_colors(short collection_index, short clut_number);
 static struct high_level_shape_definition *get_high_level_shape_definition(short collection_index, short high_level_shape_index);
-static struct low_level_shape_definition *get_low_level_shape_definition(short collection_index, short low_level_shape_index);
 static struct bitmap_definition *get_bitmap_definition(short collection_index, short bitmap_index);
 
 /* ---------- machine-specific code */
@@ -1995,7 +1994,8 @@ static struct high_level_shape_definition *get_high_level_shape_definition(
 	return (struct high_level_shape_definition *) collection_offset(definition, offset_table[high_level_shape_index]);
 }
 
-static struct low_level_shape_definition *get_low_level_shape_definition(
+// ZZZ: exposed this
+struct low_level_shape_definition *get_low_level_shape_definition(
 	short collection_index,
 	short low_level_shape_index)
 {

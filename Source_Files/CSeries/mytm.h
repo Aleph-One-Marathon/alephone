@@ -1,4 +1,4 @@
-/*
+/* mytm.h
 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
@@ -17,8 +17,14 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-*/
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
+    Sept-Nov 2001 (Woody Zenfell): new function myTMCleanup for SDL bookkeeping
+*/
+
+#ifndef MYTM_H_
+#define MYTM_H_
+
 typedef struct myTMTask myTMTask,*myTMTaskPtr;
 
 extern myTMTaskPtr myTMSetup(
@@ -35,3 +41,12 @@ extern myTMTaskPtr myTMRemove(
 extern void myTMReset(
 	myTMTaskPtr task);
 
+#ifdef SDL
+// ZZZ: call this from time to time to collect leftover zombie threads and reclaim a little storage.
+// Pass false for fairly quick operation.  Pass true to make sure that we wait for folks to finish.
+extern void myTMCleanup(bool waitForFinishers);
+#else
+void myTMCleanup(bool) {}
+#endif
+
+#endif //def MYTM_H_

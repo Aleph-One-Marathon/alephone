@@ -34,6 +34,7 @@
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 
 #include "preferences.h"
+#include "preferences_private.h" // ZZZ: added 23 Oct 2001 for sharing of dialog item ID's with SDL.
 #include "wad.h"
 #include "wad_prefs.h"
 #include "game_errors.h"

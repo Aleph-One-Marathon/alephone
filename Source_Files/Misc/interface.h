@@ -325,6 +325,10 @@ short get_bitmap_index(short collection_index, short low_level_shape_index);
 // Get CLUT for collection
 struct rgb_color_value *get_collection_colors(short collection_index, short clut_number, int &num_colors);
 
+// ZZZ: made these visible
+struct low_level_shape_definition *get_low_level_shape_definition(short collection_index, short low_level_shape_index);
+
+
 /* ---------- prototypes/PREPROCESS_MAP_MAC.C */
 void setup_revert_game_info(struct game_data *game_info, struct player_start_data *start, struct entry_point *entry);
 bool revert_game(void);

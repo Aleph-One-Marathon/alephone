@@ -92,7 +92,7 @@ static bool music_fading = false;		// Flag: music fading out
 static uint32 music_fade_start;			// Music fade start tick
 static uint32 music_fade_duration;		// Music fade duration in ticks
 
-const int MUSIC_BUFFER_SIZE = 0x40000;
+const uint32 MUSIC_BUFFER_SIZE = 0x40000;
 static uint8 music_buffer[MUSIC_BUFFER_SIZE];
 
 // Win32 music support. 
@@ -939,7 +939,7 @@ static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch)
  */
 
 template <class T>
-inline static void calc_buffer(T *p, int len, bool stereo)
+static inline void calc_buffer(T *p, int len, bool stereo)
 {
 	while (len--) {
 		int32 left = 0, right = 0;	// 16-bit internally

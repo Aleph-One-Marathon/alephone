@@ -336,8 +336,9 @@ enum
 
 
 // Static 3D-Model Data and Options
-struct OGL_ModelData: public OGL_SkinManager
+class OGL_ModelData: public OGL_SkinManager
 {
+public:
 	// Name of the model file
 	vector<char> ModelFile;
 	

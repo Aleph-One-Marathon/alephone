@@ -714,7 +714,7 @@ bool XML_FontParser::HandleAttribute(const char *Tag, const char *Value)
 bool XML_FontParser::AttributesDone()
 {
 	// Verify...
-	bool AllPresent = true;
+	//bool AllPresent = true;
 	if (NumFonts <= 0)
 	{
 		IsPresent[3] = true;	// Convenient fakery: no index -- always present

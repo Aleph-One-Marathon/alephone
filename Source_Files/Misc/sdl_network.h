@@ -1,4 +1,5 @@
 /*
+ *  sdl_network.h - Definitions for SDL implementation of networking
 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
@@ -17,16 +18,19 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-*/
-
-/*
- *  sdl_network.h - Definitions for SDL implementation of networking
+ *  Definitions for SDL implementation of networking
+ *
+ *  (believed to be) Created by Christian Bauer
+ *
+ *  Sept-Nov 2001 (Woody Zenfell): split some defs out of here to network_lookup_sdl.h
  */
 
 #ifndef __SDL__NETWORK_H
 #define __SDL__NETWORK_H
 
 #include <SDL_net.h>
+
+#include	"sdl_cseries.h"
 
 #include "network.h"
 
@@ -81,7 +85,9 @@ typedef struct DDPPacketBuffer DDPPacketBuffer, *DDPPacketBufferPtr;
 
 struct ConnectionEnd
 {
-	TCPsocket socket, server_socket;
+	TCPsocket		socket;
+        TCPsocket		server_socket;
+        SDLNet_SocketSet	server_socket_set;
 };
 typedef struct ConnectionEnd ConnectionEnd, *ConnectionEndPtr;
 
@@ -104,17 +110,11 @@ bool NetEntityNotInGame(EntityName *entity, AddrBlock *address);
 
 /* ---------- prototypes/NETWORK_NAMES.C */
 
-OSErr NetRegisterName(unsigned char *name, unsigned char *type, short version, short socketNumber);
-OSErr NetUnRegisterName(void);
+// ZZZ: moved to network_lookup_sdl.h to localize changes.
 
 /* ---------- prototypes/NETWORK_LOOKUP.C */
 
-void NetLookupUpdate(void);
-void NetLookupClose(void);
-OSErr NetLookupOpen(unsigned char *name, unsigned char *type, unsigned char *zone, short version, 
-	lookupUpdateProcPtr updateProc, lookupFilterProcPtr filterProc);
-void NetLookupRemove(short index);
-void NetLookupInformation(short index, AddrBlock *address, EntityName *entity);
+// ZZZ: moved to network_lookup_sdl.h to localize changes.
 
 /* ---------- prototypes/NETWORK_DDP.C */
 

@@ -1,4 +1,5 @@
 /*
+ *  csstrings_sdl.cpp - String handling, SDL implementation
 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
@@ -17,13 +18,14 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-*/
-/*
  *  csstrings_sdl.cpp - String handling, SDL implementation
  *
  *  Written in 2000 by Christian Bauer
- */
+
 // LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
+
+ *  Sept-Nov 2001 (Woody Zenfell): added a few new pstring-oriented routines
+ */
 
 #include "cseries.h"
 #include "TextStrings.h"
@@ -82,10 +84,69 @@ char *getcstr(char *string, short resid, short item)
  *  Copy pascal string
  */
 
-unsigned char *pstrcpy(unsigned char *dst, unsigned char *src)
+unsigned char *pstrcpy(unsigned char *dst, const unsigned char *src)
 {
 	memcpy(dst, src, src[0] + 1);
 	return dst;
+}
+
+
+// ZZZ: added for safety
+// Overwrites total_byte_count of Pstring 'dest' with nonoverlapping Pstring 'source' and null padding
+unsigned char*
+pstrncpy(unsigned char* dest, const unsigned char* source, size_t total_byte_count) {
+	if(total_byte_count <= source[0]) {
+		// copy truncated
+		dest[0] = total_byte_count - 1;
+		memcpy(&dest[1],&source[1],dest[0]);
+		return dest;
+	}
+	else {
+		// copy full
+		memcpy(dest,source,source[0] + 1);
+		if(source[0] + 1 < total_byte_count) {
+			// pad
+			memset(&dest[source[0] + 1], 0, total_byte_count - (source[0] + 1));
+		}
+		return dest;
+	}
+}
+
+
+// ZZZ: added for convenience
+// Duplicate a Pstring.  Result should be free()d when no longer needed.
+unsigned char*
+pstrdup(const unsigned char* inString) {
+	unsigned char* out = (unsigned char*)malloc(inString[0] + 1);
+	pstrcpy(out, inString);
+	return out;
+}
+
+
+/*
+ *  String conversion routines (ZZZ)
+ */
+
+// a1 prefix is to avoid conflict with any already-existing functions.
+
+// In-place conversion of Pstring to Cstring
+char*
+a1_p2cstr(unsigned char* inoutStringBuffer) {
+	unsigned char length = inoutStringBuffer[0];
+	memmove(inoutStringBuffer,&inoutStringBuffer[1],length);
+	inoutStringBuffer[length] = '\0';
+	return (char*) inoutStringBuffer;
+}
+	
+// In-place conversion of Cstring to Pstring.  Quietly truncates string to 255 chars.
+unsigned char*
+a1_c2pstr(char* inoutStringBuffer) {
+	int length = strlen(inoutStringBuffer);
+	if(length > 255)
+		length = 255;
+	memmove(&inoutStringBuffer[1],inoutStringBuffer,length);
+	inoutStringBuffer[0] = length;
+	return (unsigned char*)inoutStringBuffer;
 }
 
 

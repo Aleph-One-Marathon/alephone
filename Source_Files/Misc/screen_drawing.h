@@ -31,6 +31,7 @@ Jul 2, 2000 (Loren Petrich):
 */
 
 #include "XML_ElementParser.h"
+#include	"shape_descriptors.h"
 
 /* Rectangles for the interface, etc.. */
 /* rectangle id's */
@@ -162,6 +163,7 @@ extern int draw_text(SDL_Surface *s, const char *text, int length, int x, int y,
 extern int char_width(uint8 c, const sdl_font_info *font, uint16 style);
 extern int text_width(const char *text, const sdl_font_info *font, uint16 style);
 extern int text_width(const char *text, int length, const sdl_font_info *font, uint16 style);
+extern int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint16 style);
 extern void draw_polygon(SDL_Surface *s, const world_point2d *vertex_array, int vertex_count, uint32 pixel);
 extern void draw_line(SDL_Surface *s, const world_point2d *v1, const world_point2d *v2, uint32 pixel, int pen_size);
 extern void draw_rectangle(SDL_Surface *s, const SDL_Rect *r, uint32 pixel);

@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+January 15, 2002
+ - added TCP/IP networking code contributed by Woody Zenfell (still work
+   in progress)
+
 October 10, 2001
  - FileSpecified::ReadDirectory() ignores file names starting with '.'
 

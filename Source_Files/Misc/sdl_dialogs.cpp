@@ -675,6 +675,14 @@ uint32 get_dialog_color(int which)
 	return SDL_MapRGB(dialog_surface->format, dialog_color[which].r, dialog_color[which].g, dialog_color[which].b);
 }
 
+// ZZZ: added this for convenience; taken from w_player_color::draw().
+// Obviously, this color does not come from the theme.
+uint32 get_dialog_player_color(int colorIndex) {
+        SDL_Color c;
+        _get_interface_color(PLAYER_COLOR_BASE_INDEX + colorIndex, &c);
+        return SDL_MapRGB(dialog_surface->format, c.r, c.g, c.b);
+}
+
 SDL_Surface *get_dialog_image(int which, int width, int height)
 {
 	assert(which >= 0 && which < NUM_DIALOG_IMAGES);
@@ -735,6 +743,7 @@ dialog::~dialog()
 void dialog::add(widget *w)
 {
 	widgets.push_back(w);
+        w->set_owning_dialog(this);
 }
 
 
@@ -771,8 +780,13 @@ void dialog::layout()
 	// Transform positions of all widgets to be relative to the dialog surface
 	i = widgets.begin();
 	int offset_x = (rect.w - get_dialog_space(FRAME_L_SPACE) - get_dialog_space(FRAME_R_SPACE)) / 2 + get_dialog_space(FRAME_L_SPACE);
+        // ZZZ: to provide more detailed layout info to widgets
+        int leftmost_x = get_dialog_space(FRAME_L_SPACE);
+        int usable_width = rect.w - leftmost_x - get_dialog_space(FRAME_R_SPACE);
+        
 	while (i != end) {
 		(*i)->rect.x += offset_x;
+                (*i)->capture_layout_information(leftmost_x, usable_width);
 		i++;
 	}
 }
@@ -842,6 +856,21 @@ void dialog::draw(void) const
 }
 
 
+// ZZZ: deactivate widget (the code inside is Christian's)
+void dialog::deactivate_currently_active_widget(bool draw) {
+	// Deactivate previously active widget
+	if (active_widget) {
+		active_widget->active = false;
+		if (draw)
+			draw_widget(active_widget);
+
+        // ZZZ: additional cleanup code
+        active_widget       = NULL;
+        active_widget_num   = NONE;
+	}
+}
+
+
 /*
  *  Activate widget
  */
@@ -854,11 +883,7 @@ void dialog::activate_widget(int num, bool draw)
 		return;
 
 	// Deactivate previously active widget
-	if (active_widget) {
-		active_widget->active = false;
-		if (draw)
-			draw_widget(active_widget);
-	}
+    deactivate_currently_active_widget(draw);
 
 	// Activate new widget
 	active_widget = widgets[num];
@@ -890,6 +915,7 @@ void dialog::activate_first_widget(void)
  *  Activate next/previous selectable widget
  */
 
+// ZZZ: changed this to detect condition where no widgets are selectable.
 void dialog::activate_next_widget(void)
 {
 	int i = active_widget_num;
@@ -897,8 +923,13 @@ void dialog::activate_next_widget(void)
 		i++;
 		if (i >= widgets.size())
 			i = 0;
-	} while (!widgets[i]->is_selectable());
-	activate_widget(i);
+	} while (!widgets[i]->is_selectable() && i != active_widget_num);
+
+    // (ZZZ) Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around).
+    if(widgets[i]->is_selectable())
+	    activate_widget(i);
+    else
+        deactivate_currently_active_widget();
 }
 
 void dialog::activate_prev_widget(void)
@@ -933,6 +964,22 @@ int dialog::find_widget(int x, int y)
 		i++; num++;
 	}
 	return -1;
+}
+
+
+// ZZZ: locate widget by its numeric ID
+widget*
+dialog::get_widget_by_id(short inID) {
+    // Find first matching widget
+    vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
+
+    while (i != end) {
+            widget *w = *i;
+            if (w->get_identifier() == inID)
+                    return w;
+            i++;
+    }
+    return NULL;
 }
 
 
@@ -1008,7 +1055,8 @@ void dialog::event(SDL_Event &e)
 		}
 
 		// Quit requested
-		case SDL_QUIT:
+		case SDL_QUIT:	// XXX (ZZZ): if this means what I think it does - that the application is stopping -
+                                // then shouldn't we do a (safer) "cancel"?  Leaving Christian's code just in case...
 			exit(0);
 			break;
 	}
@@ -1023,7 +1071,8 @@ void dialog::event(SDL_Event &e)
 /*
  *  Run dialog modally, returns result code (0 = ok, -1 = cancel)
  */
-
+// ZZZ: original version, replaced below with version that uses chunk-by-chunk functions
+/*
 int dialog::run(bool intro_exit_sounds)
 {
 	// Set new active dialog
@@ -1078,6 +1127,10 @@ int dialog::run(bool intro_exit_sounds)
 
 		// Give time to system
 		if (e.type == SDL_NOEVENT) {
+                        // ZZZ: custom processing, if desired
+                        if(processing_function != NULL)
+                            processing_function(this);
+                            
 			global_idle_proc();
 			SDL_Delay(10);
 		}
@@ -1121,6 +1174,147 @@ int dialog::run(bool intro_exit_sounds)
 
 	return result;
 }
+*/
+
+int
+dialog::run(bool intro_exit_sounds) {
+    start(intro_exit_sounds);
+
+    bool dialog_is_finished = false;
+
+    do {
+        dialog_is_finished = run_a_little();
+        
+        // Give time to system
+        // ZZZ: custom processing, if desired
+        if(processing_function != NULL)
+            processing_function(this);
+            
+        global_idle_proc();
+        SDL_Delay(10);
+    } while(!dialog_is_finished);
+
+    return finish(intro_exit_sounds);
+}
+
+// ZZZ addition: break up the run() into three segments, so application gives control to dialog here and there, not v.v.
+// (this used primarily for display of progress bars)
+void
+dialog::start(bool play_sound) {
+        // Sanity check
+        assert(!is_running);
+        
+        // Make sure nobody tries re-entrancy with us
+        is_running = true;
+
+	// Set new active dialog
+	parent_dialog = top_dialog;
+	top_dialog = this;
+
+	// Clear dialog surface
+	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
+
+	// Activate first widget
+	activate_first_widget();
+
+	// Layout dialog
+	layout();
+
+	// Get frame images
+	frame_tl = get_dialog_image(FRAME_TL_IMAGE);
+	frame_tr = get_dialog_image(FRAME_TR_IMAGE);
+	frame_bl = get_dialog_image(FRAME_BL_IMAGE);
+	frame_br = get_dialog_image(FRAME_BR_IMAGE);
+	frame_t = get_dialog_image(FRAME_T_IMAGE, rect.w - frame_tl->w - frame_tr->w, 0);
+	frame_l = get_dialog_image(FRAME_L_IMAGE, 0, rect.h - frame_tl->h - frame_bl->h);
+	frame_r = get_dialog_image(FRAME_R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
+	frame_b = get_dialog_image(FRAME_B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
+
+	// Draw dialog
+	draw();
+
+	// Show cursor
+	cursor_was_visible = SDL_ShowCursor(true);
+
+	// Welcome sound
+	if (play_sound)
+		play_dialog_sound(DIALOG_INTRO_SOUND);
+
+	// Enable unicode key translation
+        // (ZZZ: hmm maybe this should be done on entering/leaving run_a_little?
+        // I guess really we need to "push" the current UNICODE state and set it true on entering run_a_little,
+        // then "pop" the previous state on leaving run_a_little.  In the meantime, we hope nobody tries their own
+        // event processing between dialog::start and dialog::finish (or at least is prepared to live with UNICODE) :) )
+	SDL_EnableUNICODE(true);
+
+	// Dialog event loop
+	result = 0;
+	done = false;
+}
+
+bool
+dialog::run_a_little() {
+	while (!done) {
+
+		// Get next event
+		SDL_Event e;
+		e.type = SDL_NOEVENT;
+		SDL_PollEvent(&e);
+
+		// Handle event
+		event(e);
+
+		if (e.type == SDL_NOEVENT)
+                    break;
+        }
+        
+        return done;
+}
+
+int
+dialog::finish(bool play_sound) {
+	// Disable unicode key translation
+	SDL_EnableUNICODE(false);
+
+	// Farewell sound
+	if (play_sound)
+		play_dialog_sound(result == 0 ? DIALOG_OK_SOUND : DIALOG_CANCEL_SOUND);
+
+	// Hide cursor
+	if (!cursor_was_visible)
+		SDL_ShowCursor(false);
+
+	// Clear dialog surface
+	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
+
+	// Erase dialog from screen
+	SDL_Surface *video = SDL_GetVideoSurface();
+	SDL_FillRect(video, &rect, SDL_MapRGB(video->format, 0, 0, 0));
+	SDL_UpdateRects(video, 1, &rect);
+#ifdef HAVE_OPENGL
+	if (video->flags & SDL_OPENGL)
+		SDL_GL_SwapBuffers();
+#endif
+
+	// Free frame images
+	if (frame_t) SDL_FreeSurface(frame_t);
+	if (frame_l) SDL_FreeSurface(frame_l);
+	if (frame_r) SDL_FreeSurface(frame_r);
+	if (frame_b) SDL_FreeSurface(frame_b);
+
+	// Restore active dialog
+	top_dialog = parent_dialog;
+        parent_dialog = NULL;
+	if (top_dialog) {
+		clear_screen();
+		top_dialog->draw();
+	}
+        
+        // Allow dialog to be run again later
+        is_running = false;
+
+	return result;
+}
 
 
 /*
@@ -1148,4 +1342,21 @@ void dialog_cancel(void *arg)
 {
 	dialog *d = (dialog *)arg;
 	d->quit(-1);
+}
+
+// ZZZ: commonly-used callback for text entry enter_pressed_callback
+void dialog_try_ok(w_text_entry* text_entry) {
+    w_button* ok_button = dynamic_cast<w_button*>(text_entry->get_owning_dialog()->get_widget_by_id(iOK));
+    
+    // This is arguably a violation of the sdl_dialog/sdl_widget standard behavior since
+    // ok_button is clicked without first becoming the active widget.  With the current
+    // implementation of w_button::click, should not be a problem...
+    if(ok_button != NULL)
+        ok_button->click(0,0);
+}
+
+// ZZZ: commonly-used callback to enable/disable "OK" based on whether a text_entry has data
+void dialog_disable_ok_if_empty(w_text_entry* inTextEntry) {
+    modify_control_enabled(inTextEntry->get_owning_dialog(), iOK,
+        (inTextEntry->get_text()[0] == 0) ? CONTROL_INACTIVE : CONTROL_ACTIVE);
 }

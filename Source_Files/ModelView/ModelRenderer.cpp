@@ -23,10 +23,15 @@
 */
 
 #include <string.h>
-#ifndef __WIN32__
-#include <alloca.h>
+
+#ifdef __WIN32__
+# include <malloc.h>
 #else
-#include <malloc.h>
+# if defined(__MACH__) && defined(__APPLE__)	// Mac OS X
+#  include <stdlib.h>
+# else
+#  include <alloca.h>
+# endif
 #endif
 
 #include "cseries.h"

@@ -1,4 +1,4 @@
-/*
+/* csstrings.h
 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
@@ -17,9 +17,13 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-*/
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
 // LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
+
+    Sept-Nov 2001 (Woody Zenfell): added new routines; gave pstrcpy a "const" parameter qualifier.
+*/
+
 #ifndef _CSERIES_STRINGS_
 #define _CSERIES_STRINGS_
 
@@ -39,9 +43,26 @@ extern char *getcstr(
 	short resid,
 	short item);
 
+// ZZZ: changed to 'const' on src parameter
 extern unsigned char *pstrcpy(
 	unsigned char *dst,
-	unsigned char *src);
+	const unsigned char *src);
+
+// START ZZZ additions
+extern unsigned char* pstrncpy(
+	unsigned char* dest,
+	const unsigned char* source,
+	size_t total_byte_count);
+
+extern unsigned char* pstrdup(
+	const unsigned char* source);
+
+extern unsigned char* a1_c2pstr(
+	char* inoutStringBuffer);
+
+extern char* a1_p2cstr(
+	unsigned char* inoutStringBuffer);
+// END ZZZ additions
 
 extern char *csprintf(
 	char *buffer,

@@ -24,6 +24,14 @@ NETWORK.H
 Tuesday, June 21, 1994 3:26:46 PM
 */
 
+#include	"cstypes.h"
+
+// This file should be used only for stuff that folks outside the network subsystem care about
+// (i.e. it's the interface to the subsystem)
+
+// I'm tempted to slice the routines the network dialogs deal with away from those that the
+// rest of the game deals with, but will leave that for another day.
+
 // unfortunately, this requires map.h because it needs "struct entry_point"
 
 #ifdef DEMO
@@ -35,10 +43,23 @@ Tuesday, June 21, 1994 3:26:46 PM
 #define MAX_LEVEL_NAME_LENGTH 64
 #define MAX_NET_DISTRIBUTION_BUFFER_SIZE 512
 
+#ifndef mac
+#define NETWORK_CHAT
+#endif
+
 // This number needs to be changed whenever a change occurs in the networking code
 // that would make 2 versions incompatible, or a change in the game occurs that
 // would make 2 versions out of sync.
+// ZZZ: I have made efforts to preserve existing "classic" Mac OS protocol and data formats,
+// but IPring introduces new _NET formats and so needs an increment.
+// (OK OK this is a bit pedantic - I mean, I don't think IPring is going to accidentally start
+// sending or receiving AppleTalk traffic ;) - but, you know, it's the principle of the thing.)
+#ifndef MAC
+#define	MARATHON_NETWORK_VERSION 10
+#else
+#warn using maraton network version 9
 #define MARATHON_NETWORK_VERSION 9
+#endif
 
 enum // base network speeds
 {
@@ -103,6 +124,9 @@ enum /* states */
 	netCancelled, /* the game was just cancelled */
 	netPlayerAdded, /* a new player was just added to the topology (will return to netWaiting) */
 	netJoinErrorOccurred
+#ifdef NETWORK_CHAT
+        , netChatMessageReceived
+#endif
 };
 
 /* -------- typedefs */
@@ -116,11 +140,41 @@ void NetExit(void);
 
 bool NetGather(void *game_data, short game_data_size, void *player_data, 
 	short player_data_size);
-bool NetGatherPlayer(short player_index, CheckPlayerProcPtr check_player);
 
-bool NetGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data, short player_data_size, short version_number);
+#ifdef SDL // ZZZ: quick decl for prototype below
+struct SSLP_ServiceInstance;
+#endif
+
+bool NetGatherPlayer(
+#ifndef SDL
+short player_index,
+#else
+// ZZZ: in my formulation, player info is all passed along in one structure from the dialog here.
+const SSLP_ServiceInstance* player_instance,
+#endif
+CheckPlayerProcPtr check_player);
+
+// ZZZ: added support for SSLP hinting
+bool NetGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data,
+				 short player_data_size, short version_number
+#ifdef SDL
+				 , const char* hint_address_string
+#endif
+				 );
+
 short NetUpdateJoinState(void);
 void NetCancelJoin(void);
+
+#ifdef NETWORK_CHAT // ZZZ addition - pre-game/(eventually) postgame chat
+// Returns true if there was a pending message.
+// Returns pointer to chat text.
+// Returns pointer to sending player's data (does not copy player data).
+// Data returned in pointers is only good until the next call to NetUpdateJoinState or NetCheckForIncomingMessages.
+bool NetGetMostRecentChatMessage(player_info** outSendingPlayerData, char** outMessage);
+
+// Gatherer should use this to send out his messages or to broadcast a message received from a joiner
+OSErr NetDistributeChatMessage(short sender_identifier, const char* message);
+#endif // NETWORK_CHAT
 
 short NetGetLocalPlayerIndex(void);
 short NetGetPlayerIdentifier(short player_index);

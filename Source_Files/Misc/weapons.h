@@ -59,7 +59,8 @@ enum { /* Weapons */
 enum {
 	_shape_weapon_idle,
 	_shape_weapon_charging,
-	_shape_weapon_firing
+	_shape_weapon_firing,
+        PLAYER_TORSO_WEAPON_ACTION_COUNT	// ZZZ: added this one
 };
 
 enum {

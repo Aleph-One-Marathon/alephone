@@ -1,4 +1,4 @@
-/*
+/* csdialogs_macintosh.cpp
 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
@@ -17,8 +17,14 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-*/
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
+    Sept-Nov 2001 (Woody Zenfell):
+        renamed from csdialogs.cpp
+        inserted get_dialog_control_value, from network_dialogs.cpp
+        new functions copy_pstring_*_text_field()
+*/
+
 #include <Dialogs.h>
 #include <TextUtils.h>
 //#include <ControlDefinitions.h>
@@ -301,3 +307,64 @@ void get_window_frame(
 	*frame=pr;
 }
 
+// ZZZ: added these to parallel SDL version.  Now we have a common interface.
+void
+copy_pstring_from_text_field(DialogPtr dialog, short item, unsigned char* pstring) {
+	Rect    item_rect;
+	short   item_type;
+	Handle  item_handle;   
+
+    GetDialogItem(dialog, item, &item_type, &item_handle, &item_rect);
+	GetDialogItemText(item_handle, pstring);
+}
+
+void
+copy_pstring_to_text_field(DialogPtr dialog, short item, const unsigned char* pstring) {
+	Rect    item_rect;
+	short   item_type;
+	Handle  item_handle;   
+
+    GetDialogItem(dialog, item, &item_type, &item_handle, &item_rect);
+	SetDialogItemText(item_handle, pstring);
+}
+
+void
+copy_pstring_to_static_text(DialogPtr dialog, short item, const unsigned char* pstring) {
+	Rect    item_rect;
+	short   item_type;
+	Handle  item_handle;   
+
+    GetDialogItem(dialog, item, &item_type, &item_handle, &item_rect);
+	SetDialogItemText(item_handle, pstring);
+}
+// ZZZ: moved here from network_dialogs_macintosh.cpp
+short get_dialog_control_value(DialogPtr dialog, short which_control)
+{
+	Rect    item_rect;
+	short   item_type;
+	Handle  item_handle;
+	
+	GetDialogItem(dialog, which_control, &item_type, &item_handle, &item_rect);
+	return GetControlValue((ControlHandle) item_handle);
+}
+
+// ZZZ: added these to inject a layer of indirection to slip in an SDL implementation and have the two versions share
+void
+copy_pstring_from_text_field(DialogPtr dialog, short item, unsigned char* pstring) {
+    Rect                item_rect;
+    short               item_type;
+    Handle              item_handle;
+
+    GetDialogItem(dialog, item, &item_type, &item_handle, &item_rect);
+    GetDialogItemText(item_handle, pstring);
+}
+
+void
+copy_pstring_to_text_field(DialogPtr dialog, short item, const unsigned char* pstring) {
+    Rect                item_rect;
+    short               item_type;
+    Handle              item_handle;
+
+    GetDialogItem(dialog, item, &item_type, &item_handle, &item_rect);
+    SetDialogItemText(item_handle, pstring);
+}

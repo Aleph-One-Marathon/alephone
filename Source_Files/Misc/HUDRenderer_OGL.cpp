@@ -313,6 +313,11 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
  *  Draw text
  */
 
+// WZ: Work around some Win32 oddness
+#ifdef DrawText
+#undef DrawText
+#endif
+
 void HUD_OGL_Class::DrawText(const char *text, screen_rectangle *dest, short flags, short font_id, short text_color)
 {
 	// Get color

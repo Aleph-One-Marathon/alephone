@@ -30,6 +30,8 @@
 
 Feb. 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
+
+Sept-Nov 2001 (Woody Zenfell): strategic byte-swapping for cross-platform compatibility
 */
 
 #include "cseries.h"
@@ -66,9 +68,19 @@ OSErr NetSendStreamPacket(
 {
 	OSErr error;
 	uint16 packet_length;
-	
+
 	packet_length= NetStreamPacketLength(packet_type);
-	error= stream_write(&packet_type, sizeof(short));
+
+        // ZZZ: byte-swap packet type code if necessary
+	short	packet_type_NET;
+    
+#ifndef MAC
+        packet_type_NET = SDL_SwapBE16(packet_type);
+#else
+        packet_type_NET = packet_type;
+#endif
+        
+	error= stream_write(&packet_type_NET, sizeof(short));
 	if(!error)
 	{
 		error= stream_write(packet_data, packet_length);
@@ -85,7 +97,18 @@ OSErr NetReceiveStreamPacket(
 	uint16 length;
 	
 	length= sizeof(short);
-	error= stream_read(packet_type, &length);
+
+        // ZZZ: byte-swap if necessary
+        short	packet_type_NET;
+
+	error= stream_read(&packet_type_NET, &length);
+        
+#ifndef MAC
+        *packet_type = SDL_SwapBE16(packet_type_NET);
+#else
+        *packet_type = packet_type_NET;
+#endif
+
 	if(!error)
 	{
 		length= NetStreamPacketLength(*packet_type);
@@ -290,7 +313,8 @@ short NetGetStreamSocketNumber(
 #ifdef mac
 	return dspConnection->socketNum;
 #else
-	return DEFAULT_PORT;
+        //PORTGUESS we should usually keep port in network byte order?
+	return SDL_SwapBE16(DEFAULT_PORT);
 #endif
 }
 

@@ -37,12 +37,16 @@ Mar 14, 2000 (Loren Petrich):
 
 Apr 27, 2000 (Loren Petrich):
 	Added Josh Elsasser's "don't switch weapons" patch
+
+Oct 22, 2001 (Woody Zenfell):
+    Changed the player name in player_preferences_data back to a Pstring (was Cstring in SDL version)
 */
 
 #include "interface.h"
 #include "ChaseCam.h"
 #include "Crosshairs.h"
 #include "OGL_Setup.h"
+
 
 /* New preferences junk */
 struct graphics_preferences_data
@@ -78,7 +82,8 @@ struct network_preferences_data
 
 struct player_preferences_data
 {
-#ifdef mac
+// ZZZ: We will always use a Pstring here so we can share routines more effectively
+#if 1 //was ifdef mac
 	unsigned char name[PREFERENCES_NAME_LENGTH+1];
 #else
 	char name[PREFERENCES_NAME_LENGTH+1];

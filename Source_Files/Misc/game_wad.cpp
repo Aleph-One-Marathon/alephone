@@ -217,7 +217,7 @@ static void complete_loading_level(short *_map_indexes, short map_index_count,
 	uint8 *actual_platform_data, short actual_platform_data_count, short version);
 
 static uint8 *unpack_directory_data(uint8 *Stream, directory_data *Objects, int Count);
-static uint8 *pack_directory_data(uint8 *Stream, directory_data *Objects, int Count);
+//static uint8 *pack_directory_data(uint8 *Stream, directory_data *Objects, int Count);
 
 /* ------------------------ Net functions */
 long get_net_map_data_length(
@@ -807,7 +807,7 @@ void allocate_map_for_counts(
 	short endpoint_count,
 	short line_count)
 {
-	long cumulative_length= 0;
+	//long cumulative_length= 0;
 	long automap_line_count, automap_polygon_count, map_index_count;
 	// long automap_line_length, automap_polygon_length, map_index_length;
 
@@ -1840,7 +1840,7 @@ static uint8 *tag_to_global_array_and_size(
 	)
 {
 	uint8 *array= NULL;
-	short unit_size, index, count;
+	short unit_size = 0, index, count = 0;
 	
 	for(index= 0; index<NUMBER_OF_SAVE_ARRAYS; ++index)
 	{
@@ -2155,6 +2155,8 @@ static uint8 *unpack_directory_data(uint8 *Stream, directory_data *Objects, int 
 	return S;
 }
 
+// ZZZ: gnu cc swears this is currently unused, and I don't see any sneaky #includes that might need it...
+/*
 static uint8 *pack_directory_data(uint8 *Stream, directory_data *Objects, int Count)
 {
 	uint8* S = Stream;
@@ -2171,3 +2173,4 @@ static uint8 *pack_directory_data(uint8 *Stream, directory_data *Objects, int Co
 	assert((S - Stream) == SIZEOF_directory_data);
 	return S;
 }
+*/

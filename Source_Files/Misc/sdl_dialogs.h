@@ -51,10 +51,16 @@ class FileSpecifier;
  *  Definitions
  */
 
+// ZZZ: hook for other code to get processor while dialog.run() is executing
+class dialog;
+typedef void (*processing_function_t)(dialog*);
+
+
 // Dialog structure
 class dialog {
 public:
-	dialog() : active_widget(NULL), active_widget_num(-1) {}
+	dialog() : active_widget(NULL), active_widget_num(-1), processing_function(NULL), is_running(false),
+                    parent_dialog(NULL), cursor_was_visible(false) {}
 	~dialog();
 
 	// Add widget to dialog
@@ -63,24 +69,38 @@ public:
 	// Run dialog modally
 	int run(bool intro_exit_sounds = true);
 
+        // ZZZ: Run dialog chunk-by-chunk:
+        void start(bool play_sound = true);
+        bool run_a_little();			// returns true if done; false if not
+        int finish(bool play_sound = true);	// returns dialog result
+
 	// Quit dialog, return result
 	void quit(int result);
 
 	// Draw dialog
 	void draw(void) const;
+        
+        // ZZZ: Find the first widget with matching numerical ID
+        widget*	get_widget_by_id(short inID);
 
+        // ZZZ: set custom processing function, called while dialog is idle
+        void set_processing_function(processing_function_t func) { processing_function = func; }
+
+        // ZZZ: exposed this for use (was private)
+	void activate_next_widget(void);
 private:
 	SDL_Surface *get_surface(void) const;
-	void layout(void);
 	void update(SDL_Rect r) const;
 	void draw_widget(widget *w, bool do_update = true) const;
+    // ZZZ addition: deactivate widget (now separate in case there's no selectable widget to activate afterwards)
+    void deactivate_currently_active_widget(bool draw = true);
 	void activate_first_widget(void);
 	void activate_widget(int num, bool draw = true);
-	void activate_widget(widget *w, bool draw = true);
-	void activate_next_widget(void);
+//	void activate_widget(widget *w, bool draw = true); // (ZZZ this does not seem to exist)
 	void activate_prev_widget(void);
 	int find_widget(int x, int y);
 	void event(SDL_Event &e);
+	void layout(void);
 
 	SDL_Rect rect;				// Position relative to video surface, and dimensions
 
@@ -94,6 +114,14 @@ private:
 
 	// Frame images (frame_t, frame_l, frame_r and frame_b must be freed)
 	SDL_Surface *frame_tl, *frame_t, *frame_tr, *frame_l, *frame_r, *frame_bl, *frame_b, *frame_br;
+        
+        // ZZZ: custom idle procedure
+        processing_function_t	processing_function;
+        
+        // ZZZ: support for run chunk-by-chunk
+        bool	is_running;
+        dialog*	parent_dialog;
+        bool	cursor_was_visible;
 };
 
 // Pointer to top-level dialog, NULL = no dialog active
@@ -125,7 +153,28 @@ enum {
 	TEXT_ENTRY_ACTIVE_COLOR,
 	TEXT_ENTRY_CURSOR_COLOR,
 	KEY_BINDING_COLOR,
-	NUM_DIALOG_COLORS
+	NUM_DIALOG_COLORS,
+    
+    // ZZZ: these should eventually be "real" colors gotten from MML theme, but I don't want to
+    // get into that at this point.  It should be straightforward, so have at it ;)
+    // Actually while I'm talking about this, really a better way would probably be to have the
+    // MML do something like (I know little about XML/MML, so you'll have to interpret this a bit)
+    // <widget>
+    // <state default> <property> <property> etc. </state>
+    // <state enabled> <property> etc. </state>
+    // <state active> <property> etc. </state>
+    // <state disabled> <property> etc. </state>
+    // </widget>
+    // Anything not specified in other substates would be gotten from the default state.  This way
+    // other states like "pressed" or whatever could be easily added, and most widgets would get
+    // reasonable default values.  Also, widgets with graphics (like buttons and lists) could easily
+    // use different graphics for different states.
+    // Maybe the default state need not be explicitly defined - it could get whatever properties are
+    // listed for the widget (that are not claimed inside a different <state></state> pair).
+    BUTTON_DISABLED_COLOR   = BUTTON_COLOR,
+    LABEL_DISABLED_COLOR    = BUTTON_COLOR,
+    ITEM_DISABLED_COLOR     = BUTTON_COLOR,
+    TEXT_ENTRY_DISABLED_COLOR = BUTTON_COLOR
 };
 
 // Images
@@ -209,12 +258,18 @@ extern void load_theme(FileSpecifier &theme);
 
 extern const sdl_font_info *get_dialog_font(int which, uint16 &style);
 extern uint32 get_dialog_color(int which);
+extern uint32 get_dialog_player_color(int colorIndex); // ZZZ: added
 extern SDL_Surface *get_dialog_image(int which, int width = 0, int height = 0);
 extern int get_dialog_space(int which);
 extern void play_dialog_sound(int which);
 
 extern void dialog_ok(void *arg);
 extern void dialog_cancel(void *arg);
+
+// ZZZ: some more handy callbacks
+class w_text_entry;
+extern void dialog_try_ok(w_text_entry* text_entry);
+extern void dialog_disable_ok_if_empty(w_text_entry* inTextEntry);
 
 // Get the parser for themes (name "theme")
 class XML_ElementParser;

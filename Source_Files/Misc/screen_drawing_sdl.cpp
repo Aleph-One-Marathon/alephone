@@ -184,7 +184,7 @@ int text_width(const char *text, int length, const sdl_font_info *font, uint16 s
 }
 
 // Determine how many characters of a string fit into a given width
-static int trunc_text(char *text, int max_width, const sdl_font_info *font, uint16 style)
+int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
 	int num = 0;
@@ -275,7 +275,21 @@ inline static int draw_text(const uint8 *text, int length, int x, int y, T *p, i
 		if (c < font->first_character || c > font->last_character)
 			continue;
 
-		int width = draw_glyph(c, x, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+                int width;
+
+                if(style & styleOutline) {
+                    draw_glyph(c, x-1, y-1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+                    draw_glyph(c, x  , y-1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+                    draw_glyph(c, x+1, y-1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+                    draw_glyph(c, x-1, y  , p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+                    draw_glyph(c, x+1, y  , p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+                    draw_glyph(c, x-1, y+1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+                    draw_glyph(c, x  , y+1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+                    width =
+                    draw_glyph(c, x+1, y+1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+                }
+                else
+                    width = draw_glyph(c, x, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
 		if (style & styleBold) {
 			draw_glyph(c, x + 1, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
 			width++;

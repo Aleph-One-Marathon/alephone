@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include <math.h>
+
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
@@ -32,8 +33,13 @@
 #include <windows.h>
 #endif
 
-#include <GL/gl.h>
 #include "Model3D.h"
+
+#if defined (__APPLE__) && defined (__MACH__)
+#include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif
 
 
 // Erase everything

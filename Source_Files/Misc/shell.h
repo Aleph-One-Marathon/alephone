@@ -152,7 +152,22 @@ void initialize_shape_handler(void);
 #if defined(mac)
 PixMapHandle get_shape_pixmap(short shape, bool force_copy);
 #elif defined(SDL)
-SDL_Surface *get_shape_surface(int shape);
+// ZZZ: this now works with RLE'd shapes, but needs extra storage.  Caller should
+// be prepared to take a byte* if using an RLE shape (it will be set to NULL if
+// shape is straight-coded); caller will need to free() that storage after freeing
+// the SDL_Surface.
+// If inIllumination is >= 0, it'd better be <= 1.  Shading tables are then used instead of the collection's CLUT.
+// Among other effects (like being able to get darkened shapes), this lets player shapes be colorized according to
+// team or player color.
+// OK, yet another change... we now (optionally) take shape and collection separately, since there are too many
+// low-level shapes in some collections to fit in the number of bits allotted.  If collection != NONE, it's taken
+// as a collection and CLUT reference together; shape is (then) taken directly as a low-level shape index.
+// If collection == NONE, shape is expected to convey information about all three elements (CLUT, collection,
+// low-level shape index).
+// Sigh, the extensions keep piling up... now we can also provide a quarter-sized surface from a shape.  It's hacky -
+// the shape is shrunk by nearest-neighbor-style scaling (no smoothing), even at 16-bit and above, and it only works for RLE shapes.
+SDL_Surface *get_shape_surface(int shape, int collection = NONE, byte** outPointerToPixelData = NULL, float inIllumination = -1.0f,
+                                bool inShrinkImage = false);
 #endif
 
 void open_shapes_file(FileSpecifier& File);

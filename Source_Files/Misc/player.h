@@ -51,6 +51,9 @@ July 1, 2000 (Loren Petrich):
 
 Aug 31, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+        
+Oct 21, 2001 (Woody Zenfell):
+        Moved some info from player.cpp to here, so can be shared (in particular, with SDL net dialog widgets)
 */
 
 // LP additions: stuff that this file needs
@@ -58,6 +61,8 @@ Aug 31, 2000 (Loren Petrich):
 #include "world.h"
 #include "map.h"
 #include "XML_ElementParser.h"
+// ZZZ addition: same deal
+#include "weapons.h"
 
 /* ---------- constants */
 
@@ -359,6 +364,19 @@ const int SIZEOF_player_data = 930;
 
 const int SIZEOF_physics_constants = 104;
 
+// ZZZ: moved here so we can get/use in files other than player.cpp
+struct player_shape_definitions
+{
+	short collection;
+
+	short dying_hard, dying_soft;
+	short dead_hard, dead_soft;
+	short legs[NUMBER_OF_PLAYER_ACTIONS]; /* stationary, walking, running, sliding, airborne */
+	short torsos[PLAYER_TORSO_SHAPE_COUNT]; /* NONE, ..., double pistols */
+	short charging_torsos[PLAYER_TORSO_SHAPE_COUNT]; /* NONE, ..., double pistols */
+	short firing_torsos[PLAYER_TORSO_SHAPE_COUNT]; /* NONE, ..., double pistols */
+};
+
 /* ---------- globals */
 
 extern struct player_data *players;
@@ -393,6 +411,9 @@ void damage_player(short monster_index, short aggressor_index, short aggressor_t
 	struct damage_definition *damage);
 
 void mark_player_collections(bool loading);
+
+// ZZZ: new function to get current player_shape_definitions
+player_shape_definitions* get_player_shape_definitions();
 
 short player_identifier_to_player_index(short player_identifier);
 

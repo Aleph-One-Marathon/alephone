@@ -52,7 +52,7 @@ public:
 	// Assumes a MacOS Pascal string; the resulting string will have
 	// a null byte at the end.
 	void Add(short Index, unsigned char *String);
-	
+        
 	// Get a string; return NULL if not found
 	unsigned char *GetString(short Index);
 	
@@ -333,6 +333,31 @@ void TS_PutString(short ID, short Index, unsigned char *String)
 	// Search for string set:
 	StringSet *CurrStringSet = FindStringSet(ID);
 	CurrStringSet->Add(Index,String);
+}
+
+
+// ZZZ: Set up a C-string in the repository; a repeated call will replace an old string
+void TS_PutCString(short ID, short Index, const char *String)
+{
+	// Search for string set: (FindStringSet() creates a new one if necessary)
+	StringSet *CurrStringSet = FindStringSet(ID);
+        
+        // Create a PString of the incoming CString, truncate to fit
+        unsigned char	thePStringStagingBuffer[256];
+
+        int theStringLength = strlen(String);
+
+        if(theStringLength > 255)
+            theStringLength = 255;
+
+        // Fill in the string length.
+        thePStringStagingBuffer[0] = theStringLength;
+        
+        // Copy exactly the string bytes (no termination etc.)
+        memcpy(&(thePStringStagingBuffer[1]), String, theStringLength);
+        
+        // Add() copies the string, so using the stack here is OK.
+	CurrStringSet->Add(Index,thePStringStagingBuffer);
 }
 
 

@@ -331,6 +331,47 @@
 <string index="6">Receiving environment information from server.</string>
 </stringset>
 
+<!-- ZZZ: Names of difficulty levels, used by SDL version -->
+<stringset index="145">
+<string index="0">Kindergarten</string>
+<string index="1">Easy</string>
+<string index="2">Normal</string>
+<string index="3">Major Damage</string>
+<string index="4">Total Carnage</string>
+</stringset>
+
+<!-- ZZZ: Names of game types, used by SDL version (for menu) -->
+<stringset index="146">
+<string index="0">Every Man for Himself</string>
+<string index="1">Cooperative Play</string>
+<string index="2">Capture the Flag</string>
+<string index="3">King of the Hill</string>
+<string index="4">Kill the Man With the Ball</string>
+<string index="5">Defense</string>
+<string index="6">Rugby</string>
+<string index="7">Tag</string>
+</stringset>
+
+<!-- ZZZ: Names of basic end-conditions, used by SDL version when choosing limit type -->
+<stringset index="147">
+<string index="0">No Limit (Alt+Q to quit)</string>
+<string index="1">Score Limit</string>
+<string index="2">Time Limit</string>
+</stringset>
+
+<!-- ZZZ: Names of alternate end-conditions (replace "Score Limit" above), used by SDL version -->
+<!-- ZZZ: hmm, I think I have stopped needing these (now use 141 like Mac)... leaving them in anyway just in case. -->
+<stringset index="148">
+<string index="0">Kill Limit</string>
+<string index="1">Kill Limit</string>
+<string index="2">Flag-Capture Limit</string>
+<string index="3">Kill Limit</string>
+<string index="4">Kill Limit</string>
+<string index="5">Time in Enemy Bases</string>
+<string index="6">Score Limit</string>
+<string index="7">Kill Limit</string>
+</stringset>
+
 <!-- STR# Resource: "Item names" -->
 <stringset index="150">
 <string index="0">FISTS</string>
@@ -404,6 +445,13 @@
 <string index="9"> including %d friendly-fire kills</string>
 <string index="10">Total Scores</string>
 <string index="11">Total Team Scores</string>
+<!-- ZZZ: added for team vs. team carnage in postgame report -->
+<string index="12">%s's team</string>
+<!-- ZZZ: added for legend/key in SDL postgame report -->
+<string index="13">kills</string>
+<string index="14">deaths</string>
+<string index="15">suicides</string>
+<string index="16">friendly-fire kills</string>
 </stringset>
 
 <!-- STR# Resource: "OpenGL-Option Color-Picker Prompts" -->
