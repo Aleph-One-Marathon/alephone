@@ -45,7 +45,10 @@ Mar 19, 2002 (Br'fin (Jeremy Parsons)):
 	Enabling scrollwheel as weapon selector
 
 May 16, 2002 (Woody Zenfell):
-    Configurable mouse sensitivity
+	Configurable mouse sensitivity
+
+May 20, 2003 (Woody Zenfell):
+	Reenabling mouse sensitivity; also respecting mouse Y-axis inversion.
 */
 
 /* marathon includes */
@@ -258,14 +261,16 @@ void mouse_idle(
 		_fixed vx= INTEGER_TO_FIXED(where.h-center.h)/(ticks_elapsed*MAXIMUM_MOUSE_VELOCITY);
 		_fixed vy= - INTEGER_TO_FIXED(where.v-center.v)/(ticks_elapsed*MAXIMUM_MOUSE_VELOCITY);
 
-#ifdef SDL
-        // ZZZ: scale input by sensitivity
-        if(input_preferences->sensitivity != FIXED_ONE) {
-            float   theScalingFactor = ((float) input_preferences->sensitivity) / ((float) FIXED_ONE);
-            vx = (_fixed) (theScalingFactor * vx);
-            vy = (_fixed) (theScalingFactor * vy);
-        }
-#endif
+		// ZZZ: mouse inversion
+		if (input_preferences->modifiers & _inputmod_invert_mouse)
+			vy *= -1;
+
+		// ZZZ: scale input by sensitivity
+		if(input_preferences->sensitivity != FIXED_ONE) {
+			float   theScalingFactor = ((float) input_preferences->sensitivity) / ((float) FIXED_ONE);
+			vx = (_fixed) (theScalingFactor * vx);
+			vy = (_fixed) (theScalingFactor * vy);
+		}
 
 		/* pin and do nonlinearity */
 		vx= PIN(vx, -FIXED_ONE/2, FIXED_ONE/2), vx>>= 1, vx*= (vx<0) ? -vx : vx, vx>>= 14;
