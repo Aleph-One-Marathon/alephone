@@ -434,18 +434,8 @@ what you can do by writing your own MML scripts, please consult the file
 "docs/MML.html" that comes in the Aleph One/SDL distribution archive.
 
 
-Missing features and bugs
--------------------------
-
-The SDL version of Aleph One is a work in progress. Here is an (incomplete)
-list of the missing features, listed in roughly the order I plan to implement
-them:
-
- - Some preferences items are missing (mouse sensitivity, OpenGL on/off,
-   chase cam, crosshairs, OpenGL texture/landscape/fog options)
- - Networking (the "Gather Network Game" and "Join Network Game" buttons on
-   the title screen are nonfunctional)
- - Support for named fonts and TrueType fonts
+Bug Reports
+-----------
 
 If you find a bug that's not already in the list above, please submit it
 using the bug database on SourceForge:
