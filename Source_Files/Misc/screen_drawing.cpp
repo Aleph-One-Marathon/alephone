@@ -354,7 +354,7 @@ return;
 }
 
 short _text_width(
-	char *buffer, 
+	const char *buffer, 
 	short font_id)
 {
 	TextSpec old_font;
@@ -372,7 +372,7 @@ short _text_width(
 
 /* This expects a cstring. Draws to the current port*/
 void _draw_screen_text(
-	char *text,
+	const char *text,
 	screen_rectangle *destination,
 	short flags,
 	short font_id,
