@@ -598,6 +598,6 @@ void screen_printf(const char *format, ...)
 	va_start(list,format);
 	// ZZZ: [v]sprintf is evil, generally: hard to guarantee you don't overflow target buffer
 	// using [v]snprintf instead
-	vsnprintf(Message.Text,sizeof(Message.Text),format,list);
+	std::vsnprintf(Message.Text,sizeof(Message.Text),format,list);
 	va_end(list);
 }
