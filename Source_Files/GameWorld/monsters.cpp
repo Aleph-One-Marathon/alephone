@@ -110,6 +110,7 @@ Jan 12, 2003 (Loren Petrich)
 #include "items.h"
 #include "media.h"
 #include "Packing.h"
+#include "lua_script.h"
 
 
 #ifdef env68k
@@ -1496,6 +1497,13 @@ void damage_monster(
 						if (definition->_class&_class_human_civilian) dynamic_world->civilians_killed_by_players+= 1;
 					}
 				}
+				
+				// Lua script hook
+				int aggressor_player_index = -1;
+				if (aggressor_index!=NONE)
+					if (MONSTER_IS_PLAYER(aggressor_monster))
+						aggressor_player_index = monster_index_to_player_index(aggressor_index);
+				L_Call_Monster_Killed (target_index, aggressor_player_index, projectile_index);
 			}
 		}
 		

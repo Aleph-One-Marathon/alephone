@@ -106,6 +106,7 @@ void L_Call_Light_Activated(short index) {}
 void L_Call_Platform_Activated(short index) {}
 void L_Call_Player_Revived(short player_index) {}
 void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action, short projectile_index) {}
+void L_Call_Monster_Killed(short monster_index, short aggressor_player_index, short projectile_index) {}
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
 
 bool LoadLuaScript(const char *buffer, size_t len) { /* Should never get here! */ }
@@ -184,11 +185,12 @@ static const luaL_reg lualibs[] =
 {
 	{"base", luaopen_base},
 	{"table", luaopen_table},
-	// {"io", luaopen_io},   jkvw: This is just begging to be a security problem, isn't it?
+	// {"io", luaopen_io}, jkvw: This is just begging to be a security problem, isn't it?
 	{"string", luaopen_string},
 	{"math", luaopen_math},
 	{"debug", luaopen_debug},
-	{"loadlib", luaopen_loadlib},
+	// {"loadlib", luaopen_loadlib}, jkvw: Do you really want evil scripts calling loadlib?
+	// jkvw: And don't even think about adding the operating system facilities library, burrito.
 	/* add your libraries here */
 	{NULL, NULL}
 };
@@ -263,7 +265,6 @@ L_Call_NN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2)
 	}
 }
 
-#if 0
 static void
 L_Call_NNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3)
 {
@@ -275,7 +276,6 @@ L_Call_NNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, 
 		L_Do_Call(inLuaFunctionName, 3);
 	}
 }
-#endif
 
 static void
 L_Call_NNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4)
@@ -401,6 +401,11 @@ void L_Call_Player_Revived (short player_index)
 void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action, short projectile_index)
 {
 	L_Call_NNNN("player_killed", player_index, aggressor_player_index, action, projectile_index);
+}
+
+void L_Call_Monster_Killed (short monster_index, short aggressor_player_index, short projectile_index)
+{
+	L_Call_NNN("monster_killed", monster_index, aggressor_player_index, projectile_index);
 }
 
 //  Woody Zenfell, 08/03/03
@@ -3609,8 +3614,10 @@ bool LoadLuaScript(const char *buffer, size_t len)
 		logWarning("Lua loading failed: error running script.");
 	if (status == LUA_ERRFILE)
 		logWarning("Lua loading failed: error loading file.");
-	if (status == LUA_ERRSYNTAX)
+	if (status == LUA_ERRSYNTAX) {
 		logWarning("Lua loading failed: syntax error.");
+		logWarning(lua_tostring(state, -1));
+		}
 	if (status == LUA_ERRMEM)
 		logWarning("Lua loading failed: error allocating memory.");
 	if (status == LUA_ERRERR)

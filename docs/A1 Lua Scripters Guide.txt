@@ -2,7 +2,7 @@
 Aleph One Lua Scripters' Guide
                  
 Document created: July 10, 2003, by James Willson
-Revised: September 5, 2003
+Revised: June 26, 2004
 
 Known Contributors:
 James Willson
@@ -11,7 +11,8 @@ Woody Zenfell
 
 0. General
 0.1 What is This?
-0.2 Units
+0.2 Running a Script
+0.3 Units
 1. Triggers
 2. A1 Functions
 2.1 Players
@@ -23,9 +24,10 @@ Woody Zenfell
 2.7 Platforms
 2.8 Camera
 2.9 Display
-2.10 Compass
-2.11 Projectiles
-2.12 Other
+2.10 Scoring
+2.11 Compass
+2.12 Projectiles
+2.13 Other
 3. Mnemmonics
 3.1 Items
 3.2 Monsters
@@ -55,7 +57,41 @@ Not everything here is completely documented, and any help fixing that would be 
 This is not a reference for lua itself - see lua.org for that.
 
 
-0.2 Units
+0.2 Running a Script
+--------------------
+
+There are two ways to get a script to run -
+level specific MML, and selecting a script at the gather network game dialog.
+
+To use level specific MML, put the script in a TEXT resource in the map file.
+Then put in TEXT resource 128 MML telling A1 where to find the script,
+which in its most basic form is this:
+
+	<marathon_levels>
+
+	<level index="0">
+	<lua resource="1000"/>
+	</level>
+
+	</marathon_levels>
+
+By convention we use TEXT resource 1000+x to hold the script for level x,
+so the first level in the map file (which has level index 0) gets its script
+in TEXT resource 1000.
+
+This works fine for single player games.  It will also work for multiplayer games,
+but only if every player has a copy of the map file and selects it in enviroment prefs.
+
+To use a script via the network game dialog, put then script in a text file.
+Then, at the gather network game dialog, select "use script", then select your script file.
+
+When playing network games, even if you are not gathering, it's important not to have
+a map file with level specific MML selected in your environment prefs, unless it's the
+map file for the map you are playing.  A1 will run the script for that map file,
+your game will go out of sync, and you'll be unhappy.
+
+
+0.3 Units
 ---------
 
 The unit for distance we use is World Units (WU)
@@ -172,6 +208,17 @@ projectile is the projectile that delivered the damage, or -1 if there is no suc
 The player's suit energy or oxygen may be negative when this trigger is called; if it still is when the trigger
 returns, it will be set to 0.
 The player's suit energy is tested again after this trigger returns, so a script may prevent a player's death.
+
+
+monster_killed(monster, aggressor_player, projectile)
+
+Whenever a monster dies.
+This is called after a monster has taken lethal damage, but before it's removed form the monster list.
+You can use this to find out when a monster created with new_monster dies,
+but a monster discovered by select_monster may have already taken lethal damage,
+so you may need to check for that case when using select_monster. 
+aggressor_player is the player index of who killed it, or -1 if killed by non-player.
+projectile is the projectile that delivered the final blow, or -1 if there is no such projectile.
 
 
 2 A1 Functions
