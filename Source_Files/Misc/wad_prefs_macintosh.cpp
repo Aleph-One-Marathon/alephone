@@ -5,6 +5,9 @@
 
 Feb 24, 2000 (Loren Petrich):
 	Saving setting of Preferences dialog box between choices
+	
+Dec 31, 2000 (Mike Benonis):
+	Changed Section Popup Menu item number from 3 to 4.
 */
 
 #include "cseries.h"
@@ -31,7 +34,7 @@ enum {
 	dlogPREFERENCES_DIALOG= 4000,
 	/* iOK */
 	/* iCANCEL */
-	iPREF_SECTION_POPUP= 3,
+	iPREF_SECTION_POPUP= 4,
 	NUMBER_VALID_PREF_ITEMS= 8
 };	
 /* -------------- Preferences Dialog --------- */

@@ -95,6 +95,10 @@ Dec 1, 2000 (Loren Petrich):
 
 Dec 2, 2000 (Loren Petrich):
 	Added more reasonable suspend-and-resume, so as to hide and show the app properly
+	
+Dec 31, 2000 (Mike Benonis):
+	Changed Dialog Header drawing code so it will not draw the Preferences header in the
+	preferences dialog.
 */
 
 #include <exception.h>
@@ -985,15 +989,19 @@ static void marathon_dialog_header_proc(
 	
 	if (refCon>=FIRST_DIALOG_REFCON && refCon<=LAST_DIALOG_REFCON)
 	{
-		PicHandle picture= GetPicture(DIALOG_HEADER_RESOURCE_OFFSET - FIRST_DIALOG_REFCON + refCon);
-		
-		if (picture)
+		/* Mike Benonis Change */
+		if (refCon!=FIRST_DIALOG_REFCON)
 		{
-			Rect destination= (*picture)->picFrame;
+			PicHandle picture= GetPicture(DIALOG_HEADER_RESOURCE_OFFSET - FIRST_DIALOG_REFCON + refCon);
 			
-			OffsetRect(&destination, frame->left-destination.left+DIALOG_HEADER_HORIZONTAL_INSET,
-				frame->top-destination.top+DIALOG_HEADER_VERTICAL_INSET);
-			DrawPicture(picture, &destination);
+			if (picture)
+			{
+				Rect destination= (*picture)->picFrame;
+				
+				OffsetRect(&destination, frame->left-destination.left+DIALOG_HEADER_HORIZONTAL_INSET,
+					frame->top-destination.top+DIALOG_HEADER_VERTICAL_INSET);
+				DrawPicture(picture, &destination);
+			}
 		}
 	}
 		
