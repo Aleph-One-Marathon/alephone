@@ -228,7 +228,10 @@ bool is_pfhortran_on(void)
 }
 
 
-#pragma mark  - 
+// Suppressed for MSVC compatibility
+#if 0
+#pragma mark -
+#endif
 
 /* Binding Table Code
 
@@ -320,7 +323,10 @@ void set_trap_instruction_decay(short trap, uint32 decay)
 
 
 
-#pragma mark  - 
+// Suppressed for MSVC compatibility
+#if 0
+#pragma mark -
+#endif
 
 /* Symbol Table Code 
 
@@ -490,7 +496,10 @@ short put_symbol(char *symbol, float val, short mode, symbol_def **the_hash)
 
 }
 
-#pragma mark  - 
+// Suppressed for MSVC compatibility
+#if 0
+#pragma mark -
+#endif
 
 /* Parsing code 
 

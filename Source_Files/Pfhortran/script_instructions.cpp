@@ -365,7 +365,10 @@ void init_instructions(void)
 
 	}
 
+// Suppressed for MSVC compatibility
+#if 0
 #pragma mark -
+#endif
 
 /* ----------------------------------------- */
 
