@@ -257,10 +257,10 @@ struct WadContainer
 {
 	wad_data *Ptr;
 	
-	void Clear() {if (Ptr) free_wad(Ptr); Ptr = NULL;}
-	void Set(wad_data *_Ptr) {Clear(); Ptr = _Ptr;}
+	void Clear() {if (Ptr) free_wad(Ptr); Ptr = create_empty_wad();}
+	void Set(wad_data *_Ptr) {if (Ptr) free_wad(Ptr); Ptr = _Ptr;}
 	
-	WadContainer(): Ptr(NULL) {}
+	WadContainer(): Ptr(create_empty_wad()) {}
 	WadContainer(wad_data *_Ptr): Ptr(_Ptr) {}
 	~WadContainer() {if (Ptr) free_wad(Ptr);}
 };
@@ -317,6 +317,85 @@ bool InFileData::GetWad(short TrueIndex, WadContainer& Wad)
 	
 	return (Wad.Ptr != NULL);
 }
+
+
+struct OutFileData
+{
+	FileSpecifier Spec;
+	OpenedFile Opened;
+	wad_header Header;
+	
+	vector<directory_entry> DirEntries;
+	int Offset;
+
+	bool Open(char *Prompt, char *Default);
+	
+	int NumWads() {return DirEntries.size();}
+	
+	bool AddWad(short TrueIndex, WadContainer& Wad);
+	
+	bool Finish();
+};
+
+
+bool OutFileData::Open(char *Prompt, char *Default)
+{
+	if (!Spec.WriteDialog(_typecode_scenario,Prompt,Default)) return false;
+	
+	fill_default_wad_header(Spec, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION,
+		0, sizeof(directory_entry) - SIZEOF_directory_entry, &Header);
+	
+	if (!create_wadfile(Spec,_typecode_scenario)) return false;
+	
+	if (!open_wad_file_for_writing(Spec,Opened)) return false;
+	
+	if (!write_wad_header(Opened, &Header)) return false;
+	
+	Offset = SIZEOF_wad_header;
+	
+	return true;
+}
+
+
+bool OutFileData::AddWad(short TrueIndex, WadContainer& Wad)
+{		
+	// Add the new wad if it contains anything
+	int32 WadLength = calculate_wad_length(&Header, Wad.Ptr);
+	
+	if (WadLength > 0)
+	{
+		directory_entry NewDirEntry;
+		DirEntries.push_back(NewDirEntry);
+		
+		set_indexed_directory_offset_and_length(&Header, 
+			&DirEntries[0], NumWads()-1, Offset, WadLength, TrueIndex);
+			
+		if (!write_wad(Opened, &Header, Wad.Ptr, Offset)) return false;
+		
+		Offset += WadLength;
+	}
+	
+	return true;
+}
+
+
+bool OutFileData::Finish()
+{
+	
+	// Reset the size
+	Header.wad_count = NumWads();
+		
+	// Need to know where to write the directory
+	Header.directory_offset = Offset;
+	
+	if (!write_directorys(Opened, &Header, &DirEntries[0])) return false;
+	
+	Header.checksum = calculate_crc_for_opened_file(Opened);
+	if (!write_wad_header(Opened, &Header)) return false;
+	
+	return true;
+}
+
 
 void ListChunks()
 {
@@ -515,6 +594,78 @@ void LoadResourceIntoArray(int TypeIndex, int16 RsrcID, OpenedResourceFile InRes
 }
 
 
+bool LoadDataIntoResource(int TypeIndex, byte *Data, int32 Length, OpenedResourceFile OutRes,
+	int16 RsrcID)
+{
+	if (Length <= 0) return false;
+	
+	bool Success = false;
+	OutRes.Push();
+	
+	Handle Rsrc = NULL;
+
+	// Details cribbed from images.cpp in the engine code
+	switch(TypeIndex)
+	{
+	case 0:
+		// PICT
+		// The most complicated :-)
+		// Simply copy over
+		PtrToHand(Data,&Rsrc,Length);
+		break;
+		
+	case 1:
+		// clut
+		if (Length != (6 + 256 * 6))
+		{
+			Success = false;
+			break;
+		}
+		Rsrc = NewHandleClear(8 + 256 * 8);
+		{
+			uint8 *In = Data;
+			uint8 *Out = (uint8 *)(*Rsrc);
+			
+			Out[6] = In[0];
+			Out[7] = In[1];
+			In += 6;
+			Out += 8;
+			
+			for (int i=0; i<256; i++)
+			{
+				Out++;	// Index value
+				*Out++ = i;
+				*Out++ = *In++;	// Red
+				*Out++ = *In++;
+				*Out++ = *In++;	// Green
+				*Out++ = *In++;
+				*Out++ = *In++;	// Blue
+				*Out++ = *In++;
+			}
+		}
+		break;
+		
+	case 2:
+		// snd
+	case 3:
+		// TEXT
+		// Simply copy over
+		PtrToHand(Data,&Rsrc,Length);
+		break;
+	}
+	
+	if (Success)
+	{
+		AddResource(Rsrc, MovedResourceTypes[TypeIndex], RsrcID, "\p");
+		Success = (ResError() == noErr);
+	}
+	if (Rsrc) DisposeHandle(Rsrc);
+	
+	OutRes.Pop();
+	return Success;
+}
+
+
 void AddChunks()
 {
 	InFileData InFile;
@@ -548,31 +699,15 @@ void AddChunks()
 	strncat(Name," Chunked",31);
 	Name[31] = 0;
 	
-	FileSpecifier OutFileSpec;
-	if (!OutFileSpec.WriteDialog(_typecode_scenario,"What chunked file?",Name)) return;
+	OutFileData OutFile;
 	
-	wad_header Header;
-	int NumWads = 0;
-	fill_default_wad_header(OutFileSpec, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION,
-		NumWads, sizeof(directory_entry) - SIZEOF_directory_entry, &Header);
-	
-	vector<directory_entry> DirEntries;
-	DirEntries.reserve(InFile.NumWads());
-	
-	if (!create_wadfile(OutFileSpec,_typecode_scenario)) return;
-	
-	OpenedFile OutFileOpened;
-	if (!open_wad_file_for_writing(OutFileSpec,OutFileOpened)) return;
-	
-	if (!write_wad_header(OutFileOpened, &Header)) return;
-	
-	int32 Offset = SIZEOF_wad_header;
+	if (!OutFile.Open("What chunked file?",Name)) return;
 	
 	for (int lvl=0; lvl<InFile.NumWads(); lvl++)
 	{
 		WadContainer InWad;
 		short TrueLevel = InFile.LevelIndices[lvl];
-		if (!InFile.GetWad(TrueLevel,InWad)) InWad.Set(create_empty_wad());
+		InFile.GetWad(TrueLevel,InWad);
 		
 		// Load the resources to be chunked
 		vector<uint8> LoadedResources[NumMovedTypes];
@@ -595,7 +730,7 @@ void AddChunks()
 			}
 		}
 		
-		WadContainer OutWad(create_empty_wad());
+		WadContainer OutWad;
 		
 		// Load the already-existing chunks; be sure to replace those that have
 		// corresponding resources
@@ -624,22 +759,7 @@ void AddChunks()
 				append_data_to_wad(OutWad.Ptr, MovedChunkTypes[it], &LoadedResources[it][0], DataLen, 0);
 		}
 		
-		// Add the new wad if it contains anything
-		int32 OutWadLength = calculate_wad_length(&Header, OutWad.Ptr);
-		
-		if (OutWadLength > 0)
-		{
-			directory_entry NewDirEntry;
-			DirEntries.push_back(NewDirEntry);
-			
-			set_indexed_directory_offset_and_length(&Header, 
-				&DirEntries[0], NumWads, Offset, OutWadLength, TrueLevel);
-				
-			if (!write_wad(OutFileOpened, &Header, OutWad.Ptr, Offset)) return;
-			
-			NumWads++;
-			Offset += OutWadLength;
-		}
+		OutFile.AddWad(TrueLevel,OutWad);
 	}
 	
 	// Write out the remaining resources
@@ -692,7 +812,7 @@ void AddChunks()
 		
 		// Load the resources to be chunked
 		vector<uint8> LoadedResources[NumMovedTypes];
-		WadContainer OutWad(create_empty_wad());
+		WadContainer OutWad;
 		
 		for (int it = 0; it<NumMovedTypes; it++)
 		{
@@ -724,39 +844,61 @@ void AddChunks()
 		}
 		
 		// Add the new wad if it contains anything
-		int32 OutWadLength = calculate_wad_length(&Header, OutWad.Ptr);
 		
-		if (OutWadLength > 0)
-		{
-			directory_entry NewDirEntry;
-			DirEntries.push_back(NewDirEntry);
-			
-			set_indexed_directory_offset_and_length(&Header, 
-				&DirEntries[0], NumWads, Offset, OutWadLength, MinID);
-			
-			if (!write_wad(OutFileOpened, &Header, OutWad.Ptr, Offset)) return;
-			
-			NumWads++;
-			Offset += OutWadLength;
-		}
+		OutFile.AddWad(MinID,OutWad);
 	}
 	
-	// Reset the size
-	Header.wad_count = NumWads;
-	
-	long Len;
-	OutFileOpened.GetLength(Len);
-	
-	// Need to know where to write the directory
-	Header.directory_offset = Offset;
-	
-	if (!write_directorys(OutFileOpened, &Header, &DirEntries[0])) return;
-	OutFileOpened.GetLength(Len);
-	
-	Header.checksum = calculate_crc_for_opened_file(OutFileOpened);
-	if (!write_wad_header(OutFileOpened, &Header)) return;
+	OutFile.Finish();
 }
 
 void ExtractChunks()
 {
+	InFileData InFile;
+	if (!InFile.Open("Move into resources from?")) return;
+	
+	// Compose a name for the unchunked level
+	char Name[256];
+	InFile.Spec.GetName(Name);
+	
+	strncat(Name," Unchunked",31);
+	Name[31] = 0;
+	
+	OutFileData OutFile;
+	
+	if (!OutFile.Open("What unchunked file?",Name)) return;
+
+	OpenedResourceFile OutRes;
+	if (!OutFile.Spec.Open(OutRes,true)) return;
+	
+	for (int lvl=0; lvl<InFile.NumWads(); lvl++)
+	{
+		WadContainer InWad, OutWad;
+		short TrueLevel = InFile.LevelIndices[lvl];
+		InFile.GetWad(TrueLevel,InWad);
+		
+		// Load the already-existing chunks; be sure to replace those that have
+		// corresponding resources
+		for (int itg=0; itg<InWad.Ptr->tag_count; itg++)
+		{
+			tag_data& Tag = InWad.Ptr->tag_data[itg];
+			
+			bool WasMoved = false;
+			for (int it = 0; it<NumMovedTypes; it++)
+			{
+				if (Tag.tag == MovedChunkTypes[it])
+				{
+					// Move the chunk into the resource fork
+					WasMoved = LoadDataIntoResource(it,Tag.data,Tag.length,OutRes,TrueLevel);
+					break;
+				}
+			}
+			
+			if (!WasMoved)
+				append_data_to_wad(OutWad.Ptr, Tag.tag, Tag.data, Tag.length, 0);
+		}
+		
+		OutFile.AddWad(TrueLevel,OutWad);
+	}
+	
+	OutFile.Finish();	
 }
