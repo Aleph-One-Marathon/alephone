@@ -11,7 +11,12 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef HAVE_OPENGL
 #include <GL/gl.h>
+#else
+typedef float GLfloat;
+#endif
 
 #include "cseries.h"
 #include "tags.h"
