@@ -26,6 +26,11 @@
 Jul 10, 2000:
 
 	Fixed crashing bug when OpenGL is inactive with ResetTextures()
+
+Sep 9, 2000:
+
+	Restored old fix for AppleGL texturing as an option; this fix consists of setting
+	the minimum size of a texture to be 128.
 */
 
 #include <GL/gl.h>
@@ -435,6 +440,12 @@ inline int NextPowerOfTwo(int n)
 }
 
 
+inline bool WhetherTextureFix()
+{
+	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
+	return (TEST_FLAG(ConfigureData.Flags,OGL_Flag_TextureFix) != 0);
+}
+
 bool TextureManager::SetupTextureGeometry()
 {
 	// How many rows (scanlines) and columns
@@ -498,10 +509,12 @@ bool TextureManager::SetupTextureGeometry()
 			TxtrHeight = NextPowerOfTwo(BaseTxtrHeight+2);
 			
 			// This kludge no longer necessary
-			/*
-			TxtrWidth = MAX(TxtrWidth,128);
-			TxtrHeight = MAX(TxtrHeight,128);
-			*/
+			// Restored due to some people still having AppleGL 1.1.2
+			if (WhetherTextureFix())
+			{
+				TxtrWidth = MAX(TxtrWidth,128);
+				TxtrHeight = MAX(TxtrHeight,128);
+			}
 						
 			// Offsets
 			WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
