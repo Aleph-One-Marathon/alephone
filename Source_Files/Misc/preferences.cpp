@@ -423,8 +423,10 @@ void write_preferences(
 	fprintf(F,"  bkgd_music=\"%s\"\n",BoolString(player_preferences->background_music_on));
 	fprintf(F,">\n");
 	ChaseCamData& ChaseCam = player_preferences->ChaseCam;
-	fprintf(F,"  <chase_cam behind=\"%hd\" upward=\"%hd\" rightward=\"%hd\" flags=\"%hd\" inertia=\"%f\" opacity=\"%f\"/>\n",
-		ChaseCam.Behind, ChaseCam.Upward, ChaseCam.Rightward, ChaseCam.Flags, ChaseCam.Inertia, ChaseCam.Opacity);
+	fprintf(F,"  <chase_cam behind=\"%hd\" upward=\"%hd\" rightward=\"%hd\" flags=\"%hd\"\n",
+		ChaseCam.Behind, ChaseCam.Upward, ChaseCam.Rightward, ChaseCam.Flags);
+	fprintf(F,"    damping=\"%f\" spring=\"%f\" opacity=\"%f\"/>\n",
+		ChaseCam.Damping, ChaseCam.Spring, ChaseCam.Opacity);
 	CrosshairData& Crosshairs = player_preferences->Crosshairs;
 	fprintf(F,"  <crosshairs\n");
 	fprintf(F,"    thickness=\"%hd\" from_center=\"%hd\" length=\"%hd\"\n",
@@ -666,7 +668,8 @@ static void default_player_preferences(player_preferences_data *preferences)
 	preferences->ChaseCam.Upward = 0;
 	preferences->ChaseCam.Rightward = 0;
 	preferences->ChaseCam.Flags = 0;
-	preferences->ChaseCam.Inertia = 0.5;
+	preferences->ChaseCam.Damping = 0.5;
+	preferences->ChaseCam.Spring = 0;
 	preferences->ChaseCam.Opacity = 1;
 	
 	preferences->Crosshairs.Thickness = 2;
@@ -1393,9 +1396,13 @@ bool XML_ChaseCamPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	{
 		return ReadInt16Value(Value,player_preferences->ChaseCam.Flags);
 	}
-	else if (StringsEqual(Tag,"inertia"))
+	else if (StringsEqual(Tag,"damping"))
 	{
-		return ReadFloatValue(Value,player_preferences->ChaseCam.Inertia);
+		return ReadFloatValue(Value,player_preferences->ChaseCam.Damping);
+	}
+	else if (StringsEqual(Tag,"spring"))
+	{
+		return ReadFloatValue(Value,player_preferences->ChaseCam.Spring);
 	}
 	else if (StringsEqual(Tag,"opacity"))
 	{

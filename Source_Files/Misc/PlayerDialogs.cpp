@@ -53,6 +53,7 @@ Jun 26, 2002 (Loren Petrich):
 #include "Crosshairs.h"
 #include "OGL_Setup.h"
 #include "MacCheckbox.h"
+#include <math.h>
 #include <stdio.h>
 
 const float FLOAT_WORLD_ONE = float(WORLD_ONE);
@@ -71,8 +72,9 @@ enum
 	OnWhenEntering_Item = 12,
 	VoidColorOnOff_Item = 13,
 	VoidColorSelect_Item = 14,
-	Inertia_Item = 16,
-	CC_Opacity_Item = 18,
+	Damping_Item = 16,
+	Spring_Item = 18,
+	CC_Opacity_Item = 20,
 	
 	Crosshairs_Dialog = 1600,
 	Thickness_Item = 5,
@@ -154,9 +156,13 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	MacCheckbox NeverActive_CB(Dialog, NeverActive_Item, TEST_FLAG(Data.Flags,_ChaseCam_NeverActive) != 0);
 	MacCheckbox OnWhenEntering_CB(Dialog, OnWhenEntering_Item, TEST_FLAG(Data.Flags,_ChaseCam_OnWhenEntering) != 0);
 	
-	ControlHandle Inertia_CHdl;
-	GetDialogItem(Dialog, Inertia_Item, &ItemType, (Handle *)&Inertia_CHdl, &Bounds);
-	SetFloat(Inertia_CHdl,Data.Inertia);
+	ControlHandle Damping_CHdl;
+	GetDialogItem(Dialog, Damping_Item, &ItemType, (Handle *)&Damping_CHdl, &Bounds);
+	SetFloat(Damping_CHdl,Data.Damping);
+	
+	ControlHandle Spring_CHdl;
+	GetDialogItem(Dialog, Spring_Item, &ItemType, (Handle *)&Spring_CHdl, &Bounds);
+	SetFloat(Spring_CHdl,Data.Spring);
 	
 	ControlHandle Opacity_CHdl;
 	GetDialogItem(Dialog, CC_Opacity_Item, &ItemType, (Handle *)&Opacity_CHdl, &Bounds);
@@ -188,7 +194,7 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	short New_Behind = 0, New_Upward = 0, New_Rightward = 0;
 	float FloatTemp = 0;
 	bool BadValue;
-	float New_Inertia, New_Opacity;
+	float New_Damping, New_Spring, New_Opacity;
 	while(!WillQuit)
 	{
 		short ItemHit;
@@ -218,29 +224,65 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 			else
 				BadValue = true;
 			
-			if (GetFloat(Inertia_CHdl,FloatTemp))
+			if (GetFloat(Damping_CHdl,FloatTemp))
+			{
+				// Simple validation of the damping factor
+				New_Damping = PIN(FloatTemp,-1,1);
+				if (New_Damping != FloatTemp)
 				{
-					New_Inertia = PIN(FloatTemp,0,1);
-					if (New_Inertia != FloatTemp)
-					{
-						BadValue = true;
-						SetFloat(Inertia_CHdl,New_Inertia);
-					}
+					BadValue = true;
+					SetFloat(Damping_CHdl,New_Damping);
 				}
+			}
 			else
 				BadValue = true;
-
+			
+			if (GetFloat(Spring_CHdl,FloatTemp))
+			{
+				New_Spring = FloatTemp;
+			}
+			else
+				BadValue = true;
+			
 			if (GetFloat(Opacity_CHdl,FloatTemp))
+			{
+				New_Opacity = PIN(FloatTemp,0,1);
+				if (New_Opacity != FloatTemp)
 				{
-					New_Opacity = PIN(FloatTemp,0,1);
-					if (New_Opacity != FloatTemp)
-					{
-						BadValue = true;
-						SetFloat(Opacity_CHdl,New_Opacity);
-					}
+					BadValue = true;
+					SetFloat(Opacity_CHdl,New_Opacity);
 				}
+			}
 			else
 				BadValue = true;
+			
+			// Do validation: will the chase cam be unstable?			
+			if (!BadValue)
+			{
+				if (New_Spring >= 0)
+				{
+					// Oscillatory case
+					float NewDampSq = New_Damping*New_Damping;
+					BadValue = ((NewDampSq + New_Spring) >= 1);
+					if (BadValue)
+					{
+						New_Spring = 1 - NewDampSq;
+						SetFloat(Spring_CHdl,New_Spring);
+					}
+				}
+				else
+				{
+					// Overdamped case
+					float NewDampAbs = fabsf(New_Damping);
+					BadValue = ((NewDampAbs + sqrtf(-New_Spring)) >= 1);
+					if (BadValue)
+					{
+						float Temp = 1 - NewDampAbs;
+						New_Spring = - Temp*Temp;
+						SetFloat(Spring_CHdl,New_Spring);
+					}
+				}	
+			}
 			
 			if (BadValue)
 			{
@@ -281,7 +323,8 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 		SET_FLAG(Data.Flags,_ChaseCam_NeverActive,NeverActive_CB.GetState());
 		SET_FLAG(Data.Flags,_ChaseCam_OnWhenEntering,OnWhenEntering_CB.GetState());
 		SET_FLAG(OGLData.Flags,OGL_Flag_VoidColor,VoidColorOnOff_CB.GetState());
-		Data.Inertia = New_Inertia;
+		Data.Damping = New_Damping;
+		Data.Spring = New_Spring;
 		Data.Opacity = New_Opacity;
 	}
 	
