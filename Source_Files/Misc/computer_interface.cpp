@@ -57,6 +57,9 @@ Aug 22, 2000 (Loren Petrich):
 
 Sep 24, 2000 (Loren Petrich):
 	Banished OverallBounds as unnecessary; world_pixels->portRect does fine here
+
+Jun 23, 2001 (Loren Petrich):
+	Suppressed some of the asserts in the code; tried to make degradation more graceful
 */
 
 // add logon/logoff keywords. (& make terminal display them)
@@ -461,6 +464,7 @@ void update_player_for_terminal_mode(
 	short player_index)
 {
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
+	if (!terminal) return;
 
 	if(terminal->state != _no_terminal_state)
 	{
@@ -491,6 +495,7 @@ void update_player_keys_for_terminal(
 	uint32 action_flags)
 {
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
+	if (!terminal) return;
 
 	switch(terminal->state)
 	{
@@ -501,7 +506,7 @@ void update_player_keys_for_terminal(
 		case _no_terminal_state:
 		default:
 			// LP change:
-			assert(false);
+			// assert(false);
 			// halt();
 			break;
 	}
@@ -528,7 +533,8 @@ void _render_computer_interface(
 {
 	struct player_terminal_data *terminal_data= get_player_terminal_data(current_player_index);
 	
-	assert(terminal_data->state != _no_terminal_state);
+	if (terminal_data->state == _no_terminal_state) return;
+	// assert(terminal_data->state != _no_terminal_state);
 	if(TERMINAL_IS_DIRTY(terminal_data))
 	{
 		terminal_text_t *terminal_text;
@@ -626,7 +632,7 @@ void _render_computer_interface(
 				
 			default:
 				// LP change:
-				assert(false);
+				// assert(false);
 				// halt();
 				break;
 		}
@@ -807,6 +813,7 @@ static void _draw_computer_text(
 			}
 			//dprintf("calculate line: %d start: %d end: %d", index, start_index, end_index);
 			assert(end_index<=current_group->start_index+current_group->length);
+			
 			start_index= end_index;
 		} else {
 			/* End of text.. */
@@ -1486,7 +1493,7 @@ static bool previous_terminal_group(
 					
 					default:
 						// LP change:
-						assert(false);
+						// assert(false);
 						// halt();
 						break;
 				}
@@ -1530,7 +1537,7 @@ static void next_terminal_group(
 				{
 					/* Fallback. */
 					terminal_data->current_group= find_group_type(terminal_text, _unfinished_group);
-					assert(terminal_data->current_group != terminal_text->groupings.size());
+					// assert(terminal_data->current_group != terminal_text->groupings.size());
 				}
 				break;
 				
@@ -1540,7 +1547,7 @@ static void next_terminal_group(
 				{
 					/* Fallback. */
 					terminal_data->current_group= find_group_type(terminal_text, _unfinished_group);
-					assert(terminal_data->current_group != terminal_text->groupings.size());
+					// assert(terminal_data->current_group != terminal_text->groupings.size());
 				}
 				break;
 			
@@ -1682,7 +1689,7 @@ static void goto_terminal_group(
 			
 		default:
 			// LP change:
-			assert(false);
+			// assert(false);
 			// halt();
 			break;
 	}
