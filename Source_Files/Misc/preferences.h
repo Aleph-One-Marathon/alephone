@@ -111,6 +111,12 @@ struct network_preferences_data
 	bool use_speex_encoder;
 	uint16 speex_encoder_quality; // 1-10
 	uint16 speex_encoder_complexity; //1-10
+	bool use_netscript;
+#ifdef mac
+	FSSpec netscript_file;
+#else
+	char netscript_file[256];
+#endif	
 };
 
 struct player_preferences_data

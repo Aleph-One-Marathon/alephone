@@ -43,6 +43,9 @@ May 22, 2003 (Woody Zenfell):
 
  May 27, 2003 (Gregory Smith):
 	Preferences for speex netmic
+
+ August 27, 2003 (Woody Zenfell):
+	Preferences for netscript.  Some reworking of index-based Mac FSSpec reading along the way.
  */
 
 /*
@@ -100,6 +103,24 @@ static const char* sNetworkGameProtocolNames[] =
 };
 
 static const size_t NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES = sizeof(sNetworkGameProtocolNames) / sizeof(sNetworkGameProtocolNames[0]);
+
+
+// ZZZ: I'm really, really sorry.  But this is way better than what was here... trust me.
+#ifdef mac
+enum
+{
+	kEnvMapFileSpecIndex = 0,
+	kEnvPhysicsFileSpecIndex = 1,
+	kEnvShapesFileSpecIndex = 2,
+	kEnvSoundsFileSpecIndex = 3,
+	kNetworkScriptFileSpecIndex = 4,
+	kNumberOfFileSpecIndices
+};
+
+static FSSpec* sFileSpecIndexToFileSpecPtr[kNumberOfFileSpecIndices];
+
+#endif // mac
+		
 
 
 // MML-like Preferences Stuff; it makes obsolete
@@ -240,6 +261,14 @@ void initialize_preferences(
 		network_preferences= new network_preferences_data;
 		environment_preferences= new environment_preferences_data;
 
+#ifdef mac
+		sFileSpecIndexToFileSpecPtr[kEnvMapFileSpecIndex]	= &(environment_preferences->map_file);
+		sFileSpecIndexToFileSpecPtr[kEnvPhysicsFileSpecIndex]	= &(environment_preferences->physics_file);
+		sFileSpecIndexToFileSpecPtr[kEnvShapesFileSpecIndex]	= &(environment_preferences->shapes_file);
+		sFileSpecIndexToFileSpecPtr[kEnvSoundsFileSpecIndex]	= &(environment_preferences->sounds_file);
+		sFileSpecIndexToFileSpecPtr[kNetworkScriptFileSpecIndex]= &(network_preferences->netscript_file);
+#endif
+
 		XML_DataBlockLoader.CurrentElement = &PrefsRootParser;
 		XML_DataBlockLoader.SourceName = "[Preferences]";
 				
@@ -254,7 +283,7 @@ void initialize_preferences(
 	default_input_preferences(input_preferences);
 	default_sound_manager_parameters(sound_preferences);
 	default_environment_preferences(environment_preferences);
-	
+
 	// Slurp in the file and parse it
 
         {
@@ -509,7 +538,14 @@ void write_preferences(
 	fprintf(F,"  use_speex_netmic_encoder=\"%s\"\n", BoolString(network_preferences->use_speex_encoder));
 	fprintf(F,"  speex_encoder_quality=\"%hu\"\n", network_preferences->speex_encoder_quality);
 	fprintf(F,"  speex_encoder_complexity=\"%hu\"\n", network_preferences->speex_encoder_complexity);
+	fprintf(F,"  use_netscript=\"%s\"\n", BoolString(network_preferences->use_netscript));
+#ifdef SDL
+	WriteXML_CString(F,"  netscript_file=\"", network_preferences->netscript_file, sizeof(network_preferences->netscript_file), "\"\n");
+#endif
 	fprintf(F,">\n");
+#ifndef SDL
+	WriteXML_FSSpec(F,"  ", kNetworkScriptFileSpecIndex, network_preferences->netscript_file);
+#endif
 	WriteStarPreferences(F);
 	WriteRingPreferences(F);
 	fprintf(F,"</network>\n\n");
@@ -531,10 +567,10 @@ void write_preferences(
         fprintf(F,"  non_bungie_warning=\"%s\"\n",BoolString(environment_preferences->non_bungie_warning));
 	fprintf(F,">\n");
 #ifdef mac
-	WriteXML_FSSpec(F,"  ",0,environment_preferences->map_file);
-	WriteXML_FSSpec(F,"  ",1,environment_preferences->physics_file);
-	WriteXML_FSSpec(F,"  ",2,environment_preferences->shapes_file);
-	WriteXML_FSSpec(F,"  ",3,environment_preferences->sounds_file);
+	WriteXML_FSSpec(F,"  ",kEnvMapFileSpecIndex,environment_preferences->map_file);
+	WriteXML_FSSpec(F,"  ",kEnvPhysicsFileSpecIndex,environment_preferences->physics_file);
+	WriteXML_FSSpec(F,"  ",kEnvShapesFileSpecIndex,environment_preferences->shapes_file);
+	WriteXML_FSSpec(F,"  ",kEnvSoundsFileSpecIndex,environment_preferences->sounds_file);
 #endif
 	fprintf(F,"</environment>\n\n");
 			
@@ -704,6 +740,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->use_speex_encoder = true;
 	preferences->speex_encoder_quality = 2;
 	preferences->speex_encoder_complexity = 1;
+	preferences->use_netscript = false;
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -1842,6 +1879,17 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return ReadUInt16Value(Value,network_preferences->speex_encoder_complexity);
 	}
+	else if (StringsEqual(Tag,"use_netscript"))
+	{
+		return ReadBooleanValue(Value,network_preferences->use_netscript);
+	}
+	else if (StringsEqual(Tag,"netscript_file"))
+	{
+#ifdef SDL
+		DeUTF8_C(Value,strlen(Value),network_preferences->netscript_file,sizeof(network_preferences->netscript_file));
+#endif
+		return true;
+	}
         
 	UnrecognizedTag();
 	return false;
@@ -1852,8 +1900,6 @@ static XML_NetworkPrefsParser NetworkPrefsParser;
 
 // Make this child-entity class a dummy class for SDL
 #ifdef mac
-
-const int NUMBER_OF_FSSPECS = 4;
 
 class XML_MacFSSpecPrefsParser: public XML_ElementParser
 {
@@ -1884,7 +1930,7 @@ bool XML_MacFSSpecPrefsParser::HandleAttribute(const char *Tag, const char *Valu
 {
 	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedInt32Value(Value,Index,0,NUMBER_OF_FSSPECS-1))
+		if (ReadInt32Value(Value,Index))
 		{
 			IsPresent[0] = true;
 			return true;
@@ -1936,25 +1982,9 @@ bool XML_MacFSSpecPrefsParser::AttributesDone()
 			return false;
 		}
 	}
-	
-	switch(Index)
-	{
-	case 0:
-		environment_preferences->map_file = Spec;
-		break;
-		
-	case 1:
-		environment_preferences->physics_file = Spec;
-		break;
-		
-	case 2:
-		environment_preferences->shapes_file = Spec;
-		break;
-		
-	case 3:
-		environment_preferences->sounds_file = Spec;
-		break;
-	}
+
+	if(Index < kNumberOfFileSpecIndices && Index >= 0)
+		*(sFileSpecIndexToFileSpecPtr[Index]) = Spec;
 	
 	return true;
 }
@@ -2090,6 +2120,7 @@ void SetupPrefsParseTree()
 
 	NetworkPrefsParser.AddChild(StarGameProtocol::GetParser());
 	NetworkPrefsParser.AddChild(RingGameProtocol::GetParser());
+	NetworkPrefsParser.AddChild(&MacFSSpecPrefsParser);
 	MarathonPrefsParser.AddChild(&NetworkPrefsParser);
 	
 	EnvironmentPrefsParser.AddChild(&MacFSSpecPrefsParser);
