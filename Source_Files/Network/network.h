@@ -43,7 +43,7 @@ Tuesday, June 21, 1994 3:26:46 PM
 #define MAX_LEVEL_NAME_LENGTH 64
 #define MAX_NET_DISTRIBUTION_BUFFER_SIZE 512
 
-#ifndef mac
+#if HAVE_SDL_NET
 #define NETWORK_CHAT
 #endif
 
@@ -54,10 +54,10 @@ Tuesday, June 21, 1994 3:26:46 PM
 // but IPring introduces new _NET formats and so needs an increment.
 // (OK OK this is a bit pedantic - I mean, I don't think IPring is going to accidentally start
 // sending or receiving AppleTalk traffic ;) - but, you know, it's the principle of the thing.)
-#ifndef MAC
+#if HAVE_SDL_NET
 #define	MARATHON_NETWORK_VERSION 10
 #else
-#warn using maraton network version 9
+// #warn using marathon network version 9
 #define MARATHON_NETWORK_VERSION 9
 #endif
 
@@ -142,12 +142,12 @@ void NetExit(void);
 bool NetGather(void *game_data, short game_data_size, void *player_data, 
 	short player_data_size);
 
-#ifdef SDL // ZZZ: quick decl for prototype below
+#if HAVE_SDL_NET // ZZZ: quick decl for prototype below
 struct SSLP_ServiceInstance;
 #endif
 
 bool NetGatherPlayer(
-#ifndef SDL
+#if !HAVE_SDL_NET
 short player_index,
 #else
 // ZZZ: in my formulation, player info is all passed along in one structure from the dialog here.
@@ -158,7 +158,7 @@ CheckPlayerProcPtr check_player);
 // ZZZ: added support for SSLP hinting
 bool NetGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data,
 				 short player_data_size, short version_number
-#ifdef SDL
+#if HAVE_SDL_NET
 				 , const char* hint_address_string
 #endif
 				 );

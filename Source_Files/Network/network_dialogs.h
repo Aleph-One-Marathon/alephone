@@ -25,6 +25,10 @@
  *
  *  Sept-Nov 2001 (Woody Zenfell): added some identifiers and prototypes for carnage report
  *	and for better code sharing between the Mac and SDL versions.
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Moved shared SDL hint address info here from network_dialogs_sdl.cpp
+	Added dialog item definitions for a Join by Host in the join dialog
  */
 
 #ifndef NETWORK_DIALOGS_H
@@ -81,6 +85,16 @@ enum {
 	NUMBER_OF_NET_COLORS
 };
 
+#if HAVE_SDL_NET
+/* SDL/TCP hinting info. JTP: moved here from network_dialogs_sdl.cpp */
+enum {
+    kJoinHintingAddressLength = 64
+};
+
+extern bool sUserWantsJoinHinting;
+extern char sJoinHintingAddress[];
+#endif
+
 #define strJOIN_DIALOG_MESSAGES 136
 enum /* join dialog string numbers */
 {
@@ -120,7 +134,11 @@ enum {
 	iJOIN_TEAM,
 	iJOIN_COLOR, 
 	iJOIN_MESSAGES,
-	iJOIN_NETWORK_TYPE= 13
+	// Group line = 12
+	iJOIN_NETWORK_TYPE= 13,
+	iJOIN_BY_HOST = 14,
+	iJOIN_BY_HOST_LABEL,
+	iJOIN_BY_HOST_ADDRESS
 };
 
 enum {

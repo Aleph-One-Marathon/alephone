@@ -25,6 +25,9 @@
  *
  *  Nearly complete rewrite in Sept-Nov 2001 by Woody Zenfell, III
  *	(Many comments are mine despite lack of ZZZ.)
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Moved shared SDL hint address info to network_dialogs.cpp/.h
  */
 
 #include "cseries.h"
@@ -1002,13 +1005,7 @@ bool network_gather(void)
  *  Joining dialog
  */
 
-//static bool inserted_join_waiting_message	= false;
-enum {
-    kJoinHintingAddressLength = 64
-};
-// I guess we could really store this stuff in the prefs, but I think short-term storage is fine for now.
-static bool	sUserWantsJoinHinting				= false;
-static char	sJoinHintingAddress[kJoinHintingAddressLength]	= "";
+// JTP: Now sharing sUsersWantsJoinHinting and sJoinHintingAddress in network_dialogs.cpp
         
 static void
 join_processing_function(dialog* inDialog) {

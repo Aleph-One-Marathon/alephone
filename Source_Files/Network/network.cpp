@@ -65,6 +65,11 @@ Nov 13, 2001 (Woody Zenfell):
         Although things were basically OK under favorable conditions, they were IMO too "fragile" - sensitive
         to latency and jitter.  I couldn't help but try again... so NETWORK_ADAPTIVE_LATENCY_2 has been added.
         Also put in NETWORK_SMARTER_FLAG_DITCHING mechanism.
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Rewired things to more generally key off of HAVE_SDL_NET than SDL (The Carbon build has SDL_NET, but
+		understandably lacks SDL)
+	Uses #if HAVE_SDL_NET in place of calls to #ifndef mac to allow SDL networking under Carbon
 */
 
 /*
@@ -87,12 +92,12 @@ clearly this is all broken until we have packet types
 #include "interface.h" // for transfering map
 #include "mytm.h"	// ZZZ: both versions use mytm now
 
-#if defined(mac)
-#include "macintosh_network.h"
-#elif defined(SDL)
+#if defined(SDL) || HAVE_SDL_NET
 #include "sdl_network.h"
 #include	"network_lookup_sdl.h"
 #include	"SDL_thread.h"
+#elif defined(mac)
+#include "macintosh_network.h"
 #endif
 
 #include "game_errors.h"
@@ -129,7 +134,7 @@ clearly this is all broken until we have packet types
 #include "network_data_formats.h"
 
 // Optional features, disabled by default on Mac to preserve existing behavior (I hope ;) )
-#ifndef mac
+#if HAVE_SDL_NET
 #undef	NETWORK_FAUX_QUEUE		// honest intentions, but perhaps ultimately useless.
 #undef	NETWORK_ADAPTIVE_LATENCY	// should be better - oops, heh, or not.
 #define	NETWORK_ADAPTIVE_LATENCY_2	// use this one instead; it should be good.
@@ -139,8 +144,9 @@ clearly this is all broken until we have packet types
 #endif
 
 // LP: kludge so I can get the code to compile
-#ifdef mac
-#define NETWORK_IP
+#if defined(mac) && !HAVE_SDL_NET
+//#define NETWORK_IP // JTP: No no no, this defeats the whole purpose of NETWORK_IP
+#undef NETWORK_IP
 #undef DEBUG_NET
 #endif
 
@@ -933,7 +939,7 @@ void NetDistributeInformation(
 	//	buffer_size);
 	
 	// LP: kludge to get it to compile
-#ifndef mac
+#ifdef NETWORK_IP
 	NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 #endif
 #endif
@@ -1062,7 +1068,7 @@ static int net_compare(
 	void const *p1, 
 	void const *p2)
 {
-#if defined(mac)
+#ifndef NETWORK_IP
 	return 0;
 #ifdef OBSOLETE
 	uint16 base_network_number;
@@ -1124,7 +1130,7 @@ bool NetGameJoin(
 	void *player_data,
 	short player_data_size,
 	short version_number
-#ifdef SDL
+#if HAVE_SDL_NET
 	, const char* hint_addr_string
 #endif
 	)
@@ -1141,7 +1147,7 @@ bool NetGameJoin(
 	/* register our downring socket with the net so gather dialogs can find us */
 	error= NetRegisterName(player_name, player_type, version_number, 
 		NetGetStreamSocketNumber()
-#ifdef SDL
+#if HAVE_SDL_NET
 		, hint_addr_string
 #endif
 		);
@@ -1469,8 +1475,10 @@ bool NetEntityNotInGame(
 		AddrBlock *player_address= &topology->players[player_index].dspAddress;
 		
 #ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
 		if (address->aNode==player_address->aNode && address->aSocket==player_address->aSocket &&
 			address->aNet==player_address->aNet)
+#endif
 #else
 		if (address->host == player_address->host && address->port == player_address->port)
 #endif
@@ -1532,15 +1540,14 @@ void NetDDPPacketHandler(
 					break;
 				case tagACKNOWLEDGEMENT:
 #ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
 					if (/*packet->sourceAddress.aNet == status->upringAddress.aNet && */
 						packet->sourceAddress.aNode == status->upringAddress.aNode &&
 						packet->sourceAddress.aSocket == status->upringAddress.aSocket)
+#endif
 #else
-// LP: kludge to get it to compile
-#ifndef mac
 					if (packet->sourceAddress.host == status->upringAddress.host &&
 					    packet->sourceAddress.port == status->upringAddress.port)
-#endif
 #endif
 					{
 						if (header->sequence==status->lastValidRingSequence+1)
@@ -1616,14 +1623,13 @@ void NetDDPPacketHandler(
 					
 				case tagCHANGE_RING_PACKET:
 #ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
 					status->downringAddress.aNet= packet->sourceAddress.aNet;
 					status->downringAddress.aNode= packet->sourceAddress.aNode;
 					status->downringAddress.aSocket= packet->sourceAddress.aSocket;
-#else
-// LP: kludge to get it to compile
-#ifndef mac
-					status->downringAddress = packet->sourceAddress;
 #endif
+#else
+					status->downringAddress = packet->sourceAddress;
 #endif
 
 #ifdef DEBUG_NET
@@ -1637,17 +1643,17 @@ void NetDDPPacketHandler(
 					if(status->acceptRingPackets)
 					{
 #ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
 						if (/* packet->sourceAddress.aNet == status->downringAddress.aNet && */
 							packet->sourceAddress.aNode == status->downringAddress.aNode &&
 							packet->sourceAddress.aSocket == status->downringAddress.aSocket)
 #else
+						if (0)	// LP: kludge to get it to compile
+#endif
+#else
 // LP: kludge to get it to compile
-#ifndef mac
 						if (packet->sourceAddress.host == status->downringAddress.host &&
 						    packet->sourceAddress.port == status->downringAddress.port)
-#else
-	if (0)
-#endif
 #endif
 						{
 							if (header->sequence <= status->lastValidRingSequence)
@@ -1797,7 +1803,7 @@ static void NetProcessLossyDistribution(
                         sizeof(NetDistributionPacket_NET) + packet_data->data_size);
                 //BlockMove(buffer, distributionFrame->data+sizeof(NetPacketHeader), sizeof(NetDistributionPacket) + packet_data->data_size);
                 // LP: AddrBlock is the trouble here
-                #ifndef mac
+                #ifdef NETWORK_IP
                 NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
                 #endif
         }
@@ -2209,6 +2215,7 @@ static void NetLocalAddrBlock(
 {
 	
 #ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
 	short node, network;
 
 	GetNodeAddress(&node, &network);
@@ -2216,6 +2223,7 @@ static void NetLocalAddrBlock(
 	address->aSocket= socketNumber;
 	address->aNode= node;
 	address->aNet= network;
+#endif
 #else
 	address->host = 0x7f000001;	//!! XXX (ZZZ) yeah, that's really bad.
 	address->port = socketNumber;	// OTOH, I guess others are set up to "stuff" the address they actually saw for us instead of
@@ -2293,7 +2301,7 @@ static void NetSendAcknowledgement(
         netcpy(header_NET, header);
         
 	/* send the acknowledgement */
-	#ifndef mac
+	#ifdef NETWORK_IP
 	NetDDPSendFrame(frame, &status->downringAddress, kPROTOCOL_TYPE, ddpSocket);
 	#endif
 	
@@ -2417,7 +2425,7 @@ static void NetSendRingPacket(
 	status->canForwardRing= false; /* will not be set unless this task fires without a packet to forward */
 	status->clearToForwardRing= false; /* will not be set until we receive the next valid ring packet but will be irrelevant if serverCanForwardRing is true */
 	// LP: AddrBlock is the trouble here
-	#ifndef mac
+	#if HAVE_SDL_NET
 	NetDDPSendFrame(frame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 	#endif
 	
@@ -2505,7 +2513,7 @@ dprintf("Never got confirmation on NetUnsync packet.  They don't love us.");
 #endif
 			/* Resend it.. */
 			// LP: AddrBlock is the trouble here
-			#ifndef mac
+			#ifdef NETWORK_IP
 			NetDDPSendFrame(ringFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 			#endif
 		}
@@ -2735,9 +2743,11 @@ static short NetAdjustUpringAddressUpwards(
 	{
 		address = &(topology->players[nextPlayerIndex].ddpAddress);
 #ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
 		if (address->aNet == status->upringAddress.aNet 
 			&& address->aNode == status->upringAddress.aNode
 			&& address->aSocket == status->upringAddress.aSocket)
+#endif
 #else
 		if (address->host == status->upringAddress.host &&
 		    address->port == status->upringAddress.port)
@@ -3154,7 +3164,7 @@ static void *receive_stream_data(
                 // ZZZ: byte-swap if necessary
                 long length_NET = *((long*) network_adsp_packet);
 
-#ifdef SDL
+#if HAVE_SDL_NET
                 *length = SDL_SwapBE32(length_NET);
 #else
                 *length = length_NET;
@@ -3206,7 +3216,7 @@ static OSErr send_stream_data(
         // ZZZ: byte-swap if necessary
         long	length_NET;
 
-#ifdef SDL
+#if HAVE_SDL_NET
         length_NET = SDL_SwapBE32(length);
 #else
         length_NET = length;
@@ -3809,15 +3819,17 @@ short NetUpdateJoinState(
 						AddrBlock address;
 						
 						// LP: AddrBlock is the trouble here
-						#ifndef mac
+						#ifdef NETWORK_IP
 						NetGetStreamAddress(&address);
 						#endif
 						
 						/* for ARA, make stuff in an address we know is correct (don’t believe the server) */
 						topology->players[0].dspAddress= address;
 #ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
 						topology->players[0].ddpAddress.aNet= address.aNet;
 						topology->players[0].ddpAddress.aNode= address.aNode;
+#endif
 #else
 						topology->players[0].ddpAddress.host = address.host;
 #endif
@@ -3924,7 +3936,7 @@ short NetUpdateJoinState(
 
 
 bool NetGatherPlayer(
-#ifndef SDL
+#if !HAVE_SDL_NET
         /* player_index in our lookup list */
 	short player_index,
 #else
@@ -3947,7 +3959,7 @@ bool NetGatherPlayer(
 	assert(topology->player_count<MAXIMUM_NUMBER_OF_NETWORK_PLAYERS);
 	
 	/* Get the address from the dialog */
-#ifndef SDL
+#if !HAVE_SDL_NET
 	// LP: AddrBlock is the trouble here
 	#ifndef mac
 	NetLookupInformation(player_index, &address, NULL);
@@ -3963,8 +3975,10 @@ bool NetGatherPlayer(
 	/* Force the address to be correct, so we can use our stream system.. */
 	topology->players[topology->player_count].dspAddress= address;
 #ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
 	topology->players[topology->player_count].ddpAddress.aNet= address.aNet;
 	topology->players[topology->player_count].ddpAddress.aNode= address.aNode;
+#endif
 #else
 	topology->players[topology->player_count].ddpAddress.host = address.host;
 #endif
@@ -4008,8 +4022,10 @@ bool NetGatherPlayer(
 						/* force in some addresses we know are correct */
 						topology->players[topology->player_count].dspAddress= address;
 #ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
 						topology->players[topology->player_count].ddpAddress.aNet= address.aNet;
 						topology->players[topology->player_count].ddpAddress.aNode= address.aNode;
+#endif
 #else
 						topology->players[topology->player_count].ddpAddress.host = address.host;
 #endif
@@ -4024,7 +4040,7 @@ bool NetGatherPlayer(
 							if(stream_transport_type!=kModemTransportType)
 							{
 // ZZZ: in my formulation, entry is removed from list instantly by widget when clicked
-#ifndef SDL
+#if !HAVE_SDL_NET
 								NetLookupRemove(player_index);
 #endif
 							}
@@ -4068,7 +4084,7 @@ bool NetGatherPlayer(
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrCantAddPlayer, error);
 // ZZZ: in my formulation, entry is removed as soon as it's clicked, by the clicked widget.
-#ifndef SDL
+#if !HAVE_SDL_NET
 		NetLookupRemove(player_index); /* get this guy out of here, he didn’t respond */
 #endif
 		success= false;
@@ -4091,7 +4107,7 @@ used to be NetStart() and it used to connect all upring and downring ADSP connec
 static OSErr NetDistributeTopology(
 	short tag)
 {
-	OSErr error;
+	OSErr error = 0; //JTP: initialize to no error
 	short playerIndex;
 	
 	assert(netState==netGathering);
@@ -4189,7 +4205,7 @@ uint16 NetStreamPacketLength(
 }
 
 // LP: AddrBlock is the trouble here
-#ifndef mac
+#ifdef NETWORK_IP
 AddrBlock *NetGetPlayerADSPAddress(
 	short player_index)
 {

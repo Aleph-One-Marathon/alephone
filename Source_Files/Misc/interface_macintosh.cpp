@@ -47,6 +47,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Game menus added to the menu bar normally instead of as popups. (otherwise Carbon's app-menu
 		was stealing our command-Q menu item)
 	Included Steve Bytnar's Cursor Hiding
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Uses generalized networking under Carbon instead of macintosh_network.h
 */
 
 #include "macintosh_cseries.h"
@@ -64,7 +67,11 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "interface.h"
 #include "player.h"
 
+#if defined(TARGET_API_MAC_CARBON)
+#include "network.h"
+#else
 #include "macintosh_network.h"
+#endif
 #include "network_sound.h"
 
 #include "screen_drawing.h"
@@ -562,9 +569,7 @@ static void network_speaker_proc(
 void exit_networking(
 	void)
 {
-#if !defined(TARGET_API_MAC_CARBON)
 	NetExit();
-#endif
 }
 
 bool has_cheat_modifiers(

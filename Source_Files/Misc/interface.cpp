@@ -72,6 +72,9 @@ Jan 31, 2001 (Loren Petrich):
 	
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Disabled network and network microphone calls under Carbon
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Renabled network calls, but not microphone calls under Carbon
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -1203,7 +1206,6 @@ static bool begin_game(
 	
 	switch(user)
 	{
-#if !defined(TARGET_API_MAC_CARBON)
 		case _network_player:
 			{
 				game_info *network_game_info= (game_info *)NetGetGameData();
@@ -1233,9 +1235,12 @@ static bool begin_game(
 	
 				if (network_game_info->allow_mic)
 				{
-						
+#if !defined(TARGET_API_MAC_CARBON)
 					install_network_microphone();
 					game_state.current_netgame_allows_microphone= true;
+#else
+					game_state.current_netgame_allows_microphone= false;
+#endif
 				} else {
 					game_state.current_netgame_allows_microphone= false;
 				}
@@ -1244,7 +1249,6 @@ static bool begin_game(
 				record_game= true;
 			}
 			break;
-#endif
 
 		case _replay_from_file:
 		case _replay:

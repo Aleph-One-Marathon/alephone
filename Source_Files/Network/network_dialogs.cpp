@@ -42,6 +42,10 @@ Jul 1, 2000 (Loren Petrich):
 Sept-Nov 2001 (Woody Zenfell):
         This file was split into Mac-specific code (in network_dialogs_macintosh.cpp) and
         shared code (this file, network_dialogs.cpp).
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Moved shared SDL hint address info here from network_dialogs_sdl.cpp
+	Reworked #ifdef mac to #if !defined(HAVE_SDL_NET)
 */
 
 #include	"cseries.h"
@@ -52,6 +56,12 @@ Sept-Nov 2001 (Woody Zenfell):
 #include	"network_dialogs.h"
 #include	"network_games.h"
 #include    "player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
+
+#if HAVE_SDL_NET
+// JTP: Shared join information. Here because it can be shared with Carbon/SDL networking
+bool	sUserWantsJoinHinting				   = false;
+char	sJoinHintingAddress[kJoinHintingAddressLength + 1] = "";
+#endif
 
 static long get_dialog_game_options(DialogPtr dialog, short game_type);
 static void set_dialog_game_options(DialogPtr dialog, long game_options);
@@ -71,7 +81,7 @@ extract_setup_dialog_information(
 	short game_limit_type,
 	bool allow_all_levels)
 {
-#ifdef mac
+#if !HAVE_SDL_NET
 	short               network_speed;
 #endif
 	short               updates_per_packet, update_latency;
@@ -153,14 +163,14 @@ extract_setup_dialog_information(
 	strcpy(game_information->level_name, entry.level_name);
 	game_information->difficulty_level = get_selection_control_value(dialog, iDIFFICULTY_MENU)-1;
 
-#ifdef mac
+#if !HAVE_SDL_NET
 	game_information->allow_mic = (bool) get_boolean_control_value(dialog, iREAL_TIME_SOUND);
 #else
         game_information->allow_mic = false;
 #endif
 
 
-#ifdef mac
+#if !HAVE_SDL_NET
 #ifdef OBSOLETE
 	// get network information
 	network_speed = get_selection_control_value(dialog, iNETWORK_SPEED)-1;
@@ -180,7 +190,7 @@ extract_setup_dialog_information(
 	game_information->initial_random_seed = (uint16) machine_tick_count(); // was (uint16) TickCount(); // bo-ring
 
 	// now save some of these to the preferences
-#ifdef mac
+#if !HAVE_SDL_NET
 	network_preferences->type = network_speed; 
 #endif
 	network_preferences->allow_microphone = game_information->allow_mic;
@@ -293,7 +303,7 @@ fill_in_game_setup_dialog(
 	if (player_information->name[0]==0) modify_control_enabled(dialog, iOK, CONTROL_INACTIVE);
 
 	// set up the game options
-#ifdef mac
+#if !HAVE_SDL_NET
 	modify_boolean_control(dialog, iREAL_TIME_SOUND, CONTROL_ACTIVE, network_preferences->allow_microphone);
 #endif
 	set_dialog_game_options(dialog, network_preferences->game_options);
@@ -306,7 +316,7 @@ fill_in_game_setup_dialog(
 		modify_control_enabled(dialog, iGATHER_TEAM, CONTROL_ACTIVE);
 	}
 
-#ifdef mac
+#if !HAVE_SDL_NET
 	// set up network options
 #ifdef OBSOLETE
 	setup_network_speed_for_gather(dialog);

@@ -26,6 +26,9 @@
  *
  * Oct-Nov 2001 (Woody Zenfell): added code in support of text messages in stream packets.
  *	Added many comments.
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Enabled SDL networking for Carbon without fully using SDL
  */
 
 #ifndef	NETWORK_PRIVATE_H
@@ -34,7 +37,7 @@
 #include	"cstypes.h"
 #include	"network.h"
 
-#ifdef SDL
+#if defined(SDL) || HAVE_SDL_NET
 #include	"sdl_network.h"
 #endif
 
@@ -99,7 +102,7 @@ enum
 
 
 // LP: This is a dummy definition until Classic MacOS support can be completed
-#ifdef mac
+#if defined(mac) && !HAVE_SDL_NET
 #define AddrBlock IPaddress
 struct IPaddress {
     uint32 host;

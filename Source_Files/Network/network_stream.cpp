@@ -32,16 +32,20 @@ Feb. 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
 
 Sept-Nov 2001 (Woody Zenfell): strategic byte-swapping for cross-platform compatibility
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Enabled SDL networking for Carbon without fully using SDL
+	Replaced many mac checks with checks for HAVE_SDL_NET
 */
 
 #include "cseries.h"
 
 
 
-#if defined(mac)
-#include "macintosh_network.h"
-#elif defined(SDL)
+#if defined(SDL) || HAVE_SDL_NET
 #include "sdl_network.h"
+#elif defined(mac)
+#include "macintosh_network.h"
 #endif
 
 #include "network_modem.h"
@@ -76,7 +80,7 @@ OSErr NetSendStreamPacket(
         // ZZZ: byte-swap packet type code if necessary
 	short	packet_type_NET;
     
-#ifndef mac
+#if HAVE_SDL_NET
         packet_type_NET = SDL_SwapBE16(packet_type);
 #else
         packet_type_NET = packet_type;
@@ -105,7 +109,7 @@ OSErr NetReceiveStreamPacket(
 
 	error= stream_read(&packet_type_NET, &length);
         
-#ifndef mac
+#if HAVE_SDL_NET
         *packet_type = SDL_SwapBE16(packet_type_NET);
 #else
         *packet_type = packet_type_NET;
@@ -129,7 +133,7 @@ OSErr NetOpenStreamToPlayer(
 	{
 		case kNetworkTransportType:
 			// LP: kludge to get the code to compile
-			#ifndef mac
+			#if HAVE_SDL_NET
 			error= NetADSPOpenConnection(dspConnection, 
 				NetGetPlayerADSPAddress(player_index));
 			#else
@@ -317,7 +321,7 @@ short NetGetStreamSocketNumber(
 {
 	assert(transport_type==kNetworkTransportType);
 
-#ifdef mac
+#if defined(mac) && !HAVE_SDL_NET
 	return dspConnection->socketNum;
 #else
         //PORTGUESS we should usually keep port in network byte order?
@@ -333,9 +337,9 @@ bool NetTransportAvailable(
 	switch(type)
 	{
 		case kNetworkTransportType:
-#if defined(mac)
+#if defined(mac) && !HAVE_SDL_NET
 			available= system_information->appletalk_is_available;
-#elif defined(HAVE_SDL_NET)
+#elif HAVE_SDL_NET
 			available= true;
 #else
 			available= false;
