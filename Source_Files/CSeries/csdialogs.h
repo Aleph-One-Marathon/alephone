@@ -144,6 +144,18 @@ typedef void (*dialog_header_proc_ptr)(
 
 extern void set_dialog_header_proc(
 	dialog_header_proc_ptr proc);
+
+// For Carbon-events dialogs
+#ifdef APPLICATION_IS_BUNDLED
+
+// Runs a modal dialog; needs:
+//   Dialog window
+//   Dialog handler; uses the ID of the control hit and the user data
+//   Dialog user data; passed to the dialog handler
+// There are always two special dialog numbers: iOK (1) and iCANCEL (2)
+void RunModalDialog(WindowRef DlgWindow, void (*DlgHandler)(int,void *), void *DlgData);
+
+#endif
 #endif//mac
 
 

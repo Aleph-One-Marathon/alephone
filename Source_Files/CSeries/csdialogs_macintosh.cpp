@@ -510,3 +510,76 @@ GetListBoxListHandle( ControlHandle control, ListHandle* list )
 	return err;
 }
 #endif
+
+
+// For Carbon-events dialogs
+#ifdef APPLICATION_IS_BUNDLED
+
+#include "csalerts.h"
+
+struct ModalDialogHandlerData
+{
+	WindowRef DlgWindow;
+	void (*DlgHandler)(int,void *);
+	void *DlgData;
+};
+
+static pascal OSStatus ModalDialogHandler(
+	EventHandlerCallRef HandlerCallRef, EventRef Event, void *Data)
+{
+	(void)(HandlerCallRef);
+	
+	OSErr err;
+	ControlRef Control;
+	err = GetEventParameter(Event,
+		kEventParamDirectObject,typeControlRef,
+		NULL, sizeof(ControlRef), NULL, &Control);
+	vassert(err == noErr, csprintf(temporary,"GetEventParameter error: %hd",err));
+	
+	ControlID CtrlID;
+	err = GetControlID(Control,&CtrlID);
+	vassert(err == noErr, csprintf(temporary,"GetControlID error: %hd",err));
+
+	ModalDialogHandlerData *HDPtr = (ModalDialogHandlerData *)(Data);
+	HDPtr->DlgHandler(CtrlID.id,HDPtr->DlgData);
+	
+	if (CtrlID.id == iOK || CtrlID.id == iCANCEL)
+	{
+		QuitAppModalLoopForWindow(HDPtr->DlgWindow);
+		HideWindow(HDPtr->DlgWindow);
+	}
+	
+	return noErr;
+}
+
+
+// Runs a modal dialog; needs:
+//   Dialog window
+//   Dialog handler; will respond to every hit of a control item
+void RunModalDialog(WindowRef DlgWindow, void (*DlgHandler)(int,void *), void *DlgData)
+{
+	OSErr err;
+	ModalDialogHandlerData HandlerData;
+	HandlerData.DlgWindow = DlgWindow;
+	HandlerData.DlgHandler = DlgHandler;
+	HandlerData.DlgData = DlgData;
+	
+	const int NumEventTypes = 1;
+	const EventTypeSpec EventTypes[NumEventTypes] =
+		{
+			{kEventClassControl, kEventControlHit}
+		};
+	
+	EventHandlerUPP HandlerUPP = NewEventHandlerUPP(ModalDialogHandler);
+	err = InstallWindowEventHandler(DlgWindow, HandlerUPP,
+		NumEventTypes, EventTypes,
+		&HandlerData, NULL);
+	vassert(err == noErr, csprintf(temporary,"InstallWindowEventHandler error: %hd",err));
+
+	ShowWindow(DlgWindow);
+	RunAppModalLoopForWindow(DlgWindow);
+	
+	DisposeEventHandlerUPP(HandlerUPP);
+}
+
+#endif
