@@ -31,6 +31,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "macintosh_cseries.h"
 #include "progress.h"
+#include "shell.h"
 
 enum {
 	dialogPROGRESS= 10002,
@@ -38,6 +39,87 @@ enum {
 	iPROGRESS_MESSAGE
 };
 
+#ifdef USES_NIBS
+
+const CFStringRef Window_Progress = CFSTR("Progress");
+
+// When not in use, this variable will have value NULL
+WindowRef ProgressWindow = NULL;
+
+
+static void Update()
+{
+	if (QDIsPortBuffered(GetWindowPort(ProgressWindow)))
+		QDFlushPortBuffer(GetWindowPort(ProgressWindow), NULL);
+}
+
+
+void open_progress_dialog(size_t message_id)
+{
+	OSStatus err;
+	
+	err = CreateWindowFromNib(GUI_Nib,Window_Progress,&ProgressWindow);
+	
+	vassert(err == noErr,
+		csprintf(temporary,"CreateWindowFromNib error: %d for the progress window",err));
+	
+	reset_progress_bar();
+	
+	set_progress_dialog_message(message_id);
+	
+	ShowWindow(ProgressWindow);
+}
+
+void close_progress_dialog(void)
+{
+	assert(ProgressWindow);
+	
+	HideWindow(ProgressWindow);
+	DisposeWindow(ProgressWindow);
+	
+	ProgressWindow = NULL;
+}
+
+void set_progress_dialog_message(size_t message_id)
+{
+	assert(ProgressWindow);
+	
+	getpstr(ptemporary, strPROGRESS_MESSAGES, message_id);
+	
+	ControlRef Ctrl = GetCtrlFromWindow(ProgressWindow, 0, iPROGRESS_MESSAGE);
+	SetStaticPascalText(Ctrl, ptemporary);
+	
+	Draw1Control(Ctrl);	// Updates the control's text display
+	Update();
+}
+
+void draw_progress_bar(size_t sent, size_t total)
+{
+	assert(ProgressWindow);
+	
+	ControlRef Ctrl = GetCtrlFromWindow(ProgressWindow, 0, iPROGRESS_BAR);
+	
+	int CtrlMin = GetControl32BitMinimum(Ctrl);
+	int CtrlMax = GetControl32BitMaximum(Ctrl);
+	
+	int ProportionSent = CtrlMin + ((sent*(CtrlMax-CtrlMin))/total);
+	
+	SetControl32BitValue(Ctrl, ProportionSent);
+
+	Update();
+}
+
+void reset_progress_bar(void)
+{
+	assert(ProgressWindow);
+	
+	ControlRef Ctrl = GetCtrlFromWindow(ProgressWindow, 0, iPROGRESS_BAR);
+	
+	Update();
+}
+
+
+#else
 
 /* ------- structures */
 struct progress_data {
@@ -213,3 +295,4 @@ static pascal void draw_distribute_progress(
 
 	SetPort(old_port);
 }
+#endif
