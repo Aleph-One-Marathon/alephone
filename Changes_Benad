@@ -1,0 +1,82 @@
+All changes are marked with:
+
+// Benad
+...
+
+for one line and
+
+// START Benad
+...
+// END Benad
+
+for more than one line.
+
+-------------------------------------------------------------------------------
+June 12th, 2000:
+
+"marathon2.resource" changed (DLOG 3000 and DITL 3000)
+"Configuration Files" changed (STR# 140, 141 and 142)
+
+csdialogs.c
+Changed hit_dialog_button and modify_radio_button_family
+to make them work with the new headers.
+
+items.c
+Changed try_and_add_player_item.
+
+network_dialogs.c
+Added typedefs to make it work with the new headers.
+Added some constants for text strings (minutesString, timeOnBaseString...).
+Changed those functions:
+fill_in_game_setup_dialog
+network_game_setup
+setup_for_timed_game
+extract_setup_dialog_information
+setup_dialog_for_game_type
+
+network_games.c
+destroy_players_ball moved to weapons.c.
+timeOnBaseString constant added.
+Changed those functions:
+get_player_net_ranking
+initialize_net_game
+get_network_compass_state
+update_net_game
+calculate_ranking_text
+calculate_ranking_text_for_post_game
+get_network_score_text_for_postgame
+game_is_over
+get_entry_point_flags_for_game_type
+
+OGL_Dialog.c
+Added typedefs to make it work with the new headers.
+GetFogDepth changed to fix a bug with CWPro 2.
+
+player.c
+Changed those functions:
+update_players
+remove_dead_player_items
+calculate_player_team
+
+preferences.c
+Added typedefs to make it work with the new headers.
+
+projectiles.c
+move_projectiles changed.
+
+screen.c
+"#define EXTERNAL" added to remove a bug with CWPro 2.
+
+shell.c
+Turned on all the cheats. For me, for fun.
+
+wad_prefs_macintosh.c
+Added typedefs to make it work with the new headers.
+
+weapons.c
+Added destroy_players_ball.
+Changed those functions:
+update_player_weapons
+destroy_current_weapon
+
+-------------------------------------------------------------------------------
