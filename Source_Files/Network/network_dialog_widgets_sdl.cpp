@@ -986,11 +986,7 @@ w_players_in_game2::draw_carnage_totals(SDL_Surface* s) const {
             center_x = get_wide_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings);
         else
             center_x = get_close_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings);
-/*        
-        uint32	pixel_color = (net_rankings[i].player_index == NONE) ?
-                                player_entries[players_on_team[net_rankings[i].color][0]].name_pixel_color :
-                                player_entries[net_rankings[i].player_index].name_pixel_color;
-*/        
+
         // Draw carnage score for player/team (list -N for N suicides)
         int	thePlayerCarnageScore = (selected_player == i) ? -net_rankings[i].kills : net_rankings[i].kills - net_rankings[i].deaths;
         if(thePlayerCarnageScore == 0)
@@ -1003,9 +999,9 @@ w_players_in_game2::draw_carnage_totals(SDL_Surface* s) const {
         
         int	theStringCenter = center_x - (text_width(temporary, theBiggerFont, theBiggerFontStyle) / 2);
         
-        draw_text(s, temporary, theStringCenter, rect.y + rect.h - 1, 0,
+        draw_text(s, temporary, theStringCenter, rect.y + rect.h - 1, SDL_MapRGB(s->format, 0, 0, 0),
                     theBiggerFont, theBiggerFontStyle | styleOutline);
-        draw_text(s, temporary, theStringCenter, rect.y + rect.h - 1, get_dialog_color(MESSAGE_COLOR),// was pixel_color,
+        draw_text(s, temporary, theStringCenter, rect.y + rect.h - 1, SDL_MapRGB(s->format, 0xff, 0xff, 0xff),
                     theBiggerFont, theBiggerFontStyle);
     } // walk through rankings
 } // draw_carnage_totals
