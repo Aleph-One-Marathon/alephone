@@ -23,6 +23,9 @@
 
 Nov 29, 2000 (Loren Petrich):
 	Put in STL's sorter (more efficient than the stupidsort I had used)
+	
+Oct 24, 2001 (Loren Petrich):
+	Added "SourceName" field for indicating source of XML data for easier debugging
 */
 
 
@@ -53,7 +56,10 @@ bool XML_ResourceFork::GetData()
 // Reports a read error
 void XML_ResourceFork::ReportReadError()
 {
-	ParamText("\pError in reading resource fork",0,0,0);
+	const char *Name = SourceName ? SourceName : "[]";
+	psprintf(ptemporary,
+		"Error in reading resource fork of object %s",Name);
+	ParamText(ptemporary,0,0,0);
 	Alert(FatalErrorAlert,NULL);
 	ExitToShell();
 }
@@ -62,7 +68,8 @@ void XML_ResourceFork::ReportReadError()
 // Reports an XML parsing error
 void XML_ResourceFork::ReportParseError(const char *ErrorString, int LineNumber)
 {
-	psprintf(ptemporary,"XML parsing error: %s at line %d",ErrorString,LineNumber);
+	const char *Name = SourceName ? SourceName : "[]";
+	psprintf(ptemporary,"XML parsing error: %s at line %d in object %s",ErrorString,LineNumber,Name);
 	ParamText(ptemporary,0,0,0);
 	Alert(FatalErrorAlert,NULL);
 	ExitToShell();
@@ -98,7 +105,10 @@ bool XML_ResourceFork::ParseResource(ResType Type, short ID)
 	HLock(ResourceHandle);
 	if (!DoParse())
 	{
-		ParamText("\pThere were configuration-file parsing errors",0,0,0);
+		const char *Name = SourceName ? SourceName : "[]";
+		psprintf(ptemporary,
+			"There were configuration-file parsing errors in resource %hd of object %s",ID,Name);
+		ParamText(ptemporary,0,0,0);
 		Alert(FatalErrorAlert,NULL);
 		ExitToShell();
 	}

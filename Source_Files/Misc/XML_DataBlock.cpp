@@ -20,6 +20,9 @@
 	XML-Data-Block-Parser Implementation
 	by Loren Petrich,
 	September 14, 2000
+	
+Oct 24, 2001 (Loren Petrich):
+	Added "SourceName" field for indicating source of XML data for easier debugging
 */
 
 
@@ -52,14 +55,17 @@ bool XML_DataBlock::GetData()
 // Reports a read error
 void XML_DataBlock::ReportReadError()
 {
+	const char *Name = SourceName ? SourceName : "[]";
+
 #ifdef mac
-	ParamText("\pError in reading data block",0,0,0);
+	psprintf(ptemporary,"Error in reading data/resources from object %s",Name);
+	ParamText(ptemporary,0,0,0);
 	Alert(FatalErrorAlert,NULL);
 	ExitToShell();
 #endif
 	
 #ifdef SDL
-	fprintf(stderr, "Error in reading resources\n");
+	fprintf(stderr, "Error in reading data/resources from object %s\n",Name);
 	exit(1);
 #endif
 }
@@ -68,15 +74,17 @@ void XML_DataBlock::ReportReadError()
 // Reports an XML parsing error
 void XML_DataBlock::ReportParseError(const char *ErrorString, int LineNumber)
 {
+	const char *Name = SourceName ? SourceName : "[]";
+
 #ifdef mac
-	psprintf(ptemporary,"XML parsing error: %s at line %d",ErrorString,LineNumber);
+	psprintf(ptemporary,"XML parsing error: %s at line %d in object %s",ErrorString,LineNumber,Name);
 	ParamText(ptemporary,0,0,0);
 	Alert(FatalErrorAlert,NULL);
 	ExitToShell();
 #endif
 
 #ifdef SDL
-	fprintf(stderr, "XML parsing error: %s at line %d\n", ErrorString, LineNumber);
+	fprintf(stderr, "XML parsing error: %s at line %d in object %s\n" ErrorString,LineNumber,Name);
 	exit(1);
 #endif
 }

@@ -24,6 +24,11 @@
  *
  *  Written in 2000 by Christian Bauer
  */
+ 
+ /*
+ Oct 24, 2001 (Loren Petrich):
+ 	Added printing out of current filename in error messages
+ */
 
 #ifndef _XML_LOADER_SDL_
 #define _XML_LOADER_SDL_
@@ -34,8 +39,13 @@ class FileSpecifier;
 
 
 class XML_Loader_SDL : public XML_Configure {
+	
+	// LP: for error-message convenience;
+	// initialized to the null string
+	char FileName[256];
+	
 public:
-	XML_Loader_SDL() : data(NULL) {}
+	XML_Loader_SDL() : data(NULL) {FileName[0] = 0;}
 	~XML_Loader_SDL() {delete[] data; data = NULL;}
 
 	bool ParseFile(FileSpecifier &file);

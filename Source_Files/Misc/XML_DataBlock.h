@@ -24,6 +24,9 @@
 	September 14, 2000
 	
 	This is intended to parse XML objects contained in data blocks in memory
+	
+Oct 24, 2001 (Loren Petrich):
+	Added "SourceName" field for indicating source of XML data for easier debugging
 */
 
 
@@ -51,9 +54,12 @@ public:
 
 	// Parse a data block:
 	bool ParseData(char *_Buffer, int _BufLen)
-	{Buffer = _Buffer; BufLen = _BufLen; return DoParse();}
+		{Buffer = _Buffer; BufLen = _BufLen; return DoParse();}
 		
-	XML_DataBlock() {Buffer = NULL;}
+	// Pointer to name of XML-code source for error-message convenience (C string)
+	char *SourceName;
+
+	XML_DataBlock(): SourceName(NULL) {Buffer = NULL;}
 };
 
 

@@ -205,6 +205,7 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	if (!OFile.Get('T','E','X','T',128,ScriptRsrc)) return;
 	
 	// Load the script
+	LSXML_Loader.SourceName = "[Map Script]";
 	LSXML_Loader.ParseData((char *)ScriptRsrc.GetPointer(),ScriptRsrc.GetLength());
 }
 
@@ -307,6 +308,9 @@ void GeneralRunScript(int LevelIndex)
 				if (Data == NULL || DataLen <= 0) break;
 				
 				// Set to the MML root parser
+				char ObjName[256];
+				sprintf(ObjName,"[Map Rsrc %hd for Level %d]",Cmd.RsrcID,LevelIndex);
+				LSXML_Loader.SourceName = ObjName;
 				LSXML_Loader.CurrentElement = &RootParser;
 				LSXML_Loader.ParseData(Data,DataLen);
 			}

@@ -24,6 +24,11 @@
  *
  *  Written in 2000 by Christian Bauer
  */
+ 
+ /*
+ Oct 24, 2001 (Loren Petrich):
+ 	Added printing out of current filename in error messages
+ */
 
 #include "cseries.h"
 #include "XML_Loader_SDL.h"
@@ -68,7 +73,7 @@ void XML_Loader_SDL::ReportReadError()
 
 void XML_Loader_SDL::ReportParseError(const char *ErrorString, int LineNumber)
 {
-	fprintf(stderr, "XML parsing error: %s at line %d\n", ErrorString, LineNumber);
+	fprintf(stderr, "XML parsing error: %s at line %d in object %s\n", ErrorString, LineNumber, FileName);
 	exit(1);
 }
 
@@ -110,11 +115,14 @@ bool XML_Loader_SDL::ParseFile(FileSpecifier &file_name)
 		// Get file size and allocate buffer
 		file.GetLength(data_size);
 		data = new char[data_size];
+		
+		// In case there were errors...
+		file_name.GetName(FileName);
 
 		// Read and parse file
 		if (file.Read(data_size, data)) {
 			if (!DoParse()) {
-				fprintf(stderr, "There were configuration file parsing errors\n");
+				fprintf(stderr, "There were parsing errors in configuration file %s\n",FileName);
 				exit(1);
 			}
 		}

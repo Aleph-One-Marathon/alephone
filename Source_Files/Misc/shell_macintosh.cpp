@@ -354,6 +354,7 @@ static void initialize_application_heap(
 	SetupParseTree();
 	XML_DataBlockLoader.CurrentElement = &RootParser;
 	XML_ResourceForkLoader.CurrentElement = &RootParser;
+	XML_ResourceForkLoader.SourceName = "[Application]";
 	XML_ResourceForkLoader.ParseResourceSet('TEXT');
 	
 	// Look for such files in subdirectories specified in a STR# resource:
@@ -1567,6 +1568,11 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 					vector<char> FileContents(Len);
 					if (!OFile.Read(Len,&FileContents[0])) break;
 					
+					char FileName[256];
+					FileSpec.GetName(FileName);
+					FileName[31] = 0;	// Use only first 31 characters of filename (MacOS Classic)
+					
+					XML_DataBlockLoader.SourceName = FileName;
 					if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
 					{
 						ParamText("\pThere were configuration-file parsing errors",0,0,0);
@@ -1581,6 +1587,12 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 			{
 				FileSpecifier FileSpec;
 				FileSpec.SetSpec(SLMember.Spec);
+				
+				char FileName[256];
+				FileSpec.GetName(FileName);
+				FileName[31] = 0;	// Use only first 31 characters of filename (MacOS Classic)
+				XML_ResourceForkLoader.SourceName = FileName;
+				
 				XML_LoadFromResourceFork(FileSpec);
 			}
 			break;

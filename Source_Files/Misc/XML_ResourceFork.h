@@ -24,6 +24,9 @@
 	April 15, 2000
 	
 	This is intended to parse XML objects contained in MacOS resource forks
+	
+Oct 24, 2001 (Loren Petrich):
+	Added "SourceName" field for indicating source of XML data for easier debugging
 */
 
 
@@ -61,7 +64,10 @@ public:
 	// returns whether any resources were found
 	bool ParseResourceSet(ResType Type);
 	
-	XML_ResourceFork(): ResourceHandle(NULL) {}
+	// Pointer to name of XML-code source for error-message convenience (C string)
+	char *SourceName;
+	
+	XML_ResourceFork(): ResourceHandle(NULL), SourceName(NULL) {}
 };
 
 
