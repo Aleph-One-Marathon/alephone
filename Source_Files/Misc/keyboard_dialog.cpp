@@ -39,6 +39,13 @@ Feb 6, 2002 (Br'fin (Jeremy Parsons)):
 #define alrtDUPLICATE_KEY           136
 #define OPTION_KEYCODE             0x3a
 
+#ifdef USES_NIBS
+
+const CFStringRef Window_Prefs_Keyboard = CFSTR("Prefs_Keyboard");
+const CFStringRef Window_Prefs_Keyboard_TinyScreen = CFSTR("Prefs_Keyboard_TinyScreen");
+
+#endif
+
 enum {
 	dlogCONFIGURE_KEYS= 1000,
 	dlogCONFIGURE_KEYS12,
@@ -68,12 +75,325 @@ enum {
 	iKEY_LAYOUT_POPUP= 62
 };
 
-#define FIRST_KEY_ITEM (iFORWARD)  // first item in dlogCONFIGURE_KEYS with a keycode
-#define LAST_KEY_ITEM (iUSE_MICROPHONE)  // last item in dlogCONFIGURE_KEYS with a keycode
+const int FIRST_KEY_ITEM = iFORWARD;  // first item in dlogCONFIGURE_KEYS with a keycode
+const int LAST_KEY_ITEM = iUSE_MICROPHONE;  // last item in dlogCONFIGURE_KEYS with a keycode
+const int NUMBER_OF_KEY_ITEMS = (LAST_KEY_ITEM - FIRST_KEY_ITEM + 1);
 
 enum {
 	_custom_keyboard_item= 4
 };
+
+
+#ifdef USES_NIBS
+
+
+// Prototypes
+static short keycode_to_charcode(short keycode);
+
+
+struct KeyboardHandlerData
+{
+	short *KeyCodes;
+	ControlRef KeyCtrls[NUMBER_OF_KEY_ITEMS];
+	ControlRef KeysetPopup;
+	
+	// Finds the popup-menu setting corresponding to the current keycodes
+	void SetPopup();
+	
+	// Updates the key codes from the popup-menu selection
+	void UpdateKeyCodes();
+	
+	// Set a keycode;
+	// returns whether it duplicated an existing one
+	bool SetKeyCode(int Which, short KeyCode);
+	
+	// Each one
+	void CodeToControl(int Which);
+	
+	// All of them
+	void CodesToControls();
+};
+
+
+void KeyboardHandlerData::SetPopup()
+{
+	short KeySetup = find_key_setup(KeyCodes);
+	
+	if (KeySetup == NONE)
+		KeySetup = _custom_keyboard_item;
+	
+	SetControl32BitValue(KeysetPopup, KeySetup+1);
+}
+
+
+void KeyboardHandlerData::UpdateKeyCodes()
+{
+	int KeySetup = GetControl32BitValue(KeysetPopup) - 1;
+	
+	if (KeySetup < NUMBER_OF_KEY_SETUPS)
+		set_default_keys(KeyCodes, KeySetup);
+	
+	CodesToControls();
+}
+
+
+bool KeyboardHandlerData::SetKeyCode(int Which, short KeyCode)
+{
+	// Check for matches
+	for (int k=0; k<NUMBER_OF_KEY_ITEMS; k++)
+	{
+		if (k != Which)
+		{
+			if (KeyCode == KeyCodes[k])
+				return false;
+		}
+	}
+	
+	KeyCodes[Which] = KeyCode;
+	CodeToControl(Which);
+	SetPopup();
+	return true;
+}
+
+
+void KeyboardHandlerData::CodeToControl(int Which)
+{
+	short KeyCode = KeyCodes[Which];
+	
+	if (KeyCode >= 0 && KeyCode < 0x7f)
+	{
+		getpstr(ptemporary, strKEYCODES_TO_ASCII, KeyCode);
+		SetEditPascalText(KeyCtrls[Which], ptemporary);
+	}
+	else
+		SetEditCText(KeyCtrls[Which], "-----");
+	
+	Draw1Control(KeyCtrls[Which]);
+}
+
+void KeyboardHandlerData::CodesToControls()
+{
+	for (int k=0; k<NUMBER_OF_KEY_ITEMS; k++)
+		CodeToControl(k);
+}
+
+
+// For each individual control
+struct KeyboardControlHandlerData
+{
+	KeyboardHandlerData *HDPtr;
+	int Which;
+};
+
+
+static short ValidateKey(UInt32 Key)
+{
+	// Cribbed from original find_key_hit()
+	
+	if (Key < 0 && Key > INT16_MAX)
+		return NONE;
+	
+	short keycode = Key;
+	short error_message= NONE;
+	short charcode;
+
+	charcode = keycode_to_charcode(keycode);
+	switch(charcode)
+	{
+	case ',':
+	case '.':
+		if (keycode != 0x41) // IS_KEYPAD() is worthless here.
+			error_message= keyIsUsedForSound;
+		break;
+		
+	case '-':
+	case '_':
+	case '+':
+	case '=':
+		if (keycode != 0x4e && keycode != 0x45) // IS_KEYPAD() is worthless here
+			error_message=  keyIsUsedForMapZooming;
+		break;
+		
+	case '[':
+	case ']':
+		error_message= keyIsUsedForScrolling;
+		break;
+		
+	default:
+		switch(keycode)
+		{
+		case kcF1:
+		case kcF2:
+		case kcF3:
+		case kcF4:
+		case kcF5:
+		case kcF6:
+		case kcF7:
+		case kcF8:
+		case kcF9:
+			error_message= keyIsUsedAlready;
+			break;
+			
+		case 0x7f: /* This is the power key, which is not reliable... */
+			keycode = NONE;
+			break;
+		}
+		break;
+	}
+	
+	if (error_message != NONE)
+	{
+		SysBeep(30);
+		alert_user(infoError, strERRORS, error_message, 0);
+		keycode= NONE;
+	}
+
+	return keycode;
+}
+
+
+static pascal OSStatus KeyboardHandler(
+	EventHandlerCallRef HandlerCallRef,
+	EventRef Event,
+	void *Data
+	)
+{
+	KeyboardControlHandlerData *CDPtr = (KeyboardControlHandlerData *)(Data);
+	
+	// Most of the code in this function is from Br'fin's keyboard-event parsing
+	assert(GetEventClass(Event) == kEventClassKeyboard);
+	short KeyCode = NONE;	// No key -- in case none was ever pressed
+	
+	switch(GetEventKind(Event))
+	{
+	case kEventRawKeyDown:
+		{
+			UInt32 RawKeycode;
+			GetEventParameter(Event,
+				kEventParamKeyCode, typeUInt32,
+				NULL, sizeof(typeUInt32), NULL, &RawKeycode);
+			KeyCode = ValidateKey(RawKeycode);
+		}
+		break;
+		
+	case kEventRawKeyModifiersChanged:
+		{
+			const UInt32 modiferMask = cmdKey | shiftKey | alphaLock | optionKey | controlKey;
+			static UInt32 priorModifiers = 0;
+			UInt32 modifiers;
+			GetEventParameter(Event,
+				kEventParamKeyModifiers, typeUInt32,
+				NULL, sizeof(typeUInt32), NULL, &modifiers);
+			modifiers &= modiferMask; // Strip off all elements we care about
+			if(modifiers)
+			{
+				// We want bits only in modifiers...
+				UInt32 new_modifiers= (modifiers ^ priorModifiers) & modifiers;
+				switch(new_modifiers)
+				{
+				case cmdKey:
+					KeyCode = 55;
+					break;
+					
+				case shiftKey:
+					KeyCode = 56;
+					break;
+					
+				case alphaLock:
+					KeyCode = 57;
+					break;
+					
+				case optionKey:
+					KeyCode = 58;
+					break;
+					
+				case controlKey:
+					KeyCode = 59;
+					break;
+				
+				// Otherwise, no key (NONE)
+				}
+			}
+			priorModifiers= modifiers;
+		}
+		break;
+	
+	case kEventRawKeyRepeat:
+		// Do nothing
+		break;
+	}
+	
+	if (KeyCode != NONE)
+	{
+		// Update the keyboard display -- and beep if it could not be done
+		if (!CDPtr->HDPtr->SetKeyCode(CDPtr->Which,KeyCode))
+			SysBeep(30);
+	}
+	
+	return noErr;
+}
+
+
+static void KeyboardDialogHandler(ParsedControl &Ctrl, void *Data)
+{
+	KeyboardHandlerData *HDPtr = (KeyboardHandlerData *)(Data);
+
+	if (Ctrl.ID.signature == 0 && Ctrl.ID.id == iKEY_LAYOUT_POPUP)
+		HDPtr->UpdateKeyCodes();
+}
+
+
+// Note: the original keycodes are saved outside of this function;
+// it's not necessary to save the original ones
+bool configure_key_setup(
+	short *keycodes)
+{
+	bool IsTinyScreen =
+		(RECTANGLE_WIDTH(&(*GetWorldDevice())->gdRect)<640 || RECTANGLE_HEIGHT(&(*GetWorldDevice())->gdRect)<480);
+	
+	AutoNibWindow Window(GUI_Nib,
+		IsTinyScreen ? Window_Prefs_Keyboard_TinyScreen : Window_Prefs_Keyboard);
+	
+	// So that the handlers will work with the transmitted data
+	KeyboardHandlerData HandlerData;
+	HandlerData.KeyCodes = keycodes;
+	
+	// From Br'fin's keyboard event handler
+	const int NumKeyboardEvents = 3;
+	const EventTypeSpec KeyboardEvents[NumKeyboardEvents] = {
+		{kEventClassKeyboard, kEventRawKeyDown},
+		{kEventClassKeyboard, kEventRawKeyModifiersChanged},
+		{kEventClassKeyboard, kEventRawKeyRepeat}
+	};
+	EventHandlerUPP KeyboardHandlerUPP = NewEventHandlerUPP(KeyboardHandler);
+	
+	KeyboardControlHandlerData CtrlData[NUMBER_OF_KEY_ITEMS];
+	for (int k=0; k<NUMBER_OF_KEY_ITEMS; k++)
+	{
+		HandlerData.KeyCtrls[k] = GetCtrlFromWindow(Window(), 0, FIRST_KEY_ITEM + k);
+		CtrlData[k].HDPtr = &HandlerData;
+		CtrlData[k].Which = k;
+		InstallControlEventHandler(
+			HandlerData.KeyCtrls[k], KeyboardHandlerUPP,
+			NumKeyboardEvents, KeyboardEvents,
+			CtrlData + k, NULL);
+	}
+	
+	HandlerData.CodesToControls();
+	
+	// The keyset popup
+	HandlerData.KeysetPopup = GetCtrlFromWindow(Window(), 0, iKEY_LAYOUT_POPUP);
+	HandlerData.SetPopup();
+	
+	bool IsOK = RunModalDialog(Window(), true, KeyboardDialogHandler, &HandlerData);
+	
+	DisposeEventHandlerUPP(KeyboardHandlerUPP);
+	
+	return IsOK;
+}
+
+
+#else
 
 /* Necessary globals, only for the key_setup_filter_proc */
 struct keyboard_setup_struct {
@@ -445,6 +765,8 @@ static short find_duplicate_keycode(
 	return NONE;
 }
 
+#endif
+
 /* DANGER! DANGER! DANGER!! This is Alain's code, untouched.... */
 static short keycode_to_charcode(
 	short keycode)
@@ -478,6 +800,8 @@ static short keycode_to_charcode(
 	return charcode;
 }
 
+#ifdef USES_NIBS
+
 static bool is_pressed(
 	short key_code)
 {
@@ -486,3 +810,5 @@ static bool is_pressed(
 	GetKeys(key_map);
 	return ((((byte*)key_map)[key_code>>3] >> (key_code & 7)) & 1);
 }
+
+#endif
