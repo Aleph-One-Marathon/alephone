@@ -116,6 +116,7 @@ Dec 17, 2000 (Loren Petrich):
 #include "Random.h"
 #include "ViewControl.h"
 #include "OGL_Faders.h"
+#include "ModelRenderer.h"
 
 #ifdef __WIN32__
 #include "OGL_Win32.h"
@@ -336,9 +337,10 @@ static uint16 FlatStaticColor[4];
 static GM_Random StaticRandom;
 
 
+#ifdef UNUSED
 // Whether to do one-pass multitexturing
 static bool OnePassMultitexturing = false;
-
+#endif
 
 // Function for resetting map fonts when starting up an OpenGL rendering context;
 // defined in overhead_map.cpp
@@ -347,6 +349,40 @@ extern void OGL_ResetMapFonts(bool IsStarting);
 // Function for resetting HUD fonts when starting up an OpenGL rendering context;
 // defined in game_window.cpp
 extern void OGL_ResetHUDFonts(bool IsStarting);
+
+// Function for rendering a 3D model
+// Returns whether or not the model could be rendered
+// (lack of a skin appropriate for the CLUT, for example)
+static bool RenderModel(rectangle_definition& RenderRectangle, short CLUT);
+
+// Does the lighting and blending setup;
+// returns whether or not the texture can be glowmapped
+// (not the case for infravision, invisible, static)
+// it gets "IsBlended" off of the texture definition
+static bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended);
+
+// Renderer object
+static ModelRenderer ModelRenderObject;
+
+// Shader lists for the object renderer
+static ModelRenderShader StandardShaders[2];
+static ModelRenderShader StaticEffectShaders[4];
+
+// Contains everything that the shader callbacks will need
+struct ShaderDataStruct
+{
+	OGL_ModelData *ModelPtr;
+	OGL_SkinData *SkinPtr;
+	short CLUT;
+};
+static ShaderDataStruct ShaderData;
+
+// Shader callbacks
+void NormalShader(void *Data);
+void GlowingShader(void *Data);
+
+// Set up the shader data
+static void SetupShaders();
 
 
 #ifdef mac
@@ -464,6 +500,7 @@ bool OGL_StartRun()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
+#ifdef UNUSED
 	OnePassMultitexturing = false;
 	// Texture 0 is the default one; texture 1 is the additional texture
 #ifdef GL_ARB_multitexture
@@ -473,6 +510,7 @@ bool OGL_StartRun()
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	}
+#endif
 #endif
 	
 	// Initialize the texture accounting
@@ -484,7 +522,11 @@ bool OGL_StartRun()
 	// Reset the font info for overhead-map and HUD fonts done in OpenGL fashion
 	OGL_ResetMapFonts(true);
 	OGL_ResetHUDFonts(true);
-		
+	
+	// Setup for 3D-model rendering
+	ModelRenderObject.Clear();
+	SetupShaders();
+	
 	// Success!
 	JustInited = true;
 	return (_OGL_IsActive = true);
@@ -1352,7 +1394,8 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	
 	// Painting a texture...
 	glEnable(GL_TEXTURE_2D);
-
+	
+#ifdef UNUSED
 	bool DoTwoSimultaneousTextures = OnePassMultitexturing && TMgr.IsGlowMapped();
 #ifdef GL_ARB_multitexture
 	if (DoTwoSimultaneousTextures)
@@ -1373,6 +1416,9 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		glActiveTextureARB(GL_TEXTURE0_ARB);
 	}
 #endif
+#endif
+	
+	TMgr.RenderNormal();
 	
 	if (PolygonVariableShade)
 	{
@@ -1503,7 +1549,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		// Don't care about triangulation here, because the polygon never got split
 		glDrawArrays(GL_POLYGON,0,NumVertices);
 
-	// Do textured rendering
+#ifdef UNUSED
 #ifdef GL_ARB_multitexture
 	if (DoTwoSimultaneousTextures)
 	{
@@ -1514,6 +1560,8 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	}
 	else
 #endif
+
+	// Do textured rendering
 	if (TMgr.IsGlowMapped())
 	{
 		// Do blending here to get the necessary semitransparency;
@@ -1532,7 +1580,11 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		}
 		glAlphaFunc(GL_GREATER,0.25);
 		
+#ifdef UNUSED
 		TMgr.RenderGlowing(false);
+#endif
+
+		TMgr.RenderGlowing();
 		glDrawArrays(GL_POLYGON,0,NumVertices);
 		
 		// Reset these values
@@ -1744,6 +1796,31 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	}
 	else return true;
 	
+	// Render as a model if one is found
+	if (IsInhabitant)
+	{
+		OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
+		if (ModelPtr)
+		{
+			// Get from the model coordinates to the screen coordinates.
+			SetProjectionType(Projection_OpenGL_Eye);
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+			glLoadMatrixd(World_2_OGLEye);
+			world_point3d& Position = RenderRectangle.Position;
+			glTranslated(Position.x,Position.y,Position.z);
+			glRotated(RenderRectangle.Azimuth,0,0,1);
+			
+			// Be sure to include texture-mode effects as appropriate.
+			short CollColor = GET_DESCRIPTOR_COLLECTION(RenderRectangle.ShapeDesc);
+			short CLUT = ModifyCLUT(RenderRectangle.transfer_mode,GET_COLLECTION_CLUT(CollColor));
+			RenderModel(RenderRectangle,CLUT);
+			
+			glPopMatrix();
+			return true;
+		}
+	}
+	
 	// Find texture coordinates
 	ExtendedVertexData ExtendedVertexList[4];
 	
@@ -1825,62 +1902,19 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	ExtendedVertexList[3].TexCoord[0] = ExtendedVertexList[2].TexCoord[0];
 	ExtendedVertexList[3].TexCoord[1] = ExtendedVertexList[0].TexCoord[1];
 	
-	// Apply lighting
-	bool IsInvisible = false;
-	if (RenderRectangle.transfer_mode == _tinted_transfer)
-	{
-		// Used for invisibility; the tinting refers to the already-rendered color's fate
-		// The opacity is controlled by the transfer data; its value is guessed from
-		// the rendering source code (render.c, scottish_textures.c, low_level_textures.c)
-		glColor4f(0,0,0,1-RenderRectangle.transfer_data/32.0);
-		IsInvisible = true;
-	}
-	else if (RenderRectangle.flags&_SHADELESS_BIT)
-		// Only set when infravision is active
-		glColor3f(1,1,1);
-	else if (RenderRectangle.ambient_shade < 0)
-	{
-		GLfloat Light = (- RenderRectangle.ambient_shade)/GLfloat(FIXED_ONE);
-		glColor3f(Light,Light,Light);
-	}
-	else {
-		GLfloat Color[3];
-		FindShadingColor(RayDistance,RenderRectangle.ambient_shade,Color);
-		glColor3fv(Color);
-	}
-	
-	// Make the sprites crisp-edged, except if they are in invisibility mode
-	bool IsBlended = TMgr.IsBlended();
-	if (IsInvisible || IsBlended)
-	{
-		glDisable(GL_ALPHA_TEST);
-		glEnable(GL_BLEND);
-	} else { 
-		glEnable(GL_ALPHA_TEST);
-		glDisable(GL_BLEND);
-	}
-	
 	// Proper projection
 	if (IsInhabitant)
 		SetProjectionType(Projection_OpenGL_Eye);
 	else if (IsWeaponsInHand)
 		SetProjectionType(Projection_Screen);
 	
+	DoLightingAndBlending(RenderRectangle,TMgr.IsBlended());
+	
 	// Location of data:
 	glVertexPointer(3,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
 	glTexCoordPointer(2,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
 	glEnable(GL_TEXTURE_2D);
-	
-	bool DoTwoSimultaneousTextures = OnePassMultitexturing && TMgr.IsGlowMapped();
-#ifdef GL_ARB_multitexture
-	if (DoTwoSimultaneousTextures)
-	{
-		glClientActiveTextureARB(GL_TEXTURE1_ARB);
-		glTexCoordPointer(2,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
-		glClientActiveTextureARB(GL_TEXTURE0_ARB);
-	}
-#endif
-	
+		
 	// Go!
 	TMgr.RenderNormal();	// Always do this, of course
 	if (RenderRectangle.transfer_mode == _static_transfer)
@@ -1958,7 +1992,8 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	}
 	else
 	{
-		// Do textured rendering
+
+#ifdef UNUSED
 #ifdef GL_ARB_multitexture
 		if (DoTwoSimultaneousTextures)
 		{
@@ -1976,27 +2011,157 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		}
 		else
 #endif
+#endif
+
+		// Do textured rendering
+		glDrawArrays(GL_POLYGON,0,4);
+		
+		if (TMgr.IsGlowMapped())
 		{
+			// Do blending here to get the necessary semitransparency;
+			// push the cutoff down so 0.5*0.5 (half of half-transparency)
+			glColor3f(1,1,1);
+			glEnable(GL_BLEND);
+			glAlphaFunc(GL_GREATER,0.25);
+			
+#ifdef UNUSED
+			TMgr.RenderGlowing(false);
+#endif
+			
+			TMgr.RenderGlowing();
 			glDrawArrays(GL_POLYGON,0,4);
 			
-			if (TMgr.IsGlowMapped())
-			{
-				// Do blending here to get the necessary semitransparency;
-				// push the cutoff down so 0.5*0.5 (half of half-transparency)
-				glColor3f(1,1,1);
-				glEnable(GL_BLEND);
-				glAlphaFunc(GL_GREATER,0.25);
-				
-				TMgr.RenderGlowing(false);
-				glDrawArrays(GL_POLYGON,0,4);
-				
-				// Reset these values
-				glAlphaFunc(GL_GREATER,0.5);
-			}
+			// Reset these values
+			glAlphaFunc(GL_GREATER,0.5);
 		}
 	}
 		
 	return true;
+}
+
+bool RenderModel(rectangle_definition& RenderRectangle, short CLUT)
+{
+	OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
+	assert(ModelPtr);
+	
+	// Get the skin; test for whether one was actually found
+	OGL_SkinData *SkinPtr = ModelPtr->GetSkin(CLUT);
+	if (!SkinPtr) return false;
+	
+	// Parallel to TextureManager::IsBlended() in OGL_Textures.h
+	bool IsBlended = SkinPtr->OpacityType != OGL_OpacType_Crisp;
+	bool IsGlowmappable = DoLightingAndBlending(RenderRectangle, IsBlended);
+	
+	ShaderData.ModelPtr = ModelPtr;
+	ShaderData.SkinPtr = SkinPtr;
+	ShaderData.CLUT = CLUT;
+	
+	if (RenderRectangle.transfer_mode == _static_transfer)
+	{
+
+#warning Will get this working after the more normal rendering gets working	
+	
+	}
+	else
+	{
+		bool IsGlowing = IsGlowmappable && SkinPtr->GlowImg.IsPresent();
+		int NumShaders = IsGlowing ? 2 : 1;
+		
+		bool Use_Z_Buffer = Z_Buffering && !IsBlended;
+		
+		ModelRenderObject.Render(ModelPtr->Model, Use_Z_Buffer, StandardShaders, NumShaders);
+		
+		// Reset to default if glowmapping had been used
+		if (IsGlowing) glAlphaFunc(GL_GREATER,0.5);
+	}
+		
+	return true;
+}
+
+bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended)
+{
+	bool IsGlowmappable = true;
+	
+	// Apply lighting
+	bool IsInvisible = false;
+	if (RenderRectangle.transfer_mode == _tinted_transfer)
+	{
+		// Used for invisibility; the tinting refers to the already-rendered color's fate
+		// The opacity is controlled by the transfer data; its value is guessed from
+		// the rendering source code (render.c, scottish_textures.c, low_level_textures.c)
+		glColor4f(0,0,0,1-RenderRectangle.transfer_data/32.0);
+		IsInvisible = true;
+		IsGlowmappable = false;
+	}
+	else if (RenderRectangle.flags&_SHADELESS_BIT)
+	{
+		// Only set when infravision is active
+		glColor3f(1,1,1);
+		IsGlowmappable = false;
+	}
+	else if (RenderRectangle.ambient_shade < 0)
+	{
+		GLfloat Light = (- RenderRectangle.ambient_shade)/GLfloat(FIXED_ONE);
+		glColor3f(Light,Light,Light);
+	}
+	else
+	{
+		GLfloat Color[3];
+		FindShadingColor(RenderRectangle.depth,RenderRectangle.ambient_shade,Color);
+		glColor3fv(Color);
+	}
+	
+	// Make the sprites crisp-edged, except if they are in invisibility mode
+	if (IsInvisible || IsBlended)
+	{
+		glDisable(GL_ALPHA_TEST);
+		glEnable(GL_BLEND);
+	} else { 
+		glEnable(GL_ALPHA_TEST);
+		glDisable(GL_BLEND);
+	}
+	
+	return IsGlowmappable;
+};
+
+
+void NormalShader(void *Data)
+{
+	// Normal setup: nothing special
+	
+	ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Glowing);
+}
+
+void GlowingShader(void *Data)
+{
+	// Glowmapped setup
+	glColor3f(1,1,1);
+	glEnable(GL_BLEND);
+	glAlphaFunc(GL_GREATER,0.25);
+	
+	ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Glowing);
+}
+
+
+void SetupShaders()
+{
+	StandardShaders[0].Flags = ModelRenderer::Textured;
+	StandardShaders[0].TextureCallback = NormalShader;
+
+	StandardShaders[1].Flags = ModelRenderer::Textured;
+	StandardShaders[1].TextureCallback = GlowingShader;
+
+	StaticEffectShaders[0].Flags = ModelRenderer::Textured;
+	StaticEffectShaders[0].TextureCallback = NormalShader;
+
+	StaticEffectShaders[1].Flags = ModelRenderer::Textured;
+	StaticEffectShaders[1].TextureCallback = NormalShader;
+
+	StaticEffectShaders[2].Flags = ModelRenderer::Textured;
+	StaticEffectShaders[2].TextureCallback = NormalShader;
+
+	StaticEffectShaders[3].Flags = ModelRenderer::Textured;
+	StaticEffectShaders[3].TextureCallback = NormalShader;
 }
 
 
