@@ -1,5 +1,6 @@
 /*
- *  shell_beos.cpp - Main game loop and input handling, BeOS specific stuff
+ *  csfiles_beos.cpp - Some BeOS-specific functions that didn't fit elsewhere
+ *                     (used by shell_sdl.cpp)
  *
  *  Written in 2000 by Christian Bauer
  */

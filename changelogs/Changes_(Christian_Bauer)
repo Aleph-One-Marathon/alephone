@@ -6,6 +6,14 @@ September 1, 2000
  - on non-Mac platforms, the overhead map drawing doesn't use any vertex
    arrays because this crashed both Mesa and NVidia's OpenGL (I couldn't
    figure out why)
+ - MML scripts are no longer read from TEXT resources in the "Resources"
+   file but from text files in "MML" subdirectories of the local and
+   global data directories
+ - updated MML and cheat code docs and added them to the Aleph One/SDL
+   distribution
+ - split shell.cpp into it's platform-independent part ("shell.cpp",
+   mostly cheat code handling) and platform-specific parts ("shell_sdl.cpp"
+   and "shell_macintosh.cpp", one of which is included by shell.cpp)
 
 August 31, 2000
  - fixes to OpenGL rendering

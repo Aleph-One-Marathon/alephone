@@ -5,3 +5,4 @@ This directory contains data files needed by the SDL version of Aleph One:
     (extracted from the Mac "Aleph One" application)
   Pfhortran_Language_Definition - The Pfhortran defs file, actually the
     same as the one in "Pfhortran Release"
+  *.mml - MML scripts

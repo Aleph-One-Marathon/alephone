@@ -6,9 +6,12 @@
 
 The Marathon Markup Language (MML), a subset of the Extensible Markup Language (XML):
 This was created for the purpose of configuring the Marathon engine in a non-hardcoded way.
-Currently, MML scripts are stored as TEXT resources in the Marathon app;
-these are accessed in increasing order of ID.
-However, in future versions of the engine, these may be stored as separate files.
+On the MacOS version of Aleph One, MML scripts are stored as TEXT resources
+in the Aleph One app which are accessed in increasing order of ID. On the
+SDL version of Aleph One, the scripts are stored in "MML" subdirectories of
+the local and global data directories and accessed in alphabetical order
+(scripts in the local directory are read after the global ones so they can
+override their settings).
 <p>
 
 For more on XML, check out these links:

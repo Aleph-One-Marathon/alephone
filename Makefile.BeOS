@@ -37,7 +37,8 @@ NW=Source_Files/Network
 PF=Source_Files/Pfhortran
 SRCS=\
   $(CS)/byte_swapping.cpp $(CS)/csalerts_sdl.cpp $(CS)/cscluts_sdl.cpp \
-  $(CS)/csdialogs_sdl.cpp $(CS)/csmisc_sdl.cpp $(CS)/csstrings_sdl.cpp \
+  $(CS)/csdialogs_sdl.cpp $(CS)/csfiles_beos.cpp $(CS)/csmisc_sdl.cpp \
+  $(CS)/csstrings_sdl.cpp \
   \
   $(EP)/hashtable.c $(EP)/xmlparse.c $(EP)/xmlrole.c $(EP)/xmltok.c \
   \
@@ -47,7 +48,7 @@ SRCS=\
   $(MI)/PlayerName.cpp $(MI)/RenderPlaceObjs.cpp $(MI)/RenderRasterize.cpp \
   $(MI)/RenderSortPoly.cpp $(MI)/RenderVisTree.cpp $(MI)/ShapesParser.cpp \
   $(MI)/TextStrings.cpp $(MI)/ViewControl.cpp $(MI)/XML_Configure.cpp \
-  $(MI)/XML_ElementParser.cpp $(MI)/XML_MakeRoot.cpp $(MI)/XML_Resources_SDL.cpp \
+  $(MI)/XML_ElementParser.cpp $(MI)/XML_MakeRoot.cpp $(MI)/XML_Loader_SDL.cpp \
   $(MI)/computer_interface.cpp $(MI)/crc.cpp $(MI)/devices.cpp \
   $(MI)/dynamic_limits.cpp $(MI)/effects.cpp $(MI)/fades.cpp \
   $(MI)/filetypes_sdl.cpp $(MI)/flood_map.cpp $(MI)/game_errors.cpp \
@@ -61,9 +62,9 @@ SRCS=\
   $(MI)/preprocess_map_sdl.cpp $(MI)/projectiles.cpp $(MI)/render.cpp \
   $(MI)/resource_manager.cpp $(MI)/scenery.cpp $(MI)/scottish_textures.cpp \
   $(MI)/screen_drawing_sdl.cpp $(MI)/screen_sdl.cpp $(MI)/shapes.cpp \
-  $(MI)/shell_sdl.cpp $(MI)/shell_beos.cpp $(MI)/textures.cpp $(MI)/vbl.cpp \
-  $(MI)/vbl_sdl.cpp $(MI)/wad.cpp $(MI)/wad_sdl.cpp $(MI)/wad_prefs.cpp \
-  $(MI)/wad_prefs_sdl.cpp $(MI)/weapons.cpp $(MI)/world.cpp \
+  $(MI)/shell.cpp $(MI)/textures.cpp $(MI)/vbl.cpp $(MI)/vbl_sdl.cpp \
+  $(MI)/wad.cpp $(MI)/wad_sdl.cpp $(MI)/wad_prefs.cpp $(MI)/wad_prefs_sdl.cpp \
+  $(MI)/weapons.cpp $(MI)/world.cpp \
   \
   $(NW)/network_dummy.cpp $(NW)/network_games.cpp \
   \

@@ -1,0 +1,85 @@
+<marathon>
+<!-- Make Marathon 2/oo liquids, splashes, and puddles semitransparent -->
+
+<opengl>
+<!-- Water -->
+<texture coll="17" bitmap="19" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="0" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="1" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="2" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="3" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="4" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="5" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="6" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="7" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="8" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="9" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="10" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="11" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="12" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="26" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="22" bitmap="27" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+<!-- Lava -->
+<texture coll="18" bitmap="12" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="23" bitmap="0" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="23" bitmap="1" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="23" bitmap="2" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="23" bitmap="3" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="23" bitmap="4" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="23" bitmap="5" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+<!-- Sewage -->
+<texture coll="19" bitmap="13" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="0" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="1" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="2" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="3" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="4" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="5" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="6" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="7" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="8" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="9" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="10" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="11" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="24" bitmap="12" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+<!-- Jjaro -->
+<texture coll="20" bitmap="13" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="0" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="1" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="2" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="3" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="4" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="5" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="6" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="7" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="8" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="9" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="10" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="11" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="25" bitmap="12" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+<!-- Pfhor -->
+<texture coll="21" bitmap="5" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="0" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="1" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="2" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="3" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="4" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="5" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="6" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="7" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="8" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="9" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="10" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="11" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="12" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="33" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="34" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+<texture coll="26" bitmap="35" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+</opengl>
+
+</marathon>

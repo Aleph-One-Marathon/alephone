@@ -1,22 +1,23 @@
 /*
- *  XML_Resources_SDL.h - Parser for XML-containing resource files
+ *  XML_Loader_SDL.h - Parser for XML files, SDL implementation
  *
  *  Written in 2000 by Christian Bauer
  */
 
-#ifndef _XML_RESOURCES_SDL_
-#define _XML_RESOURCES_SDL_
+#ifndef _XML_LOADER_SDL_
+#define _XML_LOADER_SDL_
 
 #include "XML_Configure.h"
-#include "FileHandler.h"
 
-class XML_Resources_SDL : public XML_Configure
-{
+class FileSpecifier;
+
+
+class XML_Loader_SDL : public XML_Configure {
 public:
-	XML_Resources_SDL() {}
-	virtual ~XML_Resources_SDL() {rsrc.Unload();}
+	XML_Loader_SDL() : data(NULL) {}
+	~XML_Loader_SDL() {delete[] data; data = NULL;}
 
-	bool ParseResourceSet(uint32 Type);
+	bool ParseDirectory(FileSpecifier &dir);
 
 protected:
 	virtual bool GetData();
@@ -26,7 +27,8 @@ protected:
 	virtual bool RequestAbort();
 
 private:
-	LoadedResource rsrc;
+	char *data;
+	long data_size;
 };
 
 #endif

@@ -28,6 +28,7 @@
 #ifdef SDL
 #include <errno.h>
 #include <string>
+#include <vector>
 #define fnfErr ENOENT
 #endif
 
@@ -93,7 +94,6 @@ private:
 
 private:
 	SDL_RWops *f;	// File handle
-
 #endif
 };
 
@@ -145,8 +145,8 @@ private:
 	
 #elif defined(SDL)
 
-	void *p;
-	uint32 size;
+	void *p;		// Pointer to resource data (malloc()ed)
+	uint32 size;	// Size of data
 #endif
 };
 
@@ -244,6 +244,7 @@ public:
 	DirectorySpecifier(DirectorySpecifier& D) {*this = D;}
 };
 #else
+// Directories are treated like files
 #define DirectorySpecifier FileSpecifier
 #endif
 
@@ -253,6 +254,43 @@ public:
 typedef unsigned long TimeType;
 #else
 typedef time_t TimeType;	// Maybe this can also be used on MacOS, so there wouldn't be any need for TimeType?
+#endif
+
+
+#ifdef SDL
+// Directory entry, returned by FileSpecifier::ReadDirectory()
+struct dir_entry {
+	dir_entry() {}
+	dir_entry(const string &n, off_t s, bool is_dir, bool is_vol = false)
+		: name(n), size(s), is_directory(is_dir), is_volume(is_vol) {}
+	dir_entry(const dir_entry &other)
+		: name(other.name), size(other.size), is_directory(other.is_directory), is_volume(other.is_volume) {}
+	~dir_entry() {}
+
+	const dir_entry &operator=(const dir_entry &other)
+	{
+		if (this != &other) {
+			name = other.name;
+			size = other.size;
+			is_directory = other.is_directory;
+			is_volume = other.is_volume;
+		}
+		return *this;
+	}
+
+	bool operator<(const dir_entry &other) const
+	{
+		if (is_directory == other.is_directory)
+			return name < other.name;
+		else	// Sort directories before files
+			return is_directory > other.is_directory;
+	}
+
+	string name;		// Entry name
+	long size;			// File size (only valid if !is_directory)
+	bool is_directory;	// Entry is a directory (plain file otherwise)
+	bool is_volume;		// Entry is a volume (for platforms that have volumes, is_directory must also be set)
+};
 #endif
 
 
@@ -360,6 +398,9 @@ private:
 	void AddPart(const string &part);
 	void GetLastPart(char *part);
 	const char *GetName(void) {return name.c_str();}
+
+	bool CreateDirectory();
+	bool ReadDirectory(vector<dir_entry> &vec);
 
 	int GetError() {return errno;}
 

@@ -77,6 +77,7 @@ public:
 	
 	// Idiot-proofing measure
 	XML_Configure() {CurrentElement = NULL;}
+	virtual ~XML_Configure() {}
 };
 
 #endif

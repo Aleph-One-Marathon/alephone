@@ -60,3 +60,7 @@ long NetGetNetTime(void)
 void display_net_game_stats(void)
 {
 }
+
+void network_speaker_idle_proc(void)
+{
+}

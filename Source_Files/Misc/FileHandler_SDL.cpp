@@ -18,6 +18,8 @@
 
 #ifdef HAVE_UNISTD_H
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <dirent.h>
 #include <unistd.h>
 #endif
 
@@ -212,6 +214,7 @@ void FileSpecifier::SetName(char *Name, int Type)
 	name = Name;
 }
 
+// Create file
 bool FileSpecifier::Create(int Type)
 {
 	Delete();
@@ -219,6 +222,19 @@ bool FileSpecifier::Create(int Type)
 	return true;
 }
 
+// Create directory
+bool FileSpecifier::CreateDirectory()
+{
+#if defined(__unix__) || defined(__BEOS__)
+
+	return mkdir(name.c_str(), 0777) == 0;
+
+#else
+#error FileSpecifier::CreateDirectory() not implemented for this platform
+#endif
+}
+
+// Open data file
 bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 {
 	OFile.Close();
@@ -228,6 +244,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 	return OFile.IsOpen();
 }
 
+// Open resource file
 bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 {
 	OFile.Close();
@@ -237,6 +254,7 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 	return OFile.IsOpen();
 }
 
+// Check for existence of file
 bool FileSpecifier::Exists()
 {
 #if defined(__unix__) || defined(__BEOS__)
@@ -249,6 +267,7 @@ bool FileSpecifier::Exists()
 #endif
 }
 
+// Get modification date
 TimeType FileSpecifier::GetDate()
 {
 #if defined(__unix__) || defined(__BEOS__)
@@ -263,12 +282,14 @@ TimeType FileSpecifier::GetDate()
 #endif
 }
 
+// Get file types
 int FileSpecifier::GetType()
 {
 	// No file types
 	return NONE;
 }
 
+// Get free space on disk
 bool FileSpecifier::GetFreeSpace(unsigned long &FreeSpace)
 {
 	// This is impossible to do in a platform-independant way, so we
@@ -277,6 +298,7 @@ bool FileSpecifier::GetFreeSpace(unsigned long &FreeSpace)
 	return true;
 }
 
+// Delete file
 bool FileSpecifier::Delete()
 {
 	return remove(name.c_str()) == 0;
@@ -322,6 +344,35 @@ void FileSpecifier::GetLastPart(char *part)
 
 #else
 #error FileSpecifier::GetLastPart() not implemented for this platform
+#endif
+}
+
+// Read directory contents
+bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
+{
+#if defined(__unix__) || defined(__BEOS__)
+
+	vec.clear();
+
+	DIR *d = opendir(name.c_str());
+	if (d == NULL)
+		return false;
+	struct dirent *de = readdir(d);
+	while (de) {
+		if (de->d_name[0] != '.' || (de->d_name[1] && de->d_name[1] != '.')) {
+			FileSpecifier full_path = name;
+			full_path.AddPart(de->d_name);
+			struct stat st;
+			if (stat(full_path.name.c_str(), &st) == 0)
+				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false));
+		}
+		de = readdir(d);
+	}
+	closedir(d);
+	return true;
+
+#else
+#error FileSpecifier::ReadDirectory() not implemented for this platform
 #endif
 }
 

@@ -66,10 +66,10 @@ BeOS:
    $ make -f Makefile.BeOS install
 
   This will create a new directory "AlephOne" in your "home" directory that
-  contains the "AlephOne" application and the "Fonts", "Resources" and
-  "Pfhortran_Language_Definition" data files. You can move the "AlephOne"
-  directory anywhere you like as long as the application is kept together
-  with the data files.
+  contains the "AlephOne" application, the "Fonts", "Resources" and
+  "Pfhortran_Language_Definition" data files, and an "MML" directory. You
+  can move the "AlephOne" directory anywhere you like as long as the
+  application is kept together with the data files.
 
 To play Aleph One, you will also need Marathon graphics, sound and map
 files. Unfortunately, Bungie has not released these files to the public, so
@@ -141,10 +141,11 @@ Infinity/Trilogy CD under Linux:
     That's it.
 
 Playing Marathon 2:
+
 It is possible to play the Marathon 2 scenario by copying the data files from
 a Marathon 2 CD in the same way as described above, but you need to replace
 the "Shapes" and "Sounds" files with their Infinity versions or the game will
-not work.
+not work (some textures will be wrong but the game will work).
 
 
 PLAYING ALEPH ONE
@@ -329,6 +330,29 @@ can't do this, you may want to run Aleph One in 8 bit mode by specifying
 the "-8" argument. If you don't have hardware accelerated OpenGL, you should
 specify the "-g" argument to enable software rendering (unless you configured
 Aleph One with the "--disable-opengl" option).
+
+
+MARATHON MARKUP LANGUAGE
+------------------------
+
+The Marathon Markup Language (MML) is a subset of the Extensible Markup
+Language (XML). MML scripts can be used to configure some aspects of
+Aleph One. These scripts are stored in
+
+Unix:
+  /usr/local/share/AlephOne/MML
+ and
+  ~/.alephone/MML
+
+BeOS:
+  The "MML" directory in the Aleph One application directory
+ and
+  /boot/home/config/settings/Aleph One/MML
+
+Upon startup, Aleph One reads and parses all scripts found in these
+directories. For a description of their contents and what you can do by
+writing your own MML scripts, please consult the file "docs/MML.html"
+that comes in the Aleph One distribution archive.
 
 
 SUPPORT
