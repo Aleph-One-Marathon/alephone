@@ -596,7 +596,9 @@ void set_recording_header_data(
 	replay.header.version= version;
 	objlist_copy(replay.header.starts, starts, MAXIMUM_NUMBER_OF_PLAYERS);
 	obj_copy(replay.header.game_information, *game_information);
-	replay.header.length= sizeof(struct recording_header);
+	// Use the packed size here!!!
+	replay.header.length= SIZEOF_recording_header;
+	// replay.header.length= sizeof(struct recording_header);
 
 	return;
 }
@@ -761,7 +763,9 @@ void rewind_recording(
 		FilmFileSpec.Open(FilmFile,true);
 		FilmFile.Write(SIZEOF_recording_header,Header);
 		
-		replay.header.length= sizeof(struct recording_header);
+		// Use the packed length here!!!
+		replay.header.length= SIZEOF_recording_header;
+		// replay.header.length= sizeof(struct recording_header);
 	}
 	
 	return;
