@@ -123,6 +123,8 @@ public:
     
     // player may be NULL, to put informational messages into the chat buffer.
     void append_chat_entry(const player_info* player, const char* chat_text);
+
+	void append_chat_entry(const char* playerName, uint32 player_pixel_color, uint32 team_pixel_color, const char* text);
     
 	~w_chat_history();
 private:

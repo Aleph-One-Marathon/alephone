@@ -184,40 +184,56 @@ w_found_players::draw_item(vector<prospective_joiner_info>::const_iterator i, SD
 ////// w_chat_history //////
 void
 w_chat_history::append_chat_entry(const player_info* player, const char* chat_text) {
-    char*	text_buf = strdup(chat_text); // Temporary buf so we can mangle around in it.  free()d at end.
-	char*	whole_text_buf = text_buf;	// we modify the text_buf pointer; need to keep a pointer for free.
-
-    // Fill in the "template" entry that will be copied into the entries vector from time to time below.
-	chat_entry	entry;
-
     // Player name C-string, used to make copies for individual entries below.
     char*	player_name_master_copy;
+	uint32 player_pixel_color;
+	uint32 team_pixel_color;
 
     if(player != NULL) {
         // Note: player_name_pascal and player_name_master_copy are really the same buffer.
         unsigned char* player_name_pascal	= pstrdup(player->name);
         player_name_master_copy = a1_p2cstr(player_name_pascal);
         
-        entry.player_pixel_color	= get_dialog_player_color(player->color);
-        entry.team_pixel_color	= get_dialog_player_color(player->team);
+        player_pixel_color	= get_dialog_player_color(player->color);
+        team_pixel_color	= get_dialog_player_color(player->team);
     }
     else {
         player_name_master_copy		= "Aleph One";
-        entry.player_pixel_color	= get_dialog_color(MESSAGE_COLOR);
-        entry.team_pixel_color		= get_dialog_color(MESSAGE_COLOR);
+        player_pixel_color	= get_dialog_color(MESSAGE_COLOR);
+        team_pixel_color		= get_dialog_color(MESSAGE_COLOR);
     }
+
+    append_chat_entry(player_name_master_copy, player_pixel_color, team_pixel_color, chat_text);
     
-    entry.chat_text	= NULL;		// will be overwritten below as we word-wrap lines
-    
+        // If we allocated our own space for the master name copy, free it.
+        if(player != NULL)
+            free(player_name_master_copy);
+}
+
+
+
+void
+w_chat_history::append_chat_entry(const char* playerName, uint32 player_pixel_color, uint32 team_pixel_color, const char* chat_text)
+{
+	char*	text_buf = strdup(chat_text); // Temporary buf so we can mangle around in it.  free()d at end.
+	char*	whole_text_buf = text_buf;	// we modify the text_buf pointer; need to keep a pointer for free.
+
+	// Fill in the "template" entry that will be copied into the entries vector from time to time below.
+	chat_entry	entry;
+
+	entry.player_pixel_color = player_pixel_color;
+	entry.team_pixel_color = team_pixel_color;
+	entry.chat_text	= NULL;		// will be overwritten below as we word-wrap lines
+
 	// See how much room the player's name will take up
-    char	theNameBuffer[40];
+	char	theNameBuffer[40];
 
 	// Will be safe no matter the player's name length (we'll truncate it if necessary)
-	sprintf(theNameBuffer, "%.37s: ", player_name_master_copy);
+	sprintf(theNameBuffer, "%.37s: ", playerName);
 
-    int name_width = text_width(theNameBuffer, font, style);
-    
-    int available_width = rect.w - name_width - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+	int name_width = text_width(theNameBuffer, font, style);
+
+	int available_width = rect.w - name_width - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
 
 	// Badly-formed dialog (or widget, anyway) if there's not enough room to print a player's name.
 	assert(available_width > 0);
@@ -228,7 +244,7 @@ w_chat_history::append_chat_entry(const player_info* player, const char* chat_te
         // it again, but someone's probably already done that anyway)... it should probably
         // be moved out into its own class/function/whatever as it's more generally
         // applicable than just to this widget.
-        
+
 
 	// For looping
 	size_t characters_left;
@@ -252,54 +268,54 @@ w_chat_history::append_chat_entry(const player_info* player, const char* chat_te
 		// How we move our pointers depends on what we're looking at now.
 		switch(text_buf[first_char_next_line]) {
 
-		case '\0':	// End of buffer, everything fits on this line.
+			case '\0':	// End of buffer, everything fits on this line.
 
-			// Last char of this line should be last char of string (or earlier, if whitespace)
-			last_char_this_line = first_char_next_line - 1;
+				// Last char of this line should be last char of string (or earlier, if whitespace)
+				last_char_this_line = first_char_next_line - 1;
 
-			// First char of next line is the terminating null.  Loop will exit.
+				// First char of next line is the terminating null.  Loop will exit.
 
-		break;
+				break;
 
-		case ' ':	// Middle of buffer, in a bank of whitespace (maybe just a single space)
-		
-			// Last char of this line should be here (or earlier, if whitespace)
-			last_char_this_line = first_char_next_line;
+			case ' ':	// Middle of buffer, in a bank of whitespace (maybe just a single space)
 
-			// Next line should start after whitespace
-			do {
-				first_char_next_line++;
-			} while(text_buf[first_char_next_line] == ' ' && text_buf[first_char_next_line] != '\0');
-			
-			// First char of the next line is either the terminating null, OR the next non-whitespace.
+				// Last char of this line should be here (or earlier, if whitespace)
+				last_char_this_line = first_char_next_line;
 
-		break;
+				// Next line should start after whitespace
+				do {
+					first_char_next_line++;
+				} while(text_buf[first_char_next_line] == ' ' && text_buf[first_char_next_line] != '\0');
 
-		default:	// Middle of buffer, in a bank of non-whitespace
+					// First char of the next line is either the terminating null, OR the next non-whitespace.
 
-			// We operate on last_char_this_line so we can come back to first_char_next_line if
-			// there are no whitespace characters.
-			last_char_this_line = first_char_next_line;
+					break;
 
-			// Find first whitespace (if any) going backwards
-			do {
-				last_char_this_line--;
-			} while(text_buf[last_char_this_line] != ' ' && last_char_this_line >= 0);
+			default:	// Middle of buffer, in a bank of non-whitespace
 
-			// Now we either point at the last whitespace, or are at -1.  Either way, go forward one.
-			last_char_this_line++;
+				// We operate on last_char_this_line so we can come back to first_char_next_line if
+    // there are no whitespace characters.
+				last_char_this_line = first_char_next_line;
 
-			// Maybe we found the last piece of whitespace before the word that didn't fit, and now
-			// we point at that word.
-			if(last_char_this_line > 0) {
-				first_char_next_line = last_char_this_line;
-			}
+				// Find first whitespace (if any) going backwards
+				do {
+					last_char_this_line--;
+				} while(text_buf[last_char_this_line] != ' ' && last_char_this_line >= 0);
 
-			// This line should end immediately before the next one begins.  That's
-			// either at a space or the last char that would fit.
-			last_char_this_line = first_char_next_line - 1;
+					// Now we either point at the last whitespace, or are at -1.  Either way, go forward one.
+					last_char_this_line++;
 
-		break;
+				// Maybe we found the last piece of whitespace before the word that didn't fit, and now
+    // we point at that word.
+				if(last_char_this_line > 0) {
+					first_char_next_line = last_char_this_line;
+				}
+
+					// This line should end immediately before the next one begins.  That's
+     // either at a space or the last char that would fit.
+					last_char_this_line = first_char_next_line - 1;
+
+				break;
 		}
 
 		// No matter what, walk backward discarding whitespace.
@@ -318,7 +334,7 @@ w_chat_history::append_chat_entry(const player_info* player, const char* chat_te
 			text_buf[last_char_this_line] = '\0';
 			// Copy the string and name for longer life.  Destructor will free() them.
 			entry.chat_text		= strdup(text_buf);
-                        entry.player_name	= strdup(player_name_master_copy);
+                        entry.player_name	= strdup(playerName);
 			append_chat_entry(entry);
 			text_buf[last_char_this_line] = saved_char;
 		}
@@ -329,9 +345,6 @@ w_chat_history::append_chat_entry(const player_info* player, const char* chat_te
 	// Done with the temporary buffer.
 	free(whole_text_buf);
         
-        // If we allocated our own space for the master name copy, free it.
-        if(player != NULL)
-            free(player_name_master_copy);
 }
 
 
