@@ -1278,10 +1278,12 @@ Its root element is &lt;marathon_levels&gt; and not
 &lt;marathon&gt;, to distinguish it from the usual sort of MML.
 <p>
 
-It has child elements &lt;level&gt;, &lt;default&gt;, and &lt;restore&gt;,
-these specify what individual level scripts to execute. The element  &lt;level&gt;
+It has child elements &lt;level&gt;, &lt;end&gt;, &lt;default&gt;, &lt;restore&gt;,
+and &lt;end_screens&gt;,
+all but the last one specify what individual level scripts to execute. The element &lt;level&gt;
 has a mandatory attribute, "index", which specifies which level the script is for;
 the first one is index 0.
+The element &lt;end&gt; specifies a script that is for the end of a game;
 The element &lt;default&gt; specifies a script that is for the entire map file;
 it is executed before a level's script is executed, for rather obvious reasons.
 The element &lt;restore&gt is intended to restore parameters to their A1 defaults
@@ -1302,7 +1304,10 @@ that they are specified in, the first in the list played first, etc.
 <li>&lt;random_order&gt; has the <a name="#boolean">boolean</a> attribute "on", which indicates whether
 the music files are to be played in random order;
 if not (the default), they are played in looping sequence.
-<li>&lt;music&gt; plays at the beginning of a level the movie file specified in the value of the attribute "file"
+<li>&lt;movie&gt; plays at the beginning of a level the movie file
+specified in the value of the attribute "file".
+It has an optional attribute, "size" (default: 2),
+which indicates how much the movie is to be scaled when playing back.
 </ul>
 <p>
 Directoris and files are specified in Unix fashion, &lt;dirname&gt;/&lt;dirname&gt;/&lt;filename&gt;,
@@ -1312,13 +1317,24 @@ so something like "Music/bang_my_head.mp3" means looking for file "bang_my_head.
 in the directory "Music", which is in the same directory that the map file lives in.
 <p>
 
-The MacOS version uses Quicktime for music playing, meaning that any of these formats can be used:
+The MacOS version uses Quicktime for music and movie playing,
+meaning that any of these formats can be used:
 <ul>
 <li>AIFF
 <li>Sun's AU
 <li>Microsoft's WAVE
 <li>MP3
 <li>MIDI
+<p>
+
+Finally, the &lt;end_screens&gt; element is for specifying which PICT resources
+are to be used as the end-of-game screen displays.
+This specification is done with these attributes:
+<ul>
+<li>index: which fake level-index value to use for the end of the game (default: 99);
+all chapter screens have the resource ID (1500 + (level index)).
+<li>count: how many in sequence (default: 1), with resource ID's incremented by one for each one.
+</ul>
 <p>
 
 <hr>
