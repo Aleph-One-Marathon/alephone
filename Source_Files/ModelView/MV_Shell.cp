@@ -252,11 +252,20 @@ void DrawMainWindow()
 			{  1,   0,   1},
 			{  1,   0, 0.5}
 		};
-		int NumColors = 3*(Model.Positions.size()/3);
+		
+		// Replace the colors if there isn't an already-present color array
+		int NumColors = Model.Positions.size()/3;
 		if (Model.Colors.size() != 3*NumColors)
+		{
 			Model.Colors.resize(3*NumColors);
-		for (int k=0; k<NumColors; k++)
-			memcpy(&Model.Colors[3*k],FalseColors[k%12],3*sizeof(GLfloat));
+			for (int k=0; k<NumColors; k++)
+			{
+				const GLfloat *FalseColor = FalseColors[k%12];
+				GLfloat *Color = &Model.Colors[3*k];
+				for (int c=0; c<3; c++)
+					Color[c] = FalseColor[c];
+			}
+		}
 		
 		// Load the texture
 		if (!TxtrIsPresent && Image.IsPresent())
