@@ -190,20 +190,22 @@ struct NetPlayer
 
 	bool net_dead; // only valid if you are the server.
 
-	uint8 player_data[MAXIMUM_PLAYER_DATA_SIZE];
+  uint8 player_data[MAXIMUM_PLAYER_DATA_SIZE]; // DELETE ME
+  player_info playerInfo;
 };
 typedef struct NetPlayer NetPlayer, *NetPlayerPtr;
 
 struct NetTopology
 {
-	int16 tag;
-	int16 player_count;
-	
-	int16 nextIdentifier;
-	
-	uint8 game_data[MAXIMUM_GAME_DATA_SIZE];
-	
-	struct NetPlayer players[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+  int16 tag;
+  int16 player_count;
+  
+  int16 nextIdentifier;
+  
+  uint8 game_data[MAXIMUM_GAME_DATA_SIZE]; // DELETE ME
+  game_info gameInfo;
+  
+  struct NetPlayer players[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 };
 typedef struct NetTopology NetTopology, *NetTopologyPtr;
 

@@ -10,14 +10,14 @@ endif
 
 libnetwork_a_SOURCES = network.h network_audio_shared.h network_data_formats.h \
   network_dialog_widgets_sdl.h network_dialogs.h network_distribution_types.h \
-  network_games.h network_lookup_sdl.h network_modem.h network_private.h \
+  network_games.h network_lookup_sdl.h network_messages.h network_modem.h network_private.h \
   network_sound.h network_speaker_sdl.h network_speex.h network_star.h \
   network_stream.h NetworkGameProtocol.h RingGameProtocol.h SDL_netx.h \
   SSLP_API.h SSLP_Protocol.h StarGameProtocol.h \
   \
   network.cpp network_data_formats.cpp network_dialogs.cpp \
   network_dialogs_sdl.cpp network_dialog_widgets_sdl.cpp network_games.cpp \
-  network_lookup_sdl.cpp $(NETWORK_MIC) \
+  network_lookup_sdl.cpp network_messages.cpp $(NETWORK_MIC) \
   network_microphone_shared.cpp network_speex.cpp network_speaker_sdl.cpp \
   network_speaker_shared.cpp network_star_hub.cpp network_star_spoke.cpp \
   network_stream.cpp network_tcp.cpp network_udp.cpp RingGameProtocol.cpp \
