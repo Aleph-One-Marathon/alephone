@@ -457,7 +457,8 @@ uint32 get_current_map_checksum(
 
 	assert(file_is_set);
 	OpenedFile MapFile;
-	assert(open_wad_file_for_reading(MapFileSpec, MapFile));
+	open_wad_file_for_reading(MapFileSpec, MapFile);
+	assert(MapFile.IsOpen());
 
 	/* Read the file */
 	read_wad_header(MapFile, &header);

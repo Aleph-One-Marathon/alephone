@@ -1662,7 +1662,9 @@ static void search_from_directory(DirectorySpecifier& BaseDir)
 	pb.user_data= NULL;
 	pb.count= 0;
 
-	vassert(pb.Find(), csprintf(temporary, "Error: %d", pb.GetError()));
+	bool seek_ok= pb.Find();
+	if(!seek_ok)
+		vassert(seek_ok, csprintf(temporary, "Error: %d", pb.GetError()));
 }
 
 static bool

@@ -1201,7 +1201,8 @@ bool OGL_SetView(view_data &View)
 	OrigVec[3] = 0;
 	GL_MatrixTimesVector(CenteredWorld_2_OGLEye,OrigVec,HorizCoords.V_Vec);
 	
-	assert(HorizCoords.FindComplements());
+	bool found_complements= HorizCoords.FindComplements();
+	if(!found_complements) assert(found_complements);
 	
 	// Get the yaw angle as a value from 0 to 1
 	Yaw = FullCircleReciprocal*View.yaw;
@@ -1365,7 +1366,8 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		OrigVec[3] = 0;
 		GL_MatrixTimesVector(MaraEye_2_OGLEye,OrigVec,VertCoords.V_Vec);
 	
-		assert(VertCoords.FindComplements());
+		bool found_complements= VertCoords.FindComplements();
+		if(!found_complements) assert(found_complements);
 		
 	} else {
 		// Set to horizontal ones
