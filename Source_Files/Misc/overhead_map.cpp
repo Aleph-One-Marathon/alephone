@@ -29,6 +29,9 @@ May 2, 2000 (Loren Petrich):
 	also imported the number of paths for displaying them.
 	
 	Can display alien monsters, items, projectiles, and paths.
+
+Jul 4, 2000 (Loren Petrich):
+	Made XML map-display settings compatible with the map cheat.
 */
 
 #include "macintosh_cseries.h"
@@ -279,9 +282,10 @@ void _render_overhead_map(
 	short i;
 	
 	// LP addition: stuff for setting the game options, since they get defaulted to 0
-	SET_FLAG(GET_GAME_OPTIONS(),_overhead_map_shows_monsters,ShowAliens);
-	SET_FLAG(GET_GAME_OPTIONS(),_overhead_map_shows_items,ShowItems);
-	SET_FLAG(GET_GAME_OPTIONS(),_overhead_map_shows_projectiles,ShowProjectiles);
+	// Made compatible with map cheat
+	if (ShowAliens) GET_GAME_OPTIONS() |= _overhead_map_shows_monsters;
+	if (ShowItems) GET_GAME_OPTIONS() |= _overhead_map_shows_items;
+	if (ShowProjectiles) GET_GAME_OPTIONS() |= _overhead_map_shows_projectiles;
 	
 	if (data->mode==_rendering_checkpoint_map) generate_false_automap(data->origin_polygon_index);
 	
