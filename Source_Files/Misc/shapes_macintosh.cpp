@@ -19,8 +19,12 @@ Aug 14, 2000 (Loren Petrich):
 #define HOLLOW_PIXMAP_BUFFER_SIZE 0
 //was (80*1024)
 
-#define COLLECTIONS_RESOURCE_BASE 128
-#define COLLECTIONS_RESOURCE_BASE16 1128
+// LP: begin no-compile
+#if 0
+
+// Possibly of historical interest:
+// #define COLLECTIONS_RESOURCE_BASE 128
+// #define COLLECTIONS_RESOURCE_BASE16 1128
 
 enum /* collection status */
 {
@@ -35,6 +39,9 @@ enum /* flags */
 	_collection_is_stripped= 0x0001
 };
 
+// LP: end no-compile
+#endif
+
 /* ---------- globals */
 
 // static short shapes_file_refnum= -1;
@@ -46,6 +53,9 @@ static pixel8 *hollow_data;
 
 /* --------- private prototypes */
 
+// LP: begin no-compile
+#if 0
+
 static void shutdown_shape_handler(void);
 static void close_shapes_file(void);
 
@@ -55,19 +65,28 @@ static byte *read_object_from_file(OpenedFile& OFile, long offset, long length);
 static byte *make_stripped_collection(byte *collection);
 // static void strip_collection_handle(struct collection_definition **collection);
 
+// LP: end no-compile
+#endif
+
+// LP: separating out initing the hollow pixmap, used for reading in PICT resources
+void initialize_pixmap_handler();
+
 /* --------- code */
 
-void initialize_shape_handler(
-	void)
+// void initialize_shape_handler(
+//	void)
+void initialize_pixmap_handler()
 {
+
+// LP: begin no-compile
+#if 0
 	// FSSpec shapes_file;
 	// OSErr error;
 
 	// LP: this is an out-of-date comment!
 	// M1 uses the resource fork, but M2 and Moo use the data fork
 	/* open the resource fork of our shape file for reading */
-	
-	
+		
 	/*
 	error= get_file_spec(&shapes_file, strFILENAMES, filenameSHAPES8, strPATHS);
 	if (error==noErr)
@@ -76,7 +95,7 @@ void initialize_shape_handler(
 	}
 	*/
 	
-	FileObject_Mac File;
+	FileSpecifier File;
 	get_default_shapes_spec(File);
 	if (!File.Open(ShapesFile))
 	// if (error!=noErr || shapes_file_refnum==-1)
@@ -87,6 +106,9 @@ void initialize_shape_handler(
 	{
 		atexit(shutdown_shape_handler);
 	}
+
+// LP: end no-compile
+#endif
 
 	hollow_pixmap= NewPixMap();
 	assert(hollow_pixmap);
@@ -220,7 +242,10 @@ PixMapHandle get_shape_pixmap(
 	return hollow_pixmap;
 }
 
-void open_shapes_file(FileObject& File)
+// LP: begin no-compile
+#if 0
+
+void open_shapes_file(FileSpecifier& File)
 	// FSSpec *spec)
 {
 	/*
@@ -632,3 +657,7 @@ static void dump_colors(RGBColor *colors, short color_count)
 	ReleaseResource((Handle) new_table);
 }
 #endif
+
+// LP: end no-compile
+#endif
+
