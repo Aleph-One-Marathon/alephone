@@ -70,7 +70,7 @@ boolean find_replay_to_use(
 	
 	if(ask_user)
 	{
-		successful = File.ReadDialog(FileSpecifier::C_Film);
+		successful = File.ReadDialog(_typecode_film);
 		/*
 		StandardFileReply reply;
 		SFTypeList types;
@@ -122,7 +122,7 @@ boolean get_recording_filedesc(FileSpecifier& File)
 //	FileDesc *file)
 {
 	File.SetParentToPreferences();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING),FileSpecifier::C_Film);
+	File.SetName(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING),_typecode_film);
 	return File.Exists();
 /*
 	short vRef;
@@ -151,7 +151,7 @@ void move_replay(
 	// Need this temporary space for getting the strings
 	char Prompt[256], DefaultName[256];
 	if (!MovedFilmFile.WriteDialog(
-			FileSpecifier::C_Film,
+			_typecode_film,
 			getcstr(Prompt, strPROMPTS, _save_replay_prompt),
 			getcstr(DefaultName, strFILENAMES, filenameMARATHON_RECORDING)
 		))
@@ -161,7 +161,7 @@ void move_replay(
 	MovedFilmFile.CopyContents(OrigFilmFile);
 	
 	/* Alert them on problems */
-	OSErr Err = MovedFilmFile.Err;
+	OSErr Err = MovedFilmFile.GetError();
 	if (Err != noErr) alert_user(infoError, strERRORS, fileError, Err);
 
 // Begin no-compile

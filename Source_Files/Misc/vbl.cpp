@@ -49,6 +49,10 @@ Jul 7, 2000 (Loren Petrich)
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Aug 26, 2000 (Loren Petrich):
+	Created alternative to SetLength(): delete a file, then re-create it.
+	This should be more stdio-friendly.
 */
 
 #include "cseries.h"
@@ -598,7 +602,11 @@ boolean setup_for_replay_from_file(
 	boolean successful= FALSE;
 
 	(void)(map_checksum);
-	if (File.Open(FilmFile, FileSpecifier::C_Film))
+	
+	FilmFileSpec = File;
+	if (FilmFileSpec.Open(FilmFile))
+	// replay.recording_file_refnum= open_file_for_reading(file);
+	// if(replay.recording_file_refnum > 0)
 	{
 		replay.valid= TRUE;
 		replay.have_read_last_chunk = FALSE;
@@ -648,7 +656,9 @@ void start_recording(
 	if(get_recording_filedesc(FilmFileSpec))
 		FilmFileSpec.Delete();
 
-	if (FilmFileSpec.Create(FileSpecifier::C_Film))
+	if (FilmFileSpec.Create(_typecode_film))
+	// error= create_file(&recording_file, FILM_FILE_TYPE);	
+	// if(!error)
 	{
 		/* I debate the validity of fsCurPerm here, but Alain had it, and it has been working */
 		if (FilmFileSpec.Open(FilmFile,true))
@@ -707,8 +717,19 @@ void rewind_recording(
 	{
 		/* This is unnecessary, because it is called from reset_player_queues, */
 		/* which is always called from revert_game */
+		/*
 		FilmFile.SetLength(sizeof(recording_header));
 		FilmFile.SetPosition(sizeof(recording_header));
+		*/
+		// Alternative that does not use "SetLength", but instead creates and re-creates the file.
+		recording_header Header;
+		FilmFile.SetPosition(0);
+		FilmFile.ReadObject(Header);
+		FilmFile.Close();
+		FilmFileSpec.Delete();
+		FilmFileSpec.Create(_typecode_film);
+		FilmFileSpec.Open(FilmFile,true);
+		FilmFile.WriteObject(Header);
 		
 		replay.header.length= sizeof(struct recording_header);
 	}
