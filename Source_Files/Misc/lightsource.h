@@ -202,13 +202,13 @@ struct light_data *get_light_data(short light_index);
 uint8 *pack_light_data(static_light_data& source, saved_static_light& dest);
 uint8 *unpack_light_data(saved_static_light& source, static_light_data& dest);
 
-uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count = 1);
-uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count = 1);
-uint8 *unpack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count = 1);
-uint8 *pack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count = 1);
-uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, int Count = 1);
-uint8 *pack_light_data(uint8 *Stream, light_data* Objects, int Count = 1);
+uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count);
+uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count);
+uint8 *unpack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count);
+uint8 *pack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count);
+uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, int Count);
+uint8 *pack_light_data(uint8 *Stream, light_data* Objects, int Count);
 
-void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data* OldLights, int Count = 1);
+void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data* OldLights, int Count);
 
 #endif
