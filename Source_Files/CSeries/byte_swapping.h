@@ -23,9 +23,19 @@ extern void byte_swap_memory(
 	size_t fieldcount);
 
 #ifndef LITTLE_ENDIAN
-#define byte_swap_data(data,elsize,elcount,field) ((void)0)
+#define byte_swap_data(data,elsize,elcount,fields) ((void)0)
 #define byte_swap_memory(memory,type,elcount) ((void)0)
 #endif
+
+// LP: convenient templates for byte-swapping single objects and object lists;
+// they will work out the number of bytes from the object type.
+
+template<class T> void byte_swap_object(T& object, _bs_field *fields)
+	{byte_swap_data(&object,sizeof(object),1,fields);}
+
+template<class T> void byte_swap_object_list(T *object_list, int num_objects, _bs_field *fields)
+	{byte_swap_data(object_list,sizeof(object),num_objects,fields);}
+
 
 #if defined(SDL)
 #include <SDL/SDL_endian.h>
