@@ -876,12 +876,6 @@
 			path = ../Resources/GUI.nib;
 			refType = 2;
 		};
-		3D3A410D04DF92C400000107 = {
-			fileRef = 3D3A410C04DF92C400000107;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		3D5482BA04D73ED300000107 = {
 			buildRules = (
 			);
@@ -3457,7 +3451,7 @@
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = "/usr/local/lib \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\"";
 				OPTIMIZATION_CFLAGS = "-O2 -finline-limit=1000 -frerun-cse-after-loop -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt -fschedule-insns -fschedule-insns2 -ffast-math -finline-functions";
-				OTHER_CFLAGS = "-DUSES_NIBS -Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA -DSPEEX\n";
+				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA -DSPEEX\n";
 				OTHER_LDFLAGS = "-flat_namespace -llua -llualib -lspeex";
 				OTHER_REZFLAGS = "";
 				PRECOMPILE_PREFIX_HEADER = YES;
@@ -3901,7 +3895,6 @@
 				F552047E02173FFA01A80001,
 				F552047F02173FFA01A80001,
 				F552048002173FFA01A80001,
-				3D3A410D04DF92C400000107,
 			);
 			isa = PBXResourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
