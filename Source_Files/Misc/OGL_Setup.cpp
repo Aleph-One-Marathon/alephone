@@ -696,18 +696,18 @@ void OGL_ModelData::Load()
 	bool Success = false;
 	
 	char *Type = &ModelType[0];
-	if (StringsEqual(Type,"wave",4) == 0)
+	if (StringsEqual(Type,"wave",4))
 	{
 		// Alias|Wavefront
 		Success = LoadModel_Wavefront(File, Model);
 	}
-	else if (StringsEqual(Type,"3ds",3) == 0)
+	else if (StringsEqual(Type,"3ds",3))
 	{
 		// 3D Studio Max
 		Success = LoadModel_Studio(File, Model);
 	}
 #ifdef mac
-	else if (StringsEqual(Type,"qd3d") == 0 || StringsEqual(Type,"3dmf") == 0 || StringsEqual(Type,"quesa") == 0)
+	else if (StringsEqual(Type,"qd3d") || StringsEqual(Type,"3dmf") || StringsEqual(Type,"quesa"))
 	{
 		// QuickDraw 3D / Quesa
 		Success = LoadModel_QD3D(File, Model);

@@ -213,7 +213,7 @@ static void player_dialog(void *arg)
         d.add(ok_button);
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
-        // ZZZ: we don't do this earlier because it (indirectly) invokes the name_typing collback, which needs iOK.
+        // ZZZ: we don't do this earlier because it (indirectly) invokes the name_typing callback, which needs iOK
         copy_pstring_to_text_field(&d, iNAME, player_preferences->name);
 
 	// Clear screen

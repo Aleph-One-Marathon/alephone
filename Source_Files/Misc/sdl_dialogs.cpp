@@ -45,6 +45,7 @@
 #ifdef __MVCPP__
 #include <string>
 #endif
+
 // Global variables
 dialog *top_dialog = NULL;
 

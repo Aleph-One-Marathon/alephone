@@ -1005,7 +1005,7 @@ w_players_in_game2::draw_carnage_totals(SDL_Surface* s) const {
         
         draw_text(s, temporary, theStringCenter, rect.y + rect.h - 1, 0,
                     theBiggerFont, theBiggerFontStyle | styleOutline);
-        draw_text(s, temporary, theStringCenter, rect.y + rect.h - 1, -1,// was pixel_color,
+        draw_text(s, temporary, theStringCenter, rect.y + rect.h - 1, get_dialog_color(MESSAGE_COLOR),// was pixel_color,
                     theBiggerFont, theBiggerFontStyle);
     } // walk through rankings
 } // draw_carnage_totals

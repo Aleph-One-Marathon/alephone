@@ -132,32 +132,32 @@ bool XML_ElementParser::ReadBooleanValueAsBool(const char *String, bool& Value)
 
 bool XML_GetBooleanValue(const char *String, bool &Value)
 {
-	if (StringsEqual(String,"1") == 0)
+	if (StringsEqual(String,"1"))
 	{
 		Value = true;
 		return true;
 	}
-	else if (StringsEqual(String,"t") == 0)
+	else if (StringsEqual(String,"t"))
 	{
 		Value = true;
 		return true;
 	}
-	else if (StringsEqual(String,"true") == 0)
+	else if (StringsEqual(String,"true"))
 	{
 		Value = true;
 		return true;
 	}
-	else if (StringsEqual(String,"0") == 0)
+	else if (StringsEqual(String,"0"))
 	{
 		Value = false;
 		return true;
 	}
-	else if (StringsEqual(String,"f") == 0)
+	else if (StringsEqual(String,"f"))
 	{
 		Value = false;
 		return true;
 	}
-	else if (StringsEqual(String,"false") == 0)
+	else if (StringsEqual(String,"false"))
 	{
 		Value = false;
 		return true;
