@@ -29,7 +29,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Disabled networking under carbon
 */
 
-#if !defined(TARGET_API_MAC_CARBON)
+#if defined(TARGET_API_MAC_CARBON)
+#error Classic Appletalk networking not supported under carbon
+#endif
+
 #include <AppleTalk.h>
 #include <ADSP.h>
 
@@ -182,5 +185,4 @@ bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *add
 OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
 OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
 
-#endif // Carbon not defined
 #endif

@@ -132,6 +132,9 @@ Feb 4, 2002 (Br'fin (Jeremy Parsons)):
 Feb 13, 2002 (Br'fin (Jeremy Parsons)):
 	Revised Carbon's use of RunCurrentEventLoop to dispatch Carbon MouseMoved events
 	(Which should be caught and handled by an event handler installed by mouse.cpp)
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Enabled networking under Carbon
 */
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -145,7 +148,9 @@ Feb 13, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprockets Support */
 
+#if !defined(TARGET_API_MAC_CARBON)
 #include "macintosh_network.h" /* For NetDDPOpen() */
+#endif
 
 // LP addition: local-event management:
 #include "LocalEvents.h"
@@ -1015,7 +1020,7 @@ static void initialize_system_information(
 
 	/* Is appletalk available? */
 #if defined(TARGET_API_MAC_CARBON)
-	// I'm not doing network foo right now
+	// Networking will not be appletalk
 	system_information->appletalk_is_available= false;
 #else
 	if(system_information->has_seven && NetDDPOpen()==noErr && FreeMem()>kMINIMUM_NETWORK_HEAP)
@@ -1093,7 +1098,11 @@ bool is_keypad(
 bool networking_available(
 	void)
 {
+#if HAVE_SDL_NET
+	return true;
+#else
 	return system_information->appletalk_is_available;
+#endif
 }
 
 /* ---------- dialog headers */
