@@ -11,6 +11,8 @@
 #include "crc.cpp"
 #include "map.h"
 #include "Packing.cpp"
+#include "Logging.cpp"
+#include "XML_ElementParser.cpp"
 
 #include <stdio.h>
 #include <stdlib.h>

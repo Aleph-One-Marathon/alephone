@@ -8,6 +8,7 @@
 #include "FileHandler_SDL.cpp"
 #include "csalerts_sdl.cpp"
 #include "Logging.cpp"
+#include "XML_ElementParser.cpp"
 
 #include <stdio.h>
 #include <stdlib.h>
