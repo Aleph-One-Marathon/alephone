@@ -427,6 +427,8 @@ static void sound_dialog(void *arg)
 	d.add(ambient_w);
 	w_toggle *more_w = new w_toggle("More Sounds", sound_preferences->flags & _more_sounds_flag);
 	d.add(more_w);
+	w_toggle *button_sounds_w = new w_toggle("Interface Button Sounds", input_preferences->modifiers & _inputmod_use_button_sounds);
+	d.add(button_sounds_w);
 	w_select *channels_w = new w_select("Channels", sound_preferences->channel_count, channel_labels);
 	d.add(channels_w);
 	w_volume_slider *volume_w = new w_volume_slider("Volume", sound_preferences->volume);
@@ -451,6 +453,13 @@ static void sound_dialog(void *arg)
 
 		if (flags != sound_preferences->flags) {
 			sound_preferences->flags = flags;
+			changed = true;
+		}
+
+		flags = input_preferences->modifiers & ~_inputmod_use_button_sounds;
+		if (button_sounds_w->get_selection()) flags |= _inputmod_use_button_sounds;
+		if (flags != input_preferences->modifiers) {
+			input_preferences->modifiers = flags;
 			changed = true;
 		}
 
@@ -498,8 +507,6 @@ static void controls_dialog(void *arg)
 	d.add(always_swim_w);
 	w_toggle *weapon_w = new w_toggle("Auto-Switch Weapons", !(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
 	d.add(weapon_w);
-	w_toggle *button_sound_w = new w_toggle("Button Sounds", !(input_preferences->modifiers & _inputmod_use_button_sounds));
-	d.add(button_sound_w);
 	d.add(new w_spacer());
 	d.add(new w_button("CONFIGURE KEYBOARD", keyboard_dialog, &d));
 	d.add(new w_spacer());
@@ -519,12 +526,11 @@ static void controls_dialog(void *arg)
 			changed = true;
 		}
 
-		uint16 flags = 0;
+		uint16 flags = input_preferences->modifiers & _inputmod_use_button_sounds;
 		if (always_run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
 		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
 		if (!(weapon_w->get_selection())) flags |= _inputmod_dont_switch_to_new_weapon;
 		if (invert_mouse_w->get_selection()) flags |= _inputmod_invert_mouse;
-		if (button_sound_w->get_selection()) flags |= _inputmod_use_button_sounds;
 
 		if (flags != input_preferences->modifiers) {
 			input_preferences->modifiers = flags;
