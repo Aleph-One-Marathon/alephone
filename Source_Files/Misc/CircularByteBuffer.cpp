@@ -68,7 +68,7 @@ CircularByteBuffer::enqueueBytes(const void* inBytes, unsigned int inByteCount)
 }
 
 
-void*
+void
 CircularByteBuffer::enqueueBytesNoCopyStart(unsigned int inByteCount, void** outFirstBytes, unsigned int* outFirstByteCount,
 			      void** outSecondBytes, unsigned int* outSecondByteCount)
 {

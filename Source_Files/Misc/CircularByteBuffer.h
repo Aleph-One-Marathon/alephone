@@ -71,7 +71,7 @@ public:
 	// You may write fewer than inByteCount bytes; specify how many were actually written when
 	// calling enqueueBytesNoCopyFinish().
 	// Any of the out-pointers may be passed as NULL if you don't care about the returned value.
-	void* enqueueBytesNoCopyStart(unsigned int inByteCount, void** outFirstBytes, unsigned int* outFirstByteCount,
+	void enqueueBytesNoCopyStart(unsigned int inByteCount, void** outFirstBytes, unsigned int* outFirstByteCount,
 					void** outSecondBytes, unsigned int* outSecondByteCount);
 
 	// This finishes an enqueueing operation: you tell it how many bytes you actually enqueued.
