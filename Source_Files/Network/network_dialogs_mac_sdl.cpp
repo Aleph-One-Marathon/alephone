@@ -151,6 +151,10 @@ static void lost_player_callback(const SSLP_ServiceInstance* player);
 static bool key_is_down(short key_code);
 #pragma mark -
 
+static bool CheckSetupInformation(
+	NetgameSetupData& Data, 
+	short game_limit_type);
+
 /* ---------- code */
 
 extern void NetUpdateTopology(void);
@@ -558,10 +562,180 @@ int network_join(
  * Purpose:  handle the dialog to setup a network game.
  *
  *************************************************************************************************/
+
+#ifdef USES_NIBS
+
+static pascal OSStatus PlayerNameWatcher(
+	EventHandlerCallRef HandlerCallRef,
+	EventRef Event,
+	void *UserData
+	)
+{
+	NetgameSetupData *DPtr = (NetgameSetupData *)(UserData);
+	NetgameSetupData& Data = *DPtr;
+	
+	// Hand off to the next event handler
+	OSStatus err = CallNextEventHandler(HandlerCallRef, Event);
+	
+	// Need this order because we want to check the text field
+	// after it's been changed, not before.
+	// Adjust the OK button's activity as needed
+	GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
+	SetControlActivity(Data.OK_Ctrl, ptemporary[0] != 0);
+	
+	return err;
+}
+
+void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
+{
+	NetgameSetupData *DPtr = (NetgameSetupData *)(UserData);
+	NetgameSetupData& Data = *DPtr;
+	
+	switch(Ctrl.ID.id)
+	{
+	case iRADIO_GROUP_DURATION:
+		switch(GetControl32BitValue(Ctrl.Ctrl))
+		{
+		case duration_no_time_limit:
+			NetgameSetup_Untimed(Data);
+			break;
+			
+		case duration_time_limit:
+			NetgameSetup_Timed(Data);
+			break;
+			
+		case duration_kill_limit:
+			NetgameSetup_ScoreLimit(Data);
+			break;
+		}
+		break;
+		
+	case iFORCE_UNIQUE_TEAMS:
+		SetControlActivity(Data.PlayerTeamCtrl, GetControl32BitValue(Ctrl.Ctrl));
+
+	case iGAME_TYPE:
+		{
+			short new_game_type= GetControl32BitValue(Ctrl.Ctrl)-1;
+			
+			if(new_game_type != Data.game_information->net_game_type)
+			{
+				long entry_flags, old_entry_flags;
+				struct entry_point entry;
+				
+				if(Data.allow_all_levels)
+				{
+					entry_flags= old_entry_flags= NONE;
+				} else {
+					old_entry_flags= get_entry_point_flags_for_game_type(Data.game_information->net_game_type);
+					entry_flags= get_entry_point_flags_for_game_type(new_game_type);
+				}
+
+				menu_index_to_level_entry(GetControl32BitValue(Data.EntryPointCtrl), old_entry_flags, &entry);
+				
+				/* Get the old one and reset.. */
+				EntryPoints_FillIn(Data.EntryPointCtrl, entry_flags, entry.level_number);
+				Data.game_information->net_game_type= new_game_type;
+				
+				NetgameSetup_GameType(Data, new_game_type);
+			}
+		}
+		break;
+	
+	case iOK_SPECIAL:
+		// Verify whether it's OK to exit
+		{
+			bool information_is_acceptable = false;
+			// START Benad
+			if (GetControl32BitValue(Data.GameTypeCtrl) - 1 == _game_of_defense)
+			{
+				information_is_acceptable =
+					CheckSetupInformation(Data, duration_time_limit) &&
+					CheckSetupInformation(Data, duration_kill_limit);
+			}
+			else
+			{
+				short game_limit_type= GetControl32BitValue(Data.DurationCtrl);
+			
+				information_is_acceptable= CheckSetupInformation(Data, game_limit_type);
+			}
+			// END Benad
+			if (information_is_acceptable)
+			{
+				Data.IsOK = true;
+				StopModalDialog(ActiveNonFloatingWindow(),false);
+			}
+		}
+	}
+}
+
+
 bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
-        bool inResumingGame)
+        bool ResumingGame)
+{
+	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
+	
+	AutoNibWindow Window(GUI_Nib, Window_Network_Setup);
+	
+	NetgameSetupData Data;
+	
+	Data.PlayerNameCtrl = GetCtrlFromWindow(Window(), 0, iGATHER_NAME);
+	Data.PlayerColorCtrl = GetCtrlFromWindow(Window(), 0, iGATHER_COLOR);
+	Data.PlayerTeamCtrl = GetCtrlFromWindow(Window(), 0, iGATHER_TEAM);
+	
+	Data.EntryPointCtrl = GetCtrlFromWindow(Window(), 0, iENTRY_MENU);
+	Data.GameTypeCtrl = GetCtrlFromWindow(Window(), 0, iGAME_TYPE);
+	Data.DifficultyCtrl = GetCtrlFromWindow(Window(), 0, iDIFFICULTY_MENU);
+	
+	Data.MonstersCtrl = GetCtrlFromWindow(Window(), 0, iUNLIMITED_MONSTERS);
+	Data.NoMotionSensorCtrl = GetCtrlFromWindow(Window(), 0, iMOTION_SENSOR_DISABLED);
+	Data.BadDyingCtrl = GetCtrlFromWindow(Window(), 0, iDYING_PUNISHED);
+	Data.BadSuicideCtrl = GetCtrlFromWindow(Window(), 0, iSUICIDE_PUNISHED);
+	Data.UniqTeamsCtrl = GetCtrlFromWindow(Window(), 0, iFORCE_UNIQUE_TEAMS);
+	Data.BurnItemsCtrl = GetCtrlFromWindow(Window(), 0, iBURN_ITEMS_ON_DEATH);
+	Data.StatsReportingCtrl = GetCtrlFromWindow(Window(), 0, iREALTIME_NET_STATS);
+	
+	Data.DurationCtrl = GetCtrlFromWindow(Window(), 0, iRADIO_GROUP_DURATION);
+	Data.TimeLabelCtrl = GetCtrlFromWindow(Window(), 0, iTEXT_TIME_LIMIT);
+	Data.TimeTextCtrl = GetCtrlFromWindow(Window(), 0, iTIME_LIMIT);
+	Data.KillsLabelCtrl = GetCtrlFromWindow(Window(), 0, iTEXT_KILL_LIMIT);
+	Data.KillsTextCtrl = GetCtrlFromWindow(Window(), 0, iKILL_LIMIT);
+	
+	Data.OK_Ctrl = GetCtrlFromWindow(Window(), 0, iOK_SPECIAL);
+	
+	Data.game_information = game_information;
+	Data.allow_all_levels = allow_all_levels;
+	
+	Data.IsOK = false;
+	
+	AutoKeyboardWatcher Watcher(PlayerNameWatcher);
+	
+	Watcher.Watch(Data.PlayerNameCtrl, &Data);
+	
+	game_information->net_game_type =
+		NetgameSetup_FillIn(Data, player_information, allow_all_levels, ResumingGame);
+
+	bool IsOK = RunModalDialog(Window(), false, NetgameSetup_Handler, &Data);
+	IsOK = Data.IsOK;
+	
+	if (IsOK)
+	{
+		short game_limit_type= GetControl32BitValue(Data.DurationCtrl) - 1;
+		
+		NetgameSetup_Extract(Data, player_information, game_information,
+			game_limit_type, allow_all_levels, ResumingGame);
+	}
+	
+	return IsOK;
+}
+
+#else
+
+bool network_game_setup(
+	player_info *player_information,
+	game_info *game_information,
+        bool ResumingGame)
 {
 	short item_hit;
 	GrafPtr old_port;
@@ -695,6 +869,9 @@ bool network_game_setup(
 	return (item_hit==iOK);
 }
 
+#endif
+
+
 /*************************************************************************************************
  *
  * Function: fill_in_game_setup_dialog
@@ -754,6 +931,51 @@ static short get_game_duration_radio(
 // ZZZ: moved this function to shared network_dialogs.cpp
 
 
+#ifdef USES_NIBS
+
+struct EntryPointMenuData
+{
+	long entry_flags;
+	short level_index;
+	short default_level;
+};
+
+
+// Cribbed from interface_macintosh.h : LevelNumberMenuBuilder()
+static bool EntryPointMenuBuilder(
+	int indx, Str255 ItemName, bool &ThisIsInitial, void *Data)
+{
+	EntryPointMenuData *MDPtr = (EntryPointMenuData *)(Data);
+	entry_point entry;
+		
+	bool UseThis = get_indexed_entry_point(
+		&entry, &MDPtr->level_index, MDPtr->entry_flags);
+	
+	ThisIsInitial = (MDPtr->level_index == MDPtr->default_level);
+	
+	if (UseThis)
+		psprintf(ItemName, "%d: %s",entry.level_number,entry.level_name);
+	
+	return UseThis;
+}
+
+
+void EntryPoints_FillIn(
+	ControlRef EntryPointCtrl,
+	long entry_flags,
+	short default_level
+	)
+{
+	EntryPointMenuData MenuData;
+	MenuData.entry_flags = entry_flags;
+	MenuData.level_index = 0;
+	MenuData.default_level = default_level;
+	
+	BuildMenu(EntryPointCtrl, EntryPointMenuBuilder, &MenuData);
+}
+
+#else
+
 // ZZZ: exposed this function
 void fill_in_entry_points(
 	DialogPtr dialog,
@@ -811,6 +1033,8 @@ void fill_in_entry_points(
 	return;
 }
 
+#endif
+
 // ZZZ: new function
 void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
 {
@@ -824,6 +1048,58 @@ void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
  * Purpose:  check to make sure that the user entered usable information in the dialog.
  *
  *************************************************************************************************/
+
+#ifdef USES_NIBS
+
+bool CheckSetupInformation(
+	NetgameSetupData& Data, 
+	short game_limit_type)
+{
+	bool information_is_acceptable = true;
+	long limit;
+	
+	if (information_is_acceptable)
+	{
+		GetEditCText(Data.TimeTextCtrl, temporary);
+		information_is_acceptable = (sscanf(temporary, "%hd", &limit) >= 1);
+	}
+	
+	if (information_is_acceptable)
+	{
+		if (game_limit_type == duration_time_limit && limit <= 0)
+			information_is_acceptable = false;
+	}
+	
+	if (information_is_acceptable)
+	{
+		GetEditCText(Data.KillsTextCtrl, temporary);
+		information_is_acceptable = (sscanf(temporary, "%hd", &limit) >= 1);
+	}
+		
+	if (information_is_acceptable)
+	{
+		if (game_limit_type == duration_kill_limit && limit <= 0)
+			information_is_acceptable = false;
+	}
+	
+	if (information_is_acceptable)
+	{
+		GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
+		if (ptemporary[0] == 0)
+			information_is_acceptable = true;
+	}
+	
+	if (!information_is_acceptable)
+	{
+		SysBeep(30);
+	}
+
+	return information_is_acceptable;
+}
+
+
+#else
+
 bool check_setup_information(
 	DialogPtr dialog, 
 	short game_limit_type)
@@ -871,6 +1147,8 @@ bool check_setup_information(
 
 	return information_is_acceptable;
 }
+
+#endif
 
 /*************************************************************************************************
  *
