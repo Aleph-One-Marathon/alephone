@@ -155,10 +155,10 @@ class RenderVisTreeClass
 	
 	// Polygon queue now a growable list; its working size is maintained separately
 	vector<short> PolygonQueue;
-	short polygon_queue_size;
+	size_t polygon_queue_size;
 	
 	/* translates from map indexes to clip indexes, only valid if appropriate render flag is set */
-	vector<short> line_clip_indexes;
+	vector<size_t> line_clip_indexes;
 	
 	// Turned preprocessor macro into function
 	void PUSH_POLYGON_INDEX(short polygon_index);

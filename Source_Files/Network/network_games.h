@@ -46,7 +46,7 @@ void calculate_ranking_text_for_post_game(char *buffer, long ranking);
 bool get_network_score_text_for_postgame(char *buffer, bool team_mode);
 bool current_game_has_balls(void);
 void get_network_joined_message(char *buffer, short game_type);
-long get_entry_point_flags_for_game_type(short game_type);
+long get_entry_point_flags_for_game_type(size_t game_type);
 
 bool player_killed_player(short dead_player_index, short aggressor_player_index);
 

@@ -36,10 +36,10 @@ enum {
 	_receiving_physics
 };
 
-void open_progress_dialog(short message_id);
+void open_progress_dialog(size_t message_id);
 void close_progress_dialog(void);
 
-void set_progress_dialog_message(short message_id);
+void set_progress_dialog_message(size_t message_id);
 
 void draw_progress_bar(size_t sent, size_t total);
 

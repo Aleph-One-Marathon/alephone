@@ -424,7 +424,7 @@ bool untoggled_repair_switches_on_level(
 					break;
 				
 				default:
-					untoggled_switch= GET_CONTROL_PANEL_STATUS(side) ? false : true;
+					untoggled_switch= !GET_CONTROL_PANEL_STATUS(side);
 					break;
 			}
 		}
@@ -744,7 +744,7 @@ static void	change_panel_state(
 	short player_index,
 	short panel_side_index)
 {
-	short state, make_sound= false;
+	bool state, make_sound= false;
 	struct side_data *side= get_side_data(panel_side_index);
 	struct player_data *player= get_player_data(player_index);
 	struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);

@@ -152,9 +152,9 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	GetDialogItem(Dialog, Rightward_Item, &ItemType, (Handle *)&Rightward_CHdl, &Bounds);
 	SetFloat(Rightward_CHdl,Data.Rightward/FLOAT_WORLD_ONE);
 	
-	MacCheckbox PassThruWall_CB(Dialog, PassThruWall_Item, TEST_FLAG(Data.Flags,_ChaseCam_ThroughWalls) != 0);
-	MacCheckbox NeverActive_CB(Dialog, NeverActive_Item, TEST_FLAG(Data.Flags,_ChaseCam_NeverActive) != 0);
-	MacCheckbox OnWhenEntering_CB(Dialog, OnWhenEntering_Item, TEST_FLAG(Data.Flags,_ChaseCam_OnWhenEntering) != 0);
+	MacCheckbox PassThruWall_CB(Dialog, PassThruWall_Item, TEST_FLAG(Data.Flags,_ChaseCam_ThroughWalls));
+	MacCheckbox NeverActive_CB(Dialog, NeverActive_Item, TEST_FLAG(Data.Flags,_ChaseCam_NeverActive));
+	MacCheckbox OnWhenEntering_CB(Dialog, OnWhenEntering_Item, TEST_FLAG(Data.Flags,_ChaseCam_OnWhenEntering));
 	
 	ControlHandle Damping_CHdl;
 	GetDialogItem(Dialog, Damping_Item, &ItemType, (Handle *)&Damping_CHdl, &Bounds);
@@ -173,7 +173,7 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	RGBColor NewColor;
 	// Get void color from OpenGL-parameters data
 	OGL_ConfigureData& OGLData = Get_OGL_ConfigureData();
-	MacCheckbox VoidColorOnOff_CB(Dialog, VoidColorOnOff_Item, TEST_FLAG(OGLData.Flags,OGL_Flag_VoidColor) != 0);
+	MacCheckbox VoidColorOnOff_CB(Dialog, VoidColorOnOff_Item, TEST_FLAG(OGLData.Flags,OGL_Flag_VoidColor));
 	
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)

@@ -179,24 +179,24 @@ enum /* old light types */
 /* -------- static functions */
 static void scan_and_add_scenery(void);
 static void complete_restoring_level(struct wad_data *wad);
-static void load_redundant_map_data(short *redundant_data, short count);
+static void load_redundant_map_data(short *redundant_data, size_t count);
 static void allocate_map_structure_for_map(struct wad_data *wad);
 static struct wad_data *build_save_game_wad(struct wad_header *header, long *length);
 
-static void allocate_map_for_counts(short polygon_count, short side_count,
-	short endpoint_count, short line_count);
-static void load_points(uint8 *points, short count);
-static void load_lines(uint8 *lines, short count);
-static void load_sides(uint8 *sides, short count, short version);
-static void load_polygons(uint8 *polys, short count, short version);
-static void load_lights(uint8 *_lights, short count, short version);
-static void load_annotations(uint8 *annotations, short count);
-static void load_objects(uint8 *map_objects, short count);
-static void load_media(uint8 *_medias, short count);
+static void allocate_map_for_counts(size_t polygon_count, size_t side_count,
+	size_t endpoint_count, size_t line_count);
+static void load_points(uint8 *points, size_t count);
+static void load_lines(uint8 *lines, size_t count);
+static void load_sides(uint8 *sides, size_t count, short version);
+static void load_polygons(uint8 *polys, size_t count, short version);
+static void load_lights(uint8 *_lights, size_t count, short version);
+static void load_annotations(uint8 *annotations, size_t count);
+static void load_objects(uint8 *map_objects, size_t count);
+static void load_media(uint8 *_medias, size_t count);
 static void load_map_info(uint8 *map_info);
-static void load_ambient_sound_images(uint8 *data, short count);
-static void load_random_sound_images(uint8 *data, short count);
-static void load_terminal_data(uint8 *data, long length);
+static void load_ambient_sound_images(uint8 *data, size_t count);
+static void load_random_sound_images(uint8 *data, size_t count);
+static void load_terminal_data(uint8 *data, size_t length);
 
 /* Used _ONLY_ by game_wad.c internally and precalculate.c. */
 // ZZZ: hmm, no longer true, now using when resuming a network saved-game... hope that's ok?...
@@ -204,12 +204,12 @@ static void load_terminal_data(uint8 *data, long length);
 
 /* Final three calls, must be in this order! */
 static void recalculate_redundant_map(void);
-static void scan_and_add_platforms(uint8 *platform_static_data, short count);
-static void complete_loading_level(short *_map_indexes, short map_index_count, 
-	uint8 *_platform_data, short platform_data_count,
-	uint8 *actual_platform_data, short actual_platform_data_count, short version);
+static void scan_and_add_platforms(uint8 *platform_static_data, size_t count);
+static void complete_loading_level(short *_map_indexes, size_t map_index_count, 
+	uint8 *_platform_data, size_t platform_data_count,
+	uint8 *actual_platform_data, size_t actual_platform_data_count, short version);
 
-static uint8 *unpack_directory_data(uint8 *Stream, directory_data *Objects, int Count);
+static uint8 *unpack_directory_data(uint8 *Stream, directory_data *Objects, size_t Count);
 //static uint8 *pack_directory_data(uint8 *Stream, directory_data *Objects, int Count);
 
 /* ------------------------ Net functions */
@@ -357,11 +357,11 @@ bool load_level_from_map(
 /* This sucks, beavis. */
 void complete_loading_level(
 	short *_map_indexes,
-	short map_index_count,
+	size_t map_index_count,
 	uint8 *_platform_data,
-	short platform_data_count,
+	size_t platform_data_count,
 	uint8 *actual_platform_data,
-	short actual_platform_data_count,
+	size_t actual_platform_data_count,
 	short version)
 {
 	/* Scan, add the doors, recalculate, and generally tie up all loose ends */
@@ -376,7 +376,9 @@ void complete_loading_level(
 		assert(actual_platform_data);
 		PlatformList.resize(actual_platform_data_count);
 		unpack_platform_data(actual_platform_data,platforms,actual_platform_data_count);
-		dynamic_world->platform_count= actual_platform_data_count;
+		assert(actual_platform_data_count == static_cast<size_t>(static_cast<int16>(actual_platform_data_count)));
+		assert(0 <= static_cast<int16>(actual_platform_data_count));
+		dynamic_world->platform_count= static_cast<int16>(actual_platform_data_count);
 	}
 
 	scan_and_add_scenery();
@@ -623,7 +625,7 @@ bool get_indexed_entry_point(
 			if (wad)
 			{
 				/* IF this has the proper type.. */
-				long length;
+				size_t length;
 				uint8 *p = (uint8 *)extract_type_from_wad(wad, MAP_INFO_TAG, &length);
 				assert(length == SIZEOF_static_data);
 				static_data map_info;
@@ -701,7 +703,7 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 				continue;
 
 			// Read map_info data
-			long length;
+			size_t length;
 			uint8 *p = (uint8 *)extract_type_from_wad(wad, MAP_INFO_TAG, &length);
 			assert(length == SIZEOF_static_data);
 			static_data map_info;
@@ -802,13 +804,13 @@ bool goto_level(
 
 /* -------------------- Private or map editor functions */
 void allocate_map_for_counts(
-	short polygon_count, 
-	short side_count,
-	short endpoint_count,
-	short line_count)
+	size_t polygon_count, 
+	size_t side_count,
+	size_t endpoint_count,
+	size_t line_count)
 {
 	//long cumulative_length= 0;
-	long automap_line_count, automap_polygon_count, map_index_count;
+	size_t automap_line_count, automap_polygon_count, map_index_count;
 	// long automap_line_length, automap_polygon_length, map_index_length;
 
 	/* Give the map indexes a whole bunch of memory (cause we can't calculate it) */
@@ -867,9 +869,9 @@ void allocate_map_for_counts(
 
 void load_points(
 	uint8 *points,
-	short count)
+	size_t count)
 {
-	short loop;
+	size_t loop;
 	
 	// OK to modify input-data pointer since it's called by value
 	for(loop=0; loop<count; ++loop)
@@ -878,24 +880,28 @@ void load_points(
 		StreamToValue(points,vertex.x);
 		StreamToValue(points,vertex.y);
 	}
-	dynamic_world->endpoint_count= count;
+	assert(count == static_cast<size_t>(static_cast<int16>(count)));
+	assert(0 <= static_cast<int16>(count));
+	dynamic_world->endpoint_count= static_cast<int16>(count);
 }
 
 void load_lines(
 	uint8 *lines, 
-	short count)
+	size_t count)
 {
 	// assert(count>=0 && count<=MAXIMUM_LINES_PER_MAP);
 	unpack_line_data(lines,map_lines,count);
-	dynamic_world->line_count= count;
+	assert(count == static_cast<size_t>(static_cast<int16>(count)));
+	assert(0 <= static_cast<int16>(count));
+	dynamic_world->line_count= static_cast<int16>(count);
 }
 
 void load_sides(
 	uint8 *sides, 
-	short count,
+	size_t count,
 	short version)
 {
-	short loop;
+	size_t loop;
 	
 	// assert(count>=0 && count<=MAXIMUM_SIDES_PER_MAP);
 
@@ -911,20 +917,24 @@ void load_sides(
 		++sides;
 	}
 
-	dynamic_world->side_count= count;
+	assert(count == static_cast<size_t>(static_cast<int16>(count)));
+	assert(0 <= static_cast<int16>(count));
+	dynamic_world->side_count= static_cast<int16>(count);
 }
 
 void load_polygons(
 	uint8 *polys, 
-	short count,
+	size_t count,
 	short version)
 {
-	short loop;
+	size_t loop;
 
 	// assert(count>=0 && count<=MAXIMUM_POLYGONS_PER_MAP);
 	
 	unpack_polygon_data(polys,map_polygons,count);
-	dynamic_world->polygon_count= count;
+	assert(count == static_cast<size_t>(static_cast<int16>(count)));
+	assert(0 <= static_cast<int16>(count));
+	dynamic_world->polygon_count= static_cast<int16>(count);
 
 	/* Allow for backward compatibility! */
 	switch(version)
@@ -952,10 +962,11 @@ void load_polygons(
 
 void load_lights(
 	uint8 *_lights, 
-	short count,
+	size_t count,
 	short version)
 {
-	short loop, new_index;
+	size_t loop;
+	short new_index;
 	
 	LightList.resize(count);
 	objlist_clear(lights,count);
@@ -1006,20 +1017,24 @@ void load_lights(
 
 void load_annotations(
 	uint8 *annotations, 
-	short count)
+	size_t count)
 {
 	// assert(count>=0 && count<=MAXIMUM_ANNOTATIONS_PER_MAP);
 	MapAnnotationList.resize(count);
 	unpack_map_annotation(annotations,map_annotations,count);
-	dynamic_world->default_annotation_count= count;
+	assert(count == static_cast<size_t>(static_cast<int16>(count)));
+	assert(0 <= static_cast<int16>(count));
+	dynamic_world->default_annotation_count= static_cast<int16>(count);
 }
 
-void load_objects(uint8 *map_objects, short count)
+void load_objects(uint8 *map_objects, size_t count)
 {
 	// assert(count>=0 && count<=MAXIMUM_SAVED_OBJECTS);
 	SavedObjectList.resize(count);
 	unpack_map_object(map_objects,saved_objects,count);
-	dynamic_world->initial_objects_count= count;
+	assert(count == static_cast<size_t>(static_cast<int16>(count)));
+	assert(0 <= static_cast<int16>(count));
+	dynamic_world->initial_objects_count= static_cast<int16>(count);
 }
 
 void load_map_info(
@@ -1030,10 +1045,10 @@ void load_map_info(
 
 void load_media(
 	uint8 *_medias,
-	short count)
+	size_t count)
 {
 	// struct media_data *media= _medias;
-	short ii;
+	size_t ii;
 	
 	MediaList.resize(count);
 	objlist_clear(medias,count);
@@ -1051,22 +1066,26 @@ void load_media(
 
 void load_ambient_sound_images(
 	uint8 *data,
-	short count)
+	size_t count)
 {
 	// assert(count>=0 &&count<=MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
 	AmbientSoundImageList.resize(count);
 	unpack_ambient_sound_image_data(data,ambient_sound_images,count);
-	dynamic_world->ambient_sound_image_count= count;
+	assert(count == static_cast<size_t>(static_cast<int16>(count)));
+	assert(0 <= static_cast<int16>(count));
+	dynamic_world->ambient_sound_image_count= static_cast<int16>(count);
 }
 
 void load_random_sound_images(
 	uint8 *data,
-	short count)
+	size_t count)
 {
 	// assert(count>=0 &&count<=MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
 	RandomSoundImageList.resize(count);
 	unpack_random_sound_image_data(data,random_sound_images,count);
-	dynamic_world->random_sound_image_count= count;
+	assert(count == static_cast<size_t>(static_cast<int16>(count)));
+	assert(0 <= static_cast<int16>(count));
+	dynamic_world->random_sound_image_count= static_cast<int16>(count);
 }
 
 /* Recalculate all the redundant crap- must be done before platforms/doors/etc.. */
@@ -1289,11 +1308,10 @@ bool save_game_file(FileSpecifier& File)
 /* -------- static functions */
 static void scan_and_add_platforms(
 	uint8 *platform_static_data,
-	short count)
+	size_t count)
 {
 	struct polygon_data *polygon;
 	short loop;
-	short platform_static_data_index;
 	
 	PlatformList.resize(count);
 	objlist_clear(platforms,count);
@@ -1306,7 +1324,7 @@ static void scan_and_add_platforms(
 			/* backwards compatibility! */
 
 			uint8 *_static_data= platform_static_data;
-			for(platform_static_data_index= 0; platform_static_data_index<count; ++platform_static_data_index)
+			for(size_t platform_static_data_index = 0; platform_static_data_index<count; ++platform_static_data_index)
 			{
 				static_platform_data TempPlatform;
 				_static_data = unpack_static_platform_data(_static_data, &TempPlatform, 1);
@@ -1335,9 +1353,9 @@ bool process_map_wad(
 	bool restoring_game,
 	short version)
 {
-	long data_length;
+	size_t data_length;
 	uint8 *data;
-	long count;
+	size_t count;
 	bool is_preprocessed_map= false;
 
 	assert(version==MARATHON_INFINITY_DATA_VERSION || version==MARATHON_TWO_DATA_VERSION || version==MARATHON_ONE_DATA_VERSION);
@@ -1365,7 +1383,9 @@ bool process_map_wad(
 
 		/* Slam! */
 		unpack_endpoint_data(data,map_endpoints,count);
-		dynamic_world->endpoint_count= count;
+		assert(count == static_cast<size_t>(static_cast<int16>(count)));
+		assert(0 <= static_cast<int16>(count));
+		dynamic_world->endpoint_count= static_cast<int16>(count);
 
 		is_preprocessed_map= true;
 	}
@@ -1416,7 +1436,7 @@ bool process_map_wad(
 
 		//	HACK!!!!!!!!!!!!!!! vulcan doesn’t NONE .first_object field after adding scenery
 		{
-			for (count= 0; count<dynamic_world->polygon_count; ++count)
+			for (count= 0; count<static_cast<size_t>(dynamic_world->polygon_count); ++count)
 			{
 				map_polygons[count].first_object= NONE;
 			}
@@ -1572,7 +1592,7 @@ bool process_map_wad(
 		count= data_length/SIZEOF_object_data;
 		assert(count*SIZEOF_object_data==data_length);
 		vassert(count <= MAXIMUM_OBJECTS_PER_MAP,
-			csprintf(temporary,"Number of map objects %ld > limit %d",count,MAXIMUM_OBJECTS_PER_MAP));
+			csprintf(temporary,"Number of map objects %lu > limit %u",count,MAXIMUM_OBJECTS_PER_MAP));
 		unpack_object_data(data,objects,count);
 		
 		// Unpacking is E-Z here...
@@ -1585,21 +1605,21 @@ bool process_map_wad(
 		count= data_length/SIZEOF_monster_data;
 		assert(count*SIZEOF_monster_data==data_length);
 		vassert(count <= MAXIMUM_MONSTERS_PER_MAP,
-			csprintf(temporary,"Number of monsters %ld > limit %d",count,MAXIMUM_MONSTERS_PER_MAP));
+			csprintf(temporary,"Number of monsters %lu > limit %u",count,MAXIMUM_MONSTERS_PER_MAP));
 		unpack_monster_data(data,monsters,count);
 
 		data= (uint8 *)extract_type_from_wad(wad, EFFECTS_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_effect_data;
 		assert(count*SIZEOF_effect_data==data_length);
 		vassert(count <= MAXIMUM_EFFECTS_PER_MAP,
-			csprintf(temporary,"Number of effects %ld > limit %d",count,MAXIMUM_EFFECTS_PER_MAP));
+			csprintf(temporary,"Number of effects %lu > limit %u",count,MAXIMUM_EFFECTS_PER_MAP));
 		unpack_effect_data(data,effects,count);
 
 		data= (uint8 *)extract_type_from_wad(wad, PROJECTILES_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_projectile_data;
 		assert(count*SIZEOF_projectile_data==data_length);
 		vassert(count <= MAXIMUM_PROJECTILES_PER_MAP,
-			csprintf(temporary,"Number of projectiles %ld > limit %d",count,MAXIMUM_PROJECTILES_PER_MAP));
+			csprintf(temporary,"Number of projectiles %lu > limit %u",count,MAXIMUM_PROJECTILES_PER_MAP));
 		unpack_projectile_data(data,projectiles,count);
 		
 		data= (uint8 *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
@@ -1621,9 +1641,9 @@ bool process_map_wad(
 		complete_restoring_level(wad);
 	} else {
 		uint8 *map_index_data;
-		short map_index_count;
+		size_t map_index_count;
 		uint8 *platform_structures;
-		short platform_structure_count;
+		size_t platform_structure_count;
 
 		if(version==MARATHON_ONE_DATA_VERSION)
 		{
@@ -1633,7 +1653,7 @@ bool process_map_wad(
 		} else {
 			map_index_data= (uint8 *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
 			map_index_count= data_length/sizeof(short);
-			assert(map_index_count*long(sizeof(short))==data_length);
+			assert(map_index_count*sizeof(short)==data_length);
 		}
 
 		assert(is_preprocessed_map&&map_index_count || !is_preprocessed_map&&!map_index_count);
@@ -1658,34 +1678,33 @@ bool process_map_wad(
 static void allocate_map_structure_for_map(
 	struct wad_data *wad)
 {
-	uint8 *data;
-	long data_length;
-	short line_count, polygon_count, side_count, endpoint_count;
+	size_t data_length;
+	size_t line_count, polygon_count, side_count, endpoint_count;
 
 	/* Extract points */
-	data= (uint8 *)extract_type_from_wad(wad, POINT_TAG, &data_length);
+	extract_type_from_wad(wad, POINT_TAG, &data_length);
 	endpoint_count= data_length/SIZEOF_world_point2d;
 	if(endpoint_count*SIZEOF_world_point2d!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7074); // 'pt'
 	
 	if(!endpoint_count)
 	{
-		data= (uint8 *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
+		extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
 		endpoint_count= data_length/SIZEOF_endpoint_data;
 		if(endpoint_count*SIZEOF_endpoint_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x6570); // 'ep'
 	}
 
 	/* Extract lines */
-	data= (uint8 *)extract_type_from_wad(wad, LINE_TAG, &data_length);
+	extract_type_from_wad(wad, LINE_TAG, &data_length);
 	line_count= data_length/SIZEOF_line_data;
 	if(line_count*SIZEOF_line_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x6c69); // 'li'
 
 	/* Sides.. */
-	data= (uint8 *)extract_type_from_wad(wad, SIDE_TAG, &data_length);
+	extract_type_from_wad(wad, SIDE_TAG, &data_length);
 	side_count= data_length/SIZEOF_side_data;
 	if(side_count*SIZEOF_side_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7369); // 'si'
 
 	/* Extract polygons */
-	data= (uint8 *)extract_type_from_wad(wad, POLYGON_TAG, &data_length);
+	extract_type_from_wad(wad, POLYGON_TAG, &data_length);
 	polygon_count= data_length/SIZEOF_polygon_data;
 	if(polygon_count*SIZEOF_polygon_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7369); // 'si'
 
@@ -1695,7 +1714,7 @@ static void allocate_map_structure_for_map(
 /* Note that we assume the redundant data has already been recalculated... */
 static void load_redundant_map_data(
 	short *redundant_data,
-	short count)
+	size_t count)
 {
 	if (redundant_data)
 	{
@@ -1703,7 +1722,9 @@ static void load_redundant_map_data(
 		uint8 *Stream = (uint8 *)redundant_data;
 		MapIndexList.resize(count);
 		StreamToList(Stream,map_indexes,count);
-		dynamic_world->map_index_count= count;
+		assert(count == static_cast<size_t>(static_cast<int16>(count)));
+		assert(0 <= static_cast<int16>(count));
+		dynamic_world->map_index_count= static_cast<int16>(count);
 	}
 	else
 	{
@@ -1730,7 +1751,7 @@ static void load_redundant_map_data(
 
 void load_terminal_data(
 	uint8 *data, 
-	long length)
+	size_t length)
 {
 	/* I would really like it if I could get these into computer_interface.c statically */
 	unpack_map_terminal_data(data,length);
@@ -1808,11 +1829,12 @@ struct save_game_data save_data[]=
 /* the sizes are the sizes to save in the file, be aware! */
 static uint8 *tag_to_global_array_and_size(
 	uint32 tag, 
-	long *size
+	size_t *size
 	)
 {
 	uint8 *array= NULL;
-	short unit_size = 0, count = 0;
+	size_t unit_size = 0;
+	size_t count = 0;
 	unsigned index;
 	
 	for (index=0; index<NUMBER_OF_SAVE_ARRAYS; ++index)
@@ -2043,7 +2065,7 @@ static struct wad_data *build_save_game_wad(
 {
 	struct wad_data *wad= NULL;
 	uint8 *array_to_slam;
-	long size;
+	size_t size;
 
 	wad= create_empty_wad();
 	if(wad)
@@ -2057,7 +2079,7 @@ static struct wad_data *build_save_game_wad(
 			/* Add it to the wad.. */
 			if(size)
 			{
-				wad= append_data_to_wad(wad, save_data[loop].tag, array_to_slam, size, 0l);
+				wad= append_data_to_wad(wad, save_data[loop].tag, array_to_slam, size, 0);
 				delete []array_to_slam;
 			}
 		}
@@ -2087,12 +2109,12 @@ FileSpecifier& get_map_file()
  *  Unpacking/packing functions
  */
 
-static uint8 *unpack_directory_data(uint8 *Stream, directory_data *Objects, int Count)
+static uint8 *unpack_directory_data(uint8 *Stream, directory_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	directory_data* ObjPtr = Objects;
 
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->mission_flags);
 		StreamToValue(S,ObjPtr->environment_flags);

@@ -69,7 +69,7 @@ void RenderRasterizerClass::render_tree()
 	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
 	// LP change: added support for semitransparent liquids
-	bool SeeThruLiquids = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_LiqSeeThru) != 0;
+	bool SeeThruLiquids = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_LiqSeeThru);
 	
 	/* walls, ceilings, interior objects, floors, exterior objects for all nodes, back to front */
 	for (node= &SortedNodes.front(); node <= &SortedNodes.back(); ++node)

@@ -57,7 +57,7 @@ bool OGL_FaderActive()
 	if (!OGL_IsActive()) return false;
 
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	return TEST_FLAG(ConfigureData.Flags,OGL_Flag_Fader) != 0;
+	return TEST_FLAG(ConfigureData.Flags,OGL_Flag_Fader);
 }
 
 static OGL_Fader FaderQueue[NUMBER_OF_FADER_QUEUE_ENTRIES];
@@ -130,7 +130,7 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			break;
 		
 		case _randomize_fader_type:
-			UseFlatStatic = (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) != 0);
+			UseFlatStatic = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic);
 			if (UseFlatStatic)
 			{
 				for (int c=0; c<3; c++)

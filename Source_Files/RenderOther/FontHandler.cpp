@@ -280,7 +280,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	TxtrWidth = MAX(128, NextPowerOfTwo(EstDim));
 	
 	// Find the character starting points and counts
-	short CharStarts[256], CharCounts[256];
+	char CharStarts[256], CharCounts[256];
 	int LastLine = 0;
 	CharStarts[LastLine] = 0;
 	CharCounts[LastLine] = 0;
@@ -428,7 +428,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  	GLfloat THtNorm = GLfloat(1)/TxtrHeight;
  	for (int k=0; k<=LastLine; k++)
  	{
- 		int Which = CharStarts[k];
+ 		char Which = CharStarts[k];
  		GLfloat Top = k*(THtNorm*GlyphHeight);
  		GLfloat Bottom = (k+1)*(THtNorm*GlyphHeight);
  		int Pos = 0;

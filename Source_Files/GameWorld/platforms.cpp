@@ -1084,12 +1084,12 @@ static void adjust_platform_sides(
 	}
 }
 
-uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects, int Count)
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	static_platform_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->speed);
@@ -1110,12 +1110,12 @@ uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects,
 	return S;
 }
 
-uint8 * pack_static_platform_data(uint8 *Stream, static_platform_data* Objects, int Count)
+uint8 * pack_static_platform_data(uint8 *Stream, static_platform_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	static_platform_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->speed);
@@ -1154,12 +1154,12 @@ inline void EndpointOwnerToStream(uint8* &S, endpoint_owner_data& Object)
 }
 
 
-uint8 *unpack_platform_data(uint8 *Stream, platform_data* Objects, int Count)
+uint8 *unpack_platform_data(uint8 *Stream, platform_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	platform_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->static_flags);
@@ -1190,12 +1190,12 @@ uint8 *unpack_platform_data(uint8 *Stream, platform_data* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_platform_data(uint8 *Stream, platform_data* Objects, int Count)
+uint8 *pack_platform_data(uint8 *Stream, platform_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	platform_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->static_flags);

@@ -277,17 +277,17 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 				// Negative is from end of current list
 				
 				if (PosIndx < 0)
-					PosIndx += Positions.size()/3;
+					PosIndx += static_cast<short>(Positions.size())/3;
 				else
 					PosIndx--;
 				
 				if (TCIndx < 0)
-					TCIndx += TxtrCoords.size()/2;
+					TCIndx += static_cast<short>(TxtrCoords.size())/2;
 				else
 					TCIndx--;
 				
 				if (NormIndx < 0)
-					NormIndx += Normals.size()/3;
+					NormIndx += static_cast<short>(Normals.size())/3;
 				else
 					NormIndx--;
 				

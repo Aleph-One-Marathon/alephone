@@ -54,7 +54,7 @@ size_t countstr(short resid)
  *  Get pascal string
  */
 
-unsigned char *getpstr(unsigned char *string, short resid, short item)
+unsigned char *getpstr(unsigned char *string, short resid, size_t item)
 {
 	unsigned char *CollString = TS_GetString(resid, item);
 	if (CollString)
@@ -69,7 +69,7 @@ unsigned char *getpstr(unsigned char *string, short resid, short item)
  *  Get C string
  */
 
-char *getcstr(char *string, short resid, short item)
+char *getcstr(char *string, short resid, size_t item)
 {
 	unsigned char *CollString = TS_GetString(resid, item);
 	if (CollString) {

@@ -300,10 +300,10 @@ platform_data *get_platform_data(
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects, int Count);
-uint8 *pack_static_platform_data(uint8 *Stream, static_platform_data *Objects, int Count);
-uint8 *unpack_platform_data(uint8 *Stream, platform_data *Objects, int Count);
-uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, int Count);
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects, size_t Count);
+uint8 *pack_static_platform_data(uint8 *Stream, static_platform_data *Objects, size_t Count);
+uint8 *unpack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);
+uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, size_t Count);
 
 // LP change: added platform-parser export
 XML_ElementParser *Platforms_GetParser();

@@ -51,7 +51,7 @@
 // Bone-stack and transformation-matrix locally-used arrays;
 // the matrices have dimensions (output coords)(input-coord multipliers + offset for output)
 static vector<Model3D_Transform> BoneMatrices;
-static vector<short> BoneStack;
+static vector<size_t> BoneStack;
 
 
 // Find transform of point (source and dest must be different arrays)
@@ -719,7 +719,7 @@ bool Model3D::FindPositions_Frame(bool UseModelTransform,
 	
 	// Find the cumulative-bone transformation matrices:
 	int StackIndx = -1;
-	int Parent = NONE;
+	size_t Parent = UNONE;
 	for (int ib=0; ib<NumBones; ib++)
 	{
 		Model3D_Bone& Bone = Bones[ib];
@@ -731,7 +731,7 @@ bool Model3D::FindPositions_Frame(bool UseModelTransform,
 			if (StackIndx >= 0)
 				Parent = BoneStack[StackIndx--];
 			else
-				Parent = NONE;
+				Parent = UNONE;
 		}
 		if (TEST_FLAG(Bone.Flags,Model3D_Bone::Push))
 		{
@@ -740,7 +740,7 @@ bool Model3D::FindPositions_Frame(bool UseModelTransform,
 		}
 		
 		// Do the transform!
-		if (Parent != NONE)
+		if (Parent != UNONE)
 		{
 			Model3D_Transform Res;
 			TMatMultiply(Res,BoneMatrices[Parent],BoneMatrices[ib]);

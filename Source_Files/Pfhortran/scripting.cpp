@@ -314,7 +314,7 @@ void add_variable(int var)
 	if (variable_count >= MAX_VARS)
 		return;
 
-	variable_lookup[variable_count] = var;
+	variable_lookup[variable_count] = float(var);
 	variable_count ++;
 
 }

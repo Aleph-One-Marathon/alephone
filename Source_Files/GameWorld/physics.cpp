@@ -894,17 +894,17 @@ static void physics_update(
 }
 
 
-uint8 *unpack_physics_constants(uint8 *Stream, int Count)
+uint8 *unpack_physics_constants(uint8 *Stream, size_t Count)
 {
 	return unpack_physics_constants(Stream,physics_models,Count);
 }
 
-uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, int Count)
+uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	physics_constants* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->maximum_forward_velocity);
 		StreamToValue(S,ObjPtr->maximum_backward_velocity);
@@ -941,17 +941,17 @@ uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, int C
 	return S;
 }
 
-uint8 *pack_physics_constants(uint8 *Stream, int Count)
+uint8 *pack_physics_constants(uint8 *Stream, size_t Count)
 {
 	return pack_physics_constants(Stream,physics_models,Count);
 }
 
-uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, int Count)
+uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	physics_constants* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->maximum_forward_velocity);
 		ValueToStream(S,ObjPtr->maximum_backward_velocity);
@@ -990,4 +990,4 @@ uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, int Cou
 
 
 // LP addition: get number of physics models (restricted sense)
-int get_number_of_physics_models() {return NUMBER_OF_PHYSICS_MODELS;}
+size_t get_number_of_physics_models() {return NUMBER_OF_PHYSICS_MODELS;}

@@ -34,6 +34,7 @@
 #include	"TextLayoutHelper.h"
 
 #include	<set>
+#include	<assert.h>
 
 TextLayoutHelper::TextLayoutHelper() {
 }
@@ -127,7 +128,9 @@ TextLayoutHelper::reserveSpaceFor(int inLeft, unsigned int inWidth, int inLowest
         k = theReservations.begin();
     
         for( ; k != end3; k++) {
-            if(((*k)->mBottom > theCurrentBottom - inHeight) && ((*k)->mTop < theCurrentBottom)) {
+			assert(inHeight == static_cast<unsigned int>(static_cast<int>(inHeight)));
+			assert(0 <= static_cast<int>(inHeight));
+            if(((*k)->mBottom > theCurrentBottom - static_cast<int>(inHeight)) && ((*k)->mTop < theCurrentBottom)) {
                 // Found one that interferes with us.  Adjust our current bottom upwards.
                 theCurrentBottom = (*k)->mTop;
                 // We break (I hope this breaks only the for()!) so that the do-while can walk

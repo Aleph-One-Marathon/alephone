@@ -520,7 +520,7 @@ enum /* control panel side types */
 #define SIDE_IS_CONTROL_PANEL(s) ((s)->flags & _side_is_control_panel)
 #define SET_SIDE_CONTROL_PANEL(s, t) ((void)((t) ? (s->flags |= (uint16) _side_is_control_panel) : (s->flags &= (uint16)~_side_is_control_panel)))
 
-#define GET_CONTROL_PANEL_STATUS(s) ((s)->flags & _control_panel_status)
+#define GET_CONTROL_PANEL_STATUS(s) (((s)->flags & _control_panel_status) != 0)
 #define SET_CONTROL_PANEL_STATUS(s, t) ((t) ? (s->flags |= (uint16) _control_panel_status) : (s->flags &= (uint16)~_control_panel_status))
 #define TOGGLE_CONTROL_PANEL_STATUS(s) ((s)->flags ^= _control_panel_status)
 
@@ -1183,36 +1183,36 @@ void set_map_index_buffer_size(long length);
 
 // LP: routines for packing and unpacking the data from streams of bytes
 
-uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count);
-uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count);
-uint8 *unpack_line_data(uint8 *Stream, line_data* Objects, int Count);
-uint8 *pack_line_data(uint8 *Stream, line_data* Objects, int Count);
-uint8 *unpack_side_data(uint8 *Stream, side_data* Objects, int Count);
-uint8 *pack_side_data(uint8 *Stream, side_data* Objects, int Count);
-uint8 *unpack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count);
-uint8 *pack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count);
+uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data* Objects, size_t Count);
+uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data* Objects, size_t Count);
+uint8 *unpack_line_data(uint8 *Stream, line_data* Objects, size_t Count);
+uint8 *pack_line_data(uint8 *Stream, line_data* Objects, size_t Count);
+uint8 *unpack_side_data(uint8 *Stream, side_data* Objects, size_t Count);
+uint8 *pack_side_data(uint8 *Stream, side_data* Objects, size_t Count);
+uint8 *unpack_polygon_data(uint8 *Stream, polygon_data* Objects, size_t Count);
+uint8 *pack_polygon_data(uint8 *Stream, polygon_data* Objects, size_t Count);
 
-uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count);
-uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count);
-uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, int Count);
-uint8 *pack_map_object(uint8 *Stream, map_object* Objects, int Count);
-uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count);
-uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count);
-uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, int Count);
-uint8 *pack_static_data(uint8 *Stream, static_data* Objects, int Count);
+uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, size_t Count);
+uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, size_t Count);
+uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, size_t Count);
+uint8 *pack_map_object(uint8 *Stream, map_object* Objects, size_t Count);
+uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, size_t Count);
+uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, size_t Count);
+uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, size_t Count);
+uint8 *pack_static_data(uint8 *Stream, static_data* Objects, size_t Count);
 
-uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count);
-uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count);
-uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count);
-uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count);
+uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, size_t Count);
+uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, size_t Count);
+uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, size_t Count);
+uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, size_t Count);
 
-uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count);
-uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count);
-uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, int Count);
-uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count);
+uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, size_t Count);
+uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, size_t Count);
+uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, size_t Count);
+uint8 *pack_object_data(uint8 *Stream, object_data* Objects, size_t Count);
 
-uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count);
-uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count);
+uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, size_t Count);
+uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, size_t Count);
 
 /*
 	map_indexes, automap_lines, and automap_polygons do not have any special
@@ -1243,7 +1243,7 @@ short new_lightsource_from_old(short old_source);
 void entered_polygon(short index);
 void left_polygon(short index);
 /* Only send _light_turning_on, _light_turning_off, _light_toggle */
-void change_light_state(short lightsource_index, short state);
+void change_light_state(size_t lightsource_index, short state);
 
 /* ---------- prototypes/DEVICES.C */
 

@@ -2519,7 +2519,7 @@ size_t calculate_packed_terminal_data_length(void)
  *  Unpack terminal data from stream
  */
 
-void unpack_map_terminal_data(uint8 *p, int count)
+void unpack_map_terminal_data(uint8 *p, size_t count)
 {
 	// Clear existing terminals
 	map_terminal_text.clear();
@@ -2587,7 +2587,7 @@ void unpack_map_terminal_data(uint8 *p, int count)
  *  Pack terminal data to stream
  */
 
-void pack_map_terminal_data(uint8 *p, int count)
+void pack_map_terminal_data(uint8 *p, size_t count)
 {
 	// Pack all terminals
 	vector<terminal_text_t>::const_iterator t = map_terminal_text.begin(), tend = map_terminal_text.end();
@@ -2639,12 +2639,12 @@ void pack_map_terminal_data(uint8 *p, int count)
 }
 
 
-uint8 *unpack_player_terminal_data(uint8 *Stream, int Count)
+uint8 *unpack_player_terminal_data(uint8 *Stream, size_t Count)
 {
 	uint8* S = Stream;
 	player_terminal_data* ObjPtr = player_terminals;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->flags);
 		StreamToValue(S,ObjPtr->phase);
@@ -2661,12 +2661,12 @@ uint8 *unpack_player_terminal_data(uint8 *Stream, int Count)
 	return S;
 }
 
-uint8 *pack_player_terminal_data(uint8 *Stream, int Count)
+uint8 *pack_player_terminal_data(uint8 *Stream, size_t Count)
 {
 	uint8* S = Stream;
 	player_terminal_data* ObjPtr = player_terminals;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->flags);
 		ValueToStream(S,ObjPtr->phase);

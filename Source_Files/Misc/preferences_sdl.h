@@ -239,19 +239,22 @@ static void player_dialog(void *arg)
 			changed = true;
 		}
 
-		int level = level_w->get_selection();
+		int16 level = static_cast<int16>(level_w->get_selection());
+		assert(level >= 0);
 		if (level != player_preferences->difficulty_level) {
 			player_preferences->difficulty_level = level;
 			changed = true;
 		}
 
-		int color = pcolor_w->get_selection();
+		int16 color = static_cast<int16>(pcolor_w->get_selection());
+		assert(color >= 0);
 		if (color != player_preferences->color) {
 			player_preferences->color = color;
 			changed = true;
 		}
 
-		int team = tcolor_w->get_selection();
+		int16 team = static_cast<int16>(tcolor_w->get_selection());
+		assert(team >= 0);
 		if (team != player_preferences->team) {
 			player_preferences->team = team;
 			changed = true;
@@ -323,7 +326,7 @@ static void software_rendering_options_dialog(void* arg)
 			// don't change mode now; it will be changed when the game starts
 		}
 
-		bool hi_res = resolution_w->get_selection();
+		bool hi_res = resolution_w->get_selection() != 0;
 		if (hi_res != graphics_preferences->screen_mode.high_resolution) {
 			graphics_preferences->screen_mode.high_resolution = hi_res;
 			changed = true;
@@ -399,7 +402,7 @@ static void graphics_dialog(void *arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
-		bool fullscreen = fullscreen_w->get_selection();
+		bool fullscreen = fullscreen_w->get_selection() != 0;
 		if (fullscreen != graphics_preferences->screen_mode.fullscreen) {
 			graphics_preferences->screen_mode.fullscreen = fullscreen;
 			// This is the only setting that has an immediate effect
@@ -408,7 +411,8 @@ static void graphics_dialog(void *arg)
 			changed = true;
 		}
 
-        int renderer = renderer_w->get_selection();
+        short renderer = static_cast<short>(renderer_w->get_selection());
+		assert(renderer >= 0);
         if(renderer != graphics_preferences->screen_mode.acceleration) {
             graphics_preferences->screen_mode.acceleration = renderer;
 
@@ -421,14 +425,15 @@ static void graphics_dialog(void *arg)
             changed = true;
         }
 
-		int size = size_w->get_selection();
+		short size = static_cast<short>(size_w->get_selection());
+		assert(size >= 0);
 		if (size != graphics_preferences->screen_mode.size) {
 			graphics_preferences->screen_mode.size = size;
 			changed = true;
 			// don't change mode now; it will be changed when the game starts
 		}
 
-		int gamma = gamma_w->get_selection();
+		short gamma = static_cast<short>(gamma_w->get_selection());
 		if (gamma != graphics_preferences->screen_mode.gamma_level) {
 			graphics_preferences->screen_mode.gamma_level = gamma;
 			changed = true;
@@ -458,19 +463,19 @@ static void opengl_dialog(void *arg)
 	d.add(zbuffer_w);
 	w_toggle *landscape_w = new w_toggle("Landscapes", !(prefs.Flags & OGL_Flag_FlatLand));
 	d.add(landscape_w);
-	w_toggle *fog_w = new w_toggle("Fog", prefs.Flags & OGL_Flag_Fog);
+	w_toggle *fog_w = new w_toggle("Fog", TEST_FLAG(prefs.Flags, OGL_Flag_Fog));
 	d.add(fog_w);
 	w_toggle *static_w = new w_toggle("Static Effect", !(prefs.Flags & OGL_Flag_FlatStatic));
 	d.add(static_w);
-	w_toggle *fader_w = new w_toggle("Color Effects", prefs.Flags & OGL_Flag_Fader);
+	w_toggle *fader_w = new w_toggle("Color Effects", TEST_FLAG(prefs.Flags, OGL_Flag_Fader));
 	d.add(fader_w);
-	w_toggle *liq_w = new w_toggle("Transparent Liquids", prefs.Flags & OGL_Flag_LiqSeeThru);
+	w_toggle *liq_w = new w_toggle("Transparent Liquids", TEST_FLAG(prefs.Flags, OGL_Flag_LiqSeeThru));
 	d.add(liq_w);
-	w_toggle *map_w = new w_toggle("OpenGL Overhead Map", prefs.Flags & OGL_Flag_Map);
+	w_toggle *map_w = new w_toggle("OpenGL Overhead Map", TEST_FLAG(prefs.Flags, OGL_Flag_Map));
 	d.add(map_w);
-	w_toggle *hud_w = new w_toggle("OpenGL HUD", prefs.Flags & OGL_Flag_HUD);
+	w_toggle *hud_w = new w_toggle("OpenGL HUD", TEST_FLAG(prefs.Flags, OGL_Flag_HUD));
 	d.add(hud_w);
-	w_toggle *models_w = new w_toggle("3D Models", prefs.Flags & OGL_Flag_3D_Models);
+	w_toggle *models_w = new w_toggle("3D Models", TEST_FLAG(prefs.Flags, OGL_Flag_3D_Models));
 	d.add(models_w);
 	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
@@ -557,17 +562,17 @@ static void sound_dialog(void *arg)
 	d.add(new w_static_text("SOUND SETUP", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
 	static const char *quality_labels[3] = {"8 Bit", "16 Bit", NULL};
-	w_toggle *quality_w = new w_toggle("Quality", sound_preferences->flags & _16bit_sound_flag, quality_labels);
+	w_toggle *quality_w = new w_toggle("Quality", TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
 	d.add(quality_w);
 	stereo_w = new w_stereo_toggle("Stereo", sound_preferences->flags & _stereo_flag);
 	d.add(stereo_w);
-	dynamic_w = new w_dynamic_toggle("Active Panning", sound_preferences->flags & _dynamic_tracking_flag);
+	dynamic_w = new w_dynamic_toggle("Active Panning", TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
 	d.add(dynamic_w);
-	w_toggle *ambient_w = new w_toggle("Ambient Sounds", sound_preferences->flags & _ambient_sound_flag);
+	w_toggle *ambient_w = new w_toggle("Ambient Sounds", TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
 	d.add(ambient_w);
-	w_toggle *more_w = new w_toggle("More Sounds", sound_preferences->flags & _more_sounds_flag);
+	w_toggle *more_w = new w_toggle("More Sounds", TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
 	d.add(more_w);
-	w_toggle *button_sounds_w = new w_toggle("Interface Button Sounds", input_preferences->modifiers & _inputmod_use_button_sounds);
+	w_toggle *button_sounds_w = new w_toggle("Interface Button Sounds", TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
 	d.add(button_sounds_w);
 	w_select *channels_w = new w_select("Channels", sound_preferences->channel_count, channel_labels);
 	d.add(channels_w);
@@ -603,7 +608,7 @@ static void sound_dialog(void *arg)
 			changed = true;
 		}
 
-		int channel_count = channels_w->get_selection();
+		int16 channel_count = static_cast<int16>(channels_w->get_selection());
 		if (channel_count != sound_preferences->channel_count) {
 			sound_preferences->channel_count = channel_count;
 			changed = true;
@@ -635,9 +640,9 @@ static void controls_dialog(void *arg)
 	dialog d;
 	d.add(new w_static_text("CONTROLS", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
-	mouse_w = new w_toggle("Mouse Control", input_preferences->input_device);
+	mouse_w = new w_toggle("Mouse Control", input_preferences->input_device != 0);
 	d.add(mouse_w);
-	w_toggle *invert_mouse_w = new w_toggle("Invert Mouse", input_preferences->modifiers & _inputmod_invert_mouse);
+	w_toggle *invert_mouse_w = new w_toggle("Invert Mouse", TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
 	d.add(invert_mouse_w);
 
     const float kMinSensitivityLog = -3.0f;
@@ -658,7 +663,7 @@ static void controls_dialog(void *arg)
 
 	w_toggle *always_run_w = new w_toggle("Always Run", input_preferences->modifiers & _inputmod_interchange_run_walk);
 	d.add(always_run_w);
-	w_toggle *always_swim_w = new w_toggle("Always Swim", input_preferences->modifiers & _inputmod_interchange_swim_sink);
+	w_toggle *always_swim_w = new w_toggle("Always Swim", TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
 	d.add(always_swim_w);
 	w_toggle *weapon_w = new w_toggle("Auto-Switch Weapons", !(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
 	d.add(weapon_w);
@@ -684,7 +689,7 @@ static void controls_dialog(void *arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
-		int device = mouse_w->get_selection();
+		int16 device = static_cast<int16>(mouse_w->get_selection());
 		if (device != input_preferences->input_device) {
 			input_preferences->input_device = device;
 			changed = true;

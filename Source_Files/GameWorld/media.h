@@ -166,8 +166,8 @@ size_t count_number_of_medias_used();
 
 // LP: routines for packing and unpacking the data from streams of bytes
 
-uint8 *unpack_media_data(uint8 *Stream, media_data* Objects, int Count);
-uint8 *pack_media_data(uint8 *Stream, media_data* Objects, int Count);
+uint8 *unpack_media_data(uint8 *Stream, media_data* Objects, size_t Count);
+uint8 *pack_media_data(uint8 *Stream, media_data* Objects, size_t Count);
 
 // LP change: added liquid-parser export
 XML_ElementParser *Liquids_GetParser();

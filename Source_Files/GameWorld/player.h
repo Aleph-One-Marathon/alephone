@@ -482,13 +482,13 @@ _fixed get_player_forward_velocity_scale(short player_index);
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, int Count);
-uint8 *pack_player_data(uint8 *Stream, player_data *Objects, int Count);
-uint8 *unpack_physics_constants(uint8 *Stream, int Count);
-uint8 *pack_physics_constants(uint8 *Stream, int Count);
+uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, size_t Count);
+uint8 *pack_player_data(uint8 *Stream, player_data *Objects, size_t Count);
+uint8 *unpack_physics_constants(uint8 *Stream, size_t Count);
+uint8 *pack_physics_constants(uint8 *Stream, size_t Count);
 
 // LP addition: get number of physics models (restricted sense)
-int get_number_of_physics_models();
+size_t get_number_of_physics_models();
 
 // ZZZ addition: get number of ticks (NOT measured carefully, beware)
 // since local player was in terminal mode.

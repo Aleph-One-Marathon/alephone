@@ -1235,8 +1235,8 @@ int network_join(void)
                     player_info myPlayerInfo;
 
                     copy_pstring_from_text_field(&d, iJOIN_NAME, myPlayerInfo.name);
-                    myPlayerInfo.color = pcolor_w->get_selection();
-					myPlayerInfo.team = tcolor_w->get_selection();
+                    myPlayerInfo.color = static_cast<int16>(pcolor_w->get_selection());
+					myPlayerInfo.team = static_cast<int16>(tcolor_w->get_selection());
 					myPlayerInfo.desired_color = myPlayerInfo.color;
                     memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
 
@@ -1348,7 +1348,7 @@ dialog*		sProgressDialog 	= NULL;
 w_static_text*	sProgressMessage	= NULL;
 //widget* 	sProgressBar		= NULL;
 
-void open_progress_dialog(short message_id)
+void open_progress_dialog(size_t message_id)
 {
 //printf("open_progress_dialog %d\n", message_id);
 
@@ -1368,7 +1368,7 @@ void open_progress_dialog(short message_id)
 }
 
 
-void set_progress_dialog_message(short message_id)
+void set_progress_dialog_message(size_t message_id)
 {
 //printf("set_progress_dialog_message %d\n", message_id);
     assert(sProgressMessage != NULL);

@@ -125,7 +125,7 @@ static bool create_physics_file(
 						struct definition_data *definition= definitions+index;
 						
 						wad= append_data_to_wad(wad, definition->tag, definition->data,
-							definition->size*definition->count, 0l);
+							definition->size*definition->count, 0);
 					}
 				
 					if(write_wad(file_ref, &header, wad, sizeof(struct wad_header)))

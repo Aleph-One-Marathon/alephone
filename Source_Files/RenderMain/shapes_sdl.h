@@ -305,7 +305,7 @@ static bool load_collection(short collection_index, bool strip)
 
 	// Allocate memory for collection
 	int extra_length = 1024 + high_level_shape_count * 4 + low_level_shape_count * 4 + bitmap_count * 2048;
-	void *c = malloc(src_length + extra_length);
+	uint8 *c = (uint8*)malloc(src_length + extra_length);
 	if (c == NULL)
 		return false;
 
@@ -323,35 +323,35 @@ static bool load_collection(short collection_index, bool strip)
 //	printf(" index %d, version %d, type %d, %d colors, %d cluts, %d hl, %d ll, %d bitmaps\n", collection_index, version, type, color_count, clut_count, high_level_shape_count, low_level_shape_count, bitmap_count);
 
 	// Set up destination pointer
-	uint8 *q = (uint8 *)c + 0x220;
-#define dst_offset (q - (uint8 *)c)
+	size_t dst_offset = 0x220;
+#define q (c + dst_offset)
 
 	// Convert CLUTs
 	ShapesFile.SetPosition(src_offset + color_table_offset);
-	cd->color_table_offset = dst_offset;
+	cd->color_table_offset = static_cast<int32>(dst_offset);
 	for (int i=0; i<clut_count*color_count; i++) {
 		rgb_color_value *r = (rgb_color_value *)q;
 		SDL_RWread(p, r, 1, 2);
 		r->red = SDL_ReadBE16(p);
 		r->green = SDL_ReadBE16(p);
 		r->blue = SDL_ReadBE16(p);
-		q += sizeof(rgb_color_value);
+		dst_offset += sizeof(rgb_color_value);
 	}
 
 	// Convert high-level shape definitions
 	ShapesFile.SetPosition(src_offset + high_level_shape_offset_table_offset);
-	cd->high_level_shape_offset_table_offset = dst_offset;
+	cd->high_level_shape_offset_table_offset = static_cast<int32>(dst_offset);
 
 	t = (uint32 *)q;	// Offset table
 	SDL_RWread(p, t, sizeof(uint32), high_level_shape_count);
 	byte_swap_memory(t, _4byte, high_level_shape_count);
-	q += high_level_shape_count * sizeof(uint32);
+	dst_offset += high_level_shape_count * sizeof(uint32);
 
 	for (int i=0; i<high_level_shape_count; i++) {
 
 		// Seek to offset in source file, correct destination offset
 		ShapesFile.SetPosition(src_offset + t[i]);
-		t[i] = dst_offset;
+		t[i] = static_cast<int32>(dst_offset);
 
 		// Convert high-level shape definition
 		high_level_shape_definition *d = (high_level_shape_definition *)q;
@@ -398,25 +398,25 @@ static bool load_collection(short collection_index, bool strip)
 		for (int j=0; j<num_views*d->frames_per_view; j++)
 			d->low_level_shape_indexes[j] = SDL_ReadBE16(p);
 
-		q += sizeof(high_level_shape_definition) + (num_views * d->frames_per_view - 1) * sizeof(int16);
+		dst_offset += sizeof(high_level_shape_definition) + (num_views * d->frames_per_view - 1) * sizeof(int16);
 		if (dst_offset & 3)	// Align to 32-bit boundary
-			q += 4 - (dst_offset & 3);
+			dst_offset += 4 - (dst_offset & 3);
 	}
 
 	// Convert low-level shape definitions
 	ShapesFile.SetPosition(src_offset + low_level_shape_offset_table_offset);
-	cd->low_level_shape_offset_table_offset = dst_offset;
+	cd->low_level_shape_offset_table_offset = static_cast<int32>(dst_offset);
 
 	t = (uint32 *)q;	// Offset table
 	SDL_RWread(p, t, sizeof(uint32), low_level_shape_count);
 	byte_swap_memory(t, _4byte, low_level_shape_count);
-	q += low_level_shape_count * sizeof(uint32);
+	dst_offset += low_level_shape_count * sizeof(uint32);
 
 	for (int i=0; i<low_level_shape_count; i++) {
 
 		// Seek to offset in source file, correct destination offset
 		ShapesFile.SetPosition(src_offset + t[i]);
-		t[i] = dst_offset;
+		t[i] = static_cast<int32>(dst_offset);
 
 		// Convert low-level shape definition
 		low_level_shape_definition *d = (low_level_shape_definition *)q;
@@ -434,25 +434,25 @@ static bool load_collection(short collection_index, bool strip)
 		d->world_x0 = SDL_ReadBE16(p);
 		d->world_y0 = SDL_ReadBE16(p);
 		SDL_RWseek(p, 8, SEEK_CUR);
-		q += sizeof(low_level_shape_definition);
+		dst_offset += sizeof(low_level_shape_definition);
 	}
 
 	// Convert bitmap definitions
 	ShapesFile.SetPosition(src_offset + bitmap_offset_table_offset);
-	cd->bitmap_offset_table_offset = dst_offset;
+	cd->bitmap_offset_table_offset = static_cast<int32>(dst_offset);
 
 	t = (uint32 *)q;	// Offset table
 	SDL_RWread(p, t, sizeof(uint32), bitmap_count);
 	byte_swap_memory(t, _4byte, bitmap_count);
-	q += bitmap_count * sizeof(uint32);
+	dst_offset += bitmap_count * sizeof(uint32);
 	if (dst_offset & 7)	// Align to 64-bit boundary
-		q += 8 - (dst_offset & 7);
+		dst_offset += 8 - (dst_offset & 7);
 
 	for (int i=0; i<bitmap_count; i++) {
 
 		// Seek to offset in source file, correct destination offset
 		ShapesFile.SetPosition(src_offset + t[i]);
-		t[i] = dst_offset;
+		t[i] = static_cast<int32>(dst_offset);
 
 		// Convert bitmap definition
 		bitmap_definition *d = (bitmap_definition *)q;
@@ -462,12 +462,12 @@ static bool load_collection(short collection_index, bool strip)
 		d->flags = SDL_ReadBE16(p);
 		d->bit_depth = SDL_ReadBE16(p);
 		SDL_RWseek(p, 16, SEEK_CUR);
-		q += sizeof(bitmap_definition);
+		dst_offset += sizeof(bitmap_definition);
 
 		// Skip row address pointers
 		int rows = (d->flags & _COLUMN_ORDER_BIT) ? d->width : d->height;
 		SDL_RWseek(p, (rows + 1) * sizeof(uint32), SEEK_CUR);
-		q += rows * sizeof(pixel8 *);
+		dst_offset += rows * sizeof(pixel8 *);
 
 		// Copy bitmap data
 		if (d->bytes_per_row == NONE) {
@@ -475,23 +475,25 @@ static bool load_collection(short collection_index, bool strip)
 			for (int j=0; j<rows; j++) {
 				int16 first = SDL_ReadBE16(p);
 				int16 last = SDL_ReadBE16(p);
-				*q++ = (uint8)(first >> 8); *q++ = (uint8)(first);
-				*q++ = (uint8)(last >> 8);  *q++ = (uint8)(last);
+				*(c + dst_offset++) = (uint8)(first >> 8);
+				*(c + dst_offset++) = (uint8)(first);
+				*(c + dst_offset++) = (uint8)(last >> 8);
+				*(c + dst_offset++) = (uint8)(last);
 				SDL_RWread(p, q, 1, last - first);
-				q += last - first;
+				dst_offset += last - first;
 			}
 		} else {
 			// Raw format
 			SDL_RWread(p, q, d->bytes_per_row, rows);
-			q += rows * d->bytes_per_row;
+			dst_offset += rows * d->bytes_per_row;
 		}
 		if (dst_offset & 7)	// Align to 64-bit boundary
-			q += 8 - (dst_offset & 7);
+			dst_offset += 8 - (dst_offset & 7);
 	}
 
 	// Set pointer to collection in collection header
 	header->collection = cd;
-	cd->size = dst_offset;
+	cd->size = static_cast<int32>(dst_offset);
 //	printf(" collection at %p, size %d -> %d\n", cd, src_length, cd->size);
 	assert(cd->size <= src_length + extra_length);
 

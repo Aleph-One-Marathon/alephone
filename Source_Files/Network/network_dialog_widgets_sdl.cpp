@@ -182,7 +182,7 @@ w_found_players::callback_on_all_items() {
 
 
 void
-w_found_players::draw_item(vector<const SSLP_ServiceInstance*>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const {
+w_found_players::draw_item(vector<const SSLP_ServiceInstance*>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const {
 	char	theNameBuffer[SSLP_MAX_NAME_LENGTH];
 
 	pstrncpy((unsigned char*)theNameBuffer, (unsigned char*)(*i)->sslps_name, SSLP_MAX_NAME_LENGTH - 1);
@@ -371,7 +371,7 @@ w_chat_history::append_chat_entry(const chat_entry& inEntry) {
 
 
 void
-w_chat_history::draw_item(vector<chat_entry>::const_iterator i, SDL_Surface* s, int x, int y, int width, bool selected) const {
+w_chat_history::draw_item(vector<chat_entry>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const {
     int computed_y = y + font->get_ascent();
 
     char	theNameBuffer[40];

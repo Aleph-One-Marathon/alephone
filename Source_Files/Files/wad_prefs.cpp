@@ -140,12 +140,12 @@ bool w_open_preferences_file(
 /* Caller should assert this. */
 void *w_get_data_from_preferences(
 	WadDataType tag,					/* Tag to read */
-	short expected_size,				/* Data size */
+	size_t expected_size,				/* Data size */
 	prefs_initializer initialize,	/* Call if I have to allocate it.. */
 	prefs_validater validate)	/* Verify function-> fixes if bad and returns true */
 {
 	void *data;
-	long length;
+	size_t length;
 	
 	assert(prefInfo->wad);
 	

@@ -786,7 +786,7 @@ int XML_Parse(XML_Parser parser, const char *s, int len, int isFinal)
       return 0;
     }
     XmlUpdatePosition(encoding, positionPtr, end, &position);
-    nLeftOver = s + len - end;
+    nLeftOver = (int)(s + len - end);
     if (nLeftOver) {
       if (buffer == 0 || nLeftOver > bufferLim - buffer) {
 	/* FIXME avoid integer overflow */
@@ -833,7 +833,7 @@ void *XML_GetBuffer(XML_Parser parser, int len)
 {
   if (len > bufferLim - bufferEnd) {
     /* FIXME avoid integer overflow */
-    int neededSize = len + (bufferEnd - bufferPtr);
+    int neededSize = len + (int)(bufferEnd - bufferPtr);
     if (neededSize  <= bufferLim - buffer) {
       memmove(buffer, bufferPtr, bufferEnd - bufferPtr);
       bufferEnd = buffer + (bufferEnd - bufferPtr);
@@ -841,7 +841,7 @@ void *XML_GetBuffer(XML_Parser parser, int len)
     }
     else {
       char *newBuf;
-      int bufferSize = bufferLim - bufferPtr;
+      int bufferSize = (int)(bufferLim - bufferPtr);
       if (bufferSize == 0)
 	bufferSize = INIT_BUFFER_SIZE;
       do {
@@ -879,7 +879,7 @@ long XML_GetCurrentByteIndex(XML_Parser parser)
 int XML_GetCurrentByteCount(XML_Parser parser)
 {
   if (eventEndPtr && eventPtr)
-    return eventEndPtr - eventPtr;
+    return (int)(eventEndPtr - eventPtr);
   return 0;
 }
 
@@ -1251,7 +1251,7 @@ doContent(XML_Parser parser,
 		       (ICHAR **)&toPtr, (ICHAR *)tag->bufEnd - 1);
 	    if (fromPtr == rawNameEnd)
 	      break;
-	    bufSize = (tag->bufEnd - tag->buf) << 1;
+	    bufSize = (int)(tag->bufEnd - tag->buf) << 1;
 	    tag->buf = (char *)realloc(tag->buf, bufSize);
 	    if (!tag->buf)
 	      return XML_ERROR_NO_MEMORY;
@@ -1421,12 +1421,12 @@ doContent(XML_Parser parser,
 	if (MUST_CONVERT(enc, s)) {
 	  ICHAR *dataPtr = (ICHAR *)dataBuf;
 	  XmlConvert(enc, &s, end, &dataPtr, (ICHAR *)dataBufEnd);
-	  characterDataHandler(handlerArg, dataBuf, dataPtr - (ICHAR *)dataBuf);
+	  characterDataHandler(handlerArg, dataBuf, (int)(dataPtr - (ICHAR *)dataBuf));
 	}
 	else
 	  characterDataHandler(handlerArg,
 		  	       (XML_Char *)s,
-			       (XML_Char *)end - (XML_Char *)s);
+			       (int)((XML_Char *)end - (XML_Char *)s));
       }
       else if (defaultHandler)
 	reportDefault(parser, enc, s, end);
@@ -1446,7 +1446,7 @@ doContent(XML_Parser parser,
 	    ICHAR *dataPtr = (ICHAR *)dataBuf;
 	    XmlConvert(enc, &s, next, &dataPtr, (ICHAR *)dataBufEnd);
 	    *eventEndPP = s;
-	    characterDataHandler(handlerArg, dataBuf, dataPtr - (ICHAR *)dataBuf);
+	    characterDataHandler(handlerArg, dataBuf, (int)(dataPtr - (ICHAR *)dataBuf));
 	    if (s == next)
 	      break;
 	    *eventPP = s;
@@ -1455,7 +1455,7 @@ doContent(XML_Parser parser,
 	else
 	  characterDataHandler(handlerArg,
 			       (XML_Char *)s,
-			       (XML_Char *)next - (XML_Char *)s);
+			       (int)((XML_Char *)next - (XML_Char *)s));
       }
       else if (defaultHandler)
 	reportDefault(parser, enc, s, next);
@@ -1795,7 +1795,7 @@ enum XML_Error doCdataSection(XML_Parser parser,
   	    ICHAR *dataPtr = (ICHAR *)dataBuf;
 	    XmlConvert(enc, &s, next, &dataPtr, (ICHAR *)dataBufEnd);
 	    *eventEndPP = next;
-	    characterDataHandler(handlerArg, dataBuf, dataPtr - (ICHAR *)dataBuf);
+	    characterDataHandler(handlerArg, dataBuf, (int)(dataPtr - (ICHAR *)dataBuf));
 	    if (s == next)
 	      break;
 	    *eventPP = s;
@@ -1804,7 +1804,7 @@ enum XML_Error doCdataSection(XML_Parser parser,
 	else
 	  characterDataHandler(handlerArg,
 		  	       (XML_Char *)s,
-			       (XML_Char *)next - (XML_Char *)s);
+			       (int)((XML_Char *)next - (XML_Char *)s));
       }
       else if (defaultHandler)
 	reportDefault(parser, enc, s, next);
@@ -2489,7 +2489,7 @@ enum XML_Error storeEntityValue(XML_Parser parser,
     case XML_TOK_NONE:
       if (declEntity) {
 	declEntity->textPtr = pool->start;
-	declEntity->textLen = pool->ptr - pool->start;
+	declEntity->textLen = (int)(pool->ptr - pool->start);
 	poolFinish(pool);
       }
       else
@@ -2633,12 +2633,12 @@ reportDefault(XML_Parser parser, const ENCODING *enc, const char *s, const char 
       ICHAR *dataPtr = (ICHAR *)dataBuf;
       XmlConvert(enc, &s, end, &dataPtr, (ICHAR *)dataBufEnd);
       *eventEndPP = s;
-      defaultHandler(handlerArg, dataBuf, dataPtr - (ICHAR *)dataBuf);
+      defaultHandler(handlerArg, dataBuf, (int)(dataPtr - (ICHAR *)dataBuf));
       *eventPP = s;
     } while (s != end);
   }
   else
-    defaultHandler(handlerArg, (XML_Char *)s, (XML_Char *)end - (XML_Char *)s);
+    defaultHandler(handlerArg, (XML_Char *)s, (int)((XML_Char *)end - (XML_Char *)s));
 }
 
 
@@ -3211,7 +3211,7 @@ int poolGrow(STRING_POOL *pool)
     }
   }
   if (pool->blocks && pool->start == pool->blocks->s) {
-    int blockSize = (pool->end - pool->start)*2;
+    int blockSize = (int)((pool->end - pool->start))*2;
     pool->blocks = (BLOCK *)realloc(pool->blocks, offsetof(BLOCK, s) + blockSize * sizeof(XML_Char));
     if (!pool->blocks)
       return 0;
@@ -3222,7 +3222,7 @@ int poolGrow(STRING_POOL *pool)
   }
   else {
     BLOCK *tem;
-    int blockSize = pool->end - pool->start;
+    int blockSize = (int)(pool->end - pool->start);
     if (blockSize < INIT_BLOCK_SIZE)
       blockSize = INIT_BLOCK_SIZE;
     else

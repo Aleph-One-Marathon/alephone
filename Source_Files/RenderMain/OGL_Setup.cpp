@@ -286,7 +286,7 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 	{
 		vector<TextureOptionsEntry>::iterator TOIter = TOList[Collection].begin() + (HashVal & ~Specific_CLUT_Flag);
 		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
-		bool Hash_SCS = (TEST_FLAG(HashVal,Specific_CLUT_Flag) != 0);
+		bool Hash_SCS = TEST_FLAG(HashVal,Specific_CLUT_Flag);
 		if ((Specific_CLUT_Set && Hash_SCS) || ((TOIter->CLUT == ALL_CLUTS) && !Hash_SCS))
 			if (TOIter->Bitmap == Bitmap)
 			{
@@ -409,8 +409,8 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence, short& ModelSe
 	{
 		// First, check in the sequence-map table
 		vector<ModelDataEntry>::iterator MdlIter = MdlList[Collection].begin() + HashVal.ModelIndex;
-		short MSTIndex = HashVal.ModelSeqTabIndex;
-		if (MSTIndex >= 0 && MSTIndex < MdlIter->SequenceMap.size())
+		size_t MSTIndex = static_cast<size_t>(HashVal.ModelSeqTabIndex);  // Cast only safe b/c of following check
+		if (MSTIndex < MdlIter->SequenceMap.size())
 		{
 			vector<SequenceMapEntry>::iterator SMIter = MdlIter->SequenceMap.begin() + MSTIndex;
 			if (SMIter->Sequence == Sequence)

@@ -699,14 +699,14 @@ void damage_player(
 		{
 			case _damage_oxygen_drain:
 				// LP change: pegging to maximum value
-				if ((player->suit_oxygen= MIN(long(player->suit_oxygen)-long(damage_amount),long(INT16_MAX)))<0) player->suit_oxygen= 0;
+				if ((player->suit_oxygen= int16(MIN(long(player->suit_oxygen)-long(damage_amount),long(INT16_MAX))))<0) player->suit_oxygen= 0;
 				if (player_index==current_player_index) mark_oxygen_display_as_dirty();
 				break;
 			
 			default:
 				/* damage the player, recording the kill if the aggressor was another player and we died */
 				// LP change: pegging to maximum value
-				if ((player->suit_energy= MIN(long(player->suit_energy)-long(damage_amount),long(INT16_MAX)))<0)
+				if ((player->suit_energy= int16(MIN(long(player->suit_energy)-long(damage_amount),long(INT16_MAX))))<0)
 				{
 					if (damage->type!=_damage_energy_drain)
 					{
@@ -1920,12 +1920,12 @@ static void DamRecToStream(uint8* &S, damage_record& Object)
 }
 
 
-uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, int Count)
+uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	player_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->identifier);
 		StreamToValue(S,ObjPtr->flags);
@@ -1992,12 +1992,12 @@ uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, int Count)
 	assert((S - Stream) == Count*SIZEOF_player_data);
 	return S;
 }
-uint8 *pack_player_data(uint8 *Stream, player_data *Objects, int Count)
+uint8 *pack_player_data(uint8 *Stream, player_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	player_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->identifier);
 		ValueToStream(S,ObjPtr->flags);

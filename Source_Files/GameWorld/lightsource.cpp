@@ -68,7 +68,6 @@ vector<light_data> LightList;
 static void rephase_light(short light_index);
 
 // LP: "static" removed
-void change_light_state(short light_index, short new_state);
 static struct lighting_function_specification *get_lighting_function_specification(
 	struct static_light_data *data, short state);
 
@@ -278,8 +277,9 @@ bool set_light_status(
 		if (!LIGHT_IS_STATELESS(light))
 		{
 			change_light_state(light_index, new_status ? _light_becoming_active : _light_becoming_inactive);
-			activate_light_activated_trap(light_index); // Hook for Pfhortran procedures
-			assume_correct_switch_position(_panel_is_light_switch, light_index, new_status);
+			assert(light_index == static_cast<size_t>(static_cast<short>(light_index)));
+			activate_light_activated_trap(static_cast<int>(light_index)); // Hook for Pfhortran procedures
+			assume_correct_switch_position(_panel_is_light_switch, static_cast<short>(light_index), new_status);
 			changed= true;
 		}
 	}
@@ -327,8 +327,8 @@ _fixed get_light_intensity(
 
 /* given a state, initialize .phase, .period, .initial_intensity, and .final_intensity */
 // LP: "static" removed
-void change_light_state(
-	short light_index,
+static void change_light_state(
+	size_t light_index,
 	short new_state)
 {
 	struct light_data *light= get_light_data(light_index);
@@ -469,12 +469,12 @@ static _fixed flicker_lighting_proc(
 }
 
 
-uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count)
+uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	old_light_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->flags);
 		
@@ -495,12 +495,12 @@ uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count)
+uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	old_light_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->flags);
 		
@@ -542,12 +542,12 @@ static void LightSpecToStream(uint8* &S, lighting_function_specification& Object
 }
 
 
-uint8 *unpack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count)
+uint8 *unpack_static_light_data(uint8 *Stream, static_light_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	static_light_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->flags);
@@ -569,12 +569,12 @@ uint8 *unpack_static_light_data(uint8 *Stream, static_light_data* Objects, int C
 	return S;
 }
 
-uint8 *pack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count)
+uint8 *pack_static_light_data(uint8 *Stream, static_light_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	static_light_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->flags);
@@ -597,12 +597,12 @@ uint8 *pack_static_light_data(uint8 *Stream, static_light_data* Objects, int Cou
 }
 
 
-uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, int Count)
+uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	light_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->flags);
 		StreamToValue(S,ObjPtr->state);
@@ -623,12 +623,12 @@ uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_light_data(uint8 *Stream, light_data* Objects, int Count)
+uint8 *pack_light_data(uint8 *Stream, light_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	light_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->flags);
 		ValueToStream(S,ObjPtr->state);

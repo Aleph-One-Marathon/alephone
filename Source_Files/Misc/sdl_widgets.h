@@ -275,12 +275,15 @@ public:
 
 	void set_selection(const char *selection);
 
+protected:
+	void set_arg(void *arg) { this->arg = arg; }
+
 private:
 	const char *name, *selection;
 	action_proc proc;
 	void *arg;
 
-	int selection_x;			// X offset of selection display
+	int16 selection_x;			// X offset of selection display
 };
 
 
@@ -302,7 +305,7 @@ public:
 	void click(int x, int y);
 	void event(SDL_Event &e);
 
-	size_t get_selection(void) const {return (num_labels > 0 ? selection : -1);}
+	size_t get_selection(void) const {return (num_labels > 0 ? selection : UNONE);}
 	void set_selection(size_t selection, bool simulate_user_input = false);
 
 	// ZZZ: change labels after creation (used for entry-point selection when game type changes)
@@ -334,7 +337,7 @@ protected:
 	// storage for the data member "labels".
 
 	size_t selection;			// UNONE means unknown selection
-	int label_x;			// X offset of label display
+	int16 label_x;			// X offset of label display
         
 	// ZZZ: storage for callback function
 	selection_changed_callback_t	selection_changed_callback;
@@ -343,7 +346,7 @@ protected:
 //	bool				center_entire_widget;
         
 	// ZZZ: ripped this out for sharing
-	int				get_largest_label_width();
+	uint16				get_largest_label_width();
 };
 
 
@@ -421,15 +424,15 @@ private:
 
 	size_t num_chars;		// Length of text in buffer
 	size_t max_chars;		// Maximum number of chars in buffer
-	int text_x;			// X offset of text display
-	int max_text_width;	// Maximum width of text display
+	int16 text_x;			// X offset of text display
+	uint16 max_text_width;	// Maximum width of text display
 
     // ZZZ: these are used in conjunction with set_name to allow late updating of the real widget rect
     // so that moving from a larger rect to a smaller one correctly erases the leftover space.
     bool    new_rect_valid; // should these be used instead of the widget rect for internal drawing/computation?
     int16     new_rect_x;     // corresponds to rect.x
     uint16     new_rect_w;     // corresponds to rect.w
-    int     new_text_x;     // corresponds to text_x
+    int16     new_text_x;     // corresponds to text_x
 };
 
 
@@ -467,7 +470,7 @@ public:
 private:
 	const char *name;
 
-	int key_x;			// X offset of key name
+	int16 key_x;			// X offset of key name
 
 	SDLKey key;
 	bool binding;		// Flag: next key press will bind key
@@ -523,7 +526,7 @@ public:
 protected:
 	const char *name;
 
-	int slider_x;			// X offset of slider image
+	int16 slider_x;			// X offset of slider image
 
 	int selection;			// Currently selected item
 	int num_items;			// Total number of items
@@ -560,14 +563,14 @@ public:
 
 protected:
 	virtual void draw_items(SDL_Surface *s) const = 0;
-	void draw_image(SDL_Surface *dst, SDL_Surface *s, int x, int y) const;
+	void draw_image(SDL_Surface *dst, SDL_Surface *s, int16 x, int16 y) const;
 	void set_selection(size_t s);
 	void new_items(void);
 	void center_item(size_t i);
 	void set_top_item(size_t i);
 
 	size_t selection;		// Currently selected item
-	int font_height;		// Height of font
+	uint16 font_height;		// Height of font
 
 	size_t num_items;		// Total number of items
 	size_t shown_items;		// Number of shown items
@@ -575,9 +578,9 @@ protected:
 
 	bool thumb_dragging;	// Flag: currently dragging scroll bar thumb
 	SDL_Rect trough_rect;	// Dimensions of trough
-	int thumb_height;		// Height of thumb
-	int min_thumb_height;	// Minimal height of thumb
-	int thumb_y;			// Y position of thumb
+	uint16 thumb_height;		// Height of thumb
+	uint16 min_thumb_height;	// Minimal height of thumb
+	int16 thumb_y;			// Y position of thumb
 
 	int thumb_drag_y;		// Y start position when dragging
 
@@ -602,17 +605,17 @@ protected:
 	void draw_items(SDL_Surface *s) const
 	{
 		typename vector<T>::const_iterator i = items.begin() + top_item;
-		int x = rect.x + get_dialog_space(LIST_L_SPACE);
-		int y = rect.y + get_dialog_space(LIST_T_SPACE);
-		int width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
-		for (size_t n=top_item; n<top_item + MIN(shown_items, num_items); n++, i++, y+=font_height)
+		int16 x = rect.x + get_dialog_space(LIST_L_SPACE);
+		int16 y = rect.y + get_dialog_space(LIST_T_SPACE);
+		uint16 width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+		for (size_t n=top_item; n<top_item + MIN(shown_items, num_items); n++, i++, y=y+font_height)
 			draw_item(i, s, x, y, width, n == selection && active);
 	}
 
 	const vector<T> &items;	// List of items
 
 private:
-	virtual void draw_item(typename vector<T>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const = 0;
+	virtual void draw_item(typename vector<T>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const = 0;
 };
 
 
@@ -631,7 +634,7 @@ public:
 
 	void item_selected(void);
 
-	void draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const;
+	void draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const;
 
 private:
 	dialog *parent;

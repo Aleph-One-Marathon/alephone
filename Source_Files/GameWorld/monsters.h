@@ -331,10 +331,10 @@ void SetPlayerViewAttribs(int16 half_visual_arc, int16 half_vertical_visual_arc,
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, int Count);
-uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, int Count);
-uint8 *unpack_monster_definition(uint8 *Stream, int Count);
-uint8 *pack_monster_definition(uint8 *Stream, int Count);
+uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, size_t Count);
+uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, size_t Count);
+uint8 *unpack_monster_definition(uint8 *Stream, size_t Count);
+uint8 *pack_monster_definition(uint8 *Stream, size_t Count);
 
 
 XML_ElementParser *DamageKicks_GetParser();

@@ -506,7 +506,7 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 			assert((S - SBase) == SIZEOF_high_level_shape_definition);
 			
 			// Do the remaining frame indices
-			long NumFrameIndxs = (SNext - S)/sizeof(int16);
+			size_t NumFrameIndxs = (SNext - S)/sizeof(int16);
 			StreamToList(S,Sequence.low_level_shape_indexes+1,NumFrameIndxs);
 			
 			// Set the offset pointer appropriately:
@@ -1307,8 +1307,8 @@ static void build_shading_tables8(
 }
 #else
 short find_closest_color(
-	struct rgb_color *color,
-	register struct rgb_color *colors,
+	struct rgb_color_value *color,
+	register struct rgb_color_value *colors,
 	short color_count)
 {
 	short i;
@@ -1329,7 +1329,7 @@ short find_closest_color(
 }
 
 static void build_shading_tables8(
-	struct rgb_color *colors,
+	struct rgb_color_value *colors,
 	short color_count,
 	pixel8 *shading_tables)
 {
@@ -1345,8 +1345,8 @@ static void build_shading_tables8(
 		{
 			for (level= 0; level<number_of_shading_tables; ++level)
 			{
-				struct rgb_color *color= colors + start + i;
-				RGBColor result;
+				struct rgb_color_value *color= colors + start + i;
+				rgb_color_value result;
 				
 				result.red= (color->red*level)/(number_of_shading_tables-1);
 				result.green= (color->green*level)/(number_of_shading_tables-1);

@@ -94,7 +94,7 @@ private:
     void list_player(const SSLP_ServiceInstance* player);
     void unlist_player(const SSLP_ServiceInstance* player);
     
-    void draw_item(vector<const SSLP_ServiceInstance*>::const_iterator i, SDL_Surface* s, int x, int y, int width, bool selected) const;
+    void draw_item(vector<const SSLP_ServiceInstance*>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
 };
 
 
@@ -131,7 +131,7 @@ public:
 private:
     void append_chat_entry(const chat_entry& entry);
 
-    void draw_item(vector<chat_entry>::const_iterator i, SDL_Surface* s, int x, int y, int width, bool selected) const;
+    void draw_item(vector<chat_entry>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
 };
 
 
@@ -231,16 +231,17 @@ protected:
 // from the currently active map file
 class w_entry_point_selector : public w_select_button {
 public:
-    w_entry_point_selector(const char* inName, short inGameType, int16 inLevelNumber)
-        : w_select_button(inName, mEntryPoint.level_name, gotSelectedCallback, this), mGameType(NONE)
+    w_entry_point_selector(const char* inName, size_t inGameType, int16 inLevelNumber)
+        : w_select_button(inName, mEntryPoint.level_name, gotSelectedCallback, NULL), mGameType(NONE)
     {
         mEntryPoint.level_number = inLevelNumber;
+		set_arg(this);
 
         setGameType(inGameType);
     }
 
     // Adjusts entry point if new game type is not supported by current entry point.
-    void    setGameType(short inGameType) {
+    void    setGameType(size_t inGameType) {
         if(inGameType != mGameType) {
             mGameType = inGameType;
             validateEntryPoint();
@@ -282,7 +283,7 @@ private:
     void validateEntryPoint();
 
     entry_point         mEntryPoint;
-    short               mGameType;
+    size_t               mGameType;
     size_t                 mCurrentIndex;
     vector<entry_point> mEntryPoints;
 };

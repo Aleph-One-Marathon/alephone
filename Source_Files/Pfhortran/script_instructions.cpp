@@ -725,7 +725,7 @@ bool script_Camera_Active(void)
 					roll_count = script_paths[cameras[current_camera].path].roll_speed;
 					
 							
-					offset_yaw = abs(camera_point.location.yaw - 
+					offset_yaw = (float)abs(camera_point.location.yaw - 
 						script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.yaw);
 						
 					if (offset_yaw / roll_count < 1)
@@ -734,7 +734,7 @@ bool script_Camera_Active(void)
 					offset_yaw /= roll_count;
 					
 								
-					offset_pitch = abs(camera_point.location.pitch - 
+					offset_pitch = (float)abs(camera_point.location.pitch - 
 						script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch);
 					
 					if (offset_pitch / roll_count < 1)
@@ -937,10 +937,10 @@ void s_Set_Tag_State(script_instruction inst)
 		}
 		
 	// AlexJLS: needless if statements removed
-	set_tagged_light_statuses(int16(temp), temp2);
-	try_and_change_tagged_platform_states(int16(temp), temp2); 
+	set_tagged_light_statuses(int16(temp), (temp2 < -0.5) || (temp2 > 0.5));
+	try_and_change_tagged_platform_states(int16(temp), (temp2 < -0.5) || (temp2 > 0.5)); 
 	
-	assume_correct_switch_position(_panel_is_tag_switch, int16(temp), temp2);
+	assume_correct_switch_position(_panel_is_tag_switch, int16(temp), (temp2 < -0.5) || (temp2 > 0.5));
 	
 }
 
@@ -1352,7 +1352,7 @@ void s_Get_My_Value(script_instruction inst)
 	if (inst.mode == 0)
 		return;
 		
-	set_variable(int(inst.op1),get_trap_value(current_trap));
+	set_variable(static_cast<int>(inst.op1),static_cast<float>(get_trap_value(current_trap)));
 }
 
 void s_Add_Item(script_instruction inst)
@@ -2024,16 +2024,16 @@ void s_Change_Soundtrack(script_instruction inst)
 
 void s_Set_Fog_Depth(script_instruction inst)
 {
-	int temp;
+	double temp;
 
 	switch(inst.mode)
 	{
 		case 0:
-			temp= (int)floor(inst.op1);
+			temp= floor(inst.op1);
 			break;
 			
 		case 1:
-			temp= (int)floor(get_variable(int(inst.op1)));
+			temp= floor(get_variable(int(inst.op1)));
 			break;
 			
 		default:
@@ -2041,7 +2041,7 @@ void s_Set_Fog_Depth(script_instruction inst)
 			break;
  	}
  	
-	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = temp;
+	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = static_cast<float>(temp);
 }
 
 void s_Set_Fog_Color(script_instruction inst)
@@ -2115,16 +2115,16 @@ void s_Get_Fog_Color(script_instruction inst)
 
 void s_Set_UnderFog_Depth(script_instruction inst)
 {
-	int temp;
+	double temp;
 
 	switch(inst.mode)
 	{
 		case 0:
-			temp= (int)floor(inst.op1);
+			temp= floor(inst.op1);
 			break;
 			
 		case 1:
-			temp= (int)floor(get_variable(int(inst.op1)));
+			temp= floor(get_variable(int(inst.op1)));
 			break;
 			
 		default:
@@ -2132,7 +2132,7 @@ void s_Set_UnderFog_Depth(script_instruction inst)
 			break;
  	}
  	
-	OGL_GetFogData(OGL_Fog_BelowLiquid)->Depth = temp;
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->Depth = static_cast<float>(temp);
 }
 
 void s_Set_UnderFog_Color(script_instruction inst)
@@ -2801,7 +2801,7 @@ void s_Monster_Get_Friend(script_instruction inst)
 	if(SLOT_IS_USED(theMonster))
 		{
 		theDef = get_monster_definition_external(theMonster->type);
-		set_variable((int)inst.op3, theDef->friends & 1<<monsterClass);
+		set_variable(static_cast<int>(inst.op3), static_cast<float>(theDef->friends & 1<<monsterClass));
 //		dprintf("weakness was %d\n", theDef->friends & 1<<monsterClass);
 		}
 
@@ -2903,7 +2903,7 @@ void s_Monster_Get_Enemy(script_instruction inst)
 	if(SLOT_IS_USED(theMonster))
 		{
 		theDef = get_monster_definition_external(theMonster->type);
-		set_variable((int)inst.op3, theDef->enemies & 1<<monsterClass);
+		set_variable(static_cast<int>(inst.op3), static_cast<float>(theDef->enemies & 1<<monsterClass));
 //		dprintf("enemy was %d\n", theDef->friends & 1<<monsterClass);
 		}
 }
@@ -3084,97 +3084,97 @@ void s_Get_Monster_Poly(script_instruction inst)
 
 void s_Set_Platform_State(script_instruction inst)
 {
-	float polygon_index, state;
+	short polygon_index;
+	bool state;
 	
 	switch(inst.mode)
 	{
 		case 0:
-			polygon_index = int(inst.op1);
-			state = int(inst.op2);
+			polygon_index = static_cast<short>(inst.op1);
+			state = inst.op2 != 0;
 			break;
 			
 		case 1:
-			polygon_index = get_variable(int(inst.op1));
-			state = int(inst.op2);
+			polygon_index = static_cast<short>(get_variable(int(inst.op1)));
+			state = inst.op2 != 0;
 			break;
 			
 		case 2:
-			polygon_index = int(inst.op1);
-			state = get_variable(int(inst.op2));
+			polygon_index = static_cast<short>(inst.op1);
+			state = get_variable(int(inst.op2)) != 0;
 			break;
 			
 		case 3:
-			polygon_index = get_variable(int(inst.op1));
-			state = get_variable(int(inst.op2));
+			polygon_index = static_cast<short>(get_variable(int(inst.op1)));
+			state = get_variable(int(inst.op2)) != 0;
 			break;
 		
 		default:
 			return;
 	}
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	struct polygon_data *polygon = get_polygon_data(polygon_index);
 	if (polygon)
 	{
 		if (polygon->type == _polygon_is_platform)
 		{	
-			try_and_change_platform_state(short(polygon->permutation), state != 0);
-			assume_correct_switch_position(_panel_is_platform_switch, short(polygon->permutation), state != 0);
+			try_and_change_platform_state(short(polygon->permutation), state);
+			assume_correct_switch_position(_panel_is_platform_switch, short(polygon->permutation), state);
 		}
 	}
 }
 
 void s_Get_Platform_State(script_instruction inst)
 {
-	float polygon_index;
-	
-	polygon_index = inst.op1;
+	short polygon_index;
 	
 	switch(inst.mode)
 	{
 		case 2:
-			polygon_index = int(inst.op1);
+			polygon_index = static_cast<short>(inst.op1);
 			break;
 			
 		case 3:
-			polygon_index = get_variable(int(inst.op1));
+			polygon_index = static_cast<short>(get_variable(int(inst.op1)));
 			break;
 		
 		default:
 			return;
 	}
 	
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	struct polygon_data *polygon = get_polygon_data(polygon_index);
 	if (polygon)
 	{
 		if (polygon->type == _polygon_is_platform)
 		{
-			set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(get_platform_data(short(polygon->permutation))) ? 1 : 0);
+			set_variable(int(inst.op2), (PLATFORM_IS_ACTIVE(get_platform_data(short(polygon->permutation)))) ? 1.0F : 0.0F);
 		}
 	}
 }
 
 void s_Play_Sound(script_instruction inst)
 {
-	float sound_index, pitch;
+	float pitch;
+	short sound_index;
 	
 	switch(inst.mode)
 	{
 		case 0:
-			sound_index = int(inst.op1);
+			sound_index = static_cast<short>(inst.op1);
 			pitch = inst.op2;
 			break;
 			
 		case 1:
-			sound_index = get_variable(int(inst.op1));
+			sound_index = static_cast<short>(get_variable(int(inst.op1)));
 			pitch = inst.op2;
 			break;
 			
 		case 2:
-			sound_index = int(inst.op1);
+			sound_index = static_cast<short>(inst.op1);
 			pitch = get_variable(int(inst.op2));
 			break;
 			
 		case 3:
-			sound_index = get_variable(int(inst.op1));
+			sound_index = static_cast<short>(get_variable(int(inst.op1)));
 			pitch = get_variable(int(inst.op2));
 			break;
 		
@@ -3184,60 +3184,62 @@ void s_Play_Sound(script_instruction inst)
 	
 	// Purely local sound: args are which sound index
 	// and which pitch multiplier (1.0 = no pitch change)
-	_play_sound(short(sound_index), NULL, NONE, _fixed(FIXED_ONE*pitch));
+	_play_sound(sound_index, NULL, NONE, _fixed(FIXED_ONE*pitch));
 }
 
 void s_Set_Light_State(script_instruction inst)
 {
-	float light_index, state;
+	size_t light_index;
+	float state;
 	
 	switch(inst.mode)
 	{
 		case 0:
-			light_index = int(inst.op1);
-			state = int(inst.op2);
+			light_index = static_cast<size_t>(inst.op1);
+			state = inst.op2;
 			break;
 			
 		case 1:
-			state = int(inst.op2);
-			light_index = get_variable(int(inst.op1));
+			light_index = static_cast<size_t>(get_variable(int(inst.op1)));
+			state = inst.op2;
 			break;
 			
 		case 2:
-			light_index = int(inst.op1);
+			light_index = static_cast<size_t>(inst.op1);
 			state = get_variable(int(inst.op2));
 			break;
 			
 		case 3:
-			light_index = get_variable(int(inst.op1));
+			light_index = static_cast<size_t>(get_variable(int(inst.op1)));
 			state = get_variable(int(inst.op2));
 			break;
 		
 		default:
 			return;
 	}
-	set_light_status(short(light_index), state ? 1 : 0);
-	assume_correct_switch_position(_panel_is_light_switch, short(light_index), state ? 1 : 0);
+	set_light_status(light_index, (state < -0.5) || (state > 0.5));
+	assert(light_index == static_cast<size_t>(static_cast<short>(light_index)));
+	assume_correct_switch_position(_panel_is_light_switch, static_cast<short>(light_index), (state < -0.5) || (state > 0.5));
 }
 
 void s_Get_Light_State(script_instruction inst)
 {
-	float light_index;
+	size_t light_index;
 	
 	switch(inst.mode)
 	{
 		case 2:
-			light_index = int(inst.op1);
+			light_index = static_cast<size_t>(inst.op1);
 			break;
 		
 		case 3:
-			light_index = get_variable(int(inst.op1));
+			light_index = static_cast<size_t>(get_variable(int(inst.op1)));
 			break;
 		
 		default:
 			return;
 	}
-	set_variable(int(inst.op2), get_light_status(short(light_index)) ? 1 : 0);
+	set_variable(int(inst.op2), get_light_status(light_index) ? 1.0F : 0.0F);
 }
 
 void s_Get_Player_Poly(script_instruction inst)
@@ -3250,21 +3252,21 @@ void s_Get_Player_Poly(script_instruction inst)
 
 void s_Get_Fog_Presence(script_instruction inst)
 {
-	if (inst.mode = 1) set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent ? 1 : 0);
+	if (inst.mode = 1) set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent ? 1.0F : 0.0F);
 }
 
 void s_Set_Fog_Presence(script_instruction inst)
 {
-	float temp;
+	bool temp;
 
 	switch(inst.mode)
 	{		
 	case 0:
-		temp = int(inst.op1);
+		temp = (inst.op1 < -0.5) || (inst.op1 > 0.5);
 		break;
 		
 	case 1:
-		temp = get_variable(int(inst.op1));
+		temp = get_variable(int(inst.op1)) != 0;
 		break;
 		
 	default:
@@ -3276,7 +3278,7 @@ void s_Set_Fog_Presence(script_instruction inst)
 
 void s_Get_UnderFog_Presence(script_instruction inst)
 {
-	if (inst.mode = 1) set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent ? 1 : 0);
+	if (inst.mode = 1) set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent ? 1.0F : 0.0F);
 }
 
 void s_Set_UnderFog_Presence(script_instruction inst)
@@ -3286,7 +3288,7 @@ void s_Set_UnderFog_Presence(script_instruction inst)
 	switch(inst.mode)
 	{
 	case 0:
-		temp = int(inst.op1);
+		temp = inst.op1;
 		break;
 		
 	case 1:
@@ -3297,7 +3299,7 @@ void s_Set_UnderFog_Presence(script_instruction inst)
 		return;
 	}
 	
-	OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent = (temp != 0);
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent = (temp < -0.5) || (temp > 0.5);
 }
 
 void s_Remove_Item(script_instruction inst)
@@ -3711,7 +3713,7 @@ void s_Get_Platform_Player_Control(script_instruction inst)
 		{
 			struct platform_data *platform = get_platform_data(polygon->permutation);
 			if (platform)
-				set_variable(int(inst.op1), PLATFORM_IS_PLAYER_CONTROLLABLE(platform) ? 1 : 0);
+				set_variable(int(inst.op1), PLATFORM_IS_PLAYER_CONTROLLABLE(platform) ? 1.0F : 0.0F);
 		}
 	}
 }
@@ -3788,7 +3790,7 @@ void s_Get_Platform_Monster_Control(script_instruction inst)
 			platform = get_platform_data(polygon->permutation);
 			if (platform)
 			{
-				set_variable(int(inst.op1), PLATFORM_IS_MONSTER_CONTROLLABLE(platform) ? 1 : 0);
+				set_variable(int(inst.op1), PLATFORM_IS_MONSTER_CONTROLLABLE(platform) ? 1.0F : 0.0F);
 			}
 		}
 	}
@@ -3975,16 +3977,16 @@ void s_Get_Motion_Sensor_State(script_instruction inst)
 
 void s_Set_Motion_Sensor_State(script_instruction inst)
 {
-	int value;
+	bool value;
 	
 	switch(inst.mode)
 	{
 		case 0:
-			value = int(inst.op1);
+			value = (inst.op1 != 0.0F);
 			break;
 			
 		case 1:
-			value = int(get_variable(int(inst.op1)));
+			value = (get_variable(int(inst.op1)) != 0.0F);
 			break;
 			
 		default:

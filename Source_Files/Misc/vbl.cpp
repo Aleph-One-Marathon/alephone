@@ -159,8 +159,8 @@ static bool vblFSRead(OpenedFile& File, long *count, void *dest, bool& HitEOF);
 static void record_action_flags(short player_identifier, uint32 *action_flags, short count);
 static short get_recording_queue_size(short which_queue);
 
-static uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, int Count);
-static uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, int Count);
+static uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, size_t Count);
+static uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, size_t Count);
 
 // #define DEBUG_REPLAY
 
@@ -1171,12 +1171,12 @@ static void GameDataToStream(uint8* &S, game_data& Object)
 }
 
 
-uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, int Count)
+uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	recording_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->length);
 		StreamToValue(S,ObjPtr->num_players);
@@ -1192,19 +1192,19 @@ uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, int Cou
 	return S;
 }
 
-uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, int Count)
+uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	recording_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->length);
 		ValueToStream(S,ObjPtr->num_players);
 		ValueToStream(S,ObjPtr->level_number);
 		ValueToStream(S,ObjPtr->map_checksum);
 		ValueToStream(S,ObjPtr->version);
-		for (int m = 0; m < MAXIMUM_NUMBER_OF_PLAYERS; m++)
+		for (size_t m = 0; m < MAXIMUM_NUMBER_OF_PLAYERS; m++)
 			PlayerStartToStream(S,ObjPtr->starts[m]);
 		GameDataToStream(S,ObjPtr->game_information);
 	}

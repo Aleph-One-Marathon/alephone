@@ -158,7 +158,7 @@ long get_size_of_directory_data(struct wad_header *header);
 
 /* Given a wad, extract the given tag from it */
 void *extract_type_from_wad(struct wad_data *wad, WadDataType type, 
-	long *length);
+	size_t *length);
 
 /* Calculate the length of the wad */
 long calculate_wad_length(struct wad_header *file_header, struct wad_data *wad);
@@ -210,8 +210,8 @@ struct wad_data *append_data_to_wad(
 	struct wad_data *wad, 
 	WadDataType type, 
 	void *data, 
-	long size, 
-	long offset);
+	size_t size, 
+	size_t offset);
 
 void remove_tag_from_wad(struct wad_data *wad, WadDataType type);
 	

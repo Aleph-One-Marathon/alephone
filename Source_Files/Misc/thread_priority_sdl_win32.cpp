@@ -32,7 +32,7 @@ TryToReduceMainThreadPriority() {
 
 bool
 BoostThreadPriority(SDL_Thread* inThread) {
-    HANDLE	theTargetThread = (HANDLE)SDL_GetThreadID(inThread);
+    HANDLE	theTargetThread = OpenThread(STANDARD_RIGHTS_REQUIRED | THREAD_SET_INFORMATION, FALSE, SDL_GetThreadID(inThread));
 
     // This seems to work on Win 98, hope it does on others too!
     if(SetThreadPriority(theTargetThread, THREAD_PRIORITY_TIME_CRITICAL) == 0)

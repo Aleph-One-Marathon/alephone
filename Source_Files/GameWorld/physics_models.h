@@ -96,7 +96,7 @@ static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS]=
 };
 
 // Added for the convenience of the 1-2-3 Converter
-uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, int Count);
-uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, int Count);
+uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t Count);
+uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t Count);
 
 #endif

@@ -101,8 +101,8 @@ public:
     virtual void logMessageV(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, va_list inArgs);
 protected:
     vector<string>	mContextStack;
-    unsigned int	mMostRecentCommonStackDepth;
-    unsigned int	mMostRecentlyPrintedStackDepth;
+    size_t	mMostRecentCommonStackDepth;
+    size_t	mMostRecentlyPrintedStackDepth;
 };
 
 
@@ -144,7 +144,7 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
     // Also eventually some logged messages could be posted in a dialog in addition to appended to the file.
     if(inLevel < sLoggingThreshhold) {
         char	stringBuffer[kStringBufferSize];
-        unsigned int firstDepthToPrint = mMostRecentCommonStackDepth;
+        size_t firstDepthToPrint = mMostRecentCommonStackDepth;
     /*
         // This was designed to give a little context when coming back from deep stacks, but it seems
         // rather annoying to me in practice.  (Maybe should be set to only kick in for bigger stack depth differences,
@@ -152,7 +152,7 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
         if(mMostRecentlyPrintedStackDepth != mMostRecentCommonStackDepth && firstDepthToPrint > 0)
             firstDepthToPrint--;
     */
-        for(unsigned int depth = firstDepthToPrint; depth < mContextStack.size(); depth++) {
+        for(size_t depth = firstDepthToPrint; depth < mContextStack.size(); depth++) {
             string	theString(depth * 2, ' ');
     
             theString += "while ";

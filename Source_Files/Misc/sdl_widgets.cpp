@@ -294,11 +294,12 @@ void w_button::click(int /*x*/, int /*y*/)
  *  Button on left/right side of dialog box
  */
 
-const int LR_BUTTON_OFFSET = 100;
+const uint16 LR_BUTTON_OFFSET = 100;
 
 int w_left_button::layout(void)
 {
-	rect.x = -(LR_BUTTON_OFFSET + rect.w) / 2;
+	rect.x = (LR_BUTTON_OFFSET + rect.w) / 2;
+	rect.x = -rect.x; // MVCPP Warnings require this funny way of doing things.  Yuck!
 	return 0;	// This will place the right button on the same y position
 }
 
@@ -313,7 +314,7 @@ int w_right_button::layout(void)
  *  Selection button
  */
 
-const int MAX_TEXT_WIDTH = 200;
+const uint16 MAX_TEXT_WIDTH = 200;
 
 // ZZZ: how come we have to do this?  because of that "&" in the typedef for action_proc?
 // Anyway, this fixes the "crash when clicking in the Environment menu" bug we've seen
@@ -324,11 +325,11 @@ w_select_button::w_select_button(const char *n, const char *s, action_proc p, vo
 
 int w_select_button::layout(void)
 {
-	int name_width = text_width(name, font, style);
-	int max_selection_width = MAX_TEXT_WIDTH;
-	int spacing = get_dialog_space(LABEL_ITEM_SPACE);
+	uint16 name_width = text_width(name, font, style);
+	uint16 max_selection_width = MAX_TEXT_WIDTH;
+	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
 
-	rect.x = -(spacing / 2 + name_width);
+	rect.x = -spacing / 2 - name_width;
 	rect.w = name_width + spacing + max_selection_width;
 	rect.h = font->get_line_height();
 	selection_x = name_width + spacing;
@@ -407,13 +408,13 @@ int w_select::layout(void)
 
     int theResult = widget::layout();
     
-    int name_width = text_width(name, font, style);
+    uint16 name_width = text_width(name, font, style);
 
-	int max_label_width = get_largest_label_width();
+	uint16 max_label_width = get_largest_label_width();
         
 	max_label_width += 6;
 
-	int spacing = get_dialog_space(LABEL_ITEM_SPACE);
+	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
 
 	rect.w = name_width + spacing + max_label_width;
 /*
@@ -425,9 +426,9 @@ int w_select::layout(void)
 
         // We do this so widget contributes minimally to dialog layout unless we're forcing natural alignment.
 	if(widget_alignment == kAlignNatural)
-            rect.x = -(spacing / 2 + name_width);
+            rect.x = -spacing / 2 - name_width;
         else
-            rect.x = -(rect.w / 2);
+            rect.x = -rect.w / 2;
             
     //	return rect.h;
     return theResult;
@@ -541,7 +542,7 @@ void w_select::set_labels_stringset(short inStringSetID) {
         labels = (const char**)malloc(sizeof(const char*) * (num_labels + 1));
         labels[num_labels] = NULL;
         
-		for(short i = 0; i < static_cast<short>(num_labels); i++) {
+		for(size_t i = 0; i < num_labels; i++) {
             // shared references should be OK, stringsets ought to be pretty stable.  No need to copy...
             labels[i] = TS_GetCString(inStringSetID, i);
         }
@@ -575,10 +576,10 @@ void w_select::selection_changed(void)
 
 
 // ZZZ addition
-int w_select::get_largest_label_width() {
-    int max_label_width = 0;
+uint16 w_select::get_largest_label_width() {
+    uint16 max_label_width = 0;
     for (size_t i=0; i<num_labels; i++) {
-            int width = text_width(labels[i], font, style);
+            uint16 width = text_width(labels[i], font, style);
             if (width > max_label_width)
                     max_label_width = width;
     }
@@ -659,11 +660,11 @@ int w_text_entry::layout(void)
 {
 	rect.h = font->get_line_height();
     int theResult = widget::layout();
-    int name_width = text_width(name, font, style);
+    uint16 name_width = text_width(name, font, style);
 	max_text_width = MAX_TEXT_WIDTH;
-	int spacing = get_dialog_space(LABEL_ITEM_SPACE);
+	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
 
-	rect.x = -(spacing / 2 + name_width);
+	rect.x = -spacing / 2 - name_width;
 	rect.w = name_width + spacing + max_text_width;
 	text_x = name_width + spacing;
 
@@ -686,7 +687,7 @@ void w_text_entry::draw(SDL_Surface *s) const
 
 	// Text
     int16 x = theRectX + theTextX;
-	int width = text_width(buf, text_font, text_style);
+	uint16 width = text_width(buf, text_font, text_style);
 	if (width > max_text_width)
 		x -= width - max_text_width;
 	set_drawing_clip_rectangle(0, theRectX + theTextX, static_cast<uint16>(s->h), theRectX + theRectW);
@@ -796,10 +797,10 @@ void w_text_entry::set_name(const char* inName)
         }
     
         // This calculation based on w_text_entry::layout(), we "invert" its operation a bit.
-            int spacing         = get_dialog_space(LABEL_ITEM_SPACE);
-        int old_name_width  = rect.w - spacing - max_text_width;
-        int new_name_width  = text_width(inName, font, style);
-        int name_width_diff = new_name_width - old_name_width;
+		uint16 spacing         = get_dialog_space(LABEL_ITEM_SPACE);
+        uint16 old_name_width  = rect.w - spacing - max_text_width;
+        uint16 new_name_width  = text_width(inName, font, style);
+        int16 name_width_diff = new_name_width - old_name_width;
     
         if(name_width_diff != 0) {
             // Note here we now keep a "new width" and "new x".  We need the rect to stay where it was
@@ -851,6 +852,7 @@ w_text_entry::capture_layout_information(int16 leftmost_x, int16 usable_width) {
     widget::capture_layout_information(leftmost_x, usable_width);
 
     if(full_width) {
+		assert(rect.w >= text_x);
         max_text_width	= rect.w - text_x;
     }
 }
@@ -920,10 +922,10 @@ w_key::w_key(const char *n, SDLKey key) : widget(LABEL_FONT), name(n), binding(f
 
 int w_key::layout(void)
 {
-	int name_width = text_width(name, font, style);
-	int spacing = get_dialog_space(LABEL_ITEM_SPACE);
+	uint16 name_width = text_width(name, font, style);
+	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
 
-	rect.x = -(spacing / 2 + name_width);
+	rect.x = -spacing / 2 - name_width;
 	rect.w = name_width + spacing + text_width(WAITING_TEXT, font, style);
 	rect.h = font->get_line_height();
 	key_x = name_width + spacing;
@@ -1037,12 +1039,12 @@ w_slider::~w_slider()
 
 int w_slider::layout(void)
 {
-	int name_width = text_width(name, font, style);
-	int spacing = get_dialog_space(LABEL_ITEM_SPACE);
+	uint16 name_width = text_width(name, font, style);
+	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
 
-	rect.x = -(spacing / 2 + name_width);
+	rect.x = -spacing / 2 - name_width;
 	rect.w = name_width + spacing + SLIDER_WIDTH;
-	rect.h = MAX(font->get_line_height(), slider_c->h);
+	rect.h = MAX(font->get_line_height(), static_cast<uint16>(slider_c->h));
 	slider_x = name_width + spacing;
 	set_selection(selection);
 
@@ -1140,7 +1142,7 @@ w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(IT
 {
 	font_height = font->get_line_height();
 	rect.w = width;
-	rect.h = font_height * shown_items + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE);
+	rect.h = font_height * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE);
 
 	frame_tl = get_dialog_image(LIST_TL_IMAGE);
 	frame_tr = get_dialog_image(LIST_TR_IMAGE);
@@ -1159,7 +1161,7 @@ w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(IT
 	thumb_bc = NULL;
 	thumb_b = get_dialog_image(THUMB_B_IMAGE);
 
-	min_thumb_height = thumb_t->h + thumb_tc_unscaled->h + thumb_c->h + thumb_bc_unscaled->h + thumb_b->h;
+	min_thumb_height = static_cast<uint16>(thumb_t->h + thumb_tc_unscaled->h + thumb_c->h + thumb_bc_unscaled->h + thumb_b->h);
 
 	trough_rect.x = rect.w - get_dialog_space(TROUGH_R_SPACE);
 	trough_rect.y = get_dialog_space(TROUGH_T_SPACE);
@@ -1183,7 +1185,7 @@ int w_list_base::layout(void)
 	return rect.h;
 }
 
-void w_list_base::draw_image(SDL_Surface *dst, SDL_Surface *s, int x, int y) const
+void w_list_base::draw_image(SDL_Surface *dst, SDL_Surface *s, int16 x, int16 y) const
 {
 	SDL_Rect r = {x, y, static_cast<Uint16>(s->w), static_cast<Uint16>(s->h)};
 	SDL_BlitSurface(s, NULL, dst, &r);
@@ -1192,25 +1194,25 @@ void w_list_base::draw_image(SDL_Surface *dst, SDL_Surface *s, int x, int y) con
 void w_list_base::draw(SDL_Surface *s) const
 {
 	// Draw frame
-	int x = rect.x;
-	int y = rect.y;
+	int16 x = rect.x;
+	int16 y = rect.y;
 	draw_image(s, frame_tl, x, y);
-	draw_image(s, frame_t, x + frame_tl->w, y);
-	draw_image(s, frame_tr, x + frame_tl->w + frame_t->w, y);
-	draw_image(s, frame_l, x, y + frame_tl->h);
-	draw_image(s, frame_r, x + rect.w - frame_r->w, y + frame_tr->h);
-	draw_image(s, frame_bl, x, y + frame_tl->h + frame_l->h);
-	draw_image(s, frame_b, x + frame_bl->w, y + rect.h - frame_b->h);
-	draw_image(s, frame_br, x + frame_bl->w + frame_b->w, y + frame_tr->h + frame_r->h);
+	draw_image(s, frame_t, x + static_cast<int16>(frame_tl->w), y);
+	draw_image(s, frame_tr, x + static_cast<int16>(frame_tl->w) + static_cast<int16>(frame_t->w), y);
+	draw_image(s, frame_l, x, y + static_cast<int16>(frame_tl->h));
+	draw_image(s, frame_r, x + rect.w - static_cast<int16>(frame_r->w), y + static_cast<int16>(frame_tr->h));
+	draw_image(s, frame_bl, x, y + static_cast<int16>(frame_tl->h) + static_cast<int16>(frame_l->h));
+	draw_image(s, frame_b, x + static_cast<int16>(frame_bl->w), y + rect.h - static_cast<int16>(frame_b->h));
+	draw_image(s, frame_br, x + static_cast<int16>(frame_bl->w) + static_cast<int16>(frame_b->w), y + static_cast<int16>(frame_tr->h) + static_cast<int16>(frame_r->h));
 
 	// Draw thumb
 	x = rect.x + trough_rect.x;
 	y = rect.y + thumb_y;
 	draw_image(s, thumb_t, x, y);
-	draw_image(s, thumb_tc, x, y += thumb_t->h);
-	draw_image(s, thumb_c, x, y += thumb_tc->h);
-	draw_image(s, thumb_bc, x, y += thumb_c->h);
-	draw_image(s, thumb_b, x, y += thumb_bc->h);
+	draw_image(s, thumb_tc, x, y = y + static_cast<int16>(thumb_t->h));
+	draw_image(s, thumb_c, x, y = y + static_cast<int16>(thumb_tc->h));
+	draw_image(s, thumb_bc, x, y = y + static_cast<int16>(thumb_c->h));
+	draw_image(s, thumb_b, x, y = y + static_cast<int16>(thumb_bc->h));
 
 	// Draw items
 	draw_items(s);
@@ -1311,9 +1313,9 @@ void w_list_base::new_items(void)
 	if (num_items <= shown_items)
 		thumb_height = trough_rect.h;
 	else if (num_items == 0)
-		thumb_height = shown_items * trough_rect.h;
+		thumb_height = static_cast<uint16>(shown_items) * trough_rect.h;
 	else
-		thumb_height = int(float(shown_items * trough_rect.h) / num_items + 0.5);
+		thumb_height = uint16(float(shown_items * trough_rect.h) / num_items + 0.5);
 	if (thumb_height < min_thumb_height)
 		thumb_height = min_thumb_height;
 	else if (thumb_height > trough_rect.h)
@@ -1350,10 +1352,10 @@ void w_list_base::set_top_item(size_t i)
 	if (num_items == 0)
 		thumb_y = 0;
 	else
-		thumb_y = int(float(top_item * trough_rect.h) / num_items + 0.5);
+		thumb_y = int16(float(top_item * trough_rect.h) / num_items + 0.5);
 	if (thumb_y > trough_rect.h - thumb_height)
 		thumb_y = trough_rect.h - thumb_height;
-	thumb_y += trough_rect.y;
+	thumb_y = thumb_y + trough_rect.y;
 }
 
 
@@ -1382,9 +1384,9 @@ w_levels::item_selected(void)
 }
 
 void
-w_levels::draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
+w_levels::draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const
 {
-	y += font->get_ascent();
+	y = y + font->get_ascent();
 	char str[256];
 
     if(show_level_numbers)
@@ -1392,7 +1394,7 @@ w_levels::draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int x
     else
         sprintf(str, "%s", i->level_name);
 
-	set_drawing_clip_rectangle(0, x, s->h, x + width);
+	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
 	draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }

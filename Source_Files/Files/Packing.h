@@ -39,16 +39,16 @@
 	ValueToStream(uint8* &Stream, T Number)
 		packs a numerical value (T is int16, uint16, int32, uint32) into a stream
 	
-	StreamToList(uint8* &Stream, T* List, int Count)
+	StreamToList(uint8* &Stream, T* List, size_t Count)
 		unpacks a stream into a list of numerical values (T is int16, uint16, int32, uint32)
 	
-	ListToStream(uint8* &Stream, const T* List, int Count)
+	ListToStream(uint8* &Stream, const T* List, size_t Count)
 		packs a list of numerical values (T is int16, uint16, int32, uint32) into a stream
 	
-	StreamToBytes(uint8* &Stream, void* Bytes, int Count)
+	StreamToBytes(uint8* &Stream, void* Bytes, size_t Count)
 		unpacks a stream into a block of bytes
 	
-	BytesToStream(uint8* &Stream, const void* Bytes, int Count)
+	BytesToStream(uint8* &Stream, const void* Bytes, size_t Count)
 		packs a block of bytes into a stream
 
 Aug 27, 2002 (Alexander Strange):
@@ -90,10 +90,10 @@ extern void ValueToStream(uint8* &Stream, uint32 Value);
 extern void ValueToStream(uint8* &Stream, int32 Value);
 
 #ifndef PACKING_INTERNAL
-template<class T> inline static void StreamToList(uint8* &Stream, T* List, int Count)
+template<class T> inline static void StreamToList(uint8* &Stream, T* List, size_t Count)
 {
     T* ValuePtr = List;
-    for (int k=0; k<Count; k++)
+    for (size_t k=0; k<Count; k++)
         StreamToValue(Stream,*(ValuePtr++));
 }
 
@@ -105,13 +105,13 @@ template<class T> inline static void ListToStream(uint8* &Stream, T* List, size_
         ValueToStream(Stream,*(ValuePtr++));
 }
 
-inline static void StreamToBytes(uint8* &Stream, void* Bytes, int Count)
+inline static void StreamToBytes(uint8* &Stream, void* Bytes, size_t Count)
 {
     memcpy(Bytes,Stream,Count);
     Stream += Count;
 }
 
-inline static void BytesToStream(uint8* &Stream, const void* Bytes, int Count)
+inline static void BytesToStream(uint8* &Stream, const void* Bytes, size_t Count)
 {
     memcpy(Stream,Bytes,Count);
     Stream += Count;

@@ -573,9 +573,9 @@ short get_level_number_from_user(void)
 	d.add(new w_button("CANCEL", dialog_cancel, &d));
 
 	// Run dialog
-	int level;
+	short level;
 	if (d.run() == 0)		// OK
-		level = level_w->get_selection();
+		level = static_cast<short>(level_w->get_selection());
 	else
 		level = NONE;
 
@@ -593,7 +593,7 @@ class w_file_list : public w_list<dir_entry> {
 public:
 	w_file_list(const vector<dir_entry> &items) : w_list<dir_entry>(items, 400, 15, 0) {}
 
-	void draw_item(vector<dir_entry>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
+	void draw_item(vector<dir_entry>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const
 	{
 		y += font->get_ascent();
 		set_drawing_clip_rectangle(0, x, s->h, x + width);

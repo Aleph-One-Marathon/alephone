@@ -4037,12 +4037,12 @@ inline void ShellDataToStream(uint8* &S, shell_casing_data& Object)
 }
 
 
-uint8 *unpack_player_weapon_data(uint8 *Stream, int Count)
+uint8 *unpack_player_weapon_data(uint8 *Stream, size_t Count)
 {
 	uint8* S = Stream;
 	player_weapon_data* ObjPtr = player_weapons_array;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->current_weapon);
 		StreamToValue(S,ObjPtr->desired_weapon);
@@ -4055,18 +4055,18 @@ uint8 *unpack_player_weapon_data(uint8 *Stream, int Count)
 	return S;
 }
 
-uint8 *pack_player_weapon_data(uint8 *Stream, int Count)
+uint8 *pack_player_weapon_data(uint8 *Stream, size_t Count)
 {
 	uint8* S = Stream;
 	player_weapon_data* ObjPtr = player_weapons_array;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->current_weapon);
 		ValueToStream(S,ObjPtr->desired_weapon);
-		for (unsigned m=0; m<NUMBER_OF_WEAPONS; m++)
+		for (size_t m=0; m<NUMBER_OF_WEAPONS; m++)
 			WeapDataToStream(S,ObjPtr->weapons[m]);
-		for (unsigned m=0; m<MAXIMUM_SHELL_CASINGS; m++)
+		for (size_t m=0; m<MAXIMUM_SHELL_CASINGS; m++)
 			ShellDataToStream(S,ObjPtr->shell_casings[m]);
 	}
 	assert((S - Stream) == Count*SIZEOF_player_weapon_data);
@@ -4118,17 +4118,17 @@ inline void TrigDefDataToStream(uint8* &S, trigger_definition& Object)
 }
 
 
-uint8 *unpack_weapon_definition(uint8 *Stream, int Count)
+uint8 *unpack_weapon_definition(uint8 *Stream, size_t Count)
 {
 	return unpack_weapon_definition(Stream,weapon_definitions,Count);
 }
 
-uint8 *unpack_weapon_definition(uint8 *Stream, weapon_definition *Objects, int Count)
+uint8 *unpack_weapon_definition(uint8 *Stream, weapon_definition *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	weapon_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->item_type);
 		StreamToValue(S,ObjPtr->powerup_type);	
@@ -4167,17 +4167,17 @@ uint8 *unpack_weapon_definition(uint8 *Stream, weapon_definition *Objects, int C
 }
 
 
-uint8 *pack_weapon_definition(uint8 *Stream, int Count)
+uint8 *pack_weapon_definition(uint8 *Stream, size_t Count)
 {
 	return pack_weapon_definition(Stream,weapon_definitions,Count);
 }
 
-uint8 *pack_weapon_definition(uint8 *Stream, weapon_definition *Objects, int Count)
+uint8 *pack_weapon_definition(uint8 *Stream, weapon_definition *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	weapon_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->item_type);
 		ValueToStream(S,ObjPtr->powerup_type);	
@@ -4217,7 +4217,7 @@ uint8 *pack_weapon_definition(uint8 *Stream, weapon_definition *Objects, int Cou
 
 
 // LP additions: get weapon-definition size and number of weapon types
-int get_number_of_weapon_types() {return NUMBER_OF_WEAPONS;}
+size_t get_number_of_weapon_types() {return NUMBER_OF_WEAPONS;}
 
 
 class XML_ShellCasingParser: public XML_ElementParser

@@ -50,14 +50,14 @@ class AnimTxtr
 	
 	// Phases: which frame, and which tick in a frame
 	// These must be in ranges (0 to NumFrames - 1) and (0 to abs(NumTicks) - 1)
-	int FramePhase, TickPhase;
+	size_t FramePhase, TickPhase;
 
 public:
 	// How many frames
-	int GetNumFrames() {return FrameList.size();}
+	size_t GetNumFrames() {return FrameList.size();}
 		
 	// Frame ID (writable)
-	short& GetFrame(int Index) {return FrameList[Index];}
+	short& GetFrame(size_t Index) {return FrameList[Index];}
 	
 	// Clear the list
 	void Clear() {FrameList.clear();}
@@ -70,7 +70,7 @@ public:
 	bool Translate(short& Frame);
 	
 	// Set the timing info: number of ticks per frame, and tick and frame phases
-	void SetTiming(short _NumTicks, short _FramePhase, short _TickPhase);
+	void SetTiming(short _NumTicks, size_t _FramePhase, size_t _TickPhase);
 	
 	// Update the phases:
 	void Update();
@@ -112,11 +112,11 @@ void AnimTxtr::Load(vector<short>& _FrameList)
 bool AnimTxtr::Translate(short& Frame)
 {
 	// Sanity check
-	int NumFrames = FrameList.size();
-	if (NumFrames <= 0) return false;
+	size_t NumFrames = FrameList.size();
+	if (NumFrames == 0) return false;
 
 	// Find the index in the loop; default: first one.
-	int FrameIndx = 0;
+	size_t FrameIndex = 0;
 	if (Select >= 0)
 	{
 		if (Frame != Select) return false;
@@ -124,24 +124,23 @@ bool AnimTxtr::Translate(short& Frame)
 	else
 	{
 		bool FrameFound = false;
-		for (int f=0; f<NumFrames; f++)
+		for (size_t f=0; f<NumFrames; f++)
 			if (FrameList[f] == Frame)
 			{
 				FrameFound = true;
-				FrameIndx = f;
+				FrameIndex = f;
 			}
 		if (!FrameFound) return false;
 	}	
-	FrameIndx += FramePhase;
-	while(FrameIndx >= NumFrames)
-		FrameIndx -= NumFrames;
+	FrameIndex += FramePhase;
+	FrameIndex %= NumFrames;
 		
-	Frame = FrameList[FrameIndx];
+	Frame = FrameList[FrameIndex];
 	return true;
 }
 
 
-void AnimTxtr::SetTiming(short _NumTicks, short _FramePhase, short _TickPhase)
+void AnimTxtr::SetTiming(short _NumTicks, size_t _FramePhase, size_t _TickPhase)
 {
 	NumTicks = _NumTicks;
 	FramePhase = _FramePhase;
@@ -150,39 +149,31 @@ void AnimTxtr::SetTiming(short _NumTicks, short _FramePhase, short _TickPhase)
 	// Correct for possible overshooting of limits:
 	if (NumTicks)
 	{
-		int TickPhaseFrames = TickPhase / NumTicks;
-		TickPhase -= NumTicks*TickPhaseFrames;
-		if (TickPhase < 0)
+		int TickPhaseFrames = static_cast<int>(TickPhase) / NumTicks;
+		if (static_cast<int>(TickPhase) < NumTicks*TickPhaseFrames)
 		{
+			TickPhase += abs(NumTicks) - NumTicks*TickPhaseFrames;
 			TickPhaseFrames--;
-			if (NumTicks > 0)
-			{
-				TickPhase += NumTicks;
-			}
-			else if (NumTicks < 0)
-			{
-				TickPhase -= NumTicks;
-			}
 		}
+		else
+		{	TickPhase -= NumTicks*TickPhaseFrames; }
+
 		FramePhase += TickPhaseFrames;
 	}
 	
-	int NumFrames = FrameList.size();
-	if (NumFrames > 0)
-	{
-		FramePhase = FramePhase % NumFrames;
-		if (FramePhase < 0) FramePhase += NumFrames;
-	}
+	size_t NumFrames = FrameList.size();
+	if (NumFrames != 0)
+	{	FramePhase = FramePhase % NumFrames; }
 }
 
 
 void AnimTxtr::Update()
 {
 	// Be careful to wrap around in the appropriate direction
-	int NumFrames = FrameList.size();
+	size_t NumFrames = FrameList.size();
 	if (NumTicks > 0)
 	{
-		if (++TickPhase >= NumTicks)
+		if (static_cast<int>(++TickPhase) >= NumTicks)
 		{
 			TickPhase = 0;
 			if (++FramePhase >= NumFrames)
@@ -191,12 +182,16 @@ void AnimTxtr::Update()
 	}
 	else if (NumTicks < 0)
 	{
-		if (--TickPhase < 0)
+		if (TickPhase == 0)
 		{
 			TickPhase = - NumTicks - 1;
-			if (--FramePhase < 0)
+			if (FramePhase != 0)
+				FramePhase--;
+			else
 				FramePhase = NumFrames - 1;
 		}
+		else
+		{	TickPhase--; }
 	}
 }
 
@@ -371,7 +366,8 @@ class XML_AT_SequenceParser: public XML_ElementParser
 	short Collection, NumTicks;
 	
 	// Optional Attributes
-	short FramePhase, TickPhase, Select;
+	uint16 FramePhase, TickPhase;
+	short Select;
 
 public:
 	bool Start();
@@ -415,11 +411,11 @@ bool XML_AT_SequenceParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"framephase"))
 	{
-		return ReadInt16Value(Value,FramePhase);
+		return ReadUInt16Value(Value,FramePhase);
 	}
 	else if (StringsEqual(Tag,"tickphase"))
 	{
-		return ReadInt16Value(Value,TickPhase);
+		return ReadUInt16Value(Value,TickPhase);
 	}
 	else if (StringsEqual(Tag,"select"))
 	{

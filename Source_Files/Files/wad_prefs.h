@@ -38,7 +38,7 @@ typedef bool (*prefs_validater)(void *prefs);
 
 void *w_get_data_from_preferences(
 	WadDataType tag,					/* Tag to read */
-	short expected_size,				/* Data size */
+	size_t expected_size,				/* Data size */
 	prefs_initializer initialize,	/* Call if I have to allocate it.. */
 	prefs_validater validate);	/* Verify function-> fixes if bad and returns true */
 	

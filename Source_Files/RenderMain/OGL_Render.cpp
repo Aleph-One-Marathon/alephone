@@ -378,7 +378,7 @@ OGL_FogData *CurrFog = NULL;
 inline bool FogActive()
 {
 	if (!CurrFog) return false;
-	bool FogAllowed = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog) != 0;
+	bool FogAllowed = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog);
 	return CurrFog->IsPresent && FogAllowed;
 }
 
@@ -550,7 +550,7 @@ bool OGL_StartRun()
 #endif
 	
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer) != 0;
+	Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
 	
 #ifdef mac
 	// Plain and simple
@@ -962,7 +962,7 @@ bool OGL_StartMain()
 	// are to ensure that all the bits overlap.
 	// Also do flat static if requested;
 	// done once per frame to avoid visual inconsistencies
-	UseFlatStatic = (TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatStatic) != 0);
+	UseFlatStatic = TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatStatic);
 	if (UseFlatStatic)
 	{
 		// Made this per-sprite
@@ -3035,7 +3035,7 @@ bool OGL_Get2D()
 	if (!OGL_IsActive()) return false;
 	
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	return (TEST_FLAG(ConfigureData.Flags,OGL_Flag_2DGraphics) != 0);
+	return TEST_FLAG(ConfigureData.Flags,OGL_Flag_2DGraphics);
 }
 
 // Copying 2D display: status bar, overhead map, terminal

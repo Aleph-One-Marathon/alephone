@@ -42,12 +42,12 @@ extern size_t countstr(
 extern unsigned char *getpstr(
 	unsigned char *string,
 	short resid,
-	short item);
+	size_t item);
 
 extern char *getcstr(
 	char *string,
 	short resid,
-	short item);
+	size_t item);
 
 // ZZZ: changed to 'const' on src parameter
 extern unsigned char *pstrcpy(

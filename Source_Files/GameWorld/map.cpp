@@ -1718,7 +1718,7 @@ void recalculate_map_counts(
 	struct projectile_data *projectile;
 	struct effect_data *effect;
 	struct light_data *light;
-	short count;
+	size_t count;
 	
 	// LP: fixed serious bug in the counting logic
 	
@@ -1726,31 +1726,31 @@ void recalculate_map_counts(
 			count>0&&(!SLOT_IS_USED(object));
 			--count,--object)
 		;
-	dynamic_world->object_count= count;
+	dynamic_world->object_count= static_cast<int16>(count);
 	
 	for (count=MAXIMUM_MONSTERS_PER_MAP,monster=monsters+MAXIMUM_MONSTERS_PER_MAP-1;
 			count>0&&(!SLOT_IS_USED(monster));
 			--count,--monster)
 		;
-	dynamic_world->monster_count= count;
+	dynamic_world->monster_count= static_cast<int16>(count);
 	
 	for (count=MAXIMUM_PROJECTILES_PER_MAP,projectile=projectiles+MAXIMUM_PROJECTILES_PER_MAP-1;
 			count>0&&(!SLOT_IS_USED(projectile));
 			--count,--projectile)
 		;
-	dynamic_world->projectile_count= count;
+	dynamic_world->projectile_count= static_cast<int16>(count);
 	
 	for (count=MAXIMUM_EFFECTS_PER_MAP,effect=effects+MAXIMUM_EFFECTS_PER_MAP-1;
 			count>0&&(!SLOT_IS_USED(effect));
 			--count,--effect)
 		;
-	dynamic_world->effect_count= count;
+	dynamic_world->effect_count= static_cast<int16>(count);
 	
 	for (count=MAXIMUM_LIGHTS_PER_MAP,light=lights+MAXIMUM_LIGHTS_PER_MAP-1;
 			count>0&&(!SLOT_IS_USED(light));
 			--count,--light)
 		;
-	dynamic_world->light_count= count;
+	dynamic_world->light_count= static_cast<int16>(count);
 }
 
 bool change_polygon_height(

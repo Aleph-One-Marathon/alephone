@@ -105,7 +105,7 @@ public:
 		parent->quit(0);
 	}
 
-	void draw_item(vector<env_item>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
+	void draw_item(vector<env_item>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const
 	{
 		y += font->get_ascent();
 
@@ -133,8 +133,9 @@ class w_env_select : public w_select_button {
 public:
 	w_env_select(const char *name, const char *path, const char *m, int t, dialog *d)
         : parent(d), menu_title(m), type(t), mCallback(NULL),
-		w_select_button(name, item_name, select_item_callback, this)
+		w_select_button(name, item_name, select_item_callback, NULL)
 	{
+		set_arg(this);
 		set_path(path);
 	}
 	~w_env_select() {}

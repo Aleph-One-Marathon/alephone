@@ -630,7 +630,7 @@ void enter_screen(
 	if ((screen_mode.acceleration == _opengl_acceleration) && screen_mode.bit_depth == 32)
 	{
 		// Be sure to do this only once, and only if one isn't doing 2D through OpenGL...
-		if (!ScreenFix_OGL32 && !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_2DGraphics) != 0))
+		if (!ScreenFix_OGL32 && !TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_2DGraphics))
 		{
 			GDSpec& DevSpec = graphics_preferences->device_spec;
 			DevSpec.bit_depth = 16;
@@ -960,7 +960,7 @@ void render_screen(
 	
 	// Is map to be drawn with OpenGL?
 	if (OGL_IsActive() && world_view->overhead_map_active)
-		OGL_MapActive = (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Map) != 0);
+		OGL_MapActive = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Map);
 	else
 		OGL_MapActive = false;
 	

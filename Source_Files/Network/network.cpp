@@ -2050,7 +2050,7 @@ static void NetAddFlagsToPacket(
 	NetPacketPtr packet)
 {
 	uint32 *action_flags;
-	short player_index, extra_flags, flags_to_remove, action_flag_index;
+	short player_index, extra_flags, action_flag_index;
 	static bool already_here = false;
 	
 	assert(already_here == false);
@@ -2177,7 +2177,7 @@ static void NetAddFlagsToPacket(
 	// if we're accumulating too many flags, just ditch some to avoid latency
 	// (which we assume is worse than losing a couple of flags)
 	extra_flags= NetSizeofLocalQueue();
-	flags_to_remove= MIN(extra_flags, status->last_extra_flags);
+	short flags_to_remove= MIN(extra_flags, status->last_extra_flags);
 	status->last_extra_flags = extra_flags - flags_to_remove;
 	while (flags_to_remove--)
 	{
@@ -2379,7 +2379,9 @@ static void NetBuildRingPacket(
 	/* build the ring packet */
         // ZZZ: note that data_size is now just the size of the variable-length part (i.e. the action_flags)
         // so we will add the sizeof both _NET format structures first.
-	frame->data_size= sizeof(NetPacketHeader_NET) + sizeof(NetPacket_NET) + data_size;
+	assert(sizeof(NetPacketHeader_NET) + sizeof(NetPacket_NET) + data_size
+		== static_cast<size_t>(static_cast<short>(sizeof(NetPacketHeader_NET) + sizeof(NetPacket_NET) + data_size)));
+	frame->data_size= static_cast<short>(sizeof(NetPacketHeader_NET) + sizeof(NetPacket_NET) + data_size);
 
         // ZZZ: set up our local header buffer's data
 	header->tag= tagRING_PACKET;

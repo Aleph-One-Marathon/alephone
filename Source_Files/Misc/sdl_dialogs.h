@@ -265,7 +265,7 @@ extern const sdl_font_info *get_dialog_font(int which, uint16 &style);
 extern uint32 get_dialog_color(int which);
 extern uint32 get_dialog_player_color(size_t colorIndex); // ZZZ: added
 extern SDL_Surface *get_dialog_image(int which, int width = 0, int height = 0);
-extern int get_dialog_space(int which);
+extern uint16 get_dialog_space(size_t which);
 extern void play_dialog_sound(int which);
 
 extern void dialog_ok(void *arg);

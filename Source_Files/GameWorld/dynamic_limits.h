@@ -52,6 +52,6 @@ enum {
 XML_ElementParser *DynamicLimits_GetParser();
 
 // Accessor
-short get_dynamic_limit(int which);
+uint16 get_dynamic_limit(int which);
 
 #endif

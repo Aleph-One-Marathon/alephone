@@ -327,7 +327,7 @@ static void IndexedQuickSort(SORT_INDEX_TYPE *First, SORT_INDEX_TYPE *Last)
 {
 	// Don't sort if the range is wrong;
 	// special-case the smallest values [LP addition]
-	int Diff = Last - First;
+	int Diff = static_cast<int>(Last - First);
 	if (Diff <= 0) return;
 	else if (Diff == 1)
 	{
@@ -434,7 +434,7 @@ void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumSh
 	Indices.resize(NumTriangles);
 	
 	GLushort *VIPtr = Model.VIBase();
-	for (size_t k=0; k<NumTriangles; k++)
+	for (unsigned short k=0; k<NumTriangles; k++)
 	{
 		GLfloat Sum[3] = {0, 0, 0};
 		for (int v=0; v<3; v++)

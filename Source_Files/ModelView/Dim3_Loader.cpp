@@ -117,7 +117,7 @@ struct BoneTagWrapper
 static vector<BoneTagWrapper> VertexBoneTags, BoneOwnTags;
 
 // Translation from read-in bone order to "true" order
-static vector<short> BoneIndices;
+static vector<size_t> BoneIndices;
 
 // Names of frames and seqeunces:
 
@@ -226,19 +226,20 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	{
 		size_t NumBones = Model.Bones.size();
 		BoneIndices.resize(NumBones);
-		fill(BoneIndices.begin(),BoneIndices.end(),NONE);	// No bones listed -- yet
+		fill(BoneIndices.begin(),BoneIndices.end(),UNONE);	// No bones listed -- yet
 		vector<Model3D_Bone> SortedBones(NumBones);
-		vector<short> BoneStack(NumBones);
+		vector<size_t> BoneStack(NumBones);
 		vector<bool> BonesUsed(NumBones);
 		fill(BonesUsed.begin(),BonesUsed.end(),false);
 		
 		// Add the bones, one by one;
 		// the bone stack's height is originally zero
 		int StackTop = -1;
-		for (size_t ib=0; ib<NumBones; ib++)
+		for (vector<size_t>::value_type ib=0; ib<NumBones; ib++)
 		{		
 			// Scan down the bone stack to find a bone that's the parent of some unlisted bone;
-			int ibsrch = NumBones;	// "Bone not found" value
+			vector<size_t>::value_type ibsrch = 
+				static_cast<vector<size_t>::value_type>(NumBones);	// "Bone not found" value
 			int ibstck = -1;		// Empty stack
 			for (ibstck=StackTop; ibstck>=0; ibstck--)
 			{
@@ -305,7 +306,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 			BonesUsed[ibsrch] = true;
 			
 			// Index for remapping
-			BoneIndices[ibsrch] = (size_t)ib;
+			BoneIndices[ibsrch] = ib;
 		}
 		
 		// Reorder the bones

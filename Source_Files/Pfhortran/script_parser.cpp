@@ -132,15 +132,15 @@ void dispose_pfhortran(void);
 
 struct P_HashTableEntry
 {
-	int StringIndx;		// Index in string array (no string is NONE)
-	int NextIndx;		// Index to next one in hash-table entries (no string is NONE) 
+	size_t StringIndx;		// Index in string array (no string is UNONE)
+	size_t NextIndx;		// Index to next one in hash-table entries (no string is UNONE) 
 	
 	// Data associated with character string
 	float val;
 	short mode;
 
 	// Sets to "empty" values
-	void Reset() {StringIndx = NONE; NextIndx = NONE;}
+	void Reset() {StringIndx = UNONE; NextIndx = UNONE;}
 };
 
 class P_HashTable
@@ -211,7 +211,7 @@ void P_HashTable::Reset()
 		Table[i].Reset();
 }
 
-unsigned char calculate_hash_key(const char *symbol);
+static unsigned char calculate_hash_key(const char *symbol);
 
 void P_HashTable::SetEntry(const char *String, float val, short mode)
 {
@@ -224,10 +224,10 @@ void P_HashTable::SetEntry(const char *String, float val, short mode)
 	StandardizeString(String,StdString);
 	
 	// Find where to start
-	int Indx = calculate_hash_key(StdString);
+	size_t Indx = calculate_hash_key(StdString);
 	
 	// Is the base-table entry empty?
-	if (Table[Indx].StringIndx == NONE)
+	if (Table[Indx].StringIndx == UNONE)
 	{
 		// Set its string; the index is the before-addition current size
 		Table[Indx].StringIndx = Strings.size();
@@ -245,9 +245,9 @@ void P_HashTable::SetEntry(const char *String, float val, short mode)
 	while (strcmp(StdString,&Strings[Table[Indx].StringIndx]) != 0)
 	{
 		// Is it possible to proceed any further?
-		int NextIndx = Table[Indx].NextIndx;
+		size_t NextIndx = Table[Indx].NextIndx;
 		
-		if (NextIndx == NONE)
+		if (NextIndx == UNONE)
 		{
 			// Can't do so, so add this entry
 			P_HashTableEntry NewEntry;
@@ -287,10 +287,10 @@ bool P_HashTable::GetEntry(const char *String, float& val, short& mode)
 	StandardizeString(String,StdString);
 	
 	// Find where to start
-	int Indx = calculate_hash_key(StdString);
+	size_t Indx = calculate_hash_key(StdString);
 	
 	// Is the base-table entry empty?
-	if (Table[Indx].StringIndx == NONE)
+	if (Table[Indx].StringIndx == UNONE)
 	{
 		// We didn't find it
 		// fdprintf("!!! %s",String);
@@ -301,7 +301,7 @@ bool P_HashTable::GetEntry(const char *String, float& val, short& mode)
 	while (strcmp(StdString,&Strings[Table[Indx].StringIndx]) != 0)
 	{
 		// Is it possible to proceed any further?
-		int NextIndx = Table[Indx].NextIndx;
+		size_t NextIndx = Table[Indx].NextIndx;
 		
 		if (NextIndx == NONE)
 		{
@@ -987,7 +987,7 @@ void report_errors(vector<error_def>& error_log)
 			}
 			
 			strcat(error_string, "\n");
-			OFile.Write(strlen(error_string), error_string);
+			OFile.Write(static_cast<long>(strlen(error_string)), error_string);
 		}
 	
 	}
@@ -1007,7 +1007,6 @@ void parse_script(char *input, vector<script_instruction>& instruction_list)
 	int mode;
 	short op1mode,op2mode,op3mode;
 	int var_count = 0;
-	float val;
 	
 	bool output_errors = false;
 	vector<error_def> error_log;
@@ -1037,10 +1036,10 @@ void parse_script(char *input, vector<script_instruction>& instruction_list)
 			
 			
 			mode = absolute;
-			val = line_count;
 			
 			if (blats[0][0])
 			{
+				int val = line_count;
 				if (blats[1][0])
 					if (match_opcode(blats[1]) == Define)
 					{
@@ -1049,7 +1048,7 @@ void parse_script(char *input, vector<script_instruction>& instruction_list)
 						var_count++;
 					}
 				
-				GlobHash.SetEntry(blats[0],val,mode);
+				GlobHash.SetEntry(blats[0],static_cast<float>(val),mode);
 #ifdef OBSOLETE
 				put_symbol(blats[0],val,mode,glob_hash);
 #endif

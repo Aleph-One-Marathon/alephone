@@ -3352,12 +3352,12 @@ void SetPlayerViewAttribs(int16 half_visual_arc, int16 half_vertical_visual_arc,
 }
 
 
-uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, int Count)
+uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	monster_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->vitality);
@@ -3400,12 +3400,12 @@ uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, int Count)
 	return S;
 }
 
-uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, int Count)
+uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	monster_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->vitality);
@@ -3476,17 +3476,17 @@ inline void AttackDefToStream(uint8* &S, attack_definition& Object)
 }
 
 
-uint8 *unpack_monster_definition(uint8 *Stream, int Count)
+uint8 *unpack_monster_definition(uint8 *Stream, size_t Count)
 {
 	return unpack_monster_definition(Stream,monster_definitions,Count);
 }
 
-uint8 *unpack_monster_definition(uint8 *Stream, monster_definition* Objects, int Count)
+uint8 *unpack_monster_definition(uint8 *Stream, monster_definition* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	monster_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->collection);
 		
@@ -3554,17 +3554,17 @@ uint8 *unpack_monster_definition(uint8 *Stream, monster_definition* Objects, int
 }
 
 
-uint8 *pack_monster_definition(uint8 *Stream, int Count)
+uint8 *pack_monster_definition(uint8 *Stream, size_t Count)
 {
 	return pack_monster_definition(Stream,monster_definitions,Count);
 }
 
-uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, int Count)
+uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	monster_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->collection);
 		

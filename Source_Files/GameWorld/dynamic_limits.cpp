@@ -39,7 +39,7 @@ Feb 19, 2000 (Loren Petrich):
 
 // Reasonable defaults;
 // the original ones are in []'s
-static short dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
+static uint16 dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 {
 	1024,	// [384] Objects (every possible kind)
 	 512,	// [220] NPC's
@@ -57,14 +57,14 @@ class XML_DynLimValueParser: public XML_ElementParser
 {
 
 	bool IsPresent;
-	short *ValuePtr;
+	uint16 *ValuePtr;
 
 public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
 	
-	XML_DynLimValueParser(const char *_Name, short *_ValuePtr):
+	XML_DynLimValueParser(const char *_Name, uint16 *_ValuePtr):
 		XML_ElementParser(_Name), ValuePtr(_ValuePtr) {}
 };
 
@@ -79,7 +79,7 @@ bool XML_DynLimValueParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"value"))
 	{
-		if (ReadBoundedInt16Value(Value,*ValuePtr,0,32767))
+		if (ReadBoundedUInt16Value(Value,*ValuePtr,0,32767))
 		{
 			IsPresent = true;
 			return true;
@@ -158,6 +158,6 @@ XML_ElementParser *DynamicLimits_GetParser()
 
 
 // Accessor
-short get_dynamic_limit(int which) {
+uint16 get_dynamic_limit(int which) {
 	return dynamic_limits[which];
 }

@@ -166,20 +166,24 @@ int8 char_width(uint8 c, const sdl_font_info *font, uint16 style)
 }
 
 // Calculate width of text string
-int text_width(const char *text, const sdl_font_info *font, uint16 style)
+uint16 text_width(const char *text, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
 	char c;
 	while ((c = *text++) != 0)
 		width += char_width(c, font, style);
+	assert(0 <= width);
+	assert(width == static_cast<int>(static_cast<uint16>(width)));
 	return width;
 }
 
-int text_width(const char *text, int length, const sdl_font_info *font, uint16 style)
+uint16 text_width(const char *text, size_t length, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
 	while (length--)
 		width += char_width(*text++, font, style); 
+	assert(0 <= width);
+	assert(width == static_cast<int>(static_cast<uint16>(width)));
 	return width;
 }
 

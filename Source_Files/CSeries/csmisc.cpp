@@ -35,7 +35,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 extern void initialize_debugger(bool);
 
-unsigned long machine_tick_count(void)
+uint32 machine_tick_count(void)
 {
 	return TickCount();
 }

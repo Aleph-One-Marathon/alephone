@@ -113,10 +113,10 @@ bool player_in_terminal_mode(short player_index);
 // "player terminal" means the terminal state for each player.
 // For the map terminal data, the "count" is number of packed bytes.
 
-extern void unpack_map_terminal_data(uint8 *Stream, int Count);
-extern void pack_map_terminal_data(uint8 *Stream, int Count);
-uint8 *unpack_player_terminal_data(uint8 *Stream, int Count);
-uint8 *pack_player_terminal_data(uint8 *Stream, int Count);
+extern void unpack_map_terminal_data(uint8 *Stream, size_t Count);
+extern void pack_map_terminal_data(uint8 *Stream, size_t Count);
+uint8 *unpack_player_terminal_data(uint8 *Stream, size_t Count);
+uint8 *pack_player_terminal_data(uint8 *Stream, size_t Count);
 
 extern size_t calculate_packed_terminal_data_length(void);
 

@@ -359,7 +359,7 @@ void TS_PutCString(short ID, short Index, const char *String)
 
 // Returns a pointer to a string; if the ID and the index do not point to a valid string,
 // this function will then return NULL
-unsigned char *TS_GetString(short ID, short Index)
+unsigned char *TS_GetString(short ID, size_t Index)
 {
 	// Search for string set:
 	StringSet *PrevStringSet = NULL, *CurrStringSet = StringSetRoot;
@@ -378,7 +378,7 @@ unsigned char *TS_GetString(short ID, short Index)
 
 
 // Here is that string in C form
-char *TS_GetCString(short ID, short Index)
+char *TS_GetCString(short ID, size_t Index)
 {
 	unsigned char *String = TS_GetString(ID,Index);
 	if (!String) return NULL;

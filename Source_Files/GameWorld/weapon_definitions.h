@@ -1136,7 +1136,7 @@ static struct weapon_definition weapon_definitions[]=
 };
 
 // Added for the convenience of the 1-2-3 Converter
-uint8 *unpack_weapon_definition(uint8 *Stream, weapon_definition *Objects, int Count);
-uint8 *pack_weapon_definition(uint8 *Stream, weapon_definition *Objects, int Count);
+uint8 *unpack_weapon_definition(uint8 *Stream, weapon_definition *Objects, size_t Count);
+uint8 *pack_weapon_definition(uint8 *Stream, weapon_definition *Objects, size_t Count);
 
 #endif

@@ -45,14 +45,14 @@ public:
 		ascent(0), descent(0), leading(0), pixmap(NULL), ref_count(0) {}
 	~sdl_font_info() {if (pixmap) free(pixmap);}
 
-	int get_ascent(void) const {return ascent;}
-	int get_height(void) const {return ascent + descent;}
-	int get_line_height(void) const {return ascent + descent + leading;}
+	uint16 get_ascent(void) const {return ascent;}
+	uint16 get_height(void) const {return ascent + descent;}
+	uint16 get_line_height(void) const {return ascent + descent + leading;}
 
 	uint8 first_character, last_character;
 	int16 maximum_kerning;
 	int16 rect_width, rect_height;
-	int16 ascent, descent, leading;
+	uint16 ascent, descent, leading;
 
 	uint8 *pixmap;			// Font image (1 byte/pixel)
 	int bytes_per_row;		// Bytes per row in pixmap

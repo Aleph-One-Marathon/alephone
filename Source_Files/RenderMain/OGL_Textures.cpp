@@ -390,7 +390,7 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, uint32 *Col
 inline bool IsLandscapeFlatColored()
 {
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	return (TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatLand) != 0);
+	return TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatLand);
 }
 
 
@@ -589,7 +589,7 @@ inline int NextPowerOfTwo(int n)
 inline bool WhetherTextureFix()
 {
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	return (TEST_FLAG(ConfigureData.Flags,OGL_Flag_TextureFix) != 0);
+	return TEST_FLAG(ConfigureData.Flags,OGL_Flag_TextureFix);
 }
 
 

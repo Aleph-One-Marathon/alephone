@@ -91,8 +91,8 @@ private:
 	bool has_rsrc(uint32 rsrc_type, uint32 wad_type, int id);
 	bool get_rsrc(uint32 rsrc_type, uint32 wad_type, int id, LoadedResource &rsrc);
 
-	bool make_rsrc_from_pict(void *data, long length, LoadedResource &rsrc, void *clut_data, long clut_length);
-	bool make_rsrc_from_clut(void *data, long length, LoadedResource &rsrc);
+	bool make_rsrc_from_pict(void *data, size_t length, LoadedResource &rsrc, void *clut_data, size_t clut_length);
+	bool make_rsrc_from_clut(void *data, size_t length, LoadedResource &rsrc);
 
 	OpenedResourceFile rsrc_file;
 	OpenedFile wad_file;
@@ -234,7 +234,7 @@ bool image_file_t::has_rsrc(uint32 rsrc_type, uint32 wad_type, int id)
 		wad_data *d = read_indexed_wad_from_file(wad_file, &wad_hdr, id, true);
 		if (d) {
 			bool success = false;
-			long len;
+			size_t len;
 			if (extract_type_from_wad(d, wad_type, &len))
 				success = true;
 			free_wad(d);
@@ -269,13 +269,13 @@ bool image_file_t::get_rsrc(uint32 rsrc_type, uint32 wad_type, int id, LoadedRes
 		wad_data *d = read_indexed_wad_from_file(wad_file, &wad_hdr, id, true);
 		if (d) {
 			bool success = false;
-			long raw_length;
+			size_t raw_length;
 			void *raw = extract_type_from_wad(d, wad_type, &raw_length);
 			if (raw)
 			{
 				if (rsrc_type == FOUR_CHARS_TO_INT('P','I','C','T'))
 				{
-					long clut_length;
+					size_t clut_length;
 					void *clut_data = extract_type_from_wad(d, FOUR_CHARS_TO_INT('c','l','u','t'), &clut_length);
 					success = make_rsrc_from_pict(raw, raw_length, rsrc, clut_data, clut_length);
 				}
@@ -537,7 +537,7 @@ int image_file_t::determine_pict_resource_id(int base_id, int delta16, int delta
 #ifdef mac
 
 // MacOS version
-bool image_file_t::make_rsrc_from_pict(void *data, long length, LoadedResource &rsrc, void *clut_data, long clut_length)
+bool image_file_t::make_rsrc_from_pict(void *data, size_t length, LoadedResource &rsrc, void *clut_data, size_t clut_length)
 {
 	pict_head		*head;
 	PicHandle		picture;
@@ -655,7 +655,7 @@ bool image_file_t::make_rsrc_from_pict(void *data, long length, LoadedResource &
 #else
 
 // SDL version
-bool image_file_t::make_rsrc_from_pict(void *data, long length, LoadedResource &rsrc, void *clut_data, long clut_length)
+bool image_file_t::make_rsrc_from_pict(void *data, size_t length, LoadedResource &rsrc, void *clut_data, size_t clut_length)
 {
 	if (length < 10)
 		return false;
@@ -772,10 +772,10 @@ bool image_file_t::make_rsrc_from_pict(void *data, long length, LoadedResource &
 
 #endif
 
-bool image_file_t::make_rsrc_from_clut(void *data, long length, LoadedResource &rsrc)
+bool image_file_t::make_rsrc_from_clut(void *data, size_t length, LoadedResource &rsrc)
 {
-	const int input_length = 6 + 256 * 6;	// 6 bytes header, 256 entries with 6 bytes each
-	const int output_length = 8 + 256 * 8;	// 8 bytes header, 256 entries with 8 bytes each
+	const size_t input_length = 6 + 256 * 6;	// 6 bytes header, 256 entries with 6 bytes each
+	const size_t output_length = 8 + 256 * 8;	// 8 bytes header, 256 entries with 8 bytes each
 
 	if (length != input_length)
 		return false;

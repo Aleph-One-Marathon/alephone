@@ -1064,12 +1064,12 @@ static void precalculate_polygon_sound_sources(
 	}
 }
 
-uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
+uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	endpoint_data* ObjPtr = Objects;
      
-     for (int k = 0; k < Count; k++, ObjPtr++)
+     for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->flags);
 		StreamToValue(S,ObjPtr->highest_adjacent_floor_height);
@@ -1087,12 +1087,12 @@ uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 	return S;
 }
 
-uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
+uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	endpoint_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->flags);
 		ValueToStream(S,ObjPtr->highest_adjacent_floor_height);
@@ -1111,12 +1111,12 @@ uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 }
 
 
-uint8 *unpack_line_data(uint8 *Stream, line_data *Objects, int Count)
+uint8 *unpack_line_data(uint8 *Stream, line_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	line_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToList(S,ObjPtr->endpoint_indexes,2);
 		StreamToValue(S,ObjPtr->flags);
@@ -1138,12 +1138,12 @@ uint8 *unpack_line_data(uint8 *Stream, line_data *Objects, int Count)
 	return S;
 }
 
-uint8 *pack_line_data(uint8 *Stream, line_data *Objects, int Count)
+uint8 *pack_line_data(uint8 *Stream, line_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	line_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ListToStream(S,ObjPtr->endpoint_indexes,2);
 		ValueToStream(S,ObjPtr->flags);
@@ -1206,12 +1206,12 @@ void SideExclZoneToStream(uint8* &S, side_exclusion_zone& Object)
 }
 
 
-uint8 *unpack_side_data(uint8 *Stream, side_data *Objects, int Count)
+uint8 *unpack_side_data(uint8 *Stream, side_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	side_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->flags);
@@ -1245,12 +1245,12 @@ uint8 *unpack_side_data(uint8 *Stream, side_data *Objects, int Count)
 	return S;
 }
 
-uint8 *pack_side_data(uint8 *Stream, side_data *Objects, int Count)
+uint8 *pack_side_data(uint8 *Stream, side_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	side_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->flags);
@@ -1285,12 +1285,12 @@ uint8 *pack_side_data(uint8 *Stream, side_data *Objects, int Count)
 }
 
 
-uint8 *unpack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
+uint8 *unpack_polygon_data(uint8 *Stream, polygon_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	polygon_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->flags);
@@ -1348,12 +1348,12 @@ uint8 *unpack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
 	return S;
 }
 
-uint8 *pack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
+uint8 *pack_polygon_data(uint8 *Stream, polygon_data *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	polygon_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->flags);
@@ -1412,12 +1412,12 @@ uint8 *pack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
 }
 
 
-uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count)
+uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	map_annotation* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		
@@ -1432,12 +1432,12 @@ uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count)
+uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	map_annotation* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		
@@ -1453,12 +1453,12 @@ uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count)
 }
 
 
-uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, int Count)
+uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	map_object* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->index);
@@ -1475,12 +1475,12 @@ uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_map_object(uint8 *Stream, map_object* Objects, int Count)
+uint8 *pack_map_object(uint8 *Stream, map_object* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	map_object* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->index);
@@ -1498,12 +1498,12 @@ uint8 *pack_map_object(uint8 *Stream, map_object* Objects, int Count)
 }
 
 
-uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count)
+uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	object_frequency_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->flags);
 		
@@ -1519,12 +1519,12 @@ uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_defini
 	return S;
 }
 
-uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count)
+uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	object_frequency_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->flags);
 		
@@ -1541,12 +1541,12 @@ uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definiti
 }
 
 
-uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, int Count)
+uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	static_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->environment_code);
 		
@@ -1565,12 +1565,12 @@ uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_static_data(uint8 *Stream, static_data* Objects, int Count)
+uint8 *pack_static_data(uint8 *Stream, static_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	static_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->environment_code);
 		
@@ -1590,12 +1590,12 @@ uint8 *pack_static_data(uint8 *Stream, static_data* Objects, int Count)
 }
 
 
-uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count)
+uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	ambient_sound_image_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->flags);
 		
@@ -1609,12 +1609,12 @@ uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* 
 	return S;
 }
 
-uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count)
+uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	ambient_sound_image_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->flags);
 		
@@ -1629,12 +1629,12 @@ uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Ob
 }
 
 
-uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count)
+uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	random_sound_image_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->flags);
 		
@@ -1658,12 +1658,12 @@ uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Ob
 	return S;
 }
 
-uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count)
+uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	random_sound_image_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->flags);
 		
@@ -1711,12 +1711,12 @@ static void GameDataToStream(uint8* &S, game_data& Object)
 }
 
 
-uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count)
+uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	dynamic_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->tick_count);
 
@@ -1780,12 +1780,12 @@ uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count)
+uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	dynamic_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->tick_count);
 
@@ -1850,12 +1850,12 @@ uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count)
 }
 
 
-uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, int Count)
+uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	object_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->location.x);
 		StreamToValue(S,ObjPtr->location.y);
@@ -1883,12 +1883,12 @@ uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count)
+uint8 *pack_object_data(uint8 *Stream, object_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	object_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->location.x);
 		ValueToStream(S,ObjPtr->location.y);
@@ -1917,12 +1917,12 @@ uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count)
 }
 
 
-uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count)
+uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	damage_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->flags);
@@ -1936,12 +1936,12 @@ uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, int C
 	return S;
 }
 
-uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count)
+uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	damage_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->flags);

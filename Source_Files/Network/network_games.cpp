@@ -903,7 +903,7 @@ void get_network_joined_message(
 
 /* This function is used only at network.. */
 long get_entry_point_flags_for_game_type(
-	short game_type)
+	size_t game_type)
 {
 	long entry_flags = 0;
 	

@@ -1685,7 +1685,7 @@ int PREFIX(nameLength)(const ENCODING *enc, const char *ptr)
       ptr += MINBPC(enc);
       break;
     default:
-      return ptr - start;
+      return (int)(ptr - start);
     }
   }
 }

@@ -173,10 +173,10 @@ projectile_data *get_projectile_data(
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_projectile_data(uint8 *Stream, projectile_data *Objects, int Count);
-uint8 *pack_projectile_data(uint8 *Stream, projectile_data *Objects, int Count);
-uint8 *unpack_projectile_definition(uint8 *Stream, int Count);
-uint8 *pack_projectile_definition(uint8 *Stream, int Count);
+uint8 *unpack_projectile_data(uint8 *Stream, projectile_data *Objects, size_t Count);
+uint8 *pack_projectile_data(uint8 *Stream, projectile_data *Objects, size_t Count);
+uint8 *unpack_projectile_definition(uint8 *Stream, size_t Count);
+uint8 *pack_projectile_definition(uint8 *Stream, size_t Count);
 
 #endif
 

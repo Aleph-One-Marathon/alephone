@@ -59,7 +59,7 @@ Aug 27, 2000 (Loren Petrich):
 #define SET_FLAG16(flags,bit,value) ((void)((value) ? ((flags)|=FLAG16(bit)) : ((flags)&=~FLAG16(bit))))
 
 // LP addition (Mar 2, 2000): some more generic routines for flags
-#define TEST_FLAG(obj,flag) ((obj)&(flag))
+#define TEST_FLAG(obj,flag) (((obj)&(flag))!=0)
 #define SET_FLAG(obj,flag,value) ((void)((value)?((obj)|=(flag)):((obj)&=~(flag))))
 
 #define RECTANGLE_WIDTH(rectptr) ((rectptr)->right-(rectptr)->left)

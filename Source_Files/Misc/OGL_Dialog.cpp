@@ -328,8 +328,8 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		TxtrConfigList[k] = Data.TxtrConfigList[k];
 	}
 	
-	MacCheckbox ZBuffer_CB(Dialog, ZBuffer_Item, TEST_FLAG(Data.Flags,OGL_Flag_ZBuffer) != 0);
-	MacCheckbox ColorVoid_CB(Dialog, ColorVoid_Item, TEST_FLAG(Data.Flags,OGL_Flag_VoidColor) != 0);
+	MacCheckbox ZBuffer_CB(Dialog, ZBuffer_Item, TEST_FLAG(Data.Flags,OGL_Flag_ZBuffer));
+	MacCheckbox ColorVoid_CB(Dialog, ColorVoid_Item, TEST_FLAG(Data.Flags,OGL_Flag_VoidColor));
 		
 	ControlHandle ColorVoidSwatch_CHdl;
 	GetDialogItem(Dialog, ColorVoidSwatch_Item, &ItemType, (Handle *)&ColorVoidSwatch_CHdl, &Bounds);
@@ -340,7 +340,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 #endif
 	SetDialogItem(Dialog, ColorVoidSwatch_Item, ItemType, Handle(PaintSwatchUPP), &Bounds);
 	
-	MacCheckbox FlatColorLandscapes_CB(Dialog, FlatColorLandscapes_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatLand) != 0);
+	MacCheckbox FlatColorLandscapes_CB(Dialog, FlatColorLandscapes_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatLand));
 		
 	for (int ile=0; ile<8; ile++)
 	{
@@ -350,15 +350,15 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		SetDialogItem(Dialog, LandscapeSwatch_Item, ItemType, Handle(PaintSwatchUPP), &Bounds);
 	}
 	
-	MacCheckbox Fog_CB(Dialog, AllowFog_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fog) != 0);
+	MacCheckbox Fog_CB(Dialog, AllowFog_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fog));
 		
-	MacCheckbox TwoDimGraphics_CB(Dialog, TwoDimGraphics_Item, TEST_FLAG(Data.Flags,OGL_Flag_2DGraphics) != 0);
-	MacCheckbox FlatStaticEffect_CB(Dialog, FlatStaticEffect_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatStatic) != 0);
-	MacCheckbox FaderEffect_CB(Dialog, Fader_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fader) != 0);
-	MacCheckbox SeeThruLiquids_CB(Dialog, LiquidSeeThru_Item, TEST_FLAG(Data.Flags,OGL_Flag_LiqSeeThru) != 0);
-	MacCheckbox Map_CB(Dialog, Map_Item, TEST_FLAG(Data.Flags,OGL_Flag_Map) != 0);
-	MacCheckbox TextureFix_CB(Dialog, TextureFix_Item, TEST_FLAG(Data.Flags,OGL_Flag_TextureFix) != 0);
-	MacCheckbox Model_CB(Dialog, Model_Item, TEST_FLAG(Data.Flags,OGL_Flag_3D_Models) != 0);
+	MacCheckbox TwoDimGraphics_CB(Dialog, TwoDimGraphics_Item, TEST_FLAG(Data.Flags,OGL_Flag_2DGraphics));
+	MacCheckbox FlatStaticEffect_CB(Dialog, FlatStaticEffect_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatStatic));
+	MacCheckbox FaderEffect_CB(Dialog, Fader_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fader));
+	MacCheckbox SeeThruLiquids_CB(Dialog, LiquidSeeThru_Item, TEST_FLAG(Data.Flags,OGL_Flag_LiqSeeThru));
+	MacCheckbox Map_CB(Dialog, Map_Item, TEST_FLAG(Data.Flags,OGL_Flag_Map));
+	MacCheckbox TextureFix_CB(Dialog, TextureFix_Item, TEST_FLAG(Data.Flags,OGL_Flag_TextureFix));
+	MacCheckbox Model_CB(Dialog, Model_Item, TEST_FLAG(Data.Flags,OGL_Flag_3D_Models));
 	
 	// Load the colors into temporaries
 	VoidColor = Data.VoidColor;

@@ -2878,8 +2878,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 };
 
 // Added for the convenience of the 1-2-3 Converter
-uint8 *unpack_monster_definition(uint8 *Stream, monster_definition *Objects, int Count);
-uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, int Count);
+uint8 *unpack_monster_definition(uint8 *Stream, monster_definition *Objects, size_t Count);
+uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, size_t Count);
 
 #endif
 

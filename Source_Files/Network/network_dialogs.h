@@ -225,7 +225,7 @@ extern void setup_for_score_limited_game(
 
 extern void setup_dialog_for_game_type(
 	DialogPtr dialog, 
-	short game_type);
+	size_t game_type);
 
 
 

@@ -166,13 +166,13 @@ static void import_physics_wad_data(
 	struct wad_data *wad)
 {
 	// LP: this code is copied out of game_wad.c
-	long data_length;
+	size_t data_length;
 	byte *data;
-	short count;
+	size_t count;
 	bool PhysicsModelLoaded = false;
 	
 	data= (unsigned char *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
-	count = (short)data_length/SIZEOF_monster_definition;
+	count = data_length/SIZEOF_monster_definition;
 	assert(count*SIZEOF_monster_definition == data_length);
 	assert(count <= NUMBER_OF_MONSTER_TYPES);
 	if (data_length > 0)
@@ -182,7 +182,7 @@ static void import_physics_wad_data(
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, EFFECTS_PHYSICS_TAG, &data_length);
-	count = (short)data_length/SIZEOF_effect_definition;
+	count = data_length/SIZEOF_effect_definition;
 	assert(count*SIZEOF_effect_definition == data_length);
 	assert(count <= NUMBER_OF_EFFECT_TYPES);
 	if (data_length > 0)
@@ -192,7 +192,7 @@ static void import_physics_wad_data(
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, PROJECTILE_PHYSICS_TAG, &data_length);
-	count = (short)data_length/SIZEOF_projectile_definition;
+	count = data_length/SIZEOF_projectile_definition;
 	assert(count*SIZEOF_projectile_definition == data_length);
 	assert(count <= NUMBER_OF_PROJECTILE_TYPES);
 	if (data_length > 0)
@@ -202,7 +202,7 @@ static void import_physics_wad_data(
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, PHYSICS_PHYSICS_TAG, &data_length);
-	count = (short)data_length/SIZEOF_physics_constants;
+	count = data_length/SIZEOF_physics_constants;
 	assert(count*SIZEOF_physics_constants == data_length);
 	assert(count <= get_number_of_physics_models());
 	if (data_length > 0)
@@ -211,8 +211,8 @@ static void import_physics_wad_data(
 		unpack_physics_constants(data,count);
 	}
 	
-	data= (unsigned char *)extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
-	count = (short)data_length/SIZEOF_weapon_definition;
+	extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
+	count = data_length/SIZEOF_weapon_definition;
 	assert(count*SIZEOF_weapon_definition == data_length);
 	assert(count <= get_number_of_weapon_types());
 	if (data_length > 0)

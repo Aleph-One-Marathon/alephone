@@ -55,7 +55,7 @@ size_t countstr(
 unsigned char *getpstr(
 	unsigned char *string,
 	short resid,
-	short item)
+	size_t item)
 {
 	unsigned char *CollString = TS_GetString(resid,item);
 	if (CollString)
@@ -72,7 +72,7 @@ unsigned char *getpstr(
 char *getcstr(
 	char *string,
 	short resid,
-	short item)
+	size_t item)
 {
 	unsigned char *CollString = TS_GetString(resid,item);
 	if (CollString)

@@ -133,16 +133,16 @@ static bool write_to_file(OpenedFile& OFile, long offset, void *data, long lengt
 static bool read_from_file(OpenedFile& OFile, long offset, void *data, long length);
 
 // LP: routines for packing and unpacking the data from streams of bytes
-static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count);
-static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, int Count);
-static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count);
-static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count);
-static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count);
-static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count);
-static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count);
-static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count);
-static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count);
-static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, int Count);
+static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, size_t Count);
+static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, size_t Count);
+static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, size_t Count);
+static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, size_t Count);
+static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, size_t Count);
+static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, size_t Count);
+static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, size_t Count);
+static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, size_t Count);
+static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, size_t Count);
+static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, size_t Count);
 
 /* ------------------ Code Begins */
 
@@ -237,12 +237,12 @@ struct wad_data *read_indexed_wad_from_file(
 void *extract_type_from_wad(
 	struct wad_data *wad,
 	WadDataType type, 
-	long *length)
+	size_t *length)
 {
 	void *return_value= NULL;
 	short index;
 	
-	*length= 0l;
+	*length= 0;
 	
 	assert(wad);
 	for(index= 0; index<wad->tag_count; ++index)
@@ -251,6 +251,7 @@ void *extract_type_from_wad(
 		{
 			return_value= wad->tag_data[index].data;
 			*length= wad->tag_data[index].length;
+			assert(wad->tag_data[index].length >= 0);
 			break;
 		}
 	}
@@ -524,8 +525,8 @@ struct wad_data *append_data_to_wad(
 	struct wad_data *wad, 
 	WadDataType type, 
 	void *data, 
-	long size,
-	long offset) /* Allows for inplace creation of wadfiles */
+	size_t size,
+	size_t offset) /* Allows for inplace creation of wadfiles */
 {
 	short index;
 
@@ -1353,12 +1354,12 @@ static bool read_from_file(
 	return OFile.Read(length, data);
 }
 
-static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
+static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	wad_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->version);
 		StreamToValue(S,ObjPtr->data_version);
@@ -1377,12 +1378,12 @@ static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
 	return S;
 }
 
-static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
+static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	wad_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->version);
 		ValueToStream(S,ObjPtr->data_version);
@@ -1402,12 +1403,12 @@ static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
 }
 
 
-static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count)
+static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	old_directory_entry* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->offset_to_start);
 		StreamToValue(S,ObjPtr->length);
@@ -1417,12 +1418,12 @@ static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Obj
 	return S;
 }
 
-static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count)
+static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	old_directory_entry* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->offset_to_start);
 		ValueToStream(S,ObjPtr->length);
@@ -1433,12 +1434,12 @@ static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objec
 }
 
 
-static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count)
+static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	directory_entry* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->offset_to_start);
 		StreamToValue(S,ObjPtr->length);
@@ -1449,12 +1450,12 @@ static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, in
 	return S;
 }
 
-static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count)
+static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	directory_entry* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->offset_to_start);
 		ValueToStream(S,ObjPtr->length);
@@ -1466,12 +1467,12 @@ static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, int 
 }
 
 
-static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count)
+static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	old_entry_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->tag);
 		StreamToValue(S,ObjPtr->next_offset);
@@ -1482,12 +1483,12 @@ static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, 
 	return S;
 }
 
-static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count)
+static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	old_entry_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->tag);
 		ValueToStream(S,ObjPtr->next_offset);
@@ -1499,12 +1500,12 @@ static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, in
 }
 
 
-static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
+static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	entry_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->tag);
 		StreamToValue(S,ObjPtr->next_offset);
@@ -1516,12 +1517,12 @@ static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, int Coun
 	return S;
 }
 
-static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
+static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	entry_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->tag);
 		ValueToStream(S,ObjPtr->next_offset);

@@ -322,12 +322,12 @@ void teleport_object_in(
 /* ---------- private code */
 
 
-uint8 *unpack_effect_data(uint8 *Stream, effect_data* Objects, int Count)
+uint8 *unpack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	effect_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->object_index);
@@ -344,12 +344,12 @@ uint8 *unpack_effect_data(uint8 *Stream, effect_data* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_effect_data(uint8 *Stream, effect_data* Objects, int Count)
+uint8 *pack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	effect_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->object_index);
@@ -367,17 +367,17 @@ uint8 *pack_effect_data(uint8 *Stream, effect_data* Objects, int Count)
 }
 
 
-uint8 *unpack_effect_definition(uint8 *Stream, int Count)
+uint8 *unpack_effect_definition(uint8 *Stream, size_t Count)
 {
 	return unpack_effect_definition(Stream,effect_definitions,Count);
 }
 
-uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, int Count)
+uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	effect_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->collection);
 		StreamToValue(S,ObjPtr->shape);
@@ -394,17 +394,17 @@ uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, int C
 }
 
 
-uint8 *pack_effect_definition(uint8 *Stream, int Count)
+uint8 *pack_effect_definition(uint8 *Stream, size_t Count)
 {
 	return pack_effect_definition(Stream,effect_definitions,Count);
 }
 
-uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, int Count)
+uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	effect_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->collection);
 		ValueToStream(S,ObjPtr->shape);

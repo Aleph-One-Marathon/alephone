@@ -74,8 +74,8 @@ bool	sUserWantsJoinHinting				   = false;
 char	sJoinHintingAddress[kJoinHintingAddressLength + 1] = "";
 #endif
 
-static long get_dialog_game_options(DialogPtr dialog, short game_type);
-static void set_dialog_game_options(DialogPtr dialog, long game_options);
+static uint16 get_dialog_game_options(DialogPtr dialog, short game_type);
+static void set_dialog_game_options(DialogPtr dialog, uint16 game_options);
 
 
 
@@ -186,7 +186,7 @@ extract_setup_dialog_information(
 	strcpy(game_information->level_name, entry.level_name);
 	game_information->difficulty_level = get_selection_control_value(dialog, iDIFFICULTY_MENU)-1;
 
-	game_information->allow_mic = (bool) get_boolean_control_value(dialog, iREAL_TIME_SOUND);
+	game_information->allow_mic = get_boolean_control_value(dialog, iREAL_TIME_SOUND);
 
 
 #if HAVE_SDL_NET
@@ -384,12 +384,12 @@ fill_in_game_setup_dialog(
  * Purpose:  extract the game option flags from the net game setup's controls
  *
  *************************************************************************************************/
-static long
+static uint16
 get_dialog_game_options(
 	DialogPtr dialog,
 	short game_type)
 {
-	long game_options = 0;
+	uint16 game_options = 0;
 	
 	// These used to be options in the dialog. now they are always true, i guess.
 	game_options |= (_ammo_replenishes | _weapons_replenish | _specials_replenish);
@@ -419,7 +419,7 @@ get_dialog_game_options(
 static void
 set_dialog_game_options(
 	DialogPtr dialog, 
-	long game_options)
+	uint16 game_options)
 {
 	modify_boolean_control(dialog, iUNLIMITED_MONSTERS, NONE, (game_options & _monsters_replenish) ? 1 : 0);
 	modify_boolean_control(dialog, iMOTION_SENSOR_DISABLED, NONE, (game_options & _motion_sensor_does_not_work) ? 1 : 0);
@@ -434,7 +434,7 @@ set_dialog_game_options(
 // ZZZ: moved here from network_dialogs_macintosh.cpp
 void setup_dialog_for_game_type(
 	DialogPtr dialog, 
-	short game_type)
+	size_t game_type)
 {
 	switch(game_type)
 	{

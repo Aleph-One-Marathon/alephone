@@ -473,13 +473,13 @@ void render_screen(short ticks_elapsed)
 #ifdef HAVE_OPENGL
 	// Is map to be drawn with OpenGL?
 	if (OGL_IsActive() && world_view->overhead_map_active)
-		OGL_MapActive = (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Map) != 0);
+		OGL_MapActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Map);
 	else
 		OGL_MapActive = false;
 
 	// Is HUD to be drawn with OpenGL?
 	if (OGL_IsActive())
-		OGL_HUDActive = (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_HUD) != 0);
+		OGL_HUDActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_HUD);
 	else
 		OGL_HUDActive = false;
 

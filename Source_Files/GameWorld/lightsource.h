@@ -181,12 +181,12 @@ _fixed get_light_intensity(size_t light_index);
 light_data *get_light_data(
 	const size_t light_index);
 
-uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count);
-uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count);
-uint8 *unpack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count);
-uint8 *pack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count);
-uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, int Count);
-uint8 *pack_light_data(uint8 *Stream, light_data* Objects, int Count);
+uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, size_t Count);
+uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, size_t Count);
+uint8 *unpack_static_light_data(uint8 *Stream, static_light_data* Objects, size_t Count);
+uint8 *pack_static_light_data(uint8 *Stream, static_light_data* Objects, size_t Count);
+uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, size_t Count);
+uint8 *pack_light_data(uint8 *Stream, light_data* Objects, size_t Count);
 
 void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data* OldLights, int Count);
 

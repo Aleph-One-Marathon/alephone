@@ -1066,12 +1066,12 @@ bool ProjectileIsGuided(short Type)
 }
 
 
-uint8 *unpack_projectile_data(uint8 *Stream, projectile_data* Objects, int Count)
+uint8 *unpack_projectile_data(uint8 *Stream, projectile_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	projectile_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		
@@ -1103,12 +1103,12 @@ uint8 *unpack_projectile_data(uint8 *Stream, projectile_data* Objects, int Count
 	return S;
 }
 
-uint8 *pack_projectile_data(uint8 *Stream, projectile_data* Objects, int Count)
+uint8 *pack_projectile_data(uint8 *Stream, projectile_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	projectile_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		
@@ -1141,12 +1141,12 @@ uint8 *pack_projectile_data(uint8 *Stream, projectile_data* Objects, int Count)
 }
 
 
-uint8 *unpack_projectile_definition(uint8 *Stream, projectile_definition *Objects, int Count)
+uint8 *unpack_projectile_definition(uint8 *Stream, projectile_definition *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	projectile_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->collection);
 		StreamToValue(S,ObjPtr->shape);
@@ -1175,18 +1175,18 @@ uint8 *unpack_projectile_definition(uint8 *Stream, projectile_definition *Object
 	return S;
 }
 
-uint8 *unpack_projectile_definition(uint8 *Stream, int Count)
+uint8 *unpack_projectile_definition(uint8 *Stream, size_t Count)
 {
 	return unpack_projectile_definition(Stream,projectile_definitions,Count);
 }
 
 
-uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects, int Count)
+uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects, size_t Count)
 {
 	uint8* S = Stream;
 	projectile_definition* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->collection);
 		ValueToStream(S,ObjPtr->shape);
@@ -1215,7 +1215,7 @@ uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects,
 	return S;
 }
 
-uint8 *pack_projectile_definition(uint8 *Stream, int Count)
+uint8 *pack_projectile_definition(uint8 *Stream, size_t Count)
 {
 	return pack_projectile_definition(Stream,projectile_definitions,Count);
 }

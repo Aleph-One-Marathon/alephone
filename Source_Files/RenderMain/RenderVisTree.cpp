@@ -105,7 +105,7 @@ void RenderVisTreeClass::PUSH_POLYGON_INDEX(short polygon_index)
 	if (!TEST_RENDER_FLAG(polygon_index, _polygon_is_visible))
 	{
 		// Grow the list only if necessary
-		if (polygon_queue_size < int(PolygonQueue.size()))
+		if (polygon_queue_size < PolygonQueue.size())
 			PolygonQueue[polygon_queue_size]= polygon_index;
 		else
 			PolygonQueue.push_back(polygon_index);
@@ -176,7 +176,7 @@ void RenderVisTreeClass::build_render_tree()
 				{
 					long x= view->half_screen_width + (transformed_endpoint.j*view->world_to_screen_x)/transformed_endpoint.i;
 					
-					endpoint_x_coordinates[endpoint_index]= PIN(x, INT16_MIN, INT16_MAX);
+					endpoint_x_coordinates[endpoint_index]= static_cast<int16>(PIN(x, INT16_MIN, INT16_MAX));
 					SET_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed);
 				}
 				
@@ -725,7 +725,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	assert(!TEST_RENDER_FLAG(line_index, _line_has_clip_data));
 
 	SET_RENDER_FLAG(line_index, _line_has_clip_data);
-	line_clip_indexes[line_index]= LastIndex;
+	line_clip_indexes[line_index]= static_cast<vector<size_t>::value_type>(LastIndex);
 	
 	data->flags= 0;
 

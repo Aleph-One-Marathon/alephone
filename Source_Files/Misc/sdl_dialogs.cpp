@@ -65,26 +65,12 @@ static OpenedResourceFile theme_resources;
 static TextSpec dialog_font_spec[NUM_DIALOG_FONTS];
 static sdl_font_info *dialog_font[NUM_DIALOG_FONTS];
 static SDL_Color dialog_color[NUM_DIALOG_COLORS];
-static int dialog_space[NUM_DIALOG_SPACES];
+static uint16 dialog_space[NUM_DIALOG_SPACES];
 
-#ifdef __MVCPP__			// VC++ doesn't like the other way -- throws an error about a default constructor.
-
-struct dialog_image_spec_stru
-{
-	string name;
-	bool scale;
-};
-
-static dialog_image_spec_stru dialog_image_spec[NUM_DIALOG_IMAGES];
-
-#else
-
-static struct {
+static struct dialog_image_spec_type {
 	string name;
 	bool scale;
 } dialog_image_spec[NUM_DIALOG_IMAGES];
-
-#endif
 
 static SDL_Surface *dialog_image[NUM_DIALOG_IMAGES];
 
@@ -313,13 +299,13 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%d", dialog_space[FRAME_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[FRAME_T_SPACE]);
 		} else if (StringsEqual(tag, "bottom")) {
-			return ReadNumericalValue(value, "%d", dialog_space[FRAME_B_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[FRAME_B_SPACE]);
 		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%d", dialog_space[FRAME_L_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[FRAME_L_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%d", dialog_space[FRAME_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[FRAME_R_SPACE]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -343,7 +329,7 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "height")) {
-			return ReadNumericalValue(value, "%d", dialog_space[SPACER_HEIGHT]);
+			return ReadNumericalValue(value, "%hu", dialog_space[SPACER_HEIGHT]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -361,13 +347,13 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%d", dialog_space[BUTTON_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[BUTTON_T_SPACE]);
 		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%d", dialog_space[BUTTON_L_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[BUTTON_L_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%d", dialog_space[BUTTON_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[BUTTON_R_SPACE]);
 		} else if (StringsEqual(tag, "height")) {
-			return ReadNumericalValue(value, "%d", dialog_space[BUTTON_HEIGHT]);
+			return ReadNumericalValue(value, "%hu", dialog_space[BUTTON_HEIGHT]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -388,7 +374,7 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "space")) {
-			return ReadNumericalValue(value, "%d", dialog_space[LABEL_ITEM_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[LABEL_ITEM_SPACE]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -412,13 +398,13 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%d", dialog_space[TROUGH_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[TROUGH_T_SPACE]);
 		} else if (StringsEqual(tag, "bottom")) {
-			return ReadNumericalValue(value, "%d", dialog_space[TROUGH_B_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[TROUGH_B_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%d", dialog_space[TROUGH_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[TROUGH_R_SPACE]);
 		} else if (StringsEqual(tag, "width")) {
-			return ReadNumericalValue(value, "%d", dialog_space[TROUGH_WIDTH]);
+			return ReadNumericalValue(value, "%hu", dialog_space[TROUGH_WIDTH]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -439,13 +425,13 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%d", dialog_space[LIST_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[LIST_T_SPACE]);
 		} else if (StringsEqual(tag, "bottom")) {
-			return ReadNumericalValue(value, "%d", dialog_space[LIST_B_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[LIST_B_SPACE]);
 		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%d", dialog_space[LIST_L_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[LIST_L_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%d", dialog_space[LIST_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[LIST_R_SPACE]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -463,11 +449,11 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%d", dialog_space[SLIDER_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[SLIDER_T_SPACE]);
 		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%d", dialog_space[SLIDER_L_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[SLIDER_L_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%d", dialog_space[SLIDER_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_space[SLIDER_R_SPACE]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -711,9 +697,9 @@ SDL_Surface *get_dialog_image(int which, int width, int height)
 	return s2;
 }
 
-int get_dialog_space(int which)
+uint16 get_dialog_space(size_t which)
 {
-	assert(which >= 0 && which < NUM_DIALOG_SPACES);
+	assert(which < NUM_DIALOG_SPACES);
 	return dialog_space[which];
 }
 

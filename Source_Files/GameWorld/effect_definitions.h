@@ -199,7 +199,7 @@ static struct effect_definition effect_definitions[NUMBER_OF_EFFECT_TYPES]=
 };
 
 // Added for the convenience of the 1-2-3 Converter
-uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, int Count);
-uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, int Count);
+uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t Count);
+uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t Count);
 
 #endif

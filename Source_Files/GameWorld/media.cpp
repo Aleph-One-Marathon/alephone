@@ -296,12 +296,12 @@ size_t count_number_of_medias_used()
 }
 
 
-uint8 *unpack_media_data(uint8 *Stream, media_data* Objects, int Count)
+uint8 *unpack_media_data(uint8 *Stream, media_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	media_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->flags);
@@ -329,12 +329,12 @@ uint8 *unpack_media_data(uint8 *Stream, media_data* Objects, int Count)
 	return S;
 }
 
-uint8 *pack_media_data(uint8 *Stream, media_data* Objects, int Count)
+uint8 *pack_media_data(uint8 *Stream, media_data* Objects, size_t Count)
 {
 	uint8* S = Stream;
 	media_data* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
 		ValueToStream(S,ObjPtr->flags);
