@@ -159,6 +159,7 @@
 				F5CFAD410200FA6B01D80110,
 				F5CFAD420200FA6B01D80110,
 				F5CFAD430200FA6B01D80110,
+				F5D37B6F022D35A901A80001,
 			);
 			isa = PBXGroup;
 			name = Resources;
@@ -198,7 +199,7 @@
 				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks";
 				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Library/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O3";
+				OPTIMIZATION_CFLAGS = "-O0";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H";
 				OTHER_LDFLAGS = "-noprebind -multiply_defined suppress -F$(HOME)/Library/Frameworks -framework SDL -framework SDL_image -framework SDL_net";
 				PREBINDING = NO;
@@ -594,6 +595,8 @@
 				F521E80B0213680301A80001,
 				F521E80F021369E301A80001,
 				F521E810021369E301A80001,
+				F53DC61E022179A801A80001,
+				F53DC62102219A3E01A80001,
 			);
 			isa = PBXHeadersBuildPhase;
 			name = Headers;
@@ -715,7 +718,6 @@
 				F522136C0136A6FD01000001,
 				F522136D0136A6FD01000001,
 				F522136E0136A6FD01000001,
-				F52213940136ABAE01000001,
 				F52213950136ABAE01000001,
 				F52213960136ABAE01000001,
 				F52213970136ABAE01000001,
@@ -746,6 +748,7 @@
 				F5FDA08D0200C962013D663B,
 				F5CFAD3C0200F9D201D80110,
 				F5F50D6A0215CB9801144D54,
+				F56A463E021F7E2301A80001,
 			);
 			isa = PBXSourcesBuildPhase;
 			name = Sources;
@@ -3359,12 +3362,6 @@
 			path = ../Source_Files/Network/network.h;
 			refType = 2;
 		};
-		F52213940136ABAE01000001 = {
-			fileRef = F522137C0136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F52213950136ABAE01000001 = {
 			fileRef = F52213810136ABAE01000001;
 			isa = PBXBuildFile;
@@ -4650,6 +4647,8 @@
 				F522138F0136ABAE01000001,
 				F522137A0136ABAE01000001,
 				F522137B0136ABAE01000001,
+				F56A463D021F7E2301A80001,
+				F573B28F021FAF7801A80001,
 				F522137C0136ABAE01000001,
 				F522137D0136ABAE01000001,
 				F522137E0136ABAE01000001,
@@ -4676,9 +4675,12 @@
 		F52214520136C0C401000001 = {
 			children = (
 				F52213900136ABAE01000001,
+				F53DC61D022179A801A80001,
 				F52213800136ABAE01000001,
+				F53DC62002219A3D01A80001,
 				F52213850136ABAE01000001,
 				F52213870136ABAE01000001,
+				F5D37B6D022D1C2C01A80001,
 				F52213890136ABAE01000001,
 				F522138C0136ABAE01000001,
 			);
@@ -4736,9 +4738,13 @@
 				F53673F302014B3F01A80001,
 			);
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
+				HEADER_SEARCH_PATHS = "\"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
 				OPTIMIZATION_CFLAGS = "-O0";
-				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1";
+				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1";
+				OTHER_LDFLAGS = "-lobjc";
 				OTHER_REZFLAGS = "";
+				PREBINDING = NO;
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
@@ -4760,64 +4766,197 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>shp</string>
-			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>ShapesFile.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>Shapes File</string>
+			<string>Aleph One Shapes File</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>shp∞</string>
+				<string>shp2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>NSDocumentClass</key>
-			<string>Aleph One Sprite Data</string>
+			<string>org.bungie.source.shapes</string>
 		</dict>
 		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>snd2</string>
-			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>SoundsIcon.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>Sounds File</string>
+			<string>Aleph One Sound Data</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
 				<string>snd∞</string>
+				<string>snd2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>NSDocumentClass</key>
-			<string>Aleph One Sound Data</string>
+			<string>org.bungie.source.sounds</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFile</key>
+			<string>ImagesIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One Interface Images</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>img∞</string>
+				<string>img2</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.images</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFile</key>
+			<string>FilmIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One Replay</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>fil∞</string>
+				<string>fil2</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.film</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>img2</string>
+				<string>sce</string>
+				<string>*</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>ImagesIcon.icns</string>
+			<string>MapIcon.icns</string>
 			<key>CFBundleTypeName</key>
-			<string>Images File</string>
+			<string>Aleph One Map File</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>img∞</string>
+				<string>sce∞</string>
+				<string>sce2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>NSDocumentClass</key>
-			<string>Aleph One Interface Images</string>
+			<string>org.bungie.source.map</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>mml</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>MMLIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One XML Configuration</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>****</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.mml</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>pfhr</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>PFIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One Pfhortran Script</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>****</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.pfhortran</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>phys</string>
+				<string>*</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>PhysIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One Physics File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>phy∞</string>
+				<string>phy2</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.physics</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFile</key>
+			<string>SaveIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One Saved Game</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>sga∞</string>
+				<string>sga2</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.save</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeIconFile</key>
+			<string>MusakIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One Music</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>AIFF</string>
+				<string>MPEG</string>
+				<string>MP3 </string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.music</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>a1bndl</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>package.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One Bundle</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>****</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSTypeIsPackage</key>
+			<true/>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.bundle</string>
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>AlephOne</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Aleph One Carbon Test for OS X</string>
+	<string>Aleph One Carbon for OS X (0.13.20020226 Carbon/SDL Network)</string>
 	<key>CFBundleIconFile</key>
 	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -4829,11 +4968,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.13.0</string>
+	<string>0.13.20020226 Carbon</string>
 	<key>CFBundleSignature</key>
 	<string>26.A</string>
 	<key>CFBundleVersion</key>
-	<string>0.13.0</string>
+	<string>0.13.20020226</string>
 </dict>
 </plist>
 ";
@@ -5003,6 +5142,10 @@
 				F51E8E320212A3E701A80001,
 				F51E8E330212A3E701A80001,
 				F51E8E360212A6F201A80001,
+				F57081C50220B34901A80001,
+				F53DC61F022179A901A80001,
+				F53DC62202219A3E01A80001,
+				F5D37B6E022D1C2C01A80001,
 			);
 			isa = PBXHeadersBuildPhase;
 			name = Headers;
@@ -5047,7 +5190,6 @@
 				F53674580201508B01A80001,
 				F53674590201508B01A80001,
 				F536745A0201508B01A80001,
-				F536745B0201508B01A80001,
 				F536745C0201508B01A80001,
 				F536745D0201508B01A80001,
 				F536745E0201508B01A80001,
@@ -5146,6 +5288,18 @@
 				F53675220201639001A80001,
 				F5367523020163DB01A80001,
 				F58816A6021B112A01A80001,
+				F56A4636021F7D8F01A80001,
+				F56A4637021F7D8F01A80001,
+				F56A4639021F7D8F01A80001,
+				F56A463A021F7D8F01A80001,
+				F56A463B021F7D8F01A80001,
+				F56A463C021F7D8F01A80001,
+				F56A4640021F7E2301A80001,
+				F5828BE0022089D801A80001,
+				F57081C60220B34901A80001,
+				F57081C70220B3AF01A80001,
+				F53DC61B02214F2201A80001,
+				F53DC61C0221781001A80001,
 			);
 			isa = PBXSourcesBuildPhase;
 			name = Sources;
@@ -5159,6 +5313,8 @@
 				F53673FD02014D2D01A80001,
 				F53673FE02014D2D01A80001,
 				F53673FF02014D2D01A80001,
+				F56A4632021F7C5501A80001,
+				F56A4641021F88A301A80001,
 			);
 			isa = PBXFrameworksBuildPhase;
 			name = "Frameworks & Libraries";
@@ -5166,6 +5322,7 @@
 		F53673F302014B3F01A80001 = {
 			buildActionMask = 2147483647;
 			files = (
+				F5D37B70022D35AA01A80001,
 				F536740502014DC301A80001,
 				F536740902014E1C01A80001,
 				F536740A02014E1C01A80001,
@@ -5777,12 +5934,6 @@
 		};
 		F536745A0201508B01A80001 = {
 			fileRef = F5830B4C01E77D5701BA387C;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F536745B0201508B01A80001 = {
-			fileRef = F522137E0136ABAE01000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -6956,6 +7107,54 @@
 			settings = {
 			};
 		};
+		F53DC61B02214F2201A80001 = {
+			fileRef = F573B28F021FAF7801A80001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F53DC61C0221781001A80001 = {
+			fileRef = F522137D0136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F53DC61D022179A801A80001 = {
+			isa = PBXFileReference;
+			name = network_dialogs.h;
+			path = ../Source_Files/Network/network_dialogs.h;
+			refType = 2;
+		};
+		F53DC61E022179A801A80001 = {
+			fileRef = F53DC61D022179A801A80001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F53DC61F022179A901A80001 = {
+			fileRef = F53DC61D022179A801A80001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F53DC62002219A3D01A80001 = {
+			isa = PBXFileReference;
+			name = network_lookup_sdl.h;
+			path = ../Source_Files/Network/network_lookup_sdl.h;
+			refType = 2;
+		};
+		F53DC62102219A3E01A80001 = {
+			fileRef = F53DC62002219A3D01A80001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F53DC62202219A3E01A80001 = {
+			fileRef = F53DC62002219A3D01A80001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F552047902173FFA01A80001 = {
 			fileRef = F5CFAD3D0200FA6B01D80110;
 			isa = PBXBuildFile;
@@ -7112,6 +7311,72 @@
 			settings = {
 			};
 		};
+		F56A4632021F7C5501A80001 = {
+			fileRef = F5281C0801F8CA2101E83A66;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56A4636021F7D8F01A80001 = {
+			fileRef = F5574EFE01F4ED6501FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56A4637021F7D8F01A80001 = {
+			fileRef = F5574EFC01F4ED4801FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56A4639021F7D8F01A80001 = {
+			fileRef = F5574EF801F4ECD701FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56A463A021F7D8F01A80001 = {
+			fileRef = F522138E0136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56A463B021F7D8F01A80001 = {
+			fileRef = F522138D0136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56A463C021F7D8F01A80001 = {
+			fileRef = F522138B0136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56A463D021F7E2301A80001 = {
+			isa = PBXFileReference;
+			name = network_dialogs_macintosh.cpp;
+			path = ../Source_Files/Network/network_dialogs_macintosh.cpp;
+			refType = 2;
+		};
+		F56A463E021F7E2301A80001 = {
+			fileRef = F522137C0136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56A4640021F7E2301A80001 = {
+			fileRef = F52213810136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56A4641021F88A301A80001 = {
+			fileRef = F5281C0501F8C94101E83A66;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F56AEB6B01F8AA1201780311 = {
 			isa = PBXFileReference;
 			path = ImagesIcon.icns;
@@ -7145,6 +7410,30 @@
 			settings = {
 			};
 		};
+		F57081C50220B34901A80001 = {
+			fileRef = F5CFAD3A0200F9D201D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F57081C60220B34901A80001 = {
+			fileRef = F5CFAD390200F9D201D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F57081C70220B3AF01A80001 = {
+			fileRef = F522138F0136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F573B28F021FAF7801A80001 = {
+			isa = PBXFileReference;
+			name = network_dialogs_mac_sdl.cpp;
+			path = ../Source_Files/Network/network_dialogs_mac_sdl.cpp;
+			refType = 2;
+		};
 		F574330401FE38A2013C4252 = {
 			fileRef = F52211910136A6FD01000001;
 			isa = PBXBuildFile;
@@ -7159,6 +7448,12 @@
 		};
 		F574330601FE6306013C4252 = {
 			fileRef = F52211930136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5828BE0022089D801A80001 = {
+			fileRef = F5574EF601F4EC8501FEABBD;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -7428,6 +7723,30 @@
 		};
 		F5CFAD4A0200FA6B01D80110 = {
 			fileRef = F5CFAD430200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5D37B6D022D1C2C01A80001 = {
+			isa = PBXFileReference;
+			name = network_private.h;
+			path = ../Source_Files/Network/network_private.h;
+			refType = 2;
+		};
+		F5D37B6E022D1C2C01A80001 = {
+			fileRef = F5D37B6D022D1C2C01A80001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5D37B6F022D35A901A80001 = {
+			isa = PBXFileReference;
+			name = CarbonResourceTweaks.r;
+			path = ../Resources/CarbonResourceTweaks.r;
+			refType = 2;
+		};
+		F5D37B70022D35AA01A80001 = {
+			fileRef = F5D37B6F022D35A901A80001;
 			isa = PBXBuildFile;
 			settings = {
 			};

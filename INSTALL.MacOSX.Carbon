@@ -14,9 +14,20 @@ MacOS 7.x-9.x/Classic UI code.
 Required Libraries
 ------------------
 
-As of the current time, no libraries are required. In the future SDL_net may
-become a requirement as networking code is synced between the Macintosh and SDL
-interfaces.
+Aleph One/Carbon with SDL networking for MacOSX requires the Simple DirectMedia
+Layer (SDL) library, available from the official SDL site:
+
+  http://www.libsdl.org/
+
+Aleph One expects SDL to be installed as a Framework, which is MacOSX's fancy
+version of a shared library. If you build SDL from source use Project Builder
+rather than command line tools, because (as far as I can tell) the command line
+tools do not build framework versions. The developer package available at the
+SDL webpage does install as a framework.
+
+The SDL_net library, available from the "Libraries" section of the SDL site, is
+also required.
+
 
 Building and Installing the Program
 -----------------------------------
@@ -24,8 +35,8 @@ Building and Installing the Program
 Go to the aleph/PBProjects directory and open the AlephOne-OSX.pbproj within
 Project Builder.
 
-Select AlephOne-Carbon from the menu of targets. (It open defaults to just AlephOne
-for the SDL version).
+Select AlephOne-Carbon from the menu of targets. (By default it opens to building the
+AlephOne/SDL version).
 
 Now, build the program (click on the hammer icon or choose "Build" from the Build menu).
 
@@ -35,7 +46,8 @@ good way to test the program, as Project Builder will give you console output),
 or move this wherever you want it installed.
 
 For the curious the build flags currently are:
-	-Dmac -DTARGET_API_MAC_CARBON -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1
+	-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1
+
 
 	mac
 		Compile the Macintosh UI code
@@ -50,6 +62,9 @@ For the curious the build flags currently are:
 	USE_SHEETS=1
 		When defined as true (1) specifies that MacOSX sheets should be used
 		in dialogs, where applicable.
+	HAVE_SDL_NET=1
+		When defined as true (1) specifies that SDL style networking should
+		be used.
 		
 		
 Installing the data files
@@ -70,8 +85,6 @@ Choice of Frequencies for full screen display is funky. Also leads to
 AlephOne getting confused about screen capabilities. (Fires off the warning
 that AlephOne requires a screen capable of 256 colors or more and is 13" or
 bigger) and to a corruption of the preferences file.
-
-Network play is not hooked up in this build.
 
 Screen fading is not working in this build.
 
@@ -96,3 +109,19 @@ The mouse cannot currently be inverted.
 
 There's a very strong likelihood that the dialog box to choose which monitor
 on a Mac with multiple monitors doesn't actually do anything.
+
+The Gather dialog often has the ok button active even if it should be deactivated.
+For instance, when no other users than the host have been gathered.
+
+Network play is not necessarilly full features, or even stable. There isn't
+even a way for the gatherer to send messages to the player as the SDL version
+purports. It is included in the build because otherwise there's no networking.
+Hopefully with partial networking either things will come together as networking
+in general comes together or as someone focuses on the Carbon build details.
+
+There is currently no way to build without Networking. (And without requireing the
+SDL libraries either)
+
+The resulting executable currently requires SDL and SDL_Net frameworks to be
+installed. In the future we hope to install these as private frameworks of the
+application.
