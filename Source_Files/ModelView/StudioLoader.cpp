@@ -13,7 +13,7 @@
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -108,7 +108,7 @@ static void LoadFloats(int NVals, uint8 *Stream, GLfloat *Floats);
 
 
 // For feeding into the read-in routines
-Model3D *ModelPtr = NULL;
+static Model3D *ModelPtr = NULL;
 
 bool LoadModel_Studio(FileSpecifier& Spec, Model3D& Model)
 {

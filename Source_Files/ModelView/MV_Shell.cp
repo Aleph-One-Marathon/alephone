@@ -13,7 +13,7 @@
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -38,6 +38,7 @@
 #include "FileHandler.h"
 #include "ImageLoader.h"
 #include "ModelRenderer.h"
+#include "Dim3_Loader.h"
 #include "QD3D_Loader.h"
 #include "StudioLoader.h"
 #include "WavefrontLoader.h"
@@ -119,7 +120,8 @@ ModelRenderShader Shaders[2];
 enum {
 	ModelWavefront = 1,
 	ModelStudio,
-	Model_QD3D
+	Model_QD3D,
+	Model_Dim3
 };
 const int LoadSkinItem = 1;
 
@@ -146,6 +148,11 @@ void LoadModelAction(int ModelType)
 		TypeCode = '3DMF';
 		if (File.ReadDialog(1,"Model Type: QuickDraw 3D"))
 			Success = LoadModel_QD3D(File, Model);
+		break;
+	case Model_Dim3:
+		TypeCode = 'TEXT';
+		if (File.ReadDialog(1,"Model Type: Dim3"))
+			Success = LoadModel_Dim3(File, Model);
 		break;
 	}
 	
@@ -782,6 +789,7 @@ int main(int argc, char **argv)
 	glutAddMenuEntry("Alias-Wavefront...",ModelWavefront);
 	glutAddMenuEntry("3D Studio Max...",ModelStudio);
 	glutAddMenuEntry("QuickDraw 3D...",Model_QD3D);
+	glutAddMenuEntry("Dim3...",Model_Dim3);
 
 	int SkinMenu = glutCreateMenu(LoadSkinAction);
 	glutAddMenuEntry("Colors...",ImageLoader_Colors);
