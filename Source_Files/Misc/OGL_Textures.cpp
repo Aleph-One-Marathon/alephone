@@ -31,6 +31,10 @@ Sep 9, 2000:
 
 	Restored old fix for AppleGL texturing as an option; this fix consists of setting
 	the minimum size of a texture to be 128.
+
+Nov 12, 2000 (Loren Petrich):
+	Cleaned up some of the code to avoid explicit endianness usage;
+	also implemented texture substitution.
 */
 
 #include <string.h>
@@ -241,7 +245,7 @@ void OGL_StopTextures()
 
 
 // Find an OpenGL-friendly color table from a Marathon shading table
-static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, GLuint *ColorTable)
+static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, uint32 *ColorTable)
 {
 	// Stretch the original color table to 4 bytes per value for OpenGL convenience;
 	// all the intermediate calculations will be done in RGBA 8888 form,
@@ -252,16 +256,13 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, GLuint *Col
 		for (int k=0; k<MAXIMUM_SHADING_TABLE_INDEXES; k++)
 		{
 			byte *OrigPtr = OrigColorTable + NumSrcBytes*k;
-			GLuint &Color = ColorTable[k];
+			uint32 &Color = ColorTable[k];
 			
 			// Convert from ARGB 5551 to RGBA 8888; make opaque
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			GLushort Intmd = GLushort(OrigPtr[0]);
-			Intmd = Intmd | (GLushort(OrigPtr[1]) << 8);
-#else
-			GLushort Intmd = GLushort(OrigPtr[0]);
-			Intmd = (Intmd << 8) | GLushort(OrigPtr[1]);
-#endif
+			uint16 Intmd;
+			uint8 *IntmdPtr = (uint8 *)(&Intmd);
+			IntmdPtr[0] = OrigPtr[0];
+			IntmdPtr[1] = OrigPtr[1];
 			Color = Convert_16to32(Intmd);
 		}
 		break;
@@ -270,35 +271,14 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, GLuint *Col
 		for (int k=0; k<MAXIMUM_SHADING_TABLE_INDEXES; k++)
 		{
 			byte *OrigPtr = OrigColorTable + NumSrcBytes*k;
-			GLuint &Color = ColorTable[k];
+			uint32 &Color = ColorTable[k];
 			
 			// Convert from ARGB 8888 to RGBA 8888; make opaque
-			GLuint Chan;
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			// Red
-			Chan = OrigPtr[1];
-			Color = Chan;
-			// Green
-			Chan = OrigPtr[2];
-			Color |= Chan << 8;
-			// Blue
-			Chan = OrigPtr[3];
-			Color |= Chan << 16;
-			// Alpha
-			Color |= 0xff000000;
-#else
-			// Red
-			Chan = OrigPtr[1];
-			Color = Chan << 24;
-			// Green
-			Chan = OrigPtr[2];
-			Color |= Chan << 16;
-			// Blue
-			Chan = OrigPtr[3];
-			Color |= Chan << 8;
-			// Alpha
-			Color |= 0x000000ff;
-#endif
+			uint8 *ColorPtr = (uint8 *)(&Color);
+			ColorPtr[0] = OrigPtr[1];
+			ColorPtr[1] = OrigPtr[2];
+			ColorPtr[2] = OrigPtr[3];
+			ColorPtr[3] = 0xff;
 		}
 		break;
 	}
@@ -394,14 +374,21 @@ bool TextureManager::Setup()
 		// get the geometry from the shapes bitmap.
 		if (!LoadSubstituteTexture())
 			if (!SetupTextureGeometry()) return false;
-		
+				
 		// Store sprite scale/offset
 		CBTS.U_Scale = U_Scale;
 		CBTS.V_Scale = V_Scale;
 		CBTS.U_Offset = U_Offset;
 		CBTS.V_Offset = V_Offset;
 		
-		FindColorTables();		
+		// This finding of color tables sets the glow state
+		FindColorTables();
+		// Override if textures had been substituted;
+		// if the normal texture had been substituted, it will be assumed to be
+		// non-glowing unless the glow texture has also been substituted.
+		if (GlowBuffer) IsGlowing = true;
+		else if (NormalBuffer) IsGlowing = false;
+		
 		CTState.IsGlowing = IsGlowing;
 		
 		// Load the fake landscape if selected
@@ -482,11 +469,48 @@ inline bool WhetherTextureFix()
 }
 
 
+// Conversion of color data types
+
+inline int MakeEightBit(GLfloat Chan)
+{
+	return int(PIN(int(255*Chan+0.5),0,255));
+}
+
+uint32 MakeIntColor(GLfloat *FloatColor)
+{
+	uint32 IntColor;
+	uint8 *ColorPtr = (uint8 *)(&IntColor);
+	for (int k=0; k<4; k++)
+		ColorPtr[k] = MakeEightBit(FloatColor[k]);
+	return IntColor;
+}
+
+void MakeFloatColor(uint32 IntColor, GLfloat *FloatColor)
+{
+	uint8 *ColorPtr = (uint8 *)(&IntColor);
+	for (int k=0; k<4; k++)
+		FloatColor[k] = float(ColorPtr[k])/float(255);
+}
+
+
+
 bool TextureManager::LoadSubstituteTexture()
 {
 	// Is there a texture to be substituted?
 	ImageDescriptor& NormalImg = TxtrOptsPtr->NormalImg;
 	if (!NormalImg.IsPresent()) return false;
+	
+	// Idiot-proofing
+	if (NormalBuffer)
+	{
+		delete []NormalBuffer;
+		NormalBuffer = NULL;
+	}
+	if (GlowBuffer)
+	{
+		delete []GlowBuffer;
+		GlowBuffer = NULL;
+	}
 	
 	int Width = NormalImg.GetWidth();
 	int Height = NormalImg.GetHeight();
@@ -501,19 +525,75 @@ bool TextureManager::LoadSubstituteTexture()
 		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
 		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
 		
-		NormalBuffer = new GLuint[TxtrWidth*TxtrHeight];
+		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
 		for (int v=0; v<Height; v++)
 			for (int h=0; h<Width; h++)
 				NormalBuffer[h*Height+v] = NormalImg.GetPixel(h,v);
-		
 		break;
 	
-	// Not supported yet
 	case OGL_Txtr_Landscape:
+		// For tiling to be possible, the width must be a power of 2;
+		// the height need not be such a power.
+		// Also, flip the vertical dimension to get the orientation correct.
+		TxtrWidth = Width;
+		TxtrHeight = Height;
+		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+		
+		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
+		for (int v=0; v<Height; v++)
+			for (int h=0; h<Width; h++)
+				NormalBuffer[((Height-1)-v)*Width+h] = NormalImg.GetPixel(h,v);
+		break;
+		
+	// Not supported yet
 	case OGL_Txtr_Inhabitant:
 	case OGL_Txtr_WeaponsInHand:
 		return false;
 	}
+	
+	// Use the Tomb Raider opacity hack if selected
+	SetPixelOpacities(*TxtrOptsPtr,Width*Height,NormalBuffer);
+	
+	// Modify if infravision is active
+	if (CTable == INFRAVISION_BITMAP_SET)
+	{
+		if (NormalBuffer)
+		{
+			for (int k=0; k<Width*Height; k++)
+			{
+				uint32& IntPxl = NormalBuffer[k];
+				GLfloat FloatPxl[4];
+				MakeFloatColor(IntPxl,FloatPxl);
+				FindInfravisionVersion(Collection,FloatPxl);
+				IntPxl = MakeIntColor(FloatPxl);
+			}
+		}
+		// Infravision textures don't glow
+		if (GlowBuffer)
+		{
+			delete []GlowBuffer;
+			GlowBuffer = NULL;
+		}
+	}
+	else if (CTable == SILHOUETTE_BITMAP_SET)
+	{
+		if (NormalBuffer)
+		{
+			for (int k=0; k<Width*Height; k++)
+			{
+				// Make the color white, but keep the opacity
+				uint8 *PxlPtr = (uint8 *)(NormalBuffer + k);
+				PxlPtr[0] = PxlPtr[1] = PxlPtr[2] = 0xff;
+			}
+		}
+		// Silhouette textures don't glow
+		if (GlowBuffer)
+		{
+			delete []GlowBuffer;
+			GlowBuffer = NULL;
+		}
+	}
+	
 	return true;
 }
 
@@ -607,10 +687,6 @@ bool TextureManager::SetupTextureGeometry()
 }
 
 
-// Float -> unsigned long for opacity (alpha channel) values:
-inline unsigned long MakeUnsignedLong(float x) {return (unsigned long)(0xff*x + 0.5);}
-
-
 void TextureManager::FindColorTables()
 {
 	// Default
@@ -629,13 +705,15 @@ void TextureManager::FindColorTables()
 	short NumSrcBytes = bit_depth/8;
 	
 	// Shadeless polygons use the first, instead of the last, shading table
-	byte *OrigColorTable = ((byte *)ShadingTables);
+	byte *OrigColorTable = (byte *)ShadingTables;
 	byte *OrigGlowColorTable = OrigColorTable;
 	if (!IsShadeless) OrigColorTable +=
 		NumSrcBytes*(number_of_shading_tables - 1)*MAXIMUM_SHADING_TABLE_INDEXES;
 	
-	// Find the normal color table
+	// Find the normal color table,
+	// and set its opacities as if there was no glow table.
 	FindOGLColorTable(NumSrcBytes,OrigColorTable,NormalColorTable);
+	SetPixelOpacities(*TxtrOptsPtr,MAXIMUM_SHADING_TABLE_INDEXES,NormalColorTable);
 	
 	// Find the glow-map color table;
 	// only inhabitants are glowmapped.
@@ -644,126 +722,38 @@ void TextureManager::FindColorTables()
 	{
 		// Find the glow table from the lowest-illumination color table
 		FindOGLColorTable(NumSrcBytes,OrigGlowColorTable,GlowColorTable);
-			
+		
 		// Search for self-luminous colors; ignore the first one as the transparent one
 		for (int k=1; k<MAXIMUM_SHADING_TABLE_INDEXES; k++)
 		{
 			// Check for illumination-independent colors
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			if (GlowColorTable[k] & 0x00f0f0f0)
-#else
-			if (GlowColorTable[k] & 0xf0f0f000)
-#endif
+			uint8 *NormalEntry = (uint8 *)(NormalColorTable + k);
+			uint8 *GlowEntry = (uint8 *)(GlowColorTable + k);
+			
+			bool EntryIsGlowing = false;
+			for (int q=0; q<3; q++)
+				if (GlowEntry[q] >= 0x0f) EntryIsGlowing = true;
+			
+			// Make the glow color the original color, to get continuity
+			for (int q=0; q<3; q++)
+				GlowEntry[q] = NormalEntry[q];
+			
+			if (EntryIsGlowing && NormalEntry[3])
 			{
 				IsGlowing = true;
-				// Make half-opaque, and the original color;
-				// this is to get more like the software rendering
-#ifdef ALEPHONE_LITTLE_ENDIAN
-				GlowColorTable[k] = NormalColorTable[k] & 0x80ffffff;
-#else
-				GlowColorTable[k] = NormalColorTable[k] & 0xffffff80;
-#endif
+				// Make half-opaque, to get more like the software rendering
+				float Opacity = NormalEntry[3]/float(0xff);
+				NormalEntry[3] = MakeEightBit(Opacity/(2-Opacity));
+				GlowEntry[3] = MakeEightBit(Opacity/2);
 			}
 			else
-				// Make transparent but the original color,
-				// so as to get appropriate continuity
-#ifdef ALEPHONE_LITTLE_ENDIAN
-				GlowColorTable[k] = NormalColorTable[k] & 0x00ffffff;
-#else
-				GlowColorTable[k] = NormalColorTable[k] & 0xffffff00;
-#endif
-		}
-	}
-	
-	// Find the modified opacity if specified as a rendering option:
-	short OpacityType = TxtrOptsPtr->OpacityType;
-	if ((TextureType != OGL_Txtr_Landscape) && (OpacityType != OGL_OpacType_Crisp))
-	{
-		for (int k=1; k<MAXIMUM_SHADING_TABLE_INDEXES; k++)
-		{
-			// Get the normal color; the glow color is calculated from it,
-			// so this is OK.
-			unsigned long CTabEntry = NormalColorTable[k];
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			if (!(CTabEntry & 0xff000000)) continue;
-#else
-			if (!(CTabEntry & 0x000000ff)) continue;
-#endif
-			
-			// Suppress the opacity, since we'll be replacing it
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			CTabEntry &= 0x00ffffff;
-#else
-			CTabEntry &= 0xffffff00;
-#endif
-			
-			// Find the overall opacity
-			float Opacity = 1;
-			if (OpacityType == OGL_OpacType_Avg)
 			{
-#ifdef ALEPHONE_LITTLE_ENDIAN
-				unsigned long Red = CTabEntry & 0x000000ff;
-				unsigned long Green = (CTabEntry >> 8) & 0x000000ff;
-				unsigned long Blue = (CTabEntry >> 16) & 0x000000ff;
-#else
-				unsigned long Red = (CTabEntry >> 24) & 0x000000ff;
-				unsigned long Green = (CTabEntry >> 16) & 0x000000ff;
-				unsigned long Blue = (CTabEntry >> 8) & 0x000000ff;
-#endif
-				Opacity = (Red + Green + Blue)/3.0/float(0xff);
-			}
-			else if (OpacityType == OGL_OpacType_Max)
-			{
-#ifdef ALEPHONE_LITTLE_ENDIAN
-				unsigned long Red = CTabEntry & 0x000000ff;
-				unsigned long Green = (CTabEntry >> 8) & 0x000000ff;
-				unsigned long Blue = (CTabEntry >> 16) & 0x000000ff;
-#else
-				unsigned long Red = (CTabEntry >> 24) & 0x000000ff;
-				unsigned long Green = (CTabEntry >> 16) & 0x000000ff;
-				unsigned long Blue = (CTabEntry >> 8) & 0x000000ff;
-#endif
-				Opacity = MAX(MAX(Red,Green),Blue)/float(0xff);
-			}
-			Opacity *= TxtrOptsPtr->OpacityScale;
-			Opacity += TxtrOptsPtr->OpacityShift;
-			Opacity = PIN(Opacity,0,1);
-			
-			// Replace only the really-glowing colors' opacities
-			unsigned long GlowCTabEntry = GlowColorTable[k];
-#ifdef ALEPHONE_LITTLE_ENDIAN
-			if (IsGlowing && (GlowCTabEntry & 0xff000000))
-#else
-			if (IsGlowing && (GlowCTabEntry & 0x000000ff))
-#endif
-			{
-				// Suppress the opacity, since we'll be replacing it
-#ifdef ALEPHONE_LITTLE_ENDIAN
-				GlowCTabEntry &= 0x00ffffff;
-#else
-				GlowCTabEntry &= 0xffffff00;
-#endif
-				
-				// The opacity values for each layer are selected to get
-				// the appropriate overall effect (1/2 normal + 1/2 glowing)		
-#ifdef ALEPHONE_LITTLE_ENDIAN
-				GlowColorTable[k] = GlowCTabEntry | (MakeUnsignedLong(Opacity/2) << 24);
-				NormalColorTable[k] = CTabEntry | (MakeUnsignedLong(Opacity/(2-Opacity)) << 24);
-#else
-				GlowColorTable[k] = GlowCTabEntry | MakeUnsignedLong(Opacity/2);
-				NormalColorTable[k] = CTabEntry | MakeUnsignedLong(Opacity/(2-Opacity));
-#endif
-			} else {
-				// Non-glowing colors are done here
-#ifdef ALEPHONE_LITTLE_ENDIAN
-				NormalColorTable[k] = CTabEntry | (MakeUnsignedLong(Opacity) << 24);
-#else
-				NormalColorTable[k] = CTabEntry | MakeUnsignedLong(Opacity);
-#endif
+				// Make transparent, to get appropriate continuity
+				GlowEntry[3] = 0;
 			}
 		}
 	}
-	
+		
 	// The first color is always the transparent color,
 	// except if it is a landscape color
 	if (TextureType != OGL_Txtr_Landscape)
@@ -771,11 +761,11 @@ void TextureManager::FindColorTables()
 }
 
 
-GLuint *TextureManager::GetOGLTexture(GLuint *ColorTable)
+uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 {
 	// Allocate and set to black and transparent
 	int NumPixels = int(TxtrWidth)*int(TxtrHeight);
-	GLuint *Buffer = new GLuint[NumPixels];
+	uint32 *Buffer = new uint32[NumPixels];
 	objlist_clear(Buffer,NumPixels);
 	
 	// The dimension, the offset in the original texture, and the offset in the OpenGL texture
@@ -803,11 +793,11 @@ GLuint *TextureManager::GetOGLTexture(GLuint *ColorTable)
 	if (Texture->bytes_per_row == NONE)
 	{
 		short horig = OrigHeightOffset;
-		GLuint *OGLRowStart = Buffer + TxtrWidth*OGLHeightOffset;
+		uint32 *OGLRowStart = Buffer + TxtrWidth*OGLHeightOffset;
 		for (short h=0; h<Height; h++)
 		{
 			byte *OrigStrip = Texture->row_addresses[horig];
-			GLuint *OGLStrip = OGLRowStart;
+			uint32 *OGLStrip = OGLRowStart;
 
 			// Cribbed from textures.c:
 			// This is the Marathon 2 sprite-interpretation scheme;
@@ -868,11 +858,11 @@ GLuint *TextureManager::GetOGLTexture(GLuint *ColorTable)
 			OGLWidthOffset = 0;
 		}
 		short horig = OrigHeightOffset;
-		GLuint *OGLRowStart = Buffer + TxtrWidth*OGLHeightOffset + OGLWidthOffset;
+		uint32 *OGLRowStart = Buffer + TxtrWidth*OGLHeightOffset + OGLWidthOffset;
 		for (short h=0; h<Height; h++)
 		{
 			byte *OrigStrip = Texture->row_addresses[horig] + OrigWidthOffset;
-			GLuint *OGLStrip = OGLRowStart;
+			uint32 *OGLStrip = OGLRowStart;
 			for (short w=0; w<Width; w++)
 				*(OGLStrip++) = ColorTable[*(OrigStrip++)];
 			horig++;
@@ -884,39 +874,25 @@ GLuint *TextureManager::GetOGLTexture(GLuint *ColorTable)
 }
 
 
-inline GLuint MakeEightBit(GLfloat Chan)
-{
-	return GLuint(PIN(GLint(255*Chan+0.5),0,255));
-}
-
-GLuint MakeTxtrColor(GLfloat *Color)
-{
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	GLuint Red = MakeEightBit(Color[0]);
-	GLuint Green = MakeEightBit(Color[1]) << 8;
-	GLuint Blue = MakeEightBit(Color[2]) << 16;
-	GLuint Alpha = MakeEightBit(Color[3]) << 24;
-#else
-	GLuint Red = MakeEightBit(Color[0]) << 24;
-	GLuint Green = MakeEightBit(Color[1]) << 16;
-	GLuint Blue = MakeEightBit(Color[2]) << 8;
-	GLuint Alpha = MakeEightBit(Color[3]);
-#endif
-	return (Red | Green | Blue | Alpha); 
-}
-
-
-GLuint *TextureManager::GetFakeLandscape()
+uint32 *TextureManager::GetFakeLandscape()
 {
 	// Allocate and set to black and transparent
 	int NumPixels = int(TxtrWidth)*int(TxtrHeight);
-	GLuint *Buffer = new GLuint[NumPixels];
+	uint32 *Buffer = new uint32[NumPixels];
 	objlist_clear(Buffer,NumPixels);
 	
-	// Set up land and sky colors:
+	// Set up land and sky colors;
+	// be sure to idiot-proof out-of-range ones
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	RGBColor OrigLandColor = ConfigureData.LscpColors[static_world->song_index][0];
-	RGBColor OrigSkyColor = ConfigureData.LscpColors[static_world->song_index][1];
+	int LscpIndx = static_world->song_index;
+	if (LscpIndx < 0 && LscpIndx >= 4)
+	{
+		memset(Buffer,0,NumPixels*sizeof(uint32));
+		return Buffer;
+	}
+	
+	RGBColor OrigLandColor = ConfigureData.LscpColors[LscpIndx][0];
+	RGBColor OrigSkyColor = ConfigureData.LscpColors[LscpIndx][1];
 	
 	// Set up floating-point ones, complete with alpha channel
 	GLfloat LandColor[4], SkyColor[4];
@@ -932,12 +908,12 @@ GLuint *TextureManager::GetFakeLandscape()
 		FindInfravisionVersion(Collection,SkyColor);
 	}
 	
-	GLuint TxtrLandColor = MakeTxtrColor(LandColor);
-	GLuint TxtrSkyColor = MakeTxtrColor(SkyColor);
+	uint32 TxtrLandColor = MakeIntColor(LandColor);
+	uint32 TxtrSkyColor = MakeIntColor(SkyColor);
 	
 	// Textures' vertical dimension is upward;
 	// put in the land after the sky
-	GLuint *BufPtr = Buffer;
+	uint32 *BufPtr = Buffer;
 	for (int h=0; h<TxtrHeight/2; h++)
 		for (int w=0; w<TxtrWidth; w++)
 			*(BufPtr++) = TxtrLandColor;
@@ -949,10 +925,10 @@ GLuint *TextureManager::GetFakeLandscape()
 }
 
 
-GLuint *TextureManager::Shrink(GLuint *Buffer)
+uint32 *TextureManager::Shrink(GLuint *Buffer)
 {
 	int NumPixels = int(LoadedWidth)*int(LoadedHeight);
-	GLuint *NewBuffer = new GLuint[NumPixels];
+	uint32 *NewBuffer = new GLuint[NumPixels];
 	gluScaleImage(GL_RGBA, TxtrWidth, TxtrHeight, GL_UNSIGNED_BYTE, Buffer,
 		LoadedWidth, LoadedHeight, GL_UNSIGNED_BYTE, NewBuffer);
 	
@@ -962,7 +938,7 @@ GLuint *TextureManager::Shrink(GLuint *Buffer)
 
 // This places a texture into the OpenGL software and gives it the right
 // mapping attributes
-void TextureManager::PlaceTexture(bool IsOverlaid, GLuint *Buffer)
+void TextureManager::PlaceTexture(bool IsOverlaid, uint32 *Buffer)
 {
 
 	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[TextureType];
