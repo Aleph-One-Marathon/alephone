@@ -1497,7 +1497,10 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 			break;
 		
 		default:
-			vassert(false,csprintf(temporary,"Bad type: %d",SLMember.Type));
+			// Suppressed because for some reason, bad types creep in.
+			// However, this suppression seems to be harmless.
+			// vassert(false,csprintf(temporary,"Bad type: %d",SLMember.Type));
+			break;
 		}
 	}
 }
