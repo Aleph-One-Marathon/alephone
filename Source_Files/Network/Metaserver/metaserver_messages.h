@@ -446,11 +446,6 @@ public:
 	static const uint16	kBungie		= 0x1;
 	static const uint16	kAdmin		= 0x4;
 	
-	// Verbs
-	static const uint16	kAdd		= 0;
-	static const uint16	kDelete		= 1;
-	static const uint16	kRefresh	= 2;
-
 	MetaserverPlayerInfo(AIStream& fromStream);
 
 	uint16 verb() const { return m_verb; }
