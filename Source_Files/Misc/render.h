@@ -171,10 +171,20 @@ void render_view(struct view_data *view, struct bitmap_definition *destination);
 
 void start_render_effect(struct view_data *view, short effect);
 
+
 /* ----------- prototypes/SCREEN.C */
 void render_overhead_map(struct view_data *view);
 void render_computer_interface(struct view_data *view);
 
 #include "scottish_textures.h"
+
+// LP: definitions moved up here because they are referred to
+// outside of render.c, where they are defined.
+
+void instantiate_rectangle_transfer_mode(view_data *view,
+	rectangle_definition *rectangle, short transfer_mode, fixed transfer_phase);
+
+void instantiate_polygon_transfer_mode(view_data *view,
+	polygon_definition *polygon, short transfer_mode, short transfer_phase, boolean horizontal);
 
 #endif
