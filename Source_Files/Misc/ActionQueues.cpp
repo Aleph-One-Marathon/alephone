@@ -100,7 +100,7 @@ ActionQueues::reset()
 void
 ActionQueues::resetQueue(int inPlayerIndex)
 {
-	assert(inPlayerIndex >= 0 && inPlayerIndex < mNumPlayers);
+	assert(inPlayerIndex >= 0 && inPlayerIndex < static_cast<int>(mNumPlayers));
 	mQueueHeaders[inPlayerIndex].read_index = mQueueHeaders[inPlayerIndex].write_index = 0;
 }
 
