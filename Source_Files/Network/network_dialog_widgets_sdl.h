@@ -57,7 +57,7 @@ struct player_info;
 
 class w_found_players;
 
-typedef void (*player_selected_callback_t)(w_found_players*, prospective_joiner_info &player);
+typedef void (*player_selected_callback_t)(w_found_players*, prospective_joiner_info player);
 
 class w_found_players : public w_list<prospective_joiner_info> {
 public:

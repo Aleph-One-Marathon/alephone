@@ -858,7 +858,7 @@ send_text(w_text_entry* te) {
 
 // This is called when the user clicks on a found player to attempt to gather him in.
 static void
-gather_player_callback(w_found_players* foundPlayersWidget, prospective_joiner_info &player) {
+gather_player_callback(w_found_players* foundPlayersWidget, prospective_joiner_info player) {
         assert(foundPlayersWidget != NULL);
     
 	// Either gather will succeed, in which case we don't want to see player, or
