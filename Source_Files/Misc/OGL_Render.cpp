@@ -870,10 +870,10 @@ bool OGL_SetView(view_data &View)
 	CenteredWorld_2_MaraEye[4+1] = Cosine;
 	glLoadMatrixd(CenteredWorld_2_MaraEye);
 	
-	// Reverse the model-render direction so as to work correctly
-	ModelRenderObject.ViewDirection[0] = ViewDir[0] = - Cosine;
-	ModelRenderObject.ViewDirection[1] = ViewDir[1] = - Sine;
-	ModelRenderObject.ViewDirection[2] = 0;
+	// Set the view direction
+	ViewDir[0] = Cosine;
+	ViewDir[1] = Sine;
+	ModelRenderObject.ViewDirection[2] = 0;	// Always stays the same
 
 	// Do a translation and then save;
 	glTranslated(-View.origin.x,-View.origin.y,-View.origin.z);
@@ -2145,6 +2145,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	GLfloat Sine = sine_table[Azimuth];
 	ModelRenderObject.ViewDirection[0] =   ViewDir[0]*Cosine + ViewDir[1]*Sine;
 	ModelRenderObject.ViewDirection[1] = - ViewDir[0]*Sine + ViewDir[1]*Cosine;
+	// The z-component is already set -- to 0
 
 	// Set up the render sidedness
 	if (ModelPtr->Sidedness < 0)
