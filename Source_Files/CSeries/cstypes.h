@@ -34,6 +34,9 @@ enum {
 
 // Integer types with specific bit size
 #if defined(mac)
+#if defined(EXPLICIT_CARBON_HEADER)
+    #include <Carbon/Carbon.h>
+#endif
 
 typedef SInt8 int8;
 typedef UInt8 uint8;
