@@ -36,7 +36,14 @@
 
 #include <string.h>
 
+// Default: packed-data is big-endian.
+// May be overridden by some previous definition,
+// as is the case for the 3D Studio Max loader code,
+// which uses little-endian order
+#if !(defined(PACKED_DATA_IS_BIG_ENDIAN)) && !(defined(PACKED_DATA_IS_LITTLE_ENDIAN))
 #define PACKED_DATA_IS_BIG_ENDIAN
+#undef PACKED_DATA_IS_LITTLE_ENDIAN
+#endif
 
 #if !(defined(PACKED_DATA_IS_BIG_ENDIAN)) && !(defined(PACKED_DATA_IS_LITTLE_ENDIAN))
 #error "At least one of PACKED_DATA_IS_BIG_ENDIAN and PACKED_DATA_IS_LITTLE_ENDIAN must be defined!"

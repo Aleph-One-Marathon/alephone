@@ -316,7 +316,7 @@ struct OGL_ModelData: public OGL_SkinManager
 	
 	// The model itself (static, single-skin [only one skin at a time])
 	Model3D Model;
-	bool ModelPresent() {return !Model.Positions.empty();}
+	bool ModelPresent() {return !Model.VertIndices.empty();}
 	
 	// For convenience
 	void Load();
