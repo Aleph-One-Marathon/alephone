@@ -125,7 +125,7 @@ static void usage(const char *prg_name)
 		"\t[-g | --nogl]          Do not use OpenGL\n"
 #endif
 		"\t[-s | --nosound]       Do not access the sound card\n"
-#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
+#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
 		"\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 		"the data directory.\n"
 #endif
@@ -232,7 +232,7 @@ static void initialize_application(void)
 	// Find data directories, construct search path
 	DirectorySpecifier default_data_dir;
 
-#if defined(__unix__)
+#if defined(unix)
 
 	default_data_dir = PKGDATADIR;
 	const char *home = getenv("HOME");
@@ -270,13 +270,13 @@ static void initialize_application(void)
 #error Data file paths must be set for this platform.
 #endif
 
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(unix) || defined(__BEOS__)
 #define LIST_SEP ':'
 #elif defined(__WIN32__)
 #define LIST_SEP ';'
 #endif
 
-#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
+#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
 	const char *data_env = getenv("ALEPHONE_DATA");
 	if (data_env) {
 		// Read colon-separated list of directories

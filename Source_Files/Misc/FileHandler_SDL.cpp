@@ -29,7 +29,7 @@
 #endif
 
 
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(unix) || defined(__BEOS__)
 #define PATH_SEP '/'
 #elif defined(__WIN32__)
 #define PATH_SEP '\\'
@@ -327,7 +327,7 @@ bool FileSpecifier::Create(int Type)
 // Create directory
 bool FileSpecifier::CreateDirectory()
 {
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(unix) || defined(__BEOS__)
 
 	err = 0;
 	if (mkdir(GetPath(), 0777) < 0)
@@ -396,7 +396,7 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 // Check for existence of file
 bool FileSpecifier::Exists()
 {
-#if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
+#if defined(unix) || defined(__BEOS__) || defined (__WIN32__)
 
 	// Check whether the file is readable
 	err = 0;
@@ -412,7 +412,7 @@ bool FileSpecifier::Exists()
 // Get modification date
 TimeType FileSpecifier::GetDate()
 {
-#if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
+#if defined(unix) || defined(__BEOS__) || defined (__WIN32__)
 
 	struct stat st;
 	err = 0;
@@ -583,7 +583,7 @@ bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
 // Get last element of path
 void FileSpecifier::GetName(char *part) const
 {
-#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
+#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
 
 	string::size_type pos = name.rfind(PATH_SEP);
 	if (pos == string::npos)
@@ -599,7 +599,7 @@ void FileSpecifier::GetName(char *part) const
 // Add part to path name
 void FileSpecifier::AddPart(const string &part)
 {
-#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
+#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
 
 	if (name.length() && name[name.length() - 1] == PATH_SEP)
 		name += part;
@@ -616,7 +616,7 @@ void FileSpecifier::AddPart(const string &part)
 // Split path to base and last part
 void FileSpecifier::SplitPath(string &base, string &part) const
 {
-#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
+#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
 
 	string::size_type pos = name.rfind(PATH_SEP);
 	if (pos == string::npos) {
@@ -651,7 +651,7 @@ void FileSpecifier::FromDirectory(DirectorySpecifier &dir)
 // Canonicalize path
 void FileSpecifier::canonicalize_path(void)
 {
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(unix) || defined(__BEOS__)
 
 	// Replace multiple consecutive '/'s by a single '/'
 	while (true) {
@@ -663,7 +663,7 @@ void FileSpecifier::canonicalize_path(void)
 
 #endif
 
-#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
+#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
 
 	// Remove trailing '/'
 	if (!name.empty() && name[name.size()-1] == PATH_SEP)
@@ -679,7 +679,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 {
 	vec.clear();
 
-#if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
+#if defined(unix) || defined(__BEOS__) || defined (__WIN32__)
 
 #ifndef __MVCPP__
 
