@@ -22,9 +22,9 @@ struct Model3D
 		NormalDim = 3
 	};
 	
-	// Vertex positions assumed to be 3-dimensional
-	vector<GLfloat> Vertices;
-	GLfloat *VertBase() {return &Vertices[0];}
+	// Positions assumed to be 3-dimensional
+	vector<GLfloat> Positions;
+	GLfloat *PosBase() {return &Positions[0];}
 	
 	// Texture coordinates assumed to be 2-dimensional
 	// Their indices parallel the vertex indices
@@ -42,7 +42,7 @@ struct Model3D
 	int NumVI() {return VertIndices.size();}
 	
 	// Erase everything
-	void Clear() {Vertices.clear(); TxtrCoords.clear(); Normals.clear(); VertIndices.clear();}
+	void Clear() {Positions.clear(); TxtrCoords.clear(); Normals.clear(); VertIndices.clear();}
 };
 
 
