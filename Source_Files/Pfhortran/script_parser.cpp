@@ -389,9 +389,6 @@ symbol_def *get_symbol(char *symbol, symbol_def **the_hash)
 	
 	key = calculate_hash_key(symbol);	/* get the hash value for pszLabel */
 	
-	if (key < 0) 						/* if an error occured, drop out */
-		return NULL;
-	
 	temp = get_hash(key,the_hash);		 /* go get any records at location key in the hash */
 	
 	if (!temp)							/* if there were none, return NULL */
@@ -592,7 +589,7 @@ short match_opcode(char *input)			/* the instruction strings are held in the has
 	if (!instruction)
 		return 0;
 	else
-		return instruction->val;
+		return short(instruction->val);
 }
 
 

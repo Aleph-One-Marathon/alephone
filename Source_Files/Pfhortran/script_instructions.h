@@ -12,7 +12,7 @@
 #define script_FALSE 0
 #define script_ERROR -1
 
-#include "cstypes.h"
+#include "cseries.h"
 #include "world.h"
 
 struct path_point
