@@ -102,6 +102,11 @@ Oct 21, 2001 (Woody Zenfell):
         Made player_shape_definitions available to the rest of the system -
         in particular, so that SDL network dialog widgets can use it to render
         player icons.
+
+Feb 20, 2002 (Woody Zenfell):
+    Ripped action_queue support out into new ActionQueues class (see ActionQueues.h)
+    Providing pointer gRealActionQueues to help others find the set of queues they are
+    accustomed to using.
 */
 
 #include "cseries.h"
@@ -130,6 +135,9 @@ Oct 21, 2001 (Woody Zenfell):
 #include "ChaseCam.h"
 #include "Packing.h"
 
+// ZZZ additions:
+#include "ActionQueues.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,7 +150,8 @@ Oct 21, 2001 (Woody Zenfell):
 /* ---------- constants */
 
 #define ACTION_QUEUE_BUFFER_DIAMETER 0x100
-#define ACTION_QUEUE_BUFFER_INDEX_MASK 0xff
+// ZZZ: no longer relevant
+//#define ACTION_QUEUE_BUFFER_INDEX_MASK 0xff
 
 // These are now variables, because they can be set with an XML parser
 static short kINVISIBILITY_DURATION = (70*TICKS_PER_SECOND);
@@ -192,13 +201,7 @@ static short Powerup_Oxygen = _i_oxygen_powerup;
 				
 /* ---------- structures */
 
-struct action_queue /* 8 bytes */
-{
-	short read_index, write_index;
-	
-	uint32 *buffer;
-};
-
+// ZZZ: moved struct action_queue inside ActionQueues (see ActionQueues.cpp).
 // ZZZ: moved struct player_shape_information to player.h for sharing
 
 struct damage_response_definition
@@ -217,7 +220,9 @@ struct player_data *players;
 struct player_data *local_player, *current_player;
 short local_player_index, current_player_index;
 
-static struct action_queue *action_queues;
+// ZZZ: Let folks ask for a pointer to the main set of ActionQueues.
+static ActionQueues*   sRealActionQueues = NULL;
+ActionQueues* GetRealActionQueues() { return sRealActionQueues; }
 
 static struct player_shape_definitions player_shapes=
 {
@@ -343,9 +348,6 @@ player_data *get_player_data(
 void allocate_player_memory(
 	void)
 {
-	uint32 *action_queue_buffer;
-	short i;
-
 	/* allocate space for all our players */
 	players= new player_data[MAXIMUM_NUMBER_OF_PLAYERS];
 	assert(players);
@@ -354,16 +356,7 @@ void allocate_player_memory(
 	dprintf("#%d players at %p (%x bytes each) ---------------------------------------;g;", MAXIMUM_NUMBER_OF_PLAYERS, players, sizeof(struct player_data));
 #endif
 
-	/* allocate space for our action queue headers and the queues themselves */
-	action_queues= new action_queue[MAXIMUM_NUMBER_OF_PLAYERS];
-	action_queue_buffer= new uint32[MAXIMUM_NUMBER_OF_PLAYERS*ACTION_QUEUE_BUFFER_DIAMETER];
-	assert(action_queues&&action_queue_buffer);
-	
-	/* tell the queues where their buffers are */
-	for (i=0;i<MAXIMUM_NUMBER_OF_PLAYERS;++i)
-	{
-		action_queues[i].buffer= action_queue_buffer + i*ACTION_QUEUE_BUFFER_DIAMETER;
-	}
+    sRealActionQueues = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER);
 }
 
 /* returns player index */
@@ -449,8 +442,9 @@ void initialize_players(
 	for (i=0;i<MAXIMUM_NUMBER_OF_PLAYERS;++i)
 	{
 		obj_clear(players[i]);
-		action_queues[i].read_index= action_queues[i].write_index= 0;
 	}
+
+    sRealActionQueues->reset();
 }
 
 /* This will be called by entering map for two reasons:
@@ -462,84 +456,19 @@ void initialize_players(
 void reset_player_queues(
 	void)
 {
-	short i;
-
-	for (i=0;i<MAXIMUM_NUMBER_OF_PLAYERS;++i)
-	{
-		action_queues[i].read_index= action_queues[i].write_index= 0;
-	}
-
+    sRealActionQueues->reset();
 	reset_recording_and_playback_queues();
 	sync_heartbeat_count(); //¥¥ÊMY ADDITION...
 }
 
-/* queue an action flag on the given playerÕs queue (no zombies allowed) */
-void queue_action_flags(
-	short player_index,
-	uint32 *action_flags,
-	short count)
-{
-	struct player_data *player= get_player_data(player_index);
-	struct action_queue *queue= action_queues+player_index;
 
-	//assert(!PLAYER_IS_ZOMBIE(player)); // CP: Changed for scripting
-	if (PLAYER_IS_ZOMBIE(player))
-		return;
-	while ((count-= 1)>=0)
-	{
-		queue->buffer[queue->write_index]= *action_flags++;
-		queue->write_index= (queue->write_index+1)&ACTION_QUEUE_BUFFER_INDEX_MASK;
-		if (queue->write_index==queue->read_index) dprintf("blew player %dÕs queue at %p;g;", player_index, queue);
-	}
-}
+// ZZZ: queue_action_flags() replaced by ActionQueues::enqueueActionFlags()
+// ZZZ: dequeue_action_flags() replaced by ActionQueues::dequeueActionFlags()
+// ZZZ: get_action_queue_size() replaced by ActionQueues::countActionFlags()
 
-/* dequeueÕs a single action flag from the given queue (zombies always return zero) */
-uint32 dequeue_action_flags(
-	short player_index)
-{
-	struct player_data *player= get_player_data(player_index);
-	struct action_queue *queue= action_queues+player_index;
-	uint32 action_flags;
-
-	if (PLAYER_IS_ZOMBIE(player))
-	{
-		//dprintf("Player is zombie!", player_index);	// CP: Disabled for scripting
-		action_flags= 0;
-	}
-	else
-	{
-		assert(queue->read_index!=queue->write_index);
-		action_flags= queue->buffer[queue->read_index];
-		queue->read_index= (queue->read_index+1)&ACTION_QUEUE_BUFFER_INDEX_MASK;
-	}
-
-	return action_flags;
-}
-
-/* returns the number of elements sitting in the given queue (zombies always return queue diameter) */
-short get_action_queue_size(
-	short player_index)
-{
-	struct player_data *player= get_player_data(player_index);
-	struct action_queue *queue= action_queues+player_index;
-	short size;
-
-	if (PLAYER_IS_ZOMBIE(player))
-	{
-		//dprintf("PLayer %d is a zombie", player_index);  // CP: Disabled for scripting
-		size= ACTION_QUEUE_BUFFER_DIAMETER;
-	} 
-	else
-	{
-		if ((size= queue->write_index-queue->read_index)<0) size+= ACTION_QUEUE_BUFFER_DIAMETER;
-	}
-	
-	return size;
-}
 
 /* assumes ¶t==1 tick */
-void update_players(
-	void)
+void update_players(ActionQueues* inActionQueuesToUse)
 {
 	struct player_data *player;
 	short player_index;
@@ -547,7 +476,7 @@ void update_players(
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{
 		struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
-		uint32 action_flags= dequeue_action_flags(player_index);
+		uint32 action_flags = inActionQueuesToUse->dequeueActionFlags(player_index);
 		
 		if (action_flags==NONE)
 		{

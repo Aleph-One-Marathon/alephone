@@ -22,6 +22,9 @@
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Disabled network_speaker_idle_proc under Carbon
+
+Mar 08, 2002 (Woody Zenfell):
+    Enabled network_microphone_idle_proc (in global_idle_proc()) under SDL
 */
 
 bool CheatsActive = false;
@@ -40,6 +43,10 @@ bool CheatsActive = false;
 #include "player.h"
 #include "music.h"
 #include "items.h"
+
+#ifdef  SDL
+#include    "network_microphone_sdl.h"
+#endif
 
 #include <ctype.h>
 
@@ -329,6 +336,9 @@ void global_idle_proc(void)
 	music_idle_proc();
 #if !defined(TARGET_API_MAC_CARBON)
 	network_speaker_idle_proc();
+#endif
+#ifdef  SDL
+    network_microphone_idle_proc();
 #endif
 	sound_manager_idle_proc();
 }

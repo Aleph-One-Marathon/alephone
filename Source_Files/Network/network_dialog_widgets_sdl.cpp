@@ -21,6 +21,8 @@
  *  Implementation of network-dialog-specific widgets in the SDL dialog system.
  *
  *  Created by Woody Zenfell, III on Fri Sep 28 2001.
+ *
+ *  Mar 1, 2002 (Woody Zenfell): Added new w_entry_point_selector widget.
  */
 
 #include	"network_dialog_widgets_sdl.h"
@@ -35,6 +37,10 @@
 #include	"HUDRenderer.h"
 #include	"shell.h"
 #include	"collection_definition.h"
+
+// here are some for w_entry_point_selector
+#include    "preferences.h"
+#include    "screen.h"
 
 // for TS_GetCString, get shared ref rather than copying string.
 #include	"TextStrings.h"
@@ -1222,3 +1228,115 @@ w_players_in_game2::draw_bar(SDL_Surface* s, int inCenterX, int inBarColorIndex,
         outBarInfo.pixel_color  = thePixelColor;
     } // if(inBarValue > 0)
 } // draw_bar
+
+
+
+
+
+////// w_entry_point_selector //////
+
+void
+w_entry_point_selector::validateEntryPoint() {
+    // Get the entry-point flags from the game type.
+    int	theAppropriateLevelTypeFlags = get_entry_point_flags_for_game_type(mGameType);
+
+    mEntryPoints.clear();
+
+    // OK, get the vector of entry points.
+    get_entry_points(mEntryPoints, theAppropriateLevelTypeFlags);
+
+    if(mEntryPoints.size() <= 0) {
+        mEntryPoint.level_number = NONE;
+        strcpy(mEntryPoint.level_name, "(no valid options)");
+        mCurrentIndex = NONE;
+    }
+    else {
+        int i;
+
+        for(i = 0; i < mEntryPoints.size(); i++) {
+            if(mEntryPoints[i].level_number == mEntryPoint.level_number)
+                break;
+        }
+
+        if(i == mEntryPoints.size()) {
+            mEntryPoint = mEntryPoints[0];
+            mCurrentIndex = 0;
+        }
+        else {
+            mEntryPoint = mEntryPoints[i];
+            mCurrentIndex = i;
+        }
+    }
+
+    dirty = true;
+}
+
+void
+w_entry_point_selector::gotSelectedCallback(void* arg) {
+    ((w_entry_point_selector*) arg)->gotSelected();
+}
+
+void
+w_entry_point_selector::gotSelected() {
+    if(mEntryPoints.size() > 1) {
+        dialog theDialog;
+
+        theDialog.add(new w_static_text("SELECT LEVEL", TITLE_FONT, TITLE_COLOR));
+
+        theDialog.add(new w_spacer());
+
+        FileSpecifier   theFile(environment_preferences->map_file);
+        char            theName[256];
+        theFile.GetName(theName);
+        sprintf(temporary, "%s", theName);
+        theDialog.add(new w_static_text(temporary, LABEL_FONT));
+
+        theDialog.add(new w_spacer());
+
+        w_levels*   levels_w = new w_levels(mEntryPoints, &theDialog, 480, 16, mCurrentIndex, false);
+        theDialog.add(levels_w);
+
+        theDialog.add(new w_spacer());
+
+        sprintf(temporary, "%d %s levels available",
+            mEntryPoints.size(),
+            TS_GetCString(kNetworkGameTypesStringSetID, mGameType)
+        );
+        theDialog.add(new w_static_text(temporary));
+
+        theDialog.add(new w_spacer());
+
+        theDialog.add(new w_button("CANCEL", dialog_cancel, &theDialog));
+
+        clear_screen();
+
+        if(theDialog.run() == 0) {
+            mCurrentIndex = levels_w->get_selection();
+            mEntryPoint = mEntryPoints[mCurrentIndex];
+            dirty = true;
+        }
+    }
+}
+
+void
+w_entry_point_selector::event(SDL_Event &e) {
+	if (e.type == SDL_KEYDOWN) {
+		if (e.key.keysym.sym == SDLK_LEFT || e.key.keysym.sym == SDLK_RIGHT) {
+            int theNumberOfEntryPoints = mEntryPoints.size();
+
+            if(theNumberOfEntryPoints > 1) {
+                int theDesiredOffset = (e.key.keysym.sym == SDLK_LEFT) ? -1 : 1;
+
+                mCurrentIndex = (mCurrentIndex + theNumberOfEntryPoints + theDesiredOffset)
+                    % theNumberOfEntryPoints;
+
+                mEntryPoint = mEntryPoints[mCurrentIndex];
+
+                dirty = true;
+                play_dialog_sound(DIALOG_CLICK_SOUND);
+            }
+
+            e.type = SDL_NOEVENT;	// Swallow event
+		}
+	}
+}

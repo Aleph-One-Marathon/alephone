@@ -29,6 +29,16 @@
 
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Moved shared SDL hint address info to network_dialogs.cpp/.h
+
+Mar 1, 2002 (Woody Zenfell):  Setup Network Game changes.
+    Reworked selection of level to pop up a box (w_select_button rather than w_select).
+    Added support for changing map file in SNG; no trip to Environment Preferences needed!
+    Pruned out some stale code.
+
+Mar 8, 2002 (Woody Zenfell):
+    Realtime microphone can be enabled now in setup network game.
+    Added UI for testing out a microphone implementation on the local machine.
+
  */
 
 #include "cseries.h"
@@ -37,6 +47,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #include "sdl_fonts.h"
 #include "sdl_widgets.h"
 #include	"network_dialog_widgets_sdl.h"
+#include    "preferences_widgets_sdl.h"
 #include	"network_lookup_sdl.h"
 
 #include "shell.h"
@@ -45,6 +56,9 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #include "preferences.h"
 #include "PlayerName.h"
 #include	"progress.h"
+#include    "screen.h"  // clear_screen()
+#include    "mysound.h" // resolution of DIALOG_CLICK_SOUND
+#include    "wad.h"     // read_wad_file_checksum()
 
 // String-Set Functions (for getting strings from MML rather than compiled-in)
 #include	"TextStrings.h"
@@ -54,6 +68,9 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 // get_entry_point_flags_for_game_type
 #include	"network_games.h"
+
+
+
 
 // Get player name from outside
 // ZZZ random note: I didn't do this part, and I'm not sure it's right.  At least, the
@@ -77,22 +94,22 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 #ifdef	DEBUG
 //#define	NETWORK_TEST_POSTGAME_DIALOG	// For testing without having to play a netgame
+
+// Note!  If you use NETWORK_TEST_MICROPHONE_LOCALLY you'll also want to set the microphone
+// implementation to local loopback, else who knows what will happen...
+//#define NETWORK_TEST_MICROPHONE_LOCALLY // can use this OR test postgame dialog, not both at once.
 #endif
 
-// ZZZ: now get strings from outside (MML) for easier localization.
-enum {
-    kDifficultyLevelsStringSetID	= 145,
-    kNetworkGameTypesStringSetID	= 146,
-    kEndConditionTypeStringSetID	= 147,
-    kScoreLimitTypeStringSetID		= 148
-};
+#ifdef NETWORK_TEST_MICROPHONE_LOCALLY
+#include    "network_speaker_sdl.h"
+#include    "network_microphone_sdl.h"
+#endif
 
-// ZZZ: we use StringSets to keep track of sets of level names... it's just easier that way.  :)
-// Note: when I did this, I did not yet know anything about STL/C++ std library.  I would clearly do things
-// differently if I were starting again now... but I'm not.
-// actual StringSet ID is BASE_ID + game_type
+
+
+
+// ZZZ: graph types are a dynamically-generated StringSet (not loaded from MML)
 enum {
-    kBaseLevelNamesStringSetID	= 3190,
     kGraphTypesStringSetID	= 3180
 };
 
@@ -101,7 +118,7 @@ enum {
     kNoLimit			= 0,
     kScoreLimit			= 0x01,
     kTimeLimit			= 0x02,
-    kScoreAndTimeLimits		= kScoreLimit | kTimeLimit // currently cannot be selected directly (used by _game_of_defense)
+    kScoreAndTimeLimits		= kScoreLimit | kTimeLimit // currently cannot be selected directly
 };
 
 // Some identifiers used only locally.  Hope the numeric equivalents don't conflict!
@@ -116,9 +133,17 @@ enum {
 };
 
 
+
+
+
+
+
+
 /*
  *  Network game statistics dialog
  */
+
+
 // ZZZ: this is based on the eponymous function on the Mac side
 static short create_graph_popup_menu(w_select* theMenu)
 {
@@ -261,7 +286,6 @@ void display_net_game_stats(void)
     dialog d;
     
     d.add(new w_static_text("POSTGAME CARNAGE REPORT", TITLE_FONT, TITLE_COLOR));
-//    d.add(new w_spacer());
     
     w_select* graph_type_w = new w_select("Report on", 0, NULL);
     graph_type_w->set_identifier(iGRAPH_POPUP);
@@ -309,8 +333,6 @@ void display_net_game_stats(void)
     total_deaths_w->set_full_width();
     d.add(total_deaths_w);
 
-//    d.add(new w_spacer());
-  
     // Place OK button in the lower right to save a little vertical space (this is more important when chat UI is present)
     w_button* ok_w = new w_button("OK", dialog_ok, &d);
     ok_w->set_alignment(widget::kAlignRight);
@@ -330,6 +352,14 @@ void display_net_game_stats(void)
     
     d.run();
 }
+
+
+
+
+
+
+
+
 
 
 /*
@@ -375,7 +405,10 @@ update_setup_ok_button_enabled(dialog* d) {
         }
         else {
             // If there's no valid entry point, don't enable OK.
-            if(get_selection_control_value(d, iENTRY_MENU) == 0)
+//           if(get_selection_control_value(d, iENTRY_MENU) == 0)
+            entry_point theEntryPoint;
+            get_selected_entry_point(d, iENTRY_MENU, &theEntryPoint);
+            if(theEntryPoint.level_number < 0)
                 button_state = CONTROL_INACTIVE;
             else
                 button_state = CONTROL_ACTIVE;
@@ -415,133 +448,9 @@ respond_to_end_condition_type_change(w_select* inWidget) {
     
     // make sure "ok" button state is current.
     update_setup_ok_button_enabled(theDialog);
-
-    // The old way had a single limit entry field that switched its name depending on the limit type specified...
-    // I still like that idea, but thanks to Benad's use of two limit boxes for _game_of_defense, we may as well
-    // do it this way (has the additional advantage of letting us share more code with the Mac version).
-    
-/*    // Get the newly-selected end-condition type
-    short theNewType = inWidget->get_selection();
-    assert(theNewType >= 0);
-    
-    // Get owning dialog
-    dialog* theDialog = inWidget->get_owning_dialog();
-    
-    if(theDialog != NULL) {    
-        // Find the limit widget
-        w_number_entry*	theLimitEntry = dynamic_cast<w_number_entry*>(theDialog->get_widget_by_id(iLIMIT_ENTRY));
-
-        if(theLimitEntry != NULL) {
-            // Set the limit widget to reflect the change
-            theLimitEntry->set_name(TS_GetCString(kEndConditionTypeStringSetID, theNewType));
-            theLimitEntry->set_number(theNewType == kTimeLimit ? network_preferences->time_limit : network_preferences->kill_limit);
-            
-            theDialog->layout();
-
-        } // limit_entry widget is valid
-
-    } // dialog is valid
-*/
 } // respond_to_end_condition_type_change
 
-// It's just easier to keep this around... trust me...
-static vector<entry_point>	sEntryPointsForCurrentGameType;
 
-static void
-destroy_level_names_stringsets() {
-    for(int i = kBaseLevelNamesStringSetID; i < kBaseLevelNamesStringSetID + NUMBER_OF_GAME_TYPES; i++)
-        TS_DeleteStringSet(i);
-}
-
-static short
-fill_in_level_names_stringset(short inGameType, short* ioLevelIndex) {
-        bool theTryToPreserveLevel			= (ioLevelIndex == NULL) ? false : true;
-        short	theLevelNamesForSelectedGameTypeStringSetID	= kBaseLevelNamesStringSetID + inGameType;
-        int	theSavedLevelNumber				= NONE;
-
-        // Note that the entry points are expected to be valid from last time!
-        if(theTryToPreserveLevel)
-            theSavedLevelNumber = sEntryPointsForCurrentGameType[*ioLevelIndex].level_number;
-
-        // Figure out the menu-index of the saved level number in the new menu; fill in stringset with level names if needed.
-        int	theLevelIndex 			= -1;
-        bool	theNeedToRecreateStringSetFlag	= false;
-        
-        // See if we need to build a stringset for this game type, or if we've already got one.
-        if(!TS_IsPresent(theLevelNamesForSelectedGameTypeStringSetID))
-            theNeedToRecreateStringSetFlag = true;
-
-        // Get the entry-point flags from the game type.
-        int	theAppropriateLevelTypeFlags = get_entry_point_flags_for_game_type(inGameType);
-
-        // OK, get the vector of entry points.
-        if(get_entry_points(sEntryPointsForCurrentGameType, theAppropriateLevelTypeFlags)) {
-            vector<entry_point>::const_iterator i, end = sEntryPointsForCurrentGameType.end();
-            int index = 0;
-            for(i = sEntryPointsForCurrentGameType.begin(); i != end; i++, index++) {
-                if(theNeedToRecreateStringSetFlag)
-                    TS_PutCString(theLevelNamesForSelectedGameTypeStringSetID, index, i->level_name);
-                
-                if(i->level_number == theSavedLevelNumber)
-                    theLevelIndex = index;
-            }
-            // selection widget should do the right thing for nonexistent stringset.
-        }
-        
-        if(theTryToPreserveLevel)
-            *ioLevelIndex = theLevelIndex;	// will be -1 if could not preserve.
-
-        return theLevelNamesForSelectedGameTypeStringSetID;
-} // fill_in_level_names_stringset
-
-
-static void
-respond_to_net_game_type_change(w_select* inWidget) {
-        // Get the newly-selected game type and calculate stringset ID
-        short	theSelectedGameType = inWidget->get_selection();
-        assert(theSelectedGameType >= 0);
-
-        // Get the level-selection menu
-        dialog*	theDialog = inWidget->get_owning_dialog();
-        w_select* theLevelMenu = dynamic_cast<w_select*>(theDialog->get_widget_by_id(iENTRY_MENU));
-        assert(theLevelMenu != NULL);
-
-        // Get the currently-selected (old) level index
-        short	theLevelIndex		= theLevelMenu->get_selection();
-        bool	thePreserveLevelFlag	= (theLevelIndex < 0) ? false : true;
-
-        // Make sure the stringset is valid, and receive an updated level index (if possible)
-        short	theStringSetID		= fill_in_level_names_stringset(theSelectedGameType, thePreserveLevelFlag ? &theLevelIndex : NULL);
-        
-        // Install new stringset and select updated index
-        theLevelMenu->set_labels_stringset(theStringSetID);
-        if(thePreserveLevelFlag)	// (if could not preserve, level index is -1; selecting -1 will select 0)
-            theLevelMenu->set_selection(theLevelIndex);
-        
-        setup_dialog_for_game_type(theDialog, theSelectedGameType);
-        
-        // make sure ok button state is current.
-        update_setup_ok_button_enabled(theDialog);
-/*
-        // Update the endcondition-type string set
-        TS_PutCString(kEndConditionTypeStringSetID, kScoreLimit, TS_GetCString(kScoreLimitTypeStringSetID, theSelectedGameType));
-        
-        // Update the endcondition-type widget with the new string set (this would not be necessary if the selection widget
-        // got its strings more dynamically... oh well.)
-        w_select* theEndConditionTypeMenu = dynamic_cast<w_select*>(theDialog->get_widget_by_id(iENDCONDITION_TYPE_MENU));
-        assert(theEndConditionTypeMenu != NULL);
-        
-        theEndConditionTypeMenu->set_labels_stringset(kEndConditionTypeStringSetID);
-        
-        w_number_entry* theScoreLimitEntry = dynamic_cast<w_number_entry*>(theDialog->get_widget_by_id(iKILL_LIMIT));
-        assert(theScoreLimitEntry != NULL);
-        
-        theScoreLimitEntry->set_name(TS_GetCString(kEndConditionTypeStringSetID, kScoreLimit));
-        
-        // We call this because _game_of_defense has different effects from others - thanks Benad ;)
-        respond_to_end_condition_type_change(theEndConditionTypeMenu);
-*/
-} // respond_to_net_game_type_change
 
 
 static void respond_to_teams_toggle(w_select* inToggle) {
@@ -549,7 +458,9 @@ static void respond_to_teams_toggle(w_select* inToggle) {
         inToggle->get_selection() ? CONTROL_ACTIVE : CONTROL_INACTIVE);
 }
 
-
+// ZZZ might rework this to use menu indices again someday for the sake of
+// cross-platformness - wouldn't be hard at all, just too tired tonight.
+#if 0
 void menu_index_to_level_entry(
 	short menu_index, 
 	long /*entry_flags*/,
@@ -558,7 +469,7 @@ void menu_index_to_level_entry(
     // We'd better hope the set of entry points in the static vector is right!
     *entry = sEntryPointsForCurrentGameType[menu_index - 1];
 }
-
+#endif
 
 void set_limit_type(DialogPtr dialog, short limit_type) {
     switch(limit_type) {
@@ -608,12 +519,71 @@ void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id
 }
 
 
+void
+get_selected_entry_point(dialog* inDialog, short inItem, entry_point* outEntryPoint) {
+    w_entry_point_selector* theSelector =
+        dynamic_cast<w_entry_point_selector*>(inDialog->get_widget_by_id(inItem));
+
+    *outEntryPoint = theSelector->getEntryPoint();
+}
+
+void
+select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber) {
+    w_entry_point_selector* theSelector =
+        dynamic_cast<w_entry_point_selector*>(inDialog->get_widget_by_id(inItem));
+
+    theSelector->setLevelNumber(inLevelNumber);
+}
+
+
+static void
+respond_to_net_game_type_change(w_select* inWidget) {
+        // Get the newly-selected game type and calculate stringset ID
+        short	theSelectedGameType = inWidget->get_selection();
+        assert(theSelectedGameType >= 0);
+
+        // Get the level-selection menu
+        dialog*	theDialog = inWidget->get_owning_dialog();
+        w_entry_point_selector* theSelector = 
+            dynamic_cast<w_entry_point_selector*>(theDialog->get_widget_by_id(iENTRY_MENU));
+        assert(theSelector != NULL);
+
+        // Update the game type in the level selector
+        theSelector->setGameType(theSelectedGameType);
+    
+        // Adjust default/available options, end condition, etc. (cross-platform)
+        setup_dialog_for_game_type(theDialog, theSelectedGameType);
+        
+        // make sure ok button state is current.
+        update_setup_ok_button_enabled(theDialog);
+} // respond_to_net_game_type_change
+
+
+static void
+respond_to_map_file_change(w_env_select* inWidget) {
+    if(strcmp(environment_preferences->map_file, inWidget->get_path())) {
+        strcpy(environment_preferences->map_file, inWidget->get_path());
+		environment_preferences->map_checksum = read_wad_file_checksum(inWidget->get_file_specifier());
+
+        load_environment_from_preferences();
+
+        // We don't write_preferences in case user cancels (in which case environment_preferences->map_file
+        // and map_checksum are restored).
+
+        dynamic_cast<w_entry_point_selector*>(inWidget->get_owning_dialog()->get_widget_by_id(iENTRY_MENU))->reset();
+
+        // There might not be any levels for the currently selected game-type; need to double-check the OK button.
+        update_setup_ok_button_enabled(inWidget->get_owning_dialog());
+    }
+}
+
+
 bool network_game_setup(player_info *player_information, game_info *game_information)
 {
 //printf("network_game_setup\n");
 
-        // Destroy any cached level-names stringsets - if player meddled in Environment prefs, they could be stale.
-        destroy_level_names_stringsets();
+    // Save the map file path on entering, so we can restore it if user cancels.
+    string  theSavedMapFilePath(environment_preferences->map_file);
 
 	// Create dialog
     // ZZZ note: the initial values here are nice, but now are not too important.
@@ -647,13 +617,17 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
         type_w->set_selection_changed_callback(respond_to_net_game_type_change);
 	d.add(type_w);
 
-        short	theLevelNamesStringSetID = fill_in_level_names_stringset(network_preferences->game_type, NULL);
+    // Could eventually store this path in network_preferences somewhere, so to have separate map file
+    // prefs for single- and multi-player.
+	    w_env_select *map_w = new w_env_select("Map file", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
+        map_w->set_selection_made_callback(respond_to_map_file_change);
+        map_w->set_full_width();
+	    d.add(map_w);
 
-        w_select* level_w = new w_select("Level", 0, NULL);
-        level_w->set_labels_stringset(theLevelNamesStringSetID);
-        level_w->set_full_width();
-        level_w->set_identifier(iENTRY_MENU);
-        d.add(level_w);
+        w_entry_point_selector* entry_point_w = new w_entry_point_selector("Level", network_preferences->game_type, 0);
+        entry_point_w->set_full_width();
+        entry_point_w->set_identifier(iENTRY_MENU);
+        d.add(entry_point_w);
 
 	w_select *diff_w = new w_select("Difficulty", network_preferences->difficulty_level, NULL);
         diff_w->set_labels_stringset(kDifficultyLevelsStringSetID);
@@ -685,6 +659,10 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 	w_toggle *aliens_w = new w_toggle("Aliens", network_preferences->game_options & _monsters_replenish);
         aliens_w->set_identifier(iUNLIMITED_MONSTERS);
 	d.add(aliens_w);
+
+    w_toggle*   realtime_audio_w = new w_toggle("Realtime audio (broadband only)", network_preferences->allow_microphone);
+    realtime_audio_w->set_identifier(iREAL_TIME_SOUND);
+    d.add(realtime_audio_w);
 
 	w_toggle *live_w = new w_toggle("Live Carnage Reporting", network_preferences->game_options & _live_network_stats);
         live_w->set_identifier(iREALTIME_NET_STATS);
@@ -725,6 +703,8 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
     
         // or is it called automatically by fill_in_game_setup_dialog somehow?  the interactions are getting complex... :/
         // in any event, the data SHOULD be ok, or else we wouldn't have let the user save the info in prefs, but....
+        // (Hmm, true user should not have been able to save bad data, but if we have a different map file now, we could
+        // have an illegal configuration showing.)
         update_setup_ok_button_enabled(&d);
 
 	// Run dialog
@@ -752,18 +732,44 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
         break;
         }
 
+        // This will write preferences changes (including change of map file if applicable)
         extract_setup_dialog_information(&d, player_information, game_information, theLimitType, false);
 
 		return true;
 	} // d.run() == 0
         
-        else
+    else {
+        // Restore the map file path if it was changed - no need to resave prefs.
+        if(strcmp(theSavedMapFilePath.c_str(), map_w->get_path())) {
+            strcpy(environment_preferences->map_file, theSavedMapFilePath.c_str());
+
+            FileSpecifier   theFS(theSavedMapFilePath.c_str());
+
+		    environment_preferences->map_checksum = read_wad_file_checksum(theFS);
+
+            load_environment_from_preferences();
+        }
+
 		return false;
+    }
 } // network_game_setup
 
 
 
-// Currently only the gatherer should call this one.
+
+
+
+
+
+
+
+
+/*
+ *  Gathering dialog
+ */
+
+
+ // Currently only the gatherer should call this one.
 static void
 send_text(w_text_entry* te) {
     assert(te != NULL);
@@ -793,14 +799,12 @@ send_text(w_text_entry* te) {
     }
 }
 
-/*
- *  Gathering dialog
- */
-
 // Is this even useful anymore?  This dates back before widgets and dialogs could find each other.
 // Anyway it probably replicates "top_dialog" or whatever that is already in the dialog code.
+// ANSWER: yes, it is still useful; critical, in fact, for the SSLP callbacks to find the w_found_players widget.
 static dialog* sActiveDialog;
 
+// This is called when the user clicks on a found player to attempt to gather him in.
 static void
 gather_player_callback(w_found_players* foundPlayersWidget, const SSLP_ServiceInstance* player) {
     assert(foundPlayersWidget != NULL);
@@ -815,7 +819,7 @@ gather_player_callback(w_found_players* foundPlayersWidget, const SSLP_ServiceIn
 		assert(theDialog != NULL);
 
 		w_players_in_game2* thePlayersDisplay =
-			dynamic_cast<w_players_in_game2*>(sActiveDialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
+			dynamic_cast<w_players_in_game2*>(theDialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
 
 		assert(thePlayersDisplay != NULL);
 
@@ -831,6 +835,7 @@ gather_player_callback(w_found_players* foundPlayersWidget, const SSLP_ServiceIn
 // during a dialog's run.
 static bool	sUserWantsAutogather = false;
 
+// This is called when the autogather toggle is twiddled.
 static void
 autogather_callback(w_select* inAutoGather) {
     if(inAutoGather->get_selection() > 0) {
@@ -845,6 +850,7 @@ autogather_callback(w_select* inAutoGather) {
 }
 
 
+// These three callbacks are called during an SSLP_Pump(), by SSLP to notify us of its findings.
 static void
 found_player_callback(const SSLP_ServiceInstance* player) {
     assert(sActiveDialog != NULL);
@@ -882,6 +888,7 @@ player_name_changed_callback(const SSLP_ServiceInstance* player) {
 }
 
 
+// This is a callback of sorts; the dialog will invoke it during its idle time.
 static void
 gather_processing_function(dialog* inDialog) {
 	SSLP_Pump();
@@ -889,6 +896,7 @@ gather_processing_function(dialog* inDialog) {
 
 
 #ifndef NETWORK_TEST_POSTGAME_DIALOG // because that test code replaces the real gather box
+#ifndef NETWORK_TEST_MICROPHONE_LOCALLY // same deal
 bool network_gather(void)
 {
 //printf("network_gather\n");
@@ -925,18 +933,9 @@ bool network_gather(void)
                     
                     d.add(new w_spacer());
 
-//                    d.add(new w_static_text("Players in Game"));
-                    
-//                    d.add(new w_spacer());
-                    
-//					w_players_in_game* players_w = new w_players_in_game(320, 4);
                     w_players_in_game2* players_w = new w_players_in_game2(false);
 					players_w->set_identifier(iPLAYER_DISPLAY_AREA);
 					d.add(players_w);
-
-//                    d.add(new w_static_text("Chat"));
-                    
-//                    d.add(new w_spacer());
 
 #ifdef NETWORK_PREGAME_CHAT
 
@@ -999,12 +998,23 @@ bool network_gather(void)
 	}
 	return false;
 }
+#endif // ndef NETWORK_TEST_MICROPHONE_LOCALLY
 #endif // ndef NETWORK_TEST_POSTGAME_DIALOG
+
+
+
+
+
+
+
+
 
 
 /*
  *  Joining dialog
  */
+
+
 
 // JTP: Now sharing sUsersWantsJoinHinting and sJoinHintingAddress in network_dialogs.cpp
         
@@ -1013,16 +1023,6 @@ join_processing_function(dialog* inDialog) {
 	// Let SSLP do its thing (respond to FIND messages, hint out HAVE messages, etc.)
 	SSLP_Pump();
 
-        // Put the "waiting to join" message into the chat history (we can't do this earlier because the
-        // dialog must layout() before we can append chat entries).
-/*        if(inserted_join_waiting_message == false) {
-            assert(inDialog != NULL);
-            w_chat_history* chat_history_w = dynamic_cast<w_chat_history*>(inDialog->get_widget_by_id(iCHAT_HISTORY));
-            assert(chat_history_w != NULL);
-            chat_history_w->append_chat_entry(NULL, TS_GetCString(strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string));
-            inserted_join_waiting_message = true;
-        }
-*/
 
 	// The rest of this taken almost directly from the join_dialog_filter_proc in the Mac version:
 
@@ -1040,9 +1040,6 @@ join_processing_function(dialog* inDialog) {
 			break;
 
 		case netCancelled: /* the server cancelled the game; force bail */
-//			*item_hit= iCANCEL;
-//			handled= true;
-
 			assert(inDialog != NULL);
 			inDialog->quit(-1);
 
@@ -1051,21 +1048,9 @@ join_processing_function(dialog* inDialog) {
 		case netWaiting: /* if we just changed netJoining to netWaiting change the dialog text */
 			modify_control_enabled(inDialog, iCANCEL, CONTROL_INACTIVE);
 
-/*			assert(inDialog != NULL);
-			{
-				w_button* cancel_w = dynamic_cast<w_button*>(inDialog->get_widget_by_id(iCANCEL));
-
-				assert(cancel_w != NULL);
-			
-				// cancel_w->set_enabled(false);
-			}
-*/
 			break;
 
 		case netStartingUp: /* the game is starting up (we have the network topography) */
-			//accepted_into_game = true;
-			//handled= true;
-
 			// dialog is finished (successfully) when game is starting.
 			assert(inDialog != NULL);
 			inDialog->quit(0);
@@ -1075,14 +1060,15 @@ join_processing_function(dialog* inDialog) {
 		case netPlayerAdded:
 			if(last_join_state==netWaiting)
 			{
-				game_info *info= (game_info *)NetGetGameData();
+                // Tell user they got accepted.  Hmm, this should eventually be reworked into
+                // something that looks nicer and is more informative (we know the end conditions,
+                // options, level name, etc. by now if I'm not mistaken - may as well pass that
+                // info along to the user).
+                game_info *info= (game_info *)NetGetGameData();
 
 				static char	sStringBuffer[240];
 
-//				GetDialogItem(dialog, iJOIN_MESSAGES, &item_type, &item_handle, &item_rect);
 				get_network_joined_message(sStringBuffer, info->net_game_type);
-//				c2pstr(temporary);
-//				SetDialogItemText(item_handle, ptemporary);
 
 				assert(inDialog != NULL);
 
@@ -1092,19 +1078,7 @@ join_processing_function(dialog* inDialog) {
 				assert(join_status_w != NULL);
 
 				join_status_w->set_text(sStringBuffer);
-
-
-                                // Here's something a little different.
-/*                                w_chat_history* chat_history_w =
-                                    dynamic_cast<w_chat_history*>(inDialog->get_widget_by_id(iCHAT_HISTORY));
-                                    
-                                assert(chat_history_w != NULL);
-                                
-                                // NULL player means message came from game.
-                                chat_history_w->append_chat_entry(NULL, sStringBuffer);
-*/
             }
-//			update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
 
 			assert(inDialog != NULL);
 
@@ -1131,9 +1105,6 @@ join_processing_function(dialog* inDialog) {
                 break;
 
 		case netJoinErrorOccurred:
-//			*item_hit= iCANCEL;
-//			handled= true;
-
 			assert(inDialog != NULL);
 			inDialog->quit(-1);
 			
@@ -1220,12 +1191,7 @@ bool network_join(void)
                     player_info myPlayerInfo;
 
                     copy_pstring_from_text_field(&d, iJOIN_NAME, myPlayerInfo.name);
-/*					const char *name = name_w->get_text();
-					int name_length = strlen(name);
-					myPlayerInfo.name[0] = name_length;
-					memcpy(myPlayerInfo.name + 1, name, name_length);
-*/
-					myPlayerInfo.color = pcolor_w->get_selection();
+                    myPlayerInfo.color = pcolor_w->get_selection();
 					myPlayerInfo.team = tcolor_w->get_selection();
 					myPlayerInfo.desired_color = myPlayerInfo.color;
                     memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
@@ -1253,8 +1219,7 @@ bool network_join(void)
 
 						d2.add(new w_spacer());
 
-//						w_players_in_game* players_w = new w_players_in_game(320, 8);
-                                                w_players_in_game2* players_w = new w_players_in_game2(false);
+                        w_players_in_game2* players_w = new w_players_in_game2(false);
 						players_w->set_identifier(iPLAYER_DISPLAY_AREA);
 						d2.add(players_w);
                 
@@ -1274,7 +1239,6 @@ bool network_join(void)
 						w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
 						chatentry_w->set_identifier(iCHAT_ENTRY);
 						chatentry_w->set_enter_pressed_callback(send_text_fake);
-//                        chatentry_w->set_left_justified();
                         chatentry_w->set_alignment(widget::kAlignLeft);
                         chatentry_w->set_full_width();
                         d2.add(chatentry_w);
@@ -1296,8 +1260,6 @@ bool network_join(void)
 						// Need to pump SSLP to respond to FIND messages, to hint, etc.
 	                    d2.set_processing_function(join_processing_function);
 
-                            //inserted_join_waiting_message = true;
-
 						// d2.run() returns -1 if player clicked cancel or error occured; 0 if accepted into game.
 						if (d2.run() == 0) {
                             game_info *myGameInfo = (game_info *)NetGetGameData();
@@ -1317,9 +1279,18 @@ bool network_join(void)
 }
 
 
+
+
+
+
+
+
+
 /*
  *  Progress dialog (ZZZ)
  */
+
+
 
 // This should really be done better, I guess, but most people will never see it long enough to read it.
 // Currently no actual bar is drawn (just a box with message), and no effort is made to make sure all messages
@@ -1394,6 +1365,14 @@ void reset_progress_bar(void)
 }
 
 
+
+
+
+
+
+
+
+
 #ifdef NETWORK_TEST_POSTGAME_DIALOG
 static const char*    sTestingNames[] = {
         "Doctor Burrito",
@@ -1463,3 +1442,36 @@ bool network_gather(void) {
 }
 #endif // NETWORK_TEST_POSTGAME_DIALOG
 
+
+
+
+
+#ifdef NETWORK_TEST_MICROPHONE_LOCALLY
+static void
+respond_to_microphone_toggle(w_select* inWidget) {
+    set_network_microphone_state(inWidget->get_selection() != 0);
+}
+
+bool
+network_gather() {
+    open_network_speaker();
+    open_network_microphone();
+
+    dialog d;
+
+    d.add(new w_static_text("TEST MICROPHONE", TITLE_FONT, TITLE_COLOR));
+
+    w_toggle*   onoff_w = new w_toggle("Active", 0);
+    onoff_w->set_selection_changed_callback(respond_to_microphone_toggle);
+    d.add(onoff_w);
+
+    d.add(new w_button("DONE", dialog_ok, &d));
+
+    d.run();
+
+    close_network_microphone();
+    close_network_speaker();
+
+    return false;
+}
+#endif

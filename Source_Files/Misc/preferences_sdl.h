@@ -26,6 +26,9 @@
  *
  *  Feb 27, 2002 (Woody Zenfell):
  *    Now allowing selection of OpenGL or software renderer, and doing separate config boxes for each.
+ *
+ *  Mar 08, 2002 (Woody Zenfell):
+ *      Added UI/preferences elements to configure microphone key
  */
 
 #ifndef _SDL_PREFERNCES_
@@ -43,6 +46,8 @@
 #include "images.h"
 #include "find_files.h"
 #include "screen_drawing.h"
+
+#include    "preferences_widgets_sdl.h"
 
 #include <string.h>
 #include <vector>
@@ -65,9 +70,6 @@
 
 #endif
 
-
-// From shell_sdl.cpp
-extern vector<DirectorySpecifier> data_search_path;
 
 // Prototypes
 static void player_dialog(void *arg);
@@ -700,14 +702,14 @@ static void controls_dialog(void *arg)
  *  Keyboard dialog
  */
 
-const int NUM_KEYS = 20;
+const int NUM_KEYS = 21;
 
 static const char *action_name[NUM_KEYS] = {
 	"Move Forward", "Move Backward", "Turn Left", "Turn Right", "Sidestep Left", "Sidestep Right",
 	"Glance Left", "Glance Right", "Look Up", "Look Down", "Look Ahead",
 	"Previous Weapon", "Next Weapon", "Trigger", "2nd Trigger",
 	"Sidestep", "Run/Swim", "Look",
-	"Action", "Auto Map"
+	"Action", "Auto Map", "Microphone"
 };
 
 static SDLKey default_keys[NUM_KEYS] = {
@@ -719,7 +721,8 @@ static SDLKey default_keys[NUM_KEYS] = {
 	SDLK_SPACE, SDLK_LALT,						// weapon trigger
 	SDLK_LSHIFT, SDLK_LCTRL, SDLK_LMETA,		// modifiers
 	SDLK_TAB,									// action trigger
-	SDLK_m										// map
+	SDLK_m,										// map
+    SDLK_BACKQUOTE                              // microphone (ZZZ)
 };
 
 static SDLKey default_mouse_keys[NUM_KEYS] = {
@@ -731,7 +734,8 @@ static SDLKey default_mouse_keys[NUM_KEYS] = {
 	SDLK_RCTRL, SDLK_SPACE,						// weapon trigger
 	SDLK_RSHIFT, SDLK_LSHIFT, SDLK_LCTRL,		// modifiers
 	SDLK_s,										// action trigger
-	SDLK_TAB									// map
+	SDLK_TAB,									// map
+    SDLK_BACKQUOTE                              // microphone (ZZZ)
 };
 
 class w_prefs_key;
@@ -858,205 +862,6 @@ static void keyboard_dialog(void *arg)
 /*
  *  Environment dialog
  */
-
-// Find available themes in directory and append to vector
-class FindThemes : public FileFinder {
-public:
-	FindThemes(vector<FileSpecifier> &v) : dest_vector(v) {dest_vector.clear();}
-
-private:
-	bool found(FileSpecifier &file)
-	{
-		// Look for "theme.mml" files
-		string base, part;
-		file.SplitPath(base, part);
-		if (part == "theme.mml")
-			dest_vector.push_back(base);
-		return false;
-	}
-
-	vector<FileSpecifier> &dest_vector;
-};
-
-// Environment item
-class env_item {
-public:
-	env_item() : indent(0), selectable(false)
-	{
-		name[0] = 0;
-	}
-
-	env_item(const FileSpecifier &fs, int i, bool sel) : spec(fs), indent(i), selectable(sel)
-	{
-		spec.GetName(name);
-	}
-
-	FileSpecifier spec;	// Specifier of associated file
-	char name[256];		// Last part of file name
-	int indent;			// Indentation level
-	bool selectable;	// Flag: item refers to selectable file (otherwise to directory name)
-};
-
-// Environment file list widget
-class w_env_list : public w_list<env_item> {
-public:
-	w_env_list(const vector<env_item> &items, const char *selection, dialog *d) : w_list<env_item>(items, 400, 15, 0), parent(d)
-	{
-		vector<env_item>::const_iterator i, end = items.end();
-		int num = 0;
-		for (i = items.begin(); i != end; i++, num++) {
-			if (strcmp(i->spec.GetPath(), selection) == 0) {
-				set_selection(num);
-				break;
-			}
-		}
-	}
-
-	bool is_item_selectable(int i)
-	{
-		return items[i].selectable;
-	}
-
-	void item_selected(void)
-	{
-		parent->quit(0);
-	}
-
-	void draw_item(vector<env_item>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
-	{
-		y += font->get_ascent();
-
-		int color;
-		if (i->selectable) {
-			color = selected ? ITEM_ACTIVE_COLOR : ITEM_COLOR;
-		} else
-			color = LABEL_COLOR;
-
-		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, i->name, x + i->indent * 8, y, get_dialog_color(color), font, style);
-		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
-	}
-
-private:
-	dialog *parent;
-};
-
-// Environment selection button
-class w_env_select : public w_select_button {
-public:
-	w_env_select(const char *name, const char *path, const char *m, int t, dialog *d) : w_select_button(name, item_name, select_item_callback, this), parent(d), menu_title(m), type(t)
-	{
-		set_path(path);
-	}
-	~w_env_select() {}
-
-	void set_path(const char *p)
-	{
-		item = p;
-		item.GetName(item_name);
-		set_selection(item_name);
-	}
-
-	const char *get_path(void) const
-	{
-		return item.GetPath();
-	}
-
-	FileSpecifier &get_file_specifier(void)
-	{
-		return item;
-	}
-
-private:
-	void select_item(dialog *parent);
-	static void select_item_callback(void *arg);
-
-    dialog *parent;
-	const char *menu_title;	// Selection menu title
-
-	FileSpecifier item;		// File specification
-	int type;				// File type
-	char item_name[256];	// File name (excluding directory part)
-};
-
-void w_env_select::select_item_callback(void* arg) {
-    w_env_select* obj = (w_env_select*) arg;
-    obj->select_item(obj->parent);
-}
-
-void w_env_select::select_item(dialog *parent)
-{
-	// Find available files
-	vector<FileSpecifier> files;
-	if (type == _typecode_theme) {
-
-		// Theme, find by theme script
-		FindThemes finder(files);
-		vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-		while (i != end) {
-			FileSpecifier dir = *i + "Themes";
-			finder.Find(dir, WILDCARD_TYPE);
-			i++;
-		}
-
-	} else {
-
-		// Map/phyics/shapes/sounds, find by type
-		FindAllFiles finder(files);
-		vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-		while (i != end) {
-			FileSpecifier dir = *i;
-			finder.Find(dir, type);
-			i++;
-		}
-	}
-
-	// Create structured list of files
-	vector<env_item> items;
-	vector<FileSpecifier>::const_iterator i = files.begin(), end = files.end();
-	string last_base;
-	int indent_level = 0;
-	for (i = files.begin(); i != end; i++) {
-		string base, part;
-		i->SplitPath(base, part);
-		if (base != last_base) {
-
-			// New directory
-			FileSpecifier base_spec = base;
-//			if (base_spec != global_dir && base_spec != local_dir) {
-
-				// Subdirectory, insert name as unselectable item, put items on indentation level 1
-				items.push_back(env_item(base_spec, 0, false));
-				indent_level = 1;
-
-//			} else {
-//
-//				// Top-level directory, put items on indentation level 0
-//				indent_level = 0;
-//			}
-			last_base = base;
-		}
-		items.push_back(env_item(*i, indent_level, true));
-	}
-
-	// Create dialog
-	dialog d;
-	d.add(new w_static_text(menu_title, TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
-	w_env_list *list_w = new w_env_list(items, item.GetPath(), &d);
-	d.add(list_w);
-	d.add(new w_spacer());
-	d.add(new w_button("CANCEL", dialog_cancel, &d));
-
-	// Clear screen
-	clear_screen();
-
-	// Run dialog
-	if (d.run() == 0) { // Accepted
-		if (items.size())
-			set_path(items[list_w->get_selection()].spec.GetPath());
-	}
-}
 
 static void environment_dialog(void *arg)
 {

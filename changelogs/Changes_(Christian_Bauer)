@@ -1,5 +1,15 @@
 Change log of the SDL version of Aleph One
 
+March 13, 2002
+ - additions by Woody Zenfell:
+    - SDL network speaker (realtime audio playback)
+    - Win32 DirectX network microphone (realtime audio capture)
+    - some fixes and changes to netplay
+    - restoration of working cross-platform netplay
+    - more pleasant SDL level-selection facilities in Setup Network Game
+    - support for multiple sets of action_queues (for later network-prediction
+      efforts)
+
 January 16, 2002
  - new networking code is operational
  - fixed crash when picking up infravision in OpenGL mode

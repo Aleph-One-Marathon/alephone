@@ -25,7 +25,11 @@
  *
  *  Created by Woody Zenfell, III on Thu Oct 11 2001; structures copied from network_private.h.
  
- 	Jan 16, 2002 (Loren Petrich) Made 
+ 	Jan 16, 2002 (Loren Petrich) Replaced compiler-specific packing code with generalized wrappers
+
+    Mar 5, 2002 (Woody Zenfell) added network_audio_header
+
+    Mar 9, 2002 (Woody Zenfell) changed some SIZEOF_'s to be more accurate/specific
  */
 
 #ifndef	NETWORK_DATA_FORMATS_H
@@ -34,6 +38,7 @@
 #include	"cseries.h"		// Need ALEPHONE_LITTLE_ENDIAN, if appropriate.
 #include	"network.h"
 #include	"network_private.h"
+#include    "network_speaker_sdl.h"
 
 
 
@@ -137,8 +142,9 @@ extern void netcpy(IPaddress_NET* dest, const IPaddress* src);
 extern void netcpy(IPaddress* dest, const IPaddress_NET* src);
 
 
-
-const int SIZEOF_NetPlayer = 2*SIZEOF_IPaddress + MAXIMUM_PLAYER_DATA_SIZE + 3;
+// ZZZ fix: a NetPlayer holds a player_info, not general player data as might be implied
+//const int SIZEOF_NetPlayer = 2*SIZEOF_IPaddress + MAXIMUM_PLAYER_DATA_SIZE + 3;
+const int SIZEOF_NetPlayer = 2*SIZEOF_IPaddress + SIZEOF_player_info + 3;
 
 struct NetPlayer_NET {
 	uint8 data[SIZEOF_NetPlayer];
@@ -148,9 +154,10 @@ extern void netcpy(NetPlayer_NET* dest, const NetPlayer* src);
 extern void netcpy(NetPlayer* dest, const NetPlayer_NET* src);
 
 
-
-const int SIZEOF_NetTopology = MAXIMUM_GAME_DATA_SIZE +
-	MAXIMUM_NUMBER_OF_NETWORK_PLAYERS*SIZEOF_NetPlayer + 6;
+// ZZZ fix: NetTopology holds game_info, not general unformatted game data as it might appear.
+//const int SIZEOF_NetTopology = MAXIMUM_GAME_DATA_SIZE +
+//	MAXIMUM_NUMBER_OF_NETWORK_PLAYERS*SIZEOF_NetPlayer + 6;
+const int SIZEOF_NetTopology = SIZEOF_game_info + MAXIMUM_NUMBER_OF_NETWORK_PLAYERS*SIZEOF_NetPlayer + 6;
 
 struct NetTopology_NET
 {
@@ -193,5 +200,15 @@ struct NetChatMessage_NET {
 extern void netcpy(NetChatMessage_NET* dest, const NetChatMessage* src);
 extern void netcpy(NetChatMessage* dest, const NetChatMessage_NET* src);
 #endif
+
+
+const int SIZEOF_network_audio_header = 8;
+
+struct network_audio_header_NET {
+    uint8 data[SIZEOF_network_audio_header];
+};
+
+extern void netcpy(network_audio_header_NET* dest, const network_audio_header* src);
+extern void netcpy(network_audio_header* dest, const network_audio_header_NET* src);
 
 #endif//NETWORK_DATA_FORMATS_H

@@ -51,6 +51,9 @@ Aug 10, 2000 (Loren Petrich):
 
 Feb 4, 2002 (Br'fin (Jeremy Parsons)):
 	Moved Macintosh call to OGL_Initialize to shell_macintosh.cpp
+
+Feb 20, 2002 (Woody Zenfell):
+    Changed action queues operations to ActionQueues operations on GetRealActionQueues()
 */
 
 #include "cseries.h"
@@ -83,6 +86,9 @@ Feb 4, 2002 (Br'fin (Jeremy Parsons)):
 // CP additions:
 #include "scripting.h"
 #include "script_parser.h"
+
+// ZZZ additions:
+#include "ActionQueues.h"
 
 #include <limits.h>
 
@@ -146,11 +152,13 @@ short update_world(
 
 		if (game_is_networked)
 		{
-			queue_size= MIN(get_action_queue_size(player_index), NetGetNetTime() - dynamic_world->tick_count);
+			queue_size= MIN(GetRealActionQueues()->countActionFlags(player_index),
+                NetGetNetTime() - dynamic_world->tick_count);
 		}
 		else
 		{
-			queue_size= MIN(get_action_queue_size(player_index), get_heartbeat_count() - dynamic_world->tick_count);
+			queue_size= MIN(GetRealActionQueues()->countActionFlags(player_index),
+                get_heartbeat_count() - dynamic_world->tick_count);
 		}
 		if (queue_size<0) queue_size= 0; // thumb in dike to prevent update_interface from getting -1
 		
@@ -173,7 +181,7 @@ short update_world(
 		update_platforms();
 		
 		update_control_panels(); // don't put after update_players
-		update_players();
+		update_players(GetRealActionQueues());
 		move_projectiles();
 		move_monsters();
 		update_effects();

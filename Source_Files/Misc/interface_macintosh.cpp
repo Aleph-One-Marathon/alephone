@@ -90,6 +90,8 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #include "XML_LevelScript.h"
 #include "music.h"
 
+#include "network_distribution_types.h"
+
 #ifdef env68k
 	#pragma segment macintosh_
 #endif
@@ -531,8 +533,8 @@ void install_network_microphone(
 	short id;
 
 	open_network_speaker(NETWORK_SOUND_CHUNK_BUFFER_SIZE, 2);
-	id = NetAddDistributionFunction(network_speaker_proc, true);
-	open_network_microphone(id);
+	NetAddDistributionFunction(kOriginalNetworkAudioDistributionTypeID, network_speaker_proc, true);
+	open_network_microphone(kOriginalNetworkAudioDistributionTypeID);
 }
 
 void remove_network_microphone(

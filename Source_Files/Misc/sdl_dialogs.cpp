@@ -23,6 +23,9 @@
  *  sdl_dialogs.cpp - SDL implementation of user dialogs
  *
  *  Written in 2000 by Christian Bauer
+ *
+ *  11 Mar 2002 (Woody Zenfell): renamed XML_FrameParser to XML_DFrameParser
+ *      to resolve conflict with new animated-model frame parsing code.
  */
 
 #include "cseries.h"
@@ -300,9 +303,9 @@ static XML_DFontParser ItemFontParser(ITEM_FONT);
 static XML_DFontParser MessageFontParser(MESSAGE_FONT);
 static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_FONT);
 
-class XML_FrameParser : public XML_ElementParser {
+class XML_DFrameParser : public XML_ElementParser {
 public:
-	XML_FrameParser() : XML_ElementParser("frame") {}
+	XML_DFrameParser() : XML_ElementParser("frame") {}
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
@@ -322,7 +325,7 @@ public:
 	}
 };
 
-static XML_FrameParser FrameParser;
+static XML_DFrameParser FrameParser;
 
 struct XML_BackgroundParser : public XML_ElementParser {XML_BackgroundParser() : XML_ElementParser("background") {}};
 static XML_BackgroundParser BackgroundParser;

@@ -70,6 +70,12 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Rewired things to more generally key off of HAVE_SDL_NET than SDL (The Carbon build has SDL_NET, but
 		understandably lacks SDL)
 	Uses #if HAVE_SDL_NET in place of calls to #ifndef mac to allow SDL networking under Carbon
+
+Mar 3-8, 2002 (Woody Zenfell):
+    Changed net distribution stuff to use an STL map to associate distribution types with
+    {lossy, handling procedure}.  Now different endstations can have different distribution
+    types installed for handling (previously they had to all install the same handlers in the
+    same order to get the same distribution type ID's).
 */
 
 /*
@@ -115,6 +121,8 @@ clearly this is all broken until we have packet types
 #include <stdlib.h>
 #include <string.h>
 
+#include <map>
+
 #ifdef env68k
 #pragma segment network
 #endif
@@ -157,6 +165,7 @@ void record_profile(int raf);
 /* ---------- globals */
 
 static short ddpSocket; /* our ddp socket number */
+
 // ZZZ: note: these will always be used in _NET (packed) format.  Fortunately, the existing code only
 // works directly with these in a few very specific places, so it's reasonable to hold this invariant.
 // Observe that these are only used in the preparation of _outgoing_ frames.  They are read only (umm,
@@ -166,6 +175,7 @@ static short ddpSocket; /* our ddp socket number */
 // to the upring's upring).
 static DDPFramePtr ackFrame, ringFrame; /* ddp frames for sending ring/acknowledgement packets */
 static DDPFramePtr distributionFrame;
+
 // ZZZ: On packet reception, we copy the _NET (packed) data into the local preferred format.  This is
 // the storage for the unpacked copy.  Note that few folks refer to it directly - usually a pointer
 // to the unpacked data (i.e. into this buffer) is passed along as an argument.
@@ -497,11 +507,10 @@ enum {
 // reins on the consumer a bit.
 
 
-// ZZZ annotation: originally, multiple types of data to be distributed were planned.  distribution_info would
-// have been used to demultiplex incoming distribution data to the appropriate handler.  Currently, the only
-// data that's distributed this way is realtime microphone data, and it's always 'lossy'... so at most one
-// element of this array would be used.  Although, if someone wants to add text chat......
-static NetDistributionInfo distribution_info[NUM_DISTRIBUTION_TYPES];
+// ZZZ change: now using an STL 'map' to, well, _map_ distribution types to info records.
+typedef map<int16, NetDistributionInfo> distribution_info_map_t;
+static  distribution_info_map_t distribution_info_map;
+
 
 #ifdef NETWORK_CHAT
 static	NetChatMessage	incoming_chat_message_buffer;
@@ -659,7 +668,6 @@ bool NetEnter(
 	void)
 {
 	OSErr error;
-	short i;
 	bool success= true; /* optimism */
 
 #ifdef TEST_MODEM
@@ -676,11 +684,6 @@ bool NetEnter(
 		added_exit_procedure= true;
 	}
 
-	for (i = 0; i < NUM_DISTRIBUTION_TYPES; i++)
-	{
-		distribution_info[i].type_in_use = false;
-	}
-	
 	error= NetDDPOpen();	
 	if (!error)
 	{
@@ -827,59 +830,29 @@ void NetExit(
 
 /* Add a function for a distribution type. returns the type, or NONE if it can't be
  * installed. It's safe to call this function multiple times for the same proc. */
-short NetAddDistributionFunction(
-	NetDistributionProc proc, 
-	bool lossy)
-{
-	short    i;
-	bool  found_slot = false;
+// ZZZ: changed to take in the desired type, so a given machine can handle perhaps only some
+// of the distribution types.
+void
+NetAddDistributionFunction(int16 inDataTypeID, NetDistributionProc inProc, bool inLossy) {
+    // We don't support lossless distribution yet.
+    assert(inLossy);
 
-#ifdef TEST_MODEM
-	return ModemAddDistributionFunction(proc, lossy);
-#else
+    // Prepare a NetDistributionInfo with the desired data.
+    NetDistributionInfo theInfo;
+    theInfo.lossy               = inLossy;
+    theInfo.distribution_proc   = inProc;
 
-	assert(lossy == true); // until we decide to support it.
-	
-	// see if it's already installed.
-	for (i = 0; i < NUM_DISTRIBUTION_TYPES; i++)
-	{
-		if (distribution_info[i].type_in_use && distribution_info[i].distribution_proc == proc)
-		{
-			distribution_info[i].lossy = lossy; // maybe they want to change it. who am i to argue?
-			found_slot = true;
-			break;
-		}
-	}
-	
-	if (!found_slot) // not installed, install it.
-	{
-		for (i = 0; i < NUM_DISTRIBUTION_TYPES; i++)
-		{
-			if (!distribution_info[i].type_in_use)
-			{
-				distribution_info[i].type_in_use = true;
-				distribution_info[i].lossy = lossy;
-				distribution_info[i].distribution_proc = proc;
-				found_slot = true;
-				break;
-			}
-		}
-	}
-	
-	return found_slot ? i : NONE;
-#endif
+    // Insert or update a map entry
+    distribution_info_map[inDataTypeID] = theInfo;
 }
+
 
 /* Remove a distribution proc that has been installed. */
-void NetRemoveDistributionFunction(
-	short type)
-{
-#ifdef TEST_MODEM
-	ModemRemoveDistributionFunction(type);
-#else
-	distribution_info[type].type_in_use = false;
-#endif
+void
+NetRemoveDistributionFunction(int16 inDataTypeID) {
+    distribution_info_map.erase(inDataTypeID);
 }
+
 
 /* Distribute information to the whole net. */
 void NetDistributeInformation(
@@ -897,13 +870,21 @@ void NetDistributeInformation(
 
 	// Sanity Check! Sanity Check!
 	// Hand Check! Hand Check!
-	assert(buffer_size <= MAX_NET_DISTRIBUTION_BUFFER_SIZE);
-	assert(type >= 0 && type < NUM_DISTRIBUTION_TYPES);
-	assert(distribution_info[type].type_in_use);
+    // ZZZ: there ought to be some kind of check here on buffer size, but it should be based on
+    // the size of the DDP (UDP) packet storage allocated and the sizes of stuff to be crammed in there.
+    //	assert(buffer_size <= MAX_NET_DISTRIBUTION_BUFFER_SIZE);
+
+    // ZZZ: I suppose one could argue that you should be able to send distribution types you don't
+    // process, but currently anyway this is used to lookup lossless/lossy.  Maybe the caller should
+    // specify lossless/lossy as a parameter to this function rather than associating it with a
+    // distribution type anyway.  The two seem to be at least somewhat independent.
+    distribution_info_map_t::const_iterator    theEntry = distribution_info_map.find(type);
+
+    assert(theEntry != distribution_info_map.end());
 	
 	if (send_to_self)
 	{
-		distribution_info[type].distribution_proc(buffer, buffer_size, localPlayerIndex);
+		theEntry->second.distribution_proc(buffer, buffer_size, localPlayerIndex);
 	}
 
 	distributionFrame->data_size = sizeof(NetPacketHeader_NET) + sizeof(NetDistributionPacket_NET) + buffer_size;
@@ -912,7 +893,7 @@ void NetDistributeInformation(
                 NetPacketHeader		header_storage;
                 NetPacketHeader*	header		= &header_storage;
 		
-		header->tag = distribution_info[type].lossy ? tagLOSSY_DISTRIBUTION : tagLOSSLESS_DISTRIBUTION;
+		header->tag = theEntry->second.lossy ? tagLOSSY_DISTRIBUTION : tagLOSSLESS_DISTRIBUTION;
 		header->sequence = 0;
                 
                 netcpy(header_NET, header);
@@ -935,7 +916,7 @@ void NetDistributeInformation(
 #ifdef NETWORK_IP
 	NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 #endif
-#endif
+#endif // TEST_MODEM
 }
 
 short NetState(
@@ -1728,10 +1709,14 @@ static void NetProcessLossyDistribution(
 	type = packet_data->distribution_type;
 
         // Act upon the data, if possible
-	if (distribution_info[type].type_in_use)
+    // ZZZ note: we use find(type) and an iterator instead of distribution_info_map[type] because
+    // using operator [] on the map inserts an entry (even if it's not being used as an Lvalue).
+    distribution_info_map_t::const_iterator    theEntry = distribution_info_map.find(type);
+
+	if (theEntry != distribution_info_map.end())
 	{
 //		distribution_info[type].distribution_proc(&packet_data->data[0], packet_data->data_size, packet_data->first_player_index);
-		distribution_info[type].distribution_proc(((char*) buffer) + sizeof(NetDistributionPacket_NET), packet_data->data_size,
+		theEntry->second.distribution_proc(((char*) buffer) + sizeof(NetDistributionPacket_NET), packet_data->data_size,
                                                             packet_data->first_player_index);
         }
         

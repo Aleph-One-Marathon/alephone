@@ -23,8 +23,13 @@
  *  sdl_widgets.cpp - Widgets for SDL dialogs
  *
  *  Written in 2000 by Christian Bauer
+ *
+ *  Sept-Nov. 2001 (Woody Zenfell):
+ *      Significant extensions to support more dynamic behavior and more useful layouts
+ *
+ *  Mar 1, 2002 (Woody Zenfell):
+ *      Moved w_levels here from shell_sdl; am using it in Setup Network Game box.
  */
-// Sept-Nov. 2001 (Woody Zenfell) - Significant extensions to support more dynamic behavior and more useful layouts
 
 #include "cseries.h"
 #include "sdl_dialogs.h"
@@ -302,9 +307,8 @@ int w_right_button::layout(void)
 
 const int MAX_TEXT_WIDTH = 200;
 
-// ZZZ: how come we have to do this?  because Christian put that "&" in the typedef
-// for action_proc?
-// Anyway, it fixes the "crash when clicking in the Environment menu" bug we've seen
+// ZZZ: how come we have to do this?  because of that "&" in the typedef for action_proc?
+// Anyway, this fixes the "crash when clicking in the Environment menu" bug we've seen
 // in the Windows version all this time.
 #ifdef __MVCPP__
 w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a)
@@ -1288,4 +1292,45 @@ void w_list_base::set_top_item(int i)
 	if (thumb_y > trough_rect.h - thumb_height)
 		thumb_y = trough_rect.h - thumb_height;
 	thumb_y += trough_rect.y;
+}
+
+
+
+// ZZZ: maybe this belongs in a new file or something - it's definitely A1-related
+// whereas most (but not all) of the other widgets here are sort of 'general-purpose'.
+// Anyway, moved here from shell_sdl.h and enhanced ever so slightly, will now be
+// using it in the setup network game dialog as well.
+
+/*
+ *  Level number dialog
+ */
+
+w_levels::w_levels(const vector<entry_point> &items, dialog *d)
+	  : w_list<entry_point>(items, 400, 8, 0), parent(d), show_level_numbers(true) {}
+
+// ZZZ: new constructor gives more control over widget's appearance.
+w_levels::w_levels(const vector<entry_point>& items, dialog* d, int inWidth,
+        int inNumLines, int inSelectedItem, bool in_show_level_numbers)
+	  : w_list<entry_point>(items, inWidth, inNumLines, inSelectedItem), parent(d), show_level_numbers(in_show_level_numbers) {}
+
+void
+w_levels::item_selected(void)
+{
+	parent->quit(0);
+}
+
+void
+w_levels::draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
+{
+	y += font->get_ascent();
+	char str[256];
+
+    if(show_level_numbers)
+    	sprintf(str, "%d - %s", i->level_number + 1, i->level_name);
+    else
+        sprintf(str, "%s", i->level_name);
+
+	set_drawing_clip_rectangle(0, x, s->h, x + width);
+	draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }
