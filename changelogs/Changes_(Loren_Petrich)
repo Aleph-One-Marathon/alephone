@@ -1405,3 +1405,8 @@ Feb 2, 2001
 
 Numerous changes: added OpenGL font-texture support, idle-weapon animations,
 variability of powerup assignments, fixed underwater-dialog-box bug, and so forth.
+
+Feb 8, 2001
+
+Made most of the map data dynamically allocated, so as to banish maximum numbers of points,
+lines, sides, etc. Also fixed some bugs in counting some of the entities.
