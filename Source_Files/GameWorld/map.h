@@ -53,6 +53,7 @@ Nov 19, 2000 (Loren Petrich):
 		no real ticks have elapsed (we may have predicted ahead further).
 */
 
+#include "csmacros.h"
 #include "world.h"
 #include "dynamic_limits.h"
 #include "XML_ElementParser.h"
