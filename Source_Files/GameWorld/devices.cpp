@@ -196,6 +196,14 @@ static struct control_panel_definition control_panel_definitions[]=
 static short ReachDistance = MAXIMUM_CONTROL_ACTIVATION_RANGE;
 static short ReachHorizontal = 2;
 
+// For recharging
+static short SingleEnergy = PLAYER_MAXIMUM_SUIT_ENERGY;
+static short SingleEnergyRate = 1;
+static short DoubleEnergy = 2*PLAYER_MAXIMUM_SUIT_ENERGY;
+static short DoubleEnergyRate = 2;
+static short TripleEnergy = 3*PLAYER_MAXIMUM_SUIT_ENERGY;
+static short TripleEnergyRate = 3;
+
 /* ------------ private prototypes */
 
 static control_panel_definition *get_control_panel_definition(
@@ -304,9 +312,9 @@ void update_control_panels(
 							
 							switch (definition->_class)
 							{
-								case _panel_is_shield_refuel: maximum= PLAYER_MAXIMUM_SUIT_ENERGY, rate= 1; break;
-								case _panel_is_double_shield_refuel: maximum= 2*PLAYER_MAXIMUM_SUIT_ENERGY, rate= 2; break;
-								case _panel_is_triple_shield_refuel: maximum= 3*PLAYER_MAXIMUM_SUIT_ENERGY, rate= 3; break;
+								case _panel_is_shield_refuel: maximum= SingleEnergy, rate= SingleEnergyRate; break;
+								case _panel_is_double_shield_refuel: maximum= DoubleEnergy, rate= DoubleEnergyRate; break;
+								case _panel_is_triple_shield_refuel: maximum= TripleEnergy, rate= TripleEnergyRate; break;
 								default:
 									assert(false);
 							}
@@ -1081,6 +1089,30 @@ bool XML_ControlPanelsParser::HandleAttribute(const char *Tag, const char *Value
 	else if (StringsEqual(Tag,"horiz"))
 	{
 		return ReadInt16Value(Value,ReachHorizontal);
+	}
+	else if (StringsEqual(Tag,"single_energy"))
+	{
+		return ReadInt16Value(Value,SingleEnergy);
+	}
+	else if (StringsEqual(Tag,"single_energy_rate"))
+	{
+		return ReadInt16Value(Value,SingleEnergyRate);
+	}
+	else if (StringsEqual(Tag,"double_energy"))
+	{
+		return ReadInt16Value(Value,DoubleEnergy);
+	}
+	else if (StringsEqual(Tag,"double_energy_rate"))
+	{
+		return ReadInt16Value(Value,DoubleEnergyRate);
+	}
+	else if (StringsEqual(Tag,"triple_energy"))
+	{
+		return ReadInt16Value(Value,TripleEnergy);
+	}
+	else if (StringsEqual(Tag,"triple_energy_rate"))
+	{
+		return ReadInt16Value(Value,TripleEnergyRate);
 	}
 	UnrecognizedTag();
 	return false;

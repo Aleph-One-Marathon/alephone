@@ -294,6 +294,11 @@ static short InitialEnergy = PLAYER_MAXIMUM_SUIT_ENERGY;
 static short InitialOxygen = PLAYER_MAXIMUM_SUIT_OXYGEN;
 static short StrippedEnergy = PLAYER_MAXIMUM_SUIT_ENERGY/4;
 
+// For picked-up powerups
+static short SingleEnergy = PLAYER_MAXIMUM_SUIT_ENERGY;
+static short DoubleEnergy = 2*PLAYER_MAXIMUM_SUIT_ENERGY;
+static short TripleEnergy = 3*PLAYER_MAXIMUM_SUIT_ENERGY;
+
 // Used in weapons.cpp: player can have guided missiles
 bool PlayerShotsGuided = false;
 short PlayerHalfVisualArc = QUARTER_CIRCLE/3;
@@ -842,15 +847,15 @@ bool legal_player_powerup(
 	}
 	else if (item_index == Powerup_TripleEnergy)
 	{
-		if (player->suit_energy>=3*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
+		if (player->suit_energy>=TripleEnergy) legal= false;
 	}
 	else if (item_index == Powerup_DoubleEnergy)
 	{
-		if (player->suit_energy>=2*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
+		if (player->suit_energy>=DoubleEnergy) legal= false;
 	}
 	else if (item_index == Powerup_Energy)
 	{
-		if (player->suit_energy>=PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
+		if (player->suit_energy>=SingleEnergy) legal= false;
 	}
 	else if (item_index == Powerup_Oxygen)
 	{
@@ -885,25 +890,25 @@ void process_player_powerup(
 	}
 	else if (item_index == Powerup_TripleEnergy)
 	{
-		if (player->suit_energy<3*PLAYER_MAXIMUM_SUIT_ENERGY)
+		if (player->suit_energy<TripleEnergy)
 		{
-			player->suit_energy= 3*PLAYER_MAXIMUM_SUIT_ENERGY;
+			player->suit_energy= TripleEnergy;
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
 	else if (item_index == Powerup_DoubleEnergy)
 	{
-		if (player->suit_energy<2*PLAYER_MAXIMUM_SUIT_ENERGY)
+		if (player->suit_energy<DoubleEnergy)
 		{
-			player->suit_energy= 2*PLAYER_MAXIMUM_SUIT_ENERGY;
+			player->suit_energy= DoubleEnergy;
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
 	else if (item_index == Powerup_Energy)
 	{
-		if (player->suit_energy<1*PLAYER_MAXIMUM_SUIT_ENERGY)
+		if (player->suit_energy<SingleEnergy)
 		{
-			player->suit_energy= 1*PLAYER_MAXIMUM_SUIT_ENERGY;
+			player->suit_energy= SingleEnergy;
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
@@ -2505,6 +2510,18 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"dark_visual_range"))
 	{
 		return ReadFloatValue(Value,PlayerDarkVisualRange);
+	}
+	else if (StringsEqual(Tag,"single_energy"))
+	{
+		return ReadInt16Value(Value,SingleEnergy);
+	}
+	else if (StringsEqual(Tag,"double_energy"))
+	{
+		return ReadInt16Value(Value,DoubleEnergy);
+	}
+	else if (StringsEqual(Tag,"triple_energy"))
+	{
+		return ReadInt16Value(Value,TripleEnergy);
 	}
 	UnrecognizedTag();
 	return false;
