@@ -11,7 +11,9 @@ Aug 12, 2000 (Loren Petrich):
 
 */
 
-class FileSpecifier;
+// LP: CodeWarrior complains unless I give the full definition of these classes
+#include "FileHandler.h"
+// class FileSpecifier;
 
 /* ------------ prototypes/VBL.C */
 boolean setup_for_replay_from_file(FileSpecifier& File, unsigned long map_checksum);
