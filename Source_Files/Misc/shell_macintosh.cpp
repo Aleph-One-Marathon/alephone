@@ -337,9 +337,7 @@ void handle_game_key(
 	bool changed_prefs= false;
 	bool changed_volume= false;
 	bool update_interface= false;
-
-	dprintf("Key in handle_game_key(): %hx",short(key));
-
+	
 	_virtual = (event->message >> 8) & charCodeMask;
 	
 // LP change: implementing Benad's "cheats always on"
