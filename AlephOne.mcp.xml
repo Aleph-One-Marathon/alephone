@@ -719,7 +719,7 @@
                 <!-- Settings for "FTP Panel" panel -->
                 <SETTING><NAME>MWFTP_Post_hostName</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_username</NAME><VALUE></VALUE></SETTING>
-                <SETTING><NAME>MWFTP_Post_password</NAME><VALUE>0&#255;&#196;`&#203;!&#132;&#144;"&#168;T</VALUE></SETTING>
+                <SETTING><NAME>MWFTP_Post_password</NAME><VALUE>0&#255;&#196;`&#187;&#160;&#228;&#144;"&#168;T</VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_remoteDir</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_ftp_PathVersion</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_ftp_PathType</NAME><VALUE>0</VALUE></SETTING>
@@ -884,21 +884,21 @@
                 <SETTING><NAME>Comments</NAME><VALUE></VALUE></SETTING>
 
                 <!-- Settings for "Packager Panel" panel -->
-                <SETTING><NAME>MWMacOSPackager_UsePackager</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWMacOSPackager_UsePackager</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWMacOSPackager_FolderToPackage</NAME>
                     <SETTING><NAME>Path</NAME><VALUE>:</VALUE></SETTING>
                     <SETTING><NAME>PathFormat</NAME><VALUE>MacOS</VALUE></SETTING>
                     <SETTING><NAME>PathRoot</NAME><VALUE>Project</VALUE></SETTING>
                 </SETTING>
-                <SETTING><NAME>MWMacOSPackager_CreateClassicAlias</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWMacOSPackager_CreateClassicAlias</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWMacOSPackager_ClassicAliasMethod</NAME><VALUE>UseTargetOutput</VALUE></SETTING>
                 <SETTING><NAME>MWMacOSPackager_ClassicAliasPath</NAME>
                     <SETTING><NAME>Path</NAME><VALUE>:</VALUE></SETTING>
                     <SETTING><NAME>PathFormat</NAME><VALUE>MacOS</VALUE></SETTING>
                     <SETTING><NAME>PathRoot</NAME><VALUE>Project</VALUE></SETTING>
                 </SETTING>
-                <SETTING><NAME>MWMacOSPackager_CreatePkgInfo</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWMacOSPackager_PkgCreatorType</NAME><VALUE>????</VALUE></SETTING>
+                <SETTING><NAME>MWMacOSPackager_CreatePkgInfo</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWMacOSPackager_PkgCreatorType</NAME><VALUE>26.A</VALUE></SETTING>
                 <SETTING><NAME>MWMacOSPackager_PkgFileType</NAME><VALUE>APPL</VALUE></SETTING>
 
                 <!-- Settings for "PPC CodeGen" panel -->
@@ -1052,13 +1052,13 @@
                 <SETTING><NAME>MWPEF_collapsereloads</NAME><VALUE>1</VALUE></SETTING>
 
                 <!-- Settings for "PPC Project" panel -->
-                <SETTING><NAME>MWProject_PPC_type</NAME><VALUE>Application</VALUE></SETTING>
+                <SETTING><NAME>MWProject_PPC_type</NAME><VALUE>ApplicationPackage</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_outfile</NAME><VALUE>Aleph One.app</VALUE></SETTING>
-                <SETTING><NAME>MWProject_PPC_filecreator</NAME><VALUE>????</VALUE></SETTING>
+                <SETTING><NAME>MWProject_PPC_filecreator</NAME><VALUE>26.A</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_filetype</NAME><VALUE>APPL</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_size</NAME><VALUE>65536</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_minsize</NAME><VALUE>8192</VALUE></SETTING>
-                <SETTING><NAME>MWProject_PPC_stacksize</NAME><VALUE>128</VALUE></SETTING>
+                <SETTING><NAME>MWProject_PPC_stacksize</NAME><VALUE>64</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_flags</NAME><VALUE>22720</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_symfilename</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_rsrcname</NAME><VALUE></VALUE></SETTING>
@@ -2107,13 +2107,6 @@
                 </FILE>
                 <FILE>
                     <PATHTYPE>Name</PATHTYPE>
-                    <PATH>marathon2.resource</PATH>
-                    <PATHFORMAT>Unix</PATHFORMAT>
-                    <FILEKIND>Resource</FILEKIND>
-                    <FILEFLAGS>Debug</FILEFLAGS>
-                </FILE>
-                <FILE>
-                    <PATHTYPE>Name</PATHTYPE>
                     <PATH>Text Strings</PATH>
                     <PATHFORMAT>Unix</PATHFORMAT>
                     <FILEKIND>Resource</FILEKIND>
@@ -2220,6 +2213,34 @@
                 <FILE>
                     <PATHTYPE>Name</PATHTYPE>
                     <PATH>OGL_Model_Def.cpp</PATH>
+                    <PATHFORMAT>Unix</PATHFORMAT>
+                    <FILEKIND>Text</FILEKIND>
+                    <FILEFLAGS></FILEFLAGS>
+                </FILE>
+                <FILE>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>m2_stripped.rsrc</PATH>
+                    <PATHFORMAT>Unix</PATHFORMAT>
+                    <FILEKIND>Resource</FILEKIND>
+                    <FILEFLAGS>Debug</FILEFLAGS>
+                </FILE>
+                <FILE>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>GUI.nib</PATH>
+                    <PATHFORMAT>Unix</PATHFORMAT>
+                    <FILEKIND>Resource</FILEKIND>
+                    <FILEFLAGS></FILEFLAGS>
+                </FILE>
+                <FILE>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>AlephOne.plc</PATH>
+                    <PATHFORMAT>Unix</PATHFORMAT>
+                    <FILEKIND>Text</FILEKIND>
+                    <FILEFLAGS>Debug</FILEFLAGS>
+                </FILE>
+                <FILE>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>lua_script.cpp</PATH>
                     <PATHFORMAT>Unix</PATHFORMAT>
                     <FILEKIND>Text</FILEKIND>
                     <FILEFLAGS></FILEFLAGS>
@@ -2893,11 +2914,6 @@
                 </FILEREF>
                 <FILEREF>
                     <PATHTYPE>Name</PATHTYPE>
-                    <PATH>marathon2.resource</PATH>
-                    <PATHFORMAT>Unix</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <PATHTYPE>Name</PATHTYPE>
                     <PATH>Text Strings</PATH>
                     <PATHFORMAT>Unix</PATHFORMAT>
                 </FILEREF>
@@ -2974,6 +2990,26 @@
                 <FILEREF>
                     <PATHTYPE>Name</PATHTYPE>
                     <PATH>OGL_Model_Def.cpp</PATH>
+                    <PATHFORMAT>Unix</PATHFORMAT>
+                </FILEREF>
+                <FILEREF>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>m2_stripped.rsrc</PATH>
+                    <PATHFORMAT>Unix</PATHFORMAT>
+                </FILEREF>
+                <FILEREF>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>GUI.nib</PATH>
+                    <PATHFORMAT>Unix</PATHFORMAT>
+                </FILEREF>
+                <FILEREF>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>AlephOne.plc</PATH>
+                    <PATHFORMAT>Unix</PATHFORMAT>
+                </FILEREF>
+                <FILEREF>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>lua_script.cpp</PATH>
                     <PATHFORMAT>Unix</PATHFORMAT>
                 </FILEREF>
             </LINKORDER>
@@ -3659,6 +3695,14 @@
                 <PATHFORMAT>Unix</PATHFORMAT>
             </FILEREF>
         </GROUP>
+        <GROUP><NAME>Lua</NAME>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC Carbon</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>lua_script.cpp</PATH>
+                <PATHFORMAT>Unix</PATHFORMAT>
+            </FILEREF>
+        </GROUP>
         <GROUP><NAME>Network</NAME>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC Carbon</TARGETNAME>
@@ -3835,7 +3879,19 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC Carbon</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>marathon2.resource</PATH>
+                <PATH>AlephOne.plc</PATH>
+                <PATHFORMAT>Unix</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC Carbon</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>GUI.nib</PATH>
+                <PATHFORMAT>Unix</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC Carbon</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>m2_stripped.rsrc</PATH>
                 <PATHFORMAT>Unix</PATHFORMAT>
             </FILEREF>
             <FILEREF>
