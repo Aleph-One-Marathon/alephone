@@ -78,12 +78,12 @@ public:
         }
 
         unsigned int	getCountOfElements() const
-                            { return (mQueueSize + mWriteIndex - mReadIndex) % mQueueSize; }
+				{ return (mQueueSize > 0) ? (mQueueSize + mWriteIndex - mReadIndex) % mQueueSize : 0; }
 
         unsigned int	getRemainingSpace() const
                             { return getTotalSpace() - getCountOfElements(); }
 
-        unsigned int	getTotalSpace() const { return mQueueSize - 1; }
+        unsigned int	getTotalSpace() const { return (mQueueSize > 0) ? mQueueSize - 1 : 0; }
     
         const T&        peek() const { return mData[getReadIndex()]; }
 
@@ -101,7 +101,7 @@ protected:
                             
         unsigned int advanceReadIndex(unsigned int inAmount = 1) {   
                 if(inAmount > 0) {
-                        assert(getCountOfElements() > inAmount - 1);
+                        assert(inAmount <= getCountOfElements());
                         mReadIndex = (mReadIndex + inAmount) % mQueueSize;
                 }
                 return mReadIndex;
@@ -109,7 +109,7 @@ protected:
         
         unsigned int advanceWriteIndex(unsigned int inAmount = 1) {
                 if(inAmount > 0) {
-                        assert(getRemainingSpace() > inAmount - 1);
+                        assert(inAmount <= getRemainingSpace());
                         mWriteIndex = (mWriteIndex + inAmount) % mQueueSize;
                 }
                 return mWriteIndex;

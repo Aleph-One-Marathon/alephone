@@ -29,11 +29,12 @@
 
 #include <algorithm> // std::min()
 
+// static
 std::pair<unsigned int, unsigned int>
-CircularByteBuffer::splitIntoChunks(unsigned int inByteCount, unsigned int inStartingIndex)
+CircularByteBuffer::splitIntoChunks(unsigned int inByteCount, unsigned int inStartingIndex, unsigned int inQueueSize)
 {
 	// Copy, potentially, two separate chunks (one at end of buffer; one at beginning)
-	unsigned int theSpaceAtEndOfBuffer = mQueueSize - mWriteIndex;
+	unsigned int theSpaceAtEndOfBuffer = inQueueSize - inStartingIndex;
 	unsigned int theFirstChunkSize = std::min(inByteCount, theSpaceAtEndOfBuffer);
 	unsigned int theSecondChunkSize = inByteCount - theFirstChunkSize;
 
@@ -51,7 +52,7 @@ CircularByteBuffer::enqueueBytes(const void* inBytes, unsigned int inByteCount)
 	
 		const char* theBytes = static_cast<const char*>(inBytes);
 	
-		std::pair<unsigned int, unsigned int> theChunkSizes = splitIntoChunks(inByteCount, mWriteIndex);
+		std::pair<unsigned int, unsigned int> theChunkSizes = splitIntoChunks(inByteCount, mWriteIndex, mQueueSize);
 	
 		memcpy(&(mData[mWriteIndex]), theBytes, theChunkSizes.first);
 	
@@ -73,7 +74,7 @@ CircularByteBuffer::peekBytes(void* outBytes, unsigned int inByteCount)
 
 		char* theBytes = static_cast<char*>(outBytes);
 	
-		std::pair<unsigned int, unsigned int> theChunkSizes = splitIntoChunks(inByteCount, mReadIndex);
+		std::pair<unsigned int, unsigned int> theChunkSizes = splitIntoChunks(inByteCount, mReadIndex, mQueueSize);
 	
 		memcpy(theBytes, &(mData[mReadIndex]), theChunkSizes.first);
 	

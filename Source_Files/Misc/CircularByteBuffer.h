@@ -42,12 +42,16 @@ public:
 	void peekBytes(void* outBytes, unsigned int inByteCount);
 	void enqueueBytes(const void* inBytes, unsigned int inByteCount);
 
-protected:
 	// Circular buffer may have incoming or outgoing data splitting across the "seam"
 	// so this routine returns the length of the chunk at the starting index "first" and
 	// the length of the chunk needed from the beginning of the buffer to satisfy inByteCount.
 	// (If the chunk does not need splitting, the result's first == inByteCount and second == 0.)
-	std::pair<unsigned int, unsigned int> splitIntoChunks(unsigned int inByteCount, unsigned int inStartingIndex);
+	// This is static since it can be, basically; others clients (outside this class) could use it if they wanted to...
+	// I'm still not totally happy with it because it seems it'd be too easy to mix up the parameters,
+	// but OTOH using a structure for the parameters seems too clunky for such a simple routine...
+	static std::pair<unsigned int, unsigned int> splitIntoChunks(unsigned int inByteCount, unsigned int inStartingIndex, unsigned int inQueueSize);
+
+protected:
 };
 
 #endif // CIRCULAR_BYTE_BUFFER_H
