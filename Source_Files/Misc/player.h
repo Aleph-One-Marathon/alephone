@@ -30,6 +30,9 @@ May 23, 2000 (Loren Petrich):
 
 July 1, 2000 (Loren Petrich):
 	Made player-data accessor inline; added map.h to define some stuff for it
+
+Aug 31, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 // LP additions: stuff that this file needs
@@ -334,6 +337,10 @@ struct player_data
 	short unused[256];
 };
 
+const int SIZEOF_player_data = 930;
+
+const int SIZEOF_physics_constants = 104;
+
 /* ---------- globals */
 
 extern struct player_data *players;
@@ -420,8 +427,15 @@ void get_binocular_vision_origins(short player_index, world_point3d *left, short
 
 fixed get_player_forward_velocity_scale(short player_index);
 
-// LP addition: get physics-definition size and number of physics models (restricted sense)
-int get_physics_definition_size();
+// LP: to pack and unpack this data;
+// these do not make the definitions visible to the outside world
+
+uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, int Count = 1);
+uint8 *pack_player_data(uint8 *Stream, player_data *Objects, int Count = 1);
+uint8 *unpack_physics_constants(uint8 *Stream, int Count = 1);
+uint8 *pack_physics_constants(uint8 *Stream, int Count = 1);
+
+// LP addition: get number of physics models (restricted sense)
 int get_number_of_physics_models();
 
 // XML-parser support
