@@ -1,5 +1,21 @@
 Change log of the SDL version of Aleph One
 
+August 31, 2000
+ - fixes to OpenGL rendering
+ - some clean-ups:
+     word -> uint16
+     new definitions INT16_MIN/MAX and INT32_MIN/MAX replacing SHORT_MIN/MAX
+       and LONG_MIN/MAX in cstypes.h
+     SHORT_MIN/MAX -> INT16_MIN/MAX or SHRT_MIN/MAX from limits.h, as
+       appropriate
+     boolean -> bool
+     TRUE/FALSE -> true/false
+ - integrated FreeBSD patches from Michael Alyn Miller
+ - OpenedResourceFile::Check()/Get() can now also take 4 chars instead of a
+   uint32 resource type
+ - wadfile checksums are now uint32 consistently, instead of "long" or
+   "unsigned long"
+
 August 30, 2000
  - implemented OpenGL rendering
 
