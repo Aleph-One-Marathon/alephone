@@ -4,6 +4,10 @@ Tuesday, January 17, 1995 2:51:59 PM  (Jason')
 
 Feb. 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
+
+Nov 17, 2000 (Loren Petrich):
+	Added some handling of absent mice and out-of-range input types;
+	this may help avert some crashes on certain PowerBook models
 */
 
 /* marathon includes */
@@ -47,7 +51,7 @@ extern pascal OSErr CrsrDevMoveTo(CursorDevicePtr ourDevice, long absX, long abs
 
 /* ---------- globals */
 
-static CursorDevicePtr mouse_device;
+static CursorDevicePtr mouse_device = NULL;
 static fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
 static bool snapshot_button_state;
 
@@ -61,7 +65,7 @@ void enter_mouse(
 	mouse_device= find_mouse_device(); /* will use cursor device manager if non-NULL */
 
 #ifndef env68k
-	vwarn(mouse_device, "no valid mouse/trackball device;g;"); /* must use cursor device manager on non-68k */
+	// vwarn(mouse_device, "no valid mouse/trackball device;g;"); /* must use cursor device manager on non-68k */
 #endif
 	
 	snapshot_delta_yaw= snapshot_delta_pitch= snapshot_delta_velocity= false;
@@ -78,6 +82,15 @@ void test_mouse(
 	fixed *delta_velocity)
 {
 	(void) (type);
+	
+	// Idiot-proofing in case of an absent mouse
+	if (mouse_device == NULL)
+	{
+		*delta_yaw= 0;
+		*delta_pitch= 0;
+		*delta_velocity= 0;
+		return;
+	}
 	
 	if (snapshot_button_state) *action_flags|= _left_trigger_state;
 	
@@ -147,8 +160,10 @@ void mouse_idle(
 				break;
 			
 			default:
-				// LP change:
-				assert(false);
+				// LP change: put in some (presumably) reasonable behavior
+				// for some unrecognized type.
+				snapshot_delta_pitch= 0, snapshot_delta_velocity= 0;
+				// assert(false);
 				// halt();
 		}
 		
