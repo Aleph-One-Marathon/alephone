@@ -63,6 +63,12 @@ extern bool MotionSensorActive;
 static HUD_OGL_Class HUD_OGL;
 
 
+// MacOS HUD Buffer; defined in screen.cpp
+#if defined(mac)
+extern GWorldPtr HUD_Buffer;
+#endif
+
+
 /*
  *  Draws the entire interface using OpenGL
  */
@@ -103,8 +109,68 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 				txtr_data[i] = new uint8[txtr_width[i] * txtr_height[i] * 4];
 
 #if defined(mac)
-			// Render picture to GWorld, convert to GL textures
-#warning This needs to be implemented!
+			// Using already-rendered HUD buffer (LP)
+			if (HUD_Buffer)
+			{
+				// Get the pixels to copy in
+				PixMapHandle Pxls = GetGWorldPixMap(HUD_Buffer);
+				LockPixels(Pxls);
+				
+				// Row-start address and row length
+				uint8 *SourceStart = (uint8 *)GetPixBaseAddr(Pxls);
+				long StrideBytes = (**Pxls).rowBytes & 0x3fff;
+				
+				// Special-case it for 
+				int SrcBytes = (**Pxls).pixelSize/8;
+				switch(SrcBytes)
+				{
+				case 2:
+				for (int i=0; i<NUM_TEX; i++)
+				{
+					uint8 *SrcLineStart = SourceStart + txtr_y[i]*StrideBytes + txtr_x[i]*SrcBytes;
+					uint32 *DestPP = (uint32 *)txtr_data[i];
+					for (int y=0; y<txtr_height[i]; y++)
+					{
+						uint8 *SrcPP = SrcLineStart;
+						for (int x=0; x<txtr_width[i]; x++)
+						{
+							// 1555 ARGB to 8888 RGBA -- with A = 1 always
+              				uint16 Intmd = *(SrcPP++);
+            			    Intmd <<= 8;
+            				Intmd |= uint16(*(SrcPP++));
+            				*(DestPP++) = Convert_16to32(Intmd);
+						}
+						SrcLineStart += StrideBytes;
+					}
+				}
+				break;
+				
+				case 4:
+				for (int i=0; i<NUM_TEX; i++)
+				{
+					uint8 *SrcLineStart = SourceStart + txtr_y[i]*StrideBytes + txtr_x[i]*SrcBytes;
+					uint8 *DestPP = txtr_data[i];
+					for (int y=0; y<txtr_height[i]; y++)
+					{
+						uint8 *SrcPP = SrcLineStart;
+						for (int x=0; x<txtr_width[i]; x++)
+						{
+							// 8888 ARGB to RGBA -- with A = 1 always
+							SrcPP++;
+							*(DestPP++) = *(SrcPP++);
+							*(DestPP++) = *(SrcPP++);
+							*(DestPP++) = *(SrcPP++);
+							*(DestPP++) = 0xff;
+						}
+						SrcLineStart += StrideBytes;
+					}
+				}
+				}
+				
+				// Done!
+				UnlockPixels(Pxls);
+			}
+			
 #elif defined(SDL)
 			// Render picture into SDL surface, convert to GL textures
 			SDL_Surface *hud_pict = picture_to_surface(PictRsrc);
