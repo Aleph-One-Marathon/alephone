@@ -240,28 +240,14 @@ enum /* instruction defs */
 	
 	Set_Platform_State = 0x51,
 	
-	Get_Platform_State = 0x52,
+	Get__Platform_State = 0x52,
 	
 	Set_Light_State = 0x53,
 	
-	Get_Light_State = 0x54,
+	Get__Light_State = 0x54,
 	
-	Get_Player_Poly = 0x55,
-	
-	// LP: adding this stuff for "EE"
-	
-	Get_Fog_Presence = 0x56,
-	
-	Set_Fog_Presence = 0x57,
-	
-	Get_UnderFog_Presence = 0x58,
-	
-	Set_UnderFog_Presence = 0x59,
-	
-	Remove_Item = 0x5A,
-	
-	Player_Control = 0x5B,
-	
+	Get__Player_Poly = 0x55,
+
 	NUMBER_OF_INSTRUCTIONS
 };
 

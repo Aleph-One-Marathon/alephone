@@ -25,11 +25,6 @@
 
 June 13, 2001 (Loren Petrich): 
 	Added script-length output to script parser
-
-March 11, 2002 (Br'fin (Jeremy Parsons)):
-	Rewrote to use FileHandler classes instead of fopen and company
-	SDL has embedded language definition info
-	Defaults to Carbon private resources directory if no language def in app directory
 */
 
 #include <stdio.h>
@@ -41,8 +36,6 @@ March 11, 2002 (Br'fin (Jeremy Parsons)):
 #include "script_parser.h"
 #include "script_instructions.h"
 #include "FileHandler.h"
-#include <vector>
-using namespace std;
 
 // The max number of 'blats', string units, that a single line can contain
 // label: instruction op1, op2, op3  == 5 blats
@@ -119,6 +112,19 @@ void lowercase_string(char *string);
 short put_symbol(char *symbol, float val, short mode, symbol_def **the_hash);
 void dispose_pfhortran(void);
 
+void add_trap(short trap, int start_offset);
+void clear_hash();
+void add_hash(symbol_def *symbol, short key, symbol_def **the_hash);
+unsigned char calculate_hash_key(char *symbol);
+symbol_def *get_symbol(char *symbol, symbol_def **the_hash);
+void get_blats(char *input, short max_blats, char blats[MAXBLATS][64]);
+void read_line(char *input, char output[256]);
+short match_opcode(char *input);
+float evaluate_operand(char *input, short *mode);
+void add_error(error_def *error_log, short error, int offset);
+void report_errors(error_def *error_log, int length);
+
+
 /* Pfhortran Language Defination Init/Parsing Code
 
 This code opens up the Pfhortran Language Defination File and parses it so that 
@@ -141,6 +147,11 @@ bool init_pfhortran(void)
 
 	bool err = false;
 
+<<<<<<< script_parser.cpp
+	// LP change: made this code always read the language-definition file
+#if 0
+=======
+>>>>>>> 1.22
 	// Read tokens from array
 	static const struct {
 		const char *str;
@@ -159,6 +170,39 @@ bool init_pfhortran(void)
 		}
 	}
 	
+<<<<<<< script_parser.cpp
+#endif
+		
+	// Read tokens from language definition file
+	FILE *lang_def = fopen(LANGDEFPATH,"r");
+	if (lang_def == NULL) {
+		dispose_pfhortran();
+		return false;
+	}
+	
+	char input_str[256];
+	int input_val;
+	while (fscanf(lang_def, "%s %x\n", input_str, &input_val) != EOF)
+	{
+		if (input_str && input_str[0] != '#')
+		{
+			lowercase_string(input_str);
+			
+			if (!put_symbol(input_str,(float)input_val,absolute,instruction_hash))
+			{
+				err = true;
+				break;
+			}
+		
+		}
+		
+		input_str[0] = 0;
+	
+	}
+	fclose(lang_def);
+	
+=======
+>>>>>>> 1.22
 	if (err)
 	{
 		dispose_pfhortran();
@@ -671,8 +715,7 @@ void report_errors(error_def *error_log, int length)
 {
 	int x;
 	char error_string[64];
-	FileSpecifier FileSpec;
-	OpenedFile OFile;
+	FILE *error_report = NULL;
 	
 	if (error_count <= 0)
 		return;
@@ -708,8 +751,11 @@ void report_errors(error_def *error_log, int length)
 		
 		if (error_string[0])
 		{
-			if (!OFile.IsOpen())
+			if (!error_report)
 			{
+<<<<<<< script_parser.cpp
+				if ((error_report=fopen("Pfhortran Error Report","a+"))==NULL)
+=======
 #if defined(mac)
 				FileSpec.SetToApp();
 				FileSpec.SetName("Pfhortran Error Report", _typecode_theme);
@@ -730,14 +776,19 @@ void report_errors(error_def *error_log, int length)
 					}
 				}
 				else
+>>>>>>> 1.22
 					return;
 			}
 			
-			strcat(error_string, "\n");
-			OFile.Write(strlen(error_string), error_string);
+			fprintf(error_report,"%s\n",error_string);
+		
 		}
 	
 	}
+	
+	if (error_report)
+		fclose(error_report);
+
 }
 
 

@@ -27,9 +27,18 @@
 	Apr 27, 2001 (Loren Petrich):
 		Modified access to OpenGL color data; Pfhortran now affects only the above-liquid color,
 		though below-liquid color should be easy to control with appropriate modifications
+<<<<<<< script_instructions.cpp
+
+Aug 12, 2001 (Ian Rickard):
+	two changes relating to B&B prep or OOzing
+
+Aug 16, 2001 (Ian Rickard):
+	#if UNUSED out a global that wasn't touched from anywhere.
+=======
 
 	01/26/02 - EE via AS
 	Added Get_Platform_Sate, Set_Platform_State, Get_Light_State, Set_Light_State & Get_Player_Poly
+>>>>>>> 1.23
 */
 
  
@@ -47,11 +56,7 @@
 #include <string.h>
 
 #ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#  include <OpenGL/gl.h>
-# else
-#  include <GL/gl.h>
-# endif
+#include <GL/gl.h>
 #else
 typedef float GLfloat;
 #endif
@@ -77,13 +82,8 @@ typedef float GLfloat;
 
 //#include "Soundtrack.h"
 
-//we need to be able to access item and monster definitions;
-// be sure not to repeat the item and monster definitions --
-// the originals could get changed by MML, and the accessor functions
-// get_*_definition_external() should suffice for them.
+//we need to be able to access monster definitions
 
-#define DONT_REPEAT_DEFINITIONS
-#include "item_definitions.h"
 #include "monster_definitions.h"
 
 #include "flood_map.h"
@@ -139,7 +139,9 @@ extern path_list camera_point;
 world_point3d offset_position;
 //for camera timing
 //int lastTicks;		//the tickCount at which we last updated the path
+#if UNUSED
 short offset_polygon_index;
+#endif
 float offset_yaw;
 float offset_pitch;
 short offset_count;
@@ -154,6 +156,8 @@ void (*instruction_lookup[NUMBER_OF_INSTRUCTIONS])(script_instruction);
 
 
 /* function prototypes */
+void update_path_camera(void);
+bool script_Camera_Active(void);
 
 void s_Camera_Move(script_instruction inst);
 void s_Camera_Look(script_instruction inst);
@@ -249,17 +253,6 @@ void s_Monster_Set_Item(script_instruction inst);
 void s_Monster_Get_Nuke(script_instruction inst);
 void s_Monster_Set_Nuke(script_instruction inst);
 void s_Get_Random(script_instruction inst);
-void s_Set_Platform_State(script_instruction inst);
-void s_Get_Platform_State(script_instruction inst);
-void s_Set_Light_State(script_instruction inst);
-void s_Get_Light_State(script_instruction inst);
-void s_Get_Player_Poly(script_instruction inst);
-void s_Get_Fog_Presence(script_instruction inst);
-void s_Set_Fog_Presence(script_instruction inst);
-void s_Get_UnderFog_Presence(script_instruction inst);
-void s_Set_UnderFog_Presence(script_instruction inst);
-void s_Remove_Item(script_instruction inst);
-void s_Player_Control(script_instruction inst);
 
 /*-------------------------------------------*/
 
@@ -381,19 +374,8 @@ void init_instructions(void)
 	instruction_lookup[Get_UnderFog_Depth] = s_Get_UnderFog_Depth;
 	instruction_lookup[Get_UnderFog_Color] = s_Get_UnderFog_Color;
  	instruction_lookup[Get_Random] = s_Get_Random;
-	// LP: Added for EE
- 	instruction_lookup[Set_Platform_State] = s_Set_Platform_State;
-	instruction_lookup[Get_Platform_State] = s_Get_Platform_State;
-	instruction_lookup[Set_Light_State] = s_Set_Light_State;
-	instruction_lookup[Get_Light_State] = s_Get_Light_State;
-	instruction_lookup[Get_Player_Poly] = s_Get_Player_Poly;
-	instruction_lookup[Get_Fog_Presence] = s_Get_Fog_Presence;
-	instruction_lookup[Set_Fog_Presence] = s_Set_Fog_Presence;
-	instruction_lookup[Get_UnderFog_Presence] = s_Get_UnderFog_Presence;
-	instruction_lookup[Set_UnderFog_Presence] = s_Set_UnderFog_Presence;
-	instruction_lookup[Remove_Item] = s_Remove_Item;
-	instruction_lookup[Player_Control] = s_Player_Control;
-}
+
+	}
 
 // Suppressed for MSVC compatibility
 #if 0
@@ -513,8 +495,8 @@ void update_path_camera(void)
 			struct line_data *Line= get_line_data(LineIndex);
 			world_point3d Intersection;
 			find_line_intersection(
-				&get_endpoint_data(Line->endpoint_indexes[0])->vertex,
-				&get_endpoint_data(Line->endpoint_indexes[1])->vertex,
+				// IR change: OOzing
+				&Line->endpoint_0()->vertex, &Line->endpoint_1()->vertex,
 				&camera_point.location.position,
 				&old_point.position,
 				&Intersection);
@@ -706,7 +688,7 @@ void s_Wait_Ticks(script_instruction inst)
 
 void s_Inflict_Damage(script_instruction inst)
 {
-	if (PLAYER_IS_DEAD(local_player) || PLAYER_IS_TOTALLY_DEAD(local_player))
+	if (PLAYER_IS_DEAD(current_player) || PLAYER_IS_TOTALLY_DEAD(current_player))
 		return;
 		
 	
@@ -732,7 +714,7 @@ void s_Inflict_Damage(script_instruction inst)
 	damage.random= 0;
 	damage.scale= FIXED_ONE;
 
-	damage_player(local_player->monster_index, NONE, NONE, &damage);
+	damage_player(current_player->monster_index, NONE, NONE, &damage);
 }
 
 
@@ -756,15 +738,15 @@ void s_Jump(script_instruction inst)
 
 void s_Enable_Player(script_instruction inst)
 {
-	SET_PLAYER_ZOMBIE_STATUS(local_player,script_FALSE);
+	SET_PLAYER_ZOMBIE_STATUS(current_player,script_FALSE);
 }
 
 void s_Disable_Player(script_instruction inst)
 {
-	if (PLAYER_IS_DEAD(local_player) || PLAYER_IS_TOTALLY_DEAD(local_player))
+	if (PLAYER_IS_DEAD(current_player) || PLAYER_IS_TOTALLY_DEAD(current_player))
 		return;
 		
-	SET_PLAYER_ZOMBIE_STATUS(local_player,script_TRUE);
+	SET_PLAYER_ZOMBIE_STATUS(current_player,script_TRUE);
 }
 
 void s_Script_End(script_instruction inst)
@@ -820,9 +802,9 @@ void s_Set_Tag_State(script_instruction inst)
 				break;
 		}
 		
-	// AlexJLS: needless if statements removed
-	set_tagged_light_statuses(int16(temp), temp2);
-	try_and_change_tagged_platform_states(int16(temp), temp2); 
+		
+	if (set_tagged_light_statuses(int16(temp), temp2));
+	if (try_and_change_tagged_platform_states(int16(temp), temp2)); 
 	
 	assume_correct_switch_position(_panel_is_tag_switch, int16(temp), temp2);
 	
@@ -1165,7 +1147,7 @@ void s_Get_Life(script_instruction inst)
 	if (inst.mode == 0)
 		return;
 		
-	set_variable(int(inst.op1),local_player->suit_energy);
+	set_variable(int(inst.op1),current_player->suit_energy);
 
 }
 
@@ -1175,10 +1157,10 @@ void s_Set_Life(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				local_player->suit_energy = (int)floor(inst.op1);
+				current_player->suit_energy = (int)floor(inst.op1);
 				break;
 		case 1:
-				local_player->suit_energy = (int)floor(get_variable(int(inst.op1)));
+				current_player->suit_energy = (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1194,7 +1176,7 @@ void s_Get_Oxygen(script_instruction inst)
 	if (inst.mode == 0)
 		return;
 		
-	set_variable(int(inst.op1),local_player->suit_oxygen);
+	set_variable(int(inst.op1),current_player->suit_oxygen);
 
 }
 
@@ -1203,10 +1185,10 @@ void s_Set_Oxygen(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				local_player->suit_oxygen = (int)floor(inst.op1);
+				current_player->suit_oxygen = (int)floor(inst.op1);
 				break;
 		case 1:
-				local_player->suit_oxygen = (int)floor(get_variable(int(inst.op1)));
+				current_player->suit_oxygen = (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1235,11 +1217,11 @@ void s_Add_Item(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				if (!try_and_add_player_item(player_identifier_to_player_index(local_player->identifier), (int)floor(inst.op1)))
+				if (!try_and_add_player_item(player_identifier_to_player_index(current_player->identifier), (int)floor(inst.op1)))
 					; /* this sucks */
 				break;
 		case 1:
-				if (!try_and_add_player_item(player_identifier_to_player_index(local_player->identifier), (int)floor(get_variable(int(inst.op1)))))
+				if (!try_and_add_player_item(player_identifier_to_player_index(current_player->identifier), (int)floor(get_variable(int(inst.op1)))))
 					; /* this sucks */
 				break;
 		default:
@@ -1302,7 +1284,7 @@ void s_Select_Weapon(script_instruction inst)
 			break;
 	}	
 	
-	if (!ready_weapon(player_identifier_to_player_index(local_player->identifier), weapon_index))
+	if (!ready_weapon(player_identifier_to_player_index(current_player->identifier), weapon_index))
 		; /* this sucks */
 		
 	
@@ -2045,7 +2027,7 @@ void s_Get_UnderFog_Color(script_instruction inst)
 void s_Teleport_Player(script_instruction inst)
 {
 	int dest;
-	monster_data *monster= get_monster_data(local_player->monster_index);
+	monster_data *monster= get_monster_data(current_player->monster_index);
 	
 	
 	switch(inst.mode)
@@ -2063,14 +2045,14 @@ void s_Teleport_Player(script_instruction inst)
 	
 	
 	
-	SET_PLAYER_TELEPORTING_STATUS(local_player, true);
+	SET_PLAYER_TELEPORTING_STATUS(current_player, true);
 	monster->action= _monster_is_teleporting;
-	local_player->teleporting_phase= 0;
-	local_player->delay_before_teleport= 0;
+	current_player->teleporting_phase= 0;
+	current_player->delay_before_teleport= 0;
 	
-	local_player->teleporting_destination= dest;
+	current_player->teleporting_destination= dest;
 	start_teleporting_effect(true);
-	play_object_sound(local_player->object_index, Sound_TeleportOut());
+	play_object_sound(current_player->object_index, Sound_TeleportOut());
 }
 
 void s_Wait_For_Path(script_instruction inst)
@@ -2099,13 +2081,12 @@ void s_Monster_New(script_instruction inst)
 	object_location theLocation;		//where we will put him
 	struct polygon_data *destination;
 	world_point3d theDestination;
-	world_point2d theCenter;
 	short index;
 	short type, where;
 	
-	// dprintf("I TOLD YOU NOT TO USE THIS INSTRUCTION DAMMIT");
-	// set_variable(int(inst.op1), -1);
-	// return;
+	dprintf("I TOLD YOU NOT TO USE THIS INSTRUCTION DAMMIT");
+	set_variable(int(inst.op1), -1);
+	return;
 	
 	switch(inst.mode)			//requires: var, both, both
 	{
@@ -2134,15 +2115,12 @@ void s_Monster_New(script_instruction inst)
 	destination= get_polygon_data(theLocation.polygon_index);
 	if(destination==NULL)
 		return;
-	find_center_of_polygon(where, &theCenter);
-	// *((world_point2d *)&theDestination)= destination->center;
-	//stolen, assuming it works
-	theDestination.x = theCenter.x;
-	theDestination.y = theCenter.y;
-	theDestination.z= destination->floor_height;
+	*((world_point2d *)&theDestination)= destination->center;	//stolen, assuming it works
+	// IR change: B&B prep hack
+	theDestination.z= destination->lowest_floor();
 	theLocation.p = theDestination;
 	theLocation.yaw = 0;
-	theLocation.pitch = 0;
+	theLocation.pitch=0;
 	theLocation.flags = 0;//(monster_placement_info+type)->flags;			//so far
 	
 	index = new_monster(&theLocation, (short)type);
@@ -2893,13 +2871,18 @@ void s_Monster_Set_Nuke(script_instruction inst)
 {
 }
 
+<<<<<<< script_instructions.cpp
+//Random variable, useful in mazes or something
+//should i use GM_Random?
+=======
 //Random variable, useful in mazes or something (PiD conversion, anyone?)
+>>>>>>> 1.23
 void s_Get_Random(script_instruction inst)
 {
 	if (inst.mode != 1)
 		return;
 
-	set_variable(int(inst.op1),global_random());
+	set_variable(int(inst.op1),(set_random_seed(clock()),global_random()));
 
 }
 
@@ -2956,7 +2939,12 @@ void s_Get_Platform_State(script_instruction inst)
 		}
 		
 		platform = get_platform_data(int(temp));
-		set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(platform) ? 1 : 0);		
+		
+		if (PLATFORM_IS_ACTIVE(platform))
+			set_variable(int(inst.op2), 1);
+		else
+			set_variable(int(inst.op2), 0);
+		
 	}
 }
 
@@ -3009,14 +2997,19 @@ void s_Get_Light_State(script_instruction inst)
 				temp2 = get_variable(int(inst.op2));
 				break;
 		}
-		set_variable(int(inst.op2), get_light_status(int(temp)));
+                set_variable(int(inst.op2), get_light_status(int(temp)));
 	}
 }
 
 void s_Get_Player_Poly(script_instruction inst)
 {
+	if (inst.mode == 0)
+		return;
+		
 	switch(inst.mode)
 	{
+<<<<<<< script_instructions.cpp
+=======
 	case 1:
 		set_variable(int(inst.op1), get_polygon_index_supporting_player(local_player_index));
 		break;
@@ -3101,69 +3094,9 @@ void s_Player_Control(script_instruction inst)
 	
 	switch(inst.mode)
 	{			
+>>>>>>> 1.27
 		case 1:
-			move_type = short(get_variable(int(inst.op1)));
-			value = int(inst.op2);
-		break;
-			
-		case 3:
-			move_type = short(get_variable(int(inst.op1)));
-			value = short(get_variable(int(inst.op2)));
-		break;
-			
-		default:
+			set_variable(int(inst.op1), get_polygon_index_supporting_player(current_player_index));
 			break;
 	}
-	
-	switch(move_type)
-	{
-		case 0:
-			action_flags = _moving_forward;
-		break;
-		
-		case 1:
-			action_flags = _moving_backward;
-		break;
-		
-		case 2:
-			action_flags = _sidestepping_left;
-		break;
-		
-		case 3:
-			action_flags = _sidestepping_right;
-		break;
-		
-		case 4:
-			action_flags = _turning_left;
-		break;
-		
-		case 5:
-			action_flags = _turning_right;
-		break;
-		
-		case 6:
-			action_flags = _looking_up;
-		break;
-		
-		case 7:
-			action_flags = _looking_down;
-		break;
-		
-		case 8:
-			action_flags = _action_trigger_state;
-		break;
-		
-		case 9:
-			action_flags = _left_trigger_state;
-		break;
-		
-		case 10:
-			action_flags = _right_trigger_state;
-		break;
-		
-		default:
-		break;
-	}
-	
-	process_action_flags(local_player_index, &action_flags, value);
 }

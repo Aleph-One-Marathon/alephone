@@ -90,8 +90,14 @@ int get_next_instruction(void);
 bool execute_instruction(int inst);
 bool script_in_use(void);
 bool instruction_finished(void);
-
-
+void clean_up_script(void);
+void set_instruction_decay(long decay);
+void jump_to_line(int newline);
+void add_variable(int var);
+void set_variable(int var, float val);
+float get_variable(int var);
+void stack_push(int val);
+int stack_pop(void);
 
 void clean_up_script(void)
 {
