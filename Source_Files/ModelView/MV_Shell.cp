@@ -14,6 +14,7 @@
 #include "FileHandler.h"
 #include "ImageLoader.h"
 #include "ModelRenderer.h"
+#include "QD3D_Loader.h"
 #include "StudioLoader.h"
 #include "WavefrontLoader.h"
 
@@ -92,7 +93,8 @@ ModelRenderShader Shaders[2];
 // For loading models and skins
 enum {
 	ModelWavefront = 1,
-	ModelStudio
+	ModelStudio,
+	Model_QD3D
 };
 const int LoadSkinItem = 1;
 
@@ -111,8 +113,14 @@ void LoadModelAction(int ModelType)
 			Success = LoadModel_Wavefront(File, Model);
 		break;
 	case ModelStudio:
+		// No canonical MacOS assignment of this model type
 		if (File.ReadDialog(-1,"Model Type: 3D Studio Max"))
 			Success = LoadModel_Studio(File, Model);
+		break;
+	case Model_QD3D:
+		TypeCode = '3DMF';
+		if (File.ReadDialog(1,"Model Type: QuickDraw 3D"))
+			Success = LoadModel_QD3D(File, Model);
 		break;
 	}
 	
@@ -545,6 +553,7 @@ int main(int argc, char **argv)
 	// Direct debug output to the console:
 	SetDebugOutput_Wavefront(stdout);
 	SetDebugOutput_Studio(stdout);
+	SetDebugOutput_QD3D(stdout);
 
 	// Set up shader object
 	Shaders[0].Flags = 0;
@@ -570,6 +579,7 @@ int main(int argc, char **argv)
 	int ModelMenu = glutCreateMenu(LoadModelAction);
 	glutAddMenuEntry("Alias-Wavefront...",ModelWavefront);
 	glutAddMenuEntry("3D Studio Max...",ModelStudio);
+	glutAddMenuEntry("QuickDraw 3D...",Model_QD3D);
 
 	int SkinMenu = glutCreateMenu(LoadSkinAction);
 	glutAddMenuEntry("Colors...",ImageLoader_Colors);
