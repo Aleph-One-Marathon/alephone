@@ -100,6 +100,7 @@ enum
 	OGL_Flag_FlatStatic	= 0x0040,	// Whether to make the "static" effect look flat
 	OGL_Flag_Fader		= 0x0080,	// Whether to do the fader effects in OpenGL
 	OGL_Flag_LiqSeeThru	= 0x0100,	// Whether the liquids can be seen through
+	OGL_Flag_Map		= 0x0200,	// Whether to do the overhead map with OpenGL
 };
 
 struct OGL_ConfigureData
