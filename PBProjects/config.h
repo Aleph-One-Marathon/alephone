@@ -20,7 +20,7 @@
 #define HAVE_OPENGL 1
 
 /* Define if SDL_image support is enabled. */
-//#define HAVE_SDL_IMAGE 1
+#define HAVE_SDL_IMAGE 1
 
 /* Define if SDL_net support is enabled. */
 #define HAVE_SDL_NET 1
@@ -32,7 +32,7 @@
    ignoring punctuation (such as underscores).  */
 
 /* Define if you have the <SDL_image.h> header file. */
-//#define HAVE_SDL_IMAGE_H 1
+#define HAVE_SDL_IMAGE_H 1
 
 /* Define if you have the <SDL_net.h> header file. */
 #define HAVE_SDL_NET_H 1
