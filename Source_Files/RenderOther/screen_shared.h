@@ -580,6 +580,10 @@ void RequestDrawingHUD()
 	HUD_RenderRequest = true;
 }
 
+// ZZZ: I feel bad doing this, but ... not sure what best way to handle it is.
+#ifdef __MWERKS__
+using std::vsnprintf;
+#endif
 
 // LP addition: display message on the screen;
 // this really puts the current message into a buffer
@@ -598,6 +602,6 @@ void screen_printf(const char *format, ...)
 	va_start(list,format);
 	// ZZZ: [v]sprintf is evil, generally: hard to guarantee you don't overflow target buffer
 	// using [v]snprintf instead
-	std::vsnprintf(Message.Text,sizeof(Message.Text),format,list);
+	vsnprintf(Message.Text,sizeof(Message.Text),format,list);
 	va_end(list);
 }
