@@ -206,6 +206,8 @@ public:
 	bool IsGlowMapped() {return IsGlowing;}
 	bool IsBlended() {return (TxtrOptsPtr->OpacityType != OGL_OpacType_Crisp);}
 	bool VoidVisible() {return (TxtrOptsPtr->VoidVisible);}
+	short NormalBlend() {return (TxtrOptsPtr->NormalBlend);}
+	short GlowBlend() {return (TxtrOptsPtr->GlowBlend);}
 	
 	// Scaling and offset of the current texture;
 	// important for sprites, which will be padded to make them OpenGL-friendly.
