@@ -42,6 +42,10 @@ Nov 18, 2000 (Loren Petrich):
 
 Dec 16, 2000 (Loren Petrich):
 	Fixed substitution of landscape textures
+
+June 14, 2001 (Loren Petrich):
+	Changed Width*Height to TxtrWidth*TxtrHeight in some places to ensure that some operations
+	are done over complete textures
 */
 
 #include <string.h>
@@ -648,14 +652,14 @@ bool TextureManager::LoadSubstituteTexture()
 	}
 	
 	// Use the Tomb Raider opacity hack if selected
-	SetPixelOpacities(*TxtrOptsPtr,Width*Height,NormalBuffer);
+	SetPixelOpacities(*TxtrOptsPtr,TxtrWidth*TxtrHeight,NormalBuffer);
 	
 	// Modify if infravision is active
 	if (CTable == INFRAVISION_BITMAP_SET)
 	{
 		if (NormalBuffer)
 		{
-			for (int k=0; k<Width*Height; k++)
+			for (int k=0; k<TxtrWidth*TxtrHeight; k++)
 			{
 				uint32& IntPxl = NormalBuffer[k];
 				GLfloat FloatPxl[4];
@@ -675,7 +679,7 @@ bool TextureManager::LoadSubstituteTexture()
 	{
 		if (NormalBuffer)
 		{
-			for (int k=0; k<Width*Height; k++)
+			for (int k=0; k<TxtrWidth*TxtrHeight; k++)
 			{
 				// Make the color white, but keep the opacity
 				uint8 *PxlPtr = (uint8 *)(NormalBuffer + k);
