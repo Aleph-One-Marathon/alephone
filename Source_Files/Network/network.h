@@ -141,6 +141,7 @@ typedef void (*CheckPlayerProcPtr)(short player_index, short num_players);
 
 /* --------- prototypes/NETWORK.C */
 bool NetEnter(void);
+void NetDoneGathering (void);
 void NetExit(void);
 
 bool NetGather(void *game_data, short game_data_size, void *player_data, 
@@ -171,6 +172,8 @@ short player_index,
 prospective_joiner_info &player,
 #endif
 CheckPlayerProcPtr check_player);
+
+void NetHandleUngatheredPlayer(prospective_joiner_info ungathered_player);
 
 // jkvw: replaced SSLP hinting address with host address
 bool NetGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data,

@@ -69,7 +69,8 @@ enum /* error string for user */
         netErrIncompatibleVersion,
         netErrGatheredPlayerUnacceptable,
         netErrUngatheredPlayerUnacceptable,
-        netErrJoinerCantFindScenario
+        netErrJoinerCantFindScenario,
+	netErrLostConnection
 };
 
 

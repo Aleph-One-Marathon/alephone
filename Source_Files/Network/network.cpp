@@ -340,7 +340,6 @@ bool NetEnter(
 	error= NetDDPOpen();
 	if (!error)
 	{
-		error= NetADSPOpen();
 		if (!error)
 		{
 			topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
@@ -393,6 +392,14 @@ bool NetEnter(
 #endif
 	
 	return success;
+}
+
+void NetDoneGathering(void)
+{
+	if (server) {
+		delete server;
+		server = NULL;
+	}
 }
 
 void NetExit(
@@ -449,11 +456,8 @@ void NetExit(
 	}
 	
 	NetDDPClose();
-	NetADSPClose();
 #endif
 }
-
-
 
 bool
 NetSync()
@@ -1622,16 +1626,19 @@ short NetUpdateJoinState(
 				connection_to_server->connect(host_address);
 				if (connection_to_server->isConnected())
 					newState = netJoining;
-				else if (ticks_before_connection_attempt + 180 < machine_tick_count ()) {
+				else if (ticks_before_connection_attempt + 3*MACHINE_TICKS_PER_SECOND < machine_tick_count ()) {
 					newState= netJoinErrorOccurred;
 					alert_user(infoError, strNETWORK_ERRORS, netErrCouldntJoin, 3);
 				}
-				next_join_attempt = machine_tick_count() + 300;
+				next_join_attempt = machine_tick_count() + 5*MACHINE_TICKS_PER_SECOND;
 			}
 			break;
 
 		case netJoining:	// waiting to be gathered
-			if (NetReceivePacket(connection_to_server, packet_type, network_adsp_packet, false))
+			if (!connection_to_server->isConnected ()) {
+				newState = netJoinErrorOccurred;
+				alert_user(infoError, strNETWORK_ERRORS, netErrLostConnection, 0);
+			} else if (NetReceivePacket(connection_to_server, packet_type, network_adsp_packet, false))
 			{
 				if(!error && packet_type==_hello_packet)
 				{
@@ -1711,7 +1718,10 @@ short NetUpdateJoinState(
                     // netJoining
 		
 		case netWaiting:	// have been gathered, waiting for other players / game start
-			if (NetReceivePacket(connection_to_server, packet_type, network_adsp_packet, false))
+			if (!connection_to_server->isConnected ()) {
+				newState = netJoinErrorOccurred;
+				alert_user(infoError, strNETWORK_ERRORS, netErrLostConnection, 0);
+			} else if (NetReceivePacket(connection_to_server, packet_type, network_adsp_packet, false))
 			{
 				/* and now, the packet you’ve all been waiting for ... (the server is trying to
 					hook us up with the network topology) */
@@ -2074,6 +2084,13 @@ int NetGatherPlayer(
 	}
 	
 	return theResult;
+}
+
+void NetHandleUngatheredPlayer (prospective_joiner_info ungathered_player)
+{
+	// Drop connection of ungathered player
+	delete connections_to_clients[ungathered_player.stream_id];
+	connections_to_clients.erase(ungathered_player.stream_id);
 }
 
 /*

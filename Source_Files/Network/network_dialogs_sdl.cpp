@@ -1027,7 +1027,6 @@ bool network_gather(bool inResumingGame)
                                 theDialogResult = -1;	// simulate "cancel" clicked if NetGather failed.
                         }
                   
-                        NetLookupClose();
                         sActiveDialog = NULL;
                 
                         if(theDialogResult == 0) {
@@ -1037,6 +1036,13 @@ bool network_gather(bool inResumingGame)
                                         network_preferences->autogather = new_autogather_setting; 
                                         write_preferences();
                                 }
+				
+				// jkvw: Give network code a chance to deal with prospective joiners we chose not to gather.
+				// (right now I'm just dropping connection)
+				foundplayers_w->handle_ungathered_players();
+				
+				NetDoneGathering();
+				
                                 return true;
                         }
                     

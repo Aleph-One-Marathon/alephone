@@ -151,6 +151,13 @@ w_found_players::callback_on_all_items() {
             player_selected_callback(this, listed_players[0]);
 }
 
+void
+w_found_players::handle_ungathered_players() {
+	// jkvw: Give network code a chance to deal with prospective joiners we chose not to gather.
+	// (right now I'm just dropping connection)
+	for (vector<prospective_joiner_info>::iterator it = listed_players.begin (); it != listed_players.end (); ++it)
+		NetHandleUngatheredPlayer (*it);
+}
 
 void
 w_found_players::draw_item(vector<prospective_joiner_info>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const {

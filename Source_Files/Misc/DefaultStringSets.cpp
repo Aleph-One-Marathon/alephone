@@ -144,6 +144,7 @@ static char* sStringSetNumber132[] = {
     "The player you just added is using an older version of Aleph One that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game.",
     "The player you just attempted to add is using a version of Aleph One that does not support some advanced features required by the game you're trying to gather.",
     "Aleph One was unable to locate the Map file this level came from.  Some terminals may not display properly, and saving this game on this computer is not recommended.",
+    "The connection to gatherer was lost.",
 };
 
 // STR# Resource: "Key Codes To Names"

@@ -154,18 +154,6 @@ OSErr NetDDPSendFrame(DDPFramePtr frame, AddrBlock *address, short protocolType,
 
 /* ---------- prototypes/NETWORK_ADSP.C */
 
-OSErr NetADSPOpen(void);
-OSErr NetADSPClose(void);
-
-OSErr NetADSPEstablishConnectionEnd(ConnectionEndPtr *connection);
-OSErr NetADSPDisposeConnectionEnd(ConnectionEndPtr connectionEnd);
-
-OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, AddrBlock *address);
-OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, bool abort);
-OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd);
-bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *address);
-
-OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
-OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
+// jkvw: removed - we use TCPMess now
 
 #endif

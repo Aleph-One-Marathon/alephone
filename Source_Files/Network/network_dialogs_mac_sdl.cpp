@@ -119,7 +119,8 @@ static int sStartJoinedGameResult;
 static ListHandle network_list_box= (ListHandle) NULL;
 
 // List of found player info when gathering a game
-static vector<prospective_joiner_info> found_players;
+typedef vector<prospective_joiner_info> found_players_t;
+static found_players_t found_players;
 
 /* from screen_drawing.c */
 extern TextSpec *_get_font_spec(short font_index);
@@ -323,6 +324,13 @@ bool network_gather(bool inResumingGame)
 				/* Failed on NetGather */
 				item_hit=iCANCEL;
 			}
+			
+			if (item_hit == iOK) {
+				// jkvw: Give network code a chance to deal with prospective joiners we chose not to gather.
+				// (right now I'm just dropping connection)
+				for (found_players_t::iterator it = found_players.begin (); it != found_players.end (); ++it)
+					NetHandleUngatheredPlayer (*it);
+			}
 
 			dispose_network_list_box();
 		
@@ -332,6 +340,7 @@ bool network_gather(bool inResumingGame)
 		
 			if (item_hit==iOK)
 			{
+				NetDoneGathering();
 				successful= true;
 			}
 			else
