@@ -1,3 +1,10 @@
+/*
+	Jul 1, 2000 (Loren Petrich):
+		Added accessor template function
+
+*/
+// LP note: this is probably Bo Lindbergh's stuff
+
 #define FLOOR(value,floor) ((value)<(floor) ? (floor) : (value))
 #define CEILING(value,ceiling) ((value)>(ceiling) ? (ceiling) : (value))
 
@@ -23,3 +30,20 @@
 // LP addition (Mar 2, 2000): some more generic routines for flags
 #define TEST_FLAG(obj,flag) (obj&flag)
 #define SET_FLAG(obj,flag,value) ((void)((value)?((obj)|=(flag)):((obj)&=~(flag))))
+
+/*
+	LP addition: template class for doing bounds checking when accessing an array;
+	it uses an array, an index value, and an intended number of members for that array.
+	It will return a pointer to the array member, if that member is in range, or else
+	the null pointer. Its caller must check whether a null pointer had been returned,
+	and then perform the appropriate action.
+*/
+
+template<class T> T* GetMemberWithBounds(T* Array, const int Index, const int Number)
+{
+	// Bounds checking
+	if (!(Index>=0 && Index<Number)) return NULL;
+	
+	// The appropriate pointer
+	return (Array + Index);
+}
