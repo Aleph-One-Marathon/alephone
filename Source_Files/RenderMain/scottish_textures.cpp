@@ -244,7 +244,7 @@ static void calculate_shading_table(void * &result,view_data *view, void *shadin
 static short *scratch_table0 = NULL, *scratch_table1 = NULL;
 static void *precalculation_table = NULL;
 
-static uint16 texture_random_seed= 1;
+static uint16 texture_random_seed= 6906;
 
 /* ---------- private prototypes */
 
@@ -335,7 +335,7 @@ void allocate_texture_tables(
 {
 	scratch_table0= new short[MAXIMUM_SCRATCH_TABLE_ENTRIES];
 	scratch_table1= new short[MAXIMUM_SCRATCH_TABLE_ENTRIES];
-	precalculation_table= malloc(MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE*MAXIMUM_SCRATCH_TABLE_ENTRIES);
+	precalculation_table= (void*)new char[MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE*MAXIMUM_SCRATCH_TABLE_ENTRIES];
 	assert(scratch_table0&&scratch_table1&&precalculation_table);
 }
 
