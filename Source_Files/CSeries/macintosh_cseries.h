@@ -3,6 +3,7 @@
 #define _MACINTOSH_CSERIES
 
 #define mac
+#define HAVE_OPENGL
 #define DEBUG
 
 #include <Events.h>

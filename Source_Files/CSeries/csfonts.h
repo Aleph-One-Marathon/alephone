@@ -2,6 +2,8 @@
 #ifndef _CSERIES_FONTS_
 #define _CSERIES_FONTS_
 
+#include "cstypes.h"
+
 typedef struct TextSpec {
 	int16 font;
 	uint16 style;
