@@ -16,10 +16,18 @@
 #include <stdlib.h>
 
 #include "cseries.h"
+#include "crc.h"
 #include "map.h"
 #include "editor.h"
 #include "FileHandler.h"
 #include "wad.h"
+
+
+// Parallel resource/chunk ID's to handle with this app:
+
+const int NumMovedTypes = 4;
+const OSType MovedResourceTypes[NumMovedTypes] = {'PICT','clut','snd ','TEXT'};
+const OSType MovedChunkTypes[NumMovedTypes] = {'pict','clut','snd ','text'};
 
 
 // Test for Macintosh-specific stuff: Quicktime (for loading images)
@@ -295,9 +303,8 @@ bool InFileData::Open(char *Prompt)
 	LevelIndices.resize(Header.wad_count);
 	for (int lvl=0; lvl<NumWads(); lvl++)
 	{
-		short TrueLevel;
-		Opened.SetPosition(IndexOffset + lvl*IndexStep);
-		Opened.Read(2,&LevelIndices[lvl]);
+		if (!Opened.SetPosition(IndexOffset + lvl*IndexStep)) return false;
+		if (!Opened.Read(2,&LevelIndices[lvl])) return false;
 	}
 	
 	return true;
@@ -320,7 +327,7 @@ void ListChunks()
 	char Name[256];
 	InFile.Spec.GetName(Name);
 	
-	strncat(Name," Report.txt",31);
+	strncat(Name," Report",31);
 	Name[31] = 0;
 	
 	FileSpecifier OutFileSpec;
@@ -367,7 +374,12 @@ void ListChunks()
 	
 	// Try reading the resource file
 	OpenedResourceFile InRes;
-	InFile.Spec.Open(InRes);
+	if (!InFile.Spec.Open(InRes))
+	{
+		fprintf(F,"\n*** NONE ***\n");
+		fclose(F);
+		return;
+	}
 	
 	vector<uint32> ResourceTypes;
 	InRes.GetTypeList(ResourceTypes);
@@ -405,27 +417,147 @@ void ListChunks()
 }
 
 
+int FindInIDList(vector<int16>& IDList, int16 ID)
+{
+	int NumIDs = IDList.size();
+	if (NumIDs == 0) return NONE;
+	else if (NumIDs == 1)
+	{
+		if (ID == IDList[0]) return 0;
+		else return NONE;
+	}
+	// NumIDs >= 2
+	
+	int16 Val;
+	
+	int MinIndx = 0;
+	Val = IDList[MinIndx];
+	if (ID < Val) return NONE;
+	else if (ID == Val) return MinIndx;
+	
+	int MaxIndx = NumIDs - 1;
+	Val = IDList[MaxIndx];
+	if (ID > Val) return NONE;
+	else if (ID == Val) return MaxIndx;
+	
+	while (MaxIndx > (MinIndx + 1))
+	{
+		int NewIndx = (MinIndx + MaxIndx) >> 1;
+		Val = IDList[NewIndx];
+		if (ID > Val)
+			MinIndx = NewIndx;
+		else if (ID < Val)
+			MaxIndx = NewIndx;
+		else
+			return NewIndx;
+	}
+	return NONE;
+}
+
+
+void LoadResourceIntoArray(int TypeIndex, int16 RsrcID, OpenedResourceFile InRes,
+	vector<uint8>& Data)
+{	
+	LoadedResource Rsrc;
+	if (!InRes.Get(MovedResourceTypes[TypeIndex],RsrcID,Rsrc)) return;
+	
+	int RsrcLen = Rsrc.GetLength();
+	if (RsrcLen <= 0) return;
+	
+	// Details cribbed from images.cpp in the engine code
+	switch(TypeIndex)
+	{
+	case 0:
+		// PICT
+		// The most complicated :-)
+		// Simply copy over
+		Data.resize(RsrcLen);
+		memcpy(&Data[0],Rsrc.GetPointer(),RsrcLen);
+		break;
+		
+	case 1:
+		// clut
+		if (RsrcLen != (8 + 256 * 8)) return;
+		Data.resize(6 + 256 * 6);
+		objlist_clear(&Data[0],Data.size());
+		{
+			uint8 *In = (uint8 *)(Rsrc.GetPointer());
+			uint8 *Out = &Data[0];
+			
+			Out[0] = In[6];
+			Out[1] = In[7];
+			In += 8;
+			Out += 6;
+			
+			for (int i=0; i<256; i++)
+			{
+				In++;	// Index value
+				In++;
+				*Out++ = *In++;	// Red
+				*Out++ = *In++;
+				*Out++ = *In++;	// Green
+				*Out++ = *In++;
+				*Out++ = *In++;	// Blue
+				*Out++ = *In++;
+			}
+		}
+		break;
+		
+	case 2:
+		// snd
+	case 3:
+		// TEXT
+		// Simply copy over
+		Data.resize(RsrcLen);
+		memcpy(&Data[0],Rsrc.GetPointer(),RsrcLen);
+		break;
+	}
+}
+
+
 void AddChunks()
 {
 	InFileData InFile;
 	if (!InFile.Open("Move resources into?")) return;
 	
-	// Compose a name for the chunk-list report
+	vector<int16> ResourceIDs[NumMovedTypes];
+	vector<uint8> NotYetUsed[NumMovedTypes];
+	
+	OpenedResourceFile InRes;
+	if (InFile.Spec.Open(InRes))
+	{
+		for (int it=0; it<NumMovedTypes; it++)
+		{
+			OSType Type = MovedResourceTypes[it];
+			InRes.GetIDList(Type,ResourceIDs[it]);
+			NotYetUsed[it].resize(ResourceIDs[it].size(),1);
+			
+			// Ignore any resources below ID 128
+			for (int ix=0; ix<ResourceIDs[it].size(); ix++)
+			{
+				if (ResourceIDs[it][ix] < 128)
+					NotYetUsed[it][ix] = 0;
+			}
+		}
+	}
+	
+	// Compose a name for the chunked level
 	char Name[256];
 	InFile.Spec.GetName(Name);
 	
-	strncat(Name," Chunked.sce",31);
+	strncat(Name," Chunked",31);
 	Name[31] = 0;
 	
 	FileSpecifier OutFileSpec;
 	if (!OutFileSpec.WriteDialog(_typecode_scenario,"What chunked file?",Name)) return;
 	
-	// Simply try creating the file and moving into it the first time around
 	wad_header Header;
+	int NumWads = 0;
 	fill_default_wad_header(OutFileSpec, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION,
-		InFile.NumWads(), sizeof(directory_entry) - SIZEOF_directory_entry, &Header);
+		NumWads, sizeof(directory_entry) - SIZEOF_directory_entry, &Header);
 	
-	vector<directory_entry> DirEntries(InFile.NumWads());
+	vector<directory_entry> DirEntries;
+	DirEntries.reserve(InFile.NumWads());
 	
 	if (!create_wadfile(OutFileSpec,_typecode_scenario)) return;
 	
@@ -433,7 +565,7 @@ void AddChunks()
 	if (!open_wad_file_for_writing(OutFileSpec,OutFileOpened)) return;
 	
 	if (!write_wad_header(OutFileOpened, &Header)) return;
-
+	
 	int32 Offset = SIZEOF_wad_header;
 	
 	for (int lvl=0; lvl<InFile.NumWads(); lvl++)
@@ -442,30 +574,186 @@ void AddChunks()
 		short TrueLevel = InFile.LevelIndices[lvl];
 		if (!InFile.GetWad(TrueLevel,InWad)) InWad.Set(create_empty_wad());
 		
+		// Load the resources to be chunked
+		vector<uint8> LoadedResources[NumMovedTypes];
+		for (int it=0; it<NumMovedTypes; it++)
+		{
+			int Index = FindInIDList(ResourceIDs[it],TrueLevel);
+			if (Index != NONE)
+			{
+				if (!NotYetUsed[it][Index])
+					Index = NONE;
+			}
+			if (Index != NONE)
+			{
+				LoadResourceIntoArray(it,TrueLevel,InRes,LoadedResources[it]);
+				// Kludge for forcing the program to read all the map file's resources
+				InRes.Close();
+				InFile.Spec.Open(InRes);
+				
+				NotYetUsed[it][Index] = 0;
+			}
+		}
+		
 		WadContainer OutWad(create_empty_wad());
 		
+		// Load the already-existing chunks; be sure to replace those that have
+		// corresponding resources
 		for (int itg=0; itg<InWad.Ptr->tag_count; itg++)
 		{
 			tag_data& Tag = InWad.Ptr->tag_data[itg];
-			int32 DataLength;
-			append_data_to_wad(OutWad.Ptr, Tag.tag, Tag.data, Tag.length, 0);
+			
+			bool WasFound = false;
+			for (int it = 0; it<NumMovedTypes; it++)
+			{
+				if (Tag.tag == MovedChunkTypes[it] && (!LoadedResources[it].empty()))
+				{
+					WasFound = true;
+					break;
+				}
+			}
+			
+			if (!WasFound)
+				append_data_to_wad(OutWad.Ptr, Tag.tag, Tag.data, Tag.length, 0);
 		}
 		
+		for (int it = 0; it<NumMovedTypes; it++)
+		{
+			int DataLen = LoadedResources[it].size();
+			if (DataLen > 0)
+				append_data_to_wad(OutWad.Ptr, MovedChunkTypes[it], &LoadedResources[it][0], DataLen, 0);
+		}
+		
+		// Add the new wad if it contains anything
 		int32 OutWadLength = calculate_wad_length(&Header, OutWad.Ptr);
 		
-		set_indexed_directory_offset_and_length(&Header, 
-						&DirEntries[0], lvl, Offset, OutWadLength, TrueLevel);
-		
-		if (!write_wad(OutFileOpened, &Header, OutWad.Ptr, Offset)) return;
-		
-		Offset += OutWadLength;
+		if (OutWadLength > 0)
+		{
+			directory_entry NewDirEntry;
+			DirEntries.push_back(NewDirEntry);
+			
+			set_indexed_directory_offset_and_length(&Header, 
+				&DirEntries[0], NumWads, Offset, OutWadLength, TrueLevel);
+				
+			if (!write_wad(OutFileOpened, &Header, OutWad.Ptr, Offset)) return;
+			
+			NumWads++;
+			Offset += OutWadLength;
+		}
 	}
 	
-	write_directorys(OutFileOpened, &Header, &DirEntries[0]);
+	// Write out the remaining resources
 	
-	// The header needs an update
+	// Set to before the first one
+	int Indices[NumMovedTypes];
+	bool Advanceable[NumMovedTypes];
+	for (int it = 0; it<NumMovedTypes; it++)
+	{
+		bool CanAdvance = false;
+		for (int i = 0; i<ResourceIDs[it].size(); i++)
+		{
+			if (NotYetUsed[it][i])
+			{
+				Indices[it] = i;
+				CanAdvance = true;
+				break;
+			}
+		}
+		Advanceable[it] = CanAdvance;
+	}
+	
+	// Now advance through the indices
+	while(true)
+	{	
+		// Find the minimum of all the current-index values;
+		// if none could be found, then quit;
+		
+		bool ValueFound = false;
+		int16 MinID;
+		for (int it = 0; it<NumMovedTypes; it++)
+		{
+			if (Advanceable[it])
+			{
+				int16 RsrcID = ResourceIDs[it][Indices[it]];
+				
+				if (ValueFound)
+				{
+					MinID = min(MinID,RsrcID);
+				}
+				else
+				{
+					MinID = RsrcID;
+					ValueFound = true;
+				}
+			}
+		}
+		
+		if (!ValueFound) break;
+		
+		// Load the resources to be chunked
+		vector<uint8> LoadedResources[NumMovedTypes];
+		WadContainer OutWad(create_empty_wad());
+		
+		for (int it = 0; it<NumMovedTypes; it++)
+		{
+			if (ResourceIDs[it][Indices[it]] == MinID)
+			{
+				LoadResourceIntoArray(it,MinID,InRes,LoadedResources[it]);
+				// Kludge for forcing the program to read all the map file's resources
+				InRes.Close();
+				InFile.Spec.Open(InRes);
+				
+				int DataLen = LoadedResources[it].size();
+				if (DataLen > 0)
+					append_data_to_wad(OutWad.Ptr, MovedChunkTypes[it], &LoadedResources[it][0], DataLen, 0);
+				
+				// Advance to next one when done
+				NotYetUsed[it][Indices[it]] = 0;
+				bool CanAdvance = false;
+				for (int i = Indices[it]+1; i<ResourceIDs[it].size(); i++)
+				{
+					if (NotYetUsed[it][i])
+					{
+						Indices[it] = i;
+						CanAdvance = true;
+						break;
+					}
+				}
+				Advanceable[it] = CanAdvance;
+			}
+		}
+		
+		// Add the new wad if it contains anything
+		int32 OutWadLength = calculate_wad_length(&Header, OutWad.Ptr);
+		
+		if (OutWadLength > 0)
+		{
+			directory_entry NewDirEntry;
+			DirEntries.push_back(NewDirEntry);
+			
+			set_indexed_directory_offset_and_length(&Header, 
+				&DirEntries[0], NumWads, Offset, OutWadLength, MinID);
+			
+			if (!write_wad(OutFileOpened, &Header, OutWad.Ptr, Offset)) return;
+			
+			NumWads++;
+			Offset += OutWadLength;
+		}
+	}
+	
+	// Reset the size
+	Header.wad_count = NumWads;
+	
+	long Len;
+	OutFileOpened.GetLength(Len);
+	
+	// Need to know where to write the directory
 	Header.directory_offset = Offset;
-	Header.parent_checksum= read_wad_file_checksum(OutFileSpec);
+	
+	if (!write_directorys(OutFileOpened, &Header, &DirEntries[0])) return;
+	OutFileOpened.GetLength(Len);
+	
+	Header.checksum = calculate_crc_for_opened_file(OutFileOpened);
 	if (!write_wad_header(OutFileOpened, &Header)) return;
 }
 
