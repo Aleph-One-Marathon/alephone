@@ -34,6 +34,7 @@ CS=Source_Files/CSeries
 EP=Source_Files/Expat
 MI=Source_Files/Misc
 NW=Source_Files/Network
+PF=Source_Files/Pfhortran
 SRCS=\
   $(CS)/byte_swapping.cpp $(CS)/csalerts_sdl.cpp $(CS)/cscluts_sdl.cpp \
   $(CS)/csdialogs_sdl.cpp $(CS)/csmisc_sdl.cpp $(CS)/csstrings_sdl.cpp \
@@ -54,7 +55,7 @@ SRCS=\
   $(MI)/images.cpp $(MI)/import_definitions.cpp $(MI)/interface.cpp \
   $(MI)/interface_sdl.cpp $(MI)/items.cpp $(MI)/lightsource.cpp $(MI)/map.cpp \
   $(MI)/map_constructors.cpp $(MI)/marathon2.cpp $(MI)/media.cpp $(MI)/monsters.cpp \
-  $(MI)/motion_sensor.cpp $(MI)/music_sdl.cpp $(MI)/mysound.cpp \
+  $(MI)/motion_sensor.cpp $(MI)/mouse_sdl.cpp $(MI)/mysound.cpp \
   $(MI)/overhead_map.cpp $(MI)/pathfinding.cpp $(MI)/physics.cpp \
   $(MI)/placement.cpp $(MI)/platforms.cpp $(MI)/player.cpp $(MI)/preferences.cpp \
   $(MI)/preprocess_map_sdl.cpp $(MI)/projectiles.cpp $(MI)/render.cpp \
