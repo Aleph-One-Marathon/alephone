@@ -96,6 +96,7 @@ list:
 
   [-h | --help]          Display the help message
   [-v | --version]       Display the game version
+  [-d | --debug]         Allow saving of core files (disable SDL parachute)
   [-f | --fullscreen]    Run the game fullscreen
   [-w | --windowed]      Run the game in a window
   [-g | --nogl]          Do not use OpenGL
