@@ -30,7 +30,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 */
 
 #if defined(TARGET_API_MAC_CARBON)
-#error Classic Appletalk networking not supported under carbon
+#warning Classic Appletalk networking not supported under carbon
 #endif
 
 #include <AppleTalk.h>

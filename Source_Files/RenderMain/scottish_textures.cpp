@@ -164,6 +164,7 @@ struct _horizontal_polygon_line_data
 #define VERTICAL_TEXTURE_FREE_BITS FIXED_FRACTIONAL_BITS
 #define VERTICAL_TEXTURE_DOWNSHIFT (32-VERTICAL_TEXTURE_WIDTH_BITS)
 
+//AS: Seven! It's Everywhere!
 #define HORIZONTAL_WIDTH_SHIFT 7 /* 128 (8 for 256) */
 #define HORIZONTAL_HEIGHT_SHIFT 7 /* 128 */
 #define HORIZONTAL_FREE_BITS (32-TRIG_SHIFT-WORLD_FRACTIONAL_BITS)
@@ -227,8 +228,8 @@ struct _vertical_polygon_line_data
 	of the top and bottom of the current trapezoid) and the rectangle mapper (for it’s
 	vertical and if necessary horizontal distortion tables).  these are not necessary as
 	globals, just as global storage. */
-static short *scratch_table0, *scratch_table1;
-static void *precalculation_table;
+static short *scratch_table0 = NULL, *scratch_table1 = NULL;
+static void *precalculation_table = NULL;
 
 static uint16 texture_random_seed= 1;
 
@@ -305,11 +306,11 @@ void _landscape_horizontal_polygon_lines32(struct bitmap_definition *texture, st
 
 // LP addition:
 // Find the next lower power of 2, and return the exponent
+//AS: p isn't needed
 inline int NextLowerExponent(int n)
 {
-	int p = n;
 	int xp = 0;
-	while(p > 1) {p >>= 1; xp++;}
+	while(n > 1) {n >>= 1; xp++;}
 	return xp;
 }
 
@@ -334,6 +335,7 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 	assert(polygon->vertex_count>=MINIMUM_VERTICES_PER_SCREEN_POLYGON&&polygon->vertex_count<MAXIMUM_VERTICES_PER_SCREEN_POLYGON);
 
 	/* if we get static, tinted or landscaped transfer modes punt to the vertical polygon mapper */
+     /*
 	switch (polygon->transfer_mode)
 	{
 //		case _solid_transfer:
@@ -344,7 +346,8 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 			texture_vertical_polygon(textured_polygon);
 			// texture_vertical_polygon(polygon, screen, view);
 			return;
-	}
+	}*/
+     if (polygon->transfer_mode == _static_transfer) return texture_vertical_polygon(textured_polygon);
 	
 	/* locate the vertically highest (closest to zero) and lowest (farthest from zero) vertices */
 	highest_vertex= lowest_vertex= 0;
@@ -382,7 +385,6 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 		aggregate_total_line_count= total_line_count;
 		while (total_line_count>0)
 		{
-			short delta;
 			
 			/* if we’re out of scan lines on the left side, get a new vertex and build a table
 				of x-coordinates so we can walk toward the new vertex */
@@ -415,9 +417,9 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 				}
 				while (!right_line_count);
 			}
-
+              //AS: moving delta declaration up to where it's needed. Isn't C++ wonderful?
 			/* advance by the minimum of left_line_count and right_line_count */
-			delta= MIN(left_line_count, right_line_count);
+			short delta= MIN(left_line_count, right_line_count);
 			assert(delta);
 //			dprintf("tc=%d lc=%d rc=%d delta=%d", total_line_count, left_line_count, right_line_count, delta);
 			total_line_count-= delta;
@@ -532,7 +534,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 	point2d *vertices= polygon->vertices;
 
 	assert(polygon->vertex_count>=MINIMUM_VERTICES_PER_SCREEN_POLYGON&&polygon->vertex_count<MAXIMUM_VERTICES_PER_SCREEN_POLYGON);
-
+/*
 	switch (polygon->transfer_mode)
 	{
 //		case _landscaped_transfer:
@@ -542,7 +544,9 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 			texture_horizontal_polygon(textured_polygon);
 			return;
 	}
-
+*/
+     if (polygon->transfer_mode == _big_landscaped_transfer) return texture_horizontal_polygon(textured_polygon);
+     
 	/* locate the horizontally highest (closest to zero) and lowest (farthest from zero) vertices */
 	highest_vertex= lowest_vertex= 0;
 	for (vertex=1;vertex<polygon->vertex_count;++vertex)
@@ -578,9 +582,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 		/* precalculate high and low y-coordinates for every x-coordinate */			
 		aggregate_total_line_count= total_line_count;
 		while (total_line_count>0)
-		{
-			short delta;
-			
+		{			
 			/* if we’re out of scan lines on the left side, get a new vertex and build a table
 				of y-coordinates so we can walk toward the new vertex */
 			if (left_line_count<=0)
@@ -614,7 +616,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 			}
 			
 			/* advance by the minimum of left_line_count and right_line_count */
-			delta= MIN(left_line_count, right_line_count);
+			short delta= MIN(left_line_count, right_line_count);
 			assert(delta);
 			total_line_count-= delta;
 			left_line_count-= delta;
@@ -628,6 +630,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 		assert(aggregate_left_line_count==aggregate_total_line_count);
 
 		/* precalculate mode-specific data */
+          /*
 		switch (polygon->transfer_mode)
 		{
 			case _textured_transfer:
@@ -640,7 +643,13 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 			default:
 				vhalt(csprintf(temporary, "vertical_polygons dont support mode #%d", polygon->transfer_mode));
 		}
-		
+		*/
+          if ((polygon->transfer_mode == _textured_transfer) || (polygon->transfer_mode == _static_transfer))
+          {
+              _pretexture_vertical_polygon_lines(polygon, screen, view, (struct _vertical_polygon_data *)precalculation_table, vertices[highest_vertex].x, left_table, right_table, aggregate_total_line_count);
+          }
+          else vhalt(csprintf(temporary, "vertical_polygons dont support mode #%d", polygon->transfer_mode));
+          
 		/* render all lines */
 		switch (bit_depth)
 		{
@@ -717,7 +726,6 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_rectangle)
 {
 	rectangle_definition *rectangle = &textured_rectangle;	// Reference to pointer
-	(void) (view) /* we don’t need no steenkin’ view */;
 
 	if (rectangle->x0<rectangle->x1 && rectangle->y0<rectangle->y1)
 	{
@@ -1188,8 +1196,8 @@ static void _pretexture_horizontal_polygon_lines(
 			CALCULATE_SHADING_TABLE(data->shading_table, view, polygon->shading_tables, (short)MIN(depth, SHRT_MAX), polygon->ambient_shade);
 		}
 		
-		data+= 1;
-		y0+= 1;
+		data++;
+		y0++;
 	}
 }
 
@@ -1318,7 +1326,7 @@ static short *build_x_table(
 	else
 	{
 		/* can’t build a table for negative dy */
-		if (dy<0) table= (short *) NULL;
+		if (dy<0) return NULL;
 	}
 	
 	return table;
@@ -1384,7 +1392,7 @@ static short *build_y_table(
 	else
 	{
 		/* can’t build a table for a negative dx */
-		table= (short *) NULL;
+		return NULL;
 	}
 	
 	return table;

@@ -500,7 +500,7 @@ static long calculate_polygon_area(
 	}
 	
 	/* real area is absolute value of calculated area divided by two */
-     area= (ABS(area), area >>= 1);
+     area= (ABS(area) >> 1);
 	
 	return area;
 }
@@ -534,12 +534,12 @@ void precalculate_map_indexes(
 			short endpoint_count = EndpointIndices.size();
 			short *endpoint_indexes = &EndpointIndices[0];
 			
-			for (unsigned int i=0;i<line_count;++i)	
+			for (int i=0;i<line_count;++i)	
 			{
 				add_map_index(line_indexes[i], &polygon->line_exclusion_zone_count);
 			}
 			
-			for (unsigned int i=0;i<endpoint_count;++i)
+			for (int i=0;i<endpoint_count;++i)
 			{
 				add_map_index(endpoint_indexes[i], &polygon->point_exclusion_zone_count);
 			}
@@ -555,7 +555,7 @@ void precalculate_map_indexes(
 			short *polygon_indexes = &PolygonIndices[0];
 			short polygon_count = PolygonIndices.size();
 
-			for (unsigned int i=0;i<polygon_count;++i)
+			for (int i=0;i<polygon_count;++i)
 			{
 				add_map_index(polygon_indexes[i], &polygon->neighbor_count);
 			}
@@ -759,7 +759,6 @@ static long intersecting_flood_proc(
 	struct polygon_data *original_polygon= get_polygon_data(data->original_polygon_index);
 	bool keep_searching= false; /* don’t flood any deeper unless we find something close enough */
 	unsigned short i, j;
-     unsigned long second_note;
 	(void) (line_index);
 	(void) (destination_polygon_index);
 

@@ -102,7 +102,7 @@ enum
 
 
 // LP: This is a dummy definition until Classic MacOS support can be completed
-#if defined(mac) && !HAVE_SDL_NET
+#if defined(mac) && !HAVE_SDL_NET && !HAVE_SDL_NET_H
 #define AddrBlock IPaddress
 struct IPaddress {
     uint32 host;
