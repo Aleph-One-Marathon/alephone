@@ -60,6 +60,15 @@ if [[ "x$ac_cv_lib_SDL_net_SDLNet_Init" != xyes ]]; then
 fi
 AM_CONDITIONAL(HAVE_SDL_NET, test x$ac_cv_lib_SDL_net_SDLNet_Init = xyes)
 
+dnl Check for SDL_sound
+AC_CHECK_HEADERS(SDL_sound.h, [
+  AC_CHECK_LIB(SDL_sound, Sound_Init, [
+    LIBS="$LIBS -lSDL_sound"
+    AC_DEFINE(HAVE_SDL_SOUND, 1, [SDL_sound support is enabled])
+  ])
+])
+
+
 dnl Check for Lua.
 AC_CHECK_HEADERS(lua.h, [
   AC_CHECK_HEADERS(lualib.h, [

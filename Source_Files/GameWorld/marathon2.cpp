@@ -562,7 +562,7 @@ void leaving_map(
 	/* stop counting world ticks */
 //	set_keyboard_controller_status(false);
 
-#ifdef WIN32
+#ifdef SDL
     // Hackish. Should probably be in stop_all_sounds(), but that just
     // doesn't work out. 
     StopLevelMusic(); 

@@ -62,7 +62,7 @@ void fade_out_music(short duration);
 
 // LP: this is so that a level can have some music loaded when it starts running
 void PreloadLevelMusic();
-#ifdef WIN32
+#ifdef SDL
 void StopLevelMusic();
 #endif
 

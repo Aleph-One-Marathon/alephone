@@ -135,6 +135,7 @@ private:
 
 	int GetError() {return err;}
 	SDL_RWops *GetRWops() {return f;}
+	SDL_RWops *TakeRWops();		// Hand over SDL_RWops
 
 private:
 	SDL_RWops *f;	// File handle

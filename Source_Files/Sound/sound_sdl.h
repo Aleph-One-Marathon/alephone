@@ -36,7 +36,6 @@
  */
 
 #include <SDL_endian.h>
-
 // Unlike the Mac version, we also do the music handling here
 #include "music.h"
 #include "song_definitions.h"
@@ -88,26 +87,38 @@ const int MORE_SOUND_BUFFER_SIZE = 600*KILO;
 const int AMBIENT_SOUND_BUFFER_SIZE = 1*MEG;
 const int MAXIMUM_SOUND_BUFFER_SIZE = 1*MEG;
 
-
 // Desired and obtained audio formats
 static SDL_AudioSpec desired;
 
 // Global sound volume (0x100 = nominal)
 static int16 main_volume = 0x100;
 
-// Data for music replay
-static OpenedFile music_file;			// Music file object
-static uint32 music_data_length;		// Total length of sample data in file
-static uint32 music_data_remaining;		// Remaining unread sample data in file
-static uint32 music_data_offset;		// Start offset of sample data
-static uint32 music_sample_rate;		// Music sample rate in Hz
+
+/*
+ *  Music
+ */
+
 static bool music_initialized = false;	// Flag: music ready to play
+static bool music_play = false;			// Flag: music playing
+static bool music_prelevel = false;		// Flag: level music loaded but not playing
+static bool music_level = false;		// Flag: play level music
+
 static bool music_fading = false;		// Flag: music fading out
 static uint32 music_fade_start;			// Music fade start tick
 static uint32 music_fade_duration;		// Music fade duration in ticks
 
-const uint32 MUSIC_BUFFER_SIZE = 0x40000;
-static uint8 music_buffer[MUSIC_BUFFER_SIZE];
+static FileSpecifier music_file;		// Current music file
+static FileSpecifier music_intro_file;	// Introductory music
+static bool music_intro = false;		// Flag: introductory music available
+
+void set_music_file (FileSpecifier *file);
+bool load_music (FileSpecifier &file);
+
+void restart_music (void);
+void LoadLevelMusic (void);
+void play_music (void);
+void rewind_music (void);
+bool fill_music_buffer (void);
 
 // Win32 music support.
 // ZZZ: could not build with this in, so added preprocessor symbol to disable it.
@@ -116,13 +127,46 @@ static uint8 music_buffer[MUSIC_BUFFER_SIZE];
 #include <dshow.h>
 #include "SDL_syswm.h"
 
-static bool directshow_initialized = false; 
-static IGraphBuilder* gp_graph_builder = NULL; 
+#define MUSIC_WIN32
+
+static IGraphBuilder* gp_graph_builder = NULL;
 static IMediaControl* gp_media_control = NULL;
 static IMediaSeeking* gp_media_seeking = NULL;
 static IMediaEventEx* gp_media_event_ex = NULL;
+
+void process_music_event_win32(const SDL_Event& event);
 #endif
 #endif
+
+// SDL music support
+#ifndef MUSIC_WIN32			// If native music support unavailable try using SDL
+#ifndef SDL_RFORK_HACK		// If SDL audio is disabled we can't do music either
+#define MUSIC_SDL
+
+static SDL_RWops *music_rw;	// music file object
+const uint32 MUSIC_BUFFER_SIZE = 0x40000;
+
+bool load_music_sdl (FileSpecifier &song_file);
+
+#ifdef HAVE_SDL_SOUND
+// Use SDL_Sound to read music files
+#define MUSIC_SDL_SOUND
+
+#include "SDL_sound.h"
+static Sound_Sample* music_sample;
+
+#else
+// Read music ourself (AIFF and WAV only)
+#define MUSIC_PURE_SDL
+
+static uint32 music_data_length;		// Total length of sample data in file
+static uint32 music_data_remaining;		// Remaining unread sample data in file
+static uint32 music_data_offset;		// Start offset of sample data
+static uint8 music_buffer[MUSIC_BUFFER_SIZE];
+#endif
+#endif
+#endif
+
 
 // ZZZ: network_speaker support
 static NetworkSpeakerSoundBufferDescriptor*   sNetworkAudioBufferDesc;
@@ -188,145 +232,344 @@ static void shutdown_sound_manager(void)
 
 
 /*
+ *	Initialize introductory music
+ */
+
+bool initialize_music_handler(FileSpecifier &file)
+{
+	music_intro_file = file;
+	set_music_file (&file);
+
+	if (music_initialized)
+		music_intro = true;
+
+	return music_initialized;
+}
+
+
+/*
+ *	Make the necessary preperations to play a music file
+ */
+
+void set_music_file (FileSpecifier *file)
+{
+	if (music_initialized) {
+		// Music file is already loaded
+		if (file != NULL && *file == music_file) {
+			if (music_initialized)
+				rewind_music ();
+			return;
+		}
+
+		// Close the old music file
+		shutdown_music_handler ();
+		music_initialized = false;
+	}
+
+	if (file != NULL) {
+		// Open the new music file
+		music_initialized = load_music (*file);
+		music_file = *file;
+	}
+}
+
+/*
  *  Initialize music handling
  */
 
-bool initialize_music_handler(FileSpecifier &song_file)
+
+bool load_music (FileSpecifier &song_file)
 {
-#ifndef SDL_RFORK_HACK
 	assert(NUMBER_OF_SONGS == sizeof(songs) / sizeof(struct song_definition));
-	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
 
-	atexit(shutdown_music_handler);
+#ifdef MUSIC_SDL
+	return load_music_sdl (song_file);
+#endif
+#ifdef MUSIC_WIN32
+    CoInitialize(NULL);
+    SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
 
-	// Open music file
-	if (song_file.Open(music_file)) {
+    // Create an IGraphBuilder object, through which
+    //  we will create a DirectShow graph.
+    CoCreateInstance(CLSID_FilterGraph, NULL,
+                     CLSCTX_INPROC, IID_IGraphBuilder,
+                     (void **)&gp_graph_builder);
+    // Get the IMediaControl Interface
+    gp_graph_builder->QueryInterface(IID_IMediaControl,
+                                 (void **)&gp_media_control);
+   // Get the IMediaSeeking Interface
+    gp_graph_builder->QueryInterface(IID_IMediaSeeking,
+                                 (void **)&gp_media_seeking);
+    // Get the IMediaEventEx Interface
+    gp_graph_builder->QueryInterface(IID_IMediaEventEx,
+                                 (void **)&gp_media_event_ex);
 
-		SDL_RWops *p = music_file.GetRWops();
+    // Set the event window.
+    SDL_SysWMinfo wmi;
+    SDL_VERSION(&wmi.version);
+    SDL_GetWMInfo(&wmi);
+    gp_media_event_ex->SetNotifyWindow((OAHWND)wmi.window, WM_DSHOW_GRAPH_NOTIFY, 0);
 
-		// Read magic ID
-		uint32 magic = SDL_ReadBE32(p);
-		if (magic == FOUR_CHARS_TO_INT('F', 'O', 'R', 'M')) {
+    gp_media_control->Stop();
 
-			// Maybe an AIFF file, check further
-			uint32 total_size = SDL_ReadBE32(p);
-			if (SDL_ReadBE32(p) != FOUR_CHARS_TO_INT('A', 'I', 'F', 'F'))
-				return false;
+    char song_name[_MAX_PATH];
+    WCHAR wsong_name[_MAX_PATH];
 
-			// Seems so, look for COMM and SSND chunks
-			bool comm_found = false;
-			bool ssnd_found = false;
-			do {
+    strcpy(song_name, song_file.GetPath());
 
-				// Read chunk ID and size
-				uint32 id = SDL_ReadBE32(p);
-				uint32 size = SDL_ReadBE32(p);
-				int pos = SDL_RWtell(p);
+    MultiByteToWideChar(CP_ACP, 0, song_name, -1,
+                        wsong_name, _MAX_PATH);
 
-				switch (id) {
-					case FOUR_CHARS_TO_INT('C', 'O', 'M', 'M'): {
-						comm_found = true;
+    fwprintf(stderr, L"Starting music (%s)...\n", wsong_name);
+    gp_graph_builder->RenderFile(wsong_name, NULL);
 
-						c->stereo = (SDL_ReadBE16(p) == 2);
-						SDL_RWseek(p, 4, SEEK_CUR);
-						c->sixteen_bit = (SDL_ReadBE16(p) == 16);
-						c->signed_8bit = true;
+	// start it here, because I dont know how
+	// to check whether it is playing in music_idle_proc
+	play_music ();
 
-						c->bytes_per_frame = 1;
-						if (c->stereo)
-							c->bytes_per_frame *= 2;
-						if (c->sixteen_bit)
-							c->bytes_per_frame *= 2;
+	// I don't know how to check if the music has been initialized,
+	// but it isn't very important on MUSIC_WIN32
+	return true;
+#endif
+	return false;
+}
 
-						uint32 srate = SDL_ReadBE32(p);	// This is a 6888x 80-bit floating point number, but we only read the first 4 bytes and try to guess the sample rate
-						switch (srate) {
-							case 0x400eac44:
-								music_sample_rate = 44100;
-								break;
-							case 0x400dac44:
-							default:
-								music_sample_rate = 22050;
-								break;
-						}
-						break;
-					}
 
-					case FOUR_CHARS_TO_INT('S', 'S', 'N', 'D'):
-						ssnd_found = true;
+/*
+ * Initialise music handling under SDL
+ */
 
-						music_data_length = size;
-						SDL_RWseek(p, 8, SEEK_CUR);
-						music_data_offset = SDL_RWtell(p);
-						break;
-				}
+#ifdef MUSIC_SDL
+bool load_music_sdl(FileSpecifier &song_file)
+{
+	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;	// Music channel
+	uint32 music_sample_rate;						// Music sample rate in Hz
 
-				// Skip to next chunk
-				if (size & 1)
-					size++;
-				SDL_RWseek(p, pos + size, SEEK_SET);
+	// We use the file abstraction classes to open the file,
+	// but then we steal the SDL_RWops it created for us
+	OpenedFile music_file;
+	if (!song_file.Open(music_file)) {
+		puts ("failed open music file 1");
+		return false;
+	}
 
-			} while (uint32(SDL_RWtell(p)) < total_size);
+	music_rw = music_file.TakeRWops();
 
-			if (comm_found && ssnd_found)
-				music_initialized = true;
+#ifdef MUSIC_SDL_SOUND
+	// If this is an mp3 file, we need to tell SDL_sound
+	const char *song_name = song_file.GetPath ();
+	const char *song_ext = strrchr (song_name, '.');
+	if (song_ext != NULL)
+		song_ext++;
 
-		} else if (magic == FOUR_CHARS_TO_INT('R', 'I', 'F', 'F')) {
+	// Start reading music
+	music_sample = Sound_NewSample (music_rw, song_ext, NULL, MUSIC_BUFFER_SIZE);
 
-			// Maybe a WAV file, check further
-			uint32 total_size = SDL_ReadLE32(p);
-			if (SDL_ReadBE32(p) != FOUR_CHARS_TO_INT('W', 'A', 'V', 'E'))
-				return false;
+	if (music_sample == NULL) {
+		fprintf (stderr, "Error reading music file (%s)\n", Sound_GetError ());
+		return false;
+	}
 
-			// Seems so, look for fmt and data chunks
-			bool fmt_found = false;
-			bool data_found = false;
-			do {
+	Sound_AudioInfo in = music_sample->actual;	// music format of file
+	Sound_AudioInfo out = in;					// music format to play
+	bool convert = false;						// conversion necesary?
 
-				// Read chunk ID and size
-				uint32 id = SDL_ReadBE32(p);
-				uint32 size = SDL_ReadLE32(p);
-				int pos = SDL_RWtell(p);
+	switch (in.format) {
+		case AUDIO_U8:
+			c->sixteen_bit = false;
+			c->signed_8bit = false;
+			break;
+		case AUDIO_S8:
+			c->sixteen_bit = false;
+			c->signed_8bit = true;
+			break;
+		case AUDIO_S16MSB:
+			c->sixteen_bit = true;
+			c->signed_8bit = false;
+			break;
+		default:
+			// Sound channels are big endian
+			// regardless of platform
+			out.format = AUDIO_S16MSB;
+			c->sixteen_bit = true;
+			convert = true;
+	}
 
-				switch (id) {
-					case FOUR_CHARS_TO_INT('f', 'm', 't', ' '):
-						fmt_found = true;
+	switch (in.channels) {
+		case 1:
+			c->stereo = false;
+			break;
+		case 2:
+			c->stereo = true;
+			break;
+		default:  // just in case music has more than two channels
+			convert = true;
 
-						if (SDL_ReadLE16(p) != 1) // PCM encoding
-							return false;
-						c->stereo = (SDL_ReadLE16(p) == 2);
-						music_sample_rate = SDL_ReadLE32(p);
-						SDL_RWseek(p, 4, SEEK_CUR);
-						c->bytes_per_frame = SDL_ReadLE16(p);
-						c->sixteen_bit = (SDL_ReadLE16(p) == 16);
-						c->signed_8bit = false;
-						break;
+			switch (desired.channels) {
+				case 1:
+					out.channels = 1;
+					c->stereo = false;
+					break;
+				case 2:
+					out.channels = 2;
+					c->stereo = true;
+					break;
+				default:
+					fprintf (stderr, "This should not happen: sound device should be opened as either mono or stereo\n");
+					return false;
+			}
+	}
 
-					case FOUR_CHARS_TO_INT('d', 'a', 't', 'a'):
-						data_found = true;
+	// Recreate sample with necessary conversion
+	if (convert) {
+		Sound_FreeSample (music_sample);
 
-						music_data_length = size;
-						music_data_offset = SDL_RWtell(p);
-						break;
-				}
+		OpenedFile music_file;
+		if (!song_file.Open(music_file)) {
+			puts ("error opening music file 2");
+			return false;
+		}
+		music_rw = music_file.TakeRWops();
 
-				// Skip to next chunk
-				if (size & 1)
-					size++;
-				SDL_RWseek(p, pos + size, SEEK_SET);
-
-			} while (uint32(SDL_RWtell(p)) < total_size);
-
-			if (fmt_found && data_found)
-				music_initialized = true;
+		music_sample = Sound_NewSample (music_rw, song_ext, &out, MUSIC_BUFFER_SIZE);
+		if (music_sample == NULL) {
+			fprintf (stderr, "Error converting music file (%s)\n", Sound_GetError ());
+			return false;
 		}
 	}
 
-	return music_initialized;
-#else
-return false;
-#endif
-}
+	music_sample_rate = out.rate;
+#else // MUSIC_PURE_SDL
+	// Read magic ID
+	uint32 magic = SDL_ReadBE32(music_rw);
+	if (magic == FOUR_CHARS_TO_INT('F', 'O', 'R', 'M')) {
 
+		// Maybe an AIFF file, check further
+		uint32 total_size = SDL_ReadBE32(music_rw);
+		if (SDL_ReadBE32(music_rw) != FOUR_CHARS_TO_INT('A', 'I', 'F', 'F'))
+			return false;
+
+		// Seems so, look for COMM and SSND chunks
+		bool comm_found = false;
+		bool ssnd_found = false;
+		do {
+
+			// Read chunk ID and size
+			uint32 id = SDL_ReadBE32(music_rw);
+			uint32 size = SDL_ReadBE32(music_rw);
+			int pos = SDL_RWtell(music_rw);
+
+			switch (id) {
+				case FOUR_CHARS_TO_INT('C', 'O', 'M', 'M'): {
+					comm_found = true;
+
+					c->stereo = (SDL_ReadBE16(music_rw) == 2);
+					SDL_RWseek(music_rw, 4, SEEK_CUR);
+					c->sixteen_bit = (SDL_ReadBE16(music_rw) == 16);
+					c->signed_8bit = true;
+
+					uint32 srate = SDL_ReadBE32(music_rw);	// This is a 6888x 80-bit floating point number, but we only read the first 4 bytes and try to guess the sample rate
+					switch (srate) {
+						case 0x400eac44:
+							music_sample_rate = 44100;
+							break;
+						case 0x400dac44:
+							music_sample_rate = 22050;
+							break;
+						case 0x400cac44:
+						default:
+							music_sample_rate = 11025;
+					}
+
+					break;
+				}
+
+				case FOUR_CHARS_TO_INT('S', 'S', 'N', 'D'):
+					ssnd_found = true;
+
+					music_data_length = size;
+					SDL_RWseek(music_rw, 8, SEEK_CUR);
+					music_data_offset = SDL_RWtell(music_rw);
+					break;
+			}
+
+			// Skip to next chunk
+			if (size & 1)
+				size++;
+			SDL_RWseek(music_rw, pos + size, SEEK_SET);
+
+		} while (uint32(SDL_RWtell(music_rw)) < total_size);
+
+		if (!comm_found)
+			return false;
+		if (!ssnd_found)
+			return false;
+	} else if (magic == FOUR_CHARS_TO_INT('R', 'I', 'F', 'F')) {
+
+		// Maybe a WAV file, check further
+		uint32 total_size = SDL_ReadLE32(music_rw);
+		if (SDL_ReadBE32(music_rw) != FOUR_CHARS_TO_INT('W', 'A', 'V', 'E'))
+			return false;
+
+		// Seems so, look for fmt and data chunks
+		bool fmt_found = false;
+		bool data_found = false;
+		do {
+
+			// Read chunk ID and size
+			uint32 id = SDL_ReadBE32(music_rw);
+			uint32 size = SDL_ReadLE32(music_rw);
+			int pos = SDL_RWtell(music_rw);
+
+			switch (id) {
+				case FOUR_CHARS_TO_INT('f', 'm', 't', ' '):
+					fmt_found = true;
+
+					if (SDL_ReadLE16(music_rw) != 1) // PCM encoding
+						return false;
+					c->stereo = (SDL_ReadLE16(music_rw) == 2);
+					music_sample_rate = SDL_ReadLE32(music_rw);
+					SDL_RWseek(music_rw, 4, SEEK_CUR);
+					c->bytes_per_frame = SDL_ReadLE16(music_rw);
+					c->sixteen_bit = (SDL_ReadLE16(music_rw) == 16);
+					c->signed_8bit = false;
+					break;
+
+				case FOUR_CHARS_TO_INT('d', 'a', 't', 'a'):
+					data_found = true;
+
+					music_data_length = size;
+					music_data_offset = SDL_RWtell(music_rw);
+					break;
+			}
+
+			// Skip to next chunk
+			if (size & 1)
+				size++;
+			SDL_RWseek(music_rw, pos + size, SEEK_SET);
+
+		} while (uint32(SDL_RWtell(music_rw)) < total_size);
+
+		if (!fmt_found)
+			return false;
+		if (!data_found)
+			return false;
+	} else {
+		return false;
+	}
+#endif
+	c->bytes_per_frame = 1;
+	if (c->stereo)
+		c->bytes_per_frame *= 2;
+	if (c->sixteen_bit)
+		c->bytes_per_frame *= 2;
+
+	c->rate = (music_sample_rate << 16) / desired.freq;
+	c->loop_length = 0;
+
+	return true;
+}
+#endif
 
 /*
  *  Shutdown music handling
@@ -334,8 +577,35 @@ return false;
 
 static void shutdown_music_handler(void)
 {
-	free_music_channel();
-	music_file.Close();
+	if (music_initialized) {
+		music_initialized = false;
+
+#ifdef MUSIC_SDL
+		free_music_channel ();
+#ifdef MUSIC_SDL_SOUND
+		Sound_FreeSample (music_sample);
+#else
+		SDL_RWclose (music_rw);
+#endif
+#endif
+#ifdef MUSIC_WIN32
+	    // Release everything.
+		gp_media_control->Stop();
+		gp_media_control->Release();
+		gp_media_control = NULL;
+
+		gp_media_event_ex->Release();
+		gp_media_event_ex = NULL;
+
+		gp_media_seeking->Release();
+		gp_media_seeking = NULL;
+
+		gp_graph_builder->Release();
+		gp_graph_builder = NULL;
+
+		CoUninitialize();
+#endif
+	}
 }
 
 
@@ -696,39 +966,52 @@ void stop_sound_resource(void)
 
 
 /*
- *  Start playback of music
+ *  (Re)start playback of introduction music
  */
 
 void queue_song(short song_index)
 {
-	if (!_sm_initialized || !_sm_active || !music_initialized)
-		return;
-#ifndef SDL_RFORK_HACK
-	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
-	SDL_RWops *p = music_file.GetRWops();
+	if (music_intro) {
+		set_music_file (&music_intro_file);
+		play_music ();
+		music_play = true;
+	}
+}
 
-	// Read first buffer of music data
-	SDL_RWseek(p, music_data_offset, SEEK_SET);
+
+void rewind_music ()
+{
+#ifdef MUSIC_SDL_SOUND
+	Sound_Rewind (music_sample);
+#endif
+#ifdef MUSIC_PURE_SDL
+	SDL_RWseek(music_rw, music_data_offset, SEEK_SET);
 	music_data_remaining = music_data_length;
-	uint32 to_read = music_data_remaining > MUSIC_BUFFER_SIZE ? MUSIC_BUFFER_SIZE : music_data_remaining;
-	SDL_RWread(p, music_buffer, 1, to_read);
-	music_data_remaining -= to_read;
+#endif
+#ifdef MUSIC_WIN32
+	// Re-seek the graph to the beginning
+	LONGLONG llPos = 0;
+	gp_media_seeking->SetPositions(&llPos, AM_SEEKING_AbsolutePositioning,
+      								   &llPos, AM_SEEKING_NoPositioning);
+#endif
+}
 
-	// Lock sound subsystem
-	SDL_LockAudio();
+void play_music ()
+{
+	if (!_sm_initialized || !_sm_active || !music_initialized) {
+		return;
+	}
 
-	// Initialize and start channel
-	c->data = music_buffer;
-	c->length = to_read;
-	c->loop_length = 0;
-	c->rate = (music_sample_rate << 16) / desired.freq;
-	c->left_volume = c->right_volume = 0x100;
-	music_fading = false;
-	c->counter = 0;
-	c->active = true;
-
-	// Unlock sound subsystem
-	SDL_UnlockAudio();
+#ifdef MUSIC_SDL
+	if (fill_music_buffer ()) {
+		sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
+		c->counter = 0;
+		c->left_volume = c->right_volume = 0x100;
+		c->active = true;
+	}
+#endif
+#ifdef MUSIC_WIN32
+    gp_media_control->Run();
 #endif
 }
 
@@ -739,10 +1022,11 @@ void queue_song(short song_index)
 
 void free_music_channel(void)
 {
-	music_fading = false;
 	SDL_LockAudio();
 	sdl_channels[MUSIC_CHANNEL].active = false;
 	SDL_UnlockAudio();
+
+	music_fading = false;
 }
 
 
@@ -762,23 +1046,39 @@ bool music_playing(void)
 
 void fade_out_music(short duration)
 {
-	music_fading = true;
-	music_fade_start = SDL_GetTicks();
-	music_fade_duration = duration;
+	if (music_play) {
+		// don't restart music
+		music_play = false;
+
+		music_fading = true;
+		music_fade_start = SDL_GetTicks();
+		music_fade_duration = duration;
+	}
 }
+
 
 void music_idle_proc(void)
 {
+	#ifdef MUSIC_SDL
+	// Start preloaded music
+	if (music_prelevel) {
+		music_prelevel = false;
+		play_music ();
+	}
+
+	// Keep music going
+	if (!music_playing())
+		restart_music ();
+	#endif
+
 	if (music_fading) {
 
 		// Calculate volume level
 		uint32 elapsed = SDL_GetTicks() - music_fade_start;
 		int vol = 0x100 - (elapsed * 0x100) / music_fade_duration;
 		if (vol <= 0) {
-
 			// Fading done, stop music
 			free_music_channel();
-
 		} else {
 
 			// Set new volume level
@@ -789,113 +1089,73 @@ void music_idle_proc(void)
 	}
 }
 
+/*
+ * (Re)start appropriate music when none is playing
+ */
+
+void restart_music ()
+{
+	if (music_play) {
+		if (music_level) {
+			// Load next song in playlist
+			LoadLevelMusic ();
+			// Play song
+			play_music ();
+		} else if (music_intro) {
+			// (Re)start intro music
+			set_music_file (&music_intro_file);
+			play_music ();
+		}
+	}
+}
 
 /*
  *  Preload per-level music
  */
 
-void PreloadLevelMusic(void)
+void PreloadLevelMusic (void)
 {
-#ifdef WIN32
-#ifndef WIN32_DISABLE_MUSIC
+	LoadLevelMusic ();
 
-    CoInitialize(NULL);
-    SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
-
-    // Create an IGraphBuilder object, through which 
-    //  we will create a DirectShow graph.
-    CoCreateInstance(CLSID_FilterGraph, NULL,
-                     CLSCTX_INPROC, IID_IGraphBuilder,
-                     (void **)&gp_graph_builder);
-    // Get the IMediaControl Interface
-    gp_graph_builder->QueryInterface(IID_IMediaControl,
-                                 (void **)&gp_media_control);
-   // Get the IMediaSeeking Interface
-    gp_graph_builder->QueryInterface(IID_IMediaSeeking,
-                                 (void **)&gp_media_seeking);
-    // Get the IMediaEventEx Interface
-    gp_graph_builder->QueryInterface(IID_IMediaEventEx,
-                                 (void **)&gp_media_event_ex);
-
-    // Set the event window. 
-    SDL_SysWMinfo wmi; 
-    SDL_VERSION(&wmi.version); 
-    SDL_GetWMInfo(&wmi); 
-    gp_media_event_ex->SetNotifyWindow((OAHWND)wmi.window, WM_DSHOW_GRAPH_NOTIFY, 0);
-
-    gp_media_control->Stop(); 
-
-	FileSpecifier* level_song_file = GetLevelMusic();
-    if (level_song_file) {
-        char level_song_name[_MAX_PATH];
-        WCHAR wlevel_song_name[_MAX_PATH]; 
-
-        strcpy(level_song_name, level_song_file->GetPath());
-
-        MultiByteToWideChar(CP_ACP, 0, level_song_name, -1, 
-                            wlevel_song_name, _MAX_PATH); 
-
-        fwprintf(stderr, L"Starting music (%s)...", wlevel_song_name); 
-        gp_graph_builder->RenderFile(wlevel_song_name, NULL);
-
-        gp_media_control->Run();
-    }
-#endif
-#endif
+	if (music_initialized) {
+		music_prelevel = true;
+		music_level = true;
+		music_play = true;
+	}
 }
 
-#ifdef WIN32
+void LoadLevelMusic(void)
+{
+	FileSpecifier* level_song_file = GetLevelMusic ();
+	set_music_file (level_song_file);
+}
+
+
 void StopLevelMusic(void)
 {
-#ifndef WIN32_DISABLE_MUSIC
-    // Release everything.        
-    if (gp_media_control) {
-        gp_media_control->Stop();        
-        gp_media_control->Release();  gp_media_control = NULL;
-    }
-
-    if (gp_media_event_ex) {
-        gp_media_event_ex->Release(); gp_media_event_ex = NULL;
-    }
-
-    if (gp_media_seeking) {
-        gp_media_seeking->Release();  gp_media_seeking = NULL;
-    }
-
-    if (gp_graph_builder) {
-        gp_graph_builder->Release();  gp_graph_builder = NULL;
-    }
-
-    CoUninitialize();
-#endif
+ 	music_level = false;
+	music_play = false;
+	set_music_file (NULL);
 }
-#endif
 
-#ifdef WIN32
+
+#ifdef MUSIC_WIN32
 void process_music_event_win32(const SDL_Event& event)
 {
-#ifndef WIN32_DISABLE_MUSIC
     long evCode, param1, param2;
     HRESULT hr;
 
     if (gp_media_event_ex == NULL)
         return;
-    
+
     // We must restart the music if it stops playing.
     while (hr = gp_media_event_ex->GetEvent(&evCode, &param1, &param2, 0), SUCCEEDED(hr)) {
         hr = gp_media_event_ex->FreeEventParams(evCode, param1, param2);
-        if ((EC_COMPLETE == evCode) || (EC_USERABORT == evCode)) { 
-
-   		// Re-seek the graph to the beginning
-	   		LONGLONG llPos = 0;
-   			gp_media_seeking->SetPositions(&llPos, AM_SEEKING_AbsolutePositioning,
-      								   &llPos, AM_SEEKING_NoPositioning);
-
-            gp_media_control->Run(); 
-            break;
-		} 
+        if ((EC_COMPLETE == evCode) || (EC_USERABORT == evCode)) {
+			restart_music ();
+			break;
+		}
 	}
-#endif
 }
 #endif
 
@@ -1045,10 +1305,8 @@ static inline void calc_buffer(T *p, int len, bool stereo)
 		// Mix all channels
 		sdl_channel *c = sdl_channels;
 		for (int i=0; i<TOTAL_SOUND_CHANNELS; i++, c++) {
-
 			// Channel active?
 			if (c->active) {
-
 				// Yes, read sound data
 				int32 dleft, dright;
 				if (c->stereo) {
@@ -1095,19 +1353,9 @@ static inline void calc_buffer(T *p, int len, bool stereo)
 
 						} else if (i == MUSIC_CHANNEL) {
 
-							// Music channel, more data to play?
-							uint32 to_read = music_data_remaining > MUSIC_BUFFER_SIZE ? MUSIC_BUFFER_SIZE : music_data_remaining;
-							if (to_read) {
-
-								// Read next buffer of music data
-								SDL_RWread(music_file.GetRWops(), music_buffer, 1, to_read);
-								music_data_remaining -= to_read;
-								c->data = music_buffer;
-								c->length = to_read;
-
-							} else {
-
-								// Music replay finished, turn off channel
+							// More music data?
+							if (!fill_music_buffer ()) {
+								// Music finished, turn it off
 								c->active = false;
 							}
 
@@ -1198,6 +1446,50 @@ static void sound_callback(void *usr, uint8 *stream, int len)
 		else
 			calc_buffer((int8 *)stream, len, false);
 	}
+}
+
+
+/*
+ * Fill music buffer from file
+ */
+
+bool fill_music_buffer ()
+{
+	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
+
+#ifdef MUSIC_SDL_SOUND
+	Uint32 decoded;
+	int attempt = 5;	// retry up to five times
+
+	do {
+		decoded = Sound_Decode (music_sample);
+		if (decoded > 0) {
+			c->data = (uint8 *) music_sample->buffer;
+			c->length = decoded;
+			return true;
+		}
+
+		if (!(music_sample->flags & SOUND_SAMPLEFLAG_EAGAIN)) {
+			// This is not a temporary error
+			return false;
+		}
+	}  while (attempt-- > 0);
+
+#endif
+#ifdef MUSIC_PURE_SDL
+	uint32 to_read = music_data_remaining > MUSIC_BUFFER_SIZE ? MUSIC_BUFFER_SIZE : music_data_remaining;
+	if (to_read > 0) {
+		// Read next buffer of music data
+		SDL_RWread(music_rw, music_buffer, 1, to_read);
+		music_data_remaining -= to_read;
+		c->data = music_buffer;
+		c->length = to_read;
+
+		return true;
+	}
+#endif
+	// Failed
+	return false;
 }
 
 

@@ -219,6 +219,14 @@ bool OpenedFile::Write(long Count, void *Buffer)
 }
 
 
+SDL_RWops *OpenedFile::TakeRWops ()
+{
+	SDL_RWops *taken = f;
+	f = NULL;
+	Close ();
+	return taken;
+}
+
 /*
  *  Loaded resource
  */

@@ -103,6 +103,10 @@ void free_and_unlock_memory(void);
 #include <SDL_net.h>
 #endif
 
+#ifdef HAVE_SDL_SOUND_H
+#include <SDL_sound.h>
+#endif
+
 #ifdef __WIN32__
 #include <windows.h>
 #endif
@@ -281,6 +285,14 @@ static void initialize_application(void)
 	}
 #endif
 
+#ifdef HAVE_SDL_SOUND
+	// Initialize SDL_sound
+	if (Sound_Init () == 0) {
+		fprintf (stderr, "Couldn't initialize SDL_sound (%s)\n", Sound_GetError());
+		exit(1);
+	}
+#endif
+
 	// Find data directories, construct search path
 	DirectorySpecifier default_data_dir;
 
@@ -455,6 +467,9 @@ static void shutdown_application(void)
         
 #ifdef HAVE_SDL_NET
 	SDLNet_Quit();
+#endif
+#ifdef HAVE_SDL_SOUND
+	Sound_Quit();
 #endif
 	SDL_Quit();
 }

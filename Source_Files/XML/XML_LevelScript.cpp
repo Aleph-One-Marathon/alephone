@@ -420,7 +420,7 @@ void FindMovieInScript(int LevelIndex)
 
 bool IsLevelMusicActive() {return (!Playlist.empty());}
 
-#ifndef WIN32
+#ifndef SDL
 void StopLevelMusic() {Playlist.clear();}
 #endif
 
