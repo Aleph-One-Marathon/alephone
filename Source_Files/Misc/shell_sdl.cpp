@@ -47,6 +47,9 @@ extern string get_preferences_directory(void);
 // From preprocess_map_sdl.cpp
 extern bool get_default_music_spec(FileSpecifier &file);
 
+// From vbl_sdl.cpp
+void execute_timer_tasks(void);
+
 // Prototypes
 static void initialize_application(void);
 static void shutdown_application(void);
@@ -152,7 +155,7 @@ int main(int argc, char **argv)
 static void initialize_application(void)
 {
 	// Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTTHREAD | (option_nosound ? 0 : SDL_INIT_AUDIO)) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | (option_nosound ? 0 : SDL_INIT_AUDIO)) < 0) {
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
 	}
@@ -648,11 +651,11 @@ static bool confirm_save_choice(FileSpecifier &file)
  *  Main event loop
  */
 
-const Uint32 TICKS_BETWEEN_EVENT_POLL = 167;	// 6 Hz
+const uint32 TICKS_BETWEEN_EVENT_POLL = 167;	// 6 Hz
 
 static void main_event_loop(void)
 {
-	Uint32 last_event_poll = 0;
+	uint32 last_event_poll = 0;
 
 	while (get_game_state() != _quit_game) {
 
@@ -718,6 +721,7 @@ static void main_event_loop(void)
 			}
 		}
 
+		execute_timer_tasks();
 		idle_game_state();
 	}
 }

@@ -123,6 +123,8 @@ void test_mouse(short type, uint32 *flags, fixed *delta_yaw, fixed *delta_pitch,
 		*delta_yaw = snapshot_delta_yaw;
 		*delta_pitch = snapshot_delta_pitch;
 		*delta_velocity = snapshot_delta_velocity;
+
+		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
 	}
 }
 

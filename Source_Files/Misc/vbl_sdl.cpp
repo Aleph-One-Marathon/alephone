@@ -4,8 +4,6 @@
  *  Written in 2000 by Christian Bauer
  */
 
-#include <SDL_thread.h>
-
 #include "cseries.h"
 #include "FileHandler.h"
 #include "resource_manager.h"
@@ -139,7 +137,6 @@ uint32 parse_keymap(void)
 	// Handle the selected input controller
 	if (input_preferences->input_device != _keyboard_or_game_pad) {
 		fixed delta_yaw, delta_pitch, delta_velocity;
-		mouse_idle(input_preferences->input_device);
 		test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
 		flags = mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
 	}
@@ -186,37 +183,39 @@ void set_keys_to_match_preferences(void)
 
 typedef bool (*timer_func)(void);
 
-static uint32 tm_period;		// Ticks between two calls of the timer task
-static SDL_Thread *tm_thread;
-static volatile bool tm_quit;
+static timer_func tm_func = NULL;	// The installed timer task
+static uint32 tm_period;			// Ticks between two calls of the timer task
+static uint32 tm_last = 0, tm_accum = 0;
 
-static int timer_thread(void *param)
-{
-	// On Linux, this is more precise than using an SDL timer
-	uint32 next = SDL_GetTicks();
-	while (!tm_quit) {
-		((timer_func)param)();
-		next += tm_period;
-		int32 delay = next - SDL_GetTicks();
-		if (delay > 0)
-			SDL_Delay(delay);
-		else if (delay < -tm_period)
-			next = SDL_GetTicks();
-	}
-	return 0;
-}
-
-timer_task_proc install_timer_task(short tasks_per_second, bool (*func)(void))
+timer_task_proc install_timer_task(short tasks_per_second, timer_func func)
 {
 	// We only handle one task, which is enough
-	tm_quit = false;
 	tm_period = 1000 / tasks_per_second;
-	tm_thread = SDL_CreateThread(timer_thread, (void *)func);
-	return (timer_task_proc)tm_thread;
+	tm_func = func;
+	tm_last = SDL_GetTicks();
+	tm_accum = 0;
+	return (timer_task_proc)tm_func;
 }
 
 void remove_timer_task(timer_task_proc proc)
 {
-	tm_quit = true;
-	SDL_WaitThread(tm_thread, NULL);
+	tm_func = NULL;
+}
+
+void execute_timer_tasks(void)
+{
+	if (tm_func) {
+		uint32 now = SDL_GetTicks();
+		tm_accum += now - tm_last;
+		tm_last = now;
+		bool first_time = true;
+		while (tm_accum >= tm_period) {
+			tm_accum -= tm_period;
+			if (first_time) {
+				mouse_idle(input_preferences->input_device);
+				first_time = false;
+			}
+			tm_func();
+		}
+	}
 }

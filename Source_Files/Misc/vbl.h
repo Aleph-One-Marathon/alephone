@@ -13,7 +13,6 @@ Aug 12, 2000 (Loren Petrich):
 
 // LP: CodeWarrior complains unless I give the full definition of these classes
 #include "FileHandler.h"
-// class FileSpecifier;
 
 /* ------------ prototypes/VBL.C */
 bool setup_for_replay_from_file(FileSpecifier& File, uint32 map_checksum);
@@ -53,4 +52,3 @@ static void close_stream_file(void);
 #endif
 
 #endif
-

@@ -69,4 +69,3 @@ void remove_timer_task(timer_task_proc proc);
 void set_keys_to_match_preferences(void);
 
 #endif
-

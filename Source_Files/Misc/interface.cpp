@@ -492,7 +492,7 @@ void idle_game_state(
 {
 	short ticks_elapsed;
 	
-	ticks_elapsed= (machine_tick_count() - game_state.last_ticks_on_idle)/(MACHINE_TICKS_PER_SECOND/TICKS_PER_SECOND);
+	ticks_elapsed= (machine_tick_count() - game_state.last_ticks_on_idle) * TICKS_PER_SECOND / MACHINE_TICKS_PER_SECOND;
 	if(ticks_elapsed || game_state.phase==0)
 	{
 		if(game_state.phase != INDEFINATE_TIME_DELAY)

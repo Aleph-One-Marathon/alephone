@@ -949,7 +949,7 @@ void darken_world_window(void)
 
 	// Get world window bounds
 	int size = screen_mode.size;
-	SDL_Rect r = {0, 0, ViewSizes[size].OverallWidth, ViewSizes[size].OverallHeight - 160};
+	SDL_Rect r = {0, 0, ViewSizes[size].OverallWidth, ViewSizes[size].OverallHeight - (ViewSizes[size].ShowHUD ? 160 : 0)};
 
 	// Draw pattern
 	switch (main_surface->format->BytesPerPixel) {

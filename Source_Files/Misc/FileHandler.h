@@ -257,7 +257,7 @@ public:
 // Directory entry, returned by FileSpecifier::ReadDirectory()
 struct dir_entry {
 	dir_entry() {}
-	dir_entry(const string &n, off_t s, bool is_dir, bool is_vol = false)
+	dir_entry(const string &n, long s, bool is_dir, bool is_vol = false)
 		: name(n), size(s), is_directory(is_dir), is_volume(is_vol) {}
 	dir_entry(const dir_entry &other)
 		: name(other.name), size(other.size), is_directory(other.is_directory), is_volume(other.is_volume) {}
