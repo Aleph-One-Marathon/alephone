@@ -1684,8 +1684,7 @@ static void draw_button(
 	screen_rectangle *screen_rect= get_interface_rectangle(index);
 	short pict_resource_number= MAIN_MENU_BASE + pressed;
 
-	set_drawing_clip_rectangle(screen_rect->top, screen_rect->left, screen_rect->bottom,
-		screen_rect->right);
+	set_drawing_clip_rectangle(screen_rect->top, screen_rect->left, screen_rect->bottom, screen_rect->right);
 	
 	/* Use this to avoid the fade.. */
 	draw_full_screen_pict_resource_from_images(pict_resource_number);
@@ -2248,7 +2247,7 @@ static void display_screen(
 			full_fade(_start_cinematic_fade_in, current_picture_clut);
 
 			draw_full_screen_pict_resource_from_images(pict_resource_number);
-#if defined(MAC_SDL_KLUDGE)
+#if defined(MAC_SDL_KLUDGE) 
 			draw_full_screen_pict_resource_from_images(pict_resource_number);
 #endif
 			picture_drawn= true;
@@ -2289,11 +2288,21 @@ static void handle_interface_menu_screen_click(
 	short index;
 	screen_rectangle *screen_rect;
 
+#if defined(SDL_FORCERES_HACK)
+	short xoffset, yoffset;
+	xoffset = (SDL_GetVideoSurface()->w - 640) / 2;
+	yoffset = (SDL_GetVideoSurface()->h - 480) / 2;
+#endif
+
 	/* find it.. */
 	for(index= _new_game_button_rect; index<NUMBER_OF_INTERFACE_RECTANGLES; ++index)
 	{
 		screen_rect= get_interface_rectangle(index);
+#if defined(SDL_FORCERES_HACK)
+		if (point_in_rectangle(x - xoffset, y - yoffset, screen_rect))
+#else
 		if(point_in_rectangle(x, y, screen_rect))
+#endif
 		{
 			break;
 		}
@@ -2318,7 +2327,11 @@ static void handle_interface_menu_screen_click(
 				bool state;
 				
 				get_mouse_position(&x, &y);
-				state= point_in_rectangle(x, y, screen_rect);
+#if defined(SDL_FORCERES_HACK)
+				state= point_in_rectangle(x - xoffset, y - yoffset, screen_rect);
+#else
+				state = point_in_rectangle(x, y, screen_rect);
+#endif
 				
 				if(state != last_state)
 				{

@@ -145,8 +145,11 @@ void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog)
 
 	// Set screen to 640x480 without OpenGL for menu
 	screen_mode = *mode;
+#if defined(SDL_FORCERES_HACK)
+	change_screen_mode(get_screen_mode(), true);
+#else
 	change_screen_mode(640, 480, bit_depth, true);
-
+#endif
 	screen_initialized = true;
 }
 
@@ -223,7 +226,11 @@ void exit_screen(void)
 {
 	// Return to 640x480 without OpenGL
 	in_game = false;
+#if defined(SDL_FORCERES_HACK)
+	change_screen_mode(get_screen_mode(), true);
+#else
 	change_screen_mode(640, 480, bit_depth, true);
+#endif
 
 #ifdef HAVE_OPENGL
 	OGL_StopRun();
@@ -266,7 +273,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		exit(1);
 	}
 	if (depth == 8) {
-		SDL_Color colors[256];
+	        SDL_Color colors[256];
 		build_sdl_color_table(interface_color_table, colors);
 		SDL_SetColors(main_surface, colors, 0, 256);
 	}
@@ -311,7 +318,11 @@ void toggle_fullscreen(bool fs)
 		if (in_game)
 			change_screen_mode(&screen_mode, true);
 		else {
-			change_screen_mode(640, 480, bit_depth, true);
+#if defined(SDL_FORCERES_HACK)
+		  change_screen_mode(get_screen_mode(), true);
+#else
+		  change_screen_mode(640, 480, bit_depth, true);
+#endif
 			clear_screen();
 		}
 	}

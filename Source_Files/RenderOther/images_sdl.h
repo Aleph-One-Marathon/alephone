@@ -751,10 +751,10 @@ static void draw_picture(LoadedResource &rsrc)
 	if (draw_clip_rect_active) {
 		src_rect.w = dst_rect.w = draw_clip_rect.right - draw_clip_rect.left;
 		src_rect.h = dst_rect.h = draw_clip_rect.bottom - draw_clip_rect.top;
-		src_rect.x = draw_clip_rect.left - dst_rect.x;
-		src_rect.y = draw_clip_rect.top - dst_rect.y;
-		dst_rect.x = draw_clip_rect.left;
-		dst_rect.y = draw_clip_rect.top;
+		src_rect.x = draw_clip_rect.left - (640 - s->w) / 2;
+		src_rect.y = draw_clip_rect.top - (480 - s->h) / 2;
+		dst_rect.x += draw_clip_rect.left- (640 - s->w) / 2;
+		dst_rect.y += draw_clip_rect.top - (480 - s->h) / 2;
 	} else {
 		// Clear destination to black
 		SDL_FillRect(video, NULL, SDL_MapRGB(video->format, 0, 0, 0));
@@ -767,8 +767,8 @@ static void draw_picture(LoadedResource &rsrc)
 	// Update display and free picture surface
 	SDL_UpdateRects(video, 1, &dst_rect);
 #ifdef HAVE_OPENGL
-	if (video->flags & SDL_OPENGL)
-		SDL_GL_SwapBuffers();
+		if (video->flags & SDL_OPENGL)
+		  SDL_GL_SwapBuffers();
 #endif
 }
 
