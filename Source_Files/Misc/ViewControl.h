@@ -48,6 +48,9 @@ struct LandscapeOptions
 	// Necessary because OpenGL prefers powers of 2, and Bungie's landscapes have heights
 	// that are not powers of 2.
 	short OGL_AspRatExp;
+	// Whether the texture repeats in the vertical direction (true: like Marathon 1)
+	// or gets clamped in the vertical direction (false: like Marathon 2/oo)
+	bool VertRepeat;
 	// This is the azimuth or yaw (full circle = 512);
 	// the texture is shifted leftward, relative to view direction, by this amount.
 	angle Azimuth;
@@ -55,7 +58,7 @@ struct LandscapeOptions
 	// Constructor: sets everything to defaults appropriate for standard textures
 	// Same scale for horizontal and vertical, 2^1 = 2 repeats,
 	// OpenGL hight is half width, and the azimuth is zero
-	LandscapeOptions(): HorizExp(1), VertExp(1), OGL_AspRatExp(1), Azimuth(0) {}
+	LandscapeOptions(): HorizExp(1), VertExp(1), OGL_AspRatExp(1), VertRepeat(false), Azimuth(0) {}
 };
 
 extern LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc);
