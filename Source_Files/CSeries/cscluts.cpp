@@ -5,6 +5,7 @@
 #include <Memory.h>
 
 #include "cscluts.h"
+#include "FileHandler.h"
 
 extern RGBColor rgb_black={0x0000,0x0000,0x0000};
 extern RGBColor rgb_white={0xFFFF,0xFFFF,0xFFFF};
@@ -50,11 +51,13 @@ CTabHandle build_macintosh_color_table(
 
 void build_color_table(
 	color_table *table,
-	CTabHandle clut)
+	LoadedResource& clut_rsrc)
 {
 	int i,n;
 	ColorSpec *src;
 	rgb_color *dst;
+	
+	CTabHandle clut = CTabHandle(clut_rsrc.GetHandle());
 
 	n=(*clut)->ctSize+1;
 	if (n<0) {
