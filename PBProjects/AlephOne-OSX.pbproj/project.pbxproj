@@ -197,7 +197,7 @@
 			buildSettings = {
 				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks";
-				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Libr\nary/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
+				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Libr\n\nary/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				LIBRARY_SEARCH_PATHS = "";
@@ -821,6 +821,38 @@
 //F52
 //F53
 //F54
+		F50028EE038EE8C201000105 = {
+			children = (
+				F50028F0038EE8C201000105,
+				F50028F1038EE8C201000105,
+				F50028F2038EE8C201000105,
+				F50028FA038EE8C201000105,
+			);
+			isa = PBXGroup;
+			name = tools;
+			path = "/Volumes/Sprawl/Users/astrange/Desktop/Development/Aleph One/alephcvs/aleph/tools";
+			refType = 0;
+		};
+		F50028F0038EE8C201000105 = {
+			isa = PBXFileReference;
+			path = dumprsrcmap.cpp;
+			refType = 4;
+		};
+		F50028F1038EE8C201000105 = {
+			isa = PBXFileReference;
+			path = dumpwad.cpp;
+			refType = 4;
+		};
+		F50028F2038EE8C201000105 = {
+			isa = PBXFileReference;
+			path = forks2single.c;
+			refType = 4;
+		};
+		F50028FA038EE8C201000105 = {
+			isa = PBXFileReference;
+			path = single2forks.c;
+			refType = 4;
+		};
 		F50D2BD502F86DDA01000105 = {
 			isa = PBXFileReference;
 			path = precompiled_headers.h;
@@ -2080,6 +2112,7 @@
 				F5CC92D70240D54401A80001,
 				F5CC91FE0240D09B01A80001,
 				F5CC924E0240D28201A80001,
+				F50028EE038EE8C201000105,
 			);
 			isa = PBXGroup;
 			name = Sources;
@@ -2324,9 +2357,9 @@
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O3 -finline-functions -fno-rtti -frename-registers -fprefetch-loop-arrays -mcpu=750 -mtune=750 -mpowerpc-gfxopt -mmultiple -mstring";
-				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAS_UNISTD_H -x c++ ";
-				OTHER_LDFLAGS = "-lobjc";
+				OPTIMIZATION_CFLAGS = "-O2 -finline-functions -finline-limit=400 -fmerge-all-constants -fschedule-insns2 -fno-rtti -frename-registers -fprefetch-loop-arrays";
+				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  -mcpu=750 -mtune=750 -mpowerpc-gfxopt -mmultiple -mstring";
+				OTHER_LDFLAGS = "-lobjc -flat_namespace";
 				OTHER_REZFLAGS = "";
 				PRECOMPILE_PREFIX_HEADER = YES;
 				PREFIX_HEADER = precompiled_headers.h;
