@@ -462,6 +462,9 @@ static void LoadCoreGraphicsFader();
 
 #endif
 
+#if USES_NIBS
+static pascal OSStatus CEvtWindowUpdateEvents (EventHandlerCallRef nextHandler, EventRef theEvent, void* userData);
+#endif
 
 /* ---------- code */
 void initialize_screen(
@@ -575,6 +578,14 @@ void initialize_screen(
 		assert(screen_window);
 		SetWRefCon(screen_window, refSCREEN_WINDOW);
 		ShowWindow(screen_window);
+
+#if USES_NIBS
+		static EventTypeSpec windowEvents[] = {
+			{kEventClassWindow, kEventWindowDrawContent}
+		};
+		static EventHandlerUPP _CEWindowUpdateUPP = NewEventHandlerUPP(CEvtWindowUpdateEvents);
+		InstallWindowEventHandler (screen_window, _CEWindowUpdateUPP, 1, windowEvents, NULL, NULL);
+#endif
 
 		/* allocate the bitmap_definition structure for our GWorld (it is reinitialized every frame */
 		world_pixels_structure= (struct bitmap_definition *) NewPtr(sizeof(struct bitmap_definition)+sizeof(pixel8 *)*MAXIMUM_WORLD_HEIGHT);
@@ -3125,4 +3136,25 @@ void animate_screen_clut_osx(
 			CGSetDisplayTransferByTable_Ptr(0, color_table->color_count, redTable, greenTable, blueTable);
 #endif
 	}
+#endif
+
+#if USES_NIBS
+static pascal OSStatus CEvtWindowUpdateEvents (EventHandlerCallRef nextHandler,
+    EventRef theEvent,
+    void* userData)
+{
+	OSStatus err = eventNotHandledErr;
+
+	if (nextHandler)
+		err = CallNextEventHandler (nextHandler, theEvent);
+
+	if (err == noErr || err == eventNotHandledErr)
+	{
+		EventRecord eventRec;
+		ConvertEventRefToEventRecord(theEvent, &eventRec);
+		update_game_window((WindowPtr)eventRec.message, &eventRec);
+		err= noErr;
+	}
+	return err;
+}
 #endif
