@@ -68,7 +68,7 @@ void do_preferences(void)
 
 	if (mode.bit_depth != graphics_preferences->screen_mode.bit_depth) {
 		paint_window_black();
-		initialize_screen(&graphics_preferences->screen_mode);
+		initialize_screen(&graphics_preferences->screen_mode, false);
 
 		/* Re fade in, so that we get the proper colortable loaded.. */
 		display_main_menu();

@@ -109,7 +109,7 @@ static void DrawHUD(SDL_Rect &dest_rect);
  *  Initialize screen management
  */
 
-void initialize_screen(struct screen_mode_data *mode)
+void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog)
 {
 	interface_bit_depth = bit_depth = mode->bit_depth;
 
