@@ -249,15 +249,11 @@ static void add_overhead_thumbnail(
 	GetGWorld(&old_gworld, &old_device);
 	SetGWorld(world_pixels, (GDHandle) NULL);
 
-#if defined(USE_CARBON_ACCESSORS) && defined(assert)
-	Rect portRect;
-	GetPortBounds(world_pixels, &portRect);
-	assert(THUMBNAIL_WIDTH<RECTANGLE_WIDTH(&portRect));
-	assert(THUMBNAIL_HEIGHT<RECTANGLE_HEIGHT(&portRect));
-#else
-	assert(THUMBNAIL_WIDTH<RECTANGLE_WIDTH(&world_pixels->portRect));
-	assert(THUMBNAIL_HEIGHT<RECTANGLE_HEIGHT(&world_pixels->portRect));
-#endif
+	// Note well. We're using world_pixels to create our thumbnail pict within.
+	// If world_pixels is runing as a postage stamp (low-res + small display space)
+	// Then it is actually smaller than the size we're looking to build a thumbnail
+	// within. But seeing as we're generating pict images and using drawing commands
+	// instead of bit-wise operations. It all works out.
 
 	/* Create the bounding rectangle */
 	SetRect(&bounds, 0, 0, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);

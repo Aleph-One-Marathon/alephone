@@ -234,17 +234,19 @@ static bool TextureConfigureDialog(short WhichTexture)
 	
 	// Clean up
 #if defined(USE_CARBON_ACCESSORS)
-#if USE_SHEETS
+# if USE_SHEETS
 	HideSheetWindow(GetDialogWindow(Dialog));
-	SelectWindow(frontWindow);
-#else
+# else
 	HideWindow(GetDialogWindow(Dialog));
-#endif
+# endif
 #else
 	HideWindow(Dialog);
 #endif
 	DisposeDialog(Dialog);
-	
+
+#if defined(USE_CARBON_ACCESSORS) && USE_SHEETS
+	SelectWindow(frontWindow);
+#endif
 	return IsOK;
 }
 

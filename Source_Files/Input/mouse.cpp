@@ -334,7 +334,7 @@ static void set_mouse_location(
 	Point where)
 {
 #if defined(TARGET_API_MAC_CARBON)
-//	CGWarpMouseCursorPosition(CGPointMake(where.h, where.v));
+	CGWarpMouseCursorPosition(CGPointMake(where.h, where.v));
 #else
 	if (mouse_device)
 	{
@@ -414,6 +414,7 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 						MPExitCriticalRegion(CE_MouseLock);
 					}
 					err = noErr;
+					CGWarpMouseCursorPosition(CGPointMake(CENTER_MOUSE_X, CENTER_MOUSE_Y));
 					break;
 
 				case kEventMouseDown:

@@ -1882,7 +1882,8 @@ void quadruple_screen(
 			for (count= data->width; count>0; --count)
 			{
 				in= *read++;
-				*write1++= *write2++= *write1++= *write2++= in;
+				*write1++= *write2++= in;
+				*write1++= *write2++= in;
 			}
 		}
 		else
