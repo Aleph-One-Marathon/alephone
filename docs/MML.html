@@ -71,6 +71,7 @@ This element has no attributes and contains these child elements:
 <li><a href="#items">Items Element: &lt;items&gt;</a>
 <li><a href="#scenery">Scenery Element: &lt;scenery&gt;</a>
 <li><a href="#landscapes">Landscapes Element: &lt;landscapes&gt;</a>
+<li><a href="#textureloading">Texture-Loading Element: &lt;texture_loading&gt;</a>
 <li><a href="#opengl">OpenGL-Rendering Element: &lt;opengl&gt;</a>
 <li><a href="#dynlims">Dynamic-Limits Element: &lt;dynamic_limits&gt;</a>
 <li><a href="#playername">Player-Name Element: &lt;player_name&gt;</a>
@@ -1116,6 +1117,45 @@ or will not include the top and bottom parts. (default: 1 -- height is 1/2 width
 <li>azimuth: angle in degrees to rotate the texture leftward relative to the map.
 This could be useful for aligning landscape features with map ones. (default: 0)
 </ul>
+<p>
+
+<hr>
+
+<h3><a name="textureloading">Texture-Loading Element: &lt;texture_loading&gt;</a></h3>
+
+This kind of element is for setting what textures are to be loaded.
+It has one attribute, "landscapes",  which is <a href="#boolean">boolean</a>;
+it indicates whether or not to load M2/Moo-style landscapes (collections 26 to 30).
+It also has a child element, &lt;texture_env&gt;, for indicating what wall-texture and
+scenery collections are to be loaded.
+It takes these attributes, all mandatory:
+<ul>
+<li>index: which one of the texture environments (water, lava, sewage, etc.)
+<li>which: which position in the texture-environment definition (0 = first, etc;).
+There are currently 7 such positions available.
+<li>coll: which collection in that position; -1 is no collection.
+</ul>
+<p>
+
+The defaults for Marathon 2/oo are, in order (walls, scenery):
+<ol type=1 start=1000>
+<li>17, 22 -- Lh'owon Water
+<li>18, 23 -- Lh'owon Lava
+<li>19, 24 -- Lh'owon Sewage
+<li>20, 25 -- Jjaro
+<li>21, 26 -- Pfhor
+</ol>
+<p>
+
+Those for Marathon 1 are, in order (walls, control panels, scenery):
+<ol type=1 start=1000>
+<li>17, 8, 23 -- Marathon Set 1
+<li>18, 8, 23 -- Marathon Set 2
+<li>19, 8, 23 -- Marathon Set 3
+<li>2, 24, 25 -- Pfhor
+</ol>
+Note also that Marathon 1 has its landscapes in the wall-texture collections;
+the attribute "landscapes" is to be false for it.
 <p>
 
 <hr>
