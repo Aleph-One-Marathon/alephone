@@ -261,14 +261,17 @@ static void handle_high_level_event(EventRecord *event);
 void update_any_window(WindowPtr window, EventRecord *event);
 void activate_any_window(WindowPtr window, EventRecord *event, bool active);
 
-bool is_keypad(short keycode);
+static bool is_keypad(short keycode);
 
 // LP addition: compose a MacOS event from a local-event-queue event;
 // returns whether one was composed
-bool ComposeOSEventFromLocal(EventRecord& Event);
+static bool ComposeOSEventFromLocal(EventRecord& Event);
+
+// Reads in the filespec of the root directory
+static void ReadRootDirectory();
 
 // Looks for MML files and resources in that directory and parses them
-void FindAndParseFiles(DirectorySpecifier& DirSpec);
+static void FindAndParseFiles(DirectorySpecifier& DirSpec);
 
 // For detecting whether modifiers had initially been pressed
 static bool KeyIsPressed(KeyMap key_map, short key_code);
@@ -427,6 +430,9 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	XML_ResourceForkLoader.SourceName = "[Application]";
 	XML_ResourceForkLoader.ParseResourceSet('TEXT');
 	
+	// Need to set the root directory before doing reading any other files
+	ReadRootDirectory();
+	
 	// Look for such files in subdirectories specified in a STR# resource:
 	const int PathID = 128;
 	Handle PathStrings = Get1Resource('STR#',PathID);
@@ -459,7 +465,6 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 			//fdprintf("Dir Path = %s",PathSpec);
 			
 			DirectorySpecifier DirSpec;
-			if (!DirSpec.SetToAppParent()) break;
 			if (!DirSpec.SetToSubdirectory((char *)PathSpec)) continue;
 			FindAndParseFiles(DirSpec);
 		}
@@ -1168,8 +1173,7 @@ static void initialize_marathon_music_handler(
 	OSErr error;
 	bool initialized= false;
 	
-	SongFile.SetToApp();
-	SongFile.SetName(getcstr(temporary, strFILENAMES, filenameMUSIC),NONE);
+	SongFile.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameMUSIC)); // typecode: NONE
 	if (SongFile.Exists())
 	// error= get_file_spec(&music_file_spec, strFILENAMES, filenameMUSIC, strPATHS);
 	// if (!error)
@@ -1614,6 +1618,74 @@ static bool WasRepeated(vector<TypedSpec>& SpecList, TypedSpec& Spec)
 {
 	// Test for a repeat; STL makes it E-Z
 	return (find(SpecList.begin(),SpecList.end(),Spec) != SpecList.end());
+}
+
+
+void ReadRootDirectory()
+{
+	// Set up its name
+	FileSpecifier F;
+	F.SetToApp();
+	F.SetName("RootDirectory.txt",NONE);
+	
+	// No need to work with a nonexistent file
+	if (!F.Exists()) return;
+	
+	OpenedFile OFile;
+	if (!F.Open(OFile)) return;
+	
+	long Len = 0;
+	OFile.GetLength(Len);
+	if (Len <= 0) return;
+	
+	vector<char> FileContents(Len+1);
+	if (!OFile.Read(Len,&FileContents[0])) return;
+	FileContents[Len] = 0;
+	
+	// Strip Unix-style comments, blank lines
+	int StartIndex = NONE;
+	enum {
+		S_Normal,
+		S_LineEnded,
+		S_InComment
+	};
+	int State = S_LineEnded;
+	for (int k=0; k<FileContents.size(); k++)
+	{
+		char c = FileContents[k];
+		if (c == '\r' || c == '\n')
+		{
+			if (State == S_Normal)
+			{
+				// Found end of desired string;
+				// tack on C end-of-string
+				FileContents[k] = 0;
+				break;
+			}
+			else
+				State = S_LineEnded;
+		}
+		else if (State == S_LineEnded)
+		{
+			if (c == '#')
+			{
+				// A comment begins here
+				State = S_InComment;
+			}
+			else
+			{
+				// The desired line begins here
+				StartIndex = k;
+				State = S_Normal;
+			}
+		}
+	}
+	
+	if (StartIndex == NONE) return;
+	
+	fdprintf(&FileContents[StartIndex]);
+	
+	Files_SetRootDirectory(&FileContents[StartIndex]);
 }
 
 
