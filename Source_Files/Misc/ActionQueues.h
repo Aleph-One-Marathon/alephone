@@ -22,7 +22,10 @@
 May 9, 2002 (Loren Petrich):
 	Changed enqueueActionFlags() so that it can make zombie players controllable by Pfhortran;
 	did this by adding the argument "ZombiesControllable" (default: false)
- 	
+	
+Jun 9, 2002 (tiennou):
+	Following the above example, I modified dequeueActionFlags() & countActionFlags().
+	 	
  *  Encapsulates a set of action_queues, so we can have multiple sets and explicitly choose one.
  *
  *  Created by woody on Wed Feb 20 2002.
@@ -41,9 +44,11 @@ public:
 
     void		enqueueActionFlags(int inPlayerIndex, uint32* inFlags, int inFlagsCount,
     				bool ZombiesControllable = false);
-    uint32		dequeueActionFlags(int inPlayerIndex);
+    uint32		dequeueActionFlags(int inPlayerIndex,
+    				bool ZombiesControllable = false);
     
-    unsigned int	countActionFlags(int inPlayerIndex);
+    unsigned int	countActionFlags(int inPlayerIndex,
+    					bool ZombiesControllable = false);
     
     ~ActionQueues();
     

@@ -24,6 +24,9 @@ May 9, 2002 (Loren Petrich):
 	Changed enqueueActionFlags() so that it can make zombie players controllable by Pfhortran;
 	did this by adding the argument "ZombiesControllable" (default: false)
 	
+Jun 9, 2002 (tiennou):
+	Following the above example, I modified dequeueActionFlags() & countActionFlags().
+	
  *  An ActionQueues object encapsulates a set of players' action_queues.
  *
  *  Created by woody on Wed Feb 20 2002.
@@ -112,14 +115,15 @@ ActionQueues::enqueueActionFlags(
 /* dequeue’s a single action flag from the given queue (zombies always return zero) */
 uint32
 ActionQueues::dequeueActionFlags(
-	int player_index)
+	int player_index,
+	bool ZombiesControllable)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct action_queue *queue= mQueueHeaders+player_index;
 
 	uint32 action_flags;
 
-	if (PLAYER_IS_ZOMBIE(player))
+	if (!ZombiesControllable && PLAYER_IS_ZOMBIE(player))
 	{
 		//dprintf("Player is zombie!", player_index);	// CP: Disabled for scripting
 		action_flags= 0;
@@ -140,13 +144,14 @@ ActionQueues::dequeueActionFlags(
 /* returns the number of elements sitting in the given queue (zombies always return queue diameter) */
 unsigned int
 ActionQueues::countActionFlags(
-	int player_index)
+	int player_index,
+	bool ZombiesControllable)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct action_queue *queue= mQueueHeaders+player_index;
 	unsigned int size;
 
-	if (PLAYER_IS_ZOMBIE(player))
+	if (!ZombiesControllable && PLAYER_IS_ZOMBIE(player))
 	{
 		//dprintf("PLayer %d is a zombie", player_index);  // CP: Disabled for scripting
 		size= mQueueSize;
