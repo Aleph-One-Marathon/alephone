@@ -33,6 +33,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 	Put screen choosing dialog in a sheet under Carbon
+
+Feb 14, 2002 (Br'fin (Jeremy Parsons)):
+	Made the Carbon sheet background transparent
+	Changed the background for the screen selector to be an opaque backgrounded image well in Carbon
 */
 
 #include <stdlib.h>
@@ -198,7 +202,24 @@ static pascal void draw_desktop(
 	static RGBColor fifty={0x7FFF,0x7FFF,0x7FFF};
 
 	GetDialogItem(dlg,item,&it,&ih,&ir);
+#if defined(TARGET_API_MAC_CARBON)
+	CGrafPtr port = GetWindowPort(GetDialogWindow(dlg));
+	SInt16   pixelDepth = (*GetPortPixMap(port))->pixelSize;
+
+	ThemeDrawingState savedState;
+	ThemeDrawState curState =
+		IsWindowActive(GetDialogWindow(dlg))?kThemeStateActive:kThemeStateInactive;
+
+	GetThemeDrawingState(&savedState);
+	SetThemeBackground(
+		(curState == kThemeStateActive)?kThemeBrushDialogBackgroundActive:kThemeBrushDialogBackgroundInactive,
+		pixelDepth, pixelDepth > 1);
+	EraseRect(&ir);
+	DrawThemeGenericWell (&ir, curState, false);
+	SetThemeDrawingState(savedState, true);
+#else
 	FrameRect(&ir);
+#endif
 	for (i=0; i<devcnt; i++) {
 		ir=devices[i].rect;
 		if (i==curix) {
@@ -405,6 +426,7 @@ void display_device_dialog(
 	SetControlValue((spec->flags&1<<gdDevType) ? colorsradio : graysradio,1);
 #if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
+	SetThemeWindowBackground(GetDialogWindow(dlg), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(dlg), ActiveNonFloatingWindow());
 #else
 	ShowWindow(GetDialogWindow(dlg));

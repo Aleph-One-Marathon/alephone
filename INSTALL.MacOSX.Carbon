@@ -66,8 +66,6 @@ in the same directory as the AlephOne application.
 Issues, Bugs, and annoyances
 ----------------------------
 
-The software renderer seems extremely slow.
-
 Choice of Frequencies for full screen display is funky. Also leads to
 AlephOne getting confused about screen capabilities. (Fires off the warning
 that AlephOne requires a screen capable of 256 colors or more and is 13" or
@@ -83,3 +81,18 @@ Marathon 2's starting music doesn't play because it's an AIFF with
 a different file type (mus2) so Quicktime doesn't recognize it.
 It seems more trouble than it's worth to implement. Map makers who
 want startup audio can use a real file type AIFF or a movie.
+
+Opening and closing the OpenGL preferences results in the word 'ground'
+as showing up funky or AlephOne crashing due to a System called TE Event
+Handler (There's no editable text items in the dialog....)
+
+When a preferences sheet is open, the preferences dialog isn't draggable.
+
+The Customize Keyboard dialog is not a sheet. It's seperator lines
+aren't drawn by proper user procs. And it wasn't quite made a sheet as I
+was worried about the dialog's size and small resolutions.
+
+The mouse cannot currently be inverted.
+
+There's a very strong likelihood that the dialog box to choose which monitor
+on a Mac with multiple monitors doesn't actually do anything.
