@@ -833,8 +833,9 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 	// LP change: bug out if weapons-in-hand are not to be displayed
 	if (!view->show_weapons_in_hand) return;
 	
-	// No models here
+	// No models here, and completely opaque
 	textured_rectangle.ModelPtr = NULL;
+	textured_rectangle.Opacity = 1;
 
 	/* get_weapon_display_information() returns true if there is a weapon to be drawn.  it
 		should initially be passed a count of zero.  it returns the weapon’s texture and
