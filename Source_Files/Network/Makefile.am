@@ -12,7 +12,7 @@ endif
 
 libnetwork_a_SOURCES = network.h network_audio_shared.h network_data_formats.h \
   network_dialog_widgets_sdl.h network_dialogs.h network_distribution_types.h \
-  network_games.h network_lookup_sdl.h network_messages.h network_modem.h network_private.h \
+  network_games.h network_lookup_sdl.h network_messages.h network_private.h \
   network_sound.h network_speaker_sdl.h network_speex.h network_star.h \
   NetworkGameProtocol.h RingGameProtocol.h SDL_netx.h \
   SSLP_API.h SSLP_Protocol.h StarGameProtocol.h \
