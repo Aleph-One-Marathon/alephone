@@ -1024,6 +1024,14 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 		memcpy(&Data.GlowMask[0],Value,nchars);
 		return true;
 	}
+	else if (StringsEqual(Tag,"normal_blend"))
+	{
+		return ReadBoundedInt16Value(Value,Data.NormalBlend,0,OGL_NUMBER_OF_BLEND_TYPES-1);
+	}
+	else if (StringsEqual(Tag,"glow_blend"))
+	{
+		return ReadBoundedInt16Value(Value,Data.GlowBlend,0,OGL_NUMBER_OF_BLEND_TYPES-1);
+	}
 	else if (StringsEqual(Tag,"image_scale"))
 	{
 		return ReadFloatValue(Value,Data.ImageScale);
@@ -1144,6 +1152,14 @@ bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
 		Data.GlowMask.resize(nchars);
 		memcpy(&Data.GlowMask[0],Value,nchars);
 		return true;
+	}
+	else if (StringsEqual(Tag,"normal_blend"))
+	{
+		return ReadBoundedInt16Value(Value,Data.NormalBlend,0,OGL_NUMBER_OF_BLEND_TYPES-1);
+	}
+	else if (StringsEqual(Tag,"glow_blend"))
+	{
+		return ReadBoundedInt16Value(Value,Data.GlowBlend,0,OGL_NUMBER_OF_BLEND_TYPES-1);
 	}
 	UnrecognizedTag();
 	return false;
