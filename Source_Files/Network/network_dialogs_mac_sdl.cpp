@@ -151,9 +151,11 @@ static void lost_player_callback(const SSLP_ServiceInstance* player);
 static bool key_is_down(short key_code);
 #pragma mark -
 
+#ifdef USES_NIBS
 static bool CheckSetupInformation(
 	NetgameSetupData& Data, 
 	short game_limit_type);
+#endif
 
 /* ---------- code */
 
@@ -735,7 +737,7 @@ bool network_game_setup(
 bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
-        bool ResumingGame)
+        bool inResumingGame)
 {
 	short item_hit;
 	GrafPtr old_port;
