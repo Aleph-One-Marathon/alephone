@@ -80,6 +80,7 @@ struct static_light_data /* 8*2 + 6*14 == 100 bytes */
 	
 	short unused[4];
 };
+const int SIZEOF_static_light_data = 100;
 
 /* ---------- dynamic light data */
 
