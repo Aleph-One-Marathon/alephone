@@ -144,6 +144,15 @@ static void send_packet();
 
 
 
+static inline NetworkPlayer_spoke&
+getNetworkPlayer(size_t inIndex)
+{
+        assert(inIndex < sNetworkPlayers.size());
+        return sNetworkPlayers[inIndex];
+}
+
+
+
 static inline bool
 operator !=(const NetAddrBlock& a, const NetAddrBlock& b)
 {
@@ -292,7 +301,7 @@ spoke_get_net_time()
 		sPreviousDelay = theDelay;
 	}
 
-	return (sConnected ? sOutgoingFlags.getWriteTick() - theDelay : sNetworkPlayers.at(sLocalPlayerIndex).mQueue->getWriteTick());
+	return (sConnected ? sOutgoingFlags.getWriteTick() - theDelay : getNetworkPlayer(sLocalPlayerIndex).mQueue->getWriteTick());
 }
 
 
@@ -787,7 +796,7 @@ spoke_tick()
 	}
 	else
 	{
-		int32 theLocalPlayerWriteTick = sNetworkPlayers.at(sLocalPlayerIndex).mQueue->getWriteTick();
+		int32 theLocalPlayerWriteTick = getNetworkPlayer(sLocalPlayerIndex).mQueue->getWriteTick();
 
 		// Since we're not connected, we won't be enqueueing flags for the other players in the packet handler.
 		// So, we do it here to keep the game moving.
