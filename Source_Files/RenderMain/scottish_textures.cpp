@@ -207,7 +207,7 @@ struct _vertical_polygon_line_data
 
 // i0 + i1 == MAX(i0, i1) + MIN(i0, i1)/2
 //#define calculate_shading_table(result, view, shading_tables, depth, ambient_shade)
-void calculate_shading_table(void * &result,view_data *view, void *shading_tables, short depth,_fixed ambient_shade)
+static void calculate_shading_table(void * &result,view_data *view, void *shading_tables, short depth,_fixed ambient_shade)
 { 
 	short table_index; 
 	_fixed shade; 

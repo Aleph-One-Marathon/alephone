@@ -57,6 +57,7 @@ enum {
 	_credits_button_rect,
 	_quit_button_rect,
 	_center_button_rect,
+	_singleton_game_button_rect,
 	NUMBER_OF_INTERFACE_RECTANGLES
 };
 

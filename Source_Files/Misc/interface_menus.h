@@ -61,7 +61,8 @@ enum { /* Menu interface... */
 	iReplaySavedFilm,
 	iCredits,
 	iQuit,
-	iCenterButton
+	iCenterButton,
+	iPlaySingletonLevel
 };
 
 /* This is the menu with nothing in the title, so that it doesn't show up */

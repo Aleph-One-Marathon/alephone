@@ -251,6 +251,10 @@ extern bool OGL_HUDActive;
 #define SCREEN_BASED_SCREENSHOT 0
 #endif
 
+#ifdef CHUD_PROF
+#include <CHUD/chudUtil.h>
+#endif
+
 /* ---------- constants */
 
 #ifdef DIRECT_SCREEN_TEST
@@ -805,7 +809,9 @@ void render_screen(
 	short ticks_elapsed)
 {
 	PixMapHandle pixels;
-
+#ifdef CHUD_PROF
+    chudStartStopAmber();
+#endif
 	/* make whatever changes are necessary to the world_view structure based on whichever player
 		is frontmost */
 	world_view->ticks_elapsed= ticks_elapsed;
@@ -1232,6 +1238,9 @@ void render_screen(
 	}
 
 	myUnlockPixels(world_pixels);
+#ifdef CHUD_PROF
+	chudStartStopAmber();
+#endif
 }
 
 void change_interface_clut(

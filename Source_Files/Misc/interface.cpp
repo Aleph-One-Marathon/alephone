@@ -1347,6 +1347,9 @@ void do_menu_item_command(
 					begin_game(_single_player, cheat);
 					ForceRepaintMenuDisplay();
 					break;
+				case iPlaySingletonLevel:
+				    begin_game(_single_player,2);
+				    break;
 		
 				case iJoinGame:
 #ifdef mac
@@ -1472,6 +1475,7 @@ bool enabled_item(
 	{
 		case iNewGame:
 		case iLoadGame:
+		case iPlaySingletonLevel:
 		case iPreferences:
 		case iReplaySavedFilm:
 		case iCredits:

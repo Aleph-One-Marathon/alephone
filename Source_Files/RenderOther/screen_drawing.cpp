@@ -91,6 +91,7 @@ static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES] =
 	{344, 83, 374, 271},
 	{206, 246, 347, 382},
 	{264, 522, 291, 588},
+	{0,0,0,0},
 	{0, 0, 0, 0},
 };
 
