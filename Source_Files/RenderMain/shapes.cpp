@@ -1912,13 +1912,15 @@ struct low_level_shape_definition *get_low_level_shape_definition(
 	struct collection_definition *definition= get_collection_definition(collection_index);
 	uint32 *offset_table;
 
-	if (!(low_level_shape_index>=0 && low_level_shape_index<definition->low_level_shape_count))
-		return NULL;
+	if (low_level_shape_index>=0 && low_level_shape_index<definition->low_level_shape_count)
+	{
 	
 	offset_table= (uint32 *) collection_offset(definition, definition->low_level_shape_offset_table_offset);
 	if (!offset_table) return NULL;
 	
 	return (struct low_level_shape_definition *) collection_offset(definition, offset_table[low_level_shape_index]);
+	}
+	else return NULL;
 }
 
 static struct bitmap_definition *get_bitmap_definition(
