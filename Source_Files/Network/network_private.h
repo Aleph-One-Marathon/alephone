@@ -231,8 +231,7 @@ typedef struct NetQueue NetQueue, *NetQueuePtr;
 // ZZZ: same here (should be safe to alter)
 struct NetDistributionInfo
 {
-    // ZZZ: now using a map to hold these; type_in_use obsolete
-//	bool              type_in_use;
+	bool              type_in_use;
 	bool              lossy;
 	NetDistributionProc  distribution_proc;
 };

@@ -200,11 +200,7 @@ bool NetChangeMap(struct entry_point *entry);
 
 void display_net_game_stats(void);
 
-// ZZZ change: caller specifies int16 ID for distribution type.  Unknown types (when received) are
-// passed along but ignored.  Uses an STL 'map' so ID's need not be consecutive or in any particular
-// sub-range.
-void NetAddDistributionFunction(int16 type, NetDistributionProc proc, bool lossy);
-//short NetAddDistributionFunction(NetDistributionProc proc, bool lossy);
+short NetAddDistributionFunction(NetDistributionProc proc, bool lossy);
 void NetDistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self);
 void NetRemoveDistributionFunction(short type);
 

@@ -21,10 +21,6 @@
  *  Created by Woody Zenfell, III on Thu Oct 11 2001.
 
 	16 Jan 2002 (Loren Petrich): Added packing/unpacking functions
-
-    5 Mar 2002 (Woody Zenfell):  Added network_audio_header netcpy()s.
-
-    9 Mar 2002 (Woody Zenfell):  Made some packing/unpacking functions pack/unpack more data
  */
 
 #include "network_data_formats.h"
@@ -257,14 +253,8 @@ netcpy(NetPlayer_NET* dest, const NetPlayer* src)
 	BytesToStream(S,&TempIPAddr.data,SIZEOF_IPaddress);
 	ValueToStream(S,src->identifier);
 	*(S++) = src->net_dead ? 1 : 0;
-
-    // ZZZ fix: need to process player_info now also (the rest of the code assumes it is processed here).
-    //BytesToStream(S,src->player_data,MAXIMUM_PLAYER_DATA_SIZE);
-    player_info_NET  TempPlayerInfo_NET;
-    netcpy(&TempPlayerInfo_NET, (player_info*) &src->player_data);
-    BytesToStream(S, &TempPlayerInfo_NET, SIZEOF_player_info);
-	
-    assert(S == dest->data + SIZEOF_NetPlayer);
+	BytesToStream(S,src->player_data,MAXIMUM_PLAYER_DATA_SIZE);
+	assert(S == dest->data + SIZEOF_NetPlayer);
 }
 
 void
@@ -278,13 +268,7 @@ netcpy(NetPlayer* dest, const NetPlayer_NET* src)
 	netcpy(&dest->ddpAddress,&TempIPAddr);
 	StreamToValue(S,dest->identifier);
 	dest->net_dead = *(S++) != 0;
-
-    // ZZZ: process player_info now; nobody else does it later :)
-	// StreamToBytes(S,dest->player_data,MAXIMUM_PLAYER_DATA_SIZE);
-    player_info_NET TempPlayerInfo_NET;
-    StreamToBytes(S, &TempPlayerInfo_NET, SIZEOF_player_info);
-    netcpy((player_info*) &dest->player_data, &TempPlayerInfo_NET);
-
+	StreamToBytes(S,dest->player_data,MAXIMUM_PLAYER_DATA_SIZE);
 	assert(S == src->data + SIZEOF_NetPlayer);
 }
 
@@ -303,13 +287,7 @@ netcpy(NetTopology_NET* dest, const NetTopology* src)
 	ValueToStream(S,src->tag);
 	ValueToStream(S,src->player_count);
 	ValueToStream(S,src->nextIdentifier);
-
-    // ZZZ: process game_info now, not later
-	//BytesToStream(S,src->game_data,MAXIMUM_GAME_DATA_SIZE);
-    game_info_NET   TempGameInfo_NET;
-    netcpy(&TempGameInfo_NET, (game_info*) &src->game_data);
-    BytesToStream(S, &TempGameInfo_NET, SIZEOF_game_info);
-
+	BytesToStream(S,src->game_data,MAXIMUM_GAME_DATA_SIZE);
 	for (int i=0; i<MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
 	{
 		NetPlayer_NET TempPlyrData;
@@ -326,13 +304,7 @@ netcpy(NetTopology* dest, const NetTopology_NET* src)
 	StreamToValue(S,dest->tag);
 	StreamToValue(S,dest->player_count);
 	StreamToValue(S,dest->nextIdentifier);
-
-    // ZZZ: process game_info now, not later
-	//StreamToBytes(S,dest->game_data,MAXIMUM_GAME_DATA_SIZE);
-    game_info_NET   TempGameInfo_NET;
-    StreamToBytes(S, &TempGameInfo_NET, SIZEOF_game_info);
-    netcpy((game_info*) &dest->game_data, &TempGameInfo_NET);
-
+	StreamToBytes(S,dest->game_data,MAXIMUM_GAME_DATA_SIZE);
 	for (int i=0; i<MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
 	{
 		NetPlayer_NET TempPlyrData;
@@ -424,27 +396,3 @@ netcpy(NetChatMessage* dest, const NetChatMessage_NET* src)
 }
 
 #endif // NETWORK_CHAT
-
-#pragma mark -
-
-
-
-
-
-#pragma mark network_audio_header
-
-void
-netcpy(network_audio_header_NET* dest, const network_audio_header* src) {
-    uint8* S = dest->data;
-    ValueToStream(S, src->mReserved);
-    ValueToStream(S, src->mFlags);
-    assert(S == dest->data + SIZEOF_network_audio_header);
-}
-
-void
-netcpy(network_audio_header* dest, const network_audio_header_NET* src) {
-    uint8* S = (uint8*) src->data;
-    StreamToValue(S, dest->mReserved);
-    StreamToValue(S, dest->mFlags);
-    assert(S == src->data + SIZEOF_network_audio_header);
-}

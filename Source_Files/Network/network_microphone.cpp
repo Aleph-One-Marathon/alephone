@@ -22,6 +22,9 @@ Sunday, August 14, 1994 1:08:47 AM- go nuts
 
 Tuesday, December 6, 1994 10:38:50 PM  (Jason)
 	choose closest sample rate on target device to rate22khz.
+
+Aug 20, 2001 (Ian Rickard):
+	#if UNUSED out handle_microphone and start_sound_recording
 */
 
 #include <string.h>
@@ -204,6 +207,7 @@ void close_network_microphone(void)
 	}
 }
 
+#if UNUSED
 void handle_microphone(bool triggered)
 {
 	OSErr err= noErr;
@@ -250,6 +254,7 @@ void handle_microphone(bool triggered)
 
 	if(err) dprintf("Err in handle microphone: %d", err);	
 }
+#endif
 
 /* -------- private functions */
 
@@ -348,6 +353,7 @@ static OSErr closest_supported_sample_rate(
 	return error;
 }
 
+#if UNUSED
 static OSErr start_sound_recording(
 	void)
 {
@@ -366,6 +372,7 @@ static OSErr start_sound_recording(
 
 	return SPBRecord(&net_microphone.param_block, true);
 }
+#endif
 
 /* -------- Completion callback function.. */
 

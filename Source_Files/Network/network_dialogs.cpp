@@ -46,14 +46,6 @@ Sept-Nov 2001 (Woody Zenfell):
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Moved shared SDL hint address info here from network_dialogs_sdl.cpp
 	Reworked #ifdef mac to #if !defined(HAVE_SDL_NET)
-
-Mar 1, 2002 (Woody Zenfell):
-    Reworked SDL dialog-box level-choosing code; interface is different now (can't use
-    get_selection_control_value(), gives and takes level numbers instead).  SDL prefs now store
-    level number instead of menu index.  Using #ifdef mac to decide which interface to use.
-
-Mar 8, 2002 (Woody Zenfell):
-    Network microphone UI is now handled for SDL version as well (since SDL has net-audio now)
 */
 
 #include	"cseries.h"
@@ -164,18 +156,18 @@ extract_setup_dialog_information(
 	} else {
 		entry_flags= get_entry_point_flags_for_game_type(game_information->net_game_type);
 	}
-#ifdef mac
-	menu_index_to_level_entry(get_selection_control_value(dialog, iENTRY_MENU), entry_flags, &entry);
-#else
-    get_selected_entry_point(dialog, iENTRY_MENU, &entry);
-#endif
+	menu_index_to_level_entry(get_selection_control_value(dialog, iENTRY_MENU), entry_flags, &entry);    
     network_preferences->game_type= game_information->net_game_type;
 
 	game_information->level_number = entry.level_number;
 	strcpy(game_information->level_name, entry.level_name);
 	game_information->difficulty_level = get_selection_control_value(dialog, iDIFFICULTY_MENU)-1;
 
+#if !HAVE_SDL_NET
 	game_information->allow_mic = (bool) get_boolean_control_value(dialog, iREAL_TIME_SOUND);
+#else
+	game_information->allow_mic = false;
+#endif
 
 
 #if HAVE_SDL_NET
@@ -196,11 +188,7 @@ extract_setup_dialog_information(
 #endif
 	network_preferences->allow_microphone = game_information->allow_mic;
 	network_preferences->difficulty_level = game_information->difficulty_level;
-#ifdef mac
 	network_preferences->entry_point= get_selection_control_value(dialog, iENTRY_MENU)-1;
-#else
-    network_preferences->entry_point = entry.level_number;
-#endif
 	network_preferences->game_options = game_information->game_options;
 	network_preferences->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT)*60*TICKS_PER_SECOND;
 	if (network_preferences->time_limit <= 0) // if it wasn't chosen, this could be so
@@ -279,11 +267,7 @@ fill_in_game_setup_dialog(
 	modify_selection_control(dialog, iGATHER_COLOR, CONTROL_ACTIVE, player_preferences->color+1);
 	modify_selection_control(dialog, iGATHER_TEAM, CONTROL_ACTIVE, player_preferences->team+1);
 	modify_selection_control(dialog, iDIFFICULTY_MENU, CONTROL_ACTIVE, network_preferences->difficulty_level+1);
-#ifdef mac
-    modify_selection_control(dialog, iENTRY_MENU, CONTROL_ACTIVE, network_preferences->entry_point+1);
-#else
-    select_entry_point(dialog, iENTRY_MENU, network_preferences->entry_point);
-#endif
+	modify_selection_control(dialog, iENTRY_MENU, CONTROL_ACTIVE, network_preferences->entry_point+1);
 
 	// START Benad
 	if (network_preferences->game_type == _game_of_defense)
@@ -310,7 +294,9 @@ fill_in_game_setup_dialog(
 	if (player_information->name[0]==0) modify_control_enabled(dialog, iOK, CONTROL_INACTIVE);
 
 	// set up the game options
+#if !HAVE_SDL_NET
 	modify_boolean_control(dialog, iREAL_TIME_SOUND, CONTROL_ACTIVE, network_preferences->allow_microphone);
+#endif
 	set_dialog_game_options(dialog, network_preferences->game_options);
 
 	/* Setup the team popup.. */

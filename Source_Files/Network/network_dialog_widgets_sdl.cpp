@@ -21,8 +21,6 @@
  *  Implementation of network-dialog-specific widgets in the SDL dialog system.
  *
  *  Created by Woody Zenfell, III on Fri Sep 28 2001.
- *
- *  Mar 1, 2002 (Woody Zenfell): Added new w_entry_point_selector widget.
  */
 
 #include	"network_dialog_widgets_sdl.h"
@@ -37,10 +35,6 @@
 #include	"HUDRenderer.h"
 #include	"shell.h"
 #include	"collection_definition.h"
-
-// here are some for w_entry_point_selector
-#include    "preferences.h"
-#include    "screen.h"
 
 // for TS_GetCString, get shared ref rather than copying string.
 #include	"TextStrings.h"
@@ -1228,6 +1222,8 @@ w_players_in_game2::draw_bar(SDL_Surface* s, int inCenterX, int inBarColorIndex,
         outBarInfo.pixel_color  = thePixelColor;
     } // if(inBarValue > 0)
 } // draw_bar
+<<<<<<< network_dialog_widgets_sdl.cpp
+=======
 
 
 
@@ -1340,3 +1336,4 @@ w_entry_point_selector::event(SDL_Event &e) {
 		}
 	}
 }
+>>>>>>> 1.6

@@ -21,8 +21,6 @@
  *  Custom widgets for network-related dialogs in the SDL version.
  *
  *  Created by Woody Zenfell, III on Fri Sep 28 2001.
- *
- *  Mar 1, 2002 (Woody Zenfell): added w_entry_point_selector widget.
  */
 
 #ifndef	NETWORK_DIALOG_WIDGETS_SDL_H
@@ -34,17 +32,6 @@
 #include "player.h"	// for MAXIMUM_PLAYER_NAME_LENGTH
 #include "PlayerImage_sdl.h"
 #include "network_dialogs.h" // for net_rank
-
-
-// I don't like putting this here, but it exposes them to exactly the right folks
-// (by semi-coincidence).
-// ZZZ: get strings from outside (MML) for easier localization.
-enum {
-    kDifficultyLevelsStringSetID	= 145,
-    kNetworkGameTypesStringSetID	= 146,
-    kEndConditionTypeStringSetID	= 147,
-    kScoreLimitTypeStringSetID		= 148
-};
 
 
 
@@ -222,69 +209,5 @@ protected:
         
     // Class (static) methods
 };
-
-
-
-////// w_entry_point_selector //////
-// Helps user choose a level that works for a particular game type
-// from the currently active map file
-class w_entry_point_selector : public w_select_button {
-public:
-    w_entry_point_selector(const char* inName, short inGameType, int16 inLevelNumber)
-        : w_select_button(inName, mEntryPoint.level_name, gotSelectedCallback, this), mGameType(NONE)
-    {
-        mEntryPoint.level_number = inLevelNumber;
-
-        setGameType(inGameType);
-    }
-
-    // Adjusts entry point if new game type is not supported by current entry point.
-    void    setGameType(short inGameType) {
-        if(inGameType != mGameType) {
-            mGameType = inGameType;
-            validateEntryPoint();
-        }
-    }
-
-    // Choose first available entry point for current game type (good if map file changed)
-    void    reset() {
-        mEntryPoint.level_number = NONE;
-        validateEntryPoint();
-    }
-
-    // Choose entry point matching level number, if possible
-    void    setLevelNumber(int16 inLevelNumber) {
-        mEntryPoint.level_number = inLevelNumber;
-        validateEntryPoint();
-    }
-
-    // Return currently-chosen entry point.
-    const entry_point& getEntryPoint() {
-        return mEntryPoint;
-    }
-
-    // User can cursor left or right to cycle through options.
-    virtual void event(SDL_Event& e);
-
-private:
-	// Pop up a box (if enough choices) and let user choose a level.
-    void gotSelected();
-
-    // Bounces callback to arg->gotSelected()
-    static void gotSelectedCallback(void *arg);
-
-    // This uses the currently-set level number and currently-set game type to
-    // (re-)lookup the entry point.  Use if map file or game type changes.
-    // Sets entry point to entry point matching level number, if possible,
-    // or the first available if not.
-    // If no entry points are available, sets entry point level number to NONE.
-    void validateEntryPoint();
-
-    entry_point         mEntryPoint;
-    short               mGameType;
-    int                 mCurrentIndex;
-    vector<entry_point> mEntryPoints;
-};
-
 
 #endif//NETWORK_DIALOG_WIDGETS_SDL_H

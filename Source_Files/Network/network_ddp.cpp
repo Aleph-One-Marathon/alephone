@@ -22,6 +22,9 @@ Monday, June 27, 1994 1:10:35 PM
 
 Feb. 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
+
+Aug 20, 2001 (Ian RIckard):
+	#if UNUSED out listenerUPP.
 */
 
 
@@ -55,7 +58,10 @@ enum
 
 static DDPPacketBufferPtr ddpPacketBuffer= (DDPPacketBufferPtr) NULL;
 
+// IR change: this is never used.
+#if UNUSED
 static DDPSocketListenerUPP listenerUPP= (DDPSocketListenerUPP) NULL;
+#endif
 
 /* ---------- code */
 

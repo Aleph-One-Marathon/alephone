@@ -29,9 +29,6 @@
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Moved shared SDL hint address info here from network_dialogs_sdl.cpp
 	Added dialog item definitions for a Join by Host in the join dialog
-
-Mar 1, 2002 (Woody Zenfell):
-    SDL dialog uses new level-selection scheme; new interface based on level number, not menu index.
  */
 
 #ifndef NETWORK_DIALOGS_H
@@ -253,8 +250,6 @@ extern void fill_in_entry_points(DialogPtr dialog, short item, long entry_flags,
 
 #else//!mac
 // SDL-only routines called by shared routines.
-extern void get_selected_entry_point(dialog* inDialog, short inItem, entry_point* outEntryPoint);
-extern void select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber);
 
 #endif//!mac
 
