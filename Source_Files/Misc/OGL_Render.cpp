@@ -52,6 +52,15 @@ Jul 8, 2000:
 
 	Modified OGL_SetView() so that one can control whether to allocate a back buffer to draw in
 	Modified OGL_Copy2D() so that one can control which buffer (front or back)
+
+Jul 9, 2000:
+
+	Turned BeginFrame() and EndFrame() into OGL_StartMain() and OGL_EndMain()
+	
+	Also, grabbed some display list ID's for the fonts with glGenLists();
+	this makes it unnecessary to hardcode their ID's. Also, grabbed a display list ID
+	for a text string; this makes it easier to repeat its rendering.
+	Calling OGL_ResetMapFonts() near there -- it resets the font-info cache for the overhead map
 */
 
 #include <GL/gl.h>
@@ -78,8 +87,8 @@ Jul 8, 2000:
 // Whether or not OpenGL is active for rendering
 static bool _OGL_IsActive = false;
 
-// Render context
-static AGLContext RenderContext;
+// Render context; expose for OGL_Map.c
+AGLContext RenderContext;
 
 // Was OpenGL just inited? If so, then some state may need changing
 static bool JustInited = false;
@@ -193,6 +202,8 @@ const GLdouble Z_Far = 1.5*64*WORLD_ONE;
 const GLdouble Z_Proj0 = (Z_Far + Z_Near)/(Z_Far - Z_Near);
 const GLdouble Z_Proj1 = 2*Z_Far*Z_Near/(Z_Far - Z_Near);
 
+// Whether Z-buffering is being used
+bool Z_Buffering = false;
 
 // Screen <-> world conversion factors and functions
 GLdouble XScale, YScale, XScaleRecip, YScaleRecip, XOffset, YOffset;
@@ -277,10 +288,18 @@ static GM_Random StaticRandom;
 
 
 // Whether to do one-pass multitexturing
-bool OnePassMultitexturing = false;
+static bool OnePassMultitexturing = false;
 
-// Display-list ID used for text strings
-const GLuint TextDisplayList = 1024;
+
+// Display-list ID used for text fonts;
+// this is actually the display list ID for ASCII '\0' (0);
+// the others are in appropriate numerical order.
+static GLuint FontDisplayList;
+
+// Function for resetting map fonts when starting up an OpenGL rendering context;
+// defined in OGL_Map.c
+extern void OGL_ResetMapFonts();
+
 
 // This is a strip buffer for piping 2D graphics through OpenGL.
 static GLuint *Buffer2D = NULL;
@@ -288,16 +307,12 @@ static int Buffer2D_Width = 0;
 // Making the buffer several lines makes it more efficient
 const int Buffer2D_Height = 16;
 
+
 // This function returns whether OpenGL is active;
 // if OpenGL is not present, it will never be active.
 
 // Test for activity;
 bool OGL_IsActive() {if (OGL_IsPresent()) return _OGL_IsActive; else return false;}
-
-
-// Functions for starting and ending a frame:
-static void BeginFrame();
-static void EndFrame();
 
 
 // Start an OpenGL run (creates a rendering context)
@@ -312,7 +327,7 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 	if (bit_depth <= 8) return false;
 	
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	bool Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer) != 0;
+	Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer) != 0;
 	
 	// Plain and simple
 	GrowableList<GLint> PixelFormatSetupList(16);
@@ -412,11 +427,13 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 	}
 	
 	// Convenient function for setting up fonts;
-	// they are in display lists 0 to 255
-	aglUseFont(RenderContext, kFontIDMonaco, normal, 12, 0, 256, 0);
+	// set aside some display lists for them
+	FontDisplayList = glGenLists(256);
+	aglUseFont(RenderContext, kFontIDMonaco, normal, 12, 0, 256, FontDisplayList);
 	
-	BeginFrame();
-	 
+	// Reset the font into for overhead-map fonts done in OpenGL fashion
+	OGL_ResetMapFonts();
+	
 	// Success!
 	JustInited = true;
 	return (_OGL_IsActive = true);
@@ -522,8 +539,19 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 }
 
 
-void BeginFrame()
+bool OGL_StartMain()
 {
+	if (!OGL_IsActive()) return false;
+
+	// One-sidedness necessary for correct rendering
+	glEnable(GL_CULL_FACE);	
+	
+	// Set the Z-buffering for this go-around
+	if (Z_Buffering)
+		glEnable(GL_DEPTH_TEST);
+	else
+		glDisable(GL_DEPTH_TEST);
+	
 	// Set the color of the void
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	if (TEST_FLAG(ConfigureData.Flags,OGL_Flag_VoidColor))
@@ -564,11 +592,15 @@ void BeginFrame()
 			for (int n=0; n<StatPatLen; n++)
 				StaticPatterns[c][n] = StaticRandom.KISS() + StaticRandom.LFIB4();
 	}
+		
+	return true;
 }
 
 
-void EndFrame()
+bool OGL_EndMain()
 {
+	if (!OGL_IsActive()) return false;
+	
 	// Proper projection
 	SetProjectionType(Projection_Screen);
 	
@@ -589,8 +621,8 @@ void EndFrame()
 	glVertex2f(ViewWidth-0.5,ViewHeight-0.5);
 	glVertex2f(ViewWidth-0.5,0.5);
 	glEnd();
-	
-	if (Z_Buffering) glEnable(GL_DEPTH_TEST);
+		
+	return true;
 }
 
 // Swap buffers (reveal rendered image)
@@ -598,11 +630,7 @@ bool OGL_SwapBuffers()
 {
 	if (!OGL_IsActive()) return false;
 	
-	EndFrame();
-	
 	aglSwapBuffers(RenderContext);
-	
-	BeginFrame();
 	
 	return true;
 }
@@ -1884,9 +1912,16 @@ bool OGL_RenderText(short BaseX, short BaseY, unsigned char *Text)
 {
 	if (!OGL_IsActive()) return false;
 	
-	// Create display list for the current text string
+	// Create display list for the current text string;
+	// use the "standard" text-font display list (display lists can be nested)
+	GLuint TextDisplayList;
+	TextDisplayList = glGenLists(1);
 	glNewList(TextDisplayList,GL_COMPILE);
-	glCallLists(Text[0],GL_UNSIGNED_BYTE,Text+1);
+	for (int b=1; b<=Text[0]; b++)
+	{
+		GLuint ByteDisplayList = FontDisplayList + Text[b];
+		glCallLists(1,GL_UNSIGNED_INT,&ByteDisplayList);
+	}
 	glEndList();
 	
 	// Place the text in the foreground of the display
@@ -1924,10 +1959,9 @@ bool OGL_RenderText(short BaseX, short BaseY, unsigned char *Text)
 	glColor3f(1,1,1);
 	glRasterPos3s(BaseX,BaseY,Depth);
 	glCallList(TextDisplayList);
+
+	glDeleteLists(TextDisplayList,1);
 	
-	// No need to worry about deleting the text-display list,
-	// since it will be deleted when a new one is created.
-		
 	return true;
 }
 
