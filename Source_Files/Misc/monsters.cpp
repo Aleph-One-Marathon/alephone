@@ -59,6 +59,9 @@ Jun 11, 2000 (Loren Petrich):
 
 Jul 1, 2000 (Loren Petrich):
 	Inlined the accessors
+
+Aug 30, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 #include "cseries.h"
@@ -78,6 +81,8 @@ Jul 1, 2000 (Loren Petrich):
 #include "media.h"
 
 #include <string.h>
+
+#include "Packing.h"
 
 #ifdef env68k
 #pragma segment objects
@@ -3376,5 +3381,271 @@ static long nearest_goal_cost_function(
 	return cost;
 }
 
-// LP addition: Get monster-definition size
-int get_monster_defintion_size() {return sizeof(struct monster_definition);}
+
+uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	monster_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->vitality);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->path);
+		StreamToValue(S,ObjPtr->path_segment_length);
+		StreamToValue(S,ObjPtr->desired_height);
+		
+		StreamToValue(S,ObjPtr->mode);
+		StreamToValue(S,ObjPtr->action);
+		StreamToValue(S,ObjPtr->target_index);
+		StreamToValue(S,ObjPtr->external_velocity);
+		StreamToValue(S,ObjPtr->vertical_velocity);
+		StreamToValue(S,ObjPtr->ticks_since_attack);
+		StreamToValue(S,ObjPtr->attack_repetitions);
+		StreamToValue(S,ObjPtr->changes_until_lock_lost);
+		
+		StreamToValue(S,ObjPtr->elevation);
+		
+		StreamToValue(S,ObjPtr->object_index);
+		
+		StreamToValue(S,ObjPtr->ticks_since_last_activation);
+		
+		StreamToValue(S,ObjPtr->activation_bias);
+		
+		StreamToValue(S,ObjPtr->goal_polygon_index);
+		
+		StreamToValue(S,ObjPtr->sound_location.x);
+		StreamToValue(S,ObjPtr->sound_location.y);
+		StreamToValue(S,ObjPtr->sound_location.z);
+		StreamToValue(S,ObjPtr->sound_polygon_index);
+		
+		StreamToValue(S,ObjPtr->random_desired_height);
+		
+		S += 7*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_monster_data);
+	return S;
+}
+
+uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	monster_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->vitality);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->path);
+		ValueToStream(S,ObjPtr->path_segment_length);
+		ValueToStream(S,ObjPtr->desired_height);
+		
+		ValueToStream(S,ObjPtr->mode);
+		ValueToStream(S,ObjPtr->action);
+		ValueToStream(S,ObjPtr->target_index);
+		ValueToStream(S,ObjPtr->external_velocity);
+		ValueToStream(S,ObjPtr->vertical_velocity);
+		ValueToStream(S,ObjPtr->ticks_since_attack);
+		ValueToStream(S,ObjPtr->attack_repetitions);
+		ValueToStream(S,ObjPtr->changes_until_lock_lost);
+		
+		ValueToStream(S,ObjPtr->elevation);
+		
+		ValueToStream(S,ObjPtr->object_index);
+		
+		ValueToStream(S,ObjPtr->ticks_since_last_activation);
+		
+		ValueToStream(S,ObjPtr->activation_bias);
+		
+		ValueToStream(S,ObjPtr->goal_polygon_index);
+		
+		ValueToStream(S,ObjPtr->sound_location.x);
+		ValueToStream(S,ObjPtr->sound_location.y);
+		ValueToStream(S,ObjPtr->sound_location.z);
+		ValueToStream(S,ObjPtr->sound_polygon_index);
+		
+		ValueToStream(S,ObjPtr->random_desired_height);
+		
+		S += 7*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_monster_data);
+	return S;
+}
+
+
+inline void StreamToAttackDef(uint8* &S, attack_definition& Object)
+{
+	StreamToValue(S,Object.type);
+	StreamToValue(S,Object.repetitions);
+	StreamToValue(S,Object.error);
+	StreamToValue(S,Object.range);
+	StreamToValue(S,Object.attack_shape);
+	
+	StreamToValue(S,Object.dx);
+	StreamToValue(S,Object.dy);
+	StreamToValue(S,Object.dz);
+}
+
+inline void AttackDefToStream(uint8* &S, attack_definition& Object)
+{
+	ValueToStream(S,Object.type);
+	ValueToStream(S,Object.repetitions);
+	ValueToStream(S,Object.error);
+	ValueToStream(S,Object.range);
+	ValueToStream(S,Object.attack_shape);
+	
+	ValueToStream(S,Object.dx);
+	ValueToStream(S,Object.dy);
+	ValueToStream(S,Object.dz);
+}
+
+
+uint8 *unpack_monster_definition(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	monster_definition* ObjPtr = monster_definitions;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->collection);
+		
+		StreamToValue(S,ObjPtr->vitality);
+		StreamToValue(S,ObjPtr->immunities);
+		StreamToValue(S,ObjPtr->weaknesses);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->_class);
+		StreamToValue(S,ObjPtr->friends);
+		StreamToValue(S,ObjPtr->enemies);
+		
+		StreamToValue(S,ObjPtr->sound_pitch);
+		StreamToValue(S,ObjPtr->activation_sound);
+		StreamToValue(S,ObjPtr->friendly_activation_sound);
+		StreamToValue(S,ObjPtr->clear_sound);
+		StreamToValue(S,ObjPtr->kill_sound);
+		StreamToValue(S,ObjPtr->apology_sound);
+		StreamToValue(S,ObjPtr->friendly_fire_sound);
+		StreamToValue(S,ObjPtr->flaming_sound);
+		StreamToValue(S,ObjPtr->random_sound);
+		StreamToValue(S,ObjPtr->random_sound_mask);
+		
+		StreamToValue(S,ObjPtr->carrying_item_type);
+		
+		StreamToValue(S,ObjPtr->radius);
+		StreamToValue(S,ObjPtr->height);
+		StreamToValue(S,ObjPtr->preferred_hover_height);	
+		StreamToValue(S,ObjPtr->minimum_ledge_delta);
+		StreamToValue(S,ObjPtr->maximum_ledge_delta);
+		StreamToValue(S,ObjPtr->external_velocity_scale);
+		StreamToValue(S,ObjPtr->impact_effect);
+		StreamToValue(S,ObjPtr->melee_impact_effect);
+		StreamToValue(S,ObjPtr->contrail_effect);
+		
+		StreamToValue(S,ObjPtr->half_visual_arc);
+		StreamToValue(S,ObjPtr->half_vertical_visual_arc);
+		StreamToValue(S,ObjPtr->visual_range);	
+		StreamToValue(S,ObjPtr->dark_visual_range);
+		StreamToValue(S,ObjPtr->intelligence);
+		StreamToValue(S,ObjPtr->speed);
+		StreamToValue(S,ObjPtr->gravity);
+		StreamToValue(S,ObjPtr->terminal_velocity);
+		StreamToValue(S,ObjPtr->door_retry_mask);
+		StreamToValue(S,ObjPtr->shrapnel_radius);
+		S = unpack_damage_definition(S,&ObjPtr->shrapnel_damage);
+		
+		StreamToValue(S,ObjPtr->hit_shapes);
+		StreamToValue(S,ObjPtr->hard_dying_shape);
+		StreamToValue(S,ObjPtr->soft_dying_shape);
+		StreamToValue(S,ObjPtr->hard_dead_shapes);
+		StreamToValue(S,ObjPtr->soft_dead_shapes);
+		StreamToValue(S,ObjPtr->stationary_shape);
+		StreamToValue(S,ObjPtr->moving_shape);
+		StreamToValue(S,ObjPtr->teleport_in_shape);
+		StreamToValue(S,ObjPtr->teleport_out_shape);
+		
+		StreamToValue(S,ObjPtr->attack_frequency);
+		StreamToAttackDef(S,ObjPtr->melee_attack);
+		StreamToAttackDef(S,ObjPtr->ranged_attack);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_monster_definition);
+	return S;
+}
+
+uint8 *pack_monster_definition(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	monster_definition* ObjPtr = monster_definitions;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->collection);
+		
+		ValueToStream(S,ObjPtr->vitality);
+		ValueToStream(S,ObjPtr->immunities);
+		ValueToStream(S,ObjPtr->weaknesses);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->_class);
+		ValueToStream(S,ObjPtr->friends);
+		ValueToStream(S,ObjPtr->enemies);
+		
+		ValueToStream(S,ObjPtr->sound_pitch);
+		ValueToStream(S,ObjPtr->activation_sound);
+		ValueToStream(S,ObjPtr->friendly_activation_sound);
+		ValueToStream(S,ObjPtr->clear_sound);
+		ValueToStream(S,ObjPtr->kill_sound);
+		ValueToStream(S,ObjPtr->apology_sound);
+		ValueToStream(S,ObjPtr->friendly_fire_sound);
+		ValueToStream(S,ObjPtr->flaming_sound);
+		ValueToStream(S,ObjPtr->random_sound);
+		ValueToStream(S,ObjPtr->random_sound_mask);
+		
+		ValueToStream(S,ObjPtr->carrying_item_type);
+		
+		ValueToStream(S,ObjPtr->radius);
+		ValueToStream(S,ObjPtr->height);
+		ValueToStream(S,ObjPtr->preferred_hover_height);	
+		ValueToStream(S,ObjPtr->minimum_ledge_delta);
+		ValueToStream(S,ObjPtr->maximum_ledge_delta);
+		ValueToStream(S,ObjPtr->external_velocity_scale);
+		ValueToStream(S,ObjPtr->impact_effect);
+		ValueToStream(S,ObjPtr->melee_impact_effect);
+		ValueToStream(S,ObjPtr->contrail_effect);
+		
+		ValueToStream(S,ObjPtr->half_visual_arc);
+		ValueToStream(S,ObjPtr->half_vertical_visual_arc);
+		ValueToStream(S,ObjPtr->visual_range);	
+		ValueToStream(S,ObjPtr->dark_visual_range);
+		ValueToStream(S,ObjPtr->intelligence);
+		ValueToStream(S,ObjPtr->speed);
+		ValueToStream(S,ObjPtr->gravity);
+		ValueToStream(S,ObjPtr->terminal_velocity);
+		ValueToStream(S,ObjPtr->door_retry_mask);
+		ValueToStream(S,ObjPtr->shrapnel_radius);
+		S = pack_damage_definition(S,&ObjPtr->shrapnel_damage);
+		
+		ValueToStream(S,ObjPtr->hit_shapes);
+		ValueToStream(S,ObjPtr->hard_dying_shape);
+		ValueToStream(S,ObjPtr->soft_dying_shape);
+		ValueToStream(S,ObjPtr->hard_dead_shapes);
+		ValueToStream(S,ObjPtr->soft_dead_shapes);
+		ValueToStream(S,ObjPtr->stationary_shape);
+		ValueToStream(S,ObjPtr->moving_shape);
+		ValueToStream(S,ObjPtr->teleport_in_shape);
+		ValueToStream(S,ObjPtr->teleport_out_shape);
+		
+		ValueToStream(S,ObjPtr->attack_frequency);
+		AttackDefToStream(S,ObjPtr->melee_attack);
+		AttackDefToStream(S,ObjPtr->ranged_attack);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_monster_definition);
+	return S;
+}
