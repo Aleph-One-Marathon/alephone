@@ -29,10 +29,12 @@
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
 # include <OpenGL/glut.h>
+# include <Movies.h>
 #elif defined mac
-# include "gl.h"
-# include "glu.h"
-# include "glut.h"
+# include <gl.h>
+# include <glu.h>
+# include <glut.h>
+# include <Movies.h>
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
@@ -326,7 +328,7 @@ void ShaderCallback(void *Data)
 GLfloat ExternalLight[3][4];
 
 
-void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors)
+void LightingCallback(void *Data, unsigned long NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors)
 {
 	(void)(Data);
 	
