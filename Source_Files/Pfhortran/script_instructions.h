@@ -285,6 +285,8 @@ enum /* instruction defs */
 	Monster_Set_Vitality = 0x61,
 
 	Not = 0x62,
+	
+	Start_Fade = 0x63,
 		
 	NUMBER_OF_INSTRUCTIONS
 };

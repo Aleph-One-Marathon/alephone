@@ -99,6 +99,7 @@ typedef float GLfloat;
 #include "script_instructions.h"
 #include "item_definitions.h" // EE add for Remove_Item
 #include "ActionQueues.h"
+#include "fades.h"
 
 #define sign(a) (a) < 0 ? -1 : 1
 
@@ -272,6 +273,7 @@ void s_Monster_Get_Mode(script_instruction inst);
 void s_Monster_Get_Vitality(script_instruction inst);
 void s_Monster_Set_Vitality(script_instruction inst);
 void s_Not(script_instruction inst);
+void s_Start_Fade(script_instruction inst);
 
 /*-------------------------------------------*/
 
@@ -412,6 +414,7 @@ void init_instructions(void)
 	instruction_lookup[Monster_Get_Vitality] = s_Monster_Get_Vitality;
 	instruction_lookup[Monster_Set_Vitality] = s_Monster_Set_Vitality;
 	instruction_lookup[Not] = s_Not;
+	instruction_lookup[Start_Fade] = s_Start_Fade;
 }
 
 // Suppressed for MSVC compatibility
@@ -3045,36 +3048,33 @@ void s_Set_Platform_State(script_instruction inst)
 	polygon_index = inst.op1;
 	state = inst.op2;
 	
-	if (inst.mode != 0)
+	switch(inst.mode)
 	{
-		switch(inst.mode)
-		{
-			case 1:
-				polygon_index = get_variable(int(inst.op1));
-				state = int(inst.op2);
-				break;
-				
-			case 2:
-				polygon_index = int(inst.op1);
-				state = get_variable(int(inst.op2));
-				break;
-				
-			case 3:
-				polygon_index = get_variable(int(inst.op1));
-				state = get_variable(int(inst.op2));
-				break;
+		case 1:
+			polygon_index = get_variable(int(inst.op1));
+			state = int(inst.op2);
+			break;
 			
-			default:
-				return;
-		}
-		polygon = get_polygon_data(short(polygon_index));
+		case 2:
+			polygon_index = int(inst.op1);
+			state = get_variable(int(inst.op2));
+			break;
+			
+		case 3:
+			polygon_index = get_variable(int(inst.op1));
+			state = get_variable(int(inst.op2));
+			break;
 		
+		default:
+			return;
+	}
+	polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
 		if (polygon->type == _polygon_is_platform)
 		{	
 			try_and_change_platform_state(short(polygon->permutation), state != 0);
 			assume_correct_switch_position(_panel_is_platform_switch, short(polygon->permutation), state != 0);
 		}
-	}	
 }
 
 void s_Get_Platform_State(script_instruction inst)
@@ -3083,29 +3083,25 @@ void s_Get_Platform_State(script_instruction inst)
 	struct polygon_data *polygon;
 	
 	polygon_index = inst.op1;
-
-	if (inst.mode != 0)
+	
+	switch(inst.mode)
 	{
-		switch(inst.mode)
-		{
-			case 2:
-				polygon_index = int(inst.op1);
-				break;
-				
-			case 3:
-				polygon_index = get_variable(int(inst.op1));
-				break;
+		case 2:
+			polygon_index = int(inst.op1);
+			break;
 			
-			default:
-				return;
-		}
-		polygon = get_polygon_data(short(polygon_index));
+		case 3:
+			polygon_index = get_variable(int(inst.op1));
+			break;
 		
-		if (polygon->type == _polygon_is_platform)
-		{
-			set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(get_platform_data(short(polygon->permutation))) ? 1 : 0);		
-		}
+		default:
+			return;
 	}
+	
+	polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+		if (polygon->type == _polygon_is_platform)
+			set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(get_platform_data(short(polygon->permutation))) ? 1 : 0);		
 }
 
 void s_Play_Sound(script_instruction inst)
@@ -3115,28 +3111,25 @@ void s_Play_Sound(script_instruction inst)
 	sound_index = inst.op1;
 	pitch = inst.op2;
 	
-	if (inst.mode != 0)
+	switch(inst.mode)
 	{
-		switch(inst.mode)
-		{
-			case 1:
-				sound_index = get_variable(int(inst.op1));
-				pitch = int(inst.op2);
-				break;
-				
-			case 2:
-				sound_index = int(inst.op1);
-				pitch = get_variable(int(inst.op2));
-				break;
-				
-			case 3:
-				sound_index = get_variable(int(inst.op1));
-				pitch = get_variable(int(inst.op2));
-				break;
+		case 1:
+			sound_index = get_variable(int(inst.op1));
+			pitch = int(inst.op2);
+			break;
 			
-			default:
-				return;
-		}
+		case 2:
+			sound_index = int(inst.op1);
+			pitch = get_variable(int(inst.op2));
+			break;
+			
+		case 3:
+			sound_index = get_variable(int(inst.op1));
+			pitch = get_variable(int(inst.op2));
+			break;
+		
+		default:
+			return;
 	}
 	
 	// Purely local sound: args are which sound index
@@ -3151,60 +3144,51 @@ void s_Set_Light_State(script_instruction inst)
 	light_index = inst.op1;
 	state = inst.op2;
 	
-	if (inst.mode != 0)
+	switch(inst.mode)
 	{
-		switch(inst.mode)
-		{
-			case 1:
-				light_index = get_variable(int(inst.op1));
-				break;
-				
-			case 2:
-				light_index = get_variable(int(inst.op2));
-				break;
-				
-			case 3:
-				light_index = get_variable(int(inst.op1));
-				state = get_variable(int(inst.op2));
-				break;
+		case 1:
+			light_index = get_variable(int(inst.op1));
+			break;
 			
-			default:
-				return;
-		}
+		case 2:
+			light_index = get_variable(int(inst.op2));
+			break;
+			
+		case 3:
+			light_index = get_variable(int(inst.op1));
+			state = get_variable(int(inst.op2));
+			break;
 		
-	set_light_status(short(light_index), state != 0);
+		default:
+			return;
 	}	
+	set_light_status(short(light_index), state ? 1 : 0);
 }
 
 void s_Get_Light_State(script_instruction inst)
 {
 	float light_index;
-
-	if (inst.mode != 0)
+	
+	switch(inst.mode)
 	{
-		switch(inst.mode)
-		{
-			case 2:
-				light_index = int(inst.op1);
-				break;
-			
-			case 3:
-				light_index = get_variable(int(inst.op1));
-				break;
-			
-			default:
-				return;
-		}
-		set_variable(int(inst.op2), get_light_status(short(light_index)) ? 1 : 0);
+		case 2:
+			light_index = int(inst.op1);
+			break;
+		
+		case 3:
+			light_index = get_variable(int(inst.op1));
+			break;
+		
+		default:
+			return;
 	}
+	set_variable(int(inst.op2), get_light_status(short(light_index)) ? 1 : 0);
 }
 
 void s_Get_Player_Poly(script_instruction inst)
 {
-	if (inst.mode != 1)
-	{
+	if (inst.mode == 1)
 		set_variable(int(inst.op1), get_polygon_index_supporting_player(local_player->monster_index));
-	}
 }
 
 // LP: adding this stuff for "EE"
@@ -3421,12 +3405,10 @@ void s_Monster_Get_Action(script_instruction inst)
 			return;
 	}
 	
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	
-	if (SLOT_IS_USED(theMonster))
-	{
+	theMonster = get_monster_data(monster_index);
+	if (theMonster)
 		set_variable(int(inst.op2), theMonster->action);
-	}
 }
 
 void s_Monster_Get_Mode(script_instruction inst)
@@ -3448,12 +3430,9 @@ void s_Monster_Get_Mode(script_instruction inst)
 			return;
 	}
 	
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	
-	if (SLOT_IS_USED(theMonster))
-	{
-		set_variable(int(inst.op2), int(theMonster->mode));
-	}
+	theMonster = get_monster_data(monster_index);
+	if (theMonster)
+		set_variable(int(inst.op2), theMonster->mode);
 }
 
 void s_Monster_Get_Vitality(script_instruction inst)
@@ -3475,12 +3454,9 @@ void s_Monster_Get_Vitality(script_instruction inst)
 			return;
 	}
 	
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	
-	if (SLOT_IS_USED(theMonster))
-	{
+	theMonster = get_monster_data(monster_index);
+	if (theMonster)
 		set_variable(int(inst.op2), theMonster->vitality);
-	}
 }
 
 void s_Monster_Set_Vitality(script_instruction inst)
@@ -3515,18 +3491,36 @@ void s_Monster_Set_Vitality(script_instruction inst)
 			return;
 	}
 	
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	
-	if (SLOT_IS_USED(theMonster))
-	{
-		theMonster->vitality = vitality;
-	}
+	theMonster = get_monster_data(monster_index);
+	if (theMonster)
+		theMonster->vitality = vitality;	
 }
 
 void s_Not(script_instruction inst)
 {
-	if (inst.mode!=1) return
+	if (inst.mode != 1) return
 	
 	set_variable(int(get_variable(inst.op1)), !(int(get_variable(inst.op1))));
 	
+}
+
+void s_Start_Fade(script_instruction inst)
+{
+	short fade_index;
+	
+	switch(inst.mode)
+	{
+		case 0:
+			fade_index = int(inst.op1);
+			break;
+	
+		case 1:
+			fade_index = int(get_variable(inst.op1));
+			break;
+		
+		default:
+			return;
+	}
+	
+	start_fade(fade_index);
 }
