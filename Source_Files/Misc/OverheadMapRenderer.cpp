@@ -375,14 +375,6 @@ void OverheadMapClass::transform_endpoints_for_overhead_map(
 	short scale= Control.scale;
 	short i;
 
-#ifdef OBSOLETE
-	/* find the bounds of our screen in world space */
-	left= ((-Control.half_width)<<(WORLD_TO_SCREEN_SCALE_ONE-scale)) + x0;
-	right= ((Control.half_width)<<(WORLD_TO_SCREEN_SCALE_ONE-scale)) + x0;
-	top= ((-Control.half_height)<<(WORLD_TO_SCREEN_SCALE_ONE-scale)) + y0;
-	bottom= ((Control.half_height)<<(WORLD_TO_SCREEN_SCALE_ONE-scale)) + y0;
-#endif
-	
 	/* transform all our endpoints into screen space, remembering which ones are visible */
 	for (i=0;i<dynamic_world->endpoint_count;++i)
 	{
@@ -413,8 +405,6 @@ void OverheadMapClass::transform_endpoints_for_overhead_map(
 			}
 		}
 	}
-
-	return;
 }
 
 /* --------- the false automap */
@@ -445,8 +435,6 @@ void OverheadMapClass::generate_false_automap(
 		}
 		while (polygon_index!=NONE);
 	}
-	
-	return;
 }
 
 
@@ -469,8 +457,6 @@ void OverheadMapClass::replace_real_automap(
 		delete []saved_automap_polygons;
 		saved_automap_polygons= (byte *) NULL;
 	}
-	
-	return;
 }
 
 

@@ -94,7 +94,6 @@ running backwards shouldnÕt mean doom in a fistfight
 // LP change: drop-dead height is effectively zero when the chase-cam is on;
 // this keeps it from dropping.
 #define DROP_DEAD_HEIGHT WORLD_TO_FIXED(ChaseCam_IsActive() ? 0 : WORLD_ONE_HALF)
-// #define DROP_DEAD_HEIGHT WORLD_TO_FIXED(WORLD_ONE_HALF)
 
 #define FLAGS_WHICH_PREVENT_RECENTERING (_turning|_looking|_sidestepping|_looking_vertically|_look_dont_turn|_sidestep_dont_turn)
 
@@ -159,12 +158,6 @@ void initialize_player_physics_variables(
 	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0),
 		&player->variables, player_index, true);
 
-#ifdef OBSOLETE
-	/* tell our absolute positioning device that our attitude was just reset, and that it should
-		try and respond appropriately */
-	if (player_index==local_player_index) reset_absolute_positioning_device(variables->direction, 0, 0);
-#endif
-	
 #ifdef DIVERGENCE_CHECK
 	if (!saved_point_iterations)
 	{
@@ -175,8 +168,6 @@ void initialize_player_physics_variables(
 	saved_point_iterations+= 1;
 	saved_divergence_warning= false;
 #endif
-
-	return;
 }
 
 void update_player_physics_variables(
@@ -216,8 +207,6 @@ void update_player_physics_variables(
 		saved_point_count+= 1;
 	}
 #endif
-
-	return;
 }
 
 void adjust_player_for_polygon_height_change(
@@ -242,8 +231,6 @@ void adjust_player_for_polygon_height_change(
 			if (PLAYER_IS_DEAD(player)) variables->external_velocity.k= 0;
 		}
 	}
-
-	return;
 }
 
 void accelerate_player(
@@ -262,8 +249,6 @@ void accelerate_player(
 	
 	variables->external_velocity.i+= (cosine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
 	variables->external_velocity.j+= (sine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
-	
-	return;
 }
 
 void get_absolute_pitch_range(
@@ -274,8 +259,6 @@ void get_absolute_pitch_range(
 	
 	*minimum= -constants->maximum_elevation;
 	*maximum= constants->maximum_elevation;
-	
-	return;
 }
 
 /* deltas of zero are ignored; all deltas must be in [-FIXED_ONE,FIXED_ONE] which will be scaled
@@ -317,63 +300,6 @@ uint32 mask_in_absolute_positioning_information(
 	return action_flags;
 }
 
-#ifdef OBSOLETE
-/* yaw must be in [0,2¹), pitch must be in [-¹/2,¹/2], velocity must be in [-1,1]; returns new
-	action flags.  we assume that this is for the local player. */
-uint32 mask_in_absolute_positioning_information(
-	uint32 action_flags,
-	fixed yaw,
-	fixed pitch,
-	fixed velocity)
-{
-	struct physics_variables *variables= &local_player->variables;
-	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, action_flags);
-	short encoded_delta;
-	fixed delta;
-	
-	assert(pitch>=-INTEGER_TO_FIXED(QUARTER_CIRCLE)&&pitch<=INTEGER_TO_FIXED(QUARTER_CIRCLE));
-	assert(yaw>=0&&yaw<INTEGER_TO_FIXED(FULL_CIRCLE));
-	
-	if (action_flags&_absolute_yaw_mode)
-	{
-		/* find the smallest delta to turn our current yaw into the given absolute yaw */
-		delta= yaw-variables->adjusted_yaw;
-		if (delta<-INTEGER_TO_FIXED(HALF_CIRCLE)) delta+= INTEGER_TO_FIXED(FULL_CIRCLE);
-		if (delta>INTEGER_TO_FIXED(HALF_CIRCLE)) delta-= INTEGER_TO_FIXED(FULL_CIRCLE);
-		
-		encoded_delta= FIXED_INTEGERAL_PART(delta)+MAXIMUM_ABSOLUTE_YAW/2;
-		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_YAW-1);
-		action_flags= SET_ABSOLUTE_YAW(action_flags, encoded_delta);
-		
-		variables->adjusted_yaw+= INTEGER_TO_FIXED(encoded_delta-MAXIMUM_ABSOLUTE_YAW/2);
-		if (variables->adjusted_yaw<0) variables->adjusted_yaw+= INTEGER_TO_FIXED(FULL_CIRCLE);
-		if (variables->adjusted_yaw>=INTEGER_TO_FIXED(FULL_CIRCLE)) variables->adjusted_yaw-= INTEGER_TO_FIXED(FULL_CIRCLE);
-	}
-	
-	if (action_flags&_absolute_pitch_mode)
-	{
-		delta= pitch-variables->adjusted_pitch;
-		
-		encoded_delta= FIXED_INTEGERAL_PART(delta)+MAXIMUM_ABSOLUTE_PITCH/2;
-		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_PITCH-1);
-		action_flags= SET_ABSOLUTE_PITCH(action_flags, encoded_delta);
-		
-		variables->adjusted_pitch+= INTEGER_TO_FIXED(encoded_delta-MAXIMUM_ABSOLUTE_PITCH/2);
-		variables->adjusted_pitch= PIN(variables->adjusted_pitch, -constants->maximum_elevation, constants->maximum_elevation);
-	}
-	
-	if (action_flags&_absolute_position_mode)
-	{
-		delta= PIN(velocity+FIXED_ONE, 0, 2*FIXED_ONE-1);
-		
-		encoded_delta= delta>>(FIXED_FRACTIONAL_BITS+1-ABSOLUTE_POSITION_BITS);
-		action_flags= SET_ABSOLUTE_POSITION(action_flags, encoded_delta);
-	}
-	
-	return action_flags;
-}
-#endif
-
 /* will be obsolete when cybermaxx changes to new-style */
 void instantiate_absolute_positioning_information(
 	short player_index,
@@ -393,8 +319,6 @@ void instantiate_absolute_positioning_information(
 	variables->direction= facing;
 
 	instantiate_physics_variables(constants, variables, player_index, false);
-	
-	return;
 }
 
 void get_binocular_vision_origins(
@@ -424,8 +348,6 @@ void get_binocular_vision_origins(
 	left->z= player->camera_location.z;
 	*left_polygon_index= find_new_object_polygon((world_point2d *)&player->camera_location, (world_point2d *)left, player->camera_polygon_index);
 	*left_angle= NORMALIZE_ANGLE(player->facing+1);
-	
-	return;
 }
 
 void kill_player_physics_variables(
@@ -437,8 +359,6 @@ void kill_player_physics_variables(
 	
 //	variables->position.z+= variables->actual_height-constants->dead_height;
 //	variables->actual_height= constants->dead_height;
-	
-	return;
 }
 
 /* return a number in [-FIXED_ONE,FIXED_ONE] (arguably) */
@@ -468,13 +388,11 @@ static struct physics_constants *get_physics_constants_for_model(
 		case _editor_model:
 		case _earth_gravity_model: constants= physics_models + ((action_flags&_run_dont_walk) ? _model_game_running : _model_game_walking); break;
 		case _low_gravity_model:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	
 	return constants;
@@ -534,9 +452,8 @@ static void instantiate_physics_variables(
 					break;
 				
 				default:
-					// LP change:
 					assert(false);
-					// halt();
+					break;
 			}
 		}
 	}
@@ -565,8 +482,6 @@ static void instantiate_physics_variables(
 		step_height= (constants->step_amplitude*sine_table[variables->step_phase>>(FIXED_FRACTIONAL_BITS-ANGULAR_BITS+1)])>>TRIG_SHIFT;
 		step_height= (step_height*variables->step_amplitude)>>FIXED_FRACTIONAL_BITS;
 	}
-	// step_height= (constants->step_amplitude*sine_table[variables->step_phase>>(FIXED_FRACTIONAL_BITS-ANGULAR_BITS+1)])>>TRIG_SHIFT;
-	// step_height= (step_height*variables->step_amplitude)>>FIXED_FRACTIONAL_BITS;
 	player->camera_location= new_location;
 	if (PLAYER_IS_DEAD(player) && new_location.z<adjusted_floor_height) new_location.z= adjusted_floor_height;
 	player->location= new_location;
@@ -589,7 +504,6 @@ static void instantiate_physics_variables(
 		// LP change: idiot-proofing
 		media_data *media = get_media_data(media_index);
 		world_distance media_height= (media_index==NONE || !media) ? INT16_MIN : media->height;
-		// world_distance media_height= media_index==NONE ? INT16_MIN : get_media_data(media_index)->height;
 
 		if (player->location.z<media_height) variables->flags|= _FEET_BELOW_MEDIA_BIT; else variables->flags&= (uint16)~_FEET_BELOW_MEDIA_BIT;
 		if (player->camera_location.z<media_height) variables->flags|= _HEAD_BELOW_MEDIA_BIT; else variables->flags&= (uint16)~_HEAD_BELOW_MEDIA_BIT;
@@ -598,8 +512,6 @@ static void instantiate_physics_variables(
 	// so our sounds come from the right place
 	monster->sound_location= player->camera_location;
 	monster->sound_polygon_index= player->camera_polygon_index;
-
-	return;
 }
 
 /* separate physics_constant structures are passed in for running/walking modes */
@@ -629,9 +541,8 @@ static void physics_update(
 			case 1: action_flags= _looking_down; break;
 			case 0: action_flags= 0; break;
 			default:
-				// LP change:
 				assert(false);
-				// halt();
+				break;
 		}
 		
 		variables->floor_height-= DROP_DEAD_HEIGHT;
@@ -978,8 +889,6 @@ static void physics_update(
 			variables->action= (variables->external_velocity.i||variables->external_velocity.j||variables->external_velocity.k) ? _player_sliding : _player_stationary;
 		}
 	}
-
-	return;
 }
 
 

@@ -72,12 +72,6 @@ enum /* shading tables */
 	_shading_infravision /* false color */
 };
 
-/*
-// LP addition: tunnel vision
-#define TUNNEL_VISION_FIELD_OF_VIEW 30
-#define NORMAL_FIELD_OF_VIEW 80
-#define EXTRAVISION_FIELD_OF_VIEW 130
-*/
 // LP change: using accessors instead
 #define TUNNEL_VISION_FIELD_OF_VIEW View_FOV_TunnelVision()
 #define NORMAL_FIELD_OF_VIEW View_FOV_Normal()
@@ -105,7 +99,6 @@ struct view_data
 	// the current FOV toward it
 	float field_of_view;
 	float target_field_of_view;
-	// short field_of_view; /* width of the view cone, in degrees (!) */
 	short standard_screen_width; /* this is *not* the width of the projected image (see initialize_view_data() in RENDER.C */
 	short screen_width, screen_height; /* dimensions of the projected image */
 	short horizontal_scale, vertical_scale;

@@ -368,8 +368,6 @@ void initialize_weapon_manager(
 	}
 }
 #endif
-	
-	return;
 }
 
 void initialize_player_weapons_for_new_game(
@@ -435,8 +433,6 @@ void mark_weapon_collections(
 			mark_projectile_collections(definition->weapons_by_trigger[_secondary_weapon].projectile_type, loading);
 		}
 	}
-	
-	return;
 }
 
 void player_hit_target(
@@ -451,8 +447,6 @@ void player_hit_target(
 	
 	assert(weapon_id>=0 && weapon_id<NUMBER_OF_WEAPONS);
 	player_weapons->weapons[weapon_id].triggers[trigger].shots_hit++;
-
-	return;
 }
 
 /* Called on entry to a level, and will change weapons if this one doesn't work */
@@ -574,10 +568,6 @@ void process_new_item_for_reloading(
 							case _twofisted_pistol_class:
 							default:
 								trigger_count = 0;
-								// LP change:
-								// suppressed error checking
-								// assert(false);
-								// halt();
 								break;
 						}
 					}
@@ -667,8 +657,6 @@ void process_new_item_for_reloading(
 		default:
 			break;
 	}
-
-	return;
 }
 
 #define IDLE_PHASE_COUNT 1000 // doesn't matter
@@ -706,7 +694,6 @@ void update_player_weapons(
 				player->weapon_intensity= NATURAL_LIGHT_INTENSITY + 
 					// LP change: now adds correctly, rather than replacing
 					((definition->firing_light_intensity)*
-					// ((definition->firing_light_intensity-NATURAL_LIGHT_INTENSITY)*
 					player->weapon_intensity_decay)/definition->firing_intensity_decay_ticks;
 				player->weapon_intensity_decay--;
 			} else {
@@ -994,7 +981,6 @@ void update_player_weapons(
 	idle_weapon(player_index);
 
 	// dprintf("done;g");
-	return;
 }
 
 // START Benad
@@ -1076,9 +1062,6 @@ short get_player_weapon_ammo_count(
 		case NONE:
 		default:
 			rounds_loaded = NONE;
-			// LP change:
-			// assert(false);
-			// halt();
 			break;		
 	}
 	
@@ -1395,9 +1378,7 @@ bool get_weapon_display_information(
 						break;
 
 					default:
-						// LP change:
 						assert(false);
-						// halt();
 						break;
 				}
 
@@ -1417,13 +1398,6 @@ bool get_weapon_display_information(
 				// LP: bug out if there is no weapon sequence to render
 				if (!high_level_data) return false;
 				if (!(frame>=0 && frame<high_level_data->frames_per_view)) return false;
-				/*
-				vassert(frame>=0 && frame<high_level_data->frames_per_view,
-					csprintf(temporary, "frame: %d max: %d trigger: %d state: %d count: %d phase: %d", 
-					frame, high_level_data->frames_per_view,
-					which_trigger, weapon->triggers[which_trigger].state, *count, 
-					weapon->triggers[which_trigger].phase));
-				*/
 				
 				data->collection= BUILD_COLLECTION(definition->collection, 0);
 				data->low_level_shape_index= high_level_data->low_level_shape_indexes[frame];
@@ -1464,9 +1438,7 @@ bool get_weapon_display_information(
 			{
 				get_shell_casing_display_data(data, which_trigger);
 			} else {
-				// LP change:
 				assert(false);
-				// halt();
 			}
 		}
 	
@@ -1551,15 +1523,12 @@ void get_player_weapon_mode_and_type(
 					break;
 		
 				default: 
-					// LP change:
 					assert(false);
-					// halt();
 					break;
 			}
 		}
 		
 		// LP change: suppressed error checking
-		// assert(mode != NONE);
 		if (mode == NONE) mode = _shape_weapon_idle;
 		*shape_mode= mode;
 	} else {
@@ -1567,8 +1536,6 @@ void get_player_weapon_mode_and_type(
 		*shape_mode= _shape_weapon_idle;
 		*shape_weapon_type= _weapon_fist;
 	}
-
-	return;
 }
 
 /* -------- general static code */
@@ -1628,7 +1595,6 @@ static void select_next_best_weapon(
 	}
 	
 	/* if we didn't change, we punt */
-	return;
 }
 
 static void select_next_weapon(
@@ -1658,8 +1624,6 @@ static void select_next_weapon(
 			if(ready_weapon(player_index, weapon_ordering_array[test_weapon_index])) break;
 		}
 	}
-
-	return;
 }
 
 static struct trigger_definition *get_player_trigger_definition(
@@ -1707,9 +1671,7 @@ static struct trigger_definition *get_trigger_definition(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 #endif
@@ -1867,24 +1829,11 @@ static void fire_weapon(
 			if(definition->flags & _weapon_triggers_share_ammo)
 			{
 				player_weapons->weapons[player_weapons->current_weapon].triggers[!which_trigger].rounds_loaded--;
-				// LP change: avoids crash in "Dirt Devil"
-				/*
-				assert(player_weapons->weapons[player_weapons->current_weapon].triggers[0].rounds_loaded==
-					player_weapons->weapons[player_weapons->current_weapon].triggers[1].rounds_loaded);
-				*/
 			}
 			
 			/* on dual function classes, keep the two ammo pools synched.. */
 			if(definition->weapon_class==_dual_function_class)
 			{
-#ifdef OBSOLETE
-				short other_trigger;
-				
-				other_trigger= !which_trigger;
-				player_weapons->weapons[player_weapons->current_weapon].triggers[other_trigger].rounds_loaded--;
-				assert(player_weapons->weapons[player_weapons->current_weapon].triggers[0].rounds_loaded==
-					player_weapons->weapons[player_weapons->current_weapon].triggers[1].rounds_loaded);
-#endif
 				/* Dual function class, charging weapons use 4x the ammo. */
 				if(which_trigger==_secondary_weapon && trigger_definition->charging_ticks)
 				{
@@ -1899,11 +1848,6 @@ static void fire_weapon(
 					if(definition->flags & _weapon_triggers_share_ammo)
 					{
 						player_weapons->weapons[player_weapons->current_weapon].triggers[!which_trigger].rounds_loaded-= rounds_count;
-						// Suppressed this weird error that someone had gotten
-						/*
-						assert(player_weapons->weapons[player_weapons->current_weapon].triggers[0].rounds_loaded==
-							player_weapons->weapons[player_weapons->current_weapon].triggers[1].rounds_loaded);
-							*/
 					}
 				}
 			}
@@ -1977,8 +1921,6 @@ static void fire_weapon(
 			play_weapon_sound(player_index, trigger_definition->click_sound, FIXED_ONE);
 		}
 	}
-
-	return;
 }
 
 struct weapon_definition *get_current_weapon_definition(
@@ -2079,8 +2021,6 @@ static void calculate_weapon_origin_and_vector(
 			(world_point2d *)origin, object->polygon);
 		assert(*origin_polygon != NONE);
 	}
-		
-	return;
 }
 
 static bool reload_weapon(
@@ -2097,8 +2037,6 @@ static bool reload_weapon(
 	// LP change: bugging out if these cannot be done
 	if (!(trigger->state==_weapon_idle && trigger->rounds_loaded==0)) return false;
 	if (!(trigger_definition->ammunition_type==NONE || (trigger_definition->ammunition_type>=0 && trigger_definition->ammunition_type<NUMBER_OF_ITEMS))) return false;
-	// assert(trigger->state==_weapon_idle && trigger->rounds_loaded==0);
-	// assert(trigger_definition->ammunition_type==NONE || (trigger_definition->ammunition_type>=0 && trigger_definition->ammunition_type<NUMBER_OF_ITEMS));
 
 	if(trigger_definition->ammunition_type != NONE && player->items[trigger_definition->ammunition_type]>0)
 	{
@@ -2317,9 +2255,6 @@ static bool check_reload(
 			// LP change: no weapon
 			case NONE:
 			default:
-				// LP change:
-				// assert(false);
-				// halt();
 				break;
 		}
 	}
@@ -2351,13 +2286,6 @@ static void put_rounds_into_weapon(
 	mark_player_inventory_as_dirty(player_index, _i_magnum_magazine);
 
 	/* Keep the ammo stores in sync for dual function class weapons */
-#ifdef OBSOLETE
-	if(definition->weapon_class==_dual_function_class)
-	{
-		trigger= get_player_trigger_data(player_index, !which_trigger);
-		trigger->rounds_loaded= trigger_definition->rounds_per_magazine;
-	}
-#endif
 	if(definition->flags & _weapon_triggers_share_ammo)
 	{
 		trigger= get_player_trigger_data(player_index, !which_trigger);
@@ -2493,9 +2421,6 @@ static bool handle_trigger_down(
 				// LP change: no weapon -- do nothing
 				case NONE:
 				default:
-					// LP change:
-					// assert(false);
-					// halt();
 					break;
 			}
 			
@@ -2653,10 +2578,6 @@ static bool player_weapon_has_ammo(
 			case NONE:
 			default:
 				max_triggers= 0;
-				// max_triggers= 1;
-				// LP change:
-				// assert(false);
-				// halt();
 				break;
 		}
 
@@ -2767,8 +2688,6 @@ static void raise_weapon(
 			}
 		}
 	}
-	
-	return;
 }
 
 /* Note that we are guaranteed that the current weapon has ammo.. */
@@ -2779,10 +2698,6 @@ static bool should_switch_to_weapon(
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 	bool should_change= false;
 	
-	// LP change: suppressing this message because it does not work properly
-	// in Missed Island.
-	// assert(player_weapon_has_ammo(player_index, new_weapon));
-
 	/* Switch to it if we should.. */
 	/* Change if: */
 	/*		The current weapon is the desired weapon, the trigger is not down, AND either: */
@@ -2826,7 +2741,6 @@ static bool should_switch_to_weapon(
 								if (!dont_switch_to_new_weapon())
 									should_change= true;
 							}
-							// if(!TRIGGER_IS_DOWN(weapon)) should_change= true;
 						}
 					}
 				}
@@ -2980,8 +2894,6 @@ static void play_weapon_sound(
 	object->sound_pitch= pitch;
 	play_object_sound(monster->object_index, sound);
 	object->sound_pitch= old_pitch;
-	
-	return;
 }
 
 static short get_active_trigger_count_and_states(
@@ -3079,10 +2991,6 @@ static short get_active_trigger_count_and_states(
 		// LP change: no weapon
 		case NONE:
 		default:
-			// LP change:
-			// Suppressed assertion
-			// assert(false);
-			// halt();
 			break;
 	}
 
@@ -3197,8 +3105,6 @@ static void calculate_ticks_from_shapes(
 			definition->finish_loading_ticks= total_ticks/3;
 		}
 	}
-
-	return;
 }
 
 static void update_automatic_sequence(
@@ -3252,8 +3158,6 @@ static void update_automatic_sequence(
 			}
 		}
 	}
-
-	return;
 }
 
 // LP addition: update the idle-weapon animation:
@@ -3282,7 +3186,6 @@ static void UpdateIdleAnimation(
 		// LP change: added some idiot-proofing to the ticks-per-frame value
 		if (animation->ticks_per_frame <= 0)
 			animation->ticks_per_frame = 1;
-		// assert(animation->ticks_per_frame>0);
 	
 		frame= GET_SEQUENCE_FRAME(trigger->sequence);
 		phase= GET_SEQUENCE_PHASE(trigger->sequence);
@@ -3429,8 +3332,6 @@ static void update_sequence(
 		}
 		trigger->sequence= BUILD_SEQUENCE(frame, phase);
 	}
-
-	return;
 }
 
 static void blow_up_player(
@@ -3441,8 +3342,6 @@ static void blow_up_player(
 
 	detonate_projectile(&object->location, object->polygon, _projectile_overloaded_fusion_dispersal,
 		player->monster_index, _monster_marine, FIXED_ONE);
-	
-	return;
 }
 
 static bool get_weapon_data_type_for_count(
@@ -3582,9 +3481,6 @@ static bool get_weapon_data_type_for_count(
 		// LP change: no weapon
 		case NONE:
 		default:
-			// LP change:
-			// assert(false);
-			// halt();
 			break;
 	}
 
@@ -3598,8 +3494,6 @@ static void update_player_ammo_count(
 	{
 		mark_ammo_display_as_dirty();
 	}
-
-	return;
 }
 
 static bool player_has_valid_weapon(
@@ -3755,8 +3649,6 @@ static void idle_weapon(
 			}
 		}	
 	}
-
-	return;
 }
 
 /* We are requesting to raise the second pistol for a twofisted class... */
@@ -3818,8 +3710,6 @@ static void test_raise_double_weapon(
 			}
 		}
 	}
-
-	return;
 }
 
 static void change_to_desired_weapon(
@@ -3900,9 +3790,6 @@ static void change_to_desired_weapon(
 		// LP change: no weapon
 		case NONE:
 		default:
-			// LP change:
-			// assert(false);
-			// halt();
 			break;
 	}
 
@@ -3934,8 +3821,6 @@ static void change_to_desired_weapon(
 			}
 		}
 	}
-
-	return;
 }
 
 static bool automatic_still_firing(
@@ -3979,8 +3864,6 @@ static void	play_shell_casing_sound(
 	
 		play_sound(sound_index, &location, NONE);
 	}
-
-	return;
 }
 
 static short find_weapon_power_index(
@@ -4014,8 +3897,6 @@ static void initialize_shell_casings(
 	{
 		MARK_SLOT_AS_FREE(shell_casing);
 	}
-	
-	return;
 }
 
 static short new_shell_casing(
@@ -4077,8 +3958,6 @@ static void update_shell_casings(
 			}
 		}
 	}
-
-	return;
 }
 
 static bool get_shell_casing_display_data(

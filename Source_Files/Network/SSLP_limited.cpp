@@ -378,8 +378,6 @@ SSLPint_ReceivedPacket() {
         return;
     break;
     }
-    
-    return;
 }
 
 

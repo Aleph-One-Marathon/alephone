@@ -21,7 +21,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 	Added accessors for datafields now opaque in Carbon
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
 #if defined(TARGET_API_MAC_CARBON)
     #include <Carbon/Carbon.h>
 #else
@@ -83,4 +85,3 @@ void SetFont(
 	TextFace(spec->style);
 	TextSize(spec->size);
 }
-

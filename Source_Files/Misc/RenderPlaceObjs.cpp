@@ -87,8 +87,6 @@ void RenderPlaceObjsClass::initialize_render_object_list()
 {
 	// LP change: using growable list
 	RenderObjects.clear();
-	
-	return;
 }
 
 
@@ -105,9 +103,7 @@ void RenderPlaceObjsClass::build_render_object_list()
 
 	initialize_render_object_list();
 	
-	// LP change:
 	for (sorted_node = &SortedNodes.back(); sorted_node >= &SortedNodes.front(); --sorted_node)
-	// for (sorted_node= next_sorted_node-1;sorted_node>=sorted_nodes;--sorted_node)
 	{
 		polygon_data *polygon= get_polygon_data(sorted_node->polygon_index);
 		_fixed floor_intensity= get_light_intensity(polygon->floor_lightsource_index);
@@ -118,7 +114,6 @@ void RenderPlaceObjsClass::build_render_object_list()
 		{
 			short base_node_count;
 			sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
-			// LP change:
 			render_object_data *render_object= build_render_object(NULL, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, object_index);
 			
 			if (render_object)
@@ -130,8 +125,6 @@ void RenderPlaceObjsClass::build_render_object_list()
 			object_index= get_object_data(object_index)->next_object;
 		}
 	}
-
-	return;
 }
 
 
@@ -150,24 +143,19 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
 	// LP change: removed upper limit on number (restored it later)
-	// if (!OBJECT_IS_INVISIBLE(object))
 	if (!OBJECT_IS_INVISIBLE(object) && RenderObjects.size()<get_dynamic_limit(_dynamic_limit_rendered))
 	{
 		// LP change: made this more long-distance-friendly
 		long_point3d transformed_origin;
-		// world_point3d transformed_origin;
 		
 		if (origin)
 		{
-			// LP change:
 			transformed_origin.x = origin->x;
 			transformed_origin.y = origin->y;
 			transformed_origin.z = origin->z;
-			// transformed_origin= *origin;
 		}
 		else
 		{
-			// LP change:
 			world_point2d temp_tfm_origin;
 			temp_tfm_origin.x = object->location.x;
 			temp_tfm_origin.y = object->location.y;
@@ -176,11 +164,6 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			transform_overflow_point2d(&temp_tfm_origin, (world_point2d *)&view->origin, view->yaw, &tfm_origin_flags);
 			long_vector2d *tfm_origin_ptr = (long_vector2d *)(&transformed_origin);
 			overflow_short_to_long_2d(temp_tfm_origin,tfm_origin_flags,*tfm_origin_ptr);
-			/*
-			transformed_origin= object->location;
-			transformed_origin.z-= view->origin.z;
-			transform_point2d((world_point2d *) &transformed_origin, (world_point2d *)&view->origin, view->yaw);
-			*/
 		}
 		
 		// May do some calculation on spries that are behind the view position,
@@ -367,9 +350,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				if (object->parasitic_object!=NONE)
 				{
 					render_object_data *parasitic_render_object;
-					// LP change:
 					long_point3d parasitic_origin= transformed_origin;
-					// world_point3d parasitic_origin= transformed_origin;
 					
 					parasitic_origin.z+= shape_information->world_y0;
 					parasitic_origin.y+= shape_information->world_x0;
@@ -429,9 +410,7 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 		;
 
 	/* find the two objects we must be lie between */
-	// LP change:
 	for (render_object = &RenderObjects.front(); render_object <= &RenderObjects.back(); ++render_object)
-	// for (render_object= render_objects; render_object<new_render_object; ++render_object)
 	{
 		/* if these two objects intersect... */
 		if (render_object->rectangle.x1>new_render_object->rectangle.x0 && render_object->rectangle.x0<new_render_object->rectangle.x1 &&
@@ -463,7 +442,6 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	desired_node= base_nodes[0];
 	for (i= 1; i<base_node_count; ++i) if (base_nodes[i]>desired_node) desired_node= base_nodes[i];
 	assert((desired_node >= &SortedNodes.front()) && (desired_node <= &SortedNodes.back()));
-	// assert(desired_node>=sorted_nodes && desired_node<next_sorted_node);
 	
 	/* adjust desired node based on the nodes of the deep and shallow render object; only
 		one of deep_render_object and shallow_render_object will be non-null after this if
@@ -533,8 +511,6 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 //			desired_node->exterior_objects= new_render_object;
 //		}
 	}
-
-	return;
 }
 
 enum /* build_base_node_list() states */
@@ -583,9 +559,8 @@ short RenderPlaceObjsClass::build_base_node_list(
 				break;
 			
 			default:
-				// LP change:
 				assert(false);
-				// halt();
+				break;
 		}
 
 		vector.i= destination.x - origin->x;
@@ -757,7 +732,6 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 				if (x0[left]<x1[right]) /* found one between x0[left] and x1[right] */
 				{
 					/* allocate it */
-					// LP Change:
 					int Length = ClippingWindows.size();
 					POINTER_DATA OldCWPointer = POINTER_CAST(&ClippingWindows.front());
 					
@@ -793,10 +767,6 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 							first_window = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(first_window) - OldCWPointer));
 					}
 					window= &ClippingWindows[Length];
-					/*
-					assert(next_clipping_window_index++<MAXIMUM_CLIPPING_WINDOWS);
-					window= next_clipping_window++;
-					*/
 					
 					/* build it */
 					window->x0= x0[left], window->x1= x1[right];
@@ -819,8 +789,6 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 	
 	/* stuff our windows in all objects hanging off our first object (i.e., all parasites) */	
 	for (; render_object; render_object= render_object->next_object) render_object->clipping_windows= first_window;
-
-	return;
 }
 
 #define NUMBER_OF_SCALED_VALUES 6

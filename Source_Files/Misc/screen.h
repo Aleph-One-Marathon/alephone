@@ -91,7 +91,6 @@ enum /* hardware acceleration codes */
 {
 	_no_acceleration,
 	_opengl_acceleration	// LP addition: OpenGL support
-	// _valkyrie_acceleration	LP: eliminating this
 };
 
 /* ---------- missing from QUICKDRAW.H */

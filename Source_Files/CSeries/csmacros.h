@@ -18,7 +18,9 @@
 	http://www.gnu.org/licenses/gpl.html
 
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
 /*
 	Jul 1, 2000 (Loren Petrich):
 		Added accessor template function
@@ -26,6 +28,7 @@
 Aug 27, 2000 (Loren Petrich):
 	Added object wrappers for memcpy() and memset(); these copy, set, and clear objects
 */
+
 #ifndef _CSERIES_MACROS_
 #define _CSERIES_MACROS_
 

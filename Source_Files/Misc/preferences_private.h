@@ -11,8 +11,6 @@
 enum {
 	ditlGRAPHICS= 4001,
 	iCHOOSE_MONITOR=1,
-	// LP change: finally eliminated this option
-	// iDRAW_EVERY_OTHER_LINE,
 	iHARDWARE_ACCELERATION,
 	iNUMBER_OF_COLORS,
 	iWINDOW_SIZE,

@@ -126,7 +126,6 @@ enum /* effect types */
 
 // LP change: made this settable from the resource fork
 #define MAXIMUM_EFFECTS_PER_MAP (get_dynamic_limit(_dynamic_limit_effects))
-// #define MAXIMUM_EFFECTS_PER_MAP 64
 
 /* uses SLOT_IS_USED(), SLOT_IS_FREE(), MARK_SLOT_AS_FREE(), MARK_SLOT_AS_USED() macros (0x8000 bit) */
 

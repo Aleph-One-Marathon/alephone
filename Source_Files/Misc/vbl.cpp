@@ -203,8 +203,6 @@ void initialize_keyboard_controller(
 		if(!queue->buffer) alert_user(fatalError, strERRORS, outOfMemory, memory_error());
 	}
 	enter_mouse(0);
-	
-	return;
 }
 
 void set_keyboard_controller_status(
@@ -229,8 +227,6 @@ void set_keyboard_controller_status(
 #endif
 	
 	/******************************************************************************************/
-
-	return;
 }
 
 bool get_keyboard_controller_status(
@@ -249,24 +245,18 @@ void sync_heartbeat_count(
 	void)
 {
 	heartbeat_count= dynamic_world->tick_count;
-
-	return;
 }
 
 void increment_replay_speed(
 	void)
 {
 	if (replay.replay_speed < MAXIMUM_REPLAY_SPEED) replay.replay_speed++;
-
-	return;
 }
 
 void decrement_replay_speed(
 	void)
 {
 	if (replay.replay_speed > MINIMUM_REPLAY_SPEED) replay.replay_speed--;
-
-	return;
 }
 
 /* Returns NONE if it is custom.. */
@@ -331,8 +321,6 @@ void set_keys(
 #endif
 	}
 	precalculate_key_information();
-	
-	return;
 }
 
 bool has_recording_file(void)
@@ -618,8 +606,6 @@ void get_recording_header_data(
 	*version= replay.header.version;
 	objlist_copy(starts, replay.header.starts, MAXIMUM_NUMBER_OF_PLAYERS);
 	obj_copy(*game_information, replay.header.game_information);
-	
-	return;
 }
 
 bool setup_for_replay_from_file(
@@ -748,8 +734,6 @@ void rewind_recording(
 		// Use the packed length here!!!
 		replay.header.length= SIZEOF_recording_header;
 	}
-	
-	return;
 }
 
 void check_recording_replaying(
@@ -804,8 +788,6 @@ void check_recording_replaying(
 			read_recording_queue_chunks();
 		}
 	}
-
-	return;
 }
 
 void reset_recording_and_playback_queues(

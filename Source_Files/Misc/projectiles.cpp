@@ -234,8 +234,6 @@ bool preflight_projectile(
 			media_data *media = get_media_data(origin_polygon->media_index);
 			if (origin->z>origin_polygon->floor_height && origin->z<origin_polygon->ceiling_height &&
 				(origin_polygon->media_index==NONE || definition->flags&(_penetrates_media) || (media ? origin->z>media->height : true)))
-			// if (origin->z>origin_polygon->floor_height && origin->z<origin_polygon->ceiling_height &&
-			//	(origin_polygon->media_index==NONE || definition->flags&(_penetrates_media) || origin->z>get_media_data(origin_polygon->media_index)->height))
 			{
 				/* make sure it hits something */
 				uint16 flags= translate_projectile(type, origin, origin_polygon_index, destination, (short *) NULL, owner, obstruction_index);
@@ -265,8 +263,6 @@ void detonate_projectile(
 	damage_monsters_in_radius(NONE, owner_index, owner_type, origin, polygon_index,
 		definition->area_of_effect, damage);
 	if (definition->detonation_effect!=NONE) new_effect(origin, polygon_index, definition->detonation_effect, 0);
-
-	return;
 }
 
 short new_projectile(
@@ -503,7 +499,6 @@ void move_projectiles(
 								// Some of the later routines may set both "hit landscape" and "hit media",
 								// so be careful.
 								if (flags&_projectile_hit_landscape && !(flags&_projectile_hit_media)) detonation_effect= NONE;
-								// if (flags&_projectile_hit_landscape) detonation_effect= NONE;
 								
 								if (detonation_effect!=NONE) new_effect(&new_location, new_polygon_index, detonation_effect, object->facing);
 								
@@ -556,8 +551,6 @@ void move_projectiles(
 			}
 		}
 	}
-	
-	return;
 }
 
 void remove_projectile(
@@ -567,8 +560,6 @@ void remove_projectile(
 	
 	remove_map_object(projectile->object_index);
 	MARK_SLOT_AS_FREE(projectile);
-	
-	return;
 }
 
 void remove_all_projectiles(
@@ -581,8 +572,6 @@ void remove_all_projectiles(
 	{
 		if (SLOT_IS_USED(projectile)) remove_projectile(projectile_index);
 	}
-	
-	return;
 }
 
 /* when a given monster is deactivated (or killed), all his active projectiles should become
@@ -599,8 +588,6 @@ void orphan_projectiles(
 		if (projectile->owner_index==monster_index) projectile->owner_index= NONE;
 		if (projectile->target_index==monster_index) projectile->target_index= NONE;
 	}
-
-	return;
 }
 
 void load_projectile_sounds(
@@ -613,8 +600,6 @@ void load_projectile_sounds(
 		load_sound(definition->flyby_sound);
 		load_sound(definition->rebound_sound);
 	}
-	
-	return;
 }
 
 void mark_projectile_collections(
@@ -636,8 +621,6 @@ void mark_projectile_collections(
 		mark_effect_collections(definition->detonation_effect, loading);
 		mark_effect_collections(definition->contrail_effect, loading);
 	}
-	
-	return;
 }
 
 
@@ -663,8 +646,6 @@ void drop_the_ball(
 		
 		object->shape= get_item_shape(item_type);
 	}
-
-	return;
 }
 
 /* ---------- private code */
@@ -700,35 +681,6 @@ static short adjust_projectile_type(
 	return type;
 }
 	
-#ifdef OBSOLETE
-void guided_projectile_target(
-	short projectile_index)
-{
-	struct projectile_data *projectile= get_projectile_data(projectile_index);
-	struct object_data *projectile_object= get_object_data(projectile->object_index);
-	world_point3d new_location;
-	short new_polygon_index;
-	short obstruction_index;
-	
-	// calculate a new_location, new_polygon_index
-	new_location= object->location;
-	translate_point3d(&new_location, speed, object->facing, projectile->elevation);
-	
-	// if we're pointing at anything, lock on
-	if (translate_projectile(projectile->type, &object->location, object->polygon,
-		&new_location, new_polygon_index, projectile->owner_index, &obstruction_index,
-		(bool *) NULL))
-	{
-		if (obstruction_index!=NONE)
-		{
-			projectile->target_index= obstruction_index;
-		}
-	}
-	
-	return;
-}
-#endif
-
 #define MAXIMUM_GUIDED_DELTA_YAW 8
 #define MAXIMUM_GUIDED_DELTA_PITCH 6
 
@@ -758,10 +710,6 @@ static void update_guided_projectile(
 			// LP change: made this long-distance-friendly
 			long dx= long(target_location.x) - long(projectile_object->location.x);
 			long dy= long(target_location.y) - long(projectile_object->location.y);
-			/*
-			world_distance dx= target_location.x - projectile_object->location.x;
-			world_distance dy= target_location.y - projectile_object->location.y;
-			*/
 			world_distance dz= target_location.z - projectile_object->location.z;
 			short delta_yaw= MAXIMUM_GUIDED_DELTA_YAW+_normal_level-dynamic_world->game_information.difficulty_level;
 			short delta_pitch= MAXIMUM_GUIDED_DELTA_PITCH+_normal_level-dynamic_world->game_information.difficulty_level;
@@ -812,8 +760,6 @@ static void update_guided_projectile(
 #endif
 		}
 	}
-	
-	return;
 }
 
 /* new_polygon_index==NULL means weÕre preflighting */
@@ -827,8 +773,6 @@ uint16 translate_projectile(
 	short *obstruction_index)
 {
 	struct projectile_definition *definition= get_projectile_definition(type);
-	// LP change: no longer necessary
-	// short intersected_object_indexes[GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE];
 	struct polygon_data *old_polygon;
 	world_point3d intersection;
 	world_distance media_height;
@@ -840,9 +784,7 @@ uint16 translate_projectile(
 	*obstruction_index= NONE;
 
 	contact= _hit_nothing;
-	// LP change:
 	IntersectedObjects.clear();
-	// intersected_object_count= 0;
 	old_polygon= get_polygon_data(old_polygon_index);
 	if (new_polygon_index) *new_polygon_index= old_polygon_index;
 	do
@@ -852,7 +794,6 @@ uint16 translate_projectile(
 		// Idiot-proofing of media handling
 		media_data *media = get_media_data(old_polygon->media_index);
 		media_height= (old_polygon->media_index==NONE || definition->flags&_penetrates_media || !media) ? INT16_MIN : media->height;
-		// media_height= (old_polygon->media_index==NONE || definition->flags&_penetrates_media) ? INT16_MIN : get_media_data(old_polygon->media_index)->height;
 		
 		// This flag says it can
 		bool traveled_underneath = (definition->flags&_penetrates_media_boundary) && (old_location->z <= media_height);
@@ -860,7 +801,6 @@ uint16 translate_projectile(
 		/* add this polygonÕs monsters to our non-redundant list of possible intersections */
 		possible_intersecting_monsters(&IntersectedObjects, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
 		intersected_object_count = IntersectedObjects.size();
-		// possible_intersecting_monsters(intersected_object_indexes, &intersected_object_count, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
 		
  		line_index= find_line_crossed_leaving_polygon(old_polygon_index, (world_point2d *)old_location, (world_point2d *)new_location);
 		if (line_index!=NONE)
@@ -880,7 +820,6 @@ uint16 translate_projectile(
 			// on the other side
 			short adjacent_polygon_index= find_adjacent_polygon(old_polygon_index, line_index);
 			if ((!LINE_IS_SOLID(line) || LINE_HAS_TRANSPARENT_SIDE(line)) && (adjacent_polygon_index != NONE))
-			// if (!LINE_IS_SOLID(line) || LINE_HAS_TRANSPARENT_SIDE(line))
 			{
 				// short adjacent_polygon_index= find_adjacent_polygon(old_polygon_index, line_index);
 				
@@ -891,11 +830,9 @@ uint16 translate_projectile(
 				// Here, test for whether the projectile is above the floor or the media surface;
 				// ignore the latter test if PMB is set.
 				if ((traveled_underneath || intersection.z>media_height) && intersection.z>old_polygon->floor_height)
-				// if (intersection.z>media_height && intersection.z>old_polygon->floor_height)
 				{
 					// If PMB was set, check to see if the projectile hit the media surface.
 					if ((!traveled_underneath || intersection.z<media_height) && intersection.z<old_polygon->ceiling_height)
-					// if (intersection.z<old_polygon->ceiling_height)
 					{
 						if (intersection.z>adjacent_polygon->floor_height&&intersection.z<adjacent_polygon->ceiling_height)
 						{
@@ -929,7 +866,6 @@ uint16 translate_projectile(
 						if (adjacent_polygon->ceiling_transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
 						// LP change: if PMB was set, check to see if hit media
 						contact= (!traveled_underneath || old_polygon->ceiling_height<media_height) ? _hit_ceiling : _hit_media;
-						// contact= _hit_ceiling;
 					}
 				}
 				else
@@ -939,7 +875,6 @@ uint16 translate_projectile(
 					if (adjacent_polygon->floor_transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
 					// LP change: suppress media-hit test only if PMB was set and the projectile was underneath the media
 					contact= (traveled_underneath || old_polygon->floor_height>media_height) ? _hit_floor : _hit_media;
-					// contact= (old_polygon->floor_height>media_height) ? _hit_floor : _hit_media;
 				}
 			}
 			else
@@ -958,11 +893,9 @@ uint16 translate_projectile(
 			// Here, test for whether the projectile is above the floor or the media surface;
 			// ignore the latter test if PMB is set.
 			if ((traveled_underneath || new_location->z>media_height) && new_location->z>old_polygon->floor_height)
-			// if (new_location->z>media_height && new_location->z>old_polygon->floor_height)
 			{
 				// If PMB was set, check to see if the projectile hit the media surface.
 				if ((!traveled_underneath || new_location->z<media_height) && new_location->z<old_polygon->ceiling_height)
-				// if (new_location->z<old_polygon->ceiling_height)
 				{
 					/* weÕre staying in this polygon and weÕre finally done screwing around;
 						the caller can look in *new_polygon_index to find out where we ended up */
@@ -974,7 +907,6 @@ uint16 translate_projectile(
 					if (old_polygon->ceiling_transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
 					// LP change: if PMB was set, check to see if hit media
 					contact= (!traveled_underneath || old_polygon->ceiling_height<media_height) ? _hit_ceiling : _hit_media;
-					// contact= _hit_ceiling;
 				}
 			}
 			else
@@ -984,7 +916,6 @@ uint16 translate_projectile(
 				if (old_polygon->floor_transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
 				// LP change: suppress media-hit test only if PMB was set and the projectile was underneath the media
 				contact= (traveled_underneath || old_polygon->floor_height>media_height) ? _hit_floor : _hit_media;
-				// contact= (old_polygon->floor_height>media_height) ? _hit_floor : _hit_media;
 			}
 		}
 	}
@@ -1026,7 +957,6 @@ uint16 translate_projectile(
 		{
 			// LP change:
 			struct object_data *object= get_object_data(IntersectedObjects[i]);
-			// struct object_data *object= get_object_data(intersected_object_indexes[i]);
 			long separation= point_to_line_segment_distance_squared((world_point2d *)&object->location,
 				(world_point2d *)old_location, (world_point2d *)new_location);
 			world_distance radius, height;
@@ -1040,9 +970,8 @@ uint16 translate_projectile(
 					case _object_is_monster: get_monster_dimensions(object->permutation, &radius, &height); break;
 					case _object_is_scenery: get_scenery_dimensions(object->permutation, &radius, &height); break;
 					default:
-						// LP change:
 						assert(false);
-						// halt();
+						break;
 				}
 				radius_squared= (radius+definition->radius)*(radius+definition->radius);
 				
@@ -1060,7 +989,6 @@ uint16 translate_projectile(
 						{
 							// LP change:
 							best_intersection_object= IntersectedObjects[i];
-							// best_intersection_object= intersected_object_indexes[i];
 							best_intersection_distance= distance;
 							best_radius= radius;
 
@@ -1069,9 +997,8 @@ uint16 translate_projectile(
 								case _object_is_monster: contact= _hit_monster; break;
 								case _object_is_scenery: contact= _hit_scenery; break;
 								default:
-									// LP change:
 									assert(false);
-									// halt();
+									break;
 							}
 						}
 					}

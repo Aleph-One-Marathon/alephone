@@ -78,7 +78,6 @@ enum /* activation biases (set in editor) */
 
 // LP change: made this settable from the resource fork
 #define MAXIMUM_MONSTERS_PER_MAP (get_dynamic_limit(_dynamic_limit_monsters))
-// #define MAXIMUM_MONSTERS_PER_MAP 220
 
 /* player monsters are never active */
 
@@ -294,12 +293,6 @@ struct monster_definition *get_monster_definition_external(const short type);
 #define GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE (get_dynamic_limit(_dynamic_limit_global_collision))
 bool possible_intersecting_monsters(vector<short> *IntersectedObjectsPtr, short maximum_object_count, short polygon_index, bool include_scenery);
 #define monsters_nearby(polygon_index) possible_intersecting_monsters(0, 0, (polygon_index), false)
-/*
-#define LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE 16
-#define GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE 64
-bool possible_intersecting_monsters(short *object_indexes, short *object_count, short maximum_object_count, short polygon_index, bool include_scenery);
-#define monsters_nearby(polygon_index) possible_intersecting_monsters(0, 0, 0, (polygon_index), false)
-*/
 
 void get_monster_dimensions(short monster_index, world_distance *radius, world_distance *height);
 
@@ -319,10 +312,6 @@ void adjust_monster_for_polygon_height_change(short monster_index, short polygon
 void accelerate_monster(short monster_index, angle direction, angle elevation, world_distance velocity);
 
 void monster_died(short target_index);
-
-#ifdef OBSOLETE
-	void try_and_drop_random_monsters(void);
-#endif
 
 short monster_placement_index(short monster_type);
 short placement_index_to_monster_type(short placement_index);

@@ -72,9 +72,7 @@ void RenderRasterizerClass::render_tree()
 	bool SeeThruLiquids = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_LiqSeeThru) != 0;
 	
 	/* walls, ceilings, interior objects, floors, exterior objects for all nodes, back to front */
-	// LP change:
 	for (node= &SortedNodes.front(); node <= &SortedNodes.back(); ++node)
-	// for (node= sorted_nodes; node<next_sorted_node; ++node)
 	{
 		polygon_data *polygon= get_polygon_data(node->polygon_index);
 		clipping_window_data *window;
@@ -111,7 +109,6 @@ void RenderRasterizerClass::render_tree()
 		/* if necessary, replace the ceiling or floor surfaces with the media surface */
 		// LP change: don't do this step if liquids are semitransparent
 		if (media && !SeeThruLiquids)
-		// if (polygon->media_index!=NONE)
 		{
 			// LP change: moved this get upwards
 			// struct media_data *media= get_media_data(polygon->media_index);
@@ -146,7 +143,6 @@ void RenderRasterizerClass::render_tree()
 		}
 		// LP change: always render liquids that are semitransparent
 		else if (!SeeThruLiquids)
-		// else
 		{
 			// if weÕre trying to draw a polygon without media from under a polygon with media, donÕt
 			if (view->under_media_boundary) continue;
@@ -162,7 +158,6 @@ void RenderRasterizerClass::render_tree()
 				{
 					// LP change: indicated that the void is on other side
 					render_node_floor_or_ceiling(window, polygon, &ceiling_surface, true);
-					// render_node_floor_or_ceiling(view, destination, window, polygon, &ceiling_surface);
 				}
 				
 				/* render visible sides */
@@ -182,10 +177,6 @@ void RenderRasterizerClass::render_tree()
 						overflow_short_to_long_2d(endpoint0->transformed,endpoint0->flags,surface.p0);
 						endpoint_data *endpoint1 = get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)]);
 						overflow_short_to_long_2d(endpoint1->transformed,endpoint1->flags,surface.p1);
-						/*
-						surface.p0= get_endpoint_data(polygon->endpoint_indexes[i])->transformed;
-						surface.p1= get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)])->transformed;
-						*/
 						surface.ambient_delta= side->ambient_delta;
 						
 						// LP change: indicate in all cases whether the void is on the other side;
@@ -206,7 +197,6 @@ void RenderRasterizerClass::render_tree()
 								surface.texture_definition= &side->primary_texture;
 								surface.transfer_mode= side->primary_transfer_mode;
 								render_node_side(window, &surface, void_present);
-								// render_node_side(view, destination, window, &surface);
 								break;
 							case _split_side: /* render _low_side first */
 								surface.lightsource_index= side->secondary_lightsource_index;
@@ -216,7 +206,6 @@ void RenderRasterizerClass::render_tree()
 								surface.texture_definition= &side->secondary_texture;
 								surface.transfer_mode= side->secondary_transfer_mode;
 								render_node_side(window, &surface, true);
-								// render_node_side(view, destination, window, &surface);
 								/* fall through and render high side */
 							case _high_side:
 								surface.lightsource_index= side->primary_lightsource_index;
@@ -240,9 +229,8 @@ void RenderRasterizerClass::render_tree()
 								break;
 							
 							default:
-								// LP change:
 								assert(false);
-								// halt();
+								break;
 						}
 						
 						if (side->transparent_texture.texture!=NONE)
@@ -254,7 +242,6 @@ void RenderRasterizerClass::render_tree()
 							surface.texture_definition= &side->transparent_texture;
 							surface.transfer_mode= side->transparent_transfer_mode;
 							render_node_side(window, &surface, false);
-							// render_node_side(view, destination, window, &surface);
 						}
 					}
 				}
@@ -264,7 +251,6 @@ void RenderRasterizerClass::render_tree()
 				{
 					// LP change: indicated that the void is on other side
 					render_node_floor_or_ceiling(window, polygon, &floor_surface, true);
-					// render_node_floor_or_ceiling(view, destination, window, polygon, &floor_surface);
 				}
 			}
 		}
@@ -311,11 +297,8 @@ void RenderRasterizerClass::render_tree()
 		for (object= node->exterior_objects; object; object= object->next_object)
 		{
 			render_node_object(object, false);
-			// render_node_object(view, destination, object);
 		}
 	}
-	
-	return;
 }
 
 /* ---------- rendering ceilings and floors */
@@ -326,13 +309,11 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 	polygon_data *polygon,
 	horizontal_surface_data *surface,
 	bool void_present)
-	// struct horizontal_surface_data *surface)
 {
 	// LP addition: animated-texture support
 	// Extra variable defined so as not to edit the original texture
 	shape_descriptor Texture = AnimTxtr_Translate(surface->texture);
 	if (Texture!=NONE)
-	// if (surface->texture!=NONE)
 	{
 		struct polygon_definition textured_polygon;
 		flagged_world_point2d vertices[MAXIMUM_VERTICES_PER_WORLD_POLYGON];
@@ -351,7 +332,6 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 			overflow_short_to_long_2d(endpoint->transformed,endpoint->flags,temp_vertex);
 			vertices[i].x = temp_vertex.i;
 			vertices[i].y = temp_vertex.j;
-			// *((world_point2d *)(vertices+i))= get_endpoint_data(polygon->endpoint_indexes[i])->transformed;
 			vertices[i].flags= 0;
 		}
 		
@@ -381,16 +361,10 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 						int32 screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 						screen->x= PIN(screen_x, 0, view->screen_width);
 						}
-						/*
-						screen->x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
-						screen->x= PIN(screen->x, 0, view->screen_width);
-						*/
 						break;
 					case _clip_left: screen->x= window->x0; break;
 					case _clip_right: screen->x= window->x1; break;
 					default:
-						// LP change: suppressing
-						// if (window->x1-window->x0>1) dprintf("ambiguous clip flags for window [%d,%d];g;", window->x0, window->x1);
 						screen->x= window->x0;
 						break;
 				}
@@ -403,16 +377,10 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 						int32 screen_y= view->half_screen_height - transformed_height/world->x + view->dtanpitch;
 						screen->y= PIN(screen_y, 0, view->screen_height);
 						}
-						/*
-						screen->y= view->half_screen_height - transformed_height/world->x + view->dtanpitch;
-						screen->y= PIN(screen->y, 0, view->screen_height);
-						*/
 						break;
 					case _clip_up: screen->y= window->y0; break;
 					case _clip_down: screen->y= window->y1; break;
 					default:
-						// LP change: suppressing
-						// if (window->y1-window->y0>1) dprintf("ambiguous clip flags for window [%d,%d];g;", window->y0, window->y1);
 						screen->y= window->y0;
 						break;
 				}
@@ -424,13 +392,11 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 			textured_polygon.origin.x= view->origin.x + surface->origin.x;
 			textured_polygon.origin.y= view->origin.y + surface->origin.y;
 			textured_polygon.origin.z= adjusted_height;
-			// LP change:
 			get_shape_bitmap_and_shading_table(Texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
 			// Bug out if bitmap is nonexistent
 			if (!textured_polygon.texture) return;
 			
 			textured_polygon.ShapeDesc = Texture;
-			// get_shape_bitmap_and_shading_table(surface->texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
 			textured_polygon.ambient_shade= get_light_intensity(surface->lightsource_index);
 			textured_polygon.vertex_count= vertex_count;
 			instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, view->tick_count + 16*(polygon-map_polygons), true);
@@ -441,14 +407,8 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 			textured_polygon.VoidPresent = void_present;
 			// LP: using rasterizer object
 			RasPtr->texture_horizontal_polygon(textured_polygon);
-			/*
-			if (!OGL_RenderWall(textured_polygon,false))
-				texture_horizontal_polygon(&textured_polygon, destination, view);
-			*/
 		}
 	}
-
-	return;
 }
 
 /* ---------- rendering sides (walls) */
@@ -465,7 +425,6 @@ void RenderRasterizerClass::render_node_side(
 	// Extra variable defined so as not to edit the original texture
 	shape_descriptor Texture = AnimTxtr_Translate(surface->texture_definition->texture);
 	if (h>surface->h0 && Texture!=NONE)
-	// if (h>surface->h0 && surface->texture_definition->texture!=NONE)
 	{
 		struct polygon_definition textured_polygon;
 		flagged_world_point2d posts[2];
@@ -475,13 +434,8 @@ void RenderRasterizerClass::render_node_side(
 	
 		/* initialize the two posts of our trapezoid */
 		vertex_count= 2;
-		// LP change:
 		posts[0].x= surface->p0.i, posts[0].y= surface->p0.j, posts[0].flags= 0;
 		posts[1].x= surface->p1.i, posts[1].y= surface->p1.j, posts[1].flags= 0;
-		/*
-		posts[0].x= surface->p0.x, posts[0].y= surface->p0.y, posts[0].flags= 0;
-		posts[1].x= surface->p1.x, posts[1].y= surface->p1.y, posts[1].flags= 0;
-		*/
 	
 		/* clip to left and right sides of the cone (must happen in the same order as horizontal polygons) */
 		vertex_count= xy_clip_line(posts, vertex_count, &window->left, _clip_left);
@@ -506,13 +460,8 @@ void RenderRasterizerClass::render_node_side(
 			
 			if (vertex_count)
 			{
-				// LP change:
 				world_distance dx= surface->p1.i - surface->p0.i;
 				world_distance dy= surface->p1.j - surface->p0.j;
-				/*
-				world_distance dx= surface->p1.x - surface->p0.x;
-				world_distance dy= surface->p1.y - surface->p0.y;
-				*/
 				world_distance x0= WORLD_FRACTIONAL_PART(surface->texture_definition->x0);
 				world_distance y0= WORLD_FRACTIONAL_PART(surface->texture_definition->y0);
 				
@@ -523,20 +472,14 @@ void RenderRasterizerClass::render_node_side(
 				textured_polygon.vector.i= (WORLD_ONE*dx)/divisor;
 				textured_polygon.vector.j= (WORLD_ONE*dy)/divisor;
 				textured_polygon.vector.k= -WORLD_ONE;
-				// LP change:
 				textured_polygon.origin.x= surface->p0.i - (x0*dx)/divisor;
 				textured_polygon.origin.y= surface->p0.j - (x0*dy)/divisor;
-				/*
-				textured_polygon.origin.x= surface->p0.x - (x0*dx)/divisor;
-				textured_polygon.origin.y= surface->p0.y - (x0*dy)/divisor;
-				*/
 				textured_polygon.origin.z= surface->h1 + y0;
 	
 				/* transform the points we have into screen-space */
 				for (i=0;i<vertex_count;++i)
 				{
 					flagged_world_point3d *world= vertices + i;
-					// LP change:
 					point2d *screen= textured_polygon.vertices + i;
 					
 					switch (world->flags&(_clip_left|_clip_right))
@@ -547,16 +490,10 @@ void RenderRasterizerClass::render_node_side(
 							int32 screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 							screen->x= PIN(screen_x, 0, view->screen_width);
 							}
-							/*
-							screen->x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
-							screen->x= PIN(screen->x, 0, view->screen_width);
-							*/
 							break;
 						case _clip_left: screen->x= window->x0; break;
 						case _clip_right: screen->x= window->x1; break;
 						default:
-							// LP change: suppressing
-							// if (window->x1-window->x0>1) dprintf("ambiguous clip flags for window [%d,%d];g;", window->x0, window->x1);
 							screen->x= window->x0;
 							break;
 					}
@@ -569,16 +506,10 @@ void RenderRasterizerClass::render_node_side(
 							int32 screen_y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
 							screen->y= PIN(screen_y, 0, view->screen_height);
 							}
-							/*
-							screen->y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
-							screen->y= PIN(screen->y, 0, view->screen_height);
-							*/
 							break;
 						case _clip_up: screen->y= window->y0; break;
 						case _clip_down: screen->y= window->y1; break;
 						default:
-							// LP change: suppressing
-							// if (window->y1-window->y0>1) dprintf("ambiguous clip flags for window [%d,%d];g;", window->y0, window->y1);
 							screen->y= window->y0;
 							break;
 					}
@@ -587,13 +518,11 @@ void RenderRasterizerClass::render_node_side(
 				
 				/* setup the other parameters of the textured polygon */
 				textured_polygon.flags= 0;
-				// LP change:
 				get_shape_bitmap_and_shading_table(Texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
 				// Bug out if bitmap is nonexistent
 				if (!textured_polygon.texture) return;
 
 				textured_polygon.ShapeDesc = Texture;
-				// get_shape_bitmap_and_shading_table(surface->texture_definition->texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
 				textured_polygon.ambient_shade= get_light_intensity(surface->lightsource_index) + surface->ambient_delta;
 				textured_polygon.ambient_shade= PIN(textured_polygon.ambient_shade, 0, FIXED_ONE);
 				textured_polygon.vertex_count= vertex_count;
@@ -605,15 +534,9 @@ void RenderRasterizerClass::render_node_side(
 				textured_polygon.VoidPresent = void_present;
 				// LP: using rasterizer object
 				RasPtr->texture_vertical_polygon(textured_polygon);
-				/*
-				if (!OGL_RenderWall(textured_polygon,true))
-					texture_vertical_polygon(&textured_polygon, destination, view);
-				*/
 			}
 		}
 	}
-
-	return;
 }
 
 /* ---------- rendering objects */
@@ -621,7 +544,6 @@ void RenderRasterizerClass::render_node_side(
 void RenderRasterizerClass::render_node_object(
 	render_object_data *object,
 	bool other_side_of_media)
-	// struct render_object_data *object)
 {
 	struct clipping_window_data *window;
 	
@@ -636,7 +558,6 @@ void RenderRasterizerClass::render_node_object(
 		// so don't edit their clip rects
 		// This is bitwise XOR, but is presumably OK here
 		if (view->under_media_boundary ^ other_side_of_media)
-		// if (view->under_media_boundary)
 		{
 			// Clipping: below a liquid surface
 			if (object->rectangle.ModelPtr)
@@ -656,13 +577,7 @@ void RenderRasterizerClass::render_node_object(
 		// LP: added OpenGL support
 		// LP: using rasterizer object
 		RasPtr->texture_rectangle(object->rectangle);
-		/*
-		if (!OGL_RenderSprite(object->rectangle))
-			texture_rectangle(&object->rectangle, destination, view);
-		*/
 	}
-	
-	return;
 }
 
 
@@ -680,7 +595,7 @@ enum /* xy_clip_horizontal_polygon() states */
 short RenderRasterizerClass::xy_clip_horizontal_polygon(
 	flagged_world_point2d *vertices,
 	short vertex_count,
-	long_vector2d *line, // world_vector2d *line,
+	long_vector2d *line,
 	uint16 flag)
 {
 #ifdef QUICKDRAW_DEBUG
@@ -871,7 +786,7 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 	flagged_world_point2d *p0,
 	flagged_world_point2d *p1,
 	flagged_world_point2d *clipped,
-	long_vector2d *line) // world_vector2d *line)
+	long_vector2d *line)
 {
 	bool swap= (p1->y>p0->y) ? false : ((p0->y==p1->y) ? (p1->x<p0->x) : true);
 	flagged_world_point2d *local_p0= swap ? p1 : p0;
@@ -893,8 +808,6 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 	clipped->x= local_p0->x + FIXED_INTEGERAL_PART(t*dx);
 	clipped->y= local_p0->y + FIXED_INTEGERAL_PART(t*dy);
 	clipped->flags= local_p0->flags&local_p1->flags;
-
-	return;
 }
 
 /* almost wholly identical to xz_clip_vertical_polygon() except that this works off 2d points
@@ -903,13 +816,11 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 short RenderRasterizerClass::z_clip_horizontal_polygon(
 	flagged_world_point2d *vertices,
 	short vertex_count,
-	long_vector2d *line, // world_vector2d *line,/* i==x, j==z */
+	long_vector2d *line, /* i==x, j==z */
 	world_distance height,
 	uint16 flag)
 {
-	// LP change:
 	CROSSPROD_TYPE heighti= CROSSPROD_TYPE(line->i)*height;
-	// int32 heighti= line->i*height;
 	
 #ifdef QUICKDRAW_DEBUG
 	debug_flagged_points(vertices, vertex_count);
@@ -926,9 +837,7 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 		
 		do
 		{
-			// LP change:
 			CROSSPROD_TYPE cross_product= heighti - CROSSPROD_TYPE(line->j)*vertices[vertex_index].x;
-			// int32 cross_product= heighti - line->j*vertices[vertex_index].x;
 
 			if (cross_product<0) /* inside (i.e., will be clipped) */
 			{
@@ -1096,7 +1005,7 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 	flagged_world_point2d *p1,
 	world_distance height,
 	flagged_world_point2d *clipped,
-	long_vector2d *line) // world_vector2d *line)
+	long_vector2d *line)
 {
 	bool swap= (p1->y>p0->y) ? false : ((p0->y==p1->y) ? (p1->x<p0->x) : true);
 	flagged_world_point2d *local_p0= swap ? p1 : p0;
@@ -1118,8 +1027,6 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 	clipped->x= local_p0->x + FIXED_INTEGERAL_PART(t*dx);
 	clipped->y= local_p0->y + FIXED_INTEGERAL_PART(t*dy);
 	clipped->flags= local_p0->flags&local_p1->flags;
-
-	return;
 }
 
 /* ---------- vertical polygon clipping */
@@ -1128,7 +1035,7 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 short RenderRasterizerClass::xy_clip_line(
 	flagged_world_point2d *posts,
 	short vertex_count,
-	long_vector2d *line, // world_vector2d *line,
+	long_vector2d *line,
 	uint16 flag)
 {
 #ifdef QUICKDRAW_DEBUG
@@ -1139,13 +1046,8 @@ short RenderRasterizerClass::xy_clip_line(
 	
 	if (vertex_count)
 	{
-		// LP change:
 		CROSSPROD_TYPE cross_product0= CROSSPROD_TYPE(line->i)*posts[0].y - CROSSPROD_TYPE(line->j)*posts[0].x;
 		CROSSPROD_TYPE cross_product1= CROSSPROD_TYPE(line->i)*posts[1].y - CROSSPROD_TYPE(line->j)*posts[1].x;
-		/*
-		int32 cross_product0= line->i*posts[0].y - line->j*posts[0].x;
-		int32 cross_product1= line->i*posts[1].y - line->j*posts[1].x;
-		*/
 		
 		if (cross_product0<0)
 		{
@@ -1182,7 +1084,7 @@ short RenderRasterizerClass::xy_clip_line(
 short RenderRasterizerClass::xz_clip_vertical_polygon(
 	flagged_world_point3d *vertices,
 	short vertex_count,
-	long_vector2d *line, // world_vector2d *line, /* i==x, j==z */
+	long_vector2d *line, /* i==x, j==z */
 	uint16 flag)
 {
 #ifdef QUICKDRAW_DEBUG
@@ -1200,9 +1102,7 @@ short RenderRasterizerClass::xz_clip_vertical_polygon(
 		
 		do
 		{	
-			// LP change:
 			CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(line->i)*vertices[vertex_index].z - CROSSPROD_TYPE(line->j)*vertices[vertex_index].x;
-			// int32 cross_product= line->i*vertices[vertex_index].z - line->j*vertices[vertex_index].x;
 			
 			switch (SGN(cross_product))
 			{
@@ -1370,7 +1270,7 @@ void RenderRasterizerClass::xz_clip_flagged_world_points(
 	flagged_world_point3d *p0,
 	flagged_world_point3d *p1,
 	flagged_world_point3d *clipped,
-	long_vector2d *line) // world_vector2d *line)
+	long_vector2d *line)
 {
 	bool swap= (p1->y>p0->y) ? false : ((p0->y==p1->y) ? (p1->x<p0->x) : true);
 	flagged_world_point3d *local_p0= swap ? p1 : p0;
@@ -1396,6 +1296,4 @@ void RenderRasterizerClass::xz_clip_flagged_world_points(
 	clipped->y= local_p0->y + FIXED_INTEGERAL_PART(t*dy);
 	clipped->z= local_p0->z + FIXED_INTEGERAL_PART(t*dz);
 	clipped->flags= local_p0->flags&local_p1->flags;
-
-	return;
 }

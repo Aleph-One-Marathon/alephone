@@ -148,9 +148,7 @@ OSErr NetOpenStreamToPlayer(
 			break;
 #endif			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -174,9 +172,7 @@ OSErr NetCloseStreamConnection(
 			break;
 #endif			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -200,9 +196,7 @@ OSErr NetStreamEstablishConnectionEnd(
 			break;
 #endif			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -227,9 +221,7 @@ OSErr NetStreamDisposeConnectionEnd(
 			break;
 #endif			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -270,9 +262,7 @@ bool NetStreamCheckConnectionStatus(
 			break;
 #endif			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -297,9 +287,7 @@ OSErr NetStreamWaitForConnection(
 
 #endif			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -312,8 +300,6 @@ void NetGetStreamAddress(
 	assert(transport_type==kNetworkTransportType);
 	
 	*address= adsp_end_address;	
-	
-	return;
 }
 
 short NetGetStreamSocketNumber(
@@ -355,9 +341,7 @@ bool NetTransportAvailable(
 			break;
 
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -383,9 +367,7 @@ static OSErr stream_write(
 			break;
 #endif			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -410,9 +392,7 @@ static OSErr stream_read(
 			break;
 #endif			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 

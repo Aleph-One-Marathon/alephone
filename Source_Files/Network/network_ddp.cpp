@@ -246,8 +246,6 @@ void NetDDPDisposeFrame(
 	DDPFramePtr frame)
 {
 	DisposePtr((Ptr)frame);
-	
-	return;
 }
 
 /*
@@ -311,46 +309,3 @@ OSErr NetDDPSendFrame(
 	
 	return error;
 }
-
-#ifdef OBSOLETE
-#ifdef envppc
-static bool NetDDPSocketListener(
-	Ptr SCCAddr1,
-	Ptr SCCAddr2,
-	Ptr MPPLocalVars,
-	Ptr nextFreeByteInRHA,
-	Ptr ReadPacketAndReadRestPtr,
-	char packetDestinationNumber,
-	short numBytesLeftToReadInPacket)
-{
-	(void) (SCCAddr1,SCCAddr2,MPPLocalVars,nextFreeByteInRHA,ReadPacketAndReadRestPtr,packetDestinationNumber,numBytesLeftToReadInPacket);
-	
-	// LP change:
-	assert(false);
-	// halt();
-}
-#endif
-#endif
-
-#ifdef OBSOLETE
-static ParmBlkPtr killioPBPtr;
-
-		
-		killioPBPtr= (ParmBlkPtr) NewPtrClear(sizeof(ParamBlockRec));
-		assert(killioPBPtr);
-
-			if (killioPBPtr->ioParam.ioResult==noErr)
-			{
-				OSErr error;
-				
-				killioPBPtr->ioParam.ioRefNum= mppRefNum;
-				
-				error= PBKillIO(killioPBPtr, true);
-				dprintf("PBKillIO(%d) returned %d;g", mppRefNum, error);
-			}
-			else
-			{
-				dprintf("last async PBKillIO returned %d", killioPBPtr->ioParam.ioResult);
-				if (killioPBPtr->ioParam.ioResult!=asyncUncompleted) killioPBPtr->ioParam.ioResult= noErr;
-			}
-#endif

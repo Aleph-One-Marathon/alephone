@@ -96,7 +96,6 @@ struct line_clip_data
 	
 	// LP change: made more long-distance friendly
 	long_vector2d top_vector, bottom_vector;
-	// world_vector2d top_vector, bottom_vector; /* viewer-space */
 	short top_y, bottom_y; /* screen-space */
 };
 
@@ -107,7 +106,6 @@ struct endpoint_clip_data
 	
 	// LP change: made into a long vector for long views
 	long_vector2d vector;
-	// world_vector2d vector; /* viewer-space */
 };
 
 struct clipping_window_data
@@ -115,7 +113,6 @@ struct clipping_window_data
 	// LP change: split into two sets of vectors: left-right and top-bottom
 	long_vector2d left, right;
 	long_vector2d top, bottom;
-	// world_vector2d left, right, top, bottom; /* j is really k for top and bottom */
 	short x0, x1, y0, y1;
 	
 	struct clipping_window_data *next_window;
@@ -178,8 +175,6 @@ class RenderVisTreeClass
 	// LP: referring to parent node by index instead of by pointer, to avoid stale-pointer bug
 	void cast_render_ray(long_vector2d *_vector, short endpoint_index,
 		int ParentIndex, short bias);
-	// void cast_render_ray(long_vector2d *vector, short endpoint_index,
-	//	node_data *parent, short bias);
 	
 	uint16 decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
 		world_point2d *origin, long_vector2d *_vector, uint16 clip_flags, short bias);

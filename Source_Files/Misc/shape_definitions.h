@@ -41,8 +41,6 @@ struct collection_header /* 32 bytes on disk */
 	// LP: handles to pointers
 	collection_definition *collection;
 	byte *shading_tables;
-	
-	// int16 unused[2];
 };
 const int SIZEOF_collection_header = 32;
 

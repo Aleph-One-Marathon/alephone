@@ -20,6 +20,7 @@
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #include <stdlib.h>
 #include <string.h>
@@ -117,4 +118,3 @@ void _alephone_warn(
 {
 	vpause(csprintf(assert_text,"%s:%ld: %s",file,line,what));
 }
-

@@ -805,27 +805,18 @@ void s_Hide_Interface(script_instruction inst)
 	screen_mode_data *the_mode;
 	the_mode = get_screen_mode();
 	old_size = the_mode->size;
-	// LP: Modifying Mark Levin's patch to be more general
 	short new_size = GetSizeWithoutHUD(old_size);
 	if(the_mode->size != new_size)
 	{
 		the_mode->size = new_size;
 		change_screen_mode(the_mode,true);
 	}
-	/*
-	if(the_mode->size != _full_screen)
-	{
-		the_mode->size = _full_screen;
-		change_screen_mode(the_mode,true);
-	}
-	*/
 }
 
 void s_Show_Interface(script_instruction inst)
 {
 	screen_mode_data *the_mode;
 	the_mode = get_screen_mode();
-	// LP: Modifying Mark Levin's patch to be more general
 	short the_size = the_mode->size;
 	if(the_size == GetSizeWithoutHUD(the_size))
 	{
@@ -833,14 +824,6 @@ void s_Show_Interface(script_instruction inst)
 		change_screen_mode(the_mode,true);
 		draw_panels();
 	}
-	/*
-	if(the_mode->size == _full_screen)
-	{
-		the_mode->size = old_size;
-		change_screen_mode(the_mode,true);
-		draw_panels();
-	}
-	*/
 }
 
 void s_Set_Tag_State(script_instruction inst)
@@ -2448,7 +2431,6 @@ void s_Monster_Select(script_instruction inst)
 //	dprintf("No monster found, returning -1\n");
 	set_variable(int(inst.op1), -1);
 //	dprintf("we return %d\n", (short)get_variable(int(inst.op1)));
-	return;
 }
 
 //op1: the monster to edit (this is global for all monsters of this type)

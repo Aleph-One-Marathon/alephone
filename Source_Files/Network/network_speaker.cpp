@@ -177,8 +177,6 @@ void close_network_speaker(
 		
 		speaker= (struct speaker_definition *) NULL;
 	}
-	
-	return;
 }
 
 /* can be called at interrupt time */
@@ -245,8 +243,6 @@ void queue_network_speaker_data(
 		}
 #endif
 	}
-
-	return;
 }
 
 void quiet_network_speaker(
@@ -276,8 +272,6 @@ void quiet_network_speaker(
 		speaker->header->dbhBufferPtr[0]->dbFlags= 0;
 		speaker->header->dbhBufferPtr[1]->dbFlags= 0;
 	}
-
-	return;
 }
 
 /* because SndPlayDoubleBuffer() is not safe at interrupt time */
@@ -304,8 +298,6 @@ void network_speaker_idle_proc(
 				break;
 		}
 	}
-	
-	return;
 }
 
 /* ---------- private code */
@@ -322,8 +314,6 @@ static void fill_buffer_with_static(
 		if (seed&1) seed= (seed>>1)^0xb400; else seed= seed>>1;
 	}
 	speaker->random_seed= seed;
-	
-	return;
 }
 
 static pascal void network_speaker_doubleback_procedure(
@@ -341,8 +331,6 @@ static pascal void network_speaker_doubleback_procedure(
 #ifdef env68k
 	set_a5(old_a5); /* restore a5 */
 #endif
-
-	return;
 }
 
 void fill_network_speaker_buffer(
@@ -392,6 +380,4 @@ void fill_network_speaker_buffer(
 		default:
 			vhalt(csprintf(temporary, "what the hell is #%d!?", speaker->state));
 	}
-	
-	return;
 }

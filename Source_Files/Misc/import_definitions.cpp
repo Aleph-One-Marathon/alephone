@@ -61,19 +61,13 @@ static void import_physics_wad_data(struct wad_data *wad);
 void set_physics_file(FileSpecifier& File)
 {
 	PhysicsFileSpec = File;
-	// memcpy(&physics_file, file, sizeof(FileDesc));
-	
-	return;
 }
 
 void set_to_default_physics_file(
 	void)
 {
 	get_default_physics_spec(PhysicsFileSpec);
-
 //	dprintf("Set to: %d %d %.*s", physics_file.vRefNum, physics_file.parID, physics_file.name[0], physics_file.name+1);
-
-	return;
 }
 
 void import_definition_structures(
@@ -98,8 +92,6 @@ void import_definition_structures(
 		
 		free_wad(wad);
 	}
-
-	return;
 }
 
 void *get_network_physics_buffer(
@@ -132,8 +124,6 @@ void process_network_physics_model(
 			free_wad(wad); /* Note that the flat data points into the wad. */
 		}
 	}
-	
-	return;
 }
 
 /* --------- local code */

@@ -723,8 +723,6 @@ void unload_all_collections(
 		}
 		OGL_UnloadModelsImages(collection_index);
 	}
-	
-	return;
 }
 
 void mark_collection(
@@ -738,8 +736,6 @@ void mark_collection(
 		assert(collection_index>=0&&collection_index<MAXIMUM_COLLECTIONS);
 		collection_headers[collection_index].status|= loading ? markLOAD : markUNLOAD;
 	}
-	
-	return;
 }
 
 void strip_collection(
@@ -752,8 +748,6 @@ void strip_collection(
 		assert(collection_index>=0&&collection_index<MAXIMUM_COLLECTIONS);
 		collection_headers[collection_index].status|= markSTRIP;
 	}
-	
-	return;
 }
 
 /* returns count, doesnÕt fill NULL buffer */
@@ -770,9 +764,8 @@ short get_shape_descriptors(
 		case _wall_shape: appropriate_type= _wall_collection; break;
 		case _floor_or_ceiling_shape: appropriate_type= _wall_collection; break;
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 
 	count= 0;
@@ -840,13 +833,10 @@ void extended_get_shape_bitmap_and_shading_table(
 				break;
 			
 			default:
-				// LP change:
 				assert(false);
-				// halt();
+				break;
 		}
 	}
-
-	return;
 }
 
 // Because this object has to continue to exist after exiting the next function
@@ -862,20 +852,6 @@ struct shape_information_data *extended_get_shape_information(
 
 	// collection= get_collection_definition(collection_index);
 	low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
-
-	/* this will be removed when itÕs calculated in the extractor */
-#ifdef OBSOLETE
-	{
-		struct bitmap_definition *bitmap= get_bitmap_definition(collection_index, low_level_shape->bitmap_index);
-
-		low_level_shape->world_left= (-low_level_shape->origin_x)*collection->pixels_to_world;
-		low_level_shape->world_top= - (-low_level_shape->origin_y)*collection->pixels_to_world;
-		low_level_shape->world_right= (bitmap->width-low_level_shape->origin_x)*collection->pixels_to_world;
-		low_level_shape->world_bottom= - (bitmap->height-low_level_shape->origin_y)*collection->pixels_to_world;
-		low_level_shape->world_x0= (low_level_shape->key_x-low_level_shape->origin_x)*collection->pixels_to_world;
-		low_level_shape->world_y0= - (low_level_shape->key_y-low_level_shape->origin_y)*collection->pixels_to_world;
-	}
-#endif
 
 #ifdef HAVE_OPENGL
 	// Try to get the texture options to use for a substituted image;
@@ -921,8 +897,6 @@ void process_collection_sounds(
 		process_sound(high_level_shape->key_frame_sound);
 		process_sound(high_level_shape->last_frame_sound);
 	}
-	
-	return;
 }
 
 struct shape_animation_data *get_shape_animation_data(
@@ -976,9 +950,8 @@ void *get_global_shading_table(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	assert(shading_table);
 	
@@ -1053,8 +1026,6 @@ void load_collections(
 #ifdef DEBUG
 //	debug_shapes_memory();
 #endif
-
-	return;
 }
 
 /* ---------- private code */
@@ -1083,8 +1054,6 @@ static void precalculate_bit_depth_constants(
 			shading_table_size= PIXEL8_MAXIMUM_COLORS*sizeof(pixel32);
 			break;
 	}
-	
-	return;
 }
 
 /* given a list of RGBColors, find out which one, if any, match the given color.  if there
@@ -1246,9 +1215,8 @@ static void update_color_environment(
 							break;
 						
 						default:
-							// LP change:
 							assert(false);
-							// halt();
+							break;
 					}
 				}
 				else
@@ -1260,9 +1228,8 @@ static void update_color_environment(
 						case 16: build_shading_tables16(colors, color_count, (pixel16 *)primary_shading_table, (byte *) NULL); break;
 						case 32: build_shading_tables32(colors, color_count,  (pixel32 *)primary_shading_table, (byte *) NULL); break;
 						default:
-							// LP change:
 							assert(false);
-							// halt();
+							break;
 					}
 				}
 			}
@@ -1283,8 +1250,6 @@ static void update_color_environment(
 
 	/* change the screen clut and rebuild our shading tables */
 	_change_clut(change_screen_clut, colors, color_count);
-
-	return;
 }
 
 static void _change_clut(
@@ -1307,8 +1272,6 @@ static void _change_clut(
 		color->red= color->green= color->blue= 0;
 	}
 	change_clut_proc(&color_table);
-	
-	return;
 }
 
 #ifndef SCREAMING_METAL
@@ -1340,8 +1303,6 @@ static void build_shading_tables8(
 			}
 		}
 	}
-
-	return;
 }
 #else
 short find_closest_color(
@@ -1394,8 +1355,6 @@ static void build_shading_tables8(
 			}
 		}
 	}
-
-	return;
 }
 #endif
 
@@ -1442,8 +1401,6 @@ static void build_shading_tables16(
 			}
 		}
 	}
-
-	return;
 }
 
 static void build_shading_tables32(
@@ -1490,8 +1447,6 @@ static void build_shading_tables32(
 			}
 		}
 	}
-
-	return;
 }
 
 static void build_global_shading_table16(
@@ -1537,8 +1492,6 @@ static void build_global_shading_table16(
 #endif
 		}
 	}
-	
-	return;
 }
 
 static void build_global_shading_table32(
@@ -1584,8 +1537,6 @@ static void build_global_shading_table32(
 #endif
 		}
 	}
-	
-	return;
 }
 
 static bool get_next_color_run(
@@ -1644,9 +1595,8 @@ static long get_shading_table_size(
 		case 16: size= number_of_shading_tables*shading_table_size; break;
 		case 32: size= number_of_shading_tables*shading_table_size; break;
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	
 	return size;
@@ -1759,40 +1709,6 @@ static void build_collection_tinting_table(
 		tint_color = NONE;
 	else
 		tint_color = MAX(tint_color,NONE);
-	/*
-	tint_color= NONE;	
-	switch (collection->type)
-	{
-		case _wall_collection: tint_color= _tint_collection_blue; break;
-		case _object_collection: tint_color= _tint_collection_red; break;
-		case _scenery_collection: tint_color= _tint_collection_green; break;
-	}
-	switch (collection_index)
-	{
-		case _collection_weapons_in_hand:
-		case _collection_player:
-		case _collection_rocket:
-		case _collection_civilian:
-		// LP change:
-		case _collection_civilian_fusion:
-		// case _collection_madd:
-			tint_color= _tint_collection_yellow;
-			break;
-		
-		case _collection_items:
-			tint_color= _tint_collection_green;
-			break;
-		
-		case _collection_compiler:
-		case _collection_scenery1:
-		case _collection_scenery2:
-		case _collection_scenery3:
-		case _collection_scenery4:
-		case _collection_scenery5:
-			tint_color= _tint_collection_blue;
-			break;
-	}
-	*/
 
 	/* build the tint table */	
 	if (tint_color!=NONE)
@@ -1822,8 +1738,6 @@ static void build_collection_tinting_table(
 		OGL_SetInfravisionTint(collection_index,false,1,1,1);
 #endif
 	}
-	
-	return;
 }
 
 static void build_tinting_table8(
@@ -1849,8 +1763,6 @@ static void build_tinting_table8(
 			tint_table[start+i]= value;
 		}
 	}
-	
-	return;
 }
 
 static void build_tinting_table16(
@@ -1881,8 +1793,6 @@ static void build_tinting_table16(
 			(magnitude*tint_color->green)/65535, (magnitude*tint_color->blue)/65535);
 #endif
 	}
-
-	return;
 }
 
 static void build_tinting_table32(
@@ -1913,8 +1823,6 @@ static void build_tinting_table32(
 			(magnitude*tint_color->green)/65535, (magnitude*tint_color->blue)/65535);
 #endif
 	}
-
-	return;
 }
 
 
@@ -2073,8 +1981,6 @@ static void debug_shapes_memory(
 	}
 	
 	dprintf("                  #% 9d bytes total", total_size);
-	
-	return;
 }
 */
 

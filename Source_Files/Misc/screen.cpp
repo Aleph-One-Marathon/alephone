@@ -196,7 +196,6 @@ Feb 24, 2002 (Loren Petrich):
 // LP addition: crosshairs support
 #include "Crosshairs.h"
 // LP addition: OpenGL support
-// OGL_Map.h removed as unnecessary
 #include "OGL_Render.h"
 
 // LP addition: view control
@@ -330,7 +329,6 @@ static bool DM_Inited = false;
 // LP change: the source and destination rects will be very variable, in general.
 // Also indicating whether to use high or low resolution (the terminal and the ovhd map are always hi-rez)
 static void update_screen(Rect& source, Rect& destination, bool hi_rez);
-// static void update_screen(void);
 
 void calculate_destination_frame(short size, bool high_resolution, Rect *frame);
 static void calculate_source_frame(short size, bool high_resolution, Rect *frame);
@@ -407,11 +405,6 @@ void initialize_screen(
 	{
 		/* Calculate the screen options-> 16, 32, full? */
 		calculate_screen_options();
-#ifdef OBSOLETE
-		enough_memory_for_16bit= (FreeMem()>FREE_MEMORY_FOR_16BIT) ? true : false;
-		enough_memory_for_32bit= (FreeMem()>FREE_MEMORY_FOR_32BIT) ? true : false;
-		enough_memory_for_full_screen= (FreeMem()>FREE_MEMORY_FOR_FULL_SCREEN) ? true : false;
-#endif
 	}
 	
 	if (mode->bit_depth==32 && !enough_memory_for_32bit) mode->bit_depth= 16;
@@ -428,17 +421,6 @@ void initialize_screen(
 		if (world_device) mode->bit_depth= bit_depth= interface_bit_depth= 8;
 	}
 	if (!world_device) alert_user(fatalError, strERRORS, badMonitor, -1);
-
-#ifdef OBSOLETE
-	/* beg, borrow or steal an n-bit device */
-	world_device= find_and_initialize_world_device(DESIRED_SCREEN_WIDTH*DESIRED_SCREEN_HEIGHT, interface_bit_depth);
-	if (!world_device&&interface_bit_depth!=8)
-	{
-		world_device= find_and_initialize_world_device(DESIRED_SCREEN_WIDTH*DESIRED_SCREEN_HEIGHT, 8);
-		if (world_device) mode->bit_depth= bit_depth= interface_bit_depth= 8;
-	}
-	if (!world_device) alert_user(fatalError, strERRORS, badMonitor, -1);
-#endif
 
 	// Grab the initial screen-depth mode for restoring when done
 	if (!screen_initialized)
@@ -584,17 +566,10 @@ void initialize_screen(
 	error= world_pixels ? myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0) :
 		myNewGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
 	if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
-	/*
-	calculate_destination_frame(mode->size, mode->high_resolution, &bounds);
-	error= screen_initialized ? myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0) :
-		myNewGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
-	if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
-	*/
 	
 	change_screen_mode(mode, false);
 	
 	screen_initialized= true;
-	return;
 }
 
 
@@ -675,18 +650,13 @@ void enter_screen(
 			else screen_mode.acceleration = _no_acceleration;
 			break;
 	}
-
-	return;
 }
 
 void exit_screen(
 	void)
 {
-
 	// LP addition: doing OpenGL if present
 	OGL_StopRun();
-		
-	return;
 }
 
 
@@ -717,8 +687,6 @@ void change_screen_mode(
 	if (redraw) ClearScreen();
 	
 	frame_count= frame_index= 0;
-
-	return;
 }
 
 void render_screen(
@@ -735,33 +703,6 @@ void render_screen(
 	world_view->maximum_depth_intensity= current_player->weapon_intensity;
 	world_view->shading_mode= current_player->infravision_duration ? _shading_infravision : _shading_normal;
 
-	// LP change: always do this, no matter what
-	// Moved downward after resizing
-	// initialize_view_data(world_view);
-	/*
-	if (current_player->extravision_duration)
-	{
-		// LP idiot-proofing
-		if (world_view->field_of_view>=EXTRAVISION_FIELD_OF_VIEW && world_view->effect!=_render_effect_going_fisheye)
-		{
-			world_view->field_of_view= EXTRAVISION_FIELD_OF_VIEW;
-			initialize_view_data(world_view);
-		}
-	}
-	else
-	{
-		// LP idiot-proofing and tunnel-vision support 
-		if (world_view->field_of_view<=NORMAL_FIELD_OF_VIEW && world_view->effect!=_render_effect_leaving_fisheye
-			&& world_view->effect!=_render_effect_going_tunnel && world_view->effect!=_render_effect_leaving_tunnel)
-		{
-			// Tunnel-vision support
-			world_view->field_of_view= world_view->tunnel_vision_active ? TUNNEL_VISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW;
-			// world_view->field_of_view= NORMAL_FIELD_OF_VIEW;
-			initialize_view_data(world_view);
-		}
-	}
-	*/
-	
 	// LP change: suppress the overhead map if desired
 	if (PLAYER_HAS_MAP_OPEN(current_player) && View_MapActive())
 	{
@@ -966,9 +907,8 @@ void render_screen(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 
 	// assert(world_view->screen_height<=MAXIMUM_WORLD_HEIGHT);
@@ -1100,29 +1040,17 @@ void render_screen(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 
 	myUnlockPixels(world_pixels);
+}
 
-	return;
-}
-/*
-void process_screen_click(
-	EventRecord *event)
-{
-	(void) (event);
-	return;
-}
-*/
 void change_interface_clut(
 	struct color_table *color_table)
 {
 	obj_copy(*interface_color_table, *color_table);
-
-	return;
 }
 
 /* builds color tables suitable for SetEntries (in either bit depth) and makes the screen look
@@ -1158,11 +1086,9 @@ void change_screen_clut(
 	
 		// LP change: doing a 640*480 allocation as a sensible starting point
 		calculate_destination_frame(_full_screen, true, &bounds);
-		// calculate_adjusted_source_frame(&screen_mode, &bounds);
 		error= myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
 		if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
 	}
-	return;
 }
 
 void build_direct_color_table(
@@ -1178,9 +1104,8 @@ void build_direct_color_table(
 		case 16: maximum_component= PIXEL16_MAXIMUM_COMPONENT; break;
 		case 32: maximum_component= PIXEL32_MAXIMUM_COMPONENT; break;
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	
 	color_table->color_count= maximum_component+1;
@@ -1188,8 +1113,6 @@ void build_direct_color_table(
 	{
 		color->red= color->green= color->blue= (i*0xffff)/maximum_component;
 	}
-	
-	return;
 }
 
 void render_computer_interface(
@@ -1248,8 +1171,6 @@ void render_computer_interface(
 	TextFace(normal);
 	TextSize(0);
 	SetGWorld(old_gworld, old_device);
-	
-	return;
 }
 
 void render_overhead_map(
@@ -1283,13 +1204,6 @@ void render_overhead_map(
 	overhead_data.mode= _rendering_game_map;
 	overhead_data.origin.x= view->origin.x;
 	overhead_data.origin.y= view->origin.y;
-	/*
-	overhead_data.half_width= view->half_screen_width;
-	overhead_data.half_height= view->half_screen_height;
-	overhead_data.width= view->screen_width;
-	overhead_data.height= view->screen_height;
-	overhead_data.top= overhead_data.left= 0;
-	*/
 	
 	_render_overhead_map(&overhead_data);
 
@@ -1299,8 +1213,6 @@ void render_overhead_map(
 	TextFace(normal);
 	TextSize(0);
 	SetGWorld(old_gworld, old_device);
-	
-	return;
 }
 
 // Accessors for the screen's GDevice and GrafPort;
@@ -1376,8 +1288,6 @@ void update_screen_window(
 	draw_interface();
 	change_screen_mode(&screen_mode, true);
 	assert_world_color_table(interface_color_table, world_color_table);
-	
-	return;
 }
 
 void activate_screen_window(
@@ -1386,8 +1296,6 @@ void activate_screen_window(
 	bool active)
 {
 	(void) (window,event,active);
-	
-	return;
 }
 
 /* LowLevelSetEntries bypasses the Color Manager and goes directly to the hardware.  this means
@@ -1427,9 +1335,7 @@ void animate_screen_clut(
 		DisposeHandle((Handle)macintosh_color_table);
 		SetGDevice(old_device);
 	}
-	
 #endif
-	return;
 }
 
 void assert_world_color_table(
@@ -1455,8 +1361,6 @@ void assert_world_color_table(
 	}
 	
 	if (world_color_table) animate_screen_clut(world_color_table, false);
-	
-	return;
 }
 
 void darken_world_window(
@@ -1486,8 +1390,6 @@ void darken_world_window(
 	PenPat(&qd.black);
 #endif
 	SetPort(old_port);
-	
-	return;
 }
 
 void validate_world_window(
@@ -1509,8 +1411,6 @@ void validate_world_window(
 	ValidRect(&bounds);
 #endif
 	SetPort(old_port);
-
-	return;
 }
 
 
@@ -1532,30 +1432,11 @@ static void DisplayText(short BaseX, short BaseY, char *Text)
 	PasText[0] = Len;
 	memcpy(PasText+1,Text,Len);
 	
-	// LP change: added drop-shadow rendering
-	// Changed it to a black halo
-	
+	// LP change: added black halo
 	RGBForeColor(&rgb_black);
 	MoveTo(BaseX+1,BaseY+1);
 	DrawString(PasText);
-	// Changed back to drop shadow only for performance reasons
-	/*
-	MoveTo(BaseX+1,BaseY);
-	DrawString(PasText);
-	MoveTo(BaseX+1,BaseY-1);
-	DrawString(PasText);
-	MoveTo(BaseX,BaseY+1);
-	DrawString(PasText);
-	MoveTo(BaseX,BaseY-1);
-	DrawString(PasText);
-	MoveTo(BaseX-1,BaseY+1);
-	DrawString(PasText);
-	MoveTo(BaseX-1,BaseY);
-	DrawString(PasText);
-	MoveTo(BaseX-1,BaseY-1);
-	DrawString(PasText);
-	*/
-	
+
 	RGBForeColor(&rgb_white);
 	MoveTo(BaseX,BaseY);
 	DrawString(PasText);
@@ -1590,27 +1471,14 @@ static void update_fps_display(
 		Font.Use();
 		// The line spacing is a generalization of "5" for larger fonts
 		short Offset = Font.LineSpacing / 3;
-		// LP: Changed font size from 9 to this more readable value
-		// TextSize(12);
-		// LP: No desire to change this at the moment
-		// TextFont(kFontIDMonaco);
-		// LP change: moved the rendering out
 		DisplayText(port->portRect.left+Offset,port->portRect.bottom-Offset,fps);
 		RGBForeColor(&rgb_black);
-		/*
-		MoveTo(5, port->portRect.bottom-5);
-		RGBForeColor(&rgb_white);
-		DrawString(fps);
-		RGBForeColor(&rgb_black);
-		*/
 		SetPort(old_port);
 	}
 	else
 	{
 		frame_count= frame_index= 0;
 	}
-	
-	return;
 }
 
 
@@ -1776,8 +1644,6 @@ void restore_world_device(
 		backdrop_window = NULL;
 	}
 #endif
-	
-	return;
 }
 
 // JTP: Bytnar's buffer flushing
@@ -1800,15 +1666,7 @@ void FlushGrafPortRect(const CGrafPtr port, const Rect &destination)
 /* pixels are already locked, etc. */
 static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 {
-	/*
-	Rect source, destination;
-	
-	calculate_source_frame(screen_mode.size, screen_mode.high_resolution, &source);
-	calculate_destination_frame(screen_mode.size, screen_mode.high_resolution, &destination);
-	*/
-	
 	if (hi_rez)
-	// if (screen_mode.high_resolution)
 	{
 		GrafPtr old_port;
 		RGBColor old_forecolor, old_backcolor;
@@ -1904,8 +1762,6 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 		quadruple_screen(&data);
 		SwapMMUMode(&mode);
 	}
-
-	return;
 }
 
 /* This function is NOT void because both the computer interface editor and vulcan use it */
@@ -1939,8 +1795,6 @@ void calculate_destination_frame(
 		OffsetRect(frame, WORLD_H+((DEFAULT_WORLD_WIDTH-frame->right)>>1), 
 			WORLD_V+((DEFAULT_WORLD_HEIGHT-frame->bottom)>>1));
 	}
-	
-	return;
 }
 
 enum
@@ -1954,48 +1808,6 @@ static void calculate_adjusted_source_frame(
 	Rect *frame)
 {
 	calculate_source_frame(mode->size, mode->high_resolution, frame);
-
-#ifdef OBSOLETE
-	short width;
-
-#ifdef envppc
-#if 0
-	// calculate width in bytes
-	width= RECTANGLE_WIDTH(frame);
-	switch (mode->bit_depth)
-	{
-		case 8: break;
-		case 16: width<<= 1; break;
-		case 32: width<<= 2; break;
-		default:
-			// LP change:
-			assert(false);
-			// halt();
-	}
-
-	// assure that our width is an odd-multiple of our cache line size
-	if (width&(CACHE_LINE_SIZE-1)) width= (width&~(CACHE_LINE_SIZE-1)) + CACHE_LINE_SIZE;
-	if (!((width>>BITS_PER_CACHE_LINE)&1)) width+= CACHE_LINE_SIZE;
-	
-	// restore width in pixels
-	switch (mode->bit_depth)
-	{
-		case 8: break;
-		case 16: width>>= 1; break;
-		case 32: width>>= 2; break;
-		default:
-			// LP change:
-			assert(false);
-			// halt();
-	}
-#else
-	if (mode->bit_depth==8) width= 704;
-#endif
-	frame->right= frame->left + width;
-#endif
-#endif
-
-	return;
 }
 
 static void calculate_source_frame(
@@ -2011,8 +1823,6 @@ static void calculate_source_frame(
 	}
 	OffsetRect(frame, (*world_device)->gdRect.left-frame->left,
 		(*world_device)->gdRect.top-frame->top);
-	
-	return;
 }
 
 static void calculate_screen_options(
@@ -2103,8 +1913,6 @@ void quadruple_screen(
 		(byte*)write1+= data->destination_slop;
 		(byte*)write2+= data->destination_slop;
 	}
-	
-	return;
 }
 #endif
 
@@ -2259,7 +2067,6 @@ void dump_screen()
 	// All done!
 	FSClose(RefNum);
 	KillPicture(PicObject);
-	return;
 }
 
 

@@ -48,7 +48,6 @@ struct flagged_world_point2d /* for floors */
 {
 	// LP change: made this more long-distance friendly
 	int32 x, y;
-	// world_distance x, y;
 	uint16 flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
 };
 
@@ -57,7 +56,6 @@ struct flagged_world_point3d /* for ceilings */
 	// LP change: made this more long-distance friendly
 	int32 x, y;
 	world_distance z;
-	// world_distance x, y, z;
 	uint16 flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
 };
 
@@ -75,7 +73,6 @@ struct vertical_surface_data
 	world_distance h0, h1, hmax; /* h0<h1; hmax<=h1 and is the height where this wall side meets the ceiling */
 	// LP change: made this more long-distance friendly
 	long_vector2d p0, p1; /* will transform into left, right points on the screen (respectively) */
-	// world_point2d p0, p1; /* will transform into left, right points on the screen (respectively) */
 	
 	struct side_texture_definition *texture_definition;
 	short transfer_mode;

@@ -179,8 +179,6 @@ void NetLookupClose(
 		lookupMPPPBPtr= (MPPPBPtr) NULL;
 	}
 #endif
-		
-	return;
 }
 
 /*
@@ -210,8 +208,6 @@ void NetLookupRemove(
 	/* tell the caller to make the change */
 	if (lookupUpdateProc) lookupUpdateProc(removeEntity, index);
 #endif
-	
-	return;
 }
 
 /*
@@ -239,8 +235,6 @@ void NetLookupInformation(
 	if (address) *address= lookupEntities[index].address;
 	if (entity) *entity= lookupEntities[index].entity;
 #endif
-	
-	return;
 }
 
 /*
@@ -345,8 +339,6 @@ void NetLookupUpdate(
 		if (error!=noErr) dprintf("Subsequent PLookupName() returned %d", error);
 	}
 #endif
-	
-	return;
 }
 
 OSErr NetGetZonePopupMenu(

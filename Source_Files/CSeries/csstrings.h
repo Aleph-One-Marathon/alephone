@@ -83,4 +83,3 @@ extern void fdprintf(
 	...);
 
 #endif
-

@@ -27,6 +27,7 @@ Sept-Nov 2001 (Woody Zenfell): approximate emulations of originally Mac OS-only 
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Added utility routine GetListBoxListHandle for Carbon
 */
+
 #ifndef _CSERIES_DIALOGS_
 #define _CSERIES_DIALOGS_
 

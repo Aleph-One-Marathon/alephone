@@ -56,49 +56,6 @@ pixel8 *calculate_bitmap_origin(
 	return origin;
 }
 
-#if 0
-static void erase_bitmap(
-	struct bitmap_definition *bitmap,
-	long pel)
-{
-	short rows, columns;
-	short row, column;
-	
-	assert(bitmap->bytes_per_row!=NONE);
-	
-	rows= (bitmap->flags&_COLUMN_ORDER_BIT) ? bitmap->width : bitmap->height;
-	columns= (bitmap->flags&_COLUMN_ORDER_BIT) ? bitmap->height : bitmap->width;
-
-	for (row=0;row<rows;++row)
-	{
-		register void *pixels= bitmap->row_addresses[row];
-		
-		switch (bitmap->bit_depth)
-		{
-			case 8:
-				for (column=0;column<columns;++column) {
-					*(pixel8 *)pixels = (pixel8) pel;
-					pixels = (pixel8 *)pixels + 1;
-				}
-				break;
-			case 16:
-				for (column=0;column<columns;++column) {
-					*(pixel16 *)pixels = (pixel16) pel;
-					pixels = (pixel16 *)pixels + 1;
-				}
-				break;
-			
-			default:
-				// LP change:
-				assert(false);
-				// halt();
-		}
-	}
-	
-	return;
-}
-#endif
-
 void remap_bitmap(
 	struct bitmap_definition *bitmap,
 	pixel8 *table)
@@ -145,18 +102,14 @@ void remap_bitmap(
 			// CB: first/last are stored in big-endian order
 			uint16 first = *pixels++ << 8;
 			first |= *pixels++;
-//			short first= *(int16 *)pixels; pixels += 2;
 			uint16 last = *pixels++ << 8;
 			last |= *pixels++;
-//			short last= *(int16 *)pixels; pixels += 2;
 			map_bytes(pixels, table, last-first);
 			pixels+= last-first;
 		}
 #endif
 	}
-	
-	return;
-}
+;}
 
 /* must initialize bytes_per_row, height and row_address[0] */
 void precalculate_bitmap_row_addresses(
@@ -201,16 +154,12 @@ void precalculate_bitmap_row_addresses(
 			// CB: first/last are stored in big-endian order
 			uint16 first = *row_address++ << 8;
 			first |= *row_address++;
-//			short first= *(int16 *)row_address; row_address += 2;
 			uint16 last = *row_address++ << 8;
 			last |= *row_address++;
-//			short last= *(int16 *)row_address; row_address += 2;
 			row_address+= last-first;
 		}
 #endif
 	}
-	
-	return;
 }
 
 void map_bytes(
@@ -223,6 +172,4 @@ void map_bytes(
 		*buffer= table[*buffer];
 		buffer+= 1;
 	}
-	
-	return;
 }

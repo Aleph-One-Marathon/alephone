@@ -474,15 +474,11 @@ void move_monsters(
 							case _monster_is_waiting_to_attack_again:
 							case _monster_is_stationary:
 							case _monster_is_moving:
-								// LP message: suppressed this as unnecessary
-								// vassert(!monster->external_velocity, csprintf(temporary, "%p->external_velocity= %x", monster, monster->external_velocity));
 								handle_moving_or_stationary_monster(monster_index);
 								break;
 							
 							case _monster_is_attacking_close:
 							case _monster_is_attacking_far:
-								// LP message: suppressed this as unnecessary
-								// assert(!monster->external_velocity);
 								if (animation_flags&_obj_keyframe_started) execute_monster_attack(monster_index);
 								if (animation_flags&_obj_last_frame_animated)
 								{
@@ -501,9 +497,6 @@ void move_monsters(
 								break;
 							
 							case _monster_is_teleporting_in:
-								// LP change: changed again to make it unnecessary
-								// assert(false);
-								// halt();
 								if (animation_flags&_obj_last_frame_animated)
 								{
 									monster->action= _monster_is_moving;
@@ -554,15 +547,13 @@ void move_monsters(
 									// which is that Hunters injure those nearby when they die a soft death.
 									if (animation_flags&_obj_keyframe_started && (GET_SEQUENCE_FRAME(object->sequence) != 0))
 										cause_shrapnel_damage(monster_index);
-									// if (animation_flags&_obj_keyframe_started) cause_shrapnel_damage(monster_index);
 									if (animation_flags&_obj_last_frame_animated) kill_monster(monster_index);
 								}
 								break;
 							
 							default:
-								// LP change:
 								assert(false);
-								// halt();
+								break;
 						}
 					}
 				}
@@ -609,8 +600,6 @@ void move_monsters(
 			dynamic_world->civilians_killed_by_players-= 1;
 		}
 	}
-	
-	return;
 }
 
 /* when a monster dies, all monsters locked on it need to find something better to do; this
@@ -660,8 +649,6 @@ void monster_died(
 			}
 		}
 	}
-
-	return;
 }
 
 void initialize_monsters(
@@ -673,8 +660,6 @@ void initialize_monsters(
 	dynamic_world->last_monster_index_to_build_path= -1;
 	dynamic_world->new_monster_mangler_cookie= global_random();
 	dynamic_world->new_monster_vanishing_cookie= global_random();
-	
-	return;
 }
 
 /* call this when a new level is loaded from disk so the monsters can cope with their new world */
@@ -695,8 +680,6 @@ void initialize_monsters_for_new_level(
 			monster->path= NONE;
 		}
 	}
-
-	return;
 }
 
 void load_monster_sounds(
@@ -713,8 +696,6 @@ void load_monster_sounds(
 		
 		load_sounds(&definition->activation_sound, 8);
 	}
-	
-	return;
 }
 
 void mark_monster_collections(
@@ -732,8 +713,6 @@ void mark_monster_collections(
 		mark_projectile_collections(definition->ranged_attack.type, loading);
 		mark_projectile_collections(definition->melee_attack.type, loading);
 	}
-	
-	return;
 }
 
 enum
@@ -845,8 +824,6 @@ void activate_nearby_monsters(
 
 		caller->ticks_since_last_activation= dynamic_world->tick_count;
 	}
-	
-	return;
 }
 
 static long monster_activation_flood_proc(
@@ -1006,8 +983,6 @@ void activate_monster(
 	}
 	
 	changed_polygon(object->polygon, object->polygon, NONE);
-
-	return;
 }
 
 void deactivate_monster(
@@ -1038,8 +1013,6 @@ void deactivate_monster(
 			SET_MONSTER_ACTIVE_STATUS(monster, false);
 		}
 	}
-	
-	return;
 }
 
 /* returns a list of object indexes of all monsters in or adjacent to the given polygon,
@@ -1047,10 +1020,6 @@ void deactivate_monster(
 // LP change: called with growable list
 bool possible_intersecting_monsters(
 	vector<short> *IntersectedObjectsPtr,
-/*
-	short *object_indexes,
-	short *object_count,
-*/
 	short maximum_object_count,
 	short polygon_index,
 	bool include_scenery)
@@ -1178,8 +1147,6 @@ void monster_moved(
 			if (monster->mode!=_monster_losing_lock) monster_needs_path(monster_index, false);
 		}
 	}
-	
-	return;
 }
 
 /* returns NONE or a monster_index that prevented us from moving */
@@ -1188,8 +1155,6 @@ short legal_player_move(
 	world_point3d *new_location,
 	world_distance *object_floor) /* must be set on entry */
 {
-	// LP change: no longer necessary
-	// short object_indexes[LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE];
 	struct monster_data *monster= get_monster_data(monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
 	world_point3d *old_location= &object->location;
@@ -1200,17 +1165,12 @@ short legal_player_move(
 
 	get_monster_dimensions(monster_index, &radius, &height);	
 	
-	// LP change:
 	IntersectedObjects.clear();
-	// monster_count= 0;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
-	// possible_intersecting_monsters(object_indexes, &monster_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
 	monster_count = IntersectedObjects.size();
 	for (i=0;i<monster_count;++i)
 	{
-		// LP change:
 		struct object_data *obstacle= get_object_data(IntersectedObjects[i]);
-		// struct object_data *obstacle= get_object_data(object_indexes[i]);
 		world_distance obstacle_radius, obstacle_height;
 		
 		switch (GET_OBJECT_OWNER(obstacle))
@@ -1218,14 +1178,11 @@ short legal_player_move(
 			case _object_is_monster: get_monster_dimensions(obstacle->permutation, &obstacle_radius, &obstacle_height); break;
 			case _object_is_scenery: get_scenery_dimensions(obstacle->permutation, &obstacle_radius, &obstacle_height); break;
 			default:
-			// LP change:
-			assert(false);
-			// halt();
+				assert(false);
+				break;
 		}
 		
-		// LP change:
 		if (IntersectedObjects[i]!=monster->object_index) /* no self-intersection */
-		// if (object_indexes[i]!=monster->object_index) /* no self-intersection */
 		{
 			world_point3d *obstacle_location= &obstacle->location;
 
@@ -1255,9 +1212,7 @@ short legal_player_move(
 					}
 					
 //					dprintf("#%d (%d,%d) hit #%d (%d,%d) moving to (%d,%d)", monster_index, old_location->x, old_location->y, obstacle->permutation, obstacle_location->x, obstacle_location->y, new_location->x, new_location->y);
-					// LP change:
 					obstacle_index= IntersectedObjects[i];
-					// obstacle_index= object_indexes[i];
 					break;
 				}
 			}
@@ -1273,8 +1228,6 @@ short legal_monster_move(
 	angle facing, /* could be different than object->facing for players and ÔflyingÕ (heh heh) monsters */
 	world_point3d *new_location)
 {
-	// LP change: no longer necessary
-	// short object_indexes[LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE];
 	struct monster_data *monster= get_monster_data(monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
 	world_point2d *old_location= (world_point2d *) &object->location;
@@ -1285,17 +1238,12 @@ short legal_monster_move(
 
 	get_monster_dimensions(monster_index, &radius, &height);	
 	
-	// LP change:
 	IntersectedObjects.clear();
-	// monster_count= 0;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
-	// possible_intersecting_monsters(object_indexes, &monster_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
 	monster_count= IntersectedObjects.size();
 	for (i=0;i<monster_count;++i)
 	{
-		// LP change:
 		struct object_data *obstacle= get_object_data(IntersectedObjects[i]);
-		// struct object_data *obstacle= get_object_data(object_indexes[i]);
 		world_distance obstacle_radius, obstacle_height;
 			
 		switch (GET_OBJECT_OWNER(obstacle))
@@ -1303,14 +1251,12 @@ short legal_monster_move(
 			case _object_is_monster: get_monster_dimensions(obstacle->permutation, &obstacle_radius, &obstacle_height); break;
 			case _object_is_scenery: get_scenery_dimensions(obstacle->permutation, &obstacle_radius, &obstacle_height); break;
 			default:
-			// LP change:
-			assert(false);
-			// halt();
+				assert(false);
+				break;
 		}
 			
 		// LP change:
 		if (IntersectedObjects[i]!=monster->object_index) /* no self-intersection */
-		// if (object_indexes[i]!=monster->object_index) /* no self-intersection */
 		{
 			world_point3d *obstacle_location= &obstacle->location;
 			
@@ -1329,9 +1275,7 @@ short legal_monster_move(
 					if (theta<EIGHTH_CIRCLE||theta>FULL_CIRCLE-EIGHTH_CIRCLE)
 					{
 //						dprintf("#%d (%d,%d) hit #%d (%d,%d) moving to (%d,%d)", monster_index, old_location->x, old_location->y, obstacle->permutation, obstacle_location->x, obstacle_location->y, new_location->x, new_location->y);
-						// LP change:
 						obstacle_index= IntersectedObjects[i];
-						// obstacle_index= object_indexes[i];
 						break;
 					}
 				}
@@ -1352,8 +1296,6 @@ void get_monster_dimensions(
 
 	*radius= definition->radius;
 	*height= definition->height;
-	
-	return;
 }
 
 void damage_monsters_in_radius(
@@ -1367,22 +1309,15 @@ void damage_monsters_in_radius(
 {
 	short i;
 	short object_count;
-	// LP change: no longer necessary
-	// short object_indexes[LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE];
 
 	(void) (primary_target_index);
 	
-	// LP change:
 	IntersectedObjects.clear();
-	// object_count= 0;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, epicenter_polygon_index, false);
-	// possible_intersecting_monsters(object_indexes, &object_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, epicenter_polygon_index, false);
 	object_count= IntersectedObjects.size();
 	for (i=0;i<object_count;++i)
 	{
-		// LP change:
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
-		// struct object_data *object= get_object_data(object_indexes[i]);
 		world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&object->location);
 		world_distance monster_radius, monster_height;
 		
@@ -1401,8 +1336,6 @@ void damage_monsters_in_radius(
 			}
 		}
 	}
-
-	return;
 }
 
 void damage_monster(
@@ -1455,7 +1388,6 @@ void damage_monster(
 			
 			// LP change: pegging to maximum value
 			if ((monster->vitality= MIN(int32(monster->vitality)-int32(delta_vitality),int32(INT16_MAX)))>0)
-			// if ((monster->vitality-= delta_vitality)>0)
 			{
 				set_monster_action(target_index, _monster_is_being_hit);
 				if ((definition->flags&_monster_is_berserker) && monster->vitality<(definition->vitality>>2))
@@ -1550,8 +1482,6 @@ void damage_monster(
 			accelerate_monster(target_index, vertical_velocity, direction, external_velocity);
 		}
 	}
-	
-	return;
 }
 
 bool bump_monster(
@@ -1635,8 +1565,6 @@ void adjust_monster_for_polygon_height_change(
 		
 		if (object->location.z==polygon->floor_height) object->location.z= new_floor_height;
 	}
-	
-	return;
 }
 
 void accelerate_monster(
@@ -1659,8 +1587,6 @@ void accelerate_monster(
 		monster->external_velocity+= velocity;
 		monster->vertical_velocity+= PIN(monster->vertical_velocity+vertical_velocity, -TERMINAL_VERTICAL_MONSTER_VELOCITY, TERMINAL_VERTICAL_MONSTER_VELOCITY);
 	}
-	
-	return;
 }
 
 short get_monster_impact_effect(
@@ -1713,8 +1639,6 @@ void pick_nearby_random_monster_position(
 		
 		polygon_index= flood_map(NONE, area, monster_activation_flood_proc, _breadth_first, &flood_flags);
 	}
-	
-	return;
 }
 #endif
 
@@ -1732,8 +1656,6 @@ static void cause_shrapnel_damage(
 		damage_monsters_in_radius(NONE, NONE, NONE, &object->location, object->polygon,
 			definition->shrapnel_radius, &definition->shrapnel_damage);
 	}
-	
-	return;
 }
 
 static void update_monster_vertical_physics_model(
@@ -1791,8 +1713,7 @@ static void update_monster_vertical_physics_model(
 			// LP change: this stuff put in to handle the map "Aqualung" correctly
 			if (above_ground && !MONSTER_IS_ATTACKING(monster)) monster->vertical_velocity= FLOOR(monster->vertical_velocity-gravity, -definition->terminal_velocity);
 			if (below_ground) monster->vertical_velocity= CEILING(monster->vertical_velocity+gravity, definition->terminal_velocity);
-			// assert(false);
-			// halt();
+			break;
 	}
 	
 	/* add our vertical velocity to z */
@@ -1872,8 +1793,6 @@ static void update_monster_vertical_physics_model(
 			new_effect(&location, object->polygon, effect_type, object->facing);
 		}
 	}
-	
-	return;
 }
 
 static void update_monster_physics_model(
@@ -1912,8 +1831,6 @@ static void update_monster_physics_model(
 			}
 		}
 	}
-	
-	return;
 }
 
 static void monster_needs_path(
@@ -1925,8 +1842,6 @@ static void monster_needs_path(
 	if (monster->path!=NONE && immediately) delete_path(monster->path), monster->path= NONE;
 	if (monster->action==_monster_is_moving && immediately) set_monster_action(monster_index, _monster_is_stationary);
 	SET_MONSTER_NEEDS_PATH_STATUS(monster, true);
-	
-	return;
 }
 
 void set_monster_mode(
@@ -1965,14 +1880,11 @@ void set_monster_mode(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	
 	monster->mode= new_mode;
-	
- 	return;
 }
 
 /* this function decides what the given monster actually wants to do, and then generates a path
@@ -2044,9 +1956,8 @@ static void generate_new_path_for_monster(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 
 //	dprintf("#%d: generating new %spath for monster #%d;g;", dynamic_world->tick_count, destination?"":"random ", monster_index);
@@ -2066,8 +1977,6 @@ static void generate_new_path_for_monster(
 	{
 		advance_monster_path(monster_index);
 	}
-
-	return;
 }
 
 
@@ -2277,13 +2186,8 @@ static bool clear_line_of_sight(
 		// LP change: made this long-distance friendly
 		int32 dx= int32(destination->x)-int32(origin->x);
 		int32 dy= int32(destination->y)-int32(origin->y);
-		/*
-		world_distance dx= destination->x-origin->x;
-		world_distance dy= destination->y-origin->y;
-		*/
 		world_distance dz= destination->z-origin->z;
 		int32 distance2d= GUESS_HYPOTENUSE(ABS(dx), ABS(dy));
-		// world_distance distance2d= GUESS_HYPOTENUSE(ABS(dx), ABS(dy));
 
 		/* if we canÕt see full circle, make sure the target is in our visual arc */
 		if (!full_circle)
@@ -2332,7 +2236,6 @@ static bool clear_line_of_sight(
 						polygon_index= find_adjacent_polygon(polygon_index, line_index);
 						// LP change: make no polygon act like a non-transparent line
 						if (polygon_index == NONE) target_visible= false;
-						// assert(polygon_index!=NONE);
 					}
 					else
 					{
@@ -2401,8 +2304,6 @@ void change_monster_target(
 			}
 		}
 	}
-	
-	return;
 }
 
 static void handle_moving_or_stationary_monster(
@@ -2488,8 +2389,6 @@ static void handle_moving_or_stationary_monster(
 			}
 		}
 	}
-
-	return;
 }
 
 void set_monster_action(
@@ -2543,8 +2442,6 @@ void set_monster_action(
 			play_local_sound(Sound_Exploding());
 		}
 	}
-	
-	return;
 }
 
 /* do whatever needs to be done when this monster dies and remove it from the monster list */
@@ -2569,9 +2466,8 @@ static void kill_monster(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 
 	/* add an item if weÕre supposed to be carrying something */
@@ -2624,8 +2520,6 @@ static void kill_monster(
 	object_was_just_destroyed(_object_is_monster, monster->type);
 
 	MARK_SLOT_AS_FREE(monster);
-
-	return;
 }
 		
 /* move the monster along his current heading; if he reaches the center of his destination square,
@@ -2904,8 +2798,6 @@ void advance_monster_path(
 		object->facing= arctangent(path_goal.x-object->location.x, path_goal.y-object->location.y);
 		monster->path_segment_length= distance2d(&path_goal, (world_point2d *)&object->location);
 	}
-
-	return;
 }
 
 static bool try_monster_attack(
@@ -3061,8 +2953,6 @@ static void execute_monster_attack(
 			attack->dy= -attack->dy;
 		}
 	}
-
-	return;
 }
 
 long monster_pathfinding_cost_function(

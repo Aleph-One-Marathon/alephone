@@ -132,12 +132,6 @@ bool init_pfhortran(void)
 	if (!instruction_hash)
 		return false;
 
-	//init the other hash
-/*	hash = (symbol_def **)malloc(sizeof(symbol_def *) * 256);
-	memset(hash,0,sizeof(symbol_def *) * 256);
-	if (!hash)
-		return false;
-*/
 	bool err = false;
 
 	// LP change: made this code always read the language-definition file
@@ -227,11 +221,6 @@ bool is_pfhortran_on(void)
 	return pfhortran_is_on;
 }
 
-
-// Suppressed for MSVC compatibility
-#if 0
-#pragma mark -
-#endif
 
 /* Binding Table Code
 

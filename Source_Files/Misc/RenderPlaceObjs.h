@@ -96,11 +96,4 @@ public:
  	RenderPlaceObjsClass();
 };
 
-// Historical note: cause of too-many-transparent-line errors
-// LP addition: node-alias growable list
-// Only used in sort_render_tree()
-// Suppressed as unnecessary because of node_data polygon-sorted-tree structure
-// static GrowableList<node_data *> NodeAliases(32);
-
-
 #endif

@@ -42,11 +42,8 @@ Aug 12, 2000 (Loren Petrich):
 #define PRE_ENTRY_POINT_WADFILE_VERSION 0
 #define WADFILE_HAS_DIRECTORY_ENTRY 1
 #define WADFILE_SUPPORTS_OVERLAYS 2
-// LP addition:
 #define WADFILE_HAS_INFINITY_STUFF 4
-// LP change:
 #define CURRENT_WADFILE_VERSION (WADFILE_HAS_INFINITY_STUFF)
-// #define CURRENT_WADFILE_VERSION (WADFILE_SUPPORTS_OVERLAYS)
 
 #define MAXIMUM_DIRECTORY_ENTRIES_PER_FILE 64
 #define MAXIMUM_WADFILE_NAME_LENGTH 64
@@ -143,11 +140,6 @@ bool open_wad_file_for_writing(FileSpecifier& File, OpenedFile& OFile);
 
 void close_wad_file(OpenedFile& OFile);
 
-/* ----- Hardware dependent functions (From macintosh_wad.c) */
-// LP: depends on union wads, which are no longer supported
-// FileError find_other_entries_that_reference_checksum(uint32 checksum,
-// 	FileDesc *files_array, short *count);
-
 /* ----- Read File functions */
 
 /* Read the header from the wad file */
@@ -197,13 +189,6 @@ long get_flat_data_length(void *data);
 
 /* This is how you dispose of it-> you inflate it, then use free_wad() */
 struct wad_data *inflate_flat_data(void *data, struct wad_header *header);
-
-/* ------------ Union wad functions */
-/* Both of these return 0 on error */
-// LP: won't bother to convert the union-wad stuff file handling
-// 
-// fileref open_union_wad_file_for_reading(FileDesc *base_file);
-// fileref open_union_wad_file_for_reading_by_list(FileDesc *files, short count);
 
 /* ------------  Write File functions */
 struct wad_data *create_empty_wad(void);

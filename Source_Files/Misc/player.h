@@ -80,7 +80,6 @@ enum
 // LP change: turning this into a variable
 extern _fixed PlayerSelfLuminosity;
 #define NATURAL_LIGHT_INTENSITY PlayerSelfLuminosity
-// #define NATURAL_LIGHT_INTENSITY FIXED_ONE_HALF
 
 enum /* physics models */
 {

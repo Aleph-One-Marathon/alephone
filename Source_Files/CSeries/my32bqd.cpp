@@ -22,7 +22,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	LowLevelSetEntries simply asserts under Carbon (Device control unavailable)
 	Included Steve Bytnar's Carbon menubar handling code
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
 #include "my32bqd.h"
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -211,4 +213,3 @@ void LowLevelSetEntries(
 	PBControlSync((ParmBlkPtr)&pb);
 #endif
 }
-

@@ -78,8 +78,6 @@ static void initialize_pixmap_handler()
 #if !defined(USE_CARBON_ACCESSORS)
 	(*hollow_pixmap)->pmReserved= 0;
 #endif
-
-	return;
 }
 
 
@@ -142,9 +140,8 @@ PixMapHandle get_shape_pixmap(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 
 	low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
@@ -341,6 +338,4 @@ static void unload_collection(
 	
 	if (header->shading_tables) delete []header->shading_tables;
 	header->shading_tables = NULL;
-	
-	return;
 }

@@ -478,7 +478,6 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 		// Go!
 		glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,&SortedVertIndices[0]);
 	}
-	return;
 }
 
 

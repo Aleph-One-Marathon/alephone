@@ -96,8 +96,6 @@ void initialize_scenery(
 {
 	// Will reserve some space for them
 	AnimatedSceneryObjects.reserve(32);
-	
-	return;
 }
 
 /* returns object index if successful, NONE otherwise */
@@ -133,8 +131,6 @@ void animate_scenery(
 	{
 		animate_object(AnimatedSceneryObjects[i]);
 	}
-	
-	return;
 }
 
 void randomize_scenery_shapes(
@@ -143,9 +139,7 @@ void randomize_scenery_shapes(
 	struct object_data *object;
 	short object_index;
 	
-	// LP Change:
 	AnimatedSceneryObjects.clear();
-	// animated_scenery_object_count= 0;
 	
 	for (object_index= 0, object= objects; object_index<MAXIMUM_OBJECTS_PER_MAP; ++object_index, ++object)
 	{
@@ -160,8 +154,6 @@ void randomize_scenery_shapes(
 			}
 		}
 	}
-	
-	return;
 }
 
 void get_scenery_dimensions(
@@ -180,8 +172,6 @@ void get_scenery_dimensions(
 
 	*radius= definition->radius;
 	*height= definition->height;
-	
-	return;
 }
 
 void damage_scenery(
@@ -199,8 +189,6 @@ void damage_scenery(
 			new_effect(&object->location, object->polygon, definition->destroyed_effect, object->facing);
 		SET_OBJECT_OWNER(object, _object_is_normal);
 	}
-	
-	return;
 }
 
 /* ---------- private code */

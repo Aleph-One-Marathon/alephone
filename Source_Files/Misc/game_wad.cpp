@@ -114,24 +114,10 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "ChaseCam.h"
 #include "render.h"
 
-// CP Addition:  scripting.h necessary for script loading
-// LP: now obsolete
-// #include "scripting.h"
 #include "XML_LevelScript.h"
 
 // For packing and unpacking some of the stuff
 #include "Packing.h"
-
-// LP addition: for physics-model stuff, we need these pointers to definitions
-/* sadly extern'ed from their respective files */
-// LP: no need to do this anymore
-/*
-extern byte monster_definitions[];
-extern byte projectile_definitions[];
-extern byte effect_definitions[];
-extern byte weapon_definitions[];
-extern byte physics_models[];
-*/
 
 #ifdef env68k
 #pragma segment file_io
@@ -868,8 +854,6 @@ void allocate_map_for_counts(
 	// Stuff that needs the max number of polygons
 	allocate_render_memory();
 	allocate_flood_map_memory();
-	
-	return;
 }
 
 void load_points(
@@ -878,9 +862,6 @@ void load_points(
 {
 	short loop;
 	
-	// LP change: fixed off-by-one error
-	// assert(count>=0 && count<=MAXIMUM_ENDPOINTS_PER_MAP);
-	// assert(count>=0 && count<MAXIMUM_ENDPOINTS_PER_MAP);
 	// OK to modify input-data pointer since it's called by value
 	for(loop=0; loop<count; ++loop)
 	{
@@ -954,9 +935,7 @@ void load_polygons(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 }
@@ -1059,8 +1038,6 @@ void load_media(
 		short new_index = new_media(&TempMedia);
 		assert(new_index==ii);
 	}
-
-	return;
 }
 
 void load_ambient_sound_images(
@@ -1161,8 +1138,6 @@ void setup_revert_game_info(
 	obj_copy(revert_game_data.game_information, *game_info);
 	obj_copy(revert_game_data.player_start, *start);
 	obj_copy(revert_game_data.entry_point, *entry);
-	
-	return;
 }
 
 bool revert_game(
@@ -1714,8 +1689,6 @@ static void allocate_map_structure_for_map(
 	if(polygon_count*SIZEOF_polygon_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7369); // 'si'
 
 	allocate_map_for_counts(polygon_count, side_count, endpoint_count, line_count);
-
-	return;
 }
 
 /* Note that we assume the redundant data has already been recalculated... */
@@ -1752,11 +1725,6 @@ static void load_redundant_map_data(
 		recalculate_redundant_map();
 		precalculate_map_indexes();
 	}
-// dynamic_world->map_index_count= 0;
-// recalculate_redundant_map();
-// precalculate_map_indexes();
-
-	return;
 }
 
 void load_terminal_data(
@@ -1789,8 +1757,6 @@ static void scan_and_add_scenery(
 		
 		++saved_object;
 	} 
-	
-	return;
 }
 
 struct save_game_data 
@@ -1953,9 +1919,7 @@ static uint8 *tag_to_global_array_and_size(
 			count= get_number_of_weapon_types();
 			break;
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 	
@@ -2105,37 +2069,15 @@ static struct wad_data *build_save_game_wad(
 static void complete_restoring_level(
 	struct wad_data *wad)
 {
-	for(unsigned loop= 0; loop<NUMBER_OF_SAVE_ARRAYS; ++loop)
-	{
-		/* If it hasn't already been loaded */
-		// LP: no longer necessary
-#if 0
-		if(!save_data[loop].loaded_by_level)
-		{
-			/* Size is invalid at this point.. */
-			long size, data_length;
-			void *array= tag_to_global_array_and_size(save_data[loop].tag, &size);
-			uint8 *data= (uint8 *)extract_type_from_wad(wad, save_data[loop].tag, &data_length);	
-			short count= data_length/save_data[loop].unit_size;
-			assert(count*save_data[loop].unit_size==data_length);
-
-			/* Copy the data to the proper array.. */
-			memcpy(array, data, data_length);
-		}
-#endif
-	}
-	
 	/* Loading games needs this done. */
 	reset_player_queues();
 }
 
 
 /* CP Addition: get_map_file returns a pointer to the current map file */
-//FileDesc *get_map_file(
-//	void)
 FileSpecifier& get_map_file()
 {
-	return MapFileSpec; // (FileDesc *)&MapFile.Spec;
+	return MapFileSpec;
 }
 
 

@@ -79,7 +79,6 @@ Feb 4, 2002 (Br'fin (Jeremy Parsons)):
 #include "AnimatedTextures.h"
 #include "ChaseCam.h"
 #include "OGL_Setup.h"
-// #include "items.h" -- already implicitly included
 
 // CP additions:
 #include "scripting.h"
@@ -126,8 +125,6 @@ void initialize_marathon(
 #endif
 	// CP addition: init pfhortran
 	init_pfhortran();
-
-	return;
 }
 
 short update_world(
@@ -248,8 +245,6 @@ void leaving_map(
     StopLevelMusic(); 
 #endif
 	stop_all_sounds();
-
-	return;
 }
 
 /* call this function after the new level has been completely read into memory, after
@@ -366,8 +361,6 @@ void changed_polygon(
 		default:
 			break;
 	}
-
-	return;
 }
 
 /* _level_failed is the same as _level_finished but indicates a non-fatal failure condition (e.g.,
@@ -478,8 +471,6 @@ void cause_polygon_damage(
 		damage_monster(monster_index, NONE, NONE, (world_point3d *) NULL, &damage);
 	}
 // #endif
-	
-	return;
 }
 
 /* ---------- private code */
@@ -537,7 +528,5 @@ static void load_all_game_sounds(
 		case 3: break;
 		case 4: break;
 	}
-	
-	return;
 }
 */

@@ -63,15 +63,6 @@ enum /* transfer modes */
 
 #define MAXIMUM_SHADING_TABLE_INDEXES PIXEL8_MAXIMUM_COLORS
 
-#ifdef OBSOLETE
-/* number of shading tables and the size of each (in bytes) */
-#define SHADING_TABLE_INDEX_FRACTIONAL_BITS (bit_depth==8?5:6)
-#define NUMBER_OF_SHADING_TABLES (bit_depth==8?32:64)
-#define SHADING_TABLE_SIZE PIXEL8_MAXIMUM_COLORS
-#define COMPLETE_SHADING_TABLE_SIZE (SHADING_TABLE_SIZE*NUMBER_OF_SHADING_TABLES)
-#define PELSIZE (bit_depth==8?sizeof(pixel8):sizeof(pixel16))
-#endif
-
 #define FIRST_SHADING_TABLE 0
 
 struct tint_table8
@@ -198,17 +189,5 @@ extern short number_of_shading_tables, shading_table_fractional_bits, shading_ta
 /* ---------- prototypes/SCOTTISH_TEXTURES.C */
 
 void allocate_texture_tables(void);
-// Now defined in Renderizer_SW_Class:
-/*
-void texture_rectangle(struct rectangle_definition *rectangle, struct bitmap_definition *screen, struct view_data *view);
-void texture_horizontal_polygon(struct polygon_definition *polygon, struct bitmap_definition *screen, struct view_data *view);
-void texture_vertical_polygon(struct polygon_definition *polygon, struct bitmap_definition *screen, struct view_data *view);
-*/
-/* ---------- prototypes/SPHERE.C */
-// LP: Interesting historical note... something that will interest Hamish Sinclair
-/*
-void allocate_spherical_decision_table(void);
-void precalculate_spherical_decision_table(short texture_width, short texture_height, short r);
-void texture_sphere(fixed phase, struct bitmap_definition *texture, struct bitmap_definition *destination, void *shading_tables);
-*/
+
 #endif

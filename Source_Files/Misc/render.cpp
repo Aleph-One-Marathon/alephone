@@ -296,9 +296,7 @@ static void update_view_data(struct view_data *view);
 static void update_render_effect(struct view_data *view);
 static void shake_view_origin(struct view_data *view, world_distance delta);
 
-// LP: using rasterizer-object instead
 static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr);
-// static void render_viewer_sprite_layer(struct view_data *view, struct bitmap_definition *destination);
 static void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width,
 	short positioning_mode, _fixed position, bool flip, world_distance world_left, world_distance world_right);
 
@@ -317,14 +315,6 @@ void allocate_render_memory(
 {
 	assert(NUMBER_OF_RENDER_FLAGS<=16);
 	RenderFlagList.resize(RENDER_FLAGS_BUFFER_SIZE);
-	/*
-	assert(MAXIMUM_LINES_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
-	assert(MAXIMUM_SIDES_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
-	assert(MAXIMUM_ENDPOINTS_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
-	assert(MAXIMUM_POLYGONS_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
-	render_flags= new uint16[RENDER_FLAGS_BUFFER_SIZE];
-	assert(render_flags);
-	*/
 	
 	// LP addition: check out pointer-arithmetic hack
 	assert(sizeof(void *) == sizeof(POINTER_DATA));
@@ -338,8 +328,6 @@ void allocate_render_memory(
 	RenderPlaceObjs.RVPtr = &RenderVisTree;
 	RenderPlaceObjs.RSPtr = &RenderSortPoly;
 	RenderRasterize.RSPtr = &RenderSortPoly;
-		
-	return;
 }
 
 /* just in case anyone was wondering, standard_screen_width will usually be the same as
@@ -390,9 +378,6 @@ void initialize_view_data(
 
 	/* reset any active effects */
 	// LP: this is now called in render_screen(), so we need to disable the initializing
-	// view->effect= NONE;
-	
-	return;
 }
 
 /* origin,origin_polygon_index,yaw,pitch,roll,etc. have probably changed since last call */
@@ -484,8 +469,6 @@ void render_view(
 			RasPtr->End();
 		}
 	}
-
-	return;
 }
 
 void start_render_effect(
@@ -494,8 +477,6 @@ void start_render_effect(
 {
 	view->effect= effect;
 	view->effect_phase= NONE;
-	
-	return;
 }
 
 /* ---------- private code */
@@ -587,8 +568,6 @@ static void update_view_data(
 			}
 		}
 	}
-
-	return;
 }
 
 static void update_render_effect(
@@ -604,14 +583,10 @@ static void update_render_effect(
 	{
 		// LP change: suppressed all the FOV changes
 		case _render_effect_fold_in: case _render_effect_fold_out: period= TICKS_PER_SECOND/2; break;
-		// case _render_effect_going_fisheye: case _render_effect_leaving_fisheye: period= TICKS_PER_SECOND; break;
 		case _render_effect_explosion: period= TICKS_PER_SECOND; break;
-		// LP additions:
-		// case _render_effect_going_tunnel: case _render_effect_leaving_tunnel: period= TICKS_PER_SECOND; break;
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	
 	if (phase>period)
@@ -633,42 +608,8 @@ static void update_render_effect(
 				view->world_to_screen_x= view->real_world_to_screen_x + (4*view->real_world_to_screen_x*phase)/period;
 				view->world_to_screen_y= view->real_world_to_screen_y - (view->real_world_to_screen_y*phase)/(period+period/4);
 				break;
-			// LP change: suppressed all the FOV changes here
-			/*
-			case _render_effect_leaving_fisheye:
-				phase= period-phase;
-				// LP addition: goes to normal instead of tunnel vision
-				view->tunnel_vision_active = false;
-			case _render_effect_going_fisheye:
-			*/
-				/* calculate field of view based on phase */
-				/*
-				// LP change: supporting tunnel vision
-				if (view->tunnel_vision_active)
-					view->field_of_view= TUNNEL_VISION_FIELD_OF_VIEW + ((EXTRAVISION_FIELD_OF_VIEW-TUNNEL_VISION_FIELD_OF_VIEW)*phase)/period;
-				else
-					view->field_of_view= NORMAL_FIELD_OF_VIEW + ((EXTRAVISION_FIELD_OF_VIEW-NORMAL_FIELD_OF_VIEW)*phase)/period;
-				// view->field_of_view= NORMAL_FIELD_OF_VIEW + ((EXTRAVISION_FIELD_OF_VIEW-NORMAL_FIELD_OF_VIEW)*phase)/period;
-				initialize_view_data(view);
-				view->effect= effect;
-				break;
-			
-			// LP additions:
-			case _render_effect_leaving_tunnel:
-				phase= period-phase;
-			case _render_effect_going_tunnel:
-			*/
-				/* calculate field of view based on phase */
-				/*
-				view->field_of_view= NORMAL_FIELD_OF_VIEW + ((TUNNEL_VISION_FIELD_OF_VIEW-NORMAL_FIELD_OF_VIEW)*phase)/period;
-				initialize_view_data(view);
-				view->effect= effect;
-				break;
-			*/
 		}
 	}
-
-	return;
 }
 
 
@@ -762,10 +703,8 @@ void instantiate_rectangle_transfer_mode(
 		// LP change: made an unrecognized mode act like normal
 		default:
 			rectangle->transfer_mode= _textured_transfer;
-			// vhalt(csprintf(temporary, "rectangles don’t support render mode #%d", transfer_mode));
+			break;
 	}
-	
-	return;
 }
 
 /* given a transfer mode and phase, cause whatever changes it should cause to a polygon_definition
@@ -879,10 +818,7 @@ void instantiate_polygon_transfer_mode(
 		default:
 			// LP change: made an unrecognized mode act like normal
 			break;
-			// vhalt(csprintf(temporary, "polygons don’t support render mode #%d", transfer_mode));
 	}
-
-	return;
 }
 
 /* ---------- viewer sprite layer (i.e., weapons) */
@@ -955,13 +891,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 		/* and draw it */
 		// LP: added OpenGL support
 		RasPtr->texture_rectangle(textured_rectangle);
-		/*
-		if (!OGL_RenderSprite(textured_rectangle))
-			texture_rectangle(&textured_rectangle, destination, view);
-		*/
 	}
-	
-	return;
 }
 
 static void position_sprite_axis(
@@ -997,9 +927,8 @@ static void position_sprite_axis(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	
 	switch (positioning_mode)
@@ -1019,12 +948,9 @@ static void position_sprite_axis(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
-	
-	return;
 }
 
 static void shake_view_origin(
@@ -1044,8 +970,6 @@ static void shake_view_origin(
 	{
 		view->origin= new_origin;
 	}
-	
-	return;
 }
 
 // LP: begin no-compile
@@ -1130,122 +1054,6 @@ static void debug_x_line(
 }
 
 #endif /* QUICKDRAW DEBUG */
-
-			
-#ifdef OBSOLETE
-static void sort_render_object_into_tree(
-	struct render_object_data *new_render_object, /* null-terminated linked list */
-	struct sorted_node_data **base_nodes,
-	short base_node_count)
-{
-	struct render_object_data *render_object, *last_new_render_object;
-	struct render_object_data *deep_render_object= (struct render_object_data *) NULL;
-	struct render_object_data *shallow_render_object= (struct render_object_data *) NULL;
-	struct sorted_node_data *desired_node;
-	short i;
-
-	/* find the last render_object in the given list of new objects */
-	for (last_new_render_object= new_render_object;last_new_render_object->next_object;
-		last_new_render_object= last_new_render_object->next_object);
-
-	/* find the two objects we must be lie between */	
-	for (render_object= render_objects;render_object<new_render_object;++render_object)
-	{
-		/* if these two objects intersect... */
-		if (render_object->rectangle.x1>new_render_object->rectangle.x0 && render_object->rectangle.x0<new_render_object->rectangle.x1 &&
-			render_object->rectangle.y1>new_render_object->rectangle.y0 && render_object->rectangle.y0<new_render_object->rectangle.y1)
-		{
-			/* update our closest and farthest matches */
-			if (render_object->rectangle.depth>new_render_object->rectangle.depth) /* found deeper intersecting object */
-			{
-				if (!deep_render_object || deep_render_object->rectangle.depth>render_object->rectangle.depth)
-				{
-					deep_render_object= render_object;
-				}
-			}
-			else
-			{
-				if (render_object->rectangle.depth<new_render_object->rectangle.depth) /* found shallower intersecting object */
-				{
-					if (!shallow_render_object || shallow_render_object->rectangle.depth<=render_object->rectangle.depth)
-					{
-						shallow_render_object= render_object;
-					}
-				}
-			}
-		}
-	}
-
-	/* find the node we’d like to be in (ignoring polygons which were not lit up by the view cone) */
-	desired_node= base_nodes[0];
-	for (i= 1;i<base_node_count;++i) if (base_nodes[i]>desired_node) desired_node= base_nodes[i];
-	assert(desired_node>=sorted_nodes && desired_node<next_sorted_node);
-	
-	/* adjust desired node based on the nodes of the deep and shallow render object; only
-		one of deep_render_object and shallow_render_object will be non-null after this if
-		block.  the current object must be sorted with respect to this non-null object inside
-		the object list of the desired_node */
-	if (shallow_render_object && desired_node>=shallow_render_object->node)
-	{
-		/* we tried to sort too close to the front of the node list */
-		desired_node= shallow_render_object->node;
-		deep_render_object= (struct render_object_data *) NULL;
-	}
-	else
-	{
-		if (deep_render_object && desired_node<=deep_render_object->node)
-		{
-			/* we tried to sort too close to the back of the node list */
-			desired_node= deep_render_object->node;
-			shallow_render_object= (struct render_object_data *) NULL;
-		}
-		else
-		{
-			deep_render_object= shallow_render_object= (struct render_object_data *) NULL;
-		}
-	}
-	
-	/* update the .node fields of all the objects we’re about to add to reflect their new
-		location in the sorted node list */
-	for (render_object= new_render_object;render_object;render_object= render_object->next_object)
-	{
-		render_object->node= desired_node;
-	}
-	
-	if (deep_render_object)
-	{
-		/* sort after all objects as deep as the deep render object in this node */
-		while (deep_render_object->next_object && deep_render_object->next_object->rectangle.depth==deep_render_object->rectangle.depth) deep_render_object= deep_render_object->next_object;
-		last_new_render_object->next_object= deep_render_object->next_object;
-		deep_render_object->next_object= new_render_object;
-	}
-	else
-	{
-		if (shallow_render_object)
-		{
-			struct render_object_data **reference;
-			
-			/* find the reference to the first object as shallow as the shallow render object in this node */
-			for (reference= &desired_node->exterior_objects;
-				(*reference)->rectangle.depth!=shallow_render_object->rectangle.depth && *reference;
-				reference= &(*reference)->next_object);
-			assert(*reference);
-			
-			/* sort before this object in the given node */
-			last_new_render_object->next_object= *reference;
-			*reference= new_render_object;
-		}
-		else
-		{
-			/* sort anywhere in the node */
-			last_new_render_object->next_object= desired_node->exterior_objects;
-			desired_node->exterior_objects= new_render_object;
-		}
-	}
-
-	return;
-}
-#endif
 
 // LP: end no-compile
 #endif

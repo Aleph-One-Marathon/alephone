@@ -164,8 +164,6 @@ void handle_preferences(
 	}
 	else
 		set_sound_manager_parameters(&OriginalSoundParameters);
-	
-	return;
 }
 
 
@@ -312,8 +310,6 @@ static void setup_graphics_dialog(
 	// LP: added full-screen option; will not activate it until it's in good working order
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iFILL_SCREEN, first_item), 
 		CONTROL_ACTIVE, (preferences->screen_mode.fullscreen));
-		
-	return;
 }
 
 static void hit_graphics_item(
@@ -389,9 +385,7 @@ static void hit_graphics_item(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -554,8 +548,6 @@ static void setup_sound_dialog(
 	active= (available_flags & _relative_volume_flag) ? CONTROL_ACTIVE : CONTROL_INACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iRELATIVE_VOLUME, first_item), active, 
 		(preferences->flags & _relative_volume_flag) ? true : false);
-
-	return;
 }
 
 static void hit_sound_item(
@@ -628,15 +620,11 @@ static void hit_sound_item(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
 	setup_sound_dialog(dialog, first_item, prefs);
-
-	return;
 }
 	
 static bool teardown_sound_dialog(
@@ -787,9 +775,7 @@ static bool teardown_input_dialog(
 }
 
 /* ------------------ environment preferences */
-// LP change: increased
 #define MAXIMUM_FIND_FILES (128)
-// #define MAXIMUM_FIND_FILES (32)
 
 struct file_description {
 	// This is now the _typecode_stuff specified in tags.h (abstract file typing)
@@ -834,12 +820,8 @@ static void setup_environment_dialog(
 		SetCursor(&qd.arrow);
 #endif
 	} else {
-		// LP change:
 		assert(false);
-		// halt();
 	}
-	
-	return;
 }
 
 static void hit_environment_item(
@@ -879,8 +861,6 @@ static void hit_environment_item(
 		default:
 			break;
 	}
-
-	return;
 }
 
 static bool teardown_environment_dialog(
@@ -1007,8 +987,6 @@ static void free_extensions_memory(
 	accessory_files= NULL;
 	file_descriptions= NULL;
 	accessory_file_count= 0;
-
-	return;
 }
 
 static bool file_is_extension_and_add_callback(
@@ -1076,14 +1054,6 @@ static void build_extensions_list(
 	BaseDir.SetToAppParent();
 	search_from_directory(BaseDir);
 	
-	/*
-	FSSpec my_spec;
-	short path_count, ii;
-
-	get_my_fsspec(&my_spec);
-	search_from_directory(&my_spec);
-	*/
-	
 	// LP: for now, will only care about looking in the Marathon app's directory
 	#if 0
 	/* Add the paths.. */
@@ -1114,8 +1084,6 @@ static void build_extensions_list(
 		}
 	}
 	#endif
-
-	return;
 }
 
 static void search_from_directory(DirectorySpecifier& BaseDir)
@@ -1126,7 +1094,6 @@ static void search_from_directory(DirectorySpecifier& BaseDir)
 	OSErr error;
 
 	pb.Clear();	
-	// memset(&pb, 0, sizeof(struct find_file_pb));
 	pb.version= 0;
 	// LP change: always recurse
 	pb.flags= _ff_recurse | _ff_callback_with_catinfo;
@@ -1139,10 +1106,7 @@ static void search_from_directory(DirectorySpecifier& BaseDir)
 #endif
 	pb.search_type= _callback_only;
 	pb.BaseDir = BaseDir;
-	// pb.vRefNum= file->vRefNum;
-	// pb.directory_id= file->parID;
 	pb.Type= WILDCARD_TYPE;
-	// pb.type_to_find= WILDCARD_TYPE;
 	pb.buffer= NULL;
 	pb.max= MAXIMUM_FIND_FILES;
 	pb.callback= file_is_extension_and_add_callback;
@@ -1150,10 +1114,6 @@ static void search_from_directory(DirectorySpecifier& BaseDir)
 	pb.count= 0;
 
 	vassert(pb.Find(), csprintf(temporary, "Error: %d", pb.GetError()));
-	// error= find_files(&pb);
-	// vassert(!error, csprintf(temporary, "Error: %d", error));
-
-	return;
 }
 
 /* Note that we are going to assume that things don't change while they are in this */
@@ -1234,8 +1194,6 @@ static void fill_in_popup_with_filetype(
 		/* Select the default one, somehow.. */
 		SetControlValue(control, 1);
 	}
-
-	return;
 }
 
 static unsigned long find_checksum_and_file_spec_from_dialog(

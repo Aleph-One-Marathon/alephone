@@ -723,8 +723,6 @@ void fill_in_entry_points(
 	}
 
 	if (!CountMItems(menu)) modify_control(dialog, iOK, CONTROL_INACTIVE, 0);
-
-	return;
 }
 
 
@@ -977,13 +975,6 @@ static pascal Boolean join_dialog_filter_proc(
 			break;
 
 		case netWaiting: /* if we just changed netJoining to netWaiting change the dialog text */
-#ifdef OBSOLETE
-			if (last_join_state==netJoining)
-			{
-				GetDialogItem(dialog, iJOIN_MESSAGES, &item_type, &item_handle, &item_rect);
-				SetDialogItemText(item_handle, getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_accepted_string));
-			}
-#endif
 			modify_control(dialog, iCANCEL, CONTROL_INACTIVE, 0);
 			break;
 
@@ -1011,9 +1002,8 @@ static pascal Boolean join_dialog_filter_proc(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	last_join_state= join_state;
 
@@ -1105,8 +1095,6 @@ static void setup_network_list_box(
 		network_list_box_update_proc, NetEntityNotInGame);
 	if (error!=noErr) dprintf("NetLookupOpen() returned %d", error);
 	#endif
-
-	return;
 }
 
 /*************************************************************************************************
@@ -1124,8 +1112,6 @@ static void dispose_network_list_box(
 
 	LDispose(network_list_box);
 	network_list_box= (ListHandle) NULL;
-	
-	return;
 }
 
 /*************************************************************************************************
@@ -1155,12 +1141,9 @@ static void network_list_box_update_proc(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
-	
-	return;
 }
 
 /*************************************************************************************************
@@ -1260,8 +1243,6 @@ void menu_index_to_level_entry(
 	}
 	
 	SetCursor(&qd.arrow);
-
-	return;
 }
 
 static MenuHandle get_popup_menu_handle(
@@ -1532,8 +1513,6 @@ void display_net_game_stats(
 
 	DisposeRoutineDescriptor(stats_dialog_upp);
 	DisposeDialog(dialog);
-
-	return;
 }
 
 /* ------------------------- private code */
@@ -1716,9 +1695,7 @@ static pascal Boolean display_net_stats_proc(
 						break;
 						
 					default:
-						// LP change:
 						assert(false);
-						// halt();
 						break;
 				}
 				
@@ -1835,8 +1812,6 @@ void draw_names(
 		}
 		OffsetRect(&name_rect, 0, RECTANGLE_HEIGHT(&name_rect)+GRAPH_BAR_SPACING);
 	}
-	
-	return;
 }
 
 
@@ -1956,8 +1931,6 @@ void draw_kill_bars(
 
     // ZZZ: ripped this out into a new function for sharing with SDL version
     update_carnage_summary(dialog, ranks, num_players, suicide_index, do_totals, friendly_fire);
-	
-	return;
 }
 
 static void draw_beveled_text_box(
@@ -2044,7 +2017,6 @@ static void draw_beveled_box(
 	}
 
 	RGBForeColor(&old_color);
-	return;
 }
 
 static void calculate_maximum_bar(	
@@ -2199,9 +2171,7 @@ static bool will_new_mode_reorder_dialog(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 	
@@ -2222,8 +2192,6 @@ static void setup_network_speed_for_join(
 			DisableItem(menu, index+1);
 		}
 	}
-
-	return;
 }
 
 static void setup_network_speed_for_gather(
@@ -2258,14 +2226,10 @@ static void setup_network_speed_for_gather(
 				break;
 #endif				
 			default:
-				// LP change:
 				assert(false);
-				// halt();
 				break;
 		}
 	}
-
-	return;
 }
 
 /* Stupid function, here as a hack.. */

@@ -20,7 +20,9 @@
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
 #include <stddef.h>
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -102,4 +104,3 @@ void build_color_table(
 		dst++;
 	}
 }
-

@@ -108,8 +108,6 @@ void open_progress_dialog(
 #else
 	SetCursor(*(GetCursor(watchCursor)));
 #endif
-
-	return;
 }
 
 void set_progress_dialog_message(
@@ -123,8 +121,6 @@ void set_progress_dialog_message(
 	GetDialogItem(progress_data.dialog, iPROGRESS_MESSAGE, &item_type, &item_handle, &bounds);
 	getpstr(ptemporary, strPROGRESS_MESSAGES, message_id);
 	SetDialogItemText(item_handle, ptemporary);
-	
-	return;
 }
 
 void close_progress_dialog(
@@ -145,8 +141,6 @@ void close_progress_dialog(
 	DisposeDialog(progress_data.dialog);
 	DisposeRoutineDescriptor(progress_data.progress_bar_upp);
 #endif
-
-	return;
 }
 
 void draw_progress_bar(
@@ -172,8 +166,6 @@ void draw_progress_bar(
 	PaintRect(&bounds);
 	ForeColor(blackColor);
 #endif
-
-	return;
 }
 
 void reset_progress_bar(
@@ -184,8 +176,6 @@ void reset_progress_bar(
 #else
 	draw_distribute_progress(progress_data.dialog, iPROGRESS_BAR);
 #endif
-
-	return;
 }
 
 /* --------- private code */
@@ -214,6 +204,4 @@ static pascal void draw_distribute_progress(
 	FrameRect(&item_box);
 
 	SetPort(old_port);
-
-	return;
 }

@@ -351,8 +351,6 @@ void allocate_map_memory(
 	// assert(map_annotations && saved_objects);
 
 	allocate_player_memory();
-
-	return;
 }
 
 void initialize_map_for_new_game(
@@ -362,8 +360,6 @@ void initialize_map_for_new_game(
 
 	initialize_players();
 	initialize_monsters();
-	
-	return;
 }
 
 void initialize_map_for_new_level(
@@ -410,71 +406,7 @@ void initialize_map_for_new_level(
 	// map_endpoints= NULL;
 	// automap_lines= NULL;
 	// automap_polygons= NULL;
-
-	return;
 }
-
-#ifdef OBSOLETE
-void *get_map_structure_chunk(
-	long chunk_size)
-{
-	byte *buffer;
-
-	assert(map_structure_memory.memory);
-	assert(chunk_size>=0 && chunk_size+map_structure_memory.index<=map_structure_memory.size);
-	buffer= map_structure_memory.memory+map_structure_memory.index;
-//dprintf("base: %x mem: %x index: %d chunk: %d;g", map_structure_memory.memory, buffer, map_structure_memory.index, chunk_size);
-	map_structure_memory.index+= chunk_size;
-
-	return buffer;
-}
-
-void reallocate_map_structure_memory(
-	long size)
-{
-	bool success= false;
-	bool reallocate= false;
-
-	if(map_structure_memory.memory)
-	{
-		if(map_structure_memory.size<size)
-		{
-			/* Must reallocate.. */
-			delete []map_structure_memory.memory;
-			reallocate= true;		
-		} else {
-			/* Already allocated, new size is less than old.. */
-			success= true;
-		}
-	} else {
-		reallocate= true;
-	}
-	
-	if(reallocate)
-	{
-		/* Must allocate initially.. */
-		map_structure_memory.memory= new byte[size];
-		map_structure_memory.size= size;
-		if(map_structure_memory.memory) success= true;
-	}
-
-	/* This tells us where to take the next block from. */
-	map_structure_memory.index= 0;
-
-	/* If we failed, warn the user.. */
-	if(!success)
-	{
-		alert_user(fatalError, strERRORS, outOfMemory, size);
-	} else {
-		/* Clear the array to a known state */
-		assert(map_structure_memory.size>=size);
-		memset(map_structure_memory.memory, 0, size);
-	}
-//	dprintf("Conglomerate Map: 0x%x bytes at 0x%x;g", size, map_structure_memory.memory);
-	
-	return;
-}
-#endif
 
 bool collection_in_environment(
 	short collection_code,
@@ -510,7 +442,6 @@ void mark_environment_collections(
 	short collection;
 	
 	if (!(environment_code>=0&&environment_code<NUMBER_OF_ENVIRONMENTS)) return;
-	// assert(environment_code>=0&&environment_code<NUMBER_OF_ENVIRONMENTS);
 
 	// LP change: modified to use new collection-environment management;
 	// be sure to set "loaded wall texture" to the first one loaded
@@ -532,8 +463,6 @@ void mark_environment_collections(
 	if (LandscapesLoaded)
 		loading ? mark_collection_for_loading(_collection_landscape1+static_world->song_index) :
 			mark_collection_for_unloading(_collection_landscape1+static_world->song_index);
-	
-	return;
 }
 
 /* make the object list and the map consistent */
@@ -561,8 +490,6 @@ void reconnect_map_object_list(
 			polygon->first_object= i;
 		}
 	}
-	
-	return;
 }
 
 bool valid_point2d(
@@ -711,8 +638,6 @@ void remove_parasitic_object(
 
 	host->parasitic_object= NONE;
 	MARK_SLOT_AS_FREE(parasite);
-
-	return;
 }
 
 /* look up the index yourself */
@@ -736,8 +661,6 @@ void remove_map_object(
 	orphan_sound(object_index);
 	*next_object= object->next_object;
 	MARK_SLOT_AS_FREE(object);
-
-	return;
 }
 
 /* if a new polygon index is supplied, it will be used, otherwise we’ll try to find the new
@@ -836,7 +759,6 @@ void get_object_shape_and_transfer_mode(
 	/* get correct base shape */
 	// LP change: made long-distance friendly
 	theta= arctangent(int32(object->location.x) - int32(camera_location->x), int32(object->location.y) - int32(camera_location->y)) - object->facing;
-	// theta= arctangent(object->location.x - camera_location->x, object->location.y - camera_location->y) - object->facing;
 	switch (animation->number_of_views)
 	{
 		case _unanimated:
@@ -853,11 +775,8 @@ void get_object_shape_and_transfer_mode(
 				case 2: view= 1; break; /* -90° (facing right) */
 				case 3: view= 2; break; /* ±180° (facing away) */
 				default:
-					// LP change:
 					data->collection_code = NONE; // Deliberate bad value
 					return;
-					// assert(false);
-					// halt();
 			}
 			break;
 
@@ -872,11 +791,8 @@ void get_object_shape_and_transfer_mode(
 				case 3: view= 1; break;
 				case 4: view= 0; break;
 				default:
-					// LP change:
 					data->collection_code = NONE; // Deliberate bad value
 					return;
-					// assert(false);
-					// halt();
 			}
 			break;
 		
@@ -894,20 +810,14 @@ void get_object_shape_and_transfer_mode(
 				case 6: view= 5; break; /* -135° (facing right) */
 				case 7: view= 4; break; /* ±180° (facing away) */
 				default:
-					// LP change:
 					data->collection_code = NONE; // Deliberate bad value
 					return;
-					// assert(false);
-					// halt();
 			}
 			break;
 		
 		default:
-			// LP change:
 			data->collection_code = NONE; // Deliberate bad value
 			return;
-			// assert(false);
-			// halt();
 	}
 
 	/* fill in the structure (transfer modes in the animation override transfer modes in the object */
@@ -925,8 +835,6 @@ void get_object_shape_and_transfer_mode(
 		data->transfer_mode= animation->transfer_mode;
 		data->transfer_phase= animation->transfer_mode!=_xfer_normal ? INTEGER_TO_FIXED(object->transfer_phase)/animation->transfer_mode_period : 0;
 	}
-	
-	return;
 }
 
 bool randomize_object_sequence(
@@ -980,8 +888,6 @@ void set_object_shape_and_transfer_mode(
 			object->transfer_phase= 0;
 		}
 	}
-	
-	return;
 }
 
 /* no longer called by RENDER.C; must be called by monster, projectile or effect controller;
@@ -1006,7 +912,6 @@ void animate_object(
 			// LP change: added some idiot-proofing to the ticks-per-frame value
 			if (animation->ticks_per_frame <= 0)
 				animation->ticks_per_frame = 1;
-			// assert(animation->ticks_per_frame>0);
 		
 			frame= GET_SEQUENCE_FRAME(object->sequence);
 			phase= GET_SEQUENCE_PHASE(object->sequence);
@@ -1064,8 +969,6 @@ void animate_object(
 	/*  it is questionable if you would ever want to do that) */
 	/* if this object has any parasites, animate those too */
 	if (object->parasitic_object!=NONE) animate_object(object->parasitic_object);
-
-	return;
 }
 
 void calculate_line_midpoint(
@@ -1079,8 +982,6 @@ void calculate_line_midpoint(
 	midpoint->x= (e0->x+e1->x)>>1;
 	midpoint->y= (e0->y+e1->y)>>1;
 	midpoint->z= (line->lowest_adjacent_ceiling+line->highest_adjacent_floor)>>1;
-	
-	return;
 }
 
 bool point_in_polygon(
@@ -1119,8 +1020,7 @@ short clockwise_endpoint_in_line(
 
 	if (line->clockwise_polygon_owner!=polygon_index)
 	{
-		// LP change: suppressing this test to get around some Pfhorte bugs
-		// assert(line->counterclockwise_polygon_owner==polygon_index);
+		// LP change: get around some Pfhorte bugs
 		line_is_clockwise= false;
 	}
 	
@@ -1133,9 +1033,8 @@ short clockwise_endpoint_in_line(
 			index= line_is_clockwise ? 1 : 0;
 			break;
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 
 	return line->endpoint_indexes[index];
@@ -1174,13 +1073,11 @@ short find_adjacent_polygon(
 	}
 	else
 	{
-		// LP change: suppressing this test to get around some Pfhorte bugs
-		// assert(polygon_index==line->counterclockwise_polygon_owner);
+		// LP change: get around some Pfhorte bugs
 		new_polygon_index= line->clockwise_polygon_owner;
 	}
 	
 	assert(new_polygon_index!=polygon_index);
-//	assert(!POLYGON_IS_DETACHED(get_polygon_data(polygon_index)));
 	
 	return new_polygon_index;
 }
@@ -1241,9 +1138,8 @@ bool line_is_landscaped(
 				break;
 			
 			default:
-				// LP change:
 				assert(false);
-				// halt();
+				break;
 		}
 	}
 
@@ -1425,8 +1321,6 @@ void closest_point_on_circle(
 	{
 		*closest_point= *p;
 	}
-	
-	return;
 }
 
 void find_center_of_polygon(
@@ -1446,8 +1340,6 @@ void find_center_of_polygon(
 	
 	center->x= x/polygon->vertex_count;
 	center->y= y/polygon->vertex_count;
-	
-	return;
 }
 
 /* calculate 3d intersection of the line p0p1 with the plane z=h */
@@ -1687,8 +1579,6 @@ void push_out_line(
 	/* adjust the line */
 	e0->x+= dx, e0->y+= dy;
 	e1->x+= dx, e1->y+= dy;
-	
-	return;
 }
 
 /* given the ray p0,theta,d, calculate a point p1 such that p1 is on the ray but still inside
@@ -1710,8 +1600,6 @@ void ray_to_line_segment(
 
 	p1->x= x;
 	p1->y= y;
-		
-	return;
 }
 
 /* computes the squared distance from p to the line segment e0e1 */
@@ -1839,8 +1727,6 @@ void recalculate_map_counts(
 			--count,--light)
 		;
 	dynamic_world->light_count= count;
-	
-	return;
 }
 
 bool change_polygon_height(
@@ -1851,9 +1737,6 @@ bool change_polygon_height(
 {
 	bool legal_change;
 	
-	// LP change: no need to check on this
-	// assert(new_ceiling_height>=new_floor_height);
-
 	/* returns false if a monster prevented the given change from ocurring (and probably did damage
 		to him or maybe even caused him to pop) */
 	legal_change= legal_polygon_height_change(polygon_index, new_floor_height, new_ceiling_height, damage);
@@ -1941,24 +1824,19 @@ bool point_is_monster_visible(
 	int32 *distance)
 {
 	short  i;
-	// LP change: no longer necessary
-	// short  object_indexes[LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE];
 	short  object_count;
 	
 	*distance = INT32_MAX; /* infinite */
 	
 	// LP change:
 	IntersectedObjects.clear();
-	// object_count= 0;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, polygon_index, false);
-	// possible_intersecting_monsters(object_indexes, &object_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, polygon_index, false);
 	object_count = IntersectedObjects.size();
 	
 	for (i=0;i<object_count;++i)
 	{
 		// LP change:
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
-		// struct object_data *object= get_object_data(object_indexes[i]);
 		int32 this_distance;
 		
 		this_distance = guess_distance2d((world_point2d*)&object->location, p);
@@ -2073,8 +1951,6 @@ void turn_object_to_shit( /* garbage that is, garbage */
 	}
 	
 	SET_OBJECT_OWNER(garbage_object, _object_is_garbage);
-	
-	return;
 }
 
 /* find an (x,y) and polygon_index for a random point on the given circle, at the same height
@@ -2101,8 +1977,6 @@ void random_point_on_circle(
 		
 		if (center_polygon->floor_height!=random_polygon->floor_height) *random_polygon_index= NONE;
 	}
-	
-	return;
 }
 
 /* ---------- private code */
@@ -2227,8 +2101,6 @@ void play_object_sound(
 		(world_location3d *) &object->location;
 
 	_play_sound(sound_code, location, object_index, object->sound_pitch);
-	
-	return;
 }
 
 void play_polygon_sound(
@@ -2243,8 +2115,6 @@ void play_polygon_sound(
 	source.polygon_index= polygon_index;
 	
 	play_sound(sound_code, &source, NONE);
-	
-	return;
 }
 
 void _play_side_sound(
@@ -2259,8 +2129,6 @@ void _play_side_sound(
 	source.polygon_index= side->polygon_index;
 
 	_play_sound(sound_code, &source, NONE, pitch);
-	
-	return;
 }
 
 void play_world_sound(
@@ -2273,8 +2141,6 @@ void play_world_sound(
 	source.point= *origin;
 	source.polygon_index= polygon_index;
 	play_sound(sound_code, &source, NONE);
-	
-	return;
 }
 
 world_location3d *_sound_listener_proc(
@@ -2313,7 +2179,6 @@ uint16 _sound_obstructed_proc(
 				if (media)
 				{
 					if (source->point.z<media->height)
-					// if (source->point.z<get_media_data(source_polygon->media_index)->height)
 					{
 						source_under_media= true;
 					}
@@ -2326,7 +2191,6 @@ uint16 _sound_obstructed_proc(
 				if (media)
 				{
 					if (listener->point.z<media->height)
-					//if (listener->point.z<get_media_data(listener_polygon->media_index)->height)
 					{
 						listener_under_media= true;
 					}
@@ -2477,8 +2341,6 @@ void _sound_add_ambient_sources_proc(
 		}
 		}
 	}
-	
-	return;
 }
 
 void handle_random_sound_image(
@@ -2518,106 +2380,7 @@ void handle_random_sound_image(
 		else
 			polygon->random_sound_image_index = NONE;
 	}
-	
-	return;
 }
-
-#ifdef OBSOLETE	
-/* same naming conventions as above: p1 is the point which has passed through the given line,
-	on entry intersection is the point where the p0p1 intersected the given line, on exit
-	it is the adjusted intersection, slid along the line */
-fixed find_line_deflection(
-	short line_index,
-	world_point2d *p1,
-	world_point2d *intersection)
-{
-	world_distance line_dx, line_dy, dx, dy;
-	struct line_data *line;
-	world_point2d *e0, *e1;
-	int32 numerator, denominator;
-	fixed t;
-	
-	/* get endpoints */
-	line= get_line_data(line_index);
-	e0= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
-	e1= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
-
-	/* calculate dx,dy and line_dx,line_dy; it doesn’t matter, really, which endpoint of the
-		line we choose, but the math will work better if we choose the one farthest from the
-		point of intersection (because in the case where ie==(0,0,0) everything breaks). */
-	dx= p1->x-intersection->x, dy= p1->y-intersection->y;
-	if (guess_distance2d(intersection, e0)>guess_distance2d(intersection, e1))
-	{
-		line_dx= e0->x-intersection->x, line_dy= e0->y-intersection->y;
-	}
-	else
-	{
-		line_dx= e1->x-intersection->x, line_dy= e1->y-intersection->y;
-	}
-	
-	/* same comment as above for calculating t; this is not wholly accurate */
-	numerator= line_dx*dx + line_dy*dy;
-	denominator= line_dx*line_dx + line_dy*line_dy;
-	while (numerator>=(1<<24)||numerator<=(-1<<24)) numerator>>= 1, denominator>>= 1;
-	numerator<<= 8;
-	if (!(denominator>>= 8)) denominator= 1;
-	t= numerator/denominator;
-
-	intersection->x+= FIXED_INTEGERAL_PART(t*line_dx);
-	intersection->y+= FIXED_INTEGERAL_PART(t*line_dy);
-
-	return t;
-}
-
-	/* calculate polygon neighbors */
-
-	/* initialize the polygon’s neighbors */
-	nc= 0;
-	for(ii=0; ii<poly->vertex_count; ii++)
-	{
-		if(poly->line_indexes[ii]!=NONE) 
-		{
-			line= get_line_data(poly->line_indexes[ii]);
-			neighbor= (line->clockwise_polygon_owner==polygon_index) ? (line->counterclockwise_polygon_owner) : (line->clockwise_polygon_owner);
-			if(!LINE_IS_DOOR(line) && LINE_IS_SOLID(line)) neighbor= NONE; /* Wall between us. */
-			if(neighbor != NONE)
-			{
-				poly->neighbors[nc++]= neighbor;
-			}
-		}				
-	}
-	for(ii= nc; ii<MAXIMUM_VERTICES_PER_POLYGON; ii++)
-	{
-		poly->neighbors[ii]= NONE;
-	}
-#endif
-	
-#ifdef OBSOLETE
-bool point_in_polygon(
-	short polygon_index,
-	world_point2d *p)
-{
-	struct polygon_data *polygon= get_polygon_data(polygon_index);
-	short intersected_line_index= NONE;
-	bool point_inside= true;
-	short i;
-	
-	for (i=0;i<polygon->vertex_count;++i)
-	{
-		/* e1 is clockwise from e0 */
-		world_point2d *e0= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-		world_point2d *e1= &get_endpoint_data(polygon->endpoint_indexes[i==polygon->vertex_count-1?0:i+1])->vertex;
-		
-		if ((p->x-e0->x)*(e1->y-e0->y) - (p->y-e0->y)*(e1->x-e0->x) > 0)
-		{
-			point_inside= false;
-			break;
-		}
-	}
-	
-	return point_inside;
-}
-#endif
 
 
 // XML elements for parsing the texture-loading specification

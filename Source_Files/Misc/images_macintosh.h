@@ -188,9 +188,7 @@ void scroll_full_screen_pict_resource_from_scenario(
 									break;
 								
 								default:
-									// LP change:
 									assert(false);
-									// halt();
 									break;
 							}
 						}
@@ -209,8 +207,6 @@ void scroll_full_screen_pict_resource_from_scenario(
 		
 		// ReleaseResource((Handle)picture);
 	}
-					
-	return;
 }
 
 

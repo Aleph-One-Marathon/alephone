@@ -249,8 +249,6 @@ void handle_microphone(bool triggered)
 	}
 
 	if(err) dprintf("Err in handle microphone: %d", err);	
-	
-	return;
 }
 
 /* -------- private functions */
@@ -409,6 +407,4 @@ static pascal void sound_recording_completed(
 #ifdef env68k
 	set_a5(old_a5); /* restore our a5 world */
 #endif
-
-	return;
 }

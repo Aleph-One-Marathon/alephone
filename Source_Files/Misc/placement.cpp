@@ -165,8 +165,6 @@ void load_placement_data(
 		}
 	}
 #endif
-	
-	return;
 }
 
 /*************************************************************************************************
@@ -238,8 +236,6 @@ void mark_all_monster_collections(
 		}
 		placement_info++;
 	}
-	
-	return;
 }
 
 void load_all_monster_sounds(
@@ -256,8 +252,6 @@ void load_all_monster_sounds(
 		}
 		placement_info++;
 	}
-	
-	return;
 }
 
 /*************************************************************************************************
@@ -290,8 +284,6 @@ void recreate_objects(
 		_recreate_objects(_object_is_item, NUMBER_OF_DEFINED_ITEMS, item_placement_info, 
 			dynamic_world->current_item_count, dynamic_world->random_items_left);
 	}
-	
-	return;
 }
 
 /*************************************************************************************************
@@ -318,13 +310,9 @@ void object_was_just_added(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
-	
-	return;
 }
 
 /*************************************************************************************************
@@ -359,9 +347,7 @@ void object_was_just_destroyed(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 	
@@ -369,8 +355,6 @@ void object_was_just_destroyed(
 	{
 		add_objects(object_class, object_type, 1, false);
 	}
-	
-	return;
 }
 
 /*************************************************************************************************
@@ -557,8 +541,6 @@ static void add_objects(
 			}
 		}
 	}
-	
-	return;
 }
 
 /*************************************************************************************************
@@ -738,9 +720,8 @@ static bool polygon_is_valid_for_object_drop(
 									break;
 									
 								default:
-									// LP change:
 									assert(false);
-									// halt();
+									break;
 							}
 						}
 						else

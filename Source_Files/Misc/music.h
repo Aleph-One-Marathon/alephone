@@ -31,7 +31,6 @@ Aug 24, 2000 (Loren Petrich):
 
 // LP: CodeWarrior complains unless I give the full definition of these classes
 #include "FileHandler.h"
-// class FileSpecifier;
 
 enum { // All of our songs.
 	_introduction_song= 0,

@@ -304,11 +304,6 @@ extern sdl_font_info *GetInterfaceFont(short font_index);
 extern uint16 GetInterfaceStyle(short font_index);
 #endif
 
-// #ifdef mac
-// LP addition: overall terminal boundary rect (needed for resetting the clipping rectangle)
-// static Rect OverallBounds;
-// #endif
-
 /* ------------ private prototypes */
 static player_terminal_data *get_player_terminal_data(
 	short player_index);
@@ -529,9 +524,6 @@ void update_player_keys_for_terminal(
 		
 		case _no_terminal_state:
 		default:
-			// LP change: do nothing
-			// assert(false);
-			// halt();
 			break;
 	}
 }
@@ -586,7 +578,6 @@ void _render_computer_interface(
 				
 				/* Draw the borders! */
 				// LP change: draw these after, so as to avoid overdraw bug
-				// draw_terminal_borders(data, terminal_data, &bounds);
 				draw_terminal_borders(data, terminal_data, &bounds, false);
 				switch(current_group->type)
 				{
@@ -646,9 +637,6 @@ void _render_computer_interface(
 						break;
 
 					default:
-						// LP change: do nothing
-						// vhalt(csprintf(temporary, "What is this group: %d", current_group->type));
-						// vwarn(false,csprintf(temporary, "What is this group: %d", current_group->type));
 						break;
 				}
 				// Moved down here, so they'd overdraw the other stuff
@@ -656,9 +644,6 @@ void _render_computer_interface(
 				break;
 				
 			default:
-				// LP change: do nothing
-				// assert(false);
-				// halt();
 				break;
 		}
 		
@@ -752,8 +737,6 @@ static void draw_logon_text(
 	display_picture(logon_shape_id, &picture_bounds,  _center_object);
 
 	/* Use the picture bounds to create the logon text crap . */	
-	/* The top has the font line height subtracted due to the fudge factor... */
-//	picture_bounds.top= picture_bounds.bottom-_get_font_line_height(_computer_interface_font)+5;
 	picture_bounds.top= picture_bounds.bottom;
 	picture_bounds.bottom= bounds->bottom;
 	picture_bounds.left= bounds->left;
@@ -920,8 +903,6 @@ static void _draw_computer_text(
 #else
 	current_style = old_style;
 #endif
-
-	return;
 }
 
 static short count_total_lines(
@@ -1059,8 +1040,6 @@ static void teleport_to_level(
 	/* It doesn't matter which player we get. */
 	struct player_data *player= get_player_data(0);
 	
-	// LP change: won't be checking this
-	// assert(level_number != 0);
 	// LP change: moved down by 1 so that level 0 will be valid
 	player->teleporting_destination= -level_number - 1;
 	player->delay_before_teleport= TICKS_PER_SECOND/2; // delay before we teleport.
@@ -1093,8 +1072,6 @@ static void calculate_bounds_for_text_box(
 	{
 		calculate_bounds_for_object(frame, _draw_object_on_right, bounds, NULL);
 	}
-
-	return;
 }
 
 static void display_picture_with_text(
@@ -1230,7 +1207,6 @@ static void display_picture(
 		DrawText(temporary, 0, strlen(temporary));
 #elif defined(SDL)
 		const sdl_font_info *font = GetInterfaceFont(_computer_interface_title_font);
-		// const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
 		int width = text_width(temporary, font, styleNormal);
 		draw_text(world_pixels, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
@@ -1246,24 +1222,6 @@ static void fill_terminal_with_static(
 	Rect *bounds)
 {
 	(void) (bounds);
-	// dprintf("Filling with static;g");
-#ifdef OBSOLETE
-	static long seed= TickCount();
-	byte *base;
-	short x, y;
-	
-	base= base_address_of_gworld;
-	rowBytes= base_rowbytes;
-	for(y= bounds->top; y<bounds->bottom; ++y)
-	{
-		for(x= bounds->left; x<bounds->right; ++x)
-		{
-			(*base)++= BASE_STATIC_COLOR+(seed&7);
-			seed= (seed&1) ? ((seed>>1)^0xb400) : (seed>> 1);
-		}
-		base+= (rowBytes-width);
-	}
-#endif
 }
 
 #ifndef PREPROCESSING_CODE
@@ -1367,44 +1325,42 @@ static void draw_terminal_borders(
 	frame.left= data->left;
 	frame.right= data->right;
 		
-	// LP change:
 	if (!after_other_terminal_stuff)
 	{
-	/* Erase the rectangle.. */
-	_fill_screen_rectangle((screen_rectangle *) &frame, _black_color);
-	// LP addition:
+		/* Erase the rectangle.. */
+		_fill_screen_rectangle((screen_rectangle *) &frame, _black_color);
 	} else {
 
-	/* Now letterbox it if necessary */
-	frame.top+= data->vertical_offset;
-	frame.bottom-= data->vertical_offset;
+		/* Now letterbox it if necessary */
+		frame.top+= data->vertical_offset;
+		frame.bottom-= data->vertical_offset;
 	
-	/* Draw the top rectangle */
-	border= frame;
-	border.bottom= border.top+BORDER_HEIGHT;
-	_fill_screen_rectangle((screen_rectangle *) &border, _computer_border_background_text_color);
+		/* Draw the top rectangle */
+		border= frame;
+		border.bottom= border.top+BORDER_HEIGHT;
+		_fill_screen_rectangle((screen_rectangle *) &border, _computer_border_background_text_color);
 
-	/* Draw the top login header text... */
-	border.left += LABEL_INSET; border.right -= LABEL_INSET;
-	getcstr(temporary, strCOMPUTER_LABELS, top_message);
-	_draw_screen_text(temporary, (screen_rectangle *) &border, _center_vertical, _computer_interface_font, _computer_border_text_color);
-	get_date_string(temporary);
-	_draw_screen_text(temporary, (screen_rectangle *) &border, _right_justified | _center_vertical, 
-		_computer_interface_font, _computer_border_text_color);
+		/* Draw the top login header text... */
+		border.left += LABEL_INSET; border.right -= LABEL_INSET;
+		getcstr(temporary, strCOMPUTER_LABELS, top_message);
+		_draw_screen_text(temporary, (screen_rectangle *) &border, _center_vertical, _computer_interface_font, _computer_border_text_color);
+		get_date_string(temporary);
+		_draw_screen_text(temporary, (screen_rectangle *) &border, _right_justified | _center_vertical, 
+			_computer_interface_font, _computer_border_text_color);
 	
-	/* Draw the the bottom rectangle & text */
-	border= frame;
-	border.top= border.bottom-BORDER_HEIGHT;
-	_fill_screen_rectangle((screen_rectangle *) &border, _computer_border_background_text_color);
-	border.left += LABEL_INSET; border.right -= LABEL_INSET;
-	getcstr(temporary, strCOMPUTER_LABELS, bottom_left_message);
-	_draw_screen_text(temporary, (screen_rectangle *) &border, _center_vertical, _computer_interface_font, 
-		_computer_border_text_color);
-	getcstr(temporary, strCOMPUTER_LABELS, bottom_right_message);
-	_draw_screen_text(temporary, (screen_rectangle *) &border, _right_justified | _center_vertical, 
-		_computer_interface_font, _computer_border_text_color);
+		/* Draw the the bottom rectangle & text */
+		border= frame;
+		border.top= border.bottom-BORDER_HEIGHT;
+		_fill_screen_rectangle((screen_rectangle *) &border, _computer_border_background_text_color);
+		border.left += LABEL_INSET; border.right -= LABEL_INSET;
+		getcstr(temporary, strCOMPUTER_LABELS, bottom_left_message);
+		_draw_screen_text(temporary, (screen_rectangle *) &border, _center_vertical, _computer_interface_font, 
+			_computer_border_text_color);
+		getcstr(temporary, strCOMPUTER_LABELS, bottom_right_message);
+		_draw_screen_text(temporary, (screen_rectangle *) &border, _right_justified | _center_vertical, 
+			_computer_interface_font, _computer_border_text_color);
 	
-	// LP change: done with stuff for after the other rendering
+		// LP change: done with stuff for after the other rendering
 	}
 	
 	/* The screen rectangle minus the border.. */
@@ -1420,52 +1376,14 @@ static void next_terminal_state(
 
 	switch(terminal->state)
 	{
-#ifdef OBSOLETE
-	terminal_text_t *terminal_text;
-	
-		case _logging_in_terminal:
-			terminal->state= _reading_terminal;
-			terminal->phase= NONE; /* Different type.. */
-			/* Get the terminal text.. */
-			terminal_text= get_indexed_terminal_data(terminal->terminal_id);
-			// LP addition: quit if none
-			if (!terminal_text) return;
-			terminal->current_group= NONE;
-			next_terminal_group(player_index, terminal_text);
-			break;
-
-		case _logging_out_terminal:
-			terminal->state= _no_terminal_state;
-			terminal->phase= 0;
-			terminal->current_group= NONE;
-			terminal->current_line= 0;
-			terminal->maximum_line= 1; // any click or keypress will get us out.
-			initialize_player_terminal_info(player_index);
-			break;
-		case _reading_terminal:
-			terminal->state= _logging_out_terminal;
-			terminal->phase= LOG_DURATION_BEFORE_TIMEOUT;
-			terminal->current_group= NONE;
-			terminal->current_line= 0;
-			terminal->maximum_line= 1; // any click or keypress will get us out.
-			SET_TERMINAL_IS_DIRTY(terminal, true);
-#ifndef PREPROCESSING_CODE
-			play_object_sound(player->object_index, Sound_TerminalLogoff());
-#endif			
-#endif
 		case _reading_terminal:
 			initialize_player_terminal_info(player_index);
 			break;
 			
 		case _no_terminal_state:
 		default:
-			// LP change: do nothing
-			// vhalt(csprintf(temporary, "What is %d?", terminal->state));
-			// vwarn(false,csprintf(temporary, "What is %d?", terminal->state));
 			break;
 	}
-
-	return;
 }
 
 static bool previous_terminal_group(
@@ -1524,9 +1442,6 @@ static bool previous_terminal_group(
 						break;
 					
 					default:
-						// LP change: do nothing
-						// assert(false);
-						// halt();
 						break;
 				}
 			} else {
@@ -1584,10 +1499,6 @@ static void next_terminal_group(
 				break;
 			
 			default:
-				// LP change: do nothing
-				// vhalt(csprintf(temporary, "What is type %d?", 
-				// vwarn(false,csprintf(temporary, "What is type %d?", 
-				// 	terminal_data->level_completion_state));
 				break;
 		}
 
@@ -1609,8 +1520,6 @@ static void next_terminal_group(
 	}
 	
 	SET_TERMINAL_IS_DIRTY(terminal_data, true);
-
-	return;
 }
 
 static void goto_terminal_group(
@@ -1721,13 +1630,8 @@ static void goto_terminal_group(
 			break;
 			
 		default:
-			// LP change: do nothing
-			// assert(false);
-			// halt();
 			break;
 	}
-
-	return;
 }
 
 /* I'll use this function, almost untouched.. */
@@ -1847,8 +1751,6 @@ static void present_checkpoint_text(
 	// draw the text
 	calculate_bounds_for_text_box(frame, current_group->flags, &bounds);
 	draw_computer_text(&bounds, terminal_text, current_group_index, current_line);
-
-	return;
 }
 
 static bool find_checkpoint_location(
@@ -1880,9 +1782,6 @@ static bool find_checkpoint_location(
 		location->x /= match_count;
 		location->y /= match_count;
 		*polygon_index= world_point_to_polygon_index(location);
-		// LP change: made this much more correct
-		// assert(*polygon_index);
-		// success= true;
 		success = (*polygon_index != NONE);
 	}
 #else
@@ -2023,9 +1922,6 @@ static void handle_reading_terminal_keys(
 			break;
 
 		default:
-			// LP change: do nothing
-			// vhalt(csprintf(temporary, "What is group: %d", current_group->type));
-			// vwarn(false,csprintf(temporary, "What is group: %d", current_group->type));
 			break;
 	}
 
@@ -2381,8 +2277,6 @@ static void pre_build_groups(
 	(*group_count)= grp_count;
 	(*base_length)= data_length;
 	if(in_group) groups[grp_count].length= current_length;
-
-	return;
 }
 
 /* Return NONE if it doesn't matches.. */
@@ -2548,15 +2442,9 @@ static void calculate_maximum_lines_for_groups(
 				break;
 				
 			default:
-				// LP change: do nothing
-				// assert(false);
-				// halt();
 				break;
-
 		}
 	}
-
-	return;
 }
 #endif // End of preprocessing code
 

@@ -18,6 +18,7 @@
 	http://www.gnu.org/licenses/gpl.html
 
 */
+
 /*
  *  network_dialogs_sdl.cpp - Network game dialogs, SDL implementation
  *
@@ -1139,9 +1140,7 @@ join_processing_function(dialog* inDialog) {
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 	}
 
 	last_join_state = join_state;
@@ -1404,7 +1403,7 @@ static const char*    sTestingNames[] = {
         "Kissy Monster",
         "lala",
         "Prof. Windsurf",
-        "<<<-ZED-<<<"
+        "-ZED-"
 };
 
 // THIS ONE IS FAKE - used to test postgame report dialog without going through a game.

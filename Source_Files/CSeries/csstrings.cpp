@@ -23,17 +23,19 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 		c2pstr is obsolete and I didn't want to allocate the memory
 		to use CopyCStringToPascal
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 // LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 
 #if defined(TARGET_API_MAC_CARBON)
-    #include <Carbon/Carbon.h>
+# include <Carbon/Carbon.h>
 #else
-#include <Resources.h>
-#include <TextUtils.h>
+# include <Resources.h>
+# include <TextUtils.h>
 #endif
 
 #include "csstrings.h"
@@ -47,21 +49,7 @@ char temporary[256];
 short countstr(
 	short resid)
 {
-	// LP change: look in the string sets
 	return TS_CountStrings(resid);
-	
-	/*
-	Handle res;
-
-	res=GetResource('STR#',resid);
-	if (!res)
-		return 0;
-	if (!*res)
-		LoadResource(res);
-	if (!*res)
-		return 0;
-	return *(short *)*res;
-	*/
 }
 
 unsigned char *getpstr(
@@ -79,32 +67,6 @@ unsigned char *getpstr(
 		string[0] = 0;
 	}
 	return string;
-	
-/*
-	Handle res;
-	int i,cnt;
-	unsigned char *src;
-
-	res=GetResource('STR#',resid);
-	if (!res)
-		goto notfound;
-	if (!*res)
-		LoadResource(res);
-	if (!*res)
-		goto notfound;
-	cnt=*(short *)*res;
-	if (item<0 || item>=cnt)
-		goto notfound;
-	src=(unsigned char *)(*res+sizeof (short));
-	for (i=0; i<item; i++) {
-		src+=src[0]+1;
-	}
-	memcpy(string,src,src[0]+1);
-	return string;
-notfound:
-	string[0]=0;
-	return string;
-*/
 }
 
 char *getcstr(
@@ -123,34 +85,6 @@ char *getcstr(
 		string[0] = 0;
 	}
 	return string;
-	
-	/*
-	Handle res;
-	int i,cnt,len;
-	unsigned char *src;
-
-	res=GetResource('STR#',resid);
-	if (!res)
-		goto notfound;
-	if (!*res)
-		LoadResource(res);
-	if (!*res)
-		goto notfound;
-	cnt=*(short *)*res;
-	if (item<0 || item>=cnt)
-		goto notfound;
-	src=(unsigned char *)(*res+sizeof (short));
-	for (i=0; i<item; i++) {
-		src+=src[0]+1;
-	}
-	len=src[0];
-	memcpy(string,src+1,len);
-	string[len]=0;
-	return string;
-notfound:
-	string[0]=0;
-	return string;
-	*/
 }
 
 unsigned char *pstrcpy(
@@ -230,4 +164,3 @@ void fdprintf(
 	fprintf(FD,"\n");
 	fclose(FD);
 }
-

@@ -89,7 +89,6 @@ RenderVisTreeClass::RenderVisTreeClass():
 	EndpointClips.reserve(MAXIMUM_ENDPOINT_CLIPS);
 	LineClips.reserve(MAXIMUM_LINE_CLIPS);
 	ClippingWindows.reserve(MAXIMUM_CLIPPING_WINDOWS);
-	// Nodes.reserve(MAXIMUM_NODES);
 }
 
 
@@ -139,17 +138,12 @@ void RenderVisTreeClass::build_render_tree()
 	cast_render_ray(&view_edge, NONE, 0, _counterclockwise_bias);
 	short_to_long_2d(view->right_edge,view_edge);
 	cast_render_ray(&view_edge, NONE, 0, _clockwise_bias);
-	/*
-	cast_render_ray(view, &view->left_edge, NONE, nodes, _counterclockwise_bias);
-	cast_render_ray(view, &view->right_edge, NONE, nodes, _clockwise_bias);
-	*/
 	
 	/* pull polygons off the queue, fire at all their new endpoints, building the tree as we go */
 	while (polygon_queue_size)
 	{
 		short vertex_index;
 		short polygon_index= PolygonQueue[--polygon_queue_size];
-		// short polygon_index= polygon_queue[--polygon_queue_size];
 		polygon_data *polygon= get_polygon_data(polygon_index);
 		
 		assert(!POLYGON_IS_DETACHED(polygon));
@@ -163,13 +157,10 @@ void RenderVisTreeClass::build_render_tree()
 			{
 				// LP change: move toward correct handling of long distances
 				long_vector2d _vector;
-				// world_vector2d vector;
 				
 				/* transform all visited endpoints */
 				endpoint->transformed= endpoint->vertex;
-				// LP change
 				transform_overflow_point2d(&endpoint->transformed, (world_point2d *) &view->origin, view->yaw, &endpoint->flags);
-				// transform_point2d(&endpoint->transformed, (world_point2d *) &view->origin, view->yaw);
 
 				/* calculate an outbound vector to this endpoint */
 				// LP: changed to do long distance correctly.	
@@ -182,10 +173,8 @@ void RenderVisTreeClass::build_render_tree()
 				overflow_short_to_long_2d(endpoint->transformed,endpoint->flags,transformed_endpoint);
 				
 				if (transformed_endpoint.i>0)
-				// if (endpoint->transformed.x>0)
 				{
 					long x= view->half_screen_width + (transformed_endpoint.j*view->world_to_screen_x)/transformed_endpoint.i;
-					// long x= view->half_screen_width + (endpoint->transformed.y*view->world_to_screen_x)/endpoint->transformed.x;
 					
 					endpoint_x_coordinates[endpoint_index]= PIN(x, INT16_MIN, INT16_MAX);
 					SET_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed);
@@ -195,17 +184,13 @@ void RenderVisTreeClass::build_render_tree()
 					(we donÕt have to cast at points outside the cone) */
 				if ((view->right_edge.i*_vector.j - view->right_edge.j*_vector.i)<=0 && (view->left_edge.i*_vector.j - view->left_edge.j*_vector.i)>=0)
 				{
-					// LP change:
 					cast_render_ray(&_vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, 0, _no_bias);
-					// cast_render_ray(view, &vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, nodes, _no_bias);
 				}
 				
 				SET_RENDER_FLAG(endpoint_index, _endpoint_has_been_visited);
 			}
 		}
 	}
-	
-	return;
 }
 
 /* ---------- building the render tree */
@@ -216,7 +201,6 @@ void RenderVisTreeClass::cast_render_ray(
 	long_vector2d *_vector, // world_vector2d *vector,
 	short endpoint_index,
 	int ParentIndex, /* 0==root */
-	// node_data *parent, /* nodes==root */
 	short bias) /* _clockwise or _counterclockwise for walking endpoints */
 {
 	// LP: keep the parent-node pointer and index in sync with each other:
@@ -237,9 +221,7 @@ void RenderVisTreeClass::cast_render_ray(
 			if (clip_flags&_split_render_ray)
 			{
 				cast_render_ray(_vector, endpoint_index, ParentIndex, _clockwise_bias);
-				// cast_render_ray(vector, endpoint_index, parent, _clockwise_bias);
 				cast_render_ray(_vector, endpoint_index, ParentIndex, _counterclockwise_bias);
-				// cast_render_ray(vector, endpoint_index, parent, _counterclockwise_bias);
 				// LP: could have reallocated, so keep in sync!
 				node_data *parent =  &Nodes.front() + ParentIndex;
 			}
@@ -295,8 +277,6 @@ void RenderVisTreeClass::cast_render_ray(
 					
 					// Edit parent-node pointer also
 					parent =  &Nodes.front() + ParentIndex;
-					// if (parent != NULL)
-					//	parent = (node_data *)(NewNodePointer + (POINTER_CAST(parent) - OldNodePointer));
 
 					// CB: Find the node reference again, the old one may point to stale memory
 					for (node_reference= &parent->children;
@@ -305,10 +285,6 @@ void RenderVisTreeClass::cast_render_ray(
 						;
 				}
 				node = &Nodes[Length];		// The length here is the "old" length
-				/*
-				assert(node_count++<MAXIMUM_NODES);
-				node= next_node++;
-				*/
 				
 				*node_reference= node;
 				INITIALIZE_NODE(node, polygon_index, 0, parent, node_reference);
@@ -395,17 +371,11 @@ void RenderVisTreeClass::cast_render_ray(
 		}
 	}
 	while (polygon_index!=NONE);
-	
-	return;
 }
 
 void RenderVisTreeClass::initialize_polygon_queue()
 {
-	(void) (view);
-	
 	polygon_queue_size= 0;
-	
-	return;
 }
 
 
@@ -452,7 +422,6 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		world_point2d *vertex= &get_endpoint_data(endpoint_index)->vertex;
 		// LP change to make it more long-distance-friendly
 		CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(long(vertex->x)-long(origin->x))*_vector->j - CROSSPROD_TYPE(long(vertex->y)-long(origin->y))*_vector->i;
-		// long cross_product= (vertex->x-origin->x)*vector->j - (vertex->y-origin->y)*vector->i;
 		
 //		dprintf("p#%d, e#%d:#%d, SGN(cp)=#%d, state=#%d", *polygon_index, vertex_index, polygon->endpoint_indexes[vertex_index], SGN(cross_product), state);
 		
@@ -467,7 +436,6 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 						// LP change: resetting loop test
 						initial_vertex_index = vertex_index;
 						changed_state = true;
-						//
 						break;
 					
 					case _looking_counterclockwise_for_left_vertex: /* found the transition we were looking for */
@@ -501,7 +469,6 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 							// LP change: resetting loop test
 							initial_vertex_index = vertex_index;
 							changed_state = true;
-							//
 							break;
 					}
 				}
@@ -517,7 +484,6 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 						// LP change: resetting loop test
 						initial_vertex_index = vertex_index;
 						changed_state = true;
-						//
 						break;
 					
 					case _looking_clockwise_for_right_vertex: /* found the transition we were looking for */
@@ -562,7 +528,6 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 			if itÕs not transparent then we canÕt pass through it */
 		// LP change: added test for there being a polygon on the other side
 		if (LINE_IS_TRANSPARENT(line) && next_polygon_index != NONE)
-		// if (LINE_IS_TRANSPARENT(line))
 		{
 			polygon_data *next_polygon= get_polygon_data(next_polygon_index);
 			
@@ -626,9 +591,7 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 	{
 		line_data *line;
 		world_point2d *vertex;
-		// LP change:
 		CROSSPROD_TYPE cross_product;
-		// long cross_product;
 
 		*line_index= polygon->line_indexes[index];
 		*side_index= polygon->side_indexes[index];
@@ -651,15 +614,13 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 				case _clockwise_bias: index= WRAP_HIGH(index, polygon->vertex_count-1); break;
 				case _counterclockwise_bias: index= WRAP_LOW(index, polygon->vertex_count-1); break;
 				default:
-					// LP change:
 					assert(false);
-					// halt();
+					break;
 			}
 			
 			vertex= &get_endpoint_data(polygon->endpoint_indexes[index])->vertex;
 			// LP change: made more long-distance-friendly
 			cross_product= CROSSPROD_TYPE(long(vertex->x)-long(origin->x))*_vector->j - CROSSPROD_TYPE(long(vertex->y)-long(origin->y))*_vector->i;
-			// cross_product= (vertex->x-origin->x)*vector->j - (vertex->y-origin->y)*vector->i;
 			
 			if ((bias==_clockwise_bias&&cross_product>=0) || (bias==_counterclockwise_bias&&cross_product<=0))
 			{
@@ -682,82 +643,44 @@ void RenderVisTreeClass::initialize_render_tree()
 	Dummy.flags = 0;				// Fake initialization to shut up CW
 	Nodes.push_back(Dummy);
 	INITIALIZE_NODE(&Nodes.front(), view->origin_polygon_index, 0, NULL, NULL);
-	/*
-	node_count= 1;
-	next_node= nodes+1;
-	INITIALIZE_NODE(nodes, view->origin_polygon_index, 0, (struct node_data *) NULL, (struct node_data **) NULL);
-	*/
-	
-	return;
 }
 
 /* ---------- initializing and calculating clip data */
 
 void RenderVisTreeClass::initialize_clip_data()
 {
-	// LP change:
 	ResetEndpointClips();
-	/*
-	next_endpoint_clip_index= NUMBER_OF_INITIAL_ENDPOINT_CLIPS;
-	next_endpoint_clip= endpoint_clips + NUMBER_OF_INITIAL_ENDPOINT_CLIPS;
-	*/
 	
 	/* set two default endpoint clips (left and right sides of screen) */
 	{
 		endpoint_clip_data *endpoint;
 		
-		// LP change:
 		endpoint= &EndpointClips[indexLEFT_SIDE_OF_SCREEN];
-		// endpoint= endpoint_clips + indexLEFT_SIDE_OF_SCREEN;
 		endpoint->flags= _clip_left;
-		// LP change:
 		short_to_long_2d(view->untransformed_left_edge,endpoint->vector);
-		// endpoint->vector= view->untransformed_left_edge;
 		endpoint->x= 0;
 
-		// LP change:
 		endpoint= &EndpointClips[indexRIGHT_SIDE_OF_SCREEN];
-		// endpoint= endpoint_clips + indexLEFT_SIDE_OF_SCREEN;
 		endpoint->flags= _clip_right;
-		// LP change:
 		short_to_long_2d(view->untransformed_right_edge,endpoint->vector);
-		// endpoint->vector= view->untransformed_right_edge;
 		endpoint->x= view->screen_width;
 	}
 	
-	// LP change:
 	ResetLineClips();
-	/*
-	next_line_clip_index= NUMBER_OF_INITIAL_LINE_CLIPS;
-	next_line_clip= line_clips + NUMBER_OF_INITIAL_LINE_CLIPS;
-	*/
-	
+
 	/* set default line clip (top and bottom of screen) */
 	{
-		// LP change:
 		line_clip_data *line= &LineClips[indexTOP_AND_BOTTOM_OF_SCREEN];
-		// struct line_clip_data *line= line_clips + indexTOP_AND_BOTTOM_OF_SCREEN;
 
 		line->flags= _clip_up|_clip_down;
 		line->x0= 0;
 		line->x1= view->screen_width;
-		// LP change:
 		line->top_y= 0; short_to_long_2d(view->top_edge,line->top_vector);
 		line->bottom_y= view->screen_height; short_to_long_2d(view->bottom_edge,line->bottom_vector);
-		/*
-		line->top_y= 0, line->top_vector= view->top_edge;
-		line->bottom_y= view->screen_height, line->bottom_vector= view->bottom_edge;
-		*/
 	}
 
 	// LP change:
 	ClippingWindows.clear();
-	/*
-	next_clipping_window_index= 0;
-	next_clipping_window= clipping_windows;
-	*/
-	
-	return;
 }
 
 void RenderVisTreeClass::calculate_line_clipping_information(
@@ -778,7 +701,6 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	world_point2d p1_orig= get_endpoint_data(line->endpoint_indexes[1])->vertex;
 	// LP addition: place for new line data
 	line_clip_data *data= &LineClips[LastIndex];
-	// struct line_clip_data *data= next_line_clip++;
 
 	/* itÕs possible (in fact, likely) that this lineÕs endpoints have not been transformed yet,
 		so we have to do it ourselves */
@@ -786,10 +708,6 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	uint16 p0_flags = 0, p1_flags = 0;
 	transform_overflow_point2d(&p0_orig, (world_point2d *) &view->origin, view->yaw, &p0_flags);
 	transform_overflow_point2d(&p1_orig, (world_point2d *) &view->origin, view->yaw, &p1_flags);
-	/*
-	transform_point2d(&p0, (world_point2d *) &view->origin, view->yaw);
-	transform_point2d(&p1, (world_point2d *) &view->origin, view->yaw);	
-	*/
 	
 	// Defining long versions here and copying over
 	long_point2d p0, p1;
@@ -799,14 +717,10 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	
 	clip_flags&= _clip_up|_clip_down;	
 	assert(clip_flags&(_clip_up|_clip_down));
-	// LP change:
-	// assert(next_line_clip_index<MAXIMUM_LINE_CLIPS);
 	assert(!TEST_RENDER_FLAG(line_index, _line_has_clip_data));
 
 	SET_RENDER_FLAG(line_index, _line_has_clip_data);
-	// LP change:
 	line_clip_indexes[line_index]= LastIndex;
-	// line_clip_indexes[line_index]= next_line_clip_index++;
 	
 	data->flags= 0;
 
@@ -814,7 +728,6 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	{
 		// LP change:
 		long_point2d *p;
-		// world_point2d *p;
 		world_distance z;
 		long transformed_z;
 		long y, y0, y1;
@@ -881,8 +794,6 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 //			dprintf("line #%d clips %x @ %p", line_index, clip_flags, data);
 		}
 	}
-
-	return;
 }
 
 /* we can actually rely on the given endpoint being transformed because we only set clipping
@@ -900,13 +811,9 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	short LastIndex = Length-1;
 
 	endpoint_data *endpoint= get_endpoint_data(endpoint_index);
-	// LP change:
 	endpoint_clip_data *data= &EndpointClips[LastIndex];
-	// struct endpoint_clip_data *data= next_endpoint_clip++;
 	long x;
 
-	// LP change:
-	// assert(next_endpoint_clip_index<MAXIMUM_ENDPOINT_CLIPS);
 	assert((clip_flags&(_clip_left|_clip_right))); /* must have a clip flag */
 	assert((clip_flags&(_clip_left|_clip_right))!=(_clip_left|_clip_right)); /* but canÕt have both */
 	assert(!TEST_RENDER_FLAG(endpoint_index, _endpoint_has_clip_data));
@@ -922,18 +829,10 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 		case _clip_left:
 			data->vector.i= transformed_endpoint.i;
 			data->vector.j= transformed_endpoint.j;
-			/*
-			data->vector.i= endpoint->transformed.x;
-			data->vector.j= endpoint->transformed.y;
-			*/
 			break;
 		case _clip_right: /* negatives so we clip to the correct side */
 			data->vector.i= -transformed_endpoint.i;
 			data->vector.j= -transformed_endpoint.j;
-			/*
-			data->vector.i= -endpoint->transformed.x;
-			data->vector.j= -endpoint->transformed.y;
-			*/
 			break;
 	}
 	warn(data->vector.i);
@@ -943,9 +842,7 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 
 	data->x= PIN(x, 0, view->screen_width);
 	
-	// LP change:
 	return LastIndex;
-	// return next_endpoint_clip_index++;
 }
 
 // LP addition: resetters for some of the lists:

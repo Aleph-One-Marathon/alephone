@@ -135,8 +135,6 @@ void do_preferences(
 	{
 		change_screen_mode(&graphics_preferences->screen_mode, false);
 	}
-	
-	return;
 }
 
 short get_level_number_from_user(
@@ -225,9 +223,7 @@ short get_level_number_from_user(
 				break;
 				
 			default:
-				// LP change:
 				assert(false);
-				// halt();
 				break;
 		}
 	}
@@ -314,8 +310,6 @@ void toggle_menus(
 #endif
 		}
 	}
-
-	return;
 }
 
 void update_game_window(
@@ -350,13 +344,9 @@ void update_game_window(
 			break;
 	
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
-	
-	return;
 }
 	
 void process_game_key(
@@ -454,13 +444,9 @@ void process_game_key(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
-
-	return;
 }	
 
 bool try_for_event(
@@ -586,180 +572,6 @@ bool has_cheat_modifiers(
 	return cheat;
 }
 
-#ifdef OBSOLETE
-static GWorldPtr main_menu_pressed= NULL;
-static GWorldPtr main_menu_unpressed= NULL;
-
-extern short interface_bit_depth;
-
-/* Create the two gworlds */
-void load_main_menu_buffers(
-	short base_id)
-{
-	OSErr error;
-	Rect bounds;
-	PicHandle picture;
-	
-	assert(main_menu_unpressed==NULL && main_menu_pressed==NULL);
-
-	/* Determine the pictures bounds... */	
-	picture= get_picture_resource_from_images(base_id);
-	assert(picture);
-	bounds= (*picture)->picFrame;
-	OffsetRect(&bounds, -bounds.left, -bounds.top);
-
-	error= NewGWorld(&main_menu_unpressed, interface_bit_depth, &bounds, 
-		NULL, world_device, noNewDevice);
-	assert(!error && main_menu_unpressed);
-
-	/* Draw it and release it.. */
-	draw_picture_into_gworld(main_menu_unpressed, picture);
-
-	/* Create the other gworld */	
-	error= NewGWorld(&main_menu_pressed, interface_bit_depth, &bounds, 
-		(CTabHandle) NULL, world_device, noNewDevice);
-	assert(!error && main_menu_pressed);
-
-	picture= get_picture_resource_from_images(base_id+1);
-	assert(picture);
-	draw_picture_into_gworld(main_menu_pressed, picture);
-		
-	return;
-}
-
-bool main_menu_buffers_loaded(
-	void)
-{
-	return (main_menu_unpressed!=NULL);
-}
-
-void main_menu_bit_depth_changed(
-	short base_id)
-{
-	free_main_menu_buffers();
-	load_main_menu_buffers(base_id);
-	
-	return;
-}
-
-void free_main_menu_buffers(
-	void)
-{
-	assert(main_menu_unpressed && main_menu_pressed);
-	DisposeGWorld(main_menu_unpressed);
-	DisposeGWorld(main_menu_pressed);
-	
-	main_menu_pressed= main_menu_unpressed= NULL;
-	
-	return;
-}
-
-void draw_main_menu(
-	void)
-{
-	PixMapHandle pixmap;
-	bool locked;
-	GrafPtr old_port;
-	Rect source_bounds, dest_bounds;
-	
-	assert(main_menu_pressed && main_menu_unpressed);
-	
-	GetPort(&old_port);
-	SetPort(screen_window);
-
-	source_bounds= dest_bounds= main_menu_pressed->portRect;
-	AdjustRect(&screen_window->portRect, &dest_bounds, &dest_bounds, centerRect);
-	OffsetRect(&dest_bounds, dest_bounds.left<0 ? -dest_bounds.left : 0, dest_bounds.top<0 ? -dest_bounds.top : 0);
-	
-	pixmap= GetGWorldPixMap(main_menu_unpressed);
-	assert(pixmap);
-	locked= LockPixels(pixmap);
-	assert(locked);
-	CopyBits((BitMapPtr)*main_menu_unpressed->portPixMap, &screen_window->portBits,
-		&source_bounds, &dest_bounds, srcCopy, (RgnHandle) NULL);
-	UnlockPixels(pixmap);
-
-	SetPort(old_port);
-
-	return;	
-}
-
-void draw_menu_button(
-	short index, 
-	bool pressed)
-{
-	screen_rectangle *screen_rect= get_interface_rectangle(index);
-	PixMapHandle pixmap;
-	bool locked;
-	GrafPtr old_port;
-	GWorldPtr source_world;
-
-	if(!main_menu_buffers_loaded())
-	{
-		load_main_menu_buffers(1100); //ееее
-	}
-	
-	assert(main_menu_pressed && main_menu_unpressed);
-	
-	if(pressed)
-	{
-		source_world= main_menu_pressed;
-	} else {
-		source_world= main_menu_unpressed;
-	}
-	
-	GetPort(&old_port);
-	SetPort(screen_window);
-	
-	pixmap= GetGWorldPixMap(source_world);
-	locked= LockPixels(pixmap);
-	assert(locked);
-	CopyBits((BitMapPtr)*source_world->portPixMap, &screen_window->portBits,
-		(Rect *) screen_rect, (Rect *) screen_rect, srcCopy, (RgnHandle) NULL);
-	UnlockPixels(pixmap);
-
-	SetPort(old_port);
-
-	return;
-}
-
-static void draw_picture_into_gworld(
-	GWorldPtr gworld,
-	PicHandle picture)
-{
-	if (picture)
-	{
-		Rect bounds;
-		GWorldPtr old_world;
-		GDHandle old_device;
-		PixMapHandle pixmap;
-		bool locked;
-	
-		GetGWorld(&old_world, &old_device);
-		SetGWorld(gworld, NULL);
-		pixmap= GetGWorldPixMap(gworld);
-		assert(pixmap);
-		locked= LockPixels(pixmap);
-		assert(locked);
-		
-		bounds= (*picture)->picFrame;
-		AdjustRect(&gworld->portRect, &bounds, &bounds, centerRect);
-		OffsetRect(&bounds, bounds.left<0 ? -bounds.left : 0, bounds.top<0 ? -bounds.top : 0);
-
-		HLock((Handle) picture);
-		DrawPicture(picture, &bounds);
-		HUnlock((Handle) picture);
-		
-		UnlockPixels(pixmap);
-		SetGWorld(old_world, old_device);
-				
-		ReleaseResource((Handle) picture);
-	}
-
-	return;
-}
-#endif
-
 #if defined(TARGET_API_MAC_CARBON)
 static volatile int cursor_showing = -1;
 #endif
@@ -787,8 +599,6 @@ void hide_cursor(
 #else
 	HideCursor();
 #endif
-
-	return;
 }
 
 void show_cursor(
@@ -809,8 +619,6 @@ void show_cursor(
 #else
 	InitCursor(); // why worry about balancing?
 #endif
-
-	return;
 }
 
 bool mouse_still_down(
@@ -827,8 +635,6 @@ void get_mouse_position(
 	
 	GetMouse(&p);
 	*x= p.h; *y= p.v;
-	
-	return;
 }
 
 void set_drawing_clip_rectangle(
@@ -841,8 +647,6 @@ void set_drawing_clip_rectangle(
 	
 	SetRect(&rectangle, left, top, right, bottom);
 	ClipRect(&rectangle);
-
-	return;
 }
 
 void show_movie(
@@ -969,14 +773,10 @@ void show_movie(
 		
 						CloseMovieFile(resRefNum); // reference to movie file
 					}
-					
-					// ExitMovies();
 				}
 			}
 		}
 	}
-
-	return;
 }
 
 // "Has Quicktime" test moved to shell_macintosh.cpp

@@ -134,9 +134,6 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 
 #define LARGEST_N 24
 
-// LP: LANDSCAPE_REPEAT_BITS is defined later;
-// (1 << LANDSCAPE_REPEAT_BITS) is the number of landscape repeats
-
 /* ---------- texture horizontal polygon */
 
 #define HORIZONTAL_WIDTH_SHIFT 7 /* 128 (8 for 256) */
@@ -328,8 +325,6 @@ void allocate_texture_tables(
 	scratch_table1= new short[MAXIMUM_SCRATCH_TABLE_ENTRIES];
 	precalculation_table= malloc(MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE*MAXIMUM_SCRATCH_TABLE_ENTRIES);
 	assert(scratch_table0&&scratch_table1&&precalculation_table);
-
-	return;
 }
 
 void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& textured_polygon)
@@ -483,9 +478,8 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 						break;
 						
 					default:
-						// LP change:
 						assert(false);
-						// halt();
+						break;
 				}
 				break;
 
@@ -502,9 +496,8 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 						break;
 					
 					default:
-						// LP change:
 						assert(false);
-						// halt();
+						break;
 				}
 				break;
 
@@ -522,20 +515,16 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 						break;
 					
 					default:
-						// LP change:
 						assert(false);
-						// halt();
+						break;
 				}
 				break;
 
 			default:
-				// LP change:
 				assert(false);
-				// halt();
+				break;
 		}
 	}
-	
-	return;
 }
 
 void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_polygon)
@@ -674,9 +663,8 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 						break;
 					
 					default:
-						// LP change:
 						assert(false);
-						// halt();
+						break;
 				}
 				break;
 				
@@ -696,9 +684,8 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 						break;
 
 					default:
-						// LP change:
 						assert(false);
-						// halt();
+						break;
 				}
 				break;
 			
@@ -718,20 +705,16 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 						break;
 
 					default:
-						// LP change:
 						assert(false);
-						// halt();
+						break;
 				}
 				break;
 			
 			default:
-				// LP change:
 				assert(false);
-				// halt();
+				break;
 		}
 	}
-	
-	return;
 }
 
 void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_rectangle)
@@ -826,7 +809,6 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 							// LP change:
 							// Made this more long-distance friendly
 							CALCULATE_SHADING_TABLE(shading_table, view, rectangle->shading_tables, (short)MIN(rectangle->depth, SHRT_MAX), rectangle->ambient_shade);
-							// CALCULATE_SHADING_TABLE(shading_table, view, rectangle->shading_tables, rectangle->depth, rectangle->ambient_shade);
 							break;
 						}
 						/* if shadeless, fall through to a single shading table, ignoring depth */
@@ -845,10 +827,8 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 					// CB: first/last are stored in big-endian order
 					uint16 first = *read++ << 8;
 					first |= *read++;
-//					short first= *(int16*)read; read = (int16 *)read + 1;
 					uint16 last = *read++ << 8;
 					last |= *read++;
-//					short last= *(int16*)read; read = (int16 *)read + 1;
 					_fixed texture_y= texture_y0;
 					short y0= rectangle->clip_top, y1= rectangle->clip_bottom;
 					
@@ -907,9 +887,8 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 								break;
 							
 							default:
-								// LP change:
 								assert(false);
-								// halt();
+								break;
 						}
 						break;
 		
@@ -932,9 +911,8 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 								break;
 							
 							default:
-								// LP change:
 								assert(false);
-								// halt();
+								break;
 						}
 						break;
 		
@@ -957,22 +935,18 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 								break;
 							
 							default:
-								// LP change:
 								assert(false);
-								// halt();
+								break;
 						}
 						break;
 		
 					default:
-						// LP change:
 						assert(false);
-						// halt();
+						break;
 				}
 			}
 		}
 	}
-
-	return;
 }
 
 /* generate code for 8-bit texture-mapping */
@@ -1008,8 +982,6 @@ static void preprocess_landscaped_polygon(
 	polygon->vector.k= -WORLD_ONE;
 
 	polygon->ambient_shade= FIXED_ONE;
-	
-	return;
 }
 
 #endif
@@ -1052,7 +1024,6 @@ static void _pretexture_vertical_polygon_lines(
 		// LP change: made this quantity more long-distance friendly;
 		// have to avoid doing INTEGER_TO_FIXED on this one, however
 		int32 world_x;
-		// world_distance world_x;
 		short x0, y0= *y0_table++, y1= *y1_table++;
 		short screen_y0= view->half_screen_height-y0+view->dtanpitch;
 		int32 ty_numerator, ty_denominator;
@@ -1106,7 +1077,6 @@ static void _pretexture_vertical_polygon_lines(
 		}
 		ty_delta= - INTEGER_TO_FIXED(adjusted_world_x)/adjusted_ty_denominator;
 		
-		// ty_delta= - INTEGER_TO_FIXED(world_x)/(unadjusted_ty_denominator>>8);
 		vassert(ty_delta>=0, csprintf(temporary, "ty_delta=W2F(%d)/%d=%d", world_x, unadjusted_ty_denominator, ty_delta));
 
 		/* calculate the shading table for this column */
@@ -1137,8 +1107,6 @@ static void _pretexture_vertical_polygon_lines(
 		
 		screen_x+= 1;
 	}
-	
-	return;
 }
 
 static void _pretexture_horizontal_polygon_lines(
@@ -1226,8 +1194,6 @@ static void _pretexture_horizontal_polygon_lines(
 		data+= 1;
 		y0+= 1;
 	}
-	
-	return;
 }
 
 
@@ -1245,7 +1211,6 @@ static void _prelandscape_horizontal_polygon_lines(
 {
 	// LP change: made this more general:
 	short landscape_width_bits= NextLowerExponent(polygon->texture->height);
-	// short landscape_width_bits= polygon->texture->height==1024 ? 10 : 9;
 	short texture_height= polygon->texture->width;
 	_fixed ambient_shade= FIXED_ONE; // MPW C died if we passed the constant directly to the macro
 
@@ -1255,10 +1220,8 @@ static void _prelandscape_horizontal_polygon_lines(
 	// LP change: separate horizontal and vertical pixel deltas:
 	// LP change: using a "landscape yaw" that's at the left edge of the screen.
 	_fixed first_horizontal_pixel= (view->landscape_yaw + LandOpts->Azimuth)<<(landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS);
-	// fixed first_pixel= view->yaw<<(landscape_width_bits+LANDSCAPE_REPEAT_BITS+FIXED_FRACTIONAL_BITS-ANGULAR_BITS);
 	_fixed horizontal_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
 	_fixed vertical_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->VertExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
-	// fixed pixel_delta= (view->half_cone<<(1+landscape_width_bits+LANDSCAPE_REPEAT_BITS+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
 	short landscape_free_bits= 32-FIXED_FRACTIONAL_BITS-landscape_width_bits;
 	void *shading_table;
 	
@@ -1297,19 +1260,13 @@ static void _prelandscape_horizontal_polygon_lines(
 			y_txtr_offset = ((y_txtr_offset + height_repeat_shift) & height_repeat_mask) -
 				height_repeat_shift;
 		data->source_y= texture_height - PIN(y_txtr_offset + height_shift, 0, height_reduced) - 1;
-		// data->source_y= FIXED_INTEGERAL_PART(y0*pixel_delta) + (texture_height>>1);
-		// data->source_y= texture_height - PIN(data->source_y, 0, texture_height-1) - 1;
 		// LP change: using horizontal pixel delta
 		data->source_x= (first_horizontal_pixel + x0*horizontal_pixel_delta)<<landscape_free_bits;
 		data->source_dx= horizontal_pixel_delta<<landscape_free_bits;
-		// data->source_x= (first_pixel + x0*pixel_delta)<<landscape_free_bits;
-		// data->source_dx= pixel_delta<<landscape_free_bits;
 		
 		data+= 1;
 		y0+= 1;
 	}
-	
-	return;
 }
 
 /* y0<y1; this is for vertical polygons */
@@ -1330,7 +1287,6 @@ static short *build_x_table(
 	dy= y1-y0, ady= ABS(dy), dy= SGN(dy);
 
 	assert(ady<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* can't overflow table */
-//	vassert(dy>=0, csprintf(temporary, "dy must be positive, (%d,%d) to (%d,%d)", x0, y0, x1, y1));
 	if (dy>0)
 	{
 		/* setup initial (x,y) location and initialize a pointer to our table */
@@ -1389,7 +1345,6 @@ static short *build_y_table(
 	dy= y1-y0, ady= ABS(dy), dy= SGN(dy);
 
 	assert(adx<MAXIMUM_SCRATCH_TABLE_ENTRIES); /* can't overflow table */
-//	vassert(dx>=0, csprintf(temporary, "dx must be positive, (%d,%d) to (%d,%d)", x0, y0, x1, y1));
 	if (dx>=0) /* vertical lines allowed */
 	{
 		/* setup initial (x,y) location and initialize a pointer to our table */
@@ -1437,165 +1392,3 @@ static short *build_y_table(
 	
 	return table;
 }
-
-#ifdef OBSOLETE /* unnecessary, but do not delete */
-/* clip_low<clip_high in destination units; this function builds a table of source coordinates
-	for each unclipped destination coordinate (the landscape mapper and the object mapper
-	will both use this to build y-coordinate lookup tables) */
-static short *build_distortion_table(
-	short *table,
-	short source,
-	short destination,
-	short clip_low,
-	short clip_high,
-	bool mirror)
-{
-	register short i;
-	short count, source_coordinate;
-	register fixed d, delta_d, d_max;
-	register short *record;
-	
-	assert(clip_low<=clip_high);
-	if (clip_low<0) clip_low= 0;
-	if (clip_high>destination) clip_high= destination;
-	
-	/* initialize d, delta_d, d_max */
-	d= 2*destination - source;
-	delta_d= 2*source;
-	d_max= 2*destination;
-	
-	/* if unclipped, we'll generation translation entries for every destination pixel */
-	count= destination;
-	
-	/* if unclipped we'll start at source==0 */
-	source_coordinate= 0;
-	
-	/* even marginally clever editing of d_max and delta_d with the addition of a new
-		source_coordinate_delta variable would allow us to change the while (d<=0) loop
-		into an if (d<=0) below */
-
-	if (mirror)
-	{
-		short low_clipped_pixels= clip_low, high_clipped_pixels= destination-clip_high;
-		clip_low= high_clipped_pixels, clip_high= destination-low_clipped_pixels;
-	}
-
-	/* handle high clipping by adjusting count */
-	if (clip_high<destination) count-= destination-clip_high;
-	
-	/* handle low clipping by adjusting d, count, source_coordinate */
-	if (clip_low>0)
-	{
-		d-= clip_low*delta_d;
-		if (d<=0)
-		{
-			short n= 1 - d/d_max;
-		
-			d+= n*d_max;
-			source_coordinate+= n;
-		}
-
-		count-= clip_low;
-	}
-
-	for (i=count,record=mirror?table+count:table;i>0;--i)
-	{
-		while (d<=0) source_coordinate+= 1, d+= d_max;
-		if (mirror) *--record= source_coordinate; else *record++= source_coordinate;
-		d-= delta_d;
-	}
-
-	if (count)
-	{
-		if (table[0]<0 || table[0]>=source || table[count-1]<0 || table[count-1]>=source)
-		{
-			dprintf("%d==>%d [%d/%d==>%d] at %p", source, destination, clip_low, clip_high, count, table);
-		}
-	}
-	
-//	if (destination<20) dprintf("table %d-->%d (cliped to %d);dm #%d #%d;", source, destination, fuck, table, fuck*sizeof(short));
-	
-	return table;
-}
-#endif
-
-#ifdef OBSOLETE /* replaced by macro */
-/* a negative ambient_shade is interpreted as an absolute shade, and is not modified by depth
-	shading */
-void *calculate_shading_table(
-	struct view_data *view,
-	void *shading_tables,
-	world_distance depth,
-	fixed ambient_shade)
-{
-	short table_index;
-	int32 shading_table_size;
-	
-	switch (bit_depth)
-	{
-		case 8: shading_table_size= PIXEL8_MAXIMUM_COLORS*sizeof(pixel8); break;
-		case 16: shading_table_size= PIXEL8_MAXIMUM_COLORS*sizeof(pixel16); break;
-		default:
-			// LP change:
-			assert(false);
-			// halt();
-	}
-
-#ifdef env68k
-	/* eventually the shading function will depend on something in the view_data structure
-		(and this will replace the DEPTH_TO_SHADE macro) */
-	(void) (view);
-#endif
-
-	if (ambient_shade<0)
-	{
-		assert(ambient_shade>=-FIXED_ONE);
-		table_index= SHADE_TO_SHADING_TABLE_INDEX(-ambient_shade);
-	}
-	else
-	{
-		/* calculate shading index due to viewer’s depth, adjust it according to FIRST_ and
-			LAST_SHADING_TABLE, then take whichever of this index or the index due to the
-			ambient shade is higher */
-		table_index= SHADE_TO_SHADING_TABLE_INDEX(DEPTH_TO_SHADE(depth));
-		table_index= LAST_SHADING_TABLE-PIN(table_index, FIRST_SHADING_TABLE, LAST_SHADING_TABLE);
-		table_index= MAX(SHADE_TO_SHADING_TABLE_INDEX(ambient_shade), table_index);
-	}
-
-	/* calculate and return exact shading table */
-	return ((byte*)shading_tables) + shading_table_size*CEILING(table_index, number_of_shading_tables-1);
-}
-#endif
-
-#if OBSOLETE_CLIPPING
-		/* fake clipping */
-		{
-			short i;
-
-			high_point= vertices[highest_vertex].y;
-			
-			for (i=0;i<aggregate_total_line_count;++i)
-			{
-				if (left_table[i]<0) left_table[i]= 0;
-				if (right_table[i]>screen->width) right_table[i]= screen->width;
-				if (left_table[i]<polygon->clip_left) left_table[i]= polygon->clip_left;
-				if (right_table[i]>polygon->clip_right) right_table[i]= polygon->clip_right-1;
-			}
-
-			if (vertices[highest_vertex].y<0)
-			{
-				aggregate_total_line_count+= vertices[highest_vertex].y;
-				left_table-= vertices[highest_vertex].y;
-				right_table-= vertices[highest_vertex].y;
-				
-				high_point= 0; /* ow */
-			}
-			
-			if (vertices[lowest_vertex].y>screen->height)
-			{
-				aggregate_total_line_count-= vertices[lowest_vertex].y-screen->height;
-			}
-
-			if (aggregate_total_line_count<=0) return;
-		}
-#endif

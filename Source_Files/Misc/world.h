@@ -194,7 +194,6 @@ world_point3d *transform_point3d(world_point3d *point, world_point3d *origin, an
 /* angle is in [0,NUMBER_OF_ANGLES), or, [0,2¹) */
 // LP change: made this long-distance friendly
 angle arctangent(int32 x, int32 y);
-// angle arctangent(world_distance x, world_distance y);
 
 void set_random_seed(uint16 seed);
 uint16 get_random_seed(void);

@@ -131,34 +131,20 @@ void OverheadMap_QD_Class::draw_player(
 	// if so, then will render a line
 	
 	// Get the scale back
-	/*
-	short scale = (OVERHEAD_MAP_MAXIMUM_SCALE-shrink);
-	if (scale < 2)
-	{
-		MoveTo(triangle[0].x, triangle[0].y);
-		if (triangle[1].x != triangle[0].x || triangle[1].y != triangle[0].y)
-			LineTo(triangle[1].x, triangle[1].y);
-		else
-			LineTo(triangle[2].x, triangle[2].y);
-	}
-	else
-	*/
-	{
-		polygon= OpenPoly();
-		MoveTo(triangle[2].x, triangle[2].y);
-		for (i=0;i<3;++i) LineTo(triangle[i].x, triangle[i].y);
-		ClosePoly();
-		PenSize(1, 1);		// LP: need only 1-pixel thickness of line
+	polygon= OpenPoly();
+	MoveTo(triangle[2].x, triangle[2].y);
+	for (i=0;i<3;++i) LineTo(triangle[i].x, triangle[i].y);
+	ClosePoly();
+	PenSize(1, 1);		// LP: need only 1-pixel thickness of line
 #if defined(USE_CARBON_ACCESSORS)
-                Pattern black;
-                GetQDGlobalsBlack(&black);
-		FillPoly(polygon, &black);
+	Pattern black;
+	GetQDGlobalsBlack(&black);
+	FillPoly(polygon, &black);
 #else
-		FillPoly(polygon, &qd.black);
+	FillPoly(polygon, &qd.black);
 #endif
-		FramePoly(polygon);	// LP addition: perimeter drawing makes small version easier to see
-		KillPoly(polygon);
-	}
+	FramePoly(polygon);	// LP addition: perimeter drawing makes small version easier to see
+	KillPoly(polygon);
 }
 	
 // Text justification: 0=left, 1=center

@@ -76,12 +76,6 @@ void RenderSortPolyClass::initialize_sorted_render_tree()
 {
 	// LP change: sorted nodes a growable list
 	SortedNodes.clear();
-	/*
-	sorted_node_count= 0;
-	next_sorted_node= sorted_nodes;
-	*/
-	
-	return;
 }
 
 /*
@@ -93,14 +87,6 @@ pick a leaf polygon
 		if it is, pull it off the tree (destructively) and accumulate it’s clipping information
 			pick the one of the node’s siblings (or it’s parent if it has none) to handle next
 */
-
-// LP change: this is the source of transparent-line errors;
-// this has been increased to 32 (the value in the Win32 version)
-// Feb 1, 2000: Suppressed because of use of growable-list
-// MacOS-version value:
-// #define MAXIMUM_NODE_ALIASES 20
-// Win32-version value:
-// #define MAXIMUM_NODE_ALIASES 32
 
 void RenderSortPolyClass::sort_render_tree()
 {
@@ -117,18 +103,12 @@ void RenderSortPolyClass::sort_render_tree()
 	{
 		// LP change: no more growable list of aliases,
 		// due to the sorted-polygon-tree structure of the nodes.
-		/*
-		short alias_count= 0;
-		struct node_data *aliases[MAXIMUM_NODE_ALIASES];
-		*/
 		bool leaf_has_children= false; /* i.e., it’s not a leaf */
 		node_data *node;
 
 		/* if we don’t have a leaf, find one */
 		if (!leaf)
-			// LP change:
 			for (leaf= &Nodes.front(); leaf->children; leaf= leaf->children)
-			// for (leaf= nodes; leaf->children; leaf= leaf->children)
 				;
 		last_leaf= leaf;
 		
@@ -186,50 +166,6 @@ void RenderSortPolyClass::sort_render_tree()
 			}
 		}
 		
-		/*
-		// LP change: don't need this linear-search code anymore,
-		// thanx to Rhys Hill's insights on how to construct self-sorting objects.
-		for (node= Nodes.Begin(); node<Nodes.End(); ++node)
-		// for (node= nodes; node<next_node; ++node)
-		{
-			if (node->polygon_index==leaf->polygon_index)
-			{
-				// LP change: using node-alias growable list				
-				assert(NodeAliases.Add(node));
-				
-				if (node->children)
-				{
-					leaf_has_children= true;
-					break;
-				}
-				if (alias_count<MAXIMUM_NODE_ALIASES)
-				{
-					aliases[alias_count++]= node;
-					
-					if (node->children)
-					{
-						leaf_has_children= true;
-						break;
-					}
-				}
-#ifdef DEBUG
-				else
-				{
-					dprintf("exceeded MAXIMUM_NODE_ALIASES; this sucks, Beavis.");
-					return;
-				}
-// LP: Added alternative way of handling this
-#else
-				else
-				{
-					assert(alias_count<MAXIMUM_NODE_ALIASES);
-					return;
-				}
-#endif
-			}
-		}
-		*/
-		
 		if (leaf_has_children) /* something was in our way; see if we can take it out instead */
 		{
 			leaf= node->children;
@@ -241,7 +177,6 @@ void RenderSortPolyClass::sort_render_tree()
 			
 //			dprintf("removed polygon #%d (#%d aliases)", leaf->polygon_index, alias_count);
 			
-			// LP change:
 			int Length = SortedNodes.size();
 			POINTER_DATA OldSNPointer = POINTER_CAST(&SortedNodes.front());
 				
@@ -260,19 +195,12 @@ void RenderSortPolyClass::sort_render_tree()
 				}
 			}
 			sorted_node = &SortedNodes[Length];
-			/*
-			assert(sorted_node_count++<MAXIMUM_SORTED_NODES);
-			sorted_node= next_sorted_node++;
-			*/
 			
 			sorted_node->polygon_index= leaf->polygon_index;
 			sorted_node->interior_objects= NULL;
 			sorted_node->exterior_objects= NULL;
 			// LP change: using polygon-sorted node chain
 			sorted_node->clipping_windows= build_clipping_windows(FoundNode);
-			/*
-			sorted_node->clipping_windows= build_clipping_windows(view, aliases, alias_count);
-			*/
 			
 			/* remember which sorted nodes correspond to which polygons (only valid if
 				_polygon_is_visible) */
@@ -281,13 +209,9 @@ void RenderSortPolyClass::sort_render_tree()
 			/* walk this node’s alias list, removing each from the tree */
 			// LP change: move down the chain of polygon-sharing nodes
 			for (node_data *Alias = FoundNode; Alias; Alias = Alias->PS_Shared)
-			/*
-			for (alias= 0;alias<alias_count;++alias)
-			*/
 			{
 				// LP change: remember what the node was for when we break out
 				node = Alias;
-				// node= aliases[alias];
 
 				/* remove this node and update the next node’s reference (if there is a
 					reference and if there is a next node) */
@@ -303,34 +227,26 @@ void RenderSortPolyClass::sort_render_tree()
 			leaf= node->siblings;
 		}
 	}
-	// LP change:
+
 	while (last_leaf != &Nodes.front()); /* continue until we remove the root */
-	// while (last_leaf!=nodes); /* continue until we remove the root */
-	
-	return;
 }
 
 /* ---------- initializing and calculating clip data */
 
 /* be sure to examine all of a node’s parents for clipping information (gak!) */
 clipping_window_data *RenderSortPolyClass::build_clipping_windows(
-	// LP change: using node chain instead
 	node_data *ChainBegin)
-	// struct node_data **node_list,
-	// short node_count)
 {
 	// LP change: growable lists
 	AccumulatedLineClips.clear();
 	AccumulatedEndpointClips.clear();
-	// short accumulated_line_clip_count= 0, accumulated_endpoint_clip_count= 0;
-	// struct line_clip_data *accumulated_line_clips[MAXIMUM_CLIPS_PER_NODE];
-	// struct endpoint_clip_data *accumulated_endpoint_clips[MAXIMUM_CLIPS_PER_NODE];
 	clipping_window_data *first_clipping_window= NULL;
 	clipping_window_data *last_clipping_window;
 	endpoint_clip_data *endpoint;
 	line_clip_data *line;
 	short x0, x1; /* ignoring what clipping parameters we’ve gotten, this is the left and right borders of this node on the screen */
 	short i, j;
+
 	// LP: references to simplify the code
 	vector<endpoint_clip_data>& EndpointClips = RVPtr->EndpointClips;
 	vector<line_clip_data>& LineClips = RVPtr->LineClips;
@@ -342,7 +258,6 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	{
 		// LP change: look at beginning of chain
 		polygon_data *polygon= get_polygon_data(ChainBegin->polygon_index); /* all these nodes should be the same */
-		// struct polygon_data *polygon= get_polygon_data((*node_list)->polygon_index); /* all these nodes should be the same */
 		
 		x0= SHRT_MAX, x1= SHRT_MIN;
 		for (i= 0;i<polygon->vertex_count;++i)
@@ -365,47 +280,30 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	}
 	
 	/* add left, top and bottom of screen */
-	// LP change:
 	endpoint_clip_data *EndpointClipPtr = &EndpointClips[indexLEFT_SIDE_OF_SCREEN];
 	AccumulatedEndpointClips.push_back(EndpointClipPtr);
 	line_clip_data *LineClipPtr = &LineClips[indexTOP_AND_BOTTOM_OF_SCREEN];
 	AccumulatedLineClips.push_back(LineClipPtr);
-	/*
-	accumulated_endpoint_clips[accumulated_endpoint_clip_count++]= endpoint_clips + indexLEFT_SIDE_OF_SCREEN;
-	accumulated_line_clips[accumulated_line_clip_count++]= line_clips + indexTOP_AND_BOTTOM_OF_SCREEN;
-	*/
 
 	/* accumulate clipping information, left to right, into local arrays */
 	// Move along chain
 	for (node_data *ChainNode = ChainBegin; ChainNode; ChainNode = ChainNode->PS_Shared)
-	// for (k= 0;k<node_count;++k)
 	{
 		node_data *node;
 		
 		// LP change: use chain node as starting point
 		for (node= ChainNode;node;node= node->parent) /* examine this node and all parents! */
-		// for (node= node_list[k];node;node= node->parent) /* examine this node and all parents! */
 		{
 			/* sort in endpoint clips (left to right) */
 			for (i= 0;i<node->clipping_endpoint_count;++i)
 			{
-				// LP change:
 				endpoint= &EndpointClips[node->clipping_endpoints[i]];
-				// endpoint= endpoint_clips + node->clipping_endpoints[i];
 				
-				// LP change:
 				for (j= 0;j<AccumulatedEndpointClips.size();++j)
-				// for (j= 0;j<accumulated_endpoint_clip_count;++j)
 				{
-					// LP change:
 					if (AccumulatedEndpointClips[j]==endpoint) { j= NONE; break; } /* found duplicate */
 					if ((AccumulatedEndpointClips[j]->x==endpoint->x&&endpoint->flags==_clip_left) ||
 						AccumulatedEndpointClips[j]->x>endpoint->x)
-						/*
-					if (accumulated_endpoint_clips[j]==endpoint) { j= NONE; break; } *//* found duplicate *//*
-					if ((accumulated_endpoint_clips[j]->x==endpoint->x&&endpoint->flags==_clip_left) ||
-						accumulated_endpoint_clips[j]->x>endpoint->x)
-					*/
 					{
 						break; /* found sorting position if x is greater or x is equal and this is a left clip */
 					}
@@ -414,20 +312,12 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				if (j!=NONE) /* if the endpoint was not a duplicate */
 				{
 					/* expand the array, if necessary, and add the new endpoint */
-					// LP change:
 					int Length = AccumulatedEndpointClips.size();
 					AccumulatedEndpointClips.push_back(NULL);
 					assert(AccumulatedEndpointClips.size() <= 32767);		// Originally a short value
 					if (j!=Length) memmove(&AccumulatedEndpointClips[j+1], &AccumulatedEndpointClips[j],
 						(Length-j)*sizeof(endpoint_clip_data *));
 					AccumulatedEndpointClips[j]= endpoint;
-					/*
-					assert(accumulated_endpoint_clip_count<MAXIMUM_CLIPS_PER_NODE);
-					if (j!=accumulated_endpoint_clip_count) memmove(accumulated_endpoint_clips+j+1, accumulated_endpoint_clips+j,
-						(accumulated_endpoint_clip_count-j)*sizeof(struct endpoint_clip_data *));
-					accumulated_endpoint_clips[j]= endpoint;
-					accumulated_endpoint_clip_count+= 1;
-					*/
 				}
 			}
 
@@ -435,25 +325,14 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				the function which deals with these, does not depend on them being sorted */
 			for (i= 0;i<node->clipping_line_count;++i)
 			{
-				// LP change:
 				line= &LineClips[node->clipping_lines[i]];
-				// line= line_clips + node->clipping_lines[i];
 				
-				// LP change:
 				for (j= 0;j<AccumulatedLineClips.size();++j) if (AccumulatedLineClips[j]==line) break; /* found duplicate */
 				if (j==AccumulatedLineClips.size()) /* if the line was not a duplicate */
 				{
 					AccumulatedLineClips.push_back(line);
 					assert(AccumulatedLineClips.size() <= 32767);		// Originally a short value
 				}
-				/*
-				for (j= 0;j<accumulated_line_clip_count;++j) if (accumulated_line_clips[j]==line) break; *//* found duplicate *//*
-				if (j==accumulated_line_clip_count) *//* if the line was not a duplicate *//*
-				{
-					assert(accumulated_line_clip_count<MAXIMUM_CLIPS_PER_NODE);
-					accumulated_line_clips[accumulated_line_clip_count++]= line;
-				}
-				*/
 			}
 		}
 	}
@@ -462,24 +341,17 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 //	dprintf("#%d accumulated lines @ %p", accumulated_line_clip_count, accumulated_line_clips);
 
 	/* add right side of screen */
-	// LP change:
 	EndpointClipPtr = &EndpointClips[indexRIGHT_SIDE_OF_SCREEN];
 	AccumulatedEndpointClips.push_back(EndpointClipPtr);
-	// assert(accumulated_endpoint_clip_count<MAXIMUM_CLIPS_PER_NODE);
-	// accumulated_endpoint_clips[accumulated_endpoint_clip_count++]= endpoint_clips + indexRIGHT_SIDE_OF_SCREEN;
 
 	/* build the clipping windows */
 	{
 		short state= _looking_for_left_clip;
 		endpoint_clip_data *left_clip, *right_clip;
 
-		// LP change:
 		for (i= 0;i<AccumulatedEndpointClips.size();++i)
-		// for (i= 0;i<accumulated_endpoint_clip_count;++i)
 		{
-			// LP change:
 			endpoint= AccumulatedEndpointClips[i];
-			// endpoint= accumulated_endpoint_clips[i];
 	
 			switch (endpoint->flags)
 			{
@@ -509,9 +381,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					break;
 				
 				default:
-					// LP change:
 					vassert(false,csprintf(temporary,"RenderSortPoly.cpp: build_clipping_windows(): bad state: %d",state));
-					// halt();
+					break;
 			}
 
 			if (state==_building_clip_window)
@@ -545,10 +416,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 						}
 					}
 					clipping_window_data *window= &ClippingWindows[Length];
-					// struct clipping_window_data *window= next_clipping_window++;
 					
 					/* handle maintaining the linked list of clipping windows */
-					// assert(next_clipping_window_index++<MAXIMUM_CLIPPING_WINDOWS);
 					if (!first_clipping_window)
 					{
 						first_clipping_window= last_clipping_window= window;
@@ -564,10 +433,6 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					window->right= right_clip->vector;
 					calculate_vertical_clip_data(&AccumulatedLineClips.front(), AccumulatedLineClips.size(), window,
 						MAX(x0, window->x0), MIN(x1, window->x1));
-					/*
-					calculate_vertical_clip_data(accumulated_line_clips, accumulated_line_clip_count, window,
-						MAX(x0, window->x0), MIN(x1, window->x1));
-					*/
 					window->next_window= NULL;
 				}
 				
@@ -659,7 +524,5 @@ void RenderSortPolyClass::calculate_vertical_clip_data(
 //		dprintf("%p [%d,%d] is lowest bottom clip line for window [%d,%d]", highest_line, highest_line->x0, highest_line->x1, x0, x1);
 		window->bottom= highest_line->bottom_vector;
 		window->y1= highest_line->bottom_y;
-}
-	
-	return;
+	}
 }

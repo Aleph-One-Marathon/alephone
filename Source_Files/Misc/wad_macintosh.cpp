@@ -56,7 +56,6 @@ struct find_checksum_private_data {
 
 struct find_files_private_data { /* used for enumerating wadfiles */
 	FileSpecifier BaseFile;
-	// FileDesc *base_file;
 	uint32 base_checksum;
 };
 
@@ -77,7 +76,6 @@ static bool find_file_with_modification_date_in_directory(
 /* Search all the directories in the path.. */
 bool find_wad_file_that_has_checksum(
 	FileSpecifier& MatchingFile,
-	// FileDesc *matching_file,
 	int file_type,
 	short path_resource_id,
 	uint32 checksum)
@@ -92,7 +90,6 @@ bool find_wad_file_that_has_checksum(
 	DirectorySpecifier BaseDir;
 	if (BaseDir.SetToAppParent())
 		file_matched= find_wad_file_with_checksum_in_directory(MatchingFile, BaseDir,file_type, checksum);
-	
 
 	return file_matched;
 }
@@ -100,7 +97,6 @@ bool find_wad_file_that_has_checksum(
 
 bool find_file_with_modification_date(
 	FileSpecifier& MatchingFile,
-	// FileDesc *matching_file,
 	int file_type,
 	short path_resource_id,
 	TimeType modification_date)
@@ -122,7 +118,6 @@ bool find_file_with_modification_date(
 /* -------------- local code */
 static bool checksum_and_not_base_callback(
 	FileSpecifier& File,
-	// FSSpec *file, 
 	void *data)
 {
 	bool add_this_file= false;
@@ -130,11 +125,9 @@ static bool checksum_and_not_base_callback(
 	
 	/* Don't readd the base file.. */
 	if (File != _private->BaseFile)
-	// if(!equal_fsspecs(file, (FSSpec *) _private->base_file))
 	{
 		/* Do the checksums match? */
 		if(wad_file_has_parent_checksum(File, _private->base_checksum))
-		// if(wad_file_has_parent_checksum((FileDesc *) file, _private->base_checksum))
 		{
 			add_this_file= true;
 		}
@@ -145,7 +138,6 @@ static bool checksum_and_not_base_callback(
 
 static bool match_wad_checksum_callback(
 	FileSpecifier& File,
-	// FSSpec *file, 
 	void *data)
 {
 	bool add_this_file= false;
@@ -153,7 +145,6 @@ static bool match_wad_checksum_callback(
 	
 	/* Do the checksums match? */
 	if(wad_file_has_checksum(File, _private->checksum_to_match))
-	// if(wad_file_has_checksum((FileDesc *) file, _private->checksum_to_match))
 	{
 		add_this_file= true;
 	}
@@ -164,19 +155,12 @@ static bool match_wad_checksum_callback(
 static bool find_wad_file_with_checksum_in_directory(
 	FileSpecifier& MatchingFile,
 	DirectorySpecifier& BaseDir,
-	/*
-	FSSpec *matching_file,
-	short vRefNum,
-	long parID,
-	*/
 	int file_type,
 	uint32 checksum)
 {
 	bool success= false;
 	FileFinder pb;
-	// struct find_file_pb pb;
 	struct find_checksum_private_data private_data;
-	// FileError error;
 	short error;
 
 	/* Setup the private data for the callback */
@@ -184,26 +168,19 @@ static bool find_wad_file_with_checksum_in_directory(
 	
 	/* Clear out the find_file pb */
 	pb.Clear();
-	// memset(&pb, 0, sizeof(struct find_file_pb));
 	
 	/* Set the information */
 	pb.version= 0;
 	// LP change: always recurse
 	pb.flags= _ff_recurse; /* DANGER WILL ROBINSON!!! */
 	pb.BaseDir = BaseDir;
-	// pb.vRefNum= vRefNum;
-	// pb.directory_id= parID;
 	pb.Type= file_type;
-	// pb.type_to_find= file_type;
 	pb.buffer= &MatchingFile;
 	pb.max= 1; /* Only find one.. */
 	pb.callback= match_wad_checksum_callback;
 	pb.user_data= &private_data;
 
 	/* Find them! */
-	// error= find_files(&pb);
-	
-	// if(!error) 
 	if (pb.Find())
 	{
 		if(pb.count) success= true;
@@ -215,51 +192,35 @@ static bool find_wad_file_with_checksum_in_directory(
 }
 
 static TimeType target_modification_date;
-// static unsigned long target_modification_date;
 
 static bool find_file_with_modification_date_in_directory(
 	FileSpecifier& MatchingFile,
 	DirectorySpecifier& BaseDir,
-	/*
-	FSSpec *matching_file,
-	short vRefNum,
-	long parID,
-	*/
 	int file_type,
 	TimeType modification_date)
 {
 	bool success= false;
 	FileFinder pb;
-	// struct find_file_pb pb;
 	short error;
-	// FileError error;
 
 	/* Setup the private data for the callback */
 	target_modification_date= modification_date;
 	
 	/* Clear out the find_file pb */
 	pb.Clear();
-	// memset(&pb, 0, sizeof(struct find_file_pb));
 	
 	/* Set the information */
 	pb.version= 0;
 	// LP change: always recurse
 	pb.flags= _ff_recurse | _ff_callback_with_catinfo; /* DANGER WILL ROBINSON!!! */
 	pb.BaseDir = BaseDir;
-	// pb.vRefNum= vRefNum;
-	// pb.directory_id= parID;
 	pb.Type= file_type;
-	// pb.type_to_find= file_type;
 	pb.buffer= &MatchingFile;
-	// pb.buffer= (FSSpec *) matching_file;
 	pb.max= 1; /* Only find one.. */
 	pb.callback= match_modification_date_callback;
 	pb.user_data= NULL;
 
 	/* Find them! */
-	// error= find_files(&pb);
-	
-	// if(!error) 
 	if (pb.Find())
 	{
 		if(pb.count) success= true;
@@ -272,7 +233,6 @@ static bool find_file_with_modification_date_in_directory(
 
 static bool match_modification_date_callback(
 	FileSpecifier& File,
-	// FSSpec *file, 
 	void *data)
 {
 	// More general code; does not use the passed data
@@ -280,14 +240,5 @@ static bool match_modification_date_callback(
 	if (File.GetDate() == target_modification_date)
 		add_this_file = true;
 	
-	/*
-	Boolean add_this_file= false;
-	CInfoPBRec *pb= (CInfoPBRec *) data;
-	(void) (File);
-	if(pb->hFileInfo.ioFlMdDat==target_modification_date)
-	{
-		add_this_file= true;
-	}
-	*/
 	return add_this_file;
 }

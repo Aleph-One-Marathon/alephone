@@ -21,7 +21,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 	Carbon uses GetNextEvent instead of GetOSEvent
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
 #if defined(TARGET_API_MAC_CARBON)
     #include <Carbon/Carbon.h>
 #else
@@ -67,4 +69,3 @@ void initialize_debugger(
 {
 	(void)ignore;
 }
-

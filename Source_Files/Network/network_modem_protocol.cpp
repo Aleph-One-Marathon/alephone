@@ -463,8 +463,6 @@ void ModemExit(
 			modemState= netUninitialized;
 		}
 	}
-		
-	return;
 }
 
 bool ModemSync(
@@ -566,14 +564,12 @@ void ModemDistributeInformation(
 	bool send_to_self)
 {
 	(void)(type, buffer, buffer_size, send_to_self);
-	return;
 }
 
 void ModemRemoveDistributionFunction(
 	short type)
 {
 	(void)(type);
-	return;
 }
 
 bool ModemGather(
@@ -727,8 +723,6 @@ void ModemCancelJoin(
 		/* our name has been unregistered and our connection end has been closed */
 	}
 #endif
-	
-	return;
 }
 
 short ModemGetLocalPlayerIndex(
@@ -835,8 +829,6 @@ void ModemCancelGather(
 	assert(modemState==netGathering);
 
 	distribute_topology(tagCANCEL_GAME);
-
-	return;
 }
 
 long ModemGetNetTime(
@@ -1090,8 +1082,6 @@ static void update_topology(
 #ifdef DEBUG
 	if (status->localPlayerIndex==topology->player_count) dprintf("couldnÕt find my identifier: %p", topology);
 #endif
-	
-	return;
 }
 
 static void modem_initialize_topology(
@@ -1116,8 +1106,6 @@ static void modem_initialize_topology(
 	topology->player_count= 1;
 	topology->nextIdentifier= 1;
 	BlockMove(game_data, topology->game_data, game_data_size);
-
-	return;
 }
 
 /* A maximum packet is a server packet with MAXIMUM_NUMBER_OF_PLAYERS flags */
@@ -1149,8 +1137,6 @@ static void client_send_action_flag(
 	
 	err= modem_send_packet(_client_packet, &packet);
 	vassert(!err, csprintf(temporary, "Acknowledge write_modem returned: %d", err));
-
-	return;
 }
 
 /* Process the flags in the server packet.  This is called by both the server and the client */
@@ -1172,8 +1158,6 @@ static void process_server_packet(
 
 	status->sequence++;
 	status->localNetTime++;
-	
-	return;
 }
 
 static void build_server_packet(
@@ -1203,8 +1187,6 @@ static void build_server_packet(
 #endif
 		}
 	}
-
-	return;
 }
 
 static void handle_single_player(
@@ -1227,8 +1209,6 @@ static void handle_single_player(
 			modemState= netDown;
 			break;
 	}
-
-	return;
 }
 
 static short size_of_players_queue(
@@ -1448,8 +1428,6 @@ static void reset_modem_buffer(
 {
 	assert(stream_read_queue.data);
 	stream_read_queue.read_index= stream_read_queue.write_index= 0;
-	
-	return;
 }
 
 static void modem_interrupt_idle(
@@ -1463,8 +1441,6 @@ static void modem_interrupt_idle(
 	{
 		uint16 bytes_to_read= MIN(read_bytes_available, MODEM_QUEUE_SIZE-stream_read_queue.write_index);
 
-//		err= read_modem_endpoint(&stream_read_queue.data[stream_read_queue.write_index], 
-//			bytes_to_read, kNoTimeout);
 		err= read_modem_endpoint(&stream_read_queue.data[stream_read_queue.write_index], 
 			bytes_to_read, 0);
 		vassert(!err, csprintf(temporary, "Error reading buffer: %d", err));
@@ -1472,8 +1448,6 @@ static void modem_interrupt_idle(
 		/* oops, increment past.. */
 		stream_read_queue.write_index+= bytes_to_read;
 	}
-
-	return;
 }
 
 static bool modem_read_packet(
@@ -1936,8 +1910,6 @@ static void progress_function(
 	
 	progress->sent+= bytes_written;
 	draw_progress_bar(progress->sent, progress->total);
-
-	return;
 }
 
 
@@ -1990,8 +1962,6 @@ void ModemUnRegisterName(
 #ifdef DEBUG
 	lookup_data_valid= false;
 #endif
-
-	return;
 }
 
 
@@ -2059,8 +2029,6 @@ void ModemLookupClose(
 {
 	assert(lookup_data);
 	DisposePtr((Ptr) lookup_data);
-	
-	return;
 }
 
 void ModemLookupInformation(
@@ -2082,8 +2050,6 @@ void ModemLookupInformation(
 	{
 		obj_copy(*entity, lookup_data->entities[index].entity);
 	}
-	
-	return;
 }
 
 
@@ -2134,8 +2100,6 @@ void ModemLookupUpdate(
 			}
 		}
 	}
-
-	return;
 }
 
 void ModemLookupRemove(
@@ -2150,8 +2114,6 @@ void ModemLookupRemove(
 	
 	/* tell the caller to make the change */
 	if (lookup_data->lookupUpdateProc) lookup_data->lookupUpdateProc(removeEntity, index);
-	
-	return;
 }
 
 
@@ -2164,8 +2126,6 @@ static void send_acknowledge(
 	packet.sequence= sequence;
 	error= modem_send_packet(_acknowledge_packet, &packet);
 	assert(!error);
-	
-	return;
 }
 
 static bool modem_read_fake_packet(
@@ -2301,9 +2261,7 @@ bool packet_tickler(
 								queue->buffer[queue->write_index++]= action_flag;
 								if (queue->write_index >= NET_QUEUE_SIZE) queue->write_index= 0;
 							} else {
-								// LP change:
 								assert(false);
-								// halt();
 							}
 						}
 					}
@@ -2467,8 +2425,6 @@ static void build_and_post_async_client_packet(
 	/* let her go.. */
 	status->outgoing_packet_type= _client_packet;
 	status->outgoing_packet_valid= true;
-	
-	return;
 }
 
 static void build_and_post_async_server_packet(
@@ -2499,7 +2455,5 @@ static void build_and_post_async_server_packet(
 
 	/* Start our interrupt routine on it's merry way.. */
 	status->outgoing_packet_valid= true;
-	
-	return;
 }
 

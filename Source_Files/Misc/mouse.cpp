@@ -129,7 +129,6 @@ void enter_mouse(
 		2, mouseMovedEvents, NULL, &_CEMouseTracker);
 	MPCreateCriticalRegion(&CE_MouseLock);
 #endif
-	return;
 }
 
 void test_mouse(
@@ -157,8 +156,6 @@ void test_mouse(
 	*delta_yaw= snapshot_delta_yaw;
 	*delta_pitch= snapshot_delta_pitch;
 	*delta_velocity= snapshot_delta_velocity;
-	
-	return;
 }
 
 static bool mouse_available(
@@ -180,7 +177,6 @@ void exit_mouse(
 	_CEMouseTrackerUPP = NULL;
 	MPDeleteCriticalRegion(CE_MouseLock);
 #endif
-	return;
 }
 
 /* 1200 pixels per second is the highest possible mouse velocity */
@@ -219,8 +215,6 @@ void mouse_idle(
 		/* pin and do nonlinearity */
 		vx= PIN(vx, -FIXED_ONE/2, FIXED_ONE/2), vx>>= 1, vx*= (vx<0) ? -vx : vx, vx>>= 14;
 		vy= PIN(vy, -FIXED_ONE/2, FIXED_ONE/2), vy>>= 1, vy*= (vy<0) ? -vy : vy, vy>>= 14;
-//		vx= PIN(vx, -FIXED_ONE/2, FIXED_ONE/2);
-//		vy= PIN(vy, -FIXED_ONE/2, FIXED_ONE/2);
 
 		snapshot_delta_yaw= vx;
 		
@@ -237,8 +231,7 @@ void mouse_idle(
 				// LP change: put in some (presumably) reasonable behavior
 				// for some unrecognized type.
 				snapshot_delta_pitch= 0, snapshot_delta_velocity= 0;
-				// assert(false);
-				// halt();
+				break;
 		}
 		
 		snapshot_button_state= Button();
@@ -246,8 +239,6 @@ void mouse_idle(
 		
 //		dprintf("%08x %08x %08x;g;", snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity);
 	}
-	
-	return;
 }
 
 /* ---------- private code */
@@ -284,8 +275,6 @@ static void get_mouse_location(
 //		LocalToGlobal(where);
 	}
 #endif
-	
-	return;
 }
 
 static void set_mouse_location(
@@ -307,8 +296,6 @@ static void set_mouse_location(
 		CrsrNewCouple= 0xffff;
 	}
 #endif
-	
-	return;
 }
 
 #if defined(TARGET_API_MAC_CARBON)

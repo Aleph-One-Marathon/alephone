@@ -178,9 +178,7 @@ enum
 	// LP change: increase maximum number of sound channels and also
 	// ambient ones
 	MAXIMUM_SOUND_CHANNELS= 8,
-	// MAXIMUM_SOUND_CHANNELS= 4,
 	MAXIMUM_AMBIENT_SOUND_CHANNELS= 4,
-	// MAXIMUM_AMBIENT_SOUND_CHANNELS= 2,
 
 	MINIMUM_SOUND_PITCH= 1,
 	MAXIMUM_SOUND_PITCH= 256*FIXED_ONE
@@ -499,15 +497,12 @@ void initialize_sound_manager(
 	// objlist_clear(sound_definitions, NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS);
 	
 	initialize_machine_sound_manager(parameters);
-	
-	return;
 }
 
 bool open_sound_file(FileSpecifier& File)
 {
 	// LP: rewrote the whole g*dd*mn thing
 	if (!_sm_globals) return false;
-	// if (!(sound_definitions && _sm_globals)) return false;
 	
 	if (!File.Open(SoundFile)) return false;
 	
@@ -636,8 +631,6 @@ void load_sound(
 			_load_sound(sound);
 		}
 	}
-	
-	return;
 }
 
 void load_sounds(
@@ -650,8 +643,6 @@ void load_sounds(
 	{
 		load_sound(sounds[i]);
 	}
-	
-	return;
 }
 
 void sound_manager_idle_proc(
@@ -692,8 +683,6 @@ void sound_manager_idle_proc(
 		}	
 #endif
 	}
-	
-	return;
 }
 
 void cause_ambient_sound_source_update(
@@ -706,8 +695,6 @@ void cause_ambient_sound_source_update(
 			update_ambient_sound_sources();
 		}
 	}
-	
-	return;
 }
 
 void direct_play_sound(
@@ -762,8 +749,6 @@ void direct_play_sound(
 			}
 		}
 	}
-	
-	return;
 }
 
 void _play_sound(
@@ -815,8 +800,6 @@ void _play_sound(
 			}
 		}
 	}
-	
-	return;
 }
 
 void unload_all_sounds(
@@ -832,8 +815,6 @@ void unload_all_sounds(
 		for (vector<SoundOptionsEntry>::iterator SOIter = SOList.begin(); SOIter < SOList.end(); SOIter++)
 			SOIter->OptionsData.Sound.Unload();
 	}
-	
-	return;
 }
 
 void stop_sound(
@@ -915,8 +896,6 @@ void orphan_sound(
 			}
 		}
 	}
-	
-	return;
 }
 
 uint16 available_sound_manager_flags(
@@ -947,8 +926,6 @@ void default_sound_manager_parameters(
 	// Beef it up
 	parameters->flags |= _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag;
 #endif
-	
-	return;
 }
 
 bool verify_sound_manager_parameters(
@@ -997,8 +974,6 @@ static void unlock_locked_sounds(
 			}
 		}
 	}
-	
-	return;
 }
 
 static void track_stereo_sounds(
@@ -1022,8 +997,6 @@ static void track_stereo_sounds(
 			}
 		}
 	}
-
-	return;
 }
 
 static short get_random_sound_permutation(
@@ -1176,8 +1149,6 @@ static void free_channel(
 		// if anybody else is playing this sound_index, we canÕt unlock the handle
 		if (!sound_is_playing(sound_index)) unlock_sound(sound_index);
 	}
-	
-	return;
 }
 
 bool _load_sound(
@@ -1228,8 +1199,6 @@ static void calculate_initial_sound_variables(
 
 	/* and finally, do all the stuff we regularly do ... */
 	calculate_sound_variables(sound_index, source, variables);
-
-	return;
 }
 
 static _fixed calculate_pitch_modifier(
@@ -1271,8 +1240,6 @@ static void calculate_sound_variables(
 		// LP change: made this long-distance friendly
 		long dx= long(listener->point.x) - long(source->point.x);
 		long dy= long(listener->point.y) - long(source->point.y);
-		// world_distance dx= listener->point.x - source->point.x;
-		// world_distance dy= listener->point.y - source->point.y;
 		
 		/* for now, a sound's priority is it's behavior_index */
 		variables->priority= definition->behavior_index;
@@ -1291,8 +1258,6 @@ static void calculate_sound_variables(
 			variables->left_volume= variables->right_volume= variables->volume;
 		}
 	}
-
-	return;
 }
 
 static void angle_and_volume_to_stereo_volume(
@@ -1331,17 +1296,14 @@ static void angle_and_volume_to_stereo_volume(
 				break;
 			
 			default:
-				// LP change:
 				assert(false);
-				// halt();
+				break;
 		}
 	}
 	else
 	{
 		*left_volume= *right_volume= volume;
 	}
-
-	return;
 }
 
 static short distance_to_volume(
@@ -1557,8 +1519,6 @@ static void update_ambient_sound_sources(
 			}
 		}
 	}
-	
-	return;
 }
 
 enum
@@ -1579,7 +1539,6 @@ static void add_one_ambient_sound_source(
 		// LP change; make NONE in case this sound definition is invalid
 		struct ambient_sound_definition *SoundDef = get_ambient_sound_definition(ambient_sound_index);
 		short sound_index = (SoundDef) ? SoundDef->sound_index : NONE;
-		// short sound_index= get_ambient_sound_definition(ambient_sound_index)->sound_index;
 		
 		if (sound_index!=NONE)
 		{
@@ -1635,8 +1594,6 @@ static void add_one_ambient_sound_source(
 							// LP change: made this long-distance friendly
 							long dx= long(listener->point.x) - long(source->point.x);
 							long dy= long(listener->point.y) - long(source->point.y);
-							// world_distance dx= listener->point.x-source->point.x;
-							// world_distance dy= listener->point.y-source->point.y;
 							
 							volume= distance_to_volume(definition, distance, _sound_obstructed_proc(source));
 							volume= (absolute_volume*volume)>>MAXIMUM_SOUND_VOLUME_BITS;
@@ -1675,8 +1632,6 @@ static void add_one_ambient_sound_source(
 			}
 		}
 	}
-	
-	return;
 }
 
 

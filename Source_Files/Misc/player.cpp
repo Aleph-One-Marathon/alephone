@@ -289,7 +289,6 @@ static struct damage_response_definition damage_response_definitions[]=
 /* For teleportation */
 #define EPILOGUE_LEVEL_NUMBER 256
 // LP change: made this much bigger than the number of M2/Moo polygons
-// #define NO_TELEPORTATION_DESTINATION 512
 #define NO_TELEPORTATION_DESTINATION INT16_MAX
 
 // LP additions: variables for initial energy, initial oxygen, and stripped energy:
@@ -365,8 +364,6 @@ void allocate_player_memory(
 	{
 		action_queues[i].buffer= action_queue_buffer + i*ACTION_QUEUE_BUFFER_DIAMETER;
 	}
-
-	return;
 }
 
 /* returns player index */
@@ -391,8 +388,6 @@ short new_player(
 	// LP change: using variables for these
 	player->suit_energy= InitialEnergy;
 	player->suit_oxygen= InitialOxygen;
-	// player->suit_energy= PLAYER_MAXIMUM_SUIT_ENERGY;
-	// player->suit_oxygen= PLAYER_MAXIMUM_SUIT_OXYGEN;
 	player->color= color;
 	player->team= team;
 	player->flags= 0;
@@ -440,8 +435,6 @@ void walk_player_list(
 		update_interface(NONE);
 		dirty_terminal_view(player_index); /* In case they are in terminal mode.. */
 	}
-	
-	return;
 }
 
 void initialize_players(
@@ -458,8 +451,6 @@ void initialize_players(
 		obj_clear(players[i]);
 		action_queues[i].read_index= action_queues[i].write_index= 0;
 	}
-	
-	return;
 }
 
 /* This will be called by entering map for two reasons:
@@ -500,8 +491,6 @@ void queue_action_flags(
 		queue->write_index= (queue->write_index+1)&ACTION_QUEUE_BUFFER_INDEX_MASK;
 		if (queue->write_index==queue->read_index) dprintf("blew player %dÕs queue at %p;g;", player_index, queue);
 	}
-
-	return;
 }
 
 /* dequeueÕs a single action flag from the given queue (zombies always return zero) */
@@ -675,8 +664,6 @@ void update_players(
 		update_player_media(player_index);
 		set_player_shapes(player_index, true);
 	}
-	
-	return;
 }
 
 void damage_player(
@@ -696,7 +683,6 @@ void damage_player(
 	
 	// LP change: made this more general
 	if (player->invincibility_duration && damage->type!=Vulnerability)
-	// if (player->invincibility_duration && damage->type!=_damage_fusion_bolt)
 	{
 		damage_type= _damage_absorbed;
 	}
@@ -742,7 +728,6 @@ void damage_player(
 			case _damage_oxygen_drain:
 				// LP change: pegging to maximum value
 				if ((player->suit_oxygen= MIN(long(player->suit_oxygen)-long(damage_amount),long(INT16_MAX)))<0) player->suit_oxygen= 0;
-				// if ((player->suit_oxygen-= damage_amount)<0) player->suit_oxygen= 0;
 				if (player_index==current_player_index) mark_oxygen_display_as_dirty();
 				break;
 			
@@ -750,7 +735,6 @@ void damage_player(
 				/* damage the player, recording the kill if the aggressor was another player and we died */
 				// LP change: pegging to maximum value
 				if ((player->suit_energy= MIN(long(player->suit_energy)-long(damage_amount),long(INT16_MAX)))<0)
-				// if ((player->suit_energy-= damage_amount)<0)
 				{
 					if (damage->type!=_damage_energy_drain)
 					{
@@ -808,8 +792,6 @@ void damage_player(
 	{
 		abort_terminal_mode(player_index);
 	}
-
-	return;
 }
 
 short player_identifier_to_player_index(
@@ -841,8 +823,6 @@ void mark_player_collections(
 	mark_weapon_collections(loading);
 	mark_item_collections(loading);
 	mark_interface_collections(loading);
-	
-	return;
 }
 
 player_shape_definitions*
@@ -855,8 +835,6 @@ void set_local_player_index(
 {
 	local_player_index= player_index;
 	local_player= get_player_data(player_index);
-	
-	return;
 }
 
 void set_current_player_index(
@@ -864,8 +842,6 @@ void set_current_player_index(
 {
 	current_player_index= player_index;
 	current_player= get_player_data(player_index);
-	
-	return;
 }
 
 /* We just teleported in as it were-> recreate all the players..  */
@@ -879,8 +855,6 @@ void recreate_players_for_new_level(
 		/* Recreate all of the players for the new level.. */	
 		recreate_player(player_index);
 	}
-	
-	return;
 }
 
 short monster_index_to_player_index(
@@ -947,40 +921,6 @@ bool legal_player_powerup(
 	{
 		if (player->suit_oxygen>=5*PLAYER_MAXIMUM_SUIT_OXYGEN/6) legal= false;
 	}
-	/*	
-	switch (item_index)
-	{
-		case _i_invisibility_powerup:
-			if (player->invisibility_duration>kINVISIBILITY_DURATION) legal= false;
-			break;
-
-		case _i_invincibility_powerup:
-			if (player->invincibility_duration) legal= false;
-			break;
-		
-		case _i_infravision_powerup:
-			if (player->infravision_duration) legal= false;
-			break;
-		
-		case _i_extravision_powerup:
-			if (player->extravision_duration) legal= false;
-			break;
-		
-		case _i_oxygen_powerup:
-			if (player->suit_oxygen>5*PLAYER_MAXIMUM_SUIT_OXYGEN/6) legal= false;
-			break;
-		
-		case _i_energy_powerup:
-			if (player->suit_energy>=1*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
-			break;
-		case _i_double_energy_powerup:
-			if (player->suit_energy>=2*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
-			break;
-		case _i_triple_energy_powerup:
-			if (player->suit_energy>=3*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
-			break;
-	}
-	*/
 
 	return legal;
 }
@@ -1037,57 +977,6 @@ void process_player_powerup(
 		player->suit_oxygen= CEILING(player->suit_oxygen+PLAYER_MAXIMUM_SUIT_OXYGEN/2, PLAYER_MAXIMUM_SUIT_OXYGEN);
 		if (player_index==current_player_index) mark_oxygen_display_as_dirty();
 	}
-
-	/*
-	switch (item_index)
-	{
-		case _i_invisibility_powerup:
-			player->invisibility_duration+= kINVISIBILITY_DURATION;
-			break;
-
-		case _i_invincibility_powerup:
-			player->invincibility_duration+= kINVINCIBILITY_DURATION;
-			break;
-		
-		case _i_infravision_powerup:
-			player->infravision_duration+= kINFRAVISION_DURATION;
-			break;
-		
-		case _i_extravision_powerup:
-			if (player_index==current_player_index) start_extravision_effect(true);
-			player->extravision_duration+= kEXTRAVISION_DURATION;
-			break;
-		
-		case _i_oxygen_powerup:
-			player->suit_oxygen= CEILING(player->suit_oxygen+PLAYER_MAXIMUM_SUIT_OXYGEN/2, PLAYER_MAXIMUM_SUIT_OXYGEN);
-			if (player_index==current_player_index) mark_oxygen_display_as_dirty();
-			break;
-		
-		case _i_energy_powerup:
-			if (player->suit_energy<1*PLAYER_MAXIMUM_SUIT_ENERGY)
-			{
-				player->suit_energy= 1*PLAYER_MAXIMUM_SUIT_ENERGY;
-				if (player_index==current_player_index) mark_shield_display_as_dirty();
-			}
-			break;
-		case _i_double_energy_powerup:
-			if (player->suit_energy<2*PLAYER_MAXIMUM_SUIT_ENERGY)
-			{
-				player->suit_energy= 2*PLAYER_MAXIMUM_SUIT_ENERGY;
-				if (player_index==current_player_index) mark_shield_display_as_dirty();
-			}
-			break;
-		case _i_triple_energy_powerup:
-			if (player->suit_energy<3*PLAYER_MAXIMUM_SUIT_ENERGY)
-			{
-				player->suit_energy= 3*PLAYER_MAXIMUM_SUIT_ENERGY;
-				if (player_index==current_player_index) mark_shield_display_as_dirty();
-			}
-			break;
-	}
-	*/
-
-	return;
 }
 
 world_distance dead_player_minimum_polygon_height(
@@ -1188,8 +1077,6 @@ static void handle_player_in_vacuum(
 			damage_player(player->monster_index, NONE, NONE, &damage);
 		}
 	}
-	
-	return;
 }
 
 // LP: assumes nonnegative change rate
@@ -1382,8 +1269,6 @@ static void update_player_teleport(
 			}
 		}
 	}
-	
-	return;
 }
 
 static void update_player_media(
@@ -1452,8 +1337,6 @@ static void update_player_media(
 			play_object_sound(monster->object_index, sound_index);
 		}
 	}
-	
-	return;
 }
 
 static void set_player_shapes(
@@ -1486,9 +1369,8 @@ static void set_player_shapes(
 			case _shape_weapon_idle: torso_shape= player_shapes.torsos[pseudo_weapon_type]; break;
 			case _shape_weapon_charging: torso_shape= player_shapes.charging_torsos[pseudo_weapon_type]; break;
 			default:
-				// LP change:
 				assert(false);
-				// halt();
+				break;
 		}
 		assert(player->variables.action>=0 && player->variables.action<NUMBER_OF_PLAYER_ACTIONS);
 		
@@ -1518,8 +1400,6 @@ static void set_player_shapes(
 			remove_dead_player_items(player_index);
 		}
 	}
-
-	return;
 }
 
 /* We can rebuild him!! */
@@ -1585,8 +1465,6 @@ static void revive_player(
 	
 	// LP addition: set field-of-view approrpriately
 	if (player_index == current_player_index) ResetFieldOfView();
-	
-	return;
 }
 
 /* The player just changed map levels, recreate him, and all of the objects */
@@ -1645,17 +1523,6 @@ static void recreate_player(
 	player->control_panel_side_index = NONE; // not using a control panel.
 	initialize_player_terminal_info(player_index);
 
-#ifdef OBSOLETE
-	/* If the player transported dead.. */
-	if(player_needs_weapons)
-	{
-		initialize_player_weapons(player_index);
-	
-		/* give the player his initial items */
-		give_player_initial_items(player_index);
-	}
-#endif
-
 	try_and_strip_player_items(player_index);
 
 	if(player_teleported_dead)
@@ -1670,8 +1537,6 @@ static void recreate_player(
 	// Done here so that players' missiles will always be guided
 	// if they are intended to be guided
 	adjust_player_physics(get_monster_data(player->monster_index));
-		
-	return;
 }
 
 static void kill_player(
@@ -1705,8 +1570,6 @@ static void kill_player(
 	if (aggressor_player_index==player_index && (GET_GAME_OPTIONS()&_suicide_is_penalized)) player->reincarnation_delay+= SUICIDE_REINCARNATION_DELAY;
 
 	kill_player_physics_variables(player_index);
-
-	return;
 }
 
 static void give_player_initial_items(
@@ -1729,8 +1592,6 @@ static void give_player_initial_items(
 		
 		process_new_item_for_reloading(player_index, player_initial_items[loop]);
 	}
-	
-	return;
 }
 
 static void remove_dead_player_items(
@@ -1829,8 +1690,6 @@ static void remove_dead_player_items(
 	}
 
 	mark_player_inventory_as_dirty(player_index, NONE);
-
-	return;
 }
 
 static void get_player_transfer_mode(
@@ -1880,8 +1739,6 @@ static void get_player_transfer_mode(
 			}
 		}
 	}
-	
-	return;
 }
 
 static void set_player_dead_shape(
@@ -1918,8 +1775,6 @@ static void set_player_dead_shape(
 	{
 		randomize_object_sequence(monster->object_index, shape);
 	}
-	
-	return;
 }
 
 static short calculate_player_team(
@@ -1983,10 +1838,7 @@ static void try_and_strip_player_items(
 		
 		// LP change: using variable for this
 		if (player->suit_energy>StrippedEnergy) player->suit_energy= StrippedEnergy;
-		// if (player->suit_energy>STRIPPED_ENERGY) player->suit_energy= STRIPPED_ENERGY;
 	}
-	
-	return;
 }
 
 

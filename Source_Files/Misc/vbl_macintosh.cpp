@@ -188,8 +188,6 @@ void move_replay(
 	/* Alert them on problems */
 	OSErr Err = MovedFilmFile.GetError();
 	if (Err != noErr) alert_user(infoError, strERRORS, fileError, Err);
-	
-	return;
 }
 
 uint32 parse_keymap(
@@ -243,9 +241,8 @@ uint32 parse_keymap(
 					break;
 				
 				default:
-					// LP change:
 					assert(false);
-					// halt();
+					break;
 			}
 			
 			special->persistence= MAXIMUM_FLAG_PERSISTENCE;
@@ -423,8 +420,6 @@ void set_keys_to_match_preferences(
 	void)
 {
 	set_keys(input_preferences->keycodes);
-
-	return;
 }
 
 timer_task_proc install_timer_task(

@@ -43,7 +43,6 @@ Feb 10, 2000 (Loren Petrich):
 #include "cseries.h"
 #include "map.h"
 #include "flood_map.h"
-// LP addition:
 #include "dynamic_limits.h"
 
 #ifdef env68k
@@ -69,7 +68,6 @@ we should cut corners instead of blindly following map geometry (i.e., separate 
 
 // LP change: made this settable from the resource fork
 #define MAXIMUM_PATHS (get_dynamic_limit(_dynamic_limit_paths))
-// #define MAXIMUM_PATHS 20
 #define MAXIMUM_POINTS_PER_PATH 63
 
 #define PATH_VALIDATION_AREA_SIZE 64*1024
@@ -114,8 +112,6 @@ void allocate_pathfinding_memory(
 	assert(path_validation_area);
 	path_run_count= 0;
 #endif
-	
-	return;
 }
 
 void reset_paths(
@@ -129,8 +125,6 @@ void reset_paths(
 	path_run_count+= 1;
 	path_validation_area_index= 0;
 #endif
-
-	return;
 }
 
 short new_path(
@@ -330,8 +324,6 @@ void delete_path(
 	vassert(paths[path_index].current_step>=0&&paths[path_index].current_step<=paths[path_index].step_count, csprintf(temporary, "invalid current path step: #%d/#%d", paths[path_index].current_step, paths[path_index].step_count));
 	
 	paths[path_index].step_count= NONE;
-	
-	return;
 }
 
 /* ---------- private code */
@@ -373,45 +365,7 @@ static void calculate_midpoint_of_shared_line(
 		midpoint->x= endpoint0->vertex.x + (offset*dx)/shared_line->length;
 		midpoint->y= endpoint0->vertex.y + (offset*dy)/shared_line->length;
 	}
-	
-	return;
 }
-
-#ifdef OBSOLETE
-			/* extract the path by calling reverse_flood_map().  instead of generating some
-				random final point in the destination polygon, we end the path straddling the
-				gridline between polygons.  i donÕt think this is a problem.  */
-			{
-				short step_count;
-				short last_polygon_index;
-				world_point2d *path_points;
-				
-				step_count= 2*flood_depth()-1;
-
-				/* if we couldnÕt go anywhere (depth==0) then return a null path */				
-				if (step_count>=1&&step_count<MAXIMUM_POINTS_PER_PATH)
-				{
-					paths[path_index].step_count= step_count;
-					paths[path_index].current_step= 0;
-		
-					path_points= paths[path_index].points + paths[path_index].step_count;
-					last_polygon_index= reverse_flood_map();
-					while ((polygon_index= reverse_flood_map())!=NONE)
-					{
-						calculate_midpoint_of_shared_line(last_polygon_index, polygon_index, minimum_separation, --path_points);
-						if (polygon_index!=source_polygon_index) find_center_of_polygon(polygon_index, --path_points);
-						last_polygon_index= polygon_index;
-					}
-				}
-				else
-				{
-//					dprintf("step count was %d, oops", step_count);
-					path_index= NONE;
-				}
-			}
-		}
-	}
-#endif
 
 /* for debug purposes only (called from OVERHEAD_MAP.C) */
 // LP: making these available for those wanting to check out the monster AI

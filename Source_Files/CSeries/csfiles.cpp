@@ -21,7 +21,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 	Added a backup to get_my_fsspec to back out of Carbon bundle
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
 #include <string.h>
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -87,4 +89,3 @@ extern OSErr get_my_fsspec(
 	return GetProcessInformation(&psn,&pir);
 #endif
 }
-

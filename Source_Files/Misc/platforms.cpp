@@ -359,9 +359,7 @@ void update_platforms(
 						}
 						else
 						{
-							// LP change:
 							assert(false);
-							// halt();
 						}
 					}
 					if (PLATFORM_DEACTIVATES_AT_EACH_LEVEL(platform)) deactivate= true;
@@ -374,8 +372,6 @@ void update_platforms(
 			if (sound_code!=NONE) play_platform_sound(platform_index, sound_code);
 		}
 	}
-	
-	return;
 }
 
 bool platform_is_on(
@@ -551,8 +547,6 @@ void player_touch_platform_state(
 	}
 	
 	if (sound_code!=NONE) play_platform_sound(platform_index, sound_code);
-	
-	return;
 }
 
 
@@ -570,8 +564,6 @@ void platform_was_entered(
 			try_and_change_platform_state(platform_index, true);
 		}
 	}
-	
-	return;
 }
 
 bool platform_is_legal_player_target(
@@ -763,8 +755,6 @@ static void set_adjacent_platform_states(
 			}
 		}
 	}
-	
-	return;
 }
 
 /* remove all garbage objects in the platform */
@@ -782,8 +772,6 @@ static void take_out_the_garbage(
 		if (GET_OBJECT_OWNER(object)==_object_is_garbage) remove_map_object(object_index);
 		object_index= object->next_object; /* relies on remove_map_object() not changing this */
 	}
-	
-	return;
 }
 
 static void adjust_platform_for_media(
@@ -827,8 +815,6 @@ static void adjust_platform_for_media(
 		SET_PLATFORM_CEILING_BELOW_MEDIA(platform, ceiling_below_media);
 		}
 	}
-	
-	return;
 }
 
 static void adjust_platform_endpoint_and_line_heights(
@@ -894,8 +880,6 @@ static void adjust_platform_endpoint_and_line_heights(
 		endpoint->lowest_adjacent_ceiling_height= lowest_adjacent_ceiling;
 		endpoint->supporting_polygon_index= supporting_polygon_index;
 	}
-	
-	return;
 }
 
 static void play_platform_sound(
@@ -925,15 +909,12 @@ static void play_platform_sound(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	
 	play_polygon_sound(platform->polygon_index, sound_code);
 	cause_ambient_sound_source_update();
-	
-	return;
 }
 
 /* rules for using native polygon heights: a) if this is a floor platform, then take the polygonÕs
@@ -1027,8 +1008,6 @@ static void calculate_platform_extrema(
 			platform->minimum_floor_height= platform->maximum_floor_height= polygon->floor_height;
 		}
 	}
-	
-	return;
 }
 
 static void adjust_platform_sides(
@@ -1100,75 +1079,7 @@ static void adjust_platform_sides(
 			}
 		}
 	}
-	
-	return;
 }
-
-#ifdef OBSOLETE
-/*
-	¥ if this is a monster-controllable door, give them the open heights and return
-	_platform_is_accessable if the door is in fact open and _platform_will_be_accessable
-	if the monster should trigger it.
-	
-	¥ if this is a monster uncontrollable door, give them the current heights and tell them
-	to try their luck (_platform_might_be_accessable).
-	
-	¥ if this is an inactive platform, give them the current heights and tell them to try
-	their luck (_platform_might_be_accessable).
-	
-	¥ if this is an active platform and we stop for some non-zero (if not, return
-	_platform_will_never_be_accessable) time at the given level then
-	return _platform_will_be_accessable unless weÕre already there in which case return
-	_platform_is_accessable
-*/
-	
-short monster_can_enter_platform(
-	short platform_index,
-	short source_polygon_index,
-	world_distance *floor,
-	world_distance *height)
-{
-	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
-	struct platform_data *platform= get_platform_data(platform_index);
-	short result_code= _platform_will_never_be_accessable;
-
-	if (PLATFORM_IS_DOOR(platform))
-	{
-		if (PLATFORM_IS_MONSTER_CONTROLLABLE(platform))
-		{
-			if (platform->maximum_ceiling_height-platform->minimum_floor_height>=height &&
-				platform->delay>=_short_delay_platform)
-			{
-				result_code= PLATFORM_IS_FULLY_CONTRACTED(platform) ? _platform_is_accessable : _platform_will_be_accessable;
-			}
-		}
-		else
-		{
-			result_code= _platform_might_be_accessable; /* try your luck (i.e., look at polygon heights) */
-		}
-	}
-	else
-	{
-		if (PLATFORM_IS_ACTIVE(platform) && PLATFORM_COMES_FROM_FLOOR(platform) && !PLATFORM_COMES_FROM_CEILING(platform))
-		{
-			/* if this platform doesnÕt go floor to ceiling and it stops at the source polygon, it might be ok */
-			if (platform->maximum_floor_height!=platform->minimum_ceiling_height &&
-				(platform->minimum_floor_height==source_polygon->floor_height ||
-				platform->maximum_floor_height==source_polygon->floor_height))
-			{
-				result_code= (platform->floor_height==source_polygon->floor_height) ? _platform_is_accessable : _platform_will_be_accessable;
-			}
-		}
-		else
-		{
-			result_code= _platform_might_be_accessable; /* try your luck (i.e., look at polygon heights) */
-		}
-	}
-	
-	return result_code;
-}
-#endif
-
 
 uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects, int Count)
 {

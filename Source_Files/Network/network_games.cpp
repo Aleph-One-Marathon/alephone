@@ -76,9 +76,7 @@ enum { // for capture the flag.
 
 /* ----------------- private prototypes */
 static bool player_has_ball(short player_index, short color);
-// LP change: this is to be consistent with Benad's moving it out
 extern void destroy_players_ball(short player_index);
-// static void destroy_players_ball(short player_index);
 
 /* ------------------ code */
 long get_player_net_ranking(
@@ -226,8 +224,6 @@ void initialize_net_game(
 			dynamic_world->game_player_index= NONE; // nobody is it, yet
 			break;
 	}
-
-	return;
 }
 
 #define NETWORK_COMPASS_SLOP SIXTEENTH_CIRCLE

@@ -140,7 +140,6 @@ bool media_in_environment(
 	if (!definition) return false;
 	
 	return collection_in_environment(definition->collection, environment_code);
-	// return collection_in_environment(get_media_definition(media_type)->collection, environment_code);
 }
 
 void update_medias(
@@ -159,8 +158,6 @@ void update_medias(
 			media->origin.y= WORLD_FRACTIONAL_PART(media->origin.y + ((sine_table[media->current_direction]*media->current_magnitude)>>TRIG_SHIFT));
 		}
 	}
-
-	return;
 }
 
 void get_media_detonation_effect(
@@ -178,12 +175,9 @@ void get_media_detonation_effect(
 	if (type!=NONE)
 	{
 		if (!(type>=0 && type<NUMBER_OF_MEDIA_DETONATION_TYPES)) return;
-		// assert(type>=0 && type<NUMBER_OF_MEDIA_DETONATION_TYPES);
 		
 		if (definition->detonation_effects[type]!=NONE) *detonation_effect= definition->detonation_effects[type];
 	}
-
-	return;
 }
 
 short get_media_sound(
@@ -198,7 +192,6 @@ short get_media_sound(
 	if (!definition) return NONE;
 
 	if (!(type>=0 && type<NUMBER_OF_MEDIA_SOUNDS)) return NONE;
-	// assert(type>=0 && type<NUMBER_OF_MEDIA_SOUNDS);		
 
 	return definition->sounds[type];
 }
@@ -282,8 +275,6 @@ if (force_update || !(dynamic_world->tick_count&definition->shape_frequency))
 #else
 	(void)force_update;
 #endif
-	
-	return;
 }
 
 // LP addition: count number of media types used,

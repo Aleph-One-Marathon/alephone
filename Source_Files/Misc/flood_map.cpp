@@ -96,8 +96,6 @@ void allocate_flood_map_memory(
 	if (visited_polygons) delete []visited_polygons;
 	visited_polygons= new short[MAXIMUM_POLYGONS_PER_MAP];
 	assert(nodes&&visited_polygons);
-	
-	return;
 }
 
 /* returns next polygon index or NONE if there are no more polygons left cheaper than maximum_cost */
@@ -161,14 +159,12 @@ short flood_map(
 		
 		case _depth_first:
 			/* implementation left to the caller (c.f., zen() in fareast.c) */
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 
 	/* if we found a node, mark it as expanded and add it’s adjacent non-solid polygons to the search tree */
@@ -288,8 +284,6 @@ void choose_random_flood_node(
 		}
 		while (!suitable);
 	}
-	
-	return;
 }
 
 /* ---------- private code */
@@ -346,6 +340,4 @@ static void add_node(
 //			dprintf("added polygon #%d to node #%d (nodes=%p,visited=%p)", polygon_index, node_index, nodes, visited_polygons);
 		}
 	}
-	
-	return;
 }

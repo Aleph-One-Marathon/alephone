@@ -74,8 +74,6 @@ void draw_panels(void)
 		HUnlock((Handle) picture);
 
 		HUD_SW.update_everything(NONE);
-		// LP: handled inside of the resource wrapper object
-		// ReleaseResource((Handle) picture);	
 		
 		_restore_port();
 	} else {

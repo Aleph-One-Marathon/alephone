@@ -103,15 +103,12 @@ void TEXTURE_HORIZONTAL_POLYGON_LINES(
 		while ((count-= 1)>=0)
 		{
 			*write++= shading_table[base_address[((source_y>>(HORIZONTAL_HEIGHT_DOWNSHIFT-7))&(0x7f<<7))+(source_x>>HORIZONTAL_WIDTH_DOWNSHIFT)]];
-//			*write++= shading_table[source_y>>HORIZONTAL_HEIGHT_DOWNSHIFT][source_x>>HORIZONTAL_WIDTH_DOWNSHIFT]];
 			source_x+= source_dx, source_y+= source_dy;
 		}
 		
 		data+= 1;
 		y0+= 1;
 	}
-	
-	return;
 }
 #endif
 
@@ -127,9 +124,7 @@ void LANDSCAPE_HORIZONTAL_POLYGON_LINES(
 	short *x1_table,
 	short line_count)
 {
-	// LP change: 
 	register short landscape_texture_width_downshift= 32 - NextLowerExponent(texture->height);
-	// register short landscape_texture_width_downshift= texture->height==1024 ? 32-10 : 32-9;
 
 	(void) (view);
 
@@ -153,8 +148,6 @@ void LANDSCAPE_HORIZONTAL_POLYGON_LINES(
 		data+= 1;
 		y0+= 1;
 	}
-	
-	return;
 }
 
 #if !defined(EXTERNAL) || BIT_DEPTH==32
@@ -333,8 +326,6 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 			x+= 4;
 		}
 	}
-	
-	return;
 }
 #endif
 
@@ -537,8 +528,6 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 			x+= 4;
 		}
 	}
-	
-	return;
 }
 #endif
 
@@ -627,8 +616,6 @@ void TINT_VERTICAL_POLYGON_LINES(
 		line+= 1;
 		x+= 1;
 	}
-	
-	return;
 }
 
 // LP: "static" removed
@@ -679,6 +666,4 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 	}
 	
 	texture_random_seed= seed;
-
-	return;
 }

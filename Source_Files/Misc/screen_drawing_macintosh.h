@@ -169,15 +169,6 @@ void _get_interface_color(
 	color->red = Color.red;
 	color->green = Color.green;
 	color->blue = Color.blue;
-	
-	/*
-	assert(screen_colors);
-	assert(color_index>=0 && color_index<=(*screen_colors)->ctSize);
-
-	*color= (*screen_colors)->ctTable[color_index].rgb;
-	*/
-	
-	return;
 }
 
 void _scroll_window(
@@ -556,85 +547,6 @@ void UseInterfaceFont(short font_index)
 	
 	InterfaceFonts[font_index].Use();
 }
-
-#ifdef OBSOLETE
-extern short interface_bit_depth;
-extern short bit_depth;
-
-bool display_full_screen_pict_resource(
-	WindowPtr window,
-	OSType pict_resource_type,
-	short pict_resource_number,
-	long delay)
-{
-	PicHandle picture;
-	bool picture_drawn= false;
-	
-	picture= (PicHandle) GetResource(pict_resource_type, 
-		determine_pict_resource_id(pict_resource_type, pict_resource_number));
-	if (picture)
-	{
-		CTabHandle clut;
-		
-		if (interface_bit_depth==8)
-		{
-#if 0
-			PictInfo info;
-			OSErr error;
-			
-			error= GetPictInfo(picture, &info, returnColorTable, 256, popularMethod, 0);
-			assert(error==noErr);
-
-			clut= info.theColorTable;
-#endif
-			clut= (CTabHandle) GetResource('clut', pict_resource_number);
-			if (clut)
-			{
-				MoveHHi((Handle)clut);
-				HLock((Handle)clut);
-			}
-		}
-		else
-		{
-			clut= world_color_table;
-		}
-		
-		if (clut)
-		{
-			GrafPtr old_port;
-
-			GetPort(&old_port);
-			SetPort(window);
-			
-			PaintRect(&window->portRect);
-	
-			if (interface_bit_depth==8) assert_world_color_table(clut, world_color_table);
-			full_fade(_start_cinematic_fade_in, clut);
-
-			draw_full_screen_pict_resource(window, pict_resource_type, pict_resource_number);
-			picture_drawn= true;
-	
-			full_fade(_long_cinematic_fade_in, clut);
-
-			if (delay>0)
-			{
-				wait_for_click_or_keypress(delay);
-		
-				full_fade(_cinematic_fade_out, clut);
-				PaintRect(&window->portRect);
-				full_fade(_end_cinematic_fade_out, clut);
-				if (interface_bit_depth==8) assert_world_color_table(interface_color_table, world_color_table);
-			}
-			
-			SetPort(old_port);
-		}
-
-		if (bit_depth==8 && clut) ReleaseResource((Handle)clut);
-	}
-	
-	return picture_drawn;
-}
-#endif
 
 /* ------- Private prototypes */
 static void load_interface_rectangles(

@@ -98,7 +98,6 @@ world_point2d *translate_point2d(
 {
 	// LP change: idiot-proofed this
 	theta = normalize_angle(theta);
-	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	point->x+= (distance*cosine_table[theta])>>TRIG_SHIFT;
@@ -116,11 +115,9 @@ world_point3d *translate_point3d(
 {
 	world_distance transformed_distance;
 	
-	// LP change: idiot-proofed this error check
+	// LP change: idiot-proofed this
 	theta = normalize_angle(theta);
 	phi = normalize_angle(phi);
-	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
-	// assert(phi>=0&&phi<NUMBER_OF_ANGLES);
 	
 	transformed_distance= (distance*cosine_table[phi])>>TRIG_SHIFT;
 	point->x+= (transformed_distance*cosine_table[theta])>>TRIG_SHIFT;
@@ -137,29 +134,17 @@ world_point2d *rotate_point2d(
 {
 	// LP change: lengthening the values for more precise calculations
 	long_vector2d temp;
-	// world_point2d temp;
 	
-	// LP change: idiot-proofed this error check
 	theta = normalize_angle(theta);
-	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
-	// LP change: lengthening the values for more precise calculations
 	temp.i= int32(point->x)-int32(origin->x);
 	temp.j= int32(point->y)-int32(origin->y);
-	// temp.x= point->x-origin->x;
-	// temp.y= point->y-origin->y;
 	
 	point->x= ((temp.i*cosine_table[theta])>>TRIG_SHIFT) + ((temp.j*sine_table[theta])>>TRIG_SHIFT) +
 		origin->x;
 	point->y= ((temp.j*cosine_table[theta])>>TRIG_SHIFT) - ((temp.i*sine_table[theta])>>TRIG_SHIFT) +
 		origin->y;
-	/*
-	point->x= ((temp.x*cosine_table[theta])>>TRIG_SHIFT) + ((temp.y*sine_table[theta])>>TRIG_SHIFT) +
-		origin->x;
-	point->y= ((temp.y*cosine_table[theta])>>TRIG_SHIFT) - ((temp.x*sine_table[theta])>>TRIG_SHIFT) +
-		origin->y;
-	*/
 	
 	return point;
 }
@@ -171,25 +156,15 @@ world_point2d *transform_point2d(
 {
 	// LP change: lengthening the values for more precise calculations
 	long_vector2d temp;
-	// world_point2d temp;
 	
-	// LP change: idiot-proofed this error check
 	theta = normalize_angle(theta);
-	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
-	// LP change: lengthening the values for more precise calculations
 	temp.i= int32(point->x)-int32(origin->x);
 	temp.j= int32(point->y)-int32(origin->y);
-	// temp.x= point->x-origin->x;
-	// temp.y= point->y-origin->y;
 	
 	point->x= ((temp.i*cosine_table[theta])>>TRIG_SHIFT) + ((temp.j*sine_table[theta])>>TRIG_SHIFT);
 	point->y= ((temp.j*cosine_table[theta])>>TRIG_SHIFT) - ((temp.i*sine_table[theta])>>TRIG_SHIFT);
-	/*
-	point->x= ((temp.x*cosine_table[theta])>>TRIG_SHIFT) + ((temp.y*sine_table[theta])>>TRIG_SHIFT);
-	point->y= ((temp.y*cosine_table[theta])>>TRIG_SHIFT) - ((temp.x*sine_table[theta])>>TRIG_SHIFT);
-	*/
 	
 	return point;
 }
@@ -202,42 +177,28 @@ world_point3d *transform_point3d(
 {
 	// LP change: lengthening the values for more precise calculations
 	long_vector3d temporary;
-	// world_point3d temporary;
 	
 	temporary.i= int32(point->x)-int32(origin->x);
 	temporary.j= int32(point->y)-int32(origin->y);
 	temporary.k= int32(point->z)-int32(origin->z);
-	// temporary.x= point->x-origin->x;
-	// temporary.y= point->y-origin->y;
-	// temporary.z= point->z-origin->z;
 	
 	/* do theta rotation (in x-y plane) */
 	point->x= ((temporary.i*cosine_table[theta])>>TRIG_SHIFT) + ((temporary.j*sine_table[theta])>>TRIG_SHIFT);
 	point->y= ((temporary.j*cosine_table[theta])>>TRIG_SHIFT) - ((temporary.i*sine_table[theta])>>TRIG_SHIFT);
-	/*
-	point->x= ((temporary.x*cosine_table[theta])>>TRIG_SHIFT) + ((temporary.y*sine_table[theta])>>TRIG_SHIFT);
-	point->y= ((temporary.y*cosine_table[theta])>>TRIG_SHIFT) - ((temporary.x*sine_table[theta])>>TRIG_SHIFT);
-	*/
 	
 	/* do phi rotation (in x-z plane) */
 	if (phi)
 	{
 		temporary.i= point->x;
-		// temporary.x= point->x;
 		/* temporary.z is already set */
 		
 		point->x= ((temporary.i*cosine_table[phi])>>TRIG_SHIFT) + ((temporary.k*sine_table[phi])>>TRIG_SHIFT);
 		point->z= ((temporary.k*cosine_table[phi])>>TRIG_SHIFT) - ((temporary.i*sine_table[phi])>>TRIG_SHIFT);
-		/*
-		point->x= ((temporary.x*cosine_table[phi])>>TRIG_SHIFT) + ((temporary.z*sine_table[phi])>>TRIG_SHIFT);
-		point->z= ((temporary.z*cosine_table[phi])>>TRIG_SHIFT) - ((temporary.x*sine_table[phi])>>TRIG_SHIFT);
-		*/
 		/* y-coordinate is unchanged */
 	}
 	else
 	{
 		point->z= temporary.k;
-		// point->z= temporary.z;
 	}
 	
 	return point;
@@ -281,8 +242,6 @@ void build_trig_tables(
 			tangent_table[i]= INT32_MIN;
 		}
 	}
-
-	return;
 }
 
 /* one day weÕll come back here and actually make this run fast */
@@ -384,60 +343,12 @@ angle arctangent(
 	
 	// Idiot-proofed exit
 	return NORMALIZE_ANGLE(theta);
-
-	/*
-	register int32 last_difference, new_difference;
-	angle search_arc;
-	if (x)
-	{
-		tangent= (TRIG_MAGNITUDE*y)/x;
-		
-		if (tangent)
-		{
-			theta= (y>0) ? 1 : HALF_CIRCLE+1;
-			if (tangent<0) theta+= QUARTER_CIRCLE;
-			
-			last_difference= tangent-tangent_table[theta-1];
-			for (search_arc=QUARTER_CIRCLE-1;search_arc;search_arc--,theta++)
-			{
-				new_difference= tangent-tangent_table[theta];
-				
-				if ((last_difference<=0&&new_difference>=0) || (last_difference>=0&&new_difference<=0))
-				{
-					if (ABS(last_difference)<ABS(new_difference))
-					{
-						return theta-1;
-					}
-					else
-					{
-						return theta;
-					}
-				}
-				
-				last_difference= new_difference;
-			}
-			
-			return theta==NUMBER_OF_ANGLES ? 0 : theta;
-		}
-		else
-		{
-			return x<0 ? HALF_CIRCLE : 0;
-		}
-	}
-	else
-	{
-		*//* so arctan(0,0)==¹/2 (bill me) *//*
-		return y<0 ? THREE_QUARTER_CIRCLE : QUARTER_CIRCLE;
-	}
-	*/
 }
 
 void set_random_seed(
 	uint16 seed)
 {
 	random_seed= seed ? seed : DEFAULT_RANDOM_SEED;
-	
-	return;
 }
 
 uint16 get_random_seed(
@@ -518,7 +429,6 @@ world_distance distance2d(
 	int32 distance= isqrt(dx*dx + dy*dy);
 	
 	return distance>INT16_MAX ? INT16_MAX : distance;
-	// return isqrt((p0->x-p1->x)*(p0->x-p1->x)+(p0->y-p1->y)*(p0->y-p1->y));
 }
 
 /*
@@ -639,21 +549,6 @@ int32 isqrt(
 	return r;
 }
 
-#ifdef OBSOLETE
-world_distance guess_distance3d(
-	world_point3d *p0,
-	world_point3d *p1)
-{
-	world_distance dx= (p0->x<p1->x) ? (p1->x-p0->x) : (p0->x-p1->x);
-	world_distance dy= (p0->y<p1->y) ? (p1->y-p0->y) : (p0->y-p1->y);
-	world_distance dz= (p0->z<p1->z) ? (p1->z-p0->z) : (p0->z-p1->z);
-
-	/* max + med/4 + min/4 formula from graphics gems; weÕre just taking their word for it */
-	return (dx>dy) ? ((dx>dz) ? (dx+(dy>>2)+(dz>>2)) : (dz+(dx>>2)+(dy>>2))) :
-		((dy>dz) ? (dy+(dx>>2)+(dz>>2)) : (dz+(dx>>2)+(dy>>2)));
-}
-#endif
-
 // LP additions: stuff for handling long-distance views
 
 void long_to_overflow_short_2d(long_vector2d& LVec, world_point2d& WVec, uint16& flags)
@@ -702,18 +597,12 @@ world_point2d *transform_overflow_point2d(
 {
 	// LP change: lengthening the values for more precise calculations
 	long_vector2d temp, tempr;
-	// world_point2d temp;
 	
-	// LP change: idiot-proofed this error check
 	theta = normalize_angle(theta);
-	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
-	// LP change: lengthening the values for more precise calculations
 	temp.i= int32(point->x)-int32(origin->x);
 	temp.j= int32(point->y)-int32(origin->y);
-	// temp.x= point->x-origin->x;
-	// temp.y= point->y-origin->y;
 		
 	tempr.i= ((temp.i*cosine_table[theta])>>TRIG_SHIFT) + ((temp.j*sine_table[theta])>>TRIG_SHIFT);
 	tempr.j= ((temp.j*cosine_table[theta])>>TRIG_SHIFT) - ((temp.i*sine_table[theta])>>TRIG_SHIFT);

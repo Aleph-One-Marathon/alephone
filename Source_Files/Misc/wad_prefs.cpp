@@ -272,8 +272,6 @@ void w_write_preferences_file(
 		}
 		close_wad_file(PrefsFile);
 	} 
-	
-	return;
 }
 
 static void load_preferences(
@@ -303,6 +301,4 @@ static void load_preferences(
 		/* Close the file.. */
 		close_wad_file(PrefsFile);
 	}
-	
-	return;
 }

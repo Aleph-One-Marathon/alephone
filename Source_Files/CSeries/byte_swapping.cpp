@@ -18,7 +18,9 @@
 	http://www.gnu.org/licenses/gpl.html
 
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
 #include "cseries.h"
 #include "byte_swapping.h"
 

@@ -479,8 +479,6 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 #else
 	SetCursor(&qd.arrow);
 #endif
-
-	return;
 }
 
 void handle_game_key(
@@ -732,8 +730,6 @@ void handle_game_key(
 		// if(update_interface) draw_interface();
 	}
 	if (changed_prefs) write_preferences();
-	
-	return;
 }
 
 static void verify_environment(
@@ -799,8 +795,6 @@ static void verify_environment(
 	{
 		alert_user(fatalError, strERRORS, badMemory, FreeMem());
 	}
-	
-	return;
 }
 
 static void handle_high_level_event(
@@ -1086,7 +1080,6 @@ static void initialize_system_information(
 	} else {
 		system_information->machine_is_bluebox= false;
 	}
-	return;
 }
 
 bool is_keypad(
@@ -1139,8 +1132,6 @@ static void marathon_dialog_header_proc(
 			}
 		}
 	}
-		
-	return;
 }
 
 static void initialize_marathon_music_handler(
@@ -1163,8 +1154,6 @@ static void initialize_marathon_music_handler(
 		// initialized= initialize_music_handler((FileDesc *) &music_file_spec);
 		initialized= initialize_music_handler(SongFile);
 	}
-	
-	return;
 }
 
 static void main_event_loop(
@@ -1254,8 +1243,6 @@ static void wait_for_highlevel_event(
 			done= true;
 		}
 	}
-
-	return;
 }
 
 // LP: GetScreenGrafPort() cast to WindowPtr is OK, since it is either screen_window in screen.cpp
@@ -1286,8 +1273,6 @@ void update_any_window(
 	}
 	EndUpdate(window);
 	SetPort(old_port);
-	
-	return;
 }
 
 /* Can't be static because the general_filter_proc calls this */
@@ -1304,8 +1289,6 @@ void activate_any_window(
 	{
 		activate_screen_window(window, event, active);
 	}
-	
-	return;
 }
 
 static void process_event(
@@ -1322,9 +1305,7 @@ static void process_event(
 			{
 				case inSysWindow: /* DAs and the menu bar can blow me */
 				case inMenuBar:
-					// LP change:
 					assert(false);
-					// halt();
 					break;
 					
 				case inContent:
@@ -1332,9 +1313,7 @@ static void process_event(
 					break;
 					
 				default:
-					// LP change:
 					assert(false);
-					// halt();
 					break;
 			}
 			break;
@@ -1402,8 +1381,6 @@ static void process_event(
 		default:
 			break;
 	}
-		
-	return;
 }
 
 // LP: "static" removed
@@ -1422,8 +1399,6 @@ void process_screen_click(
 	portable_process_screen_click(where.h, where.v, cheatkeys_down);
 
 	SetPort(old_port);	
-	
-	return;
 }
 
 static void process_key(
@@ -1431,7 +1406,6 @@ static void process_key(
 	short key)
 {
 	process_game_key(event, key);
-	return;
 }
 
 

@@ -29,21 +29,8 @@ Feb 12, 2000 (Loren Petrich):
 
 #define MARATHON_ONE_DATA_VERSION 0
 #define MARATHON_TWO_DATA_VERSION 1
-// LP change:
 #define MARATHON_INFINITY_DATA_VERSION 2
 #define EDITOR_MAP_VERSION (MARATHON_INFINITY_DATA_VERSION)
-// #define EDITOR_MAP_VERSION (MARATHON_TWO_DATA_VERSION)
-
-#if 0
-/* these are in map.h, why again? */
-typedef world_point2d saved_map_pt;
-typedef struct line_data saved_line;
-typedef struct side_data saved_side;
-typedef struct polygon_data saved_poly;
-typedef struct map_annotation saved_annotation;
-typedef struct map_object saved_object;
-typedef struct static_data saved_map_data;
-#endif
 
 #define MINIMUM_MAP_X_COORDINATE SHORT_MIN
 #define MAXIMUM_MAP_X_COORDINATE SHORT_MAX

@@ -42,7 +42,6 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #else
 #include <Dialogs.h>
 #include <TextUtils.h>
-//#include <ControlDefinitions.h>
 #endif
 
 #include "cstypes.h"

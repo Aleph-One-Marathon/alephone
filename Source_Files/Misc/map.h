@@ -68,11 +68,6 @@ Nov 19, 2000 (Loren Petrich):
 
 /* These arrays are the absolute limits, and are used only by the small memory allocating */
 /*  arrays.  */
-// LP: these are now defined as sizes of dynamically-allocated arrays of these objects
-// #define MAXIMUM_POLYGONS_PER_MAP (KILO)
-// #define MAXIMUM_SIDES_PER_MAP (4*KILO)
-// #define MAXIMUM_ENDPOINTS_PER_MAP (8*KILO)
-// #define MAXIMUM_LINES_PER_MAP (4*KILO)
 #define MAXIMUM_LEVELS_PER_MAP (128)
 
 #define LEVEL_NAME_LENGTH (64+2)
@@ -277,7 +272,6 @@ const int SIZEOF_random_sound_image_data = 32;
 /* ---------- object structure */
 // LP change: made this settable from the resource fork
 #define MAXIMUM_OBJECTS_PER_MAP (get_dynamic_limit(_dynamic_limit_objects))
-// #define MAXIMUM_OBJECTS_PER_MAP 384
 
 /* SLOT_IS_USED(), SLOT_IS_FREE(), MARK_SLOT_AS_FREE(), MARK_SLOT_AS_USED() macros are also used
 	for monsters, effects and projectiles */

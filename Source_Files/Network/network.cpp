@@ -571,10 +571,6 @@ static byte *NetReceiveGameData(void);
 /*  when the gatherer sends out an unsync packet, but we aren't ready to quit.  Therefore we */
 /*  must become the gatherer. */
 static void drop_upring_player(void);
-// ZZZ: note, become_the_gatherer is only called from code marked "OBSOLETE", so I'm marking the function likewise.
-#ifdef OBSOLETE
-static void become_the_gatherer(NetPacketPtr packet_data);
-#endif
 
 static void *receive_stream_data(long *length, OSErr *receive_error);
 static OSErr send_stream_data(void *data, long length);
@@ -827,8 +823,6 @@ void NetExit(
 	NetDDPClose();
 	NetADSPClose();
 #endif
-		
-	return;
 }
 
 /* Add a function for a distribution type. returns the type, or NONE if it can't be
@@ -885,7 +879,6 @@ void NetRemoveDistributionFunction(
 #else
 	distribution_info[type].type_in_use = false;
 #endif
-	return;
 }
 
 /* Distribute information to the whole net. */
@@ -943,8 +936,6 @@ void NetDistributeInformation(
 	NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 #endif
 #endif
-	
-	return;
 }
 
 short NetState(
@@ -1022,8 +1013,6 @@ void NetCancelGather(
 
 	NetDistributeTopology(tagCANCEL_GAME);
 #endif
-
-	return;
 }
 
 bool NetStart(
@@ -1070,24 +1059,6 @@ static int net_compare(
 {
 #ifndef NETWORK_IP
 	return 0;
-#ifdef OBSOLETE
-	uint16 base_network_number;
-	uint16 p1_network_number, p2_network_number;
-	
-	base_network_number = topology->players[0].ddpAddress.aNet; // get server's addres.
-	p1_network_number = ((struct NetPlayer const *)p1)->ddpAddress.aNet;
-	p2_network_number = ((struct NetPlayer const *)p2)->ddpAddress.aNet;
-	if (p1_network_number == p2_network_number)
-		return 0;
-	if (p1_network_number >= base_network_number && p2_network_number >= base_network_number)
-		return p1_network_number - p2_network_number;
-	else if (p1_network_number < base_network_number && p2_network_number < base_network_number)
-		return p1_network_number - p2_network_number;
-	else if (p1_network_number >= base_network_number)
-		return -1;
-	else // p2_network_number >= base_network_number
-		return 1;
-#endif
 #else
 	uint32 p1_host = ((const NetPlayer *)p1)->ddpAddress.host;
 	uint32 p2_host = ((const NetPlayer *)p2)->ddpAddress.host;
@@ -1193,7 +1164,6 @@ void NetCancelJoin(
 		}
 	}
 #endif	
-	return;
 }
 
 /*
@@ -1590,9 +1560,7 @@ void NetDDPPacketHandler(
 										break;
 										
 									default:
-										// LP change:
 										assert(false);
-										// halt();
 										break;
 								}
 							}
@@ -1613,9 +1581,7 @@ void NetDDPPacketHandler(
 							{
 								/* early acknowledgement; wet our pants (this should never happen) */
 //								dprintf("early ack (%d>%d);g", header->sequence, status->lastValidRingSequence);
-								// LP change:
 								assert(false);
-								// halt();
 							}
 						}
 					}
@@ -1693,9 +1659,7 @@ void NetDDPPacketHandler(
 											break;
 										
 										default:
-											// LP change:
 											assert(false);
-											// halt();
 											break;
 									}
 								}
@@ -1737,16 +1701,13 @@ void NetDDPPacketHandler(
 				// (was tagRING_PACKET, or tagRING_CHANGE_PACKET)
                                 
 				default:
-					// LP change:
 					assert(false);
-					// halt();
+					break;
 			} // switch(header->tag)
 		} // packet seems legitimate (correct protocolType and size)
 	} // accept_packets
 	
 	already_here= false;
-	
-	return;
 } // NetDDPPacketHandler
 
 // Act on an incoming lossy-distribution datagram
@@ -1807,8 +1768,6 @@ static void NetProcessLossyDistribution(
                 NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
                 #endif
         }
-
-	return;
 } // NetProcessLossyDistribution
 
 /*
@@ -1908,28 +1867,6 @@ static void NetProcessIncomingBuffer(
 			break;
 			
 		case typeNORMAL_RING_PACKET:
-/* This needs to be done differently, because the required action flags at zero need to be */
-/*  read so that I know that the netState==netComingDown. */
-/* For now, I remove it, so that we aren't able to recover nicely, only through the resend */
-/*  task */
-#ifdef OBSOLETE
-			if(packet_data->required_action_flags==0 && netState!=netComingDown)
-			{
-#ifdef DEBUG_NET
-				net_stats.server_bailing_early++;
-				if(status->upringPlayerIndex!=status->server_player_index)
-				{
-					dprintf("Upring PLayer: %d Server player: %d", status->upringPlayerIndex,
-				}
-#endif
-				warn(status->upringPlayerIndex==status->server_player_index);
-				if(status->upringPlayerIndex==status->server_player_index)
-				{
-					become_the_gatherer(packet_data);
-					packet_tag= tagCHANGE_RING_PACKET;
-				} 
-			}
-#endif//OBSOLETE
 			break;
 
 		case typeUNSYNC_RING_PACKET:
@@ -1961,9 +1898,7 @@ static void NetProcessIncomingBuffer(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -2002,13 +1937,9 @@ static void NetProcessIncomingBuffer(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
-	
-	return;
 } // NetProcessIncomingBuffer
 
 
@@ -2198,15 +2129,11 @@ static void NetInitializeTopology(
 		NetLocalAddrBlock(&local_player->ddpAddress, ddpSocket);
 	}
 	memcpy(local_player->player_data, player_data, player_data_size);
-	//BlockMove(player_data, local_player->player_data, player_data_size);
 	
 	/* initialize the network topology (assume weÕre the only player) */
 	topology->player_count= 1;
 	topology->nextIdentifier= 1;
 	memcpy(topology->game_data, game_data, game_data_size);
-	//BlockMove(game_data, topology->game_data, game_data_size);
-
-	return;
 }
 
 static void NetLocalAddrBlock(
@@ -2228,8 +2155,6 @@ static void NetLocalAddrBlock(
 	address->host = 0x7f000001;	//!! XXX (ZZZ) yeah, that's really bad.
 	address->port = socketNumber;	// OTOH, I guess others are set up to "stuff" the address they actually saw for us instead of
 #endif					// this, anyway... right??  So maybe it's not that big a deal.......
-	
-	return;
 }
 
 static long NetPacketSize(
@@ -2304,8 +2229,6 @@ static void NetSendAcknowledgement(
 	#ifdef NETWORK_IP
 	NetDDPSendFrame(frame, &status->downringAddress, kPROTOCOL_TYPE, ddpSocket);
 	#endif
-	
-	return;
 }
 
 /* Only the server can call this... */
@@ -2381,13 +2304,6 @@ static void NetBuildRingPacket(
             
             netcpy(action_flags_NET, action_flags, data_size);
         }
-        
-        // (some original versions of the above code, preserved to help satisfy your historical curiosity)
-        // (observe that data_size used to include sizeof(NetPacket); now it only is the size of the action_flags.)
-	//memcpy(frame->data + sizeof(NetPacketHeader), data, data_size);
-	//BlockMove(data, frame->data+sizeof(NetPacketHeader), data_size);
-
-	return;
 }
 
 // ZZZ: fixed to deal with packed (_NET) format
@@ -2428,8 +2344,6 @@ static void NetSendRingPacket(
 	#if HAVE_SDL_NET
 	NetDDPSendFrame(frame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 	#endif
-	
-	return;
 }
 
 /*
@@ -2504,9 +2418,7 @@ dprintf("Never got confirmation on NetUnsync packet.  They don't love us.");
 						break;
 						
 					default:
-						// LP change:
 						assert(false);
-						// halt();
 						break;
 				}
 			}
@@ -2669,8 +2581,6 @@ static void NetUpdateTopology(
 	nextPlayerIndex= localPlayerIndex==topology->player_count-1 ? 0 : localPlayerIndex+1;
 	status->upringAddress= topology->players[nextPlayerIndex].ddpAddress;
 	status->upringPlayerIndex = nextPlayerIndex;
-	
-	return;
 }
 
 
@@ -3446,92 +3356,7 @@ static void process_flags(
 			}
 		}
 	}
-
-	return;
 }
-
-// ZZZ: observe: the only place this would be called is from within "OBSOLETE" code.  I have not
-// bothered to fix it for _NET format etc.  (I think it's been generalized/updated/replaced by
-// drop_upring_player().)
-#ifdef OBSOLETE	// (ZZZ)
-static void become_the_gatherer(
-	NetPacketPtr packet_data)
-{
-	short flag_count, index, oldNextPlayerIndex;
-	uint32 *action_flags;
-	
-	flag_count= 0;
-
-#ifdef DEBUG_NET
-//	dprintf("Attempting to delete upring (node %d) from ring. muhaha.;g", status->upringAddress.aNode);
-	net_stats.upring_drops++;
-#endif
-
-	/* uh-oh. looks like the upring address has gone down. modify the ring packet to zero */
-	/* out the players action flags and find a new downring address. */
-	oldNextPlayerIndex= NetAdjustUpringAddressUpwards();
-
-	/* If the next player upring was the server, and the next player upring wasn't us.. */
-	assert(oldNextPlayerIndex==status->server_player_index);
-	if (oldNextPlayerIndex==status->server_player_index && !status->iAmTheServer)
-	{				
-		// let us crown ourselves!
-		status->server_player_index= localPlayerIndex;
-		status->iAmTheServer= true;
-#ifdef DEBUG_NET
-//		dprintf("Trying to become the server...;g");				
-		net_stats.assuming_control++;
-#endif
-
-		// now down to work. gotta switch tasks. Take a deep breath...
-		queueingTMTask = myTMRemove(queueingTMTask);
-		assert(!serverTMTask);
-		serverTMTask = myXTMSetup(1000/TICKS_PER_SECOND, NetServerTask);
-
-		packet_data->server_net_time= status->localNetTime;
-	}
-	
-	//  adjust the packet to indicate that our fellow player has become deceased.
-	// (is this an obituary?)
-	action_flags= packet_data->action_flags;
-	for (index= 0; index<oldNextPlayerIndex; index++)
-	{
-		if (packet_data->action_flag_count[index] != NET_DEAD_ACTION_FLAG_COUNT)
-		{
-			action_flags += packet_data->action_flag_count[index];
-		}
-	}
-	
-	for (index= oldNextPlayerIndex+1; index<topology->player_count; index++)
-	{
-		if (packet_data->action_flag_count[index] != NET_DEAD_ACTION_FLAG_COUNT)
-		{
-			flag_count += packet_data->action_flag_count[index];
-		}
-	}
-	
-	/* Remove the servers flags.. */
-	if (flag_count > 0) 
-	{
-		memcpy(action_flags, action_flags + packet_data->action_flag_count[oldNextPlayerIndex], flag_count * sizeof(uint32));
-		//BlockMove(action_flags + packet_data->action_flag_count[oldNextPlayerIndex], 
-		//	action_flags, sizeof(long)*flag_count);
-	}
-	/* Mark the server as net dead */
-	packet_data->action_flag_count[oldNextPlayerIndex]= NET_DEAD_ACTION_FLAG_COUNT;
-	packet_data->ring_packet_type= typeNORMAL_RING_PACKET;
-
-	/* If everyone else is netdead, set the single player flag. */
-	for(index= 0; index<topology->player_count; ++index)
-	{
-		if(index!=localPlayerIndex && packet_data->action_flag_count[index]!=NET_DEAD_ACTION_FLAG_COUNT)
-		{
-			break;
-		}
-	}
-	if(index==topology->player_count) status->single_player= true;
-}
-#endif//OBSOLETE ZZZ
 
 #ifdef DEBUG_NET
 #ifdef STREAM_NET
@@ -4195,9 +4020,7 @@ uint16 NetStreamPacketLength(
 	
 		default:
 			length= 0;
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 

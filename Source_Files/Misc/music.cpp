@@ -59,6 +59,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 		Have an AIFF file, that I use sndplaydoublebuffer to play from, reading in my
 		buffers as needed.
 */
+
 // LP note: A5 worlds are for interrupt-time stuff in the 68K MacOS;
 // no need for them in the PowerPC MacOS or anywhere else
 
@@ -106,9 +107,7 @@ struct music_data {
 	short play_count;
 	short song_index;
 	short next_song_index;
-	// LP: using opened-file object
 	OpenedFile OFile;
-	// short song_file_refnum;
 	short fade_interval_duration;
 	short fade_interval_ticks;
 	long ticks_at_last_update;
@@ -125,8 +124,6 @@ static struct song_definition *get_song_definition(
 	short index);
 
 /* ----------------- globals */
-// LP: no need for it to be a pointer
-// static struct music_data *music_state= NULL;
 static music_data music_state;
 
 // Stuff for playing a soundtrack with Quicktime;
@@ -254,7 +251,6 @@ void PreloadMusic()
 
 /* If channel is null, we don't initialize */
 bool initialize_music_handler(FileSpecifier& SongFile)
-//	FileDesc *song_file)
 {
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 	// In case the old player doesn't get initialized...
@@ -288,24 +284,17 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 	
 	/* Does the file exist? */
 	// LP change: using a file object
-	// error= FSpOpenDF((FSSpec *) song_file, fsRdPerm, &song_file_refnum);
 	if(SongFile.Open(music_state.OFile))
 	{
-		
 		// LP change: check to see if the file is an AIFF one;
 		OSType MusicHeader;
 		const OSType AIFF_Header = 'FORM';
 		
 		if (!music_state.OFile.Read(sizeof(MusicHeader),&MusicHeader)) return false;
-		// long NumBytes = 4;
-		// error = FSRead(song_file_refnum, &NumBytes, &MusicHeader);
-		// if (error != noErr) return false;
 		if (MusicHeader != AIFF_Header) return false;
 		
 		// Reposition the file
 		if (!music_state.OFile.SetPosition(0)) return false;
-		// error = SetFPos(song_file_refnum, fsFromStart, 0);
-		// if (error != noErr) return false;
 		
 		// LP: removed allocation of music-state object
 		music_state.initialized= true;
@@ -314,26 +303,20 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 		music_state.phase= 0;
 		music_state.song_index= 0;
 		music_state.next_song_index= NONE;
-		// music_state.song_file_refnum= song_file_refnum;
 		music_state.completion_proc= NewFilePlayCompletionProc(file_play_completion_routine);
 		music_state.ticks_at_last_update= TickCount();
 		/* Allocate our buffer */
 		music_state.sound_buffer_size= kDefaultSoundBufferSize;
 		music_state.sound_buffer= NULL;
 			
-//			music_state->sound_buffer= malloc(music_state->sound_buffer_size);
-//			assert(music_state->sound_buffer);
-		
 		allocate_music_channel();
 		
 		assert(music_state.completion_proc);
 		atexit(shutdown_music_handler);
 	}
 #endif
-	// LP addition:
-		return false;
-	
-	return true;
+
+	return false;
 }
 
 void free_music_channel(
@@ -589,8 +572,6 @@ void music_idle_proc(
 		music_state.ticks_at_last_update= TickCount();
 	}
 #endif
-
-	return;
 }
 
 void stop_music(
@@ -715,8 +696,6 @@ static pascal void file_play_completion_routine(
 	struct music_data *private_music_data= (struct music_data *) channel->userInfo;
 
 	private_music_data->flags |= _song_completed;
-
-	return;
 }
 
 static void allocate_music_channel(
@@ -738,7 +717,7 @@ static void allocate_music_channel(
 #include "world.h"
 #include "map.h"
 #include "mysound.h"
-// Becuase something in preferences.h
+// Because something in preferences.h
 //    typedef float GLfloat
 // in GL/gl.h not to work properly.
 extern struct sound_manager_parameters *sound_preferences;

@@ -287,8 +287,6 @@ static void default_network_preferences(
 	preferences->kill_limit = 10;
 	preferences->entry_point= 0;
 	preferences->game_type= _game_of_kill_monsters;
-	
-	return;
 }
 
 static void default_player_preferences(
@@ -315,8 +313,6 @@ static void default_player_preferences(
 	prefs->Crosshairs.FromCenter = 8;
 	prefs->Crosshairs.Length = 16;
 	prefs->Crosshairs.Color = rgb_white;
-	
-	return;
 }
 
 static void default_input_preferences(

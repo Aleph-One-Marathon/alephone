@@ -20,7 +20,9 @@
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+
 #ifndef _MY_32BIT_QUICKDRAW_
 #define _MY_32BIT_QUICKDRAW_
 

@@ -206,8 +206,6 @@ void trigger_nearby_items(
 		
 		polygon_index= flood_map(NONE, LONG_MAX, item_trigger_cost_function, _breadth_first, (void *) NULL);
 	}
-	
-	return;
 }
 
 /* returns the color of the ball or NONE if they don't have one */
@@ -248,8 +246,6 @@ void get_item_name(
 	
 	getcstr(buffer, strITEM_NAME_LIST, plural ? definition->plural_name_id :
 		definition->singular_name_id);
-	
-	return;
 }
 
 void get_header_name(
@@ -257,8 +253,6 @@ void get_header_name(
 	short type)
 {
 	getcstr(buffer, strHEADER_NAME_LIST, type);
-	
-	return;
 }
 
 void calculate_player_item_array(
@@ -287,8 +281,6 @@ void calculate_player_item_array(
 	}
 	
 	*array_count= count;
-	
-	return;
 }
 
 short count_inventory_lines(
@@ -403,16 +395,12 @@ void swipe_nearby_items(
 		// LP addition: end of that kludgy search loop
 		}
 	}
-	
-	return;
 }
 
 void mark_item_collections(
 	bool loading)
 {
 	mark_collection(_collection_items, loading);
-	
-	return;
 }
 
 bool unretrieved_items_on_map(
@@ -578,9 +566,8 @@ bool try_and_add_player_item(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	// Benad. Burk.
 	DONE:
@@ -684,8 +671,6 @@ static bool test_item_retrieval(
 
 // LP addition: initializer
 void initialize_items(void) {
-
-	return;
 }
 
 // LP addition: animator

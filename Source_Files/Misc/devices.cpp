@@ -251,8 +251,6 @@ void initialize_control_panels_for_level(
 			set_control_panel_texture(side);
 		}
 	}
-
-	return;
 }
 
 void update_control_panels(
@@ -317,9 +315,8 @@ void update_control_panels(
 						break;
 					
 					default:
-						// LP change:
 						assert(false);
-						// halt();
+						break;
 				}
 			}
 			
@@ -335,8 +332,6 @@ void update_control_panels(
 			}
 		}
 	}
-	
-	return;
 }
 
 void update_action_key(
@@ -424,8 +419,6 @@ void assume_correct_switch_position(
 			}
 		}
 	}
-	
-	return;
 }
 
 void try_and_toggle_control_panel(
@@ -488,8 +481,6 @@ void try_and_toggle_control_panel(
 			}
 		}
 	}
-	
-	return;
 }
 
 #if 0
@@ -778,11 +769,6 @@ static void	change_panel_state(
 //				fade_in_background_music(30);
 			}
 			break;
-
-		// default:
-			// LP change: do nothing
-			// assert(false);
-			// halt();
 	}
 	
 	if (make_sound)
@@ -802,8 +788,6 @@ static void set_control_panel_texture(
 	
 	side->primary_texture.texture= BUILD_DESCRIPTOR(definition->collection,
 		GET_CONTROL_PANEL_STATUS(side) ? definition->active_shape : definition->inactive_shape);
-
-	return;
 }
 
 
@@ -847,11 +831,8 @@ static void play_control_panel_sound(
 	if (!definition) return;
 
 	if (!(sound_index>=0 && sound_index<NUMBER_OF_CONTROL_PANEL_SOUNDS)) return;
-	// assert(sound_index>=0 && sound_index<NUMBER_OF_CONTROL_PANEL_SOUNDS);
 	
 	_play_side_sound(side_index, definition->sounds[sound_index], definition->sound_frequency);
-	
-	return;
 }
 
 static bool get_recharge_status(

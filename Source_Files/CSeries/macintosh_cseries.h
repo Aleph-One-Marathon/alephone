@@ -22,6 +22,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Adjusted when defines were done to not stomp on Carbon's use of them
 	Added undefs to mac and BIG_ENDIAN to prevent redefinition warnings
 */
+
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #ifndef _MACINTOSH_CSERIES
 #define _MACINTOSH_CSERIES

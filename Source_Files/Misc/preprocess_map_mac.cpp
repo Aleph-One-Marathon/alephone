@@ -53,9 +53,7 @@ Feb 16, 2002 (Br'fin (Jeremy Parsons)):
 #include "macintosh_cseries.h"
 #include "world.h"
 #include "map.h"
-// LP change: moved this into main directory:
 #include "editor.h"
-// #include ":editor code:editor.h"
 #include "interface.h"
 #include "shell.h"
 #include "game_wad.h"
@@ -340,6 +338,4 @@ static void add_overhead_thumbnail(
 	KillPicture(picture);
 
 	SetGWorld(old_gworld, old_device);
-	
-	return;
 }

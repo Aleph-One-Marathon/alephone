@@ -131,19 +131,7 @@ extern TP2PerfGlobals perf_globals;
 #define DISPLAY_PICT_RESOURCE_TYPE 'PICT'
 #define CLOSE_WITHOUT_WARNING_DELAY (5*TICKS_PER_SECOND)
 
-// LP change:
 #define NUMBER_OF_INTRO_SCREENS (3)
-/*
-#ifdef DEBUG
-	#define NUMBER_OF_INTRO_SCREENS (0)
-#else
-	#ifdef DEMO
-		#define NUMBER_OF_INTRO_SCREENS (2)
-	#else
-		#define NUMBER_OF_INTRO_SCREENS (1)
-	#endif
-#endif
-*/
 #define INTRO_SCREEN_DURATION (215) // fudge to align with sound
 
 #ifdef DEMO
@@ -164,9 +152,7 @@ extern TP2PerfGlobals perf_globals;
 #define NUMBER_OF_EPILOGUE_SCREENS 1
 #define EPILOGUE_DURATION (INDEFINATE_TIME_DELAY)
 
-// LP change:
 #define NUMBER_OF_CREDIT_SCREENS 7
-// #define NUMBER_OF_CREDIT_SCREENS 1
 #define CREDIT_SCREEN_DURATION (15*60*TICKS_PER_SECOND)
 
 #define NUMBER_OF_CHAPTER_HEADINGS 0
@@ -306,8 +292,6 @@ void force_game_state_change(
 	void)
 {
 	game_state.phase= 0;
-
-	return;
 }
 
 bool player_controlling_game(
@@ -375,9 +359,7 @@ void set_game_state(
 					break;
 					
 				default: 
-					// LP change:
 					assert(false);
-					// halt();
 					break;
 			}
 			break;
@@ -411,8 +393,6 @@ void set_change_level_destination(
 {
 	assert(game_state.state== _change_level);
 	game_state.current_screen= level_number;
-
-	return;
 }
 
 static short get_difficulty_level(void)
@@ -511,8 +491,6 @@ void draw_menu_button_for_command(
 		;
 #endif
 	draw_button(rectangle_index, false);
-
-	return;
 }
 
 void update_interface_display(
@@ -524,8 +502,6 @@ void update_interface_display(
 	
 	/* Use this to avoid the fade.. */
 	draw_full_screen_pict_resource_from_images(data->screen_base+game_state.current_screen);
-
-	return;
 }
 
 void idle_game_state(
@@ -583,9 +559,7 @@ void idle_game_state(
 							break;
 							
 						default: 
-							// LP change:
 							assert(false);
-							// halt();
 							break;
 					}
 					break;
@@ -630,9 +604,7 @@ void idle_game_state(
 					break;
 					
 				default:
-					// LP change:
 					assert(false);
-					// halt();
 					break;
 			}
 		}
@@ -651,8 +623,6 @@ void idle_game_state(
 		/* Update the fade ins, etc.. */
 		update_interface_fades();
 	}
-
-	return;
 }
 
 void display_main_menu(
@@ -725,9 +695,7 @@ void do_menu_item_command(
 							break;
 							
 						default:
-							// LP change:
 							assert(false);
-							// halt();
 							break;
 					}
 					break;
@@ -751,9 +719,7 @@ void do_menu_item_command(
 							break;
 							
 						default:
-							// LP change:
 							assert(false);
-							// halt();
 							break;
 					}
 					break;
@@ -790,9 +756,7 @@ void do_menu_item_command(
 								break;
 								
 							default:
-								// LP change:
 								assert(false);
-								// halt();
 								break;
 						}
 	
@@ -814,9 +778,7 @@ void do_menu_item_command(
 					break;
 					
 				default:
-					// LP change:
 					assert(false);
-					// halt();
 					break;
 			}
 			break;
@@ -889,17 +851,13 @@ void do_menu_item_command(
 					break;
 		
 				default:
-					// LP change:
 					assert(false);
-					// halt();
 					break;
 			}
 			break;
 
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 }
@@ -942,13 +900,9 @@ void portable_process_screen_click(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
-
-	return;
 }
 
 bool enabled_item(
@@ -981,9 +935,7 @@ bool enabled_item(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 	
@@ -996,8 +948,6 @@ void paint_window_black(
 	_set_port_to_screen_window();
 	_erase_screen(_black_color);
 	_restore_port();
-
-	return;
 }
 
 /* --------------------- static code */
@@ -1071,8 +1021,6 @@ static void display_epilogue(
 	for (int i=0; i<NumEndScreens; i++)
 		try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+EndScreenIndex+i, true, true);
 	show_cursor();
-	
-	return;
 }
 
 static void display_credits(
@@ -1155,8 +1103,6 @@ static void transfer_to_new_level(
 		display_loading_map_error();
 		finish_game(true);
 	}
-	
-	return;
 }
 
 /* The port is set.. */
@@ -1174,8 +1120,6 @@ static void draw_button(
 	draw_full_screen_pict_resource_from_images(pict_resource_number);
 
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
-
-	return;
 }
 					
 static void handle_replay( /* This is gross. */
@@ -1279,9 +1223,7 @@ static bool begin_game(
 					break;
 					
 				default:
-					// LP change:
 					assert(false);
-					// halt();
 					break;
 			}
 			
@@ -1310,10 +1252,8 @@ static bool begin_game(
 			}
 	
 			entry.level_name[0] = starts[0].identifier = 0;
-			// LP change:
-			// use player color in Preferences for single-player game
+			// LP change: use player color in Preferences for single-player game
 			starts[0].team = starts[0].color = player_preferences->color;
-			// starts[0].team = starts[0].color = _red_team;
 			strcpy(starts[0].name, "");
 			game_information.game_time_remaining= INT32_MAX;
 			game_information.kill_limit = 0;
@@ -1326,9 +1266,7 @@ static bool begin_game(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 
@@ -1586,8 +1524,6 @@ static void handle_save_film(
 	hide_cursor(); // JTP: Will be shown by display_main_menu
 	move_replay();
 	display_main_menu();
-
-	return;
 }
 
 static void next_game_screen(
@@ -1735,8 +1671,6 @@ dprintf("Didn't draw: %d;g", pict_resource_number);
 		/* Go for the next one.. */
 		next_game_screen();
 	}
-	
-	return;
 }
 
 static bool point_in_rectangle(
@@ -1809,8 +1743,6 @@ static void handle_interface_menu_screen_click(
 			}	
 		}
 	}
-
-	return;
 }
 
 /* Note that this is modal. This sucks... */
@@ -1891,8 +1823,6 @@ static void try_and_display_chapter_screen(
 #endif
 		}
 	}
-
-	return;
 }
 
 /* ------------ interface fade code */
@@ -1928,8 +1858,6 @@ static void update_interface_fades(
 			stop_interface_fade();
 		}
 	}
-	
-	return;
 }
 
 void stop_interface_fade(
@@ -2005,8 +1933,6 @@ void interface_fade_out(
 		delete current_picture_clut;
 		current_picture_clut= NULL;
 	}
-
-	return;
 }
 
 static bool can_interface_fade_out(

@@ -265,8 +265,6 @@ void initialize_fades(
 	
 	SET_FADE_ACTIVE_STATUS(fade, false);
 	fade->fade_effect_type= NONE;
-	
-	return;
 }
 
 bool update_fades(
@@ -337,16 +335,12 @@ void set_fade_effect(
 			}
 		}
 	}
-	
-	return;
 }
 
 void start_fade(
 	short type)
 {
 	explicit_start_fade(type, world_color_table, visible_color_table);
-	
-	return;
 }
 
 void explicit_start_fade(
@@ -386,8 +380,6 @@ void explicit_start_fade(
 			SET_FADE_ACTIVE_STATUS(fade, true);
 		}
 	}
-	
-	return;
 }
 
 void stop_fade(
@@ -404,8 +396,6 @@ void stop_fade(
 		
 		SET_FADE_ACTIVE_STATUS(fade, false);
 	}
-	
-	return;
 }
 
 bool fade_finished(
@@ -425,8 +415,6 @@ void full_fade(
 	explicit_start_fade(type, original_color_table, &animated_color_table);
 	while (update_fades())
 		;
-
-	return;
 }
 
 short get_fade_period(
@@ -459,8 +447,6 @@ void gamma_correct_color_table(
 		corrected->green = uint16(pow(uncorrected->green/65535.0, gamma)*65535.0);
 		corrected->blue = uint16(pow(uncorrected->blue/65535.0, gamma)*65535.0);
 	}
-	
-	return;
 }
 
 /* ---------- private code */
@@ -525,8 +511,6 @@ static void recalculate_and_display_color_table(
 	if (!OGL_FaderActive())
 #endif
 		animate_screen_clut(animated_color_table, full_screen);
-	
-	return;
 }
 
 /* ---------- fade functions */
@@ -557,8 +541,6 @@ static void tint_color_table(
 		adjusted->green= unadjusted->green + (((color->green-unadjusted->green)*adjusted_transparency)>>(FIXED_FRACTIONAL_BITS-ADJUSTED_TRANSPARENCY_DOWNSHIFT));
 		adjusted->blue= unadjusted->blue + (((color->blue-unadjusted->blue)*adjusted_transparency)>>(FIXED_FRACTIONAL_BITS-ADJUSTED_TRANSPARENCY_DOWNSHIFT));
 	}
-	
-	return;
 }
 
 static void randomize_color_table(
@@ -598,8 +580,6 @@ static void randomize_color_table(
 		adjusted->green= unadjusted->green + (FADES_RANDOM()&mask);
 		adjusted->blue= unadjusted->blue + (FADES_RANDOM()&mask);
 	}
-	
-	return;
 }
 
 /* unlike pathways, all colors wonÕt pass through 50% gray at the same time */
@@ -635,8 +615,6 @@ static void negate_color_table(
 			CEILING((unadjusted->blue^color->blue)+transparency, (int32)unadjusted->blue) :
 			FLOOR((unadjusted->blue^color->blue)-transparency, (int32)unadjusted->blue);
 	}
-	
-	return;
 }
 
 static void dodge_color_table(
@@ -666,8 +644,6 @@ static void dodge_color_table(
 		component= 0xffff - (((color->green^0xffff)*unadjusted->green)>>FIXED_FRACTIONAL_BITS) - transparency, adjusted->green= CEILING(component, unadjusted->green);
 		component= 0xffff - (((color->blue^0xffff)*unadjusted->blue)>>FIXED_FRACTIONAL_BITS) - transparency, adjusted->blue= CEILING(component, unadjusted->blue);
 	}
-	
-	return;
 }
 
 static void burn_color_table(
@@ -698,8 +674,6 @@ static void burn_color_table(
 		component= ((color->green*unadjusted->green)>>FIXED_FRACTIONAL_BITS) + transparency, adjusted->green= CEILING(component, unadjusted->green);
 		component= ((color->blue*unadjusted->blue)>>FIXED_FRACTIONAL_BITS) + transparency, adjusted->blue= CEILING(component, unadjusted->blue);
 	}
-
-	return;
 }
 
 static void soft_tint_color_table(
@@ -733,8 +707,6 @@ static void soft_tint_color_table(
 		adjusted->green= unadjusted->green + (((((color->green*intensity)>>(FIXED_FRACTIONAL_BITS-ADJUSTED_TRANSPARENCY_DOWNSHIFT))-unadjusted->green)*adjusted_transparency)>>(FIXED_FRACTIONAL_BITS-ADJUSTED_TRANSPARENCY_DOWNSHIFT));
 		adjusted->blue= unadjusted->blue + (((((color->blue*intensity)>>(FIXED_FRACTIONAL_BITS-ADJUSTED_TRANSPARENCY_DOWNSHIFT))-unadjusted->blue)*adjusted_transparency)>>(FIXED_FRACTIONAL_BITS-ADJUSTED_TRANSPARENCY_DOWNSHIFT));
 	}
-
-	return;
 }
 
 

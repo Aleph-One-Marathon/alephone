@@ -225,8 +225,6 @@ void update_lights(
 				light->initial_intensity, light->final_intensity, light->phase, light->period);
 		}
 	}
-
-	return;
 }
 
 bool get_light_status(
@@ -318,7 +316,6 @@ _fixed get_light_intensity(
 	if (!light) return 0;	// Blackness
 	
 	return light->intensity;
-	// return get_light_data(light_index)->intensity;
 }
 
 /* ---------- private code */
@@ -341,8 +338,6 @@ void change_light_state(
 	light->final_intensity= function->intensity + global_random()%(function->delta_intensity+1);
 	
 	light->state= new_state;
-	
-	return;
 }
 
 static struct lighting_function_specification *get_lighting_function_specification(
@@ -393,8 +388,6 @@ static void rephase_light(
 		change_light_state(light_index, new_state);
 	}
 	light->phase= phase;
-	
-	return;
 }
 				
 /* ---------- lighting functions */

@@ -139,7 +139,6 @@ static ScreenMessage Messages[NumScreenMessages];
 // LP change: the source and destination rects will be very variable, in general.
 // Also indicating whether to use high or low resolution (the terminal and the ovhd map are always hi-rez)
 static void update_screen(Rect& source, Rect& destination, bool hi_rez);
-// static void update_screen(void);
 
 static void set_overhead_map_status(bool status);
 static void set_terminal_status(bool status);
@@ -215,7 +214,6 @@ void start_extravision_effect(
 {
 	// LP change: doing this by setting targets
 	world_view->target_field_of_view = out ? EXTRAVISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW;
-	// start_render_effect(world_view, out ? _render_effect_going_fisheye : _render_effect_leaving_fisheye);
 }
 
 // LP addition:
@@ -225,7 +223,6 @@ void start_tunnel_vision_effect(
 	// LP change: doing this by setting targets
 	world_view->target_field_of_view = out ? TUNNEL_VISION_FIELD_OF_VIEW : 
 		((current_player->extravision_duration) ? EXTRAVISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW);
-	// start_render_effect(world_view, out ? _render_effect_going_tunnel : _render_effect_leaving_tunnel);
 }
 
 //CP addition: returns the screen info
@@ -256,8 +253,6 @@ bool game_window_is_full_screen(
 	short msize = screen_mode.size;
 	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
 	return (!ViewSizes[msize].ShowHUD);
-	
-	// return screen_mode.size==_full_screen;
 }
 
 
@@ -271,8 +266,6 @@ void change_gamma_level(
 	assert_world_color_table(interface_color_table, world_color_table);
 	change_screen_mode(&screen_mode, false);
 	set_fade_effect(NONE);
-	
-	return;
 }
 
 /* ---------- private code */
@@ -386,8 +379,6 @@ static void update_fps_display(SDL_Surface *s)
 	{
 		frame_count= frame_index= 0;
 	}
-	
-	return;
 }
 
 
@@ -518,8 +509,6 @@ static void set_overhead_map_status( /* it has changed, this is the new status *
 	bool status)
 {
 	world_view->overhead_map_active= status;
-	
-	return;
 }
 
 static void set_terminal_status( /* It has changed, this is the new state.. */
@@ -548,9 +537,8 @@ static void set_terminal_status( /* It has changed, this is the new state.. */
 
 	/* Dirty the view.. */
 	dirty_terminal_view(current_player_index);
-	
-	return;
 }
+
 // For getting and setting tunnel-vision mode
 bool GetTunnelVision() {return world_view->tunnel_vision_active;}
 bool SetTunnelVision(bool TunnelVisionOn)

@@ -111,9 +111,6 @@ static long calculate_polygon_area(short polygon_index);
 
 static void add_map_index(short index, short *count);
 static void find_intersecting_endpoints_and_lines(short polygon_index, world_distance minimum_separation);
-// LP: this stuff is now global
-//	short *line_indexes, short *line_count, short *endpoint_indexes, short *endpoint_count,
-//	short *polygon_indexes, short *polygon_count);
 static long intersecting_flood_proc(short source_polygon_index, short line_index,
 	short destination_polygon_index, void *data);
 
@@ -140,8 +137,6 @@ void recalculate_redundant_polygon_data(
 //	polygon->media_lightsource_index= polygon->floor_lightsource_index;
 //	polygon->ambient_sound_image_index= NONE;
 //	polygon->random_sound_image_index= NONE;
-
-	return;
 }
 
 /* calculates solidity, highest adjacent floor and lowest adjacent ceiling; not to be called
@@ -196,8 +191,6 @@ void recalculate_redundant_endpoint_data(
 	endpoint->highest_adjacent_floor_height= highest_adjacent_floor_height;
 	endpoint->lowest_adjacent_ceiling_height= lowest_adjacent_ceiling_height;
 	endpoint->supporting_polygon_index= supporting_polygon_index;
-	
-	return;
 }
 
 /* calculates line length, highest adjacent floor and lowest adjacent ceiling and calls
@@ -282,8 +275,6 @@ void recalculate_redundant_line_data(
 	SET_LINE_VARIABLE_ELEVATION(line, variable_elevation && !LINE_IS_SOLID(line));
 	SET_LINE_LANDSCAPE_STATUS(line, landscaped);
 	SET_LINE_HAS_TRANSPARENT_SIDE(line, transparent_texture);
-
-	return;
 }
 
 void recalculate_redundant_side_data(
@@ -329,8 +320,6 @@ void recalculate_redundant_side_data(
 	
 	// TEMPORARY UNTIL THE EDITOR SETS THESE FIELDS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //	guess_side_lightsource_indexes(side_index);
-
-	return;
 }
 
 void calculate_endpoint_polygon_owners(
@@ -356,8 +345,6 @@ void calculate_endpoint_polygon_owners(
 			}
 		}
 	}
-	
-	return;
 }
 
 void calculate_endpoint_line_owners(
@@ -378,8 +365,6 @@ void calculate_endpoint_line_owners(
 			add_map_index(line_index, index_count);
 		}
 	}
-	
-	return;
 }
 
 #define CONTINUOUS_SPLIT_SIDE_HEIGHT WORLD_ONE
@@ -408,14 +393,11 @@ void guess_side_lightsource_indexes(
 			break;
 		
 		default:
-			// LP change:
 			assert(false);
-			// halt();
+			break;
 	}
 	
 	side->transparent_lightsource_index= polygon->ceiling_lightsource_index;
-
-	return;
 }
 
 /* Since the map_index buffer is no longer statically sized. */
@@ -462,15 +444,12 @@ static void calculate_adjacent_sides(
 		}
 		else
 		{
-			// LP change: suppressing this test to get around some Pfhorte bugs
-			// assert(line->counterclockwise_polygon_owner==polygon_index);
+			// LP change: get around some Pfhorte bugs
 			side_index= line->counterclockwise_polygon_side_index;
 		}
 		
 		*side_indexes++= side_index;
 	}
-	
-	return;
 }
 
 static void calculate_adjacent_polygons(
@@ -492,15 +471,12 @@ static void calculate_adjacent_polygons(
 		}
 		else
 		{
-			// LP change: suppressing this test to get around some Pfhorte bugs
-			// assert(polygon_index==line->counterclockwise_polygon_owner);
+			// LP change: get around some Pfhorte bugs
 			adjacent_polygon_index= line->clockwise_polygon_owner;
 		}
 		
 		*polygon_indexes++= adjacent_polygon_index;
 	}
-	
-	return;
 }
 
 /* returns area of the given polygon */
@@ -587,40 +563,12 @@ void precalculate_map_indexes(
 		}
 	}
 
-#ifdef OBSOLETE
-	/* go back and find detached polygons and copy their exclusion data from their twin polygons */
-	for (polygon_index=0,polygon=map_polygons;polygon_index<dynamic_world->polygon_count;++polygon,++polygon_index)
-	{
-		if (POLYGON_IS_DETACHED(polygon))
-		{
-			struct polygon_data *original= get_polygon_data(find_detached_polygons_twin(polygon_index));
-			
-			polygon->first_exclusion_zone_index= original->first_exclusion_zone_index;
-			polygon->line_exclusion_zone_count= original->line_exclusion_zone_count;
-			polygon->point_exclusion_zone_count= original->point_exclusion_zone_count;
-			
-			polygon->first_neighbor_index= original->first_neighbor_index;
-			polygon->neighbor_count= original->neighbor_count;
-		}
-	}
-#endif
-
 	precalculate_polygon_sound_sources();
-	
-	return;
 }
 
 static void find_intersecting_endpoints_and_lines(
 	short polygon_index,
 	world_distance minimum_separation)
-	/*
-	short *line_indexes,
-	short *line_count,
-	short *endpoint_indexes,
-	short *endpoint_count,
-	short *polygon_indexes,
-	short *polygon_count)
-	*/
 {
 	struct intersecting_flood_data data;
 
@@ -628,14 +576,7 @@ static void find_intersecting_endpoints_and_lines(
 	LineIndices.clear();
 	EndpointIndices.clear();
 	PolygonIndices.clear();
-	/*
-	data.line_indexes= line_indexes;
-	data.line_count= 0;
-	data.endpoint_indexes= endpoint_indexes;
-	data.endpoint_count= 0;
-	data.polygon_indexes= polygon_indexes;
-	data.polygon_count= 0;
-	*/
+
 	data.minimum_separation_squared= minimum_separation*minimum_separation;
 	find_center_of_polygon(polygon_index, &data.center);
 
@@ -644,12 +585,6 @@ static void find_intersecting_endpoints_and_lines(
 	{
 		polygon_index= flood_map(NONE, LONG_MAX, intersecting_flood_proc, _breadth_first, &data);
 	}
-	/*
-	*line_count= data.line_count;
-	*polygon_count= data.polygon_count;
-	*endpoint_count= data.endpoint_count;
-	*/
-	return;
 }
 
 #ifdef NEW_AND_BROKEN
@@ -1075,17 +1010,6 @@ static void add_map_index(
 	MapIndexList.push_back(index);
 	dynamic_world->map_index_count++;
 	*count += 1;
-	/*
-	if (dynamic_world->map_index_count<map_index_buffer_count)
-	{
-		if (DoIncorrectCountVWarn)
-			vwarn(dynamic_world->map_index_count!=map_index_buffer_count-1, "impassability/collision information may be incomplete.");
-		map_indexes[dynamic_world->map_index_count++]= index;
-		*count+= 1;
-	}
-	*/
-	
-	return;
 }
 
 #define ZERO_VOLUME_DISTANCE (10*WORLD_ONE)
@@ -1132,32 +1056,7 @@ static void precalculate_polygon_sound_sources(
 		
 		add_map_index(NONE, &sound_sources);
 	}
-	
-	return;
 }
-
-#ifdef OBSOLETE
-void touch_polygon(
-	short polygon_index)
-{
-	struct polygon_data *polygon= get_polygon_data(polygon_index);
-
-	if (!POLYGON_IS_DETACHED(polygon))
-	{
-		short i;
-		
-		recalculate_redundant_polygon_data(polygon_index);
-		
-		for (i=0;i<polygon->vertex_count;++i)
-		{
-			recalculate_redundant_line_data(polygon->line_indexes[i]); /* does sides */
-			recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
-		}
-	}
-	
-	return;
-}
-#endif
 
 uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 {

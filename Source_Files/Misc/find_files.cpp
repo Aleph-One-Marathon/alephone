@@ -30,6 +30,7 @@ Aug 28, 2000 (Loren Petrich):
 	Put these functions into the FileFinder object; eradicated the "param_block->" code, etc.
 	and did other things to abstract it.
 */
+
 #if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
 #include "macintosh_cseries.h"
 #include <string.h> /* For memset */
@@ -76,23 +77,6 @@ bool FileFinder::Find()
 		
 	return (Err == noErr);
 }
-
-/*
-Boolean equal_fsspecs(
-	FSSpec *a, 
-	FSSpec *b)
-{
-	Boolean equal= false;
-	
-	if(a->vRefNum==b->vRefNum && a->parID==b->parID && 
-		EqualString(a->name, b->name, false, false))
-	{
-		equal= true;
-	}
-	
-	return equal;
-}
-*/
 
 /* --------- Local Code --------- */
 // static OSErr enumerate_files(
@@ -166,9 +150,7 @@ bool FileFinder::Enumerate(DirectorySpecifier& Dir)
 							break;
 							
 						default:
-							// LP change:
 							assert(false);
-							// halt();
 							break;
 					}
 				}
@@ -179,17 +161,8 @@ bool FileFinder::Enumerate(DirectorySpecifier& Dir)
 	}
 
 	/* If we got a fnfErr, it was because we indexed too far. */	
-	///return (Err==fnfErr) ? (noErr) : Err;
 	if (Err == fnfErr) Err = noErr;
 	
 	return (Err == noErr);
 }
-/*
-static int alphabetical_names(
-	void const *a, 
-	void const *b)
-{
-	return (IUCompString(((FSSpec const *)a)->name, ((FSSpec const *)b)->name)); 
-}
-*/
 #endif

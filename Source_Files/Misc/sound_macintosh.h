@@ -120,8 +120,6 @@ void set_sound_manager_parameters(
 		/* if it was initially on, turn the sound manager back on */
 		if (initial_state) set_sound_manager_status(true);
 	}
-	
-	return;
 }
 
 /* passing false disposes of all existing sound channels and sets _sm_active to false,
@@ -211,8 +209,6 @@ static void set_sound_manager_status(
 			_sm_active= active;
 		}
 	}
-	
-	return;
 }
 
 bool adjust_sound_volume_up(
@@ -270,8 +266,6 @@ void test_sound_volume(
 			SetDefaultOutputVolume(sound_level_to_sound_volume(_sm_parameters->volume));
 		}
 	}
-	
-	return;
 }
 
 /* ---------- private code (SOUND.C) */
@@ -351,8 +345,6 @@ static void initialize_machine_sound_manager(
 	}
 
 	vwarn(error==noErr, csprintf(temporary, "initialize_sound_manager() == #%d", error));
-
-	return;
 }
 
 static bool channel_busy(
@@ -367,7 +359,6 @@ static void unlock_sound(
 	short sound_index)
 {
 	// LP: unlocking a sound handle is now superfluous
-	return;
 }
 
 static void dispose_sound(
@@ -383,8 +374,6 @@ static void dispose_sound(
 	delete []definition->ptr;
 	definition->ptr = NULL;
 	definition->size = 0;
-	
-	return;
 }
 
 // should be asynchronous
@@ -497,8 +486,6 @@ static void quiet_channel(
 	}
 	
 	vwarn(error==noErr, csprintf(temporary, "SndDoImmediate() == #%d in quiet_channel()", error));
-	
-	return;
 }
 
 static void instantiate_sound_variables(
@@ -525,8 +512,6 @@ static void instantiate_sound_variables(
 	vwarn(error==noErr, csprintf(temporary, "SndDoImmediate() == #%d in instantiate_sound_variables()", error));
 
 	channel->variables= *variables;
-	
-	return;
 }
 
 static void buffer_sound(
@@ -615,11 +600,6 @@ static void buffer_sound(
 #endif
 		}
 	}
-
-	// LP: will ignore errors
-	// vassert(error==noErr, csprintf(temporary, "SndDoCommand() == #%d in buffer_sound()", error));
-	
-	return;
 }
 
 /* ---------- private code (SOUND_MACINTOSH.C) */
@@ -628,10 +608,7 @@ static void shutdown_sound_manager(
 	void)
 {
 	set_sound_manager_status(false);
-
 	close_sound_file();	
-	
-	return;
 }
 
 static pascal void sound_callback_proc(
@@ -646,8 +623,6 @@ static pascal void sound_callback_proc(
 	(void) (command);
 	
 	*((short *)channel->userInfo)+= 1;
-
-	return;
 }
 
 static long sound_level_to_sound_volume(
@@ -725,8 +700,6 @@ static synchronous_global_fade_to_silence(
 			}
 		}
 	}
-	
-	return;
 }
 #endif
 

@@ -198,8 +198,6 @@ void update_effects(
 			}
 		}
 	}
-	
-	return;
 }
 
 void remove_effect(
@@ -210,8 +208,6 @@ void remove_effect(
 	effect= get_effect_data(effect_index);
 	remove_map_object(effect->object_index);
 	MARK_SLOT_AS_FREE(effect);
-	
-	return;
 }
 
 void remove_all_nonpersistent_effects(
@@ -234,8 +230,6 @@ void remove_all_nonpersistent_effects(
 			}
 		}
 	}
-	
-	return;
 }
 
 void mark_effect_collections(
@@ -251,8 +245,6 @@ void mark_effect_collections(
 		/* mark the effect collection */
 		loading ? mark_collection_for_loading(definition->collection) : mark_collection_for_unloading(definition->collection);
 	}
-	
-	return;
 }
 
 void teleport_object_out(
@@ -283,8 +275,6 @@ void teleport_object_out(
 			play_object_sound(effect->object_index, _snd_teleport_out); /* teleport in sound, at destination */
 		}
 	}
-	
-	return;
 }
 
 // if the given object isnÕt already teleporting in, do so
@@ -326,8 +316,6 @@ void teleport_object_in(
 			effect_object->flags|= object->flags&(_object_is_enlarged|_object_is_tiny);
 		}
 	}
-	
-	return;
 }
 
 

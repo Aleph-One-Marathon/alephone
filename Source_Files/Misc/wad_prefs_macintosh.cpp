@@ -57,6 +57,7 @@ enum {
 	iPREF_SECTION_POPUP= 4,
 	NUMBER_VALID_PREF_ITEMS= 8
 };	
+
 /* -------------- Preferences Dialog --------- */
 /* Kick ass, take names */
 bool set_preferences(
@@ -65,8 +66,7 @@ bool set_preferences(
 	void (*reload_function)(void))
 {
 	DialogPtr dialog;
-	// LP change:
-	short index, /* current_pref_section, */ item_type, item_hit;
+	short index, item_type, item_hit;
 	Rect bounds;
 	ControlHandle preferences_control;
 	struct PopupPrivateData **privateHndl;
@@ -103,8 +103,6 @@ bool set_preferences(
 	SetControlMaximum(preferences_control, index+1); /* +1 because menus are one based. */
 
 	/* Set the current prefs section.. */
-	// LP: making this "remembered"
-	// current_pref_section= 0;
 	handle_switch(dialog, funcs, &preferences, current_pref_section, NONE);
 	SetControlValue(preferences_control, current_pref_section+1);
 

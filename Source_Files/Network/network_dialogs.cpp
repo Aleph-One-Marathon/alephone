@@ -166,20 +166,13 @@ extract_setup_dialog_information(
 #if !HAVE_SDL_NET
 	game_information->allow_mic = (bool) get_boolean_control_value(dialog, iREAL_TIME_SOUND);
 #else
-        game_information->allow_mic = false;
+	game_information->allow_mic = false;
 #endif
 
 
-#if !HAVE_SDL_NET
-#ifdef OBSOLETE
-	// get network information
-	network_speed = get_selection_control_value(dialog, iNETWORK_SPEED)-1;
-	updates_per_packet = net_speeds[network_speed].updates_per_packet;
-	update_latency = net_speeds[network_speed].update_latency;
-#endif
-#else
-        updates_per_packet = 1;
-        update_latency = 0;
+#if HAVE_SDL_NET
+	updates_per_packet = 1;
+	update_latency = 0;
 #endif
 	vassert(updates_per_packet > 0 && update_latency >= 0 && updates_per_packet < 16,
 		csprintf(temporary, "You idiot! updates_per_packet = %d, update_latency = %d", updates_per_packet, update_latency));
@@ -219,8 +212,6 @@ extract_setup_dialog_information(
 	{
 		player_information->team= player_information->color;
 	}
-
-	return;
 }
 
 
@@ -318,9 +309,6 @@ fill_in_game_setup_dialog(
 
 #if !HAVE_SDL_NET
 	// set up network options
-#ifdef OBSOLETE
-	setup_network_speed_for_gather(dialog);
-#endif
 	modify_selection_control(dialog, iNETWORK_SPEED, CONTROL_ACTIVE, network_preferences->type+1);
 #endif
 
@@ -379,8 +367,6 @@ set_dialog_game_options(
 	modify_boolean_control(dialog, iFORCE_UNIQUE_TEAMS, NONE, (game_options & _force_unique_teams) ? false : true);
 	modify_boolean_control(dialog, iBURN_ITEMS_ON_DEATH, NONE, (game_options & _burn_items_on_death) ? false : true);
 	modify_boolean_control(dialog, iREALTIME_NET_STATS, NONE, (game_options & _live_network_stats) ? true : false);
-
-	return;
 }
 
 
@@ -521,13 +507,9 @@ void setup_dialog_for_game_type(
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
-
-	return;
 }
 
 
@@ -589,8 +571,6 @@ void setup_for_timed_game(
 	// END Benad
 	//modify_radio_button_family(dialog, iRADIO_NO_TIME_LIMIT, iRADIO_KILL_LIMIT, iRADIO_TIME_LIMIT);
         set_limit_type(dialog, iRADIO_TIME_LIMIT);
-
-	return;
 }
 
 
@@ -705,8 +685,6 @@ void reassign_player_colors(
 			}
 		}
 	}
-		
-	return;
 }
 
 
@@ -814,9 +792,7 @@ find_graph_mode(
 		{
 			case 0:
 				/* Separator line */
-				// LP change:
 				assert(false);
-				// halt();
 				break;
 		
 			case 1: /* FIrst item after the players. */
@@ -835,9 +811,7 @@ find_graph_mode(
 				
 			case 3:
 				/* Separator line */
-				// LP change:
 				assert(false);
-				// halt();
 				break;
 				
 			case 4:	
@@ -851,9 +825,7 @@ find_graph_mode(
 				break;
 				
 			default:
-				// LP change:
 				assert(false);
-				// halt();
 				break;
 		}
 #endif // !0
@@ -883,8 +855,6 @@ void calculate_rankings(
 			&ranks[player_index].deaths, true);
 		ranks[player_index].ranking= ranks[player_index].kills-ranks[player_index].deaths;
 	}
-
-	return;
 }
 
 
@@ -962,8 +932,6 @@ void draw_player_graph(
 
 	draw_names(dialog, ranks, dynamic_world->player_count, index);
 	draw_kill_bars(dialog, ranks, dynamic_world->player_count, index, false, false);
-	
-	return;
 }
 
 
@@ -1007,8 +975,6 @@ void draw_team_graph(
     // Draw the bars
 //	draw_names(dialog, team_ranks, dynamic_world->player_count, index);
 //	draw_kill_bars(dialog, team_ranks, dynamic_world->player_count, index, false, false);
-	
-	return;
 }
 
 
@@ -1019,8 +985,6 @@ void draw_totals_graph(
 {
 	draw_names(dialog, rankings, dynamic_world->player_count, NONE);
 	draw_kill_bars(dialog, rankings, dynamic_world->player_count, NONE, true, false);
-
-	return;
 }
 
 
@@ -1083,8 +1047,6 @@ void draw_team_totals_graph(
 	
 	draw_names(dialog, ranks, num_teams, NONE);
 	draw_kill_bars(dialog, ranks, num_teams, NONE, true, true);
-	
-	return;
 }
 
 
@@ -1263,9 +1225,7 @@ draw_new_graph(DialogPtr dialog) {
 			break;
 			
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 }
@@ -1317,9 +1277,7 @@ void get_net_color(
 			color->red= color->green= color->blue= 60000;
 			break;
 		default:
-			// LP change:
 			assert(false);
-			// halt();
 			break;
 	}
 }

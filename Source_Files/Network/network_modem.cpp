@@ -227,8 +227,6 @@ void write_modem_endpoint_asynchronous(
 	err= CMWrite(connection_handle, asynchronous_buffers[_write_buffer], 
 		&data_written, cmData, true, NULL, timeout, 0);
 	assert(!err);
-
-	return;
 }
 
 bool asynchronous_write_completed(
@@ -257,8 +255,6 @@ void idle_modem_endpoint(
 	{
 		CMIdle(connection_handle);
 	}
-
-	return;
 }
 
 bool modem_available(
@@ -351,8 +347,6 @@ static pascal void listen_completion_routine(
 {
 	listen_error= (*connection)->errCode;
 	listen_completed= true;
-	
-	return;
 }
 
 #define MODEM_OPEN_TIMEOUT (40*60)
@@ -470,16 +464,12 @@ static void save_connection_preferences(
 	/* Save the connection data.. */
 	
 	DisposePtr(data);
-	
-	return;
 }
 
 static void load_connection_tool_name_from_preferences(
 	unsigned char *name)
 {
 	pstrcpy(name, "\pSerial Tool");
-	
-	return;
 }
 
 static void load_connection_preferences(
@@ -495,6 +485,4 @@ static void load_connection_preferences(
 		CMSetConfig(connection_handle, configuration);
 		CMValidate(connection_handle);
 	}
-
-	return;
 }

@@ -630,8 +630,6 @@ void remove_tag_from_wad(
 			free(old_data);
 		}
 	}
-
-	return;
 }
 
 /* Now uses CRC to checksum.. */
@@ -961,8 +959,6 @@ bool open_wad_file_for_writing(FileSpecifier& File, OpenedFile& OFile)
 void close_wad_file(OpenedFile& File)
 {
 	File.Close();
-	
-	return;
 }
 
 /* ------------------------------ Private Code --------------- */
