@@ -30,6 +30,8 @@ Aug 29, 2000 (Loren Petrich):
 #include "world.h"
 #include "dynamic_limits.h"
 
+#include <vector>
+
 /* ---------- constants */
 
 #define TICKS_PER_SECOND 30
@@ -166,7 +168,7 @@ enum { /* entry point types- this is per map level (int32). */
 struct entry_point 
 {
 	int16 level_number;
-	char level_name[64+1];
+	char level_name[64+2];
 };
 
 #define MAXIMUM_PLAYER_START_NAME_LENGTH 32
@@ -1253,8 +1255,9 @@ short get_player_starting_location_and_facing(short team, short index,
 void pause_game(void);
 void resume_game(void);
 
-bool get_indexed_entry_point(struct entry_point *entry_point,
-	short *index, int32 type);
+bool get_indexed_entry_point(struct entry_point *entry_point, short *index, int32 type);
+bool get_entry_points(vector<entry_point> &vec, int32 type);
+
 bool new_game(short number_of_players, bool network, 
 	struct game_data *game_information,
 	struct player_start_data *player_start_information, 

@@ -4,10 +4,15 @@ September 13, 2000
  - resource fork of MacBinary II files was not correctly accessed if data
    fork size was a multiple of 128 (or 0)
  - implemented low-resolution display
+ - Ctrl-Shift-"Begin New Game" allows selection of start level from list
+ - Esc is no longer used for quitting (interferes with Esc from terminals);
+   under BeOS, use Alt-C instead
+ - fixes for BeOS/ppc
+ - bumped version number to 0.10.5
 
 September 12, 2000
- - moved RECTANGLE_WIDTH/HEIGHT to csmacros.h; csdialogs*.* is not used any more
-   by the SDL version
+ - moved RECTANGLE_WIDTH/HEIGHT to csmacros.h; csdialogs*.* is not used any
+   more by the SDL version
  - removed global resource file "Resources"
  - action flags are now of type uint32, not int32 or long
  - map checkpoints in terminals (circles) display properly

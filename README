@@ -13,7 +13,7 @@ SYSTEM REQUIREMENTS
 -------------------
 
 Aleph One/SDL runs on all Unix systems supported by SDL (Linux, FreeBSD,
-Solaris, IRIX) and on BeOS. It will currently not run on Win32 and MacOS.
+Solaris, IRIX) and on BeOS. It does currently not run on Win32 and MacOS.
 
 Successfully tested systems include:
  - Linux/i386
@@ -224,7 +224,9 @@ keyboard; all keys are mapped by position):
 
     \       - Toggle FPS display
 
-    Esc     - Quit game
+    Alt-Q   - Quit game
+    Alt-C   - Quit game (use this under BeOS because Alt-Q will quit
+              the whole Aleph One application without warning)
     Alt-P   - Pause game (press Alt-P again to resume)
 
     F1      - Decrease screen size

@@ -15,6 +15,7 @@
 
 #include <exception>
 #include <algorithm>
+#include <vector>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -323,17 +324,23 @@ bool quit_without_saving(void)
  *  Level number dialog
  */
 
-class w_level_number : public w_number_entry {
+class w_levels : public w_list<entry_point> {
 public:
-	w_level_number(const char *name, dialog *d) : w_number_entry(name, 1), parent(d) {}
-	~w_level_number() {}
+	w_levels(const vector<entry_point> &items, dialog *d) : w_list<entry_point>(items, 400, 8, 0), parent(d) {}
 
-	void event(SDL_Event &e)
+	void item_selected(void)
 	{
-		// Return = close dialog
-		if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_RETURN)
-			parent->quit(0);
-		w_number_entry::event(e);
+		parent->quit(0);
+	}
+
+	void draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
+	{
+		y += font_ascent(font);
+		char str[256];
+		sprintf(str, "%d - %s", i->level_number + 1, i->level_name);
+		set_drawing_clip_rectangle(0, x, s->h, x + width);
+		draw_text(s, str, x, y, selected ? get_dialog_color(s, ITEM_ACTIVE_COLOR) : get_dialog_color(s, ITEM_COLOR), font, style);
+		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 
 private:
@@ -342,14 +349,14 @@ private:
 
 short get_level_number_from_user(void)
 {
-	// Find number of levels
-	struct entry_point entry;
-	short index = 0;
-	int maximum_level_number = 0;
-	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point))
-		maximum_level_number++;
-	if (maximum_level_number == 0)
-		maximum_level_number = 1;
+	// Get levels
+	vector<entry_point> levels;
+	if (!get_entry_points(levels, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point)) {
+		entry_point dummy;
+		dummy.level_number = 0;
+		strcpy(dummy.level_name, "untitled");
+		levels.push_back(dummy);
+	}
 
 	// Create dialog
 	dialog d;
@@ -363,30 +370,18 @@ short get_level_number_from_user(void)
 	d.add(new w_static_text("to never use Caps Lock as my \xd4run\xd5 key,"));
 	d.add(new w_static_text("and to never, ever, leave a single Bob alive.\xd3"));
 	d.add(new w_spacer());
-	w_level_number *level_w = new w_level_number("Start at level", &d);
+	d.add(new w_static_text("Start at level:", MESSAGE_FONT, TITLE_COLOR));
+	w_levels *level_w = new w_levels(levels, &d);
 	d.add(level_w);
-	char str[64];
-	sprintf(str, "(Available levels: 1..%d)", maximum_level_number);
-	d.add(new w_static_text(str, MESSAGE_FONT, LABEL_COLOR));
 	d.add(new w_spacer());
-	d.add(new w_left_button("OK", dialog_ok, &d));
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+	d.add(new w_button("CANCEL", dialog_cancel, &d));
 
 	// Run dialog
-	play_sound(DIALOG_INTRO_SOUND, NULL, NONE);
-again:
-	int level = NONE;
-	if (d.run(false) == 0) {	// OK
-		level = level_w->get_number();
-		if (level <= 0 || level > maximum_level_number) {
-			play_sound(DIALOG_ERROR_SOUND, NULL, NONE);
-			level_w->set_number(1);
-			goto again;
-		}
-		play_sound(DIALOG_OK_SOUND, NULL, NONE);
-		level--;
-	} else
-		play_sound(DIALOG_CANCEL_SOUND, NULL, NONE);
+	int level;
+	if (d.run() == 0)	// OK
+		level = level_w->get_selection();
+	else
+		level = NONE;
 
 	// Redraw main menu
 	update_game_window();
@@ -735,10 +730,6 @@ static void handle_game_key(const SDL_Event &event)
 	}
 
 	switch (key) {
-		case SDLK_ESCAPE:		// Quit
-			do_menu_item_command(mGame, iQuitGame, has_cheat_modifiers());
-			break;
-
 		case SDLK_PERIOD:		// Sound volume up
 			changed_prefs = adjust_sound_volume_up(sound_preferences, _snd_adjust_volume);
 			break;

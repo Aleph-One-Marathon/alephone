@@ -550,80 +550,158 @@ bool get_indexed_entry_point(
 	short *index, 
 	int32 type)
 {
-	// short file_handle;
-	struct wad_header header;
 	short actual_index;
-	bool success= false;
 	
+	// Open map file
 	assert(file_is_set);
-
 	OpenedFile MapFile;
-	if (!open_wad_file_for_reading(MapFileSpec,MapFile)) return false;
+	if (!open_wad_file_for_reading(MapFileSpec,MapFile))
+		return false;
+
+	// Read header
+	wad_header header;
+	if (!read_wad_header(MapFile, &header)) {
+		close_wad_file(MapFile);
+		return false;
+	}
+
+	bool success = false;
+	if (header.application_specific_directory_data_size == SIZEOF_directory_data)
 	{
-		if (read_wad_header(MapFile, &header))
+
+		// New style wad
+		void *total_directory_data= read_directory_data(MapFile, &header);
+
+		assert(total_directory_data);
+		for(actual_index= *index; actual_index<header.wad_count; ++actual_index)
 		{
-			/* If this is a new style */
-			if(header.application_specific_directory_data_size==SIZEOF_directory_data)
+			uint8 *p = (uint8 *)get_indexed_directory_data(&header, actual_index, total_directory_data);
+			directory_data directory;
+			unpack_directory_data(p, &directory, 1);
+
+			/* Find the flags that match.. */
+			if(directory.entry_point_flags & type)
 			{
-				void *total_directory_data= read_directory_data(MapFile, &header);
-
-				assert(total_directory_data);
-				for(actual_index= *index; actual_index<header.wad_count; ++actual_index)
-				{
-					uint8 *p = (uint8 *)get_indexed_directory_data(&header, actual_index, total_directory_data);
-					directory_data directory;
-					unpack_directory_data(p, &directory, 1);
-
-					/* Find the flags that match.. */
-					if(directory.entry_point_flags & type)
-					{
-						/* This one is valid! */
-						entry_point->level_number= actual_index;
-						strcpy(entry_point->level_name, directory.level_name);
+				/* This one is valid! */
+				entry_point->level_number= actual_index;
+				strcpy(entry_point->level_name, directory.level_name);
 			
-						*index= actual_index+1;
-						success= true;
-						break; /* Out of the for loop */
-					}
-				}
-				free(total_directory_data);
-			} else {
-				/* Old style */
-				/* Find the index.. */
-				for(actual_index= *index; !success && actual_index<header.wad_count; ++actual_index)
-				{
-					struct wad_data *wad;
-
-					/* Read the file */
-					// wad= read_indexed_wad_from_file(file_handle, &header, actual_index, true);
-					wad= read_indexed_wad_from_file(MapFile, &header, actual_index, true);
-					if (wad)
-					{
-						struct static_data *map_info;
-						long length;
-
-						/* IF this has the proper type.. */
-						map_info= (struct static_data *)extract_type_from_wad(wad, MAP_INFO_TAG, &length);
-						assert(length==sizeof(struct static_data));
-						if(map_info->entry_point_flags & type)
-						{
-							/* This one is valid! */
-							entry_point->level_number= actual_index;
-							assert(strlen(map_info->level_name)<LEVEL_NAME_LENGTH);
-							strcpy(entry_point->level_name, map_info->level_name);
-				
-							*index= actual_index+1;
-							success= true;
-						}
-				
-						free_wad(wad);
-					}
-				}
+				*index= actual_index+1;
+				success= true;
+				break; /* Out of the for loop */
 			}
 		}
+		free(total_directory_data);
 
-		/* Close the file.. */
+	} else {
+
+		// Old style wad, find the index
+		for(actual_index= *index; !success && actual_index<header.wad_count; ++actual_index)
+		{
+			struct wad_data *wad;
+
+			/* Read the file */
+			wad= read_indexed_wad_from_file(MapFile, &header, actual_index, true);
+			if (wad)
+			{
+				/* IF this has the proper type.. */
+				long length;
+				uint8 *p = (uint8 *)extract_type_from_wad(wad, MAP_INFO_TAG, &length);
+				assert(length == SIZEOF_static_data);
+				static_data map_info;
+				unpack_static_data(p, &map_info, 1);
+
+				if(map_info.entry_point_flags & type)
+				{
+					/* This one is valid! */
+					entry_point->level_number= actual_index;
+					assert(strlen(map_info.level_name)<LEVEL_NAME_LENGTH);
+					strcpy(entry_point->level_name, map_info.level_name);
+		
+					*index= actual_index+1;
+					success= true;
+				}
+				
+				free_wad(wad);
+			}
+		}
+	}
+
+	return success;
+}
+
+// Get vector of map entry points matching given type
+bool get_entry_points(vector<entry_point> &vec, int32 type)
+{
+	vec.clear();
+
+	// Open map file
+	assert(file_is_set);
+	OpenedFile MapFile;
+	if (!open_wad_file_for_reading(MapFileSpec,MapFile))
+		return false;
+
+	// Read header
+	wad_header header;
+	if (!read_wad_header(MapFile, &header)) {
 		close_wad_file(MapFile);
+		return false;
+	}
+
+	bool success = false;
+	if (header.application_specific_directory_data_size == SIZEOF_directory_data) {
+
+		// New style wad, read directory data
+		void *total_directory_data = read_directory_data(MapFile, &header);
+		assert(total_directory_data);
+
+		// Push matching directory entries into vector
+		for (int i=0; i<header.wad_count; i++) {
+			uint8 *p = (uint8 *)get_indexed_directory_data(&header, i, total_directory_data);
+			directory_data directory;
+			unpack_directory_data(p, &directory, 1);
+
+			if (directory.entry_point_flags & type) {
+
+				// This one is valid
+				entry_point point;
+				point.level_number = i;
+				strcpy(point.level_name, directory.level_name);
+				vec.push_back(point);
+				success = true;
+			}
+		}
+		free(total_directory_data);
+
+	} else {
+
+		// Old style wad
+		for (int i=0; i<header.wad_count; i++) {
+
+			wad_data *wad = read_indexed_wad_from_file(MapFile, &header, i, true);
+			if (!wad)
+				continue;
+
+			// Read map_info data
+			long length;
+			uint8 *p = (uint8 *)extract_type_from_wad(wad, MAP_INFO_TAG, &length);
+			assert(length == SIZEOF_static_data);
+			static_data map_info;
+			unpack_static_data(p, &map_info, 1);
+
+			if (map_info.entry_point_flags & type) {
+
+				// This one is valid
+				entry_point point;
+				point.level_number = i;
+				assert(strlen(map_info.level_name) < LEVEL_NAME_LENGTH);
+				strcpy(point.level_name, map_info.level_name);
+				vec.push_back(point);
+				success = true;
+			}
+				
+			free_wad(wad);
+		}
 	}
 
 	return success;
