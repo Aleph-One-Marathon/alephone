@@ -159,6 +159,7 @@ Dec 2, 2000 (Loren Petrich):
 
 // LP addition: view control
 #include "ViewControl.h"
+#include <DrawSprocket.h>
 
 //CP addition: scripting support
 #include "scripting.h"
@@ -323,6 +324,11 @@ extern bool OGL_MapActive;
 // Flag for making 32-bit-OGL screen resetting done only once.
 bool ScreenFix_OGL32 = false;
 
+// DrawSprocket activity:
+bool DSp_Present = false;
+bool DSp_Inited = false;
+
+
 /* ---------- private prototypes */
 
 // LP change: the source and destination rects will be very variable, in general.
@@ -358,6 +364,16 @@ static void ClearScreen();
 
 // Draws HUD in software mode
 void DrawHUD(Rect& SourceRect, Rect& DestRect);
+
+// DrawSprocket handlers:
+
+// Checks on the DrawSprocket's present and returns whether it is active;
+// it inits DSp if necessary
+static bool DSp_Check();
+
+// Changes the monitor's resolution;
+// returns the success of doing so
+static bool DSp_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height);
 
 
 /* ---------- code */
@@ -413,7 +429,17 @@ void initialize_screen(
 	}
 	if (!world_device) alert_user(fatalError, strERRORS, badMonitor, -1);
 #endif
-
+	
+	// Haven't quite gotten this working
+	/*
+	// Change the display resolution
+	short msize = screen_mode.size;
+	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
+	const ViewSizeData& VS = ViewSizes[msize];
+	DSp_ChangeResolution(world_device, graphics_preferences->device_spec.bit_depth,
+		VS.OverallWidth, VS.OverallHeight);
+	*/
+	
 	if (!screen_initialized)
 	{
 		graphics_preferences->device_spec.width= DESIRED_SCREEN_WIDTH;
@@ -519,7 +545,7 @@ void initialize_screen(
 	*/
 	
 	change_screen_mode(mode, false);
-
+	
 	screen_initialized= true;
 	return;
 }
@@ -688,7 +714,7 @@ void change_screen_mode(
 	
 	// "Redraw" means clear the screen
 	if (redraw) ClearScreen();
-
+	
 // LP change: beginning of obsolete part
 #if 0
 	short width, height;
@@ -2350,11 +2376,14 @@ short SizeWithoutHUD(short _size)
 
 // For switching to another process and returning (suspend/resume events)
 
-void SuspendDisplay()
+void SuspendDisplay(EventRecord *EvPtr)
 {
 	// Switch resolution only if necessary
 	if (restore_spec.bit_depth != graphics_preferences->device_spec.bit_depth)
 		SetDepthGDSpec(&restore_spec);
+	
+	Boolean EvWasProcessed = false;
+	if (DSp_Check()) DSpProcessEvent(EvPtr,&EvWasProcessed);
 	
 	HideWindow(screen_window);
 	HideWindow(backdrop_window);
@@ -2363,8 +2392,11 @@ void SuspendDisplay()
 	show_cursor();
 }
 
-void ResumeDisplay()
+void ResumeDisplay(EventRecord *EvPtr)
 {
+	Boolean EvWasProcessed = false;
+	if (DSp_Check()) DSpProcessEvent(EvPtr,&EvWasProcessed);
+	
 	// The resolution may have changed when the app was switched out
 	BuildGDSpec(&restore_spec, world_device);
 	if (restore_spec.bit_depth != graphics_preferences->device_spec.bit_depth)
@@ -2375,4 +2407,64 @@ void ResumeDisplay()
 	ShowWindow(backdrop_window);
 	SelectWindow(screen_window);
 	ShowWindow(screen_window);
+}
+
+// Handling the resolution with the DrawSprocket
+
+// Checks on the DrawSprocket's present and returns whether it is active;
+// it inits DSp if necessary
+bool DSp_Check()
+{
+	if (DSp_Inited) return DSp_Present;
+	
+	// Check on the weak linking...
+	if((Ptr)DMGetDisplayIDByGDevice == (Ptr)kUnresolvedCFragSymbolAddress) return DSp_Present;
+	if((Ptr)DSpStartup == (Ptr)kUnresolvedCFragSymbolAddress) return DSp_Present;
+	
+	// Now start!
+	return (DSp_Present = (DSpStartup() == noErr));
+}
+
+// For debugging convenience;
+// returns 1 for success, 0 for failure
+static bool DSp_HandleError(char *Description, OSStatus ErrorCode)
+{
+	if (ErrorCode != noErr) dprintf("DSp: %s Error: %d",Description,ErrorCode);
+	return (ErrorCode == noErr);
+}
+
+// Changes the monitor's resolution;
+// returns the success of doing so
+bool DSp_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height)
+{
+	if (!DSp_Check()) return false;
+	
+	DisplayIDType DisplayID;
+	if (!DSp_HandleError("Find Display ID",DMGetDisplayIDByGDevice(Device, &DisplayID, true))) return false;
+	
+	dprintf("Target resolution: %d %d %d",BitDepth,Width,Height);
+	
+	DSpContextAttributes TargetAttribs;
+	
+	// Cribbed from some of Apple's and Mark Szymczyk's sample code
+	obj_clear(TargetAttribs);
+	TargetAttribs.displayWidth = Width;
+	TargetAttribs.displayHeight = Height;
+	TargetAttribs.displayBestDepth = BitDepth;
+	TargetAttribs.backBufferBestDepth = BitDepth;
+	TargetAttribs.colorNeeds = kDSpColorNeeds_Require;
+	TargetAttribs.displayDepthMask = kDSpDepthMask_All;
+	TargetAttribs.backBufferDepthMask = kDSpDepthMask_All;
+	TargetAttribs.pageCount = 1; // only the front buffer is needed
+	
+	DSpContextReference Ctxt;
+	
+	if (!DSp_HandleError("Find Context",DSpFindBestContextOnDisplayID(&TargetAttribs,&Ctxt,DisplayID))) return false;
+	if (Ctxt == NULL) return false;
+	if (!DSp_HandleError("Reserve",DSpContext_Reserve(Ctxt, &TargetAttribs))) return false;
+	if (!DSp_HandleError("Activate",DSpContext_SetState(Ctxt, kDSpContextState_Active))) return false;
+	if (!DSp_HandleError("Pause",DSpContext_SetState(Ctxt, kDSpContextState_Paused))) return false;
+	// if (!DSp_HandleError("Release",DSPContext_Release(Ctxt))) return false;
+	
+	return true;
 }
