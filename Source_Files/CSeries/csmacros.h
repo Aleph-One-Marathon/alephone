@@ -34,21 +34,19 @@ Aug 27, 2000 (Loren Petrich):
 
 #include <string.h>
 
-#define FLOOR(value,floor) ((value)<(floor) ? (floor) : (value))
-#define CEILING(value,ceiling) ((value)>(ceiling) ? (ceiling) : (value))
-
-#define PIN(value,floor,ceiling) \
-	((value)<(floor) ? (floor) : (value)>(ceiling) ? (ceiling) : (value))
-
 #undef MAX
-#define MAX(a,b) ((a)>(b) ? (a) : (b))
+#define MAX(a,b) ((a)>=(b) ? (a) : (b))
 #undef MIN
-#define MIN(a,b) ((a)<(b) ? (a) : (b))
+#define MIN(a,b) ((a)<=(b) ? (a) : (b))
 
+#define FLOOR(value,floor) MAX(value,floor)
+#define CEILING(value,ceiling) MIN(value,ceiling)
+
+#define PIN(value,floor,ceiling) (CEILING(FLOOR((value),(floor)),(ceiling)))
 #define ABS(x) ((x)<0 ? -(x) : (x))
 #define SGN(x) ((x)<0 ? -1 : (x)>0 ? 1 : 0)
 
-#define SWAP(a,b) do{long _tmp_=(a);(a)=(b);(b)=_tmp_;}while(0)
+#define SWAP(a,b) do{__typeof__((a)) _tmp_=(a);(a)=(b);(b)=_tmp_;}while(0)
 
 #define FLAG(bit) (1L<<(bit))
 #define TEST_FLAG32(flags,bit) (((flags)&FLAG(bit))!=0)
@@ -59,12 +57,13 @@ Aug 27, 2000 (Loren Petrich):
 #define SET_FLAG16(flags,bit,value) ((void)((value) ? ((flags)|=FLAG16(bit)) : ((flags)&=~FLAG16(bit))))
 
 // LP addition (Mar 2, 2000): some more generic routines for flags
-#define TEST_FLAG(obj,flag) (((obj)&(flag))!=0)
+#define TEST_FLAG(obj,flag) ((obj)&(flag))
 #define SET_FLAG(obj,flag,value) ((void)((value)?((obj)|=(flag)):((obj)&=~(flag))))
 
 #define RECTANGLE_WIDTH(rectptr) ((rectptr)->right-(rectptr)->left)
 #define RECTANGLE_HEIGHT(rectptr) ((rectptr)->bottom-(rectptr)->top)
 
+#ifdef __cplusplus
 /*
 	LP addition: template class for doing bounds checking when accessing an array;
 	it uses an array, an index value, and an intended number of members for that array.
@@ -108,5 +107,5 @@ template<class T> void obj_clear(T& object)
 
 template<class T> void objlist_clear(T* object_list, size_t num_objects)
 	{objlist_set(object_list, 0, num_objects);}
-
+#endif
 #endif
