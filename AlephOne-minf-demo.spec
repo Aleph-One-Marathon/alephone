@@ -1,6 +1,6 @@
 Name: AlephOne-minf-demo
 Summary: AlephOne data files for Marathon Infinity Demo
-Group: X11/Games/Video
+Group: Amusements/Games
 Version: 1.0
 Release: 1
 License: Demo

@@ -7,7 +7,7 @@ Name: %{name}
 Version: %{version}
 Release: %{release}
 Copyright: GPL
-Group: X11/Games/Video
+Group: Amusements/Games
 Source: http://iphcip1.physik.uni-mainz.de/~cbauer/%{name}-%{version}.tar.gz
 URL: http://www.uni-mainz.de/~bauec002/A1Main.html
 BuildRoot: %{_tmppath}/%{name}-root
