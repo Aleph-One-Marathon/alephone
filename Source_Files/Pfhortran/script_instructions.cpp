@@ -3413,7 +3413,8 @@ void s_Player_Control(script_instruction inst)
 	{
 		GetPfhortranActionQueues()->enqueueActionFlags(local_player_index,
 			&action_flags, value, true);
-		increment_heartbeat_count(value); // ba-doom
+		if (PLAYER_IS_PFHORTRAN_CONTROLLED(local_player))
+			increment_heartbeat_count(value); // ba-doom
 	}
 }
 
