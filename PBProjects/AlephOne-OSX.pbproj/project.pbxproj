@@ -200,14 +200,14 @@
 			buildSettings = {
 				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks";
-				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" \"/System/Library/Frameworks/OpenGL.framework/Headers\\nary/Frameworks/OpenGL.framework/Headers\" /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
+				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" \"/System/Li\nbrary/Frameworks/OpenGL.framework/Headers\\nary/Frameworks/OpenGL.framework/Headers\" /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O2 -frename-registers -fprefetch-loop-arrays -fschedule-insns -fschedule-insns2 -finline-limit=400";
-				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -x objective-c++ -mcpu=750 -mmultiple -mpowerpc-gfxopt -mstring";
+				OPTIMIZATION_CFLAGS = "-O2 -frename-registers -fprefetch-loop-arrays -fschedule-insns -fschedule-insns2 -finline-functions -finline-limit=600 -fregmove -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fgcse -fgcse-lm -fgcse-sm -fdelete-null-pointer-checks   -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
+				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -x objective-c++";
 				OTHER_LDFLAGS = "-flat_namespace -multiply_defined suppress -framework SDL -framework SDL_image -framework SDL_net -framework AppKit";
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
@@ -510,7 +510,6 @@
 				F5A0002A023FDA7601A80001,
 				F5A0002C023FDAD101A80001,
 				F5A00034023FDBBD01A80001,
-				F5A00036023FDBF601A80001,
 				F5A00038023FDC0301A80001,
 				F5CC921A0240D09B01A80001,
 				F5CC921B0240D09B01A80001,
@@ -612,6 +611,7 @@
 				F50D2BD702F86DDA01000105,
 				F5D11AE60326A93E01000105,
 				3DAC27AD03DC9D1C00000104,
+				3DF2717603EDBBF100000104,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -770,6 +770,8 @@
 				F5837193031EEE0201000105,
 				3DAC27AB03DC9D1C00000104,
 				3DAC27AC03DC9D1C00000104,
+				3DF2717503EDBBF100000104,
+				3DF2717703EDBBF100000104,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -866,6 +868,101 @@
 			name = snprintf.h;
 			path = ../Source_Files/CSeries/snprintf.h;
 			refType = 2;
+		};
+		3DF2716B03EDBAA800000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = CarbonSndPlayDB.c;
+			path = /Users/astrange/aleph/Source_Files/Network/CarbonSndPlayDB.c;
+			refType = 0;
+		};
+		3DF2716C03EDBAA800000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = CarbonSndPlayDB.h;
+			path = /Users/astrange/aleph/Source_Files/Network/CarbonSndPlayDB.h;
+			refType = 0;
+		};
+		3DF2716D03EDBAA800000104 = {
+			fileRef = 3DF2716B03EDBAA800000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF2716E03EDBAA800000104 = {
+			fileRef = 3DF2716C03EDBAA800000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF2716F03EDBBF100000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_microphone_shared.cpp;
+			path = /Users/astrange/aleph/Source_Files/Network/network_microphone_shared.cpp;
+			refType = 0;
+		};
+		3DF2717003EDBBF100000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_microphone_shared.h;
+			path = /Users/astrange/aleph/Source_Files/Network/network_microphone_shared.h;
+			refType = 0;
+		};
+		3DF2717103EDBBF100000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_speaker_shared.cpp;
+			path = /Users/astrange/aleph/Source_Files/Network/network_speaker_shared.cpp;
+			refType = 0;
+		};
+		3DF2717203EDBBF100000104 = {
+			fileRef = 3DF2716F03EDBBF100000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF2717303EDBBF100000104 = {
+			fileRef = 3DF2717003EDBBF100000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF2717403EDBBF100000104 = {
+			fileRef = 3DF2717103EDBBF100000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF2717503EDBBF100000104 = {
+			fileRef = 3DF2716F03EDBBF100000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF2717603EDBBF100000104 = {
+			fileRef = 3DF2717003EDBBF100000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF2717703EDBBF100000104 = {
+			fileRef = 3DF2717103EDBBF100000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF2717803EDBC2D00000104 = {
+			fileRef = F522138A0136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF2717903EDBC3200000104 = {
+			fileRef = F52213830136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
 		};
 //3D0
 //3D1
@@ -2470,6 +2567,7 @@
 		F52214510136C0C401000001 = {
 			children = (
 				F52214520136C0C401000001,
+				3DF2716B03EDBAA800000104,
 				F522138F0136ABAE01000001,
 				F522137A0136ABAE01000001,
 				F522137B0136ABAE01000001,
@@ -2483,10 +2581,12 @@
 				F52213820136ABAE01000001,
 				F52213830136ABAE01000001,
 				F5A00031023FDB8001A80001,
+				3DF2716F03EDBBF100000104,
 				F52213840136ABAE01000001,
 				F52213860136ABAE01000001,
 				F52213880136ABAE01000001,
 				F522138A0136ABAE01000001,
+				3DF2717103EDBBF100000104,
 				F5A0002F023FDB5C01A80001,
 				F522138B0136ABAE01000001,
 				F522138D0136ABAE01000001,
@@ -2502,12 +2602,13 @@
 		};
 		F52214520136C0C401000001 = {
 			children = (
+				3DF2716C03EDBAA800000104,
 				F52213900136ABAE01000001,
 				F53DC61D022179A801A80001,
 				F5A00033023FDBBD01A80001,
 				F52213800136ABAE01000001,
 				F53DC62002219A3D01A80001,
-				F5A00035023FDBF601A80001,
+				3DF2717003EDBBF100000104,
 				F52213850136ABAE01000001,
 				F52213870136ABAE01000001,
 				F5D37B6D022D1C2C01A80001,
@@ -2575,9 +2676,9 @@
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O2 -finline-functions -finline-limit=400 -fmerge-all-constants -fschedule-insns2 -fno-rtti -frename-registers -fprefetch-loop-arrays";
-				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  -mcpu=750 -mtune=750 -mpowerpc-gfxopt -mmultiple -mstring";
-				OTHER_LDFLAGS = "-lobjc -flat_namespace";
+				OPTIMIZATION_CFLAGS = "-O2 -frename-registers -fprefetch-loop-arrays -fschedule-insns -fschedule-insns2 -finline-functions -finline-limit=600 -fregmove -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fgcse -fgcse-lm -fgcse-sm -fdelete-null-pointer-checks   -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
+				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  ";
+				OTHER_LDFLAGS = "-lobjc -flat_namespace -force_flat_namespace";
 				OTHER_REZFLAGS = "";
 				PRECOMPILE_PREFIX_HEADER = YES;
 				PREFIX_HEADER = precompiled_headers.h;
@@ -2980,6 +3081,8 @@
 				F50D2BD602F86DDA01000105,
 				F5D11AE50326A93E01000105,
 				3DAC27AA03DC9D1C00000104,
+				3DF2716E03EDBAA800000104,
+				3DF2717303EDBBF100000104,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3138,6 +3241,11 @@
 				F5837192031EEE0201000105,
 				3DAC27A803DC9D1C00000104,
 				3DAC27A903DC9D1C00000104,
+				3DF2716D03EDBAA800000104,
+				3DF2717203EDBBF100000104,
+				3DF2717403EDBBF100000104,
+				3DF2717803EDBC2D00000104,
+				3DF2717903EDBC3200000104,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3161,7 +3269,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F5D37B70022D35AA01A80001,
-				F536740502014DC301A80001,
 				F536740A02014E1C01A80001,
 				F536740902014E1C01A80001,
 			);
@@ -3264,12 +3371,6 @@
 			name = TextStrings.r;
 			path = ../Resources/TextStrings.r;
 			refType = 2;
-		};
-		F536740502014DC301A80001 = {
-			fileRef = F536740402014DC201A80001;
-			isa = PBXBuildFile;
-			settings = {
-			};
 		};
 		F536740602014E1C01A80001 = {
 			fileEncoding = 30;
@@ -4493,19 +4594,6 @@
 		};
 		F5A00034023FDBBD01A80001 = {
 			fileRef = F5A00033023FDBBD01A80001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F5A00035023FDBF601A80001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_microphone_sdl.h;
-			path = ../Source_Files/Network/network_microphone_sdl.h;
-			refType = 2;
-		};
-		F5A00036023FDBF601A80001 = {
-			fileRef = F5A00035023FDBF601A80001;
 			isa = PBXBuildFile;
 			settings = {
 			};
