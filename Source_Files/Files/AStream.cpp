@@ -22,23 +22,23 @@
 #include "AStream.h"
 
 AIStream& AIStream::operator>>(uint8 &value)
-        throw(AStream::failure)
+	throw(AStream::failure)
 {
-        if(bound_check(1))
-        {
-                value = (*(_M_stream_pos++));
-        }
-        return *this;
+	if(bound_check(1))
+	{
+		value = *(_M_stream_pos++);
+	}
+	return *this;
 }
 
 AIStream& AIStream::operator>>(int8 &value)
-        throw(AStream::failure)
+	throw(AStream::failure)
 {
-        uint8 UValue;
-        operator>>(UValue);
-        value = int8(UValue);
+	uint8 UValue;
+	operator>>(UValue);
+	value = int8(UValue);
 
-        return *this;
+	return *this;
 }
 
 AIStream& AIStream::read(char *ptr, uint32 count)
@@ -62,22 +62,20 @@ AIStream& AIStream::ignore(uint32 count)
 	return *this;
 }
 
-
-
 AOStream& AOStream::operator<<(uint8 value)
-        throw(AStream::failure)
+	throw(AStream::failure)
 {
-        if(bound_check(1))
-        {
-                *(_M_stream_pos++) = value;
-        }
-        return *this;
+	if(bound_check(1))
+	{
+		*(_M_stream_pos++) = value;
+	}
+	return *this;
 }
 
 AOStream& AOStream::operator<<(int8 value)
-        throw(AStream::failure)
+	throw(AStream::failure)
 {
-        return operator<<(uint8(value));
+	return operator<<(uint8(value));
 }
 
 AOStream& AOStream::write(char *ptr, uint32 count)
@@ -101,32 +99,30 @@ AOStream& AOStream::ignore(uint32 count)
 	return *this;
 }
 
-
-
 //big endian
 
 AIStream& AIStreamBE::operator>>(uint16 &value)
-        throw(AStream::failure)
+	throw(AStream::failure)
 {
-        if(bound_check(2))
-        {
-                // Must be unsigned, so they will be zero-extended
-                uint16 Byte0 = uint16(*(_M_stream_pos++));
-                uint16 Byte1 = uint16(*(_M_stream_pos++));
+	if(bound_check(2))
+	{
+		// Must be unsigned, so they will be zero-extended
+		uint16 Byte0 = uint16(*(_M_stream_pos++));
+		uint16 Byte1 = uint16(*(_M_stream_pos++));
 
-                value = (Byte0 << 8) | Byte1;
-        }
-        return *this;
+		value = (Byte0 << 8) | Byte1;
+	}
+	return *this;
 }
 
 AIStream& AIStreamBE::operator>>(int16 &value)
-        throw(AStream::failure)
+	throw(AStream::failure)
 {
-        uint16 UValue;
-        operator>>(UValue);
-        value = int16(UValue);
-
-        return *this;
+	uint16 UValue;
+	operator>>(UValue);
+	value = int16(UValue);
+  
+	return *this;
 }
 
 AIStream& AIStreamBE::operator>>(uint32 &value)
@@ -154,8 +150,6 @@ AIStream& AIStreamBE::operator>>(int32 &value)
   
 	return *this;
 }
-
-
 
 AOStream& AOStreamBE::operator<<(uint16 value)
 	throw(AStream::failure)
@@ -192,7 +186,6 @@ AOStream& AOStreamBE::operator<<(int32 value)
 {
 	return operator<<(uint32(value));
 }
-
 
 
 // little endian
@@ -247,8 +240,6 @@ AIStream& AIStreamLE::operator>>(int32 &value)
 	return *this;
 }
 
-
-
 AOStream& AOStreamLE::operator<<(uint16 value)
 	throw(AStream::failure)
 {
@@ -284,8 +275,6 @@ AOStream& AOStreamLE::operator<<(int32 value)
 {
 	return operator<<(uint32(value));
 }
-
-
 
 bool AStream::basic_astream::bound_check(uint32 delta)
 	throw(AStream::failure)

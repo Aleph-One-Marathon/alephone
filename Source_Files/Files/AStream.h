@@ -67,11 +67,11 @@ namespace AStream
 		tell_pos() const
 		{ return _M_stream_pos - _M_stream_begin; } 
 
-                uint32
-                max_pos() const
-                { return _M_stream_end - _M_stream_begin; }
+		uint32
+		max_pos() const
+		{ return _M_stream_end - _M_stream_begin; }
 
-        public:
+	public:
 		iostate
 		rdstate() const
 		{ return _M_state; }
@@ -123,24 +123,24 @@ public:
 	uint32
 	tellg() const
 	{ return this->tell_pos(); }
+			
+	uint32
+	maxg() const
+	{ return this->max_pos(); }
 
-        uint32
-        maxg() const
-        { return max_pos(); }
-
-        AIStream&
-        operator>>(uint8 &__value) throw(AStream::failure);
-
-        AIStream&
-        operator>>(int8 &__value) throw(AStream::failure);
-
-        virtual AIStream&
-        operator>>(uint16 &__value) throw(AStream::failure) = 0;
-
-        virtual AIStream&
-        operator>>(int16 &__value) throw(AStream::failure) = 0;
-
-        virtual AIStream&
+	AIStream&
+	operator>>(uint8 &__value) throw(AStream::failure);
+	
+	AIStream&
+	operator>>(int8 &__value) throw(AStream::failure);
+	
+	virtual AIStream&
+	operator>>(uint16 &__value) throw(AStream::failure) = 0;
+	
+	virtual AIStream&
+	operator>>(int16 &__value) throw(AStream::failure) = 0;
+	
+	virtual AIStream&
 	operator>>(uint32 &__value) throw(AStream::failure) = 0;
 	
 	virtual AIStream&
@@ -179,14 +179,14 @@ class AIStreamBE : public AIStream
 public:
 	AIStreamBE(uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AIStream(__stream, __length, __offset) {};
-
-        AIStream&
-        operator>>(uint16 &__value) throw(AStream::failure);
-
-        AIStream&
-        operator>>(int16 &__value) throw(AStream::failure);
-
-        AIStream&
+  
+	AIStream&
+	operator>>(uint16 &__value) throw(AStream::failure);
+	
+	AIStream&
+	operator>>(int16 &__value) throw(AStream::failure);
+	
+	AIStream&
 	operator>>(uint32 &__value) throw(AStream::failure);
 	
 	AIStream&
@@ -198,8 +198,8 @@ class AIStreamLE : public AIStream
 public:
 	AIStreamLE(uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AIStream(__stream, __length, __offset) {};
-
-        AIStream&
+  
+	AIStream&
 	operator>>(uint16 &__value) throw(AStream::failure);
 	
 	AIStream&
@@ -223,24 +223,24 @@ public:
 	uint32
 	tellp() const
 	{ return this->tell_pos(); }
+			
+	uint32
+	maxp() const
+	{ return this->max_pos(); }
+		
+	AOStream&
+	operator<<(uint8 __value) throw(AStream::failure);
+	
+	AOStream&
+	operator<<(int8 __value) throw(AStream::failure);
 
-        uint32
-        maxp() const
-        { return max_pos(); }
-
-        AOStream&
-        operator<<(uint8 __value) throw(AStream::failure);
-
-        AOStream&
-        operator<<(int8 __value) throw(AStream::failure);
-
-        virtual AOStream&
-        operator<<(uint16 __value) throw(AStream::failure) = 0;
-
-        virtual AOStream&
-        operator<<(int16 __value) throw(AStream::failure) = 0;
-
-        virtual AOStream&
+	virtual AOStream&
+	operator<<(uint16 __value) throw(AStream::failure) = 0;
+	
+	virtual AOStream&
+	operator<<(int16 __value) throw(AStream::failure) = 0;
+	
+	virtual AOStream&
 	operator<<(uint32 __value) throw(AStream::failure) = 0;
 	
 	virtual AOStream&
@@ -277,8 +277,8 @@ class AOStreamBE: public AOStream
 public:
 	AOStreamBE(uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AOStream(__stream, __length, __offset) {};
-
-        AOStream&
+  
+	AOStream&
 	operator<<(uint16 __value) throw(AStream::failure);
 	
 	AOStream&
@@ -296,8 +296,8 @@ class AOStreamLE: public AOStream
 public:
 	AOStreamLE(uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AOStream(__stream, __length, __offset) {}
-
-        AOStream&
+  
+	AOStream&
 	operator<<(uint16 __value) throw(AStream::failure);
 	
 	AOStream&
