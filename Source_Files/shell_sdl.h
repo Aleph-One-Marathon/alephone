@@ -28,6 +28,9 @@
  *
  *  Mar 1, 2002 (Woody Zenfell):
  *      ripped w_levels out of here into sdl_widgets.*
+ *
+ *  May 16, 2002 (Woody Zenfell):
+ *      support for Escape (in-game) and Alt+F4 (Windows only) as quit gestures
  */
 
 #ifdef __MVCPP__
@@ -898,6 +901,14 @@ static void handle_game_key(const SDL_Event &event)
 	}
 
 	switch (key) {
+#if 0
+		// Disabled because it interferes with the function of ESC in
+		// terminals - CB
+        case SDLK_ESCAPE:   // (ZZZ) Quit gesture
+            do_menu_item_command(mGame, iQuitGame, false);
+            break;
+#endif
+
 		case SDLK_PERIOD:		// Sound volume up
 			changed_prefs = adjust_sound_volume_up(sound_preferences, _snd_adjust_volume);
 			break;
@@ -1072,6 +1083,10 @@ static void process_game_key(const SDL_Event &event)
 					case SDLK_c:
 						item = iCloseGame;
 						break;
+// ZZZ: Alt+F4 is also a quit gesture in Windows
+#ifdef __WIN32__
+                    case SDLK_F4:
+#endif
 					case SDLK_q:
 						item = iQuitGame;
 						break;
@@ -1138,6 +1153,10 @@ static void process_game_key(const SDL_Event &event)
 				case SDLK_c:
 					item = iCredits;
 					break;
+// ZZZ: Alt+F4 is also a quit gesture in Windows
+#ifdef __WIN32__
+                case SDLK_F4:
+#endif
 				case SDLK_q:
 					item = iQuit;
 					break;

@@ -29,6 +29,12 @@
  *
  *  Mar 08, 2002 (Woody Zenfell):
  *      Added UI/preferences elements to configure microphone key
+ *
+ *  May 16, 2002 (Woody Zenfell):
+ *      Added UI/preferences elements for configurable mouse sensitivity
+ *      Preventing assignment of SDLK_ESCAPE; it's now a quit gesture in-game
+ *      Added UI for choosing "don't auto-recenter" option
+ *      Added warning message about safeguards surrounding behavior modifiers
  */
 
 #ifndef _SDL_PREFERNCES_
@@ -51,6 +57,7 @@
 
 #include <string.h>
 #include <vector>
+#include    <math.h>    // logf and expf, for sensitivity slider (ZZZ)
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>	// for getlogin()
@@ -628,19 +635,48 @@ static void controls_dialog(void *arg)
 	dialog d;
 	d.add(new w_static_text("CONTROLS", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
+    /*d.add(new w_static_text("Mouse"));
+    d.add(new w_spacer());*/
 	mouse_w = new w_toggle("Mouse Control", input_preferences->input_device);
 	d.add(mouse_w);
 	w_toggle *invert_mouse_w = new w_toggle("Invert Mouse", input_preferences->modifiers & _inputmod_invert_mouse);
 	d.add(invert_mouse_w);
+
+    // ZZZ: let user configure mouse sensitivity (logarithmic scale)
+    const float kMinSensitivityLog = -3.0f;
+    const float kMaxSensitivityLog = 3.0f;
+    const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
+
+    float   theSensitivity = ((float) input_preferences->sensitivity) / FIXED_ONE;
+    // avoid nasty math problems
+    if(theSensitivity <= 0.0f)
+        theSensitivity = 1.0f;
+    float   theSensitivityLog = logf(theSensitivity);
+    int     theSliderPosition = (int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
+
+    w_slider* sensitivity_w = new w_slider("Mouse Sensitivity", 1000, theSliderPosition);
+    d.add(sensitivity_w);
+
+    d.add(new w_spacer);
+
 	w_toggle *always_run_w = new w_toggle("Always Run", input_preferences->modifiers & _inputmod_interchange_run_walk);
 	d.add(always_run_w);
 	w_toggle *always_swim_w = new w_toggle("Always Swim", input_preferences->modifiers & _inputmod_interchange_swim_sink);
 	d.add(always_swim_w);
 	w_toggle *weapon_w = new w_toggle("Auto-Switch Weapons", !(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
 	d.add(weapon_w);
-	d.add(new w_spacer());
+    w_toggle* auto_recenter_w = new w_toggle("Auto-Recenter View", !(input_preferences->modifiers & _inputmod_dont_auto_recenter));
+    d.add(auto_recenter_w);
+
+    d.add(new w_spacer());
+    d.add(new w_spacer);
 	d.add(new w_button("CONFIGURE KEYBOARD", keyboard_dialog, &d));
 	d.add(new w_spacer());
+    d.add(new w_static_text("Warning: Auto-Switch Weapons and Auto-Recenter View"));
+    d.add(new w_static_text("are always ON in network play.  Turning either one OFF"));
+    d.add(new w_static_text("will also disable film recording for single-player games."));
+    d.add(new w_static_text("Future versions of Aleph One may lift these restrictions."));
+    d.add(new w_spacer);
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
@@ -657,10 +693,19 @@ static void controls_dialog(void *arg)
 			changed = true;
 		}
 
+        // ZZZ: sensitivity slider
+        int theNewSliderPosition = sensitivity_w->get_selection();
+        if(theNewSliderPosition != theSliderPosition) {
+            float theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
+            input_preferences->sensitivity = _fixed(expf(theNewSensitivityLog) * FIXED_ONE);
+            changed = true;
+        }
+
 		uint16 flags = input_preferences->modifiers & _inputmod_use_button_sounds;
 		if (always_run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
 		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
 		if (!(weapon_w->get_selection())) flags |= _inputmod_dont_switch_to_new_weapon;
+		if (!(auto_recenter_w->get_selection())) flags |= _inputmod_dont_auto_recenter;
 		if (invert_mouse_w->get_selection()) flags |= _inputmod_invert_mouse;
 
 		if (flags != input_preferences->modifiers) {
@@ -756,6 +801,7 @@ public:
 			case SDLK_F10:
 			case SDLK_F11:
 			case SDLK_F12:
+            case SDLK_ESCAPE: // (ZZZ: for quitting)
 				error = keyIsUsedAlready;
 				break;
 

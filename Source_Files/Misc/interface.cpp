@@ -75,9 +75,23 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Renabled network calls, but not microphone calls under Carbon
+
+May 16, 2002 (Woody Zenfell):
+    Enforcing standard player behavior with regard to films and netplay
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
+
+/* ZZZ: more on enforcing standard behavior...
+    + Standard behavior forced when playing a network game.
+    + Standard behavior forced when replaying a film.
+    + Custom behavior allowed when starting or restoring a single-player game.
+    + No film recorded in single-player if custom behavior != standard behavior.
+
+    Once films and netplay properly record each player's behavior prefs,
+    and the relevant code uses per-player settings, this won't be necessary.
+    Try a mass-search for "player_behavior" to find the areas affected.
+*/
 
 #include "cseries.h" // sorry ryan, nov. 4
 #include <string.h>
@@ -415,7 +429,10 @@ bool load_and_start_game(FileSpecifier& File)
 	if (success)
 	{
 		dynamic_world->game_information.difficulty_level= get_difficulty_level();
-		start_game(_single_player, false);
+        if(dynamic_world->player_count == 1) {
+            restore_custom_player_behavior_modifiers();
+		    start_game(_single_player, false);
+        }
 	} else {
 		/* We failed.  Balance the cursor */
 		/* Should this also force the system colors or something? */
@@ -1191,6 +1208,9 @@ static bool begin_game(
 
 				is_networked= true;
 				record_game= true;
+                // ZZZ: until players specify their behavior modifiers over the network,
+                // to avoid out-of-sync we must force them all the same.
+                standardize_player_behavior_modifiers();
 			}
 			break;
 
@@ -1239,6 +1259,9 @@ static bool begin_game(
 				entry.level_name[0] = 0;
 //				header.game_information.game_options |= _overhead_map_is_omniscient;
 				record_game= false;
+                // ZZZ: until films store behavior modifiers, we must require
+                // that they record and playback only with standard modifiers.
+                standardize_player_behavior_modifiers();
 			}
 			break;
 			
@@ -1264,8 +1287,15 @@ static bool begin_game(
 			game_information.initial_random_seed= machine_tick_count();
 			game_information.difficulty_level= get_difficulty_level();
 			number_of_players= 1;
-			record_game= true;
-			break;
+
+            // ZZZ: let the user use his behavior modifiers in single-player.
+            restore_custom_player_behavior_modifiers();
+            
+            // ZZZ: until film files store player behavior flags, we must require
+            // that all films recorded be made with standard behavior.
+			record_game= is_player_behavior_standard();
+			
+            break;
 			
 		default:
 			assert(false);

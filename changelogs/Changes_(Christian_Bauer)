@@ -1,5 +1,14 @@
 Change log of the SDL version of Aleph One
 
+May 19, 2002
+ - more additions by Woody Zenfell:
+    - configurable mouse sensitivity
+    - configurable mouse button actions
+    - "Don't auto-recenter" option
+    - "Don't auto-recenter" and "Don't auto-switch weapons" are ignored during
+      netplay and film playback because of their global nature
+    - Alt-F4 quits the game in the Windows version
+
 March 13, 2002
  - additions by Woody Zenfell:
     - SDL network speaker (realtime audio playback)

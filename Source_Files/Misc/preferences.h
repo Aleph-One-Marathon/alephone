@@ -40,6 +40,9 @@ Apr 27, 2000 (Loren Petrich):
 
 Oct 22, 2001 (Woody Zenfell):
     Changed the player name in player_preferences_data back to a Pstring (was Cstring in SDL version)
+
+May 16, 2002 (Woody Zenfell):
+    New control option "don't auto-recenter view"
 */
 
 #include "interface.h"
@@ -108,7 +111,8 @@ enum {
 	_inputmod_interchange_swim_sink = 0x0002,
 	_inputmod_dont_switch_to_new_weapon = 0x0004,
 	_inputmod_invert_mouse = 0x0008,
-	_inputmod_use_button_sounds = 0x0010
+	_inputmod_use_button_sounds = 0x0010,
+    _inputmod_dont_auto_recenter = 0x0020   // ZZZ addition
 };
 
 struct input_preferences_data
@@ -117,6 +121,7 @@ struct input_preferences_data
 	int16 keycodes[NUMBER_OF_KEYS];
 	// LP addition: input modifiers
 	uint16 modifiers;
+    _fixed sensitivity;    // ZZZ addition
 };
 
 #define MAXIMUM_PATCHES_PER_ENVIRONMENT (32)

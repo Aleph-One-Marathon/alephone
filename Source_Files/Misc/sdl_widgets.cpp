@@ -29,6 +29,10 @@
  *
  *  Mar 1, 2002 (Woody Zenfell):
  *      Moved w_levels here from shell_sdl; am using it in Setup Network Game box.
+ *
+ *  May 16, 2002 (Woody Zenfell):
+ *      changes to w_key to support assignment of mouse buttons as well as keys;
+ *      also fixed mouse-movement-while-binding behavior.
  */
 
 #include "cseries.h"
@@ -47,6 +51,8 @@
 
 // ZZZ: for stringset business for modified w_select
 #include	"TextStrings.h"
+
+#include    "mouse.h"   // (ZZZ) NUM_SDL_MOUSE_BUTTONS, SDLK_BASE_MOUSE_BUTTON
 
 /*
  *  Widget base class
@@ -916,6 +922,27 @@ int w_key::layout(void)
 	return rect.h;
 }
 
+// ZZZ: we provide phony key names for the phony keys used for mouse buttons.
+static const char* sMouseButtonKeyName[NUM_SDL_MOUSE_BUTTONS] = {
+        "Left Mouse",   // things like "Middle Mouse Button" are too long to draw properly
+        "Middle Mouse",
+        "Right Mouse",
+        "Mouse Button 4",
+        "Mouse Button 5",
+        "Mouse Button 6",
+        "Mouse Button 7",
+        "Mouse Button 8"
+};
+
+// ZZZ: this injects our phony key names but passes along the rest.
+static const char*
+GetSDLKeyName(SDLKey inKey) {
+    if(inKey >= SDLK_BASE_MOUSE_BUTTON && inKey < SDLK_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS)
+        return sMouseButtonKeyName[inKey - SDLK_BASE_MOUSE_BUTTON];
+    else
+        return SDL_GetKeyName(inKey);
+}
+
 void w_key::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
@@ -934,7 +961,8 @@ void w_key::draw(SDL_Surface *s) const
 	} else {
         theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
 
-		draw_text(s, SDL_GetKeyName(key), x, y, get_dialog_color(theColorToUse), font, style);
+        // ZZZ: potential to use the phony (i.e. mouse-button) key names
+		draw_text(s, GetSDLKeyName(key), x, y, get_dialog_color(theColorToUse), font, style);
 	}
 }
 
@@ -950,15 +978,26 @@ void w_key::click(int x, int y)
 
 void w_key::event(SDL_Event &e)
 {
-	if (e.type == SDL_KEYDOWN) {
-		if (binding) {
+    if(binding) {
+        // ZZZ: let mouse buttons assign like (unused) keys
+        if(e.type == SDL_MOUSEBUTTONDOWN) {
+            e.type = SDL_KEYDOWN;
+            e.key.keysym.sym = (SDLKey)(SDLK_BASE_MOUSE_BUTTON + e.button.button - 1);
+        }
+
+    	if (e.type == SDL_KEYDOWN) {
 			if (e.key.keysym.sym != SDLK_ESCAPE)
 				set_key(e.key.keysym.sym);
 			dirty = true;
 			binding = false;
 			e.key.keysym.sym = SDLK_DOWN;	// Activate next widget
-		}
-	}
+	    }
+
+        // ZZZ: suppress mouse motion while assigning
+        // (it's annoying otherwise, trust me)
+        if(e.type == SDL_MOUSEMOTION)
+            e.type = SDL_NOEVENT;
+    }
 }
 
 void w_key::set_key(SDLKey k)

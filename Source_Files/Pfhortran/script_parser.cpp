@@ -30,6 +30,9 @@ March 11, 2002 (Br'fin (Jeremy Parsons)):
 	Rewrote to use FileHandler classes instead of fopen and company
 	SDL has embedded language definition info
 	Defaults to Carbon private resources directory if no language def in app directory
+
+May 16, 2002 (Woody Zenfell):
+    quick fix in comment-detection conditional (thanks msvc warning)
 */
 
 #include <stdio.h>
@@ -628,7 +631,7 @@ float evaluate_operand(char *input, short *mode)
 	
 	*mode = absolute;
 	
-	if (!input || (input && input[0]) == '#' || (input[0] == 0))	// start of a comment?
+	if (!input || (input[0] == '#') || (input[0] == 0))	// start of a comment?
 		return -32767;
 	
 	symbol = get_symbol(input, glob_hash);

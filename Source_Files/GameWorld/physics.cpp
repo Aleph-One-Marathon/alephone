@@ -46,6 +46,9 @@ Feb 20, 2000 (Loren Petrich):
 
 Aug 31, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+
+May 16, 2002 (Woody Zenfell):
+    Letting user decide whether to auto-recenter when running
 */
 
 /*
@@ -620,21 +623,26 @@ static void physics_update(
 	
 		/* handle looking up and down; if weÕre moving at our terminal velocity forward or backward,
 			without any side-to-side motion, recenter our head vertically */
-		if (!(action_flags&FLAGS_WHICH_PREVENT_RECENTERING)) /* canÕt recenter if any of these are true */
-		{
-			if (((action_flags&_moving_forward) && (variables->velocity==constants->maximum_forward_velocity)) ||
-				((action_flags&_moving_backward) && (variables->velocity==-constants->maximum_backward_velocity)))
-			{
-				if (variables->elevation<0)
-				{
-					variables->elevation= CEILING(variables->elevation+constants->angular_recentering_velocity, 0);
-				}
-				else
-				{
-					variables->elevation= FLOOR(variables->elevation-constants->angular_recentering_velocity, 0);
-				}
-			}
-		}
+
+        // ZZZ: only do auto-recentering if the user wants it
+        if(!dont_auto_recenter()) {
+            if (!(action_flags&FLAGS_WHICH_PREVENT_RECENTERING)) /* canÕt recenter if any of these are true */
+		    {
+			    if (((action_flags&_moving_forward) && (variables->velocity==constants->maximum_forward_velocity)) ||
+				    ((action_flags&_moving_backward) && (variables->velocity==-constants->maximum_backward_velocity)))
+			    {
+				    if (variables->elevation<0)
+				    {
+					    variables->elevation= CEILING(variables->elevation+constants->angular_recentering_velocity, 0);
+				    }
+				    else
+				    {
+					    variables->elevation= FLOOR(variables->elevation-constants->angular_recentering_velocity, 0);
+				    }
+			    }
+		    }
+        }
+
 		switch (action_flags&_looking_vertically)
 		{
 			case _looking_down:

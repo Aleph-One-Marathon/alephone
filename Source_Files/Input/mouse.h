@@ -22,6 +22,9 @@ MOUSE.H
 	http://www.gnu.org/licenses/gpl.html
 
 Tuesday, January 17, 1995 2:53:17 PM  (Jason')
+
+    May 16, 2002 (Woody Zenfell):
+        semi-hacky scheme in SDL to let mouse buttons simulate keypresses
 */
 
 void enter_mouse(short type);
@@ -29,5 +32,13 @@ void test_mouse(short type, uint32 *action_flags, _fixed *delta_yaw, _fixed *del
 void exit_mouse(short type);
 void mouse_idle(short type);
 void recenter_mouse(void);
+
+// ZZZ: stuff of various hackiness levels to pretend mouse buttons are keys
+#ifdef SDL
+void mouse_buttons_become_keypresses(Uint8* ioKeyMap);
+
+#define NUM_SDL_MOUSE_BUTTONS 8   // since SDL_GetMouseState() returns 8 bits
+#define SDLK_BASE_MOUSE_BUTTON 65 // this is button 1's pseudo-keysym
+#endif // SDL
 
 #endif

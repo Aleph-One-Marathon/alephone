@@ -93,6 +93,9 @@ Jul 6, 2000 (Loren Petrich):
 
 Aug 9, 2000 (Loren Petrich):
 	Rasterizer_SW object introduced (software subclass of rasterizer object)
+
+May 16, 2002 (Woody Zenfell):
+    MSVC doesn't like "void f();  void g() { return f(); }"... fixed.
 */
 
 /*
@@ -347,7 +350,10 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 			// texture_vertical_polygon(polygon, screen, view);
 			return;
 	}*/
-     if (polygon->transfer_mode == _static_transfer) return texture_vertical_polygon(textured_polygon);
+    if (polygon->transfer_mode == _static_transfer) {
+        texture_vertical_polygon(textured_polygon);
+        return;
+    }
 	
 	/* locate the vertically highest (closest to zero) and lowest (farthest from zero) vertices */
 	highest_vertex= lowest_vertex= 0;
@@ -545,7 +551,10 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 			return;
 	}
 */
-     if (polygon->transfer_mode == _big_landscaped_transfer) return texture_horizontal_polygon(textured_polygon);
+    if (polygon->transfer_mode == _big_landscaped_transfer) {
+        texture_horizontal_polygon(textured_polygon);
+        return;
+    }
      
 	/* locate the horizontally highest (closest to zero) and lowest (farthest from zero) vertices */
 	highest_vertex= lowest_vertex= 0;

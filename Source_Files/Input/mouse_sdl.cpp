@@ -21,6 +21,10 @@
 
 /*
  *  mouse_sdl.cpp - Mouse handling, SDL specific implementation
+ *
+ *  May 16, 2002 (Woody Zenfell):
+ *      Configurable mouse sensitivity
+ *      Semi-hacky scheme to let mouse buttons simulate keypresses
  */
 
 #include "cseries.h"
@@ -112,6 +116,13 @@ void mouse_idle(short type)
 		if (input_preferences->modifiers & _inputmod_invert_mouse)
 			vy = -vy;
 
+        // ZZZ: scale input by sensitivity
+        if(input_preferences->sensitivity != FIXED_ONE) {
+            float   theScalingFactor = ((float) input_preferences->sensitivity) / ((float) FIXED_ONE);
+            vx = (_fixed) (theScalingFactor * vx);
+            vy = (_fixed) (theScalingFactor * vy);
+        }
+
 		// Pin and do nonlinearity
 		vx = PIN(vx, -FIXED_ONE/2, FIXED_ONE/2); vx >>= 1; vx *= (vx<0) ? -vx : vx; vx >>= 14;
 		vy = PIN(vy, -FIXED_ONE/2, FIXED_ONE/2); vy >>= 1; vy *= (vy<0) ? -vy : vy; vy >>= 13;
@@ -140,15 +151,6 @@ void mouse_idle(short type)
 void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitch, _fixed *delta_velocity)
 {
 	if (mouse_active) {
-		uint8 buttons = SDL_GetMouseState(NULL, NULL);
-		uint8 orig_buttons = buttons;
-		buttons &= button_mask;				// Mask out disabled buttons
-		if (buttons & SDL_BUTTON_LMASK)		// Left button: primary weapon trigger
-			*flags |= _left_trigger_state;
-		if (buttons & SDL_BUTTON_RMASK)		// Right button: secondary weapon trigger
-			*flags |= _right_trigger_state;
-		button_mask |= ~orig_buttons;		// A button must be released at least once to become enabled
-
 		*delta_yaw = snapshot_delta_yaw;
 		*delta_pitch = snapshot_delta_pitch;
 		*delta_velocity = snapshot_delta_velocity;
@@ -157,6 +159,26 @@ void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitc
 	}
 }
 
+
+void
+mouse_buttons_become_keypresses(Uint8* ioKeyMap)
+{
+		uint8 buttons = SDL_GetMouseState(NULL, NULL);
+		uint8 orig_buttons = buttons;
+		buttons &= button_mask;				// Mask out disabled buttons
+
+        for(int i = 0; i < NUM_SDL_MOUSE_BUTTONS; i++) {
+            ioKeyMap[SDLK_BASE_MOUSE_BUTTON + i] =
+                (buttons & SDL_BUTTON(i+1)) ? SDL_PRESSED : SDL_RELEASED;
+        }
+/*
+		if (buttons & SDL_BUTTON_LMASK)		// Left button: primary weapon trigger
+			*flags |= _left_trigger_state;
+		if (buttons & SDL_BUTTON_RMASK)		// Right button: secondary weapon trigger
+			*flags |= _right_trigger_state;
+*/
+        button_mask |= ~orig_buttons;		// A button must be released at least once to become enabled
+}
 
 /*
  *  Hide/show mouse pointer

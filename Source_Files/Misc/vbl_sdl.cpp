@@ -23,6 +23,10 @@
  *  vbl_sdl.cpp - Input handling, SDL specific stuff
  *
  *  Written in 2000 by Christian Bauer
+ *
+ *  May 16, 2002 (Woody Zenfell):
+ *      parse_keymap() now calls mouse_buttons_become_keypresses()
+ *      in support of treating mouse button clicks like, well, keypresses.
  */
 
 #include "cseries.h"
@@ -118,6 +122,9 @@ uint32 parse_keymap(void)
 {
 	Uint8 *key_map = SDL_GetKeyState(NULL);
 	uint32 flags = 0;
+
+    // ZZZ: let mouse code simulate keypresses
+    mouse_buttons_become_keypresses(key_map);
 
 	// Parse the keymap
 	key_definition *key = current_key_definitions;

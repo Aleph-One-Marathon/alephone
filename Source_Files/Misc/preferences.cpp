@@ -23,6 +23,11 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 
 Apr 30, 2002 (Loren Petrich):
 	Converting to a MML-based preferences system
+
+May 16, 2002 (Woody Zenfell):
+    Added UI/preferences elements for configurable mouse sensitivity
+    Support for "don't auto-recenter" behavior modifier
+    Routines to let other code disable/reenable/query behavior modification
 */
 
 /*
@@ -413,6 +418,7 @@ void write_preferences(
 	fprintf(F,"<input\n");
 	fprintf(F,"  device=\"%hd\"\n",input_preferences->input_device);
 	fprintf(F,"  modifiers=\"%hu\"\n",input_preferences->modifiers);
+    fprintf(F,"  sensitivity=\"%d\"\n",input_preferences->sensitivity); // ZZZ
 	fprintf(F,">\n");
 #if defined(mac)
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
@@ -662,6 +668,9 @@ static void default_input_preferences(input_preferences_data *preferences)
 	// LP addition: set up defaults for modifiers:
 	// interchange run and walk, but don't interchange swim and sink.
 	preferences->modifiers = _inputmod_interchange_run_walk;
+
+    // ZZZ addition: sensitivity factor starts at 1 (no adjustment)
+    preferences->sensitivity = FIXED_ONE;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)
@@ -928,10 +937,47 @@ ChaseCamData& GetChaseCamData() {return player_preferences->ChaseCam;}
 CrosshairData& GetCrosshairData() {return player_preferences->Crosshairs;}
 OGL_ConfigureData& Get_OGL_ConfigureData() {return graphics_preferences->OGL_Configure;}
 
+
+// ZZZ: override player-behavior modifiers
+static bool sStandardizeModifiers = false;
+
+
+void
+standardize_player_behavior_modifiers() {
+    sStandardizeModifiers = true;
+}
+
+
+void
+restore_custom_player_behavior_modifiers() {
+    sStandardizeModifiers = false;
+}
+
+
+bool
+is_player_behavior_standard() {
+    return (!dont_switch_to_new_weapon() && !dont_auto_recenter());
+}
+
+
 // LP addition: modification of Josh Elsasser's dont-switch-weapons patch
 // so as to access preferences stuff here
 bool dont_switch_to_new_weapon() {
-	return TEST_FLAG(input_preferences->modifiers,_inputmod_dont_switch_to_new_weapon);
+    // ZZZ: let game require standard modifiers for a while
+    if(!sStandardizeModifiers)
+	    return TEST_FLAG(input_preferences->modifiers,_inputmod_dont_switch_to_new_weapon);
+    else
+        return false;
+}
+
+
+// ZZZ addition: like dont_switch_to_new_weapon()
+bool
+dont_auto_recenter() {
+    if(!sStandardizeModifiers)
+        return TEST_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter);
+    else
+        return false;
 }
 
 
@@ -1508,6 +1554,11 @@ bool XML_InputPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return ReadUInt16Value(Value,input_preferences->modifiers);
 	}
+    // ZZZ: sensitivity scaling factor
+    else if (StringsEqual(Tag, "sensitivity"))
+    {
+        return ReadInt32Value(Value, input_preferences->sensitivity);
+    }
 	UnrecognizedTag();
 	return false;
 }

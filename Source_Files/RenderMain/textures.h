@@ -24,6 +24,8 @@ TEXTURES.H
 Saturday, August 20, 1994 12:08:34 PM
 */
 
+#include    "cseries.h"
+
 /* ---------- structures */
 
 enum /* bitmap flags */

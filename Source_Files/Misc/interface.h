@@ -46,6 +46,10 @@ Apr 30, 2000 (Loren Petrich):
 May 1, 2000 (Loren Petrich): Added XML parser object for the infravision stuff.
 
 May 16, 2000 (Loren Petrich): Added XML parser for the control panels
+
+May 16, 2002 (Woody Zenfell):
+    Interfaces to dont_auto_recenter and to routines to help make such modifications safer
+    for films and netplay.
 */
 
 #include "XML_ElementParser.h"
@@ -407,6 +411,18 @@ void ResetFieldOfView();
 
 // LP change: modification of Josh Elsasser's dont-switch-weapons patch
 bool dont_switch_to_new_weapon();
+
+// ZZZ: corresponds with dont_switch_to_new_weapon()
+bool dont_auto_recenter();
+
+// ZZZ: let code disable (standardize)/enable behavior modifiers like
+// dont_switch and dont_auto_recenter
+void standardize_player_behavior_modifiers();
+void restore_custom_player_behavior_modifiers();
+
+// ZZZ: return whether the user's behavior matches standard behavior
+// (either by being forced so or by chosen that way)
+bool is_player_behavior_standard();
 
 // LP change: force reload of view context
 void ReloadViewContext();
