@@ -2001,7 +2001,7 @@ bool XML_SoundsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"ogl_reset"))
 	{
-		return ReadInt16Value(Value,_Sound_ButtonInoperative);
+		return ReadInt16Value(Value,_Sound_OGL_Reset);
 	}
 	UnrecognizedTag();
 	return false;
