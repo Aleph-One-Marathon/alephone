@@ -1174,7 +1174,6 @@ TextureManager::~TextureManager()
 	if (GlowBuffer != 0) delete []GlowBuffer;
 }
 
-extern void ResetModelSkins();
 extern void ResetScreenFont();
 extern void OGL_ResetMapFonts(bool IsStarting);
 extern void OGL_ResetHUDFonts(bool IsStarting);
@@ -1202,7 +1201,7 @@ void OGL_ResetTextures()
 		}
 	
 	// Reset the surface textures for all the models:
-	ResetModelSkins();
+	OGL_ResetModelSkins(OGL_IsActive());
 	
 	// Reset the font textures
 	ResetScreenFont();

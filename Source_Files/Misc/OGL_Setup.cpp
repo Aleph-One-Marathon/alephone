@@ -534,8 +534,6 @@ void OGL_TextureOptionsBase::Unload()
 
 void OGL_SkinManager::Load()
 {
-	Reset();
-	
 	for (vector<OGL_SkinData>::iterator SkinIter = SkinData.begin(); SkinIter < SkinData.end(); SkinIter++)
 		SkinIter->Load();
 }
@@ -543,16 +541,14 @@ void OGL_SkinManager::Load()
 
 void OGL_SkinManager::Unload()
 {
-	Reset();
-	
 	for (vector<OGL_SkinData>::iterator SkinIter = SkinData.begin(); SkinIter < SkinData.end(); SkinIter++)
 		SkinIter->Unload();
 }
 
 
-void OGL_SkinManager::Reset()
+void OGL_SkinManager::Reset(bool Clear_OGL_Txtrs)
 {
-	if (OGL_IsActive())
+	if (Clear_OGL_Txtrs)
 	{
 		for (int k=0; k<NUMBER_OF_OPENGL_BITMAP_SETS; k++)
 			for (int l=0; l<NUMBER_OF_TEXTURES; l++)
@@ -804,14 +800,14 @@ void OGL_UnloadModelsImages(int Collection)
 
 
 // Reset model skins; used in OGL_ResetTextures() in OGL_Textures.cpp
-void ResetModelSkins()
+void OGL_ResetModelSkins(bool Clear_OGL_Txtrs)
 {
 	for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
 	{
 		vector<ModelDataEntry>& ML = MdlList[ic];
 		for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
 		{
-			MdlIter->ModelData.Reset();
+			MdlIter->ModelData.Reset(Clear_OGL_Txtrs);
 		}
 	}
 }
@@ -1033,7 +1029,6 @@ public:
 bool XML_SkinDataParser::Start()
 {
 	Data = DefaultSkinData;
-	CLUT = ALL_CLUTS;
 	
 	return true;
 }
@@ -1042,7 +1037,7 @@ bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (strcmp(Tag,"clut") == 0)
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET)));
+		return (ReadBoundedNumericalValue(Value,"%hd",Data.CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET)));
 	}
 	else if (strcmp(Tag,"opac_type") == 0)
 	{
@@ -1095,7 +1090,7 @@ bool XML_SkinDataParser::AttributesDone()
 	vector<OGL_SkinData>& SkinData = *SkinDataPtr;
 	for (vector<OGL_SkinData>::iterator SDIter = SkinData.begin(); SDIter < SkinData.end(); SDIter++)
 	{
-		if (SDIter->CLUT == CLUT)
+		if (SDIter->CLUT == Data.CLUT)
 		{
 			// Replace the data
 			*SDIter = Data;

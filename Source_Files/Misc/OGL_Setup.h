@@ -281,8 +281,9 @@ struct OGL_SkinManager
 	};
 	GLuint IDs[NUMBER_OF_OPENGL_BITMAP_SETS][NUMBER_OF_TEXTURES];		// Texture ID's
 	bool IDsInUse[NUMBER_OF_OPENGL_BITMAP_SETS][NUMBER_OF_TEXTURES];	// Which ID's are being used?
-	
-	void Reset();	// Resets the skins so that they may be reloaded
+		
+	void Reset(bool Clear_OGL_Txtrs);		// Resets the skins so that they may be reloaded;
+											// indicate whether to clear OpenGL textures
 	
 	OGL_SkinData *GetSkin(short CLUT);		// Gets a pointer to a skin-data object; NULL for no skin available
 	bool Use(short CLUT, short Which);		// Uses a skin; returns whether to load one	
@@ -290,10 +291,8 @@ struct OGL_SkinManager
 	// For convenience
 	void Load();
 	void Unload();
-	
-	// Initially all unused (of course)
-	OGL_SkinManager() {Reset();}
 };
+
 
 // Static 3D-Model Data and Options
 struct OGL_ModelData: public OGL_SkinManager
@@ -331,6 +330,10 @@ struct OGL_ModelData: public OGL_SkinManager
 
 // Returns NULL if a collectiona and sequence do not have an associated model
 OGL_ModelData *OGL_GetModelData(short Collection, short Sequence);
+
+
+// Resets all model skins; arg is whether to clear OpenGL textures
+void OGL_ResetModelSkins(bool Clear_OGL_Txtrs);
 
 
 // Fog data record

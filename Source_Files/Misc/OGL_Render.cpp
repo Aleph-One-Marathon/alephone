@@ -350,6 +350,10 @@ extern void OGL_ResetMapFonts(bool IsStarting);
 // defined in game_window.cpp
 extern void OGL_ResetHUDFonts(bool IsStarting);
 
+// Function for setting up the rendering of a 3D model: scaling, clipping, etc.;
+// returns whether or not the model could be rendered
+static bool RenderModelSetup(rectangle_definition& RenderRectangle);
+
 // Function for rendering a 3D model
 // Returns whether or not the model could be rendered
 // (lack of a skin appropriate for the CLUT, for example)
@@ -359,14 +363,17 @@ static bool RenderModel(rectangle_definition& RenderRectangle, short Collection,
 // returns whether or not the texture can be glowmapped
 // (not the case for infravision, invisible, static)
 // it gets "IsBlended" off of the texture definition
-static bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended);
+// It returns the color to use and whether the Z-buffer is to be suppressed in the render object
+static bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended,
+	GLfloat *Color, bool& Suppress_Z_Buffer);
 
 // Setup and teardown for the static-effect mode
 static void SetupStaticMode(rectangle_definition& RenderRectangle);
 static void TeardownStaticMode();
 
-// Renderer object
+// Renderer object and its "base" view direction
 static ModelRenderer ModelRenderObject;
+GLfloat ViewDir[2];
 
 // Shader lists for the object renderer
 static ModelRenderShader StandardShaders[2];
@@ -380,6 +387,7 @@ struct ShaderDataStruct
 {
 	OGL_ModelData *ModelPtr;
 	OGL_SkinData *SkinPtr;
+	GLfloat Color[4];
 	short Collection, CLUT;
 };
 static ShaderDataStruct ShaderData;
@@ -531,6 +539,9 @@ bool OGL_StartRun()
 	// Reset the font info for overhead-map and HUD fonts done in OpenGL fashion
 	OGL_ResetMapFonts(true);
 	OGL_ResetHUDFonts(true);
+	
+	// Since an OpenGL context has just been created, don't try to clear any OpenGL textures
+	OGL_ResetModelSkins(false);
 	
 	// Setup for 3D-model rendering
 	ModelRenderObject.Clear();
@@ -858,8 +869,8 @@ bool OGL_SetView(view_data &View)
 	glLoadMatrixd(CenteredWorld_2_MaraEye);
 	
 	// Reverse the model-render direction so as to work correctly
-	ModelRenderObject.ViewDirection[0] = - Cosine;
-	ModelRenderObject.ViewDirection[1] = - Sine;
+	ModelRenderObject.ViewDirection[0] = ViewDir[0] = - Cosine;
+	ModelRenderObject.ViewDirection[1] = ViewDir[1] = - Sine;
 	ModelRenderObject.ViewDirection[2] = 0;
 
 	// Do a translation and then save;
@@ -1816,128 +1827,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
 		if (ModelPtr)
 		{
-			// Initial clip check: where relative to the liquid?
-			float Scale = RenderRectangle.Scale;
-			GLfloat ModelFloor = Scale*ModelPtr->Model.BoundingBox[0][2];
-			GLfloat ModelCeiling = Scale*ModelPtr->Model.BoundingBox[1][2];
-			short LiquidRelHeight = RenderRectangle.LiquidRelHeight;
-			
-			if (RenderRectangle.BelowLiquid)
-			{
-				// Liquid below the bottom?
-				if (LiquidRelHeight <= ModelFloor)
-					return true;
-			}
-			else
-			{
-				// Liquid above the top?
-				if (LiquidRelHeight >= ModelCeiling)
-					return true;
-			}
-			if (RenderRectangle.clip_left >= RenderRectangle.x1) return true;
-			if (RenderRectangle.clip_right <= RenderRectangle.x0) return true;
-			if (RenderRectangle.clip_top >= RenderRectangle.y1) return true;
-			if (RenderRectangle.clip_bottom <= RenderRectangle.y0) return true;
-			
-			// For finding the clip planes: 0, 1, 2, 3, and 4
-			bool ClipLeft = false, ClipRight = false, ClipTop = false, ClipBottom = false, ClipLiquid = false;
-			GLdouble ClipPlane[4] = {0,0,0,0};
-			
-			if (RenderRectangle.clip_left >= RenderRectangle.x0)
-			{
-				ClipLeft = true;
-				glEnable(GL_CLIP_PLANE0);
-				ClipPlane[0] = 1;
-				ClipPlane[1] = 0;
-				ClipPlane[2] = XScaleRecip*(RenderRectangle.clip_left - XOffset);
-				glClipPlane(GL_CLIP_PLANE0,ClipPlane);
-			}
-			
-			if (RenderRectangle.clip_right <= RenderRectangle.x1)
-			{
-				ClipRight = true;
-				glEnable(GL_CLIP_PLANE1);
-				ClipPlane[0] = - 1;
-				ClipPlane[1] = 0;
-				ClipPlane[2] = - XScaleRecip*(RenderRectangle.clip_right - XOffset);
-				glClipPlane(GL_CLIP_PLANE1,ClipPlane);
-			}
-			
-			if (RenderRectangle.clip_top >= RenderRectangle.y0)
-			{
-				ClipTop = true;
-				glEnable(GL_CLIP_PLANE2);
-				ClipPlane[0] = 0;
-				ClipPlane[1] = - 1;
-				ClipPlane[2] = - YScaleRecip*(RenderRectangle.clip_top - YOffset);
-				glClipPlane(GL_CLIP_PLANE2,ClipPlane);
-			}
-			
-			if (RenderRectangle.clip_bottom <= RenderRectangle.y1)
-			{
-				ClipBottom = true;
-				glEnable(GL_CLIP_PLANE3);
-				ClipPlane[0] = 0;
-				ClipPlane[1] = 1;
-				ClipPlane[2] = YScaleRecip*(RenderRectangle.clip_bottom - YOffset);
-				glClipPlane(GL_CLIP_PLANE3,ClipPlane);
-			}
-			
-			// Get from the model coordinates to the screen coordinates.
-			SetProjectionType(Projection_OpenGL_Eye);
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadMatrixd(World_2_OGLEye);
-			world_point3d& Position = RenderRectangle.Position;
-			glTranslated(Position.x,Position.y,Position.z);
-			
-			// At model's position; now apply the liquid clipping
-			if (RenderRectangle.BelowLiquid)
-			{
-				// Liquid above the bottom? If so, then clip downward
-				if (LiquidRelHeight >= ModelFloor)
-				{
-					ClipLiquid = true;
-					glEnable(GL_CLIP_PLANE4);
-					ClipPlane[0] = ClipPlane[1] = 0;
-					ClipPlane[2] = - 1;
-					ClipPlane[3] = LiquidRelHeight;
-					glClipPlane(GL_CLIP_PLANE4,ClipPlane);
-				}
-			}
-			else
-			{
-				// Liquid below the top? If so, then clip upward
-				if (LiquidRelHeight <= ModelCeiling)
-				{
-					ClipLiquid = true;
-					glEnable(GL_CLIP_PLANE4);
-					ClipPlane[0] = ClipPlane[1] = 0;
-					ClipPlane[2] = 1;
-					ClipPlane[3] = - LiquidRelHeight;
-					glClipPlane(GL_CLIP_PLANE4,ClipPlane);
-				}
-			}
-			
-			// Its orientation and size
-			glRotated((360.0/FULL_CIRCLE)*RenderRectangle.Azimuth,0,0,1);
-			glScalef(Scale,Scale,Scale);
-			
-			// Be sure to include texture-mode effects as appropriate.
-			short CollColor = GET_DESCRIPTOR_COLLECTION(RenderRectangle.ShapeDesc);
-			short Collection = GET_COLLECTION(CollColor);
-			short CLUT = ModifyCLUT(RenderRectangle.transfer_mode,GET_COLLECTION_CLUT(CollColor));
-			RenderModel(RenderRectangle,Collection,CLUT);
-			
-			glPopMatrix();
-			
-			// No need for the clip planes
-			if (ClipLeft) glDisable(GL_CLIP_PLANE0);
-			if (ClipRight) glDisable(GL_CLIP_PLANE1);
-			if (ClipTop) glDisable(GL_CLIP_PLANE2);
-			if (ClipBottom) glDisable(GL_CLIP_PLANE3);
-			if (ClipLiquid) glDisable(GL_CLIP_PLANE4);
-			
+			RenderModelSetup(RenderRectangle);
 			return true;
 		}
 	}
@@ -2029,7 +1919,10 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	else if (IsWeaponsInHand)
 		SetProjectionType(Projection_Screen);
 	
-	DoLightingAndBlending(RenderRectangle,TMgr.IsBlended());
+	bool Suppress_Z_Buffer = false;
+	GLfloat Color[3];
+	DoLightingAndBlending(RenderRectangle,TMgr.IsBlended(),Color,Suppress_Z_Buffer);
+	glColor4fv(Color);
 	
 	// Location of data:
 	glVertexPointer(3,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
@@ -2100,6 +1993,138 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 }
 
 
+bool RenderModelSetup(rectangle_definition& RenderRectangle)
+{
+	OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
+	assert(ModelPtr);
+	
+	// Initial clip check: where relative to the liquid?
+	float Scale = RenderRectangle.Scale;
+	GLfloat ModelFloor = Scale*ModelPtr->Model.BoundingBox[0][2];
+	GLfloat ModelCeiling = Scale*ModelPtr->Model.BoundingBox[1][2];
+	short LiquidRelHeight = RenderRectangle.LiquidRelHeight;
+	
+	if (RenderRectangle.BelowLiquid)
+	{
+		// Liquid below the bottom?
+		if (LiquidRelHeight <= ModelFloor)
+			return false;
+	}
+	else
+	{
+		// Liquid above the top?
+		if (LiquidRelHeight >= ModelCeiling)
+			return false;
+	}
+	if (RenderRectangle.clip_left >= RenderRectangle.x1) return false;
+	if (RenderRectangle.clip_right <= RenderRectangle.x0) return false;
+	if (RenderRectangle.clip_top >= RenderRectangle.y1) return false;
+	if (RenderRectangle.clip_bottom <= RenderRectangle.y0) return false;
+	
+	// For finding the clip planes: 0, 1, 2, 3, and 4
+	bool ClipLeft = false, ClipRight = false, ClipTop = false, ClipBottom = false, ClipLiquid = false;
+	GLdouble ClipPlane[4] = {0,0,0,0};
+	
+	if (RenderRectangle.clip_left >= RenderRectangle.x0)
+	{
+		ClipLeft = true;
+		glEnable(GL_CLIP_PLANE0);
+		ClipPlane[0] = 1;
+		ClipPlane[1] = 0;
+		ClipPlane[2] = XScaleRecip*(RenderRectangle.clip_left - XOffset);
+		glClipPlane(GL_CLIP_PLANE0,ClipPlane);
+	}
+	
+	if (RenderRectangle.clip_right <= RenderRectangle.x1)
+	{
+		ClipRight = true;
+		glEnable(GL_CLIP_PLANE1);
+		ClipPlane[0] = - 1;
+		ClipPlane[1] = 0;
+		ClipPlane[2] = - XScaleRecip*(RenderRectangle.clip_right - XOffset);
+		glClipPlane(GL_CLIP_PLANE1,ClipPlane);
+	}
+	
+	if (RenderRectangle.clip_top >= RenderRectangle.y0)
+	{
+		ClipTop = true;
+		glEnable(GL_CLIP_PLANE2);
+		ClipPlane[0] = 0;
+		ClipPlane[1] = - 1;
+		ClipPlane[2] = - YScaleRecip*(RenderRectangle.clip_top - YOffset);
+		glClipPlane(GL_CLIP_PLANE2,ClipPlane);
+	}
+	
+	if (RenderRectangle.clip_bottom <= RenderRectangle.y1)
+	{
+		ClipBottom = true;
+		glEnable(GL_CLIP_PLANE3);
+		ClipPlane[0] = 0;
+		ClipPlane[1] = 1;
+		ClipPlane[2] = YScaleRecip*(RenderRectangle.clip_bottom - YOffset);
+		glClipPlane(GL_CLIP_PLANE3,ClipPlane);
+	}
+	
+	// Get from the model coordinates to the screen coordinates.
+	SetProjectionType(Projection_OpenGL_Eye);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadMatrixd(World_2_OGLEye);
+	world_point3d& Position = RenderRectangle.Position;
+	glTranslatef(Position.x,Position.y,Position.z);
+	
+	// At model's position; now apply the liquid clipping
+	if (RenderRectangle.BelowLiquid)
+	{
+		// Liquid above the bottom? If so, then clip downward
+		if (LiquidRelHeight >= ModelFloor)
+		{
+			ClipLiquid = true;
+			glEnable(GL_CLIP_PLANE4);
+			ClipPlane[0] = ClipPlane[1] = 0;
+			ClipPlane[2] = - 1;
+			ClipPlane[3] = LiquidRelHeight;
+			glClipPlane(GL_CLIP_PLANE4,ClipPlane);
+		}
+	}
+	else
+	{
+		// Liquid below the top? If so, then clip upward
+		if (LiquidRelHeight <= ModelCeiling)
+		{
+			ClipLiquid = true;
+			glEnable(GL_CLIP_PLANE4);
+			ClipPlane[0] = ClipPlane[1] = 0;
+			ClipPlane[2] = 1;
+			ClipPlane[3] = - LiquidRelHeight;
+			glClipPlane(GL_CLIP_PLANE4,ClipPlane);
+		}
+	}
+	
+	// Its orientation and size
+	glRotated((360.0/FULL_CIRCLE)*RenderRectangle.Azimuth,0,0,1);
+	GLfloat HorizScale = Scale*RenderRectangle.HorizScale;
+	glScalef(HorizScale,HorizScale,Scale);
+	
+	// Be sure to include texture-mode effects as appropriate.
+	short CollColor = GET_DESCRIPTOR_COLLECTION(RenderRectangle.ShapeDesc);
+	short Collection = GET_COLLECTION(CollColor);
+	short CLUT = ModifyCLUT(RenderRectangle.transfer_mode,GET_COLLECTION_CLUT(CollColor));
+	bool ModelRendered = RenderModel(RenderRectangle,Collection,CLUT);
+	
+	glPopMatrix();
+	
+	// No need for the clip planes anymore
+	if (ClipLeft) glDisable(GL_CLIP_PLANE0);
+	if (ClipRight) glDisable(GL_CLIP_PLANE1);
+	if (ClipTop) glDisable(GL_CLIP_PLANE2);
+	if (ClipBottom) glDisable(GL_CLIP_PLANE3);
+	if (ClipLiquid) glDisable(GL_CLIP_PLANE4);
+	
+	return ModelRendered;
+}
+
+
 bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT)
 {
 	OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
@@ -2111,12 +2136,21 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	
 	// Parallel to TextureManager::IsBlended() in OGL_Textures.h
 	bool IsBlended = SkinPtr->OpacityType != OGL_OpacType_Crisp;
-	bool IsGlowmappable = DoLightingAndBlending(RenderRectangle, IsBlended);
+	bool Suppress_Z_Buffer = false;
+	bool IsGlowmappable = DoLightingAndBlending(RenderRectangle, IsBlended, ShaderData.Color, Suppress_Z_Buffer);
+	bool Actual_Z_Buffering = Z_Buffering && !Suppress_Z_Buffer;
 	
 	ShaderData.ModelPtr = ModelPtr;
 	ShaderData.SkinPtr = SkinPtr;
 	ShaderData.Collection = Collection;
 	ShaderData.CLUT = CLUT;
+	
+	// Don't care about the magnitude of this vector
+	short Azimuth = normalize_angle(RenderRectangle.Azimuth);
+	GLfloat Cosine = cosine_table[Azimuth];
+	GLfloat Sine = sine_table[Azimuth];
+	ModelRenderObject.ViewDirection[0] =   ViewDir[0]*Cosine + ViewDir[1]*Sine;
+	ModelRenderObject.ViewDirection[1] = - ViewDir[0]*Sine + ViewDir[1]*Cosine;
 
 	// Set up the render sidedness
 	if (ModelPtr->Sidedness < 0)
@@ -2148,13 +2182,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	else
 	{
 		bool IsGlowing = IsGlowmappable && SkinPtr->GlowImg.IsPresent();
+		Actual_Z_Buffering = Actual_Z_Buffering && !IsGlowing;	// Glowmapped textures are blended
 		int NumShaders = IsGlowing ? 2 : 1;
 		
-		// Do explicit depth sort for not only "officially" blended textures but
-		// also for invisibility mode (tinted transfer)
-		bool Use_Z_Buffer = Z_Buffering && !IsBlended && (RenderRectangle.transfer_mode != _tinted_transfer);
-		
-		ModelRenderObject.Render(ModelPtr->Model, Use_Z_Buffer, StandardShaders, NumShaders);
+		ModelRenderObject.Render(ModelPtr->Model, Actual_Z_Buffering, StandardShaders, NumShaders);
 		
 		// Reset to default if glowmapping had been used
 		if (IsGlowing) glAlphaFunc(GL_GREATER,0.5);
@@ -2171,37 +2202,44 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	return true;
 }
 
-bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended)
+bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended,
+	GLfloat *Color, bool& Suppress_Z_Buffer)
 {
 	bool IsGlowmappable = true;
+	Suppress_Z_Buffer = false;
 	
 	// Apply lighting
 	bool IsInvisible = false;
-	if (RenderRectangle.transfer_mode == _tinted_transfer)
+	if (RenderRectangle.transfer_mode == _static_transfer)
+	{
+		// Do nothing
+	}
+	else if (RenderRectangle.transfer_mode == _tinted_transfer)
 	{
 		// Used for invisibility; the tinting refers to the already-rendered color's fate
 		// The opacity is controlled by the transfer data; its value is guessed from
 		// the rendering source code (render.c, scottish_textures.c, low_level_textures.c)
-		glColor4f(0,0,0,1-RenderRectangle.transfer_data/32.0);
+		Color[0] = Color[1] = Color[2] = 0;
+		Color[3] = 1 - RenderRectangle.transfer_data/32.0;
 		IsInvisible = true;
 		IsGlowmappable = false;
 	}
 	else if (RenderRectangle.flags&_SHADELESS_BIT)
 	{
 		// Only set when infravision is active
-		glColor3f(1,1,1);
+		Color[0] = Color[1] = Color[2] = Color[3] = 1;
 		IsGlowmappable = false;
 	}
 	else if (RenderRectangle.ambient_shade < 0)
 	{
 		GLfloat Light = (- RenderRectangle.ambient_shade)/GLfloat(FIXED_ONE);
-		glColor3f(Light,Light,Light);
+		Color[0] = Color[1] = Color[2] = Light;
+		Color[3] = 1;
 	}
 	else
 	{
-		GLfloat Color[3];
 		FindShadingColor(RenderRectangle.depth,RenderRectangle.ambient_shade,Color);
-		glColor3fv(Color);
+		Color[3] = 1;
 	}
 	
 	// Make the sprites crisp-edged, except if they are in invisibility mode
@@ -2209,6 +2247,7 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended
 	{
 		glDisable(GL_ALPHA_TEST);
 		glEnable(GL_BLEND);
+		Suppress_Z_Buffer = true;
 	} else { 
 		glEnable(GL_ALPHA_TEST);
 		glDisable(GL_BLEND);
@@ -2286,7 +2325,8 @@ void TeardownStaticMode()
 
 void NormalShader(void *Data)
 {
-	// Normal setup: nothing special
+	// Normal setup: be sure to use the normal color
+	glColor4fv(ShaderData.Color);
 	
 	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Normal))
 		LoadModelSkin(ShaderData.SkinPtr->NormalImg,ShaderData.Collection, ShaderData.CLUT);
@@ -2309,9 +2349,13 @@ void StaticModeIndivSetup(int SeqNo)
 	// Black [backing], red, green, blue
 	const GLfloat StaticBaseColors[4][3] = {{0,0,0},{1,0,0},{0,1,0},{0,0,1}};
 	
-	// Will be called in order 0, 1, 2, 3, so doing it once is OK
-	if (SeqNo == 1)
+	switch(SeqNo)
 	{
+	case 0:	// In case of another go-around, as in z-buffer-less rendering
+		glDisable(GL_COLOR_LOGIC_OP);
+		break;
+		
+	case 1:	// No need to do this for cases 2 and 3, since they will follow
 		glEnable(GL_COLOR_LOGIC_OP);
 		glLogicOp(GL_OR);
 	}

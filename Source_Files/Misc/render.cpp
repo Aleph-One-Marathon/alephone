@@ -664,6 +664,9 @@ void instantiate_rectangle_transfer_mode(
 	short transfer_mode,
 	_fixed transfer_phase)
 {
+	// For the 3D-model code
+	rectangle->HorizScale = 1;
+	
 	switch (transfer_mode)
 	{
 		case _xfer_invisibility:
@@ -701,12 +704,20 @@ void instantiate_rectangle_transfer_mode(
 		case _xfer_fold_out:
 			if (View_DoStaticEffect())
 			{
-				short delta= FIXED_INTEGERAL_PART((((rectangle->x1-rectangle->x0)>>1)-1)*transfer_phase);
-				
+				// Corrected the teleport shrinkage so that the sprite/object
+				// shrinks to its object position and not to its sprite center
+				short delta0= FIXED_INTEGERAL_PART(((rectangle->xc-rectangle->x0)-1)*transfer_phase);
+				short delta1= FIXED_INTEGERAL_PART(((rectangle->x1-rectangle->xc)-1)*transfer_phase);
+				// short delta= FIXED_INTEGERAL_PART((((rectangle->x1-rectangle->x0)>>1)-1)*transfer_phase);
+					
 				rectangle->transfer_mode= _static_transfer;
 				rectangle->transfer_data= (transfer_phase>>1);
-				rectangle->x0+= delta;
-				rectangle->x1-= delta;
+				rectangle->x0+= delta0;
+				rectangle->x1-= delta1;
+				
+				// For the 3D-model code
+				if (rectangle->ModelPtr)
+					rectangle->HorizScale = 1 - float(transfer_phase)/float(FIXED_ONE);
 			}
 			else
 				rectangle->transfer_mode= _textured_transfer;
@@ -867,6 +878,9 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 
 	// LP change: bug out if weapons-in-hand are not to be displayed
 	if (!view->show_weapons_in_hand) return;
+	
+	// No models here
+	textured_rectangle.ModelPtr = NULL;
 
 	/* get_weapon_display_information() returns true if there is a weapon to be drawn.  it
 		should initially be passed a count of zero.  it returns the weaponÕs texture and
@@ -913,6 +927,10 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 		textured_rectangle.ambient_shade= MAX(shape_information->minimum_light_intensity, textured_rectangle.ambient_shade);
 		if (view->shading_mode==_shading_infravision) textured_rectangle.flags|= _SHADELESS_BIT;
 
+		// Calculate the object's horizontal position
+		// for the convenience of doing teleport-in/teleport-out
+		textured_rectangle.xc = (textured_rectangle.x0 + textured_rectangle.x1) >> 1;
+		
 		/* make the weapon reflect the ownerÕs transfer mode */
 		instantiate_rectangle_transfer_mode(view, &textured_rectangle, display_data.transfer_mode, display_data.transfer_phase);
 		

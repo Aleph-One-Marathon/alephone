@@ -120,11 +120,16 @@ struct rectangle_definition
 	// eventually have to be transmitted.
 	shape_descriptor ShapeDesc;
 	
+	// For the convenience of the teleporter: shrink to the median axis,
+	// with this position on the screen
+	int16 xc;
+	
 	// For the convenience of the OpenGL 3D-model renderer
 	OGL_ModelData *ModelPtr;
 	world_point3d Position;		// In overall world coordinates
 	short Azimuth;				// Facing angle
 	float Scale;				// how big
+	float HorizScale;			// For teleporting
 	short LiquidRelHeight;		// Relative to object location
 	bool BelowLiquid;
 };

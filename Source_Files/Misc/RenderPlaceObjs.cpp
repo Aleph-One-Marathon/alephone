@@ -307,6 +307,16 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				render_object->rectangle.flip_vertical= (shape_information->flags&_Y_MIRRORED_BIT) ? true : false;
 				render_object->rectangle.flip_horizontal= (shape_information->flags&_X_MIRRORED_BIT) ? true : false;
 				
+				// Calculate the object's horizontal position
+				// for the convenience of doing teleport-in/teleport-out
+				switch(data.transfer_mode)
+				{
+				case _xfer_fold_in:
+				case _xfer_fold_out:
+					render_object->rectangle.xc =
+						view->half_screen_width + (int(transformed_origin.y)*view->world_to_screen_x)/transformed_origin.x;
+				}
+				
 				render_object->rectangle.depth= transformed_origin.x;
 				instantiate_rectangle_transfer_mode(view, &render_object->rectangle, data.transfer_mode, data.transfer_phase);
 				
@@ -822,7 +832,7 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	shape_information_data& ShapeInfo)
 {
 	// Reduce to circle range then find trig values
-	short ReducedRA = RelativeAngle & (FULL_CIRCLE - 1);
+	short ReducedRA = normalize_angle(RelativeAngle);
 	const double TrigMagReciprocal = 1/double(TRIG_MAGNITUDE);
 	double ScaledCosine = Scale*TrigMagReciprocal*double(cosine_table[ReducedRA]);
 	double ScaledSine = Scale*TrigMagReciprocal*double(sine_table[ReducedRA]);
