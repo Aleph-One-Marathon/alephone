@@ -15,7 +15,9 @@ Aug 27, 2000 (Loren Petrich):
 #define PIN(value,floor,ceiling) \
 	((value)<(floor) ? (floor) : (value)>(ceiling) ? (ceiling) : (value))
 
+#undef MAX
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
+#undef MIN
 #define MIN(a,b) ((a)<(b) ? (a) : (b))
 
 #define ABS(x) ((x)<0 ? -(x) : (x))

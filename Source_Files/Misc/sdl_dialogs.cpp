@@ -25,11 +25,11 @@ static SDL_Surface *dialog_surface = NULL;
 static const sdl_font_info *dialog_font[NUM_DIALOG_FONTS];
 
 static TextSpec dialog_font_spec[NUM_DIALOG_FONTS] = {
-	{kFontIDMonaco, bold, 18}, // TITLE_FONT
-	{kFontIDMonaco, bold, 18}, // BUTTON_FONT
-	{kFontIDMonaco, bold, 12}, // NORMAL_FONT
-	{kFontIDMonaco, bold, 12}, // MESSAGE_FONT
-	{22, normal, 14}           // TEXT_ENTRY_FONT
+	{174, bold, 18},   // TITLE_FONT
+	{174, normal, 18}, // BUTTON_FONT
+	{221, normal, 14}, // NORMAL_FONT
+	{174, normal, 14}, // MESSAGE_FONT
+	{221, normal, 14}  // TEXT_ENTRY_FONT
 };
 
 static SDL_Color dialog_color[NUM_DIALOG_COLORS] = {
@@ -45,8 +45,8 @@ static SDL_Color dialog_color[NUM_DIALOG_COLORS] = {
 	{0x40, 0x40, 0x40}, // DISABLED_COLOR
 	{0xff, 0xff, 0xff}, // MESSAGE_COLOR
 	{0xff, 0xff, 0xff}, // BORDER_COLOR
-	{0xff, 0x80, 0x00}, // THUMB_COLOR
-	{0xff, 0xff, 0x00}  // THUMB_ACTIVE_COLOR
+	{0x00, 0x00, 0xff}, // THUMB_COLOR
+	{0xc0, 0xc0, 0xff}  // THUMB_ACTIVE_COLOR
 };
 
 

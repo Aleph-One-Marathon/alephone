@@ -11,6 +11,9 @@ September 7, 2000
  - fixed long-standing bug where SDL_FreeRW() was used instead of SDL_RWclose(),
    causing lots of files to stay open
  - Pfhortran Language Definition file wasn't closed after being read
+ - included nicer fonts for dialog boxes (Futura)
+ - alert_user() properly wraps text
+ - fixed compilation problems under BeOS
 
 September 6, 2000
  - implemented environment preferences dialog

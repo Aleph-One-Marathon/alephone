@@ -213,7 +213,7 @@ void _draw_screen_shape_at_x_y(shape_descriptor shape_id, short x, short y)
 // Calculate width of single character
 int char_width(uint8 c, const sdl_font_info *font, uint16 style)
 {
-	if (c < font->first_character || c > font->last_character)
+	if (font == NULL || c < font->first_character || c > font->last_character)
 		return 0;
 	int width = font->width_table[(c - font->first_character) * 2 + 1] + ((style & bold) ? 1 : 0);
 	if (width == -1)	// non-existant character
@@ -350,6 +350,9 @@ inline static int draw_text(const uint8 *text, int length, int x, int y, T *p, i
 // Draw text at given coordinates, return total width
 int draw_text(SDL_Surface *s, const char *text, int length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
+	if (font == NULL)
+		return 0;
+
 	// Get clipping rectangle
 	int clip_top, clip_bottom, clip_left, clip_right;
 	if (draw_clip_rect_active) {
@@ -583,27 +586,27 @@ short _get_font_line_height(short font_id)
 
 static int _get_font_height(const sdl_font_info *info)
 {
-	return info->ascent + info->leading;
+	return info == NULL ? 0 : info->ascent + info->leading;
 }
 
 static int _get_font_line_spacing(const sdl_font_info *info)
 {
-	return info->ascent + info->descent + info->leading;
+	return info == NULL ? 0 : info->ascent + info->descent + info->leading;
 }
 
 int font_line_height(const sdl_font_info *info)
 {
-	return info->ascent + info->descent + info->leading;
+	return info == NULL ? 0 : info->ascent + info->descent + info->leading;
 }
 
 int font_width(const sdl_font_info *info)
 {
-	return info->rect_width;
+	return info == NULL ? 0 : info->rect_width;
 }
 
 int font_ascent(const sdl_font_info *info)
 {
-	return info->ascent;
+	return info == NULL ? 0 : info->ascent;
 }
 
 short _text_width(const char *text, short font_id)

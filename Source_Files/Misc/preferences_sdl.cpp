@@ -110,10 +110,12 @@ static void player_dialog(void *arg)
 	dialog d;
 	d.add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
-	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, player_preferences->name);
-	d.add(name_w);
 	w_select *level_w = new w_select("Difficulty", player_preferences->difficulty_level, level_labels);
 	d.add(level_w);
+	d.add(new w_spacer());
+	d.add(new w_static_text("Network Appearance"));
+	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, player_preferences->name);
+	d.add(name_w);
 	w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
 	d.add(pcolor_w);
 	w_player_color *tcolor_w = new w_player_color("Team Color", player_preferences->team);

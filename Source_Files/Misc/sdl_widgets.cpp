@@ -123,14 +123,14 @@ int w_right_button::layout(void)
  */
 
 const int SPACING = 8;
-const int VISIBLE_CHARS = 32;
+const int MAX_TEXT_WIDTH = 200;
 
 w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a) : widget(NORMAL_FONT), name(n), selection(s), proc(p), arg(a) {}
 
 int w_select_button::layout(void)
 {
 	int name_width = text_width(name, font, style);
-	int max_selection_width = font_width(font) * VISIBLE_CHARS;
+	int max_selection_width = MAX_TEXT_WIDTH;
 
 	rect.x = -(SPACING + name_width);
 	rect.w = name_width + 2 * SPACING + max_selection_width;
@@ -193,6 +193,7 @@ int w_select::layout(void)
 		if (width > max_label_width)
 			max_label_width = width;
 	}
+	max_label_width += 6;
 
 	rect.x = -(SPACING + name_width);
 	rect.w = name_width + 2 * SPACING + max_label_width;
@@ -307,8 +308,6 @@ void w_player_color::draw(SDL_Surface *s) const
  *  Text entry widget
  */
 
-const int TE_VISIBLE_CHARS = 16;
-
 w_text_entry::w_text_entry(const char *n, int max, const char *initial_text) : widget(NORMAL_FONT), name(n), max_chars(max)
 {
 	// Initialize buffer
@@ -327,7 +326,7 @@ w_text_entry::~w_text_entry()
 int w_text_entry::layout(void)
 {
 	int name_width = text_width(name, font, style);
-	max_text_width = font_width(text_font) * TE_VISIBLE_CHARS;
+	max_text_width = MAX_TEXT_WIDTH;
 
 	rect.x = -(SPACING + name_width);
 	rect.w = name_width + 2 * SPACING + max_text_width;

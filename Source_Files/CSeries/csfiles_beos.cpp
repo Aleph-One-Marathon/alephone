@@ -18,7 +18,8 @@ string get_application_directory(void)
 {
 	app_info info;
 	be_app->GetAppInfo(&info);
-	BPath path(&info.ref), dir;
+	BEntry entry(&info.ref);
+	BPath path(&entry), dir;
 	path.GetParent(&dir);
 	return dir.Path();
 }
