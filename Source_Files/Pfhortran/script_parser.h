@@ -30,6 +30,7 @@ June 26, 2002 (Loren Petrich):
 
 #include "cstypes.h"
 #include <vector>
+using namespace std;
 
 // LP: added trap "load" for executing whenever a level is loaded;
 // "init" will be for starting a level, and not for loading a savegame
