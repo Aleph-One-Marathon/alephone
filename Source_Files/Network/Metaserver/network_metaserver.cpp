@@ -61,8 +61,6 @@ MetaserverClient::handleUnexpectedMessage(Message* inMessage, CommunicationsChan
 void
 MetaserverClient::handleBroadcastMessage(BroadcastMessage* inMessage, CommunicationsChannel* inChannel)
 {
-	cout << "Received broadcast: " << inMessage->message() << endl;
-
 	if(m_notificationAdapter)
 		m_notificationAdapter->receivedBroadcastMessage(inMessage->message());
 }
@@ -71,8 +69,6 @@ MetaserverClient::handleBroadcastMessage(BroadcastMessage* inMessage, Communicat
 void
 MetaserverClient::handleChatMessage(ChatMessage* message, CommunicationsChannel* inChannel)
 {
-	cout << message->senderName() << " (" << message->senderID() << "): " << message->message() << endl;
-
 	if(m_notificationAdapter)
 		m_notificationAdapter->receivedChatMessage(message->senderName(), message->senderID(), message->message());
 }
@@ -82,30 +78,22 @@ void
 MetaserverClient::handleKeepAliveMessage(Message* inMessage, CommunicationsChannel* inChannel)
 {
 	inChannel->enqueueOutgoingMessage(KeepAliveMessage());
-	cout << "Keepalive (returned)" << endl;
 }
 
 
 void
 MetaserverClient::handlePlayerListMessage(PlayerListMessage* inMessage, CommunicationsChannel* inChannel)
 {
-//	cout << *inMessage;
-
 	m_playersInRoom.processUpdates(inMessage->players());
 
 	if(m_notificationAdapter)
 		m_notificationAdapter->playersInRoomChanged();
-
-//	cout << "Players-in-room is now:\n";
-//	copy(m_playersInRoom.begin(), m_playersInRoom.end(), ostream_iterator<MetaserverPlayerInfo>(cout, "\n"));
 }
 
 
 void
 MetaserverClient::handleRoomListMessage(RoomListMessage* inMessage, CommunicationsChannel* inChannel)
 {
-	cout << *inMessage;
-
 	m_rooms = inMessage->rooms();
 }
 
@@ -164,21 +152,12 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 {
 	m_channel->setMessageHandler(m_unexpectedMessageHandler.get());
 
-	cerr << "Connecting to " << serverName << " port " << port << endl;
-
 	m_channel->connect(serverName.c_str(), port);
 
-	cerr << "Connected" << endl;
-
 	LoginAndPlayerInfoMessage theLoginMessage(userName, m_playerName, m_teamName);
-
 	m_channel->enqueueOutgoingMessage(theLoginMessage);
 
-	cerr << "Sent login info" << endl;
-
 	auto_ptr<SaltMessage> theSaltMessage(m_channel->receiveSpecificMessage<SaltMessage>());
-
-	cerr << "Received salt; encryption type is " << theSaltMessage->encryptionType() << endl;
 
 	uint8 theKey[kKeyLength];
 	uint8 thePasswordCopy[kKeyLength];
@@ -187,71 +166,33 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 	for(size_t i = 0; i < sizeof(theKey); i++)
 		theKey[i] ^= thePasswordCopy[i];
 
-	cerr << "did key stuff" << endl;
-
 	BigChunkOfDataMessage theKeyMessage(kCLIENT_KEY, theKey, sizeof(theKey));
-
-	cerr << "created theKeyMessage" << endl;
-
 	m_channel->enqueueOutgoingMessage(theKeyMessage);
-
-	cerr << "Sent encrypted key" << endl;
-
-//	auto_ptr<BigChunkOfDataMessage> theAcceptMessage(m_channel->receiveSpecificMessage<BigChunkOfDataMessage>((MessageTypeID)AcceptMessage::kType));
 
 	auto_ptr<AcceptMessage> theAcceptMessage(m_channel->receiveSpecificMessage<AcceptMessage>());
 
-	cerr << "Received acceptance" << endl;
-
 	m_channel->enqueueOutgoingMessage(LocalizationMessage());
-
-	cerr << "Sent localization" << endl;
 
 	auto_ptr<LoginSuccessfulMessage> theLoginSuccessfulMessage(m_channel->receiveSpecificMessage<LoginSuccessfulMessage>());
 
-	cerr << "Received 'login successful' message; user ID is " << theLoginSuccessfulMessage->userID() << endl;
-
 	auto_ptr<SetPlayerDataMessage> theSetPlayerDataMessage(m_channel->receiveSpecificMessage<SetPlayerDataMessage>());
 
-	cerr << "Received 'set player data' message" << endl;
-
 	auto_ptr<RoomListMessage> theRoomListMessage(m_channel->receiveSpecificMessage<RoomListMessage>());
-
-	cerr << "Received room list" << endl;
-
 	m_dispatcher.get()->handle(theRoomListMessage.get(), m_channel.get());
-
-//	vector<RoomDescription> theRooms = theRoomListMessage->rooms();
-//	for(vector<RoomDescription>::iterator i = theRooms.begin(); i != theRooms.end(); ++i)
-//	{
-//		cerr << "  " << i->roomName() << " : " << i->roomType() << " : " << i->playerCount() << " : " << i->gameCount() << endl;
-//	}
 
 	m_channel->disconnect();
 
 	///// ROOM CONNECTION
-
-	cerr << "Connecting to room server" << endl;
-
 	m_channel->connect(m_rooms[0].roomServerAddress());
-
-	cerr << "Connected." << endl;
 
 	m_channel->enqueueOutgoingMessage(RoomLoginMessage(userName, theLoginSuccessfulMessage->token()));
 
-	cerr << "Sent room login message" << endl;
-
 	m_channel->enqueueOutgoingMessage(NameAndTeamMessage(m_playerName, m_teamName));
 
-	cerr << "Sent name and team message" << endl;
-
 	auto_ptr<IDAndLimitMessage> theIDAndLimitMessage(m_channel->receiveSpecificMessage<IDAndLimitMessage>());
-
-	cerr << "We are player ID " << theIDAndLimitMessage->playerID() << endl;
+	m_playerID = theIDAndLimitMessage->playerID();
 
 	auto_ptr<DenialMessage> theRoomAcceptMessage(m_channel->receiveSpecificMessage<DenialMessage>());
-
-	cerr << "Accept code " << theRoomAcceptMessage->code() << ": " << theRoomAcceptMessage->message() << endl;
 
 	m_channel->setMessageHandler(m_dispatcher.get());
 }
@@ -286,7 +227,7 @@ MetaserverClient::pump()
 void
 MetaserverClient::sendChatMessage(const std::string& message)
 {
-	m_channel->enqueueOutgoingMessage(ChatMessage(0, m_playerName, message));
+	m_channel->enqueueOutgoingMessage(ChatMessage(m_playerID, m_playerName, message));
 }
 
 
@@ -294,7 +235,6 @@ MetaserverClient::sendChatMessage(const std::string& message)
 void
 MetaserverClient::announceGame(uint16 gamePort, const GameDescription& description)
 {
-	cerr << "Announcing game '" << description.m_name << "' on port " << gamePort << endl;
 	m_channel->enqueueOutgoingMessage(CreateGameMessage(gamePort, description));
 }
 
@@ -303,7 +243,6 @@ MetaserverClient::announceGame(uint16 gamePort, const GameDescription& descripti
 void
 MetaserverClient::announceGameStarted(int32 gameTimeInSeconds)
 {
-	cerr << "Announcing game started; " << gameTimeInSeconds << " seconds of game time" << endl;
 	m_channel->enqueueOutgoingMessage(StartGameMessage(gameTimeInSeconds));
 }
 
@@ -312,7 +251,6 @@ MetaserverClient::announceGameStarted(int32 gameTimeInSeconds)
 void
 MetaserverClient::announceGameReset()
 {
-	cerr << "Announcing game reset" << endl;
 	m_channel->enqueueOutgoingMessage(ResetGameMessage());
 }
 
@@ -321,7 +259,6 @@ MetaserverClient::announceGameReset()
 void
 MetaserverClient::announceGameDeleted()
 {
-	cerr << "Announcing game deleted" << endl;
 	m_channel->enqueueOutgoingMessage(RemoveGameMessage());
 }
 
@@ -330,7 +267,6 @@ MetaserverClient::announceGameDeleted()
 void
 MetaserverClient::syncGames()
 {
-	cerr << "Asking to sync games" << endl;
 	m_channel->enqueueOutgoingMessage(SyncGamesMessage());
 }
 

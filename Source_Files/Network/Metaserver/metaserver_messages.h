@@ -426,8 +426,7 @@ protected:
 	bool reallyInflateFrom(AIStream& inStream);
 
 private:
-	uint16		m_primaryColor[3];
-	uint16		m_secondaryColor[3];
+	uint16		m_color[3];
 	uint32		m_senderID;
 	std::string	m_senderName;
 	std::string	m_message;

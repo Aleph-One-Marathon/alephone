@@ -388,22 +388,34 @@ BroadcastMessage::reallyInflateFrom(AIStream& inStream)
 ChatMessage::ChatMessage(uint32 inSenderID, const string& inSenderName, const string& inMessage)
 	: m_senderID(inSenderID), m_senderName(inSenderName), m_message(inMessage)
 {
-	m_primaryColor[0] = 0xffff;
-	m_primaryColor[1] = 0xffff;
-	m_primaryColor[2] = 0xffff;
-	m_secondaryColor[0] = 0xffff;
-	m_secondaryColor[1] = 0xffff;
-	m_secondaryColor[2] = 0xffff;
+	m_color[0] = 0x7777;
+	m_color[1] = 0x7777;
+	m_color[2] = 0x7777;
 }
 
 void
 ChatMessage::reallyDeflateTo(AOStream& thePacket) const
 {
-	thePacket << (uint32) 0;
-	thePacket.write(m_primaryColor, 3);
-	thePacket.write(m_secondaryColor, 3);
-	thePacket << m_senderID
-		<< (uint32) 0;
+	uint16 type = 0;
+	uint16 size = 0;
+	uint16 colorFlags = 0;
+	uint16 flags = 0;
+	uint16 unused16 = 0;
+	uint32 destinationPlayerID = 0;
+
+	thePacket
+		<< type
+		<< size;
+	
+	thePacket.write(m_color, 3);
+
+	thePacket
+		<< colorFlags
+		<< flags
+		<< unused16
+		<< m_senderID
+		<< destinationPlayerID;
+
 	write_string(thePacket, m_senderName);
 	write_string(thePacket, m_message);
 }
@@ -411,11 +423,26 @@ ChatMessage::reallyDeflateTo(AOStream& thePacket) const
 bool
 ChatMessage::reallyInflateFrom(AIStream& inStream)
 {
-	inStream.ignore(4);
-	inStream.read(m_primaryColor, 3);
-	inStream.read(m_secondaryColor, 3);
-	inStream >> m_senderID;
-	inStream.ignore(4);
+	uint16 type;
+	uint16 size;
+	uint16 colorFlags;
+	uint16 flags;
+	uint16 unused16;
+	uint32 destinationPlayerID;
+
+	inStream
+		>> type
+		>> size;
+
+	inStream.read(m_color, 3);
+
+	inStream
+		>> colorFlags
+		>> flags
+		>> unused16
+		>> m_senderID
+		>> destinationPlayerID;
+
 	m_senderName = read_string(inStream);
 	m_message = read_string(inStream);
 

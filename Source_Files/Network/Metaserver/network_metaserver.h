@@ -189,6 +189,7 @@ private:
 	std::string				m_playerName;
 	std::string				m_teamName;
         NotificationAdapter*			m_notificationAdapter;
+	uint32					m_playerID;
 };
 
 #endif // NETWORK_METASERVER_H
