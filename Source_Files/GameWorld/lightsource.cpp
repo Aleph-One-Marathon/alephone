@@ -326,8 +326,7 @@ _fixed get_light_intensity(
 /* ---------- private code */
 
 /* given a state, initialize .phase, .period, .initial_intensity, and .final_intensity */
-// LP: "static" removed
-static void change_light_state(
+void change_light_state(
 	size_t light_index,
 	short new_state)
 {

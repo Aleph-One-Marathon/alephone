@@ -1324,7 +1324,8 @@ static void scan_and_add_platforms(
 			/* backwards compatibility! */
 
 			uint8 *_static_data= platform_static_data;
-			for(size_t platform_static_data_index = 0; platform_static_data_index<count; ++platform_static_data_index)
+			size_t platform_static_data_index;
+			for(platform_static_data_index = 0; platform_static_data_index<count; ++platform_static_data_index)
 			{
 				static_platform_data TempPlatform;
 				_static_data = unpack_static_platform_data(_static_data, &TempPlatform, 1);
