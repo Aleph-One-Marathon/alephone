@@ -18,11 +18,14 @@
 	API is supported.
 */
 
+
+// For the filetypes
+#include "tags.h"
+
 #ifdef SDL
 #include <errno.h>
 #include <string>
 #endif
-
 
 // Symbolic constant for a closed file's reference number (refnum) (MacOS only)
 const short RefNum_Closed = -1;
@@ -101,10 +104,11 @@ private:
 /*
 	Abstraction for loaded resources;
 	this object will release that resource when it finishes.
+	MacOS resource handles will be assumed to be locked.
 */
 class LoadedResource
 {
-	// This class grabs a resource
+	// This class grabs a resource to be loaded into here
 	friend class OpenedResourceFile;
 	
 	// MacOS-specific:
@@ -125,6 +129,10 @@ public:
 		{if (RsrcHandle)
 			{HUnlock(RsrcHandle); ReleaseResource(RsrcHandle); RsrcHandle = NULL;}}
 	
+	// Get size of loaded object (the MacOS makes it easy)
+	int GetLength() {return (RsrcHandle) ? GetHandleSize(RsrcHandle) : 0;}
+	
+	// Get pointer (always present)
 	void *GetPointer(bool DoDetach = false)
 		{
 		if (RsrcHandle)
@@ -132,6 +140,7 @@ public:
 		else
 			return NULL;
 		}
+	// MacOS-specific, for stuff that only accepts handles
 	Handle GetHandle(bool DoDetach = false)
 		{return RsrcHandle; if (DoDetach) Detach();}
 
@@ -165,10 +174,14 @@ public:
 	// since resource forks are globally open with one of them the current top one.
 	// Push() saves the earlier top one makes the current one the top one,
 	// while Pop() restores the earlier top one.
+	// Will leave SetResLoad in the state of TRUE.
 	bool Push();
 	bool Pop();
 
-	// Pushing and popping are unnecessary for the MacOS version of Get()
+	// Pushing and popping are unnecessary for the MacOS versions of Get() and Check()
+	// Check simply checks if a resource is present; returns whether it is or not
+	// Get loads a resource; returns whether or not one had been successfully loaded
+	bool Check(OSType Type, short ID);
 	bool Get(OSType Type, short ID, LoadedResource& Rsrc);
 
 	bool IsOpen() {return (RefNum != RefNum_Closed);}
@@ -183,27 +196,57 @@ public:
 #endif
 
 
+/*
+	Abstraction for directory specifications;
+	designed to encapsulate both directly-specified paths
+	and MacOS volume/directory ID's.
+*/
+class DirectorySpecifier
+{
+	// This class needs to see directory info 
+	friend class FileSpecifier;
+	
+	// MacOS directory specification
+	long parID;
+	short vRefNum;
+	
+	OSErr Err;
+public:
+
+	short Get_vRefNum() {return vRefNum;}
+	long Get_parID() {return parID;}
+	void Set_vRefNum(short _vRefNum) {vRefNum = _vRefNum;}
+	void Set_parID(long _parID) {parID = _parID;}
+	
+	// Set special directories:
+	bool SetToAppParent();
+	bool SetToPreferencesParent();
+	
+	DirectorySpecifier& operator=(DirectorySpecifier& D)
+		{vRefNum = D.vRefNum; parID = D.parID; return *this;}
+		
+	OSErr GetError() {return Err;}
+	
+	DirectorySpecifier(): vRefNum(0), parID(0) {}
+	DirectorySpecifier(DirectorySpecifier& D) {*this = D;}
+};
+
+
+// Time-specification data type (can be set to 64-bit if desired)
+typedef unsigned long TimeType;
+
+
+/*
+	Abstraction for file specifications;
+	designed to encapsulate both directly-specified paths
+	and MacOS FSSpecs
+*/
 class FileSpecifier
 {	
 public:
 
-	// Possible typecodes:
-	// NONE means ignore typecode info
-	enum
-	{
-		C_Creator,	// Creator code
-		C_Map,		// For map/scenario file
-		C_Save,		// For savegames
-		C_Film,		// For films
-		C_Phys,		// For physics
-		C_Shape,	// For shapes
-		C_Sound,	// For sounds
-		C_Patch,	// For patches
-		C_Images,	// For images
-		C_Prefs,	// For preferences
-		C_NUMBER_OF_TYPECODES
-	};
-
+	// The typecodes here are the symbolic constants defined in tags.h (_typecode_creator, etc.)
+	
 	// The name as a C string:
 	// assumes enough space to hold it if getting (max. 256 bytes)
 	// The typecode is for automatically adding a suffix;
@@ -212,6 +255,14 @@ public:
 	void GetName(char *Name);
 	void SetName(char *Name, int Type);
 	
+	// Move the directory specification
+	void ToDirectory(DirectorySpecifier& Dir);
+	void FromDirectory(DirectorySpecifier& Dir);
+	
+	// Set special directories:
+	bool SetToApp();
+	bool SetParentToPreferences();
+
 	// Partially inspired by portable_files.h:
 	
 	// These functions take an appropriate one of the typecodes used earlier;
@@ -232,38 +283,49 @@ public:
 	bool ReadDialog(int Type, char *Prompt=NULL);
 	bool WriteDialog(int Type, char *Prompt=NULL, char *DefaultName=NULL);
 	
+	// Write dialog box for savegames (must be asynchronous, allowing the sound
+	// to continue in the background)
+	bool WriteDialogAsync(int Type, char *Prompt=NULL, char *DefaultName=NULL);
+	
 	// Check on whether a file exists, and its type
 	bool Exists();
 	
-	// Returns NONE if the type could not be identified
+	// Gets the modification date
+	TimeType GetDate();
+	
+	// Returns NONE if the type could not be identified;
+	// the types returned are the _typecode_stuff in tags.h
 	int GetType();
 	
 	// How many bytes are free in the disk that the file lives in?
 	bool GetFreeSpace(unsigned long& FreeSpace);
 	
-	// Copying: either copy the filespec or copy the whole file
-	// into the current file object
-	// CB: What's the difference? Why not an assignment operator (see below)?
-	bool CopySpec(FileSpecifier& File);
+	// Copying: either copy the filespec ("=") or copy the whole file
+	// into the current file object	
+	FileSpecifier& operator=(FileSpecifier& F)
+		{SetSpec(F.GetSpec()); return *this;}
+
 	bool CopyContents(FileSpecifier& File);
 	
 	bool Delete();
-
-	// Platform-specific members
-#if defined(mac)
 	
-	FileSpecifier(): Err(noErr) {}
+	// Is this file specifier the same as some other one?
+	bool operator==(FileSpecifier& F);
+	bool operator!=(FileSpecifier& F) {return !(*this == F);}
+	
+	FileSpecifier(FileSpecifier& F) {*this = F;}
+
+	// Platform-dependent parts
+#ifdef mac
 
 	// Filespec management
 	void SetSpec(FSSpec& _Spec);
 	FSSpec& GetSpec() {return Spec;}
-
-	// Parent directories:
-	bool SetFileToApp();
-	bool SetParentToPreferences();
-
+	
 	// The error:
 	OSErr GetError() {return Err;}
+	
+	FileSpecifier(): Err(noErr) {}
 	
 private:
 	FSSpec Spec;
