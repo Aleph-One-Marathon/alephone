@@ -42,7 +42,8 @@ enum {
   kLUA_MESSAGE,
   kCHAT_MESSAGE,
   kUNKNOWN_MESSAGE_MESSAGE,
-  kSCRIPT_MESSAGE
+  kSCRIPT_MESSAGE,
+  kEND_GAME_DATA_MESSAGE
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -94,6 +95,8 @@ class AcceptJoinMessage : public SmallMessageHelper
   bool mAccepted;
   NetPlayer mPlayer;
 };
+
+typedef DatalessMessage<kEND_GAME_DATA_MESSAGE> EndGameDataMessage;
 
 typedef DatalessMessage<kHELLO_MESSAGE> HelloMessage;
 

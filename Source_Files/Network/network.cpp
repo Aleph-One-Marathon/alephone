@@ -127,7 +127,9 @@ clearly this is all broken until we have packet types
 
 #include "game_errors.h"
 #include "CommunicationsChannel.h"
+#include "MessageDispatcher.h"
 #include "MessageInflater.h"
+#include "MessageHandler.h"
 #include "progress.h"
 #include "extensions.h"
 
@@ -198,6 +200,7 @@ static int next_stream_id = 0;
 static IPaddress host_address;
 static bool host_address_specified = false;
 static MessageInflater *inflater = NULL;
+static MessageDispatcher *dispatcher = NULL;
 static uint32 next_join_attempt;
 
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
@@ -246,26 +249,224 @@ static bool NetSetSelfSend(bool on);
 
 static void NetDDPPacketHandler(DDPPacketBufferPtr inPacket);
 
-enum {
-	kNetworkTransportType= 0,
-	NUMBER_OF_TRANSPORT_TYPES
-};
+//-----------------------------------------------------------------------------
+// Message handlers
+//-----------------------------------------------------------------------------
+static short handlerState;
 
-static short transport_type= kNetworkTransportType;
-
-short NetGetTransportType(
-	void)
+static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel*)
 {
-	return transport_type;
-}
-void NetSetTransportType(
-	short type)
-{
-	assert(type>=0 && type<NUMBER_OF_TRANSPORT_TYPES);
-	assert(type==kNetworkTransportType);
-	transport_type= type;
+  if (netState == netJoining) {
+    fprintf(stderr, "received hello message\n");
+    // reply with my join info
+    prospective_joiner_info my_info;
+    
+    pstrcpy(my_info.name, player_preferences->name);
+    my_info.network_version = get_network_version();
+    JoinerInfoMessage joinerInfoMessage(&my_info);
+    fprintf(stderr, "sending joinerInfoMessage\n");
+    connection_to_server->enqueueOutgoingMessage(joinerInfoMessage);
+  } else {
+    // log an error
+    fprintf(stderr, "unexpected hello message received!\n");
+  }
 }
 
+static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, CommunicationsChannel*) {
+  if (netState == netJoining) {
+    fprintf(stderr, "received join player message\n");
+
+    /* Note that we could set accepted to false if we wanted to for some */
+    /*  reason- such as bad serial numbers.... */
+    
+    SetNetscriptStatus (false); // Unless told otherwise, we don't expect a netscript
+    
+    /* Note that we share the buffers.. */
+    localPlayerIdentifier= joinPlayerMessage->value();
+    topology->players[localPlayerIndex].identifier= localPlayerIdentifier;
+    topology->players[localPlayerIndex].net_dead= false;
+    
+    /* Confirm. */
+    fprintf(stderr, "sending an acceptJoinMessage\n");
+    AcceptJoinMessage acceptJoinMessage(true, &topology->players[localPlayerIndex]);
+    connection_to_server->enqueueOutgoingMessage(acceptJoinMessage);
+
+    if (acceptJoinMessage.accepted()) {
+      handlerState = netWaiting;
+    } else {
+      handlerState = netJoinErrorOccurred;
+    }
+  } else {
+    fprintf(stderr, "unexpected join player message received!\n");
+  }
+}
+
+static byte *handlerLuaBuffer = NULL;
+static size_t handlerLuaLength = 0;
+
+static void handleLuaMessage(LuaMessage *luaMessage, CommunicationsChannel *) {
+  if (netState == netStartingUp) {
+    fprintf(stderr, "received lua\n");
+    if (handlerLuaBuffer) {
+      delete[] handlerLuaBuffer;
+      handlerLuaBuffer = NULL;
+    }
+    handlerLuaLength = luaMessage->length();
+    if (handlerLuaLength > 0) {
+      handlerLuaBuffer = new byte[handlerLuaLength];
+      memcpy(handlerLuaBuffer, luaMessage->buffer(), handlerLuaLength);
+    }
+  } else {
+    fprintf(stderr, "unexpected lua message received!\n");
+  }
+}
+
+static byte *handlerMapBuffer = NULL;
+static size_t handlerMapLength = 0;
+
+static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
+  if (netState == netStartingUp) {
+    fprintf(stderr, "received map\n");
+    if (handlerMapBuffer) { // assume the last map the server sent is right
+      delete[] handlerMapBuffer;
+      handlerMapBuffer = NULL;
+    }
+    handlerMapLength = mapMessage->length();
+    if (handlerMapLength > 0) {
+      handlerMapBuffer = new byte[handlerMapLength];
+      memcpy(handlerMapBuffer, mapMessage->buffer(), handlerMapLength);
+    }
+  } else {
+    fprintf(stderr, "unexpected map message received!\n");
+  }
+}
+    
+static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, CommunicationsChannel *) {
+  // for the moment, don't handle these
+  fprintf(stderr, "chat message received\n");
+}
+
+static byte *handlerPhysicsBuffer = NULL;
+static size_t handlerPhysicsLength = 0;
+
+static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsChannel *) {
+  if (netState == netStartingUp) {
+    fprintf(stderr, "received physics\n");
+    if (handlerPhysicsBuffer) {
+      delete[] handlerPhysicsBuffer;
+      handlerPhysicsBuffer = NULL;
+    }
+    handlerPhysicsLength = physicsMessage->length();
+    if (handlerPhysicsLength > 0) {
+      handlerPhysicsBuffer = new byte[handlerPhysicsLength];
+      memcpy(handlerPhysicsBuffer, physicsMessage->buffer(), handlerPhysicsLength);
+    }
+  } else {
+    fprintf(stderr, "unexpected physics message received!\n");
+  }
+}
+
+
+static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel*) {
+  if (netState == netJoining) {
+    fprintf(stderr, "received script message\n");
+    ScriptMessage replyToScriptMessage;
+    if (scriptMessage->value() == _netscript_query_message) {
+#ifdef HAVE_LUA
+      replyToScriptMessage.setValue(_netscript_yes_script_message);
+#else
+      replyToScriptMessage.setValue(_netscript_no_script_message);
+#endif
+    } else {
+      replyToScriptMessage.setValue(_netscript_no_script_message);
+    }
+
+    connection_to_server->enqueueOutgoingMessage(replyToScriptMessage);
+  } else {
+    fprintf(stderr, "unexpected script message received!\n");
+  }
+}
+
+static void handleTopologyMessage(TopologyMessage* topologyMessage, CommunicationsChannel *) {
+  if (netState == netWaiting) {
+    fprintf(stderr, "received topology message\n");
+    *topology = *(topologyMessage->topology());
+    
+    NetAddrBlock address;
+      
+      // LP: NetAddrBlock is the trouble here
+#ifdef NETWORK_IP
+      address = connection_to_server->peerAddress();
+#endif
+      
+      // ZZZ: the code below used to assume the server was _index_ 0; now, we merely
+      // assume the server has _identifier_ 0.
+      int theServerIndex;
+      for(theServerIndex = 0; theServerIndex < topology->player_count; theServerIndex++)
+	{
+	  if(topology->players[theServerIndex].identifier == 0) break;
+	}
+      
+      assert(theServerIndex != topology->player_count);
+      
+      /* for ARA, make stuff in an address we know is correct (donÕt believe the server) */
+      topology->players[theServerIndex].dspAddress= address;
+#ifndef NETWORK_IP
+#ifdef CLASSIC_MAC_NETWORKING
+      topology->players[theServerIndex].ddpAddress.aNet= address.aNet;
+      topology->players[theServerIndex].ddpAddress.aNode= address.aNode;
+#endif
+#else
+      topology->players[theServerIndex].ddpAddress.host = address.host;
+#endif
+      //						fdprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[0].ddpAddress),
+      //							*((long*)&topology->players[0].dspAddress));
+
+    NetUpdateTopology();
+    
+    switch (topology->tag)
+      {
+      case tagNEW_PLAYER:
+	handlerState = netPlayerAdded;
+	break;
+	
+      case tagCANCEL_GAME:
+	handlerState= netCancelled;
+	alert_user(infoError, strNETWORK_ERRORS, netErrServerCanceled, 0);
+	break;
+	
+      case tagSTART_GAME:
+	handlerState = netStartingUp;
+	resuming_saved_game = false;
+	break;
+	
+	// ZZZ addition
+      case tagRESUME_GAME:
+	handlerState = netStartingResumeGame;
+	resuming_saved_game = true;
+	break;
+	
+      default:
+	break;
+      }
+  } else {
+    fprintf(stderr, "unexpected topology message received!\n");
+  }
+}
+
+static void handleUnexpectedMessage(Message *inMessage, CommunicationsChannel *) {
+  fprintf(stderr, "unexpected message ID %i received!\n", inMessage->type());
+}
+    
+static TypedMessageHandlerFunction<HelloMessage> helloMessageHandler(&handleHelloMessage);
+static TypedMessageHandlerFunction<JoinPlayerMessage> joinPlayerMessageHandler(&handleJoinPlayerMessage);
+static TypedMessageHandlerFunction<LuaMessage> luaMessageHandler(&handleLuaMessage);
+static TypedMessageHandlerFunction<MapMessage> mapMessageHandler(&handleMapMessage);
+static TypedMessageHandlerFunction<NetworkChatMessage> networkChatMessageHandler(&handleNetworkChatMessage);
+static TypedMessageHandlerFunction<PhysicsMessage> physicsMessageHandler(&handlePhysicsMessage);
+static TypedMessageHandlerFunction<ScriptMessage> scriptMessageHandler(&handleScriptMessage);
+static TypedMessageHandlerFunction<TopologyMessage> topologyMessageHandler(&handleTopologyMessage);
+static TypedMessageHandlerFunction<Message> unexpectedMessageHandler(&handleUnexpectedMessage);
 
 bool NetEnter(
 	void)
@@ -329,6 +530,7 @@ bool NetEnter(
 		}
 
 		inflater->learnPrototype(AcceptJoinMessage());
+		inflater->learnPrototype(EndGameDataMessage());
 		inflater->learnPrototype(HelloMessage());
 		inflater->learnPrototype(JoinerInfoMessage());
 		inflater->learnPrototype(JoinPlayerMessage());
@@ -338,6 +540,20 @@ bool NetEnter(
 		inflater->learnPrototype(PhysicsMessage());
 		inflater->learnPrototype(ScriptMessage());
 		inflater->learnPrototype(TopologyMessage());
+	}
+	
+	if (!dispatcher) {
+	  dispatcher = new MessageDispatcher();
+
+	  dispatcher->setDefaultHandler(&unexpectedMessageHandler);
+	  dispatcher->setHandlerForType(&helloMessageHandler, HelloMessage::kType);
+	  dispatcher->setHandlerForType(&joinPlayerMessageHandler, JoinPlayerMessage::kType);
+	  dispatcher->setHandlerForType(&luaMessageHandler, LuaMessage::kType);
+	  dispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
+	  dispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
+	  dispatcher->setHandlerForType(&physicsMessageHandler, PhysicsMessage::kType);
+	  dispatcher->setHandlerForType(&scriptMessageHandler, ScriptMessage::kType);
+	  dispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
 	}
 	
 	next_join_attempt = machine_tick_count();
@@ -671,6 +887,8 @@ bool NetGameJoin(
 	if (!error) {
 		connection_to_server = new CommunicationsChannel();
 		connection_to_server->setMessageInflater(inflater);
+		connection_to_server->setMessageHandler(dispatcher);
+		
 		netState = netConnecting;
 		success = true;
 	}
@@ -1117,12 +1335,11 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	LuaMessage luaMessage(deferred_script_data, deferred_script_length);
 	channel->enqueueOutgoingMessage(luaMessage);
 	channel->flushOutgoingMessages(false, 30000, 30000);
-      } else {
-	fprintf(stderr, "Transfering empty lua\n");
-	LuaMessage luaMessage(NULL, 0);
-	channel->enqueueOutgoingMessage(luaMessage);
-	channel->flushOutgoingMessages(false, 30000, 30000);
-      }
+      } 
+
+      EndGameDataMessage endGameDataMessage;
+      channel->enqueueOutgoingMessage(endGameDataMessage);
+      channel->flushOutgoingMessages(false, 30000, 30000);
     }
     
     if (error) { // ghs: nothing above returns an error at the moment,
@@ -1154,124 +1371,72 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 
 byte *NetReceiveGameData(bool do_physics)
 {
-	byte *map_buffer= NULL;
-	size_t map_length;
-	uint32 ticks;
-	OSErr error= noErr;
-	bool timed_out= false;
-
-        byte *script_buffer = NULL;
-        size_t script_length;
-        
-	open_progress_dialog(_awaiting_map);
-
-	ticks= machine_tick_count();
-	
-	while (!connection_to_server->isMessageAvailable() && !timed_out) {
-	  if((machine_tick_count() - ticks) > MAP_TRANSFER_TIME_OUT) {
-	    timed_out= true;
-	  }
-	}
-	
-	if (timed_out) {
-	  close_progress_dialog();
-	  alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, 0);
-	} else {
-	  byte *physics_buffer= NULL;
-	  size_t physics_length;
-
-	  CommunicationsChannel *channel = connection_to_server;
-	  
-	  /* Receiving map.. */
-	  set_progress_dialog_message(_receiving_physics);
-	  
-	  if (do_physics) {
-
-	    fprintf(stderr, "Receiving physics\n");
-	    auto_ptr<PhysicsMessage> physicsMessage(channel->receiveSpecificMessage<PhysicsMessage>((Uint32) 30000, (Uint32) 30000));
-	    if (physicsMessage.get()) {
-	      fprintf(stderr, "Physics received (%i bytes)\n", physicsMessage->length());
-	      physics_length = physicsMessage->length();
-	      if (physics_length > 0) {
-		physics_buffer = new byte[physics_length];
-		memcpy(physics_buffer, physicsMessage->buffer(), physics_length);
-	      }
-	    } else {
-	      fprintf(stderr, "No physics received\n");
-	      error = 1;
-	    }
-	    
-	    if(!error) {
-	      /* Process the physics file & frees it!.. */
-	      if(do_physics) {
-		process_network_physics_model(physics_buffer);
-	      }
-	    }
-	  }
-
-	  set_progress_dialog_message(_receiving_map);
-	  reset_progress_bar();
-	  
-	  fprintf(stderr, "Receiving map\n");
-	  auto_ptr<MapMessage> mapMessage(channel->receiveSpecificMessage<MapMessage>((Uint32) 30000, (Uint32) 30000));
-	  if (mapMessage.get()) {
-	    fprintf(stderr, "Map received (%i bytse)\n", mapMessage->length());
-	    map_length = mapMessage->length();
-	    if (map_length > 0) {
-	      map_buffer = new byte[map_length];
-	      memcpy(map_buffer, mapMessage->buffer(), map_length);
-	    }
-	  } else {
-	    error = 1;
-	  }
-	  
-	  if (!error) {
-	    reset_progress_bar();
-
-	    fprintf(stderr, "Receiving lua\n");
-	    auto_ptr<LuaMessage> luaMessage(channel->receiveSpecificMessage<LuaMessage>((Uint32) 30000, (Uint32) 30000));
-	    if (luaMessage.get()) {
-	      fprintf(stderr, "Lua received\n");
-	      if (luaMessage->length() > 0) {
-		do_netscript = true;
-#ifdef HAVE_LUA		
-		LoadLuaScript((char *) luaMessage->buffer(), luaMessage->length());
+  byte *map_buffer= NULL;
+  
+  open_progress_dialog(_awaiting_map);
+  
+  // handlers will take care of all messages, and when they're done
+  // the server will send us this:
+  auto_ptr<EndGameDataMessage> endGameDataMessage(connection_to_server->receiveSpecificMessage<EndGameDataMessage>((Uint32) 60000, (Uint32) 30000));
+  if (endGameDataMessage.get()) {
+    // game data was received OK
+    if (do_physics && handlerPhysicsLength > 0) {
+      process_network_physics_model(handlerPhysicsBuffer);
+      handlerPhysicsLength = 0;
+      handlerPhysicsBuffer = NULL;
+    }
+    
+    if (handlerMapLength > 0) {
+      map_buffer = handlerMapBuffer;
+      handlerMapBuffer = NULL;
+      handlerMapLength = 0;
+    }
+    
+    if (handlerLuaLength > 0) {
+      do_netscript = true;
+#ifdef HAVE_LUA
+      LoadLuaScript((char *) handlerLuaBuffer, handlerLuaLength);
 #endif
-	      } else {
-		do_netscript = false;
-		fprintf(stderr, "Not using lua\n");
-	      }
-	    } else {
-	      error = 1;
-	    }
-	  }
-	  
-	  /* And close our dialog.. */
-	  draw_progress_bar(10, 10);
-	  close_progress_dialog();
-	  
-	  if (error != noErr || map_buffer == NULL)
-	    {
-	      if(error)
-		{
-		  alert_user(infoError, strNETWORK_ERRORS, netErrMapDistribFailed, error);
-		} else {
-#ifdef mac
-		  alert_user(infoError, strERRORS, outOfMemory, MemError());
-#else
-		  alert_user(infoError, strERRORS, outOfMemory, -1);
-#endif
-		}
-	      
-	      if(map_buffer)
-		{
-		  delete []map_buffer;
-		  map_buffer= NULL;
-		}
-	    }
-	}
-	
-	return map_buffer;
+      handlerLuaBuffer = NULL;
+      handlerLuaLength = 0;
+    } else {
+      do_netscript = false;
+    }
+    
+    draw_progress_bar(10, 10);
+    close_progress_dialog();
+  } else {
+    draw_progress_bar(10, 10);
+    close_progress_dialog();
+    
+    bool distributionFailed = false;
+    if (handlerPhysicsLength > 0) {
+      delete[] handlerPhysicsBuffer;
+      handlerPhysicsBuffer = NULL;
+      handlerPhysicsLength = 0;
+      distributionFailed = true;
+    }
+    if (handlerMapLength > 0) {
+      delete[] handlerMapBuffer;
+      handlerMapBuffer = NULL;
+      handlerMapLength = 0;
+      distributionFailed = true;
+    }
+    if (handlerLuaLength > 0) {
+      delete[] handlerLuaBuffer;
+      handlerLuaBuffer = NULL;
+      handlerLuaLength = 0;
+      distributionFailed = true;
+    }
+    
+    if (distributionFailed) {
+      alert_user(infoError, strNETWORK_ERRORS, netErrMapDistribFailed, 1);
+    } else {
+      alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, 1);
+    }
+  }
+  
+  return map_buffer;
 }
 
 void NetSetInitialParameters(
@@ -1430,89 +1595,19 @@ short NetUpdateJoinState(
 	newState = netJoinErrorOccurred;
 	alert_user(infoError, strNETWORK_ERRORS, netErrLostConnection, 0);
       } else {
-	auto_ptr<Message> message(connection_to_server->receiveMessage((Uint32) 30000, (Uint32) 30000));
-	if (message.get()) {
-	  fprintf(stderr, "Joining: received a message\n");
-	  if (message->type() == kHELLO_MESSAGE) {
-	    fprintf(stderr, "Message is a hello message\n");
-	    HelloMessage *helloMessage = dynamic_cast<HelloMessage*>(message.get());
-	    if (helloMessage) {
-	      fprintf(stderr, "Cast succeeded\n");
-	      prospective_joiner_info my_info;
-	      
-	      pstrcpy(my_info.name,player_preferences->name);
-	      my_info.network_version = get_network_version();
-	      JoinerInfoMessage joinerInfoMessage(&my_info);
-	      fprintf(stderr, "sending joinerInfoMessage\n");
-	      connection_to_server->enqueueOutgoingMessage(joinerInfoMessage);
-	      connection_to_server->flushOutgoingMessages(30000, 30000);
-	    } else {
-	      error = 1;
-	    }
-	  } else if (message->type() == kSCRIPT_MESSAGE) {
-	    fprintf(stderr, "Message is a script message\n");
-	    ScriptMessage *scriptMessage = dynamic_cast<ScriptMessage*>(message.get());
-	    if (scriptMessage) {
-	      fprintf(stderr, "Cast succeded\n");
-	      ScriptMessage replyToScriptMessage;
-	      if (scriptMessage->value() == _netscript_query_message) {
-#ifdef HAVE_LUA
-		replyToScriptMessage.setValue(_netscript_yes_script_message);
-#else
-		replyToScriptMessage.setValue(_netscript_no_script_message);
-#endif
-	      } else {
-		replyToScriptMessage.setValue(_netscript_no_script_message);
-	      }
-	      
-	      connection_to_server->enqueueOutgoingMessage(replyToScriptMessage);
-	      connection_to_server->flushOutgoingMessages(30000, 30000);
-	    } else {
-	      error = 1;
-	    }
-	  } else if (message->type() == kJOIN_PLAYER_MESSAGE) {
-	    fprintf(stderr, "Message is a join player message\n");
-	    JoinPlayerMessage *joinPlayerMessage = dynamic_cast<JoinPlayerMessage*>(message.get());
-	    if (joinPlayerMessage) {
-	      fprintf(stderr, "Cast succeeded\n");
-
-	      /* Note that we could set accepted to false if we wanted to for some */
-	      /*  reason- such as bad serial numbers.... */
-	      
-	      SetNetscriptStatus (false); // Unless told otherwise, we don't expect a netscript
-	      
-	      /* Note that we share the buffers.. */
-	      localPlayerIdentifier= joinPlayerMessage->value();
-	      topology->players[localPlayerIndex].identifier= localPlayerIdentifier;
-	      topology->players[localPlayerIndex].net_dead= false;
-	      
-	      /* Confirm. */
-	      fprintf(stderr, "sending an acceptJoinMessage\n");
-	      AcceptJoinMessage acceptJoinMessage(true, &topology->players[localPlayerIndex]);
-	      connection_to_server->enqueueOutgoingMessage(acceptJoinMessage);
-	      connection_to_server->flushOutgoingMessages(30000, 30000);
-	      
-	      if (acceptJoinMessage.accepted()) {
+	handlerState = netJoining;
+	connection_to_server->pump();
+	connection_to_server->dispatchIncomingMessages();
+	if (handlerState == netWaiting) {	  
 		newState= netWaiting;
-	      }
-	    } else {
-	      error = 1;
-	    }
-	  } else {
-	    error = 1;
-	  }
-	} else {
+	} else if (handlerState == netJoinErrorOccurred) {
 	  error = 1;
+	  logAnomaly1("error != noErr; error == %d", error);
+	  
+	  newState= netJoinErrorOccurred;
+	  // no way to get here
+	  alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
 	}
-	
-	if (error != noErr)
-	  {
-	    logAnomaly1("error != noErr; error == %d", error);
-	    
-	    newState= netJoinErrorOccurred;
-	    // no way to get here
-	    alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
-	  }
       }
       break;
       // netJoining
@@ -1522,89 +1617,15 @@ short NetUpdateJoinState(
 	newState = netJoinErrorOccurred;
 	alert_user(infoError, strNETWORK_ERRORS, netErrLostConnection, 0);
       } else {
-	auto_ptr<Message> message(connection_to_server->receiveMessage((Uint32) 30000, (Uint32) 30000));
-	if (message.get()) {
-	  fprintf(stderr, "Waiting: received a message\n");
-	  if (message->type() == kTOPOLOGY_MESSAGE) {
-	    fprintf(stderr, "Message is a topology message\n");
-	    TopologyMessage *topologyMessage = dynamic_cast<TopologyMessage*>(message.get());
-	    if (topologyMessage) {
-	      fprintf(stderr, "Cast succeded\n");
-	      *topology = *(topologyMessage->topology());
-
-	      if(NetGetTransportType()==kNetworkTransportType)
-		{
-		  NetAddrBlock address;
-		  
-		  // LP: NetAddrBlock is the trouble here
-#ifdef NETWORK_IP
-		  address = connection_to_server->peerAddress();
-#endif
-		  
-		  // ZZZ: the code below used to assume the server was _index_ 0; now, we merely
-		  // assume the server has _identifier_ 0.
-		  int theServerIndex;
-		  for(theServerIndex = 0; theServerIndex < topology->player_count; theServerIndex++)
-		    {
-		      if(topology->players[theServerIndex].identifier == 0) break;
-		    }
-		  
-		  assert(theServerIndex != topology->player_count);
-		  
-		  /* for ARA, make stuff in an address we know is correct (donÕt believe the server) */
-		  topology->players[theServerIndex].dspAddress= address;
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-		  topology->players[theServerIndex].ddpAddress.aNet= address.aNet;
-		  topology->players[theServerIndex].ddpAddress.aNode= address.aNode;
-#endif
-#else
-		  topology->players[theServerIndex].ddpAddress.host = address.host;
-#endif
-		  //						fdprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[0].ddpAddress),
-		  //							*((long*)&topology->players[0].dspAddress));
-		}
-	      
-	      NetUpdateTopology();
-	      
-	      switch (topology->tag)
-		{
-		case tagNEW_PLAYER:
-		  newState= netPlayerAdded;
-		  break;
-		  
-		case tagCANCEL_GAME:
-		  newState= netCancelled;
-		  alert_user(infoError, strNETWORK_ERRORS, netErrServerCanceled, 0);
-		  break;
-		  
-		case tagSTART_GAME:
-		  newState= netStartingUp;
-		  resuming_saved_game = false;
-		  break;
-		  
-		  // ZZZ addition
-		case tagRESUME_GAME:
-		  newState = netStartingResumeGame;
-		  resuming_saved_game = true;
-		  break;
-		  
-		default:
-		  break;
-		}
-	      
-	      if (error)
-		{
-		  newState= netJoinErrorOccurred;
-		  alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
-		}
-	      break;
-	      // _topology_packet
-	      
-	      // ZZZ addition
-	    } else {
-	      error = 1;
-	    }
+	handlerState = netWaiting;
+	connection_to_server->pump();
+	connection_to_server->dispatchIncomingMessages();
+	if (handlerState != netWaiting) {
+	  newState = handlerState;
+	}
+      }
+      //	alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
+#if 0
 	  } else if (message->type() == kCHAT_MESSAGE) {
 	    NetworkChatMessage *networkChatMessage = dynamic_cast<NetworkChatMessage*>(message.get());
 	    if (networkChatMessage) {
@@ -1620,7 +1641,8 @@ short NetUpdateJoinState(
 	} else {
 	  error = 1;
 	}
-      }
+	}
+#endif
       break;
       // netWaiting
       
@@ -1657,7 +1679,6 @@ int NetGatherPlayer(
 	OSErr error = noErr;
 	NetAddrBlock address;
 	short packet_type;
-	short stream_transport_type= NetGetTransportType();
 	int theResult = kGatherPlayerSuccessful;
 	bool preGatherRejection = false;
 
@@ -1872,5 +1893,4 @@ bool NetAllowBehindview() {
   return (dynamic_world->player_count == 1 ||
 	  dynamic_world->game_information.cheat_flags & _allow_behindview);
 }
-
 
