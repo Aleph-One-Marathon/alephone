@@ -58,6 +58,7 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 #include <Folders.h>
 #include <Navigation.h>
 #endif
+#include <algorithm>
 #include "cseries.h"
 #include "game_errors.h"
 #include "shell.h"
@@ -276,6 +277,71 @@ bool OpenedResourceFile::Get(uint32 Type, int16 ID, LoadedResource& Rsrc)
 	
 	Pop();
 	return RsrcLoaded;
+}
+
+bool OpenedResourceFile::GetTypeList(vector<uint32>& TypeList)
+{
+	TypeList.clear();
+	Push();
+	
+	// How many?
+	short NumTypes = Count1Types();
+	if (NumTypes <= 0)
+	{
+		Pop();
+		return false;
+	}
+	
+	TypeList.resize(NumTypes);
+	
+	// Get the type ID's
+	
+	for (int it=0; it<NumTypes; it++)
+		Get1IndType(&TypeList[it],it+1);	// 0-based to 1-based
+	
+	// Sort them!
+	sort(TypeList.begin(),TypeList.end());
+	
+	Pop();
+	return true;
+}
+
+bool OpenedResourceFile::GetIDList(uint32 Type, vector<int16>& IDList)
+{
+	IDList.clear();
+	Push();
+	
+	// How many?
+	short NumResources = Count1Resources(Type);
+	if (NumResources <= 0)
+	{
+		Pop();
+		return false;
+	}
+	
+	IDList.resize(NumResources);
+
+	// Get the resource ID's
+	
+	SetResLoad(false);
+	
+	for (int ir=0; ir<NumResources; ir++)
+	{
+		// Zero-based to one-based indexing
+		Handle ResourceHandle = Get1IndResource(Type,ir+1);	// 0-based to 1-based
+		ResType _Type;
+		Str255 Name;
+		GetResInfo(ResourceHandle,&IDList[ir],&_Type,Name);
+		ReleaseResource(ResourceHandle);
+	}
+	
+	SetResLoad(true);
+	
+	// Sort them!
+	sort(IDList.begin(),IDList.end());
+	
+	Pop();
+	return true;
 }
 
 bool OpenedResourceFile::IsOpen()
