@@ -588,7 +588,7 @@ bool try_and_add_player_item(
 	activate_got_item_trap(type);
 #ifdef HAVE_LUA
         //MH: Call Lua script hook
-        L_Call_Got_Item(type);
+        L_Call_Got_Item(type, player_index);
 #endif /* HAVE_LUA */
 			
 	/* Play the pickup sound */

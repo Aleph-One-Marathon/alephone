@@ -498,7 +498,7 @@ void try_and_toggle_control_panel(
 						activate_tag_switch_trap(side->control_panel_permutation);
 #ifdef HAVE_LUA
                                                 //MH: Lua script hook
-                                                L_Call_Tag_Switch(side->control_panel_permutation);
+                                                // L_Call_Tag_Switch(side->control_panel_permutation);
 #endif /* HAVE_LUA */
 						
 						break;
@@ -510,7 +510,7 @@ void try_and_toggle_control_panel(
 						activate_light_switch_trap(side->control_panel_permutation);
 #ifdef HAVE_LUA
                                                 //MH: Lua script hook
-                                                L_Call_Light_Switch(side->control_panel_permutation);
+                                               //  L_Call_Light_Switch(side->control_panel_permutation);
 #endif /* HAVE_LUA */
 						
 						break;
@@ -522,7 +522,7 @@ void try_and_toggle_control_panel(
 						activate_platform_switch_trap(side->control_panel_permutation);
 #ifdef HAVE_LUA
                                                 //MH: Lua script hook
-                                                L_Call_Platform_Switch(side->control_panel_permutation);
+                                                // L_Call_Platform_Switch(side->control_panel_permutation);
 #endif /* HAVE_LUA */
 						
 						break;
@@ -789,7 +789,7 @@ static void	change_panel_state(
 				activate_terminal_enter_trap(side->control_panel_permutation);
 #ifdef HAVE_LUA
                                 //MH: Lua script hook
-                                L_Call_Terminal_Enter(side->control_panel_permutation);
+                                L_Call_Terminal_Enter(side->control_panel_permutation,player_index);
 #endif /* HAVE_LUA */
 				
 				/* this will handle changing levels, if necessary (i.e., if weÕre finished) */
@@ -813,7 +813,7 @@ static void	change_panel_state(
 				activate_tag_switch_trap(side->control_panel_permutation);
 #ifdef HAVE_LUA
                                 //MH: Lua script hook
-                                L_Call_Tag_Switch(side->control_panel_permutation);
+                                L_Call_Tag_Switch(side->control_panel_permutation,player_index);
 #endif /* HAVE_LUA */
 			
 			}
@@ -826,7 +826,7 @@ static void	change_panel_state(
 			activate_light_switch_trap(side->control_panel_permutation);
 #ifdef HAVE_LUA
                         //MH: Lua script hook
-                        L_Call_Light_Switch(side->control_panel_permutation);
+                        L_Call_Light_Switch(side->control_panel_permutation,player_index);
 #endif /* HAVE_LUA */
 
 			break;
@@ -838,7 +838,7 @@ static void	change_panel_state(
 			activate_platform_switch_trap(side->control_panel_permutation);
 #ifdef HAVE_LUA
                         //MH: Lua script hook
-                        L_Call_Platform_Switch(side->control_panel_permutation);
+                        L_Call_Platform_Switch(side->control_panel_permutation,player_index);
 #endif /* HAVE_LUA */
 			
 			break;
@@ -870,7 +870,7 @@ static void	change_panel_state(
                                                 activate_pattern_buffer_trap(side->control_panel_permutation);
 #ifdef HAVE_LUA
                                                 //MH: Lua script hook
-                                                L_Call_Pattern_Buffer(side->control_panel_permutation);
+                                                L_Call_Pattern_Buffer(side->control_panel_permutation,player_index);
 #endif /* HAVE_LUA */
                                         
                 //				fade_out_background_music(30);

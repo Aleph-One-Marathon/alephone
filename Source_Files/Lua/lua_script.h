@@ -6,13 +6,13 @@
 
 void L_Call_Init();
 void L_Call_Idle();
-void L_Call_Tag_Switch(short tag);
-void L_Call_Light_Switch(short light);
-void L_Call_Platform_Switch(short platform);
-void L_Call_Terminal_Enter(short terminal_id);
-void L_Call_Terminal_Exit(short terminal_id);
-void L_Call_Pattern_Buffer(short buffer_id);
-void L_Call_Got_Item(short type);
+void L_Call_Tag_Switch(short tag, short player_index);
+void L_Call_Light_Switch(short light, short player_index);
+void L_Call_Platform_Switch(short platform, short player_index);
+void L_Call_Terminal_Enter(short terminal_id, short player_index);
+void L_Call_Terminal_Exit(short terminal_id, short player_index);
+void L_Call_Pattern_Buffer(short buffer_id, short player_index);
+void L_Call_Got_Item(short type, short player_index);
 void L_Call_Light_Activated(short index);
 void L_Call_Platform_Activated(short index);
 

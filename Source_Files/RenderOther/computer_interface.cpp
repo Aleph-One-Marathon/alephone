@@ -424,7 +424,7 @@ void initialize_player_terminal_info(
 		activate_terminal_exit_trap(terminal->terminal_id);
 #ifdef HAVE_LUA
                 // MH: call the Lua trap as well
-                L_Call_Terminal_Exit(terminal->terminal_id);
+                L_Call_Terminal_Exit(terminal->terminal_id, player_index);
 #endif /* HAVE_LUA */
         }
 
