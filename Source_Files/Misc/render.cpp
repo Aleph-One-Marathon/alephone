@@ -128,6 +128,14 @@ Mar 30, 2000 (Loren Petrich):
 	for indicating its structure; there are members for polygon >, polygon <,
 	and the next member of a chain that shares polygon-index values.
 	As a result, the node-aliases list can now be abolished once and for all.
+
+Jun 11, 2000 (Loren Petrich):
+	Added support for see-through liquids; this requires several changes.
+	The rendering of each map polygon had to be changed so that there would be a
+	separate liquid surface; it would no longer replace the floor or the ceiling.
+	Next, the inhabitant objects had to be done in two passes, one other side, and one view side.
+	Also, whether there is void on the other side had to be indicated, so that
+	waterfalls and the like may look right.
 */
 
 // For casting pointers to integer values -- use appropriate data type
@@ -523,12 +531,31 @@ void build_aggregate_render_object_clipping_window(struct render_object_data *re
 	struct sorted_node_data **base_nodes, short base_node_count);
 
 static void render_tree(struct view_data *view, struct bitmap_definition *destination);
+
+// LP change: indicate whether the void is present on one side;
+// useful for suppressing semitransparency to the void
+static void render_node_floor_or_ceiling(struct view_data *view, struct bitmap_definition *destination,
+	struct clipping_window_data *window, struct polygon_data *polygon, struct horizontal_surface_data *surface,
+	bool void_present);
+/*
 static void render_node_floor_or_ceiling(struct view_data *view, struct bitmap_definition *destination,
 	struct clipping_window_data *window, struct polygon_data *polygon, struct horizontal_surface_data *surface);
+*/
+static void render_node_side(struct view_data *view, struct bitmap_definition *destination,
+	struct clipping_window_data *window, struct vertical_surface_data *surface,
+	bool void_present);
+/*
 static void render_node_side(struct view_data *view, struct bitmap_definition *destination,
 	struct clipping_window_data *window, struct vertical_surface_data *surface);
+*/
+// LP change: add "other side of media" flag, to indicate that the sprite will be rendered
+// on the opposite side of the liquid surface from the viewpoint, instead of the same side.
+static void render_node_object(struct view_data *view, struct bitmap_definition *destination,
+	struct render_object_data *object, bool other_side_of_media);
+/*
 static void render_node_object(struct view_data *view, struct bitmap_definition *destination,
 	struct render_object_data *object);
+*/
 
 static void build_render_tree(struct view_data *view);
 // LP changes for better long-distance support:
@@ -2578,24 +2605,33 @@ static struct render_object_data *build_render_object(
 				render_object->rectangle.y1= y1;
 
 				{
+					// LP change: doing media handling more correctly here:
+					short media_index = get_polygon_data(object->polygon)->media_index;
+					media_data *media = (media_index != NONE) ? get_media_data(media_index) : NULL;
+					
+					// LP: the media splashes are clipped as if there was no liquid
+					if (media && !OBJECT_IS_MEDIA_EFFECT(object))
+					{
+						render_object->ymedia= view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
+					}
+					else
+					{
+						// All the way down
+						render_object->ymedia= SHORT_MAX;
+					}
+					
+					/*
 					short media_index= view->under_media_boundary ? view->under_media_index : get_polygon_data(object->polygon)->media_index;
 					
 					if (media_index!=NONE && !OBJECT_IS_MEDIA_EFFECT(object))
 					{
-						// LP change: idiot-proofed the media reference
-						media_data *media = get_media_data(media_index);
-						if (media)
-						{
-							render_object->ymedia= view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
-							// render_object->ymedia= view->half_screen_height - (view->world_to_screen_y*(get_media_data(media_index)->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
-						} else {
-							render_object->ymedia= SHORT_MAX;
-						}
+						render_object->ymedia= view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
 					}
 					else
 					{
 						render_object->ymedia= SHORT_MAX;
 					}
+					*/
 				}
 				
 				extended_get_shape_bitmap_and_shading_table(data.collection_code, data.low_level_shape_index,
@@ -3062,6 +3098,9 @@ static void render_tree(
 {
 	struct sorted_node_data *node;
 	
+	// LP change: added support for semitransparent liquids
+	bool SeeThruLiquids = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_LiqSeeThru) != 0;
+	
 	/* walls, ceilings, interior objects, floors, exterior objects for all nodes, back to front */
 	// LP change:
 	for (node= SortedNodes.Begin(); node<SortedNodes.End(); ++node)
@@ -3070,70 +3109,85 @@ static void render_tree(
 		struct polygon_data *polygon= get_polygon_data(node->polygon_index);
 		struct clipping_window_data *window;
 		struct render_object_data *object;
+
+		// LP change: moved this stuff out here because it only has to be calculated
+		// once per polygon.
+		struct horizontal_surface_data floor_surface, ceiling_surface;
+		short i;
 		
-		for (window= node->clipping_windows; window; window= window->next_window)
+		ceiling_surface.origin= polygon->ceiling_origin;
+		ceiling_surface.height= polygon->ceiling_height;
+		ceiling_surface.texture= polygon->ceiling_texture;
+		ceiling_surface.lightsource_index= polygon->ceiling_lightsource_index;
+		ceiling_surface.transfer_mode= polygon->ceiling_transfer_mode;
+		ceiling_surface.transfer_mode_data= 0;
+		
+		floor_surface.origin= polygon->floor_origin;
+		floor_surface.height= polygon->floor_height;
+		floor_surface.texture= polygon->floor_texture;
+		floor_surface.lightsource_index= polygon->floor_lightsource_index;
+		floor_surface.transfer_mode= polygon->floor_transfer_mode;
+		floor_surface.transfer_mode_data= 0;
+		
+		// The "continue" conditions are OK to move out here, because a non-drawn polygon's
+		// inhabitants will be clipped away.
+		
+		// LP: get liquid data here for convenience;
+		// pointer to it being NULL means no liquid in the polygon
+		struct media_data *media = NULL;
+		if (polygon->media_index!=NONE)
+			media = get_media_data(polygon->media_index);
+		
+		/* if necessary, replace the ceiling or floor surfaces with the media surface */
+		// LP change: don't do this step if liquids are semitransparent
+		if (media && !SeeThruLiquids)
+		// if (polygon->media_index!=NONE)
 		{
-			struct horizontal_surface_data floor_surface, ceiling_surface;
-			short i;
-
-			ceiling_surface.origin= polygon->ceiling_origin;
-			ceiling_surface.height= polygon->ceiling_height;
-			ceiling_surface.texture= polygon->ceiling_texture;
-			ceiling_surface.lightsource_index= polygon->ceiling_lightsource_index;
-			ceiling_surface.transfer_mode= polygon->ceiling_transfer_mode;
-			ceiling_surface.transfer_mode_data= 0;
-
-			floor_surface.origin= polygon->floor_origin;
-			floor_surface.height= polygon->floor_height;
-			floor_surface.texture= polygon->floor_texture;
-			floor_surface.lightsource_index= polygon->floor_lightsource_index;
-			floor_surface.transfer_mode= polygon->floor_transfer_mode;
-			floor_surface.transfer_mode_data= 0;
-
-			/* if necessary, replace the ceiling or floor surfaces with the media surface */
-			if (polygon->media_index!=NONE)
+			// LP change: moved this get upwards
+			// struct media_data *media= get_media_data(polygon->media_index);
+			struct horizontal_surface_data *media_surface= (struct horizontal_surface_data *) NULL;
+			
+			if (view->under_media_boundary)
 			{
-				struct media_data *media= get_media_data(polygon->media_index);
-				// LP change: idiot-proof the media reference
-				if (media)
-				{
-				struct horizontal_surface_data *media_surface= (struct horizontal_surface_data *) NULL;
-				
-				if (view->under_media_boundary)
-				{
-					if (media->height<polygon->ceiling_height) media_surface= &ceiling_surface;
-				}
-				else
-				{
-					if (media->height>polygon->floor_height) media_surface= &floor_surface;
-				}
-	
-				if (media_surface)
-				{
-					media_surface->origin= media->origin;
-					media_surface->height= media->height;
-					media_surface->texture= media->texture;
-					media_surface->lightsource_index= polygon->media_lightsource_index;
-					media_surface->transfer_mode= media->transfer_mode;
-					media_surface->transfer_mode_data= 0;
-				}
-				} else {
-					// if weÕre trying to draw a polygon without media from under a polygon with media, donÕt
-					if (view->under_media_boundary) continue;
-				}
+				if (media->height<polygon->ceiling_height) media_surface= &ceiling_surface;
 			}
 			else
 			{
+				if (media->height>polygon->floor_height) media_surface= &floor_surface;
+			}
+			
+			if (media_surface)
+			{
+				media_surface->origin= media->origin;
+				media_surface->height= media->height;
+				media_surface->texture= media->texture;
+				media_surface->lightsource_index= polygon->media_lightsource_index;
+				media_surface->transfer_mode= media->transfer_mode;
+				media_surface->transfer_mode_data= 0;
+			} else {
 				// if weÕre trying to draw a polygon without media from under a polygon with media, donÕt
 				if (view->under_media_boundary) continue;
 			}
-			
+		}
+		// LP change: always render liquids are semitransparent
+		else if (!SeeThruLiquids)
+		// else
+		{
+			// if weÕre trying to draw a polygon without media from under a polygon with media, donÕt
+			if (view->under_media_boundary) continue;
+		}
+		
+		// LP: this loop renders the walls
+		for (window= node->clipping_windows; window; window= window->next_window)
+		{
 			if (ceiling_surface.height>floor_surface.height)
 			{
 				/* render ceiling if above viewer */
 				if (ceiling_surface.height>view->origin.z)
 				{
-					render_node_floor_or_ceiling(view, destination, window, polygon, &ceiling_surface);
+					// LP change: indicated that the void is on other side
+					render_node_floor_or_ceiling(view, destination, window, polygon, &ceiling_surface, true);
+					// render_node_floor_or_ceiling(view, destination, window, polygon, &ceiling_surface);
 				}
 				
 				/* render visible sides */
@@ -3159,6 +3213,7 @@ static void render_tree(
 						*/
 						surface.ambient_delta= side->ambient_delta;
 						
+						// LP change: indicate in all cases whether the void is on the other side
 						switch (side->type)
 						{
 							case _full_side:
@@ -3168,7 +3223,8 @@ static void render_tree(
 								surface.h1= polygon->ceiling_height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
 								surface.transfer_mode= side->primary_transfer_mode;
-								render_node_side(view, destination, window, &surface);
+								render_node_side(view, destination, window, &surface, true);
+								// render_node_side(view, destination, window, &surface);
 								break;
 							case _split_side: /* render _low_side first */
 								surface.lightsource_index= side->secondary_lightsource_index;
@@ -3177,7 +3233,8 @@ static void render_tree(
 								surface.hmax= ceiling_surface.height - view->origin.z;
 								surface.texture_definition= &side->secondary_texture;
 								surface.transfer_mode= side->secondary_transfer_mode;
-								render_node_side(view, destination, window, &surface);
+								render_node_side(view, destination, window, &surface, true);
+								// render_node_side(view, destination, window, &surface);
 								/* fall through and render high side */
 							case _high_side:
 								surface.lightsource_index= side->primary_lightsource_index;
@@ -3186,7 +3243,8 @@ static void render_tree(
 								surface.h1= polygon->ceiling_height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
 								surface.transfer_mode= side->primary_transfer_mode;
-								render_node_side(view, destination, window, &surface);
+								render_node_side(view, destination, window, &surface, true);
+								// render_node_side(view, destination, window, &surface);
 								break;
 							case _low_side:
 								surface.lightsource_index= side->primary_lightsource_index;
@@ -3195,7 +3253,8 @@ static void render_tree(
 								surface.hmax= ceiling_surface.height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
 								surface.transfer_mode= side->primary_transfer_mode;
-								render_node_side(view, destination, window, &surface);
+								render_node_side(view, destination, window, &surface, true);
+								// render_node_side(view, destination, window, &surface);
 								break;
 							
 							default:
@@ -3212,7 +3271,8 @@ static void render_tree(
 							surface.hmax= ceiling_surface.height - view->origin.z;
 							surface.texture_definition= &side->transparent_texture;
 							surface.transfer_mode= side->transparent_transfer_mode;
-							render_node_side(view, destination, window, &surface);
+							render_node_side(view, destination, window, &surface, false);
+							// render_node_side(view, destination, window, &surface);
 						}
 					}
 				}
@@ -3220,15 +3280,56 @@ static void render_tree(
 				/* render floor if below viewer */
 				if (floor_surface.height<view->origin.z)
 				{
-					render_node_floor_or_ceiling(view, destination, window, polygon, &floor_surface);
+					// LP change: indicated that the void is on other side
+					render_node_floor_or_ceiling(view, destination, window, polygon, &floor_surface, true);
+					// render_node_floor_or_ceiling(view, destination, window, polygon, &floor_surface);
+				}
+			}
+		}
+
+		// LP: this is for objects on the other side of the liquids;
+		// render them out here if one can see through the liquids
+		if (SeeThruLiquids)
+		{
+			/* render exterior objects (with their own clipping windows) */
+			for (object= node->exterior_objects; object; object= object->next_object)
+			{
+				render_node_object(view, destination, object, true);
+			}
+		}
+		
+		// LP: render the liquid surface after the walls and the stuff behind it
+		// and before the stuff before it.
+		if (media && SeeThruLiquids)
+		{
+			
+			// Render only if between the floor and the ceiling:
+			if (media->height > polygon->floor_height && media->height < polygon->ceiling_height)
+			{
+			
+				// Render the liquids
+				struct horizontal_surface_data LiquidSurface;
+				
+				LiquidSurface.origin= media->origin;
+				LiquidSurface.height= media->height;
+				LiquidSurface.texture= media->texture;
+				LiquidSurface.lightsource_index= polygon->media_lightsource_index;
+				LiquidSurface.transfer_mode= media->transfer_mode;
+				LiquidSurface.transfer_mode_data= 0;
+				
+				for (window= node->clipping_windows; window; window= window->next_window)
+				{
+					render_node_floor_or_ceiling(view, destination, window, polygon, &LiquidSurface, false);
 				}
 			}
 		}
 		
+		// LP: this is for objects on the view side of the liquids
 		/* render exterior objects (with their own clipping windows) */
 		for (object= node->exterior_objects; object; object= object->next_object)
 		{
-			render_node_object(view, destination, object);
+			render_node_object(view, destination, object, false);
+			// render_node_object(view, destination, object);
 		}
 	}
 	
@@ -3237,12 +3338,15 @@ static void render_tree(
 
 /* ---------- rendering ceilings and floors */
 
+// LP change: added "void present on other side" flag
 static void render_node_floor_or_ceiling(
 	struct view_data *view,
 	struct bitmap_definition *destination,
 	struct clipping_window_data *window,
 	struct polygon_data *polygon,
-	struct horizontal_surface_data *surface)
+	struct horizontal_surface_data *surface,
+	bool void_present)
+	// struct horizontal_surface_data *surface)
 {
 	// LP addition: animated-texture support
 	// Extra variable defined so as not to edit the original texture
@@ -3346,7 +3450,8 @@ static void render_node_floor_or_ceiling(
 			if (view->shading_mode==_shading_infravision) textured_polygon.flags|= _SHADELESS_BIT;
 			
 			/* and, finally, map it */
-			// LP: added OpenGL support
+			// LP: added OpenGL support; also presence of void on other side
+			textured_polygon.VoidPresent = void_present;
 			if (!OGL_RenderWall(textured_polygon,false))
 				texture_horizontal_polygon(&textured_polygon, destination, view);
 		}
@@ -3357,11 +3462,14 @@ static void render_node_floor_or_ceiling(
 
 /* ---------- rendering sides (walls) */
 
+// LP change: added "void present on other side" flag
 static void render_node_side(
 	struct view_data *view,
 	struct bitmap_definition *destination,
 	struct clipping_window_data *window,
-	struct vertical_surface_data *surface)
+	struct vertical_surface_data *surface,
+	bool void_present)
+	// struct vertical_surface_data *surface)
 {
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
@@ -3495,7 +3603,8 @@ static void render_node_side(
 				if (view->shading_mode==_shading_infravision) textured_polygon.flags|= _SHADELESS_BIT;
 				
 				/* and, finally, map it */
-				// LP: added OpenGL support
+				// LP: added OpenGL support; also presence of void on other side
+				textured_polygon.VoidPresent = void_present;
 				if (!OGL_RenderWall(textured_polygon,true))
 					texture_vertical_polygon(&textured_polygon, destination, view);
 			}
@@ -3510,7 +3619,9 @@ static void render_node_side(
 static void render_node_object(
 	struct view_data *view,
 	struct bitmap_definition *destination,
-	struct render_object_data *object)
+	struct render_object_data *object,
+	bool other_side_of_media)
+	// struct render_object_data *object)
 {
 	struct clipping_window_data *window;
 	
@@ -3521,12 +3632,16 @@ static void render_node_object(
 		object->rectangle.clip_top= window->y0;
 		object->rectangle.clip_bottom= window->y1;
 		
-		if (view->under_media_boundary)
+		// This is bitwise XOR, but is presumably OK here
+		if (view->under_media_boundary ^ other_side_of_media)
+		// if (view->under_media_boundary)
 		{
+			// Clipping: below a liquid surface
 			object->rectangle.clip_top= MAX(object->rectangle.clip_top, object->ymedia);
 		}
 		else
 		{
+			// Clipping: above a liquid surface
 			object->rectangle.clip_bottom= MIN(object->rectangle.clip_bottom, object->ymedia);
 		}
 		

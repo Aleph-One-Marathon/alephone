@@ -52,6 +52,10 @@ May 29, 2000 (Loren Petirch):
 	Fixed side effect of fixing keyframe-never-zero bug:
 	if the keyframe is zero, then a sequence never triggers shrapnel damage.
 	Thus, Hunters die a soft death more harmlessly.
+
+Jun 11, 2000 (Loren Petrich):
+	Pegging health and oxygen to maximum values when damaged;
+	takes into account negative damage from healing projectiles.
 */
 
 #include "cseries.h"
@@ -1385,7 +1389,9 @@ void damage_monster(
 				}
 			}
 			
-			if ((monster->vitality-= delta_vitality)>0)
+			// LP change: pegging to maximum value
+			if ((monster->vitality= MIN(long(monster->vitality)-long(delta_vitality),long(SHORT_MAX)))>0)
+			// if ((monster->vitality-= delta_vitality)>0)
 			{
 				set_monster_action(target_index, _monster_is_being_hit);
 				if ((definition->flags&_monster_is_berserker) && monster->vitality<(definition->vitality>>2))

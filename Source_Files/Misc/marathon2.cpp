@@ -24,6 +24,9 @@ Mar 12, 2000 (Loren Petrich):
 May 11, 2000 (Loren Petrich):
 	Rewrote to get rid of dynamic-limit and animated-texture initializers;
 	also used new animated-texture update function.
+
+June 15, 2000 (Loren Petrich):
+	Added support for Chris Pruett's Pfhortran
 */
 
 #include "cseries.h"
@@ -52,6 +55,10 @@ May 11, 2000 (Loren Petrich):
 #include "ChaseCam.h"
 #include "OGL_Setup.h"
 // #include "items.h" -- already implicitly included
+
+// CP additions:
+#include "scripting.h"
+
 
 #ifdef env68k
 #pragma segment marathon
@@ -128,6 +135,12 @@ short update_world(
 	time_elapsed= lowest_time;
 	for (i=0;i<time_elapsed;++i)
 	{
+		//CP Addition: Scripting handling stuff
+		if (script_in_use() && instruction_finished())
+		{
+			do_next_instruction();
+		}
+		
 		update_lights();
 		update_medias();
 		update_platforms();
@@ -239,6 +252,8 @@ boolean entering_map(
 	randomize_scenery_shapes();
 
 	reset_player_queues(); //¦¦
+	//CP Addition: Run startup script (if available)
+	script_init();
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(TRUE);
 

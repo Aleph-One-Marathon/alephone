@@ -20,6 +20,11 @@
 	
 	Added support for texture resetting. This clears all the textures in memory
 	and forces them to be reloaded. This may be good in cases of textures dropping out.
+	
+	June 11, 2000 (Loren Petrich)
+	
+	Added support for see-through liquids as an OpenGL parameter.
+	Also added an opacity-value shift for making dark areas more visible
 */
 
 #include "shape_descriptors.h"
@@ -94,6 +99,7 @@ enum
 	OGL_Flag_2DGraphics	= 0x0020,	// Whether to pipe 2D graphics through OpenGL
 	OGL_Flag_FlatStatic	= 0x0040,	// Whether to make the "static" effect look flat
 	OGL_Flag_Fader		= 0x0080,	// Whether to do the fader effects in OpenGL
+	OGL_Flag_LiqSeeThru	= 0x0100,	// Whether the liquids can be seen through
 };
 
 struct OGL_ConfigureData
@@ -158,9 +164,12 @@ enum
 struct OGL_TextureOptions
 {
 	short OpacityType;		// Which type of opacity to use?
-	float OpacityScale;		// Which opacity scale
+	float OpacityScale;		// How much to scale the opacity
+	float OpacityShift;		// How much to shift the opacity
+	bool VoidVisible;		// Can see the void through texture if semitransparent
 	
-	OGL_TextureOptions(): OpacityType(OGL_OpacType_Crisp), OpacityScale(1) {}
+	OGL_TextureOptions(): OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
+		VoidVisible(false) {}
 };
 
 

@@ -1068,20 +1068,24 @@ It takes these attributes:
 <ul>
 <li>coll: which collection (mandatory).
 <li>clut: which color table. Values 0 to 7 are the familiar color-table values,
-and there are two special values: -1 means all the color tables and 8 means the infravision color table.
-The default is -1, all of the tables.
+and there are two special values: -1 means all the color tables and 8 means the infravision color table
+(default: -1 -- all of the tables).
 <li>bitmap: which one to apply the options to (mandatory).
-<li>opac_type: what type of opacity to use (default: 0 -- crisp edges)
-<li>opac_scale: scaling value for the opacity; how much to multiply it by.
-Results greater than 1 will be pinned to 1. (default: 1 -- no change)
+<li>opac_type: what type of opacity to use (default: 0 -- crisp edges).
+<li>opac_scale: scaling value for the opacity; how much to multiply it by (default: 1 -- no change).
+<li>opac_shift: shift value for the opacity; how much to add after multiplying (default: 0 -- no change).
+<li>void_visible: can see into the void (what's not in any map polygon) through this texture; can cause smearing and weird show-through (default: false; cannot see into void).
 </ul>
+Note: all resulting values will be pegged to the range 0 to 1.
 Here are the various opacity types:
 <ol type=1 start=1000>
 <li>Crisp edges. Unlike the others, this one does not have scaled opacity.
-<li>Fuzzy edges with constant opacity.
+<li>Fuzzy edges with constant opacity equal to 1.
 <li>Fuzzy edges with opacity = average of color channels.
 <li>Fuzzy edges with opacity = maximum of color channels.
 </ol>
+The opacities of all but the first will be scaled and shifted
+with opac_scale and opac_shift.
 The first one of these is good for objects with well-defined edges;
 the others are good for clouds, flames, energy-weapon bolts, and so forth,
 which will not have sharp boundaries.

@@ -150,6 +150,9 @@ struct polygon_definition
 	// LP addition: shape-descriptor value for the convenience of OpenGL;
 	// the lower byte is the frame
 	shape_descriptor ShapeDesc;
+	
+	// Whether the void is present on one side; useful for suppressing semitransparency
+	boolean VoidPresent;
 };
 
 /* ---------- globals */
