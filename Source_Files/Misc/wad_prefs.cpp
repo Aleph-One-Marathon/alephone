@@ -99,6 +99,7 @@ boolean w_open_preferences_file(
 			}
 		}
 	} catch (...) {
+		dprintf("In \"catch\"");
 		set_game_error(systemError, memory_error());
 	}
 	
@@ -194,9 +195,16 @@ void w_write_preferences_file(
 
 	assert(!error_pending());
 
+	// LP: need to re-create that file to avoid
+	// nonexistence-induced errors in the MacOS version
+	int Type = prefInfo->PrefsFile.GetType();
+
 	// CB: delete old prefs file, we're overwriting it
 	// (writing can go wrong when the old file is still in place)
 	prefInfo->PrefsFile.Delete();
+	
+	// Re-creating the file
+	prefInfo->PrefsFile.Create(Type);
 	
 	OpenedFile PrefsFile;
 	if (open_wad_file_for_writing(prefInfo->PrefsFile,PrefsFile))
