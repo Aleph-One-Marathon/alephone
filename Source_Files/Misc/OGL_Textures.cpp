@@ -204,7 +204,7 @@ void OGL_StartTextures()
 	const GLenum ColorFormatList[NUMBER_OF_COLOR_FORMATS] = 
 	{
 		GL_RGBA8,
-		GL_RGB5_A1,
+		GL_RGBA4,
 		GL_RGBA2
 	};
 	

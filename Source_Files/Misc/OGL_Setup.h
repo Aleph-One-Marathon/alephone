@@ -29,6 +29,9 @@
 Sep 9, 2000:
 
 	Added flag for AppleGL texturing fix
+
+Dec 3. 2000 (Loren Petrich):
+	Changed 16-bit internal representation of textures from 5551 to 4444
 */
 
 #include "shape_descriptors.h"
@@ -84,7 +87,7 @@ enum
 	The color depths indicate what numbers of bits for each color channel:
 	
 	32-bit (8888)
-	16-bit (5551)
+	16-bit (4444)
 	8-bit  (2222)
 */
 
