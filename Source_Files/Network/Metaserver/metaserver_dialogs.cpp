@@ -35,6 +35,10 @@
 #include "network_metaserver.h"
 #include "preferences.h"
 
+#include <algorithm>
+
+using namespace std;
+
 
 // jkvw: shared code uses GameAvailableMetaserverAnnouncer,
 //       which is implemented in this unsharable file.

@@ -444,9 +444,9 @@ void gamma_correct_color_table(
 	corrected_color_table->color_count= uncorrected_color_table->color_count;
 	for (i= 0; i<uncorrected_color_table->color_count; ++i, ++corrected, ++uncorrected)
 	{
-		corrected->red = uint16(pow(uncorrected->red/65535.0, gamma)*65535.0);
-		corrected->green = uint16(pow(uncorrected->green/65535.0, gamma)*65535.0);
-		corrected->blue = uint16(pow(uncorrected->blue/65535.0, gamma)*65535.0);
+		corrected->red = static_cast<uint16>(pow(static_cast<float>(uncorrected->red/65535.0), gamma)*65535.0);
+		corrected->green = static_cast<uint16>(pow(static_cast<float>(uncorrected->green/65535.0), gamma)*65535.0);
+		corrected->blue = static_cast<uint16>(pow(static_cast<float>(uncorrected->blue/65535.0), gamma)*65535.0);
 	}
 }
 

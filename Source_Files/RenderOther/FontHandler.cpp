@@ -276,7 +276,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	
 	int GlyphHeight = ascent_p + descent_p;
 	
-	int EstDim = int(sqrt(TotalWidth*GlyphHeight) + 0.5);
+	int EstDim = int(sqrt(static_cast<float>(TotalWidth*GlyphHeight)) + 0.5);
 	TxtrWidth = MAX(128, NextPowerOfTwo(EstDim));
 	
 	// Find the character starting points and counts

@@ -456,7 +456,7 @@ void HUD_OGL_Class::FrameRect(screen_rectangle *r, short color_index)
 
 void HUD_OGL_Class::SetClipPlane(int x, int y, int c_x, int c_y, int radius)
 {
-	GLdouble blip_dist = sqrt(x*x+y*y);
+	GLdouble blip_dist = sqrt(static_cast<float>(x*x+y*y));
 	if (blip_dist <= 2.0)
 		return;
 	GLdouble normal_x = x / blip_dist, normal_y = y / blip_dist;

@@ -39,6 +39,7 @@
 #else
 #include <fcntl.h> // hacky non-cross-platform setting of nonblocking
 #endif
+#include <algorithm>
 
 enum
 {

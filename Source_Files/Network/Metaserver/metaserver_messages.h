@@ -531,6 +531,7 @@ protected:
 	{
 		// no need for inflation
 		assert(false);
+		return false;
 	}
 
 	
@@ -675,6 +676,7 @@ protected:
 	{
 		// no need for inflation
 		assert(false);
+		return false;
 	}
 	
 private:

@@ -71,6 +71,7 @@ September 17, 2004 (jkvw):
 #include    "screen.h"  // clear_screen()
 #include    "mysound.h" // resolution of DIALOG_CLICK_SOUND
 #include    "wad.h"     // read_wad_file_checksum()
+#include	"snprintf.h"
 
 // String-Set Functions (for getting strings from MML rather than compiled-in)
 #include	"TextStrings.h"
