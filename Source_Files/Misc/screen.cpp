@@ -276,8 +276,8 @@ struct bitmap_definition *world_pixels_structure;
 // LP change: added stuff for keeping track of screen sizes;
 // this is for forcing the clearing of the screen when resizing.
 // These are initialized to improbable values.
-short PrevBufferWidth = SHORT_MIN, PrevBufferHeight = SHORT_MIN,
-	PrevOffsetWidth = SHORT_MIN, PrevOffsetHeight = SHORT_MIN;
+short PrevBufferWidth = INT16_MIN, PrevBufferHeight = INT16_MIN,
+	PrevOffsetWidth = INT16_MIN, PrevOffsetHeight = INT16_MIN;
 
 static bool enough_memory_for_16bit, enough_memory_for_32bit, enough_memory_for_full_screen;
 

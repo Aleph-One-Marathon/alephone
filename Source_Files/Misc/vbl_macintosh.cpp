@@ -37,7 +37,6 @@ Jul 7, 2000 (Loren Petrich)
 
 // #include "portable_files.h"
 #include "vbl.h"
-
 #include "vbl_definitions.h"
 
 #define MAXIMUM_FLAG_PERSISTENCE    15

@@ -1,6 +1,8 @@
 #ifndef __TAGS_H
 #define __TAGS_H
 
+#include "cstypes.h"
+
 /*
 	TAGS.H
 	Sunday, July 3, 1994 5:33:15 PM

@@ -41,14 +41,14 @@ static void	set_text_face(
 	RGBForeColor(&color);
 }
 
-static boolean calculate_line(
+static bool calculate_line(
 	char *base_text, 
 	short width,
 	short start_index,
 	short text_end_index,
 	short *end_index)
 {
-	boolean done= FALSE;
+	bool done= FALSE;
 
 	if(start_index!=text_end_index)
 	{

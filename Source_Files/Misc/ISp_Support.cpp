@@ -122,8 +122,8 @@ const int LocalButtonRefractoryTime = 10;
 static int LocalButtonTimes[Button_LastLocal-Button_FirstLocal+1] =
 	{0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0};
 
-static Boolean	canDoISp = true;
-static Boolean	active = false;
+static bool	canDoISp = true;
+static bool	active = false;
 static long		gElementActions[HowManyNeeds] =
 					{
 					// Global actions

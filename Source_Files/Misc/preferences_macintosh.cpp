@@ -525,7 +525,7 @@ static void setup_sound_dialog(
 {
 	struct sound_manager_parameters *preferences= (struct sound_manager_parameters *) prefs;
 	short active;
-	word available_flags;
+	uint16 available_flags;
 
 	available_flags= available_sound_manager_flags(preferences->flags);
 

@@ -45,9 +45,9 @@ struct find_files_private_data { /* used for enumerating wadfiles */
 
 /* ------------ local prototypes */
 
-static Boolean match_wad_checksum_callback(FileSpecifier& File, void *data);
-static Boolean checksum_and_not_base_callback(FileSpecifier& File, void *data);
-static Boolean match_modification_date_callback(FileSpecifier& File, void *data);
+static bool match_wad_checksum_callback(FileSpecifier& File, void *data);
+static bool checksum_and_not_base_callback(FileSpecifier& File, void *data);
+static bool match_modification_date_callback(FileSpecifier& File, void *data);
 // Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
 static bool find_wad_file_with_checksum_in_directory(
 	FileSpecifier& MatchingFile, DirectorySpecifier& BaseDir,
@@ -263,12 +263,12 @@ OSErr get_directories_parID(
 #endif
 
 /* -------------- local code */
-static Boolean checksum_and_not_base_callback(
+static bool checksum_and_not_base_callback(
 	FileSpecifier& File,
 	// FSSpec *file, 
 	void *data)
 {
-	Boolean add_this_file= false;
+	bool add_this_file= false;
 	struct find_files_private_data *_private= (struct find_files_private_data *) data;
 	
 	/* Don't readd the base file.. */
@@ -286,12 +286,12 @@ static Boolean checksum_and_not_base_callback(
 	return add_this_file;
 }
 
-static Boolean match_wad_checksum_callback(
+static bool match_wad_checksum_callback(
 	FileSpecifier& File,
 	// FSSpec *file, 
 	void *data)
 {
-	Boolean add_this_file= false;
+	bool add_this_file= false;
 	struct find_checksum_private_data *_private= (struct find_checksum_private_data *) data;
 	
 	/* Do the checksums match? */
@@ -427,13 +427,13 @@ static bool find_file_with_modification_date_in_directory(
 	return success;
 }
 
-static Boolean match_modification_date_callback(
+static bool match_modification_date_callback(
 	FileSpecifier& File,
 	// FSSpec *file, 
 	void *data)
 {
 	// More general code; does not use the passed data
-	Boolean add_this_file= false;
+	bool add_this_file= false;
 	if (File.GetDate() == target_modification_date)
 		add_this_file = true;
 	

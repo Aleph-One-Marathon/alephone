@@ -249,7 +249,7 @@ static void initialize_application_heap(
 
 #ifdef PERFORMANCE
 	{
-		Boolean succeeded;
+		bool succeeded;
 		
 		succeeded = InitPerf(&perf_globals, 4, 8, true, true, "\pCODE", 0, "\p", 0, 0, 0, 0);
 		assert(succeeded);

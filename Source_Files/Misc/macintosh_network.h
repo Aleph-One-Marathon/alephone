@@ -155,7 +155,7 @@ OSErr NetADSPDisposeConnectionEnd(ConnectionEndPtr connectionEnd);
 OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, AddrBlock *address);
 OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, bool abort);
 OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd);
-Boolean NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *address);
+bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *address);
 
 OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
 OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
