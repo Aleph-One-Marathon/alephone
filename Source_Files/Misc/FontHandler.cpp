@@ -17,7 +17,12 @@ Jan 12, 2001 (Loren Petrich):
 	Fixed MacOS version of TextWidth() -- uses current font
 */
 
+#include "cseries.h"
+
+#ifdef HAVE_OPENGL
 #include <GL/gl.h>
+#endif
+
 #include <math.h>
 #include <string.h>
 #include "FontHandler.h"
@@ -50,13 +55,11 @@ FontSpecifier& FontSpecifier::operator=(FontSpecifier& F)
 
 void FontSpecifier::Init()
 {
-	Update();
-	
-	OGL_Texture = NULL;
-
 #ifdef SDL
-	FontInfo = NULL;
+	Info = NULL;
 #endif
+	Update();
+	OGL_Texture = NULL;
 }
 
 
@@ -142,20 +145,27 @@ int FontSpecifier::TextWidth(char *Text)
 void FontSpecifier::Update()
 {
 	// Clear away
-	if (Info) unload_font(Info);
+	if (Info) {
+		unload_font(Info);
+		Info = NULL;
+	}
 	
 	// Simply implements format "#<value>"; may want to generalize this
-	sscanf(File+1,"%hd",&ID);
+	short id;
+	sscanf(File+1, "%hd", &id);
 	
 	// Actual loading
 	TextSpec Spec;
-	Spec.font = ID;
+	Spec.font = id;
 	Spec.size = Size;
 	Spec.style = Style;
-	Info = load_font(&Spec);
+	Info = load_font(Spec);
 	
-	Height = Info->ascent+Info->leading;
-	LineSpacing = Info->ascent+Info->descent+Info->leading;
+	if (Info) {
+		Height = Info->ascent+Info->leading;
+		LineSpacing = Info->ascent+Info->descent+Info->leading;
+	} else
+		Height = LineSpacing = 0;
 }
 
 // Defined in screen_drawing_sdl.cpp
@@ -163,7 +173,7 @@ extern int text_width(const char *text, const sdl_font_info *font, uint16 style)
 
 int FontSpecifier::TextWidth(char *Text)
 {
-	return text_width(Char,Info,Style);
+	return text_width(Text, Info, Style);
 }
 
 #endif

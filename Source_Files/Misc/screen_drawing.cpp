@@ -22,9 +22,7 @@ Dec 17, 2000 (Loren Petrich):
 	Added font-abstraction support (FontHandler.*)
 */
 
-#pragma segment drawing
-
-#include "macintosh_cseries.h"
+#include "cseries.h"
 
 #include "map.h"
 #include "interface.h"
@@ -32,7 +30,6 @@ Dec 17, 2000 (Loren Petrich):
 #include "screen_drawing.h"
 #include "fades.h"
 #include "screen.h"
-#include "my32bqd.h"
 
 // LP addition: color and font parsers
 #include "ColorParser.h"
@@ -158,9 +155,6 @@ void initialize_screen_drawing(
 	for(loop=0; loop<NUMBER_OF_INTERFACE_FONTS; ++loop)
 	{
 		InterfaceFonts[loop].Init();
-		// GetNewTextSpec(&interface_fonts.fonts[loop], finfFONTS, loop);
-		// interface_fonts.heights[loop]= interface_fonts.Fonts[loop].GetHeight(); // _get_font_height(&interface_fonts.fonts[loop]);
-		// interface_fonts.line_spacing[loop]= interface_fonts.Fonts[loop].GetLineSpacing(); // _get_font_line_spacing(&interface_fonts.fonts[loop]);
 	}
 }
 

@@ -204,9 +204,9 @@ static XML_DColorParser ItemColorParser(ITEM_COLOR, 2);
 static XML_DColorParser MessageColorParser(MESSAGE_COLOR);
 static XML_DColorParser TextEntryColorParser(TEXT_ENTRY_COLOR, 3);
 
-class XML_FontParser : public XML_ElementParser {
+class XML_DFontParser : public XML_ElementParser {
 public:
-	XML_FontParser(int i) : XML_ElementParser("font"), idx(i) {}
+	XML_DFontParser(int i) : XML_ElementParser("font"), idx(i) {}
 
 	bool Start()
 	{
@@ -255,12 +255,12 @@ private:
 	int id, size, style;
 };
 
-static XML_FontParser TitleFontParser(TITLE_FONT);
-static XML_FontParser ButtonFontParser(BUTTON_FONT);
-static XML_FontParser LabelFontParser(LABEL_FONT);
-static XML_FontParser ItemFontParser(ITEM_FONT);
-static XML_FontParser MessageFontParser(MESSAGE_FONT);
-static XML_FontParser TextEntryFontParser(TEXT_ENTRY_FONT);
+static XML_DFontParser TitleFontParser(TITLE_FONT);
+static XML_DFontParser ButtonFontParser(BUTTON_FONT);
+static XML_DFontParser LabelFontParser(LABEL_FONT);
+static XML_DFontParser ItemFontParser(ITEM_FONT);
+static XML_DFontParser MessageFontParser(MESSAGE_FONT);
+static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_FONT);
 
 class XML_FrameParser : public XML_ElementParser {
 public:

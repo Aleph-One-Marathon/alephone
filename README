@@ -437,6 +437,8 @@ them:
    annotations)
  - Networking (the "Gather Network Game" and "Join Network Game" buttons on
    the title screen are nonfunctional)
+ - Support for named fonts and TrueType fonts
+ - Support for texture replacement (image loading routines are missing)
 
 And a list of known bugs:
 

@@ -4,23 +4,12 @@
  *  Written in 2000 by Christian Bauer
  */
 
-#include "cseries.h"
-
-#include "map.h"
-#include "interface.h"
-#include "shell.h"
-#include "screen_drawing.h"
-#include "fades.h"
-#include "screen.h"
-#include "ColorParser.h"
-
 #include "sdl_fonts.h"
 
 #include <string.h>
 
 
 // Global variables
-static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES];
 static SDL_Surface *draw_surface = NULL;	// Target surface for drawing commands
 static SDL_Surface *old_draw_surface = NULL;
 
@@ -29,23 +18,6 @@ static SDL_Surface *old_draw_surface = NULL;
 // used in computer_interface.cpp
 extern sdl_font_info *GetInterfaceFont(short font_index);
 extern uint16 GetInterfaceStyle(short font_index);
-
-/*
-static struct interface_font_info {
-	TextSpec spec;
-	const sdl_font_info *font;
-	int height;
-	int line_spacing;
-} interface_fonts[NUMBER_OF_INTERFACE_FONTS] = {
-	{{kFontIDMonaco, styleBold, 9}},
-	{{kFontIDMonaco, styleBold, 9}},
-	{{kFontIDMonaco, styleBold, 9}},
-	{{kFontIDMonaco, styleNormal, 9}},
-	{{kFontIDCourier, styleNormal, 12}},
-	{{kFontIDCourier, styleBold, 14}},
-	{{kFontIDMonaco, styleNormal, 9}}
-};
-*/
 
 bool draw_clip_rect_active = false;			// Flag: clipping rect active
 screen_rectangle draw_clip_rect;			// Current clipping rectangle
@@ -56,27 +28,6 @@ extern SDL_Surface *world_pixels, *HUD_Buffer;
 // Prototypes
 extern TextSpec *_get_font_spec(short font_index);
 
-
-/*
- *  Initialize drawing module
- */
-/*
-void initialize_screen_drawing(void)
-{
-	// Init drawing surface
-	draw_surface = SDL_GetVideoSurface();
-	old_draw_surface = NULL;
-
-	// Init fonts
-	for (int i=0; i<NUMBER_OF_INTERFACE_FONTS; i++) {
-		interface_fonts[i].font = load_font(interface_fonts[i].spec);
-		if (interface_fonts[i].font) {
-			interface_fonts[i].height = interface_fonts[i].font->get_height();
-			interface_fonts[i].line_spacing = interface_fonts[i].font->get_line_height();
-		}
-	}
-}
-*/
 
 /*
  *  Redirect drawing to screen or offscreen buffer
@@ -368,8 +319,6 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
 	uint16 style = InterfaceFonts[font_id].Style;
 	const sdl_font_info *font = InterfaceFonts[font_id].Info;
-	// uint16 style = interface_fonts[font_id].spec.style;
-	// const sdl_font_info *font = interface_fonts[font_id].font;
 	if (font == NULL)
 		return;
 
@@ -404,7 +353,6 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 	
 			new_destination = *destination;
 			new_destination.top += InterfaceFonts[font_id].LineSpacing;
-			// new_destination.top += interface_fonts[font_id].line_spacing;
 			_draw_screen_text(remaining_text_to_draw, &new_destination, flags, font_id, text_color);
 	
 			// Now truncate our text to draw
@@ -429,7 +377,6 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 
 	// Vertical positioning
 	int t_height = InterfaceFonts[font_id].Height;
-	// int t_height = interface_fonts[font_id].height;
 	if (flags & _center_vertical) {
 		if (t_height > RECTANGLE_HEIGHT(destination))
 			y = destination->top;
@@ -455,7 +402,6 @@ static TextSpec NullSpec = {0, 0, 0};
 TextSpec *_get_font_spec(
 	short font_index)
 {
-	// return &(interface_fonts.fonts[font_index]);
 	return &NullSpec;
 }
 
@@ -477,18 +423,10 @@ uint16 GetInterfaceStyle(short font_index)
 	return InterfaceFonts[font_index].Style;
 }
 
-/*
-TextSpec *_get_font_spec(short font_id)
-{
-	return &interface_fonts[font_id].spec;
-}
-*/
-
 short _get_font_line_height(short font_id)
 {
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
 	return InterfaceFonts[font_id].LineSpacing;
-	// return interface_fonts[font_id].line_spacing;
 }
 
 short _text_width(const char *text, short font_id)
@@ -497,10 +435,6 @@ short _text_width(const char *text, short font_id)
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
 	uint16 style = InterfaceFonts[font_id].Style;
 	const sdl_font_info *font = InterfaceFonts[font_id].Info;
-	/*
-	uint16 style = interface_fonts[font_id].spec.style;
-	const sdl_font_info *font = interface_fonts[font_id].font;
-	*/
 	if (font == NULL)
 		return 0;
 
@@ -975,43 +909,6 @@ void draw_polygon(SDL_Surface *s, const world_point2d *vertex_array, int vertex_
  *  Interface color management
  */
 
-const int NumInterfaceColors = 26;
-
-static rgb_color InterfaceColors[NumInterfaceColors] = 
-{
-	{0, 65535, 0},
-	{0, 5140, 0},
-	{0, 0, 0},
-	
-	{0, 65535, 0},
-	{0, 12956, 0},
-	{0, 5100, 0},
-	
-	{9216, 24320, 41728},
-	{65535, 0, 0},
-	{45056, 0, 24064},
-	{65535, 65535, 0},
-	{60000, 60000, 60000},
-	{62976, 22528, 0},
-	{3072, 0, 65535},
-	{0, 65535, 0},
-	
-	{65535, 65535, 65535},
-	{0, 5140, 0},
-	
-	{10000, 0, 0},
-	{65535, 0, 0},
-	
-	{0, 65535, 0},
-	{65535, 65535, 65535},
-	{65535, 0, 0},
-	{0, 40000, 0},
-	{0, 45232, 51657},
-	{65535, 59367, 0},
-	{45000, 0, 0},
-	{3084, 0, 65535}
-};
-
 void _get_interface_color(int color_index, SDL_Color *color)
 {	
 	assert(color_index>=0 && color_index<NumInterfaceColors);
@@ -1045,112 +942,10 @@ screen_rectangle *get_interface_rectangle(short index)
 	return interface_rectangles + index;
 }
 
-// Rectangle-parser object:
-class XML_RectangleParser: public XML_ElementParser
+static void load_interface_rectangles(void)
 {
-	screen_rectangle TempRect;
-	int Index;
-	bool IsPresent[5];
-
-public:
-	screen_rectangle *RectList;
-	int NumRectangles;
-	
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-	
-	XML_RectangleParser(): XML_ElementParser("rect") {}
-};
-
-bool XML_RectangleParser::Start()
-{
-	for (int k=0; k<5; k++)
-		IsPresent[k] = false;
-	return true;
 }
 
-bool XML_RectangleParser::HandleAttribute(const char *Tag, const char *Value)
+static void load_screen_interface_colors(void)
 {
-	if (strcmp(Tag,"index") == 0)
-	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,0,NumRectangles-1))
-		{
-			IsPresent[4] = true;
-			return true;
-		}
-		else return false;
-	}
-	else if (strcmp(Tag,"top") == 0)
-	{
-		if (ReadNumericalValue(Value,"%hd",TempRect.top))
-		{
-			IsPresent[0] = true;
-			return true;
-		}
-		else return false;
-	}
-	else if (strcmp(Tag,"left") == 0)
-	{
-		if (ReadNumericalValue(Value,"%hd",TempRect.left))
-		{
-			IsPresent[1] = true;
-			return true;
-		}
-		else return false;
-	}
-	else if (strcmp(Tag,"bottom") == 0)
-	{
-		if (ReadNumericalValue(Value,"%hd",TempRect.bottom))
-		{
-			IsPresent[2] = true;
-			return true;
-		}
-		else return false;
-	}
-	else if (strcmp(Tag,"right") == 0)
-	{
-		if (ReadNumericalValue(Value,"%hd",TempRect.right))
-		{
-			IsPresent[3] = true;
-			return true;
-		}
-		else return false;
-	}
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_RectangleParser::AttributesDone()
-{
-	// Verify...
-	bool AllPresent = true;
-	for (int k=0; k<5; k++)
-		if (!IsPresent[k]) AllPresent = false;
-	
-	if (!AllPresent)
-	{
-		AttribsMissing();
-		return false;
-	}
-	
-	// Put into place
-	RectList[Index] = TempRect;
-	return true;
-}
-
-static XML_RectangleParser RectangleParser;
-
-// LP addition: set up the parser for the interface rectangles and get it
-XML_ElementParser *InterfaceRectangles_GetParser()
-{
-	RectangleParser.RectList = interface_rectangles;
-	RectangleParser.NumRectangles = NUMBER_OF_INTERFACE_RECTANGLES;
-	return &RectangleParser;
-}
-
-
-void SetColorParserToScreenDrawing()
-{
-	Color_SetArray(InterfaceColors, NumInterfaceColors);
 }

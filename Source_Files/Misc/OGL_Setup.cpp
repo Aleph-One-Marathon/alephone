@@ -39,8 +39,12 @@ Dec 17, 2000 (Loren Petrich):
 #include <string.h>
 #include "cseries.h"
 
-#ifdef mac
-#include <agl.h>
+#ifdef HAVE_OPENGL
+# ifdef mac
+#  include <agl.h>
+# else
+#  include <GL/gl.h>
+# endif
 #endif
 
 #include "shape_descriptors.h"

@@ -3,8 +3,7 @@
  *
  *  Written in 2000 by Christian Bauer
  * 
- *  Loren Petrich, Dec 23, 2000; moved shared content into screen_shared.cpp;
- *  marked out moved-out parts with #ifdef MOVED_OUT
+ *  Loren Petrich, Dec 23, 2000; moved shared content into screen_shared.cpp
  */
 
 #include "cseries.h"
@@ -41,55 +40,9 @@
 
 #include "screen_shared.cpp"
 
-#ifdef MOVED_OUT
-// Constants
-#define DESIRED_SCREEN_WIDTH 640
-#define DESIRED_SCREEN_HEIGHT 480
-
-#define MAXIMUM_WORLD_WIDTH 1024
-#define MAXIMUM_WORLD_HEIGHT 768
-
-#define DEFAULT_WORLD_WIDTH 640
-#define DEFAULT_WORLD_HEIGHT 320
-
-
-// Supported display sizes
-struct ViewSizeData
-{
-	int OverallWidth, OverallHeight;	// Of the display area, so as to properly center everything
-	int MainWidth, MainHeight;			// Of the main 3D-rendered view
-	int WithHUD, WithoutHUD;			// Corresponding entries that are with the HUD or without it
-	bool ShowHUD;						// Will it be visible?
-};
-
-const ViewSizeData ViewSizes[NUMBER_OF_VIEW_SIZES] =
-{
-	{ 640, 480,	 320, 160,	 _320_160_HUD,  _640_480,	 true},		//  _320_160_HUD
-	{ 640, 480,	 480, 240,	 _480_240_HUD,  _640_480,	 true},		//  _480_240_HUD
-	{ 640, 480,	 640, 320,	 _640_320_HUD,  _640_480,	 true},		//  _640_320_HUD
-	{ 640, 480,	 640, 480,	 _640_320_HUD,  _640_480,	false},		//  _640_480
-	{ 800, 600,	 800, 400,	 _800_400_HUD,  _800_600,	 true},		//  _800_400_HUD
-	{ 800, 600,	 800, 600,	 _800_400_HUD,  _800_600,	false},		//  _800_600
-	{1024, 768,	1024, 512,	_1024_512_HUD, _1024_768,	 true},		// _1024_512_HUD
-	{1024, 768,	1024, 768,	_1024_512_HUD, _1024_768,	false},		// _1024_768
-};
-
-// Note: the overhead map will always fill all of the screen except for the HUD,
-// and the terminal display will always have a size of 640*320.
-#endif
-
 
 // Global variables
 static SDL_Surface *main_surface;	// Main (display) surface
-
-#ifdef MOVED_OUT
-struct color_table *uncorrected_color_table; /* the pristine color environment of the game (can be 16bit) */
-struct color_table *world_color_table; /* the gamma-corrected color environment of the game (can be 16bit) */
-struct color_table *interface_color_table; /* always 8bit, for mixed-mode (i.e., valkyrie) fades */
-struct color_table *visible_color_table; /* the color environment the player sees (can be 16bit) */
-
-struct view_data *world_view; /* should be static */
-#endif
 
 // static const sdl_font_info *info_display_font = NULL;
 
@@ -97,48 +50,16 @@ struct view_data *world_view; /* should be static */
 // The HUD has a separate buffer.
 // It is initialized to NULL so as to allow its initing to be lazy.
 SDL_Surface *world_pixels = NULL;
-#ifdef MOVED_OUT
-struct bitmap_definition *world_pixels_structure;
-
-// Stuff for keeping track of screen sizes; this is for forcing the clearing of the screen when resizing.
-// These are initialized to improbable values.
-static int PrevBufferWidth = INT16_MIN, PrevBufferHeight = INT16_MIN,
-           PrevOffsetWidth = INT16_MIN, PrevOffsetHeight = INT16_MIN;
-#endif
-static bool PrevFullscreen = false;
-
-#ifdef MOVED_OUT
-#define FRAME_SAMPLE_SIZE 20
-bool displaying_fps = false;
-int frame_count, frame_index;
-uint32 frame_ticks[64];
-
-bool ShowPosition = false;	// Whether to show one's position
-
-#endif
-
 SDL_Surface *HUD_Buffer = NULL;
 
-#ifdef MOVED_OUT
-static bool HUD_RenderRequest = false;
-#endif
-
-static bool screen_initialized = false;
-
-#ifdef MOVED_OUT
+static bool PrevFullscreen = false;
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
-
-short bit_depth = NONE;
-short interface_bit_depth = NONE;
-#endif
 
 #ifdef HAVE_OPENGL
 // This is defined in overhead_map.c
 // It indicates whether to render the overhead map in OpenGL
 extern bool OGL_MapActive;
 #endif
-
-static struct screen_mode_data screen_mode;
 
 
 // Prototypes
@@ -149,10 +70,6 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
 static void update_fps_display(SDL_Surface *s);
 static void DisplayPosition(SDL_Surface *s);
 static void DisplayMessages(SDL_Surface *s);
-#ifdef MOVED_OUT
-static void set_overhead_map_status(bool status);
-static void set_terminal_status(bool status);
-#endif
 static void DrawHUD(SDL_Rect &dest_rect);
 
 
@@ -233,42 +150,6 @@ static void reallocate_world_pixels(int width, int height)
 		SDL_SetColors(world_pixels, colors, 0, 256);
 	}
 }
-
-
-/*
- *  This resets the screen; useful when starting a game
- */
-
-#ifdef MOVED_OUT
-void reset_screen()
-{
-	// Resetting cribbed from initialize_screen()
-	world_view->overhead_map_scale = DEFAULT_OVERHEAD_MAP_SCALE;
-	world_view->overhead_map_active = false;
-	world_view->terminal_mode_active = false;
-	world_view->horizontal_scale = 1;
-	world_view->vertical_scale = 1;
-	ResetFieldOfView();
-}
-
-
-/*
- *  Resets field of view to whatever the player had had when reviving
- */
-
-void ResetFieldOfView()
-{
-	world_view->tunnel_vision_active = false;
-
-	if (current_player->extravision_duration) {
-		world_view->field_of_view = EXTRAVISION_FIELD_OF_VIEW;
-		world_view->target_field_of_view = EXTRAVISION_FIELD_OF_VIEW;
-	} else {
-		world_view->field_of_view = NORMAL_FIELD_OF_VIEW;
-		world_view->target_field_of_view = NORMAL_FIELD_OF_VIEW;
-	}
-}
-#endif
 
 
 /*
@@ -744,12 +625,23 @@ void animate_screen_clut(struct color_table *color_table, bool full_screen)
 		build_sdl_color_table(color_table, colors);
 		SDL_SetPalette(main_surface, SDL_PHYSPAL, colors, 0, 256);
 	} else {
+#if SDL_PATCHLEVEL > 6
+		// SDL 1.1.7 defines these as 16-bit arrays...
+		uint16 red[256], green[256], blue[256];
+		for (int i=0; i<color_table->color_count; i++) {
+			red[i] = color_table->colors[i].red;
+			green[i] = color_table->colors[i].green;
+			blue[i] = color_table->colors[i].blue;
+		}
+#else
+		// ...while SDL 1.1.6 uses 8-bits per channel
 		uint8 red[256], green[256], blue[256];
 		for (int i=0; i<color_table->color_count; i++) {
 			red[i] = color_table->colors[i].red >> 8;
 			green[i] = color_table->colors[i].green >> 8;
 			blue[i] = color_table->colors[i].blue >> 8;
 		}
+#endif
 		SDL_SetGammaRamp(red, green, blue);
 	}
 }
@@ -914,79 +806,6 @@ static void DisplayMessages(SDL_Surface *s)
 	}
 }
 
-
-/*
- *  Zoom overhead map
- */
-
-#ifdef MOVED_OUT
-void zoom_overhead_map_out(void)
-{
-	world_view->overhead_map_scale = FLOOR(world_view->overhead_map_scale-1, OVERHEAD_MAP_MINIMUM_SCALE);
-}
-
-void zoom_overhead_map_in(void)
-{
-	world_view->overhead_map_scale = CEILING(world_view->overhead_map_scale+1, OVERHEAD_MAP_MAXIMUM_SCALE);
-}
-
-
-/*
- *  Special effects
- */
-
-void start_teleporting_effect(bool out)
-{
-	start_render_effect(world_view, out ? _render_effect_fold_out : _render_effect_fold_in);
-}
-
-void start_extravision_effect(bool out)
-{
-	world_view->target_field_of_view = out ? EXTRAVISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW;
-}
-
-void start_tunnel_vision_effect(bool out)
-{
-	world_view->target_field_of_view = out ? TUNNEL_VISION_FIELD_OF_VIEW : 
-		((current_player->extravision_duration) ? EXTRAVISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW);
-}
-
-
-/*
- *  Get current screen mode info
- */
-
-screen_mode_data *get_screen_mode(void)
-{
-	return &screen_mode;
-}
-
-
-// LP: gets a size ID's related size ID's that show or hide the HUD, respectively
-short GetSizeWithHUD(short Size)
-{
-	assert(Size >= 0 && Size < NUMBER_OF_VIEW_SIZES);
-	return ViewSizes[Size].WithHUD;
-}
-
-short GetSizeWithoutHUD(short Size)
-{
-	assert(Size >= 0 && Size < NUMBER_OF_VIEW_SIZES);
-	return ViewSizes[Size].WithoutHUD;
-}
-
-
-/*
- *  Show HUD?
- */
-
-bool game_window_is_full_screen(void)
-{
-	short msize = screen_mode.size;
-	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
-	return (!ViewSizes[msize].ShowHUD);
-}
-#endif
 
 /*
  *  Get world view destination frame for given screen size

@@ -4,8 +4,8 @@ bin_PROGRAMS = alephone
 
 alephone_SOURCES = \
   AnimatedTextures.h ChaseCam.h ColorParser.h Crosshairs.h DamageParser.h \
-  FileHandler.h ImageLoader.h ISp_Support.h OGL_Faders.h OGL_Render.h \
-  OGL_Setup.h OGL_Textures.h OverheadMap_OGL.h OverheadMap_SDL.h \
+  FileHandler.h FontHandler.h ImageLoader.h ISp_Support.h OGL_Faders.h \
+  OGL_Render.h OGL_Setup.h OGL_Textures.h OverheadMap_OGL.h OverheadMap_SDL.h \
   OverheadMapRenderer.h PlayerName.h Random.h Rasterizer.h Rasterizer_OGL.h \
   Rasterizer_SW.h RenderPlaceObjs.h RenderRasterize.h RenderSortPoly.h \
   RenderVisTree.h ShapesParser.h TextStrings.h VectorOps.h ViewControl.h \
@@ -26,13 +26,13 @@ alephone_SOURCES = \
   weapons.h world.h \
   \
   AnimatedTextures.cpp ChaseCam.cpp ColorParser.cpp Crosshairs_SDL.cpp \
-  DamageParser.cpp FileHandler_SDL.cpp ImageLoader_SDL.cpp OGL_Faders.cpp \
-  OGL_Render.cpp OGL_Setup.cpp OGL_Textures.cpp OverheadMap_OGL.cpp \
-  OverheadMap_SDL.cpp OverheadMapRenderer.cpp Packing.h PlayerName.cpp \
-  RenderPlaceObjs.cpp RenderRasterize.cpp RenderSortPoly.cpp RenderVisTree.cpp \
-  ShapesParser.cpp TextStrings.cpp ViewControl.cpp XML_Configure.cpp \
-  XML_DataBlock.cpp XML_ElementParser.cpp XML_LevelScript.cpp XML_MakeRoot.cpp \
-  XML_Loader_SDL.cpp \
+  DamageParser.cpp FileHandler_SDL.cpp FontHandler.cpp ImageLoader_SDL.cpp \
+  OGL_Faders.cpp OGL_Render.cpp OGL_Setup.cpp OGL_Textures.cpp \
+  OverheadMap_OGL.cpp OverheadMap_SDL.cpp OverheadMapRenderer.cpp Packing.h \
+  PlayerName.cpp RenderPlaceObjs.cpp RenderRasterize.cpp RenderSortPoly.cpp \
+  RenderVisTree.cpp ShapesParser.cpp TextStrings.cpp ViewControl.cpp \
+  XML_Configure.cpp XML_DataBlock.cpp XML_ElementParser.cpp XML_LevelScript.cpp \
+  XML_MakeRoot.cpp XML_Loader_SDL.cpp \
   computer_interface.cpp crc.cpp devices.cpp dynamic_limits.cpp effects.cpp \
   fades.cpp find_files_sdl.cpp flood_map.cpp game_errors.cpp game_wad.cpp \
   game_window.cpp game_window_sdl.cpp images.cpp import_definitions.cpp \
@@ -41,7 +41,7 @@ alephone_SOURCES = \
   mouse_sdl.cpp mysound.cpp overhead_map.cpp pathfinding.cpp physics.cpp \
   placement.cpp platforms.cpp player.cpp preferences.cpp preprocess_map_sdl.cpp \
   projectiles.cpp render.cpp resource_manager.cpp scenery.cpp \
-  scottish_textures.cpp screen_drawing_sdl.cpp screen_sdl.cpp sdl_dialogs.cpp \
+  scottish_textures.cpp screen_drawing.cpp screen_sdl.cpp sdl_dialogs.cpp \
   sdl_fonts.cpp sdl_widgets.cpp shapes.cpp shell.cpp textures.cpp vbl.cpp \
   vbl_sdl.cpp wad.cpp wad_sdl.cpp wad_prefs.cpp weapons.cpp world.cpp
 
@@ -49,8 +49,8 @@ alephone_LDADD = ../CSeries/libcseries.a ../Expat/libexpat.a \
   ../Network/libnetwork.a ../Pfhortran/libpfhortran.a @SYS_GL_LIBS@
 
 EXTRA_alephone_SOURCES = computer_interface_sdl.cpp images_sdl.cpp \
-  low_level_textures.cpp preferences_sdl.cpp shapes_sdl.cpp shell_sdl.cpp \
-  sound_sdl.cpp
+  low_level_textures.cpp preferences_sdl.cpp screen_shared.cpp \
+  screen_drawing_sdl.cpp shapes_sdl.cpp shell_sdl.cpp sound_sdl.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries \
   -I$(top_srcdir)/Source_Files/Expat -I$(top_srcdir)/Source_Files/Network \

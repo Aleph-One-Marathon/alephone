@@ -41,12 +41,6 @@
 // LP addition: whether or not the cheats are active
 static bool CheatsActive = false;
 
-#ifndef HAVE_OPENGL
-// No OpenGL, so define these here
-float FogDepth = 1;
-float FogColor[4] = {0, 0, 0, 0};
-#endif
-
 // Prototypes
 static void main_event_loop(void);
 static int process_keyword_key(char key);

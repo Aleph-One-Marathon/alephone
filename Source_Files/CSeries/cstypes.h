@@ -62,4 +62,9 @@ const int KILO = 0x400L;
 // Hmmm, this should be removed one day...
 typedef uint8 byte;
 
+// Make it compile on systems without OpenGL
+#ifndef HAVE_OPENGL
+#define GLfloat float
+#endif
+
 #endif

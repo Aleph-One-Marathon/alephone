@@ -7,7 +7,6 @@
 #include "OverheadMap_SDL.h"
 #include "map.h"
 #include "screen_drawing.h"
-#include "sdl_fonts.h"
 
 
 // From screen_sdl.cpp
@@ -126,25 +125,18 @@ void OverheadMap_SDL_Class::draw_player(world_point2d &center, angle facing, rgb
 void OverheadMap_SDL_Class::draw_text(world_point2d &location, rgb_color &color, char *text, FontSpecifier& FontData, short justify)
 {
 	// Load font
-	const sdl_font_info *font = FontData->Info;
-	/*
-	TextSpec spec;
-	spec.font = FontData.font;
-	spec.style = FontData.face;
-	spec.size = FontData.size;
-	const sdl_font_info *font = load_font(spec);
-	*/
+	const sdl_font_info *font = FontData.Info;
 
 	// Find left-side location
 	int xpos = location.x;
 	if (justify == _justify_center)
-		xpos -= text_width(text, font, spec.style) / 2;
+		xpos -= text_width(text, font, FontData.Style) / 2;
 
 	// Get color
 	uint32 pixel = SDL_MapRGB(world_pixels->format, color.red >> 8, color.green >> 8, color.blue >> 8);
 
 	// Draw text
-	::draw_text(world_pixels, text, xpos, location.y, pixel, font, spec.style);
+	::draw_text(world_pixels, text, xpos, location.y, pixel, font, FontData.Style);
 }
 
 
