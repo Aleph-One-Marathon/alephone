@@ -169,8 +169,6 @@ static OpenedFile ShapesFile;
 
 static void update_color_environment(void);
 static short find_or_add_color(struct rgb_color_value *color, struct rgb_color_value *colors, short *color_count);
-static void build_shading_tables(struct rgb_color_value *colors, short count);
-static pixel8 find_closest_match(struct rgb_color *match, struct rgb_color_value *colors, short count);
 static void _change_clut(void (*change_clut_proc)(struct color_table *color_table), struct rgb_color_value *colors, short color_count);
 
 static void build_shading_tables8(struct rgb_color_value *colors, short color_count, pixel8 *shading_tables);
@@ -196,14 +194,16 @@ static void unload_collection(struct collection_header *header);
 static void unlock_collection(struct collection_header *header);
 static void lock_collection(struct collection_header *header);
 static bool load_collection(short collection_index, bool strip);
+#ifdef mac
 static byte *unpack_collection(byte *collection, int32 length, bool strip);
-
-static void debug_shapes_memory(void);
+#endif
 
 static void shutdown_shape_handler(void);
 static void close_shapes_file(void);
 
+#ifdef mac
 static byte *read_object_from_file(OpenedFile& OFile, long offset, long length);
+#endif
 
 // static byte *make_stripped_collection(byte *collection);
 
@@ -308,6 +308,7 @@ static void shutdown_shape_handler(void)
 	close_shapes_file();
 }
 
+#ifdef mac
 const int POINTER_SIZE = sizeof(void *);
 
 static int AdjustToPointerBoundary(int x)
@@ -398,7 +399,7 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 			// The bitmap pointers:
 			if (!(Definition.bitmap_offset_table_offset >= 0)) throw 13666;
 			if (!(Definition.bitmap_offset_table_offset +
-				Definition.bitmap_count*sizeof(int32) <= length)) throw 13666;
+				Definition.bitmap_count*sizeof(int32) <= uint32(length))) throw 13666;
 			uint8 *OffsetStream = collection + Definition.bitmap_offset_table_offset;
 			for (int k=0; k<Definition.bitmap_count; k++)
 			{
@@ -451,7 +452,7 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 		// Copy in the sequence offsets
 		if (!(Definition.high_level_shape_offset_table_offset >= 0)) throw 13666;
 		if (!(Definition.high_level_shape_offset_table_offset +
-			Definition.high_level_shape_count*sizeof(int32) <= length)) throw 13666;
+			Definition.high_level_shape_count*sizeof(int32) <= uint32(length))) throw 13666;
 		OffsetTable = new int32[Definition.high_level_shape_count + 1];
 		
 		S = collection + Definition.high_level_shape_offset_table_offset;
@@ -528,7 +529,7 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 			if (!(Definition.low_level_shape_count >= 0)) throw 13666;
 			if (!(Definition.low_level_shape_offset_table_offset >= 0)) throw 13666;
 			if (!(Definition.low_level_shape_offset_table_offset +
-				Definition.low_level_shape_count*sizeof(int32) <= length)) throw 13666;
+				Definition.low_level_shape_count*sizeof(int32) <= uint32(length))) throw 13666;
 			int32 *OffsetTable = new int32[Definition.low_level_shape_count + 1];
 			
 			S = collection + Definition.low_level_shape_offset_table_offset;
@@ -548,7 +549,6 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 			for (int k=0; k<Definition.low_level_shape_count; k++)
 			{
 				SBase = S = collection + OffsetTable[k];
-				uint8 *SNext = collection + OffsetTable[k+1];
 						
 				low_level_shape_definition& Frame = 
 					*((low_level_shape_definition *)(NewCollection + NewCollLocation));
@@ -588,7 +588,7 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 			if (!(Definition.bitmap_count >= 0)) throw 13666;
 			if (!(Definition.bitmap_offset_table_offset >= 0)) throw 13666;
 			if (!(Definition.bitmap_offset_table_offset +
-				Definition.bitmap_count*sizeof(int32) <= length)) throw 13666;
+				Definition.bitmap_count*sizeof(int32) <= uint32(length))) throw 13666;
 			OffsetTable = new int32[Definition.bitmap_count + 1];
 			
 			S = collection + Definition.bitmap_offset_table_offset;
@@ -661,6 +661,7 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 	
 	return NewCollection;
 }
+#endif
 
 
 static bool collection_loaded(
@@ -682,6 +683,7 @@ static void unlock_collection(
 	// nothing to do
 }
 
+#ifdef mac
 static byte *read_object_from_file(
 	OpenedFile& OFile,
 	long offset,
@@ -707,6 +709,7 @@ static byte *read_object_from_file(
 	
 	return data;
 }
+#endif
 
 
 void unload_all_collections(
@@ -848,9 +851,7 @@ struct shape_information_data *extended_get_shape_information(
 {
 	short collection_index= GET_COLLECTION(collection_code);
 	struct low_level_shape_definition *low_level_shape;
-	struct collection_definition *collection;
 
-	// collection= get_collection_definition(collection_index);
 	low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
 
 #ifdef HAVE_OPENGL
@@ -1022,10 +1023,6 @@ void load_collections(
 	/* remap the shapes, recalculate row base addresses, build our new world color table and
 		(finally) update the screen to reflect our changes */
 	update_color_environment();
-
-#ifdef DEBUG
-//	debug_shapes_memory();
-#endif
 }
 
 /* ---------- private code */
@@ -1454,7 +1451,7 @@ static void build_global_shading_table16(
 {
 	if (!global_shading_table16)
 	{
-		short component, value, shading_table;
+		short value, shading_table;
 		pixel16 *write;
 
 #ifdef SDL
@@ -1480,7 +1477,7 @@ static void build_global_shading_table16(
 				*write++ = ((value*(shading_table))/(number_of_shading_tables-1))<<shift;
 #else
 			// Under MacOS, every component has the same width
-			for (component=0;component<NUMBER_OF_COLOR_COMPONENTS;++component)
+			for (short component=0;component<NUMBER_OF_COLOR_COMPONENTS;++component)
 			{
 				short shift= 5*(NUMBER_OF_COLOR_COMPONENTS-component-1);
 
@@ -1499,7 +1496,7 @@ static void build_global_shading_table32(
 {
 	if (!global_shading_table32)
 	{
-		short component, value, shading_table;
+		short value, shading_table;
 		pixel32 *write;
 		
 #ifdef SDL
@@ -1525,7 +1522,7 @@ static void build_global_shading_table32(
 				*write++ = ((value*(shading_table))/(number_of_shading_tables-1))<<shift;
 #else
 			// Under MacOS, every component has the same width
-			for (component= 0; component<NUMBER_OF_COLOR_COMPONENTS; ++component)
+			for (short component= 0; component<NUMBER_OF_COLOR_COMPONENTS; ++component)
 			{
 				short shift= 8*(NUMBER_OF_COLOR_COMPONENTS-component-1);
 
@@ -1586,7 +1583,6 @@ static bool new_color_run(
 static long get_shading_table_size(
 	short collection_code)
 {
-	short collection_index= GET_COLLECTION(collection_code);
 	long size;
 	
 	switch (bit_depth)
@@ -1961,30 +1957,6 @@ static void *get_collection_tint_tables(
 	
 	return tint_table;
 }
-
-/*
-static void debug_shapes_memory(
-	void)
-{
-	short collection_index;
-	struct collection_header *header;
-	
-	long total_size=0;
-
-	for (collection_index= 0, header= collection_headers; collection_index<MAXIMUM_COLLECTIONS; ++collection_index, ++header)
-	{
-		if (collection_loaded(header))
-		{
-			struct collection_definition *definition= get_collection_definition(collection_index);
-			
-			dprintf("collection #% 2d @ #% 9d bytes", collection_index, definition->size);
-			total_size+= definition->size;
-		}
-	}
-	
-	dprintf("                  #% 9d bytes total", total_size);
-}
-*/
 
 // LP additions:
 

@@ -164,13 +164,13 @@ light_definition *get_light_definition(
 short new_light(
 	struct static_light_data *data)
 {
-	short light_index;
+	int light_index;
 	struct light_data *light;
 	
 	// LP change: idiot-proofing
 	if (!data) return NONE;
 	
-	for (light_index= 0, light= lights; light_index<MAXIMUM_LIGHTS_PER_MAP; ++light_index, ++light)
+	for (light_index= 0, light= lights; light_index<short(MAXIMUM_LIGHTS_PER_MAP); ++light_index, ++light)
 	{
 		if (SLOT_IS_FREE(light))
 		{
@@ -191,7 +191,7 @@ short new_light(
 			break;
 		}
 	}
-	if (light_index==MAXIMUM_LIGHTS_PER_MAP) light_index= NONE;
+	if (light_index == short(MAXIMUM_LIGHTS_PER_MAP)) light_index = NONE;
 	
 	return light_index;
 }
@@ -209,10 +209,10 @@ struct static_light_data *get_defaults_for_light_type(
 void update_lights(
 	void)
 {
-	short light_index;
+	int light_index;
 	struct light_data *light;
 	
-	for (light_index= 0, light= lights; light_index<MAXIMUM_LIGHTS_PER_MAP; ++light_index, ++light)
+	for (light_index= 0, light= lights; light_index<short(MAXIMUM_LIGHTS_PER_MAP); ++light_index, ++light)
 	{
 		if (SLOT_IS_USED(light))
 		{
@@ -290,10 +290,10 @@ bool set_tagged_light_statuses(
 
 	if (tag)
 	{
-		short light_index;
+		int light_index;
 		struct light_data *light;
 		
-		for (light_index= 0, light= lights; light_index<MAXIMUM_LIGHTS_PER_MAP; ++light_index, ++light)
+		for (light_index= 0, light= lights; light_index<short(MAXIMUM_LIGHTS_PER_MAP); ++light_index, ++light)
 		{
 			if (light->static_data.tag==tag)
 			{

@@ -93,20 +93,20 @@ unsigned char *pstrcpy(unsigned char *dst, const unsigned char *src)
 
 // ZZZ: added for safety
 // Overwrites total_byte_count of Pstring 'dest' with nonoverlapping Pstring 'source' and null padding
-unsigned char*
-pstrncpy(unsigned char* dest, const unsigned char* source, size_t total_byte_count) {
-	if(total_byte_count <= source[0]) {
+unsigned char *pstrncpy(unsigned char *dest, const unsigned char *source, size_t total_byte_count)
+{
+	size_t source_count = source[0];
+	if (total_byte_count <= source_count) {
 		// copy truncated
 		dest[0] = total_byte_count - 1;
-		memcpy(&dest[1],&source[1],dest[0]);
+		memcpy(&dest[1], &source[1], dest[0]);
 		return dest;
-	}
-	else {
+	} else {
 		// copy full
-		memcpy(dest,source,source[0] + 1);
-		if(source[0] + 1 < total_byte_count) {
+		memcpy(dest, source, source_count + 1);
+		if (source_count + 1 < total_byte_count) {
 			// pad
-			memset(&dest[source[0] + 1], 0, total_byte_count - (source[0] + 1));
+			memset(&dest[source_count + 1], 0, total_byte_count - (source_count + 1));
 		}
 		return dest;
 	}
@@ -115,9 +115,9 @@ pstrncpy(unsigned char* dest, const unsigned char* source, size_t total_byte_cou
 
 // ZZZ: added for convenience
 // Duplicate a Pstring.  Result should be free()d when no longer needed.
-unsigned char*
-pstrdup(const unsigned char* inString) {
-	unsigned char* out = (unsigned char*)malloc(inString[0] + 1);
+unsigned char *pstrdup(const unsigned char *inString)
+{
+	unsigned char *out = (unsigned char *)malloc(inString[0] + 1);
 	pstrcpy(out, inString);
 	return out;
 }
@@ -130,23 +130,23 @@ pstrdup(const unsigned char* inString) {
 // a1 prefix is to avoid conflict with any already-existing functions.
 
 // In-place conversion of Pstring to Cstring
-char*
-a1_p2cstr(unsigned char* inoutStringBuffer) {
+char *a1_p2cstr(unsigned char* inoutStringBuffer)
+{
 	unsigned char length = inoutStringBuffer[0];
-	memmove(inoutStringBuffer,&inoutStringBuffer[1],length);
+	memmove(inoutStringBuffer, &inoutStringBuffer[1], length);
 	inoutStringBuffer[length] = '\0';
-	return (char*) inoutStringBuffer;
+	return (char *)inoutStringBuffer;
 }
 	
 // In-place conversion of Cstring to Pstring.  Quietly truncates string to 255 chars.
-unsigned char*
-a1_c2pstr(char* inoutStringBuffer) {
+unsigned char *a1_c2pstr(char *inoutStringBuffer)
+{
 	int length = strlen(inoutStringBuffer);
-	if(length > 255)
+	if (length > 255)
 		length = 255;
-	memmove(&inoutStringBuffer[1],inoutStringBuffer,length);
+	memmove(&inoutStringBuffer[1], inoutStringBuffer, length);
 	inoutStringBuffer[0] = length;
-	return (unsigned char*)inoutStringBuffer;
+	return (unsigned char *)inoutStringBuffer;
 }
 
 
@@ -193,16 +193,14 @@ void dprintf(const char *format, ...)
 	fprintf(stderr, "dprintf: %s\n", buffer);
 }
 
-void fdprintf(
-	const char *format,
-	...)
+void fdprintf(const char *format, ...)
 {
-	FILE *FD = fopen("AlephOneDebugLog.txt","a");
+	FILE *f = fopen("AlephOneDebugLog.txt", "a");
 	va_list list;
 
-	va_start(list,format);
-	vfprintf(FD,format,list);
+	va_start(list, format);
+	vfprintf(f, format, list);
 	va_end(list);
-	fprintf(FD,"\n");
-	fclose(FD);
+	fprintf(f, "\n");
+	fclose(f);
 }

@@ -287,8 +287,6 @@ void _randomize_vertical_polygon_lines32(struct bitmap_definition *screen, struc
 static short *build_x_table(short *table, short x0, short y0, short x1, short y1);
 static short *build_y_table(short *table, short x0, short y0, short x1, short y1);
 
-static void preprocess_landscaped_polygon(struct polygon_definition *polygon, struct view_data *view);
-
 static void _prelandscape_horizontal_polygon_lines(struct polygon_definition *polygon,
 	struct bitmap_definition *screen, struct view_data *view, struct _horizontal_polygon_line_data *data,
 	short y0, short *x0_table, short *x1_table, short line_count);
@@ -542,7 +540,6 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 //			break;
 		case _big_landscaped_transfer:
 			texture_horizontal_polygon(textured_polygon);
-			// texture_horizontal_polygon(polygon, screen, view);
 			return;
 	}
 
@@ -744,9 +741,8 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 			short delta; /* scratch */
 			short screen_width= rectangle->x1-rectangle->x0;
 			short screen_height= rectangle->y1-rectangle->y0;
-			short screen_x= rectangle->x0, screen_y= rectangle->y0;
+			short screen_x= rectangle->x0;
 			struct bitmap_definition *texture= rectangle->texture;
-			void *shading_table;
 	
 			short *y0_table= scratch_table0, *y1_table= scratch_table1;
 			struct _vertical_polygon_data *header= (struct _vertical_polygon_data *)precalculation_table;
@@ -801,6 +797,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 				header->x0= screen_x;
 				
 				/* calculate shading table, once */
+				void *shading_table = NULL;
 				switch (rectangle->transfer_mode)
 				{
 					case _textured_transfer:
@@ -1024,7 +1021,7 @@ static void _pretexture_vertical_polygon_lines(
 		// LP change: made this quantity more long-distance friendly;
 		// have to avoid doing INTEGER_TO_FIXED on this one, however
 		int32 world_x;
-		short x0, y0= *y0_table++, y1= *y1_table++;
+		short x0, y0= *y0_table++;
 		short screen_y0= view->half_screen_height-y0+view->dtanpitch;
 		int32 ty_numerator, ty_denominator;
 		_fixed ty, ty_delta;
@@ -1144,7 +1141,7 @@ static void _pretexture_horizontal_polygon_lines(
 		int32 depth;
 		// world_distance depth;
 		short screen_x, screen_y;
-		short x0= *x0_table++, x1= *x1_table++;
+		short x0= *x0_table++;
 		
 		/* calculate screen_x,screen_y */
 		screen_x= x0-view->half_screen_width;
@@ -1223,11 +1220,11 @@ static void _prelandscape_horizontal_polygon_lines(
 	_fixed horizontal_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
 	_fixed vertical_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->VertExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
 	short landscape_free_bits= 32-FIXED_FRACTIONAL_BITS-landscape_width_bits;
-	void *shading_table;
 	
 	(void) (screen);
 
 	/* calculate the shading table */	
+	void *shading_table = NULL;
 	if (polygon->flags&_SHADELESS_BIT)
 	{
 		shading_table= polygon->shading_tables;
@@ -1249,7 +1246,7 @@ static void _prelandscape_horizontal_polygon_lines(
 	y0-= view->half_screen_height + view->dtanpitch; /* back to virtual screen coordinates */
 	while ((line_count-= 1)>=0)
 	{
-		short x0= *x0_table++, x1= *x1_table++;
+		short x0= *x0_table++;
 		
 		data->shading_table= shading_table;
 		// LP change: using vertical pixel delta

@@ -47,7 +47,7 @@ ActionQueues::ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize) 
     assert(mQueueHeaders && mFlagsBuffer);
     
     /* tell the queues where their buffers are */
-    for (int i = 0; i < mNumPlayers; ++i)
+    for (unsigned i = 0; i < mNumPlayers; ++i)
     {
             mQueueHeaders[i].buffer= mFlagsBuffer + i*mQueueSize;
     }
@@ -69,7 +69,7 @@ ActionQueues::~ActionQueues() {
 void
 ActionQueues::reset()
 {
-	for (int i=0; i < mNumPlayers; ++i) {
+	for (unsigned i=0; i < mNumPlayers; ++i) {
 		mQueueHeaders[i].read_index = mQueueHeaders[i].write_index = 0;
 	}
 }

@@ -125,12 +125,8 @@ short new_scenery(
 void animate_scenery(
 	void)
 {
-	short i;
-	
-	for (i= 0; i<AnimatedSceneryObjects.size(); ++i)
-	{
+	for (unsigned i=0; i<AnimatedSceneryObjects.size(); ++i)
 		animate_object(AnimatedSceneryObjects[i]);
-	}
 }
 
 void randomize_scenery_shapes(

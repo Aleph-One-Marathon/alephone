@@ -391,7 +391,7 @@ void set_interface_microphone_recording_state(bool state)
 
 void scroll_inventory(short dy)
 {
-	short mod_value, index, current_inventory_screen, section_count, test_inventory_screen;
+	short mod_value, index, current_inventory_screen, section_count, test_inventory_screen = 0;
 	short section_items[NUMBER_OF_ITEMS];
 	short section_counts[NUMBER_OF_ITEMS];
 	

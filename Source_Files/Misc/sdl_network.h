@@ -58,7 +58,6 @@ enum /* error string for user */
 // around 1.5K per packet, not sure of the exact figure off the top of my head though.
 // Note that the SDL network microphone code is the one sending "big" packets these days.
 #define ddpMaxData 1500
-//#define ddpMaxData 586
 
 /* default IP port number for Marathon */
 const uint16 DEFAULT_PORT = 4226;
@@ -70,7 +69,7 @@ typedef IPaddress AddrBlock;
 
 struct DDPFrame
 {
-	short data_size;
+	uint16 data_size;
 	byte data[ddpMaxData];
 	UDPsocket socket;
 };
@@ -81,7 +80,7 @@ struct DDPPacketBuffer
 	byte protocolType;
 	AddrBlock sourceAddress;
 	
-	short datagramSize;
+	uint16 datagramSize;
 	byte datagramData[ddpMaxData];
 };
 typedef struct DDPPacketBuffer DDPPacketBuffer, *DDPPacketBufferPtr;

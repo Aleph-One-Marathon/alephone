@@ -279,7 +279,7 @@ void GeneralRunScript(int LevelIndex)
 	FileSpecifier& MapFile = get_map_file();
 	if (!MapFile.Open(OFile)) return;
 	
-	for (int k=0; k<CurrScriptPtr->Commands.size(); k++)
+	for (unsigned k=0; k<CurrScriptPtr->Commands.size(); k++)
 	{
 		LevelScriptCommand& Cmd = CurrScriptPtr->Commands[k];
 		
@@ -358,7 +358,7 @@ void FindMovieInScript(int LevelIndex)
 	}
 	if (!CurrScriptPtr) return;
 		
-	for (int k=0; k<CurrScriptPtr->Commands.size(); k++)
+	for (unsigned k=0; k<CurrScriptPtr->Commands.size(); k++)
 	{
 		LevelScriptCommand& Cmd = CurrScriptPtr->Commands[k];
 				

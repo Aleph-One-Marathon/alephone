@@ -860,17 +860,19 @@ void dialog::draw(void) const
 }
 
 
-// ZZZ: deactivate widget (the code inside is Christian's)
-void dialog::deactivate_currently_active_widget(bool draw) {
-	// Deactivate previously active widget
+/*
+ *  Deactivate currently active widget
+ */
+
+void dialog::deactivate_currently_active_widget(bool draw)
+{
 	if (active_widget) {
 		active_widget->active = false;
 		if (draw)
 			draw_widget(active_widget);
 
-        // ZZZ: additional cleanup code
-        active_widget       = NULL;
-        active_widget_num   = NONE;
+        active_widget = NULL;
+        active_widget_num = NONE;
 	}
 }
 
@@ -906,7 +908,7 @@ void dialog::activate_widget(int num, bool draw)
 
 void dialog::activate_first_widget(void)
 {
-	for (int i=0; i<widgets.size(); i++) {
+	for (unsigned i=0; i<widgets.size(); i++) {
 		if (widgets[i]->is_selectable()) {
 			activate_widget(i, false);
 			break;
@@ -919,32 +921,37 @@ void dialog::activate_first_widget(void)
  *  Activate next/previous selectable widget
  */
 
-// ZZZ: changed this to detect condition where no widgets are selectable.
 void dialog::activate_next_widget(void)
 {
 	int i = active_widget_num;
 	do {
 		i++;
-		if (i >= widgets.size())
+		if (i >= int(widgets.size()))
 			i = 0;
 	} while (!widgets[i]->is_selectable() && i != active_widget_num);
 
-    // (ZZZ) Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around).
-    if(widgets[i]->is_selectable())
-	    activate_widget(i);
-    else
-        deactivate_currently_active_widget();
+    // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
+	if (widgets[i]->is_selectable())
+		activate_widget(i);
+	else
+		deactivate_currently_active_widget();
 }
 
 void dialog::activate_prev_widget(void)
 {
 	int i = active_widget_num;
 	do {
-		i--;
-		if (i < 0)
+		if (i == 0)
 			i = widgets.size() - 1;
-	} while (!widgets[i]->is_selectable());
-	activate_widget(i);
+		else
+			i--;
+	} while (!widgets[i]->is_selectable() && i != active_widget_num);
+
+    // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
+	if (widgets[i]->is_selectable())
+		activate_widget(i);
+	else
+		deactivate_currently_active_widget();
 }
 
 
@@ -971,19 +978,21 @@ int dialog::find_widget(int x, int y)
 }
 
 
-// ZZZ: locate widget by its numeric ID
-widget*
-dialog::get_widget_by_id(short inID) {
-    // Find first matching widget
-    vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
+/*
+ *  Find widget by its numeric ID
+ */
 
-    while (i != end) {
-            widget *w = *i;
-            if (w->get_identifier() == inID)
-                    return w;
-            i++;
-    }
-    return NULL;
+widget *dialog::get_widget_by_id(short inID) const
+{
+	// Find first matching widget
+	vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
+	while (i != end) {
+		widget *w = *i;
+		if (w->get_identifier() == inID)
+			return w;
+		i++;
+	}
+	return NULL;
 }
 
 
@@ -993,12 +1002,9 @@ dialog::get_widget_by_id(short inID) {
 
 void dialog::event(SDL_Event &e)
 {
-	//fprintf(stderr, "  Received event %d\n", e.type);
-
 	// First pass event to active widget (which may modify it)
 	if (active_widget)
 		active_widget->event(e);
-	//fprintf(stderr, "  Handling event %d\n", e.type);
 	
 	// Remaining events handled by dialog
 	switch (e.type) {
@@ -1048,7 +1054,6 @@ void dialog::event(SDL_Event &e)
 
 		// Mouse button pressed
 		case SDL_MOUSEBUTTONDOWN: {
-			//fprintf(stderr, "  mousebuttondown received, x:%d, y:%d\n", e.button.x, e.button.y);
 			int x = e.button.x, y = e.button.y;
 			int num = find_widget(x, y);
 			if (num >= 0) {
@@ -1059,14 +1064,13 @@ void dialog::event(SDL_Event &e)
 		}
 
 		// Quit requested
-		case SDL_QUIT:	// XXX (ZZZ): if this means what I think it does - that the application is stopping -
-                                // then shouldn't we do a (safer) "cancel"?  Leaving Christian's code just in case...
+		case SDL_QUIT:
 			exit(0);
 			break;
 	}
 
 	// Redraw dirty widgets
-	for (int i=0; i<widgets.size(); i++)
+	for (unsigned i=0; i<widgets.size(); i++)
 		if (widgets[i]->dirty)
 			draw_widget(widgets[i]);
 }
@@ -1075,141 +1079,41 @@ void dialog::event(SDL_Event &e)
 /*
  *  Run dialog modally, returns result code (0 = ok, -1 = cancel)
  */
-// ZZZ: original version, replaced below with version that uses chunk-by-chunk functions
-/*
+
 int dialog::run(bool intro_exit_sounds)
 {
-	// Set new active dialog
-	dialog *parent_dialog = top_dialog;
-	top_dialog = this;
+	// Put dialog on screen
+	start(intro_exit_sounds);
 
-	// Clear dialog surface
-	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
-
-	// Activate first widget
-	activate_first_widget();
-
-	// Layout dialog
-	layout();
-
-	// Get frame images
-	frame_tl = get_dialog_image(FRAME_TL_IMAGE);
-	frame_tr = get_dialog_image(FRAME_TR_IMAGE);
-	frame_bl = get_dialog_image(FRAME_BL_IMAGE);
-	frame_br = get_dialog_image(FRAME_BR_IMAGE);
-	frame_t = get_dialog_image(FRAME_T_IMAGE, rect.w - frame_tl->w - frame_tr->w, 0);
-	frame_l = get_dialog_image(FRAME_L_IMAGE, 0, rect.h - frame_tl->h - frame_bl->h);
-	frame_r = get_dialog_image(FRAME_R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
-	frame_b = get_dialog_image(FRAME_B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
-
-	// Draw dialog
-	draw();
-
-	// Show cursor
-	bool cursor_was_visible = SDL_ShowCursor(true);
-
-	// Welcome sound
-	if (intro_exit_sounds)
-		play_dialog_sound(DIALOG_INTRO_SOUND);
-
-	// Enable unicode key translation
-	SDL_EnableUNICODE(true);
-
-	// Dialog event loop
-	result = 0;
-	done = false;
+	// Run dialog loop
 	while (!done) {
-		//fprintf(stderr, "Dialog <%x> loop iteration\n", this);
-
-		// Get next event
-		SDL_Event e;
-		e.type = SDL_NOEVENT;
-		SDL_PollEvent(&e);
-
-		// Handle event
-		event(e);
-
-		// Give time to system
-		if (e.type == SDL_NOEVENT) {
-                        // ZZZ: custom processing, if desired
-                        if(processing_function != NULL)
-                            processing_function(this);
-                            
-			global_idle_proc();
-			SDL_Delay(10);
-		}
-	}
-
-	// Disable unicode key translation
-	SDL_EnableUNICODE(false);
-
-	// Farewell sound
-	if (intro_exit_sounds)
-		play_dialog_sound(result == 0 ? DIALOG_OK_SOUND : DIALOG_CANCEL_SOUND);
-
-	// Hide cursor
-	if (!cursor_was_visible)
-		SDL_ShowCursor(false);
-
-	// Clear dialog surface
-	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
-
-	// Erase dialog from screen
-	SDL_Surface *video = SDL_GetVideoSurface();
-	SDL_FillRect(video, &rect, SDL_MapRGB(video->format, 0, 0, 0));
-	SDL_UpdateRects(video, 1, &rect);
-#ifdef HAVE_OPENGL
-	if (video->flags & SDL_OPENGL)
-		SDL_GL_SwapBuffers();
-#endif
-
-	// Free frame images
-	if (frame_t) SDL_FreeSurface(frame_t);
-	if (frame_l) SDL_FreeSurface(frame_l);
-	if (frame_r) SDL_FreeSurface(frame_r);
-	if (frame_b) SDL_FreeSurface(frame_b);
-
-	// Restore active dialog
-	top_dialog = parent_dialog;
-	if (top_dialog) {
-		clear_screen();
-		top_dialog->draw();
-	}
-
-	return result;
-}
-*/
-
-int
-dialog::run(bool intro_exit_sounds) {
-    start(intro_exit_sounds);
-
-    bool dialog_is_finished = false;
-
-    do {
-        dialog_is_finished = run_a_little();
+		// Process events
+		process_events();
+		if (done)
+			break;
         
-        // Give time to system
-        // ZZZ: custom processing, if desired
-        if(processing_function != NULL)
-            processing_function(this);
+		// Run custom processing function
+		if (processing_function != NULL)
+			processing_function(this);
             
-        global_idle_proc();
-        SDL_Delay(10);
-    } while(!dialog_is_finished);
+		// Give time to system
+		global_idle_proc();
+		SDL_Delay(10);
+	}
 
-    return finish(intro_exit_sounds);
+	// Remove dialog from screen
+	return finish(intro_exit_sounds);
 }
 
-// ZZZ addition: break up the run() into three segments, so application gives control to dialog here and there, not v.v.
-// (this used primarily for display of progress bars)
-void
-dialog::start(bool play_sound) {
-        // Sanity check
-        assert(!is_running);
-        
-        // Make sure nobody tries re-entrancy with us
-        is_running = true;
+
+/*
+ *  Put dialog on screen
+ */
+
+void dialog::start(bool play_sound)
+{
+	// Make sure nobody tries re-entrancy with us
+	assert(!done);
 
 	// Set new active dialog
 	parent_dialog = top_dialog;
@@ -1245,19 +1149,24 @@ dialog::start(bool play_sound) {
 		play_dialog_sound(DIALOG_INTRO_SOUND);
 
 	// Enable unicode key translation
-        // (ZZZ: hmm maybe this should be done on entering/leaving run_a_little?
-        // I guess really we need to "push" the current UNICODE state and set it true on entering run_a_little,
-        // then "pop" the previous state on leaving run_a_little.  In the meantime, we hope nobody tries their own
-        // event processing between dialog::start and dialog::finish (or at least is prepared to live with UNICODE) :) )
+	// (ZZZ: hmm maybe this should be done on entering/leaving run_a_little?
+	// I guess really we need to "push" the current UNICODE state and set it true on entering run_a_little,
+	// then "pop" the previous state on leaving run_a_little.  In the meantime, we hope nobody tries their own
+	// event processing between dialog::start and dialog::finish (or at least is prepared to live with UNICODE) :) )
 	SDL_EnableUNICODE(true);
 
-	// Dialog event loop
+	// Prepare for dialog event loop
 	result = 0;
 	done = false;
 }
 
-bool
-dialog::run_a_little() {
+
+/*
+ *  Process pending dialog events
+ */
+
+bool dialog::process_events()
+{
 	while (!done) {
 
 		// Get next event
@@ -1265,18 +1174,23 @@ dialog::run_a_little() {
 		e.type = SDL_NOEVENT;
 		SDL_PollEvent(&e);
 
+		if (e.type == SDL_NOEVENT)
+			break;
+
 		// Handle event
 		event(e);
+	}
 
-		if (e.type == SDL_NOEVENT)
-                    break;
-        }
-        
-        return done;
+	return done;
 }
 
-int
-dialog::finish(bool play_sound) {
+
+/*
+ *  Remove dialog from screen
+ */
+
+int dialog::finish(bool play_sound)
+{
 	// Disable unicode key translation
 	SDL_EnableUNICODE(false);
 
@@ -1308,14 +1222,14 @@ dialog::finish(bool play_sound) {
 
 	// Restore active dialog
 	top_dialog = parent_dialog;
-        parent_dialog = NULL;
+	parent_dialog = NULL;
 	if (top_dialog) {
 		clear_screen();
 		top_dialog->draw();
 	}
         
-        // Allow dialog to be run again later
-        is_running = false;
+	// Allow dialog to be run again later
+	done = false;
 
 	return result;
 }

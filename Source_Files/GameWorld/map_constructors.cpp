@@ -750,7 +750,7 @@ static long intersecting_flood_proc(
 	struct polygon_data *polygon= get_polygon_data(source_polygon_index);
 	struct polygon_data *original_polygon= get_polygon_data(data->original_polygon_index);
 	bool keep_searching= false; /* don’t flood any deeper unless we find something close enough */
-	short i, j;
+	unsigned i, j;
 
 	(void) (line_index);
 	(void) (destination_polygon_index);

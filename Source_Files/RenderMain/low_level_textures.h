@@ -543,7 +543,6 @@ void TINT_VERTICAL_POLYGON_LINES(
 	short tint_table_index= transfer_data&0xff;
 	struct _vertical_polygon_line_data *line= (struct _vertical_polygon_line_data *) (data+1);
 	register short bytes_per_row= screen->bytes_per_row;
-	register int downshift= data->downshift;
 	int line_count= data->width;
 	int x= data->x0;
 
@@ -561,7 +560,7 @@ void TINT_VERTICAL_POLYGON_LINES(
 
 	(void) (view);
 
-#ifdef SDL
+#if defined(SDL) && BIT_DEPTH != 8
 	extern SDL_Surface *world_pixels;
 	SDL_PixelFormat *fmt = world_pixels->format;
 #endif
@@ -629,7 +628,6 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 {
 	struct _vertical_polygon_line_data *line= (struct _vertical_polygon_line_data *) (data+1);
 	register short bytes_per_row= screen->bytes_per_row;
-	register int downshift= data->downshift;
 	int line_count= data->width;
 	int x= data->x0;
 	register uint16 seed= texture_random_seed;

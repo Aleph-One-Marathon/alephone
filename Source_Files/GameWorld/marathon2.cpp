@@ -151,16 +151,16 @@ short update_world(
 	highest_time= SHRT_MIN, lowest_time= SHRT_MAX;
 	for (player_index= 0;player_index<dynamic_world->player_count; ++player_index)
 	{
-		short queue_size;
+		int queue_size;
 
 		if (game_is_networked)
 		{
-			queue_size= MIN(GetRealActionQueues()->countActionFlags(player_index),
+			queue_size= MIN(int(GetRealActionQueues()->countActionFlags(player_index)),
                 NetGetNetTime() - dynamic_world->tick_count);
 		}
 		else
 		{
-			queue_size= MIN(GetRealActionQueues()->countActionFlags(player_index),
+			queue_size= MIN(int(GetRealActionQueues()->countActionFlags(player_index)),
                 get_heartbeat_count() - dynamic_world->tick_count);
 		}
 		if (queue_size<0) queue_size= 0; // thumb in dike to prevent update_interface from getting -1

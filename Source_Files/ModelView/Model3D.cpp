@@ -130,7 +130,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 	case Reversed:
 	default:
 		// Normalize
-		for (int k=0; k<Normals.size()/3; k++)
+		for (unsigned k=0; k<Normals.size()/3; k++)
 			NormalizeNormal(&Normals[3*k]);
 		break;
 	
@@ -139,11 +139,11 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 		// The really interesting stuff
 		{
 			// First, create a list of per-polygon normals
-			int NumPolys = NumVI()/3;
+			unsigned NumPolys = NumVI()/3;
 			vector<FlaggedVector> PerPolygonNormalList(NumPolys);
 			
 			GLushort *IndxPtr = VIBase();
-			for (int k=0; k<NumPolys; k++)
+			for (unsigned k=0; k<NumPolys; k++)
 			{
 				// The three vertices:
 				GLfloat *P0 = &Positions[3*(*(IndxPtr++))];
@@ -167,14 +167,14 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			}
 			
 			// Create a list of per-vertex normals
-			int NumVerts = Positions.size()/3;
+			unsigned NumVerts = Positions.size()/3;
 			vector<FlaggedVector> PerVertexNormalList(NumVerts);
 			objlist_clear(&PerVertexNormalList[0],NumVerts);
 			IndxPtr = VIBase();
-			for (int k=0; k<NumPolys; k++)
+			for (unsigned k=0; k<NumPolys; k++)
 			{
 				FlaggedVector& PPN = PerPolygonNormalList[k];
-				for (int c=0; c<3; c++)
+				for (unsigned c=0; c<3; c++)
 				{
 					GLushort VertIndx = *(IndxPtr++);
 					GLfloat *V = PerVertexNormalList[VertIndx].Vec;
@@ -185,7 +185,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			}
 			
 			// Normalize the per-vertex normals
-			for (int k=0; k<NumVerts; k++)
+			for (unsigned k=0; k<NumVerts; k++)
 			{
 				FlaggedVector& PVN = PerVertexNormalList[k];
 				PVN.Flag = NormalizeNormal(PVN.Vec);
@@ -199,10 +199,10 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			vector<short> NumPolysPerVert(NumVerts);
 			objlist_clear(&NumPolysPerVert[0],NumVerts);
 			IndxPtr = VIBase();
-			for (int k=0; k<NumPolys; k++)
+			for (unsigned k=0; k<NumPolys; k++)
 			{
 				FlaggedVector& PPN = PerPolygonNormalList[k];
-				for (int c=0; c<3; c++)
+				for (unsigned c=0; c<3; c++)
 				{
 					GLushort VertIndx = *(IndxPtr++);
 					FlaggedVector& PVN = PerVertexNormalList[VertIndx];
@@ -220,11 +220,11 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			
 			// Decide whether to split each vertex;
 			// if the flag is "true", a vertex is not to be split
-			for (int k=0; k<NumVerts; k++)
+			for (unsigned k=0; k<NumVerts; k++)
 			{
 				// Vertices without contributions will automatically have
 				// their flags be false, as a result of NormalizeNormal()
-				short NumVertPolys = NumPolysPerVert[k];
+				unsigned NumVertPolys = NumPolysPerVert[k];
 				if (NumVertPolys > 0 && PerVertexNormalList[k].Flag)
 					PerVertexNormalList[k].Flag =
 						sqrt(Variances[k]/NumVertPolys) <= SmoothThreshold;
@@ -235,9 +235,9 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			// Use NONE for unsplit ones
 			objlist_clear(&NumPolysPerVert[0],NumVerts);
 			IndxPtr = VIBase();
-			for (int k=0; k<NumPolys; k++)
+			for (unsigned k=0; k<NumPolys; k++)
 			{
-				for (int c=0; c<3; c++)
+				for (unsigned c=0; c<3; c++)
 				{
 					GLushort VertIndx = *(IndxPtr++);
 					FlaggedVector& PVN = PerVertexNormalList[VertIndx];
@@ -256,7 +256,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			// Finding that list will be used to find how many new vertices there are.
 			vector<short> IndicesInList(NumVerts);
 			short IndxInList = 0;
-			for (int k=0; k<NumVerts; k++)
+			for (unsigned k=0; k<NumVerts; k++)
 			{
 				IndicesInList[k] = IndxInList;
 				FlaggedVector& PVN = PerVertexNormalList[k];
@@ -268,9 +268,9 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			
 			// In creating that list, also remap the triangles' vertices
 			GLushort *VIPtr = VIBase();
-			for (int k=0; k<NumPolys; k++)
+			for (unsigned k=0; k<NumPolys; k++)
 			{
-				for (int c=0; c<3; c++)
+				for (unsigned c=0; c<3; c++)
 				{
 					GLushort VertIndx = *VIPtr;
 					GLushort NewVertIndx = IndicesInList[VertIndx];
@@ -316,11 +316,11 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			GLushort *OldS = &VtxSrcIndices[0];
 			GLushort *NewS = &NewVtxSrcIndices[0];
 			GLfloat *NewN = &NewNormals[0];
-			for (int k=0; k<NumVerts; k++)
+			for (unsigned k=0; k<NumVerts; k++)
 			{
 				FlaggedVector& PVN = PerVertexNormalList[k];
-				int NumVertPolys = PVN.Flag ? 1 : NumPolysPerVert[k];
-				for (int c=0; c<NumVertPolys; c++)
+				unsigned NumVertPolys = PVN.Flag ? 1 : NumPolysPerVert[k];
+				for (unsigned c=0; c<NumVertPolys; c++)
 				{
 					GLfloat *OldPP = OldP;
 					*(NewP++) = *(OldPP++);
@@ -329,7 +329,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 				}
 				if (TCPresent)
 				{
-					for (int c=0; c<NumVertPolys; c++)
+					for (unsigned c=0; c<NumVertPolys; c++)
 					{
 						GLfloat *OldTP = OldT;
 						*(NewT++) = *(OldTP++);
@@ -338,7 +338,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 				}
 				if (ColPresent)
 				{
-					for (int c=0; c<NumVertPolys; c++)
+					for (unsigned c=0; c<NumVertPolys; c++)
 					{
 						GLfloat *OldCP = OldC;
 						*(NewC++) = *(OldCP++);
@@ -348,7 +348,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 				}
 				if (VSPresent)
 				{
-					for (int c=0; c<NumVertPolys; c++)
+					for (unsigned c=0; c<NumVertPolys; c++)
 						*(NewS++) = *OldS;
 				}
 				if (PVN.Flag)
@@ -362,7 +362,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 				{
 					// A reference so that the incrementing can work on it
 					short& IndxInList = IndicesInList[k];
-					for (int c=0; c<NumVertPolys; c++)
+					for (unsigned c=0; c<NumVertPolys; c++)
 					{
 						GLfloat *VP = PerPolygonNormalList[VertexPolygons[IndxInList++]].Vec;
 						*(NewN++) = *(VP++);
@@ -417,7 +417,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 	case CounterclockwiseSide:
 		{
 			GLfloat *NormalPtr = NormBase();
-			for (int k=0; k<Normals.size(); k++)
+			for (unsigned k=0; k<Normals.size(); k++)
 				*(NormalPtr++) *= -1;
 		}
 	}
@@ -555,7 +555,7 @@ void Model3D::BuildInverseVSIndices()
 		}
 	
 	// Place the inverse indices
-	for (int k = 0; k<VtxSrcIndices.size(); k++)
+	for (unsigned k = 0; k<VtxSrcIndices.size(); k++)
 		InverseVSIndices[InvVSIPointers[VtxSrcIndices[k]]++] = k;
 	
 	// Push the pointer values forward in the list
@@ -616,7 +616,7 @@ bool Model3D::FindPositions(GLshort FrameIndex)
 		return false;
 	}
 	
-	int NumBones = Bones.size();
+	unsigned NumBones = Bones.size();
 	if (FrameIndex < 0 || NumBones*FrameIndex >= Frames.size())
 	{
 		FindPositions();
@@ -636,13 +636,13 @@ bool Model3D::FindPositions(GLshort FrameIndex)
 	Model3D_Frame *FramePtr = &Frames[NumBones*FrameIndex];
 	
 	// Find the individual-bone transformation matrices:
-	for (int ib=0; ib<NumBones; ib++)
+	for (unsigned ib=0; ib<NumBones; ib++)
 		FindBoneTransform(BoneMatrices[ib],FramePtr[ib],Bones[ib]);
 	
 	// Find the cumulative-bone transformation matrices:
 	int StackIndx = -1;
 	int Parent = NONE;
-	for (int ib=0; ib<NumBones; ib++)
+	for (unsigned ib=0; ib<NumBones; ib++)
 	{
 		Model3D_Bone& Bone = Bones[ib];
 		
@@ -673,7 +673,7 @@ bool Model3D::FindPositions(GLshort FrameIndex)
 		Parent = ib;
 	}
 	
-	for (int ivs=0; ivs<VtxSources.size(); ivs++)
+	for (unsigned ivs=0; ivs<VtxSources.size(); ivs++)
 	{
 		Model3D_VertexSource& VS = VtxSources[ivs];
 		GLfloat Position[3];
@@ -708,7 +708,7 @@ bool Model3D::FindPositions(GLshort FrameIndex)
 GLshort Model3D::NumSeqFrames(GLshort SeqIndex)
 {
 	if (SeqFrmPointers.empty()) return 0;
-	if ((SeqIndex < 0) || (SeqIndex >= SeqFrmPointers.size())) return 0;
+	if ((SeqIndex < 0) || (SeqIndex >= GLshort(SeqFrmPointers.size()))) return 0;
 	
 	return (SeqFrmPointers[SeqIndex+1] - SeqFrmPointers[SeqIndex]);
 }

@@ -141,16 +141,13 @@ bool init_pfhortran(void)
 
 	bool err = false;
 
-	// LP change: made this code always read the language-definition file
-// #ifdef SDL
-#if 1
 	// Read tokens from array
 	static const struct {
 		const char *str;
 		int val;
 	} tokens[] = {
 #include "language_definition.h"
-		NULL, 0
+		{NULL, 0} // end marker
 	};
 
 	for (int i=0; tokens[i].str != NULL; i++) {
@@ -161,69 +158,6 @@ bool init_pfhortran(void)
 			break;
 		}
 	}
-	
-#else
-		
-	// Read tokens from language definition file
-	FileSpecifier FileSpec;
-
-	FileSpec.SetToApp();
-	FileSpec.SetName(LANGDEFPATH, _typecode_theme);
-#if defined(TARGET_API_MAC_CARBON)
-	if(!FileSpec.Exists())
-	{
-		FileSpec.SetParentToResources();
-		FileSpec.SetName(LANGDEFPATH, _typecode_theme);
-	}
-#endif
-	
-	OpenedFile OFile;
-	if (FileSpec.Open(OFile))
-	{
-		long Len = 0;
-		OFile.GetLength(Len);
-		if (Len <= 0) {
-			dispose_pfhortran();
-			return false;
-		}
-		
-		vector<char> FileContents(Len);
-		if (!OFile.Read(Len,&FileContents[0])) {
-			dispose_pfhortran();
-			return false;
-		}
-		
-		// Entire buffer is now in FileContents vector
-		char *index = &FileContents[0];
-
-		char input_str[256];
-		int input_val;
-		while (sscanf(index, "%s %x\n", input_str, &input_val) != EOF)
-		{
-			// Skip past line
-			while((*index != '\n' && *index != '\r')&& (index - &FileContents[0] < Len))
-				index++;
-			// Skip over trailing carriage return
-			if(*index == '\r') index++;
-			if(*index == '\n') index++;
-			
-			if (input_str && input_str[0] != '#')
-			{
-				lowercase_string(input_str);
-				
-				if (!put_symbol(input_str,(float)input_val,absolute,instruction_hash))
-				{
-					err = true;
-					break;
-				}
-			
-			}
-			
-			input_str[0] = 0;
-		
-		}
-	}
-#endif
 	
 	if (err)
 	{
@@ -780,7 +714,6 @@ void report_errors(error_def *error_log, int length)
 				FileSpec.SetToApp();
 				FileSpec.SetName("Pfhortran Error Report", _typecode_theme);
 #else
-#warning JTP: An SDL Guru would probably wish to rework this
 				FileSpec.SetToPreferencesDir();
 				FileSpec.AddPart("pfhortran_error_report.txt");
 #endif

@@ -637,7 +637,7 @@ struct polygon_data /* 128 bytes */
 	uint16 flags;
 	int16 permutation;
 
-	int16 vertex_count;
+	uint16 vertex_count;
 	int16 endpoint_indexes[MAXIMUM_VERTICES_PER_POLYGON]; /* clockwise */
 	int16 line_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	

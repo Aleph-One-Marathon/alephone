@@ -1554,7 +1554,7 @@ bool process_map_wad(
 		// Slurp it all in...
 		data= (uint8 *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
 		count= data_length/sizeof(short);
-		assert(count*sizeof(short)==data_length);
+		assert(count*long(sizeof(short))==data_length);
 		MapIndexList.resize(count);
 		StreamToList(data,map_indexes,count);
 		
@@ -1571,7 +1571,7 @@ bool process_map_wad(
 		count= data_length/SIZEOF_object_data;
 		assert(count*SIZEOF_object_data==data_length);
 		vassert(count <= MAXIMUM_OBJECTS_PER_MAP,
-			csprintf(temporary,"Number of map objects %d > limit %d",count,MAXIMUM_OBJECTS_PER_MAP));
+			csprintf(temporary,"Number of map objects %ld > limit %d",count,MAXIMUM_OBJECTS_PER_MAP));
 		unpack_object_data(data,objects,count);
 		
 		// Unpacking is E-Z here...
@@ -1584,21 +1584,21 @@ bool process_map_wad(
 		count= data_length/SIZEOF_monster_data;
 		assert(count*SIZEOF_monster_data==data_length);
 		vassert(count <= MAXIMUM_MONSTERS_PER_MAP,
-			csprintf(temporary,"Number of monsters %d > limit %d",count,MAXIMUM_MONSTERS_PER_MAP));
+			csprintf(temporary,"Number of monsters %ld > limit %d",count,MAXIMUM_MONSTERS_PER_MAP));
 		unpack_monster_data(data,monsters,count);
 
 		data= (uint8 *)extract_type_from_wad(wad, EFFECTS_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_effect_data;
 		assert(count*SIZEOF_effect_data==data_length);
 		vassert(count <= MAXIMUM_EFFECTS_PER_MAP,
-			csprintf(temporary,"Number of effects %d > limit %d",count,MAXIMUM_EFFECTS_PER_MAP));
+			csprintf(temporary,"Number of effects %ld > limit %d",count,MAXIMUM_EFFECTS_PER_MAP));
 		unpack_effect_data(data,effects,count);
 
 		data= (uint8 *)extract_type_from_wad(wad, PROJECTILES_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_projectile_data;
 		assert(count*SIZEOF_projectile_data==data_length);
 		vassert(count <= MAXIMUM_PROJECTILES_PER_MAP,
-			csprintf(temporary,"Number of projectiles %d > limit %d",count,MAXIMUM_PROJECTILES_PER_MAP));
+			csprintf(temporary,"Number of projectiles %ld > limit %d",count,MAXIMUM_PROJECTILES_PER_MAP));
 		unpack_projectile_data(data,projectiles,count);
 		
 		data= (uint8 *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
@@ -1632,7 +1632,7 @@ bool process_map_wad(
 		} else {
 			map_index_data= (uint8 *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
 			map_index_count= data_length/sizeof(short);
-			assert(map_index_count*sizeof(short)==data_length);
+			assert(map_index_count*long(sizeof(short))==data_length);
 		}
 
 		assert(is_preprocessed_map&&map_index_count || !is_preprocessed_map&&!map_index_count);
@@ -1811,9 +1811,10 @@ static uint8 *tag_to_global_array_and_size(
 	)
 {
 	uint8 *array= NULL;
-	short unit_size = 0, index, count = 0;
+	short unit_size = 0, count = 0;
+	unsigned index;
 	
-	for(index= 0; index<NUMBER_OF_SAVE_ARRAYS; ++index)
+	for (index=0; index<NUMBER_OF_SAVE_ARRAYS; ++index)
 	{
 		if(save_data[index].tag==tag)
 		{

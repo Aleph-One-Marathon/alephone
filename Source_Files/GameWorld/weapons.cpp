@@ -445,7 +445,7 @@ void player_hit_target(
 	weapon_id= GET_WEAPON_FROM_IDENTIFIER(weapon_identifier);
 	trigger= GET_TRIGGER_FROM_IDENTIFIER(weapon_identifier);
 	
-	assert(weapon_id>=0 && weapon_id<NUMBER_OF_WEAPONS);
+	assert(weapon_id>=0 && weapon_id<short(NUMBER_OF_WEAPONS));
 	player_weapons->weapons[weapon_id].triggers[trigger].shots_hit++;
 }
 
@@ -634,7 +634,7 @@ void process_new_item_for_reloading(
 							get_trigger_definition(player_index, weapon_type, which_trigger);
 			
 						if(trigger_definition->ammunition_type==item_type && 
-							weapon_type==player_weapons->current_weapon &&
+							int(weapon_type)==player_weapons->current_weapon &&
 							player_weapons->current_weapon==player_weapons->desired_weapon)
 						{
 							struct weapon_data *weapon= get_player_current_weapon(player_index);
@@ -645,7 +645,7 @@ void process_new_item_for_reloading(
 							{
 								if(!reload_weapon(player_index, which_trigger))
 								{
-									dprintf("Error reloading??!");
+									dprintf("Error reloading!?");
 								}
 							}
 						}
@@ -1037,7 +1037,7 @@ short get_player_weapon_ammo_count(
 	short rounds_loaded;
 	struct player_data *player= get_player_data(player_index);
 	
-	assert(which_weapon>=0 && which_weapon<NUMBER_OF_WEAPONS);
+	assert(which_weapon>=0 && which_weapon<short(NUMBER_OF_WEAPONS));
 	assert(which_trigger>=0 && which_trigger<NUMBER_OF_TRIGGERS);
 	
 	switch(definition->weapon_class)
@@ -1574,7 +1574,7 @@ static void select_next_best_weapon(
 	short player_index)
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
-	short index, current_weapon_index;
+	unsigned index, current_weapon_index;
 	
 	/* Find where we are in the array. */
 	current_weapon_index= find_weapon_power_index(player_weapons->current_weapon);
@@ -1605,12 +1605,12 @@ static void select_next_weapon(
 
 	if(player_weapons->desired_weapon!=_weapon_ball && player_weapons->current_weapon!=_weapon_ball)
 	{
-		short index, desired_weapon_index;
+		short desired_weapon_index;
 
 		desired_weapon_index= find_weapon_power_index(player_weapons->desired_weapon);
 
 		/* This starts at one because we are trying to go forward or backward.. */	
-		for(index=1; index<NUMBER_OF_WEAPONS; ++index)
+		for(unsigned index=1; index<NUMBER_OF_WEAPONS; ++index)
 		{
 			short test_weapon_index;
 			
@@ -1643,39 +1643,7 @@ static struct trigger_definition *get_trigger_definition(
 	struct trigger_definition *trigger_definition;
 
 	assert(which_trigger>=0 && which_trigger<NUMBER_OF_TRIGGERS);
-	assert(which_weapon>=0 && which_weapon<NUMBER_OF_WEAPONS);
-
-/*
-	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
-#ifdef DEBUG
-	switch(which_weapon)
-	{
-		// Single-trigger weapons:
-		case _weapon_missile_launcher:
-		case _weapon_flamethrower:
-		case _weapon_smg:
-			vassert(which_trigger==_primary_weapon, csprintf(temporary, "which: %d weapon: %d",
-				which_trigger, which_weapon));
-			break;
-
-		// Dual-trigger weapons:
-		case _weapon_fist:
-		case _weapon_alien_shotgun:
-		case _weapon_shotgun:
-		case _weapon_pistol:
-		case _weapon_plasma_pistol:
-		case _weapon_assault_rifle:
-		case _weapon_ball:
-			vassert(which_trigger==_primary_weapon || which_trigger==_secondary_weapon, 
-				csprintf(temporary, "which: %d weapon: %d", which_trigger, which_weapon));
-			break;
-			
-		default:
-			assert(false);
-			break;
-	}
-#endif
-*/
+	assert(which_weapon>=0 && which_weapon<short(NUMBER_OF_WEAPONS));
 
 	trigger_definition= &definition->weapons_by_trigger[which_trigger];
 	
@@ -1688,7 +1656,7 @@ static struct trigger_data *get_player_trigger_data(
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 	
-	assert(player_weapons->current_weapon>=0 && player_weapons->current_weapon<NUMBER_OF_WEAPONS);
+	assert(player_weapons->current_weapon>=0 && player_weapons->current_weapon<short(NUMBER_OF_WEAPONS));
 	
 	return get_trigger_data(player_index, player_weapons->current_weapon, which_trigger);
 }
@@ -1701,7 +1669,7 @@ struct trigger_data *get_trigger_data(
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 	
 	assert(which_trigger>=0 && which_trigger<NUMBER_OF_TRIGGERS);
-	assert(weapon_index>=0 && weapon_index<NUMBER_OF_WEAPONS);
+	assert(weapon_index>=0 && weapon_index<short(NUMBER_OF_WEAPONS));
 	
 	return &player_weapons->weapons[weapon_index].triggers[which_trigger];
 }
@@ -1711,7 +1679,7 @@ static struct weapon_data *get_player_current_weapon(
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 	
-	assert(player_weapons->current_weapon>=0 && player_weapons->current_weapon<NUMBER_OF_WEAPONS);
+	assert(player_weapons->current_weapon>=0 && player_weapons->current_weapon<short(NUMBER_OF_WEAPONS));
 	
 	return &player_weapons->weapons[player_weapons->current_weapon];
 }
@@ -1928,7 +1896,7 @@ struct weapon_definition *get_current_weapon_definition(
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 	
-	assert(player_weapons->current_weapon>=0 && player_weapons->current_weapon<NUMBER_OF_WEAPONS);
+	assert(player_weapons->current_weapon>=0 && player_weapons->current_weapon<short(NUMBER_OF_WEAPONS));
 	
 	return get_weapon_definition(player_weapons->current_weapon);
 }
@@ -1993,7 +1961,7 @@ static void calculate_weapon_origin_and_vector(
 	if(*origin_polygon==NONE)
 	{
 		short source_polygon= object->polygon;
-		short line_crossed;
+		short line_crossed = NONE;
 		struct line_data *line;
 		world_distance distance;
 
@@ -2447,7 +2415,7 @@ static bool handle_trigger_up(
 	struct trigger_definition *trigger_definition= 
 		get_player_trigger_definition(player_index, which_trigger);
 	bool discharge;
-	_fixed charged_amount;
+	_fixed charged_amount = 0;
 
 	/* On charged weapons, when the trigger goes up, we discharge.. */
 	switch(weapon->triggers[which_trigger].state)
@@ -2904,7 +2872,7 @@ static short get_active_trigger_count_and_states(
 	bool *triggers_down)
 {
 	struct weapon_definition *definition= get_weapon_definition(weapon_index);
-	short active_count;
+	short active_count = 0;
 
 	assert(first_trigger);
 
@@ -3025,9 +2993,7 @@ static bool dual_function_secondary_has_control(
 static void calculate_ticks_from_shapes(
 	void)
 {
-	short weapon_type;
-	
-	for(weapon_type= 0; weapon_type<NUMBER_OF_WEAPONS; ++weapon_type)
+	for(unsigned weapon_type= 0; weapon_type<NUMBER_OF_WEAPONS; ++weapon_type)
 	{
 		struct weapon_definition *definition= get_weapon_definition(weapon_type);
 
@@ -3717,7 +3683,7 @@ static void change_to_desired_weapon(
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 	struct weapon_definition *definition= get_weapon_definition(player_weapons->desired_weapon);
-	short first_trigger, which_trigger, trigger_count;
+	short first_trigger = _primary_weapon, which_trigger, trigger_count = 1;
 
 	// dprintf("Changing!");	
 	assert(player_weapons->desired_weapon != player_weapons->current_weapon);
@@ -3869,20 +3835,17 @@ static void	play_shell_casing_sound(
 static short find_weapon_power_index(
 	short weapon_type)
 {
-	short index;
-	
 	if(weapon_type==NONE)
-	{
-		index= NONE;
-	} else {
-		for(index= 0; index<NUMBER_OF_WEAPONS; ++index)
-		{
-			if(weapon_type==weapon_ordering_array[index]) break;
+		return NONE;
+	else {
+		unsigned index;
+		for (index=0; index<NUMBER_OF_WEAPONS; ++index) {
+			if (weapon_type == weapon_ordering_array[index])
+				break;
 		}
-		assert(index!=NUMBER_OF_WEAPONS);
+		assert(index != NUMBER_OF_WEAPONS);
+		return index;
 	}
-	
-	return index;
 }
 
 /* ---------- shell casing stuff */
@@ -4083,10 +4046,9 @@ uint8 *unpack_player_weapon_data(uint8 *Stream, int Count)
 	{
 		StreamToValue(S,ObjPtr->current_weapon);
 		StreamToValue(S,ObjPtr->desired_weapon);
-		int m;
-		for (m=0; m<NUMBER_OF_WEAPONS; m++)
+		for (unsigned m=0; m<NUMBER_OF_WEAPONS; m++)
 			StreamToWeapData(S,ObjPtr->weapons[m]);
-		for (m=0; m<MAXIMUM_SHELL_CASINGS; m++)
+		for (unsigned m=0; m<MAXIMUM_SHELL_CASINGS; m++)
 			StreamToShellData(S,ObjPtr->shell_casings[m]);
 	}
 	assert((S - Stream) == Count*SIZEOF_player_weapon_data);
@@ -4102,9 +4064,9 @@ uint8 *pack_player_weapon_data(uint8 *Stream, int Count)
 	{
 		ValueToStream(S,ObjPtr->current_weapon);
 		ValueToStream(S,ObjPtr->desired_weapon);
-		for (int m=0; m<NUMBER_OF_WEAPONS; m++)
+		for (unsigned m=0; m<NUMBER_OF_WEAPONS; m++)
 			WeapDataToStream(S,ObjPtr->weapons[m]);
-		for (int m=0; m<MAXIMUM_SHELL_CASINGS; m++)
+		for (unsigned m=0; m<MAXIMUM_SHELL_CASINGS; m++)
 			ShellDataToStream(S,ObjPtr->shell_casings[m]);
 	}
 	assert((S - Stream) == Count*SIZEOF_player_weapon_data);

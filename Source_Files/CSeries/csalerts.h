@@ -24,6 +24,12 @@
 #ifndef _CSERIES_ALERTS_
 #define _CSERIES_ALERTS_
 
+#if defined(__GNUC__)
+#define NORETURN __attribute__((noreturn))
+#else
+#define NORETURN
+#endif
+
 enum {
 	infoError,
 	fatalError
@@ -39,14 +45,14 @@ extern void pause_debug(void);
 extern void vpause(
 	char *message);
 
-extern void halt(void);
+extern void halt(void) NORETURN;
 extern void vhalt(
-	char *message);
+	char *message) NORETURN;
 
 extern void _alephone_assert(
 	char *file,
 	long line,
-	char *what);
+	char *what) NORETURN;
 extern void _alephone_warn(
 	char *file,
 	long line,

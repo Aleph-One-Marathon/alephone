@@ -141,7 +141,7 @@ short new_platform(
 	// LP: OK for a platform to be a do-nothing platform
 	// assert(data->static_flags&(FLAG(_platform_comes_from_floor)|FLAG(_platform_comes_from_ceiling)));
 
-	if (dynamic_world->platform_count<MAXIMUM_PLATFORMS_PER_MAP)
+	if (dynamic_world->platform_count<int(MAXIMUM_PLATFORMS_PER_MAP))
 	{
 		struct polygon_data *polygon= get_polygon_data(polygon_index);
 		short i;
@@ -749,8 +749,6 @@ static void set_adjacent_platform_states(
 			
 			if (!PLATFORM_DOES_NOT_ACTIVATE_PARENT(platform) || platform->parent_platform_index!=adjacent_platform_index)
 			{
-				struct platform_data *adjacent_platform= get_platform_data(adjacent_platform_index);
-				
 				set_platform_state(adjacent_polygon->permutation, state, platform_index);
 			}
 		}
@@ -832,7 +830,7 @@ static void adjust_platform_endpoint_and_line_heights(
 		short *polygon_indexes= get_map_indexes(platform->endpoint_owners[i].first_polygon_index, polygon_count);
 		short line_count= platform->endpoint_owners[i].line_index_count;
 		short *line_indexes= get_map_indexes(platform->endpoint_owners[i].first_line_index, line_count);
-		short lowest_adjacent_ceiling= 0, highest_adjacent_floor= 0, supporting_polygon_index;
+		short lowest_adjacent_ceiling= 0, highest_adjacent_floor= 0, supporting_polygon_index = NONE;
 		struct polygon_data *adjacent_polygon;
 		short j;
 		

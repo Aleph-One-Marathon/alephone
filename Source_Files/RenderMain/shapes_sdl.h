@@ -301,7 +301,7 @@ static bool load_collection(short collection_index, bool strip)
 	int16 bitmap_count = SDL_ReadBE16(p);
 	int32 bitmap_offset_table_offset = SDL_ReadBE32(p);
 	int16 pixels_to_world = SDL_ReadBE16(p);
-	int32 size = SDL_ReadBE32(p);
+	SDL_ReadBE32(p); // skip size
 
 	// Allocate memory for collection
 	int extra_length = 1024 + high_level_shape_count * 4 + low_level_shape_count * 4 + bitmap_count * 2048;

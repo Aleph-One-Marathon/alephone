@@ -59,8 +59,9 @@ typedef void (*processing_function_t)(dialog*);
 // Dialog structure
 class dialog {
 public:
-	dialog() : active_widget(NULL), active_widget_num(-1), processing_function(NULL), is_running(false),
-                    parent_dialog(NULL), cursor_was_visible(false) {}
+	dialog() : active_widget(NULL), active_widget_num(-1), done(false),
+	           cursor_was_visible(false), parent_dialog(NULL),
+	           processing_function(NULL) {}
 	~dialog();
 
 	// Add widget to dialog
@@ -69,10 +70,14 @@ public:
 	// Run dialog modally
 	int run(bool intro_exit_sounds = true);
 
-        // ZZZ: Run dialog chunk-by-chunk:
-        void start(bool play_sound = true);
-        bool run_a_little();			// returns true if done; false if not
-        int finish(bool play_sound = true);	// returns dialog result
+	// Put dialog on screen
+	void start(bool play_sound = true);
+
+	// Process pending events, returns "done" flag
+	bool process_events();
+
+	// Remove dialog from screen, returns dialog result
+	int finish(bool play_sound = true);
 
 	// Quit dialog, return result
 	void quit(int result);
@@ -80,23 +85,22 @@ public:
 	// Draw dialog
 	void draw(void) const;
         
-        // ZZZ: Find the first widget with matching numerical ID
-        widget*	get_widget_by_id(short inID);
+	// Find the first widget with matching numerical ID
+	widget *get_widget_by_id(short inID) const;
 
-        // ZZZ: set custom processing function, called while dialog is idle
-        void set_processing_function(processing_function_t func) { processing_function = func; }
+	// Set custom processing function, called while dialog is idle
+	void set_processing_function(processing_function_t func) { processing_function = func; }
 
-        // ZZZ: exposed this for use (was private)
+	// Activate next selectable widget
 	void activate_next_widget(void);
+
 private:
 	SDL_Surface *get_surface(void) const;
 	void update(SDL_Rect r) const;
 	void draw_widget(widget *w, bool do_update = true) const;
-    // ZZZ addition: deactivate widget (now separate in case there's no selectable widget to activate afterwards)
     void deactivate_currently_active_widget(bool draw = true);
 	void activate_first_widget(void);
 	void activate_widget(int num, bool draw = true);
-//	void activate_widget(widget *w, bool draw = true); // (ZZZ this does not seem to exist)
 	void activate_prev_widget(void);
 	int find_widget(int x, int y);
 	void event(SDL_Event &e);
@@ -111,17 +115,14 @@ private:
 
 	int result;					// Dialog result code
 	bool done;					// Flag: dialog done
+	bool cursor_was_visible;	// Previous cursor state
+
+	dialog *parent_dialog;		// Pointer to parent dialog
+
+	processing_function_t processing_function; // Custom idle procedure
 
 	// Frame images (frame_t, frame_l, frame_r and frame_b must be freed)
 	SDL_Surface *frame_tl, *frame_t, *frame_tr, *frame_l, *frame_r, *frame_bl, *frame_b, *frame_br;
-        
-        // ZZZ: custom idle procedure
-        processing_function_t	processing_function;
-        
-        // ZZZ: support for run chunk-by-chunk
-        bool	is_running;
-        dialog*	parent_dialog;
-        bool	cursor_was_visible;
 };
 
 // Pointer to top-level dialog, NULL = no dialog active

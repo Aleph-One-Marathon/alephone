@@ -1315,7 +1315,7 @@ void open_progress_dialog(short message_id)
     
     sProgressDialog->start(false);
 
-    bool done = sProgressDialog->run_a_little();
+    bool done = sProgressDialog->process_events();
     assert(!done);
 }
 
@@ -1327,7 +1327,7 @@ void set_progress_dialog_message(short message_id)
 
     sProgressMessage->set_text(TS_GetCString(strPROGRESS_MESSAGES, message_id));
     
-    bool done = sProgressDialog->run_a_little();
+    bool done = sProgressDialog->process_events();
     assert(!done);
 }
 
@@ -1339,7 +1339,7 @@ void close_progress_dialog(void)
     
     sProgressDialog->quit(0);
     
-    bool done = sProgressDialog->run_a_little();
+    bool done = sProgressDialog->process_events();
     
     assert(done);
     

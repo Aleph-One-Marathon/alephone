@@ -188,7 +188,7 @@ SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket) {
     // (entries can have various sizes, but always >= sizeof(struct ifreq)... IP entries have minimum size.)
     // The while() condition avoids misbehaving in case there's only a partial entry at the end
     // of the buffer.
-    while(theConfigRequest.ifc_len - theOffset >= sizeof(struct ifreq)) {
+    while(theConfigRequest.ifc_len - theOffset >= int(sizeof(struct ifreq))) {
         // Point at the next result
         struct ifreq*	theReq	= (struct ifreq*) &(theRequestBuffer[theOffset]);
         

@@ -263,10 +263,12 @@ struct SoundOptionsEntry
 };
 
 
+#ifdef mac
 // Get the sound-options record for a sound index and a sound slot (or permutation)
 // Will return NULL if there is no such record;
 // use the native-Marathon soundfile for the sound and use the bare MacOS Sound Manager
 static SoundOptions *GetSoundOptions(short Index, short Slot);
+#endif
 
 
 struct sound_variables
@@ -1157,7 +1159,6 @@ bool _load_sound(
 	struct sound_definition *definition= get_sound_definition(sound_index);
 	// LP change: idiot-proofing
 	if (!definition) return false;
-	bool successful= false;
 		
 	if (definition->sound_code!=NONE &&
 		((_sm_parameters->flags&_ambient_sound_flag) || !(definition->flags&_sound_is_ambient)))
@@ -1554,7 +1555,7 @@ static void add_one_ambient_sound_source(
 				if (!behavior) return; // Silence
 	
 				struct ambient_sound_data *ambient;
-				short distance;
+				short distance = 0;
 				short i;
 			
 				if (source)
@@ -1635,10 +1636,12 @@ static void add_one_ambient_sound_source(
 }
 
 
+#ifdef mac
+
 // Get the sound-options record for a sound index and a sound slot (or permutation)
 // Will return NULL if there is no such record;
 // use the native-Marathon soundfile for the sound and use the bare MacOS Sound Manager
-SoundOptions *GetSoundOptions(short Index, short Slot)
+static SoundOptions *GetSoundOptions(short Index, short Slot)
 {
 
 	// Initialize the hash table if necessary
@@ -1677,6 +1680,8 @@ SoundOptions *GetSoundOptions(short Index, short Slot)
 	// None found
 	return NULL;
 }
+
+#endif
 
 
 // XML elements for parsing sound specifications;

@@ -179,7 +179,7 @@ void HUD_Class::update_weapon_panel(bool force_redraw)
 	
 		if(desired_weapon != NONE)
 		{
-			assert(desired_weapon>=0 && desired_weapon<MAXIMUM_WEAPON_INTERFACE_DEFINITIONS);
+			assert(desired_weapon>=0 && desired_weapon<short(MAXIMUM_WEAPON_INTERFACE_DEFINITIONS));
 
 			definition= weapon_interface_definitions+desired_weapon;
 	

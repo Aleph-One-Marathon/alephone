@@ -354,7 +354,6 @@ OGL_FogData *CurrFog = NULL;
 inline bool FogActive()
 {
 	if (!CurrFog) return false;
-	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	bool FogAllowed = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog) != 0;
 	return CurrFog->IsPresent && FogAllowed;
 }
@@ -1073,6 +1072,7 @@ void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color)
 
 
 // For debugging purposes:
+#if 0
 static void MakeFalseColor(int c, float Opacity = 1)
 {
 	int cr = c % 12;
@@ -1098,6 +1098,7 @@ static void MakeFalseColor(int c, float Opacity = 1)
 	
 	glColor4f(Colors[cr][0],Colors[cr][1],Colors[cr][2],Opacity);
 }
+#endif
 
 
 // Stuff for doing OpenGL rendering of various objects

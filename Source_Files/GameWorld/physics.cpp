@@ -353,12 +353,6 @@ void get_binocular_vision_origins(
 void kill_player_physics_variables(
 	short player_index)
 {
-	struct player_data *player= get_player_data(player_index);
-	struct physics_variables *variables= &player->variables;
-	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, 0);
-	
-//	variables->position.z+= variables->actual_height-constants->dead_height;
-//	variables->actual_height= constants->dead_height;
 }
 
 /* return a number in [-FIXED_ONE,FIXED_ONE] (arguably) */

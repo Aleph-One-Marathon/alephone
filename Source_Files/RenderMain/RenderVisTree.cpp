@@ -105,7 +105,7 @@ void RenderVisTreeClass::PUSH_POLYGON_INDEX(short polygon_index)
 	if (!TEST_RENDER_FLAG(polygon_index, _polygon_is_visible))
 	{
 		// Grow the list only if necessary
-		if (polygon_queue_size < PolygonQueue.size())
+		if (polygon_queue_size < int(PolygonQueue.size()))
 			PolygonQueue[polygon_queue_size]= polygon_index;
 		else
 			PolygonQueue.push_back(polygon_index);
@@ -223,7 +223,7 @@ void RenderVisTreeClass::cast_render_ray(
 				cast_render_ray(_vector, endpoint_index, ParentIndex, _clockwise_bias);
 				cast_render_ray(_vector, endpoint_index, ParentIndex, _counterclockwise_bias);
 				// LP: could have reallocated, so keep in sync!
-				node_data *parent =  &Nodes.front() + ParentIndex;
+				parent =  &Nodes.front() + ParentIndex;
 			}
 		}
 		else
@@ -607,7 +607,7 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 					index<polygon->vertex_count && polygon->endpoint_indexes[index]!=endpoint_index;
 					++index)
 				;
-			vassert(index!=polygon->vertex_count, csprintf(temporary, "endpoint #%d not in polygon #%d (from #%d)", endpoint_index, polygon_index, polygon_index));
+			vassert(index!=polygon->vertex_count, csprintf(temporary, "endpoint #%d not in polygon #%d", endpoint_index, *polygon_index));
 	
 			switch (bias)
 			{

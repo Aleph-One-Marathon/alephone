@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 		printf("\n  %d tags:\n", w->tag_count);
 		for (int t=0; t<w->tag_count; t++) {
 			WadDataType tag = w->tag_data[t].tag;
-			printf("    '%c%c%c%c' (0x%08x), size %d\n", tag >> 24, tag >> 16, tag >> 8, tag, tag, w->tag_data[t].length);
+			printf("    '%c%c%c%c' (0x%08x), size %ld\n", tag >> 24, tag >> 16, tag >> 8, tag, tag, w->tag_data[t].length);
 		}
 		free_wad(w);
 	}

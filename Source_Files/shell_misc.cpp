@@ -248,9 +248,8 @@ void handle_keyword(int tag)
 					_i_assault_rifle_magazine, _i_assault_grenade_magazine, 
 					_i_magnum_magazine, _i_missile_launcher_magazine, _i_flamethrower_canister,
 					_i_plasma_magazine, _i_shotgun_magazine, _i_shotgun, _i_smg, _i_smg_ammo};
-				short index;
 				
-				for(index= 0; index<sizeof(items)/sizeof(short); ++index)
+				for(unsigned index= 0; index<sizeof(items)/sizeof(short); ++index)
 				{
 					switch(get_item_kind(items[index]))
 					{	
@@ -269,9 +268,8 @@ void handle_keyword(int tag)
 					_i_assault_rifle_magazine, _i_assault_grenade_magazine, 
 					_i_magnum_magazine, _i_missile_launcher_magazine, _i_flamethrower_canister,
 					_i_plasma_magazine, _i_shotgun_magazine, _i_shotgun, _i_smg, _i_smg_ammo};
-				short index;
 				
-				for(index= 0; index<sizeof(items)/sizeof(short); ++index)
+				for(unsigned index= 0; index<sizeof(items)/sizeof(short); ++index)
 				{
 					switch(get_item_kind(items[index]))
 					{
@@ -470,11 +468,10 @@ XML_ElementParser *Cheats_GetParser()
 int process_keyword_key(
 	char key)
 {
-	short i;
 	short tag = NONE;
 
 	// copy the buffer down and insert the new character 
-	for (i=0;i<MAXIMUM_KEYWORD_LENGTH-1;++i)
+	for (unsigned i=0;i<MAXIMUM_KEYWORD_LENGTH-1;++i)
 	{
 		keyword_buffer[i]= keyword_buffer[i+1];
 	}
@@ -482,7 +479,7 @@ int process_keyword_key(
 	keyword_buffer[MAXIMUM_KEYWORD_LENGTH]= 0;
 	
 	// any matches? 
-	for (i=0; i<NUMBER_OF_KEYWORDS; ++i)
+	for (unsigned i=0; i<NUMBER_OF_KEYWORDS; ++i)
 	{
 		if (!strcmp(keywords[i].keyword, keyword_buffer+MAXIMUM_KEYWORD_LENGTH-strlen(keywords[i].keyword)))
 		{

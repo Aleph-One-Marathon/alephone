@@ -92,7 +92,6 @@ short PrevBufferWidth = INT16_MIN, PrevBufferHeight = INT16_MIN,
 	PrevOffsetWidth = INT16_MIN, PrevOffsetHeight = INT16_MIN;
 
 static struct screen_mode_data screen_mode;
-static bool overhead_map_status= false;
 
 #define FRAME_SAMPLE_SIZE 20
 bool displaying_fps= false;
@@ -135,10 +134,6 @@ static ScreenMessage Messages[NumScreenMessages];
 
 
 /* ---------- private prototypes */
-
-// LP change: the source and destination rects will be very variable, in general.
-// Also indicating whether to use high or low resolution (the terminal and the ovhd map are always hi-rez)
-static void update_screen(Rect& source, Rect& destination, bool hi_rez);
 
 static void set_overhead_map_status(bool status);
 static void set_terminal_status(bool status);
@@ -514,9 +509,8 @@ static void set_overhead_map_status( /* it has changed, this is the new status *
 static void set_terminal_status( /* It has changed, this is the new state.. */
 	bool status)
 {
-	static struct screen_mode_data previous_screen_mode;
 	bool restore_effect= false;
-	short effect, phase;
+	short effect = 0, phase = 0;
 	
 	if(!status)
 	{

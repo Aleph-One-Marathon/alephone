@@ -114,7 +114,6 @@ struct wad_internal_data *internal_data[MAXIMUM_OPEN_WADFILES]= {NULL, NULL, NUL
 
 /* ---------------- private prototypes */
 static long calculate_directory_offset(struct wad_header *header, short index);
-static void dump_raw_wad(uint8 *wad);
 static short get_directory_base_length(struct wad_header *header);
 static short get_entry_header_length(struct wad_header *header);
 static bool read_indexed_directory_data(OpenedFile& OFile, struct wad_header *header,
@@ -928,12 +927,12 @@ void dump_wad(
 	short index;
 	struct tag_data *tag= wad->tag_data;
 
-	dprintf("---Dumping---;g");
-	dprintf("Tag Count: %d;g", wad->tag_count);
+	dprintf("---Dumping---");
+	dprintf("Tag Count: %d", wad->tag_count);
 	for(index= 0; index<wad->tag_count; ++index)
 	{
 		assert(tag);
-		dprintf("Tag: %x data: %x length: %d offset: %d;g", tag->tag, tag->data, tag->length,
+		dprintf("Tag: %08x data: %p length: %ld offset: %ld", tag->tag, tag->data, tag->length,
 			tag->offset);
 		tag++;
 	}
@@ -1351,30 +1350,6 @@ static long calculate_raw_wad_length(
 
 	return length;
 }
-
-/* -------- debug privates */
-static void dump_raw_wad(
-	uint8 *wad)
-{
-	struct entry_header *header;
-	long offset;
-	short tag_count;
-
-	assert(wad);
-	
-	offset= tag_count= 0;
-	header= (struct entry_header *) wad;
-	
-	while(header->next_offset)
-	{
-		offset = header->next_offset;
-		dprintf("%d Tag: %x Length: %d Next Offset: %d", tag_count, header->tag, header->length, header->next_offset);
-		tag_count++;
-		header= (struct entry_header *) (((uint8 *) wad) + offset);
-	}
-	dprintf("%d Tag: %x Length: %d Next Offset: %d", tag_count, header->tag, header->length, header->next_offset);
-}
-
 
 static bool write_to_file(
 	OpenedFile& OFile, 

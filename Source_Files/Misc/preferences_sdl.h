@@ -170,11 +170,6 @@ void handle_preferences(void)
  *  Player dialog
  */
 
-// ZZZ change: now gotten from MML (StringSet)
-/*static const char *level_labels[6] = {
-	"Kindergarten", "Easy", "Normal", "Major Damage", "Total Carnage", NULL
-};
-*/
 enum {
     kDifficultyLevelsStringSetID	= 145
 };
@@ -182,28 +177,23 @@ enum {
 
 static void player_dialog(void *arg)
 {
-	dialog *parent = (dialog *)arg;
-
 	// Create dialog
 	dialog d;
-	
-        d.add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR));
-	
-        d.add(new w_spacer());
-	
-        w_select *level_w = new w_select("Difficulty", player_preferences->difficulty_level, NULL /*level_labels*/);
-        level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
+	d.add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR));
+	d.add(new w_spacer());
+	w_select *level_w = new w_select("Difficulty", player_preferences->difficulty_level, NULL /*level_labels*/);
+	level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
 	d.add(level_w);
         
 	d.add(new w_spacer());
-	
-        d.add(new w_static_text("Appearance"));
+
+	d.add(new w_static_text("Appearance"));
 
     // ZZZ change: use Pstring in the preferences.
 	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
 	name_w->set_identifier(iNAME);
-        name_w->set_enter_pressed_callback(dialog_try_ok);
-        name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
+	name_w->set_enter_pressed_callback(dialog_try_ok);
+	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
     d.add(name_w);
 
     w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
@@ -211,15 +201,15 @@ static void player_dialog(void *arg)
 	w_player_color *tcolor_w = new w_player_color("Team Color", player_preferences->team);
 	d.add(tcolor_w);
 	
-        d.add(new w_spacer());
+	d.add(new w_spacer());
         
 	w_left_button* ok_button = new w_left_button("ACCEPT", dialog_ok, &d);
-        ok_button->set_identifier(iOK);
-        d.add(ok_button);
+	ok_button->set_identifier(iOK);
+	d.add(ok_button);
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
-        // ZZZ: we don't do this earlier because it (indirectly) invokes the name_typing callback, which needs iOK
-        copy_pstring_to_text_field(&d, iNAME, player_preferences->name);
+	// ZZZ: we don't do this earlier because it (indirectly) invokes the name_typing callback, which needs iOK
+	copy_pstring_to_text_field(&d, iNAME, player_preferences->name);
 
 	// Clear screen
 	clear_screen();
@@ -228,21 +218,14 @@ static void player_dialog(void *arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
-        // ZZZ: changed to use Pstring in preferences.
 		const char *name = name_w->get_text();
-        /*
-		if (strcmp(name, player_preferences->name)) {
-			strcpy(player_preferences->name, name);
+		unsigned char theOldNameP[PREFERENCES_NAME_LENGTH+1];
+		pstrncpy(theOldNameP, player_preferences->name, PREFERENCES_NAME_LENGTH+1);
+		char *theOldName = a1_p2cstr(theOldNameP);
+		if (strcmp(name, theOldName)) {
+			copy_pstring_from_text_field(&d, iNAME, player_preferences->name);
 			changed = true;
 		}
-        */
-        unsigned char theOldNameP[PREFERENCES_NAME_LENGTH+1];
-        pstrncpy(theOldNameP, player_preferences->name, PREFERENCES_NAME_LENGTH+1);
-        char*   theOldName = a1_p2cstr(theOldNameP);
-        if(strcmp(name, theOldName)) {
-            copy_pstring_from_text_field(&d, iNAME, player_preferences->name);
-            changed = true;
-        }
 
 		int level = level_w->get_selection();
 		if (level != player_preferences->difficulty_level) {
@@ -303,10 +286,8 @@ enum {
 };
 
 // ZZZ addition: set software rendering options (analogous to opengl_dialog()).
-static void
-software_rendering_options_dialog(void* arg) {
-	dialog *parent = (dialog *)arg;
-
+static void software_rendering_options_dialog(void* arg)
+{
 	// Create dialog
 	dialog d;
 	d.add(new w_static_text("SOFTWARE RENDERING OPTIONS", TITLE_FONT, TITLE_COLOR));
@@ -347,23 +328,23 @@ software_rendering_options_dialog(void* arg) {
 }
 
 // ZZZ addition: bounce to correct renderer-config box based on selected rendering system.
-static void
-rendering_options_dialog_demux(void* arg) {
-    int theSelectedRenderer = get_selection_control_value((dialog*) arg, iRENDERING_SYSTEM) - 1;
+static void rendering_options_dialog_demux(void* arg)
+{
+	int theSelectedRenderer = get_selection_control_value((dialog*) arg, iRENDERING_SYSTEM) - 1;
 
-    switch(theSelectedRenderer) {
-        case _no_acceleration:
-            software_rendering_options_dialog(arg);
-        break;
+	switch(theSelectedRenderer) {
+		case _no_acceleration:
+			software_rendering_options_dialog(arg);
+			break;
 
-        case _opengl_acceleration:
-            opengl_dialog(arg);
-        break;
+		case _opengl_acceleration:
+			opengl_dialog(arg);
+			break;
 
-        default:
-            assert(false);
-        break;
-    }
+		default:
+			assert(false);
+			break;
+	}
 }
 
 static void graphics_dialog(void *arg)
@@ -460,7 +441,6 @@ static void graphics_dialog(void *arg)
 
 static void opengl_dialog(void *arg)
 {
-	dialog *parent = (dialog *)arg;
 	OGL_ConfigureData &prefs = Get_OGL_ConfigureData();
 
 	// Create dialog
@@ -565,8 +545,6 @@ public:
 
 static void sound_dialog(void *arg)
 {
-	dialog *parent = (dialog *)arg;
-
 	// Create dialog
 	dialog d;
 	d.add(new w_static_text("SOUND SETUP", TITLE_FONT, TITLE_COLOR));
@@ -646,8 +624,6 @@ static w_toggle *mouse_w;
 
 static void controls_dialog(void *arg)
 {
-	dialog *parent = (dialog *)arg;
-
 	// Create dialog
 	dialog d;
 	d.add(new w_static_text("CONTROLS", TITLE_FONT, TITLE_COLOR));
@@ -817,8 +793,6 @@ static void load_default_keys(void *arg)
 
 static void keyboard_dialog(void *arg)
 {
-	dialog *parent = (dialog *)arg;
-
 	// Clear array of key widgets (because w_prefs_key::set_key() scans it)
 	for (int i=0; i<NUM_KEYS; i++)
 		key_w[i] = NULL;

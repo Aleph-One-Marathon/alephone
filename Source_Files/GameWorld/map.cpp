@@ -414,19 +414,17 @@ bool collection_in_environment(
 {
 	short collection_index= GET_COLLECTION(collection_code);
 	bool found= false;
-	short test_index;
-	short i;
+	int i;
 	
 	if (!(environment_code>=0 && environment_code<NUMBER_OF_ENVIRONMENTS)) return false;
-	// assert(environment_code>=0 && environment_code<NUMBER_OF_ENVIRONMENTS);
 	assert(collection_index>=0 && collection_index<NUMBER_OF_COLLECTIONS);
 	
-	// LP change: modified to use new collection-environment management
-	// for (i= 0; (test_index= environment_definitions[environment_code].shape_collections[i])!=NONE; ++i)
 	for (i= 0; i<NUMBER_OF_ENV_COLLECTIONS; ++i)
 	{
-		if (Environments[environment_code][i]==collection_index) found= true;
-		// if (test_index==collection_index) found= true;
+		if (Environments[environment_code][i]==collection_index) {
+			found= true;
+			break;
+		}
 	}
 	
 	return found;
@@ -1906,7 +1904,7 @@ void turn_object_to_shit( /* garbage that is, garbage */
 {
 	struct object_data *garbage_object= get_object_data(garbage_object_index);
 	struct polygon_data *polygon= get_polygon_data(garbage_object->polygon);
-	short garbage_objects_in_polygon, random_garbage_object_index, object_index;
+	short garbage_objects_in_polygon, random_garbage_object_index = 0, object_index;
 
 	struct object_data *object;
 	

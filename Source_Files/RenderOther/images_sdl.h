@@ -438,8 +438,8 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 				//printf(" width %d, height %d, row_bytes %d, depth %d, pack_type %d\n", width, height, row_bytes, pixel_size, pack_type);
 
 				// Allocate surface for picture
-				uint32 Rmask, Gmask, Bmask;
-				int surface_depth;
+				uint32 Rmask = 0, Gmask = 0, Bmask = 0;
+				int surface_depth = 8;
 				switch (pixel_size) {
 					case 1:
 					case 2:

@@ -368,7 +368,8 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 
 	// Check for wrapping, and if it occurs, be recursive
 	if (flags & _wrap_text) {
-		int last_non_printing_character = 0, text_width = 0, count = 0;
+		int last_non_printing_character = 0, text_width = 0;
+		unsigned count = 0;
 		while (count < strlen(text_to_draw) && text_width < RECTANGLE_WIDTH(destination)) {
 			text_width += char_width(text_to_draw[count], font, style);
 			if (text_to_draw[count] == ' ')

@@ -104,7 +104,7 @@ sdl_font_info *load_font(const TextSpec &spec)
 	int num_assoc = SDL_ReadBE16(p) + 1;
 	while (num_assoc--) {
 		int size = SDL_ReadBE16(p);
-		int style = SDL_ReadBE16(p);
+		SDL_ReadBE16(p); // skip style
 		int id = SDL_ReadBE16(p);
 		if (size == spec.size) {
 

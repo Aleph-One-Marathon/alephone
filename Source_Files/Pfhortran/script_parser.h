@@ -58,7 +58,7 @@ struct bind_table
 
 struct script_instruction
 {
-	int opcode; 	/* the instruction index */
+	unsigned opcode; 	/* the instruction index */
 	short mode;
 	float op1;
 	float op2;

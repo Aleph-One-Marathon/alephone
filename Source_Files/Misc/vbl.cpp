@@ -274,12 +274,12 @@ void decrement_replay_speed(
 short find_key_setup(
 	short *keycodes)
 {
-	short index, jj;
 	short key_setup= NONE;
 	
-	for (index= 0; key_setup==NONE && index<NUMBER_OF_KEY_SETUPS; index++)
+	for (unsigned index= 0; key_setup==NONE && index<NUMBER_OF_KEY_SETUPS; index++)
 	{
 		struct key_definition *definition = all_key_definitions[index];
+		unsigned jj;
 
 		for (jj= 0; jj<NUMBER_OF_STANDARD_KEY_DEFINITIONS; jj++)
 		{
@@ -299,12 +299,11 @@ void set_default_keys(
 	short *keycodes, 
 	short which_default)
 {
-	short i;
 	struct key_definition *definitions;
 	
 	assert(which_default >= 0 && which_default < NUMBER_OF_KEY_SETUPS);
 	definitions= all_key_definitions[which_default];
-	for (i= 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; i++)
+	for (unsigned i= 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; i++)
 	{
 		keycodes[i] = definitions[i].offset;
 	}
@@ -313,13 +312,12 @@ void set_default_keys(
 void set_keys(
 	short *keycodes)
 {
-	short index;
 	struct key_definition *definitions;
 	
 	/* all of them have the same ordering, so which one we pick is moot. */
 	definitions = all_key_definitions[_standard_keyboard_setup]; 
 	
-	for (index= 0; index<NUMBER_OF_STANDARD_KEY_DEFINITIONS; index++)
+	for (unsigned index= 0; index<NUMBER_OF_STANDARD_KEY_DEFINITIONS; index++)
 	{
 #ifdef SDL
 		current_key_definitions[index].offset= SDLKey(keycodes[index]);
@@ -504,7 +502,7 @@ void save_recording_queue_chunk(
 	replay.header.length+= count;
 		
 	vwarn(num_flags_saved == RECORD_CHUNK_SIZE,
-		csprintf(temporary, "bad recording: %d flags, max=%d, count = %d;dm #%d #%d", num_flags_saved, max_flags, 
+		csprintf(temporary, "bad recording: %d flags, max=%d, count = %d;dm #%p #%d", num_flags_saved, max_flags, 
 			count, buffer, count));
 }
 
@@ -933,7 +931,7 @@ static bool vblFSRead(
 
 	if (replay.bytes_in_cache < *count)
 	{
-		assert(replay.bytes_in_cache + *count < DISK_CACHE_SIZE);
+		assert(replay.bytes_in_cache + *count < int(DISK_CACHE_SIZE));
 		if (replay.bytes_in_cache)
 		{
 			memcpy(replay.fsread_buffer, replay.location_in_cache, replay.bytes_in_cache);

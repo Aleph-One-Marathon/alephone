@@ -1251,7 +1251,7 @@ w_entry_point_selector::validateEntryPoint() {
         mCurrentIndex = NONE;
     }
     else {
-        int i;
+		unsigned i;
 
         for(i = 0; i < mEntryPoints.size(); i++) {
             if(mEntryPoints[i].level_number == mEntryPoint.level_number)

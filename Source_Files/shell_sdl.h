@@ -469,7 +469,8 @@ void alert_user(short severity, short resid, short item, OSErr error)
 		const sdl_font_info *font = get_dialog_font(MESSAGE_FONT, style);
 		char *t = message;
 		while (strlen(t)) {
-			int i = 0, last = 0, width = 0;
+			unsigned i = 0, last = 0;
+			int width = 0;
 			while (i < strlen(t) && width < MAX_ALERT_WIDTH) {
 				width += char_width(t[i], font, style);
 				if (t[i] == ' ')

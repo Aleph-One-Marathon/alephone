@@ -202,7 +202,7 @@ void XML_ElementParser::AddChild(XML_ElementParser *Child)
 {
 	// Check to see if the child has already been added
 	char *ChildName = Child->GetName();
-	for (int k=0; k<Children.size(); k++)
+	for (unsigned k=0; k<Children.size(); k++)
 		if (Children[k]->NameMatch(ChildName)) return;
 	
 	// Go!
@@ -214,7 +214,7 @@ XML_ElementParser *XML_ElementParser::FindChild(const char *_Name)
 {
 	XML_ElementParser *FoundChild = NULL;
 	
-	for (int k=0; k<Children.size(); k++)
+	for (unsigned k=0; k<Children.size(); k++)
 	{
 		XML_ElementParser *TestChild = Children[k];
 		if (TestChild->NameMatch(_Name))

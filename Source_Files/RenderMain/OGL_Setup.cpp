@@ -464,6 +464,7 @@ inline bool StringPresent(vector<char>& String)
 	return (String.size() > 1);
 }
 
+#if 0
 static bool StringsEqual(vector<char>& Str1, vector<char>& Str2)
 {
 	bool Pres1 = StringPresent(Str1);
@@ -488,6 +489,7 @@ static void StringCopy(vector<char>& StrDest, vector<char>& StrSrc)
 	StrDest.resize(Len);
 	memcpy(&StrDest[0],&StrSrc[0],Len);
 }
+#endif
 
 
 void OGL_TextureOptionsBase::Load()
@@ -618,7 +620,7 @@ void OGL_SkinManager::Reset(bool Clear_OGL_Txtrs)
 
 OGL_SkinData *OGL_SkinManager::GetSkin(short CLUT)
 {
-	for (int k=0; k<SkinData.size(); k++)
+	for (unsigned k=0; k<SkinData.size(); k++)
 	{
 		OGL_SkinData& Skin = SkinData[k];
 		if (Skin.CLUT == CLUT || Skin.CLUT == ALL_CLUTS)

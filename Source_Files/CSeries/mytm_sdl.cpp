@@ -302,8 +302,8 @@ myTMReset(myTMTaskPtr task) {
 
 #ifdef DEBUG
 // ZZZ addition (to myTM interface): dump profiling data
-#define DUMPIT_ZU(structure,field_name) printf("" #field_name ":\t%lu\n", (structure).field_name)
-#define DUMPIT_ZS(structure,field_name) printf("" #field_name ":\t%ld\n", (structure).field_name)
+#define DUMPIT_ZU(structure,field_name) printf("" #field_name ":\t%u\n", (structure).field_name)
+#define DUMPIT_ZS(structure,field_name) printf("" #field_name ":\t%d\n", (structure).field_name)
 
 void
 myTMDumpProfile(myTMTask* inTask) {

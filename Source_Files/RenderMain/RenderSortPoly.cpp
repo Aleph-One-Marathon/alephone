@@ -104,7 +104,7 @@ void RenderSortPolyClass::sort_render_tree()
 		// LP change: no more growable list of aliases,
 		// due to the sorted-polygon-tree structure of the nodes.
 		bool leaf_has_children= false; /* i.e., itÕs not a leaf */
-		node_data *node;
+		node_data *node = NULL;
 
 		/* if we donÕt have a leaf, find one */
 		if (!leaf)
@@ -240,8 +240,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	// LP change: growable lists
 	AccumulatedLineClips.clear();
 	AccumulatedEndpointClips.clear();
-	clipping_window_data *first_clipping_window= NULL;
-	clipping_window_data *last_clipping_window;
+	clipping_window_data *first_clipping_window = NULL;
+	clipping_window_data *last_clipping_window = NULL;
 	endpoint_clip_data *endpoint;
 	line_clip_data *line;
 	short x0, x1; /* ignoring what clipping parameters weÕve gotten, this is the left and right borders of this node on the screen */
@@ -299,7 +299,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 			{
 				endpoint= &EndpointClips[node->clipping_endpoints[i]];
 				
-				for (j= 0;j<AccumulatedEndpointClips.size();++j)
+				for (j= 0;j<short(AccumulatedEndpointClips.size());++j)
 				{
 					if (AccumulatedEndpointClips[j]==endpoint) { j= NONE; break; } /* found duplicate */
 					if ((AccumulatedEndpointClips[j]->x==endpoint->x&&endpoint->flags==_clip_left) ||
@@ -327,8 +327,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 			{
 				line= &LineClips[node->clipping_lines[i]];
 				
-				for (j= 0;j<AccumulatedLineClips.size();++j) if (AccumulatedLineClips[j]==line) break; /* found duplicate */
-				if (j==AccumulatedLineClips.size()) /* if the line was not a duplicate */
+				for (j= 0;j<short(AccumulatedLineClips.size());++j) if (AccumulatedLineClips[j]==line) break; /* found duplicate */
+				if (j==short(AccumulatedLineClips.size())) /* if the line was not a duplicate */
 				{
 					AccumulatedLineClips.push_back(line);
 					assert(AccumulatedLineClips.size() <= 32767);		// Originally a short value
@@ -347,9 +347,9 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	/* build the clipping windows */
 	{
 		short state= _looking_for_left_clip;
-		endpoint_clip_data *left_clip, *right_clip;
+		endpoint_clip_data *left_clip = NULL, *right_clip = NULL;
 
-		for (i= 0;i<AccumulatedEndpointClips.size();++i)
+		for (i= 0;i<short(AccumulatedEndpointClips.size());++i)
 		{
 			endpoint= AccumulatedEndpointClips[i];
 	
@@ -408,7 +408,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 							if (ClippingWindow.next_window != NULL)
 								ClippingWindow.next_window = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(ClippingWindow.next_window) - OldCWPointer));
 						}
-						for (int k=0; k<SortedNodes.size(); k++)
+						for (unsigned k=0; k<SortedNodes.size(); k++)
 						{
 							sorted_node_data &SortedNode = SortedNodes[k];
 							if (SortedNode.clipping_windows != NULL)

@@ -874,6 +874,10 @@ bool XML_FaderParser::AttributesDone()
 		case _soft_tint_fader_type:
 			WhichProc = soft_tint_color_table;
 			break;	
+
+		default:
+			assert(false);
+			break;
 		}
 		OrigData.proc = WhichProc;
 	}

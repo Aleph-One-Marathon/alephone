@@ -152,9 +152,9 @@ static rgb_color InterfaceColors[NumInterfaceColors] =
 
 /* ------- Private prototypes */
 static void load_interface_rectangles(void);
+#ifdef mac
 static Rect *_get_interface_rect(short index);
-// static short _get_font_height(TextSpec *font);
-// static short _get_font_line_spacing(TextSpec *font);
+#endif
 static void	load_screen_interface_colors(void);
 
 /* -------- Code */

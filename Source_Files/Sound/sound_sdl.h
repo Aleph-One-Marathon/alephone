@@ -264,7 +264,7 @@ bool initialize_music_handler(FileSpecifier &song_file)
 					size++;
 				SDL_RWseek(p, pos + size, SEEK_SET);
 
-			} while (SDL_RWtell(p) < total_size);
+			} while (uint32(SDL_RWtell(p)) < total_size);
 
 			if (comm_found && ssnd_found)
 				music_initialized = true;
@@ -313,7 +313,7 @@ bool initialize_music_handler(FileSpecifier &song_file)
 					size++;
 				SDL_RWseek(p, pos + size, SEEK_SET);
 
-			} while (SDL_RWtell(p) < total_size);
+			} while (uint32(SDL_RWtell(p)) < total_size);
 
 			if (fmt_found && data_found)
 				music_initialized = true;
@@ -609,7 +609,7 @@ static void buffer_sound(struct channel_data *channel, short sound_index, _fixed
 	// Channel active? Then queue next header
 	if (c->active) {
 
-		// Yes, queue mext header
+		// Yes, queue next header
 		c->next_header = data;
 		c->next_pitch = pitch;
 

@@ -118,17 +118,16 @@ uint32 parse_keymap(void)
 {
 	Uint8 *key_map = SDL_GetKeyState(NULL);
 	uint32 flags = 0;
-	int i;
 
 	// Parse the keymap
 	key_definition *key = current_key_definitions;
-	for (i=0; i<NUMBER_OF_STANDARD_KEY_DEFINITIONS; i++, key++)
+	for (unsigned i=0; i<NUMBER_OF_STANDARD_KEY_DEFINITIONS; i++, key++)
 		if (key_map[key->offset])
 			flags |= key->action_flag;
 
 	// Post-process the keymap
 	struct special_flag_data *special = special_flags;
-	for (i=0; i<NUMBER_OF_SPECIAL_FLAGS; i++, special++) {
+	for (unsigned i=0; i<NUMBER_OF_SPECIAL_FLAGS; i++, special++) {
 		if (flags & special->flag) {
 			switch (special->type) {
 				case _double_flag:

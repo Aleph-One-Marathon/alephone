@@ -145,8 +145,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	}
 
 	// Reading loop; create temporary lists of positions, texture coordinates, and normals
-	char c;
-	
+
 	// Load the lines, one by one, and then parse them. Be sure to take care of the continuation
 	// character "\" [Wavefront files follow some Unix conventions]
 	bool MoreLines = true;
@@ -202,7 +201,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		// Unhandled keywords are currently commented out for speed;
 		// many of those are for handling curved surfaces, which are currently ignored.
 		char *RestOfLine = NULL;
-		if (RestOfLine = CompareToKeyword("v")) // Vertex position
+		if ((RestOfLine = CompareToKeyword("v")) != NULL) // Vertex position
 		{
 			GLfloat Position[3];
 			objlist_clear(Position,3);
@@ -212,7 +211,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			for (int k=0; k<3; k++)
 				Positions.push_back(Position[k]);
 		}
-		else if (RestOfLine = CompareToKeyword("vt")) // Vertex texture coordinate
+		else if ((RestOfLine = CompareToKeyword("vt")) != NULL) // Vertex texture coordinate
 		{
 			GLfloat TxtrCoord[2];
 			objlist_clear(TxtrCoord,2);
@@ -222,7 +221,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			for (int k=0; k<2; k++)
 				TxtrCoords.push_back(TxtrCoord[k]);
 		}
-		else if (RestOfLine = CompareToKeyword("vn")) // Vertex normal
+		else if ((RestOfLine = CompareToKeyword("vn")) != NULL) // Vertex normal
 		{
 			GLfloat Normal[3];
 			objlist_clear(Normal,3);
@@ -233,43 +232,43 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 				Normals.push_back(Normal[k]);
 		}
 		/*
-		else if (RestOfLine = CompareToKeyword("vp")) // Vertex parameter value
+		else if ((RestOfLine = CompareToKeyword("vp")) // Vertex parameter value
 		{
 			// For curved objects, which are not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("deg")) // Degree
+		else if ((RestOfLine = CompareToKeyword("deg")) != NULL) // Degree
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("bmat")) // Basis matrix
+		else if ((RestOfLine = CompareToKeyword("bmat")) != NULL) // Basis matrix
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("step")) // Step size
+		else if ((RestOfLine = CompareToKeyword("step")) != NULL) // Step size
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("cstype")) // Curve/surface type
+		else if ((RestOfLine = CompareToKeyword("cstype")) != NULL) // Curve/surface type
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("p")) // Point
+		else if ((RestOfLine = CompareToKeyword("p")) != NULL) // Point
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("l")) // Line
+		else if ((RestOfLine = CompareToKeyword("l")) != NULL) // Line
 		{
 			// Not supported here
 		}
 		*/
-		else if (RestOfLine = CompareToKeyword("f")) // Face (polygon)
+		else if ((RestOfLine = CompareToKeyword("f")) != NULL) // Face (polygon)
 		{
 			// Pick off the face vertices one by one;
 			// stuff their contents into a token and then process that token
 			int NumVertices = 0;
 			
 			short Presence = 0, PosIndx = 0, TCIndx = 0, NormIndx = 0;
-			while(RestOfLine = GetVertIndxSet(RestOfLine, Presence, PosIndx, TCIndx, NormIndx))
+			while((RestOfLine = GetVertIndxSet(RestOfLine, Presence, PosIndx, TCIndx, NormIndx)) != NULL)
 			{			
 				NumVertices++;
 				
@@ -302,99 +301,99 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			PolygonSizes.push_back(NumVertices);
 		}
 		/*
-		else if (RestOfLine = CompareToKeyword("curv")) // Curve
+		else if ((RestOfLine = CompareToKeyword("curv")) != NULL) // Curve
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("curv2")) // 2D Curve
+		else if ((RestOfLine = CompareToKeyword("curv2")) != NULL) // 2D Curve
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("surf")) // Surface
+		else if ((RestOfLine = CompareToKeyword("surf")) != NULL) // Surface
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("parm")) // Parameter values
+		else if ((RestOfLine = CompareToKeyword("parm")) != NULL) // Parameter values
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("trim")) // Outer trimming loop
+		else if ((RestOfLine = CompareToKeyword("trim")) != NULL) // Outer trimming loop
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("hole")) // Inner trimming loop
+		else if ((RestOfLine = CompareToKeyword("hole")) != NULL) // Inner trimming loop
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("scrv")) // Special curve
+		else if ((RestOfLine = CompareToKeyword("scrv")) != NULL) // Special curve
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("sp")) // Special point
+		else if ((RestOfLine = CompareToKeyword("sp")) != NULL) // Special point
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("end")) // End statement
+		else if ((RestOfLine = CompareToKeyword("end")) != NULL) // End statement
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("con")) // Connect
+		else if ((RestOfLine = CompareToKeyword("con")) != NULL) // Connect
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("g")) // Group name
+		else if ((RestOfLine = CompareToKeyword("g")) != NULL) // Group name
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("s")) // Smoothing group
+		else if ((RestOfLine = CompareToKeyword("s")) != NULL) // Smoothing group
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("mg")) // Merging group
+		else if ((RestOfLine = CompareToKeyword("mg")) != NULL) // Merging group
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("o")) // Object name
+		else if ((RestOfLine = CompareToKeyword("o")) != NULL) // Object name
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("bevel")) // Bevel interpolation
+		else if ((RestOfLine = CompareToKeyword("bevel")) != NULL) // Bevel interpolation
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("c_interp")) // Color interpolation
+		else if ((RestOfLine = CompareToKeyword("c_interp")) != NULL) // Color interpolation
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("d_interp")) // Dissolve interpolation
+		else if ((RestOfLine = CompareToKeyword("d_interp")) != NULL) // Dissolve interpolation
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("lod")) // Level of detail
+		else if ((RestOfLine = CompareToKeyword("lod")) != NULL) // Level of detail
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("usemtl")) // Material name
+		else if ((RestOfLine = CompareToKeyword("usemtl")) != NULL) // Material name
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("mtllib")) // Material library
+		else if ((RestOfLine = CompareToKeyword("mtllib")) != NULL) // Material library
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("shadow_obj")) // Shadow casting
+		else if ((RestOfLine = CompareToKeyword("shadow_obj")) != NULL) // Shadow casting
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("trace_obje")) // Ray tracing
+		else if ((RestOfLine = CompareToKeyword("trace_obje")) != NULL) // Ray tracing
 		{
 			// Not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("ctech")) // Curve approximation technique
+		else if ((RestOfLine = CompareToKeyword("ctech")) != NULL) // Curve approximation technique
 		{
 			// Curved objects not supported here
 		}
-		else if (RestOfLine = CompareToKeyword("stech")) // Surface approximation technique
+		else if ((RestOfLine = CompareToKeyword("stech")) != NULL) // Surface approximation technique
 		{
 			// Curved objects not supported here
 		}
@@ -408,7 +407,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	}
 		
 	// How many vertices do the polygons have?
-	for (int k=0; k<PolygonSizes.size(); k++)
+	for (unsigned k=0; k<PolygonSizes.size(); k++)
 	{
 		short PSize = PolygonSizes[k];
 		if (PSize < 3)
@@ -421,7 +420,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	// (which is present of vertex positions, texture coordinates, and normals)
 	short WhatsPresent = Present_Position | Present_TxtrCoord | Present_Normal;
 	
-	for (int k=0; k<VertIndxSets.size()/4; k++)
+	for (unsigned k=0; k<VertIndxSets.size()/4; k++)
 	{
 		short Presence = VertIndxSets[4*k];
 		WhatsPresent &= Presence;
@@ -435,10 +434,10 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	
 	bool AllInRange = true;
 	
-	for (int k=0; k<VertIndxSets.size()/4; k++)
+	for (unsigned k=0; k<VertIndxSets.size()/4; k++)
 	{
 		short PosIndx = VertIndxSets[4*k+1];
-		if (PosIndx < 0 && PosIndx >= Positions.size())
+		if (PosIndx < 0 && PosIndx >= int(Positions.size()))
 		{
 			if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %d: %d (0,%d)\n",k,PosIndx,Positions.size()-1);
 			AllInRange = false;
@@ -447,7 +446,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		if (WhatsPresent & Present_TxtrCoord)
 		{
 			short TCIndx = VertIndxSets[4*k+2];
-			if (TCIndx < 0 && TCIndx >= TxtrCoords.size())
+			if (TCIndx < 0 && TCIndx >= int(TxtrCoords.size()))
 			{
 				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %d: %d (0,%d)\n",k,TCIndx,TxtrCoords.size()-1);
 				AllInRange = false;
@@ -459,7 +458,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		if (WhatsPresent & Present_Normal)
 		{
 			short NormIndx = VertIndxSets[4*k+3];
-			if (NormIndx < 0 && NormIndx >= Normals.size())
+			if (NormIndx < 0 && NormIndx >= int(Normals.size()))
 			{
 				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %d: %d (0,%d)\n",k,NormIndx,Normals.size()-1);
 				AllInRange = false;
@@ -475,7 +474,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	
 	// First, do an index sort of them
 	vector<int> VertIndxRefs(VertIndxSets.size()/4);
-	for (int k=0; k<VertIndxRefs.size(); k++)
+	for (unsigned k=0; k<VertIndxRefs.size(); k++)
 		VertIndxRefs[k] = k;
 	
 	IndexedVertListCompare Compare;
@@ -491,7 +490,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	int NumUnique = -1;
 	
 	// Scan the vertices in index-sort order:
-	for (int k=0; k<VertIndxRefs.size(); k++)
+	for (unsigned k=0; k<VertIndxRefs.size(); k++)
 	{
 		int n = VertIndxRefs[k];
 		
@@ -542,7 +541,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	
 	// Decompose the polygons into triangles by turning them into fans
 	int IndxBase = 0;
-	for (int k=0; k<PolygonSizes.size(); k++)
+	for (unsigned k=0; k<PolygonSizes.size(); k++)
 	{
 		short PolySize = PolygonSizes[k];
 		int *PolyIndices = &WhichUniqueSet[IndxBase];
@@ -577,16 +576,16 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 
 char *CompareToKeyword(char *Keyword)
 {
-	int KWLen = strlen(Keyword);
+	unsigned KWLen = strlen(Keyword);
 	
 	if (InputLine.size() < KWLen) return NULL;
 	
-	for (int k=0; k<KWLen; k++)
+	for (unsigned k=0; k<KWLen; k++)
 		if (InputLine[k] != Keyword[k]) return NULL;
 	
 	char *RestOfLine = &InputLine[KWLen];
 	
-	while(RestOfLine - &InputLine[0] < InputLine.size())
+	while(RestOfLine - &InputLine[0] < int(InputLine.size()))
 	{
 		// End of line?
 		if (*RestOfLine == '\0') return RestOfLine;

@@ -87,9 +87,11 @@ struct path_definition /* 256 bytes */
 
 static struct path_definition *paths = NULL;
 
+#ifdef VERIFY_PATH_SYNC
 static byte *path_validation_area = NULL;
 static long path_validation_area_index;
 static short path_run_count;
+#endif
 
 /* ---------- private prototypes */
 

@@ -143,7 +143,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
 	// LP change: removed upper limit on number (restored it later)
-	if (!OBJECT_IS_INVISIBLE(object) && RenderObjects.size()<get_dynamic_limit(_dynamic_limit_rendered))
+	if (!OBJECT_IS_INVISIBLE(object) && int(RenderObjects.size())<get_dynamic_limit(_dynamic_limit_rendered))
 	{
 		// LP change: made this more long-distance-friendly
 		long_point3d transformed_origin;
@@ -264,7 +264,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 						if (RenderObject.next_object != NULL)
 							RenderObject.next_object = (render_object_data *)(NewROPointer + (POINTER_CAST(RenderObject.next_object) - OldROPointer));
 					}
-					for (int k=0; k<SortedNodes.size(); k++)
+					for (unsigned k=0; k<SortedNodes.size(); k++)
 					{
 						sorted_node_data &SortedNode = SortedNodes[k];
 						if (SortedNode.interior_objects != NULL)
@@ -751,13 +751,13 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 							if (ClippingWindow.next_window != NULL)
 								ClippingWindow.next_window = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(ClippingWindow.next_window) - OldCWPointer));
 						}
-						for (int k=0; k<SortedNodes.size(); k++)
+						for (unsigned k=0; k<SortedNodes.size(); k++)
 						{
 							sorted_node_data &SortedNode = SortedNodes[k];
 							if (SortedNode.clipping_windows != NULL)
 								SortedNode.clipping_windows = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(SortedNode.clipping_windows) - OldCWPointer));
 						}
-						for (int k=0; k<RenderObjects.size(); k++)
+						for (unsigned k=0; k<RenderObjects.size(); k++)
 						{
 							render_object_data &RenderObject = RenderObjects[k];
 							if (RenderObject.clipping_windows != NULL)

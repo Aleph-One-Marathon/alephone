@@ -513,7 +513,8 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 
 	// Check for wrapping, and if it occurs, be recursive
 	if (flags & _wrap_text) {
-		int last_non_printing_character = 0, text_width = 0, count = 0;
+		int last_non_printing_character = 0, text_width = 0;
+		unsigned count = 0;
 		while (count < strlen(text_to_draw) && text_width < RECTANGLE_WIDTH(&r)) {
 			text_width += CharWidth(text_to_draw[count]);
 			if (text_to_draw[count] == ' ')
@@ -692,7 +693,6 @@ bool XML_FontParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"style"))
 	{
-		float CVal;
 		if (ReadInt16Value(Value,TempFont.Style))
 		{
 			IsPresent[2] = true;

@@ -546,12 +546,10 @@ static void NetAddFlagsToPacket(NetPacketPtr packet);
 	
 static void NetSendRingPacket(DDPFramePtr frame);
 static void NetSendAcknowledgement(DDPFramePtr frame, long sequence);
-static bool NetDelayedSendRingFrame(void);
 
 static bool NetCheckResendRingPacket(void);
 static bool NetServerTask(void);
 static bool NetQueueingTask(void);
-static bool NetCheckForwardRingPacket(void);
 
 #if defined(NETWORK_ADAPTIVE_LATENCY) || defined(NETWORK_ADAPTIVE_LATENCY_2)
 // ZZZ addition, for adaptive latency business.  measurement is only used for adaptive_latency_2
@@ -1376,16 +1374,6 @@ void *NetGetPlayerData(
 #endif
 }
 
-static void NetSetPlayerData(
-	short player_index,
-	void *data,
-	long data_size)
-{
-	assert(data_size>=0&&data_size<=MAXIMUM_PLAYER_DATA_SIZE);
-	memcpy(topology->players[player_index].player_data, data, data_size);
-	//BlockMove(data, topology->players[player_index].player_data, data_size);
-}
-
 void *NetGetGameData(
 	void)
 {
@@ -1973,7 +1961,7 @@ static void NetAddFlagsToPacket(
 		}
 		
 		vassert(count>=0 && count<=(MAXIMUM_UPDATES_PER_PACKET * MAXIMUM_NUMBER_OF_NETWORK_PLAYERS),
-			csprintf(temporary, "bad count. count = %d. packet:; dm #%d", count, ((byte*)packet)-sizeof(NetPacketHeader)));
+			csprintf(temporary, "bad count. count = %d. packet:; dm #%p", count, ((byte*)packet)-sizeof(NetPacketHeader)));
 
                 // ZZZ: potential very sneaky bug: memcpy is not required to correctly handle overlapping copies, and
                 // I think we probably have an overlapping copy here.  memmove it is.
@@ -2268,7 +2256,7 @@ static void NetBuildRingPacket(
 	header->sequence= sequence;
 
         // ZZZ: changed this check to frame->data_size from just data_size, seems to be more accurate
-	assert(frame->data_size>=0&&frame->data_size<ddpMaxData);
+	assert(frame->data_size<ddpMaxData);
         
         // ZZZ: copy in the NetPacketHeader_NET stuff from our local buffer.
         netcpy(header_NET, header);
@@ -2904,7 +2892,7 @@ static OSErr NetDistributeGameDataToAllPlayers(
 		{
 			alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
 		} 
-		else if  (machine_tick_count()-initial_ticks>(topology->player_count*MAP_TRANSFER_TIME_OUT))
+		else if  (machine_tick_count()-initial_ticks>uint32(topology->player_count*MAP_TRANSFER_TIME_OUT))
 		{
 			alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, error);
 			error= 1;
@@ -3049,7 +3037,6 @@ static void *receive_stream_data(
 	OSErr error;
 	short packet_type;
 	void *buffer= NULL;
-	long initial_ticks= machine_tick_count();
 
 	// first we'll get the map length
 	error= NetReceiveStreamPacket(&packet_type, network_adsp_packet);
@@ -3064,7 +3051,6 @@ static void *receive_stream_data(
 #else
                 *length = length_NET;
 #endif                
-//		*length= *((long *) network_adsp_packet);
 
 		if(*length)
 		{
@@ -3295,7 +3281,7 @@ static void process_flags(
 		short player_flag_count= packet_data->action_flag_count[player_index];
 	
 		vassert(player_flag_count >= -1 && player_flag_count <= MAXIMUM_UPDATES_PER_PACKET,
-			csprintf(temporary, "UGH! count= %d;dm #%d", player_flag_count, 
+			csprintf(temporary, "UGH! count= %d;dm #%p", player_flag_count, 
 			((byte*)packet_data)-sizeof(NetPacketHeader)));
 	
 		/* if the player is not net dead */
@@ -3452,7 +3438,7 @@ static void close_stream_file(
 OSErr NetDistributeChatMessage(
 	short sender_identifier, const char* message)
 {
-	OSErr error;
+	OSErr error = 0;
 	short playerIndex;
 	
 	assert(netState==netGathering);

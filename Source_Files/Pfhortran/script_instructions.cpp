@@ -405,8 +405,6 @@ void init_instructions(void)
 void update_path_camera(void)
 {
 	path_point old_point;
-	const float AngleConvert = 360/float(FULL_CIRCLE);
-	int currentTicks;
 	
 	/* copy over old location info so we can calculate new polygon index later */
 	
@@ -416,9 +414,6 @@ void update_path_camera(void)
 	old_point.position.y = camera_point.location.position.y;
 	old_point.position.z = camera_point.location.position.z;
 	old_point.polygon_index = camera_point.location.polygon_index;
-	
-	//we are now at this time
-//	currentTicks = machine_tick_count();	//this should be from 1 to many ticks after lastTicks
 	
 	if (offset_count)
 	{
@@ -473,13 +468,6 @@ void update_path_camera(void)
 			camera_point.location.yaw = normalize_angle(camera_point.location.yaw  + (offset_yaw * sign(check_yaw)));
 
 		
-		
-		
-		/*if (abs(check_yaw) + abs(new_yaw) > (180 - abs(check_yaw)) + (180 - abs(new_yaw)))
-			camera_point.location.yaw = normalize_angle((abs(check_yaw) + (180 - abs(check_yaw)) + (180 - abs(new_yaw)) / roll_count));
-		else
-			camera_point.location.yaw = normalize_angle((abs(check_yaw) + abs(new_yaw))/ roll_count);*/
-
 		if (normalize_angle(camera_point.location.pitch) < normalize_angle(script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch))
 		{
 			camera_point.location.pitch = normalize_angle(angle(camera_point.location.pitch + offset_pitch));
@@ -491,31 +479,6 @@ void update_path_camera(void)
 		}
 	}
 	
-	/*if (roll_count)
-	{
-		if (camera_point.location.yaw < script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.yaw)
-		{
-			camera_point.location.yaw = normalize_angle(((float)(camera_point.location.yaw * AngleConvert) - offset_yaw) / AngleConvert);
-		}
-
-		if (camera_point.location.yaw > script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.yaw)
-		{
-			camera_point.location.yaw = normalize_angle(((float)(camera_point.location.yaw * AngleConvert) + offset_yaw) / AngleConvert);
-		}
-
-		if (camera_point.location.pitch < script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch)
-		{
-			camera_point.location.pitch = normalize_angle(((float)(camera_point.location.pitch * AngleConvert) - offset_pitch) / AngleConvert);
-		}
-
-		if (camera_point.location.pitch > script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch)
-		{
-			camera_point.location.pitch = normalize_angle(((float)(camera_point.location.pitch * AngleConvert) + offset_pitch) / AngleConvert);
-		}
-	}*/
-	
-	
-		
 	/* Loren Petrich's code... thanks Loren! */
 	
 	short CurrentPolygonIndex;
@@ -525,13 +488,6 @@ void update_path_camera(void)
 	// Set TargetPosition to the new position of the camera
 	// Set CurrentPolygonIndex to the old polygon membership of the camera
 
-/*	world_point2d CurrentPosition, TargetPosition;
-
-	TargetPosition.x = camera_point.location.position.x;
-	TargetPosition.y = camera_point.location.position.y;
-	CurrentPosition.x = old_point.position.x;
-	CurrentPosition.y = old_point.position.y; */
-	
 	CurrentPolygonIndex = camera_point.location.polygon_index;
 
 	while(true)
@@ -600,9 +556,6 @@ void update_path_camera(void)
 
 bool script_Camera_Active(void)
 {
-	const float AngleConvert = 360/float(FULL_CIRCLE);
-	
-	
 	if (!script_in_use())
 		return false;
 
@@ -628,14 +581,6 @@ bool script_Camera_Active(void)
 				world_view->origin = cameras[current_camera].location.position;
 			} else
 			{
-				/* if (camera_point.location.yaw == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.yaw
-					&& camera_point.location.pitch == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch
-					&& camera_point.location.position.x == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.position.x
-					&& camera_point.location.position.y == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.position.y
-					&& camera_point.location.position.z == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.position.z)
-			
-				*/
-				
 				if (offset_count == 0 && roll_count == 0) /* path end point reached */
 					current_path_point = cameras[current_camera].point;
 					
@@ -917,7 +862,7 @@ void s_Get_Tag_State(script_instruction inst)
 	tag = (int)floor(temp);
 	
 	
-	for (light_index= 0, light= lights; light_index<MAXIMUM_LIGHTS_PER_MAP; ++light_index, ++light)
+	for (light_index= 0, light= lights; light_index<short(MAXIMUM_LIGHTS_PER_MAP); ++light_index, ++light)
 	{
 		if (light->static_data.tag==tag)
 		{
@@ -2344,9 +2289,8 @@ void s_Monster_Attack(script_instruction inst)
 //[op3: other options]
 void s_Monster_Move(script_instruction inst)
 {
-	world_point2d theStart, *theEnd;	//where we start from. start is monster's pos, end is center of dest
-	short startPoly, endPoly;		//poly indexes for new_path
-	world_distance minSpace;		//3*monster_definition->radius
+	world_point2d *theEnd;	//center of dest
+	short endPoly;		//poly index for new_path
 	struct monster_pathfinding_data thePath;		//used by new_path
 	struct monster_data *theRealMonster;			//the monster data
 	struct monster_definition *theDef;				//the def of the monster
@@ -2474,7 +2418,6 @@ void s_Monster_Get_Immunity(script_instruction inst)
 	short monsterIndex;
 	struct monster_definition *theDef;
 	int16 damageType;
-	int theValue;
 //	dprintf("trying vulnerability\n");
 	switch(inst.mode)
 	{
@@ -2573,7 +2516,6 @@ void s_Monster_Get_Weakness(script_instruction inst)
 	short monsterIndex;
 	struct monster_definition *theDef;
 	int16 damageType;
-	int theValue;
 //	dprintf("trying weakness\n");
 	switch(inst.mode)
 	{
@@ -2672,7 +2614,6 @@ void s_Monster_Get_Friend(script_instruction inst)
 	short monsterIndex;
 	struct monster_definition *theDef;
 	int32 monsterClass;
-	int theValue;
 //	dprintf("trying firends\n");
 	switch(inst.mode)
 	{
@@ -2773,7 +2714,6 @@ void s_Monster_Get_Enemy(script_instruction inst)
 	short monsterIndex;
 	struct monster_definition *theDef;
 	int32 monsterClass;
-	int theValue;
 //	dprintf("trying enemies\n");
 	switch(inst.mode)
 	{
@@ -2875,7 +2815,7 @@ void s_Monster_Get_Item(script_instruction inst)
 	struct monster_data *theMonster;
 	short monsterIndex;
 	struct monster_definition *theDef;
-	int32 monsterClass;
+//	int32 monsterClass;
 //	dprintf("trying enemies\n");
 	switch(inst.mode)
 	{
@@ -3050,7 +2990,6 @@ void s_Set_Light_State(script_instruction inst)
 void s_Get_Light_State(script_instruction inst)
 {
 	float temp, temp2;
-	struct light_data *light;
 	
 	temp = inst.op1;
 	temp2 = inst.op2;
@@ -3156,9 +3095,9 @@ void s_Remove_Item(script_instruction inst)
 
 void s_Player_Control(script_instruction inst)
 {
-	uint32 action_flags;
-	short move_type;
-	short value;
+	uint32 action_flags = 0;
+	short move_type = 0;
+	short value = 0;
 	
 	switch(inst.mode)
 	{			

@@ -288,7 +288,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		Model.Bones.swap(SortedBones);
 		
 		// Find the vertex bone indices; this assumes that the vertices have already been read in.
-		for (int iv=0; iv<Model.VtxSources.size(); iv++)
+		for (unsigned iv=0; iv<Model.VtxSources.size(); iv++)
 		{
 			Model3D_VertexSource& VS = Model.VtxSources[iv];
 			int ibsx;
@@ -721,7 +721,7 @@ bool XML_FrameParser::End()
 {
 	// Some of the data was set up by child elements, so all the processing
 	// can be back here.
-	for (int b=0; b<ReadFrame.size(); b++)
+	for (unsigned b=0; b<ReadFrame.size(); b++)
 		ModelPtr->Frames.push_back(ReadFrame[b]);
 	
 	FrameTags.push_back(NT);

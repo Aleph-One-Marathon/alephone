@@ -133,9 +133,6 @@ initalizes lineCount to point to the beginning of every line, and initalizes
 all script variables to zero*/
 int load_script(int text_id)
 {
-	char *src;
-	int x;
-
 	if (!is_pfhortran_on())	/* we can't do too much if the pfhortran isn't running */
 		return script_FALSE;
 	
@@ -397,7 +394,7 @@ opcode passed in inst, a script_instuction.
 // LP: changed to return whether there was an instruction to execute
 bool execute_instruction(int inst)
 {
-	if (inst < 0 || inst >= current_script.size()) return false;
+	if (inst < 0 || inst >= int(current_script.size())) return false;
 	
 	if (current_script[inst].opcode == 0 || current_script[inst].opcode > NUMBER_OF_INSTRUCTIONS)
 		return true;

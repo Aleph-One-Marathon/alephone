@@ -34,8 +34,6 @@ Aug 29, 2000 (Loren Petrich):
 
 /* ---------- constants */
 
-// #define MAXIMUM_LIGHTS_PER_MAP 64
-
 enum /* default light types */
 {
 	_normal_light,

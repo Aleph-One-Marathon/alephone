@@ -520,7 +520,6 @@ void load_environment_from_preferences(
 	void)
 {
 	FileSpecifier File;
-	OSErr error;
 	struct environment_preferences_data *prefs= environment_preferences;
 
 #ifdef mac

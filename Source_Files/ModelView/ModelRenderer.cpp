@@ -366,7 +366,7 @@ static void IndexedQuickSort(SORT_INDEX_TYPE *First, SORT_INDEX_TYPE *Last)
 	
 	// Do some sort of fast pseudo-random generation of the next value of RandVal;
 	RandVal = (RandVal + Diff) >> 1;
-	if (RandVal > Diff) RandVal = Diff >> 1;
+	if (RandVal > unsigned(Diff)) RandVal = Diff >> 1;
 	Swap(*First,*(First+RandVal));
 	
 	// Choose a pivot value: the first one

@@ -27,6 +27,12 @@
 #ifndef _CSERIES_STRINGS_
 #define _CSERIES_STRINGS_
 
+#if defined(__GNUC__)
+#define PRINTF_STYLE_ARGS(n,m) __attribute__((format(printf,n,m)))
+#else
+#define PRINTF_STYLE_ARGS(n,m)
+#endif
+
 extern char temporary[256];
 #define ptemporary (*(Str255 *)temporary)
 
@@ -67,19 +73,19 @@ extern char* a1_p2cstr(
 extern char *csprintf(
 	char *buffer,
 	const char *format,
-	...);
+	...) PRINTF_STYLE_ARGS(2,3);
 
 extern unsigned char *psprintf(
 	unsigned char *buffer,
 	const char *format,
-	...);
+	...) PRINTF_STYLE_ARGS(2,3);
 
 extern void dprintf(
 	const char *format,
-	...);
+	...) PRINTF_STYLE_ARGS(1,2);
 
 extern void fdprintf(
 	const char *format,
-	...);
+	...) PRINTF_STYLE_ARGS(1,2);
 
 #endif

@@ -1020,7 +1020,7 @@ void deactivate_monster(
 // LP change: called with growable list
 bool possible_intersecting_monsters(
 	vector<short> *IntersectedObjectsPtr,
-	short maximum_object_count,
+	unsigned maximum_object_count,
 	short polygon_index,
 	bool include_scenery)
 {
@@ -1073,7 +1073,7 @@ bool possible_intersecting_monsters(
 						// LP change:
 						if (IntersectedObjectsPtr && IntersectedObjectsPtr->size()<maximum_object_count) /* do we have enough space to add it? */
 						{
-							short j;
+							unsigned j;
 							
 							/* only add this object_index if it's not already in the list */
 							vector<short>& IntersectedObjects = *IntersectedObjectsPtr;
@@ -1230,7 +1230,7 @@ short legal_monster_move(
 {
 	struct monster_data *monster= get_monster_data(monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
-	world_point2d *old_location= (world_point2d *) &object->location;
+//	world_point2d *old_location= (world_point2d *) &object->location;
 	short monster_count;
 	world_distance radius, height;
 	short obstacle_index= NONE;
@@ -2418,7 +2418,7 @@ void set_monster_action(
 			case _monster_is_dying_soft: shape= definition->soft_dying_shape; break;
 			case _monster_is_teleporting_in: shape= definition->teleport_in_shape; break;
 			case _monster_is_teleporting_out: shape= definition->teleport_out_shape; break;
-			default: dprintf("what is monster action #%d?", action); break;
+			default: dprintf("what is monster action #%d?", action); assert(false); break;
 		}
 		
 		shape= shape==NONE ? NONE : BUILD_DESCRIPTOR(definition->collection, shape);
@@ -2808,7 +2808,7 @@ static bool try_monster_attack(
 	struct monster_definition *definition= get_monster_definition(monster->type);
 	short repetitions= NONE;
 	short new_action= NONE, obstruction_index= NONE;
-	angle theta, delta_theta;
+	angle theta = 0;
 
 	if (MONSTER_HAS_VALID_TARGET(monster))
 	{
@@ -2819,7 +2819,7 @@ static bool try_monster_attack(
 		world_point3d _vector;
 	
 		theta= arctangent(destination.x-origin.x, destination.y-origin.y);
-		delta_theta= NORMALIZE_ANGLE(theta-object->facing);
+		angle delta_theta= NORMALIZE_ANGLE(theta-object->facing);
 		
 		if (!(definition->flags&_monster_cant_fire_backwards) || (delta_theta<QUARTER_CIRCLE+QUARTER_CIRCLE/2 || delta_theta>FULL_CIRCLE-QUARTER_CIRCLE-QUARTER_CIRCLE/2))
 		{

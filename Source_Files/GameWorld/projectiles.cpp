@@ -163,9 +163,6 @@ static short adjust_projectile_type(world_point3d *origin, short polygon_index, 
 
 static void update_guided_projectile(short projectile_index);
 
-static void get_projectile_media_detonation_effect(short polygon_index, short media_detonation_effect,
-	short *detonation_effect);
-
 // LP change: added a location of hitting something;
 // it may be different from the new location,
 // as may happen for a "penetrates media boundary" projectile.
@@ -663,7 +660,10 @@ static short adjust_projectile_type(
 	struct projectile_definition *definition= get_projectile_definition(type);
 	short media_index= get_polygon_data(polygon_index)->media_index;
 	
-	(void) (owner_index, owner_type, intended_target_index, damage_scale);
+	(void) (owner_index);
+	(void) (owner_type);
+	(void) (intended_target_index);
+	(void) (damage_scale);
 	
 	if (media_index!=NONE)
 	{
@@ -946,10 +946,10 @@ uint16 translate_projectile(
 		then we hit this before we hit the wall, because the object list is checked against the
 		clipped new_location. */
 	{
-		world_distance best_intersection_distance= 0;
+		world_distance best_intersection_distance = 0;
 		world_distance distance_traveled;
-		world_distance best_radius;
-		short best_intersection_object= NONE;
+		world_distance best_radius = 0;
+		short best_intersection_object = NONE;
 		short i;
 		
 		distance_traveled= distance2d((world_point2d *)old_location, (world_point2d *)new_location);

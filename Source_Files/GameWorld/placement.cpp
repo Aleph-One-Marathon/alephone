@@ -370,7 +370,7 @@ short get_random_player_starting_location_and_facing(
 {
 	int32 monster_distance, player_distance;
 	uint32 best_distance;
-	short starting_location_index, maximum_starting_locations, offset, index, best_index = NONE;
+	short starting_location_index, maximum_starting_locations, offset, index = NONE, best_index = NONE;
 	struct object_location current_location;
 	
 	maximum_starting_locations= get_player_starting_location_and_facing(team, 0, NULL);

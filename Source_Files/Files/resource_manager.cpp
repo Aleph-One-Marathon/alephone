@@ -152,7 +152,7 @@ bool res_file_t::read_map(void)
 	// Read map header
 	SDL_RWseek(f, map_offset + 24, SEEK_SET);
 	uint32 type_list_offset = map_offset + SDL_ReadBE16(f);
-	uint32 name_list_offset = map_offset + SDL_ReadBE16(f);
+	//uint32 name_list_offset = map_offset + SDL_ReadBE16(f);
 	//printf(" type_list_offset %d, name_list_offset %d\n", type_list_offset, name_list_offset);
 
 	// Verify integrity of map header
@@ -432,7 +432,7 @@ bool res_file_t::get_ind_resource(uint32 type, int index, LoadedResource &rsrc) 
 	// Find resource in map
 	type_map_t::const_iterator i = types.find(type);
 	if (i != types.end()) {
-		if (index < 1 || index > i->second.size())
+		if (index < 1 || index > int(i->second.size()))
 			return false;
 		id_map_t::const_iterator j = i->second.begin();
 		for (int k=1; k<index; k++)

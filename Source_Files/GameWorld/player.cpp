@@ -153,17 +153,11 @@ Feb 20, 2002 (Woody Zenfell):
 // ZZZ: no longer relevant
 //#define ACTION_QUEUE_BUFFER_INDEX_MASK 0xff
 
-// These are now variables, because they can be set with an XML parser
+// These are variables, because they can be set with an XML parser
 static short kINVISIBILITY_DURATION = (70*TICKS_PER_SECOND);
 static short kINVINCIBILITY_DURATION = (50*TICKS_PER_SECOND);
 static short kEXTRAVISION_DURATION = (3*TICKS_PER_MINUTE);
 static short kINFRAVISION_DURATION = (3*TICKS_PER_MINUTE);
-/*
-#define kINVISIBILITY_DURATION (70*TICKS_PER_SECOND)
-#define kINVINCIBILITY_DURATION (50*TICKS_PER_SECOND)
-#define kEXTRAVISION_DURATION (3*TICKS_PER_MINUTE)
-#define kINFRAVISION_DURATION (3*TICKS_PER_MINUTE)
-*/
 
 #define MINIMUM_REINCARNATION_DELAY (TICKS_PER_SECOND)
 #define NORMAL_REINCARNATION_DELAY (10*TICKS_PER_SECOND)
@@ -475,10 +469,9 @@ void update_players(ActionQueues* inActionQueuesToUse)
 	
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{
-		struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
 		uint32 action_flags = inActionQueuesToUse->dequeueActionFlags(player_index);
 		
-		if (action_flags==NONE)
+		if (action_flags == 0xffffffff)
 		{
 			// net dead
 			if (!PLAYER_IS_DEAD(player))
@@ -617,7 +610,7 @@ void damage_player(
 	}
 
 	{
-		short i;
+		unsigned i;
 		
 		for (i=0,definition=damage_response_definitions;
 				definition->type!=damage_type && i<NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS;
@@ -1505,9 +1498,8 @@ static void give_player_initial_items(
 	short player_index)
 {
 	struct player_data *player= get_player_data(player_index);
-	short loop;
 
-	for(loop= 0; loop<NUMBER_OF_PLAYER_INITIAL_ITEMS; ++loop)
+	for(unsigned loop= 0; loop<NUMBER_OF_PLAYER_INITIAL_ITEMS; ++loop)
 	{
 		/* Get the item.. */
 		assert(player_initial_items[loop]>=0 && player_initial_items[loop]<NUMBER_OF_ITEMS);
@@ -1528,10 +1520,9 @@ static void remove_dead_player_items(
 {
 	struct player_data *player= get_player_data(player_index);
 	short item_type;
-	short i;
 
 	// subtract all initial items	
-	for (i= 0; i<NUMBER_OF_PLAYER_INITIAL_ITEMS; ++i)
+	for (unsigned i= 0; i<NUMBER_OF_PLAYER_INITIAL_ITEMS; ++i)
 	{
 		if (player->items[player_initial_items[i]]>0)
 		{
@@ -1709,7 +1700,7 @@ static void set_player_dead_shape(
 static short calculate_player_team(
 	short base_team)
 {
-	short team;
+	short team = NONE;
 
 	/* Starting locations are based on the team type. */
 	switch(GET_GAME_TYPE())

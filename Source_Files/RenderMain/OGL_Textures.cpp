@@ -389,6 +389,7 @@ inline bool IsLandscapeFlatColored()
 }
 
 
+#if 0
 static void MakeAverage(int Length, GLuint *Buffer)
 {
 	float Sum[4];
@@ -417,6 +418,8 @@ static void MakeAverage(int Length, GLuint *Buffer)
 	for (int k=0; k<Length; k++)
 		Buffer[k] = AvgVal;
 }
+#endif
+
 
 // Modify color-table index if necessary;
 // makes it the infravision or silhouette one if necessary

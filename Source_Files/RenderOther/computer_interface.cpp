@@ -92,8 +92,6 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 // checkpoint with scrolling text
 // don't use charwidth
 
-#pragma segment drawing
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -1229,7 +1227,7 @@ static void fill_terminal_with_static(
 static terminal_text_t *get_indexed_terminal_data(
 	short id)
 {
-	if (id < 0 || id >= map_terminal_text.size())
+	if (id < 0 || id >= int(map_terminal_text.size()))
 		return NULL;
 
 	terminal_text_t *t = &map_terminal_text[id];
@@ -1372,7 +1370,6 @@ static void next_terminal_state(
 	short player_index)
 {
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
-	struct player_data *player= get_player_data(player_index);
 
 	switch(terminal->state)
 	{
@@ -2452,7 +2449,7 @@ static struct terminal_groupings *get_indexed_grouping(
 	terminal_text_t *data,
 	short index)
 {
-	if (index < 0 || index >= data->groupings.size())
+	if (index < 0 || index >= int(data->groupings.size()))
 		return NULL;
 
 	return &data->groupings[index];
@@ -2462,7 +2459,7 @@ static struct text_face_data *get_indexed_font_changes(
 	terminal_text_t *data,
 	short index)
 {
-	if (index < 0 || index >= data->font_changes.size())
+	if (index < 0 || index >= int(data->font_changes.size()))
 		return NULL;
 
 	return &data->font_changes[index];
