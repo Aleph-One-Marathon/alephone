@@ -320,6 +320,7 @@ void fade_out_music(
 	if (machine_has_quicktime())
 	{
 		MusicVolumeChange = - 1.0/duration;
+		return;
 	}
 
 	if(music_playing())
