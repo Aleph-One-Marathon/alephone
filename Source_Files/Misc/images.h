@@ -14,8 +14,10 @@ Aug 26, 2000 (Loren Petrich)
 	Added object-oriented file handling
 */
 
-class FileSpecifier;
-class LoadedResource;
+// LP: CodeWarrior complains unless I give the full definition of these classes
+#include "FileHandler.h"
+// class FileSpecifier;
+// class LoadedResource;
 
 extern void initialize_images_manager(void);
 
