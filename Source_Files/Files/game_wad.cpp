@@ -121,7 +121,8 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 // For packing and unpacking some of the stuff
 #include "Packing.h"
 
-#include "motion_sensor.h" // ZZZ for reset_motion_sensor()
+#include "motion_sensor.h"	// ZZZ for reset_motion_sensor()
+#include "preferences.h"	// ZZZ for environment_preferences->non_bungie_warning
 
 #ifdef env68k
 #pragma segment file_io
