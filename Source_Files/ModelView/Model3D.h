@@ -135,6 +135,10 @@ struct Model3D
 	vector<Model3D_VertexSource> VtxSources;
 	Model3D_VertexSource *VtxSrcBase() {return &VtxSources[0];}
 	
+	// Normal-source array; has the same dimension as the normals if used.
+	vector<GLfloat> NormSources;
+	GLfloat *NormSrcBase() {return &NormSources[0];}
+	
 	// Vertex-source inverse indices:
 	// list of all the vertex indices associated with each vertex source,
 	// with a list of pointer indices into that list. Which has an extra pointer
@@ -173,8 +177,11 @@ struct Model3D
 	vector<GLushort> SeqFrmPointers;
 	GLushort *SFPtrBase() {return &SeqFrmPointers[0];}
 	
-	// The overall transform:
-	Model3D_Transform Transform;
+	// True number of sequences:
+	int TrueNumSeqs() {return max(int(SeqFrmPointers.size()-1),0);}
+	
+	// Add-on transforms for the positions and the normals
+	Model3D_Transform TransformPos, TransformNorm;
 	
 	// Bounding box (first index: 0 = min, 1 = max)
 	GLfloat BoundingBox[2][3];
@@ -231,7 +238,7 @@ struct Model3D
 	bool FindPositions(GLshort SeqIndex, GLshort FrameIndex);
 	
 	// Constructor
-	Model3D() {FindBoundingBox(); Transform.Identity();}
+	Model3D() {FindBoundingBox(); TransformPos.Identity(); TransformNorm.Identity();}
 };
 
 #endif

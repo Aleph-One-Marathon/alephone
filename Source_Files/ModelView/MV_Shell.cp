@@ -481,6 +481,10 @@ void DrawMainWindow()
 		case ShowAnim_Frames:
 			Model.FindPositions(ThisFrame);
 			break;
+		
+		case ShowAnim_Sequences:
+			Model.FindPositions(ThisSeq,ThisFrame);
+			break;
 		}
 		
 		// Draw the bounding box
@@ -672,13 +676,19 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 		
 		case '[':
 		case '{':
-			// Must figure out how to do sequences
+			if (--ThisSeq < 0)
+				ThisSeq = Model.TrueNumSeqs() - 1;
+			ThisFrame = 0;
+			printf("Sequence %d %d\n",ThisSeq,ThisFrame);
 			glutPostRedisplay();
 			break;
 		
 		case ']':
 		case '}':
-			// Must figure out how to do sequences
+			if (++ThisSeq >= Model.TrueNumSeqs())
+				ThisSeq = 0;
+			ThisFrame = 0;
+			printf("Sequence %d %d\n",ThisSeq,ThisFrame);
 			glutPostRedisplay();
 			break;
 		
@@ -693,7 +703,9 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 				break;
 			
 			case ShowAnim_Sequences:
-			// Must figure out how to do sequences
+				if (--ThisFrame < 0)
+					ThisFrame = Model.NumSeqFrames(ThisSeq)-1;
+				printf("Sequence %d %d\n",ThisSeq,ThisFrame);
 				break;
 			}
 			
@@ -711,7 +723,9 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 				break;
 			
 			case ShowAnim_Sequences:
-			// Must figure out how to do sequences
+				if (++ThisFrame >= Model.NumSeqFrames(ThisSeq))
+					ThisFrame = 0;
+				printf("Sequence %d %d\n",ThisSeq,ThisFrame);
 				break;
 			}
 			
