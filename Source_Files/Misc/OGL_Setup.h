@@ -42,7 +42,9 @@ bool OGL_IsPresent();
 // (they are in the preferences data)
 
 // There are separate texturing options for each kind of texture,
-// as listed below
+// as listed below; this is so that one can degrade texture quality independently,
+// and have (say) high-quality walls and weapons in hand, medium-quality inhabitant sprites,
+// and low-quality landscapes.
 enum
 {
 	OGL_Txtr_Wall,
