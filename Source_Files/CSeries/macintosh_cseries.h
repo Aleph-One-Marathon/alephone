@@ -54,6 +54,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #define BIG_ENDIAN
 #define DEBUG
 #undef ALEPHONE_LITTLE_ENDIAN
+#define COMPLAIN_BAD_ALLOCS
 
 #include "cstypes.h"
 
