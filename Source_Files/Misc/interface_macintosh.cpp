@@ -750,7 +750,7 @@ void show_movie(
 // "Has Quicktime" test moved to shell_macintosh.cpp
 
 
-int should_restore_game_networked() {
+size_t should_restore_game_networked() {
 	// We should return 1 for netgame, 0 for single-player game, and -1 (NONE) for "cancel".
 	// Currently we just choose based on the number of players, should be right most of the time.
 	return dynamic_world->player_count > 1 ? 1 : 0;
