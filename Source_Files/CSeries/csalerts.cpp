@@ -21,7 +21,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 
 April 22, 2003 (Woody Zenfell):
-        Now dumping alert text etc. with Logging as well
+	Now dumping alert text etc. with Logging as well
 */
 
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
@@ -29,7 +29,7 @@ April 22, 2003 (Woody Zenfell):
 #include <string.h>
 
 #if defined(EXPLICIT_CARBON_HEADER)
-    #include <Carbon/Carbon.h>
+	#include <Carbon/Carbon.h>
 /*
 #else
 #include <Dialogs.h>
@@ -43,7 +43,16 @@ April 22, 2003 (Woody Zenfell):
 #include "Logging.h"
 #include "TextStrings.h"
 
+// Update the compiler to know that ExitToShell doesn't return either
+extern void ExitToShell(void) NORETURN;
+
+/* ---------- globals */
+#ifndef TARGET_API_MAC_CARBON
 static Str255 alert_text;
+#endif
+static char assert_text[256];
+
+/* ---------- code */
 
 void alert_user(
 	short severity,
@@ -76,12 +85,12 @@ void alert_user(
 	InitCursor();
 	switch (severity) {
 	case infoError:
-                logError1("alert: %s",TS_GetCString(resid,item));
+		logError1("alert: %s",TS_GetCString(resid,item));
 		Alert(129,NULL);
 		break;
 	case fatalError:
 	default:
-                logFatal1("fatal alert: %s",TS_GetCString(resid,item));
+		logFatal1("fatal alert: %s",TS_GetCString(resid,item));
 		Alert(128,NULL);
 		exit(1);
 	}
@@ -91,28 +100,26 @@ void alert_user(
 void vpause(
 	char *message)
 {
-	long len;
-
 #ifdef TARGET_API_MAC_CARBON
 	InitCursor();
 	SimpleAlert(kAlertNoteAlert,message);
 	logWarning1("vpause: %s", message);
 #else
-	len=strlen(message);
+	long len=strlen(message);
 	if (len>255)
 		len=255;
 	alert_text[0]=len;
 	memcpy(alert_text+1,message,len);
 	ParamText(alert_text,"\p","\p","\p");
 	InitCursor();
-        logWarning1("vpause: %s", message);
+	logWarning1("vpause: %s", message);
 	Alert(129,NULL);
 #endif
 }
 
 void halt(void)
 {
-        logFatal("halt called");
+	logFatal("halt called");
 	Debugger();
 	ExitToShell();
 }
@@ -120,27 +127,23 @@ void halt(void)
 void vhalt(
 	char *message)
 {
-	long len;
-
 #ifdef TARGET_API_MAC_CARBON
 	InitCursor();
 	SimpleAlert(kAlertStopAlert,message);
 	logFatal1("vhalt: %s", message);
 #else
-	len=strlen(message);
+	long len=strlen(message);
 	if (len>255)
 		len=255;
 	alert_text[0]=len;
 	memcpy(alert_text+1,message,len);
 	ParamText(alert_text,"\p","\p","\p");
 	InitCursor();
-        logFatal1("vhalt: %s", message);
+	logFatal1("vhalt: %s", message);
 	Alert(128,NULL);
 #endif
 	ExitToShell();
 }
-
-static char assert_text[256];
 
 void _alephone_assert(
 	char *file,
@@ -173,4 +176,3 @@ DialogItemIndex SimpleAlert(AlertType Type, const char *Message, const char *Exp
 	return Button;
 }
 #endif
-
