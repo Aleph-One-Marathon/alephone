@@ -248,6 +248,10 @@ void main(
 static XML_DataBlock XML_DataBlockLoader;
 static XML_ResourceFork XML_ResourceForkLoader;
 
+// This is so that one will not quit if one presses "escape"
+// after using a terminal
+static int EscapeKeyRefractoryTime = 0;
+
 
 static void initialize_application_heap(
 	void)
@@ -470,6 +474,11 @@ void handle_game_key(
 					displaying_fps= !displaying_fps;
 				}
 				break;
+			
+			case 0x1b:
+				// "Escape" posts a "quit" event
+				PostLocalEvent(LocalEvent_Quit);
+				break;
 						
 			default: // well, let's check the function keys then, using the keycodes.
 				switch(_virtual)
@@ -624,7 +633,7 @@ void handle_game_key(
 						// Reset OpenGL textures
 						OGL_ResetTextures();
 						break;
-						
+					
 					default:
 						if(get_game_controller()==_demo)
 						{
@@ -1236,6 +1245,19 @@ static int LocalEventIndex = 0;
 // LP addition: post any events found in the local event queue
 void PostOSEventFromLocal()
 {
+	// Don't quit when in terminal mode!
+	if (player_in_terminal_mode(local_player_index))
+	{
+		EscapeKeyRefractoryTime = 15;
+		ClearLocalEvent(LocalEvent_Quit);
+	}
+	// Or some time after! (half a second of ticks)
+	else if (EscapeKeyRefractoryTime > 0)
+	{
+		EscapeKeyRefractoryTime--;
+		ClearLocalEvent(LocalEvent_Quit);
+	}
+
 	int SavedLocalEventIndex = LocalEventIndex;
 	for (int i=0; i<32; i++)
 	{
