@@ -157,7 +157,7 @@ enum {
 
 /* ---------- globals */
 
-static accepted_into_game;
+static int accepted_into_game;
 static ListHandle network_list_box= (ListHandle) NULL;
 
 // these speeds correspond to what's in the popup menu

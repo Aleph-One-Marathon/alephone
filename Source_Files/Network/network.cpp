@@ -1191,7 +1191,7 @@ be acknowledged) at a time.
 void NetDDPPacketHandler(
 	DDPPacketBufferPtr packet)
 {
-	static already_here= false;
+	static int already_here= false;
 	NetPacketHeaderPtr header= (NetPacketHeaderPtr) packet->datagramData;
 	
 	assert(!already_here);
