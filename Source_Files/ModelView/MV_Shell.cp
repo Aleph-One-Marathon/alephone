@@ -28,13 +28,11 @@
 #if defined (__APPLE__) && defined (__MACH__)
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
-# include <GLUT/glut.h>
-#include <QuickTime/QuickTime.h>
+# include <OpenGL/glut.h>
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
 # include <GL/glut.h>
-#include <QuickTime.h>
 #endif
 #include "cseries.h"
 #include "FileHandler.h"
@@ -146,13 +144,11 @@ void LoadModelAction(int ModelType)
 		if (File.ReadDialog(-1,"Model Type: 3D Studio Max"))
 			Success = LoadModel_Studio(File, Model);
 		break;
-#if !(defined(__APPLE__) && defined(__MACH__))
 	case Model_QD3D:
 		TypeCode = '3DMF';
 		if (File.ReadDialog(1,"Model Type: QuickDraw 3D"))
 			Success = LoadModel_QD3D(File, Model);
 		break;
-#endif
 	case Model_Dim3:
 		TypeCode = 'TEXT';
 		if (File.ReadDialog(1,"Model Type: Dim3"))
@@ -167,10 +163,14 @@ void LoadModelAction(int ModelType)
 	File.GetName(Name);
 	glutSetWindowTitle(Name);
 	
-	// Force the main window to use the model's bounding box
-	// And normalize the normals
-	Model.FindBoundingBox();
+	// Assume that a boned model already has a bounding box;
+	// most boneless (static) models do not have such bounding boxes.
+	if (Model.Bones.empty())
+		Model.FindBoundingBox();
+	
+	// Just in case they are off...
 	Model.NormalizeNormals();
+	
 	ResizeMainWindow(glutGet(GLUT_WINDOW_WIDTH),glutGet(GLUT_WINDOW_HEIGHT));
 	
 	// Dump stats
@@ -765,6 +765,7 @@ int main(int argc, char **argv)
 	SetDebugOutput_Wavefront(stdout);
 	SetDebugOutput_Studio(stdout);
 	SetDebugOutput_QD3D(stdout);
+	SetDebugOutput_Dim3(stdout);
 
 	// Set up shader object
 	Shaders[0].Flags = 0;
