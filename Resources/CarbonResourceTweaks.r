@@ -75,7 +75,7 @@ resource 'DITL' (3000, "Net Game Setup") {
 		{355, 486, 375, 554},
 		Button {
 			enabled,
-			"Ok"
+			"OK"
 		},
 		/* [2] */
 		{355, 407, 375, 475},
@@ -622,7 +622,7 @@ resource 'MENU' (2004, "Difficulties") {
 	"Player- Difficulties",
 	{	/* array: 5 elements */
 		/* [1] */
-		"Wuss", noIcon, noKey, noMark, plain,
+		"Kindergarten", noIcon, noKey, noMark, plain,
 		/* [2] */
 		"Easy", noIcon, noKey, noMark, plain,
 		/* [3] */
