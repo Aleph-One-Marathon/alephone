@@ -114,7 +114,8 @@ enum /* errors in strERRORS */
 	cantFindMap,	// called when the save game can't find the map.  Reverts to default map.
 	cantFindReplayMap, // called when you can't find the map that the replay references..
 	notEnoughNetworkMemory,
-        luascriptconflict
+	luascriptconflict,
+	replayVersionTooNew
 };
 
 enum /* animation types */

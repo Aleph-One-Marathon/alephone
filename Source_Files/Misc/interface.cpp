@@ -137,7 +137,11 @@ extern TP2PerfGlobals perf_globals;
 #include "FileHandler.h"
 
 /* Change this when marathon changes & replays are no longer valid */
-#define RECORDING_VERSION 0
+enum recording_version {
+	aleph_recording_version= 0,
+};
+const short default_recording_version= aleph_recording_version;
+const short max_handled_recording= aleph_recording_version;
 
 #include "screen_definitions.h"
 #include "interface_menus.h"
@@ -1764,18 +1768,26 @@ static bool begin_game(
 			if(success)
 			{
 				uint32 unused1;
-				short unused2;
+				short recording_version;
 			
 				get_recording_header_data(&number_of_players, 
-					&entry.level_number, &unused1, &unused2,
+					&entry.level_number, &unused1, &recording_version,
 					starts, &game_information);
 
-				entry.level_name[0] = 0;
-				game_information.game_options |= _overhead_map_is_omniscient;
-				record_game= false;
-                // ZZZ: until films store behavior modifiers, we must require
-                // that they record and playback only with standard modifiers.
-                standardize_player_behavior_modifiers();
+				if(recording_version > max_handled_recording)
+				{
+					alert_user(infoError, strERRORS, replayVersionTooNew, 0);
+					success= false;
+				}
+				else
+				{
+					entry.level_name[0] = 0;
+					game_information.game_options |= _overhead_map_is_omniscient;
+					record_game= false;
+					// ZZZ: until films store behavior modifiers, we must require
+					// that they record and playback only with standard modifiers.
+					standardize_player_behavior_modifiers();
+				}
 			}
 			break;
 			
@@ -1821,7 +1833,7 @@ static bool begin_game(
 		if(record_game)
 		{
 			set_recording_header_data(number_of_players, entry.level_number, get_current_map_checksum(), 
-				RECORDING_VERSION, starts, &game_information);
+				default_recording_version, starts, &game_information);
 			start_recording();
 		}
 		

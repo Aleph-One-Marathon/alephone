@@ -83,6 +83,7 @@ static char* sStringSetNumber128[] = {
     "Aleph One was unable to find the map that this film was recorded on, so the film cannot be replayed.",
     "Sorry, Aleph One needs 6000k free to play in a networked game.  Give Aleph One more memory and try again.",
     "There appears to be a script conflict.  Perhaps mml and netscript are having differences over who gets to control lua.  Don't be surprised if you get unexpected script behavior or out of sync.",
+    "This replay was created with a newer version of Aleph One and cannot be played with this version. Upgrade Aleph One and try again.",
 };
 
 // STR# Resource: "Filenames"
