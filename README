@@ -14,10 +14,10 @@ License
 Aleph One is available under the terms of the GNU General Public License.
 See the file "COPYING" that is included in the distribution for details.
 
-The BeOS version of Aleph One is linked against a special version of SDL
-which is provided to you under the terms of the GNU Library General Public
-License. See the file "COPYING.SDL" that is included in the distribution
-for details. The source code for this version of SDL is available on
+The BeOS version of Aleph One is statically linked against SDL which is
+provided to you under the terms of the GNU Library General Public License.
+See the file "COPYING.SDL" that is included in the distribution for details.
+The source code for the version of SDL used is available on
 
   http://www.uni-mainz.de/~bauec002/A1Main.html
 
@@ -440,7 +440,7 @@ them:
 
 And a list of known bugs:
 
- - OpenGL multitexturing crashes NVIDIA GLX 0.9-5 and Mesa GL, reason unknown
+ - OpenGL multitexturing crashes NVIDIA GLX 0.9-6 and Mesa GL, reason unknown
 
 If you find a bug that's not already in the list above, please submit it
 using the bug database on SourceForge:

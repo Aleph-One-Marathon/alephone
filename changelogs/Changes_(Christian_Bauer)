@@ -1,5 +1,11 @@
 Change log of the SDL version of Aleph One
 
+January 28, 2001
+ - Makefile.BeOS fixed
+ - under BeOS, Aleph One now supports reading resource forks from "MACOS:RFORK"
+   attributes; this makes copying Marathon data files from HFS CD-ROMs a simple
+   matter of drag-and-drop
+
 November 24, 2000
  - implemented fading and gamma table effects
  - now requires SDL 1.1.6 (SDL_SetPalette() and SDL_SetGammaRamp())

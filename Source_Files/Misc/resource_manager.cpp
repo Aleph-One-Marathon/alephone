@@ -20,6 +20,10 @@
 extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length);
 extern bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length);
 
+// From csfiles_beos.cpp
+bool has_rfork_attribute(const char *file);
+SDL_RWops *sdl_rw_from_rfork(const char *file, bool writable);
+
 
 // Structure for open resource file
 struct res_file_t {
@@ -191,7 +195,14 @@ SDL_RWops *open_res_file(FileSpecifier &file)
 	resources_file_name += ".resources";
 
 	// Open file, try <name>.rsrc first, then <name>.resources, then <name>
-	SDL_RWops *f = SDL_RWFromFile(rsrc_file_name.c_str(), "rb");
+	SDL_RWops *f = NULL;
+#ifdef __BEOS__
+	// On BeOS, try MACOS:RFORK attribute first
+	if (has_rfork_attribute(file.GetPath()))
+		f = sdl_rw_from_rfork(file.GetPath(), false);
+#endif
+	if (f == NULL)
+		f = SDL_RWFromFile(rsrc_file_name.c_str(), "rb");
 	if (f == NULL)
 		f = SDL_RWFromFile(resources_file_name.c_str(), "rb");
 	if (f == NULL)

@@ -1,9 +1,9 @@
 Aleph One/SDL BeOS Installation Instructions
 ============================================
 
-The BeOS version of Aleph One/SDL is statically linked against a special
-version of SDL, so you don't need to install SDL to play Aleph One on BeOS
-(unless you want to compile the Aleph One sources).
+The BeOS version of Aleph One/SDL is statically linked against SDL, so you
+don't need to install SDL to play Aleph One on BeOS (unless you want to
+compile the Aleph One sources).
 
 
 Installing the program
@@ -39,22 +39,25 @@ The archive contains the files "Images", "Map", "Shapes", "Sounds" and
 application.
 
 Alternatively, if you have a Marathon 2, Marathon Infinity or Marathon
-Trilogy Box Set CD, you can copy the needed files from the CD. This is a bit
-complicated, however, due to some ideosyncracies of the Mac HFS file system
-(every Mac file is really two files, one "data fork" and one "resource
-fork"). Aleph One/SDL needs these files:
+Trilogy Box Set CD, you can copy the needed files from the CD. Aleph One/SDL
+needs these files:
 
- "Images" (resource fork)
- "Map" (combined data and resource fork of "Map" file in AppleSingle or
-    MacBinary II format; or just the data fork, in which case the resource
-    fork must be in a file "Map.resources")
- "Music" (data fork, optional, not included in Demo)
- "Shapes" (data fork)
- "Sounds" (data fork)
+ "Images"
+ "Map"
+ "Music"
+ "Shapes"
+ "Sounds"
 
-Here's how to copy these files from a Mac Marathon CD under BeOS:
+Simply mount your Marathon CD under BeOS and drag these five files from the
+CD to your Aleph One application directory. The "Images" file will appear to
+be 0 bytes in size, but that's OK. The data is contained in a hidden file
+attribute ("MACOS:RFORK"). The "Map" file also has such an attribute. If you
+have installed the BeOS development tools, you can look at the file
+attributes with the "QuickRes" application.
 
-  <to be written...>
+NOTE: You have to copy the files using the Tracker. If you do it from the
+Shell with "cp", the file attributes will not get copied and the files will
+be rendered useless.
 
 
 Compiling from source
