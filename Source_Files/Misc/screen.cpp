@@ -134,6 +134,7 @@ Dec 29, 2000 (Loren Petrich):
 June 20, 2001 (Loren Petrich):
 	Removing the DrawSprocket and replacing it with the Display Manager,
 	so as to have less buggy resolution-switching. Something like Moo itself.
+	Some of the code was inspired by Dietrich Epp's successful resolution-switching code.
 */
 
 /*
@@ -259,7 +260,10 @@ static bool enough_memory_for_16bit, enough_memory_for_32bit, enough_memory_for_
 
 //static bool restore_depth_on_exit; /* otherwise restore CLUT */
 //static short restore_depth, restore_flags; /* for SetDepth on exit */
-static GDSpec restore_spec, resolution_restore_spec;
+static GDSpec restore_spec; // , resolution_restore_spec;
+
+// For the Display Manager to restore the screen depth when done
+static unsigned long RestoreScreenMode = 0;
 
 // LP addition: a GWorld for the Heads-Up Display
 // (if not allocated, then it's the null pointer).
@@ -383,11 +387,18 @@ void initialize_screen(
 	}
 	if (!world_device) alert_user(fatalError, strERRORS, badMonitor, -1);
 #endif
-	
-	// When this is working, uncomment it and also change appropriately
-	// do_preferences() in interface_macintosh.cpp
-	
-	// Use the Display Manager to change the display resolution
+
+	// Grab the initial screen-depth mode for restoring when done
+	if (!screen_initialized)
+	{
+		VDSwitchInfoRec SwitchInfo;
+		OSErr Err = DMGetDisplayMode(world_device,&SwitchInfo);
+		if (Err == noErr)
+			RestoreScreenMode = SwitchInfo.csData;
+	}
+		
+	// Use the Display Manager to change the display resolution;
+	// otherwise, change to the one to restore
 	if (graphics_preferences->screen_mode.fullscreen)
 	{
 		short msize = screen_mode.size;
@@ -396,15 +407,16 @@ void initialize_screen(
 		DM_ChangeResolution(world_device, graphics_preferences->device_spec.bit_depth,
 			VS.OverallWidth, VS.OverallHeight);
 	}
+	else if (screen_initialized)
+	{
+		unsigned long TempBitDepth = restore_spec.bit_depth;
+		DMSetDisplayMode(world_device,RestoreScreenMode,&TempBitDepth,NULL,NULL);
+	}
 	
 	if (!screen_initialized)
 	{
 		graphics_preferences->device_spec.width= DESIRED_SCREEN_WIDTH;
 		graphics_preferences->device_spec.height= DESIRED_SCREEN_HEIGHT;
-#if 0
-		BuildGDSpec(&resolution_restore_spec, world_device);
-		SetResolutionGDSpec(&graphics_preferences->device_spec);
-#endif
 		
 		/* get rid of the menu bar */
 		myHideMenuBar(GetMainDevice());
@@ -521,12 +533,6 @@ void ReloadViewContext()
 				OGL_StartRun((CGrafPtr)screen_window);
 			else screen_mode.acceleration = _no_acceleration;
 			break;
-		
-		/*
-		case _valkyrie_acceleration:
-			valkyrie_begin();
-			break;
-		*/
 	}
 }
 
@@ -575,12 +581,6 @@ void enter_screen(
 				OGL_StartRun((CGrafPtr)screen_window);
 			else screen_mode.acceleration = _no_acceleration;
 			break;
-		
-		/*
-		case _valkyrie_acceleration:
-			valkyrie_begin();
-			break;
-		*/
 	}
 
 	return;
@@ -592,26 +592,7 @@ void exit_screen(
 
 	// LP addition: doing OpenGL if present
 	OGL_StopRun();
-	
-	// Deallocate the drawing buffer
-	/*
-	if (world_pixels)
-	{
-		myDisposeGWorld(world_pixels);
-		world_pixels = NULL;
-	}
-	*/
-	
-	/*
-	switch (screen_mode.acceleration)
-	{
-		case _valkyrie_acceleration:
-			change_screen_mode(&screen_mode, false);
-			valkyrie_end();
-			break;
-	}
-	*/
-	
+		
 	return;
 }
 
@@ -641,83 +622,6 @@ void change_screen_mode(
 	
 	// "Redraw" means clear the screen
 	if (redraw) ClearScreen();
-	
-// LP change: beginning of obsolete part
-#if 0
-	short width, height;
-	Rect bounds;
-	GrafPtr old_port;
-	OSErr error;
-
-//	if (mode->high_resolution && mode->size==_full_screen && !enough_memory_for_full_screen)
-//	{
-//		mode->high_resolution= false;
-//	}
-	/*
-	switch (mode->acceleration)
-	{
-		case _valkyrie_acceleration:
-			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
-			{
-				mode->high_resolution= false;
-			}
-			break;
-	}
-	*/
-	/* This makes sure that the terminal and map use their own resolutions */
-	world_view->overhead_map_active= false;
-	world_view->terminal_mode_active= false;
-
-	if (redraw)
-	{
-		GetPort(&old_port);
-		SetPort(screen_window);
-		calculate_destination_frame(mode->size==_full_screen ? _full_screen : _100_percent, true, &bounds);
-		PaintRect(&bounds);
-		SetPort(old_port);
-	}
-	
-	/*
-	switch (mode->acceleration)
-	{
-		case _valkyrie_acceleration:
-			calculate_destination_frame(mode->size, mode->high_resolution, &bounds);
-			OffsetRect(&bounds, -screen_window->portRect.left, -screen_window->portRect.top);
-			valkyrie_initialize(world_device, true, &bounds, 0xfe);
-			if (redraw) valkyrie_erase_graphic_key_frame(0xfe);
-			break;
-	}
-	*/
-	
-	/* save parameters */
-	screen_mode= *mode;
-	
-	// LP addition: whether one wants to stop sounds... actually, never
-	/*
-	if (stop_sounds)
-		free_and_unlock_memory(); *//* do our best to give UpdateGWorld memory */
-	
-	/* adjust the size of our GWorld based on mode->size and mode->resolution */
-	calculate_adjusted_source_frame(mode, &bounds);
-	error= myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
-	if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
-	
-	calculate_source_frame(mode->size, mode->high_resolution, &bounds);
-	width= RECTANGLE_WIDTH(&bounds), height= RECTANGLE_HEIGHT(&bounds);
-
-	/* adjust and initialize the world_view structure */
-#ifdef CYBERMAXX
-	world_view->screen_width= width;
-	world_view->screen_height= height/2;
-	world_view->standard_screen_width= 2*height;
-#else
-	world_view->screen_width= width;
-	world_view->screen_height= height;
-	world_view->standard_screen_width= 2*height;
-#endif
-	initialize_view_data(world_view);
-// LP change: end of obsolete part
-#endif
 	
 	frame_count= frame_index= 0;
 
@@ -905,15 +809,7 @@ void render_screen(
 	
 	switch (screen_mode.acceleration)
 	{
-		/*
-		case _valkyrie_acceleration:
-			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
-			{
-				valkyrie_initialize_invisible_video_buffer(world_pixels_structure);
-				break;
-			}
-		*/
-			/* if weÕre using the overhead map, fall through to no acceleration */
+		/* if weÕre using the overhead map, fall through to no acceleration */
 		// LP change: might want to init OpenGL rendering here
 		case _opengl_acceleration:
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
@@ -1013,16 +909,7 @@ void render_screen(
 	
 	switch (screen_mode.acceleration)
 	{
-		/*
-		case _valkyrie_acceleration:
-			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
-			{
-				valkyrie_switch_to_invisible_video_buffer();
-				break;
-			}
-			// if weÕre using the overhead map, fall through to no acceleration
-		*/
-			// LP change: OpenGL acceleration included with no acceleration here
+		// LP change: OpenGL acceleration included with no acceleration here
 		case _opengl_acceleration:
 		case _no_acceleration:
 			update_fps_display((GrafPtr)world_pixels);
@@ -1340,13 +1227,6 @@ short hardware_acceleration_code(
 	
 	calculate_screen_options();
 	
-	/*
-	if (machine_has_valkyrie(spec) && enough_memory_for_16bit)
-	{
-		acceleration_code= _valkyrie_acceleration;
-	}
-	*/
-	
 	return acceleration_code;
 }
 
@@ -1390,15 +1270,6 @@ void animate_screen_clut(
 		SetGDevice(world_device);
 		switch (screen_mode.acceleration)
 		{
-			/*
-			case _valkyrie_acceleration:
-				if (!full_screen)
-				{
-					valkyrie_change_video_clut(macintosh_color_table);
-					break;
-				}
-				// if weÕre doing full-screen fall through to LowLevelSetEntries
-			*/
 			
 			// LP change: added OpenGL behavior
 			case _opengl_acceleration:
@@ -1472,15 +1343,6 @@ void validate_world_window(
 	ValidRect(&bounds);
 	SetPort(old_port);
 
-	switch (screen_mode.acceleration)
-	{
-		/*
-		case _valkyrie_acceleration:
-			valkyrie_erase_graphic_key_frame(0xfe);
-			break;
-		*/
-	}
-	
 	return;
 }
 
@@ -1676,11 +1538,6 @@ static void restore_world_device(
 
 	switch (screen_mode.acceleration)
 	{
-		/*
-		case _valkyrie_acceleration:
-			valkyrie_restore();
-			break;
-		*/
 	}
 	
 	GetPort(&old_port);
@@ -1692,14 +1549,12 @@ static void restore_world_device(
 
 	/* put our device back the way we found it */
 	SetDepthGDSpec(&restore_spec);
-
-#if 0
-	if (resolution_restore_spec.width)
-	{
-		SetResolutionGDSpec(&resolution_restore_spec);
-	}
-#endif
-
+	
+	// Use the Display Manager to set the size back
+	
+	unsigned long TempBitDepth = restore_spec.bit_depth;
+	DMSetDisplayMode(world_device,RestoreScreenMode,&TempBitDepth,NULL,NULL);
+	
 	myDisposeGWorld(world_pixels);
 	
 	CloseWindow(screen_window);
@@ -2381,15 +2236,12 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 		VPBlockPtr IDBlockPtr = IndivDepthPtr->depthVPBlock;
 		if (IDBlockPtr->vpPixelSize != BitDepth) continue;
 		
-		/*
 		// How does one get from a VPBlockPtr to the screen size?
 		
 		// Switch!
 		unsigned long TempBitDepth = BitDepth;
-		Err = DMSetDisplayMode(Device,Index,&TempBitDepth,NULL,Session.State);
-		
-		// dprintf("Err = %hd",Err);
-		*/
+		Err = DMSetDisplayMode(Device,IndivDepthPtr->depthSwitchInfo->csData,&TempBitDepth,NULL,Session.State);
+		return (Err != noErr);
 	}
 	
 	return false;
