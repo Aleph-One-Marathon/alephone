@@ -2,6 +2,8 @@
 #ifndef LUA_SCRIPT_H
 #define LUA_SCRIPT_H
 
+#include "world.h"
+
 void L_Call_Init();
 void L_Call_Idle();
 void L_Call_Tag_Switch(short tag);

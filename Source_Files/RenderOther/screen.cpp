@@ -1561,7 +1561,7 @@ void validate_world_window(
 
 #ifdef MOVED_OUT
 // LP addition: routine for displaying text
-static void DisplayText(short BaseX, short BaseY, char *Text)
+static void DisplayText(short BaseX, short BaseY, const char *Text)
 {
 	// OpenGL version:
 	// activate only in the main view, and also if OpenGL is being used for the overhead map

@@ -205,7 +205,7 @@ void load_environment_from_preferences(void);
 
 // LP: displays a text message on the screen in "printf" fashion
 // Implemented in the "screen" routines
-void screen_printf(char *format, ...);
+void screen_printf(const char *format, ...);
 
 
 #endif

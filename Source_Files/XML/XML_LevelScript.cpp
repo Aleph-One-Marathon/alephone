@@ -37,6 +37,8 @@ Jul 31, 2002 (Loren Petrich):
 */
 
 #include <vector>
+using namespace std;
+
 #include "cseries.h"
 #include "game_wad.h"
 #include "music.h"

@@ -29,6 +29,8 @@ using namespace std;
 #include "monsters.h"
 #include "flood_map.h"
 #include "vbl.h"
+#include "OGL_Setup.h"
+#include "mysound.h"
 
 #include "script_instructions.h"
 #include "lua_script.h"
@@ -39,7 +41,7 @@ using namespace std;
 
 // Steal all this stuff
 extern bool ready_weapon(short player_index, short weapon_index);
-extern void DisplayText(short BaseX, short BaseY, char *Text);
+extern void DisplayText(short BaseX, short BaseY, const char *Text);
 
 extern void advance_monster_path(short monster_index);
 extern long monster_pathfinding_cost_function(short source_polygon_index, short line_index,
@@ -1566,11 +1568,13 @@ static int L_Add_Path_Point(lua_State *L)
     int polygon = lua_tonumber(L,2);
     world_point3d point = {lua_tonumber(L,3)*WORLD_ONE, lua_tonumber(L,4)*WORLD_ONE, lua_tonumber(L,5)*WORLD_ONE};
     long time = lua_tonumber(L,6);
-    int point_index = lua_cameras[camera_index].path.path_points.size();
-    lua_cameras[camera_index].path.path_points.resize(point_index+1);
-    lua_cameras[camera_index].path.path_points[point_index].polygon = polygon;
-    lua_cameras[camera_index].path.path_points[point_index].point = point;
-    lua_cameras[camera_index].path.path_points[point_index].delta_time = time;
+
+    timed_point tp;
+    tp.polygon = polygon;
+    tp.point = point;
+    tp.delta_time = time;
+
+    lua_cameras[camera_index].path.path_points.push_back(tp);
     return 0;
 }
 
@@ -1602,10 +1606,13 @@ static int L_Add_Path_Angle(lua_State *L)
     
     const float AngleConvert = 360/float(FULL_CIRCLE);
     
-    lua_cameras[camera_index].path.path_angles.resize(angle_index+1);
-    lua_cameras[camera_index].path.path_angles[angle_index].yaw = yaw/AngleConvert;
-    lua_cameras[camera_index].path.path_angles[angle_index].pitch = pitch/AngleConvert;
-    lua_cameras[camera_index].path.path_angles[angle_index].delta_time = time;
+    timed_angle ta;
+
+    ta.yaw = yaw/AngleConvert;
+    ta.pitch = pitch/AngleConvert;
+    ta.delta_time = time;
+    lua_cameras[camera_index].path.path_angles.push_back(ta);
+
     return 0;
 }
 
