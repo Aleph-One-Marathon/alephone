@@ -48,6 +48,8 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "cstypes.h"
 #include "csdialogs.h"
+#include "csmacros.h"
+#include "csstrings.h"
 
 extern void update_any_window(
 	WindowPtr window,
@@ -598,7 +600,7 @@ void SetEditPascalText(ControlRef Ctrl, ConstStr255Param Text)
 {
 	SetControlData(Ctrl,
 		kControlEditTextPart,
-		kControlStaticTextTextTag,
+		kControlEditTextTextTag,
 		Text[0],
 		Text+1
 		);
@@ -627,10 +629,214 @@ void SetEditCText(ControlRef Ctrl, const char *Text)
 {
 	SetControlData(Ctrl,
 		kControlEditTextPart,
-		kControlStaticTextTextTag,
+		kControlEditTextTextTag,
 		strlen(Text),
 		Text
 		);
+}
+
+
+// Will not support any fancy hit testing;
+// a user-defined control will effectively be one object
+const int UserControlPart = 1;
+
+const OSType AppTag = 'this';
+const OSType DrawTag = 'draw';
+
+
+struct ControlDrawerData
+{
+	void (*DrawFunction)(ControlRef, void *);
+	void *DrawData;
+};
+
+
+static pascal void ControlDrawer(ControlRef Ctrl, short Part)
+{
+	OSStatus err;
+	unsigned long ActualSize;
+	ControlDrawerData CtrlDD;
+	
+	err = GetControlProperty(Ctrl,
+			AppTag, DrawTag,
+			sizeof(CtrlDD), &ActualSize, &CtrlDD);
+	vassert(err == noErr, csprintf(temporary,"SetControlProperty error: %d",err));
+	
+	assert(CtrlDD.DrawFunction);
+	CtrlDD.DrawFunction(Ctrl,CtrlDD.DrawData);
+}
+
+
+AutoDrawability::AutoDrawability()
+{
+	DrawingUPP = NewControlUserPaneDrawUPP(ControlDrawer);
+}
+
+AutoDrawability::~AutoDrawability()
+{
+	DisposeControlUserPaneDrawUPP(DrawingUPP);
+}
+
+void AutoDrawability::operator()(ControlRef Ctrl,
+		void (*DrawFunction)(ControlRef, void *),
+		void *DrawData)
+{
+	OSStatus err;
+	
+	ControlDrawerData CtrlDD;
+	
+	CtrlDD.DrawFunction = DrawFunction;
+	CtrlDD.DrawData = DrawData;
+	
+	err = SetControlData(
+			Ctrl, 0,
+			kControlUserPaneDrawProcTag,
+			sizeof(DrawingUPP), &DrawingUPP
+			);
+	vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
+	
+	err = SetControlProperty(
+			Ctrl,
+			AppTag, DrawTag,
+			sizeof(CtrlDD), &CtrlDD
+			);
+	vassert(err == noErr, csprintf(temporary,"SetControlProperty error: %d",err));
+}
+
+
+void SwatchDrawer(ControlRef Ctrl, void *Data)
+{
+	RGBColor *SwatchColorPtr = (RGBColor *)(Data);
+	
+	// No need for the window context -- it's assumed
+	Rect Bounds = {0,0,0,0};
+	
+	GetControlBounds(Ctrl, &Bounds);
+
+	// Save previous state		
+	PenState OldPen;
+	RGBColor OldBackColor, OldForeColor;
+	
+	GetPenState(&OldPen);
+	GetBackColor(&OldBackColor);
+	GetForeColor(&OldForeColor);
+	
+	// Get ready to draw the swatch
+	PenNormal();
+	
+	// Draw!
+	RGBForeColor(SwatchColorPtr);
+	PaintRect(&Bounds);
+	ForeColor(blackColor);
+	FrameRect(&Bounds);
+	
+	// Restore previous state
+	SetPenState(&OldPen);
+	RGBBackColor(&OldBackColor);
+	RGBForeColor(&OldForeColor);
+}
+
+
+// Globals the most convenient mechanism here,
+// since an int32 is NOT a void * (generic pointer)
+static ControlRef PickCtrl;
+static RGBColor *PickClrPtr;
+
+
+static pascal void PickColorChangedFunc(int32 Num, PMColor *NewColorPtr)
+{
+	// Transmit the color to the control
+	CMRGBColor *ChgClrPtr = &NewColorPtr->color.rgb;		
+	PickClrPtr->red = ChgClrPtr->red;
+	PickClrPtr->green = ChgClrPtr->green;
+	PickClrPtr->blue = ChgClrPtr->blue;
+	
+	Draw1Control(PickCtrl);
+}
+
+
+bool PickControlColor(ControlRef Ctrl,
+	RGBColor *ClrPtr,
+	ConstStr255Param Prompt
+	)
+{
+	// Save old color so we can revert if necessary
+	RGBColor SavedColor = *ClrPtr;
+	
+	// Set up the globals:
+	PickCtrl = Ctrl;
+	PickClrPtr = ClrPtr;
+	
+	// For live updating
+	ColorChangedUPP ClrChg = NewColorChangedUPP(PickColorChangedFunc);
+	
+	// Fill in all those blanks...
+	ColorPickerInfo PickerData;
+	obj_clear(PickerData);	// 0 is default for everything in it
+		
+	// Need to load the color and the prompt into the picker data
+	CMRGBColor *PkrClrPtr = &PickerData.theColor.color.rgb;		
+	PkrClrPtr->red = ClrPtr->red;
+	PkrClrPtr->green = ClrPtr->green;
+	PkrClrPtr->blue = ClrPtr->blue;
+	
+	PickerData.placeWhere = kCenterOnMainScreen;
+	pstrcpy(PickerData.prompt, Prompt);
+	
+	PickerData.colorProc = ClrChg;
+	
+	// Go!
+	PickColor(&PickerData);
+	
+	bool IsOK = PickerData.newColorChosen;
+	
+	if (IsOK)
+	{
+		// Get the changed color
+		ClrPtr->red = PkrClrPtr->red;
+		ClrPtr->green = PkrClrPtr->green;
+		ClrPtr->blue = PkrClrPtr->blue;
+	}
+	else
+	{
+		// Revert to the saved color
+		*ClrPtr = SavedColor;
+	}
+	// Need to update
+	Draw1Control(Ctrl);
+	
+	DisposeColorChangedUPP(ClrChg);
+	return IsOK;
+}
+
+
+// Little more than a placeholder
+static pascal ControlPartCode HitTester(ControlRef Ctrl, Point Loc)
+{
+	return UserControlPart;
+}
+
+
+AutoHittability::AutoHittability()
+{
+	HitTesterUPP = NewControlUserPaneHitTestUPP(HitTester);
+}
+
+AutoHittability::~AutoHittability()
+{
+	DisposeControlUserPaneHitTestUPP(HitTesterUPP);
+}
+
+void AutoHittability::operator()(ControlRef Ctrl)
+{
+	OSStatus err;
+	
+	err = SetControlData(
+			Ctrl, UserControlPart,
+			kControlUserPaneHitTestProcTag,
+			sizeof(HitTesterUPP), &HitTesterUPP
+			);
+	vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
 }
 
 
@@ -670,6 +876,7 @@ void BuildMenu(
 struct ModalDialogHandlerData
 {
 	WindowRef DlgWindow;
+	bool IsSheet;
 	void (*DlgHandler)(ParsedControl &,void *);
 	void *DlgData;
 	bool IsOK;	// Return whether OK was pressed
@@ -706,7 +913,14 @@ static pascal OSStatus ModalDialogHandler(
 		
 		// Done with the window
 		QuitAppModalLoopForWindow(HDPtr->DlgWindow);
-		HideWindow(HDPtr->DlgWindow);
+		if (HDPtr->IsSheet)
+#if USE_SHEETS
+			HideSheetWindow(HDPtr->DlgWindow);
+#else
+			HideWindow(HDPtr->DlgWindow);
+#endif
+		else
+			HideWindow(HDPtr->DlgWindow);
 	}
 	
 	return noErr;
@@ -715,6 +929,7 @@ static pascal OSStatus ModalDialogHandler(
 
 bool RunModalDialog(
 	WindowRef DlgWindow,
+	bool IsSheet,
 	void (*DlgHandler)(ParsedControl &,void *),
 	void *DlgData
 	)
@@ -722,6 +937,7 @@ bool RunModalDialog(
 	OSStatus err;
 	ModalDialogHandlerData HandlerData;
 	HandlerData.DlgWindow = DlgWindow;
+	HandlerData.IsSheet = IsSheet;
 	HandlerData.DlgHandler = DlgHandler;
 	HandlerData.DlgData = DlgData;
 	HandlerData.IsOK = false;
@@ -737,8 +953,16 @@ bool RunModalDialog(
 		NumEventTypes, EventTypes,
 		&HandlerData, NULL);
 	vassert(err == noErr, csprintf(temporary,"InstallWindowEventHandler error: %d",err));
-
-	ShowWindow(DlgWindow);
+	
+	if (IsSheet)
+#if USE_SHEETS
+		SetThemeWindowBackground(DlgWindow, kThemeBrushSheetBackgroundTransparent, false);
+		ShowSheetWindow(DlgWindow, ActiveNonFloatingWindow());
+#else
+		ShowWindow(DlgWindow);
+#endif
+	else
+		ShowWindow(DlgWindow);
 	RunAppModalLoopForWindow(DlgWindow);
 	
 	DisposeEventHandlerUPP(HandlerUPP);

@@ -185,6 +185,60 @@ void SetEditPascalText(ControlRef Ctrl, ConstStr255Param Text);
 void GetEditCText(ControlRef Ctrl, char *Text, int MaxLen = 255);
 void SetEditCText(ControlRef Ctrl, const char *Text);
 
+
+// For adding drawability to a 
+// It cleans up when it goes out of scope
+class AutoDrawability
+{
+	ControlUserPaneDrawUPP DrawingUPP;
+public:
+	
+	AutoDrawability();
+	~AutoDrawability();
+	
+	// Needs the control to be made drawable,
+	// the function to be used for drawing (can be shared by several controls),
+	// and the drawing data for that control.
+	// That function will be called with the control that was hit and its drawing data
+	void operator()(ControlRef Ctrl,
+		void (*DrawFunction)(ControlRef, void *),
+		void *DrawData = NULL);
+};
+
+
+// Draws a simple color swatch; "DrawData" above must be a pointer to a RGBColor object
+void SwatchDrawer(ControlRef Ctrl, void *Data);
+
+
+// Picks a color associated with a control
+// Needs:
+//   Control reference
+//   Pointer to color -- must be used in the control's draw routine for doing live updates
+//   Prompt (optional)
+// Returns whether or not the color was finally changed.
+bool PickControlColor(ControlRef Ctrl,
+	RGBColor *ClrPtr,
+	ConstStr255Param Prompt = NULL
+	);
+
+
+// For adding hittability to a user-defined control,
+// so that a mouse click will register in the way
+// that it does on some Apple-defined control (buttons, popups, etc.).
+// It cleans up when it goes out of scope
+class AutoHittability
+{
+	ControlUserPaneHitTestUPP HitTesterUPP;
+public:
+	
+	AutoHittability();
+	~AutoHittability();
+	
+	// Needs only the control to be made hittable
+	void operator()(ControlRef Ctrl);
+};
+
+
 // Builds a popup menu with the help of:
 //   The menu's control ref
 //   Menu-builder callback; uses
@@ -210,6 +264,7 @@ struct ParsedControl
 
 // Runs a modal dialog; needs:
 //   Dialog window
+//   Whether the dialog will be a sheet if sheets are available
 //   Dialog handler; uses
 //     ID of the control hit
 //     User data
@@ -218,6 +273,7 @@ struct ParsedControl
 // Will return 'true' if iOK was pressed and 'false' otherwise
 bool RunModalDialog(
 	WindowRef DlgWindow,
+	bool IsSheet,
 	void (*DlgHandler)(ParsedControl &,void *) = NULL,
 	void *DlgData = NULL
 	);

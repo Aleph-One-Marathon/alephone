@@ -232,47 +232,9 @@ struct DesktopDisplayData
 };
 
 
-static pascal void DesktopDrawer(ControlRef Ctrl, short Part)
+static void MonitorDrawer(ControlRef Ctrl, void *Data)
 {
-	// No need for the window context -- it's assumed
-	Rect Bounds = {0,0,0,0};
-	
-	GetControlBounds(Ctrl, &Bounds);
-
-	// Save previous state		
-	PenState OldPen;
-	RGBColor OldBackColor, OldForeColor;
-	
-	GetPenState(&OldPen);
-	GetBackColor(&OldBackColor);
-	GetForeColor(&OldForeColor);
-	
-	// Get ready to draw the swatch
-	PenNormal();
-	
-	// Draw!
-	ForeColor(whiteColor);
-	PaintRect(&Bounds);
-	ForeColor(blackColor);
-	FrameRect(&Bounds);
-	
-	// Restore previous state
-	SetPenState(&OldPen);
-	RGBBackColor(&OldBackColor);
-	RGBForeColor(&OldForeColor);
-}
-
-static pascal void MonitorDrawer(ControlRef Ctrl, short Part)
-{
-	OSStatus err;
-	
-	DevInfo *DI_Ptr;
-	unsigned long ActualSize;
-	
-	err = GetControlProperty(Ctrl,
-			AppTag, DevInfoTag,
-			sizeof(DI_Ptr), &ActualSize, &DI_Ptr);
-	vassert(err == noErr, csprintf(temporary,"SetControlProperty error: %d",err));
+	DevInfo *DI_Ptr = (DevInfo *)Data;
 	
 	// No need for the window context -- it's assumed
 	Rect Bounds = {0,0,0,0};
@@ -314,13 +276,6 @@ static pascal void MonitorDrawer(ControlRef Ctrl, short Part)
 	SetPenState(&OldPen);
 	RGBBackColor(&OldBackColor);
 	RGBForeColor(&OldForeColor);
-}
-
-
-// Need to do this just to get hit testing working
-static pascal ControlPartCode MonitorHitTester(ControlRef Ctrl, Point Loc)
-{
-	return 1;
 }
 
 
@@ -378,19 +333,18 @@ void display_device_dialog(
 	Rect DesktopBounds;
 	GetControlBounds(DesktopCtrl, &DesktopBounds);
 	
+	// Create inset version for putting the monitors in
 	const short InsetAmount = 8;
 	InsetRect(&DesktopBounds,InsetAmount,InsetAmount);
 	
-	// Create inset version for putting the monitors in
+	// For making controls drawable and hittable
+	AutoDrawability Drawability;
+	AutoHittability Hittability;
 	
-	// Add drawer to the desktop control
-	ControlUserPaneDrawUPP DesktopDrawerUPP = NewControlUserPaneDrawUPP(DesktopDrawer);
-	err = SetControlData(
-			DesktopCtrl, 0,
-			kControlUserPaneDrawProcTag,
-			sizeof(DesktopDrawerUPP), &DesktopDrawerUPP
-			);
-	vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
+	// Light gray
+	RGBColor DesktopColor = {0xe800, 0xe800, 0xe800};
+	
+	Drawability(DesktopCtrl, SwatchDrawer, &DesktopColor);
 	
 	// Compose the monitor representations
 	
@@ -431,12 +385,14 @@ void display_device_dialog(
 	float Scale_V = Desktop_PInfo.Size_V/Total_PInfo.Size_V;
 	float Scale = MIN(Scale_H,Scale_V);
 	
-	// Create monitor controls and add drawer to them
-	ControlUserPaneDrawUPP MonitorDrawerUPP = NewControlUserPaneDrawUPP(MonitorDrawer);
-	ControlUserPaneHitTestUPP MonitorHitTesterUPP = NewControlUserPaneHitTestUPP(MonitorHitTester);
+	// Create monitor controls
 	
-	for (vector<DevInfo>::iterator DI_Iter = DesktopData.Devices.begin(); DI_Iter < DesktopData.Devices.end(); DI_Iter++)
+	int k = 0;
+	for (vector<DevInfo>::iterator DI_Iter = DesktopData.Devices.begin();
+		DI_Iter < DesktopData.Devices.end();
+		DI_Iter++, k++)
 	{
+		// Find appropriately-scaled bounds for representing the monitor
 		Rect Bounds;
 		// The 0.5 factor is for rounding off of nonnegative values
 		Bounds.left =
@@ -448,51 +404,30 @@ void display_device_dialog(
 		Bounds.bottom =
 			Scale*(DI_Iter->Bounds.bottom - Total_PInfo.Center_V) + Desktop_PInfo.Center_V + 0.5;
 		
+		// Create!
 		err = CreateUserPaneControl(
 				Window(), &Bounds,
 				0, &(DI_Iter->Ctrl)
 				);
 		vassert(err == noErr, csprintf(temporary,"CreateUserPaneControl error: %d",err));
 		
-		err = SetControlData(
-				DI_Iter->Ctrl, 1,
-				kControlUserPaneHitTestProcTag,
-				sizeof(MonitorHitTesterUPP), &MonitorHitTesterUPP
-				);
-		vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
-		
-		err = SetControlData(
-				DI_Iter->Ctrl, 1,
-				kControlUserPaneDrawProcTag,
-				sizeof(MonitorDrawerUPP), &MonitorDrawerUPP
-				);
-		vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
-		
-		EmbedControl(DI_Iter->Ctrl, DesktopCtrl);
-	}
-	
-	// Since the device-info array is now set up, place pointers to its entries in the controls
-	
-	for (int k=0; k<DesktopData.Devices.size(); k++)
-	{
-		DevInfo *DI_Ptr = &DesktopData.Devices[k];
-		
+		// Add ID so that the dialog's hit tester can recognize it
 		ControlID ID;
 		ID.signature = Monitor_Sig;
 		ID.id = k;
 		
-		err = SetControlID(DI_Ptr->Ctrl, &ID);
+		err = SetControlID(DI_Iter->Ctrl, &ID);
 		vassert(err == noErr, csprintf(temporary,"SetControlID error: %d",err));
 		
-		err = SetControlProperty(
-				DI_Ptr->Ctrl,
-				AppTag, DevInfoTag,
-				sizeof(DI_Ptr), &DI_Ptr
-				);
-		vassert(err == noErr, csprintf(temporary,"SetControlProperty error: %d",err));
+		// OK since the list of device-info data is now set up
+		// and will not get reallocated
+		Drawability(DI_Iter->Ctrl, MonitorDrawer, &DesktopData.Devices[k]);
+		Hittability(DI_Iter->Ctrl);
+		
+		EmbedControl(DI_Iter->Ctrl, DesktopCtrl);
 	}
 	
-	if (RunModalDialog(Window(),MonitorHandler,&DesktopData))
+	if (RunModalDialog(Window(), true, MonitorHandler, &DesktopData))
 	{
 		// Pressed "OK" -- get the selected device
 		
@@ -503,11 +438,6 @@ void display_device_dialog(
 		}
 		spec->flags = (GetControl32BitValue(GrayColorCtrl) == rbColor) ? 1<<gdDevType : 0;
 	}
-	
-	// Clean up
-	DisposeControlUserPaneDrawUPP(DesktopDrawerUPP);
-	DisposeControlUserPaneDrawUPP(MonitorDrawerUPP);
-	DisposeControlUserPaneHitTestUPP(MonitorHitTesterUPP);
 }
 
 
