@@ -22,7 +22,8 @@
 #include "AStream.h"
 
 // LP: added this to define memcpy()
-#include <string.h>
+using namespace std;
+
 
 AIStream& AIStream::operator>>(uint8 &value)
 	throw(AStream::failure)
