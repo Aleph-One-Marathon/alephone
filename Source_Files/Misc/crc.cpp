@@ -101,7 +101,7 @@ static boolean build_crc_table(
 	boolean success= FALSE;
 
 	assert(!crc_table);
-	crc_table= (unsigned long *) malloc(TABLE_SIZE*sizeof(unsigned long));
+	crc_table= new unsigned long[TABLE_SIZE];
 	if(crc_table)
 	{
 		/* Build the table */
@@ -129,7 +129,7 @@ static void free_crc_table(
 	void)
 {
 	assert(crc_table);
-	free(crc_table);
+	delete []crc_table;
 	crc_table= NULL;
 }
 
