@@ -216,7 +216,6 @@ bool OGL_HUDActive = false;
 // Software rendering
 HUD_SW_Class HUD_SW;
 
-
 /* --------- code */
 
 void initialize_game_window(void)

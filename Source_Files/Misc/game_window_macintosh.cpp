@@ -46,18 +46,7 @@ void draw_panels(void)
 	Rect destination= {320, 0, 480, 640};
 	Rect source= {0, 0, 160, 640};
 	
-	/*
-	new_mode.acceleration= _no_acceleration;
-	new_mode.size= _100_percent;
-	new_mode.high_resolution= true;
-	change_screen_mode(&new_mode, false);
-
-	myLockPixels(world_pixels);
-	*/
-	
 	if (get_picture_resource_from_images(INTERFACE_PANEL_BASE,PictRsrc))
-	// picture= get_picture_resource_from_images(INTERFACE_PANEL_BASE);
-	// if(picture)
 	{
 		picture = PicHandle(PictRsrc.GetHandle());
 		
@@ -82,28 +71,4 @@ void draw_panels(void)
 	// LP addition: redirecting the HUD drawing to its own buffer
 	// if that buffer is available
 	RequestDrawingHUD();
-	/*
-	{
-		GrafPtr old_port;
-		RGBColor old_forecolor, old_backcolor;
-		
-		GetPort(&old_port);
-		SetPort(screen_window);
-
-		GetForeColor(&old_forecolor);
-		GetBackColor(&old_backcolor);
-		RGBForeColor(&rgb_black);
-		RGBBackColor(&rgb_white);
-		
-		*//* Slam it to the screen. *//*
-		CopyBits((BitMapPtr)*world_pixels->portPixMap, &screen_window->portBits, //(BitMapPtr)*screen_pixmap,
-			&source, &destination, srcCopy, (RgnHandle) NULL);
-		RGBForeColor(&old_forecolor);
-		RGBBackColor(&old_backcolor);
-		SetPort(old_port);
-	}
-	myUnlockPixels(world_pixels);
-
-	change_screen_mode(&graphics_preferences->screen_mode, false);
-	*/
 }
