@@ -96,7 +96,7 @@ struct LandscapeOptions
 	// Constructor: sets everything to defaults appropriate for standard textures
 	// Same scale for horizontal and vertical, 2^1 = 2 repeats,
 	// OpenGL hight is half width, and the azimuth is zero
-	LandscapeOptions(): HorizExp(1), VertExp(1), OGL_AspRatExp(1), VertRepeat(false), Azimuth(0) {}
+	LandscapeOptions(): HorizExp(1), VertExp(1), OGL_AspRatExp(0), VertRepeat(false), Azimuth(0) {}
 };
 
 LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc);
