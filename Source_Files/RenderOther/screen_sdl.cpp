@@ -482,9 +482,14 @@ void render_screen(short ticks_elapsed)
 	// Is map to be drawn with OpenGL?
 	if (OGL_IsActive() && world_view->overhead_map_active)
 		OGL_MapActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Map);
-	else
+	else {
+		if (OGL_MapActive) {
+			// switching off map
+			// clear the remnants of the map out of the back buffer
+			SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+		}
 		OGL_MapActive = false;
-
+	}
 	// Is HUD to be drawn with OpenGL?
 	if (OGL_IsActive())
 		OGL_HUDActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_HUD);
@@ -909,5 +914,13 @@ void clear_screen(void)
 #ifdef HAVE_OPENGL
 	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
 		SDL_GL_SwapBuffers();
+#endif
+#if defined(MAC_SDL_KLUDGE)
+	SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
+	SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+#ifdef HAVE_OPENGL
+	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+		SDL_GL_SwapBuffers();
+#endif
 #endif
 }

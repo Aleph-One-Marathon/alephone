@@ -973,6 +973,10 @@ void update_interface_display(
 	
 	/* Use this to avoid the fade.. */
 	draw_full_screen_pict_resource_from_images(data->screen_base+game_state.current_screen);
+#if defined(MAC_SDL_KLUDGE)
+	draw_full_screen_pict_resource_from_images(data->screen_base+game_state.current_screen);
+#endif
+
 }
 
 void idle_game_state(
@@ -1161,7 +1165,6 @@ void display_main_menu(
         short RightJustOffset = Font.TextWidth(A1_VERSION_STRING);
         short X = X0 - RightJustOffset;
         short Y = Y0 - Offset;
-
 #if defined(mac)
         MoveTo(X, Y);
         RGBForeColor(&(RGBColor){0x4000, 0x4000, 0x4000});
@@ -1176,7 +1179,6 @@ void display_main_menu(
                                                                  0x40), Font.Info, Font.Style);
         _restore_port();
 #endif
-        
 	game_state.main_menu_display_count++;
 }
 
@@ -2236,6 +2238,9 @@ static void display_screen(
 			full_fade(_start_cinematic_fade_in, current_picture_clut);
 
 			draw_full_screen_pict_resource_from_images(pict_resource_number);
+#if defined(MAC_SDL_KLUDGE)
+			draw_full_screen_pict_resource_from_images(pict_resource_number);
+#endif
 			picture_drawn= true;
 
 			assert(current_picture_clut);	

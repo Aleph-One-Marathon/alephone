@@ -1158,6 +1158,9 @@ void dialog::start(bool play_sound)
 	frame_b = get_dialog_image(FRAME_B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
 
 	// Draw dialog
+#if defined(MAC_SDL_KLUDGE)
+	clear_screen();
+#endif
 	draw();
 
 	// Show cursor
