@@ -102,6 +102,10 @@ Jul 8, 2000 (Loren Petrich):
 	Modified render_screen() so that the two kinds of OpenGL rendering, for the main view
 	and for the map view, are distinct, and that OpenGL for map view would be handled properly
 	(text displayed in it, etc.)
+
+Jul 17, 2000 (Loren Petrich):
+	Added a view-effect reset to enter_screen() because initialize_view_data() no longer has it,
+	in order to make teleport view-stretching work correctly.
 */
 
 /*
@@ -446,7 +450,7 @@ void initialize_screen(
 		world_view->horizontal_scale= 1, world_view->vertical_scale= 1;
 		// LP addition:
 		world_view->tunnel_vision_active = false;
-
+		
 		/* make sure everything gets cleaned up after we leave */
 		atexit(restore_world_device);
 	
@@ -573,6 +577,10 @@ void enter_screen(
 
 	if (world_view->overhead_map_active) set_overhead_map_status(FALSE);
 	if (world_view->terminal_mode_active) set_terminal_status(FALSE);
+	
+	// LP change: adding this view-effect resetting here
+	// since initialize_world_view() no longer resets it.
+	world_view->effect = NONE;
 	
 	change_screen_mode(&screen_mode, TRUE);
 	

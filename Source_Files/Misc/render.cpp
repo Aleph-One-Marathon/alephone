@@ -146,6 +146,10 @@ Jul 10, 2000 (Loren Petrich):
 	Fixed liquid visibility bug in render_tree() that happens when liquid surfaces are not semitransparent;
 	rendering is skipped if the viewpoint is under a liquid and the polygon is high and dry,
 	or else if the viewpoint is above a liquid and the polygon is submerged.
+
+Jul 17, 2000 (Loren Petrich):
+	Suppressed view-effect resetting in initialize_view_data(),
+	in order to make teleport view-stretching work correctly.
 */
 
 // For casting pointers to integer values -- use appropriate data type
@@ -780,7 +784,8 @@ void initialize_view_data(
 	view->untransformed_right_edge.j= - view->half_screen_width;
 
 	/* reset any active effects */
-	view->effect= NONE;
+	// LP: this is now called in render_screen(), so we need to disable the initializing
+	// view->effect= NONE;
 	
 	return;
 }
@@ -872,6 +877,7 @@ static void update_view_data(
 	{
 		update_render_effect(view);
 	}
+	
 	view->untransformed_left_edge.i= view->world_to_screen_x;
 	view->untransformed_right_edge.i= - view->world_to_screen_x;
 	
