@@ -77,6 +77,9 @@ Sep 21, 2000:
 
 Oct 13, 2000 (Loren Petrich)
 	Converted the animated-texture accounting into Standard Template Library vectors
+
+Nov 18, 2000 (Loren Petrich):
+	Added support for landscape vertical repeats
 */
 
 #include <vector.h>
@@ -1601,6 +1604,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	TMgr.TransferMode = RenderPolygon.transfer_mode;
 	TMgr.TransferData = RenderPolygon.transfer_data;
 	TMgr.IsShadeless = (RenderPolygon.flags&_SHADELESS_BIT) != 0;
+	TMgr.LandscapeVertRepeat = LandOpts->VertRepeat;
 	TMgr.Landscape_AspRatExp = LandOpts->OGL_AspRatExp;
 	TMgr.TextureType = OGL_Txtr_Landscape;
 	
