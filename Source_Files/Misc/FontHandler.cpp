@@ -12,6 +12,9 @@ Dec 25, 2000 (Loren Petrich):
 Dec 31, 2000 (Loren Petrich):
 	Switched to a 32-bit intermediate GWorld, so that text antialiasing
 	will work properly.
+
+Jan 12, 2001 (Loren Petrich):
+	Fixed MacOS version of TextWidth() -- uses current font
 */
 
 #include <GL/gl.h>
@@ -119,9 +122,19 @@ void FontSpecifier::Use()
 
 int FontSpecifier::TextWidth(char *Text)
 {
+	// csfonts -- push old font
+	TextSpec OldFont;
+	GetFont(&OldFont);
+	
+	// Set to use current font
+	Use();
+	
 	int Len = MIN(strlen(Text),255);
 	// MacOS-specific; note the :: for getting the top-level function instead of a member one
 	return int(::TextWidth(Text,0,Len));
+	
+	// pop old font
+	SetFont(&OldFont);
 }
 
 #elif defined(SDL)
