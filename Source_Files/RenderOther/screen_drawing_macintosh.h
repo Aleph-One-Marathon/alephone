@@ -167,7 +167,7 @@ void _get_interface_color(
 	RGBColor *color)
 {	
 	// LP change: from internal color array
-	assert(color_index>=0 && color_index<NumInterfaceColors);
+	assert(color_index>=0 && static_cast<int>(color_index)<NumInterfaceColors);
 	
 	rgb_color &Color = InterfaceColors[color_index];
 	color->red = Color.red;
@@ -366,7 +366,7 @@ void _draw_screen_text(
 /*еее WHAT IS THE INTERNATIONALIZED WAY OF DETERMINING NON-PRINTING CHARACTERS? IE SPACES? */
 		short last_non_printing_character;
 		short text_width;
-		short count= 0;
+		unsigned short count= 0;
 
 		text_width= 0;
 		last_non_printing_character= 0;
@@ -583,6 +583,7 @@ static Rect *_get_interface_rect(
 	return (Rect *) get_interface_rectangle(index);
 }
 
+#if 0
 static short _get_font_height(
 	TextSpec *font)
 {
@@ -610,6 +611,7 @@ static short _get_font_line_spacing(
 	
 	return info.ascent+info.descent+info.leading;
 }
+#endif
 
 static void	load_screen_interface_colors(
 	void)
