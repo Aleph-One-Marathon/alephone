@@ -315,6 +315,10 @@ static void initialize_application_heap(
 	initialize_system_information();
 	initialize_core_events();
 	
+	// LP addition:
+	// Try to get this one first.
+	initialize_typecodes();
+	
 	// Safest place to load the configuration files
 	SetupParseTree();
 	XML_ResourceFork XML_Loader;
