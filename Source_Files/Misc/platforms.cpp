@@ -510,6 +510,7 @@ void player_touch_platform_state(
 	return;
 }
 
+/*
 #ifdef DEBUG
 struct platform_data *get_platform_data(
 	short platform_index)
@@ -523,6 +524,7 @@ struct platform_data *get_platform_data(
 	return platform;
 }
 #endif
+*/
 
 void platform_was_entered(
 	short platform_index,
@@ -1137,6 +1139,103 @@ short monster_can_enter_platform(
 	return result_code;
 }
 #endif
+
+
+// Split and join the misaligned 4-byte values
+
+#include <string.h>
+
+void pack_platform_data(platform_data& source, saved_platform& dest)
+{
+	dest.type = source.type;
+	memcpy(dest.static_flags,&source.static_flags,4);
+	dest.speed = source.speed;
+	dest.delay = source.delay;
+	dest.minimum_floor_height = source.minimum_floor_height;
+	dest.maximum_floor_height = source.maximum_floor_height;
+	dest.minimum_ceiling_height = source.minimum_ceiling_height;
+	dest.maximum_ceiling_height = source.maximum_ceiling_height;
+	
+	dest.polygon_index = source.polygon_index;
+	dest.dynamic_flags = source.dynamic_flags;
+	dest.floor_height = source.floor_height;
+	dest.ceiling_height = source.ceiling_height;
+	dest.ticks_until_restart = source.ticks_until_restart;
+	
+	for (int i=0; i<MAXIMUM_VERTICES_PER_POLYGON; i++)
+	{
+		endpoint_owner_data& source_owners = source.endpoint_owners[i];
+		endpoint_owner_data& dest_owners = dest.endpoint_owners[i];
+		dest_owners.first_polygon_index = source_owners.first_polygon_index;
+		dest_owners.polygon_index_count = source_owners.polygon_index_count;
+		dest_owners.first_line_index = source_owners.first_line_index;
+		dest_owners.line_index_count = source_owners.line_index_count;
+	}
+	
+	dest.parent_platform_index = source.parent_platform_index;
+	dest.tag = source.tag;
+}
+
+void unpack_platform_data(saved_platform& source, platform_data& dest)
+{
+	dest.type = source.type;
+	memcpy(&dest.static_flags,source.static_flags,4);
+	dest.speed = source.speed;
+	dest.delay = source.delay;
+	dest.minimum_floor_height = source.minimum_floor_height;
+	dest.maximum_floor_height = source.maximum_floor_height;
+	dest.minimum_ceiling_height = source.minimum_ceiling_height;
+	dest.maximum_ceiling_height = source.maximum_ceiling_height;
+	
+	dest.polygon_index = source.polygon_index;
+	dest.dynamic_flags = source.dynamic_flags;
+	dest.floor_height = source.floor_height;
+	dest.ceiling_height = source.ceiling_height;
+	dest.ticks_until_restart = source.ticks_until_restart;
+	
+	for (int i=0; i<MAXIMUM_VERTICES_PER_POLYGON; i++)
+	{
+		endpoint_owner_data& source_owners = source.endpoint_owners[i];
+		endpoint_owner_data& dest_owners = dest.endpoint_owners[i];
+		dest_owners.first_polygon_index = source_owners.first_polygon_index;
+		dest_owners.polygon_index_count = source_owners.polygon_index_count;
+		dest_owners.first_line_index = source_owners.first_line_index;
+		dest_owners.line_index_count = source_owners.line_index_count;
+	}
+	
+	dest.parent_platform_index = source.parent_platform_index;
+	dest.tag = source.tag;
+}
+
+void pack_static_platform_data(static_platform_data& source, saved_static_platform& dest)
+{
+	dest.type = source.type;
+	dest.speed = source.speed;
+	dest.delay = source.delay;
+	
+	dest.maximum_height = source.maximum_height;
+	dest.minimum_height = source.minimum_height;
+	
+	memcpy(dest.static_flags,&source.static_flags,4);
+	
+	dest.polygon_index = source.polygon_index;
+	dest.tag = source.tag;
+}
+
+void unpack_static_platform_data(saved_static_platform& source, static_platform_data& dest)
+{
+	dest.type = source.type;
+	dest.speed = source.speed;
+	dest.delay = source.delay;
+	
+	dest.maximum_height = source.maximum_height;
+	dest.minimum_height = source.minimum_height;
+	
+	memcpy(&dest.static_flags,source.static_flags,4);
+	
+	dest.polygon_index = source.polygon_index;
+	dest.tag = source.tag;
+}
 
 
 class XML_PlatformParser: public XML_ElementParser
