@@ -343,7 +343,7 @@ bool XML_VertexParser::Start()
 		Data.Position[c] = 0;
 	
 	// Initially: no bones
-	Data.Bone0 = Data.Bone1 = NONE;
+	Data.Bone0 = Data.Bone1 = (GLushort)NONE;
 	Data.Blend = 0;
 	
 	// No bone: zero-length strings:
@@ -494,7 +494,7 @@ public:
 bool XML_TriVertexParser::Start()
 {
 	// Reasonable defaults:
-	ID = NONE;
+	ID = (uint16)NONE;
 	Txtr_X = 0.5, Txtr_Y = 0.5;
 	
 	return true;

@@ -33,16 +33,17 @@
 // I probably would have made life easier for myself by using SDL_timer instead, but frankly
 // the documentation does not inspire me to trust it.  I'll do things on my own.
 
-#include	<vector>
+#include "cseries.h"
+#include "thread_priority_sdl.h"
+#include "mytm.h"
 
-#include	"cseries.h"
+#include <vector>
+#include <SDL/SDL_thread.h>
+#include <SDL/SDL_timer.h>
 
-#include	"SDL_thread.h"
-#include	"SDL_timer.h"
-
-#include	"thread_priority_sdl.h"
-
-#include	"mytm.h"
+#ifndef NO_STD_NAMESPACE
+using std::vector;
+#endif
 
 #ifdef DEBUG
 struct myTMTask_profile {
@@ -216,7 +217,7 @@ We'll see!
 }
 
 
-static	vector<myTMTaskPtr>	sOutstandingTasks;
+static vector<myTMTaskPtr> sOutstandingTasks;
 
 
 // Set up a periodic callout with no anti-drift mechanisms.  (We don't support that,
