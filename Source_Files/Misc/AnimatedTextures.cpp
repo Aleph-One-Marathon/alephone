@@ -8,42 +8,44 @@
 	
 	Modified to abolish the ATxr resources, and also to add XML support.
 	A "select" feature was added, so as to be able to translate only some specified texture.
+
+Oct 13, 2000 (Loren Petrich)
+	Converted the animated-texture accounting into Standard Template Library vectors
 */
 
+#include <vector.h>
+#include <string.h>
 #include "cseries.h"
 #include "AnimatedTextures.h"
 #include "interface.h"
-#include "GrowableList.h"
-
-#include <string.h>
 
 
 class AnimTxtr
 {
 	// Frame data: private, because the frame list is only supposed
-	int NumFrames;
-	short *FrameList;
+	vector<short> FrameList;
 	
 	// Control info: private, because they need to stay self-consistent
 	// How long the animator stays on a frame;
 	// negative means animate in reverse direction
 	short NumTicks;
+	
 	// Phases: which frame, and which tick in a frame
 	// These must be in ranges (0 to NumFrames - 1) and (0 to abs(NumTicks) - 1)
 	short FramePhase, TickPhase;
 
 public:
 	// How many frames
-	int GetNumFrames() {return NumFrames;}
+	int GetNumFrames() {return FrameList.size();}
 		
 	// Frame ID (writable)
 	short& GetFrame(int Index) {return FrameList[Index];}
 	
 	// Clear the list
-	void Clear();
+	void Clear() {FrameList.clear();}
 		
 	// Load from list:
-	void Load(int _NumFrames, short *_FrameList);
+	void Load(vector<short>& _FrameList);
 	
 	// Translate the frame; indicate whether the frame was translated.
 	// Its argument is the frame ID, which gets changed in place
@@ -66,50 +68,33 @@ public:
 	// one could include some extra data to indicate whether to activate
 	// the texture or not, as when a switch tag changes state.
 	
-	// Next member of linked list
-	AnimTxtr *Next;
-	
 	// Constructor has defaults of everything
-	AnimTxtr(): NumFrames(0), FrameList(0), Next(0)
+	AnimTxtr()
 	{
 		NumTicks = 30;	// Once a second
 		FramePhase = 0;
 		TickPhase = 0;
 		Select = -1;
 	}
-	~AnimTxtr() {if (FrameList) delete[]FrameList;}
 };
 
 
-void AnimTxtr::Clear()
-{
-	if (NumFrames)
-	{
-		NumFrames = 0;
-		delete []FrameList;
-		FrameList = 0;
-	}
-}
 
-
-void AnimTxtr::Load(int _NumFrames, short *_FrameList)
+void AnimTxtr::Load(vector<short>& _FrameList)
 {
-	Clear();
-	if (_NumFrames <= 0) return;
-	NumFrames = _NumFrames;
-	
-	FrameList = new short[NumFrames];
-	for (int f=0; f<NumFrames; f++)
-		FrameList[f] = _FrameList[f];
+	// Quick way to transfer the frame data
+	FrameList.swap(_FrameList);
+	if (FrameList.empty()) return;
 	
 	// Just in case it was set to something out-of-range...
-	FramePhase = FramePhase % NumFrames;
+	FramePhase = FramePhase % FrameList.size();
 }
 
 
 bool AnimTxtr::Translate(short& Frame)
 {
 	// Sanity check
+	int NumFrames = FrameList.size();
 	if (NumFrames <= 0) return false;
 
 	// Find the index in the loop; default: first one.
@@ -164,6 +149,7 @@ void AnimTxtr::SetTiming(short _NumTicks, short _FramePhase, short _TickPhase)
 		FramePhase += TickPhaseFrames;
 	}
 	
+	int NumFrames = FrameList.size();
 	if (NumFrames > 0)
 	{
 		FramePhase = FramePhase % NumFrames;
@@ -175,6 +161,7 @@ void AnimTxtr::SetTiming(short _NumTicks, short _FramePhase, short _TickPhase)
 void AnimTxtr::Update()
 {
 	// Be careful to wrap around in the appropriate direction
+	int NumFrames = FrameList.size();
 	if (NumTicks > 0)
 	{
 		if (++TickPhase >= NumTicks)
@@ -198,27 +185,15 @@ void AnimTxtr::Update()
 
 // Separate animated-texture sequence lists for each collection ID,
 // to speed up searching
-static AnimTxtr *ATRootList[NUMBER_OF_COLLECTIONS] =
-{
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-};
+static vector<AnimTxtr> AnimTxtrList[NUMBER_OF_COLLECTIONS];
 
 
 // Deletes a collection's animated-texture sequences
 static void ATDelete(int c)
 {
-	AnimTxtr *ATPtr = ATRootList[c];
-	while(ATPtr)
-	{
-		AnimTxtr *NextATPtr = ATPtr->Next;
-		delete ATPtr;
-		ATPtr = NextATPtr;
-	}
-	ATRootList[c] = NULL;
+	AnimTxtrList[c].clear();
 }
+
 
 // Deletes all of them
 static void ATDeleteAll()
@@ -232,12 +207,9 @@ void AnimTxtr_Update()
 {
 	for (int c=0; c<NUMBER_OF_COLLECTIONS; c++)
 	{
-		AnimTxtr *ATPtr = ATRootList[c];
-		while(ATPtr)
-		{
-			ATPtr->Update();
-			ATPtr = ATPtr->Next;
-		}
+		vector<AnimTxtr>& ATL = AnimTxtrList[c];
+		for (vector<AnimTxtr>::iterator ATIter = ATL.begin(); ATIter < ATL.end(); ATIter++)
+			ATIter->Update();
 	}
 }
 
@@ -257,13 +229,10 @@ shape_descriptor AnimTxtr_Translate(shape_descriptor Texture)
 	// that could be handled as map preprocessing, by turning
 	// all shape descriptors that refer to unloaded shapes to NONE
 	
-	AnimTxtr *ATPtr = ATRootList[Collection];
-	while(ATPtr)
-	{
-		if (ATPtr->Translate(Frame)) break;
-		ATPtr = ATPtr->Next;
-	}
-		
+	vector<AnimTxtr>& ATL = AnimTxtrList[Collection];
+	for (vector<AnimTxtr>::iterator ATIter = ATL.begin(); ATIter < ATL.end(); ATIter++)
+		if (ATIter->Translate(Frame)) break;
+	
 	// Check the frame for being in range
 	if (Frame < 0) return NONE;
 	if (Frame >= get_number_of_collection_frames(Collection)) return NONE;
@@ -277,7 +246,7 @@ shape_descriptor AnimTxtr_Translate(shape_descriptor Texture)
 
 // Temporary array for storing frames
 // when doing XML parsing
-static GrowableList<short> TempFrameList(16);
+static vector<short> TempFrameList;
 
 
 class XML_AT_ClearParser: public XML_ElementParser
@@ -369,7 +338,7 @@ bool XML_AT_FrameParser::AttributesDone()
 		AttribsMissing();
 		return false;
 	}
-	TempFrameList.Add(Index);
+	TempFrameList.push_back(Index);
 	return true;
 }
 
@@ -401,7 +370,7 @@ bool XML_AT_SequenceParser::Start()
 		IsPresent[k] = false;
 	FramePhase = TickPhase = 0;	// Default values
 	Select = -1;
-	TempFrameList.ResetLength();
+	TempFrameList.clear();
 	
 	return true;
 }
@@ -461,29 +430,19 @@ static char NoFramesSpecified[] = "no frames specified";
 bool XML_AT_SequenceParser::End()
 {
 	// Verify...
-	if (TempFrameList.GetLength() <= 0)
+	if (TempFrameList.size() <= 0)
 	{
 		ErrorString = NoFramesSpecified;
 		return false;
 	}
 	
 	// Build a new sequence
-	AnimTxtr *NewSeqPtr = new AnimTxtr;
+	AnimTxtr NewAnim;
 	
-	NewSeqPtr->Load(TempFrameList.GetLength(),TempFrameList.Begin());
-	NewSeqPtr->SetTiming(NumTicks,FramePhase,TickPhase);
-	NewSeqPtr->Select = Select;
-	
-	AnimTxtr *Current = ATRootList[Collection];
-	if (Current)
-	{
-		// Search for the end and attach there
-		while(Current->Next)
-			Current = Current->Next;
-		Current->Next = NewSeqPtr;
-	}
-	else
-		ATRootList[Collection] = NewSeqPtr;
+	NewAnim.Load(TempFrameList);
+	NewAnim.SetTiming(NumTicks,FramePhase,TickPhase);
+	NewAnim.Select = Select;
+	AnimTxtrList[Collection].push_back(NewAnim);
 	
 	return true;
 }
