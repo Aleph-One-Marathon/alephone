@@ -199,8 +199,6 @@ Dec 29, 2000 (Loren Petrich):
 #define WORLD_V 0
 #endif
 
-#include "screen_shared.cpp"
-
 #define DESIRED_SCREEN_WIDTH 640
 #define DESIRED_SCREEN_HEIGHT 480
 
@@ -279,6 +277,10 @@ static bool DSp_Inited = false;
 
 // Current DrawSprocket context (NULL means none active)
 static DSpContextReference DSp_Ctxt = NULL;
+
+
+// Moved after the globals because the shared stuff might use those values
+#include "screen_shared.cpp"
 
 
 /* ---------- private prototypes */

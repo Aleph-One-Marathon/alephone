@@ -250,11 +250,13 @@ static short DisplayTextStyle = 0;
 
 static void DisplayText(short BaseX, short BaseY, char *Text)
 {
+#ifdef HAVE_OPENGL
 	// OpenGL version:
 	// activate only in the main view, and also if OpenGL is being used for the overhead map
 	if((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 		if (OGL_RenderText(BaseX, BaseY, Text)) return;
-	
+#endif
+
 #if defined(mac)
 	// C to Pascal
 	Str255 PasText;
