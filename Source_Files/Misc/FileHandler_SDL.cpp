@@ -128,7 +128,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable = false)
 
 bool FileSpecifier::Exists()
 {
-#ifdef __unix__
+#if defined(__unix__) || defined(__BEOS__)
 	return access(name.c_str(), R_OK) == 0;
 #else
 #error FileSpecifier::Exists() not implemented for this platform

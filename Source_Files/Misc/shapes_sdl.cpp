@@ -5,7 +5,8 @@
  */
 
 #include <SDL/SDL_endian.h>
-#include <byte_swapping.h>
+
+#include "byte_swapping.h"
 
 
 // Global variables

@@ -57,10 +57,16 @@ static void erase_bitmap(
 		switch (bitmap->bit_depth)
 		{
 			case 8:
-				for (column=0;column<columns;++column) *((pixel8 *)pixels)++= (pixel8) pel;
+				for (column=0;column<columns;++column) {
+					*(pixel8 *)pixels = (pixel8) pel;
+					pixels = (pixel8 *)pixels + 1;
+				}
 				break;
 			case 16:
-				for (column=0;column<columns;++column) *((pixel16 *)pixels)++= (pixel16) pel;
+				for (column=0;column<columns;++column) {
+					*(pixel16 *)pixels = (pixel16) pel;
+					pixels = (pixel16 *)pixels + 1;
+				}
 				break;
 			
 			default:
@@ -115,9 +121,8 @@ void remap_bitmap(
 		pixels= bitmap->row_addresses[0];
 		for (row= 0; row<rows; ++row)
 		{
-			short first, last;
-			
-			first= *((short *)pixels)++, last= *((short *)pixels)++;
+			short first= *(int16 *)pixels; pixels += 2;
+			short last= *(int16 *)pixels; pixels += 2;
 			map_bytes(pixels, table, last-first);
 			pixels+= last-first;
 		}
@@ -164,11 +169,10 @@ void precalculate_bitmap_row_addresses(
 #ifdef MARATHON2
 		for (row= 0; row<rows; ++row)
 		{
-			short first, last;
-			
 			*table++= row_address;
 			
-			first= *((short *)row_address)++, last= *((short *)row_address)++;
+			short first= *(int16 *)row_address; row_address += 2;
+			short last= *(int16 *)row_address; row_address += 2;
 			row_address+= last-first;
 		}
 #endif

@@ -13,6 +13,8 @@ typedef SInt16 int16;
 typedef UInt16 uint16;
 typedef SInt32 int32;
 typedef UInt32 uint32;
+#elif defined(__BEOS__)
+#include <support/SupportDefs.h>
 #elif defined(SDL)
 typedef Uint8 uint8;
 typedef Sint8 int8;
@@ -34,6 +36,10 @@ typedef int32 fixed;
 #define MEG 0x100000
 #define KILO 0x400L
 
+#undef SHORT_MAX
+#undef SHORT_MIN
+#undef LONG_MAX
+#undef LONG_MIN
 #define SHORT_MAX 32767
 #define SHORT_MIN (-SHORT_MAX-1)
 #define LONG_MAX 2147483647

@@ -174,7 +174,7 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 
 			for (count= y1-y0; count>0; --count)
 			{
-				*write= shading_table[read[texture_y>>downshift]], (byte *)write+= bytes_per_row;
+				*write= shading_table[read[texture_y>>downshift]], write = (PEL *)((byte *)write + bytes_per_row);
 				texture_y+= texture_dy;
 			}
 			
@@ -229,25 +229,25 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 
 				for (count= ymax-y0, temp_write= (PEL *)screen->row_addresses[y0] + x; count>0; --count)
 				{
-					temp_write[0]= shading_table0[read0[texture_y0>>downshift]], (byte *)temp_write+= bytes_per_row;
+					temp_write[0]= shading_table0[read0[texture_y0>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y0+= texture_dy0;
 				}
 				
 				for (count= ymax-y1, temp_write= (PEL *)screen->row_addresses[y1] + x; count>0; --count)
 				{
-					temp_write[1]= shading_table1[read1[texture_y1>>downshift]], (byte *)temp_write+= bytes_per_row;
+					temp_write[1]= shading_table1[read1[texture_y1>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y1+= texture_dy1;
 				}
 				
 				for (count= ymax-y2, temp_write= (PEL *)screen->row_addresses[y2] + x; count>0; --count)
 				{
-					temp_write[2]= shading_table2[read2[texture_y2>>downshift]], (byte *)temp_write+= bytes_per_row;
+					temp_write[2]= shading_table2[read2[texture_y2>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y2+= texture_dy2;
 				}
 		
 				for (count= ymax-y3, temp_write= (PEL *)screen->row_addresses[y3] + x; count>0; --count)
 				{
-					temp_write[3]= shading_table3[read3[texture_y3>>downshift]], (byte *)temp_write+= bytes_per_row;
+					temp_write[3]= shading_table3[read3[texture_y3>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y3+= texture_dy3;
 				}
 			}
@@ -276,7 +276,7 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 					write[3]= shading_table3[read3[texture_y3>>downshift]];
 					texture_y3+= texture_dy3;
 					
-					(byte *)write+= bytes_per_row;
+					write = (PEL *)((byte *)write + bytes_per_row);
 				}
 			}
 
@@ -286,25 +286,25 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 				
 				for (count= y1_table[0] - ymax, temp_write= write; count>0; --count)
 				{
-					temp_write[0]= shading_table0[read0[texture_y0>>downshift]], (byte *)temp_write+= bytes_per_row;
+					temp_write[0]= shading_table0[read0[texture_y0>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y0+= texture_dy0;
 				}
 				
 				for (count= y1_table[1] - ymax, temp_write= write; count>0; --count)
 				{
-					temp_write[1]= shading_table1[read1[texture_y1>>downshift]], (byte *)temp_write+= bytes_per_row;
+					temp_write[1]= shading_table1[read1[texture_y1>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y1+= texture_dy1;
 				}
 				
 				for (count= y1_table[2] - ymax, temp_write= write; count>0; --count)
 				{
-					temp_write[2]= shading_table2[read2[texture_y2>>downshift]], (byte *)temp_write+= bytes_per_row;
+					temp_write[2]= shading_table2[read2[texture_y2>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y2+= texture_dy2;
 				}
 		
 				for (count= y1_table[3] - ymax, temp_write= write; count>0; --count)
 				{
-					temp_write[3]= shading_table3[read3[texture_y3>>downshift]], (byte *)temp_write+= bytes_per_row;
+					temp_write[3]= shading_table3[read3[texture_y3>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y3+= texture_dy3;
 				}
 			}
@@ -358,7 +358,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 			{
 				if ((pixel= read[texture_y>>downshift])!=0)
 					*write= shading_table[pixel];
-				(byte *)write+= bytes_per_row;
+				write = (PEL *)((byte *)write + bytes_per_row);
 				texture_y+= texture_dy;
 			}
 			
@@ -415,7 +415,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read0[texture_y0>>downshift])!=0)
 						temp_write[0]= shading_table0[pixel];
-					(byte *)temp_write+= bytes_per_row;
+					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y0+= texture_dy0;
 				}
 				
@@ -423,7 +423,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read1[texture_y1>>downshift])!=0)
 						temp_write[1]= shading_table1[pixel];
-					(byte *)temp_write+= bytes_per_row;
+					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y1+= texture_dy1;
 				}
 				
@@ -431,7 +431,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read2[texture_y2>>downshift])!=0)
 						temp_write[2]= shading_table2[pixel];
-					(byte *)temp_write+= bytes_per_row;
+					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y2+= texture_dy2;
 				}
 		
@@ -439,7 +439,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read3[texture_y3>>downshift])!=0)
 						temp_write[3]= shading_table3[pixel];
-					(byte *)temp_write+= bytes_per_row;
+					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y3+= texture_dy3;
 				}
 			}
@@ -472,7 +472,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 						write[3]= shading_table3[pixel];
 					texture_y3+= texture_dy3;
 					
-					(byte *)write+= bytes_per_row;
+					write = (PEL *)((byte *)write + bytes_per_row);
 				}
 			}
 
@@ -484,7 +484,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read0[texture_y0>>downshift])!=0)
 						temp_write[0]= shading_table0[pixel];
-					(byte *)temp_write+= bytes_per_row;
+					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y0+= texture_dy0;
 				}
 				
@@ -492,7 +492,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read1[texture_y1>>downshift])!=0)
 						temp_write[1]= shading_table1[pixel];
-					(byte *)temp_write+= bytes_per_row;
+					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y1+= texture_dy1;
 				}
 				
@@ -500,7 +500,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read2[texture_y2>>downshift])!=0)
 						temp_write[2]= shading_table2[pixel];
-					(byte *)temp_write+= bytes_per_row;
+					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y2+= texture_dy2;
 				}
 		
@@ -508,7 +508,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read3[texture_y3>>downshift])!=0)
 						temp_write[3]= shading_table3[pixel];
-					(byte *)temp_write+= bytes_per_row;
+					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
 					texture_y3+= texture_dy3;
 				}
 			}
@@ -585,7 +585,7 @@ void TINT_VERTICAL_POLYGON_LINES(
 #endif
 			}
 
-			(byte *)write+= bytes_per_row;
+			write = (PEL *)((byte *)write + bytes_per_row);
 			texture_y+= texture_dy;
 		}
 
@@ -635,7 +635,7 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 				if (seed&1) seed= (seed>>1)^0xb400; else seed= seed>>1;
 			}
 
-			(byte *)write+= bytes_per_row;
+			write = (PEL *)((byte *)write + bytes_per_row);
 			texture_y+= texture_dy;
 		}
 

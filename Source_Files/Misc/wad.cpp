@@ -171,7 +171,6 @@ extern void *level_transition_malloc(size_t size);
 /* Note that this does the correct thing for union wadfiles... */
 struct wad_data *read_indexed_wad_from_file(
 	OpenedFile& OFile, 
-	// fileref file_id, 
 	struct wad_header *header, 
 	short index,
 	boolean read_only)

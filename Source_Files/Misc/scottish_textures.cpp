@@ -824,7 +824,8 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 				for (; screen_width; --screen_width)
 				{
 					void *read= texture->row_addresses[FIXED_INTEGERAL_PART(texture_x)];
-					short first= *((short*)read)++, last= *((short*)read)++;
+					short first= *(int16*)read; read = (int16 *)read + 1;
+					short last= *(int16*)read; read = (int16 *)read + 1;
 					fixed texture_y= texture_y0;
 					short y0= rectangle->clip_top, y1= rectangle->clip_bottom;
 					

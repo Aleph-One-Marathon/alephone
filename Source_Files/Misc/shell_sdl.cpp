@@ -5,6 +5,7 @@
  */
 
 #include "cseries.h"
+
 #include "FileHandler.h"
 #include "resource_manager.h"
 
@@ -46,7 +47,9 @@
 #include "XML_ParseTreeRoot.h"
 #include "XML_Resources_SDL.h"
 
+#ifdef HAVE_CONFIG_H
 #include "confpaths.h"
+#endif
 
 #ifdef HAVE_UNISTD_H
 #include <sys/stat.h>
@@ -70,10 +73,18 @@ FileSpecifier local_data_dir;	// Local (per-user) data file directory
 bool option_fullscreen = false;		// Run fullscreen
 bool option_nosound = false;		// Disable sound output
 
-// No OpenGL yet, so define these here
+#ifndef HAVE_OPENGL
+// No OpenGL, so define these here
 float FogDepth = 1;
 float FogColor[4] = {0, 0, 0, 0};
+#endif
 
+
+#ifdef __BEOS__
+// From shell_beos.cpp
+extern string get_application_directory(void);
+extern string get_preferences_directory(void);
+#endif
 
 // Prototypes
 static void initialize_application(void);
@@ -92,7 +103,7 @@ static void handle_keyword(int type_of_cheat);
 static void usage(const char *prg_name)
 {
 	printf(
-		PACKAGE " " VERSION "\n"
+		"Aleph One " VERSION "\n"
 		"http://source.bungie.org/\n\n"
 		"Original code by Bungie Software <http://www.bungie.com/\n"
 		"Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
@@ -103,7 +114,7 @@ static void usage(const char *prg_name)
 		"\t[-v | --version]     Display the game version\n"
 		"\t[-f | --fullscreen]  Run the game fullscreen\n"
 		"\t[-s | --nosound]     Do not access the sound card\n"
-#ifdef __unix__
+#if defined(__unix__) || defined(__BEOS__)
 		"\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 		"the data directory.\n"
 #endif
@@ -121,7 +132,7 @@ int main(int argc, char **argv)
 		if (strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0) {
 			usage(prg_name);
 		} else if (strcmp(*argv, "-v") == 0 || strcmp(*argv, "--version") == 0) {
-			printf(PACKAGE " " VERSION "\n");
+			printf("Aleph One " VERSION "\n");
 			exit(0);
 		} else if (strcmp(*argv, "-f") == 0 || strcmp(*argv, "--fullscreen") == 0) {
 			option_fullscreen = true;
@@ -202,6 +213,15 @@ static void initialize_application(void)
 	if (home)
 		local_data_dir = home;
 	local_data_dir.AddPart(".alephone");
+	mkdir(local_data_dir.GetName(), 0777);
+#elif defined(__BEOS__)
+	global_data_dir = get_application_directory();
+
+	const char *data_dir = getenv("ALEPHONE_DATA");
+	if (data_dir)
+		global_data_dir = data_dir;
+
+	local_data_dir = get_preferences_directory();
 	mkdir(local_data_dir.GetName(), 0777);
 #else
 #error Data file paths must be set for this platform.

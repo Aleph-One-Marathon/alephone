@@ -246,9 +246,9 @@ void CloseResFile(SDL_RWops *file)
 	assert(i != res_file_list.end());
 
 	// Remove it from the list, close the file and delete the res_file_t
-	res_file_list.erase(i);
 	res_file_t *r = *i;
 	SDL_FreeRW(r->f);
+	res_file_list.erase(i);
 	delete r;
 
 	cur_res_file_t = --res_file_list.end();

@@ -73,7 +73,7 @@ boolean w_open_preferences_file(
 
 		/* does the preferences file exist? */
 		load_preferences(); /* Uses prefInfo.. */
-		
+	
 		if(error_pending())
 		{
 			short type;
@@ -84,29 +84,10 @@ boolean w_open_preferences_file(
 				if (!prefInfo->PrefsFile.Exists())
 				{
 					prefInfo->PrefsFile.Create(Type);
+					prefInfo->wad = create_empty_wad();
 					set_game_error(systemError,prefInfo->PrefsFile.GetError());
 					w_write_preferences_file();
 				}
-				
-				#if 0
-				switch(error)
-				{
-					case errFileNotFound: // to be portable!
-						if (prefInfo->pref_file.Create(preferences_file_type))
-						{
-							prefInfo->wad= create_empty_wad();
-							set_game_error(systemError, error);
-							w_write_preferences_file();
-						}
-						break;
-					
-					case errNone:
-					default:
-						/* Errors besides fnfErr and noErr get returned. */
-						break;
-				}
-				set_game_error(systemError, error);
-				#endif
 			} else {
 				/* Something was invalid.. */
 				if (prefInfo->PrefsFile.Delete())

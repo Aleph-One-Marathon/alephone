@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 
+extern "C" void debugger(const char *message);
 
 /*
  *  Display alert message

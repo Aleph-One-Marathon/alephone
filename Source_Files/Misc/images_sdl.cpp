@@ -71,8 +71,11 @@ void initialize_images_manager(void)
 static void shutdown_images_handler(void)
 {
 	CloseResFile(images_file_handle);
-	if (scenario_file_handle)
+	images_file_handle = NULL;
+	if (scenario_file_handle) {
 		CloseResFile(scenario_file_handle);
+		scenario_file_handle = NULL;
+	}
 }
 
 

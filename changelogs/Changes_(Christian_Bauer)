@@ -1,3 +1,8 @@
+August 27, 2000
+ - now compiles and works under BeOS (far slower than the Linux version on
+   the same machine, however; probably an SDL issue)
+ - fixed crashing bug on startup when no preferences file was found
+
 August 26, 2000
  - improved SDL sound mixing routine: ambient sounds, stereo, 16-bit sound
    and sample rates other than 22050Hz now work

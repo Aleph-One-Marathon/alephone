@@ -1373,7 +1373,7 @@ static void *get_collection_shading_tables(
 {
 	void *shading_tables= get_collection_header(collection_index)->shading_tables;
 
-	(uint8 *)shading_tables+= clut_index*get_shading_table_size(collection_index);
+	shading_tables = (uint8 *)shading_tables + clut_index*get_shading_table_size(collection_index);
 	
 	return shading_tables;
 }
@@ -1385,7 +1385,7 @@ static void *get_collection_tint_tables(
 	struct collection_definition *definition= get_collection_definition(collection_index);
 	void *tint_table= get_collection_header(collection_index)->shading_tables;
 
-	(uint8 *)tint_table+= get_shading_table_size(collection_index)*definition->clut_count + shading_table_size*tint_index;
+	tint_table = (uint8 *)tint_table + get_shading_table_size(collection_index)*definition->clut_count + shading_table_size*tint_index;
 	
 	return tint_table;
 }

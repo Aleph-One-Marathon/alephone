@@ -7,9 +7,12 @@
 #ifndef _SDL_CSERIES
 #define _SDL_CSERIES
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <SDL/SDL.h>
+#include <SDL/SDL_byteorder.h>
 #include <string>
 
 #define DEBUG
@@ -19,7 +22,7 @@
  *  General definitions
  */
 
-#if SDL_BYTE_ORDER == SDL_LIL_ENDIAN
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define LITTLE_ENDIAN 1
 #endif
 

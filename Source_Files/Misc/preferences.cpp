@@ -47,6 +47,10 @@ Aug 12, 2000 (Loren Petrich):
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>	// for getlogin()
+#endif
+
 #include "cseries.h"
 
 #include "map.h"
@@ -507,7 +511,7 @@ static boolean validate_player_preferences(
 static void get_name_from_system(
 	unsigned char *name)
 {
-#ifdef mac
+#if defined(mac)
 	StringHandle name_handle;
 	char old_state;
 
@@ -519,12 +523,9 @@ static void get_name_from_system(
 	
 	pstrcpy(name, *name_handle);
 	HSetState((Handle)name_handle, old_state);
-#elif defined(__unix__)
-	char *login = getenv("LOGNAME");
-	if (login)
-		strcpy((char *)name, login);
-	else
-		name[0] = 0;
+#elif defined(__unix__) || defined(__BEOS__)
+	char *login = getlogin();
+	strcpy((char *)name, login ? login : "Bob User");
 #else
 #error get_name_from_system() needs to be implemented for this platform
 #endif

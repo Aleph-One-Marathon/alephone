@@ -224,7 +224,6 @@ static void set_sound_manager_status(bool active)
 					_sm_globals->total_channel_count = 0;
 					active = _sm_active = _sm_initialized = false;
 				}
-printf("freq %d, channels %d\n", desired.freq, desired.channels);
 				SDL_PauseAudio(false);
 
 			} else {
@@ -342,7 +341,7 @@ static void dispose_sound(short sound_index)
  *  a single sound unless _sm_parameters->flags & _more_sounds_flag)
  */
 
-static byte *read_sound_from_file(short sound_index, int &size)
+static byte *read_sound_from_file(short sound_index, long &size)
 {
 	size = 0;
 

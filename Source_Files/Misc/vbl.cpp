@@ -436,7 +436,7 @@ void save_recording_queue_chunk(
 		if (i && flag != last_flag)
 		{
 			*(short*)location = run_count;
-			((short*)location)++;
+			location = (long *)((short*)location + 1);
 			*location++ = last_flag;
 			count += sizeof(short) + sizeof(long);
 			num_flags_saved += run_count;
@@ -451,7 +451,7 @@ void save_recording_queue_chunk(
 	
 	// now save the final run
 	*(short*)location = run_count;
-	((short*)location)++;
+	location = (long *)((short *)location + 1);
 	*location++ = last_flag;
 	count += sizeof(short) + sizeof(long);
 	num_flags_saved += run_count;
@@ -459,7 +459,7 @@ void save_recording_queue_chunk(
 	if (max_flags<RECORD_CHUNK_SIZE)
 	{
 		*(short*)location = END_OF_RECORDING_INDICATOR;
-		((short*)location)++;
+		location = (long *)((short *)location + 1);
 		*location++ = 0;
 		count += sizeof(short) + sizeof(long);
 		num_flags_saved += RECORD_CHUNK_SIZE-max_flags;
