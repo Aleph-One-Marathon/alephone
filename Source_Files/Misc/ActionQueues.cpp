@@ -58,6 +58,8 @@ ActionQueues::ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize) 
     for (unsigned i = 0; i < mNumPlayers; ++i)
     {
             mQueueHeaders[i].buffer= mFlagsBuffer + i*mQueueSize;
+            // From reset()
+            mQueueHeaders[i].read_index = mQueueHeaders[i].write_index = 0;
     }
 }
 
