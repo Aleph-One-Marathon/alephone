@@ -289,11 +289,11 @@ inline void MacFilename_To_CString(unsigned char *Source, char *Destination)
 inline bool InRange(int Type) {return (Type >= 0 && Type < NUMBER_OF_TYPECODES);}
 
 
-void FileSpecifier::GetName(char *Name)
+void FileSpecifier::GetName(char *Name) const
 {
 	MacFilename_To_CString(Spec.name,Name);
 }
-void FileSpecifier::SetName(char *Name, int Type)
+void FileSpecifier::SetName(const char *Name, int Type)
 {
 	CString_ToFilename(Name,Spec.name);
 }
@@ -755,7 +755,7 @@ bool FileSpecifier::Delete()
 bool FileSpecifier::operator==(FileSpecifier& F)
 {
 	// Copied out of find_files.c
-	Boolean equal= false;
+	bool equal= false;
 	
 	if(Spec.vRefNum==F.Spec.vRefNum && Spec.parID==F.Spec.parID && 
 		EqualString(Spec.name, F.Spec.name, false, false))
