@@ -693,8 +693,8 @@ void display_main_menu(
 #elif defined(SDL)
         // JTP: This works, but I don't know correctness
         SDL_Surface *world_pixels = SDL_GetVideoSurface();
-        short X0 = world_pixels-w;
-        short Y0 = world_pixels-h;
+        short X0 = world_pixels->w;
+        short Y0 = world_pixels->h;
 #endif
         // The line spacing is a generalization of "5" for larger fonts
         short Offset = Font.LineSpacing / 3;
