@@ -4,6 +4,9 @@ Sunday, October 2, 1994 1:25:23 PM  (Jason')
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Aug 31, 2000 (Loren Petrich):
+	Added unpacking code for the physics models
 */
 
 #include "cseries.h"
@@ -18,14 +21,24 @@ Aug 12, 2000 (Loren Petrich):
 // LP addition
 #include "FileHandler.h"
 
+// LP: get all the unpacker definitions
+#include "monsters.h"
+#include "effects.h"
+#include "projectiles.h"
+#include "player.h"
+#include "weapons.h"
+
 /* ---------- globals */
 
 /* sadly extern'ed from their respective files */
+// LP: no longer necessary
+/*
 extern byte monster_definitions[];
 extern byte projectile_definitions[];
 extern byte effect_definitions[];
 extern byte weapon_definitions[];
 extern byte physics_models[];
+*/
 
 #define IMPORT_STRUCTURE
 #include "extensions.h"
@@ -156,14 +169,71 @@ static struct wad_data *get_physics_wad_data(
 static void import_physics_wad_data(
 	struct wad_data *wad)
 {
+	// LP: this code is copied out of game_wad.c
+	long data_length;
+	byte *data;
+	short count;
+	bool PhysicsModelLoaded = false;
+	
+	data= (unsigned char *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
+	count = data_length/SIZEOF_monster_definition;
+	assert(count*SIZEOF_monster_definition == data_length);
+	assert(count <= NUMBER_OF_MONSTER_TYPES);
+	if (data_length > 0)
+	{
+		PhysicsModelLoaded = true;
+		unpack_monster_definition(data,count);
+	}
+	
+	data= (unsigned char *)extract_type_from_wad(wad, EFFECTS_PHYSICS_TAG, &data_length);
+	count = data_length/SIZEOF_effect_definition;
+	assert(count*SIZEOF_effect_definition == data_length);
+	assert(count <= NUMBER_OF_EFFECT_TYPES);
+	if (data_length > 0)
+	{
+		PhysicsModelLoaded = true;
+		unpack_effect_definition(data,count);
+	}
+	
+	data= (unsigned char *)extract_type_from_wad(wad, PROJECTILE_PHYSICS_TAG, &data_length);
+	count = data_length/SIZEOF_projectile_definition;
+	assert(count*SIZEOF_projectile_definition == data_length);
+	assert(count <= NUMBER_OF_PROJECTILE_TYPES);
+	if (data_length > 0)
+	{
+		PhysicsModelLoaded = true;
+		unpack_projectile_definition(data,count);
+	}
+	
+	data= (unsigned char *)extract_type_from_wad(wad, PHYSICS_PHYSICS_TAG, &data_length);
+	count = data_length/SIZEOF_physics_constants;
+	assert(count*SIZEOF_physics_constants == data_length);
+	assert(count <= get_number_of_physics_models());
+	if (data_length > 0)
+	{
+		PhysicsModelLoaded = true;
+		unpack_physics_constants(data,count);
+	}
+	
+	data= (unsigned char *)extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
+	count = data_length/SIZEOF_weapon_definition;
+	assert(count*SIZEOF_weapon_definition == data_length);
+	assert(count <= get_number_of_weapon_types());
+	if (data_length > 0)
+	{
+		PhysicsModelLoaded = true;
+		unpack_weapon_definition(data,count);
+	}
+	
+#if 0
 	short index;
 	
 	for(index= 0; index<NUMBER_OF_DEFINITIONS; ++index)
 	{
 		long length;
 		struct definition_data *definition= definitions+index;
-		void *data;			
-
+		void *data;
+		
 		/* Given a wad, extract the given tag from it */
 		data= extract_type_from_wad(wad, definition->tag, &length);
 		if(data)
@@ -172,6 +242,7 @@ static void import_physics_wad_data(
 			memcpy(definition->data, data, length);
 		}
 	}
+#endif
 	
 	return;
 }
