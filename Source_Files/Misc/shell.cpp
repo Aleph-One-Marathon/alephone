@@ -82,6 +82,9 @@ Jul 29, 2000 (Loren Petrich):
 
 Jul 30, 2000 (Loren Petrich):
 	Added posting of MacOS events from the local event queue
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
 #include <stdlib.h>
@@ -139,6 +142,8 @@ Jul 30, 2000 (Loren Petrich):
 #include "XML_ResourceFork.h"
 #include "XML_ParseTreeRoot.h"
 
+#include "FileHandler_Mac.h"
+
 // #ifndef FINAL
 #include "weapons.h" /* To remove process_new_item_for_reloading warning and debug_print_weapon_status warning */
 // #endif
@@ -186,8 +191,10 @@ unsigned long LocalEventFlags = 0;
 bool CheatsActive = false;
 
 /* ---------- externs that I couldn't fit into the #include heirarchy nicely */
-extern boolean load_and_start_game(FileDesc *file);
-extern boolean handle_open_replay(FileDesc *replay_file);
+extern boolean load_and_start_game(FileObject& File);
+// extern boolean load_and_start_game(FileDesc *file);
+extern boolean handle_open_replay(FileObject& File);
+// extern boolean handle_open_replay(FileDesc *replay_file);
 
 /* ---------- private code */
 
@@ -735,37 +742,41 @@ static pascal OSErr handle_open_document(
 						FInfo theFInfo;
 
 						FSpGetFInfo(&myFSS, &theFInfo);
+						// Create a file object to use instead
+						FileObject_Mac InputFile;
+						InputFile.SetSpec(myFSS);
+						
 						// LP change, since the filetypes are no longer constants
 						OSType Typecode = theFInfo.fdType;
 						if (Typecode == SCENARIO_FILE_TYPE)
 						{
-							set_map_file((FileDesc *) &myFSS);
+							set_map_file(InputFile);
 						}
 						else if (Typecode == SAVE_GAME_TYPE)
 						{
-							if(load_and_start_game((FileDesc *) &myFSS))
+							if(load_and_start_game(InputFile))
 							{
 								done= TRUE;
 							}
 						}
 						else if (Typecode == FILM_FILE_TYPE)
 						{
-							if(handle_open_replay((FileDesc *) &myFSS))
+							if(handle_open_replay(InputFile))
 							{
 								done= TRUE;
 							}
 						}
 						else if (Typecode == PHYSICS_FILE_TYPE)
 						{
-							set_physics_file((FileDesc *) &myFSS);
+							set_physics_file(InputFile);
 						}
 						else if (Typecode == SHAPES_FILE_TYPE)
 						{
-							open_shapes_file(&myFSS);
+							open_shapes_file(InputFile);
 						}
 						else if (Typecode == SOUNDS_FILE_TYPE)
 						{
-					 		open_sound_file(&myFSS);
+					 		open_sound_file(InputFile);
 						}
 					}
 				}
