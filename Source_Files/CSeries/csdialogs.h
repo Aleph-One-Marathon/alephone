@@ -146,7 +146,7 @@ extern void set_dialog_header_proc(
 	dialog_header_proc_ptr proc);
 
 // For Carbon-events dialogs
-#ifdef APPLICATION_IS_BUNDLED
+#ifdef USES_NIBS
 
 // Runs a modal dialog; needs:
 //   Dialog window

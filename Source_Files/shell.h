@@ -128,7 +128,7 @@ struct system_information_data
 extern struct system_information_data *system_information;
 
 #ifdef TARGET_API_MAC_CARBON
-#ifdef APPLICATION_IS_BUNDLED
+#ifdef USES_NIBS
 
 extern CFBundleRef MainBundle;
 extern IBNibRef GUI_Nib;

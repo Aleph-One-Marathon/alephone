@@ -513,7 +513,7 @@ GetListBoxListHandle( ControlHandle control, ListHandle* list )
 
 
 // For Carbon-events dialogs
-#ifdef APPLICATION_IS_BUNDLED
+#ifdef USES_NIBS
 
 #include "csalerts.h"
 

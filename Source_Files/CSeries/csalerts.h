@@ -58,6 +58,10 @@ extern void _alephone_warn(
 	long line,
 	char *what);
 
+#ifdef TARGET_API_MAC_CARBON
+DialogItemIndex SimpleAlert(AlertType Type, const char *Message, const char *Explain = NULL);
+#endif
+
 #undef assert
 #ifdef DEBUG
 #define assert(what) ((what) ? (void)0 : _alephone_assert(__FILE__,__LINE__,"Assertion failed: " #what))

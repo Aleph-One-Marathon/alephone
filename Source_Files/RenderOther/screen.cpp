@@ -260,7 +260,7 @@ extern bool OGL_HUDActive;
 //#define DEFAULT_WORLD_WIDTH 640
 //#define DEFAULT_WORLD_HEIGHT 320
 
-#ifdef APPLICATION_IS_BUNDLED
+#ifdef USES_NIBS
 const CFStringRef Window_Main_Game = CFSTR("Main_Game");
 const CFStringRef Window_Main_Backdrop = CFSTR("Main_Backdrop");
 #else
@@ -481,7 +481,7 @@ void initialize_screen(
 		assert(uncorrected_color_table && world_color_table && visible_color_table && interface_color_table);
 
 #if defined(TARGET_API_MAC_CARBON)
-#ifdef APPLICATION_IS_BUNDLED
+#ifdef USES_NIBS
 		error = CreateWindowFromNib(GUI_Nib,Window_Main_Backdrop, &backdrop_window);
 		assert(error == noErr);
 #else
@@ -507,7 +507,7 @@ void initialize_screen(
 		ShowWindow(backdrop_window);
 
 #if defined(TARGET_API_MAC_CARBON)
-#ifdef APPLICATION_IS_BUNDLED
+#ifdef USES_NIBS
 		error = CreateWindowFromNib(GUI_Nib,Window_Main_Game, &screen_window);
 		assert(error == noErr);
 #else

@@ -97,7 +97,7 @@ Feb 13, 2003 (Woody Zenfell):
 	#pragma segment macintosh_
 #endif
 
-#ifdef APPLICATION_IS_BUNDLED
+#ifdef USES_NIBS
 const CFStringRef Window_Game_Goto_Level = CFSTR("Game_Goto_Level");
 const short iLEVEL_SELECTOR = 3;
 #else
@@ -146,7 +146,7 @@ void do_preferences(
 	}
 }
 
-#ifdef APPLICATION_IS_BUNDLED
+#ifdef USES_NIBS
 struct LevelNumberData
 {
 	ControlRef MenuCtrl;

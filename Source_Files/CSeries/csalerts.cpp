@@ -51,6 +51,24 @@ void alert_user(
 	short item,
 	OSErr error)
 {
+#ifdef TARGET_API_MAC_CARBON
+	char *Msg = TS_GetCString(resid,item);
+	char NumStr[256];
+	sprintf(NumStr,"Error ID: %hd",error);
+	InitCursor();
+	switch(severity)
+	{
+	case infoError:
+		SimpleAlert(kAlertNoteAlert,Msg,NumStr);
+		logError2("alert (ID=%hd): %s",error,Msg);
+		break;
+		
+	case fatalError:
+		SimpleAlert(kAlertStopAlert,Msg,NumStr);
+		logFatal2("fatal alert (ID=%hd): %s",error,Msg);
+		ExitToShell();
+	}
+#else
 	getpstr(alert_text,resid,item);
 	ParamText(alert_text,NULL,"\p","\p");
 	NumToString(error,alert_text);
@@ -67,6 +85,7 @@ void alert_user(
 		Alert(128,NULL);
 		exit(1);
 	}
+#endif
 }
 
 void vpause(
@@ -74,6 +93,11 @@ void vpause(
 {
 	long len;
 
+#ifdef TARGET_API_MAC_CARBON
+	InitCursor();
+	SimpleAlert(kAlertNoteAlert,message);
+	logWarning1("vpause: %s", message);
+#else
 	len=strlen(message);
 	if (len>255)
 		len=255;
@@ -83,13 +107,14 @@ void vpause(
 	InitCursor();
         logWarning1("vpause: %s", message);
 	Alert(129,NULL);
+#endif
 }
 
 void halt(void)
 {
         logFatal("halt called");
 	Debugger();
-	exit(1);
+	ExitToShell();
 }
 
 void vhalt(
@@ -97,6 +122,11 @@ void vhalt(
 {
 	long len;
 
+#ifdef TARGET_API_MAC_CARBON
+	InitCursor();
+	SimpleAlert(kAlertStopAlert,message);
+	logFatal1("vhalt: %s", message);
+#else
 	len=strlen(message);
 	if (len>255)
 		len=255;
@@ -106,7 +136,8 @@ void vhalt(
 	InitCursor();
         logFatal1("vhalt: %s", message);
 	Alert(128,NULL);
-	exit(1);
+#endif
+	ExitToShell();
 }
 
 static char assert_text[256];
@@ -126,3 +157,20 @@ void _alephone_warn(
 {
 	vpause(csprintf(assert_text,"%s:%ld: %s",file,line,what));
 }
+
+
+#ifdef TARGET_API_MAC_CARBON
+DialogItemIndex SimpleAlert(AlertType Type, const char *Message, const char *Explain)
+{
+	Str255 MsgStr;
+	Str255 XplStr;
+	CopyCStringToPascal(Message,MsgStr);
+	CopyCStringToPascal(Explain,XplStr);
+
+	DialogItemIndex Button;
+	StandardAlert(Type,MsgStr,XplStr,NULL,&Button);
+
+	return Button;
+}
+#endif
+
