@@ -128,9 +128,14 @@ ActionQueues::dequeueActionFlags(
 		//dprintf("Player is zombie!", player_index);	// CP: Disabled for scripting
 		action_flags= 0;
 	}
+	else if (queue->read_index==queue->write_index)
+	{
+		// None to be read
+		action_flags= 0;
+	}
 	else
 	{
-		assert(queue->read_index!=queue->write_index);
+		// assert(queue->read_index!=queue->write_index);
 		action_flags= queue->buffer[queue->read_index];
 		queue->read_index= (queue->read_index+1) % mQueueSize;
 	}
