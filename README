@@ -21,6 +21,7 @@ Successfully tested systems include:
  - FreeBSD/i386
  - Solaris/sparc
  - BeOS/x86
+ - BeOS/ppc
 
 To compile Aleph One/SDL, you need a pretty up-to-date C++ compiler. Using
 gcc >= 2.95 should give the best results. Users of pre-ISO C++ compilers

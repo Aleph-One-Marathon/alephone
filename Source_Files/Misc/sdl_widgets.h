@@ -193,9 +193,9 @@ protected:
 
 class w_toggle : public w_select {
 public:
-	w_toggle(const char *name, bool selection, const char **labels = onoff_labels);
-
 	static const char *onoff_labels[3];
+
+	w_toggle(const char *name, bool selection, const char **labels = onoff_labels);
 };
 
 

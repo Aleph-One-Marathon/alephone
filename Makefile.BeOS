@@ -89,7 +89,12 @@ RSRCS=
 #		naming scheme you need to specify the path to the library
 #		and it's name
 #		library: my_lib.a entry: my_lib.a or path/my_lib.a
-LIBS=be stdc++.r4 SDL
+MACHINE=$(shell uname -m)
+ifeq ($(MACHINE), BePC)
+  LIBS=be stdc++.r4
+else
+  LIBS=be game device media GL textencoding
+endif
 
 #	specify additional paths to directories following the standard
 #	libXXX.so or libXXX.a naming scheme.  You can specify full paths
@@ -118,7 +123,7 @@ OPTIMIZE=
 #	to use.  For example, setting DEFINES to "DEBUG=1" will cause the
 #	compiler option "-DDEBUG=1" to be used.  Setting DEFINES to "DEBUG"
 #	would pass "-DDEBUG" on the compiler's command line.
-DEFINES= SDL HAVE_UNISTD_H VERSION=\"0.10.4\"
+DEFINES= SDL HAVE_UNISTD_H VERSION=\"0.10.5\"
 
 #	specify special warning levels
 #	if unspecified default warnings will be used
@@ -129,7 +134,7 @@ WARNINGS =
 #	specify whether image symbols will be created
 #	so that stack crawls in the debugger are meaningful
 #	if TRUE symbols will be created
-SYMBOLS = 
+SYMBOLS =
 
 #	specify debug settings
 #	if TRUE will allow application to be run from a source-level

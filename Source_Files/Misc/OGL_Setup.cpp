@@ -46,6 +46,8 @@ bool OGL_Initialize()
 #else
 #error OGL_Initialize() not implemented for this platform
 #endif
+#else
+	return false;
 #endif
 }
 

@@ -12,9 +12,6 @@
 #include "interface.h"
 #include "game_errors.h"
 
-#include "sdl_dialogs.h"
-#include "sdl_widgets.h"
-
 #include <stdio.h>
 #include <errno.h>
 #include <string>
