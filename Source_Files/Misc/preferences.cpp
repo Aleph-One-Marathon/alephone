@@ -711,6 +711,7 @@ static void default_player_preferences(player_preferences_data *preferences)
 	preferences->Crosshairs.Shape = CHShape_RealCrosshairs;
 	preferences->Crosshairs.Color = rgb_white;
 	preferences->Crosshairs.Opacity = 0.5;
+	preferences->Crosshairs.PreCalced = false;
 }
 
 static void default_input_preferences(input_preferences_data *preferences)
