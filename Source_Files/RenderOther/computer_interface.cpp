@@ -400,7 +400,7 @@ void initialize_terminal_manager(
 	objlist_clear(player_terminals, MAXIMUM_NUMBER_OF_PLAYERS);
 
 #ifdef mac
-	for(int index= 0; index<NUMBER_OF_TERMINAL_KEYS; ++index)
+	for(unsigned int index= 0; index<NUMBER_OF_TERMINAL_KEYS; ++index)
 	{
 		terminal_keys[index].mask= 1 << (terminal_keys[index].keycode&7);
 		terminal_keys[index].offset= terminal_keys[index].keycode>>3;
@@ -1490,7 +1490,7 @@ static void next_terminal_group(
 				
 			case _level_finished:
 				terminal_data->current_group= find_group_type(terminal_text, _success_group);
-				if(terminal_data->current_group==terminal_text->groupings.size()) 
+				if(terminal_data->current_group==static_cast<int16>(terminal_text->groupings.size()))
 				{
 					/* Fallback. */
 					terminal_data->current_group= find_group_type(terminal_text, _unfinished_group);
@@ -1500,7 +1500,7 @@ static void next_terminal_group(
 				
 			case _level_failed:
 				terminal_data->current_group= find_group_type(terminal_text, _failure_group);
-				if(terminal_data->current_group==terminal_text->groupings.size()) 
+				if(terminal_data->current_group==static_cast<int16>(terminal_text->groupings.size()))
 				{
 					/* Fallback. */
 					terminal_data->current_group= find_group_type(terminal_text, _unfinished_group);
@@ -1664,7 +1664,7 @@ static void get_date_string(
 	/* convert the game seconds to machine seconds */
 #ifdef mac
 	// XXX Why is this here? Doesn't localtime() work on the Mac? - CB
-	seconds = 2882914937;
+	seconds = 2882914937u;
 	seconds += (game_time_passed/TICKS_PER_SECOND)*MACINTOSH_TICKS_PER_SECOND; 
 	DateTimeRec converted_date;
 	SecondsToDate(seconds, &converted_date);
