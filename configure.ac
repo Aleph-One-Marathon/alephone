@@ -95,7 +95,7 @@ case "$target" in
     ;;
   *-*-linux*)
     SYS_GL_LIBS="-lGL -lpthread"
-    CPPFLAGS="$CPPFLAGS -L/usr/X11R6/lib"
+    CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include -L/usr/X11R6/lib"
     ;;
   *)
     SYS_GL_LIBS="-lGL"
