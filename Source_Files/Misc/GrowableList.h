@@ -82,6 +82,9 @@ public:
 	// Reference to member (works like an array reference);
 	// this routine has no validity checks (could be built in, if desired)
 	T& operator[] (int Indx) {return List[Indx];}
+	
+	// Pointer to member (works like + on a pointer)
+	T* operator+ (int Indx) {return List + Indx;}
 		
 	// Reset the length to zero
 	void ResetLength() {Length = 0;}
