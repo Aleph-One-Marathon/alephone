@@ -4164,9 +4164,10 @@ uint8 *unpack_player_weapon_data(uint8 *Stream, int Count)
 	{
 		StreamToValue(S,ObjPtr->current_weapon);
 		StreamToValue(S,ObjPtr->desired_weapon);
-		for (int m=0; m<NUMBER_OF_WEAPONS; m++)
+		int m;
+		for (m=0; m<NUMBER_OF_WEAPONS; m++)
 			StreamToWeapData(S,ObjPtr->weapons[m]);
-		for (int m=0; m<MAXIMUM_SHELL_CASINGS; m++)
+		for (m=0; m<MAXIMUM_SHELL_CASINGS; m++)
 			StreamToShellData(S,ObjPtr->shell_casings[m]);
 	}
 	assert((S - Stream) == Count*SIZEOF_player_weapon_data);

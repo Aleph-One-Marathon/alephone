@@ -8,7 +8,7 @@
 #define SDL_WIDGETS_H
 
 struct SDL_Surface;
-struct sdl_font_info;
+class sdl_font_info;
 
 
 /*

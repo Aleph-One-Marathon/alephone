@@ -35,8 +35,8 @@ Aug 12, 2000 (Loren Petrich):
 #define MAXIMUM_UNION_WADFILES 16
 #define MAXIMUM_OPEN_WADFILES 3
 
-struct FileSpecifier;
-struct OpenedFile;
+class FileSpecifier;
+class OpenedFile;
 
 /* ------------- typedefs */
 typedef uint32 WadDataType;

@@ -137,7 +137,7 @@ XML_ElementParser *InterfaceRectangles_GetParser();
 void SetColorFontParserToScreenDrawing();
 
 #ifdef SDL
-struct sdl_font_info;
+class sdl_font_info;
 struct world_point2d;
 extern int draw_text(SDL_Surface *s, const char *text, int length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style);
 extern int char_width(uint8 c, const sdl_font_info *font, uint16 style);
