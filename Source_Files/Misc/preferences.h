@@ -49,15 +49,14 @@ Oct 22, 2001 (Woody Zenfell):
 
 
 /* New preferences junk */
-const _fixed DEFAULT_MONITOR_REFRESH_FREQUENCY = 60 << 16;	// 60 Hz
+const float DEFAULT_MONITOR_REFRESH_FREQUENCY = 60;	// 60 Hz
 struct graphics_preferences_data
 {
 	struct screen_mode_data screen_mode;
 #ifdef mac
 	GDSpec device_spec;
-	// LP: this is the frequency value multiplied by 0x10000,
-	// so as to take care of fractional values
-	_fixed refresh_frequency;
+	// LP: converted this to floating-point for convenience
+	float refresh_frequency;
 #endif
 	// LP change: added OpenGL support
 	OGL_ConfigureData OGL_Configure;

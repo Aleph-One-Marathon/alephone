@@ -20,6 +20,9 @@
 Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 	Default to keyboard and mouse control under Carbon
 	for there are no InputSprockets
+
+Apr 30, 2002 (Loren Petrich):
+	Converting to a MML-based preferences system
 */
 
 /*
@@ -48,10 +51,40 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #include "fades.h"
 #include "extensions.h"
 
+#include "XML_ElementParser.h"
+#include "XML_DataBlock.h"
+
 #include "tags.h"
 
 #include <string.h>
 #include <stdlib.h>
+
+
+#ifdef mac
+// Marathon-engine dialog boxes:
+const short FatalErrorAlert = 128;
+const short NonFatalErrorAlert = 129;
+#endif
+
+
+// MML-like Preferences Stuff; it makes obsolete
+// w_open_preferences_file(), w_get_data_from_preferences(), and w_write_preferences_file()
+// in wad_prefs.*
+
+// The absolute root element ...
+static XML_ElementParser PrefsRootParser("");
+
+// This is the canonical root element in the XML-format preference file:
+static XML_ElementParser MarathonPrefsParser("mara_prefs");
+
+// Interpreter of read-in file
+static XML_DataBlock XML_DataBlockLoader;
+
+// Sets up the parser, of course
+static void SetupPrefsParseTree();
+
+// Have the prefs been inited?
+static bool PrefsInited = false;
 
 
 // Global preferences data
@@ -71,25 +104,45 @@ inline short memory_error() {return 0;}
 #endif
 
 // Prototypes
-static void *get_sound_pref_data(void);
-static void *get_graphics_pref_data(void);
+#ifdef OBSOLETE
 static void default_graphics_preferences(void *prefs);
 static bool validate_graphics_preferences(void *prefs);
 static void default_serial_number_preferences(void *prefs);
 static bool validate_serial_number_preferences(void *prefs);
 static void default_network_preferences(void *prefs);
 static bool validate_network_preferences(void *prefs);
-static void *get_player_pref_data(void);
 static void default_player_preferences(void *prefs);
 static bool validate_player_preferences(void *prefs);
-static void *get_input_pref_data(void);
 static void default_input_preferences(void *prefs);
 static bool validate_input_preferences(void *prefs);
-static void *get_environment_pref_data(void);
 static void default_environment_preferences(void *prefs);
 static bool validate_environment_preferences(void *prefs);
+#endif
+static void *get_player_pref_data(void);
+static void *get_input_pref_data(void);
+static void *get_sound_pref_data(void);
+static void *get_graphics_pref_data(void);
+static void *get_environment_pref_data(void);
 static bool ethernet_active(void);
 static void get_name_from_system(unsigned char *name);
+
+// LP: getting rid of the (void *) mechanism as inelegant and non-type-safe
+static void default_graphics_preferences(graphics_preferences_data *preferences);
+static bool validate_graphics_preferences(graphics_preferences_data *preferences);
+static void default_serial_number_preferences(serial_number_data *preferences);
+static bool validate_serial_number_preferences(serial_number_data *preferences);
+static void default_network_preferences(network_preferences_data *preferences);
+static bool validate_network_preferences(network_preferences_data *preferences);
+static void default_player_preferences(player_preferences_data *preferences);
+static bool validate_player_preferences(player_preferences_data *preferences);
+static void default_input_preferences(input_preferences_data *preferences);
+static bool validate_input_preferences(input_preferences_data *preferences);
+static void default_environment_preferences(environment_preferences_data *preferences);
+static bool validate_environment_preferences(environment_preferences_data *preferences);
+
+// For writing out boolean values
+inline const char *BoolString(bool B) {return (B ? "true" : "false");}
+
 
 // Include platform-specific file
 #if defined(mac)
@@ -106,6 +159,89 @@ static void get_name_from_system(unsigned char *name);
 void initialize_preferences(
 	void)
 {
+	// In case this function gets called more than once...
+	if (!PrefsInited)
+	{
+		SetupPrefsParseTree();
+		
+		graphics_preferences= new graphics_preferences_data;
+		player_preferences= new player_preferences_data;
+		input_preferences= new input_preferences_data;
+		sound_preferences= new sound_manager_parameters;
+		serial_preferences= new serial_number_data;
+		network_preferences= new network_preferences_data;
+		environment_preferences= new environment_preferences_data;
+
+		XML_DataBlockLoader.CurrentElement = &PrefsRootParser;
+		XML_DataBlockLoader.SourceName = "[Preferences]";
+				
+		PrefsInited = true;
+	}
+		
+	// Set to defaults; will be overridden by reading in the XML stuff
+	default_graphics_preferences(graphics_preferences);
+	default_serial_number_preferences(serial_preferences);
+	default_network_preferences(network_preferences);
+	default_player_preferences(player_preferences);
+	default_input_preferences(input_preferences);
+	default_sound_manager_parameters(sound_preferences);
+	default_environment_preferences(environment_preferences);
+	
+	// Slurp in the file and parse it
+	
+	try
+	{
+		FileSpecifier FileSpec;
+
+#if defined(mac)
+		FileSpec.SetParentToPreferences();
+		FileSpec.SetName(getcstr(temporary, strFILENAMES, filenamePREFERENCES),'TEXT');
+#elif defined(SDL)
+		FileSpec.SetToPreferencesDir();
+		FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+#endif
+		
+		OpenedFile OFile;
+		if (!FileSpec.Open(OFile)) throw 0;
+		
+		long Len = 0;
+		OFile.GetLength(Len);
+		if (Len <= 0) throw 0;
+		
+		vector<char> FileContents(Len);
+		
+		if (!OFile.Read(Len,&FileContents[0])) throw 0;
+		
+		OFile.Close();
+
+#if defined(mac)
+		if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
+		{
+			ParamText("\pThere were preferences-file parsing errors",0,0,0);
+			Alert(FatalErrorAlert,NULL);
+			ExitToShell();
+		}
+#elif defined(SDL)
+		{
+			fprintf(stderr, "There were preferences-file parsing errors");
+			exit(0);
+		}
+#endif
+	}
+	catch(...)
+	{
+		// Could not open or read the preferences file, therefore we do nothing
+	}
+	
+	// Check on the read-in prefs
+	validate_graphics_preferences(graphics_preferences);
+	validate_serial_number_preferences(serial_preferences);
+	validate_network_preferences(network_preferences);
+	validate_player_preferences(player_preferences);
+	validate_input_preferences(input_preferences);
+	validate_environment_preferences(environment_preferences);
+
+#ifdef OBSOLETE
 	OSErr err;
 
 	if(!w_open_preferences_file(getcstr(temporary, strFILENAMES, filenamePREFERENCES),
@@ -142,6 +278,7 @@ void initialize_preferences(
 		default_network_preferences,
 		validate_network_preferences);
 	environment_preferences= (struct environment_preferences_data *)get_environment_pref_data();
+#endif
 }
 
 
@@ -152,6 +289,114 @@ void initialize_preferences(
 void write_preferences(
 	void)
 {
+#if defined(mac)
+	// Mac stuff: save old default directory
+	short OldVRefNum;
+	long OldParID;
+	HGetVol(nil,&OldVRefNum,&OldParID);
+	
+	// Set default directory to prefs directory
+	FileSpecifier FileSpec;
+	if (!FileSpec.SetParentToPreferences()) return;
+	if (HSetVol(nil, FileSpec.GetSpec().vRefNum, FileSpec.GetSpec().parID) != noErr) return;
+	
+	// Open the file
+	FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
+
+#elif defined(SDL)
+	// Needs to be set to the preferences directory
+	FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
+#endif
+	
+	if (!F)
+	{
+#ifdef mac
+		// Restore the old default directory and quit
+		HSetVol(nil,OldVRefNum,OldParID);
+#endif
+		return;
+	}
+
+	fprintf(F,"<!-- Preferences file for the Marathon Open Source \"Aleph One\" engine -->\n\n");
+	
+	fprintf(F,"<mara_prefs>\n\n");
+	
+	fprintf(F,"<graphics\n");
+	fprintf(F,"  scmode_size=\"%hd\"\n",graphics_preferences->screen_mode.size);
+	fprintf(F,"  scmode_accel=\"%hd\"\n",graphics_preferences->screen_mode.acceleration);
+	fprintf(F,"  scmode_highres=\"%s\"\n",BoolString(graphics_preferences->screen_mode.high_resolution));
+	fprintf(F,"  scmode_fullscreen=\"%s\"\n",BoolString(graphics_preferences->screen_mode.fullscreen));
+	fprintf(F,"  scmode_bitdepth=\"%hd\"\n",graphics_preferences->screen_mode.bit_depth);
+	fprintf(F,"  scmode_gamma=\"%hd\"\n",graphics_preferences->screen_mode.gamma_level);
+#ifdef mac
+	fprintf(F,"  devspec_slot=\"%hd\"\n",graphics_preferences->device_spec.slot);
+	fprintf(F,"  devspec_flags=\"%hd\"\n",graphics_preferences->device_spec.flags);
+	fprintf(F,"  devspec_bitdepth=\"%hd\"\n",graphics_preferences->device_spec.bit_depth);
+	fprintf(F,"  devspec_width=\"%hd\"\n",graphics_preferences->device_spec.width);
+	fprintf(F,"  devspec_height=\"%hd\"\n",graphics_preferences->device_spec.height);
+	fprintf(F,"  frequency=\"%f\"\n",graphics_preferences->refresh_frequency);
+#endif
+	fprintf(F,"/>\n\n");
+	
+	fprintf(F,"<player\n");
+	fprintf(F,"  color=\"%hd\"\n",player_preferences->color);
+	fprintf(F,"  team=\"%hd\"\n",player_preferences->team);
+	fprintf(F,"  last_time_ran=\"%u\"\n",player_preferences->last_time_ran);
+	fprintf(F,"  difficulty=\"%hd\"\n",player_preferences->difficulty_level);
+	fprintf(F,"  bkgd_music=\"%s\"\n",BoolString(player_preferences->background_music_on));
+	fprintf(F,"/>\n\n");
+	
+	fprintf(F,"<input\n");
+	fprintf(F,"  device=\"%hd\"\n",input_preferences->input_device);
+	fprintf(F,"  modifiers=\"%hu\"\n",input_preferences->modifiers);
+	fprintf(F,">\n");
+#if defined(mac)
+	for (int k=0; k<NUMBER_OF_KEYS; k++)
+		fprintf(F,"  <mac_key index=\"%hd\" value=\"%hd\"/>\n",
+			k,input_preferences->keycodes[k]);
+#elif defined(SDL)
+	for (int k=0; k<NUMBER_OF_KEYS; k++)
+		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
+			k,input_preferences->keycodes[k]);
+#endif
+	fprintf(F,"</input>\n\n");
+	
+	fprintf(F,"<sound\n");
+	fprintf(F,"  channels=\"%hd\"\n",sound_preferences->channel_count);
+	fprintf(F,"  volume=\"%hd\"\n",sound_preferences->volume);
+	fprintf(F,"  music_volume=\"%hd\"\n",sound_preferences->music);
+	fprintf(F,"  flags=\"%hu\"\n",sound_preferences->flags);
+	fprintf(F,"/>\n\n");
+	
+	fprintf(F,"<network\n");
+	fprintf(F,"  microphone=\"%s\"\n",BoolString(network_preferences->allow_microphone));
+	fprintf(F,"  untimed=\"%s\"\n",BoolString(network_preferences->game_is_untimed));
+	fprintf(F,"  type=\"%hd\"\n",network_preferences->type);
+	fprintf(F,"  game_type=\"%hd\"\n",network_preferences->game_type);
+	fprintf(F,"  difficulty=\"%hd\"\n",network_preferences->difficulty_level);
+	fprintf(F,"  game_options=\"%hu\"\n",network_preferences->game_options);
+	fprintf(F,"  time_limit=\"%d\"\n",network_preferences->time_limit);
+	fprintf(F,"  kill_limit=\"%hd\"\n",network_preferences->kill_limit);
+	fprintf(F,"  entry_point=\"%hd\"\n",network_preferences->entry_point);
+	fprintf(F,"/>\n\n");
+	
+	fprintf(F,"<environment\n");
+	fprintf(F,"  map_checksum=\"%u\"\n",environment_preferences->map_checksum);
+	fprintf(F,"  physics_checksum=\"%u\"\n",environment_preferences->physics_checksum);
+	fprintf(F,"  shapes_mod_date=\"%u\"\n",uint32(environment_preferences->shapes_mod_date));
+	fprintf(F,"  sounds_mod_date=\"%u\"\n",uint32(environment_preferences->sounds_mod_date));
+	fprintf(F,"/>\n\n");
+		
+	fprintf(F,"</mara_prefs>\n\n");
+	
+	fclose(F);
+	
+#ifdef mac
+	// Restore it
+	HSetVol(nil,OldVRefNum,OldParID);
+#endif
+	
+#ifdef OBSOLETE
 	OSErr err;
 	w_write_preferences_file();
 
@@ -163,13 +408,20 @@ void write_preferences(
 		dprintf("Preferences Write Error: %d type: %d", err, type);
 		set_game_error(systemError, noErr);
 	}
+#endif
 }
 
 
 /*
  *  Get prefs data from prefs file (or defaults)
  */
+static void *get_graphics_pref_data() {return graphics_preferences;}
+static void *get_player_pref_data() {return player_preferences;}
+static void *get_sound_pref_data() {return sound_preferences;}
+static void *get_input_pref_data() {return input_preferences;}
+static void *get_environment_pref_data() {return environment_preferences;}
 
+#ifdef OBSOLETE
 static void *get_graphics_pref_data(
 	void)
 {
@@ -214,16 +466,17 @@ static void *get_environment_pref_data(
 		default_environment_preferences,
 		validate_environment_preferences);
 }
+#endif
 
 
 /*
  *  Setup default preferences
  */
 
-static void default_graphics_preferences(
-	void *prefs)
+static void default_graphics_preferences(graphics_preferences_data *preferences)
+//	void *prefs)
 {
-	struct graphics_preferences_data *preferences=(struct graphics_preferences_data *)prefs;
+	// struct graphics_preferences_data *preferences=(struct graphics_preferences_data *)prefs;
 
 	preferences->screen_mode.gamma_level= DEFAULT_GAMMA_LEVEL;
 
@@ -264,16 +517,16 @@ static void default_graphics_preferences(
 	OGL_SetDefaults(preferences->OGL_Configure);
 }
 
-static void default_serial_number_preferences(
-	void *prefs)
+static void default_serial_number_preferences(serial_number_data *preferences)
+//	void *prefs)
 {
-	memset(prefs, 0, sizeof(struct serial_number_data));
+	memset(preferences, 0, sizeof(struct serial_number_data));
 }
 
-static void default_network_preferences(
-	void *prefs)
+static void default_network_preferences(network_preferences_data *preferences)
+//	void *prefs)
 {
-	struct network_preferences_data *preferences=(struct network_preferences_data *)prefs;
+	// struct network_preferences_data *preferences=(struct network_preferences_data *)prefs;
 
 	preferences->type= _ethernet;
 
@@ -289,36 +542,36 @@ static void default_network_preferences(
 	preferences->game_type= _game_of_kill_monsters;
 }
 
-static void default_player_preferences(
-	void *preferences)
+static void default_player_preferences(player_preferences_data *preferences)
+//	void *preferences)
 {
-	struct player_preferences_data *prefs=(struct player_preferences_data *)preferences;
+//	struct player_preferences_data *prefs=(struct player_preferences_data *)preferences;
 
-	obj_clear(*prefs);
+	obj_clear(*preferences);
 
 #ifdef mac
-	GetDateTime(&prefs->last_time_ran);
+	GetDateTime(&preferences->last_time_ran);
 #endif
-	prefs->difficulty_level= 2;
-	get_name_from_system(prefs->name);
+	preferences->difficulty_level= 2;
+	get_name_from_system(preferences->name);
 	
 	// LP additions for new fields:
 	
-	prefs->ChaseCam.Behind = 1536;
-	prefs->ChaseCam.Upward = 0;
-	prefs->ChaseCam.Rightward = 0;
-	prefs->ChaseCam.Flags = 0;
+	preferences->ChaseCam.Behind = 1536;
+	preferences->ChaseCam.Upward = 0;
+	preferences->ChaseCam.Rightward = 0;
+	preferences->ChaseCam.Flags = 0;
 	
-	prefs->Crosshairs.Thickness = 2;
-	prefs->Crosshairs.FromCenter = 8;
-	prefs->Crosshairs.Length = 16;
-	prefs->Crosshairs.Color = rgb_white;
+	preferences->Crosshairs.Thickness = 2;
+	preferences->Crosshairs.FromCenter = 8;
+	preferences->Crosshairs.Length = 16;
+	preferences->Crosshairs.Color = rgb_white;
 }
 
-static void default_input_preferences(
-	void *prefs)
+static void default_input_preferences(input_preferences_data *preferences)
+//	void *prefs)
 {
-	struct input_preferences_data *preferences=(struct input_preferences_data *)prefs;
+//	struct input_preferences_data *preferences=(struct input_preferences_data *)prefs;
 
 #if defined(TARGET_API_MAC_CARBON)
 	// JTP: No ISP, go with default option
@@ -333,57 +586,57 @@ static void default_input_preferences(
 	preferences->modifiers = _inputmod_interchange_run_walk;
 }
 
-static void default_environment_preferences(
-	void *preferences)
+static void default_environment_preferences(environment_preferences_data *preferences)
+//	void *preferences)
 {
-	struct environment_preferences_data *prefs= (struct environment_preferences_data *)preferences;
+//	struct environment_preferences_data *prefs= (struct environment_preferences_data *)preferences;
 
-	obj_set(*prefs, NONE);
+	obj_set(*preferences, NONE);
 
 	FileSpecifier DefaultFile;
 	
 	get_default_map_spec(DefaultFile);
-	prefs->map_checksum= read_wad_file_checksum(DefaultFile);
+	preferences->map_checksum= read_wad_file_checksum(DefaultFile);
 #ifdef mac
-	obj_copy(prefs->map_file, DefaultFile.GetSpec());
+	obj_copy(preferences->map_file, DefaultFile.GetSpec());
 #else
-	strncpy(prefs->map_file, DefaultFile.GetPath(), 256);
-	prefs->map_file[255] = 0;
+	strncpy(preferences->map_file, DefaultFile.GetPath(), 256);
+	preferences->map_file[255] = 0;
 #endif
 	
 	get_default_physics_spec(DefaultFile);
-	prefs->physics_checksum= read_wad_file_checksum(DefaultFile);
+	preferences->physics_checksum= read_wad_file_checksum(DefaultFile);
 #ifdef mac
-	obj_copy(prefs->physics_file, DefaultFile.GetSpec());
+	obj_copy(preferences->physics_file, DefaultFile.GetSpec());
 #else
-	strncpy(prefs->physics_file, DefaultFile.GetPath(), 256);
-	prefs->physics_file[255] = 0;
+	strncpy(preferences->physics_file, DefaultFile.GetPath(), 256);
+	preferences->physics_file[255] = 0;
 #endif
 	
 	get_default_shapes_spec(DefaultFile);
 	
-	prefs->shapes_mod_date = DefaultFile.GetDate();
+	preferences->shapes_mod_date = DefaultFile.GetDate();
 #ifdef mac
-	obj_copy(prefs->shapes_file, DefaultFile.GetSpec());
+	obj_copy(preferences->shapes_file, DefaultFile.GetSpec());
 #else
-	strncpy(prefs->shapes_file, DefaultFile.GetPath(), 256);
-	prefs->shapes_file[255] = 0;
+	strncpy(preferences->shapes_file, DefaultFile.GetPath(), 256);
+	preferences->shapes_file[255] = 0;
 #endif
 
 	get_default_sounds_spec(DefaultFile);
 	
-	prefs->sounds_mod_date = DefaultFile.GetDate();
+	preferences->sounds_mod_date = DefaultFile.GetDate();
 #ifdef mac
-	obj_copy(prefs->sounds_file, DefaultFile.GetSpec());
+	obj_copy(preferences->sounds_file, DefaultFile.GetSpec());
 #else
-	strncpy(prefs->sounds_file, DefaultFile.GetPath(), 256);
-	prefs->sounds_file[255] = 0;
+	strncpy(preferences->sounds_file, DefaultFile.GetPath(), 256);
+	preferences->sounds_file[255] = 0;
 #endif
 
 #ifdef SDL
 	get_default_theme_spec(DefaultFile);
-	strncpy(prefs->theme_dir, DefaultFile.GetPath(), 256);
-	prefs->theme_dir[255] = 0;
+	strncpy(preferences->theme_dir, DefaultFile.GetPath(), 256);
+	preferences->theme_dir[255] = 0;
 #endif
 }
 
@@ -392,10 +645,10 @@ static void default_environment_preferences(
  *  Validate preferences
  */
 
-static bool validate_graphics_preferences(
-	void *prefs)
+static bool validate_graphics_preferences(graphics_preferences_data *preferences)
+//	void *prefs)
 {
-	struct graphics_preferences_data *preferences=(struct graphics_preferences_data *)prefs;
+//	struct graphics_preferences_data *preferences=(struct graphics_preferences_data *)prefs;
 	bool changed= false;
 
 	// Fix bool options
@@ -436,77 +689,77 @@ static bool validate_graphics_preferences(
 	return changed;
 }
 
-static bool validate_serial_number_preferences(
-	void *prefs)
+static bool validate_serial_number_preferences(serial_number_data *preferences)
+//	void *prefs)
 {
-	(void) (prefs);
+	(void) (preferences);
 	return false;
 }
 
-static bool validate_network_preferences(
-	void *preferences)
+static bool validate_network_preferences(network_preferences_data *preferences)
+//	void *preferences)
 {
-	struct network_preferences_data *prefs=(struct network_preferences_data *)preferences;
+	// struct network_preferences_data *prefs=(struct network_preferences_data *)preferences;
 	bool changed= false;
 
 	// Fix bool options
-	prefs->allow_microphone = !!prefs->allow_microphone;
-	prefs->game_is_untimed = !!prefs->game_is_untimed;
+	preferences->allow_microphone = !!preferences->allow_microphone;
+	preferences->game_is_untimed = !!preferences->game_is_untimed;
 
-	if(prefs->type<0||prefs->type>_ethernet)
+	if(preferences->type<0||preferences->type>_ethernet)
 	{
 		if(ethernet_active())
 		{
-			prefs->type= _ethernet;
+			preferences->type= _ethernet;
 		} else {
-			prefs->type= _localtalk;
+			preferences->type= _localtalk;
 		}
 		changed= true;
 	}
 	
-	if(prefs->game_is_untimed != true && prefs->game_is_untimed != false)
+	if(preferences->game_is_untimed != true && preferences->game_is_untimed != false)
 	{
-		prefs->game_is_untimed= false;
+		preferences->game_is_untimed= false;
 		changed= true;
 	}
 
-	if(prefs->allow_microphone != true && prefs->allow_microphone != false)
+	if(preferences->allow_microphone != true && preferences->allow_microphone != false)
 	{
-		prefs->allow_microphone= true;
+		preferences->allow_microphone= true;
 		changed= true;
 	}
 
-	if(prefs->game_type<0 || prefs->game_type >= NUMBER_OF_GAME_TYPES)
+	if(preferences->game_type<0 || preferences->game_type >= NUMBER_OF_GAME_TYPES)
 	{
-		prefs->game_type= _game_of_kill_monsters;
+		preferences->game_type= _game_of_kill_monsters;
 		changed= true;
 	}
 	
 	return changed;
 }
 
-static bool validate_player_preferences(
-	void *preferences)
+static bool validate_player_preferences(player_preferences_data *preferences)
+//	void *preferences)
 {
 	struct player_preferences_data *prefs=(struct player_preferences_data *)preferences;
 
 	// Fix bool options
-	prefs->background_music_on = !!prefs->background_music_on;
+	preferences->background_music_on = !!preferences->background_music_on;
 
 	return false;
 }
 
-static bool validate_input_preferences(
-	void *prefs)
+static bool validate_input_preferences(input_preferences_data *preferences)
+//	void *prefs)
 {
-	(void) (prefs);
+	(void) (preferences);
 	return false;
 }
 
-static bool validate_environment_preferences(
-	void *prefs)
+static bool validate_environment_preferences(environment_preferences_data *preferences)
+//	void *prefs)
 {
-	(void) (prefs);
+	(void) (preferences);
 	return false;
 }
 
@@ -601,4 +854,380 @@ OGL_ConfigureData& Get_OGL_ConfigureData() {return graphics_preferences->OGL_Con
 // so as to access preferences stuff here
 bool dont_switch_to_new_weapon() {
 	return TEST_FLAG(input_preferences->modifiers,_inputmod_dont_switch_to_new_weapon);
+}
+
+
+// LP additions: MML-like prefs stuff
+// These parsers are intended to work correctly on both Mac and SDL prefs files;
+// including one crossing over to the other platform (uninterpreted fields become defaults)
+
+class XML_GraphicsPrefsParser: public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+
+	XML_GraphicsPrefsParser(): XML_ElementParser("graphics") {}
+};
+
+bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"scmode_size"))
+	{
+		return ReadInt16Value(Value,graphics_preferences->screen_mode.size);
+	}
+	else if (StringsEqual(Tag,"scmode_accel"))
+	{
+		return ReadInt16Value(Value,graphics_preferences->screen_mode.acceleration);
+	}
+	else if (StringsEqual(Tag,"scmode_highres"))
+	{
+		return ReadBooleanValue(Value,graphics_preferences->screen_mode.high_resolution);
+	}
+	else if (StringsEqual(Tag,"scmode_fullscreen"))
+	{
+		return ReadBooleanValue(Value,graphics_preferences->screen_mode.fullscreen);
+	}
+	else if (StringsEqual(Tag,"scmode_bitdepth"))
+	{
+		return ReadInt16Value(Value,graphics_preferences->screen_mode.bit_depth);
+	}
+	else if (StringsEqual(Tag,"scmode_gamma"))
+	{
+		return ReadInt16Value(Value,graphics_preferences->screen_mode.gamma_level);
+	}
+	else if (StringsEqual(Tag,"devspec_slot"))
+	{
+#ifdef mac
+		return ReadInt16Value(Value,graphics_preferences->device_spec.slot);
+#else
+		return true;
+#endif
+	}
+	else if (StringsEqual(Tag,"devspec_flags"))
+	{
+#ifdef mac
+		return ReadInt16Value(Value,graphics_preferences->device_spec.flags);
+#else
+		return true;
+#endif
+	}
+	else if (StringsEqual(Tag,"devspec_bitdepth"))
+	{
+#ifdef mac
+		return ReadInt16Value(Value,graphics_preferences->device_spec.bit_depth);
+#else
+		return true;
+#endif
+	}
+	else if (StringsEqual(Tag,"devspec_width"))
+	{
+#ifdef mac
+		return ReadInt16Value(Value,graphics_preferences->device_spec.width);
+#else
+		return true;
+#endif
+	}
+	else if (StringsEqual(Tag,"devspec_height"))
+	{
+#ifdef mac
+		return ReadInt16Value(Value,graphics_preferences->device_spec.height);
+#else
+		return true;
+#endif
+	}
+	else if (StringsEqual(Tag,"frequency"))
+	{
+#ifdef mac
+		return ReadFloatValue(Value,graphics_preferences->refresh_frequency);
+#else
+		return true;
+#endif
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_GraphicsPrefsParser GraphicsPrefsParser;
+
+
+class XML_PlayerPrefsParser: public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+
+	XML_PlayerPrefsParser(): XML_ElementParser("player") {}
+};
+
+bool XML_PlayerPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"color"))
+	{
+		return ReadInt16Value(Value,player_preferences->color);
+	}
+	else if (StringsEqual(Tag,"team"))
+	{
+		return ReadInt16Value(Value,player_preferences->team);
+	}
+	else if (StringsEqual(Tag,"last_time_ran"))
+	{
+		return ReadUInt32Value(Value,player_preferences->last_time_ran);
+	}
+	else if (StringsEqual(Tag,"difficulty"))
+	{
+		return ReadInt16Value(Value,player_preferences->difficulty_level);
+	}
+	else if (StringsEqual(Tag,"bkgd_music"))
+	{
+		return ReadBooleanValue(Value,player_preferences->background_music_on);
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_PlayerPrefsParser PlayerPrefsParser;
+
+
+class XML_KeyPrefsParser: public XML_ElementParser
+{
+	bool IndexPresent, KeyValPresent;
+	int16 Index, KeyVal;
+	
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+
+	XML_KeyPrefsParser(const char *_Name): XML_ElementParser(_Name) {}
+};
+
+bool XML_KeyPrefsParser::Start()
+{
+	IndexPresent = KeyValPresent = false;
+	
+	return true;
+}
+
+bool XML_KeyPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"index"))
+	{
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_KEYS-1))
+		{
+			IndexPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	if (StringsEqual(Tag,"value"))
+	{
+		if (ReadInt16Value(Value,KeyVal))
+		{
+			KeyValPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_KeyPrefsParser::AttributesDone()
+{
+	// Verify...
+	if (!(IndexPresent && KeyValPresent))
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	input_preferences->keycodes[Index] = KeyVal;
+			
+	return true;
+}
+
+// This compilation trick guarantees that both Mac and SDL versions will ignore the other's
+// key values; for each platform, the parser of the other platform's key values
+// is a dummy parser.
+#if defined(mac)
+static XML_KeyPrefsParser MacKeyPrefsParser("mac_key");
+static XML_ElementParser SDLKeyPrefsParser("sdl_key");
+#elif defined(SDL)
+static XML_ElementParser MacKeyPrefsParser("mac_key");
+static XML_KeyPrefsParser SDLKeyPrefsParser("sdl_key");
+#endif
+
+
+class XML_InputPrefsParser: public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+
+	XML_InputPrefsParser(): XML_ElementParser("input") {}
+};
+
+bool XML_InputPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"device"))
+	{
+		return ReadInt16Value(Value,input_preferences->input_device);
+	}
+	else if (StringsEqual(Tag,"modifiers"))
+	{
+		return ReadUInt16Value(Value,input_preferences->modifiers);
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_InputPrefsParser InputPrefsParser;
+
+
+class XML_SoundPrefsParser: public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+
+	XML_SoundPrefsParser(): XML_ElementParser("sound") {}
+};
+
+bool XML_SoundPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"channels"))
+	{
+		return ReadInt16Value(Value,sound_preferences->channel_count);
+	}
+	else if (StringsEqual(Tag,"volume"))
+	{
+		return ReadInt16Value(Value,sound_preferences->volume);
+	}
+	else if (StringsEqual(Tag,"music_volume"))
+	{
+		return ReadInt16Value(Value,sound_preferences->music);
+	}
+	else if (StringsEqual(Tag,"flags"))
+	{
+		return ReadUInt16Value(Value,sound_preferences->flags);
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_SoundPrefsParser SoundPrefsParser;
+
+
+class XML_NetworkPrefsParser: public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+
+	XML_NetworkPrefsParser(): XML_ElementParser("network") {}
+};
+
+bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"microphone"))
+	{
+		return ReadBooleanValue(Value,network_preferences->allow_microphone);
+	}
+	else if (StringsEqual(Tag,"untimed"))
+	{
+		return ReadBooleanValue(Value,network_preferences->game_is_untimed);
+	}
+	else if (StringsEqual(Tag,"type"))
+	{
+		return ReadInt16Value(Value,network_preferences->type);
+	}
+	else if (StringsEqual(Tag,"game_type"))
+	{
+		return ReadInt16Value(Value,network_preferences->game_type);
+	}
+	else if (StringsEqual(Tag,"difficulty"))
+	{
+		return ReadInt16Value(Value,network_preferences->difficulty_level);
+	}
+	else if (StringsEqual(Tag,"game_options"))
+	{
+		return ReadUInt16Value(Value,network_preferences->game_options);
+	}
+	else if (StringsEqual(Tag,"time_limit"))
+	{
+		return ReadInt32Value(Value,network_preferences->time_limit);
+	}
+	else if (StringsEqual(Tag,"kill_limit"))
+	{
+		return ReadInt16Value(Value,network_preferences->kill_limit);
+	}
+	else if (StringsEqual(Tag,"entry_point"))
+	{
+		return ReadInt16Value(Value,network_preferences->entry_point);
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_NetworkPrefsParser NetworkPrefsParser;
+
+
+class XML_EnvironmentPrefsParser: public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+
+	XML_EnvironmentPrefsParser(): XML_ElementParser("environment") {}
+};
+
+bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"map_checksum"))
+	{
+		return ReadUInt32Value(Value,environment_preferences->map_checksum);
+	}
+	else if (StringsEqual(Tag,"physics_checksum"))
+	{
+		return ReadUInt32Value(Value,environment_preferences->physics_checksum);
+	}
+	else if (StringsEqual(Tag,"shapes_mod_date"))
+	{
+		uint32 ModDate;
+		if (ReadUInt32Value(Value,ModDate))
+		{
+			environment_preferences->shapes_mod_date = TimeType(ModDate);
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"sounds_mod_date"))
+	{
+		uint32 ModDate;
+		if (ReadUInt32Value(Value,ModDate))
+		{
+			environment_preferences->sounds_mod_date = TimeType(ModDate);
+			return true;
+		}
+		else
+			return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_EnvironmentPrefsParser EnvironmentPrefsParser;
+
+
+
+void SetupPrefsParseTree()
+{
+	// Add the root object here
+	PrefsRootParser.AddChild(&MarathonPrefsParser);
+
+	// Add all the others
+	MarathonPrefsParser.AddChild(&GraphicsPrefsParser);
+	MarathonPrefsParser.AddChild(&PlayerPrefsParser);
+	InputPrefsParser.AddChild(&MacKeyPrefsParser);
+	InputPrefsParser.AddChild(&SDLKeyPrefsParser);
+	MarathonPrefsParser.AddChild(&InputPrefsParser);
+	MarathonPrefsParser.AddChild(&SoundPrefsParser);
+	MarathonPrefsParser.AddChild(&NetworkPrefsParser);
+	MarathonPrefsParser.AddChild(&EnvironmentPrefsParser);
 }
