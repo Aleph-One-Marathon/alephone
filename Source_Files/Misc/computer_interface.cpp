@@ -199,6 +199,7 @@ struct text_face_data {
 };
 const int SIZEOF_text_face_data = 6;
 
+// This is externally visible, so its external size is defined in the header file
 struct player_terminal_data
 {
 	short flags;
@@ -514,7 +515,8 @@ void *get_terminal_data_for_save_game(
 long calculate_terminal_data_length(
 	void)
 {
-	long length= dynamic_world->player_count*sizeof(struct player_terminal_data);
+	dprintf("%d %d",sizeof(player_terminal_data),SIZEOF_player_terminal_data);
+	long length= dynamic_world->player_count*SIZEOF_player_terminal_data;
 	
 	return length;
 }
