@@ -327,7 +327,7 @@ void HUD_OGL_Class::render_motion_sensor(short ticks_elapsed)
 {
 	// Draw background
 	screen_rectangle *r = get_interface_rectangle(_motion_sensor_rect);
-	DrawShapeAtXY(BUILD_DESCRIPTOR(_collection_interface, _motion_sensor_mount), r->left, r->top);
+	DrawShapeAtXY(BUILD_DESCRIPTOR(_collection_interface, _motion_sensor_virgin_mount), r->left, r->top);
 
 	// We allways draw all active entities because we have to update the
 	// display on every frame
