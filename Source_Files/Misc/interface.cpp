@@ -48,6 +48,9 @@ Aug 24, 2000 (Loren Petrich):
 Nov 25, 2000 (Loren Petrich):
 	Added support for movies that start at any level, including at the end of a game.
 	Also added end-screen control.
+
+Jan 31, 2001 (Loren Petrich):
+	In pause_game(), will stop the liquid faders that are active
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -446,6 +449,8 @@ void pause_game(
 	void)
 {
 	stop_fade();
+	if (!OGL_IsActive() || !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fader)))
+		set_fade_effect(NONE);
 	darken_world_window();
 	set_keyboard_controller_status(false);
 #ifdef SDL
@@ -459,6 +464,8 @@ void resume_game(
 #ifdef SDL
 	hide_cursor();
 #endif
+	if (!OGL_IsActive() || !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fader)))
+		SetFadeEffectDelay(TICKS_PER_SECOND/2);
 	validate_world_window();
 	set_keyboard_controller_status(true);
 }
@@ -1375,8 +1382,15 @@ static void start_game(
 	
 	// LP change: reset screen so that extravision will not be persistent
 	if (!changing_level) reset_screen();
-
+	
 	enter_screen();
+	
+	// LP: this is in case we are starting underneath a liquid
+	if (!OGL_IsActive() || !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fader)))
+	{
+		set_fade_effect(NONE);
+		SetFadeEffectDelay(TICKS_PER_SECOND/2);
+	}
 
 	// Screen should already be black! 
 	validate_world_window();
