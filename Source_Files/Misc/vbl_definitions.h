@@ -46,7 +46,7 @@ struct replay_private_data {
 	char *location_in_cache;
 	int32 bytes_in_cache;
 	
-	long film_resource_offset;
+	int32 film_resource_offset;
 	char *resource_data;
 	int32 resource_data_size;
 };

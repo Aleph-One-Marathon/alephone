@@ -173,15 +173,14 @@ void RenderRasterizerClass::render_tree()
 						
 						// LP change: indicate in all cases whether the void is on the other side;
 						// added a workaround for full-side textures with a polygon on the other side
-						bool void_present, adjacent_polygon_index;
+						bool void_present;
 						
 						switch (side->type)
 						{
 							case _full_side:
 								void_present = true;
 								// Suppress the void if there is a polygon on the other side.
-								adjacent_polygon_index = polygon->adjacent_polygon_indexes[i];
-								if (adjacent_polygon_index != NONE) void_present = false;
+								if (polygon->adjacent_polygon_indexes[i] != NONE) void_present = false;
 								
 								surface.lightsource_index= side->primary_lightsource_index;
 								surface.h0= floor_surface.height - view->origin.z;

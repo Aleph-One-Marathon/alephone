@@ -415,8 +415,8 @@ void save_recording_queue_chunk(
 	short player_index)
 {
 	byte *location;
-	long last_flag, count, flag = 0;
-	short i, run_count, num_flags_saved, max_flags;
+	int32 last_flag, count, flag = 0;
+	int16 i, run_count, num_flags_saved, max_flags;
 	static byte *buffer= NULL;
 	ActionQueue *queue;
 	
@@ -482,7 +482,7 @@ void save_recording_queue_chunk(
 	{
 		short end_indicator = END_OF_RECORDING_INDICATOR;
 		ValueToStream(location,end_indicator);
-		long end_flag = 0;
+		int32 end_flag = 0;
 		ValueToStream(location,end_flag);
 		/*
 		*(short*)location = END_OF_RECORDING_INDICATOR;
@@ -870,8 +870,9 @@ void stop_replay(
 static void read_recording_queue_chunks(
 	void)
 {
-	long i, sizeof_read, action_flags;
-	short count, player_index, num_flags;
+	long i, sizeof_read;
+	uint32 action_flags; 
+	int16 count, player_index, num_flags;
 	ActionQueue *queue;
 	short error;
 	

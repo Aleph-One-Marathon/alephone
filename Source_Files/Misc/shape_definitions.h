@@ -33,7 +33,7 @@ struct collection_header /* 32 bytes on disk */
 	low_level_shape_definition *Frames;
 	bitmap_definition **Bitmaps;
 	
-	void *shading_tables;
+	byte *shading_tables;
 	
 	// int16 unused[2];
 };

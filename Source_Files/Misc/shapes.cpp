@@ -537,7 +537,7 @@ static boolean load_collection(
 			assert(Definition.bitmap_offset_table_offset >= 0);
 			assert(Definition.bitmap_offset_table_offset +
 				Definition.bitmap_count*sizeof(int32) <= length);
-			long *BtmpOffsets = new long[Definition.bitmap_count + 1];
+			int32 *BtmpOffsets = new int32[Definition.bitmap_count + 1];
 			S = collection + Definition.bitmap_offset_table_offset;
 			StreamToList(S,BtmpOffsets,Definition.bitmap_count);
 			BtmpOffsets[Definition.bitmap_count] = length;
