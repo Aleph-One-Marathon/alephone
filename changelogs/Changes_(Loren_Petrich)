@@ -1400,3 +1400,8 @@ Jan 6, 2001
 
 Added AlexJS's guided-projectile patch; however, it does not seem to acquire targets correctly,
 even at point-blank range.
+
+Feb 2, 2001
+
+Numerous changes: added OpenGL font-texture support, idle-weapon animations,
+variability of powerup assignments, fixed underwater-dialog-box bug, and so forth.
