@@ -357,7 +357,7 @@ static void set_mouse_location(
 	Point where)
 {
 //#if defined(TARGET_API_MAC_CARBON)
-	#if defined(HAVE_CORE_GRAPHICS)
+	#ifdef __MACH__
 	CGWarpMouseCursorPosition(CGPointMake(where.h, where.v));
 	#endif
 /*
@@ -432,7 +432,7 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 				// Carbon tells us when the mouse moves, but CoreGraphics gets the delta
 				case kEventMouseMoved:
 				case kEventMouseDragged:
-					#if defined(HAVE_CORE_GRAPHICS)
+					#ifdef __MACH__
 					CGGetLastMouseDelta(&CGx, &CGy);
 					if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationForever)) == noErr)
 					{
