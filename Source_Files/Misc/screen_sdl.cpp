@@ -684,6 +684,14 @@ static void build_sdl_color_table(const color_table *color_table, SDL_Color *col
 	}
 }
 
+void build_direct_color_table(struct color_table *color_table, short bit_depth)
+{
+	color_table->color_count = 256;
+	rgb_color *color = color_table->colors;
+	for (int i=0; i<256; i++, color++)
+		color->red = color->green = color->blue = i * 0x0101;
+}
+
 void change_interface_clut(struct color_table *color_table)
 {
 	memcpy(interface_color_table, color_table, sizeof(struct color_table));
@@ -705,36 +713,34 @@ void change_screen_clut(struct color_table *color_table)
 
 void animate_screen_clut(struct color_table *color_table, bool full_screen)
 {
-	//!!
+	if (bit_depth == 8) {
+		SDL_Color colors[256];
+		build_sdl_color_table(color_table, colors);
+		SDL_SetPalette(main_surface, SDL_PHYSPAL, colors, 0, 256);
+	} else {
+		uint8 red[256], green[256], blue[256];
+		for (int i=0; i<color_table->color_count; i++) {
+			red[i] = color_table->colors[i].red >> 8;
+			green[i] = color_table->colors[i].green >> 8;
+			blue[i] = color_table->colors[i].blue >> 8;
+		}
+		SDL_SetGammaRamp(red, green, blue);
+	}
 }
 
 void assert_world_color_table(struct color_table *interface_color_table, struct color_table *world_color_table)
 {
-	SDL_Color colors[256];
-	build_sdl_color_table(interface_color_table, colors);
-	SDL_SetColors(main_surface, colors, 0, 256);
-	if (HUD_Buffer)
-		SDL_SetColors(HUD_Buffer, colors, 0, 256);
-
-	if (world_pixels && world_color_table) {
+	if (interface_bit_depth == 8) {
 		SDL_Color colors[256];
-		build_sdl_color_table(world_color_table, colors);
-		SDL_SetColors(world_pixels, colors, 0, 256);
+		build_sdl_color_table(interface_color_table, colors);
+		SDL_SetPalette(main_surface, SDL_LOGPAL, colors, 0, 256);
+		if (HUD_Buffer)
+			SDL_SetColors(HUD_Buffer, colors, 0, 256);
 	}
+	if (world_color_table)
+		animate_screen_clut(world_color_table, false);
 }
 
-
-/*
- *  Build dummy color table for 16/32 bit modes
- */
-
-void build_direct_color_table(struct color_table *color_table, short bit_depth)
-{
-	color_table->color_count = 256;
-	rgb_color *color = color_table->colors;
-	for (int i=0; i<256; i++, color++)
-		color->red = color->green = color->blue = i * 0x0101;
-}
 
 /*
  *  Render terminal

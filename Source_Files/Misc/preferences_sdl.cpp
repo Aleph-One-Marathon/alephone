@@ -86,7 +86,7 @@ void handle_preferences(void)
 
 	// Load sensible palette
 	struct color_table *system_colors = build_8bit_system_color_table();
-	assert_world_color_table(system_colors, NULL);
+	assert_world_color_table(system_colors, system_colors);
 	delete system_colors;
 
 	// Create top-level dialog

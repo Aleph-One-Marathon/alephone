@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+November 24, 2000
+ - implemented fading and gamma table effects
+ - now requires SDL 1.1.6 (SDL_SetPalette() and SDL_SetGammaRamp())
+
 November 22, 2000
  - integrated patches for Win32 (except OpenGL-related ones) by Ian Pitcher
  - fullscreen vs. windowed mode now selectable in graphics preferences dialog,

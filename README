@@ -165,8 +165,8 @@ keyboard; all keys are mapped by position):
     F8      - Toggle crosshairs
     F9      - Screen dump (saved in ~/.alephone/Screenshot_*.bmp files)
     F10     - Toggle position display
-    F11     - Decrease gamma level (8-bit mode only)
-    F12     - Increase gamma level (8-bit mode only)
+    F11     - Decrease gamma level
+    F12     - Increase gamma level
 
     ,       - Decrease sound volume
     .       - Increase sound volume
@@ -435,14 +435,12 @@ them:
    chase cam, crosshairs, OpenGL texture/landscape/fog options)
  - Text rendering under OpenGL (overhead map doesn't show level name and
    annotations)
- - Palette tricks (fading, underwater, red flash when being hit etc.) don't
-   work with the software renderer (SDL 1.1.5 will support gamma tables)
  - Networking (the "Gather Network Game" and "Join Network Game" buttons on
    the title screen are nonfunctional)
 
 And a list of known bugs:
 
- - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown
+ - OpenGL multitexturing crashes NVIDIA GLX 0.9-5 and Mesa GL, reason unknown
 
 If you find a bug that's not already in the list above, please submit it
 using the bug database on SourceForge:
