@@ -227,6 +227,15 @@ static bool HasNavServices = false;
 // Necessary to to indicate whether or not to create a dialog box.
 static bool AppServicesInited = false;
 
+#ifdef TARGET_API_MAC_CARBON
+#ifdef USES_NIBS
+
+CFBundleRef MainBundle;
+IBNibRef GUI_Nib;
+
+#endif
+#endif
+
 // The modifier for typing in cheat codes: defined in shell_misc.cpp
 extern short CheatCodeModMask;
 
@@ -303,25 +312,39 @@ void main(
 	{
 		if (AppServicesInited)
 		{
+#ifdef TARGET_API_MAC_CARBON
+			csprintf(temporary,
+				"Unhandled exception: %s",e.what());
+			InitCursor();
+			SimpleAlert(kAlertStopAlert,temporary);
+#else
 			psprintf(ptemporary,"Unhandled exception: %s",e.what());
 			ParamText(ptemporary,"\p0",NULL,NULL);
 			InitCursor();
 			Alert(128,NULL);
-			exit(0);
+#endif
+			ExitToShell();
 		}
 	}
 	catch(...)
 	{
 		if (AppServicesInited)
 		{
+#ifdef TARGET_API_MAC_CARBON
+			csprintf(temporary,
+				"Unknown exception");
+			InitCursor();
+			SimpleAlert(kAlertStopAlert,"Unknown exception");
+#else
 			psprintf(ptemporary,"Unknown exception");
 			ParamText(ptemporary,"\p0",NULL,NULL);
 			InitCursor();
 			Alert(128,NULL);
-			exit(0);
+#endif
+			ExitToShell();
 		}
 	}
-	exit(0);
+	ExitToShell();
 }
 
 /* ---------- private code */
@@ -440,6 +463,21 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	XML_ResourceForkLoader.CurrentElement = &RootParser;
 	XML_ResourceForkLoader.SourceName = "[Application]";
 	XML_ResourceForkLoader.ParseResourceSet('TEXT');
+	
+#ifdef TARGET_API_MAC_CARBON
+#ifdef USES_NIBS
+
+	// The asserts need ALRT resources 128 and 129 -- and nothing else that needs to be loaded
+
+	MainBundle = CFBundleGetMainBundle();
+	assert (MainBundle);
+	
+	const CFStringRef GUI_Nib_Filename = CFSTR("GUI");
+	error = CreateNibReferenceWithCFBundle(MainBundle, GUI_Nib_Filename, &GUI_Nib);
+	assert(error == noErr);
+
+#endif
+#endif
 	
 	// Need to set the root directory before doing reading any other files
 	ReadRootDirectory();
@@ -1893,9 +1931,13 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 					XML_DataBlockLoader.SourceName = FileName;
 					if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
 					{
+#ifdef TARGET_API_MAC_CARBON
+						SimpleAlert(kAlertStopAlert,"There were configuration-file parsing errors");
+#else
 						ParamText("\pThere were configuration-file parsing errors",0,0,0);
 						Alert(FatalErrorAlert,NULL);
 						ExitToShell();
+#endif
 					}
 				}
 			}
