@@ -1264,6 +1264,9 @@ bool network_game_setup(
 	Data.KillsLabelCtrl = GetCtrlFromWindow(Window(), 0, iTEXT_KILL_LIMIT);
 	Data.KillsTextCtrl = GetCtrlFromWindow(Window(), 0, iKILL_LIMIT);
 	
+	Data.UseMicrophoneCtrl = GetCtrlFromWindow(Window(), 0, iREAL_TIME_SOUND);
+	Data.MicrophoneTypeCtrl = GetCtrlFromWindow(Window(), 0, iMICROPHONE_TYPE);
+	
 	Data.OK_Ctrl = GetCtrlFromWindow(Window(), 0, iOK_SPECIAL);
 	
 	Data.game_information = game_information;

@@ -196,7 +196,8 @@ enum {
 	iSUICIDE_PUNISHED= 24,
 	iGAME_TYPE,
 	iGATHER_COLOR,
-	iTEXT_TIME_LIMIT= 35
+	iTEXT_TIME_LIMIT= 35,
+	iMICROPHONE_TYPE
 };
 
 #ifdef USES_NIBS
@@ -207,6 +208,11 @@ enum {
 	duration_no_time_limit = 1,
 	duration_time_limit,
 	duration_kill_limit
+};
+
+enum {
+	mic_type_plain = 1,
+	mic_type_speex
 };
 
 // Because otherwise it would be interpreted as a regular "OK"
@@ -265,6 +271,9 @@ struct NetgameSetupData
 	ControlRef TimeTextCtrl;
 	ControlRef KillsLabelCtrl;
 	ControlRef KillsTextCtrl;
+	
+	ControlRef UseMicrophoneCtrl;
+	ControlRef MicrophoneTypeCtrl;
 	
 	ControlRef OK_Ctrl;
 	

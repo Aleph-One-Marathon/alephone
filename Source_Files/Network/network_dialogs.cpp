@@ -197,7 +197,11 @@ void NetgameSetup_Extract(
 	game_information->level_number = entry.level_number;
 	strcpy(game_information->level_name, entry.level_name);
 	game_information->difficulty_level = GetControl32BitValue(Data.DifficultyCtrl)-1;
-
+	
+	game_information->allow_mic = GetControl32BitValue(Data.UseMicrophoneCtrl);
+	network_preferences->use_speex_encoder =
+		GetControl32BitValue(Data.MicrophoneTypeCtrl) == mic_type_speex;
+	
 #if HAVE_SDL_NET
 	updates_per_packet = 1;
 	update_latency = 0;
@@ -214,7 +218,7 @@ void NetgameSetup_Extract(
 	if(!ResumingGame)
 	{
 		network_preferences->game_type= game_information->net_game_type;
-		 
+		
 		network_preferences->allow_microphone = game_information->allow_mic;
 		network_preferences->difficulty_level = game_information->difficulty_level;
 #ifdef mac
@@ -244,7 +248,7 @@ void NetgameSetup_Extract(
 	write_preferences();
 
 	/* Don't save the preferences of their team... */
-	if(game_information->game_options & _force_unique_teams)
+	if(TEST_FLAG(game_information->game_options, _force_unique_teams))
 	{
 		player_information->team= player_information->color;
 	}
@@ -524,8 +528,11 @@ short NetgameSetup_FillIn(
 	}
 
 	if (player_information->name[0]==0) SetControlActivity(Data.OK_Ctrl, false);
-
+	
 	// set up the game options
+	SetControl32BitValue(Data.UseMicrophoneCtrl, network_preferences->allow_microphone);
+	SetControl32BitValue(Data.MicrophoneTypeCtrl, network_preferences->use_speex_encoder ?
+		mic_type_speex : mic_type_plain);
 	SetDialogGameOptions(Data, theAdjustedPreferences.game_options);
 	
 	// If they're resuming a single-player game, now we overwrite any existing options with the cooperative-play options.
