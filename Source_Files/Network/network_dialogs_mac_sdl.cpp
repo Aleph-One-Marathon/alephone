@@ -336,6 +336,7 @@ bool network_gather(bool inResumingGame)
 
 			dispose_network_list_box();
 		
+			DisposeUserItemUPP(update_player_list_item_upp);
 			DisposeModalFilterUPP(gather_dialog_upp);
 			DisposeDialog(dialog);
 		
