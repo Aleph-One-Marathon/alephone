@@ -115,7 +115,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	OpenedFile OFile;
 	if (!Spec.Open(OFile))
 	{	
-		if (DBOut) fprintf(DBOut,"Error opening the file\n");
+		if (DBOut) fprintf(DBOut,"ERROR opening the file\n");
 		return false;
 	}
 
@@ -383,19 +383,14 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	}
 		
 	// How many vertices do the polygons have?
-	bool AllPolygonsGood = true;
-	
 	for (int k=0; k<PolygonSizes.size(); k++)
 	{
 		short PSize = PolygonSizes[k];
 		if (PSize < 3)
 		{
-			if (DBOut) fprintf(DBOut,"ERROR: Bad size of polygon %d: %d\n",k,PSize);
-			AllPolygonsGood = false;
+			if (DBOut) fprintf(DBOut,"WARNING: polygon ignored; it had bad size %d: %d\n",k,PSize);
 		}
 	}
-	
-	if (!AllPolygonsGood) return false;
 	
 	// What is the lowest common denominator of the polygon data
 	// (which is present of vertex positions, texture coordinates, and normals)
@@ -535,6 +530,12 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		}
 		
 		IndxBase += PolySize;
+	}
+	
+	if (Model.VertIndices.size() <= 0)
+	{
+		if (DBOut) fprintf(DBOut,"ERROR: the model has no good polygons\n");
+		return false;
 	}
 	
 	if (DBOut) fprintf(DBOut,"Successfully read the file:");

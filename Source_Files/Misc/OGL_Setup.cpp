@@ -64,6 +64,7 @@ Aug 21, 2001 (Loren Petrich):
 #include "OGL_Setup.h"
 #include "ColorParser.h"
 
+#include "StudioLoader.h"
 #include "WavefrontLoader.h"
 
 #ifdef __WIN32__
@@ -660,14 +661,23 @@ void OGL_ModelData::Load()
 #endif
 	if (!File.SetNameWithPath(&ModelFile[0])) return;
 
-	// Alias|Wavefront is all that's supported now
+	bool Success = false;
+	
 	if (strncmp(&ModelType[0],"wave",4) == 0)
 	{
-		if (!LoadModel_Wavefront(File, Model))
-		{
-			Model.Clear();
-			return;
-		}
+		// Alias|Wavefront
+		Success = LoadModel_Wavefront(File, Model);
+	}
+	else if (strncmp(&ModelType[0],"3ds",3) == 0)
+	{
+		// 3D Studio Max
+		Success = LoadModel_Studio(File, Model);
+	}
+	
+	if (!Success)
+	{
+		Model.Clear();
+		return;
 	}
 	
 	// Calculate transformation matrix
