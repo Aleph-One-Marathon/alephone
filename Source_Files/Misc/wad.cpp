@@ -119,16 +119,16 @@ static bool write_to_file(OpenedFile& OFile, long offset, void *data, long lengt
 static bool read_from_file(OpenedFile& OFile, long offset, void *data, long length);
 
 // LP: routines for packing and unpacking the data from streams of bytes
-static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count = 1);
-static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, int Count = 1);
-static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count = 1);
-static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count = 1);
-static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count = 1);
-static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count = 1);
-static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count = 1);
-static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count = 1);
-static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count = 1);
-static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, int Count = 1);
+static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count);
+static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, int Count);
+static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count);
+static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count);
+static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count);
+static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count);
+static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count);
+static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count);
+static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count);
+static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, int Count);
 
 /* ------------------ Code Begins */
 
@@ -142,7 +142,7 @@ boolean read_wad_header(
 	
 	uint8 buffer[SIZEOF_wad_header];
 	read_from_file(OFile, 0, buffer, SIZEOF_wad_header);
-	unpack_wad_header(buffer,header);
+	unpack_wad_header(buffer,header,1);
 	/*
 	read_from_file(OFile, 0, header, sizeof(wad_header));
 	byte_swap_object(*header, _bs_wad_header);
@@ -401,7 +401,7 @@ boolean write_wad_header(
 	boolean success= TRUE;
 
 	uint8 buffer[SIZEOF_wad_header];
-	pack_wad_header(buffer,header);
+	pack_wad_header(buffer,header,1);
 	write_to_file(OFile, 0, buffer, SIZEOF_wad_header);
 	/*	
 	wad_header tmp = *header;
@@ -492,13 +492,13 @@ void set_indexed_directory_offset_and_length(
 	{
 		uint8 buffer[SIZEOF_old_directory_entry];
 		memcpy(buffer,data_ptr,SIZEOF_old_directory_entry);
-		unpack_old_directory_entry(buffer,(old_directory_entry *)data_ptr);
+		unpack_old_directory_entry(buffer,(old_directory_entry *)data_ptr,1);
 	}
 	else
 	{
 		uint8 buffer[SIZEOF_directory_entry];
 		memcpy(buffer,data_ptr,SIZEOF_directory_entry);
-		unpack_directory_entry(buffer,(directory_entry *)data_ptr);
+		unpack_directory_entry(buffer,(directory_entry *)data_ptr,1);
 	}
 	/*
 	byte_swap_data(data_ptr, header->version>=WADFILE_SUPPORTS_OVERLAYS ? SIZEOF_old_directory_entry : SIZEOF_directory_entry, 1, _bs_directory_entry);
@@ -692,10 +692,10 @@ boolean write_wad(
 		switch (entry_header_length)
 		{
 		case SIZEOF_old_entry_header:
-			pack_old_entry_header(buffer,(old_entry_header *)&header);
+			pack_old_entry_header(buffer,(old_entry_header *)&header,1);
 			break;
 		case SIZEOF_entry_header:
-			pack_entry_header(buffer,&header);
+			pack_entry_header(buffer,&header,1);
 			break;
 		default:
 			vassert(false,csprintf(temporary,"Unrecognized entry-header length: %d",entry_header_length));
@@ -1071,10 +1071,10 @@ static bool read_indexed_directory_data(
 		switch (base_entry_size)
 		{
 		case SIZEOF_old_directory_entry:
-			unpack_old_directory_entry(buffer,(old_directory_entry *)entry);
+			unpack_old_directory_entry(buffer,(old_directory_entry *)entry,1);
 			break;
 		case SIZEOF_directory_entry:
-			unpack_directory_entry(buffer,entry);
+			unpack_directory_entry(buffer,entry,1);
 			break;
 		default:
 			vassert(false,csprintf(temporary,"Unrecognized base-entry length: %d",base_entry_size));
@@ -1108,10 +1108,10 @@ static bool read_indexed_directory_data(
 			switch (base_entry_size)
 			{
 			case SIZEOF_old_directory_entry:
-				unpack_old_directory_entry(buffer,(old_directory_entry *)entry);
+				unpack_old_directory_entry(buffer,(old_directory_entry *)entry,1);
 				break;
 			case SIZEOF_directory_entry:
-				unpack_directory_entry(buffer,entry);
+				unpack_directory_entry(buffer,entry,1);
 				break;
 			default:
 				vassert(false,csprintf(temporary,"Unrecognized base-entry length: %d",base_entry_size));
