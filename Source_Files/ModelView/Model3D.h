@@ -45,7 +45,7 @@ using namespace std;
 // For boned models; calculate vertices from these
 struct Model3D_VertexSource
 {
-	GLfloat Position[3];
+	GLfloat Position[3];	// Use this directly for the neutral positions
 	GLushort Bone0, Bone1;	// Indices of the two bones (NONE is no bone)
 	GLfloat Blend;			// Blend factor: limits are 0 = first bone, 1 = second bone.
 };
@@ -61,7 +61,9 @@ struct Model3D_Bone
 		Pop		= 0x0001,
 		Push	= 0x0002
 	};
-
+	
+	// The bones' positions are all referred to the overall coordinate system
+	// instead of to their parents' positions, as in Tomb Raider.
 	GLfloat Position[3];
 	
 	// Tomb-Raider-like system for traversing a tree with reference to a stack of bones;
@@ -70,6 +72,15 @@ struct Model3D_Bone
 	// The pop is done before the push if both are present;
 	// both are done before using the bone.
 	GLushort Flags;
+};
+
+
+// Frame definition: a set of bone transforms, one for each bone in order.
+// The angles are in a form suitable for the Marathon engine's trig-function lookup tables.
+struct Model3D_Frame
+{
+	GLfloat Offset[3];
+	GLshort Angles[3];
 };
 
 
@@ -108,7 +119,16 @@ struct Model3D
 	vector<Model3D_VertexSource> VtxSources;
 	Model3D_VertexSource *VtxSrcBase() {return &VtxSources[0];}
 	
-	// Bone array:
+	// Vertex-source inverse indices:
+	// list of all the vertex indices associated with each vertex source,
+	// with a list of pointer indices into that list. Which has an extra pointer
+	// for just off the end of the last, to simplify the readoff
+	vector<GLushort> InverseVtxIndices;
+	GLushort *InverseVIBase() {return &InverseVtxIndices[0];}
+	vector<GLushort> InvVIPointers;
+	GLushort *InvVIPtrBase() {return &InvVIPointers[0];}
+	
+	// Bone array: the bones are in traversal order
 	vector<Model3D_Bone> Bones;
 	Model3D_Bone *BoneBase() {return &Bones[0];}
 	
@@ -118,7 +138,12 @@ struct Model3D
 	GLushort *VIBase() {return &VertIndices[0];}
 	int NumVI() {return VertIndices.size();}
 	
-	// Bounding box (0 = min, 1 = max)
+	// Frame array: each member is actually the transform to do on each bone;
+	// each frame has [number of bones] of these.
+	vector<Model3D_Frame> Frames;
+	Model3D_Frame *FrameBase() {return &Frames[0];}
+	
+	// Bounding box (first index: 0 = min, 1 = max)
 	GLfloat BoundingBox[2][3];
 	
 	// From the position data
@@ -149,6 +174,19 @@ struct Model3D
 	
 	// Erase everything
 	void Clear();
+	
+	// Build the trig tables for use in doing the transformations for frames and sequences;
+	// do this if build_trig_tables() in world.h was not already called elsewhere.
+	static void BuildTrigTables();
+	
+	// Build vertex-source inverse indices; these are for speeding up the translation process.
+	void BuildInverseVSIndices();
+	
+	// Find positions of vertices
+	// when a vertex-source array, bones, frames, and sequences are pres
+	// No arguments is for the model's neutral position (uses only source array)
+	void FindPositions();
+	void FindPositions(GLshort FrameIndex);
 	
 	// Constructor
 	Model3D() {FindBoundingBox();}

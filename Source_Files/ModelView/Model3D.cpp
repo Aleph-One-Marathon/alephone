@@ -26,6 +26,7 @@
 #include <math.h>
 
 #include "cseries.h"
+#include "world.h"
 
 #ifdef HAVE_OPENGL
 
@@ -42,6 +43,24 @@
 #endif
 
 
+// Bone-stack and transformation-matrix locally-used arrays;
+// the matrices have dimensions (output coords)(input-coord multipliers + offset for output)
+struct TransformMatrix
+{
+	GLfloat M[3][4];
+};
+static vector<TransformMatrix> BoneMatrices;
+static vector<short> BoneStack;
+
+
+// Res = A * B, in that order
+static void TMatMultiply(TransformMatrix &Res, TransformMatrix &A, TransformMatrix &B);
+
+	
+// Trig-function conversion:
+const GLfloat TrigNorm = GLfloat(1)/GLfloat(TRIG_MAGNITUDE);
+
+
 // Erase everything
 void Model3D::Clear()
 {
@@ -51,8 +70,11 @@ void Model3D::Clear()
 	Colors.clear();
 	VtxSrcIndices.clear();
 	VtxSources.clear();
+	InverseVtxIndices.clear();
+	InvVIPointers.clear();
 	Bones.clear();
 	VertIndices.clear();
+	Frames.clear();
 	FindBoundingBox();
 }
 
@@ -487,5 +509,300 @@ void Model3D::RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *Diagona
 		glDrawElements(GL_LINES,NumDiagVerts,GL_UNSIGNED_SHORT,DiagVerts);
 	}
 }
+
+void Model3D::BuildTrigTables()
+{
+	build_trig_tables();
+}
+
+
+void Model3D::BuildInverseVSIndices()
+{
+	if (VtxSrcIndices.empty()) return;
+	
+	InverseVtxIndices.resize(VtxSrcIndices.size());
+	InvVIPointers.resize(VtxSources.size()+1);		// One extra member
+	
+	// Use the pointers as temporary storage for the count
+	objlist_clear(InvVIPtrBase(),InvVIPointers.size());	
+	for (vector<GLushort>::iterator VSI_Iter = VtxSrcIndices.begin();
+		VSI_Iter < VtxSrcIndices.end();
+		VSI_Iter++)
+			InvVIPointers[*VSI_Iter]++;
+	
+	// Find the positions from the counts
+	GLushort PtrSum = 0;
+	for (vector<GLushort>::iterator IVP_Iter = InvVIPointers.begin();
+		IVP_Iter < InvVIPointers.end();
+		IVP_Iter++)
+		{
+			GLushort NewPtrSum = PtrSum + *IVP_Iter;
+			*IVP_Iter = PtrSum;
+			PtrSum = NewPtrSum;
+		}
+	
+	// Place the inverse indices
+	for (int k = 0; k<VtxSrcIndices.size(); k++)
+		InverseVtxIndices[InvVIPointers[VtxSrcIndices[k]]++] = k;
+	
+	// Push the pointer values forward in the list
+	// since they'd become their next values in it.
+	// The reverse iteration is necessary to avoid overwriting
+	for (vector<GLushort>::iterator IVP_Iter = InvVIPointers.end()-1;
+		IVP_Iter > InvVIPointers.begin();
+		IVP_Iter--)
+		{
+			*IVP_Iter = *(IVP_Iter - 1);
+		}
+	InvVIPointers[0] = 0;
+}
+
+
+// Neutral case
+void Model3D::FindPositions()
+{
+	// Positions already there
+	if (VtxSrcIndices.empty()) return;
+	
+	int NumVertices = VtxSrcIndices.size();
+	Positions.resize(3*NumVertices);
+	
+	GLfloat *PP = PosBase();
+	GLushort *IP = VtxSIBase();
+	
+	int NumVtxSources = VtxSources.size();
+	
+	for (int k=0; k<NumVertices; k++)
+	{
+		int VSIndex = *(IP++);
+		if (VSIndex >= 0 && VSIndex < NumVtxSources)
+		{
+			Model3D_VertexSource& VS = VtxSources[VSIndex];
+			GLfloat *VP = VS.Position;
+			*(PP++) = *(VP++);
+			*(PP++) = *(VP++);
+			*(PP++) = *(VP++);
+		}
+		else
+		{
+			*(PP++) = 0;
+			*(PP++) = 0;
+			*(PP++) = 0;
+		}
+	}
+}
+
+// Frame case
+void Model3D::FindPositions(GLshort FrameIndex)
+{
+	// Fallback in case of bad inputs: the neutral position
+	
+	if (Frames.empty())
+	{
+		FindPositions();
+		return;
+	}
+	
+	int NumBones = Bones.size();
+	if (FrameIndex < 0 || NumBones*FrameIndex >= Frames.size())
+	{
+		FindPositions();
+		return;
+	}
+	
+	int NumVertices = VtxSrcIndices.size();
+	Positions.resize(3*NumVertices);
+	
+	// Set sizes:
+	BoneMatrices.resize(NumBones);
+	BoneStack.resize(NumBones);
+	
+	// Find which frame; remember that frame data comes in [NumBones] sets
+	Model3D_Frame *FramePtr = &Frames[NumBones*FrameIndex];
+	
+	// Find the individual-bone transformation matrices:
+	for (int ib=0; ib<NumBones; ib++)
+	{
+		Model3D_Bone& Bone = Bones[ib];
+		Model3D_Frame& Frame = FramePtr[ib];
+		TransformMatrix& T = BoneMatrices[ib];
+		
+		// Initially, the identity:
+		obj_clear(T);
+		T.M[0][0] = T.M[1][1] = T.M[2][2] = 1;
+		
+		// First, do rotations:
+		short Angle;
+		
+		// Right-to-left; in the right order for Dim3 (and Tomb Raider)
+		
+		// Z:
+		Angle = NORMALIZE_ANGLE(Frame.Angles[2]);
+		
+		if (Angle != 0)
+		{
+			GLfloat C = TrigNorm*cosine_table[Angle];
+			GLfloat S = TrigNorm*sine_table[Angle];
+			
+			for (int ic=0; ic<3; ic++)
+			{
+				GLfloat X = T.M[0][ic];
+				GLfloat Y = T.M[1][ic];
+				GLfloat XR = X*C + Y*S;
+				GLfloat YR = - X*S + Y*C;
+				T.M[0][ic] = XR;
+				T.M[1][ic] = YR;
+			}
+		}
+		
+		// X:
+		Angle = NORMALIZE_ANGLE(Frame.Angles[0]);
+		
+		if (Angle != 0)
+		{
+			GLfloat C = TrigNorm*cosine_table[Angle];
+			GLfloat S = TrigNorm*sine_table[Angle];
+			
+			for (int ic=0; ic<3; ic++)
+			{
+				GLfloat X = T.M[1][ic];
+				GLfloat Y = T.M[2][ic];
+				GLfloat XR = X*C + Y*S;
+				GLfloat YR = - X*S + Y*C;
+				T.M[1][ic] = XR;
+				T.M[2][ic] = YR;
+			}
+		}
+		
+		// Y:
+		Angle = NORMALIZE_ANGLE(Frame.Angles[1]);
+		
+		if (Angle != 0)
+		{
+			GLfloat C = TrigNorm*cosine_table[Angle];
+			GLfloat S = TrigNorm*sine_table[Angle];
+			
+			for (int ic=0; ic<3; ic++)
+			{
+				GLfloat X = T.M[2][ic];
+				GLfloat Y = T.M[0][ic];
+				GLfloat XR = X*C + Y*S;
+				GLfloat YR = - X*S + Y*C;
+				T.M[2][ic] = XR;
+				T.M[0][ic] = YR;
+			}
+		}
+		
+		// Set up overall translate:
+		GLfloat *BonePos = Bone.Position;
+		GLfloat *FrameOfst = Frame.Offset;
+		for (int ic=0; ic<3; ic++)
+		{
+			GLfloat Sum = 0;
+			for (int k=0; k<3; k++)
+				Sum += T.M[ic][k]*BonePos[k];
+			
+			T.M[ic][3] = FrameOfst[ic] + BonePos[ic] - Sum;
+		}
+	}
+	
+	// Find the cumulative-bone transformation matrices:
+	int StackIndx = -1;
+	int Parent = NONE;
+	for (int ib=0; ib<NumBones; ib++)
+	{
+		Model3D_Bone& Bone = Bones[ib];
+		
+		// Do the pop-push with the stack
+		// to get the bone's parent bone
+		if (TEST_FLAG(Bone.Flags,Model3D_Bone::Pop))
+		{
+			if (StackIndx >= 0)
+				Parent = BoneStack[StackIndx--];
+			else
+				Parent = NONE;
+		}
+		if (TEST_FLAG(Bone.Flags,Model3D_Bone::Push))
+		{
+			StackIndx = MAX(StackIndx,-1);
+			BoneStack[++StackIndx] = Parent;
+		}
+		
+		// Do the transform!
+		if (Parent >= 0)
+		{
+			TransformMatrix Res;
+			TMatMultiply(Res,BoneMatrices[Parent],BoneMatrices[ib]);
+			obj_copy(BoneMatrices[ib],Res);
+		}
+		
+		// Default: parent of next bone is current bone
+		Parent = ib;
+	}
+	
+	// Transform the points; use inverse index for convenience
+	if (InverseVtxIndices.empty()) BuildInverseVSIndices();
+	
+	for (int ivs=0; ivs<VtxSources.size(); ivs++)
+	{
+		Model3D_VertexSource& VS = VtxSources[ivs];
+		GLfloat Position[3];
+		
+		if (VS.Bone0 >= 0)
+		{
+			TransformMatrix& T0 = BoneMatrices[VS.Bone0];
+			for (int ic=0; ic<3; ic++)
+			{
+				GLfloat Sum = 0;
+				for (int k=0; k<3; k++)
+					Sum += T0.M[ic][k]*VS.Position[k];
+				Position[ic] = Sum + T0.M[ic][3];
+			}
+			if (VS.Bone1 >= 0 && VS.Blend != 0)
+			{
+				TransformMatrix& T1 = BoneMatrices[VS.Bone1];
+				for (int ic=0; ic<3; ic++)
+				{
+					GLfloat Sum = 0;
+					for (int k=0; k<3; k++)
+						Sum += T1.M[ic][k]*VS.Position[k];
+					Position[ic] += VS.Blend*((Sum + T1.M[ic][3]) - Position[ic]);
+				}
+			}
+		}
+		else	// The assumed root bone (identity transformation)
+			objlist_copy(Position,VS.Position,3);
+		
+		for (int iv=InvVIPointers[ivs]; iv<InvVIPointers[ivs+1]; iv++)
+			objlist_copy(PosBase() + 3*iv,Position,3);
+	}
+}
+
+
+// Res = A * B, in that order
+static void TMatMultiply(TransformMatrix &Res, TransformMatrix &A, TransformMatrix &B)
+{
+	// Multiply the rotation parts
+	for (int i=0; i<3; i++)
+		for (int j=0; j<3; j++)
+		{
+			GLfloat Sum = 0;
+			for (int k=0; k<3; k++)
+				Sum += A.M[i][k]*B.M[k][j];
+			
+			Res.M[i][j] = Sum;
+		}
+	
+	// Now the translation part
+	for (int i=0; i<3; i++)
+	{
+		GLfloat Sum = 0;
+		for (int k=0; k<3; k++)
+			Sum += A.M[i][k]*B.M[k][3];
+		
+		Res.M[i][3] = A.M[i][3] + Sum;
+	}
+}
+
 
 #endif // def HAVE_OPENGL
