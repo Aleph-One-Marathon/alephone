@@ -1229,7 +1229,7 @@ process_game_key (const SDL_Event & event)
   switch (get_game_state ())
     {
     case _game_in_progress:
-      if (event.key.keysym.mod & KMOD_ALT)
+      if ((event.key.keysym.mod & KMOD_ALT) || (event.key.keysym.mod & KMOD_META))
 	{
 	  int item = -1;
 	  switch (event.key.keysym.sym)
