@@ -70,13 +70,13 @@ void alert_user(
 	switch(severity)
 	{
 	case infoError:
-		SimpleAlert(kAlertNoteAlert,Msg,NumStr);
 		logError2("alert (ID=%hd): %s",error,Msg);
+		SimpleAlert(kAlertNoteAlert,Msg,NumStr);
 		break;
 		
 	case fatalError:
-		SimpleAlert(kAlertStopAlert,Msg,NumStr);
 		logFatal2("fatal alert (ID=%hd): %s",error,Msg);
+		SimpleAlert(kAlertStopAlert,Msg,NumStr);
 		ExitToShell();
 	}
 #else
@@ -131,8 +131,8 @@ void vhalt(
 {
 #ifdef TARGET_API_MAC_CARBON
 	InitCursor();
-	SimpleAlert(kAlertStopAlert,message);
 	logFatal1("vhalt: %s", message);
+	SimpleAlert(kAlertStopAlert,message);
 #else
 	long len=strlen(message);
 	if (len>255)
