@@ -129,15 +129,15 @@ public:
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
-		if (strcmp(tag, "index") == 0) {
+		if (StringsEqual(tag, "index")) {
 			if (ReadBoundedNumericalValue(value, "%d", index, 0, max_index))
 				have_index = true;
 			else
 				return false;
-		} else if (strcmp(tag, "file") == 0) {
+		} else if (StringsEqual(tag, "file")) {
 			name = value;
 			have_name = true;
-		} else if (strcmp(tag, "scale") == 0) {
+		} else if (StringsEqual(tag, "scale")) {
 			return ReadBooleanValue(value, scale);
 		} else {
 			UnrecognizedTag();
@@ -187,21 +187,21 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		float v;
-		if (strcmp(tag, "index") == 0) {
+		if (StringsEqual(tag, "index")) {
 			return ReadBoundedNumericalValue(value, "%d", idx, 0, max_index);
-		} else if (strcmp(tag, "red") == 0) {
+		} else if (StringsEqual(tag, "red")) {
 			if (ReadNumericalValue(value, "%f", v)) {
 				have_red = true;
 				color.r = uint8(PIN(255 * v + 0.5, 0, 255));
 			} else
 				return false;
-		} else if (strcmp(tag, "green") == 0) {
+		} else if (StringsEqual(tag, "green")) {
 			if (ReadNumericalValue(value, "%f", v)) {
 				have_green = true;
 				color.g = uint8(PIN(255 * v + 0.5, 0, 255));
 			} else
 				return false;
-		} else if (strcmp(tag, "blue") == 0) {
+		} else if (StringsEqual(tag, "blue")) {
 			if (ReadNumericalValue(value, "%f", v)) {
 				have_blue = true;
 				color.b = uint8(PIN(255 * v + 0.5, 0, 255));
@@ -254,17 +254,17 @@ public:
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
-		if (strcmp(tag, "id") == 0) {
+		if (StringsEqual(tag, "id")) {
 			if (ReadNumericalValue(value, "%d", id))
 				have_id = true;
 			else
 				return false;
-		} else if (strcmp(tag, "size") == 0) {
+		} else if (StringsEqual(tag, "size")) {
 			if (ReadNumericalValue(value, "%d", size))
 				have_size = true;
 			else
 				return false;
-		} else if (strcmp(tag, "style") == 0) {
+		} else if (StringsEqual(tag, "style")) {
 			return ReadNumericalValue(value, "%d", style);
 		} else {
 			UnrecognizedTag();
@@ -305,13 +305,13 @@ public:
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
-		if (strcmp(tag, "top") == 0) {
+		if (StringsEqual(tag, "top")) {
 			return ReadNumericalValue(value, "%d", dialog_space[FRAME_T_SPACE]);
-		} else if (strcmp(tag, "bottom") ==0 ) {
+		} else if (StringsEqual(tag, "bottom")) {
 			return ReadNumericalValue(value, "%d", dialog_space[FRAME_B_SPACE]);
-		} else if (strcmp(tag, "left") ==0 ) {
+		} else if (StringsEqual(tag, "left")) {
 			return ReadNumericalValue(value, "%d", dialog_space[FRAME_L_SPACE]);
-		} else if (strcmp(tag, "right") ==0 ) {
+		} else if (StringsEqual(tag, "right")) {
 			return ReadNumericalValue(value, "%d", dialog_space[FRAME_R_SPACE]);
 		} else {
 			UnrecognizedTag();
@@ -335,7 +335,7 @@ public:
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
-		if (strcmp(tag, "height") == 0) {
+		if (StringsEqual(tag, "height")) {
 			return ReadNumericalValue(value, "%d", dialog_space[SPACER_HEIGHT]);
 		} else {
 			UnrecognizedTag();
@@ -353,13 +353,13 @@ public:
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
-		if (strcmp(tag, "top") == 0) {
+		if (StringsEqual(tag, "top")) {
 			return ReadNumericalValue(value, "%d", dialog_space[BUTTON_T_SPACE]);
-		} else if (strcmp(tag, "left") == 0) {
+		} else if (StringsEqual(tag, "left")) {
 			return ReadNumericalValue(value, "%d", dialog_space[BUTTON_L_SPACE]);
-		} else if (strcmp(tag, "right") == 0) {
+		} else if (StringsEqual(tag, "right")) {
 			return ReadNumericalValue(value, "%d", dialog_space[BUTTON_R_SPACE]);
-		} else if (strcmp(tag, "height") == 0) {
+		} else if (StringsEqual(tag, "height")) {
 			return ReadNumericalValue(value, "%d", dialog_space[BUTTON_HEIGHT]);
 		} else {
 			UnrecognizedTag();
@@ -380,7 +380,7 @@ public:
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
-		if (strcmp(tag, "space") == 0) {
+		if (StringsEqual(tag, "space")) {
 			return ReadNumericalValue(value, "%d", dialog_space[LABEL_ITEM_SPACE]);
 		} else {
 			UnrecognizedTag();
@@ -404,13 +404,13 @@ public:
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
-		if (strcmp(tag, "top") == 0) {
+		if (StringsEqual(tag, "top")) {
 			return ReadNumericalValue(value, "%d", dialog_space[TROUGH_T_SPACE]);
-		} else if (strcmp(tag, "bottom") ==0 ) {
+		} else if (StringsEqual(tag, "bottom")) {
 			return ReadNumericalValue(value, "%d", dialog_space[TROUGH_B_SPACE]);
-		} else if (strcmp(tag, "right") ==0 ) {
+		} else if (StringsEqual(tag, "right")) {
 			return ReadNumericalValue(value, "%d", dialog_space[TROUGH_R_SPACE]);
-		} else if (strcmp(tag, "width") ==0 ) {
+		} else if (StringsEqual(tag, "width")) {
 			return ReadNumericalValue(value, "%d", dialog_space[TROUGH_WIDTH]);
 		} else {
 			UnrecognizedTag();
@@ -431,13 +431,13 @@ public:
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
-		if (strcmp(tag, "top") == 0) {
+		if (StringsEqual(tag, "top")) {
 			return ReadNumericalValue(value, "%d", dialog_space[LIST_T_SPACE]);
-		} else if (strcmp(tag, "bottom") ==0 ) {
+		} else if (StringsEqual(tag, "bottom")) {
 			return ReadNumericalValue(value, "%d", dialog_space[LIST_B_SPACE]);
-		} else if (strcmp(tag, "left") ==0 ) {
+		} else if (StringsEqual(tag, "left")) {
 			return ReadNumericalValue(value, "%d", dialog_space[LIST_L_SPACE]);
-		} else if (strcmp(tag, "right") ==0 ) {
+		} else if (StringsEqual(tag, "right")) {
 			return ReadNumericalValue(value, "%d", dialog_space[LIST_R_SPACE]);
 		} else {
 			UnrecognizedTag();
@@ -455,11 +455,11 @@ public:
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
-		if (strcmp(tag, "top") == 0) {
+		if (StringsEqual(tag, "top")) {
 			return ReadNumericalValue(value, "%d", dialog_space[SLIDER_T_SPACE]);
-		} else if (strcmp(tag, "left") == 0) {
+		} else if (StringsEqual(tag, "left")) {
 			return ReadNumericalValue(value, "%d", dialog_space[SLIDER_L_SPACE]);
-		} else if (strcmp(tag, "right") == 0) {
+		} else if (StringsEqual(tag, "right")) {
 			return ReadNumericalValue(value, "%d", dialog_space[SLIDER_R_SPACE]);
 		} else {
 			UnrecognizedTag();
