@@ -25,6 +25,12 @@ Feb 4, 2000 (Loren Petrich):
 
 Feb 6, 2000 (Loren Petrich):
 	Added loading of typecodes from the resource fork
+
+Aug 21, 2000 (Loren Petrich):
+	Added a preferences filetype
+
+Aug 22, 2000 (Loren Petrich):
+	Added an images filetype
 */
 
 #define MAXIMUM_LEVEL_NAME_SIZE 64
@@ -40,6 +46,8 @@ enum {
 	_typecode_shapes,
 	_typecode_sounds,
 	_typecode_patch,
+	_typecode_images,
+	_typecode_prefs,
 	NUMBER_OF_TYPECODES
 };
 
@@ -58,6 +66,8 @@ OSType get_typecode(int which);
 #define SHAPES_FILE_TYPE (get_typecode(_typecode_shapes))
 #define SOUNDS_FILE_TYPE (get_typecode(_typecode_sounds))
 #define PATCH_FILE_TYPE (get_typecode(_typecode_patch))
+#define IMAGES_FILE_TYPE (get_typecode(_typcode_images))
+#define PREFERENCES_FILE_TYPE (get_typecode(_typecode_prefs))
 
 
 /* Other tags-  */
