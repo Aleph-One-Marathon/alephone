@@ -23,6 +23,9 @@ Jan 31, 2002 (Loren Petrich):
 // WIll use QD3D
 #define HAVE_QUESA 1
 
+// App is in a bundle; this is to get away from resource forks
+#define APPLICATION_IS_BUNDLED
+
 // check environs
 /*
 #if __POWERPC__
