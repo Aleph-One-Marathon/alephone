@@ -218,8 +218,10 @@ Apr 22, 2003 (Woody Zenfell):
 
 #include "Logging.h"
 
+#ifndef __MACH__
 // For loading the OSX fader, if present
 #include <CFBundle.h>
+#endif
 
 // ZZZ: egads, this stuff just keeps getting hairier
 extern bool OGL_HUDActive;
