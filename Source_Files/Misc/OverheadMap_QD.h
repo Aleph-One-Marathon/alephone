@@ -42,7 +42,7 @@ class OverheadMap_QD_Class: public OverheadMapClass
 		world_point2d& location,
 		rgb_color& color,
 		char *text,
-		FontDataStruct& FontData,
+		FontSpecifier& FontData,
 		short which,
 		short justify);
 	
