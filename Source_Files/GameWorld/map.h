@@ -834,7 +834,7 @@ struct static_data
 	char level_name[LEVEL_NAME_LENGTH];
 	uint32 entry_point_flags;
 };
-const int SIZEOF_static_data = 88;
+const unsigned int SIZEOF_static_data = 88;
 
 enum /* game options.. */
 {
@@ -961,7 +961,7 @@ struct dynamic_data
 	world_point2d game_beacon;
 	int16 game_player_index;
 };
-const int SIZEOF_dynamic_data = 604;
+const unsigned int SIZEOF_dynamic_data = 604;
 
 /* ---------- map globals */
 
