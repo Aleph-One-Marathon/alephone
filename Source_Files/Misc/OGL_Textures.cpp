@@ -597,10 +597,54 @@ bool TextureManager::LoadSubstituteTexture()
 		// No glow map here
 		break;
 		
-	// Not supported yet
 	case OGL_Txtr_Inhabitant:
 	case OGL_Txtr_WeaponsInHand:
-		return false;
+		// Much of the code here has been copied from elsewhere.
+		// Set these for convenience; sprites are transposed, as walls are.
+		BaseTxtrWidth = Height;
+		BaseTxtrHeight = Width;
+		
+		// The 2 here is so that there will be an empty border around a sprite,
+		// so that the texture can be conveniently mipmapped.
+		TxtrWidth = NextPowerOfTwo(BaseTxtrWidth+2);
+		TxtrHeight = NextPowerOfTwo(BaseTxtrHeight+2);
+		
+		// This kludge no longer necessary
+		// Restored due to some people still having AppleGL 1.1.2
+		if (WhetherTextureFix())
+		{
+			TxtrWidth = MAX(TxtrWidth,128);
+			TxtrHeight = MAX(TxtrHeight,128);
+		}
+					
+		// Offsets
+		WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
+		HeightOffset = (TxtrHeight - BaseTxtrHeight) >> 1;
+		
+		// We can calculate the scales and offsets here
+		double TWidRecip = 1/double(TxtrWidth);
+		double THtRecip = 1/double(TxtrHeight);
+		U_Scale = TWidRecip*double(BaseTxtrWidth);
+		U_Offset = TWidRecip*WidthOffset;
+		V_Scale = THtRecip*double(BaseTxtrHeight);
+		V_Offset = THtRecip*HeightOffset;
+		
+		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
+		objlist_clear(NormalBuffer,TxtrWidth*TxtrHeight);
+		for (int v=0; v<Height; v++)
+			for (int h=0; h<Width; h++)
+				NormalBuffer[(HeightOffset+h)*TxtrWidth+(WidthOffset+v)] = NormalImg.GetPixel(h,v);
+		
+		// Objects can glow...
+		if (GlowImg.IsPresent())
+		{
+			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
+			objlist_clear(GlowBuffer,TxtrWidth*TxtrHeight);
+			for (int v=0; v<Height; v++)
+				for (int h=0; h<Width; h++)
+					GlowBuffer[(HeightOffset+h)*TxtrWidth+(WidthOffset+v)] = GlowImg.GetPixel(h,v);
+		}
+		break;
 	}
 	
 	// Use the Tomb Raider opacity hack if selected
@@ -645,7 +689,6 @@ bool TextureManager::LoadSubstituteTexture()
 			GlowBuffer = NULL;
 		}
 	}
-	
 	return true;
 }
 
