@@ -39,6 +39,9 @@ May 3, 2000 (Loren Petrich):
 	Added Simon Brownlee's patch for handling the "hardware acceleration" button
 
 Jul 7, 2000 (Loren Petrich): Added Ben Thompson's InputSprocket support
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
 #include <string.h>
@@ -64,6 +67,7 @@ Jul 7, 2000 (Loren Petrich): Added Ben Thompson's InputSprocket support
 #include "extensions.h"
 
 #include "tags.h"
+#include "FileHandler_Mac.h"
 
 #ifdef env68k
 	#pragma segment dialogs
@@ -1166,18 +1170,36 @@ static void default_environment_preferences(
 
 	memset(prefs, NONE, sizeof(struct environment_preferences_data));
 
-	get_default_map_spec((FileDesc *) &prefs->map_file);
-	get_default_physics_spec((FileDesc *) &prefs->physics_file);
-	get_file_spec(&prefs->shapes_file, strFILENAMES, filenameSHAPES8, strPATHS);
-	get_file_spec(&prefs->sounds_file, strFILENAMES, filenameSOUNDS8, strPATHS);
+	FileObject_Mac DefaultFile;
+	
+	get_default_map_spec(DefaultFile);
+	prefs->map_checksum= read_wad_file_checksum(DefaultFile);
+	memcpy(&prefs->map_file, &DefaultFile.Spec, sizeof(FSSpec));
+	
+	get_default_physics_spec(DefaultFile);
+	prefs->physics_checksum= read_wad_file_checksum(DefaultFile);
+	memcpy(&prefs->physics_file, &DefaultFile.Spec, sizeof(FSSpec));
+	
+	get_default_shapes_spec(DefaultFile);
+	prefs->shapes_mod_date= get_file_modification_date(&DefaultFile.Spec);
+	memcpy(&prefs->shapes_file, &DefaultFile.Spec, sizeof(FSSpec));
+
+	get_default_sounds_spec(DefaultFile);
+	prefs->sounds_mod_date= get_file_modification_date(&DefaultFile.Spec);
+	memcpy(&prefs->sounds_file, &DefaultFile.Spec, sizeof(FSSpec));
+	
+	// get_default_map_spec((FileDesc *) &prefs->map_file);
+	// get_default_physics_spec((FileDesc *) &prefs->physics_file);
+	// get_file_spec(&prefs->shapes_file, strFILENAMES, filenameSHAPES8, strPATHS);
+	// get_file_spec(&prefs->sounds_file, strFILENAMES, filenameSOUNDS8, strPATHS);
 
 	/* Calculate their checksums.. */
-	prefs->map_checksum= read_wad_file_checksum((FileDesc *) &prefs->map_file);
-	prefs->physics_checksum= read_wad_file_checksum((FileDesc *) &prefs->physics_file);
+	// prefs->map_checksum= read_wad_file_checksum((FileDesc *) &prefs->map_file);
+	// prefs->physics_checksum= read_wad_file_checksum((FileDesc *) &prefs->physics_file);
 	
 	/* Calculate the modification dates. */
-	prefs->shapes_mod_date= get_file_modification_date(&prefs->shapes_file);
-	prefs->sounds_mod_date= get_file_modification_date(&prefs->sounds_file);
+	// prefs->shapes_mod_date= get_file_modification_date(&prefs->shapes_file);
+	// prefs->sounds_mod_date= get_file_modification_date(&prefs->sounds_file);
 
 	return;
 }
@@ -1276,68 +1298,99 @@ static void hit_environment_item(
 void load_environment_from_preferences(
 	void)
 {
-	FileDesc file;
+	FileObject_Mac File;
+	// FileDesc file;
 	OSErr error;
 	struct environment_preferences_data *prefs= environment_preferences;
 
+	File.SetSpec(prefs->map_file);
+	/*
 	error= FSMakeFSSpec(prefs->map_file.vRefNum, prefs->map_file.parID, prefs->map_file.name,
 		(FSSpec *) &file);
 	if(!error)
+	*/
+	if (File.Exists())
 	{
-		set_map_file(&file);
+		set_map_file(File);
+		// set_map_file(&file);
 	} else {
 		/* Try to find the checksum */
-		if(find_wad_file_that_has_checksum(&file,
+		// if(find_wad_file_that_has_checksum(&file,
+		if(find_wad_file_that_has_checksum(File,
 			SCENARIO_FILE_TYPE, strPATHS, prefs->map_checksum))
 		{
-			set_map_file(&file);
+			set_map_file(File);
+			// set_map_file(&file);
 		} else {
 			set_to_default_map();
 		}
 	}
 
+	File.SetSpec(prefs->physics_file);
+	/*
 	error= FSMakeFSSpec(prefs->physics_file.vRefNum, prefs->physics_file.parID, prefs->physics_file.name,
 		(FSSpec *) &file);
 	if(!error)
+	*/
+	if (File.Exists())
 	{
-		set_physics_file(&file);
+		set_physics_file(File);
+		// set_physics_file(&file);
 		import_definition_structures();
 	} else {
-		if(find_wad_file_that_has_checksum(&file,
+		// if(find_wad_file_that_has_checksum(&file,
+		if(find_wad_file_that_has_checksum(File,
 			PHYSICS_FILE_TYPE, strPATHS, prefs->physics_checksum))
 		{
-			set_physics_file(&file);
+			set_physics_file(File);
+			// set_physics_file(&file);
 			import_definition_structures();
 		} else {
 			/* Didn't find it.  Don't change them.. */
 		}
 	}
-
+	
+	FileObject *FPtr = &File;
+	FSSpec *SpecPtr = &((FileObject_Mac *)FPtr)->Spec;
+	FileDesc& file = *((FileDesc *)SpecPtr);
+	
+	File.SetSpec(prefs->shapes_file);
+	/*
 	error= FSMakeFSSpec(prefs->shapes_file.vRefNum, prefs->shapes_file.parID, prefs->shapes_file.name,
 		(FSSpec *) &file);
 	if(!error)
+	*/
+	if (File.Exists())
 	{
-		open_shapes_file((FSSpec *) &file);
+		open_shapes_file(File);
+		// open_shapes_file((FSSpec *) &file);
 	} else {
 		if(find_file_with_modification_date(&file,
 			SHAPES_FILE_TYPE, strPATHS, prefs->shapes_mod_date))
 		{
-			open_shapes_file((FSSpec *) &file);
+			open_shapes_file(File);
+			// open_shapes_file((FSSpec *) &file);
 		} else {
 			/* What should I do? */
 		}
 	}
 
+	File.SetSpec(prefs->sounds_file);
+	/*
 	error= FSMakeFSSpec(prefs->sounds_file.vRefNum, prefs->sounds_file.parID, prefs->sounds_file.name,
 		(FSSpec *) &file);
 	if(!error)
+	*/
+	if (File.Exists())
 	{
-		open_sound_file((FSSpec *) &file);
+		open_sound_file(File);
+		// open_sound_file((FSSpec *) &file);
 	} else {
 		if(find_file_with_modification_date(&file,
 			SOUNDS_FILE_TYPE, strPATHS, prefs->sounds_mod_date))
 		{
-			open_sound_file((FSSpec *) &file);
+			open_sound_file(File);
+			// open_sound_file((FSSpec *) &file);
 		} else {
 			/* What should I do? */
 		}
@@ -1469,7 +1522,10 @@ static Boolean file_is_extension_and_add_callback(
 		OSType Filetype = pb->hFileInfo.ioFlFndrInfo.fdType;
 		if (Filetype == SCENARIO_FILE_TYPE || Filetype == PHYSICS_FILE_TYPE)
 		{
-			checksum= read_wad_file_checksum((FileDesc *) file);
+			FileObject_Mac File;
+			File.SetSpec(*file);
+			checksum= read_wad_file_checksum(File);
+			// checksum= read_wad_file_checksum((FileDesc *) file);
 			if(checksum != NONE) /* error. */
 			{
 				accessory_files[accessory_file_count]= *file;
@@ -1479,12 +1535,17 @@ static Boolean file_is_extension_and_add_callback(
 		}
 		else if (Filetype == PATCH_FILE_TYPE)
 		{
-			checksum= read_wad_file_checksum((FileDesc *) file);
+			FileObject_Mac File;
+			File.SetSpec(*file);
+			checksum= read_wad_file_checksum(File);
+			// checksum= read_wad_file_checksum((FileDesc *) file);
 			if(checksum != NONE) /* error. */
 			{
 				unsigned long parent_checksum;
 				
-				parent_checksum= read_wad_file_parent_checksum((FileDesc *) file);
+				File.SetSpec(*file);
+				parent_checksum= read_wad_file_parent_checksum(File);
+				// parent_checksum= read_wad_file_parent_checksum((FileDesc *) file);
 				accessory_files[accessory_file_count]= *file;
 				file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
 				file_descriptions[accessory_file_count++].checksum= checksum;
