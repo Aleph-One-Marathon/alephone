@@ -48,6 +48,9 @@ Aug 12, 2000 (Loren Petrich):
 Aug 25, 2000 (Loren Petrich):
 	Cleared errors (game_errors.c/h) produced by Pfhortran
 	and by checking on a scenario's image files
+
+Aug 28, 2000 (Loren Petrich):
+	Started on using new pack/unpack routines
 */
 
 // This needs to do the right thing on save game, which is storing the precalculated crap.
@@ -87,6 +90,9 @@ Aug 25, 2000 (Loren Petrich):
 
 // CP Addition:  scripting.h necessary for script loading
 #include "scripting.h"
+
+// For packing and unpacking some of the stuff
+#include "Packing.h"
 
 // LP addition: for physics-model stuff, we need these pointers to definitions
 /* sadly extern'ed from their respective files */
@@ -342,6 +348,19 @@ static struct wad_data *build_save_game_wad(struct wad_header *header, long *len
 #ifdef LP
 static void allocate_map_for_counts(short polygon_count, short side_count,
 	short endpoint_count, short line_count, long terminal_data_length);
+static void load_points(byte *points, short count);
+static void load_lines(saved_line *lines, short count);
+static void load_sides(saved_side *sides, short count, short version);
+static void load_polygons(saved_poly *polys, short count, short version);
+static void load_lights(saved_static_light *_lights, short count, short version);
+static void load_annotations(saved_annotation *annotations, short count);
+static void load_objects(saved_object *map_objects, short count);
+static void load_media(struct media_data *media, short count);
+static void load_map_info(saved_map_data *map_info);
+static void load_ambient_sound_images(struct ambient_sound_image_data *data, short count);
+static void load_random_sound_images(struct random_sound_image_data *data, short count);
+static void load_terminal_data(byte *data, long length);
+/*
 static void load_points(saved_map_pt *points, short count);
 static void load_lines(saved_line *lines, short count);
 static void load_sides(saved_side *sides, short count, short version);
@@ -354,6 +373,7 @@ static void load_map_info(saved_map_data *map_info);
 static void load_ambient_sound_images(struct ambient_sound_image_data *data, short count);
 static void load_random_sound_images(struct random_sound_image_data *data, short count);
 static void load_terminal_data(byte *data, long length);
+*/
 
 /* Used _ONLY_ by game_wad.c internally and precalculate.c. */
 static boolean process_map_wad(struct wad_data *wad, boolean restoring_game, short version);
@@ -988,7 +1008,8 @@ void allocate_map_for_counts(
 }
 
 void load_points(
-	saved_map_pt *points, 
+	byte* points,
+	// saved_map_pt *points, 
 	short count)
 {
 	short loop;
@@ -996,11 +1017,17 @@ void load_points(
 	// LP change: fixed off-by-one error
 	assert(count>=0 && count<=MAXIMUM_ENDPOINTS_PER_MAP);
 	// assert(count>=0 && count<MAXIMUM_ENDPOINTS_PER_MAP);
+	// OK to modify input-data pointer since it's called by value
 	for(loop=0; loop<count; ++loop)
 	{
+		world_point2d& vertex = map_endpoints[loop].vertex;
+		StreamToValue(points,vertex.x);
+		StreamToValue(points,vertex.y);
+		/*
 		map_endpoints[loop].vertex= *points;
 		byte_swap_object(map_endpoints[loop].vertex, _bs_world_point_2d);
 		++points;
+		*/
 	}
 	dynamic_world->endpoint_count= count;
 }
@@ -1636,10 +1663,10 @@ boolean process_map_wad(
 
 	/* Extract points */
 	data= (unsigned char *)extract_type_from_wad(wad, POINT_TAG, &data_length);
-	count= data_length/sizeof(saved_map_pt);
+	count= data_length/SIZEOF_world_point2d;
 	if(count)
 	{
-		load_points((saved_map_pt *) data, count);
+		load_points(data, count);
 	} else {
 		data= (unsigned char *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
 		count= data_length/sizeof(struct endpoint_data);
