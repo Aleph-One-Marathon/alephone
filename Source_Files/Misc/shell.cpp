@@ -106,7 +106,7 @@ Aug 12, 2000 (Loren Petrich):
 #include "screen.h"
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprockets Support */
 
-#include "portable_files.h"
+// #include "portable_files.h"
 #include "music.h"
 #include "images.h"
 #include "vbl.h"
@@ -976,17 +976,22 @@ static void marathon_dialog_header_proc(
 static void initialize_marathon_music_handler(
 	void)
 {
-	FSSpec music_file_spec;
+	FileSpecifier SongFile;
+	// FSSpec music_file_spec;
 	OSErr error;
 	boolean initialized= FALSE;
 	
-	error= get_file_spec(&music_file_spec, strFILENAMES, filenameMUSIC, strPATHS);
-	if (!error)
+	SongFile.SetToApp();
+	SongFile.SetName(getcstr(temporary, strFILENAMES, filenameMUSIC),NONE);
+	if (SongFile.Exists())
+	// error= get_file_spec(&music_file_spec, strFILENAMES, filenameMUSIC, strPATHS);
+	// if (!error)
 	{
-		boolean is_folder, was_aliased;
+		// boolean is_folder, was_aliased;
 	
-		ResolveAliasFile(&music_file_spec, TRUE, &is_folder, &was_aliased);
-		initialized= initialize_music_handler((FileDesc *) &music_file_spec);
+		// ResolveAliasFile(&music_file_spec, TRUE, &is_folder, &was_aliased);
+		// initialized= initialize_music_handler((FileDesc *) &music_file_spec);
+		initialized= initialize_music_handler(SongFile);
 	}
 	
 	return;
