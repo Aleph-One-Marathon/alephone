@@ -157,7 +157,8 @@ screen_mode_data *get_screen_mode(void);
 short GetSizeWithHUD(short Size);
 short GetSizeWithoutHUD(short Size);
 
-void initialize_screen(struct screen_mode_data *mode);
+// LP: when initing, ask whether to show the monitor-frequency dialog
+void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog);
 void change_screen_mode(struct screen_mode_data *mode, bool redraw);
 
 #if defined(mac)
