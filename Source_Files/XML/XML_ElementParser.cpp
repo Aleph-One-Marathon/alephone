@@ -34,27 +34,8 @@ Dec 25, 2001 (Loren Petrich)
 #include "XML_ElementParser.h"
 
 
-bool StringsEqual(const char *String1, const char *String2, int MaxStrLen)
-{
-	// Convert and do the comparison by hand:
-	const char *S1 = String1;
-	const char *S2 = String2;
-	
-	for (int k=0; k<MaxStrLen; k++, S1++, S2++)
-	{
-		// Make the characters the same case
-		char c1 = toupper(*S1);
-		char c2 = toupper(*S2);
-		
-		// Compare!
-		if (c1 == 0 && c2 == 0) return true;	// All in both strings equal
-		else if (c1 != c2) return false;		// At least one unequal
-		// else equal but non-terminating; continue comparing
-	}
-	
-	// All those within the length range are equal
-	return true;
-}
+// StringsEqual and DeUTF8 stuff moved to the bottom
+
 
 bool XML_ElementParser::ReadInt16Value(const char *String, int16& Value)
 {
@@ -234,3 +215,168 @@ void XML_ElementParser::AttribsMissing() {ErrorString = AttribsMissingString;}
 void XML_ElementParser::BadNumericalValue() {ErrorString = BadNumericalValueString;}
 void XML_ElementParser::OutOfRange() {ErrorString = OutOfRangeString;}
 void XML_ElementParser::BadBooleanValue() {ErrorString = BadBooleanValueString;}
+
+
+bool StringsEqual(const char *String1, const char *String2, int MaxStrLen)
+{
+	// Convert and do the comparison by hand:
+	const char *S1 = String1;
+	const char *S2 = String2;
+	
+	for (int k=0; k<MaxStrLen; k++, S1++, S2++)
+	{
+		// Make the characters the same case
+		char c1 = toupper(*S1);
+		char c2 = toupper(*S2);
+		
+		// Compare!
+		if (c1 == 0 && c2 == 0) return true;	// All in both strings equal
+		else if (c1 != c2) return false;		// At least one unequal
+		// else equal but non-terminating; continue comparing
+	}
+	
+	// All those within the length range are equal
+	return true;
+}
+
+
+// For turning UTF-8 strings into plain ASCII ones;
+// needs at least (OutMaxLen) characters preallocated.
+// Will not null-terminate the string or Pascalify it.
+// Returns how many characters resulted.
+
+int DeUTF8(const char *InString, int InLen, char *OutString, int OutMaxLen)
+{
+	// Character and masked version for bit tests;
+	// unsigned char to avoid problems with interpreting the sign bit
+	uint8 c, cmsk;
+	
+	// Result character, in its full glory
+	uint32 uc;
+
+	int NumExtra = 0;	// Initial: as if previous string had ended
+	const int BAD_CHARACTER = -1; // NumExtra value that means
+	// "end string, but don't emit the character"
+	// Won't try to test for overlong characters.
+	
+	// How many characters processed
+	int Len = 0;
+	
+	for (int ic=0; ic<InLen; ic++)
+	{
+		c = uint8(InString[ic]);
+		
+		if (NumExtra <= 0)
+		{
+			// Start character string if previous one had ended or was bad
+			// Note that cmsk is calculated in each if() statement,
+			// so it can be used inside of its statement block,
+			// and so as to get a more elegant overall organization.
+			if ((cmsk = c & 0x80) != 0x80)
+			{
+				// 0 to 7 bits long: straight ASCII
+				uc = uint32(c & 0x7f);
+				NumExtra = 0;
+			}
+			else if ((cmsk = c & 0xe0) != 0xe0)
+			{
+				if (cmsk == 0xc0)
+				{
+					// 8 to 11 bits long
+					uc = uint32(c & 0x1f);
+					NumExtra = 1;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else if ((cmsk = c & 0xf0) != 0xf0)
+			{
+				if (cmsk == 0xe0)
+				{
+					// 12 to 16 bits long
+					uc = uint32(c & 0x0f);
+					NumExtra = 2;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else if ((cmsk = c & 0xf8) != 0xf8)
+			{
+				if (cmsk == 0xf0)
+				{
+					// 17 to 21 bits long
+					uc = uint32(c & 0x07);
+					NumExtra = 3;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else if ((cmsk = c & 0xfc) != 0xfc)
+			{
+				if (cmsk == 0xf8)
+				{
+					// 22 to 26 bits long
+					uc = uint32(c & 0x03);
+					NumExtra = 4;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else if ((cmsk = c & 0xfe) != 0xfe)
+			{
+				if (cmsk == 0xfc)
+				{
+					// 27 to 31 bits long
+					uc = uint32(c & 0x01);
+					NumExtra = 5;
+				}
+				else
+					NumExtra = BAD_CHARACTER;
+			}
+			else
+				NumExtra = BAD_CHARACTER;
+		}
+		else
+		{
+			cmsk = c & 0xc0;
+			if (cmsk == 0x80)
+			{
+				uc <<= 6;
+				uc |= uint32(c & 0x3f);
+				NumExtra--;
+			}
+			else
+				NumExtra = BAD_CHARACTER;
+		}
+		
+		// Overlong test would go here
+		
+		if (NumExtra == 0)
+		{
+			// Bad characters become a dollar sign
+			uint8 oc = (uc >= 0x20 && uc != 0x7f && uc <= 0xff) ? uint8(uc) : '$';
+			OutString[Len++] = char(oc);
+			if (Len >= OutMaxLen) break;
+		}
+	}
+	
+	return Len;
+}
+
+// Write output as a Pascal or C string, as the case may be;
+// Returns how many characters resulted.
+// Needs at least (OutMaxLen + 1) characters allocated.
+
+int DeUTF8_Pas(const char *InString, int InLen, unsigned char *OutString, int OutMaxLen)
+{
+	int Len = DeUTF8(InString,InLen,(char *)(OutString+1),OutMaxLen);
+	OutString[0] = Len;
+	return Len;
+}
+
+int DeUTF8_C(const char *InString, int InLen, char *OutString, int OutMaxLen)
+{
+	int Len = DeUTF8(InString,InLen,OutString,OutMaxLen);
+	OutString[Len] = 0;
+	return Len;
+}

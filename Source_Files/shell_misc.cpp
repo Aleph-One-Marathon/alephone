@@ -424,13 +424,11 @@ bool XML_CheatKeywordParser::AttributesDone()
 
 bool XML_CheatKeywordParser::HandleString(const char *String, int Length)
 {
-	// OK because of call-by-value
-	Length = MIN(Length,MAXIMUM_KEYWORD_LENGTH);
-	
 	char *DestString = keywords[Index].keyword;
-	objlist_clear(DestString,MAXIMUM_KEYWORD_LENGTH+1);
-	for (int c=0; c<Length; c++, String++, DestString++)
-		*DestString = toupper(*String);
+	int DecodedLength = DeUTF8_C(String,Length,DestString,MAXIMUM_KEYWORD_LENGTH);
+	
+	for (int c=0; c<DecodedLength; c++, DestString++)
+		*DestString = toupper(*DestString);
 	
 	return true;
 }

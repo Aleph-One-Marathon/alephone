@@ -283,11 +283,7 @@ bool XML_StringParser::HandleString(const char *String, int Length)
 {
 	// Copy into Pascal string
 	Str255 StringBuffer;
-	// OK since this is called by value
-	if (Length > 255) Length = 255;
-	
-	StringBuffer[0] = Length;
-	memcpy(StringBuffer+1,String,Length);
+	DeUTF8_Pas(String,Length,StringBuffer,255);
 	
 	// Load!
 	assert(StringSetParser.CurrStringSet);

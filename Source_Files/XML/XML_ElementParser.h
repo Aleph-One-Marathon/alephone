@@ -51,6 +51,19 @@ extern bool XML_GetBooleanValue(const char *String, bool &Value);
 bool StringsEqual(const char *String1, const char *String2, int MaxStrLen = 32);
 
 
+// For turning UTF-8 strings into plain ASCII ones;
+// needs at least (OutMaxLen) characters preallocated.
+// Will not null-terminate the string or Pascalify it.
+// Returns how many characters resulted.
+int DeUTF8(const char *InString, int InLen, char *OutString, int OutMaxLen);
+
+// Write output as a Pascal or C string, as the case may be;
+// Returns how many characters resulted.
+// Needs at least (OutMaxLen + 1) characters allocated.
+int DeUTF8_Pas(const char *InString, int InLen, unsigned char *OutString, int OutMaxLen);
+int DeUTF8_C(const char *InString, int InLen, char *OutString, int OutMaxLen);
+
+
 class XML_ElementParser
 {
 	// Its name, of course

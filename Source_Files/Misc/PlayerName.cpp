@@ -54,10 +54,7 @@ public:
 bool XML_SimpleStringParser::HandleString(const char *String, int Length)
 {
 	// Copy into Pascal string
-	// OK since this is called by value
-	if (Length > 255) Length = 255;
-	
-	memcpy(PlayerName+1,String,Length);
+	DeUTF8_Pas(String,Length,PlayerName,255);
 	
 	return true;
 }

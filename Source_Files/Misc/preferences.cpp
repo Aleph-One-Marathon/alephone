@@ -962,7 +962,18 @@ void WriteXML_Char(FILE *F, unsigned char c)
 {
 	// Make XML-friendly
 	// Are the characters normal ASCII printable characters?
-	if (c >= 0x20 && c < 0x7f)
+	if (c < 0x20)
+	{
+		// Turn the bad character into a good one,
+		// because Expat dislikes characters below 0x20
+		fprintf(F,"$");
+	}
+	else if (c >= 0x7f)
+	{
+		// Dump as hex
+		fprintf(F,"&#x%x;",int(c));
+	}
+	else
 	{
 		switch(c)
 		{
@@ -993,9 +1004,6 @@ void WriteXML_Char(FILE *F, unsigned char c)
 			break;
 		}
 	}
-	else
-		// If not, then dump it as hex
-		fprintf(F,"&#x%0.2x;",int(c));
 }
 
 #ifdef mac
@@ -1385,9 +1393,7 @@ bool XML_PlayerPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	if (StringsEqual(Tag,"name"))
 	{
 		// Copy in as Pascal string
-		int Len = min(int(strlen(Value)),PREFERENCES_NAME_LENGTH);
-		player_preferences->name[0] = Len;
-		memcpy(player_preferences->name+1,Value,Len);
+		DeUTF8_Pas(Value,strlen(Value),player_preferences->name,PREFERENCES_NAME_LENGTH);
 		return true;
 	}
 	else if (StringsEqual(Tag,"color"))
@@ -1663,9 +1669,7 @@ bool XML_MacFSSpecPrefsParser::HandleAttribute(const char *Tag, const char *Valu
 	else if (StringsEqual(Tag,"name"))
 	{
 		// Copy in as Pascal string (Classic: length 31; Carbon: length ?)
-		int Len = min(int(strlen(Value)),31);
-		Spec.name[0] = Len;
-		memcpy(Spec.name+1,Value,Len);
+		DeUTF8_Pas(Value,strlen(Value),Spec.name,31);
 		
 		IsPresent[3] = true;
 		return true;
@@ -1731,35 +1735,35 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	if (StringsEqual(Tag,"map_file"))
 	{
 #ifdef SDL
-		strncpy(environment_preferences->map_file,Value,256);
+		DeUTF8_C(Value,strlen(Value),environment_preferences->map_file,255);
 #endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"physics_file"))
 	{
 #ifdef SDL
-		strncpy(environment_preferences->physics_file,Value,256);
+		DeUTF8_C(Value,strlen(Value),environment_preferences->physics_file,255);
 #endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"shapes_file"))
 	{
 #ifdef SDL
-		strncpy(environment_preferences->shapes_file,Value,256);
+		DeUTF8_C(Value,strlen(Value),environment_preferences->shapes_file,255);
 #endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"sounds_file"))
 	{
 #ifdef SDL
-		strncpy(environment_preferences->sounds_file,Value,256);
+		DeUTF8_C(Value,strlen(Value),environment_preferences->sounds_file,255);
 #endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"theme_dir"))
 	{
 #ifdef SDL
-		strncpy(environment_preferences->theme_dir,Value,256);
+		DeUTF8_C(Value,strlen(Value),environment_preferences->theme_dir,255);
 #endif
 		return true;
 	}
