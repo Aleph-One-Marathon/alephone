@@ -5,9 +5,18 @@
 */
 
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 #include "cseries.h"
 #include "WavefrontLoader.h"
+
+
+// Which of these is present in the vertex-info data:
+enum {
+	Present_Position	= 0x0001,
+	Present_TxtrCoord	= 0x0002,
+	Present_Normal		= 0x0004
+};
 
 
 // Debug-message destination
@@ -21,6 +30,22 @@ static vector<char> InputLine(64);
 // otherwise returns NULL
 char *CompareToKeyword(char *Keyword);
 
+// Gets a pointer to a string of vertex-index sets and picks off one of them,
+// returning a pointer to the character just after it. Also returns the presence and values
+// picked off.
+// Returns NULL if there are none remaining to be found.
+char *GetVertIndxSet(char *Buffer, short& Presence,
+	short& PosIndx, short& TCIndx, short& NormIndx);
+
+// Gets a vertex index and returns whether or not an index value was found
+// what it was if found, and a pointer to the character just after the index value
+// (either '/' or '\0'). And also whether the scanning hit the end of the set.
+// Returns NULL if there are none remaining to be found.
+char *GetVertIndx(char *Buffer, bool& WasFound, short& Val, bool& HitEnd);
+
+
+
+
 
 void SetDebugOutput_Wavefront(FILE *DebugOutput)
 {
@@ -30,14 +55,23 @@ void SetDebugOutput_Wavefront(FILE *DebugOutput)
 
 bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 {
+	// Clear out the final model object
+	Model.Clear();
+
 	// Read buffer
 	const int BufferSize = 256;
 	char Buffer[BufferSize];
 	
-	// Intermediate lists of vertices, texture coordinates, and normals
-	vector<GLfloat> Vertices;
+	// Intermediate lists of positions, texture coordinates, and normals
+	vector<GLfloat> Positions;
 	vector<GLfloat> TxtrCoords;
 	vector<GLfloat> Normals;
+	
+	// Intermediate list of polygon features:
+	// Polygon sizes (how many vertices):
+	vector<short> PolygonSizes;
+	// Vertex indices (how many read, position, txtr-coord, normal)
+	vector<short> VertIndxSets;
 	
 	if (DBOut)
 	{
@@ -52,7 +86,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		return false;
 	}
 
-	// Reading loop; create temporary lists of vertices, texture coordinates, and normals
+	// Reading loop; create temporary lists of positions, texture coordinates, and normals
 	char c;
 	
 	// Load the lines, one by one, and then parse them. Be sure to take care of the continuation
@@ -107,6 +141,8 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		InputLine.push_back('\0');
 		
 		// Now parse the line; notice the = instead of == (substitute and test in one line)
+		// Unhandled keywords are currently commented out for speed;
+		// many of those are for handling curved surfaces, which are currently ignored.
 		char *RestOfLine = NULL;
 		if (RestOfLine = CompareToKeyword("v")) // Vertex position
 		{
@@ -116,7 +152,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			sscanf(RestOfLine," %f %f %f",Vertex,Vertex+1,Vertex+2);
 			
 			for (int k=0; k<Model3D::VertexDim; k++)
-				Vertices.push_back(Vertex[k]);
+				Positions.push_back(Vertex[k]);
 		}
 		else if (RestOfLine = CompareToKeyword("vt")) // Vertex texture coordinate
 		{
@@ -138,6 +174,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			for (int k=0; k<Model3D::NormalDim; k++)
 				Normals.push_back(Normal[k]);
 		}
+		/*
 		else if (RestOfLine = CompareToKeyword("vp")) // Vertex parameter value
 		{
 			// For curved objects, which are not supported here
@@ -166,10 +203,47 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		{
 			// Not supported here
 		}
+		*/
 		else if (RestOfLine = CompareToKeyword("f")) // Face (polygon)
 		{
-			// This is very complicated...
+			// Pick off the face vertices one by one;
+			// stuff their contents into a token and then process that token
+			int NumVertices = 0;
+			
+			short Presence = 0, PosIndx = 0, TCIndx = 0, NormIndx = 0;
+			while(RestOfLine = GetVertIndxSet(RestOfLine, Presence, PosIndx, TCIndx, NormIndx))
+			{			
+				NumVertices++;
+				
+				// Wavefront vertex-index conventions:
+				// Positive is 1-based indexing
+				// Negative is from end of current list
+				
+				if (PosIndx < 0)
+					PosIndx += Positions.size();
+				else
+					PosIndx--;
+				
+				if (TCIndx < 0)
+					TCIndx += TxtrCoords.size();
+				else
+					TCIndx--;
+				
+				if (NormIndx < 0)
+					NormIndx += Normals.size();
+				else
+					NormIndx--;
+				
+				// Add!
+				VertIndxSets.push_back(Presence);
+				VertIndxSets.push_back(PosIndx);
+				VertIndxSets.push_back(TCIndx);
+				VertIndxSets.push_back(NormIndx);
+			}
+			// Polygon complete!
+			PolygonSizes.push_back(NumVertices);
 		}
+		/*
 		else if (RestOfLine = CompareToKeyword("curv")) // Curve
 		{
 			// Curved objects not supported here
@@ -266,15 +340,83 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		{
 			// Curved objects not supported here
 		}
-		else
+		*/
+	}
+	
+	// How many vertices do the polygons have?
+	bool AllPolygonsGood = true;
+	
+	for (int k=0; k<PolygonSizes.size(); k++)
+	{
+		short PSize = PolygonSizes[k];
+		if (PSize < 3)
 		{
-			if (DBOut) fprintf(DBOut,"Line has bad keyword: %s\n",&InputLine[0]);
+			if (DBOut) fprintf(DBOut,"ERROR: Bad size of polygon %d: %d\n",k,PSize);
+			AllPolygonsGood = false;
 		}
 	}
-
-
-	// Create the final model object
-	Model.Clear();
+	
+	if (!AllPolygonsGood) return false;
+	
+	// What is the lowest common denominator of the polygon data
+	// (which is present of vertex positions, texture coordinates, and normals)
+	short WhatsPresent = Present_Position | Present_TxtrCoord | Present_Normal;
+	
+	for (int k=0; k<VertIndxSets.size()/4; k++)
+	{
+		short Presence = VertIndxSets[4*k];
+		WhatsPresent &= Presence;
+		if (!(Presence & Present_Position))
+		{
+			if (DBOut) fprintf(DBOut,"ERROR: Vertex has no position index: %d\n",k);
+		}
+	}
+	
+	if (!(WhatsPresent & Present_Position)) return false;
+	
+	bool AllInRange = true;
+	
+	for (int k=0; k<VertIndxSets.size()/4; k++)
+	{
+		short PosIndx = VertIndxSets[4*k+1];
+		if (PosIndx < 0 && PosIndx >= Positions.size())
+		{
+			if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %d: %d (0,%d)\n",k,PosIndx,Positions.size()-1);
+			AllInRange = false;
+		}
+		
+		if (WhatsPresent & Present_TxtrCoord)
+		{
+			short TCIndx = VertIndxSets[4*k+2];
+			if (TCIndx < 0 && TCIndx >= TxtrCoords.size())
+			{
+				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %d: %d (0,%d)\n",k,TCIndx,TxtrCoords.size()-1);
+				AllInRange = false;
+			}
+		}
+		else
+			VertIndxSets[4*k+2] = -1; // What "0" gets turned into by the Wavefront-conversion-translation code
+		
+		if (WhatsPresent & Present_Normal)
+		{
+			short NormIndx = VertIndxSets[4*k+3];
+			if (NormIndx < 0 && NormIndx >= Normals.size())
+			{
+				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %d: %d (0,%d)\n",k,NormIndx,Normals.size()-1);
+				AllInRange = false;
+			}
+		}
+		else
+			VertIndxSets[4*k+3] = -1; // What "0" gets turned into by the Wavefront-conversion-translation code
+	}
+	
+	if (!AllInRange) return false;
+	
+	// Find unique vertex sets:
+	vector<int> VertIndxRefs(VertIndxSets.size()/4);
+	
+	
+	qsort();
 	
 	if (DBOut) fprintf(DBOut,"Successfully read the file\n");
 	return true;
@@ -290,5 +432,81 @@ char *CompareToKeyword(char *Keyword)
 	for (int k=0; k<KWLen; k++)
 		if (InputLine[k] != Keyword[k]) return NULL;
 	
-	return &InputLine[KWLen];
+	char *RestOfLine = &InputLine[KWLen];
+	
+	while(RestOfLine - &InputLine[0] < InputLine.size())
+	{
+		// End of line?
+		if (*RestOfLine == '\0') return RestOfLine;
+		
+		// Other than whitespace -- assume it to be part of the keyword if just after it;
+		// otherwise, it is to be returned to the rest of the code to work on
+		if (!(*RestOfLine == ' ' || *RestOfLine == '\t'))
+			return ((RestOfLine == &InputLine[KWLen]) ? NULL : RestOfLine);
+		
+		// Whitespace: move on to the next character
+		RestOfLine++;
+	}
+	
+	// Shouldn't happen
+	return NULL;
+}
+
+
+char *GetVertIndxSet(char *Buffer, short& Presence,
+	short& PosIndx, short& TCIndx, short& NormIndx)
+{
+	// Initialize...
+	Presence = 0; PosIndx = 0; TCIndx = 0; NormIndx = 0;
+	
+	// Eat initial whitespace; return NULL if end-of-string was hit
+	// OK to modify Buffer, since it's called by value
+	while(*Buffer == ' ' || *Buffer == '\t')
+	{
+		Buffer++;
+	}
+	if (*Buffer == '\0') return NULL;
+	
+	// Hit non-whitespace; now grab the individual vertex values
+	bool WasFound = false, HitEnd = false;
+	Buffer = GetVertIndx(Buffer,WasFound,PosIndx,HitEnd);
+	if (WasFound) Presence |= Present_Position;
+	if (HitEnd) return Buffer;
+	
+	Buffer = GetVertIndx(Buffer,WasFound,TCIndx,HitEnd);
+	if (WasFound) Presence |= Present_TxtrCoord;
+	if (HitEnd) return Buffer;
+	
+	Buffer = GetVertIndx(Buffer,WasFound,NormIndx,HitEnd);
+	if (WasFound) Presence |= Present_Normal;
+	return Buffer;
+}
+
+char *GetVertIndx(char *Buffer, bool& WasFound, short& Val, bool& HitEnd)
+{
+	const int VIBLen = 64;
+	char VIBuffer[VIBLen];
+	int VIBIndx = 0;
+	
+	// Load the vertex-index buffer and make it a C string
+	HitEnd = false;
+	WasFound = false;
+	bool HitInternalBdry = false;	// Use this variable to avoid duplicating an evaluation
+	while (!(HitInternalBdry = (*Buffer == '/')))
+	{
+		HitEnd = (*Buffer == ' ' || *Buffer == '\t' || *Buffer == '\0');
+		if (HitEnd) break;
+		
+		if (VIBIndx < VIBLen-1)
+			VIBuffer[VIBIndx++] = *Buffer;
+		
+		Buffer++;
+	}
+	if (HitInternalBdry) Buffer++;
+	VIBuffer[VIBIndx] = '\0';
+	
+	// Interpret it!
+	WasFound = (sscanf(VIBuffer,"%hd",&Val) > 0);
+	
+	return Buffer;
 }
