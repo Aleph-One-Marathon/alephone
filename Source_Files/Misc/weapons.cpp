@@ -57,6 +57,9 @@ Oct 19, 2000 (Loren Petrich):
 	Weapon-sprite absence in get_weapon_display_information() handled by bugging out instead of
 	a failed assertion; having a SMG will not crash if one's using a M2 shapes file.
 	Also, added a bug-out in case of no view being found.
+
+Dec 24, 2000 (Loren Petrich):
+	Added support for idle-weapon animations
 */
 
 #include "cseries.h"
@@ -301,6 +304,9 @@ static short find_weapon_power_index(short weapon_type);
 // Set to fists being NONE
 inline bool CannotWieldWeapons()
 	{return get_weapon_definition(_weapon_fist)->weapon_class == NONE;}
+
+// For animating the idle weapons shape
+static void UpdateIdleAnimation(short player_index, short which_trigger);
 
 
 /* ------------ code starts */
@@ -740,12 +746,17 @@ void update_player_weapons(
 						break;
 						
 					case _weapon_finishing_reload:
-					case _weapon_idle:
 					case _weapon_sliding_over_to_second_position:
 					case _weapon_sliding_over_from_second_position:
 						trigger->phase= IDLE_PHASE_COUNT; // doesn't matter.
 						trigger->state= _weapon_idle;
 						trigger->sequence= 0;
+						break;
+					
+					// LP: separate case here, because it is now animated
+					case _weapon_idle:
+						trigger->phase= IDLE_PHASE_COUNT; // doesn't matter.
+						trigger->state= _weapon_idle;
 						break;
 	
 					case _weapon_recovering:
@@ -1233,7 +1244,8 @@ bool get_weapon_display_information(
 									shape_index= definition->firing_shape;
 								} else {
 									shape_index= definition->idle_shape;
-									weapon->triggers[which_trigger].sequence= 0;
+									// Now handled in UpdateIdleWeapons()
+									// weapon->triggers[which_trigger].sequence= 0;
 								}
 							} else {
 								shape_index= definition->idle_shape;
@@ -1355,7 +1367,10 @@ bool get_weapon_display_information(
 
 				/* Go to the next frame for automatics.. */
 				update_automatic_sequence(current_player_index, which_trigger);
-
+				
+				// Also for idle weapons
+				UpdateIdleAnimation(current_player_index, which_trigger);
+				
 				/* setup the positioning information */
 				high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 					shape_index));
@@ -3164,7 +3179,8 @@ static void update_automatic_sequence(
 						high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 							definition->firing_shape));
 					} else {
-						trigger->sequence= BUILD_SEQUENCE(0, 0);
+						// Now handled in UpdateIdleWeapon()
+						// trigger->sequence= BUILD_SEQUENCE(0, 0);
 					}
 					break;
 					
@@ -3188,6 +3204,70 @@ static void update_automatic_sequence(
 
 	return;
 }
+
+// LP addition: update the idle-weapon animation:
+static void UpdateIdleAnimation(
+	short player_index,
+	short which_trigger)
+{
+	struct trigger_data *trigger= get_player_trigger_data(player_index, which_trigger);
+	if (trigger->state != _weapon_idle) return;
+	if (automatic_still_firing(player_index, which_trigger)) return;
+	
+	struct weapon_definition *definition= get_current_weapon_definition(player_index);
+	struct shape_animation_data *animation =
+		get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, definition->idle_shape));
+	if (!animation) return;
+	
+	// Code cribbed from animate_object() in map.cpp
+	
+	short animation_type= _obj_not_animated;
+	
+	/* if this animation has frames, animate it */		
+	if (animation->frames_per_view>=1 && animation->number_of_views!=_unanimated)
+	{
+		short frame, phase;
+		
+		// LP change: added some idiot-proofing to the ticks-per-frame value
+		if (animation->ticks_per_frame <= 0)
+			animation->ticks_per_frame = 1;
+		// assert(animation->ticks_per_frame>0);
+	
+		frame= GET_SEQUENCE_FRAME(trigger->sequence);
+		phase= GET_SEQUENCE_PHASE(trigger->sequence);
+		if (!frame && (!phase || phase>=animation->ticks_per_frame)) play_weapon_sound(player_index, animation->first_frame_sound, FIXED_ONE);
+
+		/* phase is left unadjusted if it goes over ticks_per_frame until the next call */
+		if (phase>=animation->ticks_per_frame) phase-= animation->ticks_per_frame;
+		if ((phase+= 1)>=animation->ticks_per_frame)
+		{
+			frame+= 1;
+			// LP change: interchanged these two so that
+			// 1: keyframe 0 would get recognized
+			// 2: to keep the timing correct in the nonzero case
+			// LP change: inverted the order yet again to get more like Moo,
+			// but this time, added detection of cases
+			// keyframe = 0 and keyframe = [frames per view]
+			// Inverted the order yet again (!) to supporess Hunter death bug
+			animation_type|= _obj_animated;
+			if (frame>=animation->frames_per_view)
+			{
+				frame= animation->loop_frame;
+				animation_type|= _obj_last_frame_animated;
+				if (animation->last_frame_sound!=NONE) play_weapon_sound(player_index, animation->last_frame_sound, FIXED_ONE);
+			}
+			short offset_frame = frame + animation->frames_per_view; // LP addition
+			if (frame==animation->key_frame || offset_frame==animation->key_frame)
+			{
+				animation_type|= _obj_keyframe_started;
+				if (animation->key_frame_sound!=NONE) play_weapon_sound(player_index, animation->first_frame_sound, FIXED_ONE);
+			}
+		}
+		
+		trigger->sequence= BUILD_SEQUENCE(frame, phase);
+	}
+}
+
 
 /* Automatic weapons should always show every frame of their firing animation */
 /* If it is automatic: do nothing for idle/firing/recovery.  frame time: increment frame */
@@ -3220,7 +3300,8 @@ static void update_sequence(
 			|| (which_trigger==_secondary_weapon && (definition->flags & _weapon_is_automatic) && (definition->flags & _weapon_secondary_has_angular_flipping)))
 			{
 			} else {
-				trigger->sequence= 0;
+				// Now handled in UpdateIdleAnimation
+				// trigger->sequence= 0;
 			}
 			break;
 
