@@ -1293,7 +1293,8 @@ void animate_screen_clut(
 {
 	// Use special direct animation if the bit depth > 8;
 	// this is for the benefit of MacOS X Classic
-	if (bit_depth > 8)
+	// AS turned off when not in Classic
+	if ((bit_depth > 8) && (system_information->machine_is_bluebox == true))
 	{
 		direct_animate_screen_clut(color_table, world_device);
 		return;
