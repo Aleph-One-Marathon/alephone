@@ -133,11 +133,25 @@ void load_projectile_sounds(short type);
 void drop_the_ball(world_point3d *origin, short polygon_index, short owner_index,
 	short owner_type, short item_type);
 
+// LP change: made this inline
+inline struct projectile_data *get_projectile_data(
+	const short projectile_index)
+{
+	struct projectile_data *projectile =  GetMemberWithBounds(projectiles,projectile_index,MAXIMUM_PROJECTILES_PER_MAP);
+	
+	vassert(projectile, csprintf(temporary, "projectile index #%d is out of range", projectile_index));
+	vassert(SLOT_IS_USED(projectile), csprintf(temporary, "projectile index #%d (%p) is unused", projectile_index, projectile));
+	
+	return projectile;
+}
+
+/*
 #ifdef DEBUG
 struct projectile_data *get_projectile_data(short projectile_index);
 #else
 #define get_projectile_data(i) (projectiles+(i))
 #endif
+*/
 
 // LP addition: get projectile-definition size
 int get_projectile_definition_size();

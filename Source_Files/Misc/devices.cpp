@@ -30,6 +30,8 @@ May 26, 2000 (Loren Petrich):
 
 June 3, 2000 (Loren Petrich):
 	Idiot-proofed the control-panels accessor; it now returns NULL if an index is out of range.
+	
+	Jul 1, 2000 (Loren Petrich): made control-panel accessor an inline function
 */
 
 #include "cseries.h"
@@ -169,11 +171,20 @@ static struct control_panel_definition control_panel_definitions[]=
 
 /* ------------ private prototypes */
 
+// LP change: made this an inline function
+inline struct control_panel_definition *get_control_panel_definition(
+	const short control_panel_type)
+{
+	return GetMemberWithBounds(control_panel_definitions,control_panel_type,NUMBER_OF_CONTROL_PANEL_DEFINITIONS);
+}
+
+/*
 #ifdef DEBUG
 struct control_panel_definition *get_control_panel_definition(short control_panel_type);
 #else
 #define get_control_panel_definition(i) (control_panel_definitions+(i))
 #endif
+*/
 
 static short find_action_key_target(short player_index, world_distance range, short *target_type);
 static boolean line_side_has_control_panel(short line_index, short polygon_index, short *side_index_with_panel);
@@ -754,6 +765,7 @@ static void set_control_panel_texture(
 	return;
 }
 
+/*
 #ifdef DEBUG
 // LP: "static" removed
 struct control_panel_definition *get_control_panel_definition(
@@ -766,6 +778,7 @@ struct control_panel_definition *get_control_panel_definition(
 	return control_panel_definitions + control_panel_type;
 }
 #endif
+*/
 
 static boolean switch_can_be_toggled(
 	short side_index,

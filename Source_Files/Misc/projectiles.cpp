@@ -117,11 +117,13 @@ enum /* things the projectile can hit in detonate_projectile() */
 
 /* ---------- private prototypes */
 
+/*
 #ifdef DEBUG
 struct projectile_definition *get_projectile_definition(short type);
 #else
 #define get_projectile_definition(i) (projectile_definitions+(i))
 #endif
+*/
 
 /* ---------- globals */
 
@@ -153,6 +155,16 @@ static word translate_projectile(short type, world_point3d *old_location, short 
 	short *obstruction_index);
 
 /* ---------- code */
+
+// LP change: moved down here to use the projectile definitions
+inline struct projectile_definition *get_projectile_definition(
+	short type)
+{
+	projectile_definition *definition = GetMemberWithBounds(projectile_definitions,type,NUMBER_OF_PROJECTILE_TYPES);
+	vassert(definition, csprintf(temporary, "projectile type #%d is out of range", type));
+	
+	return definition;
+}
 
 /* FALSE means don’t fire this (it’s in a floor or ceiling or outside of the map), otherwise
 	the monster that was intersected first (or NONE) is returned in target_index */
@@ -589,6 +601,7 @@ void mark_projectile_collections(
 	return;
 }
 
+/*
 #ifdef DEBUG
 struct projectile_data *get_projectile_data(
 	short projectile_index)
@@ -603,6 +616,7 @@ struct projectile_data *get_projectile_data(
 	return projectile;
 }
 #endif
+*/
 
 void drop_the_ball(
 	world_point3d *origin,
@@ -632,6 +646,7 @@ void drop_the_ball(
 
 /* ---------- private code */
 
+/*
 #ifdef DEBUG
 struct projectile_definition *get_projectile_definition(
 	short type)
@@ -641,6 +656,7 @@ struct projectile_definition *get_projectile_definition(
 	return projectile_definitions+type;
 }
 #endif
+*/
 
 static short adjust_projectile_type(
 	world_point3d *origin,

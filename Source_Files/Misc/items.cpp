@@ -68,11 +68,20 @@ May 26, 2000 (Loren Petrich):
 
 /* ---------- private prototypes */
 
+// Item-definition accessor
+inline struct item_definition *get_item_definition(
+	const short type)
+{
+	return GetMemberWithBounds(item_definitions,type,NUMBER_OF_DEFINED_ITEMS);
+}
+
+/*
 #ifdef DEBUG
 struct item_definition *get_item_definition(short type);
 #else
 #define get_item_definition(i) (item_definitions+(i))
 #endif
+*/
 
 static boolean get_item(short player_index, short object_index);
 
@@ -89,6 +98,9 @@ short new_item(
 {
 	short object_index;
 	struct item_definition *definition= get_item_definition(type);
+	// LP change: added idiot-proofing
+	if (!definition) return FALSE;
+	
 	boolean add_item= TRUE;
 
 	assert(sizeof(item_definitions)/sizeof(struct item_definition)==NUMBER_OF_DEFINED_ITEMS);
@@ -194,7 +206,17 @@ void get_item_name(
 	boolean plural)
 {
 	struct item_definition *definition= get_item_definition(item_id);
-
+	// LP change: added idiot-proofing
+	if (!definition)
+	{
+		if (plural)
+			sprintf(buffer,"Unlisted items with ID %d",item_id);
+		else
+			sprintf(buffer,"Unlisted item with ID %d",item_id);
+		
+		return;
+	}
+	
 	getcstr(buffer, strITEM_NAME_LIST, plural ? definition->plural_name_id :
 		definition->singular_name_id);
 	
@@ -388,7 +410,9 @@ boolean item_valid_in_current_environment(
 {
 	boolean valid= TRUE;
 	struct item_definition *definition= get_item_definition(item_type);
-
+	// LP change: added idiot-proofing
+	if (!definition) return FALSE;
+	
 	if (definition->invalid_environments & static_world->environment_flags)
 	{
 		valid= FALSE;
@@ -401,6 +425,8 @@ short get_item_kind(
 	short item_id)
 {
 	struct item_definition *definition= get_item_definition(item_id);
+	// LP change: added idiot-proofing
+	if (!definition) return NONE;
 	
 	return definition->item_kind;
 }
@@ -409,6 +435,8 @@ short get_item_shape(
 	short item_id)
 {
 	struct item_definition *definition= get_item_definition(item_id);
+	// LP change: added idiot-proofing
+	if (!definition) return NONE;
 
 	return definition->base_shape;
 }
@@ -418,6 +446,9 @@ boolean try_and_add_player_item(
 	short type) 
 {
 	struct item_definition *definition= get_item_definition(type);
+	// LP change: added idiot-proofing
+	if (!definition) return false;
+	
 	struct player_data *player= get_player_data(player_index);
 	short grabbed_sound_index= NONE;
 	boolean success= FALSE;
@@ -503,6 +534,7 @@ boolean try_and_add_player_item(
 
 /* ---------- private code */
 
+/*
 #ifdef DEBUG
 struct item_definition *get_item_definition(
 	short type)
@@ -512,6 +544,7 @@ struct item_definition *get_item_definition(
 	return item_definitions+type;
 }
 #endif
+*/
 
 static long item_trigger_cost_function(
 	short source_polygon_index,
@@ -610,6 +643,9 @@ void animate_items(void) {
 			if (get_item_kind(type) != NONE)
 			{
 				struct item_definition *ItemDef = get_item_definition(type);
+				// LP change: added idiot-proofing
+				if (!ItemDef) continue;
+				
 				shape_descriptor shape = ItemDef->base_shape;
 				struct shape_animation_data *animation= get_shape_animation_data(shape);
 				// Randomize if non-animated

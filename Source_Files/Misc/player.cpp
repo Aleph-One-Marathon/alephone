@@ -775,6 +775,7 @@ void mark_player_collections(
 	return;
 }
 
+/*
 #ifdef DEBUG
 struct player_data *get_player_data(
 	short player_index)
@@ -785,6 +786,7 @@ struct player_data *get_player_data(
 	return players + player_index;
 }
 #endif
+*/
 
 void set_local_player_index(
 	short player_index)

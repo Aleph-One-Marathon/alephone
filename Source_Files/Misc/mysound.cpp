@@ -243,6 +243,35 @@ static short distance_to_volume(struct sound_definition *definition, world_dista
 
 static void update_ambient_sound_sources(void);
 
+/* ---------- private code */
+
+// LP change: inlined all these accessors; they return NULL for an invalid index value:
+
+struct sound_definition *get_sound_definition(
+	const short sound_index)
+{
+	return GetMemberWithBounds(_sm_globals->base_sound_definitions,sound_index,NUMBER_OF_SOUND_DEFINITIONS);
+}
+
+struct ambient_sound_definition *get_ambient_sound_definition(
+	const short ambient_sound_index)
+{
+	return GetMemberWithBounds(ambient_sound_definitions,ambient_sound_index,NUMBER_OF_AMBIENT_SOUND_DEFINITIONS);
+}
+
+struct random_sound_definition *get_random_sound_definition(
+	const short random_sound_index)
+{
+	return GetMemberWithBounds(random_sound_definitions,random_sound_index,NUMBER_OF_RANDOM_SOUND_DEFINITIONS);
+}
+
+struct sound_behavior_definition *get_sound_behavior_definition(
+	const short sound_behavior_index)
+{
+	return GetMemberWithBounds(sound_behavior_definitions,sound_behavior_index,NUMBER_OF_SOUND_BEHAVIOR_DEFINITIONS);
+}
+
+/*
 #ifdef DEBUG
 struct sound_definition *get_sound_definition(short sound_index);
 struct ambient_sound_definition *get_ambient_sound_definition(short ambient_sound_index);
@@ -254,6 +283,7 @@ struct sound_behavior_definition *get_sound_behavior_definition(short sound_beha
 #define get_random_sound_definition(i) (random_sound_definitions+(i))
 #define get_sound_behavior_definition(i) (sound_behavior_definitions+(i))
 #endif
+*/
 
 /* ---------- machine-specific code */
 
@@ -589,7 +619,7 @@ short random_sound_index_to_sound_index(
 }
 
 /* ---------- private code */
-
+/*
 #ifdef DEBUG
 // LP: "static" removed
 struct sound_definition *get_sound_definition(
@@ -599,10 +629,8 @@ struct sound_definition *get_sound_definition(
 	
 	// LP change: idiot-proofing
 	if (!(sound_index>=0 && sound_index<NUMBER_OF_SOUND_DEFINITIONS)) return NULL;
-	/*
 	 vassert(sound_index>=0 && sound_index<NUMBER_OF_SOUND_DEFINITIONS,
 		csprintf(temporary, "sound #%d is out of range [0,#%d)", sound_index, NUMBER_OF_SOUND_DEFINITIONS));
-	*/
 	return definition;
 }
 
@@ -613,10 +641,8 @@ struct ambient_sound_definition *get_ambient_sound_definition(
 {
 	// LP change: idiot-proofing
 	if (!(ambient_sound_index>=0 && ambient_sound_index<NUMBER_OF_AMBIENT_SOUND_DEFINITIONS)) return NULL;
-	/*
 	vassert(ambient_sound_index>=0 && ambient_sound_index<NUMBER_OF_AMBIENT_SOUND_DEFINITIONS,
 		csprintf(temporary, "ambient sound #%d is out of range [0,#%d)", ambient_sound_index, NUMBER_OF_AMBIENT_SOUND_DEFINITIONS));
-	*/
 	
 	return ambient_sound_definitions + ambient_sound_index;
 }
@@ -628,10 +654,8 @@ struct random_sound_definition *get_random_sound_definition(
 {
 	// LP change: idiot-proofing
 	if (!(random_sound_index>=0 && random_sound_index<NUMBER_OF_RANDOM_SOUND_DEFINITIONS)) return NULL;
-	/*
 	vassert(random_sound_index>=0 && random_sound_index<NUMBER_OF_RANDOM_SOUND_DEFINITIONS,
 		csprintf(temporary, "random sound #%d is out of range [0,#%d)", random_sound_index, NUMBER_OF_RANDOM_SOUND_DEFINITIONS));
-	*/
 	
 	return random_sound_definitions + random_sound_index;
 }
@@ -642,13 +666,12 @@ struct sound_behavior_definition *get_sound_behavior_definition(
 {
 	// LP change: idiot-proofing
 	if (!(sound_behavior_index>=0 && sound_behavior_index<NUMBER_OF_SOUND_BEHAVIOR_DEFINITIONS)) return NULL;
-	/*
 	vassert(sound_behavior_index>=0 && sound_behavior_index<NUMBER_OF_SOUND_BEHAVIOR_DEFINITIONS,
 		csprintf(temporary, "sound behavior #%d is out of range [0,#%d)", sound_behavior_index, NUMBER_OF_SOUND_BEHAVIOR_DEFINITIONS));
-	*/
 	return sound_behavior_definitions + sound_behavior_index;
 }
 #endif
+*/
 
 static void unlock_locked_sounds(
 	void)

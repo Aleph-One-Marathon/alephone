@@ -56,6 +56,9 @@ May 29, 2000 (Loren Petirch):
 Jun 11, 2000 (Loren Petrich):
 	Pegging health and oxygen to maximum values when damaged;
 	takes into account negative damage from healing projectiles.
+
+Jul 1, 2000 (Loren Petrich):
+	Inlined the accessors
 */
 
 #include "cseries.h"
@@ -160,11 +163,23 @@ static GrowableList<short> IntersectedObjects(64);
 
 /* ---------- private prototypes */
 
+// LP change: made this inline
+inline struct monster_definition *get_monster_definition(
+	const short type)
+{
+	monster_definition *definition = GetMemberWithBounds(monster_definitions,type,NUMBER_OF_MONSTER_TYPES);
+	assert(definition);
+	
+	return definition;
+}
+
+/*
 #ifdef DEBUG
 struct monster_definition *get_monster_definition(short type);
 #else
 #define get_monster_definition(i) (monster_definitions+(i))
 #endif
+*/
 
 static void monster_needs_path(short monster_index, boolean immediately);
 static void generate_new_path_for_monster(short monster_index);
@@ -1508,6 +1523,7 @@ boolean bump_monster(
 	return switch_target_check(monster_index, aggressor_index, 0);
 }
 
+/*
 #ifdef DEBUG
 struct monster_data *get_monster_data(
 	short monster_index)
@@ -1522,6 +1538,7 @@ struct monster_data *get_monster_data(
 	return monster;
 }
 #endif
+*/
 
 boolean legal_polygon_height_change(
 	short polygon_index,
@@ -2020,6 +2037,7 @@ static void generate_new_path_for_monster(
 	return;
 }
 
+/*
 #ifdef DEBUG
 // LP: "static" removed
 struct monster_definition *get_monster_definition(
@@ -2029,6 +2047,7 @@ struct monster_definition *get_monster_definition(
 	return monster_definitions+type;
 }
 #endif
+*/
 
 /* somebody just did damage to us; see if we should start attacking them or not.  berserk
 	monsters always switch targets.  this is where we check to see if we go berserk, right?

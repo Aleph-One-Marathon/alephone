@@ -34,6 +34,9 @@ May 29, 2000 (Loren Petrich):
 
 May 30, 2000 (Loren Petrich):
 	Added stuff for transmitting fader info to OpenGL
+
+Jul 1, 2000 (Loren Petrich):
+	Added some idiot-proofing to the fader accessors
 */
 
 #include "cseries.h"
@@ -196,8 +199,10 @@ static float actual_gamma_values[NUMBER_OF_GAMMA_LEVELS]=
 /* ---------- private prototypes */
 
 // LP: "static" removed
+/*
 struct fade_definition *get_fade_definition(short index);
 static struct fade_effect_definition *get_fade_effect_definition(short index);
+*/
 
 static void recalculate_and_display_color_table(short type, fixed transparency,
 	struct color_table *original_color_table, struct color_table *animated_color_table);
@@ -213,6 +218,19 @@ static void SetOGLFader(int Index);
 static void TranslateToOGLFader(rgb_color &Color, fixed Opacity);
 
 /* ---------- code */
+
+// Accessors:
+inline struct fade_definition *get_fade_definition(
+	const short index)
+{
+	return GetMemberWithBounds(fade_definitions,index,NUMBER_OF_FADE_TYPES);
+}
+
+inline struct fade_effect_definition *get_fade_effect_definition(
+	const short index)
+{
+	return GetMemberWithBounds(fade_effect_definitions,index,NUMBER_OF_FADE_EFFECT_TYPES);
+}
 
 void initialize_fades(
 	void)
@@ -233,6 +251,9 @@ boolean update_fades(
 	if (FADE_IS_ACTIVE(fade))
 	{
 		struct fade_definition *definition= get_fade_definition(fade->type);
+		// LP change: idiot-proofing
+		if (!definition) return false;
+		
 		fixed transparency;
 		short phase;
 		
@@ -296,15 +317,21 @@ void explicit_start_fade(
 	struct color_table *animated_color_table)
 {
 	struct fade_definition *definition= get_fade_definition(type);
+	// LP change: idiot-proofing
+	if (!definition) return;
+		
 	long machine_ticks= machine_tick_count();
 	boolean do_fade= TRUE;
 
 	if (FADE_IS_ACTIVE(fade))
 	{
 		struct fade_definition *old_definition= get_fade_definition(fade->type);
-		
-		if (old_definition->priority>definition->priority) do_fade= FALSE;
-		if (fade->type==type && machine_ticks-fade->last_update_tick<MINIMUM_FADE_RESTART) do_fade= FALSE;
+		// LP change: idiot-proofing
+		if (old_definition)
+		{
+			if (old_definition->priority>definition->priority) do_fade= FALSE;
+			if (fade->type==type && machine_ticks-fade->last_update_tick<MINIMUM_FADE_RESTART) do_fade= FALSE;
+		}
 	}
 
 	if (do_fade)
@@ -331,6 +358,8 @@ void stop_fade(
 	if (FADE_IS_ACTIVE(fade))
 	{
 		struct fade_definition *definition= get_fade_definition(fade->type);
+		// LP change: idiot-proofing
+		if (!definition) return;
 		
 		recalculate_and_display_color_table(fade->type, definition->final_transparency,
 			fade->original_color_table, fade->animated_color_table);
@@ -366,6 +395,8 @@ short get_fade_period(
 	short type)
 {
 	struct fade_definition *definition= get_fade_definition(type);
+	// LP change: idiot-proofing
+	if (!definition) return 0;	
 	
 	return definition->period;
 }
@@ -396,6 +427,7 @@ void gamma_correct_color_table(
 
 /* ---------- private code */
 
+/*
 struct fade_definition *get_fade_definition(
 	short index)
 {
@@ -411,6 +443,7 @@ static struct fade_effect_definition *get_fade_effect_definition(
 	
 	return fade_effect_definitions + index;
 }
+*/
 
 static void recalculate_and_display_color_table(
 	short type,
@@ -427,8 +460,13 @@ static void recalculate_and_display_color_table(
 	if (fade->fade_effect_type!=NONE)
 	{
 		struct fade_effect_definition *effect_definition= get_fade_effect_definition(fade->fade_effect_type);
-		struct fade_definition *definition= get_fade_definition(effect_definition->fade_type);
+		// LP change: idiot-proofing
+		if (!effect_definition) return;
 		
+		struct fade_definition *definition= get_fade_definition(effect_definition->fade_type);
+		// LP change: idiot-proofing
+		if (!definition) return;
+				
 		definition->proc(original_color_table, animated_color_table, &definition->color, effect_definition->transparency);
 		original_color_table= animated_color_table;
 	}

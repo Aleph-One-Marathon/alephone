@@ -4,6 +4,9 @@
 /*
 LIGHTSOURCE.H
 Wednesday, February 1, 1995 4:22:23 AM  (Jason')
+
+Jul 1, 2000 (Loren Petrich):
+	Made lights accessor an inline function
 */
 
 /* ---------- constants */
@@ -114,10 +117,24 @@ boolean set_tagged_light_statuses(short tag, boolean new_status);
 
 fixed get_light_intensity(short light_index);
 
+// LP change: inlined it
+inline struct light_data *get_light_data(
+	const short light_index)
+{
+	struct light_data *light = GetMemberWithBounds(lights,light_index,MAXIMUM_LIGHTS_PER_MAP);
+	
+	if (!light) return NULL;
+	if (!SLOT_IS_USED(light)) return NULL;
+	
+	return light;
+}
+
+/*
 #ifdef DEBUG
 struct light_data *get_light_data(short light_index);
 #else
 #define get_light_data(i) (lights+(i))
 #endif
+*/
 
 #endif

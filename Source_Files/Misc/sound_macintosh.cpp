@@ -12,6 +12,10 @@ Feb 2, 2000 (Loren Petrich):
 
 Mar 2, 2000 (Loren Petrich):
 	Added alias resolution to opening of file
+
+Jul 1, 2000 (Loren Petrich):
+	Suppressed dprintf statements; all the remaining ones are vwarn's, which ought to be
+	better-behaved.
 */
 
 #include <FixMath.h>
@@ -195,7 +199,7 @@ OSErr open_sound_file(
 						header.sound_count!=NUMBER_OF_SOUND_DEFINITIONS ||
 						header.source_count!=NUMBER_OF_SOUND_SOURCES)
 					{
-						dprintf("sound file discarded %p 0x%x '%4s' #%d/#%d;g;", &header, header.version, &header.tag, header.sound_count, NUMBER_OF_SOUND_DEFINITIONS);
+						// dprintf("sound file discarded %p 0x%x '%4s' #%d/#%d;g;", &header, header.version, &header.tag, header.sound_count, NUMBER_OF_SOUND_DEFINITIONS);
 						error= -1;
 					}
 				}
@@ -434,7 +438,7 @@ static long read_sound_from_file(
 		else
 		{
 			error= MemError();
-			dprintf("read_sound_from_file() couldn’t allocate #%d bytes", size);
+			// dprintf("read_sound_from_file() couldn’t allocate #%d bytes", size);
 		}
 	}
 	

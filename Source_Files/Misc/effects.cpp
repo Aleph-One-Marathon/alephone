@@ -34,11 +34,13 @@ ryan reports get_object_data() failing on effect->data after a teleport effect t
 
 /* ---------- private prototypes */
 
+/*
 #ifdef DEBUG
 struct effect_definition *get_effect_definition(short type);
 #else
 #define get_effect_definition(i) (effect_definitions+(i))
 #endif
+*/
 
 /* ---------- globals */
 
@@ -48,6 +50,13 @@ struct effect_definition *get_effect_definition(short type);
 struct effect_data *effects;
 
 /* ---------- code */
+
+// LP change: moved down here because it refers to effect definitions
+inline struct effect_definition *get_effect_definition(const short type)
+{
+	return GetMemberWithBounds(effect_definitions,type,NUMBER_OF_EFFECT_TYPES);
+}
+
 
 short new_effect(
 	world_point3d *origin,
@@ -63,6 +72,9 @@ short new_effect(
 		struct effect_definition *definition;
 	
 		definition= get_effect_definition(type);
+		// LP change: idiot-proofing
+		if (!definition) return NONE;
+		
 		if (definition->flags&_sound_only)
 		{
 			struct shape_animation_data *animation= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, definition->shape));
@@ -121,6 +133,8 @@ void update_effects(
 		{
 			struct object_data *object= get_object_data(effect->object_index);
 			struct effect_definition *definition= get_effect_definition(effect->type);
+			// LP change: idiot-proofing
+			if (!definition) continue;
 			
 			if (effect->delay)
 			{
@@ -180,7 +194,9 @@ void remove_all_nonpersistent_effects(
 		if (SLOT_IS_USED(effect))
 		{
 			struct effect_definition *definition= get_effect_definition(effect->type);
-			
+			// LP change: idiot-proofing
+			if (!definition) continue;
+
 			if (definition->flags&(_end_when_animation_loops|_end_when_transfer_animation_loops))
 			{
 				remove_effect(effect_index);
@@ -198,6 +214,8 @@ void mark_effect_collections(
 	if (effect_type!=NONE)
 	{
 		struct effect_definition *definition= get_effect_definition(effect_type);
+		// LP change: idiot-proofing
+		if (!definition) return;
 
 		/* mark the effect collection */
 		loading ? mark_collection_for_loading(definition->collection) : mark_collection_for_unloading(definition->collection);
@@ -281,6 +299,7 @@ void teleport_object_in(
 	return;
 }
 
+/*
 #ifdef DEBUG
 struct effect_data *get_effect_data(
 	short effect_index)
@@ -295,9 +314,11 @@ struct effect_data *get_effect_data(
 	return effect;
 }
 #endif
+*/
 
 /* ---------- private code */
 
+/*
 #ifdef DEBUG
 struct effect_definition *get_effect_definition(
 	short type)
@@ -307,6 +328,7 @@ struct effect_definition *get_effect_definition(
 	return effect_definitions+type;
 }
 #endif
+*/
 
 // LP addition: Get effect-definition size
 int get_effect_defintion_size() {return sizeof(struct effect_definition);}

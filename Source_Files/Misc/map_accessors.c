@@ -4,6 +4,9 @@ Friday, June 3, 1994 12:10:10 PM
 
 Thursday, June 16, 1994 7:32:13 PM
 	if DEBUG is defined, this file is empty.
+
+Jul 1, 2000 (Loren Petrich):
+	moved all its contens out to map.h
 */
 
 #include "cseries.h"
@@ -15,6 +18,7 @@ Thursday, June 16, 1994 7:32:13 PM
 
 /* --------- code */
 
+/*
 #ifdef DEBUG
 struct object_data *get_object_data(
 	short object_index)
@@ -99,10 +103,8 @@ struct ambient_sound_image_data *get_ambient_sound_image_data(
 	
 	// LP change:
 	if (!(ambient_sound_image_index>=0 && ambient_sound_image_index<dynamic_world->ambient_sound_image_count)) return NULL;
-	/*
 	vassert(ambient_sound_image_index>=0 && ambient_sound_image_index<dynamic_world->ambient_sound_image_count,
 		csprintf(temporary, "ambient_sound_image_index #%d is out of range", ambient_sound_image_index));
-	*/
 	
 	image= ambient_sound_images + ambient_sound_image_index;
 	
@@ -117,13 +119,12 @@ struct random_sound_image_data *get_random_sound_image_data(
 	
 	// LP change:
 	if(!(random_sound_image_index>=0 && random_sound_image_index<dynamic_world->random_sound_image_count)) return NULL;
-	/*
 	vassert(random_sound_image_index>=0 && random_sound_image_index<dynamic_world->random_sound_image_count,
 		csprintf(temporary, "random_sound_image_index #%d is out of range", random_sound_image_index));
-	*/
 	
 	image= random_sound_images + random_sound_image_index;
 	
 	return image;
 }
 #endif
+*/

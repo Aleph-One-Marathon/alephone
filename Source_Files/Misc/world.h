@@ -14,6 +14,9 @@ Feb 15, 2000 (Loren Petrich):
 	
 Feb 17, 2000 (Loren Petrich):
 	Made the arctangent function long-distance friendly
+
+Jul 1, 2000 (Loren Petrich):
+	Inlined the angle normalization; using tricky code for that
 */
 
 #ifndef _WORLD_H
@@ -156,7 +159,13 @@ extern short *cosine_table, *sine_table;
 /* ---------- prototypes: WORLD.C */
 
 void build_trig_tables(void);
-angle normalize_angle(angle theta);
+
+// LP change: inlined this for speed, and used the NORMALIZE_ANGLE macro;
+// looks as if the code had been worked on by more than one programmer.
+inline angle normalize_angle(angle theta)
+{
+	return NORMALIZE_ANGLE(theta);
+}
 
 world_point2d *rotate_point2d(world_point2d *point, world_point2d *origin, angle theta);
 world_point3d *rotate_point3d(world_point3d *point, world_point3d *origin, angle theta, angle phi);

@@ -14,6 +14,9 @@ Feb 6, 2000 (Loren Petrich):
 
 Feb 10, 2000 (Loren Petrich):
 	Added dynamic-limits setting of MAXIMUM_EFECTS_PER_MAP
+	
+Jul 1, 2000 (Loren Petrich):
+	Made effects accessor an inline function
 */
 
 // LP addition:
@@ -136,11 +139,25 @@ void mark_effect_collections(short type, boolean loading);
 void teleport_object_in(short object_index);
 void teleport_object_out(short object_index);
 
+// LP change: inlined it
+inline struct effect_data *get_effect_data(
+	const short effect_index)
+{
+	struct effect_data *effect = GetMemberWithBounds(effects,effect_index,MAXIMUM_EFFECTS_PER_MAP);
+	
+	vassert(effect, csprintf(temporary, "effect index #%d is out of range", effect_index));
+	vassert(SLOT_IS_USED(effect), csprintf(temporary, "effect index #%d (%p) is unused", effect_index, effect));
+	
+	return effect;
+}
+
+/*
 #ifdef DEBUG
 struct effect_data *get_effect_data(short effect_index);
 #else
 #define get_effect_data(i) (effects+(i))
 #endif
+*/
 
 // LP addition: get effectr-definition size
 int get_effect_defintion_size();

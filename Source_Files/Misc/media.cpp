@@ -11,6 +11,9 @@ May 26, 2000 (Loren Petrich):
 June 3, 2000 (Loren Petrich):
 	Added some idiot-proofing: if a liquid type is not found, then it is assumed
 	to be nonexistent. This is implemented by returning the null pointer.
+
+July 1, 2000 (Loren Petrich):
+	Inlined the media accessors
 */
 
 #include "cseries.h"
@@ -43,17 +46,27 @@ struct media_data *medias;
 
 static void update_one_media(short media_index, boolean force_update);
 
+/*
 #ifdef DEBUG
 static struct media_definition *get_media_definition(short type);
 #else
 #define get_media_definition(t) (media_definitions+(t))
 #endif
+*/
 
 /* ---------- globals */
 
 #include "media_definitions.h"
 
 /* ---------- code */
+
+// LP change: moved down here because it uses liquid definitions
+inline struct media_definition *get_media_definition(
+	const short type)
+{
+	return GetMemberWithBounds(media_definitions,type,NUMBER_OF_MEDIA_TYPES);
+}
+
 
 // light_index must be loaded
 short new_media(
@@ -88,6 +101,7 @@ boolean media_in_environment(
 	// LP change: idiot-proofing
 	struct media_definition *definition= get_media_definition(media_type);
 	if (!definition) return false;
+	
 	return collection_in_environment(definition->collection, environment_code);
 	// return collection_in_environment(get_media_definition(media_type)->collection, environment_code);
 }
@@ -120,6 +134,7 @@ void get_media_detonation_effect(
 	struct media_data *media= get_media_data(media_index);
 	// LP change: idiot-proofing
 	if (!media) return;
+	
 	struct media_definition *definition= get_media_definition(media->type);
 	if (!definition) return;
 
@@ -141,6 +156,7 @@ short get_media_sound(
 	struct media_data *media= get_media_data(media_index);
 	// LP change: idiot-proofing
 	if (!media) return NONE;
+	
 	struct media_definition *definition= get_media_definition(media->type);
 	if (!definition) return NONE;
 
@@ -157,8 +173,10 @@ struct damage_definition *get_media_damage(
 	struct media_data *media= get_media_data(media_index);
 	// LP change: idiot-proofing
 	if (!media) return NULL;
+	
 	struct media_definition *definition= get_media_definition(media->type);
 	if (!definition) return NULL;
+	
 	struct damage_definition *damage= &definition->damage;
 
 	damage->scale= scale;
@@ -173,6 +191,7 @@ short get_media_submerged_fade_effect(
 	struct media_data *media= get_media_data(media_index);
 	// LP change: idiot-proofing
 	if (!media) return NONE;
+	
 	struct media_definition *definition= get_media_definition(media->type);
 	if (!definition) return NONE;
 	
@@ -190,6 +209,7 @@ bool IsMediaDangerous(short media_index)
 	else return (damage->base > 0);
 }
 
+/*
 #ifdef DEBUG
 struct media_data *get_media_data(
 	short media_index)
@@ -207,9 +227,11 @@ struct media_data *get_media_data(
 	return media;
 }
 #endif
+*/
 
 /* ---------- private code */
 
+/*
 #ifdef DEBUG
 static struct media_definition *get_media_definition(
 	short type)
@@ -220,6 +242,7 @@ static struct media_definition *get_media_definition(
 	return media_definitions+type;
 }
 #endif
+*/
 
 static void update_one_media(
 	short media_index,

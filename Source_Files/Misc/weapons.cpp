@@ -39,6 +39,9 @@ Jun 14, 2000 (Loren Petrich):
 
 Jun 15, 2000 (Loren Petrich):
 	Added support for Chris Pruett's Pfhortran
+
+Jul 1, 2000 (Loren Petrich):
+	Made some accessors inline
 */
 
 #include "cseries.h"
@@ -183,6 +186,36 @@ static struct player_weapon_data *player_weapons_array;
 #define GET_TRIGGER_FROM_IDENTIFIER(identifier) (identifier&1)
 
 /* -------------- accessors */
+
+// LP change: made these inline
+inline struct player_weapon_data *get_player_weapon_data(
+	const short player_index)
+{
+	player_weapon_data *data = GetMemberWithBounds(player_weapons_array,player_index,get_maximum_number_of_players());
+	assert(data);
+	
+	return data;
+}
+
+inline struct weapon_definition *get_weapon_definition(
+	const short weapon_type)
+{
+	weapon_definition *definition = GetMemberWithBounds(weapon_definitions,weapon_type,NUMBER_OF_WEAPONS);
+	assert(definition);
+	
+	return definition;
+}
+
+inline struct shell_casing_definition *get_shell_casing_definition(
+	const short type)
+{
+	shell_casing_definition *definition = GetMemberWithBounds(shell_casing_definitions,type,NUMBER_OF_SHELL_CASING_TYPES);
+	assert(definition);
+	
+	return definition;
+}
+
+/*
 #ifdef DEBUG
 static struct player_weapon_data *get_player_weapon_data(
 	short player_index)
@@ -209,6 +242,7 @@ static struct shell_casing_definition *get_shell_casing_definition(
 #define get_weapon_definition(index) (weapon_definitions+(index))
 #define get_shell_casing_definition(index) (shell_casing_definitions+(index))
 #endif
+*/
 
 /* ------------- local prototypes */
 static void reset_trigger_data(short player_index, short weapon_type, short which_trigger);

@@ -27,11 +27,15 @@ May 14, 2000 (Loren Petrich):
 
 May 23, 2000 (Loren Petrich):
 	Added XML configuration of self-luminosity
+
+July 1, 2000 (Loren Petrich):
+	Made player-data accessor inline; added map.h to define some stuff for it
 */
 
 // LP additions: stuff that this file needs
 #include "cseries.h"
 #include "world.h"
+#include "map.h"
 #include "XML_ElementParser.h"
 
 /* ---------- constants */
@@ -367,11 +371,23 @@ void mark_player_collections(boolean loading);
 
 short player_identifier_to_player_index(short player_identifier);
 
+inline struct player_data *get_player_data(
+	const short player_index)
+{
+	player_data *data = GetMemberWithBounds(players,player_index,dynamic_world->player_count);
+	vassert(data,
+		csprintf(temporary, "asked for player #%d/#%d", player_index, dynamic_world->player_count));
+	
+	return data;
+}
+
+/*
 #ifdef DEBUG
 struct player_data *get_player_data(short player_index);
 #else
 #define get_player_data(i) (players+(i))
 #endif
+*/
 
 short monster_index_to_player_index(short monster_index);
 

@@ -29,6 +29,9 @@ Feb 14, 2000 (Loren Petrich):
 
 Feb 17, 2000 (Loren Petrich):
 	Fixed arctangent() so that it gets the values into the right octants, and then does a binary search
+
+Jul 1, 2000 (Loren Petrich):
+	Inlined the angle normalization; doing it automatically for all the functions that work with angles
 */
 
 #include "cseries.h"
@@ -55,6 +58,7 @@ static word local_random_seed= 0x1;
 
 /* ---------- code */
 
+/*
 angle normalize_angle(
 	angle theta)
 {
@@ -63,6 +67,7 @@ angle normalize_angle(
 	
 	return theta;
 }
+*/
 
 /* remember this is not wholly accurate, both distance or the sine/cosine values could be
 	negative, and the shift canÕt make negative numbers zero; this is probably ok because
@@ -72,7 +77,9 @@ world_point2d *translate_point2d(
 	world_distance distance,
 	angle theta)
 {
-	assert(theta>=0&&theta<NUMBER_OF_ANGLES);
+	// LP change: idiot-proofed this
+	theta = normalize_angle(theta);
+	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	point->x+= (distance*cosine_table[theta])>>TRIG_SHIFT;
@@ -90,9 +97,11 @@ world_point3d *translate_point3d(
 {
 	world_distance transformed_distance;
 	
-	// LP change: fixed this error check
-	assert(theta>=0&&theta<NUMBER_OF_ANGLES);
-	assert(phi>=0&&phi<NUMBER_OF_ANGLES);
+	// LP change: idiot-proofed this error check
+	theta = normalize_angle(theta);
+	phi = normalize_angle(phi);
+	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
+	// assert(phi>=0&&phi<NUMBER_OF_ANGLES);
 	
 	transformed_distance= (distance*cosine_table[phi])>>TRIG_SHIFT;
 	point->x+= (transformed_distance*cosine_table[theta])>>TRIG_SHIFT;
@@ -111,7 +120,9 @@ world_point2d *rotate_point2d(
 	long_vector2d temp;
 	// world_point2d temp;
 	
-	assert(theta>=0&&theta<NUMBER_OF_ANGLES);
+	// LP change: idiot-proofed this error check
+	theta = normalize_angle(theta);
+	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	// LP change: lengthening the values for more precise calculations
@@ -143,7 +154,9 @@ world_point2d *transform_point2d(
 	long_vector2d temp;
 	// world_point2d temp;
 	
-	assert(theta>=0&&theta<NUMBER_OF_ANGLES);
+	// LP change: idiot-proofed this error check
+	theta = normalize_angle(theta);
+	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	// LP change: lengthening the values for more precise calculations
@@ -670,7 +683,9 @@ world_point2d *transform_overflow_point2d(
 	long_vector2d temp, tempr;
 	// world_point2d temp;
 	
-	assert(theta>=0&&theta<NUMBER_OF_ANGLES);
+	// LP change: idiot-proofed this error check
+	theta = normalize_angle(theta);
+	// assert(theta>=0&&theta<NUMBER_OF_ANGLES);
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	// LP change: lengthening the values for more precise calculations

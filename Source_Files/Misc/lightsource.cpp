@@ -14,6 +14,9 @@ Monday, July 10, 1995 5:20:26 PM  (Jason)
 
 June 2, 2000 (Loren Petrich):
 	Added fallback for absent lights
+
+July 1, 2000 (Loren Petrich):
+	Modified light accessors to be more C++-like
 */
 
 #include "cseries.h"
@@ -31,11 +34,14 @@ struct light_data *lights;
 
 /* ---------- private prototypes */
 
+
+/*
 #ifdef DEBUG
 static struct light_definition *get_light_definition(short type);
 #else
 #define get_light_definition(t) (light_definitions+(t))
 #endif
+*/
 
 static void rephase_light(short light_index);
 
@@ -115,6 +121,13 @@ struct light_definition light_definitions[NUMBER_OF_LIGHT_TYPES]=
 
 /* ---------- code */
 
+// LP change: moved down here because it uses light definitions
+inline struct light_definition *get_light_definition(const short type)
+{
+	return GetMemberWithBounds(light_definitions,type,NUMBER_OF_LIGHT_TYPES);
+}
+
+
 short new_light(
 	struct static_light_data *data)
 {
@@ -190,6 +203,7 @@ boolean get_light_status(
 	struct light_data *light= get_light_data(light_index);
 	// LP change: idiot-proofing
 	if (!light) return false;
+	
 	boolean status;
 	
 	switch (light->state)
@@ -221,6 +235,7 @@ boolean set_light_status(
 	struct light_data *light= get_light_data(light_index);
 	// LP change: idiot-proofing
 	if (!light) return false;
+	
 	boolean old_status= get_light_status(light_index);
 	boolean changed= FALSE;
 	
@@ -269,10 +284,12 @@ fixed get_light_intensity(
 	// LP change: idiot-proofing / fallback
 	light_data *light = get_light_data(light_index);
 	if (!light) return 0;	// Blackness
+	
 	return light->intensity;
 	// return get_light_data(light_index)->intensity;
 }
 
+/*
 #ifdef DEBUG
 struct light_data *get_light_data(
 	short light_index)
@@ -290,9 +307,11 @@ struct light_data *get_light_data(
 	return light;
 }
 #endif
+*/
 
 /* ---------- private code */
 
+/*
 #ifdef DEBUG
 static struct light_definition *get_light_definition(
 	short type)
@@ -303,6 +322,7 @@ static struct light_definition *get_light_definition(
 	return light_definitions+type;
 }
 #endif
+*/
 
 /* given a state, initialize .phase, .period, .initial_intensity, and .final_intensity */
 // LP: "static" removed

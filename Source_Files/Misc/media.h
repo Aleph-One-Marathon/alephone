@@ -15,8 +15,12 @@ June 3, 2000 (Loren Petrich):
 	Made accessors return the null pointer for invalid index values;
 	also added is-media-dangerous function for use in determining whether a monster
 	should step into it.
+
+July 1, 2000 (Loren Petrich):
+	Inlined the media accessors; added map.h here to define SLOT_IS_USED
 */
 
+#include "map.h"
 #include "XML_ElementParser.h"
 
 /* ---------- constants */
@@ -122,11 +126,25 @@ bool IsMediaDangerous(short media_type);
 
 boolean media_in_environment(short media_type, short environment_code);
 
+// LP change: made this inline
+inline struct media_data *get_media_data(
+	const short media_index)
+{
+	struct media_data *media = GetMemberWithBounds(medias,media_index,MAXIMUM_MEDIAS_PER_MAP);
+	
+	if (!media) return NULL;
+	if (!(SLOT_IS_USED(media))) return NULL;
+	
+	return media;
+}
+
+/*
 #ifdef DEBUG
 struct media_data *get_media_data(short media_index);
 #else
 #define get_media_data(i) (medias+(i))
 #endif
+*/
 
 // LP addition: count number of media types used,
 // for better Infinity compatibility when saving games
