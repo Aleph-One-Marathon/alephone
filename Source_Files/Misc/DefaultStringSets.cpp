@@ -124,7 +124,7 @@ static char* sStringSetNumber131[] = {
     "Save game as:",
     "Save recording as:",
     "Select recording as:",
-    "&lt;IDefault",
+    "Default",
 };
 
 // STR# Resource: "Network Errors"

@@ -1832,7 +1832,12 @@ static void fill_in_popup_with_filetype(
 		if (type == _typecode_physics)
 		{
 			set_to_default_physics_file();
-			AppendMenu(menu, getpstr(ptemporary, strPROMPTS, _default_prompt));
+			// Get the default string for an empty physics menu.
+			// and then add the formatting to italicize it
+			char local_temp[sizeof(temporary)];
+			sprintf(local_temp, "<I%s", getcstr(temporary, strPROMPTS, _default_prompt));
+			CopyCStringToPascal(local_temp, ptemporary);
+			AppendMenu(menu, ptemporary);
 			value= 1;
 			physics_valid= false;
 			count++;
