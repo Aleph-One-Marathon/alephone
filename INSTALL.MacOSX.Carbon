@@ -39,6 +39,17 @@ by default within ProjectBuilder. This isn't necessary, just potentially useful.
 More Information on configuring MacCVS Pro for Aleph can be found at:
 http://source.bungie.org/_enginedevelopment/cvs/aboutcvs.html
 
+There is a gotcha currently. If you are using MacCVS Pro, one of the required
+files has too long. After checking things out you will need to rename it
+manually in order to compile.
+
+Go to aleph/Source_Files/Network/
+and rename network_microph…e_sdl_dummy.cpp to network_microphone_sdl_dummy.cpp
+
+Hopefully at some point MacCVS Pro will get around this filename limit or the
+file will be renamed appropriately. Even without renaming, MacCVS Pro would
+half lose track of the files.
+
 Required Libraries
 ------------------
 
