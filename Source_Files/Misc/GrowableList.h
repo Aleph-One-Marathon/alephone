@@ -73,15 +73,16 @@ public:
 	bool Add() {if (!Add_Reallocate()) return false; Length++; return true;}
 	
 	// Get the current length and capacity
-	int GetLength() {return Length;}
-	int GetCapacity() {return Capacity;}
+	int GetLength() const {return Length;}
+	int GetCapacity() const {return Capacity;}
 	
 	// Index validity check
-	bool IsInRange(int Indx) {return (Indx >= 0 && Indx < Length);}
+	bool IsInRange(int Indx) const {return (Indx >= 0 && Indx < Length);}
 	
 	// Reference to member (works like an array reference);
 	// this routine has no validity checks (could be built in, if desired)
 	T& operator[] (int Indx) {return List[Indx];}
+	const T& operator[] (int Indx) const {return List[Indx];}
 	
 	// Pointer to member (works like + on a pointer)
 	T* operator+ (int Indx) {return List + Indx;}

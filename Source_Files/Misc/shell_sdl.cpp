@@ -24,6 +24,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef HAVE_OPENGL
+#include <GL/gl.h>
+#endif
+
 
 // Data directories
 FileSpecifier global_data_dir;		// Global data file directory
@@ -1000,6 +1004,39 @@ void dump_screen(void)
 		i++;
 	} while (file.Exists());
 
-	// Dump screen
-	SDL_SaveBMP(SDL_GetVideoSurface(), file.GetPath());
+	// Without OpenGL, dumping the screen is easy
+	SDL_Surface *video = SDL_GetVideoSurface();
+	if (!(video->flags & SDL_OPENGL))
+		SDL_SaveBMP(SDL_GetVideoSurface(), file.GetPath());
+
+#ifdef HAVE_OPENGL
+	// Otherwise, allocate temporary surface...
+	SDL_Surface *t = SDL_CreateRGBSurface(SDL_SWSURFACE, video->w, video->h, 24,
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+		0x000000ff, 0x0000ff00, 0x00ff0000, 0);
+#else
+		0x00ff0000, 0x0000ff00, 0x000000ff, 0);
+#endif
+	if (t == NULL)
+		return;
+
+	// ...and pixel buffer
+	void *pixels = malloc(video->w * video->h * 3);
+	if (pixels == NULL) {
+		SDL_FreeSurface(t);
+		return;
+	}
+
+	// Read OpenGL frame buffer
+	glReadPixels(0, 0, video->w, video->h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+	// Copy pixel buffer (which is upside-down) to surface
+	for (int y=0; y<video->h; y++)
+		memcpy((uint8 *)t->pixels + t->pitch * y, (uint8 *)pixels + video->w * 3 * (video->h - y - 1), video->w * 3);
+	free(pixels);
+
+	// Save surface
+	SDL_SaveBMP(t, file.GetPath());
+	SDL_FreeSurface(t);
+#endif
 }

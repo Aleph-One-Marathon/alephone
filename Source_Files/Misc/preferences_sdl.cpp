@@ -597,6 +597,7 @@ static void keyboard_dialog(void *arg)
  *  Environment dialog
  */
 
+// Find available themes in directory and append to vector
 class FindThemes : public FileFinder {
 public:
 	FindThemes(vector<FileSpecifier> &v) : dest_vector(v) {dest_vector.clear();}
@@ -615,18 +616,38 @@ private:
 	vector<FileSpecifier> &dest_vector;
 };
 
-class w_env_list : public w_list<FileSpecifier> {
+// Environment item
+class env_item {
 public:
-	w_env_list(const vector<FileSpecifier> &items, const char *selection, dialog *d) : w_list<FileSpecifier>(items, 400, 15, 0), parent(d)
+	env_item(const FileSpecifier &fs, int i, bool sel) : spec(fs), indent(i), selectable(sel)
 	{
-		vector<FileSpecifier>::const_iterator i, end = items.end();
+		spec.GetName(name);
+	}
+
+	FileSpecifier spec;	// Specifier of associated file
+	char name[256];		// Last part of file name
+	int indent;			// Indentation level
+	bool selectable;	// Flag: item refers to selectable file (otherwise to directory name)
+};
+
+// Environment file list widget
+class w_env_list : public w_list<env_item> {
+public:
+	w_env_list(const vector<env_item> &items, const char *selection, dialog *d) : w_list<env_item>(items, 400, 15, 0), parent(d)
+	{
+		vector<env_item>::const_iterator i, end = items.end();
 		int num = 0;
 		for (i = items.begin(); i != end; i++, num++) {
-			if (strcmp(i->GetPath(), selection) == 0) {
+			if (strcmp(i->spec.GetPath(), selection) == 0) {
 				set_selection(num);
 				break;
 			}
 		}
+	}
+
+	bool is_item_selectable(int i)
+	{
+		return items[i].selectable;
 	}
 
 	void item_selected(void)
@@ -634,13 +655,18 @@ public:
 		parent->quit(0);
 	}
 
-	void draw_item(vector<FileSpecifier>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
+	void draw_item(vector<env_item>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
 	{
 		y += font->get_ascent();
-		char str[256];
-		i->GetName(str);
+
+		int color;
+		if (i->selectable) {
+			color = selected ? ITEM_ACTIVE_COLOR : ITEM_COLOR;
+		} else
+			color = LABEL_COLOR;
+
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+		draw_text(s, i->name, x + i->indent * 8, y, get_dialog_color(color), font, style);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 
@@ -648,6 +674,7 @@ private:
 	dialog *parent;
 };
 
+// Environment selection button
 class w_env_select : public w_select_button {
 public:
 	w_env_select(const char *name, const char *path, const char *m, int t, dialog *d) : w_select_button(name, item_name, select_item_callback, this), parent(d), menu_title(m), type(t)
@@ -692,24 +719,60 @@ private:
 void w_env_select::select_item(dialog *parent)
 {
 	// Find available files
+	FileSpecifier global_dir, local_dir;
 	vector<FileSpecifier> files;
 	if (type == _typecode_theme) {
+
 		// Theme, find by theme script
 		FindThemes finder(files);
-		finder.Find(global_themes_dir, WILDCARD_TYPE);
-		finder.Find(local_themes_dir, WILDCARD_TYPE);
+		global_dir = global_themes_dir;
+		local_dir = local_themes_dir;
+		finder.Find(global_dir, WILDCARD_TYPE);
+		finder.Find(local_dir, WILDCARD_TYPE);
+
 	} else {
+
 		// Map/phyics/shapes/sounds, find by type
 		FindAllFiles finder(files);
-		finder.Find(global_data_dir, type);
-		finder.Find(local_data_dir, type);
+		global_dir = global_data_dir;
+		local_dir = local_data_dir;
+		finder.Find(global_dir, type);
+		finder.Find(local_dir, type);
+	}
+
+	// Create structured list of files
+	vector<env_item> items;
+	vector<FileSpecifier>::const_iterator i = files.begin(), end = files.end();
+	string last_base;
+	int indent_level = 0;
+	for (i = files.begin(); i != end; i++) {
+		string base, part;
+		i->SplitPath(base, part);
+		if (base != last_base) {
+
+			// New directory
+			FileSpecifier base_spec = base;
+			if (base_spec != global_dir && base_spec != local_dir) {
+
+				// Subdirectory, insert name as unselectable item, put items on indentation level 1
+				items.push_back(env_item(base_spec, 0, false));
+				indent_level = 1;
+
+			} else {
+
+				// Top-level directory, put items on indentation level 0
+				indent_level = 0;
+			}
+			last_base = base;
+		}
+		items.push_back(env_item(*i, indent_level, true));
 	}
 
 	// Create dialog
 	dialog d;
 	d.add(new w_static_text(menu_title, TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
-	w_env_list *list_w = new w_env_list(files, item.GetPath(), &d);
+	w_env_list *list_w = new w_env_list(items, item.GetPath(), &d);
 	d.add(list_w);
 	d.add(new w_spacer());
 	d.add(new w_button("CANCEL", dialog_cancel, &d));
@@ -719,8 +782,8 @@ void w_env_select::select_item(dialog *parent)
 
 	// Run dialog
 	if (d.run() == 0) { // Accepted
-		if (files.size())
-			set_path(files[list_w->get_selection()].GetPath());
+		if (items.size())
+			set_path(items[list_w->get_selection()].spec.GetPath());
 	}
 
 	// Redraw parent dialog

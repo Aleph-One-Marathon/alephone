@@ -1,5 +1,10 @@
 Change log of the SDL version of Aleph One
 
+September 23, 2000
+ - screenshots (F9) work with OpenGL
+ - darken_world_window() works with OpenGL
+ - environment file selection lists show items grouped by directory
+
 September 18, 2000
  - clicking buttons in in-game dialogs that close the dialog won't cause a
    shot to be fired any more

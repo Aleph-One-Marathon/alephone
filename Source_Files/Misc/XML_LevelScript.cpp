@@ -57,15 +57,16 @@ struct LevelScriptHeader
 	GrowableList<LevelScriptCommand> Commands;
 	
 	// Copy over:
-	LevelScriptHeader& operator=(LevelScriptHeader& LSHdr)
+	const LevelScriptHeader& operator=(const LevelScriptHeader& LSHdr)
 	{
-		Level = LSHdr.Level;
+		if (this != &LSHdr) {
+			Level = LSHdr.Level;
 		
-		Commands.ResetLength();
+			Commands.ResetLength();
 		
-		for (int k=0; k<LSHdr.Commands.GetLength(); k++)
-			Commands.Add(LSHdr.Commands[k]);
-		
+			for (int k=0; k<LSHdr.Commands.GetLength(); k++)
+				Commands.Add(LSHdr.Commands[k]);
+		}
 		return *this;
 	}
 	
@@ -130,7 +131,7 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	// The script is stored at a special resource ID;
 	// simply quit if it could not be found
 	LoadedResource ScriptRsrc;
-	if (!OFile.Get('TEXT',128,ScriptRsrc)) return;
+	if (!OFile.Get('T','E','X','T',128,ScriptRsrc)) return;
 	
 	// Load the script
 	LSXML_Loader.ParseData((char *)ScriptRsrc.GetPointer(),ScriptRsrc.GetLength());
@@ -185,7 +186,7 @@ void GeneralRunScript(int LevelIndex)
 		{
 		case LevelScriptCommand::MML:
 		case LevelScriptCommand::Pfhortran:
-			if (Cmd.RsrcPresent() && OFile.Get('TEXT',Cmd.RsrcID,ScriptRsrc))
+			if (Cmd.RsrcPresent() && OFile.Get('T','E','X','T',Cmd.RsrcID,ScriptRsrc))
 			{
 				Data = (char *)ScriptRsrc.GetPointer();
 				DataLen = ScriptRsrc.GetLength();

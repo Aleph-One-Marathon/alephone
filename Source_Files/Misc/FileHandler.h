@@ -381,8 +381,8 @@ private:
 #elif defined(SDL)
 
 	FileSpecifier() : err(0) {}
-	FileSpecifier(const string &s) : name(s), err(0) {}
-	FileSpecifier(const char *s) : name(s), err(0) {}
+	FileSpecifier(const string &s) : name(s), err(0) {canonicalize_path();}
+	FileSpecifier(const char *s) : name(s), err(0) {canonicalize_path();}
 	FileSpecifier(const FileSpecifier &other) : name(other.name), err(other.err) {}
 
 	bool operator==(const FileSpecifier &other) const {return name == other.name;}
@@ -397,7 +397,7 @@ private:
 
 	void AddPart(const string &part);
 	const char *GetPath(void) const {return name.c_str();}
-	void SplitPath(string &base, string &part);
+	void SplitPath(string &base, string &part) const;
 
 	bool CreateDirectory();
 	bool ReadDirectory(vector<dir_entry> &vec);
@@ -405,6 +405,8 @@ private:
 	int GetError() const {return err;}
 
 private:
+	void canonicalize_path(void);
+
 	string name;	// Path name
 	int err;
 

@@ -724,13 +724,11 @@ static void draw_logon_text(
 		SetFont(&old_font);
 	}
 #else
-	width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, current_style);
+	width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, _get_font_spec(_computer_interface_font)->style);
 	picture_bounds.left += (RECTANGLE_WIDTH(&picture_bounds) - width) / 2;
 #endif
 	
 	_draw_computer_text(base_text, current_group_index, &picture_bounds, terminal_text, 0);
-
-	return;
 }
 
 /* returns true for phase chagne */
@@ -768,6 +766,9 @@ static void _draw_computer_text(
 	TextSpec old_font;
 	GetFont(&old_font);
 	SetFont(_get_font_spec(_computer_interface_font));
+#else
+	uint16 old_style = current_style;
+	current_style = _get_font_spec(_computer_interface_font)->style;
 #endif
 
 	line_count= 0;
@@ -861,6 +862,8 @@ static void _draw_computer_text(
 
 #ifdef mac
 	SetFont(&old_font);
+#else
+	current_style = old_style;
 #endif
 
 	return;
@@ -880,6 +883,9 @@ static short count_total_lines(
 	TextSpec old_font;
 	GetFont(&old_font);
 	SetFont(_get_font_spec(_computer_interface_font));
+#else
+	uint16 old_style = current_style;
+	current_style = _get_font_spec(_computer_interface_font)->style;
 #endif
 
 	while(!calculate_line(base_text, width, start_index, text_end_index, &end_index))
@@ -890,6 +896,8 @@ static short count_total_lines(
 
 #ifdef mac
 	SetFont(&old_font);
+#else
+	current_style = old_style;
 #endif
 	
 	return total_line_count;

@@ -346,6 +346,7 @@ public:
 
 	int get_selection(void) {return selection;}
 
+	virtual bool is_item_selectable(int i) {return true;}
 	virtual void item_selected(void) = 0;
 
 protected:

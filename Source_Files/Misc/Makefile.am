@@ -9,11 +9,11 @@ alephone_SOURCES = \
   OverheadMapRenderer.h PlayerName.h Random.h Rasterizer.h \
   Rasterizer_OGL.h Rasterizer_SW.h RenderPlaceObjs.h RenderRasterize.h \
   RenderSortPoly.h RenderVisTree.h ResizableList.h ShapesParser.h \
-  TextStrings.h VectorOps.h ViewControl.h XML_Configure.h XML_ElementParser.h \
-  XML_ParseTreeRoot.h XML_Loader_SDL.h collection_definition.h \
-  computer_interface.h crc.h dynamic_limits.h editor.h effect_definitions.h \
-  effects.h extensions.h fades.h find_files.h flood_map.h game_errors.h \
-  game_wad.h game_window.h images.h interface.h interface_menus.h \
+  TextStrings.h VectorOps.h ViewControl.h XML_Configure.h XML_DataBlock.h \
+  XML_ElementParser.h XML_LevelScript.h XML_ParseTreeRoot.h XML_Loader_SDL.h \
+  collection_definition.h computer_interface.h crc.h dynamic_limits.h editor.h \
+  effect_definitions.h effects.h extensions.h fades.h find_files.h flood_map.h \
+  game_errors.h game_wad.h game_window.h images.h interface.h interface_menus.h \
   item_definitions.h items.h key_definitions.h lightsource.h map.h media.h \
   media_definitions.h monster_definitions.h monsters.h motion_sensor.h mouse.h \
   music.h mysound.h overhead_map.h physics_models.h platform_definitions.h \
@@ -30,19 +30,19 @@ alephone_SOURCES = \
   OGL_Setup.cpp OGL_Textures.cpp OverheadMap_OGL.cpp OverheadMap_SDL.cpp \
   OverheadMapRenderer.cpp Packing.h PlayerName.cpp RenderPlaceObjs.cpp \
   RenderRasterize.cpp RenderSortPoly.cpp RenderVisTree.cpp ShapesParser.cpp \
-  TextStrings.cpp ViewControl.cpp XML_Configure.cpp XML_ElementParser.cpp \
-  XML_MakeRoot.cpp XML_Loader_SDL.cpp computer_interface.cpp crc.cpp \
-  devices.cpp dynamic_limits.cpp effects.cpp fades.cpp find_files_sdl.cpp flood_map.cpp \
-  game_errors.cpp game_wad.cpp game_window.cpp game_window_sdl.cpp images.cpp \
-  import_definitions.cpp interface.cpp interface_sdl.cpp items.cpp \
-  lightsource.cpp map.cpp map_constructors.cpp marathon2.cpp media.cpp \
-  monsters.cpp motion_sensor.cpp mouse_sdl.cpp mysound.cpp overhead_map.cpp \
-  pathfinding.cpp physics.cpp placement.cpp platforms.cpp player.cpp \
-  preferences.cpp preprocess_map_sdl.cpp projectiles.cpp render.cpp \
-  resource_manager.cpp scenery.cpp scottish_textures.cpp screen_drawing_sdl.cpp \
-  screen_sdl.cpp sdl_dialogs.cpp sdl_fonts.cpp sdl_widgets.cpp shapes.cpp \
-  shell.cpp textures.cpp vbl.cpp vbl_sdl.cpp wad.cpp wad_sdl.cpp wad_prefs.cpp \
-  weapons.cpp world.cpp
+  TextStrings.cpp ViewControl.cpp XML_Configure.cpp XML_DataBlock.cpp \
+  XML_ElementParser.cpp XML_LevelScript.cpp XML_MakeRoot.cpp XML_Loader_SDL.cpp \
+  computer_interface.cpp crc.cpp devices.cpp dynamic_limits.cpp effects.cpp \
+  fades.cpp find_files_sdl.cpp flood_map.cpp game_errors.cpp game_wad.cpp \
+  game_window.cpp game_window_sdl.cpp images.cpp import_definitions.cpp \
+  interface.cpp interface_sdl.cpp items.cpp lightsource.cpp map.cpp \
+  map_constructors.cpp marathon2.cpp media.cpp monsters.cpp motion_sensor.cpp \
+  mouse_sdl.cpp mysound.cpp overhead_map.cpp pathfinding.cpp physics.cpp \
+  placement.cpp platforms.cpp player.cpp preferences.cpp preprocess_map_sdl.cpp \
+  projectiles.cpp render.cpp resource_manager.cpp scenery.cpp \
+  scottish_textures.cpp screen_drawing_sdl.cpp screen_sdl.cpp sdl_dialogs.cpp \
+  sdl_fonts.cpp sdl_widgets.cpp shapes.cpp shell.cpp textures.cpp vbl.cpp \
+  vbl_sdl.cpp wad.cpp wad_sdl.cpp wad_prefs.cpp weapons.cpp world.cpp
 
 alephone_LDADD = ../CSeries/libcseries.a ../Expat/libexpat.a \
   ../Network/libnetwork.a ../Pfhortran/libpfhortran.a

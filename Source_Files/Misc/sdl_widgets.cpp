@@ -747,7 +747,7 @@ void w_list_base::click(int x, int y)
 	 && y >= trough_rect.y && y < trough_rect.y + trough_rect.h) {
 		thumb_dragging = dirty = true;
 		thumb_drag_y = y - thumb_y;
-	} else if (num_items > 0)
+	} else if (num_items > 0 && is_item_selectable(selection))
 		item_selected();
 }
 

@@ -945,15 +945,57 @@ static inline void draw_pattern_rect(T *p, int pitch, uint32 pixel, const SDL_Re
 
 void darken_world_window(void)
 {
-	if (main_surface->flags & SDL_OPENGL)
-		return;	//!!
-
-	// Get black pixel value
-	uint32 pixel = SDL_MapRGB(main_surface->format, 0, 0, 0);
-
 	// Get world window bounds
 	int size = screen_mode.size;
 	SDL_Rect r = {0, 0, ViewSizes[size].OverallWidth, ViewSizes[size].OverallHeight - (ViewSizes[size].ShowHUD ? 160 : 0)};
+
+#ifdef HAVE_OPENGL
+	if (main_surface->flags & SDL_OPENGL) {
+
+		// Save current state
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+		// Disable everything but alpha blending
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_ALPHA_TEST);
+		glEnable(GL_BLEND);
+		glDisable(GL_TEXTURE_2D);
+		glDisable(GL_FOG);
+		glDisable(GL_SCISSOR_TEST);
+		glDisable(GL_STENCIL_TEST);
+
+		// Direct projection
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0.0, GLdouble(main_surface->w), GLdouble(main_surface->h), 0.0, 0.0, 1.0);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		// Draw 50% black rectangle
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glColor4f(0.0, 0.0, 0.0, 0.5);
+		glBegin(GL_QUADS);
+			glVertex2i(r.x, r.y);
+			glVertex2i(r.x + r.w, r.y);
+			glVertex2i(r.x + r.w, r.y + r.h);
+			glVertex2i(r.x, r.y + r.h);
+		glEnd();
+
+		// Restore projection and state
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glPopAttrib();
+
+		SDL_GL_SwapBuffers();
+	}
+#endif
+
+	// Get black pixel value
+	uint32 pixel = SDL_MapRGB(main_surface->format, 0, 0, 0);
 
 	// Draw pattern
 	switch (main_surface->format->BytesPerPixel) {

@@ -370,8 +370,6 @@ them:
 
 And a list of known bugs:
 
- - Snapshots (F9) don't work when OpenGL is active
- - darken_world_window() doesn't work when OpenGL is active
  - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown
  - It shouldn't be possible to bind the same key to more than one function,
    or to bind a key that is already used by the game (sound volume, map zoom

@@ -45,15 +45,16 @@ public:
 	ResizableList(int NewLength = 1) {New(NewLength);}
 		
 	// Get the current length and capacity
-	int GetLength() {return Length;}
+	int GetLength() const {return Length;}
 	bool SetLength(int NewLength) {return LazyReallocate(NewLength);}
 	
 	// Index validity check
-	bool IsInRange(int Indx) {return (Indx >= 0 && Indx < Length);}
+	bool IsInRange(int Indx) const {return (Indx >= 0 && Indx < Length);}
 	
 	// Reference to member (works like an array reference);
 	// this routine has no validity checks (could be built in, if desired)
 	T& operator[] (int Indx) {return List[Indx];}
+	const T& operator[] (int Indx) const {return List[Indx];}
 	
 	// Pointer to member (works like + on a pointer)
 	T* operator+ (int Indx) {return List + Indx;}

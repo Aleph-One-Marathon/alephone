@@ -13,7 +13,9 @@
 #include "game_errors.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
+#include <limits.h>
 #include <string>
 
 #include <SDL_endian.h>
@@ -538,10 +540,12 @@ void FileSpecifier::AddPart(const string &part)
 #else
 #error FileSpecifier::AddPart() not implemented for this platform
 #endif
+
+	canonicalize_path();
 }
 
 // Split path to base and last part
-void FileSpecifier::SplitPath(string &base, string &part)
+void FileSpecifier::SplitPath(string &base, string &part) const
 {
 #if defined(__unix__) || defined(__BEOS__)
 
@@ -559,6 +563,31 @@ void FileSpecifier::SplitPath(string &base, string &part)
 
 #else
 #error FileSpecifier::SplitPath() not implemented for this platform
+#endif
+}
+
+// Canonicalize path
+void FileSpecifier::canonicalize_path(void)
+{
+#if defined(__unix__) || defined(__BEOS__)
+
+	int path_max;
+#ifdef PATH_MAX
+	path_max = PATH_MAX;
+#else
+	path_max = pathconf(path, _PC_PATH_MAX);
+	if (path_max <= 0)
+		path_max = 4096;
+#endif
+	char *resolved_path = (char *)malloc(path_max);
+	if (resolved_path) {
+		if (realpath(name.c_str(), resolved_path))
+			name = resolved_path;
+		free(resolved_path);
+	}
+
+#else
+#error FileSpecifier::canonicalize_path() not implemented for this platform
 #endif
 }
 
