@@ -109,10 +109,12 @@ static void SetFloat(ControlHandle Hdl, float Value)
 	SetDialogItemText((Handle)Hdl, ptemporary);
 }
 
+/*
 static void ToggleControl(ControlHandle Hdl)
 {
 	SetControlValue(Hdl, 1 - GetControlValue(Hdl));
 }
+*/
 
 static int FloatRoundoff(float x)
 {

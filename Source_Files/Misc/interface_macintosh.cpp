@@ -111,7 +111,9 @@ enum { /* Cheat level dialog */
 /* -------- local prototypes */
 static void network_speaker_proc(void *buffer, short size, short player_index);
 // static bool machine_has_quicktime(void);
+#if defined(USE_CARBON_ACCESSORS)
 static void draw_picture_into_gworld(GWorldPtr gworld, PicHandle picture);
+#endif
 
 /* -------- code */
 void do_preferences(
@@ -152,7 +154,9 @@ short get_level_number_from_user(
 	short item_type;
 	Rect bounds;
 	ControlHandle SelectorHdl;
+#if !defined(USE_CARBON_ACCESSORS)
 	struct PopupPrivateData **privateHndl;
+#endif
 	MenuHandle mHandle;
 	
 	index = 0; maximum_level_number= 0;

@@ -108,8 +108,7 @@ inline void ToggleControl(ControlHandle Hdl)
 
 // Local copies of this stuff, needed in case we cancel
 static OGL_Texture_Configure TxtrConfigList[OGL_NUMBER_OF_TEXTURE_TYPES];
-static RGBColor VoidColor, FogColor, LscpColors[4][2];
-static long FogDepth;
+static RGBColor VoidColor, LscpColors[4][2];
 
 // Texture-configuration dialog box
 static bool TextureConfigureDialog(short WhichTexture)
@@ -307,31 +306,6 @@ static pascal void PaintSwatch(DialogPtr DPtr, short ItemNo) {
 	SetPenState(&OldPen);
 	RGBBackColor(&OldBackColor);
 	RGBForeColor(&OldForeColor);
-}
-
-
-// Gets the fog-depth value; beeps and returns "false" if invalid
-static bool GetFogDepth(ControlHandle FDHdl)
-{
-	GetDialogItemText((Handle)FDHdl,ptemporary);
-	// Pascal to C string in place
-	ptemporary[MIN(int(ptemporary[0])+1,255)] = 0;
-	double Temp;
-	if (sscanf(temporary+1,"%lf",&Temp) == 1)
-	{
-		// Insure that fog has positive depth
-		long NewFogDepth = 1024*Temp + 0.5;
-		if (NewFogDepth > 0)
-		{
-			FogDepth = NewFogDepth;
-			return true;
-		}
-	}
-
-	psprintf(ptemporary,"%lf",FogDepth/double(1024));
-	SetDialogItemText((Handle)FDHdl,ptemporary);
-	SysBeep(1);
-	return false;
 }
 
 

@@ -133,7 +133,6 @@ bool XML_ResourceFork::ParseResourceSet(ResType Type)
 	
 	// This sorting is necessary so that the resources will be read in ascending order of ID's
 	short *IDList = new short[NumResources];
-	bool AllFound = true;
 	
 	// Get the resource ID's
 	SetResLoad(false);

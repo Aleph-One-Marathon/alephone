@@ -60,7 +60,6 @@ bool quit_without_saving(
 	DialogPtr dialog;
 	GrafPtr old_port;
 	short item_hit;
-	bool quit= false;
 	Point origin= {78, 134};
 	
 	dialog= myGetNewDialog(dlogQUIT_WITHOUT_SAVING, NULL, (WindowPtr) -1, 0);
