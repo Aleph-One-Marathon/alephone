@@ -35,6 +35,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 */
 
 #include <stdarg.h>
+#include "snprintf.h"
 
 #define DESIRED_SCREEN_WIDTH 640
 #define DESIRED_SCREEN_HEIGHT 480

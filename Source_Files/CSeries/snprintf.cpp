@@ -31,8 +31,6 @@
 
 #include "Logging.h"
 
-#include <streambuf>
-
 #ifndef HAVE_SNPRINTF
 int
 snprintf(char* inBuffer, size_t inBufferSize, const char* inFormat, ...) {

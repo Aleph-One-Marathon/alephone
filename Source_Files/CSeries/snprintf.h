@@ -27,6 +27,7 @@
 #define SNPRINTF_H
 
 #include <stdarg.h>
+#include <streambuf> // Fix MSVC7 strangeness
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
