@@ -141,6 +141,11 @@ Jun 28, 2000 (Loren Petrich):
 	Fixed Aaron Davies bug; if a polygon is completely below a liquid, it will not be rendered
 	if the viewpoint is above the liquid; the bug was that it was not rendered if the viewpoint
 	was below the liquid. This only happened if semitransparent liquid surfaces was turned off.
+
+Jul 10, 2000 (Loren Petrich):
+	Fixed liquid visibility bug in render_tree() that happens when liquid surfaces are not semitransparent;
+	rendering is skipped if the viewpoint is under a liquid and the polygon is high and dry,
+	or else if the viewpoint is above a liquid and the polygon is submerged.
 */
 
 // For casting pointers to integer values -- use appropriate data type
@@ -3151,13 +3156,21 @@ static void render_tree(
 			// LP change: moved this get upwards
 			// struct media_data *media= get_media_data(polygon->media_index);
 			struct horizontal_surface_data *media_surface= (struct horizontal_surface_data *) NULL;
-			
+					
 			if (view->under_media_boundary)
 			{
+				// LP change: skip if high and dry
+				if (media->height <= polygon->floor_height)
+					continue;
+				
 				if (media->height<polygon->ceiling_height) media_surface= &ceiling_surface;
 			}
 			else
 			{
+				// LP change: skip if submerged
+				if (media->height >= polygon->ceiling_height)
+					continue;
+				
 				if (media->height>polygon->floor_height) media_surface= &floor_surface;
 			}
 			
@@ -3169,13 +3182,9 @@ static void render_tree(
 				media_surface->lightsource_index= polygon->media_lightsource_index;
 				media_surface->transfer_mode= media->transfer_mode;
 				media_surface->transfer_mode_data= 0;
-			} else {
-				// LP: don't draw this polygon if the viewpoint is above a liquid surface
-				// (imitates original engine)
-				if (!view->under_media_boundary) continue;
 			}
 		}
-		// LP change: always render liquids are semitransparent
+		// LP change: always render liquids that are semitransparent
 		else if (!SeeThruLiquids)
 		// else
 		{
