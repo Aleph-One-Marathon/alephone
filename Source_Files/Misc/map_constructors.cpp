@@ -977,62 +977,342 @@ void touch_polygon(
 }
 #endif
 
-// Split and join the misaligned 4-byte values
 
-#include <string.h>
-
-void pack_side_data(side_data& source, saved_side& dest)
+void unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 {
-	dest.type = source.type;
-	dest.flags = source.flags;
+	uint8* S = Stream;
+	endpoint_data* ObjPtr = Objects;
 	
-	dest.primary_texture = source.primary_texture;
-	dest.secondary_texture = source.secondary_texture;
-	dest.transparent_texture = source.transparent_texture;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->highest_adjacent_floor_height);
+		StreamToValue(S,ObjPtr->lowest_adjacent_ceiling_height);
+		
+		StreamToValue(S,ObjPtr->vertex.x);
+		StreamToValue(S,ObjPtr->vertex.y);
+		StreamToValue(S,ObjPtr->transformed.x);
+		StreamToValue(S,ObjPtr->transformed.y);
+		
+		StreamToValue(S,ObjPtr->supporting_polygon_index);
+	}
 	
-	dest.exclusion_zone = source.exclusion_zone;
-	
-	dest.control_panel_type = source.control_panel_type;
-	dest.control_panel_permutation = source.control_panel_permutation;
-	
-	dest.primary_transfer_mode = source.primary_transfer_mode;
-	dest.secondary_transfer_mode = source.secondary_transfer_mode;
-	dest.transparent_transfer_mode = source.transparent_transfer_mode;
-	
-	dest.polygon_index = source.polygon_index;
-	dest.line_index = source.line_index;
-	
-	dest.primary_lightsource_index = source.primary_lightsource_index;
-	dest.secondary_lightsource_index = source.secondary_lightsource_index;
-	dest.transparent_lightsource_index = source.transparent_lightsource_index;
-	
-	memcpy(dest.ambient_delta,&source.ambient_delta,4);
+	assert((S - Stream) == Count*SIZEOF_endpoint_data);
 }
 
-void unpack_side_data(saved_side& source, side_data& dest)
+void pack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 {
-	dest.type = source.type;
-	dest.flags = source.flags;
+	uint8* S = Stream;
+	endpoint_data* ObjPtr = Objects;
 	
-	dest.primary_texture = source.primary_texture;
-	dest.secondary_texture = source.secondary_texture;
-	dest.transparent_texture = source.transparent_texture;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->highest_adjacent_floor_height);
+		ValueToStream(S,ObjPtr->lowest_adjacent_ceiling_height);
+		
+		ValueToStream(S,ObjPtr->vertex.x);
+		ValueToStream(S,ObjPtr->vertex.y);
+		ValueToStream(S,ObjPtr->transformed.x);
+		ValueToStream(S,ObjPtr->transformed.y);
+		
+		ValueToStream(S,ObjPtr->supporting_polygon_index);
+	}
 	
-	dest.exclusion_zone = source.exclusion_zone;
-	
-	dest.control_panel_type = source.control_panel_type;
-	dest.control_panel_permutation = source.control_panel_permutation;
-	
-	dest.primary_transfer_mode = source.primary_transfer_mode;
-	dest.secondary_transfer_mode = source.secondary_transfer_mode;
-	dest.transparent_transfer_mode = source.transparent_transfer_mode;
-	
-	dest.polygon_index = source.polygon_index;
-	dest.line_index = source.line_index;
-	
-	dest.primary_lightsource_index = source.primary_lightsource_index;
-	dest.secondary_lightsource_index = source.secondary_lightsource_index;
-	dest.transparent_lightsource_index = source.transparent_lightsource_index;
-	
-	memcpy(&dest.ambient_delta,source.ambient_delta,4);
+	assert((S - Stream) == Count*SIZEOF_endpoint_data);
 }
+
+
+void unpack_line_data(uint8 *Stream, line_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	line_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToList(S,ObjPtr->endpoint_indexes,2);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->length);
+		StreamToValue(S,ObjPtr->highest_adjacent_floor);
+		StreamToValue(S,ObjPtr->lowest_adjacent_ceiling);
+		
+		StreamToValue(S,ObjPtr->clockwise_polygon_side_index);
+		StreamToValue(S,ObjPtr->counterclockwise_polygon_side_index);
+		
+		StreamToValue(S,ObjPtr->clockwise_polygon_owner);
+		StreamToValue(S,ObjPtr->counterclockwise_polygon_owner);
+		
+		S += 2*6;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_line_data);
+}
+
+void pack_line_data(uint8 *Stream, line_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	line_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ListToStream(S,ObjPtr->endpoint_indexes,2);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->length);
+		ValueToStream(S,ObjPtr->highest_adjacent_floor);
+		ValueToStream(S,ObjPtr->lowest_adjacent_ceiling);
+		
+		ValueToStream(S,ObjPtr->clockwise_polygon_side_index);
+		ValueToStream(S,ObjPtr->counterclockwise_polygon_side_index);
+		
+		ValueToStream(S,ObjPtr->clockwise_polygon_owner);
+		ValueToStream(S,ObjPtr->counterclockwise_polygon_owner);
+		
+		S += 2*6;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_line_data);
+}
+
+
+inline void StreamToSideTxtr(uint8* &Stream, side_texture_definition& Object)
+{
+	StreamToValue(Stream,Object.x0);
+	StreamToValue(Stream,Object.y0);
+	StreamToValue(Stream,Object.texture);
+}
+
+inline void SideTxtrToStream(uint8* &Stream, side_texture_definition& Object)
+{
+	ValueToStream(Stream,Object.x0);
+	ValueToStream(Stream,Object.y0);
+	ValueToStream(Stream,Object.texture);	
+}
+
+
+inline void StreamToSideExclZone(uint8* &Stream, side_exclusion_zone& Object)
+{
+	StreamToValue(Stream,Object.e0.x);
+	StreamToValue(Stream,Object.e0.y);
+	StreamToValue(Stream,Object.e1.x);
+	StreamToValue(Stream,Object.e1.y);
+	StreamToValue(Stream,Object.e2.x);
+	StreamToValue(Stream,Object.e2.y);
+	StreamToValue(Stream,Object.e3.x);
+	StreamToValue(Stream,Object.e3.y);
+}
+
+inline void SideExclZoneToStream(uint8* &Stream, side_exclusion_zone& Object)
+{
+	ValueToStream(Stream,Object.e0.x);
+	ValueToStream(Stream,Object.e0.y);
+	ValueToStream(Stream,Object.e1.x);
+	ValueToStream(Stream,Object.e1.y);
+	ValueToStream(Stream,Object.e2.x);
+	ValueToStream(Stream,Object.e2.y);
+	ValueToStream(Stream,Object.e3.x);
+	ValueToStream(Stream,Object.e3.y);
+}
+
+
+void unpack_side_data(uint8 *Stream, side_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	side_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToSideTxtr(S,ObjPtr->primary_texture);
+		StreamToSideTxtr(S,ObjPtr->secondary_texture);
+		StreamToSideTxtr(S,ObjPtr->transparent_texture);
+		
+		StreamToSideExclZone(S,ObjPtr->exclusion_zone);
+		
+		StreamToValue(S,ObjPtr->control_panel_type);
+		StreamToValue(S,ObjPtr->control_panel_permutation);
+		
+		StreamToValue(S,ObjPtr->primary_transfer_mode);
+		StreamToValue(S,ObjPtr->secondary_transfer_mode);
+		StreamToValue(S,ObjPtr->transparent_transfer_mode);
+		
+		StreamToValue(S,ObjPtr->polygon_index);
+		StreamToValue(S,ObjPtr->line_index);
+		
+		StreamToValue(S,ObjPtr->primary_lightsource_index);
+		StreamToValue(S,ObjPtr->secondary_lightsource_index);
+		StreamToValue(S,ObjPtr->transparent_lightsource_index);
+		
+		StreamToValue(S,ObjPtr->ambient_delta);
+		
+		S += 2*1;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_side_data);
+}
+
+void pack_side_data(uint8 *Stream, side_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	side_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->flags);
+		
+		SideTxtrToStream(S,ObjPtr->primary_texture);
+		SideTxtrToStream(S,ObjPtr->secondary_texture);
+		SideTxtrToStream(S,ObjPtr->transparent_texture);
+		
+		SideExclZoneToStream(S,ObjPtr->exclusion_zone);
+		
+		ValueToStream(S,ObjPtr->control_panel_type);
+		ValueToStream(S,ObjPtr->control_panel_permutation);
+		
+		ValueToStream(S,ObjPtr->primary_transfer_mode);
+		ValueToStream(S,ObjPtr->secondary_transfer_mode);
+		ValueToStream(S,ObjPtr->transparent_transfer_mode);
+		
+		ValueToStream(S,ObjPtr->polygon_index);
+		ValueToStream(S,ObjPtr->line_index);
+		
+		ValueToStream(S,ObjPtr->primary_lightsource_index);
+		ValueToStream(S,ObjPtr->secondary_lightsource_index);
+		ValueToStream(S,ObjPtr->transparent_lightsource_index);
+		
+		ValueToStream(S,ObjPtr->ambient_delta);
+		
+		S += 2*6;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_side_data);
+}
+
+void unpack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	polygon_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->permutation);
+		
+		StreamToValue(S,ObjPtr->vertex_count);
+		StreamToList(S,ObjPtr->endpoint_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		StreamToList(S,ObjPtr->line_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		StreamToValue(S,ObjPtr->floor_texture);
+		StreamToValue(S,ObjPtr->ceiling_texture);
+		StreamToValue(S,ObjPtr->floor_height);
+		StreamToValue(S,ObjPtr->ceiling_height);
+		StreamToValue(S,ObjPtr->floor_lightsource_index);
+		StreamToValue(S,ObjPtr->ceiling_lightsource_index);
+		
+		StreamToValue(S,ObjPtr->area);
+		
+		StreamToValue(S,ObjPtr->first_object);
+		
+		StreamToValue(S,ObjPtr->first_exclusion_zone_index);
+		StreamToValue(S,ObjPtr->line_exclusion_zone_count);
+		StreamToValue(S,ObjPtr->point_exclusion_zone_count);
+		
+		StreamToValue(S,ObjPtr->floor_transfer_mode);
+		StreamToValue(S,ObjPtr->ceiling_transfer_mode);
+		
+		StreamToList(S,ObjPtr->adjacent_polygon_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		StreamToValue(S,ObjPtr->first_neighbor_index);
+		StreamToValue(S,ObjPtr->neighbor_count);
+		
+		StreamToValue(S,ObjPtr->center.x);
+		StreamToValue(S,ObjPtr->center.y);
+		
+		StreamToList(S,ObjPtr->side_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		StreamToValue(S,ObjPtr->floor_origin.x);
+		StreamToValue(S,ObjPtr->floor_origin.y);
+		StreamToValue(S,ObjPtr->ceiling_origin.x);
+		StreamToValue(S,ObjPtr->ceiling_origin.y);
+		
+		StreamToValue(S,ObjPtr->media_index);
+		StreamToValue(S,ObjPtr->media_lightsource_index);
+		
+		StreamToValue(S,ObjPtr->sound_source_indexes);
+		
+		StreamToValue(S,ObjPtr->ambient_sound_image_index);
+		StreamToValue(S,ObjPtr->random_sound_image_index);
+		
+		S += 2*1;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_polygon_data);
+}
+
+void pack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	polygon_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->permutation);
+		
+		ValueToStream(S,ObjPtr->vertex_count);
+		ListToStream(S,ObjPtr->endpoint_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		ListToStream(S,ObjPtr->line_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		ValueToStream(S,ObjPtr->floor_texture);
+		ValueToStream(S,ObjPtr->ceiling_texture);
+		ValueToStream(S,ObjPtr->floor_height);
+		ValueToStream(S,ObjPtr->ceiling_height);
+		ValueToStream(S,ObjPtr->floor_lightsource_index);
+		ValueToStream(S,ObjPtr->ceiling_lightsource_index);
+		
+		ValueToStream(S,ObjPtr->area);
+		
+		ValueToStream(S,ObjPtr->first_object);
+		
+		ValueToStream(S,ObjPtr->first_exclusion_zone_index);
+		ValueToStream(S,ObjPtr->line_exclusion_zone_count);
+		ValueToStream(S,ObjPtr->point_exclusion_zone_count);
+		
+		ValueToStream(S,ObjPtr->floor_transfer_mode);
+		ValueToStream(S,ObjPtr->ceiling_transfer_mode);
+		
+		ListToStream(S,ObjPtr->adjacent_polygon_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		ValueToStream(S,ObjPtr->first_neighbor_index);
+		ValueToStream(S,ObjPtr->neighbor_count);
+		
+		ValueToStream(S,ObjPtr->center.x);
+		ValueToStream(S,ObjPtr->center.y);
+		
+		ListToStream(S,ObjPtr->side_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		ValueToStream(S,ObjPtr->floor_origin.x);
+		ValueToStream(S,ObjPtr->floor_origin.y);
+		ValueToStream(S,ObjPtr->ceiling_origin.x);
+		ValueToStream(S,ObjPtr->ceiling_origin.y);
+		
+		ValueToStream(S,ObjPtr->media_index);
+		ValueToStream(S,ObjPtr->media_lightsource_index);
+		
+		ValueToStream(S,ObjPtr->sound_source_indexes);
+		
+		ValueToStream(S,ObjPtr->ambient_sound_image_index);
+		ValueToStream(S,ObjPtr->random_sound_image_index);
+		
+		S += 2*1;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_polygon_data);
+}
+
