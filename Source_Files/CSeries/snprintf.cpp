@@ -32,6 +32,7 @@
 #include "Logging.h"
 
 
+#ifndef HAVE_SNPRINTF
 int
 snprintf(char* inBuffer, size_t inBufferSize, const char* inFormat, ...) {
     va_list theArgs;
@@ -40,6 +41,7 @@ snprintf(char* inBuffer, size_t inBufferSize, const char* inFormat, ...) {
     va_end(theArgs);
     return theResult;
 }
+#endif
 
 // This could, like, fprintf out to a file and check the file size, or maybe we could
 // legally lift a whole vsnprintf() implementation from somewhere (GNU std library?)

@@ -2,11 +2,11 @@
 
 noinst_LIBRARIES = libnetwork.a
 
-libnetwork_a_SOURCES = network.h network_data_formats.h \
+libnetwork_a_SOURCES = network.h network_audio_shared.h network_data_formats.h \
   network_dialog_widgets_sdl.h network_dialogs.h network_distribution_types.h \
-  network_games.h network_lookup_sdl.h network_microphone_sdl.h \
-  network_modem.h network_private.h network_sound.h network_speaker_sdl.h \
-  network_star.h network_stream.h RingGameProtocol.h SDL_netx.h SSLP_API.h \
+  network_games.h network_lookup_sdl.h network_modem.h network_private.h \
+  network_sound.h network_speaker_sdl.h network_star.h network_stream.h \
+  NetworkGameProtocol.h RingGameProtocol.h SDL_netx.h SSLP_API.h \
   SSLP_Protocol.h StarGameProtocol.h \
   \
   network.cpp network_data_formats.cpp network_dialogs.cpp \

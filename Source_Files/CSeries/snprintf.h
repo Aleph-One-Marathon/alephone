@@ -28,7 +28,16 @@
 
 #include <stdarg.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifndef HAVE_SNPRINTF
 extern int snprintf(char* inBuffer, size_t inBufferSize, const char* inFormat, ...);
+#endif
+
+#ifndef HAVE_VSNPRINTF
 extern int vsnprintf(char* inBuffer, size_t inBufferSize, const char* inFormat, va_list inArgs);
+#endif
 
 #endif // SNPRINTF_H

@@ -50,9 +50,8 @@ Successfully tested systems include:
  - Windows NT 4
  - Windows 2000
 
-To compile Aleph One/SDL, you need an up-to-date C++ compiler. Using gcc 2.95
-or 3.x should give the best results. Users of pre-ISO C++ compilers need not
-apply.
+To compile Aleph One/SDL, you need an up-to-date C++ compiler. Using GCC 3.x
+should give the best results. Users of pre-ISO C++ compilers need not apply.
 
 Aleph One/SDL supports, but doesn't require, OpenGL for rendering.
 

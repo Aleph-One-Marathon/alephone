@@ -1,17 +1,17 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Written in 2000 by Christian Bauer <Christian.Bauer@uni-mainz.de>
 
-AC_INIT
-AC_CONFIG_SRCDIR(Source_Files/shell.cpp)
-AC_PREREQ(2.50)
+AC_INIT([Aleph One/SDL], 20030605, [http://sourceforge.net/bugs/?group_id=1997], [AlephOne])
+AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
+AC_PREREQ(2.52)
 
 dnl Detect the canonical host and target build environment.
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
-dnl This defines PACKAGE and VERSION.
+dnl Init automake.
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE([AlephOne], [0.13.0])
 
 dnl Configure options.
 AC_ARG_ENABLE(opengl, [  --enable-opengl         use OpenGL for rendering [default=yes]], , enable_opengl=yes)
@@ -26,6 +26,14 @@ AC_PROG_RANLIB
 
 dnl Checks for headers.
 AC_CHECK_HEADERS(unistd.h)
+
+dnl Checks for library functions.
+AC_CHECK_FUNC(snprintf, [
+  AC_DEFINE(HAVE_SNPRINTF, 1, [snprintf() is available])
+])
+AC_CHECK_FUNC(vsnprintf, [
+  AC_DEFINE(HAVE_VSNPRINTF, 1, [vsnprintf() is available])
+])
 
 dnl Check for SDL.
 AM_PATH_SDL(1.2.0, , AC_MSG_ERROR([You need SDL 1.2 to run Aleph One.]))
@@ -114,7 +122,7 @@ dnl Set target system name.
 AC_DEFINE_UNQUOTED(TARGET_PLATFORM, "$target_os $target_cpu", [Target platform name])
 
 dnl Generate Makefiles.
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 AlephOne.spec
 Source_Files/Makefile
@@ -136,6 +144,7 @@ tools/Makefile
 data/Makefile
 data/default_theme/Makefile
 ])
+AC_OUTPUT
 
 dnl Print summary.
 echo "Configuration done. Now type \"make\"."
