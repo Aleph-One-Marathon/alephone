@@ -387,6 +387,8 @@ Here are what the colors are:
 <li>Annotation
 <li>Map Title
 <li>Path
+<li>Minor Ouch
+<li>Major Ouch
 </ol>
 <p>
 
@@ -891,6 +893,12 @@ The attributes are:
 <li>vulnerability: what kind of damage (true damage type) one is vulnerable to when the
 invincibility powerup is active (can be -1 (NONE)) (default: 9, fusion-bolt damage)
 <li>guided: whether the players' projectiles seek their targets (default: false)
+<li>half_visual_arc: the sideways angle from forward that the guided-projectile targeting will use
+to look for in a target; it is in Marathon's angle units, where 90 degrees = 128 (default: 128/3 = 42).
+<li>half_vertical_visual_arc: the vertical angle from horizontal that the guided-projectile targeting will use0
+to look for in a target; it is in Marathon's angle units, where 90 degrees = 128 (default: 28/3 = 42).
+<li>visual_range: In World Units (default: 31)
+<li>dark_visual_range: In World Units (default: 31)
 </ul>
 Note: the oxygen depletion and replenishment rates can be negative
 if one so desires, making changes in the opposite direction.
