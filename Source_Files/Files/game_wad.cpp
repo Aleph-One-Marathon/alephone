@@ -970,8 +970,7 @@ void load_lights(
 	size_t count,
 	short version)
 {
-	size_t loop;
-	short new_index;
+	unsigned short loop, new_index;
 	
 	LightList.resize(count);
 	objlist_clear(lights,count);
