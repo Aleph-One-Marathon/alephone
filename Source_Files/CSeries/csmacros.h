@@ -79,5 +79,6 @@ template<class T> void obj_clear(T& object)
 template<class T> void objlist_clear(T* object_list, int num_objects)
 	{objlist_set(object_list, 0, num_objects);}
 
+
 #endif
 
