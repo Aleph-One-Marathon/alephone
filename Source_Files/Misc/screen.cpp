@@ -361,6 +361,11 @@ static bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, sh
 static pascal void DM_ModeInfoCallback(void *UserData,
 	DMListIndexType Index, DMDisplayModeListEntryPtr ModeInfoPtr);
 
+// Callback for monitor-frequency-selection dialog-box event handling;
+// it is for catching keyboard events
+static pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
+	EventRecord *Event, short *ItemHit);
+
 // Directly manipulate the video-driver color table.
 // Written so that the faders will work in MacOS X Classic.
 static void direct_animate_screen_clut(
@@ -2346,8 +2351,11 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	if (!MDPtr) return false;
 	
 	// Build MacOS Classic dialog box
+	// and its keyboard-event catcher
 	DialogPtr Dialog = GetNewDialog(MonitorFreq_Dialog, nil, WindowPtr(-1));
 	assert(Dialog);
+	ModalFilterUPP DialogEventHandler = NewModalFilterProc(DM_ModeFreqDialogHandler);
+	assert(DialogEventHandler);
 	
 	// Get its popup-menu handle
 	ControlHandle PopupHandle;
@@ -2402,7 +2410,7 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 		if (QuitRequested) break;
 		
 		short ItemHit;
-		ModalDialog(nil, &ItemHit);
+		ModalDialog(DialogEventHandler, &ItemHit);
 		
 		// Here, ChangeRequested and QuitRequested are false unless explicitly made true
 		switch(ItemHit)
@@ -2435,6 +2443,7 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	// Clean up
 	HideWindow(Dialog);
 	DisposeDialog(Dialog);
+	DisposeRoutineDescriptor(DialogEventHandler);
 	
 	return ChangeSuccess;
 }
@@ -2448,6 +2457,41 @@ pascal void DM_ModeInfoCallback(void *UserData,
 	assert(UserData);
 	DM_ModeList *ModeListPtr = (DM_ModeList *)UserData;
 	ModeListPtr->ModeInfoPtr = ModeInfoPtr;
+}
+
+
+// Callback for monitor-frequency-selection dialog-box event handling;
+// it is for catching keyboard events
+pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
+	EventRecord *Event, short *ItemHit)
+{
+	switch(Event->what)
+	{
+		// Only interested in keyboard events
+		case keyDown:
+		case autoKey:
+		{
+			short Key = Event->message & charCodeMask;
+			switch(Key)
+			{
+			// Return is revert to previous resolution
+			case 0x0d:
+				*ItemHit = MonitorFreq_Revert;
+				return true;
+				break;
+			
+			// Escape is quit in default resolution
+			case 0x1b:
+				*ItemHit = MonitorFreq_Def;
+				return true;
+				break;
+			}
+		}
+		break;
+	}
+	
+	// Ignore all other kinds of events
+	return false;
 }
 
 
