@@ -198,13 +198,15 @@
 				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks";
 				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Library/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
+				JAVA_COMPILER = /usr/bin/jikes;
+				JAVA_COMPILER_FLAGS = "-O";
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O0";
+				OPTIMIZATION_CFLAGS = "-Os -frename-registers";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H";
 				OTHER_LDFLAGS = "-noprebind -multiply_defined suppress -F$(HOME)/Library/Frameworks -framework SDL -framework SDL_image -framework SDL_net";
-				PREBINDING = NO;
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
+				USE_GCC3_PFE_SUPPORT = YES;
 				WARNING_CFLAGS = "-Wmost -Wpointer-arith -Wformat";
 				WRAPPER_EXTENSION = app;
 			};

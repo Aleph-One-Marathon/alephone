@@ -342,7 +342,6 @@ void write_preferences(
         strcat(str,getenv("HOME"));
         strcat(str,"/Library/Preferences/");
         chdir(str);
-        printf("%s\n",str);
 #endif
 	HGetVol(nil,&OldVRefNum,&OldParID);
 	

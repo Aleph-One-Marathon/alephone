@@ -346,7 +346,9 @@ static void initialize_application_heap(
 	InitDialogs(0); /* resume procedure ignored for multifinder and >=system 7.0 */
 #endif
 	InitCursor();
-
+#if __GNUC__ >= 3
+	QDSwapTextFlags(1 | 2 | 4);
+#endif
 	long response;
 	OSErr error;
 

@@ -52,6 +52,12 @@ Jul 1, 2000 (Loren Petrich):
 	Inlined the angle normalization; doing it automatically for all the functions that work with angles
 */
 
+#ifndef DEBUG_FAST_CODE
+#undef DEBUG
+#undef assert(x)
+#undef assert
+#define assert(x) 
+#endif
 #include "cseries.h"
 #include "world.h"
 

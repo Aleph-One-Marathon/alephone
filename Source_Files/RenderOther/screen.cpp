@@ -1457,11 +1457,11 @@ static void DisplayText(short BaseX, short BaseY, char *Text)
 static void update_fps_display(
 	GrafPtr port)
 {
-	if (displaying_fps || player_in_terminal_mode(current_player_index))
+	if (displaying_fps && !player_in_terminal_mode(current_player_index))
 	{
 		long ticks= TickCount();
 		GrafPtr old_port;
-		char fps[256];
+		char fps[sizeof("120.00fps")];
 		
 		frame_ticks[frame_index]= ticks;
 		frame_index= (frame_index+1)%FRAME_SAMPLE_SIZE;
@@ -1472,9 +1472,11 @@ static void update_fps_display(
 		}
 		else
 		{
-                    float fps = (FRAME_SAMPLE_SIZE*60)/(float)(ticks-frame_ticks[frame_index]);
-                    if (fps > TICKS_PER_SECOND) fps = TICKS_PER_SECOND; //clip it
-			sprintf(fps, "%3.2ffps", fps);
+                    float framecount = (FRAME_SAMPLE_SIZE*60)/(float)(ticks-frame_ticks[frame_index]);
+                    if (framecount >= TICKS_PER_SECOND)
+			sprintf(fps,"%d%s",(int)TICKS_PER_SECOND,".00fps");
+		    else
+			sprintf(fps, "%3.2ffps", framecount);
 		}
 
 		GetPort(&old_port);

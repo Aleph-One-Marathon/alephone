@@ -936,6 +936,10 @@ bool verify_sound_manager_parameters(
 
 	// adjust flags	
 	parameters->flags&= _sm_globals->available_flags;
+	if (!parameters->volume)
+	    set_sound_manager_status(false); // turn it off if we won't be hearing anything anyway, speeds it up, frees RAM, and may fix some crashes on M1A1
+	else
+	    set_sound_manager_status(true); // and turn it back on
 	
 	return true;
 }

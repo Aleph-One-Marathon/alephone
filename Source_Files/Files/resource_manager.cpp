@@ -218,10 +218,12 @@ SDL_RWops *open_res_file(FileSpecifier &file)
 {
 	string rsrc_file_name = file.GetPath();
 	string resources_file_name = rsrc_file_name;
+	string darwin_rsrc_file_name = rsrc_file_name;
 	rsrc_file_name += ".rsrc";
 	resources_file_name += ".resources";
+	darwin_rsrc_file_name += "/rsrc";
 
-	// Open file, try <name>.rsrc first, then <name>.resources, then <name>
+	// Open file, try <name>.rsrc first, then <name>.resources, then <name>/rsrc then <name>
 	SDL_RWops *f = NULL;
 #ifdef __BEOS__
 	// On BeOS, try MACOS:RFORK attribute first
@@ -232,6 +234,8 @@ SDL_RWops *open_res_file(FileSpecifier &file)
 		f = SDL_RWFromFile(rsrc_file_name.c_str(), "rb");
 	if (f == NULL)
 		f = SDL_RWFromFile(resources_file_name.c_str(), "rb");
+	if (f == NULL)
+		f = SDL_RWFromFile(darwin_rsrc_file_name.c_str(), "rb");
 	if (f == NULL)
 		f = SDL_RWFromFile(file.GetPath(), "rb");
 	if (f) {

@@ -315,14 +315,14 @@ static void update_fps_display(GrafPtr port)
 static void update_fps_display(SDL_Surface *s)
 #endif
 {
-	if (displaying_fps)
+	if (displaying_fps && !player_in_terminal_mode(current_player_index))
 	{
 #if defined(mac)
 		uint32 ticks= TickCount();
 #elif defined(SDL)
 		uint32 ticks = SDL_GetTicks();
 #endif
-		char fps[256];
+		char fps[sizeof("120.00fps")];
 		
 		frame_ticks[frame_index]= ticks;
 		frame_index= (frame_index+1)%FRAME_SAMPLE_SIZE;
@@ -333,7 +333,11 @@ static void update_fps_display(SDL_Surface *s)
 		}
 		else
 		{
-			sprintf(fps, "%3.2ffps", (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks-frame_ticks[frame_index]));
+		    float count = (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks-frame_ticks[frame_index]);
+		    if (count >= TICKS_PER_SECOND)
+			sprintf(fps, "%lu%s",(unsigned long)TICKS_PER_SECOND,".00fps");
+		    else
+			sprintf(fps, "%3.2ffps", count);
 		}
 		
 		FontSpecifier& Font = GetOnScreenFont();

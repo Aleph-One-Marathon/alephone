@@ -73,13 +73,11 @@ Aug 27, 2002 (Alexander Strange):
 #ifdef PACKED_DATA_IS_BIG_ENDIAN
 #define StreamToValue StreamToValueBE
 #define ValueToStream ValueToStreamBE
-#warning Big Endian
 #endif
 
 #ifdef PACKED_DATA_IS_LITTLE_ENDIAN
 #define StreamToValue StreamToValueLE
 #define ValueToStream ValueToStreamLE
-#warning Little Endian
 #endif
 
 extern void StreamToValue(uint8* &Stream, uint16 &Value);

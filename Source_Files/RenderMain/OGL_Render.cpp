@@ -2520,6 +2520,7 @@ void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Posit
 
 // Keeping CB's code on hand
 #if 0
+    /*
 
 	// Register usage:
 	// mm0/mm1: ExternalLight[0] (4 components)
@@ -2574,7 +2575,7 @@ void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Posit
 		: "g" (Normals), "g" (ColorPtr), "g" (NumVerts), "g" (LPtr->Colors), "g" (&tmp)
 		: "eax", "memory"
 	);
-
+*/
 #endif
 	
 	// Whether to fade miner's light toward model sides
