@@ -21,17 +21,6 @@
 			settings = {
 			};
 		};
-		00F9DA5400AC763A7F000001 = {
-			isa = PBXFileReference;
-			path = SDLMain.nib;
-			refType = 2;
-		};
-		00F9DA5500AC763A7F000001 = {
-			fileRef = 00F9DA5400AC763A7F000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 //000
 //001
 //002
@@ -86,22 +75,6 @@
 //082
 //083
 //084
-//100
-//101
-//102
-//103
-//104
-		1058C7A1FEA54F0111CA2CBB = {
-			isa = PBXFrameworkReference;
-			name = Cocoa.framework;
-			path = /System/Library/Frameworks/Cocoa.framework;
-			refType = 0;
-		};
-//100
-//101
-//102
-//103
-//104
 //170
 //171
 //172
@@ -109,7 +82,7 @@
 //174
 		17587328FF379C6511CA2CBB = {
 			isa = PBXApplicationReference;
-			path = "AlephOne-SDL-0.12.0.app";
+			path = AlephOne.app;
 			refType = 3;
 		};
 //170
@@ -154,16 +127,10 @@
 		};
 		29B97314FDCFA39411CA2CEA = {
 			children = (
-				F53AB44B01F3CB1D01EF2901,
 				F52214490136C0C401000001,
 				29B97317FDCFA39411CA2CEA,
 				29B97323FDCFA39411CA2CEA,
 				19C28FACFE9D520D11CA2CBB,
-				F5830B4001E776DE01BA387C,
-				F59FB19D01E780DF01BBE912,
-				F53AB44C01F3CB1E01EF2901,
-				F53AB44D01F3CB1E01EF2901,
-				F53AB44E01F3CB1E01EF2901,
 			);
 			isa = PBXGroup;
 			name = "SDL Application";
@@ -172,7 +139,10 @@
 		};
 		29B97317FDCFA39411CA2CEA = {
 			children = (
-				00F9DA5400AC763A7F000001,
+				F56AEB6B01F8AA1201780311,
+				F56AEB6C01F8AA1201780311,
+				F56AEB6D01F8AA1201780311,
+				F53AB44B01F3CB1D01EF2901,
 				089C165CFE840E0CC02AAC07,
 			);
 			isa = PBXGroup;
@@ -182,10 +152,11 @@
 		};
 		29B97323FDCFA39411CA2CEA = {
 			children = (
-				1058C7A1FEA54F0111CA2CBB,
-				F52211100136A30901000001,
-				F52213A90136AD7401000001,
-				F5CADB600136E5C101000001,
+				F5830B4001E776DE01BA387C,
+				F59FB19D01E780DF01BBE912,
+				F5281C0501F8C94101E83A66,
+				F5281C0701F8CA2101E83A66,
+				F5281C0801F8CA2101E83A66,
 			);
 			isa = PBXGroup;
 			name = Frameworks;
@@ -201,22 +172,22 @@
 				043355C9FE30361CC02AAC07,
 			);
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = "/Library/Frameworks \"$(HOME)/Library/Frameworks\"";
-				HEADER_SEARCH_PATHS = "/System/Library/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
+				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks /Users/astrange/Library/Frameworks";
+				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Library/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				LIBRARY_SEARCH_PATHS = "";
 				OPTIMIZATION_CFLAGS = "-O0";
-				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -D__DARWIN__ -DMACOSX";
-				OTHER_LDFLAGS = "-framework SDL";
+				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H";
+				OTHER_LDFLAGS = "-noprebind -multiply_defined suppress -F$(HOME)/Library/Frameworks -framework SDL -framework SDL_image -framework SDL_net";
 				PREBINDING = NO;
-				PRODUCT_NAME = "AlephOne-SDL-0.12.0";
+				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+				WARNING_CFLAGS = "-Wmost -Wpointer-arith -Wformat";
 				WRAPPER_EXTENSION = app;
 			};
 			dependencies = (
 			);
 			isa = PBXApplicationTarget;
-			name = "AlephOne-SDL-0.12.0";
+			name = AlephOne;
 			productName = "SDL Application";
 			productReference = 17587328FF379C6511CA2CBB;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -225,8 +196,65 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>shp</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>ShapesFile.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Shapes File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>shp∞</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>NSDocumentClass</key>
+			<string>Aleph One Sprite Data</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>snd2</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>SoundsIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Sounds File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>sndU221e</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>NSDocumentClass</key>
+			<string>Aleph One Sound Data</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>img2</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>ImagesIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Images File</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>img∞</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>NSDocumentClass</key>
+			<string>Aleph One Interface Images</string>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
-	<string>AlephOne-SDL-0.12.0</string>
+	<string>AlephOne</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Aleph One SDL Test for OS X</string>
 	<key>CFBundleIconFile</key>
@@ -240,11 +268,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.12.0</string>
+	<string>0.13.0</string>
 	<key>CFBundleSignature</key>
 	<string>26.A</string>
 	<key>CFBundleVersion</key>
-	<string>0.12.0</string>
+	<string>0.13.0</string>
 	<key>NSMainNibFile</key>
 	<string>SDLMain.nib</string>
 	<key>NSPrincipalClass</key>
@@ -257,7 +285,6 @@
 		29B97327FDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
 			files = (
-				F522111A0136A41F01000001,
 				F52213B80136B71101000001,
 				F52213B90136B71101000001,
 				F52213BA0136B71101000001,
@@ -396,6 +423,12 @@
 				F52214400136B78C01000001,
 				F52214410136B78C01000001,
 				F5CADB5C0136D95E01000001,
+				F58BD22F01F7D34501F58C2F,
+				F5FDA0860200C03B013D663B,
+				F5FDA0880200C577013D663B,
+				F5FDA0890200C577013D663B,
+				F5FDA08A0200C577013D663B,
+				F5FDA08B0200C577013D663B,
 			);
 			isa = PBXHeadersBuildPhase;
 			name = Headers;
@@ -404,8 +437,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				089C165EFE840E0CC02AAC07,
-				00F9DA5500AC763A7F000001,
 				F53AB44F01F3CB1E01EF2901,
+				F56AEB6E01F8AA1201780311,
+				F56AEB6F01F8AA1201780311,
+				F56AEB7001F8AA1201780311,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
@@ -434,8 +469,6 @@
 				F52212FA0136A6FD01000001,
 				F52212FB0136A6FD01000001,
 				F52212FD0136A6FD01000001,
-				F52212FE0136A6FD01000001,
-				F52213010136A6FD01000001,
 				F52213030136A6FD01000001,
 				F52213040136A6FD01000001,
 				F52213060136A6FD01000001,
@@ -534,6 +567,11 @@
 				F5574EFD01F4ED4901FEABBD,
 				F5574EFF01F4ED6501FEABBD,
 				F5956A5C01F67F62017E84DE,
+				F574330401FE38A2013C4252,
+				F574330501FE5A06013C4252,
+				F574330601FE6306013C4252,
+				F5FDA0870200C03B013D663B,
+				F5FDA08D0200C962013D663B,
 			);
 			isa = PBXSourcesBuildPhase;
 			name = Sources;
@@ -543,9 +581,9 @@
 			files = (
 				F5830B4101E776DE01BA387C,
 				F59FB19E01E780DF01BBE912,
-				F53AB45001F3CB1E01EF2901,
-				F53AB45101F3CB1E01EF2901,
-				F53AB45201F3CB1E01EF2901,
+				F5281C0601F8C94301E83A66,
+				F5281C0901F8CA2201E83A66,
+				F5281C0A01F8CA2201E83A66,
 			);
 			isa = PBXFrameworksBuildPhase;
 			name = "Frameworks & Libraries";
@@ -591,18 +629,6 @@
 //F52
 //F53
 //F54
-		F52211100136A30901000001 = {
-			isa = PBXFileReference;
-			name = "libstdc++.a";
-			path = "/usr/lib/gcc/darwin/2.95.2/libstdc++.a";
-			refType = 0;
-		};
-		F52211120136A41F01000001 = {
-			isa = PBXFileReference;
-			name = config.h;
-			path = ../config.h;
-			refType = 2;
-		};
 		F52211190136A41F01000001 = {
 			children = (
 				F522139B0136AC1601000001,
@@ -617,15 +643,6 @@
 			name = Pfhortran;
 			path = "";
 			refType = 2;
-		};
-		F522111A0136A41F01000001 = {
-			fileRef = F52211120136A41F01000001;
-			isa = PBXBuildFile;
-			settings = {
-				ATTRIBUTES = (
-					Private,
-				);
-			};
 		};
 		F522111D0136A4DD01000001 = {
 			isa = PBXFileReference;
@@ -2475,18 +2492,6 @@
 			settings = {
 			};
 		};
-		F52212FE0136A6FD01000001 = {
-			fileRef = F522118F0136A6FD01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F52213010136A6FD01000001 = {
-			fileRef = F52211920136A6FD01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F52213030136A6FD01000001 = {
 			fileRef = F52211940136A6FD01000001;
 			isa = PBXBuildFile;
@@ -3164,12 +3169,6 @@
 			isa = PBXBuildFile;
 			settings = {
 			};
-		};
-		F52213A90136AD7401000001 = {
-			isa = PBXFrameworkReference;
-			name = SDL.framework;
-			path = ../../../../../../Users/bobv/Library/Frameworks/SDL.framework;
-			refType = 4;
 		};
 		F52213B80136B71101000001 = {
 			fileRef = F522119B0136A6FD01000001;
@@ -4001,7 +4000,6 @@
 		};
 		F52214490136C0C401000001 = {
 			children = (
-				F52211120136A41F01000001,
 				F5CADB5B0136D95E01000001,
 				F5830B4201E77D5701BA387C,
 				F522144A0136C0C401000001,
@@ -4011,6 +4009,7 @@
 				F52211190136A41F01000001,
 				00F9DA4F00AC72F57F000001,
 				00F9DA5100AC730E7F000001,
+				F58BD22E01F7D34501F58C2F,
 			);
 			isa = PBXGroup;
 			name = Sources;
@@ -4396,49 +4395,49 @@
 			name = Headers;
 			refType = 4;
 		};
+		F5281C0501F8C94101E83A66 = {
+			isa = PBXFrameworkReference;
+			name = SDL.framework;
+			path = /Users/astrange/Library/Frameworks/SDL.framework;
+			refType = 0;
+		};
+		F5281C0601F8C94301E83A66 = {
+			fileRef = F5281C0501F8C94101E83A66;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5281C0701F8CA2101E83A66 = {
+			isa = PBXFrameworkReference;
+			name = SDL_image.framework;
+			path = /Users/astrange/Library/Frameworks/SDL_image.framework;
+			refType = 0;
+		};
+		F5281C0801F8CA2101E83A66 = {
+			isa = PBXFrameworkReference;
+			name = SDL_net.framework;
+			path = /Users/astrange/Library/Frameworks/SDL_net.framework;
+			refType = 0;
+		};
+		F5281C0901F8CA2201E83A66 = {
+			fileRef = F5281C0701F8CA2101E83A66;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5281C0A01F8CA2201E83A66 = {
+			fileRef = F5281C0801F8CA2101E83A66;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F53AB44B01F3CB1D01EF2901 = {
 			isa = PBXFileReference;
 			path = AlephOne.icns;
 			refType = 4;
 		};
-		F53AB44C01F3CB1E01EF2901 = {
-			isa = PBXFrameworkReference;
-			name = SDL_image.framework;
-			path = /Library/Frameworks/SDL_image.framework;
-			refType = 0;
-		};
-		F53AB44D01F3CB1E01EF2901 = {
-			isa = PBXFrameworkReference;
-			name = SDL_net.framework;
-			path = /Library/Frameworks/SDL_net.framework;
-			refType = 0;
-		};
-		F53AB44E01F3CB1E01EF2901 = {
-			isa = PBXFrameworkReference;
-			name = SDL.framework;
-			path = /Library/Frameworks/SDL.framework;
-			refType = 0;
-		};
 		F53AB44F01F3CB1E01EF2901 = {
 			fileRef = F53AB44B01F3CB1D01EF2901;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F53AB45001F3CB1E01EF2901 = {
-			fileRef = F53AB44C01F3CB1E01EF2901;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F53AB45101F3CB1E01EF2901 = {
-			fileRef = F53AB44D01F3CB1E01EF2901;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F53AB45201F3CB1E01EF2901 = {
-			fileRef = F53AB44E01F3CB1E01EF2901;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -4547,6 +4546,57 @@
 		};
 		F5574EFF01F4ED6501FEABBD = {
 			fileRef = F5574EFE01F4ED6501FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56AEB6B01F8AA1201780311 = {
+			isa = PBXFileReference;
+			path = ImagesIcon.icns;
+			refType = 4;
+		};
+		F56AEB6C01F8AA1201780311 = {
+			isa = PBXFileReference;
+			path = ShapesIcon.icns;
+			refType = 4;
+		};
+		F56AEB6D01F8AA1201780311 = {
+			isa = PBXFileReference;
+			path = SoundsIcon.icns;
+			refType = 4;
+		};
+		F56AEB6E01F8AA1201780311 = {
+			fileRef = F56AEB6B01F8AA1201780311;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56AEB6F01F8AA1201780311 = {
+			fileRef = F56AEB6C01F8AA1201780311;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F56AEB7001F8AA1201780311 = {
+			fileRef = F56AEB6D01F8AA1201780311;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F574330401FE38A2013C4252 = {
+			fileRef = F52211910136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F574330501FE5A06013C4252 = {
+			fileRef = F52211900136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F574330601FE6306013C4252 = {
+			fileRef = F52211930136A6FD01000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -4661,6 +4711,20 @@
 			settings = {
 			};
 		};
+		F58BD22E01F7D34501F58C2F = {
+			isa = PBXFileReference;
+			path = config.h;
+			refType = 4;
+		};
+		F58BD22F01F7D34501F58C2F = {
+			fileRef = F58BD22E01F7D34501F58C2F;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Private,
+				);
+			};
+		};
 		F5956A5C01F67F62017E84DE = {
 			fileRef = F522137D0136ABAE01000001;
 			isa = PBXBuildFile;
@@ -4693,11 +4757,47 @@
 				);
 			};
 		};
-		F5CADB600136E5C101000001 = {
-			isa = PBXFrameworkReference;
-			name = SDL_net.framework;
-			path = /Users/bobv/Library/Frameworks/SDL_net.framework;
-			refType = 0;
+		F5FDA0860200C03B013D663B = {
+			fileRef = 00F9DA4F00AC72F57F000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5FDA0870200C03B013D663B = {
+			fileRef = F522118F0136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5FDA0880200C577013D663B = {
+			fileRef = F5830B4401E77D5701BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5FDA0890200C577013D663B = {
+			fileRef = F5830B4601E77D5701BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5FDA08A0200C577013D663B = {
+			fileRef = F5830B4B01E77D5701BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5FDA08B0200C577013D663B = {
+			fileRef = F5830B4D01E77D5701BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5FDA08D0200C962013D663B = {
+			fileRef = F52211920136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
 		};
 	};
 	rootObject = 29B97313FDCFA39411CA2CEA;
