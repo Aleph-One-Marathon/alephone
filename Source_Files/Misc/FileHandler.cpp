@@ -619,6 +619,8 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 	ExtractSingleItem(&reply,&temp);
 	SetSpec(temp);
 	
+	if (reply.replacing) FSpDelete(temp);
+	
 	} else {
 	
 	Str31 PasPrompt, PasDefaultName;
@@ -772,6 +774,8 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 	obj_clear(temp);
 	ExtractSingleItem(&reply,&temp);
 	SetSpec(temp);
+	
+	if (reply.replacing) FSpDelete(temp);
 	
 	} else {
 	
