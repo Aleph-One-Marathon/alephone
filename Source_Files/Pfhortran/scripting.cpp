@@ -309,12 +309,12 @@ void jump_to_line(int newline)
 }
 
 /*add_variable initalizes a new script variable*/
-void add_variable(int var)
+void add_variable(float var)
 {
 	if (variable_count >= MAX_VARS)
 		return;
 
-	variable_lookup[variable_count] = float(var);
+	variable_lookup[variable_count] = var;
 	variable_count ++;
 
 }

@@ -125,7 +125,7 @@ bool XML_ShapesParser::AttributesDone()
 		}
 		else if (NONE_Is_OK)
 		{
-			*DescPtr = NONE;
+			*DescPtr = UNONE;
 			return true;
 		}
 		else

@@ -1784,13 +1784,13 @@ static void build_tinting_table16(
 #ifdef SDL
 		// Find optimal pixel value for video display
 		*tint_table++= SDL_MapRGB(fmt,
-		  ((magnitude * tint_color->red) / 65535) >> 8,
-		  ((magnitude * tint_color->green) / 65535) >> 8,
-		  ((magnitude * tint_color->blue) / 65535) >> 8);
+		  ((magnitude * tint_color->red) / 0xFFFF) >> 8,
+		  ((magnitude * tint_color->green) / 0xFFFF) >> 8,
+		  ((magnitude * tint_color->blue) / 0xFFFF) >> 8);
 #else
 		// Mac xRGB 1555 pixel format
-		*tint_table++= RGBCOLOR_TO_PIXEL16((magnitude*tint_color->red)/65535,
-			(magnitude*tint_color->green)/65535, (magnitude*tint_color->blue)/65535);
+		*tint_table++= RGBCOLOR_TO_PIXEL16((magnitude*tint_color->red)/0xFFFF,
+			(magnitude*tint_color->green)/0xFFFF, (magnitude*tint_color->blue)/0xFFFF);
 #endif
 	}
 }

@@ -131,7 +131,7 @@ extern bool MotionSensorActive;
 extern  void free_script(void);
 extern	void set_instruction_decay(long);
 extern 	void jump_to_line(int);
-extern 	void add_variable(int);
+extern 	void add_variable(float);
 extern 	float get_variable(int);
 extern 	void set_variable(int, float);
 extern void stack_push(int val);
@@ -1012,7 +1012,7 @@ void s_Get_Tag_State(script_instruction inst)
 
 void s_Define(script_instruction inst)
 {
-	add_variable(int(inst.op1));
+	add_variable(inst.op1);
 }
 
 void s_sAdd(script_instruction inst)

@@ -126,7 +126,7 @@ size_t new_media(
 			break;
 		}
 	}
-	if (media_index==MAXIMUM_MEDIAS_PER_MAP) media_index= NONE;
+	if (media_index==MAXIMUM_MEDIAS_PER_MAP) media_index= UNONE;
 	
 	return media_index;
 }
