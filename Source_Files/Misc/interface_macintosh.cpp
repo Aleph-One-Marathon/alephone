@@ -116,9 +116,6 @@ enum { /* Cheat level dialog */
 
 /* -------- local prototypes */
 // static bool machine_has_quicktime(void);
-//#if defined(USE_CARBON_ACCESSORS)
-static void draw_picture_into_gworld(GWorldPtr gworld, PicHandle picture);
-//#endif
 
 /* -------- code */
 void do_preferences(
