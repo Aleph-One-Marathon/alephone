@@ -42,7 +42,6 @@ Feb 6, 2002 (Br'fin (Jeremy Parsons)):
 #ifdef USES_NIBS
 
 const CFStringRef Window_Prefs_Keyboard = CFSTR("Prefs_Keyboard");
-const CFStringRef Window_Prefs_Keyboard_TinyScreen = CFSTR("Prefs_Keyboard_TinyScreen");
 
 #endif
 
@@ -351,8 +350,7 @@ bool configure_key_setup(
 	bool IsTinyScreen =
 		(RECTANGLE_WIDTH(&(*GetWorldDevice())->gdRect)<640 || RECTANGLE_HEIGHT(&(*GetWorldDevice())->gdRect)<480);
 	
-	AutoNibWindow Window(GUI_Nib,
-		IsTinyScreen ? Window_Prefs_Keyboard_TinyScreen : Window_Prefs_Keyboard);
+	AutoNibWindow Window(GUI_Nib, Window_Prefs_Keyboard);
 	
 	// So that the handlers will work with the transmitted data
 	KeyboardHandlerData HandlerData;
