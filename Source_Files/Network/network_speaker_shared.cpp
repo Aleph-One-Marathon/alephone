@@ -90,7 +90,7 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
                 speex_bits_read_from(&gDecoderBits, cbits, nbytes);
                 speex_decode(gDecoderState, &gDecoderBits, frame);
                 for (i = 0; i < 160; i++) {
-                    int16 framedata = frame[i];
+                    int16 framedata = static_cast<int16>(frame[i]);
                     newBuffer[totalBytes++] = 128 + (framedata >> 8);
                 }
             }
