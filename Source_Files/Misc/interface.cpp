@@ -1809,6 +1809,9 @@ static bool begin_game(
 				entry.level_number= 0;
 			}
 	
+			// ZZZ: let the user use his behavior modifiers in single-player.
+			restore_custom_player_behavior_modifiers();
+			
 			entry.level_name[0] = 0;
 			starts[0].identifier = 0;
                         //AS: make things clearer
@@ -1823,9 +1826,6 @@ static bool begin_game(
 			game_information.initial_random_seed= machine_tick_count();
 			game_information.difficulty_level= get_difficulty_level();
 
-                        // ZZZ: let the user use his behavior modifiers in single-player.
-                        restore_custom_player_behavior_modifiers();
-                        
                         // ZZZ: until film files store player behavior flags, we must require
                         // that all films recorded be made with standard behavior.
 			record_game= is_player_behavior_standard();
