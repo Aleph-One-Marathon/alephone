@@ -1678,7 +1678,9 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 {
 	// Check for fog
-	if (FogActive())
+	bool IsActive = FogActive();
+	bool AffectsLandscapes = IsActive ? CurrFog->AffectsLandscapes : true;
+	if (!AffectsLandscapes)
 	{
 		// Render as fog at infinity
 		glDisable(GL_FOG);
@@ -1724,6 +1726,9 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 		
 		return true;
 	}
+	
+	// Otherwise, the landscape would get fogged as a function of its world-geometry location
+	if (IsActive) glDisable(GL_FOG);
 
 	// Get the landscape-texturing options
 	LandscapeOptions *LandOpts = View_GetLandscapeOptions(RenderPolygon.ShapeDesc);
@@ -1760,7 +1765,11 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	TMgr.TextureType = OGL_Txtr_Landscape;
 	
 	// Use that texture
-	if (!TMgr.Setup()) return false;
+	if (!TMgr.Setup())
+	{
+		if (IsActive) glEnable(GL_FOG);
+		return false;
+	}
 	
 	// Storage of intermediate results for mass render
 	ExtendedVertexData ExtendedVertexList[MAXIMUM_VERTICES_PER_SCREEN_POLYGON];
@@ -1813,6 +1822,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	// Go!
 	glDrawArrays(GL_POLYGON,0,NumVertices);
 	
+	if (IsActive) glEnable(GL_FOG);
 	return true;
 }
 

@@ -393,6 +393,7 @@ struct OGL_FogData
 	rgb_color Color;
 	float Depth;		// In World Units (1024 internal units)
 	bool IsPresent;
+	bool AffectsLandscapes;
 };
 
 // Fog types

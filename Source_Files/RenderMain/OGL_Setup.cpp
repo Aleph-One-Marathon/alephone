@@ -144,8 +144,8 @@ bool OGL_IsPresent() {return _OGL_IsPresent;}
 // Sensible defaults for the fog:
 static OGL_FogData FogData[OGL_NUMBER_OF_FOG_TYPES] = 
 {
-	{{0x8000,0x8000,0x8000},8,false},
-	{{0x8000,0x8000,0x8000},8,false}
+	{{0x8000,0x8000,0x8000},8,false,true},
+	{{0x8000,0x8000,0x8000},8,false,true}
 };
 
 
@@ -1659,8 +1659,8 @@ static XML_ModelDataParser ModelDataParser;
 
 class XML_FogParser: public XML_ElementParser
 {
-	bool IsPresent[2];
-	bool FogPresent;
+	bool IsPresent[3];
+	bool FogPresent, AffectsLandscapes;
 	float Depth;
 	short Type;
 	
@@ -1674,7 +1674,7 @@ public:
 
 bool XML_FogParser::Start()
 {
-	IsPresent[0] = IsPresent[1] = false;
+	IsPresent[0] = IsPresent[1] = IsPresent[2] = false;
 	Type = 0;
 	return true;
 }
@@ -1699,6 +1699,15 @@ bool XML_FogParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
+	if (StringsEqual(Tag,"landscapes"))
+	{
+		if (ReadBooleanValueAsBool(Value,AffectsLandscapes))
+		{
+			IsPresent[2] = true;
+			return true;
+		}
+		else return false;
+	}
 	else if (StringsEqual(Tag,"type"))
 	{
 		return ReadBoundedInt16Value(Value,Type,0,OGL_NUMBER_OF_FOG_TYPES-1);
@@ -1712,6 +1721,7 @@ bool XML_FogParser::AttributesDone()
 	OGL_FogData& Data = FogData[Type];
 	if (IsPresent[0]) Data.IsPresent = FogPresent;
 	if (IsPresent[1]) Data.Depth = Depth;
+	if (IsPresent[1]) Data.AffectsLandscapes = AffectsLandscapes;
 	Color_SetArray(&Data.Color);	
 	return true;
 }
