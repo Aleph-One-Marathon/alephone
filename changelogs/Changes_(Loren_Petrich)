@@ -1326,3 +1326,11 @@ completely general.
 September 24, 2000
 
 Added level-dependent scripting, fixed a clip-region bug, etc.
+
+October 12, 2000
+
+Added Quicktime music playback -- the introductory music can now be anything that QT recognizes
+
+October 13, 2000
+
+Replaced ResizableList with the STL class "vector"
