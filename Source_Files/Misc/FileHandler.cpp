@@ -591,7 +591,12 @@ bool FileSpecifier::ReadDialog(int Type, char *Prompt)
 }
 
 // Haven't been able to find his in the CodeWarrior 6 headers
-const int kNavDontConfirmReplacement = 0;
+// Thomas Herzog: This causes illegal name overloading with Universal Interfaces >= 3.4
+#if UNIVERSAL_INTERFACES_VERSION < 0x0340
+	// Haven't been able to find his in the CodeWarrior 6 headers
+ 	const int kNavDontConfirmReplacement = 0;
+#endif
+// const int kNavDontConfirmReplacement = 0;
 
 bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 {

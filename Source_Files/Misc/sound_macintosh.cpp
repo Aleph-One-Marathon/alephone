@@ -53,7 +53,13 @@ enum
 
 /* --------- private prototypes */
 
-static pascal void sound_callback_proc(SndChannelPtr channel, SndCommand command);
+// Thomas Herzog: Updated for Universal Interfaces 3.4
+#if UNIVERSAL_INTERFACES_VERSION < 0x0340
+	static pascal void sound_callback_proc(SndChannelPtr channel, SndCommand command);
+#else
+	static pascal void sound_callback_proc(SndChannelPtr channel, SndCommand *command);
+#endif
+// static pascal void sound_callback_proc(SndChannelPtr channel, SndCommand command);
 
 static long sound_level_to_sound_volume(short level);
 
@@ -247,7 +253,13 @@ static void initialize_machine_sound_manager(
 
 	assert(kFullVolume==MAXIMUM_SOUND_VOLUME);
 
-	_sm_globals->sound_callback_upp= NewSndCallBackProc((ProcPtr)sound_callback_proc);
+ 	// Thomas Herzog: Updated for Universal Interfaces 3.4
+ 	#if UNIVERSAL_INTERFACES_VERSION < 0x0340
+ 		_sm_globals->sound_callback_upp= NewSndCallBackProc((ProcPtr)sound_callback_proc);
+ 	#else
+ 		_sm_globals->sound_callback_upp= NewSndCallBackUPP(sound_callback_proc);
+ 	#endif
+	// _sm_globals->sound_callback_upp= NewSndCallBackProc((ProcPtr)sound_callback_proc);
 	if ((error= MemError())==noErr)
 	{
 		short i;
@@ -584,7 +596,12 @@ static void shutdown_sound_manager(
 
 static pascal void sound_callback_proc(
 	SndChannelPtr channel,
+// TH: Updated for Universal Interfaces 3.4
+#if UNIVERSAL_INTERFACES_VERSION < 0x0340
 	SndCommand command)
+#else
+	SndCommand *command)
+#endif
 {
 	(void) (command);
 	

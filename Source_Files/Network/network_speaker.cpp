@@ -81,7 +81,13 @@ OSErr open_network_speaker(
 		
 		if (initialization)
 		{
-			doubleback_routine_descriptor= NewSndDoubleBackProc((ProcPtr)network_speaker_doubleback_procedure);
+			// Thomas Herzog fix
+ 			#if UNIVERSAL_INTERFACES_VERSION < 0x0340
+ 				doubleback_routine_descriptor= NewSndDoubleBackProc((ProcPtr)network_speaker_doubleback_procedure);
+ 			#else
+ 				doubleback_routine_descriptor= NewSndDoubleBackUPP(network_speaker_doubleback_procedure);
+ 			#endif
+ 			// doubleback_routine_descriptor= NewSndDoubleBackProc((ProcPtr)network_speaker_doubleback_procedure);
 			assert(doubleback_routine_descriptor);
 			
 			atexit(close_network_speaker);
