@@ -630,6 +630,9 @@ protected:
 
 private:
 	virtual void draw_item(typename vector<T>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const = 0;
+
+	w_list(const w_list<T>&);
+	w_list<T>& operator =(const w_list<T>&);
 };
 
 

@@ -110,6 +110,8 @@ private:
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 	
+	w_items_in_room(const w_items_in_room<tElement>&);
+	w_items_in_room<tElement>& operator =(const w_items_in_room<tElement>&);
 };
 
 
@@ -171,6 +173,9 @@ private:
 
 		m_dialog.draw_dirty_widgets();
 	}	
+
+	NotificationAdapter(const NotificationAdapter&);
+	NotificationAdapter& operator =(const NotificationAdapter&);
 };
 
 
