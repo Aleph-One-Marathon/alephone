@@ -1924,23 +1924,23 @@ boolean process_map_wad(
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, PHYSICS_PHYSICS_TAG, &data_length);
-	count = data_length/get_physics_definition_size();
-	assert(count*get_physics_definition_size() == data_length);
+	count = data_length/SIZEOF_physics_constants;
+	assert(count*SIZEOF_physics_constants == data_length);
 	assert(count <= get_number_of_physics_models());
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
-		memcpy(physics_models,data,data_length);
+		unpack_physics_constants(data,count);
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
-	count = data_length/get_weapon_defintion_size();
-	assert(count*get_weapon_defintion_size() == data_length);
-	assert(count <= get_number_of_weapons());
+	count = data_length/SIZEOF_weapon_definition;
+	assert(count*SIZEOF_weapon_definition == data_length);
+	assert(count <= get_number_of_weapon_types());
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
-		memcpy(weapon_definitions,data,data_length);
+		unpack_weapon_definition(data,count);
 	}
 // #endif
 	
@@ -1958,6 +1958,11 @@ boolean process_map_wad(
 		count= data_length/sizeof(short);
 		assert(count*sizeof(short)==data_length);
 		StreamToList(data,map_indexes,count);
+		
+		data= (unsigned char *)extract_type_from_wad(wad, PLAYER_STRUCTURE_TAG, &data_length);
+		count= data_length/SIZEOF_player_data;
+		assert(count*SIZEOF_player_data==data_length);
+		unpack_player_data(data,players,count);
 		
 		data= (unsigned char *)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
 		assert(data_length == SIZEOF_dynamic_data);
@@ -1988,6 +1993,11 @@ boolean process_map_wad(
 		count= data_length/SIZEOF_projectile_data;
 		assert(count*SIZEOF_projectile_data==data_length);
 		unpack_projectile_data(data,projectiles,count);
+
+		data= (unsigned char *)extract_type_from_wad(wad, WEAPON_STATE_TAG, &data_length);
+		count= data_length/SIZEOF_player_weapon_data;
+		assert(count*SIZEOF_player_weapon_data==data_length);
+		unpack_player_weapon_data(data,count);
 		
 		complete_restoring_level(wad);
 	} else {
@@ -2212,21 +2222,21 @@ struct save_game_data save_data[]=
 	{ ANNOTATION_TAG, SIZEOF_map_annotation, TRUE },
 	{ OBJECT_TAG, SIZEOF_map_object, TRUE },
 	{ MAP_INFO_TAG, SIZEOF_static_data, TRUE },
-	{ ITEM_PLACEMENT_STRUCTURE_TAG, 2*MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition, TRUE },
+	{ ITEM_PLACEMENT_STRUCTURE_TAG, SIZEOF_object_frequency_definition, TRUE },
 	{ MEDIA_TAG, SIZEOF_media_data, TRUE }, // FALSE },
 	{ AMBIENT_SOUND_TAG, SIZEOF_ambient_sound_image_data, TRUE },
 	{ RANDOM_SOUND_TAG, SIZEOF_random_sound_image_data, TRUE },
 	{ TERMINAL_DATA_TAG, sizeof(byte), TRUE },
 	
 	// LP addition: handling of physics models
-	{ MONSTER_PHYSICS_TAG, sizeof(byte), TRUE},
-	{ EFFECTS_PHYSICS_TAG, sizeof(byte), TRUE},
-	{ PROJECTILE_PHYSICS_TAG, sizeof(byte), TRUE},
-	{ PHYSICS_PHYSICS_TAG, sizeof(byte), TRUE},
-	{ WEAPONS_PHYSICS_TAG, sizeof(byte), TRUE},
+	{ MONSTER_PHYSICS_TAG, SIZEOF_monster_definition, TRUE},
+	{ EFFECTS_PHYSICS_TAG, SIZEOF_effect_definition, TRUE},
+	{ PROJECTILE_PHYSICS_TAG, SIZEOF_projectile_definition, TRUE},
+	{ PHYSICS_PHYSICS_TAG, SIZEOF_physics_constants, TRUE},
+	{ WEAPONS_PHYSICS_TAG, SIZEOF_weapon_definition, TRUE},
 
 	{ MAP_INDEXES_TAG, sizeof(short), TRUE }, // FALSE },
-	{ PLAYER_STRUCTURE_TAG, sizeof(struct player_data), FALSE },
+	{ PLAYER_STRUCTURE_TAG, SIZEOF_player_data, TRUE }, // FALSE },
 	{ DYNAMIC_STRUCTURE_TAG, SIZEOF_dynamic_data, TRUE }, // FALSE },
 	{ OBJECT_STRUCTURE_TAG, SIZEOF_object_data, TRUE }, // FALSE },
 	{ AUTOMAP_LINES, sizeof(byte), TRUE }, // FALSE },
@@ -2235,7 +2245,7 @@ struct save_game_data save_data[]=
 	{ EFFECTS_STRUCTURE_TAG, SIZEOF_effect_data, TRUE }, // FALSE },
 	{ PROJECTILES_STRUCTURE_TAG, SIZEOF_projectile_data, TRUE }, // FALSE },
 	{ PLATFORM_STRUCTURE_TAG, sizeof(struct platform_data), FALSE },
-	{ WEAPON_STATE_TAG, sizeof(byte), FALSE },
+	{ WEAPON_STATE_TAG, SIZEOF_player_weapon_data, TRUE }, // FALSE },
 	{ TERMINAL_STATE_TAG, sizeof(byte), FALSE }
 };
 
@@ -2246,7 +2256,7 @@ static void *tag_to_global_array_and_size(
 	)
 {
 	void *array= NULL;
-	short unit_size, index;
+	short unit_size, index, count;
 	
 	for(index= 0; index<NUMBER_OF_SAVE_ARRAYS; ++index)
 	{
@@ -2262,127 +2272,126 @@ static void *tag_to_global_array_and_size(
 	{
 		case ENDPOINT_DATA_TAG:
 			array= map_endpoints;
-			*size= dynamic_world->endpoint_count*unit_size;
+			count= dynamic_world->endpoint_count;
 			break;
 		case LINE_TAG:
 			array= map_lines;
-			*size= dynamic_world->line_count*unit_size;
+			count= dynamic_world->line_count*unit_size;
 			break;
 		case SIDE_TAG:
 			array= map_sides;
-			*size= dynamic_world->side_count*unit_size;
+			count= dynamic_world->side_count*unit_size;
 			break;
 		case POLYGON_TAG:
 			array= map_polygons;
-			*size= dynamic_world->polygon_count*unit_size;
+			count= dynamic_world->polygon_count*unit_size;
 			break;
 		case LIGHTSOURCE_TAG:
 			array= lights;
-			*size= dynamic_world->light_count*unit_size;
+			count= dynamic_world->light_count*unit_size;
 			break;
 		case ANNOTATION_TAG:
 			array= map_annotations;
-			*size= dynamic_world->default_annotation_count*unit_size;
+			count= dynamic_world->default_annotation_count*unit_size;
 			break;
 		case OBJECT_TAG:
 			array= saved_objects;
-			*size= dynamic_world->initial_objects_count*unit_size;
+			count= dynamic_world->initial_objects_count*unit_size;
 			break;
 		case MAP_INFO_TAG:
 			array= static_world;
-			*size= unit_size;
+			count= 1;
 			break;
 		case PLAYER_STRUCTURE_TAG:
 			array= players;
-			*size= unit_size*dynamic_world->player_count;
+			count= dynamic_world->player_count;
 			break;
 		case DYNAMIC_STRUCTURE_TAG:
 			array= dynamic_world;
-			*size= unit_size;
+			count= 1;
 			break;
 		case OBJECT_STRUCTURE_TAG:
 			array= objects;
-			*size= unit_size*dynamic_world->object_count;
+			count= dynamic_world->object_count;
 			break;
 		case MAP_INDEXES_TAG:
 			array= map_indexes;
-			*size= unit_size*dynamic_world->map_index_count;
+			count= dynamic_world->map_index_count;
 			break;
 		case AUTOMAP_LINES:
 			array= automap_lines;
-			*size= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0))*sizeof(byte); 
+			count= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0)); 
 			break;
 		case AUTOMAP_POLYGONS:
 			array= automap_polygons;
-			*size= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0))*sizeof(byte);
+			count= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0));
 			break;
 		case MONSTERS_STRUCTURE_TAG:
 			array= monsters;
-			*size= unit_size*dynamic_world->monster_count;
+			count= dynamic_world->monster_count;
 			break;
 		case EFFECTS_STRUCTURE_TAG:
 			array= effects;
-			*size= unit_size*dynamic_world->effect_count;
+			count= dynamic_world->effect_count;
 			break;
 		case PROJECTILES_STRUCTURE_TAG:
 			array= projectiles;
-			*size= unit_size*dynamic_world->projectile_count;
+			count= dynamic_world->projectile_count;
 			break;
 		case MEDIA_TAG:
 			array= medias;
 			// LP change: fixed saving of media data;
 			// off-by-one error now gone
-			*size= unit_size*count_number_of_medias_used();
-			// *size= unit_size*(MAXIMUM_MEDIAS_PER_MAP-1);
+			count= count_number_of_medias_used();
 			break;
 		case ITEM_PLACEMENT_STRUCTURE_TAG:
 			array= get_placement_info();
-			*size= unit_size;
+			count= 2*MAXIMUM_OBJECT_TYPES;
 			break;
 		case PLATFORM_STRUCTURE_TAG:
 			array= platforms;
-			*size= unit_size*dynamic_world->platform_count;
+			count= dynamic_world->platform_count;
 			break;
 		case AMBIENT_SOUND_TAG:
 			array= ambient_sound_images;
-			*size= unit_size*dynamic_world->ambient_sound_image_count;
+			count= dynamic_world->ambient_sound_image_count;
 			break;
 		case RANDOM_SOUND_TAG:
 			array= random_sound_images;
-			*size= unit_size*dynamic_world->random_sound_image_count;
+			count= dynamic_world->random_sound_image_count;
 			break;
 		case TERMINAL_DATA_TAG:
 			array= get_terminal_information_array();
-			*size= calculate_terminal_information_length();
+			count= calculate_terminal_information_length();
 			break;
 		case WEAPON_STATE_TAG:
 			array= get_weapon_array();
-			*size= calculate_weapon_array_length();
+			count= dynamic_world->player_count;
 			break;
 		case TERMINAL_STATE_TAG:
 			array= get_terminal_data_for_save_game();
-			*size= calculate_terminal_data_length();
+			count= calculate_terminal_data_length();
 			break;
 		// LP addition: handling of physics models
 		case MONSTER_PHYSICS_TAG:
 			array= monster_definitions;
-			*size= NUMBER_OF_MONSTER_TYPES*SIZEOF_monster_definition;
+			count= NUMBER_OF_MONSTER_TYPES;
 			break;
 		case EFFECTS_PHYSICS_TAG:
 			array= effect_definitions;
-			*size= NUMBER_OF_EFFECT_TYPES*SIZEOF_effect_definition;
+			count= NUMBER_OF_EFFECT_TYPES;
 			break;
 		case PROJECTILE_PHYSICS_TAG:
 			array= projectile_definitions;
-			*size= NUMBER_OF_PROJECTILE_TYPES*SIZEOF_projectile_definition;
+			count= NUMBER_OF_PROJECTILE_TYPES;
 			break;
 		case PHYSICS_PHYSICS_TAG:
 			array= physics_models;
-			*size= get_number_of_physics_models()*get_physics_definition_size();
+			count= get_number_of_physics_models();
 			break;
 		case WEAPONS_PHYSICS_TAG:
 			array= weapon_definitions;
-			*size= get_number_of_weapons()*get_weapon_defintion_size();
+			count= get_number_of_weapon_types();
 			break;
 		default:
 			// LP change:
@@ -2390,6 +2399,7 @@ static void *tag_to_global_array_and_size(
 			// halt();
 			break;
 	}
+	*size= count*unit_size;
 	
 	return array;
 }
