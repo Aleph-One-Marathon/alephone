@@ -160,30 +160,30 @@ void allocate_map_memory(
 {
 	assert(NUMBER_OF_COLLECTIONS<=MAXIMUM_COLLECTIONS);
 	
-	static_world= (struct static_data *) malloc(sizeof(struct static_data));
-	dynamic_world= (struct dynamic_data *) malloc(sizeof(struct dynamic_data));
+	static_world= new static_data;
+	dynamic_world= new dynamic_data;
 	assert(static_world&&dynamic_world);
 
-	monsters= (struct monster_data *) malloc(sizeof(struct monster_data)*MAXIMUM_MONSTERS_PER_MAP);
-	projectiles= (struct projectile_data *) malloc(sizeof(struct projectile_data)*MAXIMUM_PROJECTILES_PER_MAP);
-	objects= (struct object_data *) malloc(sizeof(struct object_data)*MAXIMUM_OBJECTS_PER_MAP);
-	effects= (struct effect_data *) malloc(sizeof(struct effect_data)*MAXIMUM_EFFECTS_PER_MAP);
-	lights= (struct light_data *) malloc(sizeof(struct light_data)*MAXIMUM_LIGHTS_PER_MAP);
-	medias= (struct media_data *) malloc(sizeof(struct media_data)*MAXIMUM_MEDIAS_PER_MAP);
+	monsters= new monster_data[MAXIMUM_MONSTERS_PER_MAP];
+	projectiles= new projectile_data[MAXIMUM_PROJECTILES_PER_MAP];
+	objects= new object_data[MAXIMUM_OBJECTS_PER_MAP];
+	effects= new effect_data[MAXIMUM_EFFECTS_PER_MAP];
+	lights= new light_data[MAXIMUM_LIGHTS_PER_MAP];
+	medias= new media_data[MAXIMUM_MEDIAS_PER_MAP];
 	assert(objects&&monsters&&effects&&projectiles&&lights&&medias);
 
 	obj_clear(map_structure_memory);
 	reallocate_map_structure_memory(DEFAULT_MAP_MEMORY_SIZE);
 
-	platforms= (struct platform_data *) malloc(MAXIMUM_PLATFORMS_PER_MAP*sizeof(struct platform_data));
+	platforms= new platform_data[MAXIMUM_PLATFORMS_PER_MAP];
 	assert(platforms);
 
-	ambient_sound_images= (struct ambient_sound_image_data *) malloc(MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP*sizeof(struct ambient_sound_image_data));
-	random_sound_images= (struct random_sound_image_data *) malloc(MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP*sizeof(struct random_sound_image_data));
+	ambient_sound_images= new ambient_sound_image_data[MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP];
+	random_sound_images= new random_sound_image_data[MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP];
 	assert(ambient_sound_images && random_sound_images);
 	
-	map_annotations= (struct map_annotation *) malloc(MAXIMUM_ANNOTATIONS_PER_MAP*sizeof(struct map_annotation));
-	saved_objects= (struct map_object *) malloc(MAXIMUM_SAVED_OBJECTS*sizeof(struct map_object));
+	map_annotations= new map_annotation[MAXIMUM_ANNOTATIONS_PER_MAP];
+	saved_objects= new map_object[MAXIMUM_SAVED_OBJECTS];
 	assert(map_annotations && saved_objects);
 
 	allocate_player_memory();
@@ -274,7 +274,7 @@ void reallocate_map_structure_memory(
 		if(map_structure_memory.size<size)
 		{
 			/* Must reallocate.. */
-			free(map_structure_memory.memory);
+			delete []map_structure_memory.memory;
 			reallocate= TRUE;		
 		} else {
 			/* Already allocated, new size is less than old.. */
@@ -287,7 +287,7 @@ void reallocate_map_structure_memory(
 	if(reallocate)
 	{
 		/* Must allocate initially.. */
-		map_structure_memory.memory= (byte *) malloc(size);
+		map_structure_memory.memory= new byte[size];
 		map_structure_memory.size= size;
 		if(map_structure_memory.memory) success= TRUE;
 	}
