@@ -361,7 +361,7 @@ bool network_gather(bool inResumingGame)
 
 			dispose_network_list_box();
 		
-			DisposeRoutineDescriptor(gather_dialog_upp);
+			DisposeModalFilterUPP(gather_dialog_upp);
 			DisposeDialog(dialog);
 		
 			if (item_hit==iOK)
@@ -485,43 +485,63 @@ int network_join(
 						GetDialogItemText(item_handle, ptemporary);
 						if (*temporary > kJoinHintingAddressLength)
 							*temporary = kJoinHintingAddressLength;
-#if defined(TARGET_API_MAC_CARBON)
+//#if defined(TARGET_API_MAC_CARBON)
 						CopyPascalStringToC(ptemporary, network_preferences->join_address);
+/*
 #else
 						pstrcpy((unsigned char *)network_preferences->join_address, ptemporary); 
 						p2cstr((unsigned char *)network_preferences->join_address);
 #endif
+*/
 					}
 					else
 						network_preferences->join_by_address = false;
+/*
 #if !defined(TARGET_API_MAC_CARBON)
 					// Aqua will handle if we're unresponseive
 					SetCursor(*GetCursor(watchCursor));
 #endif
+*/
 					did_join= NetGameJoin(myPlayerInfo.name, PLAYER_TYPE, (void *) &myPlayerInfo, sizeof(myPlayerInfo), 
 						MARATHON_NETWORK_VERSION,
 						network_preferences->join_by_address ? network_preferences->join_address : NULL
 						);
-					
+
+/*					
 #if !defined(USE_CARBON_ACCESSORS)
 					SetCursor(&qd.arrow);
 #endif
+*/
 					if(did_join)
 					{
-#if TARGET_API_MAC_CARBON
+//#if TARGET_API_MAC_CARBON
 						modify_control_enabled(dialog, iJOIN_NAME, CONTROL_INACTIVE);
 						modify_control_enabled(dialog, iJOIN_BY_HOST, CONTROL_INACTIVE);
+/*
 #else
 						SelectDialogItemText(dialog, iJOIN_NAME, 0, 0);
 						GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
 						SetDialogItem(dialog, iJOIN_NAME, statText, item_handle, &item_rect);
-
+#endif
+*/
 						// Remove the selection
+//#if defined(USE_CARBON_ACCESSORS)
+						SelectDialogItemText(dialog, -1, 0, 0);
+/*
+#else
 						((DialogPeek)(dialog))->editField = -1;
+#endif
+*/
 						InsetRect(&item_rect, -4, -4);
 						EraseRect(&item_rect);
+//#ifdef TARGET_API_MAC_CARBON
+						InvalWindowRect(GetDialogWindow(dialog), &item_rect); // force it to be updated
+/*
+#else
 						InvalRect(&item_rect);	// Assumed to be the dialog-box window
-#endif						
+#endif
+*/
+
 						modify_control(dialog, iJOIN_TEAM, CONTROL_INACTIVE, NONE);
 						modify_control(dialog, iJOIN_COLOR, CONTROL_INACTIVE, NONE);
 						modify_control(dialog, iJOIN, CONTROL_INACTIVE, NONE);
@@ -583,7 +603,7 @@ int network_join(
 		SetPort(old_port);
 	
 		DisposeUserItemUPP(update_player_list_item_upp);
-		DisposeRoutineDescriptor(join_dialog_upp);
+		DisposeModalFilterUPP(join_dialog_upp);
 		DisposeDialog(dialog);
 	
 		if (sStartJoinedGameResult != kNetworkJoinFailed)
@@ -745,7 +765,7 @@ bool network_game_setup(
 	}
 	
 	SetPort(old_port);
-	DisposeRoutineDescriptor(game_setup_filter_upp);
+	DisposeModalFilterUPP(game_setup_filter_upp);
 	DisposeDialog(dialog);	
 
 	return (item_hit==iOK);
@@ -1125,23 +1145,27 @@ static pascal Boolean gather_dialog_filter_proc(
 				EraseRect(&item_rectangle);
 #endif
 
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 				RgnHandle visRgn = NewRgn();
 				GetPortVisibleRegion(GetWindowPort(GetDialogWindow(dialog)), visRgn);
 				LUpdate(visRgn, network_list_box);
 				DisposeRgn(visRgn);
+/*
 #else
 				LUpdate(dialog->visRgn, network_list_box);
 #endif
-#if defined(TARGET_API_MAC_CARBON)
+*/
+//#if defined(TARGET_API_MAC_CARBON)
 				DrawThemePrimaryGroup(&item_rectangle, curState);
 //				DrawThemeFocusRect(&item_rectangle, (curState == kThemeStateActive));
 				SetThemeDrawingState(savedState, true);
+/*
 #else
 				GetDialogItem(dialog, iNETWORK_LIST_BOX, &item_type, &item_handle, &item_rectangle);
 				InsetRect(&item_rectangle, -1, -1);
 				FrameRect(&item_rectangle);
 #endif
+*/
 				/* update the player area */
 				update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
 			}
@@ -1472,11 +1496,13 @@ static pascal void update_player_list_item(
 	FontInfo     finfo;
 	
 	CGrafPtr     port = GetWindowPort(GetDialogWindow(dialog));
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	SInt16       pixelDepth = (*GetPortPixMap(port))->pixelSize;
+/*
 #else
 	SInt16       pixelDepth = (*port->portPixMap)->pixelSize;
 #endif
+*/
 
 // LP: the Classic version I've kept theme-less for simplicity
 #if defined(TARGET_API_MAC_CARBON)
@@ -1598,15 +1624,17 @@ static MenuHandle get_popup_menu_handle(
 	/* Add the maps.. */
 	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
 
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	menu= GetControlPopupMenuHandle(control);
+/*
 #else
-	/* I don't know how to assert that it is a popup control... <sigh> */
+	*//* I don't know how to assert that it is a popup control... <sigh> *//*
 	privateHndl= (PopupPrivateData **) ((*control)->contrlData);
 	assert(privateHndl);
 
 	menu= (*privateHndl)->mHandle;
 #endif
+*/
 	assert(menu);
 
 	return menu;
@@ -1723,12 +1751,14 @@ static void draw_player_box_with_team(
 	/* Finally, draw the name. */
 	text_box= *rectangle;
 	InsetRect(&text_box, NAME_BEVEL_SIZE, NAME_BEVEL_SIZE);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	CopyPascalStringToC(player->name, temporary);
+/*
 #else
 	pstrcpy(ptemporary, player->name); 
 	p2cstr(ptemporary);
 #endif
+*/
 	_draw_screen_text(temporary, (screen_rectangle *) &text_box, 
 		_center_horizontal|_center_vertical, _net_stats_font, _white_color);		
 
@@ -1869,7 +1899,7 @@ void display_net_game_stats(
 
 	SetPort(old_port);
 
-	DisposeRoutineDescriptor(stats_dialog_upp);
+	DisposeModalFilterUPP(stats_dialog_upp);
 	DisposeDialog(dialog);
 	DisposeUserItemUPP(update_damage_item_upp);
 
@@ -1920,12 +1950,14 @@ static short create_graph_popup_menu(
 	if(has_scores)
 	{
 		Str255 pscore_temp;
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 		CopyCStringToPascal(temporary, pscore_temp);
+/*
 #else		
 		strcpy((char *)pscore_temp, temporary); 
 		c2pstr((char *)pscore_temp);
 #endif
+*/
 		AppendMenu(graph_popup, pscore_temp);
 		current_graph_selection= CountMenuItems(graph_popup);
 	}
