@@ -87,7 +87,7 @@ uint32 get_typecode(int which);
 #define LIGHTSOURCE_TAG FOUR_CHARS_TO_INT('L','I','T','E')
 #define ANNOTATION_TAG FOUR_CHARS_TO_INT('N','O','T','E')
 #define OBJECT_TAG FOUR_CHARS_TO_INT('O','B','J','S')
-#define GUARDPATH_TAG FOUR_CHARS_TO_INT('p','Œ','t','h')
+#define GUARDPATH_TAG FOUR_CHARS_TO_INT('p','\x8c','t','h')
 #define MAP_INFO_TAG FOUR_CHARS_TO_INT('M','i','n','f')
 #define ITEM_PLACEMENT_STRUCTURE_TAG FOUR_CHARS_TO_INT('p','l','a','c')
 #define DOOR_EXTRA_DATA_TAG FOUR_CHARS_TO_INT('d','o','o','r')
