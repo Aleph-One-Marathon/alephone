@@ -115,9 +115,6 @@ static void calculate_platform_extrema(short platform_index, world_distance lowe
 
 static void play_platform_sound(short platform_index, short sound_code);
 
-static void adjust_platform_for_media(short platform_index, bool initialize);
-static void adjust_platform_endpoint_and_line_heights(short platform_index);
-
 static platform_definition *get_platform_definition(const short type);
 
 /* ---------- code */
@@ -786,7 +783,7 @@ static void take_out_the_garbage(
 	}
 }
 
-static void adjust_platform_for_media(
+void adjust_platform_for_media(
 	short platform_index,
 	bool initialize)
 {
@@ -829,7 +826,7 @@ static void adjust_platform_for_media(
 	}
 }
 
-static void adjust_platform_endpoint_and_line_heights(
+void adjust_platform_endpoint_and_line_heights(
 	short platform_index)
 {
 	struct platform_data *platform= get_platform_data(platform_index);

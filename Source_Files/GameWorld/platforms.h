@@ -287,6 +287,9 @@ short monster_can_leave_platform(short platform_index, short destination_polygon
 
 bool platform_is_on(short platform_index);
 
+void adjust_platform_for_media(short platform_index, bool initialize);
+void adjust_platform_endpoint_and_line_heights(short platform_index);
+
 void player_touch_platform_state(short player_index, short platform_index);
 bool platform_is_legal_player_target(short platform_index);
 
