@@ -25,6 +25,11 @@
 
 June 13, 2001 (Loren Petrich): 
 	Added script-length output to script parser
+
+March 11, 2002 (Br'fin (Jeremy Parsons)):
+	Rewrote to use FileHandler classes instead of fopen and company
+	SDL has embedded language definition info
+	Defaults to Carbon private resources directory if no language def in app directory
 */
 
 #include <stdio.h>
@@ -36,6 +41,8 @@ June 13, 2001 (Loren Petrich):
 #include "script_parser.h"
 #include "script_instructions.h"
 #include "FileHandler.h"
+#include <vector>
+using namespace std;
 
 // The max number of 'blats', string units, that a single line can contain
 // label: instruction op1, op2, op3  == 5 blats
@@ -135,7 +142,7 @@ bool init_pfhortran(void)
 	bool err = false;
 
 	// LP change: made this code always read the language-definition file
-#if 0
+#ifdef SDL
 	// Read tokens from array
 	static const struct {
 		const char *str;
@@ -154,35 +161,68 @@ bool init_pfhortran(void)
 		}
 	}
 	
-#endif
+#else
 		
 	// Read tokens from language definition file
-	FILE *lang_def = fopen(LANGDEFPATH,"r");
-	if (lang_def == NULL) {
-		dispose_pfhortran();
-		return false;
-	}
-	
-	char input_str[256];
-	int input_val;
-	while (fscanf(lang_def, "%s %x\n", input_str, &input_val) != EOF)
+	FileSpecifier FileSpec;
+
+	FileSpec.SetToApp();
+	FileSpec.SetName(LANGDEFPATH, _typecode_theme);
+#if defined(TARGET_API_MAC_CARBON)
+	if(!FileSpec.Exists())
 	{
-		if (input_str && input_str[0] != '#')
-		{
-			lowercase_string(input_str);
-			
-			if (!put_symbol(input_str,(float)input_val,absolute,instruction_hash))
-			{
-				err = true;
-				break;
-			}
-		
+		FileSpec.SetParentToResources();
+		FileSpec.SetName(LANGDEFPATH, _typecode_theme);
+	}
+#endif
+	
+	OpenedFile OFile;
+	if (FileSpec.Open(OFile))
+	{
+		long Len = 0;
+		OFile.GetLength(Len);
+		if (Len <= 0) {
+			dispose_pfhortran();
+			return false;
 		}
 		
-		input_str[0] = 0;
-	
+		vector<char> FileContents(Len);
+		if (!OFile.Read(Len,&FileContents[0])) {
+			dispose_pfhortran();
+			return false;
+		}
+		
+		// Entire buffer is now in FileContents vector
+		char *index = &FileContents[0];
+
+		char input_str[256];
+		int input_val;
+		while (sscanf(index, "%s %x\n", input_str, &input_val) != EOF)
+		{
+			// Skip past line
+			while((*index != '\n' && *index != '\r')&& (index - &FileContents[0] < Len))
+				index++;
+			// Skip over trailing carriage return
+			if(*index == '\r') index++;
+			if(*index == '\n') index++;
+			
+			if (input_str && input_str[0] != '#')
+			{
+				lowercase_string(input_str);
+				
+				if (!put_symbol(input_str,(float)input_val,absolute,instruction_hash))
+				{
+					err = true;
+					break;
+				}
+			
+			}
+			
+			input_str[0] = 0;
+		
+		}
 	}
-	fclose(lang_def);
+#endif
 	
 	if (err)
 	{
@@ -696,7 +736,8 @@ void report_errors(error_def *error_log, int length)
 {
 	int x;
 	char error_string[64];
-	FILE *error_report = NULL;
+	FileSpecifier FileSpec;
+	OpenedFile OFile;
 	
 	if (error_count <= 0)
 		return;
@@ -732,21 +773,37 @@ void report_errors(error_def *error_log, int length)
 		
 		if (error_string[0])
 		{
-			if (!error_report)
+			if (!OFile.IsOpen())
 			{
-				if ((error_report=fopen("Pfhortran Error Report","a+"))==NULL)
+#if defined(mac)
+				FileSpec.SetToApp();
+				FileSpec.SetName("Pfhortran Error Report", _typecode_theme);
+#else
+#warning JTP: An SDL Guru would probably wish to rework this
+				FileSpec.SetToPreferencesDir();
+				FileSpec.AddPart("pfhortran_error_report.txt");
+#endif
+
+				if(!FileSpec.Exists())
+					FileSpec.Create(_typecode_theme);
+					
+				if (FileSpec.Open(OFile, true))
+				{
+					long length;
+					if(OFile.GetLength(length))
+					{
+						OFile.SetPosition(length);
+					}
+				}
+				else
 					return;
 			}
 			
-			fprintf(error_report,"%s\n",error_string);
-		
+			strcat(error_string, "\n");
+			OFile.Write(strlen(error_string), error_string);
 		}
 	
 	}
-	
-	if (error_report)
-		fclose(error_report);
-
 }
 
 
