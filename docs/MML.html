@@ -1226,11 +1226,33 @@ and because saving and restoring default values inside the code
 would require a whole lot of extra coding.
 <p>
 
-These elements have child elements that specify the script entries.
-The only one currently implemented is &lt;mml&gt;,
-which specifies what MML file/resource to execute.
-Currently, it specifies only resources,
-with attribute "resource" having the resource ID as its value.
+These elements have child elements that specify the script entries;
+the entries are executed in the order that they are specified in the file.
+This means that music files played in sequential order will be played in the order
+that they are specified in, the first in the list played first, etc.
+<ul>
+<li>&lt;mml&gt; executes the MML script in the resource specified in the value of the attribute "resource"
+<li>&lt;pfhortran&gt; executes the Pfhortran script in the resource specified in the value of the attribute "resource"
+<li>&lt;music&gt; plays the music file specified in the value of the attribute "file"
+<li>&lt;random_order&gt; has the <a name="#boolean">boolean</a> attribute "on", which indicates whether
+the music files are to be played in random order;
+if not (the default), they are played in looping sequence.
+</ul>
+<p>
+Directoris and files are specified in Unix fashion, &lt;dirname&gt;/&lt;dirname&gt;/&lt;filename&gt;,
+with a ':' being translated into a '/' in the MacOS.
+The root directory for such specifications is the map file's parent directory,
+so something like "Music/bang_my_head.mp3" means looking for file "bang_my_head.mp3"
+in the directory "Music", which is in the same directory that the map file lives in.
+<p>
+
+The MacOS version uses Quicktime for music playing, meaning that any of these formats can be used:
+<ul>
+<li>AIFF
+<li>Sun's AU
+<li>Microsoft's WAVE
+<li>MP3
+<li>MIDI
 <p>
 
 <hr>
