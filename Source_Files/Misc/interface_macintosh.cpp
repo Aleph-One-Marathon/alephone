@@ -97,6 +97,10 @@ Feb 13, 2003 (Woody Zenfell):
 	#pragma segment macintosh_
 #endif
 
+#ifdef APPLICATION_IS_BUNDLED
+const CFStringRef Window_Game_Goto_Level = CFSTR("Game_Goto_Level");
+const short iLEVEL_SELECTOR = 3;
+#else
 enum { /* Cheat level dialog */
 	dlogLEVEL_NUMBER= 200,
 	iLEVEL_SELECTOR= 3
@@ -105,6 +109,7 @@ enum { /* Cheat level dialog */
 	iLEVEL_NUMBER= 3
 */
 };
+#endif
 
 #define TICKS_BETWEEN_XNEXTEVENT_CALLS 10
 #define MAXIMUM_CONSECUTIVE_GETOSEVENT_CALLS 12 // 2 seconds
@@ -141,6 +146,79 @@ void do_preferences(
 	}
 }
 
+#ifdef APPLICATION_IS_BUNDLED
+struct LevelNumberData
+{
+	ControlRef MenuCtrl;
+	short LevelNumber;
+};
+
+static void LevelNumberHandler(int ID, void *Data)
+{
+	LevelNumberData *DPtr = (LevelNumberData *)(Data);
+	
+	switch(ID)
+	{
+	case iOK:
+		DPtr->LevelNumber = GetControl32BitValue(DPtr->MenuCtrl) - 1;
+		break;
+		
+	case iCANCEL:
+		DPtr->LevelNumber = NONE;
+		break;
+	}
+}
+
+short get_level_number_from_user(
+	void)
+{
+	OSErr err;
+	
+	// Get the window
+	WindowRef Window;
+	err = CreateWindowFromNib(GUI_Nib,Window_Game_Goto_Level,&Window);
+	vassert(err == noErr, csprintf(temporary,"CreateWindowFromNib error: %hd",err));
+	
+	// Set up the popup menu
+	ControlID MenuID;
+	MenuID.signature = 0;
+	MenuID.id = iLEVEL_SELECTOR;
+	
+	ControlRef MenuCtrl;
+	err = GetControlByID(Window,&MenuID,&MenuCtrl);
+	vassert(err == noErr, csprintf(temporary,"GetControlByID error: %hd",err));
+	
+	MenuRef Menu = GetControlPopupMenuHandle(MenuCtrl);
+	
+	// Get rid of old contents
+	while(CountMenuItems(Menu)) DeleteMenuItem(Menu, 1);
+	
+	// Add level names
+	struct entry_point entry;
+	short index = 0, maximum_level_number = 0;
+	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point))
+	{
+		psprintf(ptemporary, "%d: %s",entry.level_number+1,entry.level_name);
+		AppendMenu(Menu, "\pSome Level");
+		maximum_level_number++;
+		SetMenuItemText(Menu, maximum_level_number, ptemporary);
+	}
+	
+	/* Set our max value.. */
+	SetControl32BitMaximum(MenuCtrl, maximum_level_number);
+	SetControl32BitValue(MenuCtrl, 1);
+	
+	LevelNumberData Data;
+	Data.MenuCtrl = MenuCtrl;
+	Data.LevelNumber = NONE;
+	
+	RunModalDialog(Window, LevelNumberHandler, &Data);
+
+	DisposeWindow(Window);
+
+	return Data.LevelNumber;
+}
+#else
 short get_level_number_from_user(
 	void)
 {
@@ -162,8 +240,7 @@ short get_level_number_from_user(
 	MenuHandle mHandle;
 	
 	index = 0; maximum_level_number= 0;
-	// while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point)) maximum_level_number++;
-	
+		
 	dialog = myGetNewDialog(dlogLEVEL_NUMBER, NULL, (WindowPtr) -1, 0);
 	assert(dialog);
 	
@@ -240,6 +317,7 @@ short get_level_number_from_user(
 
 	return level_number;
 }
+#endif
 
 void toggle_menus(
 	bool game_started)
