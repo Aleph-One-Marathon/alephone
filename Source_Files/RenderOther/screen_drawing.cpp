@@ -90,8 +90,10 @@ static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES] =
 	{345, 363, 372, 516},
 	{344, 83, 374, 271},
 	{206, 246, 347, 382},
-	{264, 522, 291, 588},
-	{0,0,0,0},
+	// {264, 522, 291, 588}, // inf's bounds
+	// {263, 497, 294, 565}, // m2's bounds
+	{263, 500, 294, 585}, // adjusted to work with both m2 and inf
+      	{0,0,0,0},
 	{0, 0, 0, 0},
 };
 
