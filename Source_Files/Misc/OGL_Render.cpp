@@ -446,7 +446,7 @@ bool OGL_StartRun()
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
 	
-	// Note: GL_BLEND and GL_ALPHA_FUNC do not have defaults; these are to be set
+	// Note: GL_BLEND and GL_ALPHA_TEST do not have defaults; these are to be set
 	// if some new pixels cannot be assumed to be always 100% opaque.
 	
 	// [DEFAULT]
