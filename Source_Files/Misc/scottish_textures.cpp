@@ -72,6 +72,9 @@ May 23, 2000 (Loren Petrich):
 Jul 6, 2000 (Loren Petrich):
 	Added some slop to MAXIMUM_SCRATCH_TABLE_ENTRIES, because displays are now bigger;
 	its size got upped by 2
+
+Aug 9, 2000 (Loren Petrich):
+	Rasterizer_SW object introduced (software subclass of rasterizer object)
 */
 
 /*
@@ -87,8 +90,8 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 */
 
 #include "cseries.h"
-
 #include "render.h"
+#include "Rasterizer_SW.h"
 
 #include <stdlib.h>
 
@@ -311,11 +314,9 @@ void allocate_texture_tables(
 	return;
 }
 
-void texture_horizontal_polygon(
-	struct polygon_definition *polygon,
-	struct bitmap_definition *screen,
-	struct view_data *view)
+void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& textured_polygon)
 {
+	polygon_definition *polygon = &textured_polygon;	// Reference to pointer
 	short vertex, highest_vertex, lowest_vertex;
 	point2d *vertices= polygon->vertices;
 
@@ -329,7 +330,8 @@ void texture_horizontal_polygon(
 //			break;
 		case _static_transfer:
 //		case _landscaped_transfer:
-			texture_vertical_polygon(polygon, screen, view);
+			texture_vertical_polygon(textured_polygon);
+			// texture_vertical_polygon(polygon, screen, view);
 			return;
 	}
 	
@@ -518,11 +520,9 @@ void texture_horizontal_polygon(
 	return;
 }
 
-void texture_vertical_polygon(
-	struct polygon_definition *polygon,
-	struct bitmap_definition *screen,
-	struct view_data *view)
+void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_polygon)
 {
+	polygon_definition *polygon = &textured_polygon;	// Reference to pointer
 	short vertex, highest_vertex, lowest_vertex;
 	point2d *vertices= polygon->vertices;
 
@@ -534,7 +534,8 @@ void texture_vertical_polygon(
 //			preprocess_landscaped_polygon(polygon, view);
 //			break;
 		case _big_landscaped_transfer:
-			texture_horizontal_polygon(polygon, screen, view);
+			texture_horizontal_polygon(textured_polygon);
+			// texture_horizontal_polygon(polygon, screen, view);
 			return;
 	}
 
@@ -715,11 +716,9 @@ void texture_vertical_polygon(
 	return;
 }
 
-void texture_rectangle(
-	struct rectangle_definition *rectangle,
-	struct bitmap_definition *screen,
-	struct view_data *view)
+void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_rectangle)
 {
+	rectangle_definition *rectangle = &textured_rectangle;	// Reference to pointer
 	(void) (view) /* we donÕt need no steenkinÕ view */;
 
 	if (rectangle->x0<rectangle->x1 && rectangle->y0<rectangle->y1)
