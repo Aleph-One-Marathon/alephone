@@ -39,6 +39,9 @@ Jan 17, 2001 (Loren Petrich):
 
 Sept 11, 2001 (Loren Petrich):
 	Added 3D-model support, including calculation of a projected bounding box and the miner's-light distance and direction
+
+Feb 3, 2003 (Loren Petrich):
+	Added chase-cam semitransparency
 */
 
 #include "cseries.h"
@@ -48,6 +51,8 @@ Sept 11, 2001 (Loren Petrich):
 #include "media.h"
 #include "RenderPlaceObjs.h"
 #include "OGL_Setup.h"
+#include "ChaseCam.h"
+#include "player.h"
 
 #include <string.h>
 #include <limits.h>
@@ -102,6 +107,9 @@ void RenderPlaceObjsClass::build_render_object_list()
 	sorted_node_data *sorted_node;
 	// LP: reference to simplify the code
 	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
+	
+	// What's the object index of oneself in the game?
+	short self_index = current_player->object_index;
 
 	initialize_render_object_list();
 	
@@ -116,7 +124,10 @@ void RenderPlaceObjsClass::build_render_object_list()
 		{
 			short base_node_count;
 			sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
-			render_object_data *render_object= build_render_object(NULL, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, object_index);
+			
+			float Opacity = (object_index == self_index) ? GetChaseCamData().Opacity : 1;
+			render_object_data *render_object= build_render_object(NULL, floor_intensity, ceiling_intensity,
+				base_nodes, &base_node_count, object_index, Opacity);
 			
 			if (render_object)
 			{
@@ -137,7 +148,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 	_fixed ceiling_intensity,
 	sorted_node_data **base_nodes,
 	short *base_node_count,
-	short object_index)
+	short object_index, float Opacity)
 {
 	render_object_data *render_object= NULL;
 	object_data *object= get_object_data(object_index);
@@ -313,6 +324,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				assert(render_object->rectangle.texture);
 				
 				// LP change: for the convenience of the OpenGL renderer
+				render_object->rectangle.Opacity = Opacity;
 				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,data.low_level_shape_index);
 #ifdef HAVE_OPENGL
 				render_object->rectangle.ModelPtr = ModelPtr;
@@ -362,7 +374,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					parasitic_origin.z+= shape_information->world_y0;
 					parasitic_origin.y+= shape_information->world_x0;
 					parasitic_render_object= build_render_object(&parasitic_origin, floor_intensity, ceiling_intensity,
-						NULL, NULL, object->parasitic_object);
+						NULL, NULL, object->parasitic_object, Opacity);
 					
 					if (parasitic_render_object)
 					{

@@ -133,6 +133,9 @@ struct rectangle_definition
 	// with this position on the screen
 	int16 xc;
 	
+	// Set overall, so as to make semitransparent chase-cam mode easy (0 to 1)
+	float Opacity;
+	
 	// For the convenience of the OpenGL 3D-model renderer
 	_fixed ceiling_light;		// The ambient_shade is the floor light
 	OGL_ModelData *ModelPtr;	// For models
