@@ -32,7 +32,7 @@ Mar 19, 2000 (Loren Petrich):
 #include "game_errors.h"
 #include "screen.h"
 
-#include "portable_files.h"
+// #include "portable_files.h"
 #include "images.h"
 
 #include "interface_menus.h"
