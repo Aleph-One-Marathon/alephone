@@ -1,7 +1,7 @@
 Aleph One Networking User's Guide
 
 Document created: February 26, 2003, by Woody Zenfell, III.
-Most recent revision: April 24, 2003.
+Most recent revision: May 29, 2003.
 
 
 Contents
@@ -18,6 +18,8 @@ Contents
 5  Challenges
 5.1  Incompatibilities between versions
 5.2  Dealing with NAT and firewalls
+5.2.1  A single computer behind NAT
+5.2.2  Multiple computers behind NAT
 6  Document history
 
 
@@ -30,7 +32,7 @@ This document does not provide a technical overview of Aleph One's network proto
 
 2  Networking features overview
 
-All recent builds of A1, except the "Mac OS Classic" version, should be able to gather, join, start, and successfully play network games on a LAN.  (The Mac OS Classic version currently works in some circumstances but not others.)
+All recent builds of A1 should be able to gather, join, start, and successfully play network games on a LAN or on the Internet.  (The Mac OS Classic version is currently a little flaky in some circumstances, but generally seems to work properly.)
 
 Cross-platform netplay works.  That is, one network game could have a Mac OS Classic player, a Mac OS X Carbon player, a Mac OS X SDL player, and a Windows SDL player all together.
 
@@ -45,7 +47,7 @@ SDL versions support gatherer-to-joiners pregame text messaging.  I.e. after gat
 
 3.1  Starting a new network game
 
-One player should click "Gather Network Game".  Other players should click "Join Network Game".  The gatherer should be able to "see" the joiners in his dialog box and add them to the game.  If not, the affected joiners may need to "join by address", typing in the gatherer's numeric IP address or IP hostname.  Once the desired players have been added, the gatherer clicks the button to start the game.
+One player should click "Gather Network Game".  Other players should click "Join Network Game".  In a LAN game, the gatherer should be able to "see" the joiners in his dialog box and add them to the game.  If not, or if playing on the Internet, joiners may need to "join by address", typing in the gatherer's numeric IP address or IP hostname.  Once the desired players have been added, the gatherer clicks the button to start the game.
 
 SDL versions support "auto-gather", in which the gathering computer will automatically try to add every player it can "see".
 
@@ -79,7 +81,7 @@ Note that zombies will retain the name and colors of the saved player.  In all o
 
 3.4  Using realtime network audio
 
-Check that your microphone is selected as your "primary" input device (typically in your operating system's control panels).  Use a simple sound recording program (one probably came with your OS) just to test your setup.  Configure a "microphone" key in the Aleph One controls preferences.  Play a network game in which the gatherer has enabled realtime network audio.  (If the gatherer was not given the option, it should be enabled.)  When your character is not dead and nobody else is talking, hold down your microphone key, speak clearly and directly into the microphone, and release the key.  Note that you will not (currently) receive any feedback whatsoever that you made a transmission.  Remember, dead players can't (currently) talk.
+Check that your microphone is selected as your "primary" input device, and configure its gain appropriately (typically in your operating system's control panels).  Use a simple sound recording program (one probably came with your OS) just to test your setup.  Configure a "microphone" key in the Aleph One controls preferences.  Play a network game in which the gatherer has enabled realtime network audio.  (If the gatherer was not given the option, it should be enabled.)  While actually in the game, hold down your microphone key, speak clearly and directly into the microphone, and release the key.  Note that you will not (currently) receive any feedback whatsoever that you made a transmission.  You may not talk while anyone else is talking, and if you are using the ring network protocol (no longer the default), you may not talk if your marine is dead.
 
 3.5  Miscellaneous notes
 
@@ -89,25 +91,30 @@ To ensure consistency, currently "Auto-Switch Weapons" and "Auto-Recenter View" 
 
 Note that custom MML settings that adjust the behavior of any game elements are not currently considered for consistency.  The relevant MML settings must be identical on all machines participating in a network game, or the game will go "out-of-sync".  (MML settings that affect only rendering, logging, etc. need not match.)
 
-Any level that uses the A1 scripting language "Pfhortran" is very likely to exhibit problems (including out-of-sync) in a network game.
+Any level that uses the A1 scripting language "Pfhortran" is very likely to exhibit problems (including out-of-sync) in a network game.  Lua scripts, if properly written, should work in netgames, but currently all players must select the map in their Environment preferences for this to work.
+
+There may be an issue in Aleph One currently if some players have selected a Map file (in their Environment Preferences) that has MML, Lua, or Pfhortran embedded in it (e.g., in the resource fork for Macintosh platforms).  If netgames seem to consistently go out-of-sync, players should try all selecting the same map in their Environment Preferences - or at least each selecting some map known to have no associated MML or Pfhortran.
 
 "Out-of-sync" describes the situation where players continue to play a network game, and their actions are transmitted across the wire to the other players etc., but somehow the game-world on some computers differs from that on the others, so e.g. a player who has been killed on one machine may seem to be alive and quite well on another.  Once a game goes "out-of-sync" there's little point to continuing to play it.  A1 does not currently detect or recover from out-of-sync conditions, so your only recourse is to quit out and try again.  Note that realtime network audio should continue to work even in out-of-sync, so you can advise the other players.
 
 
 4  Playing A1 on the Internet
 
-A1's network protocol and code are fundamentally the same as Bungie used in the Marathon games.  They are not particularly well-suited to Internet play.  But, since A1 uses TCP/IP and UDP/IP, you can give it a shot anyway!  Here are some tips:
+Aleph One now offers a new star-topology network game protocol in addition to Bungie's ring protocol (which has been ported to use IP rather than AppleTalk).  Compared with the ring, the star protocol improves A1's Internet play experience dramatically and has few disadvantages.  So, it has been made the default network game protocol for Aleph One.
 
-+ A1 is much more sensitive to latency ("high ping times") than games with more modern network protocols and code.
-+ Latency adds up quickly when you add players, and one player's high latency will make things unpleasant for everyone (not just that one player).
-+ You will almost certainly need to use "Join by Address", typing in the gathering machine's numeric IP address or Internet name.
-+ Currently A1 has a nasty tendency to not only get choppy and unresponsive, but to sometimes go "out-of-sync" in unfavorable network conditions.
-+ Network microphone may be problematic in Internet games (but is not categorically off-limits).  Certainly, it should never be used when any player is on a telephone modem.
-+ See the section below on NAT/firewalls if appropriate.
+Ring protocol support is retained for the curious, for those who need to be able to play with an older ring-only version of Aleph One, and because (unlike the star protocol) the ring protocol lags all players in the game equally (although this lag will be greater - sometimes far greater - than that experienced by the worst-lagged player in a star-protocol game).
 
-Under the most favorable conditions (two players with cable modem or DSL, located close together geographically), A1 can be played on the Internet, though it's not as smooth or responsive as on a LAN.  If conditions are anything worse (more than two players, larger geographic separation, anyone using a satellite connection or telephone modem) the play experience will likely be quite unpleasant, if A1 is not simply unusable.
+Aleph One does not yet offer latency hiding (motion prediction, etc.), so it's still more sensitive to latency ("ping time") than other modern Internet games.  But, for a group of folks using the star protocol on the same continent, each with consumer DSL, cable modem, university connection, corporate connection, etc. and with the hub having sufficient upstream bandwidth (more on that later), the play experience should be positive.
 
-Improving A1's Internet play experience is a long-term goal for the project.  Remember, we're not claiming A1 works well - or works at all, really - on the Internet currently.  So if you can get it to work reasonably well, then consider yourself lucky.  If it doesn't work the way you want it to, consider yourself normal.  :)
+Aleph One used to only send uncompressed realtime network audio (microphone chat) data, which was too great a load on most folks' upstream Internet connections.  Now, Aleph One can use the 'speex' speech compression library (enabled by default) to reduce the data rate dramatically at little cost to speech intelligibility, so this should not really be an issue.
+
+In the star protocol, each "spoke" (one spoke per player in the game) communicates only with the "hub" (one hub per game).  Currently, the hub is run on the gatherer's machine.  Spokes with lower latencies to the hub will enjoy more responsive gameplay than spokes with higher latencies; the gatherer, having his spoke as close to the hub as is possible, will enjoy the most responsive gameplay.
+
+The throughput required of each spoke in the star protocol is fairly minimal, small enough to fit in a 56kbps dialup modem's pipe.  (Playing by modem is _not_ recommended, though.)  The throughput required of the hub is much greater;  it's estimated that a standard consumer DSL or cable modem line can support a hub in a 5-6 player game.
+
+The throughput required of each station in the ring protocol is equal and is fairly low.
+
+When playing on the Internet, joiners must use "Join by Address".  Also, see the section on NAT and firewalls below.
 
 As of mid-April 2003, people have begun to use the AOL Instant Messaging chat room named "Aleph One" to find other potential Internet players.
 
@@ -116,9 +123,13 @@ As of mid-April 2003, people have begun to use the AOL Instant Messaging chat ro
 
 5.1  Incompatibilities between versions
 
->From time to time, a newer version of Aleph One will have some additional network features, or will introduce different rules for some game elements.  If some players are using a copy of A1 that has the changes, and others are using older versions of A1, the game could go out of sync or have other problems.  That is, two versions of Aleph One may be compatible in some circumstances, but not in others.  A1 has a mechanism to help cope with the incompatible cases as gently as possible; it lets us offer some degree of protection against inconsistency without strictly requiring that all players use the exact same version for all games.
+Players using the ring network protocol (including anyone using a build dated earlier than May 25, 2003) will not be able to "see" or "be seen" in the Players on Network box by players using the star protocol (the current default), and vice versa.
 
-When a gatherer with a newer version is starting a game that uses special features or elements whose behavior has changed, adding a player using an older version of A1 will result in an error alert being presented to the gatherer.  The text of this error is currently "The player you just added is using an older version of Aleph One that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game."  (By a bug outstanding at this writing, on some platforms the gatherer may be (erroneously) allowed to start the game anyway, but should not do so as the result will likely be out-of-sync or other confusion of the joiners' A1s.)  The gatherer should cancel the game and try again with settings that will work with older A1's, and should encourage the offending joiners to update their copies.
+At the moment, the remainder of this section is only relevant for people using the ring protocol, as there are no minor incompatibilities between builds with the star protocol yet.
+
+From time to time, a newer version of Aleph One will have some additional network features, or will introduce different rules for some game elements.  If some players are using a copy of A1 that has the changes, and others are using older versions of A1, the game could go out of sync or have other problems.  That is, two versions of Aleph One may be compatible in some circumstances, but not in others.  A1 has a mechanism to help cope with the incompatible cases as gently as possible; it lets us offer some degree of protection against inconsistency without strictly requiring that all players use the exact same version for all games.
+
+When a gatherer with a newer version is starting a game that uses special features or elements whose behavior has changed, adding a player using an older version of A1 will result in an error alert being presented to the gatherer.  The text of this error is currently "The player you just added is using an older version of Aleph One that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game."  (By a bug outstanding at this writing, on some platforms the gatherer may be (erroneously) allowed to start the game anyway, but should not do so as the result will likely be out-of-sync or other confusion of the joiners' A1's.)  The gatherer should cancel the game and try again with settings that will work with older A1's, and should encourage the offending joiners to update their copies.
 
 Here are the specific cases that can result in this message:
 
@@ -128,7 +139,33 @@ Here are the specific cases that can result in this message:
 
 5.2  Dealing with NAT and firewalls
 
-A1 currently needs clear paths - on all machines, not just the gatherer - to and from UDP ports 4226 and 15367 and TCP port 4226.  You may need to set up your firewall or NAT router device appropriately.  In the NAT case, you will almost certainly have to choose one machine and forward those ports to it.  This implies that only one machine behind each NAT can play (unless all machines are behind the NAT of course).
+Note: NAT (Network Address Translation) is sometimes called "IP Masquerading" or, more generically, "Internet Connection Sharing".  It's a facility that lets multiple computers on a private network ("behind the NAT") share a single public IP address.  NAT may run on a standard computer or on a dedicated routing device.
+
+Note also that Mac OS X has a built-in software firewall, which can be configured in the Sharing system preferences.
+
+Currently, if you are behind a NAT or firewall trying to play a game with people on the "outside", you must configure your NAT or firewall correctly for Aleph One to work properly... regardless of whether you are gathering or merely joining a game.
+
+If you have a firewall or NAT, but all players are on "the same side" of the firewall or NAT (e.g. a LAN game within an office or house), no special action needs to be taken.
+
+Aleph One currently uses UDP port 15367, another UDP port, and a TCP port.  This other UDP port and TCP port have the same number, which we'll call the "game port".  Aleph One builds before May 7, 2003 have the game port fixed at 4226 for all machines.  Newer Aleph One builds use 4226 by default, but can use a different port if explicitly configured to do so.
+
+In the simplest case - a firewall without NAT - simply pass UDP port 15367 and the UDP and TCP game ports (4226 by default).  You should be in business.
+
+5.2.1  A single computer behind NAT
+
+If you have a machine behind NAT on which you wish to play Aleph One, you'll need to configure your NAT (perhaps using a feature labelled "port forwarding") to pass incoming traffic to that machine.  Send UDP port 15367 and the UDP and TCP game port (4226 by default) to your machine.
+
+5.2.2  Multiple computers behind NAT
+
+If one machine behind the NAT can serve as the hub for a star-protocol Internet game, only it needs special treatment.  Follow the instructions for the single machine case.
+
+If instead you have multiple machines that need to be able to join a star-protocol hub outside your NAT, or if you are using the ring protocol, you must configure each of them as follows.
+
+(1)  Configure each machine's Aleph One to use a different game port number.  Currently Aleph One does not expose the game port in the user interface anywhere, so you must hand-edit your Aleph One Preferences file (it's a plain text file).  Quit Aleph One, open the file, locate the local_game_port="4226" line (in the "network" section), and change 4226 to a different number between 1024 and 49151.  Save the file.  Keep track of the number you select for each machine.  (If you do not see a local_game_port line in your Aleph One preferences, you are using a build that does not support configuration of game port numbers.  It will not be able to participate.)  If you are using the ring protocol, find the ring_protocol area of the network section and set accept_packets_from_anyone="true".  Save your edited preferences before you start Aleph One again.
+
+(2)  Select one machine to be the gathering machine.  Configure your NAT to send UDP port 15367 to the gathering machine.  If you are using the ring protocol, all machines behind the NAT must join a machine outside the NAT.
+
+(3)  Configure your NAT to send the TCP and UDP game ports you selected for each machine to the appropriate machine.  You should be all set!
 
 
 6  Document history
@@ -136,3 +173,5 @@ A1 currently needs clear paths - on all machines, not just the gatherer - to and
 February 26, 2003 (Woody Zenfell, III):  Created.
 March 19, 2003 (Woody Zenfell, III):  Revised and posted to marathon-devel for feedback.
 April 24, 2003 (Woody Zenfell, III):  Added section "Incompatibility between versions".  Added note about "Aleph One" AIM chat room.
+May 6, 2003 (Woody Zenfell, III):  In light of experience, reworked comments about Mac OS Classic version's networking and Internet play to be more positive.  Added caution about potential out-of-sync when a Pfhortran or MML-bearing Map is selected in Environment Preferences.  Added details about network microphone bandwidth.  Completely rewrote NAT/firewalls section to be friendlier and more explicit, and to cover new configurable game-port functionality.
+May 29, 2003 (Woody Zenfell, III):  Updated to include information about the star protocol and about speex realtime audio speech compression.
