@@ -26,7 +26,8 @@ Revised: (First Version!)
 3.5 Monster Actions
 3.6 Monster Modes
 3.7 Faders
-3.8 Refuel Panels
+3.8 Sounds
+3.9 Refuel Panels
 
 
 0. What is This?
@@ -56,12 +57,12 @@ idle()
 At each tick.
 
 
-start_refuel(type, player)
+start_refuel(type, player, side_index)
 
 Whenever a player starts to use a refuel panel.
 
 
-end_refuel(type, player)
+end_refuel(type, player, side_index)
 
 Whenever a player stops using a refuel panel.
 
@@ -168,14 +169,22 @@ Sets the oxygen level of player to the amount specified or one full tank, whiche
 
 get_player_position (player)
 
-(? Returns three values - the x, y, and z coordinates of player)
+Returns three values - the x, y, and z coordinates of player in W.U.
 
 
 get_player_polygon (player)
+
+Returns the polygon player is standing on.
+
+
 get_player_angle (player)
+
+Return both the facing (yaw) nad the elevation (pitch) of player.
+
+
 get_player_team (player)
 
-Returns the poly/angle/team of player.
+Returns the team of player.
 
 
 player_is_dead (player)
@@ -191,22 +200,24 @@ Attempt to force player to ready the specifiec weapon.
 player_control (player, move_type, value)
 
 (? not sure how this works)
+tiennou: In fact you can use it, but it's behavior is not really useful, and it's pretty hard to have a viable script with it. It's use is like "tell 'player' to 'move_type' by 'value' steps" (altought steps is not appropriate...)
 
 
 teleport_player (player, poly)
 
-(? Teleports player to poly, similarly to using a teleporter)
+Teleports player to poly, similarly to using a teleporter
 
 
 teleport_player_to_level (player, level)
 
-(? Teleports player to level.  Of course, all the other players will also go to that level.)
+Teleports player to level.  Of course, all the other players will also go to that level.
+(Note from tiennou: I'm not sure this actually work correctly, because the level index could be off by one... If anyone ever use this thing, tell me if it goes wrong)
 
 
 enable_player(player)
 disable_player(player)
 
-(? Sets/Clears the zombie flag of player.)
+Enable/Disable a player. The player cannot move...
 
 
 player_to_monster (player)
@@ -231,6 +242,7 @@ Creates a new monster of the chosen type in poly.
 Facing is in degrees.  (default 0)
 Height is distance above the poly floor.  (default 0)
 Returns the new monster's monster index.
+(Make sure another monster of the same type is already present on the map)
 
 
 activate_monster (monster)
@@ -297,23 +309,24 @@ get_monster_item (monster)
 set_monster_item (monster, type)
 
 Sets/Queries the item monster drops when it dies.
-(? But what about "no item")
+Set it to -1 for none.
 
 
 get_monster_vitality (monster)
 set_monster_vitality (monster)
 
 Sets/Queries the vitality of monster.
+A monster's vitality is none (-1) before it gets activated. Make sure the monster you modify was already activated...
 
 
 get_monster_action (monster)
 
-Queries the current action of monster.
+Queries the current AI action of monster.
 
 
 get_monster_mode (monster)
 
-Queries the current mode of monster.
+Queries the current AI mode of monster.
 
 
 2.3 Items
@@ -386,6 +399,7 @@ set_polygon_ceiling_height (poly, height)
 
 Sets/Queries the floor/ceiling height of poly.
 (? Is changing poly floor/ceiling heights on the fly a good idea)
+(tiennou: There is no real problem with changing, the only thing I was able to see is texture misalignement... You can also use this to make platform with both floor & ceiling moving)
 
 
 2.7 Platforms
@@ -423,7 +437,7 @@ Sets/Queries the platforms speed.
 set_platform_movement (poly, state)
 get_platform_movement (poly)
 
-(? Platforms are either contracting or extending.  This sets/queries that.)
+Sets/Queries the current moving state of the platform. Extending is true, contracting is false...
 
 
 get_platform_floor_height (poly)
@@ -438,13 +452,27 @@ set_platform_ceiling_height (poly, height)
 ----------
 
 create_camera
-add_path_point
-add_path_angle
-activate_camera
-deactivate_camera
 
-(? camera controls)
-(! Yeah, someone who knows how these work should document them)
+Adds a new Lua camera.
+
+
+add_path_point(camera_index, polygon, point_x, point_y, point_z)
+
+Add a point 'x,y,z' to camera 'camera_index' and put it in 'polygon'.
+
+
+add_path_angle(camera_index, yaw, pitch, time)
+
+Adds an angle 'yaw,pitch' to camera 'camera_index' with 'time'.
+(tiennou: someone who knows what is the 'time' argument write something more useful here...)
+
+activate_camera(player, camera_index)
+
+Starts the camera 'camera_index' for player. Works only on local player.
+
+
+deactivate_camera(player, camera_index)
+Stops the camera 'camera_index' for player. Only useful on local player.
 
 
 2.9 Display
@@ -453,29 +481,29 @@ deactivate_camera
 
 screen_print(player, message)
 
-Prints message on the screen of player.
+Prints message on the screen of player. Works only on local player.
 
 
-start_fade (fade)
+screen_fade(player, fade)
 
-(? Don't use this - oughtn't it specify a player)
+Make the fade 'fade_index' start for player. Works only on local player.
 
 
 set_motion_sensor_state (player, state)
 
-Turn on/off the motion sensor for player.
+Turn on/off the motion sensor for player. Works only on local player.
 
 
 get_motion_sensor_state (player)
 
-Returns true if player's motion sensor is enabled, false if it is disabled.
+Returns true if player's motion sensor is enabled, false if it is disabled. Works only on local player.
 
 
 hide_interface(player)
 show_interface(player)
 
-Hides/Shows the HUD of player.
-(? and weapon graphic)
+Hides/Shows the HUD of player. Works only on local player.
+
 
 
 set_fog_depth(depth)
@@ -488,14 +516,18 @@ get_underwater_fog_depth()
 get_underwater_fog_color()
 
 (? foggy)
+(tiennou: actually, fog is broken, but those specify the fog parameters (color & depth)
+
+crosshairs_active(player)
+set_crosshairs_state(player, state)
+
+Gets/Sets the crosshairs state for player. Works only on local player.
 
 
-crosshairs_active
-set_crosshairs_state
-zoom_active
-set_zoom_state
+zoom_active(player)
+set_zoom_state(player, state)
 
-(? do these work)
+Gets/Sets the tunnel (sniper-mode) vision for player. Works only on local player.
 
 
 2.10 Other
@@ -517,15 +549,18 @@ This is a good way to put net games out of sync.
 
 
 get_terminal_text_number (poly, line)
+
+Return the permutation field (the terminal script ID) of the terminal of the line contained in poly.
+
+
 set_terminal_text_number (poly, line, terminal_text_id)
 
-(? I'm not sure exactly how these are expected to work)
+Sets the permutation field (the terminal script ID) of the terminal of the line contained in poly to terminal_text_id. It can be used to display multiple terminal messages without having to add hundred of terminals hidden behind the first...
 
 
-play_sound (player, sound, pitch)
+play_sound(player, sound, pitch)
 
-(? Plays sound to player at pitch.  But there are no sound mnemonics, so good luck burrito)
-
+Plays sound to player at pitch. See the mnemonics for the sound list
 
 kill_script()
 
@@ -747,7 +782,228 @@ _fade_tint_gross
 _fade_tint_jjaro
 
 
-3.8 Refuel Panels
+3.8 Sounds
+----------
+
+_snd_startup
+_snd_teleport_in
+_snd_teleport_out
+_snd_crushed
+_snd_nuclear_hard_death
+_snd_absorbed
+_snd_breathing
+_snd_oxygen_warning
+_snd_suffocation
+_snd_energy_refuel
+_snd_oxygen_refuel
+_snd_cant_toggle_switch
+_snd_switch_on
+_snd_switch_off
+_snd_puzzle_switch
+_snd_chip_insertion
+_snd_pattern_buffer
+_snd_destroy_control_panel
+_snd_adjust_volume
+_snd_got_powerup
+_snd_get_item
+_snd_bullet_ricochet
+_snd_metallic_ricochet
+_snd_empty_gun
+_snd_spht_door_opening
+_snd_spht_door_closing
+_snd_spht_door_obstructed
+_snd_spht_platform_starting
+_snd_spht_platform_stopping
+_snd_owl
+_snd_smg_firing
+_snd_smg_reloading
+_snd_heavy_spht_platform_starting
+_snd_heavy_spht_platform_stopping
+_snd_fist_hitting
+_snd_pistol_firing
+_snd_pistol_reloading
+_snd_assault_rifle_firing
+_snd_grenade_launcher_firing
+_snd_grenade_expolding
+_snd_grenade_flyby
+_snd_fusion_firing
+_snd_fusion_exploding
+_snd_fusion_flyby
+_snd_fusion_charging
+_snd_rocket_exploding
+_snd_rocket_flyby
+_snd_rocket_firing
+_snd_flamethrower
+_snd_body_falling
+_snd_body_exploding
+_snd_bullet_hit_flesh
+_snd_fighter_activate
+_snd_fighter_wail
+_snd_fighter_scream
+_snd_fighter_chatter
+_snd_fighter_attack
+_snd_fighter_projectile_hit
+_snd_fighter_projectile_flyby
+_snd_spht_attack
+_snd_spht_death
+_snd_spht_hit
+_snd_spht_projectile_flyby
+_snd_spht_projectile_hit
+_snd_cyborg_moving
+_snd_cyborg_attack
+_snd_cyborg_hit
+_snd_cyborg_death
+_snd_cyborg_projectile_bounce
+_snd_cyborg_projectile_hit
+_snd_cyborg_projectile_flyby
+_snd_drone_activate
+_snd_drone_start_attack
+_snd_drone_attack
+_snd_drone_dying
+_snd_drone_death
+_snd_drone_projectile_hit
+_snd_drone_projectile_flyby
+_snd_bob_wail
+_snd_bob_scream
+_snd_bob_hit
+_snd_bob_chatter
+_snd_assimilated_bob_chatter
+_snd_bob_trash_talk
+_snd_bob_apology
+_snd_bob_activation
+_snd_bob_clear
+_snd_bob_angry
+_snd_bob_secure
+_snd_bob_kill_the_player
+_snd_water
+_snd_sewage
+_snd_lava
+_snd_goo
+_snd_underwater
+_snd_wind
+_snd_waterfall
+_snd_siren
+_snd_fan
+_snd_spht_door
+_snd_spht_platform
+_snd_alien_harmonics
+_snd_heavy_spht_platform
+_snd_light_machinery
+_snd_heavy_machinery
+_snd_transformer
+_snd_sparking_transformer
+_snd_water_drip
+_snd_walking_in_water
+_snd_exiting_water
+_snd_entering_water
+_snd_small_water_splash
+_snd_medium_water_splash
+_snd_large_water_splash
+_snd_walking_in_lava
+_snd_entering_lava
+_snd_exiting_lava
+_snd_small_lava_splash
+_snd_medium_lava_splash
+_snd_large_lava_splash
+_snd_walking_in_sewage
+_snd_exiting_sewage
+_snd_entering_sewage
+_snd_small_sewage_splash
+_snd_medium_sewage_splash
+_snd_large_sewage_splash
+_snd_walking_in_goo
+_snd_exiting_goo
+_snd_entering_goo
+_snd_small_goo_splash
+_snd_medium_goo_splash
+_snd_large_goo_splash
+_snd_major_fusion_firing
+_snd_major_fusion_charged
+_snd_assault_rifle_reloading
+_snd_assault_rifle_shell_casings
+_snd_shotgun_firing
+_snd_shotgun_reloading
+_snd_ball_bounce
+_snd_you_are_it
+_snd_got_ball
+_snd_computer_login
+_snd_computer_logout
+_snd_computer_page
+_snd_heavy_shpt_door
+_snd_heavy_spht_door_opening
+_snd_heavy_spht_door_closing
+_snd_heavy_spht_door_open
+_snd_heavy_spht_door_closed
+_snd_heavy_spht_door_obstructed
+_snd_hunter_activate
+_snd_hunter_attack
+_snd_hunter_dying
+_snd_hunter_landing
+_snd_hunter_exploding
+_snd_hunter_projectile_hit
+_snd_hunter_projectile_flyby
+_snd_enforcer_activate
+_snd_enforcer_attack
+_snd_enforcer_projectile_hit
+_snd_enforcer_projectile_flyby
+_snd_flickta_melee_attack
+_snd_flickta_melee_hit
+_snd_flickta_projectile_attack
+_snd_flickta_projectile_sewage_hit
+_snd_flickta_projectile_sewage_flyby
+_snd_flickta_projectile_lava_hit
+_snd_flickta_projectile_lava_flyby
+_snd_flickta_dying
+_snd_macine_binder
+_snd_macine_bookpress
+_snd_machine_puncher
+_snd_electric_hum
+_snd_alarm
+_snd_night_wind
+_snd_surface_explosion
+_snd_underground_explosion
+_snd_sphtkr_attack
+_snd_sphtkr_projectile_hit
+_snd_sphtkr_projectile_flyby
+_snd_sphtkr_hit
+_snd_sphtkr_exploding
+_snd_tick_chatter
+_snd_tick_falling
+_snd_tick_flapping
+_snd_tick_exploding
+_snd_ceiling_lamp_exploding
+_snd_pfhor_platform_starting
+_snd_pfhor_platform_stopping
+_snd_pfhor_platform
+_snd_pfhor_door_opening
+_snd_pfhor_door_closing
+_snd_pfhor_door_obstructed
+_snd_pfhor_door
+_snd_pfhor_switch_off
+_snd_pfhor_switch_on
+_snd_juggernaut_firing
+_snd_juggernaut_warning
+_snd_juggernaut_exploding
+_snd_juggernaut_start_attack
+_snd_enforcer_exploding
+_snd_alien_noise_1
+_snd_alien_noise_2
+_snd_vacbob_wail
+_snd_vacbob_scream
+_snd_vacbob_hit
+_snd_vacbob_chatter
+_snd_assimilated_vacbob_chatter
+_snd_vacbob_trash_talk
+_snd_vacbob_apology
+_snd_vacbob_activation
+_snd_vacbob_clear
+_snd_vacbob_angry
+_snd_vacbob_secure
+_snd_vacbob_kill_the_player
+
+
+
+3.9 Refuel Panels
 -----------------
 
 _refuel_oxygen

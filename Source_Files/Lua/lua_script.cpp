@@ -21,6 +21,9 @@ jkvw, 07/07/03
     Cleaned up some of the "odd" behaviors.  (e.g., new_monster/new_item would spawn their things at incorrect height.)
     Added triggers for player revival/death.
     
+tiennou, 20/07/03
+    Added mnemonics for sounds, changed L_Start_Fade to L_Screen_Fade, added side_index parameter to L_Call_Start/End_Refuel and updated the docs with the info I had...
+    
 */
 
 // cseries defines HAVE_LUA on A1/SDL
@@ -182,7 +185,7 @@ void L_Call_Idle()
         logError(lua_tostring(state,-1));
 }
 
-void L_Call_Start_Refuel (short type, short player_index)
+void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
 {
     if (!lua_running)
         return;
@@ -200,7 +203,7 @@ void L_Call_Start_Refuel (short type, short player_index)
         logError (lua_tostring (state, -1));
 }
 
-void L_Call_End_Refuel (short type, short player_index)
+void L_Call_End_Refuel (short type, short player_index, short panel_side_index)
 {
     if (!lua_running)
         return;
@@ -2368,7 +2371,7 @@ static int L_Zoom_Active(lua_State *L)
     int player_index = static_cast<int>(lua_tonumber(L,1));
     if (player_index < 0 || player_index >= dynamic_world->player_count)
     {
-        lua_pushstring(L, "player_is_dead: invalid player index");
+        lua_pushstring(L, "zoom_active: invalid player index");
         lua_error(L);
     }
     if (local_player_index != player_index)
@@ -2517,15 +2520,18 @@ static int L_Get_Light_State(lua_State *L)
     
 }
 
-static int L_Start_Fade(lua_State *L)
+static int L_Screen_Fade(lua_State *L)
 {
-    if (!lua_isnumber(L,1))
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
         lua_pushstring(L, "start_fade: incorrect argument type");
         lua_error(L);
     }
+    short player_index = static_cast<short>(lua_tonumber(L,1));
+    if (local_player_index != player_index)
+        return 0;
     
-    int fade_index = static_cast<int>(lua_tonumber(L, 1));
+    int fade_index = static_cast<int>(lua_tonumber(L, 2));
     
     start_fade(fade_index);
     return 0;
@@ -3113,7 +3119,8 @@ void RegisterLuaFunctions()
     lua_register(state, "zoom_active", L_Zoom_Active);
     lua_register(state, "set_zoom_state", L_Set_Zoom_State);
     lua_register(state, "play_sound", L_Play_Sound);
-    lua_register(state, "start_fade", L_Start_Fade);
+    lua_register(state, "screen_fade", L_Screen_Fade);
+    lua_register(state, "start_fade", L_Screen_Fade);
     lua_register(state, "get_terminal_text_number", L_Get_Terminal_Text_Number);
     lua_register(state, "set_terminal_text_number", L_Set_Terminal_Text_Number);
     lua_register(state, "get_polygon_floor_height", L_Get_Polygon_Floor_Height);
