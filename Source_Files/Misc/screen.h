@@ -32,6 +32,10 @@ Dec 2, 2000 (Loren Petrich):
 
 Mar 19, 2001 (Loren Petrich):
 	Added some even bigger screen resolutions
+
+Sept 9, 2001 (Loren Petrich):
+	Eliminated the Valkyrie-acceleration option once and for all;
+	will take care of any side effects elsewhere in the code
 */
 
 /* ---------- constants */
@@ -65,8 +69,8 @@ enum /* screen sizes */
 enum /* hardware acceleration codes */
 {
 	_no_acceleration,
-	_opengl_acceleration,	// LP addition: OpenGL support
-	_valkyrie_acceleration
+	_opengl_acceleration	// LP addition: OpenGL support
+	// _valkyrie_acceleration	LP: eliminating this
 };
 
 /* ---------- missing from QUICKDRAW.H */

@@ -357,14 +357,6 @@ void initialize_screen(
 	if (mode->bit_depth==32 && !enough_memory_for_32bit) mode->bit_depth= 16;
 	if (mode->bit_depth==16 && !enough_memory_for_16bit) mode->bit_depth= 8;
 	interface_bit_depth= bit_depth= mode->bit_depth;
-	switch (mode->acceleration)
-	{
-		case _valkyrie_acceleration:
-			mode->bit_depth= bit_depth= 16;
-			mode->high_resolution= false;
-			interface_bit_depth= 8;
-			break;
-	}
 
 	/* beg, borrow or steal an n-bit device */
 	graphics_preferences->device_spec.bit_depth= interface_bit_depth;
