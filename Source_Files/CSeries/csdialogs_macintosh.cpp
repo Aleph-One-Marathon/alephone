@@ -310,11 +310,17 @@ void modify_control(
 			&& (GetDialogItemAsControl( dlg, item, &hierarchyControl ) == noErr))
 		{
 			if(hilite == CONTROL_INACTIVE)
-				DeactivateControl(hierarchyControl);
-				//DisableControl(hierarchyControl);
+				#ifdef __MACH__
+					DisableControl(hierarchyControl);
+				#else
+					DeactivateControl(hierarchyControl);
+				#endif
 			else
-				ActivateControl(hierarchyControl);
-				//EnableControl(hierarchyControl);
+				#ifdef __MACH__
+					EnableControl(hierarchyControl);
+				#else
+					ActivateControl(hierarchyControl);
+				#endif
 		}
 		else
 			HiliteControl(control,hilite);
