@@ -18,9 +18,17 @@
 
 #define DEBUG
 
+#ifndef __MVCPP__
+
 // mwcc doesn't accept "using namespace std;" otherwise
 namespace std {};
 
+#elif __MVCPP__
+
+using namespace std;	// Visual C++ doesn't like that other way of using the namespace.
+#define for if(false) {} else for // solves a bug in MSVC for the "redeclared" initializers used in for loops.
+
+#endif
 
 /*
  *  Endianess definitions

@@ -26,7 +26,6 @@
 
 #define LANGDEFPATH "Pfhortran Language Definition"
 
-
 enum /* symbol modes */
 {absolute, variable};
 
@@ -77,7 +76,7 @@ struct error_def
 /* Global Variables */
 
 
-symbol_def **hash;
+symbol_def **glob_hash;
 symbol_def **instruction_hash;
 bool pfhortran_is_on;
 short error_count;
@@ -123,7 +122,10 @@ bool init_pfhortran(void)
 */
 	bool err = false;
 
+#ifndef __MVCPP__		// Visual C++ will work with the streams...
+	// This is not good. Please make it work with the language_defintiion.h file - CB
 #ifdef SDL
+
 
 	// Read tokens from array
 	static const struct {
@@ -142,7 +144,7 @@ bool init_pfhortran(void)
 			break;
 		}
 	}
-
+#endif
 #else
 
 	// Read tokens from language definition file
@@ -330,8 +332,8 @@ values in a symbol, squareing the result, and taking the middle 8 bits from that
 
 void init_hash()
 {
-	hash = (symbol_def **)malloc(sizeof(symbol_def *) * 256);
-	memset(hash,0,sizeof(symbol_def *) * 256);
+	glob_hash = (symbol_def **)malloc(sizeof(symbol_def *) * 256);
+	memset(glob_hash,0,sizeof(symbol_def *) * 256);
 	
 }
 
@@ -341,7 +343,7 @@ void clear_hash()
 	int x;
 	symbol_def *temp, *old;	
 	for (x = 0;x < 256;x++)
-		if ((temp = get_hash(x,hash)) != NULL)
+		if ((temp = get_hash(x,glob_hash)) != NULL)
 		{
 			while ((old = temp) != NULL)
 			{	
@@ -351,7 +353,7 @@ void clear_hash()
 		}
 		
 		
-	memset(hash,0,sizeof(symbol_def *) * 256);
+	memset(glob_hash,0,sizeof(symbol_def *) * 256);
 
 }
 
@@ -363,7 +365,7 @@ void dispose_hash()
 	int x;
 	symbol_def *temp, *old;	
 	for (x = 0;x < 256;x++)
-		if ((temp = get_hash(x,hash)) != NULL)
+		if ((temp = get_hash(x,glob_hash)) != NULL)
 		{
 			while ((old = temp) != NULL)
 			{	
@@ -373,7 +375,7 @@ void dispose_hash()
 		}
 
 
-	free(hash);
+	free(glob_hash);
 }
 
 
@@ -642,7 +644,7 @@ float evaluate_operand(char *input, short *mode)
 	if (!input || (input && input[0]) == '#' || (input[0] == 0))	// start of a comment?
 		return -32767;
 	
-	symbol = get_symbol(input, hash);
+	symbol = get_symbol(input, glob_hash);
 	
 	if (!symbol)
 		symbol = get_symbol(input, instruction_hash);
@@ -790,7 +792,7 @@ script_instruction *parse_script(char *input)
 						var_count++;
 					}
 					
-				put_symbol(blats[0],val,mode,hash);
+				put_symbol(blats[0],val,mode,glob_hash);
 			}
 				
 			if (blats[1][0] && blats[1][0]!= '_' )	/* underscore denotes compiler directive */

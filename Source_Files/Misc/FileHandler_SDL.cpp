@@ -35,6 +35,15 @@
 #define PATH_SEP '\\'
 #endif
 
+#ifdef __MVCPP__
+
+#include <direct.h>			// for mkdir()
+#include <io.h>				// for access()
+#define R_OK  4				// for access(), this checks for read access.  6 should be used for read and write access both.
+#include <sys/types.h>		// for stat()
+#include <sys/stat.h>		// for stat()
+
+#endif
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
@@ -633,6 +642,9 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 
 #if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
 
+
+#ifndef __MVCPP__
+
 	DIR *d = opendir(name.c_str());
 	if (d == NULL) {
 		err = errno;
@@ -652,6 +664,12 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 	closedir(d);
 	err = 0;
 	return true;
+#else
+
+	// Do dir listing here
+	return true;
+
+#endif	// __MVCPP__
 
 #else
 #error FileSpecifier::ReadDirectory() not implemented for this platform

@@ -286,7 +286,7 @@ int res_file_t::count_resources(uint32 type) const
 	if (i == types.end())
 		return 0;
 	else
-		return i->second.size();
+		return (*i).second.size();
 }
 
 int count_1_resources(uint32 type)
@@ -316,9 +316,9 @@ void res_file_t::get_resource_id_list(uint32 type, vector<int> &ids) const
 {
 	type_map_t::const_iterator i = types.find(type);
 	if (i != types.end()) {
-		id_map_t::const_iterator j, end = i->second.end();
-		for (j=i->second.begin(); j!=end; j++)
-			ids.push_back(j->first);
+		id_map_t::const_iterator j, end = (*i).second.end();
+		for (j=(*i).second.begin(); j!=end; j++)
+			ids.push_back((*j).first);
 	}
 }
 
@@ -352,11 +352,11 @@ bool res_file_t::get_resource(uint32 type, int id, LoadedResource &rsrc) const
 	// Find resource in map
 	type_map_t::const_iterator i = types.find(type);
 	if (i != types.end()) {
-		id_map_t::const_iterator j = i->second.find(id);
-		if (j != i->second.end()) {
+		id_map_t::const_iterator j = (*i).second.find(id);
+		if (j != (*i).second.end()) {
 
 			// Found, read data size
-			SDL_RWseek(f, j->second, SEEK_SET);
+			SDL_RWseek(f, (*j).second, SEEK_SET);
 			uint32 size = SDL_ReadBE32(f);
 
 			// Allocate memory and read data
@@ -405,14 +405,14 @@ bool res_file_t::get_ind_resource(uint32 type, int index, LoadedResource &rsrc) 
 	// Find resource in map
 	type_map_t::const_iterator i = types.find(type);
 	if (i != types.end()) {
-		if (index < 1 || index > i->second.size())
+		if (index < 1 || index > (*i).second.size())
 			return false;
-		id_map_t::const_iterator j = i->second.begin();
+		id_map_t::const_iterator j = (*i).second.begin();
 		for (int k=1; k<index; k++)
 			++j;
 
 		// Read data size
-		SDL_RWseek(f, j->second, SEEK_SET);
+		SDL_RWseek(f, (*j).second, SEEK_SET);
 		uint32 size = SDL_ReadBE32(f);
 
 		// Allocate memory and read data
@@ -457,8 +457,8 @@ bool res_file_t::has_resource(uint32 type, int id) const
 {
 	type_map_t::const_iterator i = types.find(type);
 	if (i != types.end()) {
-		id_map_t::const_iterator j = i->second.find(id);
-		if (j != i->second.end())
+		id_map_t::const_iterator j = (*i).second.find(id);
+		if (j != (*i).second.end())
 			return true;
 	}
 	return false;
