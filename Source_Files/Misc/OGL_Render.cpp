@@ -80,6 +80,9 @@ Oct 13, 2000 (Loren Petrich)
 
 Nov 18, 2000 (Loren Petrich):
 	Added support for landscape vertical repeats
+
+Dec 17, 2000 (Loren Petrich):
+	Moved fog parameters into OGL_Setup.cpp
 */
 
 #include <vector.h>
@@ -301,10 +304,18 @@ static fixed SelfLuminosity;
 
 // Self-explanatory :-)
 // CP Addition: Un-static'd FogColor for Matthew Hielscher's code
-// LP: removed "static" for all the other fog parameters
-bool FogPresent = false;
-GLfloat FogColor[4] = {0,0,0,0};
-GLfloat FogDepth = 1;
+// LP: removed "static" for all the other fog parameters.
+// LP: made its habitat OGL_Setup.cpp, where it can be controlled with MML.
+extern bool FogPresent;
+extern GLfloat FogColor[4];
+extern GLfloat FogDepth;
+
+inline bool FogActive()
+{
+	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
+	bool FogAllowed = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog) != 0;
+	return FogPresent && FogAllowed;
+}
 
 
 // Stipple patterns for that static look
@@ -463,9 +474,6 @@ bool OGL_StartRun()
 	// Initialize the texture accounting
 	OGL_StartTextures();
 	
-	// Fog status:
-	FogPresent = TEST_FLAG(ConfigureData.Flags,OGL_Flag_Fog);
-		
 #ifdef mac
 	// Convenient function for setting up fonts;
 	// set aside some display lists for them
@@ -475,11 +483,7 @@ bool OGL_StartRun()
 	
 	// Reset the font into for overhead-map fonts done in OpenGL fashion
 	OGL_ResetMapFonts();
-	
-	// Initialize the fog color and depth
-	MakeFloatColor(ConfigureData.FogColor,FogColor);
-	FogDepth = ConfigureData.FogDepth;
-	
+		
 	// Success!
 	JustInited = true;
 	return (_OGL_IsActive = true);
@@ -606,7 +610,7 @@ bool OGL_StartMain()
 	// so be sure to turn it on when leaving the overhead map
 	// Also, added support for changing fog parameters on the fly,
 	// by moving the setting of initial values to where the context gets created.
-	if (FogPresent)
+	if (FogActive())
 	{
 		glEnable(GL_FOG);
 		GLfloat TempColor[4];
@@ -620,7 +624,7 @@ bool OGL_StartMain()
 				FindInfravisionVersion(LoadedWallTexture,TempColor);
 		}
 		glFogfv(GL_FOG_COLOR,TempColor);
-		glFogf(GL_FOG_DENSITY,1.0/MAX(1,FogDepth));
+		glFogf(GL_FOG_DENSITY,1.0/MAX(1,WORLD_ONE*FogDepth));
 	}
 	else
 		glDisable(GL_FOG);
@@ -635,7 +639,7 @@ bool OGL_StartMain()
 		GLfloat Blue = VoidColor.blue/65535.0;
 		
 		// The color of the void will be the color of fog
-		if (FogPresent)
+		if (FogActive())
 		{
 			Red = FogColor[0];
 			Green = FogColor[1];
@@ -1532,7 +1536,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 {
 	// Check for fog
-	if (FogPresent)
+	if (FogActive())
 	{
 		// Render as fog at infinity
 		glDisable(GL_FOG);

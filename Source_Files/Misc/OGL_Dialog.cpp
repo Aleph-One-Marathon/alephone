@@ -16,6 +16,11 @@
 Sep 9, 2000:
 
 	Added checkbox for AppleGL texturing fix
+
+Dec 17, 2000 (Loren Petrich):
+	Eliminated fog parameters from the preferences;
+	there is still a "fog present" switch, which is used to indicate
+	whether fog will not be suppressed.
 */
 
 #include "cseries.h"
@@ -41,18 +46,15 @@ enum
 	// The first of 8 items, in order:
 	// Day Ground, Day Sky, Night Ground, Night Sky, ...
 	LandscapeSwatch_ItemBase = 17,
-	
-	Fog_Item = 25,
-	FogSwatch_Item = 26,
-	FogDepth_Item = 28,
-	
-	SinglePass_Item = 29,
-	TwoDimGraphics_Item = 30,
-	FlatStaticEffect_Item = 31,
-	Fader_Item = 32,
-	LiquidSeeThru_Item = 33,
-	Map_Item = 34,
-	TextureFix_Item = 35,
+		
+	SinglePass_Item = 25,
+	TwoDimGraphics_Item = 26,
+	FlatStaticEffect_Item = 27,
+	Fader_Item = 28,
+	LiquidSeeThru_Item = 29,
+	Map_Item = 30,
+	TextureFix_Item = 31,
+	AllowFog_Item = 32,
 	
 	ColorPicker_PromptStrings = 200,
 	ColorVoid_String = 0,
@@ -210,10 +212,6 @@ static pascal void PaintSwatch(DialogPtr DPtr, short ItemNo) {
 		ColorPtr = &VoidColor;
 		break;
 	
-	case FogSwatch_Item:
-		ColorPtr = &FogColor;
-		break;
-		
 	default:
 		ile = LandscapeSwatch_ItemBase;
 		for (int il=0; il<4; il++)
@@ -318,18 +316,8 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		SetDialogItem(Dialog, LandscapeSwatch_Item, ItemType, Handle(PaintSwatchUPP), &Bounds);
 	}
 	
-	MacCheckbox Fog_CB(Dialog, Fog_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fog) != 0);
-	
-	ControlHandle FogSwatch_CHdl;
-	GetDialogItem(Dialog, FogSwatch_Item, &ItemType, (Handle *)&FogSwatch_CHdl, &Bounds);
-	SetDialogItem(Dialog, FogSwatch_Item, ItemType, Handle(PaintSwatchUPP), &Bounds);
-
-	ControlHandle FogDepth_CHdl;
-	GetDialogItem(Dialog, FogDepth_Item, &ItemType, (Handle *)&FogDepth_CHdl, &Bounds);
-	FogDepth = Data.FogDepth;
-	psprintf(ptemporary,"%lf",FogDepth/double(1024));
-	SetDialogItemText((Handle)FogDepth_CHdl,ptemporary);
-	
+	MacCheckbox Fog_CB(Dialog, AllowFog_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fog) != 0);
+		
 	MacCheckbox SinglePass_CB(Dialog, SinglePass_Item, TEST_FLAG(Data.Flags,OGL_Flag_SnglPass) != 0);
 	MacCheckbox TwoDimGraphics_CB(Dialog, TwoDimGraphics_Item, TEST_FLAG(Data.Flags,OGL_Flag_2DGraphics) != 0);
 	MacCheckbox FlatStaticEffect_CB(Dialog, FlatStaticEffect_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatStatic) != 0);
@@ -343,7 +331,6 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	for (int il=0; il<4; il++)
 		for (int ie=0; ie<2; ie++)
 			LscpColors[il][ie] = Data.LscpColors[il][ie];
-	FogColor = Data.FogColor;
 	
 	// Reveal it
 	SelectWindow(Dialog);
@@ -362,13 +349,11 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		switch(ItemHit)
 		{
 		case OK_Item:
-			if (!GetFogDepth(FogDepth_CHdl)) break;				
 			IsOK = true;
 			WillQuit = true;
 			break;
 			
 		case Cancel_Item:
-			
 			IsOK = false;
 			WillQuit = true;
 			break;
@@ -396,19 +381,6 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 				VoidColor = TempColor;
 				DrawDialog(Dialog);
 			}
-			break;
-		
-		case FogSwatch_Item:
-			getpstr(ptemporary,ColorPicker_PromptStrings,FogColor_String);
-			if (GetColor(Loc,ptemporary,&FogColor,&TempColor))
-			{
-				FogColor = TempColor;
-				DrawDialog(Dialog);
-			}
-			break;
-		
-		case FogDepth_Item:
-			GetFogDepth(FogDepth_CHdl);
 			break;
 		
 		default:
@@ -472,8 +444,6 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		for (int il=0; il<4; il++)
 			for (int ie=0; ie<2; ie++)
 				Data.LscpColors[il][ie] = LscpColors[il][ie];
-		Data.FogColor = FogColor;
-		Data.FogDepth = FogDepth;
 	}
 	
 	// Clean up

@@ -32,6 +32,11 @@ Sep 9, 2000:
 
 Dec 3. 2000 (Loren Petrich):
 	Changed 16-bit internal representation of textures from 5551 to 4444
+
+Dec 17, 2000 (Loren Petrich):
+	Eliminated fog parameters from the preferences;
+	there is still a "fog present" switch, which is used to indicate
+	whether fog will not be suppressed.
 */
 
 #include "shape_descriptors.h"
@@ -131,11 +136,6 @@ struct OGL_ConfigureData
 	// (day, night, moon, outer space)
 	// Second index: ground, sky
 	RGBColor LscpColors[4][2];
-	
-	// Fog Features
-	RGBColor FogColor;
-	// In internal units
-	long FogDepth;
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();

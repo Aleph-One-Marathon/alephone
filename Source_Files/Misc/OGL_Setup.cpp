@@ -28,6 +28,11 @@ Nov 18, 2000 (Loren Petrich):
 
 Nov 26, 2000 (Loren Petrich):
 	Added system for reloading textures only when their filenames change.
+
+Dec 17, 2000 (Loren Petrich):
+	Eliminated fog parameters from the preferences;
+	there is still a "fog present" switch, which is used to indicate
+	whether fog will not be suppressed.
 */
 
 #include <vector.h>
@@ -40,6 +45,7 @@ Nov 26, 2000 (Loren Petrich):
 
 #include "shape_descriptors.h"
 #include "OGL_Setup.h"
+#include "ColorParser.h"
 
 
 // Whether or not OpenGL is present and usable
@@ -70,6 +76,13 @@ bool OGL_Initialize()
 bool OGL_IsPresent() {return _OGL_IsPresent;}
 
 
+// These are global so that Pfhortran can manipulate them
+bool FogPresent = false;				// Fog inactive
+GLfloat FogColor[4] = {0.5,0.5,0.5,0};	// Gray
+GLfloat FogDepth = 8;					// Not too thick
+
+
+// For flat landscapes:
 const RGBColor DefaultLscpColors[4][2] =
 {
 	{
@@ -89,8 +102,6 @@ const RGBColor DefaultLscpColors[4][2] =
 		{0x0000, 0x0000, 0x0000},
 	},
 };
-
-const RGBColor DefaultFogColor = {0x8000,0x8000,0x8000};
 
 
 // Set defaults
@@ -112,8 +123,6 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	for (int il=0; il<4; il++)
 		for (int ie=0; ie<2; ie++)
 			Data.LscpColors[il][ie] = DefaultLscpColors[il][ie];
-	Data.FogColor = DefaultFogColor;
-	Data.FogDepth = 8*1024;
 }
 
 
@@ -554,6 +563,51 @@ bool XML_TextureOptionsParser::AttributesDone()
 static XML_TextureOptionsParser TextureOptionsParser;
 
 
+class XML_FogParser: public XML_ElementParser
+{
+	rgb_color Color;
+	
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool End();
+	
+	XML_FogParser(): XML_ElementParser("fog") {}
+};
+
+bool XML_FogParser::Start()
+{
+	Color.red = PIN(int(65535*FogColor[0]+0.5),0,65535);
+	Color.green = PIN(int(65535*FogColor[1]+0.5),0,65535);
+	Color.blue = PIN(int(65535*FogColor[2]+0.5),0,65535);
+	Color_SetArray(&Color);		
+	return true;
+}
+
+bool XML_FogParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"on") == 0)
+	{
+		return (ReadBooleanValue(Value,FogPresent));
+	}
+	else if (strcmp(Tag,"depth") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",FogDepth));
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_FogParser::End()
+{
+	FogColor[0] = Color.red/65535.0;
+	FogColor[1] = Color.green/65535.0;
+	FogColor[2] = Color.blue/65535.0;
+	return true;
+}
+
+static XML_FogParser FogParser;
+
 static XML_ElementParser OpenGL_Parser("opengl");
 
 
@@ -562,6 +616,8 @@ XML_ElementParser *OpenGL_GetParser()
 {
 	OpenGL_Parser.AddChild(&TextureOptionsParser);
 	OpenGL_Parser.AddChild(&TO_ClearParser);
+	FogParser.AddChild(Color_GetParser());
+	OpenGL_Parser.AddChild(&FogParser);
 	
 	return &OpenGL_Parser;
 }
