@@ -270,6 +270,11 @@ void decrement_replay_speed(
 	if (replay.replay_speed > MINIMUM_REPLAY_SPEED) replay.replay_speed--;
 }
 
+void increment_heartbeat_count(int value)
+{
+	heartbeat_count+=value;
+}
+
 /* Returns NONE if it is custom.. */
 short find_key_setup(
 	short *keycodes)
