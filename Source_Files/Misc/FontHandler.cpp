@@ -27,6 +27,10 @@ Jan 12, 2001 (Loren Petrich):
 #include <string.h>
 #include "FontHandler.h"
 
+#ifdef SDL
+#include "shape_descriptors.h"
+#include "screen_drawing.h"
+#endif
 
 // MacOS-specific: stuff that gets reused
 // static CTabHandle Grays = NULL;
@@ -151,7 +155,7 @@ void FontSpecifier::Update()
 	}
 	
 	// Simply implements format "#<value>"; may want to generalize this
-	ID = 0;
+	short ID = 0;
 	sscanf(File+1,"%hd",&ID);
 	assert(ID != 0);
 	
@@ -374,7 +378,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 
 #elif defined(SDL)
 	// Copy the SDL surface into the OpenGL texture
-	uint8 *PixBase = FontSurface->pixels;
+	uint8 *PixBase = (uint8 *)FontSurface->pixels;
 	int Stride = FontSurface->pitch;
  	
  	for (int k=0; k<TxtrHeight; k++)
