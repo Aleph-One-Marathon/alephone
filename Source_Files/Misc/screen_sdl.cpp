@@ -2,6 +2,9 @@
  *  screen_sdl.cpp - Screen management, SDL implementation
  *
  *  Written in 2000 by Christian Bauer
+ * 
+ *  Loren Petrich, Dec 23, 2000; moved shared content into screen_shared.cpp;
+ *  marked out moved-out parts with #ifdef MOVED_OUT
  */
 
 #include "cseries.h"
@@ -36,7 +39,9 @@
 
 #include "sdl_fonts.h"
 
+#include "screen_shared.cpp"
 
+#ifdef MOVED_OUT
 // Constants
 #define DESIRED_SCREEN_WIDTH 640
 #define DESIRED_SCREEN_HEIGHT 480
@@ -71,17 +76,20 @@ const ViewSizeData ViewSizes[NUMBER_OF_VIEW_SIZES] =
 
 // Note: the overhead map will always fill all of the screen except for the HUD,
 // and the terminal display will always have a size of 640*320.
+#endif
 
 
 // Global variables
 static SDL_Surface *main_surface;	// Main (display) surface
 
+#ifdef MOVED_OUT
 struct color_table *uncorrected_color_table; /* the pristine color environment of the game (can be 16bit) */
 struct color_table *world_color_table; /* the gamma-corrected color environment of the game (can be 16bit) */
 struct color_table *interface_color_table; /* always 8bit, for mixed-mode (i.e., valkyrie) fades */
 struct color_table *visible_color_table; /* the color environment the player sees (can be 16bit) */
 
 struct view_data *world_view; /* should be static */
+#endif
 
 static const sdl_font_info *info_display_font = NULL;
 
@@ -89,14 +97,17 @@ static const sdl_font_info *info_display_font = NULL;
 // The HUD has a separate buffer.
 // It is initialized to NULL so as to allow its initing to be lazy.
 SDL_Surface *world_pixels = NULL;
+#ifdef MOVED_OUT
 struct bitmap_definition *world_pixels_structure;
 
 // Stuff for keeping track of screen sizes; this is for forcing the clearing of the screen when resizing.
 // These are initialized to improbable values.
 static int PrevBufferWidth = INT16_MIN, PrevBufferHeight = INT16_MIN,
            PrevOffsetWidth = INT16_MIN, PrevOffsetHeight = INT16_MIN;
+#endif
 static bool PrevFullscreen = false;
 
+#ifdef MOVED_OUT
 #define FRAME_SAMPLE_SIZE 20
 bool displaying_fps = false;
 int frame_count, frame_index;
@@ -104,14 +115,22 @@ uint32 frame_ticks[64];
 
 bool ShowPosition = false;	// Whether to show one's position
 
+#endif
+
 SDL_Surface *HUD_Buffer = NULL;
+
+#ifdef MOVED_OUT
 static bool HUD_RenderRequest = false;
+#endif
 
 static bool screen_initialized = false;
+
+#ifdef MOVED_OUT
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
 
 short bit_depth = NONE;
 short interface_bit_depth = NONE;
+#endif
 
 #ifdef HAVE_OPENGL
 // This is defined in overhead_map.c
@@ -129,8 +148,10 @@ static void reallocate_world_pixels(int width, int height);
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
 static void update_fps_display(SDL_Surface *s);
 static void DisplayPosition(SDL_Surface *s);
+#ifdef MOVED_OUT
 static void set_overhead_map_status(bool status);
 static void set_terminal_status(bool status);
+#endif
 static void DrawHUD(SDL_Rect &dest_rect);
 
 
@@ -216,6 +237,7 @@ static void reallocate_world_pixels(int width, int height)
  *  This resets the screen; useful when starting a game
  */
 
+#ifdef MOVED_OUT
 void reset_screen()
 {
 	// Resetting cribbed from initialize_screen()
@@ -244,6 +266,7 @@ void ResetFieldOfView()
 		world_view->target_field_of_view = NORMAL_FIELD_OF_VIEW;
 	}
 }
+#endif
 
 
 /*
@@ -862,6 +885,7 @@ static void DisplayPosition(SDL_Surface *s)
  *  Zoom overhead map
  */
 
+#ifdef MOVED_OUT
 void zoom_overhead_map_out(void)
 {
 	world_view->overhead_map_scale = FLOOR(world_view->overhead_map_scale-1, OVERHEAD_MAP_MINIMUM_SCALE);
@@ -928,7 +952,7 @@ bool game_window_is_full_screen(void)
 	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
 	return (!ViewSizes[msize].ShowHUD);
 }
-
+#endif
 
 /*
  *  Get world view destination frame for given screen size
@@ -1078,7 +1102,7 @@ void validate_world_window(void)
 /*
  *  Change gamma level
  */
-
+#ifdef MOVED_OUT
 void change_gamma_level(short gamma_level)
 {
 	screen_mode.gamma_level = gamma_level;
@@ -1105,7 +1129,7 @@ static void set_terminal_status(bool status)
 	world_view->terminal_mode_active = status;
 	dirty_terminal_view(current_player_index);
 }
-
+#endif
 
 /*
  *  Draw the HUD
@@ -1119,6 +1143,7 @@ void DrawHUD(SDL_Rect &dest_rect)
 	SDL_UpdateRects(main_surface, 1, &dest_rect);
 }
 
+#ifdef MOVED_OUT
 void RequestDrawingHUD(void)
 {
 	HUD_RenderRequest = true;
@@ -1140,7 +1165,7 @@ bool SetTunnelVision(bool TunnelVisionOn)
 	start_tunnel_vision_effect(TunnelVisionOn);
 	return world_view->tunnel_vision_active;
 }
-
+#endif
 
 /*
  *  Clear screen
