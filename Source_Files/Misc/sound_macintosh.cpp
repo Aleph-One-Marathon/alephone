@@ -22,6 +22,8 @@ Dec 3, 2000 (Loren Petrich):
 */
 
 #include <FixMath.h>
+#include <MediaHandlers.h>
+
 
 /* --------- constants */
 
@@ -468,6 +470,10 @@ static void instantiate_sound_variables(
 		command.param1= 0;
 		command.param2= BUILD_STEREO_VOLUME(variables->left_volume, variables->right_volume);
 		error= SndDoImmediate(channel->channel, &command);
+		
+		LoadedSound *SndPtr = channel->SndPtr;
+		if (SndPtr)
+			SndPtr->SetVolume(variables->left_volume,variables->right_volume);
 	}
 
 	vwarn(error==noErr, csprintf(temporary, "SndDoImmediate() == #%d in instantiate_sound_variables()", error));
@@ -505,6 +511,7 @@ static void buffer_sound(
 		{
 			channel->SndPtr = SndPtr;
 			SndPtr->SetPitch(calculate_pitch_modifier(sound_index, pitch));
+			SndPtr->SetVolume(channel->variables.left_volume,channel->variables.right_volume);
 			if (ExtPlayImmed)
 				SndPtr->Play();
 			else
@@ -725,5 +732,39 @@ bool LoadedSound::SetPitch(_fixed Pitch)
 	if (!QTSnd) return false;
 	
 	SetMovieRate(QTSnd,Pitch);
+	return true;
+}
+
+bool LoadedSound::SetVolume(_fixed Left, _fixed Right)
+{
+	if (!QTSnd) return false;
+	
+	// Rather contorted way of doing stereo with QuickTime...
+	
+	_fixed Vol = MAX(Left,Right);
+	if (Vol <= 0) return true;
+	
+	short Balance = (1 << 8) * (Right - Left)/float(Vol);
+	
+	SetMovieVolume(QTSnd,Vol);
+	
+	int NumTracks = GetMovieTrackCount(QTSnd);
+	for (int t=1; t<=NumTracks; t++) {
+	
+		Track Trk = GetMovieIndTrack(QTSnd,t);
+		if (!Trk) continue;
+		if (GetMoviesError() != noErr) continue;
+		
+		Media Med = GetTrackMedia(Trk);
+		if (!Med) continue;
+		if (GetMoviesError() != noErr) continue;
+		
+		MediaHandler Hdlr = GetMediaHandler(Med);
+		if (!Hdlr) continue;
+		if (GetMoviesError() != noErr) continue;
+		
+		MediaSetSoundBalance(Hdlr,Balance);
+	}
+	
 	return true;
 }

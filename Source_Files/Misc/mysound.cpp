@@ -212,8 +212,9 @@ struct LoadedSound
 	bool Update();
 	
 	// Control:
-	// The pitch multiplier is in fixed-integer units (FIXED_ONE = 1.0)
+	// The pitch and volume values are in fixed-integer units (FIXED_ONE = 1.0)
 	bool SetPitch(_fixed Pitch);
+	bool SetVolume(_fixed Left, _fixed Right);
 };
 
 
