@@ -2481,7 +2481,7 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 		IsGlowmappable = false;
 		glEnable(GL_ALPHA_TEST);
 		glDisable(GL_BLEND);
-		return;
+		return IsGlowmappable;
 	}
 	else if (RenderRectangle.transfer_mode == _tinted_transfer)
 	{
