@@ -84,6 +84,11 @@ Feb 11, 2001 (Loren Petrich):
 //CP addition: Scripting Hooks
 #include "scripting.h"
 
+#ifdef HAVE_LUA
+//MH: Lua scripting
+#include "lua_script.h"
+
+#endif /* HAVE_LUA */
 #ifdef env68k
 #pragma segment marathon
 #endif
@@ -581,6 +586,10 @@ bool try_and_add_player_item(
 	
 	//CP Addition: call any script traps available
 	activate_got_item_trap(type);
+#ifdef HAVE_LUA
+        //MH: Call Lua script hook
+        L_Call_Got_Item(type);
+#endif /* HAVE_LUA */
 			
 	/* Play the pickup sound */
 	if (success && player_index==current_player_index)

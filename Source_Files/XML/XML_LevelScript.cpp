@@ -46,6 +46,9 @@ Jul 31, 2002 (Loren Petrich):
 #include "scripting.h"
 #include "Random.h"
 #include "images.h"
+#ifdef HAVE_LUA
+#include "lua_script.h"
+#endif /* HAVE_LUA */
 
 
 // The "command" is an instruction to process a file/resource in a certain sort of way
@@ -56,7 +59,10 @@ struct LevelScriptCommand
 		MML,
 		Pfhortran,
 		Music,
-		Movie
+		Movie,
+#ifdef HAVE_LUA
+                Lua
+#endif /* HAVE_LUA */
 	};
 	int Type;
 	
@@ -129,6 +135,10 @@ static DirectorySpecifier MapParentDir;
 // Whether Pfhortran had been found for the current level,
 // so as to do the dummy Pfhortran if none was found
 static bool PfhortranFound = false;
+#ifdef HAVE_LUA
+// Same for Lua
+static bool LuaFound = false;
+#endif /* HAVE_LUA */
 
 // Movie filespec and whether it points to a real file
 static FileSpecifier MovieFile;
@@ -225,6 +235,9 @@ void RunLevelScript(int LevelIndex)
 {
 	// None found just yet...
 	PfhortranFound = false;
+#ifdef HAVE_LUA
+        LuaFound = false;
+#endif /* HAVE_LUA */
 	
 	// For whatever previous music had been playing...
 	fade_out_music(MACHINE_TICKS_PER_SECOND/2);
@@ -302,6 +315,9 @@ void GeneralRunScript(int LevelIndex)
 		{
 		case LevelScriptCommand::MML:
 		case LevelScriptCommand::Pfhortran:
+#ifdef HAVE_LUA
+                case LevelScriptCommand::Lua:
+#endif /* HAVE_LUA */
 			// if (Cmd.RsrcPresent() && OFile.Get('T','E','X','T',Cmd.RsrcID,ScriptRsrc))
 			if (Cmd.RsrcPresent() && get_text_resource_from_scenario(Cmd.RsrcID,ScriptRsrc))
 			{
@@ -336,6 +352,19 @@ void GeneralRunScript(int LevelIndex)
 					PfhortranFound = true;
 			}
 			break;
+#ifdef HAVE_LUA
+                        
+                case LevelScriptCommand::Lua:
+                        {
+                                // Skip if not loaded
+				if (Data == NULL || DataLen <= 0) break;
+				
+				// Load and indicate whether loading was successful
+				if (LoadLuaScript(Data, DataLen))
+					LuaFound = true;
+			}
+			break;
+#endif /* HAVE_LUA */
 		
 		case LevelScriptCommand::Music:
 			{
@@ -515,6 +544,9 @@ static XML_LSCommandParser MMLParser("mml",LevelScriptCommand::MML);
 static XML_LSCommandParser PfhortranParser("pfhortran",LevelScriptCommand::Pfhortran);
 static XML_LSCommandParser MusicParser("music",LevelScriptCommand::Music);
 static XML_LSCommandParser MovieParser("movie",LevelScriptCommand::Movie);
+#ifdef HAVE_LUA
+static XML_LSCommandParser LuaParser("lua",LevelScriptCommand::Lua);
+#endif /* HAVE_LUA */
 
 class XML_RandomOrderParser: public XML_ElementParser
 {
@@ -550,6 +582,9 @@ static void AddScriptCommands(XML_ElementParser& ElementParser)
 	ElementParser.AddChild(&MusicParser);
 	ElementParser.AddChild(&RandomOrderParser);
 	ElementParser.AddChild(&MovieParser);
+#ifdef HAVE_LUA
+        ElementParser.AddChild(&LuaParser);
+#endif /* HAVE_LUA */
 }
 
 

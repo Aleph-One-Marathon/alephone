@@ -281,7 +281,7 @@ shell_casing_definition *get_shell_casing_definition(
 /* ------------- local prototypes */
 static void reset_trigger_data(short player_index, short weapon_type, short which_trigger);
 static bool weapon_works_in_current_environment(short weapon_index);
-static void select_next_best_weapon(short player_index);
+/*static*/ void select_next_best_weapon(short player_index);
 static struct trigger_data *get_player_trigger_data(short player_index, 
 	short which_trigger);
 struct trigger_data *get_trigger_data(short player_index, short weapon_index, 
@@ -1564,7 +1564,7 @@ static bool weapon_works_in_current_environment(
 }
 
 /* This selects the next best weapon */
-static void select_next_best_weapon(
+/*static*/ void select_next_best_weapon(
 	short player_index)
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);

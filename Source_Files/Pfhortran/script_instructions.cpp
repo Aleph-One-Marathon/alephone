@@ -170,7 +170,7 @@ void (*instruction_lookup[NUMBER_OF_INSTRUCTIONS])(script_instruction);
 
 
 // ZZZ: these were in script_instructions.h; I think they were probably meant for here.
-static ActionQueues* sPfhortranActionQueues = NULL;
+/*static*/ ActionQueues* sPfhortranActionQueues = NULL; //drop the static for Lua scripting
 static long pfhortran_timer = 0;
 
 

@@ -101,6 +101,12 @@ Feb 8, 2003 (Woody Zenfell):
 #include "script_instructions.h"
 #include "script_parser.h"
 
+#ifdef HAVE_LUA
+// MH additions:
+#include "lua_script.h"
+#include <string>
+
+#endif /* HAVE_LUA */
 // ZZZ additions:
 #include "ActionQueues.h"
 #include "mytm.h"
@@ -213,6 +219,9 @@ update_world_elements_one_tick()
 //AS: removed "success"; it's pointless
         if (script_in_use())
                 do_next_instruction();
+#ifdef HAVE_LUA
+        L_Call_Idle();
+#endif /* HAVE_LUA */
         
         update_lights();
         update_medias();
@@ -421,6 +430,11 @@ void leaving_map(
 	mark_environment_collections(static_world->environment_code, false);
 	mark_all_monster_collections(false);
 	mark_player_collections(false);
+#ifdef HAVE_LUA
+        
+        //Close and unload the Lua state
+        CloseLuaScript();
+#endif /* HAVE_LUA */
 
 	/* all we do is mark them for unloading, we don't explicitly dispose of them; whenever the
 		next level is loaded someone (probably entering_map, below) will call load_collections()
@@ -474,6 +488,13 @@ bool entering_map(bool restoring_saved)
 	script_init(restoring_saved);
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
+#ifdef HAVE_LUA
+
+        // MH: Load the Lua script and run its init function.
+        // Availability of the script is checked within.
+        RunLuaScript();
+        L_Call_Init();
+#endif /* HAVE_LUA */
 
 	// Zero out fades *AND* any inadvertant fades from script start...
 	stop_fade();

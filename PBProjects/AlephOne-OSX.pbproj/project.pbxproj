@@ -122,7 +122,6 @@
 				4A9504CCFFE6A4B311CA0CBA,
 				4A9504CDFFE6A4B311CA0CBA,
 			);
-			hasScannedForEncodings = 1;
 			isa = PBXProject;
 			mainGroup = 29B97314FDCFA39411CA2CEA;
 			projectDirPath = "";
@@ -182,6 +181,8 @@
 				F53673F802014D2D01A80001,
 				F53673F902014D2D01A80001,
 				3D5F21460403247500000104,
+				F51B05A9047ACD3401C5C930,
+				F51B05AB047ACD3D01C5C930,
 			);
 			isa = PBXGroup;
 			name = Frameworks;
@@ -444,6 +445,7 @@
 </dict>
 </plist>
 ";
+			shouldUseHeadermap = 0;
 		};
 		29B97327FDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
@@ -1199,6 +1201,98 @@
 		};
 		F50D2BD702F86DDA01000105 = {
 			fileRef = F50D2BD502F86DDA01000105;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51B0587047AC6DA01C5C930 = {
+			children = (
+				F51B058B047AC6DA01C5C930,
+				F51B058C047AC6DA01C5C930,
+				F51B0589047AC6DA01C5C930,
+				F51B058A047AC6DA01C5C930,
+				F51B058D047AC6DA01C5C930,
+			);
+			isa = PBXGroup;
+			name = Lua;
+			path = "/Users/restorer/aleph/aleph lua/Source_Files/Lua";
+			refType = 0;
+		};
+		F51B0589047AC6DA01C5C930 = {
+			isa = PBXFileReference;
+			path = lauxlib.h;
+			refType = 4;
+		};
+		F51B058A047AC6DA01C5C930 = {
+			isa = PBXFileReference;
+			path = lua.h;
+			refType = 4;
+		};
+		F51B058B047AC6DA01C5C930 = {
+			isa = PBXFileReference;
+			path = lua_script.cpp;
+			refType = 4;
+		};
+		F51B058C047AC6DA01C5C930 = {
+			isa = PBXFileReference;
+			path = lua_script.h;
+			refType = 4;
+		};
+		F51B058D047AC6DA01C5C930 = {
+			isa = PBXFileReference;
+			path = lualib.h;
+			refType = 4;
+		};
+		F51B058F047AC6DA01C5C930 = {
+			fileRef = F51B0589047AC6DA01C5C930;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51B0590047AC6DA01C5C930 = {
+			fileRef = F51B058A047AC6DA01C5C930;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51B0591047AC6DA01C5C930 = {
+			fileRef = F51B058B047AC6DA01C5C930;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51B0592047AC6DA01C5C930 = {
+			fileRef = F51B058C047AC6DA01C5C930;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51B0593047AC6DA01C5C930 = {
+			fileRef = F51B058D047AC6DA01C5C930;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51B05A9047ACD3401C5C930 = {
+			isa = PBXFileReference;
+			name = liblua.a;
+			path = "/Users/restorer/aleph/aleph lua/Source_Files/Lua/lib/liblua.a";
+			refType = 0;
+		};
+		F51B05AA047ACD3401C5C930 = {
+			fileRef = F51B05A9047ACD3401C5C930;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51B05AB047ACD3D01C5C930 = {
+			isa = PBXFileReference;
+			name = liblualib.a;
+			path = "/Users/restorer/aleph/aleph lua/Source_Files/Lua/lib/liblualib.a";
+			refType = 0;
+		};
+		F51B05AC047ACD3D01C5C930 = {
+			fileRef = F51B05AB047ACD3D01C5C930;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -2554,6 +2648,7 @@
 				F522144E0136C0C401000001,
 				F52214510136C0C401000001,
 				F52211190136A41F01000001,
+				F51B0587047AC6DA01C5C930,
 				F5CC942A0240DE0E01A80001,
 				F5CC94110240DA4301A80001,
 				F5CC936E0240D85D01A80001,
@@ -2818,7 +2913,7 @@
 				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "\"/Users/restorer/aleph/aleph lua/Source_Files/Lua/lib\"";
 				OPTIMIZATION_CFLAGS = "-O1 -fprefetch-loop-arrays -finline-limit=1000 -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fdelete-null-pointer-checks -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER\n";
 				OTHER_LDFLAGS = "-flat_namespace";
@@ -3057,6 +3152,7 @@
 </dict>
 </plist>
 ";
+			shouldUseHeadermap = 0;
 		};
 		F53673EF02014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -3167,7 +3263,6 @@
 				F5CC93420240D56201A80001,
 				F5CC93430240D56201A80001,
 				F5CC93440240D56201A80001,
-				F5CC93450240D56201A80001,
 				F5CC93460240D56201A80001,
 				F5CC93480240D56201A80001,
 				F5CC93490240D56201A80001,
@@ -3229,6 +3324,11 @@
 				3DF290E7046F5BA900000104,
 				3DF290EA046F5BED00000104,
 				3DF290EB046F5BED00000104,
+				F51B058F047AC6DA01C5C930,
+				F51B0590047AC6DA01C5C930,
+				F51B0592047AC6DA01C5C930,
+				F51B0593047AC6DA01C5C930,
+				F59D57F0047C8A000136B90F,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3395,6 +3495,7 @@
 				3D5F21450403230F00000104,
 				3DF290F1046F5C5B00000104,
 				3DF290F2046F5C5B00000104,
+				F51B0591047AC6DA01C5C930,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3411,6 +3512,8 @@
 				F56A4632021F7C5501A80001,
 				F56A4641021F88A301A80001,
 				3D5F21470403247500000104,
+				F51B05AA047ACD3401C5C930,
+				F51B05AC047ACD3D01C5C930,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4620,6 +4723,12 @@
 			settings = {
 			};
 		};
+		F59D57F0047C8A000136B90F = {
+			fileRef = F5CC92F30240D56101A80001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F59FB19D01E780DF01BBE912 = {
 			isa = PBXFrameworkReference;
 			name = Cocoa.framework;
@@ -4787,6 +4896,7 @@
 			productInstallPath = /usr/local/bin;
 			productName = "Carbon Standalone";
 			productReference = F5A25343023B713601A80001;
+			shouldUseHeadermap = 0;
 		};
 		F5A25345023B713601A80001 = {
 			isa = PBXTargetDependency;
@@ -5278,8 +5388,8 @@
 				F5CC92500240D28201A80001,
 				F5CC92540240D28201A80001,
 				F5CC92560240D28201A80001,
-				F5CC92590240D28201A80001,
 				F5CC925B0240D28201A80001,
+				F5CC92590240D28201A80001,
 				F5CC925D0240D28201A80001,
 				F5CC925F0240D28201A80001,
 				F5CC92600240D28201A80001,
@@ -6768,12 +6878,6 @@
 		};
 		F5CC93440240D56201A80001 = {
 			fileRef = F5CC92F10240D56101A80001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F5CC93450240D56201A80001 = {
-			fileRef = F5CC92F30240D56101A80001;
 			isa = PBXBuildFile;
 			settings = {
 			};

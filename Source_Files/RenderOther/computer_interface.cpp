@@ -122,6 +122,11 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 //CP Addition: scripting support
 #include "scripting.h"
 
+#ifdef HAVE_LUA
+// MH: Lua scripting
+#include "lua_script.h"
+#endif /* HAVE_LUA */
+
 #define LABEL_INSET 3
 #define LOG_DURATION_BEFORE_TIMEOUT (2*TICKS_PER_SECOND)
 #define BORDER_HEIGHT 18
@@ -415,7 +420,13 @@ void initialize_player_terminal_info(
 
 	//CP Addition: trap for logout!
 	if (terminal->state != _no_terminal_state && terminal->current_line != 0)
+        {
 		activate_terminal_exit_trap(terminal->terminal_id);
+#ifdef HAVE_LUA
+                // MH: call the Lua trap as well
+                L_Call_Terminal_Exit(terminal->terminal_id);
+#endif /* HAVE_LUA */
+        }
 
 	terminal->flags= 0;
 	terminal->phase = NONE; // not using a control panel.

@@ -1,3 +1,4 @@
+#ifndef LUA_ACCESSING
 // Supersedes file "Pfhortran Language Definition".
 // Translations of names into internal numbers (can be symbolic constants)
 // Format: {"Name", Number}, [C syntax for array member that's a struct]
@@ -122,6 +123,7 @@
 {"Set_Motion_Sensor_State", Set_Motion_Sensor_State},
 {"TRUE", 0x1},
 {"FALSE", 0x0},
+#endif
 {"knife", 0x0},
 {"fist", 0x0},
 {"magnum", 0x01},
@@ -302,3 +304,15 @@
 {"_fade_tint_orange", 0x1E},
 {"_fade_tint_gross", 0x1F},
 {"_fade_tint_jjaro", 0x20},
+#ifdef LUA_ACCESSING
+{"_weapon_fist", _weapon_fist},
+{"_weapon_pistol", _weapon_pistol},
+{"_weapon_plasma_pistol", _weapon_plasma_pistol},
+{"_weapon_shotgun", _weapon_shotgun},
+{"_weapon_assault_rifle", _weapon_assault_rifle},
+{"_weapon_smg", _weapon_smg},
+{"_weapon_flamethrower", _weapon_flamethrower},
+{"_weapon_missile_launcher", _weapon_missile_launcher},
+{"_weapon_alien_shotgun", _weapon_alien_shotgun},
+{"_weapon_ball", _weapon_ball}
+#endif

@@ -274,7 +274,7 @@ static sdl_font_info *DisplayTextFont = NULL;
 static short DisplayTextStyle = 0;
 #endif
 
-static void DisplayText(short BaseX, short BaseY, char *Text)
+/*static*/ void DisplayText(short BaseX, short BaseY, char *Text)
 {
 #ifdef HAVE_OPENGL
 	// OpenGL version:

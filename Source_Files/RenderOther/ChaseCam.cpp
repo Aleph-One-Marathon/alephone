@@ -138,7 +138,7 @@ static int CC_PosUpdate(float Damping, float Spring, short x0, short x1, short x
 //		keep_line_segment_out_of_walls(Ref_Polygon, &Ref_Position, &CC_Position,
 //			WORLD_ONE, 0, &adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
 //
-static void ShootForTargetPoint(bool ThroughWalls,
+/*static*/ void ShootForTargetPoint(bool ThroughWalls,
 	world_point3d& StartPosition, world_point3d& EndPosition,
 	short& Polygon)
 {

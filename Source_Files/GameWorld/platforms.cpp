@@ -78,6 +78,11 @@ Jun 30, 2002 (tiennou):
 #include "DamageParser.h"
 #include "scripting.h"
 
+#ifdef HAVE_LUA
+//MH: Lua scripting
+#include "lua_script.h"
+
+#endif /* HAVE_LUA */
 #include <string.h>
 
 #ifdef env68k
@@ -723,6 +728,10 @@ static bool set_platform_state(
 				/* assume the correct state, and correctly update all switches referencing this platform */
 				SET_PLATFORM_IS_ACTIVE(platform, state);
 				activate_platform_activated_trap(platform->polygon_index); // Hook for Pfhortran procedures
+#ifdef HAVE_LUA
+                                //MH: Lua script hook
+                                L_Call_Platform_Activated(platform->polygon_index);
+#endif /* HAVE_LUA */
 				assume_correct_switch_position(_panel_is_platform_switch, platform->polygon_index, state);
 				
 				new_state= state;

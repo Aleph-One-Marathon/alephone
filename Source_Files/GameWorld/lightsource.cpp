@@ -50,6 +50,11 @@ Jul 3, 2002 (Loren Petrich):
 #include "Packing.h"
 #include "scripting.h"
 
+#ifdef HAVE_LUA
+//MH: Lua scripting
+#include "lua_script.h"
+
+#endif /* HAVE_LUA */
 #ifdef env68k
 #pragma segment marathon
 #endif
@@ -279,6 +284,10 @@ bool set_light_status(
 			change_light_state(light_index, new_status ? _light_becoming_active : _light_becoming_inactive);
 			assert(light_index == static_cast<size_t>(static_cast<short>(light_index)));
 			activate_light_activated_trap(static_cast<int>(light_index)); // Hook for Pfhortran procedures
+#ifdef HAVE_LUA
+                        //MH: Lua script hook
+                        L_Call_Light_Activated(light_index);
+#endif /* HAVE_LUA */
 			assume_correct_switch_position(_panel_is_light_switch, static_cast<short>(light_index), new_status);
 			changed= true;
 		}
