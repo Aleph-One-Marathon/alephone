@@ -2040,7 +2040,8 @@ void dump_screen()
 #if SCREEN_BASED_SCREENSHOT
 	// Make sure the SourceRect is appropriate
 	SourceRect = DumpRect;
-	OffsetRect(&SourceRect, 0 - SourceRect.left, 0 - SourceRect.top);
+	OffsetRect(&SourceRect, 0 - ScreenRect.left, 0 - ScreenRect.top);
+	// OffsetRect(&SourceRect, 0 - SourceRect.left, 0 - SourceRect.top);
 #endif
 
 	// Now create a picture
