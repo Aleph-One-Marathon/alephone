@@ -260,8 +260,13 @@ extern bool OGL_HUDActive;
 //#define DEFAULT_WORLD_WIDTH 640
 //#define DEFAULT_WORLD_HEIGHT 320
 
+#ifdef APPLICATION_IS_BUNDLED
+const CFStringRef Window_Main_Game = CFSTR("Main_Game");
+const CFStringRef Window_Main_Backdrop = CFSTR("Main_Backdrop");
+#else
 #define windGAME_WINDOW 128
 #define windBACKDROP_WINDOW 129
+#endif
 
 #ifdef envppc
 #define EXTRA_MEMORY (100*KILO)
@@ -476,7 +481,12 @@ void initialize_screen(
 		assert(uncorrected_color_table && world_color_table && visible_color_table && interface_color_table);
 
 #if defined(TARGET_API_MAC_CARBON)
+#ifdef APPLICATION_IS_BUNDLED
+		error = CreateWindowFromNib(GUI_Nib,Window_Main_Backdrop, &backdrop_window);
+		assert(error == noErr);
+#else
 		backdrop_window= GetNewCWindow(windBACKDROP_WINDOW, NULL, (WindowPtr) -1);
+#endif
 #else
 		backdrop_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
 		assert(backdrop_window);
@@ -497,9 +507,14 @@ void initialize_screen(
 		ShowWindow(backdrop_window);
 
 #if defined(TARGET_API_MAC_CARBON)
+#ifdef APPLICATION_IS_BUNDLED
+		error = CreateWindowFromNib(GUI_Nib,Window_Main_Game, &screen_window);
+		assert(error == noErr);
+#else
 		screen_window= GetNewCWindow(windGAME_WINDOW, NULL, (WindowPtr) -1);
-          //AS: slight speedup; disable shadow
-          ChangeWindowAttributes(screen_window,kWindowNoShadowAttribute,0);
+#endif
+        //AS: slight speedup; disable shadow
+        ChangeWindowAttributes(screen_window,kWindowNoShadowAttribute,0);
 #else
 		screen_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
 		assert(screen_window);
