@@ -19,6 +19,10 @@ Jan 12, 2001 (Loren Petrich):
 
 #include "cseries.h"
 
+#ifdef __MVCPP__
+#include <windows.h>
+#endif
+
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
 #  include <OpenGL/gl.h>

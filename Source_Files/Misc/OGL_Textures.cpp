@@ -57,6 +57,10 @@ June 14, 2001 (Loren Petrich):
 
 #ifdef HAVE_OPENGL
 
+#ifdef __MVCPP__
+#include <windows.h>
+#endif
+
 #if defined (__APPLE__) && defined (__MACH__)
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>

@@ -13,6 +13,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __MVCPP__
+#include <windows.h>
+#endif
+
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
 #  include <OpenGL/gl.h>

@@ -52,6 +52,10 @@ Aug 21, 2001 (Loren Petrich):
 
 #ifdef HAVE_OPENGL
 
+#ifdef __MVCPP__
+#include <windows.h>
+#endif
+
 #if defined(mac)
 # include <agl.h>
 #elif defined(SDL)

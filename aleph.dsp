@@ -68,8 +68,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MD /W2 /Gm /Gi /GX /ZI /Od /I "Source_Files\Pfhortran" /I "Source_Files\Network" /I "Source_Files\CSeries" /I "Source_Files\Expat" /I "Source_Files\Misc" /I "C:\SDL\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "SDL" /D "__WIN32__" /D "__MVCPP__" /D "HAVE_OPENGL" /YX /FD /GZ /c
-# SUBTRACT CPP /X /Fr
+# ADD CPP /nologo /MD /W2 /Gm /Gi /GX /ZI /Od /I "Source_Files\Pfhortran" /I "Source_Files\Network" /I "Source_Files\CSeries" /I "Source_Files\Expat" /I "Source_Files\Misc" /I "C:\SDL\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "SDL" /D "__WIN32__" /D "__MVCPP__" /D "HAVE_OPENGL" /Fr /YX /FD /GZ /c
+# SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -1227,6 +1227,10 @@ SOURCE=..\..\VC98\Lib\GLU32.LIB
 # Begin Source File
 
 SOURCE=..\..\VC98\Lib\OPENGL32.LIB
+# End Source File
+# Begin Source File
+
+SOURCE="..\..\VC98\Include\STLport-4.0\lib\stlport_vc6_debug.lib"
 # End Source File
 # End Target
 # End Project
