@@ -319,9 +319,9 @@ boolean live_aliens_on_map(void);
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, int Count = 1);
-uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, int Count = 1);
-uint8 *unpack_monster_definition(uint8 *Stream, int Count = 1);
-uint8 *pack_monster_definition(uint8 *Stream, int Count = 1);
+uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, int Count);
+uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, int Count);
+uint8 *unpack_monster_definition(uint8 *Stream, int Count);
+uint8 *pack_monster_definition(uint8 *Stream, int Count);
 
 #endif

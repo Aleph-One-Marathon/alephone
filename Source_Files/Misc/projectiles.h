@@ -162,10 +162,10 @@ struct projectile_data *get_projectile_data(short projectile_index);
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 
-uint8 *unpack_projectile_data(uint8 *Stream, projectile_data *Objects, int Count = 1);
-uint8 *pack_projectile_data(uint8 *Stream, projectile_data *Objects, int Count = 1);
-uint8 *unpack_projectile_definition(uint8 *Stream, int Count = 1);
-uint8 *pack_projectile_definition(uint8 *Stream, int Count = 1);
+uint8 *unpack_projectile_data(uint8 *Stream, projectile_data *Objects, int Count);
+uint8 *pack_projectile_data(uint8 *Stream, projectile_data *Objects, int Count);
+uint8 *unpack_projectile_definition(uint8 *Stream, int Count);
+uint8 *pack_projectile_definition(uint8 *Stream, int Count);
 
 #endif
 
