@@ -27,6 +27,9 @@ May 11, 2000 (Loren Petrich):
 
 June 15, 2000 (Loren Petrich):
 	Added support for Chris Pruett's Pfhortran
+
+Aug 10, 2000 (Loren Petrich):
+	Added Chris Pruett's Pfhortran changes
 */
 
 #include "cseries.h"
@@ -58,7 +61,7 @@ June 15, 2000 (Loren Petrich):
 
 // CP additions:
 #include "scripting.h"
-
+#include "script_parser.h"
 
 #ifdef env68k
 #pragma segment marathon
@@ -97,6 +100,8 @@ void initialize_marathon(
 	// LP additions:
 	initialize_items();
 	OGL_Initialize();
+	// CP addition: init pfhortran
+	init_pfhortran();
 
 	return;
 }
@@ -136,7 +141,7 @@ short update_world(
 	for (i=0;i<time_elapsed;++i)
 	{
 		//CP Addition: Scripting handling stuff
-		if (script_in_use() && instruction_finished())
+		if (script_in_use() /*&& instruction_finished()*/)
 		{
 			do_next_instruction();
 		}
