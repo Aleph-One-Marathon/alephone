@@ -948,22 +948,35 @@ static bool vblFSRead(
 		}
 		replay.location_in_cache = replay.fsread_buffer;
 		fsread_count= DISK_CACHE_SIZE - replay.bytes_in_cache;
-		assert(fsread_count > 0);
-		// LP: wrapped the routines with some for finding out the file positions;
-		// this finds out how much is read indirectly
 		long PrevPos;
 		File.GetPosition(PrevPos);
-		status = File.Read(fsread_count,replay.fsread_buffer+replay.bytes_in_cache);
-		long CurrPos;
-		File.GetPosition(CurrPos);
-		long new_fsread_count = CurrPos - PrevPos;
-		long FileLen;
-		File.GetLength(FileLen);
-		HitEOF = (new_fsread_count < fsread_count) && (CurrPos == FileLen);
-		fsread_count = new_fsread_count;
-		if(status) replay.bytes_in_cache += fsread_count;
+		long replay_left= replay.header.length - PrevPos;
+		if(replay_left < fsread_count)
+			fsread_count= replay_left;
+		if(fsread_count > 0)
+		{
+			assert(fsread_count > 0);
+			// LP: wrapped the routines with some for finding out the file positions;
+			// this finds out how much is read indirectly
+			status = File.Read(fsread_count,replay.fsread_buffer+replay.bytes_in_cache);
+			long CurrPos;
+			File.GetPosition(CurrPos);
+			long new_fsread_count = CurrPos - PrevPos;
+			long FileLen;
+			File.GetLength(FileLen);
+			HitEOF = (new_fsread_count < fsread_count) && (CurrPos == FileLen);
+			fsread_count = new_fsread_count;
+			if(status) replay.bytes_in_cache += fsread_count;
+		}
 	}
 
+	// If we're still low, then we've consumed the disk cache
+	if(replay.bytes_in_cache < *count)
+	{
+		HitEOF = true;
+	}
+
+	// Ignore EOF if we still have cache
 	if (HitEOF && replay.bytes_in_cache < *count)
 	{
 		*count= replay.bytes_in_cache;
@@ -971,7 +984,7 @@ static bool vblFSRead(
 	else
 	{
 		status = true;
-		// error= 0;
+		HitEOF = false;
 	}
 	
 	memcpy(dest, replay.location_in_cache, *count);
