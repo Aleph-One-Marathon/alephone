@@ -264,6 +264,13 @@ static ISpNeed gNeeds[HowManyNeeds] =
 //Starts up InputSprockets and adds all the default Needs and Controls
 void initialize_ISp(void)
 {
+	// Check if weak-linking was successful
+	if((Ptr)ISpStartup == (Ptr)kUnresolvedCFragSymbolAddress)
+	{
+		canDoISp = false;
+		return;
+	}
+
 	OSErr err = noErr;
 	
 	err = ISpStartup();
