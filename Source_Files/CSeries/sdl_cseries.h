@@ -53,7 +53,7 @@ typedef void *WindowPtr;
 typedef void *DialogPtr;
 typedef void *MenuHandle;
 typedef SDL_Surface *PixMapHandle;
-typedef void *GrafPtr;
+typedef SDL_Surface *GrafPtr;
 typedef void *CGrafPtr;
 typedef void *GWorldPtr;
 typedef void *CTabHandle;
