@@ -25,6 +25,9 @@ Feb 24, 2000 (Loren Petrich):
 	
 Dec 31, 2000 (Mike Benonis):
 	Changed Section Popup Menu item number from 3 to 4.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added accessors for datafields now opaque in Carbon
 */
 
 #include "cseries.h"
@@ -81,8 +84,12 @@ bool set_preferences(
 	GetDialogItem(dialog, iPREF_SECTION_POPUP, &item_type, 
 		(Handle *) &preferences_control, &bounds);
 	assert(preferences_control);
+#if defined(USE_CARBON_ACCESSORS)
+	mHandle= GetControlPopupMenuHandle(preferences_control);
+#else
 	privateHndl= (PopupPrivateData **) ((*preferences_control)->contrlData);
 	mHandle= (*privateHndl)->mHandle;
+#endif
 
 	/* Append the preferences names to the popup. */
 	for(index= 0; index<count; ++index)
@@ -102,10 +109,18 @@ bool set_preferences(
 	SetControlValue(preferences_control, current_pref_section+1);
 
 	/* Show the dialog... */
+#if defined(USE_CARBON_ACCESSORS)
+	ShowWindow(GetDialogWindow(dialog));
+#else
 	ShowWindow((WindowPtr) dialog);
+#endif
 
 	/* Create the modal proc. */
+#if defined(TARGET_API_MAC_CARBON)
+	modal_proc= NewModalFilterUPP(preferences_filter_proc);
+#else        
 	modal_proc= NewModalFilterProc(preferences_filter_proc);
+#endif
 	assert(modal_proc);
 
 	/* Setup the filter procedure */

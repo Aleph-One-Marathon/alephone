@@ -38,6 +38,10 @@ Dec 17, 2000 (Loren Petrich):
 	Eliminated fog parameters from the preferences;
 	there is still a "fog present" switch, which is used to indicate
 	whether fog will not be suppressed.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added accessors for datafields now opaque in Carbon
+	Proc pointers are now UPP
 */
 
 #include "cseries.h"
@@ -135,6 +139,9 @@ static bool TextureConfigureDialog(short WhichTexture)
 	
 	// Edit the title
 	HLock(Handle(BasedOn_CHdl));
+#if defined(USE_CARBON_ACCESSORS)
+	MenuHandle BasedOn_MHdl = GetControlPopupMenuHandle(BasedOn_CHdl);
+#else
 	ControlRecord *PopupPtr = *BasedOn_CHdl;
 	
 	Handle CtrlDataHdl = PopupPtr->contrlData;
@@ -142,6 +149,7 @@ static bool TextureConfigureDialog(short WhichTexture)
 	PopupPrivateData *PPD = (PopupPrivateData *)(*CtrlDataHdl);
 	
 	MenuHandle BasedOn_MHdl = PPD->mHandle;
+#endif
 	Str255 WhichTxtrLabel;
 	GetMenuItemText(BasedOn_MHdl,WhichTexture+1,WhichTxtrLabel);
 	
@@ -149,14 +157,21 @@ static bool TextureConfigureDialog(short WhichTexture)
 	GetDialogItem(Dialog, WhichOne_Item, &ItemType, &WhichOne_Hdl, &Bounds);
 	SetDialogItemText(WhichOne_Hdl,WhichTxtrLabel);
 	
+#if !defined(USE_CARBON_ACCESSORS)
 	HUnlock(CtrlDataHdl);
+#endif
 	HUnlock(Handle(BasedOn_CHdl));
 	
 	short WhichAltTxtr;	// Which alternative one selected
 	
 	// Reveal it
+#if defined(USE_CARBON_ACCESSORS)
+	SelectWindow(GetDialogWindow(Dialog));
+	ShowWindow(GetDialogWindow(Dialog));
+#else
 	SelectWindow(Dialog);
 	ShowWindow(Dialog);
+#endif
 	
 	bool WillQuit = false;
 	bool IsOK = false;
@@ -206,7 +221,11 @@ static bool TextureConfigureDialog(short WhichTexture)
 	}
 	
 	// Clean up
+#if defined(USE_CARBON_ACCESSORS)
+	HideWindow(GetDialogWindow(Dialog));
+#else
 	HideWindow(Dialog);
+#endif
 	DisposeDialog(Dialog);
 	
 	return IsOK;
@@ -320,7 +339,11 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		
 	ControlHandle ColorVoidSwatch_CHdl;
 	GetDialogItem(Dialog, ColorVoidSwatch_Item, &ItemType, (Handle *)&ColorVoidSwatch_CHdl, &Bounds);
+#if defined(TARGET_API_MAC_CARBON)
+	UserItemUPP PaintSwatchUPP = NewUserItemUPP(PaintSwatch);
+#else
 	UserItemUPP PaintSwatchUPP = NewUserItemProc(PaintSwatch);
+#endif
 	SetDialogItem(Dialog, ColorVoidSwatch_Item, ItemType, Handle(PaintSwatchUPP), &Bounds);
 	
 	MacCheckbox FlatColorLandscapes_CB(Dialog, FlatColorLandscapes_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatLand) != 0);
@@ -350,8 +373,13 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			LscpColors[il][ie] = Data.LscpColors[il][ie];
 	
 	// Reveal it
+#if defined(USE_CARBON_ACCESSORS)
+	SelectWindow(GetDialogWindow(Dialog));
+	ShowWindow(GetDialogWindow(Dialog));
+#else
 	SelectWindow(Dialog);
 	ShowWindow(Dialog);
+#endif
 	
 	bool WillQuit = false;
 	bool IsOK = false;
@@ -464,7 +492,11 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	}
 	
 	// Clean up
+#if defined(USE_CARBON_ACCESSORS)
+	HideWindow(GetDialogWindow(Dialog));
+#else
 	HideWindow(Dialog);
+#endif
 	DisposeRoutineDescriptor(UniversalProcPtr(PaintSwatchUPP));
 	DisposeDialog(Dialog);
 	

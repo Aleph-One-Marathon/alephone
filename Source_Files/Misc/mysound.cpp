@@ -121,6 +121,9 @@ Apr 8, 2001 (Loren Petrich):
 
 Apr 26, 2001 (Loren Petrich):
 	Got that support working
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
 */
 
 /*
@@ -135,8 +138,12 @@ shortening radii on low-volume ambient sound sorces would be a good idea
 #include <stdlib.h>
 
 #ifdef mac
+#if defined(TARGET_API_MAC_CARBON)
+    #include <quicktime/Quicktime.h>
+#else
 #include <Gestalt.h>
 #include <Movies.h>
+#endif
 #endif
 
 #include "shell.h"

@@ -66,6 +66,10 @@ June 14, 2001 (Loren Petrich):
 
 Nov 30, 2001 (Alexander Strange):
 	Added Ian Rickard's texture purging to save VRAM.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for AGL.h
+
 */
 
 #include <string.h>
@@ -91,7 +95,11 @@ Nov 30, 2001 (Alexander Strange):
 #endif
 
 #ifdef mac
-#include <agl.h>
+# if defined(TARGET_API_MAC_CARBON)
+#  include <AGL/agl.h>
+# else
+#  include <agl.h>
+# endif
 #endif
 
 #include "interface.h"

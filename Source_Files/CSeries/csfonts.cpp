@@ -17,10 +17,17 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	Added accessors for datafields now opaque in Carbon
 */
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <Resources.h>
 #include <Quickdraw.h>
+#endif
 
 #include "csfonts.h"
 
@@ -58,9 +65,15 @@ void GetFont(
 	GrafPtr port;
 
 	GetPort(&port);
+#if defined(USE_CARBON_ACCESSORS)
+	spec->font=GetPortTextFont(port);
+	spec->style=GetPortTextFace(port);
+	spec->size=GetPortTextSize(port);
+#else
 	spec->font=port->txFont;
 	spec->style=port->txFace;
 	spec->size=port->txSize;
+#endif
 }
 
 void SetFont(

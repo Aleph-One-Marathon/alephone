@@ -77,6 +77,9 @@ Sep 24, 2000 (Loren Petrich):
 
 Jun 23, 2001 (Loren Petrich):
 	Suppressed some of the asserts in the code; tried to make degradation more graceful
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added accessors for datafields now opaque in Carbon
 */
 
 // add logon/logoff keywords. (& make terminal display them)
@@ -662,7 +665,13 @@ void _render_computer_interface(
 #if defined(mac)
 		// LP change: restore overall clipping
 		// Changed to actually-used buffer
+#if defined(USE_CARBON_ACCESSORS)
+		Rect portRect;
+		GetPortBounds(world_pixels, &portRect);
+		ClipRect(&portRect);
+#else
 		ClipRect(&world_pixels->portRect);
+#endif
 #else
 		// Disable clipping
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
@@ -1795,7 +1804,13 @@ static void present_checkpoint_text(
 		_render_overhead_map(&overhead_data);
 #ifdef mac
 		// Reset it to the overall bounds
+#if defined(USE_CARBON_ACCESSORS)
+		Rect portRect;
+		GetPortBounds(world_pixels, &portRect);
+		ClipRect(&portRect);
+#else
 		ClipRect(&world_pixels->portRect);
+#endif
 #endif
 	} else {
 		char format_string[128];

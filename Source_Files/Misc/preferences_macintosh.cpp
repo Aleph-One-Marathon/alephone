@@ -71,7 +71,20 @@ Sept 9, 2001 (Loren Petrich):
 	Also added Ian Rickard's smart-dialog processing.
 	And added a routine for setting preferences to single files
 	if only single files of some type are present (idiot-proofing)
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for CoreServices.h
+	Attempted to get current user name for Carbon
+	Added accessors for datafields now opaque in Carbon
+	Disabled ethernet check for Carbon
+	Attempting to configure ISP controls now asserts
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Included Bytnar inspired changes to disable InputSprocket controls under Carbon
 */
+#if defined(TARGET_API_MAC_CARBON)
+    #include <CoreServices/CoreServices.h>
+#endif
 
 #ifdef env68k
 	#pragma segment dialogs
@@ -156,6 +169,21 @@ void handle_preferences(
 static void get_name_from_system(
 	unsigned char *name)
 {
+#if defined(TARGET_API_MAC_CARBON)
+	CFStringEncoding encoding = CFStringGetSystemEncoding();
+	CFStringRef username = CSCopyUserName(false);
+	Str255 buffer;
+	ConstStringPtr ptr;
+	ptr = CFStringGetPascalStringPtr(username, encoding);
+	if (ptr == NULL) {
+		if (CFStringGetPascalString(username, buffer, 256, encoding))
+			ptr = buffer;
+		}
+	CFRelease(username);
+	assert(ptr);
+	
+	pstrcpy(name, (unsigned char *)ptr);
+#else
 	StringHandle name_handle;
 	char old_state;
 
@@ -167,6 +195,7 @@ static void get_name_from_system(
 	
 	pstrcpy(name, *name_handle);
 	HSetState((Handle)name_handle, old_state);
+#endif
 }
 
 
@@ -180,9 +209,14 @@ static bool ethernet_active(
 	short  refnum;
 	OSErr  error;
 
+#if defined(TARGET_API_MAC_CARBON)
+	// JTP: I'm lame, not doing anything for network foo
+	return false;
+#else
 	error= OpenDriver("\p.ENET", &refnum);
 	
 	return error==noErr ? true : false;
+#endif
 }
 
 
@@ -608,7 +642,21 @@ static void setup_input_dialog(
 {
 	struct input_preferences_data *preferences= (struct input_preferences_data *)prefs;
 	short which;
+	short active;
 	
+	// JTP: Bytnar's inspired to disable ISp controls on no ISp systems, like OS X
+#if defined(TARGET_API_MAC_CARBON) && __MACH__
+//	if (!ISp_IsPresent())
+//	{
+		active= CONTROL_INACTIVE;
+		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), active, false);
+		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iINPUT_SPROCKET_CONTROL, first_item), active, false);
+		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iSET_INPUT_SPROCKET, first_item), active, false);
+		if (preferences->input_device != _mouse_yaw_pitch)
+			preferences->input_device = _mouse_yaw_pitch;
+//	}
+#endif
+
 	// LP change: implemented Ben Thompson ISp support
 	which = (preferences->input_device == _mouse_yaw_pitch) ? iMOUSE_CONTROL :
 		(preferences->input_device == _keyboard_or_game_pad) ?iKEYBOARD_CONTROL: iINPUT_SPROCKET_CONTROL;
@@ -617,7 +665,6 @@ static void setup_input_dialog(
 		LOCAL_TO_GLOBAL_DITL(which, first_item));
 	
 	// LP addition: handle the input modifiers
-	short active;
 		
 	active= CONTROL_ACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iINTERCHANGE_RUN_WALK, first_item), active, 
@@ -701,7 +748,11 @@ static void hit_input_item(
 
 		// LP change: modification of Ben Thompson's change
 		case iSET_INPUT_SPROCKET:
+#if defined(TARGET_API_MAC_CARBON)
+			assert(0);
+#else
 			ConfigureMarathonISpControls();
+#endif
 			break;
 			
 		default:
@@ -760,7 +811,13 @@ static void setup_environment_dialog(
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iSOUNDS, first_item),
 			_typecode_sounds, preferences->sounds_mod_date);
 
+#if defined(USE_CARBON_ACCESSORS)
+		Cursor arrow;
+		GetQDGlobalsArrow(&arrow);
+		SetCursor(&arrow);
+#else
 		SetCursor(&qd.arrow);
+#endif
 	} else {
 		// LP change:
 		assert(false);
@@ -870,19 +927,32 @@ static void set_popup_enabled_state(
 	GetDialogItem(dialog, item_number, &item_type, (Handle *) &control, &bounds);
 	assert(item_type&ctrlItem);
 
+#if defined(USE_CARBON_ACCESSORS)
+	menu= GetControlPopupMenuHandle(control);
+#else
 	/* I don't know how to assert that it is a popup control... <sigh> */
 	privateHndl= (PopupPrivateData **) ((*control)->contrlData);
 	assert(privateHndl);
 	
 	menu= (*privateHndl)->mHandle;
+#endif
 	assert(menu);
 	
+#if defined(TARGET_API_MAC_CARBON)
+	if(enabled)
+	{
+		EnableMenuItem(menu, item_to_affect);
+	} else {
+		DisableMenuItem(menu, item_to_affect);
+	}
+#else	
 	if(enabled)
 	{
 		EnableItem(menu, item_to_affect);
 	} else {
 		DisableItem(menu, item_to_affect);
 	}
+#endif
 }
 
 static bool allocate_extensions_memory(
@@ -1090,7 +1160,11 @@ static void fill_in_popup_with_filetype(
 	menu= get_popup_menu_handle(dialog, item);
 	
 	/* Remove whatever it had */
+#if defined(TARGET_API_MAC_CARBON)
+	while(CountMenuItems(menu)) DeleteMenuItem(menu, 1);
+#else
 	while(CountMItems(menu)) DeleteMenuItem(menu, 1);
+#endif
 
 	assert(file_descriptions);
 	for(index= 0; index<accessory_file_count; ++index)
@@ -1098,18 +1172,30 @@ static void fill_in_popup_with_filetype(
 		if(file_descriptions[index].file_type==type)
 		{
 			AppendMenu(menu, "\p ");
+#if defined(TARGET_API_MAC_CARBON)
+			SetMenuItemText(menu, CountMenuItems(menu), accessory_files[index].GetSpec().name);
+#else
 			SetMenuItemText(menu, CountMItems(menu), accessory_files[index].GetSpec().name);
+#endif
 
 			if(file_descriptions[index].checksum==checksum)
 			{
+#if defined(TARGET_API_MAC_CARBON)
+				value= CountMenuItems(menu);
+#else
 				value= CountMItems(menu);
+#endif
 			}
 		}
 	} 
 
 	/* Set the max value */
 	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
+#if defined(TARGET_API_MAC_CARBON)
+	count= CountMenuItems(menu);
+#else
 	count= CountMItems(menu);
+#endif
 
 	if(count==0)
 	{
@@ -1208,11 +1294,15 @@ static MenuHandle get_popup_menu_handle(
 	/* Add the maps.. */
 	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
 
+#if defined(USE_CARBON_ACCESSORS)
+	menu= GetControlPopupMenuHandle(control);
+#else
 	/* I don't know how to assert that it is a popup control... <sigh> */
 	privateHndl= (PopupPrivateData **) ((*control)->contrlData);
 	assert(privateHndl);
 
 	menu= (*privateHndl)->mHandle;
+#endif
 	assert(menu);
 
 	return menu;

@@ -1,5 +1,5 @@
 /*
- * mytm_macintosh.cpp (was mytm.cpp)
+ * mytm_mac_carbon.cpp
  
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
 	and the "Aleph One" developers.
@@ -31,15 +31,14 @@ Oct 15, 2001 (Woody Zenfell)
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 	timer_proc allocated as a NewTimerUPP under carbon
+
+Jan 29, 2002 (Br'fin (Jeremy Parsons)):
+	Forked from mytm_macintosh.cpp to use CarbonEvents timer
 */
 
 #include <stdlib.h>
 
-#if defined(TARGET_API_MAC_CARBON)
-    #include <Carbon/Carbon.h>
-#else
-#include <Timer.h>
-#endif
+#include <Carbon/Carbon.h>
 
 #include "cstypes.h"
 #include "csmisc.h"
@@ -47,52 +46,27 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 
 struct myTMTask {
-	TMTask task;
-#ifdef env68k
-	long a5;
-#endif
+	EventLoopTimerRef task;
 	bool (*func)(void);
 	long time;
-	bool insX;
 	bool primed;
 };
 
-#ifdef env68k
-#pragma parameter timer_proc(__A1)
-#endif
-
 static pascal void timer_proc(
-	TMTaskPtr task)
+	EventLoopTimerRef inTimer,
+	void *task)
 {
 	myTMTaskPtr mytask=(myTMTaskPtr)task;
-#ifdef env68k
-	long savea5;
 
-	savea5=set_a5(mytask->a5);
-#endif
 	mytask->primed=false;
 	if ((*mytask->func)()) {
 		mytask->primed=true;
-		PrimeTime((QElemPtr)mytask,mytask->time);
 	} else {
-		mytask->task.tmWakeUp=0;
+		RemoveEventLoopTimer(inTimer);
 	}
-#ifdef env68k
-	set_a5(savea5);
-#endif
 }
 
-#if defined(TARGET_API_MAC_CARBON)
-static TimerUPP timer_upp = NewTimerUPP(timer_proc);
-#else
-#ifdef env68k
-#define timer_upp ((TimerUPP)timer_proc);
-#else
-static RoutineDescriptor timer_desc =
-	BUILD_ROUTINE_DESCRIPTOR(uppTimerProcInfo,timer_proc);
-#define timer_upp (&timer_desc)
-#endif
-#endif
+static EventLoopTimerUPP timer_upp = NewEventLoopTimerUPP(timer_proc);
 
 myTMTaskPtr myTMSetup(
 	long time,
@@ -103,18 +77,16 @@ myTMTaskPtr myTMSetup(
 	result= new myTMTask;
 	if (!result)
 		return result;
-	result->task.tmAddr=timer_upp;
-	result->task.tmWakeUp=0;
-	result->task.tmReserved=0;
-#ifdef env68k
-	result->a5=get_a5();
-#endif
 	result->func=func;
 	result->time=time;
-	result->insX=false;
 	result->primed=true;
-	InsTime((QElemPtr)result);
-	PrimeTime((QElemPtr)result,time);
+	
+	InstallEventLoopTimer(GetMainEventLoop(),
+		time * kEventDurationMillisecond,
+		time * kEventDurationMillisecond,
+		timer_upp,
+		result,
+		&result->task);
 	return result;
 }
 
@@ -122,24 +94,7 @@ myTMTaskPtr myXTMSetup(
 	long time,
 	bool (*func)(void))
 {
-	myTMTaskPtr result;
-
-	result= new myTMTask;
-	if (!result)
-		return result;
-	result->task.tmAddr=timer_upp;
-	result->task.tmWakeUp=0;
-	result->task.tmReserved=0;
-#ifdef env68k
-	result->a5=get_a5();
-#endif
-	result->func=func;
-	result->time=time;
-	result->insX=false;
-	result->primed=true;
-	InsXTime((QElemPtr)result);
-	PrimeTime((QElemPtr)result,time);
-	return result;
+	return myTMSetup(time, func);
 }
 
 myTMTaskPtr myTMRemove(
@@ -147,7 +102,10 @@ myTMTaskPtr myTMRemove(
 {
 	if (!task)
 		return NULL;
-	RmvTime((QElemPtr)task);
+	if(task->primed)
+	{
+		RemoveEventLoopTimer(task->task);
+	}
 	delete task;
 	return NULL;
 }
@@ -156,17 +114,19 @@ void myTMReset(
 	myTMTaskPtr task)
 {
 	if (task->primed) {
-		RmvTime((QElemPtr)task);
-		task->task.tmWakeUp=0;
-		task->task.tmReserved=0;
-		if (task->insX) {
-			InsXTime((QElemPtr)task);
-		} else {
-			InsTime((QElemPtr)task);
-		}
+		SetEventLoopTimerNextFireTime(task->task,
+			task->time * kDurationMillisecond);
 	}
-	task->primed=true;
-	PrimeTime((QElemPtr)task,task->time);
+	else
+	{
+		task->primed=true;
+		InstallEventLoopTimer(GetMainEventLoop(),
+			task->time * kEventDurationMillisecond,
+			task->time * kEventDurationMillisecond,
+			timer_upp,
+			task,
+			&task->task);
+	}
 }
 
 // WZ's dummy function

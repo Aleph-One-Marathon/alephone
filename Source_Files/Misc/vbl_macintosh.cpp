@@ -33,10 +33,17 @@ Feb 10, 2000 (Loren Petrich):
 
 Jul 7, 2000 (Loren Petrich)
 	Added Ben Thompson's ISp-support changes
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Disabled Folders.h under Carbon (included in framework)
+	Removed excess static remove_input_controller prototype under Carbon
+		(was creating compilation errors)
 */
 
 #include "macintosh_cseries.h"
+#if !defined(TARGET_API_MAC_CARBON)
 #include <Folders.h>
+#endif
 #include <string.h>
 #include <stdlib.h>
 
@@ -74,7 +81,9 @@ static struct special_flag_data special_flags[]=
 /* ------------ globals */
 /* ------------ prototypes */
 static OSErr copy_file(FSSpec *source, FSSpec *destination);
+#if !defined(TARGET_API_MAC_CARBON)
 static void remove_input_controller(void);
+#endif
 
 /* ------------ code */
 bool find_replay_to_use(

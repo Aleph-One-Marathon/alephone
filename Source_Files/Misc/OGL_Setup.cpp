@@ -60,6 +60,11 @@ Jul 8, 2001 (Loren Petrich):
 
 Aug 21, 2001 (Loren Petrich):
 	Adding support for 3D-model inhabitant objects
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for OpenGL.h, AGL.h
+	Removed QuickDraw3D support from Carbon
+
 */
 
 #include <vector>
@@ -74,7 +79,12 @@ Aug 21, 2001 (Loren Petrich):
 #endif
 
 #if defined(mac)
-# include <agl.h>
+# if defined(TARGET_API_MAC_CARBON)
+#  include <OpenGL/gl.h>
+#  include <AGL/agl.h>
+# else
+#  include <agl.h>
+# endif
 #elif defined(SDL)
 # if defined (__APPLE__) && defined (__MACH__)
 #  include <OpenGL/gl.h>
@@ -706,7 +716,7 @@ void OGL_ModelData::Load()
 		// 3D Studio Max
 		Success = LoadModel_Studio(File, Model);
 	}
-#ifdef mac
+#if defined(mac) && !defined(TARGET_API_MAC_CARBON)
 	else if (StringsEqual(Type,"qd3d") || StringsEqual(Type,"3dmf") || StringsEqual(Type,"quesa"))
 	{
 		// QuickDraw 3D / Quesa

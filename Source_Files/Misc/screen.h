@@ -54,6 +54,9 @@ Mar 19, 2001 (Loren Petrich):
 Sept 9, 2001 (Loren Petrich):
 	Eliminated the Valkyrie-acceleration option once and for all;
 	will take care of any side effects elsewhere in the code
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Included Steve Bytnar's OSX QDPort flushing code
 */
 
 /* ---------- constants */
@@ -172,6 +175,9 @@ void update_screen_window(WindowPtr window, EventRecord *event);
 // LP: for switching to another process and returning (suspend/resume events)
 void SuspendDisplay(EventRecord *EvPtr);
 void ResumeDisplay(EventRecord *EvPtr);
+
+// Bytnar: for updating windows immediately under OSX
+void FlushGrafPortRect(const CGrafPtr port, const Rect &destination);
 
 #elif defined(SDL)
 void toggle_fullscreen(bool fs);

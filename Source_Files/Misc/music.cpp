@@ -45,6 +45,10 @@ Oct 14, 2000 (Loren Petrich):
 
 Mar 14, 2001 (Loren Petrich):
 	Added use of old music player in case the music file's typecode was the "official" Marathon one
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Quicktime.h
+	Had to disable all of the all music player under Carbon
 */
 
 /*
@@ -59,7 +63,11 @@ Mar 14, 2001 (Loren Petrich):
 // no need for them in the PowerPC MacOS or anywhere else
 
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <quicktime/Quicktime.h>
+#else
 #include <Movies.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -248,11 +256,13 @@ void PreloadMusic()
 bool initialize_music_handler(FileSpecifier& SongFile)
 //	FileDesc *song_file)
 {
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 	// In case the old player doesn't get initialized...
 	music_state.initialized= false;
 	
 	// Check on whether we'll be using it
 	UsingOldPlayer = (SongFile.GetType() == _typecode_music);
+#endif
 	
 	// LP: using Quicktime to play the movie if available
 	if (UseNewPlayer())
@@ -262,6 +272,7 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 		return true;
 	}
 	
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 	// Just in case the initial music was skipped and we want to go straight to a level...
 	UsingOldPlayer = false;
 
@@ -318,6 +329,7 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 		assert(music_state.completion_proc);
 		atexit(shutdown_music_handler);
 	}
+#endif
 	// LP addition:
 		return false;
 	
@@ -330,6 +342,7 @@ void free_music_channel(
 	// Who cares about this if QT is present?
 	if (UseNewPlayer()) return;
 	
+#if !defined(SUPRESS_MACOS_CLASSIC)	
 	if (music_state.initialized && music_state.channel)
 	{
 		OSErr error;
@@ -338,6 +351,7 @@ void free_music_channel(
 		vwarn(error==noErr, csprintf(temporary, "SndDisposeChannel returned %d;g", error));
 		music_state.channel= NULL;
 	}
+#endif
 }
 
 void queue_song(
@@ -355,6 +369,7 @@ void queue_song(
 		return;
 	}
 
+#if !defined(SUPRESS_MACOS_CLASSIC)
 	if (music_state.initialized && get_sound_volume())
 	{
 		if (!music_state.channel)
@@ -386,6 +401,7 @@ void queue_song(
 			}
 		}
 	}
+#endif
 }
 
 void fade_out_music(
@@ -397,6 +413,7 @@ void fade_out_music(
 		return;
 	}
 
+#if !defined(SUPRESS_MACOS_CLASSIC)
 	if(music_playing())
 	{
 		music_state.fade_duration= duration;
@@ -407,6 +424,7 @@ void fade_out_music(
 		music_state.fade_interval_ticks= 5;
 		music_state.song_index= NONE;
 	}
+#endif
 }
 
 void music_idle_proc(
@@ -471,6 +489,7 @@ void music_idle_proc(
 		return;
 	}
 
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 	if(music_state.initialized && music_state.state != _no_song_playing)
 	{
 		short ticks_elapsed= TickCount()-music_state.ticks_at_last_update;
@@ -569,6 +588,7 @@ void music_idle_proc(
 		}
 		music_state.ticks_at_last_update= TickCount();
 	}
+#endif
 
 	return;
 }
@@ -589,6 +609,7 @@ void stop_music(
 		return;
 	}
 	
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 	if (music_state.initialized && music_state.state != _no_song_playing)
 	{
 		OSErr error;
@@ -600,6 +621,7 @@ void stop_music(
 		delete []music_state.sound_buffer;
 		music_state.sound_buffer= NULL;
 	}
+#endif
 	
 	// Set up for doing level music, which needs the new player
 	UsingOldPlayer = false;
@@ -619,6 +641,7 @@ void pause_music(bool pause)
 		return;
 	}
 	
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 	if(music_playing())
 	{
 		bool pause_it= false;
@@ -648,12 +671,14 @@ void pause_music(bool pause)
 			vwarn(error==noErr, csprintf(temporary, "Pause error: %d;g", error));
 		}
 	}
+#endif
 }
 
 bool music_playing(void)
 {
 	if (UseNewPlayer()) return QTMMPlaying;
 		
+#if !defined(SUPRESS_MACOS_CLASSIC)
 	bool playing= false;
 	
 	if(music_state.initialized && music_state.state != _no_song_playing)
@@ -663,6 +688,9 @@ bool music_playing(void)
 	}
 
 	return playing;
+#else
+	return false;
+#endif
 }
 
 /* --------------- private code */
@@ -671,12 +699,14 @@ static void shutdown_music_handler(
 {
 	if (UseNewPlayer()) return;
 	
+#if !defined(SUPRESS_MACOS_CLASSIC)
 	if(music_state.initialized)
 	{
 		free_music_channel();
 		music_state.OFile.Close();
 		// FSClose(music_state.song_file_refnum);
 	}
+#endif
 }
 
 static pascal void file_play_completion_routine(

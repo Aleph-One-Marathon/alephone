@@ -17,9 +17,16 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	Carbon uses GetNextEvent instead of GetOSEvent
 */
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <Events.h>
+#endif
 
 #include "cstypes.h"
 #include "csmisc.h"
@@ -39,8 +46,13 @@ bool wait_for_click_or_keypress(
 
 	end=TickCount()+ticks;
 	for (;;) {
+#if defined(TARGET_API_MAC_CARBON)
+		if (GetNextEvent(mDownMask|keyDownMask,&event))
+			return true;
+#else
 		if (GetOSEvent(mDownMask|keyDownMask,&event))
 			return true;
+#endif
 		if (event.when>=end)
 			return false;
 	}

@@ -20,6 +20,9 @@
 	February 21, 2000 (Loren Petrich)
 	
 	Crosshairs-implementation file; contains Quickdraw crosshairs code.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added accessors for datafields now opaque in Carbon
 */
 
 #include "cseries.h"
@@ -107,4 +110,12 @@ bool Crosshairs_Render(GrafPtr Context, Rect &ViewRect)
 
 // If no view rectangle is explicitly specified
 bool Crosshairs_Render(GrafPtr Context)
-	{return Crosshairs_Render(Context,Context->portRect);}
+{
+#if defined(USE_CARBON_ACCESSORS)
+	Rect portRect;
+	GetPortBounds(Context, &portRect);
+	return Crosshairs_Render(Context, portRect);
+#else
+	return Crosshairs_Render(Context,Context->portRect);
+#endif
+}

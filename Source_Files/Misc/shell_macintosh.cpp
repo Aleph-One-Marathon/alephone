@@ -117,9 +117,21 @@ Dec 2, 2000 (Loren Petrich):
 Dec 31, 2000 (Mike Benonis):
 	Changed Dialog Header drawing code so it will not draw the Preferences header in the
 	preferences dialog.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Quicktime.h
+	Added accessors for datafields now opaque in Carbon
+	Added startup checks and initilizations appropriate for Carbon
+
+Jan 29, 2002 (Br'fin (Jeremy Parsons)):
+	Added a RunCurrentEventLoop to let our Carbon input timer run
 */
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <quicktime/Quicktime.h>
+#else
 #include <exception.h>
+#endif
 
 #include "macintosh_cseries.h"
 #include "my32bqd.h"
@@ -235,8 +247,13 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec);
 
 /* ---------- code */
 
+#if defined(TARGET_API_MAC_CARBON)
+int main(
+	void)
+#else
 void main(
 	void)
+#endif
 {	
 	// LP: on Christian Bauer's suggestion, I've enclosed the code in a try-catch block
 	try
@@ -283,18 +300,22 @@ static int EscapeKeyRefractoryTime = 0;
 static void initialize_application_heap(
 	void)
 {
+#if !defined(TARGET_API_MAC_CARBON)
 	MaxApplZone();
+#endif
 	MoreMasters();
 	MoreMasters();
 	MoreMasters();
 	MoreMasters();
 
+#if !defined(TARGET_API_MAC_CARBON)
 	InitGraf(&qd.thePort);
 	InitFonts();
 	InitWindows();
 	InitMenus();
 	TEInit();
 	InitDialogs(0); /* resume procedure ignored for multifinder and >=system 7.0 */
+#endif
 	InitCursor();
 
 	long response;
@@ -331,7 +352,11 @@ static void initialize_application_heap(
 
 	SetCursor(*GetCursor(watchCursor));
 
+#if defined(USE_CARBON_ACCESSORS)
+	SetQDGlobalsRandomSeed(TickCount());
+#else
 	qd.randSeed = TickCount();
+#endif
 
 #ifdef PERFORMANCE
 	{
@@ -372,11 +397,20 @@ static void initialize_application_heap(
 		for (int i=0; i<NumStrings; i++)
 		{
 			// Get next path specification; quit when one has found an empty one
+
 			unsigned char PathSpec[256];
+#if defined(USE_CARBON_ACCESSORS)
+			Str255 pascalPathSpec;
+			GetIndString(pascalPathSpec,PathID,i+1);	// Zero-based to one-based indexing
+			
+			// Make a C string from this Pascal string
+			CopyPascalStringToC(pascalPathSpec, (char *)PathSpec);
+#else
 			GetIndString(PathSpec,PathID,i+1);	// Zero-based to one-based indexing
 			
 			// Make a C string from this Pascal string
 			p2cstr(PathSpec);
+#endif
 			// fdprintf("Dir Path = %s",PathSpec);
 			
 			DirectorySpecifier DirSpec;
@@ -415,7 +449,13 @@ static void initialize_application_heap(
 	load_environment_from_preferences();
 
 	initialize_game_state();
+#if defined(USE_CARBON_ACCESSORS)
+	Cursor arrow;
+	GetQDGlobalsArrow(&arrow);
+	SetCursor(&arrow);
+#else
 	SetCursor(&qd.arrow);
+#endif
 
 	return;
 }
@@ -676,6 +716,42 @@ void handle_game_key(
 static void verify_environment(
 	void)
 {
+#if defined(TARGET_API_MAC_CARBON)
+	OSErr result;
+	long response;
+	long getCPUtype;
+	
+	result = Gestalt(gestaltSystemVersion, &response);
+	if (result!=noErr||response<0x1001)
+	{
+		alert_user(fatalError, strERRORS, badSystem, response);
+	}
+
+	result = Gestalt(gestaltQuickdrawVersion, &response);
+	if (result!=noErr||response<gestalt32BitQD13)
+	{
+		alert_user(fatalError, strERRORS, badQuickDraw, 0);
+	}
+	
+	result = Gestalt(gestaltNativeCPUtype, &getCPUtype);
+	if(result == noErr)
+	{
+		if (0x100 & getCPUtype) {
+			// We're on a PowerPC, rock on
+		}
+		else
+		{
+			result = Gestalt ( gestaltProcessorType, &getCPUtype );
+			if(getCPUtype != gestalt68040)
+			alert_user(fatalError, strERRORS, badProcessor, response);
+		}
+	}
+	else
+	{
+		alert_user(fatalError, strERRORS, badProcessor, response);
+	}
+	
+#else
 	SysEnvRec environment;
 	OSErr result;
 
@@ -694,6 +770,7 @@ static void verify_environment(
 	{
 		alert_user(fatalError, strERRORS, badProcessor, environment.processor);
 	}
+#endif
 	
 	if (FreeMem()<2900000)
 	{
@@ -919,12 +996,17 @@ static void initialize_system_information(
 	}
 
 	/* Is appletalk available? */
+#if defined(TARGET_API_MAC_CARBON)
+	// I'm not doing network foo right now
+	system_information->appletalk_is_available= false;
+#else
 	if(system_information->has_seven && NetDDPOpen()==noErr && FreeMem()>kMINIMUM_NETWORK_HEAP)
 	{
 		system_information->appletalk_is_available= true;
 	} else {
 		system_information->appletalk_is_available= false;
 	}
+#endif
 
 	/* Type of machine? */
 	err= Gestalt(gestaltNativeCPUtype, &processor_type);
@@ -1007,7 +1089,11 @@ static void marathon_dialog_header_proc(
 	DialogPtr dialog,
 	Rect *frame)
 {
+#if defined(USE_CARBON_ACCESSORS)
+	long refCon= GetWRefCon(GetDialogWindow(dialog));
+#else
 	long refCon= GetWRefCon(dialog);
+#endif
 	
 	if (refCon>=FIRST_DIALOG_REFCON && refCon<=LAST_DIALOG_REFCON)
 	{
@@ -1062,7 +1148,13 @@ static void main_event_loop(
 	while(get_game_state()!=_quit_game)
 	{
 		bool use_waitnext;
-		
+
+#if defined(TARGET_API_MAC_CARBON)
+		// JTP: Give room for our input timer to fire
+		// (kEventDurationNoWait was too short!)
+		RunCurrentEventLoop(kEventDurationNanosecond);
+#endif
+
 		if(try_for_event(&use_waitnext))
 		{
 			EventRecord event;
@@ -1083,7 +1175,11 @@ static void main_event_loop(
 			}
 			else
 			{
+#if defined(TARGET_API_MAC_CARBON)
+				got_event= GetNextEvent(EventMask, &event);
+#else
 				got_event= GetOSEvent(EventMask, &event);
+#endif
 			}
 			
 			if(got_event) process_event(&event);
@@ -1131,10 +1227,18 @@ void update_any_window(
 	GrafPtr old_port;
 
 	GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+	SetPort(GetWindowPort(window));
+#else
 	SetPort(window);
+#endif
 	BeginUpdate(window);
 
+#if defined(USE_CARBON_ACCESSORS)
+	if(window==GetWindowFromPort(GetScreenGrafPort()))
+#else
 	if(window==(WindowPtr)GetScreenGrafPort())
+#endif
 	{
 		update_game_window(window, event);
 	}
@@ -1150,7 +1254,11 @@ void activate_any_window(
 	EventRecord *event,
 	bool active)
 {
+#if defined(USE_CARBON_ACCESSORS)
+	if(window==GetWindowFromPort(GetScreenGrafPort()))
+#else
 	if(window==(WindowPtr)GetScreenGrafPort())
+#endif
 	{
 		activate_screen_window(window, event, active);
 	}
@@ -1222,8 +1330,16 @@ static void process_event(
 							set_keyboard_controller_status(true);
 						}
 						else
+						{
 							// whatever is necessary to update it
+#if defined(USE_CARBON_ACCESSORS)
+							Rect portRect;
+							GetPortBounds(GetScreenGrafPort(), &portRect);
+							InvalWindowRect(GetWindowFromPort(GetScreenGrafPort()), &portRect);
+#else
 							InvalRect(&GetScreenGrafPort()->portRect);
+#endif
+						}
 					}
 					else
 					{

@@ -26,11 +26,19 @@
 
 Nov 12, 2000 (Loren Petrich):
 	Added opacity-loading support
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h, Quicktime.h
 */
 
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+    #include <quicktime/QuickTimeComponents.h>
+#else
 #include <QDOffscreen.h>
 #include <QuickTimeComponents.h>
+#endif
 #include "ImageLoader.h"
 #include "shell.h"
 

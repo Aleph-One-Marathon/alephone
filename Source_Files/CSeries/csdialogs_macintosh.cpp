@@ -23,11 +23,19 @@
         renamed from csdialogs.cpp
         inserted get_dialog_control_value, from network_dialogs.cpp
         new functions copy_pstring_*_text_field()
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	Added accessors for datafields now opaque in Carbon
 */
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <Dialogs.h>
 #include <TextUtils.h>
 //#include <ControlDefinitions.h>
+#endif
 
 #include "cstypes.h"
 #include "csdialogs.h"
@@ -56,7 +64,11 @@ DialogPtr myGetNewDialog(
 
 	dlg=GetNewDialog(id,storage,before);
 	if (dlg) {
+#if defined(USE_CARBON_ACCESSORS)
+		SetWRefCon(GetDialogWindow(dlg),refcon);
+#else
 		SetWRefCon(dlg,refcon);
+#endif
 		GetDialogItem(dlg,iOK,&it,&ih,&ir);
 		if (it==kButtonDialogItem) {
 			SetDialogDefaultItem(dlg,iOK);
@@ -128,11 +140,20 @@ pascal Boolean general_filter_proc(
 	switch (event->what) {
 	case updateEvt:
 		win=(WindowPtr)event->message;
+#if defined(USE_CARBON_ACCESSORS)
+		SetPort(GetWindowPort(win));
+#else
 		SetPort(win);
+#endif
 		if (GetWindowKind(win)==kDialogWindowKind) {
 			if (header_proc) {
+#if defined(USE_CARBON_ACCESSORS)
+				GetPortBounds(GetWindowPort(GetDialogWindow(dlg)), &frame);
+				(*header_proc)(GetDialogFromWindow(win),&frame);
+#else
 				frame=dlg->portRect;
 				(*header_proc)(win,&frame);
+#endif
 			}
 			frame_useritems(dlg);
 		} else {
@@ -149,12 +170,16 @@ pascal Boolean general_filter_proc(
 	return StdFilterProc(dlg,event,hit);
 }
 
+#if defined(TARGET_API_MAC_CARBON)
+ModalFilterUPP general_filter_upp = NewModalFilterUPP(general_filter_proc);
+#else
 #if GENERATINGCFM
 static RoutineDescriptor general_filter_desc =
 	BUILD_ROUTINE_DESCRIPTOR(uppModalFilterProcInfo,general_filter_proc);
 #define general_filter_upp (&general_filter_desc)
 #else
 #define general_filter_upp general_filter_proc
+#endif
 #endif
 
 ModalFilterUPP get_general_filter_upp(void)
@@ -213,8 +238,13 @@ bool hit_dialog_button(
 	if (it!=kButtonDialogItem)
 		return false;
 	button=(ControlHandle)ih;
+#if defined(USE_CARBON_ACCESSORS)
+	if (GetControlHilite(button)!=kControlNoPart)
+		return false;
+#else
 	if ((*button)->contrlHilite!=kControlNoPart)
 		return false;
+#endif
 	HiliteControl(button,kControlButtonPart);
 	Delay(8,&ignore);
 	HiliteControl(button,kControlNoPart);
@@ -299,8 +329,13 @@ void get_window_frame(
 	Rect pr;
 
 	GetPort(&saveport);
+#if defined(USE_CARBON_ACCESSORS)
+	SetPort(GetWindowPort(win));
+	GetPortBounds(GetWindowPort(win), &pr);
+#else
 	SetPort(win);
 	pr=win->portRect;
+#endif
 	LocalToGlobal((Point *)&pr.top);
 	LocalToGlobal((Point *)&pr.bottom);
 	SetPort(saveport);

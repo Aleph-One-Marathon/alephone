@@ -17,6 +17,9 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added accessors for datafields now opaque in Carbon
+	Included Steve Bytnar's OSX QDPort flushing code
 */
 
 /*
@@ -125,7 +128,11 @@ void scroll_full_screen_pict_resource_from_scenario(
 					EventRecord event;
 
 					GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+					SetPort(GetWindowPort(screen_window));
+#else
 					SetPort(screen_window);
+#endif
 			
 					GetForeColor(&old_forecolor);
 					GetBackColor(&old_backcolor);
@@ -146,8 +153,15 @@ void scroll_full_screen_pict_resource_from_scenario(
 						SetRect(&source, 0, 0, screen_width, screen_height);
 						OffsetRect(&source, scroll_horizontal ? delta : 0, scroll_vertical ? delta : 0);
 
+#if defined(USE_CARBON_ACCESSORS)
+						CopyBits(GetPortBitMapForCopyBits(pixels), GetPortBitMapForCopyBits(GetWindowPort(screen_window)),
+							&source, &destination, srcCopy, (RgnHandle) NULL);
+						/* flush part of the port */
+						FlushGrafPortRect(GetWindowPort(screen_window), destination);
+#else						
 						CopyBits((BitMapPtr)*pixels->portPixMap, &screen_window->portBits,
 							&source, &destination, srcCopy, (RgnHandle) NULL);
+#endif
 						
 						/* You can't do this, because it calls flushevents every time.. */
 //						if(wait_for_click_or_keypress(0)!=NONE) done= true;
@@ -156,7 +170,11 @@ void scroll_full_screen_pict_resource_from_scenario(
 						global_idle_proc();
 
 						/* Check for events to abort.. */
+#if defined(TARGET_API_MAC_CARBON)
+						if(GetNextEvent(keyDownMask|autoKeyMask|mDownMask, &event))
+#else
 						if(GetOSEvent(keyDownMask|autoKeyMask|mDownMask, &event))
+#endif
 						{
 							switch(event.what)
 							{
@@ -213,37 +231,70 @@ static void draw_picture(LoadedResource& PictRsrc)
 		GrafPtr old_port;
 		
 		bounds= (*picture)->picFrame;
+#if defined(USE_CARBON_ACCESSORS)
+		Rect windowRect;
+		GetPortBounds(GetWindowPort(window), &windowRect);
+		AdjustRect(&windowRect, &bounds, &bounds, centerRect);
+#else
 		AdjustRect(&window->portRect, &bounds, &bounds, centerRect);
+#endif
 		OffsetRect(&bounds, bounds.left<0 ? -bounds.left : 0, bounds.top<0 ? -bounds.top : 0);
 //		OffsetRect(&bounds, -2*bounds.left, -2*bounds.top);
 //		OffsetRect(&bounds, (RECTANGLE_WIDTH(&window->portRect)-RECTANGLE_WIDTH(&bounds))/2 + window->portRect.left,
 //			(RECTANGLE_HEIGHT(&window->portRect)-RECTANGLE_HEIGHT(&bounds))/2 + window->portRect.top);
 
 		GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+		SetPort(GetWindowPort(window));
+#else
 		SetPort(window);
+#endif
 
 		{
 			RgnHandle new_clip_region= NewRgn();
 			
 			if (new_clip_region)
 			{
-				RgnHandle old_clip_region= window->clipRgn;
+				RgnHandle old_clip_region;
+                                
+#if defined(USE_CARBON_ACCESSORS)
+				old_clip_region= NewRgn();
+				GetPortClipRegion(GetWindowPort(window), old_clip_region);
+#else
+				old_clip_region = window->clipRgn;
+#endif
 
 				SetRectRgn(new_clip_region, 0, 0, 640, 480);
 				SectRgn(new_clip_region, old_clip_region, new_clip_region);
+                                
+#if defined(USE_CARBON_ACCESSORS)
+				SetPortClipRegion(GetWindowPort(window), new_clip_region);
+#else
 				window->clipRgn= new_clip_region;
+#endif
 
 				// HLock((Handle) picture);
 				DrawPicture(picture, &bounds);
 				// HUnlock((Handle) picture);
 				
+#if defined(USE_CARBON_ACCESSORS)
+				SetPortClipRegion(GetWindowPort(window), old_clip_region);
+				DisposeRgn(old_clip_region);
+#else
 				window->clipRgn= old_clip_region;
+#endif
 				
 				DisposeRgn(new_clip_region);
 			}
 		}
 		
+#if defined(USE_CARBON_ACCESSORS)
+		GetPortBounds(GetWindowPort(window), &bounds);
+		ValidWindowRect(window, &bounds);
+		FlushGrafPortRect(GetWindowPort(window), bounds);//20010805-sbytnar
+#else
 		ValidRect(&window->portRect);
+#endif
 		SetPort(old_port);
 	}
 }

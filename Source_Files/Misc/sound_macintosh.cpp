@@ -43,10 +43,19 @@ Apr 26, 2001 (Loren Petrich):
 
 Sept 10, 2001 (Loren Petrich):
 	Added Ian Rickard's relative-sound 
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	Added usage of get/setRateMultiplierCmd for Carbon
+		in place of use of unsupported get/setRateCmd
 */
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <FixMath.h>
 #include <MediaHandlers.h>
+#endif
 
 
 /* --------- constants */
@@ -580,6 +589,13 @@ static void buffer_sound(
 		error= SndDoCommand(channel->channel, &command, false);
 		if (error==noErr)
 		{
+#if defined(TARGET_API_MAC_CARBON)
+			// JTP: Steve Bytnar's rateMultiplierCmd fix
+			command.cmd= rateMultiplierCmd;
+			command.param1= 0;
+			command.param2= calculate_pitch_modifier(sound_index, pitch);
+			error= SndDoImmediate(channel->channel, &command);
+#else
 			if (pitch!=FIXED_ONE)
 			{
 				_fixed rate;
@@ -596,6 +612,7 @@ static void buffer_sound(
 					error= SndDoImmediate(channel->channel, &command);
 				}
 			}
+#endif
 		}
 	}
 

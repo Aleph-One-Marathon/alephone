@@ -69,6 +69,9 @@ Sep 30, 2001 (Loren Petrich):
 	Added support for reading Marathon 1 map files
 	(not sure if anyone really wants to write them);
 	also added a "between levels" flag so that this may be used with 3D models.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Adjusted Carbon flow to avoid a p2cstr
 */
 
 // Note that level_transition_malloc is specific to marathon...
@@ -367,7 +370,8 @@ void fill_default_wad_header(
 	obj_clear(*header);
 	header->version= wadfile_version;
 	header->data_version= data_version;
-#ifdef mac
+#if defined(mac) && !defined(USE_CARBON_ACCESSORS)
+	// JTP: Why is it forming a pascal string and immediately calling p2cstr on it?
 	// LP: being sure to create a Pascal-format filename
 	char Name[256];
 	File.GetName(Name);

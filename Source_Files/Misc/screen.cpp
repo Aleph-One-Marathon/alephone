@@ -153,6 +153,14 @@ June 20, 2001 (Loren Petrich):
 	Removing the DrawSprocket and replacing it with the Display Manager,
 	so as to have less buggy resolution-switching. Something like Moo itself.
 	Some of the code was inspired by Dietrich Epp's successful resolution-switching code.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added accessors for datafields now opaque in Carbon
+	Disabled low level fading code under Carbon
+	Adjusted init of booleans in render_screen case that was causing compiler errors:
+		jump to case label ... crosses initialization of `bool Use_OGL_2D'
+	Included Steve Bytnar's OSX QDPort flushing code
+	Trusting Suspend/Resume OSX mechanics to do the right thing with mouse and menubar
 */
 
 /*
@@ -189,7 +197,9 @@ June 20, 2001 (Loren Petrich):
 
 // LP addition: view control
 #include "ViewControl.h"
+#if !defined(TARGET_API_MAC_CARBON)
 #include <Displays.h>
+#endif
 
 //CP addition: scripting support
 #include "scripting.h"
@@ -458,17 +468,32 @@ void initialize_screen(
 		interface_color_table= new color_table;
 		assert(uncorrected_color_table && world_color_table && visible_color_table && interface_color_table);
 
+#if defined(TARGET_API_MAC_CARBON)
+		backdrop_window= GetNewCWindow(windBACKDROP_WINDOW, NULL, (WindowPtr) -1);
+#else
 		backdrop_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
 		assert(backdrop_window);
 		backdrop_window= GetNewCWindow(windBACKDROP_WINDOW, backdrop_window, (WindowPtr) -1);
+#endif
 		assert(backdrop_window);
+#if defined(USE_CARBON_ACCESSORS)
+		Rect rgnBBox;
+		GetRegionBounds(gray_region, &rgnBBox);
+		MoveWindow(backdrop_window, rgnBBox.left, rgnBBox.top, false);
+		SizeWindow(backdrop_window, RECTANGLE_WIDTH(&rgnBBox), RECTANGLE_HEIGHT(&rgnBBox), true);
+#else
 		MoveWindow(backdrop_window, (**gray_region).rgnBBox.left, (**gray_region).rgnBBox.top, false);
 		SizeWindow(backdrop_window, RECTANGLE_WIDTH(&(**gray_region).rgnBBox), RECTANGLE_HEIGHT(&(**gray_region).rgnBBox), true);
+#endif
 		ShowWindow(backdrop_window);
 
+#if defined(TARGET_API_MAC_CARBON)
+		screen_window= GetNewCWindow(windGAME_WINDOW, NULL, (WindowPtr) -1);
+#else
 		screen_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
 		assert(screen_window);
 		screen_window= GetNewCWindow(windGAME_WINDOW, screen_window, (WindowPtr) -1);
+#endif
 		assert(screen_window);
 		SetWRefCon(screen_window, refSCREEN_WINDOW);
 		ShowWindow(screen_window);
@@ -505,8 +530,15 @@ void initialize_screen(
 		if (screen_initialized)
 		{
 			GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+			SetPort(GetWindowPort(screen_window));
+			Rect portRect;
+			GetPortBounds(GetWindowPort(screen_window), &portRect);
+			PaintRect(&portRect);
+#else
 			SetPort(screen_window);
 			PaintRect(&screen_window->portRect);
+#endif
 			SetPort(old_port);
 			
 			SetDepthGDSpec(&restore_spec);
@@ -526,7 +558,11 @@ void initialize_screen(
 		if (origin.v>0) origin.v= 0;
 		
 		GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+		SetPort(GetWindowPort(screen_window));
+#else
 		SetPort(screen_window);
+#endif
 		SetOrigin(origin.h, origin.v);
 		SetPort(old_port);
 	}
@@ -561,7 +597,11 @@ void ReloadViewContext()
 		// otherwise, switching OpenGL off (kludge for having it not appear)
 		case _opengl_acceleration:
 			if (screen_mode.bit_depth > 8)
+#if defined(USE_CARBON_ACCESSORS)
+				OGL_StartRun(GetWindowPort(screen_window));
+#else
 				OGL_StartRun((CGrafPtr)screen_window);
+#endif
 			else screen_mode.acceleration = _no_acceleration;
 			break;
 	}
@@ -574,8 +614,15 @@ void enter_screen(
 	GrafPtr old_port;
 	
 	GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+	SetPort(GetWindowPort(screen_window));
+	Rect portRect;
+	GetPortBounds(GetWindowPort(screen_window), &portRect);
+	PaintRect(&portRect);
+#else
 	SetPort(screen_window);
 	PaintRect(&screen_window->portRect);
+#endif
 	SetPort(old_port);
 
 	if (world_view->overhead_map_active) set_overhead_map_status(false);
@@ -609,7 +656,11 @@ void enter_screen(
 		// otherwise, switching OpenGL off (kludge for having it not appear)
 		case _opengl_acceleration:
 			if (screen_mode.bit_depth > 8)
+#if defined(USE_CARBON_ACCESSORS)
+				OGL_StartRun(GetWindowPort(screen_window));
+#else
 				OGL_StartRun((CGrafPtr)screen_window);
+#endif
 			else screen_mode.acceleration = _no_acceleration;
 			break;
 	}
@@ -720,7 +771,12 @@ void render_screen(
 	// LP change: set rendering-window bounds for the current sort of display to render
 	// A Rect is, in order, top, left, bottom, right
 	screen_mode_data *mode = &screen_mode;
+#if defined(USE_CARBON_ACCESSORS)
+	Rect ScreenRect;
+	GetPortBounds(GetWindowPort(screen_window), &ScreenRect);
+#else
 	Rect ScreenRect = screen_window->portRect;
+#endif
 	Rect BufferRect, ViewRect;
 	bool HighResolution;
 	
@@ -814,8 +870,15 @@ void render_screen(
 	if (world_pixels)
 	{
 		// Check on the drawing buffer's size
+#if defined(USE_CARBON_ACCESSORS)
+		Rect portRect;
+		GetPortBounds(world_pixels, &portRect);
+		if (RECTANGLE_WIDTH(&portRect) != BufferWidth) ChangedSize = true;
+		if (RECTANGLE_HEIGHT(&portRect) != BufferHeight) ChangedSize = true;
+#else
 		if (RECTANGLE_WIDTH(&world_pixels->portRect) != BufferWidth) ChangedSize = true;
 		if (RECTANGLE_HEIGHT(&world_pixels->portRect) != BufferHeight) ChangedSize = true;
+#endif
 	}
 	else ChangedSize = true;
 	
@@ -875,7 +938,13 @@ void render_screen(
 					RGBColor SavedColor;
 					GetBackColor(&SavedColor);
 					RGBBackColor(&Get_OGL_ConfigureData().VoidColor);
+#if defined(USE_CARBON_ACCESSORS)
+					Rect portRect;
+					GetPortBounds(world_pixels, &portRect);
+					EraseRect(&portRect);
+#else
 					EraseRect(&world_pixels->portRect);
+#endif
 					RGBBackColor(&SavedColor);
 					mySetGWorld(old_port, old_device);
 				}
@@ -958,8 +1027,10 @@ void render_screen(
 			// LP change: put in OpenGL buffer swapping when the main view or the overhead map
 			// are being rendered in OpenGL.
 			// Otherwise, if OpenGL is active, then blit the software rendering to the screen.
-			bool OGL_WasUsed = false;
-			bool Use_OGL_2D = OGL_Get2D();
+			bool OGL_WasUsed;
+			bool Use_OGL_2D;
+			OGL_WasUsed = false;
+			Use_OGL_2D = OGL_Get2D();
 			if ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 			{
 				// Main or map view already rendered
@@ -969,7 +1040,13 @@ void render_screen(
 			{
 				// Copy 2D rendering to screen
 				// Paint onto the back buffer, so that it will be copied frontward properly
+#if defined(USE_CARBON_ACCESSORS)
+				Rect portRect;
+				GetPortBounds(world_pixels, &portRect);
+				OGL_WasUsed = OGL_Copy2D(world_pixels, portRect, portRect,true,true);
+#else
 				OGL_WasUsed = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,true,true);
+#endif
 			}
 			if (!OGL_WasUsed) update_screen(BufferRect,ViewRect,HighResolution);
 			if (HUD_RenderRequest)
@@ -1115,7 +1192,12 @@ void render_computer_interface(
 	SetGWorld(world_pixels, (GDHandle) NULL);
 	
 	// LP change: calculate the view dimensions directly from the GWorld's boundaries
+#if defined(USE_CARBON_ACCESSORS)
+	Rect WPRect;
+	GetPortBounds(world_pixels, &WPRect);
+#else
 	Rect& WPRect = ((CGrafPtr)world_pixels)->portRect;
+#endif
 	data.left = WPRect.left;
 	data.right = WPRect.right;
 	data.top = WPRect.top;
@@ -1169,10 +1251,18 @@ void render_overhead_map(
 	GetGWorld(&old_gworld, &old_device);
 	SetGWorld(world_pixels, (GDHandle) NULL);
 	
+#if defined(USE_CARBON_ACCESSORS)
+	Rect WPRect;
+	GetPortBounds(world_pixels, &WPRect);
+	PaintRect(&WPRect);
+#else
 	PaintRect(&world_pixels->portRect);
+#endif
 	
 	// LP change: calculate the view dimensions directly from the GWorld's boundaries
+#if !defined(USE_CARBON_ACCESSORS)
 	Rect& WPRect = ((CGrafPtr)world_pixels)->portRect;
+#endif
 	overhead_data.left = WPRect.left;
 	overhead_data.top = WPRect.top;
 	overhead_data.half_width = (overhead_data.width = RECTANGLE_WIDTH(&WPRect)) >> 1;
@@ -1210,7 +1300,11 @@ GDHandle GetWorldDevice()
 }
 
 CGrafPtr GetScreenGrafPort() {
+#if defined(USE_CARBON_ACCESSORS)
+	return GetWindowPort(screen_window);
+#else
 	return (CGrafPtr)screen_window;
+#endif
 }
 
 
@@ -1291,6 +1385,7 @@ void animate_screen_clut(
 	struct color_table *color_table,
 	bool full_screen)
 {
+#if !defined(TARGET_API_MAC_CARBON)
 	// Use special direct animation if the bit depth > 8;
 	// this is for the benefit of MacOS X Classic
 	// AS turned off when not in Classic
@@ -1322,6 +1417,7 @@ void animate_screen_clut(
 		SetGDevice(old_device);
 	}
 	
+#endif
 	return;
 }
 
@@ -1359,13 +1455,25 @@ void darken_world_window(
 	Rect bounds;
 	
 	GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+	SetPort(GetWindowPort(screen_window));
+	Pattern pattern;
+	GetQDGlobalsGray(&pattern);
+	PenPat(&pattern);
+#else
 	SetPort(screen_window);
 	PenPat(&qd.gray);
+#endif
 	PenMode(srcOr);
 	calculate_destination_frame(screen_mode.size, screen_mode.high_resolution, &bounds);
 	PaintRect(&bounds);
 	PenMode(srcCopy);
+#if defined(USE_CARBON_ACCESSORS)
+	GetQDGlobalsBlack(&pattern);
+	PenPat(&pattern);
+#else        
 	PenPat(&qd.black);
+#endif
 	SetPort(old_port);
 	
 	return;
@@ -1378,9 +1486,17 @@ void validate_world_window(
 	Rect bounds;
 	
 	GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+	SetPort(GetWindowPort(screen_window));
+#else
 	SetPort(screen_window);
+#endif
 	calculate_destination_frame(screen_mode.size, screen_mode.high_resolution, &bounds);
+#if defined(USE_CARBON_ACCESSORS)
+	ValidWindowRect(screen_window, &bounds);
+#else
 	ValidRect(&bounds);
+#endif
 	SetPort(old_port);
 
 	return;
@@ -1653,6 +1769,20 @@ void restore_world_device(
 	return;
 }
 
+// JTP: Bytnar's buffer flushing
+void FlushGrafPortRect(const CGrafPtr port, const Rect &destination)
+{
+#if defined(TARGET_API_MAC_CARBON)
+	if (QDIsPortBuffered(port)) {
+		RgnHandle theRgn;
+		theRgn = NewRgn();
+		/* local port coordinates */
+		SetRectRgn(theRgn, destination.left, destination.top, destination.right, destination.bottom);
+		QDFlushPortBuffer(port, theRgn);
+		DisposeRgn(theRgn);
+	}
+#endif
+}
 
 // LP changes: moved sizing and resolution outside of this function,
 // because they can be very variable
@@ -1673,15 +1803,26 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 		RGBColor old_forecolor, old_backcolor;
 		
 		GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+		SetPort(GetWindowPort(screen_window));
+#else
 		SetPort(screen_window);
+#endif
 
 		GetForeColor(&old_forecolor);
 		GetBackColor(&old_backcolor);
 		RGBForeColor(&rgb_black);
 		RGBBackColor(&rgb_white);
 		
+#if defined(USE_CARBON_ACCESSORS)
+		CopyBits(GetPortBitMapForCopyBits(world_pixels), GetPortBitMapForCopyBits(GetWindowPort(screen_window)),
+			&source, &destination, srcCopy, (RgnHandle) NULL);
+		/* flush part of the port */
+		FlushGrafPortRect(GetWindowPort(screen_window), destination);
+#else
 		CopyBits((BitMapPtr)*world_pixels->portPixMap, &screen_window->portBits,
 			&source, &destination, srcCopy, (RgnHandle) NULL);
+#endif
 		
 		RGBForeColor(&old_forecolor);
 		RGBBackColor(&old_backcolor);
@@ -1703,8 +1844,15 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 		data.source= (unsigned char *)myGetPixBaseAddr(world_pixels);
 		data.source_slop= source_rowBytes-source_width*pelsize;
 		
+#if defined(USE_CARBON_ACCESSORS)
+		Rect screenRect;
+		GetPortBounds(GetWindowPort(screen_window), &screenRect);
+		data.destination= (unsigned char *)(*screen_pixmap)->baseAddr + (destination.top-screenRect.top)*destination_rowBytes +
+			(destination.left-screenRect.left)*pelsize;
+#else
 		data.destination= (unsigned char *)(*screen_pixmap)->baseAddr + (destination.top-screen_window->portRect.top)*destination_rowBytes +
 			(destination.left-screen_window->portRect.left)*pelsize;
+#endif
 		data.destination_slop= destination_rowBytes-destination_width*pelsize;
 
 		data.bytes_per_row= destination_rowBytes;
@@ -1871,7 +2019,15 @@ static void calculate_screen_options(
 }
 
 
+#ifdef __MACH__
+// Bytnar: On Mach-O, it's not worth it to hack quadruple.s to work.
+#undef EXTERNAL
+#endif
+
+
 #ifndef EXTERNAL
+typedef unsigned short word;
+
 void quadruple_screen(
 	struct copy_screen_data *data)
 {
@@ -1950,7 +2106,11 @@ void dump_screen()
 	// Push the old graphics context
 	GrafPtr old_port;
 	GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+	SetPort(GetWindowPort(screen_window));
+#else
 	SetPort(screen_window);
+#endif
 	
 	RGBColor old_forecolor, old_backcolor;
 	GetForeColor(&old_forecolor);
@@ -1971,7 +2131,12 @@ void dump_screen()
 	short OverallHeight = VS.OverallHeight;
 	
 	// Offsets for placement in the screen
+#if defined(USE_CARBON_ACCESSORS)
+	Rect ScreenRect;
+	GetPortBounds(GetWindowPort(screen_window), &ScreenRect);
+#else
 	Rect ScreenRect = screen_window->portRect;
+#endif
 	short ScreenOffsetWidth = ((RECTANGLE_WIDTH(&ScreenRect) - VS.OverallWidth) >> 1) + ScreenRect.left;
 	short ScreenOffsetHeight = ((RECTANGLE_HEIGHT(&ScreenRect) - VS.OverallHeight) >> 1) + ScreenRect.top;
 	
@@ -1995,8 +2160,13 @@ void dump_screen()
 	PicHandle PicObject = OpenCPicture(&PicParams);
 
 	ClipRect(&DumpRect);
+#if defined(USE_CARBON_ACCESSORS)
+	CopyBits(GetPortBitMapForCopyBits(GetWindowPort(screen_window)), GetPortBitMapForCopyBits(GetWindowPort(screen_window)),
+		&DumpRect, &DumpRect, srcCopy, (RgnHandle) NULL);
+#else
 	CopyBits(&screen_window->portBits, &screen_window->portBits,
 		&DumpRect, &DumpRect, srcCopy, (RgnHandle) NULL);
+#endif
 
 	ClosePicture();
 	
@@ -2093,15 +2263,26 @@ void DrawHUD(Rect& SourceRect, Rect& DestRect)
 	RGBColor old_forecolor, old_backcolor;
 	
 	GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+	SetPort(GetWindowPort(screen_window));
+#else
 	SetPort(screen_window);
+#endif
 	GetForeColor(&old_forecolor);
 	GetBackColor(&old_backcolor);
 	RGBForeColor(&rgb_black);
 	RGBBackColor(&rgb_white);
 		
 	/* Slam it to the screen. */
+#if defined(USE_CARBON_ACCESSORS)
+	CopyBits(GetPortBitMapForCopyBits(HUD_Buffer), GetPortBitMapForCopyBits(GetWindowPort(screen_window)),
+		&SourceRect, &DestRect, srcCopy, (RgnHandle) NULL);
+	/* flush part of the port */
+	FlushGrafPortRect(GetWindowPort(screen_window), DestRect);
+#else
 	CopyBits((BitMapPtr)*HUD_Buffer->portPixMap, &screen_window->portBits, //(BitMapPtr)*screen_pixmap,
 		&SourceRect, &DestRect, srcCopy, (RgnHandle) NULL);	
+#endif
 	RGBForeColor(&old_forecolor);
 	RGBBackColor(&old_backcolor);
 	SetPort(old_port);
@@ -2113,8 +2294,15 @@ void ClearScreen()
 {
 	GrafPtr old_port;
 	GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+	SetPort(GetWindowPort(screen_window));
+	Rect portRect;
+	GetPortBounds(GetWindowPort(screen_window), &portRect);
+	PaintRect(&portRect);
+#else
 	SetPort(screen_window);
 	PaintRect(&screen_window->portRect);
+#endif
 	SetPort(old_port);
 	
 	// To be extra safe, for MacOS X Classic compatibility
@@ -2134,9 +2322,11 @@ void SuspendDisplay(EventRecord *EvPtr)
 	
 	HideWindow(screen_window);
 	HideWindow(backdrop_window);
+#if !defined(TARGET_API_MAC_CARBON)
 	SetCursor(&qd.arrow);
 	myShowMenuBar();
 	show_cursor();
+#endif
 }
 
 void ResumeDisplay(EventRecord *EvPtr)
@@ -2149,8 +2339,10 @@ void ResumeDisplay(EventRecord *EvPtr)
 	if (restore_spec.bit_depth != graphics_preferences->device_spec.bit_depth)
 		SetDepthGDSpec(&graphics_preferences->device_spec);
 	
+#if !defined(TARGET_API_MAC_CARBON)
 	SetCursor(&qd.arrow);
 	myHideMenuBar(GetMainDevice());
+#endif
 	ShowWindow(backdrop_window);
 	SelectWindow(screen_window);
 	ShowWindow(screen_window);
@@ -2355,7 +2547,11 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	// and its keyboard-event catcher
 	DialogPtr Dialog = GetNewDialog(MonitorFreq_Dialog, nil, WindowPtr(-1));
 	assert(Dialog);
+#if defined(TARGET_API_MAC_CARBON)
+	ModalFilterUPP DialogEventHandler = NewModalFilterUPP(DM_ModeFreqDialogHandler);
+#else
 	ModalFilterUPP DialogEventHandler = NewModalFilterProc(DM_ModeFreqDialogHandler);
+#endif
 	assert(DialogEventHandler);
 	
 	// Get its popup-menu handle
@@ -2365,11 +2561,19 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	GetDialogItem(Dialog, MonitorFreq_Popup, &ItemType, 
 		(Handle *) &PopupHandle, &Bounds);
 	assert(PopupHandle);
+#if defined(USE_CARBON_ACCESSORS)
+	MenuHandle PopupMenuHandle = GetControlPopupMenuHandle(PopupHandle);
+#else
 	PopupPrivateData **PopupDataHandle = (PopupPrivateData **) ((*PopupHandle)->contrlData);
 	MenuHandle PopupMenuHandle = (*PopupDataHandle)->mHandle;
+#endif
 	
 	// Add the mode names
+#if defined(TARGET_API_MAC_CARBON)
+	int NumMenuItems = CountMenuItems(PopupMenuHandle);
+#else
 	int NumMenuItems = CountMItems(PopupMenuHandle);
+#endif
 	for (int im=0; im<NumMenuItems; im++)
 		DeleteMenuItem(PopupMenuHandle,1);
 	
@@ -2391,8 +2595,13 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	bool ChangeSuccess = false;
 	
 	// Read that dialog box and set the mode as appropriate
+#if defined(USE_CARBON_ACCESSORS)
+	SelectWindow(GetDialogWindow(Dialog));
+	ShowWindow(GetDialogWindow(Dialog));
+#else
 	SelectWindow(Dialog);
 	ShowWindow(Dialog);
+#endif
 	while(true)
 	{
 		// Putting monitor-resolution changing up here so it only has to be present once
@@ -2442,7 +2651,11 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	}
 	
 	// Clean up
+#if defined(USE_CARBON_ACCESSORS)
+	HideWindow(GetDialogWindow(Dialog));
+#else
 	HideWindow(Dialog);
+#endif
 	DisposeDialog(Dialog);
 	DisposeRoutineDescriptor(DialogEventHandler);
 	
@@ -2496,6 +2709,7 @@ pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
 }
 
 
+#if !defined(TARGET_API_MAC_CARBON)
 // Directly manipulate the video-driver color table.
 // Written so that the faders will work in MacOS X Classic.
 void direct_animate_screen_clut(
@@ -2572,3 +2786,4 @@ void direct_animate_screen_clut(
 	Ptr DGRPtr = (Ptr) &DeviceGammaRec;
 	Err = Control(DevRefNum, cscSetGamma, &DGRPtr);
 }
+#endif

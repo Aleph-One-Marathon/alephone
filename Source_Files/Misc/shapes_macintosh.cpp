@@ -34,6 +34,9 @@ Aug 14, 2000 (Loren Petrich):
 Oct 19, 2000 (Loren Petrich):
 	Added graceful degradation in the case of frames or bitmaps not being found;
 	get_shape_pixmap() returns NULL when that happens
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Removed access to pmReserved of the pixmap under Carbon
 */
 
 /* ---------- constants */
@@ -72,7 +75,9 @@ static void initialize_pixmap_handler()
 	(*hollow_pixmap)->pixelSize= 8;
 	(*hollow_pixmap)->cmpCount= 1;
 	(*hollow_pixmap)->cmpSize= (*hollow_pixmap)->pixelSize;
+#if !defined(USE_CARBON_ACCESSORS)
 	(*hollow_pixmap)->pmReserved= 0;
+#endif
 
 	return;
 }

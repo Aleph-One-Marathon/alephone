@@ -31,6 +31,9 @@ Tuesday, September 20, 1994 7:41:56 PM  (alain)
 Wednesday, June 14, 1995 8:47:39 AM
 	gutted.  Keyboard stuff is now in keyboard_dialog.c.  Preferences related stuff is
 		now in preferences.c.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added accessors for datafields now opaque in Carbon
 */
 
 #include "macintosh_cseries.h"
@@ -67,8 +70,13 @@ bool quit_without_saving(
 	SetPort((GrafPtr)GetScreenGrafPort());
 	LocalToGlobal(&origin);
 	SetPort(old_port);
+#if defined(USE_CARBON_ACCESSORS)
+	MoveWindow(GetDialogWindow(dialog), origin.h, origin.v, false);
+	ShowWindow(GetDialogWindow(dialog));
+#else
 	MoveWindow(dialog, origin.h, origin.v, false);
 	ShowWindow(dialog);
+#endif
 	
 	ModalDialog(get_general_filter_upp(), &item_hit);
 	DisposeDialog(dialog);

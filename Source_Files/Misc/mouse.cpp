@@ -26,6 +26,14 @@ Feb. 4, 2000 (Loren Petrich):
 Nov 17, 2000 (Loren Petrich):
 	Added some handling of absent mice and out-of-range input types;
 	this may help avert some crashes on certain PowerBook models
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for ApplicationServices.h
+	Disabled all the trap and device based code for the mouse
+	Added in Carbon code for mouse location and warping
+
+Jan 29, 2002 (Br'fin (Jeremy Parsons)):
+	Rewrote Carbon mouse to report mouse movement based on receiving MouseMoved events
 */
 
 /* marathon includes */
@@ -38,8 +46,12 @@ Nov 17, 2000 (Loren Petrich):
 #include <math.h>
 
 /* macintosh includes */
+#if defined(TARGET_API_MAC_CARBON)
+    #include <ApplicationServices/ApplicationServices.h>
+#else
 #include <CursorDevices.h>
 #include <Traps.h>
+#endif
 
 #ifdef env68k
 #pragma segment input
@@ -52,6 +64,7 @@ Nov 17, 2000 (Loren Petrich):
 
 static void get_mouse_location(Point *where);
 static void set_mouse_location(Point where);
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 static CursorDevicePtr find_mouse_device(void);
 static bool trap_available(short trap_num);
 static TrapType get_trap_type(short trap_num);
@@ -66,10 +79,13 @@ extern pascal OSErr CrsrDevMoveTo(CursorDevicePtr ourDevice, long absX, long abs
 #define RawMouse *((Point *)0x082c)
 #define MTemp *((Point *)0x0828)
 #define CrsrNewCouple *((short *)0x08ce)
+#endif
 
 /* ---------- globals */
 
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 static CursorDevicePtr mouse_device = NULL;
+#endif
 static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
 static bool snapshot_button_state;
 
@@ -80,7 +96,9 @@ void enter_mouse(
 {
 	(void) (type);
 	
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 	mouse_device= find_mouse_device(); /* will use cursor device manager if non-NULL */
+#endif
 
 #ifndef env68k
 	// vwarn(mouse_device, "no valid mouse/trackball device;g;"); /* must use cursor device manager on non-68k */
@@ -101,6 +119,7 @@ void test_mouse(
 {
 	(void) (type);
 	
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 	// Idiot-proofing in case of an absent mouse
 	if (mouse_device == NULL)
 	{
@@ -109,6 +128,7 @@ void test_mouse(
 		*delta_velocity= 0;
 		return;
 	}
+#endif
 	
 	if (snapshot_button_state) *action_flags|= _left_trigger_state;
 	
@@ -137,6 +157,7 @@ void exit_mouse(
 
 /* 1200 pixels per second is the highest possible mouse velocity */
 #define MAXIMUM_MOUSE_VELOCITY (1200/MACINTOSH_TICKS_PER_SECOND)
+
 //#define MAXIMUM_MOUSE_VELOCITY ((float)1500/MACINTOSH_TICKS_PER_SECOND)
 
 /* take a snapshot of the current mouse state */
@@ -145,10 +166,17 @@ void mouse_idle(
 {
 	Point where;
 	Point center;
+	static bool first_run = true;
 	static long last_tick_count;
 	long tick_count= TickCount();
 	long ticks_elapsed= tick_count-last_tick_count;
 
+	if(first_run)
+	{
+		ticks_elapsed = 0;
+		first_run = false;
+	}
+	
 	get_mouse_location(&where);
 
 	center.h= CENTER_MOUSE_X, center.v= CENTER_MOUSE_Y;
@@ -200,6 +228,26 @@ void mouse_idle(
 static void get_mouse_location(
 	Point *where)
 {
+#if defined(TARGET_API_MAC_CARBON)
+	static EventTypeSpec mouseMovedEvents[] = {
+		{kEventClassMouse, kEventMouseMoved},
+		{kEventClassMouse, kEventMouseDragged}};
+	
+	EventRef theEvent;
+	if(ReceiveNextEvent(2, mouseMovedEvents, kEventDurationNoWait, true, &theEvent) == noErr)
+	{
+		int CGx, CGy;
+		CGGetLastMouseDelta(&CGx, &CGy);
+		where->h = CENTER_MOUSE_X + CGx;
+		where->v = CENTER_MOUSE_Y + CGy;
+		ReleaseEvent(theEvent);
+	}
+	else
+	{
+		where->h = CENTER_MOUSE_X;
+		where->v = CENTER_MOUSE_Y;
+	}
+#else
 	if (mouse_device)
 	{
 		where->h = mouse_device->whichCursor->where.h;
@@ -211,6 +259,7 @@ static void get_mouse_location(
 //		GetMouse(where);
 //		LocalToGlobal(where);
 	}
+#endif
 	
 	return;
 }
@@ -218,10 +267,14 @@ static void get_mouse_location(
 static void set_mouse_location(
 	Point where)
 {
+#if defined(TARGET_API_MAC_CARBON)
+//	CGWarpMouseCursorPosition(CGPointMake(where.h, where.v));
+#else
 	if (mouse_device)
 	{
 		CrsrDevMoveTo(mouse_device, where.h, where.v);
 	}
+#endif
 #ifdef env68k
 	else
 	{
@@ -234,6 +287,7 @@ static void set_mouse_location(
 	return;
 }
 
+#if !defined(SUPPRESS_MACOS_CLASSIC)
 static CursorDevicePtr find_mouse_device(
 	void)
 {
@@ -283,3 +337,4 @@ static short num_toolbox_traps(void)
 	else
 		return 0x0400;
 }
+#endif

@@ -17,13 +17,21 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	LowLevelSetEntries simply asserts under Carbon (Device control unavailable)
+	Included Steve Bytnar's Carbon menubar handling code
 */
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #include "my32bqd.h"
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <LowMem.h>
 #include <Video.h>
 #include <Devices.h>
+#endif
 
 void initialize_my_32bqd(void)
 {
@@ -95,6 +103,7 @@ Ptr myGetPixBaseAddr(
 	return GetPixBaseAddr(GetGWorldPixMap(gw));
 }
 
+#if !defined(TARGET_API_MAC_CARBON)
 static short savedmbh;
 static RgnHandle savedgray;
 
@@ -132,12 +141,58 @@ void myShowMenuBar(void)
 	DisposeRgn(savedgray);
 	savedgray=NULL;
 }
+#else
+enum eMenuBarState
+{
+	UNKNOWN,
+	HIDDEN,
+	SHOWING
+};
+
+#include "csstrings.h"
+
+static eMenuBarState mbarstate = UNKNOWN;
+void myHideMenuBar(
+	GDHandle ignoredDev)
+{
+	(void)ignoredDev;
+	switch (mbarstate)
+	{
+		case UNKNOWN:
+		case SHOWING:
+			mbarstate = HIDDEN;
+			HideMenuBar();
+			break;
+		case HIDDEN:
+			dprintf("HideMenuBar called while menubar was already hidden.");
+			break;
+	}
+}
+
+void myShowMenuBar(void)
+{
+	switch (mbarstate)
+	{
+		case UNKNOWN:
+		case HIDDEN:
+			mbarstate = SHOWING;
+			ShowMenuBar();
+			break;
+		case SHOWING:
+			dprintf("ShowMenuBar called while menubar was already showing.");
+			break;
+	}
+}
+#endif
 
 void LowLevelSetEntries(
 	short start,
 	short count0,
 	ColorSpec *specs)
 {
+#if defined(SUPPRESS_MACOS_CLASSIC)
+	assert(0);
+#else
 	GDHandle dev;
 	VDSetEntryRecord se;
 	CntrlParam pb;
@@ -154,5 +209,6 @@ void LowLevelSetEntries(
 	}
 	*(VDSetEntryRecord **)pb.csParam=&se;
 	PBControlSync((ParmBlkPtr)&pb);
+#endif
 }
 

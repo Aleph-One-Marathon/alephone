@@ -39,11 +39,23 @@ Dec 23, 2000 (Loren Petrich):
 
 Jan 12, 2001 (Loren Petrich):
 	Added popup-menu level selector
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Quicktime.h
+	Added accessors for datafields now opaque in Carbon
+	Disabled networking under Carbon
+	Game menus added to the menu bar normally instead of as popups. (otherwise Carbon's app-menu
+		was stealing our command-Q menu item)
+	Included Steve Bytnar's Cursor Hiding
 */
 
 #include "macintosh_cseries.h"
+#if defined(TARGET_API_MAC_CARBON)
+    #include <quicktime/Quicktime.h>
+#else
 #include <Movies.h>
 #include <FixMath.h>
+#endif
 
 #include <string.h>
 
@@ -146,8 +158,12 @@ short get_level_number_from_user(
 	GetDialogItem(dialog, iLEVEL_SELECTOR, &item_type, 
 		(Handle *) &SelectorHdl, &bounds);
 	assert(SelectorHdl);
+#if defined(USE_CARBON_ACCESSORS)
+	mHandle= GetControlPopupMenuHandle(SelectorHdl);
+#else
 	privateHndl= (PopupPrivateData **) ((*SelectorHdl)->contrlData);
 	mHandle= (*privateHndl)->mHandle;
+#endif
 	
 	// Get rid of old contents
 	while(CountMenuItems(mHandle)) DeleteMenuItem(mHandle, 1);
@@ -232,11 +248,20 @@ void toggle_menus(
 
 		menu= GetMenu(mInterface);
 		assert(menu);
+#if defined(TARGET_API_MAC_CARBON)
+		// JTP: Carbon doesn't intercept CMD-Q if we don't use popups
+		InsertMenu(menu, 0);
+#else
 		InsertMenu(menu, -1);
+#endif
 
 		menu= GetMenu(mGame);
 		assert(menu);
+#if defined(TARGET_API_MAC_CARBON)
+		InsertMenu(menu, 0);
+#else
 		InsertMenu(menu, -1);
+#endif
 
 		first_time= false;
 	}
@@ -247,11 +272,21 @@ void toggle_menus(
 
 	if(game_started)
 	{
+#if defined(TARGET_API_MAC_CARBON)
+		DisableMenuItem(menu_interface, 0);
+		EnableMenuItem(menu_game, 0);
+#else
 		DisableItem(menu_interface, 0);
 		EnableItem(menu_game, 0);
+#endif
 	} else {
+#if defined(TARGET_API_MAC_CARBON)
+		DisableMenuItem(menu_game, 0);
+		EnableMenuItem(menu_interface, 0);
+#else
 		DisableItem(menu_game, 0);
 		EnableItem(menu_interface, 0);
+#endif
 	}
 
 	/* Handle enabling/disabling everything.. */
@@ -259,9 +294,17 @@ void toggle_menus(
 	{
 		if(enabled_item(item))
 		{
+#if defined(TARGET_API_MAC_CARBON)
+			EnableMenuItem(menu_interface, item);
+#else
 			EnableItem(menu_interface, item);
+#endif
 		} else {
+#if defined(TARGET_API_MAC_CARBON)
+			DisableMenuItem(menu_interface, item);
+#else
 			DisableItem(menu_interface, item);
+#endif
 		}
 	}
 
@@ -428,8 +471,15 @@ bool try_for_event(
 			{
 				try_for_event= true;
 
+#if defined(USE_CARBON_ACCESSORS)
+				RgnHandle updateRgn = NewRgn();
+				GetWindowRegion(GetWindowFromPort(GetScreenGrafPort()), kWindowUpdateRgn, updateRgn);
+				if (suppress_background_events() && 
+					EmptyRgn(updateRgn)) 
+#else
 				if (suppress_background_events() && 
 					EmptyRgn(((WindowPeek)GetScreenGrafPort())->updateRgn)) 
+#endif
 					// && consecutive_getosevent_calls<MAXIMUM_CONSECUTIVE_GETOSEVENT_CALLS)
 				{
 					*use_waitnext= false;
@@ -438,6 +488,9 @@ bool try_for_event(
 					*use_waitnext= true;
 					consecutive_getosevent_calls= 0;
 				}
+#if defined(USE_CARBON_ACCESSORS)
+				DisposeRgn(updateRgn);
+#endif
 		
 				last_xnextevent_call= TickCount();
 			}
@@ -478,6 +531,7 @@ bool try_for_event(
 	return try_for_event;
 }
 
+#if !defined(TARGET_API_MAC_CARBON)
 void install_network_microphone(
 	void)
 {
@@ -503,11 +557,14 @@ static void network_speaker_proc(
 	(void)(player_index);
 	queue_network_speaker_data((byte *) buffer, size);
 }
+#endif
 
 void exit_networking(
 	void)
 {
+#if !defined(TARGET_API_MAC_CARBON)
 	NetExit();
+#endif
 }
 
 bool has_cheat_modifiers(
@@ -698,12 +755,32 @@ static void draw_picture_into_gworld(
 }
 #endif
 
+#if defined(TARGET_API_MAC_CARBON)
+static volatile int cursor_showing = -1;
+#endif
+
+// Bytnar: Under Carbon, we can't Hide twice and Show once and expect the cursor to show.
+
 /* ------------ these are all functions that are simple to write for various */
 /* --- machines */
 void hide_cursor(
 	void)
 {
+#if defined(TARGET_API_MAC_CARBON)
+	if (cursor_showing == -1)
+	{
+		InitCursor();
+		cursor_showing = true;
+	}
+	if (cursor_showing == true)
+	{
+		HideCursor();
+		cursor_showing = false;
+	}
+//	CGAssociateMouseAndMouseCursorPosition(false);
+#else
 	HideCursor();
+#endif
 
 	return;
 }
@@ -711,7 +788,21 @@ void hide_cursor(
 void show_cursor(
 	void)
 {
+#if defined(TARGET_API_MAC_CARBON)
+	if (cursor_showing == -1)
+	{
+		InitCursor();
+		cursor_showing = true;
+	}
+	if (cursor_showing == false)
+	{
+		ShowCursor();
+		cursor_showing = true;
+	}
+//	CGAssociateMouseAndMouseCursorPosition(true);
+#else
 	InitCursor(); // why worry about balancing?
+#endif
 
 	return;
 }
@@ -813,7 +904,13 @@ void show_movie(
 							dispBounds.bottom= short(PlaybackSize*RECTANGLE_HEIGHT(&dispBounds) + 0.5);
 							
 							/* ‚enter... */
+#if defined(USE_CARBON_ACCESSORS)
+							Rect screenBounds;
+							GetPortBounds(GetScreenGrafPort(), &screenBounds);
+							AdjustRect(&screenBounds, &dispBounds, &dispBounds, centerRect);
+#else
 							AdjustRect(&GetScreenGrafPort()->portRect, &dispBounds, &dispBounds, centerRect);
+#endif
 							OffsetRect(&dispBounds, dispBounds.left<0 ? -dispBounds.left : 0, dispBounds.top<0 ? -dispBounds.top : 0);
 							SetMovieBox(movie, &dispBounds);
 							

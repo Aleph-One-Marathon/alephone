@@ -17,17 +17,21 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	Adjusted when defines were done to not stomp on Carbon's use of them
+	Added undefs to mac and BIG_ENDIAN to prevent redefinition warnings
 */
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #ifndef _MACINTOSH_CSERIES
 #define _MACINTOSH_CSERIES
 
+#undef mac
 #define mac
-#define HAVE_OPENGL
-#define BIG_ENDIAN
-#define DEBUG
-#undef ALEPHONE_LITTLE_ENDIAN
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <Events.h>
 #include <AppleEvents.h>
 #include <Aliases.h>
@@ -42,6 +46,14 @@
 #include <TextUtils.h>
 #include <PictUtils.h>
 #include <Lists.h>
+#endif
+
+// JTP: Move after includes to not stomp on Carbon.h's use of DEBUG
+#define HAVE_OPENGL
+#undef BIG_ENDIAN
+#define BIG_ENDIAN
+#define DEBUG
+#undef ALEPHONE_LITTLE_ENDIAN
 
 #include "cstypes.h"
 

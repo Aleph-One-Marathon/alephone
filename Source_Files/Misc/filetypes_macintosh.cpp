@@ -36,8 +36,14 @@ Nov 29, 2000 (Loren Petrich):
 
 Mar 14, 2001 (Loren Petrich):
 	Added a music filetype
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
 */
 #if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
+#if defined(TARGET_API_MAC_CARBON)
+	#include <Carbon/Carbon.h>
+#endif
 #include <string.h>
 #include "tags.h"
 

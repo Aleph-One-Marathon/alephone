@@ -55,6 +55,9 @@ Aug 6, 2000 (Loren Petrich):
 	
 Oct 13, 2000 (Loren Petrich)
 	Converted the various lists into Standard Template Library vectors
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for AGL.h
 */
 
 #include <math.h>
@@ -75,7 +78,11 @@ Oct 13, 2000 (Loren Petrich)
 #endif
 
 #ifdef mac
-#include <agl.h>
+# if defined(TARGET_API_MAC_CARBON)
+#  include <AGL/agl.h>
+# else
+#  include <agl.h>
+# endif
 #endif
 
 

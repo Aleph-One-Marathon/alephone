@@ -17,6 +17,11 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	Carbon logging utilites directly format the pascal string as
+		c2pstr is obsolete and I didn't want to allocate the memory
+		to use CopyCStringToPascal
 */
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 // LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
@@ -24,8 +29,12 @@
 #include <stdarg.h>
 #include <string.h>
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <Resources.h>
 #include <TextUtils.h>
+#endif
 
 #include "csstrings.h"
 
@@ -172,10 +181,18 @@ unsigned char *psprintf(
 {
 	va_list list;
 
+#if defined(USE_CARBON_ACCESSORS)
+	va_start(list,format);
+	vsprintf((char *)buffer+1,format,list);
+	va_end(list);
+	buffer[0] = strlen((char *)buffer+1);
+#else
 	va_start(list,format);
 	vsprintf((char *)buffer,format,list);
 	va_end(list);
 	c2pstr((char *)buffer);
+#endif
+
 	return buffer;
 }
 
@@ -186,10 +203,17 @@ void dprintf(
 	Str255 buffer;
 	va_list list;
 
+#if defined(USE_CARBON_ACCESSORS)
+	va_start(list,format);
+	vsprintf((char *)buffer+1,format,list);
+	va_end(list);
+	buffer[0] = strlen((char *)buffer+1);
+#else
 	va_start(list,format);
 	vsprintf((char *)buffer,format,list);
 	va_end(list);
 	c2pstr((char *)buffer);
+#endif
 	DebugStr(buffer);
 }
 

@@ -34,6 +34,9 @@ Aug 21, 2000 (Loren Petrich):
 
 Jul 6, 2001 (Loren Petrich):
 	Added Thomas Herzog's changes for loading Win32-version image chunks
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Quicktime.h
  */
 
 #include "cseries.h"
@@ -41,6 +44,9 @@ Jul 6, 2001 (Loren Petrich):
 
 #include <stdlib.h>
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <quicktime/Quicktime.h>
+#endif
 #include "interface.h"
 #include "shell.h"
 #include "images.h"

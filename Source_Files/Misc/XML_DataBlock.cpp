@@ -23,6 +23,9 @@
 	
 Oct 24, 2001 (Loren Petrich):
 	Added "SourceName" field for indicating source of XML data for easier debugging
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added CopyCStringToPascal for Carbon, in place of c2pstr
 */
 
 
@@ -97,8 +100,12 @@ const int MaxErrorsToShow = 7;
 void XML_DataBlock::ReportInterpretError(const char *ErrorString)
 {
 #ifdef mac
+# if defined(USE_CARBON_ACCESSORS)
+	CopyCStringToPascal(ErrorString, (unsigned char *)temporary);
+# else
 	strncpy(temporary,ErrorString,255);
 	c2pstr(temporary);
+# endif
 	ParamText(ptemporary,0,0,0);
 	if (GetNumInterpretErrors() < MaxErrorsToShow)
 		Alert(NonFatalErrorAlert,NULL);

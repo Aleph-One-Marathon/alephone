@@ -38,6 +38,10 @@
 Dec 7, 2000 (Loren Petrich):
 	Added a MacOS-specific file-creation function that allows direct specification
 	of type and creator codes
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	Rearranged initializers in DirectorySpecifier constructor to appease compiler warnings
 */
 #ifdef SDL_RFORK_HACK
 #undef SDL
@@ -45,8 +49,12 @@ Dec 7, 2000 (Loren Petrich):
 #endif
 
 #ifdef mac
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <Files.h>
 #include <Resources.h>
+#endif
 #endif
 
 // For the filetypes
@@ -282,7 +290,7 @@ public:
 		
 	OSErr GetError() {return Err;}
 	
-	DirectorySpecifier(): vRefNum(0), parID(0), Err(noErr) {}
+	DirectorySpecifier(): parID(0), vRefNum(0), Err(noErr) {}
 	DirectorySpecifier(DirectorySpecifier& D) {*this = D;}
 };
 #else

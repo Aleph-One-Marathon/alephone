@@ -40,6 +40,10 @@ Aug 24, 2000 (Loren Petrich):
 
 Jan 31, 2001 (Loren Petrich);
 	Delete some old MacOS-specific load-and-save junk.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Replaced a c2pstr with CopyCStrin2Pascal for Carbon
+	Added accessors for datafields now opaque in Carbon
 */
 
 #include "macintosh_cseries.h"
@@ -199,8 +203,12 @@ void add_finishing_touches_to_save_file(FileSpecifier &File)
 	Handle resource;
 	
 	/* Add in the save level name */
+#if defined(USE_CARBON_ACCESSORS)
+	CopyCStringToPascal(static_world->level_name, name);
+#else
 	strcpy((char *)name, static_world->level_name);
 	c2pstr((char *)name);
+#endif
 	err= PtrToHand(name, &resource, name[0]+1);
 	assert(!err && resource);
 	
@@ -241,8 +249,15 @@ static void add_overhead_thumbnail(
 	GetGWorld(&old_gworld, &old_device);
 	SetGWorld(world_pixels, (GDHandle) NULL);
 
+#if defined(USE_CARBON_ACCESSORS) && defined(assert)
+	Rect portRect;
+	GetPortBounds(world_pixels, &portRect);
+	assert(THUMBNAIL_WIDTH<RECTANGLE_WIDTH(&portRect));
+	assert(THUMBNAIL_HEIGHT<RECTANGLE_HEIGHT(&portRect));
+#else
 	assert(THUMBNAIL_WIDTH<RECTANGLE_WIDTH(&world_pixels->portRect));
 	assert(THUMBNAIL_HEIGHT<RECTANGLE_HEIGHT(&world_pixels->portRect));
+#endif
 
 	/* Create the bounding rectangle */
 	SetRect(&bounds, 0, 0, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);

@@ -19,6 +19,9 @@
 
 	Created for non-duplication of code between mac and SDL ports.
 	(Loren Petrich and others)
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Disabled network_speaker_idle_proc under Carbon
 */
 
 bool CheatsActive = false;
@@ -324,7 +327,9 @@ void handle_keyword(int tag)
 void global_idle_proc(void)
 {
 	music_idle_proc();
+#if !defined(TARGET_API_MAC_CARBON)
 	network_speaker_idle_proc();
+#endif
 	sound_manager_idle_proc();
 }
 

@@ -24,8 +24,12 @@ MACINTOSH_NETWORK.H
 Monday, June 20, 1994 12:22:25 PM
 Wednesday, August 9, 1995 3:34:50 PM- network lookup stuff now takes a version which is 
 	concatenated to the lookup type (ryan)
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Disabled networking under carbon
 */
 
+#if !defined(TARGET_API_MAC_CARBON)
 #include <AppleTalk.h>
 #include <ADSP.h>
 
@@ -178,4 +182,5 @@ bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *add
 OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
 OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
 
+#endif // Carbon not defined
 #endif

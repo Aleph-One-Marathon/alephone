@@ -17,12 +17,18 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
 */
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #include <stddef.h>
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <Quickdraw.h>
 #include <Memory.h>
+#endif
 
 #include "cscluts.h"
 #include "FileHandler.h"

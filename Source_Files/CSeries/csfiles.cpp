@@ -17,12 +17,19 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	Added a backup to get_my_fsspec to back out of Carbon bundle
 */
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #include <string.h>
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <Errors.h>
 #include <Processes.h>
+#endif
 
 #include "csfiles.h"
 #include "csstrings.h"
@@ -68,6 +75,16 @@ extern OSErr get_my_fsspec(
 	pir.processInfoLength=sizeof pir;
 	pir.processName=NULL;
 	pir.processAppSpec=spec;
+#if defined(TARGET_API_MAC_CARBON)
+	OSStatus err = GetProcessInformation(&psn,&pir);
+	if(err == noErr)
+	{
+		// Back up out of our bundle
+		err = FSMakeFSSpec(spec->vRefNum, spec->parID, "\p:::", spec);
+	}
+	return err;
+#else
 	return GetProcessInformation(&psn,&pir);
+#endif
 }
 

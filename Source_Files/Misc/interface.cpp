@@ -69,6 +69,9 @@ Nov 25, 2000 (Loren Petrich):
 
 Jan 31, 2001 (Loren Petrich):
 	In pause_game(), will stop the liquid faders that are active
+	
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Disabled network and network microphone calls under Carbon
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -1200,6 +1203,7 @@ static bool begin_game(
 	
 	switch(user)
 	{
+#if !defined(TARGET_API_MAC_CARBON)
 		case _network_player:
 			{
 				game_info *network_game_info= (game_info *)NetGetGameData();
@@ -1240,6 +1244,7 @@ static bool begin_game(
 				record_game= true;
 			}
 			break;
+#endif
 
 		case _replay_from_file:
 		case _replay:
@@ -1365,10 +1370,12 @@ static bool begin_game(
 			{
 				if (user==_network_player)
 				{
+#if !defined(TARGET_API_MAC_CARBON)
 					if(game_state.current_netgame_allows_microphone)
 					{
 						remove_network_microphone();
 					}
+#endif
 					exit_networking();
 				} else {
 /* NOTE: The network code is now responsible for displaying its own errors!!!! */
@@ -1513,7 +1520,9 @@ static void finish_game(
 	{
 		if(game_state.current_netgame_allows_microphone)
 		{
+#if !defined(TARGET_API_MAC_CARBON)
 			remove_network_microphone();
+#endif
 		}
 		NetUnSync(); // gracefully exit from the game
 

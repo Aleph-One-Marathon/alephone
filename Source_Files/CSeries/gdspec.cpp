@@ -24,13 +24,23 @@
 
 Jan 30, 2000 (Loren Petrich)
 	Did some typecasts
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for Carbon.h
+	Added accessors for datafields now opaque in Carbon
+	Carbon proc routines all allocated as UPP's
+	GetSlotFromGDevice does nothing under Carbon (Slot field now opaque)
 */
 
 #include <stdlib.h>
 
+#if defined(TARGET_API_MAC_CARBON)
+    #include <Carbon/Carbon.h>
+#else
 #include <Dialogs.h>
 #include <Palettes.h>
 #include <Devices.h>
+#endif
 
 #include "cstypes.h"
 #include "csdialogs.h"
@@ -143,7 +153,11 @@ bool EqualGDSpec(
 short GetSlotFromGDevice(
 	GDHandle dev)
 {
+#if defined(TARGET_API_MAC_CARBON)
+	return NONE;
+#else
 	return (*(AuxDCEHandle)GetDCtlEntry((*dev)->gdRefNum))->dCtlSlot;
+#endif
 }
 
 enum {
@@ -209,12 +223,16 @@ static pascal void draw_desktop(
 	}
 }
 
+#if defined(TARGET_API_MAC_CARBON)
+UserItemUPP draw_desktop_upp = NewUserItemUPP(draw_desktop);
+#else
 #if GENERATINGCFM
 static RoutineDescriptor draw_desktop_desc =
 	BUILD_ROUTINE_DESCRIPTOR(uppUserItemProcInfo,draw_desktop);
 #define draw_desktop_upp (&draw_desktop_desc)
 #else
 #define draw_desktop_upp draw_desktop
+#endif
 #endif
 
 static pascal void draw_group(
@@ -244,12 +262,16 @@ static pascal void draw_group(
 	DisposeRgn(outer);
 }
 
+#if defined(TARGET_API_MAC_CARBON)
+UserItemUPP draw_group_upp = NewUserItemUPP(draw_group);
+#else
 #if GENERATINGCFM
 static RoutineDescriptor draw_group_desc =
 	BUILD_ROUTINE_DESCRIPTOR(uppUserItemProcInfo,draw_group);
 #define draw_group_upp (&draw_group_desc)
 #else
 #define draw_group_upp draw_group
+#endif
 #endif
 
 static pascal Boolean device_filter(
@@ -269,7 +291,11 @@ static pascal Boolean device_filter(
 		case inContent:
 			where=event->where;
 			GetPort(&saveport);
+#if defined(USE_CARBON_ACCESSORS)
+			SetPort(GetWindowPort(GetDialogWindow(dlg)));
+#else
 			SetPort(dlg);
+#endif
 			GlobalToLocal(&where);
 			item=FindDialogItem(dlg,where)+1;
 			switch (item) {
@@ -293,12 +319,16 @@ static pascal Boolean device_filter(
 	return general_filter_proc(dlg,event,hit);
 }
 
+#if defined(TARGET_API_MAC_CARBON)
+ModalFilterUPP device_filter_upp = NewModalFilterUPP(device_filter);
+#else
 #if GENERATINGCFM
 static RoutineDescriptor device_filter_desc =
 	BUILD_ROUTINE_DESCRIPTOR(uppModalFilterProcInfo,device_filter);
 #define device_filter_upp (&device_filter_desc)
 #else
 #define device_filter_upp device_filter
+#endif
 #endif
 
 void display_device_dialog(
@@ -370,7 +400,11 @@ void display_device_dialog(
 	GetDialogItem(dlg,itemColorsRadio,&it,&ih,&ir);
 	colorsradio=(ControlHandle)ih;
 	SetControlValue((spec->flags&1<<gdDevType) ? colorsradio : graysradio,1);
+#if defined(USE_CARBON_ACCESSORS)
+	ShowWindow(GetDialogWindow(dlg));
+#else
 	ShowWindow(dlg);
+#endif
 	for (done=false; !done; ) {
 		ModalDialog(device_filter_upp,&hit);
 		switch (hit) {
@@ -388,7 +422,11 @@ void display_device_dialog(
 			break;
 		}
 	}
+#if defined(USE_CARBON_ACCESSORS)
+	HideWindow(GetDialogWindow(dlg));
+#else
 	HideWindow(dlg);
+#endif
 	if (hit==itemOKButton) {
 		spec->slot=GetSlotFromGDevice(devices[curix].dev);
 		spec->flags=GetControlValue(colorsradio) ? 1<<gdDevType : 0;

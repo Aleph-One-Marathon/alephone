@@ -20,6 +20,9 @@
 
 	Tuesday, June 13, 1995 5:49:10 PM- rdm created.
 
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Added accessors for datafields now opaque in Carbon
+	Now use UPP for callback procedures
 */
 
 #include <string.h>
@@ -109,7 +112,11 @@ bool configure_key_setup(
 		dialog = myGetNewDialog(dlogCONFIGURE_KEYS, NULL, (WindowPtr) -1, refCONFIGURE_KEYBOARD_DIALOG);
 	}
 	assert(dialog);
+#if defined(TARGET_API_MAC_CARBON)
+	key_setup_filter_upp= NewModalFilterUPP(key_setup_filter_proc);
+#else
 	key_setup_filter_upp= NewModalFilterProc(key_setup_filter_proc);
+#endif
 	
 	/* Setup the keyboard dialog.. */
 	current_key_set= setup_key_dialog(dialog, keycodes);
@@ -118,7 +125,11 @@ bool configure_key_setup(
 	SelectDialogItemText(dialog, iFORWARD, 0, SHRT_MAX);
 
 	set_dialog_cursor_tracking(false);
+#if defined(USE_CARBON_ACCESSORS)
+	ShowWindow(GetDialogWindow(dialog));
+#else
 	ShowWindow(dialog);
+#endif
 
 	/* Setup the globals.. */
 	GetKeys(keyboard_setup_globals.old_key_map);
@@ -145,9 +156,15 @@ bool configure_key_setup(
 						set_default_keys(keycodes, menu_selection);
 						
 						// looks slightly nicer to deselect text before changing and reselecting it.
+#if defined(USE_CARBON_ACCESSORS)
+						SelectDialogItemText(dialog, GetDialogKeyboardFocusItem(dialog) + 1, 0, 0);
+						keyboard_setup_globals.current_key_setup= setup_key_dialog(dialog, keycodes);
+						SelectDialogItemText(dialog, GetDialogKeyboardFocusItem(dialog) + 1, 0, SHRT_MAX);
+#else
 						SelectDialogItemText(dialog, ((DialogRecord *) dialog)->editField + 1, 0, 0);
 						keyboard_setup_globals.current_key_setup= setup_key_dialog(dialog, keycodes);
 						SelectDialogItemText(dialog, ((DialogRecord *) dialog)->editField + 1, 0, SHRT_MAX);
+#endif
 					}
 					break;
 					
@@ -198,7 +215,11 @@ static pascal Boolean key_setup_filter_proc(
 	bool handled= false;
 	
 	GetPort(&old_port);
+#if defined(USE_CARBON_ACCESSORS)
+        SetPort(GetWindowPort(GetDialogWindow(dialog)));
+#else
 	SetPort(dialog);
+#endif
 	
 	/* preprocess events */	
 	switch(event->what)
@@ -209,7 +230,11 @@ static pascal Boolean key_setup_filter_proc(
 			GetKeys(key_map);
 			if (memcmp(key_map, keyboard_setup_globals.old_key_map, sizeof(KeyMap))) // the user has hit a new key
 			{
+#if defined(USE_CARBON_ACCESSORS)
+				current_edit_field= GetDialogKeyboardFocusItem(dialog) + 1;
+#else
 				current_edit_field= ((DialogRecord *) dialog)->editField + 1;
+#endif
 				keycode= find_key_hit((byte *)key_map, (byte *)keyboard_setup_globals.old_key_map);
 
 				// update the text field

@@ -103,6 +103,11 @@ Dec 17, 2000 (Loren Petrich):
 	changed "fog is on" in preferences to "fog is allowed"
 	Added "current fog color" so that landscapes will be correctly colored
 	in infravision mode.
+
+Jan 31, 2002 (Br'fin (Jeremy Parsons)):
+	Added TARGET_API_MAC_CARBON for AGL.h
+	Added accessors for datafields now opaque in Carbon
+	Added a check to make sure AGL_SWAP_RECT is enabled before we try to disable it, trying to squash a bug that occasionally pops up
 */
 
 #include <vector>
@@ -127,7 +132,11 @@ Dec 17, 2000 (Loren Petrich):
 #endif
 
 #ifdef mac
+#if defined(TARGET_API_MAC_CARBON)
+    #include <AGL/agl.h>
+#else
 #include <agl.h>
+#endif
 #include "my32bqd.h"
 #endif
 
@@ -477,7 +486,13 @@ bool OGL_ClearScreen()
 	{
 #ifdef mac
 		// So as to paint the entire screen buffer
-		aglDisable(RenderContext,AGL_SWAP_RECT);
+		if(aglIsEnabled(RenderContext, AGL_SWAP_RECT))
+		{
+			if(!aglDisable(RenderContext,AGL_SWAP_RECT))
+			{
+				dprintf("aglDisable failed: AGL Error: %s\n", aglErrorString(aglGetError()));
+			}
+		}
 #endif
 		glClearColor(0,0,0,0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -697,8 +712,8 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 		*/
 		
 		// Set aside swap area
-		aglEnable(RenderContext,AGL_SWAP_RECT);
 		aglSetInteger(RenderContext,AGL_SWAP_RECT,RectBounds);
+		aglEnable(RenderContext,AGL_SWAP_RECT);
 	}
 #endif
 	
@@ -2786,7 +2801,12 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	if (!UseBackBuffer) glDrawBuffer(GL_FRONT);
 	
 	// Where the image comes from
+#if defined(USE_CARBON_ACCESSORS)
+	Rect ImgBounds;
+	GetPortBounds(BufferPtr, &ImgBounds);
+#else
 	Rect& ImgBounds = ((CGrafPtr)BufferPtr)->portRect;
+#endif
 	
 	// Number of source bytes (destination bytes = 4)
 	short NumSrcBytes = bit_depth/8;

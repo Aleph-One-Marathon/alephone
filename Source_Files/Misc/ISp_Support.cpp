@@ -41,6 +41,9 @@ Sep 24, 2000 (Loren Petrich):
 Nov 13, 2000 (Loren Petrich):
 	Undefined USE_OLD_INPUT_SPROCKET_LABELS to make CW6 and Universal Headers 3.3 happy;
 	also, added another "nil" to the virtual elements, also to satisfy ISp's response under CW6.
+
+Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+	Disable ISP under Carbon
 */
 
 
@@ -62,9 +65,11 @@ Nov 13, 2000 (Loren Petrich):
 #define USE_OLD_ISPNEED_STRUCT 1
 
 /* macintosh includes */
+#if !defined(TARGET_API_MAC_CARBON)
 #include <InputSprocket.h>
 #include <CursorDevices.h>
 #include <Traps.h>
+#endif
 
 const OSType kCreatorCode		= '26.A';
 const OSType kSubCreatorCode	= 'BENT';
@@ -186,6 +191,7 @@ static long		gElementActions[HowManyNeeds] =
 					// Axis stuff
 					0, 0, 0, 0};
 
+#if !defined(TARGET_API_MAC_CARBON)
 ISpElementListReference		gVirtualList = NULL;
 ISpElementReference			gVirtualElements[HowManyNeeds] =
 	{	// LP: prettyprinted to make them easier to match with gElementActions members
@@ -277,11 +283,16 @@ static ISpNeed gNeeds[HowManyNeeds] =
 	{ "\pMove",				Icon_Move, 				0, kISpElementKind_Delta,		kISpElementLabel_Delta_Z,			kISpNeedFlag_Delta_AlreadyButton , 0, 0, 0},
 	{ "\pChange Weapon",	Icon_ChangeWeapon, 		0, kISpElementKind_Delta,		kISpElementLabel_Delta_Z,			kISpNeedFlag_Delta_AlreadyButton , 0, 0, 0},
 };
+#endif // !defined(TARGET_API_MAC_CARBON)
 
 
 //Starts up InputSprockets and adds all the default Needs and Controls
 void initialize_ISp(void)
 {
+#if defined(TARGET_API_MAC_CARBON)
+	canDoISp = false;
+	return;
+#else
 	// Check if weak-linking was successful
 	if((Ptr)ISpStartup == (Ptr)kUnresolvedCFragSymbolAddress)
 	{
@@ -333,11 +344,13 @@ void initialize_ISp(void)
 		
 	err = ISpSuspend();
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
+#endif
 }
 
 void ShutDown_ISp(void)
 {
 	if(!canDoISp) return; // Leave function because Input Sprockets is not available
+#if !defined(TARGET_API_MAC_CARBON)
 	OSErr err = noErr;
 	err = ISpStop();
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
@@ -350,11 +363,13 @@ void ShutDown_ISp(void)
 	
 	err = ISpShutdown();
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
+#endif
 }
 
 void Start_ISp(void)
 {
 	if(!canDoISp) return; // Leave function because Input Sprockets is not available
+#if !defined(TARGET_API_MAC_CARBON)
 	if(input_preferences->input_device!=_input_sprocket_only && input_preferences->input_device!=_keyboard_or_game_pad) return;
 	OSErr err = noErr;
 	
@@ -365,16 +380,19 @@ void Start_ISp(void)
 	err = ISpResume();
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
 	active = true;
+#endif
 }
 
 void Stop_ISp(void)
 {
 	if(!canDoISp) return; // Leave function because Input Sprockets is not available
+#if !defined(TARGET_API_MAC_CARBON)
 	OSErr err = noErr;
 	
 	err = ISpSuspend();
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
 	active = false;
+#endif
 }
 
 bool ISp_IsUsingKeyboard()
@@ -389,6 +407,7 @@ long InputSprocketTestElements(void)
 	if(!active) return 0; //Input Sprockets is not active, so return no action flags
 	if(!canDoISp) return 0; //Input Sprockets is not available so return no action flags
 	
+#if !defined(TARGET_API_MAC_CARBON)
 	OSErr err = noErr;
 	UInt32 data;
 	long flags = 0;
@@ -452,11 +471,15 @@ long InputSprocketTestElements(void)
 	
 /* Done Handling all axis data!!! ****************************************/		
 	return flags;
+#else
+	return 0;
+#endif
 }
 
 void ConfigureMarathonISpControls(void)
 {
 	if(!canDoISp) return; // Leave function because Input Sprockets is not available
+#if !defined(TARGET_API_MAC_CARBON)
 	OSErr err = noErr;
 			
 	err = ISpResume();
@@ -471,4 +494,5 @@ void ConfigureMarathonISpControls(void)
 	
 	err = ISpSuspend();
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
+#endif
 }
