@@ -877,8 +877,15 @@ an engine tick is 1/30 second.
 <h3><a name="view">View Element: &lt;view&gt;</a></h3>
 
 This kind of element specifies various view features.
-It has one attribute, "map", which is <a name="#boolean">boolean</a>,
-and which indicates whether or not to show the overhead map.
+It has these attributes, which are all<a name="#boolean">boolean</a>:
+<ul>
+<li>map: indicates whether or not to show the overhead map (default: true)
+<li>fold_effect: indicates whether or not to make the field of view stretch horizontally
+and squeeze vertically as one teleports (default: true)
+<li>static_effect: indicates whether or not to make teleporting objects have the sparkling
+"static" effect and whether they get squeezed horizontally as they teleport (default: true)
+</ul>
+<p>
 This element also has the child element &lt;fov&gt;,
 which is for setting field-of-view features.
 <p>
@@ -1333,6 +1340,7 @@ This specification is done with these attributes:
 <ul>
 <li>index: which fake level-index value to use for the end of the game (default: 99);
 all chapter screens have the resource ID (1500 + (level index)).
+If there is more than one ending chapter screen, then this is for finding the first one.
 <li>count: how many in sequence (default: 1), with resource ID's incremented by one for each one.
 </ul>
 <p>
