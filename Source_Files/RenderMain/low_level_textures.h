@@ -32,7 +32,7 @@ Jan 30, 2000 (Loren Petrich):
 
 /*
 we donÕt include anything here because we are included in SCOTTISH_TEXTURES.C, with
-BIT_DEPTH==8 and BIT_DEPTH==16
+BIT_DEPTH==8 and BIT_DEPTH==16 (and 32 too)
 */
 
 #undef PEL
@@ -126,9 +126,9 @@ void LANDSCAPE_HORIZONTAL_POLYGON_LINES(
 {
 	register short landscape_texture_width_downshift= 32 - NextLowerExponent(texture->height);
 
-	(void) (view);
 
-	while ((line_count-= 1)>=0)
+	//while ((line_count--)>=0)
+    for (;line_count>=0;line_count--)
 	{
 		short x0= *x0_table++, x1= *x1_table++;
 		
@@ -167,7 +167,6 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 	int x= data->x0;
 	int count;
 	
-	(void) (view);
 
 	while (line_count>0)	
 	{
@@ -347,8 +346,6 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 	pixel8 pixel;
 	int count;
 	
-	(void) (view);
-
 	while (line_count>0)	
 	{
 		if (line_count<4 || (x&3) || aborted)
@@ -633,9 +630,9 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 	register uint16 seed= texture_random_seed;
 	register uint16 drop_less_than= transfer_data;
 
-	(void) (view);
 
-	while ((line_count-= 1)>=0)
+	//while ((line_count-= 1)>=0)
+        for (;line_count>=0;line_count--)
 	{
 		short y0= *y0_table++, y1= *y1_table++;
 		register PEL *write= (PEL *) screen->row_addresses[y0] + x;

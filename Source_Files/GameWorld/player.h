@@ -276,14 +276,14 @@ enum { /* Player flags */
 #define PLAYER_IS_ZOMBIE(p) ((p)->flags&_player_is_zombie_flag)
 #define SET_PLAYER_ZOMBIE_STATUS(p,v) ((v)?((p)->flags|=(uint16)_player_is_zombie_flag):((p)->flags&=(uint16)~_player_is_zombie_flag))
 
-#define PLAYER_IS_PFHORTRAN_CONTROLLED(p) ((p)->flags&_player_is_pfhortran_controlled_flag)
+#define PLAYER_IS_PFHORTRAN_CONTROLLED(p) ( ( p )->flags & _player_is_pfhortran_controlled_flag )
 #define SET_PLAYER_IS_PFHORTRAN_CONTROLLED_STATUS(p,v) ((v)?((p)->flags|=(uint16)_player_is_pfhortran_controlled_flag):((p)->flags&=(uint16)_player_is_pfhortran_controlled_flag))
 
 /* i.e., our animation has stopped */
 #define PLAYER_IS_TOTALLY_DEAD(p) ((p)->flags&_player_is_totally_dead_flag)
 #define SET_PLAYER_TOTALLY_DEAD_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_totally_dead_flag):((p)->flags&=(uint16)~_player_is_totally_dead_flag)))
 
-#define PLAYER_HAS_MAP_OPEN(p) ((p)->flags&_player_has_map_open_flag)
+#define PLAYER_HAS_MAP_OPEN(p) ( (p)->flags & _player_has_map_open_flag )
 #define SET_PLAYER_MAP_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_has_map_open_flag):((p)->flags&=(uint16)~_player_has_map_open_flag)))
 
 #define PLAYER_IS_TELEPORTING(p) ((p)->flags&_player_is_teleporting_flag)

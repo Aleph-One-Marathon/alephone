@@ -430,7 +430,7 @@ bool network_join(
 
 		GetPort(&old_port);
 		SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
-		ShowWindow((GrafPtr)GetDialogWindow(dialog));
+		ShowWindow(GetDialogWindow(dialog));
 	
 		do
 		{
@@ -491,7 +491,7 @@ bool network_join(
 #endif
 						InsetRect(&item_rect, -4, -4);
 						EraseRect(&item_rect);
-#if defined(TARGET_MAC_API_CARBON)
+#ifdef TARGET_API_MAC_CARBON
 						InvalWindowRect(GetDialogWindow(dialog), &item_rect); // force it to be updated
 #else
 						InvalRect(&item_rect);	// Assumed to be the dialog-box window
@@ -1832,7 +1832,7 @@ void display_net_game_stats(
 
 					/* Erase! */
 					EraseRect(&item_rect);
-#if defined(TARGET_MAC_API_CARBON)
+#if TARGET_API_MAC_CARBON
 					InvalWindowRect(GetDialogWindow(dialog), &item_rect);
 #else
 					InvalRect(&item_rect);	// Assumed to be the dialog-box window

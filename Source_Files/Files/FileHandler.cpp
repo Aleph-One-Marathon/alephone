@@ -556,7 +556,6 @@ bool FileSpecifier::Open(OpenedFile& OFile, bool Writable)
 	OFile.Close();
 	
 	if (!ResolveFile(Spec)) return false;
-	
 	short RefNum;
 	Err = FSpOpenDF(&Spec, WhatPermission(Writable), &RefNum);
 	if (Err != noErr) 
@@ -577,8 +576,7 @@ bool FileSpecifier::Open(OpenedResourceFile& OFile, bool Writable)
 	OFile.Close();
 	
 	if (!ResolveFile(Spec)) return false;
-
-	short RefNum;
+        short RefNum;
 	RefNum = FSpOpenResFile(&Spec, WhatPermission(Writable));
 	Err = ResError();
 	if (Err != noErr) 

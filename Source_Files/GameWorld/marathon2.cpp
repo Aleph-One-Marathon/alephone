@@ -206,11 +206,9 @@ short update_world(
 	for (i=0;i<time_elapsed;++i)
 	{
 		//CP Addition: Scripting handling stuff
-		bool success = true;
-		if (script_in_use() && success /*&& instruction_finished()*/)
-		{
-			success = do_next_instruction();
-		}
+  //AS: removed "success"; it's pointless
+		if (script_in_use())
+			do_next_instruction();
 		
 		update_lights();
 		update_medias();

@@ -111,6 +111,7 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 */
 
 #include "cseries.h"
+#undef DEBUG
 #include "render.h"
 #include "Rasterizer_SW.h"
 
@@ -193,36 +194,33 @@ struct _vertical_polygon_line_data
 /* ---------- macros */
 
 // i0 + i1 == MAX(i0, i1) + MIN(i0, i1)/2
-#define CALCULATE_SHADING_TABLE(result, view, shading_tables, depth, ambient_shade) \
-{ \
-	short table_index; \
-	_fixed shade; \
-	 \
-	if ((ambient_shade)<0) \
-	{ \
-		table_index= SHADE_TO_SHADING_TABLE_INDEX(-(ambient_shade)); \
-	} \
-	else \
-	{ \
-		shade= (view)->maximum_depth_intensity - DEPTH_TO_SHADE(depth); \
-		shade= PIN(shade, 0, FIXED_ONE); \
-		table_index= SHADE_TO_SHADING_TABLE_INDEX((ambient_shade>shade) ? (ambient_shade + (shade>>1)) : (shade + (ambient_shade>>1))); \
-	} \
-	 \
-	switch (bit_depth) \
-	{ \
-		case 8: result= ((byte*)(shading_tables)) + MAXIMUM_SHADING_TABLE_INDEXES*sizeof(pixel8)* \
-			CEILING(table_index, number_of_shading_tables-1); break; \
-		case 16: result= ((byte*)(shading_tables)) + MAXIMUM_SHADING_TABLE_INDEXES*sizeof(pixel16)* \
-			CEILING(table_index, number_of_shading_tables-1); break; \
-		case 32: result= ((byte*)(shading_tables)) + MAXIMUM_SHADING_TABLE_INDEXES*sizeof(pixel32)* \
-			CEILING(table_index, number_of_shading_tables-1); break; \
-	} \
+//#define calculate_shading_table(result, view, shading_tables, depth, ambient_shade)
+void calculate_shading_table(void * &result,view_data *view, void *shading_tables, short depth,_fixed ambient_shade)
+{ 
+	short table_index; 
+	_fixed shade; 
+	 
+	if ((ambient_shade)<0) 
+	{ 
+		table_index= SHADE_TO_SHADING_TABLE_INDEX(-(ambient_shade)); 
+	} 
+	else 
+	{ 
+		shade= (view)->maximum_depth_intensity - DEPTH_TO_SHADE(depth); 
+		shade= PIN(shade, 0, FIXED_ONE); 
+		table_index= SHADE_TO_SHADING_TABLE_INDEX((ambient_shade>shade) ? (ambient_shade + (shade>>1)) : (shade + (ambient_shade>>1))); 
+	} 
+	 
+	switch (bit_depth) 
+	{ 
+		case 8: result= ((byte*)(shading_tables)) + MAXIMUM_SHADING_TABLE_INDEXES*sizeof(pixel8)* 
+			CEILING(table_index, number_of_shading_tables-1); break; 
+		case 16: result= ((byte*)(shading_tables)) + MAXIMUM_SHADING_TABLE_INDEXES*sizeof(pixel16)* 
+			CEILING(table_index, number_of_shading_tables-1); break; 
+		case 32: result= ((byte*)(shading_tables)) + MAXIMUM_SHADING_TABLE_INDEXES*sizeof(pixel32)* 
+			CEILING(table_index, number_of_shading_tables-1); break; 
+	} 
 }
-
-//		table_index= SHADE_TO_SHADING_TABLE_INDEX((view)->maximum_depth_intensity - DEPTH_TO_SHADE(depth));
-//		table_index= PIN(table_index, 0, number_of_shading_tables);
-//		table_index= MAX(SHADE_TO_SHADING_TABLE_INDEX(ambient_shade), table_index);
 
 /* ---------- globals */
 
@@ -338,18 +336,7 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 	assert(polygon->vertex_count>=MINIMUM_VERTICES_PER_SCREEN_POLYGON&&polygon->vertex_count<MAXIMUM_VERTICES_PER_SCREEN_POLYGON);
 
 	/* if we get static, tinted or landscaped transfer modes punt to the vertical polygon mapper */
-     /*
-	switch (polygon->transfer_mode)
-	{
-//		case _solid_transfer:
-//			if (bit_depth!=8) polygon->transfer_mode= _textured_transfer;
-//			break;
-		case _static_transfer:
-//		case _landscaped_transfer:
-			texture_vertical_polygon(textured_polygon);
-			// texture_vertical_polygon(polygon, screen, view);
-			return;
-	}*/
+
     if (polygon->transfer_mode == _static_transfer) {
         texture_vertical_polygon(textured_polygon);
         return;
@@ -443,7 +430,6 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 		switch (polygon->transfer_mode)
 		{
 			case _textured_transfer:
-//			case _solid_transfer:
 				_pretexture_horizontal_polygon_lines(polygon, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 					vertices[highest_vertex].y, left_table, right_table,
 					aggregate_total_line_count);
@@ -465,14 +451,6 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 			case 8:
 				switch (polygon->transfer_mode)
 				{
-//					case _solid_transfer:
-//#ifdef env68k /* otherwise, fall through to _textured_transfer */
-//#ifdef EXTERNAL
-//						_fill_horizontal_polygon_lines8(polygon->texture, screen, view, precalculation_table,
-//							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
-//						break;
-//#endif
-//#endif
 	
 					case _textured_transfer:
 						_texture_horizontal_polygon_lines8(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
@@ -540,17 +518,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 	point2d *vertices= polygon->vertices;
 
 	assert(polygon->vertex_count>=MINIMUM_VERTICES_PER_SCREEN_POLYGON&&polygon->vertex_count<MAXIMUM_VERTICES_PER_SCREEN_POLYGON);
-/*
-	switch (polygon->transfer_mode)
-	{
-//		case _landscaped_transfer:
-//			preprocess_landscaped_polygon(polygon, view);
-//			break;
-		case _big_landscaped_transfer:
-			texture_horizontal_polygon(textured_polygon);
-			return;
-	}
-*/
+
     if (polygon->transfer_mode == _big_landscaped_transfer) {
         texture_horizontal_polygon(textured_polygon);
         return;
@@ -639,20 +607,7 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 		assert(aggregate_left_line_count==aggregate_total_line_count);
 
 		/* precalculate mode-specific data */
-          /*
-		switch (polygon->transfer_mode)
-		{
-			case _textured_transfer:
-//			case _landscaped_transfer:
-			case _static_transfer:
-				_pretexture_vertical_polygon_lines(polygon, screen, view, (struct _vertical_polygon_data *)precalculation_table,
-					vertices[highest_vertex].x, left_table, right_table, aggregate_total_line_count);
-				break;
-			
-			default:
-				vhalt(csprintf(temporary, "vertical_polygons dont support mode #%d", polygon->transfer_mode));
-		}
-		*/
+
           if ((polygon->transfer_mode == _textured_transfer) || (polygon->transfer_mode == _static_transfer))
           {
               _pretexture_vertical_polygon_lines(polygon, screen, view, (struct _vertical_polygon_data *)precalculation_table, vertices[highest_vertex].x, left_table, right_table, aggregate_total_line_count);
@@ -666,15 +621,9 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 				switch (polygon->transfer_mode)
 				{
 					case _textured_transfer:
-//					case _landscaped_transfer:
 						(polygon->texture->flags&_TRANSPARENT_BIT) ?
 							_transparent_texture_vertical_polygon_lines8(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
 							_texture_vertical_polygon_lines8(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
-						break;
-					
-					case _static_transfer:
-//						_randomize_vertical_polygon_lines8(screen, view, precalculation_table,
-//							left_table, right_table, polygon->transfer_data);
 						break;
 					
 					default:
@@ -687,15 +636,9 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 				switch (polygon->transfer_mode)
 				{
 					case _textured_transfer:
-//					case _landscaped_transfer:
 						(polygon->texture->flags&_TRANSPARENT_BIT) ?
 							_transparent_texture_vertical_polygon_lines16(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
 							_texture_vertical_polygon_lines16(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
-						break;
-					
-					case _static_transfer:
-//						_randomize_vertical_polygon_lines16(screen, view, precalculation_table,
-//							left_table, right_table, polygon->transfer_data);
 						break;
 
 					default:
@@ -708,15 +651,9 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 				switch (polygon->transfer_mode)
 				{
 					case _textured_transfer:
-//					case _landscaped_transfer:
 						(polygon->texture->flags&_TRANSPARENT_BIT) ?
 							_transparent_texture_vertical_polygon_lines32(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
 							_texture_vertical_polygon_lines32(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
-						break;
-					
-					case _static_transfer:
-//						_randomize_vertical_polygon_lines32(screen, view, precalculation_table,
-//							left_table, right_table, polygon->transfer_data);
 						break;
 
 					default:
@@ -822,7 +759,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 						{
 							// LP change:
 							// Made this more long-distance friendly
-							CALCULATE_SHADING_TABLE(shading_table, view, rectangle->shading_tables, (short)MIN(rectangle->depth, SHRT_MAX), rectangle->ambient_shade);
+							calculate_shading_table(shading_table, view, rectangle->shading_tables, (short)MIN(rectangle->depth, SHRT_MAX), rectangle->ambient_shade);
 							break;
 						}
 						/* if shadeless, fall through to a single shading table, ignoring depth */
@@ -1101,8 +1038,8 @@ static void _pretexture_vertical_polygon_lines(
 		else
 		{
 			// LP change: made this more long-distance friendly
-			CALCULATE_SHADING_TABLE(line->shading_table, view, polygon->shading_tables, (short)MIN(world_x, SHRT_MAX), polygon->ambient_shade);
-			// CALCULATE_SHADING_TABLE(line->shading_table, view, polygon->shading_tables, world_x, polygon->ambient_shade);
+			calculate_shading_table(line->shading_table, view, polygon->shading_tables, (short)MIN(world_x, SHRT_MAX), polygon->ambient_shade);
+			// calculate_shading_table(line->shading_table, view, polygon->shading_tables, world_x, polygon->ambient_shade);
 		}
 
 //		if (ty_delta)
@@ -1166,10 +1103,7 @@ static void _pretexture_horizontal_polygon_lines(
 		if (!screen_y) screen_y= 1; /* this will avoid division by zero and won't change rendering */
 		
 		/* calculate source_x, source_y, source_dx, source_dy */
-//#ifdef env68k
-//		if (polygon->transfer_mode!=_solid_transfer)
-//#endif
-		{
+		
 			int32 source_x, source_y, source_dx, source_dy;
 			
 			/* calculate texture origins and deltas (source_x,source_dx,source_y,source_dy) */
@@ -1192,7 +1126,7 @@ static void _pretexture_horizontal_polygon_lines(
 				(subtract one from HORIZONTAL_FREE_BITS to double scale) */
 			data->source_x= source_x<<HORIZONTAL_FREE_BITS, data->source_dx= source_dx<<HORIZONTAL_FREE_BITS;
 			data->source_y= source_y<<HORIZONTAL_FREE_BITS, data->source_dy= source_dy<<HORIZONTAL_FREE_BITS;
-		}
+		
 
 		/* get shading table (with absolute value of depth) */
 		if ((depth= hworld_to_screen/screen_y)<0) depth= -depth;
@@ -1202,7 +1136,7 @@ static void _pretexture_horizontal_polygon_lines(
 		}
 		else
 		{
-			CALCULATE_SHADING_TABLE(data->shading_table, view, polygon->shading_tables, (short)MIN(depth, SHRT_MAX), polygon->ambient_shade);
+			calculate_shading_table(data->shading_table, view, polygon->shading_tables, (short)MIN(depth, SHRT_MAX), polygon->ambient_shade);
 		}
 		
 		data++;
@@ -1248,7 +1182,7 @@ static void _prelandscape_horizontal_polygon_lines(
 	}
 	else
 	{
-		CALCULATE_SHADING_TABLE(shading_table, view, polygon->shading_tables, 0, ambient_shade);
+		calculate_shading_table(shading_table, view, polygon->shading_tables, 0, ambient_shade);
 	}
 	
 	// Find the height to repeat over; use value used for OpenGL texture setup

@@ -200,7 +200,6 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			OGL_ModelData *ModelPtr =
 				OGL_GetModelData(GET_COLLECTION(data.collection_code),GET_DESCRIPTOR_SHAPE(object->shape),ModelSequence);
 #endif
-			
 			shape_information= rescale_shape_information(
 				extended_get_shape_information(data.collection_code, data.low_level_shape_index),
 				&scaled_shape_information, GET_OBJECT_SCALE_FLAGS(object));
