@@ -65,7 +65,7 @@ Feb 14, 2003 (Woody Zenfell):
 // LP change: outside handler for the default player name
 #include "PlayerName.h"
 
-//#define TEST_NET_STATS_DIALOG  // for testing the dialog when i don't want to play a net game
+#define TEST_NET_STATS_DIALOG  // for testing the dialog when i don't want to play a net game
 
 #ifdef TEST_NET_STATS_DIALOG
 //#define TEST_TEAM_DISPLAY_FOR_DIALOG
@@ -204,7 +204,284 @@ void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
  * Purpose:  do the game setup and gather dialogs
  *
  *************************************************************************************************/
+
+#ifdef USES_NIBS
+
+// Ought to be a property of the player-list control...
+NetgameGatherData *GatherDataPtr;
+
+static pascal OSStatus SetPlayerListMember(
+		ControlRef Browser,
+		DataBrowserItemID ItemID,
+		DataBrowserPropertyID PropertyID,
+        DataBrowserItemDataRef ItemData,
+        Boolean SetValue
+		)
+{
+	NetgameGatherData& Data = *GatherDataPtr;
+	
+	// Find the player entry
+	map<DataBrowserItemID, const SSLP_ServiceInstance*>::iterator Entry = 
+		Data.FoundPlayers.find(ItemID);
+	
+	// Was it really found? if not, quit
+	if (Entry == Data.FoundPlayers.end()) return noErr;
+	
+	const byte *NameBytes = (const byte *)Entry->second->sslps_name;
+	
+	CFStringRef NameStr = CFStringCreateWithBytes(
+					NULL, NameBytes+1, NameBytes[0],
+					NULL, false);
+	
+	SetDataBrowserItemDataText(ItemData, NameStr);
+	
+	CFRelease(NameStr);
+	
+	return noErr;
+}
+
+static UInt32 HowManySelected(ControlRef Browser)
+{
+	// Count how many selected;
+	// from Apple's sample code in TechNote #2009
+	// (a valuable source on the Data Browser control in general)
+	UInt32 Count = 0;
+	GetDataBrowserItemCount(Browser,
+		kDataBrowserNoItem ,		/* start searching at the root item */
+		true,						/* recursively search all subitems */
+		kDataBrowserItemIsSelected,	/* only return selected items */
+		&Count);
+	
+	return Count;
+}
+
+
+static pascal void PlayerListMemberHit(
+		ControlRef Browser,
+		DataBrowserItemID Item,
+		DataBrowserItemNotification Message
+		)
+{
+	NetgameGatherData& Data = *GatherDataPtr;
+
+	switch(Message)
+	{
+	case kDataBrowserItemSelected:
+	case kDataBrowserItemDoubleClicked:
+		SetControlActivity(Data.AddCtrl, NetGetNumberOfPlayers() <= MAXIMUM_NUMBER_OF_PLAYERS);
+		break;
+		
+	case kDataBrowserItemDeselected:
+	case kDataBrowserItemRemoved:
+		SetControlActivity(Data.AddCtrl, HowManySelected(Data.NetworkDisplayCtrl) > 0);
+		break;
+	}
+}
+
+
+void PlayerDisplayDrawer(ControlRef Ctrl, void *UserData)
+{
+	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
+	NetgameGatherData& Data = *DPtr;
+
+	// No need for the window context -- it's assumed
+	Rect Bounds = {0,0,0,0};
+	
+	GetControlBounds(Ctrl, &Bounds);
+	
+	// Draw background and boundary
+	ForeColor(whiteColor);
+	PaintRect(&Bounds);
+	ForeColor(blackColor);
+	FrameRect(&Bounds);
+
+	// Cribbed from update_player_list_item()
+	FontInfo finfo;
+	GetFontInfo(&finfo);
+	short height = finfo.ascent + finfo.descent + finfo.leading;
+	MoveTo(Bounds.left + 3, Bounds.top+height);
+	short num_players = NetNumberOfPlayerIsValid() ? NetGetNumberOfPlayers() : 0;
+	
+	Rect name_rect;
+	SetRect(&name_rect, Bounds.left, Bounds.top, Bounds.left+NAME_BOX_WIDTH, Bounds.top+NAME_BOX_HEIGHT);
+	for (short i = 0; i < num_players; i++)
+	{
+		draw_player_box_with_team(&name_rect, i);
+		if (!(i % 2))
+		{
+			OffsetRect(&name_rect, NAME_BOX_WIDTH+BOX_SPACING, 0);
+		}
+		else
+		{
+			OffsetRect(&name_rect, -(NAME_BOX_WIDTH+BOX_SPACING), NAME_BOX_HEIGHT + BOX_SPACING);
+		}
+	}
+	
+}
+
+
+void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
+{
+	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
+	NetgameGatherData& Data = *DPtr;
+	
+	Handle ItemsHdl;
+	DataBrowserItemID *ItemsPtr;
+	
+	switch(Ctrl.ID.id)
+	{
+	case iADD:
+		// Find which players were selected
+		
+		ItemsHdl = NewHandle(0);
+		GetDataBrowserItems(Data.NetworkDisplayCtrl,
+			NULL, false, kDataBrowserItemIsSelected,
+			ItemsHdl);
+		
+		int NumItems = GetHandleSize(ItemsHdl)/sizeof(DataBrowserItemID);
+		
+		HLock(ItemsHdl);
+		ItemsPtr = (DataBrowserItemID *)(*ItemsHdl);
+		
+		for (int k=0; k<NumItems; k++)
+		{
+			// No need to try if we've gathered enough players
+			if (NetGetNumberOfPlayers() >= MAXIMUM_NUMBER_OF_PLAYERS)
+				continue;
+			
+			// Examine each entry in the list
+			map<DataBrowserItemID, const SSLP_ServiceInstance*>::iterator Entry = 
+				Data.FoundPlayers.find(ItemsPtr[k]);
+			
+			// Was it really found? if not, then try the next one
+			if (Entry == Data.FoundPlayers.end()) continue;
+	
+			const SSLP_ServiceInstance *player = Entry->second;
+			
+			// Remove player from lists
+			lost_player_callback(player);
+			
+			// Gather player
+			int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
+			if (theGatherPlayerResult != kGatherPlayerFailed)
+			{
+				Draw1Control(Data.PlayerDisplayCtrl);
+				if(theGatherPlayerResult == kGatheredUnacceptablePlayer)
+					Data.AllPlayersOK = false;
+			}
+		}
+		
+		// Note: ADD button is handled in list-box callback
+		SetControlActivity(Data.OK_Ctrl, (NetGetNumberOfPlayers() > 1) && Data.AllPlayersOK);
+		
+		break;	
+	}
+}
+
+
+const double PollingInterval = 1.0/30.0;
+
+static pascal void NetgameGather_Poller(EventLoopTimerRef Timer, void *UserData)
+{
+	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
+	NetgameGatherData& Data = *DPtr;
+	
+	SSLP_Pump();
+	
+	Draw1Control(Data.PlayerDisplayCtrl);
+}
+
 #ifndef NETWORK_TEST_POSTGAME_DIALOG
+
+bool network_gather(bool ResumingGame)
+{
+	bool successful= false;
+	game_info myGameInfo;
+	player_info myPlayerInfo;
+
+	show_cursor(); // JTP: Hidden one way or another
+	
+	// Do early returns if these inits failed
+	
+	if (!network_game_setup(&myPlayerInfo, &myGameInfo, ResumingGame))
+		return successful;
+	
+	myPlayerInfo.desired_color= myPlayerInfo.color;
+	
+	if (!NetEnter())
+		return successful;
+
+	if (!NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
+		sizeof(myPlayerInfo), ResumingGame))
+		return successful;
+	
+	// Now for the dialog box
+	
+	AutoNibWindow Window(GUI_Nib, Window_Network_Gather);
+	
+	NetgameGatherData Data;
+	GatherDataPtr = &Data;
+
+	// Actually a Data Browser control, a sort of super list box introduced in Carbon/OSX
+	Data.NetworkDisplayCtrl = GetCtrlFromWindow(Window(), 0, iNETWORK_LIST_BOX);
+	
+	DataBrowserCallbacks Callbacks;
+	obj_clear(Callbacks);	// Makes everything NULL
+	Callbacks.version = kDataBrowserLatestCallbacks;
+	Callbacks.u.v1.itemDataCallback = NewDataBrowserItemDataUPP(SetPlayerListMember);
+	Callbacks.u.v1.itemNotificationCallback = NewDataBrowserItemNotificationUPP(PlayerListMemberHit);
+	SetDataBrowserCallbacks(Data.NetworkDisplayCtrl, &Callbacks);
+	
+	Data.ItemID = 1; 	// Initial values
+	Data.AllPlayersOK = true;
+	
+	Data.PlayerDisplayCtrl = GetCtrlFromWindow(Window(), 0, iPLAYER_DISPLAY_AREA);
+	
+	AutoDrawability Drawability;
+	Drawability(Data.PlayerDisplayCtrl, PlayerDisplayDrawer, &Data);
+	
+	Data.AddCtrl = GetCtrlFromWindow(Window(), 0, iADD);
+	Data.OK_Ctrl = GetCtrlFromWindow(Window(), 0, iOK);
+	
+	SetControlActivity(Data.AddCtrl,false);
+	SetControlActivity(Data.OK_Ctrl,false);
+
+	AutoTimer Poller(0, PollingInterval, NetgameGather_Poller, &Data);
+
+#ifdef NETWORK_TEST_GATHER_DIALOG
+	SSLP_ServiceInstance test[] = {
+		{"type", "\pTesting one", {0, 0}}, {"type", "\pTesting two", {0, 0}},
+		{"type", "\pTesting three", {0, 0}}, {"type", "\pTesting four", {0, 0}},
+		{"type", "\pTesting five", {0, 0}}, {"type", "\pTesting six", {0, 0}},
+		{"type", "\pTesting seven", {0, 0}}, {"type", "\pTesting eight", {0, 0}},
+		{"type", "\pTesting nine", {0, 0}}, {"type", "\pTesting ten", {0, 0}},
+		{"type", "\pTesting eleven", {0, 0}}, {"type", "\pTesting twelve", {0, 0}}};
+	const int test_count= sizeof(test)/sizeof(SSLP_ServiceInstance);
+	for(int i= 0; i < test_count; i++)
+		found_player_callback(&test[i]);
+#endif
+	
+	successful = RunModalDialog(Window(), false, NetgameGather_Handler, &Data);
+	
+	if (!successful)
+	{
+		NetCancelGather();
+		NetExit();
+	}
+	
+	// Clean up
+	DisposeDataBrowserItemDataUPP(Callbacks.u.v1.itemDataCallback);
+	DisposeDataBrowserItemNotificationUPP(Callbacks.u.v1.itemNotificationCallback);
+	
+	return successful;
+}
+
+#endif //ndef NETWORK_TEST_POSTGAME_DIALOG
+
+#else
+
+#ifndef NETWORK_TEST_POSTGAME_DIALOG
+
 bool network_gather(bool inResumingGame)
 {
 	bool successful= false;
@@ -363,6 +640,9 @@ bool network_gather(bool inResumingGame)
 	hide_cursor();
 	return successful;
 }
+
+#endif
+
 #endif //ndef NETWORK_TEST_POSTGAME_DIALOG
 
 /*************************************************************************************************
@@ -371,6 +651,283 @@ bool network_gather(bool inResumingGame)
  * Purpose:  do the dialog to join a network game.
  *
  *************************************************************************************************/
+
+#ifdef USES_NIBS
+
+static pascal OSStatus Join_PlayerNameWatcher(
+	EventHandlerCallRef HandlerCallRef,
+	EventRef Event,
+	void *UserData
+	)
+{
+	NetgameJoinData *DPtr = (NetgameJoinData *)(UserData);
+	NetgameJoinData& Data = *DPtr;
+	
+	// Hand off to the next event handler
+	OSStatus err = CallNextEventHandler(HandlerCallRef, Event);
+	
+	// Need this order because we want to check the text field
+	// after it's been changed, not before.
+	// Adjust the OK button's activity as needed
+	GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
+	SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (Data.JoinState == NONE));
+	
+	return err;
+}
+
+void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
+{
+	NetgameJoinData *DPtr = (NetgameJoinData *)(UserData);
+	NetgameJoinData& Data = *DPtr;
+	
+	int Value;
+	bool did_join;
+
+	switch(Ctrl.ID.id)
+	{
+	case iOK_SPECIAL:
+		// Try to join!
+		
+		GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
+		if (ptemporary[0] > MAX_NET_PLAYER_NAME_LENGTH) ptemporary[0] = MAX_NET_PLAYER_NAME_LENGTH;
+		pstrcpy(Data.myPlayerInfo.name, ptemporary);
+		
+		Data.myPlayerInfo.team = GetControl32BitValue(Data.PlayerTeamCtrl);
+		Data.myPlayerInfo.color = GetControl32BitValue(Data.PlayerColorCtrl);
+		Data.myPlayerInfo.desired_color = Data.myPlayerInfo.color;
+		
+		if (GetControl32BitValue(Data.ByHost_Ctrl))
+		{
+			network_preferences->join_by_address = true;
+			
+			GetEditPascalText(Data.ByHost_AddressCtrl, ptemporary);
+			
+			if (ptemporary[0] > kJoinHintingAddressLength)
+				ptemporary[0] = kJoinHintingAddressLength;
+			CopyPascalStringToC(ptemporary, network_preferences->join_address);
+		}
+		else
+			network_preferences->join_by_address = false;
+		
+		Data.DidJoin =
+			NetGameJoin(Data.myPlayerInfo.name, PLAYER_TYPE,
+				(void *) &Data.myPlayerInfo, sizeof(Data.myPlayerInfo), 
+				get_network_version(),
+				network_preferences->join_by_address ? network_preferences->join_address : NULL
+				);
+		
+		if (Data.DidJoin)
+		{
+			SetControlActivity(Data.PlayerNameCtrl, false);
+			SetControlActivity(Data.PlayerTeamCtrl, false);
+			SetControlActivity(Data.PlayerColorCtrl, false);
+			
+			SetControlActivity(Data.ByHost_Ctrl, false);
+			SetControlActivity(Data.ByHost_LabelCtrl, false);
+			SetControlActivity(Data.ByHost_AddressCtrl, false);
+			
+			SetControlActivity(Data.JoinCtrl, false);
+			
+			// update preferences for user (Eat Gaseous Worms!)
+			pstrcpy(player_preferences->name, Data.myPlayerInfo.name);
+			player_preferences->team = Data.myPlayerInfo.team;
+			player_preferences->color = Data.myPlayerInfo.color;
+			write_preferences();
+			
+			getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
+			SetStaticPascalText(Data.MessageCtrl, ptemporary);	
+		}
+		else
+		{
+			// Bug out!
+			StopModalDialog(ActiveNonFloatingWindow(),false);
+		}
+		
+		break;
+		
+	case iJOIN_BY_HOST:
+		Value = GetControl32BitValue(Ctrl.Ctrl);
+		SetControlActivity(Data.ByHost_AddressCtrl, Value);
+		SetControlActivity(Data.ByHost_LabelCtrl, Value);
+		
+		break;
+	}
+}
+
+static pascal void NetgameJoin_Poller(EventLoopTimerRef Timer, void *UserData)
+{
+	NetgameJoinData *DPtr = (NetgameJoinData *)(UserData);
+	NetgameJoinData& Data = *DPtr;
+	
+	// Cribbed from join_dialog_filter_proc
+	
+	// Let SSLP do its thing (respond to FIND messages, hint out HAVE messages, etc.)
+	SSLP_Pump();
+	
+	/* check and see if weÕve gotten any connection requests */
+	int JoinState = NetUpdateJoinState();
+	switch (JoinState)
+	{
+		case NONE: // haven't Joined yet.
+			break;
+
+		case netJoining:
+			break;
+
+		case netCancelled: /* the server cancelled the game; force bail */
+			StopModalDialog(ActiveNonFloatingWindow(),false);
+			break;
+
+		case netWaiting: /* if we just changed netJoining to netWaiting change the dialog text */
+#ifdef OBSOLETE
+			if (last_join_state==netJoining)
+			{
+				getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_accepted_string);
+				SetStaticPascalText(Data.MessageCtrl, ptemporary);
+			}
+#endif
+			SetControlActivity(Data.CancelCtrl, false);
+			break;
+
+		case netStartingUp: /* the game is starting up (we have the network topography) */
+			Data.JoinResult = kNetworkJoinedNewGame;
+			StopModalDialog(ActiveNonFloatingWindow(),false);
+			break;
+
+		case netStartingResumeGame: /* the game is starting up a resume game (we have the network topography) */
+			Data.JoinResult = kNetworkJoinedResumeGame;
+			StopModalDialog(ActiveNonFloatingWindow(),false);
+			break;
+
+		case netPlayerAdded:
+			if(Data.JoinState==netWaiting)
+			{
+				char joinMessage[256];
+				
+				game_info *info= (game_info *)NetGetGameData();
+
+				get_network_joined_message(joinMessage, info->net_game_type);
+				SetStaticCText(Data.MessageCtrl, joinMessage);
+			}
+			// Update!
+			Draw1Control(Data.PlayerDisplayCtrl);
+			break;
+
+		case netJoinErrorOccurred:
+			StopModalDialog(ActiveNonFloatingWindow(),false);
+			break;
+                
+		case netChatMessageReceived:
+			{
+				player_info*	sending_player;
+				char*		chat_message;
+				
+				if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
+					// should actually do something with the message here
+					// be sure to copy any info you need as the next call to
+					// NetUpdateJoinState could overwrite the storage we're pointing at.
+				}
+			}
+			break;
+
+		default:
+			// LP change:
+			assert(false);
+			// halt();
+	}
+	Data.JoinState = JoinState;
+	
+	// Update the "Join" button
+	GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
+	SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (Data.JoinState == NONE));
+}
+
+int network_join(
+	void)
+{
+	show_cursor(); // Hidden one way or another
+	
+	/* If we can enter the network... */
+	if(!NetEnter()) return kNetworkJoinFailed;
+	
+	// Now for the dialog box
+	
+	AutoNibWindow Window(GUI_Nib, Window_Network_Join);
+	
+	NetgameJoinData Data;
+
+	Data.PlayerNameCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_NAME);
+
+	short name_length= player_preferences->name[0];
+	if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
+	memcpy(Data.myPlayerInfo.name, player_preferences->name, name_length+1);
+	
+	SetEditPascalText(Data.PlayerNameCtrl, Data.myPlayerInfo.name);
+	
+	Data.PlayerTeamCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_TEAM);
+	SetControl32BitValue(Data.PlayerTeamCtrl, player_preferences->team+1);
+
+	AutoKeyboardWatcher Watcher(Join_PlayerNameWatcher);
+	
+	Watcher.Watch(Data.PlayerNameCtrl, &Data);
+	
+	Data.PlayerColorCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_COLOR);
+	SetControl32BitValue(Data.PlayerColorCtrl, player_preferences->color+1);
+
+	Data.MessageCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_MESSAGES);
+	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
+	SetStaticPascalText(Data.MessageCtrl, ptemporary);
+	
+	Data.PlayerDisplayCtrl = GetCtrlFromWindow(Window(), 0, iPLAYER_DISPLAY_AREA);
+	
+	AutoDrawability Drawability;
+	Drawability(Data.PlayerDisplayCtrl, PlayerDisplayDrawer, &Data);	
+	
+	Data.ByHost_Ctrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST);
+	SetControl32BitValue(Data.ByHost_Ctrl, network_preferences->join_by_address);
+	
+	Data.ByHost_LabelCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_LABEL);
+	SetControlActivity(Data.ByHost_LabelCtrl, network_preferences->join_by_address);
+	
+	Data.ByHost_AddressCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_ADDRESS);
+	CopyCStringToPascal(network_preferences->join_address, ptemporary);
+	SetEditPascalText(Data.ByHost_AddressCtrl, ptemporary);
+	SetControlActivity(Data.ByHost_AddressCtrl, network_preferences->join_by_address);
+		
+	Data.CancelCtrl = GetCtrlFromWindow(Window(), 0, iCANCEL);
+	Data.JoinCtrl = GetCtrlFromWindow(Window(), 0, iOK_SPECIAL);
+	if (Data.myPlayerInfo.name[0] == 0) SetControlActivity(Data.JoinCtrl, false);
+	
+	Data.DidJoin = false;
+	Data.JoinState = NONE;	// Have not joined
+	Data.JoinResult = kNetworkJoinFailed;	// Change if succeeded, of course
+	
+	AutoTimer Poller(0, PollingInterval, NetgameJoin_Poller, &Data);
+	
+	RunModalDialog(Window(), false, NetgameJoin_Handler, &Data);
+	
+	if (Data.JoinResult != kNetworkJoinFailed)
+	{
+		game_info *GameInfoPtr = (game_info *)NetGetGameData();
+		NetSetInitialParameters(
+			GameInfoPtr->initial_updates_per_packet,
+			GameInfoPtr->initial_update_latency);
+	}
+	else
+	{
+		if (Data.DidJoin)
+			NetCancelJoin();
+		
+		NetExit();
+	}
+	
+	hide_cursor();
+	return Data.JoinResult;
+}
+
+
+#else
+
 int network_join(
 	void)
 {
@@ -434,7 +991,7 @@ int network_join(
 		GetPort(&old_port);
 		SetPort(GetWindowPort(GetDialogWindow(dialog)));
 		ShowWindow(GetDialogWindow(dialog));
-	
+		
 		do
 		{
 			ModalDialog(join_dialog_upp, &item_hit);
@@ -556,6 +1113,8 @@ int network_join(
 	return sStartJoinedGameResult;
 }
 
+#endif
+
 /* ---------- private code */
 
 /*************************************************************************************************
@@ -567,7 +1126,7 @@ int network_join(
 
 #ifdef USES_NIBS
 
-static pascal OSStatus PlayerNameWatcher(
+static pascal OSStatus Setup_PlayerNameWatcher(
 	EventHandlerCallRef HandlerCallRef,
 	EventRef Event,
 	void *UserData
@@ -711,7 +1270,7 @@ bool network_game_setup(
 	
 	Data.IsOK = false;
 	
-	AutoKeyboardWatcher Watcher(PlayerNameWatcher);
+	AutoKeyboardWatcher Watcher(Setup_PlayerNameWatcher);
 	
 	Watcher.Watch(Data.PlayerNameCtrl, &Data);
 	
@@ -1178,6 +1737,69 @@ autogather_callback(w_select* inAutoGather) {
 }
 #endif
 
+#ifdef USES_NIBS
+
+static void
+found_player_callback(const SSLP_ServiceInstance* player)
+{
+	NetgameGatherData& Data = *GatherDataPtr;
+
+	DataBrowserItemID ItemID = Data.ItemID++;	// Get current value, then move to next one
+	Data.FoundPlayers[ItemID] = player;
+	Data.ReverseFoundPlayers[player] = ItemID;
+	
+	AddDataBrowserItems(Data.NetworkDisplayCtrl,
+		kDataBrowserNoItem,
+		1, &ItemID,
+		NULL
+		);
+}
+
+
+static void
+lost_player_callback(const SSLP_ServiceInstance* player)
+{
+	NetgameGatherData& Data = *GatherDataPtr;
+
+	map<const SSLP_ServiceInstance*, DataBrowserItemID>::iterator Entry =
+		Data.ReverseFoundPlayers.find(player);
+	
+	// Could the player entry be found?
+	if (Entry == Data.ReverseFoundPlayers.end()) return;
+
+	DataBrowserItemID ItemID = Entry->second;
+	Data.FoundPlayers.erase(ItemID);
+	Data.ReverseFoundPlayers.erase(Entry);
+	
+	RemoveDataBrowserItems(Data.NetworkDisplayCtrl,
+		kDataBrowserNoItem,
+		1, &ItemID,
+		NULL
+		);
+}
+
+static void
+player_name_changed_callback(const SSLP_ServiceInstance* player)
+{
+	NetgameGatherData& Data = *GatherDataPtr;
+	
+	map<const SSLP_ServiceInstance*, DataBrowserItemID>::iterator Entry =
+		Data.ReverseFoundPlayers.find(player);
+
+	// Could the player entry be found?
+	if (Entry == Data.ReverseFoundPlayers.end()) return;
+	
+	DataBrowserItemID ItemID = Entry->second;
+		
+	UpdateDataBrowserItems(Data.NetworkDisplayCtrl,
+		kDataBrowserNoItem,
+		1, &ItemID,
+		NULL, NULL
+		);
+}
+
+#else
+
 static void
 found_player_callback(const SSLP_ServiceInstance* player)
 {
@@ -1247,6 +1869,8 @@ player_name_changed_callback(const SSLP_ServiceInstance* player) {
 	InvalWindowRect(window, &bounds);
 #endif
 }
+
+#endif
 
 /*************************************************************************************************
  *
@@ -2848,14 +3472,14 @@ bool network_gather(bool inResumingGame) {
 	open_progress_dialog(_distribute_physics_single);
 	for(i=0; i < 100; i++)
 	{
-		nanosleep(&(timespec){0,50000000},NULL);
-		idle_progress_bar();
+		//nanosleep(&(timespec){0,50000000},NULL);
+		//idle_progress_bar();
 	}
 	set_progress_dialog_message(_distribute_map_single);
 	reset_progress_bar();
 	for(i=0; i < 100; i++)
 	{
-		nanosleep(&(timespec){0,90000000},NULL);
+		//nanosleep(&(timespec){0,90000000},NULL);
 		draw_progress_bar(i, 100);
 	}
 	close_progress_dialog();
