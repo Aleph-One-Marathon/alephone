@@ -1,0 +1,51 @@
+#ifndef _XML_RESOURCEFORK_
+#define _XML_RESOURCEFORK_
+/*
+	Parser of XML-containing Resource Forks
+	by Loren Petrich,
+	April 15, 2000
+	
+	This is intended to parse XML objects contained in MacOS resource forks
+*/
+
+
+#include "XML_Configure.h"
+
+
+class XML_ResourceFork: public XML_Configure
+{
+	
+	// Handle to the resource (assumes it was completely read in)
+	Handle ResourceHandle;
+	
+	// Gets some XML data to parse
+	bool GetData();
+	
+	// Reports a read error
+	void ReportReadError();
+	
+	// Reports an XML parsing error
+	void ReportParseError(const char *ErrorString, int LineNumber);
+	
+	// Reports an interpretation error
+	void ReportInterpretError(const char *ErrorString);
+	
+	// Requests aborting of parsing (reasonable if there were lots of errors)
+	bool RequestAbort();
+
+public:
+
+	// Parse a single resource;
+	// returns whether the resource exists
+	bool ParseResource(ResType Type, short ID);
+	
+	// Parse all resources in a set;
+	// returns whether any resources were found
+	bool ParseResourceSet(ResType Type);
+	
+	XML_ResourceFork(): ResourceHandle(NULL) {}
+};
+
+
+
+#endif

@@ -1,0 +1,1814 @@
+<html>
+<head>
+<title>The Marathon Markup Language</title>
+</head>
+<body bgcolor="#ffffff">
+
+The Marathon Markup Language (MML), a subset of the Extensible Markup Language (XML):
+This was created for the purpose of configuring the Marathon engine in a non-hardcoded way.
+Currently, MML scripts are stored as TEXT resources in the Marathon app;
+these are accessed in increasing order of ID.
+However, in future versions of the engine, these may be stored as separate files.
+<p>
+
+For more on XML, check out these links:
+<ul>
+<li><a href="http://www.xml.com">xml.com; has lots of XML-related stuff</a>
+<li><a href="http://www.trafficstudio.com/sixpack">Sixpack, a MacOS-native XML editor</a>
+</ul>
+
+One feature that I've attempted to maintain is that any set of values
+can always be overrode by another.
+For example, if you set some color to be red in one file,
+and that color to be green in a file processed after it,
+that color will be green.
+<p>
+
+Many of the element attributes here are some sort of index value,
+and they are all counted from 0 unless specified otherwise;
+for example, collections are numbered from 0 to 31.
+But one problem that I currently face is that
+the lists in this document are shown as starting from 1 instead of 0.
+I'm not sure how to correct that without numbering the items by hand;
+this document contains the kludge of adding 1000.
+<p>
+
+
+Here is the format:
+<p>
+
+<h3><a name="marathon">Marathon Root Element: &lt;marathon&gt;</a></h3>
+
+This is the root element, the one that contains all the others.
+Other Marathon-related root elements may be defined in the future, however,
+such as root elements for stuff that is intended for individual map levels.
+These may have a format like &lt;maralevel index="value"&gt;.
+<p>
+
+This element has no attributes and contains these child elements:
+
+<ul>
+<li><a href="#stringset">String-Set Element: &lt;stringset&gt;</a>
+<li><a href="#interface">Interface-Stuff Element: &lt;interface&gt;</a>
+<li><a href="#motsens">Motion-Sensor Element: &lt;motion_sensor&gt;</a>
+<li><a href="#ovhdmap">Overhead-Map Element: &lt;overhead_map&gt;</a>
+<li><a href="#infravision">Infravision Element: &lt;infravision&gt;</a>
+<li><a href="#motsens">Motion-Sensor Element: &lt;motion_sensor&gt;</a>
+<li><a href="#animtxtrs">Animated-Textures Element: &lt;animated_textures&gt;</a>
+<li><a href="#controlpanels">Control-Panels Element: &lt;control_panels&gt;</a>
+<li><a href="#platforms">Platforms Element: &lt;platforms&gt;</a>
+<li><a href="#liquids">Liquids (Medias) Element: &lt;liquids&gt;</a>
+<li><a href="#faders">Fader Element: &lt;faders&gt;</a>
+<li><a href="#player">Player Element: &lt;player&gt;</a>
+<li><a href="#view">View Element: &lt;view&gt;</a>
+<li><a href="#weapons">Weapons Element: &lt;weapons&gt;</a>
+<li><a href="#items">Items Element: &lt;items&gt;</a>
+<li><a href="#scenery">Scenery Element: &lt;scenery&gt;</a>
+<li><a href="#landscapes">Landscapes Element: &lt;landscapes&gt;</a>
+<li><a href="#opengl">OpenGL-Rendering Element: &lt;opengl&gt;</a>
+<li><a href="#dynlims">Dynamic-Limits Element: &lt;dynamic_limits&gt;</a>
+<li><a href="#playername">Player-Name Element: &lt;player_name&gt;</a>
+<li><a href="#appendix1">Appendix 1: Additional Elements</a>
+<li><a href="#appendix2">Appendix 2: Lists of Entity Types</a>
+</ul>
+
+<hr>
+
+<h3><a name="stringset">String-Set Element: &lt;stringset&gt;</a></h3>
+
+This element is an imitation of MacOS 'STR#' resources. It has an attribute of "index",
+which has a numerical value corresponding to the original resource ID:
+
+<ul>
+<li>128: Errors
+<li>129: Filenames
+<li>130: Top-Level Interface Items
+<li>131: Prompts
+<li>132: Network Errors
+<li>133: Key Codes to Names
+<li>134: Preferences Advice
+<li>135: Computer Interface
+<li>136: Join Dialog Messages
+<li>137: Weapon Names
+<li>138: File Search Path
+<li>139: Preferences Groupings
+<li>140: Postgame Network Game Statistics
+<li>141: Net Game Setup
+<li>142: New Join Dialog Messages
+<li>143: Progress Strings for Networking
+<li>150: Item Names
+<li>151: Item types
+<li>153: Net Statistics Strings
+<li>200: OpenGL-Option Color-Picker Prompts
+</ul>
+
+This element contains child elements with form &lt;string&gt;,
+which have an attribute of "index",
+and contents of whatever the string is supposed to be.
+For example, the filenames are specified in this fashion:
+
+<pre>
+&lt;!-- STR# Resource: "Filenames" --&gt;
+&lt;stringset index="129"&gt;
+&lt;string index="0"&gt;Shapes&lt;/string&gt;
+&lt;string index="1"&gt;Shapes.16&lt;/string&gt;
+&lt;string index="2"&gt;Sounds&lt;/string&gt;
+&lt;string index="3"&gt;Sounds.16&lt;/string&gt;
+&lt;string index="4"&gt;Aleph One Preferences&lt;/string&gt;
+&lt;string index="5"&gt;Map&lt;/string&gt;
+&lt;string index="6"&gt;Untitled Game&lt;/string&gt;
+&lt;string index="7"&gt;Marathon&lt;/string&gt;
+&lt;string index="8"&gt;Aleph One Recording&lt;/string&gt;
+&lt;string index="9"&gt;Physics Model&lt;/string&gt;
+&lt;string index="10"&gt;Music&lt;/string&gt;
+&lt;string index="11"&gt;Images&lt;/string&gt;
+&lt;string index="12"&gt;Movie&lt;/string&gt;
+&lt;/stringset&gt;
+</pre>
+
+<h3><a name="interface">Interface-Stuff Element: &lt;interface&gt;</a></h3>
+
+This kind of element specifies stuff used in the heads-up display (HUD).
+It has one attribute, "motion_sensor", which is <a name="#boolean">boolean</a>,
+and which indicates whether or not the motion sensor will be active.
+It also contains three kinds of child elements:
+<ul>
+<li>&lt;rect&gt;, with all interface rectangles;
+it contains the attributes
+<ul>
+<li> index, others are short integers
+<li>top
+<li>left
+<li>bottom
+<li>right
+</ul>
+All of them are mandatory.
+The interface rectangles have the meanings listed below.
+<li>&lt;color&gt;, for all interface colors; it is indexed.
+For more on specifying colors, go <a href="#color">here</a>.
+The interfaces colors have the meanings listed below.
+<li>&lt;weapon&gt;, for the weapon display;
+it contains the attributes
+<ul>
+<li>index: the only mandatory attribute
+<li>shape: the shape number (which frame in "Interface")
+<li>start_y: these are for the text-display rectangle
+<li>end_y
+<li>start_x: if centered, then equal to -1
+<li>end_x: if centered, then equal to -1
+<li>top: weapon sprite's position in screen
+<li>left
+<li>multiple: whether the display will show two of them (1) or only one (0)
+</ul>
+and an optional child element, &lt;ammo&gt;, which contains the attributes
+<ul>
+<li>index: either 0 or 1, and the only mandatory attribute
+<li>type: this has these possible values
+<ul>
+<li>0: No display (alien weapon, for example)
+<li>1: Box display (partially-filled box; takes interface-color indexes instead of shapes)
+<li>2: Discrete-bullet display
+</ul>
+<li>left: position in screen
+<li>top
+<li>across: how many bullets (energy-weapon max number)
+<li>down: how many bullets (unused for energy weapons)
+<li>delta_x: bullet offset (energy-weapon width)
+<li>delta_y: bullet offset (energy-weapon height)
+<li>bullet_shape: the shape number for a bullet, or the full-region color index
+<li>empty_shape: the shape number for an empty bullet, or the empty-region color index
+<li>right_to_left: which way the bullets go as they are used (0 is left-to-right)
+</ul>
+</ul>
+<p>
+
+Here is a list of all the interface rectangles:
+<ol type=1 start=1000>
+<li>Player Name
+<li>Oxygen
+<li>Shield
+<li>Motion Sensor
+<li>Microphone
+<li>Inventory
+<li>Weapon Display
+
+<li>New-Game Button
+<li>Load-Game Button
+<li>Gather Button
+<li>Join Button
+<li>Preferences Button
+<li>Replay Button
+<li>Save-Last Button
+<li>Replace-Saved Button
+<li>Credits Button
+<li>Quit Button
+<li>Center Button
+</ol>
+<p>
+
+Here is a list of all the interface colors:
+
+<ol type=1 start=1000>
+<li>Ammo Box-Display Full
+<li>Ammo Box-Display Empty
+<li>Black
+
+<li>Inventory Text
+<li>Inventory Header Background
+<li>Inventory Background
+
+<li>Slate Player
+<li>Red Player
+<li>Violet Player
+<li>Yellow Player
+<li>White Player
+<li>Orange Player
+<li>Blue Player
+<li>Green Player
+
+<li>White
+<li>Invalid Weapon
+
+<li>Computer Border-Text background
+<li>Computer Border Text
+
+<li>Computer Text
+<li>Computer White Text
+<li>Computer Red Text
+<li>Computer Dark Green Text
+<li>Computer Cyan Text
+<li>Computer Yellow Text
+<li>Computer Dark Red Text
+<li>Computer Blue Text
+</ol>
+
+Here is a list of all the weapon displays:
+<ol type=1 start=1000>
+<li>Knife (seems to be a placeholder for wielding no weapon)
+<li>Pistol
+<li>Fusion Pistol
+<li>Assault Rifle
+<li>Rocket Launcher
+<li>Flamethrower
+<li>Alien Weapon
+<li>Shotgun
+</ol>
+<p>
+
+<hr>
+
+<h3><a name="motsens">Motion-Sensor Element: &lt;motion_sensor&gt;</a></h3>
+
+This kind of element is for assigning motion-sensor features;
+the assignment is done by doing &lt;assign&gt;, which has attributes "monster"
+(which one of these in the list) and "type", which is
+<ol type=1 start=1000>
+<li>Self, Friendly Player, and Bob
+<li>Alien
+<li>Hostile Player
+</ol>
+<p>
+
+One can disable it by specifying that the top-level element
+<a href="#interface">&lt;interface&gt;</a>
+has attribute "motion_sensor" with value "false".
+<p>
+
+<hr>
+
+<h3><a name="ovhdmap">Overhead-Map Element: &lt;overhead_map&gt;</a></h3>
+
+This kind of element is for setting up overhead-map features.
+One can assign various types to monsters; they can either never show up,
+or else show up as a Bob or as an alien.
+This must be done separately for living and dead monsters,
+because the engine "forgets" what monster type a dead monster is.
+<p>
+
+Thus, one assigns live monsters with &lt;assign_live&gt; and dead ones with
+&lt;assign_dead&gt;.
+Which live monster to assign one specifies with an attribute "monster",
+which takes a monster type, while which dead monster to assign one specified
+with an attribute of "coll", which takes a collection ID.
+Both elements assign to a type of display, specified with attribute "type";
+the possible types are:
+<ul>
+<li>-1(NONE): won't ever show up
+<li> 0: Bob (shown by default)
+<li> 1: Alien (not shown by default)
+</ul>
+<p>
+
+One can display additional stuff by specifying an appropriate element;
+this elements have an attribute of "on", which is a 
+<a name="#boolean">boolean</a> value.
+<ul>
+<li>&lt;aliens&gt;: shows characters other than players and Bobs
+<li>&lt;items&gt;: shows anything that can be picked up
+<li>&lt;projectiles&gt;: shows these
+<li>&lt;paths&gt;: shows the paths that the monster AI has worked out
+</ul>
+<p>
+
+Colors can be specified with the element &lt;color&gt;, which is indexed;
+For more on specifying colors, go <a href="#color">here</a>.
+Here are what the colors are:
+<ol type=1 start=1000>
+<li>Plain polygon
+<li>Platform
+<li>Water
+<li>Lava
+<li>Sewage
+<li>JjaroGoo
+<li>PfhorSlime
+<li>Hill
+<li>Solid Line
+<li>Elevation Line
+<li>Control Panel
+<li>Bob Display
+<li>Monster Display
+<li>Item Display
+<li>Projectile Display
+<li>Checkpoint Display
+<li>Annotation
+<li>Map Title
+<li>Path
+</ol>
+<p>
+
+One can disable it by specifying that the top-level element
+<a href="#view">&lt;view&gt;</a>
+has attribute "map" with value "false".
+<p>
+
+<hr>
+
+<h3><a name="infravision">Infravision Element: &lt;infravision&gt;</a></h3>
+
+This kind of element contains what is needed to specify infravision colors.
+These are assigned by texture collection, and there are 4 colors to choose from.
+The assignment is done with element &lt;assign&gt;, which has the attributes
+"coll" (for collection) and "color" (for which one of the colors).
+Here are the default colors:
+<ol type=1 start=1000>
+<li>Aliens (red)
+<li>Friends and Items (green)
+<li>Walls and Scenery, also the S'pht (blue)
+<li>Player Stuff and Explosion Effects (yellow)
+</ol>
+Colors can be specified with the element &lt;color&gt;, which is indexed;
+For more on specifying colors, go <a href="#color">here</a>.
+<p>
+
+<hr>
+
+<h3><a name="animtxtrs">Animated-Textures Element: &lt;animated_textures&gt;</a></h3>
+
+This kind of element is for specifying animated textures.
+Animated textures are specified as sequences, which contain loops of texture frames
+and various timing and phase information.
+For example, suppose that a sequence contains frames (a,b,c).
+As time goes on, frame a will be translated first into frame a, then into frame b,
+then into frame c, and then will repeat the sequence, as shown below:
+<p>
+
+<table>
+<tr>
+<td>a</td>
+<td>-</td>
+<td>a</td>
+<td>b</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td>c</td>
+<td>...</td>
+</tr>
+<tr>
+<td>b</td>
+<td>-</td>
+<td>b</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td>c</td>
+<td>a</td>
+<td>...</td>
+</tr>
+<tr>
+<td>c</td>
+<td>-</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td>c</td>
+<td>a</td>
+<td>b</td>
+<td>...</td>
+</tr>
+</table>
+<p>
+
+This element has two kinds of child elements, &lt;clear&gt; and &lt;sequence&gt;.
+<p>
+
+The first one, &lt;clear&gt;, clears the sequences; if it has an attribute of "coll",
+it will clear the sequences for the collection specified in that attribute's value;
+if not, it will clear all the sequences.
+However, this command can be followed by commands to create sequences,
+which will then be executed as if no "clear" command had been issued.
+<p>
+
+The second one, &lt;sequence&gt;, specifies the sequences themselves.
+It takes these attributes:
+<ul>
+<li>coll: which collection (mandatory)
+<li>numticks: how many engine ticks to stay at each frame (mandatory)
+<lI>framephase: how many frames ahead to start (optional: default = 0)
+<li>tickphase: how many ticks into a frame to start (optional: default = 0)
+<li>select: for choosing some frame to translate into the loop of frames
+as if it was the first one; this frame need not be a member of the loop.
+If this is -1, then it is the frames in the loop that are translated.
+(optional: default = -1; use the loop frames)
+</ul>
+<p>
+
+This one also contains a child element, &lt;frame&gt;, which has a mandatory
+attribute of "index", which is the frame's index.
+There must be at least one of these in a sequence, for rather obvious reasons.
+<p>
+
+<hr>
+
+<h3><a name="controlpanels">Control-Panels Element: &lt;control_panels&gt;</a></h3>
+
+This kind of element specifies various control-panel features,
+such as what kind it is, what items it accepts, and so forth.
+Each kind of control panel is specified with the child element
+&lt;panel&gt;, which has these attributes:
+<ul>
+<li>index: which one of the types of control panel (mandatory)
+<li>type: what that control panel does
+<li>coll: which shapes collection
+<li>active_frame: which frame when the panel is active
+<li>inactive_frame: which frame when the panel is inactive
+<li>pitch: what pitch of panel-active sound
+<li>item: what item the panel accepts (-1 is none)
+</ul>
+This element has an optional child element, "sound", with two attributes,
+both mandatory: type and which.
+The type indicates when the sound is to play, while which is the index in
+the list of sound definitions (-1 means none).
+<p>
+
+The map files themselves reference control panels by definition;
+here are the default control-panel definitions:
+<ol type=1 start=1000>
+<li>Water: Oxygen Refuel
+<li>Water: Energy Refuel (1x)
+<li>Water: Energy Refuel (2x)
+<li>Water: Tag Switch (Accepts Chip)
+<li>Water: Light Switch
+<li>Water: Platform Switch
+<li>Water: Tag Switch
+<li>Water: Pattern Buffer
+<li>Water: Computer Terminal
+<li>Water: Tag Switch (Destroyable)
+
+<li>Lava: Energy Refuel (1x)
+<li>Lava: Energy Refuel (2x)
+<li>Lava: Energy Refuel (3x)
+<li>Lava: Light Switch
+<li>Lava: Platform Switch
+<li>Lava: Tag Switch
+<li>Lava: Pattern Buffer
+<li>Lava: Computer Terminal
+<li>Lava: Oxygen Refuel
+<li>Lava: Tag Switch (Accepts Chip)
+<li>Lava: Tag Switch (Destroyable)
+
+<li>Sewage: Energy Refuel (1x)
+<li>Sewage: Energy Refuel (2x)
+<li>Sewage: Energy Refuel (3x)
+<li>Sewage: Light Switch
+<li>Sewage: Platform Switch
+<li>Sewage: Tag Switch
+<li>Sewage: Pattern Buffer
+<li>Sewage: Computer Terminal
+<li>Sewage: Oxygen Refuel
+<li>Sewage: Tag Switch (Accepts Chip)
+<li>Sewage: Tag Switch (Destroyable)
+
+<li>Pfhor: Energy Refuel (1x)
+<li>Pfhor: Energy Refuel (2x)
+<li>Pfhor: Energy Refuel (3x)
+<li>Pfhor: Light Switch
+<li>Pfhor: Platform Switch
+<li>Pfhor: Tag Switch
+<li>Pfhor: Pattern Buffer
+<li>Pfhor: Computer Terminal
+<li>Pfhor: Oxygen Refuel
+<li>Pfhor: Tag Switch (Accepts Chip)
+<li>Pfhor: Tag Switch (Destroyable)
+
+<li>Jjaro: Energy Refuel (1x)
+<li>Jjaro: Energy Refuel (2x)
+<li>Jjaro: Energy Refuel (3x)
+<li>Jjaro: Light Switch
+<li>Jjaro: Platform Switch
+<li>Jjaro: Tag Switch
+<li>Jjaro: Pattern Buffer
+<li>Jjaro: Computer Terminal
+<li>Jjaro: Oxygen Refuel
+<li>Jjaro: Tag Switch (Accepts Chip)
+<li>Jjaro: Tag Switch (Destroyable)
+</ol>
+<p>
+
+The control panels can do various things; these are:
+<ol type=1 start=1000>
+<li>Oxygen Refuel
+<li>Energy Refuel (1x)
+<li>Energy Refuel (2x)
+<li>Energy Refuel (3x)
+<li>Light switch
+<li>Platform switch
+<li>Tag switch
+<li>Pattern buffer (for saving games)
+<li>Computer terminal
+</ol>
+<p>
+
+The sound types are:
+<ol type=1 start=1000>
+<li>Activating
+<li>Deactivating
+<li>Unusable
+</ol>
+<p>
+
+<hr>
+
+<h3><a name="platforms">Platforms Element: &lt;platforms&gt;</a></h3>
+
+This kind of element specifies various platform features,
+such as its sounds and how deadly it is when it crunches.
+Each individual platform type is specified with a &lt;platform&gt; child element,
+which has these attributes:
+<ul>
+<li>index: which one of the platform types (mandatory)
+<li>start_extend: sound index for platform starting to extend (-1 for none)
+<li>start_contract: same for starting to contract
+<li>stop_extend: same for stopping extending
+<li>stop_contract: same for stopping contracting
+<li>obstructed: same for obstructed by something
+<li>uncontrollable: same if one is unable to control it
+<li>moving: same for moving in general
+<li>item: index of item that acts like a key (-1 for none)
+</ul>
+The index is which one of these platform types:
+<ol type=1 start=1000>
+<li>S'pht Door
+<li>S'pht Split Door
+<li>Locked S'pht Door
+<li>S'pht Platform
+<li>Noisy S'pht Platform
+<li>Heavy S'pht Door
+<li>Pfhor Door
+<li>Heavy S'pht Platform
+<li>Pfhor Platform
+</ol>
+This element also has child element &lt;damage&gt;
+(how much damage; it is described in greater detail <a href="#damage">here</a>),
+<p>
+
+<hr>
+
+<h3><a name="liquids">Liquids (Medias) Element: &lt;liquids&gt;</a></h3>
+
+This kind of element specifies various liquid features,
+such as how deadly a liquid is, and so forth.
+Each individual liquid type is specified with a &lt;liquid&gt; child element,
+which has these attributes:
+<ul>
+<li>index: which one of the liquid types (mandatory)
+<li>coll: which shapes collection
+<li>frame: which frame
+<li>transfer: this is the texture-rendering transfer mode.
+<li>damage_freq: this is for indicating how often to apply a liquid's damage.
+This is bitwise-ANDed with the number of engine ticks,
+and damage gets applied if the result is all zeros.
+Thus, if this quantity has a value of (2^n-1), then damage will be applied
+every (2^n) ticks.
+<li>submerged: this is the fader used to do the submerged appearance;
+its default index values are those of their liquids.
+</ul>
+The index value is which one of these liquid types:
+<ol type=1 start=1000>
+<li>Water
+<li>Lava
+<li>Pfhor
+<li>Sewage
+<li>Jjaro
+</ol>
+while the "submerged" value is which one of these liquid types
+<ol type=1 start=1000>
+<li>Water
+<li>Lava
+<li>Sewage
+<li>Jjaro
+<li>Pfhor
+</ol>
+This element also has child elements &lt;damage&gt;
+(how much damage; it is described in greater detail <a href="#damage">here</a>),
+&lt;effect&gt; and &lt;sound&gt;.
+The latter two have two attributes, both mandatory: type and which.
+The type indicates when to make the effect / sound, while which is the index in
+the list of effect or sound definitions (-1 means none).
+<p>
+
+The effects:
+<ol type=1 start=1000>
+<li>Small Detonation
+<li>Medium Detonation
+<li>Large Detonation
+<li>Large Emergence
+</ol>
+<p>
+
+The sounds:
+<ol type=1 start=1000>
+<li>Feet Entering
+<li>Feet Leaving
+<li>Head Entering
+<li>Head Leaving
+<li>Splashing
+<li>Ambient Over
+<li>Ambient Under
+<li>Platform Entering
+<li>Platform Leaving
+</ol>
+<p>
+
+<hr>
+
+<h3><a name="faders">Fader Elements: &lt;faders&gt;</a></h3>
+
+This kind of element is for specifying various fader features,
+the faders being what causes the whole screen to change color
+when one is underneath a liquid or getting hit by something.
+It has two kinds of child elements, &lt;fader&gt; and &lt;liquid&gt;.
+<p>
+
+The first kind, &lt;fader&gt;, specifies features of each individual fader;
+it has attributes
+<ul>
+<li>index: which fader
+<li>type: which type of fade effect to apply
+<li>initial_opacity (floating point: 0 = none, 1 = complete)
+<li>final_opacity (floating point: 0 = none, 1 = complete)
+<li>period: time for fader effect to complete, in engine ticks (1/30 second)
+<li>flags: various features; get this value by adding the numerical values
+corresponding to the desired features:
+<ul>
+<li><tt>1 (hex 0001)</tt> Full screen
+<li><tt>2 (hex 0002)</tt> Random transparency; makes flickering effect
+</ul>
+<li>priority: higher is higher priority
+</ul>
+and a child element &lt;color&gt;, which is not indexed.
+For more on specifying colors, go <a href="#color">here</a>.
+The fader types are these:
+<ol type=1 start=1000>
+<li>Tint: fade to the fader's color value:<br>
+[new color] = [old color] + ([fader color] - [old color])*[opacity]
+<li>Randomize: do random shifts of the colors:<br>
+[new color] = [old color] + [opacity]*[random numbers]
+<li>Negate: darkens light colors and lightens dark colors. For each channel:<br>
+[opacity complement] = 1 - [opacity]<br>
+if [old color] &gt; 0.5 then<br>
+&nbsp;&nbsp;&nbsp;[new color] = max([old color], xor([fader color], [old color]) + [opacity complement])<br>
+else<br>
+&nbsp;&nbsp;&nbsp;[new color] = min([old color], xor([fader color], [old color]) - [opacity complement])<br>
+Intermediate results may be out of (0,1) range.
+<li>Dodge: some weird processing. For each channel:<br>
+[new color] = max([old color], 1 - (1 - [fader color])*[old color] - [opacity])<br>
+Intermediate results may be out of (0,1) range.
+<li>Burn: some weird processing. For each channel:<br>
+[opacity complement] = 1 - [opacity]<br>
+[new color] = max([old color],[fader color]*[old color] + [opacity complement])<br>
+Intermediate results may be out of (0,1) range.
+<li>Soft tint: fade to the fader's color value multiplied by the intensity
+(maximum of color-channel values):<br>
+[intensity] = max(color channels of [old color])<br>
+[new color] = [old color] + ([fader color]*[intensity] - [old color])*[opacity]
+</ol>
+In all these equations, color values are from 0 (black) to 1 (white),
+and out-of-range result values are reduced to that range by subtracting whichever integer
+will put the result into that range.
+<p>
+
+The second kind, &lt;liquid&gt;, specifies faders for liquids;
+it has attributes
+<ul>
+<li>index: which liquid to apply the fader to
+<li>fader: this specifies which fader to use for this liquid.
+<li>opacity: how strong is the fader effect (floating point: 0 = none, 1 = complete)
+</ul>
+The index is which one of these liquid types:
+<ol type=1 start=1000>
+<li>Water
+<li>Lava
+<li>Sewage
+<li>Jjaro
+<li>Pfhor
+</ol>
+<p>
+
+<hr>
+
+<h3><a name="player">Player Element: &lt;player&gt;</a></h3>
+
+This kind of element specifies various player-character features,
+such as starting energy, starting oxygen, rebellion-map stripped energy
+(specified with attributes), and starting items, damage types,
+and powerup durations (specified with child elements).
+The attributes are:
+<ul>
+<li>energy: how much to start with (default: 150)
+<li>oxygen: how much to start with (default: 10800)
+<li>stripped: how much energy one has if one starts in a rebellion level
+<li>light: self-luminosity (the miner's-light effect) (floating point: default: 0.5)
+<li>oxygen_deplete: how much oxygen one loses per engine tick under a liquid or in vacuum (default: 1)
+<li>oxygen_replenish: how much oxygen one gains per engine tick in air (default: 0)
+</ul>
+Note: the oxygen depletion and replenishment rates can be negative
+if one so desires.
+<p>
+
+The starting items can be set with an element of &lt;item&gt;,
+which has attributes:
+<ul>
+<li>index (which one in list)
+<li>type (which item type)
+</ul>
+Both of them are mandatory.
+The first weapon in the list is the one that will get used.
+The default list is:
+<ul>
+<li>0: Pistol
+<li>1: Knife
+<li>2: Knife
+<li>3: Pistol Ammo
+<li>4: Pistol Ammo
+<li>5: Pistol Ammo
+<li>6 to 15: Knife
+</ul>
+<p>
+
+The responses to various kinds of damage can be set with an element of &lt;damage&gt;,
+which has attributes:
+<ul>
+<li>index (which one in player-damage list; mandatory, but the others are optional)
+<li>threshold: if the amount of damage is greater than this,
+then fader (fade)+1 is used instead of fader (fade).
+<li>fade: what of the faders to use.
+<li>sound: Sound to make.
+<li>death_sound: Death sound to make.
+<li>death_action: Behavior of sprites when killed.
+Here are the appropriate behavior types:
+<ul>
+<li> 6: Hard death (blown to bits by explosion)
+<li> 7: Soft death (stays in shape)
+<li> 8: Flaming death
+</ul>
+</ul>
+If there is none of something, then it gets a value of -1.
+Soft death for sprites can also be specified with a -1.
+<p>
+
+The durations of the powerups can be said with an element of &lt;powerup&gt;.
+It has these attributes
+<ul>
+<li>invisibility (default: 2100 or 70 seconds)
+<li>invincibility (default: 1500 or 50 seconds)
+<li>extravision (default: 5400 or 3 minutes)
+<li>infravision (default: 5400 or 3 minutes)
+</ul>
+These have a value of the number of engine ticks the powerup lasts;
+an engine tick is 1/30 second.
+<p>
+
+<hr>
+
+<h3><a name="view">View Element: &lt;view&gt;</a></h3>
+
+This kind of element specifies various view features.
+It has one attribute, "map", which is <a name="#boolean">boolean</a>,
+and which indicates whether or not to show the overhead map.
+This element also has the child element &lt;fov&gt;,
+which is for setting field-of-view features.
+<p>
+
+Field-of-view features are set with child element &lt;fov&gt;,
+which has these attributes:
+<ul>
+<li>normal: the normal field of view (default: 80)
+<li>extra: the extravision-powerup field of view (default: 130)
+<li>tunnel: the tunnel-vision field of view, good for long-distance sharpshooting
+(default: 30)
+<li>rate: how much to change the FOV in degrees/(engine tick) (default: 1.667 or 50 degrees/s)
+</ul>
+All of them are in degrees, all of them are floating-point values
+(can be non-integer) between 0 and 180, and all of them are optional.
+<p>
+
+<hr>
+
+<h3><a name="weapons">Weapons Element: &lt;weapons&gt;</a></h3>
+
+This kind of element specifies various features of the weapons,
+such as shell casings and weapon order (child elements &lt;shell_casings&gt;
+and &lt;order&gt;).
+<p>
+
+Shell-casing features one can specify
+with the child element &lt;shell_casings&gt;,
+which has these attributes:
+<ul>
+<li>index (mandatory)
+<li>coll: which shapes collection
+<li>seq: which sequence
+<li>x0: initial position (horizontal)
+<li>y0: initial position (vertical)
+<li>vx0: initial velocity (horizontal)
+<li>vy0: initial velocity (vertical)
+<li>dvx: acceleration (horizontal)
+<li>dvy: acceleration (vertical)
+</ul>
+The time unit here is the engine tick;
+x0, y0, vx0, vy0, dvx, and dvy are all floating-point values
+that are relative to the screen (0 = left, 1 = right; 0 = bottom, 1 = top).
+<p>
+
+The various types of shell casings are:
+<ol type=1 start=1000>
+<li>Assault rifle
+<li>Centered pistol
+<li>Left-side pistol
+<li>Right-side pistol
+<li>SMG
+</ol>
+<p>
+
+The weapon order can be specified with the child element
+&lt;order&gt;, which has these attributes, both mandatory:
+<ul>
+<li>index: which in the ordering list
+<li>weapon: what weapon index
+</ul>
+The default weapon order is
+<ol type=1 start=1000>
+<li>Fist
+<li>Pistol
+<li>Fusion Pistol
+<li>Shotgun
+<li>Assault Rifle
+<li>SMG
+<li>Flamethrower
+<li>Rocket Launcher
+<li>Alien Weapon
+<li>Ball
+</ol>
+<p>
+
+<hr>
+
+<h3><a name="items">Items Element: &lt;items&gt;</a></h3>
+
+This kind of element specifies various features of items that can be picked up.
+These are specified with the child element &lt;item&gt;,
+which has these attributes:
+<ul>
+<li>index (mandatory)
+<li>singular: index of singular name string (only one of them)
+<li>plural: index of plural name string (more than one of them)
+<li>maximum: maximum number that a player may possess
+<li>invalid: what environments the item cannot be used in;
+this value is determined by the sum of values for individual
+environment types:
+<ul>
+<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;0 (hex 0000)</tt> Normal
+<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;1 (hex 0001)</tt> Vacuum
+<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;2 (hex 0002)</tt> Magnetic
+<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;4 (hex 0004)</tt> Rebellion
+<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;8 (hex 0008)</tt> Low Gravity
+<li><tt>&nbsp;8192 (hex 2000)</tt> Network
+<li><tt>16384 (hex 4000)</tt> Single Player
+</ul>
+</ul>
+<p>
+The item shape can be specified with a <a href="#shape">shape</a>
+child element, which can be blank (&lt;shape/&gt;).
+<p>
+
+<hr>
+
+<h3><a name="scenery">Scenery Element: &lt;scenery&gt;</a></h3>
+
+This kind of element specifies various features of scenery objects,
+including size and solidity.
+Each individual type of scenery object is specified with a &lt;object&gt; child element,
+which has these attributes:
+<ul>
+<li>index: which one of the scenery-object types (mandatory)
+<li>flags: various features; get this value by adding the numerical values
+corresponding to the desired features:
+<ul>
+<li><tt>1 (hex 0001)</tt> Solid (can't pass through it)
+<li><tt>2 (hex 0002)</tt> Animated
+<li><tt>4 (hex 0004)</tt> Destroyable
+</ul>
+<li>radius: horizontal dimension in internal units, for doing collision detection.
+<li>height: vertical dimension like above; if negative,
+then object's extent downward from reference point (good for ceiling objects).
+<li>destruction: effect to make when destroyed (-1 is none).
+</ul>
+<p>
+
+This element's shapes can be specified with child elements
+&lt;normal&gt; and &lt;destroyed&gt;, for before-and-after shapes;
+each of them has the actual shape value specified with a
+<a href="#shape">shape</a> child element.
+<p>
+
+
+The index is which one of these scenery-object types:
+<ol type=1 start=1000>
+<li>Lava: light dirt
+<li>Lava: dark dirt
+<li>Lava: bones
+<li>Lava: bone
+<li>Lava: ribs
+<li>Lava: skull
+<li>Lava: hanging light 1
+<li>Lava: hanging light 2
+<li>Lava: small cylinder
+<li>Lava: large cylinder
+<li>Lava: block 1
+<li>Lava: block 2
+<li>Lava: block 3
+<li>Water: pistol clip
+<li>Water: short light
+<li>Water: long light
+<li>Water: siren
+<li>Water: rocks
+<li>Water: blood drops
+<li>Water: water thing
+<li>Water: gun
+<li>Water: Bob remains
+<li>Water: puddles
+<li>Water: big puddles
+<li>Water: security monitor
+<li>Water: alien supply can
+<li>Water: machine
+<li>Water: fighter's staff
+<li>Sewage: stubby green light
+<li>Sewage: long green light
+<li>Sewage: junk
+<li>Sewage: big antenna 1
+<li>Sewage: big antenna 2
+<li>Sewage: alien supply can
+<li>Sewage: bones
+<li>Sewage: big bones
+<li>Sewage: Pfhor pieces
+<li>Sewage: Bob pieces
+<li>Sewage: Bob blood
+<li>Pfhor: green light
+<li>Pfhor: small alien light
+<li>Pfhor: alien ceiling rod light
+<li>Pfhor: bulbous yellow alien object
+<li>Pfhor: square gray organic object
+<li>Pfhor: Pfhor skeleton
+<li>Pfhor: Pfhor mask
+<li>Pfhor: green stuff
+<li>Pfhor: Hunter shield
+<li>Pfhor: bones
+<li>Pfhor: alien sludge
+<li>Jjaro: short ceiling light
+<li>Jjaro: long light
+<li>Jjaro: weird rod
+<li>Jjaro: Pfhor ship
+<li>Jjaro: Sun
+<li>Jjaro: large glass container
+<li>Jjaro: nub 1
+<li>Jjaro: nub 2
+<li>Jjaro: Lh'owon
+<li>Jjaro: floor whip antenna
+<li>Jjaro: ceiling whip antenna
+</ol>
+<p>
+
+<hr>
+
+<h3><a name="landscapes">Landscapes Element: &lt;landscapes&gt;</a></h3>
+
+This kind of element is for modifying landscape rendering.
+
+This element has two kinds of child elements, &lt;clear&gt; and &lt;sequence&gt;.
+<p>
+
+The first one, &lt;clear&gt;, clears the landscape options,
+setting them back to their defaults; if it has an attribute of "coll",
+it will clear the sequences for the collection specified in that attribute's value;
+if not, it will clear all the sequences.
+However, this command can be followed by commands to set up landscape options,
+which will then be executed as if no "clear" command had been issued.
+<p>
+
+The second one, &lt;landscape&gt;, specifies the landscape options themselves.
+It takes these attributes:
+<ul>
+<li>coll: which collection (mandatory)
+<li>frame: which frame to apply the options to (default: 0, the frame that is always present)
+<li>horiz_exp: exponent for power of 2 that is the number of wraparound repeats in the horizontal direction.
+(default: 1 - two repeats)
+<li>vert_exp: exponent for power of 2 that makes a vertical scaling equal to the scaling
+produced by the same value of horiz_exp in the horizontal direction. (default: 1 - equal to two horizontal repeats)
+<li>ogl_asprat_exp: exponent for power of 2 that is the ratio of width to height
+of the part of the texture that OpenGL will use (width is fixed; height can be variable).
+This part will always be centered in height, and will either include some untextured area
+or will not include the top and bottom parts. (default: 1 -- height is 1/2 width)
+<li>azimuth: angle in degrees to rotate the texture leftward relative to the map.
+This could be useful for aligning landscape features with map ones. (default: 0)
+</ul>
+<p>
+
+<hr>
+
+<h3><a name="opengl">OpenGL-Rendering Element: &lt;opengl&gt;</a></h3>
+
+This kind of element is for modifying the OpenGL rendering.
+Currently, only modifications of texture rendering are implemented,
+
+
+This element has two kinds of child elements, &lt;txtr_clear&gt; and &lt;texture&gt;.
+<p>
+
+The first one, &lt;txtr_clear&gt;, clears the landscape options,
+setting them back to their defaults; if it has an attribute of "coll",
+it will clear the sequences for the collection specified in that attribute's value;
+if not, it will clear all the sequences.
+However, this command can be followed by commands to set up texture options,
+which will then be executed as if no "txtr_clear" command had been issued.
+<p>
+
+The second one, &lt;texture&gt;, specifies the texture options themselves.
+It takes these attributes:
+<ul>
+<li>coll: which collection (mandatory).
+<li>clut: which color table. Values 0 to 7 are the familiar color-table values,
+and there are two special values: -1 means all the color tables and 8 means the infravision color table.
+The default is -1, all of the tables.
+<li>bitmap: which one to apply the options to (mandatory).
+<li>opac_type: what type of opacity to use (default: 0 -- crisp edges)
+<li>opac_scale: scaling value for the opacity; how much to multiply it by.
+Results greater than 1 will be pinned to 1. (default: 1 -- no change)
+</ul>
+Here are the various opacity types:
+<ol type=1 start=1000>
+<li>Crisp edges. Unlike the others, this one does not have scaled opacity.
+<li>Fuzzy edges with constant opacity.
+<li>Fuzzy edges with opacity = average of color channels.
+<li>Fuzzy edges with opacity = maximum of color channels.
+</ol>
+The first one of these is good for objects with well-defined edges;
+the others are good for clouds, flames, energy-weapon bolts, and so forth,
+which will not have sharp boundaries.
+The average and maximum modes were included as a way of producing variable opacity
+without adding any new files; this hack was inspired by the semitransparency handling
+in Tomb Raider 3.
+The idea here is that the brighter regions are likely to be the more opaque ones
+in these cases.
+I've put both of them in because they behave somewhat differently;
+max has the same strength for saturated colors as for grays,
+while mean has less strength for saturated colors than for grays.
+<p>
+
+<hr>
+
+<h3><a name="dynlims">Dynamic-Limits Element: &lt;dynamic_limits&gt;</a></h3>
+
+This kind of element specifies various dynamic limits,
+more specifically, the maximum numbers of various entities whose quantity
+varies during the game.
+These are specified with various child elements, each one of which
+has a mandatory attribute of "value", which is set to the appropriate number.
+Here they are:
+
+<ul>
+<li> &lt;objects&gt; (default: 1024) Every sort of inhabitant object (players, monsters, items, projectiles, scenery)
+<li> &lt;monsters&gt; (default: 512) Monsters / Non-Player Characters (NPC's).
+<li> &lt;paths&gt; (default: 128) Paths for NPC's to follow; if not enough, they will not move.
+<li> &lt;projectiles&gt; (default: 128) Bullets, missiles, flame, fist punches, etc.
+<li> &lt;effects&gt; (default: 128) Explosions, splashes, etc.
+<li> &lt;rendered&gt; (default: 1024) How many inhabitants to render at any one time.
+<li> &lt;local_collision&gt; (default: 64) Target visibility, NPC-NPC collisions, etc.
+<li> &lt;global_collision&gt; (default: 256) Projectiles with other objects
+</ul>
+
+<hr>
+
+<h3><a name="playername">Player-Name Element: &lt;player_name&gt;</a></h3>
+
+This is the default player name in netgames, which takes the form:
+<pre>
+&lt;player_name&gt;Marathon Player&lt;/player_name&gt;
+</pre>
+<p>
+
+<hr>
+
+<h3><a name="appendix1">Appendix 1: Additional Elements</a></h3>
+
+<h4><a name="color">Colors</a></h4>
+
+Colors are specified with the element &lt;color&gt;
+colors may be either indexed (being list members), or non-indexed (being in isolation).
+<ul>
+<li>index (mandatory if indexed; must be absent if not indexed)
+<li>red
+<li>green
+<li>blue
+</ul>
+All the color-channel attributes (red, green, blue) are mandatory.
+This example makes color 7 be yellow:
+<pre>
+&lt;color index="7" red="1" green="1" blue="0"/&gt;
+</pre>
+<p>
+
+<h4><a name="shape">Shapes</a></h4>
+
+Shapes can be specified with the element &lt;shape&gt;.
+A shape specification includes which collection, which color table,
+and which sequence or frame; a shape may also be allowed to be blank.
+A shape's attributes are
+<ul>
+<li>coll: which collection (0 to 31)
+<li>clut: which color table; default is 0 (0 to 7)
+<li>seq: which sequence (0 to 255)
+<li>frame: like the above, included if the meaning of "frame" is clearer
+in some context.
+</ul>
+A blank shape is specified as one having no attributes: &lt;shape/&gt;.
+A non-blank shape requires the collection and sequence attributes,
+and optionally the color-table attribute (default: 0).
+<p>
+
+<h4><a name="damage">Damage</a></h4>
+
+Damage is specified with the element &lt;damage&gt;.
+Damage features are set with these attributes, which are all optional.
+<ul>
+<li>type ("true" damage index; none is -1)
+<li>flags (0 or 1 [is alien: weaker in easier difficulty levels])
+<li>base
+<li>random
+<li>scale (1 = identity scaling)
+</ul>
+<p>
+
+<h4><a name="boolean">Boolean data</a></h4>
+
+This is not a separate element, but a kind of value of an attribute.
+These values for a boolean attribute,
+<ul>
+<li>1
+<li>t
+<li>true
+</ul>
+indicate that a flag is to be on or an action is to be taken.
+These values,
+<ul>
+<li>0
+<li>f
+<li>false
+</ul>
+indicate that a flag is to be off or an action is not to be taken.
+<p>
+
+<hr>
+
+<h3><a name="appendix2">Appendix 2: Lists of Entity Types</a></h3>
+
+The collections:
+<ol type=1 start=1000>
+<li>Interface
+<li>Weapons in Hand
+<li>Juggernaut
+<li>Tick
+<li>Explosion Effects
+<li>Hunter
+<li>Player
+<li>Items
+<li>Trooper
+<li>Pfhor Fighter
+<li>S'pht'Kr
+<li>F'lickta
+<li>Bob
+<li>VacBob
+<li>Enforcer
+<li>Drone
+<li>S'pht
+<li>Walls - Water
+<li>Walls - Lava
+<li>Walls - Sewage
+<li>Walls - Jjaro
+<li>Walls - Pfhor
+<li>Scenery - Water
+<li>Scenery - Lava
+<li>Scenery - Sewage
+<li>Scenery - Jjaro
+<li>Scenery - Pfhor
+<li>Landscape - Day
+<li>Landscape - Night
+<li>Landscape - Moon
+<li>Landscape - Outer Space
+<li>Cyborg
+</ol>
+<p>
+
+The monsters:
+<ol type=1 start=1000>
+<li>Player
+<li>Tick - Energy
+<li>Tick - Oxygen
+<li>Tick - Kamikaze
+<li>S'pht - Minor
+<li>S'pht - Major
+<li>S'pht - Minor Invisible
+<li>S'pht - Major Invisible
+<li>Pfhor Fighter - Minor
+<li>Pfhor Fighter - Major
+<li>Pfhor Fighter - Minor Projectile
+<li>Pfhor Fighter - Major Projectile
+<li>Bob - Crew
+<li>Bob - Science
+<li>Bob - Security
+<li>Bob - Bad
+<li>Drone - Minor
+<li>Drone - Major
+<li>Drone - Big Minor
+<li>Drone - Big Major
+<li>Drone - Subverted
+<li>Cyborg - Minor
+<li>Cyborg - Major
+<li>Cyborg - Minor Flame
+<li>Cyborg - Major Flame
+<li>Enforcer - Minor
+<li>Enforcer - Major
+<li>Hunter - Minor
+<li>Hunter - Major
+<li>Trooper - Minor
+<li>Trooper - Major
+<li>Mother of All Cyborgs
+<li>Mother of All Hunters
+<li>F'lickta - Sewage
+<li>F'lickta - Water
+<li>F'lickta - Lava
+<li>S'pht'Kr - Minor
+<li>S'pht'Kr - Major
+<li>Juggernaut - Minor
+<li>Juggernaut - Major
+<li>Tiny Fighter
+<li>Tiny Bob
+<li>Tiny F'lickta
+<li>VacBob - Crew
+<li>VacBob - Science
+<li>VacBob - Security
+<li>VacBob - Bad
+</ol>
+<p>
+
+The items to be picked up:
+<ol type=1 start=1000>
+<li>Knife (apparently some placeholder item for "nothing")
+<li>Pistol
+<li>Pistol Ammo
+<li>Fusion Pistol
+<li>Fusion Pistol Ammo
+<li>Assault Rifle
+<li>Assault Rifle Bullets
+<li>Assault Rifle Grenades
+<li>Rocket Launcher
+<li>Rockets
+<li>Invisibility Powerup
+<li>Invincibility Powerup
+<li>Infravision Powerup
+<li>Alien Weapon
+<li>Alien Weapon Ammo
+<li>Flamethrower
+<li>Flamethrower Ammo
+<li>Extravision Powerup
+<li>Oxygen Powerup
+<li>Energy Powerup x1
+<li>Energy Powerup x2
+<li>Energy Powerup x3
+<li>Shotgun
+<li>Shotgun Ammo
+<li>S'pht Door Key
+<li>Uplink Chip
+<li>Light Blue Ball
+<li>Red Ball
+<li>Violet Ball
+<li>Yellow Ball
+<li>Brown Ball
+<li>Orange Ball
+<li>Blue Ball
+<li>Green Ball
+<li>SMG
+<li>SMG Ammo
+</ol>
+<p>
+
+The weapons:
+<ol type=1 start=1000>
+<li>Fist
+<li>Pistol
+<li>Fusion Pistol
+<li>Assault Rifle
+<li>Rocket Launcher
+<li>Flamethrower
+<li>Alien Weapon
+<li>Shotgun
+<li>Ball
+<li>SMG
+</ol>
+<p>
+
+The projectiles:
+<ol type=1 start=1000>
+<li>Rocket
+<li>Grenade
+<li>Pistol Bullet
+<li>Rifle Bullet
+<li>Shotgun Bullet
+<li>Staff Hit
+<li>Staff Bolt
+<li>Flamethrower Flames
+<li>S'pht Bolt - Minor
+<li>S'pht Bolt - Major (Seeking)
+<li>Alien-Weapon Bolt
+<li>Fusion Bolt - Minor
+<li>Fusion Bolt - Major
+<li>Hunter Bolt
+<li>Fist Punch
+<li>Armageddon Sphere
+<li>Armageddon Electricity
+<li>Juggernaut Rocket
+<li>Trooper Bullet
+<li>Trooper Grenade
+<li>S'pht'Kr Bolt - Minor
+<li>S'pht'Kr Bolt - Major
+<li>Juggernaut Missile
+<li>Energy Drain - Minor
+<li>Energy Drain - Major
+<li>Oxygen Drain
+<li>Drone Bolt - Minor
+<li>Drone Bolt - Major
+<li>Drone Bolt - Subverted
+<li>Grenade - Minor Cyborg (Bouncing)
+<li>Grenade - Major Cyborg (Seeking)
+<li>Ball
+<li>Dispersal - Minor Fusion
+<li>Dispersal - Major Fusion
+<li>Dispersal - Overloaded Fusion
+<li>F'lickta Claw
+<li>F'lickta Glob
+<li>F'lickta Lava Glob
+<li>SMG Bullet
+</ol>
+<p>
+
+The effects:
+<ol type=1 start=1000>
+<li>Rocket Explosion
+<li>Rocket Contrail
+<li>Grenade Explosion
+<li>Grenade Contrail
+<li>Bullet Impact
+<li>Alien Weapon Impact
+<li>Flamethrower Flame
+<li>Pfhor Hit
+<li>Player Hit
+<li>Bob Hit
+<li>Bad Bob Hit
+<li>Enforcer Hit
+<li>S'pht Bolt Minor Impact
+<li>S'pht Bolt Major Impact
+<li>S'pht Bolt Major Contrail
+<li>Pfhor Projectile Impact
+<li>Pfhor Melee Hit
+<li>Hunter Projectile Detonation
+<li>Hunter Hit
+<li>Minor Fusion Impact
+<li>Major Fusion Impact
+<li>Major Fusion Contrail
+<li>Fist Hit
+<li>Minor S'pht'Kr Impact
+<li>Minor S'pht'Kr Impact
+<li>S'pht'Kr Hit
+<li>Trooper Hit
+<li>Water Lamp Breaking
+<li>Lava Lamp Breaking
+<li>Sewage Lamp Breaking
+<li>Pfhor Lamp Breaking
+<li>Clank (melee hit)
+<li>Teleport In
+<li>Teleport Out
+<li>Small Water Splash
+<li>Medium Water Splash
+<li>Large Water Splash
+<li>Large Water Emergence
+<li>Small Lava Splash
+<li>Medium Lava Splash
+<li>Large Lava Splash
+<li>Large Lava Emergence
+<li>Small Sewage Splash
+<li>Medium Sewage Splash
+<li>Large Sewage Splash
+<li>Large Sewage Emergence
+<li>Small Goo Splash
+<li>Medium Goo Splash
+<li>Large Goo Splash
+<li>Large Goo Emergence
+<li>Minor Drone Projectile Impact
+<li>Major Drone Projectile Impact
+<li>Subverted Drone Projectile Impact
+<li>Drone Hit
+<li>Cyborg Projectile Explosion
+<li>Cyborg Hit
+<li>Minor Fusion Dispersal
+<li>Major Fusion Dispersal
+<li>Overloaded Fusion Dispersal
+<li>Sewage F'lickta Hit
+<li>Sewage F'lickta Projectile Hit
+<li>Water F'lickta Hit
+<li>Lava F'lickta Hit
+<li>Lava F'lickta Projectile Hit
+<li>F'lickta Claw
+<li>Juggernaut Hit
+<li>Juggernaut Missile Contail
+<li>Small Jjaro Splash
+<li>Medium Jjaro Splash
+<li>Large Jjaro Splash
+<li>Large Jjaro Emergence
+<li>VacBob Hit
+<li>Bad VacBob Hit
+</ol>
+<p>
+
+Player-damage types (out of order from "true" damage types):
+<ol type=1 start=1000>
+<li>Explosion
+<li>Crushing
+<li>Bullet
+<li>Shotgun Bullet
+<li>Electrical Staff
+<li>Hulk Slap
+<li>Absorbed
+<li>Teleporter
+<li>Flame
+<li>Hound Claws
+<li>S'pht Bolt
+<li>Alien-Weapon Bolt
+<li>Hunter Bolt
+<li>Fusion Bolt
+<li>Fist
+<li>F'lickta Claws
+<li>F'lickta Glob
+<li>S'pht'Kr Bolt
+<li>Lava
+<li>Goo
+<li>Suffocation
+<li>Energy Drain
+<li>Oxygen Drain
+<li>Drone Bolt
+</ol>
+
+"True" damage types:
+<ol type=1 start=1000>
+<li>Explosion
+<li>Electrical Staff
+<li>Bullet
+<li>Absorbed
+<li>Flame
+<li>Hound Claws
+<li>Alien-Weapon Bolt
+<li>Hulk Slap
+<li>S'pht Bolt
+<li>Fusion Bolt
+<li>Hunter Bolt
+<li>Fist
+<li>Teleporter
+<li>S'pht'Kr Bolt
+<li>F'lickta Claws
+<li>F'lickta Glob
+<li>Crushing
+<li>Lava
+<li>Suffocation
+<li>Goo
+<li>Energy Drain
+<li>Oxygen Drain
+<li>Drone Bolt
+<li>Shotgun Bullet
+</ol>
+
+The faders:
+<ol type=1 start=1000>
+<li>Start Cinematic Fade In
+<li>Cinematic Fade In
+<li>Long Cinematic Fade In
+<li>Cinematic Fade Out
+<li>End Cinematic Fade Out
+<li>Red (bullets, fists)
+<li>Big Red (bigger bullets, fists)
+<li>Picked Something Up
+<li>Bright (teleporting)
+<li>Long Bright (nuclear explosions)
+<li>Yellow (explosions)
+<li>Big Yellow (big explosions)
+<li>Purple
+<li>Cyan (Pfhor-staff/projectile hits)
+<li>White (absorbed)
+<li>Big White
+<li>Orange (flamethrower)
+<li>Long Orange (M1 lava)
+<li>Green (Hunter projectile)
+<li>Long Green (M1 goo)
+<li>Static (S'pht projectile)
+<li>Negative (minor fusion bolt)
+<li>Big Negative (major fusion bolt)
+<li>Flicker Negative (Drone bolt)
+<li>Dodge Purple (alien weapon)
+<li>Burn Cyan (Armageddon Beast electricity)
+<li>Dodge Yellow (Armageddon Beast projectile)
+<li>Burn Green (Hunter projectile)
+<li>Tint Green (under goo)
+<li>Tint Blue (under water)
+<li>Tint Orange (under lava)
+<li>Tint Gross (under sewage)
+<li>Tint Jjaro (under JjaroGoo)
+</ol>
+<p>
+
+The texture-mapping transfer modes:
+<ol type=1 start=1000>
+<li>Normal
+<li>Fade Out to Black
+<li>Invisibility
+<li>Subtle Invisibility
+<li>Pulsate
+<li>Wobble
+<li>Fast Wobble
+<li>Static
+<li>50% Static
+<li>Landscape
+<li>Smear
+<li>Fade Out Static
+<li>Pulsating Static
+<li>Fold In
+<li>Fold Out
+<li>Horizontal Slide
+<li>Fast Horizontal Slide
+<li>Vertical Slide
+<li>Fast Vertical Slide
+<li>Wander
+<li>Fast Wander
+<li>Big Landscape
+</ol>
+<p>
+
+The sounds:
+<ol type=1 start=1000>
+<li>Startup
+<li>Teleport In
+<li>Teleport Out
+<li>Body Being Crunched
+<li>Creak
+<li>Absorbed
+<li>Breathing
+<li>Oxygen Warning
+<li>Suffocation
+<li>Energy Refuel
+<li>Oxygen Refuel
+<li>Can't Toggle Switch
+<li>Switch On
+<li>Switch Off
+<li>Puzzle Switch
+<li>Chip Insertion
+<li>Pattern Buffer
+<li>Destroy Control Panel
+<li>Adjust Volume
+<li>Got Powerup
+<li>Got Item
+<li>Bullet Ricochet
+<li>Metallic Ricochet
+<li>Empty Gun
+<li>S'pht Door Opening
+<li>S'pht Door Closing
+<li>S'pht Door Obstructed
+<li>S'pht Platform Starting
+<li>S'pht Platform Stopping
+<li>Loon
+<li>SMG Firing
+<li>SMG Reloading
+<li>Heavy S'pht Platform Starting
+<li>Heavy S'pht Platform Stopping
+<li>Fist Hitting
+<li>Pistol Firing
+<li>Pistol Reloading
+<li>Assault Rifle Firing
+<li>Grenade Launcher Firing
+<li>Grenade Exploding
+<li>Grenade Flyby
+<li>Fusion Firing
+<li>Fusion Exploding
+<li>Fusion Flyby
+<li>Fusion Charging
+<li>Rocket Exploding
+<li>Rocket Flyby
+<li>Rocket Firing
+<li>Flamethrower
+<li>Body Falling
+<li>Body Exploding
+<li>Bullet Hitting Flesh
+<li>Fighter Activate
+<li>Fighter Wail
+<li>Fighter Scream
+<li>Fighter Chatter
+<li>Fighter Attack
+<li>Fighter Projectile Hit
+<li>Fighter Projectile Flyby
+<li>S'pht Attack
+<li>S'pht Death
+<li>S'pht Hit
+<li>S'pht Projectile Flyby
+<li>S'pht Projectile Hit
+<li>Cyborg Moving
+<li>Cyborg Attack
+<li>Cyborg Hit
+<li>Cyborg Death
+<li>Cyborg Projectile Bounce
+<li>Cyborg Projectile Hit
+<li>Cyborg Projectile Flyby
+<li>Drone Activate
+<li>Drone Start Attack
+<li>Drone Attack
+<li>Drone Dying
+<li>Drone Death
+<li>Drone Projectile Hit
+<li>Drone Projectile Flyby
+<li>Bob Wail
+<li>Bob Scream
+<li>Bob Hit
+<li>Bob Chatter
+<li>Bad Bob Chatter
+<li>Bob Trash Talk
+<li>Bob Apology
+<li>Bob Activation
+<li>Bob Clear
+<li>Bob Stop Shooting Me, You Bastard
+<li>Bob Area Secure
+<li>Bob Kill the Player
+<li>Water
+<li>Sewage
+<li>Lava
+<li>Goo
+<li>Under Liquids
+<li>Wind
+<li>Waterfall
+<li>Siren
+<li>Fan
+<li>S'pht Door
+<li>S'pht Platform
+<li>Alien Harmonics
+<li>Heavy S'pht Platform
+<li>Light Machinery
+<li>Heavy Machinery
+<li>Transformer
+<li>Sparking Transformer
+<li>Water Drip
+<li>Walking in Water
+<li>Exit Water
+<li>Enter Water
+<li>Small Water Splash
+<li>Medium Water Splash
+<li>Large Water Splash
+<li>Walking in Lava
+<li>Enter Lava
+<li>Exit Lava
+<li>Small Lava Splash
+<li>Medium Lava Splash
+<li>Large Lava Splash
+<li>Walking in Sewage
+<li>Exit Sewage
+<li>Enter Sewage
+<li>Small Sewage Splash
+<li>Medium Sewage Splash
+<li>Large Sewage Splash
+<li>Walking in Goo
+<li>Exit Goo
+<li>Enter Goo
+<li>Small Goo Splash
+<li>Medium Goo Splash
+<li>Large Goo Splash
+<li>Major Fusion Firing
+<li>Major Fusion Charged
+<li>Assault Rifle Reloading
+<li>Assault Rifle Shell Casings
+<li>Shotgun Firing
+<li>Shotgun Reloading
+<li>Ball Bounce
+<li>You Are it
+<li>Got Ball
+<li>Computer interface Logon
+<li>Computer interface Logout
+<li>Computer interface Page
+<li>Heavy S'pht Door
+<li>Heavy S'pht Door Opening
+<li>Heavy S'pht Door Closing
+<li>Heavy S'pht Door Open
+<li>Heavy S'pht Door Closed
+<li>Heavy S'pht Door Obstructed
+<li>Hunter Activate
+<li>Hunter Attack
+<li>Hunter Dying
+<li>Hunter Landing
+<li>Hunter Exploding
+<li>Hunter Projectile Hit
+<li>Hunter Projectile Flyby
+<li>Enforcer Activate
+<li>Enforcer Attack
+<li>Enforcer Projectile Hit
+<li>Enforcer Projectile Flyby
+<li>F'lickta Melee Attack
+<li>F'lickta Melee Attack Hit
+<li>F'lickta Projectile Attack
+<li>F'lickta Projectile Sewage Attack Hit
+<li>F'lickta Projectile Sewage Flyby
+<li>F'lickta Projectile Lava Attack Hit
+<li>F'lickta Projectile Lava Flyby
+<li>F'lickta Dying
+<li>Machine Binder
+<li>Machine Bookpress
+<li>Machine Puncher
+<li>Electric
+<li>Alarm
+<li>Night Wind
+<li>Surface Explosion
+<li>Underground Explosion
+<li>S'pht'Kr Attack
+<li>S'pht'Kr Hit
+<li>S'pht'Kr Flyby
+<li>S'pht'Kr Being Hit
+<li>S'pht'Kr Exploding
+<li>Tick Chatter
+<li>Tick Falling
+<li>Tick Flapping
+<li>Tick Exploding
+<li>Ceiling Lamp Exploding
+<li>Pfhor Platform Starting
+<li>Pfhor Platform Stopping
+<li>Pfhor Platform
+<li>Pfhor Door Opening
+<li>Pfhor Door Closing
+<li>Pfhor Door Obstructed
+<li>Pfhor Door
+<li>Pfhor Switch Off
+<li>Pfhor Switch On
+<li>Juggernaut Firing
+<li>Juggernaut Warning
+<li>Juggernaut Exploding
+<li>Juggernaut Preparing to Fire
+<li>Enforcer Exploding
+<li>Alien Noise 1
+<li>Alien Noise 2
+<li>VacBob Wail
+<li>VacBob Scream
+<li>VacBob Hit
+<li>VacBob Chatter
+<li>Bad VacBob Chatter
+<li>VacBob Trash Talk
+<li>VacBob Apology
+<li>VacBob Activation
+<li>VacBob Clear
+<li>VacBob Stop Shooting Me, You Bastard
+<li>VacBob Area Secure
+<li>VacBob Kill the Player
+</ol>
+
+</body>
+</html>
+

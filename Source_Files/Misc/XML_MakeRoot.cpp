@@ -1,0 +1,65 @@
+/*
+	Creator of root of XML-Parser Tree
+	by Loren Petrich,
+	April 16, 2000
+
+	This is for setting up the absolute root element; this element has as its children
+	the possible root elements of the Marathon XML files, which is here only "marathon"
+*/
+
+#include "cseries.h"
+#include "XML_ParseTreeRoot.h"
+#include "TextStrings.h"
+#include "interface.h"
+#include "game_window.h"
+#include "PlayerName.h"
+#include "motion_sensor.h"
+#include "world.h"
+#include "overhead_map.h"
+#include "dynamic_limits.h"
+#include "AnimatedTextures.h"
+#include "player.h"
+#include "items.h"
+#include "media.h"
+#include "map.h"
+#include "platforms.h"
+#include "scenery.h"
+#include "fades.h"
+#include "ViewControl.h"
+#include "weapons.h"
+#include "OGL_Setup.h"
+
+
+// The absolute root element is a global, of course
+XML_ElementParser RootParser("");
+
+// This is the canonical root element in the XML setup files:
+XML_ElementParser MarathonParser("marathon");
+
+
+void SetupParseTree()
+{
+	// Add the only recognized XML-document-root object here
+	RootParser.AddChild(&MarathonParser);
+	
+	// Add all its subobjects
+	MarathonParser.AddChild(TS_GetParser());		// Text strings
+	MarathonParser.AddChild(Interface_GetParser());
+	MarathonParser.AddChild(PlayerName_GetParser());
+	MarathonParser.AddChild(Infravision_GetParser());
+	MarathonParser.AddChild(MotionSensor_GetParser());
+	MarathonParser.AddChild(OverheadMap_GetParser());
+	MarathonParser.AddChild(DynamicLimits_GetParser());
+	MarathonParser.AddChild(AnimatedTextures_GetParser());
+	MarathonParser.AddChild(Player_GetParser());
+	MarathonParser.AddChild(Items_GetParser());
+	MarathonParser.AddChild(ControlPanels_GetParser());
+	MarathonParser.AddChild(Liquids_GetParser());
+	MarathonParser.AddChild(Platforms_GetParser());
+	MarathonParser.AddChild(Scenery_GetParser());
+	MarathonParser.AddChild(Faders_GetParser());
+	MarathonParser.AddChild(View_GetParser());
+	MarathonParser.AddChild(Landscapes_GetParser());
+	MarathonParser.AddChild(Weapons_GetParser());
+	MarathonParser.AddChild(OpenGL_GetParser());
+}

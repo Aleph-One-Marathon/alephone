@@ -1,0 +1,136 @@
+
+/*
+	Shapes parser
+	by Loren Petrich,
+	May 26, 2000
+	
+	This parses shapes elements (name "shape").
+	and returns the parsed value into a pointed-to values.
+*/
+
+#include <string.h>
+#include "cseries.h"
+#include "ShapesParser.h"
+
+
+// Shapes-parser object:
+class XML_ShapesParser: public XML_ElementParser
+{
+	// Which are present?
+	bool CollPresent, SeqPresent;
+	
+	// Values to read
+	word Coll, CLUT, Seq;
+	
+public:
+	shape_descriptor *DescPtr;
+	bool NONE_Is_OK;
+		
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	XML_ShapesParser(): XML_ElementParser("shape"), DescPtr(NULL), NONE_Is_OK(true) {}
+};
+
+bool XML_ShapesParser::Start()
+{
+	CollPresent = SeqPresent = false;
+	CLUT = 0;	// Reasonable default
+	return true;
+}
+
+bool XML_ShapesParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	
+	if (strcmp(Tag,"coll") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hu",Coll,word(0),word(MAXIMUM_COLLECTIONS-1)))
+		{
+			CollPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"clut") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hu",CLUT,word(0),word(MAXIMUM_CLUTS_PER_COLLECTION-1)))
+		{
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"seq") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hu",Seq,word(0),word(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		{
+			SeqPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"frame") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hu",Seq,word(0),word(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		{
+			SeqPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_ShapesParser::AttributesDone()
+{	
+	// Verify and compose the value:
+	assert(DescPtr);
+	if (CollPresent)
+	{
+		if (SeqPresent)
+		{
+			*DescPtr = BUILD_DESCRIPTOR(BUILD_COLLECTION(Coll, CLUT), Seq);
+			return true;
+		}
+		else
+		{
+			AttribsMissing();
+			return false;
+		}
+	}
+	else
+	{
+		if (SeqPresent)
+		{
+			AttribsMissing();
+			return false;
+		}
+		else if (NONE_Is_OK)
+		{
+			*DescPtr = NONE;
+			return true;
+		}
+		else
+		{
+			AttribsMissing();
+			return false;
+		}
+	}
+	return true;
+}
+
+static XML_ShapesParser ShapesParser;
+
+
+// Returns a parser for the shapes;
+// several elements may have shapes, so this ought to be callable several times.
+XML_ElementParser *Shape_GetParser() {return &ShapesParser;}
+
+// This sets the pointer to the shape descriptor to be read into.
+// Its args are that pointer, and whether "NONE" is an acceptable value for it.
+void Shape_SetPointer(shape_descriptor *DescPtr, bool NONE_Is_OK)
+{
+	ShapesParser.DescPtr = DescPtr;
+	ShapesParser.NONE_Is_OK = NONE_Is_OK;
+}
