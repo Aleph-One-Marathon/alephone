@@ -42,6 +42,35 @@ using namespace std;
 #include <vector>
 
 
+// For boned models; calculate vertices from these
+struct Model3D_VertexSource
+{
+	GLfloat Position[3];
+	GLushort Bone0, Bone1;	// Indices of the two bones (NONE is no bone)
+	GLfloat Blend;			// Blend factor: limits are 0 = first bone, 1 = second bone.
+};
+
+
+// Bone definition: neutral position is assumed to be zero rotation.
+// 
+struct Model3D_Bone
+{
+	enum
+	{
+		Pop		= 0x0001,
+		Push	= 0x0002
+	};
+
+	GLfloat Position[3];
+	
+	// Tomb-Raider-like system for traversing a tree with reference to a stack of bones;
+	// "pop" removes a bone from that stack and makes it the current one, while
+	// "push" adds the current bone to that stack.
+	// Popping an empty stack means reaching the assumed root bone.
+	GLushort Flags;
+};
+
+
 struct Model3D
 {
 	// Assumed dimensions:
@@ -55,19 +84,33 @@ struct Model3D
 	GLfloat *PosBase() {return &Positions[0];}
 	
 	// Texture coordinates assumed to be 2-dimensional
-	// Their indices parallel the vertex indices
+	// Parallel to the vertex-position array
 	vector<GLfloat> TxtrCoords;
 	GLfloat *TCBase() {return &TxtrCoords[0];}
 	
 	// Normals assumed to be 3-dimensional
+	// Parallel to the vertex-position array
 	vector<GLfloat> Normals;
 	GLfloat *NormBase() {return &Normals[0];}
 	
 	// Vertex colors (useful for by-hand vertex lighting)
+	// Parallel to the vertex-position array
 	vector<GLfloat> Colors;
 	GLfloat *ColBase() {return &Colors[0];}
 	
-	// List of indices into the aforementioned values;
+	// Vertex-source indices; into vertex-source array:
+	vector<GLushort> VtxSrcIndices;
+	GLushort *VtxSIBase() {return &VtxSrcIndices[0];}
+	
+	// Vertex-source array: useful with boned models
+	vector<Model3D_VertexSource> VtxSources;
+	Model3D_VertexSource *VtxSrcBase() {return &VtxSources[0];}
+	
+	// Bone array:
+	vector<Model3D_Bone> Bones;
+	Model3D_Bone *BoneBase() {return &Bones[0];}
+	
+	// List of indices into the aforementioned vertices;
 	// the list is a list of triangles.
 	vector<GLushort> VertIndices;
 	GLushort *VIBase() {return &VertIndices[0];}

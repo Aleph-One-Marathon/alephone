@@ -49,6 +49,9 @@ void Model3D::Clear()
 	TxtrCoords.clear();
 	Normals.clear();
 	Colors.clear();
+	VtxSrcIndices.clear();
+	VtxSources.clear();
+	Bones.clear();
 	VertIndices.clear();
 	FindBoundingBox();
 }
@@ -257,12 +260,16 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			vector<GLfloat> NewTxtrCoords;
 			vector<GLfloat> NewNormals(3*NewNumVerts);
 			vector<GLfloat> NewColors;
+			vector<GLushort> NewVtxSrcIndices;
 			
 			bool TCPresent = !TxtrCoords.empty();
 			if (TCPresent) NewTxtrCoords.resize(2*NewNumVerts);
 			
 			bool ColPresent = !Colors.empty();
 			if (ColPresent) NewColors.resize(3*NewNumVerts);
+			
+			bool VSPresent = !VtxSrcIndices.empty();
+			if (VSPresent) NewVtxSrcIndices.resize(NewNumVerts);
 			
 			// Use marching pointers to speed up the copy-over
 			GLfloat *OldP = &Positions[0];
@@ -271,6 +278,8 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			GLfloat *NewT = &NewTxtrCoords[0];
 			GLfloat *OldC = &Colors[0];
 			GLfloat *NewC = &NewColors[0];
+			GLushort *OldS = &VtxSrcIndices[0];
+			GLushort *NewS = &NewVtxSrcIndices[0];
 			GLfloat *NewN = &NewNormals[0];
 			for (int k=0; k<NumVerts; k++)
 			{
@@ -302,6 +311,11 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 						*(NewC++) = *(OldCP++);
 					}
 				}
+				if (VSPresent)
+				{
+					for (int c=0; c<NumVertPolys; c++)
+						*(NewS++) = *OldS;
+				}
 				if (PVN.Flag)
 				{
 					GLfloat *VP = PVN.Vec;
@@ -328,6 +342,9 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 					OldT += 2;
 				if (ColPresent)
 					OldC += 3;
+				if (VSPresent)
+					OldS++;
+					
 			}
 			assert(OldP == &Positions[3*NumVerts]);
 			assert(NewP == &NewPositions[3*NewNumVerts]);
@@ -341,6 +358,11 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 				assert(OldC == &Colors[3*NumVerts]);
 				assert(NewC == &NewColors[3*NewNumVerts]);
 			}
+			if (VSPresent)
+			{
+				assert(OldS == &VtxSrcIndices[NumVerts]);
+				assert(NewS == &NewVtxSrcIndices[NewNumVerts]);				
+			}
 			assert(NewN == &NewNormals[3*NewNumVerts]);
 			
 			// Accept the new vectors
@@ -348,6 +370,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			TxtrCoords.swap(NewTxtrCoords);
 			Normals.swap(NewNormals);
 			Colors.swap(NewColors);
+			VtxSrcIndices.swap(NewVtxSrcIndices);
 		}
 		break;
 	}
