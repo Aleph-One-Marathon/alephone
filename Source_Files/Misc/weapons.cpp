@@ -4254,8 +4254,13 @@ inline void TrigDefDataToStream(uint8* &S, trigger_definition& Object)
 
 uint8 *unpack_weapon_definition(uint8 *Stream, int Count)
 {
+	return unpack_weapon_definition(Stream,weapon_definitions,Count);
+}
+
+uint8 *unpack_weapon_definition(uint8 *Stream, weapon_definition *Objects, int Count)
+{
 	uint8* S = Stream;
-	weapon_definition* ObjPtr = weapon_definitions;
+	weapon_definition* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
@@ -4295,10 +4300,16 @@ uint8 *unpack_weapon_definition(uint8 *Stream, int Count)
 	return S;
 }
 
+
 uint8 *pack_weapon_definition(uint8 *Stream, int Count)
 {
+	return pack_weapon_definition(Stream,weapon_definitions,Count);
+}
+
+uint8 *pack_weapon_definition(uint8 *Stream, weapon_definition *Objects, int Count)
+{
 	uint8* S = Stream;
-	weapon_definition* ObjPtr = weapon_definitions;
+	weapon_definition* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{

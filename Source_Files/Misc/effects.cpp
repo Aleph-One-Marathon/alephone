@@ -377,8 +377,13 @@ uint8 *pack_effect_data(uint8 *Stream, effect_data* Objects, int Count)
 
 uint8 *unpack_effect_definition(uint8 *Stream, int Count)
 {
+	return unpack_effect_definition(Stream,effect_definitions,Count);
+}
+
+uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, int Count)
+{
 	uint8* S = Stream;
-	effect_definition* ObjPtr = effect_definitions;
+	effect_definition* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
@@ -396,10 +401,16 @@ uint8 *unpack_effect_definition(uint8 *Stream, int Count)
 	return S;
 }
 
+
 uint8 *pack_effect_definition(uint8 *Stream, int Count)
 {
+	return pack_effect_definition(Stream,effect_definitions,Count);
+}
+
+uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, int Count)
+{
 	uint8* S = Stream;
-	effect_definition* ObjPtr = effect_definitions;
+	effect_definition* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{

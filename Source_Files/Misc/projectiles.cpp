@@ -1220,8 +1220,13 @@ uint8 *pack_projectile_data(uint8 *Stream, projectile_data* Objects, int Count)
 
 uint8 *unpack_projectile_definition(uint8 *Stream, int Count)
 {
+	return unpack_projectile_definition(Stream,projectile_definitions,Count);
+}
+
+uint8 *unpack_projectile_definition(uint8 *Stream, projectile_definition *Objects, int Count)
+{
 	uint8* S = Stream;
-	projectile_definition* ObjPtr = projectile_definitions;
+	projectile_definition* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
@@ -1252,10 +1257,16 @@ uint8 *unpack_projectile_definition(uint8 *Stream, int Count)
 	return S;
 }
 
+
 uint8 *pack_projectile_definition(uint8 *Stream, int Count)
 {
+	return pack_projectile_definition(Stream,projectile_definitions,Count);
+}
+
+uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects, int Count)
+{
 	uint8* S = Stream;
-	projectile_definition* ObjPtr = projectile_definitions;
+	projectile_definition* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{

@@ -3548,8 +3548,13 @@ inline void AttackDefToStream(uint8* &S, attack_definition& Object)
 
 uint8 *unpack_monster_definition(uint8 *Stream, int Count)
 {
+	return unpack_monster_definition(Stream,monster_definitions,Count);
+}
+
+uint8 *unpack_monster_definition(uint8 *Stream, monster_definition* Objects, int Count)
+{
 	uint8* S = Stream;
-	monster_definition* ObjPtr = monster_definitions;
+	monster_definition* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
@@ -3618,10 +3623,16 @@ uint8 *unpack_monster_definition(uint8 *Stream, int Count)
 	return S;
 }
 
+
 uint8 *pack_monster_definition(uint8 *Stream, int Count)
 {
+	return pack_monster_definition(Stream,monster_definitions,Count);
+}
+
+uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, int Count)
+{
 	uint8* S = Stream;
-	monster_definition* ObjPtr = monster_definitions;
+	monster_definition* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{

@@ -180,4 +180,8 @@ struct effect_definition effect_definitions[NUMBER_OF_EFFECT_TYPES]=
 	{BUILD_COLLECTION(_collection_civilian_fusion, 3), 12, _normal_frequency, _end_when_animation_loops, 0, NONE},
 };
 
+// Added for the convenience of the 1-2-3 Converter
+uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, int Count);
+uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, int Count);
+
 #endif

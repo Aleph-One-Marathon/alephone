@@ -967,8 +967,13 @@ static void physics_update(
 
 uint8 *unpack_physics_constants(uint8 *Stream, int Count)
 {
+	return unpack_physics_constants(Stream,physics_models,Count);
+}
+
+uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, int Count)
+{
 	uint8* S = Stream;
-	physics_constants* ObjPtr = physics_models;
+	physics_constants* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
@@ -1009,8 +1014,13 @@ uint8 *unpack_physics_constants(uint8 *Stream, int Count)
 
 uint8 *pack_physics_constants(uint8 *Stream, int Count)
 {
+	return pack_physics_constants(Stream,physics_models,Count);
+}
+
+uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, int Count)
+{
 	uint8* S = Stream;
-	physics_constants* ObjPtr = physics_models;
+	physics_constants* ObjPtr = Objects;
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
