@@ -227,8 +227,11 @@ void initialize_preferences(
 	{
 		short type;
 		
+		char Name[256];
+		memcpy(Name,temporary,256);
+		
 		err= get_game_error(&type);
-		dprintf("Er: %d type: %d", err, type);
+		dprintf("Preferences Init Error: %d type: %d prefs name: %s", err, type, Name);
 		set_game_error(systemError, noErr);
 	}
 	
@@ -287,7 +290,7 @@ void write_preferences(
 		short type;
 		
 		err= get_game_error(&type);
-		dprintf("Er: %d type: %d", err, type);
+		dprintf("Preferences Write Error: %d type: %d", err, type);
 		set_game_error(systemError, noErr);
 	}
 }
