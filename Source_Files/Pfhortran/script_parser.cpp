@@ -200,7 +200,7 @@ void P_HashTable::StandardizeString(const char *String, char *StdString)
 	lowercase_string(StdString);
 }
 
-void P_HashTable::P_HashTable::Reset()
+void P_HashTable::Reset()
 {
 	Table.clear();
 	Strings.clear();
