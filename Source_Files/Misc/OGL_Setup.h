@@ -191,6 +191,11 @@ struct OGL_TextureOptions
 };
 
 
+// Does this for a set of several pixel values or color-table values;
+// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
+void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels);
+
+
 // for managing the image loading and unloading
 void OGL_LoadImages(int Collection);
 void OGL_UnloadImages(int Collection);
