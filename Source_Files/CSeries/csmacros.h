@@ -3,6 +3,8 @@
 	Jul 1, 2000 (Loren Petrich):
 		Added accessor template function
 
+Aug 27, 2000 (Loren Petrich):
+	Added object wrappers for memcpy() and memset(); these copy, set, and clear objects
 */
 #ifndef _CSERIES_MACROS_
 #define _CSERIES_MACROS_
@@ -49,6 +51,33 @@ template<class T> T* GetMemberWithBounds(T* Array, const int Index, const int Nu
 	// The appropriate pointer
 	return (Array + Index);
 }
+
+/*
+	LP addition: convenient type-safe wrappers for memcpy and memset,
+		that get rid of annoying sizeof's. obj_ means a single object
+		and objlist_ means a list of num_objects of them.
+		The _copy set copies "source" to "destination"
+		The _set set sets all the bytes to "value"
+		The _clear set sets all the bytes to zero (a common operation)
+*/
+
+template<class T> void obj_copy(T& destination, T& source)
+	{memcpy(&destination, &source, sizeof(T));}
+
+template<class T> void objlist_copy(T* destination, T* source, int num_objects)
+	{memcpy(destination, source, num_objects*sizeof(T));}
+
+template<class T> void obj_set(T& object, int value)
+	{memset(&object, value, sizeof(T));}
+
+template<class T> void objlist_set(T* object_list, int value, int num_objects)
+	{memset(object_list, value, num_objects*sizeof(T));}
+
+template<class T> void obj_clear(T& object)
+	{obj_set(object, 0);}
+
+template<class T> void objlist_clear(T* object_list, int num_objects)
+	{objlist_set(object_list, 0, num_objects);}
 
 #endif
 
