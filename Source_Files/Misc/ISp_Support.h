@@ -12,6 +12,7 @@ void initialize_ISp(void);
 void ShutDown_ISp(void);
 void Start_ISp(void);
 void Stop_ISp(void);
+bool ISp_IsUsingKeyboard(void);
 long InputSprocketTestElements(void);
 void ConfigureMarathonISpControls(void);
 

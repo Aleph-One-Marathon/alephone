@@ -1058,6 +1058,10 @@ static void main_event_loop(
 			EventRecord event;
 			bool got_event= false;
 			
+			// Set up for ignoring keyboard events while the ISp is reading the keyboard
+			uint16 EventMask = everyEvent;
+			if (ISp_IsUsingKeyboard()) EventMask &= ~(keyDownMask | autoKeyMask); 
+			
 			// Get a local event directly; don't bother to put it into the MacOS event queue
 			if (ComposeOSEventFromLocal(event))
 			{
@@ -1065,11 +1069,11 @@ static void main_event_loop(
 			}
 			else if(use_waitnext)
 			{
-				got_event= WaitNextEvent(everyEvent, &event, 2, (RgnHandle) NULL);
+				got_event= WaitNextEvent(EventMask, &event, 2, (RgnHandle) NULL);
 			}
 			else
 			{
-				got_event= GetOSEvent(everyEvent, &event);
+				got_event= GetOSEvent(EventMask, &event);
 			}
 			
 			if(got_event) process_event(&event);

@@ -359,6 +359,13 @@ void Stop_ISp(void)
 	active = false;
 }
 
+bool ISp_IsUsingKeyboard()
+{
+	if (!canDoISp) return false; // Leave function because Input Sprockets is not available
+	if (!active) return false; // ISp can't be using the keyboard if it is inactive
+	return (input_preferences->input_device==_input_sprocket_only);
+}
+
 long InputSprocketTestElements(void)
 {
 	if(!active) return 0; //Input Sprockets is not active, so return no action flags
