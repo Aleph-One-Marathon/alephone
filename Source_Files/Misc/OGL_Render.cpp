@@ -2071,6 +2071,8 @@ bool OGL_RenderText(short BaseX, short BaseY, char *Text)
 	// Background
 	glColor3f(0,0,0);
 	
+	// Changed to drop shadow only for performance reasons
+	/*
 	glLoadIdentity();
 	glTranslatef(BaseX-1,BaseY-1,Depth);
 	glCallList(TextDisplayList);
@@ -2098,6 +2100,7 @@ bool OGL_RenderText(short BaseX, short BaseY, char *Text)
 	glLoadIdentity();
 	glTranslatef(BaseX,BaseY+1,Depth);
 	glCallList(TextDisplayList);
+	*/
 	
 	glLoadIdentity();
 	glTranslatef(BaseX+1,BaseY+1,Depth);
