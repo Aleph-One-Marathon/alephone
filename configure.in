@@ -75,6 +75,7 @@ fi
 dnl Generate Makefiles.
 AC_OUTPUT([
 Makefile
+AlephOne.spec
 Source_Files/Makefile
 Source_Files/CSeries/Makefile
 Source_Files/Expat/Makefile

@@ -34,9 +34,9 @@ One, which can be downloaded from my Aleph One/SDL page:
 
   http://www.uni-mainz.de/~bauec002/A1Main.html
 
-The archive contains the files "Images", "Map", "Map.resources", "Shapes",
-"Sounds" and "README" and has to be unpacked to the same directory as the
-"AlephOne" application.
+The archive contains the files "Images", "Map", "Shapes", "Sounds" and
+"README" and has to be unpacked to the same directory as the "AlephOne"
+application.
 
 Alternatively, if you have a Marathon 2, Marathon Infinity or Marathon
 Trilogy Box Set CD, you can copy the needed files from the CD. This is a bit
@@ -45,8 +45,9 @@ complicated, however, due to some ideosyncracies of the Mac HFS file system
 fork"). Aleph One/SDL needs these files:
 
  "Images" (resource fork)
- "Map" (data fork)
- "Map.resources" (resource fork of "Map" file)
+ "Map" (combined data and resource fork of "Map" file in AppleSingle or
+    MacBinary II format; or just the data fork, in which case the resource
+    fork must be in a file "Map.resources")
  "Music" (data fork, optional, not included in Demo)
  "Shapes" (data fork)
  "Sounds" (data fork)
