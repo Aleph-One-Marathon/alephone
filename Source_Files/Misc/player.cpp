@@ -103,11 +103,12 @@ Aug 31, 2000 (Loren Petrich):
 // LP addition:
 #include "ChaseCam.h"
 #include "Packing.h"
+#include "ViewControl.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
+#include <limits.h> 
 
 #ifdef env68k
 #pragma segment player
@@ -1114,7 +1115,7 @@ static void update_player_teleport(
 				if(player_index==current_player_index)
 				{
 					start_teleporting_effect(false);
-					play_object_sound(player->object_index, _snd_teleport_in); 
+					play_object_sound(player->object_index, Sound_TeleportIn()); 
 				}
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 				break;
@@ -1172,7 +1173,7 @@ static void update_player_teleport(
 				if(player_index==current_player_index)
 				{
 					start_teleporting_effect(false);
-					play_object_sound(player->object_index, _snd_teleport_in); 
+					play_object_sound(player->object_index, Sound_TeleportIn()); 
 				} 
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 				break;
@@ -1224,7 +1225,7 @@ static void update_player_teleport(
 					{
 						start_teleporting_effect(true);
 					}
-					play_object_sound(player->object_index, _snd_teleport_out);
+					play_object_sound(player->object_index, Sound_TeleportOut());
 				}
 				else /* Level change */
 				{
@@ -1232,7 +1233,7 @@ static void update_player_teleport(
 				
 					/* Everyone plays the teleporting effect out. */
 					start_teleporting_effect(true);
-					play_object_sound(current_player->object_index, _snd_teleport_out);
+					play_object_sound(current_player->object_index, Sound_TeleportOut());
 					
 					/* Every players object plays the sound, and everyones monster responds. */
 					for (other_player_index= 0; other_player_index<dynamic_world->player_count; ++other_player_index)
