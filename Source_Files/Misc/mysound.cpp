@@ -100,6 +100,9 @@ Oct 14, 2000 (Loren Petrich):
 
 Apr 8, 2001 (Loren Petrich):
 	Added support for loading external sounds
+
+Apr 26, 2001 (Loren Petrich):
+	Got that support working
 */
 
 /*

@@ -19,6 +19,9 @@ Jul 1, 2000 (Loren Petrich):
 
 Dec 3, 2000 (Loren Petrich):
 	Added quadrupling of usual buffer size because RAM is now readily available
+
+Apr 26, 2001 (Loren Petrich):
+	Added support for loading external sounds; got that support working
 */
 
 #include <FixMath.h>
