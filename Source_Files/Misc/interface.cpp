@@ -1254,11 +1254,13 @@ static bool begin_game(
 				case _replay:
 					{
 						FileSpecifier ReplayFile;
-
+						show_cursor(); // JTP: Hidden one way or another :p
+						
 						success= find_replay_to_use(cheat, ReplayFile);
 						if(success)
 						{
 							success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
+							hide_cursor();
 						}
 					} 
 					break;
@@ -1449,19 +1451,25 @@ void handle_load_game(
 	bool success= false;
 
 	force_system_colors();
+	show_cursor(); // JTP: Was hidden by force system colors
 	if(choose_saved_game_to_load(FileToLoad))
 	{
 		if(!load_and_start_game(FileToLoad))
 		{
 			/* Reset the system colors, since the screen clut is all black.. */
 			force_system_colors();
+			show_cursor(); // JTP: Was hidden by force system colors
 			display_loading_map_error();
 		} else {
 			success= true;
 		}
 	}
 
-	if(!success) display_main_menu();
+	if(!success)
+	{
+		hide_cursor(); // JTP: Will be shown when fade stops
+		display_main_menu();
+	}
 }
 
 static void finish_game(
@@ -1569,7 +1577,9 @@ static void handle_network_game(
 static void handle_save_film(
 	void)
 {
+	show_cursor(); // JTP: Hidden by force_system_colors
 	force_system_colors();
+	hide_cursor(); // JTP: Will be shown by display_main_menu
 	move_replay();
 	display_main_menu();
 

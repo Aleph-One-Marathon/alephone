@@ -1326,7 +1326,10 @@ static void process_event(
 						ResumeDisplay(event);
 						if (get_game_state()==_game_in_progress)
 						{
+#if !defined(TARGET_API_MAC_CARBON)
+							// Lets the MacOS X GUI manager handle the mouse showing/hiding
 							hide_cursor();
+#endif
 							set_keyboard_controller_status(true);
 						}
 						else

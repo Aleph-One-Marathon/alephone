@@ -760,13 +760,14 @@ static volatile int cursor_showing = -1;
 #endif
 
 // Bytnar: Under Carbon, we can't Hide twice and Show once and expect the cursor to show.
+// JTP: Disable Bytnar for now... csalerts call InitCursor directly
 
 /* ------------ these are all functions that are simple to write for various */
 /* --- machines */
 void hide_cursor(
 	void)
 {
-#if defined(TARGET_API_MAC_CARBON)
+#if 0 && defined(TARGET_API_MAC_CARBON)
 	if (cursor_showing == -1)
 	{
 		InitCursor();
@@ -788,7 +789,7 @@ void hide_cursor(
 void show_cursor(
 	void)
 {
-#if defined(TARGET_API_MAC_CARBON)
+#if 0 && defined(TARGET_API_MAC_CARBON)
 	if (cursor_showing == -1)
 	{
 		InitCursor();
