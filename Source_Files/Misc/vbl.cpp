@@ -886,9 +886,14 @@ static void read_recording_queue_chunks(
 				}
 				else
 				{
-					num_flags = * (short *) (replay.resource_data + replay.film_resource_offset);
+					uint8* S;
+					// num_flags = * (short *) (replay.resource_data + replay.film_resource_offset);
+					S = (uint8 *)(replay.resource_data + replay.film_resource_offset);
+					StreamToValue(S,num_flags);
 					replay.film_resource_offset += sizeof(num_flags);
-					action_flags = *(long *) (replay.resource_data + replay.film_resource_offset);
+					// action_flags = *(long *) (replay.resource_data + replay.film_resource_offset);
+					S = (uint8 *)(replay.resource_data + replay.film_resource_offset);
+					StreamToValue(S,action_flags);
 					replay.film_resource_offset+= sizeof(action_flags);
 				}
 				
@@ -901,11 +906,19 @@ static void read_recording_queue_chunks(
 			else
 			{
 				sizeof_read = sizeof(num_flags);
+				uint8 NumFlagsBuffer[sizeof(num_flags)];
 				bool HitEOF = false;
-				if (vblFSRead(FilmFile, &sizeof_read, &num_flags, HitEOF))
+				// if (vblFSRead(FilmFile, &sizeof_read, &num_flags, HitEOF))
+				if (vblFSRead(FilmFile, &sizeof_read, NumFlagsBuffer, HitEOF))
 				{
+					uint8 *S = NumFlagsBuffer;
+					StreamToValue(S,num_flags);
 					sizeof_read = sizeof(action_flags);
-					bool status = vblFSRead(FilmFile, &sizeof_read, &action_flags, HitEOF);
+					// bool status = vblFSRead(FilmFile, &sizeof_read, &action_flags, HitEOF);
+					uint8 ActionFlagsBuffer[sizeof(action_flags)];
+					bool status = vblFSRead(FilmFile, &sizeof_read, ActionFlagsBuffer, HitEOF);
+					S = ActionFlagsBuffer;
+					StreamToValue(S,action_flags);
 					assert(status || (HitEOF && sizeof_read == sizeof(action_flags)));
 				}
 				
