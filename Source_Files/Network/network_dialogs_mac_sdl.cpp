@@ -1336,9 +1336,9 @@ static void setup_network_list_box(
 		adjusted_frame= *frame;
 		adjusted_frame.right-= SCROLLBAR_WIDTH-1;
 		network_list_box= LNew(&adjusted_frame, &bounds, cell, 0, window, false, false, false, true);
+#endif
 		assert(network_list_box);
 		LSetDrawingMode(true, network_list_box);	
-#endif
 		(*network_list_box)->selFlags= lOnlyOne;
 	}
 	else
@@ -1534,6 +1534,9 @@ static void fake_initialize_stat_data(void)
 		(players+i)->monster_damage_taken.kills = abs(Random()%30);
 		(players+i)->monster_damage_given.damage = abs(Random()%200);
 		(players+i)->monster_damage_given.kills = abs(Random()%30);
+		
+		(players+i)->netgame_parameters[0] = abs(Random()%5000000);
+		(players+i)->netgame_parameters[1] = abs(Random()%6);
 		
 		for (j = 0; j < MAXIMUM_NUMBER_OF_PLAYERS; j++)
 		{
@@ -1749,6 +1752,7 @@ void display_net_game_stats(
 				
 					/* Determine what we need to delete. */
 					GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
+					Rect inval_rect(item_rect);
 					InsetRect(&item_rect, 1, 1); /* Avoid the grey border */
 
 					new_mode= find_graph_mode(dialog, NULL);
@@ -1762,9 +1766,9 @@ void display_net_game_stats(
 					/* Erase! */
 					EraseRect(&item_rect);
 #if TARGET_API_MAC_CARBON
-					InvalWindowRect(GetDialogWindow(dialog), &item_rect);
+					InvalWindowRect(GetDialogWindow(dialog), &inval_rect);
 #else
-					InvalRect(&item_rect);	// Assumed to be the dialog-box window
+					InvalRect(&inval_rect);	// Assumed to be the dialog-box window
 #endif
 
 					current_graph_selection= value;
@@ -1989,10 +1993,22 @@ static pascal Boolean display_net_stats_proc(
 				GetDialogItem(dialog, iGRAPH_POPUP, &item_type, &item_handle, &item_rect);
 				if (in_box && (index+1) != GetControlValue((ControlHandle) item_handle))
 				{
+					struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
+	
+					/* Use a private copy to avoid boning things */
+					objlist_copy(ranks, rankings, dynamic_world->player_count);
+
+					if(find_graph_mode(dialog, NULL) == _total_scores_graph)
+					{
+						/* First qsort the rankings arrray by game_ranking.. */
+						qsort(ranks, dynamic_world->player_count,
+							sizeof(struct net_rank), score_rank_compare);
+					}
+
 					bool last_in_box= false;
 					RGBColor color;
 
-					_get_player_color(rankings[index].color, &color);
+					_get_player_color(ranks[index].color, &color);
 								
 					while (StillDown())
 					{
@@ -2001,12 +2017,12 @@ static pascal Boolean display_net_stats_proc(
 
 						if (last_in_box != in_box)
 						{
-							if(rankings[index].player_index==NONE)
+							if(ranks[index].player_index==NONE)
 							{
 								draw_beveled_text_box(in_box, &box, NAME_BEVEL_SIZE, &color, 
 									"", _center_horizontal|_center_vertical, true);
 							} else {
-								struct player_data *player= get_player_data(rankings[index].player_index);
+								struct player_data *player= get_player_data(ranks[index].player_index);
 							
 								draw_beveled_text_box(in_box, &box, NAME_BEVEL_SIZE, &color, 
 									player->name, _center_horizontal|_center_vertical, true);
@@ -2018,18 +2034,27 @@ static pascal Boolean display_net_stats_proc(
 					/* IF we were still in at the end.. */
 					if (in_box)
 					{
+						// Find the right value for an adjusted sorting
+						int popup_index;
+						for(popup_index= 0; popup_index < dynamic_world->player_count;  popup_index++)
+						{
+							if(ranks[index].player_index == rankings[popup_index].player_index)
+							{
+								break;
+							}
+						}
 						GetDialogItem(dialog, iGRAPH_POPUP, &item_type, &item_handle, &item_rect);
-						SetControlValue((ControlHandle) item_handle, index+1); // 1 based
+						SetControlValue((ControlHandle) item_handle, popup_index+1); // 1 based
 						*item_hit = iGRAPH_POPUP; 
 						handled = true;
 
 						// One last set of drawing... reset the box bevel
-						if(rankings[index].player_index==NONE)
+						if(ranks[index].player_index==NONE)
 						{
 							draw_beveled_text_box(false, &box, NAME_BEVEL_SIZE, &color, 
 								"", _center_horizontal|_center_vertical, true);
 						} else {
-							struct player_data *player= get_player_data(rankings[index].player_index);
+							struct player_data *player= get_player_data(ranks[index].player_index);
 						
 							draw_beveled_text_box(false, &box, NAME_BEVEL_SIZE, &color, 
 								player->name, _center_horizontal|_center_vertical, true);
@@ -2346,7 +2371,7 @@ static void calculate_maximum_bar(
 
 	GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
 	kill_bar_rect->left = item_rect.left + GRAPH_LEFT_INSET + NAME_BOX_WIDTH + GRAPH_BAR_SPACING;
-	kill_bar_rect->right = item_rect.right - GRAPH_RIGHT_INSET - kill_bar_rect->left;
+	kill_bar_rect->right = item_rect.right - GRAPH_RIGHT_INSET;
 	kill_bar_rect->top = item_rect.top + GRAPH_TOP_INSET;
 	kill_bar_rect->bottom = kill_bar_rect->top + NAME_BOX_HEIGHT;
 }
@@ -2358,6 +2383,7 @@ void draw_score_bars(
 {
 	short index, maximum_width;
 	long highest_ranking= LONG_MIN;
+	long lowest_ranking= LONG_MAX;
 	Rect maximum_bar, bar;
 	RGBColor color;
 	short item_type;
@@ -2366,6 +2392,7 @@ void draw_score_bars(
 	for(index= 0; index<bar_count; ++index)
 	{
 		if(ranks[index].game_ranking>highest_ranking) highest_ranking= ranks[index].game_ranking;
+		if(ranks[index].game_ranking<lowest_ranking) lowest_ranking= ranks[index].game_ranking;
 	}
 
 	calculate_maximum_bar(dialog, &maximum_bar);
@@ -2374,6 +2401,14 @@ void draw_score_bars(
 
 	get_net_color(_score_color, &color);
 
+	// Perform adjustments if ranking goes under 0.
+	// It likely means a scoring system like golf or for tag, where the person with
+	// the least score wins.
+	if(lowest_ranking < 0)
+	{
+		highest_ranking = lowest_ranking;
+	}
+	
 	if(highest_ranking)
 	{
 		for(index= 0; index<bar_count; ++index)
@@ -2442,12 +2477,12 @@ static bool will_new_mode_reorder_dialog(
 		case _total_scores_graph:
 			switch(previous_mode)
 			{
-				case _player_graph:
-				case _total_carnage_graph:
 				case _total_scores_graph:
 					may_reorder= false; 
 					break;
 					
+				case _total_carnage_graph:
+				case _player_graph:
 				case _total_team_carnage_graph:
 				case _total_team_scores_graph:
 					may_reorder= true;
