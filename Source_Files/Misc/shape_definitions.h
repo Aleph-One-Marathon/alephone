@@ -1,9 +1,13 @@
 #ifndef __SHAPE_DEFINITIONS_H
 #define __SHAPE_DEFINITIONS_H
-
 /*
 SHAPE_DEFINITIONS.H
 Tuesday, August 29, 1995 9:56:56 AM  (Jason)
+
+Aug 14, 2000 (Loren Petrich):
+	Turned collection and shading-table handles into pointers,
+	because handles are needlessly MacOS-specific,
+	and because these are variable-format objects.
 */
 
 /* ---------- structures */
@@ -16,6 +20,12 @@ struct collection_header /* 32 bytes */
 	long offset, length;
 	long offset16, length16;
 
+	// LP: handles to pointers
+	collection_definition *collection;
+	void *shading_tables;
+	
+	short unused[2];
+/*
 #ifdef mac	
 	struct collection_definition **collection;
 	void **shading_tables;
@@ -26,6 +36,7 @@ struct collection_header /* 32 bytes */
 #ifdef win
 	short unused[6];
 #endif
+*/
 };
 
 /* ---------- byte-swapping data */

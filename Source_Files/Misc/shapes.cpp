@@ -38,6 +38,14 @@ Mar 14, 2000 (Loren Petrich):
 
 Mar 23, 2000 (Loren Petrich):
 	Made infravision tinting more generic and reassignable
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
+	
+Aug 14, 2000 (Loren Petrich):
+	Turned collection and shading-table handles into pointers,
+	because handles are needlessly MacOS-specific,
+	and because these are variable-format objects.
 */
 
 /*
@@ -60,6 +68,7 @@ Mar 23, 2000 (Loren Petrich):
 #include "rle.h"
 #include "collection_definition.h"
 #include "screen.h"
+#include "FileHandler_Mac.h"
 
 #include "map.h"
 
@@ -99,6 +108,9 @@ static pixel16 *global_shading_table16= (pixel16 *) NULL;
 static pixel32 *global_shading_table32= (pixel32 *) NULL;
 
 short number_of_shading_tables, shading_table_fractional_bits, shading_table_size;
+
+// LP addition: opened-shapes-file object
+OpenedFile_Mac ShapesFile;
 
 /* ---------- private prototypes */
 
@@ -398,7 +410,7 @@ void load_collections(
 {
 	struct collection_header *header;
 	short collection_index;
-
+	
 	precalculate_bit_depth_constants();
 	
 	free_and_unlock_memory(); /* do our best to get a big, unfragmented heap */
@@ -1262,6 +1274,16 @@ static void byte_swap_collection(
 	
 	return;
 }
+
+
+// Clone of similar functions for getting default map and physics specs
+void get_default_shapes_spec(FileObject& File)
+{
+	File.SetFileToApp();
+	File.SetName(getcstr(temporary, strFILENAMES, filenameSHAPES8),FileObject::C_Shape);
+	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+}
+
 
 /* ---------- collection accessors */
 
