@@ -102,8 +102,8 @@ enum
 #ifdef mac
 #define AddrBlock IPaddress
 struct IPaddress {
-    uint32	host;
-    uint16	port;
+    uint32 host;
+    uint16 port;
 };
 #endif
 
@@ -117,8 +117,8 @@ struct IPaddress {
 // If not, it's a BUG.  These are used to setup/extract data.)
 struct NetPacketHeader
 {
-	short  tag;
-	long   sequence;
+	int16 tag;
+	int32 sequence;
 	
 	/* data */
 };
@@ -126,21 +126,21 @@ typedef struct NetPacketHeader NetPacketHeader, *NetPacketHeaderPtr;
 
 struct NetPacket
 {
-	byte ring_packet_type;         // typeSYNC_RING_PACKET, etc...
-	byte server_player_index;
-	long server_net_time;
-	short required_action_flags;                         // handed down from on high (the server)
-	short action_flag_count[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];  // how many each player actually has.
+	uint8 ring_packet_type;         // typeSYNC_RING_PACKET, etc...
+	uint8 server_player_index;
+	int32 server_net_time;
+	int16 required_action_flags;                         // handed down from on high (the server)
+	int16 action_flag_count[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];  // how many each player actually has.
 	uint32 action_flags[1];
 };
 typedef struct NetPacket NetPacket, *NetPacketPtr;
 
 struct NetDistributionPacket
 {
-	short distribution_type;  // type of information
-	short first_player_index; // who sent the information
-	short data_size;          // how much they're sending.
-	byte  data[2];            // the chunk Õo shit to send
+	int16 distribution_type;  // type of information
+	int16 first_player_index; // who sent the information
+	int16 data_size;          // how much they're sending.
+	uint8  data[2];            // the chunk Õo shit to send
 };
 typedef struct NetDistributionPacket NetDistributionPacket, *NetDistributionPacketPtr;
 
@@ -149,22 +149,22 @@ struct NetPlayer
 {
 	AddrBlock dspAddress, ddpAddress;
 	
-	short identifier;
+	int16 identifier;
 
 	bool net_dead; // only valid if you are the server.
 
-	byte player_data[MAXIMUM_PLAYER_DATA_SIZE];
+	uint8 player_data[MAXIMUM_PLAYER_DATA_SIZE];
 };
 typedef struct NetPlayer NetPlayer, *NetPlayerPtr;
 
 struct NetTopology
 {
-	short tag;
-	short player_count;
+	int16 tag;
+	int16 player_count;
 	
-	short nextIdentifier;
+	int16 nextIdentifier;
 	
-	byte game_data[MAXIMUM_GAME_DATA_SIZE];
+	uint8 game_data[MAXIMUM_GAME_DATA_SIZE];
 	
 	struct NetPlayer players[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 };
@@ -175,7 +175,7 @@ typedef struct NetTopology NetTopology, *NetTopologyPtr;
 enum { CHAT_MESSAGE_TEXT_BUFFER_SIZE = 250 };
 
 struct NetChatMessage {
-    short   sender_identifier;
+    int16   sender_identifier;
     char    text[CHAT_MESSAGE_TEXT_BUFFER_SIZE];
 };
 #endif
@@ -187,10 +187,10 @@ struct NetStatus
 {
 	/* we receive packets from downring and send them upring */
 	AddrBlock upringAddress, downringAddress;
-	short upringPlayerIndex;
+	int16 upringPlayerIndex;
 	
-	long lastValidRingSequence; /* the sequence number of the last valid ring packet we received */
-	long ringPacketCount; /* the number of ring packets we have received */
+	int32 lastValidRingSequence; /* the sequence number of the last valid ring packet we received */
+	int32 ringPacketCount; /* the number of ring packets we have received */
 	
 	bool receivedAcknowledgement; /* true if we received a valid acknowledgement for the last ring packet we sent */
 	bool canForwardRing; 
@@ -199,20 +199,20 @@ struct NetStatus
 	bool acceptRingPackets; /* true if we want to get ring packets */
 	bool oldSelfSendStatus;
 
-	short retries;
+	int16 retries;
 	
-	short action_flags_per_packet;
-	short last_extra_flags;
-	short update_latency;
+	int16 action_flags_per_packet;
+	int16 last_extra_flags;
+	int16 update_latency;
 	
 	bool iAmTheServer;
 	bool single_player; /* Set true if I dropped everyone else. */
-	short server_player_index;
-	short new_packet_tag; /* Valid _only_ if you are the server, and is only set when you just became the server. */
+	int16 server_player_index;
+	int16 new_packet_tag; /* Valid _only_ if you are the server, and is only set when you just became the server. */
 
-	byte *buffer;
+	uint8 *buffer;
 	
-	long localNetTime;
+	int32 localNetTime;
 };
 typedef struct NetStatus NetStatus, *NetStatusPtr;
 
@@ -220,8 +220,8 @@ typedef struct NetStatus NetStatus, *NetStatusPtr;
 // this note, that's probably right.  :)
 struct NetQueue
 {
-	short read_index, write_index;
-	long buffer[NET_QUEUE_SIZE];
+	int16 read_index, write_index;
+	int32 buffer[NET_QUEUE_SIZE];
 };
 typedef struct NetQueue NetQueue, *NetQueuePtr;
 
@@ -241,7 +241,7 @@ typedef struct NetDistributionInfo NetDistributionInfo, *NetDistributionInfoPtr;
 
 // Information sent via streaming protocol - warning above still applies!
 struct gather_player_data {
-	short new_local_player_identifier;
+	int16 new_local_player_identifier;
 };
 
 struct accept_gather_data {

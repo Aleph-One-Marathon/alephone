@@ -23,7 +23,7 @@
 	16 Jan 2002 (Loren Petrich): Added packing/unpacking functions
  */
 
-#include	"network_data_formats.h"
+#include "network_data_formats.h"
 #include "Packing.h"
 
 #pragma mark game_info
@@ -252,13 +252,13 @@ netcpy(uint32* dest, const uint32* src, size_t length) {
 	
 	uint8 *S = (uint8 *)dest;
 	ListToStream(S,src,num_items);
-	assert(S == dest + length);
+	assert(S == (uint8 *)dest + length);
 	
 #ifdef OBSOLETE
     for(int i = 0; i < num_items; i++) {
         dest[i] = SDL_SwapBE32(src[i]);
-#endif
     }
+#endif
 }
 #endif
 
@@ -552,13 +552,15 @@ netcpy(NetChatMessage_NET* dest, const NetChatMessage* src)
 void
 netcpy(NetChatMessage* dest, const NetChatMessage_NET* src)
 {
-	uint8 *S = src->data;
+	uint8 *S = (uint8 *)src->data;
 	StreamToValue(S,dest->sender_identifier);
 	StreamToBytes(S,dest->text,CHAT_MESSAGE_TEXT_BUFFER_SIZE);
 	assert(S == src->data + SIZEOF_NetChatMessage);
 
+#ifdef OBSOLETE
     dest->sender_identifier	= SDL_SwapBE16(src->sender_identifier);
     strncpy(dest->text,		src->text,				CHAT_MESSAGE_TEXT_BUFFER_SIZE);
+#endif
 }
 
 #endif // NETWORK_CHAT
