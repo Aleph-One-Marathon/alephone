@@ -7,6 +7,9 @@ Matthew Hielscher, 05-28-03
     Also incorporated tiennou's functions
 */
 
+// cseries defines HAVE_LUA on A1/SDL
+#include "cseries.h"
+
 #ifdef HAVE_LUA
 
 extern "C"
@@ -20,7 +23,6 @@ extern "C"
 using namespace std;
 #include <stdlib.h>
 
-#include "cseries.h"
 #include "screen.h"
 #include "tags.h"
 #include "player.h"

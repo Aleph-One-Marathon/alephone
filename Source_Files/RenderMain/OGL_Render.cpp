@@ -752,7 +752,7 @@ void PreloadTextures()
 		for (int i=0; i<polygon->vertex_count; i++)
 		{
 			short side_index= polygon->side_indexes[i];
-			if (side_index = NONE) continue;
+			if (side_index == NONE) continue;
 			side_data *side= get_side_data(side_index);
 			switch (side->type)
 			{
