@@ -42,6 +42,9 @@ Jul 7, 2000 (Loren Petrich): Added Ben Thompson's InputSprocket support
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Aug 25, 2000 (Loren Petrich)
+	Confined searches to the app's directory
 */
 
 #include <string.h>
@@ -189,17 +192,21 @@ static void *get_environment_pref_data(void);
 static void setup_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void hit_environment_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
 static boolean teardown_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
-static void fill_in_popup_with_filetype(DialogPtr dialog, short item, OSType type, unsigned long checksum);
+static void fill_in_popup_with_filetype(DialogPtr dialog, short item, int type, unsigned long checksum);
+// static void fill_in_popup_with_filetype(DialogPtr dialog, short item, OSType type, unsigned long checksum);
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
 static boolean allocate_extensions_memory(void);
 static void free_extensions_memory(void);
 static void build_extensions_list(void);
-static void search_from_directory(FSSpec *file);
+static void search_from_directory(DirectorySpecifier& BaseDir);
+// static void search_from_directory(FSSpec *file);
 static unsigned long find_checksum_and_file_spec_from_dialog(DialogPtr dialog, 
 	short item_hit, OSType type, FSSpec *file);
 static void	rebuild_patchlist(DialogPtr dialog, short item, unsigned long parent_checksum,
 	struct environment_preferences_data *preferences);
-static unsigned long get_file_modification_date(FSSpec *file);
+
+// LP: turned into a file-specifier method
+// static unsigned long get_file_modification_date(FSSpec *file);
 
 // LP: fake portable-files stuff
 #ifdef mac
@@ -215,7 +222,9 @@ void initialize_preferences(
 	OSErr err;
 
 	if(!w_open_preferences_file(getcstr(temporary, strFILENAMES, filenamePREFERENCES),
-		FileSpecifier::C_Prefs))
+		_typecode_preferences))
+	// if(!w_open_preferences_file(getpstr(ptemporary, strFILENAMES, filenamePREFERENCES),
+	// 	PREFERENCES_TYPE))
 	{
 		/* Major memory error.. */
 		alert_user(fatalError, strERRORS, outOfMemory, memory_error());
@@ -1197,12 +1206,15 @@ static boolean teardown_input_dialog(
 // #define MAXIMUM_FIND_FILES (32)
 
 struct file_description {
-	OSType file_type;
+	// OSType file_type;
+	// This is now the _typecode_stuff specified in tags.h (abstract file typing)
+	int file_type;
 	unsigned long checksum;
 	unsigned long parent_checksum;
 };
 
-static FSSpec *accessory_files= NULL;
+static FileSpecifier *accessory_files= NULL;
+// static FSSpec *accessory_files= NULL;
 static struct file_description *file_descriptions= NULL;
 static short accessory_file_count= 0;
 static boolean physics_valid= TRUE;
@@ -1219,7 +1231,7 @@ static void default_environment_preferences(
 	get_default_map_spec(DefaultFile);
 	prefs->map_checksum= read_wad_file_checksum(DefaultFile);
 #ifdef mac
-	memcpy(&prefs->map_file, &DefaultFile.Spec, sizeof(FSSpec));
+	memcpy(&prefs->map_file, &DefaultFile.GetSpec(), sizeof(FSSpec));
 #else
 	DefaultFile.GetName(prefs->map_file);
 #endif
@@ -1227,23 +1239,27 @@ static void default_environment_preferences(
 	get_default_physics_spec(DefaultFile);
 	prefs->physics_checksum= read_wad_file_checksum(DefaultFile);
 #ifdef mac
-	memcpy(&prefs->physics_file, &DefaultFile.Spec, sizeof(FSSpec));
+	memcpy(&prefs->physics_file, &DefaultFile.GetSpec(), sizeof(FSSpec));
 #else
 	DefaultFile.GetName(prefs->physics_file);
 #endif
 	
 	get_default_shapes_spec(DefaultFile);
+	
+	prefs->shapes_mod_date = DefaultFile.GetDate();
+	// prefs->shapes_mod_date= get_file_modification_date(&DefaultFile.Spec);
 #ifdef mac
-	prefs->shapes_mod_date= get_file_modification_date(&DefaultFile.Spec);
-	memcpy(&prefs->shapes_file, &DefaultFile.Spec, sizeof(FSSpec));
+	memcpy(&prefs->shapes_file, &DefaultFile.GetSpec(), sizeof(FSSpec));
 #else
 	DefaultFile.GetName(prefs->shapes_file);
 #endif
 
 	get_default_sounds_spec(DefaultFile);
+	
+	prefs->sounds_mod_date = DefaultFile.GetDate();
+	// prefs->sounds_mod_date= get_file_modification_date(&DefaultFile.Spec);
 #ifdef mac
-	prefs->sounds_mod_date= get_file_modification_date(&DefaultFile.Spec);
-	memcpy(&prefs->sounds_file, &DefaultFile.Spec, sizeof(FSSpec));
+	memcpy(&prefs->sounds_file, &DefaultFile.GetSpec(), sizeof(FSSpec));
 #else
 	DefaultFile.GetName(prefs->sounds_file);
 #endif
@@ -1276,18 +1292,18 @@ static void setup_environment_dialog(
 	if(allocate_extensions_memory())
 	{
 		SetCursor(*GetCursor(watchCursor));
-
+		
 		build_extensions_list();
 
 		/* Fill in the extensions.. */
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iMAP, first_item),
-			SCENARIO_FILE_TYPE, preferences->map_checksum);
+			_typecode_scenario, preferences->map_checksum);
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iPHYSICS, first_item),
-			PHYSICS_FILE_TYPE, preferences->physics_checksum);
+			_typecode_physics, preferences->physics_checksum);
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iSHAPES, first_item),
-			SHAPES_FILE_TYPE, preferences->shapes_mod_date);
+			_typecode_shapes, preferences->shapes_mod_date);
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iSOUNDS, first_item),
-			SOUNDS_FILE_TYPE, preferences->sounds_mod_date);
+			_typecode_sounds, preferences->sounds_mod_date);
 
 		SetCursor(&qd.arrow);
 	} else {
@@ -1314,22 +1330,22 @@ static void hit_environment_item(
 	{
 		case iMAP:
 			preferences->map_checksum= find_checksum_and_file_spec_from_dialog(dialog, item_hit, 
-				SCENARIO_FILE_TYPE,	&preferences->map_file);
+				_typecode_scenario,	&preferences->map_file);
 			break;
 			
 		case iPHYSICS:
 			preferences->physics_checksum= find_checksum_and_file_spec_from_dialog(dialog, item_hit, 
-				PHYSICS_FILE_TYPE,	&preferences->physics_file);
+				_typecode_physics,	&preferences->physics_file);
 			break;
 			
 		case iSHAPES:
 			preferences->shapes_mod_date= find_checksum_and_file_spec_from_dialog(dialog, item_hit,
-				SHAPES_FILE_TYPE, &preferences->shapes_file);
+				_typecode_shapes, &preferences->shapes_file);
 			break;
 
 		case iSOUNDS:
 			preferences->sounds_mod_date= find_checksum_and_file_spec_from_dialog(dialog, item_hit,
-				SOUNDS_FILE_TYPE, &preferences->sounds_file);
+				_typecode_sounds, &preferences->sounds_file);
 			break;
 			
 		case iPATCHES_LIST:
@@ -1367,7 +1383,7 @@ void load_environment_from_preferences(
 		/* Try to find the checksum */
 		// if(find_wad_file_that_has_checksum(&file,
 		if(find_wad_file_that_has_checksum(File,
-			SCENARIO_FILE_TYPE, strPATHS, prefs->map_checksum))
+			_typecode_scenario, strPATHS, prefs->map_checksum))
 		{
 			set_map_file(File);
 			// set_map_file(&file);
@@ -1390,7 +1406,7 @@ void load_environment_from_preferences(
 	} else {
 		// if(find_wad_file_that_has_checksum(&file,
 		if(find_wad_file_that_has_checksum(File,
-			PHYSICS_FILE_TYPE, strPATHS, prefs->physics_checksum))
+			_typecode_physics, strPATHS, prefs->physics_checksum))
 		{
 			set_physics_file(File);
 			// set_physics_file(&file);
@@ -1413,7 +1429,7 @@ void load_environment_from_preferences(
 	} else {
 		// if(find_file_with_modification_date(&file,
 		if(find_file_with_modification_date(File,
-			SHAPES_FILE_TYPE, strPATHS, prefs->shapes_mod_date))
+			_typecode_shapes, strPATHS, prefs->shapes_mod_date))
 		{
 			open_shapes_file(File);
 			// open_shapes_file((FSSpec *) &file);
@@ -1435,7 +1451,7 @@ void load_environment_from_preferences(
 	} else {
 		// if(find_file_with_modification_date(&file,
 		if(find_file_with_modification_date(File,
-			SOUNDS_FILE_TYPE, strPATHS, prefs->sounds_mod_date))
+			_typecode_sounds, strPATHS, prefs->sounds_mod_date))
 		{
 			open_sound_file(File);
 			// open_sound_file((FSSpec *) &file);
@@ -1515,6 +1531,7 @@ static boolean teardown_environment_dialog(
 	return TRUE;
 }
 
+/*
 static unsigned long get_file_modification_date(
 	FSSpec *file)
 {
@@ -1539,6 +1556,7 @@ static unsigned long get_file_modification_date(
 	return 0;
 #endif
 }
+*/
 
 /* ---------------- miscellaneous */
 #ifdef mac
@@ -1582,14 +1600,15 @@ static boolean allocate_extensions_memory(
 	assert(!file_descriptions);
 
 	accessory_file_count= 0;
-	accessory_files= (FSSpec *) malloc(MAXIMUM_FIND_FILES*sizeof(FSSpec));
-	file_descriptions= (struct file_description *) malloc(MAXIMUM_FIND_FILES*sizeof(struct file_description));
+	// A lot prettier than the original mallocs...
+	accessory_files= new FileSpecifier[MAXIMUM_FIND_FILES];
+	file_descriptions= new file_description[MAXIMUM_FIND_FILES];
 	if(file_descriptions && accessory_files)
 	{
 		success= TRUE;
 	} else {
-		if(file_descriptions) free(file_descriptions);
-		if(accessory_files) free(accessory_files);
+		if(file_descriptions) delete []file_descriptions;
+		if(accessory_files) delete []accessory_files;
 		accessory_files= NULL;
 		file_descriptions= NULL;
 		success= FALSE;
@@ -1604,8 +1623,8 @@ static void free_extensions_memory(
 	assert(accessory_files);
 	assert(file_descriptions);
 
-	free(file_descriptions);
-	free(accessory_files);
+	delete []file_descriptions;
+	delete []accessory_files;
 	accessory_files= NULL;
 	file_descriptions= NULL;
 	accessory_file_count= 0;
@@ -1614,7 +1633,8 @@ static void free_extensions_memory(
 }
 
 static Boolean file_is_extension_and_add_callback(
-	FSSpec *file,
+	FileSpecifier& File,
+	// FSSpec *file,
 	void *data)
 {
 	unsigned long checksum;
@@ -1626,43 +1646,45 @@ static Boolean file_is_extension_and_add_callback(
 	if(accessory_file_count<MAXIMUM_FIND_FILES)
 	{
 		// LP change, since the filetypes are no longer constants
-		OSType Filetype = pb->hFileInfo.ioFlFndrInfo.fdType;
-		if (Filetype == SCENARIO_FILE_TYPE || Filetype == PHYSICS_FILE_TYPE)
+		int Filetype = File.GetType();
+		// OSType Filetype = pb->hFileInfo.ioFlFndrInfo.fdType;
+		if (Filetype == _typecode_scenario || Filetype == _typecode_physics)
 		{
-			FileSpecifier File;
-			File.SetSpec(*file);
 			checksum= read_wad_file_checksum(File);
 			// checksum= read_wad_file_checksum((FileDesc *) file);
 			if(checksum != NONE) /* error. */
 			{
-				accessory_files[accessory_file_count]= *file;
-				file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
+				accessory_files[accessory_file_count]= File;
+				// accessory_files[accessory_file_count]= *file;
+				file_descriptions[accessory_file_count].file_type= Filetype;
+				// file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
 				file_descriptions[accessory_file_count++].checksum= checksum;
 			}
 		}
-		else if (Filetype == PATCH_FILE_TYPE)
+		else if (Filetype == _typecode_patch)
 		{
-			FileSpecifier File;
-			File.SetSpec(*file);
 			checksum= read_wad_file_checksum(File);
 			// checksum= read_wad_file_checksum((FileDesc *) file);
 			if(checksum != NONE) /* error. */
 			{
 				unsigned long parent_checksum;
 				
-				File.SetSpec(*file);
 				parent_checksum= read_wad_file_parent_checksum(File);
 				// parent_checksum= read_wad_file_parent_checksum((FileDesc *) file);
-				accessory_files[accessory_file_count]= *file;
-				file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
+				accessory_files[accessory_file_count]= File;
+				// accessory_files[accessory_file_count]= *file;
+				file_descriptions[accessory_file_count].file_type= Filetype;
+				// file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
 				file_descriptions[accessory_file_count++].checksum= checksum;
 				file_descriptions[accessory_file_count++].parent_checksum= parent_checksum;
 			}
 		}
-		else if (Filetype == SHAPES_FILE_TYPE || Filetype == SOUNDS_FILE_TYPE)
+		else if (Filetype == _typecode_shapes || Filetype == _typecode_sounds)
 		{		
-			accessory_files[accessory_file_count]= *file;
-			file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
+			accessory_files[accessory_file_count]= File;
+			// accessory_files[accessory_file_count]= *file;
+			file_descriptions[accessory_file_count].file_type= Filetype;
+			// file_descriptions[accessory_file_count].file_type= pb->hFileInfo.ioFlFndrInfo.fdType;
 			file_descriptions[accessory_file_count++].checksum= pb->hFileInfo.ioFlMdDat;
 		}
 	}
@@ -1673,12 +1695,20 @@ static Boolean file_is_extension_and_add_callback(
 static void build_extensions_list(
 	void)
 {
+	DirectorySpecifier BaseDir;
+	BaseDir.SetToAppParent();
+	search_from_directory(BaseDir);
+	
+	/*
 	FSSpec my_spec;
 	short path_count, ii;
 
 	get_my_fsspec(&my_spec);
 	search_from_directory(&my_spec);
-
+	*/
+	
+	// LP: for now, will only care about looking in the Marathon app's directory
+	#if 0
 	/* Add the paths.. */
 	path_count= countstr(strPATHS);
 	for(ii= 0; ii<path_count; ++ii)
@@ -1702,21 +1732,24 @@ static void build_extensions_list(
 				file.parID= parID;
 				search_from_directory(&file);
 			} else {
-dprintf("Error: %d", err);
+				dprintf("Error: %d", err);
 			}
 		}
 	}
+	#endif
 
 	return;
 }
 
-static void search_from_directory(
-	FSSpec *file)
+static void search_from_directory(DirectorySpecifier& BaseDir)
+//	FSSpec *file)
 {
-	struct find_file_pb pb;
+	FileFinder pb;
+	// struct find_file_pb pb;
 	OSErr error;
-	
-	memset(&pb, 0, sizeof(struct find_file_pb));
+
+	pb.Clear();	
+	// memset(&pb, 0, sizeof(struct find_file_pb));
 	pb.version= 0;
 	// LP change: always recurse
 	pb.flags= _ff_recurse | _ff_callback_with_catinfo;
@@ -1728,27 +1761,31 @@ static void search_from_directory(
 #endif
 #endif
 	pb.search_type= _callback_only;
-	pb.vRefNum= file->vRefNum;
-	pb.directory_id= file->parID;
-	pb.type_to_find= WILDCARD_TYPE;
+	pb.BaseDir = BaseDir;
+	// pb.vRefNum= file->vRefNum;
+	// pb.directory_id= file->parID;
+	pb.Type= WILDCARD_TYPE;
+	// pb.type_to_find= WILDCARD_TYPE;
 	pb.buffer= NULL;
 	pb.max= MAXIMUM_FIND_FILES;
 	pb.callback= file_is_extension_and_add_callback;
 	pb.user_data= NULL;
 	pb.count= 0;
 
-	error= find_files(&pb);
-	vassert(!error, csprintf(temporary, "Err: %d", error));
+	vassert(pb.Find(), csprintf(temporary, "Error: %d", pb.GetError()));
+	// error= find_files(&pb);
+	// vassert(!error, csprintf(temporary, "Error: %d", error));
 
 	return;
 }
 
 /* Note that we are going to assume that things don't change while they are in this */
 /*  dialog- ie no one is copying files to their machine, etc. */
+// Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
 static void fill_in_popup_with_filetype(
 	DialogPtr dialog, 
 	short item,
-	OSType type,
+	int type,
 	unsigned long checksum)
 {
 	MenuHandle menu;
@@ -1769,7 +1806,7 @@ static void fill_in_popup_with_filetype(
 		if(file_descriptions[index].file_type==type)
 		{
 			AppendMenu(menu, "\p ");
-			SetMenuItemText(menu, CountMItems(menu), accessory_files[index].name);
+			SetMenuItemText(menu, CountMItems(menu), accessory_files[index].GetSpec().name);
 
 			if(file_descriptions[index].checksum==checksum)
 			{
@@ -1785,7 +1822,7 @@ static void fill_in_popup_with_filetype(
 	if(count==0)
 	{
 		// LP change, since the filetypes are no longer constants
-		if (type == PHYSICS_FILE_TYPE)
+		if (type == _typecode_physics)
 		{
 			set_to_default_physics_file();
 			AppendMenu(menu, getpstr(ptemporary, strPROMPTS, _default_prompt));
@@ -1831,7 +1868,7 @@ static unsigned long find_checksum_and_file_spec_from_dialog(
 			if(!--value)
 			{
 				/* This is it */
-				*file= accessory_files[index];
+				*file= accessory_files[index].GetSpec();
 				checksum= file_descriptions[index].checksum;
 			}
 		}
