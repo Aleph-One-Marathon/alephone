@@ -30,41 +30,43 @@ TYPE=APP
 #	if two source files with the same name (source.c or source.cpp)
 #	are included from different directories.  Also note that spaces
 #	in folder names do not work well with this makefile.
+CS=Source_Files/CSeries
+EP=Source_Files/Expat
+MI=Source_Files/Misc
+NW=Source_Files/Network
 SRCS=\
-  CSeries/byte_swapping.cpp CSeries/csalerts_sdl.cpp CSeries/cscluts_sdl.cpp \
-  CSeries/csdialogs_sdl.cpp CSeries/csmisc_sdl.cpp CSeries/csstrings_sdl.cpp \
+  $(CS)/byte_swapping.cpp $(CS)/csalerts_sdl.cpp $(CS)/cscluts_sdl.cpp \
+  $(CS)/csdialogs_sdl.cpp $(CS)/csmisc_sdl.cpp $(CS)/csstrings_sdl.cpp \
   \
-  Expat/hashtable.c Expat/xmlparse.c Expat/xmlrole.c Expat/xmltok.c \
+  $(EP)/hashtable.c $(EP)/xmlparse.c $(EP)/xmlrole.c $(EP)/xmltok.c \
   \
-  Misc/AnimatedTextures.cpp Misc/ChaseCam.cpp Misc/ColorParser.cpp \
-  Misc/Crosshairs_SDL.cpp Misc/DamageParser.cpp Misc/FileHandler_SDL.cpp \
-  Misc/OGL_Setup.cpp Misc/OverheadMap_SDL.cpp Misc/OverheadMapRenderer.cpp \
-  Misc/PlayerName.cpp Misc/RenderPlaceObjs.cpp Misc/RenderRasterize.cpp \
-  Misc/RenderSortPoly.cpp Misc/RenderVisTree.cpp Misc/ShapesParser.cpp \
-  Misc/TextStrings.cpp Misc/ViewControl.cpp Misc/XML_Configure.cpp \
-  Misc/XML_ElementParser.cpp Misc/XML_MakeRoot.cpp Misc/XML_Resources_SDL.cpp \
-  Misc/computer_interface.cpp Misc/crc.cpp Misc/devices.cpp \
-  Misc/dynamic_limits.cpp Misc/effects.cpp Misc/fades.cpp \
-  Misc/filetypes_sdl.cpp Misc/flood_map.cpp Misc/game_errors.cpp \
-  Misc/game_wad.cpp Misc/game_window.cpp Misc/game_window_sdl.cpp \
-  Misc/images.cpp Misc/import_definitions.cpp Misc/interface.cpp \
-  Misc/interface_sdl.cpp Misc/items.cpp Misc/lightsource.cpp Misc/map.cpp \
-  Misc/map_constructors.cpp Misc/marathon2.cpp Misc/media.cpp Misc/monsters.cpp \
-  Misc/motion_sensor.cpp Misc/music_sdl.cpp Misc/mysound.cpp \
-  Misc/overhead_map.cpp Misc/pathfinding.cpp Misc/physics.cpp \
-  Misc/placement.cpp Misc/platforms.cpp Misc/player.cpp Misc/preferences.cpp \
-  Misc/preprocess_map_sdl.cpp Misc/projectiles.cpp Misc/render.cpp \
-  Misc/resource_manager.cpp Misc/scenery.cpp Misc/scottish_textures.cpp \
-  Misc/screen_drawing_sdl.cpp Misc/screen_sdl.cpp Misc/shapes.cpp \
-  Misc/shell_sdl.cpp Misc/shell_beos.cpp Misc/textures.cpp Misc/vbl.cpp \
-  Misc/vbl_sdl.cpp Misc/wad.cpp Misc/wad_sdl.cpp Misc/wad_prefs.cpp \
-  Misc/wad_prefs_sdl.cpp Misc/weapons.cpp Misc/world.cpp \
+  $(MI)/AnimatedTextures.cpp $(MI)/ChaseCam.cpp $(MI)/ColorParser.cpp \
+  $(MI)/Crosshairs_SDL.cpp $(MI)/DamageParser.cpp $(MI)/FileHandler_SDL.cpp \
+  $(MI)/OGL_Setup.cpp $(MI)/OverheadMap_SDL.cpp $(MI)/OverheadMapRenderer.cpp \
+  $(MI)/PlayerName.cpp $(MI)/RenderPlaceObjs.cpp $(MI)/RenderRasterize.cpp \
+  $(MI)/RenderSortPoly.cpp $(MI)/RenderVisTree.cpp $(MI)/ShapesParser.cpp \
+  $(MI)/TextStrings.cpp $(MI)/ViewControl.cpp $(MI)/XML_Configure.cpp \
+  $(MI)/XML_ElementParser.cpp $(MI)/XML_MakeRoot.cpp $(MI)/XML_Resources_SDL.cpp \
+  $(MI)/computer_interface.cpp $(MI)/crc.cpp $(MI)/devices.cpp \
+  $(MI)/dynamic_limits.cpp $(MI)/effects.cpp $(MI)/fades.cpp \
+  $(MI)/filetypes_sdl.cpp $(MI)/flood_map.cpp $(MI)/game_errors.cpp \
+  $(MI)/game_wad.cpp $(MI)/game_window.cpp $(MI)/game_window_sdl.cpp \
+  $(MI)/images.cpp $(MI)/import_definitions.cpp $(MI)/interface.cpp \
+  $(MI)/interface_sdl.cpp $(MI)/items.cpp $(MI)/lightsource.cpp $(MI)/map.cpp \
+  $(MI)/map_constructors.cpp $(MI)/marathon2.cpp $(MI)/media.cpp $(MI)/monsters.cpp \
+  $(MI)/motion_sensor.cpp $(MI)/music_sdl.cpp $(MI)/mysound.cpp \
+  $(MI)/overhead_map.cpp $(MI)/pathfinding.cpp $(MI)/physics.cpp \
+  $(MI)/placement.cpp $(MI)/platforms.cpp $(MI)/player.cpp $(MI)/preferences.cpp \
+  $(MI)/preprocess_map_sdl.cpp $(MI)/projectiles.cpp $(MI)/render.cpp \
+  $(MI)/resource_manager.cpp $(MI)/scenery.cpp $(MI)/scottish_textures.cpp \
+  $(MI)/screen_drawing_sdl.cpp $(MI)/screen_sdl.cpp $(MI)/shapes.cpp \
+  $(MI)/shell_sdl.cpp $(MI)/shell_beos.cpp $(MI)/textures.cpp $(MI)/vbl.cpp \
+  $(MI)/vbl_sdl.cpp $(MI)/wad.cpp $(MI)/wad_sdl.cpp $(MI)/wad_prefs.cpp \
+  $(MI)/wad_prefs_sdl.cpp $(MI)/weapons.cpp $(MI)/world.cpp \
   \
-  Network/network_dummy.cpp Network/network_games.cpp \
+  $(NW)/network_dummy.cpp $(NW)/network_games.cpp \
   \
-  Pfhortran/script_instructions.cpp Pfhortran/script_parser.cpp \
-  Pfhortran/scripting.cpp
-
+  $(PF)/script_instructions.cpp $(PF)/script_parser.cpp $(PF)/scripting.cpp
 
 #	specify the resource files to use
 #	full path or a relative path to the resource file can be used.
