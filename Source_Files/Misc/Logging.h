@@ -18,9 +18,13 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-
+ 
  Jan. 16, 2003 (Woody Zenfell): Created.
 
+ July 13, 2003 (Woody Zenfell):
+	Split out the repetitive bits to Logging_gruntwork.h; now generating that with a script
+	Now offering logWarningNMT3() and co. for use in non-main threads, for added safety
+	New Logging level 'summary'
 */
 
 #ifndef LOGGING_H
@@ -34,6 +38,7 @@ enum {
 	logWarningLevel	= 20,	// can continue but results could be really screwy
 	logAnomalyLevel	= 30,	// can continue, results could be off a little, but no big deal
 	logNoteLevel	= 40,	// something worth mentioning
+	logSummaryLevel	= 45,	// occasional dumps of aggregate statistics
 	logTraceLevel	= 50,	// details of actions and logic
 	logDumpLevel	= 60	// values of data etc.
 };
@@ -43,11 +48,12 @@ class Logger {
 public:
 	virtual void pushLogContext(const char* inFile, int inLine, const char* inContext, ...);
 	virtual void logMessage(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, ...);
+	virtual void logMessageNMT(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, ...);
 
 	virtual void pushLogContextV(const char* inFile, int inLine, const char* inContext, va_list inArgList) = 0;
 	virtual void popLogContext() = 0;
 	virtual void logMessageV(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, va_list inArgList) = 0;
-    
+
 	virtual ~Logger();
 };
 
@@ -69,57 +75,27 @@ extern const char* logDomain;
 
 
 
+// (COMMENTS FOR logError() FAMILY)
 // Ease-of-use macros wrap around logMessage.
-// Hmm, it seems (as I later learn) some preprocessors support variadic macros (i.e. macros with varying numbers of parameters)
-// If somebody knows more about this issue, feel free to put it in instead of these fixed-number-of-args macros.  (GNU cpp docs
-// did not indicate that any variadic forms were available.)
-#define logFatal(message) (GetCurrentLogger()->logMessage(logDomain, logFatalLevel, __FILE__, __LINE__, (message)))
-#define logError(message) (GetCurrentLogger()->logMessage(logDomain, logErrorLevel, __FILE__, __LINE__, (message)))
-#define logWarning(message) (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, (message)))
-#define logAnomaly(message) (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, (message)))
-#define logNote(message) (GetCurrentLogger()->logMessage(logDomain, logNoteLevel, __FILE__, __LINE__, (message)))
-#define logTrace(message) (GetCurrentLogger()->logMessage(logDomain, logTraceLevel, __FILE__, __LINE__, (message)))
-#define logDump(message) (GetCurrentLogger()->logMessage(logDomain, logDumpLevel, __FILE__, __LINE__, (message)))
+// Some preprocessors (including any adhering to C99) support variadic macros (macros with varying numbers
+// of parameters) but I'm willing to bet things like MSVC++6.0, MPW, etc. don't, and I think we still want
+// to be compatible with them.
+// NB! use logError() and co. only in the main thread.  Elsewhere, use logErrorNMT() and co.
+// (the NMT versions may have more complex - or missing - implementations to make them safer)
 
-#define logFatal1(message, arg1) (GetCurrentLogger()->logMessage(logDomain, logFatalLevel, __FILE__, __LINE__, (message), (arg1)))
-#define logError1(message, arg1) (GetCurrentLogger()->logMessage(logDomain, logErrorLevel, __FILE__, __LINE__, (message), (arg1)))
-#define logWarning1(message, arg1) (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, (message), (arg1)))
-#define logAnomaly1(message, arg1) (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, (message), (arg1)))
-#define logNote1(message, arg1) (GetCurrentLogger()->logMessage(logDomain, logNoteLevel, __FILE__, __LINE__, (message), (arg1)))
-#define logTrace1(message, arg1) (GetCurrentLogger()->logMessage(logDomain, logTraceLevel, __FILE__, __LINE__, (message), (arg1)))
-#define logDump1(message, arg1) (GetCurrentLogger()->logMessage(logDomain, logDumpLevel, __FILE__, __LINE__, (message), (arg1)))
+// (COMMENTS FOR logContext() FAMILY)
+// Enter a (runtime) logging subcontext; expires at end of block.  Use only within functions!!
+// Use only as a statement, e.g. logContext("foo");, never in an expression.  Useless in code like
+// if(a) logContext("a is true"); else logContext("b is true");.  For that sort of thing, use
+// the class directly - declare an instance of it earlier and call enterContext() in your if().
+// Contexts should be phrased like "starting a new game".
+// We need to use makeUniqueIdentifier so that __LINE__ gets expanded before concatenation.
+#define makeUniqueIdentifier(a, b) a ## b
 
-#define logFatal2(message, arg1, arg2) (GetCurrentLogger()->logMessage(logDomain, logFatalLevel, __FILE__, __LINE__, (message), (arg1), (arg2)))
-#define logError2(message, arg1, arg2) (GetCurrentLogger()->logMessage(logDomain, logErrorLevel, __FILE__, __LINE__, (message), (arg1), (arg2)))
-#define logWarning2(message, arg1, arg2) (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, (message), (arg1), (arg2)))
-#define logAnomaly2(message, arg1, arg2) (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, (message), (arg1), (arg2)))
-#define logNote2(message, arg1, arg2) (GetCurrentLogger()->logMessage(logDomain, logNoteLevel, __FILE__, __LINE__, (message), (arg1), (arg2)))
-#define logTrace2(message, arg1, arg2) (GetCurrentLogger()->logMessage(logDomain, logTraceLevel, __FILE__, __LINE__, (message), (arg1), (arg2)))
-#define logDump2(message, arg1, arg2) (GetCurrentLogger()->logMessage(logDomain, logDumpLevel, __FILE__, __LINE__, (message), (arg1), (arg2)))
 
-#define logFatal3(message, arg1, arg2, arg3) (GetCurrentLogger()->logMessage(logDomain, logFatalLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3)))
-#define logError3(message, arg1, arg2, arg3) (GetCurrentLogger()->logMessage(logDomain, logErrorLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3)))
-#define logWarning3(message, arg1, arg2, arg3) (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3)))
-#define logAnomaly3(message, arg1, arg2, arg3) (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3)))
-#define logNote3(message, arg1, arg2, arg3) (GetCurrentLogger()->logMessage(logDomain, logNoteLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3)))
-#define logTrace3(message, arg1, arg2, arg3) (GetCurrentLogger()->logMessage(logDomain, logTraceLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3)))
-#define logDump3(message, arg1, arg2, arg3) (GetCurrentLogger()->logMessage(logDomain, logDumpLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3)))
-
-#define logFatal4(message, arg1, arg2, arg3, arg4) (GetCurrentLogger()->logMessage(logDomain, logFatalLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4)))
-#define logError4(message, arg1, arg2, arg3, arg4) (GetCurrentLogger()->logMessage(logDomain, logErrorLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4)))
-#define logWarning4(message, arg1, arg2, arg3, arg4) (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4)))
-#define logAnomaly4(message, arg1, arg2, arg3, arg4) (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4)))
-#define logNote4(message, arg1, arg2, arg3, arg4) (GetCurrentLogger()->logMessage(logDomain, logNoteLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4)))
-#define logTrace4(message, arg1, arg2, arg3, arg4) (GetCurrentLogger()->logMessage(logDomain, logTraceLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4)))
-#define logDump4(message, arg1, arg2, arg3, arg4) (GetCurrentLogger()->logMessage(logDomain, logDumpLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4)))
-
-#define logFatal5(message, arg1, arg2, arg3, arg4, arg5) (GetCurrentLogger()->logMessage(logDomain, logFatalLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4), (arg5)))
-#define logError5(message, arg1, arg2, arg3, arg4, arg5) (GetCurrentLogger()->logMessage(logDomain, logErrorLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4), (arg5)))
-#define logWarning5(message, arg1, arg2, arg3, arg4, arg5) (GetCurrentLogger()->logMessage(logDomain, logWarningLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4), (arg5)))
-#define logAnomaly5(message, arg1, arg2, arg3, arg4, arg5) (GetCurrentLogger()->logMessage(logDomain, logAnomalyLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4), (arg5)))
-#define logNote5(message, arg1, arg2, arg3, arg4, arg5) (GetCurrentLogger()->logMessage(logDomain, logNoteLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4), (arg5)))
-#define logTrace5(message, arg1, arg2, arg3, arg4, arg5) (GetCurrentLogger()->logMessage(logDomain, logTraceLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4), (arg5)))
-#define logDump5(message, arg1, arg2, arg3, arg4, arg5) (GetCurrentLogger()->logMessage(logDomain, logDumpLevel, __FILE__, __LINE__, (message), (arg1), (arg2), (arg3), (arg4), (arg5)))
+// logError, logContext, etc. are found in here now.  Users are STRONGLY encouraged to read
+// Logging_gruntwork.h as most of the Logging facilities they will actually use directly are defined there.
+#include "Logging_gruntwork.h"
 
 
 
@@ -138,28 +114,19 @@ extern const char* logDomain;
 */
 
 
-// Enter a (runtime) logging subcontext; expires at end of block.  Use only within functions!!
-// Use only as a statement, e.g. logContext("foo");, never in an expression.  Useless in code like
-// if(a) logContext("a is true"); else logContext("b is true");.  For that sort of thing, use
-// the class directly - declare an instance of it earlier and call enterContext() in your if().
-// Contexts should be phrased like "starting a new game".
-// We need to use makeUniqueIdentifier so that __LINE__ gets expanded before concatenation.
-#define makeUniqueIdentifier(a, b) a ## b
-#define logContext(context) LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(__FILE__, __LINE__, (context))
-#define logContext1(context, arg1) LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(__FILE__, __LINE__, (context), (arg1))
-#define logContext2(context, arg1, arg2) LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(__FILE__, __LINE__, (context), (arg1), (arg2))
-#define logContext3(context, arg1, arg2, arg3) LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(__FILE__, __LINE__, (context), (arg1), (arg2), (arg3))
-#define logContext4(context, arg1, arg2, arg3, arg4) LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(__FILE__, __LINE__, (context), (arg1), (arg2), (arg3), (arg4))
-#define logContext5(context, arg1, arg2, arg3, arg4, arg5) LogContext makeUniqueIdentifier(_theLogContext,__LINE__)(__FILE__, __LINE__, (context), (arg1), (arg2), (arg3), (arg4), (arg5))
-
-
-
 // Class intended for stack-based use for entering/leaving a logging subcontext
 class LogContext {
 public:
-	LogContext() : contextSet(false) {}
-    
-	LogContext(const char* inFile, int inLine, const char* inContext, ...) : contextSet(false) {
+	LogContext(bool inNonMainThread) : contextSet(false), nonMainThread(inNonMainThread) {}
+
+	LogContext(const char* inFile, int inLine, const char* inContext, ...) : contextSet(false), nonMainThread(false) {
+		va_list theVarArgs;
+		va_start(theVarArgs, inContext);
+		enterContextV(inFile, inLine, inContext, theVarArgs);
+		va_end(theVarArgs);
+	}
+
+	LogContext(bool inNonMainThread, const char* inFile, int inLine, const char* inContext, ...) : contextSet(false), nonMainThread(inNonMainThread) {
 		va_list theVarArgs;
 		va_start(theVarArgs, inContext);
 		enterContextV(inFile, inLine, inContext, theVarArgs);
@@ -176,15 +143,21 @@ public:
 	void enterContextV(const char* inFile, int inLine, const char* inContext, va_list inArgs) {
 		if(contextSet)
 			leaveContext();
-
-		GetCurrentLogger()->pushLogContextV(inFile, inLine, inContext, inArgs);
+		
+#if defined(mac) && !defined(__MACH__)
+		if(!nonMainThread)
+#endif
+			GetCurrentLogger()->pushLogContextV(inFile, inLine, inContext, inArgs);
 
 		contextSet = true;
 	}
 
 	void leaveContext() {
-		if(contextSet)
-			GetCurrentLogger()->popLogContext();
+#if defined(mac) && !defined(__MACH__)
+		if(!nonMainThread)
+#endif
+			if(contextSet)
+				GetCurrentLogger()->popLogContext();
 
 		contextSet = false;
 	}
@@ -195,7 +168,9 @@ public:
 	
 protected:
 	bool contextSet;
+	bool nonMainThread;
 };
+
 
 
 // Not yet complete - idea is let some set of logging operations be "held",
