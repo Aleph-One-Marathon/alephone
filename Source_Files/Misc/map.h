@@ -1176,7 +1176,7 @@ inline short *get_map_indexes(
 	assert(map_indexes);
 	short *map_index = GetMemberWithBounds(map_indexes,index,dynamic_world->map_index_count-count+1);
 	
-	vassert(map_index, csprintf(temporary, "map_indexes(#%d,#%d) are out of range", index, count));
+	// vassert(map_index, csprintf(temporary, "map_indexes(#%d,#%d) are out of range", index, count));
 	
 	return map_index;
 }
@@ -1192,28 +1192,6 @@ inline struct random_sound_image_data *get_random_sound_image_data(
 {
 	return GetMemberWithBounds(random_sound_images,random_sound_image_index,dynamic_world->random_sound_image_count);
 }
-
-/*
-#ifdef DEBUG
-struct object_data *get_object_data(short object_index);
-struct polygon_data *get_polygon_data(short polygon_index);
-struct line_data *get_line_data(short line_index);
-struct side_data *get_side_data(short side_index);
-struct endpoint_data *get_endpoint_data(short endpoint_index);
-struct ambient_sound_image_data *get_ambient_sound_image_data(short ambient_sound_image_index);
-struct random_sound_image_data *get_random_sound_image_data(short random_sound_image_index);
-short *get_map_indexes(short index, short count);
-#else
-#define get_object_data(i) (objects+(i))
-#define get_polygon_data(i) (map_polygons+(i))
-#define get_line_data(i) (map_lines+(i))
-#define get_side_data(i) (map_sides+(i))
-#define get_endpoint_data(i) (map_endpoints+(i))
-#define get_map_indexes(i, c) (map_indexes+(i))
-#define get_ambient_sound_image_data(i) (ambient_sound_images+(i))
-#define get_random_sound_image_data(i) (random_sound_images+(i))
-#endif
-*/
 
 /* ---------- prototypes/MAP_CONSTRUCTORS.C */
 
