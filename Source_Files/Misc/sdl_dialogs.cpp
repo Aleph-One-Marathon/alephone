@@ -75,6 +75,7 @@ static struct dialog_image_spec_type {
 static SDL_Surface *dialog_image[NUM_DIALOG_IMAGES];
 
 // Prototypes
+static void shutdown_dialogs(void);
 static void unload_theme(void);
 static void set_theme_defaults(void);
 
@@ -102,6 +103,18 @@ void initialize_dialogs(FileSpecifier &theme)
 
 	// Load theme from preferences
 	load_theme(theme);
+
+	atexit(shutdown_dialogs);
+}
+
+
+/*
+ *  Shutdown dialog manager
+ */
+
+static void shutdown_dialogs(void)
+{
+	unload_theme();
 }
 
 

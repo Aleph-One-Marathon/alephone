@@ -323,15 +323,16 @@ void close_res_file(SDL_RWops *file)
 
 	// Find file in list
 	list<res_file_t *>::iterator i = find_res_file_t(file);
-	assert(i != res_file_list.end());
+	if (i != res_file_list.end()) {
 
-	// Remove it from the list, close the file and delete the res_file_t
-	res_file_t *r = *i;
-	SDL_RWclose(r->f);
-	res_file_list.erase(i);
-	delete r;
+		// Remove it from the list, close the file and delete the res_file_t
+		res_file_t *r = *i;
+		SDL_RWclose(r->f);
+		res_file_list.erase(i);
+		delete r;
 
-	cur_res_file_t = --res_file_list.end();
+		cur_res_file_t = --res_file_list.end();
+	}
 }
 
 
