@@ -32,6 +32,9 @@
  *  July 3, 2003 (Woody Zenfell):
  *	Lossy distribution should be more robust now (using a queue rather than holding a single element).
  *	Should help netmic all-around, but especially (I hope) on Windows.
+ *
+ *  July 9, 2003 (Woody Zenfell):
+ *	Preliminary support for standalone hub (define A1_NETWORK_STANDALONE_HUB).
  */
 
 #include "network_star.h"

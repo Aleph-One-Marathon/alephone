@@ -21,6 +21,10 @@
  *  A circular queue of bytes, with support for mass enqueueing from/peeking to caller's buffer
  *  
  *  Created by Woody Zenfell, III on Sun Jun 29 2003.
+
+ July 19, 2003 (Woody Zenfell):
+	Additional "NoCopy" interface may let clients avoid a copy, though it's not as safe.
+
  */
 
 #include "cseries.h" // assert()
