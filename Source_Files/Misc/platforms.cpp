@@ -1325,7 +1325,7 @@ bool XML_PlatformParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"start_extend") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.starting_extension,short(NONE),short(NUMBER_OF_SOUND_DEFINITIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Data.starting_extension,short(NONE),short(SHORT_MAX)))
 		{
 			IsPresent[0] = true;
 			return true;
@@ -1334,7 +1334,7 @@ bool XML_PlatformParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"start_contract") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.starting_contraction,short(NONE),short(NUMBER_OF_SOUND_DEFINITIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Data.starting_contraction,short(NONE),short(SHORT_MAX)))
 		{
 			IsPresent[1] = true;
 			return true;
@@ -1343,7 +1343,7 @@ bool XML_PlatformParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"stop_extend") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.stopping_extension,short(NONE),short(NUMBER_OF_SOUND_DEFINITIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Data.stopping_extension,short(NONE),short(SHORT_MAX)))
 		{
 			IsPresent[2] = true;
 			return true;
@@ -1352,7 +1352,7 @@ bool XML_PlatformParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"stop_contract") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.stopping_contraction,short(NONE),short(NUMBER_OF_SOUND_DEFINITIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Data.stopping_contraction,short(NONE),short(SHORT_MAX)))
 		{
 			IsPresent[3] = true;
 			return true;
@@ -1361,7 +1361,7 @@ bool XML_PlatformParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"obstructed") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.obstructed_sound,short(NONE),short(NUMBER_OF_SOUND_DEFINITIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Data.obstructed_sound,short(NONE),short(SHORT_MAX)))
 		{
 			IsPresent[4] = true;
 			return true;
@@ -1370,7 +1370,7 @@ bool XML_PlatformParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"uncontrollable") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.uncontrollable_sound,short(NONE),short(NUMBER_OF_SOUND_DEFINITIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Data.uncontrollable_sound,short(NONE),short(SHORT_MAX)))
 		{
 			IsPresent[5] = true;
 			return true;
@@ -1379,7 +1379,7 @@ bool XML_PlatformParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"moving") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.moving_sound,short(NONE),short(NUMBER_OF_SOUND_DEFINITIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Data.moving_sound,short(NONE),short(SHORT_MAX)))
 		{
 			IsPresent[6] = true;
 			return true;
