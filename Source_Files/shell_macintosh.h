@@ -905,68 +905,80 @@ static pascal OSErr handle_open_document(
 		err= required_appleevent_check(event);
 		if(!err)
 		{
-			long itemsInList;
-		
-			err= AECountItems(&docList, &itemsInList);
-
-			if(!err)
+			short game_state= get_game_state();
+			if(
+				game_state == _display_main_menu ||
+				game_state == _display_intro_screens
+			)
 			{
-				bool done= false;
-				long index;
-				FSSpec myFSS;
-				Size actualSize;
-
-				for(index= 1; !done && index<= itemsInList; index++) 
+				long itemsInList;
+			
+				err= AECountItems(&docList, &itemsInList);
+	
+				if(!err)
 				{
-					DescType typeCode;
-					AEKeyword theKeyword;
-
-					err=AEGetNthPtr(&docList, index, typeFSS, &theKeyword, &typeCode, 
-						&myFSS, sizeof(FSSpec), &actualSize);
-					if(!err)
+					bool done= false;
+					long index;
+					FSSpec myFSS;
+					Size actualSize;
+	
+					for(index= 1; !done && index<= itemsInList; index++) 
 					{
-						// FInfo theFInfo;
-
-						// FSpGetFInfo(&myFSS, &theFInfo);
-						// Create a file object to use instead
-						FileSpecifier InputFile;
-						InputFile.SetSpec(myFSS);
-						
-						// LP change, since the filetypes are no longer constants
-						// OSType Typecode = theFInfo.fdType;
-						int Typecode = InputFile.GetType();
-						if (Typecode == _typecode_scenario)
+						DescType typeCode;
+						AEKeyword theKeyword;
+	
+						err=AEGetNthPtr(&docList, index, typeFSS, &theKeyword, &typeCode, 
+							&myFSS, sizeof(FSSpec), &actualSize);
+						if(!err)
 						{
-							set_map_file(InputFile);
-						}
-						else if (Typecode == _typecode_savegame)
-						{
-							if(load_and_start_game(InputFile))
+							// FInfo theFInfo;
+	
+							// FSpGetFInfo(&myFSS, &theFInfo);
+							// Create a file object to use instead
+							FileSpecifier InputFile;
+							InputFile.SetSpec(myFSS);
+							
+							// LP change, since the filetypes are no longer constants
+							// OSType Typecode = theFInfo.fdType;
+							int Typecode = InputFile.GetType();
+							if (Typecode == _typecode_scenario)
 							{
-								done= true;
+								set_map_file(InputFile);
 							}
-						}
-						else if (Typecode == _typecode_film)
-						{
-							if(handle_open_replay(InputFile))
+							else if (Typecode == _typecode_savegame)
 							{
-								done= true;
+								if(load_and_start_game(InputFile))
+								{
+									done= true;
+								}
 							}
-						}
-						else if (Typecode == _typecode_physics)
-						{
-							set_physics_file(InputFile);
-						}
-						else if (Typecode == _typecode_shapes)
-						{
-							open_shapes_file(InputFile);
-						}
-						else if (Typecode == _typecode_sounds)
-						{
-					 		open_sound_file(InputFile);
+							else if (Typecode == _typecode_film)
+							{
+								if(handle_open_replay(InputFile))
+								{
+									done= true;
+								}
+							}
+							else if (Typecode == _typecode_physics)
+							{
+								set_physics_file(InputFile);
+							}
+							else if (Typecode == _typecode_shapes)
+							{
+								open_shapes_file(InputFile);
+							}
+							else if (Typecode == _typecode_sounds)
+							{
+								open_sound_file(InputFile);
+							}
 						}
 					}
 				}
+			}
+			else
+			{
+//				vassert(false, "Attempting to open a file during a game state that doesn't allow it!");
+				err= errAEEventNotHandled;
 			}
 		}
 	}
