@@ -2287,6 +2287,7 @@
 				F53673F102014B3F01A80001,
 				F53673F202014B3F01A80001,
 				F53673F302014B3F01A80001,
+				F5B9EAC30246595D01A80001,
 			);
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
@@ -4234,6 +4235,19 @@
 			isa = PBXBuildFile;
 			settings = {
 			};
+		};
+		F5B9EAC30246595D01A80001 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			generatedFileNames = (
+			);
+			isa = PBXShellScriptBuildPhase;
+			name = "Shell Script";
+			neededFileNames = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "cp $SRCROOT/../Source_Files/Pfhortran/Pfhortran_Language_Definition \"$SYMROOT/AlephOne.app/Contents/Resources/Pfhortran Language Definition\"";
 		};
 		F5C8AFE50207387301A80001 = {
 			isa = PBXFileReference;
