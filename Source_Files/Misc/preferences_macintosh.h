@@ -677,6 +677,11 @@ static void setup_input_dialog(
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iINTERCHANGE_SWIM_SINK, first_item), active, 
 		(preferences->modifiers & _inputmod_interchange_swim_sink) ? true : false);
 	
+	// LP addition: Woody Zenfell's don't-recenter-view patch
+	active= CONTROL_ACTIVE;
+	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDONT_AUTO_RECENTER, first_item), active, 
+		(preferences->modifiers & _inputmod_dont_auto_recenter) ? true : false);
+	
 	// LP addition: Josh Elsasser's dont-switch-weapons patch
 	active= CONTROL_ACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDONT_SWITCH_TO_NEW_WEAPON, first_item), active, 
@@ -722,6 +727,12 @@ static void hit_input_item(
 		case iINTERCHANGE_SWIM_SINK:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
 			SET_FLAG(preferences->modifiers,_inputmod_interchange_swim_sink,!GetControlValue(control));
+			break;
+			
+		// LP addition: Woody Zenfell's don't-recenter-view patch
+		case iDONT_AUTO_RECENTER:
+			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
+			SET_FLAG(preferences->modifiers,_inputmod_dont_auto_recenter,!GetControlValue(control));
 			break;
 			
 		// LP addition: Josh Elsasser's dont-switch-weapons patch
