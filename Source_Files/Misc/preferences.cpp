@@ -68,7 +68,10 @@ Jul 21, 2002 (Loren Petrich):
 
 #include <string.h>
 #include <stdlib.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #ifdef mac
 // Marathon-engine dialog boxes:

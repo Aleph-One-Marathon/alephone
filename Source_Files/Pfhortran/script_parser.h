@@ -29,7 +29,7 @@ June 26, 2002 (Loren Petrich):
 #define _SCRIPT_PARSER_DEF
 
 #include "cstypes.h"
-#include <vector.h>
+#include <vector>
 
 // LP: added trap "load" for executing whenever a level is loaded;
 // "init" will be for starting a level, and not for loading a savegame
