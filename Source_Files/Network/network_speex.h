@@ -29,8 +29,6 @@
 #ifdef SPEEX
 #include "speex.h"
 
-using namespace std;
-
 // encoder
 extern void *gEncoderState;
 extern SpeexBits gEncoderBits;
