@@ -2724,7 +2724,7 @@
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O2 -frename-registers -fprefetch-loop-arrays -fschedule-insns -fschedule-insns2 -finline-functions -finline-limit=1000 -fregmove -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fdelete-null-pointer-checks -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
+				OPTIMIZATION_CFLAGS = "-O3 -fprefetch-loop-arrays -finline-limit=1000 -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fdelete-null-pointer-checks -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  ";
 				OTHER_LDFLAGS = "-flat_namespace";
 				OTHER_REZFLAGS = "";
