@@ -1,3 +1,4 @@
+#!/bin/sh
 # fix-cvs-resources.sh - Unarchive resource files from cvs into usable forked files 
 #
 #	Copyright (C) 1991-2002 and beyond by Bungie Studios, Inc.
