@@ -185,7 +185,6 @@ Sep 2, 2000 (Loren Petrich):
 #include "weapons.h"
 
 // LP additions
-#include "GrowableList.h"
 #include "dynamic_limits.h"
 #include "AnimatedTextures.h"
 #include "OGL_Render.h"

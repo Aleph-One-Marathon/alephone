@@ -66,16 +66,13 @@ inline void INITIALIZE_NODE(node_data *node, short node_polygon_index, uint16 no
 
 // Inits everything
 RenderVisTreeClass::RenderVisTreeClass():
-	/*
-	
-	*/
-	Nodes(MAXIMUM_NODES),
 	view(NULL)	// Idiot-proofing
 {
 	PolygonQueue.reserve(POLYGON_QUEUE_SIZE);
 	EndpointClips.reserve(MAXIMUM_ENDPOINT_CLIPS);
 	LineClips.reserve(MAXIMUM_LINE_CLIPS);
 	ClippingWindows.reserve(MAXIMUM_CLIPPING_WINDOWS);
+	// Nodes.reserve(MAXIMUM_NODES);
 }
 
 
@@ -206,7 +203,7 @@ void RenderVisTreeClass::cast_render_ray(
 	short bias) /* _clockwise or _counterclockwise for walking endpoints */
 {
 	// LP: keep the parent-node pointer and index in sync with each other:
-	node_data *parent =  Nodes + ParentIndex;
+	node_data *parent =  &Nodes.front() + ParentIndex;
 	
 	short polygon_index= parent->polygon_index;
 
@@ -227,7 +224,7 @@ void RenderVisTreeClass::cast_render_ray(
 				cast_render_ray(vector, endpoint_index, ParentIndex, _counterclockwise_bias);
 				// cast_render_ray(vector, endpoint_index, parent, _counterclockwise_bias);
 				// LP: could have reallocated, so keep in sync!
-				node_data *parent =  Nodes + ParentIndex;
+				node_data *parent =  &Nodes.front() + ParentIndex;
 			}
 		}
 		else
@@ -243,52 +240,44 @@ void RenderVisTreeClass::cast_render_ray(
 			if (!node)
 			{
 				// LP change: using growable list
-				// Contents get swapped when the length starts to exceed the capacity;
-				// prepare extra array to store the contents before swapping.
+				// Contents get swapped when the length starts to exceed the capacity.
 				// When they are not NULL,
 				// "parent", "siblings" and "children" are pointers to members,
 				// "reference" is a pointer to a member with an offset.
 				// Cast the pointers to whatever size of integer the system uses.
-				node_data *SavedNodes;
-				POINTER_DATA OldNodePointer;
-				int Length = Nodes.GetLength();
-				// Will memory get swapped?
-				bool DoSwap = Length >= Nodes.GetCapacity();
-				if (DoSwap)
+				int Length = Nodes.size();
+				POINTER_DATA OldNodePointer = POINTER_CAST(&Nodes.front());
+				
+				// Add a dummy object and check if the pointer got changed
+				node_data Dummy;
+				Dummy.flags = 0;				// Fake initialization to shut up CW
+				Nodes.push_back(Dummy);
+				POINTER_DATA NewNodePointer = POINTER_CAST(&Nodes.front());
+
+				if (NewNodePointer != OldNodePointer)				
 				{
-					OldNodePointer = POINTER_CAST(Nodes.Begin());
-					assert(SavedNodes = new node_data[Length]);
-					// Copy the node contents without change
-					for (int k=0; k<Length; k++) SavedNodes[k] = Nodes[k];
-				}
-				assert(Nodes.Add());
-				if (DoSwap)
-				{
-					POINTER_DATA NewNodePointer = POINTER_CAST(Nodes.Begin());
 					for (int k=0; k<Length; k++)
 					{
-						node_data &SavedNode = SavedNodes[k];
-						node_data &NewNode = Nodes[k];
+						node_data &Node = Nodes[k];
 						// If NULL, then these pointers were already copied.
-						if (SavedNode.parent != NULL)
-							NewNode.parent = (node_data *)(NewNodePointer + (POINTER_CAST(SavedNode.parent) - OldNodePointer));
-						if (SavedNode.reference != NULL)
-							NewNode.reference = (node_data **)(NewNodePointer + (POINTER_CAST(SavedNode.reference) - OldNodePointer));
-						if (SavedNode.siblings != NULL)
-							NewNode.siblings = (node_data *)(NewNodePointer + (POINTER_CAST(SavedNode.siblings) - OldNodePointer));
-						if (SavedNode.children != NULL)
-							NewNode.children = (node_data *)(NewNodePointer + (POINTER_CAST(SavedNode.children) - OldNodePointer));
-						if (SavedNode.PS_Greater != NULL)
-							NewNode.PS_Greater = (node_data *)(NewNodePointer + (POINTER_CAST(SavedNode.PS_Greater) - OldNodePointer));
-						if (SavedNode.PS_Less != NULL)
-							NewNode.PS_Less = (node_data *)(NewNodePointer + (POINTER_CAST(SavedNode.PS_Less) - OldNodePointer));
-						if (SavedNode.PS_Shared != NULL)
-							NewNode.PS_Shared = (node_data *)(NewNodePointer + (POINTER_CAST(SavedNode.PS_Shared) - OldNodePointer));
+						if (Node.parent != NULL)
+							Node.parent = (node_data *)(NewNodePointer + (POINTER_CAST(Node.parent) - OldNodePointer));
+						if (Node.reference != NULL)
+							Node.reference = (node_data **)(NewNodePointer + (POINTER_CAST(Node.reference) - OldNodePointer));
+						if (Node.siblings != NULL)
+							Node.siblings = (node_data *)(NewNodePointer + (POINTER_CAST(Node.siblings) - OldNodePointer));
+						if (Node.children != NULL)
+							Node.children = (node_data *)(NewNodePointer + (POINTER_CAST(Node.children) - OldNodePointer));
+						if (Node.PS_Greater != NULL)
+							Node.PS_Greater = (node_data *)(NewNodePointer + (POINTER_CAST(Node.PS_Greater) - OldNodePointer));
+						if (Node.PS_Less != NULL)
+							Node.PS_Less = (node_data *)(NewNodePointer + (POINTER_CAST(Node.PS_Less) - OldNodePointer));
+						if (Node.PS_Shared != NULL)
+							Node.PS_Shared = (node_data *)(NewNodePointer + (POINTER_CAST(Node.PS_Shared) - OldNodePointer));
 					}
-					delete []SavedNodes;
-
+					
 					// Edit parent-node pointer also
-					parent =  Nodes + ParentIndex;
+					parent =  &Nodes.front() + ParentIndex;
 					// if (parent != NULL)
 					//	parent = (node_data *)(NewNodePointer + (POINTER_CAST(parent) - OldNodePointer));
 
@@ -310,7 +299,7 @@ void RenderVisTreeClass::cast_render_ray(
 				// Place new node in tree if it has gotten rooted
 				if (Length > 0)
 				{
-				node_data *CurrNode = Nodes.Begin();
+				node_data *CurrNode = &Nodes.front();
 				while(true)
 				{
 					long PolyDiff = long(polygon_index) - long(CurrNode->polygon_index);
@@ -385,7 +374,7 @@ void RenderVisTreeClass::cast_render_ray(
 			
 			parent= node;
 			// LP: keep in sync!
-			ParentIndex = parent - Nodes.Begin();
+			ParentIndex = parent - &Nodes.front();
 		}
 	}
 	while (polygon_index!=NONE);
@@ -671,9 +660,11 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 void RenderVisTreeClass::initialize_render_tree()
 {
 	// LP change: using growable list
-	Nodes.ResetLength();
-	Nodes.Add();
-	INITIALIZE_NODE(Nodes.Begin(), view->origin_polygon_index, 0, NULL, NULL);
+	Nodes.clear();
+	node_data Dummy;
+	Dummy.flags = 0;				// Fake initialization to shut up CW
+	Nodes.push_back(Dummy);
+	INITIALIZE_NODE(&Nodes.front(), view->origin_polygon_index, 0, NULL, NULL);
 	/*
 	node_count= 1;
 	next_node= nodes+1;

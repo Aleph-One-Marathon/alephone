@@ -91,7 +91,7 @@ void RenderSortPolyClass::sort_render_tree()
 	assert(RVPtr);
 	node_data *leaf, *last_leaf;
 	// LP: reference to simplify the code
-	GrowableList<node_data>& Nodes = RVPtr->Nodes;
+	vector<node_data>& Nodes = RVPtr->Nodes;
 
 	initialize_sorted_render_tree();
 	
@@ -110,7 +110,7 @@ void RenderSortPolyClass::sort_render_tree()
 		/* if we donÕt have a leaf, find one */
 		if (!leaf)
 			// LP change:
-			for (leaf= Nodes.Begin(); leaf->children; leaf= leaf->children)
+			for (leaf= &Nodes.front(); leaf->children; leaf= leaf->children)
 			// for (leaf= nodes; leaf->children; leaf= leaf->children)
 				;
 		last_leaf= leaf;
@@ -123,7 +123,7 @@ void RenderSortPolyClass::sort_render_tree()
 		// Look for the first node with that polygon index;
 		// start search off with the hypothesis of failure
 		node_data *FoundNode = NULL;
-		node_data *CurrNode = Nodes.Begin();
+		node_data *CurrNode = &Nodes.front();
 		while(true)
 		{
 			long PolyDiff = long(PolygonToFind) - long(CurrNode->polygon_index);
@@ -287,7 +287,7 @@ void RenderSortPolyClass::sort_render_tree()
 		}
 	}
 	// LP change:
-	while (last_leaf!=Nodes.Begin()); /* continue until we remove the root */
+	while (last_leaf != &Nodes.front()); /* continue until we remove the root */
 	// while (last_leaf!=nodes); /* continue until we remove the root */
 	
 	return;

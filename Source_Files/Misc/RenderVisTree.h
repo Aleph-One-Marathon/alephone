@@ -20,7 +20,6 @@ Oct 13, 2000
 	LP: replaced GrowableLists and ResizableLists with STL vectors
 */
 
-#include "GrowableList.h"
 #include <vector.h>
 #include "world.h"
 #include "render.h"
@@ -201,7 +200,7 @@ public:
 	
 	// Growable list of node_data values
 	// Length changed in cast_render_ray() and initialize_render_tree()
-	GrowableList<node_data> Nodes;
+	vector<node_data> Nodes;
 	
 	// Pointer to view
 	view_data *view;
@@ -220,8 +219,8 @@ public:
 
 #if 0
 // Some old debug code
-inline int DiffIndx(GrowableList<node_data>& Nodes, node_data *Node) {if (Node) return (Node - Nodes.Begin()); else return -1;}
-inline void DebugTree(char *Label, int q, GrowableList<node_data>& Nodes,  node_data &Node) {dprintf("%s %4d %4d %4d %4d %4d",Label,q,Node.polygon_index,DiffIndx(Nodes,Node.PS_Less),DiffIndx(Nodes,Node.PS_Greater),DiffIndx(Nodes,Node.PS_Shared));}
+inline int DiffIndx(vector<node_data>& Nodes, node_data *Node) {if (Node) return (Node - &Nodes.front()); else return -1;}
+inline void DebugTree(char *Label, int q, vector<node_data>& Nodes,  node_data &Node) {dprintf("%s %4d %4d %4d %4d %4d",Label,q,Node.polygon_index,DiffIndx(Nodes,Node.PS_Less),DiffIndx(Nodes,Node.PS_Greater),DiffIndx(Nodes,Node.PS_Shared));}
 #endif
 
 #endif
