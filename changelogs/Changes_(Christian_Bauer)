@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+September 18, 2000
+ - clicking buttons in in-game dialogs that close the dialog won't cause a
+   shot to be fired any more
+
 September 16, 2000
  - SDL dialog GUI supports loadable themes
  - added sound volume slider

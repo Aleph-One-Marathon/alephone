@@ -11,6 +11,7 @@
 
 // Global variables
 static bool mouse_active = false;
+static uint8 button_mask = 0;		// Mask of enabled buttons
 static int center_x, center_y;		// X/Y center of screen
 static fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
 
@@ -28,6 +29,7 @@ void enter_mouse(short type)
 		SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 		mouse_active = true;
 		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
+		button_mask = 0;	// Disable all buttons (so a shot won't be fired if we enter the game with a mouse button down from clicking a GUI widget)
 		recenter_mouse();
 	}
 }
@@ -115,10 +117,13 @@ void test_mouse(short type, uint32 *flags, fixed *delta_yaw, fixed *delta_pitch,
 {
 	if (mouse_active) {
 		uint8 buttons = SDL_GetMouseState(NULL, NULL);
+		uint8 orig_buttons = buttons;
+		buttons &= button_mask;				// Mask out disabled buttons
 		if (buttons & SDL_BUTTON_LMASK)		// Left button: primary weapon trigger
 			*flags |= _left_trigger_state;
 		if (buttons & SDL_BUTTON_RMASK)		// Right button: secondary weapon trigger
 			*flags |= _right_trigger_state;
+		button_mask |= ~orig_buttons;		// A button must be released at least once to become enabled
 
 		*delta_yaw = snapshot_delta_yaw;
 		*delta_pitch = snapshot_delta_pitch;

@@ -359,9 +359,8 @@ The SDL version of Aleph One is a work in progress. Here is an (incomplete)
 list of the missing features, listed in roughly the order I plan to implement
 them:
 
- - Some preferences items are missing (sound volume, mouse sensitivity,
-   OpenGL on/off, chase cam, crosshairs, OpenGL texture/landscape/fog
-   options)
+ - Some preferences items are missing (mouse sensitivity, OpenGL on/off,
+   chase cam, crosshairs, OpenGL texture/landscape/fog options)
  - Text rendering under OpenGL (overhead map doesn't show level name and
    annotations)
  - Palette tricks (fading, underwater, red flash when being hit etc.) don't
@@ -374,9 +373,6 @@ And a list of known bugs:
  - Snapshots (F9) don't work when OpenGL is active
  - darken_world_window() doesn't work when OpenGL is active
  - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown
- - Clicking on buttons in the "Save game" etc. dialog boxes will cause a shot
-   to be fired when the dialog box closes; the workaround is to use the
-   Return key instead
  - It shouldn't be possible to bind the same key to more than one function,
    or to bind a key that is already used by the game (sound volume, map zoom
    etc.)
