@@ -5,7 +5,7 @@ AC_INIT(Source_Files/Misc/shell_sdl.cpp)
 AC_PREREQ(2.13)
 
 dnl This defines PACKAGE and VERSION.
-AM_INIT_AUTOMAKE([AlephOne], [0.10.2])
+AM_INIT_AUTOMAKE([AlephOne], [0.10.3])
 AM_CONFIG_HEADER(config.h)
 
 dnl Configure options.
@@ -23,13 +23,28 @@ AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+dnl Figure out which OpenGL library to use
+case "$target" in
+  *-*-cygwin* | *-*-mingw32*)
+    SYS_GL_LIBS="-lopengl32"
+    ;;
+  *-*-beos*)
+    SYS_GL_LIBS="-lGL"
+    ;;
+  *)
+    AC_PATH_X
+    AC_PATH_XTRA
+    if test x$have_x = xyes; then
+      CFLAGS="$CFLAGS $X_CFLAGS"
+      SYS_GL_LIBS="$X_LIBS -lGL"
+    else
+      SYS_GL_LIBS="-lGL"
+    fi
+    ;;
+esac
+
 dnl Check for SDL.
-if [[ "x$target" = xmipsel-sony-ecoff ]]; then
-  CFLAGS="$CFLAGS `sdl-config --cflags`"
-  CXXFLAGS="$CXXFLAGS `sdl-config --cflags`"
-else
-  AM_PATH_SDL(1.1.4, , AC_MSG_ERROR([You need SDL to run Aleph One.]))
-fi
+AM_PATH_SDL(1.1.4, , AC_MSG_ERROR([You need SDL to run Aleph One.]))
 CFLAGS="$CFLAGS $SDL_CFLAGS -DSDL"
 CXXFLAGS="$CXXFLAGS $SDL_CFLAGS -DSDL"
 LIBS="$LIBS $SDL_LIBS"
@@ -37,15 +52,24 @@ LIBS="$LIBS $SDL_LIBS"
 dnl Checks for headers.
 AC_CHECK_HEADERS(unistd.h)
 
-dnl OpenGL support.
+dnl Check for OpenGL.
 if [[ "x$enable_opengl" = "xyes" ]]; then
-  AC_CHECK_LIB(GL, glBegin, [
-    LIBS="$LIBS -lGL"
-    AC_DEFINE(HAVE_OPENGL)
-  ], [
-    AC_MSG_WARN([Could not find OpenGL, ignoring --enable-opengl.])
+  AC_MSG_CHECKING(for OpenGL support)
+  have_opengl=no
+  AC_TRY_COMPILE([
+   #include <GL/gl.h>
+  ],[
+  ],[
+  have_opengl=yes
   ])
-  AC_CHECK_LIB(GLU, gluScaleImage)
+  AC_MSG_RESULT($have_opengl)
+  if test x$have_opengl = xyes; then
+    LIBS="$LIBS $SYS_GL_LIBS"
+    AC_DEFINE(HAVE_OPENGL)
+    AC_CHECK_LIB(GLU, gluScaleImage)
+  else
+    AC_MSG_WARN([Could not find OpenGL, ignoring --enable-opengl.])
+  fi
 fi
 
 dnl Generate Makefiles.

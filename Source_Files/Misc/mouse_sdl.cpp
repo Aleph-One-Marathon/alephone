@@ -20,7 +20,9 @@ static int center_x, center_y;		// X/Y center of screen
 void enter_mouse(short type)
 {
 	if (type != _keyboard_or_game_pad) {
+#ifndef DEBUG
 		SDL_WM_GrabInput(SDL_GRAB_ON);
+#endif
 		SDL_Surface *s = SDL_GetVideoSurface();
 		center_x = s->w / 2;
 		center_y = s->h / 2;
@@ -35,8 +37,10 @@ void enter_mouse(short type)
 
 void exit_mouse(short type)
 {
+#ifndef DEBUG
 	if (type != _keyboard_or_game_pad)
 		SDL_WM_GrabInput(SDL_GRAB_OFF);
+#endif
 }
 
 

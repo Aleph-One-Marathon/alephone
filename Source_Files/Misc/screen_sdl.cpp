@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef HAVE_OPENGL
+#include <GL/gl.h>
+#endif
+
 #include "world.h"
 #include "map.h"
 #include "render.h"
@@ -287,6 +291,9 @@ void enter_screen(void)
 	if (screen_mode.acceleration == _opengl_acceleration)
 		OGL_StartRun();
 #endif
+
+	// Reset modifier key status
+	SDL_SetModState(KMOD_NONE);
 }
 
 
@@ -341,6 +348,12 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_FreeSurface(HUD_Buffer);
 		HUD_Buffer = NULL;
 	}
+#ifdef HAVE_OPENGL
+	if (main_surface->flags & SDL_OPENGL) {
+		glScissor(0, 0, width, height);
+		glViewport(0, 0, width, height);
+	}
+#endif
 }
 
 void change_screen_mode(struct screen_mode_data *mode, boolean redraw)
@@ -1028,4 +1041,8 @@ static void ClearScreen(void)
 {
 	SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
 	SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+#ifdef HAVE_OPENGL
+	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+		SDL_GL_SwapBuffers();
+#endif
 }

@@ -278,6 +278,7 @@ static void initialize_application(void)
 #else
 	graphics_preferences->screen_mode.acceleration = _no_acceleration;
 #endif
+	Get_OGL_ConfigureData().Flags = OGL_Flag_ZBuffer | OGL_Flag_LiqSeeThru | OGL_Flag_Fader | OGL_Flag_FlatStatic;
 	write_preferences();
 
 	initialize_sound_manager(sound_preferences);
@@ -963,13 +964,11 @@ static void handle_keyword(int tag)
 								*/
 							} else {	
 								AddItemsToPlayer(items[index],1);
-								// local_player->items[items[index]]= 1;
 							}
 							break;
 							
 						case _ammunition:
 							AddItemsToPlayer(items[index],10);
-							// local_player->items[items[index]]= 10;
 							break;
 							
 						case _powerup:
