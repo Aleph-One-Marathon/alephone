@@ -363,9 +363,11 @@ static bool RenderModel(rectangle_definition& RenderRectangle, short Collection,
 // returns whether or not the texture can be glowmapped
 // (not the case for infravision, invisible, static)
 // it gets "IsBlended" off of the texture definition
-// It returns the color to use and whether the Z-buffer is to be suppressed in the render object
+// It returns the color to use,
+// whether the Z-buffer is to be suppressed in the render object
+// and whether the object will be externally lit
 static bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended,
-	GLfloat *Color, bool& Suppress_Z_Buffer);
+	GLfloat *Color, bool& Suppress_Z_Buffer, bool& ExternallyLit);
 
 // Setup and teardown for the static-effect mode
 static void SetupStaticMode(rectangle_definition& RenderRectangle);
@@ -1598,13 +1600,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		// on a glowmap texture that is atop a texture that is opaque to the void.
 		glColor3f(1,1,1);
 		glEnable(GL_BLEND);
-		if (IsBlended)
-		{
-			glDisable(GL_ALPHA_TEST);
-		} else {
-			glEnable(GL_ALPHA_TEST);
-		}
-		glAlphaFunc(GL_GREATER,0.25);
+		glDisable(GL_ALPHA_TEST);
 		
 #ifdef UNUSED
 		TMgr.RenderGlowing(false);
@@ -1612,9 +1608,6 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 
 		TMgr.RenderGlowing();
 		glDrawArrays(GL_POLYGON,0,NumVertices);
-		
-		// Reset these values
-		glAlphaFunc(GL_GREATER,0.5);
 	}
 	
 	return true;
@@ -1920,8 +1913,10 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		SetProjectionType(Projection_Screen);
 	
 	bool Suppress_Z_Buffer = false;
+	bool ExternallyLit = false;
 	GLfloat Color[4];
-	DoLightingAndBlending(RenderRectangle,TMgr.IsBlended(),Color,Suppress_Z_Buffer);
+	DoLightingAndBlending(RenderRectangle, TMgr.IsBlended(),
+		Color, Suppress_Z_Buffer, ExternallyLit);
 	glColor4fv(Color);
 	
 	// Location of data:
@@ -1979,13 +1974,10 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			// push the cutoff down so 0.5*0.5 (half of half-transparency)
 			glColor3f(1,1,1);
 			glEnable(GL_BLEND);
-			glAlphaFunc(GL_GREATER,0.25);
+			glDisable(GL_ALPHA_TEST);
 			
 			TMgr.RenderGlowing();
 			glDrawArrays(GL_POLYGON,0,4);
-			
-			// Reset these values
-			glAlphaFunc(GL_GREATER,0.5);
 		}
 	}
 		
@@ -2137,7 +2129,9 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	// Parallel to TextureManager::IsBlended() in OGL_Textures.h
 	bool IsBlended = SkinPtr->OpacityType != OGL_OpacType_Crisp;
 	bool Suppress_Z_Buffer = false;
-	bool IsGlowmappable = DoLightingAndBlending(RenderRectangle, IsBlended, ShaderData.Color, Suppress_Z_Buffer);
+	bool ExternallyLit = false;
+	bool IsGlowmappable = DoLightingAndBlending(RenderRectangle, IsBlended,
+		ShaderData.Color, Suppress_Z_Buffer, ExternallyLit);
 	bool Actual_Z_Buffering = Z_Buffering && !Suppress_Z_Buffer;
 	
 	ShaderData.ModelPtr = ModelPtr;
@@ -2185,10 +2179,35 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		Actual_Z_Buffering = Actual_Z_Buffering && !IsGlowing;	// Glowmapped textures are blended
 		int NumShaders = IsGlowing ? 2 : 1;
 		
+		SET_FLAG(StandardShaders[0].Flags,ModelRenderer::ExtLight,ExternallyLit);
+		
+		if (ExternallyLit)
+		{
+			// Find the light values to use
+			GLfloat AvgLight = (RenderRectangle.ceiling_light + RenderRectangle.ambient_shade)/GLfloat(2*FIXED_ONE);
+			GLfloat LightDiff = (RenderRectangle.ceiling_light - RenderRectangle.ambient_shade)/GLfloat(2*FIXED_ONE);
+			GLfloat *Dir = RenderRectangle.LightDirection;
+			// In the direction of observation; use this to find miner's-light effect
+			GLfloat LightInDir = AvgLight - Dir[2]*LightDiff;
+			GLfloat Color[3];
+			FindShadingColor(RenderRectangle.LightDepth,int(FIXED_ONE*LightInDir + 0.5),Color);
+			
+			for (int c=0; c<3; c++)
+			{
+				// Note: the miner's-light effect adds to the existing light,
+				// thus we subtract the bkgd before adding to the rest of the light
+				GLfloat HC = (Color[c] - LightInDir)/2;
+				ModelRenderObject.ExternalLight[c][0] = - HC*Dir[0];
+				ModelRenderObject.ExternalLight[c][1] = - HC*Dir[1];
+				ModelRenderObject.ExternalLight[c][2] = LightDiff - HC*Dir[2];
+				ModelRenderObject.ExternalLight[c][3] = AvgLight + HC;
+			}
+		}
+		
 		ModelRenderObject.Render(ModelPtr->Model, Actual_Z_Buffering, StandardShaders, NumShaders);
 		
-		// Reset to default if glowmapping had been used
-		if (IsGlowing) glAlphaFunc(GL_GREATER,0.5);
+		// Restore default
+		if (ExternallyLit) glDisableClientState(GL_COLOR_ARRAY);
 	}
 	
 	// Restore the default render sidedness
@@ -2203,10 +2222,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 }
 
 bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended,
-	GLfloat *Color, bool& Suppress_Z_Buffer)
+	GLfloat *Color, bool& Suppress_Z_Buffer, bool& ExternallyLit)
 {
 	bool IsGlowmappable = true;
 	Suppress_Z_Buffer = false;
+	ExternallyLit = true;
 	
 	// Apply lighting
 	bool IsInvisible = false;
@@ -2238,6 +2258,8 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended
 	}
 	else
 	{
+		// External lighting includes the player's "miner's light"
+		ExternallyLit = true;
 		FindShadingColor(RenderRectangle.depth,RenderRectangle.ambient_shade,Color);
 		Color[3] = 1;
 	}
@@ -2337,7 +2359,7 @@ void GlowingShader(void *Data)
 	// Glowmapped setup
 	glColor3f(1,1,1);
 	glEnable(GL_BLEND);
-	glAlphaFunc(GL_GREATER,0.25);
+	glDisable(GL_ALPHA_TEST);
 	
 	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Glowing))
 		LoadModelSkin(ShaderData.SkinPtr->GlowImg, ShaderData.Collection, ShaderData.CLUT);

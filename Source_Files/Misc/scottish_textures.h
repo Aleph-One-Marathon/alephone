@@ -125,13 +125,16 @@ struct rectangle_definition
 	int16 xc;
 	
 	// For the convenience of the OpenGL 3D-model renderer
+	_fixed ceiling_light;		// The ambient_shade is the floor light
 	OGL_ModelData *ModelPtr;
 	world_point3d Position;		// In overall world coordinates
 	short Azimuth;				// Facing angle
 	float Scale;				// how big
 	float HorizScale;			// For teleporting
 	short LiquidRelHeight;		// Relative to object location
-	bool BelowLiquid;
+	bool BelowLiquid;			// Where the rendering is relative to the liquid
+	int LightDepth;				// For finding the amount of "miner's light"
+	GLfloat LightDirection[3];		// To the "light point"
 };
 
 struct polygon_definition

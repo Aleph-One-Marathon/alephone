@@ -733,7 +733,9 @@ void OGL_ModelData::Load()
 	}	
 	
 	// Will need this to find bounding rectangles
+	// and to normalize the normals
 	Model.FindBoundingBox();
+	Model.NormalizeNormals();
 	
 	// Don't forget the skins
 	OGL_SkinManager::Load();

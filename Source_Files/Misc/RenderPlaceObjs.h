@@ -44,7 +44,8 @@ class RenderPlaceObjsClass
 	void initialize_render_object_list();
 	
 	render_object_data *build_render_object(long_point3d *origin,
-		_fixed ambient_intensity, sorted_node_data **base_nodes, short *base_node_count,
+		_fixed floor_intensity, _fixed ceiling_intensity,
+		sorted_node_data **base_nodes, short *base_node_count,
 		short object_index);
 	
 	void sort_render_object_into_tree(render_object_data *new_render_object,

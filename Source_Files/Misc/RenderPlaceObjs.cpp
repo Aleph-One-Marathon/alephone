@@ -42,7 +42,10 @@ static void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	long_point3d& TransformedPosition,
 	GLfloat Scale,
 	short RelativeAngle,
-	shape_information_data& ShapeInfo);
+	shape_information_data& ShapeInfo,
+	int& Depth,
+	GLfloat *Direction
+);
 
 
 // Inits everything
@@ -86,7 +89,8 @@ void RenderPlaceObjsClass::build_render_object_list()
 	// for (sorted_node= next_sorted_node-1;sorted_node>=sorted_nodes;--sorted_node)
 	{
 		polygon_data *polygon= get_polygon_data(sorted_node->polygon_index);
-		_fixed ambient_intensity= get_light_intensity(polygon->floor_lightsource_index);
+		_fixed floor_intensity= get_light_intensity(polygon->floor_lightsource_index);
+		_fixed ceiling_intensity = get_light_intensity(polygon->ceiling_lightsource_index);
 		short object_index= polygon->first_object;
 		
 		while (object_index!=NONE)
@@ -94,8 +98,7 @@ void RenderPlaceObjsClass::build_render_object_list()
 			short base_node_count;
 			sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
 			// LP change:
-			render_object_data *render_object= build_render_object(NULL, ambient_intensity, base_nodes, &base_node_count, object_index);
-			// struct render_object_data *render_object= build_render_object(view, (world_point3d *) NULL, ambient_intensity, base_nodes, &base_node_count, object_index);
+			render_object_data *render_object= build_render_object(NULL, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, object_index);
 			
 			if (render_object)
 			{
@@ -113,7 +116,8 @@ void RenderPlaceObjsClass::build_render_object_list()
 // LP change: make it better able to do long-distance views
 render_object_data *RenderPlaceObjsClass::build_render_object(
 	long_point3d *origin, // world_point3d *origin,
-	_fixed ambient_intensity,
+	_fixed floor_intensity,
+	_fixed ceiling_intensity,
 	sorted_node_data **base_nodes,
 	short *base_node_count,
 	short object_index)
@@ -165,6 +169,10 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			shape_information_data scaled_shape_information; // if necessary
 			shape_information_data model_shape_information;	// also if necessary
 			
+			// For the convenience of the 3D-model renderer
+			int LightDepth;
+			GLfloat LightDirection[3];
+			
 			get_object_shape_and_transfer_mode(&view->origin, object_index, &data);
 			// Nonexistent shape: skip
 			if (data.collection_code == NONE) return NULL;
@@ -192,7 +200,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				
 				FindProjectedBoundingBox(ModelPtr->Model.BoundingBox,
 					transformed_origin, Scale, object->facing - view->yaw,
-					model_shape_information);
+					model_shape_information, LightDepth, LightDirection);
 				
 				// Set pointer back
 				shape_information = &model_shape_information;
@@ -302,6 +310,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					render_object->rectangle.Position = object->location;
 					render_object->rectangle.Azimuth = object->facing;
 					render_object->rectangle.Scale = Scale;
+					render_object->rectangle.LightDepth = LightDepth;
+					objlist_copy(render_object->rectangle.LightDirection,LightDirection,3);
 				}
 					
 				render_object->rectangle.flip_vertical= (shape_information->flags&_Y_MIRRORED_BIT) ? true : false;
@@ -320,7 +330,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				render_object->rectangle.depth= transformed_origin.x;
 				instantiate_rectangle_transfer_mode(view, &render_object->rectangle, data.transfer_mode, data.transfer_phase);
 				
-				render_object->rectangle.ambient_shade= MAX(shape_information->minimum_light_intensity, ambient_intensity);
+				render_object->rectangle.ambient_shade= MAX(shape_information->minimum_light_intensity, floor_intensity);
+				render_object->rectangle.ceiling_light= MAX(shape_information->minimum_light_intensity, ceiling_intensity);
 
 				if (view->shading_mode==_shading_infravision) render_object->rectangle.flags|= _SHADELESS_BIT;
 				
@@ -334,7 +345,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					
 					parasitic_origin.z+= shape_information->world_y0;
 					parasitic_origin.y+= shape_information->world_x0;
-					parasitic_render_object= build_render_object(&parasitic_origin, ambient_intensity,
+					parasitic_render_object= build_render_object(&parasitic_origin, floor_intensity, ceiling_intensity,
 						NULL, NULL, object->parasitic_object);
 					
 					if (parasitic_render_object)
@@ -345,6 +356,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 							aggregate (does not handle multiple parasites correctly) */
 						parasitic_render_object->rectangle.ambient_shade= render_object->rectangle.ambient_shade=
 							MAX(parasitic_render_object->rectangle.ambient_shade, render_object->rectangle.ambient_shade);
+						parasitic_render_object->rectangle.ceiling_light= render_object->rectangle.ceiling_light=
+							MAX(parasitic_render_object->rectangle.ceiling_light, render_object->rectangle.ceiling_light);
 						
 						if (shape_information->flags&_KEYPOINT_OBSCURED_BIT) /* host obscures parasite */
 						{
@@ -824,18 +837,24 @@ shape_information_data *RenderPlaceObjsClass::rescale_shape_information(
 }
 
 
-// Creates a fake sprite rectangle from a model's bounding box
+// Creates a fake sprite rectangle from a model's bounding box;
+// also finds the depth and direction to use in the model's "Miner's Light" effect
 void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	long_point3d& TransformedPosition,
 	GLfloat Scale,
 	short RelativeAngle,
-	shape_information_data& ShapeInfo)
+	shape_information_data& ShapeInfo,
+	int& Depth,
+	GLfloat *Direction
+)
 {
 	// Reduce to circle range then find trig values
 	short ReducedRA = normalize_angle(RelativeAngle);
 	const double TrigMagReciprocal = 1/double(TRIG_MAGNITUDE);
-	double ScaledCosine = Scale*TrigMagReciprocal*double(cosine_table[ReducedRA]);
-	double ScaledSine = Scale*TrigMagReciprocal*double(sine_table[ReducedRA]);
+	double Cosine = TrigMagReciprocal*double(cosine_table[ReducedRA]);
+	double Sine = TrigMagReciprocal*double(sine_table[ReducedRA]);
+	double ScaledCosine = Scale*Cosine;
+	double ScaledSine = Scale*Sine;
 	
 	// Binary representation: (000) (001) (010) (011) (100) (101) (110) (111)
 	// where 0 is the first BB vertex and 1 is the second;
@@ -891,6 +910,7 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	// Find minimum and maximum projected Y, Z;
 	// scale to the object's position to be compatible
 	// with the rest of the code.
+	GLfloat XMin;
 	GLfloat Proj_YMin, Proj_YMax, Proj_ZMin, Proj_ZMax;
 	
 	for (int k=0; k<8; k++)
@@ -899,17 +919,21 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 		GLfloat Y = ExpandedBB[k][1];
 		GLfloat Z = ExpandedBB[k][2];
 		
-		GLfloat Proj = (X0/MAX(X,MINIMUM_OBJECT_DISTANCE));
+		GLfloat XClip = MAX(X,MINIMUM_OBJECT_DISTANCE);
+		
+		GLfloat Proj = (X0/XClip);
 		GLfloat Proj_Y = Proj*Y;
 		GLfloat Proj_Z = Proj*Z;
 		
 		if (k == 0)
 		{
+			XMin = XClip;
 			Proj_YMin = Proj_YMax = Proj_Y;
 			Proj_ZMin = Proj_ZMax = Proj_Z;
 		}
 		else
 		{
+			XMin = MIN(XMin, XClip);
 			Proj_YMin = MIN(Proj_YMin,Proj_Y);
 			Proj_YMax = MAX(Proj_YMax,Proj_Y);
 			Proj_ZMin = MIN(Proj_ZMin,Proj_Z);
@@ -922,10 +946,28 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	Proj_YMax -= Y0;
 	Proj_ZMin -= Z0;
 	Proj_ZMax -= Z0;
-		
+	
 	// Plug back into the sprite
 	ShapeInfo.world_left = PIN(Proj_YMin,SHRT_MIN,SHRT_MAX);
 	ShapeInfo.world_right = PIN(Proj_YMax,SHRT_MIN,SHRT_MAX);
 	ShapeInfo.world_bottom = PIN(Proj_ZMin,SHRT_MIN,SHRT_MAX);
 	ShapeInfo.world_top = PIN(Proj_ZMax,SHRT_MIN,SHRT_MAX);
+	
+	// Set X0, Y0, Z0 to location of center of bounding box
+	X0 += (ExpandedBB[0][0] + ExpandedBB[7][0])/2;
+	Y0 += (ExpandedBB[0][1] + ExpandedBB[7][1])/2;
+	Z0 += (ExpandedBB[0][2] + ExpandedBB[7][2])/2;
+	
+	// Find the depth to use in the miner's light for the object
+	Depth = (XMin + MAX(X0,MINIMUM_OBJECT_DISTANCE))/2;
+	
+	// Find the direction to the object;
+	// use the engine's fast square root
+	GLfloat DistSq = X0*X0 + Y0*Y0 + Z0*Z0;
+	double DistRecip = 1.0/isqrt(DistSq + 0.5);
+	
+	// Rotate it to get to the object's internal coordinates
+	Direction[0] = DistRecip*(  X0*Cosine + Y0*Sine);
+	Direction[1] = DistRecip*(- X0*Sine + Y0*Cosine);
+	Direction[2] = DistRecip*Z0;
 }
