@@ -47,7 +47,7 @@ enum {
 	_typecode_sounds,
 	_typecode_patch,
 	_typecode_images,
-	_typecode_prefs,
+	_typecode_preferences,
 	NUMBER_OF_TYPECODES
 };
 
@@ -58,6 +58,9 @@ void initialize_typecodes();
 OSType get_typecode(int which);
 
 // These are no longer constants, which will cause trouble for switch/case constructions
+// These have been eliminated in favor of using the above enum of abstracted filetypes
+// as much as possible
+/*
 #define APPLICATION_CREATOR (get_typecode(_typecode_creator))
 #define SCENARIO_FILE_TYPE (get_typecode(_typecode_scenario))
 #define SAVE_GAME_TYPE (get_typecode(_typecode_savegame))
@@ -68,7 +71,7 @@ OSType get_typecode(int which);
 #define PATCH_FILE_TYPE (get_typecode(_typecode_patch))
 #define IMAGES_FILE_TYPE (get_typecode(_typcode_images))
 #define PREFERENCES_FILE_TYPE (get_typecode(_typecode_prefs))
-
+*/
 
 /* Other tags-  */
 #define POINT_TAG 'PNTS'
