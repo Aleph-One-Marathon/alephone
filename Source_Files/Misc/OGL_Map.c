@@ -35,26 +35,32 @@ Jul 17, 2000:
 #include "GrowableList.h"
 #include "map.h"
 #include "OGL_Map.h"
+#include "OverheadMapRenderer.h"
 
 
-// RGBColor straight to OpenGL
-inline void SetColor(RGBColor& Color) {glColor3usv((unsigned short *)(&Color));}
+// rgb_color straight to OpenGL
+inline void SetColor(rgb_color& Color) {glColor3usv((unsigned short *)(&Color));}
 
 // Render context for aglUseFont(); defined in OGL_Render.c
 extern AGLContext RenderContext;
 
-// Font info: all the info needed to construct a font
+
+// Font info: all the info needed to construct a font;
+// this is currently MacOS-specific; will have to find out how to handle fonts
+// in a cross-platform manner.
 struct FontInfoData
 {
+	// This is specific to the MacOS
 	short font, face, size;
 	
 	// Equality tester (the == operator)
 	bool operator==(FontInfoData &FI) {return ((font==FI.font) && (face==FI.face) && (size==FI.size));}
 	
 	// Constructor
-	FontInfoData() {font=face=size=0;}
+	FontInfoData() {font = face = size = 0;}
 	FontInfoData(short _font, short _face, short _size) {font=_font, face=_face, size=_size;}
 };
+
 
 // Font-cache data, so fonts don't have to be repeatedly re-uploaded
 struct FontCacheData
@@ -118,14 +124,14 @@ void OGL_EndMap()
 
 
 // Need to test this so as to find out when the color changes
-inline bool ColorsEqual(RGBColor& Color1, RGBColor& Color2)
+inline bool ColorsEqual(rgb_color& Color1, rgb_color& Color2)
 {
 	return ((Color1.red == Color2.red) && (Color1.green == Color2.green) && (Color1.blue == Color2.blue));
 }
 
 // Stuff for caching polygons to be drawn;
 // several polygons with the same color will be drawn at the same time
-static RGBColor MapSavedColor = {0, 0, 0};
+static rgb_color MapSavedColor = {0, 0, 0};
 static GrowableList<unsigned short> MapPolygonCache(16);
 
 static void DrawCachedPolygons()
@@ -154,7 +160,7 @@ void OGL_end_overhead_polygons()
 }
 
 void OGL_draw_overhead_polygon(short vertex_count, short *vertices,
-	RGBColor &color)
+	rgb_color &color)
 {
 	// Test whether the polygon parameters have changed
 	bool AreColorsEqual = ColorsEqual(color,MapSavedColor);
@@ -209,7 +215,7 @@ void OGL_end_overhead_lines()
 	DrawCachedLines();
 }
 
-void OGL_draw_overhead_line(short line_index, RGBColor &color,
+void OGL_draw_overhead_line(short line_index, rgb_color &color,
 	short pen_size)
 {
 	// Test whether the line parameters have changed
@@ -239,7 +245,7 @@ void OGL_draw_overhead_line(short line_index, RGBColor &color,
 }
 
 
-void OGL_draw_overhead_thing(world_point2d &center, RGBColor &color,
+void OGL_draw_overhead_thing(world_point2d &center, rgb_color &color,
 	short shape, short radius)
 {
 	// Cribbed from overhead_map.c
@@ -297,7 +303,7 @@ void OGL_draw_overhead_thing(world_point2d &center, RGBColor &color,
 	glPopMatrix();
 }
 
-void OGL_draw_overhead_player(world_point2d &center, angle facing, RGBColor &color,
+void OGL_draw_overhead_player(world_point2d &center, angle facing, rgb_color &color,
 	short reduce, short front, short rear, short rear_theta)
 {
 	SetColor(color);
@@ -327,7 +333,7 @@ void OGL_draw_overhead_player(world_point2d &center, angle facing, RGBColor &col
 	glPopMatrix();
 }
 
-void OGL_draw_map_text(world_point2d &location, RGBColor &color,
+void OGL_draw_map_text(world_point2d &location, rgb_color &color,
 	unsigned char *text_pascal, short font, short face, short size)
 {
 	SetColor(color);
@@ -404,7 +410,7 @@ void OGL_draw_map_text(world_point2d &location, RGBColor &color,
 // For drawing monster paths
 static GrowableList<world_point2d> MapPathPoints(16);
 
-void OGL_SetPathDrawing(RGBColor &color)
+void OGL_SetPathDrawing(rgb_color &color)
 {
 	SetColor(color);
 	glLineWidth(1);
