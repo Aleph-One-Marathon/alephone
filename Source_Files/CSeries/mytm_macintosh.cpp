@@ -157,3 +157,5 @@ void myTMReset(
 	PrimeTime((QElemPtr)task,task->time);
 }
 
+// WZ's dummy function
+void myTMCleanup(bool) {}

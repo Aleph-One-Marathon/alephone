@@ -146,7 +146,7 @@ notfound:
 
 unsigned char *pstrcpy(
 	unsigned char *dst,
-	unsigned char *src)
+	const unsigned char *src)
 {
 	memcpy(dst,src,src[0]+1);
 	return dst;

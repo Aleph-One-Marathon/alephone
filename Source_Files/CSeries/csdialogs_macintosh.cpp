@@ -348,6 +348,8 @@ short get_dialog_control_value(DialogPtr dialog, short which_control)
 	return GetControlValue((ControlHandle) item_handle);
 }
 
+#ifndef mac
+
 // ZZZ: added these to inject a layer of indirection to slip in an SDL implementation and have the two versions share
 void
 copy_pstring_from_text_field(DialogPtr dialog, short item, unsigned char* pstring) {
@@ -368,3 +370,5 @@ copy_pstring_to_text_field(DialogPtr dialog, short item, const unsigned char* ps
     GetDialogItem(dialog, item, &item_type, &item_handle, &item_rect);
     SetDialogItemText(item_handle, pstring);
 }
+
+#endif

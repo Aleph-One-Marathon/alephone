@@ -151,26 +151,26 @@ __inline__ void modify_selection_control(
 	DialogPtr dlg,
 	short item,
 	short hilite,
-	short value) { modify_control(dlg, item, hilite, value); }
+	short value) {modify_control(dlg, item, hilite, value); }
 
 __inline__ void modify_control_enabled(
 	DialogPtr dlg,
 	short item,
-	short hilite) { modify_control(dlg, item, hilite, NONE); }
+	short hilite) {modify_control(dlg, item, hilite, NONE); }
 
 __inline__ void modify_boolean_control(
 	DialogPtr dlg,
 	short item,
 	short hilite,
-	short value) { modify_control(dlg, item, hilite, value); }
+	short value) {modify_control(dlg, item, hilite, value); }
         
 __inline__ short get_selection_control_value(
         DialogPtr dialog,
-        short which_control) { get_dialog_control_value(dialog, which_control); }
+        short which_control) {return get_dialog_control_value(dialog, which_control); }
         
 __inline__ short get_boolean_control_value(
         DialogPtr dialog,
-        short which_control) { get_dialog_control_value(dialog, which_control); }
+        short which_control) {return get_dialog_control_value(dialog, which_control); }
 
 #else//!mac
 

@@ -46,7 +46,7 @@ extern void myTMReset(
 // Pass false for fairly quick operation.  Pass true to make sure that we wait for folks to finish.
 extern void myTMCleanup(bool waitForFinishers);
 #else
-void myTMCleanup(bool) {}
+extern void myTMCleanup(bool);
 #endif
 
 #endif //def MYTM_H_
