@@ -1357,3 +1357,12 @@ not supported.
 
 Added alternative, Forge-like automapping modes: currently-visible and all.
 
+Nov 19, 2000
+
+Added glowmapping to texture-substitution support.
+
+Added vertical-texture repeat option for both software and OpenGL rendering.
+
+Added texture-loading control; one can control which wall and scenery collections to load,
+and also whether to load the landscape ones.
+
