@@ -49,18 +49,18 @@ enum /* lighting functions */
 	state, plus the intensity at the time of transition */
 struct lighting_function_specification /* 7*2 == 14 bytes */
 {
-	short function;
+	int16 function;
 	
-	short period, delta_period;
+	int16 period, delta_period;
 	fixed intensity, delta_intensity;
 };
 
 // Misaligned 4-byte values (intensity, delta_intensity) split in it
 struct saved_lighting_function /* 7*2 == 14 bytes */
 {
-	short function;
+	int16 function;
 	
-	short period, delta_period;
+	int16 period, delta_period;
 	uint16 intensity[2], delta_intensity[2];
 };
 
@@ -96,17 +96,17 @@ const int SIZEOF_static_light_data = 100;
 // Misaligned 4-byte values (in lighting_function_specification) split in it
 struct saved_static_light /* 8*2 + 6*14 == 100 bytes */
 {
-	short type;
+	int16 type;
 	uint16 flags;
 
-	short phase; // initializer, so lights may start out-of-phase with each other
+	int16 phase; // initializer, so lights may start out-of-phase with each other
 	
 	struct saved_lighting_function primary_active, secondary_active, becoming_active;
 	struct saved_lighting_function primary_inactive, secondary_inactive, becoming_inactive;
 	
-	short tag;
+	int16 tag;
 	
-	short unused[4];
+	int16 unused[4];
 };
 
 /* ---------- dynamic light data */
@@ -145,19 +145,19 @@ enum /* old light types */
 
 /* Borrowed from the old lightsource.h, to allow Marathon II to open/use Marathon I maps */
 struct old_light_data {
-	word flags;
+	uint16 flags;
 	
-	short type;
-	short mode; /* on, off, etc. */
-	short phase;
+	int16 type;
+	int16 mode; /* on, off, etc. */
+	int16 phase;
 	
 	fixed minimum_intensity, maximum_intensity;
-	short period; /* on, in ticks (turning on and off periods are always the same for a given light type,
+	int16 period; /* on, in ticks (turning on and off periods are always the same for a given light type,
 		or else are some function of this period) */
 	
 	fixed intensity; /* current intensity */
 	
-	short unused[5];	
+	int16 unused[5];	
 };
 const int SIZEOF_old_light_data = 32;
 

@@ -203,27 +203,27 @@ const int SIZEOF_text_face_data = 6;
 // This is externally visible, so its external size is defined in the header file
 struct player_terminal_data
 {
-	short flags;
-	short phase;
-	short state;
-	short current_group;
-	short level_completion_state;
-	short current_line;
-	short maximum_line;
-	short terminal_id;
-	long last_action_flag;
+	int16 flags;
+	int16 phase;
+	int16 state;
+	int16 current_group;
+	int16 level_completion_state;
+	int16 current_line;
+	int16 maximum_line;
+	int16 terminal_id;
+	int32 last_action_flag;
 };
 
 struct terminal_key {
-	short keycode;
-	short offset;
-	short mask;
-	long action_flag;
+	int16 keycode;
+	int16 offset;
+	int16 mask;
+	int32 action_flag;
 };
 
 struct font_dimensions {
-	short lines_per_screen;
-	short character_width;
+	int16 lines_per_screen;
+	int16 character_width;
 };
 
 /* globals - I would really like to make these static to computer_interface.c, but game_wad.c needs them */

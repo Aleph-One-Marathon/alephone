@@ -16,16 +16,16 @@ May 17, 2000 (Loren Petrich):
 
 struct media_definition
 {
-	short collection, shape, shape_count, shape_frequency;
-	short transfer_mode;
+	int16 collection, shape, shape_count, shape_frequency;
+	int16 transfer_mode;
 	
-	short damage_frequency; // mask&ticks
+	int16 damage_frequency; // mask&ticks
 	struct damage_definition damage;
 
-	short detonation_effects[NUMBER_OF_MEDIA_DETONATION_TYPES];	
-	short sounds[NUMBER_OF_MEDIA_SOUNDS];
+	int16 detonation_effects[NUMBER_OF_MEDIA_DETONATION_TYPES];	
+	int16 sounds[NUMBER_OF_MEDIA_SOUNDS];
 	
-	short submerged_fade_effect;
+	int16 submerged_fade_effect;
 };
 
 /* ---------- globals */

@@ -258,6 +258,11 @@ TimeType FileSpecifier::GetDate()
 #endif
 }
 
+int FileSpecifier::GetType()
+{
+	return NONE;
+}
+
 bool FileSpecifier::GetFreeSpace(unsigned long &FreeSpace)
 {
 	// This is impossible to do in a platform-independant way, so we

@@ -97,7 +97,7 @@ enum // shell casing types
 
 struct shell_casing_definition
 {
-	short collection, shape;
+	int16 collection, shape;
 	
 	fixed x0, y0;
 	fixed vx0, vy0;
@@ -151,33 +151,33 @@ struct shell_casing_definition shell_casing_definitions[NUMBER_OF_SHELL_CASING_T
 /* ---------- structures */
 
 struct trigger_definition {
-	short rounds_per_magazine;
-	short ammunition_type;
-	short ticks_per_round;
-	short recovery_ticks;
-	short charging_ticks;
+	int16 rounds_per_magazine;
+	int16 ammunition_type;
+	int16 ticks_per_round;
+	int16 recovery_ticks;
+	int16 charging_ticks;
 	world_distance recoil_magnitude;
-	short firing_sound;
-	short click_sound;
-	short charging_sound;
-	short shell_casing_sound;
-	short reloading_sound;
-	short charged_sound;
-	short projectile_type;
-	short theta_error;
-	short dx, dz;
-	short shell_casing_type;
-	short burst_count;
+	int16 firing_sound;
+	int16 click_sound;
+	int16 charging_sound;
+	int16 shell_casing_sound;
+	int16 reloading_sound;
+	int16 charged_sound;
+	int16 projectile_type;
+	int16 theta_error;
+	int16 dx, dz;
+	int16 shell_casing_type;
+	int16 burst_count;
 };
 
 struct weapon_definition {
-	short item_type;
-	short powerup_type;
-	short weapon_class;
-	short flags;
+	int16 item_type;
+	int16 powerup_type;
+	int16 weapon_class;
+	int16 flags;
 
 	fixed firing_light_intensity;
-	short firing_intensity_decay_ticks;
+	int16 firing_intensity_decay_ticks;
 
 	/* weapon will come up to FIXED_ONE when fired; idle_height±bob_amplitude should be in
 		the range [0,FIXED_ONE] */
@@ -190,21 +190,21 @@ struct weapon_definition {
 		the trigger is depressed and is not lowered until the firing animation stops.  for single
 		shot weapons the animation loops once; the weapon is raised and lowered as soon as the
 		firing animation terminates */
-	short collection;
-	short idle_shape, firing_shape, reloading_shape;
-	short unused;
-	short charging_shape, charged_shape;
+	int16 collection;
+	int16 idle_shape, firing_shape, reloading_shape;
+	int16 unused;
+	int16 charging_shape, charged_shape;
 
 	/* How long does it take to ready the weapon? */
 	/* load_rounds_tick is the point which you actually load them. */
-	short ready_ticks, await_reload_ticks, loading_ticks, finish_loading_ticks, powerup_ticks;
+	int16 ready_ticks, await_reload_ticks, loading_ticks, finish_loading_ticks, powerup_ticks;
 
 	struct trigger_definition weapons_by_trigger[NUMBER_OF_TRIGGERS];
 };
 
 /* ------------------------ globals */
 
-short weapon_ordering_array[]= {
+int16 weapon_ordering_array[]= {
 	_weapon_fist,
 	_weapon_pistol,
 	_weapon_plasma_pistol,

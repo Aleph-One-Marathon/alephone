@@ -211,7 +211,7 @@ struct monster_data /* 64 bytes */
 
 	short object_index;
 	
-	long ticks_since_last_activation;
+	int32 ticks_since_last_activation;
 
 	short activation_bias;
 	

@@ -119,8 +119,8 @@ struct sound_definition
 
 struct depth_curve_definition
 {
-	short maximum_volume, maximum_volume_distance;
-	short minimum_volume, minimum_volume_distance;
+	int16 maximum_volume, maximum_volume_distance;
+	int16 minimum_volume, minimum_volume_distance;
 };
 
 struct sound_behavior_definition

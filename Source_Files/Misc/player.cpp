@@ -436,7 +436,7 @@ void reset_player_queues(
 /* queue an action flag on the given player’s queue (no zombies allowed) */
 void queue_action_flags(
 	short player_index,
-	long *action_flags,
+	int32 *action_flags,
 	short count)
 {
 	struct player_data *player= get_player_data(player_index);

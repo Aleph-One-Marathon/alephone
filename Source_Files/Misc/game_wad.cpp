@@ -596,34 +596,6 @@ void complete_loading_level(
 		assert(actual_platform_data);
 		
 		unpack_platform_data(actual_platform_data,platforms,actual_platform_data_count);
-/*
-#ifdef SDL
-		// CB: convert saved_platform_data to platform_data
-		for (int i=0; i<actual_platform_data_count; i++) {
-			struct platform_data *p = platforms + i;
-			struct saved_platform_data *q = actual_platform_data + i;
-			p->type = q->type;
-			p->static_flags = (q->static_flags_hi << 16) | q->static_flags_lo;
-			p->speed = q->speed;
-			p->delay = q->delay;
-			p->minimum_floor_height = q->minimum_floor_height;
-			p->maximum_floor_height = q->maximum_floor_height;
-			p->minimum_ceiling_height = q->minimum_ceiling_height;
-			p->maximum_ceiling_height = q->maximum_ceiling_height;
-			p->polygon_index = q->polygon_index;
-			p->dynamic_flags = q->dynamic_flags;
-			p->floor_height = q->floor_height;
-			p->ceiling_height = q->ceiling_height;
-			p->ticks_until_restart = q->ticks_until_restart;
-			for (int j=0; j<MAXIMUM_VERTICES_PER_POLYGON; j++)
-				p->endpoint_owners[j] = q->endpoint_owners[j];
-			p->parent_platform_index = q->parent_platform_index;
-			p->tag = q->tag;
-		}
-#else
-		objlist_copy(platforms, actual_platform_data, actual_platform_data_count);
-#endif
-*/
 		dynamic_world->platform_count= actual_platform_data_count;
 	}
 
@@ -1058,26 +1030,6 @@ void load_sides(
 
 	unpack_side_data(sides,map_sides,count);
 
-#if 0
-	for(loop=0; loop<count; ++loop)
-	{
-#ifdef LP
-		// map_sides[loop]= *sides;
-		byte_swap_object(*sides, _bs_side_data);
-		unpack_side_data(*sides,map_sides[loop]);
-#endif
-#ifdef CB
-#ifdef SDL
-		map_sides[loop]= *(side_data *)sides;
-		byte_swap_data(map_sides + loop, SIZEOF_saved_side, 1, _bs_saved_side);
-		map_sides[loop].ambient_delta = (sides->ambient_delta_hi << 16) | sides->ambient_delta_lo;
-#else
-		map_sides[loop]= *sides;
-		byte_swap_object(map_sides[loop], _bs_side_data);
-#endif
-#endif
-#endif
-
 	for(loop=0; loop<count; ++loop)
 	{
 		if(version==MARATHON_ONE_DATA_VERSION)
@@ -1151,7 +1103,7 @@ void load_lights(
 	
 	switch(version)
 	{
-	case MARATHON_ONE_DATA_VERSION:
+	case MARATHON_ONE_DATA_VERSION: {
 		
 		// Unpack the old lights into a temporary array
 		OldLights = new old_light_data[count];
@@ -1168,6 +1120,7 @@ void load_lights(
 		}
 		delete []OldLights;
 		break;			
+	}
 		
 	case MARATHON_TWO_DATA_VERSION:
 	case MARATHON_INFINITY_DATA_VERSION:
@@ -1189,131 +1142,6 @@ void load_lights(
 
 	return;
 }
-
-// Superseded by what's above
-#if 0
-static void convert_lighting_function_spec(lighting_function_specification &dst, const saved_lighting_function_specification &src)
-{
-	dst.function = src.function;
-	dst.period = src.period;
-	dst.delta_period = src.delta_period;
-	dst.intensity = (src.intensity_hi << 16) | src.intensity_lo;
-	dst.delta_intensity = (src.delta_intensity_hi << 16) | src.delta_intensity_lo;
-}
-
-void load_lights(
-#ifdef LP
-	saved_static_light *_lights, 
-#endif
-#ifdef CB
-	struct saved_static_light_data *lights,
-#endif
-	short count,
-	short version)
-{
-	short loop;
-
-	vassert(count>=0 && count<=MAXIMUM_LIGHTS_PER_MAP, csprintf(temporary, "Light count: %d vers: %d",
-		count, version));
-	
-	switch(version)
-	{
-		case MARATHON_ONE_DATA_VERSION:
-			{	
-				struct old_light_data *light= (struct old_light_data *) _lights;
-				
-				/* As time goes on, we should add functions below to make the lights */
-				/*  behave more like their bacward compatible cousins. */
-				for(loop= 0; loop<count; ++loop)
-				{
-					short new_index;
-
-					/* Do the best we can.. */
-					switch(SDL_SwapBE16(light->type))
-					{
-						case _light_is_normal:
-						case _light_is_annoying:
-						case _light_is_energy_efficient:
-						case _light_is_rheostat:
-						case _light_is_flourescent:
-							new_index= new_light(get_defaults_for_light_type(_normal_light));
-							break;
-							
-						case _light_is_strobe:
-						case _light_flickers:
-						case _light_pulsates:
-							new_index= new_light(get_defaults_for_light_type(_strobe_light));
-							break;
-							
-						default:
-							// LP change:
-							assert(false);
-							// halt();
-							break;
-					}
-					assert(new_index==loop);
-					light++;
-				}
-			}
-			break;
-			
-		case MARATHON_TWO_DATA_VERSION:
-		// LP addition:
-		case MARATHON_INFINITY_DATA_VERSION:
-			{
-#ifdef LP
-				struct saved_static_light *light= _lights;
-#endif
-#ifdef CB
-				struct saved_static_light_data *light= lights;
-#endif				
-				for(loop= 0; loop<count; ++loop)
-				{
-					short new_index;
-#ifdef LP
-					byte_swap_object(light, _bs_static_light_data);
-					static_light_data temp_light;
-					unpack_light_data(*light,temp_light);
-					
-					new_index= new_light(&temp_light);
-#endif
-#ifdef CB
-#ifdef SDL
-					// CB: convert saved_static_light_data to static_light_data
-					saved_static_light_data tmp = *light;
-					byte_swap_data(&tmp, SIZEOF_saved_static_light_data, 1, _bs_saved_static_light_data);
-					static_light_data tmp2;
-					tmp2.type = tmp.type;
-					tmp2.flags = tmp.flags;
-					tmp2.phase = tmp.phase;
-					convert_lighting_function_spec(tmp2.primary_active, tmp.primary_active);
-					convert_lighting_function_spec(tmp2.secondary_active, tmp.secondary_active);
-					convert_lighting_function_spec(tmp2.becoming_active, tmp.becoming_active);
-					convert_lighting_function_spec(tmp2.primary_inactive, tmp.primary_inactive);
-					convert_lighting_function_spec(tmp2.secondary_inactive, tmp.secondary_inactive);
-					convert_lighting_function_spec(tmp2.becoming_inactive, tmp.becoming_inactive);
-					tmp2.tag = tmp.tag;
-					new_index = new_light(&tmp2);
-#else
-					byte_swap_object(*light, _bs_static_light_data);
-					new_index = new_light(light);
-#endif
-#endif
-					assert(new_index==loop);
-					light++;
-				}
-			}
-			break;
-		default:
-			// LP change:
-			assert(false);
-			// halt();
-			break;
-	}
-
-	return;
-}
-#endif
 
 void load_annotations(
 	byte *annotations, 
@@ -1378,22 +1206,6 @@ void load_media(
 		short new_index = new_media(&TempMedia);
 		assert(new_index==ii);
 	}
-#if 0
-	for(ii= 0; ii<count; ++ii)
-	{
-#ifdef SDL
-		media_data tmp = *media;
-		byte_swap_data(&tmp, SIZEOF_media_data, 1, _bs_media_data);
-		short new_index = new_media(&tmp);
-#else
-		byte_swap_object(media, _bs_media_data);
-		short new_index= new_media(media);
-#endif
-		
-		assert(new_index==ii);
-		media++;
-	}
-#endif
 
 	return;
 }
@@ -1405,15 +1217,6 @@ void load_ambient_sound_images(
 	assert(count>=0 &&count<=MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
 
 	unpack_ambient_sound_image_data(data,ambient_sound_images,count);
-#if 0
-#ifdef SDL
-	memcpy(ambient_sound_images, data, count*SIZEOF_ambient_sound_image_data);
-	byte_swap_data(ambient_sound_images, SIZEOF_ambient_sound_image_data, count, _bs_ambient_sound_image_data);
-#else
-	objlist_copy(ambient_sound_images, data, count);
-	byte_swap_object_list(ambient_sound_images, count, _bs_ambient_sound_image_data);
-#endif
-#endif
 
 	dynamic_world->ambient_sound_image_count= count;
 }
@@ -1425,15 +1228,6 @@ void load_random_sound_images(
 	assert(count>=0 &&count<=MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
 
 	unpack_random_sound_image_data(data,random_sound_images,count);
-#if 0
-#ifdef SDL
-	memcpy(random_sound_images, data, count*sizeof(struct random_sound_image_data));
-	byte_swap_data(random_sound_images, SIZEOF_random_sound_image_data, count, _bs_random_sound_image_data);
-#else
-	objlist_copy(random_sound_images, data, count);
-	byte_swap_object_list(random_sound_images, count, _bs_random_sound_image_data);
-#endif
-#endif
 
 	dynamic_world->random_sound_image_count= count;
 }
@@ -1691,33 +1485,6 @@ static void scan_and_add_platforms(
 				}
 			}
 			
-#if 0
-			static_data= platform_static_data;
-			for(platform_static_data_index= 0; platform_static_data_index<count; ++platform_static_data_index)
-			{
-				if(static_data->polygon_index==loop)
-				{
-#ifdef SDL
-					// CB: convert saved_static_platform_data to static_platform_data
-					static_platform_data tmp;
-					tmp.type = static_data->type;
-					tmp.speed = static_data->speed;
-					tmp.delay = static_data->delay;
-					tmp.maximum_height = static_data->maximum_height;
-					tmp.minimum_height = static_data->minimum_height;
-					tmp.static_flags = (static_data->static_flags_hi << 16) | static_data->static_flags_lo;
-					tmp.polygon_index = static_data->polygon_index;
-					tmp.tag = static_data->tag;
-					new_platform(&tmp, loop);
-#else
-					new_platform(static_data, loop);
-#endif
-					break;
-				}
-				static_data++;
-			}
-#endif
-			
 			/* DIdn't find it- use a standard platform */
 			if(platform_static_data_index==count)
 			{
@@ -1898,7 +1665,6 @@ boolean process_map_wad(
 	// LP addition: load the physics-model chunks (all fixed-size)
 	bool PhysicsModelLoaded = false;
 	
-// #ifdef mac	//!! most of these structures have non-portable alignment requirements; to be fixed later
 	data= (byte *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
 	count = data_length/SIZEOF_monster_definition;
 	assert(count*SIZEOF_monster_definition == data_length);
@@ -1948,7 +1714,6 @@ boolean process_map_wad(
 		PhysicsModelLoaded = true;
 		unpack_weapon_definition(data,count);
 	}
-// #endif
 	
 	// LP addition: Reload the physics model if it had been loaded in the previous level,
 	// but not in the current level. This avoids the persistent-physics bug.
@@ -2051,61 +1816,6 @@ boolean process_map_wad(
 		complete_loading_level((short *) map_index_data, map_index_count,
 			data, count, platform_structures,
 			platform_structure_count, version);
-	
-		// LP: don't need this stuff
-#if 0
-#ifdef SDL
-		data= (byte *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
-		count= data_length/SIZEOF_saved_static_platform_data;
-		assert(count*SIZEOF_saved_static_platform_data==data_length);
-		byte_swap_data(data, SIZEOF_saved_static_platform_data, count, _bs_saved_static_platform_data);
-
-		platform_structures= (struct saved_platform_data *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
-		platform_structure_count= data_length/SIZEOF_saved_platform_data;
-		assert(platform_structure_count*SIZEOF_saved_platform_data==data_length);
-		byte_swap_data(platform_structures, SIZEOF_saved_platform_data, platform_structure_count, _bs_saved_platform_data);
-#else
-		data= (byte *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
-		count= data_length/sizeof(saved_static_platform);
-		assert(count*sizeof(saved_static_platform)==data_length);
-		byte_swap_object_list(data, count, _bs_static_platform_data);
-		
-		static_platform_data *unpacked_static_platform_structures = NULL;
-		if (count > 0)
-		{
-			unpacked_static_platform_structures = new static_platform_data[count];
-			saved_static_platform *static_platform_structures = (saved_static_platform *)data;
-			for (int i=0; i<count; i++)
-				unpack_static_platform_data(static_platform_structures[i], unpacked_static_platform_structures[i]);
-		}
-
-		platform_structures= (saved_platform *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
-		platform_structure_count= data_length/sizeof(saved_platform);
-		assert(platform_structure_count*sizeof(saved_platform)==data_length);
-		byte_swap_object_list(platform_structures, platform_structure_count, _bs_platform_data);
-#ifdef LP		
-		platform_data *unpacked_platform_structures = NULL;
-		if (platform_structure_count > 0)
-		{
-			unpacked_platform_structures = new platform_data[platform_structure_count];
-			for (int i=0; i<platform_structure_count; i++)
-				unpack_platform_data(platform_structures[i], unpacked_platform_structures[i]);
-		}
-		
-#endif
-#endif
-		complete_loading_level((short *) map_index_data, map_index_count,
-#ifdef LP
-			unpacked_static_platform_structures, count, unpacked_platform_structures, 
-#endif
-#ifdef CB
-			(struct saved_static_platform_data *) data, count, platform_structures,
-#endif
-			platform_structure_count, version);
-		
-		if (unpacked_static_platform_structures) delete []unpacked_static_platform_structures;
-		if (unpacked_platform_structures) delete []unpacked_platform_structures;
-#endif
 	}
 	
 	/* ... and bail */

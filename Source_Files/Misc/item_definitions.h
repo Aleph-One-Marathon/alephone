@@ -14,12 +14,12 @@ Feb 4, 2000 (Loren Petrich):
 
 struct item_definition
 {
-	short item_kind;
-	short singular_name_id;
-	short plural_name_id;
+	int16 item_kind;
+	int16 singular_name_id;
+	int16 plural_name_id;
 	shape_descriptor base_shape;
-	short maximum_count_per_player;
-	short invalid_environments;
+	int16 maximum_count_per_player;
+	int16 invalid_environments;
 };
 
 /* ---------- globals */

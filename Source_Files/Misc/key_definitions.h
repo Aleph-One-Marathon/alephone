@@ -18,15 +18,15 @@ enum /* special flag types */
 /* Structures */
 struct blacklist_data
 {
-	short offset1, offset2; /* the combination of keys that should be blacklisted */
-	short mask1, mask2;     /* help for finding them in the keymap */
+	int16 offset1, offset2; /* the combination of keys that should be blacklisted */
+	int16 mask1, mask2;     /* help for finding them in the keymap */
 };
 
 struct special_flag_data
 {
-	short type;
-	long flag, alternate_flag;
-	short persistence;
+	int16 type;
+	int32 flag, alternate_flag;
+	int16 persistence;
 };
 
 struct key_definition
@@ -35,9 +35,9 @@ struct key_definition
 	SDLKey offset;
 	uint32 action_flag;
 #else
-	short offset;
-	long action_flag;
-	short mask;
+	int16 offset;
+	int32 action_flag;
+	int16 mask;
 #endif
 };
 

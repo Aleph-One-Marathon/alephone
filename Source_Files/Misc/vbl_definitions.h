@@ -16,8 +16,8 @@ Aug 12, 2000 (Loren Petrich):
 
 typedef struct action_queue /* 8 bytes */
 {
-	short read_index, write_index;
-	long *buffer;
+	int16 read_index, write_index;
+	int32 *buffer;
 } ActionQueue;
 
 struct recording_header
@@ -34,7 +34,7 @@ struct recording_header
 struct replay_private_data {
 	boolean valid;
 	struct recording_header header;
-	short replay_speed;
+	int16 replay_speed;
 	boolean game_is_being_replayed;
 	boolean game_is_being_recorded;
 	boolean have_read_last_chunk;
@@ -43,11 +43,11 @@ struct replay_private_data {
 	// fileref recording_file_refnum;
 	char *fsread_buffer;
 	char *location_in_cache;
-	long bytes_in_cache;
+	int32 bytes_in_cache;
 	
 	long film_resource_offset;
 	char *resource_data;
-	long resource_data_size;
+	int32 resource_data_size;
 };
 
 /* ----- globals */

@@ -131,7 +131,7 @@ static void read_recording_queue_chunks(void);
 static boolean pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
 static bool vblFSRead(OpenedFile& File, long *count, void *dest, bool& HitEOF);
-static void record_action_flags(short player_identifier, long *action_flags, short count);
+static void record_action_flags(short player_identifier, int32 *action_flags, short count);
 static short get_recording_queue_size(short which_queue);
 
 // #define DEBUG_REPLAY
@@ -175,7 +175,7 @@ void initialize_keyboard_controller(
 	{
 		queue= get_player_recording_queue(player_index);
 		queue->read_index= queue->write_index = 0;
-		queue->buffer= new long[MAXIMUM_QUEUE_SIZE];
+		queue->buffer= new int32[MAXIMUM_QUEUE_SIZE];
 		if(!queue->buffer) alert_user(fatalError, strERRORS, outOfMemory, memory_error());
 	}
 	enter_mouse(0);
@@ -354,7 +354,7 @@ boolean input_controller(
 			}
 			else // then getting input from the keyboard/mouse
 			{
-				long action_flags= parse_keymap();
+				int32 action_flags= parse_keymap();
 				
 				process_action_flags(local_player_index, &action_flags, 1);
 				heartbeat_count++; // ba-doom
@@ -369,7 +369,7 @@ boolean input_controller(
 
 void process_action_flags(
 	short player_identifier, 
-	long *action_flags, 
+	int32 *action_flags, 
 	short count)
 {
 	if (replay.game_is_being_recorded)
@@ -382,7 +382,7 @@ void process_action_flags(
 
 static void record_action_flags(
 	short player_identifier, 
-	long *action_flags, 
+	int32 *action_flags, 
 	short count)
 {
 	short index;

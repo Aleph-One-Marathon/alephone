@@ -58,7 +58,7 @@ short get_level_number_from_user(void)
 {
 printf("*** get_level_number_from_user()\n");
 	//!!
-	return 19;
+	return 3;
 }
 
 
