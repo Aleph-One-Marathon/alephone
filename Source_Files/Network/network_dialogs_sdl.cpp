@@ -972,6 +972,9 @@ bool run_network_gather_dialog()
 				players_w->set_identifier(iPLAYER_DISPLAY_AREA);
 				d.add(players_w);
 
+	players_w->start_displaying_actual_information();
+	players_w->update_display();
+
 #ifdef NETWORK_PREGAME_CHAT
 
 #ifdef	NETWORK_TWO_WAY_CHAT
@@ -1007,7 +1010,7 @@ bool run_network_gather_dialog()
 	d.set_processing_function(gather_processing_function);
 	
 	sGathererMayStartGame= true;
-                        
+
 	return !(d.run());
 }
 #endif // ndef NETWORK_TEST_MICROPHONE_LOCALLY
