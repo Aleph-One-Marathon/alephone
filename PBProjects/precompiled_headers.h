@@ -6,7 +6,7 @@
  *  Copyright (c) 2002 __MyCompanyName__. All rights reserved.
  *
  */
-
+#ifdef __GNUG__
 #ifdef SDL
 #undef mac
 #include <SDL.h>
@@ -41,4 +41,5 @@
 #import "monsters.h"
 #import "world.h"
 #import "player.h"
+#endif
 #endif
