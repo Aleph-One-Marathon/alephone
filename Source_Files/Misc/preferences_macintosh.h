@@ -259,23 +259,11 @@ static void PreferencesHandler(ParsedControl &Ctrl, void *UserData)
 		switch(Ctrl.ID.id)
 		{
 		case iCHASE_CAM:
-#ifndef USE_SHEETS
-			HideWindow(HDPtr->Window);
-#endif
 			Configure_ChaseCam(player_preferences->ChaseCam);
-#ifndef USE_SHEETS
-			ShowWindow(HDPtr->Window);
-#endif
 			break;
 			
 		case iCROSSHAIRS:
-#ifndef USE_SHEETS
-			HideWindow(HDPtr->Window);
-#endif
 			Configure_Crosshairs(player_preferences->Crosshairs);
-#ifndef USE_SHEETS
-			ShowWindow(HDPtr->Window);
-#endif
 			break;
 		}
 		break;
