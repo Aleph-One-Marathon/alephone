@@ -139,7 +139,7 @@ For example, the filenames are specified in this fashion:
 <h3><a name="interface">Interface-Stuff Element: &lt;interface&gt;</a></h3>
 
 This kind of element specifies stuff used in the heads-up display (HUD).
-It has one attribute, "motion_sensor", which is <a name="#boolean">boolean</a>,
+It has one attribute, "motion_sensor", which is <a href="#boolean">boolean</a>,
 and which indicates whether or not the motion sensor will be active.
 In what follows, the HUD coordinates used will be x = rightward and y = downward,
 with the HUD's top left corner being at x = 0, y = 320.
@@ -174,7 +174,7 @@ it contains the attributes
 <li>top: weapon sprite's position in screen
 <li>left
 <li>multiple: whether the display will show two of them instead of only one,
-which is a <a name="#boolean">boolean</a> value.
+which is a <a href="#boolean">boolean</a> value.
 </ul>
 and an optional child element, &lt;ammo&gt;, which contains the attributes
 <ul>
@@ -194,7 +194,7 @@ and an optional child element, &lt;ammo&gt;, which contains the attributes
 <li>bullet_shape: the shape number for a bullet, or the full-region color index
 <li>empty_shape: the shape number for an empty bullet, or the empty-region color index
 <li>right_to_left: whether the bullets go right-to-left instead of left-to-right,
-which is a <a name="#boolean">boolean</a> value.
+which is a <a href="#boolean">boolean</a> value.
 </ul>
 </ul>
 <p>
@@ -341,7 +341,7 @@ the possible types are:
 
 One can display additional stuff by specifying an appropriate element;
 this elements have an attribute of "on", which is a 
-<a name="#boolean">boolean</a> value.
+<a href="#boolean">boolean</a> value.
 <ul>
 <li>&lt;aliens&gt;: shows characters other than players and Bobs
 <li>&lt;items&gt;: shows anything that can be picked up
@@ -1009,11 +1009,11 @@ The types and subtypes have these values:
 This kind of element specifies various view features.
 It has these attributes:
 <ul>
-<li>map: indicates whether or not to show the overhead map (<a name="#boolean">boolean</a>; default: true)
+<li>map: indicates whether or not to show the overhead map (<a href="#boolean">boolean</a>; default: true)
 <li>fold_effect: indicates whether or not to make the field of view stretch horizontally
-and squeeze vertically as one teleports (<a name="#boolean">boolean</a>; default: true)
+and squeeze vertically as one teleports (<a href="#boolean">boolean</a>; default: true)
 <li>static_effect: indicates whether or not to make teleporting objects have the sparkling
-"static" effect and whether they get squeezed horizontally as they teleport (<a name="#boolean">boolean</a>; default: true)
+"static" effect and whether they get squeezed horizontally as they teleport (<a href="#boolean">boolean</a>; default: true)
 </ul>
 <p>
 This element has the child elements &lt;font&gt;, for setting on-screen-display fonts
@@ -1032,6 +1032,12 @@ which has these attributes:
 <li>tunnel: the tunnel-vision field of view, good for long-distance sharpshooting
 (default: 30)
 <li>rate: how much to change the FOV in degrees/(engine tick) (default: 1.667 or 50 degrees/s)
+<li>fix_h_not_v: fix the view's horizontal FOV angle instead of its vertical FOV angle (<a href="#boolean">boolean</a>; default: false).
+Here is what happens when one shifts from a HUDded to a HUDless view:
+<ul>
+<li>fix_h_not_v false: the horizontal FOV shrinks
+<li>fix_h_not_v true: the vertical FOV expands
+</ul>
 </ul>
 All of them are in degrees, all of them are floating-point values
 (can be non-integer) between 0 and 180, and all of them are optional.
@@ -1383,7 +1389,7 @@ while mean has less strength for saturated colors than for grays.
 
 The third one, &lt;fog&gt;, has these attributes:
 <ul>
-<li>on: (<a name="#boolean">boolean</a>; default: false)
+<li>on: (<a href="#boolean">boolean</a>; default: false)
 <li>depth: the fog depth in World Units (default: 8)
 </ul>
 and a <a href="#color">color</a> subelement, which indicates the fog color
@@ -1427,7 +1433,7 @@ This is the default player name in netgames, which takes the form:
 <h3><a name="cheats">Cheating Element: &lt;cheats&gt;</a></h3>
 
 This element controls whether or not the engine will respond to the cheat codes;
-it has one attribute, "on", which is <a name="#boolean">boolean</a>.
+it has one attribute, "on", which is <a href="#boolean">boolean</a>.
 Cheating is off by default.
 <p>
 
@@ -1465,7 +1471,7 @@ that they are specified in, the first in the list played first, etc.
 <li>&lt;mml&gt; executes the MML script in the resource specified in the value of the attribute "resource"
 <li>&lt;pfhortran&gt; executes the Pfhortran script in the resource specified in the value of the attribute "resource"
 <li>&lt;music&gt; plays the music file specified in the value of the attribute "file"
-<li>&lt;random_order&gt; has the <a name="#boolean">boolean</a> attribute "on", which indicates whether
+<li>&lt;random_order&gt; has the <a href="#boolean">boolean</a> attribute "on", which indicates whether
 the music files are to be played in random order;
 if not (the default), they are played in looping sequence.
 <li>&lt;movie&gt; plays at the beginning of a level the movie file
