@@ -27,10 +27,11 @@
 	for the walls and the sprites
 */
 
-#ifdef HAVE_OPENGL
-
 #include "OGL_Texture_Def.h"
 #include "XML_ElementParser.h"
+
+
+#ifdef HAVE_OPENGL
 
 
 // Options for wall textures and sprites

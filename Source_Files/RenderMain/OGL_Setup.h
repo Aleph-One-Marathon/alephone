@@ -62,9 +62,10 @@ Aug 21, 2001 (Loren Petrich):
 	Adding support for 3D-model inhabitant objects
 */
 
-#include "Model3D.h"
+
 #include "XML_ElementParser.h"
 #include "OGL_Subst_Texture_Def.h"
+#include "OGL_Model_Def.h"
 
 
 // Initializer; returns whether or not OpenGL is present
@@ -189,6 +190,7 @@ void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixel
 // Implemented in OGL_Textures.cpp
 void OGL_ResetTextures();
 
+#ifdef MOVED_OUT
 
 #ifdef HAVE_OPENGL
 
@@ -288,6 +290,14 @@ public:
 // also returns which model sequence was found (
 OGL_ModelData *OGL_GetModelData(short Collection, short Sequence, short& ModelSequence);
 
+// Resets all model skins; arg is whether to clear OpenGL textures
+void OGL_ResetModelSkins(bool Clear_OGL_Txtrs);
+
+#endif // def HAVE_OPENGL
+
+#endif
+
+#ifdef HAVE_OPENGL
 
 // Resets all model skins; arg is whether to clear OpenGL textures
 void OGL_ResetModelSkins(bool Clear_OGL_Txtrs);
