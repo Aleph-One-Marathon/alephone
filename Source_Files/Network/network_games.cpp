@@ -119,7 +119,7 @@ long get_player_net_ranking(
 			break;
 
 		// START Benad
-		case _game_of_defense:
+		case _game_of_defense: {
 			//ranking= (*kills)-(*deaths);
 
 			/* Bogus for now.. */
@@ -151,6 +151,7 @@ long get_player_net_ranking(
 			}
 			break;
 		// END Benad
+		}
 		case _game_of_rugby:
 			// Benad
 			ranking= player->netgame_parameters[_points_scored];
