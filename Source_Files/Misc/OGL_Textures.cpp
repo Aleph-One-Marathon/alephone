@@ -63,12 +63,16 @@ Dec 16, 2000 (Loren Petrich):
 June 14, 2001 (Loren Petrich):
 	Changed Width*Height to TxtrWidth*TxtrHeight in some places to ensure that some operations
 	are done over complete textures
+
+Nov 30, 2001 (Alexander Strange):
+	Added Ian Rickard's texture purging to save VRAM.
 */
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <math.h>
+#include <list>
 
 #include "cseries.h"
 
@@ -98,6 +102,7 @@ June 14, 2001 (Loren Petrich):
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
 
+OGL_TexturesStats gGLTxStats = {0,0,0,500000,0,0, 0};
 
 // Texture mapping
 struct TxtrTypeInfoData
@@ -160,14 +165,20 @@ struct InfravisionData IVDataList[NUMBER_OF_COLLECTIONS] =
 // Is infravision currently active?
 static bool InfravisionActive = false;
 
+static list<TextureState*> sgActiveTextureStates;
+
 
 // Allocate some textures and indicate whether an allocation had happened.
-bool TextureState::Allocate()
+bool TextureState::Allocate(short txType)
 {
+	TextureType = txType;
 	if (!IsUsed)
 	{
+		sgActiveTextureStates.push_front(this);
+		gGLTxStats.inUse++;
 		glGenTextures(NUMBER_OF_TEXTURES,IDs);
 		IsUsed = true;
+		unusedFrames=0;
 		return true;
 	}
 	return false;
@@ -177,12 +188,10 @@ bool TextureState::Allocate()
 bool TextureState::Use(int Which)
 {
 	glBindTexture(GL_TEXTURE_2D,IDs[Which]);
-	if (!IDsInUse[Which])
-	{
-		IDsInUse[Which] = true;
-		return true;
-	}
-	return false;
+	bool result = !TexGened[Which];
+	TexGened[Which] = true;
+	IDUsage[Which]++;
+	return result;
 }
 
 
@@ -191,11 +200,46 @@ void TextureState::Reset()
 {
 	if (IsUsed)
 	{
+		sgActiveTextureStates.remove(this);
+		gGLTxStats.inUse--;
 		glDeleteTextures(NUMBER_OF_TEXTURES,IDs);
-		IsUsed = IsGlowing = IDsInUse[Normal] = IDsInUse[Glowing] = false;
 	}
+	IsUsed = IsGlowing = TexGened[Normal] = TexGened[Glowing] = false;
+	IDUsage[Normal] = IDUsage[Glowing] = unusedFrames = 0;
 }
 
+void TextureState::FrameTick() {
+	if (!IsUsed) return;
+	
+	gGLTxStats.totalAge += (TextureType!=OGL_Txtr_Landscape)?unusedFrames:0;
+	
+	bool used  = false;
+	
+	for (int i=0 ; i<NUMBER_OF_TEXTURES ; i++)
+		if (IDUsage[i] != 0) used = true;
+	
+	if (used) {
+		IDUsage[Normal] = IDUsage[Glowing] = unusedFrames = 0;
+		
+	} else {
+		unusedFrames++;
+		assert(TextureType != NONE);
+		switch (TextureType) {
+		case OGL_Txtr_Wall:
+				if (unusedFrames > 600) Reset(); // at least 20 seconds till wall textures are released
+				break;
+		case OGL_Txtr_Landscape:
+				// never release landscapes
+				break;
+		case OGL_Txtr_Inhabitant:
+				if (unusedFrames > 450) Reset(); // release unused sprites in 15 seconds
+				break;
+		case OGL_Txtr_WeaponsInHand:
+				if (unusedFrames > 300) Reset(); // release weaponds in hand in 10 seconds
+				break;
+		}
+	}
+}
 
 // Will distinguish by texture type as well as by collection;
 // this is because different rendering modes deserve different treatment.
@@ -281,6 +325,14 @@ void OGL_StopTextures()
 			if (TextureStateSets[it][ic]) delete []TextureStateSets[it][ic];
 }
 
+void OGL_FrameTickTextures()
+{
+	list<TextureState*>::iterator i;
+	
+	for (i=sgActiveTextureStates.begin() ; i!= sgActiveTextureStates.end() ; i++) {
+		(*i)->FrameTick();
+	}
+}
 
 // Find an OpenGL-friendly color table from a Marathon shading table
 static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, uint32 *ColorTable)
@@ -846,6 +898,7 @@ void TextureManager::FindColorTables()
 	}
 	
 	// Number of source bytes, for reading off of the shading table
+	// IR change: dithering
 	short NumSrcBytes = bit_depth / 8;
 	
 	// Shadeless polygons use the first, instead of the last, shading table
@@ -1145,23 +1198,41 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 // Always call this one and call it first; safe to allocate texture ID's in it
 void TextureManager::RenderNormal()
 {
-	TxtrStatePtr->Allocate();
+
+
+	TxtrStatePtr->Allocate(TextureType);
 	
 	if (TxtrStatePtr->UseNormal())
 	{
 		assert(NormalBuffer);
 		PlaceTexture(NormalBuffer);
 	}
+
+		gGLTxStats.binds++;
+		int time = 0;
+		gGLTxStats.totalBind += time;
+		if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
+		if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
+		if (time>2) gGLTxStats.longNormalSetups++;
 }
 
 // Call this one after RenderNormal()
 void TextureManager::RenderGlowing()
 {
+
+
 	if (TxtrStatePtr->UseGlowing())
 	{
 		assert(GlowBuffer);
 		PlaceTexture(GlowBuffer);
 	}
+
+		gGLTxStats.binds++;
+		int time = 0;
+		gGLTxStats.totalBind += time;
+		if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
+		if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
+		if (time>2) gGLTxStats.longGlowSetups++;
 }
 
 

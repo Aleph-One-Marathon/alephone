@@ -36,6 +36,8 @@ void OGL_StartTextures();
 // Done with the texture accounting
 void OGL_StopTextures();
 
+// Call this after every frame for housekeeping stuff
+void OGL_FrameTickTextures();
 
 // State of an individual texture set:
 struct TextureState
@@ -50,18 +52,23 @@ struct TextureState
 	GLuint IDs[NUMBER_OF_TEXTURES];		// Texture ID's
 	bool IsUsed;						// Is the texture set being used?
 	bool IsGlowing;						// Does the texture have a glow map?
-	bool IDsInUse[NUMBER_OF_TEXTURES];	// Which ID's are being used?
+	bool TexGened[NUMBER_OF_TEXTURES];	// Which ID's have had their textures generated?
+	int IDUsage[NUMBER_OF_TEXTURES];	// Which ID's are being used?  Reset every frame.
+	int unusedFrames;					// How many frames have passed since we were last used.
+	short TextureType;
 	
-	TextureState() {IsUsed = IsGlowing = IDsInUse[Normal] = IDsInUse[Glowing] = false;}
-	~TextureState() {if (IsUsed) glDeleteTextures(NUMBER_OF_TEXTURES,IDs);}
+	TextureState() {IsUsed = false; Reset(); TextureType = NONE;}
+	~TextureState() {Reset();}
 	
 	// Allocate some textures and indicate whether an allocation had happened.
-	bool Allocate();
+	bool Allocate(short txType);
 	
 	// These indicate that some texture
 	bool Use(int Which);
 	bool UseNormal() {return Use(Normal);}
 	bool UseGlowing() {return Use(Glowing);}
+	
+	void FrameTick();
 	
 	// Reset the texture to unused and force a reload if necessary
 	void Reset();
@@ -296,5 +303,14 @@ void FindInfravisionVersion(short Collection, GLfloat *Color);
 
 // Mass-production version of above; suitable for textures
 void FindInfravisionVersion(short Collection, int NumPixels, uint32 *Pixels);
+
+struct OGL_TexturesStats {
+	int inUse;
+	int binds, totalBind, minBind, maxBind;
+	int longNormalSetups, longGlowSetups;
+	int totalAge;
+};
+
+extern OGL_TexturesStats gGLTxStats;
 
 #endif
