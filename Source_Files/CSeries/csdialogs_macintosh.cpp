@@ -1089,4 +1089,31 @@ void AutoKeyboardWatcher::Watch(
 	vassert(err == noErr, csprintf(temporary, "Error in InstallControlEventHandler: %d",err));
 }
 
+// Convert between control values and floats from 0 to 1.
+// Should be especially useful for sliders.
+
+float GetCtrlFloatValue(ControlRef Ctrl)
+{
+	int32 MinVal = GetControl32BitMinimum(Ctrl);
+	int32 MaxVal = GetControl32BitMaximum(Ctrl);
+	assert(MaxVal != MinVal);
+	
+	int32 Value = GetControl32BitValue(Ctrl);
+	
+	return float(Value - MinVal) / float(MaxVal - MinVal);
+}
+
+void SetCtrlFloatValue(ControlRef Ctrl, float Value)
+{
+	int32 MinVal = GetControl32BitMinimum(Ctrl);
+	int32 MaxVal = GetControl32BitMaximum(Ctrl);
+	assert(MaxVal != MinVal);
+
+	// Round instead of truncating
+	float FVal = MinVal + (MaxVal - MinVal)*Value;
+	int IVal = FVal > 0 ? int(FVal + 0.5) : -int(-FVal + 0.5);
+	
+	SetControl32BitValue(Ctrl, IVal);
+}
+
 #endif

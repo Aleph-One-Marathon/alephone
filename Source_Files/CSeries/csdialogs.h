@@ -332,6 +332,12 @@ public:
 		);
 };
 
+
+// Convert between control values and floats from 0 to 1.
+// Should be especially useful for sliders.
+float GetCtrlFloatValue(ControlRef Ctrl);
+void SetCtrlFloatValue(ControlRef Ctrl, float Value);
+
 #endif
 
 #endif//mac
