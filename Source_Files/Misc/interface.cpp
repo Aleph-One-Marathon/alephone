@@ -70,7 +70,7 @@ extern TP2PerfGlobals perf_globals;
 #include "vbl.h"
 #include "shell.h"
 #include "preferences.h"
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 /* Change this when marathon changes & replays are no longer valid */
 #define RECORDING_VERSION 0
@@ -188,7 +188,7 @@ struct chapter_screen_sound_data chapter_screen_sounds[]=
 
 /* -------------- local globals */
 static struct game_state game_state;
-static FileObject_Mac DraggedReplayFile;
+static FileSpecifier DraggedReplayFile;
 // static FileDesc dragged_replay_file;
 static boolean interface_fade_in_progress= FALSE;
 static short interface_fade_type;
@@ -201,10 +201,10 @@ extern short interface_bit_depth;
 extern short bit_depth;
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
-extern boolean load_game_from_file(FileObject& File);
+extern boolean load_game_from_file(FileSpecifier& File);
 // extern boolean load_game_from_file(FileDesc *file);
 // extern "C" {
-extern boolean choose_saved_game_to_load(FileObject& File);
+extern boolean choose_saved_game_to_load(FileSpecifier& File);
 // extern boolean choose_saved_game_to_load(FileDesc *saved_game);
 // }
 
@@ -380,10 +380,10 @@ void set_change_level_destination(
 	return;
 }
 
-extern boolean load_and_start_game(FileObject& File);
+extern boolean load_and_start_game(FileSpecifier& File);
 // extern boolean load_and_start_game(FileDesc *file);
 
-boolean load_and_start_game(FileObject& File)
+boolean load_and_start_game(FileSpecifier& File)
 	// FileDesc *file)
 {
 	boolean success;
@@ -408,10 +408,10 @@ boolean load_and_start_game(FileObject& File)
 	return success;
 }
 
-extern boolean handle_open_replay(FileObject& File);
+extern boolean handle_open_replay(FileSpecifier& File);
 // extern boolean handle_open_replay(FileDesc *replay_file);
 
-boolean handle_open_replay(FileObject& File)
+boolean handle_open_replay(FileSpecifier& File)
 	// FileDesc *replay_file)
 {
 	DraggedReplayFile.CopySpec(File);
@@ -1177,7 +1177,7 @@ static boolean begin_game(
 			{
 				case _replay:
 					{
-						FileObject_Mac ReplayFile;
+						FileSpecifier ReplayFile;
 						// FileDesc replay_file;
 
 						success= find_replay_to_use(cheat, ReplayFile);
@@ -1363,7 +1363,7 @@ static void start_game(
 void handle_load_game(
 	void)
 {
-	FileObject_Mac FileToLoad;
+	FileSpecifier FileToLoad;
 	// FileDesc file_to_load;
 	boolean success= FALSE;
 
@@ -1737,10 +1737,11 @@ static void try_and_display_chapter_screen(
 		assert(!current_picture_clut);
 		current_picture_clut= calculate_picture_clut(pict_resource_number);
 		current_picture_clut_depth= interface_bit_depth;
-
+		
 		if (current_picture_clut)
 		{
 			SndChannelPtr channel= NULL;
+			LoadedResource SoundRsrc;
 			SndListHandle sound= NULL;
 
 			/* slam the entire clut to black, now. */
@@ -1754,9 +1755,12 @@ static void try_and_display_chapter_screen(
 			draw_full_screen_pict_resource_from_scenario(pict_resource_number);
 
 #if 1
-			sound= get_sound_resource_from_scenario(pict_resource_number);
-			if (sound)
+			if (get_sound_resource_from_scenario(pict_resource_number,SoundRsrc))
+			// sound= get_sound_resource_from_scenario(pict_resource_number);
+			// if (sound)
 			{
+				sound = SndListHandle(SoundRsrc.GetHandle());
+				
 				OSErr sound_error= SndNewChannel(&channel, 0, 0, (SndCallBackUPP) NULL);
 					
 				if (sound_error==noErr)
@@ -1784,10 +1788,13 @@ static void try_and_display_chapter_screen(
 				SndDisposeChannel(channel, TRUE);
 			}
 			
+			// Superfluous, since the loaded-resource wrapper object does it
+			/*
 			if (sound)
 			{
 				ReleaseResource((Handle)sound);
 			}
+			*/
 #endif
 		}
 	}

@@ -31,7 +31,7 @@ Aug 12, 2000 (Loren Petrich):
 #include "player.h"
 #include "game_window.h"
 #include "game_errors.h"
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 #include "tags.h"
 #include "wad.h"
@@ -78,12 +78,12 @@ static boolean confirm_save_choice(FSSpec *file);
 
 
 /* --------- code begins */
-void get_default_map_spec(FileObject& File)
+void get_default_map_spec(FileSpecifier& File)
 	// FileDesc *_new)
 {
 
 	File.SetFileToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP),FileObject::C_Map);
+	File.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP),FileSpecifier::C_Map);
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 	
 // LP: begin no-compile
@@ -110,12 +110,12 @@ void get_default_map_spec(FileObject& File)
 #endif
 }
 
-void get_default_physics_spec(FileObject& File)
+void get_default_physics_spec(FileSpecifier& File)
 //	FileDesc *_new)
 {
 
 	File.SetFileToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL),FileObject::C_Phys);
+	File.SetName(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL),FileSpecifier::C_Phys);
 	// Don't care if it does not exist
 
 // LP: begin no-compile
@@ -148,15 +148,15 @@ void get_default_physics_spec(FileObject& File)
 }
 
 // extern "C" {
-extern boolean choose_saved_game_to_load(FileObject& File);
+extern boolean choose_saved_game_to_load(FileSpecifier& File);
 // extern boolean choose_saved_game_to_load(FSSpec *saved_game);
 // }
 
 /* Note this should show the map of where you are... */
-boolean choose_saved_game_to_load(FileObject& File)
+boolean choose_saved_game_to_load(FileSpecifier& File)
 	// FSSpec *saved_game)
 {
-	return File.ReadDialog(FileObject::C_Save);
+	return File.ReadDialog(FileSpecifier::C_Save);
 	/*
 	SFTypeList type_list;
 	short type_count= 0;
@@ -182,14 +182,14 @@ boolean save_game(
 	show_cursor();
 
 	/* Translate the name, and display the dialog */
-	FileObject_Mac SaveFile;
+	FileSpecifier SaveFile;
 	get_current_saved_game_name(SaveFile);
 	char GameName[256];
 	SaveFile.GetName(GameName);
 	
 	char Prompt[256];
 	boolean success = SaveFile.WriteDialog(
-			FileObject::C_Save,
+			FileSpecifier::C_Save,
 			getcstr(Prompt, strPROMPTS, _save_game_prompt),
 			GameName);
 
@@ -247,14 +247,14 @@ boolean save_game(
 #endif
 }
 
-void add_finishing_touches_to_save_file(FileObject &File)
+void add_finishing_touches_to_save_file(FileSpecifier &File)
 // 	FileDesc *file)
 {
 	short resource_file_ref;
 	unsigned char name[64+1];
 	
 	/* Save the STR resource that tells us what our application name is. */
-	resource_file_ref= FSpOpenResFile(&GetSpec(File), fsWrPerm);
+	resource_file_ref= FSpOpenResFile(&File.Spec, fsWrPerm);
 	// resource_file_ref= FSpOpenResFile((FSSpec *) file, fsWrPerm);
 	if(resource_file_ref>= 0)
 	{
@@ -278,8 +278,55 @@ void add_finishing_touches_to_save_file(FileObject &File)
 
 	/* Add the application name resource.. */
 	getpstr(name, strFILENAMES, filenameMARATHON_NAME);
-	add_application_name_to_fsspec((FileDesc *)&GetSpec(File), name);
 	// add_application_name_to_fsspec((FileDesc *) file, name);
+	
+	// LP: copied out of files_macintosh.c -- add_application_name_to_fsspec();
+	// this is the only place that uses this code
+	short err;
+	FInfo finder_info;
+	short refnum;
+	
+	FSSpec *SpecPtr = &File.GetSpec();
+	
+	err = FSpGetFInfo((FSSpec *)SpecPtr, &finder_info);
+	if(!err)
+	{
+		refnum= FSpOpenResFile((FSSpec *)SpecPtr, fsWrPerm);
+		err= ResError();
+		if(err)
+		{
+			/* This file doesn't have a res fork.. */
+			if(err==fnfErr)
+			{
+				FSpCreateResFile((FSSpec *)SpecPtr, finder_info.fdCreator, 
+					finder_info.fdType, smSystemScript);
+				err= ResError();
+				
+				if(!err)
+				{
+					refnum= FSpOpenResFile((FSSpec *)SpecPtr, fsWrPerm);
+					err= ResError();
+				}
+			}
+		}
+	}
+	
+	if(!err)
+	{
+		Handle resource;
+		
+		assert(refnum>=0);
+								
+		/* Add in the application name */
+		err= PtrToHand(name, &resource, name[0]+1);
+		assert(!err && resource);
+								
+		AddResource(resource, 'STR ', -16396, "\p");
+		ReleaseResource(resource);
+					
+		CloseResFile(refnum);
+	}
+	// End copying
 }
 
 /* ------------ Local code */

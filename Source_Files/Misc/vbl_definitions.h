@@ -12,7 +12,7 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler; removing refnum from here
 */
 
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 #define MAXIMUM_QUEUE_SIZE           512
 

@@ -104,7 +104,7 @@ shortening radii on low-volume ambient sound sorces would be a good idea
 #include "interface.h"
 #include "mysound.h"
 #include "byte_swapping.h"
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 #include <string.h>
 
@@ -207,7 +207,7 @@ static struct sound_manager_parameters *_sm_parameters;
 
 // Moved out of _sm_globals so it could work correctly;
 // there is apparently some sort of buffer overrun somwhere.
-static OpenedFile_Mac SoundFile;
+static OpenedFile SoundFile;
 
 /* include globals */
 #include "sound_definitions.h"
@@ -1383,9 +1383,9 @@ static void add_one_ambient_sound_source(
 }
 
 // Clone of similar functions for getting default map and physics specs
-void get_default_sounds_spec(FileObject& File)
+void get_default_sounds_spec(FileSpecifier& File)
 {
 	File.SetFileToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameSOUNDS8),FileObject::C_Sound);
+	File.SetName(getcstr(temporary, strFILENAMES, filenameSOUNDS8),FileSpecifier::C_Sound);
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 }

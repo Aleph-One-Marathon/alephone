@@ -50,17 +50,23 @@ Aug 15, 2000 (Loren Petrich):
 #include "game_errors.h"
 #include "interface.h" // for strERRORS
 
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
+
+// Formerly in portable_files.h
+inline short memory_error() {return MemError();}
 
 #ifdef env68k
 #pragma segment file_io
 #endif
 
 /* ---------------- private structures */
+// LP: no more union wads
+/*
 struct wad_internal_data {
 	short file_count;
 	FileDesc files[MAXIMUM_UNION_WADFILES];
 };
+*/
 
 /* ---------------- private global data */
 struct wad_internal_data *internal_data[MAXIMUM_OPEN_WADFILES]= {NULL, NULL, NULL};
@@ -104,7 +110,8 @@ boolean read_wad_header(
 	struct wad_header *header)
 {
 	boolean union_file= FALSE;
-	FileError error = noErr;
+	short error = noErr;
+	// FileError error = noErr;
 	boolean success= TRUE;
 
 // LP: suppressing union-wad stuff
@@ -115,7 +122,7 @@ boolean read_wad_header(
 		struct wad_internal_data *data= get_internal_data_for_file_id(file_id);
 
 		assert(data);
-		FileObject_Mac File;
+		FileSpecifier_Mac File;
 		File.SetSpec(*((FSSpec *)(&data->files[0])));
 		file_id= open_wad_file_for_reading(File);
 		// file_id= open_wad_file_for_reading(&data->files[0]);
@@ -165,7 +172,8 @@ struct wad_data *read_indexed_wad_from_file(
 	struct wad_data *read_wad= (struct wad_data *) NULL;
 	byte *raw_wad;
 	long length;
-	FileError error= 0;
+	// FileError error= 0;
+	short error = noErr;
 
 	// if(file_id>=0) /* NOT a union wadfile... */
 	{
@@ -219,7 +227,7 @@ struct wad_data *read_indexed_wad_from_file(
 		assert(union_wad_data->file_count);
 		
 		/* Call myself, to load in the base file... */
-		FileObject_Mac File;
+		FileSpecifier_Mac File;
 		File.SetSpec(*((FSSpec *)&union_wad_data->files[0]));
 		base_ref= open_wad_file_for_reading(File);
 		// base_ref= open_wad_file_for_reading(&union_wad_data->files[0]);
@@ -307,7 +315,7 @@ void *extract_type_from_wad(
 }
 
 boolean wad_file_has_checksum(
-	FileObject& File, 
+	FileSpecifier& File, 
 	// FileDesc *file, 
 	unsigned long checksum)
 {
@@ -322,14 +330,14 @@ boolean wad_file_has_checksum(
 	return has_checksum;
 }
 
-unsigned long read_wad_file_checksum(FileObject& File)
+unsigned long read_wad_file_checksum(FileSpecifier& File)
 	// FileDesc *file)
 {
 	// fileref file_id;
 	struct wad_header header;
 	unsigned long checksum= 0l;
 	
-	OpenedFile_Mac OFile;
+	OpenedFile OFile;
 	if (!open_wad_file_for_reading(File,OFile))
 	// file_id= open_wad_file_for_reading(file);
 	// if(file_id>=0)
@@ -347,14 +355,14 @@ unsigned long read_wad_file_checksum(FileObject& File)
 	return checksum;
 }
 
-unsigned long read_wad_file_parent_checksum(FileObject& File)
+unsigned long read_wad_file_parent_checksum(FileSpecifier& File)
 	// FileDesc *file)
 {
 	// fileref file_id;
 	struct wad_header header;
 	unsigned long checksum= 0l;
 
-	OpenedFile_Mac OFile;
+	OpenedFile OFile;
 	if (!open_wad_file_for_reading(File,OFile))
 	// file_id= open_wad_file_for_reading(file);
 	// if(file_id>=0)
@@ -373,7 +381,7 @@ unsigned long read_wad_file_parent_checksum(FileObject& File)
 }
 
 boolean wad_file_has_parent_checksum(
-	FileObject& File, 
+	FileSpecifier& File, 
 	// FileDesc *file, 
 	unsigned long parent_checksum)
 {
@@ -381,7 +389,7 @@ boolean wad_file_has_parent_checksum(
 	boolean has_checksum= FALSE;
 	struct wad_header header;
 
-	OpenedFile_Mac OFile;
+	OpenedFile OFile;
 	if (!open_wad_file_for_reading(File,OFile))
 	// file_id= open_wad_file_for_reading(file);
 	// if(file_id>=0)
@@ -414,7 +422,7 @@ fileref open_union_wad_file_for_reading(
 	fileref parent_file_id;
 	
 	/* Initially just open the base file, to make sure that it exists */
-	FileObject_Mac BaseFile;
+	FileSpecifier_Mac BaseFile;
 	BaseFile.SetSpec(*((FSSpec *)base_file));
 	parent_file_id= open_wad_file_for_reading(BaseFile);
 	// parent_file_id= open_wad_file_for_reading(base_file);
@@ -475,7 +483,7 @@ fileref open_union_wad_file_for_reading_by_list(
 	assert(count>=1);
 	
 	/* Initially just open the base file, to make sure that it exists */
-	FileObject_Mac BaseFile;
+	FileSpecifier_Mac BaseFile;
 	BaseFile.SetSpec(*((FSSpec *)&files[0]));
 	parent_file_id= open_wad_file_for_reading(BaseFile);
 	// parent_file_id= open_wad_file_for_reading(&files[0]);
@@ -511,7 +519,7 @@ fileref open_union_wad_file_for_reading_by_list(
 				{
 					/* Only add it if the checksum is valid.. */
 					
-					FileObject_Mac File;
+					FileSpecifier_Mac File;
 					File.SetSpec(*((FSSpec *)&files[index]));
 					if(wad_file_has_parent_checksum(File, checksum))
 					// if(wad_file_has_parent_checksum(&files[index], checksum))
@@ -550,7 +558,7 @@ struct wad_data *create_empty_wad(void)
 } 
 
 void fill_default_wad_header(
-	FileObject& File, 
+	FileSpecifier& File, 
 	// FileDesc *file, 
 	short wadfile_version,
 	short data_version, 
@@ -593,7 +601,7 @@ boolean write_wad_header(
 	// fileref file_id, 
 	struct wad_header *header)
 {
-	FileError error;
+	// FileError error;
 	boolean success= TRUE;
 	
 	write_to_file(OFile, 0, header, sizeof(struct wad_header));
@@ -616,7 +624,7 @@ boolean write_directorys(
 	void *entries)
 {
 	long size_to_write= get_size_of_directory_data(header);
-	FileError error;
+	// FileError error;
 	boolean success= TRUE;
 	
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
@@ -861,7 +869,8 @@ boolean write_wad(
 	struct wad_data *wad, 
 	long offset)
 {
-	FileError error= 0;
+	short error = noErr;
+	// FileError error= 0;
 	boolean success;
 	short entry_header_length= get_entry_header_length(file_header);
 	short index;
@@ -916,13 +925,13 @@ boolean write_wad(
 	return success;
 }
 
-short number_of_wads_in_file(FileObject& File)
+short number_of_wads_in_file(FileSpecifier& File)
 	// FileDesc *file)
 {
-	fileref file_ref;
+	// fileref file_ref;
 	short count= NONE;
 	
-	OpenedFile_Mac OFile;
+	OpenedFile OFile;
 	if (open_wad_file_for_reading(File,OFile))
 	// file_ref= open_wad_file_for_reading(file);
 	// if(file_ref>=0)
@@ -995,7 +1004,7 @@ struct encapsulated_wad_data {
 };
 
 void *get_flat_data(
-	FileObject& File, 
+	FileSpecifier& File, 
 	// FileDesc *base_file, 
 	boolean use_union, 
 	short wad_index)
@@ -1007,7 +1016,7 @@ void *get_flat_data(
 	
 	assert(!use_union);
 	
-	OpenedFile_Mac OFile;
+	OpenedFile OFile;
 	if (open_wad_file_for_reading(File,OFile))
 	// file_handle= open_wad_file_for_reading(base_file);
 	// if(file_handle>=0)
@@ -1019,7 +1028,8 @@ void *get_flat_data(
 		if (success)
 		{
 			long length;
-			FileError error= 0;
+			short error = 0;
+			// FileError error= 0;
 		
 			/* Allocate the conglomerate data.. */
 			if (size_of_indexed_wad(OFile, &header, wad_index, &length))
@@ -1116,7 +1126,7 @@ void dump_wad(
 }
 
 /* ---------- file management routines */
-bool create_wadfile(FileObject& File, int Type)
+bool create_wadfile(FileSpecifier& File, int Type)
 	// FileDesc *file,
 	// unsigned long file_type) /* Should be OSType, or extension for dos. */
 {
@@ -1124,14 +1134,14 @@ bool create_wadfile(FileObject& File, int Type)
 	// return create_file(file, file_type);
 }
 
-bool open_wad_file_for_reading(FileObject& File, OpenedFile& OFile)
+bool open_wad_file_for_reading(FileSpecifier& File, OpenedFile& OFile)
 	// FileDesc *file)
 {
 	return File.Open(OFile);
 	// return open_file_for_reading((FileDesc *)&GetSpec(File));
 }
 
-bool open_wad_file_for_writing(FileObject& File, OpenedFile& OFile)
+bool open_wad_file_for_writing(FileSpecifier& File, OpenedFile& OFile)
 	// FileDesc *file)
 {
 	return File.Open(OFile,true);
@@ -1271,7 +1281,8 @@ static bool read_indexed_directory_data(
 {
 	short base_entry_size;
 	long offset;
-	FileError error= 0;
+	short error = noErr;
+	// FileError error= 0;
 
 	/* Get the sizes of the data structures */
 	base_entry_size= get_directory_base_length(header);
@@ -1329,7 +1340,8 @@ static bool read_indexed_wad_from_file_into_buffer(
 	long *length) /* Length of maximum buffer on entry, actual length on return */
 {
 	struct directory_entry entry;
-	FileError error= 0;
+	short error = noErr;
+	// FileError error= 0;
 
 	/* No union files for this one.. */
 	// assert(file_id>=0);

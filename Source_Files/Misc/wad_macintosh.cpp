@@ -24,7 +24,7 @@ Aug 12, 2000 (Loren Petrich):
 #include "game_errors.h"
 
 #include "find_files.h"
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 #ifdef env68k
 #pragma segment file_io
@@ -35,7 +35,8 @@ struct find_checksum_private_data {
 };
 
 struct find_files_private_data { /* used for enumerating wadfiles */
-	FileDesc *base_file;
+	FileSpecifier BaseFile;
+	// FileDesc *base_file;
 	long base_checksum;
 };
 
@@ -52,7 +53,7 @@ static boolean find_file_with_modification_date_in_directory(FSSpec *matching_fi
 /* ------------- code! */
 /* Search all the directories in the path.. */
 boolean find_wad_file_that_has_checksum(
-	FileObject& File,
+	FileSpecifier& File,
 	// FileDesc *matching_file,
 	unsigned long file_type,
 	short path_resource_id,
@@ -62,8 +63,8 @@ boolean find_wad_file_that_has_checksum(
 	FSSpec app_spec;
 	boolean file_matched= FALSE;
 	
-	FileObject_Mac *FPtr = (FileObject_Mac *)&File;
-	FileDesc *matching_file = (FileDesc *)&(FPtr->Spec);
+	FSSpec *matching_file = &File.GetSpec();
+	// FileDesc *matching_file = (FileDesc *)&(File.Spec);
 
 	/* Look for the files in the same directory that we are in.. */	
 	err= get_my_fsspec(&app_spec);
@@ -104,6 +105,9 @@ boolean find_wad_file_that_has_checksum(
 
 	return file_matched;
 }
+
+// LP: begin no-compile
+#if 0
 
 /* Find other entries that reference the base wad.  Search is by type, and when one is found, the */
 /*  checksums are checked, to make sure that it is modifying the correct file. */
@@ -152,9 +156,12 @@ FileError find_other_entries_that_reference_checksum(
 
 	return error;
 }
+// LP: end no-compile
+#endif
 
 boolean find_file_with_modification_date(
-	FileDesc *matching_file,
+	FileSpecifier& MatchingFile,
+	// FileDesc *matching_file,
 	unsigned long file_type,
 	short path_resource_id,
 	unsigned long modification_date)
@@ -165,6 +172,7 @@ boolean find_file_with_modification_date(
 
 	/* Look for the files in the same directory that we are in.. */	
 	err= get_my_fsspec(&app_spec);
+	FSSpec *matching_file = &MatchingFile.GetSpec();
 	if(!err)
 	{
 		file_matched= find_file_with_modification_date_in_directory((FSSpec *) matching_file,
@@ -234,10 +242,11 @@ static Boolean checksum_and_not_base_callback(
 	struct find_files_private_data *_private= (struct find_files_private_data *) data;
 	
 	/* Don't readd the base file.. */
-	if(!equal_fsspecs(file, (FSSpec *) _private->base_file))
+	if(!equal_fsspecs(file, (FSSpec *) &_private->BaseFile.GetSpec()))
+	// if(!equal_fsspecs(file, (FSSpec *) _private->base_file))
 	{
 		/* Do the checksums match? */
-		FileObject_Mac File;
+		FileSpecifier File;
 		File.SetSpec(*file);
 		if(wad_file_has_parent_checksum(File, _private->base_checksum))
 		// if(wad_file_has_parent_checksum((FileDesc *) file, _private->base_checksum))
@@ -257,7 +266,7 @@ static Boolean match_wad_checksum_callback(
 	struct find_checksum_private_data *_private= (struct find_checksum_private_data *) data;
 	
 	/* Do the checksums match? */
-	FileObject_Mac File;
+	FileSpecifier File;
 	File.SetSpec(*file);
 	if(wad_file_has_checksum(File, _private->checksum_to_match))
 	// if(wad_file_has_checksum((FileDesc *) file, _private->checksum_to_match))
@@ -278,7 +287,8 @@ static boolean find_wad_file_with_checksum_in_directory(
 	boolean success= FALSE;
 	struct find_file_pb pb;
 	struct find_checksum_private_data private_data;
-	FileError error;
+	// FileError error;
+	short error;
 
 	/* Setup the private data for the callback */
 	private_data.checksum_to_match= checksum;
@@ -329,7 +339,8 @@ static boolean find_file_with_modification_date_in_directory(
 {
 	boolean success= FALSE;
 	struct find_file_pb pb;
-	FileError error;
+	short error;
+	// FileError error;
 
 	/* Setup the private data for the callback */
 	target_modification_date= modification_date;

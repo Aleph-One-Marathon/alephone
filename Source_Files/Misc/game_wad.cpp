@@ -65,7 +65,7 @@ Aug 12, 2000 (Loren Petrich):
 #include "lightsource.h"
 #include "media.h"
 #include "weapons.h"
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 // LP change: moved this into main directory:
 #include "editor.h"
@@ -100,7 +100,7 @@ extern byte physics_models[];
 // unify the save game code into one structure.
 
 /* -------- local globals */
-FileObject_Mac MapFileSpec;
+FileSpecifier MapFileSpec;
 // static FileDesc current_map_file;
 static boolean file_is_set= FALSE;
 
@@ -114,7 +114,7 @@ struct revert_game_info
 	struct game_data game_information;
 	struct player_start_data player_start;
 	struct entry_point entry_point;
-	FileObject_Mac SavedGame;
+	FileSpecifier SavedGame;
 	// FileDesc saved_game;
 };
 static struct revert_game_info revert_game_data;
@@ -196,12 +196,12 @@ void *get_map_for_net_transfer(
 /* ---------------------- End Net Functions ----------- */
 
 /* This takes a cstring */
-void set_map_file(FileObject& File)
+void set_map_file(FileSpecifier& File)
 	// FileDesc *file)
 {
 	MapFileSpec.CopySpec(File);
 	// memcpy(&current_map_file, file, sizeof(FileDesc));
-	set_scenario_images_file((FileDesc *)&MapFileSpec.Spec);
+	set_scenario_images_file(File);
 	// set_scenario_images_file(file);
 	file_is_set= TRUE;
 	
@@ -212,7 +212,7 @@ void set_map_file(FileObject& File)
 void set_to_default_map(
 	void)
 {
-	FileObject_Mac NewMapFile;
+	FileSpecifier NewMapFile;
 	// FileDesc new_map;
 	
 	get_default_map_spec(NewMapFile);
@@ -228,7 +228,7 @@ void set_to_default_map(
 boolean use_map_file(
 	long checksum) /* Should be unsigned long */
 {
-	FileObject_Mac File;
+	FileSpecifier File;
 	// FileDesc file;
 	boolean success= FALSE;
 
@@ -246,7 +246,8 @@ boolean use_map_file(
 boolean load_level_from_map(
 	short level_index)
 {
-	fileref file_handle;
+	OpenedFile OFile;
+	// fileref file_handle;
 	struct wad_header header;
 	struct wad_data *wad;
 	short index_to_load;
@@ -266,7 +267,7 @@ boolean load_level_from_map(
 	
 //		file_handle= open_union_wad_file_for_reading(&current_map_file);
 //		if(file_handle!=0)
-		OpenedFile_Mac MapFile;
+		OpenedFile MapFile;
 		if (open_wad_file_for_reading(MapFileSpec,MapFile))
 		// file_handle= open_wad_file_for_reading(&current_map_file);
 		// if(file_handle!=NONE)
@@ -409,7 +410,7 @@ unsigned long get_current_map_checksum(
 	struct wad_header header;
 
 	assert(file_is_set);
-	OpenedFile_Mac MapFile;
+	OpenedFile MapFile;
 	assert(open_wad_file_for_reading(MapFileSpec,MapFile));
 	// file_handle= open_wad_file_for_reading(&current_map_file);
 	// assert(file_handle != -1);	
@@ -444,7 +445,7 @@ boolean new_game(
 	/* If we want to save it, this is an untitled map.. */
 	revert_game_data.SavedGame.SetFileToApp();
 	// get_application_filedesc(&revert_game_data.saved_game);
-	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),FileObject::C_Save);
+	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),FileSpecifier::C_Save);
 	// getpstr(revert_game_data.saved_game.name, strFILENAMES, filenameDEFAULT_SAVE_GAME);
 
 	/* Set the random seed. */
@@ -525,7 +526,7 @@ boolean get_indexed_entry_point(
 	boolean success= FALSE;
 	
 	assert(file_is_set);
-	OpenedFile_Mac MapFile;
+	OpenedFile MapFile;
 	if (!open_wad_file_for_reading(MapFileSpec,MapFile)) return false;
 	// file_handle= open_wad_file_for_reading(&current_map_file);
 	// if (file_handle != -1)
@@ -993,10 +994,10 @@ void recalculate_redundant_map(
 	for(loop=0;loop<dynamic_world->endpoint_count;++loop) recalculate_redundant_endpoint_data(loop);
 }
 
-extern boolean load_game_from_file(FileObject& File);
+extern boolean load_game_from_file(FileSpecifier& File);
 // extern boolean load_game_from_file(FileDesc *file);
 
-boolean load_game_from_file(FileObject& File)
+boolean load_game_from_file(FileSpecifier& File)
 	// FileDesc *file)
 {
 	boolean success= FALSE;
@@ -1100,7 +1101,7 @@ boolean revert_game(
 	return successful;
 }
 
-void get_current_saved_game_name(FileObject& File)
+void get_current_saved_game_name(FileSpecifier& File)
 	// unsigned char *file_name)
 {
 	File.CopySpec(revert_game_data.SavedGame);
@@ -1108,11 +1109,12 @@ void get_current_saved_game_name(FileObject& File)
 }
 
 /* The current mapfile should be set to the save game file... */
-boolean save_game_file(FileObject& File)
+boolean save_game_file(FileSpecifier& File)
 	// FileDesc *file)
 {
 	struct wad_header header;
-	FileError err;
+	short err;
+	// FileError err;
 	boolean success= FALSE;
 	// short file_ref;
 	long offset, wad_length;
@@ -1134,10 +1136,10 @@ boolean save_game_file(FileObject& File)
 		
 	/* Assume that we confirmed on save as... */
 	// err= create_wadfile(file, SAVE_GAME_TYPE);
-	if (create_wadfile(File,FileObject::C_Save))
+	if (create_wadfile(File,FileSpecifier::C_Save))
 	// if(!err)
 	{
-		OpenedFile_Mac SaveFile;
+		OpenedFile SaveFile;
 		if(open_wad_file_for_writing(File,SaveFile))
 		// file_ref= open_wad_file_for_writing(file); /* returns -1 on error */
 		// if (file_ref>=0)
@@ -1856,7 +1858,7 @@ static void complete_restoring_level(
 /* CP Addition: get_map_file returns a pointer to the current map file */
 //FileDesc *get_map_file(
 //	void)
-FileObject& get_map_file()
+FileSpecifier& get_map_file()
 {
 	return MapFileSpec; // (FileDesc *)&MapFile.Spec;
 }

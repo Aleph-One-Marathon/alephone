@@ -24,7 +24,7 @@ Aug 12, 2000 (Loren Petrich):
 // #include "shell.h" // for refPREFERENCES_DIALOG only
 #include "wad_prefs.h"
 
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 #ifdef env68k
 	#pragma segment file_io
@@ -43,10 +43,13 @@ static void load_preferences(void);
 /* Open the file, and allocate whatever internal structures are necessary in the */
 /*  preferences pointer.. */
 boolean w_open_preferences_file(
-	unsigned char *prefName, 
-	unsigned long preferences_file_type) // ostype for mac, extension for dos
+	char *PrefName,
+	int Type)
+	// unsigned char *prefName, 
+	// unsigned long preferences_file_type) // ostype for mac, extension for dos
 {
-	FileError error;
+	short error;
+	// FileError error;
 	boolean success= TRUE;
 
 	/* allocate space for our global structure to keep track of the prefs file */
@@ -55,14 +58,17 @@ boolean w_open_preferences_file(
 	{
 		/* Clear memory */
 		memset(prefInfo, 0, sizeof(struct preferences_info));
-		memcpy(prefInfo->pref_file.name, prefName, *prefName+1);
-
+		// memcpy(prefInfo->pref_file.name, prefName, *prefName+1);
+		
 		/* check for the preferences folder using FindFolder, creating it if necessary */
-		find_preferences_location(&prefInfo->pref_file);
-
+		// find_preferences_location(&prefInfo->pref_file);
+		
+		prefInfo->PrefsFile.SetParentToPreferences();
+		prefInfo->PrefsFile.SetName(PrefName,Type);
+		
 		/* does the preferences file exist? */
 		load_preferences(); /* Uses prefInfo.. */
-
+		
 		if(error_pending())
 		{
 			short type;
@@ -70,10 +76,18 @@ boolean w_open_preferences_file(
 			error= get_game_error(&type);
 			if(type==systemError)
 			{
+				if (!prefInfo->PrefsFile.Exists())
+				{
+					prefInfo->PrefsFile.Create(Type);
+					set_game_error(systemError,prefInfo->PrefsFile.GetError());
+					w_write_preferences_file();
+				}
+				
+				#if 0
 				switch(error)
 				{
 					case errFileNotFound: // to be portable!
-						error= create_file(&prefInfo->pref_file, preferences_file_type);
+						// error= create_file(&prefInfo->pref_file, preferences_file_type);
 						if (!error)
 						{
 							prefInfo->wad= create_empty_wad();
@@ -81,18 +95,19 @@ boolean w_open_preferences_file(
 							w_write_preferences_file();
 						}
 						break;
-						
+					
 					case errNone:
 					default:
 						/* Errors besides fnfErr and noErr get returned. */
 						break;
 				}
-				
 				set_game_error(systemError, error);
+				#endif
 			} else {
 				/* Something was invalid.. */
-				error= delete_file(&prefInfo->pref_file);
-				if(!error)
+				// error= delete_file(&prefInfo->pref_file);
+				// if(!error)
+				if (prefInfo->PrefsFile.Delete())
 				{
 					prefInfo->wad= create_empty_wad();
 					set_game_error(systemError, error);
@@ -104,7 +119,8 @@ boolean w_open_preferences_file(
 	}
 	else
 	{
-		set_game_error(systemError, memory_error());
+		set_game_error(systemError, MemError());
+		// set_game_error(systemError, memory_error());
 	}
 	
 	if (error)
@@ -190,7 +206,8 @@ void w_write_preferences_file(
 	void)
 {
 	struct wad_header header;
-	fileref refNum;
+	OpenedFile OFile;
+	// fileref refNum;
 
 	/* We can be called atexit. */
 	if(error_pending())
@@ -199,10 +216,8 @@ void w_write_preferences_file(
 	}
 	
 	assert(!error_pending());
-	FileObject_Mac PrefsFileSpec;
-	PrefsFileSpec.SetSpec(*((FSSpec *)&prefInfo->pref_file));
-	OpenedFile_Mac PrefsFile;
-	if (open_wad_file_for_writing(PrefsFileSpec,PrefsFile))
+	OpenedFile PrefsFile;
+	if (open_wad_file_for_writing(prefInfo->PrefsFile,PrefsFile))
 	// refNum= open_wad_file_for_writing(&prefInfo->pref_file);
 	// if(!error_pending())
 	{
@@ -211,7 +226,7 @@ void w_write_preferences_file(
 		// assert(refNum!=NONE);
 
 		// fill_default_wad_header(&prefInfo->pref_file, 
-		fill_default_wad_header(PrefsFileSpec, 
+		fill_default_wad_header(prefInfo->PrefsFile, 
 			CURRENT_WADFILE_VERSION, CURRENT_PREF_WADFILE_VERSION, 
 			1, 0l, &header);
 			
@@ -262,7 +277,7 @@ void w_write_preferences_file(
 static void load_preferences(
 	void)
 {
-	fileref refNum;
+	// fileref refNum;
 	
 	/* If it was already allocated, we are reloading, so free the old one.. */
 	if(prefInfo->wad)
@@ -271,10 +286,8 @@ static void load_preferences(
 		prefInfo->wad= NULL;
 	}
 	
-	FileObject_Mac PrefsFileSpec;
-	PrefsFileSpec.SetSpec(*((FSSpec *)&prefInfo->pref_file));
-	OpenedFile_Mac PrefsFile;
-	if (open_wad_file_for_reading(PrefsFileSpec,PrefsFile))
+	OpenedFile PrefsFile;
+	if (open_wad_file_for_reading(prefInfo->PrefsFile,PrefsFile))
 	// refNum= open_wad_file_for_reading(&prefInfo->pref_file);
 	// if(!error_pending())
 	{

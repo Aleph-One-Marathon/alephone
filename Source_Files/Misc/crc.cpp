@@ -11,7 +11,7 @@ Aug 15, 2000 (Loren Petrich):
 #include <stdlib.h>
 
 #include "cseries.h"
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 // #include "portable_files.h"
 #include "crc.h"
 
@@ -36,13 +36,13 @@ static boolean build_crc_table(void);
 static void free_crc_table(void);
 
 /* -------------- Entry Point ----------- */
-unsigned long calculate_crc_for_file(FileObject& File)
+unsigned long calculate_crc_for_file(FileSpecifier& File)
 	// FileDesc *file) 
 {
 	short refnum;
 	unsigned long crc;
 	
-	OpenedFile_Mac OFile;
+	OpenedFile OFile;
 	if (File.Open(OFile))
 	{
 		crc= calculate_crc_for_opened_file(OFile);

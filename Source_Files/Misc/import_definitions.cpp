@@ -16,7 +16,7 @@ Aug 12, 2000 (Loren Petrich):
 #include "wad.h"
 #include "game_errors.h"
 // LP addition
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 /* ---------- globals */
 
@@ -31,7 +31,7 @@ extern byte physics_models[];
 #include "extensions.h"
 
 /* ---------- local globals */
-static FileObject_Mac PhysicsFileSpec;
+static FileSpecifier PhysicsFileSpec;
 // static FileDesc physics_file;
 
 /* ---------- local prototype */
@@ -39,7 +39,7 @@ static struct wad_data *get_physics_wad_data(boolean *bungie_physics);
 static void import_physics_wad_data(struct wad_data *wad);
 
 /* ---------- code */
-void set_physics_file(FileObject& File)
+void set_physics_file(FileSpecifier& File)
 	// FileDesc *file)
 {
 	PhysicsFileSpec.CopySpec(File);
@@ -130,7 +130,7 @@ static struct wad_data *get_physics_wad_data(
 	
 //	dprintf("Open is: %d %d %.*s", physics_file.vRefNum, physics_file.parID, physics_file.name[0], physics_file.name+1);
 
-	OpenedFile_Mac PhysicsFile;
+	OpenedFile PhysicsFile;
 	if(open_wad_file_for_reading(PhysicsFileSpec,PhysicsFile));
 	// file_id= open_wad_file_for_reading(&physics_file);
 	// if(file_id != NONE)

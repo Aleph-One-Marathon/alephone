@@ -38,7 +38,7 @@ Aug 12, 2000 (Loren Petrich):
 
 #include "portable_files.h"
 #include "music.h"
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 #include "song_definitions.h"
 
@@ -68,8 +68,8 @@ struct music_data {
 	short play_count;
 	short song_index;
 	short next_song_index;
-	// LP: using file object
-	FileObject_Mac File;
+	// LP: using opened-file object
+	OpenedFile OFile;
 	// short song_file_refnum;
 	short fade_interval_duration;
 	short fade_interval_ticks;
@@ -123,23 +123,24 @@ boolean initialize_music_handler(
 		
 	/* Does the file exist? */
 	// LP change: using a file object
-	music_state.File.SetSpec(*((FSSpec *)song_file));
+	FileSpecifier File;
+	File.SetSpec(*((FSSpec *)song_file));
 	// error= FSpOpenDF((FSSpec *) song_file, fsRdPerm, &song_file_refnum);
-	if(music_state.File.Open(NONE))
+	if(File.Open(music_state.OFile))
 	{
 		
 		// LP change: check to see if the file is an AIFF one;
 		OSType MusicHeader;
 		const OSType AIFF_Header = 'FORM';
 		
-		if (!music_state.File.ReadObject(MusicHeader)) return false;
+		if (!music_state.OFile.ReadObject(MusicHeader)) return false;
 		// long NumBytes = 4;
 		// error = FSRead(song_file_refnum, &NumBytes, &MusicHeader);
 		// if (error != noErr) return FALSE;
 		if (MusicHeader != AIFF_Header) return FALSE;
 		
 		// Reposition the file
-		if (!music_state.File.SetPosition(0)) return false;
+		if (!music_state.OFile.SetPosition(0)) return false;
 		// error = SetFPos(song_file_refnum, fsFromStart, 0);
 		// if (error != noErr) return FALSE;
 		
@@ -257,7 +258,7 @@ void music_idle_proc(
 						assert(music_state.channel);					
 	
 						error= SndStartFilePlay(music_state.channel, // channel
-							music_state.File.RefNum, // Not from an AIFF file.
+							music_state.OFile.GetRefNum(), // Not from an AIFF file.
 							// music_state.song_file_refnum, // Not from an AIFF file.
 							0, // our resource id.
 							music_state.sound_buffer_size, // Buffer size
@@ -409,7 +410,7 @@ static void shutdown_music_handler(
 	if(music_state.initialized)
 	{
 		free_music_channel();
-		music_state.File.Close();
+		music_state.OFile.Close();
 		// FSClose(music_state.song_file_refnum);
 	}
 }
