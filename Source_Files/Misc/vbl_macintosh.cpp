@@ -314,7 +314,7 @@ static OSErr copy_file(
 					GetFPos(source_refnum, &total_length);
 					SetFPos(source_refnum, fsFromStart, 0l);
 					
-					data= (char *)malloc(COPY_BUFFER_SIZE);
+					data= new char[COPY_BUFFER_SIZE];
 					if(data)
 					{
 						long running_length= total_length;
@@ -381,7 +381,7 @@ boolean setup_replay_from_random_resource(
 		vassert(resource, csprintf(temporary, "film_to_play = %d", which_film_to_play+1));
 		
 		size= GetHandleSize(resource);
-		replay.resource_data= (char *)malloc(size);
+		replay.resource_data= new char[size];
 		if(!replay.resource_data) alert_user(fatalError, strERRORS, outOfMemory, MemError());
 		
 		HLock(resource);
@@ -407,7 +407,7 @@ boolean setup_replay_from_random_resource(
 
 			replay.film_resource_offset= NONE;
 			replay.resource_data_size= 0;
-			free(replay.resource_data);
+			delete []replay.resource_data;
 			replay.resource_data= NULL;
 
 			replay.valid= FALSE;
@@ -469,7 +469,7 @@ static void open_stream_file(
 	error= FSpOpenDF(&file, fsWrPerm, &stream_refnum);
 	if(error || stream_refnum==NONE) dprintf("Open Err:%d", error);
 	
-	action_flag_buffer= (struct recorded_flag *) malloc(MAXIMUM_STREAM_FLAGS*sizeof(struct recorded_flag));
+	action_flag_buffer= new recorded_flag[MAXIMUM_STREAM_FLAGS];
 	assert(action_flag_buffer);
 	action_flag_index= 0;
 }
@@ -549,7 +549,7 @@ static void close_stream_file(
 		write_flags(action_flag_buffer, action_flag_index-1);
 		FSClose(stream_refnum);
 		
-		free(action_flag_buffer);
+		delete []action_flag_buffer;
 		action_flag_buffer= NULL;
 	}
 }
