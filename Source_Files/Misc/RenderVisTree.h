@@ -9,6 +9,9 @@
 	Defines a class for doing rendering visibility; from render.c
 	
 	Made [view_data *view] a member and removed it as an argument
+	
+Sep. 11, 2000 (Loren Petrich:
+	Made POINTER_DATA more general -- byte *, so one can do pointer arithmetic on it correctly.
 */
 
 #include "GrowableList.h"
@@ -17,9 +20,8 @@
 #include "render.h"
 
 
-// For casting pointers to integer values -- use appropriate data type
-// The definition here is for 32-bit systems; for 64-bit systems use appropriate longer one.
-typedef unsigned long POINTER_DATA;
+// Made pointers more general
+typedef byte *POINTER_DATA;
 #define POINTER_CAST(x) ((POINTER_DATA)(x))
 
 
