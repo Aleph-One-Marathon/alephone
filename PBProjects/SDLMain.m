@@ -1,3 +1,5 @@
+
+
 /*   SDLMain.m - main entry point for our Cocoa-ized SDL app
        Initial Version: Darrell Walisser <dwaliss1@purdue.edu>
        Non-NIB-Code & other changes: Max Horn <max@quendi.de>
@@ -13,6 +15,21 @@
 /* Use this flag to determine whether we use SDLMain.nib or not */
 #define		SDL_USE_NIB_FILE	0
 
+/* Use this flag to determine whether we use CPS (docking) or not */
+#define		SDL_USE_CPS		1
+#ifdef SDL_USE_CPS
+/* Portions of CPS.h */
+typedef struct CPSProcessSerNum
+{
+	UInt32		lo;
+	UInt32		hi;
+} CPSProcessSerNum;
+
+extern OSErr	CPSGetCurrentProcess( CPSProcessSerNum *psn);
+extern OSErr 	CPSEnableForegroundOperation( CPSProcessSerNum *psn, UInt32 _arg2, UInt32 _arg3, UInt32 _arg4, UInt32 _arg5);
+extern OSErr	CPSSetFrontProcess( CPSProcessSerNum *psn);
+
+#endif /* SDL_USE_CPS */
 
 static int    gArgc;
 static char  **gArgv;
@@ -51,24 +68,25 @@ static BOOL   gFinderLaunch;
 /* Set the working directory to the .app's parent directory */
 - (void) setupWorkingDirectory:(BOOL)shouldChdir
 {
-    char parentdir[MAXPATHLEN];
-    char *c;
-    
-    strncpy ( parentdir, gArgv[0], sizeof(parentdir) );
-    c = (char*) parentdir;
 
-    while (*c != '\0')     /* go to end */
-        c++;
-    
-    while (*c != '/')      /* back up to parent */
-        c--;
-    
-    *c++ = '\0';             /* cut off last part (binary name) */
-  
     if (shouldChdir)
     {
-      assert ( chdir (parentdir) == 0 );   /* chdir to the binary app's parent */
-      assert ( chdir ("../../../") == 0 ); /* chdir to the .app's parent */
+        char parentdir[MAXPATHLEN];
+        char *c;
+
+        strncpy ( parentdir, gArgv[0], sizeof(parentdir) );
+        c = (char*) parentdir;
+
+        while (*c != '\0')     /* go to end */
+               c++;
+
+        while (*c != '/')      /* back up to parent */
+               c--;
+
+        *c++ = '\0';           /* cut off last part (binary name) */
+
+        assert ( chdir (parentdir) == 0 );   /* chdir to the binary app's parent */
+        assert ( chdir ("../../../") == 0 ); /* chdir to the .app's parent */
     }
 }
 
@@ -161,6 +179,17 @@ void CustomApplicationMain (argc, argv)
     /* Ensure the application object is initialised */
     [SDLApplication sharedApplication];
     
+#ifdef SDL_USE_CPS
+    {
+        CPSProcessSerNum PSN;
+        /* Tell the dock about us */
+        if (!CPSGetCurrentProcess(&PSN))
+            if (!CPSEnableForegroundOperation(&PSN,0x03,0x3C,0x2C,0x1103))
+                if (!CPSSetFrontProcess(&PSN))
+                    [SDLApplication sharedApplication];
+    }
+#endif /* SDL_USE_CPS */
+
     /* Set up the menubar */
     [NSApp setMainMenu:[[NSMenu alloc] init]];
     setupAppleMenu();
