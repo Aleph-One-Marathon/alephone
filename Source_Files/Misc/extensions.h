@@ -10,7 +10,7 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
-#include "FileHandler.h"
+class FileSpecifier;
 
 #define BUNGIE_PHYSICS_DATA_VERSION 0
 #define PHYSICS_DATA_VERSION 1
@@ -57,7 +57,6 @@ static struct definition_data definitions[]=
 
 /* Set the physics file to read from.. */
 void set_physics_file(FileSpecifier& File);
-// void set_physics_file(FileDesc *file);
 
 void set_to_default_physics_file(void);
 

@@ -64,8 +64,8 @@ bool CheatsActive = false;
 // Global variables
 struct system_information_data *system_information;
 
-FileObject global_data_dir;	// Global data file directory
-FileObject local_data_dir;	// Local (per-user) data file directory
+FileSpecifier global_data_dir;	// Global data file directory
+FileSpecifier local_data_dir;	// Local (per-user) data file directory
 
 bool option_fullscreen = false;		// Run fullscreen
 bool option_nosound = false;		// Disable sound output
@@ -96,6 +96,7 @@ static void usage(const char *prg_name)
 		"http://source.bungie.org/\n\n"
 		"Original code by Bungie Software <http://www.bungie.com/\n"
 		"Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
+	    "Expat XML library by James Clark\n"
 		"SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
 		"\nUsage: %s\n"
 		"\t[-h | --help]        Display this help message\n"
@@ -201,13 +202,13 @@ static void initialize_application(void)
 	if (home)
 		local_data_dir = home;
 	local_data_dir.AddPart(".alephone");
-	mkdir(local_data_dir.name.c_str(), 0777);
+	mkdir(local_data_dir.GetName(), 0777);
 #else
 #error Data file paths must be set for this platform.
 #endif
 
 	// Setup resource manager
-	FileObject resource = global_data_dir;
+	FileSpecifier resource = global_data_dir;
 	resource.AddPart("Resources");
 	initialize_resources(resource);
 
@@ -218,7 +219,11 @@ static void initialize_application(void)
 	XML_Loader.ParseResourceSet('TEXT');
 
 	initialize_preferences();
-graphics_preferences->screen_mode.bit_depth = 16;	//!!
+graphics_preferences->screen_mode.bit_depth = 16;	//!! 8 or 16
+#if 0
+sound_preferences->flags = _more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag;
+sound_preferences->pitch = 0x00020000;
+#endif
 	write_preferences();
 
 	initialize_sound_manager(sound_preferences);
@@ -240,6 +245,23 @@ graphics_preferences->screen_mode.bit_depth = 16;	//!!
 	load_environment_from_preferences();
 
 	initialize_game_state();
+
+#if 1
+//!! sorry, uhm, this will of course be gone once the preferences dialogs are implemented...
+short cebix_keys[] = {
+	SDLK_KP8, SDLK_KP2, SDLK_KP4, SDLK_KP6,		// moving/turning
+	SDLK_KP1, SDLK_KP_PLUS,						// sidestepping
+	SDLK_KP7, SDLK_KP9,							// horizontal looking
+	SDLK_UP, SDLK_DOWN, SDLK_KP0,				// vertical looking
+	SDLK_QUOTE, SDLK_SEMICOLON,					// weapon cycling
+	SDLK_RETURN, SDLK_RALT,						// weapon trigger
+	SDLK_RMETA, SDLK_RSHIFT, SDLK_RCTRL,		// modifiers
+	SDLK_KP5,									// action trigger
+	SDLK_RIGHT,									// map
+	SDLK_PAGEDOWN								// microphone
+};
+set_keys(cebix_keys);
+#endif
 }
 
 
@@ -269,7 +291,7 @@ boolean networking_available(void)
 
 static void initialize_marathon_music_handler(void)
 {
-	FileObject file;
+	FileSpecifier file;
 	if (get_default_music_spec(file))
 		initialize_music_handler(file);
 }
@@ -320,7 +342,8 @@ static void main_event_loop(void)
 				if (SDL_GetTicks() - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
 					poll_event = true;
 					last_event_poll = SDL_GetTicks();
-				}
+				} else
+					SDL_PumpEvents();
 				break;
 
 			case _display_intro_screens:
@@ -632,18 +655,18 @@ static void process_event(const SDL_Event &event)
 void dump_screen(void)
 {
 	// Find suitable file name
-	FileObject file;
+	FileSpecifier file;
 	int i = 0;
 	do {
 		char name[256];
-		sprintf(name, "Screenshot_%0.4d", i);
+		sprintf(name, "Screenshot_%0.4d.bmp", i);
 		file = local_data_dir;
 		file.AddPart(name);
 		i++;
 	} while (file.Exists());
 
 	// Dump screen
-	SDL_SaveBMP(SDL_GetVideoSurface(), file.name.c_str());
+	SDL_SaveBMP(SDL_GetVideoSurface(), file.GetName());
 }
 
 

@@ -69,12 +69,12 @@ enum /* projectile types */
 	NUMBER_OF_PROJECTILE_TYPES
 };
 
-#define PROJECTILE_HAS_MADE_A_FLYBY(p) ((p)->flags&(word)0x4000)
-#define SET_PROJECTILE_FLYBY_STATUS(p,v) ((void)((v)?((p)->flags|=(word)0x4000):((p)->flags&=(word)~0x4000)))
+#define PROJECTILE_HAS_MADE_A_FLYBY(p) ((p)->flags&(uint16)0x4000)
+#define SET_PROJECTILE_FLYBY_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)0x4000):((p)->flags&=(uint16)~0x4000)))
 
 /* only used for persistent projectiles */
-#define PROJECTILE_HAS_CAUSED_DAMAGE(p) ((p)->flags&(word)0x2000)
-#define SET_PROJECTILE_DAMAGE_STATUS(p,v) ((void)((v)?((p)->flags|=(word)0x2000):((p)->flags&=(word)~0x2000)))
+#define PROJECTILE_HAS_CAUSED_DAMAGE(p) ((p)->flags&(uint16)0x2000)
+#define SET_PROJECTILE_DAMAGE_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)0x2000):((p)->flags&=(uint16)~0x2000)))
 
 /* uses SLOT_IS_USED(), SLOT_IS_FREE(), MARK_SLOT_AS_FREE(), MARK_SLOT_AS_USED() macros (0x8000 bit) */
 
@@ -90,7 +90,7 @@ struct projectile_data /* 32 bytes */
 	
 	short owner_index; /* ownerless if NONE */
 	short owner_type; /* identical to the monster type which fired this projectile (valid even if owner==NONE) */
-	word flags; /* [slot_used.1] [played_flyby_sound.1] [has_caused_damage.1] [unused.13] */
+	uint16 flags; /* [slot_used.1] [played_flyby_sound.1] [has_caused_damage.1] [unused.13] */
 	
 	/* some projectiles leave n contrails effects every m ticks */
 	short ticks_since_last_contrail, contrail_count;

@@ -336,10 +336,10 @@ void change_light_state(
 	struct lighting_function_specification *function= get_lighting_function_specification(&light->static_data, new_state);
 	
 	light->phase= 0;
-	light->period= function->period + random()%(function->delta_period+1);
+	light->period= function->period + global_random()%(function->delta_period+1);
 	
 	light->initial_intensity= light->intensity;
-	light->final_intensity= function->intensity + random()%(function->delta_intensity+1);
+	light->final_intensity= function->intensity + global_random()%(function->delta_intensity+1);
 	
 	light->state= new_state;
 	
@@ -466,5 +466,5 @@ static fixed flicker_lighting_proc(
 	fixed smooth_intensity= smooth_lighting_proc(initial_intensity, final_intensity, phase, period);
 	fixed delta= final_intensity-smooth_intensity;
 	
-	return smooth_intensity + (delta ? random()%delta : 0);
+	return smooth_intensity + (delta ? global_random()%delta : 0);
 }

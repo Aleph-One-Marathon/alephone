@@ -81,14 +81,14 @@ enum /* media sounds */
 
 struct media_data /* 32 bytes */
 {
-	short type;
-	word flags;
+	int16 type;
+	uint16 flags;
 
 	/* this light is not used as a real light; instead, the intensity of this light is used to
 		determine the height of the media: height= low + (high-low)*intensity ... this sounds
 		gross, but it makes media heights as flexible as light intensities; clearly discontinuous
 		light functions (e.g., strobes) should not be used */
-	short light_index;
+	int16 light_index;
 
 	/* this is the maximum external velocity due to current; acceleration is 1/32nd of this */
 	angle current_direction;
@@ -101,10 +101,11 @@ struct media_data /* 32 bytes */
 
 	fixed minimum_light_intensity;
 	shape_descriptor texture;
-	short transfer_mode;
+	int16 transfer_mode;
 	
-	short unused[2];
+	int16 unused[2];
 };
+const int SIZEOF_media_data = 32;
 
 /* --------- globals */
 

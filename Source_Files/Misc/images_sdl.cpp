@@ -40,7 +40,7 @@ extern bool draw_clip_rect_active;
 extern screen_rectangle draw_clip_rect;
 
 // From FileHandler_SDL.cpp
-void get_default_images_spec(FileObject& File);
+void get_default_images_spec(FileSpecifier& File);
 
 // Prototypes
 static void shutdown_images_handler(void);
@@ -53,7 +53,7 @@ static short determine_pict_resource_id(uint32 pict_resource_type, short base_id
 
 void initialize_images_manager(void)
 {
-	FileObject file;
+	FileSpecifier file;
 	get_default_images_spec(file);
 	images_file_handle = OpenResFile(file);
 
@@ -80,7 +80,7 @@ static void shutdown_images_handler(void)
  *  Set map file to load images from
  */
 
-void set_scenario_images_file(FileObject &file)
+void set_scenario_images_file(FileSpecifier &file)
 {
 	if (scenario_file_handle) {
 		CloseResFile(scenario_file_handle);
@@ -315,7 +315,7 @@ SDL_Surface *picture_to_surface(void *picture, uint32 size)
 				SDL_RWseek(p, 14, SEEK_CUR);		// packSize/hRes/vRes/pixelType
 				uint16 pixel_size = SDL_ReadBE16(p);
 				SDL_RWseek(p, 16, SEEK_CUR);		// cmpCount/cmpSize/planeBytes/pmTable/pmReserved
-				printf(" width %d, height %d, row_bytes %d, depth %d, pack_type %d\n", width, height, row_bytes, pixel_size, pack_type);
+				//printf(" width %d, height %d, row_bytes %d, depth %d, pack_type %d\n", width, height, row_bytes, pixel_size, pack_type);
 
 				// Allocate surface for picture
 				uint32 Rmask, Gmask, Bmask;
@@ -464,7 +464,7 @@ boolean scenario_picture_exists(short base_resource)
 void *get_picture_resource_from_scenario(short base_resource, uint32 &size)
 {
 	if (scenario_file_handle == NULL)
-		return false;
+		return NULL;
 
 	SDL_RWops *old_resfile = CurResFile();
 	UseResFile(scenario_file_handle);
@@ -488,7 +488,7 @@ void draw_full_screen_pict_resource_from_scenario(short pict_resource_number)
 void *get_sound_resource_from_scenario(short resource_number, uint32 &size)
 {
 	if (scenario_file_handle == NULL)
-		return false;
+		return NULL;
 
 	SDL_RWops *old_resfile = CurResFile();
 	UseResFile(scenario_file_handle);

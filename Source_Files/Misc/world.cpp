@@ -425,7 +425,7 @@ word get_random_seed(
 	return random_seed;
 }
 
-word random(
+word global_random(
 	void)
 {
 	word seed= random_seed;

@@ -21,12 +21,13 @@ struct color_table *calculate_picture_clut(short pict_resource_number);
 struct color_table *build_8bit_system_color_table(void);
 
 void set_scenario_images_file(FileSpecifier& File);
-// void set_scenario_images_file(FileDesc *file);
 
 void draw_full_screen_pict_resource_from_images(short pict_resource_number);
 void draw_full_screen_pict_resource_from_scenario(short pict_resource_number);
 
 void scroll_full_screen_pict_resource_from_scenario(short pict_resource_number, boolean text_block);
+
+#ifdef mac
 
 // Places a MacOS resource handle into an appropriate wrapper object;
 // a resource-fork emulator may put a pointer instead.
@@ -35,15 +36,14 @@ bool get_picture_resource_from_scenario(short base_resource, LoadedResource& Pic
 
 bool get_sound_resource_from_scenario(short resource_number, LoadedResource& SndRsrc);
 
+#elif defined(SDL)
 
-/*
-#ifdef mac
-PicHandle get_picture_resource_from_images(short base_resource);
-PicHandle get_picture_resource_from_scenario(short base_resource);
+extern void *get_picture_resource_from_images(short base_resource, uint32 &size);
+extern void *get_picture_resource_from_scenario(short base_resource, uint32 &size);
 
-SndListHandle get_sound_resource_from_scenario(short resource_number);
+extern void *get_sound_resource_from_scenario(short resource_number, uint32 &size);
+
 #endif
-*/
 
 #endif
 

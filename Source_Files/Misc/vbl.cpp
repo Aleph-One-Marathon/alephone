@@ -61,9 +61,9 @@ Aug 12, 2000 (Loren Petrich):
 #include "player.h"
 #include "key_definitions.h"
 #include "tags.h"
-// #include "portable_files.h"
 #include "vbl.h"
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
+#include "FileHandler.h"
 
 #ifdef env68k
 #pragma segment input
@@ -84,7 +84,11 @@ Aug 12, 2000 (Loren Petrich):
 #define INCREMENT_QUEUE_COUNTER(c) { (c)++; if ((c)>=MAXIMUM_QUEUE_SIZE) (c) = 0; }
 
 // LP: fake portable-files stuff
+#ifdef mac
 inline short memory_error() {return MemError();}
+#else
+inline short memory_error() {return 0;}
+#endif
 
 /* ---------- structures */
 #include "vbl_definitions.h"
@@ -123,7 +127,6 @@ static void read_recording_queue_chunks(void);
 static boolean pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
 static bool vblFSRead(OpenedFile& File, long *count, void *dest, bool& HitEOF);
-// static FileError vblFSRead(short refnum, long *count, void *dest);
 static void record_action_flags(short player_identifier, long *action_flags, short count);
 static short get_recording_queue_size(short which_queue);
 
@@ -184,8 +187,10 @@ void set_keyboard_controller_status(
 	/******************************************************************************************/
 	/* BT:	Added April 16, 2000 ISp: De-activate Input Sprockets while the keyboard is
 			not active.  This also means that the game is currently not recieving keystrokes */
+#ifdef mac
 	if(active) Start_ISp();
 	else Stop_ISp();
+#endif
 	
 	/******************************************************************************************/
 
@@ -279,25 +284,25 @@ void set_keys(
 	
 	for (index= 0; index<NUMBER_OF_STANDARD_KEY_DEFINITIONS; index++)
 	{
+#ifdef SDL
+		current_key_definitions[index].offset= SDLKey(keycodes[index]);
+#else
 		current_key_definitions[index].offset= keycodes[index];
+#endif
 		current_key_definitions[index].action_flag= definitions[index].action_flag;
+#ifdef mac
 		assert(current_key_definitions[index].offset <= 0x7f);
+#endif
 	}
 	precalculate_key_information();
 	
 	return;
 }
 
-boolean has_recording_file(
-	void)
+boolean has_recording_file(void)
 {
 	FileSpecifier File;
 	return get_recording_filedesc(File);
-/*
-	FileDesc spec;
-
-	return get_recording_filedesc(&spec);
-*/
 }
 
 /* Called by the time manager task in vbl_macintosh.c */
@@ -461,7 +466,6 @@ void save_recording_queue_chunk(
 	}
 	
 	FilmFile.Write(count,buffer);
-	// write_file(replay.recording_file_refnum, count, buffer);
 	replay.header.length+= count;
 		
 	vwarn(num_flags_saved == RECORD_CHUNK_SIZE,
@@ -533,6 +537,7 @@ static short get_recording_queue_size(
 static void precalculate_key_information(
 	void)
 {
+#ifndef SDL
 	short i;
 	
 	/* convert raw key codes to offets and masks */
@@ -543,6 +548,7 @@ static void precalculate_key_information(
 	}
 	
 	return;
+#endif
 }
 
 void set_recording_header_data(
@@ -586,17 +592,13 @@ void get_recording_header_data(
 }
 
 boolean setup_for_replay_from_file(
-//	FileDesc *file,
 	FileSpecifier& File,
 	unsigned long map_checksum)
 {
 	boolean successful= FALSE;
 
 	(void)(map_checksum);
-	File.CopySpec(FilmFileSpec);
-	if (FilmFileSpec.Open(FilmFile))
-	// replay.recording_file_refnum= open_file_for_reading(file);
-	// if(replay.recording_file_refnum > 0)
+	if (File.Open(FilmFile, FileSpecifier::C_Film))
 	{
 		replay.valid= TRUE;
 		replay.have_read_last_chunk = FALSE;
@@ -607,7 +609,6 @@ boolean setup_for_replay_from_file(
 		replay.film_resource_offset= NONE;
 		
 		FilmFile.ReadObject(replay.header);
-		// read_file(replay.recording_file_refnum, sizeof(struct recording_header), &replay.header);
 	
 		/* Set to the mapfile this replay came from.. */
 		if(use_map_file(replay.header.map_checksum))
@@ -644,30 +645,18 @@ void start_recording(
 	assert(!replay.valid);
 	replay.valid= TRUE;
 	
-	/*
-	if(get_recording_filedesc(&recording_file))
-	{
-		delete_file(&recording_file);
-	}
-	*/
 	if(get_recording_filedesc(FilmFileSpec))
 		FilmFileSpec.Delete();
 
 	if (FilmFileSpec.Create(FileSpecifier::C_Film))
-	// error= create_file(&recording_file, FILM_FILE_TYPE);	
-	// if(!error)
 	{
 		/* I debate the validity of fsCurPerm here, but Alain had it, and it has been working */
 		if (FilmFileSpec.Open(FilmFile,true))
-		// replay.recording_file_refnum= open_file_for_writing(&recording_file);
-		// if(replay.recording_file_refnum != NONE)
 		{
 			replay.game_is_being_recorded= TRUE;
 	
 			// save a header containing information about the game.
 			FilmFile.WriteObject(replay.header);
-			// count= sizeof(struct recording_header); 
-			// write_file(replay.recording_file_refnum, count, &replay.header);
 		}
 	}
 }
@@ -680,7 +669,6 @@ void stop_recording(
 		short player_index;
 		long count;
 		long total_length;
-		// FileError error;
 
 		assert(replay.valid);
 		for (player_index= 0; player_index<dynamic_world->player_count; player_index++)
@@ -705,7 +693,6 @@ void stop_recording(
 		assert(total_length==replay.header.length);
 		
 		FilmFile.Close();
-		// close_file(replay.recording_file_refnum);
 	}
 
 	replay.valid= FALSE;
@@ -722,10 +709,6 @@ void rewind_recording(
 		/* which is always called from revert_game */
 		FilmFile.SetLength(sizeof(recording_header));
 		FilmFile.SetPosition(sizeof(recording_header));
-		/*
-		set_eof(replay.recording_file_refnum, sizeof(struct recording_header));
-		set_fpos(replay.recording_file_refnum, sizeof(struct recording_header));
-		*/
 		
 		replay.header.length= sizeof(struct recording_header);
 	}
@@ -754,13 +737,10 @@ void check_recording_replaying(
 			boolean success;
 			unsigned long freespace = 0;
 			FileSpecifier FilmFile_Check;
-			// FileDesc recording_file;
 			
 			get_recording_filedesc(FilmFile_Check);
-			// get_recording_filedesc(&recording_file);
 
 			success= FilmFile_Check.GetFreeSpace(freespace);
-			// success= get_freespace_on_disk(&recording_file, &freespace);
 			if (success && freespace>(RECORD_CHUNK_SIZE*sizeof(short)*sizeof(long)*dynamic_world->player_count))
 			{
 				for (player_index= 0; player_index<dynamic_world->player_count; player_index++)
@@ -818,7 +798,6 @@ void stop_replay(
 		else
 		{
 			FilmFile.Close();
-			// close_file(replay.recording_file_refnum);
 			assert(replay.fsread_buffer);
 			free(replay.fsread_buffer);
 		}
@@ -873,18 +852,13 @@ static void read_recording_queue_chunks(
 				sizeof_read = sizeof(num_flags);
 				bool HitEOF = false;
 				if (vblFSRead(FilmFile, &sizeof_read, &num_flags, HitEOF))
-				// error= vblFSRead(replay.recording_file_refnum, &sizeof_read, &num_flags);
-				// if (!error)
 				{
 					sizeof_read = sizeof(action_flags);
 					bool status = vblFSRead(FilmFile, &sizeof_read, &action_flags, HitEOF);
-					// error= vblFSRead(replay.recording_file_refnum, &sizeof_read, &action_flags);
 					assert(status || (HitEOF && sizeof_read == sizeof(action_flags)));
-					// assert(!error || (error == errHitFileEOF && sizeof_read == sizeof(action_flags)));
 				}
 				
 				if ((HitEOF && sizeof_read != sizeof(action_flags)) || num_flags == END_OF_RECORDING_INDICATOR)
-				// if ((error == errHitFileEOF && sizeof_read != sizeof(long)) || num_flags == END_OF_RECORDING_INDICATOR)
 				{
 					replay.have_read_last_chunk = TRUE;
 					break;
@@ -910,13 +884,11 @@ static void read_recording_queue_chunks(
 /* This is gross, (Alain wrote it, not me!) but I don't have time to clean it up */
 static bool vblFSRead(
 	OpenedFile& File,
-	// short refnum, 
 	long *count, 
 	void *dest,
 	bool& HitEOF)
 {
 	long fsread_count;
-	// FileError error= 0;
 	bool status = true;
 	
 	assert(replay.fsread_buffer);
@@ -947,13 +919,10 @@ static bool vblFSRead(
 		File.GetLength(FileLen);
 		HitEOF = (new_fsread_count < fsread_count) && (CurrPos == FileLen);
 		fsread_count = new_fsread_count;
-		// error= read_file(refnum, fsread_count, replay.fsread_buffer+replay.bytes_in_cache);
 		if(status) replay.bytes_in_cache += fsread_count;
-		// if(!error) replay.bytes_in_cache += fsread_count;
 	}
 
 	if (HitEOF && replay.bytes_in_cache < *count)
-	// if (error == errHitFileEOF && replay.bytes_in_cache < *count)
 	{
 		*count= replay.bytes_in_cache;
 	}
@@ -968,7 +937,6 @@ static bool vblFSRead(
 	replay.location_in_cache += *count;
 	
 	return status;
-	// return error;
 }
 
 static void remove_input_controller(
@@ -991,8 +959,6 @@ static void remove_input_controller(
 		else
 		{
 			FilmFile.Close();
-			// assert(replay.recording_file_refnum>0);
-			// close_file(replay.recording_file_refnum);
 		}
 	}
 

@@ -48,17 +48,17 @@ struct map_index_data
 {
 	char level_name[LEVEL_NAME_LENGTH];
 	char unused;
-	long level_flags;
+	int32 level_flags;
 };
 
 #define MAXIMUM_GUARD_PATH_CONTROL_POINTS 20
 
 struct saved_path
 {
-	short point_count;
-	word flags;
+	int16 point_count;
+	uint16 flags;
 	world_point2d points[MAXIMUM_GUARD_PATH_CONTROL_POINTS];
-	short polygon_indexes[MAXIMUM_GUARD_PATH_CONTROL_POINTS];
+	int16 polygon_indexes[MAXIMUM_GUARD_PATH_CONTROL_POINTS];
 };
 
 /* Prevent ridiculous maps.. */

@@ -268,7 +268,7 @@ if (force_update || !(dynamic_world->tick_count&definition->shape_frequency))
 		
 		do
 		{
-			texture= BUILD_DESCRIPTOR(definition->collection, definition->shape + random()%definition->shape_count);
+			texture= BUILD_DESCRIPTOR(definition->collection, definition->shape + global_random()%definition->shape_count);
 		}
 		while (definition->shape_count>1 && texture==media->texture);
 		

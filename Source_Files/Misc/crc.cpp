@@ -12,7 +12,6 @@ Aug 15, 2000 (Loren Petrich):
 
 #include "cseries.h"
 #include "FileHandler.h"
-// #include "portable_files.h"
 #include "crc.h"
 
 #ifdef env68k
@@ -30,16 +29,13 @@ static unsigned long *crc_table= NULL;
 /* ---------- local prototypes ------- */
 static unsigned long calculate_file_crc(unsigned char *buffer, 
 	short buffer_size, OpenedFile& OFile);
-//	short buffer_size, short refnum);
 static unsigned long calculate_buffer_crc(long count, unsigned long crc, void *buffer);
 static boolean build_crc_table(void);
 static void free_crc_table(void);
 
 /* -------------- Entry Point ----------- */
 unsigned long calculate_crc_for_file(FileSpecifier& File)
-	// FileDesc *file) 
 {
-	short refnum;
 	unsigned long crc;
 	
 	OpenedFile OFile;
@@ -49,20 +45,10 @@ unsigned long calculate_crc_for_file(FileSpecifier& File)
 		OFile.Close();
 	}
 	
-	/*
-	refnum= open_file_for_reading(file);
-	if(refnum!=NONE)
-	{
-		crc= calculate_crc_for_opened_file(refnum);
-		close_file(refnum);
-	}
-	*/
-	
 	return crc;
 }
 
 unsigned long calculate_crc_for_opened_file(OpenedFile& OFile)
-	// short refnum) 
 {
 	unsigned long crc;
 	unsigned char *buffer;
@@ -71,13 +57,10 @@ unsigned long calculate_crc_for_opened_file(OpenedFile& OFile)
 	if(build_crc_table())
 	{
 		buffer = new byte[BUFFER_SIZE];
-		// buffer= (unsigned char *) malloc(BUFFER_SIZE*sizeof(unsigned char));
 		if(buffer) 
 		{
-			// crc= calculate_file_crc(buffer, BUFFER_SIZE, refnum);
 			crc= calculate_file_crc(buffer, BUFFER_SIZE, OFile);
 			delete []buffer;
-			// free(buffer);
 		}
 		
 		/* free the crc table! */
@@ -175,7 +158,6 @@ static unsigned long calculate_file_crc(
 	unsigned char *buffer, 
 	short buffer_size,
 	OpenedFile& OFile)
-	// short refnum)
 {
 	unsigned long crc;
 	long count;

@@ -222,7 +222,7 @@ struct physics_variables
 	fixed media_height; /* media height */
 
 	short action; /* what the playerÕs legs are doing, basically */
-	word old_flags, flags; /* stuff like _RECENTERING */
+	uint16 old_flags, flags; /* stuff like _RECENTERING */
 };
 
 enum { /* Player flags */
@@ -236,26 +236,26 @@ enum { /* Player flags */
 };
 
 #define PLAYER_IS_DEAD(p) ((p)->flags&_player_is_dead_flag)
-#define SET_PLAYER_DEAD_STATUS(p,v) ((void)((v)?((p)->flags|=(word)_player_is_dead_flag):((p)->flags&=(word)~_player_is_dead_flag)))
+#define SET_PLAYER_DEAD_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_dead_flag):((p)->flags&=(uint16)~_player_is_dead_flag)))
 
 #define PLAYER_IS_ZOMBIE(p) ((p)->flags&_player_is_zombie_flag)
-#define SET_PLAYER_ZOMBIE_STATUS(p,v) ((v)?((p)->flags|=(word)_player_is_zombie_flag):((p)->flags&=(word)~_player_is_zombie_flag))
+#define SET_PLAYER_ZOMBIE_STATUS(p,v) ((v)?((p)->flags|=(uint16)_player_is_zombie_flag):((p)->flags&=(uint16)~_player_is_zombie_flag))
 
 /* i.e., our animation has stopped */
 #define PLAYER_IS_TOTALLY_DEAD(p) ((p)->flags&_player_is_totally_dead_flag)
-#define SET_PLAYER_TOTALLY_DEAD_STATUS(p,v) ((void)((v)?((p)->flags|=(word)_player_is_totally_dead_flag):((p)->flags&=(word)~_player_is_totally_dead_flag)))
+#define SET_PLAYER_TOTALLY_DEAD_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_totally_dead_flag):((p)->flags&=(uint16)~_player_is_totally_dead_flag)))
 
 #define PLAYER_HAS_MAP_OPEN(p) ((p)->flags&_player_has_map_open_flag)
-#define SET_PLAYER_MAP_STATUS(p,v) ((void)((v)?((p)->flags|=(word)_player_has_map_open_flag):((p)->flags&=(word)~_player_has_map_open_flag)))
+#define SET_PLAYER_MAP_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_has_map_open_flag):((p)->flags&=(uint16)~_player_has_map_open_flag)))
 
 #define PLAYER_IS_TELEPORTING(p) ((p)->flags&_player_is_teleporting_flag)
-#define SET_PLAYER_TELEPORTING_STATUS(p,v) ((void)((v)?((p)->flags|=(word)_player_is_teleporting_flag):((p)->flags&=(word)~_player_is_teleporting_flag)))
+#define SET_PLAYER_TELEPORTING_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_teleporting_flag):((p)->flags&=(uint16)~_player_is_teleporting_flag)))
 
 #define PLAYER_IS_INTERLEVEL_TELEPORTING(p) ((p)->flags&_player_is_interlevel_teleporting_flag)
-#define SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(p,v) ((void)((v)?((p)->flags|=(word)_player_is_interlevel_teleporting_flag):((p)->flags&=(word)~_player_is_interlevel_teleporting_flag)))
+#define SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)_player_is_interlevel_teleporting_flag):((p)->flags&=(uint16)~_player_is_interlevel_teleporting_flag)))
 
 #define PLAYER_HAS_CHEATED(p) ((p)->flags&_player_has_cheated_flag)
-#define SET_PLAYER_HAS_CHEATED(p) ((p)->flags|=(word)_player_has_cheated_flag)
+#define SET_PLAYER_HAS_CHEATED(p) ((p)->flags|=(uint16)_player_has_cheated_flag)
 
 #define PLAYER_MAXIMUM_SUIT_ENERGY (150)
 #define PLAYER_MAXIMUM_SUIT_OXYGEN (6*TICKS_PER_MINUTE)

@@ -10,7 +10,9 @@
 */
 
 #include "render.h"
+#ifdef HAVE_OPENGL
 #include "OGL_Render.h"
+#endif
 
 
 class RasterizerClass
@@ -26,9 +28,9 @@ public:
 	virtual void End() {}
 	
 	virtual void texture_horizontal_polygon(polygon_definition& textured_polygon) {}
-	
+
 	virtual void texture_vertical_polygon(polygon_definition& textured_polygon) {}
-	
+
 	virtual void texture_rectangle(rectangle_definition& textured_rectangle) {}
 };
 

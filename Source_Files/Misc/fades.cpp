@@ -290,7 +290,9 @@ void set_fade_effect(
 					SetOGLFader(f);
 				
 				// Only do the video-card fader if the OpenGL fader is inactive
+#ifdef HAVE_OPENGL
 				if (!OGL_FaderActive())
+#endif
 					animate_screen_clut(world_color_table, FALSE);
 			}
 			else
@@ -417,9 +419,9 @@ void gamma_correct_color_table(
 	corrected_color_table->color_count= uncorrected_color_table->color_count;
 	for (i= 0; i<uncorrected_color_table->color_count; ++i, ++corrected, ++uncorrected)
 	{
-		corrected->red= pow(uncorrected->red/65535.0, gamma)*65535.0;
-		corrected->green= pow(uncorrected->green/65535.0, gamma)*65535.0;
-		corrected->blue= pow(uncorrected->blue/65535.0, gamma)*65535.0;
+		corrected->red = uint16(pow(uncorrected->red/65535.0, gamma)*65535.0);
+		corrected->green = uint16(pow(uncorrected->green/65535.0, gamma)*65535.0);
+		corrected->blue = uint16(pow(uncorrected->blue/65535.0, gamma)*65535.0);
 	}
 	
 	return;
@@ -483,7 +485,9 @@ static void recalculate_and_display_color_table(
 	}
 	
 	// Only do the video-card fader if the OpenGL fader is inactive
+#ifdef HAVE_OPENGL
 	if (!OGL_FaderActive())
+#endif
 		animate_screen_clut(animated_color_table, full_screen);
 	
 	return;
@@ -701,11 +705,13 @@ static void soft_tint_color_table(
 // Arg is location in the OpenGL fader queue
 void SetOGLFader(int Index)
 {
+#ifdef HAVE_OPENGL
 	if (OGL_FaderActive())
 	{
 		CurrentOGLFader = GetOGL_FaderQueueEntry(Index);
 		CurrentOGLFader->Type = NONE;
 	} else
+#endif
 		CurrentOGLFader = NULL;
 }
 

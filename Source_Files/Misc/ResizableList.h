@@ -73,7 +73,6 @@ public:
 	T* RevEnd() {return (List - 1);}
 	
 	// Destructor
-	// Christian Bauer bug fix:
 	~ResizableList() {delete[]List;}
 };
 

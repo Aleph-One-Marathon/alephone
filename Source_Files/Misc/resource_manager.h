@@ -10,11 +10,11 @@
 #include <stdio.h>
 #include <vector>
 
-struct FileObject;
+class FileSpecifier;
 
-extern void initialize_resources(FileObject &global_resources);
+extern void initialize_resources(FileSpecifier &global_resources);
 
-extern SDL_RWops *OpenResFile(FileObject &file);
+extern SDL_RWops *OpenResFile(FileSpecifier &file);
 extern void CloseResFile(SDL_RWops *file);
 extern SDL_RWops *CurResFile(void);
 extern void UseResFile(SDL_RWops *file);

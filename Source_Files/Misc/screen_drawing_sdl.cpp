@@ -62,12 +62,10 @@ screen_rectangle draw_clip_rect;			// Current clipping rectangle
 // From screen_sdl.cpp
 extern SDL_Surface *world_pixels, *HUD_Buffer;
 
-// From shell_sdl.cpp
-extern FileObject global_data_dir;
-
 // Prototypes
 static int _get_font_height(const sdl_font_info *info);
 static int _get_font_line_spacing(const sdl_font_info *info);
+extern TextSpec *_get_font_spec(short font_index);
 
 
 /*
@@ -81,7 +79,7 @@ void initialize_screen_drawing(void)
 	old_draw_surface = NULL;
 
 	// Open font resources
-	FileObject fonts = global_data_dir;
+	FileSpecifier fonts = global_data_dir;
 	fonts.AddPart("Fonts");
 	OpenResFile(fonts);
 
@@ -99,7 +97,7 @@ void initialize_screen_drawing(void)
 			interface_fonts.font[i].font = SDL_ReadBE16(p);
 			interface_fonts.font[i].style = SDL_ReadBE16(p);
 			interface_fonts.font[i].size = SDL_ReadBE16(p);
-			printf(" font ID %d, size %d, style %d\n", interface_fonts.font[i].font, interface_fonts.font[i].size, interface_fonts.font[i].style);
+			//printf(" font ID %d, size %d, style %d\n", interface_fonts.font[i].font, interface_fonts.font[i].size, interface_fonts.font[i].style);
 			interface_fonts.info[i] = load_font(interface_fonts.font[i]);
 			interface_fonts.height[i] = _get_font_height(interface_fonts.info[i]);
 			interface_fonts.line_spacing[i] = _get_font_line_spacing(interface_fonts.info[i]);
@@ -117,18 +115,21 @@ void initialize_screen_drawing(void)
 
 void _set_port_to_screen_window(void)
 {
+	assert(old_draw_surface == NULL);
 	old_draw_surface = draw_surface;
 	draw_surface = SDL_GetVideoSurface();
 }
 
 void _set_port_to_gworld(void)
 {
+	assert(old_draw_surface == NULL);
 	old_draw_surface = draw_surface;
 	draw_surface = world_pixels;
 }
 
 void _set_port_to_HUD(void)
 {
+	assert(old_draw_surface == NULL);
 	old_draw_surface = draw_surface;
 	draw_surface = HUD_Buffer;
 }
@@ -146,7 +147,7 @@ void _restore_port(void)
 
 void set_drawing_clip_rectangle(short top, short left, short bottom, short right)
 {
-	if (top == -32768)
+	if (top < 0)
 		draw_clip_rect_active = false;
 	else {
 		draw_clip_rect_active = true;
@@ -213,7 +214,7 @@ void _draw_screen_shape_at_x_y(shape_descriptor shape_id, short x, short y)
  */
 
 // Calculate width of single character
-static int char_width(uint8 c, const sdl_font_info *font, uint16 style)
+int char_width(uint8 c, const sdl_font_info *font, uint16 style)
 {
 	if (c < font->first_character || c > font->last_character)
 		return 0;
@@ -224,12 +225,20 @@ static int char_width(uint8 c, const sdl_font_info *font, uint16 style)
 }
 
 // Calculate width of text string
-static int text_width(char *text, const sdl_font_info *font, uint16 style)
+int text_width(char *text, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
 	char c;
 	while ((c = *text++) != 0)
 		width += char_width(c, font, style);
+	return width;
+}
+
+int text_width(char *text, int length, const sdl_font_info *font, uint16 style)
+{
+	int width = 0;
+	while (length--)
+		width += char_width(*text++, font, style); 
 	return width;
 }
 
@@ -260,6 +269,8 @@ inline static int draw_glyph(uint8 c, T *dst, int pitch, uint32 pixel, const sdl
 	int src_height = font->rect_height;
 	dst += font->maximum_kerning + font->width_table[cpos * 2];
 	dst -= font->ascent * pitch / sizeof(T);
+	if (oblique)
+		dst += font->ascent / 2 - 1;
 
 	// Blit glyph to screen
 	T *p = dst;
@@ -268,6 +279,8 @@ inline static int draw_glyph(uint8 c, T *dst, int pitch, uint32 pixel, const sdl
 			if (src[x])
 				p[x] = pixel;			
 		}
+		if (oblique && (y & 1))
+			p--;
 		src += font->bytes_per_row;
 		p += pitch / sizeof(T);
 	}
@@ -275,14 +288,16 @@ inline static int draw_glyph(uint8 c, T *dst, int pitch, uint32 pixel, const sdl
 	return font->width_table[cpos * 2 + 1];
 }
 
-// Draw text at given position in frame buffer
+// Draw text at given position in frame buffer, return width
 template <class T>
-inline static void draw_text(uint8 *text, T *p, int pitch, uint32 pixel, const sdl_font_info *font, uint16 style)
+inline static int draw_text(uint8 *text, int length, T *p, int pitch, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
 	bool oblique = style & italic;
+	int total_width = 0;
 
 	uint8 c;
-	while ((c = *text++) != 0) {
+	while (length--) {
+		c = *text++;
 		if (c < font->first_character || c > font->last_character)
 			continue;
 
@@ -296,19 +311,22 @@ inline static void draw_text(uint8 *text, T *p, int pitch, uint32 pixel, const s
 				p[i] = pixel;
 		}
 
+		total_width += width;
 		p += width;
 	}
+	return total_width;
 }
 
-// Draw text at given coordinates
-void draw_text(SDL_Surface *s, char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
+// Draw text at given coordinates, return total width
+int draw_text(SDL_Surface *s, char *text, int length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
+	int width = 0;
 	switch (s->format->BytesPerPixel) {
 		case 1:
-			draw_text((uint8 *)text, (uint8 *)s->pixels + y * s->pitch + x, s->pitch, pixel, font, style);
+			width = draw_text((uint8 *)text, length, (uint8 *)s->pixels + y * s->pitch + x, s->pitch, pixel, font, style);
 			break;
 		case 2:
-			draw_text((uint8 *)text, (uint16 *)((uint8 *)s->pixels + y * s->pitch) + x, s->pitch, pixel, font, style);
+			width = draw_text((uint8 *)text, length, (uint16 *)((uint8 *)s->pixels + y * s->pitch) + x, s->pitch, pixel, font, style);
 			break;
 		default:
 			assert(false);
@@ -316,11 +334,12 @@ void draw_text(SDL_Surface *s, char *text, int x, int y, uint32 pixel, const sdl
 	}
 	if (s == SDL_GetVideoSurface())
 		SDL_UpdateRect(s, x, y - font->ascent, text_width(text, font, style), font->rect_height);
+	return width;
 }
 
 static void draw_text(char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
-	draw_text(draw_surface, text, x, y, pixel, font, style);
+	draw_text(draw_surface, text, strlen(text), x, y, pixel, font, style);
 }
 
 void _draw_screen_text(char *text, screen_rectangle *destination, short flags, short font_id, short text_color)
@@ -511,6 +530,11 @@ sdl_font_info *load_font(const TextSpec &spec)
 	return info;
 }
 
+TextSpec *_get_font_spec(short font_id)
+{
+	return interface_fonts.font + font_id;
+}
+
 short _get_font_line_height(short font_id)
 {
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
@@ -570,6 +594,11 @@ void _fill_rect(screen_rectangle *rectangle, short color_index)
 	}
 }
 
+void _fill_screen_rectangle(screen_rectangle *rectangle, short color_index)
+{
+	_fill_rect(rectangle, color_index);
+}
+
 void _frame_rect(screen_rectangle *rectangle, short color_index)
 {
 	SDL_Color color;
@@ -594,6 +623,175 @@ void _offset_screen_rect(screen_rectangle *rect, short dx, short dy)
 	rect->left += dx;
 	rect->bottom += dy;
 	rect->right += dx;
+}
+
+
+/*
+ *  Draw clipped, filled polygon
+ */
+
+void draw_polygon(SDL_Surface *s, world_point2d *vertex_array, int vertex_count, uint32 pixel)
+{
+	if (vertex_count == 0)
+		return;
+
+	// Reallocate temporary vertex lists if necessary
+	static world_point2d *va1 = NULL, *va2 = NULL;
+	static int max_vertices = 0;
+	if (vertex_count > max_vertices) {
+		delete[] va1;
+		delete[] va2;
+		va1 = new world_point2d[vertex_count * 2];	// During clipping, each vertex can become two vertices
+		va2 = new world_point2d[vertex_count * 2];
+		max_vertices = vertex_count;
+	}
+
+	// Get clipping rectangle
+	int clip_top, clip_bottom, clip_left, clip_right;
+	if (draw_clip_rect_active) {
+		clip_top = draw_clip_rect.top;
+		clip_bottom = draw_clip_rect.bottom - 1;
+		clip_left = draw_clip_rect.left;
+		clip_right = draw_clip_rect.right - 1;
+	} else {
+		clip_top = clip_left = 0;
+		clip_right = s->w - 1;
+		clip_bottom = s->h - 1;
+	}
+
+	// Clip polygon
+	world_point2d *v1, *v2, *vp;
+	world_point2d clip_point;
+	int new_vertex_count;
+
+#define clip_min(X, Y, clip, dst_array) \
+	clip_point.Y = clip; \
+	v1 = vertex_array + vertex_count - 1; \
+	v2 = vertex_array; \
+	vp = dst_array; \
+	new_vertex_count = 0; \
+	for (int i=0; i<vertex_count; i++, v1 = v2, v2++) { \
+		if (v1->Y < clip) { \
+			if (v2->Y < clip) { 		/* Edge completely clipped */ \
+				continue; \
+			} else {		 			/* Clipped edge going down, find clip point */ \
+				clip_point.X = v1->X + (v2->X - v1->X) * (clip - v1->Y) / (v2->Y - v1->Y); \
+				*vp++ = clip_point;		/* Add clip point to array */ \
+				*vp++ = *v2;			/* Add visible endpoint to array */ \
+				new_vertex_count += 2; \
+			} \
+		} else { \
+			if (v2->Y < clip) {			/* Clipped edge going up, find clip point */ \
+				clip_point.X = v2->X + (v1->X - v2->X) * (clip - v2->Y) / (v1->Y - v2->Y); \
+				*vp++ = clip_point;		/* Add clip point to array */ \
+				new_vertex_count++; \
+			} else {					/* Edge completely visible, add endpoint to array */ \
+				*vp++ = *v2; \
+				new_vertex_count++; \
+			} \
+		} \
+	} \
+	vertex_count = new_vertex_count; \
+	if (vertex_count == 0) \
+		return;		/* Polygon completely clipped */ \
+	vertex_array = dst_array;
+
+#define clip_max(X, Y, clip, dst_array) \
+	clip_point.Y = clip; \
+	v1 = vertex_array + vertex_count - 1; \
+	v2 = vertex_array; \
+	vp = dst_array; \
+	new_vertex_count = 0; \
+	for (int i=0; i<vertex_count; i++, v1 = v2, v2++) { \
+		if (v1->Y < clip) { \
+			if (v2->Y < clip) {			/* Edge completely visible, add endpoint to array */ \
+				*vp++ = *v2; \
+				new_vertex_count++; \
+			} else {		 			/* Clipped edge going down, find clip point */ \
+				clip_point.X = v1->X + (v2->X - v1->X) * (clip - v1->Y) / (v2->Y - v1->Y); \
+				*vp++ = clip_point;		/* Add clip point to array */ \
+				new_vertex_count++; \
+			} \
+		} else { \
+			if (v2->Y < clip) {			/* Clipped edge going up, find clip point */ \
+				clip_point.X = v2->X + (v1->X - v2->X) * (clip - v2->Y) / (v1->Y - v2->Y); \
+				*vp++ = clip_point;		/* Add clip point to array */ \
+				*vp++ = *v2;			/* Add visible endpoint to array */ \
+				new_vertex_count += 2; \
+			} else {					/* Edge completely clipped */ \
+				continue; \
+			} \
+		} \
+	} \
+	vertex_count = new_vertex_count; \
+	if (vertex_count == 0) \
+		return;		/* Polygon completely clipped */ \
+	vertex_array = dst_array;
+
+	clip_min(x, y, clip_top, va1);
+	clip_max(x, y, clip_bottom, va2);
+	clip_min(y, x, clip_left, va1);
+	clip_max(y, x, clip_right, va2);
+
+	// Reallocate span list if necessary
+	struct span_t {
+		int left, right;
+	};
+	static span_t *span = NULL;
+	static int max_spans = 0;
+	if (s->h > max_spans) {
+		delete[] span;
+		span = new span_t[s->h];
+		max_spans = s->h;
+	}
+
+	// Scan polygon edges and build span list
+	v1 = vertex_array + vertex_count - 1;
+	v2 = vertex_array;
+	int ymin = SHORT_MAX, ymax = SHORT_MIN;
+	for (int i=0; i<vertex_count; i++, v1 = v2, v2++) {
+
+		if (v1->y < ymin)			// Find minimum and maximum y coordinates
+			ymin = v1->y;
+		if (v1->y > ymax)
+			ymax = v1->y;
+
+		if (v1->y == v2->y)			// Horizontal edge
+			continue;
+		else if (v1->y < v2->y) {	// Edge going down -> left span boundary
+			int32 x = v1->x << 16;	// 16.16 fixed point
+			int32 delta = ((v2->x - v1->x) << 16) / (v2->y - v1->y);
+			for (int y=v1->y; y<=v2->y; y++) {
+				span[y].left = x >> 16;
+				x += delta;			// DDA line drawing
+			}
+		} else {					// Edge going up -> right span boundary
+			int32 x = v2->x << 16;
+			int32 delta = ((v1->x - v2->x) << 16) / (v1->y - v2->y);
+			for (int y=v2->y; y<=v1->y; y++) {
+				span[y].right = x >> 16;
+				x += delta;			// Draw downwards to ensure that adjacent polygon fits perfectly
+			}
+		}
+	}
+
+	// Fill spans
+	SDL_Rect r = {0, 0, 0, 1};
+	for (int y=ymin; y<=ymax; y++) {
+		int left = span[y].left, right = span[y].right;
+		if (left == right)
+			continue;
+		else if (left < right) {
+			r.x = left;
+			r.y = y;
+			r.w = right - r.x;
+		} else {
+			r.x = right;
+			r.y = y;
+			r.w = left - r.x;
+		}
+		SDL_FillRect(s, &r, pixel);
+	}
 }
 
 

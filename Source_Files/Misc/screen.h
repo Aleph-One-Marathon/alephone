@@ -78,7 +78,7 @@ extern WindowPtr screen_window;
 #endif
 
 //CP Addition: make screen_mode_data usable here too
-extern struct screen_mode_data;
+struct screen_mode_data;
 
 /* ---------- prototypes/SCREEN.C */
 
@@ -113,7 +113,7 @@ void reset_screen();
 // CP addition: added function to return the the game size
 screen_mode_data *get_screen_mode(void);
 
-#ifdef mac
+#if defined(mac) || defined(SDL)
 void initialize_screen(struct screen_mode_data *mode);
 void change_screen_mode(struct screen_mode_data *mode, boolean redraw);
 

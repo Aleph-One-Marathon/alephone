@@ -38,59 +38,60 @@ enum /* collection types */
 
 struct collection_definition
 {
-	short version;
+	int16 version;
 	
-	short type; /* used for get_shape_descriptors() */
-	word flags; /* [unused.16] */
+	int16 type; /* used for get_shape_descriptors() */
+	uint16 flags; /* [unused.16] */
 	
-	short color_count, clut_count;
-	long color_table_offset; /* an array of clut_count arrays of color_count ColorSpec structures */
+	int16 color_count, clut_count;
+	int32 color_table_offset; /* an array of clut_count arrays of color_count ColorSpec structures */
 
-	short high_level_shape_count;
-	long high_level_shape_offset_table_offset;
+	int16 high_level_shape_count;
+	int32 high_level_shape_offset_table_offset;
 
-	short low_level_shape_count;
-	long low_level_shape_offset_table_offset;
+	int16 low_level_shape_count;
+	int32 low_level_shape_offset_table_offset;
 
-	short bitmap_count;
-	long bitmap_offset_table_offset;
+	int16 bitmap_count;
+	int32 bitmap_offset_table_offset;
 
-	short pixels_to_world; /* used to shift pixel values into world coordinates */
+	int16 pixels_to_world; /* used to shift pixel values into world coordinates */
 	
-	long size; /* used to assert offsets */
+	int32 size; /* used to assert offsets */
 	
-	short unused[253];
+	int16 unused[253];
 };
 
 /* ---------- high level shape definition */
 
 #define HIGH_LEVEL_SHAPE_NAME_LENGTH 32
 
-struct high_level_shape_definition
+struct high_level_shape_definition // Starting with number_of_views, this is a shape_animation_data structure
 {
-	short type; /* ==0 */
-	word flags; /* [unused.16] */
+	int16 type; /* ==0 */
+	uint16 flags; /* [unused.16] */
 	
-	char name[HIGH_LEVEL_SHAPE_NAME_LENGTH+1];
+	char name[HIGH_LEVEL_SHAPE_NAME_LENGTH+2];
 	
-	short number_of_views;
+	int16 number_of_views;
 	
-	short frames_per_view, ticks_per_frame;
-	short key_frame;
+	int16 frames_per_view, ticks_per_frame;
+	int16 key_frame;
 	
-	short transfer_mode;
-	short transfer_mode_period; /* in ticks */
+	int16 transfer_mode;
+	int16 transfer_mode_period; /* in ticks */
 	
-	short first_frame_sound, key_frame_sound, last_frame_sound;
+	int16 first_frame_sound, key_frame_sound, last_frame_sound;
 
-	short pixels_to_world;
+	int16 pixels_to_world;
 
-	short loop_frame;
+	int16 loop_frame;
 
-	short unused[14];
+	int16 unused[14];
 
-	/* number_of_views*frames_per_view indexes of low-level shapes follow */
-	short low_level_shape_indexes[1];
+	/* see the interface.h/shape_animation_data for a decription of how many
+	   low-level indices follow (it's not simply number_of_view * frames_per_view) */
+	int16 low_level_shape_indexes[1];
 };
 
 /* --------- low-level shape definition */
@@ -101,22 +102,22 @@ struct high_level_shape_definition
 
 struct low_level_shape_definition
 {
-	word flags; /* [x-mirror.1] [y-mirror.1] [keypoint_obscured.1] [unused.13] */
+	uint16 flags; /* [x-mirror.1] [y-mirror.1] [keypoint_obscured.1] [unused.13] */
 
 	fixed minimum_light_intensity; /* in [0,FIXED_ONE] */
 
-	short bitmap_index;
+	int16 bitmap_index;
 	
 	/* (x,y) in pixel coordinates of origin */
-	short origin_x, origin_y;
+	int16 origin_x, origin_y;
 	
 	/* (x,y) in pixel coordinates of key point */
-	short key_x, key_y;
+	int16 key_x, key_y;
 
-	short world_left, world_right, world_top, world_bottom;
-	short world_x0, world_y0;
+	int16 world_left, world_right, world_top, world_bottom;
+	int16 world_x0, world_y0;
 	
-	short unused[4];
+	int16 unused[4];
 };
 
 /* ---------- colors */
@@ -128,10 +129,10 @@ enum
 
 struct rgb_color_value
 {
-	byte flags;
-	byte value;
+	uint8 flags;
+	uint8 value;
 	
-	word red, green, blue;
+	uint16 red, green, blue;
 };
 
 #endif

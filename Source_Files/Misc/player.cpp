@@ -1640,7 +1640,7 @@ static void remove_dead_player_items(
 			if (!(GET_GAME_OPTIONS()&_burn_items_on_death) ||
 				(item_kind==_item && dynamic_world->player_count>1))
 			{
-				if (item_kind!=_ammunition || !(random()&1))
+				if (item_kind!=_ammunition || !(global_random()&1))
 				{
 					world_point3d random_point;
 					short random_polygon_index;

@@ -160,7 +160,7 @@ enum /* render flags */
 
 /* ---------- globals */
 
-extern word *render_flags;
+extern uint16 *render_flags;
 
 /* ---------- prototypes/RENDER.C */
 

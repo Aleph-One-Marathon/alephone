@@ -22,7 +22,7 @@ struct sdl_channel {
 	int32 length;		// Length in bytes remaining to be played
 	uint8 *loop;		// Pointer to loop start
 	int32 loop_length;	// Loop length in bytes (0 = don't loop)
-	fixed rate;			// Sample rate (relative to 22050Hz)
+	fixed rate;			// Sample rate (relative to output sample rate)
 	fixed counter;		// Counter for up/downsampling
 	int16 left_volume;	// Volume (0x100 = nominal)
 	int16 right_volume;
@@ -45,7 +45,7 @@ static int16 main_volume = 0x100;
 
 
 // From FileHandler_SDL.cpp
-extern void get_default_sounds_spec(FileObject &file);
+extern void get_default_sounds_spec(FileSpecifier &file);
 
 // From shell_sdl.cpp
 extern bool option_nosound;
@@ -65,7 +65,7 @@ static _bs_field _bs_sound_file_header[] = { // 260 bytes
 	_4byte, _4byte, _2byte, _2byte, 124*sizeof(int16)
 };
 
-bool open_sound_file(FileObject &File)
+bool open_sound_file(FileSpecifier &File)
 {
 	if (!(sound_definitions && _sm_globals))
 		return false;
@@ -129,7 +129,7 @@ static void initialize_machine_sound_manager(struct sound_manager_parameters *pa
 	_sm_globals->total_channel_count = 0;
 
 	// Open sounds file
-	FileObject InitialSoundFile;
+	FileSpecifier InitialSoundFile;
 	get_default_sounds_spec(InitialSoundFile);
 	if (open_sound_file(InitialSoundFile)) {
 		atexit(shutdown_sound_manager);
@@ -201,7 +201,7 @@ static void set_sound_manager_status(bool active)
 				main_volume = _sm_parameters->volume * SOUND_VOLUME_DELTA;
 
 				// Activate SDL audio
-				desired.freq = 22050;
+				desired.freq = (_sm_parameters->pitch >> 16) * 22050;
 				desired.format = _sm_parameters->flags & _16bit_sound_flag ? AUDIO_S16SYS : AUDIO_S8;
 				desired.channels = _sm_parameters->flags & _stereo_flag ? 2 : 1;
 				desired.samples = 1024;
@@ -412,7 +412,7 @@ static void buffer_sound(struct channel_data *channel, short sound_index, fixed 
 	// Read sound header
 	uint8 *data = (uint8 *)definition->ptr + definition->sound_offsets[permutation];
 	uint32 *sound_header = (uint32*)data;
-	c->rate = (pitch >> 8) * ((SDL_SwapBE32(sound_header[2]) >> 8) / 22050);
+	c->rate = (pitch >> 8) * ((SDL_SwapBE32(sound_header[2]) >> 8) / desired.freq);
 	c->data = data + 22;
 	c->length = SDL_SwapBE32(sound_header[1]);
 	c->loop = c->data + SDL_SwapBE32(sound_header[3]);

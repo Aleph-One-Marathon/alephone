@@ -95,7 +95,7 @@ public:
 	virtual bool HandleString(const char *String, int Length) {return true;}
 	
 	// Error-message string
-	char *ErrorString;
+	const char *ErrorString;
 	
 	// Common kinds of errors:
 	void UnrecognizedTag();

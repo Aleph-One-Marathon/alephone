@@ -623,8 +623,8 @@ void initialize_monsters(
 	dynamic_world->civilians_killed_by_players= 0;
 	dynamic_world->last_monster_index_to_get_time= -1;
 	dynamic_world->last_monster_index_to_build_path= -1;
-	dynamic_world->new_monster_mangler_cookie= random();
-	dynamic_world->new_monster_vanishing_cookie= random();
+	dynamic_world->new_monster_mangler_cookie= global_random();
+	dynamic_world->new_monster_vanishing_cookie= global_random();
 	
 	return;
 }
@@ -920,7 +920,7 @@ void activate_monster(
 	/* we used to set monster->target_index here, but it is invalid when mode==_monster_unlocked */
 	monster->mode= _monster_unlocked, monster->target_index= NONE;
 	monster->ticks_since_attack= (definition->flags&_monster_attacks_immediately) ?
-		definition->attack_frequency : random()%definition->attack_frequency;
+		definition->attack_frequency : global_random()%definition->attack_frequency;
 	monster->desired_height= object->location.z; /* best guess */
 	monster->random_desired_height= SHORT_MAX; // to be out of range and recalculated
 	monster->external_velocity= monster->vertical_velocity= 0;	
@@ -1668,7 +1668,7 @@ void pick_nearby_random_monster_position(
 	world_point2d *p,
 	short *polygon_index)
 {
-	short player_index= random()%dynamic_world->player_count;
+	short player_index= global_random()%dynamic_world->player_count;
 	short flood_polygon_index= get_player_data(player_index)->camera_polygon_index;
 	
 	polygon_index= flood_map(polygon_index, area, monster_activation_flood_proc, _breadth_first, &flood_flags);
@@ -1801,7 +1801,7 @@ static void update_monster_vertical_physics_model(
 			{
 				world_distance delta= polygon->ceiling_height-floor_height-definition->height;
 				
-				monster->random_desired_height= floor_height + ((delta>0) ? (random()%delta) : 0);
+				monster->random_desired_height= floor_height + ((delta>0) ? (global_random()%delta) : 0);
 			}
 			
 			monster->desired_height= MONSTER_IS_DYING(monster) ? polygon->floor_height : monster->random_desired_height;
@@ -1970,7 +1970,7 @@ static void generate_new_path_for_monster(
 			struct monster_data *target= get_monster_data(monster->target_index);
 			struct object_data *target_object= get_object_data(target->object_index);
 
-			if (definition->random_sound_mask && !(random()&definition->random_sound_mask)) play_object_sound(monster->object_index, definition->random_sound);
+			if (definition->random_sound_mask && !(global_random()&definition->random_sound_mask)) play_object_sound(monster->object_index, definition->random_sound);
 
 			/* if we canÕt attack, run away, otherwise go for the target */
 			if (definition->flags&_monster_cannot_attack)
@@ -2723,7 +2723,7 @@ static boolean translate_monster(
 					{
 						if (!MONSTER_HAS_VALID_TARGET(obstacle_monster) || !switch_target_check(monster_index, obstacle_monster->target_index, 0))
 						{
-							if (monster->mode==_monster_unlocked && !(random()&OBSTRUCTION_DEACTIVATION_MASK) &&
+							if (monster->mode==_monster_unlocked && !(global_random()&OBSTRUCTION_DEACTIVATION_MASK) &&
 								(monster->goal_polygon_index==NONE || monster->goal_polygon_index==object->polygon))
 							{
 								deactivate_monster(monster_index);
@@ -2786,7 +2786,7 @@ static boolean attempt_evasive_manouvers(
 	struct monster_data *monster= get_monster_data(monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
 	world_point2d destination= *((world_point2d*)&object->location);
-	angle new_facing= NORMALIZE_ANGLE(object->facing + ((random()&1) ? QUARTER_CIRCLE : -QUARTER_CIRCLE));
+	angle new_facing= NORMALIZE_ANGLE(object->facing + ((global_random()&1) ? QUARTER_CIRCLE : -QUARTER_CIRCLE));
 	world_distance original_floor_height= get_polygon_data(object->polygon)->floor_height;
 	short polygon_index= object->polygon;
 	boolean successful= TRUE;
@@ -2926,7 +2926,7 @@ static boolean try_monster_attack(
 		
 						if (definition->flags&_monster_chooses_weapons_randomly)
 						{
-							if (random()&1) new_action= _monster_is_attacking_far;
+							if (global_random()&1) new_action= _monster_is_attacking_far;
 						}
 					}
 					break;

@@ -424,10 +424,14 @@ void update_interface(
 		// LP addition: added support for HUD buffer;
 		// added origin relocation to make the graphics paint into place
 		_set_port_to_HUD();
+#ifdef mac
 		SetOrigin(0,320);
+#endif
 		// _set_port_to_screen_window();
 		update_everything(time_elapsed);
+#ifdef mac
 		SetOrigin(0,0);
+#endif
 		_restore_port();
 		
 		// Draw the whole thing if doing so is requested

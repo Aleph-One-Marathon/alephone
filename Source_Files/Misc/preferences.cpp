@@ -47,7 +47,7 @@ Aug 12, 2000 (Loren Petrich):
 #include <string.h>
 #include <stdlib.h>
 
-#include "macintosh_cseries.h"
+#include "cseries.h"
 
 #include "map.h"
 #include "shell.h" /* For the screen_mode structure */
@@ -197,6 +197,13 @@ static void	rebuild_patchlist(DialogPtr dialog, short item, unsigned long parent
 	struct environment_preferences_data *preferences);
 static unsigned long get_file_modification_date(FSSpec *file);
 
+// LP: fake portable-files stuff
+#ifdef mac
+inline short memory_error() {return MemError();}
+#else
+inline short memory_error() {return 0;}
+#endif
+
 /* ---------------- code */
 void initialize_preferences(
 	void)
@@ -205,11 +212,9 @@ void initialize_preferences(
 
 	if(!w_open_preferences_file(getcstr(temporary, strFILENAMES, filenamePREFERENCES),
 		FileSpecifier::C_Prefs))
-	// if(!w_open_preferences_file(getpstr(ptemporary, strFILENAMES, filenamePREFERENCES),
-	// 	PREFERENCES_TYPE))
 	{
 		/* Major memory error.. */
-		alert_user(fatalError, strERRORS, outOfMemory, MemError());
+		alert_user(fatalError, strERRORS, outOfMemory, memory_error());
 	}
 
 	if(error_pending())
@@ -287,8 +292,10 @@ static void default_graphics_preferences(
 {
 	struct graphics_preferences_data *preferences=(struct graphics_preferences_data *)prefs;
 
+#ifdef mac
 	preferences->device_spec.slot= NONE;
 	preferences->device_spec.flags= deviceIsColor;
+#endif
 	preferences->device_spec.bit_depth= 8;
 	preferences->device_spec.width= 640;
 	preferences->device_spec.height= 480;
@@ -318,7 +325,9 @@ static void default_graphics_preferences(
 	
 	preferences->screen_mode.draw_every_other_line= FALSE;
 	
+#ifdef HAVE_OPENGL
 	OGL_SetDefaults(preferences->OGL_Configure);
+#endif
 }
 
 static boolean validate_graphics_preferences(
@@ -465,7 +474,9 @@ static void default_player_preferences(
 
 	memset(prefs, 0, sizeof(struct player_preferences_data));
 
+#ifdef mac
 	GetDateTime(&prefs->last_time_ran);
+#endif
 	prefs->difficulty_level= 2;
 	get_name_from_system(prefs->name);
 	
@@ -496,6 +507,7 @@ static boolean validate_player_preferences(
 static void get_name_from_system(
 	unsigned char *name)
 {
+#ifdef mac
 	StringHandle name_handle;
 	char old_state;
 
@@ -507,8 +519,15 @@ static void get_name_from_system(
 	
 	pstrcpy(name, *name_handle);
 	HSetState((Handle)name_handle, old_state);
-	
-	return;
+#elif defined(__unix__)
+	char *login = getenv("LOGNAME");
+	if (login)
+		strcpy((char *)name, login);
+	else
+		name[0] = 0;
+#else
+#error get_name_from_system() needs to be implemented for this platform
+#endif
 }
 
 /* ------------ input preferences */
@@ -535,12 +554,16 @@ static boolean validate_input_preferences(
 static boolean ethernet_active(
 	void)
 {
+#ifdef mac
 	short  refnum;
 	OSErr  error;
 
 	error= OpenDriver("\p.ENET", &refnum);
 	
 	return error==noErr ? TRUE : FALSE;
+#else
+	return TRUE;
+#endif
 }
 
 /* ------------- dialog functions */
@@ -567,6 +590,7 @@ static void setup_graphics_dialog(
 	short first_item,
 	void *prefs)
 {
+#ifdef mac
 	struct graphics_preferences_data *preferences= (struct graphics_preferences_data *) prefs;
 	short value, active;
 
@@ -661,6 +685,7 @@ static void setup_graphics_dialog(
 	*/
 		
 	return;
+#endif
 }
 
 static void hit_graphics_item(
@@ -669,6 +694,7 @@ static void hit_graphics_item(
 	void *prefs,
 	short item_hit)
 {
+#ifdef mac
 	struct graphics_preferences_data *preferences= (struct graphics_preferences_data *) prefs;
 	ControlHandle control;
 	short item_type;
@@ -750,6 +776,7 @@ static void hit_graphics_item(
 	{
 		setup_graphics_dialog(dialog, first_item, prefs);
 	}
+#endif
 }
 	
 static boolean teardown_graphics_dialog(
@@ -776,6 +803,7 @@ static void setup_player_dialog(
 	short first_item,
 	void *prefs)
 {
+#ifdef mac
 	struct player_preferences_data *preferences= (struct player_preferences_data *)prefs;
 	Handle item;
 	short item_type;
@@ -797,6 +825,7 @@ static void setup_player_dialog(
 	/* Setup the team */
 	GetDialogItem(dialog, LOCAL_TO_GLOBAL_DITL(iTEAM, first_item), &item_type, &item, &bounds);
 	SetControlValue((ControlHandle) item, preferences->team+1);
+#endif
 }
 
 static void hit_player_item(
@@ -805,6 +834,7 @@ static void hit_player_item(
 	void *prefs,
 	short item_hit)
 {
+#ifdef mac
 	ControlHandle control;
 	short item_type;
 	Rect bounds;
@@ -836,6 +866,7 @@ static void hit_player_item(
 			Configure_Crosshairs(preferences->Crosshairs);
 			break;
 	}
+#endif
 }
 	
 static boolean teardown_player_dialog(
@@ -843,6 +874,7 @@ static boolean teardown_player_dialog(
 	short first_item,
 	void *prefs)
 {
+#ifdef mac
 	Handle control;
 	short item_type;
 	Rect bounds;
@@ -854,6 +886,7 @@ static boolean teardown_player_dialog(
 	GetDialogItemText(control, buffer);
 	if(buffer[0]>PREFERENCES_NAME_LENGTH) buffer[0]= PREFERENCES_NAME_LENGTH;
 	memcpy(preferences->name, buffer, buffer[0]+1);
+#endif
 
 	return TRUE;
 }
@@ -873,6 +906,7 @@ static void setup_sound_dialog(
 	short first_item,
 	void *prefs)
 {
+#ifdef mac
 	struct sound_manager_parameters *preferences= (struct sound_manager_parameters *) prefs;
 	short active;
 	word available_flags;
@@ -912,6 +946,7 @@ static void setup_sound_dialog(
 		(preferences->flags & _more_sounds_flag) ? TRUE : FALSE);
 
 	return;
+#endif
 }
 
 static void hit_sound_item(
@@ -920,6 +955,7 @@ static void hit_sound_item(
 	void *prefs,
 	short item_hit)
 {
+#ifdef mac
 	ControlHandle control;
 	short item_type;
 	Rect bounds;
@@ -998,6 +1034,7 @@ static void hit_sound_item(
 	setup_sound_dialog(dialog, first_item, prefs);
 
 	return;
+#endif
 }
 	
 static boolean teardown_sound_dialog(
@@ -1025,6 +1062,7 @@ static void setup_input_dialog(
 	short first_item,
 	void *prefs)
 {
+#ifdef mac
 	struct input_preferences_data *preferences= (struct input_preferences_data *)prefs;
 	short which;
 	
@@ -1054,6 +1092,7 @@ static void setup_input_dialog(
 	active= CONTROL_ACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDONT_SWITCH_TO_NEW_WEAPON, first_item), active, 
 		(preferences->modifiers & _inputmod_dont_switch_to_new_weapon) ? TRUE : FALSE);
+#endif
 }
 
 static void hit_input_item(
@@ -1062,6 +1101,7 @@ static void hit_input_item(
 	void *prefs,
 	short item_hit)
 {
+#ifdef mac
 	ControlHandle control;
 	short item_type;
 	Rect bounds;
@@ -1138,6 +1178,7 @@ static void hit_input_item(
 	}
 	
 	setup_input_dialog(dialog, first_item, prefs);
+#endif
 }
 	
 static boolean teardown_input_dialog(
@@ -1176,34 +1217,35 @@ static void default_environment_preferences(
 	
 	get_default_map_spec(DefaultFile);
 	prefs->map_checksum= read_wad_file_checksum(DefaultFile);
+#ifdef mac
 	memcpy(&prefs->map_file, &DefaultFile.Spec, sizeof(FSSpec));
+#else
+	DefaultFile.GetName(prefs->map_file);
+#endif
 	
 	get_default_physics_spec(DefaultFile);
 	prefs->physics_checksum= read_wad_file_checksum(DefaultFile);
+#ifdef mac
 	memcpy(&prefs->physics_file, &DefaultFile.Spec, sizeof(FSSpec));
+#else
+	DefaultFile.GetName(prefs->physics_file);
+#endif
 	
 	get_default_shapes_spec(DefaultFile);
+#ifdef mac
 	prefs->shapes_mod_date= get_file_modification_date(&DefaultFile.Spec);
 	memcpy(&prefs->shapes_file, &DefaultFile.Spec, sizeof(FSSpec));
+#else
+	DefaultFile.GetName(prefs->shapes_file);
+#endif
 
 	get_default_sounds_spec(DefaultFile);
+#ifdef mac
 	prefs->sounds_mod_date= get_file_modification_date(&DefaultFile.Spec);
 	memcpy(&prefs->sounds_file, &DefaultFile.Spec, sizeof(FSSpec));
-	
-	// get_default_map_spec((FileDesc *) &prefs->map_file);
-	// get_default_physics_spec((FileDesc *) &prefs->physics_file);
-	// get_file_spec(&prefs->shapes_file, strFILENAMES, filenameSHAPES8, strPATHS);
-	// get_file_spec(&prefs->sounds_file, strFILENAMES, filenameSOUNDS8, strPATHS);
-
-	/* Calculate their checksums.. */
-	// prefs->map_checksum= read_wad_file_checksum((FileDesc *) &prefs->map_file);
-	// prefs->physics_checksum= read_wad_file_checksum((FileDesc *) &prefs->physics_file);
-	
-	/* Calculate the modification dates. */
-	// prefs->shapes_mod_date= get_file_modification_date(&prefs->shapes_file);
-	// prefs->sounds_mod_date= get_file_modification_date(&prefs->sounds_file);
-
-	return;
+#else
+	DefaultFile.GetName(prefs->sounds_file);
+#endif
 }
 
 static boolean validate_environment_preferences(
@@ -1227,6 +1269,7 @@ static void setup_environment_dialog(
 	short first_item,
 	void *prefs)
 {
+#ifdef mac
 	struct environment_preferences_data *preferences= (struct environment_preferences_data *)prefs;
 
 	if(allocate_extensions_memory())
@@ -1253,6 +1296,7 @@ static void setup_environment_dialog(
 	}
 	
 	return;
+#endif
 }
 
 static void hit_environment_item(
@@ -1261,6 +1305,7 @@ static void hit_environment_item(
 	void *prefs,
 	short item_hit)
 {
+#ifdef mac
 	struct environment_preferences_data *preferences= (struct environment_preferences_data *)prefs;
 
 	(void)(dialog);
@@ -1294,6 +1339,7 @@ static void hit_environment_item(
 	}
 
 	return;
+#endif
 }
 
 /* Load the environment.. */
@@ -1301,9 +1347,10 @@ void load_environment_from_preferences(
 	void)
 {
 	FileSpecifier File;
-	// FileDesc file;
 	OSErr error;
 	struct environment_preferences_data *prefs= environment_preferences;
+
+#ifdef mac
 
 	File.SetSpec(prefs->map_file);
 	/*
@@ -1397,6 +1444,58 @@ void load_environment_from_preferences(
 	}
 	
 	return;
+#else
+
+	File.SetName(prefs->map_file, FileSpecifier::C_Map);
+	if (File.Exists())
+		set_map_file(File);
+	else {
+		/* Try to find the checksum */
+		if (find_wad_file_that_has_checksum(File, SCENARIO_FILE_TYPE, strPATHS, prefs->map_checksum))
+			set_map_file(File);
+		else
+			set_to_default_map();
+	}
+
+	File.SetName(prefs->physics_file, FileSpecifier::C_Phys);
+	if (File.Exists()) {
+		set_physics_file(File);
+		import_definition_structures();
+	} else {
+		if (find_wad_file_that_has_checksum(File, PHYSICS_FILE_TYPE, strPATHS, prefs->physics_checksum)) {
+			set_physics_file(File);
+			import_definition_structures();
+		} else {
+			/* Didn't find it.  Don't change them.. */
+		}
+	}
+	
+	File.SetName(prefs->shapes_file, FileSpecifier::C_Shape);
+	if (File.Exists())
+		open_shapes_file(File);
+	else {
+#if 0	//!!
+		if (find_file_with_modification_date(File, SHAPES_FILE_TYPE, strPATHS, prefs->shapes_mod_date))
+			open_shapes_file(File);
+		else {
+			/* What should I do? */
+		}
+#endif
+	}
+
+	File.SetName(prefs->sounds_file, FileSpecifier::C_Sound);
+	if (File.Exists())
+		open_sound_file(File);
+	else {
+#if 0	//!!
+		if (find_file_with_modification_date(File, SOUNDS_FILE_TYPE, strPATHS, prefs->sounds_mod_date))
+			open_sound_file(File);
+		else {
+			/* What should I do? */
+		}
+#endif
+	}
+#endif
 }
 
 static boolean teardown_environment_dialog(
@@ -1404,11 +1503,13 @@ static boolean teardown_environment_dialog(
 	short first_item,
 	void *prefs)
 {
+#ifdef mac
 	struct environment_preferences_data *preferences= (struct environment_preferences_data *)prefs;
 
 	(void) (dialog, first_item);
 	/* Proceses the entire physics file.. */
 	free_extensions_memory();
+#endif
 	
 	return TRUE;
 }
@@ -1416,6 +1517,7 @@ static boolean teardown_environment_dialog(
 static unsigned long get_file_modification_date(
 	FSSpec *file)
 {
+#ifdef mac
 	CInfoPBRec pb;
 	OSErr error;
 	unsigned long modification_date= 0l;
@@ -1432,9 +1534,13 @@ static unsigned long get_file_modification_date(
 	}
 
 	return modification_date;
+#else
+	return 0;
+#endif
 }
 
 /* ---------------- miscellaneous */
+#ifdef mac
 static void set_popup_enabled_state(
 	DialogPtr dialog,
 	short item_number,
@@ -1755,6 +1861,7 @@ static MenuHandle get_popup_menu_handle(
 
 	return menu;
 }
+#endif
 
 #if 0
 static boolean control_strip_installed(

@@ -346,7 +346,7 @@ static void calculate_midpoint_of_shared_line(
 	{
 		world_distance dx= endpoint1->vertex.x-endpoint0->vertex.x;
 		world_distance dy= endpoint1->vertex.y-endpoint0->vertex.y;
-		world_distance offset= origin + ((random()*range)>>16);
+		world_distance offset= origin + ((global_random()*range)>>16);
 		
 		midpoint->x= endpoint0->vertex.x + (offset*dx)/shared_line->length;
 		midpoint->y= endpoint0->vertex.y + (offset*dy)/shared_line->length;

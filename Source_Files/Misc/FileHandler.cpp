@@ -27,6 +27,11 @@ Feb 3, 2000 (Loren Petrich):
 	Abstraction for opened files; it does reading, writing, and closing of such files,
 	without doing anything to the files' specifications
 */
+bool OpenedFile::IsOpen()
+{
+	return (RefNum != RefNum_Closed);
+}
+
 bool OpenedFile::Close()
 {
 	if (!IsOpen()) return true;

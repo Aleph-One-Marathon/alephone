@@ -44,7 +44,7 @@ Aug 12, 2000 (Loren Petrich):
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
 
-#include "macintosh_cseries.h" // sorry ryan, nov. 4
+#include "cseries.h" // sorry ryan, nov. 4
 #include <string.h>
 #include <stdlib.h>
 
@@ -62,7 +62,6 @@ extern TP2PerfGlobals perf_globals;
 #include "fades.h"
 #include "game_window.h"
 #include "game_errors.h"
-#include "portable_files.h"
 #include "music.h"
 #include "images.h"
 #include "screen.h"
@@ -189,7 +188,6 @@ struct chapter_screen_sound_data chapter_screen_sounds[]=
 /* -------------- local globals */
 static struct game_state game_state;
 static FileSpecifier DraggedReplayFile;
-// static FileDesc dragged_replay_file;
 static boolean interface_fade_in_progress= FALSE;
 static short interface_fade_type;
 static short current_picture_clut_depth;
@@ -202,11 +200,7 @@ extern short bit_depth;
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
 extern boolean load_game_from_file(FileSpecifier& File);
-// extern boolean load_game_from_file(FileDesc *file);
-// extern "C" {
 extern boolean choose_saved_game_to_load(FileSpecifier& File);
-// extern boolean choose_saved_game_to_load(FileDesc *saved_game);
-// }
 
 /* ---------------------- prototypes */
 static void display_credits(void);
@@ -409,13 +403,14 @@ boolean load_and_start_game(FileSpecifier& File)
 }
 
 extern boolean handle_open_replay(FileSpecifier& File);
-// extern boolean handle_open_replay(FileDesc *replay_file);
 
 boolean handle_open_replay(FileSpecifier& File)
-	// FileDesc *replay_file)
 {
+#ifdef mac
 	DraggedReplayFile.CopySpec(File);
-	// dragged_replay_file= *replay_file;
+#else
+	DraggedReplayFile = File;
+#endif
 	return begin_game(_replay_from_file, FALSE);
 }
 
@@ -463,9 +458,13 @@ void draw_menu_button_for_command(
 	
 	/* Draw it initially depressed.. */
 	draw_button(rectangle_index, TRUE);
+#ifdef SDL
+	SDL_Delay(1000 / 12);
+#else
 	initial_tick= machine_tick_count();
 	while(machine_tick_count()-initial_tick<5) /* 1/12 second */
 		;
+#endif
 	draw_button(rectangle_index, FALSE);
 
 	return;
@@ -739,7 +738,9 @@ void do_menu_item_command(
 						if(really_wants_to_quit)
 						{
 							// Rhys Hill fix for crash when quitting OpenGL
+#ifdef HAVE_OPENGL
 							if (!OGL_IsActive())
+#endif HAVE_OPENGL
 							render_screen(0); /* Get rid of hole.. */
 /* If you want to quit on command-q while in the game.. */
 #if 0
@@ -1178,14 +1179,11 @@ static boolean begin_game(
 				case _replay:
 					{
 						FileSpecifier ReplayFile;
-						// FileDesc replay_file;
 
 						success= find_replay_to_use(cheat, ReplayFile);
-						// success= find_replay_to_use(cheat, &replay_file);
 						if(success)
 						{
 							success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
-							// success= setup_for_replay_from_file(&replay_file, get_current_map_checksum());
 						}
 					} 
 					break;
@@ -1196,7 +1194,6 @@ static boolean begin_game(
 
 				case _replay_from_file:
 					success= setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum());
-					// success= setup_for_replay_from_file(&dragged_replay_file, get_current_map_checksum());
 					user= _replay;
 					break;
 					
@@ -1364,15 +1361,12 @@ void handle_load_game(
 	void)
 {
 	FileSpecifier FileToLoad;
-	// FileDesc file_to_load;
 	boolean success= FALSE;
 
 	force_system_colors();
 	if(choose_saved_game_to_load(FileToLoad))
-	// if(choose_saved_game_to_load(&file_to_load))
 	{
 		if(!load_and_start_game(FileToLoad))
-		// if(!load_and_start_game(&file_to_load))
 		{
 			/* Reset the system colors, since the screen clut is all black.. */
 			force_system_colors();
@@ -1455,7 +1449,7 @@ static void finish_game(
 static void handle_network_game(
 	boolean gatherer)
 {
-#if 1
+#ifdef mac
 	boolean successful_gather;
 	
 	force_system_colors();
@@ -1740,9 +1734,14 @@ static void try_and_display_chapter_screen(
 		
 		if (current_picture_clut)
 		{
+#if defined(mac)
 			SndChannelPtr channel= NULL;
 			LoadedResource SoundRsrc;
 			SndListHandle sound= NULL;
+#elif defined(SDL)
+			uint32 sound_size = 0;
+			void *sound = NULL;
+#endif
 
 			/* slam the entire clut to black, now. */
 			if (interface_bit_depth==8) 
@@ -1754,10 +1753,8 @@ static void try_and_display_chapter_screen(
 			/* Draw the picture */
 			draw_full_screen_pict_resource_from_scenario(pict_resource_number);
 
-#if 1
+#if defined(mac)
 			if (get_sound_resource_from_scenario(pict_resource_number,SoundRsrc))
-			// sound= get_sound_resource_from_scenario(pict_resource_number);
-			// if (sound)
 			{
 				sound = SndListHandle(SoundRsrc.GetHandle());
 				
@@ -1768,6 +1765,11 @@ static void try_and_display_chapter_screen(
 					HLockHi((Handle)sound);
 					SndPlay(channel, sound, TRUE);
 				}
+			}
+#elif defined(SDL)
+			sound = get_sound_resource_from_scenario(pict_resource_number, sound_size);
+			if (sound) {
+				play_sound_resource(sound, sound_size);
 			}
 #endif
 			
@@ -1782,19 +1784,13 @@ static void try_and_display_chapter_screen(
 			/* Fade out! (Pray) */
 			interface_fade_out(pict_resource_number, FALSE);
 			
-#if 1
+#if defined(mac)
 			if (channel)
-			{
 				SndDisposeChannel(channel, TRUE);
-			}
-			
-			// Superfluous, since the loaded-resource wrapper object does it
-			/*
+#elif defined(SDL)
+			stop_sound_resource();
 			if (sound)
-			{
-				ReleaseResource((Handle)sound);
-			}
-			*/
+				free(sound);
 #endif
 		}
 	}

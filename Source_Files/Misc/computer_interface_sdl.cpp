@@ -4,114 +4,70 @@
  *  Written in 2000 by Christian Bauer
  */
 
-#include "cseries.h"
-#include "computer_interface.h"
-
 
 // Global variables
-byte *map_terminal_data;
-long map_terminal_data_length;
+static sdl_font_info *terminal_font = NULL;
+static uint32 current_pixel;			// Current color pixel value
+static uint16 current_style = normal;	// Current style flags
+
+// From images_sdl.cpp
+extern SDL_Surface *picture_to_surface(void *picture, uint32 size);
 
 
-void initialize_terminal_manager(void)
+// Terminal key definitions
+static struct terminal_key terminal_keys[]= {
+	{SDLK_UP, 0, 0, _terminal_page_up},				// arrow up
+	{SDLK_DOWN, 0, 0, _terminal_page_down},			// arrow down
+	{SDLK_PAGEUP, 0, 0, _terminal_page_up},			// page up
+	{SDLK_PAGEDOWN, 0, 0, _terminal_page_down},		// page down
+	{SDLK_TAB, 0, 0, _terminal_next_state},			// tab
+	{SDLK_KP_ENTER, 0, 0, _terminal_next_state},	// enter
+	{SDLK_RETURN, 0, 0, _terminal_next_state},		// return
+	{SDLK_SPACE, 0, 0, _terminal_next_state},		// space
+	{SDLK_ESCAPE, 0, 0, _any_abort_key_mask}		// escape
+};
+
+
+// Emulation of MacOS functions
+static void SetRect(Rect *r, int left, int top, int right, int bottom)
 {
-printf("*** initialize_terminal_manager\n");
-	//!!
+	r->top = top;
+	r->left = left;
+	r->bottom = bottom;
+	r->right = right;
+}
+
+static void InsetRect(Rect *r, int dx, int dy)
+{
+	r->top += dy;
+	r->left += dx;
+	r->bottom -= dy;
+	r->right -= dx;
+}
+
+static void OffsetRect(Rect *r, int dx, int dy)
+{
+	r->top += dy;
+	r->left += dx;
+	r->bottom += dy;
+	r->right += dx;
 }
 
 
-void initialize_player_terminal_info(short player_index)
+static void	set_text_face(struct text_face_data *text_face)
 {
-printf("*** initialize_player_terminal_info(%d)\n", player_index);
-	//!!
-}
+	current_style = normal;
 
+	// Set style
+	if (text_face->face & _bold_text)
+		current_style |= bold;
+	if (text_face->face & _italic_text)
+		current_style |= italic;
+	if (text_face->face & _underline_text)
+		current_style |= underline;
 
-void enter_computer_interface(short player_index, short text_number, short completion_flag)
-{
-printf("*** enter_computer_interface(), player %d, text %d\n", player_index, text_number);
-	//!!
-}
-
-
-void _render_computer_interface(struct view_terminal_data *data)
-{
-printf("*** render_computer_interface()\n");
-	//!!
-}
-
-
-void update_player_for_terminal_mode(short player_index)
-{
-printf("*** update_for_terminal_mode(%d)\n", player_index);
-	//!!
-}
-
-
-void update_player_keys_for_terminal(short player_index, long action_flags)
-{
-printf("*** update_player_keys_for_terminal(%d), flags %08x\n", player_index, action_flags);
-	//!!
-}
-
-
-long build_terminal_action_flags(char *keymap)
-{
-printf("*** build_terminal_action_flags()\n");
-	//!!
-	return 0;
-}
-
-
-void dirty_terminal_view(short player_index)
-{
-printf("*** dirty_terminal_view(%d)\n", player_index);
-	//!!
-}
-
-
-void abort_terminal_mode(short player_index)
-{
-printf("*** abort_terminal_mode(%d)\n", player_index);
-	//!!
-}
-
-
-boolean player_in_terminal_mode(short player_index)
-{
-//printf("*** player_in_terminal_mode(%d)\n", player_index);
-	//!!
-	return false;
-}
-
-
-void *get_terminal_data_for_save_game(void)
-{
-printf("*** get_terminal_data_for_save_game()\n");
-	//!!
-	return NULL;
-}
-
-
-long calculate_terminal_data_length(void)
-{
-printf("*** calculate_terminal_data_length()\n");
-	//!!
-	return 0;
-}
-
-
-void *get_terminal_information_array(void)
-{
-printf("*** get_terminal_information_array()\n");
-	//!!
-	return NULL;
-}
-
-
-long calculate_terminal_information_length(void)
-{
-printf("*** calculate_terminal_information_length()\n");
-	//!!
-	return 0;
+	// Set color
+	SDL_Color color;
+	_get_interface_color(text_face->color + _computer_interface_text_color, &color);
+	current_pixel = SDL_MapRGB(world_pixels->format, color.r, color.g, color.b);
 }

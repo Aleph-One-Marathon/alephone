@@ -18,8 +18,15 @@
 	API is supported.
 */
 
-// Symbolic constant for a closed file's reference number (refnum)
+#ifdef SDL
+#include <errno.h>
+#include <string>
+#endif
+
+
+// Symbolic constant for a closed file's reference number (refnum) (MacOS only)
 const short RefNum_Closed = -1;
+
 
 /*
 	Abstraction for opened files; it does reading, writing, and closing of such files,
@@ -30,17 +37,8 @@ class OpenedFile
 	// This class will need to set the refnum and error value appropriately 
 	friend class FileSpecifier;
 	
-	// MacOS-specific variables:
-	short RefNum;	// File reference number
-	OSErr Err;		// Error code
-	
 public:
-	
-	// MacOS-specific
-	short GetRefNum() {return RefNum;}
-	OSErr GetError() {return Err;}
-	
-	bool IsOpen() {return (RefNum != RefNum_Closed);}	
+	bool IsOpen();
 	bool Close();
 	
 	bool GetPosition(long& Position);
@@ -53,6 +51,7 @@ public:
 	bool Write(long Count, void *Buffer);
 	
 	// Smart macros for more easy reading of structured objects
+	// CB: reading/writing C structures from/to files is evil...
 	
 	template<class T> bool ReadObject(T& Object)
 		{return Read(sizeof(T),&Object);}
@@ -66,13 +65,39 @@ public:
 	template<class T> bool WriteObjectList(int NumObjects, T* ObjectList)
 		{return Write(NumObjects*sizeof(T),ObjectList);}
 	
+	// Auto-close when destroying
+	~OpenedFile() {Close();}
+
+	// Platform-specific members
+#if defined(mac)
+
 	// Set the file to initially closed
 	OpenedFile(): RefNum(RefNum_Closed), Err(noErr) {}
 	
-	// Auto-close when destroying
-	~OpenedFile() {Close();}
+	short GetRefNum() {return RefNum;}
+	OSErr GetError() {return Err;}
+
+private:
+	short RefNum;	// File reference number
+	OSErr Err;		// Error code
+
+#elif defined(SDL)
+
+	OpenedFile() : handle(NULL) {}
+
+	int GetError() {return errno;}
+	#define errFileNotFound ENOENT
+
+	FILE *GetFILE() {return handle;}
+
+private:
+	FILE *handle;	// File handle
+
+#endif
 };
 
+
+#ifdef mac
 /*
 	Abstraction for loaded resources;
 	this object will release that resource when it finishes.
@@ -155,13 +180,11 @@ public:
 	// Auto-close when destroying
 	~OpenedResourceFile() {Close();}
 };
+#endif
 
 
-struct FileSpecifier
+class FileSpecifier
 {	
-	FSSpec Spec;
-	OSErr Err;
-
 public:
 
 	// Possible typecodes:
@@ -181,14 +204,6 @@ public:
 		C_NUMBER_OF_TYPECODES
 	};
 
-	
-	// Filespec management
-	void SetSpec(FSSpec& _Spec);
-	FSSpec& GetSpec() {return Spec;}
-
-	// The error:
-	OSErr GetError() {return Err;}
-	
 	// The name as a C string:
 	// assumes enough space to hold it if getting (max. 256 bytes)
 	// The typecode is for automatically adding a suffix;
@@ -197,24 +212,20 @@ public:
 	void GetName(char *Name);
 	void SetName(char *Name, int Type);
 	
-	// Parent directories:
-		
-	bool SetFileToApp();
-	bool SetParentToPreferences();
-	
 	// Partially inspired by portable_files.h:
 	
 	// These functions take an appropriate one of the typecodes used earlier;
 	// this is to try to cover the cases of both typecode attributes
 	// and typecode suffixes.
 	bool Create(int Type);
-	// bool Open(bool Writable = false);
 	
 	// Opens a file:
 	bool Open(OpenedFile& OFile, bool Writable=false);
 	
+#ifdef mac
 	// Opens either a MacOS resource fork or some imitation of it:
 	bool Open(OpenedResourceFile& OFile, bool Writable=false);
+#endif
 	
 	// These calls are for creating dialog boxes to set the filespec
 	// A null pointer means an empty string
@@ -232,13 +243,50 @@ public:
 	
 	// Copying: either copy the filespec or copy the whole file
 	// into the current file object
+	// CB: What's the difference? Why not an assignment operator (see below)?
 	bool CopySpec(FileSpecifier& File);
 	bool CopyContents(FileSpecifier& File);
 	
 	bool Delete();
+
+	// Platform-specific members
+#if defined(mac)
 	
 	FileSpecifier(): Err(noErr) {}
-};
 
+	// Filespec management
+	void SetSpec(FSSpec& _Spec);
+	FSSpec& GetSpec() {return Spec;}
+
+	// Parent directories:
+	bool SetFileToApp();
+	bool SetParentToPreferences();
+
+	// The error:
+	OSErr GetError() {return Err;}
+	
+private:
+	FSSpec Spec;
+	OSErr Err;
+
+#elif defined(SDL)
+
+	FileSpecifier() {}
+	FileSpecifier(const string &s) : name(s) {}
+	FileSpecifier(const char *s) : name(s) {}
+	FileSpecifier(const FileSpecifier &other) : name(other.name) {}
+	const FileSpecifier &operator=(const FileSpecifier &other);
+
+	void AddPart(const string &part);
+	void GetLastPart(char *part);
+	const char *GetName(void) {return name.c_str();}
+
+	int GetError() {return errno;}
+
+private:
+	string name;	// Path name
+
+#endif
+};
 
 #endif

@@ -11,12 +11,11 @@ Aug 15, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
-#include "FileHandler.h"
+class FileSpecifier;
+class OpenedFile;
 
 unsigned long calculate_crc_for_file(FileSpecifier& File);
-// unsigned long calculate_crc_for_file(FileDesc *file);
 unsigned long calculate_crc_for_opened_file(OpenedFile& OFile);
-// unsigned long calculate_crc_for_opened_file(short refnum);
 unsigned long calculate_data_crc(unsigned char *buffer, long length);
 
 #endif

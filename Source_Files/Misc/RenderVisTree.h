@@ -67,7 +67,7 @@ enum /* top and bottom sides of screen */
 
 struct line_clip_data
 {
-	word flags;
+	uint16 flags;
 	short x0, x1; /* clipping bounds */
 	
 	// LP change: made more long-distance friendly
@@ -78,7 +78,7 @@ struct line_clip_data
 
 struct endpoint_clip_data
 {
-	word flags;
+	uint16 flags;
 	short x; /* screen-space */
 	
 	// LP change: made into a long vector for long views
@@ -105,7 +105,7 @@ struct clipping_window_data
 
 struct node_data
 {
-	word flags;
+	uint16 flags;
 	short polygon_index;
 	
 	/* clipping effects all children (and was caused by crossing from parent) */
@@ -148,18 +148,18 @@ class RenderVisTreeClass
 	
 	void initialize_clip_data();
 	
-	word next_polygon_along_line(short *polygon_index, world_point2d *origin, long_vector2d *vector,
+	uint16 next_polygon_along_line(short *polygon_index, world_point2d *origin, long_vector2d *vector,
 		short *clipping_endpoint_index, short *clipping_line_index, short bias);
 	
 	void cast_render_ray(long_vector2d *vector, short endpoint_index,
 		node_data *parent, short bias);
 	
-	word decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
-		world_point2d *origin, long_vector2d *vector, word clip_flags, short bias);
+	uint16 decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
+		world_point2d *origin, long_vector2d *vector, uint16 clip_flags, short bias);
 
-	void calculate_line_clipping_information(short line_index, word clip_flags);
+	void calculate_line_clipping_information(short line_index, uint16 clip_flags);
 	
-	short calculate_endpoint_clipping_information(short endpoint_index, word clip_flags);
+	short calculate_endpoint_clipping_information(short endpoint_index, uint16 clip_flags);
 	
 	void ResetEndpointClips(void);
 	

@@ -591,6 +591,10 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 			short j, k;
 			
 			window= base_nodes[i]->clipping_windows;
+
+			// CB: sometimes, the window pointer seems to be NULL
+			if (window == NULL)
+				continue;
 			
 			/* update the top and bottom clipping bounds */
 			if (window->y0<y0) y0= window->y0;

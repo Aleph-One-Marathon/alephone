@@ -24,7 +24,7 @@ enum
 
 struct scenery_definition
 {
-	word flags;
+	uint16 flags;
 	shape_descriptor shape;
 	
 	world_distance radius, height;

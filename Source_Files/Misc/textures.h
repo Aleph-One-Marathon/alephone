@@ -16,13 +16,13 @@ enum /* bitmap flags */
 
 struct bitmap_definition
 {
-	short width, height; /* in pixels */
-	short bytes_per_row; /* if ==NONE this is a transparent RLE shape */
+	int16 width, height; /* in pixels */
+	int16 bytes_per_row; /* if ==NONE this is a transparent RLE shape */
 	
-	short flags; /* [column_order.1] [unused.15] */
-	short bit_depth; /* should always be ==8 */
+	int16 flags; /* [column_order.1] [unused.15] */
+	int16 bit_depth; /* should always be ==8 */
 	
-	short unused[8];
+	int16 unused[8];
 	
 	pixel8 *row_addresses[1];
 };

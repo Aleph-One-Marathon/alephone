@@ -12,7 +12,7 @@ enum { // All of our songs.
 	NUMBER_OF_SONGS
 };
 
-boolean initialize_music_handler(FileDesc *song_file);
+boolean initialize_music_handler(FileSpecifier &song_file);
 
 void queue_song(short song_index);
 

@@ -58,12 +58,12 @@ short get_level_number_from_user(void)
 {
 printf("*** get_level_number_from_user()\n");
 	//!!
-	return 1;
+	return 3;
 }
 
 
 /*
- *  Toggle up system hotkeys
+ *  Toggle system hotkeys
  */
 
 void toggle_menus(boolean game_started)

@@ -65,12 +65,12 @@ enum /* sound chances */
 
 struct ambient_sound_definition
 {
-	short sound_index;
+	int16 sound_index;
 };
 
 struct random_sound_definition
 {
-	short sound_index;
+	int16 sound_index;
 };
 
 enum
@@ -81,44 +81,40 @@ enum
 
 struct sound_file_header
 {
-	long version;
-	long tag;
+	int32 version;
+	int32 tag;
 	
-	short source_count; // usually 2 (8-bit, 16-bit)
-	short sound_count;
+	int16 source_count; // usually 2 (8-bit, 16-bit)
+	int16 sound_count;
 	
-	short unused[124];
+	int16 unused[124];
 	
-	// immediately followed by permutation_count*sound_count sound_definition structures
+	// immediately followed by source_count*sound_count sound_definition structures
 };
 
-struct sound_definition /* 64 bytes */
+struct sound_definition
 {
-	short sound_code;
+	int16 sound_code;
 	
-	short behavior_index;
-	word flags;
+	int16 behavior_index;
+	uint16 flags;
 
-	word chance; // play sound if AbsRandom()>=chance
+	uint16 chance; // play sound if AbsRandom()>=chance
 	
 	/* if low_pitch==0, use FIXED_ONE; if high_pitch==0 use low pitch; else choose in [low_pitch,high_pitch] */
 	fixed low_pitch, high_pitch;
 	
 	/* filled in later */
-	short permutations;
-	word permutations_played;
-	long group_offset, single_length, total_length; // magic numbers necessary to load sounds
-	long sound_offsets[MAXIMUM_PERMUTATIONS_PER_SOUND]; // zero-based from group offset
+	int16 permutations;
+	uint16 permutations_played;
+	int32 group_offset, single_length, total_length; // magic numbers necessary to load sounds
+	int32 sound_offsets[MAXIMUM_PERMUTATIONS_PER_SOUND]; // zero-based from group offset
 	
-	unsigned long last_played; // machine ticks
+	uint32 last_played; // machine ticks
 	
 	// Pointer to loaded sound and size of sound object pointed to
-	byte *ptr;
-	long size;
-	
-	// long handle; // (machine-specific pointer type) zero if not loaded
-	
-	// short unused[2];
+	uint8 *ptr;
+	int32 size;
 };
 
 struct depth_curve_definition
@@ -204,11 +200,11 @@ static struct random_sound_definition random_sound_definitions[NUMBER_OF_RANDOM_
 
 /* ---------- sound definition structures */
 
-_bs_field _bs_sound_definition[]=
-{
-	_2byte, _2byte, _2byte, _2byte, _4byte,
-	_4byte, _2byte, _4byte, _4byte, _4byte,
-	_4byte, _4byte, _4byte, _4byte, _4byte
+_bs_field _bs_sound_definition[] = { // 64 bytes
+	_2byte, _2byte, _2byte, _2byte, _4byte, _4byte,
+	_2byte, _2byte, _4byte, _4byte, _4byte, _4byte,
+	_4byte, _4byte, _4byte, _4byte, _4byte, sizeof(int32),
+	2*sizeof(int16)
 };
 
 #ifndef STATIC_DEFINITIONS

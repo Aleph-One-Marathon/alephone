@@ -90,10 +90,17 @@ struct input_preferences_data
 
 struct environment_preferences_data
 {
+#ifdef mac
 	FSSpec map_file;
 	FSSpec physics_file;
 	FSSpec shapes_file;
 	FSSpec sounds_file;
+#else
+	char map_file[256];
+	char physics_file[256];
+	char shapes_file[256];
+	char sounds_file[256];
+#endif
 	unsigned long map_checksum;
 	unsigned long physics_checksum;
 	unsigned long shapes_mod_date;

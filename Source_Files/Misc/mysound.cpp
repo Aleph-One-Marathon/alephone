@@ -90,7 +90,7 @@ there should be no difference between ambient and normal sound channels
 shortening radii on low-volume ambient sound sorces would be a good idea
 */
 
-#include "macintosh_cseries.h"
+#include "cseries.h"
 
 #include <stdlib.h>
 
@@ -172,10 +172,12 @@ struct channel_data
 
 	unsigned long start_tick;
 
-#ifdef mac
+#if defined(mac)
 	SndChannelPtr channel;
-	short callback_count;
+#elif defined(SDL)
+	void *channel;
 #endif
+	short callback_count;
 };
 
 struct sound_manager_globals
@@ -193,7 +195,6 @@ struct sound_manager_globals
 	struct channel_data channels[MAXIMUM_SOUND_CHANNELS+MAXIMUM_AMBIENT_SOUND_CHANNELS];
 
 #ifdef mac
-//	short sound_file_refnum;
 	long old_sound_volume;
 	SndCallBackUPP sound_callback_upp;
 #endif
@@ -221,7 +222,6 @@ static void unlock_sound(short sound_index);
 static void dispose_sound(short sound_index);
 // Returns not the handle, but the pointer and size
 static byte *read_sound_from_file(short sound_index, long& size);
-// static long read_sound_from_file(short sound_index);
 
 static void quiet_channel(struct channel_data *channel);
 static void instantiate_sound_variables(struct sound_variables *variables,
@@ -297,8 +297,10 @@ struct sound_behavior_definition *get_sound_behavior_definition(short sound_beha
 
 /* ---------- machine-specific code */
 
-#ifdef mac
+#if defined(mac)
 #include "sound_macintosh.c"
+#elif defined(SDL)
+#include "sound_sdl.cpp"
 #endif
 
 /* ---------- code */
@@ -310,6 +312,10 @@ void initialize_sound_manager(
 	_sm_parameters= (struct sound_manager_parameters *) malloc(sizeof(struct sound_manager_parameters));
 	sound_definitions= (struct sound_definition *) malloc(NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS*sizeof(struct sound_definition));
 	assert(_sm_globals && _sm_parameters && sound_definitions);
+
+	memset(_sm_globals, 0, sizeof(struct sound_manager_globals));
+	memset(_sm_parameters, 0, sizeof(struct sound_manager_parameters));
+	memset(sound_definitions, 0, NUMBER_OF_SOUND_SOURCES * NUMBER_OF_SOUND_DEFINITIONS * sizeof(struct sound_definition));
 	
 	initialize_machine_sound_manager(parameters);
 	
@@ -898,7 +904,7 @@ boolean _load_sound(
 		if (!definition->ptr)
 		{
 			// definition->handle= read_sound_from_file(sound_index);
-			definition->ptr= read_sound_from_file(sound_index,definition->size);
+			definition->ptr = read_sound_from_file(sound_index, definition->size);
 			definition->last_played= machine_tick_count();
 			
 			while (_sm_globals->loaded_sounds_size>_sm_globals->total_buffer_size) _release_least_useful_sound();
@@ -1382,6 +1388,7 @@ static void add_one_ambient_sound_source(
 	return;
 }
 
+#ifdef mac
 // Clone of similar functions for getting default map and physics specs
 void get_default_sounds_spec(FileSpecifier& File)
 {
@@ -1389,3 +1396,4 @@ void get_default_sounds_spec(FileSpecifier& File)
 	File.SetName(getcstr(temporary, strFILENAMES, filenameSOUNDS8),FileSpecifier::C_Sound);
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 }
+#endif

@@ -189,22 +189,61 @@ struct endpoint_owner_data
 	short first_line_index, line_index_count;
 };
 
-struct static_platform_data
+struct saved_static_platform_data /* 32 bytes */
 {
-	short type;
-	short speed, delay;
+	int16 type;
+	int16 speed, delay;
 	world_distance maximum_height, minimum_height; /* if NONE then calculated in some reasonable way */
 
-	unsigned long static_flags;
+	uint16 static_flags_hi, static_flags_lo;
 	
-	short polygon_index;
+	int16 polygon_index;
 	
-	short tag;
+	int16 tag;
 	
-	short unused[7];
+	int16 unused[7];
+};
+const int SIZEOF_saved_static_platform_data = 32;
+
+struct static_platform_data
+{
+	int16 type;
+	int16 speed, delay;
+	world_distance maximum_height, minimum_height; /* if NONE then calculated in some reasonable way */
+
+	uint32 static_flags;
+	
+	int16 polygon_index;
+	
+	int16 tag;
+	
+	int16 unused[7];
 };
 
-struct platform_data /* 128 bytes */
+struct saved_platform_data /* 140 bytes */
+{
+	int16 type;
+	uint16 static_flags_hi, static_flags_lo;
+	int16 speed, delay;
+	world_distance minimum_floor_height, maximum_floor_height;
+	world_distance minimum_ceiling_height, maximum_ceiling_height;
+	
+	int16 polygon_index;
+	uint16 dynamic_flags;
+	world_distance floor_height, ceiling_height;
+	int16 ticks_until_restart; /* if we’re not moving but are active, this is our delay until we move again */
+
+	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
+
+	int16 parent_platform_index; /* the platform_index which activated us, if any */
+	
+	int16 tag;
+	
+	int16 unused[22];
+};
+const int SIZEOF_saved_platform_data = 140;
+
+struct platform_data /* size platform-specific because some fields are not aligned naturally */
 {
 	short type;
 	unsigned long static_flags;
@@ -213,7 +252,7 @@ struct platform_data /* 128 bytes */
 	world_distance minimum_ceiling_height, maximum_ceiling_height;
 	
 	short polygon_index;
-	word dynamic_flags;
+	uint16 dynamic_flags;
 	world_distance floor_height, ceiling_height;
 	short ticks_until_restart; /* if we’re not moving but are active, this is our delay until we move again */
 

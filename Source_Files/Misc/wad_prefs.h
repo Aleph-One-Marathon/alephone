@@ -10,12 +10,11 @@ Aug 21, 2000 (Loren Petrich):
 	Added object-oriented file handling
 */
 
+#include "FileHandler.h"
+
 /* Open the file, and allocate whatever internal structures are necessary in the */
 /*  preferences pointer.. */
-// LP: using abstract type defined in class FileSpecifier
 boolean w_open_preferences_file(char *PrefName, int Type);
-// 	unsigned char *prefName, 
-// 	unsigned long preferences_file_type); // ostype for mac, extension for dos
 
 typedef void (*prefs_initializer)(void *prefs);
 typedef boolean (*prefs_validater)(void *prefs);
@@ -31,13 +30,14 @@ void w_write_preferences_file(void);
 /* ------ local structures */
 /* This is the structure used internally */
 struct preferences_info {
+	preferences_info() : wad(NULL) {}
+
 	FileSpecifier PrefsFile;
-	// FileDesc pref_file;
 	struct wad_data *wad;
 };
 
 /* This will need to be rewritten! */
-#ifdef mac
+#if defined(mac) || defined(SDL)
 /*----------------- code from macintosh_wad_prefs.c */
 #define LOCAL_TO_GLOBAL_DITL(id, first) (id+first)
 #define GLOBAL_TO_LOCAL_DITL(id, first) (id-first)

@@ -97,7 +97,7 @@ short new_effect(
 						effect->flags= 0;
 						effect->object_index= object_index;
 						effect->data= 0;
-						effect->delay= definition->delay ? random()%definition->delay : 0;
+						effect->delay= definition->delay ? global_random()%definition->delay : 0;
 						MARK_SLOT_AS_USED(effect);
 						
 						SET_OBJECT_OWNER(object, _object_is_effect);

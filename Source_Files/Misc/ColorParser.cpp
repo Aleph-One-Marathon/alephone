@@ -59,7 +59,7 @@ bool XML_ColorParser::HandleAttribute(const char *Tag, const char *Value)
 		if (ReadNumericalValue(Value,"%f",CVal))
 		{
 			IsPresent[0] = true;
-			TempColor.red = PIN(65535*CVal+0.5,0,65535);
+			TempColor.red = uint16(PIN(65535*CVal+0.5,0,65535));
 			return true;
 		}
 		else return false;
@@ -69,7 +69,7 @@ bool XML_ColorParser::HandleAttribute(const char *Tag, const char *Value)
 		if (ReadNumericalValue(Value,"%f",CVal))
 		{
 			IsPresent[1] = true;
-			TempColor.green = PIN(65535*CVal+0.5,0,65535);
+			TempColor.green = uint16(PIN(65535*CVal+0.5,0,65535));
 			return true;
 		}
 		else return false;
@@ -80,7 +80,7 @@ bool XML_ColorParser::HandleAttribute(const char *Tag, const char *Value)
 		if (ReadNumericalValue(Value,"%f",CVal))
 		{
 			IsPresent[2] = true;
-			TempColor.blue = PIN(65535*CVal+0.5,0,65535);
+			TempColor.blue = uint16(PIN(65535*CVal+0.5,0,65535));
 			return true;
 		}
 		else return false;

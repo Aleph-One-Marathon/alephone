@@ -247,7 +247,7 @@ void choose_random_flood_node(
 		{
 			do
 			{
-				last_node_index_expanded= random()%node_count;
+				last_node_index_expanded= global_random()%node_count;
 			}
 			while (NODE_IS_UNEXPANDED(nodes+last_node_index_expanded));
 

@@ -738,7 +738,7 @@ boolean randomize_object_sequence(
 	{
 		case _unanimated:
 			object->shape= shape;
-			object->sequence= BUILD_SEQUENCE(random()%animation->frames_per_view, 0);
+			object->sequence= BUILD_SEQUENCE(global_random()%animation->frames_per_view, 0);
 			randomized= TRUE;
 			break;
 	}
@@ -1217,8 +1217,6 @@ void closest_point_on_circle(
 	}
 	else
 	{
-		// LP: some debugging statement?
-		// pause();
 		*closest_point= *p;
 	}
 	
@@ -1323,8 +1321,15 @@ boolean keep_line_segment_out_of_walls(
 				{
 					short adjacent_polygon_index= signed_line_index<0 ? line->clockwise_polygon_owner : line->counterclockwise_polygon_owner;
 					struct polygon_data *adjacent_polygon= adjacent_polygon_index==NONE ? NULL : get_polygon_data(adjacent_polygon_index);
-					world_distance lowest_ceiling= adjacent_polygon->ceiling_height<polygon->ceiling_height ? adjacent_polygon->ceiling_height : polygon->ceiling_height;
-					world_distance highest_floor= adjacent_polygon->floor_height>polygon->floor_height ? adjacent_polygon->floor_height : polygon->floor_height;
+					world_distance lowest_ceiling;
+					world_distance highest_floor;
+
+					// CB: If there is no adjacent polygon, we assume a solid side
+					if (adjacent_polygon == NULL)
+						goto line_is_solid;
+
+					lowest_ceiling= adjacent_polygon->ceiling_height<polygon->ceiling_height ? adjacent_polygon->ceiling_height : polygon->ceiling_height;
+					highest_floor= adjacent_polygon->floor_height>polygon->floor_height ? adjacent_polygon->floor_height : polygon->floor_height;
 
 					/* if a) this line is solid, b) the new polygon is farther than maximum_delta height
 						above our feet, or c) the new polygon is lower than the top of our head then
@@ -1334,6 +1339,7 @@ boolean keep_line_segment_out_of_walls(
 						adjacent_polygon->ceiling_height-p1->z<height ||
 						lowest_ceiling-highest_floor<height)
 					{
+line_is_solid:
 //						if (unsigned_line_index==104) dprintf("inside solid line #%d (%p) in polygon #%d", unsigned_line_index, line, polygon_index);
 						
 						switch (state)
@@ -1850,7 +1856,7 @@ void random_point_on_circle(
 	world_distance adjusted_floor_height, adjusted_ceiling_height, supporting_polygon_index; /* not used */
 	
 	*random_point= *center;
-	translate_point2d((world_point2d *)random_point, radius, random()&(NUMBER_OF_ANGLES-1));
+	translate_point2d((world_point2d *)random_point, radius, global_random()&(NUMBER_OF_ANGLES-1));
 	keep_line_segment_out_of_walls(center_polygon_index, center, random_point, 0, WORLD_ONE/12,
 		&adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
 	*random_polygon_index= find_new_object_polygon((world_point2d *)center,

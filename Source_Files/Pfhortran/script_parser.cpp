@@ -18,10 +18,14 @@
 
 // The name of the Pfhortran Language Def File.  Path could be included here.
 
+#ifdef SDL
+#define LANGDEFPATH "Pfhortran_Language_Definition"
+#else
 #define LANGDEFPATH "Pfhortran Language Definition"
+#endif
 
 #ifdef SDL
-extern FileObject global_data_dir;
+extern FileSpecifier global_data_dir;
 #endif
 
 
@@ -110,9 +114,9 @@ bool init_pfhortran(void)
 	pfhortran_is_on = false;	// In case we have some errors
 	
 #ifdef SDL
-	FileObject lang_def_path = global_data_dir;
+	FileSpecifier lang_def_path = global_data_dir;
 	lang_def_path.AddPart(LANGDEFPATH);
-	lang_def = fopen(lang_def_path.name.c_str(), "r");
+	lang_def = fopen(lang_def_path.GetName(), "r");
 #else
 	lang_def = fopen(LANGDEFPATH,"r");
 #endif

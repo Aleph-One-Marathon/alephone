@@ -99,7 +99,9 @@ void initialize_marathon(
 	initialize_scenery();
 	// LP additions:
 	initialize_items();
+#ifdef HAVE_OPENGL
 	OGL_Initialize();
+#endif
 	// CP addition: init pfhortran
 	init_pfhortran();
 
@@ -398,7 +400,7 @@ short calculate_level_completion_state(
 short calculate_damage(
 	struct damage_definition *damage)
 {
-	short total_damage= damage->base + (damage->random ? random()%damage->random : 0);
+	short total_damage= damage->base + (damage->random ? global_random()%damage->random : 0);
 	
 	total_damage= FIXED_INTEGERAL_PART(total_damage*damage->scale);
 	

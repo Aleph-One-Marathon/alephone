@@ -575,8 +575,8 @@ static void precalculate_sensor_region(
 		double x= sqrt(r*r-y*y);
 		
 		if (x>=r) x= r-1.0;
-		sensor_region[i].x0= half_side_length-x;
-		sensor_region[i].x1= x+half_side_length;
+		sensor_region[i].x0= int16(half_side_length-x);
+		sensor_region[i].x1= int16(x+half_side_length);
 	}
 
 	return;

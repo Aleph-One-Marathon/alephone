@@ -16,10 +16,14 @@
 */
 
 
+#ifdef mac
 #include <agl.h>
+#endif
+
 #include "cseries.h"
 #include "shape_descriptors.h"
 #include "OGL_Setup.h"
+
 #include <string.h>
 
 
@@ -30,10 +34,18 @@ static bool _OGL_IsPresent = false;
 // Initializer
 bool OGL_Initialize()
 {
+#ifdef HAVE_OPENGL
+#if defined(mac)
 	// Cribbed from Apple's DrawSprocket documentation;
 	// look for OpenGL function
 	return (_OGL_IsPresent = ((Ptr)aglChoosePixelFormat != (Ptr)kUnresolvedCFragSymbolAddress));
 	// return (_OGL_IsPresent = ((Ptr)glBegin != (Ptr)kUnresolvedCFragSymbolAddress));
+#elif defined(SDL)
+	// nothing to do
+#else
+#error OLG_Initialize() not implemented for this platform
+#endif
+#endif
 }
 
 // Test for presence

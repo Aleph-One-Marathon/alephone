@@ -16,7 +16,7 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
-#include "FileHandler.h"
+class FileSpecifier;
 
 /* ---------- constants */
 
@@ -399,7 +399,7 @@ struct sound_manager_parameters
 {
 	short channel_count; /* >=0 */
 	short volume; /* [0,NUMBER_OF_SOUND_VOLUME_LEVELS) */
-	word flags; /* stereo, dynamic_tracking, etc. */
+	uint16 flags; /* stereo, dynamic_tracking, etc. */
 
 	long unused_long;
 	fixed pitch;
@@ -415,7 +415,7 @@ struct dynamic_sound_data
 	/* can be NULL; only for doppler effects */
 	world_vector3d *velocity;
 	
-	word flags;
+	uint16 flags;
 };
 
 /* ---------- external prototypes */
@@ -425,7 +425,7 @@ struct dynamic_sound_data
 world_location3d *_sound_listener_proc(void);
 
 /* _sound_obstructed_proc() tells whether the given sound is obstructed or not */
-word _sound_obstructed_proc(world_location3d *source);
+uint16 _sound_obstructed_proc(world_location3d *source);
 
 void _sound_add_ambient_sources_proc(void *data, add_ambient_sound_source_proc_ptr add_one_ambient_sound_source);
 
@@ -437,7 +437,7 @@ boolean verify_sound_manager_parameters(struct sound_manager_parameters *paramet
 void set_sound_manager_parameters(struct sound_manager_parameters *parameters);
 void set_sound_manager_status(boolean status);
 
-word available_sound_manager_flags(word flags);
+uint16 available_sound_manager_flags(uint16 flags);
 
 boolean adjust_sound_volume_up(struct sound_manager_parameters *parameters, short sound_index);
 boolean adjust_sound_volume_down(struct sound_manager_parameters *parameters, short sound_index);
@@ -472,15 +472,13 @@ void cause_ambient_sound_source_update(void);
 short random_sound_index_to_sound_index(short random_sound_index);
 
 // LP: generalized this: returns whether or not it was successful
+class FileSpecifier;
 bool open_sound_file(FileSpecifier& File);
 
-// Clone of similar functions for getting default map and physics specs
-void get_default_sounds_spec(FileSpecifier& File);
-
-/*
-#ifdef mac
-OSErr open_sound_file(FSSpec *spec);
+// Play MacOS sound resource
+#ifdef SDL
+extern void play_sound_resource(void *sound, uint32 sound_size);
+extern void stop_sound_resource(void);
 #endif
-*/
 
 #endif

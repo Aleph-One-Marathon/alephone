@@ -197,7 +197,7 @@ inline byte FiveToEight(byte x) {return (x << 3) | ((x >> 2) & 0x07);}
 
 // 16-bit-to-32-bit with opacity = 1;
 // ARGB 1555 to RGBA 8888
-inline GLuint Convert_16to32(word InPxl)
+inline GLuint Convert_16to32(uint16 InPxl)
 {
 	// Alpha preset
 	GLuint OutPxl = 0x000000ff;

@@ -16,12 +16,13 @@ Aug 12, 2000 (Loren Petrich):
 #include "cseries.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdexcept>
 
 #include "map.h"
+#include "shell.h"
 #include "wad.h"
 #include "game_errors.h"
 
-// #include "shell.h" // for refPREFERENCES_DIALOG only
 #include "wad_prefs.h"
 
 #include "FileHandler.h"
@@ -39,33 +40,37 @@ struct preferences_info *prefInfo= NULL;
 /* ------ local prototypes */
 static void load_preferences(void);
 
+// LP: fake portable-files stuff
+#ifdef mac
+inline short memory_error() {return MemError();}
+#else
+inline short memory_error() {return 0;}
+#endif
+
 /* ------------ Entry point */
 /* Open the file, and allocate whatever internal structures are necessary in the */
 /*  preferences pointer.. */
 boolean w_open_preferences_file(
 	char *PrefName,
 	int Type)
-	// unsigned char *prefName, 
-	// unsigned long preferences_file_type) // ostype for mac, extension for dos
 {
-	short error;
-	// FileError error;
+	int error = 0;
 	boolean success= TRUE;
 
 	/* allocate space for our global structure to keep track of the prefs file */
-	prefInfo= (struct preferences_info *) malloc(sizeof(struct preferences_info));
-	if (prefInfo)
-	{
-		/* Clear memory */
-		memset(prefInfo, 0, sizeof(struct preferences_info));
-		// memcpy(prefInfo->pref_file.name, prefName, *prefName+1);
-		
-		/* check for the preferences folder using FindFolder, creating it if necessary */
-		// find_preferences_location(&prefInfo->pref_file);
-		
+	prefInfo = NULL;
+	try {
+		prefInfo = new preferences_info;
+
+#if defined(mac)
 		prefInfo->PrefsFile.SetParentToPreferences();
 		prefInfo->PrefsFile.SetName(PrefName,Type);
-		
+		/* check for the preferences folder using FindFolder, creating it if necessary */
+#elif defined(SDL)
+		prefInfo->PrefsFile = local_data_dir;
+		prefInfo->PrefsFile.AddPart(PrefName);
+#endif
+
 		/* does the preferences file exist? */
 		load_preferences(); /* Uses prefInfo.. */
 		
@@ -87,8 +92,7 @@ boolean w_open_preferences_file(
 				switch(error)
 				{
 					case errFileNotFound: // to be portable!
-						// error= create_file(&prefInfo->pref_file, preferences_file_type);
-						if (!error)
+						if (prefInfo->pref_file.Create(preferences_file_type))
 						{
 							prefInfo->wad= create_empty_wad();
 							set_game_error(systemError, error);
@@ -105,8 +109,6 @@ boolean w_open_preferences_file(
 				#endif
 			} else {
 				/* Something was invalid.. */
-				// error= delete_file(&prefInfo->pref_file);
-				// if(!error)
 				if (prefInfo->PrefsFile.Delete())
 				{
 					prefInfo->wad= create_empty_wad();
@@ -116,11 +118,8 @@ boolean w_open_preferences_file(
 				set_game_error(systemError, errNone);
 			}
 		}
-	}
-	else
-	{
-		set_game_error(systemError, MemError());
-		// set_game_error(systemError, memory_error());
+	} catch (...) {
+		set_game_error(systemError, memory_error());
 	}
 	
 	if (error)
@@ -207,7 +206,6 @@ void w_write_preferences_file(
 {
 	struct wad_header header;
 	OpenedFile OFile;
-	// fileref refNum;
 
 	/* We can be called atexit. */
 	if(error_pending())
@@ -218,19 +216,13 @@ void w_write_preferences_file(
 	assert(!error_pending());
 	OpenedFile PrefsFile;
 	if (open_wad_file_for_writing(prefInfo->PrefsFile,PrefsFile))
-	// refNum= open_wad_file_for_writing(&prefInfo->pref_file);
-	// if(!error_pending())
 	{
 		struct directory_entry entry;
 
-		// assert(refNum!=NONE);
-
-		// fill_default_wad_header(&prefInfo->pref_file, 
 		fill_default_wad_header(prefInfo->PrefsFile, 
 			CURRENT_WADFILE_VERSION, CURRENT_PREF_WADFILE_VERSION, 
 			1, 0l, &header);
 			
-		// if (write_wad_header(refNum, &header))
 		if (write_wad_header(PrefsFile, &header))
 		{
 			long wad_length;
@@ -239,20 +231,17 @@ void w_write_preferences_file(
 			/* Length? */
 			wad_length= calculate_wad_length(&header, prefInfo->wad);
 
-			/* Set the entry data..... */
+			/* Set the entry data..... (and put into correct byte-order for writing) */
 			set_indexed_directory_offset_and_length(&header, 
 				&entry, 0, offset, wad_length, 0);
 			
 			/* Now write it.. */
-			// if (write_wad(refNum, &header, prefInfo->wad, offset))
 			if (write_wad(PrefsFile, &header, prefInfo->wad, offset))
 			{
 				offset+= wad_length;
 				header.directory_offset= offset;
 				if (write_wad_header(PrefsFile, &header) &&
 					write_directorys(PrefsFile, &header, &entry))
-				// if (write_wad_header(refNum, &header) &&
-				//	write_directorys(refNum, &header, &entry))
 				{
 					/* Success! */
 				} else {
@@ -268,7 +257,6 @@ void w_write_preferences_file(
 			assert(error_pending());
 		}
 		close_wad_file(PrefsFile);
-		// close_wad_file(refNum);
 	} 
 	
 	return;
@@ -277,8 +265,6 @@ void w_write_preferences_file(
 static void load_preferences(
 	void)
 {
-	// fileref refNum;
-	
 	/* If it was already allocated, we are reloading, so free the old one.. */
 	if(prefInfo->wad)
 	{	
@@ -288,19 +274,13 @@ static void load_preferences(
 	
 	OpenedFile PrefsFile;
 	if (open_wad_file_for_reading(prefInfo->PrefsFile,PrefsFile))
-	// refNum= open_wad_file_for_reading(&prefInfo->pref_file);
-	// if(!error_pending())
 	{
 		struct wad_header header;
 	
-		// assert(refNum != NONE);
-	
 		/* Read the header from the wad file */
-		// if(read_wad_header(refNum, &header))
 		if(read_wad_header(PrefsFile, &header))
 		{
 			/* Read the indexed wad from the file */
-			// prefInfo->wad= read_indexed_wad_from_file(refNum, &header, 0, FALSE);
 			prefInfo->wad= read_indexed_wad_from_file(PrefsFile, &header, 0, FALSE);
 			// LP change: more graceful degradation
 			if (!prefInfo->wad) set_game_error(gameError, errUnknownWadVersion);
@@ -309,7 +289,6 @@ static void load_preferences(
 				
 		/* Close the file.. */
 		close_wad_file(PrefsFile);
-		// close_wad_file(refNum);
 	}
 	
 	return;

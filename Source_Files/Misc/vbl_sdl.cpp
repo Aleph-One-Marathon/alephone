@@ -39,9 +39,6 @@ static struct special_flag_data special_flags[]=
 	{_latched_flag, _toggle_map}
 };
 
-// From shell_sdl.cpp
-extern FileObject local_data_dir;
-
 // Constants
 #define FILM_RESOURCE_TYPE 'film'
 
@@ -66,7 +63,7 @@ static _bs_field _bs_game_data[] = {
  *  Get FileDesc for replay, ask user if desired
  */
 
-boolean find_replay_to_use(boolean ask_user, FileObject &file)
+boolean find_replay_to_use(boolean ask_user, FileSpecifier &file)
 {
 	if (ask_user) {
 		//!!
@@ -80,7 +77,7 @@ boolean find_replay_to_use(boolean ask_user, FileObject &file)
  *  Get FileDesc for default recording file
  */
 
-boolean get_recording_filedesc(FileObject &file)
+boolean get_recording_filedesc(FileSpecifier &file)
 {
 	file = local_data_dir;
 	file.AddPart(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING));
@@ -154,11 +151,8 @@ long parse_keymap(void)
 	if (do_interchange)
 		flags ^= _run_dont_walk;
 
-#if 0
-	//!!
-	if(player_in_terminal_mode(local_player_index))
-		flags = build_terminal_action_flags((char *) key_map);
-#endif
+	if (player_in_terminal_mode(local_player_index))
+		flags = build_terminal_action_flags((char *)key_map);
 
 	return flags;
 }

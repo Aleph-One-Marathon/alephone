@@ -109,6 +109,7 @@ void _draw_screen_shape_centered(shape_descriptor shape, screen_rectangle *recta
 void _draw_screen_text(char *text, screen_rectangle *destination, 
 	short flags, short font_id, short text_color);
 short _text_width(char *buffer, short font_id);
+short _text_width(char *buffer, int start, int length, short font_id);
 
 void _erase_screen(short color_index);
 
@@ -134,5 +135,21 @@ XML_ElementParser *InterfaceRectangles_GetParser();
 
 // Makes the color parser use screen-drawing stuff
 void SetColorParserToScreenDrawing();
+
+#ifdef SDL
+struct sdl_font_info;
+struct world_point2d;
+extern int draw_text(SDL_Surface *s, char *text, int length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style);
+extern int char_width(uint8 c, const sdl_font_info *font, uint16 style);
+extern int text_width(char *text, const sdl_font_info *font, uint16 style);
+extern int text_width(char *text, int length, const sdl_font_info *font, uint16 style);
+extern sdl_font_info *load_font(const TextSpec &spec);
+extern void draw_polygon(SDL_Surface *s, world_point2d *vertex_array, int vertex_count, uint32 pixel);
+
+static inline int draw_text(SDL_Surface *s, char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
+{
+	draw_text(s, text, strlen(text), x, y, pixel, font, style);
+}
+#endif
 
 #endif

@@ -570,7 +570,7 @@ void process_new_item_for_reloading(
 							short rounds_given;
 		
 							rounds_given= trigger_definition->rounds_per_magazine/2 + 
-								(random()%(trigger_definition->rounds_per_magazine/2+1));
+								(global_random()%(trigger_definition->rounds_per_magazine/2+1));
 							player_weapons->weapons[weapon_type].triggers[which_trigger].rounds_loaded= 
 								rounds_given;
 								
@@ -2913,7 +2913,7 @@ static void add_random_flutter(
 	delta_height= flutter_base>>4;
 	delta_width= flutter_base>>6;
 	
-	/* Note that we MUST use rand() here, and not random() */
+	/* Note that we MUST use rand() here, and not global_random() */
 	if(delta_height) *height += (rand()%delta_height)-(delta_height/2);
 	if(delta_width) *width += (rand()%delta_width)-(delta_width/2);
 }				

@@ -91,7 +91,7 @@ int PrevBufferWidth = SHORT_MIN, PrevBufferHeight = SHORT_MIN,
     PrevOffsetWidth = SHORT_MIN, PrevOffsetHeight = SHORT_MIN;
 
 #define FRAME_SAMPLE_SIZE 20
-bool displaying_fps = true;
+bool displaying_fps = false;
 int frame_count, frame_index;
 uint32 frame_ticks[64];
 
@@ -112,6 +112,7 @@ static struct screen_mode_data screen_mode;
 extern bool option_fullscreen;
 
 // Prototypes
+static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
 static void update_fps_display(SDL_Surface *s);
@@ -205,6 +206,11 @@ static void reallocate_world_pixels(int width, int height)
 	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bit_depth, Rmask, Gmask, Bmask, 0);
 	if (world_pixels == NULL)
 		alert_user(fatalError, strERRORS, outOfMemory, -1);
+	else if (bit_depth == 8) {
+		SDL_Color colors[256];
+		build_sdl_color_table(world_color_table, colors);
+		SDL_SetColors(world_pixels, colors, 0, world_color_table->color_count);
+	}
 }
 
 
@@ -545,7 +551,7 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
  *  Color table handling
  */
 
-void build_sdl_color_table(const color_table *color_table, SDL_Color *colors)
+static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors)
 {
 	const rgb_color *src = color_table->colors;
 	SDL_Color *dst = colors;
@@ -622,7 +628,9 @@ void render_computer_interface(struct view_data *view)
 	data.bottom = view->screen_height;
 	data.vertical_offset = 0;
 
+	_set_port_to_gworld();
 	_render_computer_interface(&data);
+	_restore_port();
 }
 
 
@@ -647,7 +655,9 @@ void render_overhead_map(struct view_data *view)
 	overhead_data.origin.x = view->origin.x;
 	overhead_data.origin.y = view->origin.y;
 
+	_set_port_to_gworld();
 	_render_overhead_map(&overhead_data);
+	_restore_port();
 }
 
 
@@ -812,6 +822,45 @@ void update_screen_window(WindowPtr window, EventRecord *event)
 	draw_interface();
 	change_screen_mode(&screen_mode, TRUE);
 	assert_world_color_table(interface_color_table, world_color_table);
+}
+
+
+/*
+ *  Get world view destination frame for given screen size
+ */
+
+void calculate_destination_frame(short size, boolean high_resolution, Rect *frame)
+{
+	frame->left = frame->top = 0;
+
+	// Calculate destination frame
+	switch (size) {
+		case _full_screen:
+			frame->right = DESIRED_SCREEN_WIDTH;
+			frame->bottom = DESIRED_SCREEN_HEIGHT;
+			break;
+		case _100_percent:
+			frame->right = DEFAULT_WORLD_WIDTH;
+			frame->bottom = DEFAULT_WORLD_HEIGHT;
+			break;
+		case _75_percent:
+			frame->right = 3 * DEFAULT_WORLD_WIDTH / 4;
+			frame->bottom = 3 * DEFAULT_WORLD_HEIGHT / 4;
+			break;
+		case _50_percent:
+			frame->right = DEFAULT_WORLD_WIDTH / 2;
+			frame->bottom = DEFAULT_WORLD_HEIGHT / 2;
+			break;
+	}
+	
+	if (size != _full_screen) {
+		int dx = (DEFAULT_WORLD_WIDTH - frame->right) / 2;
+		int dy = (DEFAULT_WORLD_HEIGHT - frame->bottom) / 2;
+		frame->top += dy;
+		frame->left += dx;
+		frame->bottom += dy;
+		frame->right += dx;
+	}
 }
 
 

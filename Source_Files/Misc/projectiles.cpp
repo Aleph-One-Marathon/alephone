@@ -270,9 +270,9 @@ short new_projectile(
 			elevation= arctangent(isqrt(vector->x*vector->x+vector->y*vector->y), vector->z);
 			if (delta_theta)
 			{
-				if (!(definition->flags&_no_horizontal_error)) facing= normalize_angle(facing+random()%(2*delta_theta)-delta_theta);
-				if (!(definition->flags&_no_vertical_error)) elevation= (definition->flags&_positive_vertical_error) ? normalize_angle(elevation+random()%delta_theta) :
-					normalize_angle(elevation+random()%(2*delta_theta)-delta_theta);
+				if (!(definition->flags&_no_horizontal_error)) facing= normalize_angle(facing+global_random()%(2*delta_theta)-delta_theta);
+				if (!(definition->flags&_no_vertical_error)) elevation= (definition->flags&_positive_vertical_error) ? normalize_angle(elevation+global_random()%delta_theta) :
+					normalize_angle(elevation+global_random()%(2*delta_theta)-delta_theta);
 			}
 			
 			object_index= new_map_object3d(origin, polygon_index, definition->collection==NONE ? NONE : BUILD_DESCRIPTOR(definition->collection, definition->shape), facing);
@@ -368,8 +368,8 @@ void move_projectiles(
 					if (definition->flags&_doubly_affected_by_gravity) projectile->gravity-= 2*GRAVITATIONAL_ACCELERATION;
 					new_location.z+= projectile->gravity;
 					translate_point3d(&new_location, speed, object->facing, projectile->elevation);
-					if (definition->flags&_vertical_wander) new_location.z+= (random()&1) ? WANDER_MAGNITUDE : -WANDER_MAGNITUDE;
-					if (definition->flags&_horizontal_wander) translate_point3d(&new_location, (random()&1) ? WANDER_MAGNITUDE : -WANDER_MAGNITUDE, NORMALIZE_ANGLE(object->facing+QUARTER_CIRCLE), 0);
+					if (definition->flags&_vertical_wander) new_location.z+= (global_random()&1) ? WANDER_MAGNITUDE : -WANDER_MAGNITUDE;
+					if (definition->flags&_horizontal_wander) translate_point3d(&new_location, (global_random()&1) ? WANDER_MAGNITUDE : -WANDER_MAGNITUDE, NORMALIZE_ANGLE(object->facing+QUARTER_CIRCLE), 0);
 					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index);
 					
 					// LP change: set up for penetrating media boundary
@@ -897,8 +897,8 @@ word translate_projectile(
 						if (intersection.z>adjacent_polygon->floor_height&&intersection.z<adjacent_polygon->ceiling_height)
 						{
 							if (!LINE_HAS_TRANSPARENT_SIDE(line) || (!new_polygon_index && (definition->flags&(_usually_pass_transparent_side|_sometimes_pass_transparent_side))) ||
-								((definition->flags&_usually_pass_transparent_side) && (random()&3)) ||
-								((definition->flags&_sometimes_pass_transparent_side) && !(random()&3)))
+								((definition->flags&_usually_pass_transparent_side) && (global_random()&3)) ||
+								((definition->flags&_sometimes_pass_transparent_side) && !(global_random()&3)))
 							{
 								/* no intersections, successfully entered new polygon */
 								if (new_polygon_index) *new_polygon_index= adjacent_polygon_index;

@@ -8,26 +8,11 @@
 #include <byte_swapping.h>
 
 
-// Constants
-enum /* collection status */
-{
-    markNONE,
-    markLOAD= 1,
-    markUNLOAD= 2,
-    markSTRIP= 4 /* we don't want bitmaps, just high/low-level shape data */
-};
-
-enum /* flags */
-{
-    _collection_is_stripped= 0x0001
-};
-
-
 // Global variables
 static SDL_RWops *shapes_file = NULL;
 
 // From FileHandler_SDL.cpp
-extern void get_default_shapes_spec(FileObject &File);
+extern void get_default_shapes_spec(FileSpecifier &File);
 
 // Prototypes
 static void close_shapes_file(void);
@@ -38,10 +23,10 @@ static void shutdown_shape_handler(void);
  *  Open shapes file, read collection headers
  */
 
-void open_shapes_file(FileObject &file)
+void open_shapes_file(FileSpecifier &file)
 {
 	// Open stream to shapes file
-	SDL_RWops *p = SDL_RWFromFile(file.name.c_str(), "rb");
+	SDL_RWops *p = SDL_RWFromFile(file.GetName(), "rb");
 	if (p == NULL)
 		return;
 
@@ -55,6 +40,7 @@ void open_shapes_file(FileObject &file)
 		h->offset16 = SDL_ReadBE32(p);
 		h->length16 = SDL_ReadBE32(p);
 		SDL_RWseek(p, 12, SEEK_CUR);
+		//printf(" collection %d, status %d, flags %04x, offset %d, length %d, offset16 %d, length16 %d\n", i, h->status, h->flags, h->offset, h->length, h->offset16, h->length16);
 		h->collection = NULL;
 		h->shading_tables = NULL;
 	}
@@ -84,7 +70,7 @@ static void close_shapes_file(void)
 
 void initialize_shape_handler(void)
 {
-	FileObject shapes;
+	FileSpecifier shapes;
 	get_default_shapes_spec(shapes);
 	open_shapes_file(shapes);
 
@@ -92,16 +78,6 @@ void initialize_shape_handler(void)
 		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
 	else
 		atexit(shutdown_shape_handler);
-}
-
-
-/*
- *  Shutdown shapes handling
- */
-
-static void shutdown_shape_handler(void)
-{
-	close_shapes_file();
 }
 
 
@@ -149,16 +125,6 @@ SDL_Surface *get_shape_surface(int shape)
 	// Set color table
 	SDL_SetColors(s, colors, 0, 256);
 	return s;
-}
-
-
-/*
- *  Is collection loaded?
- */
-
-static boolean collection_loaded(struct collection_header *header)
-{
-	return header->collection ? true : false;
 }
 
 
@@ -431,71 +397,4 @@ static void unload_collection(struct collection_header *header)
 	free(header->shading_tables);
 	header->collection = NULL;
 	header->shading_tables = NULL;
-}
-
-
-/*
- *  Lock collection
- */
-
-static void lock_collection(struct collection_header *header)
-{
-	// does nothing
-}
-
-
-/*
- *  Unlock collection
- */
-
-static void unlock_collection(struct collection_header *header)
-{
-	// does nothing
-}
-
-
-/*
- *  Get pointer to collection definition
- */
-
-static struct collection_definition *get_collection_definition(short collection_index)
-{
-	collection_definition *collection = get_collection_header(collection_index)->collection;
-	vassert(collection, csprintf(temporary, "collection #%d isn't loaded", collection_index));
-	return collection;
-}
-
-
-/*
- *  Get pointer to collection shading tables
- */
-
-static void *get_collection_shading_tables(short collection_index, short clut_index)
-{
-	void *shading_tables = get_collection_header(collection_index)->shading_tables;
-	(uint8 *)shading_tables += clut_index * get_shading_table_size(collection_index);
-	return shading_tables;
-}
-
-
-/*
- *  Get pointer to collection tint tables
- */
-
-static void *get_collection_tint_tables(short collection_index, short tint_index)
-{
-	collection_definition *collection = get_collection_definition(collection_index);
-	void *tint_table = get_collection_header(collection_index)->shading_tables;
-	(uint8 *)tint_table += get_shading_table_size(collection_index) * collection->clut_count + shading_table_size * tint_index;
-	return tint_table;
-}
-
-
-/*
- *  Get pointer to collection definition, or NULL
- */
-
-static struct collection_definition *_get_collection_definition(short collection_index)
-{
-	return get_collection_header(collection_index)->collection;
 }

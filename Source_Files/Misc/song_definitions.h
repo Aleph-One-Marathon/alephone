@@ -16,18 +16,18 @@ enum {
 };
 
 struct sound_snippet {
-	long start_offset;
-	long end_offset;
+	int32 start_offset;
+	int32 end_offset;
 };
 
 struct song_definition {
-	short flags;
-	long sound_start;
+	int16 flags;
+	int32 sound_start;
 	struct sound_snippet introduction;
 	struct sound_snippet chorus;
-	short chorus_count; /* If it is negative then it is a random count */
+	int16 chorus_count; /* If it is negative then it is a random count */
 	struct sound_snippet trailer;
-	long restart_delay;
+	int32 restart_delay;
 };
 
 struct song_definition songs[]= {
@@ -37,7 +37,7 @@ struct song_definition songs[]= {
 		{ 0, 0},	// chorus
 		RANDOM_COUNT(3), // chorus count
 		{ 0, 0}, // trailer
-		30*MACINTOSH_TICKS_PER_SECOND
+		30*MACHINE_TICKS_PER_SECOND
 	}
 };
 

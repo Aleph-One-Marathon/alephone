@@ -157,8 +157,8 @@ OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, boolean abort);
 OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd);
 Boolean NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *address);
 
-OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, word *count);
-OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, word *count);
+OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
+OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
 
 #endif
 

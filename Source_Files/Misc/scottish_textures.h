@@ -82,7 +82,7 @@ struct tint_table32
 
 struct rectangle_definition
 {
-	word flags;
+	uint16 flags;
 	
 	struct bitmap_definition *texture;
 	
@@ -122,7 +122,7 @@ struct rectangle_definition
 
 struct polygon_definition
 {
-	word flags;
+	uint16 flags;
 	
 	struct bitmap_definition *texture; /* ignored for _tinted and _solid polygons */
 

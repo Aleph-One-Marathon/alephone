@@ -953,17 +953,17 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 
 /* generate code for 8-bit texture-mapping */
 #define BIT_DEPTH 8
-#include "low_level_textures.c"
+#include "low_level_textures.cpp"
 #undef BIT_DEPTH
 
 /* generate code for 16-bit texture-mapping */
 #define BIT_DEPTH 16
-#include "low_level_textures.c"
+#include "low_level_textures.cpp"
 #undef BIT_DEPTH
 
 /* generate code for 32-bit texture-mapping */
 #define BIT_DEPTH 32
-#include "low_level_textures.c"
+#include "low_level_textures.cpp"
 #undef BIT_DEPTH
 
 /* ---------- private code */

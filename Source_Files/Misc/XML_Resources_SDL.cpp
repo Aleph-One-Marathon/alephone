@@ -99,5 +99,6 @@ bool XML_Resources_SDL::ParseResourceSet(uint32 Type)
 			exit(1);
 		}
 		free(data);
+		data = NULL;
 	}
 }

@@ -255,7 +255,9 @@ static RenderPlaceObjsClass RenderPlaceObjs;		// Object-placement object
 static RenderRasterizerClass RenderRasterize;		// Clipping and rasterization class
 
 static Rasterizer_SW_Class Rasterizer_SW;			// Software rasterizer
+#ifdef HAVE_OPENGL
 static Rasterizer_OGL_Class Rasterizer_OGL;			// OpenGL rasterizer
+#endif
 
 
 /* ---------- private prototypes */
@@ -410,14 +412,18 @@ void render_view(
 			
 			// LP addition: set the current rasterizer to whichever is appropriate here
 			RasterizerClass *RasPtr;
+#ifdef HAVE_OPENGL
 			if (OGL_IsActive())
 				RasPtr = &Rasterizer_OGL;
 			else
 			{
+#endif
 				// The software renderer needs this but the OpenGL one doesn't...
 				Rasterizer_SW.screen = destination;
 				RasPtr = &Rasterizer_SW;
+#ifdef HAVE_OPENGL
 			}
+#endif
 			
 			// Set its view:
 			RasPtr->SetView(*view);
@@ -835,7 +841,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 	weapon_display_information display_data;
 	shape_information_data *shape_information;
 	short count;
-	
+
 	// LP change: bug out if weapons-in-hand are not to be displayed
 	if (!view->show_weapons_in_hand) return;
 

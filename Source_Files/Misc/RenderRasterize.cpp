@@ -344,8 +344,10 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 				{
 					case 0:
 						// LP change: making it long-distance friendly
+{
 						long screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 						screen->x= PIN(screen_x, 0, view->screen_width);
+}
 						/*
 						screen->x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 						screen->x= PIN(screen->x, 0, view->screen_width);
@@ -364,8 +366,10 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 				{
 					case 0:
 						// LP change: making it long-distance friendly
+{
 						long screen_y= view->half_screen_height - transformed_height/world->x + view->dtanpitch;
 						screen->y= PIN(screen_y, 0, view->screen_height);
+}
 						/*
 						screen->y= view->half_screen_height - transformed_height/world->x + view->dtanpitch;
 						screen->y= PIN(screen->y, 0, view->screen_height);
@@ -501,8 +505,10 @@ void RenderRasterizerClass::render_node_side(
 					{
 						case 0:
 							// LP change: making it long-distance friendly
+{
 							long screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 							screen->x= PIN(screen_x, 0, view->screen_width);
+}
 							/*
 							screen->x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 							screen->x= PIN(screen->x, 0, view->screen_width);
@@ -521,8 +527,10 @@ void RenderRasterizerClass::render_node_side(
 					{
 						case 0:
 							// LP change: making it long-distance friendly
+{
 							long screen_y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
 							screen->y= PIN(screen_y, 0, view->screen_height);
+}
 							/*
 							screen->y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
 							screen->y= PIN(screen->y, 0, view->screen_height);

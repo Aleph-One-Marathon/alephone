@@ -56,7 +56,7 @@ class RenderPlaceObjsClass
 		sorted_node_data **base_nodes, short base_node_count);
 		
 	shape_information_data *rescale_shape_information(shape_information_data *unscaled,
-		shape_information_data *scaled, word flags);
+		shape_information_data *scaled, uint16 flags);
 
 public:
 

@@ -30,7 +30,6 @@ May 1, 2000 (Loren Petrich): Added XML parser object for the infravision stuff.
 May 16, 2000 (Loren Petrich): Added XML parser for the control panels
 */
 
-#include "FileHandler.h"
 #include "XML_ElementParser.h"
 
 /* ---------- constants */
@@ -144,7 +143,7 @@ enum /* The various default key setups a user can select. for vbl.c and it's cal
 
 struct shape_information_data
 {
-	word flags; /* [x-mirror.1] [y-mirror.1] [keypoint_obscured.1] [unused.13] */
+	uint16 flags; /* [x-mirror.1] [y-mirror.1] [keypoint_obscured.1] [unused.13] */
 
 	fixed minimum_light_intensity; /* in [0,FIXED_ONE] */
 
@@ -154,26 +153,30 @@ struct shape_information_data
 	short world_x0, world_y0;
 };
 
-struct shape_animation_data
+struct shape_animation_data // Also used in high_level_shape_definition
 {
-	short number_of_views; /* must be 1, 2, 5 or 8 */
+	int16 number_of_views; /* must be 1, 2, 5 or 8 */
 	
-	short frames_per_view, ticks_per_frame;
-	short key_frame;
+	int16 frames_per_view, ticks_per_frame;
+	int16 key_frame;
 	
-	short transfer_mode;
-	short transfer_mode_period; /* in ticks */
+	int16 transfer_mode;
+	int16 transfer_mode_period; /* in ticks */
 	
-	short first_frame_sound, key_frame_sound, last_frame_sound;
+	int16 first_frame_sound, key_frame_sound, last_frame_sound;
 
-	short pixels_to_world;
+	int16 pixels_to_world;
 	
-	short loop_frame;
+	int16 loop_frame;
 
-	short unused[14];
+	int16 unused[14];
 
-	/* number_of_views*frames_per_view indexes of low-level shapes follow */
-	short low_level_shape_indexes[1];
+	/* N*frames_per_view indexes of low-level shapes follow, where
+	   N = 1 if number_of_views = _unanimated/_animated1,
+	   N = 4 if number_of_views = _animated3to4/_animated4,
+	   N = 5 if number_of_views = _animated3to5/_animated5,
+	   N = 8 if number_of_views = _animated2to8/_animated5to8/_animated8 */
+	int16 low_level_shape_indexes[1];
 };
 
 /* ---------- prototypes/SHELL.C */
@@ -299,9 +302,6 @@ short get_number_of_collection_frames(short collection_index);
 short get_number_of_collection_bitmaps(short collection_index);
 // Which bitmap index for a frame (good for OpenGL texture rendering)
 short get_bitmap_index(short collection_index, short low_level_shape_index);
-
-// Clone of similar functions for getting default map and physics specs
-void get_default_shapes_spec(FileSpecifier& File);
 
 /* ---------- prototypes/PREPROCESS_MAP_MAC.C */
 void setup_revert_game_info(struct game_data *game_info, struct player_start_data *start, struct entry_point *entry);

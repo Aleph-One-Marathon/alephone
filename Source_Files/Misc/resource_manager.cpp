@@ -78,10 +78,10 @@ static list<res_file_t *>::iterator find_res_file_t(SDL_RWops *f)
  *  Initialize resource management, open global resource file
  */
 
-void initialize_resources(FileObject &global_resources)
+void initialize_resources(FileSpecifier &global_resources)
 {
 	if (OpenResFile(global_resources) == NULL) {
-		fprintf(stderr, "Can't open global resource file '%s'\n", global_resources.name.c_str());
+		fprintf(stderr, "Can't open global resource file '%s'\n", global_resources.GetName());
 		exit(1);
 	}
 }
@@ -110,9 +110,7 @@ bool res_file_t::read_map(void)
 			uint32 id = SDL_ReadBE32(f);
 			int32 ofs = SDL_ReadBE32(f);
 			int32 len = SDL_ReadBE32(f);
-#ifdef DEBUG
-			printf(" entry id %d, offset %d, length %d\n", id, ofs, len);
-#endif
+			//printf(" entry id %d, offset %d, length %d\n", id, ofs, len);
 			if (id == 2) {
 				resource_fork_found = true;
 				fork_start = ofs;
@@ -129,9 +127,7 @@ bool res_file_t::read_map(void)
 	uint32 map_offset = fork_start + SDL_ReadBE32(f);
 	uint32 data_size = SDL_ReadBE32(f);
 	uint32 map_size = SDL_ReadBE32(f);
-#ifdef DEBUG
-	printf(" data_offset %d, map_offset %d, data_size %d, map_size %d\n", data_offset, map_offset, data_size, map_size);
-#endif
+	//printf(" data_offset %d, map_offset %d, data_size %d, map_size %d\n", data_offset, map_offset, data_size, map_size);
 
 	// Verify integrity of resource header
 	if (data_offset >= file_size || map_offset >= file_size ||
@@ -144,9 +140,7 @@ bool res_file_t::read_map(void)
 	SDL_RWseek(f, map_offset + 24, SEEK_SET);
 	uint32 type_list_offset = map_offset + SDL_ReadBE16(f);
 	uint32 name_list_offset = map_offset + SDL_ReadBE16(f);
-#ifdef DEBUG
-	printf(" type_list_offset %d, name_list_offset %d\n", type_list_offset, name_list_offset);
-#endif
+	//printf(" type_list_offset %d, name_list_offset %d\n", type_list_offset, name_list_offset);
 
 	// Verify integrity of map header
 	if (type_list_offset >= file_size) {
@@ -163,9 +157,7 @@ bool res_file_t::read_map(void)
 		uint32 type = SDL_ReadBE32(f);
 		int num_refs = SDL_ReadBE16(f) + 1;
 		uint32 ref_list_offset = type_list_offset + SDL_ReadBE16(f);
-#ifdef DEBUG
-		printf("  type %c%c%c%c, %d refs\n", type >> 24, type >> 16, type >> 8, type, num_refs);
-#endif
+		//printf("  type %c%c%c%c, %d refs\n", type >> 24, type >> 16, type >> 8, type, num_refs);
 
 		// Verify integrity of item
 		if (ref_list_offset >= file_size) {
@@ -185,9 +177,7 @@ bool res_file_t::read_map(void)
 			int id = SDL_ReadBE16(f);
 			SDL_RWseek(f, 2, SEEK_CUR);
 			uint32 rsrc_data_offset = data_offset + (SDL_ReadBE32(f) & 0x00ffffff);
-#ifdef DEBUG
-//			printf("   id %d, rsrc_data_offset %d\n", id, rsrc_data_offset);
-#endif
+			//printf("   id %d, rsrc_data_offset %d\n", id, rsrc_data_offset);
 
 			// Verify integrify of item
 			if (rsrc_data_offset >= file_size) {
@@ -211,16 +201,15 @@ bool res_file_t::read_map(void)
  *  Open resource file, set current file to the newly opened one
  */
 
-SDL_RWops *OpenResFile(FileObject &file)
+SDL_RWops *OpenResFile(FileSpecifier &file)
 {
-printf("OpenResFile %s\n", file.name.c_str());
-	FileObject rsrc_file = file;
-	rsrc_file.name += ".resources";
+	string rsrc_file_name = file.GetName();
+	rsrc_file_name += ".resources";
 
 	// Open file, try <name>.resources first, then <name>
-	SDL_RWops *f = SDL_RWFromFile(rsrc_file.name.c_str(), "rb");
+	SDL_RWops *f = SDL_RWFromFile(rsrc_file_name.c_str(), "rb");
 	if (f == NULL)
-		f = SDL_RWFromFile(file.name.c_str(), "rb");
+		f = SDL_RWFromFile(file.GetName(), "rb");
 	if (f) {
 
 		// Successful, create res_file_t object and read resource map
@@ -234,7 +223,7 @@ printf("OpenResFile %s\n", file.name.c_str());
 		} else {
 
 			// Error reading resource map
-			fprintf(stderr, "Error reading resource map of '%s'\n", file.name.c_str());
+			fprintf(stderr, "Error reading resource map of '%s'\n", file.GetName());
 			SDL_FreeRW(f);
 			return NULL;
 		}
@@ -378,9 +367,7 @@ void *res_file_t::get_resource(uint32 type, int id, uint32 *size_ret) const
 			SDL_RWread(f, p, 1, size);
 			if (size_ret)
 				*size_ret = size;
-#ifdef DEBUG
-			printf("get_resource type %c%c%c%c, id %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, id, p, size);
-#endif
+			//printf("get_resource type %c%c%c%c, id %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, id, p, size);
 			return p;
 		}
 	}
@@ -433,9 +420,7 @@ void *res_file_t::get_ind_resource(uint32 type, int index, uint32 *size_ret) con
 		SDL_RWread(f, p, 1, size);
 		if (size_ret)
 			*size_ret = size;
-#ifdef DEBUG
-		printf("get_ind_resource type %c%c%c%c, index %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, index, p, size);
-#endif
+		//printf("get_ind_resource type %c%c%c%c, index %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, index, p, size);
 		return p;
 	}
 	return NULL;

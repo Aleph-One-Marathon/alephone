@@ -73,8 +73,38 @@ void initialize_pixmap_handler();
 
 /* --------- code */
 
-// void initialize_shape_handler(
-//	void)
+void initialize_shape_handler()
+{
+	// FSSpec shapes_file;
+	// OSErr error;
+
+	// LP: this is an out-of-date comment!
+	// M1 uses the resource fork, but M2 and Moo use the data fork
+	/* open the resource fork of our shape file for reading */
+		
+	/*
+	error= get_file_spec(&shapes_file, strFILENAMES, filenameSHAPES8, strPATHS);
+	if (error==noErr)
+	{
+		open_shapes_file(&shapes_file);
+	}
+	*/
+	
+	FileSpecifier File;
+	get_default_shapes_spec(File);
+	if (!File.Open(ShapesFile))
+	{
+		alert_user(fatalError, strERRORS, badExtraFileLocations, ShapesFile.GetError());
+	}
+	else
+	{
+		atexit(shutdown_shape_handler);
+	}
+	
+	// This still remains in shapes_macintosh.c
+	initialize_pixmap_handler();
+}
+
 void initialize_pixmap_handler()
 {
 
@@ -125,6 +155,65 @@ void initialize_pixmap_handler()
 	(*hollow_pixmap)->cmpSize= (*hollow_pixmap)->pixelSize;
 	(*hollow_pixmap)->pmReserved= 0;
 
+	return;
+}
+
+void open_shapes_file(FileSpecifier& File)
+	// FSSpec *spec)
+{
+	/*
+	short refNum;
+	OSErr error;
+		
+	// LP addition: resolving shapes file if it was an alias
+	Boolean is_folder, was_aliased;
+	ResolveAliasFile((FSSpec *)spec, TRUE, &is_folder, &was_aliased);
+	
+	error= FSpOpenDF(spec, fsRdPerm, &refNum);
+	if (error==noErr)
+	*/
+	if (File.Open(ShapesFile))
+	{
+		// long count= MAXIMUM_COLLECTIONS*sizeof(struct collection_header);
+		
+		if (!ShapesFile.ReadObjectList(MAXIMUM_COLLECTIONS,collection_headers))
+			ShapesFile.Close();
+		/*
+		FSRead(refNum, &count, (void *) &collection_headers);
+		if (error==noErr)
+		{
+		}
+		
+		if (error!=noErr)
+		{
+			FSClose(refNum);
+			refNum= -1;
+		}
+		*/
+
+		// close_shapes_file();
+		// shapes_file_refnum= refNum;
+	}
+	
+	return;
+}
+
+static void close_shapes_file(
+	void)
+{
+	ShapesFile.Close();
+	/*
+	OSErr error= noErr;
+	if (shapes_file_refnum!=-1)
+	{
+		error= FSClose(shapes_file_refnum);
+		if (error!=noErr)
+		{
+			shapes_file_refnum= -1;
+		}
+	}
+	*/
+	
 	return;
 }
 

@@ -56,8 +56,7 @@ Aug 14, 2000 (Loren Petrich):
 //must build different shading tables for each collection (even in 8-bit, for alternate color tables)
 */
 
-#include "macintosh_cseries.h"
-#include "byte_swapping.h"
+#include "cseries.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -65,7 +64,6 @@ Aug 14, 2000 (Loren Petrich):
 #include "shell.h"
 #include "render.h"
 #include "interface.h"
-// #include "rle.h"
 #include "collection_definition.h"
 #include "screen.h"
 #include "FileHandler.h"
@@ -129,7 +127,9 @@ static pixel32 *global_shading_table32= (pixel32 *) NULL;
 short number_of_shading_tables, shading_table_fractional_bits, shading_table_size;
 
 // LP addition: opened-shapes-file object
+#ifndef SDL
 OpenedFile ShapesFile;
+#endif
 
 /* ---------- private prototypes */
 
@@ -156,8 +156,6 @@ static void build_tinting_table16(struct rgb_color_value *colors, short color_co
 static void build_tinting_table32(struct rgb_color_value *colors, short color_count, pixel32 *tint_table, struct rgb_color *tint_color);
 
 static void precalculate_bit_depth_constants(void);
-
-static void byte_swap_collection(short collection_index);
 
 static boolean collection_loaded(struct collection_header *header);
 static void unload_collection(struct collection_header *header);
@@ -194,84 +192,11 @@ static struct bitmap_definition *get_bitmap_definition(short collection_index, s
 
 #ifdef mac
 #include "shapes_macintosh.c"
+#elif defined(SDL)
+#include "shapes_sdl.cpp"
 #endif
 
 /* ---------- code */
-
-// LP: from shapes_macintosh.c
-void initialize_shape_handler()
-{
-	// FSSpec shapes_file;
-	// OSErr error;
-
-	// LP: this is an out-of-date comment!
-	// M1 uses the resource fork, but M2 and Moo use the data fork
-	/* open the resource fork of our shape file for reading */
-		
-	/*
-	error= get_file_spec(&shapes_file, strFILENAMES, filenameSHAPES8, strPATHS);
-	if (error==noErr)
-	{
-		open_shapes_file(&shapes_file);
-	}
-	*/
-	
-	FileSpecifier File;
-	get_default_shapes_spec(File);
-	if (!File.Open(ShapesFile))
-	// if (error!=noErr || shapes_file_refnum==-1)
-	{
-		alert_user(fatalError, strERRORS, badExtraFileLocations, ShapesFile.GetError());
-	}
-	else
-	{
-		atexit(shutdown_shape_handler);
-	}
-	
-	// This still remains in shapes_macintosh.c
-	initialize_pixmap_handler();
-}
-
-
-void open_shapes_file(FileSpecifier& File)
-	// FSSpec *spec)
-{
-	/*
-	short refNum;
-	OSErr error;
-		
-	// LP addition: resolving shapes file if it was an alias
-	Boolean is_folder, was_aliased;
-	ResolveAliasFile((FSSpec *)spec, TRUE, &is_folder, &was_aliased);
-	
-	error= FSpOpenDF(spec, fsRdPerm, &refNum);
-	if (error==noErr)
-	*/
-	if (File.Open(ShapesFile))
-	{
-		// long count= MAXIMUM_COLLECTIONS*sizeof(struct collection_header);
-		
-		if (!ShapesFile.ReadObjectList(MAXIMUM_COLLECTIONS,collection_headers))
-			ShapesFile.Close();
-		/*
-		FSRead(refNum, &count, (void *) &collection_headers);
-		if (error==noErr)
-		{
-		}
-		
-		if (error!=noErr)
-		{
-			FSClose(refNum);
-			refNum= -1;
-		}
-		*/
-
-		// close_shapes_file();
-		// shapes_file_refnum= refNum;
-	}
-	
-	return;
-}
 
 /* --------- private code */
 
@@ -279,25 +204,6 @@ static void shutdown_shape_handler(
 	void)
 {
 	close_shapes_file();
-	
-	return;
-}
-
-static void close_shapes_file(
-	void)
-{
-	ShapesFile.Close();
-	/*
-	OSErr error= noErr;
-	if (shapes_file_refnum!=-1)
-	{
-		error= FSClose(shapes_file_refnum);
-		if (error!=noErr)
-		{
-			shapes_file_refnum= -1;
-		}
-	}
-	*/
 	
 	return;
 }
@@ -331,141 +237,30 @@ static boolean collection_loaded(
 	return header->collection ? TRUE : FALSE;
 }
 
-static void unload_collection(
+static void lock_collection(
 	struct collection_header *header)
 {
-	assert(header->collection);
-	
-	/* unload collection */
-	delete []header->collection;
-	delete []header->shading_tables;
-	// DisposeHandle((Handle)header->collection);
-	// DisposeHandle((Handle)header->shading_tables);
-	header->collection= NULL;
-	
-	return;
+	// nothing to do
 }
 
 static void unlock_collection(
 	struct collection_header *header)
 {
-	// assert(header->collection);
-	
-	// HUnlock((Handle)header->collection);
-	// HUnlock((Handle)header->shading_tables);
-	
-	return;
-}
-
-static void lock_collection(
-	struct collection_header *header)
-{
-	// assert(header->collection);
-	
-	// MoveHHi((Handle)header->collection);
-	// HLock((Handle)header->collection);
-
-	// MoveHHi((Handle)header->shading_tables);
-	// HLock((Handle)header->shading_tables);
-	
-	return;
-}
-
-static boolean load_collection(
-	short collection_index,
-	boolean strip)
-{
-	struct collection_header *header= get_collection_header(collection_index);
-	// Handle collection= NULL, shading_tables= NULL;
-	byte *collection = NULL, *shading_tables = NULL;
-	OSErr error= noErr;
-	
-	if (bit_depth==8 || header->offset16==-1)
-	{
-		vassert(header->offset!=-1, csprintf(temporary, "collection #%d does not exist.", collection_index));
-		collection= read_object_from_file(ShapesFile, header->offset, header->length);
-		// collection= read_handle_from_file(shapes_file_refnum, header->offset, header->length);
-	}
-	else
-	{
-		collection= read_object_from_file(ShapesFile, header->offset16, header->length16);
-		// collection= read_handle_from_file(shapes_file_refnum, header->offset16, header->length16);
-	}
-	error = ShapesFile.GetError();
-	if (!collection && error==noErr) error = MemError();
-	vwarn(error==noErr, csprintf(temporary, "read_handle_from_file() got error #%d", error));
-
-	if (collection)
-	{
-		if (strip) {
-			byte *new_collection = make_stripped_collection(collection);
-			delete []collection;
-			collection = new_collection;
-		}
-		// if (strip) strip_collection_handle((struct collection_definition **) collection);
-		// MoveHHi(collection), HLock(collection);
-		// header->collection= (struct collection_definition **) collection;
-		header->collection= (collection_definition *) collection;
-	
-		/* allocate enough space for this collection’s shading tables */
-		if (strip)
-		{
-			shading_tables = NULL;
-			// shading_tables= NewHandle(0);
-		}
-		else
-		{
-			struct collection_definition *definition= get_collection_definition(collection_index);
-			
-			shading_tables = new byte[get_shading_table_size(collection_index)*definition->clut_count +
-				shading_table_size*NUMBER_OF_TINT_TABLES];
-			// shading_tables= NewHandle(get_shading_table_size(collection_index)*definition->clut_count +
-			// 	shading_table_size*NUMBER_OF_TINT_TABLES);
-			if ((error= MemError())==noErr)
-			{
-				assert(shading_tables);
-				// MoveHHi(shading_tables), HLock(shading_tables);
-			}
-		}
-		
-		header->shading_tables= shading_tables;
-		// header->shading_tables= (void **)shading_tables;
-	}
-	else
-	{
-		error= MemError();
-//		vhalt(csprintf(temporary, "couldn’t load collection #%d (error==#%d)", collection_index, error));
-	}
-
-	/* if any errors ocurred, free whatever memory we used */
-	if (error!=noErr)
-	{
-		if (collection) delete []collection;
-		if (shading_tables) delete []shading_tables;
-		// if (collection) DisposeHandle(collection);
-		// if (shading_tables) DisposeHandle(shading_tables);
-	}
-	
-	return error==noErr ? TRUE : FALSE;
+	// nothing to do
 }
 
 // static Handle read_handle_from_file(
 static byte *read_object_from_file(
 	OpenedFile& OFile,
-	// short refNum,
 	long offset,
 	long length)
 {
 	if (!OFile.IsOpen()) return NULL;
 	
-	// OSErr error= noErr;
-	// Handle data= NULL;
 	byte *data = NULL;
 	
 	if (length <= 0) return NULL;
 	if (!(data = new byte[length])) return NULL;
-	// if (!(data= NewHandle(length))) return NULL;
-	// HLock(data);
 	
 	if (!OFile.SetPosition(offset))
 	{
@@ -478,50 +273,7 @@ static byte *read_object_from_file(
 		return NULL;
 	}
 	
-	// HUnlock(data);
 	return data;
-	
-	/*
-	// if (refNum!=-1)
-	{
-		if ((data= NewHandle(length)) != NULL)
-		// LP: replacing old file-I/O routines
-		{
-		{
-			ParamBlockRec param;
-			
-			HLock(data);
-			
-			param.ioParam.ioCompletion= (IOCompletionUPP) NULL;
-			param.ioParam.ioRefNum= refNum;
-			param.ioParam.ioBuffer= *data;
-			param.ioParam.ioReqCount= length;
-			param.ioParam.ioPosMode= fsFromStart;
-			param.ioParam.ioPosOffset= offset;
-			
-			error= PBReadSync(&param);
-			if (error==noErr)
-			{
-				HUnlock(data);
-			}
-			else
-			{
-				DisposeHandle(data);
-				
-				data= NULL;
-			}
-		}
-		else
-		{
-			error= MemError();
-		}
-	}
-	
-	vassert(data, "could not load data in read_handle_from_file()");
-	// vwarn(error==noErr, csprintf(temporary, "load_sound() got error #%d", error));
-	
-	return data;
-	*/
 }
 
 
@@ -1007,11 +759,11 @@ static void update_color_environment(
 							break;
 						
 						case 16:
-							build_shading_tables16(colors, color_count, (unsigned short *)alternate_shading_table, shading_remapping_table); break;
+							build_shading_tables16(colors, color_count, (pixel16 *)alternate_shading_table, shading_remapping_table); break;
 							break;
 						
 						case 32:
-							build_shading_tables32(colors, color_count, (unsigned long *)alternate_shading_table, shading_remapping_table); break;
+							build_shading_tables32(colors, color_count, (pixel32 *)alternate_shading_table, shading_remapping_table); break;
 							break;
 						
 						default:
@@ -1026,8 +778,8 @@ static void update_color_environment(
 					switch (collection_bit_depth)
 					{
 						case 8: build_shading_tables8(colors, color_count, (unsigned char *)primary_shading_table); break;
-						case 16: build_shading_tables16(colors, color_count, (unsigned short *)primary_shading_table, (byte *) NULL); break;
-						case 32: build_shading_tables32(colors, color_count,  (unsigned long *)primary_shading_table, (byte *) NULL); break;
+						case 16: build_shading_tables16(colors, color_count, (pixel16 *)primary_shading_table, (byte *) NULL); break;
+						case 32: build_shading_tables32(colors, color_count,  (pixel32 *)primary_shading_table, (byte *) NULL); break;
 						default:
 							// LP change:
 							assert(false);
@@ -1499,24 +1251,28 @@ static void build_collection_tinting_table(
 	{
 		// LP addition: OpenGL support
 		rgb_color &Color = tint_colors16[tint_color];
+#ifdef HAVE_OPENGL
 		OGL_SetInfravisionTint(collection_index,true,Color.red/65535.0,Color.green/65535.0,Color.blue/65535.0);
+#endif
 		switch (bit_depth)
 		{
 			case 8:
 				build_tinting_table8(colors, color_count, (unsigned char *)tint_table, tint_colors8[tint_color].start, tint_colors8[tint_color].count);
 				break;
 			case 16:
-				build_tinting_table16(colors, color_count, (unsigned short *)tint_table, tint_colors16+tint_color);
+				build_tinting_table16(colors, color_count, (pixel16 *)tint_table, tint_colors16+tint_color);
 				break;
 			case 32:
-				build_tinting_table32(colors, color_count, (unsigned long *)tint_table, tint_colors16+tint_color);
+				build_tinting_table32(colors, color_count, (pixel32 *)tint_table, tint_colors16+tint_color);
 				break;
 		}
 	}
 	else
 	{
 		// LP addition: OpenGL support
+#ifdef HAVE_OPENGL
 		OGL_SetInfravisionTint(collection_index,false,1,1,1);
+#endif
 	}
 	
 	return;
@@ -1587,51 +1343,7 @@ static void build_tinting_table32(
 	return;
 }
 
-static void byte_swap_collection(
-	short collection_index)
-{
-	struct collection_definition *definition= get_collection_definition(collection_index);
-	short i;
-
-	// collection_definition	
-	byte_swap_data(definition, sizeof(struct collection_definition), 1, &_bs_collection_definition);
-	
-	// rgb_color_value
-	byte_swap_data(collection_offset(definition, definition->color_table_offset), sizeof(struct rgb_color_value),
-		definition->color_count*definition->clut_count, &_bs_rgb_color_value);
-	
-	byte_swap_memory(collection_offset(definition, definition->high_level_shape_offset_table_offset),
-		_4byte, definition->high_level_shape_count);
-	for (i= 0; i<definition->high_level_shape_count; ++i)
-	{
-		struct high_level_shape_definition *high= get_high_level_shape_definition(collection_index, i);
-		
-		byte_swap_data(high, sizeof(struct high_level_shape_definition), 1, &_bs_high_level_shape_definition);
-		byte_swap_memory(&high->low_level_shape_indexes, _2byte, high->number_of_views*high->frames_per_view);
-	}
-	
-	byte_swap_memory(collection_offset(definition, definition->low_level_shape_offset_table_offset),
-		_4byte, definition->low_level_shape_count);
-	for (i= 0; i<definition->low_level_shape_count; ++i)
-	{
-		struct low_level_shape_definition *low= get_low_level_shape_definition(collection_index, i);
-		
-		byte_swap_data(low, sizeof(struct low_level_shape_definition), 1, &_bs_low_level_shape_definition);
-	}
-
-	byte_swap_memory(collection_offset(definition, definition->bitmap_offset_table_offset),
-		_4byte, definition->bitmap_count);
-	for (i= 0; i<definition->bitmap_count; ++i)
-	{
-		struct bitmap_definition *bitmap= get_bitmap_definition(collection_index, i);
-		
-		byte_swap_data(bitmap, sizeof(struct bitmap_definition), 1, &_bs_bitmap_definition);
-	}
-	
-	return;
-}
-
-
+#ifdef mac
 // Clone of similar functions for getting default map and physics specs
 void get_default_shapes_spec(FileSpecifier& File)
 {
@@ -1639,6 +1351,7 @@ void get_default_shapes_spec(FileSpecifier& File)
 	File.SetName(getcstr(temporary, strFILENAMES, filenameSHAPES8),FileSpecifier::C_Shape);
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 }
+#endif
 
 
 /* ---------- collection accessors */
@@ -1651,7 +1364,7 @@ static struct collection_definition *get_collection_definition(
 
 	vassert(collection, csprintf(temporary, "collection #%d isn’t loaded", collection_index));
 
-	return collection; // (struct collection_definition *) StripAddress(*collection);
+	return collection;
 }
 
 static void *get_collection_shading_tables(
@@ -1660,8 +1373,7 @@ static void *get_collection_shading_tables(
 {
 	void *shading_tables= get_collection_header(collection_index)->shading_tables;
 
-	(byte *)shading_tables+= clut_index*get_shading_table_size(collection_index);
-	// shading_tables= StripAddress(shading_tables);
+	(uint8 *)shading_tables+= clut_index*get_shading_table_size(collection_index);
 	
 	return shading_tables;
 }
@@ -1673,8 +1385,7 @@ static void *get_collection_tint_tables(
 	struct collection_definition *definition= get_collection_definition(collection_index);
 	void *tint_table= get_collection_header(collection_index)->shading_tables;
 
-	(byte *)tint_table+= get_shading_table_size(collection_index)*definition->clut_count + shading_table_size*tint_index;
-	// tint_table= StripAddress(tint_table);
+	(uint8 *)tint_table+= get_shading_table_size(collection_index)*definition->clut_count + shading_table_size*tint_index;
 	
 	return tint_table;
 }
@@ -1684,7 +1395,7 @@ static struct collection_definition *_get_collection_definition(
 {
 	struct collection_definition *collection= get_collection_header(collection_index)->collection;
 
-	return collection; // ? (struct collection_definition *) StripAddress(*collection) : (struct collection_definition *) NULL;
+	return collection;
 }
 
 
@@ -1751,7 +1462,7 @@ static struct bitmap_definition *get_bitmap_definition(
 {
 	struct collection_definition *definition= get_collection_definition(collection_index);
 	long *offset_table;
-	
+
 	vassert(bitmap_index>=0 && bitmap_index<definition->bitmap_count,
 		csprintf(temporary, "asked for collection #%d bitmap #%d/#%d", collection_index, bitmap_index, definition->bitmap_count));
 	
@@ -1789,7 +1500,7 @@ static void debug_shapes_memory(
 bool is_collection_present(short collection_index)
 {
 	collection_header *CollHeader = get_collection_header(collection_index);
-	return (CollHeader->collection != NULL);
+	return collection_loaded(CollHeader);
 }
 
 // Number of texture frames in a collection (good for wall-texture error checking)

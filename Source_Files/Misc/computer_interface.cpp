@@ -73,7 +73,9 @@ Aug 22, 2000 (Loren Petrich):
 #include <string.h>
 #include <time.h>
 
-#include "macintosh_cseries.h"
+#include "cseries.h"
+#include "byte_swapping.h"
+
 #include "world.h"
 #include "map.h"
 #include "player.h"
@@ -87,7 +89,6 @@ Aug 22, 2000 (Loren Petrich):
 #include "lightsource.h" // for tagged lightsources
 #include "screen.h"
 
-// #include "portable_files.h"
 #include "images.h"
 
 //CP Addition: scripting support
@@ -98,6 +99,8 @@ Aug 22, 2000 (Loren Petrich):
 #define BORDER_HEIGHT 18
 #define BORDER_INSET 9
 #define FUDGE_FACTOR 1
+
+#define MAC_LINE_END 13
 
 enum {
 	_reading_terminal,
@@ -179,19 +182,21 @@ enum { /* terminal grouping flags */
 };
 
 struct terminal_groupings {
-	short flags; /* varies.. */
-	short type; /* _information_text, _checkpoint_text, _briefing_text, _movie, _sound_bite, _soundtrack */
-	short permutation; /* checkpoint id for chkpt, level id for _briefing, movie id for movie, sound id for sound, soundtrack id for soundtrack */
-	short start_index;
-	short length;
-	short maximum_line_count;
+	int16 flags; /* varies.. */
+	int16 type; /* _information_text, _checkpoint_text, _briefing_text, _movie, _sound_bite, _soundtrack */
+	int16 permutation; /* checkpoint id for chkpt, level id for _briefing, movie id for movie, sound id for sound, soundtrack id for soundtrack */
+	int16 start_index;
+	int16 length;
+	int16 maximum_line_count;
 };
+const int SIZEOF_terminal_groupings = 12;
 
 struct text_face_data {
-	short index;
-	short face;
-	short color;
+	int16 index;
+	int16 face;
+	int16 color;
 };
+const int SIZEOF_text_face_data = 6;
 
 struct player_terminal_data
 {
@@ -230,18 +235,6 @@ extern GrafPtr world_pixels;
 static struct player_terminal_data *player_terminals;
 static struct font_dimensions font_data;
 
-static struct terminal_key terminal_keys[]= {
-	{0x7e, 0, 0, _terminal_page_up},  // arrow up
-	{0x7d, 0, 0, _terminal_page_down},// arrow down
-	{0x74, 0, 0, _terminal_page_up},   // page up
-	{0x79, 0, 0, _terminal_page_down}, // page down
-	{0x30, 0, 0, _terminal_next_state}, // tab
-	{0x4c, 0, 0, _terminal_next_state}, // enter
-	{0x24, 0, 0, _terminal_next_state}, // return
-	{0x31, 0, 0, _terminal_next_state}, // space
-	{0x3a, 0, 0, _terminal_next_state}, // command
-	{0x35, 0, 0, _any_abort_key_mask}  // escape
-};
 #define NUMBER_OF_TERMINAL_KEYS (sizeof(terminal_keys)/sizeof(struct terminal_key))
 
 extern TextSpec *_get_font_spec(short font_index);
@@ -259,6 +252,19 @@ static struct player_terminal_data *get_player_terminal_data(
 
 // LP addition: overall terminal boundary rect (needed for resetting the clipping rectangle)
 static Rect OverallBounds;
+
+/* ------------ byte-swapping definitions */
+static _bs_field _bs_static_preprocessed_terminal_data[] = {
+	_2byte, _2byte, _2byte, _2byte, _2byte
+};
+
+static _bs_field _bs_terminal_groupings[] = {
+	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte
+};
+
+static _bs_field _bs_text_face_data[] = {
+	_2byte, _2byte, _2byte
+};
 
 /* ------------ private prototypes */
 static void draw_logon_text(Rect *bounds, struct static_preprocessed_terminal_data *terminal_text,
@@ -326,6 +332,14 @@ static void encode_text(struct static_preprocessed_terminal_data *terminal_text)
 static void decode_text(struct static_preprocessed_terminal_data *terminal_text);
 #endif
 
+/* ------------ machine-specific code */
+
+#if defined(mac)
+#include "computer_interface_macintosh.c"
+#elif defined(SDL)
+#include "computer_interface_sdl.cpp"
+#endif
+
 /* ------------ code begins */
 void initialize_terminal_manager(
 	void)
@@ -337,11 +351,17 @@ void initialize_terminal_manager(
 	assert(player_terminals);
 	memset(player_terminals, 0, MAXIMUM_NUMBER_OF_PLAYERS*sizeof(struct player_terminal_data));
 
+#ifdef mac
 	for(index= 0; index<NUMBER_OF_TERMINAL_KEYS; ++index)
 	{
 		terminal_keys[index].mask= 1 << (terminal_keys[index].keycode&7);
 		terminal_keys[index].offset= terminal_keys[index].keycode>>3;
 	}
+#endif
+
+#ifdef SDL
+	terminal_font = load_font(*_get_font_spec(_computer_interface_font));
+#endif
 
 	return;
 }
@@ -529,11 +549,7 @@ void _render_computer_interface(
 		// Create overall frame for use in the checkpoint display;
 		// this frame will be the default clipping frame for the terminal-display window,
 		// in case something goes wrong.
-		OverallBounds.top= data->top;
-		OverallBounds.bottom= data->bottom;
-		OverallBounds.left= data->left;
-		OverallBounds.right= data->right;
-		ClipRect(&OverallBounds);
+		set_drawing_clip_rectangle(data->top, data->left, data->bottom, data->right);
 		
 		switch(terminal_data->state)
 		{
@@ -620,9 +636,14 @@ void _render_computer_interface(
 				break;
 		}
 		
+#if defined(mac)
 		// LP change: restore overall clipping
 		// Changed to actually-used buffer
 		ClipRect(&world_pixels->portRect);
+#else
+		// Disable clipping
+		set_drawing_clip_rectangle(SHORT_MIN, SHORT_MIN, SHORT_MAX, SHORT_MAX);
+#endif
 		
 		SET_TERMINAL_IS_DIRTY(terminal_data, FALSE);
 	}
@@ -640,7 +661,11 @@ long build_terminal_action_flags(
 	raw_flags= 0;
 	for(index= 0; index<NUMBER_OF_TERMINAL_KEYS; ++index)
 	{
-		if (*(keymap + key->offset) & key->mask) raw_flags|= key->action_flag;
+#if defined(mac)
+		if (*(keymap + key->offset) & key->mask) raw_flags |= key->action_flag;
+#elif defined(SDL)
+		if (keymap[key->keycode]) raw_flags |= key->action_flag;
+#endif
 		key++;
 	}
 
@@ -703,6 +728,7 @@ static void draw_logon_text(
 	picture_bounds.left= bounds->left;
 	picture_bounds.right= bounds->right;
 
+#ifdef mac
 	/* This is always just a line, so we can do this here.. */
 	{
 		TextSpec old_font;
@@ -714,6 +740,10 @@ static void draw_logon_text(
 		picture_bounds.left += (RECTANGLE_WIDTH(&picture_bounds)-width)/2;
 		SetFont(&old_font);
 	}
+#else
+	width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, current_style);
+	picture_bounds.left += (RECTANGLE_WIDTH(&picture_bounds) - width) / 2;
+#endif
 	
 	_draw_computer_text(base_text, current_group_index, &picture_bounds, terminal_text, 0);
 
@@ -750,9 +780,11 @@ static void _draw_computer_text(
 	short index, last_index, last_text_index, end_index;
 	TextSpec old_font;
 
+#ifdef mac
 	/* Set the font.. */
 	GetFont(&old_font);
 	SetFont(_get_font_spec(_computer_interface_font));
+#endif
 
 	line_count= 0;
 	start_index= current_group->start_index;
@@ -842,7 +874,10 @@ static void _draw_computer_text(
 			}
 		}
 	}
+
+#ifdef mac
 	SetFont(&old_font);
+#endif
 
 	return;
 }
@@ -857,21 +892,26 @@ static short count_total_lines(
 	TextSpec old_font;
 	short text_end_index= end_index;
 
+#ifdef mac
 	/* Set the font.. */
 	GetFont(&old_font);
 	SetFont(_get_font_spec(_computer_interface_font));
+#endif
 
 	while(!calculate_line(base_text, width, start_index, text_end_index, &end_index))
 	{
 		total_line_count++;
 		start_index= end_index;
 	}
+
+#ifdef mac
 	SetFont(&old_font);
+#endif
 	
 	return total_line_count;
 }
 
-#ifdef OBSOLETE
+#ifndef mac
 static boolean calculate_line(
 	char *base_text, 
 	short width,
@@ -887,15 +927,15 @@ static boolean calculate_line(
 
 		index= start_index;
 		running_width= 0;
-		while(running_width<width && base_text[index] && base_text[index]!='\n')
+		while(running_width<width && base_text[index] && base_text[index]!=MAC_LINE_END)
 		{
-			running_width+= CharWidth(base_text[index]);
+			running_width += char_width(base_text[index], terminal_font, current_style);
 			index++;
 		}
 //dprintf("base: %x start: %d index: %d", base_text, start_index, index);		
 		
 		/* Now go backwards, looking for whitespace to split on.. */
-		if(base_text[index]=='\n')
+		if(base_text[index]==MAC_LINE_END)
 		{
 			index++;
 		} 
@@ -995,7 +1035,11 @@ static void draw_line(
 	}
 	
 	current_start= start_index;
+#ifdef mac
 	MoveTo(bounds->left, bounds->top+line_height*(line_number+FUDGE_FACTOR));
+#else
+	int xpos = bounds->left;
+#endif
 
 	while(!done)
 	{
@@ -1013,7 +1057,13 @@ static void draw_line(
 			}
 		}
 
+#ifdef mac
 		DrawText(base_text, current_start, current_end-current_start);
+#else
+		xpos += draw_text(world_pixels, base_text + current_start, current_end - current_start,
+		                  xpos, bounds->top + line_height * (line_number + FUDGE_FACTOR),
+		                  current_pixel, terminal_font, current_style);
+#endif
 		if(current_end!=end_index)
 		{
 			current_start= current_end;
@@ -1024,25 +1074,6 @@ static void draw_line(
 			done= TRUE;
 		}
 	}
-}
-
-static void	set_text_face(
-	struct text_face_data *text_face)
-{
-	Style face= 0;
-	RGBColor color;
-
-	/* Set the computer interface font.. */
-
-	/* Set the face/color crap */
-	if(text_face->face & _bold_text) face |= bold;
-	if(text_face->face & _italic_text) face |= italic;
-	if(text_face->face & _underline_text) face |= underline;
-	TextFace(face);
-
-	/* Set the color */
-	_get_interface_color(text_face->color+_computer_interface_text_color, &color);
-	RGBForeColor(&color);
 }
 
 static short find_group_type(
@@ -1132,20 +1163,39 @@ static void display_picture(
 	Rect *frame,
 	short flags)
 {
+#ifdef mac
 	LoadedResource PictRsrc;
-	PicHandle picture;
+#else
+	uint32 picture_size;
+	void *picture;
+#endif
 	boolean drawn= FALSE;
 
-	if (get_picture_resource_from_scenario(picture_id,PictRsrc))
-	// picture= get_picture_resource_from_scenario(picture_id);
-	// if (picture)
+#ifdef mac
+	if (get_picture_resource_from_scenario(picture_id, PictRsrc))
 	{
 		picture = PicHandle(PictRsrc.GetHandle());
-		
+#else
+	SDL_Surface *s = NULL;
+	picture = get_picture_resource_from_scenario(picture_id, picture_size);
+	if (picture) {
+		s = picture_to_surface(picture, picture_size);
+		if (s == NULL)
+			free(picture);
+	}
+	if (s)
+	{
+#endif
 		Rect bounds;
 		Rect screen_bounds;
 
+#if defined(mac)
 		bounds= (*picture)->picFrame;
+#elif defined(SDL)
+		bounds.left = bounds.top = 0;
+		bounds.right = s->w;
+		bounds.bottom = s->h;
+#endif
 		OffsetRect(&bounds, -bounds.left, -bounds.top);
 		calculate_bounds_for_object(frame, flags, &screen_bounds, &bounds);
 
@@ -1179,12 +1229,15 @@ static void display_picture(
 
 //		warn(HGetState((Handle) picture) & 0x40); // assert it is purgable.
 
+#if defined(mac)
 		HLock((Handle) picture);
 		DrawPicture(picture, &bounds);
 		HUnlock((Handle) picture);
-
-		// LP: handled inside of the resource wrapper object
-		// ReleaseResource((Handle) picture);	
+#elif defined(SDL)
+		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
+		SDL_BlitSurface(s, NULL, world_pixels, &r);
+		SDL_FreeSurface(s);
+#endif
 		/* And let the caller know where we drew the picture */
 		*frame= bounds;
 	} else {
@@ -1194,9 +1247,17 @@ static void display_picture(
 
 		calculate_bounds_for_object(frame, flags, &bounds, NULL);
 	
+#if defined(mac)
 		EraseRect(&bounds);
+#elif defined(SDL)
+		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
+		SDL_FillRect(world_pixels, &r, SDL_MapRGB(world_pixels->format, 0, 0, 0));
+#endif
+
 		getcstr(format_string, strERRORS, pictureNotFound);
 		sprintf(temporary, format_string, picture_id);
+
+#if defined(mac)
 		// LP change: setting the font to the OS font
 		TextFont(systemFont);
 		width= TextWidth(temporary, 0, strlen(temporary));
@@ -1205,6 +1266,13 @@ static void display_picture(
 		MoveTo(bounds.left+(RECTANGLE_WIDTH(&bounds)-width)/2, 
 			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
 		DrawText(temporary, 0, strlen(temporary));
+#elif defined(SDL)
+		draw_text(world_pixels, temporary,
+		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
+		          bounds.top + RECTANGLE_HEIGHT(&bounds) / 2,
+		          SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff),
+		          load_font(*_get_font_spec(_computer_interface_title_font)), normal);
+#endif
 	}
 }
 
@@ -1283,31 +1351,19 @@ static void encode_text(
 	struct static_preprocessed_terminal_data *terminal_text)
 #endif
 {
-	char *text_base= get_text_base(terminal_text);
-	short index;
-	long length;
-	long *long_offset;
-	char *byte_offset;
+	int length = terminal_text->total_length -
+		(SIZEOF_static_preprocessed_terminal_data + 
+		terminal_text->grouping_count * SIZEOF_terminal_groupings +
+		terminal_text->font_changes_count * SIZEOF_text_face_data);
 
-	length= terminal_text->total_length-
-		(sizeof(struct static_preprocessed_terminal_data) + 
-		terminal_text->grouping_count*sizeof(struct terminal_groupings)+
-		terminal_text->font_changes_count*sizeof(struct text_face_data));
-	
-	long_offset= (long *) text_base;
-	for(index= 0; index<length/sizeof(long); ++index)
-	{
-		(*long_offset) ^= 0xfeed;
-		long_offset++;
+	uint8 *p = (uint8 *)get_text_base(terminal_text);
+	for (int i=0; i<length/4; i++) {
+		p += 2;
+		*p++ ^= 0xfe;
+		*p++ ^= 0xed;
 	}
-	
-	/* And get the last bytes */
-	byte_offset= (char *) long_offset;
-	for(index= 0; index<length%sizeof(long); ++index)
-	{
-		(*byte_offset) ^= 0xfe;
-		byte_offset++;
-	}
+	for (int i=0; i<length%4; i++)
+		*p++ ^= 0xfe;
 
 	terminal_text->flags |= _text_is_encoded_flag;
 }
@@ -1725,16 +1781,18 @@ static void get_date_string(
 	char *date_string)
 {
 	char temp_string[101];
-	long seconds, game_time_passed;
-	DateTimeRec converted_date;
+	long game_time_passed;
+	time_t seconds;
 	struct tm game_time;
 
 	/* Treat the date as if it were recent. */
 	game_time_passed= LONG_MAX - dynamic_world->game_information.game_time_remaining;
-	seconds = 2882914937;
 	
 	/* convert the game seconds to machine seconds */
+#ifdef mac
+	seconds = 2882914937;
 	seconds += (game_time_passed/TICKS_PER_SECOND)*MACINTOSH_TICKS_PER_SECOND; 
+	DateTimeRec converted_date;
 	SecondsToDate(seconds, &converted_date);
 	
 	game_time.tm_sec= converted_date.second;
@@ -1742,8 +1800,13 @@ static void get_date_string(
 	game_time.tm_hour= converted_date.hour;
 	game_time.tm_mday= converted_date.day;
 	game_time.tm_mon= converted_date.month-1;
-	game_time.tm_year= 437;
 	game_time.tm_wday= converted_date.dayOfWeek;
+#else
+	seconds = 800070137;
+	seconds += game_time_passed / TICKS_PER_SECOND;
+	game_time = *localtime(&seconds);
+#endif
+	game_time.tm_year= 437;
 	game_time.tm_yday= 0;
 	game_time.tm_isdst= 0;
 
@@ -1780,24 +1843,43 @@ static void present_checkpoint_text(
 		overhead_data.width= RECTANGLE_WIDTH(&bounds);
 		overhead_data.height= RECTANGLE_HEIGHT(&bounds);
 		overhead_data.mode= _rendering_checkpoint_map;
+#ifdef mac
 		// LP change: set the clip window to that for the overhead data
 		ClipRect(&bounds);
+#endif
 		_render_overhead_map(&overhead_data);
+#ifdef mac
 		// Reset it to the overall bounds
 		ClipRect(&OverallBounds);
+#endif
 	} else {
 		char format_string[128];
 		short width;
 	
+#if defined(mac)
 		EraseRect(&bounds);
+#elif defined(SDL)
+		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
+		SDL_FillRect(world_pixels, &r, SDL_MapRGB(world_pixels->format, 0, 0, 0));
+#endif
+
 		getcstr(format_string, strERRORS, checkpointNotFound);
 		sprintf(temporary, format_string, current_group->permutation);
+
+#if defined(mac)
 		width= TextWidth(temporary, 0, strlen(temporary));
 
 		/* Center the error message.. */
 		MoveTo(bounds.left+(RECTANGLE_WIDTH(&bounds)-width)/2, 
 			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
 		DrawText(temporary, 0, strlen(temporary));
+#elif defined(SDL)
+		draw_text(world_pixels, temporary,
+		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
+		          bounds.top + RECTANGLE_HEIGHT(&bounds) / 2,
+		          SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff),
+		          load_font(*_get_font_spec(_computer_interface_title_font)), normal);
+#endif
 	}
 
 	// draw the text
@@ -2103,9 +2185,9 @@ struct static_preprocessed_terminal_data *preprocess_text(
 		text, &new_length);
 
 	/* Allocate our conglomerated structure */
-	total_length= sizeof(struct static_preprocessed_terminal_data)+
-		group_count*sizeof(struct terminal_groupings)+
-		text_face_count*sizeof(struct text_face_data)+
+	total_length= SIZEOF_static_preprocessed_terminal_data +
+		group_count * SIZEOF_terminal_groupings +
+		text_face_count * SIZEOF_text_face_data +
 		new_length;
 
 	data_structure= (struct static_preprocessed_terminal_data *) malloc(total_length);
@@ -2128,7 +2210,7 @@ struct static_preprocessed_terminal_data *preprocess_text(
 		struct terminal_groupings *destination;
 		
 		destination= get_indexed_grouping(data_structure, index);
-		memcpy(destination, &groups[index], sizeof(struct terminal_groupings));
+		memcpy(destination, &groups[index], SIZEOF_terminal_groupings);
 	}
 
 	for(index= 0; index<text_face_count; ++index)
@@ -2136,7 +2218,7 @@ struct static_preprocessed_terminal_data *preprocess_text(
 		struct text_face_data *destination;
 		
 		destination= get_indexed_font_changes(data_structure, index);
-		memcpy(destination, &text_faces[index], sizeof(struct text_face_data));
+		memcpy(destination, &text_faces[index], SIZEOF_text_face_data);
 
 		// dprintf("%d/%d index: %d face: %d color: %d;g", index, text_face_count, text_faces[index].index, text_faces[index].face, text_faces[index].color);
 	}
@@ -2311,16 +2393,16 @@ static void pre_build_groups(
 
 			/* this is a comment */
 			destination_index= start_index= index;
-			while(start_index<data_length && base_text[start_index] != '\n') start_index++;
+			while(start_index<data_length && base_text[start_index] != MAC_LINE_END) start_index++;
 
 			/* Eat the return on the comment line. */
-			if(start_index<data_length && base_text[start_index]=='\n') start_index++;
+			if(start_index<data_length && base_text[start_index]==MAC_LINE_END) start_index++;
 			
 			/* Nix the comment */			
 			memmove(&base_text[destination_index], &base_text[start_index], data_length-start_index);
 			data_length -= (start_index-destination_index);
 		} else {
-			if(base_text[index]=='\n')
+			if(base_text[index]==MAC_LINE_END)
 			{
 				last_was_return= TRUE;
 			} else {
@@ -2363,8 +2445,8 @@ static short matches_group(
 		}
 		
 		/* Eat the rest of it.. */
-		while(start_index<length && base_text[start_index] != '\n') start_index++;
-		if(base_text[start_index]=='\n') start_index++;
+		while(start_index<length && base_text[start_index] != MAC_LINE_END) start_index++;
+		if(base_text[start_index]==MAC_LINE_END) start_index++;
 	}
 	
 	return start_index;
@@ -2525,8 +2607,8 @@ static struct terminal_groupings *get_indexed_grouping(
 	if (!(index>=0 && index<data->grouping_count)) return NULL;
 	// assert(index>=0 && index<data->grouping_count);
 	start= (byte *) data;
-	start += sizeof(struct static_preprocessed_terminal_data) + 
-		index*sizeof(struct terminal_groupings);
+	start += SIZEOF_static_preprocessed_terminal_data + 
+		index * SIZEOF_terminal_groupings;
 
 	return (struct terminal_groupings *) start;
 }
@@ -2541,9 +2623,9 @@ static struct text_face_data *get_indexed_font_changes(
 	if (!(index>=0 && index<data->font_changes_count)) return NULL;
 	// assert(index>=0 && index<data->font_changes_count);
 	start= (byte *) data;
-	start += sizeof(struct static_preprocessed_terminal_data) + 
-		data->grouping_count*sizeof(struct terminal_groupings)+
-		index*sizeof(struct text_face_data);
+	start += SIZEOF_static_preprocessed_terminal_data + 
+		data->grouping_count * SIZEOF_terminal_groupings +
+		index * SIZEOF_text_face_data;
 
 	return (struct text_face_data *) start;
 }
@@ -2554,9 +2636,9 @@ static char *get_text_base(
 	byte *start;
 
 	start= (byte *) data;
-	start += sizeof(struct static_preprocessed_terminal_data) + 
-		data->grouping_count*sizeof(struct terminal_groupings)+
-		data->font_changes_count*sizeof(struct text_face_data);
+	start += SIZEOF_static_preprocessed_terminal_data + 
+		data->grouping_count * SIZEOF_terminal_groupings +
+		data->font_changes_count * SIZEOF_text_face_data;
 
 	return (char *) start;
 }
@@ -2572,4 +2654,32 @@ static short calculate_lines_per_page(
 	lines_per_page-= FUDGE_FACTOR;
 
 	return lines_per_page;
+}
+
+
+/*
+ *  Byte-swap terminal data
+ */
+
+void byte_swap_terminal_data(uint8 *data, int length)
+{
+	while (length > 0) {
+		uint8 *p = data;
+
+		// Swap static_preprocessed_terminal_data
+		byte_swap_data(p, SIZEOF_static_preprocessed_terminal_data, 1, _bs_static_preprocessed_terminal_data);
+		static_preprocessed_terminal_data *d = (static_preprocessed_terminal_data *)p;
+		p += SIZEOF_static_preprocessed_terminal_data;
+
+		// Swap groupings
+		byte_swap_data(p, SIZEOF_terminal_groupings, d->grouping_count, _bs_terminal_groupings);
+		p += SIZEOF_terminal_groupings * d->grouping_count;
+
+		// Swap font changes
+		byte_swap_data(p, SIZEOF_text_face_data, d->font_changes_count, _bs_text_face_data);
+		p += SIZEOF_text_face_data * d->font_changes_count;
+
+		data += d->total_length;
+		length -= d->total_length;
+	}
 }

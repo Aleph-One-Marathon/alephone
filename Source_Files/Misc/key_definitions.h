@@ -31,9 +31,14 @@ struct special_flag_data
 
 struct key_definition
 {
+#ifdef SDL
+	SDLKey offset;
+	uint32 action_flag;
+#else
 	short offset;
 	long action_flag;
 	short mask;
+#endif
 };
 
 /*
@@ -46,6 +51,48 @@ struct key_definition
 #define NUMBER_OF_STANDARD_KEY_DEFINITIONS (sizeof(standard_key_definitions)/sizeof(struct key_definition))
 static struct key_definition standard_key_definitions[]=
 {
+#ifdef SDL
+	/* keypad */
+	{SDLK_KP8, _moving_forward},
+	{SDLK_KP5, _moving_backward},
+	{SDLK_KP4, _turning_left},
+	{SDLK_KP6, _turning_right},
+	
+	/* zx translation */
+	{SDLK_z, _sidestepping_left},
+	{SDLK_x, _sidestepping_right},
+
+	/* as looking */
+	{SDLK_a, _looking_left},
+	{SDLK_s, _looking_right},
+
+	/* dcv vertical looking */
+	{SDLK_d, _looking_up},
+	{SDLK_c, _looking_down},
+	{SDLK_v, _looking_center},
+	
+	/* KP7/KP9 for weapon cycling */
+	{SDLK_KP7, _cycle_weapons_backward},
+	{SDLK_KP9, _cycle_weapons_forward},
+	
+	/* space for primary trigger, option for alternate trigger */
+	{SDLK_SPACE, _left_trigger_state},
+	{SDLK_LALT, _right_trigger_state},
+	
+	/* shift, control and command modifiers */
+	{SDLK_LSHIFT, _sidestep_dont_turn},
+	{SDLK_LCTRL, _run_dont_walk},
+	{SDLK_LMETA, _look_dont_turn},
+	
+	/* tab for action */
+	{SDLK_TAB, _action_trigger_state},
+
+	/* m for toggle between normal and overhead map view */
+	{SDLK_m, _toggle_map},
+	
+	/* ` for using the microphone */
+	{SDLK_BACKQUOTE, _microphone_button}
+#else
 	/* keypad */
 	{0x5b, _moving_forward},
 	{0x57, _moving_backward},
@@ -86,11 +133,54 @@ static struct key_definition standard_key_definitions[]=
 	
 	/* ` for using the microphone */
 	{0x32, _microphone_button}
+#endif
 };
 
 #define NUMBER_OF_LEFT_HANDED_KEY_DEFINITIONS (sizeof(left_handed_key_definitions)/sizeof(struct key_definition))
 static struct key_definition left_handed_key_definitions[]=
 {
+#ifdef SDL
+	/* arrows */
+	{SDLK_UP, _moving_forward},
+	{SDLK_DOWN, _moving_backward},
+	{SDLK_LEFT, _turning_left},
+	{SDLK_RIGHT, _turning_right},
+	
+	/* zx translation */
+	{SDLK_z, _sidestepping_left},
+	{SDLK_x, _sidestepping_right},
+
+	/* as looking */
+	{SDLK_a, _looking_left},
+	{SDLK_s, _looking_right},
+
+	/* dcv vertical looking */
+	{SDLK_d, _looking_up},
+	{SDLK_c, _looking_down},
+	{SDLK_v, _looking_center},
+	
+	/* ;' for weapon cycling */
+	{SDLK_SEMICOLON, _cycle_weapons_backward},
+	{SDLK_QUOTE, _cycle_weapons_forward},
+	
+	/* space for primary trigger, option for alternate trigger */
+	{SDLK_SPACE, _left_trigger_state},
+	{SDLK_LALT, _right_trigger_state},
+	
+	/* shift, control and command modifiers */
+	{SDLK_LSHIFT, _sidestep_dont_turn},
+	{SDLK_LCTRL, _run_dont_walk},
+	{SDLK_LMETA, _look_dont_turn},
+	
+	/* tab for action */
+	{SDLK_TAB, _action_trigger_state},
+
+	/* m for toggle between normal and overhead map view */
+	{SDLK_m, _toggle_map},
+	
+	/* ` for using the microphone */
+	{SDLK_BACKQUOTE, _microphone_button}
+#else
 	/* arrows */
 	{0x7e, _moving_forward},
 	{0x7d, _moving_backward},
@@ -131,11 +221,54 @@ static struct key_definition left_handed_key_definitions[]=
 	
 	/* ` for using the microphone */
 	{0x32, _microphone_button}
+#endif
 };
 
 #define NUMBER_OF_POWERBOOK_KEY_DEFINITIONS (sizeof(powerbook_key_definitions)/sizeof(struct key_definition))
 static struct key_definition powerbook_key_definitions[]=
 {
+#ifdef SDL
+	/* olk; */
+	{SDLK_o, _moving_forward},
+	{SDLK_l, _moving_backward},
+	{SDLK_k, _turning_left},
+	{SDLK_SEMICOLON, _turning_right},
+	
+	/* zx translation */
+	{SDLK_z, _sidestepping_left},
+	{SDLK_x, _sidestepping_right},
+
+	/* as looking */
+	{SDLK_a, _looking_left},
+	{SDLK_s, _looking_right},
+
+	/* dcv vertical looking */
+	{SDLK_d, _looking_up},
+	{SDLK_c, _looking_down},
+	{SDLK_v, _looking_center},
+	
+	/* ip for weapon cycling */
+	{SDLK_i, _cycle_weapons_backward},
+	{SDLK_p, _cycle_weapons_forward},
+	
+	/* space for primary trigger, option for alternate trigger */
+	{SDLK_SPACE, _left_trigger_state},
+	{SDLK_LALT, _right_trigger_state},
+	
+	/* shift, control and command modifiers */
+	{SDLK_LSHIFT, _sidestep_dont_turn},
+	{SDLK_LCTRL, _run_dont_walk},
+	{SDLK_LMETA, _look_dont_turn},
+	
+	/* tab for action */
+	{SDLK_TAB, _action_trigger_state},
+
+	/* m for toggle between normal and overhead map view */
+	{SDLK_m, _toggle_map},
+	
+	/* ` for using the microphone */
+	{SDLK_BACKQUOTE, _microphone_button}
+#else
 	/* olk; */
 	{0x1f, _moving_forward},
 	{0x25, _moving_backward},
@@ -176,6 +309,7 @@ static struct key_definition powerbook_key_definitions[]=
 	
 	/* ` for using the microphone */
 	{0x32, _microphone_button}
+#endif
 };
 
 static struct key_definition *all_key_definitions[NUMBER_OF_KEY_SETUPS]=

@@ -29,7 +29,7 @@ struct effect_definition
 
 	fixed sound_pitch;
 	
-	word flags;
+	uint16 flags;
 	short delay, delay_sound;
 };
 

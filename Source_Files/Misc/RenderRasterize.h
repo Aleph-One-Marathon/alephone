@@ -30,7 +30,7 @@ struct flagged_world_point2d /* for floors */
 	// LP change: made this more long-distance friendly
 	long x, y;
 	// world_distance x, y;
-	word flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
+	uint16 flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
 };
 
 struct flagged_world_point3d /* for ceilings */
@@ -39,7 +39,7 @@ struct flagged_world_point3d /* for ceilings */
 	long x, y;
 	world_distance z;
 	// world_distance x, y, z;
-	word flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
+	uint16 flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
 };
 
 
@@ -83,25 +83,25 @@ class RenderRasterizerClass
 	// LP changes for better long-distance support
 	
 	short xy_clip_horizontal_polygon(flagged_world_point2d *vertices, short vertex_count,
-		long_vector2d *line, word flag);
+		long_vector2d *line, uint16 flag);
 	
 	void xy_clip_flagged_world_points(flagged_world_point2d *p0, flagged_world_point2d *p1,
 		flagged_world_point2d *clipped, long_vector2d *line);
 	
 	short z_clip_horizontal_polygon(flagged_world_point2d *vertices, short vertex_count,
-		long_vector2d *line, world_distance height, word flag);
+		long_vector2d *line, world_distance height, uint16 flag);
 	
 	void z_clip_flagged_world_points(flagged_world_point2d *p0, flagged_world_point2d *p1,
 		world_distance height, flagged_world_point2d *clipped, long_vector2d *line);
 	
 	short xz_clip_vertical_polygon(flagged_world_point3d *vertices, short vertex_count,
-		long_vector2d *line, word flag);
+		long_vector2d *line, uint16 flag);
 	
 	void xz_clip_flagged_world_points(flagged_world_point3d *p0, flagged_world_point3d *p1,
 		flagged_world_point3d *clipped, long_vector2d *line);
 	
 	short xy_clip_line(flagged_world_point2d *posts, short vertex_count,
-		long_vector2d *line, word flag);
+		long_vector2d *line, uint16 flag);
 	
 public:
 	

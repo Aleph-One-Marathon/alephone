@@ -14,7 +14,7 @@
  *  Initialize music handling
  */
 
-boolean initialize_music_handler(FileObject &song_file)
+boolean initialize_music_handler(FileSpecifier &song_file)
 {
 printf("*** initialize_music_handler()\n");
 	//!!

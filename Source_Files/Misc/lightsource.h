@@ -69,7 +69,7 @@ enum /* static flags */
 struct static_light_data /* 8*2 + 6*14 == 100 bytes */
 {
 	short type;
-	word flags;
+	uint16 flags;
 
 	short phase; // initializer, so lights may start out-of-phase with each other
 	
@@ -85,7 +85,7 @@ struct static_light_data /* 8*2 + 6*14 == 100 bytes */
 
 struct light_data /* 14*2 + 100 == 128 bytes */
 {
-	word flags;
+	uint16 flags;
 	short state;
 	
 	// result of lighting function

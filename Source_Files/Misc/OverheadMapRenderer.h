@@ -69,9 +69,9 @@ struct FontDataStruct
 	short font, face, size;
 	
 	// Equality test
-	operator==(FontDataStruct& F)
+	bool operator==(FontDataStruct& F)
 		{return ((F.font == font) && (F.face == face) && (F.size == size));}
-	operator!=(FontDataStruct& F)
+	bool operator!=(FontDataStruct& F)
 		{return (!((*this) == F));}
 	// May also need an assignment operator (operator=)
 };

@@ -111,39 +111,39 @@ enum /* monster types */
 
 /* uses SLOT_IS_USED(), SLOT_IS_FREE(), MARK_SLOT_AS_FREE(), MARK_SLOT_AS_USED() macros (0x8000 bit) */
 
-#define MONSTER_NEEDS_PATH(m) ((m)->flags&(word)0x4000)
-#define SET_MONSTER_NEEDS_PATH_STATUS(m,v) ((void)((v)?((m)->flags|=(word)0x4000):((m)->flags&=(word)~0x4000)))
+#define MONSTER_NEEDS_PATH(m) ((m)->flags&(uint16)0x4000)
+#define SET_MONSTER_NEEDS_PATH_STATUS(m,v) ((void)((v)?((m)->flags|=(uint16)0x4000):((m)->flags&=(uint16)~0x4000)))
 
 /* the recovering from hit flag is set randomly after a monster finishes his being-hit
 	animation, and when set it prevents him from being immediately dragged into another
 	being-hit animation.  this makes monsters twitch when being pinned down by a big gun,
 	and allows them a small chance to react.  the flag is cleared every frame. */
-#define MONSTER_RECOVERING_FROM_HIT(m) ((m)->flags&(word)0x2000)
-#define CLEAR_MONSTER_RECOVERING_FROM_HIT(m) ((m)->flags&=(word)~0x2000)
-#define SET_MONSTER_RECOVERING_FROM_HIT(m) ((m)->flags|=(word)0x2000)
+#define MONSTER_RECOVERING_FROM_HIT(m) ((m)->flags&(uint16)0x2000)
+#define CLEAR_MONSTER_RECOVERING_FROM_HIT(m) ((m)->flags&=(uint16)~0x2000)
+#define SET_MONSTER_RECOVERING_FROM_HIT(m) ((m)->flags|=(uint16)0x2000)
 
-#define MONSTER_IS_ACTIVE(m) ((m)->flags&(word)0x1000)
-#define SET_MONSTER_ACTIVE_STATUS(m,v) ((void)((v)?((m)->flags|=(word)0x1000):((m)->flags&=(word)~0x1000)))
+#define MONSTER_IS_ACTIVE(m) ((m)->flags&(uint16)0x1000)
+#define SET_MONSTER_ACTIVE_STATUS(m,v) ((void)((v)?((m)->flags|=(uint16)0x1000):((m)->flags&=(uint16)~0x1000)))
 
 /* berserk monsters will only switch targets when their target dies and then choose the
 	geometerically closest monster.  what sets this bit is still unclear.  */
-#define MONSTER_IS_BERSERK(m) ((m)->flags&(word)0x0400)
-#define SET_MONSTER_BERSERK_STATUS(m,v) ((void)((v)?((m)->flags|=(word)0x0400):((m)->flags&=(word)~0x0400)))
+#define MONSTER_IS_BERSERK(m) ((m)->flags&(uint16)0x0400)
+#define SET_MONSTER_BERSERK_STATUS(m,v) ((void)((v)?((m)->flags|=(uint16)0x0400):((m)->flags&=(uint16)~0x0400)))
 
-#define MONSTER_IS_IDLE(m) ((m)->flags&(word)0x0800)
-#define SET_MONSTER_IDLE_STATUS(m,v) ((void)((v)?((m)->flags|=(word)0x0800):((m)->flags&=(word)~0x0800)))
+#define MONSTER_IS_IDLE(m) ((m)->flags&(uint16)0x0800)
+#define SET_MONSTER_IDLE_STATUS(m,v) ((void)((v)?((m)->flags|=(uint16)0x0800):((m)->flags&=(uint16)~0x0800)))
 
 /* this flag is set if our current target has inflicted damage on us (because if he hasn’t, we’ll
 	probably go after somebody else if they hit us first) */
-#define TARGET_HAS_DONE_DAMAGE(m) ((m)->flags&(word)0x0200)
-#define CLEAR_TARGET_DAMAGE_FLAG(m) ((m)->flags&=(word)~0x0200)
-#define SET_TARGET_DAMAGE_FLAG(m) ((m)->flags|=(word)0x0200)
+#define TARGET_HAS_DONE_DAMAGE(m) ((m)->flags&(uint16)0x0200)
+#define CLEAR_TARGET_DAMAGE_FLAG(m) ((m)->flags&=(uint16)~0x0200)
+#define SET_TARGET_DAMAGE_FLAG(m) ((m)->flags|=(uint16)0x0200)
 
-#define SET_MONSTER_HAS_BEEN_ACTIVATED(m) ((m)->flags&=(word)~_monster_has_never_been_activated)
+#define SET_MONSTER_HAS_BEEN_ACTIVATED(m) ((m)->flags&=(uint16)~_monster_has_never_been_activated)
 
-#define MONSTER_IS_BLIND(m) ((m)->flags&(word)_monster_is_blind)
-#define MONSTER_IS_DEAF(m) ((m)->flags&(word)_monster_is_deaf)
-#define MONSTER_TELEPORTS_OUT_WHEN_DEACTIVATED(m) ((m)->flags&(word)_monster_teleports_out_when_deactivated)
+#define MONSTER_IS_BLIND(m) ((m)->flags&(uint16)_monster_is_blind)
+#define MONSTER_IS_DEAF(m) ((m)->flags&(uint16)_monster_is_deaf)
+#define MONSTER_TELEPORTS_OUT_WHEN_DEACTIVATED(m) ((m)->flags&(uint16)_monster_teleports_out_when_deactivated)
 
 #define MONSTER_IS_DYING(m) ((m)->action==_monster_is_dying_hard||(m)->action==_monster_is_dying_soft||(m)->action==_monster_is_dying_flaming)
 #define MONSTER_IS_ATTACKING(m) ((m)->action==_monster_is_attacking_close||(m)->action==_monster_is_attacking_far)
@@ -191,7 +191,7 @@ struct monster_data /* 64 bytes */
 {
 	short type;
 	short vitality; /* if ==NONE, will be properly initialized when the monster is first activated */
-	word flags; /* [slot_used.1] [need_path.1] [recovering_from_hit.1] [active.1] [idle.1] [berserk.1] [target_damage.1] [unused.6] [never_activated.1] [demoted.1] [promoted.1] */
+	uint16 flags; /* [slot_used.1] [need_path.1] [recovering_from_hit.1] [active.1] [idle.1] [berserk.1] [target_damage.1] [unused.6] [never_activated.1] [demoted.1] [promoted.1] */
 	
 	short path; /* NONE is no path (the need path bit should be set in this case) */
 	world_distance path_segment_length; /* distance until we’re through with this segment of the path */
@@ -271,7 +271,7 @@ void damage_monster(short monster_index, short aggressor_index, short aggressor_
 
 // LP change: made this inline
 inline struct monster_data *get_monster_data(
-	inline short monster_index)
+	short monster_index)
 {
 	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	

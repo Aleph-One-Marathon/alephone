@@ -24,11 +24,11 @@ typedef struct action_queue /* 8 bytes */
 
 struct recording_header
 {
-	long length;
-	short num_players;
-	short level_number;
-	unsigned long map_checksum;
-	short version;
+	int32 length;
+	int16 num_players;
+	int16 level_number;
+	uint32 map_checksum;
+	int16 version;
 	struct player_start_data starts[MAXIMUM_NUMBER_OF_PLAYERS];
 	struct game_data game_information;
 };

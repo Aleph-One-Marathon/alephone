@@ -18,7 +18,7 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
-#include "FileHandler.h"
+class FileSpecifier;
 
 /* ---------- constants */
 
@@ -105,6 +105,10 @@ struct system_information_data
 
 extern struct system_information_data *system_information;
 
+#ifdef SDL
+extern FileSpecifier local_data_dir, global_data_dir;
+#endif
+
 /* ---------- prototypes/SHELL.C */
 
 void global_idle_proc(void);
@@ -116,15 +120,22 @@ XML_ElementParser *Cheats_GetParser();
 /* ---------- prototypes/SHAPES.C */
 
 void initialize_shape_handler(void);
+#if defined(mac)
 PixMapHandle get_shape_pixmap(short shape, boolean force_copy);
+#else if defined(SDL)
+SDL_Surface *get_shape_surface(int shape);
+#endif
 
 void open_shapes_file(FileSpecifier& File);
-// void open_shapes_file(FSSpec *spec);
 
 /* ---------- prototypes/SCREEN_DRAWING.C */
 
 void _get_player_color(short color_index, RGBColor *color);
+#if defined(mac)
 void _get_interface_color(short color_index, RGBColor *color);
+#elif defined(SDL)
+void _get_interface_color(int color_index, SDL_Color *color);
+#endif
 
 /* ---------- protoypes/INTERFACE_MACINTOSH.C */
 boolean try_for_event(boolean *use_waitnext);
@@ -136,4 +147,3 @@ boolean has_cheat_modifiers(EventRecord *event);
 void load_environment_from_preferences(void);
 
 #endif
-

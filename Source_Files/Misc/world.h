@@ -45,7 +45,7 @@ Jul 1, 2000 (Loren Petrich):
 #define WORLD_ONE_FOURTH ((world_distance)(WORLD_ONE/4))
 #define WORLD_THREE_FOURTHS ((world_distance)((WORLD_ONE*3)/4))
 
-#define DEFAULT_RANDOM_SEED ((word)0xfded)
+#define DEFAULT_RANDOM_SEED ((uint16)0xfded)
 
 /* ---------- types */
 
@@ -181,11 +181,11 @@ world_point3d *transform_point3d(world_point3d *point, world_point3d *origin, an
 angle arctangent(long x, long y);
 // angle arctangent(world_distance x, world_distance y);
 
-void set_random_seed(word seed);
-word get_random_seed(void);
-word random(void);
+void set_random_seed(uint16 seed);
+uint16 get_random_seed(void);
+uint16 global_random(void);
 
-word local_random(void);
+uint16 local_random(void);
 
 world_distance guess_distance2d(world_point2d *p0, world_point2d *p1);
 world_distance distance3d(world_point3d *p0, world_point3d *p1);
@@ -197,11 +197,11 @@ long isqrt(register unsigned long x);
 // by storing the upper digits in the upper byte of a "flags" value.
 // These digits are the first 4 of X and Y beyond the short-integer digits.
 
-void long_to_overflow_short_2d(long_vector2d& LVec, world_point2d& WVec, word& flags);
-void overflow_short_to_long_2d(world_point2d& WVec, word& flags, long_vector2d& LVec);
+void long_to_overflow_short_2d(long_vector2d& LVec, world_point2d& WVec, uint16& flags);
+void overflow_short_to_long_2d(world_point2d& WVec, uint16& flags, long_vector2d& LVec);
 
 // Transform that produces a result with this kludge
-world_point2d *transform_overflow_point2d(world_point2d *point, world_point2d *origin, angle theta, word *flags);
+world_point2d *transform_overflow_point2d(world_point2d *point, world_point2d *origin, angle theta, uint16 *flags);
 
 // Simple copy-overs
 inline void long_to_short_2d(long_vector2d& LVec, world_vector2d&WVec)

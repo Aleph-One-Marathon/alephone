@@ -64,7 +64,7 @@ Aug 3, 2000 (Loren Petrich):
 [End notes for overhead_map_macintosh.c]
 */
 
-#include "macintosh_cseries.h"
+#include "cseries.h"
 
 #include "shell.h" // for _get_player_color
 
@@ -81,7 +81,11 @@ Aug 3, 2000 (Loren Petrich):
 #include "ColorParser.h"
 
 // Object-oriented setup of overhead-map rendering
+#ifdef mac
 #include "OverheadMap_QD.h"
+#else
+#include "OverheadMap_SDL.h"
+#endif
 #include "OverheadMap_OGL.h"
 
 #include <string.h>
@@ -267,9 +271,11 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 bool OGL_MapActive = false;
 
 // Software rendering
-static OverheadMap_QD_Class OverheadMap_SW;
+static OverheadMap_SDL_Class OverheadMap_SW;
 // OpenGL rendering
+#ifdef HAVE_OPENGL
 static OverheadMap_OGL_Class OverheadMap_OGL;
+#endif
 
 
 /* ---------- code */
@@ -280,9 +286,11 @@ void _render_overhead_map(
 {
 	// Select which kind of rendering (OpenGL or software)
 	OverheadMapClass *OvhdMapPtr;
+#ifdef HAVE_OPENGL
 	if (OGL_MapActive)
 		OvhdMapPtr = &OverheadMap_OGL;
 	else
+#endif
 		OvhdMapPtr = &OverheadMap_SW;
 	
 	// Do the rendering
@@ -294,7 +302,9 @@ void _render_overhead_map(
 // Call this from outside
 void OGL_ResetMapFonts()
 {
+#ifdef HAVE_OPENGL
 	OverheadMap_OGL.ResetFonts();
+#endif
 }
 
 

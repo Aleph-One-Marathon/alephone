@@ -8,6 +8,9 @@
 
 #ifndef __FILE_DESCRIPTIONS__
 #define __FILE_DESCRIPTIONS__
+
+#ifdef mac
+
 /* ------------- file descriptions */
 typedef struct {
 	short vRefNum;
@@ -18,6 +21,26 @@ typedef struct {
 /* ------------- data types */
 typedef short FileError; /* same as OSErr */
 typedef short fileref; /* File descriptor, for portability */
+#define FILEREF_NONE NONE
+
+#else
+
+#include <stdio.h>
+#include <string>
+
+/* ------------- file descriptions */
+struct FileDesc {
+	FileDesc() {name[0] = 0;}
+	FileDesc(const char *str) {strcpy(name, str);}
+	char name[256]; // File path name
+};
+
+/* ------------- data types */
+typedef int FileError;
+typedef FILE *fileref;
+#define FILEREF_NONE NULL
+
+#endif // mac
 
 /* ------------- file error codes! */
 enum {
@@ -47,7 +70,7 @@ FileError write_file(fileref refnum, unsigned long count, void *buffer);
 
 FileError delete_file(FileDesc *file);
 
-FileError find_preferences_location(FileDesc *file);
+FileError find_preferences_location(FileObject &file);
 
 /* ------ miscellaneous routines */
 FileError add_application_name_to_fsspec(FileDesc *file, unsigned char *pascal_name);

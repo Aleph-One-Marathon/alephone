@@ -60,12 +60,13 @@
 
 /* ------------ structures */
 struct static_preprocessed_terminal_data {
-	short total_length;
-	short flags;
-	short lines_per_page; /* Added for internationalization/sync problems */
-	short grouping_count;
-	short font_changes_count;
+	int16 total_length;
+	int16 flags;
+	int16 lines_per_page; /* Added for internationalization/sync problems */
+	int16 grouping_count;
+	int16 font_changes_count;
 };
+const int SIZEOF_static_preprocessed_terminal_data = 10;
 
 struct view_terminal_data {
 	short top, left, bottom, right;
@@ -94,6 +95,8 @@ long calculate_terminal_data_length(void);
 /* This returns the text.. */
 void *get_terminal_information_array(void);
 long calculate_terminal_information_length(void);
+
+extern void byte_swap_terminal_data(uint8 *data, int length);
 
 #ifdef PREPROCESSING_CODE
 struct static_preprocessed_terminal_data *preprocess_text(char *text, short length);

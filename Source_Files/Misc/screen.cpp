@@ -1857,7 +1857,7 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 	}
 	else
 	{
-		SInt8 mode;
+		int8 mode;
 		short pelsize= bit_depth>>3;
 		struct copy_screen_data data;
 		short source_rowBytes, destination_rowBytes, source_width, destination_width;

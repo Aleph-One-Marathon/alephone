@@ -15,8 +15,7 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
-#include "FileHandler.h"
-// #include "portable_files.h"
+class FileSpecifier;
 
 /* -------------------- Private or map editor functions */
 void allocate_map_for_counts(short polygon_count, short side_count,
@@ -25,7 +24,7 @@ void load_points(saved_map_pt *points, short count);
 void load_lines(saved_line *lines, short count);
 void load_sides(saved_side *sides, short count, short version);
 void load_polygons(saved_poly *polys, short count, short version);
-void load_lights(struct static_light_data *lights, short count, short version);
+void load_lights(struct saved_static_light_data *lights, short count, short version);
 void load_annotations(saved_annotation *annotations, short count);
 void load_objects(saved_object *map_objects, short count);
 void load_media(struct media_data *media, short count);
@@ -45,31 +44,27 @@ void complete_loading_level(short *map_indexes, short map_index_count,
 	struct platform_data *actual_platform_data, short actual_platform_data_count, short version);
 
 boolean save_game_file(FileSpecifier& File);
-// boolean save_game_file(FileDesc *file);
 
 /* -------------- New functions */
 void pause_game(void);
 void resume_game(void);
 void get_current_saved_game_name(FileSpecifier& File);
-// void get_current_saved_game_name(unsigned char *file_name);
 
 boolean match_checksum_with_map(short vRefNum, long dirID, unsigned long checksum, 
 	FileSpecifier& File);
-// 	FileDesc *file);
 void set_map_file(FileSpecifier& File);
-// void set_map_file(FileDesc *file);
 
 //CP Addition: get_map_file returns the FileDesc pointer to the current map
 FileSpecifier& get_map_file(void);
-// FileDesc *get_map_file(void);
 
 /* --------- from PREPROCESS_MAP_MAC.C */
 void get_default_map_spec(FileSpecifier& File);
-// void get_default_map_spec(FileDesc *_new);
 void get_default_physics_spec(FileSpecifier& File);
-// void get_default_physics_spec(FileDesc *_new);
+bool get_default_music_spec(FileSpecifier& File);
+void get_default_sounds_spec(FileSpecifier& File);
+void get_default_shapes_spec(FileSpecifier& File);
+void get_savegame_filedesc(FileSpecifier& File);
 
 void add_finishing_touches_to_save_file(FileSpecifier& File);
-// void add_finishing_touches_to_save_file(FileDesc *file);
 
 #endif

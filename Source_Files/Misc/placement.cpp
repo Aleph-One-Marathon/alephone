@@ -8,6 +8,8 @@ Feb. 4, 2000 (Loren Petrich):
 */
 
 #include "cseries.h"
+#include "byte_swapping.h"
+
 #include "map.h"
 #include "monsters.h"
 #include "items.h"
@@ -23,6 +25,13 @@ Feb. 4, 2000 (Loren Petrich):
 static struct object_frequency_definition object_placement_info[2*MAXIMUM_OBJECT_TYPES];
 static struct object_frequency_definition *monster_placement_info;
 static struct object_frequency_definition *item_placement_info;
+
+/* definitions for byte-swapping */
+static _bs_field _bs_object_frequency_definition[] = { // 12 bytes
+	_2byte,
+	_2byte, _2byte, _2byte,
+	_2byte, _2byte
+};
 
 /* private functions */
 static void _recreate_objects(short object_type, short max_object_types, struct object_frequency_definition *placement_info, short *object_counts, short *random_counts);
@@ -53,10 +62,12 @@ void load_placement_data(
 	memset(object_placement_info, 0, sizeof(object_placement_info));
 
 	/* Copy them in */
-	memcpy(monster_placement_info, monsters, sizeof(struct object_frequency_definition) * MAXIMUM_OBJECT_TYPES);
-	memcpy(item_placement_info, items, sizeof(struct object_frequency_definition) * MAXIMUM_OBJECT_TYPES);
+	memcpy(monster_placement_info, monsters, 12 * MAXIMUM_OBJECT_TYPES);
+	byte_swap_data(monster_placement_info, 12, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
+	memcpy(item_placement_info, items, 12 * MAXIMUM_OBJECT_TYPES);
+	byte_swap_data(item_placement_info, 12, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
 
-	memset(monster_placement_info, 0, sizeof(struct object_frequency_definition));
+	memset(monster_placement_info, 0, 12);
 
 #ifdef DEBUG
 	{
@@ -364,7 +375,7 @@ short get_random_player_starting_location_and_facing(
 	struct object_location current_location;
 	
 	maximum_starting_locations= get_player_starting_location_and_facing(team, 0, NULL);
-	offset= random() % maximum_starting_locations;
+	offset= global_random() % maximum_starting_locations;
 	best_distance= 0;
 	
 	for (starting_location_index= 0; starting_location_index<maximum_starting_locations; starting_location_index++)
@@ -436,7 +447,7 @@ static void _recreate_objects(
 		/* Should we add a random one? */
 		if ((indexed_placement_info->random_count == NONE || random_counts[index] > 0)
 			&& object_counts[index] + objects_to_add < indexed_placement_info->maximum_count
-			&& random() < indexed_placement_info->random_chance)
+			&& global_random() < indexed_placement_info->random_chance)
 		{
 			add_random = TRUE;
 			objects_to_add++;
@@ -556,7 +567,7 @@ static boolean pick_random_initial_location_of_type(
 	
 	actual_type = (saved_type == _saved_item) ? _object_is_item : _object_is_monster;
 	max = dynamic_world->initial_objects_count;
-	index = random() % max;
+	index = global_random() % max;
 	
 	for (i = 0; i < max; i++)
 	{
@@ -597,7 +608,7 @@ static short pick_random_facing(
 	short          new_polygon_index;
 	world_point2d  end_point;
 	
-	facing= random() % NUMBER_OF_ANGLES;
+	facing= global_random() % NUMBER_OF_ANGLES;
 	for (i= 0; i<(FULL_CIRCLE/QUARTER_CIRCLE); i++)
 	{
 		end_point = *location;
@@ -628,7 +639,7 @@ static boolean choose_invisible_random_point(
 	
 	for (retries = 0; retries < INVISIBLE_RANDOM_POINT_RETRIES && !found_legal_point; ++retries)
 	{
-		short random_polygon_index = random() % dynamic_world->polygon_count;
+		short random_polygon_index = global_random() % dynamic_world->polygon_count;
 
 		find_center_of_polygon(random_polygon_index, p);
 		if(polygon_is_valid_for_object_drop(p, random_polygon_index, object_type, initial_drop, TRUE))
