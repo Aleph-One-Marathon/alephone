@@ -1376,7 +1376,7 @@ static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, size_t Count
 		S += 2*20;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_wad_header);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_wad_header));
 	return S;
 }
 
@@ -1400,7 +1400,7 @@ static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, size_t Count)
 		S += 2*20;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_wad_header);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_wad_header));
 	return S;
 }
 
@@ -1416,7 +1416,7 @@ static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Obj
 		StreamToValue(S,ObjPtr->length);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_old_directory_entry);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_old_directory_entry));
 	return S;
 }
 
@@ -1431,7 +1431,7 @@ static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objec
 		ValueToStream(S,ObjPtr->length);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_old_directory_entry);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_old_directory_entry));
 	return S;
 }
 
@@ -1448,7 +1448,7 @@ static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, si
 		StreamToValue(S,ObjPtr->index);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_directory_entry);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_directory_entry));
 	return S;
 }
 
@@ -1464,7 +1464,7 @@ static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, size
 		ValueToStream(S,ObjPtr->index);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_directory_entry);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_directory_entry));
 	return S;
 }
 
@@ -1481,7 +1481,7 @@ static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, 
 		StreamToValue(S,ObjPtr->length);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_old_entry_header);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_old_entry_header));
 	return S;
 }
 
@@ -1497,7 +1497,7 @@ static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, si
 		ValueToStream(S,ObjPtr->length);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_old_entry_header);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_old_entry_header));
 	return S;
 }
 
@@ -1515,7 +1515,7 @@ static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, size_t C
 		StreamToValue(S,ObjPtr->offset);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_entry_header);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_entry_header));
 	return S;
 }
 
@@ -1532,7 +1532,7 @@ static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, size_t Cou
 		ValueToStream(S,ObjPtr->offset);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_entry_header);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_entry_header));
 	return S;
 }
 

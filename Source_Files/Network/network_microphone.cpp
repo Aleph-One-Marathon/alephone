@@ -275,7 +275,6 @@ void close_network_microphone(void)
 void set_network_microphone_state(bool triggered)
 {
 	OSErr err= noErr;
-	bool success= false;
 	
 	if(net_microphone_installed)
 	{

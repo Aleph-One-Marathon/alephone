@@ -60,7 +60,6 @@ void draw_panels(void)
 	LoadedResource PictRsrc;
 	PicHandle picture;
 	Rect destination= {320, 0, 480, 640};
-	Rect source= {0, 0, 160, 640};
 	
 	if (get_picture_resource_from_images(INTERFACE_PANEL_BASE,PictRsrc))
 	{

@@ -185,7 +185,6 @@ int load_script_data(void *Data, size_t DataLen)
 	memcpy(&src[0],origsrc,origlen);
 	src[origlen] = 0;
 	
-	int parsed_script_length = 0;
 	parse_script(&src[0],current_script);
 	
 	current_instruction = 0;

@@ -937,7 +937,7 @@ uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, size_
 		StreamToValue(S,ObjPtr->half_camera_separation);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_physics_constants);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_physics_constants));
 	return S;
 }
 
@@ -984,7 +984,7 @@ uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t 
 		ValueToStream(S,ObjPtr->half_camera_separation);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_physics_constants);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_physics_constants));
 	return S;
 }
 

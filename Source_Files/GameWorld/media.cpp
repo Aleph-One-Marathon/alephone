@@ -325,7 +325,7 @@ uint8 *unpack_media_data(uint8 *Stream, media_data* Objects, size_t Count)
 		S += 2*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_media_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_media_data));
 	return S;
 }
 
@@ -358,7 +358,7 @@ uint8 *pack_media_data(uint8 *Stream, media_data* Objects, size_t Count)
 		S += 2*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_media_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_media_data));
 	return S;
 }
 

@@ -499,7 +499,7 @@ uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, size_t Coun
 		S += 5*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_old_light_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_old_light_data));
 	return S;
 }
 
@@ -525,7 +525,7 @@ uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, size_t Count)
 		S += 5*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_old_light_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_old_light_data));
 	return S;
 }
 
@@ -573,7 +573,7 @@ uint8 *unpack_static_light_data(uint8 *Stream, static_light_data* Objects, size_
 		S += 4*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_static_light_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_static_light_data));
 	return S;
 }
 
@@ -600,7 +600,7 @@ uint8 *pack_static_light_data(uint8 *Stream, static_light_data* Objects, size_t 
 		S += 4*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_static_light_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_static_light_data));
 	return S;
 }
 
@@ -627,7 +627,7 @@ uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, size_t Count)
 		S = unpack_static_light_data(S,&ObjPtr->static_data,1);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_light_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_light_data));
 	return S;
 }
 
@@ -653,7 +653,7 @@ uint8 *pack_light_data(uint8 *Stream, light_data* Objects, size_t Count)
 		S = pack_static_light_data(S,&ObjPtr->static_data,1);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_light_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_light_data));
 	return S;
 }
 

@@ -832,8 +832,6 @@ void read_line(char *input, char output[256])
 
 short match_opcode(char *input)			/* the instruction strings are held in the hash as well */
 {
-	symbol_def *instruction = NULL;
-	
 	if (!input)
 		return 0;
 	
@@ -845,6 +843,8 @@ short match_opcode(char *input)			/* the instruction strings are held in the has
 		return 0;
 
 #ifdef OBSOLETE
+	symbol_def *instruction = NULL;
+	
 	instruction = get_symbol(input,instruction_hash);
 	
 	if (!instruction)
@@ -857,8 +857,6 @@ short match_opcode(char *input)			/* the instruction strings are held in the has
 
 float evaluate_operand(char *input, short *mode)
 {
-	symbol_def *symbol = NULL;
-	
 	*mode = absolute;
 	
 	if (!input || (input[0] == '#') || (input[0] == 0))	// start of a comment?
@@ -882,6 +880,8 @@ float evaluate_operand(char *input, short *mode)
 	return val;
 
 #ifdef OBSOLETE
+	symbol_def *symbol = NULL;
+	
 	symbol = get_symbol(input, glob_hash);
 
 	if (!symbol)

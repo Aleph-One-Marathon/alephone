@@ -654,7 +654,6 @@ static OSStatus ExtractSingleItem(const NavReplyRecord *reply, FSSpec *item)
 	// to support other things.  *sigh*
 {
 	OSStatus err;
-	SInt32 itemCount;
 	FSSpec fss, fss2;
 	AEKeyword junkKeyword;
 	DescType junkType;
@@ -662,8 +661,6 @@ static OSStatus ExtractSingleItem(const NavReplyRecord *reply, FSSpec *item)
 
 	obj_clear(fss);
 	obj_clear(fss2);
-	
-	//MoreAssertQ((AECountItems(&reply->selection, &itemCount) == noErr) && (itemCount == 1));
 	
 	err = AEGetNthPtr(&reply->selection, 1, typeFSS, &junkKeyword, &junkType, &fss, sizeof(fss), &junkSize);
 	if (err == noErr) {

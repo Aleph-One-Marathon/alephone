@@ -2036,7 +2036,7 @@ uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, size_t Count)
 		S += 256*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_player_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_player_data));
 	return S;
 }
 uint8 *pack_player_data(uint8 *Stream, player_data *Objects, size_t Count)
@@ -2108,7 +2108,7 @@ uint8 *pack_player_data(uint8 *Stream, player_data *Objects, size_t Count)
 		S += 256*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_player_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_player_data));
 	return S;
 }
 

@@ -1099,7 +1099,7 @@ uint8 *unpack_projectile_data(uint8 *Stream, projectile_data* Objects, size_t Co
 		S += 2*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_projectile_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_projectile_data));
 	return S;
 }
 
@@ -1136,7 +1136,7 @@ uint8 *pack_projectile_data(uint8 *Stream, projectile_data* Objects, size_t Coun
 		S += 2*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_projectile_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_projectile_data));
 	return S;
 }
 
@@ -1171,7 +1171,7 @@ uint8 *unpack_projectile_definition(uint8 *Stream, projectile_definition *Object
 		StreamToValue(S,ObjPtr->rebound_sound);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_projectile_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_projectile_definition));
 	return S;
 }
 
@@ -1211,7 +1211,7 @@ uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects,
 		ValueToStream(S,ObjPtr->rebound_sound);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_projectile_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_projectile_definition));
 	return S;
 }
 

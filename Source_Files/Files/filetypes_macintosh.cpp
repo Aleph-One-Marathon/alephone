@@ -154,7 +154,7 @@ get_typecode_for_file_type(OSType inType)
 
         file_type_to_a1_typecode_t::iterator entry = file_type_to_a1_typecode.find(inType);
         if(entry == file_type_to_a1_typecode.end())
-                return NONE;
+                return UNONE;
         else
                 return entry->second;
 }

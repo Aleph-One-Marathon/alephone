@@ -68,7 +68,7 @@ XML_ElementParser *PlayerName_GetParser()
 {
 	const char DefaultPlayerName[] = "Marathon Player";
 	size_t Length = strlen(DefaultPlayerName);
-	assert(Length == (char) Length);
+	assert(Length == static_cast<size_t>(static_cast<char>(Length)));
 	PlayerName[0] = (char)Length;
 	memcpy(PlayerName+1,DefaultPlayerName,Length);
 	

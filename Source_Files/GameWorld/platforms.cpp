@@ -1115,7 +1115,7 @@ uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects,
 		S += 7*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_static_platform_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_static_platform_data));
 	return S;
 }
 
@@ -1141,7 +1141,7 @@ uint8 * pack_static_platform_data(uint8 *Stream, static_platform_data* Objects, 
 		S += 7*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_static_platform_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_static_platform_data));
 	return S;
 }
 
@@ -1195,7 +1195,7 @@ uint8 *unpack_platform_data(uint8 *Stream, platform_data* Objects, size_t Count)
 		S += 22*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_platform_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_platform_data));
 	return S;
 }
 
@@ -1231,7 +1231,7 @@ uint8 *pack_platform_data(uint8 *Stream, platform_data* Objects, size_t Count)
 		S += 22*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_platform_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_platform_data));
 	return S;
 }
 

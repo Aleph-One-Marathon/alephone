@@ -1266,7 +1266,7 @@ XmlInitUnknownEncoding(void *mem,
 {
   int i;
   struct unknown_encoding *e = (struct unknown_encoding *)mem;
-  for (i = 0; i < sizeof(struct normal_encoding); i++)
+  for (i = 0; i < (int)sizeof(struct normal_encoding); i++)
     ((char *)mem)[i] = ((char *)&latin1_encoding)[i];
   for (i = 0; i < 128; i++)
     if (latin1_encoding.type[i] != BT_OTHER
@@ -1365,7 +1365,7 @@ int getEncodingIndex(const char *name)
   int i;
   if (name == 0)
     return NO_ENC;
-  for (i = 0; i < sizeof(encodingNames)/sizeof(encodingNames[0]); i++)
+  for (i = 0; i < (int)sizeof(encodingNames)/sizeof(encodingNames[0]); i++)
     if (streqci(name, encodingNames[i]))
       return i;
   return UNKNOWN_ENC;

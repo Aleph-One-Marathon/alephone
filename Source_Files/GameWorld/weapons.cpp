@@ -4045,7 +4045,7 @@ uint8 *unpack_player_weapon_data(uint8 *Stream, size_t Count)
 		for (unsigned m=0; m<MAXIMUM_SHELL_CASINGS; m++)
 			StreamToShellData(S,ObjPtr->shell_casings[m]);
 	}
-	assert((S - Stream) == Count*SIZEOF_player_weapon_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_player_weapon_data));
 	return S;
 }
 
@@ -4063,7 +4063,7 @@ uint8 *pack_player_weapon_data(uint8 *Stream, size_t Count)
 		for (size_t m=0; m<MAXIMUM_SHELL_CASINGS; m++)
 			ShellDataToStream(S,ObjPtr->shell_casings[m]);
 	}
-	assert((S - Stream) == Count*SIZEOF_player_weapon_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_player_weapon_data));
 	return S;
 }
 
@@ -4156,7 +4156,7 @@ uint8 *unpack_weapon_definition(uint8 *Stream, weapon_definition *Objects, size_
 		for (int m=0; m<NUMBER_OF_TRIGGERS; m++)
 			StreamToTrigDefData(S,ObjPtr->weapons_by_trigger[m]);
 	}
-	assert((S - Stream) == Count*SIZEOF_weapon_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_weapon_definition));
 	return S;
 }
 
@@ -4205,7 +4205,7 @@ uint8 *pack_weapon_definition(uint8 *Stream, weapon_definition *Objects, size_t 
 		for (int m=0; m<NUMBER_OF_TRIGGERS; m++)
 			TrigDefDataToStream(S,ObjPtr->weapons_by_trigger[m]);
 	}
-	assert((S - Stream) == Count*SIZEOF_weapon_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_weapon_definition));
 	return S;
 }
 

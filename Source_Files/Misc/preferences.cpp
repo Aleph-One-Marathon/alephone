@@ -933,8 +933,6 @@ static bool validate_network_preferences(network_preferences_data *preferences)
 static bool validate_player_preferences(player_preferences_data *preferences)
 //	void *preferences)
 {
-	struct player_preferences_data *prefs=(struct player_preferences_data *)preferences;
-
 	// Fix bool options
 	preferences->background_music_on = !!preferences->background_music_on;
 

@@ -1209,7 +1209,7 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
                     if (anisoLevel > 0.0) {
                         GLfloat max_aniso;
                         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
-                        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f + ((anisoLevel-1.0)/15.0f)*(max_aniso-1.0));
+                        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0F + ((anisoLevel-1.0F)/15.0F)*(max_aniso-1.0F));
                     }
                 }
 		break;

@@ -1457,13 +1457,14 @@ bool process_map_wad(
 	/* Extract the objects */
 	data= (uint8 *)extract_type_from_wad(wad, OBJECT_TAG, &data_length);
 	count = data_length/SIZEOF_map_object;
-	assert(data_length == count*SIZEOF_map_object);
+	assert(data_length == count*static_cast<size_t>(SIZEOF_map_object));
 	load_objects(data, count);
 
 	/* Extract the map info data */
 	data= (uint8 *)extract_type_from_wad(wad, MAP_INFO_TAG, &data_length);
 	// LP change: made this more Pfhorte-friendly
-	assert(SIZEOF_static_data==data_length || (SIZEOF_static_data-2)==data_length);
+	assert(static_cast<size_t>(SIZEOF_static_data)==data_length 
+		|| static_cast<size_t>(SIZEOF_static_data-2)==data_length);
 	load_map_info(data);
 
 	/* Extract the game difficulty info.. */

@@ -507,7 +507,7 @@ void save_recording_queue_chunk(
 	replay.header.length+= count;
 		
 	vwarn(num_flags_saved == RECORD_CHUNK_SIZE,
-		csprintf(temporary, "bad recording: %d flags, max=%d, count = %d;dm #%p #%d", num_flags_saved, max_flags, 
+		csprintf(temporary, "bad recording: %d flags, max=%d, count = %u;dm #%p #%u", num_flags_saved, max_flags, 
 			count, buffer, count));
 }
 
@@ -577,7 +577,7 @@ static void precalculate_key_information(
 {
 #ifndef SDL
 	/* convert raw key codes to offets and masks */
-	for (int i = 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; ++i)
+	for (size_t i = 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; ++i)
 	{
 		current_key_definitions[i].mask = 1 << (current_key_definitions[i].offset&7);
 		current_key_definitions[i].offset >>= 3;
@@ -1188,7 +1188,7 @@ uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, size_t 
 		StreamToGameData(S,ObjPtr->game_information);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_recording_header);
+	assert((S - Stream) == static_cast<size_t>(Count*SIZEOF_recording_header));
 	return S;
 }
 
@@ -1209,6 +1209,6 @@ uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, size_t Co
 		GameDataToStream(S,ObjPtr->game_information);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_recording_header);
+	assert((S - Stream) == static_cast<size_t>(Count*SIZEOF_recording_header));
 	return S;
 }

@@ -1083,7 +1083,7 @@ uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, size_t Count)
 		StreamToValue(S,ObjPtr->supporting_polygon_index);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_endpoint_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_endpoint_data));
 	return S;
 }
 
@@ -1106,7 +1106,7 @@ uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data *Objects, size_t Count)
 		ValueToStream(S,ObjPtr->supporting_polygon_index);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_endpoint_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_endpoint_data));
 	return S;
 }
 
@@ -1134,7 +1134,7 @@ uint8 *unpack_line_data(uint8 *Stream, line_data *Objects, size_t Count)
 		S += 6*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_line_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_line_data));
 	return S;
 }
 
@@ -1161,7 +1161,7 @@ uint8 *pack_line_data(uint8 *Stream, line_data *Objects, size_t Count)
 		S += 6*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_line_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_line_data));
 	return S;
 }
 
@@ -1241,7 +1241,7 @@ uint8 *unpack_side_data(uint8 *Stream, side_data *Objects, size_t Count)
 		S += 1*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_side_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_side_data));
 	return S;
 }
 
@@ -1280,7 +1280,7 @@ uint8 *pack_side_data(uint8 *Stream, side_data *Objects, size_t Count)
 		S += 1*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_side_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_side_data));
 	return S;
 }
 
@@ -1344,7 +1344,7 @@ uint8 *unpack_polygon_data(uint8 *Stream, polygon_data *Objects, size_t Count)
 		S += 1*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_polygon_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_polygon_data));
 	return S;
 }
 
@@ -1407,7 +1407,7 @@ uint8 *pack_polygon_data(uint8 *Stream, polygon_data *Objects, size_t Count)
 		S += 1*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_polygon_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_polygon_data));
 	return S;
 }
 
@@ -1428,7 +1428,7 @@ uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, size_t Coun
 		StreamToBytes(S,ObjPtr->text,MAXIMUM_ANNOTATION_TEXT_LENGTH);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_map_annotation);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_map_annotation));
 	return S;
 }
 
@@ -1448,7 +1448,7 @@ uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, size_t Count)
 		BytesToStream(S,ObjPtr->text,MAXIMUM_ANNOTATION_TEXT_LENGTH);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_map_annotation);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_map_annotation));
 	return S;
 }
 
@@ -1471,7 +1471,7 @@ uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, size_t Count)
 		StreamToValue(S,ObjPtr->flags);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_map_object);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_map_object));
 	return S;
 }
 
@@ -1493,7 +1493,7 @@ uint8 *pack_map_object(uint8 *Stream, map_object* Objects, size_t Count)
 		ValueToStream(S,ObjPtr->flags);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_map_object);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_map_object));
 	return S;
 }
 
@@ -1515,7 +1515,7 @@ uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_defini
 		StreamToValue(S,ObjPtr->random_chance);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_object_frequency_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_object_frequency_definition));
 	return S;
 }
 
@@ -1536,7 +1536,7 @@ uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definiti
 		ValueToStream(S,ObjPtr->random_chance);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_object_frequency_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_object_frequency_definition));
 	return S;
 }
 
@@ -1561,7 +1561,7 @@ uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, size_t Count)
 		StreamToValue(S,ObjPtr->entry_point_flags);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_static_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_static_data));
 	return S;
 }
 
@@ -1585,7 +1585,7 @@ uint8 *pack_static_data(uint8 *Stream, static_data* Objects, size_t Count)
 		ValueToStream(S,ObjPtr->entry_point_flags);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_static_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_static_data));
 	return S;
 }
 
@@ -1605,7 +1605,7 @@ uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* 
 		S += 5*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_ambient_sound_image_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_ambient_sound_image_data));
 	return S;
 }
 
@@ -1624,7 +1624,7 @@ uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Ob
 		S += 5*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_ambient_sound_image_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_ambient_sound_image_data));
 	return S;
 }
 
@@ -1654,7 +1654,7 @@ uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Ob
 		S += 3*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_random_sound_image_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_random_sound_image_data));
 	return S;
 }
 
@@ -1683,7 +1683,7 @@ uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Obje
 		S += 3*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_random_sound_image_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_random_sound_image_data));
 	return S;
 }
 
@@ -1776,7 +1776,7 @@ uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, size_t Count)
 		StreamToValue(S,ObjPtr->game_player_index);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_dynamic_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_dynamic_data));
 	return S;
 }
 
@@ -1845,7 +1845,7 @@ uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, size_t Count)
 		ValueToStream(S,ObjPtr->game_player_index);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_dynamic_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_dynamic_data));
 	return S;
 }
 
@@ -1879,7 +1879,7 @@ uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, size_t Count)
 		StreamToValue(S,ObjPtr->sound_pitch);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_object_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_object_data));
 	return S;
 }
 
@@ -1912,7 +1912,7 @@ uint8 *pack_object_data(uint8 *Stream, object_data* Objects, size_t Count)
 		ValueToStream(S,ObjPtr->sound_pitch);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_object_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_object_data));
 	return S;
 }
 
@@ -1932,7 +1932,7 @@ uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, size_
 		StreamToValue(S,ObjPtr->scale);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_damage_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_damage_definition));
 	return S;
 }
 
@@ -1951,6 +1951,6 @@ uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, size_t 
 		ValueToStream(S,ObjPtr->scale);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_damage_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_damage_definition));
 	return S;
 }

@@ -3419,7 +3419,7 @@ uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, size_t Count)
 		S += 7*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_monster_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_monster_data));
 	return S;
 }
 
@@ -3467,7 +3467,7 @@ uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, size_t Count)
 		S += 7*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_monster_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_monster_data));
 	return S;
 }
 
@@ -3572,7 +3572,7 @@ uint8 *unpack_monster_definition(uint8 *Stream, monster_definition* Objects, siz
 		StreamToAttackDef(S,ObjPtr->ranged_attack);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_monster_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_monster_definition));
 	return S;
 }
 
@@ -3650,7 +3650,7 @@ uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, size_
 		AttackDefToStream(S,ObjPtr->ranged_attack);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_monster_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_monster_definition));
 	return S;
 }
 

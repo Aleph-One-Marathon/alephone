@@ -1516,7 +1516,7 @@ static void next_terminal_group(
 		next_terminal_group(player_index, terminal_text);
 	} else {
 		terminal_data->current_group++;
-		assert(terminal_data->current_group == (size_t) terminal_data->current_group);
+		assert(terminal_data->current_group >= 0);
 		if((size_t)terminal_data->current_group>=terminal_text->groupings.size())
 		{
 			next_terminal_state(player_index);
@@ -1958,8 +1958,8 @@ static void handle_reading_terminal_keys(
 		
 		if(terminal->current_line>=terminal->maximum_line)
 		{
-			assert(terminal->current_group == (size_t)terminal->current_group);
-			if((size_t)terminal->current_group+1>=terminal_text->groupings.size())
+			assert(terminal->current_group >= 0);
+			if(static_cast<size_t>(terminal->current_group)+1>=terminal_text->groupings.size())
 			{
 				if(change_state)
 				{
@@ -2560,7 +2560,7 @@ void unpack_map_terminal_data(uint8 *p, size_t count)
 		StreamToValue(p, data.lines_per_page);
 		StreamToValue(p, grouping_count);
 		StreamToValue(p, font_changes_count);
-		assert((p - p_start) == SIZEOF_static_preprocessed_terminal_data);
+		assert((p - p_start) == static_cast<ptrdiff_t>(SIZEOF_static_preprocessed_terminal_data));
 
 		// Reserve memory for groupings and font changes
 		data.groupings.reserve(grouping_count);
@@ -2578,7 +2578,7 @@ void unpack_map_terminal_data(uint8 *p, size_t count)
 			StreamToValue(p, g.maximum_line_count);
 			data.groupings.push_back(g);
 		}
-		assert((p - p_start) == SIZEOF_terminal_groupings * grouping_count);
+		assert((p - p_start) == static_cast<ptrdiff_t>(SIZEOF_terminal_groupings) * grouping_count);
 
 		// Read font changes
 		p_start = p;
@@ -2589,7 +2589,7 @@ void unpack_map_terminal_data(uint8 *p, size_t count)
 			StreamToValue(p, f.color);
 			data.font_changes.push_back(f);
 		}
-		assert((p - p_start) == SIZEOF_text_face_data * font_changes_count);
+		assert((p - p_start) == static_cast<ptrdiff_t>(SIZEOF_text_face_data) * font_changes_count);
 
 		// Read text (no conversion)
 		data.text_length = total_length - static_cast<int>(p - p_header);
@@ -2623,7 +2623,7 @@ void pack_map_terminal_data(uint8 *p, size_t count)
 		ValueToStream(p, t->lines_per_page);
 		ValueToStream(p, grouping_count);
 		ValueToStream(p, font_changes_count);
-		assert((p - p_start) == SIZEOF_static_preprocessed_terminal_data);
+		assert((p - p_start) == static_cast<ptrdiff_t>(SIZEOF_static_preprocessed_terminal_data));
 
 		// Write groupings
 		p_start = p;
@@ -2637,7 +2637,7 @@ void pack_map_terminal_data(uint8 *p, size_t count)
 			ValueToStream(p, g->maximum_line_count);
 			g++;
 		}
-		assert((p - p_start) == SIZEOF_terminal_groupings * grouping_count);
+		assert((p - p_start) == static_cast<ptrdiff_t>(SIZEOF_terminal_groupings) * grouping_count);
 
 		// Write font changes
 		p_start = p;
@@ -2648,7 +2648,7 @@ void pack_map_terminal_data(uint8 *p, size_t count)
 			ValueToStream(p, f->color);
 			f++;
 		}
-		assert((p - p_start) == SIZEOF_text_face_data * font_changes_count);
+		assert((p - p_start) == static_cast<ptrdiff_t>(SIZEOF_text_face_data) * font_changes_count);
 
 		// Write text (no conversion)
 		BytesToStream(p, t->text, t->text_length);
@@ -2677,7 +2677,7 @@ uint8 *unpack_player_terminal_data(uint8 *Stream, size_t Count)
 		StreamToValue(S,ObjPtr->last_action_flag);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_player_terminal_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_player_terminal_data));
 	return S;
 }
 
@@ -2699,6 +2699,6 @@ uint8 *pack_player_terminal_data(uint8 *Stream, size_t Count)
 		ValueToStream(S,ObjPtr->last_action_flag);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_player_terminal_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_player_terminal_data));
 	return S;
 }

@@ -340,7 +340,7 @@ uint8 *unpack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
 		S += 11*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_effect_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_effect_data));
 	return S;
 }
 
@@ -362,7 +362,7 @@ uint8 *pack_effect_data(uint8 *Stream, effect_data* Objects, size_t Count)
 		S += 11*2;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_effect_data);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_effect_data));
 	return S;
 }
 
@@ -389,7 +389,7 @@ uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, size_
 		StreamToValue(S,ObjPtr->delay_sound);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_effect_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_effect_definition));
 	return S;
 }
 
@@ -416,6 +416,6 @@ uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t 
 		ValueToStream(S,ObjPtr->delay_sound);
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_effect_definition);
+	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_effect_definition));
 	return S;
 }

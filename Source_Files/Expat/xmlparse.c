@@ -941,7 +941,7 @@ const XML_LChar *XML_ErrorString(int code)
     XML_T("error in processing external entity reference"),
     XML_T("document is not standalone")
   };
-  if (code > 0 && code < sizeof(message)/sizeof(message[0]))
+  if (code > 0 && (size_t)(code) < sizeof(message)/sizeof(message[0]))
     return message[code];
   return 0;
 }
