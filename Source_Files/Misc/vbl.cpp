@@ -222,6 +222,13 @@ void set_keyboard_controller_status(
 	else Stop_ISp();
 #endif
 
+#if defined(TARGET_API_MAC_CARBON)
+	if (active)
+		enter_mouse(0);
+	else
+		exit_mouse(0);
+#endif
+
 #ifdef SDL
 	// We enable/disable mouse control here
 	if (active)

@@ -38,6 +38,11 @@ Jan 29, 2002 (Br'fin (Jeremy Parsons)):
 Feb 13, 2002 (Br'fin (Jeremy Parsons)):
 	Rewrote Carbon mouse again, to catch mouse movement in the main thread and pass those
 	values to the input thread
+	
+Mar 19, 2002 (Br'fin (Jeremy Parsons)):
+	Rewrote Carbon mouse again. Refining based on MacQuakeGL mouse
+	Enabling 2nd mouse button as second trigger
+	Enabling scrollwheel as weapon selector
 */
 
 /* marathon includes */
@@ -48,6 +53,9 @@ Feb 13, 2002 (Br'fin (Jeremy Parsons)):
 #include "mouse.h"
 #include "shell.h"
 #include <math.h>
+#if defined(TARGET_API_MAC_CARBON)
+#include "interface.h"
+#endif
 
 /* macintosh includes */
 #if defined(TARGET_API_MAC_CARBON)
@@ -69,7 +77,7 @@ Feb 13, 2002 (Br'fin (Jeremy Parsons)):
 static void get_mouse_location(Point *where);
 static void set_mouse_location(Point where);
 #if defined(TARGET_API_MAC_CARBON)
-static pascal OSStatus CEvtHandleApplicationMouseMoved (EventHandlerCallRef nextHandler, EventRef theEvent, void* userData);
+static pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandler, EventRef theEvent, void* userData);
 #endif
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 static CursorDevicePtr find_mouse_device(void);
@@ -94,10 +102,14 @@ extern pascal OSErr CrsrDevMoveTo(CursorDevicePtr ourDevice, long absX, long abs
 static CursorDevicePtr mouse_device = NULL;
 #endif
 static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
+#if !defined(TARGET_API_MAC_CARBON)
 static bool snapshot_button_state;
-#if defined(TARGET_API_MAC_CARBON)
+#else
+#define MAX_BUTTONS 3
+static bool snapshot_button_state[MAX_BUTTONS];
+static int snapshot_delta_scrollwheel;
 static MPCriticalRegionID CE_MouseLock;
-static int _CE_delta_x, _CE_delta_y;
+static int _CE_delta_x, _CE_delta_y, _CE_delta_scrollwheel;
 static EventHandlerUPP _CEMouseTrackerUPP;
 static EventHandlerRef _CEMouseTracker;
 #endif
@@ -117,16 +129,25 @@ void enter_mouse(
 #endif
 	
 	snapshot_delta_yaw= snapshot_delta_pitch= snapshot_delta_velocity= false;
+#if !defined(TARGET_API_MAC_CARBON)	
 	snapshot_button_state= false;
 
-#if defined(TARGET_API_MAC_CARBON)
+#else
+	for(int i = 0; i < MAX_BUTTONS; i++)
+		snapshot_button_state[i] = false;
+	snapshot_delta_scrollwheel = 0;
+	
 	// JTP: Install our Carbon Event mouse handler and create the critical region for safe value sharing
-	static EventTypeSpec mouseMovedEvents[] = {
+	static EventTypeSpec mouseEvents[] = {
+		{kEventClassMouse, kEventMouseDown},
+		{kEventClassMouse, kEventMouseUp},
+		{kEventClassMouse, kEventMouseWheelMoved},
 		{kEventClassMouse, kEventMouseMoved},
-		{kEventClassMouse, kEventMouseDragged}};
-	_CEMouseTrackerUPP = NewEventHandlerUPP(CEvtHandleApplicationMouseMoved);
+		{kEventClassMouse, kEventMouseDragged}
+	};
+	_CEMouseTrackerUPP = NewEventHandlerUPP(CEvtHandleApplicationMouseEvents);
 	InstallApplicationEventHandler (_CEMouseTrackerUPP,
-		2, mouseMovedEvents, NULL, &_CEMouseTracker);
+		5, mouseEvents, NULL, &_CEMouseTracker);
 	MPCreateCriticalRegion(&CE_MouseLock);
 #endif
 }
@@ -151,8 +172,15 @@ void test_mouse(
 	}
 #endif
 	
+#if !defined(TARGET_API_MAC_CARBON)
 	if (snapshot_button_state) *action_flags|= _left_trigger_state;
-	
+#else
+	if (snapshot_button_state[0]) *action_flags|= _left_trigger_state;
+	if (snapshot_button_state[1]) *action_flags|= _right_trigger_state;
+	if (snapshot_delta_scrollwheel > 0) *action_flags|= _cycle_weapons_forward;
+	else if (snapshot_delta_scrollwheel < 0) *action_flags|= _cycle_weapons_backward;
+	snapshot_delta_scrollwheel = 0;
+#endif	
 	*delta_yaw= snapshot_delta_yaw;
 	*delta_pitch= snapshot_delta_pitch;
 	*delta_velocity= snapshot_delta_velocity;
@@ -234,7 +262,19 @@ void mouse_idle(
 				break;
 		}
 		
+#if !defined(TARGET_API_MAC_CARBON)
 		snapshot_button_state= Button();
+#else
+		// It works for the primary...
+		snapshot_button_state[0] = Button();
+		
+		if(MPEnterCriticalRegion(CE_MouseLock, kDurationImmediate) == noErr)
+		{
+			snapshot_delta_scrollwheel = _CE_delta_scrollwheel;
+			_CE_delta_scrollwheel = 0;
+			MPExitCriticalRegion(CE_MouseLock);
+		}
+#endif
 		last_tick_count= tick_count;
 		
 //		dprintf("%08x %08x %08x;g;", snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity);
@@ -300,20 +340,100 @@ static void set_mouse_location(
 
 #if defined(TARGET_API_MAC_CARBON)
 // Catch mouse events in the main thread, store the deltas for the input thread
-pascal OSStatus CEvtHandleApplicationMouseMoved (EventHandlerCallRef nextHandler,
+// JTP: Cribbing from MacQuakeGL
+pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandler,
     EventRef theEvent,
     void* userData)
 {
-	int CGx, CGy;
-	CGGetLastMouseDelta(&CGx, &CGy);
-	OSStatus err;
-	if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationMillisecond)) == noErr)
+	UInt32 			event_kind;
+	UInt32 			event_class;
+	EventMouseButton	which_mouse_button;
+	SInt32			scroll_wheel_delta;
+	OSStatus 		err = eventNotHandledErr;
+	CGMouseDelta 		CGx, CGy;
+//	extern qboolean		background;
+
+	event_kind = GetEventKind(theEvent);
+	event_class = GetEventClass(theEvent);
+	
+	if (nextHandler)
+		err = CallNextEventHandler (nextHandler, theEvent);
+
+	if (err == noErr || err == eventNotHandledErr)
 	{
-		_CE_delta_x += CGx;
-		_CE_delta_y += CGy;
-		MPExitCriticalRegion(CE_MouseLock);
+		if (event_class == kEventClassMouse)
+		{
+			// If we're not in the game, let something else handle mouse clicks
+			if(get_game_state() != _game_in_progress)
+			{
+				extern void process_screen_click(EventRecord *event);
+			
+				extern WindowPtr screen_window;
+				if(FrontWindow() == screen_window)
+				{
+					if(event_kind == kEventMouseDown)
+					{
+						EventRecord eventRec;
+						ConvertEventRefToEventRecord(theEvent, &eventRec);
+						process_screen_click(&eventRec);
+					}
+					return noErr;
+				}
+				
+				return err;
+			}
+			
+			switch (event_kind)
+			{
+				// Carbon tells us when the mouse moves, but CoreGraphics gets the delta
+				case kEventMouseMoved:
+				case kEventMouseDragged:
+					CGGetLastMouseDelta(&CGx, &CGy);
+					OSStatus err;
+					if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationForever)) == noErr)
+					{
+						_CE_delta_x += CGx;
+						_CE_delta_y += CGy;
+						MPExitCriticalRegion(CE_MouseLock);
+					}
+					err = noErr;
+					break;
+
+				case kEventMouseDown:
+				case kEventMouseUp:
+					
+					GetEventParameter(theEvent, kEventParamMouseButton, typeMouseButton, NULL,
+						 sizeof(EventMouseButton), NULL, &which_mouse_button);
+					
+					if(which_mouse_button <= MAX_BUTTONS)
+					{
+						snapshot_button_state[which_mouse_button - 1] =
+							(event_kind == kEventMouseDown);
+					}
+					
+					err = noErr;
+					break;
+
+				case kEventMouseWheelMoved:
+					
+					GetEventParameter(theEvent, kEventParamMouseWheelDelta, typeLongInteger,
+						NULL, sizeof(SInt32), NULL, &scroll_wheel_delta);
+					
+					if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationForever)) == noErr)
+					{
+						_CE_delta_scrollwheel += scroll_wheel_delta;
+						MPExitCriticalRegion(CE_MouseLock);
+					}
+					err = noErr;
+					break;
+				
+				default:
+					break;
+			}
+		}
 	}
-        return noErr;
+	
+	return err;
 }
 #endif
 
