@@ -36,6 +36,7 @@
 			files = (
 			);
 			isa = PBXRezBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 //040
 //041
@@ -214,8 +215,8 @@
 			productName = "SDL Application";
 			productReference = 17587328FF379C6511CA2CBB;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
@@ -602,8 +603,10 @@
 				F5CC94490240DE0F01A80001,
 				F5CC944A0240DE0F01A80001,
 				F5CF585B024599B701A80001,
+				F50D2BD702F86DDA01000105,
 			);
 			isa = PBXHeadersBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		29B97328FDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
@@ -622,6 +625,7 @@
 				F5CFAD4A0200FA6B01D80110,
 			);
 			isa = PBXResourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		29B9732BFDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
@@ -757,6 +761,7 @@
 				F5CC94540240DE0F01A80001,
 			);
 			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		29B9732DFDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
@@ -768,6 +773,7 @@
 				F5281C0A01F8CA2201E83A66,
 			);
 			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 //290
 //291
@@ -796,6 +802,7 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				DEBUGGING_SYMBOLS = NO;
+				WARNING_CFLAGS = "-w";
 			};
 			isa = PBXBuildStyle;
 			name = Deployment;
@@ -810,6 +817,27 @@
 //F52
 //F53
 //F54
+		F50D2BD502F86DDA01000105 = {
+			isa = PBXFileReference;
+			path = precompiled_headers.h;
+			refType = 2;
+			usesTabs = 1;
+		};
+		F50D2BD602F86DDA01000105 = {
+			fileRef = F50D2BD502F86DDA01000105;
+			isa = PBXBuildFile;
+			settings = {
+				ATTRIBUTES = (
+					Private,
+				);
+			};
+		};
+		F50D2BD702F86DDA01000105 = {
+			fileRef = F50D2BD502F86DDA01000105;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F51E8E300212A3E701A80001 = {
 			fileRef = F522120D0136A6FD01000001;
 			isa = PBXBuildFile;
@@ -2150,8 +2178,8 @@
 				F522118D0136A6FD01000001,
 				F52211960136A6FD01000001,
 				F52211970136A6FD01000001,
-				F52211C40136A6FD01000001,
 				F52211CC0136A6FD01000001,
+				F52211C40136A6FD01000001,
 				F522120F0136A6FD01000001,
 				F52212130136A6FD01000001,
 				F52212590136A6FD01000001,
@@ -2177,6 +2205,7 @@
 				F522123E0136A6FD01000001,
 				F52212560136A6FD01000001,
 				F522125A0136A6FD01000001,
+				F50D2BD502F86DDA01000105,
 			);
 			isa = PBXGroup;
 			name = Headers;
@@ -2284,19 +2313,22 @@
 				F53673F302014B3F01A80001,
 			);
 			buildSettings = {
-				DEBUGGING_SYMBOLS = YES;
+				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
-				HEADER_SEARCH_PATHS = "\"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
+				HEADER_SEARCH_PATHS = ". \"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
+				JAVA_ARCHIVE_COMPRESSION = YES;
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O2 -fno-unroll-loops -fno-inline-functions -mdynamic-no-pic";
-				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1";
+				OPTIMIZATION_CFLAGS = "-Os -finline-functions";
+				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -I/usr/include/gcc/darwin/3.1/g++-v3 -I/usr/include/gcc/darwin/3.1/g++-v3/backward -x c++ -DHAS_UNISTD_H";
 				OTHER_LDFLAGS = "-lobjc";
 				OTHER_REZFLAGS = "";
-				PREBINDING = NO;
+				PRECOMPILE_PREFIX_HEADER = YES;
+				PREFIX_HEADER = precompiled_headers.h;
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
-				USE_GCC3 = YES;
-				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas -Wno-precomp";
+				USE_GCC3_PFE_SUPPORT = YES;
+				WARNING_CFLAGS = "-Wmost -Wno-import -Wno-four-char-constants -Wno-unknown-pragmas -Wno-precomp";
 				WRAPPER_EXTENSION = app;
 			};
 			dependencies = (
@@ -2307,8 +2339,8 @@
 			productName = "AlephOne-Carbon";
 			productReference = F53673ED02014B3E01A80001;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">
-<plist version=\"0.9\">
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
@@ -2505,7 +2537,7 @@
 	<key>CFBundleExecutable</key>
 	<string>AlephOne</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Aleph One Carbon for OS X Manual Build</string>
+	<string>Aleph One Carbon for OS X</string>
 	<key>CFBundleIconFile</key>
 	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -2517,11 +2549,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.13.2 Manual Build</string>
+	<string>0.13.2</string>
 	<key>CFBundleSignature</key>
 	<string>26.A</string>
 	<key>CFBundleVersion</key>
-	<string>0.13.2 Manual Build</string>
+	<string>0.13.2</string>
 </dict>
 </plist>
 ";
@@ -2690,8 +2722,10 @@
 				F5CC945D0240DE0F01A80001,
 				F5CC945E0240DE0F01A80001,
 				F5FA5D2A0248632901A80001,
+				F50D2BD602F86DDA01000105,
 			);
 			isa = PBXHeadersBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F53673F002014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -2710,6 +2744,7 @@
 				F552048002173FFA01A80001,
 			);
 			isa = PBXResourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F53673F102014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -2845,6 +2880,7 @@
 				F5CC94670240DE0F01A80001,
 			);
 			isa = PBXSourcesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F53673F202014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -2859,6 +2895,7 @@
 				F56A4641021F88A301A80001,
 			);
 			isa = PBXFrameworksBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F53673F302014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -2869,6 +2906,7 @@
 				F536740902014E1C01A80001,
 			);
 			isa = PBXRezBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F53673F502014D2D01A80001 = {
 			isa = PBXFrameworkReference;
@@ -4215,6 +4253,7 @@
 				F5A2534B023B71CF01A80001,
 			);
 			isa = PBXCopyFilesBuildPhase;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F5A2534A023B71CF01A80001 = {
 			fileRef = F5281C0501F8C94101E83A66;
@@ -7908,6 +7947,7 @@
 			isa = PBXShellScriptBuildPhase;
 			neededFileNames = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Disable script, this is no longer necessary or desired\n#(cd $SRCROOT/../Source_Files/Pfhortran; awk >language_definition.h '!/^#/ {print \"{\\\"\" $1 \"\\\", 0x\" $2 \"},\";}' Pfhortran_Language_Definition )";
 		};
@@ -7970,6 +8010,7 @@
 			isa = PBXShellScriptBuildPhase;
 			neededFileNames = (
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "mkdir -p $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML\ncp $SRCROOT/../data/*.mml $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML/\ncp $SRCROOT/../data/Fonts $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/";
 		};
