@@ -362,8 +362,6 @@ initialize_application (void)
     }
   else
 #if defined(__APPLE__) && defined(__MACH__)
-  data_search_path.push_back ("../Resources/DataFiles");
-  data_search_path.push_back ("../../..");
   data_search_path.push_back ("AlephOne.app/Contents/Resources/DataFiles");
   data_search_path.push_back (".");
 #endif
