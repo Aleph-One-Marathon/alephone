@@ -57,7 +57,7 @@ void initialize_images_manager(
 {
 	FileSpecifier File;
 	File.SetToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameIMAGES),FileSpecifier::C_Images);
+	File.SetName(getcstr(temporary, strFILENAMES, filenameIMAGES),_typecode_images);
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 	
 	if (!File.Open(ImagesResources))
