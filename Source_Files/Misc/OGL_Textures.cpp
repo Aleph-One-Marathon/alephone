@@ -1239,7 +1239,7 @@ void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT)
 	
 	int TxtrWidth = Image.GetWidth();
 	int TxtrHeight = Image.GetHeight();
-	Buffer = Image.GetPixelBasePtr();
+	Buffer = (GLuint*)Image.GetPixelBasePtr();
 	
 	bool IsInfravision = (CLUT == INFRAVISION_BITMAP_SET);
 	bool IsSilhouette = (CLUT == SILHOUETTE_BITMAP_SET);
@@ -1250,18 +1250,18 @@ void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT)
 	{
 		ImageBuffer.resize(ImageSize);
 		objlist_copy(&ImageBuffer[0],Buffer,ImageSize);
-		Buffer = &ImageBuffer[0];
+		Buffer = (GLuint*)&ImageBuffer[0];
 	}
 	
 	if (IsInfravision)
-		FindInfravisionVersion(Collection,ImageSize,Buffer);
+		FindInfravisionVersion(Collection,ImageSize,(uint32*)Buffer);//AS added cast for Darwin compileability
 	
 	if (IsSilhouette)
 	{
 		for (int k=0; k<ImageSize; k++)
 		{
 			// Make the color white, but keep the opacity
-			uint8 *PxlPtr = (uint8 *)(Buffer + k);
+			uint8 *PxlPtr = (uint8 *)((uint32*)Buffer + k);
 			PxlPtr[0] = PxlPtr[1] = PxlPtr[2] = 0xff;
 		}
 	}
