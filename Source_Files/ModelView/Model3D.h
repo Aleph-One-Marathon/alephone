@@ -47,13 +47,17 @@ struct Model3D
 	GLfloat BoundingBox[2][3];
 	
 	// From the position data
-	void SetBoundingBox();
+	void FindBoundingBox();
+	
+	// For debugging bounding-box-handling code
+	// NULL means don't render one set of edges
+	void RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *DiagonalColor);
 	
 	// Erase everything
 	void Clear();
 	
 	// Constructor
-	Model3D() {SetBoundingBox();}
+	Model3D() {FindBoundingBox();}
 };
 
 

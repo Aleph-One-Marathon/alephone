@@ -115,12 +115,15 @@ void LoadModelAction(int ModelType)
 	glutSetWindowTitle(Name);
 	
 	// Force the main window to use the model's bounding box
-	Model.SetBoundingBox();
+	Model.FindBoundingBox();
 	ResizeMainWindow(glutGet(GLUT_WINDOW_WIDTH),glutGet(GLUT_WINDOW_HEIGHT));
 }
 
 // Z-Buffering
 bool Use_Z_Buffer = true;
+
+// Bounding box?
+bool Show_Bounding_Box = false;
 
 // Texture management
 bool TxtrIsPresent = false;
@@ -256,6 +259,13 @@ void DrawMainWindow()
 		// glEnable(GL_CULL_FACE);
 		// glCullFace(GL_BACK);
 		// glFrontFace(GL_CW);
+		
+		// Draw the bounding box
+		const GLfloat EdgeColor[3] = {1,1,0};
+		const GLfloat DiagColor[3] = {0,1,1};
+		if (Show_Bounding_Box) Model.RenderBoundingBox(EdgeColor,DiagColor);
+		glColor3f(1,1,1);
+		
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		unsigned int Flags = ModelRenderer::Textured;
@@ -265,6 +275,7 @@ void DrawMainWindow()
 	// All done -- ready to show	
 	glutSwapBuffers();
 }
+
 
 void ResizeMainWindow(int _Width, int _Height)
 {
@@ -360,6 +371,15 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 				printf("Z-Buffer On\n");
 			else
 				printf("Z-Buffer Off\n");
+			glutPostRedisplay();
+			break;
+		
+		case 'B':
+			Show_Bounding_Box = !Show_Bounding_Box;
+			if (Show_Bounding_Box)
+				printf("Bounding Box On\n");
+			else
+				printf("Bounding Box Off\n");
 			glutPostRedisplay();
 			break;
 		
