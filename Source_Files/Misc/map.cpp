@@ -46,6 +46,8 @@ Jul 6, 2000 (Loren Petrich): Readjusted the frame checking yet again, so that bo
 
 Jul 7, 2000 (Loren Petrich): Did yet another frame-checking readjustment, in order to suppress
 	the reactivated Hunter soft-death bug.
+
+Aug 20, 2000 (Loren Petrich): eliminated a "pause()" statement -- some debugging statement?
 */
 
 /*
@@ -1215,7 +1217,8 @@ void closest_point_on_circle(
 	}
 	else
 	{
-		pause();
+		// LP: some debugging statement?
+		// pause();
 		*closest_point= *p;
 	}
 	
