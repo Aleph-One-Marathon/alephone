@@ -341,7 +341,7 @@ static void dispose_sound(short sound_index)
  *  a single sound unless _sm_parameters->flags & _more_sounds_flag)
  */
 
-static byte *read_sound_from_file(short sound_index, long &size)
+static byte *read_sound_from_file(short sound_index, int32 &size)
 {
 	size = 0;
 

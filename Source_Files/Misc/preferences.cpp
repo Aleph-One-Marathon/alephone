@@ -47,11 +47,11 @@ Aug 12, 2000 (Loren Petrich):
 #include <string.h>
 #include <stdlib.h>
 
+#include "cseries.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>	// for getlogin()
 #endif
-
-#include "cseries.h"
 
 #include "map.h"
 #include "shell.h" /* For the screen_mode structure */

@@ -221,7 +221,7 @@ static boolean channel_busy(struct channel_data *channel);
 static void unlock_sound(short sound_index);
 static void dispose_sound(short sound_index);
 // Returns not the handle, but the pointer and size
-static byte *read_sound_from_file(short sound_index, long& size);
+static byte *read_sound_from_file(short sound_index, int32 &size);
 
 static void quiet_channel(struct channel_data *channel);
 static void instantiate_sound_variables(struct sound_variables *variables,
@@ -900,17 +900,14 @@ boolean _load_sound(
 	if (definition->sound_code!=NONE &&
 		((_sm_parameters->flags&_ambient_sound_flag) || !(definition->flags&_sound_is_ambient)))
 	{
-		// if (!definition->handle)
 		if (!definition->ptr)
 		{
-			// definition->handle= read_sound_from_file(sound_index);
 			definition->ptr = read_sound_from_file(sound_index, definition->size);
 			definition->last_played= machine_tick_count();
 			
 			while (_sm_globals->loaded_sounds_size>_sm_globals->total_buffer_size) _release_least_useful_sound();
 		}
 		
-		// if (definition->handle)
 		if (definition->ptr)
 		{
 			definition->permutations_played= 0;
@@ -918,7 +915,6 @@ boolean _load_sound(
 	}
 	
 	return definition->ptr ? TRUE : FALSE;
-	// return definition->handle ? TRUE : FALSE;
 }
 
 static void calculate_initial_sound_variables(
