@@ -68,6 +68,10 @@ Mar 24, 2000 (Loren Petrich):
 
 May 23, 2000 (Loren Petrich):
 	Adding support for different size scales for landscapes
+
+Jul 6, 2000 (Loren Petrich):
+	Added some slop to MAXIMUM_SCRATCH_TABLE_ENTRIES, because displays are now bigger;
+	its size got upped by 2
 */
 
 /*
@@ -99,7 +103,9 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 
 /* ---------- constants */
 
-#define MAXIMUM_SCRATCH_TABLE_ENTRIES 1024
+// LP change: boosted to cope with big displays
+#define MAXIMUM_SCRATCH_TABLE_ENTRIES 2048
+// #define MAXIMUM_SCRATCH_TABLE_ENTRIES 1024
 #define MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE 34
 
 #define SHADE_TO_SHADING_TABLE_INDEX(shade) ((shade)>>(FIXED_FRACTIONAL_BITS-shading_table_fractional_bits))
