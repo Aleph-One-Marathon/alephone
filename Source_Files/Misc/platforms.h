@@ -372,11 +372,13 @@ struct platform_data *get_platform_data(short platform_index);
 #endif
 */
 
-// Split and join the misaligned 4-byte values
-void pack_platform_data(platform_data& source, saved_platform& dest);
-void unpack_platform_data(saved_platform& source, platform_data& dest);
-void pack_static_platform_data(static_platform_data& source, saved_static_platform& dest);
-void unpack_static_platform_data(saved_static_platform& source, static_platform_data& dest);
+// LP: to pack and unpack this data;
+// these do not make the definitions visible to the outside world
+
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects, int Count = 1);
+uint8 *pack_static_platform_data(uint8 *Stream, static_platform_data *Objects, int Count = 1);
+uint8 *unpack_platform_data(uint8 *Stream, platform_data *Objects, int Count = 1);
+uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, int Count = 1);
 
 // LP change: added platform-parser export
 XML_ElementParser *Platforms_GetParser();
