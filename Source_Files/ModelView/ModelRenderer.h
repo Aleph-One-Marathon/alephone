@@ -38,7 +38,8 @@ public:
 	// In case one wants to start over again with these persistent arrays
 	void Clear() {CentroidDepths.clear(); Indices.clear(); SortedVertIndices.clear();}
 
-	// Compare function for sorting
+	// Compare function for sorting;
+	// this is for back-to-front sorting, thus the >
 	operator()(int i1, int i2)
 	{
 		return (CentroidDepths[i1] > CentroidDepths[i2]);

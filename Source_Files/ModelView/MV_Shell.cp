@@ -131,8 +131,25 @@ void LoadSkinAction(int SkinType)
 	// Get the skin file
 	FileSpecifier File;
 	
+	bool Success = false;
 	if (File.ReadDialog(-1,"Skin Image"))
-		LoadImageFromFile(Image,File,SkinType);
+		Success = LoadImageFromFile(Image,File,SkinType);
+	if (!Success) return;
+	
+	const int BufferSize = 256;
+	char Buffer[BufferSize];
+	File.GetName(Buffer);
+	printf("Read skin file %s\n",Buffer);
+	switch(SkinType)
+	{
+		case ImageLoader_Colors:
+		printf("For colors\n");
+		break;
+		
+		case ImageLoader_Opacity:
+		printf("For opacity\n");
+		break;
+	}
 	
 	// Invalidate the current texture
 	if (TxtrIsPresent)
@@ -191,8 +208,17 @@ void DrawMainWindow()
 				Image.GetWidth(), Image.GetHeight(),
 				GL_RGBA, GL_UNSIGNED_BYTE,
 				Image.GetPixelBasePtr());
-			printf("DEBUG: Texture loading\n");
 			TxtrIsPresent = true;
+		}
+		
+		if (!Use_Z_Buffer)
+		{
+			// Extract the view direction from the matrix
+			// Since it is pure rotation, transpose = inverse
+			GLfloat ModelViewMatrix[16];
+			glGetFloatv(GL_MODELVIEW_MATRIX,ModelViewMatrix);
+			for (int k=0; k<3; k++)
+				Renderer.ViewDirection[k] = - ModelViewMatrix[4*k + 2];
 		}
 		
 		if (Use_Z_Buffer)
@@ -303,6 +329,10 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 		
 		case 'Z':
 			Use_Z_Buffer = !Use_Z_Buffer;
+			if (Use_Z_Buffer)
+				printf("Z-Buffer On\n");
+			else
+				printf("Z-Buffer Off\n");
 			glutPostRedisplay();
 			break;
 	}
