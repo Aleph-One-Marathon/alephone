@@ -168,7 +168,7 @@ static void reallocate_world_pixels(int width, int height)
 		world_pixels = NULL;
 	}
 	SDL_PixelFormat *f = main_surface->format;
-	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bit_depth, f->Rmask, f->Gmask, f->Bmask, f->Amask);
+	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
 	if (world_pixels == NULL)
 		alert_user(fatalError, strERRORS, outOfMemory, -1);
 	else if (bit_depth == 8) {
