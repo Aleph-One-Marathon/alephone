@@ -34,8 +34,8 @@ System Requirements
 -------------------
 
 Aleph One/SDL runs on all Unix systems supported by SDL (which includes
-Linux, FreeBSD, Solaris and IRIX) and on BeOS R4.5 or later versions. It
-does currently not run on Win32 and MacOS.
+Linux, FreeBSD, Solaris and IRIX), on BeOS R4.5 or later versions, and on
+Windows 9x/NT/2000. It does not currently run on MacOS.
 
 Successfully tested systems include:
  - Linux/i386
@@ -44,6 +44,10 @@ Successfully tested systems include:
  - Solaris/sparc
  - BeOS/x86 R5
  - BeOS/ppc R4.5
+ - Windows 95
+ - Windows 98/SE
+ - Windows NT 4
+ - Windows 2000
 
 To compile Aleph One/SDL, you need a pretty up-to-date C++ compiler. Using
 gcc >= 2.95 should give the best results. Users of pre-ISO C++ compilers
@@ -55,7 +59,7 @@ Aleph One/SDL supports, but doesn't require, OpenGL for rendering.
 Installing Aleph One
 --------------------
 
-See the files "INSTALL.Unix" and "INSTALL.BeOS".
+See the files "INSTALL.Unix", "INSTALL.BeOS" and "INSTALL.Windows".
 
 Aleph One/SDL needs Marathon data files which are not included in the
 distribution, so you should read the installation instructions even if
@@ -75,20 +79,26 @@ BeOS:
   to specify arguments or see error messages, you will have to start it from the
   shell, however.
 
+Windows:
+  To start Aleph One, double click the "AlephOne" application icon. If you want
+  to specify arguments or see error messages, you will have to start it from an
+  MS-DOS window, however.
+
 The program can take a number of command line arguments. Here is a complete
 list:
 
   [-h | --help]          Display the help message
   [-v | --version]       Display the game version
   [-f | --fullscreen]    Run the game fullscreen
+  [-w | --windowed]      Run the game in a window
   [-g | --nogl]          Do not use OpenGL
   [-s | --nosound]       Do not access the sound card
 
 If Aleph One complains about missing data files, and you are sure that you
 have installed them, try setting the ALEPHONE_DATA environment variable to
 the path of the data file directory. This variable can also specify a colon-
-separated list of directories which are searched for data files in the given
-order.
+separated (Windows: semicolon-separated) list of directories which are
+searched for data files in the given order.
 
 The background story of the game and the keyboard controls are explained in
 the manual or README file on your Marathon CD or in the Demo archive.
@@ -189,6 +199,11 @@ BeOS:
   The Aleph One application directory
  and
   /boot/home/config/settings/Aleph One
+
+Windows:
+  The Aleph One application directory
+ and
+  The directory "Prefs\<user name>" in the Aleph One application directory
 
 Aleph One looks in both of these directories (and in all subdirectories) for
 map, shape and sound files it recognizes and shows a list of them in the
@@ -306,6 +321,10 @@ BeOS:
  and
   /boot/home/config/settings/Aleph One/Recordings
 
+Windows:
+  Directories "Prefs\<user name>\Saved Games" and "Prefs\<user name>\Recordings"
+  in the Aleph One application directory
+
 If you want to restore games or replay films you have downloaded (or copied
 from another computer), you have to copy them into these directories or
 they won't show up when clicking on "Continue Saved Game" or "Replay Saved
@@ -328,6 +347,12 @@ BeOS:
   The "Themes" directory in the Aleph One application directory
  and
   /boot/home/config/settings/Aleph One/Themes
+
+Windows:
+  The "Themes" directory in the Aleph One application directory
+ and
+  The directory "Prefs\<user name>\Themes" in the Aleph One application
+  directory
 
 There is one subdirectory for each theme and you can install new themes by
 unpacking them into the "Themes" directory. Additional themes can be found
@@ -387,6 +412,12 @@ BeOS:
  and
   /boot/home/config/settings/Aleph One/MML
 
+Windows:
+  The "MML" directory in the Aleph One application directory
+ and
+  The directory "Prefs\<user name>\MML" in the Aleph One application
+  directory
+
 Upon startup, Aleph One reads and parses all scripts found in these
 directories, in alphabetical order. For a description of their contents and
 what you can do by writing your own MML scripts, please consult the file
@@ -445,10 +476,14 @@ Unix:
 BeOS:
   /boot/home/config/settings/Aleph One/Aleph One Preferences
 
-If the game runs very slowly, try running it in 8 bit mode. Using XFree86
-4.0 instead of 3.x may also greatly increase the speed. If you don't have
-hardware accelerated OpenGL, you should specify the "-g" argument to enable
-software rendering (unless you configured Aleph One with the
+Prefs:
+  "Prefs\<user name>\Aleph One Preferences" in the Aleph One application
+  directory
+
+If the game runs very slowly, try running it in 8 bit mode. Under Linux,
+using XFree86 4.0 instead of 3.x may also greatly increase the speed. If you
+don't have hardware accelerated OpenGL, you should specify the "-g" argument
+to enable software rendering (unless you configured Aleph One with the
 "--disable-opengl" option). If Aleph One crashes or performs poorly when
 using OpenGL, disable the "Multitexturing" and "Static Effect" options in
 the Graphics/OpenGL preferences menu.

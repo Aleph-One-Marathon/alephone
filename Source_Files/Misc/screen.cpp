@@ -413,15 +413,8 @@ void initialize_screen(
 		graphics_preferences->device_spec.width= DESIRED_SCREEN_WIDTH;
 		graphics_preferences->device_spec.height= DESIRED_SCREEN_HEIGHT;
 #if 0
-		if (1) //(mode->texture_floor)
-		{
-			BuildGDSpec(&resolution_restore_spec, world_device);
-			SetResolutionGDSpec(&graphics_preferences->device_spec);
-		}
-		else
-		{
-			obj_clear(resolution_restore_spec);
-		}
+		BuildGDSpec(&resolution_restore_spec, world_device);
+		SetResolutionGDSpec(&graphics_preferences->device_spec);
 #endif
 		
 		/* get rid of the menu bar */

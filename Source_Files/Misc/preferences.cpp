@@ -231,9 +231,10 @@ static void default_graphics_preferences(
 		preferences->screen_mode.bit_depth = 8;
 	}
 #else
-	preferences->screen_mode.size= _100_percent;
-	preferences->screen_mode.high_resolution= true;
+	preferences->screen_mode.size = _100_percent;
 	preferences->screen_mode.acceleration = _no_acceleration;
+	preferences->screen_mode.high_resolution = true;
+	preferences->screen_mode.fullscreen = false;
 	preferences->screen_mode.bit_depth = 16;
 #endif
 	
@@ -375,6 +376,11 @@ static bool validate_graphics_preferences(
 	struct graphics_preferences_data *preferences=(struct graphics_preferences_data *)prefs;
 	bool changed= false;
 
+	// Fix bool options
+	preferences->screen_mode.high_resolution = !!preferences->screen_mode.high_resolution;
+	preferences->screen_mode.fullscreen = !!preferences->screen_mode.fullscreen;
+	preferences->screen_mode.draw_every_other_line = !!preferences->screen_mode.draw_every_other_line;
+
 	if(preferences->screen_mode.gamma_level<0 || preferences->screen_mode.gamma_level>=NUMBER_OF_GAMMA_LEVELS)
 	{
 		preferences->screen_mode.gamma_level= DEFAULT_GAMMA_LEVEL;
@@ -450,6 +456,10 @@ static bool validate_network_preferences(
 	struct network_preferences_data *prefs=(struct network_preferences_data *)preferences;
 	bool changed= false;
 
+	// Fix bool options
+	prefs->allow_microphone = !!prefs->allow_microphone;
+	prefs->game_is_untimed = !!prefs->game_is_untimed;
+
 	if(prefs->type<0||prefs->type>_ethernet)
 	{
 		if(ethernet_active())
@@ -483,9 +493,13 @@ static bool validate_network_preferences(
 }
 
 static bool validate_player_preferences(
-	void *prefs)
+	void *preferences)
 {
-	(void) (prefs);
+	struct player_preferences_data *prefs=(struct player_preferences_data *)preferences;
+
+	// Fix bool options
+	prefs->background_music_on = !!prefs->background_music_on;
+
 	return false;
 }
 

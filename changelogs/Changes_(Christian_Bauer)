@@ -1,5 +1,12 @@
 Change log of the SDL version of Aleph One
 
+November 22, 2000
+ - integrated patches for Win32 (except OpenGL-related ones) by Ian Pitcher
+ - fullscreen vs. windowed mode now selectable in graphics preferences dialog,
+   overridable by "-f" and "-w" command line flags [Ian Pitcher]
+ - pausing the games switches out of fullscreen mode
+ - added option for inverting mouse Y-axis [Ian Pitcher]
+
 November 14, 2000
  - included patches for Pfhortran monster control, contributed by Mark Levin
 

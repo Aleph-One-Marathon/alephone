@@ -53,7 +53,8 @@ static void get_name_from_system(char *name)
 	char login[17];
 	DWORD len = 17;
 
-	if (GetUserName((LPTSTR)login, (LPDWORD)&len))
+	bool hasName = GetUserName((LPSTR)login, &len);
+	if (hasName && strpbrk(login, "\\/:*?\"<>|") == NULL) // Ignore illegal names
 		strcpy(name, login);
 	else
 		strcpy(name, "Bob User");
@@ -215,6 +216,8 @@ static void graphics_dialog(void *arg)
 	}
 	w_select *size_w = new w_select("Screen Size", graphics_preferences->screen_mode.size, size_labels);
 	d.add(size_w);
+	w_toggle *fullscreen_w = new w_toggle("Fullscreen", graphics_preferences->screen_mode.fullscreen);
+	d.add(fullscreen_w);
 	w_select *gamma_w = new w_select("Brightness", graphics_preferences->screen_mode.gamma_level, gamma_labels);
 	d.add(gamma_w);
 #ifdef HAVE_OPENGL
@@ -231,6 +234,15 @@ static void graphics_dialog(void *arg)
 	// Run dialog
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
+
+		bool fullscreen = fullscreen_w->get_selection();
+		if (fullscreen != graphics_preferences->screen_mode.fullscreen) {
+			graphics_preferences->screen_mode.fullscreen = fullscreen;
+			// This is the only setting that has an immediate effect
+			toggle_fullscreen(fullscreen);
+			parent->draw();
+			changed = true;
+		}
 
 		int depth = (depth_w->get_selection() ? 16 : 8);
 		if (depth != graphics_preferences->screen_mode.bit_depth) {
@@ -258,8 +270,10 @@ static void graphics_dialog(void *arg)
 			changed = true;
 		}
 
-		if (changed)
+		if (changed) {
 			write_preferences();
+			parent->draw();		// DirectX seems to need this
+		}
 	}
 }
 
@@ -329,8 +343,7 @@ static void opengl_dialog(void *arg)
  *  Sound dialog
  */
 
-class w_toggle *stereo_w;
-class w_toggle *dynamic_w;
+class w_toggle *stereo_w, *dynamic_w;
 
 class w_stereo_toggle : public w_toggle {
 public:
@@ -453,6 +466,8 @@ static void controls_dialog(void *arg)
 	d.add(new w_spacer());
 	mouse_w = new w_toggle("Mouse Control", input_preferences->input_device);
 	d.add(mouse_w);
+	w_toggle *invert_mouse_w = new w_toggle("Invert Mouse", input_preferences->modifiers & _inputmod_invert_mouse);
+	d.add(invert_mouse_w);
 	w_toggle *always_run_w = new w_toggle("Always Run", input_preferences->modifiers & _inputmod_interchange_run_walk);
 	d.add(always_run_w);
 	w_toggle *always_swim_w = new w_toggle("Always Swim", input_preferences->modifiers & _inputmod_interchange_swim_sink);
@@ -482,6 +497,7 @@ static void controls_dialog(void *arg)
 		if (always_run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
 		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
 		if (!(weapon_w->get_selection())) flags |= _inputmod_dont_switch_to_new_weapon;
+		if (invert_mouse_w->get_selection()) flags |= _inputmod_invert_mouse;
 
 		if (flags != input_preferences->modifiers) {
 			input_preferences->modifiers = flags;

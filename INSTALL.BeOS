@@ -10,14 +10,14 @@ Installing the program
 ----------------------
 
 Simply uncompress the Aleph One/SDL BeOS archive. It contains the Aleph One
-application and associated data files ("Fonts" and an "MML" directory).
-You can move the Aleph One directory anywhere you like as long as the
-application is kept together with the data files.
+application and associated data files ("Fonts" and the "MML" and "Themes"
+directories). You can move the Aleph One directory anywhere you like as long
+as the application is kept together with the data files.
 
 You also have to install Marathon data files, which is described in the
 next section.
 
-If you downloaded the Aleph One/SDL source, see "Compiling From Source",
+If you downloaded the Aleph One/SDL source, see "Compiling from source",
 below.
 
 

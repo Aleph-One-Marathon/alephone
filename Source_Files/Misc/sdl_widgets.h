@@ -100,7 +100,7 @@ private:
  *  Button
  */
 
-typedef void (*action_proc)(void *);
+typedef void (&action_proc)(void *);
 
 class w_button : public widget {
 public:

@@ -127,6 +127,7 @@ short hardware_acceleration_code(GDSpecPtr spec);
 void activate_screen_window(WindowPtr window, EventRecord *event, bool active);
 void update_screen_window(WindowPtr window, EventRecord *event);
 #elif defined(SDL)
+void toggle_fullscreen(bool fs);
 void update_screen_window(void);
 void clear_screen(void);
 #endif

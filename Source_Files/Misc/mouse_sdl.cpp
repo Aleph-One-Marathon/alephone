@@ -7,6 +7,7 @@
 #include "mouse.h"
 #include "player.h"
 #include "shell.h"
+#include "preferences.h"
 
 
 // Global variables
@@ -87,6 +88,8 @@ void mouse_idle(short type)
 		// Calculate axis deltas
 		fixed vx = ((x - center_x) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
 		fixed vy = -((y - center_y) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
+		if (input_preferences->modifiers & _inputmod_invert_mouse)
+			vy = -vy;
 
 		// Pin and do nonlinearity
 		vx = PIN(vx, -FIXED_ONE/2, FIXED_ONE/2); vx >>= 1; vx *= (vx<0) ? -vx : vx; vx >>= 14;

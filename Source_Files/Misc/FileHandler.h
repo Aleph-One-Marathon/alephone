@@ -32,6 +32,16 @@
 #define fnfErr ENOENT
 #endif
 
+#ifdef __WIN32__
+#include <windows.h>
+#ifdef GetFreeSpace
+#undef GetFreeSpace
+#endif
+#ifdef CreateDirectory
+#undef CreateDirectory
+#endif
+#endif
+
 
 // Symbolic constant for a closed file's reference number (refnum) (MacOS only)
 const short RefNum_Closed = -1;
@@ -349,7 +359,7 @@ public:
 	// Returns NONE if the type could not be identified;
 	// the types returned are the _typecode_stuff in tags.h
 	int GetType();
-	
+
 	// How many bytes are free in the disk that the file lives in?
 	bool GetFreeSpace(unsigned long& FreeSpace);
 	
@@ -421,10 +431,6 @@ private:
 
 	void SplitPath(string &base, string &part) const;
 	void SplitPath(FileSpecifier &base, string &part) const {string b; SplitPath(b, part); base = b;}
-
-#if defined(__WIN32__) && defined(CreateDirectory)
-#undef CreateDirectory
-#endif
 
 	bool CreateDirectory();
 	bool ReadDirectory(vector<dir_entry> &vec);

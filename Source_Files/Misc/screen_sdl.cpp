@@ -93,8 +93,9 @@ struct bitmap_definition *world_pixels_structure;
 
 // Stuff for keeping track of screen sizes; this is for forcing the clearing of the screen when resizing.
 // These are initialized to improbable values.
-int PrevBufferWidth = INT16_MIN, PrevBufferHeight = INT16_MIN,
-    PrevOffsetWidth = INT16_MIN, PrevOffsetHeight = INT16_MIN;
+static int PrevBufferWidth = INT16_MIN, PrevBufferHeight = INT16_MIN,
+           PrevOffsetWidth = INT16_MIN, PrevOffsetHeight = INT16_MIN;
+static bool PrevFullscreen = false;
 
 #define FRAME_SAMPLE_SIZE 20
 bool displaying_fps = false;
@@ -107,6 +108,7 @@ SDL_Surface *HUD_Buffer = NULL;
 static bool HUD_RenderRequest = false;
 
 static bool screen_initialized = false;
+static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
 
 short bit_depth = NONE;
 short interface_bit_depth = NONE;
@@ -119,9 +121,6 @@ extern bool OGL_MapActive;
 
 static struct screen_mode_data screen_mode;
 
-
-// From shell_sdl.cpp
-extern bool option_fullscreen;
 
 // Prototypes
 static void change_screen_mode(int width, int height, int depth, bool nogl);
@@ -275,7 +274,9 @@ void enter_screen(void)
 	world_view->effect = NONE;
 	
 	// Set screen to selected size
+	in_game = true;
 	change_screen_mode(&screen_mode, true);
+	PrevFullscreen = screen_mode.fullscreen;
 
 #ifdef HAVE_OPENGL
 	if (screen_mode.acceleration == _opengl_acceleration)
@@ -294,6 +295,7 @@ void enter_screen(void)
 void exit_screen(void)
 {
 	// Return to 640x480 without OpenGL
+	in_game = false;
 	change_screen_mode(640, 480, bit_depth, true);
 
 #ifdef HAVE_OPENGL
@@ -308,7 +310,7 @@ void exit_screen(void)
 
 static void change_screen_mode(int width, int height, int depth, bool nogl)
 {
-	uint32 flags = (option_fullscreen ? SDL_FULLSCREEN : 0);
+	uint32 flags = (screen_mode.fullscreen ? SDL_FULLSCREEN : 0);
 #ifdef HAVE_OPENGL
 	// The original idea was to only enable OpenGL for the in-game display, but
 	// SDL crashes if OpenGL is turned on later
@@ -368,6 +370,19 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 	frame_count = frame_index = 0;
 }
 
+void toggle_fullscreen(bool fs)
+{
+	if (fs != screen_mode.fullscreen) {
+		screen_mode.fullscreen = fs;
+		if (in_game)
+			change_screen_mode(&screen_mode, true);
+		else {
+			change_screen_mode(640, 480, bit_depth, true);
+			clear_screen();
+		}
+	}
+}
+
 
 /*
  *  Render game screen
@@ -423,6 +438,12 @@ void render_screen(short ticks_elapsed)
 	SDL_Rect HUD_DestRect = {HUD_Offset + ScreenOffsetWidth, OverallHeight + ScreenOffsetHeight, 640, 160};
 
 	bool ChangedSize = false;
+
+	// Switching fullscreen mode requires much the same reinitialization as switching the screen size
+	if (mode->fullscreen != PrevFullscreen) {
+		PrevFullscreen = mode->fullscreen;
+		ChangedSize = true;
+	}
 
 	// Each kind of display needs its own size
 	if (world_view->terminal_mode_active) {

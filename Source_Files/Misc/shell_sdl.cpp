@@ -41,10 +41,10 @@ DirectorySpecifier saved_games_dir;		// Directory for saved games
 DirectorySpecifier recordings_dir;		// Directory for recordings (except film buffer, which is stored in local_data_dir)
 
 // Command-line options
-bool option_fullscreen = false;		// Run fullscreen
-bool option_nogl = false;			// Disable OpenGL
-bool option_nosound = false;		// Disable sound output
-
+bool option_nogl = false;				// Disable OpenGL
+bool option_nosound = false;			// Disable sound output
+static bool force_fullscreen = false;	// Force fullscreen mode
+static bool force_windowed = false;		// Force windowed mode
 
 #ifdef __BEOS__
 // From csfiles_beos.cpp
@@ -71,11 +71,17 @@ static void process_event(const SDL_Event &event);
 
 static void usage(const char *prg_name)
 {
+#ifdef __WIN32__
+	MessageBox(NULL,
+		"Command line switches:\n\n"
+#else
 	printf(
 		"\nUsage: %s\n"
+#endif
 		"\t[-h | --help]          Display this help message\n"
 		"\t[-v | --version]       Display the game version\n"
 		"\t[-f | --fullscreen]    Run the game fullscreen\n"
+		"\t[-w | --windowed]      Run the game in a window\n"
 #ifdef HAVE_OPENGL
 		"\t[-g | --nogl]          Do not use OpenGL\n"
 #endif
@@ -84,14 +90,18 @@ static void usage(const char *prg_name)
 		"\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 		"the data directory.\n"
 #endif
+#ifdef __WIN32__
+		, "Usage", MB_OK | MB_ICONINFORMATION
+#else
 		, prg_name
+#endif
 	);
 	exit(0);
 }
 
 int main(int argc, char **argv)
 {
-	// Print banner
+	// Print banner (don't bother if this doesn't appear when started from a GUI)
 	printf(
 		"Aleph One " VERSION "\n"
 		"http://source.bungie.org/\n\n"
@@ -120,7 +130,9 @@ int main(int argc, char **argv)
 			printf("Aleph One " VERSION "\n");
 			exit(0);
 		} else if (strcmp(*argv, "-f") == 0 || strcmp(*argv, "--fullscreen") == 0) {
-			option_fullscreen = true;
+			force_fullscreen = true;
+		} else if (strcmp(*argv, "-w") == 0 || strcmp(*argv, "--windowed") == 0) {
+			force_windowed = true;
 		} else if (strcmp(*argv, "-g") == 0 || strcmp(*argv, "--nogl") == 0) {
 			option_nogl = true;
 		} else if (strcmp(*argv, "-s") == 0 || strcmp(*argv, "--nosound") == 0) {
@@ -163,7 +175,7 @@ int main(int argc, char **argv)
 static void initialize_application(void)
 {
 	// Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO | (option_nosound ? 0 : SDL_INIT_AUDIO)) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | (option_nosound ? 0 : SDL_INIT_AUDIO) | SDL_INIT_NOPARACHUTE) < 0) {
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
 	}
@@ -197,10 +209,13 @@ static void initialize_application(void)
 
 	char login[17];
 	DWORD len = 17;
-	if (!GetUserName((LPSTR)login, &len))
+
+	bool hasName = GetUserName((LPSTR)login, &len);
+	if (!hasName || strpbrk(login, "\\/:*?\"<>|") != NULL) 
 		strcpy(login, "Bob User");
 
-	local_data_dir = file_name + "Prefs";
+	local_data_dir = file_name;
+	local_data_dir += "Prefs";
 	local_data_dir.CreateDirectory();
 	local_data_dir += login;
 	 
@@ -278,6 +293,10 @@ static void initialize_application(void)
 	if (!option_nogl && graphics_preferences->screen_mode.bit_depth == 16)
 		graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
 #endif
+	if (force_fullscreen)
+		graphics_preferences->screen_mode.fullscreen = true;
+	if (force_windowed)	// takes precedence over fullscreen because windowed is safer
+		graphics_preferences->screen_mode.fullscreen = false;
 	write_preferences();
 
 	// Initialize everything
@@ -1045,8 +1064,10 @@ void dump_screen(void)
 
 	// Without OpenGL, dumping the screen is easy
 	SDL_Surface *video = SDL_GetVideoSurface();
-	if (!(video->flags & SDL_OPENGL))
+	if (!(video->flags & SDL_OPENGL)) {
 		SDL_SaveBMP(SDL_GetVideoSurface(), file.GetPath());
+		return;
+	}
 
 #ifdef HAVE_OPENGL
 	// Otherwise, allocate temporary surface...
