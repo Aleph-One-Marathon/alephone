@@ -34,6 +34,8 @@
 #include <windows.h>
 #endif
 
+#include <math.h>
+
 #include "Dim3_Loader.h"
 #include "world.h"
 #include "XML_Configure.h"
