@@ -873,15 +873,15 @@
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			name = CarbonSndPlayDB.c;
-			path = /Users/astrange/aleph/Source_Files/Network/CarbonSndPlayDB.c;
-			refType = 0;
+			path = ../Source_Files/Network/CarbonSndPlayDB.c;
+			refType = 2;
 		};
 		3DF2716C03EDBAA800000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			name = CarbonSndPlayDB.h;
-			path = /Users/astrange/aleph/Source_Files/Network/CarbonSndPlayDB.h;
-			refType = 0;
+			path = ../Source_Files/Network/CarbonSndPlayDB.h;
+			refType = 2;
 		};
 		3DF2716D03EDBAA800000104 = {
 			fileRef = 3DF2716B03EDBAA800000104;
@@ -899,22 +899,22 @@
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			name = network_microphone_shared.cpp;
-			path = /Users/astrange/aleph/Source_Files/Network/network_microphone_shared.cpp;
-			refType = 0;
+			path = ../Source_Files/Network/network_microphone_shared.cpp;
+			refType = 2;
 		};
 		3DF2717003EDBBF100000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			name = network_microphone_shared.h;
-			path = /Users/astrange/aleph/Source_Files/Network/network_microphone_shared.h;
-			refType = 0;
+			path = ../Source_Files/Network/network_microphone_shared.h;
+			refType = 2;
 		};
 		3DF2717103EDBBF100000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			name = network_speaker_shared.cpp;
-			path = /Users/astrange/aleph/Source_Files/Network/network_speaker_shared.cpp;
-			refType = 0;
+			path = ../Source_Files/Network/network_speaker_shared.cpp;
+			refType = 2;
 		};
 		3DF2717203EDBBF100000104 = {
 			fileRef = 3DF2716F03EDBBF100000104;
@@ -1015,8 +1015,8 @@
 			);
 			isa = PBXGroup;
 			name = tools;
-			path = "/Volumes/Sprawl/Users/astrange/Desktop/Development/Aleph One/alephcvs/aleph/tools";
-			refType = 0;
+			path = ../tools;
+			refType = 2;
 		};
 		F50028F0038EE8C201000105 = {
 			fileEncoding = 30;
