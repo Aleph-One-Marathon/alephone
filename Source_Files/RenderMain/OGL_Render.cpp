@@ -396,11 +396,12 @@ static bool RenderModel(rectangle_definition& RenderRectangle, short Collection,
 // returns whether or not the texture can be glowmapped
 // (not the case for infravision, invisible, static)
 // it gets "IsBlended" off of the texture definition
-// It returns the color to use,
-// whether the Z-buffer is to be suppressed in the render object
+// It returns in args
+// the "true" blending (invisibility is blended)
+// the color to use,
 // and whether the object will be externally lit
-static bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended,
-	GLfloat *Color, bool& Suppress_Z_Buffer, bool& ExternallyLit);
+static bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlended,
+	GLfloat *Color, bool& ExternallyLit);
 
 // Setup and teardown for the static-effect mode
 static void SetupStaticMode(rectangle_definition& RenderRectangle);
@@ -1969,11 +1970,11 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	else if (IsWeaponsInHand)
 		SetProjectionType(Projection_Screen);
 	
-	bool Suppress_Z_Buffer = false;
+	bool IsBlended = TMgr.IsBlended();
 	bool ExternallyLit = false;
 	GLfloat Color[4];
-	DoLightingAndBlending(RenderRectangle, TMgr.IsBlended(),
-		Color, Suppress_Z_Buffer, ExternallyLit);
+	DoLightingAndBlending(RenderRectangle, IsBlended,
+		Color, ExternallyLit);
 	glColor4fv(Color);
 	
 	// Location of data:
@@ -2187,11 +2188,9 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	
 	// Parallel to TextureManager::IsBlended() in OGL_Textures.h
 	bool IsBlended = SkinPtr->OpacityType != OGL_OpacType_Crisp;
-	bool Suppress_Z_Buffer = false;
 	bool ExternallyLit = false;
 	bool IsGlowmappable = DoLightingAndBlending(RenderRectangle, IsBlended,
-		ShaderData.Color, Suppress_Z_Buffer, ExternallyLit);
-	bool Actual_Z_Buffering = Z_Buffering && !Suppress_Z_Buffer;
+		ShaderData.Color, ExternallyLit);
 	
 	ShaderData.ModelPtr = ModelPtr;
 	ShaderData.SkinPtr = SkinPtr;
@@ -2226,18 +2225,18 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		if (UseFlatStatic)
 		{
 			// Do explicit depth sort because these textures are semitransparent
-			ModelRenderObject.Render(ModelPtr->Model, false, StandardShaders, 1);
+			ModelRenderObject.Render(ModelPtr->Model, StandardShaders, 1, 0, Z_Buffering);
 		} else {
 			// Do multitextured stippling to create the static effect
-			ModelRenderObject.Render(ModelPtr->Model, Z_Buffering, StaticModeShaders, 4);
+			ModelRenderObject.Render(ModelPtr->Model, StaticModeShaders, 4, 4, Z_Buffering);
 		}
 		TeardownStaticMode();
 	}
 	else
 	{
 		bool IsGlowing = IsGlowmappable && SkinPtr->GlowImg.IsPresent();
-		Actual_Z_Buffering = Actual_Z_Buffering && !IsGlowing;	// Glowmapped textures are blended
 		int NumShaders = IsGlowing ? 2 : 1;
+		int NumSeparableShaders = IsBlended ? 0 : 1;
 		
 		SET_FLAG(StandardShaders[0].Flags,ModelRenderer::ExtLight,ExternallyLit);
 		
@@ -2289,7 +2288,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			}
 		}
 		
-		ModelRenderObject.Render(ModelPtr->Model, Actual_Z_Buffering, StandardShaders, NumShaders);
+		ModelRenderObject.Render(ModelPtr->Model, StandardShaders, NumShaders,
+			NumSeparableShaders, Z_Buffering);
 		
 		// Revert to default blend
 		SetBlend(OGL_BlendType_Crossfade);
@@ -2309,11 +2309,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	return true;
 }
 
-bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended,
-	GLfloat *Color, bool& Suppress_Z_Buffer, bool& ExternallyLit)
+bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlended,
+	GLfloat *Color, bool& ExternallyLit)
 {
 	bool IsGlowmappable = true;
-	Suppress_Z_Buffer = false;
 	ExternallyLit = true;
 	
 	// Apply lighting
@@ -2357,7 +2356,7 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended
 	{
 		glDisable(GL_ALPHA_TEST);
 		glEnable(GL_BLEND);
-		Suppress_Z_Buffer = true;
+		IsBlended = true;
 	} else { 
 		glEnable(GL_ALPHA_TEST);
 		glDisable(GL_BLEND);

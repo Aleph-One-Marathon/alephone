@@ -397,7 +397,8 @@ static void IndexedQuickSort(SORT_INDEX_TYPE *First, SORT_INDEX_TYPE *Last)
 }
 
 
-void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader *Shaders, int NumShaders)
+void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumShaders,
+	int NumSeparableShaders, bool Use_Z_Buffer)
 {
 	if (NumShaders <= 0) return;
 	if (!Shaders) return;
@@ -405,7 +406,14 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT,0,Model.PosBase());
 	
-	if (Use_Z_Buffer)
+	// Effective number of separable shaders when the Z-buffer is absent: none
+	// (the Z-buffer enables separability).
+	// Editing this arg is OK since it was called by value.
+	if (!Use_Z_Buffer) NumSeparableShaders = 0;
+	
+	// Optimization: skip depth sorting, render, and quit
+	// if all shaders are separable.
+	if (NumSeparableShaders >= NumShaders)
 	{
 		for (int q=0; q<NumShaders; q++)
 		{
@@ -414,9 +422,11 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 		}
 		return;			
 	}
-	// Fall-through: don't use Z-buffer
-
-	// Have to do centroid depth sorting here
+	
+	// If some of the shaders are nonseparable, then the polygons have to be depth-sorted.
+	// The separable ones will also use that depth-sorting, out of coding convenience.
+	// OpenGL != PowerVR
+	// (which can store polygons and depth-sort them in its hardware)
 	
 	// Find the centroids:
 	int NumTriangles = Model.NumVI()/3;
@@ -446,37 +456,47 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 	// IndexedQuickSort(IndxPtr,IndxPtr + (NumTriangles - 1));
 	GNU_IndexedQuickSort(IndxPtr,NumTriangles);
 	
-	if (NumShaders > 1)
+	// Optimization: a single nonseparable shader can be rendered as if it was separable,
+	// though it must still be depth-sorted.
+	if (NumSeparableShaders == NumShaders - 1)
+		NumSeparableShaders++;
+	
+	for (int q=0; q<NumSeparableShaders; q++)
+	{
+		// Need to do this only once
+		if (q == 0)
+		{
+			SortedVertIndices.resize(Model.NumVI());
+			GLushort *DestTriangle = &SortedVertIndices[0];
+			for (int k=0; k<NumTriangles; k++)
+			{
+				GLushort *SourceTriangle = &Model.VertIndices[3*Indices[k]];
+				// Copy-over unrolled for speed
+				*(DestTriangle++) = *(SourceTriangle++);
+				*(DestTriangle++) = *(SourceTriangle++);
+				*(DestTriangle++) = *(SourceTriangle++);
+			}
+		}
+		
+		// Separable-shader optimization: render in one swell foop
+		SetupRenderPass(Model,Shaders[q]);
+				
+		// Go!
+		glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,&SortedVertIndices[0]);
+	}
+	
+	if (NumSeparableShaders < NumShaders)
 	{
 		// Multishader case: each triangle separately
 		for (int k=0; k<NumTriangles; k++)
 		{
 			GLushort *Triangle = &Model.VertIndices[3*Indices[k]];
-			for (int q=0; q<NumShaders; q++)
+			for (int q=NumSeparableShaders; q<NumShaders; q++)
 			{
 				SetupRenderPass(Model,Shaders[q]);
 				glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_SHORT,Triangle);
 			}
 		}
-	}
-	else
-	{
-		// Single-shader optimization: render in one swell foop
-		SetupRenderPass(Model,Shaders[0]);
-		
-		SortedVertIndices.resize(Model.NumVI());
-		GLushort *DestTriangle = &SortedVertIndices[0];
-		for (int k=0; k<NumTriangles; k++)
-		{
-			GLushort *SourceTriangle = &Model.VertIndices[3*Indices[k]];
-			// Copy-over unrolled for speed
-			*(DestTriangle++) = *(SourceTriangle++);
-			*(DestTriangle++) = *(SourceTriangle++);
-			*(DestTriangle++) = *(SourceTriangle++);
-		}
-		
-		// Go!
-		glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,&SortedVertIndices[0]);
 	}
 }
 

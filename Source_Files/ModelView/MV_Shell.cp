@@ -113,6 +113,7 @@ void ResizeMainWindow(int _Width, int _Height);
 // a model is saved in case it is edited, as when vertices are split
 Model3D Model, SavedModel;
 ImageDescriptor Image;
+bool ImageSemitransparent = false;
 ModelRenderer Renderer;
 ModelRenderShader Shaders[2];
 
@@ -125,6 +126,9 @@ enum {
 	Model_Dim3_Rest
 };
 const int LoadSkinItem = 1;
+
+// When the model or the skin is changed, then do this
+void InvalidateTexture();
 
 void LoadModelAction(int ModelType)
 {
@@ -191,6 +195,9 @@ void LoadModelAction(int ModelType)
 		printf("%9f %9f\n",Model.BoundingBox[0][c],Model.BoundingBox[1][c]);
 	
 	SavedModel = Model;
+	
+	// Invalidate the current texture, so it will be reloaded for the model
+	InvalidateTexture();
 }
 
 // Z-Buffering
@@ -223,6 +230,16 @@ int ThisFrame = 0;
 int ThisSeq = 0;
 
 
+void InvalidateTexture()
+{
+	if (TxtrIsPresent)
+	{
+		glDeleteTextures(1,&TxtrID);
+		TxtrIsPresent = false;
+	}
+}
+
+
 void LoadSkinAction(int SkinType)
 {
 	// Get the skin file
@@ -240,20 +257,18 @@ void LoadSkinAction(int SkinType)
 	switch(SkinType)
 	{
 		case ImageLoader_Colors:
+		ImageSemitransparent = false;	// Initially, no nonzero transparency
 		printf("For colors\n");
 		break;
 		
 		case ImageLoader_Opacity:
+		ImageSemitransparent = true;	// Nonzero transparency
 		printf("For opacity\n");
 		break;
 	}
 	
 	// Invalidate the current texture
-	if (TxtrIsPresent)
-	{
-		glDeleteTextures(1,&TxtrID);
-		TxtrIsPresent = false;
-	}
+	InvalidateTexture();
 	
 	glutPostRedisplay();
 }
@@ -275,6 +290,7 @@ void ShaderCallback(void *Data)
 	(void)(Data);
 	if (!Image.IsPresent()) return;
 	
+	// Setting up the textures each time
 	if (TxtrIsPresent)
 		glBindTexture(GL_TEXTURE_2D,TxtrID);
 	else
@@ -435,22 +451,7 @@ void DrawMainWindow()
 					Color[c] = FalseColor[c];
 			}
 		}
-		
-		// Load the texture
-		if (!TxtrIsPresent && Image.IsPresent())
-		{
-			glGenTextures(1,&TxtrID);
-			glBindTexture(GL_TEXTURE_2D,TxtrID);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA8,
-				Image.GetWidth(), Image.GetHeight(),
-				GL_RGBA, GL_UNSIGNED_BYTE,
-				Image.GetPixelBasePtr());
-			TxtrIsPresent = true;
-		}
-		
+				
 		// Extract the view direction from the matrix
 		// Since it is pure rotation, transpose = inverse
 		GLfloat ModelViewMatrix[16];
@@ -503,7 +504,8 @@ void DrawMainWindow()
 		SET_FLAG(Flags,ModelRenderer::Colored,!TxtrIsPresent);
 		SET_FLAG(Flags,ModelRenderer::ExtLight,Use_Light);
 		Shaders[1].Flags = Shaders[0].Flags = Flags;
-		Renderer.Render(Model,Use_Z_Buffer,Shaders,NumRenderPasses);
+		int NumOpaqueRenderPasses = ImageSemitransparent ? NumRenderPasses : 0;
+		Renderer.Render(Model,Shaders,NumRenderPasses,NumOpaqueRenderPasses,Use_Z_Buffer);
 	}
 	
 	// All done -- ready to show	

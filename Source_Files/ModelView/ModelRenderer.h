@@ -75,10 +75,14 @@ public:
 	
 	// Does the actual rendering; args:
 	// A 3D model (of course!)
-	// Whether or not to assume a Z-buffer is present
 	// Array of shaders to be used for multipass rendering
 	// How many shaders in that array to use
-	void Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader *Shaders, int NumShaders);
+	// How many shaders are assumed to be separably renderable when a Z-buffer is present;
+	//   these are assumed to be all-or-nothing, and are always the first shaders.
+	//   Semitransparent shaders are nonseparable.
+	// Whether a Z-buffer is present; without it, no shaders are rendered separately.
+	void Render(Model3D& Model, ModelRenderShader *Shaders, int NumShaders,
+		int NumSeparableShaders, bool Use_Z_Buffer);
 	
 	// In case one wants to start over again with these persistent arrays
 	void Clear();
