@@ -919,15 +919,11 @@ void default_sound_manager_parameters(
 	
 	parameters->channel_count= MAXIMUM_SOUND_CHANNELS;
 	parameters->volume= DEFAULT_SOUND_LEVEL;
-	parameters->flags= _more_sounds_flag;
+	// LP: adopted CB's(?) added flags
+	parameters->flags= _more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag;
 	parameters->pitch= FIXED_ONE;
 	// LP addition:
 	parameters->music = DEFAULT_MUSIC_LEVEL;
-
-#ifndef mac
-	// Beef it up
-	parameters->flags |= _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag;
-#endif
 }
 
 bool verify_sound_manager_parameters(
