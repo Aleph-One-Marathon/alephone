@@ -184,10 +184,14 @@ struct LoadedSound
 	Movie QTSnd;
 #endif
 	
+	// Whether it is queued to be used
+	bool Queued;
+	
 	LoadedSound()
 	{
 #ifdef mac
 		QTSnd = NULL;
+		Queued = false;
 #endif
 	}
 
@@ -200,19 +204,23 @@ struct LoadedSound
 	bool Unload();
 	bool IsLoaded();
 	
-	// Note, the pitch multiplier is in fixed-integer units (FIXED_ONE = 1.0)
-	bool Play(_fixed Pitch);
+	bool Play();
 	bool Stop();
 	bool IsPlaying();
 	
 	// Necessary for classic MacOS; real OSes like MacOS X ought not to need this
 	bool Update();
+	
+	// Control:
+	// The pitch multiplier is in fixed-integer units (FIXED_ONE = 1.0)
+	bool SetPitch(_fixed Pitch);
 };
 
 
 // Sound-options stuff:
 struct SoundOptions
 {
+	// The filename, including the path, in Unix style
 	vector<char> File;
 	
 	LoadedSound Sound;
@@ -366,7 +374,8 @@ static byte *read_sound_from_file(short sound_index, int32 &size);
 static void quiet_channel(struct channel_data *channel);
 static void instantiate_sound_variables(struct sound_variables *variables,
 	struct channel_data *channel, bool first_time);
-static void buffer_sound(struct channel_data *channel, short sound_index, _fixed pitch);
+	// LP: extra: whether to start playing an external sound immediately
+static void buffer_sound(struct channel_data *channel, short sound_index, _fixed pitch, bool ExtPlayImmed=true);
 
 /* ---------- private prototypes */
 
@@ -606,13 +615,27 @@ void sound_manager_idle_proc(
 		// Update QuickTime-played sounds
 		for (int ic = 0; ic<MAXIMUM_SOUND_CHANNELS+MAXIMUM_AMBIENT_SOUND_CHANNELS; ++ic)
 		{
-			LoadedSound *SndPtr = _sm_globals->channels[ic].SndPtr;
+			channel_data *channel = _sm_globals->channels + ic;
+			LoadedSound *SndPtr = channel->SndPtr;
 			if (!SndPtr) continue;
-			if (!SndPtr->Update()) continue;
-			if (!SndPtr->IsPlaying())
+			
+			// If an external sound had been queued, play it only if the channel is idle;
+			// test for that by counting callbacks
+			if (SndPtr->Queued && channel->callback_count > 0)
 			{
-				// Blank out inactive sound
-				_sm_globals->channels[ic].SndPtr = NULL;
+				// SCStatus Status;
+				// SndChannelStatus(channel->channel,sizeof(SCStatus),&Status);
+				// if (!Status.scChannelBusy)
+				SndPtr->Play();
+				SndPtr->Queued = false;
+			} else {
+				if (!SndPtr->Update()) continue;
+				if (!SndPtr->IsPlaying())
+				{
+					// Blank out inactive sound and make a fake callback
+					channel->callback_count++;
+					channel->SndPtr = NULL;
+				}
 			}
 		}	
 #endif
@@ -753,6 +776,9 @@ void unload_all_sounds(
 		
 		while (_release_least_useful_sound()!=NONE)
 			;
+		
+		for (vector<SoundOptionsEntry>::iterator SOIter = SOList.begin(); SOIter < SOList.end(); SOIter++)
+			SOIter->OptionsData.Sound.Unload();
 	}
 	
 	return;
@@ -1468,8 +1494,12 @@ static void update_ambient_sound_sources(
 				// make sure at least two sounds are buffered at all times			
 				while (channel->callback_count) // #MD
 				{
-					buffer_sound(channel, channel->sound_index, FIXED_ONE);
+					// LP: if an external sound is active or queued, don't do anything more
+					LoadedSound *SndPtr = channel->SndPtr;
+					if (SndPtr) break;
 					
+					buffer_sound(channel, channel->sound_index, FIXED_ONE, false);
+									
 					channel->callback_count-= 1;
 				}
 			}

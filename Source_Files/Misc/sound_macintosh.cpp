@@ -119,7 +119,7 @@ static void set_sound_manager_status(
 				{
 					/* initialize the channel */
 					channel->flags= 0;
-					channel->callback_count= false;
+					channel->callback_count= 0;
 					channel->sound_index= NONE;
 					obj_clear(*(channel->channel));
 					channel->channel->qLength= stdQLength;
@@ -318,7 +318,7 @@ static bool channel_busy(
 static void unlock_sound(
 	short sound_index)
 {
-	// LP: nlocking a sound handle is now superfluous
+	// LP: unlocking a sound handle is now superfluous
 	return;
 }
 
@@ -351,7 +351,7 @@ static byte *read_sound_from_file(
 	if (!definition) return NULL;
 	
 	// Load all the external-file sounds for each index; fill the slots appropriately.
-	// Don't lokad any of them is QuickTime is not present.
+	// Don't load any of them is QuickTime is not present.
 	int NumSlots = (_sm_parameters->flags&_more_sounds_flag) ? definition->permutations : 1;
 	if (!machine_has_quicktime()) NumSlots = 0;
 	for (int k=0; k<NumSlots; k++)
@@ -363,7 +363,7 @@ static byte *read_sound_from_file(
 		try
 		{
 			// Load only if necessary
-			if (!SndOpts->Sound.IsLoaded()) throw 0;
+			if (SndOpts->Sound.IsLoaded()) throw 0;
 #ifdef mac
 			if (!File.SetToApp()) throw 0;
 #endif
@@ -371,12 +371,14 @@ static byte *read_sound_from_file(
 			if (!SndOpts->Sound.Load(File)) throw 0;
 		}
 		catch(...)
-		{}
+		{
+			// Just in case attempted loading fails
+			SndOpts->Sound.Unload();
+		}
 	}
 	
 	bool success= false;
 	byte *data= NULL;
-	// Handle data= NULL;
 	OSErr error= noErr;
 	
 	if (SoundFile.IsOpen())
@@ -478,7 +480,8 @@ static void instantiate_sound_variables(
 static void buffer_sound(
 	struct channel_data *channel,
 	short sound_index,
-	_fixed pitch)
+	_fixed pitch,
+	bool ExtPlayImmed)
 {
 	struct sound_definition *definition= get_sound_definition(sound_index);
 	// LP change: idiot-proofing
@@ -498,9 +501,16 @@ static void buffer_sound(
 	if (SndOpts)
 	{
 		SndPtr = &SndOpts->Sound;
-		channel->SndPtr = SndPtr;
-		SndPtr->Play(calculate_pitch_modifier(sound_index, pitch));
-		return;
+		if (SndPtr->IsLoaded())
+		{
+			channel->SndPtr = SndPtr;
+			SndPtr->SetPitch(calculate_pitch_modifier(sound_index, pitch));
+			if (ExtPlayImmed)
+				SndPtr->Play();
+			else
+				SndPtr->Queued = true;
+			return;
+		}
 	}
 	
 	SoundHeaderPtr sound_header;
@@ -678,11 +688,9 @@ bool LoadedSound::IsLoaded()
 	return (QTSnd != NULL);
 }
 
-bool LoadedSound::Play(_fixed Pitch)
+bool LoadedSound::Play()
 {
 	if (!QTSnd) return false;
-	
-	SetMovieRate(QTSnd,Pitch);
 	
 	GoToBeginningOfMovie(QTSnd);
 	StartMovie(QTSnd);
@@ -709,5 +717,13 @@ bool LoadedSound::Update()
 	if (!QTSnd) return false;
 	
 	MoviesTask(QTSnd,0);
+	return true;
+}
+
+bool LoadedSound::SetPitch(_fixed Pitch)
+{
+	if (!QTSnd) return false;
+	
+	SetMovieRate(QTSnd,Pitch);
 	return true;
 }
