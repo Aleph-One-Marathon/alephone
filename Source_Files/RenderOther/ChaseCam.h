@@ -41,6 +41,8 @@ struct ChaseCamData
 	short Upward;
 	short Rightward;
 	short Flags;
+	float Inertia;
+	float Opacity;
 };
 
 // True for OK, false for cancel;

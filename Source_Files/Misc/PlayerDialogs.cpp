@@ -71,6 +71,8 @@ enum
 	OnWhenEntering_Item = 12,
 	VoidColorOnOff_Item = 13,
 	VoidColorSelect_Item = 14,
+	Inertia_Item = 16,
+	CC_Opacity_Item = 18,
 	
 	Crosshairs_Dialog = 1600,
 	Thickness_Item = 5,
@@ -81,7 +83,7 @@ enum
 	Preview_Item = 12,
 	BkgdColor_Item = 13,
 	Shape_Item = 14,
-	Opacity_Item = 16
+	CH_Opacity_Item = 16
 };
 
 // Background color
@@ -152,6 +154,14 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	MacCheckbox NeverActive_CB(Dialog, NeverActive_Item, TEST_FLAG(Data.Flags,_ChaseCam_NeverActive) != 0);
 	MacCheckbox OnWhenEntering_CB(Dialog, OnWhenEntering_Item, TEST_FLAG(Data.Flags,_ChaseCam_OnWhenEntering) != 0);
 	
+	ControlHandle Inertia_CHdl;
+	GetDialogItem(Dialog, Inertia_Item, &ItemType, (Handle *)&Inertia_CHdl, &Bounds);
+	SetFloat(Inertia_CHdl,Data.Inertia);
+	
+	ControlHandle Opacity_CHdl;
+	GetDialogItem(Dialog, CC_Opacity_Item, &ItemType, (Handle *)&Opacity_CHdl, &Bounds);
+	SetFloat(Opacity_CHdl,Data.Opacity);
+	
 	// Where to make the color picker
 	Point Center = {-1,-1};
 	RGBColor NewColor;
@@ -178,6 +188,7 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	short New_Behind = 0, New_Upward = 0, New_Rightward = 0;
 	float FloatTemp = 0;
 	bool BadValue;
+	float New_Inertia, New_Opacity;
 	while(!WillQuit)
 	{
 		short ItemHit;
@@ -204,6 +215,30 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 			
 			if (GetFloat(Rightward_CHdl,FloatTemp))
 				New_Rightward = FloatRoundoff(WORLD_ONE * FloatTemp);
+			else
+				BadValue = true;
+			
+			if (GetFloat(Inertia_CHdl,FloatTemp))
+				{
+					New_Inertia = PIN(FloatTemp,0,1);
+					if (New_Inertia != FloatTemp)
+					{
+						BadValue = true;
+						SetFloat(Inertia_CHdl,New_Inertia);
+					}
+				}
+			else
+				BadValue = true;
+
+			if (GetFloat(Opacity_CHdl,FloatTemp))
+				{
+					New_Opacity = PIN(FloatTemp,0,1);
+					if (New_Opacity != FloatTemp)
+					{
+						BadValue = true;
+						SetFloat(Opacity_CHdl,New_Opacity);
+					}
+				}
 			else
 				BadValue = true;
 			
@@ -246,6 +281,8 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 		SET_FLAG(Data.Flags,_ChaseCam_NeverActive,NeverActive_CB.GetState());
 		SET_FLAG(Data.Flags,_ChaseCam_OnWhenEntering,OnWhenEntering_CB.GetState());
 		SET_FLAG(OGLData.Flags,OGL_Flag_VoidColor,VoidColorOnOff_CB.GetState());
+		Data.Inertia = New_Inertia;
+		Data.Opacity = New_Opacity;
 	}
 	
 	// Clean up
@@ -347,7 +384,7 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	SetControlValue(Shape_CHdl,Data.Shape+1);
 
 	ControlHandle Opacity_CHdl;
-	GetDialogItem(Dialog, Opacity_Item, &ItemType, (Handle *)&Opacity_CHdl, &Bounds);
+	GetDialogItem(Dialog, CH_Opacity_Item, &ItemType, (Handle *)&Opacity_CHdl, &Bounds);
 	SetFloat(Opacity_CHdl,Data.Opacity);
 	
 	// Create a UPP for the crosshair preview and store it
