@@ -871,10 +871,41 @@ void calculate_destination_frame(short size, boolean high_resolution, Rect *fram
  *  Draw dithered black pattern over world window
  */
 
+template <class T>
+static inline void draw_pattern_rect(T *p, int pitch, uint32 pixel, const SDL_Rect &r)
+{
+	p += r.y * pitch / sizeof(T) + r.x;
+	for (int y=0; y<r.h; y++) {
+		for (int x=y&1; x<r.w; x+=2)
+			p[x] = pixel;
+		p += pitch / sizeof(T);
+	}
+}
+
 void darken_world_window(void)
 {
-printf("*** darken_world_window()\n");
-	//!!
+	// Get black pixel value
+	uint32 pixel = SDL_MapRGB(main_surface->format, 0, 0, 0);
+
+	// Get world window bounds
+	Rect bounds;
+	calculate_destination_frame(screen_mode.size, screen_mode.high_resolution, &bounds);
+	SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
+
+	// Draw pattern
+	switch (main_surface->format->BytesPerPixel) {
+		case 1:
+			draw_pattern_rect((uint8 *)main_surface->pixels, main_surface->pitch, pixel, r);
+			break;
+		case 2:
+			draw_pattern_rect((uint16 *)main_surface->pixels, main_surface->pitch, pixel, r);
+			break;
+		case 4:
+			draw_pattern_rect((uint32 *)main_surface->pixels, main_surface->pitch, pixel, r);
+			break;
+	}
+
+	SDL_UpdateRects(main_surface, 1, &r);
 }
 
 
