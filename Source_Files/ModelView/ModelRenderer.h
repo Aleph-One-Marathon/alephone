@@ -10,12 +10,23 @@
 
 #include "Model3D.h"
 
+struct ModelRenderShader
+{
+	unsigned int Flags;
+	void (* TextureCallback)(void *);
+	void *TextureCallbackData;
+	
+	ModelRenderShader() {obj_clear(*this);}
+};
+
 class ModelRenderer
 {
 	// Kept here to avoid unnecessary re-allocation
 	vector<GLfloat> CentroidDepths;
 	vector<unsigned short> Indices;
 	vector<GLushort> SortedVertIndices;
+	
+	void SetupRenderPass(Model3D& Model, ModelRenderShader& Shader);
 	
 public:
 	
@@ -24,16 +35,16 @@ public:
 	
 	// Render flags:
 	enum {
-		Z_Buffered = 0x0001,
-		Textured = 0x0002,
-		Colored = 0x0004
+		Textured = 0x0001,
+		Colored = 0x0002
 	};
 	
-	// The Z-buffering flag can be switched off for semitransparent textures,
-	// since rendering of these is not commutative, as is the case for all-or-nothing
-	// transparency (Z-buffering is useful there).
-	// The rendering flags are for doing colors and texture coordinates;
-	void Render(Model3D& Model, unsigned int flags);
+	// Does the actual rendering; args:
+	// A 3D model (of course!)
+	// Whether or not to assume a Z-buffer is present
+	// Array of shaders to be used for multipass rendering
+	// How many shaders in that array to use
+	void Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader *Shaders, int NumShaders);
 	
 	// In case one wants to start over again with these persistent arrays
 	void Clear() {CentroidDepths.clear(); Indices.clear(); SortedVertIndices.clear();}

@@ -10,38 +10,24 @@
 #include "ModelRenderer.h"
 
 
-void ModelRenderer::Render(Model3D& Model, unsigned int Flags)
+void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader *Shaders, int NumShaders)
 {
+	if (NumShaders <= 0) return;
+	if (!Shaders) return;
 	if (Model.Positions.empty()) return;
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glVertexPointer(3,GL_FLOAT,0,Model.PosBase());
 	
-	if (!Model.TxtrCoords.empty() && TEST_FLAG(Flags,Textured))
+	if (Use_Z_Buffer)
 	{
-		glEnable(GL_TEXTURE_2D);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2,GL_FLOAT,0,Model.TCBase());
+		for (int q=0; q<NumShaders; q++)
+		{
+			SetupRenderPass(Model,Shaders[q]);
+			glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,Model.VIBase());
+		}
+		return;			
 	}
-	else
-	{
-		glDisable(GL_TEXTURE_2D);
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	}
-	
-	if (!Model.Colors.empty() && TEST_FLAG(Flags,Colored))
-	{
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(3,GL_FLOAT,0,Model.ColBase());
-	}
-	else
-		glDisableClientState(GL_COLOR_ARRAY);
-	
-	// No-brainer!!!
-	if (TEST_FLAG(Flags,Z_Buffered))
-	{
-		glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,Model.VIBase());	
-		return;
-	}
+	// Fall-through: don't use Z-buffer
 
 	// Have to do centroid depth sorting here
 	
@@ -68,16 +54,64 @@ void ModelRenderer::Render(Model3D& Model, unsigned int Flags)
 	// Sort!
 	sort(Indices.begin(),Indices.end(),*this);
 	
-	// This step may not be appropriate for multipass rendering
-	SortedVertIndices.resize(Model.NumVI());
-	for (int k=0; k<NumTriangles; k++)
+	if (NumShaders > 1)
 	{
-		GLushort *SourceTriangle = &Model.VertIndices[3*Indices[k]];
-		GLushort *DestTriangle = &SortedVertIndices[3*k];
-		memcpy(DestTriangle,SourceTriangle,3*sizeof(GLushort));
+		// Multishader case: each triangle separately
+		for (int k=0; k<NumTriangles; k++)
+		{
+			GLushort *Triangle = &Model.VertIndices[3*Indices[k]];
+			for (int q=0; q<NumShaders; q++)
+			{
+				SetupRenderPass(Model,Shaders[0]);
+				glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_SHORT,Triangle);
+			}
+		}
+	}
+	else
+	{
+		// Single-shader optimization: render in one swell foop
+		SetupRenderPass(Model,Shaders[0]);
+		SortedVertIndices.resize(Model.NumVI());
+		for (int k=0; k<NumTriangles; k++)
+		{
+			GLushort *SourceTriangle = &Model.VertIndices[3*Indices[k]];
+			GLushort *DestTriangle = &SortedVertIndices[3*k];
+			objlist_copy(DestTriangle,SourceTriangle,3);
+		}
+		
+		// Go!
+		glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,&SortedVertIndices[0]);
+	}
+	return;
+}
+
+
+void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
+{
+	assert(Shader.TextureCallback);
+	
+	// Test textured rendering
+	if (!Model.TxtrCoords.empty() && TEST_FLAG(Shader.Flags,Textured))
+	{
+		glEnable(GL_TEXTURE_2D);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glTexCoordPointer(2,GL_FLOAT,0,Model.TCBase());
+	}
+	else
+	{
+		glDisable(GL_TEXTURE_2D);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 	
-	// Go!
-	glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,&SortedVertIndices[0]);
-	return;
+	// Test colored rendering
+	if (!Model.Colors.empty() && TEST_FLAG(Shader.Flags,Colored))
+	{
+		glEnableClientState(GL_COLOR_ARRAY);
+		glColorPointer(3,GL_FLOAT,0,Model.ColBase());
+	}
+	else
+		glDisableClientState(GL_COLOR_ARRAY);
+	
+	// Do whatever texture management is necessary
+	Shader.TextureCallback(Shader.TextureCallbackData);
 }

@@ -86,6 +86,7 @@ void ResizeMainWindow(int _Width, int _Height);
 Model3D Model;
 ImageDescriptor Image;
 ModelRenderer Renderer;
+ModelRenderShader Shaders[2];
 
 // For loading models and skins
 enum {
@@ -125,6 +126,8 @@ bool Use_Z_Buffer = true;
 bool TxtrIsPresent = false;
 GLuint TxtrID;
 
+// How many rendering passes
+int NumRenderPasses = 1;
 
 void LoadSkinAction(int SkinType)
 {
@@ -159,6 +162,30 @@ void LoadSkinAction(int SkinType)
 	}
 	
 	glutPostRedisplay();
+}
+
+
+void ShaderCallback(void *Data)
+{
+	(void)(Data);
+	if (!Image.IsPresent()) return;
+	
+	if (TxtrIsPresent)
+		glBindTexture(GL_TEXTURE_2D,TxtrID);
+	else
+	{
+		// Load the texture
+		glGenTextures(1,&TxtrID);
+		glBindTexture(GL_TEXTURE_2D,TxtrID);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA8,
+			Image.GetWidth(), Image.GetHeight(),
+			GL_RGBA, GL_UNSIGNED_BYTE,
+			Image.GetPixelBasePtr());
+		TxtrIsPresent = true;
+	}
 }
 
 
@@ -231,8 +258,7 @@ void DrawMainWindow()
 		// glFrontFace(GL_CW);
 		glAlphaFunc(GL_GREATER,0.5);
 		unsigned int Flags = ModelRenderer::Textured;
-		if (Use_Z_Buffer) Flags | ModelRenderer::Z_Buffered;
-		Renderer.Render(Model,Flags);
+		Renderer.Render(Model,Use_Z_Buffer,Shaders,NumRenderPasses);
 	}
 	
 	// All done -- ready to show	
@@ -333,6 +359,15 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 				printf("Z-Buffer On\n");
 			else
 				printf("Z-Buffer Off\n");
+			glutPostRedisplay();
+			break;
+		
+		case 'S':
+			if (NumRenderPasses == 1)
+				NumRenderPasses = 2;
+			else
+				NumRenderPasses = 1;
+			printf("Render passes: %d\n",NumRenderPasses);
 			glutPostRedisplay();
 			break;
 	}
@@ -444,6 +479,12 @@ int main(int argc, char **argv)
 	// See if QT and NavSvcs (MacOS) are present
 	InitMacServices();
 	SetDebugOutput_Wavefront(stdout);
+
+	// Set up shader object
+	Shaders[0].Flags = ModelRenderer::Textured;
+	Shaders[0].TextureCallback = ShaderCallback;
+	Shaders[1].Flags = ModelRenderer::Textured;
+	Shaders[1].TextureCallback = ShaderCallback;
 	
 	// Set up for creating the main window
 	glutInitWindowSize(MainWindowWidth,MainWindowHeight);
