@@ -585,12 +585,16 @@ bool try_and_add_player_item(
 	DONE:
 	
 	//CP Addition: call any script traps available
-	activate_got_item_trap(type);
+        // jkvw: but only if we actually got the item
+        if (success)
+        {
+                activate_got_item_trap(type);
 #ifdef HAVE_LUA
-        //MH: Call Lua script hook
-        L_Call_Got_Item(type, player_index);
+                //MH: Call Lua script hook
+                L_Call_Got_Item(type, player_index);
 #endif /* HAVE_LUA */
-			
+        }
+
 	/* Play the pickup sound */
 	if (success && player_index==current_player_index)
 	{

@@ -16,6 +16,11 @@ tiennou, 06/25/03
     
 jkvw, 07/03/03
     Added recharge panel triggers, exposed A1's internal random number generators, and item creation.
+    
+jkvw, 07/07/03
+    Cleaned up some of the "odd" behaviors.  (e.g., new_monster/new_item would spawn their things at incorrect height.)
+    Added triggers for player revival/death.
+    
 */
 
 // cseries defines HAVE_LUA on A1/SDL
@@ -128,7 +133,7 @@ static const luaL_reg lualibs[] =
 {
 	{"base", luaopen_base},
 	{"table", luaopen_table},
-	{"io", luaopen_io},
+	// {"io", luaopen_io},   jkvw: This is just begging to be a security problem, isn't it?
 	{"string", luaopen_string},
 	{"math", luaopen_math},
 	{"debug", luaopen_debug},
@@ -177,7 +182,7 @@ void L_Call_Idle()
         logError(lua_tostring(state,-1));
 }
 
-void L_Call_Start_Refuel (short refuel_kind, short player_index)
+void L_Call_Start_Refuel (short type, short player_index)
 {
     if (!lua_running)
         return;
@@ -189,13 +194,13 @@ void L_Call_Start_Refuel (short refuel_kind, short player_index)
         lua_pop (state, 1);
         return;
     }
-    lua_pushnumber (state, refuel_kind);
+    lua_pushnumber (state, type);
     lua_pushnumber (state, player_index);
     if (lua_pcall (state, 2, 0, 0) == LUA_ERRRUN)
         logError (lua_tostring (state, -1));
 }
 
-void L_Call_End_Refuel (short refuel_kind, short player_index)
+void L_Call_End_Refuel (short type, short player_index)
 {
     if (!lua_running)
         return;
@@ -207,7 +212,7 @@ void L_Call_End_Refuel (short refuel_kind, short player_index)
         lua_pop (state, 1);
         return;
     }
-    lua_pushnumber (state, refuel_kind);
+    lua_pushnumber (state, type);
     lua_pushnumber (state, player_index);
     if (lua_pcall (state, 2, 0, 0) == LUA_ERRRUN)
         logError (lua_tostring (state, -1));
@@ -328,7 +333,7 @@ void L_Call_Got_Item(short type, short player_index)
     }
     lua_pushnumber(state, type);
     lua_pushnumber(state, player_index);
-    if (lua_pcall(state, 1, 0, 0)==LUA_ERRRUN)
+    if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
         logError(lua_tostring(state,-1));
 }
 
@@ -362,6 +367,42 @@ void L_Call_Platform_Activated(short index)
     lua_pushnumber(state, index);
     if (lua_pcall(state, 1, 0, 0)==LUA_ERRRUN)
         logError(lua_tostring(state,-1));
+}
+
+void L_Call_Player_Revived (short player_index)
+{
+    if (!lua_running)
+        return;
+        
+    lua_pushstring (state, "player_revived");
+    lua_gettable (state, LUA_GLOBALSINDEX);
+    if (!lua_isfunction (state, -1))
+    {
+        lua_pop (state, 1);
+        return;
+    }
+    lua_pushnumber (state, player_index);
+    if (lua_pcall (state, 1, 0, 0) == LUA_ERRRUN)
+        logError (lua_tostring (state, -1));
+}
+
+void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action)
+{
+    if (!lua_running)
+        return;
+        
+    lua_pushstring (state, "player_killed");
+    lua_gettable (state, LUA_GLOBALSINDEX);
+    if (!lua_isfunction (state, -1))
+    {
+        lua_pop (state, 1);
+        return;
+    }
+    lua_pushnumber (state, player_index);
+    lua_pushnumber (state, aggressor_player_index);
+    lua_pushnumber (state, action);
+    if (lua_pcall (state, 3, 0, 0) == LUA_ERRRUN)
+        logError (lua_tostring (state, -1));
 }
 
 static int L_Number_of_Players(lua_State *L)
@@ -427,11 +468,13 @@ static int L_Display_Text(lua_State *L)
 */
 static int L_Inflict_Damage(lua_State *L)
 {
+    int args = lua_gettop(L);
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
         lua_pushstring(L, "inflict_damage: incorrect argument type");
         lua_error(L);
     }
+    
     int player_index = static_cast<int>(lua_tonumber(L,1));
     if (player_index < 0 || player_index >= dynamic_world->player_count)
     {
@@ -445,11 +488,21 @@ static int L_Inflict_Damage(lua_State *L)
     struct damage_definition damage;
     float temp = static_cast<int>(lua_tonumber(L,2));
 
-    damage.flags= _alien_damage;
+    damage.flags= _alien_damage;  // jkvw: do we really want to set this flag?
     damage.type= _damage_crushing;
     damage.base= int16(temp);
     damage.random= 0;
     damage.scale= FIXED_ONE;
+
+    if (args > 2)
+    {
+        if (!lua_isnumber(L,3))
+        {	
+            lua_pushstring(L, "inflict_damage: incorrect argument type");
+            lua_error(L);
+        }
+        damage.type = static_cast<int>(lua_tonumber(L,3));
+    }
 
     damage_player(player->monster_index, NONE, NONE, &damage);
     
@@ -654,11 +707,12 @@ static int L_Set_Life(lua_State *L)
     }
     
     player_data *player = get_player_data(player_index);
-    if (player->suit_energy < 3*PLAYER_MAXIMUM_SUIT_ENERGY)
-    {
-	player->suit_energy = energy;
-	mark_shield_display_as_dirty();
-    }
+    if (energy > 3*PLAYER_MAXIMUM_SUIT_ENERGY)
+        energy = 3*PLAYER_MAXIMUM_SUIT_ENERGY;
+
+    player->suit_energy = energy;
+    mark_shield_display_as_dirty();
+
     return 0;
 }
 
@@ -698,12 +752,12 @@ static int L_Set_Oxygen(lua_State *L)
     }
     
     player_data *player = get_player_data(player_index);
-    
-    if (player->suit_oxygen < PLAYER_MAXIMUM_SUIT_OXYGEN)
-    {
-	player->suit_oxygen = oxygen;
-	mark_shield_display_as_dirty();
-    }
+    if (oxygen > PLAYER_MAXIMUM_SUIT_OXYGEN)
+        oxygen = PLAYER_MAXIMUM_SUIT_OXYGEN;
+
+    player->suit_oxygen = oxygen;
+    mark_shield_display_as_dirty();
+
     return 0;
 }
 
@@ -722,10 +776,8 @@ static int L_Add_Item(lua_State *L)
         lua_error(L);
     }
     
-    player_data *player = get_player_data(player_index);
-    
-    if (!try_and_add_player_item(player_identifier_to_player_index(player->identifier), item))
-            ; /* this sucks */
+    try_and_add_player_item(player_index, item);
+
     return 0;
 }
 
@@ -756,6 +808,25 @@ static int L_Remove_Item(lua_State *L)
             select_next_best_weapon(player_index);
     }
     return 0;
+}
+
+static int L_Count_Item(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {
+        lua_pushstring(L, "count_item: incorrect argument type");
+        lua_error(L);
+    }
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int item_type = static_cast<int>(lua_tonumber(L,2));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "count_item: invalid player index");
+        lua_error(L);
+    }
+    player_data *player = get_player_data(player_index);
+    lua_pushnumber(L, player->items[item_type]);
+    return 1;
 }
 
 static int L_Select_Weapon(lua_State *L)
@@ -906,6 +977,7 @@ static int L_New_Monster(lua_State *L)
     }
     short monster_type = static_cast<int>(lua_tonumber(L,1));
     short polygon = static_cast<int>(lua_tonumber(L,2));
+    
     short facing = 0;
     if (args > 2)
     {
@@ -915,6 +987,17 @@ static int L_New_Monster(lua_State *L)
             lua_error(L);
         }
         facing = static_cast<int>(lua_tonumber(L,3));
+    }
+    
+    short height = 0;
+    if (args > 3)
+    {
+        if (!lua_isnumber(L,4))
+        {	
+            lua_pushstring(L, "new_monster: incorrect argument type");
+            lua_error(L);
+        }
+        height = static_cast<int>(lua_tonumber(L,4));
     }
     
     object_location theLocation;
@@ -933,7 +1016,7 @@ static int L_New_Monster(lua_State *L)
     //stolen, assuming it works
     theDestination.x = theCenter.x;
     theDestination.y = theCenter.y;
-    theDestination.z= destination->floor_height;
+    theDestination.z= height;
     theLocation.p = theDestination;
     theLocation.yaw = 0;
     theLocation.pitch = 0;
@@ -1757,6 +1840,25 @@ static int L_Get_Player_Angle(lua_State *L)
     lua_pushnumber(L, (double)player->facing*AngleConvert);
     lua_pushnumber(L, (double)player->elevation*AngleConvert);
     return 2;
+}
+
+static int L_Get_Player_Team(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_player_team: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "get_player_team: invalid player index");
+        lua_error(L);
+    }
+    player_data *player = get_player_data(player_index);
+    lua_pushnumber(L, player->team);
+    return 1;
 }
 
 static int L_Player_Is_Dead(lua_State *L)
@@ -2858,6 +2960,7 @@ static int L_Set_Polygon_Ceiling_Height(lua_State *L)
 static int L_New_Item(lua_State *L)
 {
     int args = lua_gettop(L);
+
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
         lua_pushstring(L, "new_item: incorrect argument type");
@@ -2865,6 +2968,17 @@ static int L_New_Item(lua_State *L)
     }
     short item_type = static_cast<int>(lua_tonumber(L,1));
     short polygon = static_cast<int>(lua_tonumber(L,2));
+    short height = 0;
+    
+    if (args > 2)
+    {
+        if (!lua_isnumber(L,3))
+        {	
+            lua_pushstring(L, "new_item: incorrect argument type");
+            lua_error(L);
+        }
+        height = static_cast<int>(lua_tonumber(L,3));
+    }
     
     object_location theLocation;
     struct polygon_data *destination;
@@ -2880,13 +2994,16 @@ static int L_New_Item(lua_State *L)
     find_center_of_polygon(polygon, &theCenter);
     theDestination.x = theCenter.x;
     theDestination.y = theCenter.y;
-    theDestination.z= destination->floor_height;
+    theDestination.z= height;
     theLocation.p = theDestination;
     theLocation.yaw = 0;
     theLocation.pitch = 0;
     theLocation.flags = 0;
     
-    new_item(&theLocation, (short)item_type);
+    index = new_item(&theLocation, (short)item_type);
+    if (index == NONE)
+        return 0;
+    lua_pushnumber(L, index);
     
     return 1;
 }
@@ -2924,6 +3041,7 @@ void RegisterLuaFunctions()
     lua_register(state, "set_oxygen", L_Set_Oxygen);
     lua_register(state, "add_item", L_Add_Item);
     lua_register(state, "remove_item", L_Remove_Item);
+    lua_register(state, "count_item", L_Count_Item);
     lua_register(state, "select_weapon", L_Select_Weapon);
     lua_register(state, "set_platform_state", L_Set_Platform_State);
     lua_register(state, "get_platform_state", L_Get_Platform_State);
@@ -2965,6 +3083,7 @@ void RegisterLuaFunctions()
     lua_register(state, "get_player_position", L_Get_Player_Position);
     lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
     lua_register(state, "get_player_angle", L_Get_Player_Angle);
+    lua_register(state, "get_player_team", L_Get_Player_Team);
     lua_register(state, "player_is_dead", L_Player_Is_Dead);
     lua_register(state, "player_control", L_Player_Control);
     lua_register(state, "teleport_player", L_Teleport_Player);
@@ -3037,7 +3156,7 @@ bool LoadLuaScript(const char *buffer, size_t len)
         // Probably the mml and netscript systems are fighting over control of lua
         show_cursor ();
         alert_user(infoError, strERRORS, luascriptconflict, 0);
-        hide_cursor (); // ok this is bad bad bad bads-maru if LoadLuaScript gets called when the pointer isn't supposed to be hidden
+        hide_cursor (); // this is bad bad badtz-maru if LoadLuaScript gets called when the pointer isn't supposed to be hidden
     }
     
     OpenStdLibs(state);

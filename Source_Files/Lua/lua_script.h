@@ -6,8 +6,8 @@
 
 void L_Call_Init();
 void L_Call_Idle();
-void L_Call_Start_Refuel(short refuel_kind, short player_index);
-void L_Call_End_Refuel(short refuel_kind, short player_index);
+void L_Call_Start_Refuel(short type, short player_index);
+void L_Call_End_Refuel(short type, short player_index);
 void L_Call_Tag_Switch(short tag, short player_index);
 void L_Call_Light_Switch(short light, short player_index);
 void L_Call_Platform_Switch(short platform, short player_index);
@@ -17,6 +17,8 @@ void L_Call_Pattern_Buffer(short buffer_id, short player_index);
 void L_Call_Got_Item(short type, short player_index);
 void L_Call_Light_Activated(short index);
 void L_Call_Platform_Activated(short index);
+void L_Call_Player_Revived(short player_index);
+void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action);
 
 bool LoadLuaScript(const char *buffer, size_t len);
 bool RunLuaScript();

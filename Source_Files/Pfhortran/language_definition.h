@@ -3,7 +3,12 @@
 // Translations of names into internal numbers (can be symbolic constants)
 // Format: {"Name", Number}, [C syntax for array member that's a struct]
 
-// jkvw 07/03/03 - added mnemonics for balls and recharger types
+/* jkvw 07/03/03 - added mnemonics for balls and recharger types
+ *
+ * jkvw 07/07/03 - Mnemonic naming conventions are being naughty - note how "shotgun" was defined as 0x16 then later as 0x17,
+ *	resulting in the shotgun item type mnemonic being unusable in scripts.  This version should be more usable and consistent.
+ *	Old names are retained for backwards compatability.
+ */
 
 {"Camera_Move", Camera_Move},
 {"Camera_Look", Camera_Look},
@@ -127,6 +132,48 @@
 {"TRUE", 0x1},
 {"FALSE", 0x0},
 #endif
+
+
+// Items
+
+{"_item_knife", 0x0},
+{"_item_fist", 0x0},
+{"_item_magnum", 0x01},
+{"_item_magnum_magazine", 0x02},
+{"_item_plasma_pistol", 0x03},
+{"_item_plasma_magazine", 0x04},
+{"_item_assault_rifle", 0x05},
+{"_item_assault_rifle_magazine", 0x06},
+{"_item_assault_grenade_magazine", 0x07},
+{"_item_missile_launcher", 0x08},
+{"_item_missile_launcher_magazine", 0x09},
+{"_item_invisibility_powerup", 0x0A},
+{"_item_invincibility_powerup", 0x0B},
+{"_item_infravision_powerup", 0x0C},
+{"_item_alien_weapon", 0x0D},
+{"_item_alien_weapon_magazine", 0x0E},
+{"_item_flamethrower", 0x0F},
+{"_item_flamethrower_canister", 0x10},
+{"_item_extravision_powerup", 0x11},
+{"_item_oxygen_powerup", 0x12},
+{"_item_energy_powerup", 0x13},
+{"_item_double_energy_powerup", 0x14},
+{"_item_triple_energy_powerup", 0x15},
+{"_item_shotgun", 0x16},
+{"_item_shotgun_magazine", 0x17},
+{"_item_spht_door_key", 0x18},
+{"_item_uplink_chip", 0x19},
+{"_item_light_blue_ball", 0x1A},
+{"_item_red_ball", 0x1B},
+{"_item_violet_ball", 0x1C},
+{"_item_yellow_ball", 0x1D},
+{"_item_brown_ball", 0x1E},
+{"_item_orange_ball", 0x1F},
+{"_item_blue_ball", 0x20},
+{"_item_green_ball", 0x21},
+{"_item_smg", 0x22},
+{"_item_smg_ammo", 0x23},
+
 {"knife", 0x0},
 {"fist", 0x0},
 {"magnum", 0x01},
@@ -150,7 +197,7 @@
 {"energy_powerup", 0x13},
 {"double_energy_powerup", 0x14},
 {"triple_energy_powerup", 0x15},
-{"shotgun", 0x16},
+// First appearance of "shotgun" removed
 {"shotgun_magazine", 0x17},
 {"spht_door_key", 0x18},
 {"uplink_chip", 0x19},
@@ -164,7 +211,61 @@
 {"green_ball", 0x21},
 {"smg", 0x22},
 {"smg_ammo", 0x23},
+
+
+// jkvw: I'm not sure how this is intended to be used, so I'm leaving it alone
 {"default_camera", 0x0},
+
+
+// monsters
+
+{"_monster_minor_tick", 0x01},
+{"_monster_major_tick", 0x02},
+{"_monster_kamikaze_tick", 0x03},
+{"_monster_minor_compiler", 0x04},
+{"_monster_major_compiler", 0x05},
+{"_monster_minor_invisible_compiler", 0x06},
+{"_monster_major_invisible_compiler", 0x07},
+{"_monster_minor_fighter", 0x08},
+{"_monster_major_fighter", 0x09},
+{"_monster_minor_projectile_fighter", 0x0A},
+{"_monster_major_projectile_fighter", 0x0B},
+{"_monster_green_bob", 0x0C},
+{"_monster_blue_bob", 0x0D},
+{"_monster_security_bob", 0x0E},
+{"_monster_explodabob", 0x0F},
+{"_monster_minor_drone", 0x10},
+{"_monster_major_drone", 0x11},
+{"_monster_big_minor_drone", 0x12},
+{"_monster_big_major_drone", 0x13},
+{"_monster_possessed_drone", 0x14},
+{"_monster_minor_cyborg", 0x15},
+{"_monster_major_cyborg", 0x16},
+{"_monster_minor_flame_cyborg", 0x17},
+{"_monster_major_flame_cyborg", 0x18},
+{"_monster_minor_enforcer", 0x19},
+{"_monster_major_enforcer", 0x1A},
+{"_monster_minor_hunter", 0x1B},
+{"_monster_major_hunter", 0x1C},
+{"_monster_minor_trooper", 0x1D},
+{"_monster_major_trooper", 0x1E},
+{"_monster_mega_cyborg", 0x1F},
+{"_monster_mega_hunter", 0x20},
+{"_monster_sewage_yeti", 0x21},
+{"_monster_water_yeti", 0x22},
+{"_monster_lava_yeti", 0x23},
+{"_monster_minor_defender", 0x24},
+{"_monster_major_defender", 0x25},
+{"_monster_minor_juggernaut", 0x26},
+{"_monster_major_juggernaut", 0x27},
+{"_monster_tiny_pfhor", 0x28},
+{"_monster_tiny_bob", 0x29},
+{"_monster_tiny_yeti", 0x2A},
+{"_monster_green_vacbob", 0x2B},
+{"_monster_blue_vacbob", 0x2C},
+{"_monster_security_vacbob", 0x2D},
+{"_monster_explodavacbob", 0x2E},
+
 {"minor_tick", 0x01},
 {"major_tick", 0x02},
 {"kamikaze_tick", 0x03},
@@ -211,6 +312,35 @@
 {"blue_vacbob", 0x2C},
 {"security_vacbob", 0x2D},
 {"explodavacbob", 0x2E},
+
+
+// damage types
+
+{"_damage_explosion", 0x00},
+{"_damage_staff", 0x01},
+{"_damage_projectile", 0x02},
+{"_damage_absorbed", 0x03},
+{"_damage_flame", 0x04},
+{"_damage_claws", 0x05},
+{"_damage_alien_weapon", 0x06},
+{"_damage_hulk_slap", 0x07},
+{"_damage_compiler", 0x08},
+{"_damage_fusion", 0x09},
+{"_damage_hunter", 0x0A},
+{"_damage_fists", 0x0B},
+{"_damage_teleporter", 0x0C},
+{"_damage_defender", 0x0D},
+{"_damage_yeti_claws", 0x0E},
+{"_damage_yeti_projectile", 0x0F},
+{"_damage_crushing", 0x10},
+{"_damage_lava", 0x11},
+{"_damage_suffocation", 0x12},
+{"_damage_goo", 0x13},
+{"_damage_energy_drain", 0x14},
+{"_damage_oxygen_drain", 0x15},
+{"_damage_drone", 0x16},
+{"_damage_shotgun", 0x17},
+
 {"explosion", 0x00},
 {"staff", 0x01},
 {"projectile", 0x02},
@@ -235,6 +365,27 @@
 {"oxygen_drain", 0x15},
 {"drone", 0x16},
 {"shotgun", 0x17},
+
+
+// monster classes
+
+{"_monster_class_player", 0x00},
+{"_monster_class_bob", 0x01},
+{"_monster_class_madd", 0x02},
+{"_monster_class_possessed_drone", 0x03},
+{"_monster_class_defender", 0x04},
+{"_monster_class_fighter", 0x05},
+{"_monster_class_trooper", 0x06},
+{"_monster_class_hunter", 0x07},
+{"_monster_class_enforcer", 0x08},
+{"_monster_class_juggernaut", 0x09},
+{"_monster_class_drone", 0x0A},
+{"_monster_class_compiler", 0x0B},
+{"_monster_class_cyborg", 0x0C},
+{"_monster_class_explodabob", 0x0D},
+{"_monster_class_tick", 0x0E},
+{"_monster_class_yeti", 0x0F},
+
 {"class_player", 0x00},
 {"class_bob", 0x01},
 {"class_madd", 0x02},
@@ -251,6 +402,10 @@
 {"class_explodabob", 0x0D},
 {"class_tick", 0x0E},
 {"class_yeti", 0x0F},
+
+
+// jkvw: hmm, I leave these alone for now
+
 {"_moving_forward", 0x00},
 {"_moving_backward", 0x01},
 {"_sidestepping_left", 0x02},
@@ -265,6 +420,10 @@
 {"_start_queue",0x0B},
 {"_stop_queue",0x0C},
 {"_reset_queue",0x0D},
+
+
+// monster actions
+
 {"_monster_is_stationary", 0x00},
 {"_monster_is_waiting_to_attack_again", 0x01},
 {"_monster_is_moving", 0x02},
@@ -277,16 +436,37 @@
 {"_monster_is_teleporting", 0x09},
 {"_monster_is_teleporting_in", 0x0A},
 {"_monster_is_teleporting_out", 0x0B},
+
+
+// monster modes
+
+{"_monster_mode_locked", 0x00},
+{"_monster_mode_losing_lock", 0x01},
+{"_monster_mode_lost_lock", 0x02},
+{"_monster_mode_unlocked", 0x03},
+{"_monster_mode_running", 0x04},
+
 {"_monster_locked", 0x00},
 {"_monster_losing_lock", 0x01},
 {"_monster_lost_lock", 0x02},
 {"_monster_unlocked", 0x03},
 {"_monster_running", 0x04},
+
+
+// faders
+
+{"_fade_start_cinematic_fade_in", 0x00},
+{"_fade_cinematic_fade_in", 0x01},
+{"_fade_long_cinematic_fade_in", 0x02},
+{"_fade_cinematic_fade_out", 0x03},
+{"_fade_end_cinematic_fade_out", 0x04},
+
 {"_start_cinematic_fade_in", 0x00},
 {"_cinematic_fade_in", 0x01},
 {"_long_cinematic_fade_in", 0x02},
 {"_cinematic_fade_out", 0x03},
 {"_end_cinematic_fade_out", 0x04},
+
 {"_fade_red", 0x05},
 {"_fade_big_red", 0x06},
 {"_fade_bonus", 0x07},
@@ -315,11 +495,12 @@
 {"_fade_tint_orange", 0x1E},
 {"_fade_tint_gross", 0x1F},
 {"_fade_tint_jjaro", 0x20},
+
 #ifdef LUA_ACCESSING
-{"oxygen_refuel", _panel_is_oxygen_refuel},
-{"shield_refuel", _panel_is_shield_refuel},
-{"double_shield_refuel", _panel_is_double_shield_refuel},
-{"triple_shield_refuel", _panel_is_triple_shield_refuel},
+{"_refuel_oxygen", _panel_is_oxygen_refuel},
+{"_refuel_single_shield", _panel_is_shield_refuel},
+{"_refuel_double_shield", _panel_is_double_shield_refuel},
+{"_refuel_triple_shield", _panel_is_triple_shield_refuel},
 {"_weapon_fist", _weapon_fist},
 {"_weapon_pistol", _weapon_pistol},
 {"_weapon_plasma_pistol", _weapon_plasma_pistol},

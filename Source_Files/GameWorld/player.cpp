@@ -161,6 +161,9 @@ May 22, 2003 (Woody Zenfell):
 // ZZZ additions:
 #include "ActionQueues.h"
 
+// jkvw addition:
+#include "lua_script.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1501,6 +1504,10 @@ static void revive_player(
 	
 	// LP addition: set field-of-view approrpriately
 	if (player_index == current_player_index) ResetFieldOfView();
+        
+#ifdef HAVE_LUA
+        L_Call_Player_Revived (player_index);
+#endif
 }
 
 /* The player just changed map levels, recreate him, and all of the objects */
@@ -1607,6 +1614,10 @@ static void kill_player(
 	if (aggressor_player_index==player_index && (GET_GAME_OPTIONS()&_suicide_is_penalized)) player->reincarnation_delay+= SUICIDE_REINCARNATION_DELAY;
 
 	kill_player_physics_variables(player_index);
+        
+#ifdef HAVE_LUA
+        L_Call_Player_Killed (player_index, aggressor_player_index, action);
+#endif
 }
 
 static void give_player_initial_items(
