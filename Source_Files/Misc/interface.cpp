@@ -607,8 +607,13 @@ static void synchronize_players_with_starts(const player_start_data* inStartArra
                         // Update player's appearance to match the start
                         thePlayer->team = inStartArray[s].team;
                         thePlayer->color = inStartArray[s].color;
-                        thePlayer->identifier = inStartArray[s].identifier;
+                        thePlayer->identifier = player_identifier_value(inStartArray[s].identifier);
                         strcpy(thePlayer->name, inStartArray[s].name);
+
+                        SET_PLAYER_DOESNT_AUTO_RECENTER_STATUS(thePlayer,
+                            player_identifier_doesnt_auto_recenter(inStartArray[s].identifier));
+                        SET_PLAYER_DOESNT_AUTO_SWITCH_WEAPONS_STATUS(thePlayer,
+                            player_identifier_doesnt_auto_switch_weapons(inStartArray[s].identifier));
 
                         // Make sure if player was saved as zombie, they're not now.
                         SET_PLAYER_ZOMBIE_STATUS(thePlayer, false);
@@ -625,12 +630,13 @@ static void synchronize_players_with_starts(const player_start_data* inStartArra
         }
 }
 
-static short find_start_for_identifier(const player_start_data* inStartArray, short inStartCount, short inIdentifier)
+static short find_start_for_identifier(const player_start_data* inStartArray, short inStartCount, short _inIdentifier)
 {
+        short inIdentifier= player_identifier_value(_inIdentifier);
         short s;
         for(s = 0; s < inStartCount; s++)
         {
-                if(inStartArray[s].identifier == inIdentifier)
+                if(player_identifier_value(inStartArray[s].identifier) == inIdentifier)
                 {
                         break;
                 }
