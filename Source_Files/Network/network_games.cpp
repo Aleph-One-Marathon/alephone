@@ -29,6 +29,7 @@ Jul 1, 2000 (Loren Petrich):
 #include "items.h"
 #include "player.h"
 #include "monsters.h"
+#include "network.h"
 #include "network_games.h"
 #include "game_window.h" // for mark_player_network_stats_as_dirty
 #include "mysound.h"

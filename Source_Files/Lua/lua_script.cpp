@@ -68,6 +68,7 @@ using namespace std;
 #include "mysound.h"
 #include "world.h"
 #include "computer_interface.h"
+#include "network.h"
 
 #include "script_instructions.h"
 #include "lua_script.h"
