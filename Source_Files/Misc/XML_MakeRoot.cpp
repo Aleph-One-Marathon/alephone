@@ -29,6 +29,7 @@
 #include "weapons.h"
 #include "OGL_Setup.h"
 #include "shell.h"
+#include "mysound.h"
 
 #ifdef SDL
 #include "sdl_dialogs.h"
@@ -60,6 +61,7 @@ void SetupParseTree()
 	MarathonParser.AddChild(Items_GetParser());
 	MarathonParser.AddChild(ControlPanels_GetParser());
 	MarathonParser.AddChild(Liquids_GetParser());
+	MarathonParser.AddChild(Sounds_GetParser());
 	MarathonParser.AddChild(Platforms_GetParser());
 	MarathonParser.AddChild(Scenery_GetParser());
 	MarathonParser.AddChild(Faders_GetParser());
