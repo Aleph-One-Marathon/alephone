@@ -213,8 +213,10 @@ bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, NetAddrBlock *
 
 
 // ZZZ: changes to functions below to account for SDL_net non-blocking TCP behavior.
-// Results in 10 sec waiting time
-#define	kNUM_TCP_RETRIES	1000
+// Results in 60 sec waiting time
+enum {
+	kNUM_TCP_RETRIES =	6000
+};
 
 
 /*
