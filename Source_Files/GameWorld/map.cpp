@@ -244,10 +244,11 @@ static short _new_map_object(shape_descriptor shape, angle facing);
 
 // ZZZ: factored out some functionality for prediction, but ended up not using this stuff,
 // so am not "publishing" it via map.h yet.
-// The first infers the polygon_index from the object's "polygon" member field.
-static void add_object_to_polygon_object_list(short object_index);
 static void remove_object_from_polygon_object_list(short object_index, short polygon_index);
+// The second infers the polygon_index from the object's "polygon" member field.
 static void add_object_to_polygon_object_list(short object_index, short polygon_index);
+inline void add_object_to_polygon_object_list(short object_index)
+{ add_object_to_polygon_object_list(object_index, get_object_data(object_index)->polygon); }
 
 short _find_line_crossed_leaving_polygon(short polygon_index, world_point2d *p0, world_point2d *p1, bool *last_line);
 
@@ -723,12 +724,6 @@ add_object_to_polygon_object_list(short object_index, short polygon_index)
 	polygon->first_object= object_index;
 
 	object->polygon= polygon_index;
-}
-
-void
-add_object_to_polygon_object_list(short object_index)
-{
-	add_object_to_polygon_object_list(object_index, get_object_data(object_index)->polygon);
 }
 
 typedef std::pair<short, short>	DeferredObjectListInsertion;
