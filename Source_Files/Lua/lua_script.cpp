@@ -43,6 +43,7 @@ using namespace std;
 #include "OGL_Setup.h"
 #include "mysound.h"
 #include "world.h"
+#include "computer_interface.h"
 
 #include "script_instructions.h"
 #include "lua_script.h"
@@ -1594,7 +1595,7 @@ static int L_Set_Monster_Global_Speed(lua_State *L)
 	double scale = static_cast<double>(lua_tonumber(L,2));
 	if (scale < 0)
 		 return 0;
-	
+    
     struct monster_data *theMonster;
     struct monster_definition *theDef;
     
@@ -1707,6 +1708,13 @@ static int L_Player_Is_Dead(lua_State *L)
     return 1;
 }
 
+enum
+{
+    move_player = 1,
+    turn_player,
+    look_at
+};
+
 static int L_Player_Control(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
@@ -1723,6 +1731,7 @@ static int L_Player_Control(lua_State *L)
     int move_type = static_cast<int>(lua_tonumber(L,2));
     int value = static_cast<int>(lua_tonumber(L,3));
     player_data *player = get_player_data(player_index);
+	
     
     // uses the Pfhortran action queue
     if (sPfhortranActionQueues == NULL)
@@ -1744,132 +1753,142 @@ static int L_Player_Control(lua_State *L)
     prev_value = value;
     
     bool DoAction = false;
+    #if 0
+    struct physics_variables variables;
+    struct physics_variables *variablesptr;
+    struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, action_flags);
+    variables = player->variables;
+    *variablesptr = variables;
+    #endif
     
     switch(move_type)
     {
-    /*
+    #if 0
         case move_player:
-          if (!lua_isnumber(L,3) || !lua_isnumber(L,4) || !lua_isnumber(L,5))
-          {
-              lua_pushstring(L, "player_control: incorrect argument type for move_player");
-              lua_error(L);
-          }
+	    if (!lua_isnumber(L,3) || !lua_isnumber(L,4) || !lua_isnumber(L,5))
+	    {
+		lua_pushstring(L, "player_control: incorrect argument type for move_player");
+		lua_error(L);
+	    }
 
-          world_point3d goal_point;
-          world_point3d current_point;
-          current_point = player->location;
-          goal_point.x = static_cast<int>(lua_tonumber(L,3)*WORLD_ONE);
-          goal_point.y = static_cast<int>(lua_tonumber(L,4)*WORLD_ONE);
-          goal_point.z = static_cast<int>(lua_tonumber(L,5)*WORLD_ONE);
-          angle heading;
-          heading = arctangent((current_point.y - goal_point.y), (current_point.x - goal_point.x));
-          
-          if (player->facing < heading)
-          {
-              screen_printf("Player heading is on the right of the goal_point");
-              // turn_left
-              while (player->facing <= heading)
-              {
-                  action_flags[0] = _turning_left;
-                  //action_flag_count++;
-                  //GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, 1);
-                  update_player_physics_variables(player_index, action_flags);
-              }
-          }
-          else if (player->facing > heading)
-          {
-              screen_printf("Player heading is on the left of the goal_point");
-              // turn_right
-              while (player->facing >= heading)
-              {
-                  action_flags[0] = _turning_right;
-                  //action_flag_count++;
-                  //GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, 1);
-                  update_player_physics_variables(player_index, action_flags);
-              }
-          }
-          
-          if (current_point.x < goal_point.x)
-          {
-              screen_printf("goal_point is in front of player");
-
-              *//*
-              while (current_point.x > goal_point.x)
-              {
-                  action_flags[0] = _moving_forward;
-                  //action_flag_count++;
-                  GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, 1);
-              }
-              *//*
-          }
-          else if (current_point.x > goal_point.x)
-          {
-              screen_printf("goal_point is behind player");
-              *//*
-              while (current_point.x < goal_point.x)
-              {
-                  action_flags[0] = _moving_backward;
-                  //action_flag_count++;
-                  GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, 1);
-              }
-              *//*
-          }
-          
-      break;
-
-      case turn_player:
-          if (!lua_isnumber(L,3) || !lua_isnumber(L,4))
-          {
-              lua_pushstring(L, "player_control: incorrect argument type for turn_player");
-              lua_error(L);
-          }
-          
-          angle new_facing;
-          angle new_elevation;
-          new_facing = static_cast<int16>(lua_tonumber(L,3));
-          new_elevation = static_cast<int16>(lua_tonumber(L,4));
-          
-          if (player->facing < new_facing)
-          {
-              screen_printf("new_facing is on right of the player heading");
-          }
-          else if (player->facing > new_facing)
-          {
-              screen_printf("new_facing is on left of the player heading");
-          }
-          
-          if (player->elevation < new_elevation)
-          {
-              screen_printf("new_elevation is above player elevation");
-          }
-          else if (player->elevation > new_elevation)
-          {
-              screen_printf("new_elevation is under player elevation");
-          }
-          
-      break;
-          
-      case look_at:
-          if (!lua_isnumber(L,3) || !lua_isnumber(L,4) || !lua_isnumber(L,5))
-          {
-              logError("player_control: incorrect argument type for look_at");
-              lua_pushstring(L, "player_control: incorrect argument type for look_at");
-              lua_error(L);
-          }
-          
-          world_point3d look;
-          look.x = static_cast<int16>(lua_tonumber(L, 3));
-          look.y = static_cast<int16>(lua_tonumber(L, 4));
-          look.z = static_cast<int16>(lua_tonumber(L, 5));
-          
-          player->facing = arctangent(ABS(look.x-player->location.x), ABS(look.y-player->location.y));
-          player->elevation = arctangent(ABS(look.x-player->location.x),ABS(look.z-player->location.z));
-
-      break;
-
-    */
-    
-        case 0:
+	    world_point3d goal_point;
+	    world_point3d current_point;
+	    current_point = player->location;
+	    goal_point.x = static_cast<int>(lua_tonumber(L,3)*WORLD_ONE);
+	    goal_point.y = static_cast<int>(lua_tonumber(L,4)*WORLD_ONE);
+	    goal_point.z = static_cast<int>(lua_tonumber(L,5)*WORLD_ONE);
+	    angle heading;
+	    heading = arctangent((current_point.y - goal_point.y), (current_point.x - goal_point.x));
+	    angle current_heading;
+	    current_heading = player->facing;
+	    _fixed delta;
+	    
+	    if (current_heading < heading)
+	    {
+		screen_printf("Player heading is on the right of the goal_point");
+		// turn_left
+		while (current_heading <= heading)
+		{
+		    action_flags[0] = _turning_left;
+		    //action_flag_count++;
+		    //GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, 1);
+		    physics_update(constants, variablesptr, player, action_flags);
+		    instantiate_physics_variables(constants, variablesptr, player_index, false);
+		}
+	    }
+	    else if (current_heading > heading)
+	    {
+		screen_printf("Player heading is on the left of the goal_point");
+		// turn_right
+		while (player->facing >= heading)
+		{
+		    action_flags[0] = _turning_right;
+		    //action_flag_count++;
+		    //GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, 1);
+		    physics_update(constants, variablesptr, player, action_flags);
+		    instantiate_physics_variables(constants, variablesptr, player_index, false);
+		}
+	    }
+	    
+	    if (current_point.x < goal_point.x)
+	    {
+		screen_printf("goal_point is in front of player");
+		
+		/*
+		while (current_point.x > goal_point.x)
+		{
+		    action_flags[0] = _moving_forward;
+		    //action_flag_count++;
+		    GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, 1);
+		}
+		*/
+	    }
+	    else if (current_point.x > goal_point.x)
+	    {
+		screen_printf("goal_point is behind player");
+		/*
+		while (current_point.x < goal_point.x)
+		{
+		    action_flags[0] = _moving_backward;
+		    //action_flag_count++;
+		    GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, 1);
+		}
+		*/
+	    }
+	    
+	break;
+	
+	case turn_player:
+	    if (!lua_isnumber(L,3) || !lua_isnumber(L,4))
+	    {
+		lua_pushstring(L, "player_control: incorrect argument type for turn_player");
+		lua_error(L);
+	    }
+	    
+	    angle new_facing;
+	    angle new_elevation;
+	    new_facing = static_cast<int16>(lua_tonumber(L,3));
+	    new_elevation = static_cast<int16>(lua_tonumber(L,4));
+	    
+	    if (player->facing < new_facing)
+	    {
+		screen_printf("new_facing is on right of the player heading");
+	    }
+	    else if (player->facing > new_facing)
+	    {
+		screen_printf("new_facing is on left of the player heading");
+	    }
+	    
+	    if (player->elevation < new_elevation)
+	    {
+		screen_printf("new_elevation is above player elevation");
+	    }
+	    else if (player->elevation > new_elevation)
+	    {
+		screen_printf("new_elevation is under player elevation");
+	    }
+	    
+	break;
+	    
+	case look_at:
+	    if (!lua_isnumber(L,3) || !lua_isnumber(L,4) || !lua_isnumber(L,5))
+	    {
+		logError("player_control: incorrect argument type for look_at");
+		lua_pushstring(L, "player_control: incorrect argument type for look_at");
+		lua_error(L);
+	    }
+	    
+	    world_point3d look;
+	    look.x = static_cast<int16>(lua_tonumber(L, 3));
+	    look.y = static_cast<int16>(lua_tonumber(L, 4));
+	    look.z = static_cast<int16>(lua_tonumber(L, 5));
+	    
+	    player->facing = arctangent(ABS(look.x-player->location.x), ABS(look.y-player->location.y));
+	    player->elevation = arctangent(ABS(look.x-player->location.x),ABS(look.z-player->location.z));
+	
+	break;
+    #endif
+            case 0:
             action_flags[0] = _moving_forward;
             DoAction = true;
         break;
@@ -1927,7 +1946,7 @@ static int L_Player_Control(lua_State *L)
         case 13: // reset pfhortran_action_queue
             GetPfhortranActionQueues()->reset();
         break;
-        
+	
         default:
         break;
     }
@@ -2404,10 +2423,251 @@ static int L_Get_Platform_Monster_Control(lua_State *L)
     return 0;
 }
 
+static int L_Get_Platform_Speed(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_platform_speed: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon && polygon->type == _polygon_is_platform);
+    {
+	struct platform_data *platform = get_platform_data(polygon->permutation);
+	if (platform)
+	{
+	    lua_pushnumber(L, platform->speed);
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+static int L_Set_Platform_Speed(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {
+        lua_pushstring(L, "set_platform_speed: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    int16 speed = static_cast<int16>(lua_tonumber(L,2));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon && polygon->type == _polygon_is_platform);
+    {
+	struct platform_data *platform = get_platform_data(polygon->permutation);
+	if (platform)
+	{
+	    platform->speed = speed;
+	}
+    }
+    return 0;
+}
+
+static int L_Get_Platform_Floor_Height(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_platform_floor_height: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon && polygon->type == _polygon_is_platform);
+    {
+	struct platform_data *platform = get_platform_data(polygon->permutation);
+	if (platform)
+	{
+	    lua_pushnumber(L, (double)platform->floor_height/WORLD_ONE);
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+static int L_Get_Platform_Ceiling_Height(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_platform_ceiling_height: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon && polygon->type == _polygon_is_platform);
+    {
+	struct platform_data *platform = get_platform_data(polygon->permutation);
+	if (platform)
+	{
+	    lua_pushnumber(L, (double)platform->ceiling_height/WORLD_ONE);
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+static int L_Set_Platform_Floor_Height(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {
+        lua_pushstring(L, "set_platform_floor_height: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    world_distance height;
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon && polygon->type == _polygon_is_platform);
+    {
+	struct platform_data *platform = get_platform_data(polygon->permutation);
+	if (platform)
+	{
+	    height = static_cast<int16>(lua_tonumber(L,2));
+	    platform->floor_height = (height*WORLD_ONE);
+	}
+    }
+    return 0;
+}
+
+static int L_Set_Platform_Ceiling_Height(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {
+        lua_pushstring(L, "set_platform_ceiling_height: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    world_distance height;
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon && polygon->type == _polygon_is_platform);
+    {
+	struct platform_data *platform = get_platform_data(polygon->permutation);
+	if (platform)
+	{
+	    height = static_cast<int16>(lua_tonumber(L,2));
+	    platform->ceiling_height = (height*WORLD_ONE);
+	}
+    }
+    return 0;
+}
+
+static int L_Get_Platform_Movement(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+	lua_pushstring(L, "get_platform_movement: incorrect argument type");
+	lua_error(L);
+    }
+    
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon && polygon->type == _polygon_is_platform)
+    {
+	struct platform_data *platform = get_platform_data(polygon->permutation);
+	if (platform)
+	{
+	    if PLATFORM_IS_EXTENDING(platform)
+		lua_pushboolean(L, true);
+	    else
+		lua_pushboolean(L, false);
+	    return 1;
+	}
+    }
+    lua_pushboolean(L, false);
+    return 1;
+}
+
+static int L_Set_Platform_Movement(lua_State *L)
+{
+    if (!lua_isnumber(L,1)) // bool can be any type
+    {
+	lua_pushstring(L, "set_platform_movement: incorrect argument type");
+	lua_error(L);
+    }
+    
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    bool movement = lua_toboolean(L,2);
+    if (polygon && polygon->type == _polygon_is_platform)
+    {
+	struct platform_data *platform = get_platform_data(polygon->permutation);
+	if (platform)
+	{
+	    switch (movement)
+	    {
+		case true:
+		    SET_PLATFORM_IS_EXTENDING(platform);
+		    break;
+		    
+		case false:
+		    SET_PLATFORM_IS_CONTRACTING(platform);
+		    break;
+		    
+		default:
+		    break;
+	    }
+	}
+    }
+    return 0;
+}
+
+static int L_Get_Terminal_Text_Number(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {
+	lua_pushstring(L, "get_terminal_text_number: incorrect argument type");
+	lua_error(L);
+    }
+    
+    short polygon_index = static_cast<short>(lua_tonumber(L,1));
+    short line_index = static_cast<short>(lua_tonumber(L,2));
+    short side_index;
+    if (line_side_has_control_panel(line_index, polygon_index, &side_index));
+    {
+	struct side_data *side_data = get_side_data(side_index);
+	if (side_data && SIDE_IS_CONTROL_PANEL(side_data) && side_data->control_panel_type == _panel_is_computer_terminal)
+	{
+	    lua_pushnumber(L, side_data->control_panel_permutation);
+	    return 1;
+	}
+    }
+    lua_pushnumber(L, -1);
+    return 1;
+}
+
+static int L_Set_Terminal_Text_Number(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+    {
+	lua_pushstring(L, "get_terminal_text_number: incorrect argument type");
+	lua_error(L);
+    }
+    
+    short polygon_index = static_cast<short>(lua_tonumber(L,1));
+    short line_index = static_cast<short>(lua_tonumber(L,2));
+    int16 terminal_text_id = static_cast<int16>(lua_tonumber(L,3));
+    short side_index;
+    if (line_side_has_control_panel(line_index, polygon_index, &side_index));
+    {
+	struct side_data *side_data = get_side_data(side_index);
+	if (side_data && SIDE_IS_CONTROL_PANEL(side_data) && side_data->control_panel_type == _panel_is_computer_terminal)
+	{
+	    side_data->control_panel_permutation = terminal_text_id;
+	}
+    }
+    return 0;
+}
+
 void RegisterLuaFunctions()
 {
-	lua_register(state, "local_player_index", L_Local_Player_Index);
-	lua_register(state, "player_to_monster_index", L_Player_To_Monster_Index);
+    lua_register(state, "local_player_index", L_Local_Player_Index);
+    lua_register(state, "player_to_monster_index", L_Player_To_Monster_Index);
     lua_register(state, "number_of_players", L_Number_of_Players);
     lua_register(state, "screen_print", L_Screen_Print);
     //lua_register(state, "display_text", L_Display_Text);
@@ -2415,8 +2675,8 @@ void RegisterLuaFunctions()
     lua_register(state, "enable_player", L_Enable_Player);
     lua_register(state, "disable_player", L_Disable_Player);
     lua_register(state, "kill_script", L_Kill_Script);
-	lua_register(state, "hide_interface", L_Hide_Interface);
-	lua_register(state, "show_interface", L_Show_Interface);
+    lua_register(state, "hide_interface", L_Hide_Interface);
+    lua_register(state, "show_interface", L_Show_Interface);
     lua_register(state, "get_tag_state", L_Get_Tag_State);
     lua_register(state, "set_tag_state", L_Set_Tag_State);
     lua_register(state, "get_life", L_Get_Life);
@@ -2426,10 +2686,10 @@ void RegisterLuaFunctions()
     lua_register(state, "add_item", L_Add_Item);
     lua_register(state, "remove_item", L_Remove_Item);
     lua_register(state, "select_weapon", L_Select_Weapon);
-	lua_register(state, "set_platform_state", L_Set_Platform_State);
-	lua_register(state, "get_platform_state", L_Get_Platform_State);
-	lua_register(state, "set_light_state", L_Set_Light_State);
-	lua_register(state, "get_light_state", L_Get_Light_State);
+    lua_register(state, "set_platform_state", L_Set_Platform_State);
+    lua_register(state, "get_platform_state", L_Get_Platform_State);
+    lua_register(state, "set_light_state", L_Set_Light_State);
+    lua_register(state, "get_light_state", L_Get_Light_State);
     lua_register(state, "set_fog_depth", L_Set_Fog_Depth);
     lua_register(state, "set_fog_color", L_Set_Fog_Color);
     lua_register(state, "get_fog_depth", L_Get_Fog_Depth);
@@ -2446,8 +2706,8 @@ void RegisterLuaFunctions()
     lua_register(state, "attack_monster", L_Attack_Monster);
     lua_register(state, "move_monster", L_Move_Monster);
     lua_register(state, "select_monster", L_Select_Monster);
-	lua_register(state, "get_monster_position", L_Get_Monster_Position);
-	lua_register(state, "get_monster_facing", L_Get_Monster_Facing);
+    lua_register(state, "get_monster_position", L_Get_Monster_Position);
+    lua_register(state, "get_monster_facing", L_Get_Monster_Facing);
     lua_register(state, "get_monster_polygon", L_Get_Monster_Polygon);
     lua_register(state, "get_monster_immunity", L_Get_Monster_Immunity);
     lua_register(state, "set_monster_immunity", L_Set_Monster_Immunity);
@@ -2464,28 +2724,38 @@ void RegisterLuaFunctions()
     lua_register(state, "get_monster_vitality", L_Get_Monster_Vitality);
     lua_register(state, "set_monster_vitality", L_Set_Monster_Vitality);
     //lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
-    lua_register(state, "set_platform_monster_control", L_Set_Platform_Monster_Control);
-    lua_register(state, "get_platform_monster_control", L_Get_Platform_Monster_Control);
-	lua_register(state, "get_player_position", L_Get_Player_Position);
+    lua_register(state, "get_player_position", L_Get_Player_Position);
     lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
-	//lua_register(state, "set_player_global_speed", L_Set_Player_Global_Speed);
-	lua_register(state, "set_platform_player_control", L_Set_Platform_Player_Control);
-	lua_register(state, "get_platform_player_control", L_Get_Platform_Player_Control);
-	lua_register(state, "set_motion_sensor_state", L_Set_Motion_Sensor_State);
-	lua_register(state, "get_motion_sensor_state", L_Get_Motion_Sensor_State);
     lua_register(state, "player_is_dead", L_Player_Is_Dead);
     lua_register(state, "player_control", L_Player_Control);
+    //lua_register(state, "set_player_global_speed", L_Set_Player_Global_Speed);
+    lua_register(state, "set_platform_player_control", L_Set_Platform_Player_Control);
+    lua_register(state, "get_platform_player_control", L_Get_Platform_Player_Control);
+    lua_register(state, "set_platform_monster_control", L_Set_Platform_Monster_Control);
+    lua_register(state, "get_platform_monster_control", L_Get_Platform_Monster_Control);
+    lua_register(state, "get_platform_speed", L_Get_Platform_Speed);
+    lua_register(state, "set_platform_speed", L_Set_Platform_Speed);
+    lua_register(state, "get_platform_floor_height", L_Get_Platform_Floor_Height);
+    lua_register(state, "get_platform_ceiling_height", L_Get_Platform_Ceiling_Height);
+    lua_register(state, "set_platform_floor_height", L_Set_Platform_Floor_Height);
+    lua_register(state, "set_platform_ceiling_height", L_Set_Platform_Ceiling_Height);
+    lua_register(state, "set_platform_movement", L_Set_Platform_Movement);
+    lua_register(state, "get_platform_movement", L_Get_Platform_Movement);
+    lua_register(state, "set_motion_sensor_state", L_Set_Motion_Sensor_State);
+    lua_register(state, "get_motion_sensor_state", L_Get_Motion_Sensor_State);
     lua_register(state, "create_camera", L_Create_Camera);
     lua_register(state, "add_path_point", L_Add_Path_Point);
     lua_register(state, "add_path_angle", L_Add_Path_Angle);
     lua_register(state, "activate_camera", L_Activate_Camera);
     lua_register(state, "deactivate_camera", L_Deactivate_Camera);
-	lua_register(state, "crosshairs_active", L_Crosshairs_Active);
-	lua_register(state, "set_crosshairs_state", L_Set_Crosshairs_State);
-	lua_register(state, "zoom_active", L_Zoom_Active);
-	lua_register(state, "set_zoom_state", L_Set_Zoom_State);
-	lua_register(state, "play_sound", L_Play_Sound);
-	lua_register(state, "start_fade", L_Start_Fade);
+    lua_register(state, "crosshairs_active", L_Crosshairs_Active);
+    lua_register(state, "set_crosshairs_state", L_Set_Crosshairs_State);
+    lua_register(state, "zoom_active", L_Zoom_Active);
+    lua_register(state, "set_zoom_state", L_Set_Zoom_State);
+    lua_register(state, "play_sound", L_Play_Sound);
+    lua_register(state, "start_fade", L_Start_Fade);
+    lua_register(state, "get_terminal_text_number", L_Get_Terminal_Text_Number);
+    lua_register(state, "set_terminal_text_number", L_Set_Terminal_Text_Number);
 }
 
 void DeclareLuaConstants()
