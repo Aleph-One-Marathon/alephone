@@ -1393,6 +1393,8 @@ in "glowing" rendering (independent of light levels).
 <li>glow_mask: the name of the file whose image content becomes the opacity mask
 for "glowing" rendering (independent of light levels).
 It must be used with a glow_image file.
+<li>normal_blend: which blend mode for semitransparent normal textures (default: 0 -- crossfade)
+<li>glow_blend: which blend mode for semitransparent glowing textures (default: 0 -- crossfade)
 <li>image_scale: The amount to scale a substituted sprite, from pixel units to internal distance units.
 If it is zero or less, then it and the offsets are ignored.
 <li>x_offset: The amount to shift the top left corner rightward, in internal units.
@@ -1406,6 +1408,11 @@ Here are the various opacity types:
 <li>Fuzzy edges.
 <li>Fuzzy edges with opacity = average of color channels.
 <li>Fuzzy edges with opacity = maximum of color channels.
+</ol>
+Here are the various blend types, to be used for semitransparent rendering:
+<ol type=1 start=1000>
+<li>Crossfade blending; reasonable for semitransparent, non-glowing object
+<li>Additive blending; reasonable for glowing, low-opacity object
 </ol>
 <p>
 
@@ -1513,6 +1520,8 @@ in "glowing" rendering (independent of light levels).
 <li>glow_mask: the name of the file whose image content becomes the opacity mask
 for "glowing" rendering (independent of light levels).
 It must be used with a glow_image file.
+<li>normal_blend: which blend mode for semitransparent normal textures (default: 0 -- crossfade)
+<li>glow_blend: which blend mode for semitransparent glowing textures (default: 0 -- crossfade)
 </ul>
 <p>
 
