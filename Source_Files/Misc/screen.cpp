@@ -172,7 +172,7 @@ June 20, 2001 (Loren Petrich):
 // LP addition: view control
 #include "ViewControl.h"
 #include <Displays.h>
-#include <DrawSprocket.h>
+// #include <DrawSprocket.h>
 
 //CP addition: scripting support
 #include "scripting.h"
