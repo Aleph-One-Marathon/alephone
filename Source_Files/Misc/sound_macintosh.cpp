@@ -113,7 +113,7 @@ void set_sound_manager_status(
 					channel->flags= 0;
 					channel->callback_count= FALSE;
 					channel->sound_index= NONE;
-					memset(channel->channel, 0, sizeof(SndChannel));
+					obj_clear(*(channel->channel));
 					channel->channel->qLength= stdQLength;
 					channel->channel->userInfo= (long) &channel->callback_count;
 
