@@ -5,6 +5,7 @@
 	There is a parallel SDL file
 */
 
+#include "my32bqd.h"
 
 // Truly global globals for screen_drawing
 extern GWorldPtr world_pixels;
