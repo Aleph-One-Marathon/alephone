@@ -81,7 +81,8 @@ enum /* weapon display positioning modes */
 
 struct weapon_display_information
 {
-	short collection, low_level_shape_index;
+	// Has sequence info for 3D-model weapon display
+	short collection, shape_index, low_level_shape_index;
 	
 	_fixed vertical_position, horizontal_position;
 	short vertical_positioning_mode, horizontal_positioning_mode;
@@ -89,6 +90,12 @@ struct weapon_display_information
 	_fixed transfer_phase;
 	
 	bool flip_horizontal, flip_vertical;
+	
+	// Needed for animated models: which frame in an individual sequence (0, 1, 2, ...)
+	short Frame, NextFrame;
+	
+	// Needed for animated models: which tick in a frame, and total ticks per frame
+	short Phase, Ticks;
 };
 
 // For external access:

@@ -1394,6 +1394,7 @@ bool get_weapon_display_information(
 				if (!(frame>=0 && frame<high_level_data->frames_per_view)) return false;
 				
 				data->collection= BUILD_COLLECTION(definition->collection, 0);
+				data->shape_index = shape_index;
 				data->low_level_shape_index= high_level_data->low_level_shape_indexes[frame];
 				data->vertical_positioning_mode= _position_center;
 				data->horizontal_positioning_mode= _position_center;
@@ -1426,6 +1427,12 @@ bool get_weapon_display_information(
 					
 					data->transfer_mode= owner_transfer_data.transfer_mode;
 					data->transfer_phase= owner_transfer_data.transfer_phase;
+					
+					// LP: model animation data
+					data->Frame = owner_transfer_data.Frame;
+					data->NextFrame = owner_transfer_data.NextFrame;
+					data->Phase = owner_transfer_data.Phase;
+					data->Ticks = owner_transfer_data.Ticks;
 				}
 			} 
 			else if(type==_shell_casing_type)
@@ -3943,11 +3950,23 @@ static bool get_shell_casing_display_data(
 					if ((shell_casing->frame+= 1)>=high_level_data->frames_per_view) shell_casing->frame= 0;
 					
 					display->collection= definition->collection;
+					display->shape_index = definition->shape;
 					display->low_level_shape_index= high_level_data->low_level_shape_indexes[shell_casing->frame];
 					display->flip_horizontal= display->flip_vertical= false;
 					display->vertical_positioning_mode= display->horizontal_positioning_mode= _position_center;
 					display->vertical_position= FIXED_ONE-shell_casing->y, display->horizontal_position= shell_casing->x;
 					display->transfer_mode= _xfer_normal, display->transfer_phase= 0;
+					
+										
+					// LP: model animation data
+					display->Frame = shell_casing->frame;
+					display->NextFrame = display->Frame + 1;
+					if (display->NextFrame >= high_level_data->frames_per_view)
+						display->NextFrame = 0;
+					// Apparently one frame per engine tick
+					display->Phase = 0;
+					display->Ticks = 1;
+
 				}
 				
 				valid= true;
