@@ -1,4 +1,5 @@
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+// LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
 #ifndef _CSERIES_STRINGS_
 #define _CSERIES_STRINGS_
 
@@ -33,6 +34,10 @@ extern unsigned char *psprintf(
 	...);
 
 extern void dprintf(
+	const char *format,
+	...);
+
+extern void fdprintf(
 	const char *format,
 	...);
 

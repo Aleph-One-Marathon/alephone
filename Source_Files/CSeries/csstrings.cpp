@@ -1,4 +1,5 @@
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+// LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -170,5 +171,19 @@ void dprintf(
 	va_end(list);
 	c2pstr((char *)buffer);
 	DebugStr(buffer);
+}
+
+void fdprintf(
+	const char *format,
+	...)
+{
+	FILE *FD = fopen("AlephOneDebugLog.txt","a");
+	va_list list;
+
+	va_start(list,format);
+	vfprintf(FD,format,list);
+	va_end(list);
+	fprintf(FD,"\n");
+	fclose(FD);
 }
 

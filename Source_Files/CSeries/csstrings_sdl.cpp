@@ -3,6 +3,7 @@
  *
  *  Written in 2000 by Christian Bauer
  */
+// LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
 
 #include "cseries.h"
 #include "TextStrings.h"
@@ -109,4 +110,18 @@ void dprintf(const char *format, ...)
 	vsprintf((char *)buffer, format, list);
 	va_end(list);
 	fprintf(stderr, "dprintf: %s\n", buffer);
+}
+
+void fdprintf(
+	const char *format,
+	...)
+{
+	FILE *FD = fopen("AlephOneDebugLog.txt","a");
+	va_list list;
+
+	va_start(list,format);
+	vfprintf(FD,format,list);
+	va_end(list);
+	fprintf(FD,"\n");
+	fclose(FD);
 }
