@@ -1431,8 +1431,12 @@ It takes these attributes and a child element &lt;skin&gt;:
 <li>coll: which collection (mandatory).
 <li>seq: which sequence (mandatory).
 <li>file: the name of the file containing the model data.
-<li>type: a string identifying the model-data format.
-Alias|Wavefront models have a type of "wave" or "wavefront".
+<li>type: a string identifying the model-data format:
+<ul>
+<li>Alias|Wavefront Object: "wave" to "wavefront"
+<li>3D Studio Max Object: "3ds" to "3ds max" or "3dsmax"
+<li>QuickDraw 3D / Quesa 3D Metafile: "qd3d" or "3dmf" or "quesa"
+</ul>
 If it is absent, the type will then be guessed from the file contents,
 an operation that may work on some file formats but not others.
 <li>scale: how much to scale the model before rendering,
