@@ -3557,7 +3557,7 @@ uint8 *unpack_monster_definition(uint8 *Stream, int Count)
 		StreamToValue(S,ObjPtr->terminal_velocity);
 		StreamToValue(S,ObjPtr->door_retry_mask);
 		StreamToValue(S,ObjPtr->shrapnel_radius);
-		S = unpack_damage_definition(S,&ObjPtr->shrapnel_damage);
+		S = unpack_damage_definition(S,&ObjPtr->shrapnel_damage,1);
 		
 		StreamToValue(S,ObjPtr->hit_shapes);
 		StreamToValue(S,ObjPtr->hard_dying_shape);
@@ -3629,7 +3629,7 @@ uint8 *pack_monster_definition(uint8 *Stream, int Count)
 		ValueToStream(S,ObjPtr->terminal_velocity);
 		ValueToStream(S,ObjPtr->door_retry_mask);
 		ValueToStream(S,ObjPtr->shrapnel_radius);
-		S = pack_damage_definition(S,&ObjPtr->shrapnel_damage);
+		S = pack_damage_definition(S,&ObjPtr->shrapnel_damage,1);
 		
 		ValueToStream(S,ObjPtr->hit_shapes);
 		ValueToStream(S,ObjPtr->hard_dying_shape);
