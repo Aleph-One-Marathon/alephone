@@ -37,6 +37,8 @@ May 2, 2000 (Loren Petrich):
 
 May 3, 2000 (Loren Petrich):
 	Added Simon Brownlee's patch for handling the "hardware acceleration" button
+
+Jul 7, 2000 (Loren Petrich): Added Ben Thompson's InputSprocket support
 */
 
 #include <string.h>
@@ -48,6 +50,7 @@ May 3, 2000 (Loren Petrich):
 #include "shell.h" /* For the screen_mode structure */
 #include "interface.h"
 #include "mysound.h"
+#include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 
 #include "preferences.h"
 #include "wad.h"
@@ -104,15 +107,17 @@ enum {
 // LP additions: InputSprocket, run/walk and swim/sink reversers;
 // renamed "iSET_KEYS" to "iSET_INPUTS".
 // LP: added Josh Elsasser's don't-switch-weapons patch
+// LP: added separate InputSprocket button
 enum {
 	ditlINPUT= 4004,
 	iMOUSE_CONTROL= 1,
 	iKEYBOARD_CONTROL,
 	iINPUT_SPROCKET_CONTROL,
-	iSET_INPUTS,
+	iSET_KEYS,
 	iINTERCHANGE_RUN_WALK,
 	iINTERCHANGE_SWIM_SINK,
-	iDONT_SWITCH_TO_NEW_WEAPON
+	iDONT_SWITCH_TO_NEW_WEAPON,
+	iSET_INPUT_SPROCKET
 };
 
 enum {
@@ -1017,8 +1022,9 @@ static void setup_input_dialog(
 	struct input_preferences_data *preferences= (struct input_preferences_data *)prefs;
 	short which;
 	
+	// LP change: implemented Ben Thompson ISp support
 	which = (preferences->input_device == _mouse_yaw_pitch) ? iMOUSE_CONTROL : iKEYBOARD_CONTROL;
-	modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
+		modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
 		LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), 
 		LOCAL_TO_GLOBAL_DITL(which, first_item));
 	
@@ -1052,15 +1058,19 @@ static void hit_input_item(
 
 	switch(GLOBAL_TO_LOCAL_DITL(item_hit, first_item))
 	{
+		// LP change: added ISp-control button action
 		case iMOUSE_CONTROL:
 		case iKEYBOARD_CONTROL:
+		case iINPUT_SPROCKET_CONTROL:
 			modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
 				LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), item_hit);
+			// LP change: added Ben Thompson's ISp support
 			preferences->input_device= GLOBAL_TO_LOCAL_DITL(item_hit, first_item)==iMOUSE_CONTROL ?
-				_mouse_yaw_pitch : _keyboard_or_game_pad;
-			break;
+				_mouse_yaw_pitch : (GLOBAL_TO_LOCAL_DITL(item_hit, first_item)==iINPUT_SPROCKET_CONTROL ? 
+				_input_sprocket_only : _keyboard_or_game_pad);
+		break;
 		
-		// Added run/walk and swim/sink interchange; renamed iSET_KEYS
+		// Added run/walk and swim/sink interchange; renamed iSET_KEYS (LP: renamed it back)
 		case iINTERCHANGE_RUN_WALK:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
 			if(!GetControlValue(control))
@@ -1092,7 +1102,7 @@ static void hit_input_item(
 			}
 			break;
 			
-		case iSET_INPUTS:
+		case iSET_KEYS:
 			{
 				short key_codes[NUMBER_OF_KEYS];
 				
@@ -1103,6 +1113,11 @@ static void hit_input_item(
 					set_keys(key_codes);
 				}
 			}
+			break;
+
+		// LP change: modification of Ben Thompson's change
+		case iSET_INPUT_SPROCKET:
+			ConfigureMarathonISpControls();
 			break;
 			
 		default:

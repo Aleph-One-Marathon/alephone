@@ -43,6 +43,9 @@ Friday, January 13, 1995 11:38:51 AM  (Jason')
 
 Jan 30, 2000 (Loren Petrich)
 	Did some typecasts
+
+Jul 7, 2000 (Loren Petrich)
+	Added Ben Thompson's ISp-support changes
 */
 
 #include "cseries.h"
@@ -57,6 +60,7 @@ Jan 30, 2000 (Loren Petrich)
 #include "tags.h"
 #include "portable_files.h"
 #include "vbl.h"
+#include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 
 #ifdef env68k
 #pragma segment input
@@ -164,6 +168,14 @@ void set_keyboard_controller_status(
 	boolean active)
 {
 	input_task_active= active;
+
+	/******************************************************************************************/
+	/* BT:	Added April 16, 2000 ISp: De-activate Input Sprockets while the keyboard is
+			not active.  This also means that the game is currently not recieving keystrokes */
+	if(active) Start_ISp();
+	else Stop_ISp();
+	
+	/******************************************************************************************/
 
 	return;
 }

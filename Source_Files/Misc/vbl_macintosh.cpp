@@ -13,6 +13,9 @@ Feb 10, 2000 (Loren Petrich):
 	Added effects of run/walk and swim/sink interchanges
 	to parse_keymap() -- this works with single-player;
 	not sure if it will work with multiplayer
+
+Jul 7, 2000 (Loren Petrich)
+	Added Ben Thompson's ISp-support changes
 */
 
 #include "macintosh_cseries.h"
@@ -30,6 +33,7 @@ Feb 10, 2000 (Loren Petrich):
 #include "key_definitions.h"
 #include "tags.h" // for filetypes.
 #include "computer_interface.h"
+#include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 
 #include "portable_files.h"
 #include "vbl.h"
@@ -166,6 +170,12 @@ long parse_keymap(
 	struct special_flag_data *special= special_flags;
 	
 	GetKeys(key_map);
+	
+	/******************************************************************************************/
+	/* BT: Added April 16, 2000 ISp: This is where we get the input sprocket events */
+	if(input_preferences->input_device==_input_sprocket_only || input_preferences->input_device==_keyboard_or_game_pad)
+		flags = InputSprocketTestElements();
+	/******************************************************************************************/
 
 	/* parse the keymap */	
 	for (i=0;i<NUMBER_OF_STANDARD_KEY_DEFINITIONS;++i,++key)
