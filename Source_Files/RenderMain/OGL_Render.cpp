@@ -112,6 +112,10 @@ Jan 31, 2002 (Br'fin (Jeremy Parsons)):
 Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
 	Centered OpenGL displays under Carbon OS X
 	Fixed AGL_SWAP_RECT spamming of OS X console
+	
+Dec 13, 2002 (Loren Petrich):
+	Added initial preloading of textures to avoid lazy loading of wall textures
+	on start/restore of level
 */
 
 #include <vector>
@@ -156,6 +160,7 @@ Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
 #include "player.h"
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
+#include "AnimatedTextures.h"
 #include "Crosshairs.h"
 #include "VecOps.h"
 #include "Random.h"
@@ -169,6 +174,13 @@ Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
 
 // Whether or not OpenGL is active for rendering
 static bool _OGL_IsActive = false;
+
+
+// Reads off of the current map;
+// call it to avoid lazy loading of textures
+static void PreloadTextures();
+static void PreloadWallTexture(shape_descriptor texture, int16 transfer_mode);
+
 
 #ifdef mac
 // Render context; expose for OGL_Map.c
@@ -647,6 +659,9 @@ bool OGL_StartRun()
 	ModelRenderObject.Clear();
 	SetupShaders();
 	
+	// Avoid lazy initial texture loading
+	PreloadTextures();
+	
 	// Success!
 	JustInited = true;
 	return (_OGL_IsActive = true);
@@ -673,6 +688,105 @@ bool OGL_StopRun()
 	
 	_OGL_IsActive = false;
 	return true;
+}
+
+
+// Reads off of the current map;
+// call it to avoid lazy loading of textures
+void PreloadTextures()
+{
+	// Loop through the map polygons
+	for (int n=0; n<dynamic_world->polygon_count; n++)
+	{
+		polygon_data *polygon = map_polygons + n;
+		
+		PreloadWallTexture(polygon->floor_texture,polygon->floor_transfer_mode);
+		PreloadWallTexture(polygon->ceiling_texture,polygon->ceiling_transfer_mode);
+		
+		for (int i=0; i<polygon->vertex_count; i++)
+		{
+			short side_index= polygon->side_indexes[i];
+			if (side_index = NONE) continue;
+			side_data *side= get_side_data(side_index);
+			switch (side->type)
+			{
+			case _full_side:
+				PreloadWallTexture(side->primary_texture.texture,side->primary_transfer_mode);
+				break;
+			case _split_side:
+				PreloadWallTexture(side->secondary_texture.texture,side->secondary_transfer_mode);
+				// Fall through to the high-side case
+			case _high_side:
+				PreloadWallTexture(side->primary_texture.texture,side->primary_transfer_mode);
+				break;
+			case _low_side:
+				PreloadWallTexture(side->primary_texture.texture,side->primary_transfer_mode);
+				break;
+			}
+			
+			PreloadWallTexture(side->transparent_texture.texture,side->transparent_transfer_mode);
+		}
+	}
+	
+	// May want to preload the liquid texture also
+	// Sprites will have the problem of guessing which ones to preload
+}
+
+void PreloadWallTexture(shape_descriptor texture, int16 transfer_mode)
+{
+	// In case of an empty side
+	if (texture == NONE) return;
+
+	// Infravision is usually inactive when entering or restoring a level.
+	bool IsInfravision = false;
+
+	TextureManager TMgr;
+	TMgr.ShapeDesc = AnimTxtr_Translate(texture);
+	
+	get_shape_bitmap_and_shading_table(
+		TMgr.ShapeDesc,
+		&TMgr.Texture,
+		&TMgr.ShadingTables,
+		IsInfravision ? _shading_infravision : _shading_normal);
+	if (!TMgr.Texture) return;
+
+	TMgr.IsShadeless = IsInfravision;
+	
+	// Cribbed from instantiate_polygon_transfer_mode() in render.cpp;
+	// translate the transfer mode
+	int16 TMgr_TransferMode = _textured_transfer;
+	switch (transfer_mode)
+	{
+	case _xfer_smear:
+		TMgr_TransferMode = _solid_transfer;
+		break;
+		
+	case _xfer_static:
+		TMgr_TransferMode = _static_transfer;
+		break;
+	
+	case _xfer_landscape:
+		TMgr_TransferMode = _big_landscaped_transfer;
+		break;
+	}
+	
+	TMgr.TransferMode = TMgr_TransferMode;
+	TMgr.TransferData = 0;
+	
+	// As in the code below, landscapes get special treatment
+	bool IsLandscape = TMgr_TransferMode == _big_landscaped_transfer;
+	TMgr.TextureType = IsLandscape ? OGL_Txtr_Landscape : OGL_Txtr_Wall;
+	
+	if (IsLandscape)
+	{
+		// Get the landscape-texturing options
+		LandscapeOptions *LandOpts = View_GetLandscapeOptions(TMgr.ShapeDesc);	
+		TMgr.LandscapeVertRepeat = LandOpts->VertRepeat;
+		TMgr.Landscape_AspRatExp = LandOpts->OGL_AspRatExp;
+	}
+	
+	// After all this setting up, now use it!
+	TMgr.Setup();
 }
 
 
