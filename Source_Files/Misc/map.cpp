@@ -43,6 +43,9 @@ Apr 28, 2000 (Loren Petrich): In animate_object(), switched the two tests
 
 Jul 6, 2000 (Loren Petrich): Readjusted the frame checking yet again, so that both keyframe = 0
 	and keyframe = [number of frames] would be detected.
+
+Jul 7, 2000 (Loren Petrich): Did yet another frame-checking readjustment, in order to suppress
+	the reactivated Hunter soft-death bug.
 */
 
 /*
@@ -804,27 +807,26 @@ void animate_object(
 			if (phase>=animation->ticks_per_frame) phase-= animation->ticks_per_frame;
 			if ((phase+= 1)>=animation->ticks_per_frame)
 			{
-				// frame+= 1;
+				frame+= 1;
 				// LP change: interchanged these two so that
 				// 1: keyframe 0 would get recognized
 				// 2: to keep the timing correct in the nonzero case
 				// LP change: inverted the order yet again to get more like Moo,
 				// but this time, added detection of cases
 				// keyframe = 0 and keyframe = [frames per view]
+				// Inverted the order yet again (!) to supporess Hunter death bug
 				animation_type|= _obj_animated;
-				short offset_frame = frame + animation->frames_per_view; // LP addition
-				if (frame==animation->key_frame || offset_frame==animation->key_frame)
-				{
-					animation_type|= _obj_keyframe_started;
-					if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
-				}
-				// LP: moved this bump-up down here
-				frame+= 1;
 				if (frame>=animation->frames_per_view)
 				{
 					frame= animation->loop_frame;
 					animation_type|= _obj_last_frame_animated;
 					if (animation->last_frame_sound!=NONE) play_object_sound(object_index, animation->last_frame_sound);
+				}
+				short offset_frame = frame + animation->frames_per_view; // LP addition
+				if (frame==animation->key_frame || offset_frame==animation->key_frame)
+				{
+					animation_type|= _obj_keyframe_started;
+					if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
 				}
 			}
 	
