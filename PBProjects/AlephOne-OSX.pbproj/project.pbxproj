@@ -122,6 +122,7 @@
 				4A9504CCFFE6A4B311CA0CBA,
 				EF2EF5F50483C7D900A8000D,
 				4A9504CDFFE6A4B311CA0CBA,
+				2B14B80104AB783A00A80001,
 			);
 			hasScannedForEncodings = 1;
 			isa = PBXProject;
@@ -825,6 +826,32 @@
 //292
 //293
 //294
+//2B0
+//2B1
+//2B2
+//2B3
+//2B4
+		2B14B80104AB783A00A80001 = {
+			buildRules = (
+			);
+			buildSettings = {
+				CC = "/usr/bin/gcc-3.3";
+				COPY_PHASE_STRIP = NO;
+				CPLUSPLUS = "/usr/bin/g++-3.3";
+				DEBUGGING_SYMBOLS = YES;
+				GCC_VERSION = 3.x;
+				OPTIMIZATION_CFLAGS = "-O0";
+				OTHER_CFLAGS = "\U0001-DDEBUG";
+				PRECOMPILE_PREFIX_HEADER = NO;
+			};
+			isa = PBXBuildStyle;
+			name = "Development (gcc 3.3 transitional)";
+		};
+//2B0
+//2B1
+//2B2
+//2B3
+//2B4
 //3D0
 //3D1
 //3D2
