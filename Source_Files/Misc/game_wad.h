@@ -58,11 +58,7 @@ void set_map_file(FileSpecifier& File);
 FileSpecifier& get_map_file(void);
 
 /* --------- from PREPROCESS_MAP_MAC.C */
-void get_default_map_spec(FileSpecifier& File);
-void get_default_physics_spec(FileSpecifier& File);
-bool get_default_music_spec(FileSpecifier& File);
-void get_default_sounds_spec(FileSpecifier& File);
-void get_default_shapes_spec(FileSpecifier& File);
+// Most of the get_default_filespecs moved to interface.h
 void get_savegame_filedesc(FileSpecifier& File);
 
 void add_finishing_touches_to_save_file(FileSpecifier& File);
