@@ -949,6 +949,15 @@ bool FileSpecifier::CopyContents(FileSpecifier& File)
 	return (Err == noErr);
 }
 
+
+bool FileSpecifier::Exchange(FileSpecifier& File)
+{
+	Err = FSpExchangeFiles(&Spec,&File.GetSpec());
+		
+	return (Err == noErr);
+}
+
+
 bool FileSpecifier::Delete()
 {
 	Err = FSpDelete(&Spec);

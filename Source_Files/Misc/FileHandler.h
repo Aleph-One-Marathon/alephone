@@ -72,25 +72,7 @@ public:
 	
 	bool Read(long Count, void *Buffer);
 	bool Write(long Count, void *Buffer);
-	
-	// Smart macros for more easy reading of structured objects
-	// CB: reading/writing C structures from/to files is evil...
-	// LP: decided to suppress them
-	
-	/*
-	template<class T> bool ReadObject(T& Object)
-		{return Read(sizeof(T),&Object);}
-	
-	template<class T> bool ReadObjectList(int NumObjects, T* ObjectList)
-		{return Read(NumObjects*sizeof(T),ObjectList);}
-	
-	template<class T> bool WriteObject(T& Object)
-		{return Write(sizeof(T),&Object);}
-	
-	template<class T> bool WriteObjectList(int NumObjects, T* ObjectList)
-		{return Write(NumObjects*sizeof(T),ObjectList);}
-	*/
-	
+		
 	OpenedFile();
 	~OpenedFile() {Close();}	// Auto-close when destroying
 
@@ -377,6 +359,10 @@ public:
 	
 	// Copy file contents
 	bool CopyContents(FileSpecifier& File);
+	
+	// Exchange contents with another filespec;
+	// good for doing safe saves
+	bool Exchange(FileSpecifier& File);
 	
 	// Delete file
 	bool Delete();
