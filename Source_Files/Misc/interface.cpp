@@ -1781,6 +1781,7 @@ static bool begin_game(
 
 				if(recording_version > max_handled_recording)
 				{
+					stop_replay();
 					alert_user(infoError, strERRORS, replayVersionTooNew, 0);
 					success= false;
 				}
