@@ -1421,6 +1421,11 @@ bool keep_line_segment_out_of_walls(
 		{
 			short signed_line_index= indexes[i];
 			short unsigned_line_index= signed_line_index<0 ? -signed_line_index-1 : signed_line_index;
+			
+			// If there is some map-index screwup...
+			if (unsigned_line_index >= dynamic_world->line_count)
+				continue;
+			
 			struct line_data *line= get_line_data(unsigned_line_index);
 			short side_index= signed_line_index<0 ? line->counterclockwise_polygon_side_index : line->clockwise_polygon_side_index;
 	
@@ -1518,7 +1523,13 @@ bool keep_line_segment_out_of_walls(
 	{
 		for (i=0;i<polygon->point_exclusion_zone_count;++i)
 		{
-			struct endpoint_data *endpoint= get_endpoint_data(indexes[polygon->line_exclusion_zone_count+i]);
+			short endpoint_index = indexes[polygon->line_exclusion_zone_count+i];
+			
+			// If there is some map-index screwup...
+			if (endpoint_index < 0 || endpoint_index >= dynamic_world->endpoint_count)
+				continue;
+			
+			struct endpoint_data *endpoint= get_endpoint_data(endpoint_index);
 			world_distance dx= endpoint->vertex.x-p1->x;
 			world_distance dy= endpoint->vertex.y-p1->y;
 			int32 distance_squared= dx*dx+dy*dy;
