@@ -201,11 +201,10 @@
 				043355C9FE30361CC02AAC07,
 			);
 			buildSettings = {
-				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "/Library/Frameworks \"$(HOME)/Library/Frameworks\"";
 				HEADER_SEARCH_PATHS = "/System/Library/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O1";
+				OPTIMIZATION_CFLAGS = "-O0";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -D__DARWIN__ -DMACOSX";
 				OTHER_LDFLAGS = "-framework SDL";
 				PREBINDING = NO;
@@ -525,6 +524,16 @@
 				F5830B4F01E77D5701BA387C,
 				F5830B5101E77D5701BA387C,
 				F5830B5201E77D5701BA387C,
+				F5574EF001F4EB1F01FEABBD,
+				F5574EF101F4EB1F01FEABBD,
+				F5574EF301F4EBD401FEABBD,
+				F5574EF501F4EC2901FEABBD,
+				F5574EF701F4EC8501FEABBD,
+				F5574EF901F4ECD801FEABBD,
+				F5574EFB01F4ED0B01FEABBD,
+				F5574EFD01F4ED4901FEABBD,
+				F5574EFF01F4ED6501FEABBD,
+				F5956A5C01F67F62017E84DE,
 			);
 			isa = PBXSourcesBuildPhase;
 			name = Sources;
@@ -756,12 +765,6 @@
 			path = ../Source_Files/CSeries/cscluts_sdl.cpp;
 			refType = 2;
 		};
-		F52211460136A66601000001 = {
-			isa = PBXFileReference;
-			name = csdialogs.cpp;
-			path = ../Source_Files/CSeries/csdialogs.cpp;
-			refType = 2;
-		};
 		F52211470136A66601000001 = {
 			isa = PBXFileReference;
 			name = csfiles_beos.cpp;
@@ -814,12 +817,6 @@
 			isa = PBXFileReference;
 			name = my32bqd.cpp;
 			path = ../Source_Files/CSeries/my32bqd.cpp;
-			refType = 2;
-		};
-		F52211500136A66601000001 = {
-			isa = PBXFileReference;
-			name = mytm.cpp;
-			path = ../Source_Files/CSeries/mytm.cpp;
 			refType = 2;
 		};
 		F52211520136A66601000001 = {
@@ -1504,12 +1501,6 @@
 			isa = PBXFileReference;
 			name = monsters.h;
 			path = ../Source_Files/Misc/monsters.h;
-			refType = 2;
-		};
-		F52211E00136A6FD01000001 = {
-			isa = PBXFileReference;
-			name = MoreFilesExtract.cp;
-			path = ../Source_Files/Misc/MoreFilesExtract.cp;
 			refType = 2;
 		};
 		F52211E10136A6FD01000001 = {
@@ -4033,7 +4024,6 @@
 				F52211430136A66601000001,
 				F52211440136A66601000001,
 				F52211450136A66601000001,
-				F52211460136A66601000001,
 				F52211470136A66601000001,
 				F52211480136A66601000001,
 				F52211490136A66601000001,
@@ -4043,7 +4033,8 @@
 				F522114D0136A66601000001,
 				F522114E0136A66601000001,
 				F522114F0136A66601000001,
-				F52211500136A66601000001,
+				F5574EEE01F4EB1E01FEABBD,
+				F5574EEF01F4EB1E01FEABBD,
 			);
 			isa = PBXGroup;
 			name = CSeries;
@@ -4125,7 +4116,6 @@
 				F52211B90136A6FD01000001,
 				F52211BA0136A6FD01000001,
 				F52211C60136A6FD01000001,
-				F52211E00136A6FD01000001,
 				F52211EB0136A6FD01000001,
 				F52211EC0136A6FD01000001,
 				F52211EE0136A6FD01000001,
@@ -4238,6 +4228,9 @@
 				F522125F0136A6FD01000001,
 				F52212660136A6FD01000001,
 				F52212680136A6FD01000001,
+				F5574EF201F4EBD401FEABBD,
+				F5574EF401F4EC2801FEABBD,
+				F5574EF601F4EC8501FEABBD,
 			);
 			isa = PBXGroup;
 			name = Misc;
@@ -4381,6 +4374,10 @@
 				F522138B0136ABAE01000001,
 				F522138D0136ABAE01000001,
 				F522138E0136ABAE01000001,
+				F5574EF801F4ECD701FEABBD,
+				F5574EFA01F4ED0A01FEABBD,
+				F5574EFC01F4ED4801FEABBD,
+				F5574EFE01F4ED6501FEABBD,
 			);
 			isa = PBXGroup;
 			name = Network;
@@ -4442,6 +4439,114 @@
 		};
 		F53AB45201F3CB1E01EF2901 = {
 			fileRef = F53AB44E01F3CB1E01EF2901;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5574EEE01F4EB1E01FEABBD = {
+			isa = PBXFileReference;
+			name = csdialogs_sdl.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/CSeries/csdialogs_sdl.cpp;
+			refType = 0;
+		};
+		F5574EEF01F4EB1E01FEABBD = {
+			isa = PBXFileReference;
+			name = mytm_sdl.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/CSeries/mytm_sdl.cpp;
+			refType = 0;
+		};
+		F5574EF001F4EB1F01FEABBD = {
+			fileRef = F5574EEE01F4EB1E01FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5574EF101F4EB1F01FEABBD = {
+			fileRef = F5574EEF01F4EB1E01FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5574EF201F4EBD401FEABBD = {
+			isa = PBXFileReference;
+			name = PlayerImage_sdl.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/PlayerImage_sdl.cpp;
+			refType = 0;
+		};
+		F5574EF301F4EBD401FEABBD = {
+			fileRef = F5574EF201F4EBD401FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5574EF401F4EC2801FEABBD = {
+			isa = PBXFileReference;
+			name = TextLayoutHelper.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/TextLayoutHelper.cpp;
+			refType = 0;
+		};
+		F5574EF501F4EC2901FEABBD = {
+			fileRef = F5574EF401F4EC2801FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5574EF601F4EC8501FEABBD = {
+			isa = PBXFileReference;
+			name = thread_priority_sdl_macosx.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/thread_priority_sdl_macosx.cpp;
+			refType = 0;
+		};
+		F5574EF701F4EC8501FEABBD = {
+			fileRef = F5574EF601F4EC8501FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5574EF801F4ECD701FEABBD = {
+			isa = PBXFileReference;
+			name = network_data_formats.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Network/network_data_formats.cpp;
+			refType = 0;
+		};
+		F5574EF901F4ECD801FEABBD = {
+			fileRef = F5574EF801F4ECD701FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5574EFA01F4ED0A01FEABBD = {
+			isa = PBXFileReference;
+			name = network_dialog_widgets_sdl.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Network/network_dialog_widgets_sdl.cpp;
+			refType = 0;
+		};
+		F5574EFB01F4ED0B01FEABBD = {
+			fileRef = F5574EFA01F4ED0A01FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5574EFC01F4ED4801FEABBD = {
+			isa = PBXFileReference;
+			name = SDL_netx.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Network/SDL_netx.cpp;
+			refType = 0;
+		};
+		F5574EFD01F4ED4901FEABBD = {
+			fileRef = F5574EFC01F4ED4801FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5574EFE01F4ED6501FEABBD = {
+			isa = PBXFileReference;
+			name = SSLP_limited.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Network/SSLP_limited.cpp;
+			refType = 0;
+		};
+		F5574EFF01F4ED6501FEABBD = {
+			fileRef = F5574EFE01F4ED6501FEABBD;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -4552,6 +4657,12 @@
 		};
 		F5830B5201E77D5701BA387C = {
 			fileRef = F5830B4C01E77D5701BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5956A5C01F67F62017E84DE = {
+			fileRef = F522137D0136ABAE01000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
