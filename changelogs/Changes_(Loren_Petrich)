@@ -1340,3 +1340,18 @@ October 14, 2000
 Replaced most GrowableLists with STL's "vector"; also added per-level music support
 and dir/file parsing to FileSpecifier.
 
+October 19, 2000
+
+To get_weapon_display_information() in weapons.cpp, changed the response to no sequence
+from a failed assertion to returning with no further processing; a SMG won't cause a crash
+if using a M2 shapes file.
+
+Nov 12, 2000
+
+Fixed bug in LoadedResource in FileHandler.h; that bug was that the handle value does not
+get initialized, which can cause screwy results if that object is never used.
+
+Also partially implemented texture substitution in OpenGL-rendering mode. One can substitute
+for walls and landscapes, and infravision will work properly, though glowmapping is still
+not supported.
+
