@@ -225,6 +225,12 @@ Feb 24, 2002 (Loren Petrich):
 #define EXTERNAL
 #endif
 
+#if defined(TARGET_API_MAC_CARBON)
+#define SCREEN_BASED_SCREENSHOT 1
+#else
+#define SCREEN_BASED_SCREENSHOT 0
+#endif
+
 /* ---------- constants */
 
 #ifdef DIRECT_SCREEN_TEST
@@ -1919,11 +1925,68 @@ void quadruple_screen(
 }
 #endif
 
+#if SCREEN_BASED_SCREENSHOT
+// JTP: createScreenPixMap taken from Apple's Sample code: SuperSnapshot
+PixMapHandle createScreenPixMap()
+{
+	GDHandle	mainDevice;
+	CTabHandle	cTable;
+	short		depth;	
+	Ptr		offBaseAddr;	/* Pointer to the off-screen pixel image */
+	short		bytesPerRow;
+	PixMapHandle	pixHandle = nil;
+	BitMap		bitMap;	// temp store for screenbits
+	Rect		gBounds;
+	
+	pixHandle = NewPixMap();
+	
+	/* Get a handle to the main device. */
+	mainDevice = GetMainDevice();
+
+	/* Store its current pixel depth. */
+	depth = (**(**mainDevice).gdPMap).pixelSize;
+
+	/* Make an identical copy of its pixmap's colortable. */
+	cTable = (**(**mainDevice).gdPMap).pmTable;
+	(void) HandToHand( (Handle*)&cTable );
+	
+	// Get Resolution of screen
+#if defined(USE_CARBON_ACCESSORS)
+	GetQDGlobalsScreenBits(&bitMap);
+#else
+	bitmap = qd.screenBits;
+#endif
+	SetRect( &gBounds, 0, 0, bitMap.bounds.right, bitMap.bounds.bottom);
+	
+	// Fill in a few of the PixMap's fields...
+	// NewPixMap() is good for default initialization, simply modify
+	// the new PixMap
+	(*pixHandle)->pmTable = cTable;
+	(*pixHandle)->bounds = gBounds;
+	(*pixHandle)->pixelSize = depth;
+	bytesPerRow = ((gBounds.right - gBounds.left) * depth) / 8;
+	offBaseAddr = NewPtr((unsigned long) bytesPerRow * (gBounds.bottom - gBounds.top));
+	(*pixHandle)->baseAddr = offBaseAddr;  			// Point to image
+	(*pixHandle)->rowBytes = bytesPerRow | 0x8000;	// MSB set for PixMap
+	
+	LockPixels(pixHandle);
+
+	CopyBits( (BitMap *)*(**mainDevice).gdPMap, (BitMap *) *pixHandle,
+				&(**(**mainDevice).gdPMap).bounds, &(*pixHandle)->bounds, srcCopy, 0l );
+	
+	UnlockPixels(pixHandle);
+	
+	return pixHandle;
+}
+#endif
 
 // LP addition: routine for doing screendumps.
 // Ought to return some error code.
 void dump_screen()
 {
+#if SCREEN_BASED_SCREENSHOT
+	PixMapHandle screenshotHandle = createScreenPixMap();
+#endif
 
 	// Push the old graphics context
 	GrafPtr old_port;
@@ -1943,6 +2006,9 @@ void dump_screen()
 	// Find out how the area that gets copied;
 	// this is intended to be done as the game runs (including terminal mode)
 	Rect DumpRect;
+#if SCREEN_BASED_SCREENSHOT
+	Rect SourceRect;
+#endif
 
 	short msize = screen_mode.size;
 	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
@@ -1971,6 +2037,12 @@ void dump_screen()
 	DumpRect.right = MIN(DumpRect.right,ScreenRect.right);
 	DumpRect.bottom = MIN(DumpRect.bottom,ScreenRect.bottom);
 	
+#if SCREEN_BASED_SCREENSHOT
+	// Make sure the SourceRect is appropriate
+	SourceRect = DumpRect;
+	OffsetRect(&SourceRect, 0 - SourceRect.left, 0 - SourceRect.top);
+#endif
+
 	// Now create a picture
 	OpenCPicParams PicParams;
 	PicParams.srcRect = DumpRect;
@@ -1981,6 +2053,20 @@ void dump_screen()
 	PicParams.reserved2 = 0;
 	PicHandle PicObject = OpenCPicture(&PicParams);
 
+#if SCREEN_BASED_SCREENSHOT
+	LockPixels(screenshotHandle);
+	
+#if defined(USE_CARBON_ACCESSORS)
+	CopyBits((BitMap *) *screenshotHandle, GetPortBitMapForCopyBits(GetWindowPort(screen_window)),
+		&SourceRect, &DumpRect, srcCopy, (RgnHandle) NULL);
+#else
+	CopyBits((BitMap *) *screenshotHandle, &screen_window->portBits,
+		&SourceRect, &DumpRect, srcCopy, (RgnHandle) NULL);
+#endif
+
+	UnlockPixels(screenshotHandle);
+	DisposePixMap(screenshotHandle);
+#else	
 	ClipRect(&DumpRect);
 #if defined(USE_CARBON_ACCESSORS)
 	CopyBits(GetPortBitMapForCopyBits(GetWindowPort(screen_window)), GetPortBitMapForCopyBits(GetWindowPort(screen_window)),
@@ -1989,9 +2075,9 @@ void dump_screen()
 	CopyBits(&screen_window->portBits, &screen_window->portBits,
 		&DumpRect, &DumpRect, srcCopy, (RgnHandle) NULL);
 #endif
-
+#endif
 	ClosePicture();
-	
+
 	// Pop back the old graphics context
 	RGBForeColor(&old_forecolor);
 	RGBBackColor(&old_backcolor);
