@@ -1023,10 +1023,15 @@ static void setup_input_dialog(
 	short which;
 	
 	// LP change: implemented Ben Thompson ISp support
-	which = (preferences->input_device == _mouse_yaw_pitch) ? iMOUSE_CONTROL : iKEYBOARD_CONTROL;
-		modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
-		LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), 
+	which = (preferences->input_device == _mouse_yaw_pitch) ? iMOUSE_CONTROL :
+		(preferences->input_device == _keyboard_or_game_pad) ?iKEYBOARD_CONTROL: iINPUT_SPROCKET_CONTROL;
+	modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
+		LOCAL_TO_GLOBAL_DITL(iINPUT_SPROCKET_CONTROL, first_item), 
 		LOCAL_TO_GLOBAL_DITL(which, first_item));
+	//	which = (preferences->input_device == _mouse_yaw_pitch) ? iMOUSE_CONTROL : iKEYBOARD_CONTROL;
+	//		modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
+	//		LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), 
+	//		LOCAL_TO_GLOBAL_DITL(which, first_item));
 	
 	// LP addition: handle the input modifiers
 	short active;
@@ -1062,8 +1067,10 @@ static void hit_input_item(
 		case iMOUSE_CONTROL:
 		case iKEYBOARD_CONTROL:
 		case iINPUT_SPROCKET_CONTROL:
-			modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
-				LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), item_hit);
+					modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
+				LOCAL_TO_GLOBAL_DITL(iINPUT_SPROCKET_CONTROL, first_item), item_hit);
+			//	modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
+			//		LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), item_hit);
 			// LP change: added Ben Thompson's ISp support
 			preferences->input_device= GLOBAL_TO_LOCAL_DITL(item_hit, first_item)==iMOUSE_CONTROL ?
 				_mouse_yaw_pitch : (GLOBAL_TO_LOCAL_DITL(item_hit, first_item)==iINPUT_SPROCKET_CONTROL ? 
