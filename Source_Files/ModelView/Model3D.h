@@ -15,6 +15,13 @@ using namespace std;
 
 struct Model3D
 {
+	// Assumed dimensions:
+	enum {
+		VertexDim = 3,
+		TxtrCoordDim = 2,
+		NormalDim = 3
+	};
+	
 	// Vertex positions assumed to be 3-dimensional
 	vector<GLfloat> Vertices;
 	GLfloat *VertBase() {return &Vertices[0];}
@@ -24,6 +31,10 @@ struct Model3D
 	vector<GLfloat> TxtrCoords;
 	GLfloat *TCBase() {return &TxtrCoords[0];}
 	
+	// Normals assumed to be 3-dimensional
+	vector<GLfloat> Normals;
+	GLfloat *NormBase() {return &Normals[0];}
+	
 	// List of indices into the aforementioned values;
 	// the list is a list of triangles.
 	vector<GLushort> VertIndices;
@@ -31,7 +42,7 @@ struct Model3D
 	int NumVI() {return VertIndices.size();}
 	
 	// Erase everything
-	void Clear() {Vertices.clear(); TxtrCoords.clear(); VertIndices.clear();}
+	void Clear() {Vertices.clear(); TxtrCoords.clear(); Normals.clear(); VertIndices.clear();}
 };
 
 
