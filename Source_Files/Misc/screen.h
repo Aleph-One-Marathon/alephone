@@ -167,4 +167,7 @@ void RequestDrawingHUD();
 short SizeWithHUD(short _size);
 short SizeWithoutHUD(short _size);
 
+// Displays a message on the screen for a second or so; may be good for debugging
+void ShowMessage(char *Text);
+
 #endif
