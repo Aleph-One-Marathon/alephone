@@ -223,7 +223,7 @@ static control_panel_definition *get_control_panel_definition(
 	const short control_panel_type);
 
 static short find_action_key_target(short player_index, world_distance range, short *target_type);
-static bool line_side_has_control_panel(short line_index, short polygon_index, short *side_index_with_panel);
+//static bool line_side_has_control_panel(short line_index, short polygon_index, short *side_index_with_panel);
 static void	somebody_save_full_auto(player_data* inWhoSaved, bool inOverwrite);
 static void	change_panel_state(short player_index, short panel_side_index);
 static void set_control_panel_texture(struct side_data *side);
@@ -699,7 +699,8 @@ static bool line_is_within_range(
 	return isqrt(dx*dx + dy*dy + dz*dz)<range ? true : false;
 }
 
-static bool line_side_has_control_panel(
+//tiennou: removed static for lua access
+bool line_side_has_control_panel(
 	short line_index, 
 	short polygon_index,
 	short *side_index_with_panel)
