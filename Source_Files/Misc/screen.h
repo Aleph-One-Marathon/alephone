@@ -29,6 +29,9 @@ Jul 5, 2000 (Loren Petrich):
 
 Dec 2, 2000 (Loren Petrich):
 	Added support for hiding and re-showing the app
+
+Mar 19, 2001 (Loren Petrich):
+	Added some even bigger screen resolutions
 */
 
 /* ---------- constants */
@@ -44,6 +47,10 @@ enum /* screen sizes */
 	_800_600,
 	_1024_512_HUD,
 	_1024_768,
+	_1280_640_HUD,
+	_1280_1024,
+	_1600_800_HUD,
+	_1600_1200,
 	NUMBER_OF_VIEW_SIZES
 };
 // Original screen-size definitions

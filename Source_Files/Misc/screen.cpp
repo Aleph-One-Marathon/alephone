@@ -1069,6 +1069,7 @@ void render_screen(
 					{
 						short Top, Bottom;
 					};
+					// Formula: 1st value = 40 + (3/16)*(true 1st value)
 					const DownwardOffsetSet OGL_DownwardOffsets[NUMBER_OF_VIEW_SIZES] =
 					{
 						{160, 480},		//  _320_160_HUD
@@ -1079,6 +1080,10 @@ void render_screen(
 						{190, 600},		//  _800_600
 						{232, 768},		// _1024_512_HUD
 						{232, 768},		// _1024_768
+						{280, 1024},	// _1280_640_HUD
+						{280, 1024},	// _1280_1024
+						{340, 1200},	// _1600_800_HUD
+						{340, 1200},	// _1600_1200
 					};
 					const DownwardOffsetSet& Set = OGL_DownwardOffsets[msize];
 					HUD_DestRect.top = Set.Top;
