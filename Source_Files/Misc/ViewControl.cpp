@@ -20,6 +20,8 @@ static bool MapActive = true;
 // Accessor:
 bool View_MapActive() {return MapActive;}
 
+// This frame value means that a landscape option will be applied to any frame in a collection:
+const int AnyFrame = -1;
 
 // Field-of-view stuff with defaults:
 static float FOV_Normal = 80;
@@ -98,7 +100,7 @@ LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc)
 	vector<LandscapeOptionsEntry>& LOL = LOList[Collection];
 	for (vector<LandscapeOptionsEntry>::iterator LOIter = LOL.begin(); LOIter < LOL.end(); LOIter++)
 	{
-		if (LOIter->Frame == Frame)
+		if (LOIter->Frame == Frame || LOIter->Frame == AnyFrame)
 		{
 			// Get a pointer from the iterator in order to return it
 			return &(LOIter->OptionsData);
@@ -240,7 +242,7 @@ public:
 bool XML_LandscapeParser::Start()
 {
 	Data = DefaultLandscape;
-	Frame = 0;
+	Frame = AnyFrame;
 		
 	return true;
 }
@@ -249,7 +251,7 @@ bool XML_LandscapeParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (strcmp(Tag,"coll") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(AnyFrame),short(NUMBER_OF_COLLECTIONS-1)))
 		{
 			IsPresent = true;
 			return true;
@@ -267,6 +269,10 @@ bool XML_LandscapeParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"vert_exp") == 0)
 	{
 		return (ReadNumericalValue(Value,"%hd",Data.VertExp));
+	}
+	else if (strcmp(Tag,"vert_repeat") == 0)
+	{
+		return (ReadBooleanValue(Value,Data.VertRepeat));
 	}
 	else if (strcmp(Tag,"ogl_asprat_exp") == 0)
 	{
