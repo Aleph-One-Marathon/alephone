@@ -19,6 +19,9 @@ Oct 19, 2000 (Loren Petrich):
 
 Jan 17, 2001 (Loren Petrich):
 	Added vertical flipping
+
+Sept 11, 2001 (Loren Petrich):
+	Added 3D-model support, including calculation of a projected bounding box and the miner's-light distance and direction
 */
 
 #include "cseries.h"
@@ -37,13 +40,16 @@ Jan 17, 2001 (Loren Petrich):
 #define MAXIMUM_RENDER_OBJECTS 72
 #define MAXIMUM_OBJECT_BASE_NODES 6
 
-// Function defined at the end
+// For finding the 2D projection of the bounding box;
+// also finds other useful info
 static void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	long_point3d& TransformedPosition,
 	GLfloat Scale,
 	short RelativeAngle,
 	shape_information_data& ShapeInfo,
-	int& Depth,
+	int& Farthest,
+	int& DistanceRef,
+	int& LightDepth,
 	GLfloat *Direction
 );
 
@@ -62,10 +68,6 @@ void RenderPlaceObjsClass::initialize_render_object_list()
 {
 	// LP change: using growable list
 	RenderObjects.clear();
-	/*
-	render_object_count= 0;
-	next_render_object= render_objects;
-	*/
 	
 	return;
 }
@@ -112,6 +114,7 @@ void RenderPlaceObjsClass::build_render_object_list()
 
 	return;
 }
+
 
 // LP change: make it better able to do long-distance views
 render_object_data *RenderPlaceObjsClass::build_render_object(
@@ -161,7 +164,10 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			*/
 		}
 		
-		if (transformed_origin.x>MINIMUM_OBJECT_DISTANCE)
+		// May do some calculation on spries that are behind the view position,
+		// but that is necessary for correctly rendering models that are behind the viewpoint,
+		// but which extend to in fron of the viewpoint.
+		// if (transformed_origin.x>MINIMUM_OBJECT_DISTANCE)
 		{
 			int x0, x1, y0, y1;	// Need the extra precision here
 			shape_and_transfer_mode data;
@@ -169,8 +175,14 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			shape_information_data scaled_shape_information; // if necessary
 			shape_information_data model_shape_information;	// also if necessary
 			
+			// Maximum distance of object parts (use position if a sprite)
+			int Farthest = transformed_origin.x;
+			
+			// Reference distance for frame calculation (use position if a sprite)
+			int DistanceRef = transformed_origin.x;
+			
 			// For the convenience of the 3D-model renderer
-			int LightDepth;
+			int LightDepth = transformed_origin.x;
 			GLfloat LightDirection[3];
 			
 			get_object_shape_and_transfer_mode(&view->origin, object_index, &data);
@@ -200,11 +212,14 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				
 				FindProjectedBoundingBox(ModelPtr->Model.BoundingBox,
 					transformed_origin, Scale, object->facing - view->yaw,
-					model_shape_information, LightDepth, LightDirection);
+					model_shape_information, Farthest, DistanceRef, LightDepth, LightDirection);
 				
 				// Set pointer back
 				shape_information = &model_shape_information;
 			}
+			
+			// Too close?
+			if (Farthest < MINIMUM_OBJECT_DISTANCE) return NULL;
 			
 			/* if the caller wants it, give him the left and right extents of this shape */
 			if (base_nodes)
@@ -213,11 +228,11 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					shape_information->world_left, shape_information->world_right, base_nodes);
 			}
 			
-			// Doing this with full-integer arithmetic to avoid mis-clipping
-			x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/transformed_origin.x;
-			x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/transformed_origin.x;
-			y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/transformed_origin.x + view->dtanpitch;
-			y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/transformed_origin.x + view->dtanpitch;
+			// Doing this with full-integer arithmetic to avoid mis-clipping;
+			x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/DistanceRef;
+			x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/DistanceRef;
+			y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/DistanceRef + view->dtanpitch;
+			y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/DistanceRef + view->dtanpitch;
 			if (x0<x1 && y0<y1)
 			{
 				// LP Change:
@@ -249,10 +264,6 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					}
 				}
 				render_object= &RenderObjects[Length];
-				/*
-				render_object= next_render_object++;
-				render_object_count+= 1;
-				*/
 				
 				render_object->rectangle.flags= 0;
 				
@@ -272,7 +283,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					if (media && !OBJECT_IS_MEDIA_EFFECT(object))
 					{
 						render_object->rectangle.LiquidRelHeight = PIN(media->height - object->location.z, SHRT_MIN,SHRT_MAX);
-						int ProjLiquidHeight = view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
+						int ProjLiquidHeight = view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/DistanceRef + view->dtanpitch;
 						render_object->ymedia= PIN(ProjLiquidHeight,SHRT_MIN,SHRT_MAX);
 					}
 					else
@@ -281,19 +292,6 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 						render_object->rectangle.LiquidRelHeight = SHRT_MIN;
 						render_object->ymedia= SHRT_MAX;
 					}
-					
-					/*
-					short media_index= view->under_media_boundary ? view->under_media_index : get_polygon_data(object->polygon)->media_index;
-					
-					if (media_index!=NONE && !OBJECT_IS_MEDIA_EFFECT(object))
-					{
-						render_object->ymedia= view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
-					}
-					else
-					{
-						render_object->ymedia= INT16_MAX;
-					}
-					*/
 				}
 				
 				extended_get_shape_bitmap_and_shading_table(data.collection_code, data.low_level_shape_index,
@@ -324,10 +322,10 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				case _xfer_fold_in:
 				case _xfer_fold_out:
 					render_object->rectangle.xc =
-						view->half_screen_width + (int(transformed_origin.y)*view->world_to_screen_x)/transformed_origin.x;
+						view->half_screen_width + (int(transformed_origin.y)*view->world_to_screen_x)/DistanceRef;
 				}
 				
-				render_object->rectangle.depth= transformed_origin.x;
+				render_object->rectangle.depth= DistanceRef;
 				instantiate_rectangle_transfer_mode(view, &render_object->rectangle, data.transfer_mode, data.transfer_phase);
 				
 				render_object->rectangle.ambient_shade= MAX(shape_information->minimum_light_intensity, floor_intensity);
@@ -838,13 +836,22 @@ shape_information_data *RenderPlaceObjsClass::rescale_shape_information(
 
 
 // Creates a fake sprite rectangle from a model's bounding box;
-// also finds the depth and direction to use in the model's "Miner's Light" effect
+// also finds:
+//
+// Distance of farthest part of the bounding box
+// Reference distance for calculating bounding-box projection
+// 
+// For player-illumination "Miner's Light" effect:
+// Light-position depth (halfway between closest point and bbox centroid)
+// Light-position direction
 void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	long_point3d& TransformedPosition,
 	GLfloat Scale,
 	short RelativeAngle,
 	shape_information_data& ShapeInfo,
-	int& Depth,
+	int& Farthest,
+	int& DistanceRef,
+	int& LightDepth,
 	GLfloat *Direction
 )
 {
@@ -910,8 +917,12 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	// Find minimum and maximum projected Y, Z;
 	// scale to the object's position to be compatible
 	// with the rest of the code.
-	GLfloat XMin;
+	GLfloat XMin, XMax;
 	GLfloat Proj_YMin, Proj_YMax, Proj_ZMin, Proj_ZMax;
+	
+	// Reference distance for projected bounding box
+	GLfloat XRef = MAX(X0,MINIMUM_OBJECT_DISTANCE);
+	DistanceRef = int(XRef + 0.5);
 	
 	for (int k=0; k<8; k++)
 	{
@@ -921,26 +932,28 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 		
 		GLfloat XClip = MAX(X,MINIMUM_OBJECT_DISTANCE);
 		
-		GLfloat Proj = (X0/XClip);
+		GLfloat Proj = (XRef/XClip);
 		GLfloat Proj_Y = Proj*Y;
 		GLfloat Proj_Z = Proj*Z;
 		
 		if (k == 0)
 		{
-			XMin = XClip;
+			XMin = X;
+			XMax = X;
 			Proj_YMin = Proj_YMax = Proj_Y;
 			Proj_ZMin = Proj_ZMax = Proj_Z;
 		}
 		else
 		{
-			XMin = MIN(XMin, XClip);
+			XMin = MIN(XMin, X);
+			XMax = MAX(XMax, X);
 			Proj_YMin = MIN(Proj_YMin,Proj_Y);
 			Proj_YMax = MAX(Proj_YMax,Proj_Y);
 			Proj_ZMin = MIN(Proj_ZMin,Proj_Z);
 			Proj_ZMax = MAX(Proj_ZMax,Proj_Z);
 		}
 	}
-	
+		
 	// Unshift by the object's position
 	Proj_YMin -= Y0;
 	Proj_YMax -= Y0;
@@ -958,8 +971,11 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	Y0 += (ExpandedBB[0][1] + ExpandedBB[7][1])/2;
 	Z0 += (ExpandedBB[0][2] + ExpandedBB[7][2])/2;
 	
+	// For checking if any of the bounding box will be visible
+	Farthest = int(XMax + 0.5);
+	
 	// Find the depth to use in the miner's light for the object
-	Depth = int((XMin + MAX(X0,MINIMUM_OBJECT_DISTANCE))/2);
+	LightDepth = MAX(int((XMin + X0)/2 + 0.5),0);
 	
 	// Find the direction to the object;
 	// use the engine's fast square root
