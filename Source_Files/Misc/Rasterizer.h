@@ -16,34 +16,20 @@
 class RasterizerClass
 {
 public:
-
-	// Temporary pointers, to be moved into a subclass
-	bitmap_definition *destination;
-	view_data *view;
 	
 	// Sets the rasterizer's view data;
 	// be sure to call it before doing any rendering
-	void SetView(view_data& View) {view = &View; OGL_SetView(View);}
+	virtual void SetView(view_data& View) {}
 	
 	// Rendering calls
+	virtual void Begin() {}
+	virtual void End() {}
 	
-	void texture_horizontal_polygon(polygon_definition& textured_polygon)
-	{
-		if (!OGL_RenderWall(textured_polygon,false))
-			::texture_horizontal_polygon(&textured_polygon, destination, view);
-	}
+	virtual void texture_horizontal_polygon(polygon_definition& textured_polygon) {}
 	
-	void texture_vertical_polygon(polygon_definition& textured_polygon)
-	{
-		if (!OGL_RenderWall(textured_polygon,true))
-			::texture_vertical_polygon(&textured_polygon, destination, view);
-	}
+	virtual void texture_vertical_polygon(polygon_definition& textured_polygon) {}
 	
-	void texture_rectangle(rectangle_definition& textured_rectangle)
-	{
-		if (!OGL_RenderSprite(textured_rectangle))
-			::texture_rectangle(&textured_rectangle, destination, view);
-	}
+	virtual void texture_rectangle(rectangle_definition& textured_rectangle) {}
 };
 
 
