@@ -808,11 +808,11 @@ void *get_flat_data(
 					// byte *buffer= ((byte *) data)+sizeof(struct encapsulated_wad_data);
 					
 					// Pack the encapsulated header
-					byte *S = buffer;
+					byte *S = data;
 					ValueToStream(S,uint32(CURRENT_FLAT_MAGIC_COOKIE));
 					ValueToStream(S,int32(length + SIZEOF_encapsulated_wad_data));
 					S = pack_wad_header(S,&header,1);
-					assert((S - buffer) == SIZEOF_encapsulated_wad_data);
+					assert((S - data) == SIZEOF_encapsulated_wad_data);
 					
 					/*
 					data->magic_cookie= CURRENT_FLAT_MAGIC_COOKIE;
@@ -821,14 +821,16 @@ void *get_flat_data(
 					*/
 					
 					/* Read into our buffer... */
-					error= read_indexed_wad_from_file_into_buffer(OFile, &header, wad_index, 
+					success = read_indexed_wad_from_file_into_buffer(OFile, &header, wad_index, 
 						buffer, &length);
-
-					if(error)
+					
+					if (!success)
+					// if(error)
 					{
 						/* Error-> didn't get it.. */
 						free(data);
 						data= NULL;
+						error = OFile.GetError();
 					}
 				} 
 				else 
