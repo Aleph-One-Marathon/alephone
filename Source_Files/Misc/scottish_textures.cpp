@@ -202,9 +202,9 @@ struct _vertical_polygon_line_data
 	} \
 }
 
-//		table_index= SHADE_TO_SHADING_TABLE_INDEX((view)->maximum_depth_intensity - DEPTH_TO_SHADE(depth)); \
-//		table_index= PIN(table_index, 0, number_of_shading_tables); \
-//		table_index= MAX(SHADE_TO_SHADING_TABLE_INDEX(ambient_shade), table_index); \
+//		table_index= SHADE_TO_SHADING_TABLE_INDEX((view)->maximum_depth_intensity - DEPTH_TO_SHADE(depth));
+//		table_index= PIN(table_index, 0, number_of_shading_tables);
+//		table_index= MAX(SHADE_TO_SHADING_TABLE_INDEX(ambient_shade), table_index);
 
 /* ---------- globals */
 
