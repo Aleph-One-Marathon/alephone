@@ -133,6 +133,8 @@ static void setup_network_list_box(WindowPtr window, Rect *frame, unsigned char 
 static void dispose_network_list_box(void);
 static pascal void update_player_list_item(DialogPtr dialog, short item_num);
 static void found_player_callback(const SSLP_ServiceInstance* player);
+static void lost_player_callback(const SSLP_ServiceInstance* player);
+static void player_name_changed_callback(const SSLP_ServiceInstance* player);
 
 // ZZZ: moved to network.cpp (network.h) so we can share
 //static void reassign_player_colors(short player_index, short num_players);
@@ -146,8 +148,6 @@ static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
 static void draw_player_box_with_team(Rect *rectangle, short player_index);
 
 static short get_game_duration_radio(DialogPtr dialog);
-
-static void lost_player_callback(const SSLP_ServiceInstance* player);
 
 static bool key_is_down(short key_code);
 #pragma mark -
@@ -426,6 +426,10 @@ bool network_gather(bool ResumingGame)
 	// Actually a Data Browser control, a sort of super list box introduced in Carbon/OSX
 	Data.NetworkDisplayCtrl = GetCtrlFromWindow(Window(), 0, iNETWORK_LIST_BOX);
 	
+	/* spawn an asynchronous network name lookup */
+	NetLookupClose();	// Quit previous looking up -- from setup_network_list_box()
+	NetLookupOpen_SSLP(PLAYER_TYPE, get_network_version(), found_player_callback, lost_player_callback, player_name_changed_callback);
+	
 	DataBrowserCallbacks Callbacks;
 	obj_clear(Callbacks);	// Makes everything NULL
 	Callbacks.version = kDataBrowserLatestCallbacks;
@@ -471,6 +475,8 @@ bool network_gather(bool ResumingGame)
 	}
 	
 	// Clean up
+	NetLookupClose();	// from dispose_network_list_box()
+	
 	DisposeDataBrowserItemDataUPP(Callbacks.u.v1.itemDataCallback);
 	DisposeDataBrowserItemNotificationUPP(Callbacks.u.v1.itemNotificationCallback);
 	
