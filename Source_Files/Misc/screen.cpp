@@ -1276,18 +1276,38 @@ void animate_screen_clut(
 	{
 		GDHandle old_device;
 
-		HLock((Handle)macintosh_color_table);	
+		HLock((Handle)macintosh_color_table);
 		old_device= GetGDevice();
 		SetGDevice(world_device);
+		
+		/*
+		// Setup for Control() call
+		short DevRefNum = (**world_device).gdRefNum;
+		
+		// Defined in MacOS header Video.h; parallels LowLevelSetEntries
+		VDSetEntryRecord CTabRec;
+		CTabRec.csStart = 0;
+		CTabRec.csCount = (**macintosh_color_table).ctSize;
+		CTabRec.csTable = (**macintosh_color_table).ctTable;
+		void *CTRecPtr = (void *)(&CTabRec);
+		short CommandCode = ((**world_device).gdType == directType) ?
+			cscDirectSetEntries :
+				cscSetEntries;
+		*/
 		switch (screen_mode.acceleration)
 		{
-			
 			// LP change: added OpenGL behavior
 			case _opengl_acceleration:
 			case _no_acceleration:
+				// Defined in MacOS header Devices.h
+				// Control(DevRefNum, CommandCode, &CTRecPtr);
+				// SetEntries(0, (*macintosh_color_table)->ctSize, (*macintosh_color_table)->ctTable);
 				LowLevelSetEntries(0, (*macintosh_color_table)->ctSize, (*macintosh_color_table)->ctTable);
 				break;
 		}
+		
+		// For checking on what had been set:
+		// Status(DevRefNum, cscGetEntries, &CTRecPtr);
 		
 		DisposeHandle((Handle)macintosh_color_table);
 		SetGDevice(old_device);
