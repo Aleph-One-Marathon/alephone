@@ -1531,45 +1531,93 @@ static void DisplayMessages(GrafPtr port)
 }
 #endif
 
-static void restore_world_device(
+
+// LP: has Steven Bytnar's changes to make this routine reentrant and otherwise better behaved.
+void restore_world_device(
 	void)
 {
 	GrafPtr old_port;
+	
+	static int entered = false;
+	if (entered) return;
+	entered = true;
 
 	switch (screen_mode.acceleration)
 	{
 	}
 	
-	GetPort(&old_port);
-	SetPort(screen_window);
-	PaintRect(&screen_window->portRect);
-	SetPort(old_port);
-	
+	if (screen_window)
+	{
+		GrafPtr screen_port = (GrafPtr)GetWindowPort(screen_window);
+		if (screen_port) {
+			GetPort(&old_port);
+			SetPort(screen_port);
+			Rect portRect;
+#if TARGET_CARBON
+			GetPortBounds(GetWindowPort(screen_window), &portRect);
+#else
+			portRect = screen_window->portRect;
+#endif
+			PaintRect(&portRect);
+			SetPort(old_port);
+		}
+	}
 	myShowMenuBar();
 
 	/* put our device back the way we found it */
-	SetDepthGDSpec(&restore_spec);
+	if (screen_initialized)
+	{
+		SetDepthGDSpec(&restore_spec);
+	}
 	
 	// Use the Display Manager to set the size back
 	
 	unsigned long TempBitDepth = restore_spec.bit_depth;
-	DMSetDisplayMode(world_device,RestoreScreenMode,&TempBitDepth,NULL,NULL);
+	if (RestoreScreenMode != -1)
+	{
+		DMSetDisplayMode(world_device,RestoreScreenMode,&TempBitDepth,NULL,NULL);
+		RestoreScreenMode = -1;
+	}
 	
-	myDisposeGWorld(world_pixels);
+	if (world_pixels)
+	{
+		myDisposeGWorld(world_pixels);
+		world_pixels = NULL;
+	}
 	
-	CloseWindow(screen_window);
-	CloseWindow(backdrop_window);
+#if !TARGET_CARBON
+	if (screen_window)
+	{
+		CloseWindow(screen_window);
+		screen_window = NULL;
+	}
+	if (backdrop_window)
+	{
+		CloseWindow(backdrop_window);
+		backdrop_window = NULL;
+	}
+#else
+	if (screen_window)
+	{
+		HideWindow(screen_window);
+		DisposeWindow(screen_window);
+		screen_window = NULL;
+	}
+	if (backdrop_window)
+	{
+		HideWindow(backdrop_window);
+		DisposeWindow(backdrop_window);
+		backdrop_window = NULL;
+	}
+#endif
 	
 	return;
 }
 
+
 // LP changes: moved sizing and resolution outside of this function,
 // because they can be very variable
 /* pixels are already locked, etc. */
-/*
-static void update_screen(
-	void)
-	*/
 static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 {
 	/*
@@ -1977,7 +2025,7 @@ void dump_screen()
 		// Cribbed from Apple's QT Sound Manager docs
 		HLock(SoundHandle);
 		SndPlay(NULL, (SndListResource **)SoundHandle, true);
-        HUnlock(SoundHandle);
+		HUnlock(SoundHandle);
 		ReleaseResource(SoundHandle);
 	}
 	
