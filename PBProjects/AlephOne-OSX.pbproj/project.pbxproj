@@ -91,8 +91,7 @@
 //174
 		17587328FF379C6511CA2CBB = {
 			explicitFileType = wrapper.application;
-			fallbackIsa = PBXFileReference;
-			isa = PBXApplicationReference;
+			isa = PBXFileReference;
 			path = AlephOneSDL.app;
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -844,8 +843,6 @@
 //2B3
 //2B4
 		2B14B80104AB783A00A80001 = {
-			buildRules = (
-			);
 			buildSettings = {
 				CC = "/usr/bin/gcc-3.3";
 				COPY_PHASE_STRIP = NO;
@@ -900,14 +897,21 @@
 			remoteInfo = "AlephOne-Carbon";
 		};
 		3D5482BA04D73ED300000107 = {
-			buildRules = (
-			);
 			buildSettings = {
 				CC = "/usr/bin/gcc-3.3";
 				COPY_PHASE_STRIP = YES;
 				CPLUSPLUS = "/usr/bin/g++-3.3";
 				DEBUGGING_SYMBOLS = NO;
+				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_MODEL_TUNING = G3;
 				GCC_VERSION = 3.x;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				PRECOMPILE_PREFIX_HEADER = NO;
 				PREFIX_HEADER = "";
 			};
@@ -1260,8 +1264,6 @@
 //4A3
 //4A4
 		4A9504CCFFE6A4B311CA0CBA = {
-			buildRules = (
-			);
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
 				DEBUGGING_SYMBOLS = YES;
@@ -1277,11 +1279,14 @@
 			name = Development;
 		};
 		4A9504CDFFE6A4B311CA0CBA = {
-			buildRules = (
-			);
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G3;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				WARNING_CFLAGS = "";
 				ZERO_LINK = NO;
 			};
@@ -1635,8 +1640,6 @@
 			};
 		};
 		EF2EF5F50483C7D900A8000D = {
-			buildRules = (
-			);
 			buildSettings = {
 				CC = /usr/bin/gcc3;
 				COPY_PHASE_STRIP = NO;
@@ -3788,8 +3791,7 @@
 			sourceTree = "<group>";
 		};
 		F5281C0501F8C94101E83A66 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			path = SDL.framework;
 			refType = 4;
@@ -3802,16 +3804,14 @@
 			};
 		};
 		F5281C0701F8CA2101E83A66 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			path = SDL_image.framework;
 			refType = 4;
 			sourceTree = "<group>";
 		};
 		F5281C0801F8CA2101E83A66 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			path = SDL_net.framework;
 			refType = 4;
@@ -3825,8 +3825,7 @@
 		};
 		F53673ED02014B3E01A80001 = {
 			explicitFileType = wrapper.application;
-			fallbackIsa = PBXFileReference;
-			isa = PBXApplicationReference;
+			isa = PBXFileReference;
 			path = AlephOne.app;
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -3850,7 +3849,7 @@
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = "/usr/local/lib \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\"";
-				OPTIMIZATION_CFLAGS = "-Os -frename-registers -finline-functions -funroll-loops -mtune=750 -mcpu=750 -mpowerpc-gfxopt -mupdate ";
+				OPTIMIZATION_CFLAGS = "-Os -frename-registers -ftracer -fsched-spec-load -fforce-addr -finline-functions -ffast-math -mmultiple";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -DHAVE_UNISTD_H -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA -DSPEEX\n";
 				OTHER_LDFLAGS = "-flat_namespace -llua -llualib -lspeex";
 				OTHER_REZFLAGS = "";
@@ -4484,8 +4483,7 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		F53673F502014D2D01A80001 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = Carbon.framework;
 			path = /System/Library/Frameworks/Carbon.framework;
@@ -4493,8 +4491,7 @@
 			sourceTree = "<absolute>";
 		};
 		F53673F602014D2D01A80001 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = QuickTime.framework;
 			path = /System/Library/Frameworks/QuickTime.framework;
@@ -4502,8 +4499,7 @@
 			sourceTree = "<absolute>";
 		};
 		F53673F702014D2D01A80001 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = ApplicationServices.framework;
 			path = /System/Library/Frameworks/ApplicationServices.framework;
@@ -4511,8 +4507,7 @@
 			sourceTree = "<absolute>";
 		};
 		F53673F802014D2D01A80001 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = AGL.framework;
 			path = /System/Library/Frameworks/AGL.framework;
@@ -4520,8 +4515,7 @@
 			sourceTree = "<absolute>";
 		};
 		F53673F902014D2D01A80001 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = CoreServices.framework;
 			path = /System/Library/Frameworks/CoreServices.framework;
@@ -5568,8 +5562,7 @@
 			};
 		};
 		F5830B4001E776DE01BA387C = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = OpenGL.framework;
 			path = /System/Library/Frameworks/OpenGL.framework;
@@ -5766,8 +5759,7 @@
 			};
 		};
 		F59FB19D01E780DF01BBE912 = {
-			fallbackIsa = PBXFileReference;
-			isa = PBXFrameworkReference;
+			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
 			name = Cocoa.framework;
 			path = /System/Library/Frameworks/Cocoa.framework;
@@ -5929,8 +5921,7 @@
 		};
 		F5A25343023B713601A80001 = {
 			explicitFileType = "compiled.mach-o.executable";
-			fallbackIsa = PBXFileReference;
-			isa = PBXExecutableFileReference;
+			isa = PBXFileReference;
 			path = "Carbon Standalone";
 			refType = 3;
 			sourceTree = BUILT_PRODUCTS_DIR;
