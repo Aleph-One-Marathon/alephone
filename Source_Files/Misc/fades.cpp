@@ -236,7 +236,7 @@ void initialize_fades(
 	void)
 {
 	/* allocate and initialize space for our fade_data structure */
-	fade= (struct fade_data *) malloc(sizeof(struct fade_data));
+	fade= new fade_data;
 	assert(fade);
 	
 	SET_FADE_ACTIVE_STATUS(fade, FALSE);
