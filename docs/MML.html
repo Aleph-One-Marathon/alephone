@@ -513,6 +513,15 @@ There must be at least one of these in a sequence, for rather obvious reasons.
 
 This kind of element specifies various control-panel features,
 such as what kind it is, what items it accepts, and so forth.
+It has these attributes:
+<ul>
+<li>reach: the maximum distance one can reach to touch a control panel,
+in World Units (default: 1.5)
+<li>horiz: how compressed-to-horizontal the reaching must be;
+no compression is 1 (default: 2)
+</ul>
+<p>
+
 Each kind of control panel is specified with the child element
 &lt;panel&gt;, which has these attributes:
 <ul>
@@ -1580,6 +1589,7 @@ The final one, &lt;fog&gt;, has these attributes:
 The default is 0 (above liquid).
 <li>on: (<a href="#boolean">boolean</a>; default: false)
 <li>depth: the fog depth in World Units (default: 8)
+<li>landscapes: whether this fog affects landscape textures (default: true)
 </ul>
 <p>
 
