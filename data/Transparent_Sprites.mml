@@ -153,6 +153,17 @@
 <texture coll="10" bitmap="37" opac_type="3" opac_scale="1.5"/>
 <texture coll="10" bitmap="38" opac_type="3" opac_scale="1.5"/>
 
+<!-- VacBob hit spark -->
+<texture coll="13" bitmap="64" opac_type="3" opac_scale="1"/>
+<texture coll="13" bitmap="65" opac_type="3" opac_scale="1"/>
+<texture coll="13" bitmap="66" opac_type="3" opac_scale="1"/>
+
+<!-- Enforcer hit spark -->
+<texture coll="14" bitmap="29" opac_type="3" opac_scale="1"/>
+<texture coll="14" bitmap="30" opac_type="3" opac_scale="1"/>
+<texture coll="14" bitmap="31" opac_type="3" opac_scale="1"/>
+<texture coll="14" bitmap="32" opac_type="3" opac_scale="1"/>
+
 <!-- Drone hit spark -->
 <texture coll="15" bitmap="18" opac_type="3" opac_scale="1"/>
 <texture coll="15" bitmap="19" opac_type="3" opac_scale="1"/>
