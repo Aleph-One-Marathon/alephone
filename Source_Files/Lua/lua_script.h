@@ -1,4 +1,4 @@
-#ifdef HAVE_LUA
+
 #ifndef LUA_SCRIPT_H
 #define LUA_SCRIPT_H
 
@@ -22,12 +22,12 @@ void L_Call_Player_Revived(short player_index);
 void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action, short projectile_index);
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
 
-
 bool LoadLuaScript(const char *buffer, size_t len);
 bool RunLuaScript();
 void CloseLuaScript();
 
 bool UseLuaCameras();
+
 
 // camera data structures
 struct timed_point
@@ -62,5 +62,4 @@ struct lua_camera //an expanded version of script_camera; uses Lua's path scheme
     int player_active;
 };
 
-#endif
 #endif

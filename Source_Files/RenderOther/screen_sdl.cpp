@@ -59,10 +59,8 @@
 
 #include "sdl_fonts.h"
 
-#ifdef HAVE_LUA
 #include "lua_script.h"
 
-#endif /* HAVE_LUA */
 
 // Global variables
 static SDL_Surface *main_surface;	// Main (display) surface
@@ -478,11 +476,7 @@ void render_screen(short ticks_elapsed)
 	world_view->origin_polygon_index = current_player->camera_polygon_index;
 
 	// Script-based camera control
-#ifdef HAVE_LUA
 	if (!UseLuaCameras() && !script_Camera_Active())
-#else
-	if (!script_Camera_Active())
-#endif /* HAVE_LUA */
 		world_view->show_weapons_in_hand = !ChaseCam_GetPosition(world_view->origin, world_view->origin_polygon_index, world_view->yaw, world_view->pitch);
 
 #ifdef HAVE_OPENGL

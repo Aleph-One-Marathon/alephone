@@ -72,10 +72,8 @@ Feb 3, 2003 (Woody Zenfell):
 //CP Addition: Scripting Hooks
 #include "scripting.h"
 #include "shell.h"	// screen_printf()
-#ifdef HAVE_LUA
 //MH: Lua scripting
 #include "lua_script.h"
-#endif /* HAVE_LUA */
 
 #include <string.h>
 #include <limits.h>
@@ -496,10 +494,8 @@ void try_and_toggle_control_panel(
 						}
 						//CP Addition: Script Hook; LP: this and its successors made consistent with change_panel_state()
 						activate_tag_switch_trap(side->control_panel_permutation);
-#ifdef HAVE_LUA
                                                 //MH: Lua script hook
                                                 // L_Call_Tag_Switch(side->control_panel_permutation);
-#endif /* HAVE_LUA */
 						
 						break;
 					case _panel_is_light_switch:
@@ -508,10 +504,8 @@ void try_and_toggle_control_panel(
 						
 						//CP Addition: Script Hook
 						activate_light_switch_trap(side->control_panel_permutation);
-#ifdef HAVE_LUA
                                                 //MH: Lua script hook
                                                //  L_Call_Light_Switch(side->control_panel_permutation);
-#endif /* HAVE_LUA */
 						
 						break;
 					case _panel_is_platform_switch:
@@ -520,10 +514,8 @@ void try_and_toggle_control_panel(
 						
 						//CP Addition: Script Hook
 						activate_platform_switch_trap(side->control_panel_permutation);
-#ifdef HAVE_LUA
                                                 //MH: Lua script hook
                                                 // L_Call_Platform_Switch(side->control_panel_permutation);
-#endif /* HAVE_LUA */
 						
 						break;
 				}
@@ -782,23 +774,19 @@ static void	change_panel_state(
 			state= get_recharge_status(panel_side_index);
 			SET_CONTROL_PANEL_STATUS(side, state);
 			if (!state) set_control_panel_texture(side);
-#ifdef HAVE_LUA
                                 // Lua script hook
                                 if (player -> control_panel_side_index == panel_side_index)
                                     L_Call_Start_Refuel (definition->_class, player_index, panel_side_index);
                                 else
                                     L_Call_End_Refuel (definition->_class, player_index, panel_side_index);
-#endif /* HAVE_LUA */
 			break;
 		case _panel_is_computer_terminal:
 			if (get_game_state()==_game_in_progress && !PLAYER_HAS_CHEATED(player) && !PLAYER_HAS_MAP_OPEN(player))
 			{
 				//CP Addition: Script Hook
 				activate_terminal_enter_trap(side->control_panel_permutation);
-#ifdef HAVE_LUA
                                 //MH: Lua script hook
                                 L_Call_Terminal_Enter(side->control_panel_permutation,player_index);
-#endif /* HAVE_LUA */
 				
 				/* this will handle changing levels, if necessary (i.e., if weÕre finished) */
 				enter_computer_interface(player_index, side->control_panel_permutation, calculate_level_completion_state());
@@ -819,10 +807,8 @@ static void	change_panel_state(
 				}
 				//CP Addition: Script Hook
 				activate_tag_switch_trap(side->control_panel_permutation);
-#ifdef HAVE_LUA
                                 //MH: Lua script hook
                                 L_Call_Tag_Switch(side->control_panel_permutation,player_index);
-#endif /* HAVE_LUA */
 			
 			}
 			break;
@@ -832,10 +818,8 @@ static void	change_panel_state(
 			
 			//CP Addition: Script Hook
 			activate_light_switch_trap(side->control_panel_permutation);
-#ifdef HAVE_LUA
                         //MH: Lua script hook
                         L_Call_Light_Switch(side->control_panel_permutation,player_index);
-#endif /* HAVE_LUA */
 
 			break;
 		case _panel_is_platform_switch:
@@ -844,10 +828,8 @@ static void	change_panel_state(
 			
 			//CP Addition: Script Hook
 			activate_platform_switch_trap(side->control_panel_permutation);
-#ifdef HAVE_LUA
                         //MH: Lua script hook
                         L_Call_Platform_Switch(side->control_panel_permutation,player_index);
-#endif /* HAVE_LUA */
 			
 			break;
 		case _panel_is_pattern_buffer:
@@ -876,10 +858,8 @@ static void	change_panel_state(
                                                 
                                                 //CP Addition: Script Hook
                                                 activate_pattern_buffer_trap(side->control_panel_permutation);
-#ifdef HAVE_LUA
                                                 //MH: Lua script hook
                                                 L_Call_Pattern_Buffer(side->control_panel_permutation,player_index);
-#endif /* HAVE_LUA */
                                         
                 //				fade_out_background_music(30);
                 

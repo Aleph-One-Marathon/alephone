@@ -215,9 +215,7 @@ Apr 22, 2003 (Woody Zenfell):
 
 //CP addition: scripting support
 #include "scripting.h"
-#ifdef HAVE_LUA
 #include "lua_script.h"
-#endif /* HAVE_LUA */
 
 #include "Logging.h"
 
@@ -1059,11 +1057,7 @@ void render_screen(
 	world_view->origin_polygon_index= current_player->camera_polygon_index;
 	// LP addition: chase-cam support
 	//CP Change: add script-based camera control
-#ifdef HAVE_LUA
 	if (!UseLuaCameras() && !script_Camera_Active())
-#else
-	if (!script_Camera_Active())
-#endif /* HAVE_LUA */
 	{
 		// LP addition: chase-cam support
 		world_view->show_weapons_in_hand =

@@ -48,9 +48,7 @@ using namespace std;
 #include "scripting.h"
 #include "Random.h"
 #include "images.h"
-#ifdef HAVE_LUA
 #include "lua_script.h"
-#endif /* HAVE_LUA */
 
 
 // The "command" is an instruction to process a file/resource in a certain sort of way

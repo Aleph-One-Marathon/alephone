@@ -29,9 +29,49 @@
 
  Woody Zenfell, 08/05/03
  Refactored L_Call_* to share common code; reporting runtime Lua script errors via screen_printf
+ 
+ jkvw, 09/16/03
+ L_Call_* no longer need guarding with #ifdef HAVE_LUA
  */
 
 // cseries defines HAVE_LUA on A1/SDL
+
+bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+
+#ifndef HAVE_LUA
+
+void L_Call_Init() {}
+void L_Call_Cleanup() {}
+void L_Call_Idle() {}
+void L_Call_Start_Refuel(short type, short player_index, short panel_side_index) {}
+void L_Call_End_Refuel(short type, short player_index, short panel_side_index) {}
+void L_Call_Tag_Switch(short tag, short player_index) {}
+void L_Call_Light_Switch(short light, short player_index) {}
+void L_Call_Platform_Switch(short platform, short player_index) {}
+void L_Call_Terminal_Enter(short terminal_id, short player_index) {}
+void L_Call_Terminal_Exit(short terminal_id, short player_index) {}
+void L_Call_Pattern_Buffer(short buffer_id, short player_index) {}
+void L_Call_Got_Item(short type, short player_index) {}
+void L_Call_Light_Activated(short index) {}
+void L_Call_Platform_Activated(short index) {}
+void L_Call_Player_Revived(short player_index) {}
+void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action, short projectile_index) {}
+void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
+
+bool LoadLuaScript(const char *buffer, size_t len) { /* Should never get here! */ }
+bool RunLuaScript() {
+	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
+		use_lua_compass [i] = false;
+	return false;
+}
+void CloseLuaScript() {}
+
+bool UseLuaCameras() { return false; }
+
+#else /* HAVE_LUA */
+
 #include "cseries.h"
 
 #include "mouse.h"
@@ -125,10 +165,6 @@ vector<lua_camera> lua_cameras;
 int number_of_cameras = 0;
 
 uint32 *action_flags;
-
-bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
-world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
-short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
 double FindLinearValue(double startValue, double endValue, double timeRange, double timeTaken)
 {
@@ -3584,10 +3620,10 @@ bool LoadLuaScript(const char *buffer, size_t len)
 
 bool RunLuaScript()
 {
-	if (!lua_loaded)
-		return false;
 	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
 		use_lua_compass [i] = false;
+	if (!lua_loaded)
+		return false;
 	int result = lua_pcall(state, 0, LUA_MULTRET, 0);
 	lua_running = (result==0);
 	return lua_running;
@@ -3601,8 +3637,6 @@ void CloseLuaScript()
 	lua_running = false;
 	lua_cameras.resize(0);
 	number_of_cameras = 0;
-	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
-		use_lua_compass [i] = false;
 }
 
 bool UseLuaCameras()
@@ -3669,3 +3703,5 @@ bool UseLuaCameras()
 }
 
 #endif
+
+#endif /* HAVE_LUA */

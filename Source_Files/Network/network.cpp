@@ -173,9 +173,7 @@ clearly this is all broken until we have packet types
 #undef NETWORK_IP
 #endif
 
-#ifdef HAVE_LUA
 #include "lua_script.h"
-#endif
 
 /* ---------- globals */
 
@@ -1180,7 +1178,7 @@ OSErr NetDistributeGameDataToAllPlayers(
                         process_network_physics_model(physics_buffer);
                 
 		draw_progress_bar(total_length, total_length);
-                
+
 #ifdef HAVE_LUA
                 if (do_netscript)
                 {
