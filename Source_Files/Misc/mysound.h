@@ -46,16 +46,17 @@ enum // sound sources
 	NUMBER_OF_SOUND_SOURCES
 };
 
-enum // initialization flags
+enum // initialization flags (some of these are used by the prefs, which fixes them)
 {
-	_stereo_flag= 0x0001, /* play sounds in stereo */
-	_dynamic_tracking_flag= 0x0002, /* tracks sound sources during idle_proc */
+	_stereo_flag= 0x0001, /* play sounds in stereo [prefs] */
+	_dynamic_tracking_flag= 0x0002, /* tracks sound sources during idle_proc [prefs] */
 	_doppler_shift_flag= 0x0004, /* adjusts sound pitch during idle_proc */
-	_ambient_sound_flag= 0x0008, /* plays and tracks ambient sounds (valid iff _dynamic_tracking_flag) */
-	_16bit_sound_flag= 0x0010, /* loads 16bit audio instead of 8bit */
-	_more_sounds_flag= 0x0020, /* loads all permutations; only loads #0 if false */
-	_extra_memory_flag= 0x0040, /* double usual memory */
-	_extra_extra_memory_flag= 0x0080 /* quadruple usual memory */ // Because RAM is more available
+	_ambient_sound_flag= 0x0008, /* plays and tracks ambient sounds (valid iff _dynamic_tracking_flag) [prefs] */
+	_16bit_sound_flag= 0x0010, /* loads 16bit audio instead of 8bit [prefs] */
+	_more_sounds_flag= 0x0020, /* loads all permutations; only loads #0 if false [prefs] */
+	_relative_volume_flag = 0x0040, /* LP: Ian Rickard's relative-volume flag [prefs] */
+	_extra_memory_flag= 0x0100, /* double usual memory */
+	_extra_extra_memory_flag= 0x0200 /* LP: quadruple usual memory, because RAM is more available */
 };
 
 enum // _sound_obstructed_proc() flags

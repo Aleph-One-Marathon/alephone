@@ -22,6 +22,9 @@ Dec 3, 2000 (Loren Petrich):
 
 Apr 26, 2001 (Loren Petrich):
 	Added support for loading external sounds; got that support working
+
+Sept 10, 2001 (Loren Petrich):
+	Added Ian Rickard's relative-sound 
 */
 
 #include <FixMath.h>
@@ -236,7 +239,7 @@ void test_sound_volume(
 			SetDefaultOutputVolume(sound_level_to_sound_volume(volume));
 			play_sound(sound_index, (world_location3d *) NULL, NONE);
 			while (sound_is_playing(sound_index))
-				;
+				{/* call an idle procedure here? */}
 			SetDefaultOutputVolume(sound_level_to_sound_volume(_sm_parameters->volume));
 		}
 	}
@@ -294,7 +297,8 @@ static void initialize_machine_sound_manager(
 				{
 					atexit(shutdown_sound_manager);
 					
-					_sm_globals->available_flags= _stereo_flag | _dynamic_tracking_flag;
+					// LP: need relative volume here
+					_sm_globals->available_flags= _stereo_flag | _dynamic_tracking_flag | _relative_volume_flag;
 					{
 						long heap_size= FreeMem();
 						
@@ -613,7 +617,19 @@ static pascal void sound_callback_proc(
 static long sound_level_to_sound_volume(
 	short level)
 {
-	short volume= level*SOUND_VOLUME_DELTA;
+	// Implementing Ian Rickard's relative-volume feature in a simpler fashion
+	// (OK, since there are 256 possible overall volume levels).
+	// Its formula was inspired by the definition of SOUND_VOLUME_DELTA
+	short volume = 0;
+	if (_sm_parameters->flags&_relative_volume_flag)
+	{
+		int LeftVol = HiWord(_sm_globals->old_sound_volume);
+		int RightVol = LoWord(_sm_globals->old_sound_volume);
+		int OldSoundVolume = (LeftVol + RightVol)/2;
+		volume = (2*level*OldSoundVolume)/NUMBER_OF_SOUND_VOLUME_LEVELS;
+	}
+	else
+		volume= (level*SOUND_VOLUME_DELTA);
 	
 	return BUILD_STEREO_VOLUME(volume, volume);
 }
