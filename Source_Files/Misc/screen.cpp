@@ -1502,6 +1502,7 @@ void validate_world_window(
 
 /* ---------- private code */
 
+#ifdef MOVED_OUT
 // LP addition: routine for displaying text
 static void DisplayText(short BaseX, short BaseY, char *Text)
 {
@@ -1680,7 +1681,7 @@ static void DisplayMessages(GrafPtr port)
 	// Pop
 	SetPort(old_port);
 }
-
+#endif
 
 static void restore_world_device(
 	void)

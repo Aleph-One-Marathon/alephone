@@ -38,8 +38,6 @@
 
 #include "sdl_fonts.h"
 
-#include "screen_shared.cpp"
-
 
 // Global variables
 static SDL_Surface *main_surface;	// Main (display) surface
@@ -60,6 +58,8 @@ static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable 
 // It indicates whether to render the overhead map in OpenGL
 extern bool OGL_MapActive;
 #endif
+
+#include "screen_shared.cpp"
 
 
 // Prototypes
@@ -705,7 +705,7 @@ void render_overhead_map(struct view_data *view)
 	_restore_port();
 }
 
-
+#ifdef MOVED_OUT
 /*
  *  Display text string on world window (OpenGL or not)
  */
@@ -820,7 +820,7 @@ static void DisplayMessages(SDL_Surface *s)
 		Y += LineSpacing;
 	}
 }
-
+#endif
 
 /*
  *  Get world view destination frame for given screen size

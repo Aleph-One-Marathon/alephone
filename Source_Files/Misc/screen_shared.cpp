@@ -239,6 +239,220 @@ void change_gamma_level(
 
 /* ---------- private code */
 
+// LP addition: routine for displaying text
+
+#ifdef SDL
+// Globals for communicating with the SDL contents of DisplayText
+static SDL_Surface *DisplayTextDest = NULL;
+static sdl_font_info *DisplayTextFont = NULL;
+static short DisplayTextStyle = 0;
+#endif
+
+static void DisplayText(short BaseX, short BaseY, char *Text)
+{
+	// OpenGL version:
+	// activate only in the main view, and also if OpenGL is being used for the overhead map
+	if((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
+		if (OGL_RenderText(BaseX, BaseY, Text)) return;
+	
+#if defined(mac)
+	// C to Pascal
+	Str255 PasText;
+	
+	int Len = MIN(strlen(Text),255);
+	PasText[0] = Len;
+	memcpy(PasText+1,Text,Len);
+	
+	// LP change: drop shadow in both MacOS and SDL versions
+	RGBForeColor(&rgb_black);
+	MoveTo(BaseX+1,BaseY+1);
+	DrawString(PasText);
+	
+	RGBForeColor(&rgb_white);
+	MoveTo(BaseX,BaseY);
+	DrawString(PasText);
+	
+#elif defined(SDL)
+
+	draw_text(DisplayTextDest, Text, BaseX+1, BaseY+1, SDL_MapRGB(world_pixels->format, 0x00, 0x00, 0x00), DisplayTextFont, DisplayTextStyle);
+	draw_text(DisplayTextDest, Text, BaseX, BaseY, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), DisplayTextFont, DisplayTextStyle);
+	
+#endif
+}
+
+
+#if defined(mac)
+static void update_fps_display(GrafPtr port)
+#elif defined(SDL)
+static void update_fps_display(SDL_Surface *s)
+#endif
+{
+	if (displaying_fps)
+	{
+#if defined(mac)
+		uint32 ticks= TickCount();
+#elif defined(SDL)
+		uint32 ticks = SDL_GetTicks();
+#endif
+		char fps[256];
+		
+		frame_ticks[frame_index]= ticks;
+		frame_index= (frame_index+1)%FRAME_SAMPLE_SIZE;
+		if (frame_count<FRAME_SAMPLE_SIZE)
+		{
+			frame_count+= 1;
+			strcpy(fps, "--");
+		}
+		else
+		{
+			sprintf(fps, "%3.2ffps", (FRAME_SAMPLE_SIZE*60)/(float)(ticks-frame_ticks[frame_index]));
+		}
+		
+		FontSpecifier& Font = GetOnScreenFont();
+		
+#if defined(mac)
+		GrafPtr old_port;
+		GetPort(&old_port);
+		SetPort(port);
+		Font.Use();
+		short X0 = port->portRect.left;
+		short Y0 = port->portRect.bottom;
+#elif defined(SDL)
+		DisplayTextDest = s;
+		DisplayTextFont = Font.Info;
+		DisplayTextStyle = Font.Style;
+		short X0 = 0;
+		short Y0 = s->h;
+#endif
+		// The line spacing is a generalization of "5" for larger fonts
+		short Offset = Font.LineSpacing / 3;
+		short X = X0 + Offset;
+		short Y = Y0 - Offset;
+		DisplayText(X,Y,fps);
+		
+#if defined(mac)
+		RGBForeColor(&rgb_black);
+		SetPort(old_port);
+#endif
+	}
+	else
+	{
+		frame_count= frame_index= 0;
+	}
+	
+	return;
+}
+
+
+#if defined(mac)
+static void DisplayPosition(GrafPtr port)
+#elif defined(SDL)
+static void DisplayPosition(SDL_Surface *s)
+#endif
+{
+	if (!ShowPosition) return;
+		
+	FontSpecifier& Font = GetOnScreenFont();
+	
+#if defined(mac)
+	// Push
+	GrafPtr old_port;
+	GetPort(&old_port);
+	SetPort(port);
+	Font.Use();
+	short X0 = port->portRect.left;
+	short Y0 = port->portRect.top;
+#elif defined(SDL)
+	DisplayTextDest = s;
+	DisplayTextFont = Font.Info;
+	DisplayTextStyle = Font.Style;
+	short X0 = 0;
+	short Y0 = 0;
+#endif
+	
+	short LineSpacing = Font.LineSpacing;
+	short X = X0 + LineSpacing/3;
+	short Y = Y0 + LineSpacing;
+	const float FLOAT_WORLD_ONE = float(WORLD_ONE);
+	const float AngleConvert = 360/float(FULL_CIRCLE);
+	sprintf(temporary, "X       = %8.3f",world_view->origin.x/FLOAT_WORLD_ONE);
+	DisplayText(X,Y,temporary);
+	Y += LineSpacing;
+	sprintf(temporary, "Y       = %8.3f",world_view->origin.y/FLOAT_WORLD_ONE);
+	DisplayText(X,Y,temporary);
+	Y += LineSpacing;
+	sprintf(temporary, "Z       = %8.3f",world_view->origin.z/FLOAT_WORLD_ONE);
+	DisplayText(X,Y,temporary);
+	Y += LineSpacing;
+	sprintf(temporary, "Polygon = %8d",world_view->origin_polygon_index);
+	DisplayText(X,Y,temporary);
+	Y += LineSpacing;
+	short Angle = world_view->yaw;
+	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
+	sprintf(temporary, "Yaw     = %8.3f",AngleConvert*Angle);
+	DisplayText(X,Y,temporary);
+	Y += LineSpacing;
+	Angle = world_view->pitch;
+	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
+	sprintf(temporary, "Pitch   = %8.3f",AngleConvert*Angle);
+	DisplayText(X,Y,temporary);
+	
+	// Pop
+#ifdef mac
+	RGBForeColor(&rgb_black);
+	SetPort(old_port);
+#endif
+}
+
+#if defined(mac)
+static void DisplayMessages(GrafPtr port)
+#elif defined(SDL)
+static void DisplayMessages(SDL_Surface *s)
+#endif
+{	
+	FontSpecifier& Font = GetOnScreenFont();
+	
+#if defined(mac)
+	// Push
+	GrafPtr old_port;
+	GetPort(&old_port);
+	SetPort(port);
+	Font.Use();
+	short X0 = port->portRect.left;
+	short Y0 = port->portRect.top;
+#elif defined(SDL)
+	DisplayTextDest = s;
+	DisplayTextFont = Font.Info;
+	DisplayTextStyle = Font.Style;
+	short X0 = 0;
+	short Y0 = 0;
+#endif
+	
+	short LineSpacing = Font.LineSpacing;
+	short X = X0 + LineSpacing/3;
+	short Y = Y0 + LineSpacing;
+	if (ShowPosition) Y += 6*LineSpacing;	// Make room for the position data
+	for (int k=0; k<NumScreenMessages; k++)
+	{
+		int Which = (MostRecentMessage+NumScreenMessages-k) % NumScreenMessages;
+		while (Which < 0)
+			Which += NumScreenMessages;
+		ScreenMessage& Message = Messages[Which];
+		if (Message.TimeRemaining <= 0) continue;
+		Message.TimeRemaining--;
+		
+		DisplayText(X,Y,Message.Text);
+		Y += LineSpacing;
+	}
+	
+	// Pop
+#ifdef mac
+	RGBForeColor(&rgb_black);
+	SetPort(old_port);
+#endif
+}
+
+
 static void set_overhead_map_status( /* it has changed, this is the new status */
 	bool status)
 {
