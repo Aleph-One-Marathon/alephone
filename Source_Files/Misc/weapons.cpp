@@ -2028,9 +2028,12 @@ static bool reload_weapon(
 	struct player_data *player= get_player_data(player_index);
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 	bool can_reload;
-
-	assert(trigger->state==_weapon_idle && trigger->rounds_loaded==0);
-	assert(trigger_definition->ammunition_type==NONE || (trigger_definition->ammunition_type>=0 && trigger_definition->ammunition_type<NUMBER_OF_ITEMS));
+	
+	// LP change: bugging out if these cannot be done
+	if (!(trigger->state==_weapon_idle && trigger->rounds_loaded==0)) return false;
+	if (!(trigger_definition->ammunition_type==NONE || (trigger_definition->ammunition_type>=0 && trigger_definition->ammunition_type<NUMBER_OF_ITEMS))) return false;
+	// assert(trigger->state==_weapon_idle && trigger->rounds_loaded==0);
+	// assert(trigger_definition->ammunition_type==NONE || (trigger_definition->ammunition_type>=0 && trigger_definition->ammunition_type<NUMBER_OF_ITEMS));
 
 	if(trigger_definition->ammunition_type != NONE && player->items[trigger_definition->ammunition_type]>0)
 	{
@@ -3743,10 +3746,15 @@ static void change_to_desired_weapon(
 					{
 						first_trigger= _primary_weapon;
 						trigger_count= 1;
-					} else {
-						assert(get_trigger_data(player_index, player_weapons->desired_weapon, _secondary_weapon)->rounds_loaded);
+					// LP change: adding fallback in case this does not succeed
+					} else if (get_trigger_data(player_index, player_weapons->desired_weapon, _secondary_weapon)->rounds_loaded) {
+						// assert(get_trigger_data(player_index, player_weapons->desired_weapon, _secondary_weapon)->rounds_loaded);
 						first_trigger= _secondary_weapon;
 						trigger_count= 2;
+					} else
+					{
+						first_trigger = _primary_weapon;
+						trigger_count = 2;
 					}
 				}
 			}
