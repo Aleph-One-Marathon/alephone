@@ -1062,39 +1062,8 @@ static void build_extensions_list(
 	void)
 {
 	DirectorySpecifier BaseDir;
-	BaseDir.SetToAppParent();
+	Files_GetRootDirectory(BaseDir);
 	search_from_directory(BaseDir);
-	
-	// LP: for now, will only care about looking in the Marathon app's directory
-	#if 0
-	/* Add the paths.. */
-	path_count= countstr(strPATHS);
-	for(ii= 0; ii<path_count; ++ii)
-	{
-		OSErr err;
-		FSSpec file;
-	
-		getpstr(ptemporary, strPATHS, ii);
-		
-		/* Hmm... check FSMakeFSSpec... */
-		/* Relative pathname.. */
-		err= FSMakeFSSpec(my_spec.vRefNum, my_spec.parID, ptemporary, &file);
-		
-		if(!err) 
-		{
-			long parID;
-			
-			err= get_directories_parID(&file, &parID);
-			if(!err)
-			{
-				file.parID= parID;
-				search_from_directory(&file);
-			} else {
-				dprintf("Error: %d", err);
-			}
-		}
-	}
-	#endif
 }
 
 static void search_from_directory(DirectorySpecifier& BaseDir)

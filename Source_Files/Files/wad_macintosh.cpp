@@ -88,8 +88,8 @@ bool find_wad_file_that_has_checksum(
 	
 	// LP: for now, will only care about looking in the Marathon app's directory
 	DirectorySpecifier BaseDir;
-	if (BaseDir.SetToAppParent())
-		file_matched= find_wad_file_with_checksum_in_directory(MatchingFile, BaseDir,file_type, checksum);
+	Files_GetRootDirectory(BaseDir);
+	file_matched= find_wad_file_with_checksum_in_directory(MatchingFile, BaseDir,file_type, checksum);
 
 	return file_matched;
 }
@@ -108,8 +108,8 @@ bool find_file_with_modification_date(
 	/* Look for the files in the same directory that we are in.. */	
 	// LP: for now, will only care about looking in the Marathon app's directory
 	DirectorySpecifier BaseDir;
-	if (BaseDir.SetToAppParent())
-		file_matched= find_file_with_modification_date_in_directory(MatchingFile, BaseDir,file_type, modification_date);
+	Files_GetRootDirectory(BaseDir);
+	file_matched= find_file_with_modification_date_in_directory(MatchingFile, BaseDir,file_type, modification_date);
 
 	return file_matched;
 }
