@@ -137,7 +137,7 @@ class BigChunkOfDataMessage : public Message
 {
 public:
 	BigChunkOfDataMessage(MessageTypeID inType, const Uint8* inBuffer = NULL, size_t inLength = 0);
-	BigChunkOfDataMessage(const BigChunkOfDataMessage& other)
+	BigChunkOfDataMessage(const BigChunkOfDataMessage& other) : mLength(0), mBuffer(NULL)
 	{
 		mType = other.type();
 		copyBufferFrom(other.buffer(), other.length());
@@ -217,6 +217,27 @@ protected:
 private:
 	MessageTypeID	mType;
 	tValueType	mValue;
+};
+
+
+
+template <MessageTypeID tMessageType>
+class DatalessMessage : public Message
+{
+public:
+	enum { kType = tMessageType };
+
+	MessageTypeID type() const { return kType; }
+
+	bool inflateFrom(const UninflatedMessage& inUninflated)
+	{
+		return inUninflated.inflatedType() == kType && inUninflated.length() == 0;
+	}
+
+	UninflatedMessage* deflate() const { return new UninflatedMessage(kType, 0); }
+	
+	COVARIANT_RETURN(Message*, DatalessMessage<tMessageType>*) clone() const
+	{ return new DatalessMessage<tMessageType>; }
 };
 
 #endif // MESSAGE_H
