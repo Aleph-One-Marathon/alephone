@@ -61,10 +61,10 @@ template<class T> T* GetMemberWithBounds(T* Array, const int Index, const int Nu
 		The _clear set sets all the bytes to zero (a common operation)
 */
 
-template<class T> void obj_copy(T& destination, T& source)
+template<class T> void obj_copy(T& destination, const T& source)
 	{memcpy(&destination, &source, sizeof(T));}
 
-template<class T> void objlist_copy(T* destination, T* source, int num_objects)
+template<class T> void objlist_copy(T* destination, const T* source, int num_objects)
 	{memcpy(destination, source, num_objects*sizeof(T));}
 
 template<class T> void obj_set(T& object, int value)
