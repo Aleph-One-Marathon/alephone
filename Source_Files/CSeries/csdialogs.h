@@ -172,6 +172,19 @@ ControlRef GetCtrlFromWindow(
 	uint32 ID
 	);
 
+// Sets whether a control is active/enabled or inactive/disabled
+void SetControlActivity(ControlRef Ctrl, bool Activity);
+
+// All these are for getting and setting the text in editable text fields;
+// for static fields, get and set the text's "title"
+// Note that the getters all have some maximum length:
+//   the maximum number of characters that may be read in
+
+void GetEditPascalText(ControlRef Ctrl, Str255 Text, int MaxLen = 255);
+void SetEditPascalText(ControlRef Ctrl, ConstStr255Param Text);
+void GetEditCText(ControlRef Ctrl, char *Text, int MaxLen = 255);
+void SetEditCText(ControlRef Ctrl, const char *Text);
+
 // Builds a popup menu with the help of:
 //   The menu's control ref
 //   Menu-builder callback; uses

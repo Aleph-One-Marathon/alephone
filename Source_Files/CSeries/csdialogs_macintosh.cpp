@@ -516,6 +516,8 @@ GetListBoxListHandle( ControlHandle control, ListHandle* list )
 #ifdef USES_NIBS
 
 #include "csalerts.h"
+#include <stdio.h>
+#include <string.h>
 
 
 AutoNibWindow::AutoNibWindow(IBNibRef Nib, CFStringRef Name)
@@ -556,7 +558,81 @@ ControlRef GetCtrlFromWindow(WindowRef DlgWindow, uint32 Signature, uint32 ID)
 	return Ctrl;	
 }
 
-#include <stdio.h>
+
+void SetControlActivity(ControlRef Ctrl, bool Activity)
+{
+
+#ifdef __MACH__
+	if(Activity)
+		EnableControl(Ctrl);
+	else
+		DisableControl(Ctrl);
+#else
+	if(Activity)
+		ActivateControl(Ctrl);
+	else
+		DeactivateControl(Ctrl);
+#endif
+}
+
+void GetEditPascalText(ControlRef Ctrl, Str255 Text, int MaxLen)
+{
+	const int BufferLen = 256;
+	char Buffer[BufferLen];
+	Size ActualLen = 0;
+	
+	GetControlData(Ctrl,
+		kControlEditTextPart,
+		kControlEditTextTextTag,
+		BufferLen,
+		Buffer,
+		&ActualLen
+		);
+	
+	if (MaxLen < ActualLen) ActualLen = MaxLen;
+	Text[0] = ActualLen;
+	memcpy(Text+1,Buffer,ActualLen);
+}
+
+void SetEditPascalText(ControlRef Ctrl, ConstStr255Param Text)
+{
+	SetControlData(Ctrl,
+		kControlEditTextPart,
+		kControlStaticTextTextTag,
+		Text[0],
+		Text+1
+		);
+}
+
+void GetEditCText(ControlRef Ctrl, char *Text, int MaxLen)
+{
+	const int BufferLen = 256;
+	char Buffer[BufferLen];
+	Size ActualLen = 0;
+	
+	GetControlData(Ctrl,
+		kControlEditTextPart,
+		kControlEditTextTextTag,
+		BufferLen,
+		Buffer,
+		&ActualLen
+		);
+	
+	if (MaxLen < ActualLen) ActualLen = MaxLen;
+	Text[ActualLen] = 0;
+	memcpy(Text,Buffer,ActualLen);
+}
+
+void SetEditCText(ControlRef Ctrl, const char *Text)
+{
+	SetControlData(Ctrl,
+		kControlEditTextPart,
+		kControlStaticTextTextTag,
+		strlen(Text),
+		Text
+		);
+}
+
 
 void BuildMenu(
 	ControlRef MenuCtrl,
@@ -589,6 +665,7 @@ void BuildMenu(
 	SetControl32BitMaximum(MenuCtrl,CountMenuItems(Menu));
 	SetControl32BitValue(MenuCtrl, Initial);
 }
+
 
 struct ModalDialogHandlerData
 {
