@@ -1,0 +1,29 @@
+Cheat Codes for Aleph One:
+
+For them to be active, one must first have some MML TEXT resource with this
+child element of the script's <marathon> element:
+
+<cheats on="true"/>
+
+To use them, type them in while pressing "control".  Weapon and ammo cheats
+will indicate their success by the "picked up item" sound and effect. Here
+are those cheats:
+
+nrg -- add suit energy
+otwo -- add oxygen
+map -- show items, monsters, and projectiles in map view
+bye -- invisibility
+nuke -- invincibility
+see -- infravision
+wow -- extravision
+mag -- pistol
+melt -- fusion gun
+puff -- shotgun
+rif -- rifle
+zip -- SMG
+toast -- flamethrower
+pow -- rocket
+pzbxay -- alien gun
+ammo -- lots of ammo
+shit -- like ammo, but more good stuff
+yourmom -- save game
