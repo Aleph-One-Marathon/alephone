@@ -19,6 +19,10 @@ Jul 31, 2000 (Loren Petrich):
 
 Sep 24, 2000 (Loren Petrich):
 	Added some stuff for using old ISP labels, as suggested by Peter Stirling <pstirling@computing.dundee.ac.uk>
+
+Nov 13, 2000 (Loren Petrich):
+	Undefined USE_OLD_INPUT_SPROCKET_LABELS to make CW6 and Universal Headers 3.3 happy;
+	also, added another "nil" to the virtual elements, also to satisfy ISp's response under CW6.
 */
 
 
@@ -35,6 +39,10 @@ Sep 24, 2000 (Loren Petrich):
 
 //Private Function Prototypes
 
+// To get the need definitions to compile properly;
+// it assumes that there is a short instead of a byte in position 3
+#define USE_OLD_ISPNEED_STRUCT 1
+
 /* macintosh includes */
 #include <InputSprocket.h>
 #include <CursorDevices.h>
@@ -44,6 +52,10 @@ const OSType kCreatorCode		= '26.A';
 const OSType kSubCreatorCode	= 'BENT';
 #define	kResourceID_setl			128
 
+// LP: There are currently:
+// 21 global actions (transmitted over the network and saved in films)
+// 23 local actions (don't get transmitted)
+// 4 axis actions (analog-input moves)
 // LP change: renamed
 enum
 {
@@ -162,9 +174,10 @@ ISpElementReference			gVirtualElements[HowManyNeeds] =
 		// Global actions
 		nil, nil, nil, nil,
 		nil, nil, nil, nil,
-		nil, nil, nil, nil, nil,
 		nil, nil, nil, nil,
 		nil, nil, nil, nil,
+		nil, nil, nil, nil,
+		nil,
 		// Local actions
 		nil, nil, nil, nil,
 		nil, nil, nil, nil,
@@ -173,13 +186,14 @@ ISpElementReference			gVirtualElements[HowManyNeeds] =
 		nil, nil, nil, nil,
 		nil, nil, nil,
 		// Axis stuff
-		nil, nil, nil
+		nil, nil, nil, nil
 	};
 
 // LP change:
 #define kISpNeedFlag_Delta_AlreadyButton kISpNeedFlag_Axis_AlreadyButton
 
-#ifdef USE_OLD_INPUT_SPROCKET_LABELS
+// Changed from #ifdef because the new ISp header file will automatically define it
+#if USE_OLD_INPUT_SPROCKET_LABELS
 #define kISpElementLabel_Btn_Quit kISpElementLabel_Btn_PauseResume
 #define kISpElementLabel_Btn_StartPause kISpElementLabel_Btn_PauseResume
 #endif
