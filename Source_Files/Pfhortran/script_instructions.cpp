@@ -2088,7 +2088,7 @@ void s_Set_UnderFog_Depth(script_instruction inst)
 			break;
  	}
  	
-	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = temp;
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->Depth = temp;
 }
 
 void s_Set_UnderFog_Color(script_instruction inst)
