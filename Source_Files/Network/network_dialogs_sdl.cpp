@@ -1272,6 +1272,12 @@ int network_join(void)
                                                 myPlayerInfo.desired_color = myPlayerInfo.color;
                         memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
 
+			// Store user prefs
+			pstrcpy(player_preferences->name, myPlayerInfo.name);
+			player_preferences->team = myPlayerInfo.team;
+			player_preferences->color = myPlayerInfo.color;
+			write_preferences();
+
 			string metaserverProvidedAddress;
 			bool keepGoing = true;
 			if(joinResult == 1)
@@ -1293,21 +1299,15 @@ int network_join(void)
 			if(keepGoing)
 			{
 				const char* hintString = NULL;
-				if(hint_w->get_selection())
-					hintString = hint_address_w->get_text();
-				else if(metaserverProvidedAddress != string())
+				if(metaserverProvidedAddress != string())
 					hintString = metaserverProvidedAddress.c_str();
-		
+				else if(hint_w->get_selection())
+					hintString = hint_address_w->get_text();
+
 				bool did_join = NetGameJoin(myPlayerInfo.name, PLAYER_TYPE,
 								(void *)&myPlayerInfo, sizeof(player_info), get_network_version(),
 								hintString);
 				if (did_join) {
-					// Store user prefs
-					pstrcpy(player_preferences->name, myPlayerInfo.name);
-					player_preferences->team = myPlayerInfo.team;
-					player_preferences->color = myPlayerInfo.color;
-					write_preferences();
-		
 					// Join network game 2 box (players in game, chat, etc.)
 					dialog d2;
 		
