@@ -73,13 +73,6 @@ struct error_def
 };
 
 
-// *** DEBUG ***
-FILE *db;
-struct Debugger {
-	Debugger() {db = fopen("Debug Dump","w");}
-} Dbg;
-
-
 /* Global Variables */
 
 
@@ -157,7 +150,7 @@ bool init_pfhortran(void)
 		dispose_pfhortran();
 		return false;
 	}
-	fprintf(db,"Loading language-definition file\n");
+	
 	char input_str[256];
 	int input_val;
 	while (fscanf(lang_def, "%s %x\n", input_str, &input_val) != EOF)
@@ -630,11 +623,6 @@ short match_opcode(char *input)			/* the instruction strings are held in the has
 		return 0;
 		
 	instruction = get_symbol(input,instruction_hash);
-	
-	if (instruction)
-		fprintf(db,"%s %d\n",input,instruction->val);
-	else
-		fprintf(db,"%s -------\n",input);
 	
 	if (!instruction)
 		return 0;
