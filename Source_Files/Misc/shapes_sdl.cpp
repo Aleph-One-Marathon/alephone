@@ -307,13 +307,8 @@ static bool load_collection(short collection_index, bool strip)
 			for (int j=0; j<rows; j++) {
 				int16 first = SDL_ReadBE16(p);
 				int16 last = SDL_ReadBE16(p);
-#ifdef ALEPHONE_LITTLE_ENDIAN
-				*q++ = first; *q++ = first >> 8;
-				*q++ = last; *q++ = last >> 8;
-#else
 				*q++ = first >> 8; *q++ = first;
 				*q++ = last >> 8; *q++ = last;
-#endif
 				SDL_RWread(p, q, 1, last - first);
 				q += last - first;
 			}

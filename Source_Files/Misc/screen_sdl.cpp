@@ -70,7 +70,7 @@ const ViewSizeData ViewSizes[NUMBER_OF_VIEW_SIZES] =
 // and the terminal display will always have a size of 640*320.
 
 // Font for FPS/position display
-static const TextSpec monaco_spec = {kFontIDMonaco, normal, 12};
+static const TextSpec monaco_spec = {kFontIDMonaco, styleNormal, 12};
 
 
 // Global variables
@@ -334,6 +334,11 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	}
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
+		printf("GL_VENDOR: %s\n", glGetString(GL_VENDOR));
+		printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
+		printf("GL_VERSION: %s\n", glGetString(GL_VERSION));
+		const char *gl_extensions = (const char *)glGetString(GL_EXTENSIONS);
+		printf("GL_EXTENSIONS: %s\n", gl_extensions);
 		glScissor(0, 0, width, height);
 		glViewport(0, 0, width, height);
 	}
@@ -736,7 +741,7 @@ static void update_fps_display(SDL_Surface *s)
 			sprintf(fps, "%3.2ffps", (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks - frame_ticks[frame_index]));
 
 		// Print to screen
-		draw_text(world_pixels, fps, 5, world_pixels->h - 5, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), load_font(monaco_spec), normal);
+		draw_text(world_pixels, fps, 5, world_pixels->h - 5, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), load_font(monaco_spec), styleNormal);
 		//!! OpenGL
 	} else
 		frame_count = frame_index = 0;
@@ -761,26 +766,26 @@ static void DisplayPosition(SDL_Surface *s)
 	const float FLOAT_WORLD_ONE = float(WORLD_ONE);
 	const float AngleConvert = 360.0 / float(FULL_CIRCLE);
 	sprintf(temporary, "X       = %8.3f", world_view->origin.x / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, normal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
 	Y += Leading;
 	sprintf(temporary, "Y       = %8.3f", world_view->origin.y / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, normal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
 	Y += Leading;
 	sprintf(temporary, "Z       = %8.3f", world_view->origin.z / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, normal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
 	Y += Leading;
 	sprintf(temporary, "Polygon = %8d", world_view->origin_polygon_index);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, normal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
 	Y += Leading;
 	int Angle = world_view->yaw;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Yaw     = %8.3f", AngleConvert * Angle);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, normal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
 	Y += Leading;
 	Angle = world_view->pitch;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Pitch   = %8.3f", AngleConvert * Angle);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, normal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
 	//!! OpenGL
 }
 

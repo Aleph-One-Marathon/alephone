@@ -58,13 +58,9 @@ struct Rect {
 
 typedef void *DialogPtr;
 
-#define noErr 0
+const int noErr = 0;
 
-#define kFontIDMonaco 4
-#define normal 0
-#define bold 1
-#define italic 2
-#define underline 4
+const int kFontIDMonaco = 4;
 
 
 /*

@@ -250,14 +250,14 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 	{
 		{{0, 65535, 0},
 		{
-			{kFontIDMonaco, bold, 5},
-			{kFontIDMonaco, bold, 9},
-			{kFontIDMonaco, bold, 12},
-			{kFontIDMonaco, bold, 18}
+			{kFontIDMonaco, styleBold, 5},
+			{kFontIDMonaco, styleBold, 9},
+			{kFontIDMonaco, styleBold, 12},
+			{kFontIDMonaco, styleBold, 18}
 		}}
 	},
 	// Map name (color, font)
-	{{0, 65535, 0}, {kFontIDMonaco, normal, 18}, 25},
+	{{0, 65535, 0}, {kFontIDMonaco, styleNormal, 18}, 25},
 	// Path color
 	{65535, 65535, 65535},
 	// What to show (aliens, items, projectiles, paths)

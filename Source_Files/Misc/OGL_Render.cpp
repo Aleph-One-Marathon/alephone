@@ -440,12 +440,14 @@ bool OGL_StartRun()
 	
 	OnePassMultitexturing = TEST_FLAG(ConfigureData.Flags,OGL_Flag_SnglPass) != 0;
 	// Texture 0 is the default one; texture 1 is the additional texture
+#ifdef GL_ARB_multitexture
 	if (OnePassMultitexturing)
 	{
 		glClientActiveTextureARB(GL_TEXTURE1_ARB);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	}
+#endif
 	
 	// Initialize the texture accounting
 	OGL_StartTextures();
@@ -1315,14 +1317,17 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	glEnable(GL_TEXTURE_2D);
 
 	bool DoTwoSimultaneousTextures = OnePassMultitexturing && TMgr.IsGlowMapped();
+#ifdef GL_ARB_multitexture
 	if (DoTwoSimultaneousTextures)
 	{
 		glClientActiveTextureARB(GL_TEXTURE1_ARB);
 		glTexCoordPointer(2,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
 		glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	}
+#endif
 
 	TMgr.RenderNormal();
+#ifdef GL_ARB_multitexture
 	if (DoTwoSimultaneousTextures)
 	{
 		glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -1330,6 +1335,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		TMgr.RenderGlowing(true);
 		glActiveTextureARB(GL_TEXTURE0_ARB);
 	}
+#endif
 	
 	if (PolygonVariableShade)
 	{
@@ -1461,6 +1467,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		glDrawArrays(GL_POLYGON,0,NumVertices);
 
 	// Do textured rendering
+#ifdef GL_ARB_multitexture
 	if (DoTwoSimultaneousTextures)
 	{
 		glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -1468,7 +1475,9 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		glDisable(GL_TEXTURE_2D);
 		glActiveTextureARB(GL_TEXTURE0_ARB);
 	}
-	else if (TMgr.IsGlowMapped())
+	else
+#endif
+	     if (TMgr.IsGlowMapped())
 	{
 		// Do blending here to get the necessary semitransparency;
 		// push the cutoff down so 0.5*0.5 (half of half-transparency)
@@ -1811,12 +1820,14 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	glEnable(GL_TEXTURE_2D);
 	
 	bool DoTwoSimultaneousTextures = OnePassMultitexturing && TMgr.IsGlowMapped();
+#ifdef GL_ARB_multitexture
 	if (DoTwoSimultaneousTextures)
 	{
 		glClientActiveTextureARB(GL_TEXTURE1_ARB);
 		glTexCoordPointer(2,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
 		glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	}
+#endif
 	
 	// Go!
 	TMgr.RenderNormal();	// Always do this, of course
@@ -1862,6 +1873,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	else
 	{
 		// Do textured rendering
+#ifdef GL_ARB_multitexture
 		if (DoTwoSimultaneousTextures)
 		{
 			glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -1877,6 +1889,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			glActiveTextureARB(GL_TEXTURE0_ARB);
 		}
 		else
+#endif
 		{
 			glDrawArrays(GL_POLYGON,0,4);
 			

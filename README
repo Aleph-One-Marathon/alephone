@@ -60,8 +60,8 @@ Unix:
   "--disable-opengl" option to the configure script.
 
 BeOS:
-  There is a special Makefile for compiling under BeOS. Install Aleph One as
-  follows:
+  Under BeOS, you don't run the "configure" script. Instead, there is a
+  special Makefile for compiling. Install Aleph One as follows:
 
    $ make -f Makefile.BeOS install
 
@@ -422,6 +422,7 @@ And a list of known bugs:
    work
  - Mouse control under BeOS doesn't work (SDL problem)
  - Lo-res mode (F3) doesn't work
+ - Snapshots (F9) don't work with OpenGL
  - Some preferences items are missing
  - Some error messages are those of the Mac version, which are often
    inappropriate or misleading

@@ -1173,12 +1173,12 @@ static void display_picture(
 		DrawText(temporary, 0, strlen(temporary));
 #elif defined(SDL)
 		const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
-		int width = text_width(temporary, font, normal);
+		int width = text_width(temporary, font, styleNormal);
 		draw_text(world_pixels, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
 		          bounds.top + RECTANGLE_HEIGHT(&bounds) / 2,
 		          SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff),
-		          font, normal);
+		          font, styleNormal);
 #endif
 	}
 }
@@ -1781,12 +1781,12 @@ static void present_checkpoint_text(
 		DrawText(temporary, 0, strlen(temporary));
 #elif defined(SDL)
 		const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
-		int width = text_width(temporary, font, normal);
+		int width = text_width(temporary, font, styleNormal);
 		draw_text(world_pixels, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
 		          bounds.top + RECTANGLE_HEIGHT(&bounds) / 2,
 		          SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff),
-		          font, normal);
+		          font, styleNormal);
 #endif
 	}
 

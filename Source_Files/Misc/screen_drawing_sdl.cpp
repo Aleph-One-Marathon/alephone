@@ -215,9 +215,9 @@ int char_width(uint8 c, const sdl_font_info *font, uint16 style)
 {
 	if (font == NULL || c < font->first_character || c > font->last_character)
 		return 0;
-	int width = font->width_table[(c - font->first_character) * 2 + 1] + ((style & bold) ? 1 : 0);
+	int width = font->width_table[(c - font->first_character) * 2 + 1] + ((style & styleBold) ? 1 : 0);
 	if (width == -1)	// non-existant character
-		width = font->width_table[(font->last_character - font->first_character + 1) * 2 + 1] + ((style & bold) ? 1 : 0);
+		width = font->width_table[(font->last_character - font->first_character + 1) * 2 + 1] + ((style & styleBold) ? 1 : 0);
 	return width;
 }
 
@@ -322,7 +322,7 @@ inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int clip_le
 template <class T>
 inline static int draw_text(const uint8 *text, int length, int x, int y, T *p, int pitch, int clip_left, int clip_top, int clip_right, int clip_bottom, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
-	bool oblique = style & italic;
+	bool oblique = style & styleItalic;
 	int total_width = 0;
 
 	uint8 c;
@@ -332,11 +332,11 @@ inline static int draw_text(const uint8 *text, int length, int x, int y, T *p, i
 			continue;
 
 		int width = draw_glyph(c, x, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
-		if (style & bold) {
+		if (style & styleBold) {
 			draw_glyph(c, x + 1, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
 			width++;
 		}
-		if (style & underline) {
+		if (style & styleUnderline) {
 			for (int i=0; i<width; i++)
 				p[y * pitch / sizeof(T) + x + i] = pixel;
 		}

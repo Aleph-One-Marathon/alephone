@@ -808,20 +808,11 @@ GLuint *TextureManager::GetOGLTexture(GLuint *ColorTable)
 			// assumes big-endian data
 				
 			// First destination location
-#if defined(mac)
-			word First = word(*(OrigStrip++));
-			First <<= 8;
-			First |= word(*(OrigStrip++));
+			uint16 First = uint16(*(OrigStrip++)) << 8;
+			First |= uint16(*(OrigStrip++));
 			// Last destination location (last pixel is just before it)
-			word Last = word(*(OrigStrip++));
-			Last <<= 8;
-			Last |= word(*(OrigStrip++));
-#elif defined(SDL)
-			// Under SDL, the start/end locations are native-endian (this may change in the future)
-			uint16 First = 0[(uint16 *)OrigStrip];
-			uint16 Last = 1[(uint16 *)OrigStrip];
-			OrigStrip += 4;
-#endif
+			uint16 Last = uint16(*(OrigStrip++)) << 8;
+			Last |= uint16(*(OrigStrip++));
 			
 			// Calculate original-texture and OpenGL-texture offsets
 			// and how many pixels to do

@@ -4,6 +4,11 @@
 
 #include "cstypes.h"
 
+const int styleNormal = 0;
+const int styleBold = 1;
+const int styleItalic = 2;
+const int styleUnderline = 4;
+
 typedef struct TextSpec {
 	int16 font;
 	uint16 style;

@@ -7,8 +7,8 @@
 
 // Global variables
 static const sdl_font_info *terminal_font = NULL;
-static uint32 current_pixel;			// Current color pixel value
-static uint16 current_style = normal;	// Current style flags
+static uint32 current_pixel;				// Current color pixel value
+static uint16 current_style = styleNormal;	// Current style flags
 
 // From screen_sdl.cpp
 extern SDL_Surface *world_pixels;
@@ -56,15 +56,15 @@ static void OffsetRect(Rect *r, int dx, int dy)
 
 static void	set_text_face(struct text_face_data *text_face)
 {
-	current_style = normal;
+	current_style = styleNormal;
 
 	// Set style
 	if (text_face->face & _bold_text)
-		current_style |= bold;
+		current_style |= styleBold;
 	if (text_face->face & _italic_text)
-		current_style |= italic;
+		current_style |= styleItalic;
 	if (text_face->face & _underline_text)
-		current_style |= underline;
+		current_style |= styleUnderline;
 
 	// Set color
 	SDL_Color color;

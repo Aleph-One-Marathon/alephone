@@ -2,7 +2,9 @@
 #ifndef _CSERIES_TYPES_
 #define _CSERIES_TYPES_
 
-#define NONE (-1)
+#include <limits.h>
+
+const int NONE = -1;
 
 // Integer types with specific bit size
 #if defined(mac)
@@ -27,14 +29,18 @@ typedef time_t TimeType;
 #endif
 
 // Minimum and maximum values for these types
-#undef INT16_MAX
-#undef INT16_MIN
-#undef INT32_MAX
-#undef INT32_MIN
+#ifndef INT16_MAX
 #define INT16_MAX 32767
+#endif
+#ifndef INT16_MIN
 #define INT16_MIN (-INT16_MAX-1)
+#endif
+#ifndef INT32_MAX
 #define INT32_MAX 2147483647
+#endif
+#ifndef INT32_MIN
 #define INT32_MIN (-INT32_MAX-1)
+#endif
 
 // Fixed point (16.16) type
 typedef int32 fixed;
@@ -47,8 +53,8 @@ typedef int32 fixed;
 #define FIXED_ONE_HALF	(1L<<(FIXED_FRACTIONAL_BITS-1))
 
 // Binary powers
-#define MEG 0x100000
-#define KILO 0x400L
+const int MEG = 0x100000;
+const int KILO = 0x400L;
 
 // Construct four-character-code
 #define FOUR_CHARS_TO_INT(a,b,c,d) (((uint32)(a) << 24) | ((uint32)(b) << 16) | ((uint32)(c) << 8) | (uint32)(d))

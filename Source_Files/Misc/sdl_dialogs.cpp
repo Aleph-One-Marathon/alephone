@@ -25,11 +25,11 @@ static SDL_Surface *dialog_surface = NULL;
 static const sdl_font_info *dialog_font[NUM_DIALOG_FONTS];
 
 static TextSpec dialog_font_spec[NUM_DIALOG_FONTS] = {
-	{174, bold, 18},   // TITLE_FONT
-	{174, normal, 18}, // BUTTON_FONT
-	{221, normal, 14}, // NORMAL_FONT
-	{174, normal, 14}, // MESSAGE_FONT
-	{221, normal, 14}  // TEXT_ENTRY_FONT
+	{174, styleBold, 18},   // TITLE_FONT
+	{174, styleNormal, 18}, // BUTTON_FONT
+	{221, styleNormal, 14}, // NORMAL_FONT
+	{174, styleNormal, 14}, // MESSAGE_FONT
+	{221, styleNormal, 14}  // TEXT_ENTRY_FONT
 };
 
 static SDL_Color dialog_color[NUM_DIALOG_COLORS] = {

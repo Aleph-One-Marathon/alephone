@@ -335,12 +335,12 @@ void update_path_camera(void)
 
 		if (normalize_angle(camera_point.location.pitch) < normalize_angle(script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch))
 		{
-			camera_point.location.pitch = normalize_angle(camera_point.location.pitch + offset_pitch);
+			camera_point.location.pitch = normalize_angle(angle(camera_point.location.pitch + offset_pitch));
 		}
 
 		if (normalize_angle(camera_point.location.pitch) > normalize_angle(script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch))
 		{
-			camera_point.location.pitch = normalize_angle(camera_point.location.pitch - offset_pitch);
+			camera_point.location.pitch = normalize_angle(angle(camera_point.location.pitch - offset_pitch));
 		}
 	}
 	
@@ -603,11 +603,11 @@ void s_Wait_Ticks(script_instruction inst)
 
 	if (inst.mode == 1)
 	{
-		temp = get_variable(inst.op1);
+		temp = get_variable(int(inst.op1));
 	}
 		
 		
-	set_instruction_decay(machine_tick_count() + temp);
+	set_instruction_decay(uint32(machine_tick_count() + temp));
 }
 
 void s_Inflict_Dammage(script_instruction inst)
@@ -628,13 +628,13 @@ void s_Inflict_Dammage(script_instruction inst)
 	
 	if (inst.mode == 1)
 	{
-		temp = get_variable(inst.op1);
+		temp = get_variable(int(inst.op1));
 	}
 				
 
 	damage.flags= _alien_damage;
 	damage.type= _damage_crushing;
-	damage.base= temp;
+	damage.base= int16(temp);
 	damage.random= 0;
 	damage.scale= FIXED_ONE;
 
@@ -651,11 +651,11 @@ void s_Jump(script_instruction inst)
 	
 	if (inst.mode == 1)
 	{
-		temp = get_variable(inst.op1);
+		temp = get_variable(int(inst.op1));
 	}
 		
 		
-	jump_to_line((int)floorf(temp));
+	jump_to_line((int)floor(temp));
 
 }
 
@@ -707,22 +707,22 @@ void s_Set_Tag_State(script_instruction inst)
 		switch(inst.mode)
 		{
 			case 1:
-				temp = get_variable(inst.op1);
+				temp = get_variable(int(inst.op1));
 				break;
 			case 2:
-				temp2 = get_variable(inst.op2);
+				temp2 = get_variable(int(inst.op2));
 				break;
 			case 3:
-				temp = get_variable(inst.op1);
-				temp2 = get_variable(inst.op2);
+				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
 				break;
 		}
 		
 		
-	if (set_tagged_light_statuses(temp, temp2));
-	if (try_and_change_tagged_platform_states(temp, temp2)); 
+	if (set_tagged_light_statuses(int16(temp), temp2));
+	if (try_and_change_tagged_platform_states(int16(temp), temp2)); 
 	
-	assume_correct_switch_position(_panel_is_tag_switch, temp, temp2);
+	assume_correct_switch_position(_panel_is_tag_switch, int16(temp), temp2);
 	
 }
 
@@ -747,11 +747,11 @@ void s_Get_Tag_State(script_instruction inst)
 		{
 			
 			case 2:
-				temp2 = get_variable(inst.op2);
+				temp2 = get_variable(int(inst.op2));
 				break;
 			case 3:
-				temp = get_variable(inst.op1);
-				temp2 = get_variable(inst.op2);
+				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
 				break;
 		}
 		
@@ -788,16 +788,14 @@ void s_Get_Tag_State(script_instruction inst)
 	}
 	
 	if (changed)
-		set_variable(inst.op2,1);
+		set_variable(int(inst.op2), 1);
 	else
-		set_variable(inst.op2,0);
-	
-
+		set_variable(int(inst.op2), 0);
 }
 
 void s_Define(script_instruction inst)
 {
-	add_variable(inst.op1);
+	add_variable(int(inst.op1));
 }
 
 void s_sAdd(script_instruction inst)
@@ -810,12 +808,12 @@ void s_sAdd(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-				temp = get_variable(inst.op1);
-				set_variable(inst.op1,temp+inst.op2);
+				temp = get_variable(int(inst.op1));
+				set_variable(int(inst.op1),temp+inst.op2);
 				break;
 		case 3:
-				temp = get_variable(inst.op1);
-				set_variable(inst.op1,temp+get_variable(inst.op2));
+				temp = get_variable(int(inst.op1));
+				set_variable(int(inst.op1),temp+get_variable(int(inst.op2)));
 				break;
 		default:
 				break;
@@ -834,12 +832,12 @@ void s_sSubtract(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-				temp = get_variable(inst.op1);
-				set_variable(inst.op1,temp-inst.op2);
+				temp = get_variable(int(inst.op1));
+				set_variable(int(inst.op1),temp-inst.op2);
 				break;
 		case 3:
-				temp = get_variable(inst.op1);
-				set_variable(inst.op1,temp-get_variable(inst.op2));
+				temp = get_variable(int(inst.op1));
+				set_variable(int(inst.op1),temp-get_variable(int(inst.op2)));
 				break;
 		default:
 				break;
@@ -853,7 +851,7 @@ void s_If_Equal(script_instruction inst)
 	float temp;
 	
 	if (inst.mode > 3)
-		temp = get_variable(inst.op3);
+		temp = get_variable(int(inst.op3));
 	else
 		temp = inst.op3;
 		
@@ -862,24 +860,24 @@ void s_If_Equal(script_instruction inst)
 		case 0:
 		case 4:
 			if (inst.op1 == inst.op2)
-				jump_to_line((int)floorf(temp));
+				jump_to_line((int)floor(temp));
 			break;
 		case 1:
 		case 5:
-			if (get_variable(inst.op1) == inst.op2)
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op1)) == inst.op2)
+				jump_to_line((int)floor(temp));
 			
 			break;
 		case 2:
 		case 6:
-			if (get_variable(inst.op2) == inst.op1)
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op2)) == inst.op1)
+				jump_to_line((int)floor(temp));
 			
 			break;
 		case 3:
 		case 7:
-			if (get_variable(inst.op1) == get_variable(inst.op2))
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op1)) == get_variable(int(inst.op2)))
+				jump_to_line((int)floor(temp));
 			break;
 		default:
 				break;
@@ -898,12 +896,12 @@ void s_Set(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-				temp = get_variable(inst.op1);
-				set_variable(inst.op1,inst.op2);
+				temp = get_variable(int(inst.op1));
+				set_variable(int(inst.op1),inst.op2);
 				break;
 		case 3:
-				temp = get_variable(inst.op1);
-				set_variable(inst.op1,get_variable(inst.op2));
+				temp = get_variable(int(inst.op1));
+				set_variable(int(inst.op1),get_variable(int(inst.op2)));
 				break;
 		default:
 				break;
@@ -936,7 +934,7 @@ void s_If_Greater(script_instruction inst)
 	float temp;
 	
 	if (inst.mode > 3)
-		temp = get_variable(inst.op3);
+		temp = get_variable(int(inst.op3));
 	else
 		temp = inst.op3;
 		
@@ -945,24 +943,24 @@ void s_If_Greater(script_instruction inst)
 		case 0:
 		case 4:
 			if (inst.op1 > inst.op2)
-				jump_to_line((int)floorf(temp));
+				jump_to_line((int)floor(temp));
 			break;
 		case 1:
 		case 5:
-			if (get_variable(inst.op1) > inst.op2)
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op1)) > inst.op2)
+				jump_to_line((int)floor(temp));
 			
 			break;
 		case 2:
 		case 6:
-			if (get_variable(inst.op2) > inst.op1)
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op2)) > inst.op1)
+				jump_to_line((int)floor(temp));
 			
 			break;
 		case 3:
 		case 7:
-			if (get_variable(inst.op1) > get_variable(inst.op2))
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op1)) > get_variable(int(inst.op2)))
+				jump_to_line((int)floor(temp));
 			break;
 		default:
 				break;
@@ -976,7 +974,7 @@ void s_If_Less(script_instruction inst)
 	float temp;
 	
 	if (inst.mode > 3)
-		temp = get_variable(inst.op3);
+		temp = get_variable(int(inst.op3));
 	else
 		temp = inst.op3;
 		
@@ -985,24 +983,24 @@ void s_If_Less(script_instruction inst)
 		case 0:
 		case 4:
 			if (inst.op1 < inst.op2)
-				jump_to_line((int)floorf(temp));
+				jump_to_line((int)floor(temp));
 			break;
 		case 1:
 		case 5:
-			if (get_variable(inst.op1) < inst.op2)
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op1)) < inst.op2)
+				jump_to_line((int)floor(temp));
 			
 			break;
 		case 2:
 		case 6:
-			if (get_variable(inst.op2) < inst.op1)
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op2)) < inst.op1)
+				jump_to_line((int)floor(temp));
 			
 			break;
 		case 3:
 		case 7:
-			if (get_variable(inst.op1) < get_variable(inst.op2))
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op1)) < get_variable(int(inst.op2)))
+				jump_to_line((int)floor(temp));
 			break;
 		default:
 				break;
@@ -1016,7 +1014,7 @@ void s_If_Not_Equal(script_instruction inst)
 	float temp;
 	
 	if (inst.mode > 3)
-		temp = get_variable(inst.op3);
+		temp = get_variable(int(inst.op3));
 	else
 		temp = inst.op3;
 		
@@ -1025,24 +1023,24 @@ void s_If_Not_Equal(script_instruction inst)
 		case 0:
 		case 4:
 			if (inst.op1 != inst.op2)
-				jump_to_line((int)floorf(temp));
+				jump_to_line((int)floor(temp));
 			break;
 		case 1:
 		case 5:
-			if (get_variable(inst.op1) != inst.op2)
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op1)) != inst.op2)
+				jump_to_line((int)floor(temp));
 			
 			break;
 		case 2:
 		case 6:
-			if (get_variable(inst.op2) != inst.op1)
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op2)) != inst.op1)
+				jump_to_line((int)floor(temp));
 			
 			break;
 		case 3:
 		case 7:
-			if (get_variable(inst.op1) != get_variable(inst.op2))
-				jump_to_line((int)floorf(temp));
+			if (get_variable(int(inst.op1)) != get_variable(int(inst.op2)))
+				jump_to_line((int)floor(temp));
 			break;
 		default:
 				break;
@@ -1056,7 +1054,7 @@ void s_Get_Life(script_instruction inst)
 	if (inst.mode == 0)
 		return;
 		
-	set_variable(inst.op1,current_player->suit_energy);
+	set_variable(int(inst.op1),current_player->suit_energy);
 
 }
 
@@ -1069,7 +1067,7 @@ void s_Set_Life(script_instruction inst)
 				current_player->suit_energy = (int)floor(inst.op1);
 				break;
 		case 1:
-				current_player->suit_energy = (int)floor(get_variable(inst.op1));
+				current_player->suit_energy = (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1085,7 +1083,7 @@ void s_Get_Oxygen(script_instruction inst)
 	if (inst.mode == 0)
 		return;
 		
-	set_variable(inst.op1,current_player->suit_oxygen);
+	set_variable(int(inst.op1),current_player->suit_oxygen);
 
 }
 
@@ -1097,7 +1095,7 @@ void s_Set_Oxygen(script_instruction inst)
 				current_player->suit_oxygen = (int)floor(inst.op1);
 				break;
 		case 1:
-				current_player->suit_oxygen = (int)floor(get_variable(inst.op1));
+				current_player->suit_oxygen = (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1118,7 +1116,7 @@ void s_Get_My_Value(script_instruction inst)
 	if (inst.mode == 0)
 		return;
 		
-	set_variable(inst.op1,get_trap_value(current_trap));
+	set_variable(int(inst.op1),get_trap_value(current_trap));
 }
 
 void s_Add_Item(script_instruction inst)
@@ -1130,7 +1128,7 @@ void s_Add_Item(script_instruction inst)
 					; /* this sucks */
 				break;
 		case 1:
-				if (!try_and_add_player_item(player_identifier_to_player_index(current_player->identifier), (int)floor(get_variable(inst.op1))))
+				if (!try_and_add_player_item(player_identifier_to_player_index(current_player->identifier), (int)floor(get_variable(int(inst.op1)))))
 					; /* this sucks */
 				break;
 		default:
@@ -1152,7 +1150,7 @@ void s_Select_Weapon(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1226,7 +1224,7 @@ void s_Init_Cameras(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1262,7 +1260,7 @@ void s_Select_Camera(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1294,7 +1292,7 @@ void s_Set_Camera_Poly(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1315,30 +1313,30 @@ void s_Set_Camera_Pos(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-				x= get_variable(inst.op1);
+				x= get_variable(int(inst.op1));
 				break;
 		case 2:
-				y= get_variable(inst.op2);
+				y= get_variable(int(inst.op2));
 				break;
 		case 3:
-				x= get_variable(inst.op1);
-				y= get_variable(inst.op2);
+				x= get_variable(int(inst.op1));
+				y= get_variable(int(inst.op2));
 				break;
 		case 4:
-				z= get_variable(inst.op3);
+				z= get_variable(int(inst.op3));
 				break;
 		case 5:
-				x= get_variable(inst.op1);
-				z= get_variable(inst.op3);
+				x= get_variable(int(inst.op1));
+				z= get_variable(int(inst.op3));
 				break;
 		case 6:
-				y= get_variable(inst.op2);
-				z= get_variable(inst.op3);
+				y= get_variable(int(inst.op2));
+				z= get_variable(int(inst.op3));
 				break;
 		case 7:
-				x= get_variable(inst.op1);
-				y= get_variable(inst.op2);
-				z= get_variable(inst.op3);
+				x= get_variable(int(inst.op1));
+				y= get_variable(int(inst.op2));
+				z= get_variable(int(inst.op3));
 				break;
 		default:
 				break;
@@ -1346,9 +1344,9 @@ void s_Set_Camera_Pos(script_instruction inst)
 	
 	if (cameras)
 	{
-		cameras[current_camera].location.position.x = x*WORLD_ONE;
-		cameras[current_camera].location.position.y = y*WORLD_ONE;
-		cameras[current_camera].location.position.z = z*WORLD_ONE;
+		cameras[current_camera].location.position.x = world_distance(x*WORLD_ONE);
+		cameras[current_camera].location.position.y = world_distance(y*WORLD_ONE);
+		cameras[current_camera].location.position.z = world_distance(z*WORLD_ONE);
 	}
 	
 }
@@ -1366,22 +1364,22 @@ void s_Set_Camera_YP(script_instruction inst)
 		switch(inst.mode)
 		{
 			case 1:
-				temp = get_variable(inst.op1);
+				temp = get_variable(int(inst.op1));
 				break;
 			case 2:
-				temp2 = get_variable(inst.op2);
+				temp2 = get_variable(int(inst.op2));
 				break;
 			case 3:
-				temp = get_variable(inst.op1);
-				temp2 = get_variable(inst.op2);
+				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
 				break;
 		}
 		
 	if (cameras)
 	{
-		cameras[current_camera].location.yaw = normalize_angle(temp/AngleConvert);
+		cameras[current_camera].location.yaw = normalize_angle(angle(temp/AngleConvert));
 		
-		cameras[current_camera].location.pitch = normalize_angle(temp2/AngleConvert);
+		cameras[current_camera].location.pitch = normalize_angle(angle(temp2/AngleConvert));
 	}
 }
 
@@ -1408,7 +1406,7 @@ void s_Init_Paths(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1443,16 +1441,16 @@ void s_New_Path(script_instruction inst)
 				path_length= (int)floor(inst.op2);
 				break;
 		case 1:
-				path_num= (int)floor(get_variable(inst.op1));
+				path_num= (int)floor(get_variable(int(inst.op1)));
 				path_length= (int)floor(inst.op2);
 				break;
 		case 2:
 				path_num= (int)floor(inst.op1);
-				path_length= (int)floor(get_variable(inst.op2));
+				path_length= (int)floor(get_variable(int(inst.op2)));
 				break;
 		case 3:
-				path_num= (int)floor(get_variable(inst.op1));
-				path_length= (int)floor(get_variable(inst.op2));
+				path_num= (int)floor(get_variable(int(inst.op1)));
+				path_length= (int)floor(get_variable(int(inst.op2)));
 				break;
 		default:
 				break;
@@ -1486,7 +1484,7 @@ void s_Dispose_Path(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1511,7 +1509,7 @@ void s_Select_Path(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1531,14 +1529,14 @@ void s_Set_Path_Move_Speed(script_instruction inst)
 				temp= inst.op1;
 				break;
 		case 1:
-				temp= get_variable(inst.op1);
+				temp= get_variable(int(inst.op1));
 				break;
 		default:
 				break;
 	}
 	
 	if (script_paths)
-		script_paths[current_path].move_speed = temp;
+		script_paths[current_path].move_speed = int16(temp);
 }
 
 void s_Set_Path_Roll_Speed(script_instruction inst)
@@ -1551,14 +1549,14 @@ void s_Set_Path_Roll_Speed(script_instruction inst)
 				temp= inst.op1;
 				break;
 		case 1:
-				temp= get_variable(inst.op1);
+				temp= get_variable(int(inst.op1));
 				break;
 		default:
 				break;
 	}
 	
 	if (script_paths)
-		script_paths[current_path].roll_speed = temp;
+		script_paths[current_path].roll_speed = int16(temp);
 }
 
 void s_Select_Point(script_instruction inst)
@@ -1571,7 +1569,7 @@ void s_Select_Point(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1591,7 +1589,7 @@ void s_Set_Point_Poly(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1612,30 +1610,30 @@ void s_Set_Point_Pos(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-				x= get_variable(inst.op1);
+				x= get_variable(int(inst.op1));
 				break;
 		case 2:
-				y= get_variable(inst.op2);
+				y= get_variable(int(inst.op2));
 				break;
 		case 3:
-				x= get_variable(inst.op1);
-				y= get_variable(inst.op2);
+				x= get_variable(int(inst.op1));
+				y= get_variable(int(inst.op2));
 				break;
 		case 4:
-				z= get_variable(inst.op3);
+				z= get_variable(int(inst.op3));
 				break;
 		case 5:
-				x= get_variable(inst.op1);
-				z= get_variable(inst.op3);
+				x= get_variable(int(inst.op1));
+				z= get_variable(int(inst.op3));
 				break;
 		case 6:
-				y= get_variable(inst.op2);
-				z= get_variable(inst.op3);
+				y= get_variable(int(inst.op2));
+				z= get_variable(int(inst.op3));
 				break;
 		case 7:
-				x= get_variable(inst.op1);
-				y= get_variable(inst.op2);
-				z= get_variable(inst.op3);
+				x= get_variable(int(inst.op1));
+				y= get_variable(int(inst.op2));
+				z= get_variable(int(inst.op3));
 				break;
 		default:
 				break;
@@ -1643,9 +1641,9 @@ void s_Set_Point_Pos(script_instruction inst)
 	
 	if (script_paths)
 	{
-		script_paths[current_path].the_path[current_path_point].location.position.x = x*WORLD_ONE;
-		script_paths[current_path].the_path[current_path_point].location.position.y = y*WORLD_ONE;
-		script_paths[current_path].the_path[current_path_point].location.position.z = z*WORLD_ONE;
+		script_paths[current_path].the_path[current_path_point].location.position.x = world_distance(x*WORLD_ONE);
+		script_paths[current_path].the_path[current_path_point].location.position.y = world_distance(y*WORLD_ONE);
+		script_paths[current_path].the_path[current_path_point].location.position.z = world_distance(z*WORLD_ONE);
 	}
 	
 }
@@ -1663,22 +1661,22 @@ void s_Set_Point_YP(script_instruction inst)
 		switch(inst.mode)
 		{
 			case 1:
-				temp = get_variable(inst.op1);
+				temp = get_variable(int(inst.op1));
 				break;
 			case 2:
-				temp2 = get_variable(inst.op2);
+				temp2 = get_variable(int(inst.op2));
 				break;
 			case 3:
-				temp = get_variable(inst.op1);
-				temp2 = get_variable(inst.op2);
+				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
 				break;
 		}
 		
 	if (script_paths)
 	{
-		script_paths[current_path].the_path[current_path_point].location.yaw = normalize_angle(temp/AngleConvert);
+		script_paths[current_path].the_path[current_path_point].location.yaw = normalize_angle(angle(temp/AngleConvert));
 		
-		script_paths[current_path].the_path[current_path_point].location.pitch = normalize_angle(temp2/AngleConvert);
+		script_paths[current_path].the_path[current_path_point].location.pitch = normalize_angle(angle(temp2/AngleConvert));
 	}
 }
 
@@ -1693,7 +1691,7 @@ void s_Start_Camera_On_Path(script_instruction inst)
 				temp= (int)floor(inst.op1);
 				break;
 		case 1:
-				temp= (int)floor(get_variable(inst.op1));
+				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1745,7 +1743,7 @@ void s_Set_Fog_Depth(script_instruction inst)
 			temp= (int)floor(inst.op1);
 			break;
 		case 1:
-			temp= (int)floor(get_variable(inst.op1));
+			temp= (int)floor(get_variable(int(inst.op1)));
 			break;
 		default:
 			break;
@@ -1764,30 +1762,30 @@ void s_Set_Fog_Color(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-			r= get_variable(inst.op1);
+			r= get_variable(int(inst.op1));
 			break;
 		case 2:
-			g= get_variable(inst.op2);
+			g= get_variable(int(inst.op2));
 			break;
 		case 3:
-			r= get_variable(inst.op1);
-			g= get_variable(inst.op2);
+			r= get_variable(int(inst.op1));
+			g= get_variable(int(inst.op2));
 			break;
 		case 4:
-			b= get_variable(inst.op3);
+			b= get_variable(int(inst.op3));
 			break;
 		case 5:
-			r= get_variable(inst.op1);
-			b= get_variable(inst.op3);
+			r= get_variable(int(inst.op1));
+			b= get_variable(int(inst.op3));
 			break;
 		case 6:
-			g= get_variable(inst.op2);
-			b= get_variable(inst.op3);
+			g= get_variable(int(inst.op2));
+			b= get_variable(int(inst.op3));
 			break;
 		case 7:
-			r= get_variable(inst.op1);
-			g= get_variable(inst.op2);
-			b= get_variable(inst.op3);
+			r= get_variable(int(inst.op1));
+			g= get_variable(int(inst.op2));
+			b= get_variable(int(inst.op3));
 			break;
 		default:
 			break;
@@ -1803,7 +1801,7 @@ void s_Get_Fog_Depth(script_instruction inst)
 	if (inst.mode != 1)
 		return;
 
-	set_variable(inst.op1,FogDepth);
+	set_variable(int(inst.op1),FogDepth);
 
 }
 
@@ -1812,9 +1810,9 @@ void s_Get_Fog_Color(script_instruction inst)
 	if (inst.mode != 7)
 		return;
 
-	set_variable(inst.op1,FogColor[0]);
-	set_variable(inst.op2,FogColor[1]);
-	set_variable(inst.op3,FogColor[2]);
+	set_variable(int(inst.op1),FogColor[0]);
+	set_variable(int(inst.op2),FogColor[1]);
+	set_variable(int(inst.op3),FogColor[2]);
 
 }
 
@@ -1830,7 +1828,7 @@ void s_Teleport_Player(script_instruction inst)
 				dest = (int)floor(inst.op1);
 				break;
 		case 1:
-				dest = (int)floor(get_variable(inst.op1));
+				dest = (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;

@@ -104,6 +104,7 @@ void remap_bitmap(
 		pixels= bitmap->row_addresses[0];
 		for (row= 0; row<rows; ++row)
 		{
+			// CB: this needs to be corrected to work properly on little-endian machines
 			while (run_count= *((short*)pixels)++)
 			{
 				if (run_count>0)
@@ -121,8 +122,13 @@ void remap_bitmap(
 		pixels= bitmap->row_addresses[0];
 		for (row= 0; row<rows; ++row)
 		{
-			short first= *(int16 *)pixels; pixels += 2;
-			short last= *(int16 *)pixels; pixels += 2;
+			// CB: first/last are stored in big-endian order
+			uint16 first = *pixels++ << 8;
+			first |= *pixels++;
+//			short first= *(int16 *)pixels; pixels += 2;
+			uint16 last = *pixels++ << 8;
+			last |= *pixels++;
+//			short last= *(int16 *)pixels; pixels += 2;
 			map_bytes(pixels, table, last-first);
 			pixels+= last-first;
 		}
@@ -157,8 +163,9 @@ void precalculate_bitmap_row_addresses(
 		for (row= 0; row<rows; ++row)
 		{
 			short run_count;
-			
 			*table++= row_address;
+
+			// CB: this needs to be corrected to work properly on little-endian systems
 			while (run_count= *((short*)row_address)++)
 			{
 				if (run_count>0) row_address+= run_count;
@@ -171,8 +178,13 @@ void precalculate_bitmap_row_addresses(
 		{
 			*table++= row_address;
 			
-			short first= *(int16 *)row_address; row_address += 2;
-			short last= *(int16 *)row_address; row_address += 2;
+			// CB: first/last are stored in big-endian order
+			uint16 first = *row_address++ << 8;
+			first |= *row_address++;
+//			short first= *(int16 *)row_address; row_address += 2;
+			uint16 last = *row_address++ << 8;
+			last |= *row_address++;
+//			short last= *(int16 *)row_address; row_address += 2;
 			row_address+= last-first;
 		}
 #endif
