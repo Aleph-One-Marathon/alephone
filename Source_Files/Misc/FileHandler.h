@@ -34,6 +34,10 @@ Dec 7, 2000 (Loren Petrich):
 #include <string>
 #include <vector>
 #define fnfErr ENOENT
+#ifndef NO_STD_NAMESPACE
+using std::string;
+using std::vector;
+#endif
 #endif
 
 #ifdef __WIN32__

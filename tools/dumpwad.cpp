@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 // Dummy declarations to avoid link errors
 void set_game_error(short a, short b) {}

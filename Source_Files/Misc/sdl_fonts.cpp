@@ -14,6 +14,12 @@
 #include <vector>
 #include <map>
 
+#ifndef NO_STD_NAMESPACE
+using std::vector;
+using std::pair;
+using std::map;
+#endif
+
 
 // Global variables
 typedef pair<int, int> id_and_size_t;

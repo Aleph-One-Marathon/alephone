@@ -10,6 +10,10 @@
 #include <stdio.h>
 #include <vector>
 
+#ifndef NO_STD_NAMESPACE
+using std::vector;
+#endif
+
 class FileSpecifier;
 class LoadedResource;
 

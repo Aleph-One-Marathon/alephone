@@ -9,6 +9,10 @@
 
 #include <vector>
 
+#ifndef NO_STD_NAMESPACE
+using std::vector;
+#endif
+
 class widget;
 struct SDL_Surface;
 class sdl_font_info;

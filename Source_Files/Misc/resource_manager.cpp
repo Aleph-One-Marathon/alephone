@@ -15,6 +15,12 @@
 #include <list>
 #include <map>
 
+#ifndef NO_STD_NAMESPACE
+using std::vector;
+using std::list;
+using std::map;
+#endif
+
 
 // From FileHandler_SDL.cpp
 extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length);
