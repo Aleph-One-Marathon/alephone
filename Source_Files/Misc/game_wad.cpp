@@ -96,11 +96,14 @@ Aug 28, 2000 (Loren Petrich):
 
 // LP addition: for physics-model stuff, we need these pointers to definitions
 /* sadly extern'ed from their respective files */
+// LP: no need to do this anymore
+/*
 extern byte monster_definitions[];
 extern byte projectile_definitions[];
 extern byte effect_definitions[];
 extern byte weapon_definitions[];
 extern byte physics_models[];
+*/
 
 #ifdef env68k
 #pragma segment file_io
@@ -1995,12 +1998,12 @@ struct save_game_data save_data[]=
 };
 
 /* the sizes are the sizes to save in the file, be aware! */
-static void *tag_to_global_array_and_size(
+static byte *tag_to_global_array_and_size(
 	long tag, 
 	long *size
 	)
 {
-	void *array= NULL;
+	byte *array= NULL;
 	short unit_size, index, count;
 	
 	for(index= 0; index<NUMBER_OF_SAVE_ARRAYS; ++index)
@@ -2012,7 +2015,220 @@ static void *tag_to_global_array_and_size(
 		}
 	}
 	assert(index != NUMBER_OF_SAVE_ARRAYS);
-
+	
+	// LP: had fixed off-by-one error in medias saving,
+	// and had added physics-model saving
+	
+	switch (tag)
+	{
+		case ENDPOINT_DATA_TAG:
+			count= dynamic_world->endpoint_count;
+			break;
+		case LINE_TAG:
+			count= dynamic_world->line_count;
+			break;
+		case SIDE_TAG:
+			count= dynamic_world->side_count;
+			break;
+		case POLYGON_TAG:
+			count= dynamic_world->polygon_count;
+			break;
+		case LIGHTSOURCE_TAG:
+			count= dynamic_world->light_count;
+			break;
+		case ANNOTATION_TAG:
+			count= dynamic_world->default_annotation_count;
+			break;
+		case OBJECT_TAG:
+			count= dynamic_world->initial_objects_count;
+			break;
+		case MAP_INFO_TAG:
+			count= 1;
+			break;
+		case PLAYER_STRUCTURE_TAG:
+			count= dynamic_world->player_count;
+			break;
+		case DYNAMIC_STRUCTURE_TAG:
+			count= 1;
+			break;
+		case OBJECT_STRUCTURE_TAG:
+			count= dynamic_world->object_count;
+			break;
+		case MAP_INDEXES_TAG:
+			count= dynamic_world->map_index_count;
+			break;
+		case AUTOMAP_LINES:
+			count= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0)); 
+			break;
+		case AUTOMAP_POLYGONS:
+			count= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0));
+			break;
+		case MONSTERS_STRUCTURE_TAG:
+			count= dynamic_world->monster_count;
+			break;
+		case EFFECTS_STRUCTURE_TAG:
+			count= dynamic_world->effect_count;
+			break;
+		case PROJECTILES_STRUCTURE_TAG:
+			count= dynamic_world->projectile_count;
+			break;
+		case MEDIA_TAG:
+			count= count_number_of_medias_used();
+			break;
+		case ITEM_PLACEMENT_STRUCTURE_TAG:
+			count= 2*MAXIMUM_OBJECT_TYPES;
+			break;
+		case PLATFORM_STRUCTURE_TAG:
+			count= dynamic_world->platform_count;
+			break;
+		case AMBIENT_SOUND_TAG:
+			count= dynamic_world->ambient_sound_image_count;
+			break;
+		case RANDOM_SOUND_TAG:
+			count= dynamic_world->random_sound_image_count;
+			break;
+		case TERMINAL_DATA_TAG:
+			count= calculate_packed_terminal_data_length(); // calculate_terminal_information_length();
+			break;
+		case WEAPON_STATE_TAG:
+			count= dynamic_world->player_count;
+			break;
+		case TERMINAL_STATE_TAG:
+			count= dynamic_world->player_count; // calculate_terminal_data_length();
+			break;
+		case MONSTER_PHYSICS_TAG:
+			count= NUMBER_OF_MONSTER_TYPES;
+			break;
+		case EFFECTS_PHYSICS_TAG:
+			count= NUMBER_OF_EFFECT_TYPES;
+			break;
+		case PROJECTILE_PHYSICS_TAG:
+			count= NUMBER_OF_PROJECTILE_TYPES;
+			break;
+		case PHYSICS_PHYSICS_TAG:
+			count= get_number_of_physics_models();
+			break;
+		case WEAPONS_PHYSICS_TAG:
+			count= get_number_of_weapon_types();
+			break;
+		default:
+			// LP change:
+			assert(false);
+			// halt();
+			break;
+	}
+	
+	// Allocate a temporary packed-data chunk;
+	// indicate if there is nothing to be written
+	*size= count*unit_size;
+	if (*size > 0)
+		array = new byte[*size];
+	else
+		return NULL;
+	
+	// An OK-to-alter version of that array pointer
+	byte *temp_array = array;
+	
+	switch (tag)
+	{
+		case ENDPOINT_DATA_TAG:
+			pack_endpoint_data(array,map_endpoints,count);
+			break;
+		case LINE_TAG:
+			pack_line_data(array,map_lines,count);
+			break;
+		case SIDE_TAG:
+			pack_side_data(array,map_sides,count);
+			break;
+		case POLYGON_TAG:
+			pack_polygon_data(array,map_polygons,count);
+			break;
+		case LIGHTSOURCE_TAG:
+			pack_light_data(array,lights,count);
+			break;
+		case ANNOTATION_TAG:
+			pack_map_annotation(array,map_annotations,count);
+			break;
+		case OBJECT_TAG:
+			pack_map_object(array,saved_objects,count);
+			break;
+		case MAP_INFO_TAG:
+			pack_static_data(array,static_world,count);
+			break;
+		case PLAYER_STRUCTURE_TAG:
+			pack_player_data(array,players,count);
+			break;
+		case DYNAMIC_STRUCTURE_TAG:
+			pack_dynamic_data(array,dynamic_world,count);
+			break;
+		case OBJECT_STRUCTURE_TAG:
+			pack_object_data(array,objects,count);
+			break;
+		case MAP_INDEXES_TAG:
+			ListToStream(temp_array,map_indexes,count); // E-Z packing here...
+			break;
+		case AUTOMAP_LINES:
+			memcpy(array,automap_lines,*size);
+			break;
+		case AUTOMAP_POLYGONS:
+			memcpy(array,automap_polygons,*size);
+			break;
+		case MONSTERS_STRUCTURE_TAG:
+			pack_monster_data(array,monsters,count);
+			break;
+		case EFFECTS_STRUCTURE_TAG:
+			pack_effect_data(array,effects,count);
+			break;
+		case PROJECTILES_STRUCTURE_TAG:
+			pack_projectile_data(array,projectiles,count);
+			break;
+		case MEDIA_TAG:
+			pack_media_data(array,medias,count);
+			break;
+		case ITEM_PLACEMENT_STRUCTURE_TAG:
+			pack_object_frequency_definition(array,get_placement_info(),count);
+			break;
+		case PLATFORM_STRUCTURE_TAG:
+			pack_platform_data(array,platforms,count);
+			break;
+		case AMBIENT_SOUND_TAG:
+			pack_ambient_sound_image_data(array,ambient_sound_images,count);
+			break;
+		case RANDOM_SOUND_TAG:
+			pack_random_sound_image_data(array,random_sound_images,count);
+			break;
+		case TERMINAL_DATA_TAG:
+			pack_map_terminal_data(array,count);
+			break;
+		case WEAPON_STATE_TAG:
+			pack_player_weapon_data(array,count);
+			break;
+		case TERMINAL_STATE_TAG:
+			pack_player_terminal_data(array,count);
+			break;
+		case MONSTER_PHYSICS_TAG:
+			pack_monster_definition(array,count);
+			break;
+		case EFFECTS_PHYSICS_TAG:
+			pack_effect_definition(array,count);
+			break;
+		case PROJECTILE_PHYSICS_TAG:
+			pack_projectile_definition(array,count);
+			break;
+		case PHYSICS_PHYSICS_TAG:
+			pack_physics_constants(array,count);
+			break;
+		case WEAPONS_PHYSICS_TAG:
+			pack_weapon_definition(array,count);
+			break;
+		default:
+			// LP change:
+			assert(false);
+			// halt();
+			break;
+	}
+	
+	/*
 	switch (tag)
 	{
 		case ENDPOINT_DATA_TAG:
@@ -2021,27 +2237,27 @@ static void *tag_to_global_array_and_size(
 			break;
 		case LINE_TAG:
 			array= map_lines;
-			count= dynamic_world->line_count*unit_size;
+			count= dynamic_world->line_count;
 			break;
 		case SIDE_TAG:
 			array= map_sides;
-			count= dynamic_world->side_count*unit_size;
+			count= dynamic_world->side_count;
 			break;
 		case POLYGON_TAG:
 			array= map_polygons;
-			count= dynamic_world->polygon_count*unit_size;
+			count= dynamic_world->polygon_count;
 			break;
 		case LIGHTSOURCE_TAG:
 			array= lights;
-			count= dynamic_world->light_count*unit_size;
+			count= dynamic_world->light_count;
 			break;
 		case ANNOTATION_TAG:
 			array= map_annotations;
-			count= dynamic_world->default_annotation_count*unit_size;
+			count= dynamic_world->default_annotation_count;
 			break;
 		case OBJECT_TAG:
 			array= saved_objects;
-			count= dynamic_world->initial_objects_count*unit_size;
+			count= dynamic_world->initial_objects_count;
 			break;
 		case MAP_INFO_TAG:
 			array= static_world;
@@ -2145,6 +2361,7 @@ static void *tag_to_global_array_and_size(
 			break;
 	}
 	*size= count*unit_size;
+	*/
 	
 	return array;
 }
@@ -2166,12 +2383,13 @@ static struct wad_data *build_save_game_wad(
 		for(loop= 0; loop<NUMBER_OF_SAVE_ARRAYS; ++loop)
 		{
 			/* If there is a conversion function, let it handle it */
-			array_to_slam= (byte *)tag_to_global_array_and_size(save_data[loop].tag, &size);
+			array_to_slam= tag_to_global_array_and_size(save_data[loop].tag, &size);
 	
 			/* Add it to the wad.. */
 			if(size)
 			{
 				wad= append_data_to_wad(wad, save_data[loop].tag, array_to_slam, size, 0l);
+				delete []array_to_slam;
 			}
 		}
 		if(wad) *length= calculate_wad_length(header, wad);
@@ -2193,6 +2411,8 @@ static void complete_restoring_level(
 	for(loop= 0; loop<NUMBER_OF_SAVE_ARRAYS; ++loop)
 	{
 		/* If it hasn't already been loaded */
+		// LP: no longer necessary
+#if 0
 		if(!save_data[loop].loaded_by_level)
 		{
 			/* Size is invalid at this point.. */
@@ -2204,6 +2424,7 @@ static void complete_restoring_level(
 			/* Copy the data to the proper array.. */
 			memcpy(array, data, data_length);
 		}
+#endif
 	}
 	
 	/* Loading games needs this done. */
