@@ -937,7 +937,7 @@ long get_entry_point_flags_for_game_type(
 			break;
 		// END Benad
 		default:
-			vhalt(csprintf(temporary, "What is game type %u?", game_type));
+			vhalt(csprintf(temporary, "What is game type %lu?", game_type));
 			break;
 	}
 		
