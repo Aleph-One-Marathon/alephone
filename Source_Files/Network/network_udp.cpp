@@ -106,14 +106,14 @@ receive_thread_function(void*) {
 
 OSErr NetDDPOpen(void)
 {
-//printf("NetDDPOpen\n");
+//fdprintf("NetDDPOpen\n");
 	// nothing to do
 	return 0;
 }
 
 OSErr NetDDPClose(void)
 {
-//printf("NetDDPClose\n");
+//fdprintf("NetDDPClose\n");
 	// nothing to do
 	return 0;
 }
@@ -125,7 +125,7 @@ OSErr NetDDPClose(void)
 // Most of this function by ZZZ.
 OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
 {
-//printf("NetDDPOpenSocket\n");
+//fdprintf("NetDDPOpenSocket\n");
 	assert(packetHandler);
 
 	// Allocate packet buffer (this is Christian's part)
@@ -157,7 +157,7 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
         // Set receiving thread priority very high
         bool	theResult = BoostThreadPriority(sReceivingThread);
         if(theResult == false)
-            printf("warning: BoostThreadPriority() failed; network performance may suffer\n");
+            fdprintf("warning: BoostThreadPriority() failed; network performance may suffer\n");
         
         //PORTGUESS but we should generally keep port in network order, I think?
 	*portNumber = SDL_SwapBE16(DEFAULT_PORT);
@@ -171,7 +171,7 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
 
 OSErr NetDDPCloseSocket(short portNumber)
 {
-//printf("NetDDPCloseSocket\n");
+//fdprintf("NetDDPCloseSocket\n");
         // ZZZ: shut down receiving thread
         if(sReceivingThread) {
             sKeepListening	= false;
@@ -197,7 +197,7 @@ OSErr NetDDPCloseSocket(short portNumber)
 
 DDPFramePtr NetDDPNewFrame(void)
 {
-//printf("NetDDPNewFrame\n");
+//fdprintf("NetDDPNewFrame\n");
 	DDPFramePtr frame = (DDPFramePtr)malloc(sizeof(DDPFrame));
 	if (frame) {
 		memset(frame, 0, sizeof(DDPFrame));
@@ -213,7 +213,7 @@ DDPFramePtr NetDDPNewFrame(void)
 
 void NetDDPDisposeFrame(DDPFramePtr frame)
 {
-//printf("NetDDPDisposeFrame\n");
+//fdprintf("NetDDPDisposeFrame\n");
 	if (frame)
 		free(frame);
 }
@@ -225,7 +225,7 @@ void NetDDPDisposeFrame(DDPFramePtr frame)
 
 OSErr NetDDPSendFrame(DDPFramePtr frame, NetAddrBlock *address, short protocolType, short port)
 {
-//printf("NetDDPSendFrame\n");
+//fdprintf("NetDDPSendFrame\n");
 	assert(frame->data_size <= ddpMaxData);
 
 	sUDPPacketBuffer->channel = -1;

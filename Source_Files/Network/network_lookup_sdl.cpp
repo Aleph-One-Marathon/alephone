@@ -87,7 +87,7 @@ OSErr NetLookupOpen_SSLP(const unsigned char *type, short version,
         SSLP_Service_Instance_Status_Changed_Callback lostInstance,
         SSLP_Service_Instance_Status_Changed_Callback nameChanged)
 {
-//    printf("NetLookupOpen_SSLP %d\n", version);
+//    fdprintf("NetLookupOpen_SSLP %d\n", version);
 
     char theType[SSLP_MAX_TYPE_LENGTH];
 
@@ -108,7 +108,7 @@ OSErr NetLookupOpen_SSLP(const unsigned char *type, short version,
 
 void NetLookupClose(void)
 {
-//    printf("NetLookupClose\n");
+//    fdprintf("NetLookupClose\n");
 
     if(sLookupInProgress) {
         // No longer interested in hearing about service instances.
@@ -125,7 +125,7 @@ void NetLookupClose(void)
 
 void NetLookupRemove(short index)
 {
-//    printf("NetLookupRemove %d\n", index);
+//    fdprintf("NetLookupRemove %d\n", index);
 }
 
 
@@ -135,7 +135,7 @@ void NetLookupRemove(short index)
 
 void NetLookupInformation(short index, NetAddrBlock *address, NetEntityName *entity)
 {
-//    printf("NetLookupInformation %d\n", index);
+//    fdprintf("NetLookupInformation %d\n", index);
 }
 
 
@@ -145,7 +145,7 @@ void NetLookupInformation(short index, NetAddrBlock *address, NetEntityName *ent
 
 void NetLookupUpdate(void)
 {
-//    printf("NetLookupUpdate\n");
+//    fdprintf("NetLookupUpdate\n");
 }
 
 
@@ -156,7 +156,7 @@ void NetLookupUpdate(void)
 OSErr NetRegisterName(const unsigned char *name, const unsigned char *type, short version, short socketNumber,
 					  const char* hint_addr_string)
 {
-//    printf("NetRegisterName %d, %d\n", version, socketNumber);
+//    fdprintf("NetRegisterName %d, %d\n", version, socketNumber);
 
     // Construct a service-instance for the player
     struct SSLP_ServiceInstance	thePlayer;
@@ -205,7 +205,7 @@ OSErr NetRegisterName(const unsigned char *name, const unsigned char *type, shor
 
 OSErr NetUnRegisterName(void)
 {
-//    printf("NetUnRegisterName\n");
+//    fdprintf("NetUnRegisterName\n");
 
     if(sNameRegistered) {
         // Stop publishing player name (we can get away with NULL, meaning "all", since we only publish one at a time)

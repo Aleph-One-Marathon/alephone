@@ -46,14 +46,14 @@
 
 OSErr NetADSPOpen(void)
 {
-//printf("NetADSPOpen\n");
+//fdprintf("NetADSPOpen\n");
 	// nothing to do
 	return 0;
 }
 
 OSErr NetADSPClose(void)
 {
-//printf("NetADSPClose\n");
+//fdprintf("NetADSPClose\n");
 	// nothing to do
 	return 0;
 }
@@ -65,7 +65,7 @@ OSErr NetADSPClose(void)
 
 OSErr NetADSPEstablishConnectionEnd(ConnectionEndPtr *connection)
 {
-//printf("NetADSPEstablishConnectionEnd\n");
+//fdprintf("NetADSPEstablishConnectionEnd\n");
 	// Allocate endpoint data structure
 	ConnectionEndPtr connectionEnd = (ConnectionEndPtr)malloc(sizeof(ConnectionEnd));
 	if (connectionEnd == NULL)
@@ -84,7 +84,7 @@ OSErr NetADSPEstablishConnectionEnd(ConnectionEndPtr *connection)
 
 OSErr NetADSPDisposeConnectionEnd(ConnectionEndPtr connectionEnd)
 {
-//printf("NetADSPDisposeConnectionEnd\n");
+//fdprintf("NetADSPDisposeConnectionEnd\n");
 	if (connectionEnd == NULL)
 		return 0;
 
@@ -108,7 +108,7 @@ OSErr NetADSPDisposeConnectionEnd(ConnectionEndPtr connectionEnd)
 
 OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, NetAddrBlock *address)
 {
-//printf("NetADSPOpenConnection\n");
+//fdprintf("NetADSPOpenConnection\n");
 	// Open socket
 	connectionEnd->socket = SDLNet_TCP_Open(address);
 	return connectionEnd->socket ? 0 : -1;
@@ -121,7 +121,7 @@ OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, NetAddrBlock *addres
 
 OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, bool abort)
 {
-//printf("NetADSPCloseConnection\n");
+//fdprintf("NetADSPCloseConnection\n");
 	// Close socket
 	if (connectionEnd->socket) {
 		SDLNet_TCP_Close(connectionEnd->socket);
@@ -142,7 +142,7 @@ OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, bool abort)
 // had just called NetADSPCloseConnection and called this with the server_socket still in place.
 OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd)
 {
-//printf("NetADSPWaitForConnection\n");
+//fdprintf("NetADSPWaitForConnection\n");
 	// Close old sockets
 	if (connectionEnd->socket) {
 		SDLNet_TCP_Close(connectionEnd->socket);
@@ -225,7 +225,7 @@ bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, NetAddrBlock *
 OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 {
 #ifdef DEBUG
-	printf("NetADSPWrite %d: ", *count);
+	fdprintf("NetADSPWrite %d: ", *count);
 #endif
 
 	int actual		= 0;
@@ -243,7 +243,7 @@ OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 
 		if(actual < *count) {
 #ifdef DEBUG
-			printf("z");
+			fdprintf("z");
 #endif
 			SDL_Delay(10);
 		}
@@ -252,7 +252,7 @@ OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 	}
 	
 #ifdef DEBUG
-	printf("%d\n", actual);
+	fdprintf("%d\n", actual);
 #endif
 	
 	return actual == *count ? 0 : -1;
@@ -266,7 +266,7 @@ OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 {
 #ifdef DEBUG
-	printf("NetADSPRead %d: ", *count);
+	fdprintf("NetADSPRead %d: ", *count);
 #endif
 
 	int actual		= 0;
@@ -282,7 +282,7 @@ OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 
 		if(actual < *count) {
 #ifdef DEBUG
-			printf("z");
+			fdprintf("z");
 #endif
 			SDL_Delay(10);
 		}
@@ -293,7 +293,7 @@ OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 	*count = actual;
 
 #ifdef DEBUG
-	printf("%d\n", actual);
+	fdprintf("%d\n", actual);
 #endif
 
 	return actual > 0 ? 0 : -1;

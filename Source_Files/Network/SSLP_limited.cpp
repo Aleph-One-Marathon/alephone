@@ -49,6 +49,9 @@
 #include	"SSLP_Protocol.h"
 #include	"SDL_netx.h"
 
+// In order to turn "printf" into "fdprintf"
+#include	"cseries.h"
+
 // DEBUGGING DEFINES
 // There's surely a better way to do this, but shrug.  If I spent all my time looking around for
 // the best way to do this sort of thing, I wouldn't ever get anything written!
@@ -57,7 +60,7 @@
 
 //#define	SSLP_DEBUG
 
-#define BUG printf
+#define BUG fdprintf
 
 #ifdef	SSLP_DEBUG
 #define	SSLP_DE	(x);
@@ -83,33 +86,33 @@ struct SSLPint_FoundInstance {
 };
 
 
-
+// LP: must be initialized!
 
 // FILE-LOCAL (STATIC) STORAGE
 ////////// used all around
-static int						sBehaviorsDesired;
+static int						sBehaviorsDesired = 0;
 static UDPsocket					sSocketDescriptor;
 
 
 ////////// used by packet receiver
-static UDPpacket*					sReceivingPacket;
+static UDPpacket*					sReceivingPacket = NULL;
 
 
 ////////// for discovering services
-static UDPpacket*					sFindPacket;			// sFindPacket->data does not change
-static SSLP_Service_Instance_Status_Changed_Callback	sFoundCallback;
-static SSLP_Service_Instance_Status_Changed_Callback	sLostCallback;
-static SSLP_Service_Instance_Status_Changed_Callback	sNameChangedCallback;
-static struct 	SSLPint_FoundInstance*			sFoundInstances;
+static UDPpacket*					sFindPacket = NULL;		// sFindPacket->data does not change
+static SSLP_Service_Instance_Status_Changed_Callback	sFoundCallback = NULL;
+static SSLP_Service_Instance_Status_Changed_Callback	sLostCallback = NULL;
+static SSLP_Service_Instance_Status_Changed_Callback	sNameChangedCallback = NULL;
+static struct 	SSLPint_FoundInstance*			sFoundInstances = NULL;
 
 
 ////////// for services that may be discovered
-static UDPpacket*					sHintPacket;			// sHintPacket->data does not change
+static UDPpacket*					sHintPacket = NULL;		// sHintPacket->data does not change
 
 // NB: currently, incoming FIND packets' service_types are compared against
 // the service_type in this packet to see if a response is warranted.
 // (the service_type in this packet is copied from the instance passed in to Allow_Service_Discovery().)
-static UDPpacket*					sResponsePacket;		// sResponsePacket->data does not change
+static UDPpacket*					sResponsePacket = NULL;	// sResponsePacket->data does not change
 
 
 // Packing and unpacking:
@@ -358,7 +361,7 @@ SSLPint_ReceivedPacket() {
             // ... ok, and we're interested... so, let's make sure it's the service_type that we're looking for...
             if(strncmp(thePacket->sslpp_service_type, ((struct SSLP_Packet*)(sFindPacket->data))->sslpp_service_type,
                 SSLP_MAX_TYPE_LENGTH) == 0) {
-
+ 
                 // It's the right type!  We found an instance out there!  Set up a structure to report our findings.
                 struct SSLP_ServiceInstance	theReceivedInstance;
                 strncpy(theReceivedInstance.sslps_type, thePacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH);

@@ -97,6 +97,8 @@ clearly this is all broken until we have packet types
 #include "map.h"       // for TICKS_PER_SECOND and "struct entry_point"
 #include "interface.h" // for transfering map
 #include "mytm.h"	// ZZZ: both versions use mytm now
+// for screen_printf()
+#include "shell.h"
 
 #if defined(SDL) || HAVE_SDL_NET
 #include "sdl_network.h"
@@ -133,6 +135,7 @@ clearly this is all broken until we have packet types
 //	#define DEBUG_NET
 //#define DEBUG_NET_RECORD_PROFILE
 #endif
+#define DEBUG_NET
 
 // ZZZ: moved many struct definitions, constant #defines, etc. to header for (limited) sharing
 #include "network_private.h"
@@ -155,7 +158,6 @@ clearly this is all broken until we have packet types
 #if defined(mac) && !HAVE_SDL_NET
 //#define NETWORK_IP // JTP: No no no, this defeats the whole purpose of NETWORK_IP
 #undef NETWORK_IP
-#undef DEBUG_NET
 #endif
 
 #ifdef DEBUG_NET_RECORD_PROFILE
@@ -1342,7 +1344,7 @@ bool NetUnSync(
 	netState= netDown;
 
 #ifdef DEBUG_NET
-	dprintf("Flags processed: %d Time: %d;g", net_stats.action_flags_processed, TickCount()-ticks);
+	fdprintf("Flags processed: %d Time: %d;g", net_stats.action_flags_processed, TickCount()-ticks);
 	net_stats.action_flags_processed= 0;
 #endif
 #endif	
@@ -1546,7 +1548,7 @@ void NetDDPPacketHandler(
 						{
 							/* on-time acknowledgement; set a global so our time manager task doesn’t resend
 								this packet when it fires */
-//								dprintf("ontime ack;g");
+//								fdprintf("ontime ack;g");
 #ifdef DEBUG_NET
 							{
                                                                 // Figure out what was ACKed
@@ -1594,7 +1596,7 @@ void NetDDPPacketHandler(
 							if (header->sequence<=status->lastValidRingSequence)
 							{
 								/* late acknowledgement; ignore */
-//								dprintf("late ack;g");
+//								fdprintf("late ack;g");
 #ifdef DEBUG_NET
 								net_stats.late_acks++;
 #endif
@@ -1602,7 +1604,7 @@ void NetDDPPacketHandler(
 							else
 							{
 								/* early acknowledgement; wet our pants (this should never happen) */
-//								dprintf("early ack (%d>%d);g", header->sequence, status->lastValidRingSequence);
+//								fdprintf("early ack (%d>%d);g", header->sequence, status->lastValidRingSequence);
 								assert(false);
 							}
 						}
@@ -1623,7 +1625,7 @@ void NetDDPPacketHandler(
 #ifdef DEBUG_NET
 					net_stats.change_ring_packet_count++;
 #endif
-//					dprintf("got change ring packet %d;g", header->sequence);
+//					fdprintf("got change ring packet %d;g", header->sequence);
 
 					/* fall through to tagRING_PACKET */
 				
@@ -1688,13 +1690,13 @@ void NetDDPPacketHandler(
 	#endif
 								/* late ring packet; acknowledge but ignore */
 								NetSendAcknowledgement(ackFrame, header->sequence);
-	//							dprintf("late ring (%d<=%d);g", header->sequence, status->lastValidRingSequence);
+	//							fdprintf("late ring (%d<=%d);g", header->sequence, status->lastValidRingSequence);
 							} // sequence <= lastValidRingSequence
 							else
 							{
 								/* on-time or early ring packet */
-	//							dprintf("Got ring.;g");
-	//							dprintf("on-time ring %p (%d bytes);dm #%d #%d;g", packet, packet->datagramSize, packet->datagramData, packet->datagramSize);
+	//							fdprintf("Got ring.;g");
+	//							fdprintf("on-time ring %p (%d bytes);dm #%d #%d;g", packet, packet->datagramSize, packet->datagramData, packet->datagramSize);
 	
 								/* process remote actions, add our local actions, build ringFrame for sending */
 								NetProcessIncomingBuffer(packet->datagramData+sizeof(NetPacketHeader_NET),
@@ -1716,7 +1718,7 @@ void NetDDPPacketHandler(
 #ifdef DEBUG_NET
 							net_stats.packets_from_the_unknown++;
 #endif
-	//						dprintf("packet from unknown source %8x!=%8x.;g;", *((long*)&packet->sourceAddress), *((long*)&status->downringAddress));
+	//						fdprintf("packet from unknown source %8x!=%8x.;g;", *((long*)&packet->sourceAddress), *((long*)&status->downringAddress));
 						}
 					} // accept_ring_packets
 					break;
@@ -1901,14 +1903,14 @@ static void NetProcessIncomingBuffer(
 			if(netState==netComingDown)
 			{
 #ifdef DEBUG_NET
-//				dprintf("Got an unsync packet.. (%d);g", net_stats.action_flags_processed);
+//				fdprintf("Got an unsync packet.. (%d);g", net_stats.action_flags_processed);
 				net_stats.unsync_while_coming_down++;
 #endif
 				status->acceptRingPackets= false;
 				if(status->iAmTheServer)
 				{
 #ifdef DEBUG_NET
-//					dprintf("Unsync returned to sender. Going down;g");
+//					fdprintf("Unsync returned to sender. Going down;g");
 					net_stats.unsync_returned_to_sender++;
 #endif
 					packet_data->ring_packet_type= typeDEAD_PACKET;
@@ -1917,7 +1919,7 @@ static void NetProcessIncomingBuffer(
 #ifdef DEBUG_NET
 			else 
 			{
-//				dprintf("Got a spurious unsync packet...;g");
+//				fdprintf("Got a spurious unsync packet...;g");
 				net_stats.spurious_unsyncs++;
 			}
 #endif
@@ -2120,7 +2122,7 @@ static void NetAddFlagsToPacket(
 	// tell everyone that we’re meeting code.
 	packet->action_flag_count[localPlayerIndex]= packet->required_action_flags;
 	
-//	dprintf("NETPACKET:;dm %x %x;g;", packet, sizeof(NetPacket)+sizeof(long)*2*8);
+//	fdprintf("NETPACKET:;dm %x %x;g;", packet, sizeof(NetPacket)+sizeof(long)*2*8);
 	
 	/* Allow for reentrance into this function */
 	already_here= false;
@@ -2241,7 +2243,7 @@ static void NetSendAcknowledgement(
         NetPacketHeader		header_storage;
         NetPacketHeader*	header		= &header_storage;
 
-//	dprintf("sending ack.;g");
+//	fdprintf("sending ack.;g");
 
 	/* build the acknowledgement */
 	frame->data_size= sizeof(NetPacketHeader_NET);
@@ -2352,7 +2354,7 @@ static void NetRebuildRingPacket(
 static void NetSendRingPacket(
 	DDPFramePtr frame)
 {
-//	dprintf("sent frame;g");
+//	fdprintf("sent frame;g");
 	
 	status->retries= 0; // needs to be here, in case retry task was canceled (’cuz it likes to set retries)
 	status->receivedAcknowledgement= false; /* will not be set until we receive an acknowledgement for this packet */
@@ -2404,7 +2406,7 @@ static bool NetCheckResendRingPacket(
 						
 					case netComingDown:
 #ifdef DEBUG_NET
-dprintf("Never got confirmation on NetUnsync packet.  They don't love us.");
+fdprintf("Never got confirmation on NetUnsync packet.  They don't love us.");
 #endif
 						reinstall= false;
 						status->acceptRingPackets= false;
@@ -2418,7 +2420,7 @@ dprintf("Never got confirmation on NetUnsync packet.  They don't love us.");
 			}
 
 #ifdef DEBUG_NET
-#error need to alter this to work with new (_NET) packet formats, or data will be screwy.
+// #error need to alter this to work with new (_NET) packet formats, or data will be screwy.
 			{
 				NetPacketPtr packet_data= (NetPacketPtr) (ringFrame->data+sizeof(NetPacketHeader));
 				switch(packet_data->ring_packet_type)
@@ -2509,7 +2511,7 @@ static bool NetServerTask(
 					if(packet_data->required_action_flags==0)
 					{
 #ifdef DEBUG_NET
-//						dprintf("I Server got a normal packet, at zero.  unsyncing... (%d);g", net_stats.action_flags_processed);
+//						fdprintf("I Server got a normal packet, at zero.  unsyncing... (%d);g", net_stats.action_flags_processed);
 						net_stats.server_unsyncing++;
 #endif
 						packet_data->ring_packet_type= typeUNSYNC_RING_PACKET;
@@ -2517,7 +2519,7 @@ static bool NetServerTask(
 					else 
 					{
 #ifdef DEBUG_NET
-//						dprintf("I Server got a normal packet & net was coming down required flags at 0. (%d);g", net_stats.action_flags_processed);
+//						fdprintf("I Server got a normal packet & net was coming down required flags at 0. (%d);g", net_stats.action_flags_processed);
 						net_stats.server_set_required_flags_to_zero++;
 #endif
 						/* Change the type to an unsync ring packet... */
@@ -2539,7 +2541,7 @@ static bool NetServerTask(
 				if(status->new_packet_tag != NONE) 
 				{
 #ifdef DEBUG_NET
-//					dprintf("rebuilding the server tag (%d);g", status->new_packet_tag);
+//					fdprintf("rebuilding the server tag (%d);g", status->new_packet_tag);
 					net_stats.rebuilt_server_tag++;
 #endif
 					NetRebuildRingPacket(ringFrame, status->new_packet_tag, status->lastValidRingSequence+1);
@@ -2596,7 +2598,7 @@ static void NetUpdateTopology(
 		if (topology->players[localPlayerIndex].identifier==localPlayerIdentifier) break;
 	}
 #ifdef DEBUG
-	if (localPlayerIndex==topology->player_count) dprintf("couldn’t find my identifier: %p", topology);
+	if (localPlayerIndex==topology->player_count) fdprintf("couldn’t find my identifier: %p", topology);
 #endif
 	
 	/* recalculate downringAddress */				
@@ -2651,13 +2653,13 @@ update_adaptive_latency(int measurement) {
             && sCurrentAdaptiveLatency < kAdaptiveLatencyMaximumValue)
         {
             sCurrentAdaptiveLatency++;
-            printf("adjusted latency upwards to %d\n", sCurrentAdaptiveLatency);
+            fdprintf("adjusted latency upwards to %d\n", sCurrentAdaptiveLatency);
         }
         else if(theAverageLatencyMeasurement - sCurrentAdaptiveLatency < kNeedToDecreaseLatencyThreshhold
                     && sCurrentAdaptiveLatency > 1)
         {
             sCurrentAdaptiveLatency--;
-            printf("adjusted latency downwards to %d\n", sCurrentAdaptiveLatency);
+            fdprintf("adjusted latency downwards to %d\n", sCurrentAdaptiveLatency);
         }
     }
     
@@ -2747,7 +2749,7 @@ static void drop_upring_player(
 	flag_count= 0;
 
 #ifdef DEBUG_NET
-//	dprintf("Dropping upring- Attempting to delete upring (node %d) from ring. muhaha.;g", status->upringAddress.aNode);
+//	fdprintf("Dropping upring- Attempting to delete upring (node %d) from ring. muhaha.;g", status->upringAddress.aNode);
 	net_stats.upring_drops++;
 #endif
 
@@ -2763,7 +2765,7 @@ static void drop_upring_player(
 		status->server_player_index= localPlayerIndex;
 		status->iAmTheServer= true;
 #ifdef DEBUG_NET
-//		dprintf("Trying to become the server (drop_upring);g");				
+//		fdprintf("Trying to become the server (drop_upring);g");				
 		net_stats.assuming_control_on_retry++;
 #endif
 
@@ -2847,7 +2849,7 @@ bool NetChangeMap(
 	if(localPlayerIndex==status->server_player_index && localPlayerIndex != 0)
 	{
 #ifdef DEBUG_NET
-		dprintf("Server died, and trying to get another level. You lose;g");
+		fdprintf("Server died, and trying to get another level. You lose;g");
 #endif
 		success= false;
 		set_game_error(gameError, errServerDied);
@@ -3187,21 +3189,21 @@ void NetPrintInfo(
 	void)
 {
 #ifdef DEBUG_NET
-	dprintf("numSmears= %d numCountChanges= %d ring packet_count= %d Single: %d;g", net_stats.numSmears, 
+	fdprintf("numSmears= %d numCountChanges= %d ring packet_count= %d Single: %d;g", net_stats.numSmears, 
 		net_stats.numCountChanges, 	status->ringPacketCount, status->single_player);
-	dprintf("localPlayerIndex= %d, server_player_index= %d;g", localPlayerIndex, status->server_player_index);
-	dprintf("tick_count= %d, localNetTime= %d;g", dynamic_world->tick_count, status->localNetTime);
-	dprintf("Unknown packets: %d Upring Drops: %d Rebuilt server Tags: %d;g", net_stats.packets_from_the_unknown, net_stats.upring_drops, net_stats.rebuilt_server_tag);
-	dprintf("Late Rings: Sync: %d Time: %d Normal: %d Unsync: %d Dead: %d;g", net_stats.late_sync_rings, net_stats.late_time_rings, net_stats.late_rings, net_stats.late_unsync_rings, net_stats.late_dead_rings);
-	dprintf("---Retries: Sync: %d Time: %d Normal: %d Unsync: %d Dead: %d;g", net_stats.sync_retry_count, net_stats.time_retry_count, net_stats.retry_count, net_stats.unsync_retry_count, net_stats.dead_retry_count);
-	dprintf("Ontime Ack: Sync: %d Time: %d Normal: %d Unsync: %d Dead: %d Late: %d;g", net_stats.sync_ontime_acks, net_stats.time_ontime_acks, net_stats.ontime_acks, net_stats.unsync_ontime_acks, net_stats.dead_ontime_acks, net_stats.late_acks);
+	fdprintf("localPlayerIndex= %d, server_player_index= %d;g", localPlayerIndex, status->server_player_index);
+	fdprintf("tick_count= %d, localNetTime= %d;g", dynamic_world->tick_count, status->localNetTime);
+	fdprintf("Unknown packets: %d Upring Drops: %d Rebuilt server Tags: %d;g", net_stats.packets_from_the_unknown, net_stats.upring_drops, net_stats.rebuilt_server_tag);
+	fdprintf("Late Rings: Sync: %d Time: %d Normal: %d Unsync: %d Dead: %d;g", net_stats.late_sync_rings, net_stats.late_time_rings, net_stats.late_rings, net_stats.late_unsync_rings, net_stats.late_dead_rings);
+	fdprintf("---Retries: Sync: %d Time: %d Normal: %d Unsync: %d Dead: %d;g", net_stats.sync_retry_count, net_stats.time_retry_count, net_stats.retry_count, net_stats.unsync_retry_count, net_stats.dead_retry_count);
+	fdprintf("Ontime Ack: Sync: %d Time: %d Normal: %d Unsync: %d Dead: %d Late: %d;g", net_stats.sync_ontime_acks, net_stats.time_ontime_acks, net_stats.ontime_acks, net_stats.unsync_ontime_acks, net_stats.dead_ontime_acks, net_stats.late_acks);
 	if(localPlayerIndex==status->server_player_index)
 	{
-		dprintf("Server: Req to zero: %d Unsyncing: %d Returned: %d;g", net_stats.server_set_required_flags_to_zero, net_stats.server_unsyncing, net_stats.unsync_returned_to_sender);
+		fdprintf("Server: Req to zero: %d Unsyncing: %d Returned: %d;g", net_stats.server_set_required_flags_to_zero, net_stats.server_unsyncing, net_stats.unsync_returned_to_sender);
 	}
-	dprintf("Packets w/zero flags: %d Spurious Unsyncs: %d;g", net_stats.packets_with_zero_flags, net_stats.spurious_unsyncs);
-	dprintf("Assumed control: Normal: %d Retry: %d (Server bailed early: %d);g", net_stats.assuming_control, net_stats.assuming_control_on_retry, net_stats.server_bailing_early);
-	dprintf("Proper unsyncs: %d", net_stats.unsync_while_coming_down);
+	fdprintf("Packets w/zero flags: %d Spurious Unsyncs: %d;g", net_stats.packets_with_zero_flags, net_stats.spurious_unsyncs);
+	fdprintf("Assumed control: Normal: %d Retry: %d (Server bailed early: %d);g", net_stats.assuming_control, net_stats.assuming_control_on_retry, net_stats.server_bailing_early);
+	fdprintf("Proper unsyncs: %d", net_stats.unsync_while_coming_down);
 #endif//DEBUG_NET
 } // NetPrintInfo
 
@@ -3253,7 +3255,7 @@ static void process_packet_buffer_flags(
 				if(packet_data->required_action_flags==0)
 				{
 #ifdef DEBUG_NET
-//					dprintf("Server got a final packet & net was coming down (changed) type: %d (%d);g",  packet_data->ring_packet_type, net_stats.action_flags_processed);
+//					fdprintf("Server got a final packet & net was coming down (changed) type: %d (%d);g",  packet_data->ring_packet_type, net_stats.action_flags_processed);
 					net_stats.server_unsyncing++;
 #endif
 					packet_data->ring_packet_type= typeUNSYNC_RING_PACKET;
@@ -3261,7 +3263,7 @@ static void process_packet_buffer_flags(
 				else 
 				{
 #ifdef DEBUG_NET
-//					dprintf("Server got a packet & net was coming down (changed) (%d) current: %d;g",  net_stats.action_flags_processed, packet_data->required_action_flags);
+//					fdprintf("Server got a packet & net was coming down (changed) (%d) current: %d;g",  net_stats.action_flags_processed, packet_data->required_action_flags);
 					net_stats.server_set_required_flags_to_zero++;
 #endif
 					packet_data->required_action_flags= 0;
@@ -3363,7 +3365,7 @@ static void process_flags(
 			/* Only process if this is in our range of flags. */
 			short index;
 	
-//			dprintf("will stuff %d flags", packet_data->required_action_flags);				
+//			fdprintf("will stuff %d flags", packet_data->required_action_flags);				
 			for (index= 0; index<packet_data->required_action_flags; index++)
 			{
 				uint32 flag= (uint32)NET_DEAD_ACTION_FLAG;
@@ -3407,9 +3409,9 @@ static void open_stream_file(
 	
 	FSpDelete(&file);
 	error= FSpCreate(&file, 'ttxt', 'TEXT', smSystemScript);
-	if(error) dprintf("Err:%d", error);
+	if(error) fdprintf("Err:%d", error);
 	error= FSpOpenDF(&file, fsWrPerm, &stream_refnum);
-	if(error || stream_refnum==NONE) dprintf("Open Err:%d", error);
+	if(error || stream_refnum==NONE) fdprintf("Open Err:%d", error);
 	
 	action_flag_buffer= new recorded_flag[MAXIMUM_STREAM_FLAGS];
 	assert(action_flag_buffer);
@@ -3426,7 +3428,7 @@ static void write_flags(
 	sprintf(temporary, "%d Total Flags\n", action_flag_index-1);
 	size= strlen(temporary);
 	error= FSWrite(stream_refnum, &size, temporary);
-	if(error) dprintf("Error: %d", error);
+	if(error) fdprintf("Error: %d", error);
 
 	for(player_index= 0; player_index<topology->player_count; ++player_index)
 	{
@@ -3446,7 +3448,7 @@ static void write_flags(
 				}
 				size= strlen(temporary);
 				error= FSWrite(stream_refnum, &size, temporary);
-				if(error) dprintf("Error: %d", error);
+				if(error) fdprintf("Error: %d", error);
 				player_action_flag_count++;
 			}
 		}
@@ -3568,7 +3570,7 @@ short NetUpdateJoinState(
 			{
 				error= NetReceiveStreamPacket(&packet_type, network_adsp_packet);
 
-                                printf("NetReceiveStreamPacket returned %d\n", error);
+                                fdprintf("NetReceiveStreamPacket returned %d\n", error);
 
 				if(!error && packet_type==_join_player_packet)
 				{
@@ -3591,7 +3593,7 @@ short NetUpdateJoinState(
                                         /* Unregister ourselves */
                                         error= NetUnRegisterName();
 
-                                        printf("NetUnRegisterName returned %d\n", error);
+                                        fdprintf("NetUnRegisterName returned %d\n", error);
 
                                         assert(!error);
                                 
@@ -3607,7 +3609,7 @@ short NetUpdateJoinState(
                                         netcpy(&new_player_data_NET, &new_player_data);
                                         error = NetSendStreamPacket(_accept_join_packet, &new_player_data_NET);
                                         
-                                        printf("NetSendStreaPacket returned %d\n", error);
+                                        fdprintf("NetSendStreaPacket returned %d\n", error);
 
 //					error= NetSendStreamPacket(_accept_join_packet, &new_player_data);
 
@@ -3616,18 +3618,18 @@ short NetUpdateJoinState(
 						/* Close and reset the connection */
 						error= NetCloseStreamConnection(false);
                                                 
-                                                printf("NetCloseStreamConnection returned %d\n", error);
+                                                fdprintf("NetCloseStreamConnection returned %d\n", error);
 
 						if (!error)
 						{
 							error= NetStreamWaitForConnection();
                                                         
-                                                        printf("NetStreamWaitForConnection returned %d\n", error);
+                                                        fdprintf("NetStreamWaitForConnection returned %d\n", error);
                                                         
 							if (!error)
 							{
 								/* start waiting for another connection */
-//dprintf("Accepted: %d", new_player_data.accepted);
+//fdprintf("Accepted: %d", new_player_data.accepted);
 								if(new_player_data.accepted) newState= netWaiting;
 							}
 						}
@@ -3636,7 +3638,7 @@ short NetUpdateJoinState(
 
 				if (error != noErr)
 				{
-                                        printf("error != noErr; error == %d\n", error);
+                                        fdprintf("error != noErr; error == %d\n", error);
                                 
 					newState= netJoinErrorOccurred;
 					NetCloseStreamConnection(false);
@@ -3682,7 +3684,7 @@ short NetUpdateJoinState(
 #else
 						topology->players[0].ddpAddress.host = address.host;
 #endif
-//						dprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[0].ddpAddress),
+//						fdprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[0].ddpAddress),
 //							*((long*)&topology->players[0].dspAddress));
 					}
 
@@ -3878,7 +3880,7 @@ bool NetGatherPlayer(
 #else
 						topology->players[topology->player_count].ddpAddress.host = address.host;
 #endif
-//						dprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[topology->player_count].ddpAddress),
+//						fdprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[topology->player_count].ddpAddress),
 //							*((long*)&topology->players[topology->player_count].dspAddress));
 							
 						error= NetCloseStreamConnection(false);
