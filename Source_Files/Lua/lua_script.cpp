@@ -263,6 +263,7 @@ L_Call_NN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2)
 	}
 }
 
+#if 0
 static void
 L_Call_NNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3)
 {
@@ -274,6 +275,7 @@ L_Call_NNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, 
 		L_Do_Call(inLuaFunctionName, 3);
 	}
 }
+#endif
 
 static void
 L_Call_NNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4)
@@ -288,6 +290,7 @@ L_Call_NNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2,
 	}
 }
 
+#if 0
 static void
 L_Call_NNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4, lua_Number inArg5)
 {
@@ -301,6 +304,7 @@ L_Call_NNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2
 		L_Do_Call(inLuaFunctionName, 5);
 	}
 }
+#endif
 
 static void
 L_Call_NNNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4, lua_Number inArg5, lua_Number inArg6)
@@ -2316,7 +2320,7 @@ static int L_Teleport_Player_To_Level(lua_State *L)
 	return 0;
 }
 
-/*
+#if 0
  static int L_Set_Player_Global_Speed(lua_State *L)
  {
 	 if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -2335,7 +2339,7 @@ static int L_Teleport_Player_To_Level(lua_State *L)
 	 struct physics_constants *constants = get_physics_constants_for_model(static_world->physics_model, _run_dont_walk);
 
 	 /* angular_velocity, vertical_angular_velocity, velocity, perpendicular_velocity,
-		 external_velocity, external_angular_velocity *//*
+		 external_velocity, external_angular_velocity */
 			 player->variables.angular_velocity *= scale;
 		  player->variables.vertical_angular_velocity *= scale;
 		  player->variables.velocity *= scale;
@@ -2351,7 +2355,8 @@ static int L_Teleport_Player_To_Level(lua_State *L)
 		  constants->step_delta *= scale;
 		  return 0;
  }
-		  */
+#endif
+
 static int L_Create_Camera(lua_State *L)
 {
 	number_of_cameras++;
