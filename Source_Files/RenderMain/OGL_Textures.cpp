@@ -301,13 +301,13 @@ void OGL_StartTextures()
 		OGL_Texture_Configure& TxtrConfigure = ConfigureData.TxtrConfigList[k];
 		TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[k];
 		
-		byte NearFilter = TxtrConfigure.NearFilter;
+		short NearFilter = TxtrConfigure.NearFilter;
 		if (NearFilter < NUMBER_OF_NEAR_FILTERS)
 			TxtrTypeInfo.NearFilter = NearFilterList[NearFilter];
 		else
 			TxtrTypeInfo.NearFilter = GL_NEAREST;
 		
-		byte FarFilter = TxtrConfigure.FarFilter;
+		short FarFilter = TxtrConfigure.FarFilter;
 		if (FarFilter < NUMBER_OF_FAR_FILTERS)
 			TxtrTypeInfo.FarFilter = FarFilterList[FarFilter];
 		else
@@ -315,7 +315,7 @@ void OGL_StartTextures()
 		
 		TxtrTypeInfo.Resolution = TxtrConfigure.Resolution;
 		
-		byte ColorFormat = TxtrConfigure.ColorFormat;
+		short ColorFormat = TxtrConfigure.ColorFormat;
 		if (ColorFormat < NUMBER_OF_COLOR_FORMATS)
 			TxtrTypeInfo.ColorFormat = ColorFormatList[ColorFormat];
 		else
@@ -520,6 +520,15 @@ bool TextureManager::Setup()
 		// Display size: may be shrunk
 		LoadedWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
 		LoadedHeight = MAX(TxtrHeight >> TxtrTypeInfo.Resolution, 1);
+		
+		// Fit the image into the maximum size allowed by the OpenGL implementation in use
+		GLint MaxTextureSize;
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE,&MaxTextureSize);
+		while (LoadedWidth > MaxTextureSize || LoadedHeight > MaxTextureSize)
+		{
+			LoadedWidth >>= 1;
+			LoadedHeight >>= 1;
+		}
 		
 		if (LoadedWidth != TxtrWidth || LoadedHeight != TxtrHeight)
 		{
@@ -1353,6 +1362,15 @@ void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT)
 	// Display size: may be shrunk
 	int LoadedWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
 	int LoadedHeight = MAX(TxtrHeight >> TxtrTypeInfo.Resolution, 1);
+	
+	// Fit the image into the maximum size allowed by the OpenGL implementation in use
+	GLint MaxTextureSize;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&MaxTextureSize);
+	while (LoadedWidth > MaxTextureSize || LoadedHeight > MaxTextureSize)
+	{
+		LoadedWidth >>= 1;
+		LoadedHeight >>= 1;
+	}
 	
 	if (LoadedWidth != TxtrWidth || LoadedHeight != TxtrHeight)
 	{
