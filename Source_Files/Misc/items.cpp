@@ -35,6 +35,11 @@ Jul 1, 2000 (Loren Petrich):
 
 Aug 10, 2000 (Loren Petrich):
 	Added Chris Pruett's Pfhortran changes
+
+Feb 11, 2001 (Loren Petrich):
+	Reversed the "polarity" of the "facing" member of "object",
+	which is used as a flag in the case of randomized unanimated objects.
+	It will become NONE when these objects are inited.
 */
 
 #include "cseries.h"
@@ -136,10 +141,9 @@ short new_item(
 		{
 			struct object_data *object= get_object_data(object_index);
 			
-			// LP addition: using the facing direction as a flag:
-			// if it's nonzero, the object was just created; if it's zero,
-			// then it's been in existence for at least one update cycle.
-			object->facing = 1;
+			// LP addition: using the facing direction as a flag in the "unanimated" case:
+			// will be initially zero, but will become nonzero when initialized,
+			// so that the shape randomization will be done only once.
 			
 			SET_OBJECT_OWNER(object, _object_is_item);
 			object->permutation= type;
@@ -700,11 +704,13 @@ void animate_items(void) {
 				struct shape_animation_data *animation= get_shape_animation_data(shape);
 				if (!animation) continue;
 				
-				// Randomize if non-animated
-				if (object->facing) {
+				// Randomize if non-animated; do only once
+				if (object->facing >= 0) {
 					if (animation->number_of_views == _unanimated)
+					{
 						randomize_object_sequence(object_index,shape);
-					object->facing = 0;
+						object->facing = NONE;
+					}
 				}
 				// Now the animation
 				if (animation->number_of_views != _unanimated)
