@@ -2,7 +2,7 @@
 Aleph One Lua Scripters' Guide
                  
 Document created: July 10, 2003, by James Willson
-Revised: June 26, 2004
+Revised: August 17, 2004
 
 Known Contributors:
 James Willson
@@ -339,7 +339,7 @@ set_player_external_velocity (player, x, y, z)
 Gets/Sets the x, y, and z components of the player's external velocity.
 
 
-add_to_player_velocity (player, x, y, z)
+add_to_player_external_velocity (player, x, y, z)
 
 Adds the vector defined by x, y, and z to the player's external velocity.
 
