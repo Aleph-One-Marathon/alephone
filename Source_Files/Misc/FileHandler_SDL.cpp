@@ -649,7 +649,6 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 
 #if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
 
-
 #ifndef __MVCPP__
 
 	DIR *d = opendir(name.c_str());
@@ -671,9 +670,38 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 	closedir(d);
 	err = 0;
 	return true;
-#else
 
-	// Do dir listing here
+#else // __MVCPP__
+
+	WIN32_FIND_DATA findData;
+
+	// We need to add a wildcard to the search name
+	string search_name;
+	search_name = name;
+	search_name += "\\*.*";
+
+	HANDLE hFind = ::FindFirstFile(search_name.c_str(), &findData);
+
+	if (hFind == INVALID_HANDLE_VALUE) {
+		err = ::GetLastError();
+		return false;
+	}
+
+	do {
+		// Exclude current and parent directories
+		if (findData.cFileName[0] != '.' ||
+		    (findData.cFileName[1] && findData.cFileName[1] != '.')) {
+			// Return found files to dir_entry
+			long fileSize = (findData.nFileSizeHigh * MAXDWORD) + findData.nFileSizeLow;
+			vec.push_back(dir_entry(findData.cFileName, fileSize,
+			              (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY), false));
+		}
+	} while(::FindNextFile(hFind, &findData));
+
+	if (!::FindClose(hFind))
+		err = ::GetLastError(); // not sure if we should return this or not
+	else
+		err = 0;
 	return true;
 
 #endif	// __MVCPP__
