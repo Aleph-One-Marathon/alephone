@@ -8,6 +8,9 @@ Feb. 4, 2000 (Loren Petrich):
 
 Mar 19, 2000 (Loren Petrich):
 	Won't do screen reinit if OpenGL has been selected
+
+Oct 12, 2000 (Loren Petrich):
+	Moved Quicktime init to shell_macintosh.cpp
 */
 
 #include "macintosh_cseries.h"
@@ -51,7 +54,7 @@ enum { /* Cheat level dialog */
 
 /* -------- local prototypes */
 static void network_speaker_proc(void *buffer, short size, short player_index);
-static bool machine_has_quicktime(void);
+// static bool machine_has_quicktime(void);
 static void draw_picture_into_gworld(GWorldPtr gworld, PicHandle picture);
 
 /* -------- code */
@@ -687,7 +690,9 @@ void show_movie(
 			err= get_file_spec(&movie_spec, strFILENAMES, filenameMOVIE, strPATHS);
 			if(!err)
 			{
-				err= EnterMovies();
+				// Quicktime initialized in shell_macintosh.h
+				err = noErr;
+				// err= EnterMovies();
 				if(!err)
 				{
 					Movie movie;
@@ -761,7 +766,7 @@ void show_movie(
 						CloseMovieFile(resRefNum); // reference to movie file
 					}
 					
-					ExitMovies();
+					// ExitMovies();
 				}
 			}
 		}
@@ -770,26 +775,4 @@ void show_movie(
 	return;
 }
 
-
-/* ----------- PRIVATE CODE */
-/* Should be in shell.h and shell.c */
-static bool machine_has_quicktime(
-	void) 
-{
-	long response;
-	bool has_quicktime= false;
-	OSErr error;
-
-	error= Gestalt(gestaltQuickTime, &response);
-	if(!error) 
-	{
-		/* No error finding QuickTime.  Check for ICM so we can use Standard Preview */
-		error= Gestalt(gestaltCompressionMgr, &response);
-		if(!error) 
-		{
-			has_quicktime= true;
-		}
-	}
-	
-	return has_quicktime;
-}
+// "Has Quicktime" test moved to shell_macintosh.cpp

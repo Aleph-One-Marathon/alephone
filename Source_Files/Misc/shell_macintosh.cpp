@@ -85,6 +85,9 @@ Jul 30, 2000 (Loren Petrich):
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Oct 12, 2000 (Loren Petrich):
+	Quicktime initialization now here
 */
 
 #include <exception.h>
@@ -140,6 +143,8 @@ extern long first_frame_tick, frame_count; /* for determining frame rate */
 
 // LP addition: the local event flags
 unsigned long LocalEventFlags = 0;
+
+static bool HasQuicktime = false;
 
 // Where the MacOS Toolbox (or some equivalent) has been inited
 // Necessary to to indicate whether or not to create a dialog box.
@@ -236,6 +241,25 @@ static void initialize_application_heap(
 	InitDialogs(0); /* resume procedure ignored for multifinder and >=system 7.0 */
 	InitCursor();
 
+	long response;
+	OSErr error;
+
+	error= Gestalt(gestaltQuickTime, &response);
+	if(!error) 
+	{
+		/* No error finding QuickTime.  Check for ICM so we can use Standard Preview */
+		error= Gestalt(gestaltCompressionMgr, &response);
+		if(!error) 
+		{
+			// Now initialize Quicktime's Movie Toolbox,
+			// since the soundtrack player will need it
+			error = EnterMovies();
+			if (!error) {
+				HasQuicktime = true;
+			}
+		}
+	}
+	
 	// The MacOS Toolbox has now been started up!
 	AppServicesInited = true;
 	
@@ -1216,3 +1240,12 @@ void PostOSEventFromLocal()
 	// Reset this value
 	LocalEventIndex = SavedLocalEventIndex;
 }
+
+
+/* ----------- PRIVATE CODE */
+/* Should be in shell.h and shell.c */
+bool machine_has_quicktime(void) 
+{
+	return HasQuicktime;
+}
+
