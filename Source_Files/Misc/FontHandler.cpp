@@ -422,25 +422,29 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  			
  			glNewList(DispList + Which, GL_COMPILE);
  			
+ 			// Move to the current glyph's (padded) position
+ 			glTranslatef(-Pad,0,0);
+ 			
  			// Draw the glyph rectangle
+ 			// Due to a bug in MacOS X Classic OpenGL, glVertex2s() was changed to glVertex2f()
  			glBegin(GL_POLYGON);
  			
  			glTexCoord2f(Left,Top);
-  			glVertex2s(0,-ascent_p);
+  			glVertex2f(0,-ascent_p);
   			
  			glTexCoord2f(Right,Top);
-  			glVertex2s(Width,-ascent_p);
+  			glVertex2f(Width,-ascent_p);
   			
  			glTexCoord2f(Right,Bottom);
- 			glVertex2s(Width,descent_p);
+ 			glVertex2f(Width,descent_p);
  			
  			glTexCoord2f(Left,Bottom);
-			glVertex2s(0,descent_p);
+			glVertex2f(0,descent_p);
 			
 			glEnd();
 			
 			// Move to the next glyph's position
-			glTranslatef(Width-2*Pad,0,0);
+			glTranslatef(Width-Pad,0,0);
 			
  			glEndList();
  			
