@@ -1307,7 +1307,7 @@ int network_join(void)
                                 cancel_w->set_identifier(iCANCEL);
                                 d2.add(cancel_w);
 
-				JoinerSeekingGathererAnnouncer announcer(hint_w->get_selection() != 0);
+				JoinerSeekingGathererAnnouncer announcer(hint_w->get_selection() == 0);
  
                                 d2.set_processing_function(join_processing_function);
         

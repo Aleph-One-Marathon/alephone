@@ -432,7 +432,7 @@ int network_join(
 		SetPort(GetWindowPort(GetDialogWindow(dialog)));
 		ShowWindow(GetDialogWindow(dialog));
 
-		JoinerSeekingGathererAnnouncer announcer(get_boolean_control_value(dialog, iJOIN_BY_HOST));
+		JoinerSeekingGathererAnnouncer announcer(!get_boolean_control_value(dialog, iJOIN_BY_HOST));
 		
 		do
 		{
