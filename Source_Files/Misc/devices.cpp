@@ -965,7 +965,7 @@ bool XML_ControlPanelParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (strcmp(Tag,"index") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_CONTROL_PANELS-1)))
+		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_CONTROL_PANEL_DEFINITIONS-1)))
 		{
 			IndexPresent = true;
 			return true;
@@ -974,7 +974,7 @@ bool XML_ControlPanelParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"type") == 0)
 	{
-		if (ReadNumericalValue(Value,"%hd",Data._class))
+		if (ReadBoundedNumericalValue(Value,"%hd",Data._class,short(0),short(NUMBER_OF_CONTROL_PANELS-1)))
 		{
 			IsPresent[0] = true;
 			return true;
