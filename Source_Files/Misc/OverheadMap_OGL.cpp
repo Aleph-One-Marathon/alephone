@@ -281,6 +281,7 @@ void OverheadMap_OGL_Class::draw_player(
 	glScalef(scale,scale,1);
 	glVertexPointer(2,GL_FLOAT,0,PlayerShape[0]);
 	glDrawArrays(GL_POLYGON,0,3);
+	glLineWidth(1);					// LP: need only 1-pixel thickness of line
 	glDrawArrays(GL_LINE_LOOP,0,3);	// LP addition: perimeter drawing makes small version easier to see
 	glPopMatrix();
 }
