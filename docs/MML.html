@@ -1440,13 +1440,29 @@ The next one, &lt;model_clear&gt;, clears all the model definitions;
 it works much like &lt;txtr_clear&gt;.
 <p>
 
-The next one, &lt;model&gt; specifies a static 3D model to be used in place
-of some sequence.
-It takes these attributes and a child element &lt;skin&gt;:
+The next one, &lt;model&gt; specifies a 3D model to be used in place
+of some sequence. Models can either be static, having no built-in animations
+(most 3D-model formats), or they can be dynamic, having such animations
+(Brian Barnes's Dim3 model format, for example).
+These animations are specified by sequence (animation in BB's terminology);
+each sequence should have at least one frame.
+There is one special "sequence", the neutral pose, which indicates a model
+with no animations applied.
+This element takes child elements &lt;seq_map&gt; and &lt;skin&gt;, and these attributes:
 <ul>
 <li>coll: which collection (mandatory).
-<li>seq: which sequence (mandatory).
+<li>seq: which sequence in the Marathon engine.
+Checked after the sequence mapping is searched for a sequence;
+it may be omitted if a sequence mapping is being used.
+Recommended for use with static models;
+for dynamic models, it maps onto the model's neutral pose.
 <li>file: the name of the file containing the model data.
+For static models, this is the only file,
+for Dim3 models, this is the "mesh" file (basic model data).
+<li>file1: an extra model-data file. Unnecessary for static models;
+for Dim3 models, this is the "pose" file (frames).
+<li>file2: an extra model-data file. Unnecessary for static models;
+for Dim3 models, this is the "animate" file (sequences).
 <li>type: a string identifying the model-data format:
 <ul>
 <li>Alias|Wavefront Object: "wave" to "wavefront"
@@ -1507,7 +1523,18 @@ The scaling and rotations will be applied before the shifts;
 the rotations will be applied in order x, y, and z.
 <p>
 
-Its child element of &lt;skin&gt; has these attributes,
+Its child element of &lt;seq_map&gt; is the sequence-mapping element,
+has these attributes, both mandatory:
+<ul>
+<li>seq: sequence in the Marathon engine to map to.
+<li>model_seq: sequence in the model, starting from 0.
+The model sequence -1 is the neutral pose.
+</ul>
+A model element can have several such elements,
+covering many of a collection's sequences.
+<p>
+
+The model element's child element of &lt;skin&gt; has these attributes,
 which closely parallel those of &lt;texture&gt;:
 <ul>
 <li>clut: which color table (default: -1 -- all of them).
