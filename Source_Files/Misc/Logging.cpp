@@ -19,8 +19,9 @@
 	http://www.gnu.org/licenses/gpl.html
 
 
-    Jan. 16, 2003 (Woody Zenfell): Created.
+	Jan. 16, 2003 (Woody Zenfell): Created.
 
+	May 21, 2003 (Woody Zenfell): being a little more defensive about NULL file pointer.
 */
 
 #include "Logging.h"
@@ -142,7 +143,7 @@ void
 TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, va_list inArgs) {
     // Obviously eventually this will be settable more dynamically...
     // Also eventually some logged messages could be posted in a dialog in addition to appended to the file.
-    if(inLevel < sLoggingThreshhold) {
+    if(sOutputFile != NULL && inLevel < sLoggingThreshhold) {
         char	stringBuffer[kStringBufferSize];
         size_t firstDepthToPrint = mMostRecentCommonStackDepth;
     /*
@@ -190,8 +191,12 @@ InitializeLogging() {
     assert(sOutputFile == NULL);
     sOutputFile = fopen("Aleph One Log.txt", "a");
     sCurrentLogger = new TopLevelLogger;
-    time_t theTime = time(NULL);
-    fprintf(sOutputFile, "\n-------------------- %s\n\n", ctime(&theTime));
+    if(sOutputFile != NULL)
+    {
+	    time_t theTime = time(NULL);
+	    const char* theTimeString = ctime(&theTime);
+	    fprintf(sOutputFile, "\n-------------------- %s\n\n", theTimeString == NULL ? "(timestamp unavailable)" : theTimeString);
+    }
 }
 
 
