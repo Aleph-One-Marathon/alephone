@@ -34,7 +34,7 @@ enum {
 extern void byte_swap_memory(
 	void *memory,
 	_bs_field type,
-	size_t fieldcount);
+	int fieldcount);
 
 #ifndef ALEPHONE_LITTLE_ENDIAN
 #define byte_swap_memory(memory,type,elcount) ((void)0)

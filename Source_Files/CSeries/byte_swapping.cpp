@@ -27,10 +27,11 @@
 
 #ifdef ALEPHONE_LITTLE_ENDIAN
 
+// Fieldcount is "int" because it can become negative in the code
 void byte_swap_memory(
 	void *memory,
 	_bs_field type,
-	size_t fieldcount)
+	int fieldcount)
 {
 	uint8 *walk;
 	int tmp;
