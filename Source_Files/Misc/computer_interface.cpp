@@ -349,7 +349,7 @@ void initialize_terminal_manager(
 	player_terminals= (struct player_terminal_data *) 
 		malloc(MAXIMUM_NUMBER_OF_PLAYERS*sizeof(struct player_terminal_data));
 	assert(player_terminals);
-	memset(player_terminals, 0, MAXIMUM_NUMBER_OF_PLAYERS*sizeof(struct player_terminal_data));
+	objlist_clear(player_terminals, MAXIMUM_NUMBER_OF_PLAYERS);
 
 #ifdef mac
 	for(index= 0; index<NUMBER_OF_TERMINAL_KEYS; ++index)
@@ -391,7 +391,11 @@ void enter_computer_interface(
 	short text_number, 
 	short completion_flag)
 {
-
+	// LP: verify object sizes:
+	assert(sizeof(static_preprocessed_terminal_data) == SIZEOF_static_preprocessed_terminal_data);
+	assert(sizeof(terminal_groupings) == SIZEOF_terminal_groupings);
+	assert(sizeof(text_face_data) == SIZEOF_text_face_data);
+	
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
 	struct player_data *player= get_player_data(player_index);
 	// LP addition: if there is no terminal-data chunk, then just make the logon sound and quit
@@ -1353,9 +1357,9 @@ static void encode_text(
 #endif
 {
 	int length = terminal_text->total_length -
-		(SIZEOF_static_preprocessed_terminal_data + 
-		terminal_text->grouping_count * SIZEOF_terminal_groupings +
-		terminal_text->font_changes_count * SIZEOF_text_face_data);
+		(sizeof(static_preprocessed_terminal_data) + 
+		terminal_text->grouping_count * sizeof(terminal_groupings) +
+		terminal_text->font_changes_count * sizeof(text_face_data));
 
 	uint8 *p = (uint8 *)get_text_base(terminal_text);
 	for (int i=0; i<length/4; i++) {
@@ -2186,9 +2190,9 @@ struct static_preprocessed_terminal_data *preprocess_text(
 		text, &new_length);
 
 	/* Allocate our conglomerated structure */
-	total_length= SIZEOF_static_preprocessed_terminal_data +
-		group_count * SIZEOF_terminal_groupings +
-		text_face_count * SIZEOF_text_face_data +
+	total_length= sizeof(static_preprocessed_terminal_data) +
+		group_count * sizeof(terminal_groupings) +
+		text_face_count * sizeof(text_face_data) +
 		new_length;
 
 	data_structure= (struct static_preprocessed_terminal_data *) malloc(total_length);
@@ -2211,7 +2215,7 @@ struct static_preprocessed_terminal_data *preprocess_text(
 		struct terminal_groupings *destination;
 		
 		destination= get_indexed_grouping(data_structure, index);
-		memcpy(destination, &groups[index], SIZEOF_terminal_groupings);
+		obj_copy(*destination, groups[index]);
 	}
 
 	for(index= 0; index<text_face_count; ++index)
@@ -2219,7 +2223,7 @@ struct static_preprocessed_terminal_data *preprocess_text(
 		struct text_face_data *destination;
 		
 		destination= get_indexed_font_changes(data_structure, index);
-		memcpy(destination, &text_faces[index], SIZEOF_text_face_data);
+		obj_copy(*destination, text_faces[index]);
 
 		// dprintf("%d/%d index: %d face: %d color: %d;g", index, text_face_count, text_faces[index].index, text_faces[index].face, text_faces[index].color);
 	}
@@ -2608,8 +2612,8 @@ static struct terminal_groupings *get_indexed_grouping(
 	if (!(index>=0 && index<data->grouping_count)) return NULL;
 	// assert(index>=0 && index<data->grouping_count);
 	start= (byte *) data;
-	start += SIZEOF_static_preprocessed_terminal_data + 
-		index * SIZEOF_terminal_groupings;
+	start += sizeof(static_preprocessed_terminal_data) + 
+		index * sizeof(terminal_groupings);
 
 	return (struct terminal_groupings *) start;
 }
@@ -2624,9 +2628,9 @@ static struct text_face_data *get_indexed_font_changes(
 	if (!(index>=0 && index<data->font_changes_count)) return NULL;
 	// assert(index>=0 && index<data->font_changes_count);
 	start= (byte *) data;
-	start += SIZEOF_static_preprocessed_terminal_data + 
-		data->grouping_count * SIZEOF_terminal_groupings +
-		index * SIZEOF_text_face_data;
+	start += sizeof(static_preprocessed_terminal_data) + 
+		data->grouping_count * sizeof(terminal_groupings) +
+		index * sizeof(text_face_data);
 
 	return (struct text_face_data *) start;
 }
@@ -2637,9 +2641,9 @@ static char *get_text_base(
 	byte *start;
 
 	start= (byte *) data;
-	start += SIZEOF_static_preprocessed_terminal_data + 
-		data->grouping_count * SIZEOF_terminal_groupings +
-		data->font_changes_count * SIZEOF_text_face_data;
+	start += sizeof(static_preprocessed_terminal_data) + 
+		data->grouping_count * sizeof(terminal_groupings) +
+		data->font_changes_count * sizeof(text_face_data);
 
 	return (char *) start;
 }
@@ -2664,21 +2668,28 @@ static short calculate_lines_per_page(
 
 void byte_swap_terminal_data(uint8 *data, int length)
 {
+	// LP: verify object sizes:
+	assert(sizeof(static_preprocessed_terminal_data) == SIZEOF_static_preprocessed_terminal_data);
+	assert(sizeof(terminal_groupings) == SIZEOF_terminal_groupings);
+	assert(sizeof(text_face_data) == SIZEOF_text_face_data);
+	
 	while (length > 0) {
 		uint8 *p = data;
 
 		// Swap static_preprocessed_terminal_data
-		byte_swap_data(p, SIZEOF_static_preprocessed_terminal_data, 1, _bs_static_preprocessed_terminal_data);
 		static_preprocessed_terminal_data *d = (static_preprocessed_terminal_data *)p;
-		p += SIZEOF_static_preprocessed_terminal_data;
+		byte_swap_object(*d, _bs_static_preprocessed_terminal_data);
+		p += sizeof(static_preprocessed_terminal_data);
 
 		// Swap groupings
-		byte_swap_data(p, SIZEOF_terminal_groupings, d->grouping_count, _bs_terminal_groupings);
-		p += SIZEOF_terminal_groupings * d->grouping_count;
+		terminal_groupings *g = (terminal_groupings *)p;
+		byte_swap_object_list(g, d->grouping_count, _bs_terminal_groupings);
+		p += sizeof(terminal_groupings) * d->grouping_count;
 
 		// Swap font changes
-		byte_swap_data(p, SIZEOF_text_face_data, d->font_changes_count, _bs_text_face_data);
-		p += SIZEOF_text_face_data * d->font_changes_count;
+		text_face_data *f = (text_face_data *)p;
+		byte_swap_object_list(f, d->font_changes_count, _bs_text_face_data);
+		p += sizeof(text_face_data) * d->font_changes_count;
 
 		data += d->total_length;
 		length -= d->total_length;
