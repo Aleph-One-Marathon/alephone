@@ -40,6 +40,7 @@ Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 */
 
 #include <stdlib.h>
+#include <vector.h>
 
 #if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
@@ -51,10 +52,13 @@ Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 */
 #endif
 
+#include "csmacros.h"
 #include "cstypes.h"
 #include "csdialogs.h"
 #include "csalerts.h"
+#include "csstrings.h"
 #include "gdspec.h"
+#include "shell.h"
 
 GDHandle BestDevice(
 	GDSpecPtr spec)
@@ -189,10 +193,325 @@ enum {
 	itemGraysRadio,
 	itemDesktopUser,
 	itemPromptText,
-	itemGroupUser,
+	itemGroupUser,	// In the nib version, contains the gray and color radio buttons
 	itemGroupText,
 	itemDescriptionText
 };
+
+#ifdef USES_NIBS
+
+const CFStringRef Window_Prefs_Monitor = CFSTR("Prefs_Monitor");
+
+
+// For the grays/colors radio button
+enum
+{
+	rbColor = 1,
+	rbGray
+};
+
+
+// For the data to be attached to the monitor controls as properties
+const OSType AppTag = 'appl';
+const OSType DevInfoTag = 'dvif';
+
+const OSType Monitor_Sig = 'mnsg';
+
+struct DevInfo {
+	ControlRef Ctrl;
+	GDHandle Dev;
+	Rect Bounds;
+	bool IsSelected;
+	bool HasMenu;
+};
+
+
+struct DesktopDisplayData
+{
+	vector<DevInfo> Devices;
+};
+
+
+static pascal void DesktopDrawer(ControlRef Ctrl, short Part)
+{
+	// No need for the window context -- it's assumed
+	Rect Bounds = {0,0,0,0};
+	
+	GetControlBounds(Ctrl, &Bounds);
+
+	// Save previous state		
+	PenState OldPen;
+	RGBColor OldBackColor, OldForeColor;
+	
+	GetPenState(&OldPen);
+	GetBackColor(&OldBackColor);
+	GetForeColor(&OldForeColor);
+	
+	// Get ready to draw the swatch
+	PenNormal();
+	
+	// Draw!
+	ForeColor(whiteColor);
+	PaintRect(&Bounds);
+	ForeColor(blackColor);
+	FrameRect(&Bounds);
+	
+	// Restore previous state
+	SetPenState(&OldPen);
+	RGBBackColor(&OldBackColor);
+	RGBForeColor(&OldForeColor);
+}
+
+static pascal void MonitorDrawer(ControlRef Ctrl, short Part)
+{
+	OSStatus err;
+	
+	DevInfo *DI_Ptr;
+	unsigned long ActualSize;
+	
+	err = GetControlProperty(Ctrl,
+			AppTag, DevInfoTag,
+			sizeof(DI_Ptr), &ActualSize, &DI_Ptr);
+	vassert(err == noErr, csprintf(temporary,"SetControlProperty error: %d",err));
+	
+	// No need for the window context -- it's assumed
+	Rect Bounds = {0,0,0,0};
+	
+	GetControlBounds(Ctrl, &Bounds);
+
+	// Save previous state		
+	PenState OldPen;
+	RGBColor OldBackColor, OldForeColor;
+	
+	GetPenState(&OldPen);
+	GetBackColor(&OldBackColor);
+	GetForeColor(&OldForeColor);
+	
+	// Get ready to draw the swatch
+	PenNormal();
+	
+	// Draw!
+	const RGBColor SelColor = {0xc000,0xffff,0xc000};
+	const RGBColor UnselColor = {0x4000,0x4000,0xffff};
+	const RGBColor *ColorPtr = (DI_Ptr->IsSelected) ? &SelColor : &UnselColor;
+	
+	RGBForeColor(ColorPtr);
+	PaintRect(&Bounds);
+	ForeColor(blackColor);
+	FrameRect(&Bounds);
+	
+	if (DI_Ptr->HasMenu)
+	{
+		const short MenuThickness = 4;
+		Bounds.bottom = Bounds.top + MenuThickness;
+		ForeColor(whiteColor);
+		PaintRect(&Bounds);
+		ForeColor(blackColor);
+		FrameRect(&Bounds);
+	}
+	
+	// Restore previous state
+	SetPenState(&OldPen);
+	RGBBackColor(&OldBackColor);
+	RGBForeColor(&OldForeColor);
+}
+
+
+// Need to do this just to get hit testing working
+static pascal ControlPartCode MonitorHitTester(ControlRef Ctrl, Point Loc)
+{
+	return 1;
+}
+
+
+static void MonitorHandler(ParsedControl &Ctrl, void *Data)
+{
+	DesktopDisplayData *DDPtr = (DesktopDisplayData *)(Data);
+	
+	if (Ctrl.ID.signature == Monitor_Sig)
+	{
+		for (int k=0; k<DDPtr->Devices.size(); k++)
+		{
+			DDPtr->Devices[k].IsSelected = (k == Ctrl.ID.id);
+			Draw1Control(DDPtr->Devices[k].Ctrl);
+		}
+	}
+}
+
+
+struct PositioningInfo
+{
+	float Center_H;
+	float Center_V;
+	float Size_H;
+	float Size_V;
+
+	PositioningInfo(Rect &R);
+};
+
+PositioningInfo::PositioningInfo(Rect &R)
+{
+	Center_H = 0.5*(R.left + R.right);
+	Center_V = 0.5*(R.top  + R.bottom);
+	
+	Size_H = R.right - R.left;
+	Size_V = R.bottom - R.top;
+}
+
+
+void display_device_dialog(
+	GDSpecPtr spec)
+{
+	OSStatus err;
+	
+	// Get the window
+	AutoNibWindow Window(GUI_Nib,Window_Prefs_Monitor);
+	
+	// Get its controls
+	
+	ControlRef GrayColorCtrl = GetCtrlFromWindow(Window(),0,itemGroupUser);
+	SetControl32BitValue(GrayColorCtrl,rbColor);
+	
+	DesktopDisplayData DesktopData;
+	ControlRef DesktopCtrl = GetCtrlFromWindow(Window(),0,itemDesktopUser);
+	
+	Rect DesktopBounds;
+	GetControlBounds(DesktopCtrl, &DesktopBounds);
+	
+	const short InsetAmount = 8;
+	InsetRect(&DesktopBounds,InsetAmount,InsetAmount);
+	
+	// Create inset version for putting the monitors in
+	
+	// Add drawer to the desktop control
+	ControlUserPaneDrawUPP DesktopDrawerUPP = NewControlUserPaneDrawUPP(DesktopDrawer);
+	err = SetControlData(
+			DesktopCtrl, 0,
+			kControlUserPaneDrawProcTag,
+			sizeof(DesktopDrawerUPP), &DesktopDrawerUPP
+			);
+	vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
+	
+	// Compose the monitor representations
+	
+	GDHandle MainDev = GetMainDevice();
+	
+	// The total screen area
+	Rect TotalBounds;
+	TotalBounds.left = TotalBounds.top = 0x7fff;
+	TotalBounds.right = TotalBounds.bottom = 0x8000;
+	
+	// Pick up the device info
+	for (GDHandle Dev = GetDeviceList(); Dev; Dev = GetNextDevice(Dev))
+	{
+		// Skip over non-monitors and inactive monitors
+		if (!TestDeviceAttribute(Dev,screenDevice) ||
+			!TestDeviceAttribute(Dev,screenActive)) continue;
+		
+		DevInfo Monitor;
+		
+		Monitor.Dev = Dev;
+		
+		Monitor.Bounds = (*Dev)->gdRect;
+		UnionRect(&TotalBounds, &Monitor.Bounds, &TotalBounds);
+		
+		Monitor.IsSelected = (GetSlotFromGDevice(Dev)==spec->slot);
+		
+		Monitor.HasMenu = (Dev == MainDev);
+		
+		// Add to list
+		DesktopData.Devices.push_back(Monitor);
+	}
+	
+	// Set up scaling factors
+	PositioningInfo Total_PInfo(TotalBounds);
+	PositioningInfo Desktop_PInfo(DesktopBounds);
+	
+	float Scale_H = Desktop_PInfo.Size_H/Total_PInfo.Size_H;
+	float Scale_V = Desktop_PInfo.Size_V/Total_PInfo.Size_V;
+	float Scale = MIN(Scale_H,Scale_V);
+	
+	// Create monitor controls and add drawer to them
+	ControlUserPaneDrawUPP MonitorDrawerUPP = NewControlUserPaneDrawUPP(MonitorDrawer);
+	ControlUserPaneHitTestUPP MonitorHitTesterUPP = NewControlUserPaneHitTestUPP(MonitorHitTester);
+	
+	for (vector<DevInfo>::iterator DI_Iter = DesktopData.Devices.begin(); DI_Iter < DesktopData.Devices.end(); DI_Iter++)
+	{
+		Rect Bounds;
+		// The 0.5 factor is for rounding off of nonnegative values
+		Bounds.left =
+			Scale*(DI_Iter->Bounds.left - Total_PInfo.Center_H) + Desktop_PInfo.Center_H + 0.5;
+		Bounds.right =
+			Scale*(DI_Iter->Bounds.right - Total_PInfo.Center_H) + Desktop_PInfo.Center_H + 0.5;
+		Bounds.top =
+			Scale*(DI_Iter->Bounds.top - Total_PInfo.Center_V) + Desktop_PInfo.Center_V + 0.5;
+		Bounds.bottom =
+			Scale*(DI_Iter->Bounds.bottom - Total_PInfo.Center_V) + Desktop_PInfo.Center_V + 0.5;
+		
+		err = CreateUserPaneControl(
+				Window(), &Bounds,
+				0, &(DI_Iter->Ctrl)
+				);
+		vassert(err == noErr, csprintf(temporary,"CreateUserPaneControl error: %d",err));
+		
+		err = SetControlData(
+				DI_Iter->Ctrl, 1,
+				kControlUserPaneHitTestProcTag,
+				sizeof(MonitorHitTesterUPP), &MonitorHitTesterUPP
+				);
+		vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
+		
+		err = SetControlData(
+				DI_Iter->Ctrl, 1,
+				kControlUserPaneDrawProcTag,
+				sizeof(MonitorDrawerUPP), &MonitorDrawerUPP
+				);
+		vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
+		
+		EmbedControl(DI_Iter->Ctrl, DesktopCtrl);
+	}
+	
+	// Since the device-info array is now set up, place pointers to its entries in the controls
+	
+	for (int k=0; k<DesktopData.Devices.size(); k++)
+	{
+		DevInfo *DI_Ptr = &DesktopData.Devices[k];
+		
+		ControlID ID;
+		ID.signature = Monitor_Sig;
+		ID.id = k;
+		
+		err = SetControlID(DI_Ptr->Ctrl, &ID);
+		vassert(err == noErr, csprintf(temporary,"SetControlID error: %d",err));
+		
+		err = SetControlProperty(
+				DI_Ptr->Ctrl,
+				AppTag, DevInfoTag,
+				sizeof(DI_Ptr), &DI_Ptr
+				);
+		vassert(err == noErr, csprintf(temporary,"SetControlProperty error: %d",err));
+	}
+	
+	if (RunModalDialog(Window(),MonitorHandler,&DesktopData))
+	{
+		// Pressed "OK" -- get the selected device
+		
+		for (vector<DevInfo>::iterator DI_Iter = DesktopData.Devices.begin(); DI_Iter < DesktopData.Devices.end(); DI_Iter++)
+		{
+			if (DI_Iter->IsSelected)
+				spec->slot = GetSlotFromGDevice(DI_Iter->Dev);
+		}
+		spec->flags = (GetControl32BitValue(GrayColorCtrl) == rbColor) ? 1<<gdDevType : 0;
+	}
+	
+	// Clean up
+	DisposeControlUserPaneDrawUPP(DesktopDrawerUPP);
+	DisposeControlUserPaneDrawUPP(MonitorDrawerUPP);
+	DisposeControlUserPaneHitTestUPP(MonitorHitTesterUPP);
+}
+
+
+#else
 
 typedef struct dev_info {
 	Rect rect;
@@ -487,3 +806,4 @@ void display_device_dialog(
 	DisposeDialog(dlg);
 }
 
+#endif
