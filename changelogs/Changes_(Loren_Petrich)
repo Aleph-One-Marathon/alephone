@@ -1355,3 +1355,5 @@ Also partially implemented texture substitution in OpenGL-rendering mode. One ca
 for walls and landscapes, and infravision will work properly, though glowmapping is still
 not supported.
 
+Added alternative, Forge-like automapping modes: currently-visible and all.
+
