@@ -32,6 +32,12 @@ Jan 31, 2002 (Loren Petrich):
 // Secondary dialogs are sheets
 #define USE_SHEETS 1
 
+// Will use Lua
+#define HAVE_LUA 1
+
+// Will use Speex
+#define SPEEX 1
+
 // check environs
 /*
 #if __POWERPC__
