@@ -2122,18 +2122,18 @@ bool XML_InfravisionAssignParser::Start()
 
 bool XML_InfravisionAssignParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Coll,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Coll,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"color") == 0)
+	else if (StringsEqual(Tag,"color"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Color,short(0),short(NUMBER_OF_TINT_COLORS-1)))
+		if (ReadBoundedInt16Value(Value,Color,0,NUMBER_OF_TINT_COLORS-1))
 		{
 			IsPresent[1] = true;
 			return true;

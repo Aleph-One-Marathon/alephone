@@ -119,14 +119,29 @@ struct light_definition light_definitions[NUMBER_OF_LIGHT_TYPES]=
 	},
 };
 
+static light_definition *get_light_definition(
+	const short type);
+
 /* ---------- code */
 
+
+light_data *get_light_data(
+	const short light_index)
+{
+	struct light_data *light = GetMemberWithBounds(lights,light_index,MAXIMUM_LIGHTS_PER_MAP);
+	
+	if (!light) return NULL;
+	if (!SLOT_IS_USED(light)) return NULL;
+	
+	return light;
+}
+
 // LP change: moved down here because it uses light definitions
-inline struct light_definition *get_light_definition(const short type)
+light_definition *get_light_definition(
+	const short type)
 {
 	return GetMemberWithBounds(light_definitions,type,NUMBER_OF_LIGHT_TYPES);
 }
-
 
 short new_light(
 	struct static_light_data *data)

@@ -318,6 +318,16 @@ static void adjust_player_physics(monster_data *me);
 
 /* ---------- code */
 
+player_data *get_player_data(
+	const short player_index)
+{
+	player_data *data = GetMemberWithBounds(players,player_index,dynamic_world->player_count);
+	vassert(data,
+		csprintf(temporary, "asked for player #%d/#%d", player_index, dynamic_world->player_count));
+	
+	return data;
+}
+
 void allocate_player_memory(
 	void)
 {
@@ -821,19 +831,6 @@ void mark_player_collections(
 	
 	return;
 }
-
-/*
-#ifdef DEBUG
-struct player_data *get_player_data(
-	short player_index)
-{
-	vassert(player_index>=0&&player_index<dynamic_world->player_count,
-		csprintf(temporary, "asked for player #%d/#%d", player_index, dynamic_world->player_count));
-	
-	return players + player_index;
-}
-#endif
-*/
 
 void set_local_player_index(
 	short player_index)
@@ -2230,7 +2227,7 @@ uint8 *pack_player_data(uint8 *Stream, player_data *Objects, int Count)
 
 class XML_StartItemParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	short Type;
 	
 	// What is present?
@@ -2257,18 +2254,18 @@ bool XML_StartItemParser::Start()
 
 bool XML_StartItemParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_PLAYER_INITIAL_ITEMS-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_PLAYER_INITIAL_ITEMS-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(NUMBER_OF_DEFINED_ITEMS-1)))
+		if (ReadBoundedInt16Value(Value,Type,0,NUMBER_OF_DEFINED_ITEMS-1))
 		{
 			IsPresent[0] = true;
 			return true;
@@ -2297,7 +2294,7 @@ static XML_StartItemParser StartItemParser;
 
 class XML_PlayerDamageParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	damage_response_definition Data;
 	
 	// What is present?
@@ -2324,54 +2321,54 @@ bool XML_PlayerDamageParser::Start()
 
 bool XML_PlayerDamageParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"threshold") == 0)
+	else if (StringsEqual(Tag,"threshold"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.damage_threshhold))
+		if (ReadInt16Value(Value,Data.damage_threshhold))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"fade") == 0)
+	else if (StringsEqual(Tag,"fade"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.fade))
+		if (ReadInt16Value(Value,Data.fade))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"sound") == 0)
+	else if (StringsEqual(Tag,"sound"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.sound))
+		if (ReadInt16Value(Value,Data.sound))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"death_sound") == 0)
+	else if (StringsEqual(Tag,"death_sound"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.death_sound))
+		if (ReadInt16Value(Value,Data.death_sound))
 		{
 			IsPresent[3] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"death_action") == 0)
+	else if (StringsEqual(Tag,"death_action"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.death_action))
+		if (ReadInt16Value(Value,Data.death_action))
 		{
 			IsPresent[4] = true;
 			return true;
@@ -2415,21 +2412,21 @@ public:
 
 bool XML_PowerupParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"invisibility") == 0)
+	if (StringsEqual(Tag,"invisibility"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",kINVISIBILITY_DURATION,short(0),short(SHRT_MAX)));
+		return ReadBoundedInt16Value(Value,kINVISIBILITY_DURATION,0,SHRT_MAX);
 	}
-	else if (strcmp(Tag,"invincibility") == 0)
+	else if (StringsEqual(Tag,"invincibility"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",kINVINCIBILITY_DURATION,short(0),short(SHRT_MAX)));
+		return ReadBoundedInt16Value(Value,kINVINCIBILITY_DURATION,0,SHRT_MAX);
 	}
-	else if (strcmp(Tag,"extravision") == 0)
+	else if (StringsEqual(Tag,"extravision"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",kEXTRAVISION_DURATION,short(0),short(SHRT_MAX)));
+		return ReadBoundedInt16Value(Value,kEXTRAVISION_DURATION,0,SHRT_MAX);
 	}
-	else if (strcmp(Tag,"infravision") == 0)
+	else if (StringsEqual(Tag,"infravision"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",kINFRAVISION_DURATION,short(0),short(SHRT_MAX)));
+		return ReadBoundedInt16Value(Value,kINFRAVISION_DURATION,0,SHRT_MAX);
 	}
 	UnrecognizedTag();
 	return false;
@@ -2449,37 +2446,37 @@ public:
 
 bool XML_PowerupAssignParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"invincibility") == 0)
+	if (StringsEqual(Tag,"invincibility"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Invincibility,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+		return ReadBoundedInt16Value(Value,Powerup_Invincibility,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
-	else if (strcmp(Tag,"invisibility") == 0)
+	else if (StringsEqual(Tag,"invisibility"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Invisibility,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+		return ReadBoundedInt16Value(Value,Powerup_Invisibility,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
-	else if (strcmp(Tag,"infravision") == 0)
+	else if (StringsEqual(Tag,"infravision"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Infravision,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+		return ReadBoundedInt16Value(Value,Powerup_Infravision,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
-	else if (strcmp(Tag,"extravision") == 0)
+	else if (StringsEqual(Tag,"extravision"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Extravision,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+		return ReadBoundedInt16Value(Value,Powerup_Extravision,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
-	else if (strcmp(Tag,"triple_energy") == 0)
+	else if (StringsEqual(Tag,"triple_energy"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_TripleEnergy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+		return ReadBoundedInt16Value(Value,Powerup_TripleEnergy,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
-	else if (strcmp(Tag,"double_energy") == 0)
+	else if (StringsEqual(Tag,"double_energy"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_DoubleEnergy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+		return ReadBoundedInt16Value(Value,Powerup_DoubleEnergy,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
-	else if (strcmp(Tag,"energy") == 0)
+	else if (StringsEqual(Tag,"energy"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Energy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+		return ReadBoundedInt16Value(Value,Powerup_Energy,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
-	else if (strcmp(Tag,"oxygen") == 0)
+	else if (StringsEqual(Tag,"oxygen"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Oxygen,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+		return ReadBoundedInt16Value(Value,Powerup_Oxygen,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
 	UnrecognizedTag();
 	return false;
@@ -2510,27 +2507,27 @@ bool XML_PlayerShapeParser::Start()
 
 bool XML_PlayerShapeParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"type") == 0)
+	if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(4)))
+		if (ReadBoundedInt16Value(Value,Type,0,4))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"subtype") == 0)
+	else if (StringsEqual(Tag,"subtype"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Subtype,short(0),short(MAX(MAX(5,NUMBER_OF_PLAYER_ACTIONS),PLAYER_TORSO_SHAPE_COUNT)-1)))
+		if (ReadBoundedInt16Value(Value,Subtype,0,MAX(MAX(5,NUMBER_OF_PLAYER_ACTIONS),PLAYER_TORSO_SHAPE_COUNT)-1))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"value") == 0)
+	else if (StringsEqual(Tag,"value"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Seq,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedInt16Value(Value,Seq,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
 		{
 			IsPresent[2] = true;
 			return true;
@@ -2651,19 +2648,19 @@ public:
 
 bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"energy") == 0)
+	if (StringsEqual(Tag,"energy"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",InitialEnergy,short(0),short(SHRT_MAX)));
+		return ReadBoundedInt16Value(Value,InitialEnergy,0,SHRT_MAX);
 	}
-	else if (strcmp(Tag,"oxygen") == 0)
+	else if (StringsEqual(Tag,"oxygen"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",InitialOxygen,short(0),short(SHRT_MAX)));
+		return ReadBoundedInt16Value(Value,InitialOxygen,0,SHRT_MAX);
 	}
-	else if (strcmp(Tag,"stripped") == 0)
+	else if (StringsEqual(Tag,"stripped"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",StrippedEnergy,short(0),short(SHRT_MAX)));
+		return ReadBoundedInt16Value(Value,StrippedEnergy,0,SHRT_MAX);
 	}
-	else if (strcmp(Tag,"light") == 0)
+	else if (StringsEqual(Tag,"light"))
 	{
 		float Luminosity;
 		if (ReadBoundedNumericalValue(Value,"%f",Luminosity,float(0),float(SHRT_MAX)))
@@ -2674,37 +2671,37 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 		else
 			return false;
 	}
-	else if (strcmp(Tag,"oxygen_deplete") == 0)
+	else if (StringsEqual(Tag,"oxygen_deplete"))
 	{
-		return (ReadNumericalValue(Value,"%hd",OxygenDepletion));
+		return ReadInt16Value(Value,OxygenDepletion);
 	}
-	else if (strcmp(Tag,"oxygen_replenish") == 0)
+	else if (StringsEqual(Tag,"oxygen_replenish"))
 	{
-		return (ReadNumericalValue(Value,"%hd",OxygenReplenishment));
+		return ReadInt16Value(Value,OxygenReplenishment);
 	}
-	else if (strcmp(Tag,"vulnerability") == 0)
+	else if (StringsEqual(Tag,"vulnerability"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Vulnerability,short(NONE),short(NUMBER_OF_DAMAGE_TYPES-1)));
+		return ReadBoundedInt16Value(Value,Vulnerability,NONE,NUMBER_OF_DAMAGE_TYPES-1);
 	}
-	else if (strcmp(Tag,"guided") == 0)
+	else if (StringsEqual(Tag,"guided"))
 	{
-		return (ReadBooleanValue(Value,PlayerShotsGuided));
+		return ReadBooleanValueAsBool(Value,PlayerShotsGuided);
 	}
-	else if (strcmp(Tag,"half_visual_arc") == 0)
+	else if (StringsEqual(Tag,"half_visual_arc"))
 	{
-		return (ReadNumericalValue(Value,"%hd",PlayerHalfVisualArc));
+		return ReadInt16Value(Value,PlayerHalfVisualArc);
 	}
-	else if (strcmp(Tag,"half_vertical_visual_arc") == 0)
+	else if (StringsEqual(Tag,"half_vertical_visual_arc"))
 	{
-		return (ReadNumericalValue(Value,"%hd",PlayerHalfVertVisualArc));
+		return ReadInt16Value(Value,PlayerHalfVertVisualArc);
 	}
-	else if (strcmp(Tag,"visual_range") == 0)
+	else if (StringsEqual(Tag,"visual_range"))
 	{
-		return (ReadNumericalValue(Value,"%f",PlayerVisualRange));
+		return ReadFloatValue(Value,PlayerVisualRange);
 	}
-	else if (strcmp(Tag,"dark_visual_range") == 0)
+	else if (StringsEqual(Tag,"dark_visual_range"))
 	{
-		return (ReadNumericalValue(Value,"%f",PlayerDarkVisualRange));
+		return ReadFloatValue(Value,PlayerDarkVisualRange);
 	}
 	UnrecognizedTag();
 	return false;

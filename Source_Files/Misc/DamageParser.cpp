@@ -28,39 +28,39 @@ public:
 
 bool XML_DamageParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"type") == 0)
+	if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",DamagePtr->type,short(NONE),short(NUMBER_OF_DAMAGE_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,DamagePtr->type,NONE,NUMBER_OF_DAMAGE_TYPES-1))
 		{
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"flags") == 0)
+	else if (StringsEqual(Tag,"flags"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",DamagePtr->flags,short(0),short(1)))
+		if (ReadBoundedInt16Value(Value,DamagePtr->flags,0,1))
 		{
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"base") == 0)
+	else if (StringsEqual(Tag,"base"))
 	{
-		if (ReadNumericalValue(Value,"%hd",DamagePtr->base))
+		if (ReadInt16Value(Value,DamagePtr->base))
 		{
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"random") == 0)
+	else if (StringsEqual(Tag,"random"))
 	{
-		if (ReadNumericalValue(Value,"%hd",DamagePtr->random))
+		if (ReadInt16Value(Value,DamagePtr->random))
 		{
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"scale") == 0)
+	else if (StringsEqual(Tag,"scale"))
 	{
 		float Scale;
 		if (ReadBoundedNumericalValue(Value,"%f",Scale,float(SHRT_MIN),float(SHRT_MAX+1)))

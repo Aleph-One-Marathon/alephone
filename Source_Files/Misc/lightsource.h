@@ -187,18 +187,8 @@ bool set_tagged_light_statuses(short tag, bool new_status);
 
 _fixed get_light_intensity(short light_index);
 
-// LP change: inlined it
-inline struct light_data *get_light_data(
-	const short light_index)
-{
-	struct light_data *light = GetMemberWithBounds(lights,light_index,MAXIMUM_LIGHTS_PER_MAP);
-	
-	if (!light) return NULL;
-	if (!SLOT_IS_USED(light)) return NULL;
-	
-	return light;
-}
-
+light_data *get_light_data(
+	const short light_index);
 
 // Split and join the misaligned 4-byte values
 uint8 *pack_light_data(static_light_data& source, saved_static_light& dest);

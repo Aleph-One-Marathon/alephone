@@ -204,11 +204,11 @@ static float actual_gamma_values[NUMBER_OF_GAMMA_LEVELS]=
 
 /* ---------- private prototypes */
 
-// LP: "static" removed
-/*
-struct fade_definition *get_fade_definition(short index);
-static struct fade_effect_definition *get_fade_effect_definition(short index);
-*/
+static fade_definition *get_fade_definition(
+	const short index);
+
+static fade_effect_definition *get_fade_effect_definition(
+	const short index);
 
 static void recalculate_and_display_color_table(short type, _fixed transparency,
 	struct color_table *original_color_table, struct color_table *animated_color_table);
@@ -226,13 +226,13 @@ static void TranslateToOGLFader(rgb_color &Color, _fixed Opacity);
 /* ---------- code */
 
 // Accessors:
-inline struct fade_definition *get_fade_definition(
+fade_definition *get_fade_definition(
 	const short index)
 {
 	return GetMemberWithBounds(fade_definitions,index,NUMBER_OF_FADE_TYPES);
 }
 
-inline struct fade_effect_definition *get_fade_effect_definition(
+fade_effect_definition *get_fade_effect_definition(
 	const short index)
 {
 	return GetMemberWithBounds(fade_effect_definitions,index,NUMBER_OF_FADE_EFFECT_TYPES);
@@ -746,7 +746,7 @@ static void TranslateToOGLFader(rgb_color &Color, _fixed Opacity)
 
 class XML_FaderParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	fade_definition Data;
 	short Type;
 	
@@ -774,25 +774,25 @@ bool XML_FaderParser::Start()
 
 bool XML_FaderParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_FADE_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_FADE_TYPES-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(NUMBER_OF_FADER_FUNCTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Type,0,NUMBER_OF_FADER_FUNCTIONS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"initial_opacity") == 0)
+	else if (StringsEqual(Tag,"initial_opacity"))
 	{
 		float Opacity;
 		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHRT_MAX),float(SHRT_MAX)))
@@ -803,7 +803,7 @@ bool XML_FaderParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"final_opacity") == 0)
+	else if (StringsEqual(Tag,"final_opacity"))
 	{
 		float Opacity;
 		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHRT_MAX),float(SHRT_MAX)))
@@ -814,27 +814,27 @@ bool XML_FaderParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"period") == 0)
+	else if (StringsEqual(Tag,"period"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.period))
+		if (ReadInt16Value(Value,Data.period))
 		{
 			IsPresent[3] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"flags") == 0)
+	else if (StringsEqual(Tag,"flags"))
 	{
-		if (ReadNumericalValue(Value,"%hu",Data.flags))
+		if (ReadUInt16Value(Value,Data.flags))
 		{
 			IsPresent[4] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"priority") == 0)
+	else if (StringsEqual(Tag,"priority"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.priority))
+		if (ReadInt16Value(Value,Data.priority))
 		{
 			IsPresent[5] = true;
 			return true;
@@ -903,7 +903,7 @@ static XML_FaderParser FaderParser;
 
 class XML_LiquidFaderParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	fade_effect_definition Data;
 	
 	// What is present?
@@ -930,25 +930,25 @@ bool XML_LiquidFaderParser::Start()
 
 bool XML_LiquidFaderParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_FADE_EFFECT_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_FADE_EFFECT_TYPES-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"fader") == 0)
+	else if (StringsEqual(Tag,"fader"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.fade_type,short(NONE),short(NUMBER_OF_FADE_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Data.fade_type,NONE,NUMBER_OF_FADE_TYPES-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"opacity") == 0)
+	else if (StringsEqual(Tag,"opacity"))
 	{
 		float Opacity;
 		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHRT_MAX),float(SHRT_MAX)))

@@ -48,10 +48,23 @@ ryan reports get_object_data() failing on effect->data after a teleport effect t
 
 // struct effect_data *effects = NULL;
 
+static effect_definition *get_effect_definition(const short type);
+
 /* ---------- code */
 
+effect_data *get_effect_data(
+	const short effect_index)
+{
+	struct effect_data *effect = GetMemberWithBounds(effects,effect_index,MAXIMUM_EFFECTS_PER_MAP);
+	
+	vassert(effect, csprintf(temporary, "effect index #%d is out of range", effect_index));
+	vassert(SLOT_IS_USED(effect), csprintf(temporary, "effect index #%d (%p) is unused", effect_index, effect));
+	
+	return effect;
+}
+
 // LP change: moved down here because it refers to effect definitions
-inline struct effect_definition *get_effect_definition(const short type)
+effect_definition *get_effect_definition(const short type)
 {
 	return GetMemberWithBounds(effect_definitions,type,NUMBER_OF_EFFECT_TYPES);
 }
@@ -299,36 +312,9 @@ void teleport_object_in(
 	return;
 }
 
-/*
-#ifdef DEBUG
-struct effect_data *get_effect_data(
-	short effect_index)
-{
-	struct effect_data *effect;
-	
-	vassert(effect_index>=0&&effect_index<MAXIMUM_EFFECTS_PER_MAP, csprintf(temporary, "effect index #%d is out of range", effect_index));
-	
-	effect= effects+effect_index;
-	vassert(SLOT_IS_USED(effect), csprintf(temporary, "effect index #%d (%p) is unused", effect_index, effect));
-	
-	return effect;
-}
-#endif
-*/
 
 /* ---------- private code */
 
-/*
-#ifdef DEBUG
-struct effect_definition *get_effect_definition(
-	short type)
-{
-	assert(type>=0&&type<NUMBER_OF_EFFECT_TYPES);
-	
-	return effect_definitions+type;
-}
-#endif
-*/
 
 uint8 *unpack_effect_data(uint8 *Stream, effect_data* Objects, int Count)
 {

@@ -401,22 +401,22 @@ bool XML_LiveAssignParser::Start()
 
 bool XML_LiveAssignParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"monster") == 0)
+	if (StringsEqual(Tag,"monster"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Monster,short(0),short(NUMBER_OF_MONSTER_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Monster,0,NUMBER_OF_MONSTER_TYPES-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
 		// The permissible values, -1, 0, and 1, are
 		// NONE
 		// _civilian_thing
 		// _monster_thing
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(-1),short(1)))
+		if (ReadBoundedInt16Value(Value,Type,short(-1),short(1)))
 		{
 			IsPresent[1] = true;
 			return true;
@@ -470,22 +470,22 @@ bool XML_DeadAssignParser::Start()
 
 bool XML_DeadAssignParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Coll,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Coll,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
 		// The permissible values, -1, 0, and 1, are
 		// NONE
 		// _civilian_thing
 		// _monster_thing
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(-1),short(1)))
+		if (ReadBoundedInt16Value(Value,Type,short(-1),short(1)))
 		{
 			IsPresent[1] = true;
 			return true;
@@ -541,9 +541,9 @@ bool XML_OvhdMapBooleanParser::Start()
 
 bool XML_OvhdMapBooleanParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"on") == 0)
+	if (StringsEqual(Tag,"on"))
 	{
-		if (ReadBooleanValue(Value,IsOn))
+		if (ReadBooleanValueAsInt16(Value,IsOn))
 		{
 			IsPresent = true;
 			return true;
@@ -596,28 +596,28 @@ bool XML_LineWidthParser::Start()
 
 bool XML_LineWidthParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"type") == 0)
+	if (StringsEqual(Tag,"type"))
 	{
 		// The permissible values, 0, 1, and 2, are line, elevation, and control panel
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(NUMBER_OF_LINE_DEFINITIONS-1)))
+		if (ReadBoundedInt16Value(Value,Type,0,NUMBER_OF_LINE_DEFINITIONS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"scale") == 0)
+	else if (StringsEqual(Tag,"scale"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Scale,short(0),short(OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE)))
+		if (ReadBoundedInt16Value(Value,Scale,0,OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"width") == 0)
+	else if (StringsEqual(Tag,"width"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Width))
+		if (ReadInt16Value(Value,Width))
 		{
 			IsPresent[2] = true;
 			return true;
@@ -732,13 +732,13 @@ bool XML_OvhdMapParser::Start()
 
 bool XML_OvhdMapParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"mode") == 0)
+	if (StringsEqual(Tag,"mode"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",OverheadMapMode,short(0),short(NUMBER_OF_OVERHEAD_MAP_MODES-1)));
+		return ReadBoundedInt16Value(Value,OverheadMapMode,0,NUMBER_OF_OVERHEAD_MAP_MODES-1);
 	}
-	else if (strcmp(Tag,"title_offset") == 0)
+	else if (StringsEqual(Tag,"title_offset"))
 	{
-		return (ReadNumericalValue(Value,"%hd",OvhdMap_ConfigData.map_name_data.offset_down));
+		return ReadInt16Value(Value,OvhdMap_ConfigData.map_name_data.offset_down);
 	}
 	UnrecognizedTag();
 	return false;

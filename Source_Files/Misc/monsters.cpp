@@ -175,27 +175,8 @@ static vector<short> IntersectedObjects;
 
 /* ---------- private prototypes */
 
-// LP change: made this inline
-inline struct monster_definition *get_monster_definition(
-	const short type)
-{
-	monster_definition *definition = GetMemberWithBounds(monster_definitions,type,NUMBER_OF_MONSTER_TYPES);
-	assert(definition);
-	
-	return definition;
-}
-
-//ML change: A non-inlined version so that it can be accessed from Pfhortran
-
-
-
-/*
-#ifdef DEBUG
-struct monster_definition *get_monster_definition(short type);
-#else
-#define get_monster_definition(i) (monster_definitions+(i))
-#endif
-*/
+static monster_definition *get_monster_definition(
+	const short type);
 
 static void monster_needs_path(short monster_index, bool immediately);
 static void generate_new_path_for_monster(short monster_index);
@@ -237,17 +218,36 @@ static long nearest_goal_cost_function(short source_polygon_index, short line_in
 
 static void cause_shrapnel_damage(short monster_index);
 
-struct monster_definition *get_monster_definition_external(const short type);
+// For external use
+monster_definition *get_monster_definition_external(const short type);
+
 /* ---------- code */
 
-//a non-inlined version for external use
-struct monster_definition *get_monster_definition_external(
+monster_data *get_monster_data(
+	short monster_index)
+{
+	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+	
+	vassert(monster, csprintf(temporary, "monster index #%d is out of range", monster_index));
+	vassert(SLOT_IS_USED(monster), csprintf(temporary, "monster index #%d (%p) is unused", monster_index, monster));
+	
+	return monster;
+}
+
+monster_definition *get_monster_definition(
 	const short type)
 {
 	monster_definition *definition = GetMemberWithBounds(monster_definitions,type,NUMBER_OF_MONSTER_TYPES);
 	assert(definition);
 	
 	return definition;
+}
+
+//a non-inlined version for external use
+monster_definition *get_monster_definition_external(
+	const short type)
+{
+	return get_monster_definition(type);
 }
 
 
@@ -1555,22 +1555,6 @@ bool bump_monster(
 	return switch_target_check(monster_index, aggressor_index, 0);
 }
 
-/*
-#ifdef DEBUG
-struct monster_data *get_monster_data(
-	short monster_index)
-{
-	struct monster_data *monster;
-	
-	vassert(monster_index>=0&&monster_index<MAXIMUM_MONSTERS_PER_MAP, csprintf(temporary, "monster index #%d is out of range", monster_index));
-	
-	monster= monsters+monster_index;
-	vassert(SLOT_IS_USED(monster), csprintf(temporary, "monster index #%d (%p) is unused", monster_index, monster));
-	
-	return monster;
-}
-#endif
-*/
 
 bool legal_polygon_height_change(
 	short polygon_index,
@@ -2068,17 +2052,6 @@ static void generate_new_path_for_monster(
 	return;
 }
 
-/*
-#ifdef DEBUG
-// LP: "static" removed
-struct monster_definition *get_monster_definition(
-	short type)
-{
-	assert(type>=0&&type<NUMBER_OF_MONSTER_TYPES);
-	return monster_definitions+type;
-}
-#endif
-*/
 
 /* somebody just did damage to us; see if we should start attacking them or not.  berserk
 	monsters always switch targets.  this is where we check to see if we go berserk, right?

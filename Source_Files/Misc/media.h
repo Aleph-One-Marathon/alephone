@@ -139,17 +139,8 @@ bool IsMediaDangerous(short media_type);
 
 bool media_in_environment(short media_type, short environment_code);
 
-// LP change: made this inline
-inline struct media_data *get_media_data(
-	const short media_index)
-{
-	struct media_data *media = GetMemberWithBounds(medias,media_index,MAXIMUM_MEDIAS_PER_MAP);
-	
-	if (!media) return NULL;
-	if (!(SLOT_IS_USED(media))) return NULL;
-	
-	return media;
-}
+media_data *get_media_data(
+	const short media_index);
 
 // LP addition: count number of media types used,
 // for better Infinity compatibility when saving games

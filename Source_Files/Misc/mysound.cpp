@@ -1729,7 +1729,7 @@ bool XML_AmbientRandomAssignParser::Start()
 
 bool XML_AmbientRandomAssignParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
 		int ArrayLimit = 0;
 		switch(Type)
@@ -1743,16 +1743,16 @@ bool XML_AmbientRandomAssignParser::HandleAttribute(const char *Tag, const char 
 		default:
 			vassert(false,csprintf(temporary,"Unrecognized sound-parser class: %d",Type));
 		}
-		if (ReadBoundedNumericalValue(Value,"%hd",Index,short(0),short(ArrayLimit-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,ArrayLimit-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"sound") == 0)
+	else if (StringsEqual(Tag,"sound"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",SoundIndex,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,SoundIndex,NONE,SHRT_MAX))
 		{
 			IsPresent[1] = true;
 			return true;
@@ -1843,20 +1843,20 @@ bool XML_SoundOptionsParser::Start()
 
 bool XML_SoundOptionsParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Index))
+		if (ReadInt16Value(Value,Index))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"slot") == 0)
+	else if (StringsEqual(Tag,"slot"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Slot,short(0),short(MAXIMUM_PERMUTATIONS_PER_SOUND-1)));
+		return ReadBoundedInt16Value(Value,Slot,0,MAXIMUM_PERMUTATIONS_PER_SOUND-1);
 	}
-	else if (strcmp(Tag,"file") == 0)
+	else if (StringsEqual(Tag,"file"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.File.resize(nchars);
@@ -1912,69 +1912,69 @@ public:
 
 bool XML_SoundsParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"terminal_logon") == 0)
+	if (StringsEqual(Tag,"terminal_logon"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_TerminalLogon));
+		return ReadInt16Value(Value,_Sound_TerminalLogon);
 	}
-	else if (strcmp(Tag,"terminal_logoff") == 0)
+	else if (StringsEqual(Tag,"terminal_logoff"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_TerminalLogoff));
+		return ReadInt16Value(Value,_Sound_TerminalLogoff);
 	}
-	else if (strcmp(Tag,"terminal_page") == 0)
+	else if (StringsEqual(Tag,"terminal_page"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_TerminalPage));
+		return ReadInt16Value(Value,_Sound_TerminalPage);
 	}
-	else if (strcmp(Tag,"teleport_in") == 0)
+	else if (StringsEqual(Tag,"teleport_in"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_TeleportIn));
+		return ReadInt16Value(Value,_Sound_TeleportIn);
 	}
-	else if (strcmp(Tag,"teleport_out") == 0)
+	else if (StringsEqual(Tag,"teleport_out"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_TeleportOut));
+		return ReadInt16Value(Value,_Sound_TeleportOut);
 	}
-	else if (strcmp(Tag,"got_powerup") == 0)
+	else if (StringsEqual(Tag,"got_powerup"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_GotPowerup));
+		return ReadInt16Value(Value,_Sound_GotPowerup);
 	}
-	else if (strcmp(Tag,"got_item") == 0)
+	else if (StringsEqual(Tag,"got_item"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_GotItem));
+		return ReadInt16Value(Value,_Sound_GotItem);
 	}
-	else if (strcmp(Tag,"crunched") == 0)
+	else if (StringsEqual(Tag,"crunched"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_Crunched));
+		return ReadInt16Value(Value,_Sound_Crunched);
 	}
-	else if (strcmp(Tag,"exploding") == 0)
+	else if (StringsEqual(Tag,"exploding"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_Exploding));
+		return ReadInt16Value(Value,_Sound_Exploding);
 	}
-	else if (strcmp(Tag,"breathing") == 0)
+	else if (StringsEqual(Tag,"breathing"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_Breathing));
+		return ReadInt16Value(Value,_Sound_Breathing);
 	}
-	else if (strcmp(Tag,"oxygen_warning") == 0)
+	else if (StringsEqual(Tag,"oxygen_warning"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_OxygenWarning));
+		return ReadInt16Value(Value,_Sound_OxygenWarning);
 	}
-	else if (strcmp(Tag,"adjust_volume") == 0)
+	else if (StringsEqual(Tag,"adjust_volume"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_AdjustVolume));
+		return ReadInt16Value(Value,_Sound_AdjustVolume);
 	}
-	else if (strcmp(Tag,"button_success") == 0)
+	else if (StringsEqual(Tag,"button_success"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_ButtonSuccess));
+		return ReadInt16Value(Value,_Sound_ButtonSuccess);
 	}
-	else if (strcmp(Tag,"button_failure") == 0)
+	else if (StringsEqual(Tag,"button_failure"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_ButtonFailure));
+		return ReadInt16Value(Value,_Sound_ButtonFailure);
 	}
-	else if (strcmp(Tag,"button_inoperative") == 0)
+	else if (StringsEqual(Tag,"button_inoperative"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_ButtonInoperative));
+		return ReadInt16Value(Value,_Sound_ButtonInoperative);
 	}
-	else if (strcmp(Tag,"ogl_reset") == 0)
+	else if (StringsEqual(Tag,"ogl_reset"))
 	{
-		return (ReadNumericalValue(Value,"%hd",_Sound_ButtonInoperative));
+		return ReadInt16Value(Value,_Sound_ButtonInoperative);
 	}
 	UnrecognizedTag();
 	return false;

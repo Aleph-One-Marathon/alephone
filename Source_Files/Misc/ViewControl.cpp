@@ -163,25 +163,25 @@ public:
 
 bool XML_FOVParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"normal") == 0)
+	if (StringsEqual(Tag,"normal"))
 	{
 		return (ReadBoundedNumericalValue(Value,"%f",FOV_Normal,float(0),float(180)));
 	}
-	else if (strcmp(Tag,"extra") == 0)
+	else if (StringsEqual(Tag,"extra"))
 	{
 		return (ReadBoundedNumericalValue(Value,"%f",FOV_ExtraVision,float(0),float(180)));
 	}
-	else if (strcmp(Tag,"tunnel") == 0)
+	else if (StringsEqual(Tag,"tunnel"))
 	{
 		return (ReadBoundedNumericalValue(Value,"%f",FOV_TunnelVision,float(0),float(180)));
 	}
-	else if (strcmp(Tag,"rate") == 0)
+	else if (StringsEqual(Tag,"rate"))
 	{
 		return (ReadBoundedNumericalValue(Value,"%f",FOV_ChangeRate,float(0),float(180)));
 	}
-	else if (strcmp(Tag,"fix_h_not_v") == 0)
+	else if (StringsEqual(Tag,"fix_h_not_v"))
 	{
-		return (ReadBooleanValue(Value,FOV_FixHorizontalNotVertical));
+		return ReadBooleanValueAsBool(Value,FOV_FixHorizontalNotVertical);
 	}
 	UnrecognizedTag();
 	return false;
@@ -208,17 +208,17 @@ bool XML_ViewParser::Start()
 
 bool XML_ViewParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"map") == 0)
+	if (StringsEqual(Tag,"map"))
 	{
-		return (ReadBooleanValue(Value,MapActive));
+		return ReadBooleanValueAsBool(Value,MapActive);
 	}
-	else if (strcmp(Tag,"fold_effect") == 0)
+	else if (StringsEqual(Tag,"fold_effect"))
 	{
-		return (ReadBooleanValue(Value,DoFoldEffect));
+		return ReadBooleanValueAsBool(Value,DoFoldEffect);
 	}
-	else if (strcmp(Tag,"static_effect") == 0)
+	else if (StringsEqual(Tag,"static_effect"))
 	{
-		return (ReadBooleanValue(Value,DoStaticEffect));
+		return ReadBooleanValueAsBool(Value,DoStaticEffect);
 	}
 	UnrecognizedTag();
 	return false;
@@ -259,9 +259,9 @@ bool XML_LO_ClearParser::Start()
 
 bool XML_LO_ClearParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Collection,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			IsPresent = true;
 			return true;
@@ -309,39 +309,39 @@ bool XML_LandscapeParser::Start()
 
 bool XML_LandscapeParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(AnyFrame),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Collection,short(AnyFrame),short(NUMBER_OF_COLLECTIONS-1)))
 		{
 			IsPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"frame") == 0)
+	else if (StringsEqual(Tag,"frame"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Frame,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)));
+		return ReadBoundedInt16Value(Value,Frame,0,MAXIMUM_SHAPES_PER_COLLECTION-1);
 	}
-	else if (strcmp(Tag,"horiz_exp") == 0)
+	else if (StringsEqual(Tag,"horiz_exp"))
 	{
-		return (ReadNumericalValue(Value,"%hd",Data.HorizExp));
+		return ReadInt16Value(Value,Data.HorizExp);
 	}
-	else if (strcmp(Tag,"vert_exp") == 0)
+	else if (StringsEqual(Tag,"vert_exp"))
 	{
-		return (ReadNumericalValue(Value,"%hd",Data.VertExp));
+		return ReadInt16Value(Value,Data.VertExp);
 	}
-	else if (strcmp(Tag,"vert_repeat") == 0)
+	else if (StringsEqual(Tag,"vert_repeat"))
 	{
-		return (ReadBooleanValue(Value,Data.VertRepeat));
+		return ReadBooleanValueAsBool(Value,Data.VertRepeat);
 	}
-	else if (strcmp(Tag,"ogl_asprat_exp") == 0)
+	else if (StringsEqual(Tag,"ogl_asprat_exp"))
 	{
-		return (ReadNumericalValue(Value,"%hd",Data.OGL_AspRatExp));
+		return ReadInt16Value(Value,Data.OGL_AspRatExp);
 	}
-	else if (strcmp(Tag,"azimuth") == 0)
+	else if (StringsEqual(Tag,"azimuth"))
 	{
 		float Azimuth;
-		if (ReadNumericalValue(Value,"%f",Azimuth))
+		if (ReadFloatValue(Value,Azimuth))
 		{
 			Azimuth = Azimuth - 360*int(Azimuth/360);
 			if (Azimuth < 0) Azimuth += 360;

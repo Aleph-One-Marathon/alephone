@@ -214,7 +214,7 @@ static XML_SceneryShapesParser SceneryNormalParser("normal"), SceneryDestroyedPa
 
 class XML_SceneryObjectParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	scenery_definition Data;
 	
 	// What is present?
@@ -241,45 +241,45 @@ bool XML_SceneryObjectParser::Start()
 
 bool XML_SceneryObjectParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_SCENERY_DEFINITIONS-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_SCENERY_DEFINITIONS-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"flags") == 0)
+	else if (StringsEqual(Tag,"flags"))
 	{
-		if (ReadNumericalValue(Value,"%hu",Data.flags))
+		if (ReadUInt16Value(Value,Data.flags))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"radius") == 0)
+	else if (StringsEqual(Tag,"radius"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.radius))
+		if (ReadInt16Value(Value,Data.radius))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"height") == 0)
+	else if (StringsEqual(Tag,"height"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.height))
+		if (ReadInt16Value(Value,Data.height))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"destruction") == 0)
+	else if (StringsEqual(Tag,"destruction"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.destroyed_effect,short(NONE),short(NUMBER_OF_EFFECT_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Data.destroyed_effect,NONE,NUMBER_OF_EFFECT_TYPES-1))
 		{
 			IsPresent[3] = true;
 			return true;

@@ -91,20 +91,25 @@ static void play_platform_sound(short platform_index, short sound_code);
 static void adjust_platform_for_media(short platform_index, bool initialize);
 static void adjust_platform_endpoint_and_line_heights(short platform_index);
 
-inline struct platform_definition *get_platform_definition(const short type)
+static platform_definition *get_platform_definition(const short type);
+
+/* ---------- code */
+
+platform_data *get_platform_data(
+	short platform_index)
+{
+	struct platform_data *platform = GetMemberWithBounds(platforms,platform_index,dynamic_world->platform_count);
+	
+	vassert(platform, csprintf(temporary, "platform index #%d is out of range", platform_index));
+	
+	return platform;
+}
+
+platform_definition *get_platform_definition(const short type)
 {
 	return GetMemberWithBounds(platform_definitions,type,NUMBER_OF_PLATFORM_TYPES);
 }
 
-/*
-#ifdef DEBUG
-static struct platform_definition *get_platform_definition(short type);
-#else
-#define get_platform_definition(t) (platform_definitions+(t))
-#endif
-*/
-
-/* ---------- code */
 
 short new_platform(
 	struct static_platform_data *data,
@@ -532,21 +537,6 @@ void player_touch_platform_state(
 	return;
 }
 
-/*
-#ifdef DEBUG
-struct platform_data *get_platform_data(
-	short platform_index)
-{
-	struct platform_data *platform;
-	
-	vassert(platform_index>=0 && platform_index<dynamic_world->platform_count, csprintf(temporary, "platform index #%d is out of range", platform_index));
-	
-	platform= platforms+platform_index;
-	
-	return platform;
-}
-#endif
-*/
 
 void platform_was_entered(
 	short platform_index,
@@ -647,16 +637,7 @@ short get_platform_moving_sound(
 }
 
 /* ---------- private code */
-/*
-#ifdef DEBUG
-static struct platform_definition *get_platform_definition(
-	short type)
-{
-	assert(type>=0&&type<NUMBER_OF_PLATFORM_TYPES);
-	return platform_definitions+type;
-}
-#endif
-*/
+
 
 static short polygon_index_to_platform_index(
 	short polygon_index)
@@ -1315,7 +1296,7 @@ uint8 *pack_platform_data(uint8 *Stream, platform_data* Objects, int Count)
 
 class XML_PlatformParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	platform_definition Data;
 	
 	// What is present?
@@ -1342,81 +1323,81 @@ bool XML_PlatformParser::Start()
 
 bool XML_PlatformParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_PLATFORM_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_PLATFORM_TYPES-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"start_extend") == 0)
+	else if (StringsEqual(Tag,"start_extend"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.starting_extension,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Data.starting_extension,NONE,SHRT_MAX))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"start_contract") == 0)
+	else if (StringsEqual(Tag,"start_contract"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.starting_contraction,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Data.starting_contraction,NONE,SHRT_MAX))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"stop_extend") == 0)
+	else if (StringsEqual(Tag,"stop_extend"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.stopping_extension,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Data.stopping_extension,NONE,SHRT_MAX))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"stop_contract") == 0)
+	else if (StringsEqual(Tag,"stop_contract"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.stopping_contraction,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Data.stopping_contraction,NONE,SHRT_MAX))
 		{
 			IsPresent[3] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"obstructed") == 0)
+	else if (StringsEqual(Tag,"obstructed"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.obstructed_sound,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Data.obstructed_sound,NONE,SHRT_MAX))
 		{
 			IsPresent[4] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"uncontrollable") == 0)
+	else if (StringsEqual(Tag,"uncontrollable"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.uncontrollable_sound,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Data.uncontrollable_sound,NONE,SHRT_MAX))
 		{
 			IsPresent[5] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"moving") == 0)
+	else if (StringsEqual(Tag,"moving"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.moving_sound,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Data.moving_sound,NONE,SHRT_MAX))
 		{
 			IsPresent[6] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"item") == 0)
+	else if (StringsEqual(Tag,"item"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.key_item_index,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)))
+		if (ReadBoundedInt16Value(Value,Data.key_item_index,NONE,NUMBER_OF_DEFINED_ITEMS-1))
 		{
 			IsPresent[7] = true;
 			return true;

@@ -150,17 +150,8 @@ void mark_effect_collections(short type, bool loading);
 void teleport_object_in(short object_index);
 void teleport_object_out(short object_index);
 
-// LP change: inlined it
-inline struct effect_data *get_effect_data(
-	const short effect_index)
-{
-	struct effect_data *effect = GetMemberWithBounds(effects,effect_index,MAXIMUM_EFFECTS_PER_MAP);
-	
-	vassert(effect, csprintf(temporary, "effect index #%d is out of range", effect_index));
-	vassert(SLOT_IS_USED(effect), csprintf(temporary, "effect index #%d (%p) is unused", effect_index, effect));
-	
-	return effect;
-}
+effect_data *get_effect_data(
+	const short effect_index);
 
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world

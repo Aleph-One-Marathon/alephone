@@ -126,14 +126,6 @@ enum /* things the projectile can hit in detonate_projectile() */
 
 /* ---------- private prototypes */
 
-/*
-#ifdef DEBUG
-struct projectile_definition *get_projectile_definition(short type);
-#else
-#define get_projectile_definition(i) (projectile_definitions+(i))
-#endif
-*/
-
 /* ---------- globals */
 
 /* import projectile definition structures, constants and globals */
@@ -163,10 +155,24 @@ static uint16 translate_projectile(short type, world_point3d *old_location, shor
 	world_point3d *new_location, short *new_polygon_index, short owner_index,
 	short *obstruction_index);
 
+static projectile_definition *get_projectile_definition(
+	short type);
+
 /* ---------- code */
 
+projectile_data *get_projectile_data(
+	const short projectile_index)
+{
+	struct projectile_data *projectile =  GetMemberWithBounds(projectiles,projectile_index,MAXIMUM_PROJECTILES_PER_MAP);
+	
+	vassert(projectile, csprintf(temporary, "projectile index #%d is out of range", projectile_index));
+	vassert(SLOT_IS_USED(projectile), csprintf(temporary, "projectile index #%d (%p) is unused", projectile_index, projectile));
+	
+	return projectile;
+}
+
 // LP change: moved down here to use the projectile definitions
-inline struct projectile_definition *get_projectile_definition(
+projectile_definition *get_projectile_definition(
 	short type)
 {
 	projectile_definition *definition = GetMemberWithBounds(projectile_definitions,type,NUMBER_OF_PROJECTILE_TYPES);
@@ -616,22 +622,6 @@ void mark_projectile_collections(
 	return;
 }
 
-/*
-#ifdef DEBUG
-struct projectile_data *get_projectile_data(
-	short projectile_index)
-{
-	struct projectile_data *projectile;
-	
-	vassert(projectile_index>=0&&projectile_index<MAXIMUM_PROJECTILES_PER_MAP, csprintf(temporary, "projectile index #%d is out of range", projectile_index));
-	
-	projectile= projectiles+projectile_index;
-	vassert(SLOT_IS_USED(projectile), csprintf(temporary, "projectile index #%d (%p) is unused", projectile_index, projectile));
-	
-	return projectile;
-}
-#endif
-*/
 
 void drop_the_ball(
 	world_point3d *origin,
@@ -661,17 +651,6 @@ void drop_the_ball(
 
 /* ---------- private code */
 
-/*
-#ifdef DEBUG
-struct projectile_definition *get_projectile_definition(
-	short type)
-{
-	vassert(type>=0&&type<NUMBER_OF_PROJECTILE_TYPES, csprintf(temporary, "projectile type #%d is out of range", type));
-	
-	return projectile_definitions+type;
-}
-#endif
-*/
 
 static short adjust_projectile_type(
 	world_point3d *origin,

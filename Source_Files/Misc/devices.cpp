@@ -175,20 +175,8 @@ static struct control_panel_definition control_panel_definitions[]=
 
 /* ------------ private prototypes */
 
-// LP change: made this an inline function
-inline struct control_panel_definition *get_control_panel_definition(
-	const short control_panel_type)
-{
-	return GetMemberWithBounds(control_panel_definitions,control_panel_type,NUMBER_OF_CONTROL_PANEL_DEFINITIONS);
-}
-
-/*
-#ifdef DEBUG
-struct control_panel_definition *get_control_panel_definition(short control_panel_type);
-#else
-#define get_control_panel_definition(i) (control_panel_definitions+(i))
-#endif
-*/
+static control_panel_definition *get_control_panel_definition(
+	const short control_panel_type);
 
 static short find_action_key_target(short player_index, world_distance range, short *target_type);
 static bool line_side_has_control_panel(short line_index, short polygon_index, short *side_index_with_panel);
@@ -529,6 +517,12 @@ static bool control_panel_type_valid_for_texture(
 
 /* ---------- private code */
 
+control_panel_definition *get_control_panel_definition(
+	const short control_panel_type)
+{
+	return GetMemberWithBounds(control_panel_definitions,control_panel_type,NUMBER_OF_CONTROL_PANEL_DEFINITIONS);
+}
+
 static short find_action_key_target(
 	short player_index,
 	world_distance range,
@@ -783,20 +777,6 @@ static void set_control_panel_texture(
 	return;
 }
 
-/*
-#ifdef DEBUG
-// LP: "static" removed
-struct control_panel_definition *get_control_panel_definition(
-	short control_panel_type)
-{
-	// LP: added idiot-proofing
-	if (!(control_panel_type>=0 && control_panel_type<NUMBER_OF_CONTROL_PANEL_DEFINITIONS)) return NULL;
-	// assert(control_panel_type>=0 && control_panel_type<NUMBER_OF_CONTROL_PANEL_DEFINITIONS);
-	
-	return control_panel_definitions + control_panel_type;
-}
-#endif
-*/
 
 static bool switch_can_be_toggled(
 	short side_index,
@@ -892,18 +872,18 @@ bool XML_CPSoundParser::Start()
 
 bool XML_CPSoundParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"type") == 0)
+	if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(NUMBER_OF_CONTROL_PANEL_SOUNDS-1)))
+		if (ReadBoundedInt16Value(Value,Type,0,NUMBER_OF_CONTROL_PANEL_SOUNDS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"which") == 0)
+	else if (StringsEqual(Tag,"which"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Which,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Which,NONE,SHRT_MAX))
 		{
 			IsPresent[1] = true;
 			return true;
@@ -936,7 +916,7 @@ static XML_CPSoundParser CPSoundParser;
 
 class XML_ControlPanelParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	control_panel_definition Data;
 	
 	// What is present?
@@ -963,52 +943,52 @@ bool XML_ControlPanelParser::Start()
 
 bool XML_ControlPanelParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_CONTROL_PANEL_DEFINITIONS-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_CONTROL_PANEL_DEFINITIONS-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data._class,short(0),short(NUMBER_OF_CONTROL_PANELS-1)))
+		if (ReadBoundedInt16Value(Value,Data._class,0,NUMBER_OF_CONTROL_PANELS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"coll") == 0)
+	else if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Data.collection,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"active_frame") == 0)
+	else if (StringsEqual(Tag,"active_frame"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.active_shape,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedInt16Value(Value,Data.active_shape,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"inactive_frame") == 0)
+	else if (StringsEqual(Tag,"inactive_frame"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.inactive_shape,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedInt16Value(Value,Data.inactive_shape,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
 		{
 			IsPresent[3] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"pitch") == 0)
+	else if (StringsEqual(Tag,"pitch"))
 	{
 		float Pitch;
 		if (ReadBoundedNumericalValue(Value,"%f",Pitch,float(0),float(SHRT_MAX+1)))
@@ -1019,9 +999,9 @@ bool XML_ControlPanelParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"item") == 0)
+	else if (StringsEqual(Tag,"item"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.item,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)))
+		if (ReadBoundedInt16Value(Value,Data.item,NONE,NUMBER_OF_DEFINED_ITEMS-1))
 		{
 			IsPresent[5] = true;
 			return true;

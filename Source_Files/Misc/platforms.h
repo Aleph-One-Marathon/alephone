@@ -276,15 +276,8 @@ bool platform_is_at_initial_state(short platform_index);
 
 short get_platform_moving_sound(short platform_index);
 
-inline struct platform_data *get_platform_data(
-	short platform_index)
-{
-	struct platform_data *platform = GetMemberWithBounds(platforms,platform_index,dynamic_world->platform_count);
-	
-	vassert(platform, csprintf(temporary, "platform index #%d is out of range", platform_index));
-	
-	return platform;
-}
+platform_data *get_platform_data(
+	short platform_index);
 
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world

@@ -291,25 +291,8 @@ void damage_monsters_in_radius(short primary_target_index, short aggressor_index
 	world_point3d *epicenter, short epicenter_polygon_index, world_distance radius, struct damage_definition *damage);
 void damage_monster(short monster_index, short aggressor_index, short aggressor_type, world_point3d *epicenter, struct damage_definition *damage);
 
-// LP change: made this inline
-inline struct monster_data *get_monster_data(
-	short monster_index)
-{
-	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	
-	vassert(monster, csprintf(temporary, "monster index #%d is out of range", monster_index));
-	vassert(SLOT_IS_USED(monster), csprintf(temporary, "monster index #%d (%p) is unused", monster_index, monster));
-	
-	return monster;
-}
-
-/*
-#ifdef DEBUG
-struct monster_data *get_monster_data(short monster_index);
-#else
-#define get_monster_data(i) (monsters+(i))
-#endif
-*/
+monster_data *get_monster_data(
+	short monster_index);
 
 bool bump_monster(short aggressor_index, short monster_index);
 

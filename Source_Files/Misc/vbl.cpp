@@ -994,7 +994,7 @@ static key_definition *XML_KeySet = all_key_definitions[0];
 class XML_KeyParser: public XML_ElementParser
 {
 	bool IsPresent[2];
-	int Index, Key;
+	short Index, Key;
 	
 public:
 	bool Start();
@@ -1012,9 +1012,9 @@ bool XML_KeyParser::Start()
 
 bool XML_KeyParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_STANDARD_KEY_DEFINITIONS-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_STANDARD_KEY_DEFINITIONS-1))
 		{
 			IsPresent[0] = true;
 			return true;
@@ -1023,12 +1023,12 @@ bool XML_KeyParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	// Select whether to accept a SDL or a Macintosh key definition
 #ifdef SDL
-	else if (strcmp(Tag,"sdl") == 0)
+	else if (StringsEqual(Tag,"sdl"))
 #else
-	else if (strcmp(Tag,"mac") == 0)
+	else if (StringsEqual(Tag,"mac"))
 #endif
 	{
-		if (ReadNumericalValue(Value,"%d",Key))
+		if (ReadInt16Value(Value,Key))
 		{
 			IsPresent[1] = true;
 			return true;
@@ -1037,9 +1037,9 @@ bool XML_KeyParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	// Do nothing in case of the opposite sort of key
 #ifdef SDL
-	else if (strcmp(Tag,"mac") == 0)
+	else if (StringsEqual(Tag,"mac"))
 #else
-	else if (strcmp(Tag,"sdl") == 0)
+	else if (StringsEqual(Tag,"sdl"))
 #endif
 	{
 		// OK no matter what
@@ -1086,10 +1086,10 @@ bool XML_KeyboardParser::Start()
 
 bool XML_KeyboardParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"set") == 0)
+	if (StringsEqual(Tag,"set"))
 	{
-		int WhichSet = 0;
-		if (ReadBoundedNumericalValue(Value,"%d",WhichSet,int(0),int(NUMBER_OF_KEY_SETUPS-1)))
+		short WhichSet = 0;
+		if (ReadBoundedInt16Value(Value,WhichSet,0,NUMBER_OF_KEY_SETUPS-1))
 		{
 			XML_KeySet = all_key_definitions[WhichSet];
 			IsPresent = true;

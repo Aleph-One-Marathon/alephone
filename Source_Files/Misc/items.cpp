@@ -86,19 +86,8 @@ Feb 11, 2001 (Loren Petrich):
 /* ---------- private prototypes */
 
 // Item-definition accessor
-inline struct item_definition *get_item_definition(
-	const short type)
-{
-	return GetMemberWithBounds(item_definitions,type,NUMBER_OF_DEFINED_ITEMS);
-}
-
-/*
-#ifdef DEBUG
-struct item_definition *get_item_definition(short type);
-#else
-#define get_item_definition(i) (item_definitions+(i))
-#endif
-*/
+static item_definition *get_item_definition(
+	const short type);
 
 static bool get_item(short player_index, short object_index);
 
@@ -108,6 +97,13 @@ static long item_trigger_cost_function(short source_polygon_index, short line_in
 	short destination_polygon_index, void *unused);
 
 /* ---------- code */
+
+// Item-definition accessor
+item_definition *get_item_definition(
+	const short type)
+{
+	return GetMemberWithBounds(item_definitions,type,NUMBER_OF_DEFINED_ITEMS);
+}
 
 short new_item(
 	struct object_location *location,
@@ -588,17 +584,6 @@ bool try_and_add_player_item(
 
 /* ---------- private code */
 
-/*
-#ifdef DEBUG
-struct item_definition *get_item_definition(
-	short type)
-{
-	vassert(type>=0 && type<NUMBER_OF_DEFINED_ITEMS, csprintf(temporary, "#%d is not a valid item type.", type));
-	
-	return item_definitions+type;
-}
-#endif
-*/
 
 static long item_trigger_cost_function(
 	short source_polygon_index,
@@ -724,7 +709,7 @@ void animate_items(void) {
 
 class XML_ItemParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	item_definition Data;
 	
 	// What is present?
@@ -751,54 +736,54 @@ bool XML_ItemParser::Start()
 
 bool XML_ItemParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_DEFINED_ITEMS-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_DEFINED_ITEMS-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"singular") == 0)
+	else if (StringsEqual(Tag,"singular"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.singular_name_id))
+		if (ReadInt16Value(Value,Data.singular_name_id))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"plural") == 0)
+	else if (StringsEqual(Tag,"plural"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.plural_name_id))
+		if (ReadInt16Value(Value,Data.plural_name_id))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"maximum") == 0)
+	else if (StringsEqual(Tag,"maximum"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.maximum_count_per_player,short(0),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Data.maximum_count_per_player,0,SHRT_MAX))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"invalid") == 0)
+	else if (StringsEqual(Tag,"invalid"))
 	{
-		if (ReadNumericalValue(Value,"%hu",Data.invalid_environments))
+		if (ReadInt16Value(Value,Data.invalid_environments))
 		{
 			IsPresent[3] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.item_kind,short(0),short(NUMBER_OF_ITEM_TYPES)))
+		if (ReadBoundedInt16Value(Value,Data.item_kind,0,NUMBER_OF_ITEM_TYPES))
 		{
 			IsPresent[4] = true;
 			return true;

@@ -95,16 +95,8 @@ struct music_data {
 #define kDefaultSoundBufferSize (500*KILO)
 #define BUILD_STEREO_VOLUME(l, r) ((((long)(r))<<16)|(l))
 
-#ifdef DEBUG
 static struct song_definition *get_song_definition(	
-	short index)
-{
-	assert(index>=0 && index<NUMBER_OF_SONGS);
-	return songs+index;
-}
-#else
-#define get_song_definition(exp) (songs+(exp))
-#endif
+	short index);
 
 /* ----------------- globals */
 // LP: no need for it to be a pointer
@@ -145,6 +137,14 @@ static void StartMusic();
 static void PreloadMusic();
 
 /* ----------------- code */
+
+song_definition *get_song_definition(	
+	short index)
+{
+	assert(index>=0 && index<NUMBER_OF_SONGS);
+	return songs+index;
+}
+
 
 // LP: Quicktime music player...
 

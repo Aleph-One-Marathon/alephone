@@ -284,22 +284,15 @@ extern sdl_font_info *GetInterfaceFont(short font_index);
 extern uint16 GetInterfaceStyle(short font_index);
 #endif
 
-inline player_terminal_data *get_player_terminal_data(
-	short player_index)
-{
-	struct player_terminal_data *player_terminal = GetMemberWithBounds(player_terminals,player_index,MAXIMUM_NUMBER_OF_PLAYERS);
-	
-	vassert(player_terminal, csprintf(temporary, "player index #%d is out of range", player_index));
-
-	return player_terminal;
-}
-
 // #ifdef mac
 // LP addition: overall terminal boundary rect (needed for resetting the clipping rectangle)
 // static Rect OverallBounds;
 // #endif
 
 /* ------------ private prototypes */
+static player_terminal_data *get_player_terminal_data(
+	short player_index);
+
 static void draw_logon_text(Rect *bounds, terminal_text_t *terminal_text,
 	short current_group_index, short logon_shape_id);
 static void draw_computer_text(Rect *bounds, 
@@ -370,6 +363,17 @@ static void decode_text(terminal_text_t *terminal_text);
 #endif
 
 /* ------------ code begins */
+
+player_terminal_data *get_player_terminal_data(
+	short player_index)
+{
+	struct player_terminal_data *player_terminal = GetMemberWithBounds(player_terminals,player_index,MAXIMUM_NUMBER_OF_PLAYERS);
+	
+	vassert(player_terminal, csprintf(temporary, "player index #%d is out of range", player_index));
+
+	return player_terminal;
+}
+
 void initialize_terminal_manager(
 	void)
 {

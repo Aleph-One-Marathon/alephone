@@ -43,35 +43,35 @@ bool XML_ShapesParser::Start()
 bool XML_ShapesParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hu",Coll,uint16(0),uint16(MAXIMUM_COLLECTIONS-1)))
+		if (ReadBoundedUInt16Value(Value,Coll,0,MAXIMUM_COLLECTIONS-1))
 		{
 			CollPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"clut") == 0)
+	else if (StringsEqual(Tag,"clut"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hu",CLUT,uint16(0),uint16(MAXIMUM_CLUTS_PER_COLLECTION-1)))
+		if (ReadBoundedUInt16Value(Value,CLUT,0,MAXIMUM_CLUTS_PER_COLLECTION-1))
 		{
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"seq") == 0)
+	else if (StringsEqual(Tag,"seq"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hu",Seq,uint16(0),uint16(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedUInt16Value(Value,Seq,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
 		{
 			SeqPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"frame") == 0)
+	else if (StringsEqual(Tag,"frame"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hu",Seq,uint16(0),uint16(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedUInt16Value(Value,Seq,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
 		{
 			SeqPresent = true;
 			return true;

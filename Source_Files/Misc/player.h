@@ -378,23 +378,8 @@ void mark_player_collections(bool loading);
 
 short player_identifier_to_player_index(short player_identifier);
 
-inline struct player_data *get_player_data(
-	const short player_index)
-{
-	player_data *data = GetMemberWithBounds(players,player_index,dynamic_world->player_count);
-	vassert(data,
-		csprintf(temporary, "asked for player #%d/#%d", player_index, dynamic_world->player_count));
-	
-	return data;
-}
-
-/*
-#ifdef DEBUG
-struct player_data *get_player_data(short player_index);
-#else
-#define get_player_data(i) (players+(i))
-#endif
-*/
+player_data *get_player_data(
+	const short player_index);
 
 short monster_index_to_player_index(short monster_index);
 

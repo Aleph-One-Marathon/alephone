@@ -1107,88 +1107,35 @@ void reallocate_map_structure_memory(long size);
 
 /* ---------- prototypes/MAP_ACCESSORS.C */
 
-// LP changed: inlined all of these;  when the index is out of range,
+// LP changed: previously inline; now de-inlined for less code bulk
+// When the index is out of range,
 // the geometry ones make failed asserts,
 // while the sound ones return null pointers.
 
-inline struct object_data *get_object_data(
-	const short object_index)
-{
-	struct object_data *object = GetMemberWithBounds(objects,object_index,MAXIMUM_OBJECTS_PER_MAP);
-	
-	vassert(object, csprintf(temporary, "object index #%d is out of range", object_index));
-	vassert(SLOT_IS_USED(object), csprintf(temporary, "object index #%d is unused", object_index));
-	
-	return object;
-}
+object_data *get_object_data(
+	const short object_index);
 
-inline struct polygon_data *get_polygon_data(
-	const short polygon_index)
-{
-	assert(map_polygons);	
-	struct polygon_data *polygon = GetMemberWithBounds(map_polygons,polygon_index,dynamic_world->polygon_count);
-	
-	vassert(map_polygons, csprintf(temporary, "polygon index #%d is out of range", polygon_index));
-	
-	return polygon;
-}
+polygon_data *get_polygon_data(
+	const short polygon_index);
 
-inline struct line_data *get_line_data(
-	const short line_index)
-{
-	assert(map_lines);
-	struct line_data *line = GetMemberWithBounds(map_lines,line_index,dynamic_world->line_count);
-	
-	vassert(line, csprintf(temporary, "line index #%d is out of range", line_index));
-	
-	return line;
-}
+line_data *get_line_data(
+	const short line_index);
 
-inline struct side_data *get_side_data(
-	const short side_index)
-{
-	assert(map_sides);
-	struct side_data *side = GetMemberWithBounds(map_sides,side_index,dynamic_world->side_count);
-	
-	vassert(side, csprintf(temporary, "side index #%d is out of range", side_index));
-	
-	return side;
-}
+side_data *get_side_data(
+	const short side_index);
 
-inline struct endpoint_data *get_endpoint_data(
-	const short endpoint_index)
-{
-	assert(map_endpoints);
-	struct endpoint_data *endpoint = GetMemberWithBounds(map_endpoints,endpoint_index,dynamic_world->endpoint_count);
+endpoint_data *get_endpoint_data(
+	const short endpoint_index);
 
-	vassert(endpoint, csprintf(temporary, "endpoint index #%d is out of range", endpoint_index));
-	
-	return endpoint;
-}
-
-inline short *get_map_indexes(
+short *get_map_indexes(
 	const short index,
-	const short count)
-{
-	assert(map_indexes);
-	short *map_index = GetMemberWithBounds(map_indexes,index,dynamic_world->map_index_count-count+1);
-	
-	// vassert(map_index, csprintf(temporary, "map_indexes(#%d,#%d) are out of range", index, count));
-	
-	return map_index;
-}
+	const short count);
 
-inline struct ambient_sound_image_data *get_ambient_sound_image_data(
-	const short ambient_sound_image_index)
-{
-	return GetMemberWithBounds(ambient_sound_images,ambient_sound_image_index,dynamic_world->ambient_sound_image_count);
-}
+ambient_sound_image_data *get_ambient_sound_image_data(
+	const short ambient_sound_image_index);
 
-inline struct random_sound_image_data *get_random_sound_image_data(
-	const short random_sound_image_index)
-{
-	return GetMemberWithBounds(random_sound_images,random_sound_image_index,dynamic_world->random_sound_image_count);
-}
+random_sound_image_data *get_random_sound_image_data(
+	const short random_sound_image_index);
 
 /* ---------- prototypes/MAP_CONSTRUCTORS.C */
 

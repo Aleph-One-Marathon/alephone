@@ -251,18 +251,18 @@ static bool can_interface_fade_out(void);
 static void transfer_to_new_level(short level_number);
 static void try_and_display_chapter_screen(short level, bool interface_table_is_valid, bool text_block);
 
-#ifdef DEBUG
-static struct screen_data *get_screen_data(
+static screen_data *get_screen_data(
+	short index);
+
+/* ---------------------- code begins */
+
+screen_data *get_screen_data(
 	short index)
 {
 	assert(index>=0 && index<NUMBER_OF_SCREENS);
 	return display_screens+index;
 }
-#else
-#define get_screen_data(index) (display_screens+(index))
-#endif
 
-/* ---------------------- code begins */
 void initialize_game_state(
 	void)
 {

@@ -150,25 +150,8 @@ void drop_the_ball(world_point3d *origin, short polygon_index, short owner_index
 // Indicates this feature of some type of projectile
 bool ProjectileIsGuided(short Type);
 
-// LP change: made this inline
-inline struct projectile_data *get_projectile_data(
-	const short projectile_index)
-{
-	struct projectile_data *projectile =  GetMemberWithBounds(projectiles,projectile_index,MAXIMUM_PROJECTILES_PER_MAP);
-	
-	vassert(projectile, csprintf(temporary, "projectile index #%d is out of range", projectile_index));
-	vassert(SLOT_IS_USED(projectile), csprintf(temporary, "projectile index #%d (%p) is unused", projectile_index, projectile));
-	
-	return projectile;
-}
-
-/*
-#ifdef DEBUG
-struct projectile_data *get_projectile_data(short projectile_index);
-#else
-#define get_projectile_data(i) (projectiles+(i))
-#endif
-*/
+projectile_data *get_projectile_data(
+	const short projectile_index);
 
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world

@@ -220,10 +220,18 @@ extern bool PlayerShotsGuided;
 #define GET_WEAPON_FROM_IDENTIFIER(identifier) (identifier>>1)
 #define GET_TRIGGER_FROM_IDENTIFIER(identifier) (identifier&1)
 
+static player_weapon_data *get_player_weapon_data(
+	const short player_index);
+
+static weapon_definition *get_weapon_definition(
+	const short weapon_type);
+
+static shell_casing_definition *get_shell_casing_definition(
+	const short type);
+
 /* -------------- accessors */
 
-// LP change: made these inline
-inline struct player_weapon_data *get_player_weapon_data(
+player_weapon_data *get_player_weapon_data(
 	const short player_index)
 {
 	player_weapon_data *data = GetMemberWithBounds(player_weapons_array,player_index,get_maximum_number_of_players());
@@ -232,7 +240,7 @@ inline struct player_weapon_data *get_player_weapon_data(
 	return data;
 }
 
-inline struct weapon_definition *get_weapon_definition(
+weapon_definition *get_weapon_definition(
 	const short weapon_type)
 {
 	weapon_definition *definition = GetMemberWithBounds(weapon_definitions,weapon_type,NUMBER_OF_WEAPONS);
@@ -241,7 +249,7 @@ inline struct weapon_definition *get_weapon_definition(
 	return definition;
 }
 
-inline struct shell_casing_definition *get_shell_casing_definition(
+shell_casing_definition *get_shell_casing_definition(
 	const short type)
 {
 	shell_casing_definition *definition = GetMemberWithBounds(shell_casing_definitions,type,NUMBER_OF_SHELL_CASING_TYPES);
@@ -4356,7 +4364,7 @@ int get_number_of_weapon_types() {return NUMBER_OF_WEAPONS;}
 
 class XML_ShellCasingParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	shell_casing_definition Data;
 	
 	// What is present?
@@ -4390,34 +4398,34 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	float FValue;
 
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_SHELL_CASING_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_SHELL_CASING_TYPES-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"coll") == 0)
+	else if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.collection,short(0),short(MAXIMUM_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Data.collection,0,MAXIMUM_COLLECTIONS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"seq") == 0)
+	else if (StringsEqual(Tag,"seq"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.shape,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedInt16Value(Value,Data.shape,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"x0") == 0)
+	else if (StringsEqual(Tag,"x0"))
 	{
 		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
@@ -4427,7 +4435,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"y0") == 0)
+	else if (StringsEqual(Tag,"y0"))
 	{
 		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
@@ -4437,7 +4445,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"vx0") == 0)
+	else if (StringsEqual(Tag,"vx0"))
 	{
 		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
@@ -4447,7 +4455,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"vy0") == 0)
+	else if (StringsEqual(Tag,"vy0"))
 	{
 		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
@@ -4457,7 +4465,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"dvx") == 0)
+	else if (StringsEqual(Tag,"dvx"))
 	{
 		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
@@ -4467,7 +4475,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"dvy") == 0)
+	else if (StringsEqual(Tag,"dvy"))
 	{
 		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
@@ -4508,7 +4516,7 @@ static XML_ShellCasingParser ShellCasingParser;
 
 class XML_WeaponOrderParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	short Weapon;
 	
 	// What is present?
@@ -4532,18 +4540,18 @@ bool XML_WeaponOrderParser::Start()
 
 bool XML_WeaponOrderParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_WEAPONS-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_WEAPONS-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"weapon") == 0)
+	else if (StringsEqual(Tag,"weapon"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Weapon,short(0),short(NUMBER_OF_WEAPONS-1)))
+		if (ReadBoundedInt16Value(Value,Weapon,0,NUMBER_OF_WEAPONS-1))
 		{
 			WeaponPresent = true;
 			return true;

@@ -441,10 +441,10 @@ public:
 
 bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"resource") == 0)
+	if (StringsEqual(Tag,"resource"))
 	{
 		short RsrcID;
-		if (ReadBoundedNumericalValue(Value,"%hd",RsrcID,short(0),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,RsrcID,0,SHRT_MAX))
 		{
 			Cmd.RsrcID = RsrcID;
 			ObjectWasFound = true;
@@ -453,7 +453,7 @@ bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 		else
 			return false;
 	}
-	else if (strcmp(Tag,"file") == 0)
+	else if (StringsEqual(Tag,"file"))
 	{
 		int vlen = strlen(Value) + 1;
 		Cmd.FileSpec.resize(vlen);
@@ -461,9 +461,9 @@ bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 		ObjectWasFound = true;
 		return true;
 	}
-	else if (strcmp(Tag,"size") == 0)
+	else if (StringsEqual(Tag,"size"))
 	{
-		return ReadNumericalValue(Value,"%f",Cmd.Size);
+		return ReadFloatValue(Value,Cmd.Size);
 	}
 	UnrecognizedTag();
 	return false;
@@ -489,10 +489,10 @@ class XML_RandomOrderParser: public XML_ElementParser
 public:
 	bool HandleAttribute(const char *Tag, const char *Value)
 	{
-		if (strcmp(Tag,"on") == 0)
+		if (StringsEqual(Tag,"on"))
 		{
 			bool RandomOrder;
-			bool Success = ReadBooleanValue(Value,RandomOrder);
+			bool Success = ReadBooleanValueAsBool(Value,RandomOrder);
 			if (Success)
 			{
 				assert(CurrScriptPtr);
@@ -577,10 +577,10 @@ public:
 
 bool XML_LevelScriptParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
 		short Level;
-		if (ReadBoundedNumericalValue(Value,"%hd",Level,short(0),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Level,0,SHRT_MAX))
 		{
 			SetLevel(Level);
 			LevelWasFound = true;
@@ -628,13 +628,13 @@ public:
 
 bool XML_EndScreenParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		return ReadNumericalValue(Value,"%hd",EndScreenIndex);
+		return ReadInt16Value(Value,EndScreenIndex);
 	}
-	else if (strcmp(Tag,"count") == 0)
+	else if (StringsEqual(Tag,"count"))
 	{
-		return ReadBoundedNumericalValue(Value,"%hd",NumEndScreens,short(0),short(SHRT_MAX));
+		return ReadBoundedInt16Value(Value,NumEndScreens,0,SHRT_MAX);
 	}
 	UnrecognizedTag();
 	return false;

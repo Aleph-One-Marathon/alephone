@@ -63,10 +63,24 @@ static void update_one_media(short media_index, bool force_update);
 
 #include "media_definitions.h"
 
+static media_definition *get_media_definition(
+	const short type);
+
 /* ---------- code */
 
+media_data *get_media_data(
+	const short media_index)
+{
+	struct media_data *media = GetMemberWithBounds(medias,media_index,MAXIMUM_MEDIAS_PER_MAP);
+	
+	if (!media) return NULL;
+	if (!(SLOT_IS_USED(media))) return NULL;
+	
+	return media;
+}
+
 // LP change: moved down here because it uses liquid definitions
-inline struct media_definition *get_media_definition(
+media_definition *get_media_definition(
 	const short type)
 {
 	return GetMemberWithBounds(media_definitions,type,NUMBER_OF_MEDIA_TYPES);
@@ -369,18 +383,18 @@ bool XML_LqEffectParser::Start()
 
 bool XML_LqEffectParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"type") == 0)
+	if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(NUMBER_OF_MEDIA_DETONATION_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Type,0,NUMBER_OF_MEDIA_DETONATION_TYPES-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"which") == 0)
+	else if (StringsEqual(Tag,"which"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Which,short(NONE),short(NUMBER_OF_EFFECT_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Which,NONE,NUMBER_OF_EFFECT_TYPES-1))
 		{
 			IsPresent[1] = true;
 			return true;
@@ -441,18 +455,18 @@ bool XML_LqSoundParser::Start()
 
 bool XML_LqSoundParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"type") == 0)
+	if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(NUMBER_OF_MEDIA_SOUNDS-1)))
+		if (ReadBoundedInt16Value(Value,Type,0,NUMBER_OF_MEDIA_SOUNDS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"which") == 0)
+	else if (StringsEqual(Tag,"which"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Which,short(NONE),short(SHRT_MAX)))
+		if (ReadBoundedInt16Value(Value,Which,NONE,SHRT_MAX))
 		{
 			IsPresent[1] = true;
 			return true;
@@ -485,7 +499,7 @@ static XML_LqSoundParser LqSoundParser;
 
 class XML_LiquidParser: public XML_ElementParser
 {
-	int Index;
+	short Index;
 	media_definition Data;
 	
 	// What is present?
@@ -512,54 +526,54 @@ bool XML_LiquidParser::Start()
 
 bool XML_LiquidParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_MEDIA_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_MEDIA_TYPES-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"coll") == 0)
+	else if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Data.collection,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"frame") == 0)
+	else if (StringsEqual(Tag,"frame"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.shape,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedInt16Value(Value,Data.shape,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"transfer") == 0)
+	else if (StringsEqual(Tag,"transfer"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.transfer_mode,short(0),short(NUMBER_OF_TRANSFER_MODES-1)))
+		if (ReadBoundedInt16Value(Value,Data.transfer_mode,0,NUMBER_OF_TRANSFER_MODES-1))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"damage_freq") == 0)
+	else if (StringsEqual(Tag,"damage_freq"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.damage_frequency))
+		if (ReadInt16Value(Value,Data.damage_frequency))
 		{
 			IsPresent[3] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"submerged") == 0)
+	else if (StringsEqual(Tag,"submerged"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.submerged_fade_effect,short(0),short(NUMBER_OF_FADE_EFFECT_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Data.submerged_fade_effect,0,NUMBER_OF_FADE_EFFECT_TYPES-1))
 		{
 			IsPresent[4] = true;
 			return true;
