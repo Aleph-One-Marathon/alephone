@@ -5,14 +5,13 @@
 
 DIE=0
 
-PROG=liboss
+PROG=alephone
 
 # Check how echo works in this /bin/sh
 case `echo -n` in
 -n)     _echo_n=   _echo_c='\c';;
 *)      _echo_n=-n _echo_c=;;
 esac
-
 
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
         echo
@@ -70,12 +69,12 @@ aclocalinclude="$ACLOCAL_FLAGS"; \
 
 rm -f config.cache
 
-#if [ x"$NO_CONFIGURE" = "x" ]; then
-#    echo " + Running 'configure $@':"
-#    if [ -z "$*" ]; then
-#	echo "   ** If you wish to pass arguments to ./configure, please"
-#        echo "   ** specify them on the command line."
-#    fi
-#    ./configure "$@" && \
-#    echo "Now type 'make' to compile $PKG_NAME" || exit 1
-#fi
+if [ x"$NO_CONFIGURE" = "x" ]; then
+    echo " + Running 'configure $@':"
+    if [ -z "$*" ]; then
+	echo "   ** If you wish to pass arguments to ./configure, please"
+        echo "   ** specify them on the command line."
+    fi
+    ./configure "$@" && \
+    echo "Now type 'make' to compile $PROG" || exit 1
+fi

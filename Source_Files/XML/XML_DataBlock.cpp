@@ -88,7 +88,6 @@ void XML_DataBlock::ReportParseError(const char *ErrorString, int LineNumber)
 
 #ifdef SDL
 	fprintf(stderr, "XML parsing error: %s at line %d in object %s\n", ErrorString, LineNumber, Name);
-	exit(1);
 #endif
 }
 

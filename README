@@ -138,9 +138,7 @@ keyboard; all keys are mapped by position):
     A       - Glance left
     S       - Glance right
 
-    Left mouse button/
     Space   - Fire weapon, primary trigger
-    Right mouse button/
     Alt     - Fire weapon, secondary trigger (e.g. grenades)
     KP7     - Select previous weapon
     KP9     - Select next weapon
@@ -159,6 +157,7 @@ keyboard; all keys are mapped by position):
 
     \       - Toggle FPS display
 
+    Esc     - Quit game/leave terminal
     Alt-Q   - Quit game
     Alt-C   - Quit game (use this under BeOS because Alt-Q will quit
               the whole Aleph One application without warning)
@@ -461,25 +460,13 @@ If you're stuck in the game, there's an excellent walkthrough at
 Troubleshooting
 ---------------
 
-If Aleph One crashes or behaves strangely on startup, try deleting the file
-
-Unix:
-  ~/.alephone/Aleph One Preferences
-
-BeOS:
-  /boot/home/config/settings/Aleph One/Aleph One Preferences
-
-Windows:
-  "Prefs\<user name>\Aleph One Preferences" in the Aleph One application
-  directory
-
 If the game runs very slowly, try running it in 8 bit mode. Under Linux,
 using XFree86 4.0 instead of 3.x may also greatly increase the speed. If you
 don't have hardware accelerated OpenGL, you should specify the "-g" argument
 to enable software rendering (unless you configured Aleph One with the
 "--disable-opengl" option). If Aleph One crashes or performs poorly when
-using OpenGL, disable the "Multitexturing" and "Static Effect" options in
-the Graphics/OpenGL preferences menu.
+using OpenGL, disable the "Static Effect" option in the Graphics/OpenGL
+preferences menu.
 
 
 Support

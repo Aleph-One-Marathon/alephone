@@ -171,12 +171,7 @@ mouse_buttons_become_keypresses(Uint8* ioKeyMap)
             ioKeyMap[SDLK_BASE_MOUSE_BUTTON + i] =
                 (buttons & SDL_BUTTON(i+1)) ? SDL_PRESSED : SDL_RELEASED;
         }
-/*
-		if (buttons & SDL_BUTTON_LMASK)		// Left button: primary weapon trigger
-			*flags |= _left_trigger_state;
-		if (buttons & SDL_BUTTON_RMASK)		// Right button: secondary weapon trigger
-			*flags |= _right_trigger_state;
-*/
+
         button_mask |= ~orig_buttons;		// A button must be released at least once to become enabled
 }
 

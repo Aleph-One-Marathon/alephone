@@ -34,16 +34,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __MVCPP__
-#include <windows.h>
-#endif
-
 #ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#  include <OpenGL/gl.h>
-# else
-#  include <GL/gl.h>
-# endif
+#include "SDL_opengl.h"
 #endif
 
 #include "world.h"
@@ -249,9 +241,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	// SDL crashes if OpenGL is turned on later
 	if (/*!nogl &&*/ screen_mode.acceleration == _opengl_acceleration) {
 		flags |= SDL_OPENGLBLIT;
-		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	} else

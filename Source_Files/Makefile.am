@@ -20,8 +20,7 @@ alephone_LDADD = \
   GameWorld/libgameworld.a Input/libinput.a Misc/libmisc.a \
   ModelView/libmodelview.a Network/libnetwork.a Pfhortran/libpfhortran.a \
   RenderMain/librendermain.a RenderOther/librenderother.a Sound/libsound.a \
-  XML/libxml.a \
-  @SYS_GL_LIBS@
+  XML/libxml.a
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \

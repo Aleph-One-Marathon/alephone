@@ -74,7 +74,6 @@ void XML_Loader_SDL::ReportReadError()
 void XML_Loader_SDL::ReportParseError(const char *ErrorString, int LineNumber)
 {
 	fprintf(stderr, "XML parsing error: %s at line %d in object %s\n", ErrorString, LineNumber, FileName);
-	exit(1);
 }
 
 
@@ -109,7 +108,6 @@ bool XML_Loader_SDL::ParseFile(FileSpecifier &file_name)
 {
 	// Open file
 	OpenedFile file;
-//printf("XML %s\n", file_name.GetPath());
 	if (file_name.Open(file)) {
 
 		// Get file size and allocate buffer
@@ -121,10 +119,8 @@ bool XML_Loader_SDL::ParseFile(FileSpecifier &file_name)
 
 		// Read and parse file
 		if (file.Read(data_size, data)) {
-			if (!DoParse()) {
-				fprintf(stderr, "There were parsing errors in configuration file %s\n",FileName);
-				exit(1);
-			}
+			if (!DoParse())
+				fprintf(stderr, "There were parsing errors in configuration file %s\n", FileName);
 		}
 
 		// Delete buffer

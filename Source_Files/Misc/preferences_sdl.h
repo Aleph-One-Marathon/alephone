@@ -52,12 +52,12 @@
 #include "images.h"
 #include "find_files.h"
 #include "screen_drawing.h"
-
-#include    "preferences_widgets_sdl.h"
+#include "mouse.h"
+#include "preferences_widgets_sdl.h"
 
 #include <string.h>
 #include <vector>
-#include    <math.h>    // logf and expf, for sensitivity slider (ZZZ)
+#include <math.h>    // logf and expf, for sensitivity slider (ZZZ)
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>	// for getlogin()
@@ -92,10 +92,9 @@ static void keyboard_dialog(void *arg);
  *  Get user name
  */
 
-// ZZZ: changed to return a pstring
 static void get_name_from_system(unsigned char *outName)
 {
-    // ZZZ: skipping usual string safety pickiness, I'm tired tonight.
+    // Skipping usual string safety pickiness, I'm tired tonight.
     // Hope caller's buffer is big enough.
     char* name = (char*) outName;
 
@@ -119,7 +118,7 @@ static void get_name_from_system(unsigned char *outName)
 #error get_name_from_system() not implemented for this platform
 #endif
 
-    // ZZZ: this operates in-place.
+    // In-place conversion to pstring
     a1_c2pstr(name);
 }
 
@@ -196,7 +195,6 @@ static void player_dialog(void *arg)
 
 	d.add(new w_static_text("Appearance"));
 
-    // ZZZ change: use Pstring in the preferences.
 	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
 	name_w->set_identifier(iNAME);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
@@ -215,7 +213,7 @@ static void player_dialog(void *arg)
 	d.add(ok_button);
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
-	// ZZZ: we don't do this earlier because it (indirectly) invokes the name_typing callback, which needs iOK
+	// We don't do this earlier because it (indirectly) invokes the name_typing callback, which needs iOK
 	copy_pstring_to_text_field(&d, iNAME, player_preferences->name);
 
 	// Clear screen
@@ -280,19 +278,14 @@ static const char *gamma_labels[9] = {
 	"Darkest", "Darker", "Dark", "Normal", "Light", "Really Light", "Even Lighter", "Lightest", NULL
 };
 
-// ZZZ: reworked dialog slightly to allow selection of OpenGL and to configure renderers.
 static const char* renderer_labels[] = {
-        "Software",
-        "OpenGL",
-        NULL
+	"Software", "OpenGL", NULL
 };
 
-// ZZZ
 enum {
     iRENDERING_SYSTEM = 1000
 };
 
-// ZZZ addition: set software rendering options (analogous to opengl_dialog()).
 static void software_rendering_options_dialog(void* arg)
 {
 	// Create dialog
@@ -412,7 +405,7 @@ static void graphics_dialog(void *arg)
         if(renderer != graphics_preferences->screen_mode.acceleration) {
             graphics_preferences->screen_mode.acceleration = renderer;
 
-            // ZZZ: disable fading under Mac OS X software rendering
+            // Disable fading under Mac OS X software rendering
 #if defined(__APPLE__) && defined(__MACH__) && defined(HAVE_OPENGL)
             extern bool option_nogamma;
             option_nogamma = true;
@@ -635,21 +628,18 @@ static void controls_dialog(void *arg)
 	dialog d;
 	d.add(new w_static_text("CONTROLS", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
-    /*d.add(new w_static_text("Mouse"));
-    d.add(new w_spacer());*/
 	mouse_w = new w_toggle("Mouse Control", input_preferences->input_device);
 	d.add(mouse_w);
 	w_toggle *invert_mouse_w = new w_toggle("Invert Mouse", input_preferences->modifiers & _inputmod_invert_mouse);
 	d.add(invert_mouse_w);
 
-    // ZZZ: let user configure mouse sensitivity (logarithmic scale)
     const float kMinSensitivityLog = -3.0f;
     const float kMaxSensitivityLog = 3.0f;
     const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
 
     float   theSensitivity = ((float) input_preferences->sensitivity) / FIXED_ONE;
     // avoid nasty math problems
-    if(theSensitivity <= 0.0f)
+    if (theSensitivity <= 0.0f)
         theSensitivity = 1.0f;
     float   theSensitivityLog = logf(theSensitivity);
     int     theSliderPosition = (int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
@@ -693,7 +683,6 @@ static void controls_dialog(void *arg)
 			changed = true;
 		}
 
-        // ZZZ: sensitivity slider
         int theNewSliderPosition = sensitivity_w->get_selection();
         if(theNewSliderPosition != theSliderPosition) {
             float theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
@@ -752,7 +741,7 @@ static SDLKey default_mouse_keys[NUM_KEYS] = {
 	SDLK_q, SDLK_e,								// horizontal looking
 	SDLK_UP, SDLK_DOWN, SDLK_KP0,				// vertical looking
 	SDLK_c, SDLK_z,								// weapon cycling
-	SDLK_RCTRL, SDLK_SPACE,						// weapon trigger
+	SDLKey(SDLK_BASE_MOUSE_BUTTON), SDLKey(SDLK_BASE_MOUSE_BUTTON+2), // weapon trigger
 	SDLK_RSHIFT, SDLK_LSHIFT, SDLK_LCTRL,		// modifiers
 	SDLK_s,										// action trigger
 	SDLK_TAB,									// map

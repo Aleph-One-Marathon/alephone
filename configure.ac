@@ -1,16 +1,17 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Written in 2000 by Christian Bauer <Christian.Bauer@uni-mainz.de>
 
-AC_INIT(Source_Files/shell.cpp)
-AC_PREREQ(2.13)
+AC_INIT
+AC_CONFIG_SRCDIR(Source_Files/shell.cpp)
+AC_PREREQ(2.50)
 
 dnl Detect the canonical host and target build environment.
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl This defines PACKAGE and VERSION.
-AM_INIT_AUTOMAKE([AlephOne], [0.13.0])
 AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE([AlephOne], [0.13.0])
 
 dnl Configure options.
 AC_ARG_ENABLE(opengl, [  --enable-opengl         use OpenGL for rendering [default=yes]], , enable_opengl=yes)
@@ -22,6 +23,31 @@ AC_PROG_CXX
 AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+
+dnl Checks for headers.
+AC_CHECK_HEADERS(unistd.h)
+
+dnl Check for SDL.
+AM_PATH_SDL(1.2.0, , AC_MSG_ERROR([You need SDL 1.2 to run Aleph One.]))
+CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
+LIBS="$LIBS $SDL_LIBS"
+
+dnl Check for SDL_image.
+AC_CHECK_HEADERS(SDL_image.h, [
+  AC_CHECK_LIB(SDL_image, IMG_Load, [
+    LIBS="$LIBS -lSDL_image"
+    AC_DEFINE(HAVE_SDL_IMAGE, 1, [SDL_image support is enabled])
+  ])
+])
+
+dnl Check for SDL_net.
+AC_CHECK_HEADERS(SDL_net.h, [
+  AC_CHECK_LIB(SDL_net, SDLNet_Init, [
+    LIBS="$LIBS -lSDL_net"
+    AC_DEFINE(HAVE_SDL_NET, 1, [SDL_net support is enabled])
+  ])
+])
+AM_CONDITIONAL(HAVE_SDL_NET, test x$ac_cv_lib_SDL_net_SDLNet_Init = xyes)
 
 dnl Figure out which OpenGL library to use
 case "$target" in
@@ -36,42 +62,14 @@ case "$target" in
     SYS_GL_LIBS="-F/System/Library/Frameworks -framework AGL -framework OpenGL"
     CPPFLAGS="$CPPFLAGS -D__DARWIN__ -F/System/Library/Frameworks  -I/System/Library/Frameworks/OpenGL.framework/Headers"
     ;;
+  *-*-linux*)
+    SYS_GL_LIBS="-lGL -lpthread"
+    CPPFLAGS="$CPPFLAGS -L/usr/X11R6/lib"
+    ;;
   *)
-    AC_PATH_X
-    AC_PATH_XTRA
-    if test x$have_x = xyes; then
-      CPPFLAGS="$CPPFLAGS $X_CFLAGS"
-      SYS_GL_LIBS="$X_LIBS -lGL"
-    else
-      SYS_GL_LIBS="-lGL"
-    fi
+    SYS_GL_LIBS="-lGL"
     ;;
 esac
-
-dnl Check for SDL.
-AM_PATH_SDL(1.2.0, , AC_MSG_ERROR([You need SDL 1.2 to run Aleph One.]))
-CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
-LIBS="$LIBS $SDL_LIBS"
-
-dnl Check for SDL_image.
-AC_CHECK_HEADERS(SDL_image.h, [
-  AC_CHECK_LIB(SDL_image, IMG_Load, [
-    LIBS="$LIBS -lSDL_image"
-    AC_DEFINE(HAVE_SDL_IMAGE)
-  ])
-])
-
-dnl Check for SDL_net.
-AC_CHECK_HEADERS(SDL_net.h, [
-  AC_CHECK_LIB(SDL_net, SDLNet_Init, [
-    LIBS="$LIBS -lSDL_net"
-    AC_DEFINE(HAVE_SDL_NET)
-  ])
-])
-AM_CONDITIONAL(HAVE_SDL_NET, test x$ac_cv_lib_SDL_net_SDLNet_Init = xyes)
-
-dnl Checks for headers.
-AC_CHECK_HEADERS(unistd.h)
 
 dnl Check for OpenGL.
 if [[ "x$enable_opengl" = "xyes" ]]; then
@@ -89,16 +87,13 @@ if [[ "x$enable_opengl" = "xyes" ]]; then
   ])
   AC_MSG_RESULT($have_opengl)
   if test x$have_opengl = xyes; then
-    AC_DEFINE(HAVE_OPENGL)
+    AC_DEFINE(HAVE_OPENGL, 1, [OpenGL support is enabled])
     AC_CHECK_LIB(GLU, gluScaleImage, [SYS_GL_LIBS="$SYS_GL_LIBS -lGLU"], , $SYS_GL_LIBS)
+    LIBS="$LIBS $SYS_GL_LIBS"
   else
     AC_MSG_WARN([Could not find OpenGL, ignoring --enable-opengl.])
-    SYS_GL_LIBS=
   fi
-else
-  SYS_GL_LIBS=
 fi
-AC_SUBST(SYS_GL_LIBS)
 
 dnl Generate Makefiles.
 AC_OUTPUT([
