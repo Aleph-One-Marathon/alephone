@@ -9,6 +9,9 @@
 	This is for specifying and working with text fonts;
 	specifying them, changing them with XML, and creating a font brush
 	for OpenGL rendering
+
+Jan 5, 2001 (Loren Petrich):
+	Added a "file" field, for containing font filenames
 */
 
 
@@ -36,6 +39,9 @@ struct FontSpecifier
 	char NameSet[NameSetLen];
 	short Size;
 	short Style;
+	
+	// For SDL font support: a font filename
+	char File[NameSetLen];
 	
 	// Derived quantities: sync with parameters by calling Update()
 	short Height;			// How tall is it?

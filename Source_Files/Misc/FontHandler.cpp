@@ -434,7 +434,7 @@ class XML_FontParser: public XML_ElementParser
 {
 	FontSpecifier TempFont;
 	int Index;
-	bool IsPresent[4];
+	bool IsPresent[5];
 
 public:
 	FontSpecifier *FontList;
@@ -449,7 +449,7 @@ public:
 
 bool XML_FontParser::Start()
 {
-	for (int k=0; k<4; k++)
+	for (int k=0; k<5; k++)
 		IsPresent[k] = false;
 	return true;
 }
@@ -494,6 +494,13 @@ bool XML_FontParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
+	else if (strcmp(Tag,"file") == 0)
+	{
+		IsPresent[4] = true;
+		strncpy(TempFont.File,Value,FontSpecifier::NameSetLen);
+		TempFont.File[FontSpecifier::NameSetLen-1] = 0;	// For making the set always a C string
+		return true;
+	}
 	UnrecognizedTag();
 	return false;
 }
@@ -529,6 +536,11 @@ bool XML_FontParser::AttributesDone()
 	if (IsPresent[2])
 	{
 		FontList[Index].Style = TempFont.Style;
+		DoUpdate = true;
+	}
+	if (IsPresent[4])
+	{
+		strncpy(FontList[Index].File,TempFont.File,FontSpecifier::NameSetLen);
 		DoUpdate = true;
 	}
 	if (DoUpdate) FontList[Index].Update();
