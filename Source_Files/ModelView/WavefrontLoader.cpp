@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 #include "cseries.h"
 #include "WavefrontLoader.h"
 
@@ -51,7 +52,7 @@ struct IndexedVertListCompare
 	short *VertIndxSets;
 	
 	// The comparison operation
-	bool operator() (int i1, int i2)
+	bool operator() (int i1, int i2) const
 	{
 		short *VISet1 = VertIndxSets + 4*i1;
 		short *VISet2 = VertIndxSets + 4*i2;

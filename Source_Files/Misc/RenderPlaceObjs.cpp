@@ -948,10 +948,10 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	Proj_ZMax -= Z0;
 	
 	// Plug back into the sprite
-	ShapeInfo.world_left = PIN(Proj_YMin,SHRT_MIN,SHRT_MAX);
-	ShapeInfo.world_right = PIN(Proj_YMax,SHRT_MIN,SHRT_MAX);
-	ShapeInfo.world_bottom = PIN(Proj_ZMin,SHRT_MIN,SHRT_MAX);
-	ShapeInfo.world_top = PIN(Proj_ZMax,SHRT_MIN,SHRT_MAX);
+	ShapeInfo.world_left = int(PIN(Proj_YMin,SHRT_MIN,SHRT_MAX));
+	ShapeInfo.world_right = int(PIN(Proj_YMax,SHRT_MIN,SHRT_MAX));
+	ShapeInfo.world_bottom = int(PIN(Proj_ZMin,SHRT_MIN,SHRT_MAX));
+	ShapeInfo.world_top = int(PIN(Proj_ZMax,SHRT_MIN,SHRT_MAX));
 	
 	// Set X0, Y0, Z0 to location of center of bounding box
 	X0 += (ExpandedBB[0][0] + ExpandedBB[7][0])/2;
@@ -959,12 +959,12 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	Z0 += (ExpandedBB[0][2] + ExpandedBB[7][2])/2;
 	
 	// Find the depth to use in the miner's light for the object
-	Depth = (XMin + MAX(X0,MINIMUM_OBJECT_DISTANCE))/2;
+	Depth = int((XMin + MAX(X0,MINIMUM_OBJECT_DISTANCE))/2);
 	
 	// Find the direction to the object;
 	// use the engine's fast square root
 	GLfloat DistSq = X0*X0 + Y0*Y0 + Z0*Z0;
-	double DistRecip = 1.0/isqrt(DistSq + 0.5);
+	double DistRecip = 1.0/double(isqrt(uint32(DistSq + 0.5)));
 	
 	// Rotate it to get to the object's internal coordinates
 	Direction[0] = DistRecip*(  X0*Cosine + Y0*Sine);
