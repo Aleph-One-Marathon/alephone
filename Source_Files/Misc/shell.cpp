@@ -115,10 +115,9 @@ Jun 15, 2000 (Loren Petrich):
 #include "XML_ResourceFork.h"
 #include "XML_ParseTreeRoot.h"
 
-
-#ifndef FINAL
+// #ifndef FINAL
 #include "weapons.h" /* To remove process_new_item_for_reloading warning and debug_print_weapon_status warning */
-#endif
+// #endif
 
 
 #define kMINIMUM_NETWORK_HEAP (3*MEG)
@@ -187,10 +186,11 @@ static void handle_high_level_event(EventRecord *event);
 void update_any_window(WindowPtr window, EventRecord *event);
 void activate_any_window(WindowPtr window, EventRecord *event, boolean active);
 
-#ifndef FINAL
+// LP change: implementing Benad's "cheats always on"
+// #ifndef FINAL
 static short process_keyword_key(char key);
 static void handle_keyword(short type_of_cheat);
-#endif
+// #endif
 
 boolean is_keypad(short keycode);
 
@@ -335,7 +335,8 @@ void handle_game_key(
 
 	_virtual = (event->message >> 8) & charCodeMask;
 	
-#ifndef FINAL
+// LP change: implementing Benad's "cheats always on"
+// #ifndef FINAL
 	if (!game_is_networked && (event->modifiers & controlKey))
 	{
 		short type_of_cheat;
@@ -343,7 +344,7 @@ void handle_game_key(
 		type_of_cheat = process_keyword_key(key);
 		if (type_of_cheat != NONE) handle_keyword(type_of_cheat);
 	}
-#endif
+// #endif
 
 	if (!is_keypad(_virtual))
 	{
@@ -936,7 +937,8 @@ static void initialize_marathon_music_handler(
 }
 
 /* ------------------------- cheating (not around if FINAL is defined) */
-#ifndef FINAL
+// LP change: implementing Benad's "cheats always on"
+// #ifndef FINAL
 
 #define MAXIMUM_KEYWORD_LENGTH 20
 #define NUMBER_OF_KEYWORDS (sizeof(keywords)/sizeof(struct keyword_data))
@@ -1161,7 +1163,8 @@ static void handle_keyword(
 	
 	return;
 }
-#endif
+// LP change: implementing Benad's "cheats always on"
+// #endif
 
 static void main_event_loop(
 	void)
