@@ -649,6 +649,27 @@ static void controls_dialog(void *arg)
     const float kMaxSensitivityLog = 3.0f;
     const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
 
+	// LP: split this into horizontal and vertical sensitivities
+	float theSensitivity, theSensitivityLog
+	
+	theSensitivity = ((float) input_preferences->sens_vertical) / FIXED_ONE;
+	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
+	theSensitivityLog = logf(theSensitivity);
+	int theVerticalSliderPosition =
+		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
+
+    w_slider* sens_vertical_w = new w_slider("Mouse Vertical Sensitivity", 1000, theVerticalSliderPosition);
+    d.add(sens_vertical_w);
+    
+	theSensitivity = ((float) input_preferences->sens_horizontal) / FIXED_ONE;
+	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
+	theSensitivityLog = logf(theSensitivity);
+	int theHorizontalSliderPosition =
+		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
+
+    w_slider* sens_horizontal_w = new w_slider("Mouse Horizontal Sensitivity", 1000, theHorizontalSliderPosition);
+    d.add(sens_horizontal_w);
+/*
     float   theSensitivity = ((float) input_preferences->sensitivity) / FIXED_ONE;
     // avoid nasty math problems
     if (theSensitivity <= 0.0f)
@@ -658,6 +679,7 @@ static void controls_dialog(void *arg)
 
     w_slider* sensitivity_w = new w_slider("Mouse Sensitivity", 1000, theSliderPosition);
     d.add(sensitivity_w);
+*/
 
     d.add(new w_spacer);
 
@@ -695,13 +717,32 @@ static void controls_dialog(void *arg)
 			changed = true;
 		}
 
+		// LP: split the sensitivity into vertical and horizontal sensitivities
+		float theNewSensitivityLog;
+		int theNewSliderPosition;
+		
+		theNewSliderPosition = sens_vertical_w->get_selection();
+        if(theNewSliderPosition != theVerticalSliderPosition) {
+            theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
+            input_preferences->sens_vertical = _fixed(expf(theNewSensitivityLog) * FIXED_ONE);
+            changed = true;
+        }
+		
+		theNewSliderPosition = sens_horizontal_w->get_selection();
+        if(theNewSliderPosition != theHorizontalSliderPosition) {
+            theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
+            input_preferences->sens_horizontal = _fixed(expf(theNewSensitivityLog) * FIXED_ONE);
+            changed = true;
+        }
+
+/*
         int theNewSliderPosition = sensitivity_w->get_selection();
         if(theNewSliderPosition != theSliderPosition) {
             float theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
             input_preferences->sensitivity = _fixed(expf(theNewSensitivityLog) * FIXED_ONE);
             changed = true;
         }
-
+*/
 		uint16 flags = input_preferences->modifiers & _inputmod_use_button_sounds;
 		if (always_run_w->get_selection()) flags |= _inputmod_interchange_run_walk;
 		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
