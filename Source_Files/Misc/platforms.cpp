@@ -46,6 +46,7 @@ May 17, 2000 (Loren Petrich):
 
 // LP addition: XML parser for damage
 #include "items.h"
+#include "Packing.h"
 #include "DamageParser.h"
 
 #include <string.h>
@@ -1141,100 +1142,146 @@ short monster_can_enter_platform(
 #endif
 
 
-// Split and join the misaligned 4-byte values
-
-#include <string.h>
-
-void pack_platform_data(platform_data& source, saved_platform& dest)
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects, int Count)
 {
-	dest.type = source.type;
-	memcpy(dest.static_flags,&source.static_flags,4);
-	dest.speed = source.speed;
-	dest.delay = source.delay;
-	dest.minimum_floor_height = source.minimum_floor_height;
-	dest.maximum_floor_height = source.maximum_floor_height;
-	dest.minimum_ceiling_height = source.minimum_ceiling_height;
-	dest.maximum_ceiling_height = source.maximum_ceiling_height;
+	uint8* S = Stream;
+	static_platform_data* ObjPtr = Objects;
 	
-	dest.polygon_index = source.polygon_index;
-	dest.dynamic_flags = source.dynamic_flags;
-	dest.floor_height = source.floor_height;
-	dest.ceiling_height = source.ceiling_height;
-	dest.ticks_until_restart = source.ticks_until_restart;
-	
-	for (int i=0; i<MAXIMUM_VERTICES_PER_POLYGON; i++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		endpoint_owner_data& source_owners = source.endpoint_owners[i];
-		endpoint_owner_data& dest_owners = dest.endpoint_owners[i];
-		dest_owners.first_polygon_index = source_owners.first_polygon_index;
-		dest_owners.polygon_index_count = source_owners.polygon_index_count;
-		dest_owners.first_line_index = source_owners.first_line_index;
-		dest_owners.line_index_count = source_owners.line_index_count;
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->speed);
+		StreamToValue(S,ObjPtr->delay);
+		StreamToValue(S,ObjPtr->maximum_height);
+		StreamToValue(S,ObjPtr->minimum_height);
+		
+		StreamToValue(S,ObjPtr->static_flags);
+		
+		StreamToValue(S,ObjPtr->polygon_index);
+		
+		StreamToValue(S,ObjPtr->tag);
+		
+		S += 7*2;
 	}
 	
-	dest.parent_platform_index = source.parent_platform_index;
-	dest.tag = source.tag;
+	assert((S - Stream) == Count*SIZEOF_static_platform_data);
+	return S;
 }
 
-void unpack_platform_data(saved_platform& source, platform_data& dest)
+uint8 * pack_static_platform_data(uint8 *Stream, static_platform_data* Objects, int Count)
 {
-	dest.type = source.type;
-	memcpy(&dest.static_flags,source.static_flags,4);
-	dest.speed = source.speed;
-	dest.delay = source.delay;
-	dest.minimum_floor_height = source.minimum_floor_height;
-	dest.maximum_floor_height = source.maximum_floor_height;
-	dest.minimum_ceiling_height = source.minimum_ceiling_height;
-	dest.maximum_ceiling_height = source.maximum_ceiling_height;
+	uint8* S = Stream;
+	static_platform_data* ObjPtr = Objects;
 	
-	dest.polygon_index = source.polygon_index;
-	dest.dynamic_flags = source.dynamic_flags;
-	dest.floor_height = source.floor_height;
-	dest.ceiling_height = source.ceiling_height;
-	dest.ticks_until_restart = source.ticks_until_restart;
-	
-	for (int i=0; i<MAXIMUM_VERTICES_PER_POLYGON; i++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		endpoint_owner_data& source_owners = source.endpoint_owners[i];
-		endpoint_owner_data& dest_owners = dest.endpoint_owners[i];
-		dest_owners.first_polygon_index = source_owners.first_polygon_index;
-		dest_owners.polygon_index_count = source_owners.polygon_index_count;
-		dest_owners.first_line_index = source_owners.first_line_index;
-		dest_owners.line_index_count = source_owners.line_index_count;
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->speed);
+		ValueToStream(S,ObjPtr->delay);
+		ValueToStream(S,ObjPtr->maximum_height);
+		ValueToStream(S,ObjPtr->minimum_height);
+		
+		ValueToStream(S,ObjPtr->static_flags);
+		
+		ValueToStream(S,ObjPtr->polygon_index);
+		
+		ValueToStream(S,ObjPtr->tag);
+		
+		S += 7*2;
 	}
 	
-	dest.parent_platform_index = source.parent_platform_index;
-	dest.tag = source.tag;
+	assert((S - Stream) == Count*SIZEOF_static_platform_data);
+	return S;
 }
 
-void pack_static_platform_data(static_platform_data& source, saved_static_platform& dest)
+
+inline void StreamToEndpointOwner(uint8* &S, endpoint_owner_data& Object)
 {
-	dest.type = source.type;
-	dest.speed = source.speed;
-	dest.delay = source.delay;
-	
-	dest.maximum_height = source.maximum_height;
-	dest.minimum_height = source.minimum_height;
-	
-	memcpy(dest.static_flags,&source.static_flags,4);
-	
-	dest.polygon_index = source.polygon_index;
-	dest.tag = source.tag;
+	StreamToValue(S,Object.first_polygon_index);
+	StreamToValue(S,Object.polygon_index_count);
+	StreamToValue(S,Object.first_line_index);
+	StreamToValue(S,Object.line_index_count);
 }
 
-void unpack_static_platform_data(saved_static_platform& source, static_platform_data& dest)
+inline void EndpointOwnerToStream(uint8* &S, endpoint_owner_data& Object)
 {
-	dest.type = source.type;
-	dest.speed = source.speed;
-	dest.delay = source.delay;
+	ValueToStream(S,Object.first_polygon_index);
+	ValueToStream(S,Object.polygon_index_count);
+	ValueToStream(S,Object.first_line_index);
+	ValueToStream(S,Object.line_index_count);
+}
+
+
+uint8 *unpack_platform_data(uint8 *Stream, platform_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	platform_data* ObjPtr = Objects;
 	
-	dest.maximum_height = source.maximum_height;
-	dest.minimum_height = source.minimum_height;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->static_flags);
+		StreamToValue(S,ObjPtr->speed);
+		StreamToValue(S,ObjPtr->delay);
+		StreamToValue(S,ObjPtr->minimum_floor_height);
+		StreamToValue(S,ObjPtr->maximum_floor_height);
+		StreamToValue(S,ObjPtr->minimum_ceiling_height);
+		StreamToValue(S,ObjPtr->maximum_ceiling_height);
+		
+		StreamToValue(S,ObjPtr->polygon_index);
+		StreamToValue(S,ObjPtr->dynamic_flags);
+		StreamToValue(S,ObjPtr->floor_height);
+		StreamToValue(S,ObjPtr->ceiling_height);
+		StreamToValue(S,ObjPtr->ticks_until_restart);
+		
+		for (int k=0; k<MAXIMUM_VERTICES_PER_POLYGON; k++)
+			StreamToEndpointOwner(S,ObjPtr->endpoint_owners[k]);
+		
+		StreamToValue(S,ObjPtr->parent_platform_index);
+		
+		StreamToValue(S,ObjPtr->tag);
+		
+		S += 22*2;
+	}
 	
-	memcpy(&dest.static_flags,source.static_flags,4);
+	assert((S - Stream) == Count*SIZEOF_platform_data);
+	return S;
+}
+
+uint8 *pack_platform_data(uint8 *Stream, platform_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	platform_data* ObjPtr = Objects;
 	
-	dest.polygon_index = source.polygon_index;
-	dest.tag = source.tag;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->static_flags);
+		ValueToStream(S,ObjPtr->speed);
+		ValueToStream(S,ObjPtr->delay);
+		ValueToStream(S,ObjPtr->minimum_floor_height);
+		ValueToStream(S,ObjPtr->maximum_floor_height);
+		ValueToStream(S,ObjPtr->minimum_ceiling_height);
+		ValueToStream(S,ObjPtr->maximum_ceiling_height);
+		
+		ValueToStream(S,ObjPtr->polygon_index);
+		ValueToStream(S,ObjPtr->dynamic_flags);
+		ValueToStream(S,ObjPtr->floor_height);
+		ValueToStream(S,ObjPtr->ceiling_height);
+		ValueToStream(S,ObjPtr->ticks_until_restart);
+		
+		for (int k=0; k<MAXIMUM_VERTICES_PER_POLYGON; k++)
+			EndpointOwnerToStream(S,ObjPtr->endpoint_owners[k]);
+		
+		ValueToStream(S,ObjPtr->parent_platform_index);
+		
+		ValueToStream(S,ObjPtr->tag);
+		
+		S += 22*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_platform_data);
+	return S;
 }
 
 
