@@ -48,6 +48,10 @@ bool OGL_SwapBuffers();
 // Set view parameters; this is for proper perspective rendering
 bool OGL_SetView(view_data &View);
 
+// Start and end rendering of main view 
+bool OGL_StartMain();
+bool OGL_EndMain();
+
 // Stuff for doing OpenGL rendering of various objects
 // The wall renderer takes a flag that indicates whether or not it is vertical
 bool OGL_RenderWall(polygon_definition& RenderPolygon, bool IsVertical);
