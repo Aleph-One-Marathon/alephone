@@ -1651,7 +1651,7 @@ static void get_date_string(
 {
 	char temp_string[101];
 	long game_time_passed;
-	time_t seconds;
+	unsigned long seconds;
 	struct tm game_time;
 
 	/* Treat the date as if it were recent. */

@@ -1248,59 +1248,17 @@
 			path = lualib.h;
 			refType = 4;
 		};
-		F51B058F047AC6DA01C5C930 = {
-			fileRef = F51B0589047AC6DA01C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F51B0590047AC6DA01C5C930 = {
-			fileRef = F51B058A047AC6DA01C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F51B0591047AC6DA01C5C930 = {
-			fileRef = F51B058B047AC6DA01C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F51B0592047AC6DA01C5C930 = {
-			fileRef = F51B058C047AC6DA01C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F51B0593047AC6DA01C5C930 = {
-			fileRef = F51B058D047AC6DA01C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F51B05A9047ACD3401C5C930 = {
 			isa = PBXFileReference;
 			name = liblua.a;
 			path = "/Users/restorer/aleph/aleph lua/Source_Files/Lua/lib/liblua.a";
 			refType = 0;
 		};
-		F51B05AA047ACD3401C5C930 = {
-			fileRef = F51B05A9047ACD3401C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F51B05AB047ACD3D01C5C930 = {
 			isa = PBXFileReference;
 			name = liblualib.a;
 			path = "/Users/restorer/aleph/aleph lua/Source_Files/Lua/lib/liblualib.a";
 			refType = 0;
-		};
-		F51B05AC047ACD3D01C5C930 = {
-			fileRef = F51B05AB047ACD3D01C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
 		};
 		F51E8E300212A3E701A80001 = {
 			fileRef = F522120D0136A6FD01000001;
@@ -2918,8 +2876,8 @@
 				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
-				LIBRARY_SEARCH_PATHS = "\"/Users/restorer/aleph/aleph lua/Source_Files/Lua/lib\"";
-				OPTIMIZATION_CFLAGS = "-O1 -fprefetch-loop-arrays -finline-limit=1000 -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fdelete-null-pointer-checks -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				OPTIMIZATION_CFLAGS = "-O2 -fprefetch-loop-arrays -finline-limit=1000 -frerun-cse-after-loop -fstrength-reduce -fdelete-null-pointer-checks -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER\n";
 				OTHER_LDFLAGS = "-flat_namespace";
 				OTHER_REZFLAGS = "";
@@ -3328,10 +3286,6 @@
 				3DF290E7046F5BA900000104,
 				3DF290EA046F5BED00000104,
 				3DF290EB046F5BED00000104,
-				F51B058F047AC6DA01C5C930,
-				F51B0590047AC6DA01C5C930,
-				F51B0592047AC6DA01C5C930,
-				F51B0593047AC6DA01C5C930,
 				F59D57F0047C8A000136B90F,
 			);
 			isa = PBXHeadersBuildPhase;
@@ -3499,7 +3453,6 @@
 				3D5F21450403230F00000104,
 				3DF290F1046F5C5B00000104,
 				3DF290F2046F5C5B00000104,
-				F51B0591047AC6DA01C5C930,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3516,8 +3469,6 @@
 				F56A4632021F7C5501A80001,
 				F56A4641021F88A301A80001,
 				3D5F21470403247500000104,
-				F51B05AA047ACD3401C5C930,
-				F51B05AC047ACD3D01C5C930,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;

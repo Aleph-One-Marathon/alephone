@@ -329,7 +329,7 @@ static bool enough_memory_for_16bit, enough_memory_for_32bit, enough_memory_for_
 static GDSpec restore_spec; // , resolution_restore_spec;
 
 // For the Display Manager to restore the screen depth when done
-static unsigned long RestoreScreenMode = 0;
+static signed long RestoreScreenMode = 0;
 
 // LP addition: a GWorld for the Heads-Up Display
 // (if not allocated, then it's the null pointer).

@@ -2,7 +2,8 @@
 Created 5-20-03 by Matthew Hielscher
 Controls the loading and execution of Lua scripts.
 */
-
+static int dummy;
+#ifdef HAVE_LUA
 extern "C"
 {
     #include "lua.h"
@@ -1846,3 +1847,4 @@ bool UseLuaCameras()
     }
     return using_lua_cameras;
 }
+#endif

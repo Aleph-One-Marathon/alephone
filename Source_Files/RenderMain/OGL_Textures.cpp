@@ -93,12 +93,15 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 # if defined (__APPLE__) && defined (__MACH__)
 #   include <OpenGL/gl.h>
 #   include <OpenGL/glu.h>
+#   include <OpenGL/glext.h>
 # elif defined mac
 #   include <gl.h>
 #   include <glu.h>
+#   include <glext.h>
 # else
 #   include <GL/gl.h>
 #   include <GL/glu.h>
+#   include <GL/glext.h>
 # endif
 #endif
 
