@@ -16,6 +16,7 @@
 #include <stdlib.h>
 
 #include "cseries.h"
+#include "map.h"
 #include "editor.h"
 #include "FileHandler.h"
 #include "wad.h"
@@ -86,14 +87,14 @@ const short FileMenuID = 129;
 enum
 {
 	File_ListChunks = 1,
-	File_MoveToChunks,
+	File_AddChunks,
 	File_ExtractChunks,
 	File_Sep1,
 	File_Quit
 };
 
 void ListChunks();
-void MoveToChunks();
+void AddChunks();
 void ExtractChunks();
 
 void HandleFileMenu(int WhichItem)
@@ -104,8 +105,8 @@ void HandleFileMenu(int WhichItem)
 		ListChunks();
 		break;
 	
-	case File_MoveToChunks:
-		MoveToChunks();
+	case File_AddChunks:
+		AddChunks();
 		break;
 	
 	case File_ExtractChunks:
@@ -249,10 +250,11 @@ struct WadContainer
 	wad_data *Ptr;
 	
 	void Clear() {if (Ptr) free_wad(Ptr); Ptr = NULL;}
-	void Set(wad_data *NewPtr) {Clear(); Ptr = NewPtr;}
+	void Set(wad_data *_Ptr) {Clear(); Ptr = _Ptr;}
 	
 	WadContainer(): Ptr(NULL) {}
-	~WadContainer() {Clear();}
+	WadContainer(wad_data *_Ptr): Ptr(_Ptr) {}
+	~WadContainer() {if (Ptr) free_wad(Ptr);}
 };
 
 
@@ -355,7 +357,7 @@ void ListChunks()
 		WadContainer Wad;
 		if (!InFile.GetWad(TrueLevel,Wad)) continue;
 		
-		for (int itg = 0; itg < Wad.Ptr->tag_count; itg++)
+		for (int itg=0; itg<Wad.Ptr->tag_count; itg++)
 		{
 			tag_data& Tag = Wad.Ptr->tag_data[itg];
 			fprintf(F,"%s  %7d\n",GetTypeString(Tag.tag),Tag.length);
@@ -403,7 +405,7 @@ void ListChunks()
 }
 
 
-void MoveToChunks()
+void AddChunks()
 {
 	InFileData InFile;
 	if (!InFile.Open("Move resources into?")) return;
@@ -420,7 +422,8 @@ void MoveToChunks()
 	
 	// Simply try creating the file and moving into it the first time around
 	wad_header Header;
-	fill_default_wad_header(OutFileSpec, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, InFile.NumWads(), 0, &Header);
+	fill_default_wad_header(OutFileSpec, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION,
+		InFile.NumWads(), sizeof(directory_entry) - SIZEOF_directory_entry, &Header);
 	
 	vector<directory_entry> DirEntries(InFile.NumWads());
 	
@@ -433,40 +436,37 @@ void MoveToChunks()
 
 	int32 Offset = SIZEOF_wad_header;
 	
-	for (int lvl=0; lvl<NumWads(); lvl++)
+	for (int lvl=0; lvl<InFile.NumWads(); lvl++)
 	{
+		WadContainer InWad;
+		short TrueLevel = InFile.LevelIndices[lvl];
+		if (!InFile.GetWad(TrueLevel,InWad)) InWad.Set(create_empty_wad());
+		
+		WadContainer OutWad(create_empty_wad());
+		
+		for (int itg=0; itg<InWad.Ptr->tag_count; itg++)
+		{
+			tag_data& Tag = InWad.Ptr->tag_data[itg];
+			int32 DataLength;
+			append_data_to_wad(OutWad.Ptr, Tag.tag, Tag.data, Tag.length, 0);
+		}
+		
+		int32 OutWadLength = calculate_wad_length(&Header, OutWad.Ptr);
+		
+		set_indexed_directory_offset_and_length(&Header, 
+						&DirEntries[0], lvl, Offset, OutWadLength, TrueLevel);
+		
+		if (!write_wad(OutFileOpened, &Header, OutWad.Ptr, Offset)) return;
+		
+		Offset += OutWadLength;
+	}
 	
-				wad= build_save_game_wad(&header, &wad_length);
-				if (wad)
-				{
-					/* Set the entry data.. */
-					set_indexed_directory_offset_and_length(&header, 
-						&entry, 0, offset, wad_length, 0);
-					
-					/* Save it.. */
-					if (write_wad(SaveFile, &header, wad, offset))
-					{
-						/* Update the new header */
-						offset+= wad_length;
-						header.directory_offset= offset;
-						header.parent_checksum= read_wad_file_checksum(MapFileSpec);
-						if (write_wad_header(SaveFile, &header) && write_directorys(SaveFile, &header, &entry))
-						{
-							/* This function saves the overhead map as a thumbnail, as well */
-							/*  as adding the string resource that tells you what it is when */
-							/*  it is clicked on & Marathon2 isn't installed.  Obviously, both */
-							/*  of these are superfluous for a dos environment. */
-							add_finishing_touches_to_save_file(TempFile);
-
-							/* We win. */
-							success= true;
-						} 
-					}
-
-					free_wad(wad);
-				}
-			}
-
+	write_directorys(OutFileOpened, &Header, &DirEntries[0]);
+	
+	// The header needs an update
+	Header.directory_offset = Offset;
+	Header.parent_checksum= read_wad_file_checksum(OutFileSpec);
+	if (!write_wad_header(OutFileOpened, &Header)) return;
 }
 
 void ExtractChunks()
