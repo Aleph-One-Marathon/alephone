@@ -441,7 +441,6 @@ void RenderRasterizerClass::render_node_side(
 	clipping_window_data *window,
 	vertical_surface_data *surface,
 	bool void_present)
-	// struct vertical_surface_data *surface)
 {
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
@@ -501,15 +500,18 @@ void RenderRasterizerClass::render_node_side(
 				world_distance y0= WORLD_FRACTIONAL_PART(surface->texture_definition->y0);
 				
 				/* calculate texture origin and direction */	
-				textured_polygon.vector.i= (WORLD_ONE*dx)/surface->length;
-				textured_polygon.vector.j= (WORLD_ONE*dy)/surface->length;
+				world_distance divisor = surface->length;
+				if (divisor == 0)
+					divisor = 1;
+				textured_polygon.vector.i= (WORLD_ONE*dx)/divisor;
+				textured_polygon.vector.j= (WORLD_ONE*dy)/divisor;
 				textured_polygon.vector.k= -WORLD_ONE;
 				// LP change:
-				textured_polygon.origin.x= surface->p0.i - (x0*dx)/surface->length;
-				textured_polygon.origin.y= surface->p0.j - (x0*dy)/surface->length;
+				textured_polygon.origin.x= surface->p0.i - (x0*dx)/divisor;
+				textured_polygon.origin.y= surface->p0.j - (x0*dy)/divisor;
 				/*
-				textured_polygon.origin.x= surface->p0.x - (x0*dx)/surface->length;
-				textured_polygon.origin.y= surface->p0.y - (x0*dy)/surface->length;
+				textured_polygon.origin.x= surface->p0.x - (x0*dx)/divisor;
+				textured_polygon.origin.y= surface->p0.y - (x0*dy)/divisor;
 				*/
 				textured_polygon.origin.z= surface->h1 + y0;
 	
