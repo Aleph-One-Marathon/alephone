@@ -1,1 +1,1 @@
-#define PKGDATADIR "/Users/Shared/AlephOne"
+#define PKGDATADIR "/Library/Application Support/AlephOne/"
