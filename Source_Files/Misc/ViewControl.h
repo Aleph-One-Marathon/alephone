@@ -18,31 +18,43 @@
 Nov 29, 2000 (Loren Petrich):
 	Added making view-folding effect optional
 	Added making teleport static/fold effect optional
+
+Dec 17, 2000 (Loren Petrich:
+	Added teleport-sound control for Marathon 1 compatibility
 */
 
 #include "world.h"
+#include "FontHandler.h"
 #include "shape_descriptors.h"
 #include "XML_ElementParser.h"
 
 // Returns whether or not the overhead map can possibly be active
-extern bool View_MapActive();
+bool View_MapActive();
 
 // Accessors for field-of-view values (normal, extravision, tunnel vision):
-extern float View_FOV_Normal();
-extern float View_FOV_ExtraVision();
-extern float View_FOV_TunnelVision();
+float View_FOV_Normal();
+float View_FOV_ExtraVision();
+float View_FOV_TunnelVision();
 
 // Move field-of-view value closer to some target value;
 // returns whether or not the FOV had been changed.
-extern bool View_AdjustFOV(float& FOV, float FOV_Target);
+bool View_AdjustFOV(float& FOV, float FOV_Target);
 
 
 // Indicates whether to do fold-in/fold-out effect when one is teleporting
-extern bool View_DoFoldEffect();
+bool View_DoFoldEffect();
 
 // Indicates whether to do the "static" effect when one is teleporting
-extern bool View_DoStaticEffect();
+bool View_DoStaticEffect();
 
+
+// Gets the teleport-in and teleport-out sounds; for M1 compatibility
+short Sound_TeleportIn();
+short Sound_TeleportOut();
+
+
+// Gets the on-screen-display font
+FontSpecifier& GetOnScreenFont();
 
 // Landscape stuff
 
@@ -72,7 +84,7 @@ struct LandscapeOptions
 	LandscapeOptions(): HorizExp(1), VertExp(1), OGL_AspRatExp(1), VertRepeat(false), Azimuth(0) {}
 };
 
-extern LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc);
+LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc);
 
 
 // XML support:
