@@ -1335,6 +1335,9 @@ void animate_screen_clut(
 		DisposeHandle((Handle)macintosh_color_table);
 		SetGDevice(old_device);
 	}
+#else
+	// Uses Carbon enabled version
+	direct_animate_screen_clut(color_table, world_device);	
 #endif
 }
 
@@ -2692,4 +2695,29 @@ void direct_animate_screen_clut(
 	Ptr DGRPtr = (Ptr) &DeviceGammaRec;
 	Err = Control(DevRefNum, cscSetGamma, &DGRPtr);
 }
+#else
+// Directly manipulate the video-driver color table.
+// Written so that the faders will work in MacOS X Carbon.
+void direct_animate_screen_clut(
+	struct color_table *color_table,
+	GDHandle DevHdl)
+	{
+		(void) DevHdl; // This might come in handy some day
+		
+		CGGammaValue redTable[ 256 ];
+		CGGammaValue greenTable[ 256 ];
+		CGGammaValue blueTable[ 256 ];
+		
+		short i;
+		
+		// Break out the colors
+		for(i = 0; i < color_table->color_count; i++)
+		{
+			redTable[i] = ((float)color_table->colors[i].red ) / (65535);
+			greenTable[i] = ((float)color_table->colors[i].green ) / (65535);
+			blueTable[i] = ((float)color_table->colors[i].blue ) / (65535);
+		}
+		
+		CGSetDisplayTransferByTable( 0, color_table->color_count, redTable, greenTable, blueTable);
+	}
 #endif

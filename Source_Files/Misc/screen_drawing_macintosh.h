@@ -492,6 +492,17 @@ void _erase_screen(
 #else
 	_fill_rect((screen_rectangle *) &GetScreenGrafPort()->portRect, color_index);
 #endif
+#if defined(TARGET_API_MAC_CARBON)
+	CGrafPtr curPort;
+	GetPort(&curPort);
+	if (QDIsPortBuffered(curPort))
+	{
+		RgnHandle rgn = NewRgn();
+		RectRgn(rgn, &rect);
+		QDFlushPortBuffer(curPort, rgn);
+		DisposeRgn(rgn);
+	}
+#endif
 }
 
 short _get_font_line_height(

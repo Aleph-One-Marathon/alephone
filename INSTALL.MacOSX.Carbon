@@ -86,7 +86,10 @@ AlephOne getting confused about screen capabilities. (Fires off the warning
 that AlephOne requires a screen capable of 256 colors or more and is 13" or
 bigger) and to a corruption of the preferences file.
 
-Screen fading is not working in this build.
+Screen fading is operational. But there appears to be a race condition
+between when screen updates occur and when the screen gamma is changed. (The screen
+can be updated, but not yet flushed to the window buffer when you start changing
+screen gamma. Lots of short term artifacts)
 
 After suspending and resuming AlephOne it is possible the cursor won't disappear.
 
@@ -124,4 +127,8 @@ SDL libraries either)
 
 The resulting executable currently requires SDL and SDL_Net frameworks to be
 installed. In the future we hope to install these as private frameworks of the
-application.
+application. In order to do this yourself, download the source for both these
+libraries and follow Project Builder's documentation on preparing a framework
+for inclusion within an application. Once you have the runtime lib all prepared
+you can have Project Builder install that into the private frameworks directory
+of the AlephOne Carbon application.

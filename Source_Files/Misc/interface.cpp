@@ -1519,10 +1519,10 @@ static void handle_network_game(
 static void handle_save_film(
 	void)
 {
-	show_cursor(); // JTP: Hidden by force_system_colors
 	force_system_colors();
-	hide_cursor(); // JTP: Will be shown by display_main_menu
+	show_cursor(); // JTP: Hidden by force_system_colors
 	move_replay();
+	hide_cursor(); // JTP: Will be shown by display_main_menu
 	display_main_menu();
 }
 
