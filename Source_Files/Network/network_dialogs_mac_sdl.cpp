@@ -265,6 +265,9 @@ static UInt32 HowManySelected(ControlRef Browser)
 }
 
 
+static void Fake_ADD_Button_Press();
+
+
 static pascal void PlayerListMemberHit(
 		ControlRef Browser,
 		DataBrowserItemID Item,
@@ -276,8 +279,12 @@ static pascal void PlayerListMemberHit(
 	switch(Message)
 	{
 	case kDataBrowserItemSelected:
+		SetControlActivity(Data.AddCtrl, NetGetNumberOfPlayers() <= MAXIMUM_NUMBER_OF_PLAYERS);
+		break;
+		
 	case kDataBrowserItemDoubleClicked:
 		SetControlActivity(Data.AddCtrl, NetGetNumberOfPlayers() <= MAXIMUM_NUMBER_OF_PLAYERS);
+		Fake_ADD_Button_Press();
 		break;
 		
 	case kDataBrowserItemDeselected:
@@ -288,7 +295,7 @@ static pascal void PlayerListMemberHit(
 }
 
 
-void PlayerDisplayDrawer(ControlRef Ctrl, void *UserData)
+static void PlayerDisplayDrawer(ControlRef Ctrl, void *UserData)
 {
 	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
 	NetgameGatherData& Data = *DPtr;
@@ -329,7 +336,7 @@ void PlayerDisplayDrawer(ControlRef Ctrl, void *UserData)
 }
 
 
-void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
+static void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
 {
 	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
 	NetgameGatherData& Data = *DPtr;
@@ -386,6 +393,15 @@ void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
 		break;	
 	}
 }
+
+
+ void Fake_ADD_Button_Press()
+ {
+ 	ParsedControl FakeAddCtrl;
+ 	FakeAddCtrl.ID.id = iADD;
+ 	
+ 	NetgameGather_Handler(FakeAddCtrl, GatherDataPtr);
+ }
 
 
 const double PollingInterval = 1.0/30.0;
@@ -710,7 +726,8 @@ static pascal OSStatus Join_PlayerNameWatcher(
 	return err;
 }
 
-void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
+
+static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 {
 	NetgameJoinData *DPtr = (NetgameJoinData *)(UserData);
 	NetgameJoinData& Data = *DPtr;
@@ -1216,7 +1233,8 @@ static pascal OSStatus Setup_PlayerNameWatcher(
 	return err;
 }
 
-void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
+
+static void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
 {
 	NetgameSetupData *DPtr = (NetgameSetupData *)(UserData);
 	NetgameSetupData& Data = *DPtr;
