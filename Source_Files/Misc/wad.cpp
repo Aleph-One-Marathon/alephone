@@ -46,6 +46,11 @@ Sep 11, 2000 (Loren Petrich):
 
 July 6, 2001 (Loren Petrich):
 	Added Thomas Herzog's more careful wad-version error checking
+	
+Sep 30, 2001 (Loren Petrich):
+	Added support for reading Marathon 1 map files
+	(not sure if anyone really wants to write them);
+	also added a "between levels" flag so that this may be used with 3D models.
 */
 
 // Note that level_transition_malloc is specific to marathon...
@@ -77,6 +82,11 @@ inline short memory_error() {return 0;}
 
 /* ---------------- private structures */
 // LP: no more union wads
+
+// Indicates whether the wad is being loaded between levels;
+// should be "false" for something that may be cleared by some other
+// "between-levels" loading, such as 3D models.
+bool BetweenLevels = true;
 
 /* ---------------- private global data */
 struct wad_internal_data *internal_data[MAXIMUM_OPEN_WADFILES]= {NULL, NULL, NULL};
@@ -163,11 +173,14 @@ struct wad_data *read_indexed_wad_from_file(
 	{
 		if (size_of_indexed_wad(OFile, header, index, &length))
 		{
-#if 0
-			raw_wad= (uint8 *) malloc(length);
-#else
-			raw_wad= (uint8 *) level_transition_malloc(length);
-#endif
+			// The padding is so that one can use later-Marathon entry-header reading
+			// on Marathon 1 wadfiles, which have a shorter entry header
+			long padded_length = length + (SIZEOF_entry_header-SIZEOF_old_entry_header);
+
+			raw_wad= BetweenLevels ?
+				(uint8 *) level_transition_malloc(padded_length) :
+				(uint8 *) malloc(padded_length);
+			
 			if(raw_wad)
 			{
 				/* Read into the buffer */
@@ -183,7 +196,7 @@ struct wad_data *read_indexed_wad_from_file(
 						/* Free it! */
 						free(raw_wad);
 					}
-
+					
 					if(!read_wad)
 					{
 						/* Error.. */
@@ -437,7 +450,7 @@ void set_indexed_directory_offset_and_length(
 	uint8 *data_ptr= (uint8 *)entries;
 	struct directory_entry *entry;
 	long data_offset;
-
+	
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
 	
 	/* calculate_directory_offset is for the file, by subtracting the base, we get the actual offset.. */
@@ -963,6 +976,7 @@ static long calculate_directory_offset(
 	{
 		case PRE_ENTRY_POINT_WADFILE_VERSION:
 			assert(header->application_specific_directory_data_size==0);
+			// OK for Marathon 1		
 		case WADFILE_HAS_DIRECTORY_ENTRY:
 		case WADFILE_SUPPORTS_OVERLAYS:
 		// LP addition:
@@ -1131,7 +1145,7 @@ static bool read_indexed_wad_from_file_into_buffer(
 		/* Some sanity checks */
 		assert(*length<=entry.length);
 		assert(buffer);
-
+		
 		/* Read into it. */
 		success = read_from_file(OFile, entry.offset_to_start, buffer, entry.length);
 
@@ -1172,7 +1186,7 @@ static struct wad_data *convert_wad_from_raw(
 		{
 			/* Count the tags */
 			tag_count= count_raw_tags(raw_wad);
-	
+			
 			/* Allocate the tags.. */
 			wad->tag_count= tag_count;
 			wad->tag_data= (struct tag_data *) malloc(tag_count * sizeof(struct tag_data));
@@ -1187,8 +1201,9 @@ static struct wad_data *convert_wad_from_raw(
 				entry_header_size= get_entry_header_length(header);
 				entry_header wad_entry_header;
 				uint8 *raw_wad_entry_header = raw_wad;
+				// Will work OK for Marathon 1
 				unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
-
+				
 				/* Note that this is a read only wad.. */	
 				wad->read_only_data= data;
 	
@@ -1201,6 +1216,7 @@ static struct wad_data *convert_wad_from_raw(
 					wad->tag_data[index].data = raw_wad_entry_header + entry_header_size;
 
 					raw_wad_entry_header = raw_wad + wad_entry_header.next_offset;
+					// Will work OK for Marathon 1
 					unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
 				} 
 			} else {
@@ -1248,8 +1264,9 @@ static struct wad_data *convert_wad_from_raw_modifiable(
 				entry_header_size= get_entry_header_length(header);
 				entry_header wad_entry_header;
 				uint8 *raw_wad_entry_header = raw_wad;
+				// Will work OK for Marathon 1
 				unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
-	
+				
 				for(index= 0; index<tag_count; ++index)
 				{
 					wad->tag_data[index].tag = wad_entry_header.tag;
@@ -1267,6 +1284,7 @@ static struct wad_data *convert_wad_from_raw_modifiable(
 					/* Copy the data.. */
 					memcpy(wad->tag_data[index].data, raw_wad_entry_header + entry_header_size, wad->tag_data[index].length);
 					raw_wad_entry_header = raw_wad + wad_entry_header.next_offset;
+					// Will work OK for Marathon 1
 					unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
 				} 
 			}
@@ -1276,6 +1294,7 @@ static struct wad_data *convert_wad_from_raw_modifiable(
 	return wad;
 }
 
+// Will work OK for Marathon 1
 static short count_raw_tags(
 	uint8 *raw_wad)
 {
@@ -1294,7 +1313,7 @@ static short count_raw_tags(
 	return tag_count;
 }
 
-
+// Will work OK for Marathon 1
 static long calculate_raw_wad_length(
 	struct wad_header *file_header,
 	uint8 *wad)
@@ -1538,3 +1557,6 @@ static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
 	assert((S - Stream) == Count*SIZEOF_entry_header);
 	return S;
 }
+
+void SetBetweenlevels(bool _BetweenLevels) {BetweenLevels = _BetweenLevels;}
+bool IsBetweenLevels() {return BetweenLevels;}

@@ -215,5 +215,12 @@ void remove_tag_from_wad(struct wad_data *wad, WadDataType type);
 /* ------- debug function */
 void dump_wad(struct wad_data *wad);
 
+// To tell the wad allocator that we are between levels (the default);
+// if one wishes to load a model file with a WAD-based format, for example,
+// one would shut off "between levels", so as not to interfere with other loaded stuff.
+void SetBetweenlevels(bool _BetweenLevels);
+bool IsBetweenLevels();
+
+
 #endif
 
