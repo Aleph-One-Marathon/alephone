@@ -9,6 +9,12 @@
 	Made [view_data *view] a member and removed it as an argument
 	Also removed [bitmap_definition *destination] as superfluous,
 		now that there is a special rasterizer object that can contain it.
+
+Sep 2, 2000 (Loren Petrich):
+	Added some idiot-proofing, since the shapes accessor now returns NULL for nonexistent bitmaps
+	
+	If a polygon has a "full_side" texture, and there is another polgyon on the other side,
+	then suppress the void for the boundary's texture.
 */
 
 #include "cseries.h"
@@ -152,7 +158,7 @@ void RenderRasterizerClass::render_tree()
 						line_data *line= get_line_data(polygon->line_indexes[i]);
 						side_data *side= get_side_data(side_index);
 						vertical_surface_data surface;
-					
+						
 						surface.length= line->length;
 						// LP change: expanded the transformed-endpoint access
 						endpoint_data *endpoint0 = get_endpoint_data(polygon->endpoint_indexes[i]);
@@ -165,17 +171,25 @@ void RenderRasterizerClass::render_tree()
 						*/
 						surface.ambient_delta= side->ambient_delta;
 						
-						// LP change: indicate in all cases whether the void is on the other side
+						// LP change: indicate in all cases whether the void is on the other side;
+						// added a workaround for full-side textures with a polygon on the other side
+						bool void_present, adjacent_polygon_index;
+						
 						switch (side->type)
 						{
 							case _full_side:
+								void_present = true;
+								// Suppress the void if there is a polygon on the other side.
+								adjacent_polygon_index = polygon->adjacent_polygon_indexes[i];
+								if (adjacent_polygon_index != NONE) void_present = false;
+								
 								surface.lightsource_index= side->primary_lightsource_index;
 								surface.h0= floor_surface.height - view->origin.z;
 								surface.hmax= ceiling_surface.height - view->origin.z;
 								surface.h1= polygon->ceiling_height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
 								surface.transfer_mode= side->primary_transfer_mode;
-								render_node_side(window, &surface, true);
+								render_node_side(window, &surface, void_present);
 								// render_node_side(view, destination, window, &surface);
 								break;
 							case _split_side: /* render _low_side first */
@@ -347,10 +361,10 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 				{
 					case 0:
 						// LP change: making it long-distance friendly
-{
+						{
 						long screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 						screen->x= PIN(screen_x, 0, view->screen_width);
-}
+						}
 						/*
 						screen->x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 						screen->x= PIN(screen->x, 0, view->screen_width);
@@ -369,10 +383,10 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 				{
 					case 0:
 						// LP change: making it long-distance friendly
-{
+						{
 						long screen_y= view->half_screen_height - transformed_height/world->x + view->dtanpitch;
 						screen->y= PIN(screen_y, 0, view->screen_height);
-}
+						}
 						/*
 						screen->y= view->half_screen_height - transformed_height/world->x + view->dtanpitch;
 						screen->y= PIN(screen->y, 0, view->screen_height);
@@ -386,7 +400,7 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 						screen->y= window->y0;
 						break;
 				}
-//				vassert(screen->y>=0&&screen->y<=view->screen_height, csprintf(temporary, "horizontal: flags==%x, window @ %p", world->flags, window));
+				// vassert(screen->y>=0&&screen->y<=view->screen_height, csprintf(temporary, "horizontal: flags==%x, window @ %p", world->flags, window));
 			}
 			
 			/* setup the other parameters of the textured polygon */
@@ -396,6 +410,9 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 			textured_polygon.origin.z= adjusted_height;
 			// LP change:
 			get_shape_bitmap_and_shading_table(Texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
+			// Bug out if bitmap is nonexistent
+			if (!textured_polygon.texture) return;
+			
 			textured_polygon.ShapeDesc = Texture;
 			// get_shape_bitmap_and_shading_table(surface->texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
 			textured_polygon.ambient_shade= get_light_intensity(surface->lightsource_index);
@@ -508,10 +525,10 @@ void RenderRasterizerClass::render_node_side(
 					{
 						case 0:
 							// LP change: making it long-distance friendly
-{
+							{
 							long screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 							screen->x= PIN(screen_x, 0, view->screen_width);
-}
+							}
 							/*
 							screen->x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 							screen->x= PIN(screen->x, 0, view->screen_width);
@@ -530,10 +547,10 @@ void RenderRasterizerClass::render_node_side(
 					{
 						case 0:
 							// LP change: making it long-distance friendly
-{
+							{
 							long screen_y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
 							screen->y= PIN(screen_y, 0, view->screen_height);
-}
+							}
 							/*
 							screen->y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
 							screen->y= PIN(screen->y, 0, view->screen_height);
@@ -547,13 +564,16 @@ void RenderRasterizerClass::render_node_side(
 							screen->y= window->y0;
 							break;
 					}
-//					vassert(screen->y>=0&&screen->y<=view->screen_height, csprintf(temporary, "#%d!in[#0,#%d]: flags==%x, wind@%p #%d w@%p s@%p", screen->y, view->screen_height, world->flags, window, vertex_count, world, screen));
+					// vassert(screen->y>=0&&screen->y<=view->screen_height, csprintf(temporary, "#%d!in[#0,#%d]: flags==%x, wind@%p #%d w@%p s@%p", screen->y, view->screen_height, world->flags, window, vertex_count, world, screen));
 				}
 				
 				/* setup the other parameters of the textured polygon */
 				textured_polygon.flags= 0;
 				// LP change:
 				get_shape_bitmap_and_shading_table(Texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
+				// Bug out if bitmap is nonexistent
+				if (!textured_polygon.texture) return;
+
 				textured_polygon.ShapeDesc = Texture;
 				// get_shape_bitmap_and_shading_table(surface->texture_definition->texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
 				textured_polygon.ambient_shade= get_light_intensity(surface->lightsource_index) + surface->ambient_delta;
