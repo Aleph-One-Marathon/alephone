@@ -193,8 +193,6 @@ main (int argc, char **argv)
 	  "For details, see the file COPYING.SDL.\n"
 #endif
     );
-system("printenv");
-system("pwd");
   // Parse arguments
   char *prg_name = argv[0];
   argc--;
