@@ -356,7 +356,6 @@ static signed long RestoreScreenMode = 0;
 // Also the currently-requested rendering area when doing in piped-through-OpenGL mode
 GWorldPtr HUD_Buffer = NULL;
 static Rect HUD_SourceRect = {0, 0, 160, 640};
-static Rect HUD_DestRect;
 
 // Flag for making 32-bit-OGL screen resetting done only once.
 static bool ScreenFix_OGL32 = false;
@@ -376,12 +375,8 @@ static bool DM_Inited = false;
 static void update_screen(Rect& source, Rect& destination, bool hi_rez);
 
 void calculate_destination_frame(short size, bool high_resolution, Rect *frame);
-static void calculate_source_frame(short size, bool high_resolution, Rect *frame);
-static void calculate_adjusted_source_frame(struct screen_mode_data *mode, Rect *frame);
 
-static GDHandle find_and_initialize_world_device(long area, short depth);
 static void restore_world_device(void);
-static bool parse_device(GDHandle device, short depth, bool *color, bool *needs_to_change);
 
 extern "C" {
 void quadruple_screen(struct copy_screen_data *data);
@@ -1470,7 +1465,8 @@ void update_screen_window(
 	WindowPtr window,
 	EventRecord *event)
 {
-	(void) (window,event);
+	(void) (window);
+	(void) (event);
 		
 	draw_interface();
 	change_screen_mode(&screen_mode, true);
@@ -1482,7 +1478,9 @@ void activate_screen_window(
 	EventRecord *event,
 	bool active)
 {
-	(void) (window,event,active);
+	(void) (window);
+	(void) (event);
+	(void) (active);
 }
 
 
@@ -2040,28 +2038,6 @@ enum
 	CACHE_LINE_SIZE= (1<<BITS_PER_CACHE_LINE) // ppc601
 };
 
-static void calculate_adjusted_source_frame(
-	struct screen_mode_data *mode,
-	Rect *frame)
-{
-	calculate_source_frame(mode->size, mode->high_resolution, frame);
-}
-
-static void calculate_source_frame(
-	short size,
-	bool high_resolution,
-	Rect *frame)
-{
-	calculate_destination_frame(size, high_resolution, frame);
-	if (!high_resolution)
-	{
-		frame->right-= (RECTANGLE_WIDTH(frame)>>1);
-		frame->bottom-= (RECTANGLE_HEIGHT(frame)>>1);
-	}
-	OffsetRect(frame, (*world_device)->gdRect.left-frame->left,
-		(*world_device)->gdRect.top-frame->top);
-}
-
 static void calculate_screen_options(
 	void)
 {
@@ -2335,7 +2311,7 @@ void dump_screen()
 	int Indx = 1;
 	while(true) {
 		// Compose a suitable name
-		psprintf(Spec.name,"Screenshot %0.4d",Indx++);
+		psprintf(Spec.name,"Screenshot %04d",Indx++);
 		// Check for the pre-existence of a file with that name
 		// by trying to open it
 		err = FSpOpenDF(&Spec, fsRdPerm, &RefNum);
@@ -2367,7 +2343,7 @@ void dump_screen()
 	// Write the header:
 	long Zero = 0;
 	long len;
-	for (int z=0; z<512/sizeof(Zero); z++)
+	for (unsigned int z=0; z<512/sizeof(Zero); z++)
 	{
 		len = sizeof(Zero);
 		err = FSWrite(RefNum,&len,&Zero);
@@ -2474,9 +2450,6 @@ void SuspendDisplay(EventRecord *EvPtr)
 	if (restore_spec.bit_depth != graphics_preferences->device_spec.bit_depth)
 		SetDepthGDSpec(&restore_spec);
 	
-	Boolean EvWasProcessed = false;
-	// if (DM_Check()) DSpProcessEvent(EvPtr,&EvWasProcessed);
-	
 	HideWindow(screen_window);
 	HideWindow(backdrop_window);
 #if !defined(TARGET_API_MAC_CARBON)
@@ -2488,9 +2461,6 @@ void SuspendDisplay(EventRecord *EvPtr)
 
 void ResumeDisplay(EventRecord *EvPtr)
 {
-	Boolean EvWasProcessed = false;
-	// if (DM_Check()) DSpProcessEvent(EvPtr,&EvWasProcessed);
-	
 	// The resolution may have changed when the app was switched out
 	BuildGDSpec(&restore_spec, world_device);
 	if (restore_spec.bit_depth != graphics_preferences->device_spec.bit_depth)
@@ -2630,6 +2600,7 @@ void DM_ModeDimList::SetDims(short _Width, short _Height)
 }
 
 
+#ifdef USES_NIBS
 static bool BuildFreqMenuItem(int Indx, Str255 ItemName, bool &IsInitial, void *Data)
 {
 	DM_ModeDimList *MDPtr = (DM_ModeDimList *)(Data);
@@ -2673,7 +2644,6 @@ static pascal void FreqDialogTimer(EventLoopTimerRef Timer, void *Data)
 
 const EventTimerInterval TimeoutTime = 7;
 
-#ifdef USES_NIBS
 static void FreqDialogHandler(ParsedControl &Ctrl, void *Data)
 {
 	FreqDialogHandlerData *HDPtr = (FreqDialogHandlerData *)(Data);
@@ -2725,14 +2695,12 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	{
 		ModeList.GetMode(Index);
 		
-		VDResolutionInfoPtr ResInfoPtr = ModeList.ModeInfoPtr->displayModeResolutionInfo;
-		
 		// The mode name is a Pascal string pointed to by ModeList.ModeInfoPtr->displayModeName
 		// Need the depth info to find which
 		DMDepthInfoBlockPtr DepthInfoPtr = ModeList.ModeInfoPtr->displayModeDepthBlockInfo;
 		
 		// Is there a submode with a bit depth that matches the desired bit depth?
-		for (int id=0; id<DepthInfoPtr->depthBlockCount; id++)
+		for (unsigned int id=0; id<DepthInfoPtr->depthBlockCount; id++)
 		{
 			DMDepthInfoPtr IndivDepthPtr = DepthInfoPtr->depthVPBlock + id;
 			VPBlockPtr IDBlockPtr = IndivDepthPtr->depthVPBlock;
