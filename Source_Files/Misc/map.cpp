@@ -2235,7 +2235,8 @@ void _sound_add_ambient_sources_proc(
 			}
 
 			// .index is environmental sound type, .facing is volume
-			if (active && (!under_media || (source.point.z<media->height && polygon->media_index==listener_polygon->media_index)))
+			// CB: added check for media != NULL because it sometimes crashed here when being underwater
+			if (active && (!under_media || (media && source.point.z<media->height && polygon->media_index==listener_polygon->media_index)))
 			{
 				add_one_ambient_sound_source((struct ambient_sound_data *)data, &source, listener, sound_type, sound_volume);
 			}

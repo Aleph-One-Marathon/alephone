@@ -61,6 +61,8 @@ Aug 26, 2000 (Loren Petrich):
 
 #include "map.h"
 #include "interface.h"
+#include "shell.h"
+#include "preferences.h"
 #include "mouse.h"
 #include "player.h"
 #include "key_definitions.h"
@@ -194,6 +196,14 @@ void set_keyboard_controller_status(
 #ifdef mac
 	if(active) Start_ISp();
 	else Stop_ISp();
+#endif
+
+#ifdef SDL
+	// We enable/disable mouse control here
+	if (active)
+		enter_mouse(input_preferences->input_device);
+	else
+		exit_mouse(input_preferences->input_device);
 #endif
 	
 	/******************************************************************************************/

@@ -77,11 +77,11 @@ boolean find_replay_to_use(boolean ask_user, FileSpecifier &file)
  *  Get FileDesc for default recording file
  */
 
-boolean get_recording_filedesc(FileSpecifier &file)
+boolean get_recording_filedesc(FileSpecifier &File)
 {
-	file.SetToLocalDataDir();
-	file.AddPart(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING));
-	return true;
+	File.SetToLocalDataDir();
+	File.AddPart(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING));
+	return File.Exists();
 }
 
 
@@ -141,13 +141,18 @@ long parse_keymap(void)
 			special->persistence = FLOOR(special->persistence-1, 0);
 	}
 
-	//!! handle the selected input controller
+	// Handle the selected input controller
+	if (input_preferences->input_device != _keyboard_or_game_pad) {
+		fixed delta_yaw, delta_pitch, delta_velocity;
+		test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
+		flags = mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
+	}
 
 	// Modify flags with run/walk and swim/sink
 	bool do_interchange =
-		(local_player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ?
-			(input_preferences->modifiers&_inputmod_interchange_swim_sink) != 0:
-			(input_preferences->modifiers&_inputmod_interchange_run_walk) != 0;
+		(local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?
+			(input_preferences->modifiers & _inputmod_interchange_swim_sink) != 0:
+			(input_preferences->modifiers & _inputmod_interchange_run_walk) != 0;
 	if (do_interchange)
 		flags ^= _run_dont_walk;
 

@@ -33,13 +33,3 @@ bool wait_for_click_or_keypress(uint32 ticks)
 	}
 	return false;
 }
-
-
-/*
- *  Disable screen saver
- */
-
-void kill_screen_saver(void)
-{
-	// nothing to do
-}

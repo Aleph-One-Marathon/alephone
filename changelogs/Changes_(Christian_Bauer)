@@ -3,6 +3,12 @@ Change log of the SDL version of Aleph One
 August 29, 2000
  - intro music and chapter screen sounds now work
  - implemented darken_world_window()
+ - implemented mouse control, which is now the default
+ - standard key settings are now different when mouse control is on (a little
+   Q3A-like)
+ - new command line arguments "-8" for 8-bit color depth and "-m" to disable
+   mouse control
+ - fixed underwater crash bug
 
 August 28, 2000
  - restructured images.c: platform-independant parts are now in images.cpp,

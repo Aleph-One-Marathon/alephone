@@ -565,6 +565,9 @@ static void buffer_sound(struct channel_data *channel, short sound_index, fixed 
 
 void play_sound_resource(LoadedResource &rsrc)
 {
+	if (!_sm_initialized || !_sm_active)
+		return;
+
 	sdl_channel *c = sdl_channels + RESOURCE_CHANNEL;
 
 	// Open stream to resource
@@ -627,8 +630,9 @@ void stop_sound_resource(void)
 
 void queue_song(short song_index)
 {
-	if (!music_initialized)
+	if (!_sm_initialized || !_sm_active || !music_initialized)
 		return;
+
 	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
 	SDL_RWops *p = music_file.GetRWops();
 

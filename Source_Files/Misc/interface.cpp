@@ -438,17 +438,19 @@ void pause_game(
 	stop_fade();
 	darken_world_window();
 	set_keyboard_controller_status(FALSE);
-	
-	return;
+#ifdef SDL
+	show_cursor();
+#endif
 }
 
 void resume_game(
 	void)
 {
+#ifdef SDL
+	hide_cursor();
+#endif
 	validate_world_window();
 	set_keyboard_controller_status(TRUE);
-	
-	return;
 }
 
 void draw_menu_button_for_command(

@@ -114,15 +114,6 @@ void exit_networking(void)
 
 
 /*
- *  Initialize mouse handling
- */
-
-void enter_mouse(short type)
-{
-}
-
-
-/*
  *  Hide/show mouse pointer
  */
 

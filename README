@@ -155,6 +155,8 @@ list:
   [-h | --help]        Display the help message
   [-v | --version]     Display the game version
   [-f | --fullscreen]  Run the game fullscreen
+  [-8 | --8bit]        Run the game in 8 bit color depth
+  [-m | --nomouse]     Disable mouse control
   [-s | --nosound]     Do not access the sound card
 
 If Aleph One complains about missing data files, and you are sure that you
@@ -180,7 +182,30 @@ keyboard; all keys are mapped by position):
     C - Show game credits
     Q - Quit
 
-  During the game:
+  In-game (mouse control on):
+    W       - Walk forward
+    S       - Walk backward
+
+    A       - Sidestep left
+    D       - Sidestep right
+
+    Q       - Glance left
+    E       - Glance right
+
+    Left mouse button
+            - Fire weapon, primary trigger
+    Right mouse button or Space
+            - Fire weapon, secondary trigger (e.g. grenades)
+    C       - Select previous weapon
+    Z       - Select next weapon
+
+    X       - Action (open doors, flip switches, log in to computer terminals)
+
+    Shift   - Walk slowly/swim
+
+    TAB     - Overhead map
+
+  In-game (mouse control on):
     KP8     - Walk forward
     KP5     - Walk backward
     KP4     - Turn left
@@ -204,19 +229,20 @@ keyboard; all keys are mapped by position):
     Tab     - Action (open doors, flip switches, log in to computer terminals)
 
     Shift   - Sidestep
-    Ctrl    - Walk slowly (this is different from the original Marathon games;
-              in Aleph One you run by default)
+    Ctrl    - Walk slowly/swim
     Meta    - Keyboard look
 
     M       - Overhead map
+
+  Other keys:
+
     -       - Zoom overhead map out
     =       - Zoom overhead map in
 
     \       - Toggle FPS display
 
-    Esc     - Quit game
-    Ctrl-Q  - Quit game
-    Ctrl-P  - Pause game (press Ctrl-P again to resume)
+    Alt-Q   - Quit game
+    Alt-P   - Pause game (press Alt-P again to resume)
 
     F1      - Decrease screen size
     F2      - Increase screen size
@@ -242,22 +268,19 @@ The SDL version of Aleph One is a work in progress. Here is an (incomplete)
 list of the missing features, listed in roughly the order I plan to implement
 them:
 
- - Mouse control
- - Chapter screen sounds
- - Intro music (not included in Demo, anyway)
+ - Preferences menus (the "Preferences" button on the title screen is
+   nonfunctional)
+ - OpenGL rendering
+ - The game could run faster in 16-bit mode on some machines if an RGB 565
+   renderer was implemented
  - Physics models in map files are not loaded (needed for playing Marathon
    Infinity properly)
  - Saving/restoring games (save terminals don't work and the "Continue Saved
    Game" button on the title screen is nonfunctional)
  - Saving/replaying films (the "Replay Saved Film", "Replay Last Film" and
    "Save Last Film" buttons on the title screen are nonfunctional)
- - OpenGL rendering
- - Preferences menus (the "Preferences" button on the title screen is
-   nonfunctional)
  - Networking (the "Gather Network Game" and "Join Network Game" buttons on
    the title screen are nonfunctional)
- - The game could run faster in 16-bit mode on some machines if an RGB 565
-   renderer was implemented
 
 And a list of known bugs:
 
@@ -286,17 +309,10 @@ BeOS:
 
 and try again.
 
-If the game runs very slowly, you may want to run it in 8 bit mode (default
-is 16 bit). To do this, you have to change the line
-
-  graphics_preferences->screen_mode.bit_depth = 16;
-
-in Misc/shell_sdl.cpp to
-
-  graphics_preferences->screen_mode.bit_depth = 8;
-
-and recompile. Setting your screen to 15 bit color depth (RGB 555) instead of
-16 bit (RGB 565) may also help.
+If the game runs very slowly, setting your screen to 15 bit color depth
+(RGB 555) instead of 16 bit (RGB 565) will make it run much faster. If you
+can't do this, you may want to run Aleph One in 8 bit mode by specifying
+the "-8" argument.
 
 
 SUPPORT

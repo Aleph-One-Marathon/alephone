@@ -72,6 +72,8 @@ FileSpecifier local_data_dir;	// Local (per-user) data file directory
 
 bool option_fullscreen = false;		// Run fullscreen
 bool option_nosound = false;		// Disable sound output
+bool option_8bit = false;			// Run in 8 bit color depth
+bool option_nomouse = false;		// Disable mouse control
 
 #ifndef HAVE_OPENGL
 // No OpenGL, so define these here
@@ -116,6 +118,8 @@ static void usage(const char *prg_name)
 		"\t[-h | --help]        Display this help message\n"
 		"\t[-v | --version]     Display the game version\n"
 		"\t[-f | --fullscreen]  Run the game fullscreen\n"
+		"\t[-8 | --8bit]        Run the game in 8 bit color depth\n"
+		"\t[-m | --nomouse]     Disable mouse control\n"
 		"\t[-s | --nosound]     Do not access the sound card\n"
 #if defined(__unix__) || defined(__BEOS__)
 		"\nYou can use the ALEPHONE_DATA environment variable to specify\n"
@@ -139,6 +143,10 @@ int main(int argc, char **argv)
 			exit(0);
 		} else if (strcmp(*argv, "-f") == 0 || strcmp(*argv, "--fullscreen") == 0) {
 			option_fullscreen = true;
+		} else if (strcmp(*argv, "-8") == 0 || strcmp(*argv, "--8bit") == 0) {
+			option_8bit = true;
+		} else if (strcmp(*argv, "-m") == 0 || strcmp(*argv, "--nomouse") == 0) {
+			option_nomouse = true;
 		} else if (strcmp(*argv, "-s") == 0 || strcmp(*argv, "--nosound") == 0) {
 			option_nosound = true;
 		} else {
@@ -199,6 +207,7 @@ static void initialize_application(void)
 		exit(1);
 	}
 	SDL_WM_SetCaption("Aleph One", "Aleph One");
+	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 	atexit(shutdown_application);
 
 	system_information = new system_information_data();
@@ -242,15 +251,14 @@ static void initialize_application(void)
 	XML_Loader.ParseResourceSet('TEXT');
 
 	initialize_preferences();
-//!!
-graphics_preferences->screen_mode.bit_depth = 16;	// 8 or 16
-sound_preferences->flags = _more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag;
-sound_preferences->pitch = 0x00010000;				// 22050Hz
+	graphics_preferences->screen_mode.bit_depth = option_8bit ? 8 : 16;
+	input_preferences->input_device = option_nomouse ? _keyboard_or_game_pad :  _mouse_yaw_pitch;
+	sound_preferences->flags = _more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag;
+	sound_preferences->pitch = 0x00010000;				// 22050Hz
 	write_preferences();
 
 	initialize_sound_manager(sound_preferences);
 	initialize_marathon_music_handler();
-
 	initialize_keyboard_controller();
 	initialize_screen(&graphics_preferences->screen_mode);
 	initialize_marathon();
@@ -258,32 +266,40 @@ sound_preferences->pitch = 0x00010000;				// 22050Hz
 	initialize_terminal_manager();
 	initialize_shape_handler();
 	initialize_fades();
-
-	kill_screen_saver();
-
 	initialize_images_manager();
-
-	// Load the environment...
 	load_environment_from_preferences();
-
 	initialize_game_state();
 
-#if 1
-//!! sorry, uhm, this will of course be gone once the preferences dialogs are implemented...
-short cebix_keys[] = {
-	SDLK_KP8, SDLK_KP2, SDLK_KP4, SDLK_KP6,		// moving/turning
-	SDLK_KP1, SDLK_KP_PLUS,						// sidestepping
-	SDLK_KP7, SDLK_KP9,							// horizontal looking
-	SDLK_UP, SDLK_DOWN, SDLK_KP0,				// vertical looking
-	SDLK_QUOTE, SDLK_SEMICOLON,					// weapon cycling
-	SDLK_RETURN, SDLK_RALT,						// weapon trigger
-	SDLK_RMETA, SDLK_RSHIFT, SDLK_RCTRL,		// modifiers
-	SDLK_KP5,									// action trigger
-	SDLK_RIGHT,									// map
-	SDLK_PAGEDOWN								// microphone
-};
-set_keys(cebix_keys);
+#if 0
+	// Sorry, uhm, this will of course be gone once the preferences dialogs are implemented...
+	static short cebix_keys[] = {
+		SDLK_KP8, SDLK_KP2, SDLK_KP4, SDLK_KP6,		// moving/turning
+		SDLK_KP1, SDLK_KP_PLUS,						// sidestepping
+		SDLK_KP7, SDLK_KP9,							// horizontal looking
+		SDLK_UP, SDLK_DOWN, SDLK_KP0,				// vertical looking
+		SDLK_QUOTE, SDLK_SEMICOLON,					// weapon cycling
+		SDLK_RETURN, SDLK_RALT,						// weapon trigger
+		SDLK_RMETA, SDLK_RSHIFT, SDLK_RCTRL,		// modifiers
+		SDLK_KP5,									// action trigger
+		SDLK_RIGHT,									// map
+		SDLK_PAGEDOWN								// microphone
+	};
 #endif
+	if (input_preferences->input_device == _mouse_yaw_pitch) {
+		static short mouse_keys[] = {
+			SDLK_w, SDLK_s, SDLK_LEFT, SDLK_RIGHT,		// moving/turning
+			SDLK_a, SDLK_d,								// sidestepping
+			SDLK_q, SDLK_e,								// horizontal looking
+			SDLK_UP, SDLK_DOWN, SDLK_KP0,				// vertical looking
+			SDLK_c, SDLK_z,								// weapon cycling
+			SDLK_RETURN, SDLK_SPACE,					// weapon trigger
+			SDLK_LMETA, SDLK_LSHIFT, SDLK_LCTRL,		// modifiers
+			SDLK_x,										// action trigger
+			SDLK_TAB,									// map
+			SDLK_BACKQUOTE								// microphone
+		};
+		set_keys(mouse_keys);
+	}
 }
 
 
@@ -493,10 +509,6 @@ static void handle_game_key(const SDL_Event &event)
 			break;
 		}
 
-		case SDLK_ESCAPE:
-			do_menu_item_command(mGame, iQuitGame, false);
-			break;
-
 		case SDLK_F1:	// Decrease screen size
 			if (graphics_preferences->screen_mode.size > 0) {
 				graphics_preferences->screen_mode.size--;
@@ -590,7 +602,7 @@ static void process_game_key(const SDL_Event &event)
 {
 	switch (get_game_state()) {
 		case _game_in_progress:
-			if (event.key.keysym.mod & KMOD_CTRL) {
+			if (event.key.keysym.mod & KMOD_ALT) {
 				int item = -1;
 				switch (event.key.keysym.sym) {
 					case SDLK_p: item = iPause; break;
@@ -843,19 +855,14 @@ static void handle_keyword(int tag)
 		case _tag_jump:
 			accelerate_monster(local_player->monster_index, WORLD_ONE/10, 0, 0);
 			break;
-		// LP: changed these cheats and added new ones:
 		case _tag_pistol:
 			AddOneItemToPlayer(_i_magnum,2);
 			AddItemsToPlayer(_i_magnum_magazine,10);
-			// local_player->items[_i_magnum_magazine]= 10;
 			break;
 		case _tag_rifle:
 			AddItemsToPlayer(_i_assault_rifle,10);
 			AddItemsToPlayer(_i_assault_rifle_magazine,10);
 			AddItemsToPlayer(_i_assault_grenade_magazine,10);
-			// local_player->items[_i_assault_rifle]= 1;
-			// local_player->items[_i_assault_rifle_magazine]= 10;
-			// local_player->items[_i_assault_grenade_magazine]= 8;
 			break;
 		case _tag_missile:
 			AddItemsToPlayer(_i_missile_launcher,1);
@@ -868,8 +875,6 @@ static void handle_keyword(int tag)
 		case _tag_fusion:
 			AddItemsToPlayer(_i_plasma_pistol,1);
 			AddItemsToPlayer(_i_plasma_magazine,10);
-			// local_player->items[_i_plasma_pistol]= 1;
-			// local_player->items[_i_plasma_magazine]= 10;
 			break;
 		case _tag_pzbxay:
 			AddItemsToPlayer(_i_alien_shotgun,1);

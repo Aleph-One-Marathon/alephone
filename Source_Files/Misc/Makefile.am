@@ -35,7 +35,7 @@ alephone_SOURCES = \
   filetypes_sdl.cpp flood_map.cpp game_errors.cpp game_wad.cpp game_window.cpp \
   game_window_sdl.cpp images.cpp import_definitions.cpp interface.cpp \
   interface_sdl.cpp items.cpp lightsource.cpp map.cpp map_constructors.cpp \
-  marathon2.cpp media.cpp monsters.cpp motion_sensor.cpp \
+  marathon2.cpp media.cpp monsters.cpp motion_sensor.cpp mouse_sdl.cpp \
   mysound.cpp overhead_map.cpp pathfinding.cpp physics.cpp placement.cpp \
   platforms.cpp player.cpp preferences.cpp preprocess_map_sdl.cpp \
   projectiles.cpp render.cpp resource_manager.cpp scenery.cpp \
