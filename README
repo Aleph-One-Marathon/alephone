@@ -377,6 +377,11 @@ And a list of known bugs:
    or to bind a key that is already used by the game (sound volume, map zoom
    etc.)
 
+If you find a bug that's not already in the list above, please submit it
+using the bug database on SourceForge:
+
+  http://sourceforge.net/bugs/?group_id=1997
+
 
 TIPS
 ----
@@ -426,6 +431,13 @@ The official Aleph One home page is at
 My home page for the SDL port is at
 
   http://www.uni-mainz.de/~bauec002/A1Main.html
+
+The Aleph One pages on SourceForge
+
+  http://www.sourceforge.net/projects/marathon/
+
+provide discussion forums, a database of bugs and feature requests and much
+more.
 
 If you have questions about Marathon in general, you should post them to
 the established marathon forums, such as alt.games.marathon.
