@@ -2449,6 +2449,157 @@ bool XML_PowerupAssignParser::HandleAttribute(const char *Tag, const char *Value
 static XML_PowerupAssignParser PowerupAssignParser;
 
 
+class XML_PlayerShapeParser: public XML_ElementParser
+{
+	bool IsPresent[3];
+	short Type, Subtype, Seq;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+		
+	XML_PlayerShapeParser(): XML_ElementParser("shape") {}
+};
+
+bool XML_PlayerShapeParser::Start()
+{
+	for (int k=0; k<3; k++)
+		IsPresent[k] = false;
+	return true;
+}
+
+bool XML_PlayerShapeParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"type") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(4)))
+		{
+			IsPresent[0] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"subtype") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Subtype,short(0),short(MAX(MAX(5,NUMBER_OF_PLAYER_ACTIONS),PLAYER_TORSO_SHAPE_COUNT)-1)))
+		{
+			IsPresent[1] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"value") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Seq,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		{
+			IsPresent[2] = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_PlayerShapeParser::AttributesDone()
+{
+	// Verify...
+	bool AllPresent = true;
+	for (int k=0; k<3; k++)
+		AllPresent = AllPresent && IsPresent[k];
+	
+	if (!AllPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	// Put into place
+	switch(Type)
+	{
+	case 0:	// Collection, dying, dead
+		switch(Subtype)
+		{
+		case 0:
+			if (Seq < MAXIMUM_COLLECTIONS)
+			{
+				player_shapes.collection = Seq;
+			} else {
+				OutOfRange();
+				return false;
+			}
+			break;
+			
+		case 1:
+			player_shapes.dying_hard = Seq;
+			break;
+			
+		case 2:
+			player_shapes.dying_soft = Seq;
+			break;
+			
+		case 3:
+			player_shapes.dead_hard = Seq;
+			break;
+			
+		case 4:
+			player_shapes.dead_soft = Seq;
+			break;
+			
+		default:
+			OutOfRange();
+			return false;
+		}
+		break;
+		
+	case 1: // Legs
+		if (Subtype < NUMBER_OF_PLAYER_ACTIONS)
+		{
+			player_shapes.legs[Subtype] = Seq;
+		} else {
+			OutOfRange();
+			return false;
+		}
+		break;
+		
+	case 2: // Weapon-idle torsos
+		if (Subtype < PLAYER_TORSO_SHAPE_COUNT)
+		{
+			player_shapes.torsos[Subtype] = Seq;
+		} else {
+			OutOfRange();
+			return false;
+		}
+		break;
+		
+	case 3: // Weapon-charging torsos
+		if (Subtype < PLAYER_TORSO_SHAPE_COUNT)
+		{
+			player_shapes.charging_torsos[Subtype] = Seq;
+		} else {
+			OutOfRange();
+			return false;
+		}
+		break;
+		
+	case 4: // Weapon-firing torsos
+		if (Subtype < PLAYER_TORSO_SHAPE_COUNT)
+		{
+			player_shapes.firing_torsos[Subtype] = Seq;
+		} else {
+			OutOfRange();
+			return false;
+		}
+		break;
+		
+	}
+		
+	return true;
+}
+
+static XML_PlayerShapeParser PlayerShapeParser;
+
 
 class XML_PlayerParser: public XML_ElementParser
 {
@@ -2510,6 +2661,7 @@ XML_ElementParser *Player_GetParser()
 	PlayerParser.AddChild(&PlayerDamageParser);
 	PlayerParser.AddChild(&PowerupParser);
 	PlayerParser.AddChild(&PowerupAssignParser);
+	PlayerParser.AddChild(&PlayerShapeParser);
 
 	return &PlayerParser;
 }
