@@ -119,7 +119,7 @@ enum
 	OGL_Flag_VoidColor	= 0x0002,	// Whether to color the void
 	OGL_Flag_FlatLand	= 0x0004,	// Whether to use flat-textured landscapes
 	OGL_Flag_Fog		= 0x0008,	// Whether to make fog
-	// 0x0010 was OGL_Flag_SnglPass, now reserved
+	OGL_Flag_3D_Models	= 0x0010,	// Whether to use 3D models
 	OGL_Flag_2DGraphics	= 0x0020,	// Whether to pipe 2D graphics through OpenGL
 	OGL_Flag_FlatStatic	= 0x0040,	// Whether to make the "static" effect look flat
 	OGL_Flag_Fader		= 0x0080,	// Whether to do the fader effects in OpenGL

@@ -54,6 +54,7 @@ enum
 	Map_Item = 29,
 	TextureFix_Item = 30,
 	AllowFog_Item = 31,
+	Model_Item = 37,
 	
 	ColorPicker_PromptStrings = 200,
 	ColorVoid_String = 0,
@@ -323,6 +324,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	MacCheckbox SeeThruLiquids_CB(Dialog, LiquidSeeThru_Item, TEST_FLAG(Data.Flags,OGL_Flag_LiqSeeThru) != 0);
 	MacCheckbox Map_CB(Dialog, Map_Item, TEST_FLAG(Data.Flags,OGL_Flag_Map) != 0);
 	MacCheckbox TextureFix_CB(Dialog, TextureFix_Item, TEST_FLAG(Data.Flags,OGL_Flag_TextureFix) != 0);
+	MacCheckbox Model_CB(Dialog, Model_Item, TEST_FLAG(Data.Flags,OGL_Flag_3D_Models) != 0);
 	
 	// Load the colors into temporaries
 	VoidColor = Data.VoidColor;
@@ -393,6 +395,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			if (SeeThruLiquids_CB.ToggleIfHit(ItemHit)) break;
 			if (Map_CB.ToggleIfHit(ItemHit)) break;
 			if (TextureFix_CB.ToggleIfHit(ItemHit)) break;
+			if (Model_CB.ToggleIfHit(ItemHit)) break;
 			
 			ile = 0;
 			Escape = false;
@@ -436,6 +439,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		SET_FLAG(Data.Flags,OGL_Flag_LiqSeeThru,SeeThruLiquids_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_Map,Map_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_TextureFix,TextureFix_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_3D_Models,Model_CB.GetState());
 		Data.VoidColor = VoidColor;
 		for (int il=0; il<4; il++)
 			for (int ie=0; ie<2; ie++)

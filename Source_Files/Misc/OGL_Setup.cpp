@@ -47,6 +47,7 @@ Aug 21, 2001 (Loren Petrich):
 
 #include <vector>
 #include <string.h>
+#include <math.h>
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
@@ -146,10 +147,11 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	}
 #ifdef SDL
 	// Reasonable default flags ("static" effect causes massive slowdown, so we turn it off)
-	Data.Flags = OGL_Flag_FlatStatic | OGL_Flag_Fader | OGL_Flag_Map | OGL_Flag_HUD | OGL_Flag_LiqSeeThru;
+	Data.Flags = OGL_Flag_FlatStatic | OGL_Flag_Fader | OGL_Flag_Map |
+		OGL_Flag_HUD | OGL_Flag_LiqSeeThr | OGL_Flag_3D_Models;
 #else
 	// Reasonable default flags
-	Data.Flags = OGL_Flag_Map | OGL_Flag_LiqSeeThru;
+	Data.Flags = OGL_Flag_Map | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models;
 #endif
 	Data.VoidColor = rgb_black;			// Self-explanatory
 	for (int il=0; il<4; il++)
@@ -339,7 +341,7 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence)
 		vector<ModelDataEntry>::iterator MdlIter = MdlList[Collection].begin() + HashVal;
 		if (MdlIter->Sequence == Sequence)
 		{
-			return &MdlIter->ModelData;
+			return MdlIter->ModelData.ModelPresent() ? &MdlIter->ModelData : NULL;
 		}
 	}
 	
@@ -352,7 +354,7 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence)
 		if (MdlIter->Sequence == Sequence)
 		{
 			HashVal = Indx;
-			return &MdlIter->ModelData;
+			return MdlIter->ModelData.ModelPresent() ? &MdlIter->ModelData : NULL;
 		}
 	}
 	
@@ -595,6 +597,57 @@ bool OGL_SkinManager::Use(short CLUT, short Which)
 }
 
 
+// Circle constants
+const double TWO_PI = 8*atan(1.0);
+const double Degree2Radian = TWO_PI/360;			// A circle is 2*pi radians
+
+// Matrix manipulation (can't trust OpenGL to be active, so won't be using OpenGL matrix stuff)
+
+// Src -> Dest
+static void MatCopy(const GLfloat SrcMat[3][3], GLfloat DestMat[3][3])
+{
+	objlist_copy(DestMat[0],SrcMat[0],9);
+}
+
+// Sets the arg to that matrix
+static void MatIdentity(GLfloat Mat[3][3])
+{
+	const GLfloat IMat[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
+	MatCopy(IMat,Mat);
+}
+
+// Src1, Src2 -> Dest (cannot be one of the sources)
+static void MatMult(const GLfloat Mat1[3][3], const GLfloat Mat2[3][3], GLfloat DestMat[3][3])
+{
+	for (int k=0; k<3; k++)
+		for (int l=0; l<3; l++)
+		{
+			GLfloat Sum = 0;
+			for (int m=0; m<3; m++)
+				Sum += Mat1[k][m]*Mat2[m][l];
+			DestMat[k][l] = Sum;
+		}
+}
+
+// Alters the matrix in place
+static void MatScalMult(GLfloat Mat[3][3], const GLfloat Scale)
+{
+	for (int k=0; k<3; k++)
+		for (int l=0; l<3; l++)
+			Mat[k][l] *= Scale;
+}
+
+// Src -> Dest vector (cannot be the same location)
+static void MatVecMult(const GLfloat Mat[3][3], const GLfloat *SrcVec, GLfloat *DestVec)
+{
+	for (int k=0; k<3; k++)
+	{
+		GLfloat Sum = 0;
+		for (int l=0; l<3; l++)
+			Sum += Mat[k][l]*SrcVec[l];
+		DestVec[k] = Sum;
+	}
+}
 
 void OGL_ModelData::Load()
 {
@@ -620,8 +673,67 @@ void OGL_ModelData::Load()
 			return;
 		}
 	}
-
-#warning Be sure to do transformations and bounding-box calculations here
+	
+	// Calculate transformation matrix
+	GLfloat Angle, Cosine, Sine;
+	GLfloat RotMatrix[3][3], NewRotMatrix[3][3], IndivRotMatrix[3][3];
+	MatIdentity(RotMatrix);
+	
+	MatIdentity(IndivRotMatrix);
+	Angle = Degree2Radian*XRot;
+	Cosine = cos(Angle);
+	Sine = sin(Angle);
+	IndivRotMatrix[1][1] = Cosine;
+	IndivRotMatrix[1][2] = - Sine;
+	IndivRotMatrix[2][1] = Sine;
+	IndivRotMatrix[2][2] = Cosine;
+	MatMult(IndivRotMatrix,RotMatrix,NewRotMatrix);
+	MatCopy(NewRotMatrix,RotMatrix);
+	
+	MatIdentity(IndivRotMatrix);
+	Angle = Degree2Radian*YRot;
+	Cosine = cos(Angle);
+	Sine = sin(Angle);
+	IndivRotMatrix[2][2] = Cosine;
+	IndivRotMatrix[2][0] = - Sine;
+	IndivRotMatrix[0][2] = Sine;
+	IndivRotMatrix[0][0] = Cosine;
+	MatMult(IndivRotMatrix,RotMatrix,NewRotMatrix);
+	MatCopy(NewRotMatrix,RotMatrix);
+	
+	MatIdentity(IndivRotMatrix);
+	Angle = Degree2Radian*ZRot;
+	Cosine = cos(Angle);
+	Sine = sin(Angle);
+	IndivRotMatrix[0][0] = Cosine;
+	IndivRotMatrix[0][1] = - Sine;
+	IndivRotMatrix[1][0] = Sine;
+	IndivRotMatrix[1][1] = Cosine;
+	MatMult(IndivRotMatrix,RotMatrix,NewRotMatrix);
+	MatCopy(NewRotMatrix,RotMatrix);
+	
+	MatScalMult(NewRotMatrix,Scale);
+	
+	int NumVerts = Model.Positions.size()/3;
+	
+	for (int k=0; k<NumVerts; k++)
+	{
+		GLfloat *Pos = Model.PosBase() + 3*k;
+		GLfloat NewPos[3];
+		MatVecMult(NewRotMatrix,Pos,NewPos);	// Has the scaling
+		Pos[0] = NewPos[0] + XShift;
+		Pos[1] = NewPos[1] + YShift;
+		Pos[2] = NewPos[2] + ZShift;
+	}
+	
+	int NumNorms = Model.Normals.size()/3;
+	for (int k=0; k<NumNorms; k++)
+	{
+		GLfloat *Norms = Model.NormBase() + 3*k;
+		GLfloat NewNorms[3];
+		MatVecMult(RotMatrix,Norms,NewNorms);	// Not scaled
+		objlist_copy(Norms,NewNorms,3);
+	}	
 	
 	// Don't forget the skins
 	OGL_SkinManager::Load();
@@ -656,10 +768,14 @@ void OGL_LoadModelsImages(int Collection)
 	}
 	
 	// For models
+	bool UseModels = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_3D_Models) ? true : false;
 	vector<ModelDataEntry>& ML = MdlList[Collection];
 	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
 	{
-		MdlIter->ModelData.Load();
+		if (UseModels)
+			MdlIter->ModelData.Load();
+		else
+			MdlIter->ModelData.Unload();
 	}
 }
 

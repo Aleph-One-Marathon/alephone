@@ -361,12 +361,19 @@ static bool RenderModel(rectangle_definition& RenderRectangle, short Collection,
 // it gets "IsBlended" off of the texture definition
 static bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended);
 
+// Setup and teardown for the static-effect mode
+static void SetupStaticMode(rectangle_definition& RenderRectangle);
+static void TeardownStaticMode();
+
 // Renderer object
 static ModelRenderer ModelRenderObject;
 
 // Shader lists for the object renderer
 static ModelRenderShader StandardShaders[2];
-static ModelRenderShader StaticEffectShaders[4];
+static ModelRenderShader StaticModeShaders[4];
+
+// Data for static-mode shader callback: which one in sequence
+static int SequenceNumbers[4] = {0, 1, 2, 3};
 
 // Contains everything that the shader callbacks will need
 struct ShaderDataStruct
@@ -380,6 +387,8 @@ static ShaderDataStruct ShaderData;
 // Shader callbacks
 void NormalShader(void *Data);
 void GlowingShader(void *Data);
+void StaticModeIndivSetup(int SeqNo);
+void StaticModeShader(void *Data);
 
 // Set up the shader data
 static void SetupShaders();
@@ -848,6 +857,11 @@ bool OGL_SetView(view_data &View)
 	CenteredWorld_2_MaraEye[4+1] = Cosine;
 	glLoadMatrixd(CenteredWorld_2_MaraEye);
 	
+	// Reverse the model-render direction so as to work correctly
+	ModelRenderObject.ViewDirection[0] = - Cosine;
+	ModelRenderObject.ViewDirection[1] = - Sine;
+	ModelRenderObject.ViewDirection[2] = 0;
+
 	// Do a translation and then save;
 	glTranslated(-View.origin.x,-View.origin.y,-View.origin.z);
 	glGetDoublev(GL_MODELVIEW_MATRIX,World_2_MaraEye);
@@ -1921,76 +1935,19 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	TMgr.RenderNormal();	// Always do this, of course
 	if (RenderRectangle.transfer_mode == _static_transfer)
 	{
+		SetupStaticMode(RenderRectangle);
 		if (UseFlatStatic)
 		{
-			// Per-sprite coloring; be sure to add the transparency in appropriate fashion
-			for (int c=0; c<3; c++)
-				FlatStaticColor[c] = StaticRandom.KISS() + StaticRandom.LFIB4();
-			FlatStaticColor[3] = 65535 - RenderRectangle.transfer_data;
-			
-			// Do flat-color version of static effect
-			glDisable(GL_ALPHA_TEST);
-			glEnable(GL_BLEND);
-			glColor4usv(FlatStaticColor);
 			glDrawArrays(GL_POLYGON,0,4);
-			
 		} else {
 			// Do multitextured stippling to create the static effect
-			
-			// The colors:
-			for (int c=0; c<3; c++)
-				for (int n=0; n<StatPatLen; n++)
-					StaticPatterns[c][n] = StaticRandom.KISS() + StaticRandom.LFIB4();
-			
-			// The alpha channel:
-			for (int n=0; n<StatPatLen; n++)
+			for (int k=0; k<4; k++)
 			{
-				uint32 Val = 0;
-				// Avoid doing extra random-number evaluations
-				// for the case of complete opacity
-				if (RenderRectangle.transfer_data > 0)
-				{
-					for (int k=0; k<32; k++)
-					{
-						// Have to do this for every bit to get the proper probability distribution
-						Val <<= 1;
-						uint16 RandSamp = uint16(StaticRandom.KISS());
-						Val |= (RandSamp >= RenderRectangle.transfer_data) ? 1 : 0;
-					}
-				}
-				else
-					Val = 0xffffffff;
-				
-				// Premultiply the stipple-color values by the alpha
-				for (int c=0; c<3; c++)
-					StaticPatterns[c][n] &= Val;
-				StaticPatterns[3][n] = Val;
-			}
-			
-			// First pass: base color (black)
-			glEnable(GL_POLYGON_STIPPLE);
-			glColor3f(0,0,0);
-			glPolygonStipple((byte *)StaticPatterns[3]);
-			glDrawArrays(GL_POLYGON,0,4);
-			
-			glEnable(GL_COLOR_LOGIC_OP);
-			
-			// Paint the appropriate color component in
-			glLogicOp(GL_OR);
-			
-			// Each of the primary colors
-			const GLfloat StaticBaseColors[3][3] = {{1,0,0},{0,1,0},{0,0,1}};
-			
-			// Remaining passes, one for each primary color
-			for (int c=0; c<3; c++)
-			{
-				glColor3fv(StaticBaseColors[c]);			
-				glPolygonStipple((byte *)StaticPatterns[c]);
+				StaticModeIndivSetup(k);
 				glDrawArrays(GL_POLYGON,0,4);
 			}
-			glDisable(GL_COLOR_LOGIC_OP);
-			glDisable(GL_POLYGON_STIPPLE);
 		}
+		TeardownStaticMode();
 	}
 	else
 	{
@@ -2057,16 +2014,25 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	
 	if (RenderRectangle.transfer_mode == _static_transfer)
 	{
-
-#warning Will get this working after the more normal rendering gets working	
-	
+		SetupStaticMode(RenderRectangle);
+		if (UseFlatStatic)
+		{
+			// Do explicit depth sort because these textures are semitransparent
+			ModelRenderObject.Render(ModelPtr->Model, false, StandardShaders, 1);
+		} else {
+			// Do multitextured stippling to create the static effect
+			ModelRenderObject.Render(ModelPtr->Model, Z_Buffering, StaticModeShaders, 4);
+		}
+		TeardownStaticMode();
 	}
 	else
 	{
 		bool IsGlowing = IsGlowmappable && SkinPtr->GlowImg.IsPresent();
 		int NumShaders = IsGlowing ? 2 : 1;
 		
-		bool Use_Z_Buffer = Z_Buffering && !IsBlended;
+		// Do explicit depth sort for not only "officially" blended textures but
+		// also for invisibility mode (tinted transfer)
+		bool Use_Z_Buffer = Z_Buffering && !IsBlended && (RenderRectangle.transfer_mode != _tinted_transfer);
 		
 		ModelRenderObject.Render(ModelPtr->Model, Use_Z_Buffer, StandardShaders, NumShaders);
 		
@@ -2124,6 +2090,72 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended
 };
 
 
+void SetupStaticMode(rectangle_definition& RenderRectangle)
+{
+	if (UseFlatStatic)
+	{
+		// Per-sprite coloring; be sure to add the transparency in appropriate fashion
+		for (int c=0; c<3; c++)
+			FlatStaticColor[c] = StaticRandom.KISS() + StaticRandom.LFIB4();
+		FlatStaticColor[3] = 65535 - RenderRectangle.transfer_data;
+		
+		// Do flat-color version of static effect
+		glDisable(GL_ALPHA_TEST);
+		glEnable(GL_BLEND);
+		glColor4usv(FlatStaticColor);
+	} else {
+		// Do multitextured stippling to create the static effect
+		
+		// The colors:
+		// Index from 1 to 3; index 0 is reserve for the initial blackout
+		for (int c=1; c<4; c++)
+			for (int n=0; n<StatPatLen; n++)
+				StaticPatterns[c][n] = StaticRandom.KISS() + StaticRandom.LFIB4();
+		
+		// The alpha channel:
+		for (int n=0; n<StatPatLen; n++)
+		{
+			uint32 Val = 0;
+			// Avoid doing extra random-number evaluations
+			// for the case of complete opacity
+			if (RenderRectangle.transfer_data > 0)
+			{
+				for (int k=0; k<32; k++)
+				{
+					// Have to do this for every bit to get the proper probability distribution
+					Val <<= 1;
+					uint16 RandSamp = uint16(StaticRandom.KISS());
+					Val |= (RandSamp >= RenderRectangle.transfer_data) ? 1 : 0;
+				}
+			}
+			else
+				Val = 0xffffffff;
+			
+			// Premultiply the stipple-color values by the alpha
+			StaticPatterns[0][n] = Val;
+			for (int c=1; c<4; c++)
+				StaticPatterns[c][n] &= Val;
+		}
+		
+		// Get read to use those static patterns
+		glEnable(GL_POLYGON_STIPPLE);
+	}
+}
+
+void TeardownStaticMode()
+{
+	if (UseFlatStatic)
+	{
+		// Nothing
+	}
+	else
+	{
+		glDisable(GL_COLOR_LOGIC_OP);
+		glDisable(GL_POLYGON_STIPPLE);
+	}
+}
+
+
 void NormalShader(void *Data)
 {
 	// Normal setup: nothing special
@@ -2144,6 +2176,34 @@ void GlowingShader(void *Data)
 }
 
 
+void StaticModeIndivSetup(int SeqNo)
+{
+	// Black [backing], red, green, blue
+	const GLfloat StaticBaseColors[4][3] = {{0,0,0},{1,0,0},{0,1,0},{0,0,1}};
+	
+	// Will be called in order 0, 1, 2, 3, so doing it once is OK
+	if (SeqNo == 1)
+	{
+		glEnable(GL_COLOR_LOGIC_OP);
+		glLogicOp(GL_OR);
+	}
+	
+	glColor3fv(StaticBaseColors[SeqNo]);			
+	glPolygonStipple((byte *)StaticPatterns[SeqNo]);
+}
+
+void StaticModeShader(void *Data)
+{
+	int *Which = (int *)Data;
+	StaticModeIndivSetup(*Which);
+	
+	// The silhouette texture is a "normal" one
+	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Normal))
+		LoadModelSkin(ShaderData.SkinPtr->NormalImg, ShaderData.Collection, ShaderData.CLUT);
+}
+
+
+
 void SetupShaders()
 {
 	StandardShaders[0].Flags = ModelRenderer::Textured;
@@ -2152,17 +2212,21 @@ void SetupShaders()
 	StandardShaders[1].Flags = ModelRenderer::Textured;
 	StandardShaders[1].TextureCallback = GlowingShader;
 
-	StaticEffectShaders[0].Flags = ModelRenderer::Textured;
-	StaticEffectShaders[0].TextureCallback = NormalShader;
+	StaticModeShaders[0].Flags = ModelRenderer::Textured;
+	StaticModeShaders[0].TextureCallback = StaticModeShader;
+	StaticModeShaders[0].TextureCallbackData = SequenceNumbers + 0;
 
-	StaticEffectShaders[1].Flags = ModelRenderer::Textured;
-	StaticEffectShaders[1].TextureCallback = NormalShader;
+	StaticModeShaders[1].Flags = ModelRenderer::Textured;
+	StaticModeShaders[1].TextureCallback = StaticModeShader;
+	StaticModeShaders[1].TextureCallbackData = SequenceNumbers + 1;
 
-	StaticEffectShaders[2].Flags = ModelRenderer::Textured;
-	StaticEffectShaders[2].TextureCallback = NormalShader;
+	StaticModeShaders[2].Flags = ModelRenderer::Textured;
+	StaticModeShaders[2].TextureCallback = StaticModeShader;
+	StaticModeShaders[2].TextureCallbackData = SequenceNumbers + 2;
 
-	StaticEffectShaders[3].Flags = ModelRenderer::Textured;
-	StaticEffectShaders[3].TextureCallback = NormalShader;
+	StaticModeShaders[3].Flags = ModelRenderer::Textured;
+	StaticModeShaders[3].TextureCallback = StaticModeShader;
+	StaticModeShaders[3].TextureCallbackData = SequenceNumbers + 3;
 }
 
 
