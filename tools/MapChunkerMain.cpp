@@ -571,6 +571,12 @@ CTabHandle GetSavedCLUT()
 	return GrayCLUT;
 }
 
+void ReplaceSavedCLUT(CTabHandle CLUT)
+{
+	if (SavedCLUT) DisposeHandle((Handle)SavedCLUT);
+	SavedCLUT = CLUT;
+}
+
 
 Handle MakeCLUT(byte *Data, int Length)
 {
@@ -601,15 +607,15 @@ Handle MakeCLUT(byte *Data, int Length)
 	return CLUT;
 }
 
-void LoadCLUTIntoArray(LoadedResource Rsrc, vector<uint8>& Data)
+void LoadCLUTIntoArray(Handle DHdl, vector<uint8>& Data)
 {
 	Data.clear();
-	if (Rsrc.GetLength() != (8 + 256 * 8)) return;
+	if (GetHandleSize(DHdl) != (8 + 256 * 8)) return;
 	
 	Data.resize(6 + 256 * 6);
 	objlist_clear(&Data[0],Data.size());
 	
-	uint8 *In = (uint8 *)(Rsrc.GetPointer());
+	uint8 *In = (uint8 *)(*DHdl);
 	uint8 *Out = &Data[0];
 	
 	Out[0] = In[6];
@@ -627,6 +633,16 @@ void LoadCLUTIntoArray(LoadedResource Rsrc, vector<uint8>& Data)
 		*Out++ = *In++;
 		*Out++ = *In++;	// Blue
 		*Out++ = *In++;
+	}
+}
+
+void LoadSavedCLUTIntoArray(vector<uint8>& Data)
+{
+	if (SavedCLUT)
+	{
+		LoadCLUTIntoArray((Handle)SavedCLUT, Data);
+		DisposeHandle((Handle)SavedCLUT);
+		SavedCLUT = NULL;
 	}
 }
 
@@ -706,15 +722,16 @@ Handle MakePicture(byte *Data, int Length)
 	return (Handle)Pic;
 }
 
-void LoadPictureIntoArray(LoadedResource Rsrc, vector<uint8>& Data)
+void LoadPictureIntoArray(Handle DHdl, vector<uint8>& Data)
 {
 	// Empty: indicates failure
 	Data.clear();
 	
 	// Get info on the picture
-	PicHandle Pic = (PicHandle)Rsrc.GetHandle();
+	PicHandle Pic = (PicHandle)DHdl;
 	if (!Pic) return;
 	
+	// Be sure that the color table is a full 256 colors
 	PictInfo Info;
 	GetPictInfo(Pic, &Info, returnColorTable, 256, 0, 0);
 	
@@ -722,9 +739,12 @@ void LoadPictureIntoArray(LoadedResource Rsrc, vector<uint8>& Data)
 	
 	CTabHandle CLUT = Info.depth <= 8 ? Info.theColorTable : NULL;
 	
+	// Need to do this so one can save a CLUT for every 8-bit picture
+	ReplaceSavedCLUT(CLUT);
+	
 	// Supporting only multiples of 8 bpp (an integer number of bytes per pixel)
-	short NBytes = max(Info.depth >> 3, 1);
-	short ColorDepth = NBytes << 3;
+	short NPixelBytes = max(Info.depth >> 3, 1);
+	short ColorDepth = NPixelBytes << 3;
 	
 	Rect& Bounds = Info.sourceRect;
 	
@@ -734,7 +754,8 @@ void LoadPictureIntoArray(LoadedResource Rsrc, vector<uint8>& Data)
 	// We don't expect to fail after this, so set the size and start writing:
 	short Width = Bounds.right - Bounds.left;
 	short Height = Bounds.bottom - Bounds.top;
-	Data.resize(ColorDepth*int(Width)*int(Height) + 10);
+	int RowBytes = NPixelBytes*int(Width);
+	Data.resize(RowBytes*int(Height) + 10);
 	
 	uint8 *DPtr = &Data[0];
 	
@@ -748,12 +769,12 @@ void LoadPictureIntoArray(LoadedResource Rsrc, vector<uint8>& Data)
 	GetGWorld(&OldPort, NULL);
 	SetGWorld(Canvas, NULL);
 	
+	PenNormal();
+	
 	ForeColor(blackColor);
 	BackColor(whiteColor);
 	
 	DrawPicture(Pic,&Bounds);
-	
-	SetGWorld(OldPort, NULL);
 	
 	// Extract the data from the GWorld:
 	
@@ -761,14 +782,15 @@ void LoadPictureIntoArray(LoadedResource Rsrc, vector<uint8>& Data)
 	LockPixels(Pixels);
 	
 	uint8 *PPtr = (uint8 *)((*Pixels)->baseAddr);
-	short PAdv = (*Pixels)->rowBytes;
-	int RowBytes = ColorDepth*int(Width);
+	short PAdv = ((*Pixels)->rowBytes) & 0x7fff;	// Lop off the topmost bit!
 	for (int h=0; h<Height; h++)
 	{
 		memcpy(DPtr,PPtr,RowBytes);
 		PPtr += PAdv;
 		DPtr += RowBytes;
 	}
+	
+	SetGWorld(OldPort, NULL);
 	
 	UnlockPixels(Pixels);
 	DisposeGWorld(Canvas);
@@ -788,11 +810,11 @@ void LoadResourceIntoArray(int TypeIndex, int16 RsrcID, OpenedResourceFile InRes
 	switch(TypeIndex)
 	{
 	case Type_Picture:
-		LoadPictureIntoArray(Rsrc,Data);
+		LoadPictureIntoArray(Rsrc.GetHandle(),Data);
 		break;
 		
 	case Type_CLUT:
-		LoadCLUTIntoArray(Rsrc,Data);
+		LoadCLUTIntoArray(Rsrc.GetHandle(),Data);
 		break;
 		
 	case Type_Sound:
@@ -909,6 +931,7 @@ void AddChunks()
 				
 				NotYetUsed[it][Index] = 0;
 			}
+			LoadSavedCLUTIntoArray(LoadedResources[Type_CLUT]);
 		}
 		
 		WadContainer OutWad;
@@ -1005,6 +1028,11 @@ void AddChunks()
 				int DataLen = LoadedResources[it].size();
 				if (DataLen > 0)
 					append_data_to_wad(OutWad.Ptr, MovedChunkTypes[it], &LoadedResources[it][0], DataLen, 0);
+				
+				LoadSavedCLUTIntoArray(LoadedResources[Type_CLUT]);
+				DataLen = LoadedResources[Type_CLUT].size();
+				if (DataLen > 0)
+					append_data_to_wad(OutWad.Ptr, MovedChunkTypes[Type_CLUT], &LoadedResources[Type_CLUT][0], DataLen, 0);
 				
 				// Advance to next one when done
 				NotYetUsed[it][Indices[it]] = 0;
