@@ -136,7 +136,7 @@ static unsigned long find_checksum_and_file_spec_from_dialog(DialogPtr dialog,
 	short item_hit, uint32 type, FSSpec *file);
 static unsigned long find_checksum_and_file_spec_from_control(ControlHandle control,
 	uint32 type, FSSpec *file);
-static void SetToLoneFile(uint32 Type, FSSpec& File, unsigned long& Checksum);
+static void SetToLoneFile(Typecode Type, FSSpec& File, unsigned long& Checksum);
 static void	rebuild_patchlist(DialogPtr dialog, short item, unsigned long parent_checksum,
 	struct environment_preferences_data *preferences);
 
@@ -1285,7 +1285,7 @@ static bool teardown_input_dialog(
 // ZZZ: changing the way all this works so we can label groups of elements by their folder name.
 struct file_description {
 	// This is now the _typecode_stuff specified in tags.h (abstract file typing)
-	int file_type;
+	Typecode file_type;
 	unsigned long checksum;
 	unsigned long parent_checksum;
         int directory_index;
@@ -1577,7 +1577,7 @@ static bool file_is_extension_and_add_callback(
                 file_description element_to_insert;
                 
 		// LP change, since the filetypes are no longer constants
-		int Filetype = File.GetType();
+		Typecode Filetype = File.GetType();
 		if (Filetype == _typecode_scenario || Filetype == _typecode_physics)
 		{
 			checksum= read_wad_file_checksum(File);
@@ -1949,7 +1949,7 @@ static unsigned long find_checksum_and_file_spec_from_control(
 	return checksum;
 }
 
-static void SetToLoneFile(uint32 Type, FSSpec& File, unsigned long& Checksum)
+static void SetToLoneFile(Typecode Type, FSSpec& File, unsigned long& Checksum)
 {
 	int LoneFileIndex = NONE;	// Null value (-1)
 	

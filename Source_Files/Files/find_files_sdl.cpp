@@ -38,7 +38,7 @@
  *  File finder base class
  */
 
-bool FileFinder::Find(DirectorySpecifier &dir, int type, bool recursive)
+bool FileFinder::Find(DirectorySpecifier &dir, Typecode type, bool recursive)
 {
 	// Get list of entries in directory
 	vector<dir_entry> entries;

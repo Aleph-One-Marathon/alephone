@@ -986,34 +986,34 @@ static pascal OSErr handle_open_document(
 							
 							// LP change, since the filetypes are no longer constants
 							// OSType Typecode = theFInfo.fdType;
-							int Typecode = InputFile.GetType();
-							if (Typecode == _typecode_scenario)
+							Typecode type = InputFile.GetType();
+							if (type == _typecode_scenario)
 							{
 								set_map_file(InputFile);
 							}
-							else if (Typecode == _typecode_savegame)
+							else if (type == _typecode_savegame)
 							{
 								if(load_and_start_game(InputFile))
 								{
 									done= true;
 								}
 							}
-							else if (Typecode == _typecode_film)
+							else if (type == _typecode_film)
 							{
 								if(handle_open_replay(InputFile))
 								{
 									done= true;
 								}
 							}
-							else if (Typecode == _typecode_physics)
+							else if (type == _typecode_physics)
 							{
 								set_physics_file(InputFile);
 							}
-							else if (Typecode == _typecode_shapes)
+							else if (type == _typecode_shapes)
 							{
 								open_shapes_file(InputFile);
 							}
-							else if (Typecode == _typecode_sounds)
+							else if (type == _typecode_sounds)
 							{
 								open_sound_file(InputFile);
 							}

@@ -66,8 +66,9 @@ Jul 4, 2002 (Loren Petrich):
 
 /* OSTypes.. */
 // LP change: moved values to filetypes_macintosh.c
-enum {
-	_typecode_creator,
+enum Typecode {
+	_typecode_unknown= NONE,
+	_typecode_creator= 0,
 	_typecode_scenario,
 	_typecode_savegame,
 	_typecode_film,
@@ -87,10 +88,10 @@ enum {
 void initialize_typecodes();
 
 // Accessors
-uint32 get_typecode(int which);
-void set_typecode(int which, uint32 _type);
+uint32 get_typecode(Typecode which);
+void set_typecode(Typecode which, uint32 _type);
 #ifdef mac
-OSType get_typecode_for_file_type(OSType inType);
+Typecode get_typecode_for_file_type(OSType inType);
 #endif
 
 // These are no longer constants, which will cause trouble for switch/case constructions

@@ -338,7 +338,7 @@ const FileSpecifier &FileSpecifier::operator=(const FileSpecifier &other)
 }
 
 // Create file
-bool FileSpecifier::Create(int Type)
+bool FileSpecifier::Create(Typecode Type)
 {
 	Delete();
 	// files are automatically created when opened for writing
@@ -429,12 +429,12 @@ TimeType FileSpecifier::GetDate()
 }
 
 // Determine file type
-int FileSpecifier::GetType()
+Typecode FileSpecifier::GetType()
 {
 	// Open file
 	OpenedFile f;
 	if (!Open(f))
-		return NONE;
+		return _typecode_unknown;
 	SDL_RWops *p = f.GetRWops();
 	long file_length = 0;
 	f.GetLength(file_length);
@@ -488,7 +488,7 @@ not_shapes: ;
 	}
 
 	// Not identified
-	return NONE;
+	return _typecode_unknown;
 }
 
 // Get free space on disk

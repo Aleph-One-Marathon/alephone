@@ -31,7 +31,7 @@ Aug 26, 2000 (Loren Petrich):
 #include "FileHandler.h"
 
 // Finds every type of file
-const int WILDCARD_TYPE = NONE;
+const Typecode WILDCARD_TYPE = _typecode_unknown;
 
 #if defined(mac)
 
@@ -65,7 +65,7 @@ public:
 	short search_type;		/* Search type						<-  */
 	
 	DirectorySpecifier BaseDir;
-	int Type;				/* OSType to find					<-  */
+	Typecode Type;				/* OSType to find					<-  */
 	
 	FileSpecifier *buffer; 	/* Destination						<-> */
 	short max;				/* Maximum matches to return		<-  */
@@ -104,7 +104,7 @@ public:
 	FileFinder() {}
 	virtual ~FileFinder() {}
 
-	bool Find(DirectorySpecifier &dir, int type, bool recursive = true);
+	bool Find(DirectorySpecifier &dir, Typecode type, bool recursive = true);
 
 protected:
 	// Gets called for each found file, returns true if search is to be aborted

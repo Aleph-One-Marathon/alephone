@@ -561,7 +561,7 @@ bool FileSpecifier::SetParentToPreferences()
 
 // Much of the content taken from portable_files.c:
 
-bool FileSpecifier::Create(int Type)
+bool FileSpecifier::Create(Typecode Type)
 {
 	OSType TypeCode = InRange(Type) ? get_typecode(Type) : '????';
 	OSType CreatorCode = get_typecode(_typecode_creator);
@@ -686,7 +686,7 @@ static OSStatus ExtractSingleItem(const NavReplyRecord *reply, FSSpec *item)
 // These calls are for creating dialog boxes to set the filespec
 // A null pointer means an empty string
 
-bool FileSpecifier::ReadDialog(int Type, char *Prompt)
+bool FileSpecifier::ReadDialog(Typecode Type, char *Prompt)
 {
 	// For those who use return as the action key, queued returns can cause unwanted saves
 	FlushEvents(everyEvent,0);
@@ -754,7 +754,7 @@ bool FileSpecifier::ReadDialog(int Type, char *Prompt)
 	return true;
 }
 
-bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
+bool FileSpecifier::WriteDialog(Typecode Type, char *Prompt, char *DefaultName)
 {
 	// For those who use return as the action key, queued returns can cause unwanted saves
 	FlushEvents(everyEvent,0);
@@ -929,7 +929,7 @@ static pascal short custom_put_hook(
 #endif
 */
 
-bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
+bool FileSpecifier::WriteDialogAsync(Typecode Type, char *Prompt, char *DefaultName)
 {
 	// For those who use return as the action key, queued returns can cause unwanted saves
 	FlushEvents(everyEvent,0);
@@ -1029,12 +1029,12 @@ TimeType FileSpecifier::GetDate()
 	return modification_date;
 }
 
-// Returns NONE if the type could not be identified
-int FileSpecifier::GetType()
+// Returns _typecode_unknown if the type could not be identified
+Typecode FileSpecifier::GetType()
 {
 	FInfo FileInfo;
 	Err = FSpGetFInfo(&Spec,&FileInfo);
-	if (Err != noErr) return NONE;
+	if (Err != noErr) return _typecode_unknown;
 	
 	OSType MacType = FileInfo.fdType;
 

@@ -31,7 +31,7 @@ Aug 21, 2000 (Loren Petrich):
 
 /* Open the file, and allocate whatever internal structures are necessary in the */
 /*  preferences pointer.. */
-bool w_open_preferences_file(char *PrefName, int Type);
+bool w_open_preferences_file(char *PrefName, Typecode Type);
 
 typedef void (*prefs_initializer)(void *prefs);
 typedef bool (*prefs_validater)(void *prefs);

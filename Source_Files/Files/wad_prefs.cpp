@@ -68,7 +68,7 @@ inline short memory_error() {return 0;}
 /*  preferences pointer.. */
 bool w_open_preferences_file(
 	char *PrefName,
-	int Type)
+	Typecode Type)
 {
 	int error = 0;
 	bool success= true;
@@ -214,10 +214,10 @@ void w_write_preferences_file(
 
 	// LP: need to re-create that file to avoid
 	// nonexistence-induced errors in the MacOS version
-	int Type = prefInfo->PrefsFile.GetType();
+	Typecode Type = prefInfo->PrefsFile.GetType();
 	
-	// Setting to default if NONE
-	if (Type == NONE) Type = _typecode_preferences;
+	// Setting to default if _typecode_unknown
+	if (Type == _typecode_unknown) Type = _typecode_preferences;
 
 	// CB: delete old prefs file, we're overwriting it
 	// (writing can go wrong when the old file is still in place)

@@ -39,6 +39,8 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
+#include "tags.h"
+
 #define PRE_ENTRY_POINT_WADFILE_VERSION 0
 #define WADFILE_HAS_DIRECTORY_ENTRY 1
 #define WADFILE_SUPPORTS_OVERLAYS 2
@@ -133,7 +135,7 @@ short number_of_wads_in_file(FileSpecifier& File); /* returns -1 on error */
 
 /* ----- Open/Close functions */
 // Use one of the FileSpecifier enum types
-bool create_wadfile(FileSpecifier& File, int Type);
+bool create_wadfile(FileSpecifier& File, Typecode Type);
 
 bool open_wad_file_for_reading(FileSpecifier& File, OpenedFile& OFile);
 bool open_wad_file_for_writing(FileSpecifier& File, OpenedFile& OFile);
@@ -175,11 +177,11 @@ uint32 read_wad_file_parent_checksum(FileSpecifier& File);
 // Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
 
 bool find_wad_file_that_has_checksum(FileSpecifier& File,
-	int file_type, short path_resource_id, uint32 checksum);
+	Typecode file_type, short path_resource_id, uint32 checksum);
 
 /* Added in here for simplicity.  Really should be somewhere else.. */
 bool find_file_with_modification_date(FileSpecifier& File,
-	int file_type, short path_resource_id, TimeType modification_date);
+	Typecode file_type, short path_resource_id, TimeType modification_date);
 
 /* ------------ Flat wad functions */
 /* These functions are used for transferring data, and it completely encapsulates */

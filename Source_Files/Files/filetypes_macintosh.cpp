@@ -75,7 +75,7 @@ static OSType typecodes[NUMBER_OF_TYPECODES] = {
 struct file_type_to_a1_typecode_rec
 {
         OSType	file_type;
-        int	typecode;
+        Typecode	typecode;
 };
 
 static file_type_to_a1_typecode_rec additional_typecodes[] =
@@ -100,7 +100,7 @@ static file_type_to_a1_typecode_rec additional_typecodes[] =
 
 static const int NUMBER_OF_ADDITIONAL_TYPECODES = sizeof(additional_typecodes) / sizeof(additional_typecodes[0]);
 
-typedef map<OSType, int> file_type_to_a1_typecode_t;
+typedef map<OSType, Typecode> file_type_to_a1_typecode_t;
 static file_type_to_a1_typecode_t file_type_to_a1_typecode;
 
 
@@ -126,7 +126,7 @@ void initialize_typecodes()
         
         for(int i = 0; i < NUMBER_OF_TYPECODES; i++)
         {
-                file_type_to_a1_typecode[typecodes[i]] = i;
+                file_type_to_a1_typecode[typecodes[i]] = static_cast<Typecode>(i);
         }
 
         for(int i = 0; i < NUMBER_OF_ADDITIONAL_TYPECODES; i++)
@@ -137,28 +137,28 @@ void initialize_typecodes()
 
 
 // Accessors
-OSType get_typecode(int which)
+OSType get_typecode(Typecode which)
 {
 	if (which < 0) return '????';
 	else if (which >= NUMBER_OF_TYPECODES) return '????';
 	return typecodes[which];
 }
 
-void set_typecode(int which, OSType _type)
+void set_typecode(Typecode which, OSType _type)
 {
 	if (which < 0) return;
 	else if (which > NUMBER_OF_TYPECODES) return;
 	else typecodes[which] = _type;
 }
 
-OSType
+Typecode
 get_typecode_for_file_type(OSType inType)
 {
         assert(!file_type_to_a1_typecode.empty());
 
         file_type_to_a1_typecode_t::iterator entry = file_type_to_a1_typecode.find(inType);
         if(entry == file_type_to_a1_typecode.end())
-                return UNONE;
+                return _typecode_unknown;
         else
                 return entry->second;
 }

@@ -67,16 +67,16 @@ static bool match_modification_date_callback(FileSpecifier& File, void *data);
 // Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
 static bool find_wad_file_with_checksum_in_directory(
 	FileSpecifier& MatchingFile, DirectorySpecifier& BaseDir,
-	int file_type, uint32 checksum);
+	Typecode file_type, uint32 checksum);
 static bool find_file_with_modification_date_in_directory(
 	FileSpecifier& MatchingFile, DirectorySpecifier& BaseDir,
-	int file_type, uint32 checksum);
+	Typecode file_type, uint32 checksum);
 
 /* ------------- code! */
 /* Search all the directories in the path.. */
 bool find_wad_file_that_has_checksum(
 	FileSpecifier& MatchingFile,
-	int file_type,
+	Typecode file_type,
 	short path_resource_id,
 	uint32 checksum)
 {
@@ -97,7 +97,7 @@ bool find_wad_file_that_has_checksum(
 
 bool find_file_with_modification_date(
 	FileSpecifier& MatchingFile,
-	int file_type,
+	Typecode file_type,
 	short path_resource_id,
 	TimeType modification_date)
 {
@@ -155,7 +155,7 @@ static bool match_wad_checksum_callback(
 static bool find_wad_file_with_checksum_in_directory(
 	FileSpecifier& MatchingFile,
 	DirectorySpecifier& BaseDir,
-	int file_type,
+	Typecode file_type,
 	uint32 checksum)
 {
 	bool success= false;
@@ -196,7 +196,7 @@ static TimeType target_modification_date;
 static bool find_file_with_modification_date_in_directory(
 	FileSpecifier& MatchingFile,
 	DirectorySpecifier& BaseDir,
-	int file_type,
+	Typecode file_type,
 	TimeType modification_date)
 {
 	bool success= false;

@@ -923,7 +923,7 @@ void dump_wad(
 }
 
 /* ---------- file management routines */
-bool create_wadfile(FileSpecifier& File, int Type)
+bool create_wadfile(FileSpecifier& File, Typecode Type)
 {
 	return File.Create(Type);
 }

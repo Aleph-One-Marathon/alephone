@@ -66,7 +66,7 @@ private:
 	uint32 look_for_checksum;
 };
 
-bool find_wad_file_that_has_checksum(FileSpecifier &matching_file, int file_type, short path_resource_id, uint32 checksum)
+bool find_wad_file_that_has_checksum(FileSpecifier &matching_file, Typecode file_type, short path_resource_id, uint32 checksum)
 {
 	FindByChecksum finder(checksum);
 	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
@@ -106,7 +106,7 @@ private:
 	TimeType look_for_date;
 };
 
-bool find_file_with_modification_date(FileSpecifier &matching_file, int file_type, short path_resource_id, TimeType modification_date)
+bool find_file_with_modification_date(FileSpecifier &matching_file, Typecode file_type, short path_resource_id, TimeType modification_date)
 {
 	FindByDate finder(modification_date);
 	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();

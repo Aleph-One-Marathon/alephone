@@ -628,7 +628,7 @@ private:
 	dialog *parent;
 };
 
-bool FileSpecifier::ReadDialog(int type, char *prompt)
+bool FileSpecifier::ReadDialog(Typecode type, char *prompt)
 {
 	// Set default prompt
 	if (prompt == NULL) {
@@ -733,7 +733,7 @@ private:
 
 static bool confirm_save_choice(FileSpecifier & file);
 
-bool FileSpecifier::WriteDialog(int type, char *prompt, char *default_name)
+bool FileSpecifier::WriteDialog(Typecode type, char *prompt, char *default_name)
 {
 	// Set default prompt
 	if (prompt == NULL) {
@@ -802,7 +802,7 @@ again:
 	return result;
 }
 
-bool FileSpecifier::WriteDialogAsync(int type, char *prompt, char *default_name)
+bool FileSpecifier::WriteDialogAsync(Typecode type, char *prompt, char *default_name)
 {
 	return FileSpecifier::WriteDialog(type, prompt, default_name);
 }

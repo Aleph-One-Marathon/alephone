@@ -399,7 +399,7 @@ public:
 	// These functions take an appropriate one of the typecodes used earlier;
 	// this is to try to cover the cases of both typecode attributes
 	// and typecode suffixes.
-	bool Create(int Type);
+	bool Create(Typecode Type);
 	
 	// Opens a file:
 	bool Open(OpenedFile& OFile, bool Writable=false);
@@ -409,12 +409,12 @@ public:
 	
 	// These calls are for creating dialog boxes to set the filespec
 	// A null pointer means an empty string
-	bool ReadDialog(int Type, char *Prompt=NULL);
-	bool WriteDialog(int Type, char *Prompt=NULL, char *DefaultName=NULL);
+	bool ReadDialog(Typecode Type, char *Prompt=NULL);
+	bool WriteDialog(Typecode Type, char *Prompt=NULL, char *DefaultName=NULL);
 	
 	// Write dialog box for savegames (must be asynchronous, allowing the sound
 	// to continue in the background)
-	bool WriteDialogAsync(int Type, char *Prompt=NULL, char *DefaultName=NULL);
+	bool WriteDialogAsync(Typecode Type, char *Prompt=NULL, char *DefaultName=NULL);
 	
 	// Check on whether a file exists, and its type
 	bool Exists();
@@ -422,9 +422,9 @@ public:
 	// Gets the modification date
 	TimeType GetDate();
 	
-	// Returns NONE if the type could not be identified;
+	// Returns _typecode_unknown if the type could not be identified;
 	// the types returned are the _typecode_stuff in tags.h
-	int GetType();
+	Typecode GetType();
 
 	// How many bytes are free in the disk that the file lives in?
 	bool GetFreeSpace(unsigned long& FreeSpace);
