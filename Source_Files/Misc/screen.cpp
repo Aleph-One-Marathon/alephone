@@ -117,6 +117,9 @@ Aug 9, 2000 (Loren Petrich):
 Sept 9, 2000 (Loren Petrich):
 	Added a kludge to make OpenGL mode well-behaved in 32-bit (millions of colors) screen depth
 	-- reset the screen depth to 16-bit and then back to 32-bit.
+
+Nov 29, 2000 (Loren Petrich):
+	Added making view-folding effect optional
 */
 
 /*
@@ -1336,7 +1339,8 @@ void zoom_overhead_map_in(
 void start_teleporting_effect(
 	bool out)
 {
-	start_render_effect(world_view, out ? _render_effect_fold_out : _render_effect_fold_in);
+	if (View_DoFoldEffect())
+		start_render_effect(world_view, out ? _render_effect_fold_out : _render_effect_fold_in);
 }
 
 void start_extravision_effect(

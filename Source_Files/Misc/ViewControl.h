@@ -14,6 +14,10 @@
 	May 24, 2000 (Loren Petrich):
 	
 	Added landscape control
+
+Nov 29, 2000 (Loren Petrich):
+	Added making view-folding effect optional
+	Added making teleport static/fold effect optional
 */
 
 #include "world.h"
@@ -31,6 +35,13 @@ extern float View_FOV_TunnelVision();
 // Move field-of-view value closer to some target value;
 // returns whether or not the FOV had been changed.
 extern bool View_AdjustFOV(float& FOV, float FOV_Target);
+
+
+// Indicates whether to do fold-in/fold-out effect when one is teleporting
+extern bool View_DoFoldEffect();
+
+// Indicates whether to do the "static" effect when one is teleporting
+extern bool View_DoStaticEffect();
 
 
 // Landscape stuff

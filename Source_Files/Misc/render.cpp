@@ -171,6 +171,9 @@ Sep 2, 2000 (Loren Petrich):
 
 Nov 12, 2000 (Loren Petrich):
 	Added automap reset before rendering
+
+Nov 29, 2000 (Loren Petrich):
+	Made teleport static/fold effect optional
 */
 
 
@@ -687,6 +690,7 @@ void instantiate_rectangle_transfer_mode(
 		case _xfer_fold_in:
 			transfer_phase= FIXED_ONE-transfer_phase; /* do everything backwards */
 		case _xfer_fold_out:
+			if (View_DoStaticEffect())
 			{
 				short delta= FIXED_INTEGERAL_PART((((rectangle->x1-rectangle->x0)>>1)-1)*transfer_phase);
 				
@@ -695,6 +699,8 @@ void instantiate_rectangle_transfer_mode(
 				rectangle->x0+= delta;
 				rectangle->x1-= delta;
 			}
+			else
+				rectangle->transfer_mode= _textured_transfer;
 			break;
 
 #if 0		

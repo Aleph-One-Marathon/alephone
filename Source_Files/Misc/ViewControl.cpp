@@ -5,6 +5,10 @@
 
 Oct 13, 2000 (Loren Petrich)
 	Using the STL for the landscape-option-data container
+
+Nov 29, 2000 (Loren Petrich):
+	Added making view-folding effect optional
+	Added making teleport static/fold effect optional
 */
 
 #include <vector.h>
@@ -28,6 +32,12 @@ static float FOV_Normal = 80;
 static float FOV_ExtraVision = 130;
 static float FOV_TunnelVision = 30;
 static float FOV_ChangeRate = 1.66666667;	// this is 50 degrees/s
+
+// Defaults:
+// do the view folding effect (stretch horizontally, squeeze vertically) when teleporting,
+// also do the static effect / folding effect on viewed teleported objects
+static bool DoFoldEffect = true;
+static bool DoStaticEffect = true;
 
 // Accessors:
 float View_FOV_Normal() {return FOV_Normal;}
@@ -55,6 +65,13 @@ bool View_AdjustFOV(float& FOV, float FOV_Target)
 	
 	return Changed;
 }
+
+// Indicates whether to do fold-in/fold-out effect when one is teleporting
+bool View_DoFoldEffect() {return DoFoldEffect;}
+
+
+// Indicates whether to do the "static" effect when one is teleporting
+extern bool View_DoStaticEffect() {return DoStaticEffect;}
 
 
 // Landscape stuff: this is for being able to return a pointer to the default one
@@ -160,6 +177,14 @@ bool XML_ViewParser::HandleAttribute(const char *Tag, const char *Value)
 	if (strcmp(Tag,"map") == 0)
 	{
 		return (ReadBooleanValue(Value,MapActive));
+	}
+	else if (strcmp(Tag,"fold_effect") == 0)
+	{
+		return (ReadBooleanValue(Value,DoFoldEffect));
+	}
+	else if (strcmp(Tag,"static_effect") == 0)
+	{
+		return (ReadBooleanValue(Value,DoStaticEffect));
 	}
 	UnrecognizedTag();
 	return false;
