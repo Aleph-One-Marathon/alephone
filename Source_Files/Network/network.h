@@ -69,8 +69,8 @@ enum // base network speeds
 enum
 {
 	_appletalk_ring_network_version = 10,
-	_ip_ring_network_version = 13,
-	_ip_star_network_version = 14,
+	_ip_ring_network_version = 15,
+	_ip_star_network_version = 16,
 
 	kMinimumNetworkVersionForGracefulUnknownStreamPackets = 11
 };
