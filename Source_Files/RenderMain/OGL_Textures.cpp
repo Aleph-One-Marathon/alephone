@@ -239,7 +239,7 @@ void TextureState::FrameTick() {
 		assert(TextureType != NONE);
 		switch (TextureType) {
 		case OGL_Txtr_Wall:
-				if (unusedFrames > 600) Reset(); // at least 20 seconds till wall textures are released
+				if (unusedFrames > 300) Reset(); // at least 10 seconds till wall textures are released
 				break;
 		case OGL_Txtr_Landscape:
 				// never release landscapes
@@ -248,7 +248,7 @@ void TextureState::FrameTick() {
 				if (unusedFrames > 450) Reset(); // release unused sprites in 15 seconds
 				break;
 		case OGL_Txtr_WeaponsInHand:
-				if (unusedFrames > 300) Reset(); // release weaponds in hand in 10 seconds
+				if (unusedFrames > 600) Reset(); // release weapons in hand in 20 seconds
 				break;
 		}
 	}

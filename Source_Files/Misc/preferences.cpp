@@ -232,53 +232,53 @@ void initialize_preferences(
 	default_environment_preferences(environment_preferences);
 	
 	// Slurp in the file and parse it
-	
-	try
-	{
-		FileSpecifier FileSpec;
+
+        {
+            FileSpecifier FileSpec;
 
 #if defined(mac)
-#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
-            chdir(getenv("HOME"));
-            chdir("./Library/Preferences/");
-#endif
-		FileSpec.SetParentToPreferences();
-		FileSpec.SetName(getcstr(temporary, strFILENAMES, filenamePREFERENCES),'TEXT');
+            FileSpec.SetParentToPreferences();
+            FileSpec.SetName(getcstr(temporary, strFILENAMES, filenamePREFERENCES),'TEXT');
 #elif defined(SDL)
-		FileSpec.SetToPreferencesDir();
-		FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+            FileSpec.SetToPreferencesDir();
+            FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
 #endif
-		
-		OpenedFile OFile;
-		if (!FileSpec.Open(OFile)) throw 0;
-		
-		long Len = 0;
-		OFile.GetLength(Len);
-		if (Len <= 0) throw 0;
-		
-		vector<char> FileContents(Len);
-		
-		if (!OFile.Read(Len,&FileContents[0])) throw 0;
-		
-		OFile.Close();
 
-		if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
-		{
+            OpenedFile OFile;
+            if (FileSpec.Open(OFile)) {
+
+                long Len = 0;
+                OFile.GetLength(Len);
+                if (Len > 0) {
+
+                    vector<char> FileContents(Len);
+
+                    if (OFile.Read(Len,&FileContents[0])) {
+
+                        OFile.Close();
+
+                        if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
+                        {
 #if defined(mac)
-			ParamText("\pThere were preferences-file parsing errors",0,0,0);
-			Alert(FatalErrorAlert,NULL);
-			ExitToShell();
+                            ParamText("\pThere were preferences-file parsing errors",0,0,0);
+                            Alert(FatalErrorAlert,NULL);
+                            ExitToShell();
 #elif defined(SDL)
+<<<<<<< preferences.cpp
+                            fprintf(stderr, "There were preferences-file parsing errors");
+                            exit(0);
+=======
 			fprintf(stderr, "There were preferences-file parsing errors\n");
+>>>>>>> 1.43
 #endif
-		}
-	}
-	catch(...)
-	{
-		// Could not open or read the preferences file, therefore we do nothing
-            
-	}
-	
+                        }
+                    }
+                }
+
+            }
+
+        }
+        
 	// Check on the read-in prefs
 	validate_graphics_preferences(graphics_preferences);
 	validate_serial_number_preferences(serial_preferences);
@@ -346,7 +346,7 @@ void write_preferences(
         char str[257] = "";
         strcat(str,getenv("HOME"));
         strcat(str,"/Library/Preferences/");
-        strcat(str,getcstr(temporary, strFILENAMES, filenamePREFERENCES));
+        chdir(str);
         printf("%s\n",str);
 #endif
 	HGetVol(nil,&OldVRefNum,&OldParID);
@@ -357,11 +357,7 @@ void write_preferences(
 	if (HSetVol(nil, FileSpec.GetSpec().vRefNum, FileSpec.GetSpec().parID) != noErr) return;
     
 	// Open the file
-#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
-        FILE *F = fopen(str,"w");
-#else
         FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
-#endif
 
 #elif defined(SDL)
 	// Fix courtesy of mdadams@ku.edu
