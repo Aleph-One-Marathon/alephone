@@ -2048,7 +2048,7 @@ bool OGL_RenderCrosshairs()
 }
 
 // Rendering text; this takes it as a Pascal string (byte 0 = number of text bytes)
-bool OGL_RenderText(short BaseX, short BaseY, char *Text)
+bool OGL_RenderText(short BaseX, short BaseY, const char *Text)
 {
 	if (!OGL_IsActive()) return false;
 	

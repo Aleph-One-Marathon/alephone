@@ -463,7 +463,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 // assumes screen coordinates and that the left baseline point is at (0,0).
 // Alters the modelview matrix so that the next characters will be drawn at the proper place.
 // One can surround it with glPushMatrix() and glPopMatrix() to remember the original.
-void FontSpecifier::OGL_Render(char *Text)
+void FontSpecifier::OGL_Render(const char *Text)
 {
 	// Bug out if no texture to render
 	if (!OGL_Texture) return;

@@ -82,7 +82,7 @@ struct FontSpecifier
 	// assumes screen coordinates and that the left baseline point is at (0,0).
 	// Alters the modelview matrix so that the next characters will be drawn at the proper place.
 	// One can surround it with glPushMatrix() and glPopMatrix() to remember the original.
-	void OGL_Render(char *Text);
+	void OGL_Render(const char *Text);
 #endif
 	
 	// Equality and assignment operators

@@ -707,6 +707,24 @@ void render_overhead_map(struct view_data *view)
 
 
 /*
+ *  Display text string on world window (OpenGL or not)
+ */
+
+static void DisplayText(const FontSpecifier &font, int x, int y, const char *text)
+{
+	// OpenGL version:
+	// activate only in the main view, and also if OpenGL is being used for the overhead map
+	if ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
+		if (OGL_RenderText(x, y, text))
+			return;
+
+	// Non-OpenGL version (drop-shadow)
+	draw_text(world_pixels, text, x+1, y+1, SDL_MapRGB(world_pixels->format, 0x00, 0x00, 0x00), font.Info, font.Style);
+	draw_text(world_pixels, text, x, y, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), font.Info, font.Style);
+}
+
+
+/*
  *  FPS display
  */
 
@@ -730,9 +748,7 @@ static void update_fps_display(SDL_Surface *s)
 		// Print to screen
 		FontSpecifier& Font = GetOnScreenFont();
 		short Offset = Font.LineSpacing / 3;
-		draw_text(world_pixels, fps, Offset, world_pixels->h - Offset, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), Font.Info, Font.Style);
-		// draw_text(world_pixels, fps, 5, world_pixels->h - 5, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), info_display_font, styleNormal);
-		//!! OpenGL
+		DisplayText(Font, Offset, world_pixels->h - Offset, fps);
 	} else
 		frame_count = frame_index = 0;
 }
@@ -757,27 +773,26 @@ static void DisplayPosition(SDL_Surface *s)
 	const float FLOAT_WORLD_ONE = float(WORLD_ONE);
 	const float AngleConvert = 360.0 / float(FULL_CIRCLE);
 	sprintf(temporary, "X       = %8.3f", world_view->origin.x / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	DisplayText(Font, X, Y, temporary);
 	Y += LineSpacing;
 	sprintf(temporary, "Y       = %8.3f", world_view->origin.y / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	DisplayText(Font, X, Y, temporary);
 	Y += LineSpacing;
 	sprintf(temporary, "Z       = %8.3f", world_view->origin.z / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	DisplayText(Font, X, Y, temporary);
 	Y += LineSpacing;
 	sprintf(temporary, "Polygon = %8d", world_view->origin_polygon_index);
-	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	DisplayText(Font, X, Y, temporary);
 	Y += LineSpacing;
 	int Angle = world_view->yaw;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Yaw     = %8.3f", AngleConvert * Angle);
-	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	DisplayText(Font, X, Y, temporary);
 	Y += LineSpacing;
 	Angle = world_view->pitch;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Pitch   = %8.3f", AngleConvert * Angle);
-	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
-	//!! OpenGL
+	DisplayText(Font, X, Y, temporary);
 }
 
 
@@ -801,7 +816,7 @@ static void DisplayMessages(SDL_Surface *s)
 		if (Message.TimeRemaining <= 0) continue;
 		Message.TimeRemaining--;
 		
-		draw_text(world_pixels, Message.Text, X, Y, pixel, Font.Info, Font.Style);
+		DisplayText(Font, X, Y, Message.Text);
 		Y += LineSpacing;
 	}
 }
@@ -953,38 +968,6 @@ void validate_world_window(void)
 
 
 /*
- *  Change gamma level
- */
-#ifdef MOVED_OUT
-void change_gamma_level(short gamma_level)
-{
-	screen_mode.gamma_level = gamma_level;
-	gamma_correct_color_table(uncorrected_color_table, world_color_table, gamma_level);
-	stop_fade();
-	memcpy(visible_color_table, world_color_table, sizeof(struct color_table));
-	assert_world_color_table(interface_color_table, world_color_table);
-	change_screen_mode(&screen_mode, false);
-	set_fade_effect(NONE);
-}
-
-
-/*
- *  Set map/terminal display status
- */
-
-static void set_overhead_map_status(bool status)
-{
-	world_view->overhead_map_active = status;
-}
-
-static void set_terminal_status(bool status)
-{
-	world_view->terminal_mode_active = status;
-	dirty_terminal_view(current_player_index);
-}
-#endif
-
-/*
  *  Draw the HUD
  */
 
@@ -996,29 +979,6 @@ void DrawHUD(SDL_Rect &dest_rect)
 	SDL_UpdateRects(main_surface, 1, &dest_rect);
 }
 
-#ifdef MOVED_OUT
-void RequestDrawingHUD(void)
-{
-	HUD_RenderRequest = true;
-}
-
-
-/*
- *  For getting and setting tunnel-vision mode
- */
-
-bool GetTunnelVision(void)
-{
-	return world_view->tunnel_vision_active;
-}
-
-bool SetTunnelVision(bool TunnelVisionOn)
-{
-	world_view->tunnel_vision_active = TunnelVisionOn;
-	start_tunnel_vision_effect(TunnelVisionOn);
-	return world_view->tunnel_vision_active;
-}
-#endif
 
 /*
  *  Clear screen
