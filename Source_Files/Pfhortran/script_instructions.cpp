@@ -5,7 +5,10 @@
 	
 	10/20/00 - Mark Levin
 	Functions created for monster support
-	
+
+	Apr 27, 2001 (Loren Petrich):
+		Modified access to OpenGL color data; Pfhortran now affects only the above-liquid color,
+		though below-liquid color should be easy to control with appropriate modifications
 */
 
  
@@ -61,13 +64,6 @@ extern struct view_data *world_view;
 extern bool ready_weapon(short player_index, short weapon_index);
 extern void draw_panels(void);
 extern struct monster_data *get_monster_data(short monster_index);
-
-// LP: added complete set of fog variables: whether present, the depth, and the color
-// The depth is in internal units (1024 = 1 world unit),
-// and the color is RGBA, with color channels from 0 to 1.
-extern bool FogPresent;
-extern GLfloat FogDepth;
-extern GLfloat FogColor[4];
 
 
 // ML addition: to use possible_intersecting_monsters
@@ -1887,7 +1883,7 @@ void s_Set_Fog_Depth(script_instruction inst)
 			temp= 0;
 			break;
  	}
-	FogDepth = temp;
+	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = temp;
 }
 
 void s_Set_Fog_Color(script_instruction inst)
@@ -1929,10 +1925,12 @@ void s_Set_Fog_Color(script_instruction inst)
 		default:
 			break;
 	}
+	
+	rgb_color& Color = OGL_GetFogData(OGL_Fog_AboveLiquid)->Color;
 
-	FogColor[0] = r;
-	FogColor[1] = g;
-	FogColor[2] = b;
+	Color.red = PIN(int(65535*r+0.5),0,65535);
+	Color.green = PIN(int(65535*g+0.5),0,65535);
+	Color.blue = PIN(int(65535*b+0.5),0,65535);
 }
 
 void s_Get_Fog_Depth(script_instruction inst)
@@ -1940,7 +1938,7 @@ void s_Get_Fog_Depth(script_instruction inst)
 	if (inst.mode != 1)
 		return;
 
-	set_variable(int(inst.op1),FogDepth);
+	set_variable(int(inst.op1),OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth);
 
 }
 
@@ -1948,10 +1946,12 @@ void s_Get_Fog_Color(script_instruction inst)
 {
 	if (inst.mode != 7)
 		return;
-
-	set_variable(int(inst.op1),FogColor[0]);
-	set_variable(int(inst.op2),FogColor[1]);
-	set_variable(int(inst.op3),FogColor[2]);
+	
+	rgb_color& Color = OGL_GetFogData(OGL_Fog_AboveLiquid)->Color;
+	
+	set_variable(int(inst.op1),Color.red/65535.0);
+	set_variable(int(inst.op2),Color.green/65535.0);
+	set_variable(int(inst.op3),Color.blue/65535.0);
 
 }
 
