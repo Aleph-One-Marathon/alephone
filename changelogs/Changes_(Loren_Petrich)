@@ -1322,3 +1322,7 @@ September 11, 2000
 
 Made pointer-data and pointer-size definitions RenderVisTree.h and shapes.cp
 completely general.
+
+September 24, 2000
+
+Added level-dependent scripting, fixed a clip-region bug, etc.
