@@ -72,7 +72,7 @@ July 03, 2003 (jkvw):
 // LP change: outside handler for the default player name
 #include "PlayerName.h"
 
-#define TEST_NET_STATS_DIALOG  // for testing the dialog when i don't want to play a net game
+//#define TEST_NET_STATS_DIALOG  // for testing the dialog when i don't want to play a net game
 
 #ifdef TEST_NET_STATS_DIALOG
 //#define TEST_TEAM_DISPLAY_FOR_DIALOG
@@ -1981,7 +1981,6 @@ found_player_callback(const SSLP_ServiceInstance* player)
 
 static void
 lost_player_callback(const SSLP_ServiceInstance* player) {
-#warning Potential for off by one error in this code
 	int theIndex = find_item_index_in_vector(player, found_players);
 	
 	if(theIndex == -1)
@@ -2003,7 +2002,6 @@ lost_player_callback(const SSLP_ServiceInstance* player) {
 
 static void
 player_name_changed_callback(const SSLP_ServiceInstance* player) {
-#warning Potential for off by one error in this code
 	Cell cell;
 	int theIndex = find_item_index_in_vector(player, found_players);
 	
