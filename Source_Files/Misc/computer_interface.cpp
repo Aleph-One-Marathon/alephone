@@ -1132,7 +1132,16 @@ static void display_picture(
 		HUnlock((Handle) picture);
 #elif defined(SDL)
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
-		SDL_BlitSurface(s, NULL, world_pixels, &r);
+		if (s->w == r.w && s->h == r.h)
+			SDL_BlitSurface(s, NULL, world_pixels, &r);
+		else {
+			// Rescale picture
+			SDL_Surface *s2 = rescale_surface(s, r.w, r.h);
+			if (s2) {
+				SDL_BlitSurface(s2, NULL, world_pixels, &r);
+				SDL_FreeSurface(s2);
+			}
+		}
 		SDL_FreeSurface(s);
 #endif
 		/* And let the caller know where we drew the picture */

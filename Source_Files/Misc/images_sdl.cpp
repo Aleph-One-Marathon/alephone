@@ -165,7 +165,6 @@ static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int 
 					break;
 				default:
 					fprintf(stderr, "Unimplemented packing type %d in PICT resource\n", pack_type);
-					exit(1);
 					break;
 			}
 		}
@@ -194,27 +193,19 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 	bool done = false;
 	while (!done) {
 		uint16 opcode = SDL_ReadBE16(p);
+		//printf("%04x\n", opcode);
 		switch (opcode) {
 
 			case 0x0000:	// NOP
 			case 0x0011:	// VersionOp
+			case 0x001c:	// HiliteMode
 			case 0x001e:	// DefHilite
+			case 0x0038:	// FrameSameRect
+			case 0x0039:	// PaintSameRect
+			case 0x003a:	// EraseSameRect
+			case 0x003b:	// InvertSameRect
+			case 0x003c:	// FillSameRect
 			case 0x02ff:	// Version
-				break;
-
-			case 0x00a0:	// ShortComment
-				SDL_RWseek(p, 2, SEEK_CUR);
-				break;
-
-			case 0x00a1: {	// LongComment
-				SDL_RWseek(p, 2, SEEK_CUR);
-				int size = SDL_ReadBE16(p);
-				SDL_RWseek(p, size, SEEK_CUR);
-				break;
-			}
-
-			case 0x0c00:	// HeaderOp
-				SDL_RWseek(p, 24, SEEK_CUR);
 				break;
 
 			case 0x00ff:	// OpEndPic
@@ -223,14 +214,74 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 
 			case 0x0001: {	// Clipping region
 				uint16 size = SDL_ReadBE16(p);
+				if (size & 1)
+					size++;
 				SDL_RWseek(p, size - 2, SEEK_CUR);
 				break;
 			}
 
-			case 0x0098:	// Packed CopyBits with clipping rectangle
-			case 0x009a: {
+			case 0x0003:	// TxFont
+			case 0x0004:	// TxFace
+			case 0x0005:	// TxMode
+			case 0x0008:	// PnMode
+			case 0x000d:	// TxSize
+			case 0x0015:	// PnLocHFrac
+			case 0x0016:	// ChExtra
+			case 0x0023:	// ShortLineFrom
+			case 0x00a0:	// ShortComment
+				SDL_RWseek(p, 2, SEEK_CUR);
+				break;
+
+			case 0x0006:	// SpExtra
+			case 0x0007:	// PnSize
+			case 0x000b:	// OvSize
+			case 0x000c:	// Origin
+			case 0x000e:	// FgColor
+			case 0x000f:	// BgColor
+			case 0x0021:	// LineFrom
+				SDL_RWseek(p, 4, SEEK_CUR);
+				break;
+
+			case 0x001a:	// RGBFgCol
+			case 0x001b:	// RGBBkCol
+			case 0x001d:	// HiliteColor
+			case 0x001f:	// OpColor
+			case 0x0022:	// ShortLine
+				SDL_RWseek(p, 6, SEEK_CUR);
+				break;
+
+			case 0x0002:	// BkPat
+			case 0x0009:	// PnPat
+			case 0x000a:	// FillPat
+			case 0x0010:	// TxRatio
+			case 0x0020:	// Line
+			case 0x0030:	// FrameRect
+			case 0x0031:	// PaintRect
+			case 0x0032:	// EraseRect
+			case 0x0033:	// InvertRect
+			case 0x0034:	// FillRect
+				SDL_RWseek(p, 8, SEEK_CUR);
+				break;
+
+			case 0x0c00:	// HeaderOp
+				SDL_RWseek(p, 24, SEEK_CUR);
+				break;
+
+			case 0x00a1: {	// LongComment
+				SDL_RWseek(p, 2, SEEK_CUR);
+				int size = SDL_ReadBE16(p);
+				if (size & 1)
+					size++;
+				SDL_RWseek(p, size, SEEK_CUR);
+				break;
+			}
+
+			case 0x0098:	// Packed CopyBits
+			case 0x0099:	// Packed CopyBits with clipping region
+			case 0x009a:	// Direct CopyBits
+			case 0x009b: {	// Direct CopyBits with clipping region
 				// 1. PixMap
-				if (opcode == 0x009a)
+				if (opcode == 0x009a || opcode == 0x009b)
 					SDL_RWseek(p, 4, SEEK_CUR);		// pmBaseAddr
 				uint16 row_bytes = SDL_ReadBE16(p) & 0x3fff;	// the upper 2 bits are flags
 				uint16 top = SDL_ReadBE16(p);
@@ -268,22 +319,32 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 				}
 
 				// 2. ColorTable
-				if (opcode == 0x0098) {
-					SDL_Palette *pal = s->format->palette;
-					SDL_RWseek(p, 6, SEEK_CUR);			// ctSeed/ctFlags
+				if (opcode == 0x0098 || opcode == 0x0099) {
+					SDL_Color colors[256];
+					SDL_RWseek(p, 4, SEEK_CUR);			// ctSeed
+					uint16 flags = SDL_ReadBE16(p);
 					int num_colors = SDL_ReadBE16(p) + 1;
 					for (int i=0; i<num_colors; i++) {
 						uint8 value = SDL_ReadBE16(p) & 0xff;
-						pal->colors[value].r = SDL_ReadBE16(p) >> 8;
-						pal->colors[value].g = SDL_ReadBE16(p) >> 8;
-						pal->colors[value].b = SDL_ReadBE16(p) >> 8;
+						if (flags & 0x8000)
+							value = i;
+						colors[value].r = SDL_ReadBE16(p) >> 8;
+						colors[value].g = SDL_ReadBE16(p) >> 8;
+						colors[value].b = SDL_ReadBE16(p) >> 8;
 					}
+					SDL_SetColors(s, colors, 0, 256);
 				}
 
 				// 3. source/destination Rect and transfer mode
 				SDL_RWseek(p, 18, SEEK_CUR);
 
-				// 4. graphics data
+				// 4. clipping region
+				if (opcode == 0x0099 || opcode == 0x009b) {
+					uint16 rgn_size = SDL_ReadBE16(p);
+					SDL_RWseek(p, rgn_size - 2, SEEK_CUR);
+				}
+
+				// 5. graphics data
 				uncompress_picture((uint8 *)rsrc.GetPointer() + SDL_RWtell(p), row_bytes, (uint8 *)s->pixels, s->pitch, pixel_size, height, pack_type);
 
 				done = true;
@@ -291,8 +352,14 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 			}
 
 			default:
-				fprintf(stderr, "Unimplemented opcode %04x in PICT resource\n", opcode);
-				exit(1);
+				if (opcode >= 0x0300 && opcode < 0x8000)
+					SDL_RWseek(p, (opcode >> 8) * 2, SEEK_CUR);
+				else if (opcode >= 0x8000 && opcode < 0x8100)
+					break;
+				else {
+					fprintf(stderr, "Unimplemented opcode %04x in PICT resource\n", opcode);
+					done = true;
+				}
 				break;
 		}
 	}
@@ -300,6 +367,58 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 	// Close stream, return surface
 	SDL_FreeRW(p);
 	return s;
+}
+
+
+/*
+ *  Rescale surface
+ */
+
+template <class T>
+static void rescale(T *src_pixels, int src_pitch, T *dst_pixels, int dst_pitch, int width, int height, uint32 dx, uint32 dy)
+{
+	// Brute-force rescaling, no interpolation
+	uint32 sy = 0;
+	for (int y=0; y<height; y++) {
+		T *p = src_pixels + src_pitch / sizeof(T) * (sy >> 16);
+		uint32 sx = 0;
+		for (int x=0; x<width; x++) {
+			dst_pixels[x] = p[sx >> 16];
+			sx += dx;
+		}
+		dst_pixels += dst_pitch / sizeof(T);
+		sy += dy;
+	}
+}
+
+SDL_Surface *rescale_surface(SDL_Surface *s, int width, int height)
+{
+	if (s == NULL)
+		return NULL;
+
+	SDL_Surface *s2 = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, s->format->BitsPerPixel, s->format->Rmask, s->format->Gmask, s->format->Bmask, s->format->Amask);
+	if (s2 == NULL)
+		return NULL;
+
+	uint32 dx = (s->w << 16) / width;
+	uint32 dy = (s->h << 16) / height;
+
+	switch (s->format->BytesPerPixel) {
+		case 1:
+			rescale((uint8 *)s->pixels, s->pitch, (uint8 *)s2->pixels, s2->pitch, width, height, dx, dy);
+			break;
+		case 2:
+			rescale((uint16 *)s->pixels, s->pitch, (uint16 *)s2->pixels, s2->pitch, width, height, dx, dy);
+			break;
+		case 4:
+			rescale((uint32 *)s->pixels, s->pitch, (uint32 *)s2->pixels, s2->pitch, width, height, dx, dy);
+			break;
+	}
+
+	if (s->format->palette)
+		SDL_SetColors(s2, s->format->palette->colors, 0, s->format->palette->ncolors);
+
+	return s2;
 }
 
 

@@ -1,5 +1,11 @@
 Change log of the SDL version of Aleph One
 
+September 7, 2000
+ - improved PICT compatibility (implemented opcodes 0x0099 and 0x009b,
+   ignored many more opcodes)
+ - PICTs in terminals are properly scaled
+ - added support for format 2 sound resources
+
 September 6, 2000
  - implemented environment preferences dialog
  - moved TimeType to cstypes.h

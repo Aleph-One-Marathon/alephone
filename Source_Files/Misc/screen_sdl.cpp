@@ -195,28 +195,8 @@ static void reallocate_world_pixels(int width, int height)
 		SDL_FreeSurface(world_pixels);
 		world_pixels = NULL;
 	}
-#if 0
-	uint32 Rmask, Gmask, Bmask;
-	switch (bit_depth) {
-		case 8:
-			Rmask = Gmask = Bmask = 0xff;
-			break;
-		case 16:
-			Rmask = 0x7c00;
-			Gmask = 0x03e0;
-			Bmask = 0x001f;
-			break;
-		case 32:
-			Rmask = 0x00ff0000;
-			Gmask = 0x0000ff00;
-			Bmask = 0x000000ff;
-			break;
-	}
-	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bit_depth, Rmask, Gmask, Bmask, 0);
-#else
 	SDL_PixelFormat *f = main_surface->format;
 	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bit_depth, f->Rmask, f->Gmask, f->Bmask, f->Amask);
-#endif
 	if (world_pixels == NULL)
 		alert_user(fatalError, strERRORS, outOfMemory, -1);
 	else if (bit_depth == 8) {

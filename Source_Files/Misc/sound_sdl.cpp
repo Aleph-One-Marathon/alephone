@@ -575,15 +575,18 @@ void play_sound_resource(LoadedResource &rsrc)
 
 	// Get resource format
 	uint16 format = SDL_ReadBE16(p);
-	if (format != 1) {
+	if (format != 1 && format != 2) {
 		fprintf(stderr, "Unknown sound resource format %d\n", format);
 		SDL_FreeRW(p);
 		return;
 	}
 
-	// Skip sound data types
-	uint16 num_data_formats = SDL_ReadBE16(p);
-	SDL_RWseek(p, num_data_formats * 6, SEEK_CUR);
+	// Skip sound data types or reference count
+	if (format == 1) {
+		uint16 num_data_formats = SDL_ReadBE16(p);
+		SDL_RWseek(p, num_data_formats * 6, SEEK_CUR);
+	} else if (format == 2)
+		SDL_RWseek(p, 2, SEEK_CUR);
 
 	// Lock sound subsystem
 	SDL_LockAudio();

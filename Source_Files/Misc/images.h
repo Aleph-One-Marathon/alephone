@@ -51,6 +51,9 @@ extern bool get_sound_resource_from_scenario(int resource_number, LoadedResource
 #ifdef SDL
 // Convert MacOS PICT resource to SDL surface
 extern SDL_Surface *picture_to_surface(LoadedResource &rsrc);
+
+// Rescale surface
+extern SDL_Surface *rescale_surface(SDL_Surface *s, int width, int height);
 #endif
 
 #endif
