@@ -1349,7 +1349,7 @@ Currently, both texture-rendering modification and fog are supported;
 texture-rendering modification modifies the rendering of each bitmap.
 
 This element has these kinds of child elements, &lt;txtr_clear&gt;, &lt;texture&gt;,
-and &lt;fog&gt;.
+&lt;model_clear&gt;, &lt;model&gt;, and &lt;fog&gt;.
 <p>
 
 The first one, &lt;txtr_clear&gt;, clears the texture options,
@@ -1360,14 +1360,14 @@ However, this command can be followed by commands to set up texture options,
 which will then be executed as if no "txtr_clear" command had been issued.
 <p>
 
-The second one, &lt;texture&gt;, specifies the texture options themselves.
+The next one, &lt;texture&gt;, specifies the texture options themselves.
 It takes these attributes:
 <ul>
 <li>coll: which collection (mandatory).
 <li>clut: which color table. Values 0 to 7 are the familiar color-table values,
 and there are these special values:
 <ul>
-<li>All color tables: -1
+<li>All color tables: -1 (default)
 <li>Infravision: 8
 <li>Silhouette: 9 [used for invisibility and static effect]
 </ul>
@@ -1420,7 +1420,59 @@ max has the same strength for saturated colors as for grays,
 while mean has less strength for saturated colors than for grays.
 <p>
 
-The third one, &lt;fog&gt;, has these attributes:
+The next one, &lt;model_clear&gt;, clears all the model definitions;
+it works much like &lt;txtr_clear&gt;.
+<p>
+
+The next one, &lt;model&gt; specifies a static 3D model to be used in place
+of some sequence.
+It takes these attributes and a child element &lt;skin&gt;:
+<ul>
+<li>coll: which collection (mandatory).
+<li>seq: which sequence (mandatory).
+<li>file: the name of the file containing the model data.
+<li>type: a string identifying the model-data format.
+Alias|Wavefront models have a type of "wave".
+If it is absent, the type will then be guessed from the file contents,
+an operation that may work on some file formats but not others.
+<li>scale: how much to scale the model before rendering,
+from model coordinates to internal coordinates.
+A negative scale will cause the model to be reflected around all three axes
+(default: 1).
+<li>x_rot: rotation in degrees around the x-axis (default: 0).
+<li>y_rot: rotation in degrees around the y-axis (default: 0).
+<li>z_rot: rotation in degrees around the z-axis (default: 0).
+<li>x_shift: shift in internal units in the x direction (default: 0).
+<li>y_shift: shift in internal units in the y direction (default: 0).
+<li>z_shift: shift in internal units in the z direction (default: 0).
+</ul>
+<p>
+The scaling and rotation will be applied before the shifts.
+<p>
+
+Its child element of &lt;skin&gt; has these attributes,
+which closely parallel those of &lt;texture&gt;:
+<ul>
+<li>clut: which color table (default: -1 -- all of them).
+<li>opac_type: what type of opacity to use (default: 0 -- crisp edges).
+<li>opac_scale: scaling value for the opacity;
+how much to multiply it by (default: 1 -- no change).
+<li>opac_shift: shift value for the opacity;
+how much to add after multiplying (default: 0 -- no change).
+<li>normal_image: the name of the file whose image content to substitute
+in "normal" rendering (sensitive to light levels).
+<li>normal_mask: the name of the file whose image content becomes the opacity mask
+for "normal" rendering (sensitive to light levels).
+It must be used with a normal_image file.
+<li>glow_image: the name of the file whose image content to substitute
+in "glowing" rendering (independent of light levels).
+<li>glow_mask: the name of the file whose image content becomes the opacity mask
+for "glowing" rendering (independent of light levels).
+It must be used with a glow_image file.
+</ul>
+<p>
+
+The final one, &lt;fog&gt;, has these attributes:
 <ul>
 <li>type: which type of fog:
 <ol type=1 start=1000>
