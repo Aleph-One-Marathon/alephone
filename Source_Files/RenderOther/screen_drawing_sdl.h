@@ -954,6 +954,15 @@ void _get_player_color(short color_index, RGBColor *color)
 	color->blue = c.blue;
 }
 
+void _get_player_color(short color_index, SDL_Color *color)
+{
+    assert(color_index>=0 && color_index<NUMBER_OF_PLAYER_COLORS);
+
+    rgb_color &c = InterfaceColors[color_index + PLAYER_COLOR_BASE_INDEX];
+    color->r = c.red;
+    color->g = c.green;
+    color->b = c.blue;
+}
 
 /*
  *  Rectangle XML parser

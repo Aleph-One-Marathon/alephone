@@ -166,18 +166,18 @@ PixMapHandle get_shape_pixmap(short shape, bool force_copy);
 // low-level shape index).
 // Sigh, the extensions keep piling up... now we can also provide a quarter-sized surface from a shape.  It's hacky -
 // the shape is shrunk by nearest-neighbor-style scaling (no smoothing), even at 16-bit and above, and it only works for RLE shapes.
-SDL_Surface *get_shape_surface(int shape, int collection = NONE, byte** outPointerToPixelData = NULL, float inIllumination = -1.0f,
-                                bool inShrinkImage = false);
+SDL_Surface *get_shape_surface(int shape, int collection = NONE, byte** outPointerToPixelData = NULL, float inIllumination = -1.0f, bool inShrinkImage = false);
 #endif
 
 void open_shapes_file(FileSpecifier& File);
 
 /* ---------- prototypes/SCREEN_DRAWING.C */
 
-void _get_player_color(short color_index, RGBColor *color);
 #if defined(mac)
+void _get_player_color(short color_index, RGBColor *color);
 void _get_interface_color(short color_index, RGBColor *color);
 #elif defined(SDL)
+void _get_player_color(short color_index, SDL_Color *color);
 void _get_interface_color(int color_index, SDL_Color *color);
 #endif
 

@@ -275,7 +275,11 @@ private:
 		short scale)
 		{
 			rgb_color PlayerColor;
-			_get_player_color(color, (RGBColor *)&PlayerColor);
+#ifndef SDL
+			_get_player_color(color, (RGBColor*)&PlayerColor);
+#else
+                        _get_player_color(color, (SDL_Color*)&PlayerColor);
+#endif
 			// Changed to use only one entity shape
 			entity_definition& EntityDef = ConfigPtr->player_entity;
 			draw_player(*center, facing, PlayerColor,
