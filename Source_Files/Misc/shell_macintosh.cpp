@@ -314,6 +314,8 @@ void handle_game_key(
 	bool changed_volume= false;
 	bool update_interface= false;
 
+	dprintf("Key in handle_game_key(): %hx",short(key));
+
 	_virtual = (event->message >> 8) & charCodeMask;
 	
 // LP change: implementing Benad's "cheats always on"
@@ -325,7 +327,9 @@ void handle_game_key(
 		// LP change: this is now conditional
 		if (CheatsActive)
 		{
-			type_of_cheat = process_keyword_key(key);
+			unsigned char cheat_key = key;
+			if (cheat_key < 0x20) cheat_key += 0x40;	// Map control+key onto proper key
+			type_of_cheat = process_keyword_key(cheat_key);
 			if (type_of_cheat != NONE) handle_keyword(type_of_cheat);
 		}
 	}
