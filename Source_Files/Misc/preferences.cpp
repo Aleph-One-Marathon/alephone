@@ -470,7 +470,8 @@ void write_preferences(
 	fprintf(F,"<input\n");
 	fprintf(F,"  device=\"%hd\"\n",input_preferences->input_device);
 	fprintf(F,"  modifiers=\"%hu\"\n",input_preferences->modifiers);
-	fprintf(F,"  sensitivity=\"%d\"\n",input_preferences->sensitivity); // ZZZ
+	fprintf(F,"  sens_horizontal=\"%d\"\n",input_preferences->sens_horizontal); // ZZZ, LP
+	fprintf(F,"  sens_vertical=\"%d\"\n",input_preferences->sens_vertical); // ZZZ, LP
 	fprintf(F,">\n");
 #if defined(mac)
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
@@ -754,8 +755,10 @@ static void default_input_preferences(input_preferences_data *preferences)
 	// interchange run and walk, but don't interchange swim and sink.
 	preferences->modifiers = _inputmod_interchange_run_walk;
 
+	// LP: split into horizontal and vertical sensitivities
     // ZZZ addition: sensitivity factor starts at 1 (no adjustment)
-    preferences->sensitivity = FIXED_ONE;
+    preferences->sens_horizontal = FIXED_ONE;
+    preferences->sens_vertical = FIXED_ONE;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)
@@ -1686,9 +1689,26 @@ bool XML_InputPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 		return ReadUInt16Value(Value,input_preferences->modifiers);
 	}
     // ZZZ: sensitivity scaling factor
+    // LP addition: split into separate horizontal and vertical sensitivities
     else if (StringsEqual(Tag, "sensitivity"))
     {
-        return ReadInt32Value(Value, input_preferences->sensitivity);
+    	_fixed sensitivity;
+        if (ReadInt32Value(Value, sensitivity))
+        {
+        	input_preferences->sens_horizontal = sensitivity;
+        	input_preferences->sens_vertical = sensitivity;
+        	return true;
+        }
+        else
+        	return false;
+    }
+    else if (StringsEqual(Tag, "sens_horizontal"))
+    {
+        return ReadInt32Value(Value, input_preferences->sens_horizontal);
+    }
+    else if (StringsEqual(Tag, "sens_vertical"))
+    {
+        return ReadInt32Value(Value, input_preferences->sens_vertical);
     }
 	UnrecognizedTag();
 	return false;

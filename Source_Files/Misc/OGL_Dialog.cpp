@@ -84,6 +84,8 @@ enum
 	TextureFix_Item = 30,
 	AllowFog_Item = 31,
 	Model_Item = 37,
+	HUD_Item = 38,
+	AnisoSlider_Item = 39,
 	
 	ColorPicker_PromptStrings = 200,
 	ColorVoid_String = 0,
@@ -109,7 +111,7 @@ const CFStringRef Window_Prefs_OpenGL_Textures = CFSTR("Prefs_OpenGL_Textures");
 
 // For doing checkboxes en masse
 // Which checkbox, flag value
-const int NumCheckboxes = 11;
+const int NumCheckboxes = 12;
 const int CheckboxDispatch[NumCheckboxes][2] = {
 	{ZBuffer_Item, OGL_Flag_ZBuffer},
 	{ColorVoid_Item, OGL_Flag_VoidColor},
@@ -123,7 +125,8 @@ const int CheckboxDispatch[NumCheckboxes][2] = {
 	{LiquidSeeThru_Item, OGL_Flag_LiqSeeThru},
 	{Map_Item, OGL_Flag_Map},
 	
-	{TextureFix_Item, OGL_Flag_TextureFix}
+	{TextureFix_Item, OGL_Flag_TextureFix},
+	{HUD_Item, OGL_Flag_HUD}
 };
 
 struct TextureConfigDlgHandlerData
@@ -319,6 +322,14 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	for (int k=0; k<OGL_NUMBER_OF_TEXTURE_TYPES; k++)
 		HandlerData.TxtrConfigList[k] = Data.TxtrConfigList[k];
 	
+	// The anisotropy-filter slider -- make it half-linear, half-log;
+	// linear from 0 to 1, log from 1 to 16 -- mapping 0-16 onto 0-5
+	ControlRef AnisoSlider = GetCtrlFromWindow(Window(), 0, AnisoSlider_Item);
+	float AnisoValue = Data.AnisotropyLevel > 1 ?
+		(log(Data.AnisotropyLevel)/log(2.0) + 1) :
+			Data.AnisotropyLevel;
+	SetCtrlFloatValue(AnisoSlider, AnisoValue/5.0);
+	
 	bool IsOK = RunModalDialog(Window(), true, OGL_Dialog_Handler, &HandlerData);
 	
 	if (IsOK)
@@ -333,6 +344,10 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		
 		for (int k=0; k<OGL_NUMBER_OF_TEXTURE_TYPES; k++)
 			Data.TxtrConfigList[k] = HandlerData.TxtrConfigList[k];
+		
+		// Undo that log-linear
+		AnisoValue = 5.0*GetCtrlFloatValue(AnisoSlider);
+		Data.AnisotropyLevel = AnisoValue > 1 ? pow(2.0, (AnisoValue-1)) : AnisoValue;
 	}
 	
 	return IsOK;

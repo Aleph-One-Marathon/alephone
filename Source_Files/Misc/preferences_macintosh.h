@@ -170,6 +170,26 @@ enum {
 static int CurrentPrefsPane = graphicsGroup;
 
 
+// These map between a slider's 0-1 range and the sensitivity values
+
+const float SliderSensRange = 4;
+
+static float PrefToSlider(_fixed PrefVal)
+{
+	float CenteredSliderVal = (PrefVal > 0) ?
+		(log(float(PrefVal)) - log(FIXED_ONE))/log(SliderSensRange) :
+		0;
+	
+	// -1 to 1 -> 0 to 1
+	return (CenteredSliderVal+1)/2;
+}
+
+static _fixed SliderToPref(float SliderVal)
+{
+	return _fixed(FIXED_ONE * pow(SliderSensRange, 2*SliderVal-1));
+}
+
+
 struct PreferencesHandlerData
 {
 	WindowPtr Window;
@@ -419,7 +439,16 @@ void handle_preferences(
 
 	ControlRef INPT_Button_Snds = GetCtrlFromWindow(Window(),Sig_Input,iUSE_INTERFACE_BUTTON_SOUNDS);
 	SetControl32BitValue(INPT_Button_Snds,TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
+
+	ControlRef INPT_Button_Invert = GetCtrlFromWindow(Window(),Sig_Input,iINVERT_MOUSE_VERTICAL);
+	SetControl32BitValue(INPT_Button_Invert,TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
+
+	ControlRef INPT_Button_VertSens = GetCtrlFromWindow(Window(),Sig_Input,iVERTICAL_MOUSE_SENSITIVITY);
+	SetCtrlFloatValue(INPT_Button_VertSens, PrefToSlider(input_preferences->sens_vertical));
 	
+	ControlRef INPT_Button_HorizSens = GetCtrlFromWindow(Window(),Sig_Input,iHORIZONTAL_MOUSE_SENSITIVITY);
+	SetCtrlFloatValue(INPT_Button_HorizSens, PrefToSlider(input_preferences->sens_horizontal));
+		
 	// Environment:
 	
 	if(allocate_extensions_memory())
@@ -538,6 +567,12 @@ void handle_preferences(
 		SET_FLAG(input_preferences->modifiers, _inputmod_dont_switch_to_new_weapon, GetControl32BitValue(INPT_No_Switch_New));
 
 		SET_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds, GetControl32BitValue(INPT_Button_Snds));
+
+		SET_FLAG(input_preferences->modifiers, _inputmod_invert_mouse, GetControl32BitValue(INPT_Button_Invert));
+	
+		input_preferences->sens_vertical = SliderToPref(GetCtrlFloatValue(INPT_Button_VertSens));
+		
+		input_preferences->sens_horizontal = SliderToPref(GetCtrlFloatValue(INPT_Button_HorizSens));
 		
 		// Environment:
 		

@@ -143,7 +143,9 @@ struct input_preferences_data
 	int16 keycodes[NUMBER_OF_KEYS];
 	// LP addition: input modifiers
 	uint16 modifiers;
-    _fixed sensitivity;    // ZZZ addition
+	// Mouse-sensitivity parameters (LP: originally ZZZ)
+    _fixed sens_horizontal;
+    _fixed sens_vertical;
 };
 
 #define MAXIMUM_PATCHES_PER_ENVIRONMENT (32)
