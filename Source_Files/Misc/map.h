@@ -1232,7 +1232,7 @@ void try_and_toggle_control_panel(short polygon_index, short line_index);
 /* ---------- prototypes/GAME_WAD.C */
 
 struct map_identifier {
-	int32 scenario_checksum;
+	uint32 scenario_checksum;
 	short level_index;
 };
 

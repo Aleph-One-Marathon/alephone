@@ -5,7 +5,7 @@ AC_INIT(Source_Files/Misc/shell_sdl.cpp)
 AC_PREREQ(2.13)
 
 dnl This defines PACKAGE and VERSION.
-AM_INIT_AUTOMAKE([AlephOne], [0.10.3])
+AM_INIT_AUTOMAKE([AlephOne], [0.10.4])
 AM_CONFIG_HEADER(config.h)
 
 dnl Configure options.

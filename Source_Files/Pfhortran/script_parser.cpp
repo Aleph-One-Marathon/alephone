@@ -121,7 +121,7 @@ bool init_pfhortran(void)
 	FileSpecifier lang_def_path;
 	lang_def_path.SetToGlobalDataDir();
 	lang_def_path.AddPart(LANGDEFPATH);
-	lang_def = fopen(lang_def_path.GetName(), "r");
+	lang_def = fopen(lang_def_path.GetPath(), "r");
 #else
 	lang_def = fopen(LANGDEFPATH,"r");
 #endif

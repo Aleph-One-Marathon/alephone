@@ -7,7 +7,6 @@
 #include <SDL_thread.h>
 
 #include "cseries.h"
-#include "byte_swapping.h"
 #include "FileHandler.h"
 #include "resource_manager.h"
 
@@ -42,22 +41,6 @@ static struct special_flag_data special_flags[]=
 	{_latched_flag, _toggle_map}
 };
 
-// Byte-swap definitions
-static _bs_field _bs_recording_header[] = {
-	_4byte, _2byte, _2byte, _4byte, _2byte,
-	MAXIMUM_NUMBER_OF_PLAYERS * sizeof(player_start_data),
-	sizeof(game_data)
-};
-
-static _bs_field _bs_player_start_data[] = {
-	_2byte, _2byte, _2byte, MAXIMUM_PLAYER_START_NAME_LENGTH + 1
-};
-
-static _bs_field _bs_game_data[] = {
-	_4byte, _2byte, _2byte, _2byte, _2byte, _2byte,
-	_2byte, _2byte
-};
-
 
 /*
  *  Get FileDesc for replay, ask user if desired
@@ -66,8 +49,7 @@ static _bs_field _bs_game_data[] = {
 bool find_replay_to_use(bool ask_user, FileSpecifier &file)
 {
 	if (ask_user) {
-		//!!
-		return false;
+		return file.ReadDialog(_typecode_film);
 	} else
 		return get_recording_filedesc(file);
 }
@@ -86,13 +68,26 @@ bool get_recording_filedesc(FileSpecifier &File)
 
 
 /*
- *  Overwrite recording file
+ *  Save film buffer to user-selected file
  */
 
 void move_replay(void)
 {
-printf("*** move_replay()\n");
-	//!!
+	// Get source file specification
+	FileSpecifier src_file, dst_file;
+	if (!get_recording_filedesc(src_file))
+		return;
+
+	// Ask user for destination file
+	char prompt[256], default_name[256];
+	if (!dst_file.WriteDialog(_typecode_film, getcstr(prompt, strPROMPTS, _save_replay_prompt), getcstr(default_name, strFILENAMES, filenameMARATHON_RECORDING)))
+		return;
+
+	// Copy file
+	dst_file.CopyContents(src_file);
+	int error = dst_file.GetError();
+	if (error)
+		alert_user(infoError, strERRORS, fileError, error);
 }
 
 
@@ -170,67 +165,8 @@ long parse_keymap(void)
 
 bool setup_replay_from_random_resource(unsigned long map_checksum)
 {
-	printf("setup_replay_from_random_resource(), checksum %08x\n", map_checksum);
-
-	static int index_of_last_film_played = 0;
-	bool success = false;
-
-	int number_of_films = count_resources(FILM_RESOURCE_TYPE);
-	printf("%d films\n", number_of_films);
-
-	if (number_of_films > 0) {
-		int which_film_to_play;
-
-		if (number_of_films == 1)
-			which_film_to_play = 0;
-		else {
-			for (which_film_to_play = index_of_last_film_played;
-			     which_film_to_play == index_of_last_film_played;
-			     which_film_to_play = (abs(rand()) % number_of_films))
-				;
-			index_of_last_film_played = which_film_to_play;
-		}
-
-		LoadedResource rsrc;
-		get_ind_resource(FILM_RESOURCE_TYPE, which_film_to_play + 1, rsrc);
-
-		replay.resource_data = (char *)malloc(rsrc.GetLength());
-		if (!replay.resource_data)
-			alert_user(fatalError, strERRORS, outOfMemory, 0);
-
-		memcpy(&replay.header, rsrc.GetPointer(), sizeof(recording_header));
-		byte_swap_data(&replay.header, sizeof(recording_header), 1, _bs_recording_header);
-		byte_swap_data(&replay.header.starts, sizeof(player_start_data), MAXIMUM_NUMBER_OF_PLAYERS, _bs_player_start_data);
-		byte_swap_data(&replay.header.game_information, sizeof(game_data), 1, _bs_game_data);
-		memcpy(replay.resource_data, rsrc.GetPointer(), rsrc.GetLength());
-
-		if (replay.header.map_checksum == map_checksum) {
-			replay.have_read_last_chunk = false;
-			replay.game_is_being_replayed = true;
-
-			replay.film_resource_offset = sizeof(struct recording_header);
-			replay.resource_data_size = rsrc.GetLength();
-
-			replay.valid = true;
-			
-			success = true;
-		} else {
-			replay.game_is_being_replayed = false;
-
-			replay.film_resource_offset = NONE;
-			replay.resource_data_size = 0;
-			free(replay.resource_data);
-			replay.resource_data = NULL;
-
-			replay.valid = false;
-			
-			success = false;
-		}
-		
-		replay.replay_speed= 1;
-	}
-	
-	return success;
+	// not supported in SDL version
+	return false;
 }
 
 

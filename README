@@ -189,9 +189,11 @@ Here is a rundown of the default keyboard configuration (assuming a US
 keyboard; all keys are mapped by position):
 
   On the menu screen:
-    N - Start new game
-    C - Show game credits
+    N - Begin new game
+    O - Continue saved game
     P - Preferences
+    R - Replay saved film
+    C - Show game credits
     Q - Quit
 
   In-game:
@@ -375,6 +377,59 @@ a Marathon 2 or Infinity map.
    the Environment preferences section of Aleph One.
 
 
+FILMS AND SAVED GAMES
+---------------------
+
+Saved games and films are stored in
+
+Unix:
+  ~/.alephone/Saved Games
+ and
+  ~/.alephone/Recordings
+
+BeOS:
+  /boot/home/config/settings/Aleph One/Saved Games
+ and
+  /boot/home/config/settings/Aleph One/Recordings
+
+If you want to restore games or replay films you have downloaded (or copied
+from another computer), you have to copy them into these directories or
+they won't show up when clicking on "Continue Saved Game" or "Replay Saved
+Film" on the main menu.
+
+
+FILE COMPATIBILITY
+------------------
+
+This section gives a summary of the cross-platform compatibility of the
+various files used by Aleph One and the original Marathon games:
+
+  "Images" - on Aleph One/SDL this is a data file and not a resource file
+    as on the MacOS versions of Aleph One and Marathon, but the file format
+    is exactly the same, and compatible across all platforms supported by
+    Aleph One/SDL
+  "Shapes" - fully compatible across all versions of Aleph One/Marathon Infinity
+  "Sounds" - fully compatible across all versions of Aleph One/Marathon Infinity
+  Map files - maps without resource forks are fully compatible across all
+    versions of Aleph One/Marathon 2/Marathon Infinity; maps with resource
+    forks need to be in one of three formats:
+      - data and resource forks in separate files, such as "Map" and
+        "Map.resources"
+      - an AppleSingle encoded file containing data and resource fork
+      - a MacBinary II encoded file containing data and resource fork
+    All of these formats are fully compatible across all platforms supported
+    by Aleph One/SDL.
+  Saved games - fully compatible across all versions of Aleph One/
+    Marathon 2/Marathon Infinity (but the MacOS versions save a small picture
+    of the map at the current player's position in the resource fork of
+    saved games, which is not preserved or used by Aleph One/SDL)
+  Films - fully compatible across all versions of Aleph One/Marathon 2/
+    Marathon Infinity
+  "Aleph One Preferences" - platform-specific, not compatible with the MacOS
+    versions of Aleph One/Marathon nor across the platforms supported by
+    Aleph One/SDL
+
+
 MARATHON MARKUP LANGUAGE
 ------------------------
 
@@ -405,24 +460,24 @@ The SDL version of Aleph One is a work in progress. Here is an (incomplete)
 list of the missing features, listed in roughly the order I plan to implement
 them:
 
+ - Some preferences items are missing (sound volume, mouse sensitivity,
+   OpenGL on/off, chase cam, crosshairs, OpenGL texture/landscape/fog
+   options)
  - Text rendering under OpenGL (overhead map doesn't show level name and
    annotations)
- - Saving/restoring games (save terminals don't work and the "Continue Saved
-   Game" button on the title screen is nonfunctional)
- - Saving/replaying films (the "Replay Saved Film", "Replay Last Film" and
-   "Save Last Film" buttons on the title screen are nonfunctional)
+ - Palette tricks (fading, underwater, red flash when being hit etc.) don't
+   work with the software renderer (SDL 1.1.5 will support gamma tables)
  - Networking (the "Gather Network Game" and "Join Network Game" buttons on
    the title screen are nonfunctional)
 
 And a list of known bugs:
 
- - Palette tricks (fading, underwater, red flash when being hit etc.) don't
-   work (SDL 1.1.5 will support gamma tables)
  - Mouse control under BeOS doesn't work (SDL problem)
  - Lo-res mode (F3) doesn't work
- - Snapshots (F9) don't work with OpenGL
- - Some preferences items are missing
+ - Snapshots (F9) don't work when OpenGL is active
+ - darken_world_window() doesn't work when OpenGL is active
  - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown
+ - "Checkpoint" map displays in terminals don't show circle shapes
  - Some error messages are those of the Mac version, which are often
    inappropriate or misleading
 
@@ -445,15 +500,13 @@ If you're stuck in the game, there's an excellent walkthrough at
 TROUBLESHOOTING
 ---------------
 
-If Aleph One crashes or behaves strangely on startup, try deleting the files
+If Aleph One crashes or behaves strangely on startup, delete the file
 
 Unix:
   ~/.alephone/Aleph One Preferences
-  ~/.alephone/Aleph One Recording
 
 BeOS:
   /boot/home/config/settings/Aleph One/Aleph One Preferences
-  /boot/home/config/settings/Aleph One/Aleph One Recording
 
 and try again.
 

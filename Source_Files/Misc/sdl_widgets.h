@@ -306,7 +306,7 @@ public:
 		rect.w = width;
 		rect.h = font_height * shown_items + BORDER_SIZE * 2;
 		new_items();
-		set_selection(selection);
+		set_selection(sel);
 		center_item(selection);
 	}
 	~w_list() {}
@@ -356,7 +356,7 @@ public:
 		if (x >= rect.w - SCROLL_BAR_WIDTH) {
 			thumb_dragging = dirty = true;
 			thumb_drag_y = y - thumb_y;
-		} else
+		} else if (num_items > 0)
 			item_selected();
 	}
 
@@ -422,6 +422,8 @@ protected:
 		dirty = true;
 		if (num_items <= shown_items)
 			thumb_height = rect.h;
+		else if (num_items == 0)
+			thumb_height = shown_items * rect.h;
 		else
 			thumb_height = shown_items * rect.h / num_items;
 	}
@@ -430,6 +432,9 @@ protected:
 	{
 		set_top_item(selection - shown_items / 2);
 	}
+
+	const vector<T> &items;	// List items
+	int num_items;			// Total number of items
 
 	int selection;			// Currently selected item
 	int font_height;		// Height of font
@@ -444,13 +449,14 @@ private:
 		if (i != top_item)
 			dirty = true;
 		top_item = i;
-		thumb_y = top_item * rect.h / num_items;
+		if (num_items == 0)
+			thumb_y = 0;
+		else
+			thumb_y = top_item * rect.h / num_items;
 	}
 
 	virtual void draw_item(vector<T>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const = 0;
 
-	const vector<T> &items;	// List items
-	int num_items;			// Total number of items
 	int top_item;			// Number of first visible item
 	int shown_items;		// Number of shown items
 

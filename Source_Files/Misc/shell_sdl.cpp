@@ -14,6 +14,7 @@
 #endif
 
 #include <exception>
+#include <algorithm>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -40,7 +41,7 @@ extern string get_application_directory(void);
 extern string get_preferences_directory(void);
 #endif
 
-// From FileHandler_SDL.cpp
+// From preprocess_map_sdl.cpp
 extern bool get_default_music_spec(FileSpecifier &file);
 
 // Prototypes
@@ -326,18 +327,19 @@ bool quit_without_saving(void)
 
 class w_level_number : public w_number_entry {
 public:
-	w_level_number(const char *name, dialog *dia) : w_number_entry(name, 1), d(dia) {}
+	w_level_number(const char *name, dialog *d) : w_number_entry(name, 1), parent(d) {}
+	~w_level_number() {}
 
 	void event(SDL_Event &e)
 	{
 		// Return = close dialog
 		if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_RETURN)
-			d->quit(0);
+			parent->quit(0);
 		w_number_entry::event(e);
 	}
 
 private:
-	dialog *d;
+	dialog *parent;
 };
 
 short get_level_number_from_user(void)
@@ -391,6 +393,235 @@ again:
 	// Redraw main menu
 	update_game_window();
 	return level;
+}
+
+
+/*
+ *  File selection dialogs
+ */
+
+class w_file_list : public w_list<dir_entry> {
+public:
+	w_file_list(const vector<dir_entry> &items) : w_list<dir_entry>(items, 400, 15, 0) {}
+
+	void draw_item(vector<dir_entry>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
+	{
+		y += font_ascent(font);
+		set_drawing_clip_rectangle(0, x, s->h, x + width);
+		draw_text(s, i->name.c_str(), x, y, selected ? get_dialog_color(s, ITEM_ACTIVE_COLOR) : get_dialog_color(s, ITEM_COLOR), font, style);
+		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+	}
+};
+
+class w_read_file_list : public w_file_list {
+public:
+	w_read_file_list(const vector<dir_entry> &items, dialog *d) : w_file_list(items), parent(d) {}
+
+	void item_selected(void)
+	{
+		parent->quit(0);
+	}
+
+private:
+	dialog *parent;
+};
+
+bool FileSpecifier::ReadDialog(int type, char *prompt)
+{
+	// Set default prompt
+	if (prompt == NULL) {
+		switch (type) {
+			case _typecode_savegame:
+				prompt = "CONTINUE SAVED GAME";
+				break;
+			case _typecode_film:
+				prompt = "REPLAY SAVED FILM";
+				break;
+			default:
+				prompt = "OPEN FILE";
+				break;
+		}
+	}
+
+	// Read directory
+	FileSpecifier dir;
+	switch (type) {
+		case _typecode_savegame:
+			dir.SetToSavedGamesDir();
+			break;
+		case _typecode_film:
+			dir.SetToRecordingsDir();
+			break;
+		default:
+			dir.SetToLocalDataDir();
+			break;
+	}
+	vector<dir_entry> entries;
+	if (!dir.ReadDirectory(entries))
+		return false;
+	sort(entries.begin(), entries.end());
+
+	// Create dialog
+	dialog d;
+	d.add(new w_static_text(prompt, TITLE_FONT, TITLE_COLOR));
+	d.add(new w_spacer());
+	w_read_file_list *list_w = new w_read_file_list(entries, &d);
+	d.add(list_w);
+	d.add(new w_spacer());
+	d.add(new w_button("CANCEL", dialog_cancel, &d));
+
+	// Run dialog
+	bool result = false;
+	if (d.run() == 0) { // OK
+		if (entries.size()) {
+			name = dir.name;
+			AddPart(entries[list_w->get_selection()].name);
+			result = true;
+		}
+	}
+
+	// Redraw game window
+	update_game_window();
+	return result;
+}
+
+class w_file_name : public w_text_entry {
+public:
+	w_file_name(const char *name, dialog *d, const char *initial_name = NULL) : w_text_entry(name, 31, initial_name), parent(d) {}
+	~w_file_name() {}
+
+	void event(SDL_Event &e)
+	{
+		// Return = close dialog
+		if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_RETURN)
+			parent->quit(0);
+		w_text_entry::event(e);
+	}
+
+private:
+	dialog *parent;
+};
+
+class w_write_file_list : public w_file_list {
+public:
+	w_write_file_list(const vector<dir_entry> &items, const char *selection, dialog *d, w_file_name *w) : w_file_list(items), parent(d), name_widget(w)
+	{
+		if (selection) {
+			vector<dir_entry>::const_iterator i, end = items.end();
+			int num = 0;
+			for (i = items.begin(); i != end; i++, num++) {
+				if (i->name == selection) {
+					set_selection(num);
+					break;
+				}
+			}
+		}
+	}
+
+	void item_selected(void)
+	{
+		name_widget->set_text(items[selection].name.c_str());
+		parent->quit(0);
+	}
+
+private:
+	dialog *parent;
+	w_file_name *name_widget;
+};
+
+static bool confirm_save_choice(FileSpecifier &file);
+
+bool FileSpecifier::WriteDialog(int type, char *prompt, char *default_name)
+{
+	// Set default prompt
+	if (prompt == NULL) {
+		switch (type) {
+			case _typecode_savegame:
+				prompt = "SAVE GAME";
+				break;
+			case _typecode_film:
+				prompt = "SAVE FILM";
+				break;
+			default:
+				prompt = "SAVE FILE";
+				break;
+		}
+	}
+
+	// Read directory
+	FileSpecifier dir;
+	switch (type) {
+		case _typecode_savegame:
+			dir.SetToSavedGamesDir();
+			break;
+		case _typecode_film:
+			dir.SetToRecordingsDir();
+			break;
+		default:
+			dir.SetToLocalDataDir();
+			break;
+	}
+	vector<dir_entry> entries;
+	if (!dir.ReadDirectory(entries))
+		return false;
+	sort(entries.begin(), entries.end());
+
+	// Create dialog
+	dialog d;
+	d.add(new w_static_text(prompt, TITLE_FONT, TITLE_COLOR));
+	d.add(new w_spacer());
+	w_file_name *name_w = new w_file_name("File Name", &d, default_name);
+	w_write_file_list *list_w = new w_write_file_list(entries, default_name, &d, name_w);
+	d.add(list_w);
+	d.add(new w_spacer());
+	d.add(name_w);
+	d.add(new w_spacer());
+	d.add(new w_left_button("OK", dialog_ok, &d));
+	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+	// Run dialog
+again:
+	bool result = false;
+	if (d.run() == 0) { // OK
+		name = dir.name;
+		AddPart(name_w->get_text());
+		result = confirm_save_choice(*this);
+		if (!result)
+			goto again;
+	}
+
+	// Redraw game window
+	update_game_window();
+	return result;
+}
+
+bool FileSpecifier::WriteDialogAsync(int type, char *prompt, char *default_name)
+{
+	return FileSpecifier::WriteDialog(type, prompt, default_name);
+}
+
+static bool confirm_save_choice(FileSpecifier &file)
+{
+	// If the file doesn't exist, everything is alright
+	if (!file.Exists())
+		return true;
+
+	// Construct message
+	char name[256];
+	file.GetName(name);
+	char message[512];
+	sprintf(message, "'%s' already exists.", name);
+
+	// Create dialog
+	dialog d;
+	d.add(new w_static_text(message));
+	d.add(new w_static_text("Ok to overwrite?"));
+	d.add(new w_spacer());
+	d.add(new w_left_button("YES", dialog_ok, &d));
+	d.add(new w_right_button("NO", dialog_cancel, &d));
+
+	// Run dialog
+	return d.run() == 0;
 }
 
 
@@ -740,5 +971,5 @@ void dump_screen(void)
 	} while (file.Exists());
 
 	// Dump screen
-	SDL_SaveBMP(SDL_GetVideoSurface(), file.GetName());
+	SDL_SaveBMP(SDL_GetVideoSurface(), file.GetPath());
 }

@@ -402,6 +402,7 @@ void w_text_entry::set_text(const char *text)
 	if (text)
 		strncpy(buf, text, max_chars);
 	num_chars = strlen(buf);
+	modified_text();
 }
 
 void w_text_entry::modified_text(void)

@@ -507,7 +507,7 @@ void load_environment_from_preferences(
 #ifdef mac
 	File.SetSpec(prefs->map_file);
 #else
-	File.SetName(prefs->map_file, _typecode_scenario);
+	File = prefs->map_file;
 #endif
 	if (File.Exists())
 	{
@@ -526,7 +526,7 @@ void load_environment_from_preferences(
 #ifdef mac
 	File.SetSpec(prefs->physics_file);
 #else
-	File.SetName(prefs->physics_file, _typecode_physics);
+	File = prefs->physics_file;
 #endif
 	if (File.Exists())
 	{
@@ -546,7 +546,7 @@ void load_environment_from_preferences(
 #ifdef mac
 	File.SetSpec(prefs->shapes_file);
 #else
-	File.SetName(prefs->shapes_file, _typecode_shapes);
+	File = prefs->shapes_file;
 #endif
 	if (File.Exists())
 	{
@@ -564,7 +564,7 @@ void load_environment_from_preferences(
 #ifdef mac
 	File.SetSpec(prefs->sounds_file);
 #else
-	File.SetName(prefs->sounds_file, _typecode_sounds);
+	File = prefs->sounds_file;
 #endif
 	if (File.Exists())
 	{

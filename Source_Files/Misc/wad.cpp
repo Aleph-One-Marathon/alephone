@@ -351,7 +351,7 @@ void fill_default_wad_header(
 	strncpy(header->file_name+1,Name,MAXIMUM_WADFILE_NAME_LENGTH-1);
 	p2cstr((unsigned char *)header->file_name);
 #else
-	File.GetLastPart(header->file_name);
+	File.GetName(header->file_name);
 #endif
 	header->wad_count= wad_count;
 	header->application_specific_directory_data_size= application_directory_data_size;					

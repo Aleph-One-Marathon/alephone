@@ -571,7 +571,7 @@ public:
 		vector<FileSpecifier>::const_iterator i, end = items.end();
 		int num = 0;
 		for (i = items.begin(); i != end; i++, num++) {
-			if (strcmp(i->GetName(), selection) == 0) {
+			if (strcmp(i->GetPath(), selection) == 0) {
 				set_selection(num);
 				break;
 			}
@@ -587,7 +587,7 @@ public:
 	{
 		y += font_ascent(font);
 		char str[256];
-		i->GetLastPart(str);
+		i->GetName(str);
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
 		draw_text(s, str, x, y, selected ? get_dialog_color(s, ITEM_ACTIVE_COLOR) : get_dialog_color(s, ITEM_COLOR), font, style);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
@@ -607,14 +607,14 @@ public:
 
 	void set_path(const char *p)
 	{
-		item.SetName(p, type);
-		item.GetLastPart(item_name);
+		item = p;
+		item.GetName(item_name);
 		set_selection(item_name);
 	}
 
 	const char *get_path(void) const
 	{
-		return item.GetName();
+		return item.GetPath();
 	}
 
 	FileSpecifier &get_file_specifier(void)
@@ -650,7 +650,7 @@ void w_env_select::select_item(dialog *parent)
 	dialog d;
 	d.add(new w_static_text(menu_title, TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
-	w_env_list *list_w = new w_env_list(files, item.GetName(), &d);
+	w_env_list *list_w = new w_env_list(files, item.GetPath(), &d);
 	d.add(list_w);
 	d.add(new w_spacer());
 	d.add(new w_button("CANCEL", dialog_cancel, &d));
@@ -659,8 +659,10 @@ void w_env_select::select_item(dialog *parent)
 	clear_screen();
 
 	// Run dialog
-	if (d.run() == 0) // Accepted
-		set_path(files[list_w->get_selection()].GetName());
+	if (d.run() == 0) { // Accepted
+		if (files.size())
+			set_path(files[list_w->get_selection()].GetPath());
+	}
 
 	// Redraw parent dialog
 	clear_screen();

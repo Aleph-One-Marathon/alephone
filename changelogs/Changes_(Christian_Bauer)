@@ -1,5 +1,11 @@
 Change log of the SDL version of Aleph One
 
+September 10, 2000
+ - improved error handling of OpenedFile, OpenedResourceFile and FileSpecifier
+ - implemented file selection dialogs
+ - saving/continuing games and saving/replaying films works
+ - bumped version number to 0.10.4
+
 September 9, 2000
  - implemented OpenGL prefs menu (only flags)
  - fixed possible reference to freed memory in RenderVisTree::cast_render_ray()

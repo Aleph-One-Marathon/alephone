@@ -89,11 +89,12 @@ private:
 
 #elif defined(SDL)
 
-	int GetError() {return errno;}
+	int GetError() {return err;}
 	SDL_RWops *GetRWops() {return f;}
 
 private:
 	SDL_RWops *f;	// File handle
+	int err;		// Error code
 	bool is_forked;
 	long fork_offset, fork_length;
 #endif
@@ -202,10 +203,11 @@ private:
 
 #elif defined(SDL)
 
-	int GetError() {return errno;}
+	int GetError() {return err;}
 
 private:
 	SDL_RWops *f, *saved_f;
+	int err;		// Error code
 #endif
 };
 
@@ -298,22 +300,10 @@ class FileSpecifier
 public:
 	// The typecodes here are the symbolic constants defined in tags.h (_typecode_creator, etc.)
 	
-	// The name as a C string:
+	// Get the name (final path element) as a C string:
 	// assumes enough space to hold it if getting (max. 256 bytes)
-	// The typecode is for automatically adding a suffix;
-	// NONE means add none
-	
 	void GetName(char *Name) const;
-	void SetName(const char *Name, int Type);
-	
-#ifdef mac
-	// Move the directory specification
-	void ToDirectory(DirectorySpecifier& Dir);
-	void FromDirectory(DirectorySpecifier& Dir);
-#endif
-	
-	// Partially inspired by portable_files.h:
-	
+
 	// These functions take an appropriate one of the typecodes used earlier;
 	// this is to try to cover the cases of both typecode attributes
 	// and typecode suffixes.
@@ -368,9 +358,18 @@ public:
 	void SetSpec(FSSpec& _Spec);
 	FSSpec& GetSpec() {return Spec;}
 	
+	// Replace the file name;
+	// The typecode is for automatically adding a suffix;
+	// NONE means add none
+	void SetName(const char *Name, int Type);
+	
 	// Set special directories:
 	bool SetToApp();
 	bool SetParentToPreferences();
+
+	// Move the directory specification
+	void ToDirectory(DirectorySpecifier& Dir);
+	void FromDirectory(DirectorySpecifier& Dir);
 
 	// The error:
 	OSErr GetError() {return Err;}
@@ -381,28 +380,30 @@ private:
 
 #elif defined(SDL)
 
-	FileSpecifier() {}
-	FileSpecifier(const string &s) : name(s) {}
-	FileSpecifier(const char *s) : name(s) {}
-	FileSpecifier(const FileSpecifier &other) : name(other.name) {}
+	FileSpecifier() : err(0) {}
+	FileSpecifier(const string &s) : name(s), err(0) {}
+	FileSpecifier(const char *s) : name(s), err(0) {}
+	FileSpecifier(const FileSpecifier &other) : name(other.name), err(other.err) {}
 
 	bool operator==(const FileSpecifier &other) const {return name == other.name;}
 	bool operator!=(const FileSpecifier &other) const {return name != other.name;}
 
-	void SetToLocalDataDir();	// Per-user directory, where prefs, recordings and saved games go
+	void SetToLocalDataDir();	// Per-user directory, where preferences go
+	void SetToSavedGamesDir();	// Directory for saved games (per-user)
+	void SetToRecordingsDir();	// Directory for recordings (per-user)
 	void SetToGlobalDataDir();	// Data file directory, where "Images", "Shapes" etc. are stored
 
 	void AddPart(const string &part);
-	void GetLastPart(char *part) const;
-	const char *GetName(void) const {return name.c_str();}
+	const char *GetPath(void) const {return name.c_str();}
 
-	bool CreateDirectory() const;
-	bool ReadDirectory(vector<dir_entry> &vec) const;
+	bool CreateDirectory();
+	bool ReadDirectory(vector<dir_entry> &vec);
 
-	int GetError() const {return errno;}
+	int GetError() const {return err;}
 
 private:
 	string name;	// Path name
+	int err;
 
 #endif
 };

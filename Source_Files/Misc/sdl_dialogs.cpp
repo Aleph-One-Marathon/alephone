@@ -420,6 +420,9 @@ int dialog::run(bool intro_exit_sounds)
 	layout();
 	draw();
 
+	// Show cursor
+	bool cursor_was_visible = SDL_ShowCursor(true);
+
 	// Welcome sound
 	if (intro_exit_sounds)
 		play_sound(DIALOG_INTRO_SOUND, NULL, NONE);
@@ -453,6 +456,10 @@ int dialog::run(bool intro_exit_sounds)
 	// Farewell sound
 	if (intro_exit_sounds)
 		play_sound(result == 0 ? DIALOG_OK_SOUND : DIALOG_CANCEL_SOUND, NULL, NONE);
+
+	// Hide cursor
+	if (!cursor_was_visible)
+		SDL_ShowCursor(false);
 
 	// Clear dialog surface
 	SDL_FillRect(dialog_surface, NULL, get_dialog_color(dialog_surface, BLACK_COLOR));

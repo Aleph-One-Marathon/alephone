@@ -12,6 +12,9 @@
 #include "interface.h"
 #include "game_errors.h"
 
+#include "sdl_dialogs.h"
+#include "sdl_widgets.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <string>
@@ -27,7 +30,7 @@
 
 
 // From shell_sdl.cpp
-extern FileSpecifier global_data_dir, local_data_dir;
+extern FileSpecifier global_data_dir, local_data_dir, saved_games_dir, recordings_dir;
 
 
 /*
@@ -97,7 +100,7 @@ bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length)
  *  Opened file
  */
 
-OpenedFile::OpenedFile() : f(NULL), is_forked(false), fork_offset(0), fork_length(0) {}
+OpenedFile::OpenedFile() : f(NULL), err(0), is_forked(false), fork_offset(0), fork_length(0) {}
 
 bool OpenedFile::IsOpen()
 {
@@ -109,6 +112,7 @@ bool OpenedFile::Close()
 	if (f) {
 		SDL_RWclose(f);
 		f = NULL;
+		err = 0;
 	}
 	return true;
 }
@@ -118,6 +122,7 @@ bool OpenedFile::GetPosition(long &Position)
 	if (f == NULL)
 		return false;
 
+	err = 0;
 	Position = SDL_RWtell(f) - fork_offset;
 	return true;
 }
@@ -127,7 +132,10 @@ bool OpenedFile::SetPosition(long Position)
 	if (f == NULL)
 		return false;
 
-	return SDL_RWseek(f, Position + fork_offset, SEEK_SET) >= 0;
+	err = 0;
+	if (SDL_RWseek(f, Position + fork_offset, SEEK_SET) < 0)
+		err = errno;
+	return err == 0;
 }
 
 bool OpenedFile::GetLength(long &Length)
@@ -143,14 +151,8 @@ bool OpenedFile::GetLength(long &Length)
 		Length = SDL_RWtell(f);
 		SDL_RWseek(f, pos, SEEK_SET);
 	}
+	err = 0;
 	return true;
-}
-
-bool OpenedFile::SetLength(long Length)
-{
-	// impossible to do in a platform-independant way
-	printf("*** OpenedFile::SetLength(%ld)\n", Length);
-	return false;
 }
 
 bool OpenedFile::Read(long Count, void *Buffer)
@@ -158,7 +160,10 @@ bool OpenedFile::Read(long Count, void *Buffer)
 	if (f == NULL)
 		return false;
 
-	return SDL_RWread(f, Buffer, 1, Count) == Count;
+	err = 0;
+	if (SDL_RWread(f, Buffer, 1, Count) != Count)
+		err = errno;
+	return err == 0;
 }
 
 bool OpenedFile::Write(long Count, void *Buffer)
@@ -166,7 +171,10 @@ bool OpenedFile::Write(long Count, void *Buffer)
 	if (f == NULL)
 		return false;
 
-	return SDL_RWwrite(f, Buffer, 1, Count) == Count;
+	err = 0;
+	if (SDL_RWwrite(f, Buffer, 1, Count) != Count)
+		err = errno;
+	return err == 0;
 }
 
 
@@ -214,13 +222,14 @@ void LoadedResource::Detach()
  *  Opened resource file
  */
 
-OpenedResourceFile::OpenedResourceFile() : f(NULL), saved_f(NULL) {}
+OpenedResourceFile::OpenedResourceFile() : f(NULL), saved_f(NULL), err(0) {}
 
 bool OpenedResourceFile::Push()
 {
 	saved_f = cur_res_file();
 	if (saved_f != f)
 		use_res_file(f);
+	err = 0;
 	return true;
 }
 
@@ -228,6 +237,7 @@ bool OpenedResourceFile::Pop()
 {
 	if (f != saved_f)
 		use_res_file(saved_f);
+	err = 0;
 	return true;
 }
 
@@ -235,6 +245,7 @@ bool OpenedResourceFile::Check(uint32 Type, int16 ID)
 {
 	Push();
 	bool result = has_1_resource(Type, ID);
+	err = result ? 0 : errno;
 	Pop();
 	return result;
 }
@@ -243,6 +254,7 @@ bool OpenedResourceFile::Get(uint32 Type, int16 ID, LoadedResource &Rsrc)
 {
 	Push();
 	bool success = get_1_resource(Type, ID, Rsrc);
+	err = success ? 0 : errno;
 	Pop();
 	return success;
 }
@@ -257,6 +269,7 @@ bool OpenedResourceFile::Close()
 	if (f) {
 		close_res_file(f);
 		f = NULL;
+		err = 0;
 	}
 	return true;
 }
@@ -268,19 +281,27 @@ bool OpenedResourceFile::Close()
 
 const FileSpecifier &FileSpecifier::operator=(const FileSpecifier &other)
 {
-	if (this != &other)
+	if (this != &other) {
 		name = other.name;
+		err = other.err;
+	}
 	return *this;
 }
 
-void FileSpecifier::GetName(char *Name) const
+// Get last element of path
+void FileSpecifier::GetName(char *part) const
 {
-	strcpy(Name, name.c_str());
-}
+#if defined(__unix__) || defined(__BEOS__)
 
-void FileSpecifier::SetName(const char *Name, int Type)
-{
-	name = Name;
+	string::size_type pos = name.rfind('/');
+	if (pos == string::npos)
+		part[0] = 0;
+	else
+		strcpy(part, name.substr(pos + 1).c_str());
+
+#else
+#error FileSpecifier::GetLastPart() not implemented for this platform
+#endif
 }
 
 // Create file
@@ -288,15 +309,19 @@ bool FileSpecifier::Create(int Type)
 {
 	Delete();
 	// files are automatically created when opened for writing
+	err = 0;
 	return true;
 }
 
 // Create directory
-bool FileSpecifier::CreateDirectory() const
+bool FileSpecifier::CreateDirectory()
 {
 #if defined(__unix__) || defined(__BEOS__)
 
-	return mkdir(name.c_str(), 0777) == 0;
+	err = 0;
+	if (mkdir(name.c_str(), 0777) < 0)
+		err = errno;
+	return err == 0;
 
 #else
 #error FileSpecifier::CreateDirectory() not implemented for this platform
@@ -311,7 +336,8 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 	OFile.fork_offset = 0;
 	OFile.fork_length = 0;
 	SDL_RWops *f = OFile.f = SDL_RWFromFile(name.c_str(), Writable ? "wb" : "rb");
-	if (!OFile.IsOpen()) {
+	err = f ? 0 : errno;
+	if (f == NULL) {
 		set_game_error(systemError, OFile.GetError());
 		return false;
 	}
@@ -342,7 +368,8 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 {
 	OFile.Close();
 	OFile.f = open_res_file(*this);
-	if (!OFile.IsOpen()) {
+	err = OFile.f ? 0 : errno;
+	if (OFile.f == NULL) {
 		set_game_error(systemError, OFile.GetError());
 		return false;
 	} else
@@ -355,7 +382,10 @@ bool FileSpecifier::Exists()
 #if defined(__unix__) || defined(__BEOS__)
 
 	// Check whether the file is readable
-	return access(name.c_str(), R_OK) == 0;
+	err = 0;
+	if (access(name.c_str(), R_OK) < 0)
+		err = errno;
+	return err == 0;
 
 #else
 #error FileSpecifier::Exists() not implemented for this platform
@@ -368,8 +398,11 @@ TimeType FileSpecifier::GetDate()
 #if defined(__unix__) || defined(__BEOS__)
 
 	struct stat st;
-	if (stat(name.c_str(), &st) < 0)
+	err = 0;
+	if (stat(name.c_str(), &st) < 0) {
+		err = errno;
 		return 0;
+	}
 	return st.st_mtime;
 
 #else
@@ -446,19 +479,35 @@ bool FileSpecifier::GetFreeSpace(unsigned long &FreeSpace)
 	// This is impossible to do in a platform-independant way, so we
 	// just return 16MB which should be enough for everything
 	FreeSpace = 16 * 1024 * 1024;
+	err = 0;
 	return true;
 }
 
 // Delete file
 bool FileSpecifier::Delete()
 {
-	return remove(name.c_str()) == 0;
+	err = 0;
+	if (remove(name.c_str()) < 0)
+		err = errno;
+	return err == 0;
 }
 
 // Set to local (per-user) data directory
 void FileSpecifier::SetToLocalDataDir()
 {
 	name = local_data_dir.name;
+}
+
+// Set to saved games directory
+void FileSpecifier::SetToSavedGamesDir()
+{
+	name = saved_games_dir.name;
+}
+
+// Set to recordings directory
+void FileSpecifier::SetToRecordingsDir()
+{
+	name = recordings_dir.name;
 }
 
 // Set to global data directory
@@ -482,32 +531,18 @@ void FileSpecifier::AddPart(const string &part)
 #endif
 }
 
-// Get last element of path
-void FileSpecifier::GetLastPart(char *part) const
-{
-#if defined(__unix__) || defined(__BEOS__)
-
-	string::size_type pos = name.rfind('/');
-	if (pos == string::npos)
-		part[0] = 0;
-	else
-		strcpy(part, name.substr(pos + 1).c_str());
-
-#else
-#error FileSpecifier::GetLastPart() not implemented for this platform
-#endif
-}
-
 // Read directory contents
-bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec) const
+bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 {
 #if defined(__unix__) || defined(__BEOS__)
 
 	vec.clear();
 
 	DIR *d = opendir(name.c_str());
-	if (d == NULL)
+	if (d == NULL) {
+		err = errno;
 		return false;
+	}
 	struct dirent *de = readdir(d);
 	while (de) {
 		if (de->d_name[0] != '.' || (de->d_name[1] && de->d_name[1] != '.')) {
@@ -520,6 +555,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec) const
 		de = readdir(d);
 	}
 	closedir(d);
+	err = 0;
 	return true;
 
 #else
@@ -527,44 +563,33 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec) const
 #endif
 }
 
-
-/*
- *  Get FileSpecifiers for data files
- */
-
-bool get_file_spec(FileSpecifier &spec, short listid, short item, short pathsid)
+// Copy file contents
+bool FileSpecifier::CopyContents(FileSpecifier &source_name)
 {
-	spec = global_data_dir;
-	if (getcstr(temporary, listid, item)) {
-		spec.AddPart(temporary);
-		return spec.Exists();
-	}
-	return false;
-}
+	err = 0;
+	OpenedFile src, dst;
+	if (source_name.Open(src)) {
+		Delete();
+		if (Open(dst, true)) {
+			const int BUFFER_SIZE = 1024;
+			uint8 buffer[BUFFER_SIZE];
 
-void get_default_map_spec(FileSpecifier &file)
-{
-	if (!get_file_spec(file, strFILENAMES, filenameDEFAULT_MAP, strPATHS))
-		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
-}
+			long length = 0;
+			src.GetLength(length);
 
-void get_default_physics_spec(FileSpecifier &file)
-{
-	get_file_spec(file, strFILENAMES, filenamePHYSICS_MODEL, strPATHS);
-}
-
-void get_default_sounds_spec(FileSpecifier &file)
-{
-	get_file_spec(file, strFILENAMES, filenameSOUNDS8, strPATHS);
-}
-
-bool get_default_music_spec(FileSpecifier &file)
-{
-	return get_file_spec(file, strFILENAMES, filenameMUSIC, strPATHS);
-}
-
-void get_default_shapes_spec(FileSpecifier &file)
-{
-	if (!get_file_spec(file, strFILENAMES, filenameSHAPES8, strPATHS))
-		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
+			while (length && err == 0) {
+				long count = length > BUFFER_SIZE ? BUFFER_SIZE : length;
+				if (src.Read(count, buffer)) {
+					if (!dst.Write(count, buffer))
+						err = dst.GetError();
+				} else
+					err = src.GetError();
+				length -= count;
+			}
+		}
+	} else
+		err = source_name.GetError();
+	if (err)
+		Delete();
+	return err == 0;
 }

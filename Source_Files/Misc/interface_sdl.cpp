@@ -100,7 +100,6 @@ static void network_speaker_proc(void *buffer, short size, short player_index)
 void install_network_microphone(void)
 {
 #if 0
-	//!!
 	open_network_speaker(NETWORK_SOUND_CHUNK_BUFFER_SIZE, 2);
 	short id = NetAddDistributionFunction(network_speaker_proc, true);
 	open_network_microphone(id);
@@ -110,7 +109,6 @@ void install_network_microphone(void)
 void remove_network_microphone(void)
 {
 #if 0
-	//!!
 	close_network_speaker();
 	close_network_microphone();
 #endif

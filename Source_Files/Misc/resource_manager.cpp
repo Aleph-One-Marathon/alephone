@@ -79,7 +79,7 @@ static list<res_file_t *>::iterator find_res_file_t(SDL_RWops *f)
 void initialize_resources(FileSpecifier &global_resources)
 {
 	if (open_res_file(global_resources) == NULL) {
-		fprintf(stderr, "Can't open global resource file '%s'\n", global_resources.GetName());
+		fprintf(stderr, "Can't open global resource file '%s'\n", global_resources.GetPath());
 		exit(1);
 	}
 }
@@ -188,7 +188,7 @@ bool res_file_t::read_map(void)
 
 SDL_RWops *open_res_file(FileSpecifier &file)
 {
-	string rsrc_file_name = file.GetName();
+	string rsrc_file_name = file.GetPath();
 	string resources_file_name = rsrc_file_name;
 	rsrc_file_name += ".rsrc";
 	resources_file_name += ".resources";
@@ -198,7 +198,7 @@ SDL_RWops *open_res_file(FileSpecifier &file)
 	if (f == NULL)
 		f = SDL_RWFromFile(resources_file_name.c_str(), "rb");
 	if (f == NULL)
-		f = SDL_RWFromFile(file.GetName(), "rb");
+		f = SDL_RWFromFile(file.GetPath(), "rb");
 	if (f) {
 
 		// Successful, create res_file_t object and read resource map
@@ -212,7 +212,7 @@ SDL_RWops *open_res_file(FileSpecifier &file)
 		} else {
 
 			// Error reading resource map
-			//fprintf(stderr, "Error reading resource map of '%s'\n", file.GetName());
+			//fprintf(stderr, "Error reading resource map of '%s'\n", file.GetPath());
 			SDL_RWclose(f);
 			return NULL;
 		}
