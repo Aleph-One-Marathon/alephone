@@ -340,7 +340,6 @@ void GeneralRunScript(int LevelIndex)
 		case LevelScriptCommand::Music:
 			{
 				FileSpecifier MusicFile;
-				MusicFile.FromDirectory(MapParentDir);
 				if (MusicFile.SetNameWithPath(&Cmd.FileSpec[0]))
 					Playlist.push_back(MusicFile);
 			}
@@ -376,7 +375,6 @@ void FindMovieInScript(int LevelIndex)
 		{
 		case LevelScriptCommand::Movie:
 			{
-				MovieFile.FromDirectory(MapParentDir);
 				MovieFileExists = MovieFile.SetNameWithPath(&Cmd.FileSpec[0]);
 
 				// Set the size only if there was a movie file here
