@@ -1679,8 +1679,8 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 {
 	// Check for fog
 	bool IsActive = FogActive();
-	bool AffectsLandscapes = IsActive ? CurrFog->AffectsLandscapes : true;
-	if (!AffectsLandscapes)
+	bool AffectsLandscapes = IsActive ? CurrFog->AffectsLandscapes : false;
+	if (AffectsLandscapes)
 	{
 		// Render as fog at infinity
 		glDisable(GL_FOG);

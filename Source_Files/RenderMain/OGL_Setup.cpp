@@ -1721,7 +1721,7 @@ bool XML_FogParser::AttributesDone()
 	OGL_FogData& Data = FogData[Type];
 	if (IsPresent[0]) Data.IsPresent = FogPresent;
 	if (IsPresent[1]) Data.Depth = Depth;
-	if (IsPresent[1]) Data.AffectsLandscapes = AffectsLandscapes;
+	if (IsPresent[2]) Data.AffectsLandscapes = AffectsLandscapes;
 	Color_SetArray(&Data.Color);	
 	return true;
 }
