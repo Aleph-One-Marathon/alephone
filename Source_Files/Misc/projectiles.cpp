@@ -1226,7 +1226,7 @@ uint8 *unpack_projectile_definition(uint8 *Stream, int Count)
 		
 		StreamToValue(S,ObjPtr->radius);
 		StreamToValue(S,ObjPtr->area_of_effect);
-		S = unpack_damage_definition(S,&ObjPtr->damage);
+		S = unpack_damage_definition(S,&ObjPtr->damage,1);
 		
 		StreamToValue(S,ObjPtr->flags);
 		
@@ -1260,7 +1260,7 @@ uint8 *pack_projectile_definition(uint8 *Stream, int Count)
 		
 		ValueToStream(S,ObjPtr->radius);
 		ValueToStream(S,ObjPtr->area_of_effect);
-		S = pack_damage_definition(S,&ObjPtr->damage);
+		S = pack_damage_definition(S,&ObjPtr->damage,1);
 		
 		ValueToStream(S,ObjPtr->flags);
 		
