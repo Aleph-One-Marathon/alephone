@@ -124,7 +124,11 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 		TxtrData.Resolution = 0;		// 1x
 		TxtrData.ColorFormat = 0;		// 32-bit color
 	}
+#ifdef SDL
+	Data.Flags = OGL_Flag_FlatStatic | OGL_Flag_Fader | OGL_Flag_Map | OGL_Flag_LiqSeeThru;	// Reasonable default flags ("static" effect causes massive slowdown, so we turn it off)
+#else
 	Data.Flags = 0;						// Everything off
+#endif
 	Data.VoidColor = rgb_black;			// Self-explanatory
 	for (int il=0; il<4; il++)
 		for (int ie=0; ie<2; ie++)

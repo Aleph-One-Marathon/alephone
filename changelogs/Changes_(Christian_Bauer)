@@ -1,5 +1,13 @@
 Change log of the SDL version of Aleph One
 
+February 7, 2001
+ - more reasonable default OpenGL flags:
+     FlatStatic on (because the real 'static' effect causes major slowdown)
+     Fader on (gives visual clues when picking up objects etc.)
+     Map on (faster than non-OpenGL map)
+     LiqSeeThru on (looks cool)
+ - implemented support for JPEG compressed, banded terminal PICTs
+
 February 6, 2001
  - implemented support for 1/2/4-bit PICTs
  - fixed bug in FPS calculation

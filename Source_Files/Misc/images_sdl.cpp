@@ -6,6 +6,10 @@
 
 #include <SDL_endian.h>
 
+#ifdef HAVE_SDL_IMAGE_H
+#include <SDL_image.h>
+#endif
+
 #include "byte_swapping.h"
 #include "screen_drawing.h"
 
@@ -19,7 +23,7 @@ extern screen_rectangle draw_clip_rect;
 
 
 /*
- *  Uncompress picture data
+ *  Uncompress picture data, returns size of compressed image data that was read
  */
 
 // Uncompress (and endian-correct) scan line compressed by PackBits RLE algorithm
@@ -77,21 +81,25 @@ static const uint8 *unpack_bits(const uint8 *src, int row_bytes, T *dst)
 }
 
 // 8-bit picture, one scan line at a time
-static void uncompress_rle8(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int height)
+static int uncompress_rle8(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int height)
 {
+	const uint8 *start = src;
 	for (int y=0; y<height; y++) {
 		src = unpack_bits(src, row_bytes, dst);
 		dst += dst_pitch;
 	}
+	return src - start;
 }
 
 // 16-bit picture, one scan line at a time, 16-bit chunks
-static void uncompress_rle16(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int height)
+static int uncompress_rle16(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int height)
 {
+	const uint8 *start = src;
 	for (int y=0; y<height; y++) {
 		src = unpack_bits(src, row_bytes, (uint16 *)dst);
 		dst += dst_pitch;
 	}
+	return src - start;
 }
 
 static void copy_component_into_surface(const uint8 *src, uint8 *dst, int count, int component)
@@ -108,11 +116,13 @@ static void copy_component_into_surface(const uint8 *src, uint8 *dst, int count,
 }
 
 // 32-bit picture, one scan line, one component at a time
-static void uncompress_rle32(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int height)
+static int uncompress_rle32(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int height)
 {
 	uint8 *tmp = (uint8 *)malloc(row_bytes);
 	if (tmp == NULL)
-		return;
+		return -1;
+
+	const uint8 *start = src;
 
 	int width = row_bytes / 4; 
 	for (int y=0; y<height; y++) {
@@ -127,10 +137,13 @@ static void uncompress_rle32(const uint8 *src, int row_bytes, uint8 *dst, int ds
 
 		dst += dst_pitch;
 	}
+
 	free(tmp);
+
+	return src - start;
 }
 
-static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int depth, int height, int pack_type)
+static int uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int depth, int height, int pack_type)
 {
 	// Depths <8 have to be color expanded to depth 8 after uncompressing,
 	// so we uncompress into a temporary buffer
@@ -140,42 +153,66 @@ static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int 
 		dst = (uint8 *)malloc(row_bytes * height);
 		dst_pitch = row_bytes;
 		if (dst == NULL)
-			return;
+			return -1;
 	}
+
+	int data_size = 0;
 
 	if (row_bytes < 8) {
 
 		// Uncompressed data
-		memcpy(dst, src, row_bytes * height);
+		const uint8 *p = src;
+		uint8 *q = dst;
+		for (int y=0; y<height; y++) {
+			memcpy(q, p, MIN(row_bytes, dst_pitch));
+			p += row_bytes;
+			q += dst_pitch;
+		}
+		data_size = row_bytes * height;
 
 	} else {
 
 		// Compressed data
 		if (depth <= 8) {
-			uncompress_rle8(src, row_bytes, dst, dst_pitch, height);
+
+			// Indexed color
+			data_size = uncompress_rle8(src, row_bytes, dst, dst_pitch, height);
+
 		} else {
+
+			// Direct color
 			if (pack_type == 0) {
 				if (depth == 16)
 					pack_type = 3;
 				else if (depth == 32)
 					pack_type = 4;
+
 			}
 			switch (pack_type) {
-				case 1:		// No packing
-					memcpy(dst, src, row_bytes * height);
+				case 1: {	// No packing
+					const uint8 *p = src;
+					uint8 *q = dst;
+					for (int y=0; y<height; y++) {
+						memcpy(q, p, MIN(row_bytes, dst_pitch));
+						p += row_bytes;
+						q += dst_pitch;
+					}
+					data_size = row_bytes * height;
 					if (depth == 16)
 						byte_swap_memory(dst, _2byte, dst_pitch * height / 2);
 					else if (depth == 32)
 						byte_swap_memory(dst, _4byte, dst_pitch * height / 4);
 					break;
+				}
 				case 3:		// Run-length encoding by 16-bit chunks
-					uncompress_rle16(src, row_bytes, dst, dst_pitch, height);
+					data_size = uncompress_rle16(src, row_bytes, dst, dst_pitch, height);
 					break;
 				case 4:		// Run-length encoding one component at a time
-					uncompress_rle32(src, row_bytes, dst, dst_pitch, height);
+					data_size = uncompress_rle32(src, row_bytes, dst, dst_pitch, height);
 					break;
 				default:
 					fprintf(stderr, "Unimplemented packing type %d (depth %d) in PICT resource\n", pack_type, depth);
+					data_size = -1;
 					break;
 			}
 		}
@@ -183,13 +220,20 @@ static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int 
 
 	// Color expansion 1/2/4->8 bits
 	if (depth < 8) {
-		uint8 *p = dst;
+		const uint8 *p = dst;
 		uint8 *q = orig_dst;
+
+		// Source and destination may have different alignment restrictions,
+		// don't run off the right of either
+		int x_max = row_bytes;
+		while (x_max * 8 / depth > orig_dst_pitch)
+			x_max--;
+
 		switch (depth) {
 			case 1:
 				for (int y=0; y<height; y++) {
-					for (int x=0; x<row_bytes; x++) {
-						uint8 b = *p++;
+					for (int x=0; x<x_max; x++) {
+						uint8 b = p[x];
 						q[x*8+0] = (b & 0x80) ? 0x01 : 0x00;
 						q[x*8+1] = (b & 0x40) ? 0x01 : 0x00;
 						q[x*8+2] = (b & 0x20) ? 0x01 : 0x00;
@@ -199,34 +243,39 @@ static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int 
 						q[x*8+6] = (b & 0x02) ? 0x01 : 0x00;
 						q[x*8+7] = (b & 0x01) ? 0x01 : 0x00;
 					}
+					p += row_bytes;
 					q += orig_dst_pitch;
 				}
 				break;
 			case 2:
 				for (int y=0; y<height; y++) {
-					for (int x=0; x<row_bytes; x++) {
-						uint8 b = *p++;
+					for (int x=0; x<x_max; x++) {
+						uint8 b = p[x];
 						q[x*4+0] = (b >> 6) & 0x03;
 						q[x*4+1] = (b >> 4) & 0x03;
 						q[x*4+2] = (b >> 2) & 0x03;
 						q[x*4+3] = b & 0x03;
 					}
+					p += row_bytes;
 					q += orig_dst_pitch;
 				}
 				break;
 			case 4:
 				for (int y=0; y<height; y++) {
-					for (int x=0; x<row_bytes; x++) {
-						uint8 b = *p++;
+					for (int x=0; x<x_max; x++) {
+						uint8 b = p[x];
 						q[x*2+0] = (b >> 4) & 0x0f;
 						q[x*2+1] = b & 0x0f;
 					}
+					p += row_bytes;
 					q += orig_dst_pitch;
 				}
 				break;
 		}
 		free(dst);
 	}
+
+	return data_size;
 }
 
 
@@ -245,7 +294,10 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), rsrc.GetLength());
 	if (p == NULL)
 		return NULL;
-	SDL_RWseek(p, 10, SEEK_CUR);	// skip picSize and picRect
+	SDL_RWseek(p, 6, SEEK_CUR);		// picSize/top/left
+	int pic_height = SDL_ReadBE16(p);
+	int pic_width = SDL_ReadBE16(p);
+	//printf("pic_width %d, pic_height %d\n", pic_width, pic_height);
 
 	// Read and parse picture opcodes
 	bool done = false;
@@ -341,16 +393,25 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 				// 1. PixMap
 				if (opcode == 0x009a || opcode == 0x009b)
 					SDL_RWseek(p, 4, SEEK_CUR);		// pmBaseAddr
-				uint16 row_bytes = SDL_ReadBE16(p) & 0x3fff;	// the upper 2 bits are flags
+				uint16 row_bytes = SDL_ReadBE16(p);	// the upper 2 bits are flags
+				//printf(" row_bytes %04x\n", row_bytes);
+				bool is_pixmap = row_bytes & 0x8000;
+				row_bytes &= 0x3fff;
 				uint16 top = SDL_ReadBE16(p);
 				uint16 left = SDL_ReadBE16(p);
 				uint16 height = SDL_ReadBE16(p) - top;
 				uint16 width = SDL_ReadBE16(p) - left;
-				SDL_RWseek(p, 2, SEEK_CUR);			// pmVersion
-				uint16 pack_type = SDL_ReadBE16(p);
-				SDL_RWseek(p, 14, SEEK_CUR);		// packSize/hRes/vRes/pixelType
-				uint16 pixel_size = SDL_ReadBE16(p);
-				SDL_RWseek(p, 16, SEEK_CUR);		// cmpCount/cmpSize/planeBytes/pmTable/pmReserved
+				uint16 pack_type, pixel_size;
+				if (is_pixmap) {
+					SDL_RWseek(p, 2, SEEK_CUR);			// pmVersion
+					pack_type = SDL_ReadBE16(p);
+					SDL_RWseek(p, 14, SEEK_CUR);		// packSize/hRes/vRes/pixelType
+					pixel_size = SDL_ReadBE16(p);
+					SDL_RWseek(p, 16, SEEK_CUR);		// cmpCount/cmpSize/planeBytes/pmTable/pmReserved
+				} else {
+					pack_type = 0;
+					pixel_size = 1;
+				}
 				//printf(" width %d, height %d, row_bytes %d, depth %d, pack_type %d\n", width, height, row_bytes, pixel_size, pack_type);
 
 				// Allocate surface for picture
@@ -383,14 +444,14 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 				}
 				if (done)
 					break;
-				s = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, surface_depth, Rmask, Gmask, Bmask, 0);
-				if (s == NULL) {
+				SDL_Surface *bm = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, surface_depth, Rmask, Gmask, Bmask, 0);
+				if (bm == NULL) {
 					done = true;
 					break;
 				}
 
 				// 2. ColorTable
-				if (opcode == 0x0098 || opcode == 0x0099) {
+				if (is_pixmap && (opcode == 0x0098 || opcode == 0x0099)) {
 					SDL_Color colors[256];
 					SDL_RWseek(p, 4, SEEK_CUR);			// ctSeed
 					uint16 flags = SDL_ReadBE16(p);
@@ -403,7 +464,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 						colors[value].g = SDL_ReadBE16(p) >> 8;
 						colors[value].b = SDL_ReadBE16(p) >> 8;
 					}
-					SDL_SetColors(s, colors, 0, 256);
+					SDL_SetColors(bm, colors, 0, 256);
 				}
 
 				// 3. source/destination Rect and transfer mode
@@ -416,11 +477,101 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 				}
 
 				// 5. graphics data
-				uncompress_picture((uint8 *)rsrc.GetPointer() + SDL_RWtell(p), row_bytes, (uint8 *)s->pixels, s->pitch, pixel_size, height, pack_type);
+				int data_size = uncompress_picture((uint8 *)rsrc.GetPointer() + SDL_RWtell(p), row_bytes, (uint8 *)bm->pixels, bm->pitch, pixel_size, height, pack_type);
+				if (data_size < 0) {
+					done = true;
+					break;
+				}
+				if (data_size & 1)
+					data_size++;
+				SDL_RWseek(p, data_size, SEEK_CUR);
 
-				done = true;
+				// If there's already a surface, throw away the decoded image
+				// (actually, we could have skipped this entire opcode, but the
+				// only way to do this is to decode the image data).
+				// So we only draw the first image we encounter.
+				if (s)
+					SDL_FreeSurface(bm);
+				else
+					s = bm;
 				break;
 			}
+
+#ifdef HAVE_SDL_IMAGE
+			case 0x8200: {	// Compressed QuickTime image (we only handle JPEG compression)
+				// 1. Header
+				uint32 opcode_size = SDL_ReadBE32(p);
+				if (opcode_size & 1)
+					opcode_size++;
+				uint32 opcode_start = SDL_RWtell(p);
+				SDL_RWseek(p, 26, SEEK_CUR);	// version/matrix (hom. part)
+				int offset_x = SDL_ReadBE16(p);
+				SDL_RWseek(p, 2, SEEK_CUR);
+				int offset_y = SDL_ReadBE16(p);
+				SDL_RWseek(p, 6, SEEK_CUR);	// matrix (remaining part)
+				uint32 matte_size = SDL_ReadBE32(p);
+				SDL_RWseek(p, 22, SEEK_CUR);	// matteRec/mode/srcRect/accuracy
+				uint32 mask_size = SDL_ReadBE32(p);
+
+				// 2. Matte image description
+				if (matte_size) {
+					uint32 matte_id_size = SDL_ReadBE32(p);
+					SDL_RWseek(p, matte_id_size - 4, SEEK_CUR);
+				}
+
+				// 3. Matte data
+				SDL_RWseek(p, matte_size, SEEK_CUR);
+
+				// 4. Mask region
+				SDL_RWseek(p, mask_size, SEEK_CUR);
+
+				// 5. Image description
+				uint32 id_start = SDL_RWtell(p);
+				uint32 id_size = SDL_ReadBE32(p);
+				uint32 codec_type = SDL_ReadBE32(p);
+				if (codec_type != FOUR_CHARS_TO_INT('j','p','e','g')) {
+					fprintf(stderr, "Unsupported codec type %c%c%c%c\n", codec_type >> 24, codec_type >> 16, codec_type >> 8, codec_type);
+					done = true;
+					break;
+				}
+				SDL_RWseek(p, 36, SEEK_CUR);	// resvd1/resvd2/dataRefIndex/version/revisionLevel/vendor/temporalQuality/spatialQuality/width/height/hRes/vRes
+				uint32 data_size = SDL_ReadBE32(p);
+				SDL_RWseek(p, id_start + id_size, SEEK_SET);
+
+				// Allocate surface for complete (but possibly banded) picture
+				if (s == NULL) {
+					s = SDL_CreateRGBSurface(SDL_SWSURFACE, pic_width, pic_height, 24,
+#ifdef ALEPHONE_LITTLE_ENDIAN
+							0x0000ff, 0x00ff00, 0xff0000,
+#else
+							0xff0000, 0x00ff00, 0x0000ff,
+#endif
+							0);
+					if (s == NULL) {
+						done = true;
+						break;
+					}
+				}
+
+				// 6. Compressed image data
+				SDL_RWops *img = SDL_RWFromMem((uint8 *)rsrc.GetPointer() + SDL_RWtell(p), data_size);
+				if (img == NULL) {
+					done = true;
+					break;
+				}
+				SDL_Surface *bm = IMG_LoadTyped_RW(img, true, "JPG");
+
+				// Copy image (band) into surface
+				if (bm) {
+					SDL_Rect dst_rect = {offset_x, offset_y, bm->w, bm->h};
+					SDL_BlitSurface(bm, NULL, s, &dst_rect);
+					SDL_FreeSurface(bm);
+				}
+
+				SDL_RWseek(p, opcode_start + opcode_size, SEEK_SET);
+				break;
+			}
+#endif
 
 			default:
 				if (opcode >= 0x0300 && opcode < 0x8000)
