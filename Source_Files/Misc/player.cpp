@@ -103,7 +103,6 @@ Aug 31, 2000 (Loren Petrich):
 // LP addition:
 #include "ChaseCam.h"
 #include "Packing.h"
-#include "ViewControl.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -1024,8 +1023,8 @@ static void handle_player_in_vacuum(
 			default: breathing_frequency= TICKS_PER_MINUTE/2;
 		}
 
-		if (!(player->suit_oxygen%breathing_frequency)) play_local_sound(_snd_breathing);
-		if ((player->suit_oxygen+OXYGEN_WARNING_OFFSET)<OXYGEN_WARNING_LEVEL && !((player->suit_oxygen+OXYGEN_WARNING_OFFSET)%OXYGEN_WARNING_FREQUENCY)) play_local_sound(_snd_oxygen_warning);
+		if (!(player->suit_oxygen%breathing_frequency)) play_local_sound(Sound_Breathing());
+		if ((player->suit_oxygen+OXYGEN_WARNING_OFFSET)<OXYGEN_WARNING_LEVEL && !((player->suit_oxygen+OXYGEN_WARNING_OFFSET)%OXYGEN_WARNING_FREQUENCY)) play_local_sound(Sound_OxygenWarning());
 		
 		// LP change: modified to use global variable for change rate
 		assert(OxygenChange <= 0);

@@ -1591,7 +1591,7 @@ bool legal_polygon_height_change(
 				if (damage)
 				{
 					damage_monster(object->permutation, NONE, NONE, (world_point3d *) NULL, damage);
-					play_object_sound(object_index, _snd_body_being_crunched);
+					play_object_sound(object_index, Sound_Crunched());
 				}
 				legal_change= false;
 			}
@@ -2542,7 +2542,7 @@ void set_monster_action(
 		if ((definition->flags&_monster_has_nuclear_hard_death) && action==_monster_is_dying_hard)
 		{
 			start_fade(_fade_long_bright);
-			play_local_sound(_snd_juggernaut_exploding);
+			play_local_sound(Sound_Exploding());
 		}
 	}
 	

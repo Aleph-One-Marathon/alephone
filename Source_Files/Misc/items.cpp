@@ -473,7 +473,7 @@ bool try_and_add_player_item(
 			{
 				process_player_powerup(player_index, type);
 				object_was_just_destroyed(_object_is_item, type);
-				grabbed_sound_index= _snd_got_powerup;
+				grabbed_sound_index= Sound_GotPowerup();
 				success= true;
 			}
 			break;
@@ -495,7 +495,7 @@ bool try_and_add_player_item(
 					if (polygon->type!=_polygon_is_base)
 					{
 						object_was_just_destroyed(_object_is_item, type);
-						grabbed_sound_index= _snd_got_item;
+						grabbed_sound_index= Sound_GotItem();
 						success= true;
 						goto DONE;
 					}
@@ -546,7 +546,7 @@ bool try_and_add_player_item(
 				/* You have exceeded the count of these items */
 			}
 
-			grabbed_sound_index= _snd_got_item;
+			grabbed_sound_index= Sound_GotItem();
 
 			if(success)
 			{

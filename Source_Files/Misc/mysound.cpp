@@ -232,6 +232,46 @@ static OpenedFile SoundFile;
 /* include globals */
 #include "sound_definitions.h"
 
+
+// Extra formerly-hardcoded sounds and their accessors; this is done for M1 compatibility:
+
+static short _Sound_TerminalLogon = _snd_computer_interface_logon;
+static short _Sound_TerminalLogoff = _snd_computer_interface_logout;
+static short _Sound_TerminalPage = _snd_computer_interface_page;
+
+static short _Sound_TeleportIn = _snd_teleport_in;
+static short _Sound_TeleportOut = _snd_teleport_out;
+
+static short _Sound_GotPowerup = _snd_got_powerup;
+static short _Sound_GotItem = _snd_got_item;
+
+static short _Sound_Crunched = _snd_body_being_crunched;
+static short _Sound_Exploding = _snd_juggernaut_exploding;
+
+static short _Sound_Breathing = _snd_breathing;
+static short _Sound_OxygenWarning = _snd_oxygen_warning;
+
+static short _Sound_AdjustVolume = _snd_adjust_volume;
+
+short Sound_TerminalLogon() {return _Sound_TerminalLogon;}
+short Sound_TerminalLogoff() {return _Sound_TerminalLogoff;}
+short Sound_TerminalPage() {return _Sound_TerminalPage;}
+
+short Sound_TeleportIn() {return _Sound_TeleportIn;}
+short Sound_TeleportOut() {return _Sound_TeleportOut;}
+
+short Sound_GotPowerup() {return _Sound_GotPowerup;}
+short Sound_GotItem() {return _Sound_GotItem;}
+
+short Sound_Crunched() {return _Sound_Crunched;}
+short Sound_Exploding() {return _Sound_Exploding;}
+
+short Sound_Breathing() {return _Sound_Breathing;}
+short Sound_OxygenWarning() {return _Sound_OxygenWarning;}
+
+short Sound_AdjustVolume() {return _Sound_AdjustVolume;}
+
+
 /* ---------- machine-specific prototypes */
 
 static void initialize_machine_sound_manager(struct sound_manager_parameters *parameters);
@@ -1565,14 +1605,65 @@ static XML_AmbientRandomAssignParser
 class XML_SoundsParser: public XML_ElementParser
 {
 public:
-	bool HandleAttribute(const char *Tag, const char *Value)
-	{
-		UnrecognizedTag();
-		return false;
-	}
+	bool HandleAttribute(const char *Tag, const char *Value);
 	
 	XML_SoundsParser(): XML_ElementParser("sounds") {}
 };
+
+bool XML_SoundsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"terminal_logon") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_TerminalLogon));
+	}
+	else if (strcmp(Tag,"terminal_logoff") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_TerminalLogoff));
+	}
+	else if (strcmp(Tag,"terminal_page") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_TerminalPage));
+	}
+	else if (strcmp(Tag,"teleport_in") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_TeleportIn));
+	}
+	else if (strcmp(Tag,"teleport_out") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_TeleportOut));
+	}
+	else if (strcmp(Tag,"got_powerup") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_GotPowerup));
+	}
+	else if (strcmp(Tag,"got_item") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_GotItem));
+	}
+	else if (strcmp(Tag,"crunched") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_Crunched));
+	}
+	else if (strcmp(Tag,"exploding") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_Exploding));
+	}
+	else if (strcmp(Tag,"breathing") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_Breathing));
+	}
+	else if (strcmp(Tag,"oxygen_warning") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_OxygenWarning));
+	}
+	else if (strcmp(Tag,"adjust_volume") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_AdjustVolume));
+	}
+	UnrecognizedTag();
+	return false;
+}
+
 
 static XML_SoundsParser SoundsParser;
 

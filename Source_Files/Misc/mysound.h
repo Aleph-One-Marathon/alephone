@@ -483,6 +483,26 @@ void cause_ambient_sound_source_update(void);
 
 short random_sound_index_to_sound_index(short random_sound_index);
 
+// Accessors for remaining formerly hardcoded sounds:
+
+short Sound_TerminalLogon();
+short Sound_TerminalLogoff();
+short Sound_TerminalPage();
+
+short Sound_TeleportIn();
+short Sound_TeleportOut();
+
+short Sound_GotPowerup();
+short Sound_GotItem();
+
+short Sound_Crunched();
+short Sound_Exploding();
+
+short Sound_Breathing();
+short Sound_OxygenWarning();
+
+short Sound_AdjustVolume();
+
 // LP: generalized this: returns whether or not it was successful
 bool open_sound_file(FileSpecifier& File);
 

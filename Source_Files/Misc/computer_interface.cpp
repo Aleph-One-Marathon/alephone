@@ -412,13 +412,13 @@ void enter_computer_interface(
 	// LP addition: if there is no terminal-data chunk, then just make the logon sound and quit
 	if (map_terminal_text.size() == 0)
 	{
-		play_object_sound(player->object_index, _snd_computer_interface_logon);
+		play_object_sound(player->object_index, Sound_TerminalLogon());
 		return;
 	}
 	struct terminal_text_t *terminal_text = get_indexed_terminal_data(text_number);
 	if (terminal_text == NULL)
 	{
-		play_object_sound(player->object_index, _snd_computer_interface_logon);
+		play_object_sound(player->object_index, Sound_TerminalLogon());
 		return;
 	}
 	
@@ -1398,7 +1398,7 @@ static void next_terminal_state(
 			terminal->maximum_line= 1; // any click or keypress will get us out.
 			SET_TERMINAL_IS_DIRTY(terminal, true);
 #ifndef PREPROCESSING_CODE
-			play_object_sound(player->object_index, _snd_computer_interface_logout);
+			play_object_sound(player->object_index, Sound_TerminalLogoff());
 #endif			
 #endif
 		case _reading_terminal:
@@ -1586,7 +1586,7 @@ static void goto_terminal_group(
 	{
 		case _logon_group:
 #ifndef PREPROCESSING_CODE
-			play_object_sound(player->object_index, _snd_computer_interface_logon);
+			play_object_sound(player->object_index, Sound_TerminalLogon());
 #endif
 			terminal_data->phase= LOG_DURATION_BEFORE_TIMEOUT;
 			terminal_data->maximum_line= current_group->maximum_line_count;
@@ -1594,7 +1594,7 @@ static void goto_terminal_group(
 			
 		case _logoff_group:
 #ifndef PREPROCESSING_CODE
-			play_object_sound(player->object_index, _snd_computer_interface_logout);
+			play_object_sound(player->object_index, Sound_TerminalLogoff());
 #endif
 			terminal_data->phase= LOG_DURATION_BEFORE_TIMEOUT;
 			terminal_data->maximum_line= current_group->maximum_line_count;
@@ -1881,7 +1881,7 @@ static void handle_reading_terminal_keys(
 			if(action_flags & _terminal_page_down)
 			{
 #ifndef PREPROCESSING_CODE
-				play_object_sound(player->object_index, _snd_computer_interface_page);
+				play_object_sound(player->object_index, Sound_TerminalPage());
 #endif
 				line_delta= terminal_text->lines_per_page;
 			} 
@@ -1889,7 +1889,7 @@ static void handle_reading_terminal_keys(
 			if(action_flags & _terminal_page_up)
 			{
 #ifndef PREPROCESSING_CODE
-				play_object_sound(player->object_index, _snd_computer_interface_page);
+				play_object_sound(player->object_index, Sound_TerminalPage());
 #endif
 				line_delta= -terminal_text->lines_per_page;
 			}
@@ -1898,7 +1898,7 @@ static void handle_reading_terminal_keys(
 			if(action_flags & _terminal_next_state)
 			{
 #ifndef PREPROCESSING_CODE
-				play_object_sound(player->object_index, _snd_computer_interface_page);
+				play_object_sound(player->object_index, Sound_TerminalPage());
 #endif
 				/* Force a state change. */
 				line_delta= terminal_text->lines_per_page;

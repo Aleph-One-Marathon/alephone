@@ -655,7 +655,7 @@ static void hit_sound_item(
 		case iVOLUME:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
 			preferences->volume= GetControlValue(control)-1;
-			test_sound_volume(preferences->volume, _snd_adjust_volume);
+			test_sound_volume(preferences->volume, Sound_AdjustVolume());
 			// For checking out the music volume
 			set_sound_manager_parameters(sound_preferences);
 			break;

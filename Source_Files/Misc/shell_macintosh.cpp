@@ -418,10 +418,10 @@ void handle_game_key(
 		switch(key)
 		{
 			case '.': case '>': // sound volume up
-				changed_prefs= adjust_sound_volume_up(sound_preferences, _snd_adjust_volume);
+				changed_prefs= adjust_sound_volume_up(sound_preferences, Sound_AdjustVolume());
 				break;
 			case ',': case '<': // sound volume down.
-				changed_prefs= adjust_sound_volume_down(sound_preferences, _snd_adjust_volume);
+				changed_prefs= adjust_sound_volume_down(sound_preferences, Sound_AdjustVolume());
 				break;
 			case kDELETE: // switch player view
 				walk_player_list();

@@ -48,11 +48,6 @@ bool View_DoFoldEffect();
 bool View_DoStaticEffect();
 
 
-// Gets the teleport-in and teleport-out sounds; for M1 compatibility
-short Sound_TeleportIn();
-short Sound_TeleportOut();
-
-
 // Gets the on-screen-display font
 FontSpecifier& GetOnScreenFont();
 
