@@ -305,7 +305,7 @@ int network_join(
 		my_join_dialog_data.metaserver_provided_address = string();
 		
 		my_join_dialog_data.join_by_ip = network_preferences->join_by_address;
-		my_join_dialog_data.ip_for_join_by_ip = network_preferences->join_address;
+		strncpy(my_join_dialog_data.ip_for_join_by_ip, network_preferences->join_address, 256);
 		
 		int name_length= player_preferences->name[0];
 		if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
@@ -322,7 +322,7 @@ int network_join(
 		if (my_join_dialog_data.join_by_ip)
 		{
 			network_preferences->join_by_address = true;
-			network_preferences->join_address = my_join_dialog_data.ip_for_join_by_ip;
+			strncpy(network_preferences->join_address, my_join_dialog_data.ip_for_join_by_ip, 256);
 		}
 		else
 			network_preferences->join_by_address = false;
