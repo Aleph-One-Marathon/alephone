@@ -221,7 +221,7 @@ void set_monster_mode(short monster_index, short new_mode, short target_index);
 static short find_obstructing_terrain_feature(short monster_index, short *feature_index, short *relevant_polygon_index);
 
 static short position_monster_projectile(short aggressor_index, short target_index, struct attack_definition *attack,
-	world_point3d *origin, world_point3d *destination, world_point3d *vector, angle theta);
+	world_point3d *origin, world_point3d *destination, world_point3d *_vector, angle theta);
 
 static void update_monster_vertical_physics_model(short monster_index);
 static void update_monster_physics_model(short monster_index);
@@ -2926,7 +2926,7 @@ static bool try_monster_attack(
 		world_point3d origin= object->location, destination= target_object->location;
 		world_distance range= distance2d((world_point2d *)&origin, (world_point2d *)&destination);
 		short polygon_index;
-		world_point3d vector;
+		world_point3d _vector;
 	
 		theta= arctangent(destination.x-origin.x, destination.y-origin.y);
 		delta_theta= NORMALIZE_ANGLE(theta-object->facing);
@@ -2959,7 +2959,7 @@ static bool try_monster_attack(
 			{
 				/* make sure this is a valid projectile, that we donÕt hit any walls and that whatever
 					we did hit is _hostile. */
-				polygon_index= position_monster_projectile(monster_index, monster->target_index, &definition->melee_attack, &origin, &destination, &vector, theta);
+				polygon_index= position_monster_projectile(monster_index, monster->target_index, &definition->melee_attack, &origin, &destination, &_vector, theta);
 				if (preflight_projectile(&origin, polygon_index, &destination, definition->melee_attack.error,
 					definition->melee_attack.type, monster_index, monster->type, &obstruction_index))
 				{
@@ -2977,7 +2977,7 @@ static bool try_monster_attack(
 				{
 					/* make sure this is a valid projectile, that we donÕt hit any walls and that whatever
 						we did hit is _hostile. */
-					polygon_index= position_monster_projectile(monster_index, monster->target_index, &definition->ranged_attack, &origin, &destination, &vector, theta);
+					polygon_index= position_monster_projectile(monster_index, monster->target_index, &definition->ranged_attack, &origin, &destination, &_vector, theta);
 					if (preflight_projectile(&origin, polygon_index, &destination, definition->ranged_attack.error,
 						definition->ranged_attack.type, monster_index, monster->type, &obstruction_index))
 					{
@@ -3049,16 +3049,16 @@ static void execute_monster_attack(
 		struct attack_definition *attack= (monster->action==_monster_is_attacking_close) ? &definition->melee_attack : &definition->ranged_attack;
 		short projectile_polygon_index;
 		world_point3d origin= object->location;
-		world_point3d vector;
+		world_point3d _vector;
 		
-		projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, (world_point3d *) NULL, &vector, object->facing);
-		new_projectile(&origin, projectile_polygon_index, &vector, attack->error, attack->type,
+		projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, (world_point3d *) NULL, &_vector, object->facing);
+		new_projectile(&origin, projectile_polygon_index, &_vector, attack->error, attack->type,
 			monster_index, monster->type, monster->target_index, FIXED_ONE);
 		if (definition->flags&_monster_fires_symmetrically)
 		{
 			attack->dy= -attack->dy;
-			projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, (world_point3d *) NULL, &vector, object->facing);
-			new_projectile(&origin, projectile_polygon_index, &vector, attack->error, attack->type,
+			projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, (world_point3d *) NULL, &_vector, object->facing);
+			new_projectile(&origin, projectile_polygon_index, &_vector, attack->error, attack->type,
 				monster_index, monster->type, monster->target_index, FIXED_ONE);
 			attack->dy= -attack->dy;
 		}
@@ -3315,7 +3315,7 @@ static short position_monster_projectile(
 	struct attack_definition *attack,
 	world_point3d *origin,
 	world_point3d *destination,
-	world_point3d *vector,
+	world_point3d *_vector,
 	angle theta)
 {
 	struct monster_data *aggressor= get_monster_data(aggressor_index);
@@ -3342,18 +3342,18 @@ static short position_monster_projectile(
 		destination->z+= (height>>1) + (height>>2); /* shoot 3/4ths up the target */
 		
 		/* calculate outbound vector */
-		vector->x= destination->x-origin->x;
-		vector->y= destination->y-origin->y;
-		vector->z= destination->z-origin->z;
+		_vector->x= destination->x-origin->x;
+		_vector->y= destination->y-origin->y;
+		_vector->z= destination->z-origin->z;
 		
-		distance= isqrt(vector->x*vector->x + vector->y*vector->y);
-		aggressor->elevation= distance ? (vector->z*TRIG_MAGNITUDE)/distance : 0;
+		distance= isqrt(_vector->x*_vector->x + _vector->y*_vector->y);
+		aggressor->elevation= distance ? (_vector->z*TRIG_MAGNITUDE)/distance : 0;
 	}
 	else
 	{
-		vector->x= cosine_table[theta];
-		vector->y= sine_table[theta];
-		vector->z= aggressor->elevation;
+		_vector->x= cosine_table[theta];
+		_vector->y= sine_table[theta];
+		_vector->z= aggressor->elevation;
 	}
 	
 	/* return polygon_index of the new origin point */

@@ -145,7 +145,7 @@ void RenderVisTreeClass::build_render_tree()
 			if (!TEST_RENDER_FLAG(endpoint_index, _endpoint_has_been_visited))
 			{
 				// LP change: move toward correct handling of long distances
-				long_vector2d vector;
+				long_vector2d _vector;
 				// world_vector2d vector;
 				
 				/* transform all visited endpoints */
@@ -156,8 +156,8 @@ void RenderVisTreeClass::build_render_tree()
 
 				/* calculate an outbound vector to this endpoint */
 				// LP: changed to do long distance correctly.	
-				vector.i= long(endpoint->vertex.x)-long(view->origin.x);
-				vector.j= long(endpoint->vertex.y)-long(view->origin.y);
+				_vector.i= long(endpoint->vertex.x)-long(view->origin.x);
+				_vector.j= long(endpoint->vertex.y)-long(view->origin.y);
 				
 				// LP change: compose a true transformed point to replace endpoint->transformed,
 				// and use it in the upcoming code
@@ -176,10 +176,10 @@ void RenderVisTreeClass::build_render_tree()
 				
 				/* do two cross products to determine whether this endpoint is in our view cone or not
 					(we donÕt have to cast at points outside the cone) */
-				if ((view->right_edge.i*vector.j - view->right_edge.j*vector.i)<=0 && (view->left_edge.i*vector.j - view->left_edge.j*vector.i)>=0)
+				if ((view->right_edge.i*_vector.j - view->right_edge.j*_vector.i)<=0 && (view->left_edge.i*_vector.j - view->left_edge.j*_vector.i)>=0)
 				{
 					// LP change:
-					cast_render_ray(&vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, 0, _no_bias);
+					cast_render_ray(&_vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, 0, _no_bias);
 					// cast_render_ray(view, &vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, nodes, _no_bias);
 				}
 				
@@ -196,7 +196,7 @@ void RenderVisTreeClass::build_render_tree()
 // LP change: make it better able to do long-distance views
 // Using parent index instead of pointer to avoid stale-pointer bug
 void RenderVisTreeClass::cast_render_ray(
-	long_vector2d *vector, // world_vector2d *vector,
+	long_vector2d *_vector, // world_vector2d *vector,
 	short endpoint_index,
 	int ParentIndex, /* 0==root */
 	// node_data *parent, /* nodes==root */
@@ -213,15 +213,15 @@ void RenderVisTreeClass::cast_render_ray(
 	{
 		short clipping_endpoint_index= endpoint_index;
 		short clipping_line_index;
-		uint16 clip_flags= next_polygon_along_line(&polygon_index, (world_point2d *) &view->origin, vector, &clipping_endpoint_index, &clipping_line_index, bias);
+		uint16 clip_flags= next_polygon_along_line(&polygon_index, (world_point2d *) &view->origin, _vector, &clipping_endpoint_index, &clipping_line_index, bias);
 		
 		if (polygon_index==NONE)
 		{
 			if (clip_flags&_split_render_ray)
 			{
-				cast_render_ray(vector, endpoint_index, ParentIndex, _clockwise_bias);
+				cast_render_ray(_vector, endpoint_index, ParentIndex, _clockwise_bias);
 				// cast_render_ray(vector, endpoint_index, parent, _clockwise_bias);
-				cast_render_ray(vector, endpoint_index, ParentIndex, _counterclockwise_bias);
+				cast_render_ray(_vector, endpoint_index, ParentIndex, _counterclockwise_bias);
 				// cast_render_ray(vector, endpoint_index, parent, _counterclockwise_bias);
 				// LP: could have reallocated, so keep in sync!
 				node_data *parent =  &Nodes.front() + ParentIndex;
@@ -396,7 +396,7 @@ void RenderVisTreeClass::initialize_polygon_queue()
 uint16 RenderVisTreeClass::next_polygon_along_line(
 	short *polygon_index,
 	world_point2d *origin, /* not necessairly in polygon_index */
-	long_vector2d *vector, // world_vector2d *vector,
+	long_vector2d *_vector, // world_vector2d *vector,
 	short *clipping_endpoint_index, /* if non-NONE on entry this is the solid endpoint weÕre shooting for */
 	short *clipping_line_index, /* NONE on exit if this polygon transition wasnÕt accross an elevation line */
 	short bias)
@@ -434,7 +434,7 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		short endpoint_index= polygon->endpoint_indexes[vertex_index];
 		world_point2d *vertex= &get_endpoint_data(endpoint_index)->vertex;
 		// LP change to make it more long-distance-friendly
-		CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(long(vertex->x)-long(origin->x))*vector->j - CROSSPROD_TYPE(long(vertex->y)-long(origin->y))*vector->i;
+		CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(long(vertex->x)-long(origin->x))*_vector->j - CROSSPROD_TYPE(long(vertex->y)-long(origin->y))*_vector->i;
 		// long cross_product= (vertex->x-origin->x)*vector->j - (vertex->y-origin->y)*vector->i;
 		
 //		dprintf("p#%d, e#%d:#%d, SGN(cp)=#%d, state=#%d", *polygon_index, vertex_index, polygon->endpoint_indexes[vertex_index], SGN(cross_product), state);
@@ -479,7 +479,7 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 						case _looking_counterclockwise_for_left_vertex:
 							next_polygon_index= *polygon_index;
 							clip_flags|= decide_where_vertex_leads(&next_polygon_index, &crossed_line_index, &crossed_side_index,
-								vertex_index, origin, vector, clip_flags, bias);
+								vertex_index, origin, _vector, clip_flags, bias);
 							state= _looking_for_next_nonzero_vertex;
 							// LP change: resetting loop test
 							initial_vertex_index = vertex_index;
@@ -574,7 +574,7 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 	short *side_index,
 	short endpoint_index_in_polygon_list,
 	world_point2d *origin,
-	long_vector2d *vector, // world_vector2d *vector,
+	long_vector2d *_vector, // world_vector2d *vector,
 	uint16 clip_flags,
 	short bias)
 {
@@ -641,7 +641,7 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 			
 			vertex= &get_endpoint_data(polygon->endpoint_indexes[index])->vertex;
 			// LP change: made more long-distance-friendly
-			cross_product= CROSSPROD_TYPE(long(vertex->x)-long(origin->x))*vector->j - CROSSPROD_TYPE(long(vertex->y)-long(origin->y))*vector->i;
+			cross_product= CROSSPROD_TYPE(long(vertex->x)-long(origin->x))*_vector->j - CROSSPROD_TYPE(long(vertex->y)-long(origin->y))*_vector->i;
 			// cross_product= (vertex->x-origin->x)*vector->j - (vertex->y-origin->y)*vector->i;
 			
 			if ((bias==_clockwise_bias&&cross_product>=0) || (bias==_counterclockwise_bias&&cross_product<=0))

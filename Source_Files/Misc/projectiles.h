@@ -121,9 +121,9 @@ extern struct projectile_data *projectiles;
 
 /* ---------- prototypes/PROJECTILES.C */
 
-bool preflight_projectile(world_point3d *origin, short polygon_index, world_point3d *vector,
+bool preflight_projectile(world_point3d *origin, short polygon_index, world_point3d *_vector,
 	angle delta_theta, short type, short owner, short owner_type, short *target_index);
-short new_projectile(world_point3d *origin, short polygon_index, world_point3d *vector,
+short new_projectile(world_point3d *origin, short polygon_index, world_point3d *_vector,
 	angle delta_theta, short type, short owner_index, short owner_type, short intended_target_index,
 	_fixed damage_scale);
 void detonate_projectile(world_point3d *origin, short polygon_index, short type,

@@ -272,7 +272,7 @@ static void calculate_weapon_position_for_idle(short player_index, short count, 
 	_fixed *height, _fixed *width);
 static void add_random_flutter(_fixed flutter_base, _fixed *height, _fixed *width);
 static void calculate_weapon_origin_and_vector(short player_index, short which_trigger,
-	world_point3d *origin, world_point3d *vector, short *origin_polygon, angle delta_theta);
+	world_point3d *origin, world_point3d *_vector, short *origin_polygon, angle delta_theta);
 static void play_weapon_sound(short player_index, short sound, _fixed pitch);
 static bool player_weapon_has_ammo(short player_index, short weapon_index);
 static void lower_weapon(short player_index, short weapon_index);
@@ -797,7 +797,7 @@ void update_player_weapons(
 						if(definition->item_type==_i_red_ball)
 						{
 							short ball_color= find_player_ball_color(player_index);
-							world_point3d origin, vector;
+							world_point3d origin, _vector;
 							short origin_polygon, item_type;
 
 							//START Benad
@@ -807,7 +807,7 @@ void update_player_weapons(
 								item_type= ball_color+BALL_ITEM_BASE;
 
 								calculate_weapon_origin_and_vector(player_index, _primary_weapon, 
-									&origin, &vector, &origin_polygon, 0);
+									&origin, &_vector, &origin_polygon, 0);
 
 								drop_the_ball(&origin, origin_polygon, player->monster_index, 
 									_monster_marine, item_type);
@@ -817,7 +817,7 @@ void update_player_weapons(
 							item_type= ball_color+BALL_ITEM_BASE;
 
 							calculate_weapon_origin_and_vector(player_index, _primary_weapon, 
-								&origin, &vector, &origin_polygon, 0);
+								&origin, &_vector, &origin_polygon, 0);
 
 							drop_the_ball(&origin, origin_polygon, player->monster_index, 
 								_monster_marine, item_type);
@@ -1740,7 +1740,7 @@ static void fire_weapon(
 	struct weapon_definition *definition= get_weapon_definition(player_weapons->current_weapon);
 	struct trigger_definition *trigger_definition;
 	struct trigger_data	*trigger;
-	world_point3d origin, vector;
+	world_point3d origin, _vector;
 	short origin_polygon, flailing_bonus, rounds_to_fire;
 	_fixed damage_modifier;
 
@@ -1808,7 +1808,7 @@ static void fire_weapon(
 		/* Spawn the projectile. I can't update the shots_hit until it actually hits the */
 		/* target, which comes in update */
 		calculate_weapon_origin_and_vector(player_index, which_trigger, 
-			&origin, &vector, &origin_polygon, delta_theta);
+			&origin, &_vector, &origin_polygon, delta_theta);
 	
 		/* If it is a melee weapon, add in the damage based on their speed.. */
 		if(definition->weapon_class==_melee_class)
@@ -1883,7 +1883,7 @@ static void fire_weapon(
 				short Target = ProjectileIsGuided(trigger_definition->projectile_type) ?
 					find_closest_appropriate_target(player->monster_index,false) :
 					NONE;
-				new_projectile(&origin, origin_polygon, &vector, 
+				new_projectile(&origin, origin_polygon, &_vector, 
 					trigger_definition->theta_error+flailing_bonus, 
 					trigger_definition->projectile_type, 
 					player->monster_index, _monster_marine, Target, damage_modifier);
@@ -1961,7 +1961,7 @@ static void calculate_weapon_origin_and_vector(
 	short player_index,
 	short which_trigger,
 	world_point3d *origin,
-	world_point3d *vector,
+	world_point3d *_vector,
 	short *origin_polygon,
 	angle delta_theta)
 {
@@ -2005,9 +2005,9 @@ static void calculate_weapon_origin_and_vector(
 		projectile_facing, player->elevation);
 	
 	/* And create the vector.. */
-	vector->x= destination.x-origin->x;
-	vector->y= destination.y-origin->y;
-	vector->z= destination.z-origin->z;
+	_vector->x= destination.x-origin->x;
+	_vector->y= destination.y-origin->y;
+	_vector->z= destination.z-origin->z;
 
 	/* Now calculate the origin polygon index */
 	*origin_polygon= find_new_object_polygon((world_point2d *) &player->location,

@@ -248,7 +248,7 @@ void detonate_projectile(
 short new_projectile(
 	world_point3d *origin,
 	short polygon_index,
-	world_point3d *vector,
+	world_point3d *_vector,
 	angle delta_theta, /* ±¶theta is added (in a circle) to the angle before firing */
 	short type,
 	short owner_index,
@@ -272,8 +272,8 @@ short new_projectile(
 			short object_index;
 			struct object_data *object;
 
-			facing= arctangent(vector->x, vector->y);
-			elevation= arctangent(isqrt(vector->x*vector->x+vector->y*vector->y), vector->z);
+			facing= arctangent(_vector->x, _vector->y);
+			elevation= arctangent(isqrt(_vector->x*_vector->x+_vector->y*_vector->y), _vector->z);
 			if (delta_theta)
 			{
 				if (!(definition->flags&_no_horizontal_error)) facing= normalize_angle(facing+global_random()%(2*delta_theta)-delta_theta);
@@ -640,11 +640,11 @@ void drop_the_ball(
 	short owner_type,
 	short item_type)
 {
-	struct world_point3d vector;
+	struct world_point3d _vector;
 	short projectile_index;
 
-	vector.x= vector.y= vector.z= 0;
-	projectile_index= new_projectile(origin, polygon_index, &vector, 0, _projectile_ball,
+	_vector.x= _vector.y= _vector.z= 0;
+	projectile_index= new_projectile(origin, polygon_index, &_vector, 0, _projectile_ball,
 		owner_index, owner_type, NONE, FIXED_ONE);
 	if (projectile_index!=NONE)
 	{
