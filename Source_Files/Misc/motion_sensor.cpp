@@ -798,18 +798,18 @@ bool XML_MotSensAssignParser::Start()
 
 bool XML_MotSensAssignParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"monster") == 0)
+	if (StringsEqual(Tag,"monster"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Monster,short(0),short(NUMBER_OF_MONSTER_TYPES-1)))
+		if (ReadBoundedInt16Value(Value,Monster,0,NUMBER_OF_MONSTER_TYPES-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Type,short(0),short(NUMBER_OF_MDISPTYPES-1)))
+		if (ReadBoundedInt16Value(Value,Type,0,NUMBER_OF_MDISPTYPES-1))
 		{
 			IsPresent[1] = true;
 			return true;

@@ -19,8 +19,14 @@ Oct 13, 2000 (Loren Petrich)
 #include <stdio.h>
 using namespace std;
 
+#include "cstypes.h"
 
 extern bool XML_GetBooleanValue(const char *String, bool &Value);
+
+inline bool StringsEqual(const char *String1, const char *String2)
+{
+	return (strcmp(String1,String2) == 0);
+}
 
 
 class XML_ElementParser
@@ -74,6 +80,27 @@ protected:
 		return true;
 	}
 	
+	// The more common read operations encapsulated into single functions;
+	// this is to help make the code less bloated
+	
+	bool ReadInt16Value(const char *String, int16& Value);
+	bool ReadBoundedInt16Value(const char *String, int16& Value, int16 MinVal, int16 MaxVal);
+	bool ReadUInt16Value(const char *String, uint16& Value);
+	bool ReadBoundedUInt16Value(const char *String, uint16& Value, uint16 MinVal, uint16 MaxVal);
+	
+	bool ReadInt32Value(const char *String, int32& Value);
+	bool ReadBoundedInt32Value(const char *String, int32& Value, int32 MinVal, int32 MaxVal);
+	bool ReadUInt32Value(const char *String, uint32& Value);
+	bool ReadBoundedUInt32Value(const char *String, uint32& Value, uint32 MinVal, uint32 MaxVal);
+	
+	bool ReadBooleanValueAsInt16(const char *String, int16& Value);
+	bool ReadBooleanValueAsUInt16(const char *String, uint16& Value);
+	bool ReadBooleanValueAsInt32(const char *String, int32& Value);
+	bool ReadBooleanValueAsUInt32(const char *String, uint32& Value);
+	bool ReadBooleanValueAsBool(const char *String, bool& Value);
+	
+	bool ReadFloatValue(const char *String, float& Value);
+		
 public:
 
 	// The element's name:

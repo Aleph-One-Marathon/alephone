@@ -185,10 +185,10 @@ public:
 
 bool XML_StringSetParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
 		short ID;
-		if (ReadNumericalValue(Value,"%hd",ID))
+		if (ReadInt16Value(Value,ID))
 		{
 			CurrStringSet = FindStringSet(ID);
 			return true;
@@ -248,9 +248,9 @@ bool XML_StringParser::Start() {
 
 bool XML_StringParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Index))
+		if (ReadInt16Value(Value,Index))
 		{
 			IndexPresent = true;
 			return true;

@@ -2188,7 +2188,7 @@ struct DM_ModeList
 // Dimensions of a mode; use this for searching for biggest and best modes
 struct ModeDims
 {
-	int Index;			// What index in the list of modes?0
+	int Index;				// What index in the list of modes?
 	short Width, Height;	// What dimensions?
 	
 	void Set(int _Index, short _Width, short _Height)

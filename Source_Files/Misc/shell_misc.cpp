@@ -24,7 +24,7 @@ bool CheatsActive = false;
 
 #if defined(mac)
 // The modifier for typing in cheat codes
-short CheatCodeModMask = controlKey;
+unsigned short CheatCodeModMask = controlKey;
 #endif
 
 
@@ -354,7 +354,7 @@ static char keyword_buffer[MAXIMUM_KEYWORD_LENGTH+1];
 class XML_CheatKeywordParser: public XML_ElementParser
 {
 	bool IsPresent;
-	int Index;
+	short Index;
 
 public:
 	bool Start();
@@ -373,9 +373,9 @@ bool XML_CheatKeywordParser::Start()
 
 bool XML_CheatKeywordParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,0,int(NUMBER_OF_KEYWORDS-1)))
+		if (ReadBoundedInt16Value(Value,Index,0,int(NUMBER_OF_KEYWORDS-1)))
 		{
 			IsPresent = true;
 			return true;
@@ -409,14 +409,14 @@ static XML_CheatKeywordParser CheatKeywordParser;
 
 bool XML_CheatsParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"on") == 0)
+	if (StringsEqual(Tag,"on"))
 	{
-		return ReadBooleanValue(Value,CheatsActive);
+		return ReadBooleanValueAsBool(Value,CheatsActive);
 	}
-	else if (strcmp(Tag,"mac_keymod") == 0)
+	else if (StringsEqual(Tag,"mac_keymod"))
 	{
 #ifdef mac
-		return (ReadNumericalValue(Value,"%hu",CheatCodeModMask));
+		return ReadUInt16Value(Value,CheatCodeModMask);
 #else
 		return true;
 #endif

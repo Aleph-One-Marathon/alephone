@@ -618,7 +618,7 @@ char *FontSpecifier::FindNameEnd(char *NamePtr)
 class XML_FontParser: public XML_ElementParser
 {
 	FontSpecifier TempFont;
-	int Index;
+	short Index;
 	bool IsPresent[5];
 
 public:
@@ -643,9 +643,9 @@ bool XML_FontParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (NumFonts > 0)
 	{
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,0,NumFonts-1))
+		if (ReadBoundedInt16Value(Value,Index,0,NumFonts-1))
 		{
 			IsPresent[3] = true;
 			return true;
@@ -653,33 +653,33 @@ bool XML_FontParser::HandleAttribute(const char *Tag, const char *Value)
 		else return false;
 	}
 	}
-	if (strcmp(Tag,"name") == 0)
+	if (StringsEqual(Tag,"name"))
 	{
 		IsPresent[0] = true;
 		strncpy(TempFont.NameSet,Value,FontSpecifier::NameSetLen);
 		TempFont.NameSet[FontSpecifier::NameSetLen-1] = 0;	// For making the set always a C string
 		return true;
 	}
-	else if (strcmp(Tag,"size") == 0)
+	else if (StringsEqual(Tag,"size"))
 	{
-		if (ReadNumericalValue(Value,"%hd",TempFont.Size))
+		if (ReadInt16Value(Value,TempFont.Size))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"style") == 0)
+	else if (StringsEqual(Tag,"style"))
 	{
 		float CVal;
-		if (ReadNumericalValue(Value,"%hd",TempFont.Style))
+		if (ReadInt16Value(Value,TempFont.Style))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"file") == 0)
+	else if (StringsEqual(Tag,"file"))
 	{
 		IsPresent[4] = true;
 		strncpy(TempFont.File,Value,FontSpecifier::NameSetLen);

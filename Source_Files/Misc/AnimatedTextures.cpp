@@ -270,9 +270,9 @@ bool XML_AT_ClearParser::Start()
 
 bool XML_AT_ClearParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Collection,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			IsPresent = true;
 			return true;
@@ -317,9 +317,9 @@ bool XML_AT_FrameParser::Start()
 
 bool XML_AT_FrameParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Index,short(0),short(254)))
+		if (ReadBoundedInt16Value(Value,Index,0,254))
 		{
 			IsPresent = true;
 			return true;
@@ -377,35 +377,35 @@ bool XML_AT_SequenceParser::Start()
 
 bool XML_AT_SequenceParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Collection,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"numticks") == 0)
+	else if (StringsEqual(Tag,"numticks"))
 	{
-		if (ReadNumericalValue(Value,"%hd",NumTicks))
+		if (ReadInt16Value(Value,NumTicks))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"framephase") == 0)
+	else if (StringsEqual(Tag,"framephase"))
 	{
-		return (ReadNumericalValue(Value,"%hd",FramePhase));
+		return ReadInt16Value(Value,FramePhase);
 	}
-	else if (strcmp(Tag,"tickphase") == 0)
+	else if (StringsEqual(Tag,"tickphase"))
 	{
-		return (ReadNumericalValue(Value,"%hd",TickPhase));
+		return ReadInt16Value(Value,TickPhase);
 	}
-	else if (strcmp(Tag,"select") == 0)
+	else if (StringsEqual(Tag,"select"))
 	{
-		return (ReadNumericalValue(Value,"%hd",Select));
+		return ReadInt16Value(Value,Select);
 	}
 	UnrecognizedTag();
 	return false;

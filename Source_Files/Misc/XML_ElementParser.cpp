@@ -13,6 +13,80 @@
 #include "XML_ElementParser.h"
 
 
+bool XML_ElementParser::ReadInt16Value(const char *String, int16& Value)
+{
+	return ReadNumericalValue(String,"%hd",Value);
+}
+
+bool XML_ElementParser::ReadBoundedInt16Value(const char *String, int16& Value, int16 MinVal, int16 MaxVal)
+{
+	return ReadBoundedNumericalValue(String,"%hd",Value,MinVal,MaxVal);
+}
+
+bool XML_ElementParser::ReadUInt16Value(const char *String, uint16& Value)
+{
+	return ReadNumericalValue(String,"%hu",Value);
+}
+
+bool XML_ElementParser::ReadBoundedUInt16Value(const char *String, uint16& Value, uint16 MinVal, uint16 MaxVal)
+{
+	return ReadBoundedNumericalValue(String,"%hu",Value,MinVal,MaxVal);
+}
+
+	
+bool XML_ElementParser::ReadInt32Value(const char *String, int32& Value)
+{
+	return ReadNumericalValue(String,"%d",Value);
+}
+
+bool XML_ElementParser::ReadBoundedInt32Value(const char *String, int32& Value, int32 MinVal, int32 MaxVal)
+{
+	return ReadBoundedNumericalValue(String,"%d",Value,MinVal,MaxVal);
+}
+
+bool XML_ElementParser::ReadUInt32Value(const char *String, uint32& Value)
+{
+	return ReadNumericalValue(String,"%u",Value);
+}
+
+bool XML_ElementParser::ReadBoundedUInt32Value(const char *String, uint32& Value, uint32 MinVal, uint32 MaxVal)
+{
+	return ReadBoundedNumericalValue(String,"%u",Value,MinVal,MaxVal);
+}
+
+
+bool XML_ElementParser::ReadFloatValue(const char *String, float& Value)
+{
+	return ReadNumericalValue(String,"%f",Value);
+}
+
+	
+bool XML_ElementParser::ReadBooleanValueAsInt16(const char *String, int16& Value)
+{
+	return ReadBooleanValue(String,Value);
+}
+
+bool XML_ElementParser::ReadBooleanValueAsUInt16(const char *String, uint16& Value)
+{
+	return ReadBooleanValue(String,Value);
+}
+
+bool XML_ElementParser::ReadBooleanValueAsInt32(const char *String, int32& Value)
+{
+	return ReadBooleanValue(String,Value);
+}
+
+bool XML_ElementParser::ReadBooleanValueAsUInt32(const char *String, uint32& Value)
+{
+	return ReadBooleanValue(String,Value);
+}
+
+bool XML_ElementParser::ReadBooleanValueAsBool(const char *String, bool& Value)
+{
+	return ReadBooleanValue(String,Value);
+}
+
+
 bool XML_GetBooleanValue(const char *String, bool &Value)
 {
 	if (strcmp(String,"1") == 0)

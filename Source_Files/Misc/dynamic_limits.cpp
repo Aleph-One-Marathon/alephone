@@ -59,9 +59,9 @@ bool XML_DynLimValueParser::Start()
 
 bool XML_DynLimValueParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"value") == 0)
+	if (StringsEqual(Tag,"value"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",*ValuePtr,short(0),short(32767)))
+		if (ReadBoundedInt16Value(Value,*ValuePtr,0,32767))
 		{
 			IsPresent = true;
 			return true;

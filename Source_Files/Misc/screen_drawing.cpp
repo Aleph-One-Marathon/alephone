@@ -188,7 +188,7 @@ FontSpecifier &get_interface_font(short index)
 class XML_RectangleParser: public XML_ElementParser
 {
 	screen_rectangle TempRect;
-	int Index;
+	short Index;
 	bool IsPresent[5];
 
 public:
@@ -211,45 +211,45 @@ bool XML_RectangleParser::Start()
 
 bool XML_RectangleParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,0,NumRectangles-1))
+		if (ReadBoundedInt16Value(Value,Index,0,NumRectangles-1))
 		{
 			IsPresent[4] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"top") == 0)
+	else if (StringsEqual(Tag,"top"))
 	{
-		if (ReadNumericalValue(Value,"%hd",TempRect.top))
+		if (ReadInt16Value(Value,TempRect.top))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"left") == 0)
+	else if (StringsEqual(Tag,"left"))
 	{
-		if (ReadNumericalValue(Value,"%hd",TempRect.left))
+		if (ReadInt16Value(Value,TempRect.left))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"bottom") == 0)
+	else if (StringsEqual(Tag,"bottom"))
 	{
-		if (ReadNumericalValue(Value,"%hd",TempRect.bottom))
+		if (ReadInt16Value(Value,TempRect.bottom))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"right") == 0)
+	else if (StringsEqual(Tag,"right"))
 	{
-		if (ReadNumericalValue(Value,"%hd",TempRect.right))
+		if (ReadInt16Value(Value,TempRect.right))
 		{
 			IsPresent[3] = true;
 			return true;

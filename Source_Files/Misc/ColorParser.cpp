@@ -16,7 +16,7 @@
 class XML_ColorParser: public XML_ElementParser
 {
 	rgb_color TempColor;
-	int Index;
+	short Index;
 	bool IsPresent[5];
 
 public:
@@ -44,9 +44,9 @@ bool XML_ColorParser::HandleAttribute(const char *Tag, const char *Value)
 	
 	if (NumColors > 0)
 	{
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,0,NumColors-1))
+		if (ReadBoundedInt16Value(Value,Index,0,NumColors-1))
 		{
 			IsPresent[3] = true;
 			return true;
@@ -54,9 +54,9 @@ bool XML_ColorParser::HandleAttribute(const char *Tag, const char *Value)
 		else return false;
 	}
 	}
-	if (strcmp(Tag,"red") == 0)
+	if (StringsEqual(Tag,"red"))
 	{
-		if (ReadNumericalValue(Value,"%f",CVal))
+		if (ReadFloatValue(Value,CVal))
 		{
 			IsPresent[0] = true;
 			TempColor.red = uint16(PIN(65535*CVal+0.5,0,65535));
@@ -64,9 +64,9 @@ bool XML_ColorParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"green") == 0)
+	else if (StringsEqual(Tag,"green"))
 	{
-		if (ReadNumericalValue(Value,"%f",CVal))
+		if (ReadFloatValue(Value,CVal))
 		{
 			IsPresent[1] = true;
 			TempColor.green = uint16(PIN(65535*CVal+0.5,0,65535));
@@ -74,10 +74,10 @@ bool XML_ColorParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"blue") == 0)
+	else if (StringsEqual(Tag,"blue"))
 	{
 		float CVal;
-		if (ReadNumericalValue(Value,"%f",CVal))
+		if (ReadFloatValue(Value,CVal))
 		{
 			IsPresent[2] = true;
 			TempColor.blue = uint16(PIN(65535*CVal+0.5,0,65535));

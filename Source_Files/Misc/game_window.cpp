@@ -427,7 +427,7 @@ static void set_current_inventory_screen(
 class XML_AmmoDisplayParser: public XML_ElementParser
 {
 	// Intended one to replace
-	int Index;
+	short Index;
 	// Ammo data
 	weapon_interface_ammo_data Data;
 	
@@ -459,99 +459,99 @@ bool XML_AmmoDisplayParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	// Won't be doing the item ID or the shape ID;
 	// just the stuff necessary for good placement of weapon and name graphics
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,0,int(NUMBER_OF_WEAPON_INTERFACE_ITEMS)-1))
+		if (ReadBoundedInt16Value(Value,Index,0,int(NUMBER_OF_WEAPON_INTERFACE_ITEMS)-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.type))
+		if (ReadInt16Value(Value,Data.type))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"left") == 0)
+	else if (StringsEqual(Tag,"left"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.screen_left))
+		if (ReadInt16Value(Value,Data.screen_left))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"top") == 0)
+	else if (StringsEqual(Tag,"top"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.screen_top))
+		if (ReadInt16Value(Value,Data.screen_top))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"across") == 0)
+	else if (StringsEqual(Tag,"across"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.ammo_across))
+		if (ReadInt16Value(Value,Data.ammo_across))
 		{
 			IsPresent[3] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"down") == 0)
+	else if (StringsEqual(Tag,"down"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.ammo_down))
+		if (ReadInt16Value(Value,Data.ammo_down))
 		{
 			IsPresent[4] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"delta_x") == 0)
+	else if (StringsEqual(Tag,"delta_x"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.delta_x))
+		if (ReadInt16Value(Value,Data.delta_x))
 		{
 			IsPresent[5] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"delta_y") == 0)
+	else if (StringsEqual(Tag,"delta_y"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.delta_y))
+		if (ReadInt16Value(Value,Data.delta_y))
 		{
 			IsPresent[6] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"bullet_shape") == 0)
+	else if (StringsEqual(Tag,"bullet_shape"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.bullet))
+		if (ReadInt16Value(Value,Data.bullet))
 		{
 			IsPresent[7] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"empty_shape") == 0)
+	else if (StringsEqual(Tag,"empty_shape"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.empty_bullet))
+		if (ReadInt16Value(Value,Data.empty_bullet))
 		{
 			IsPresent[8] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"right_to_left") == 0)
+	else if (StringsEqual(Tag,"right_to_left"))
 	{
-		if (ReadBooleanValue(Value,Data.right_to_left))
+		if (ReadBooleanValueAsBool(Value,Data.right_to_left))
 		{
 			IsPresent[9] = true;
 			return true;
@@ -592,7 +592,7 @@ static XML_AmmoDisplayParser AmmoDisplayParser;
 class XML_WeaponDisplayParser: public XML_ElementParser
 {
 	// Intended one to replace
-	int Index;
+	short Index;
 	// Weapon data
 	weapon_interface_data Data;
 	
@@ -621,81 +621,81 @@ bool XML_WeaponDisplayParser::HandleAttribute(const char *Tag, const char *Value
 {
 	// Won't be doing the item ID or the shape ID;
 	// just the stuff necessary for good placement of weapon and name graphics
-	if (strcmp(Tag,"index") == 0)
+	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%d",Index,0,int(MAXIMUM_WEAPON_INTERFACE_DEFINITIONS)-1))
+		if (ReadBoundedInt16Value(Value,Index,0,int(MAXIMUM_WEAPON_INTERFACE_DEFINITIONS)-1))
 		{
 			IndexPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"shape") == 0)
+	else if (StringsEqual(Tag,"shape"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.weapon_panel_shape))
+		if (ReadInt16Value(Value,Data.weapon_panel_shape))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"start_y") == 0)
+	else if (StringsEqual(Tag,"start_y"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.weapon_name_start_y))
+		if (ReadInt16Value(Value,Data.weapon_name_start_y))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"end_y") == 0)
+	else if (StringsEqual(Tag,"end_y"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.weapon_name_end_y))
+		if (ReadInt16Value(Value,Data.weapon_name_end_y))
 		{
 			IsPresent[2] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"start_x") == 0)
+	else if (StringsEqual(Tag,"start_x"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.weapon_name_start_x))
+		if (ReadInt16Value(Value,Data.weapon_name_start_x))
 		{
 			IsPresent[3] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"end_x") == 0)
+	else if (StringsEqual(Tag,"end_x"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.weapon_name_end_x))
+		if (ReadInt16Value(Value,Data.weapon_name_end_x))
 		{
 			IsPresent[4] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"top") == 0)
+	else if (StringsEqual(Tag,"top"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.standard_weapon_panel_top))
+		if (ReadInt16Value(Value,Data.standard_weapon_panel_top))
 		{
 			IsPresent[5] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"left") == 0)
+	else if (StringsEqual(Tag,"left"))
 	{
-		if (ReadNumericalValue(Value,"%hd",Data.standard_weapon_panel_left))
+		if (ReadInt16Value(Value,Data.standard_weapon_panel_left))
 		{
 			IsPresent[6] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"multiple") == 0)
+	else if (StringsEqual(Tag,"multiple"))
 	{
-		if (ReadBooleanValue(Value,Data.multi_weapon))
+		if (ReadBooleanValueAsBool(Value,Data.multi_weapon))
 		{
 			IsPresent[7] = true;
 			return true;
@@ -744,9 +744,9 @@ public:
 	}
 	bool HandleAttribute(const char *Tag, const char *Value)
 	{
-		if (strcmp(Tag,"motion_sensor") == 0)
+		if (StringsEqual(Tag,"motion_sensor"))
 		{
-			return ReadBooleanValue(Value, MotionSensorActive);
+			return ReadBooleanValueAsBool(Value, MotionSensorActive);
 		}
 		UnrecognizedTag();
 		return false;

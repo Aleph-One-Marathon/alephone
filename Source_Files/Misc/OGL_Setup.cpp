@@ -435,7 +435,7 @@ static bool StringsEqual(vector<char>& Str1, vector<char>& Str2)
 	{
 		if (Pres1 && Pres2)
 		{
-			return strcmp(&Str1[0],&Str2[0]);
+			return (strcmp(&Str1[0],&Str2[0]) == 0);
 		}
 		else
 			return false;
@@ -887,9 +887,9 @@ bool XML_TO_ClearParser::Start()
 
 bool XML_TO_ClearParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Collection,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			IsPresent = true;
 			return true;
@@ -939,83 +939,83 @@ bool XML_TextureOptionsParser::Start()
 
 bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Collection,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			CollIsPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"clut") == 0)
+	else if (StringsEqual(Tag,"clut"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET)));
+		return ReadBoundedInt16Value(Value,CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET));
 	}
-	else if (strcmp(Tag,"bitmap") == 0)
+	else if (StringsEqual(Tag,"bitmap"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Bitmap,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedInt16Value(Value,Bitmap,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
 		{
 			BitmapIsPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"opac_type") == 0)
+	else if (StringsEqual(Tag,"opac_type"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Data.OpacityType,short(0),short(OGL_NUMBER_OF_OPACITY_TYPES-1)));
+		return ReadBoundedInt16Value(Value,Data.OpacityType,0,OGL_NUMBER_OF_OPACITY_TYPES-1);
 	}
-	else if (strcmp(Tag,"opac_scale") == 0)
+	else if (StringsEqual(Tag,"opac_scale"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.OpacityScale));
+		return ReadFloatValue(Value,Data.OpacityScale);
 	}
-	else if (strcmp(Tag,"opac_shift") == 0)
+	else if (StringsEqual(Tag,"opac_shift"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.OpacityShift));
+		return ReadFloatValue(Value,Data.OpacityShift);
 	}
-	else if (strcmp(Tag,"void_visible") == 0)
+	else if (StringsEqual(Tag,"void_visible"))
 	{
-		return (ReadBooleanValue(Value,Data.VoidVisible));
+		return ReadBooleanValueAsBool(Value,Data.VoidVisible);
 	}
-	else if (strcmp(Tag,"normal_image") == 0)
+	else if (StringsEqual(Tag,"normal_image"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.NormalColors.resize(nchars);
 		memcpy(&Data.NormalColors[0],Value,nchars);
 		return true;
 	}
-	else if (strcmp(Tag,"normal_mask") == 0)
+	else if (StringsEqual(Tag,"normal_mask"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.NormalMask.resize(nchars);
 		memcpy(&Data.NormalMask[0],Value,nchars);
 		return true;
 	}
-	else if (strcmp(Tag,"glow_image") == 0)
+	else if (StringsEqual(Tag,"glow_image"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.GlowColors.resize(nchars);
 		memcpy(&Data.GlowColors[0],Value,nchars);
 		return true;
 	}
-	else if (strcmp(Tag,"glow_mask") == 0)
+	else if (StringsEqual(Tag,"glow_mask"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.GlowMask.resize(nchars);
 		memcpy(&Data.GlowMask[0],Value,nchars);
 		return true;
 	}
-	else if (strcmp(Tag,"image_scale") == 0)
+	else if (StringsEqual(Tag,"image_scale"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.ImageScale));
+		return ReadFloatValue(Value,Data.ImageScale);
 	}
-	else if (strcmp(Tag,"x_offset") == 0)
+	else if (StringsEqual(Tag,"x_offset"))
 	{
-		return (ReadNumericalValue(Value,"%hd",Data.Left));
+		return ReadInt16Value(Value,Data.Left);
 	}
-	else if (strcmp(Tag,"y_offset") == 0)
+	else if (StringsEqual(Tag,"y_offset"))
 	{
-		return (ReadNumericalValue(Value,"%hd",Data.Top));
+		return ReadInt16Value(Value,Data.Top);
 	}
 	UnrecognizedTag();
 	return false;
@@ -1082,44 +1082,44 @@ bool XML_SkinDataParser::Start()
 
 bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"clut") == 0)
+	if (StringsEqual(Tag,"clut"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Data.CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET)));
+		return ReadBoundedInt16Value(Value,Data.CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET));
 	}
-	else if (strcmp(Tag,"opac_type") == 0)
+	else if (StringsEqual(Tag,"opac_type"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Data.OpacityType,short(0),short(OGL_NUMBER_OF_OPACITY_TYPES-1)));
+		return ReadBoundedInt16Value(Value,Data.OpacityType,0,OGL_NUMBER_OF_OPACITY_TYPES-1);
 	}
-	else if (strcmp(Tag,"opac_scale") == 0)
+	else if (StringsEqual(Tag,"opac_scale"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.OpacityScale));
+		return ReadFloatValue(Value,Data.OpacityScale);
 	}
-	else if (strcmp(Tag,"opac_shift") == 0)
+	else if (StringsEqual(Tag,"opac_shift"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.OpacityShift));
+		return ReadFloatValue(Value,Data.OpacityShift);
 	}
-	else if (strcmp(Tag,"normal_image") == 0)
+	else if (StringsEqual(Tag,"normal_image"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.NormalColors.resize(nchars);
 		memcpy(&Data.NormalColors[0],Value,nchars);
 		return true;
 	}
-	else if (strcmp(Tag,"normal_mask") == 0)
+	else if (StringsEqual(Tag,"normal_mask"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.NormalMask.resize(nchars);
 		memcpy(&Data.NormalMask[0],Value,nchars);
 		return true;
 	}
-	else if (strcmp(Tag,"glow_image") == 0)
+	else if (StringsEqual(Tag,"glow_image"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.GlowColors.resize(nchars);
 		memcpy(&Data.GlowColors[0],Value,nchars);
 		return true;
 	}
-	else if (strcmp(Tag,"glow_mask") == 0)
+	else if (StringsEqual(Tag,"glow_mask"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.GlowMask.resize(nchars);
@@ -1175,9 +1175,9 @@ bool XML_MdlClearParser::Start()
 
 bool XML_MdlClearParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Collection,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			IsPresent = true;
 			return true;
@@ -1230,76 +1230,80 @@ bool XML_ModelDataParser::Start()
 
 bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"coll") == 0)
+	if (StringsEqual(Tag,"coll"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		if (ReadBoundedInt16Value(Value,Collection,0,NUMBER_OF_COLLECTIONS-1))
 		{
 			CollIsPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"seq") == 0)
+	else if (StringsEqual(Tag,"seq"))
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Sequence,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedInt16Value(Value,Sequence,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
 		{
 			SeqIsPresent = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"scale") == 0)
+	else if (StringsEqual(Tag,"scale"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.Scale));
+		return ReadFloatValue(Value,Data.Scale);
 	}
-	else if (strcmp(Tag,"x_rot") == 0)
+	else if (StringsEqual(Tag,"x_rot"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.XRot));
+		return ReadFloatValue(Value,Data.XRot);
 	}
-	else if (strcmp(Tag,"y_rot") == 0)
+	else if (StringsEqual(Tag,"y_rot"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.YRot));
+		return ReadFloatValue(Value,Data.YRot);
 	}
-	else if (strcmp(Tag,"z_rot") == 0)
+	else if (StringsEqual(Tag,"z_rot"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.ZRot));
+		return ReadFloatValue(Value,Data.ZRot);
 	}
-	else if (strcmp(Tag,"x_shift") == 0)
+	else if (StringsEqual(Tag,"x_shift"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.XShift));
+		return ReadFloatValue(Value,Data.XShift);
 	}
-	else if (strcmp(Tag,"y_shift") == 0)
+	else if (StringsEqual(Tag,"y_shift"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.YShift));
+		return ReadFloatValue(Value,Data.YShift);
 	}
-	else if (strcmp(Tag,"z_shift") == 0)
+	else if (StringsEqual(Tag,"z_shift"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.ZShift));
+		return ReadFloatValue(Value,Data.ZShift);
 	}
-	else if (strcmp(Tag,"side") == 0)
+	else if (StringsEqual(Tag,"side"))
 	{
-		return (ReadNumericalValue(Value,"%hd",Data.Sidedness));
+		return ReadInt16Value(Value,Data.Sidedness);
 	}
-	else if (strcmp(Tag,"norm_type") == 0)
+	else if (StringsEqual(Tag,"norm_type"))
 	{
-		return (ReadNumericalValue(Value,"%hd",Data.NormalType));
+		return ReadBoundedInt16Value(Value,Data.NormalType,0,Model3D::NUMBER_OF_NORMAL_TYPES-1);
 	}
-	else if (strcmp(Tag,"norm_split") == 0)
+	else if (StringsEqual(Tag,"norm_split"))
 	{
-		return (ReadNumericalValue(Value,"%f",Data.NormalSplit));
+		return ReadFloatValue(Value,Data.NormalSplit);
 	}
-	else if (strcmp(Tag,"light_type") == 0)
+	else if (StringsEqual(Tag,"light_type"))
 	{
-		return (ReadNumericalValue(Value,"%hd",Data.LightType));
+		return ReadBoundedInt16Value(Value,Data.LightType,0,NUMBER_OF_MODEL_LIGHT_TYPES-1);
 	}
-	else if (strcmp(Tag,"file") == 0)
+	else if (StringsEqual(Tag,"depth_type"))
+	{
+		return ReadInt16Value(Value,Data.DepthType);
+	}
+	else if (StringsEqual(Tag,"file"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.ModelFile.resize(nchars);
 		memcpy(&Data.ModelFile[0],Value,nchars);
 		return true;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
 		int nchars = strlen(Value)+1;
 		Data.ModelType.resize(nchars);
@@ -1355,7 +1359,7 @@ class XML_FogParser: public XML_ElementParser
 	bool IsPresent[2];
 	bool FogPresent;
 	float Depth;
-	int Type;
+	short Type;
 	
 public:
 	bool Start();
@@ -1374,27 +1378,27 @@ bool XML_FogParser::Start()
 
 bool XML_FogParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (strcmp(Tag,"on") == 0)
+	if (StringsEqual(Tag,"on"))
 	{
-		if (ReadBooleanValue(Value,FogPresent))
+		if (ReadBooleanValueAsBool(Value,FogPresent))
 		{
 			IsPresent[0] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"depth") == 0)
+	else if (StringsEqual(Tag,"depth"))
 	{
-		if (ReadNumericalValue(Value,"%f",Depth))
+		if (ReadFloatValue(Value,Depth))
 		{
 			IsPresent[1] = true;
 			return true;
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"type") == 0)
+	else if (StringsEqual(Tag,"type"))
 	{
-		return (ReadBoundedNumericalValue(Value,"%d",Type,0,OGL_NUMBER_OF_FOG_TYPES-1));
+		return ReadBoundedInt16Value(Value,Type,0,OGL_NUMBER_OF_FOG_TYPES-1);
 	}
 	UnrecognizedTag();
 	return false;

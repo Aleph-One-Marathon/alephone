@@ -296,6 +296,15 @@ struct OGL_SkinManager
 };
 
 
+// Mode
+enum
+{
+	OGL_ModelLight_Fast,		// Fast method -- only one miner's-light calculation
+	OGL_ModelLight_Indiv,		// Miner's light calculated for each vertex
+	NUMBER_OF_MODEL_LIGHT_TYPES
+};
+
+
 // Static 3D-Model Data and Options
 struct OGL_ModelData: public OGL_SkinManager
 {
@@ -316,6 +325,8 @@ struct OGL_ModelData: public OGL_SkinManager
 	short NormalType;				// What type of normals?
 	float NormalSplit;				// Threshold for splitting the vertex normals 
 	short LightType;				// What type of lighting?
+	short DepthType;				// What sort of depth reference to use?
+									// (+: farthest point, -: nearest point, 0: center point)
 	
 	// Should a rotation rate be included, in order to get that Quake look?
 	
@@ -329,7 +340,7 @@ struct OGL_ModelData: public OGL_SkinManager
 	
 	OGL_ModelData():
 		Scale(1), XRot(0), YRot(0), ZRot(0), XShift(0), YShift(0), ZShift(0), Sidedness(1),
-			NormalType(1), NormalSplit(0.5), LightType(0) {}
+			NormalType(1), NormalSplit(0.5), LightType(0), DepthType(0) {}
 };
 
 
