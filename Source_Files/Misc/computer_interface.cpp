@@ -239,16 +239,15 @@ static struct font_dimensions font_data;
 
 extern TextSpec *_get_font_spec(short font_index);
 
-#ifdef DEBUG
-static struct player_terminal_data *get_player_terminal_data(
+inline player_terminal_data *get_player_terminal_data(
 	short player_index)
 {
-	assert(player_index>=0 && player_index<MAXIMUM_NUMBER_OF_PLAYERS);
-	return player_terminals+player_index;
+	struct player_terminal_data *player_terminal = GetMemberWithBounds(player_terminals,player_index,MAXIMUM_NUMBER_OF_PLAYERS);
+	
+	vassert(player_terminal, csprintf(temporary, "player index #%d is out of range", player_index));
+
+	return player_terminal;
 }
-#else
-#define get_player_terminal_data(index) (player_terminals+index)
-#endif
 
 // LP addition: overall terminal boundary rect (needed for resetting the clipping rectangle)
 static Rect OverallBounds;
@@ -346,8 +345,7 @@ void initialize_terminal_manager(
 {
 	short index;
 
-	player_terminals= (struct player_terminal_data *) 
-		malloc(MAXIMUM_NUMBER_OF_PLAYERS*sizeof(struct player_terminal_data));
+	player_terminals= new player_terminal_data[MAXIMUM_NUMBER_OF_PLAYERS];
 	assert(player_terminals);
 	objlist_clear(player_terminals, MAXIMUM_NUMBER_OF_PLAYERS);
 
