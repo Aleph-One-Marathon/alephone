@@ -381,6 +381,10 @@ void OGL_LoadImages(int Collection)
 		{
 			TOIter->OptionsData.GlowImg.Clear();
 		}
+		
+		// Find adjusted-frame image-data positioning;
+		// this is for doing sprites with textures with sizes different from the originals
+		TOIter->OptionsData.FindImagePosition();
 	}
 }
 
@@ -571,7 +575,6 @@ bool XML_TextureOptionsParser::AttributesDone()
 		{
 			// Replace the data
 			TOIter->OptionsData = Data;
-			TOIter->OptionsData.FindImagePosition();
 			return true;
 		}
 	}
@@ -582,8 +585,7 @@ bool XML_TextureOptionsParser::AttributesDone()
 	DataEntry.Bitmap = Bitmap;
 	DataEntry.OptionsData = Data;
 	TOL.push_back(DataEntry);
-	TOL.back().OptionsData.FindImagePosition();
-		
+	
 	return true;
 }
 
