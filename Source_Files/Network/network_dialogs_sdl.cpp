@@ -108,7 +108,7 @@ Apr 10, 2003 (Woody Zenfell):
 
 #ifdef NETWORK_TEST_MICROPHONE_LOCALLY
 #include    "network_speaker_sdl.h"
-#include    "network_microphone_sdl.h"
+#include	"network_sound.h"
 #endif
 
 
@@ -1499,7 +1499,7 @@ respond_to_microphone_toggle(w_select* inWidget) {
 }
 
 bool
-network_gather() {
+network_gather(bool) {
     open_network_speaker();
     open_network_microphone();
 
