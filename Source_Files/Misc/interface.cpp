@@ -2343,6 +2343,7 @@ static void try_and_display_chapter_screen(
 	/* If the picture exists... */
 	if (scenario_picture_exists(pict_resource_number))
 	{
+		short existing_state= game_state.state;
 		game_state.state= _display_chapter_heading;
 		free_and_unlock_memory();
 		
@@ -2412,6 +2413,7 @@ static void try_and_display_chapter_screen(
 			stop_sound_resource();
 #endif
 		}
+		game_state.state= existing_state;
 	}
 }
 
