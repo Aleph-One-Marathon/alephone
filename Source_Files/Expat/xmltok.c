@@ -1365,7 +1365,7 @@ int getEncodingIndex(const char *name)
   int i;
   if (name == 0)
     return NO_ENC;
-  for (i = 0; i < (int)sizeof(encodingNames)/sizeof(encodingNames[0]); i++)
+  for (i = 0; i < (int)(sizeof(encodingNames)/sizeof(encodingNames[0])); i++)
     if (streqci(name, encodingNames[i]))
       return i;
   return UNKNOWN_ENC;
