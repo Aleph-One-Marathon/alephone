@@ -172,14 +172,22 @@ void recalculate_redundant_endpoint_data(
 			if (polygon_index!=NONE)
 			{
 				polygon= get_polygon_data(polygon_index);
-				if (highest_adjacent_floor_height<polygon->floor_height) highest_adjacent_floor_height= polygon->floor_height, supporting_polygon_index= polygon_index;
+				if (highest_adjacent_floor_height<polygon->floor_height)
+                    {
+                        highest_adjacent_floor_height= polygon->floor_height;
+                        supporting_polygon_index= polygon_index;
+                    }
 				if (lowest_adjacent_ceiling_height>polygon->ceiling_height) lowest_adjacent_ceiling_height= polygon->ceiling_height;
 			}
 			polygon_index= line->counterclockwise_polygon_owner;
 			if (polygon_index!=NONE)
 			{
 				polygon= get_polygon_data(polygon_index);
-				if (highest_adjacent_floor_height<polygon->floor_height) highest_adjacent_floor_height= polygon->floor_height, supporting_polygon_index= polygon_index;
+                   if (highest_adjacent_floor_height<polygon->floor_height)
+                   {
+                       highest_adjacent_floor_height= polygon->floor_height;
+                       supporting_polygon_index= polygon_index;
+                   }
 				if (lowest_adjacent_ceiling_height>polygon->ceiling_height) lowest_adjacent_ceiling_height= polygon->ceiling_height;
 			}
 		}
@@ -206,15 +214,15 @@ void recalculate_redundant_line_data(
 	bool transparent_texture= false;
 	
 	/* recalculate line length */
-	line->length= distance2d(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
-		&get_endpoint_data(line->endpoint_indexes[1])->vertex);
+	line->length= distance2d(&(get_endpoint_data(line->endpoint_indexes[0])->vertex),
+		&(get_endpoint_data(line->endpoint_indexes[1])->vertex));
 
 	/* find highest adjacent floor and lowest adjacent ceiling */
 	{
 		struct polygon_data *polygon1, *polygon2;
 		
-		polygon1= line->clockwise_polygon_owner==NONE ? (struct polygon_data *) NULL : get_polygon_data(line->clockwise_polygon_owner);
-		polygon2= line->counterclockwise_polygon_owner==NONE ? (struct polygon_data *) NULL : get_polygon_data(line->counterclockwise_polygon_owner);
+		polygon1= (line->clockwise_polygon_owner == NONE) ? (struct polygon_data *) NULL : get_polygon_data(line->clockwise_polygon_owner);
+		polygon2= (line->counterclockwise_polygon_owner == NONE) ? (struct polygon_data *) NULL : get_polygon_data(line->counterclockwise_polygon_owner);
 		
 		if ((polygon1&&polygon1->type==_polygon_is_platform) || (polygon2&&polygon2->type==_polygon_is_platform)) variable_elevation= true;
 		
@@ -222,7 +230,7 @@ void recalculate_redundant_line_data(
 		{
 			line->highest_adjacent_floor= MAX(polygon1->floor_height, polygon2->floor_height);
 			line->lowest_adjacent_ceiling= MIN(polygon1->ceiling_height, polygon2->ceiling_height);
-			if (polygon1->floor_height!=polygon2->floor_height) elevation= true;
+			if (polygon1->floor_height != polygon2->floor_height) elevation= true;
 		}
 		else
 		{
@@ -283,7 +291,7 @@ void recalculate_redundant_side_data(
 {
 	struct side_data *side= get_side_data(side_index);
 	struct line_data *line= get_line_data(line_index);
-	world_point2d *e0, *e1;
+	world_point2d *e0 = NULL , *e1 = NULL;
 
 	// TEMPORARY UNTIL THE EDITOR SETS THESE FIELDS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //	side->transparent_texture.texture= NONE; // no transparent texture
@@ -299,8 +307,8 @@ void recalculate_redundant_side_data(
 	{
 		assert(side_index==line->counterclockwise_polygon_side_index);
 
-		e0= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
-		e1= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
+		e0= &(get_endpoint_data(line->endpoint_indexes[1])->vertex);
+		e1= &(get_endpoint_data(line->endpoint_indexes[0])->vertex);
 		side->polygon_index= line->counterclockwise_polygon_owner;
 	}
 
@@ -327,17 +335,15 @@ void calculate_endpoint_polygon_owners(
 	short *first_index,
 	short *index_count)
 {
-	struct polygon_data *polygon;
-	short polygon_index;
+	struct polygon_data *polygon = map_polygons;
+	short polygon_index = 0;
 	
 	*first_index= dynamic_world->map_index_count;
 	*index_count= 0;
-	
-	for (polygon_index= 0, polygon= map_polygons; polygon_index<dynamic_world->polygon_count; ++polygon_index, ++polygon)
-	{
-		short i;
-		
-		for (i= 0; i<polygon->vertex_count; ++i)
+
+	for (; polygon_index<dynamic_world->polygon_count ; ++polygon_index, ++polygon)
+	{		
+		for (unsigned short i= 0; i<polygon->vertex_count; ++i)
 		{
 			if (endpoint_index==polygon->endpoint_indexes[i])
 			{
@@ -352,13 +358,13 @@ void calculate_endpoint_line_owners(
 	short *first_index,
 	short *index_count)
 {
-	short line_index;
-	struct line_data *line;
+	short line_index = 0;
+	struct line_data *line = map_lines;
 	
 	*first_index= dynamic_world->map_index_count;
 	*index_count= 0;
 	
-	for (line_index= 0, line= map_lines; line_index<dynamic_world->line_count; ++line_index, ++line)
+	for (; line_index<dynamic_world->line_count; ++line_index, ++line)
 	{
 		if (line->endpoint_indexes[0]==endpoint_index||line->endpoint_indexes[1]==endpoint_index)
 		{
@@ -414,13 +420,11 @@ static short calculate_clockwise_endpoints(
 	short polygon_index,
 	short *buffer)
 {
-	struct polygon_data *polygon;
-	short i;
+	struct polygon_data *polygon = get_polygon_data(polygon_index);
 	
-	polygon= get_polygon_data(polygon_index);
-	for (i=0;i<polygon->vertex_count;++i)
+	for (unsigned short i=0;i<polygon->vertex_count;++i)
 	{
-		*buffer++= clockwise_endpoint_in_line(polygon_index, polygon->line_indexes[i], 0);
+		*buffer++ = clockwise_endpoint_in_line(polygon_index, polygon->line_indexes[i], 0);
 	}
 	
 	return polygon->vertex_count;
@@ -431,9 +435,8 @@ static void calculate_adjacent_sides(
 	short *side_indexes)
 {
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
-	short i;
 	
-	for (i=0;i<polygon->vertex_count;++i)
+	for (unsigned short i=0;i<polygon->vertex_count;++i)
 	{
 		struct line_data *line= get_line_data(polygon->line_indexes[i]);
 		short side_index;
@@ -456,11 +459,9 @@ static void calculate_adjacent_polygons(
 	short polygon_index,
 	short *polygon_indexes)
 {
-	struct polygon_data *polygon;
-	short i;
-	
-	polygon= get_polygon_data(polygon_index);
-	for (i=0;i<polygon->vertex_count;++i)
+	struct polygon_data *polygon = get_polygon_data(polygon_index);
+
+     for (unsigned short i=0;i<polygon->vertex_count;++i)
 	{
 		struct line_data *line= get_line_data(polygon->line_indexes[i]);
 		short adjacent_polygon_index= NONE;
@@ -483,24 +484,23 @@ static void calculate_adjacent_polygons(
 static long calculate_polygon_area(
 	short polygon_index)
 {
-	short vertex;
 	long area= 0;
 	world_point2d *first_point, *point, *next_point;
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 
-	first_point= &get_endpoint_data(polygon->endpoint_indexes[0])->vertex;	
-	for (vertex=1;vertex<polygon->vertex_count-1;++vertex)
+	first_point= &(get_endpoint_data(polygon->endpoint_indexes[0])->vertex);	
+	for (unsigned short vertex=1;vertex<polygon->vertex_count-1;++vertex)
 	{
-		point= &get_endpoint_data(polygon->endpoint_indexes[vertex])->vertex;
-		next_point= &get_endpoint_data(polygon->endpoint_indexes[vertex+1])->vertex;
+		point= &(get_endpoint_data(polygon->endpoint_indexes[vertex])->vertex);
+		next_point= &(get_endpoint_data(polygon->endpoint_indexes[vertex+1])->vertex);
 
-		area+= (first_point->x*point->y-point->x*first_point->y) +
-			(point->x*next_point->y-next_point->x*point->y) +
-			(next_point->x*first_point->y-first_point->x*next_point->y);
+		area+= (((first_point->x) * (point->y)) - ((point->x) * (first_point->y))) +
+			(((point->x) * (next_point->y)) - ((next_point->x) * (point->y))) +
+			(((next_point->x) * (first_point->y)) - ((first_point->x) * (next_point->y)));
 	}
 	
 	/* real area is absolute value of calculated area divided by two */
-	area= ABS(area), area>>= 1;
+     area= (ABS(area), area >>= 1);
 	
 	return area;
 }
@@ -510,17 +510,16 @@ static long calculate_polygon_area(
 void precalculate_map_indexes(
 	void)
 {
-	short polygon_index;
-	struct polygon_data *polygon;
+	short polygon_index = 0;
+	struct polygon_data *polygon = map_polygons;
 	
-	for (polygon_index=0,polygon=map_polygons;polygon_index<dynamic_world->polygon_count;++polygon,++polygon_index)
+	for (;polygon_index< dynamic_world->polygon_count;++polygon,++polygon_index)
 	{
 		if (!POLYGON_IS_DETACHED(polygon)) /* we’ll handle detached polygons during the second pass */
 		{
 			// short line_indexes[MAXIMUM_INTERSECTING_INDEXES], endpoint_indexes[MAXIMUM_INTERSECTING_INDEXES],
 			// 	polygon_indexes[MAXIMUM_INTERSECTING_INDEXES];
 			// short line_count, endpoint_count, polygon_count;
-			short i;
 	
 //			if (polygon_index==17) dprintf("polygon #%d at %p", polygon_index, polygon);
 						
@@ -535,12 +534,12 @@ void precalculate_map_indexes(
 			short endpoint_count = EndpointIndices.size();
 			short *endpoint_indexes = &EndpointIndices[0];
 			
-			for (i=0;i<line_count;++i)	
+			for (unsigned int i=0;i<line_count;++i)	
 			{
 				add_map_index(line_indexes[i], &polygon->line_exclusion_zone_count);
 			}
 			
-			for (i=0;i<endpoint_count;++i)
+			for (unsigned int i=0;i<endpoint_count;++i)
 			{
 				add_map_index(endpoint_indexes[i], &polygon->point_exclusion_zone_count);
 			}
@@ -556,7 +555,7 @@ void precalculate_map_indexes(
 			short *polygon_indexes = &PolygonIndices[0];
 			short polygon_count = PolygonIndices.size();
 
-			for (i=0;i<polygon_count;++i)
+			for (unsigned int i=0;i<polygon_count;++i)
 			{
 				add_map_index(polygon_indexes[i], &polygon->neighbor_count);
 			}
@@ -588,6 +587,8 @@ static void find_intersecting_endpoints_and_lines(
 }
 
 #ifdef NEW_AND_BROKEN
+//AS: this confuses PB, so comment it out for now
+/*
 static long intersecting_flood_proc(
 	short source_polygon_index,
 	short line_index,
@@ -597,20 +598,19 @@ static long intersecting_flood_proc(
 	struct intersecting_flood_data *data=vdata;
 	struct polygon_data *polygon= get_polygon_data(source_polygon_index);
 	struct polygon_data *original_polygon= get_polygon_data(data->original_polygon_index);
-	bool keep_searching= false; /* don’t flood any deeper unless we find something close enough */
-	short i, j;
-
-	(void) (line_index,destination_polygon_index);
-
-	/* we only care about this polygon if it intersects us in z */
-	if (polygon->floor_height<=original_polygon->ceiling_height&&polygon->ceiling_height>=original_polygon->floor_height)
+	bool keep_searching= false; // don’t flood any deeper unless we find something close enough 
+	short i = 0, j = 0;
+     unsigned long new_broken_note;
+	//(void) (line_index,destination_polygon_index);
+#pragma unused (line_index,destination_polygon_index)
+	// we only care about this polygon if it intersects us in z 
+	if ((polygon->floor_height<=original_polygon->ceiling_height)&&(polygon->ceiling_height>=original_polygon->floor_height))
 	{
-		/* check each endpoint to see if it is within the critical distance of any line
-			within our original polygon */
+		// check each endpoint to see if it is within the critical distance of any line within our original polygon 
 		for (i= 0; i<polygon->vertex_count; ++i)
 		{
 			short endpoint_index= polygon->endpoint_indexes[i];
-			world_point2d *p= &get_endpoint_data(endpoint_index)->vertex;
+			world_point2d *p= &(get_endpoint_data(endpoint_index)->vertex);
 			
 			for (j= 0; j<original_polygon->vertex_count; ++j)
 			{
@@ -619,23 +619,23 @@ static long intersecting_flood_proc(
 				
 				if (point_to_line_segment_distance_squared(p, a, b)<data->minimum_separation_squared)
 				{
-					keep_searching|= try_and_add_endpoint(endpoint_index);
-					keep_searching|= try_and_add_line(polygon->line_indexes[i]);
-					keep_searching|= try_and_add_line(polygon->line_indexes[i?i-1:polygon->vertex_count-1);
+					keep_searching |= try_and_add_endpoint(endpoint_index);
+					keep_searching |= try_and_add_line(polygon->line_indexes[i]);
+					keep_searching |= try_and_add_line(polygon->line_indexes[i ? i-1 : polygon->vertex_count-1);
 					break;
 				}
 			}
 		}
 	}
 
-	/* if any part of this polygon is close enough to our original polygon, remember it’s index */
+	// if any part of this polygon is close enough to our original polygon, remember it’s index 
 	if (keep_searching)
 	{
 		for (j=0;j<data->polygon_count;++j)
 		{
 			if (data->polygon_indexes[j]==source_polygon_index)
 			{
-				break; /* found duplicate, ignore */
+				break; // found duplicate, ignore
 			}
 		}
 		if (j==data->polygon_count && data->polygon_count<MAXIMUM_INTERSECTING_INDEXES)
@@ -643,20 +643,26 @@ static long intersecting_flood_proc(
 			short detached_twin_index= NONE; //find_undetached_polygons_twin(source_polygon_index);
 			
 			if (DoIncorrectCountVWarn)
-				vwarn(data->polygon_count!=MAXIMUM_INTERSECTING_INDEXES-1, csprintf(temporary, "incomplete neighbor list for polygon#%d", data->original_polygon_index));
+               {
+                   vwarn(data->polygon_count!=MAXIMUM_INTERSECTING_INDEXES-1,
+                   csprintf(temporary, "incomplete neighbor list for polygon#%d", data->original_polygon_index));
+               }
 			data->polygon_indexes[data->polygon_count++]= source_polygon_index;
 			
-			/* if this polygon has a detached twin, add it too */
-			if (detached_twin_index!=NONE && data->polygon_count<MAXIMUM_INTERSECTING_INDEXES)
+			// if this polygon has a detached twin, add it too 
+			if ((detached_twin_index!=NONE) && (data->polygon_count<MAXIMUM_INTERSECTING_INDEXES))
 			{
 				if (DoIncorrectCountVWarn)
-					vwarn(data->polygon_count!=MAXIMUM_INTERSECTING_INDEXES-1, csprintf(temporary, "incomplete neighbor list for polygon#%d", data->original_polygon_index));
+                    {
+                        vwarn(data->polygon_count!=MAXIMUM_INTERSECTING_INDEXES-1,
+                        csprintf(temporary, "incomplete neighbor list for polygon#%d", data->original_polygon_index));
+                    }
 				data->polygon_indexes[data->polygon_count++]= detached_twin_index;
 			}
 		}
 	}
 
-	/* return area of source polygon as cost */
+	// return area of source polygon as cost
 	return keep_searching ? 1 : -1;
 }
 
@@ -667,28 +673,31 @@ void try_and_add_line(
 	struct polygon_data *original_polygon= get_polygon_data(data->original_polygon_index);
 	struct line_data *line= get_line_data(line_index);
 	bool keep_searching= false;
-	short i;
+	short i = 0;
 	
-	if (LINE_IS_SOLID(line) ||
-		line_has_variable_height(line_index) ||
-		line->lowest_adjacent_ceiling<original_polygon->ceiling_height ||
-		line->highest_adjacent_floor>original_polygon->floor_height)
+	if ((LINE_IS_SOLID(line)) ||
+		(line_has_variable_height(line_index)) ||
+		(line->lowest_adjacent_ceiling<original_polygon->ceiling_height) ||
+     (line->highest_adjacent_floor>original_polygon->floor_height))
 	{
-		/* make sure this line isn’t already in the line list */
+		// make sure this line isn’t already in the line list 
 		for (i=0; i<data->line_count; ++i)
 		{
 			if (data->line_indexes[i]==line_index)
 			{
 				keep_searching= true;
-				break; /* found duplicate, ignore (but keep looking for others) */
+				break; // found duplicate, ignore (but keep looking for others) 
 			}
 		}
 		if (i==data->line_count && data->line_count<MAXIMUM_INTERSECTING_INDEXES)
 		{
-			bool clockwise= ((b->x-a->x)*(data->center.y-b->y) - (b->y-a->y)*(data->center.x-b->x)>0) ? true : false;
+              bool clockwise= !!((((b->x-a->x)*(data->center.y-b->y)) - ((b->y-a->y)*(data->center.x-b->x)))>0);
 
 			if (DoIncorrectCountVWarn)
-				vwarn(data->line_count!=MAXIMUM_INTERSECTING_INDEXES-1, csprintf(temporary, "incomplete line list for polygon#%d", data->original_polygon_index));
+               {
+                   vwarn(data->line_count!=MAXIMUM_INTERSECTING_INDEXES-1,
+                         csprintf(temporary, "incomplete line list for polygon#%d", data->original_polygon_index));
+               }
 			data->line_indexes[data->line_count++]= clockwise ? polygon->line_indexes[i] : (-polygon->line_indexes[i]-1);
 //			if (data->original_polygon_index==23) dprintf("found line %d (%s)", polygon->line_indexes[i], clockwise ? "clockwise" : "counterclockwise");
 			keep_searching= true;
@@ -698,22 +707,20 @@ void try_and_add_line(
 	
 	return keep_searching;
 }
-			
-			/* add this endpoint if it isn’t already in the intersecting endpoint list */
+			// add this endpoint if it isn’t already in the intersecting endpoint list 
 			for (j=0;j<data->endpoint_count;++j)
 			{
 				if (data->endpoint_indexes[j]==polygon->endpoint_indexes[i])
 				{
 					keep_searching= true;
-					break; /* found duplicate, ignore (but keep looking for others) */
+					break; // found duplicate, ignore (but keep looking for others) 
 				}
 			}
 			if (j==data->endpoint_count && data->endpoint_count<MAXIMUM_INTERSECTING_INDEXES)
 			{
 				world_point2d *p= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
 				
-				/* check and see if this endpoint is close enough to any line in our original polygon
-					to care about; if it is, add it to our list */
+				// check and see if this endpoint is close enough to any line in our original polygon to care about; if it is, add it to our list 
 				for (j=0;j<original_polygon->vertex_count;++j)
 				{
 					struct line_data *line= get_line_data(original_polygon->line_indexes[j]);
@@ -738,6 +745,7 @@ void try_and_add_line(
 			}
 		}
 	}
+*/
 #endif
 
 static long intersecting_flood_proc(
@@ -750,13 +758,13 @@ static long intersecting_flood_proc(
 	struct polygon_data *polygon= get_polygon_data(source_polygon_index);
 	struct polygon_data *original_polygon= get_polygon_data(data->original_polygon_index);
 	bool keep_searching= false; /* don’t flood any deeper unless we find something close enough */
-	unsigned i, j;
-
+	unsigned short i, j;
+     unsigned long second_note;
 	(void) (line_index);
 	(void) (destination_polygon_index);
 
 	/* we only care about this polygon if it intersects us in z */
-	if (polygon->floor_height<=original_polygon->ceiling_height&&polygon->ceiling_height>=original_polygon->floor_height)
+	if ((polygon->floor_height<=original_polygon->ceiling_height)&&(polygon->ceiling_height>=original_polygon->floor_height))
 	{
 		/* update our running line and endpoint lists */	
 		for (i=0;i<polygon->vertex_count;++i)
@@ -781,18 +789,18 @@ static long intersecting_flood_proc(
 					line->lowest_adjacent_ceiling<original_polygon->ceiling_height ||
 					line->highest_adjacent_floor>original_polygon->floor_height)
 				{
-					world_point2d *a= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
-					world_point2d *b= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
+					world_point2d *a= &(get_endpoint_data(line->endpoint_indexes[0])->vertex);
+					world_point2d *b= &(get_endpoint_data(line->endpoint_indexes[1])->vertex);
 		
 					/* check and see if this line is close enough to any point in our original polygon
 						to care about; if it is, add it to our list */
 					for (j=0;j<original_polygon->vertex_count;++j)
 					{
-						world_point2d *p= &get_endpoint_data(original_polygon->endpoint_indexes[j])->vertex;
+						world_point2d *p= &(get_endpoint_data(original_polygon->endpoint_indexes[j])->vertex);
 			
 						if (point_to_line_segment_distance_squared(p, a, b)<data->minimum_separation_squared)
 						{
-							bool clockwise= ((b->x-a->x)*(data->center.y-b->y) - (b->y-a->y)*(data->center.x-b->x)>0) ? true : false;
+							bool clockwise= !!((((b->x-a->x)*(data->center.y-b->y)) - ((b->y-a->y)*(data->center.x-b->x)))>0);
 							
 							LineIndices.push_back(clockwise ? polygon->line_indexes[i] : (-polygon->line_indexes[i]-1));
 							keep_searching= true;
@@ -813,7 +821,7 @@ static long intersecting_flood_proc(
 			}
 			if (j==EndpointIndices.size())
 			{
-				world_point2d *p= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
+				world_point2d *p= &(get_endpoint_data(polygon->endpoint_indexes[i])->vertex);
 				
 				/* check and see if this endpoint is close enough to any line in our original polygon
 					to care about; if it is, add it to our list */
@@ -863,6 +871,7 @@ static long intersecting_flood_proc(
 
 
 #ifdef WITH_ORIGINAL_DATA_STRUCTURES
+/*
 static long intersecting_flood_proc(
 	short source_polygon_index,
 	short line_index,
@@ -872,26 +881,25 @@ static long intersecting_flood_proc(
 	struct intersecting_flood_data *data=(struct intersecting_flood_data *)vdata;
 	struct polygon_data *polygon= get_polygon_data(source_polygon_index);
 	struct polygon_data *original_polygon= get_polygon_data(data->original_polygon_index);
-	bool keep_searching= false; /* don’t flood any deeper unless we find something close enough */
-	short i, j;
-
+	bool keep_searching= false; // don’t flood any deeper unless we find something close enough
+     short i, j;
 	(void) (line_index);
 	(void) (destination_polygon_index);
 
-	/* we only care about this polygon if it intersects us in z */
+	// we only care about this polygon if it intersects us in z 
 	if (polygon->floor_height<=original_polygon->ceiling_height&&polygon->ceiling_height>=original_polygon->floor_height)
 	{
-		/* update our running line and endpoint lists */	
+		// update our running line and endpoint lists 
 		for (i=0;i<polygon->vertex_count;++i)
 		{
-			/* add this line if it isn’t already in the intersecting line list */
+			// add this line if it isn’t already in the intersecting line list 
 			for (j=0;j<data->line_count;++j)
 			{
 				if (data->line_indexes[j]==polygon->line_indexes[i] ||
 					-data->line_indexes[j]-1==polygon->line_indexes[i])
 				{
 					keep_searching= true;
-					break; /* found duplicate, stop */
+					break; // found duplicate, stop 
 				}
 			}
 			if (j==data->line_count && data->endpoint_count<MAXIMUM_INTERSECTING_INDEXES)
@@ -909,8 +917,7 @@ static long intersecting_flood_proc(
 					world_point2d *a= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
 					world_point2d *b= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
 		
-					/* check and see if this line is close enough to any point in our original polygon
-						to care about; if it is, add it to our list */
+					// check and see if this line is close enough to any point in our original polygon to care about; if it is, add it to our list 
 					for (j=0;j<original_polygon->vertex_count;++j)
 					{
 						world_point2d *p= &get_endpoint_data(original_polygon->endpoint_indexes[j])->vertex;
@@ -930,21 +937,20 @@ static long intersecting_flood_proc(
 				}
 			}
 			
-			/* add this endpoint if it isn’t already in the intersecting endpoint list */
+			// add this endpoint if it isn’t already in the intersecting endpoint list 
 			for (j=0;j<data->endpoint_count;++j)
 			{
 				if (data->endpoint_indexes[j]==polygon->endpoint_indexes[i])
 				{
 					keep_searching= true;
-					break; /* found duplicate, ignore (but keep looking for others) */
+					break; // found duplicate, ignore (but keep looking for others) 
 				}
 			}
 			if (j==data->endpoint_count && data->endpoint_count<MAXIMUM_INTERSECTING_INDEXES)
 			{
 				world_point2d *p= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
 				
-				/* check and see if this endpoint is close enough to any line in our original polygon
-					to care about; if it is, add it to our list */
+				// check and see if this endpoint is close enough to any line in our original polygon to care about; if it is, add it to our list 
 				for (j=0;j<original_polygon->vertex_count;++j)
 				{
 					struct line_data *line= get_line_data(original_polygon->line_indexes[j]);
@@ -970,14 +976,14 @@ static long intersecting_flood_proc(
 		}
 	}
 
-	/* if any part of this polygon is close enough to our original polygon, remember it’s index */
+	// if any part of this polygon is close enough to our original polygon, remember it’s index 
 	if (keep_searching)
 	{
 		for (j=0;j<data->polygon_count;++j)
 		{
 			if (data->polygon_indexes[j]==source_polygon_index)
 			{
-				break; /* found duplicate, ignore */
+				break; // found duplicate, ignore 
 			}
 		}
 		if (j==data->polygon_count && data->polygon_count<MAXIMUM_INTERSECTING_INDEXES)
@@ -988,7 +994,7 @@ static long intersecting_flood_proc(
 				vwarn(data->polygon_count!=MAXIMUM_INTERSECTING_INDEXES-1, csprintf(temporary, "incomplete neighbor list for polygon#%d", data->original_polygon_index));
 			data->polygon_indexes[data->polygon_count++]= source_polygon_index;
 			
-			/* if this polygon has a detached twin, add it too */
+			// if this polygon has a detached twin, add it too 
 			if (detached_twin_index!=NONE && data->polygon_count<MAXIMUM_INTERSECTING_INDEXES)
 			{
 				if (DoIncorrectCountVWarn)
@@ -998,9 +1004,10 @@ static long intersecting_flood_proc(
 		}
 	}
 
-	/* return area of source polygon as cost */
+	// return area of source polygon as cost
 	return keep_searching ? 1 : -1;
 }
+*/
 #endif
 
 static void add_map_index(

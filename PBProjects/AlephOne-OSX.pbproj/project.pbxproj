@@ -789,7 +789,8 @@
 			);
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
-				OPTIMIZATION_CFLAGS = "-O1";
+				DEBUGGING_SYMBOLS = YES;
+				OPTIMIZATION_CFLAGS = "-O0";
 			};
 			isa = PBXBuildStyle;
 			name = Development;
@@ -800,7 +801,6 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				DEBUGGING_SYMBOLS = NO;
-				OPTIMIZATION_CFLAGS = "-O3";
 			};
 			isa = PBXBuildStyle;
 			name = Deployment;
@@ -2293,13 +2293,13 @@
 				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
 				HEADER_SEARCH_PATHS = "\"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O3";
+				OPTIMIZATION_CFLAGS = "-O2 -ffast-math -fno-unroll-loops";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1";
 				OTHER_LDFLAGS = "-lobjc";
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas -Wno-precomp";
 				WRAPPER_EXTENSION = app;
 			};
 			dependencies = (
@@ -2508,7 +2508,7 @@
 	<key>CFBundleExecutable</key>
 	<string>AlephOne</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Aleph One Carbon for OS X (0.13.20020424 Carbon/SDL Network)</string>
+	<string>Aleph One Carbon for OS X Manual Build</string>
 	<key>CFBundleIconFile</key>
 	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -2520,11 +2520,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.13.20020424 Carbon</string>
+	<string>0.13.2 Manual Build</string>
 	<key>CFBundleSignature</key>
 	<string>26.A</string>
 	<key>CFBundleVersion</key>
-	<string>0.13.20020424</string>
+	<string>0.13.2 Manual Build</string>
 </dict>
 </plist>
 ";
