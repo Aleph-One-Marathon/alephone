@@ -12,6 +12,9 @@ Wednesday, February 1, 1995 12:58:17 AM  (Jason')
 
 Feb 6, 2000 (Loren Petrich):
 	Added access to size of effect-definition structure
+
+Aug 30, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 #include "cseries.h"
@@ -19,6 +22,8 @@ Feb 6, 2000 (Loren Petrich):
 #include "interface.h"
 #include "effects.h"
 #include "mysound.h"
+
+#include "Packing.h"
 
 #ifdef env68k
 #pragma segment objects
@@ -330,5 +335,89 @@ struct effect_definition *get_effect_definition(
 #endif
 */
 
-// LP addition: Get effect-definition size
-int get_effect_defintion_size() {return sizeof(struct effect_definition);}
+uint8 *unpack_effect_data(uint8 *Stream, effect_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	effect_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->object_index);
+		
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->data);
+		StreamToValue(S,ObjPtr->delay);
+		
+		S += 11*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_effect_data);
+	return S;
+}
+
+uint8 *pack_effect_data(uint8 *Stream, effect_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	effect_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->object_index);
+		
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->data);
+		ValueToStream(S,ObjPtr->delay);
+		
+		S += 11*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_effect_data);
+	return S;
+}
+
+
+uint8 *unpack_effect_definition(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	effect_definition* ObjPtr = effect_definitions;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->collection);
+		StreamToValue(S,ObjPtr->shape);
+		
+		StreamToValue(S,ObjPtr->sound_pitch);
+				
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->delay);
+		StreamToValue(S,ObjPtr->delay_sound);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_effect_definition);
+	return S;
+}
+
+uint8 *pack_effect_definition(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	effect_definition* ObjPtr = effect_definitions;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->collection);
+		ValueToStream(S,ObjPtr->shape);
+		
+		ValueToStream(S,ObjPtr->sound_pitch);
+				
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->delay);
+		ValueToStream(S,ObjPtr->delay_sound);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_effect_definition);
+	return S;
+}
