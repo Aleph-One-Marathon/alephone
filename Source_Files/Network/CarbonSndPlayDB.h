@@ -49,7 +49,7 @@
 */
 
 #ifdef TARGET_API_MAC_CARBON
-
+#include <sys/cdefs.h>
 struct SndDoubleBuffer {
   long                dbNumFrames;
   long                dbFlags;
@@ -98,6 +98,8 @@ enum {
 #endif // TARGET_API_MAC_CARBON
 
 #pragma export on
+__BEGIN_DECLS
 				OSErr	CarbonSndPlayDoubleBuffer (SndChannelPtr chan, SndDoubleBufferHeaderPtr theParams);
 				OSErr	MySndDoImmediate (SndChannelPtr chan, SndCommand * cmd);
+__END_DECLS
 #pragma export off
