@@ -826,6 +826,11 @@ static void verify_environment(
 	long response;
 	long getCPUtype;
 	
+	// Carbon systems always have:
+	// >= System 7
+	// Color QuickDraw
+	// PowerPC CPU's
+	/*
 	result = Gestalt(gestaltSystemVersion, &response);
 	if (result!=noErr||response<0x1001)
 	{
@@ -855,6 +860,7 @@ static void verify_environment(
 	{
 		alert_user(fatalError, strERRORS, badProcessor, response);
 	}
+	*/
 	
 #else
 	SysEnvRec environment;
