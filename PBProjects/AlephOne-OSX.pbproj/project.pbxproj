@@ -207,9 +207,9 @@
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = "\"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\"";
+				LIBRARY_SEARCH_PATHS = "\"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\"";
 				OPTIMIZATION_CFLAGS = "-O2 -frename-registers -fprefetch-loop-arrays -fschedule-insns -fschedule-insns2 -finline-functions -finline-limit=600 -fregmove -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fgcse -fgcse-lm -fgcse-sm -fdelete-null-pointer-checks   -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
-				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -x objective-c++";
+				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -DSPEEX -DHAVE_LUA -x objective-c++";
 				OTHER_LDFLAGS = "-flat_namespace -multiply_defined suppress -framework SDL -framework SDL_image -framework SDL_net -framework AppKit";
 				PRODUCT_NAME = AlephOneSDL;
 				SECTORDER_FLAGS = "";
@@ -634,6 +634,7 @@
 				EFBAF0250485BEA500A8000D,
 				EFBAF0260485BEA500A8000D,
 				EFBAF0270485BEA500A8000D,
+				EFEF1AC804AF552D00C3A19D,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -804,6 +805,8 @@
 				EF2EF5E104819BD700A8000D,
 				EF2EF5E704819EBF00A8000D,
 				EFBAF0230485BEA500A8000D,
+				EFEF1AC904AF552D00C3A19D,
+				EFF8264204B4BD2B00778F0B,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -814,9 +817,11 @@
 				F5830B4101E776DE01BA387C,
 				F59FB19E01E780DF01BBE912,
 				F5281C0601F8C94301E83A66,
-				F5281C0901F8CA2201E83A66,
 				F5281C0A01F8CA2201E83A66,
 				EFBAF0120485B69900A8000D,
+				EFF8264004B4BD2000778F0B,
+				EFF8264104B4BD2100778F0B,
+				EFF8264304B5E20800778F0B,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1205,6 +1210,12 @@
 //EF2
 //EF3
 //EF4
+		EF081A82049E64D100A8000D = {
+			fileRef = F5574EEF01F4EB1E01FEABBD;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		EF2EF5A30481939600A8000D = {
 			fileRef = F51B058B047AC6DA01C5C930;
 			isa = PBXBuildFile;
@@ -1246,12 +1257,6 @@
 			name = Frameworks;
 			path = /Library/Frameworks;
 			refType = 0;
-		};
-		EF2EF5C704819B6200A8000D = {
-			fileRef = F5574EEF01F4EB1E01FEABBD;
-			isa = PBXBuildFile;
-			settings = {
-			};
 		};
 		EF2EF5C804819BD700A8000D = {
 			fileEncoding = 30;
@@ -1748,6 +1753,68 @@
 		};
 		EFBAF0270485BEA500A8000D = {
 			fileRef = EFBAF0190485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFEF1AC404AF552D00C3A19D = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			name = CircularByteBuffer.h;
+			path = ../Source_Files/Misc/CircularByteBuffer.h;
+			refType = 4;
+		};
+		EFEF1AC504AF552D00C3A19D = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			name = CircularByteBuffer.cpp;
+			path = ../Source_Files/Misc/CircularByteBuffer.cpp;
+			refType = 4;
+		};
+		EFEF1AC604AF552D00C3A19D = {
+			fileRef = EFEF1AC404AF552D00C3A19D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFEF1AC704AF552D00C3A19D = {
+			fileRef = EFEF1AC504AF552D00C3A19D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFEF1AC804AF552D00C3A19D = {
+			fileRef = EFEF1AC404AF552D00C3A19D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFEF1AC904AF552D00C3A19D = {
+			fileRef = EFEF1AC504AF552D00C3A19D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFF8264004B4BD2000778F0B = {
+			fileRef = F51B05A9047ACD3401C5C930;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFF8264104B4BD2100778F0B = {
+			fileRef = F51B05AB047ACD3D01C5C930;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFF8264204B4BD2B00778F0B = {
+			fileRef = F51B058B047AC6DA01C5C930;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFF8264304B5E20800778F0B = {
+			fileRef = F5281C0701F8CA2101E83A66;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -3258,8 +3325,8 @@
 				F522114E0136A66601000001,
 				F522114F0136A66601000001,
 				F536742802014FC301A80001,
-				F536742A02014FE101A80001,
 				F5574EEE01F4EB1E01FEABBD,
+				F536742A02014FE101A80001,
 				F5574EEF01F4EB1E01FEABBD,
 				F5C8AFE50207387301A80001,
 				3DAC27AE03DC9D5600000104,
@@ -3333,6 +3400,7 @@
 				F5CC94280240DB8801A80001,
 				F5CC94290240DB8801A80001,
 				F5A00022023FDA1601A80001,
+				EFEF1AC504AF552D00C3A19D,
 				3DAC27A503DC9D1C00000104,
 				3DAC27A603DC9D1C00000104,
 				F52211EB0136A6FD01000001,
@@ -3355,6 +3423,7 @@
 		F522144F0136C0C401000001 = {
 			children = (
 				F5A00027023FDA6101A80001,
+				EFEF1AC404AF552D00C3A19D,
 				F5A00029023FDA7601A80001,
 				F52211CF0136A6FD01000001,
 				3DAC27A703DC9D1C00000104,
@@ -3472,12 +3541,6 @@
 			isa = PBXFrameworkReference;
 			path = SDL_net.framework;
 			refType = 4;
-		};
-		F5281C0901F8CA2201E83A66 = {
-			fileRef = F5281C0701F8CA2101E83A66;
-			isa = PBXBuildFile;
-			settings = {
-			};
 		};
 		F5281C0A01F8CA2201E83A66 = {
 			fileRef = F5281C0801F8CA2101E83A66;
@@ -3935,6 +3998,7 @@
 				EFBAF01E0485BEA500A8000D,
 				EFBAF01F0485BEA500A8000D,
 				EFBAF0200485BEA500A8000D,
+				EFEF1AC604AF552D00C3A19D,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4101,7 +4165,6 @@
 				3DF290F1046F5C5B00000104,
 				3DF290F2046F5C5B00000104,
 				EF2EF5A30481939600A8000D,
-				EF2EF5C704819B6200A8000D,
 				EF2EF5D104819BD700A8000D,
 				EF2EF5D204819BD700A8000D,
 				EF2EF5D404819BD700A8000D,
@@ -4109,6 +4172,8 @@
 				EF2EF5D804819BD700A8000D,
 				EF2EF5E504819EBF00A8000D,
 				EFBAF01C0485BEA500A8000D,
+				EF081A82049E64D100A8000D,
+				EFEF1AC704AF552D00C3A19D,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;

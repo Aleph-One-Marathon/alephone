@@ -23,6 +23,9 @@
  *  Created by Woody Zenfell, III on Fri May 02 2003.
  *
  *  May 27, 2003 (Woody Zenfell): lossy byte-stream distribution.
+ *
+ *  June 30, 2003 (Woody Zenfell): lossy byte-stream distribution more tolerant of scheduling jitter
+ *	(i.e. will queue multiple chunks before send, instead of dropping all data but most recent)
  */
 
 #include "network_star.h"
@@ -31,6 +34,7 @@
 #include "network_private.h" // kPROTOCOL_TYPE
 #include "WindowedNthElementFinder.h"
 #include "vbl.h" // parse_keymap
+#include "CircularByteBuffer.h"
 #include "Logging.h"
 
 #include <map>
@@ -47,6 +51,8 @@ enum {
 	kDefaultTimingWindowSize = 3 * TICKS_PER_SECOND,
 	kDefaultTimingNthElement = kDefaultTimingWindowSize / 2,
 	kLossyByteStreamDataBufferSize = 1280,
+	kTypicalLossyByteStreamChunkSize = 56,
+	kLossyByteStreamDescriptorCount = kLossyByteStreamDataBufferSize / kTypicalLossyByteStreamChunkSize
 };
 
 struct SpokePreferences
@@ -105,10 +111,22 @@ static int32 sSmallestUnreceivedTick;
 static WindowedNthElementFinder<int32> sNthElementFinder(kDefaultTimingWindowSize);
 static bool sTimingMeasurementValid;
 static int32 sTimingMeasurement;
-static byte sLossyByteStreamData[kLossyByteStreamDataBufferSize];
-static uint16 sOutstandingLossyByteStreamLength;
-static int16 sOutstandingLossyByteStreamType;
-static uint32 sOutstandingLossyByteStreamDestinations;
+
+
+struct SpokeLossyByteStreamChunkDescriptor
+{
+	uint16	mLength;
+	int16	mType;
+	uint32	mDestinations;
+};
+
+// This holds outgoing lossy byte stream data
+static CircularByteBuffer sOutgoingLossyByteStreamData(kLossyByteStreamDataBufferSize);
+
+// This holds a descriptor for each chunk of lossy byte stream data held in the above buffer
+static CircularQueue<SpokeLossyByteStreamChunkDescriptor> sOutgoingLossyByteStreamDescriptors(kLossyByteStreamDescriptorCount);
+
+// This is currently used only to hold incoming streaming data until it's passed to the upper-level code
 static byte sScratchBuffer[kLossyByteStreamDataBufferSize];
 
 
@@ -211,7 +229,8 @@ spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inN
 	sNthElementFinder.reset(sSpokePreferences.mTimingWindowSize);
 	sTimingMeasurementValid = false;
 
-	sOutstandingLossyByteStreamLength = 0;
+	sOutgoingLossyByteStreamDescriptors.reset();
+	sOutgoingLossyByteStreamData.reset();
 
         sMessageTypeToMessageHandler.clear();
         sMessageTypeToMessageHandler[kEndOfMessagesMessageType] = handle_end_of_messages_message;
@@ -296,21 +315,27 @@ spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistributionType, byt
 void
 spoke_distribute_lossy_streaming_bytes(int16 inDistributionType, uint32 inDestinationsBitmask, byte* inBytes, uint16 inLength)
 {
-	if(sOutstandingLossyByteStreamLength > 0)
-		logNote2("spoke discarding %hu unsent bytes of outgoing lossy streaming type %hd", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType);
+	if(inLength > sOutgoingLossyByteStreamData.getRemainingSpace())
+	{
+		logNote2("spoke has insufficient buffer space for %hu bytes of outgoing lossy streaming type %hd; discarded", inLength, inDistributionType);
+		return;
+	}
+
+	if(sOutgoingLossyByteStreamDescriptors.getRemainingSpace() < 1)
+	{
+		logNote2("spoke has exhausted descriptor buffer space; discarding %hu bytes of outgoing lossy streaming type %hd", inLength, inDistributionType);
+		return;
+	}
+	
+	struct SpokeLossyByteStreamChunkDescriptor theDescriptor;
+	theDescriptor.mLength = inLength;
+	theDescriptor.mDestinations = inDestinationsBitmask;
+	theDescriptor.mType = inDistributionType;
 
 	logDump3("spoke application decided to send %d bytes of lossy streaming type %d destined for players 0x%x", inLength, inDistributionType, inDestinationsBitmask);
 	
-	if(inLength > kLossyByteStreamDataBufferSize)
-	{
-		logAnomaly2("spoke passed too many (%hu) bytes of outgoing lossy streaming type %hd; truncating", inLength, inDistributionType);
-		inLength = kLossyByteStreamDataBufferSize;
-	}
-
-	memcpy(sLossyByteStreamData, inBytes, inLength);
-	sOutstandingLossyByteStreamLength = inLength;
-	sOutstandingLossyByteStreamType = inDistributionType;
-	sOutstandingLossyByteStreamDestinations = inDestinationsBitmask;
+	sOutgoingLossyByteStreamData.enqueueBytes(inBytes, inLength);
+	sOutgoingLossyByteStreamDescriptors.enqueue(theDescriptor);
 }
 
 
@@ -745,7 +770,7 @@ spoke_tick()
 
 	logDump1("sOutstandingTimingAdjustment is now %d", sOutstandingTimingAdjustment);
 
-	if(sOutstandingLossyByteStreamLength > 0)
+	if(sOutgoingLossyByteStreamDescriptors.getCountOfElements() > 0)
 		shouldSend = true;
 
         // If we're connected and (we generated new data or if it's been long enough since we last sent), send.
@@ -800,17 +825,31 @@ send_packet()
         
                 // Messages
 		// Outstanding lossy streaming bytes?
-		if(sOutstandingLossyByteStreamLength > 0)
+		if(sOutgoingLossyByteStreamDescriptors.getCountOfElements() > 0)
 		{
-			uint16 theMessageLength = sOutstandingLossyByteStreamLength + sizeof(sOutstandingLossyByteStreamType) + sizeof(sOutstandingLossyByteStreamDestinations);
+			// Note: we make a conscious decision here to dequeue these things before
+			// writing to ps, so that if the latter operation exhausts ps's buffer and
+			// throws, we have less data to mess with next time, and shouldn't end up
+			// throwing every time we try to send here.
+			// If we eventually got smarter about managing packet space, we could try
+			// harder to preserve and pace data - e.g. change the 'if' immediately before this
+			// comment to a 'while', only put in as much data as we think we can fit, etc.
+			SpokeLossyByteStreamChunkDescriptor theDescriptor = sOutgoingLossyByteStreamDescriptors.peek();
+			sOutgoingLossyByteStreamDescriptors.dequeue();
+			
+			uint16 theMessageLength = theDescriptor.mLength + sizeof(theDescriptor.mType) + sizeof(theDescriptor.mDestinations);
 
 			ps << (uint16)kSpokeToHubLossyByteStreamMessageType
 				<< theMessageLength
-				<< sOutstandingLossyByteStreamType
-				<< sOutstandingLossyByteStreamDestinations;
-			ps.write(sLossyByteStreamData, sOutstandingLossyByteStreamLength);
+				<< theDescriptor.mType
+				<< theDescriptor.mDestinations;
 
-			sOutstandingLossyByteStreamLength = 0;
+			// XXX unnecessary copy due to overly restrictive interfaces (retaining for clarity)
+			assert(theDescriptor.mLength <= sizeof(sScratchBuffer));
+			sOutgoingLossyByteStreamData.peekBytes(sScratchBuffer, theDescriptor.mLength);
+			sOutgoingLossyByteStreamData.dequeue(theDescriptor.mLength);
+
+			ps.write(sScratchBuffer, theDescriptor.mLength);
 		}
 		
                 // No more messages

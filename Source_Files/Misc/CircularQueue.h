@@ -49,13 +49,16 @@ public:
 	}
 		
         CircularQueue<T>& operator =(const CircularQueue<T>& o) {
-		reset(o.getTotalSpace());
-		for(unsigned int i = 0; i < o.getCountOfElements(); i++)
-			enqueue(o.mData[o.getReadIndex(i)]);
+		if(&o != this)
+		{
+			reset(o.getTotalSpace());
+			for(unsigned int i = 0; i < o.getCountOfElements(); i++)
+				enqueue(o.mData[o.getReadIndex(i)]);
+		}
 		return *this;
 	}		
 
-        void reset() { reset(mQueueSize); }
+        void reset() { reset(getTotalSpace()); }
         
         void reset(unsigned int inSize) {
                 // We need size+1 elements of storage to allow size elements in queue
@@ -77,24 +80,24 @@ public:
         unsigned int	getCountOfElements() const
                             { return (mQueueSize + mWriteIndex - mReadIndex) % mQueueSize; }
 
-        unsigned int	getSpaceRemaining() const
+        unsigned int	getRemainingSpace() const
                             { return getTotalSpace() - getCountOfElements(); }
 
         unsigned int	getTotalSpace() const { return mQueueSize - 1; }
     
         const T&        peek() const { return mData[getReadIndex()]; }
 
-        void            dequeue() { advanceReadIndex(); }
+        void            dequeue(unsigned int inAmount = 1) { advanceReadIndex(inAmount); }
 
         void            enqueue(const T& inData) { mData[getWriteIndex()] = inData;  advanceWriteIndex(); }
 
-        ~CircularQueue() { if(mData != NULL) delete [] mData; }
+        virtual ~CircularQueue() { if(mData != NULL) delete [] mData; }
 
 protected:
         unsigned int	getReadIndex(unsigned int inOffset = 0) const
                             { assert(getCountOfElements() > inOffset);  return (mReadIndex + inOffset) % mQueueSize; }
         unsigned int	getWriteIndex(unsigned int inOffset = 0) const
-                            { assert(getSpaceRemaining() > inOffset);  return (mWriteIndex + inOffset) % mQueueSize; }
+                            { assert(getRemainingSpace() > inOffset);  return (mWriteIndex + inOffset) % mQueueSize; }
                             
         unsigned int advanceReadIndex(unsigned int inAmount = 1) {   
                 if(inAmount > 0) {
@@ -106,7 +109,7 @@ protected:
         
         unsigned int advanceWriteIndex(unsigned int inAmount = 1) {
                 if(inAmount > 0) {
-                        assert(getSpaceRemaining() > inAmount - 1);
+                        assert(getRemainingSpace() > inAmount - 1);
                         mWriteIndex = (mWriteIndex + inAmount) % mQueueSize;
                 }
                 return mWriteIndex;

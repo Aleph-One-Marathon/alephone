@@ -28,6 +28,10 @@
  *  June 14, 2003 (Woody Zenfell):
  *	+ send_period preference allows hub to reduce upstream requirements (sends fewer packets -> less data)
  *	+ hub preferences now are only emitted if they differ from the defaults (easier to change defaults in future)
+ *
+ *  July 3, 2003 (Woody Zenfell):
+ *	Lossy distribution should be more robust now (using a queue rather than holding a single element).
+ *	Should help netmic all-around, but especially (I hope) on Windows.
  */
 
 #include "network_star.h"
@@ -39,6 +43,7 @@
 #include "AStream.h"
 #include "Logging.h"
 #include "WindowedNthElementFinder.h"
+#include "CircularByteBuffer.h"
 #include "SDL_timer.h" // SDL_Delay()
 
 #include <vector>
@@ -112,7 +117,9 @@ enum {
         kDefaultInGameTicksBeforeNetDeath = 3 * TICKS_PER_SECOND,
 	kDefaultSendPeriod = 1,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
-	kLossyStreamingDataBufferSize = 1280,
+	kLossyByteStreamDataBufferSize = 1280,
+	kTypicalLossyByteStreamChunkSize = 56,
+	kLossyByteStreamDescriptorCount = kLossyByteStreamDataBufferSize / kTypicalLossyByteStreamChunkSize	
 };
 
 
@@ -235,11 +242,25 @@ static DDPFramePtr	sOutgoingFrame = NULL;
 static DDPPacketBuffer	sLocalOutgoingBuffer;
 static bool		sNeedToSendLocalOutgoingBuffer = false;
 
-static byte		sLossyStreamingData[kLossyStreamingDataBufferSize];
-static uint16		sOutstandingLossyByteStreamLength;
-static uint32		sOutstandingLossyByteStreamDestinations;
-static uint8		sOutstandingLossyByteStreamSender;
-static int16		sOutstandingLossyByteStreamType;
+
+struct HubLossyByteStreamChunkDescriptor
+{
+	uint16	mLength;
+	int16	mType;
+	uint32	mDestinations;
+	uint8	mSender;
+};
+
+// This holds outgoing lossy byte stream data
+static CircularByteBuffer sOutgoingLossyByteStreamData(kLossyByteStreamDataBufferSize);
+
+// This holds a descriptor for each chunk of lossy byte stream data held in the above buffer
+static CircularQueue<HubLossyByteStreamChunkDescriptor> sOutgoingLossyByteStreamDescriptors(kLossyByteStreamDescriptorCount);
+
+// This is used to copy between AStream and CircularByteBuffer
+// It's used in both directions, but that's ok because the routines that do so are mutex.
+static byte sScratchBuffer[kLossyByteStreamDataBufferSize];
+
 
 static myTMTaskPtr	sHubTickTask = NULL;
 static bool		sHubActive = false;	// used to enable the packet handler
@@ -339,7 +360,8 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
         sAddressToPlayerIndex.clear();
         sConnectedPlayersBitmask = 0;
 
-	sOutstandingLossyByteStreamLength = 0;
+	sOutgoingLossyByteStreamDescriptors.reset();
+	sOutgoingLossyByteStreamData.reset();
 
         for(size_t i = 0; i < inNumPlayers; i++)
         {
@@ -752,28 +774,50 @@ static void
 process_lossy_byte_stream_message(AIStream& ps, int inSenderIndex, uint16 inLength)
 {
 	assert(inSenderIndex >= 0 && inSenderIndex < sNetworkPlayers.size());
-	
-	if(sOutstandingLossyByteStreamLength > 0)
-		logNote4("discarding %hu bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%x", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender, sOutstandingLossyByteStreamDestinations);
+
+	HubLossyByteStreamChunkDescriptor theDescriptor;
 
 	size_t theHeaderStreamPosition = ps.tellg();
-	ps >> sOutstandingLossyByteStreamType >> sOutstandingLossyByteStreamDestinations;
-	sOutstandingLossyByteStreamLength = inLength - (ps.tellg() - theHeaderStreamPosition);
-	sOutstandingLossyByteStreamSender = inSenderIndex;
+	ps >> theDescriptor.mType >> theDescriptor.mDestinations;
+	theDescriptor.mLength = inLength - (ps.tellg() - theHeaderStreamPosition);
+	theDescriptor.mSender = inSenderIndex;
 
-	logDump4("got %d bytes of lossy stream type %d from player %d for destinations 0x%x", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender, sOutstandingLossyByteStreamDestinations);
+	logDump4("got %d bytes of lossy stream type %d from player %d for destinations 0x%x", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
 
-	uint16 theSpilloverDataLength = 0;
+	bool canEnqueue = true;
 	
-	if(sOutstandingLossyByteStreamLength > kLossyStreamingDataBufferSize)
+	if(sOutgoingLossyByteStreamDescriptors.getRemainingSpace() < 1)
 	{
-		logNote4("too many (%uh) bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx; truncating", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender, sOutstandingLossyByteStreamDestinations);
-		theSpilloverDataLength = sOutstandingLossyByteStreamLength - kLossyStreamingDataBufferSize;
-		sOutstandingLossyByteStreamLength = kLossyStreamingDataBufferSize;
+		logNote4("no descriptor space remains; discarding (%uh) bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
+		canEnqueue = false;
 	}
 
-	ps.read(sLossyStreamingData, sOutstandingLossyByteStreamLength);
-	ps.ignore(theSpilloverDataLength);
+	// We avoid enqueueing a partial chunk to make things easier on code that uses us
+	if(theDescriptor.mLength > sOutgoingLossyByteStreamData.getRemainingSpace())
+	{
+		logNote4("insufficient buffer space for %uh bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx; discarded", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
+		canEnqueue = false;
+	}
+
+	if(canEnqueue)
+	{
+		if(theDescriptor.mLength > 0)
+		{
+			// This is an assert, not a test, because the data buffer should be no
+			// bigger than the scratch buffer (and if it didn't fit into the data buffer,
+			// canEnqueue would be false).
+			assert(theDescriptor.mLength <= sizeof(sScratchBuffer));
+
+			// XXX extraneous copy, needed given the current interfaces to these things
+			ps.read(sScratchBuffer, theDescriptor.mLength);
+	
+			sOutgoingLossyByteStreamData.enqueueBytes(sScratchBuffer, theDescriptor.mLength);
+			sOutgoingLossyByteStreamDescriptors.enqueue(theDescriptor);
+		}
+	}
+	else
+		// We still have to gobble up the entire message, even if we can't use it.
+		ps.ignore(theDescriptor.mLength);
 }
 
 
@@ -863,6 +907,21 @@ hub_tick()
 static void
 send_packets()
 {
+	// Currently, at most one lossy data descriptor is used per trip through this function.  So,
+	// we do some processing here outside the loop since the results'd be the same every time.
+	HubLossyByteStreamChunkDescriptor theDescriptor;
+	bool haveLossyData = false;
+	if(sOutgoingLossyByteStreamDescriptors.getCountOfElements() > 0)
+	{
+		haveLossyData = true;
+		theDescriptor = sOutgoingLossyByteStreamDescriptors.peek();
+
+		// XXX extraneous copy due to limited interfaces
+		// We assert here; the real "test" happened when it was enqueued.
+		assert(theDescriptor.mLength <= sizeof(sScratchBuffer));
+		sOutgoingLossyByteStreamData.peekBytes(sScratchBuffer, theDescriptor.mLength);
+	}
+		
         for(size_t i = 0; i < sNetworkPlayers.size(); i++)
         {
                 NetworkPlayer_hub& thePlayer = sNetworkPlayers[i];
@@ -895,17 +954,18 @@ send_packets()
                                 }
 
 				// Lossy streaming data?
-				if(sOutstandingLossyByteStreamLength > 0 && ((sOutstandingLossyByteStreamDestinations & (((uint32)1) << i)) != 0))
+				if(haveLossyData && ((theDescriptor.mDestinations & (((uint32)1) << i)) != 0))
 				{
-					logDump4("packet to player %d will contain %d bytes of lossy byte stream type %d from player %d", i, sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender);
+					logDump4("packet to player %d will contain %d bytes of lossy byte stream type %d from player %d", i, theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender);
 					// In AStreams, sizeof(packed scalar) == sizeof(unpacked scalar)
-					uint16 theMessageLength = sizeof(sOutstandingLossyByteStreamType) + sizeof(sOutstandingLossyByteStreamSender) + sOutstandingLossyByteStreamLength;
+					uint16 theMessageLength = sizeof(theDescriptor.mType) + sizeof(theDescriptor.mSender) + theDescriptor.mLength;
 					
 					ps << (uint16)kHubToSpokeLossyByteStreamMessageType
 						<< theMessageLength
-						<< sOutstandingLossyByteStreamType
-						<< sOutstandingLossyByteStreamSender;
-					ps.write(sLossyStreamingData, sOutstandingLossyByteStreamLength);
+						<< theDescriptor.mType
+						<< theDescriptor.mSender;
+
+					ps.write(sScratchBuffer, theDescriptor.mLength);
 				}
         
                                 // End of messages
@@ -973,7 +1033,12 @@ send_packets()
 
         sLastNetworkTickSent = sNetworkTicker;
 	sSmallestUnsentTick = sSmallestIncompleteTick;
-	sOutstandingLossyByteStreamLength = 0;
+
+	if(haveLossyData)
+	{
+		sOutgoingLossyByteStreamData.dequeue(theDescriptor.mLength);
+		sOutgoingLossyByteStreamDescriptors.dequeue();
+	}
 	
 } // send_packets()
 
