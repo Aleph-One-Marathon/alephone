@@ -1234,7 +1234,7 @@ bool save_game_file(FileSpecifier& File)
 			/* Write out the new header */
 			if (write_wad_header(SaveFile, &header))
 			{
-				offset= sizeof(struct wad_header);
+				offset= SIZEOF_wad_header;
 		
 				wad= build_save_game_wad(&header, &wad_length);
 				if (wad)
