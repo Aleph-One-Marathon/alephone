@@ -270,7 +270,22 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	main_surface = SDL_SetVideoMode(width, height, depth, flags);
 	if (main_surface == NULL) {
 		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
-		exit(1);
+#ifdef HAVE_OPENGL
+		fprintf(stderr, "WARNING: Failed to initialize OpenGL with 24 bit colour\n");
+		fprintf(stderr, "WARNING: Retrying with 16 bit colour\n");
+		
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+ 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+
+		main_surface = SDL_SetVideoMode(width, height, depth, flags);
+ 		if (main_surface == NULL) {
+ 			fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
+ 			exit(1);
+ 		}
+#else
+	exit(1);
+#endif
 	}
 	if (depth == 8) {
 	        SDL_Color colors[256];
