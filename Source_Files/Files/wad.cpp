@@ -139,7 +139,7 @@ static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Obj
 static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, size_t Count);
 static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, size_t Count);
 static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, size_t Count);
-static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, size_t Count);
+//static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, size_t Count);
 static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, size_t Count);
 static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, size_t Count);
 static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, size_t Count);
@@ -926,7 +926,7 @@ void dump_wad(
 	for(index= 0; index<wad->tag_count; ++index)
 	{
 		assert(tag);
-		dprintf("Tag: %08x data: %p length: %ld offset: %ld", tag->tag, tag->data, tag->length,
+		dprintf("Tag: %lx data: %p length: %ld offset: %ld", tag->tag, tag->data, tag->length,
 			tag->offset);
 		tag++;
 	}
@@ -1480,6 +1480,7 @@ static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, size
 }
 
 
+#if 0
 static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, size_t Count)
 {
 	uint8* S = Stream;
@@ -1495,6 +1496,7 @@ static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, 
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_old_entry_header));
 	return S;
 }
+#endif
 
 static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, size_t Count)
 {
