@@ -2433,7 +2433,9 @@ void _sound_add_ambient_sources_proc(
 		while ((index= *indexes++)!=NONE)
 		{
 			struct map_object *object= saved_objects + index; // gross, sorry
+            if (object->polygon_index < 0) continue;
 			struct polygon_data *polygon= get_polygon_data(object->polygon_index);
+            if (!polygon) continue;
 			struct media_data *media= polygon->media_index!=NONE ? get_media_data(polygon->media_index) : (struct media_data *) NULL;
 			short sound_type= object->index;
 			short sound_volume= object->facing;
