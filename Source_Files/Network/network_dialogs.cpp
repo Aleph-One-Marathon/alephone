@@ -235,6 +235,12 @@ void NetgameSetup_Extract(
 	
 	game_information->initial_random_seed = ResumingGame ? dynamic_world->random_seed : (uint16) machine_tick_count();
 
+	// allow all cheats
+	game_information->cheat_flags = 
+	  _allow_crosshair | 
+	  _allow_tunnel_vision |
+	  _allow_behindview;
+
 	// now save some of these to the preferences - only if not resuming a game
 	if(!ResumingGame)
 	{
@@ -423,6 +429,11 @@ extract_setup_dialog_information(
 			// hmm failing quietly is probably not the best course of action, but ...
 			shouldUseNetscript = false;
 	}
+
+	// allow all cheats
+	game_information->cheat_flags = _allow_crosshair | 
+					_allow_tunnel_vision |
+					_allow_behindview;
 
 	// now save some of these to the preferences - only if not resuming a game
         if(!resuming_game)

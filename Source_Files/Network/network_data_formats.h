@@ -44,7 +44,7 @@
 
 // LP: All the packed net-packet structs have been turned into wrappers for plain bytes
 
-const int SIZEOF_game_info = MAX_LEVEL_NAME_LENGTH + 23;
+const int SIZEOF_game_info = MAX_LEVEL_NAME_LENGTH + 25;
 
 struct game_info_NET
 {

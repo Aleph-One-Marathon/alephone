@@ -68,9 +68,9 @@ enum // base network speeds
 // as returned by get_network_version()
 enum
 {
-	_appletalk_ring_network_version = 9,
-	_ip_ring_network_version = 12,
-	_ip_star_network_version = 13,
+	_appletalk_ring_network_version = 10,
+	_ip_ring_network_version = 13,
+	_ip_star_network_version = 14,
 
 	kMinimumNetworkVersionForGracefulUnknownStreamPackets = 11
 };
@@ -85,6 +85,8 @@ typedef struct game_info
 	int16  difficulty_level;
 	bool   server_is_playing; // if false, then observing
 	bool   allow_mic;
+
+        int16 cheat_flags;
 	
 	// where the game takes place
 	int16  level_number;
@@ -235,4 +237,8 @@ void NetRemoveDistributionFunction(short type);
 
 short get_network_version();
 
+// disable "cheats"
+bool NetAllowCrosshair();
+bool NetAllowTunnelVision();
+bool NetAllowBehindview();
 #endif

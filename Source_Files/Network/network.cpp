@@ -2211,3 +2211,20 @@ NetAddrBlock *NetGetPlayerADSPAddress(
 	return &topology->players[player_index].dspAddress;
 }
 #endif
+
+bool NetAllowCrosshair() {
+  return (dynamic_world->player_count == 1 ||
+	  (dynamic_world->game_information.cheat_flags & _allow_crosshair));
+}
+
+bool NetAllowTunnelVision() {
+  return (dynamic_world->player_count == 1 ||
+	  dynamic_world->game_information.cheat_flags & _allow_tunnel_vision);
+}
+
+bool NetAllowBehindview() {
+  return (dynamic_world->player_count == 1 ||
+	  dynamic_world->game_information.cheat_flags & _allow_behindview);
+}
+
+

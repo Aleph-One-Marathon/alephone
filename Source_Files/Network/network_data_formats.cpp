@@ -42,6 +42,8 @@ netcpy(game_info_NET* dest, const game_info* src)
 	ValueToStream(S,src->difficulty_level);
 	*(S++) = src->server_is_playing ? 1 : 0;
 	*(S++) = src->allow_mic ? 1 : 0;
+	fprintf(stderr, "ValueToStream: cheat_flags = %i\n", src->cheat_flags);
+	ValueToStream(S,src->cheat_flags);
 	ValueToStream(S,src->level_number);
 	BytesToStream(S,src->level_name,sizeof(src->level_name));
 	ValueToStream(S,src->initial_updates_per_packet);
@@ -61,6 +63,8 @@ netcpy(game_info* dest, const game_info_NET* src)
 	StreamToValue(S,dest->difficulty_level);
 	dest->server_is_playing = *(S++) != 0;
 	dest->allow_mic = *(S++) != 0;
+	StreamToValue(S,dest->cheat_flags);
+	fprintf(stderr, "StreamToValue: cheat_flags = %i\n", dest->cheat_flags);
 	StreamToValue(S,dest->level_number);
 	StreamToBytes(S,dest->level_name,sizeof(dest->level_name));
 	StreamToValue(S,dest->initial_updates_per_packet);
