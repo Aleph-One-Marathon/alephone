@@ -193,7 +193,7 @@ void HUD_OGL_Class::SetClipPlane(int x, int y, int c_x, int c_y, int radius)
 	if (blip_dist <= 2.0)
 		return;
 	GLdouble normal_x = x / blip_dist, normal_y = y / blip_dist;
-	GLdouble tan_pt_x = c_x + normal_x * radius, tan_pt_y = c_y + normal_y * radius;
+	GLdouble tan_pt_x = c_x + normal_x * radius + 0.5, tan_pt_y = c_y + normal_y * radius + 0.5;
 
 	glEnable(GL_CLIP_PLANE0);
 
