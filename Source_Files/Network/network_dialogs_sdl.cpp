@@ -87,6 +87,8 @@ September 17, 2004 (jkvw):
 // LAN game-location services
 #include	"network_private.h"
 
+#include	<memory>
+
 
 
 
@@ -839,6 +841,8 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
  // Currently only the gatherer should call this one.
  
  // jkvw: The meaty bits here should be moved to shared code
+
+static MetaserverClient* sMetaserverClient = NULL;
  
 static void
 send_text(w_text_entry* te) {
@@ -848,12 +852,16 @@ send_text(w_text_entry* te) {
     if(strlen(te->get_text()) <= 0)
         return;
 
+	sMetaserverClient->sendChatMessage(te->get_text());
+	te->set_text("");
+
+#ifdef OLDSCHOOL_SEND
     dialog* d = te->get_owning_dialog();
     
     w_chat_history* ch = dynamic_cast<w_chat_history*>(d->get_widget_by_id(iCHAT_HISTORY));
     assert(ch != NULL);
-    
-    int netState = NetState();
+
+	int netState = NetState();
     
     if(netState != netUninitialized && netState != netJoining && netState != netDown
         && !(netState == netGathering && NetGetNumberOfPlayers() <= 1))
@@ -867,6 +875,7 @@ send_text(w_text_entry* te) {
     else {
         ch->append_chat_entry(NULL, "There is nobody in the game to hear you yet.");
     }
+#endif
 }
 
 // This is called when the user clicks on a found player to attempt to gather him in.
@@ -934,7 +943,9 @@ found_player(dialog* inDialog, prospective_joiner_info &player) {
 
 // This is a callback of sorts; the dialog will invoke it during its idle time.
 static void
-gather_processing_function(dialog* inDialog) {
+gather_processing_function(dialog* inDialog)
+{
+	GameAvailableMetaserverAnnouncer::pumpAll();
 
 	prospective_joiner_info player;
 
@@ -943,12 +954,41 @@ gather_processing_function(dialog* inDialog) {
 }
 
 
+class GatherDialogNotificationAdapter : public MetaserverClient::NotificationAdapter
+{
+public:
+	GatherDialogNotificationAdapter(w_chat_history& chatHistory)
+		: m_chatHistory(chatHistory)
+	{
+	}
+
+	void receivedChatMessage(const std::string& senderName, uint16 senderID, const std::string& message)
+	{
+		m_chatHistory.append_chat_entry(senderName.c_str(), 0xaaaaaaaa, 0xaaaaaaaa, message.c_str());
+	}
+
+	void receivedBroadcastMessage(const std::string& message)
+	{
+		receivedChatMessage("Metaserver", 0, message);
+	}
+
+	void playersInRoomChanged() {}
+	void gamesInRoomChanged() {}
+
+private:
+	w_chat_history&	m_chatHistory;
+
+	GatherDialogNotificationAdapter(const GatherDialogNotificationAdapter&);
+	GatherDialogNotificationAdapter& operator =(const GatherDialogNotificationAdapter&);
+};
+
+
 #ifndef NETWORK_TEST_POSTGAME_DIALOG // because that test code replaces the real gather box
 #ifndef NETWORK_TEST_MICROPHONE_LOCALLY // same deal
-bool run_network_gather_dialog()
+bool run_network_gather_dialog(MetaserverClient* metaserverClient)
 {
-	
-	// ZZZ: gather network game dialog
+	sMetaserverClient = metaserverClient;
+
 	dialog d;
 	
 	d.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
@@ -976,28 +1016,22 @@ bool run_network_gather_dialog()
 	players_w->start_displaying_actual_information();
 	players_w->update_display();
 
-#ifdef NETWORK_PREGAME_CHAT
-
-#ifdef	NETWORK_TWO_WAY_CHAT
-	w_chat_history* chat_history_w = new w_chat_history(600, 4);
-#else
-	// Signal gatherer that he won't be hearing anything back ;)
-	d.add(new w_static_text("Messages sent to other players"));
-	w_chat_history* chat_history_w = new w_chat_history(600, 3);
-#endif // NETWORK_TWO_WAY_CHAT
-
-	chat_history_w->set_identifier(iCHAT_HISTORY);
-	d.add(chat_history_w);
-	
-	w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
-	chatentry_w->set_identifier(iCHAT_ENTRY);
-	chatentry_w->set_enter_pressed_callback(send_text);
-	chatentry_w->set_alignment(widget::kAlignLeft);
-	chatentry_w->set_full_width();
-	d.add(chatentry_w);
-	
-	d.add(new w_spacer());
-#endif // NETWORK_PREGAME_CHAT
+	w_chat_history* chatHistory = NULL;
+	if (metaserverClient != NULL)
+	{
+		chatHistory = new w_chat_history(600, 4);
+		chatHistory->set_identifier(iCHAT_HISTORY);
+		d.add(chatHistory);
+		
+		w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
+		chatentry_w->set_identifier(iCHAT_ENTRY);
+		chatentry_w->set_enter_pressed_callback(send_text);
+		chatentry_w->set_alignment(widget::kAlignLeft);
+		chatentry_w->set_full_width();
+		d.add(chatentry_w);
+		
+		d.add(new w_spacer());
+	}
                     
 	// "Play" (OK) button starts off disabled.  It's enabled in the gather callback when a player is gathered (see above).
 	// This prevents trying to start a net game by yourself (which doesn't work at the moment, whether it ought to or not).
@@ -1011,6 +1045,14 @@ bool run_network_gather_dialog()
 	d.set_processing_function(gather_processing_function);
 	
 	sGathererMayStartGame= true;
+
+	auto_ptr<GatherDialogNotificationAdapter> notificationAdapter;
+	if (metaserverClient != NULL)
+		notificationAdapter.reset(new GatherDialogNotificationAdapter(*chatHistory));
+
+	auto_ptr<MetaserverClient::NotificationAdapterInstaller> notificationAdapterInstaller;
+	if (metaserverClient != NULL)
+		notificationAdapterInstaller.reset(new MetaserverClient::NotificationAdapterInstaller(notificationAdapter.get(), *metaserverClient));
 
 	return !(d.run());
 }

@@ -218,7 +218,7 @@ bool network_gather(bool inResumingGame)
 				if(advertiseOnMetaserver)
 					metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
 
-				gather_dialog_result = run_network_gather_dialog ();
+				gather_dialog_result = run_network_gather_dialog(metaserverAnnouncer.get() != NULL ? &metaserverAnnouncer->client() : NULL);
 				if (gathered_unacceptable_player)
 					gather_dialog_result = false;
 			} else {

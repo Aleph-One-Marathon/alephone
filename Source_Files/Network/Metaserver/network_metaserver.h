@@ -127,6 +127,31 @@ public:
                 virtual void receivedBroadcastMessage(const std::string& message) = 0;
         };
 
+		class NotificationAdapterInstaller
+		{
+		public:
+			NotificationAdapterInstaller(NotificationAdapter* adapter, MetaserverClient& metaserverClient)
+				: m_adapter(adapter), m_metaserverClient(metaserverClient)
+			{
+				m_previousAdapter = m_metaserverClient.notificationAdapter();
+				m_metaserverClient.associateNotificationAdapter(m_adapter);
+			}
+
+			~NotificationAdapterInstaller()
+			{
+				assert(m_metaserverClient.notificationAdapter() == m_adapter);
+				m_metaserverClient.associateNotificationAdapter(m_previousAdapter);
+			}
+
+		private:
+			NotificationAdapter*	m_previousAdapter;
+			NotificationAdapter*	m_adapter;
+			MetaserverClient&		m_metaserverClient;
+
+			NotificationAdapterInstaller(const NotificationAdapterInstaller&);
+			NotificationAdapterInstaller& operator =(const NotificationAdapterInstaller&);
+		};
+
         typedef std::vector<RoomDescription>					Rooms;
         typedef MetaserverMaintainedList<MetaserverPlayerInfo>			PlayersInRoom;
         typedef MetaserverMaintainedList<GameListMessage::GameListEntry>	GamesInRoom;

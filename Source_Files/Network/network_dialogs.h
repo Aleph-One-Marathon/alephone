@@ -362,7 +362,8 @@ extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 bool gather_dialog_player_search (prospective_joiner_info& player);
 bool gather_dialog_gathered_player (const prospective_joiner_info& player);
 // non-shared routines
-bool run_network_gather_dialog ();
+class MetaserverClient;
+bool run_network_gather_dialog (MetaserverClient* metaserverClient);
 // netgame setup dialog - unconverted routine called by network_gather()
 bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
 

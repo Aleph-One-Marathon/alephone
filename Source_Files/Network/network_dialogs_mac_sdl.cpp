@@ -188,7 +188,7 @@ void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
 
 #ifndef NETWORK_TEST_POSTGAME_DIALOG
 
-bool run_network_gather_dialog ()
+bool run_network_gather_dialog (MetaserverClient*)
 {
 	DialogPtr dialog;
 	Rect item_rectangle;

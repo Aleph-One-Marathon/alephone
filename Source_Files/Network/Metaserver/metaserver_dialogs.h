@@ -39,6 +39,7 @@ public:
 	~GameAvailableMetaserverAnnouncer();
 
 	void pump();
+	MetaserverClient& client() { return m_client; }
 
 	static void pumpAll();
 
