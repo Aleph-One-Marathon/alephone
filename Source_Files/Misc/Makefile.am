@@ -3,7 +3,7 @@
 noinst_LIBRARIES = libmisc.a
 
 if MAKE_WINDOWS
-THREAD_PRIORITY = thread_priority_sdl_dummy.cpp
+THREAD_PRIORITY = thread_priority_sdl_win32.cpp
 else
 THREAD_PRIORITY = thread_priority_sdl_posix.cpp
 endif

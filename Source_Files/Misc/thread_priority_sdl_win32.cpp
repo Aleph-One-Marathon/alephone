@@ -11,7 +11,7 @@
 
 #include    <windows.h>
 #include    <stdio.h>
-#include    <SDL_Thread.h>
+#include    <SDL_thread.h>
 
 static bool
 TryToReduceMainThreadPriority() {
