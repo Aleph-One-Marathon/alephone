@@ -20,6 +20,8 @@ enum { // All of our songs.
 	NUMBER_OF_SONGS
 };
 
+// All this is for the introduction/ending song file
+
 bool initialize_music_handler(FileSpecifier& SongFile);
 
 void queue_song(short song_index);

@@ -17,6 +17,10 @@ Mar 5, 2000 (Loren Petrich):
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Oct 12, 2000 (Loren Petrich):
+	Added Quicktime support; will use Quicktime for playback
+	whenever it is available
 */
 
 /*
@@ -31,6 +35,7 @@ Aug 12, 2000 (Loren Petrich):
 // no need for them in the PowerPC MacOS or anywhere else
 
 
+#include <Movies.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -38,6 +43,7 @@ Aug 12, 2000 (Loren Petrich):
 
 // #include "portable_files.h"
 #include "music.h"
+#include "shell.h"
 
 #include "song_definitions.h"
 
@@ -96,7 +102,23 @@ static struct song_definition *get_song_definition(
 /* ----------------- globals */
 // LP: no need for it to be a pointer
 // static struct music_data *music_state= NULL;
-music_data music_state;
+static music_data music_state;
+
+// Stuff for playing a soundtrack with Quicktime;
+// a NULL movie means don't play anything.
+// Doing fadeouts by having a current volume and a change rate
+// Need to save the introductory music file here
+static FileSpecifier IntroMusicFile;
+static FileSpecifier QTMusicFile;
+static Movie QTMusicMovie = NULL;
+static bool QTMMPlaying = false;
+static double MusicVolume = 0;				// 0 to 1
+static double MusicVolumeChange = 0;		// Change per tick [TickCount()]
+static long MostRecentUpdateTicks = 0;
+
+// Turned into a form more useful for QT
+inline short GetQTMusicVolume() {return short(double(0x100)*MusicVolume + 0.5);}
+
 
 /* ----------------- local prototypes */
 static void shutdown_music_handler(void);
@@ -104,12 +126,76 @@ static pascal void file_play_completion_routine(SndChannelPtr channel);
 static void allocate_music_channel(void);
 static short get_sound_volume(void);
 
+static void PlayMusic(FileSpecifier& SongFile);
+static void StartMusic();
+
 /* ----------------- code */
+
+// LP: Quicktime music player...
+
+void PlayMusic(FileSpecifier& SongFile)
+{
+	if (!machine_has_quicktime()) return;
+
+	if (QTMusicMovie)
+	{
+		if (SongFile == QTMusicFile)
+		{
+			// Don't need to rebuild the movie object; simply rewind and play again
+			GoToBeginningOfMovie(QTMusicMovie);
+			StartMusic();
+			return;
+		}
+		else
+		{
+			QTMusicFile = SongFile;
+			
+			// Get rid of the old one and have a fallback in case
+			// the new one is invalid
+			DisposeMovie(QTMusicMovie);
+			QTMusicMovie = NULL;
+		}
+	}
+	QTMMPlaying = false;
+	
+	// Create a new movie object
+	OSErr Err;
+	short RefNum;
+	short ResID = 0;	// Only use the first resource
+	Boolean WasChanged;
+	Err = OpenMovieFile(&SongFile.GetSpec(), &RefNum, fsRdPerm);
+	if (Err != noErr) return;
+	Err = NewMovieFromFile(&QTMusicMovie, RefNum, &ResID, NULL, newMovieActive, &WasChanged);
+	CloseMovieFile(RefNum);
+	if (Err != noErr) return;
+	
+	// Play!
+	StartMusic();
+}
+
+void StartMusic()
+{
+	MusicVolume = 1;				// Full blast
+	MusicVolumeChange = 0;			// Staying full blast
+	SetMovieVolume(QTMusicMovie,GetQTMusicVolume());
+	StartMovie(QTMusicMovie);
+	QTMMPlaying = true;
+	MostRecentUpdateTicks = TickCount();
+}
+
 
 /* If channel is null, we don't initialize */
 bool initialize_music_handler(FileSpecifier& SongFile)
 //	FileDesc *song_file)
 {
+	// LP: using Quicktime to play the movie if available
+	if (machine_has_quicktime())
+	{
+		// Will need to remember what introductory music file
+		IntroMusicFile = SongFile;
+		return true;
+	}
+
 	short song_file_refnum;
 	OSErr error;
 
@@ -172,6 +258,9 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 void free_music_channel(
 	void)
 {
+	// Who cares about this if QT is present?
+	if (machine_has_quicktime()) return;
+	
 	if (music_state.initialized && music_state.channel)
 	{
 		OSErr error;
@@ -185,6 +274,13 @@ void free_music_channel(
 void queue_song(
 	short song_index)
 {
+	// This routine plays only the introductory song
+	if (machine_has_quicktime())
+	{
+		PlayMusic(IntroMusicFile);
+		return;
+	}
+
 	if (music_state.initialized && get_sound_volume())
 	{
 		if (!music_state.channel)
@@ -221,6 +317,11 @@ void queue_song(
 void fade_out_music(
 	short duration)
 {
+	if (machine_has_quicktime())
+	{
+		MusicVolumeChange = - 1.0/duration;
+	}
+
 	if(music_playing())
 	{
 		music_state.fade_duration= duration;
@@ -236,6 +337,36 @@ void fade_out_music(
 void music_idle_proc(
 	void)
 {
+	// Quicktime: what could be easier?
+	if (machine_has_quicktime())
+	{
+		if (QTMusicMovie && QTMMPlaying)
+			if (IsMovieDone(QTMusicMovie))
+			{
+				// Automatically loop
+				GoToBeginningOfMovie(QTMusicMovie);
+				StartMusic();
+			}
+			else
+			{
+				// Adjust the volume
+				long CurrentTicks = TickCount();
+				MusicVolume += MusicVolumeChange*(CurrentTicks - MostRecentUpdateTicks);
+				MostRecentUpdateTicks = CurrentTicks;
+				
+				if (MusicVolume > 1) MusicVolume = 1;
+				else if (MusicVolume <= 0)
+				{
+					stop_music();
+					return;
+				}
+				
+				// Keep it going
+				MoviesTask(QTMusicMovie,0);
+			}
+		return;
+	}
+
 	if(music_state.initialized && music_state.state != _no_song_playing)
 	{
 		short ticks_elapsed= TickCount()-music_state.ticks_at_last_update;
@@ -339,6 +470,16 @@ void music_idle_proc(
 void stop_music(
 	void)
 {
+	if (machine_has_quicktime())
+	{
+		if (QTMusicMovie && QTMMPlaying)
+		{
+			StopMovie(QTMusicMovie);
+			QTMMPlaying = false;
+		}
+		return;
+	}
+	
 	if (music_state.initialized && music_state.state != _no_song_playing)
 	{
 		OSErr error;
@@ -352,9 +493,20 @@ void stop_music(
 	}
 }
 
-void pause_music(
-	bool pause)
+void pause_music(bool pause)
 {
+	if (machine_has_quicktime())
+	{
+		if (QTMusicMovie && QTMMPlaying)
+		{
+			if (pause)
+				StopMovie(QTMusicMovie);
+			else
+				StartMovie(QTMusicMovie);
+		}
+		return;
+	}
+	
 	if(music_playing())
 	{
 		bool pause_it= false;
@@ -386,9 +538,10 @@ void pause_music(
 	}
 }
 
-bool music_playing(
-	void)
+bool music_playing(void)
 {
+	if (machine_has_quicktime()) return QTMMPlaying;
+		
 	bool playing= false;
 	
 	if(music_state.initialized && music_state.state != _no_song_playing)
@@ -404,6 +557,8 @@ bool music_playing(
 static void shutdown_music_handler(
 	void)
 {
+	if (machine_has_quicktime()) return;
+	
 	if(music_state.initialized)
 	{
 		free_music_channel();
