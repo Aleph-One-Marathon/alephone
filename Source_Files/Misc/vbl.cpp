@@ -68,6 +68,7 @@ Aug 26, 2000 (Loren Petrich):
 #include "vbl.h"
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 #include "FileHandler.h"
+#include "Packing.h"
 
 #ifdef env68k
 #pragma segment input
@@ -133,6 +134,9 @@ static boolean pull_flags_from_recording(short count);
 static bool vblFSRead(OpenedFile& File, long *count, void *dest, bool& HitEOF);
 static void record_action_flags(short player_identifier, int32 *action_flags, short count);
 static short get_recording_queue_size(short which_queue);
+
+static uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, int Count);
+static uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, int Count);
 
 // #define DEBUG_REPLAY
 
@@ -410,15 +414,19 @@ static void record_action_flags(
 void save_recording_queue_chunk(
 	short player_index)
 {
-	long *location;
+	byte *location;
 	long last_flag, count, flag = 0;
 	short i, run_count, num_flags_saved, max_flags;
-	static long *buffer= NULL;
+	static byte *buffer= NULL;
 	ActionQueue *queue;
-
+	
+	// The data format is (run length (int16)) + (action flag (int32))
+	int DataSize = sizeof(int16) + sizeof(int32);
+	
 	if (buffer == NULL)
 	{
-		buffer = (long *)malloc((RECORD_CHUNK_SIZE * sizeof(long)) + RECORD_CHUNK_SIZE * sizeof(short));
+		buffer = new byte[RECORD_CHUNK_SIZE * DataSize];
+		// buffer = (long *)malloc((RECORD_CHUNK_SIZE * sizeof(long)) + RECORD_CHUNK_SIZE * sizeof(short));
 	}
 	
 	location= buffer;
@@ -439,10 +447,15 @@ void save_recording_queue_chunk(
 		
 		if (i && flag != last_flag)
 		{
+			ValueToStream(location,run_count);
+			ValueToStream(location,last_flag);
+			/*
 			*(short*)location = run_count;
 			location = (long *)((short*)location + 1);
 			*location++ = last_flag;
 			count += sizeof(short) + sizeof(long);
+			*/
+			count += DataSize;
 			num_flags_saved += run_count;
 			run_count = 1;
 		}
@@ -454,18 +467,30 @@ void save_recording_queue_chunk(
 	}
 	
 	// now save the final run
+	ValueToStream(location,run_count);
+	ValueToStream(location,last_flag);
+	/*
 	*(short*)location = run_count;
 	location = (long *)((short *)location + 1);
 	*location++ = last_flag;
 	count += sizeof(short) + sizeof(long);
+	*/
+	count += DataSize;
 	num_flags_saved += run_count;
 	
 	if (max_flags<RECORD_CHUNK_SIZE)
 	{
+		short end_indicator = END_OF_RECORDING_INDICATOR;
+		ValueToStream(location,end_indicator);
+		long end_flag = 0;
+		ValueToStream(location,end_flag);
+		/*
 		*(short*)location = END_OF_RECORDING_INDICATOR;
 		location = (long *)((short *)location + 1);
 		*location++ = 0;
 		count += sizeof(short) + sizeof(long);
+		*/
+		count += DataSize;
 		num_flags_saved += RECORD_CHUNK_SIZE-max_flags;
 	}
 	
@@ -516,7 +541,7 @@ static boolean pull_flags_from_recording(
 					queue_action_flags(player_index, queue->buffer+queue->read_index, 1);
 					INCREMENT_QUEUE_COUNTER(queue->read_index);
 				} else {
-dprintf("Dropping flag?");
+					dprintf("Dropping flag?");
 				}
 			}
 		}
@@ -616,14 +641,15 @@ boolean setup_for_replay_from_file(
 		replay.resource_data_size= 0l;
 		replay.film_resource_offset= NONE;
 		
-		FilmFile.ReadObject(replay.header);
+		byte Header[SIZEOF_recording_header];
+		FilmFile.Read(SIZEOF_recording_header,Header);
+		unpack_recording_header(Header,&replay.header,1);
 	
 		/* Set to the mapfile this replay came from.. */
 		if(use_map_file(replay.header.map_checksum))
 		{
 			replay.fsread_buffer= new char[DISK_CACHE_SIZE]; 
 			assert(replay.fsread_buffer);
-			if(!replay.fsread_buffer) alert_user(fatalError, strERRORS, outOfMemory, memory_error());
 			
 			replay.location_in_cache= NULL;
 			replay.bytes_in_cache= 0;
@@ -666,7 +692,9 @@ void start_recording(
 			replay.game_is_being_recorded= TRUE;
 	
 			// save a header containing information about the game.
-			FilmFile.WriteObject(replay.header);
+			byte Header[SIZEOF_recording_header];
+			pack_recording_header(Header,&replay.header,1);
+			FilmFile.Write(SIZEOF_recording_header,Header);
 		}
 	}
 }
@@ -690,7 +718,9 @@ void stop_recording(
 		
 		/* Rewrite the header, since it has the new length */
 		FilmFile.SetPosition(0);
-		assert(FilmFile.WriteObject(replay.header));
+		byte Header[SIZEOF_recording_header];
+		pack_recording_header(Header,&replay.header,1);
+		assert(FilmFile.Write(SIZEOF_recording_header,Header));
 		/*
 		set_fpos(replay.recording_file_refnum, 0l); 
 		count= sizeof(struct recording_header);
@@ -722,14 +752,14 @@ void rewind_recording(
 		FilmFile.SetPosition(sizeof(recording_header));
 		*/
 		// Alternative that does not use "SetLength", but instead creates and re-creates the file.
-		recording_header Header;
 		FilmFile.SetPosition(0);
-		FilmFile.ReadObject(Header);
+		byte Header[SIZEOF_recording_header];
+		FilmFile.Read(SIZEOF_recording_header,Header);
 		FilmFile.Close();
 		FilmFileSpec.Delete();
 		FilmFileSpec.Create(_typecode_film);
 		FilmFileSpec.Open(FilmFile,true);
-		FilmFile.WriteObject(Header);
+		FilmFile.Write(SIZEOF_recording_header,Header);
 		
 		replay.header.length= sizeof(struct recording_header);
 	}
@@ -986,4 +1016,87 @@ static void remove_input_controller(
 	replay.valid= FALSE;
 
 	return;
+}
+
+
+static void StreamToPlayerStart(uint8* &S, player_start_data& Object)
+{
+	StreamToValue(S,Object.team);
+	StreamToValue(S,Object.identifier);
+	StreamToValue(S,Object.color);
+	StreamToBytes(S,Object.name,MAXIMUM_PLAYER_START_NAME_LENGTH+2);
+}
+
+static void PlayerStartToStream(uint8* &S, player_start_data& Object)
+{
+	ValueToStream(S,Object.team);
+	ValueToStream(S,Object.identifier);
+	ValueToStream(S,Object.color);
+	BytesToStream(S,Object.name,MAXIMUM_PLAYER_START_NAME_LENGTH+2);
+}
+
+
+static void StreamToGameData(uint8* &S, game_data& Object)
+{
+	StreamToValue(S,Object.game_time_remaining);
+	StreamToValue(S,Object.game_type);
+	StreamToValue(S,Object.game_options);
+	StreamToValue(S,Object.kill_limit);
+	StreamToValue(S,Object.initial_random_seed);
+	StreamToValue(S,Object.difficulty_level);
+	StreamToList(S,Object.parameters,2);
+}
+
+static void GameDataToStream(uint8* &S, game_data& Object)
+{
+	ValueToStream(S,Object.game_time_remaining);
+	ValueToStream(S,Object.game_type);
+	ValueToStream(S,Object.game_options);
+	ValueToStream(S,Object.kill_limit);
+	ValueToStream(S,Object.initial_random_seed);
+	ValueToStream(S,Object.difficulty_level);
+	ListToStream(S,Object.parameters,2);
+}
+
+
+uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, int Count)
+{
+	uint8* S = Stream;
+	recording_header* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->length);
+		StreamToValue(S,ObjPtr->num_players);
+		StreamToValue(S,ObjPtr->level_number);
+		StreamToValue(S,ObjPtr->map_checksum);
+		StreamToValue(S,ObjPtr->version);
+		for (int m = 0; m < MAXIMUM_NUMBER_OF_PLAYERS; m++)
+			StreamToPlayerStart(S,ObjPtr->starts[m]);
+		StreamToGameData(S,ObjPtr->game_information);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_recording_header);
+	return S;
+}
+
+uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, int Count)
+{
+	uint8* S = Stream;
+	recording_header* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->length);
+		ValueToStream(S,ObjPtr->num_players);
+		ValueToStream(S,ObjPtr->level_number);
+		ValueToStream(S,ObjPtr->map_checksum);
+		ValueToStream(S,ObjPtr->version);
+		for (int m = 0; m < MAXIMUM_NUMBER_OF_PLAYERS; m++)
+			PlayerStartToStream(S,ObjPtr->starts[m]);
+		GameDataToStream(S,ObjPtr->game_information);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_recording_header);
+	return S;
 }
