@@ -18,6 +18,10 @@ Nov 5, 2000 (Loren Petrich):
 Feb 15, 2001 (Loren Petrich):
 	Added event flushing for saving, so that using "return" as the action key
 	does not cause unwanted saves.
+	
+Jun 13, 2001 (Loren Petrich):
+	The write dialogs are designed to be used with safe saves,
+	so they will not delete the previous files
 */
 
 #include <string.h>
@@ -619,8 +623,6 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 	ExtractSingleItem(&reply,&temp);
 	SetSpec(temp);
 	
-	if (reply.replacing) FSpDelete(&temp);
-	
 	} else {
 	
 	Str31 PasPrompt, PasDefaultName;
@@ -639,10 +641,7 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 	if (!Reply.sfGood) return false;
 	
 	SetSpec(Reply.sfFile);
-	
-	if (Reply.sfReplacing)
-		FSpDelete(&Spec);
-	
+		
 	}
 	
 	return true;
@@ -709,7 +708,7 @@ static bool confirm_save_choice(
 				if(item_hit==iOK) /* replace.. */
 				{
 					/* Want to delete it... */
-					err= FSpDelete(file);
+					// err= FSpDelete(file);
 					/* Pass it on through.. they won't bring up the replace now. */
 				} else {
 					/* They cancelled.. */
@@ -775,8 +774,6 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 	ExtractSingleItem(&reply,&temp);
 	SetSpec(temp);
 	
-	if (reply.replacing) FSpDelete(&temp);
-	
 	} else {
 	
 	Str31 PasPrompt, PasDefaultName;
@@ -808,10 +805,6 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 	if (!Reply.sfGood) return false;
 	
 	SetSpec(Reply.sfFile);
-	
-	if (Reply.sfReplacing)
-		FSpDelete(&Spec);
-	
 	}
 	
 	return true;
@@ -889,10 +882,18 @@ bool FileSpecifier::CopyContents(FileSpecifier& File)
 	// this code only copies the data fork
 	const int COPY_BUFFER_SIZE = (3*1024);
 	FSSpec *source = &File.Spec;
-	FSSpec *destination = &Spec;
+	FSSpec *ult_dest = &Spec;
+	
+	// Do a safe copy; keep the original if the copying had failed
+	FileSpecifier TempFile;
+	DirectorySpecifier TempFileDir;
+	File.ToDirectory(TempFileDir);
+	TempFile.FromDirectory(TempFileDir);
+	TempFile.SetName("savetemp.dat",NONE);
+	FSSpec *destination = &TempFile.GetSpec();
 	
 	FInfo info;
-
+	
 	Err= FSpGetFInfo(source, &info);
 	if(Err==noErr)
 	{
@@ -947,6 +948,13 @@ bool FileSpecifier::CopyContents(FileSpecifier& File)
 			if(Err != noErr) FSpDelete(destination);
 		}
 	}
+	
+	if (Err == noErr)
+	{
+		Exchange(TempFile);
+		TempFile.Delete();
+	}
+	
 	return (Err == noErr);
 }
 
