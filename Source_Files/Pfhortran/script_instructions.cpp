@@ -117,7 +117,7 @@ short roll_count;
 //float current_pitch;
 
 bool s_camera_Control;
-short old_size;
+short old_size = _640_320_HUD;
 void (*instruction_lookup[NUMBER_OF_INSTRUCTIONS])(script_instruction);
 
 
@@ -767,17 +767,42 @@ void s_Hide_Interface(script_instruction inst)
 	screen_mode_data *the_mode;
 	the_mode = get_screen_mode();
 	old_size = the_mode->size;
-	the_mode->size = _full_screen;
-	change_screen_mode(the_mode,true);
+	// LP: Modifying Mark Levin's patch to be more general
+	short new_size = GetSizeWithoutHUD(old_size);
+	if(the_mode->size != new_size)
+	{
+		the_mode->size = new_size;
+		change_screen_mode(the_mode,true);
+	}
+	/*
+	if(the_mode->size != _full_screen)
+	{
+		the_mode->size = _full_screen;
+		change_screen_mode(the_mode,true);
+	}
+	*/
 }
 
 void s_Show_Interface(script_instruction inst)
 {
 	screen_mode_data *the_mode;
 	the_mode = get_screen_mode();
-	the_mode->size =old_size;
-	change_screen_mode(the_mode,true);
-	draw_panels();
+	// LP: Modifying Mark Levin's patch to be more general
+	short the_size = the_mode->size;
+	if(the_size == GetSizeWithoutHUD(the_size))
+	{
+		the_mode->size = old_size;
+		change_screen_mode(the_mode,true);
+		draw_panels();
+	}
+	/*
+	if(the_mode->size == _full_screen)
+	{
+		the_mode->size = old_size;
+		change_screen_mode(the_mode,true);
+		draw_panels();
+	}
+	*/
 }
 
 void s_Set_Tag_State(script_instruction inst)
