@@ -25,6 +25,12 @@ Feb 1, 2003 (Woody Zenfell):
         to emulate missing SndPlayDoubleBuffer call (in Carbon, anyway).
         Using bigger blocks and bigger buffers in general, and SDL-format
         network audio (11025Hz 8-bit mono unsigned) instead of MACE 6:1.
+
+ May 28, 2003 (Gregory Smith):
+	Speex audio decompression
+
+ May 28, 2003 (Woody Zenfell):
+	Quieter static bursts in netmic audio playback
 */
 
 /*
@@ -45,6 +51,10 @@ Feb 1, 2003 (Woody Zenfell):
 
 #include "network_sound.h"
 
+#ifdef SPEEX
+#include "network_speex.h"
+#endif SPEEX
+
 #include "Logging.h"
 
 #ifdef env68k
@@ -59,6 +69,9 @@ Feb 1, 2003 (Woody Zenfell):
 // ZZZ: these used to be passed-in at open() time, now we'll just assume them.
 // This helps us present a consistent interface with the SDL speaker stuff.
 enum { kConnectionThreshhold = 2, kBlockSize = 1024 };
+
+// ZZZ: make the static blasts a little less annoying (higher numbers are quieter)
+enum { kStaticAmplitudeReduction = 2 };
 
 enum /* speaker states */
 {
@@ -176,6 +189,10 @@ OSErr open_network_speaker()
 			}
 		}
 	}
+        
+        #ifdef SPEEX
+        init_speex_decoder();
+        #endif
 
 	/* if something went wrong, zero the speaker definition (without freeing any of our memory
 		like we should) */
@@ -203,6 +220,10 @@ void close_network_speaker(
 		
 		speaker= (struct speaker_definition *) NULL;
 	}
+        
+        #ifdef SPEEX
+        destroy_speex_decoder();
+        #endif
 }
 
 /* can be called at interrupt time */
@@ -365,7 +386,7 @@ static void fill_buffer_with_static(
 	
 	while ((count-=1)>=0)
 	{
-		*buffer++= seed;
+		*buffer++= static_cast<byte>(seed) / kStaticAmplitudeReduction;
 		if (seed&1) seed= (seed>>1)^0xb400; else seed= seed>>1;
 	}
 	speaker->random_seed= seed;

@@ -40,6 +40,9 @@ Apr 10-22, 2003 (Woody Zenfell):
 
 May 22, 2003 (Woody Zenfell):
 	Support for preferences for multiple network game protocols; configurable local game port.
+
+ May 27, 2003 (Gregory Smith):
+	Preferences for speex netmic
  */
 
 /*
@@ -502,6 +505,9 @@ void write_preferences(
         WriteXML_CString(F, "  join_address=\"",network_preferences->join_address,256,"\"\n");
         fprintf(F,"  local_game_port=\"%hu\"\n",network_preferences->game_port);
 	fprintf(F,"  game_protocol=\"%s\"\n",sNetworkGameProtocolNames[network_preferences->game_protocol]);
+	fprintf(F,"  use_speex_netmic_encoder=\"%s\"\n", BoolString(network_preferences->use_speex_encoder));
+	fprintf(F,"  speex_encoder_quality=\"%hu\"\n", network_preferences->speex_encoder_quality);
+	fprintf(F,"  speex_encoder_complexity=\"%hu\"\n", network_preferences->speex_encoder_complexity);
 	fprintf(F,">\n");
 	WriteStarPreferences(F);
 	WriteRingPreferences(F);
@@ -694,6 +700,9 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->game_protocol= _network_game_protocol_default;
 	DefaultStarPreferences();
 	DefaultRingPreferences();
+	preferences->use_speex_encoder = true;
+	preferences->speex_encoder_quality = 2;
+	preferences->speex_encoder_complexity = 1;
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -1801,6 +1810,18 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else
 			return false;
+	}
+	else if (StringsEqual(Tag,"use_speex_netmic_encoder"))
+	{
+		return ReadBooleanValue(Value,network_preferences->use_speex_encoder);
+	}
+	else if (StringsEqual(Tag,"speex_encoder_quality"))
+	{
+		return ReadUInt16Value(Value,network_preferences->speex_encoder_quality);
+	}
+	else if (StringsEqual(Tag,"speex_encoder_complexity"))
+	{
+		return ReadUInt16Value(Value,network_preferences->speex_encoder_complexity);
 	}
         
 	UnrecognizedTag();

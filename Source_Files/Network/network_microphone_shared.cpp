@@ -28,6 +28,9 @@
  *  Utility/support routines for various platforms' network microphone implementations.
  *
  *  Created by woody Jan 31, 2003, largely from code originally in network_microphone_sdl_win32.cpp.
+ *
+ *  May 28, 2003 (Gregory Smith):
+ *	Speex audio compression
  */
 
 #include    "cseries.h"
@@ -36,6 +39,11 @@
 #include    "network_distribution_types.h"
 
 #include	<algorithm>	// for STL pair<> type
+
+#ifdef SPEEX
+#include "speex.h"
+#include "network_speex.h"
+#endif
 
 using namespace std;
 
@@ -137,7 +145,76 @@ copy_8_bit_mono_samples(uint8* outStorage, uint8* inStorage, int32 inCount) {
     }
 }
 
+#ifdef SPEEX
+int32 copy_and_speex_encode(uint8* outStorage, void* inStorage, int32 inCount, int32 inAmountOfNetworkStorage) {
 
+    static float storedFrame[160];
+    static int storedSamples = 0;
+    int bytesWritten = 0;
+    float frame[160];
+    // first, use the old stored samples
+    while (inCount + storedSamples >= 160) {
+        // build a frame	
+        for (int i = 0; i < 160; i++) {
+            if (storedSamples > 0) {
+                frame[i] = storedFrame[i];
+                storedSamples--;
+            } else {
+                if (s16Bit) {
+                    if (sStereo) {
+                        // downmix to mono
+                        frame[i] = (((int16 *) inStorage)[0] + ((int16 *) inStorage)[1]) / 2.0;
+                    } else {
+                        frame[i] = *((int16  *) inStorage);
+                    }
+                    (int16 *) inStorage += sCaptureStride;
+                } else {
+                    if (sStereo) {
+                        frame[i] = ((int16) ((((uint8 *)inStorage)[0] + ((uint8 *)inStorage)[1]) / 2) - 128) << 8;
+                    } else {
+                        frame[i] = ((int16) (*((uint8 *)inStorage) - 128)) << 8;            
+                    }
+                    (uint8 *) inStorage += sCaptureStride;
+                }
+                inCount--;
+            }
+        }
+
+        // encode the frame
+        speex_bits_reset(&gEncoderBits);
+        speex_encode(gEncoderState, frame, &gEncoderBits);
+        uint8 nbytes = (speex_bits_write(&gEncoderBits, outStorage + 1, 200));
+        bytesWritten += nbytes + 1;
+        // first put the size of this frame in storage
+        *(outStorage) = nbytes;
+        outStorage += nbytes + 1;
+    }
+    // fill the storedFrame for next time
+    assert(storedSamples == 0);
+    while (inCount > 0) {
+        if (s16Bit) {
+            if (sStereo) {
+                // downmix to mono
+                storedFrame[storedSamples] = (((int16 *) inStorage)[0] + ((int16 *) inStorage)[1]) / 2.0;
+            } else {
+                storedFrame[storedSamples] = *((int16  *) inStorage);
+            }
+            (int16 *) inStorage += sCaptureStride;
+        } else {
+            if (sStereo) {
+                storedFrame[storedSamples] = ((int16) ((((uint8 *)inStorage)[0] + ((uint8 *)inStorage)[1]) / 2) - 128) << 8;
+            } else {
+                storedFrame[storedSamples] = ((int16) (*((uint8 *)inStorage) - 128)) << 8;            
+            }
+            (uint8 *) inStorage += sCaptureStride;
+        }
+        inCount--;
+        storedSamples++;
+    }
+   
+    return bytesWritten;
+}
+#endif SPEEX
 
 // Returns pair (used network storage bytes, used capture storage bytes)
 static pair<int32, int32>
@@ -147,30 +224,38 @@ copy_data_in_capture_format_to_network_format(uint8* inNetworkStorage, int inAmo
     int32	theNetworkAudioBytesCaptured		= inAmountOfCaptureStorage / sCaptureBytesPerNetworkAudioByte;
     int32	theNetworkAudioBytesToCopy		= MIN(inAmountOfNetworkStorage, theNetworkAudioBytesCaptured);
     int32	theNumberOfNetworkAudioSamplesToCopy	= theNetworkAudioBytesToCopy / kNetworkAudioBytesPerSample;
-
-    // Actually perform the copying (mixing stereo->mono, 16->8 bit conversion, downsampling, etc.)
-    if(s16Bit) {
-        if(sStereo)
-            copy_16_bit_stereo_samples(inNetworkStorage, (int16*) inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy);
-        else
-            copy_16_bit_mono_samples(inNetworkStorage, (int16*) inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy);
+    
+#ifdef SPEEX
+    if (network_preferences->use_speex_encoder) {
+        theNumberOfNetworkAudioSamplesToCopy = copy_and_speex_encode(inNetworkStorage, inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy, inAmountOfNetworkStorage);
+        return pair<int32, int32>(theNumberOfNetworkAudioSamplesToCopy, theNetworkAudioBytesToCopy * sCaptureBytesPerNetworkAudioByte);
+    } else 
+#endif
+    {
+        // Actually perform the copying (mixing stereo->mono, 16->8 bit conversion, downsampling, etc.)
+        if(s16Bit) {
+            if(sStereo)
+                copy_16_bit_stereo_samples(inNetworkStorage, (int16*) inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy);
+            else
+                copy_16_bit_mono_samples(inNetworkStorage, (int16*) inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy);
+        }
+        else {
+            if(sStereo)
+                copy_8_bit_stereo_samples(inNetworkStorage, (uint8*) inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy);
+            else
+                copy_8_bit_mono_samples(inNetworkStorage, (uint8*) inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy);
+        }
+    
+        // Tell the caller how many bytes of each were used.
+        return pair<int32, int32>(theNumberOfNetworkAudioSamplesToCopy, theNetworkAudioBytesToCopy * sCaptureBytesPerNetworkAudioByte);
     }
-    else {
-        if(sStereo)
-            copy_8_bit_stereo_samples(inNetworkStorage, (uint8*) inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy);
-        else
-            copy_8_bit_mono_samples(inNetworkStorage, (uint8*) inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy);
-    }
-
-    // Tell the caller how many bytes of each were used.
-    return pair<int32, int32>(theNumberOfNetworkAudioSamplesToCopy, theNetworkAudioBytesToCopy * sCaptureBytesPerNetworkAudioByte);
 }
-
 
 
 static void
 send_audio_data(void* inData, short inSize) {
 #ifdef MICROPHONE_LOCAL_LOOPBACK
+#include "network_sound.h"
     received_network_audio_proc(inData, inSize, 0);
 #else
     NetDistributeInformation(kNewNetworkAudioDistributionTypeID, inData, inSize, false);
@@ -191,6 +276,11 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     static  uint8           sOutgoingPacketBuffer[kNetworkAudioDataBytesPerPacket + SIZEOF_network_audio_header];
 
     network_audio_header    theHeader;
+#ifdef SPEEX
+    if (network_preferences->use_speex_encoder) {
+        theHeader.mReserved = 1;
+    } else
+#endif
     theHeader.mReserved = 0;
     theHeader.mFlags    = 0;
 

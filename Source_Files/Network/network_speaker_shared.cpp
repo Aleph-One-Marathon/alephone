@@ -28,6 +28,9 @@
  *  Network speaker-related code usable by multiple platforms.
  *
  *  Created by woody Feb 1, 2003, largely from stuff in network_speaker_sdl.cpp.
+ *
+ *  May 28, 2003 (Gregory Smith):
+ *	Speex audio decompression 
  */
 
 #include "cseries.h"
@@ -35,6 +38,11 @@
 #include "network_data_formats.h"
 #include "network_audio_shared.h"
 #include "player.h"
+
+#ifdef SPEEX
+#include "speex.h"
+#include "network_speex.h"
+#endif
 
 // This is what the network distribution system calls when audio is received.
 void
@@ -44,12 +52,52 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
     network_audio_header    theHeader;
 
     netcpy(&theHeader, theHeader_NET);
+    
+    byte* theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
 
-    // For now, this should always be 0
-    if(theHeader.mReserved == 0) {
-        if(!(theHeader.mFlags & kNetworkAudioForTeammatesOnlyFlag) || (local_player->team == get_player_data(player_index)->team)) {
-            byte* theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
+    // 0 if using uncompressed audio, 1 if using speex
+    if(!(theHeader.mFlags & kNetworkAudioForTeammatesOnlyFlag) || (local_player->team == get_player_data(player_index)->team)) {
+        if (theHeader.mReserved == 0) {
             queue_network_speaker_data(theSoundData, buffer_size - sizeof(network_audio_header_NET));
+        } 
+#ifdef SPEEX
+        else if (theHeader.mReserved == 1) {
+
+            // decode the data
+            float frame[160];
+            char cbits[200];
+            int nbytes;
+            int i;
+            byte *newBuffer = NULL;
+            int totalBytes = 0;
+            
+            // allocate buffer space
+            int numFrames = 0;
+            while (theSoundData < buffer + buffer_size) {
+                nbytes = *theSoundData++;
+                theSoundData += nbytes;
+                numFrames++;
+            }
+            newBuffer = (byte *) malloc (sizeof(char) * 160 * numFrames);
+            theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
+            
+            while (theSoundData < buffer + buffer_size) {
+                // copy a frame into the decoder
+                nbytes = *theSoundData++;
+                for (i = 0; i < nbytes; i++) {
+                    cbits[i] = *theSoundData++;
+                }
+                speex_bits_read_from(&gDecoderBits, cbits, nbytes);
+                speex_decode(gDecoderState, &gDecoderBits, frame);
+                for (i = 0; i < 160; i++) {
+                    int16 framedata = frame[i];
+                    newBuffer[totalBytes++] = 128 + (framedata >> 8);
+                }
+            }
+            
+            queue_network_speaker_data(newBuffer, 160 * numFrames);
+            free(newBuffer);
         }
+#endif
     }
 }

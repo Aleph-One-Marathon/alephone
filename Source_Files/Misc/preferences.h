@@ -108,6 +108,9 @@ struct network_preferences_data
         char join_address[256];
         uint16 game_port;	// TCP and UDP port number used for game traffic (not player-location traffic)
 	uint16 game_protocol; // _network_game_protocol_star, etc.
+	bool use_speex_encoder;
+	uint16 speex_encoder_quality; // 1-10
+	uint16 speex_encoder_complexity; //1-10
 };
 
 struct player_preferences_data

@@ -27,6 +27,9 @@ Feb 1, 2003 (Woody Zenfell):
         Resurrected for A1.  Reworked to be more tolerant of different supported
         capture rates and formats, thanks to network_microphone_shared.cpp.
         Made interface match that of the SDL network microphone stuff.
+
+ May 28, 2003 (Gregory Smith):
+	Speex audio compression
 */
 
 #include <string.h>
@@ -54,6 +57,10 @@ Feb 1, 2003 (Woody Zenfell):
 #include "interface.h"
 #include "network_data_formats.h"
 #include "network_microphone_shared.h"
+
+#ifdef SPEEX
+#include "network_speex.h"
+#endif SPEEX
 
 #ifdef env68k
 #pragma segment sound
@@ -154,6 +161,12 @@ OSErr open_network_microphone()
 			initialization= true;
 		}
 	}
+        
+        #ifdef SPEEX
+        if (network_preferences->use_speex_encoder) {
+            init_speex_encoder();
+        }
+        #endif SPEEX
 
 	if (!net_microphone_installed)
 	{
@@ -228,7 +241,7 @@ OSErr open_network_microphone()
 void close_network_microphone(void)
 {
 	OSErr err;
-
+        
 	if(net_microphone_installed)
 	{
 		/* Is the completion routine called immediately, or can the application quit before */
@@ -250,6 +263,13 @@ void close_network_microphone(void)
 
 		net_microphone_installed= false;
 	}
+        
+        #ifdef SPEEX
+        if (network_preferences->use_speex_encoder) {
+            destroy_speex_encoder();
+        }
+        #endif SPEEX
+
 }
 
 void set_network_microphone_state(bool triggered)
