@@ -57,14 +57,15 @@ Oct 14, 2000 (Loren Petrich):
 enum {
 	ditlGRAPHICS= 4001,
 	iCHOOSE_MONITOR=1,
-	// LP change: finally eliminted this option
+	// LP change: finally eliminated this option
 	// iDRAW_EVERY_OTHER_LINE,
 	iHARDWARE_ACCELERATION,
 	iNUMBER_OF_COLORS,
 	iWINDOW_SIZE,
 	iDETAIL,
 	iBRIGHTNESS,
-	iOPENGL_OPTIONS	// LP addition: OpenGL-options button
+	iOPENGL_OPTIONS, // LP addition: OpenGL-options button
+	iFILL_SCREEN // LP addition: fill-the-screen button
 };
 
 enum {
@@ -339,6 +340,10 @@ static void setup_graphics_dialog(
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iHARDWARE_ACCELERATION, first_item), 
 		active, (preferences->screen_mode.acceleration == _valkyrie_acceleration));
 	*/
+	// LP: added full-screen option; will not activate it until it's in good working order
+	active = CONTROL_INACTIVE;
+	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iFILL_SCREEN, first_item), 
+		active, (preferences->screen_mode.fullscreen));
 		
 	return;
 }
@@ -417,6 +422,11 @@ static void hit_graphics_item(
 		
 		case iOPENGL_OPTIONS:
 			OGL_ConfigureDialog(preferences->OGL_Configure);
+			break;
+		
+		case iFILL_SCREEN:
+			// LP change: added full-screen support here
+			preferences->screen_mode.fullscreen = !preferences->screen_mode.fullscreen;
 			break;
 			
 		default:
