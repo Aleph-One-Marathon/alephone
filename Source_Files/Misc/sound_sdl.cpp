@@ -544,6 +544,7 @@ void play_sound_resource(LoadedResource &rsrc)
 		uint16 cmd = SDL_ReadBE16(p);
 		uint16 param1 = SDL_ReadBE16(p);
 		uint32 param2 = SDL_ReadBE32(p);
+		//printf("cmd %04x %04x %08x\n", cmd, param1, param2);
 
 		if (cmd == 0x8051) {
 
@@ -691,6 +692,7 @@ static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
 	// Parse sound header
 	c->bytes_per_frame = 1;
 	if (header_type == 0x00) {			// Standard sound header
+		//printf("standard sound header\n");
 		c->data = data + 22;
 		c->sixteen_bit = c->stereo = false;
 		c->length = SDL_ReadBE32(p);
@@ -699,6 +701,7 @@ static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
 		c->loop = c->data + loop_start;
 		c->loop_length = SDL_ReadBE32(p) - loop_start;
 	} else if (header_type == 0xff) {	// Extended sound header
+		//printf("extended sound header\n");
 		c->data = data + 64;
 		c->stereo = SDL_ReadBE32(p) == 2;
 		if (c->stereo)
@@ -711,9 +714,10 @@ static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
 		c->length = SDL_ReadBE32(p) * c->bytes_per_frame;
 		SDL_RWseek(p, 22, SEEK_CUR);
 		c->sixteen_bit = SDL_ReadBE16(p) == 16;
-		if (c->sixteen_bit)
+		if (c->sixteen_bit) {
 			c->bytes_per_frame *= 2;
-		c->length *= c->bytes_per_frame;
+			c->length *= 2;
+		}
 	} else {							// Unknown header type
 		fprintf(stderr, "Unknown sound header type %02x\n", header_type);
 		c->active = false;
@@ -724,6 +728,8 @@ static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
 	// Correct loop count
 	if (c->loop_length < 4)
 		c->loop_length = 0;
+
+	//printf(" data %p, length %d, loop %p, loop_length %d, rate %08x, stereo %d, 16 bit %d\n", c->data, c->length, c->loop, c->loop_length, c->rate, c->stereo, c->sixteen_bit);
 
 	// Reset sample counter
 	c->counter = 0;

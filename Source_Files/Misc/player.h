@@ -367,8 +367,8 @@ void update_players(void); /* assumes ¶t==1 tick */
 
 void walk_player_list(void);
 
-void queue_action_flags(short player_index, int32 *action_flags, short count);
-long dequeue_action_flags(short player_index);
+void queue_action_flags(short player_index, uint32 *action_flags, short count);
+uint32 dequeue_action_flags(short player_index);
 short get_action_queue_size(short player_index);
 
 void damage_player(short monster_index, short aggressor_index, short aggressor_type,
@@ -410,7 +410,7 @@ bool try_and_subtract_player_item(short player_index, short item_type);
 /* ---------- prototypes/PHYSICS.C */
 
 void initialize_player_physics_variables(short player_index);
-void update_player_physics_variables(short player_index, long action_flags);
+void update_player_physics_variables(short player_index, uint32 action_flags);
 
 void adjust_player_for_polygon_height_change(short monster_index, short polygon_index, world_distance new_floor_height,
 	world_distance new_ceiling_height);
@@ -418,7 +418,7 @@ void accelerate_player(short monster_index, world_distance vertical_velocity, an
 
 void kill_player_physics_variables(short player_index);
 
-long mask_in_absolute_positioning_information(long action_flags, fixed yaw, fixed pitch, fixed velocity);
+uint32 mask_in_absolute_positioning_information(uint32 action_flags, fixed yaw, fixed pitch, fixed velocity);
 void get_absolute_pitch_range(fixed *minimum, fixed *maximum);
 
 void instantiate_absolute_positioning_information(short player_index, fixed facing, fixed elevation);

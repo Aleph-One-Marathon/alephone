@@ -37,7 +37,7 @@ struct preferences_info {
 };
 
 /* This will need to be rewritten! */
-#if defined(mac) || defined(SDL)
+#if defined(mac)
 /*----------------- code from macintosh_wad_prefs.c */
 #define LOCAL_TO_GLOBAL_DITL(id, first) (id+first)
 #define GLOBAL_TO_LOCAL_DITL(id, first) (id-first)

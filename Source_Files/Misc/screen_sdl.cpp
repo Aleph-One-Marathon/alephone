@@ -496,8 +496,9 @@ void render_screen(short ticks_elapsed)
 		case _no_acceleration:
 			world_pixels_structure->width = world_view->screen_width;
 			world_pixels_structure->height = world_view->screen_height;
-			world_pixels_structure->flags = 0;
 			world_pixels_structure->bytes_per_row = world_pixels->pitch;
+			world_pixels_structure->flags = 0;
+			world_pixels_structure->bit_depth = bit_depth;
 			world_pixels_structure->row_addresses[0] = (pixel8 *)world_pixels->pixels;
 
 			//!! set world_pixels to VoidColor to avoid smearing?

@@ -398,14 +398,14 @@ typedef void (*add_ambient_sound_source_proc_ptr)(struct ambient_sound_data *amb
 
 struct sound_manager_parameters
 {
-	short channel_count; /* >=0 */
-	short volume; /* [0,NUMBER_OF_SOUND_VOLUME_LEVELS) */
+	int16 channel_count; /* >=0 */
+	int16 volume; /* [0,NUMBER_OF_SOUND_VOLUME_LEVELS) */
 	uint16 flags; /* stereo, dynamic_tracking, etc. */
 
-	long unused_long;
+	int32 unused_long;
 	fixed pitch;
 	
-	short unused[9];
+	int16 unused[9];
 };
 
 struct dynamic_sound_data

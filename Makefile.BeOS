@@ -37,8 +37,7 @@ NW=Source_Files/Network
 PF=Source_Files/Pfhortran
 SRCS=\
   $(CS)/byte_swapping.cpp $(CS)/csalerts_sdl.cpp $(CS)/cscluts_sdl.cpp \
-  $(CS)/csdialogs_sdl.cpp $(CS)/csfiles_beos.cpp $(CS)/csmisc_sdl.cpp \
-  $(CS)/csstrings_sdl.cpp \
+  $(CS)/csfiles_beos.cpp $(CS)/csmisc_sdl.cpp $(CS)/csstrings_sdl.cpp \
   \
   $(EP)/hashtable.c $(EP)/xmlparse.c $(EP)/xmlrole.c $(EP)/xmltok.c \
   \
@@ -168,7 +167,6 @@ install: $(TARGET)
 	./mkinstalldirs $$dest; \
 	./mkinstalldirs $$dest/MML; \
 	cp $(TARGET) $$dest/AlephOne; \
-	cp data/Resources $$dest; \
 	cp data/Fonts $$dest; \
 	cp data/Pfhortran_Language_Definition $$dest; \
 	cp data/*.mml $$dest/MML; \

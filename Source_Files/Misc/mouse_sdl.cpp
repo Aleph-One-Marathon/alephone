@@ -101,7 +101,7 @@ void mouse_idle(short type)
  *  Return mouse state
  */
 
-void test_mouse(short type, long *flags, fixed *delta_yaw, fixed *delta_pitch, fixed *delta_velocity)
+void test_mouse(short type, uint32 *flags, fixed *delta_yaw, fixed *delta_pitch, fixed *delta_velocity)
 {
 	if (mouse_active) {
 		uint8 buttons = SDL_GetMouseState(NULL, NULL);

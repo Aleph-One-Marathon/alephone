@@ -105,7 +105,7 @@ static bool load_collection(short collection_index, bool strip)
 	int32 size = SDL_ReadBE32(p);
 
 	// Allocate memory for collection
-	int extra_length = 1024 + high_level_shape_count * 4 + low_level_shape_count * 4 + bitmap_count * 4;
+	int extra_length = 1024 + high_level_shape_count * 4 + low_level_shape_count * 4 + bitmap_count * 2048;
 	void *c = malloc(src_length + extra_length);
 	if (c == NULL)
 		return false;
@@ -246,6 +246,8 @@ static bool load_collection(short collection_index, bool strip)
 	SDL_RWread(p, t, sizeof(uint32), bitmap_count);
 	byte_swap_memory(t, _4byte, bitmap_count);
 	q += bitmap_count * sizeof(uint32);
+	if (dst_offset & 7)	// Align to 64-bit boundary
+		q += 8 - (dst_offset & 7);
 
 	for (int i=0; i<bitmap_count; i++) {
 
@@ -284,8 +286,8 @@ static bool load_collection(short collection_index, bool strip)
 			SDL_RWread(p, q, d->bytes_per_row, rows);
 			q += rows * d->bytes_per_row;
 		}
-		if (dst_offset & 3)	// Align to 32-bit boundary
-			q += 4 - (dst_offset & 3);
+		if (dst_offset & 7)	// Align to 64-bit boundary
+			q += 8 - (dst_offset & 7);
 	}
 
 	// Set pointer to collection in collection header

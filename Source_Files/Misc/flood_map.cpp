@@ -100,7 +100,7 @@ short flood_map(
 		
 		node_count= 0;
 		last_node_index_expanded= NONE;
-		add_node(NONE, first_polygon_index, 0, 0, (flood_mode==_flagged_breadth_first) ? *((long*)caller_data) : 0);
+		add_node(NONE, first_polygon_index, 0, 0, (flood_mode==_flagged_breadth_first) ? *((int32*)caller_data) : 0);
 	}
 	
 	switch (flood_mode)
@@ -185,7 +185,7 @@ short flood_map(
 		}
 		
 		polygon_index= node->polygon_index;
-		if (flood_mode==_flagged_breadth_first) *((long*)caller_data)= node->user_flags;
+		if (flood_mode==_flagged_breadth_first) *((int32*)caller_data)= node->user_flags;
 	}
 	else
 	{

@@ -72,7 +72,7 @@ void enter_mouse(
 
 void test_mouse(
 	short type,
-	long *action_flags,
+	uint32 *action_flags,
 	fixed *delta_yaw,
 	fixed *delta_pitch,
 	fixed *delta_velocity)

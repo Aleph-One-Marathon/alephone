@@ -264,7 +264,7 @@ static void lower_weapon(short player_index, short weapon_index);
 static void raise_weapon(short player_index, short weapon_index);
 static bool check_reload(short player_index, short which_trigger);
 static short get_active_trigger_count_and_states(short player_index,
-	short weapon_index, long action_flags, short *first_trigger, bool *triggers_down);
+	short weapon_index, uint32 action_flags, short *first_trigger, bool *triggers_down);
 static bool dual_function_secondary_has_control(short player_index);
 static void calculate_ticks_from_shapes(void);
 static void update_sequence(short player_index, short which_trigger);
@@ -274,7 +274,7 @@ static bool get_weapon_data_type_for_count(short player_index, short count, shor
 static void update_player_ammo_count(short player_index);
 static bool player_has_valid_weapon(short player_index);
 static void idle_weapon(short player_index);
-static void test_raise_double_weapon(short player_index, long *action_flags);
+static void test_raise_double_weapon(short player_index, uint32 *action_flags);
 static void modify_position_for_two_weapons(short player_index, short count, fixed *width, fixed *height);
 static void change_to_desired_weapon(short player_index);
 static void destroy_current_weapon(short player_index);
@@ -635,7 +635,7 @@ void process_new_item_for_reloading(
 /* Update the given player's weapons */
 void update_player_weapons(
 	short player_index, 
-	long action_flags)
+	uint32 action_flags)
 {
 	update_shell_casings(player_index);
 	
@@ -2922,7 +2922,7 @@ static void play_weapon_sound(
 static short get_active_trigger_count_and_states(
 	short player_index,
 	short weapon_index,
-	long action_flags,
+	uint32 action_flags,
 	short *first_trigger,
 	bool *triggers_down)
 {
@@ -3626,7 +3626,7 @@ static void idle_weapon(
 /* We are requesting to raise the second pistol for a twofisted class... */
 static void test_raise_double_weapon(
 	short player_index,
-	long *action_flags)
+	uint32 *action_flags)
 {
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 	struct player_data *player= get_player_data(player_index);

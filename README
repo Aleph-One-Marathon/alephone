@@ -12,13 +12,19 @@ See the file "COPYING" that is included in the distribution for details.
 SYSTEM REQUIREMENTS
 -------------------
 
-Aleph One/SDL has so far only been developed and tested on Linux/i386,
-FreeBSD 4.x/i386 and BeOS/x86 R5. It may not work on other operating systems
-or on architectures other than i386, PowerPC and 680x0 because there are
-still some portablilty problems with the code (mainly data alignment
-problems and assumptions that sizeof(long) = sizeof(void *) = 4, which are
-not yet completely removed). You are, however, invited to test or fix it to
-run on other systems.
+Aleph One/SDL runs on all Unix systems supported by SDL (Linux, FreeBSD,
+Solaris, IRIX) and on BeOS. It will currently not run on Win32 and MacOS.
+
+Successfully tested systems include:
+ - Linux/i386
+ - Linux/alpha
+ - FreeBSD/i386
+ - Solaris/sparc
+ - BeOS/x86
+
+To compile Aleph One/SDL, you need a pretty up-to-date C++ compiler. Using
+gcc >= 2.95 should give the best results. Users of pre-ISO C++ compilers
+need not apply.
 
 
 PREREQUISITES
@@ -66,10 +72,10 @@ BeOS:
    $ make -f Makefile.BeOS install
 
   This will create a new directory "AlephOne" in your "home" directory that
-  contains the "AlephOne" application, the "Fonts", "Resources" and
-  "Pfhortran_Language_Definition" data files, and an "MML" directory. You
-  can move the "AlephOne" directory anywhere you like as long as the
-  application is kept together with the data files.
+  contains the "AlephOne" application, the "Pfhortran_Language_Definition"
+  and "Fonts" data files, and an "MML" directory. You can move the "AlephOne"
+  directory anywhere you like as long as the application is kept together
+  with the data files.
 
 To play Aleph One, you will also need Marathon graphics, sound and map
 files. Unfortunately, Bungie has not released these files to the public, so
@@ -103,9 +109,9 @@ fork"). Aleph One/SDL needs these files:
  "Shapes" (data fork)
  "Sounds" (data fork)
 
-Aleph One also needs the files "Fonts" and "Pfhortran_Language_Definition"
-and "Resources", but these are included with the Aleph One/SDL distribution
-and installed by "make install". Here's how to copy these files from a Mac
+Aleph One also needs the files "Fonts" and "Pfhortran_Language_Definition",
+but these are included with the Aleph One/SDL distribution and installed by
+"make install". Here's how to copy the missing data files from a Mac
 Marathon CD under Linux:
 
  1. Mount the CD with the HFS file system (you will probably have to be
@@ -467,7 +473,6 @@ And a list of known bugs:
  - Snapshots (F9) don't work when OpenGL is active
  - darken_world_window() doesn't work when OpenGL is active
  - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown
- - "Checkpoint" map displays in terminals don't show circle shapes
  - Clicking on buttons in the "Save game" etc. dialog boxes will cause a shot
    to be fired when the dialog box closes; the workaround is to use the
    Return key instead

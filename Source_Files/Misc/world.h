@@ -113,25 +113,25 @@ typedef struct fixed_vector3d fixed_vector3d;
 
 struct long_point2d
 {
-	long x, y;
+	int32 x, y;
 };
 typedef struct long_point2d long_point2d;
 
 struct long_point3d
 {
-	long x, y, z;
+	int32 x, y, z;
 };
 typedef struct long_point3d long_point3d;
 
 struct long_vector2d
 {
-	long i, j;
+	int32 i, j;
 };
 typedef struct long_vector2d long_vector2d;
 
 struct long_vector3d
 {
-	long i, j, k;
+	int32 i, j, k;
 };
 typedef struct long_vector3d long_vector3d;
 
@@ -175,7 +175,7 @@ world_point3d *transform_point3d(world_point3d *point, world_point3d *origin, an
 
 /* angle is in [0,NUMBER_OF_ANGLES), or, [0,2¹) */
 // LP change: made this long-distance friendly
-angle arctangent(long x, long y);
+angle arctangent(int32 x, int32 y);
 // angle arctangent(world_distance x, world_distance y);
 
 void set_random_seed(uint16 seed);
@@ -188,7 +188,7 @@ world_distance guess_distance2d(world_point2d *p0, world_point2d *p1);
 world_distance distance3d(world_point3d *p0, world_point3d *p1);
 world_distance distance2d(world_point2d *p0, world_point2d *p1); /* calls isqrt() */
 
-long isqrt(register unsigned long x);
+int32 isqrt(register uint32 x);
 
 // LP additions: kludges for doing long-distance calculation
 // by storing the upper digits in the upper byte of a "flags" value.

@@ -76,10 +76,10 @@ void TEXTURE_HORIZONTAL_POLYGON_LINES(
 		register PEL *shading_table= (PEL *)data->shading_table;
 		register PEL *write= (PEL *) screen->row_addresses[y0] + x0;
 		register pixel8 *base_address= texture->row_addresses[0];
-		register unsigned long source_x= data->source_x;
-		register unsigned long source_y= data->source_y;
-		register unsigned long source_dx= data->source_dx;
-		register unsigned long source_dy= data->source_dy;
+		register uint32 source_x= data->source_x;
+		register uint32 source_y= data->source_y;
+		register uint32 source_dx= data->source_dx;
+		register uint32 source_dy= data->source_dy;
 		register short count= x1-x0;
 		
 		while ((count-= 1)>=0)
@@ -122,8 +122,8 @@ void LANDSCAPE_HORIZONTAL_POLYGON_LINES(
 		register PEL *shading_table= (PEL *)data->shading_table;
 		register PEL *write= (PEL *)screen->row_addresses[y0] + x0;
 		register pixel8 *read= texture->row_addresses[data->source_y];
-		register unsigned long source_x= data->source_x;
-		register unsigned long source_dx= data->source_dx;
+		register uint32 source_x= data->source_x;
+		register uint32 source_dx= data->source_dx;
 		register short count= x1-x0;
 		
 		while ((count-= 1)>=0)
@@ -163,8 +163,8 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 		if (line_count<4 || (x&3) || aborted)
 		{
 			int y0= *y0_table++, y1= *y1_table++;
-			unsigned long texture_y= line->texture_y;
-			unsigned long texture_dy= line->texture_dy;
+			uint32 texture_y= line->texture_y;
+			uint32 texture_dy= line->texture_dy;
 			PEL *write, *shading_table;
 			pixel8 *read;
 
@@ -186,19 +186,19 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 		}
 		else
 		{
-			unsigned long texture_y0= line[0].texture_y, texture_dy0= line[0].texture_dy;
+			uint32 texture_y0= line[0].texture_y, texture_dy0= line[0].texture_dy;
 			pixel8 *read0= line[0].texture;
 			PEL *shading_table0= (PEL *)line[0].shading_table;
 			
-			unsigned long texture_y1= line[1].texture_y, texture_dy1= line[1].texture_dy;
+			uint32 texture_y1= line[1].texture_y, texture_dy1= line[1].texture_dy;
 			pixel8 *read1= line[1].texture;
 			PEL *shading_table1= (PEL *)line[1].shading_table;
 			
-			unsigned long texture_y2= line[2].texture_y, texture_dy2= line[2].texture_dy;
+			uint32 texture_y2= line[2].texture_y, texture_dy2= line[2].texture_dy;
 			pixel8 *read2= line[2].texture;
 			PEL *shading_table2= (PEL *)line[2].shading_table;
 			
-			unsigned long texture_y3= line[3].texture_y, texture_dy3= line[3].texture_dy;
+			uint32 texture_y3= line[3].texture_y, texture_dy3= line[3].texture_dy;
 			pixel8 *read3= line[3].texture;
 			PEL *shading_table3= (PEL *)line[3].shading_table;
 			
@@ -345,8 +345,8 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 		if (line_count<4 || (x&3) || aborted)
 		{
 			int y0= *y0_table++, y1= *y1_table++;
-			unsigned long texture_y= line->texture_y;
-			unsigned long texture_dy= line->texture_dy;
+			uint32 texture_y= line->texture_y;
+			uint32 texture_dy= line->texture_dy;
 			PEL *write, *shading_table;
 			pixel8 *read;
 
@@ -370,19 +370,19 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 		}
 		else
 		{
-			unsigned long texture_y0= line[0].texture_y, texture_dy0= line[0].texture_dy;
+			uint32 texture_y0= line[0].texture_y, texture_dy0= line[0].texture_dy;
 			pixel8 *read0= line[0].texture;
 			PEL *shading_table0= (PEL *)line[0].shading_table;
 			
-			unsigned long texture_y1= line[1].texture_y, texture_dy1= line[1].texture_dy;
+			uint32 texture_y1= line[1].texture_y, texture_dy1= line[1].texture_dy;
 			pixel8 *read1= line[1].texture;
 			PEL *shading_table1= (PEL *)line[1].shading_table;
 			
-			unsigned long texture_y2= line[2].texture_y, texture_dy2= line[2].texture_dy;
+			uint32 texture_y2= line[2].texture_y, texture_dy2= line[2].texture_dy;
 			pixel8 *read2= line[2].texture;
 			PEL *shading_table2= (PEL *)line[2].shading_table;
 			
-			unsigned long texture_y3= line[3].texture_y, texture_dy3= line[3].texture_dy;
+			uint32 texture_y3= line[3].texture_y, texture_dy3= line[3].texture_dy;
 			pixel8 *read3= line[3].texture;
 			PEL *shading_table3= (PEL *)line[3].shading_table;
 			

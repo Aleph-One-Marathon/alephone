@@ -74,7 +74,7 @@ void handle_preferences(void)
 
 	// Create top-level dialog
 	dialog d;
-	d.add(new w_pict(8000));
+	d.add(new w_static_text("PREFERENCES", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
 	d.add(new w_button("PLAYER", player_dialog, &d));
 	d.add(new w_button("GRAPHICS", graphics_dialog, &d));
@@ -522,7 +522,7 @@ static void keyboard_dialog(void *arg)
 
 	// Create dialog
 	dialog d;
-	d.add(new w_pict(8001));
+	d.add(new w_static_text("CONFIGURE KEYBOARD", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
 	for (int i=0; i<NUM_KEYS; i++) {
 		key_w[i] = new w_key(action_name[i], SDLKey(input_preferences->keycodes[i]));

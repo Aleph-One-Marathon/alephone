@@ -197,11 +197,11 @@ void move_replay(
 	return;
 }
 
-long parse_keymap(
+uint32 parse_keymap(
 	void)
 {
 	short i;
-	long flags= 0;
+	uint32 flags= 0;
 	KeyMap key_map;
 	struct key_definition *key= current_key_definitions;
 	struct special_flag_data *special= special_flags;
@@ -350,7 +350,7 @@ static OSErr copy_file(
 }
 
 bool setup_replay_from_random_resource(
-	unsigned long map_checksum)
+	uint32 map_checksum)
 {
 	short number_of_films;
 	static short index_of_last_film_played= 0;
@@ -524,7 +524,7 @@ static void write_flags(
 }
 
 static void debug_stream_of_flags(
-	long action_flag,
+	uint32 action_flag,
 	short player_index)
 {
 	if(stream_refnum != NONE)

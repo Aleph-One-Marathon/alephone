@@ -50,9 +50,9 @@ Jul 1, 2000 (Loren Petrich):
 
 /* ---------- globals */
 
-short *cosine_table;
-short *sine_table;
-static long *tangent_table;
+int16 *cosine_table;
+int16 *sine_table;
+static int32 *tangent_table;
 
 static uint16 random_seed= 0x1;
 static uint16 local_random_seed= 0x1;
@@ -127,8 +127,8 @@ world_point2d *rotate_point2d(
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	// LP change: lengthening the values for more precise calculations
-	temp.i= long(point->x)-long(origin->x);
-	temp.j= long(point->y)-long(origin->y);
+	temp.i= int32(point->x)-int32(origin->x);
+	temp.j= int32(point->y)-int32(origin->y);
 	// temp.x= point->x-origin->x;
 	// temp.y= point->y-origin->y;
 	
@@ -161,8 +161,8 @@ world_point2d *transform_point2d(
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	// LP change: lengthening the values for more precise calculations
-	temp.i= long(point->x)-long(origin->x);
-	temp.j= long(point->y)-long(origin->y);
+	temp.i= int32(point->x)-int32(origin->x);
+	temp.j= int32(point->y)-int32(origin->y);
 	// temp.x= point->x-origin->x;
 	// temp.y= point->y-origin->y;
 	
@@ -186,9 +186,9 @@ world_point3d *transform_point3d(
 	long_vector3d temporary;
 	// world_point3d temporary;
 	
-	temporary.i= long(point->x)-long(origin->x);
-	temporary.j= long(point->y)-long(origin->y);
-	temporary.k= long(point->z)-long(origin->z);
+	temporary.i= int32(point->x)-int32(origin->x);
+	temporary.j= int32(point->y)-int32(origin->y);
+	temporary.k= int32(point->z)-int32(origin->z);
 	// temporary.x= point->x-origin->x;
 	// temporary.y= point->y-origin->y;
 	// temporary.z= point->z-origin->z;
@@ -232,9 +232,9 @@ void build_trig_tables(
 	double two_pi= 8.0*atan(1.0);
 	double theta;
 
-	sine_table= (short *) malloc(sizeof(short)*NUMBER_OF_ANGLES);
-	cosine_table= (short *) malloc(sizeof(short)*NUMBER_OF_ANGLES);
-	tangent_table= (long *) malloc(sizeof(long)*NUMBER_OF_ANGLES);
+	sine_table= (int16 *) malloc(sizeof(int16)*NUMBER_OF_ANGLES);
+	cosine_table= (int16 *) malloc(sizeof(int16)*NUMBER_OF_ANGLES);
+	tangent_table= (int32 *) malloc(sizeof(int32)*NUMBER_OF_ANGLES);
 	assert(sine_table&&cosine_table&&tangent_table);
 	
 	for (i=0;i<NUMBER_OF_ANGLES;++i)
@@ -260,7 +260,7 @@ void build_trig_tables(
 			/* we always take -°, even though the limit is ±°, depending on which side you
 				approach it from.  this is because of the direction we traverse the circle
 				looking for matches during arctan. */
-			tangent_table[i]= LONG_MIN;
+			tangent_table[i]= INT32_MIN;
 		}
 	}
 
@@ -271,17 +271,17 @@ void build_trig_tables(
 // LP change: made this long-distance friendly
 //
 angle arctangent(
-	long x, // world_distance x,
-	long y) // world_distance y)
+	int32 x, // world_distance x,
+	int32 y) // world_distance y)
 {
-	long tangent;
-	register long last_difference, new_difference;
+	int32 tangent;
+	register int32 last_difference, new_difference;
 	angle search_arc, theta;
 	
 	// LP change: reworked everything in here
 	
 	// Intermediate transformed values
-	long xtfm = x, ytfm = y;
+	int32 xtfm = x, ytfm = y;
 	
 	// Initial angle:
 	theta = 0;
@@ -297,7 +297,7 @@ angle arctangent(
 	// Reduce 4th quadrant to 1st quadrant
 	if (ytfm < 0)
 	{
-		long temp = ytfm;
+		int32 temp = ytfm;
 		ytfm = xtfm;
 		xtfm = - temp;
 		theta += THREE_QUARTER_CIRCLE;
@@ -309,7 +309,7 @@ angle arctangent(
 	{
 		// Choosing the second octant instead of the first one..
 		other_octant = true;
-		long temp = ytfm;
+		int32 temp = ytfm;
 		ytfm = xtfm;
 		xtfm = temp;
 	}
@@ -320,8 +320,8 @@ angle arctangent(
 	
 	// Find the search endpoints and test them:
 	angle dtheta, dth0 = 0, dth1 = EIGHTH_CIRCLE;
-	long tan0 = tangent_table[dth0];
-	long tan1 = tangent_table[dth1];
+	int32 tan0 = tangent_table[dth0];
+	int32 tan1 = tangent_table[dth1];
 	if (tangent <= tan0) dtheta = dth0;
 	else if (tangent >= tan1) dtheta = dth1;
 	else
@@ -333,7 +333,7 @@ angle arctangent(
 			// Divide the interval in half
 			angle dthnew = (dth0 + dth1) >> 1;
 			// Where's the point?
-			long tannew = tangent_table[dthnew];
+			int32 tannew = tangent_table[dthnew];
 			if (tangent > tannew)
 			{
 				dth0 = dthnew;
@@ -464,9 +464,9 @@ world_distance guess_distance2d(
 	world_point2d *p0,
 	world_point2d *p1)
 {
-	long dx= (long)p0->x - p1->x;
-	long dy= (long)p0->y - p1->y;
-	long distance;
+	int32 dx= (int32)p0->x - p1->x;
+	int32 dy= (int32)p0->y - p1->y;
+	int32 distance;
 	
 	if (dx<0) dx= -dx;
 	if (dy<0) dy= -dy;
@@ -479,10 +479,10 @@ world_distance distance3d(
 	world_point3d *p0,
 	world_point3d *p1)
 {
-	long dx= (long)p0->x - p1->x;
-	long dy= (long)p0->y - p1->y;
-	long dz= (long)p0->z - p1->z;
-	long distance= isqrt(dx*dx + dy*dy + dz*dz);
+	int32 dx= (int32)p0->x - p1->x;
+	int32 dy= (int32)p0->y - p1->y;
+	int32 dz= (int32)p0->z - p1->z;
+	int32 distance= isqrt(dx*dx + dy*dy + dz*dz);
 	
 	return distance>INT16_MAX ? INT16_MAX : distance;
 }
@@ -493,9 +493,9 @@ world_distance distance2d(
 {
 	// LP change: lengthening the values for more precise calculations;
 	// code cribbed from the previous function
-	long dx= (long)p0->x - p1->x;
-	long dy= (long)p0->y - p1->y;
-	long distance= isqrt(dx*dx + dy*dy);
+	int32 dx= (int32)p0->x - p1->x;
+	int32 dy= (int32)p0->y - p1->y;
+	int32 distance= isqrt(dx*dx + dy*dy);
 	
 	return distance>INT16_MAX ? INT16_MAX : distance;
 	// return isqrt((p0->x-p1->x)*(p0->x-p1->x)+(p0->y-p1->y)*(p0->y-p1->y));
@@ -594,10 +594,10 @@ world_distance distance2d(
  *              r++;
  */
 
-long isqrt(
-	register unsigned long x)
+int32 isqrt(
+	register uint32 x)
 {
-	register unsigned long r, nr, m;
+	register uint32 r, nr, m;
 
 	r= 0;
 	m= 0x40000000;
@@ -657,8 +657,8 @@ void long_to_overflow_short_2d(long_vector2d& LVec, world_point2d& WVec, uint16&
 void overflow_short_to_long_2d(world_point2d& WVec, uint16& flags, long_vector2d& LVec)
 {
 	// Move lower values
-	LVec.i = long(WVec.x) & 0x0000ffff;
-	LVec.j = long(WVec.y) & 0x0000ffff;
+	LVec.i = int32(WVec.x) & 0x0000ffff;
+	LVec.j = int32(WVec.y) & 0x0000ffff;
 	
 	// Extract upper digits
 	uint16 xupper = (flags >> 12) & 0x000f;
@@ -669,8 +669,8 @@ void overflow_short_to_long_2d(world_point2d& WVec, uint16& flags, long_vector2d
 	if (yupper & 0x0008) yupper |= 0xfff0;
 	
 	// Put them into place
-	LVec.i |= long(xupper) << 16;
-	LVec.j |= long(yupper) << 16;
+	LVec.i |= int32(xupper) << 16;
+	LVec.j |= int32(yupper) << 16;
 }
 
 
@@ -690,8 +690,8 @@ world_point2d *transform_overflow_point2d(
 	assert(cosine_table[0]==TRIG_MAGNITUDE);
 	
 	// LP change: lengthening the values for more precise calculations
-	temp.i= long(point->x)-long(origin->x);
-	temp.j= long(point->y)-long(origin->y);
+	temp.i= int32(point->x)-int32(origin->x);
+	temp.j= int32(point->y)-int32(origin->y);
 	// temp.x= point->x-origin->x;
 	// temp.y= point->y-origin->y;
 		

@@ -320,7 +320,7 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 		struct polygon_definition textured_polygon;
 		flagged_world_point2d vertices[MAXIMUM_VERTICES_PER_WORLD_POLYGON];
 		world_distance adjusted_height= surface->height-view->origin.z;
-		long transformed_height= adjusted_height*view->world_to_screen_y;
+		int32 transformed_height= adjusted_height*view->world_to_screen_y;
 		short vertex_count;
 		short i;
 	
@@ -361,7 +361,7 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 					case 0:
 						// LP change: making it long-distance friendly
 						{
-						long screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
+						int32 screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 						screen->x= PIN(screen_x, 0, view->screen_width);
 						}
 						/*
@@ -383,7 +383,7 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 					case 0:
 						// LP change: making it long-distance friendly
 						{
-						long screen_y= view->half_screen_height - transformed_height/world->x + view->dtanpitch;
+						int32 screen_y= view->half_screen_height - transformed_height/world->x + view->dtanpitch;
 						screen->y= PIN(screen_y, 0, view->screen_height);
 						}
 						/*
@@ -525,7 +525,7 @@ void RenderRasterizerClass::render_node_side(
 						case 0:
 							// LP change: making it long-distance friendly
 							{
-							long screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
+							int32 screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
 							screen->x= PIN(screen_x, 0, view->screen_width);
 							}
 							/*
@@ -547,7 +547,7 @@ void RenderRasterizerClass::render_node_side(
 						case 0:
 							// LP change: making it long-distance friendly
 							{
-							long screen_y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
+							int32 screen_y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
 							screen->y= PIN(screen_y, 0, view->screen_height);
 							}
 							/*
@@ -578,7 +578,7 @@ void RenderRasterizerClass::render_node_side(
 				textured_polygon.ambient_shade= get_light_intensity(surface->lightsource_index) + surface->ambient_delta;
 				textured_polygon.ambient_shade= PIN(textured_polygon.ambient_shade, 0, FIXED_ONE);
 				textured_polygon.vertex_count= vertex_count;
-				instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, view->tick_count + (long)window, false);
+				instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, view->tick_count + (int32)window, false);
 				if (view->shading_mode==_shading_infravision) textured_polygon.flags|= _SHADELESS_BIT;
 				
 				/* and, finally, map it */
@@ -673,7 +673,7 @@ short RenderRasterizerClass::xy_clip_horizontal_polygon(
 		{
 			// LP change:
 			CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(line->i)*vertices[vertex_index].y - CROSSPROD_TYPE(line->j)*vertices[vertex_index].x;
-			// long cross_product= line->i*vertices[vertex_index].y - line->j*vertices[vertex_index].x;
+			// int32 cross_product= line->i*vertices[vertex_index].y - line->j*vertices[vertex_index].x;
 			
 			switch (SGN(cross_product))
 			{
@@ -851,14 +851,14 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 	flagged_world_point2d *local_p1= swap ? p0 : p1;
 	world_distance dx= local_p1->x - local_p0->x;
 	world_distance dy= local_p1->y - local_p0->y;
-	long numerator= line->j*local_p0->x - line->i*local_p0->y;
-	long denominator= line->i*dy - line->j*dx;
+	int32 numerator= line->j*local_p0->x - line->i*local_p0->y;
+	int32 denominator= line->i*dy - line->j*dx;
 	short shift_count= FIXED_FRACTIONAL_BITS;
 	fixed t;
 
 	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWÕs PPCC
-		didnÕt seem to like (LONG_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
-	while (numerator<=(long)0x3fffffff && numerator>=(long)0xc0000000 && shift_count--) numerator<<= 1;
+		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
+	while (numerator<=(int32)0x3fffffff && numerator>=(int32)0xc0000000 && shift_count--) numerator<<= 1;
 	if (shift_count>0) denominator>>= shift_count;
 	t= numerator/denominator;
 
@@ -882,11 +882,11 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 {
 	// LP change:
 	CROSSPROD_TYPE heighti= CROSSPROD_TYPE(line->i)*height;
-	// long heighti= line->i*height;
+	// int32 heighti= line->i*height;
 	
 #ifdef QUICKDRAW_DEBUG
 	debug_flagged_points(vertices, vertex_count);
-	debug_x_line(line->j ? (line->i*height)/line->j : (height<0 ? LONG_MIN : LONG_MAX));
+	debug_x_line(line->j ? (line->i*height)/line->j : (height<0 ? INT32_MIN : INT32_MAX));
 #endif
 //	dprintf("clipping %p (#%d vertices) to vector %x,%x", vertices, vertex_count, line->i, line->j);
 	
@@ -901,7 +901,7 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 		{
 			// LP change:
 			CROSSPROD_TYPE cross_product= heighti - CROSSPROD_TYPE(line->j)*vertices[vertex_index].x;
-			// long cross_product= heighti - line->j*vertices[vertex_index].x;
+			// int32 cross_product= heighti - line->j*vertices[vertex_index].x;
 
 			if (cross_product<0) /* inside (i.e., will be clipped) */
 			{
@@ -1054,7 +1054,7 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 
 #ifdef QUICKDRAW_DEBUG
 	debug_flagged_points(vertices, vertex_count);
-	debug_x_line(line->j ? (line->i*height)/line->j : (height<0 ? LONG_MIN : LONG_MAX));
+	debug_x_line(line->j ? (line->i*height)/line->j : (height<0 ? INT32_MIN : INT32_MAX));
 #endif
 //	dprintf("result == %p (#%d vertices)", vertices, vertex_count);
 
@@ -1076,14 +1076,14 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 	flagged_world_point2d *local_p1= swap ? p0 : p1;
 	world_distance dx= local_p1->x - local_p0->x;
 	world_distance dy= local_p1->y - local_p0->y;
-	long numerator= line->j*local_p0->x - line->i*height;
-	long denominator= - line->j*dx;
+	int32 numerator= line->j*local_p0->x - line->i*height;
+	int32 denominator= - line->j*dx;
 	short shift_count= FIXED_FRACTIONAL_BITS;
 	fixed t;
 
 	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWÕs PPCC
-		didnÕt seem to like (LONG_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
-	while (numerator<=(long)0x3fffffff && numerator>=(long)0xc0000000 && shift_count--) numerator<<= 1;
+		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
+	while (numerator<=(int32)0x3fffffff && numerator>=(int32)0xc0000000 && shift_count--) numerator<<= 1;
 	if (shift_count>0) denominator>>= shift_count;
 	t= numerator/denominator;
 
@@ -1116,8 +1116,8 @@ short RenderRasterizerClass::xy_clip_line(
 		CROSSPROD_TYPE cross_product0= CROSSPROD_TYPE(line->i)*posts[0].y - CROSSPROD_TYPE(line->j)*posts[0].x;
 		CROSSPROD_TYPE cross_product1= CROSSPROD_TYPE(line->i)*posts[1].y - CROSSPROD_TYPE(line->j)*posts[1].x;
 		/*
-		long cross_product0= line->i*posts[0].y - line->j*posts[0].x;
-		long cross_product1= line->i*posts[1].y - line->j*posts[1].x;
+		int32 cross_product0= line->i*posts[0].y - line->j*posts[0].x;
+		int32 cross_product1= line->i*posts[1].y - line->j*posts[1].x;
 		*/
 		
 		if (cross_product0<0)
@@ -1175,7 +1175,7 @@ short RenderRasterizerClass::xz_clip_vertical_polygon(
 		{	
 			// LP change:
 			CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(line->i)*vertices[vertex_index].z - CROSSPROD_TYPE(line->j)*vertices[vertex_index].x;
-			// long cross_product= line->i*vertices[vertex_index].z - line->j*vertices[vertex_index].x;
+			// int32 cross_product= line->i*vertices[vertex_index].z - line->j*vertices[vertex_index].x;
 			
 			switch (SGN(cross_product))
 			{
@@ -1351,14 +1351,14 @@ void RenderRasterizerClass::xz_clip_flagged_world_points(
 	world_distance dx= local_p1->x - local_p0->x;
 	world_distance dy= local_p1->y - local_p0->y;
 	world_distance dz= local_p1->z - local_p0->z;
-	long numerator= line->j*local_p0->x - line->i*local_p0->z;
-	long denominator= line->i*dz - line->j*dx;
+	int32 numerator= line->j*local_p0->x - line->i*local_p0->z;
+	int32 denominator= line->i*dz - line->j*dx;
 	short shift_count= FIXED_FRACTIONAL_BITS;
 	fixed t;
 
 	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWÕs PPCC
-		didnÕt seem to like (LONG_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
-	while (numerator<=(long)0x3fffffff && numerator>=(long)0xc0000000 && shift_count--) numerator<<= 1;
+		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
+	while (numerator<=(int32)0x3fffffff && numerator>=(int32)0xc0000000 && shift_count--) numerator<<= 1;
 	if (shift_count>0) denominator>>= shift_count;
 	t= numerator/denominator;
 

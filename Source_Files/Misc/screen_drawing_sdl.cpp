@@ -48,11 +48,19 @@ typedef map<id_and_size_t, sdl_font_info *> font_list_t;
 static font_list_t font_list;				// List of all loaded fonts
 
 static struct interface_font_info {
-	TextSpec font[NUMBER_OF_INTERFACE_FONTS];
-	const sdl_font_info *info[NUMBER_OF_INTERFACE_FONTS];
-	int height[NUMBER_OF_INTERFACE_FONTS];
-	int line_spacing[NUMBER_OF_INTERFACE_FONTS];
-} interface_fonts;
+	TextSpec spec;
+	const sdl_font_info *font;
+	int height;
+	int line_spacing;
+} interface_fonts[NUMBER_OF_INTERFACE_FONTS] = {
+	{{kFontIDMonaco, styleBold, 9}},
+	{{kFontIDMonaco, styleBold, 9}},
+	{{kFontIDMonaco, styleBold, 9}},
+	{{kFontIDMonaco, styleNormal, 9}},
+	{{kFontIDCourier, styleNormal, 12}},
+	{{kFontIDCourier, styleBold, 14}},
+	{{kFontIDMonaco, styleNormal, 9}}
+};
 
 bool draw_clip_rect_active = false;			// Flag: clipping rect active
 screen_rectangle draw_clip_rect;			// Current clipping rectangle
@@ -83,25 +91,10 @@ void initialize_screen_drawing(void)
 	open_res_file(fonts);
 
 	// Init fonts
-	LoadedResource rsrc;
-	if (get_resource(FOUR_CHARS_TO_INT('f', 'i', 'n', 'f'), 128, rsrc)) {
-		SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), rsrc.GetLength());
-		assert(p);
-		int count = SDL_ReadBE16(p);
-		if (count > NUMBER_OF_INTERFACE_FONTS)
-			count = NUMBER_OF_INTERFACE_FONTS;
-
-		for (int i=0; i<NUMBER_OF_INTERFACE_FONTS; i++) {
-			interface_fonts.font[i].font = SDL_ReadBE16(p);
-			interface_fonts.font[i].style = SDL_ReadBE16(p);
-			interface_fonts.font[i].size = SDL_ReadBE16(p);
-			//printf(" font ID %d, size %d, style %d\n", interface_fonts.font[i].font, interface_fonts.font[i].size, interface_fonts.font[i].style);
-			interface_fonts.info[i] = load_font(interface_fonts.font[i]);
-			interface_fonts.height[i] = _get_font_height(interface_fonts.info[i]);
-			interface_fonts.line_spacing[i] = _get_font_line_spacing(interface_fonts.info[i]);
-		}
-
-		SDL_RWclose(p);
+	for (int i=0; i<NUMBER_OF_INTERFACE_FONTS; i++) {
+		interface_fonts[i].font = load_font(interface_fonts[i].spec);
+		interface_fonts[i].height = _get_font_height(interface_fonts[i].font);
+		interface_fonts[i].line_spacing = _get_font_line_spacing(interface_fonts[i].font);
 	}
 }
 
@@ -394,8 +387,8 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 
 	// Find font information
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
-	uint16 style = interface_fonts.font[font_id].style;
-	const sdl_font_info *font = interface_fonts.info[font_id];
+	uint16 style = interface_fonts[font_id].spec.style;
+	const sdl_font_info *font = interface_fonts[font_id].font;
 	if (font == NULL)
 		return;
 
@@ -429,7 +422,7 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 			memcpy(remaining_text_to_draw, text_to_draw + last_non_printing_character + 1, strlen(text_to_draw + last_non_printing_character + 1) + 1);
 	
 			new_destination = *destination;
-			new_destination.top += interface_fonts.line_spacing[font_id];
+			new_destination.top += interface_fonts[font_id].line_spacing;
 			_draw_screen_text(remaining_text_to_draw, &new_destination, flags, font_id, text_color);
 	
 			// Now truncate our text to draw
@@ -453,7 +446,7 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 		x = destination->left;
 
 	// Vertical positioning
-	int t_height = interface_fonts.height[font_id];
+	int t_height = interface_fonts[font_id].height;
 	if (flags & _center_vertical) {
 		if (t_height > RECTANGLE_HEIGHT(destination))
 			y = destination->top;
@@ -575,13 +568,13 @@ const sdl_font_info *load_font(const TextSpec &spec)
 
 TextSpec *_get_font_spec(short font_id)
 {
-	return interface_fonts.font + font_id;
+	return &interface_fonts[font_id].spec;
 }
 
 short _get_font_line_height(short font_id)
 {
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
-	return interface_fonts.line_spacing[font_id];
+	return interface_fonts[font_id].line_spacing;
 }
 
 static int _get_font_height(const sdl_font_info *info)
@@ -613,8 +606,8 @@ short _text_width(const char *text, short font_id)
 {
 	// Find font information
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
-	uint16 style = interface_fonts.font[font_id].style;
-	const sdl_font_info *font = interface_fonts.info[font_id];
+	uint16 style = interface_fonts[font_id].spec.style;
+	const sdl_font_info *font = interface_fonts[font_id].font;
 	if (font == NULL)
 		return 0;
 

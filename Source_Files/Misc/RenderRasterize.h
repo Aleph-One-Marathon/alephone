@@ -28,7 +28,7 @@
 struct flagged_world_point2d /* for floors */
 {
 	// LP change: made this more long-distance friendly
-	long x, y;
+	int32 x, y;
 	// world_distance x, y;
 	uint16 flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
 };
@@ -36,7 +36,7 @@ struct flagged_world_point2d /* for floors */
 struct flagged_world_point3d /* for ceilings */
 {
 	// LP change: made this more long-distance friendly
-	long x, y;
+	int32 x, y;
 	world_distance z;
 	// world_distance x, y, z;
 	uint16 flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */

@@ -1,5 +1,17 @@
 Change log of the SDL version of Aleph One
 
+September 12, 2000
+ - moved RECTANGLE_WIDTH/HEIGHT to csmacros.h; csdialogs*.* is not used any more
+   by the SDL version
+ - removed global resource file "Resources"
+ - action flags are now of type uint32, not int32 or long
+ - map checkpoints in terminals (circles) display properly
+ - size of sound data was miscalculated for extended sound headers of stereo
+   sounds
+ - fixed many places where it was assumed that sizeof(long) = sizeof(void *) = 4;
+   now it works on Alpha CPUs
+ - building in a separate directory works
+
 September 11, 2000
  - fixed some remaining alignment bugs, now works on Solaris/sparc (with gcc
    2.95.2)

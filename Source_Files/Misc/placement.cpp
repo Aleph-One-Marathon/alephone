@@ -249,7 +249,7 @@ void load_all_monster_sounds(
 void recreate_objects(
 	void)
 {
-	static long delay = 0;
+	static int32 delay = 0;
 
 	/* If time goes backwards, it means that they started a new game.  Therefore we must */
 	/*  reset our delay. */
@@ -362,8 +362,8 @@ short get_random_player_starting_location_and_facing(
 	short team, 
 	struct object_location *location)
 {
-	long monster_distance, player_distance;
-	unsigned long best_distance;
+	int32 monster_distance, player_distance;
+	uint32 best_distance;
 	short starting_location_index, maximum_starting_locations, offset, index, best_index = NONE;
 	struct object_location current_location;
 	
@@ -382,7 +382,7 @@ short get_random_player_starting_location_and_facing(
 		
 		if (monster_distance != 0 && player_distance != 0)
 		{
-			unsigned long combined_distance = player_distance + (monster_distance>>1); // weight player distance more heavily.
+			uint32 combined_distance = player_distance + (monster_distance>>1); // weight player distance more heavily.
 
 			if (combined_distance > best_distance)
 			{
@@ -660,7 +660,7 @@ static bool polygon_is_valid_for_object_drop(
 {
 	struct polygon_data *polygon = get_polygon_data(polygon_index);
 	bool valid = false;
-	long distance; // only used to call point_is_player_visible()
+	int32 distance; // only used to call point_is_player_visible()
 
 	(void) (initial_drop);
 	

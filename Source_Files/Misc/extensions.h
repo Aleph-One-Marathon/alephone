@@ -21,10 +21,10 @@ class FileSpecifier;
 #ifdef EXPORT_STRUCTURE
 struct definition_data
 {
-	long tag;
+	uint32 tag;
 	void *data;
-	short count;
-	short size;
+	int16 count;
+	int16 size;
 };
 
 static struct definition_data definitions[]=
@@ -40,7 +40,7 @@ static struct definition_data definitions[]=
 #ifdef IMPORT_STRUCTURE
 struct definition_data 
 {
-	long tag;
+	uint32 tag;
 	void *data;
 };
 

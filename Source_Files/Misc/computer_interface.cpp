@@ -1667,7 +1667,7 @@ static void get_date_string(
 	struct tm game_time;
 
 	/* Treat the date as if it were recent. */
-	game_time_passed= LONG_MAX - dynamic_world->game_information.game_time_remaining;
+	game_time_passed= INT32_MAX - dynamic_world->game_information.game_time_remaining;
 	
 	/* convert the game seconds to machine seconds */
 #ifdef mac

@@ -4,4 +4,5 @@ noinst_LIBRARIES = libpfhortran.a
 libpfhortran_a_SOURCES = script_instructions.cpp script_instructions.h \
   script_parser.cpp script_parser.h scripting.h scripting.cpp
 
-INCLUDES = -I../CSeries -I../Misc
+INCLUDES = -I$(top_srcdir)/Source_Files/CSeries \
+  -I$(top_srcdir)/Source_Files/Misc

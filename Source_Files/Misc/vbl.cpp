@@ -82,7 +82,7 @@ Aug 26, 2000 (Loren Petrich):
 #define END_OF_RECORDING_INDICATOR  (RECORD_CHUNK_SIZE+1)
 #define MAXIMUM_TIME_DIFFERENCE     15 // allowed between heartbeat_count and dynamic_world->tick_count
 #define MAXIMUM_NET_QUEUE_SIZE       8
-#define DISK_CACHE_SIZE             ((sizeof(short)+sizeof(long))*100)
+#define DISK_CACHE_SIZE             ((sizeof(int16)+sizeof(uint32))*100)
 #define MAXIMUM_REPLAY_SPEED         5
 #define MINIMUM_REPLAY_SPEED        -5
 
@@ -134,7 +134,7 @@ static void read_recording_queue_chunks(void);
 static bool pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
 static bool vblFSRead(OpenedFile& File, long *count, void *dest, bool& HitEOF);
-static void record_action_flags(short player_identifier, int32 *action_flags, short count);
+static void record_action_flags(short player_identifier, uint32 *action_flags, short count);
 static short get_recording_queue_size(short which_queue);
 
 static uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, int Count);
@@ -144,7 +144,7 @@ static uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, in
 
 #ifdef DEBUG_REPLAY
 static void open_stream_file(void);
-static void debug_stream_of_flags(long action_flag, short player_index);
+static void debug_stream_of_flags(uint32 action_flag, short player_index);
 static void close_stream_file(void);
 #endif
 
@@ -181,7 +181,7 @@ void initialize_keyboard_controller(
 	{
 		queue= get_player_recording_queue(player_index);
 		queue->read_index= queue->write_index = 0;
-		queue->buffer= new int32[MAXIMUM_QUEUE_SIZE];
+		queue->buffer= new uint32[MAXIMUM_QUEUE_SIZE];
 		if(!queue->buffer) alert_user(fatalError, strERRORS, outOfMemory, memory_error());
 	}
 	enter_mouse(0);
@@ -368,7 +368,7 @@ bool input_controller(
 			}
 			else // then getting input from the keyboard/mouse
 			{
-				int32 action_flags= parse_keymap();
+				uint32 action_flags= parse_keymap();
 				
 				process_action_flags(local_player_index, &action_flags, 1);
 				heartbeat_count++; // ba-doom
@@ -383,7 +383,7 @@ bool input_controller(
 
 void process_action_flags(
 	short player_identifier, 
-	int32 *action_flags, 
+	uint32 *action_flags, 
 	short count)
 {
 	if (replay.game_is_being_recorded)
@@ -396,7 +396,7 @@ void process_action_flags(
 
 static void record_action_flags(
 	short player_identifier, 
-	int32 *action_flags, 
+	uint32 *action_flags, 
 	short count)
 {
 	short index;
@@ -425,23 +425,20 @@ void save_recording_queue_chunk(
 	short player_index)
 {
 	uint8 *location;
-	int32 last_flag, count, flag = 0;
+	uint32 last_flag, count, flag = 0;
 	int16 i, run_count, num_flags_saved, max_flags;
 	static uint8 *buffer= NULL;
 	ActionQueue *queue;
 	
-	// The data format is (run length (int16)) + (action flag (int32))
-	int DataSize = sizeof(int16) + sizeof(int32);
+	// The data format is (run length (int16)) + (action flag (uint32))
+	int DataSize = sizeof(int16) + sizeof(uint32);
 	
 	if (buffer == NULL)
-	{
 		buffer = new byte[RECORD_CHUNK_SIZE * DataSize];
-		// buffer = (long *)malloc((RECORD_CHUNK_SIZE * sizeof(long)) + RECORD_CHUNK_SIZE * sizeof(short));
-	}
 	
 	location= buffer;
 	count= 0; // keeps track of how many bytes we'll save.
-	last_flag= NONE;
+	last_flag= (uint32)NONE;
 
 	queue= get_player_recording_queue(player_index);
 	
@@ -452,19 +449,13 @@ void save_recording_queue_chunk(
 	run_count= num_flags_saved= 0;
 	for (i = 0; i<max_flags; i++)
 	{
-		flag = *(queue->buffer + queue->read_index);
+		flag = queue->buffer[queue->read_index];
 		INCREMENT_QUEUE_COUNTER(queue->read_index);
 		
 		if (i && flag != last_flag)
 		{
 			ValueToStream(location,run_count);
 			ValueToStream(location,last_flag);
-			/*
-			*(short*)location = run_count;
-			location = (long *)((short*)location + 1);
-			*location++ = last_flag;
-			count += sizeof(short) + sizeof(long);
-			*/
 			count += DataSize;
 			num_flags_saved += run_count;
 			run_count = 1;
@@ -479,12 +470,6 @@ void save_recording_queue_chunk(
 	// now save the final run
 	ValueToStream(location,run_count);
 	ValueToStream(location,last_flag);
-	/*
-	*(short*)location = run_count;
-	location = (long *)((short *)location + 1);
-	*location++ = last_flag;
-	count += sizeof(short) + sizeof(long);
-	*/
 	count += DataSize;
 	num_flags_saved += run_count;
 	
@@ -494,12 +479,6 @@ void save_recording_queue_chunk(
 		ValueToStream(location,end_indicator);
 		int32 end_flag = 0;
 		ValueToStream(location,end_flag);
-		/*
-		*(short*)location = END_OF_RECORDING_INDICATOR;
-		location = (long *)((short *)location + 1);
-		*location++ = 0;
-		count += sizeof(short) + sizeof(long);
-		*/
 		count += DataSize;
 		num_flags_saved += RECORD_CHUNK_SIZE-max_flags;
 	}
@@ -577,23 +556,19 @@ static void precalculate_key_information(
 	void)
 {
 #ifndef SDL
-	short i;
-	
 	/* convert raw key codes to offets and masks */
-	for (i = 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; ++i)
+	for (int i = 0; i < NUMBER_OF_STANDARD_KEY_DEFINITIONS; ++i)
 	{
 		current_key_definitions[i].mask = 1 << (current_key_definitions[i].offset&7);
 		current_key_definitions[i].offset >>= 3;
 	}
-	
-	return;
 #endif
 }
 
 void set_recording_header_data(
 	short number_of_players, 
 	short level_number, 
-	unsigned long map_checksum,
+	uint32 map_checksum,
 	short version, 
 	struct player_start_data *starts, 
 	struct game_data *game_information)
@@ -608,15 +583,12 @@ void set_recording_header_data(
 	obj_copy(replay.header.game_information, *game_information);
 	// Use the packed size here!!!
 	replay.header.length= SIZEOF_recording_header;
-	// replay.header.length= sizeof(struct recording_header);
-
-	return;
 }
 
 void get_recording_header_data(
 	short *number_of_players, 
 	short *level_number, 
-	unsigned long *map_checksum,
+	uint32 *map_checksum,
 	short *version, 
 	struct player_start_data *starts, 
 	struct game_data *game_information)
@@ -634,7 +606,7 @@ void get_recording_header_data(
 
 bool setup_for_replay_from_file(
 	FileSpecifier& File,
-	unsigned long map_checksum)
+	uint32 map_checksum)
 {
 	bool successful= false;
 
@@ -642,8 +614,6 @@ bool setup_for_replay_from_file(
 	
 	FilmFileSpec = File;
 	if (FilmFileSpec.Open(FilmFile))
-	// replay.recording_file_refnum= open_file_for_reading(file);
-	// if(replay.recording_file_refnum > 0)
 	{
 		replay.valid= true;
 		replay.have_read_last_chunk = false;
@@ -684,9 +654,7 @@ bool setup_for_replay_from_file(
 void start_recording(
 	void)
 {
-//	FileDesc recording_file;
 	long count;
-	// FileError error;
 	
 	assert(!replay.valid);
 	replay.valid= true;
@@ -695,8 +663,6 @@ void start_recording(
 		FilmFileSpec.Delete();
 
 	if (FilmFileSpec.Create(_typecode_film))
-	// error= create_file(&recording_file, FILM_FILE_TYPE);	
-	// if(!error)
 	{
 		/* I debate the validity of fsCurPerm here, but Alain had it, and it has been working */
 		if (FilmFileSpec.Open(FilmFile,true))
@@ -733,23 +699,14 @@ void stop_recording(
 		byte Header[SIZEOF_recording_header];
 		pack_recording_header(Header,&replay.header,1);
 		assert(FilmFile.Write(SIZEOF_recording_header,Header));
-		/*
-		set_fpos(replay.recording_file_refnum, 0l); 
-		count= sizeof(struct recording_header);
-		error= write_file(replay.recording_file_refnum, count, &replay.header);
-		assert(!error);
-		*/
 		
 		FilmFile.GetLength(total_length);
-		// total_length= get_file_length(replay.recording_file_refnum);
 		assert(total_length==replay.header.length);
 		
 		FilmFile.Close();
 	}
 
 	replay.valid= false;
-	
-	return;
 }
 
 void rewind_recording(
@@ -775,7 +732,6 @@ void rewind_recording(
 		
 		// Use the packed length here!!!
 		replay.header.length= SIZEOF_recording_header;
-		// replay.header.length= sizeof(struct recording_header);
 	}
 	
 	return;
@@ -806,7 +762,7 @@ void check_recording_replaying(
 			get_recording_filedesc(FilmFile_Check);
 
 			success= FilmFile_Check.GetFreeSpace(freespace);
-			if (success && freespace>(RECORD_CHUNK_SIZE*sizeof(short)*sizeof(long)*dynamic_world->player_count))
+			if (success && freespace>(RECORD_CHUNK_SIZE*sizeof(int16)*sizeof(uint32)*dynamic_world->player_count))
 			{
 				for (player_index= 0; player_index<dynamic_world->player_count; player_index++)
 				{
@@ -828,8 +784,8 @@ void check_recording_replaying(
 		
 		if(load_new_data)
 		{
-			// at this point, we’ve determined that the queues are sufficently empty, so
-			// we’ll fill ’em up.
+			// at this point, we've determined that the queues are sufficently empty, so
+			// we'll fill 'em up.
 			read_recording_queue_chunks();
 		}
 	}
@@ -873,8 +829,6 @@ void stop_replay(
 
 	/* Unecessary, because reset_player_queues calls this. */
 	replay.valid= false;
-	
-	return;
 }
 
 static void read_recording_queue_chunks(
@@ -902,11 +856,9 @@ static void read_recording_queue_chunks(
 				else
 				{
 					uint8* S;
-					// num_flags = * (short *) (replay.resource_data + replay.film_resource_offset);
 					S = (uint8 *)(replay.resource_data + replay.film_resource_offset);
 					StreamToValue(S,num_flags);
 					replay.film_resource_offset += sizeof(num_flags);
-					// action_flags = *(long *) (replay.resource_data + replay.film_resource_offset);
 					S = (uint8 *)(replay.resource_data + replay.film_resource_offset);
 					StreamToValue(S,action_flags);
 					replay.film_resource_offset+= sizeof(action_flags);
@@ -923,13 +875,11 @@ static void read_recording_queue_chunks(
 				sizeof_read = sizeof(num_flags);
 				uint8 NumFlagsBuffer[sizeof(num_flags)];
 				bool HitEOF = false;
-				// if (vblFSRead(FilmFile, &sizeof_read, &num_flags, HitEOF))
 				if (vblFSRead(FilmFile, &sizeof_read, NumFlagsBuffer, HitEOF))
 				{
 					uint8 *S = NumFlagsBuffer;
 					StreamToValue(S,num_flags);
 					sizeof_read = sizeof(action_flags);
-					// bool status = vblFSRead(FilmFile, &sizeof_read, &action_flags, HitEOF);
 					uint8 ActionFlagsBuffer[sizeof(action_flags)];
 					bool status = vblFSRead(FilmFile, &sizeof_read, ActionFlagsBuffer, HitEOF);
 					S = ActionFlagsBuffer;
@@ -956,8 +906,6 @@ static void read_recording_queue_chunks(
 		}
 		assert(replay.have_read_last_chunk || count == RECORD_CHUNK_SIZE);
 	}
-
-	return;
 }
 
 /* This is gross, (Alain wrote it, not me!) but I don't have time to clean it up */
@@ -1042,8 +990,6 @@ static void remove_input_controller(
 	}
 
 	replay.valid= false;
-
-	return;
 }
 
 

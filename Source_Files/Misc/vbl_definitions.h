@@ -17,7 +17,7 @@ Aug 12, 2000 (Loren Petrich):
 typedef struct action_queue /* 8 bytes */
 {
 	int16 read_index, write_index;
-	int32 *buffer;
+	uint32 *buffer;
 } ActionQueue;
 
 struct recording_header

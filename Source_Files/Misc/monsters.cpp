@@ -549,7 +549,7 @@ void move_monsters(
 
 	if (dynamic_world->civilians_killed_by_players)
 	{
-		long mask = 0;
+		uint32 mask = 0;
 		
 		switch (dynamic_world->game_information.difficulty_level)
 		{
@@ -710,7 +710,7 @@ void activate_nearby_monsters(
 		short polygon_index= get_object_data(caller->object_index)->polygon;
 		short need_target_indexes[MAXIMUM_NEED_TARGET_INDEXES];
 		short need_target_count= 0;
-		long flood_flags= flags;
+		int32 flood_flags= flags;
 		
 		/* flood out from the target monster’s polygon, searching through the object lists of all
 			polygons we encounter */
@@ -811,7 +811,7 @@ static long monster_activation_flood_proc(
 	short destination_polygon_index,
 	void *data)
 {
-	long *flags=(long *)data;
+	int32 *flags=(int32 *)data;
 	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
 	struct line_data *line= get_line_data(line_index);
 	long cost= 1;
@@ -1182,17 +1182,17 @@ short legal_player_move(
 			world_point3d *obstacle_location= &obstacle->location;
 
 			world_distance separation= radius+obstacle_radius;
-			long separation_squared= separation*separation;
+			int32 separation_squared= separation*separation;
 
 			world_distance new_dx= obstacle_location->x-new_location->x;
 			world_distance new_dy= obstacle_location->y-new_location->y;
-			long new_distance_squared= new_dx*new_dx+new_dy*new_dy;
+			int32 new_distance_squared= new_dx*new_dx+new_dy*new_dy;
 			
 			if (new_distance_squared<separation_squared)
 			{
 				world_distance old_dx= obstacle_location->x-old_location->x;
 				world_distance old_dy= obstacle_location->y-old_location->y;
-				long old_distance_squared= old_dx*old_dx+old_dy*old_dy;
+				int32 old_distance_squared= old_dx*old_dx+old_dy*old_dy;
 
 				if (old_distance_squared>new_distance_squared)
 				{
@@ -1404,7 +1404,7 @@ void damage_monster(
 			}
 			
 			// LP change: pegging to maximum value
-			if ((monster->vitality= MIN(long(monster->vitality)-long(delta_vitality),long(INT16_MAX)))>0)
+			if ((monster->vitality= MIN(int32(monster->vitality)-int32(delta_vitality),int32(INT16_MAX)))>0)
 			// if ((monster->vitality-= delta_vitality)>0)
 			{
 				set_monster_action(target_index, _monster_is_being_hit);
@@ -1709,7 +1709,7 @@ static void update_monster_vertical_physics_model(
 	struct object_data *object= get_object_data(monster->object_index);
 	struct polygon_data *polygon= get_polygon_data(object->polygon);
 	struct media_data *media= polygon->media_index==NONE ? (struct media_data *) NULL : get_media_data(polygon->media_index);
-	long moving_flags= MONSTER_IS_DYING(monster) ? 0 : (definition->flags&(_monster_flys|_monster_floats));
+	uint32 moving_flags= MONSTER_IS_DYING(monster) ? 0 : (definition->flags&(_monster_flys|_monster_floats));
 	world_distance gravity= (static_world->environment_flags&_environment_low_gravity) ? (definition->gravity>>1) : definition->gravity;
 	world_distance floor_height= polygon->floor_height;
 	world_distance desired_height;
@@ -2170,7 +2170,7 @@ short find_closest_appropriate_target(
 	
 	if (MONSTER_IS_ACTIVE(aggressor))
 	{
-		long flood_flags= _pass_one_zone_border;
+		int32 flood_flags= _pass_one_zone_border;
 		short polygon_index= get_object_data(get_monster_data(aggressor_index)->object_index)->polygon;
 		
 		/* flood out from the aggressor monster’s polygon, searching through the object lists of all
@@ -2251,14 +2251,14 @@ static bool clear_line_of_sight(
 		world_point3d *origin= &viewer_object->location;
 		world_point3d *destination= &target_object->location;
 		// LP change: made this long-distance friendly
-		long dx= long(destination->x)-long(origin->x);
-		long dy= long(destination->y)-long(origin->y);
+		int32 dx= int32(destination->x)-int32(origin->x);
+		int32 dy= int32(destination->y)-int32(origin->y);
 		/*
 		world_distance dx= destination->x-origin->x;
 		world_distance dy= destination->y-origin->y;
 		*/
 		world_distance dz= destination->z-origin->z;
-		long distance2d= GUESS_HYPOTENUSE(ABS(dx), ABS(dy));
+		int32 distance2d= GUESS_HYPOTENUSE(ABS(dx), ABS(dy));
 		// world_distance distance2d= GUESS_HYPOTENUSE(ABS(dx), ABS(dy));
 
 		/* if we can’t see full circle, make sure the target is in our visual arc */

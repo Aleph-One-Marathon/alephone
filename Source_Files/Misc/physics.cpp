@@ -82,9 +82,9 @@ running backwards shouldnÕt mean doom in a fistfight
 
 /* ---------- private prototypes */
 
-static struct physics_constants *get_physics_constants_for_model(short physics_model, long action_flags);
+static struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
 static void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time);
-static void physics_update(struct physics_constants *constants, struct physics_variables *variables, struct player_data *player, long action_flags);
+static void physics_update(struct physics_constants *constants, struct physics_variables *variables, struct player_data *player, uint32 action_flags);
 
 /* ---------- globals */
 
@@ -163,7 +163,7 @@ void initialize_player_physics_variables(
 
 void update_player_physics_variables(
 	short player_index,
-	long action_flags)
+	uint32 action_flags)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct physics_variables *variables= &player->variables;
@@ -262,8 +262,8 @@ void get_absolute_pitch_range(
 
 /* deltas of zero are ignored; all deltas must be in [-FIXED_ONE,FIXED_ONE] which will be scaled
 	to the maximum for that value */
-long mask_in_absolute_positioning_information(
-	long action_flags,
+uint32 mask_in_absolute_positioning_information(
+	uint32 action_flags,
 	fixed delta_yaw,
 	fixed delta_pitch,
 	fixed delta_position)
@@ -302,8 +302,8 @@ long mask_in_absolute_positioning_information(
 #ifdef OBSOLETE
 /* yaw must be in [0,2¹), pitch must be in [-¹/2,¹/2], velocity must be in [-1,1]; returns new
 	action flags.  we assume that this is for the local player. */
-long mask_in_absolute_positioning_information(
-	long action_flags,
+uint32 mask_in_absolute_positioning_information(
+	uint32 action_flags,
 	fixed yaw,
 	fixed pitch,
 	fixed velocity)
@@ -441,7 +441,7 @@ fixed get_player_forward_velocity_scale(
 
 static struct physics_constants *get_physics_constants_for_model(
 	short physics_model,
-	long action_flags)
+	uint32 action_flags)
 {
 	struct physics_constants *constants;
 	
@@ -589,7 +589,7 @@ static void physics_update(
 	struct physics_constants *constants,
 	struct physics_variables *variables,
 	struct player_data *player,
-	long action_flags)
+	uint32 action_flags)
 {
 	fixed_point3d new_position;
 	short sine, cosine;

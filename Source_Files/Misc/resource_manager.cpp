@@ -73,15 +73,12 @@ static list<res_file_t *>::iterator find_res_file_t(SDL_RWops *f)
 
 
 /*
- *  Initialize resource management, open global resource file
+ *  Initialize resource management
  */
 
-void initialize_resources(FileSpecifier &global_resources)
+void initialize_resources(void)
 {
-	if (open_res_file(global_resources) == NULL) {
-		fprintf(stderr, "Can't open global resource file '%s'\n", global_resources.GetPath());
-		exit(1);
-	}
+	// nothing to do
 }
 
 

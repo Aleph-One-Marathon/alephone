@@ -10,9 +10,6 @@
 
 #define SCROLLBAR_WIDTH	16
 
-#define RECTANGLE_WIDTH(rectptr) ((rectptr)->right-(rectptr)->left)
-#define RECTANGLE_HEIGHT(rectptr) ((rectptr)->bottom-(rectptr)->top)
-
 enum {
 	centerRect
 };
@@ -23,7 +20,6 @@ extern void AdjustRect(
 	Rect *out,
 	short how);
 
-#ifdef mac
 extern void get_window_frame(
 	WindowPtr win,
 	Rect *frame);
@@ -74,6 +70,5 @@ typedef void (*dialog_header_proc_ptr)(
 
 extern void set_dialog_header_proc(
 	dialog_header_proc_ptr proc);
-#endif
 
 #endif

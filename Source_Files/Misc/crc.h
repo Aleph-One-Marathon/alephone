@@ -14,8 +14,8 @@ Aug 15, 2000 (Loren Petrich):
 class FileSpecifier;
 class OpenedFile;
 
-unsigned long calculate_crc_for_file(FileSpecifier& File);
-unsigned long calculate_crc_for_opened_file(OpenedFile& OFile);
-unsigned long calculate_data_crc(unsigned char *buffer, long length);
+uint32 calculate_crc_for_file(FileSpecifier& File);
+uint32 calculate_crc_for_opened_file(OpenedFile& OFile);
+uint32 calculate_data_crc(unsigned char *buffer, long length);
 
 #endif

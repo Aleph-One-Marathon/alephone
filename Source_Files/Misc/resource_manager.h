@@ -13,7 +13,7 @@
 class FileSpecifier;
 class LoadedResource;
 
-extern void initialize_resources(FileSpecifier &global_resources);
+extern void initialize_resources(void);
 
 extern SDL_RWops *open_res_file(FileSpecifier &file);
 extern void close_res_file(SDL_RWops *file);

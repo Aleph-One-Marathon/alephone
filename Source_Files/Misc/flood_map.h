@@ -12,7 +12,7 @@ enum /* flood modes */
 {
 	_depth_first, /* unsupported */
 	_breadth_first, /* significantly faster than _best_first for large domains */
-	_flagged_breadth_first, /* user data is interpreted as a long * to 4 bytes of flags */
+	_flagged_breadth_first, /* user data is interpreted as an int32 * to 4 bytes of flags */
 	_best_first
 };
 

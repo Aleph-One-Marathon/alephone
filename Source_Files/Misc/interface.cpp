@@ -1218,7 +1218,7 @@ static bool begin_game(
 			
 			if(success)
 			{
-				unsigned long unused1;
+				uint32 unused1;
 				short unused2;
 			
 				get_recording_header_data(&number_of_players, 
@@ -1246,7 +1246,7 @@ static bool begin_game(
 			starts[0].team = starts[0].color = player_preferences->color;
 			// starts[0].team = starts[0].color = _red_team;
 			strcpy(starts[0].name, "");
-			game_information.game_time_remaining= LONG_MAX;
+			game_information.game_time_remaining= INT32_MAX;
 			game_information.kill_limit = 0;
 			game_information.game_type= _game_of_kill_monsters;
 			game_information.game_options= _burn_items_on_death|_ammo_replenishes|_weapons_replenish|_monsters_replenish;

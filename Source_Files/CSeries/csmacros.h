@@ -39,6 +39,9 @@ Aug 27, 2000 (Loren Petrich):
 #define TEST_FLAG(obj,flag) ((obj)&(flag))
 #define SET_FLAG(obj,flag,value) ((void)((value)?((obj)|=(flag)):((obj)&=~(flag))))
 
+#define RECTANGLE_WIDTH(rectptr) ((rectptr)->right-(rectptr)->left)
+#define RECTANGLE_HEIGHT(rectptr) ((rectptr)->bottom-(rectptr)->top)
+
 /*
 	LP addition: template class for doing bounds checking when accessing an array;
 	it uses an array, an index value, and an intended number of members for that array.

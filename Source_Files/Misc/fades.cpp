@@ -108,7 +108,7 @@ struct fade_data
 	short type;
 	short fade_effect_type;
 	
-	long last_update_tick;
+	uint32 last_update_tick;
 	
 	struct color_table *original_color_table;
 	struct color_table *animated_color_table;
@@ -323,7 +323,7 @@ void explicit_start_fade(
 	// LP change: idiot-proofing
 	if (!definition) return;
 		
-	long machine_ticks= machine_tick_count();
+	uint32 machine_ticks= machine_tick_count();
 	bool do_fade= true;
 
 	if (FADE_IS_ACTIVE(fade))
@@ -591,14 +591,14 @@ static void negate_color_table(
 	for (i= 0; i<original_color_table->color_count; ++i, ++adjusted, ++unadjusted)
 	{
 		adjusted->red= (unadjusted->red>0x8000) ?
-			CEILING((unadjusted->red^color->red)+transparency, (long)unadjusted->red) :
-			FLOOR((unadjusted->red^color->red)-transparency, (long)unadjusted->red);
+			CEILING((unadjusted->red^color->red)+transparency, (int32)unadjusted->red) :
+			FLOOR((unadjusted->red^color->red)-transparency, (int32)unadjusted->red);
 		adjusted->green= (unadjusted->green>0x8000) ?
-			CEILING((unadjusted->green^color->green)+transparency, (long)unadjusted->green) :
-			FLOOR((unadjusted->green^color->green)-transparency, (long)unadjusted->green);
+			CEILING((unadjusted->green^color->green)+transparency, (int32)unadjusted->green) :
+			FLOOR((unadjusted->green^color->green)-transparency, (int32)unadjusted->green);
 		adjusted->blue= (unadjusted->blue>0x8000) ?
-			CEILING((unadjusted->blue^color->blue)+transparency, (long)unadjusted->blue) :
-			FLOOR((unadjusted->blue^color->blue)-transparency, (long)unadjusted->blue);
+			CEILING((unadjusted->blue^color->blue)+transparency, (int32)unadjusted->blue) :
+			FLOOR((unadjusted->blue^color->blue)-transparency, (int32)unadjusted->blue);
 	}
 	
 	return;
@@ -625,7 +625,7 @@ static void dodge_color_table(
 	animated_color_table->color_count= original_color_table->color_count;
 	for (i= 0; i<original_color_table->color_count; ++i, ++adjusted, ++unadjusted)
 	{
-		long component;
+		int32 component;
 		
 		component= 0xffff - (((color->red^0xffff)*unadjusted->red)>>FIXED_FRACTIONAL_BITS) - transparency, adjusted->red= CEILING(component, unadjusted->red);
 		component= 0xffff - (((color->green^0xffff)*unadjusted->green)>>FIXED_FRACTIONAL_BITS) - transparency, adjusted->green= CEILING(component, unadjusted->green);
@@ -657,7 +657,7 @@ static void burn_color_table(
 	animated_color_table->color_count= original_color_table->color_count;
 	for (i= 0; i<original_color_table->color_count; ++i, ++adjusted, ++unadjusted)
 	{
-		long component;
+		int32 component;
 		
 		component= ((color->red*unadjusted->red)>>FIXED_FRACTIONAL_BITS) + transparency, adjusted->red= CEILING(component, unadjusted->red);
 		component= ((color->green*unadjusted->green)>>FIXED_FRACTIONAL_BITS) + transparency, adjusted->green= CEILING(component, unadjusted->green);
@@ -780,7 +780,7 @@ bool XML_FaderParser::HandleAttribute(const char *Tag, const char *Value)
 		float Opacity;
 		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
-			Data.initial_transparency = long(FIXED_ONE*Opacity + 0.5);
+			Data.initial_transparency = int32(FIXED_ONE*Opacity + 0.5);
 			IsPresent[1] = true;
 			return true;
 		}
@@ -791,7 +791,7 @@ bool XML_FaderParser::HandleAttribute(const char *Tag, const char *Value)
 		float Opacity;
 		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
-			Data.final_transparency = long(FIXED_ONE*Opacity + 0.5);
+			Data.final_transparency = int32(FIXED_ONE*Opacity + 0.5);
 			IsPresent[2] = true;
 			return true;
 		}
@@ -936,7 +936,7 @@ bool XML_LiquidFaderParser::HandleAttribute(const char *Tag, const char *Value)
 		float Opacity;
 		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
-			Data.transparency = long(FIXED_ONE*Opacity + 0.5);
+			Data.transparency = int32(FIXED_ONE*Opacity + 0.5);
 			IsPresent[1] = true;
 			return true;
 		}

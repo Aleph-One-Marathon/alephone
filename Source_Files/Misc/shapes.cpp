@@ -1915,12 +1915,12 @@ static struct high_level_shape_definition *get_high_level_shape_definition(
 	short high_level_shape_index)
 {
 	struct collection_definition *definition= get_collection_definition(collection_index);
-	long *offset_table;
+	uint32 *offset_table;
 	
 	if (!(high_level_shape_index>=0&&high_level_shape_index<definition->high_level_shape_count))
 		return NULL;
 	
-	offset_table= (long *) collection_offset(definition, definition->high_level_shape_offset_table_offset);
+	offset_table= (uint32 *) collection_offset(definition, definition->high_level_shape_offset_table_offset);
 	if (!offset_table) return NULL;
 	
 	return (struct high_level_shape_definition *) collection_offset(definition, offset_table[high_level_shape_index]);
@@ -1931,12 +1931,12 @@ static struct low_level_shape_definition *get_low_level_shape_definition(
 	short low_level_shape_index)
 {
 	struct collection_definition *definition= get_collection_definition(collection_index);
-	long *offset_table;
+	uint32 *offset_table;
 
 	if (!(low_level_shape_index>=0 && low_level_shape_index<definition->low_level_shape_count))
 		return NULL;
 	
-	offset_table= (long *) collection_offset(definition, definition->low_level_shape_offset_table_offset);
+	offset_table= (uint32 *) collection_offset(definition, definition->low_level_shape_offset_table_offset);
 	if (!offset_table) return NULL;
 	
 	return (struct low_level_shape_definition *) collection_offset(definition, offset_table[low_level_shape_index]);
@@ -1947,12 +1947,12 @@ static struct bitmap_definition *get_bitmap_definition(
 	short bitmap_index)
 {
 	struct collection_definition *definition= get_collection_definition(collection_index);
-	long *offset_table;
+	uint32 *offset_table;
 
 	if (!(bitmap_index>=0 && bitmap_index<definition->bitmap_count))
 		return NULL;
 	
-	offset_table= (long *) collection_offset(definition, definition->bitmap_offset_table_offset);
+	offset_table= (uint32 *) collection_offset(definition, definition->bitmap_offset_table_offset);
 	if (!offset_table) return NULL;
 	
 	return (struct bitmap_definition *) collection_offset(definition, offset_table[bitmap_index]);

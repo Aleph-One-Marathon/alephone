@@ -207,7 +207,7 @@ void initialize_map_for_new_level(
 	void)
 {
 	short total_civilians, total_causalties;
-	long tick_count;
+	uint32 tick_count;
 	uint16 random_seed;
 	short player_count;
 	struct game_data game_information;
@@ -641,7 +641,7 @@ void get_object_shape_and_transfer_mode(
 	
 	/* get correct base shape */
 	// LP change: made long-distance friendly
-	theta= arctangent(long(object->location.x) - long(camera_location->x), long(object->location.y) - long(camera_location->y)) - object->facing;
+	theta= arctangent(int32(object->location.x) - int32(camera_location->x), int32(object->location.y) - int32(camera_location->y)) - object->facing;
 	// theta= arctangent(object->location.x - camera_location->x, object->location.y - camera_location->y) - object->facing;
 	switch (animation->number_of_views)
 	{
@@ -895,7 +895,7 @@ bool point_in_polygon(
 		bool clockwise= line->endpoint_indexes[0]==polygon->endpoint_indexes[i];
 		world_point2d *e0= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
 		world_point2d *e1= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
-		long cross_product= (p->x-e0->x)*(e1->y-e0->y) - (p->y-e0->y)*(e1->x-e0->x);
+		int32 cross_product= (p->x-e0->x)*(e1->y-e0->y) - (p->y-e0->y)*(e1->x-e0->x);
 		
 		if ((clockwise && cross_product>0) || (!clockwise && cross_product<0))
 		{
@@ -1125,7 +1125,7 @@ fixed find_line_intersection(
 	world_point3d *intersection)
 {
 	world_distance dx, dy, dz, line_dx, line_dy;
-	long numerator, denominator;
+	int32 numerator, denominator;
 	fixed t;
 	
 	/* calculate line deltas */
@@ -1166,7 +1166,7 @@ fixed closest_point_on_line(
 {
 	world_distance line_dx, line_dy, dx, dy;
 	world_point2d calculated_closest_point;
-	long numerator, denominator;
+	int32 numerator, denominator;
 	fixed t;
 	
 	/* calculate dx,dy and line_dx,line_dy */
@@ -1232,7 +1232,7 @@ void find_center_of_polygon(
 	world_point2d *center)
 {
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
-	long x= 0, y= 0;
+	int32 x= 0, y= 0;
 	short i;
 	
 	for (i=0;i<polygon->vertex_count;++i)
@@ -1292,7 +1292,7 @@ bool keep_line_segment_out_of_walls(
 {
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 	short *indexes= get_map_indexes(polygon->first_exclusion_zone_index, polygon->line_exclusion_zone_count+polygon->point_exclusion_zone_count);
-	long line_collision_bitmap;
+	int32 line_collision_bitmap;
 	bool clipped= false;
 	short state;
 	short i;
@@ -1412,7 +1412,7 @@ bool keep_line_segment_out_of_walls(
 			struct endpoint_data *endpoint= get_endpoint_data(indexes[polygon->line_exclusion_zone_count+i]);
 			world_distance dx= endpoint->vertex.x-p1->x;
 			world_distance dy= endpoint->vertex.y-p1->y;
-			long distance_squared= dx*dx+dy*dy;
+			int32 distance_squared= dx*dx+dy*dy;
 			
 //			switch (indexes[polygon->line_exclusion_zone_count+i])
 //			{
@@ -1477,13 +1477,13 @@ void ray_to_line_segment(
 	world_distance d)
 {
 	short dx= cosine_table[theta], dy= sine_table[theta];
-	long x= (long)p0->x + (long)((d*dx)>>TRIG_SHIFT);
-	long y= (long)p0->y + (long)((d*dy)>>TRIG_SHIFT);
+	int32 x= (int32)p0->x + (int32)((d*dx)>>TRIG_SHIFT);
+	int32 y= (int32)p0->y + (int32)((d*dy)>>TRIG_SHIFT);
 	
-	if (x<INT16_MIN) x= INT16_MIN, y= (long)p0->y + (dy*(INT16_MIN-p0->x))/dx;
-	if (x>INT16_MAX) x= INT16_MAX, y= (long)p0->y + (dy*(INT16_MAX-p0->x))/dx;
-	if (y<INT16_MIN) y= INT16_MIN, x= (long)p0->x + (dx*(INT16_MIN-p0->y))/dy;
-	if (y>INT16_MAX) y= INT16_MAX, x= (long)p0->x + (dx*(INT16_MAX-p0->y))/dy;
+	if (x<INT16_MIN) x= INT16_MIN, y= (int32)p0->y + (dy*(INT16_MIN-p0->x))/dx;
+	if (x>INT16_MAX) x= INT16_MAX, y= (int32)p0->y + (dy*(INT16_MAX-p0->x))/dx;
+	if (y<INT16_MIN) y= INT16_MIN, x= (int32)p0->x + (dx*(INT16_MIN-p0->y))/dy;
+	if (y>INT16_MAX) y= INT16_MAX, x= (int32)p0->x + (dx*(INT16_MAX-p0->y))/dy;
 
 	p1->x= x;
 	p1->y= y;
@@ -1492,7 +1492,7 @@ void ray_to_line_segment(
 }
 
 /* computes the squared distance from p to the line segment e0e1 */
-long point_to_line_segment_distance_squared(
+int32 point_to_line_segment_distance_squared(
 	world_point2d *p,
 	world_point2d *a,
 	world_point2d *b)
@@ -1500,7 +1500,7 @@ long point_to_line_segment_distance_squared(
 	world_distance abx= b->x-a->x, aby= b->y-a->y;
 	world_distance apx= p->x-a->x, apy= p->y-a->y;
 	world_distance bpx= p->x-b->x, bpy= p->y-b->y;
-	long distance;
+	int32 distance;
 	
 	/* if AB dot BP is greather than or equal to zero, d is the distance between B and P */
 	if (abx*bpx+aby*bpy>=0)
@@ -1524,15 +1524,15 @@ long point_to_line_segment_distance_squared(
 	return distance;
 }
 
-long point_to_line_distance_squared(
+int32 point_to_line_distance_squared(
 	world_point2d *p,
 	world_point2d *a,
 	world_point2d *b)
 {
 	world_distance abx= b->x-a->x, aby= b->y-a->y;
 	world_distance apx= p->x-a->x, apy= p->y-a->y;
-	long signed_numerator;
-	unsigned long numerator, denominator;
+	int32 signed_numerator;
+	uint32 numerator, denominator;
 	
 	/* numerator is absolute value of the cross product of AB and AP, denominator is the
 		magnitude of AB squared */
@@ -1686,12 +1686,12 @@ bool point_is_player_visible(
 	short max_players,
 	short polygon_index,
 	world_point2d *p,
-	long *distance)
+	int32 *distance)
 {
 	short player_index;
 	bool visible= false;
 	
-	*distance= LONG_MAX; /* infinite */
+	*distance= INT32_MAX; /* infinite */
 	for (player_index=0;player_index<max_players;++player_index)
 	{
 		struct player_data *player= get_player_data(player_index);
@@ -1700,7 +1700,7 @@ bool point_is_player_visible(
 
 		if (!line_is_obstructed(object->polygon, (world_point2d*)&object->location, polygon_index, p))
 		{
-			long this_distance= guess_distance2d((world_point2d*)&object->location, p);
+			int32 this_distance= guess_distance2d((world_point2d*)&object->location, p);
 			
 			if (*distance>this_distance) *distance= this_distance;
 			visible= true;
@@ -1713,14 +1713,14 @@ bool point_is_player_visible(
 bool point_is_monster_visible(
 	short polygon_index,
 	world_point2d *p,
-	long *distance)
+	int32 *distance)
 {
 	short  i;
 	// LP change: no longer necessary
 	// short  object_indexes[LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE];
 	short  object_count;
 	
-	*distance = LONG_MAX; /* infinite */
+	*distance = INT32_MAX; /* infinite */
 	
 	// LP change:
 	IntersectedObjects.ResetLength();
@@ -1734,13 +1734,13 @@ bool point_is_monster_visible(
 		// LP change:
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
 		// struct object_data *object= get_object_data(object_indexes[i]);
-		long this_distance;
+		int32 this_distance;
 		
 		this_distance = guess_distance2d((world_point2d*)&object->location, p);
 		if (*distance>this_distance) *distance= this_distance;
 	}
 
-	return *distance!=LONG_MAX;
+	return *distance!=INT32_MAX;
 }
 
 bool line_is_obstructed(
@@ -1899,7 +1899,7 @@ short _find_line_crossed_leaving_polygon(
 		/* e1 is clockwise from e0 */
 		world_point2d *e0= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
 		world_point2d *e1= &get_endpoint_data(polygon->endpoint_indexes[i==polygon->vertex_count-1?0:i+1])->vertex;
-		long not_on_line;
+		int32 not_on_line;
 		
 		/* if e0p1 cross e0e1 is negative, p1 is on the outside of edge e0e1 (a result of zero
 			means p1 is on the line e0e1) */
@@ -2309,7 +2309,7 @@ fixed find_line_deflection(
 	world_distance line_dx, line_dy, dx, dy;
 	struct line_data *line;
 	world_point2d *e0, *e1;
-	long numerator, denominator;
+	int32 numerator, denominator;
 	fixed t;
 	
 	/* get endpoints */

@@ -77,9 +77,22 @@ void OverheadMap_SDL_Class::draw_thing(world_point2d &center, rgb_color &color, 
 		case _rectangle_thing:
 			SDL_FillRect(world_pixels, &r, pixel);
 			break;
-		case _circle_thing:
-			//!!
+		case _circle_thing: {
+			world_point2d circle[8] = {
+				{int16(-0.75 * radius) + center.x, int16(-0.3 * radius) + center.y},
+				{int16(-0.75 * radius) + center.x, int16(0.3 * radius) + center.y},
+				{int16(-0.3 * radius) + center.x, int16(0.75 * radius) + center.y},
+				{int16(0.3 * radius) + center.x, int16(0.75 * radius) + center.y},
+				{int16(0.75 * radius) + center.x, int16(0.3 * radius) + center.y},
+				{int16(0.75 * radius) + center.x, int16(-0.3 * radius) + center.y},
+				{int16(0.3 * radius) + center.x, int16(-0.75 * radius) + center.y},
+				{int16(-0.3 * radius) + center.x, int16(-0.75 * radius) + center.y}
+			};
+			for (int i=0; i<7; i++)
+				::draw_line(world_pixels, circle + i, circle + i + 1, pixel, 2);
+			::draw_line(world_pixels, circle + 7, circle, pixel, 2);
 			break;
+		}
 	}
 }
 

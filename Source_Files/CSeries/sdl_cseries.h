@@ -53,11 +53,9 @@ struct Rect {
 	int16 bottom, right;
 };
 
-typedef void *DialogPtr;
-
 const int noErr = 0;
-
 const int kFontIDMonaco = 4;
+const int kFontIDCourier = 22;
 
 
 /*
@@ -67,7 +65,6 @@ const int kFontIDMonaco = 4;
 #include "cstypes.h"
 #include "csmacros.h"
 #include "cscluts.h"
-#include "csdialogs.h"
 #include "csstrings.h"
 #include "csfonts.h"
 #include "cspixels.h"

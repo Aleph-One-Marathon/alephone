@@ -24,19 +24,19 @@ Aug 15, 2000 (Loren Petrich):
 #define BUFFER_SIZE 1024
 
 /* ---------- local data */
-static unsigned long *crc_table= NULL;
+static uint32 *crc_table= NULL;
 
 /* ---------- local prototypes ------- */
-static unsigned long calculate_file_crc(unsigned char *buffer, 
+static uint32 calculate_file_crc(unsigned char *buffer, 
 	short buffer_size, OpenedFile& OFile);
-static unsigned long calculate_buffer_crc(long count, unsigned long crc, void *buffer);
+static uint32 calculate_buffer_crc(long count, uint32 crc, void *buffer);
 static bool build_crc_table(void);
 static void free_crc_table(void);
 
 /* -------------- Entry Point ----------- */
-unsigned long calculate_crc_for_file(FileSpecifier& File)
+uint32 calculate_crc_for_file(FileSpecifier& File)
 {
-	unsigned long crc = 0;
+	uint32 crc = 0;
 	
 	OpenedFile OFile;
 	if (File.Open(OFile))
@@ -48,9 +48,9 @@ unsigned long calculate_crc_for_file(FileSpecifier& File)
 	return crc;
 }
 
-unsigned long calculate_crc_for_opened_file(OpenedFile& OFile)
+uint32 calculate_crc_for_opened_file(OpenedFile& OFile)
 {
-	unsigned long crc = 0;
+	uint32 crc = 0;
 	unsigned char *buffer;
 
 	/* Build the crc table */
@@ -71,11 +71,11 @@ unsigned long calculate_crc_for_opened_file(OpenedFile& OFile)
 }
 
 /* Calculate the crc for a file using the given buffer.. */
-unsigned long calculate_data_crc(
+uint32 calculate_data_crc(
 	unsigned char *buffer,
 	long length)
 {
-	unsigned long crc= 0l;
+	uint32 crc = 0;
 
 	assert(buffer);
 	
@@ -101,12 +101,12 @@ static bool build_crc_table(
 	bool success= false;
 
 	assert(!crc_table);
-	crc_table= new unsigned long[TABLE_SIZE];
+	crc_table= new uint32[TABLE_SIZE];
 	if(crc_table)
 	{
 		/* Build the table */
 		short index, j;
-		unsigned long crc;
+		uint32 crc;
 
 		for(index= 0; index<TABLE_SIZE; ++index)
 		{
@@ -134,14 +134,14 @@ static void free_crc_table(
 }
 
 /* Calculate for a block of data incrementally */
-static unsigned long calculate_buffer_crc(
+static uint32 calculate_buffer_crc(
 	long count, 
-	unsigned long crc, 
+	uint32 crc, 
 	void *buffer)
 {
 	unsigned char *p;
-	unsigned long a;
-	unsigned long b;
+	uint32 a;
+	uint32 b;
 
 	p= (unsigned char *) buffer;
 	while (count--) 
@@ -154,12 +154,12 @@ static unsigned long calculate_buffer_crc(
 }
 
 /* Calculate the crc for a file using the given buffer.. */
-static unsigned long calculate_file_crc(
+static uint32 calculate_file_crc(
 	unsigned char *buffer, 
 	short buffer_size,
 	OpenedFile& OFile)
 {
-	unsigned long crc;
+	uint32 crc;
 	long count;
 	// FileError err;
 	long file_length, initial_position;

@@ -109,8 +109,7 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 
 // LP change: boosted to cope with big displays
 #define MAXIMUM_SCRATCH_TABLE_ENTRIES 2048
-// #define MAXIMUM_SCRATCH_TABLE_ENTRIES 1024
-#define MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE 34
+#define MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE (MAX(sizeof(_vertical_polygon_data), sizeof(_horizontal_polygon_line_data)))
 
 #define SHADE_TO_SHADING_TABLE_INDEX(shade) ((shade)>>(FIXED_FRACTIONAL_BITS-shading_table_fractional_bits))
 #define DEPTH_TO_SHADE(d) (((fixed)(d))<<(FIXED_FRACTIONAL_BITS-WORLD_FRACTIONAL_BITS-3))
@@ -130,13 +129,13 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 
 struct _horizontal_polygon_line_header
 {
-	long y_downshift;
+	int32 y_downshift;
 };
 
 struct _horizontal_polygon_line_data
 {
-	unsigned long source_x, source_y;
-	unsigned long source_dx, source_dy;
+	uint32 source_x, source_y;
+	uint32 source_dx, source_dy;
 	
 	void *shading_table;
 };
@@ -158,18 +157,18 @@ struct _horizontal_polygon_line_data
 
 struct _vertical_polygon_data
 {
-	short downshift;
-	short x0;
-	short width;
+	int16 downshift;
+	int16 x0;
+	int16 width;
 	
-	short pad;
+	int16 pad;
 };
 
 struct _vertical_polygon_line_data
 {
 	void *shading_table;
 	pixel8 *texture;
-	long texture_y, texture_dy;
+	int32 texture_y, texture_dy;
 };
 
 /* ---------- macros */
@@ -1010,9 +1009,9 @@ static void _pretexture_vertical_polygon_lines(
 	short line_count)
 {
 	short screen_x= x0-view->half_screen_width;
-	long dz0= view->world_to_screen_y*polygon->origin.z;
-	long unadjusted_ty_denominator= view->world_to_screen_y*polygon->vector.k;
-	long tx_numerator, tx_denominator, tx_numerator_delta, tx_denominator_delta;
+	int32 dz0= view->world_to_screen_y*polygon->origin.z;
+	int32 unadjusted_ty_denominator= view->world_to_screen_y*polygon->vector.k;
+	int32 tx_numerator, tx_denominator, tx_numerator_delta, tx_denominator_delta;
 	struct _vertical_polygon_line_data *line= (struct _vertical_polygon_line_data *) (data+1);
 
 	(void) (screen);
@@ -1034,18 +1033,18 @@ static void _pretexture_vertical_polygon_lines(
 		fixed tx;
 		// LP change: made this quantity more long-distance friendly;
 		// have to avoid doing INTEGER_TO_FIXED on this one, however
-		long world_x;
+		int32 world_x;
 		// world_distance world_x;
 		short x0, y0= *y0_table++, y1= *y1_table++;
 		short screen_y0= view->half_screen_height-y0+view->dtanpitch;
-		long ty_numerator, ty_denominator;
+		int32 ty_numerator, ty_denominator;
 		fixed ty, ty_delta;
 
 		/* would our precision be greater here if we shifted the numerator up to $7FFFFFFF and
 			then downshifted only the numerator?  too bad we canÕt use BFFFO in 68k */
 		{
-			long adjusted_tx_denominator= tx_denominator;
-			long adjusted_tx_numerator= tx_numerator;
+			int32 adjusted_tx_denominator= tx_denominator;
+			int32 adjusted_tx_numerator= tx_numerator;
 			
 			while (adjusted_tx_numerator>((1<<(31-VERTICAL_TEXTURE_WIDTH_BITS))-1) ||
 				adjusted_tx_numerator<((-1)<<(31-VERTICAL_TEXTURE_WIDTH_BITS)))
@@ -1079,8 +1078,8 @@ static void _pretexture_vertical_polygon_lines(
 		// LP change:
 		// Use the same reduction hack used earlier,
 		// because otherwise, INTEGER_TO_FIXED would cause world_x to wrap around.
-		long adjusted_world_x = world_x;
-		long adjusted_ty_denominator = unadjusted_ty_denominator>>8;
+		int32 adjusted_world_x = world_x;
+		int32 adjusted_ty_denominator = unadjusted_ty_denominator>>8;
 		
 		// LP: remember that world_x is always >= 0
 		while(adjusted_world_x > INT16_MAX)
@@ -1134,9 +1133,9 @@ static void _pretexture_horizontal_polygon_lines(
 	short *x1_table,
 	short line_count)
 {
-	long hcosine, dhcosine;
-	long hsine, dhsine;
-	long hworld_to_screen;
+	int32 hcosine, dhcosine;
+	int32 hsine, dhsine;
+	int32 hworld_to_screen;
 	bool higher_precision= polygon->origin.z>-WORLD_ONE && polygon->origin.z<WORLD_ONE;
 
 	(void) (screen);
@@ -1156,7 +1155,7 @@ static void _pretexture_horizontal_polygon_lines(
 	while ((line_count-=1)>=0)
 	{
 		// LP change: made this more long-distance-friendly
-		long depth;
+		int32 depth;
 		// world_distance depth;
 		short screen_x, screen_y;
 		short x0= *x0_table++, x1= *x1_table++;
@@ -1171,7 +1170,7 @@ static void _pretexture_horizontal_polygon_lines(
 //		if (polygon->transfer_mode!=_solid_transfer)
 //#endif
 		{
-			long source_x, source_y, source_dx, source_dy;
+			int32 source_x, source_y, source_dx, source_dy;
 			
 			/* calculate texture origins and deltas (source_x,source_dx,source_y,source_dy) */
 			if (higher_precision)
@@ -1498,7 +1497,7 @@ void *calculate_shading_table(
 	fixed ambient_shade)
 {
 	short table_index;
-	long shading_table_size;
+	int32 shading_table_size;
 	
 	switch (bit_depth)
 	{

@@ -95,10 +95,10 @@ void move_replay(void)
  *  Poll keyboard and return action flags
  */
 
-long parse_keymap(void)
+uint32 parse_keymap(void)
 {
 	Uint8 *key_map = SDL_GetKeyState(NULL);
-	long flags = 0;
+	uint32 flags = 0;
 
 	// Parse the keymap
 	key_definition *key = current_key_definitions;
@@ -163,7 +163,7 @@ long parse_keymap(void)
  *  Get random demo replay from map
  */
 
-bool setup_replay_from_random_resource(unsigned long map_checksum)
+bool setup_replay_from_random_resource(uint32 map_checksum)
 {
 	// not supported in SDL version
 	return false;

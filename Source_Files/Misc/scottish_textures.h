@@ -87,17 +87,16 @@ struct rectangle_definition
 	struct bitmap_definition *texture;
 	
 	/* screen coordinates; x0<x1, y0<y1 */
-	short x0, y0;
-	short x1, y1;
+	int16 x0, y0;
+	int16 x1, y1;
 
 	/* screen coordinates */
-	short clip_left, clip_right;
-	short clip_top, clip_bottom;
+	int16 clip_left, clip_right;
+	int16 clip_top, clip_bottom;
 
 	/* depth at logical center (used to calculate light due to viewer) */
 	// LP change: made this long-distance friendly
-	long depth;
-	// world_distance depth;
+	int32 depth;
 	
 	/* ambient shading table index; many objects will be self-luminescent, so this may have
 		nothing to do with the polygon the object is sitting in */
@@ -108,7 +107,7 @@ struct rectangle_definition
 
 	/* _tinted, _textured and _static are supported; _solid would be silly and _landscape
 		would be hard (but might be cool) */
-	short transfer_mode, transfer_data;
+	int16 transfer_mode, transfer_data;
 	
 	/* mirrored horizontally and vertically if true */
 	bool flip_vertical, flip_horizontal;
@@ -134,15 +133,14 @@ struct polygon_definition
 	void *shading_tables;	
 
 	/* all modes legal */	
-	short transfer_mode, transfer_data;
+	int16 transfer_mode, transfer_data;
 	
 	// LP change: made this long-distance friendly
 	long_point3d origin;
-	// world_point3d origin;
 	world_vector3d vector; /* used only for vertically textured polygons */
 
 	/* clockwise vertices for this convex polygon */
-	short vertex_count;
+	int16 vertex_count;
 	point2d vertices[MAXIMUM_VERTICES_PER_SCREEN_POLYGON];
 	
 	// LP addition: shape-descriptor value for the convenience of OpenGL;

@@ -184,9 +184,7 @@ static void initialize_application(void)
 	recordings_dir.CreateDirectory();
 
 	// Setup resource manager
-	FileSpecifier resource_file = global_data_dir;
-	resource_file.AddPart("Resources");
-	initialize_resources(resource_file);
+	initialize_resources();
 
 	// Parse MML files
 	SetupParseTree();

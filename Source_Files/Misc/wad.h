@@ -127,7 +127,7 @@ void close_wad_file(OpenedFile& OFile);
 
 /* ----- Hardware dependent functions (From macintosh_wad.c) */
 // LP: depends on union wads, which are no longer supported
-// FileError find_other_entries_that_reference_checksum(unsigned long checksum,
+// FileError find_other_entries_that_reference_checksum(uint32 checksum,
 // 	FileDesc *files_array, short *count);
 
 /* ----- Read File functions */

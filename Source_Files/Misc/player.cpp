@@ -160,7 +160,7 @@ struct action_queue /* 8 bytes */
 {
 	short read_index, write_index;
 	
-	long *buffer;
+	uint32 *buffer;
 };
 
 struct player_shape_definitions
@@ -282,21 +282,21 @@ static void get_player_transfer_mode(short player_index, short *transfer_mode, s
 static void set_player_dead_shape(short player_index, bool dying);
 static void remove_dead_player_items(short player_index);
 static void update_player_teleport(short player_index);
-static void handle_player_in_vacuum(short player_index, long action_flags);
+static void handle_player_in_vacuum(short player_index, uint32 action_flags);
 static void update_player_media(short player_index);
 static short calculate_player_team(short base_team);
 
 static void try_and_strip_player_items(short player_index);
 
 // LP addition:
-static void ReplenishPlayerOxygen(short player_index, long action_flags);
+static void ReplenishPlayerOxygen(short player_index, uint32 action_flags);
 
 /* ---------- code */
 
 void allocate_player_memory(
 	void)
 {
-	long *action_queue_buffer;
+	uint32 *action_queue_buffer;
 	short i;
 
 	/* allocate space for all our players */
@@ -309,7 +309,7 @@ void allocate_player_memory(
 
 	/* allocate space for our action queue headers and the queues themselves */
 	action_queues= new action_queue[MAXIMUM_NUMBER_OF_PLAYERS];
-	action_queue_buffer= new long[MAXIMUM_NUMBER_OF_PLAYERS*ACTION_QUEUE_BUFFER_DIAMETER];
+	action_queue_buffer= new uint32[MAXIMUM_NUMBER_OF_PLAYERS*ACTION_QUEUE_BUFFER_DIAMETER];
 	assert(action_queues&&action_queue_buffer);
 	
 	/* tell the queues where their buffers are */
@@ -437,7 +437,7 @@ void reset_player_queues(
 /* queue an action flag on the given player’s queue (no zombies allowed) */
 void queue_action_flags(
 	short player_index,
-	int32 *action_flags,
+	uint32 *action_flags,
 	short count)
 {
 	struct player_data *player= get_player_data(player_index);
@@ -457,12 +457,12 @@ void queue_action_flags(
 }
 
 /* dequeue’s a single action flag from the given queue (zombies always return zero) */
-long dequeue_action_flags(
+uint32 dequeue_action_flags(
 	short player_index)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct action_queue *queue= action_queues+player_index;
-	long action_flags;
+	uint32 action_flags;
 
 	if (PLAYER_IS_ZOMBIE(player))
 	{
@@ -510,7 +510,7 @@ void update_players(
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{
 		struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
-		long action_flags= dequeue_action_flags(player_index);
+		uint32 action_flags= dequeue_action_flags(player_index);
 		
 		if (action_flags==NONE)
 		{
@@ -1000,7 +1000,7 @@ bool try_and_subtract_player_item(
 // LP change: assumes nonpositive change rate
 static void handle_player_in_vacuum(
 	short player_index,
-	long action_flags)
+	uint32 action_flags)
 {
 	struct player_data *player= get_player_data(player_index);
 
@@ -1061,7 +1061,7 @@ static void handle_player_in_vacuum(
 }
 
 // LP: assumes nonnegative change rate
-static void ReplenishPlayerOxygen(short player_index, long action_flags)
+static void ReplenishPlayerOxygen(short player_index, uint32 action_flags)
 {
 	(void)(action_flags);
 	

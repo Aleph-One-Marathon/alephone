@@ -814,7 +814,7 @@ enum {
 struct game_data 
 {
 	/* Used for the net game, decrement each tick.  Used for the */
-	/*  single player game-> set to LONG_MAX, and decremented over time, so */
+	/*  single player game-> set to INT32_MAX, and decremented over time, so */
 	/*  that you know how long it took you to solve the game. */
 	int32 game_time_remaining;  
 	int16 game_type; /* One of previous enum's */
@@ -997,8 +997,8 @@ short find_line_crossed_leaving_polygon(short polygon_index, world_point2d *p0, 
 bool point_in_polygon(short polygon_index, world_point2d *p);
 void find_center_of_polygon(short polygon_index, world_point2d *center);
 
-long point_to_line_segment_distance_squared(world_point2d *p, world_point2d *a, world_point2d *b);
-long point_to_line_distance_squared(world_point2d *p, world_point2d *a, world_point2d *b);
+int32 point_to_line_segment_distance_squared(world_point2d *p, world_point2d *a, world_point2d *b);
+int32 point_to_line_distance_squared(world_point2d *p, world_point2d *a, world_point2d *b);
 
 fixed closest_point_on_line(world_point2d *e0, world_point2d *e1, world_point2d *p, world_point2d *closest_point);
 void closest_point_on_circle(world_point2d *c, world_distance radius, world_point2d *p, world_point2d *closest_point);
@@ -1024,8 +1024,8 @@ bool change_polygon_height(short polygon_index, world_distance new_floor_height,
 	world_distance new_ceiling_height, struct damage_definition *damage);
 
 bool line_is_obstructed(short polygon_index1, world_point2d *p1, short polygon_index2, world_point2d *p2);
-bool point_is_player_visible(short max_players, short polygon_index, world_point2d *p, long *distance);
-bool point_is_monster_visible(short polygon_index, world_point2d *p, long *distance);
+bool point_is_player_visible(short max_players, short polygon_index, world_point2d *p, int32 *distance);
+bool point_is_monster_visible(short polygon_index, world_point2d *p, int32 *distance);
 
 void turn_object_to_shit(short garbage_object_index);
 

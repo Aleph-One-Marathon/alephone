@@ -99,7 +99,7 @@ struct view_data
 	world_vector2d left_edge, right_edge, top_edge, bottom_edge;
 
 	short ticks_elapsed;
-	long tick_count; /* for effects and transfer modes */
+	uint32 tick_count; /* for effects and transfer modes */
 	short origin_polygon_index;
 	angle yaw, pitch, roll;
 	world_point3d origin;

@@ -131,7 +131,7 @@ enum /* The various default key setups a user can select. for vbl.c and it's cal
 	_custom_keyboard_setup = NONE
 };
 
-#define INDEFINATE_TIME_DELAY (LONG_MAX)
+#define INDEFINATE_TIME_DELAY (INT32_MAX)
 
 /* ---------- shape descriptors */
 
@@ -324,7 +324,7 @@ bool get_keyboard_controller_status(void);
 void pause_keyboard_controller(bool active);
 long get_heartbeat_count(void);
 void sync_heartbeat_count(void);
-void process_action_flags(short player_identifier, int32 *action_flags, short count);
+void process_action_flags(short player_identifier, uint32 *action_flags, short count);
 void rewind_recording(void);
 void stop_recording(void);
 void stop_replay(void);
@@ -337,10 +337,7 @@ bool has_recording_file(void);
 void increment_replay_speed(void);
 void decrement_replay_speed(void);
 void reset_recording_and_playback_queues(void);
-long parse_keymap(void);
-
-#define MAXIMUM_DEQUEUED_KEYMAP_COUNT 16
-short dequeue_keymaps(short count, long *buffer);
+uint32 parse_keymap(void);
 
 /* ---------- prototypes/GAME_DIALOGS.C */
 

@@ -48,7 +48,7 @@
 
 	Preprocessed format:
 	static:
-		long total_length;
+		int32 total_length;
 		short grouping_count;
 		short font_changes_count;
 		short total_text_length;
