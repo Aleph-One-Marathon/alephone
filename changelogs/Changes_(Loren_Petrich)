@@ -1420,3 +1420,12 @@ Apr 27, 2001
 
 Added lots of things, including external-sound loading, making HUD-less view wider,
 and cheat-code modification
+
+Mar 14, 2002
+
+A lot has happened over the past year that I neglected to document, such as
+adding per-level scripting in map files, static 3D-model support, making A1
+Carbon-friendly by using an alternative screen fader, and essentially commenting out
+Classic networking.
+
+Currently working on adding support for Brian Barnes's Dim3 animated models.
