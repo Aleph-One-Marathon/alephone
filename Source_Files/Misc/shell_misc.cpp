@@ -5,24 +5,27 @@
 
 bool CheatsActive = false;
 
-#ifdef __MVCPP__
-#include "sdl_cseries.h"
-#endif
+#include "cseries.h"
 
-#include "shell.h"
-#include "world.h"
-#include "SDL_rwops.h"
-#include "shell.h"
 #include "XML_ParseTreeRoot.h"
 #include "interface.h"
-#include "preferences.h"
+#include "world.h"
 #include "screen.h"
 #include "mysound.h"
-#include "vbl.h"
 #include "map.h"
+#include "shell.h"
+#include "preferences.h"
+#include "vbl.h"
 #include "player.h"
 #include "music.h"
 #include "items.h"
+
+#include <ctype.h>
+
+#if defined(mac)
+// The modifier for typing in cheat codes
+short CheatCodeModMask = controlKey;
+#endif
 
 
 extern void process_new_item_for_reloading(short player_index, short item_type);
@@ -34,6 +37,8 @@ extern void accelerate_monster(short monster_index,	world_distance vertical_velo
 extern void network_speaker_idle_proc(void);
 extern void update_interface(short time_elapsed);
 
+
+// Cheat-keyword definition: tag and associated text string
 
 #define MAXIMUM_KEYWORD_LENGTH 20
 
@@ -246,24 +251,13 @@ void handle_keyword(int tag)
 							if(items[index]==_i_shotgun || items[index]==_i_magnum)
 							{
 								AddOneItemToPlayer(items[index],2);
-								/*
-								assert(items[index]>=0 && items[index]<NUMBER_OF_ITEMS);
-								if(local_player->items[items[index]]==NONE)
-								{
-									local_player->items[items[index]]= 1;
-								} else {
-									local_player->items[items[index]]++;
-								}
-								*/
 							} else {	
 								AddItemsToPlayer(items[index],1);
-								// local_player->items[items[index]]= 1;
 							}
 							break;
 							
 						case _ammunition:
 							AddItemsToPlayer(items[index],10);
-							// local_player->items[items[index]]= 10;
 							break;
 							
 						case _powerup:
@@ -305,6 +299,10 @@ void handle_keyword(int tag)
 
 }
 
+/*
+ *  Called regularly during event loops
+ */
+
 void global_idle_proc(void)
 {
 	music_idle_proc();
@@ -312,10 +310,19 @@ void global_idle_proc(void)
 	sound_manager_idle_proc();
 }
 
+/*
+ *  Somebody wants to do something important; free as much temporary memory as possible
+ */
+
 void free_and_unlock_memory(void)
 {
 	stop_all_sounds();
 }
+
+/*
+ *  Special version of malloc() used for level transitions, frees some
+ *  memory if possible
+ */
 
 void *level_transition_malloc(
 	size_t size)
@@ -337,6 +344,9 @@ void *level_transition_malloc(
 	return ptr;
 }
 
+// LP change: implementing Benad's "cheats always on"
+// Originally, cheats were not on in the "FINAL" version
+//
 #define NUMBER_OF_KEYWORDS (sizeof(keywords)/sizeof(keyword_data))
 
 static char keyword_buffer[MAXIMUM_KEYWORD_LENGTH+1];

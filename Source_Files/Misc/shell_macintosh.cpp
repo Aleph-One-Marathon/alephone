@@ -172,8 +172,8 @@ static bool HasNavServices = false;
 // Necessary to to indicate whether or not to create a dialog box.
 static bool AppServicesInited = false;
 
-// The modifier for typing in cheat codes
-static short CheatCodeModMask = controlKey;
+// The modifier for typing in cheat codes: defined in shell_misc.cpp
+extern short CheatCodeModMask;
 
 /* ---------- externs that I couldn't fit into the #include heirarchy nicely */
 extern bool load_and_start_game(FileSpecifier& File);
