@@ -371,15 +371,16 @@ void update_path_camera(void)
 		
 	/* Loren Petrich's code... thanks Loren! */
 	
-	world_point2d CurrentPosition, TargetPosition;
 	short CurrentPolygonIndex;
 	short NextPolygonIndex;
 	
 	// Set CurrentPosition to the old position of the camera
 	// Set TargetPosition to the new position of the camera
 	// Set CurrentPolygonIndex to the old polygon membership of the camera
-	
-/*	TargetPosition.x = camera_point.location.position.x;
+
+/*	world_point2d CurrentPosition, TargetPosition;
+
+	TargetPosition.x = camera_point.location.position.x;
 	TargetPosition.y = camera_point.location.position.y;
 	CurrentPosition.x = old_point.position.x;
 	CurrentPosition.y = old_point.position.y; */
@@ -1153,6 +1154,7 @@ void s_Select_Weapon(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1185,7 +1187,9 @@ void s_Select_Weapon(script_instruction inst)
 		case _i_smg:
 			weapon_index = _weapon_smg;
 			break;
-		
+		default:
+			weapon_index = _weapon_fist;
+			break;
 	}	
 	
 	if (!ready_weapon(player_identifier_to_player_index(current_player->identifier), weapon_index))
@@ -1227,6 +1231,7 @@ void s_Init_Cameras(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1263,6 +1268,7 @@ void s_Select_Camera(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1295,6 +1301,7 @@ void s_Set_Camera_Poly(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1409,6 +1416,7 @@ void s_Init_Paths(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1453,6 +1461,7 @@ void s_New_Path(script_instruction inst)
 				path_length= (int)floor(get_variable(int(inst.op2)));
 				break;
 		default:
+				path_num = path_length = 0;
 				break;
 	}
 	
@@ -1487,6 +1496,7 @@ void s_Dispose_Path(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1512,6 +1522,7 @@ void s_Select_Path(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1532,6 +1543,7 @@ void s_Set_Path_Move_Speed(script_instruction inst)
 				temp= get_variable(int(inst.op1));
 				break;
 		default:
+				temp= 0.0;
 				break;
 	}
 	
@@ -1552,6 +1564,7 @@ void s_Set_Path_Roll_Speed(script_instruction inst)
 				temp= get_variable(int(inst.op1));
 				break;
 		default:
+				temp= 0.0;
 				break;
 	}
 	
@@ -1572,6 +1585,7 @@ void s_Select_Point(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1592,6 +1606,7 @@ void s_Set_Point_Poly(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1694,6 +1709,7 @@ void s_Start_Camera_On_Path(script_instruction inst)
 				temp= (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				temp= 0;
 				break;
 	}
 	
@@ -1726,6 +1742,7 @@ void s_Change_Soundtrack(script_instruction inst)
 			temp= (int)floor(get_variable(inst.op1));
 			break;
 		default:
+			temp= 0;
 			break;
 	}
 
@@ -1746,6 +1763,7 @@ void s_Set_Fog_Depth(script_instruction inst)
 			temp= (int)floor(get_variable(int(inst.op1)));
 			break;
 		default:
+			temp= 0;
 			break;
  	}
 	FogDepth = temp;
@@ -1831,6 +1849,7 @@ void s_Teleport_Player(script_instruction inst)
 				dest = (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
+				dest = 0;
 				break;
 	}
 	

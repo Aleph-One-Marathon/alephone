@@ -654,8 +654,6 @@ bool setup_for_replay_from_file(
 void start_recording(
 	void)
 {
-	long count;
-	
 	assert(!replay.valid);
 	replay.valid= true;
 	
@@ -683,7 +681,6 @@ void stop_recording(
 	if (replay.game_is_being_recorded)
 	{
 		short player_index;
-		long count;
 		long total_length;
 
 		assert(replay.valid);
@@ -838,7 +835,6 @@ static void read_recording_queue_chunks(
 	uint32 action_flags; 
 	int16 count, player_index, num_flags;
 	ActionQueue *queue;
-	short error;
 	
 	for (player_index = 0; player_index < dynamic_world->player_count; player_index++)
 	{

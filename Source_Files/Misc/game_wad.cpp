@@ -975,7 +975,7 @@ bool load_game_from_file(FileSpecifier& File)
 	success= load_level_from_map(NONE); /* Save games are ALWAYS index NONE */
 	if (success)
 	{
-		unsigned long parent_checksum;
+		uint32 parent_checksum;
 	
 		/* Set the non-saved data.... */
 		set_current_player_index(0);
@@ -1602,7 +1602,7 @@ static void scan_and_add_scenery(
 
 struct save_game_data 
 {
-	long tag;
+	uint32 tag;
 	short unit_size;
 	bool loaded_by_level;
 };
@@ -1647,7 +1647,7 @@ struct save_game_data save_data[]=
 
 /* the sizes are the sizes to save in the file, be aware! */
 static uint8 *tag_to_global_array_and_size(
-	long tag, 
+	uint32 tag, 
 	long *size
 	)
 {
@@ -1883,7 +1883,6 @@ static struct wad_data *build_save_game_wad(
 	long *length)
 {
 	struct wad_data *wad= NULL;
-	short loop;
 	uint8 *array_to_slam;
 	long size;
 
@@ -1891,7 +1890,7 @@ static struct wad_data *build_save_game_wad(
 	if(wad)
 	{
 		recalculate_map_counts();
-		for(loop= 0; loop<NUMBER_OF_SAVE_ARRAYS; ++loop)
+		for(unsigned loop= 0; loop<NUMBER_OF_SAVE_ARRAYS; ++loop)
 		{
 			/* If there is a conversion function, let it handle it */
 			array_to_slam= tag_to_global_array_and_size(save_data[loop].tag, &size);
@@ -1913,13 +1912,7 @@ static struct wad_data *build_save_game_wad(
 static void complete_restoring_level(
 	struct wad_data *wad)
 {
-	short loop;
-	void *array;
-	uint8 *data;
-	long size, data_length;
-	short count;
-	
-	for(loop= 0; loop<NUMBER_OF_SAVE_ARRAYS; ++loop)
+	for(unsigned loop= 0; loop<NUMBER_OF_SAVE_ARRAYS; ++loop)
 	{
 		/* If it hasn't already been loaded */
 		// LP: no longer necessary
@@ -1927,9 +1920,10 @@ static void complete_restoring_level(
 		if(!save_data[loop].loaded_by_level)
 		{
 			/* Size is invalid at this point.. */
-			array= tag_to_global_array_and_size(save_data[loop].tag, &size);
-			data= (uint8 *)extract_type_from_wad(wad, save_data[loop].tag, &data_length);	
-			count= data_length/save_data[loop].unit_size;
+			long size, data_length;
+			void *array= tag_to_global_array_and_size(save_data[loop].tag, &size);
+			uint8 *data= (uint8 *)extract_type_from_wad(wad, save_data[loop].tag, &data_length);	
+			short count= data_length/save_data[loop].unit_size;
 			assert(count*save_data[loop].unit_size==data_length);
 
 			/* Copy the data to the proper array.. */

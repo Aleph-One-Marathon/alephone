@@ -365,6 +365,8 @@ void dialog::event(SDL_Event &e)
 				case SDLK_F9:			// F9 = Screen dump
 					dump_screen();
 					break;
+				default:
+					break;
 			}
 			break;
 

@@ -38,6 +38,7 @@ pixel8 *calculate_bitmap_origin(
 	return origin;
 }
 
+#if 0
 static void erase_bitmap(
 	struct bitmap_definition *bitmap,
 	long pel)
@@ -78,6 +79,7 @@ static void erase_bitmap(
 	
 	return;
 }
+#endif
 
 void remap_bitmap(
 	struct bitmap_definition *bitmap,

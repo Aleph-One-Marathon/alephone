@@ -325,11 +325,13 @@ static GLuint FontDisplayList;
 extern void OGL_ResetMapFonts();
 
 
+#ifdef mac
 // This is a strip buffer for piping 2D graphics through OpenGL.
 static GLuint *Buffer2D = NULL;
 static int Buffer2D_Width = 0;
 // Making the buffer several lines makes it more efficient
 const int Buffer2D_Height = 16;
+#endif
 
 
 // This function returns whether OpenGL is active;
@@ -664,7 +666,7 @@ bool OGL_EndMain()
 	// No texture mapping now
 	glDisable(GL_TEXTURE_2D);
 	
-	GLboolean Z_Buffering = glIsEnabled(GL_DEPTH_TEST);
+	// And no Z buffer
 	glDisable(GL_DEPTH_TEST);
 	
 	// Render OpenGL faders, if in use
@@ -1513,7 +1515,6 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 {
 	// Check for fog
-	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	if (FogPresent)
 	{
 		// Render as fog at infinity

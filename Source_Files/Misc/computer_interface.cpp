@@ -230,7 +230,7 @@ struct font_dimensions {
 
 /* Terminal data loaded from map (maintained by computer_interface.cpp) */
 struct terminal_text_t {	// Object describing one terminal
-	terminal_text_t() : text(NULL), text_length(0) {}
+	terminal_text_t() : text_length(0), text(NULL) {}
 	terminal_text_t(const terminal_text_t &other) {copy(other);}
 	~terminal_text_t() {delete[] text;}
 
@@ -281,8 +281,10 @@ inline player_terminal_data *get_player_terminal_data(
 	return player_terminal;
 }
 
+#ifdef mac
 // LP addition: overall terminal boundary rect (needed for resetting the clipping rectangle)
 static Rect OverallBounds;
+#endif
 
 /* ------------ private prototypes */
 static void draw_logon_text(Rect *bounds, terminal_text_t *terminal_text,
@@ -314,12 +316,6 @@ static void present_checkpoint_text(Rect *frame,
 	short current_line);
 static bool find_checkpoint_location(short checkpoint_index, world_point2d *location, 
 	short *polygon_index);
-struct static_preprocessed_terminal_data *preprocess_text(char *text, short length);
-static void pre_build_groups(struct terminal_groupings *groups,
-	short *group_count, struct text_face_data *text_faces, short *text_face_count, 
-	char *base_text, short *base_length);
-static short matches_group(char *base_text, short length, short index, short possible_group, 
-	short *permutation);
 static void	set_text_face(struct text_face_data *text_face);
 static void draw_line(char *base_text, short start_index, short end_index, Rect *bounds,
 	terminal_text_t *terminal_text, short *text_face_start_index,
@@ -339,7 +335,14 @@ static bool previous_terminal_group(short player_index, terminal_text_t *termina
 static void fill_terminal_with_static(Rect *bounds);
 static short calculate_lines_per_page(void);
 
-#ifndef PREPROCESSING_CODE
+#ifdef PREPROCESSING_CODE
+struct static_preprocessed_terminal_data *preprocess_text(char *text, short length);
+static void pre_build_groups(struct terminal_groupings *groups,
+	short *group_count, struct text_face_data *text_faces, short *text_face_count, 
+	char *base_text, short *base_length);
+static short matches_group(char *base_text, short length, short index, short possible_group, 
+	short *permutation);
+#else
 static terminal_text_t *get_indexed_terminal_data(short id);
 static void encode_text(terminal_text_t *terminal_text);
 static void decode_text(terminal_text_t *terminal_text);
@@ -752,12 +755,13 @@ static void _draw_computer_text(
 	short current_line)
 {
 	bool done= false;
-	short line_count, start_index, text_index;
+	short line_count, start_index;
 	struct terminal_groupings *current_group= get_indexed_grouping(terminal_text, group_index);
 	// LP change: just in case...
 	if (!current_group) return;
 	struct text_face_data text_face;
 	short index, last_index, last_text_index, end_index;
+	unsigned text_index;
 
 #ifdef mac
 	/* Set the font.. */
@@ -902,9 +906,9 @@ static void draw_line(
 {
 	short line_height= _get_font_line_height(_computer_interface_font);
 	bool done= false;
-	short text_index, current_start;
-	short current_end= end_index;
+	short current_start, current_end= end_index;
 	struct text_face_data *face_data= NULL;
+	unsigned text_index;
 
 	if((*text_face_start_index)==NONE) 
 	{
@@ -970,8 +974,8 @@ static short find_group_type(
 	terminal_text_t *data, 
 	short group_type)
 {
-	short index;
-	
+	unsigned index;
+
 	for(index= 0; index<data->groupings.size(); index++)
 	{
 		struct terminal_groupings *group= get_indexed_grouping(data, index);

@@ -275,8 +275,7 @@ angle arctangent(
 	int32 y) // world_distance y)
 {
 	int32 tangent;
-	register int32 last_difference, new_difference;
-	angle search_arc, theta;
+	angle theta;
 	
 	// LP change: reworked everything in here
 	
@@ -319,7 +318,7 @@ angle arctangent(
 	tangent= (TRIG_MAGNITUDE*ytfm)/xtfm;
 	
 	// Find the search endpoints and test them:
-	angle dtheta, dth0 = 0, dth1 = EIGHTH_CIRCLE;
+	angle dtheta = 0, dth0 = 0, dth1 = EIGHTH_CIRCLE;
 	int32 tan0 = tangent_table[dth0];
 	int32 tan1 = tangent_table[dth1];
 	if (tangent <= tan0) dtheta = dth0;
@@ -367,7 +366,10 @@ angle arctangent(
 	
 	// Idiot-proofed exit
 	return NORMALIZE_ANGLE(theta);
+
 	/*
+	register int32 last_difference, new_difference;
+	angle search_arc;
 	if (x)
 	{
 		tangent= (TRIG_MAGNITUDE*y)/x;

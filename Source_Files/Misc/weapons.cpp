@@ -341,9 +341,8 @@ void initialize_player_weapons(
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 	struct player_data *player= get_player_data(player_index);
-	short weapon_type;
 	
-	for(weapon_type= 0; weapon_type<NUMBER_OF_WEAPONS; ++weapon_type)
+	for(unsigned weapon_type= 0; weapon_type<NUMBER_OF_WEAPONS; ++weapon_type)
 	{
 		short which_trigger;
 
@@ -371,9 +370,7 @@ void initialize_player_weapons(
 void mark_weapon_collections(
 	bool loading)
 {
-	short index;
-	
-	for(index= 0; index<NUMBER_OF_WEAPONS; ++index)
+	for(unsigned index= 0; index<NUMBER_OF_WEAPONS; ++index)
 	{
 		struct weapon_definition *definition= get_weapon_definition(index);
 		
@@ -474,14 +471,12 @@ void process_new_item_for_reloading(
 	short player_index, 
 	short item_type)
 {
-	short weapon_type;
-	
 	/* Is this a weapon? */
 	switch(get_item_kind(item_type))
 	{
 		case _ball:
 		case _weapon:
-			for(weapon_type= 0; weapon_type<NUMBER_OF_WEAPONS; ++weapon_type)
+			for(unsigned weapon_type= 0; weapon_type<NUMBER_OF_WEAPONS; ++weapon_type)
 			{
 				struct weapon_definition *definition= get_weapon_definition(weapon_type);
 				
@@ -587,9 +582,8 @@ void process_new_item_for_reloading(
 			/* Don't try to reload if the player has an invalid weapon */
 			if(player_has_valid_weapon(player_index))
 			{
-				for(weapon_type= 0; weapon_type<NUMBER_OF_WEAPONS; ++weapon_type)
+				for(unsigned weapon_type= 0; weapon_type<NUMBER_OF_WEAPONS; ++weapon_type)
 				{
-					struct weapon_definition *definition= get_weapon_definition(weapon_type);
 					short which_trigger, first_trigger, trigger_count;
 				
 					trigger_count= get_active_trigger_count_and_states(player_index, weapon_type, 0l, &first_trigger, NULL);
@@ -955,17 +949,20 @@ void destroy_players_ball(
 	struct player_data *player= get_player_data(player_index);
 	short ball_color= find_player_ball_color(player_index);
 	struct weapon_data *weapon= get_player_current_weapon(player_index);
-	world_point3d origin, vector;
-	short origin_polygon, item_type;
+	short item_type;
 
 	assert(ball_color!=NONE);
 	item_type= ball_color+BALL_ITEM_BASE;
 
-	/*calculate_weapon_origin_and_vector(player_index, _primary_weapon, 
+	/*
+	world_point3d origin, vector;
+	short origin_polygon;
+	calculate_weapon_origin_and_vector(player_index, _primary_weapon, 
 		&origin, &vector, &origin_polygon, 0);
 
 	drop_the_ball(&origin, origin_polygon, player->monster_index, 
-		_monster_marine, item_type);*/
+		_monster_marine, item_type);
+	*/
 	
 	weapon->triggers[0].rounds_loaded = 0;
 	weapon->triggers[1].rounds_loaded = 0;
@@ -1038,10 +1035,9 @@ void debug_print_weapon_status(
 	void)
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(current_player_index);
-	short index;
 	
 	dprintf("Current: %d Desired: %d;g", player_weapons->current_weapon, player_weapons->desired_weapon);
-	for(index= 0; index<NUMBER_OF_WEAPONS; ++index)
+	for(unsigned index= 0; index<NUMBER_OF_WEAPONS; ++index)
 	{
 		debug_weapon(index);
 	}
@@ -1613,13 +1609,13 @@ static struct trigger_definition *get_trigger_definition(
 	short which_trigger)
 {
 	struct weapon_definition *definition= get_weapon_definition(which_weapon);
-	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 	struct trigger_definition *trigger_definition;
 
 	assert(which_trigger>=0 && which_trigger<NUMBER_OF_TRIGGERS);
 	assert(which_weapon>=0 && which_weapon<NUMBER_OF_WEAPONS);
 
 /*
+	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 #ifdef DEBUG
 	switch(which_weapon)
 	{
@@ -2616,7 +2612,6 @@ static void lower_weapon(
 	short player_index,
 	short weapon_index)
 {
-	struct player_data *player= get_player_data(player_index);
 	struct weapon_definition *definition= get_weapon_definition(weapon_index);
 	short which_trigger, active_trigger_count, first_trigger;
 
@@ -2630,9 +2625,6 @@ static void lower_weapon(
 		/* If this weapon isn't already lowering.. */
 		if(trigger->state != _weapon_lowering) 
 		{
-			struct trigger_definition *trigger_definition= 
-				get_trigger_definition(player_index, weapon_index, which_trigger);
-
 			/* If we aren't raising, set the phase.  Otherwise use */
 			/*  the current phase to go back down.. */	
 			if( trigger->state==_weapon_idle)
@@ -2658,7 +2650,6 @@ static void raise_weapon(
 	short player_index,
 	short weapon_index)
 {
-	struct player_data *player= get_player_data(player_index);
 	struct weapon_definition *definition= get_weapon_definition(weapon_index);
 	short which_trigger, active_trigger_count, first_trigger;
 
@@ -2672,9 +2663,6 @@ static void raise_weapon(
 
 		if(trigger->state!=_weapon_raising)
 		{
-			struct trigger_definition *trigger_definition= 
-				get_trigger_definition(player_index, weapon_index, which_trigger);
-	
 			/* If we aren't raising, set the phase.  Otherwise use */
 			/*  the current phase to go back down.. */	
 			if(trigger->state==_weapon_idle)
@@ -3301,7 +3289,6 @@ static void blow_up_player(
 {
 	struct player_data *player= get_player_data(player_index);
 	struct object_data *object= get_object_data(player->object_index);
-	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 
 	detonate_projectile(&object->location, object->polygon, _projectile_overloaded_fusion_dispersal,
 		player->monster_index, _monster_marine, FIXED_ONE);
@@ -3630,7 +3617,6 @@ static void test_raise_double_weapon(
 {
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 	struct player_data *player= get_player_data(player_index);
-	bool raising= false;
 	
 	if(definition->weapon_class==_twofisted_pistol_class || definition->weapon_class==_melee_class)
 	{
@@ -3770,8 +3756,6 @@ static void change_to_desired_weapon(
 	for(which_trigger= first_trigger; which_trigger<trigger_count; ++which_trigger)
 	{
 		struct trigger_data *trigger= get_trigger_data(player_index, player_weapons->desired_weapon, which_trigger);
-		struct trigger_definition *trigger_definition= get_trigger_definition(player_index, 
-			player_weapons->desired_weapon, which_trigger);
 
 		trigger->phase= definition->ready_ticks;
 		trigger->state= _weapon_raising;
@@ -4407,8 +4391,6 @@ bool XML_WeaponOrderParser::Start()
 
 bool XML_WeaponOrderParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	float FValue;
-
 	if (strcmp(Tag,"index") == 0)
 	{
 		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_WEAPONS-1)))

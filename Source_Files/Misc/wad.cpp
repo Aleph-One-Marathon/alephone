@@ -98,7 +98,7 @@ static short count_raw_tags(byte *raw_wad);
 static struct wad_data *convert_wad_from_raw(struct wad_header *header, byte *data,	long wad_start_offset,
 	long raw_length);
 static struct wad_data *convert_wad_from_raw_modifiable(struct wad_header *header, byte *raw_wad, long raw_length);
-static void patch_wad_from_raw(struct wad_header *header, byte *raw_wad, struct wad_data *read_wad);
+//static void patch_wad_from_raw(struct wad_header *header, byte *raw_wad, struct wad_data *read_wad);
 static bool size_of_indexed_wad(OpenedFile& OFile, struct wad_header *header, short index, 
 	long *length);
 
@@ -123,7 +123,6 @@ bool read_wad_header(
 	OpenedFile& OFile, 
 	struct wad_header *header)
 {
-	bool union_file= false;
 	int error = 0;
 	bool success= true;
 	

@@ -47,7 +47,7 @@ bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length)
 		return false;
 
 	// Find fork
-	int req_id = rsrc_fork ? 2 : 1;
+	uint32 req_id = rsrc_fork ? 2 : 1;
 	SDL_RWseek(f, 0x18, SEEK_SET);
 	int num_entries = SDL_ReadBE16(f);
 	while (num_entries--) {

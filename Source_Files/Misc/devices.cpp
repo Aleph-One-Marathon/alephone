@@ -475,6 +475,7 @@ void try_and_toggle_control_panel(
 	return;
 }
 
+#if 0
 /* ---------- these functions are all used in Vulcan */
 static bool shape_is_control_panel(
 	shape_descriptor texture)
@@ -524,6 +525,7 @@ static bool control_panel_type_valid_for_texture(
 	return valid;
 }
 //------------------
+#endif
 
 /* ---------- private code */
 

@@ -526,7 +526,7 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 		uint32 start_tick = SDL_GetTicks();
 		do {
 
-			uint32 delta = (SDL_GetTicks() - start_tick) / (text_block ? (2 * SCROLLING_SPEED) : SCROLLING_SPEED);
+			int32 delta = (SDL_GetTicks() - start_tick) / (text_block ? (2 * SCROLLING_SPEED) : SCROLLING_SPEED);
 			if (scroll_horizontal && delta > picture_width - screen_width) {
 				delta = picture_width - screen_width;
 				done = true;

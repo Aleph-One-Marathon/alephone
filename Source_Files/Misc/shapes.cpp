@@ -703,7 +703,6 @@ void mark_collection(
 {
 	if (collection_code!=NONE)
 	{
-		short clut_index= GET_COLLECTION_CLUT(collection_code);
 		short collection_index= GET_COLLECTION(collection_code);
 	
 		assert(collection_index>=0&&collection_index<MAXIMUM_COLLECTIONS);

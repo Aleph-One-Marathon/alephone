@@ -722,11 +722,6 @@ static void process_screen_click(const SDL_Event &event)
 	portable_process_screen_click(event.button.x, event.button.y, has_cheat_modifiers());
 }
 
-static bool is_keypad(SDLKey key)
-{
-	return key >= SDLK_KP0 && key <= SDLK_KP_EQUALS;
-}
-
 static void handle_game_key(const SDL_Event &event)
 {
 	SDLKey key = event.key.keysym.sym;
@@ -883,6 +878,7 @@ static void process_game_key(const SDL_Event &event)
 					case SDLK_r: item = iRevert; break;
 					case SDLK_c: item = iCloseGame; break;
 					case SDLK_q: item = iQuitGame; break;
+					default: break;
 				}
 				if (item > 0)
 					do_menu_item_command(mGame, item, has_cheat_modifiers());
@@ -932,6 +928,7 @@ static void process_game_key(const SDL_Event &event)
 				case SDLK_c: item = iCredits; break;
 				case SDLK_q: item = iQuit; break;
 				case SDLK_F9: dump_screen(); break;
+				default: break;
 			}
 			if (item > 0) {
 				draw_menu_button_for_command(item);
@@ -971,7 +968,7 @@ void dump_screen(void)
 	int i = 0;
 	do {
 		char name[256];
-		sprintf(name, "Screenshot_%0.4d.bmp", i);
+		sprintf(name, "Screenshot_%04d.bmp", i);
 		file = local_data_dir;
 		file.AddPart(name);
 		i++;
