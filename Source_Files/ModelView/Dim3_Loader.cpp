@@ -337,13 +337,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 			VS.Bone1 = ibsx < NumBones ? BoneIndices[ibsx] : NONE;
 		}
 	}
-	
-	
-	int NumFrames = Model.Frames.size();
-	int NumBones = Model.Bones.size();
-	if (NumBones > 0 && NumFrames > 0)
-		printf("Number of Frames = %d\n",NumFrames/NumBones);
-	
+		
 	return (!Model.Positions.empty() && !Model.VertIndices.empty());
 }
 
