@@ -42,8 +42,9 @@ bool OGL_Initialize()
 	// return (_OGL_IsPresent = ((Ptr)glBegin != (Ptr)kUnresolvedCFragSymbolAddress));
 #elif defined(SDL)
 	// nothing to do
+	return true;
 #else
-#error OLG_Initialize() not implemented for this platform
+#error OGL_Initialize() not implemented for this platform
 #endif
 #endif
 }
