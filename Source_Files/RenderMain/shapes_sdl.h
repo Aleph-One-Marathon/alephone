@@ -71,7 +71,7 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
         if(inCollection != NONE) {
             collection_index = GET_COLLECTION(inCollection);
             clut_index = GET_COLLECTION_CLUT(inCollection);
-            low_level_shape_index = GET_DESCRIPTOR_SHAPE(shape);
+            low_level_shape_index = shape;
         }
 
 	struct collection_definition *collection = get_collection_definition(collection_index);
