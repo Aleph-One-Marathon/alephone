@@ -197,6 +197,9 @@ static short Powerup_TripleEnergy = _i_triple_energy_powerup;
 static short Powerup_DoubleEnergy = _i_double_energy_powerup;
 static short Powerup_Energy = _i_energy_powerup;
 static short Powerup_Oxygen = _i_oxygen_powerup;
+
+// LP: can one swim?
+static bool CanSwim = true;
 				
 /* ---------- structures */
 
@@ -541,22 +544,24 @@ void update_players(ActionQueues* inActionQueuesToUse)
 			action_flags= 0;
 			update_player_for_terminal_mode(player_index);
 		}
+		
+		bool IsSwimming = TEST_FLAG(player->variables.flags,_HEAD_BELOW_MEDIA_BIT) && CanSwim;
 
 		// if weÕve got the ball we canÕt run (that sucks)
 		// Benad: also works with _game_of_rugby and _game_of_capture_the_flag
 		// LP change: made it possible to swim under a liquid if one has the ball
 		// START Benad changed oct. 1st (works with ANY ball color, d'uh...)
 		if ((GET_GAME_TYPE()==_game_of_kill_man_with_ball) 
-		 && dynamic_world->game_player_index==player_index && !(player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) action_flags&= ~_run_dont_walk;
+		 && dynamic_world->game_player_index==player_index && !IsSwimming) action_flags&= ~_run_dont_walk;
 		
 		if ((((GET_GAME_TYPE()==_game_of_rugby) || (GET_GAME_TYPE()==_game_of_capture_the_flag)) && (find_player_ball_color(player_index) != NONE))
-			&& !(player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) action_flags&= ~_run_dont_walk;
+			&& !IsSwimming) action_flags&= ~_run_dont_walk;
 		// END Benad changed oct. 1st
 		
 		// if (GET_GAME_TYPE()==_game_of_kill_man_with_ball && dynamic_world->game_player_index==player_index) action_flags&= ~_run_dont_walk;
 		
 		// if our head is under media, we canÕt run (that sucks, too)
-		if ((player->variables.flags&_HEAD_BELOW_MEDIA_BIT) && (action_flags&_run_dont_walk)) action_flags&= ~_run_dont_walk, action_flags|= _swim;
+		if (IsSwimming && (action_flags&_run_dont_walk)) action_flags&= ~_run_dont_walk, action_flags|= _swim;
 		
 		update_player_physics_variables(player_index, action_flags);
 
@@ -2550,6 +2555,10 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"triple_energy"))
 	{
 		return ReadInt16Value(Value,TripleEnergy);
+	}
+	else if (StringsEqual(Tag,"can_swim"))
+	{
+		return ReadBooleanValue(Value,CanSwim);
 	}
 	UnrecognizedTag();
 	return false;
