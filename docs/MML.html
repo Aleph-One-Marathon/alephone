@@ -1453,12 +1453,26 @@ A negative scale will cause the model to be reflected around all three axes
 <li>x_shift: shift in internal units in the x direction (default: 0).
 <li>y_shift: shift in internal units in the y direction (default: 0).
 <li>z_shift: shift in internal units in the z direction (default: 0).
-<li>side: which side is visible:
+<li>side: which side is visible (default: clockwise):
 <ul>
 <li>+: clockwise side
 <li>0: both sides
 <li>-: counterclockwise side
 </ul>
+<li>norm_type: which sort of normals to use for doing the lighting (default: originals)
+<ol type=1 start=1000>
+<li>None
+<li>Original-model normals (may be none)
+<li>Reverse-direction original-model normals (may be none)
+<li>Normals in the direction of the polygons' clockwise sides
+<li>Normals in the direction of the polygons' counterclockwise sides
+</ol>
+<li>norm_split: threshold for spltting the vertex normals
+for clockwise-side or counterclockwise-side normals;
+if the normals' variance is greater than this value,
+then a vertex's normal is split into one for each of its polygons.
+(default: 0.5)
+<li>light_type: what sort of lighting to use
 </ul>
 <p>
 The scaling and rotations will be applied before the shifts;
