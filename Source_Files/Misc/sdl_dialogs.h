@@ -102,7 +102,7 @@ private:
 	SDL_Surface *get_surface(void) const;
 	void update(SDL_Rect r) const;
 	void draw_widget(widget *w, bool do_update = true) const;
-    void deactivate_currently_active_widget(bool draw = true);
+	void deactivate_currently_active_widget(bool draw = true);
 	void activate_first_widget(void);
 	void activate_widget(size_t num, bool draw = true);
 	void activate_prev_widget(void);
