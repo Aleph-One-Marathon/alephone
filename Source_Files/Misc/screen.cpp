@@ -1954,7 +1954,7 @@ PixMapHandle createScreenPixMap()
 #if defined(USE_CARBON_ACCESSORS)
 	GetQDGlobalsScreenBits(&bitMap);
 #else
-	bitmap = qd.screenBits;
+	bitMap = qd.screenBits;
 #endif
 	SetRect( &gBounds, 0, 0, bitMap.bounds.right, bitMap.bounds.bottom);
 	
