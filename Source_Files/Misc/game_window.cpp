@@ -370,6 +370,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		mark_shield_display_as_dirty();
 		mark_oxygen_display_as_dirty();
 		mark_player_inventory_as_dirty(current_player_index, NONE);
+		glScissor(dest.left, dest.bottom, 640, 160);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
 		glTranslatef(dest.left, dest.top - 320, 0.0);

@@ -27,6 +27,9 @@ protected:
 	void DrawText(const char *text, screen_rectangle *dest, short flags, short font_id, short text_color);
 	void FillRect(screen_rectangle *r, short color_index);
 	void FrameRect(screen_rectangle *r, short color_index);
+
+	void SetClipPlane(int x, int y, int c_x, int c_y, int radius);
+	void DisableClipPlane(void);
 };
 
 #endif

@@ -514,14 +514,18 @@ void HUD_OGL_Class::draw_entity_blip(point2d *location, shape_descriptor shape)
 {
 	bitmap_definition *blip;
 	get_shape_bitmap_and_shading_table(shape, &blip, (void **) NULL, NONE);
-	if (!blip)
-		return;
+	if (!blip) return;
 
 	screen_rectangle *r = get_interface_rectangle(_motion_sensor_rect);
+	int x = location->x, y = location->y;
+	int c_x = r->left + (motion_sensor_side_length >> 1);
+	int c_y = r->top + (motion_sensor_side_length >> 1);
+	SetClipPlane(x, y, c_x, c_y, motion_sensor_side_length >> 1);
 	DrawShapeAtXY(shape,
-		location->x + r->left + (motion_sensor_side_length>>1) - (blip->width>>1),
-		location->y + r->top  + (motion_sensor_side_length>>1) - (blip->height>>1),
+		x + c_x - (blip->width >> 1),
+		y + c_y - (blip->height >> 1),
 		true);
+	DisableClipPlane();
 }
 
 /* if we find an entity that is being removed, we continue with the removal process and ignore

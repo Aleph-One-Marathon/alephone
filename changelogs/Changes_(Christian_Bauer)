@@ -1,7 +1,7 @@
 Change log of the SDL version of Aleph One
 
 August 3, 2001
- - motion sensor works in OpenGL HUD (without proper clipping, though)
+ - motion sensor works in OpenGL HUD
 
 August 2, 2001
  - added OpenGL HUD rendering (controlled by OGL_Flag_HUD, similar to the

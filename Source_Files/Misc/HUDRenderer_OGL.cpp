@@ -5,6 +5,9 @@
  */
 
 #include "HUDRenderer_OGL.h"
+
+#ifdef HAVE_OPENGL
+
 #include "FontHandler.h"
 
 #include "render.h"
@@ -13,9 +16,9 @@
 #include "OGL_Setup.h"
 #include "OGL_Textures.h"
 
-#ifdef HAVE_OPENGL
-
 #include <GL/gl.h>
+
+#include <math.h>
 
 extern bool MotionSensorActive;
 
@@ -173,6 +176,42 @@ void HUD_OGL_Class::FrameRect(screen_rectangle *r, short color_index)
 		glVertex2i(r->right - 1, r->bottom);
 		glVertex2i(r->left, r->bottom);
 	glEnd();
+}
+
+
+/*
+ *  Set clip plane for rendering a blip at (x, y) on the motion sensor.
+ *  The plane gets attached tangential to the circle with the specified
+ *  radius and center (this circle covers the entire motion sensor area).
+ *  This should be a sufficient approximation to a circular clipping region
+ *  for small blips.
+ */
+
+void HUD_OGL_Class::SetClipPlane(int x, int y, int c_x, int c_y, int radius)
+{
+	GLdouble blip_dist = sqrt(x*x+y*y);
+	if (blip_dist <= 2.0)
+		return;
+	GLdouble normal_x = x / blip_dist, normal_y = y / blip_dist;
+	GLdouble tan_pt_x = c_x + normal_x * radius, tan_pt_y = c_y + normal_y * radius;
+
+	glEnable(GL_CLIP_PLANE0);
+
+	GLdouble eqn[4] = {
+		-normal_x, -normal_y, 0,
+		normal_x * tan_pt_x + normal_y * tan_pt_y
+	};
+	glClipPlane(GL_CLIP_PLANE0, eqn);
+}
+
+
+/*
+ *  Disable clip plane
+ */
+
+void HUD_OGL_Class::DisableClipPlane(void)
+{
+	glDisable(GL_CLIP_PLANE0);
 }
 
 #endif // def HAVE_OPENGL
