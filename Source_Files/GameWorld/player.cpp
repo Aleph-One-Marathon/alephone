@@ -768,15 +768,23 @@ void damage_player(
 		switch (damage->type)
 		{
 			case _damage_oxygen_drain:
+			{
 				// LP change: pegging to maximum value
-				if ((player->suit_oxygen= int16(MIN(long(player->suit_oxygen)-long(damage_amount),long(INT16_MAX))))<0) player->suit_oxygen= 0;
+				player->suit_oxygen= int16(MIN(long(player->suit_oxygen)-long(damage_amount),long(INT16_MAX)));
+				L_Call_Player_Damaged(player_index, aggressor_player_index, aggressor_index, damage->type, damage_amount);
+				if (player->suit_oxygen < 0) player->suit_oxygen= 0;
 				if (player_index==current_player_index) mark_oxygen_display_as_dirty();
 				break;
-			
+			}
 			default:
-				/* damage the player, recording the kill if the aggressor was another player and we died */
+			{
 				// LP change: pegging to maximum value
-				if ((player->suit_energy= int16(MIN(long(player->suit_energy)-long(damage_amount),long(INT16_MAX))))<0)
+				player->suit_energy= int16(MIN(long(player->suit_energy)-long(damage_amount),long(INT16_MAX)));
+
+				L_Call_Player_Damaged(player_index, aggressor_player_index, aggressor_index, damage->type, damage_amount);
+				
+				/* damage the player, recording the kill if the aggressor was another player and we died */
+				if (player->suit_energy<0)
 				{
 					if (damage->type!=_damage_energy_drain)
 					{
@@ -821,6 +829,7 @@ void damage_player(
 					player->suit_energy= 0;
 				}
 				break;
+			}
 		}
 	}
 	

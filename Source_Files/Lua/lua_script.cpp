@@ -432,6 +432,28 @@ void L_Call_Player_Killed (short player_index, short aggressor_player_index, sho
 		logError (lua_tostring (state, -1));
 }
 
+//  Woody Zenfell, 08/03/03
+void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount)
+{
+	if (!lua_running)
+		return;
+
+	lua_pushstring (state, "player_damaged");
+	lua_gettable (state, LUA_GLOBALSINDEX);
+	if (!lua_isfunction (state, -1))
+	{
+		lua_pop (state, 1);
+		return;
+	}
+	lua_pushnumber (state, player_index);
+	lua_pushnumber (state, aggressor_player_index);
+	lua_pushnumber (state, aggressor_monster_index);
+	lua_pushnumber (state, damage_type);
+	lua_pushnumber (state, damage_amount);
+	if (lua_pcall (state, 5, 0, 0) == LUA_ERRRUN)
+		logError (lua_tostring (state, -1));
+}
+
 static int L_Number_of_Players(lua_State *L)
 {
 	lua_pushnumber(L, dynamic_world->player_count);

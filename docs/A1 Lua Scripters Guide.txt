@@ -2,11 +2,12 @@
 Aleph One Lua Scripters' Guide
                  
 Document created: July 10, 2003, by James Willson
-Revised: July 21, 2003
+Revised: August 2, 2003
 
 Known Contributors:
 James Willson
 tiennou
+Woody Zenfell
 
 0. General
 0.1 What is This?
@@ -170,6 +171,19 @@ player_killed(player, aggressor_player, action)
 Whenver a player dies.
 aggressor_player is the player index of who killed em, possibly emself, or -1 if killed by non-player.
 There are no mnemonics for "action" at this time, making its use difficult.
+
+
+player_damaged(victim_player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount)
+
+Whenever a player has taken damage, but before he dies if applicable.
+aggressor_player_index will be -1 if the victim was damaged by a non-player.
+aggressor_monster_index will be -1 if the victim was damaged by neither a player nor a monster.
+damage_type is one of the Damage Types, e.g. _damage_fusion.
+damage_amount is the amount recently subtracted from the player.  If _damage_oxygen_drain, damage_amount was
+assessed against player's oxygen; else against player's suit energy.
+The player's suit energy or oxygen may be negative when this trigger is called; if it still is when the trigger
+returns, it will be set to 0.
+The player's suit energy is tested again after this trigger returns, so a script may prevent a player's death.
 
 
 2 A1 Functions
