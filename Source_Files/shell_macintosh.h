@@ -1272,7 +1272,7 @@ static void initialize_marathon_music_handler(
 static void main_event_loop(
 	void)
 {
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 	static EventTypeSpec mouseEvents[] = {
 		{kEventClassMouse, kEventMouseDown},
 		{kEventClassMouse, kEventMouseUp},
@@ -1291,7 +1291,7 @@ static void main_event_loop(
 	{
 		bool use_waitnext;
 
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 		// JTP: Give room for catching mouse Events
 		RunCurrentEventLoop(kEventDurationNoWait);
 		
@@ -1323,7 +1323,7 @@ static void main_event_loop(
 			}
 			else
 			{
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 				got_event= GetNextEvent(EventMask, &event);
 #else
 				got_event= GetOSEvent(EventMask, &event);
@@ -1467,7 +1467,7 @@ static void process_event(
 						ResumeDisplay(event);
 						if (get_game_state()==_game_in_progress)
 						{
-#if !defined(TARGET_API_MAC_CARBON)
+#if !TARGET_API_MAC_CARBON
 							// Lets the MacOS X GUI manager handle the mouse showing/hiding
 							hide_cursor();
 #endif

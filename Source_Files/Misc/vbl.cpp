@@ -222,7 +222,7 @@ void set_keyboard_controller_status(
 	else Stop_ISp();
 #endif
 
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 	if (active)
 		enter_mouse(0);
 	else

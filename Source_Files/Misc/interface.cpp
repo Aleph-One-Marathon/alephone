@@ -1074,11 +1074,13 @@ void idle_game_state(
 		last time), render a frame */
 	if(game_state.state==_game_in_progress)
 	{
+		// ZZZ change: update_world() whether or not get_keyboard_controller_status() is true
+		// This way we won't fill up queues and stall netgames if one player switches out for a bit.
+		std::pair<bool, int16> theUpdateResult= update_world();
+		ticks_elapsed= theUpdateResult.second;
+
 		if (get_keyboard_controller_status())
 		{
-			std::pair<bool, int16> theUpdateResult= update_world();
-			ticks_elapsed= theUpdateResult.second;
-
 			// ZZZ: I don't know for sure that render_screen works best with the number of _real_
 			// ticks elapsed rather than the number of (potentially predictive) ticks elapsed.
 			// This is a guess.

@@ -193,87 +193,94 @@ void move_replay(
 uint32 parse_keymap(
 	void)
 {
-	short i;
 	uint32 flags= 0;
-	KeyMap key_map;
-	struct key_definition *key= current_key_definitions;
-	struct special_flag_data *special= special_flags;
-	
-	GetKeys(key_map);
-	
-	/******************************************************************************************/
-	/* BT: Added April 16, 2000 ISp: This is where we get the input sprocket events */
-	if(input_preferences->input_device==_input_sprocket_only || input_preferences->input_device==_keyboard_or_game_pad)
-		flags = InputSprocketTestElements();
-	/******************************************************************************************/
-	
-	/* parse the keymap */
-	// LP: don't do if in input-sprocket-only mode
-	if (!ISp_IsUsingKeyboard())
-	{
-		for (i=0;i<NUMBER_OF_STANDARD_KEY_DEFINITIONS;++i,++key)
-		{
-			if (*((byte*)key_map + key->offset) & key->mask) flags|= key->action_flag;
-		}
-	}
 
-	/* post-process the keymap */
-	for (i=0;i<NUMBER_OF_SPECIAL_FLAGS;++i,++special)
+	// ZZZ change: only actually check the keys and mouse if the application in the foreground
+	// (makes for sort of instant zombification on switching out during netgames)
+	if(get_keyboard_controller_status())
 	{
-		if (flags&special->flag)
-		{
-			switch (special->type)
-			{
-				case _double_flag:
-					/* if this flag has a double-click flag and has been hit within
-						DOUBLE_CLICK_PERSISTENCE (but not at MAXIMUM_FLAG_PERSISTENCE),
-						mask on the double-click flag */
-					if (special->persistence<MAXIMUM_FLAG_PERSISTENCE &&
-						special->persistence>MAXIMUM_FLAG_PERSISTENCE-DOUBLE_CLICK_PERSISTENCE)
-					{
-						flags|= special->alternate_flag;
-					}
-					break;
-				
-				case _latched_flag:
-					/* if this flag is latched and still being held down, mask it out */
-					if (special->persistence==MAXIMUM_FLAG_PERSISTENCE) flags&= ~special->flag;
-					break;
-				
-				default:
-					assert(false);
-					break;
-			}
-			
-			special->persistence= MAXIMUM_FLAG_PERSISTENCE;
-		}
-		else
-		{
-			special->persistence= FLOOR(special->persistence-1, 0);
-		}
-	}
-
-	/* handle the selected input controller */
-	if (input_preferences->input_device!=_keyboard_or_game_pad)
-	{
-		_fixed delta_yaw, delta_pitch, delta_velocity;
+		short i;
+		KeyMap key_map;
+		struct key_definition *key= current_key_definitions;
+		struct special_flag_data *special= special_flags;
 		
-		mouse_idle(input_preferences->input_device);
-		test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
-		flags= mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
-	}
+		GetKeys(key_map);
+		
+		/******************************************************************************************/
+		/* BT: Added April 16, 2000 ISp: This is where we get the input sprocket events */
+		if(input_preferences->input_device==_input_sprocket_only || input_preferences->input_device==_keyboard_or_game_pad)
+			flags = InputSprocketTestElements();
+		/******************************************************************************************/
+		
+		/* parse the keymap */
+		// LP: don't do if in input-sprocket-only mode
+		if (!ISp_IsUsingKeyboard())
+		{
+			for (i=0;i<NUMBER_OF_STANDARD_KEY_DEFINITIONS;++i,++key)
+			{
+				if (*((byte*)key_map + key->offset) & key->mask) flags|= key->action_flag;
+			}
+		}
 	
-	// LP addition: modify flags with run/walk and swim/sink
-	bool do_interchange =
-		(local_player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ?
-			(input_preferences->modifiers&_inputmod_interchange_swim_sink) != 0:
-			(input_preferences->modifiers&_inputmod_interchange_run_walk) != 0;
-	if (do_interchange) flags ^= _run_dont_walk;
+		/* post-process the keymap */
+		for (i=0;i<NUMBER_OF_SPECIAL_FLAGS;++i,++special)
+		{
+			if (flags&special->flag)
+			{
+				switch (special->type)
+				{
+					case _double_flag:
+						/* if this flag has a double-click flag and has been hit within
+							DOUBLE_CLICK_PERSISTENCE (but not at MAXIMUM_FLAG_PERSISTENCE),
+							mask on the double-click flag */
+						if (special->persistence<MAXIMUM_FLAG_PERSISTENCE &&
+							special->persistence>MAXIMUM_FLAG_PERSISTENCE-DOUBLE_CLICK_PERSISTENCE)
+						{
+							flags|= special->alternate_flag;
+						}
+						break;
+					
+					case _latched_flag:
+						/* if this flag is latched and still being held down, mask it out */
+						if (special->persistence==MAXIMUM_FLAG_PERSISTENCE) flags&= ~special->flag;
+						break;
+					
+					default:
+						assert(false);
+						break;
+				}
+				
+				special->persistence= MAXIMUM_FLAG_PERSISTENCE;
+			}
+			else
+			{
+				special->persistence= FLOOR(special->persistence-1, 0);
+			}
+		}
+	
+		/* handle the selected input controller */
+		if (input_preferences->input_device!=_keyboard_or_game_pad)
+		{
+			_fixed delta_yaw, delta_pitch, delta_velocity;
+			
+			mouse_idle(input_preferences->input_device);
+			test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
+			flags= mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
+		}
+		
+		// LP addition: modify flags with run/walk and swim/sink
+		bool do_interchange =
+			(local_player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ?
+				(input_preferences->modifiers&_inputmod_interchange_swim_sink) != 0:
+				(input_preferences->modifiers&_inputmod_interchange_run_walk) != 0;
+		if (do_interchange) flags ^= _run_dont_walk;
+	
+		if(player_in_terminal_mode(local_player_index))
+		{
+			flags= build_terminal_action_flags((char *) key_map);
+		}
 
-	if(player_in_terminal_mode(local_player_index))
-	{
-		flags= build_terminal_action_flags((char *) key_map);
-	}
+	} // if(get_keyboard_controller_status())
 
 	return flags;
 }
