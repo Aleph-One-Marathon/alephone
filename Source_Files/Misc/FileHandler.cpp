@@ -303,7 +303,7 @@ void FileSpecifier::SetName(char *Name, int Type)
 const FileSpecifier &FileSpecifier::operator=(const FileSpecifier &other)
 {
 	if (this != &other)
-		SetSpec(other.GetSpec());
+		obj_copy(Spec,other.Spec);
 	return *this;
 }
 
