@@ -22,6 +22,10 @@
 	
 	Added support for opacity shift factor (OpacityShift alongside OpacityScale);
 	should be good for making dark colors somewhat opaque.
+
+Jul 10, 2000:
+
+	Fixed crashing bug when OpenGL is inactive with ResetTextures()
 */
 
 #include <GL/gl.h>
@@ -36,6 +40,7 @@
 #include "render.h"
 #include "map.h"
 #include "OGL_Setup.h"
+#include "OGL_Render.h"
 #include "OGL_Textures.h"
 
 
@@ -976,6 +981,9 @@ TextureManager::~TextureManager()
 
 void OGL_ResetTextures()
 {
+	// Fix for crashing bug when OpenGL is inactive
+	if (!OGL_IsActive()) return;
+	
 	// Reset the textures:
 	for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
 	{
