@@ -63,7 +63,7 @@ SmallMessageHelper::deflate() const
 
 
 BigChunkOfDataMessage::BigChunkOfDataMessage(MessageTypeID inType, const byte* inBuffer, size_t inLength)
-	: mType(inType)
+	: mType(inType), mLength(0), mBuffer(NULL)
 {
 	copyBufferFrom(inBuffer, inLength);
 }
