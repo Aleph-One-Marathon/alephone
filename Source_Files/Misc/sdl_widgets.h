@@ -32,6 +32,11 @@
  *
  *  Mar 1, 2002 (Woody Zenfell):
  *      moved w_levels here (from shell_sdl); am using it in Setup Network Game dialog box.
+ *
+ *  August 27, 2003 (Woody Zenfell):
+ *	new w_enabling_toggle can enable/disable a bank of other widgets according to its state
+ *	new w_file_chooser displays filename; allows selection of file (via FileSpecifier::ReadDialog())
+ *	miscellaneous minor code cleanup (dead code removal etc.)
  */
 
 #ifndef SDL_WIDGETS_H
@@ -43,8 +48,11 @@
 #include	"sdl_dialogs.h"
 
 #include    "map.h" // for entry_point, for w_levels
+#include	"tags.h"	// for Typecode, for w_file_chooser
+#include	"FileHandler.h"	// for FileSpecifier, for w_file_chooser
 
 #include	<vector>
+#include	<set>
 
 struct SDL_Surface;
 class sdl_font_info;
@@ -172,20 +180,12 @@ public:
         void set_text(const char* t);
         
 	bool is_selectable(void) const {return false;}
-/*
-        // ZZZ: set justification for layout
-        void	set_left_justified();
-        
-        void	capture_layout_information(int leftmost_x, int usable_width);
-        
-        void	reduce_left_justified_width_by_width_of(widget* otherWidget);
-*/        
+
         ~w_static_text();
+
 private:
 	char *text;
 	int color;
-//        bool left_justified;
-//        int width_reduction;
 };
 
 
@@ -220,22 +220,11 @@ public:
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
 
-    /*
-        // ZZZ: this is getting pretty ugly, you might not want to watch.
-        // I'll use this with reduce_width_by_width_of() on some static_texts for the postgame carnage report.
-        void	align_bottom_with(widget* otherWidget);
-        void	set_right_justified();
-        void	capture_layout_information(int leftmost_x, int usable_width);
-        int	layout();
-*/
 protected:
 	const char *text;
 	action_proc proc;
 	void *arg;
         
-//        bool	bottom_aligned;
-//        bool	right_justified;
-
 	SDL_Surface *button_l, *button_c, *button_r;
 };
 
@@ -342,9 +331,6 @@ protected:
 	// ZZZ: storage for callback function
 	selection_changed_callback_t	selection_changed_callback;
 
-	// ZZZ: should we center the whole widget?
-//	bool				center_entire_widget;
-        
 	// ZZZ: ripped this out for sharing
 	uint16				get_largest_label_width();
 };
@@ -359,6 +345,35 @@ public:
 	static const char *onoff_labels[3];
 
 	w_toggle(const char *name, bool selection, const char **labels = onoff_labels);
+};
+
+
+/*
+ *	Enabling toggle (ZZZ)
+ *
+ *	Can enable/disable a bank of other widgets according to its state
+ */
+
+class w_enabling_toggle : public w_toggle
+{
+public:
+	w_enabling_toggle(const char* inName, bool inSelection, bool inEnablesWhenOn = true, const char** inLabels = onoff_labels);
+	void add_dependent_widget(widget* inWidget) { dependents.insert(inWidget); update_widget_enabled(inWidget); }
+	void remove_dependent_widget(widget* inWidget) { dependents.erase(inWidget); }
+	
+protected:
+	void selection_changed();
+	
+private:
+	void update_widget_enabled(widget* inWidget)
+	{
+		inWidget->set_enabled(selection == enables_when_on);
+	}
+
+	typedef std::set<widget*> DependentCollection;
+	
+	DependentCollection	dependents;
+	bool			enables_when_on;
 };
 
 
@@ -639,6 +654,31 @@ public:
 private:
 	dialog *parent;
 	bool    show_level_numbers;
+};
+
+
+
+/*
+ *	General file-chooser (ZZZ)
+ */
+
+class w_file_chooser : public w_select_button
+{
+public:
+	w_file_chooser(const char* inLabel, const char* inDialogPrompt, Typecode inTypecode);
+
+	void click(int x, int y);
+
+	void set_file(const FileSpecifier& inFile);
+	const FileSpecifier& get_file() { return file; }
+
+private:
+	void update_filename();
+	
+	FileSpecifier	file;
+	char		filename[256];
+	char		dialog_prompt[256];
+	Typecode	typecode;
 };
 
 #endif

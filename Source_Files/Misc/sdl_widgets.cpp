@@ -33,6 +33,10 @@
  *  May 16, 2002 (Woody Zenfell):
  *      changes to w_key to support assignment of mouse buttons as well as keys;
  *      also fixed mouse-movement-while-binding behavior.
+ *
+ *  August 27, 2003 (Woody Zenfell):
+ *	new w_enabling_toggle can enable/disable a bank of other widgets according to its state
+ *	new w_file_chooser displays filename; allows selection of file (via FileSpecifier::ReadDialog())
  */
 
 #include "cseries.h"
@@ -601,6 +605,29 @@ const char *w_toggle::onoff_labels[] = {"Off", "On", NULL};
 w_toggle::w_toggle(const char *name, bool selection, const char **labels) : w_select(name, selection, labels) {}
 
 
+/*
+ *	Enabling toggle (ZZZ)
+ *
+ *	Can enable/disable a bank of other widgets according to its state
+ */
+
+
+w_enabling_toggle::w_enabling_toggle(const char* inName, bool inSelection, bool inEnablesWhenOn, const char** inLabels)
+	: w_toggle(inName, inSelection, inLabels), enables_when_on(inEnablesWhenOn)
+{
+}
+
+
+void
+w_enabling_toggle::selection_changed()
+{
+	w_toggle::selection_changed();
+
+	for(DependentCollection::iterator i = dependents.begin(); i != dependents.end(); i++)
+		update_widget_enabled(*i);
+}
+
+	
 /*
  *  Player color selection
  */
@@ -1397,4 +1424,52 @@ w_levels::draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int16
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
 	draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+}
+
+
+
+static const char* const sFileChooserInvalidFileString = "(no valid selection)";
+
+w_file_chooser::w_file_chooser(const char* inLabel, const char* inDialogPrompt, Typecode inTypecode)
+	: w_select_button(inLabel, "", NULL, NULL), typecode(inTypecode)
+{
+	strncpy(dialog_prompt, inDialogPrompt, sizeof(dialog_prompt));
+	set_selection(sFileChooserInvalidFileString);
+}
+
+
+
+void
+w_file_chooser::set_file(const FileSpecifier& inFile)
+{
+	file = inFile;
+	update_filename();
+}
+
+
+
+void
+w_file_chooser::click(int, int)
+{
+	if(enabled)
+	{
+		if(file.ReadDialog(typecode, dialog_prompt))
+		{
+			update_filename();
+		}
+	}	
+}
+
+
+
+void
+w_file_chooser::update_filename()
+{
+	if(file.Exists())
+	{
+		file.GetName(filename);
+		set_selection(filename);
+	}
+	else
+		set_selection(sFileChooserInvalidFileString);
 }
