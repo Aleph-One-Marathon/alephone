@@ -106,8 +106,8 @@ struct error_def
 /* Global Variables */
 
 
-symbol_def **glob_hash;
-symbol_def **instruction_hash;
+// symbol_def **glob_hash;
+// symbol_def **instruction_hash;
 bool pfhortran_is_on;
 short error_count;
 
@@ -115,7 +115,9 @@ bind_table procedure_bindings[NUMBER_OF_TRAPS];	/*Binding table for procedure tr
 
 /* Local Function Prototypes */
 
+#ifdef OBSOLETE
 symbol_def *get_hash(short key, symbol_def **the_hash);
+#endif
 void init_hash();
 
 void dispose_hash();
@@ -123,6 +125,205 @@ void dispose_hash();
 void lowercase_string(char *string);
 short put_symbol(char *symbol, float val, short mode, symbol_def **the_hash);
 void dispose_pfhortran(void);
+
+
+// Hash-Table Objects; revised to cut down the number of allocations
+// and to encapsulate their logic better
+
+struct P_HashTableEntry
+{
+	int StringIndx;		// Index in string array (no string is NONE)
+	int NextIndx;		// Index to next one in hash-table entries (no string is NONE) 
+	
+	// Data associated with character string
+	float val;
+	short mode;
+
+	// Sets to "empty" values
+	void Reset() {StringIndx = NONE; NextIndx = NONE;}
+};
+
+class P_HashTable
+{
+	// Definitions of constants
+	enum {
+		BaseTableSize = 256,
+		StdStringLen = 256
+	};
+	
+	vector<P_HashTableEntry> Table;
+	vector<char> Strings;
+	
+	// Add to the "strings" array
+	void AddString(const char *String);
+	
+	// Convert a string to a standardize form, such as small letters
+	void StandardizeString(const char *String, char *StdString);
+
+public:
+	// Sets the table to its "empty" state
+	void Reset();
+	
+	// Sets a string to be associated with "val" and "mode";
+	// Adds to the table if necessary
+	void SetEntry(const char *String, float val, short mode);
+	
+	// For some string, gets associated "val" and "mode" if possible;
+	// returns whether that action was possible.
+	bool GetEntry(const char *String, float& val, short& mode);
+	
+	// The "reserve" is necessary for avoiding weird behavior in MacOS Classic;
+	// something happening when the level starts up?
+	P_HashTable() {Table.reserve(2*StdStringLen); Strings.reserve(16*StdStringLen); Reset();}
+};
+
+
+// These could be made pointers to P_HashTable objects,
+// so as to allow more complete cleanup,
+// because STL vectors' arrays only shrink when their containing objects go out of scope.
+static P_HashTable GlobHash, InstructionHash;
+
+
+void P_HashTable::AddString(const char *String)
+{
+	for (; *String != 0; String++)
+		Strings.push_back(*String);
+	
+	// C-string terminator; we use some C-string functions here
+	Strings.push_back(0);
+}
+
+void P_HashTable::StandardizeString(const char *String, char *StdString)
+{
+	strncpy(StdString,String,StdStringLen);
+	StdString[StdStringLen-1] = 0;	// Just in case...
+	lowercase_string(StdString);
+}
+
+void P_HashTable::P_HashTable::Reset()
+{
+	Table.clear();
+	Strings.clear();
+	
+	// Set up empty base table
+	Table.resize(BaseTableSize);
+	for (int i=0; i<BaseTableSize; i++)
+		Table[i].Reset();
+}
+
+unsigned char calculate_hash_key(const char *symbol);
+
+void P_HashTable::SetEntry(const char *String, float val, short mode)
+{
+	// Search for entry's string
+	
+	// fdprintf("*** %s: %f %hd",String,val,mode);
+	
+	// Convert it to standard form
+	char StdString[StdStringLen];
+	StandardizeString(String,StdString);
+	
+	// Find where to start
+	int Indx = calculate_hash_key(StdString);
+	
+	// Is the base-table entry empty?
+	if (Table[Indx].StringIndx == NONE)
+	{
+		// Set its string; the index is the before-addition current size
+		Table[Indx].StringIndx = Strings.size();
+		AddString(StdString);
+		
+		// Load the associated data
+		Table[Indx].val = val;
+		Table[Indx].mode = mode;
+		
+		// Now filled, so we're done
+		return;
+	}
+	
+	// Search for that string
+	while (strcmp(StdString,&Strings[Table[Indx].StringIndx]) != 0)
+	{
+		// Is it possible to proceed any further?
+		int NextIndx = Table[Indx].NextIndx;
+		
+		if (NextIndx == NONE)
+		{
+			// Can't do so, so add this entry
+			P_HashTableEntry NewEntry;
+			NewEntry.Reset();
+			
+			// Set its string; the index is the before-addition current size
+			NewEntry.StringIndx = Strings.size();
+			AddString(StdString);
+			
+			// Load the associated data
+			NewEntry.val = val;
+			NewEntry.mode = mode;
+			
+			// Load the new entry and point to it
+			Table[Indx].NextIndx = Table.size();
+			Table.push_back(NewEntry);
+			
+			// And we're done
+			return;
+		}
+		
+		// Go a step further
+		Indx = NextIndx;
+	}
+	
+	// Change the associated data, and we're done
+	Table[Indx].val = val;
+	Table[Indx].mode = mode;
+}
+
+bool P_HashTable::GetEntry(const char *String, float& val, short& mode)
+{
+	// Search for entry's string
+	
+	// Convert it to standard form
+	char StdString[StdStringLen];
+	StandardizeString(String,StdString);
+	
+	// Find where to start
+	int Indx = calculate_hash_key(StdString);
+	
+	// Is the base-table entry empty?
+	if (Table[Indx].StringIndx == NONE)
+	{
+		// We didn't find it
+		// fdprintf("!!! %s",String);
+		return false;
+	}
+	
+	// Search for that string
+	while (strcmp(StdString,&Strings[Table[Indx].StringIndx]) != 0)
+	{
+		// Is it possible to proceed any further?
+		int NextIndx = Table[Indx].NextIndx;
+		
+		if (NextIndx == NONE)
+		{
+			// Can't do so; we didn't find it
+			// fdprintf("!!! %s",String);
+			return false;
+		}
+		
+		// Go a step further
+		Indx = NextIndx;
+	}
+
+	// Get the associated data
+	val = Table[Indx].val;
+	mode = Table[Indx].mode;
+	
+	// fdprintf("--- %s: %f %hd",String,val,mode);
+			
+	// Got the data, so we're done
+	return true;
+}
+
 
 /* Pfhortran Language Defination Init/Parsing Code
 
@@ -139,10 +340,13 @@ bool init_pfhortran(void)
 	pfhortran_is_on = false;	// In case we have some errors
 
 	// init the instruction hash
+#ifdef OBSOLETE
 	instruction_hash = (symbol_def **)malloc(sizeof(symbol_def *) * 256);
 	memset(instruction_hash,0,sizeof(symbol_def *) * 256);
 	if (!instruction_hash)
 		return false;
+#endif
+	InstructionHash.Reset();
 
 	bool err = false;
 
@@ -155,7 +359,10 @@ bool init_pfhortran(void)
 		{NULL, 0} // end marker
 	};
 
-	for (int i=0; tokens[i].str != NULL; i++) {
+	for (int i=0; tokens[i].str != NULL; i++)
+		InstructionHash.SetEntry(tokens[i].str, float(tokens[i].val), absolute);
+#ifdef OBSOLETE
+	{
 		char str[256];
 		strcpy(str, tokens[i].str);	// string gets modified by lowercase_string()
 		if (!put_symbol(str, (float)tokens[i].val, absolute, instruction_hash)) {
@@ -163,6 +370,7 @@ bool init_pfhortran(void)
 			break;
 		}
 	}
+#endif
 	
 	if (err)
 	{
@@ -179,6 +387,7 @@ bool init_pfhortran(void)
 
 void dispose_pfhortran(void)
 {
+#ifdef OBSOLETE
 	int x;
 	symbol_def *temp, *old;	
 	for (x = 0;x < 256;x++)
@@ -193,7 +402,8 @@ void dispose_pfhortran(void)
 
 
 	free(instruction_hash);
-
+#endif
+	// Who cares? I don't think that the Pfhortran hash tables are big memory hogs
 }
 
 bool is_pfhortran_on(void)
@@ -320,14 +530,16 @@ values in a symbol, squareing the result, and taking the middle 8 bits from that
 
 void init_hash()
 {
+#ifdef OBSOLETE
 	glob_hash = (symbol_def **)malloc(sizeof(symbol_def *) * 256);
 	memset(glob_hash,0,sizeof(symbol_def *) * 256);
-	
+#endif
+	GlobHash.Reset();
 }
 
 void clear_hash()
 {
-
+#ifdef OBSOLETE
 	int x;
 	symbol_def *temp, *old;	
 	for (x = 0;x < 256;x++)
@@ -342,7 +554,8 @@ void clear_hash()
 		
 		
 	memset(glob_hash,0,sizeof(symbol_def *) * 256);
-
+#endif
+	GlobHash.Reset();
 }
 
 // we need to dispose all the contents of the hash as well...
@@ -350,6 +563,7 @@ void clear_hash()
 
 void dispose_hash()
 {
+#ifdef OBSOLETE
 	int x;
 	symbol_def *temp, *old;	
 	for (x = 0;x < 256;x++)
@@ -364,11 +578,13 @@ void dispose_hash()
 
 
 	free(glob_hash);
+#endif
+	// Who cares? I don't think that the Pfhortran hash tables are big memory hogs
 }
 
 
 
-
+#ifdef OBSOLETE
 symbol_def *get_hash(short key, symbol_def **the_hash)
 {
 	return the_hash[key];
@@ -379,8 +595,9 @@ void add_hash(symbol_def *symbol, short key, symbol_def **the_hash)
 	symbol->next = the_hash[key];
 	the_hash[key] = symbol;
 }
+#endif
 
-unsigned char calculate_hash_key(char *symbol)
+unsigned char calculate_hash_key(const char *symbol)
 {
 	int key = 0;
 	int x;
@@ -408,6 +625,7 @@ void lowercase_string(char *string)
 			string[x] += 32;
 }
 
+#ifdef OBSOLETE
 symbol_def *get_symbol(char *symbol, symbol_def **the_hash)
 {
 	
@@ -464,6 +682,7 @@ short put_symbol(char *symbol, float val, short mode, symbol_def **the_hash)
 	return true;
 
 }
+#endif
 
 // Suppressed for MSVC compatibility
 #if 0
@@ -617,13 +836,22 @@ short match_opcode(char *input)			/* the instruction strings are held in the has
 	
 	if (!input)
 		return 0;
-		
+	
+	float val;
+	short mode;
+	if (InstructionHash.GetEntry(input,val,mode))
+		return short(val);
+	else
+		return 0;
+
+#ifdef OBSOLETE
 	instruction = get_symbol(input,instruction_hash);
 	
 	if (!instruction)
 		return 0;
 	else
 		return short(instruction->val);
+#endif
 }
 
 
@@ -635,9 +863,27 @@ float evaluate_operand(char *input, short *mode)
 	
 	if (!input || (input[0] == '#') || (input[0] == 0))	// start of a comment?
 		return -32767;
+
+	float val = 0;
+
+	if (GlobHash.GetEntry(input,val,*mode))
+		return val;
 	
+	if (InstructionHash.GetEntry(input,val,*mode))
+		return val;
+
+	// A part of neither hashtable	
+	
+	char endChar = '\0';
+	char *endCharPtr = &endChar;
+	val = float(strtod(input, &endCharPtr));
+	
+	*mode = absolute;
+	return val;
+
+#ifdef OBSOLETE
 	symbol = get_symbol(input, glob_hash);
-	
+
 	if (!symbol)
 		symbol = get_symbol(input, instruction_hash);
 	
@@ -660,7 +906,7 @@ float evaluate_operand(char *input, short *mode)
 		*mode = symbol->mode;
 		return symbol->val;
 	}
-	
+#endif	
 }
 
 void add_error(vector<error_def>& error_log, short error, int offset)
@@ -802,8 +1048,11 @@ void parse_script(char *input, vector<script_instruction>& instruction_list)
 						val = var_count;
 						var_count++;
 					}
-					
+				
+				GlobHash.SetEntry(blats[0],val,mode);
+#ifdef OBSOLETE
 				put_symbol(blats[0],val,mode,glob_hash);
+#endif
 			}
 				
 			if (blats[1][0] && blats[1][0]!= '_' )	/* underscore denotes compiler directive */
