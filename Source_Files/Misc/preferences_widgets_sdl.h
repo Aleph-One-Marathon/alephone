@@ -131,7 +131,7 @@ typedef void (*selection_made_callback_t)(w_env_select* inWidget);
 
 class w_env_select : public w_select_button {
 public:
-	w_env_select(const char *name, const char *path, const char *m, int t, dialog *d)
+	w_env_select(const char *name, const char *path, const char *m, Typecode t, dialog *d)
         : parent(d), menu_title(m), type(t), mCallback(NULL),
 		w_select_button(name, item_name, select_item_callback, NULL)
 	{
@@ -169,7 +169,7 @@ private:
 	const char *menu_title;	// Selection menu title
 
 	FileSpecifier item;		// File specification
-	int type;				// File type
+	Typecode type;				// File type
 	char item_name[256];	// File name (excluding directory part)
 
     selection_made_callback_t mCallback;
