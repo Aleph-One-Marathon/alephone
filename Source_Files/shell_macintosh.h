@@ -401,7 +401,8 @@ static void initialize_application_heap(
 	OSErr error;
 
 #if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
-	chdir(getenv("HOME"));
+	const char *home = getenv("HOME");
+	if (home) chdir(home);
 #endif
 	
 #if  defined(__MWERKS__) && !defined(COMPLAIN_BAD_ALLOCS)

@@ -395,7 +395,8 @@ void write_preferences(
 #if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
         //AS: evil hack since HSetVol doesn't affect fopen() on OS X, so we fopen an absolute path
         char str[257] = "";
-        strcat(str,getenv("HOME"));
+        const char *home = getenv("HOME");
+        if (home) strcat(str, home);
         strcat(str,"/Library/Preferences/");
 	strcat(str,getcstr(temporary, strFILENAMES, filenamePREFERENCES));
 #endif
