@@ -112,7 +112,7 @@ void initialize_typecodes()
 	Handle FTypHdl = GetResource('FTyp',128);
 	if (FTypHdl != NULL)
 	{
-		int FTHSize = GetHandleSize(FTypHdl);
+		size_t FTHSize = GetHandleSize(FTypHdl);
 		if (FTHSize <= sizeof(typecodes))
 		{
 			HLock(FTypHdl);
