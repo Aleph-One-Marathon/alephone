@@ -78,6 +78,10 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 May 16, 2002 (Woody Zenfell):
     Enforcing standard player behavior with regard to films and netplay
+    
+Jun 5, 2002 (Loren Petrich):
+	Added do-nothing "case _revert_game:" in portable_process_screen_click()
+	at the request of Michael Adams.
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -890,6 +894,10 @@ void portable_process_screen_click(
 		case _begin_display_of_epilogue:
 		case _change_level:
 		case _displaying_network_game_dialogs:
+		case _quit_game:
+		case _close_game:
+		case _switch_demo:
+		case _revert_game:
 			break;
 
 		case _display_intro_screens_for_demo:
@@ -905,11 +913,6 @@ void portable_process_screen_click(
 		case _display_credits:
 			/* Force the state change next time through.. */
 			force_game_state_change();
-			break;
-			
-		case _quit_game:
-		case _close_game:
-		case _switch_demo:	
 			break;
 	
 		case _display_main_menu:
