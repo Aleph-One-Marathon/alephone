@@ -409,8 +409,12 @@ void write_preferences(
 	fprintf(F,"  <chase_cam behind=\"%hd\" upward=\"%hd\" rightward=\"%hd\" flags=\"%hd\"/>\n",
 		ChaseCam.Behind, ChaseCam.Upward, ChaseCam.Rightward, ChaseCam.Flags);
 	CrosshairData& Crosshairs = player_preferences->Crosshairs;
-	fprintf(F,"  <crosshairs thickness=\"%hd\" from_center=\"%hd\" length=\"%hd\">\n",
+	fprintf(F,"  <crosshairs\n");
+	fprintf(F,"    thickness=\"%hd\" from_center=\"%hd\" length=\"%hd\"\n",
 		Crosshairs.Thickness, Crosshairs.FromCenter, Crosshairs.Length);
+	fprintf(F,"    shape=\"%hd\" opacity=\"%f\"\n",
+		Crosshairs.Shape, Crosshairs.Opacity);
+	fprintf(F,"  >\n"),
 	WriteColor(F,"    ",Crosshairs.Color,"\n");
 	fprintf(F,"  </crosshairs>\n");
 	fprintf(F,"</player>\n\n");
@@ -649,7 +653,9 @@ static void default_player_preferences(player_preferences_data *preferences)
 	preferences->Crosshairs.Thickness = 2;
 	preferences->Crosshairs.FromCenter = 8;
 	preferences->Crosshairs.Length = 16;
+	preferences->Crosshairs.Shape = CHShape_RealCrosshairs;
 	preferences->Crosshairs.Color = rgb_white;
+	preferences->Crosshairs.Opacity = 0.5;
 }
 
 static void default_input_preferences(input_preferences_data *preferences)
@@ -1408,6 +1414,14 @@ bool XML_CrosshairsPrefsParser::HandleAttribute(const char *Tag, const char *Val
 	else if (StringsEqual(Tag,"length"))
 	{
 		return ReadInt16Value(Value,player_preferences->Crosshairs.Length);
+	}
+	else if (StringsEqual(Tag,"shape"))
+	{
+		return ReadInt16Value(Value,player_preferences->Crosshairs.Shape);
+	}
+	else if (StringsEqual(Tag,"opacity"))
+	{
+		return ReadFloatValue(Value,player_preferences->Crosshairs.Opacity);
 	}
 	UnrecognizedTag();
 	return false;

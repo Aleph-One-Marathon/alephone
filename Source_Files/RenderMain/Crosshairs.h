@@ -20,24 +20,32 @@
 	
 	Crosshairs-interface file.
 
-	Feb 25, 2000 (Loren Petrich):
-	
+Feb 25, 2000 (Loren Petrich):
 	Split the rendering routines up into routines that need different parameters.
-	
-	Mar 2, 2000 (Loren Petrich):
-	
+
+Mar 2, 2000 (Loren Petrich):	
 	Moved crosshair data and configuration here from interface.h
+	
+Jun 26, 2002 (Loren Petrich):
+	Added support for crosshairs being circular and/or partially transparent
 */
 
 #ifndef _CROSSHAIRS
 #define _CROSSHAIRS
+
+enum {
+	CHShape_RealCrosshairs,
+	CHShape_Circle
+};
 
 struct CrosshairData
 {
 	short Thickness;
 	short FromCenter;
 	short Length;
+	short Shape;
 	RGBColor Color;
+	float Opacity;
 };
 
 // True for OK, false for cancel

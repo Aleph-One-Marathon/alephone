@@ -40,6 +40,10 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 	Made the Carbon sheets backgrounds transparent
+
+Jun 26, 2002 (Loren Petrich):
+	Added support for additional crosshairs features;
+	included revert on bad value for crosshairs dialog
 */
 
 #include "cseries.h"
@@ -75,7 +79,9 @@ enum
 	GetColor_Item = 10,
 	Show_Item = 11,
 	Preview_Item = 12,
-	BkgdColor_Item = 13
+	BkgdColor_Item = 13,
+	Shape_Item = 14,
+	Opacity_Item = 16
 };
 
 // Background color
@@ -335,6 +341,14 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	ControlHandle Length_CHdl;
 	GetDialogItem(Dialog, Length_Item, &ItemType, (Handle *)&Length_CHdl, &Bounds);
 	SetShort(Length_CHdl,Data.Length);
+
+	ControlHandle Shape_CHdl;
+	GetDialogItem(Dialog, Shape_Item, &ItemType, (Handle *)&Shape_CHdl, &Bounds);
+	SetControlValue(Shape_CHdl,Data.Shape+1);
+
+	ControlHandle Opacity_CHdl;
+	GetDialogItem(Dialog, Opacity_Item, &ItemType, (Handle *)&Opacity_CHdl, &Bounds);
+	SetFloat(Opacity_CHdl,Data.Opacity);
 	
 	// Create a UPP for the crosshair preview and store it
 	UserItemUPP DoPreviewUPP = NewUserItemUPP(DoPreview);
@@ -346,15 +360,7 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	Point Center = {-1,-1};
 	
 	// Remembering the old values is necessary for the preview to work properly
-	
-	// Remember old color just in case of cancellation
-	// Also, some temporary output for the color picker
-	RGBColor OldColor = Data.Color, NewColor;
-	
-	// Remember other old values in case of cancellation
-	short Old_Thickness = Data.Thickness;
-	short Old_FromCenter = Data.FromCenter;
-	short Old_Length = Data.Length;
+	CrosshairData SavedData = Data;
 	
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)
@@ -373,7 +379,9 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	bool WillQuit = false;
 	bool IsOK = false;
 	short ShortTemp;
-	bool BadValue;
+	float FloatTemp;
+	RGBColor NewColor;
+	bool BadValue, OverallBadValue;
 	while(!WillQuit)
 	{
 		short ItemHit;
@@ -382,27 +390,43 @@ bool Configure_Crosshairs(CrosshairData &Data)
 		switch(ItemHit)
 		{
 		case OK_Item:
-		// Check before quitting
-			BadValue = false;
+		case Preview_Item:
+			// Check before quitting or redrawing;
+			OverallBadValue = false;
 			
+			BadValue = false;
 			if (GetShort(Thickness_CHdl,ShortTemp))
 			{
-				if (ShortTemp > 0)
+				if (ShortTemp > 1)
 					Data.Thickness = ShortTemp;
 				else
 					BadValue = true;
 			} else
 				BadValue = true;
 			
+			if (BadValue)
+			{
+				SetShort(Thickness_CHdl,Data.Thickness);
+				OverallBadValue = true;
+			}
+			
+			BadValue = false;
 			if (GetShort(FromCenter_CHdl,ShortTemp))
 			{
-				if (ShortTemp > 0)
+				if (ShortTemp >= 0)
 					Data.FromCenter = ShortTemp;
 				else
 					BadValue = true;
 			} else
 				BadValue = true;
 			
+			if (BadValue)
+			{
+				SetShort(FromCenter_CHdl,Data.FromCenter);
+				OverallBadValue = true;
+			}
+			
+			BadValue = false;
 			if (GetShort(Length_CHdl,ShortTemp))
 			{
 				if (ShortTemp > 0)
@@ -414,12 +438,46 @@ bool Configure_Crosshairs(CrosshairData &Data)
 			
 			if (BadValue)
 			{
+				SetShort(Length_CHdl,Data.Length);
+				OverallBadValue = true;
+			}
+
+			BadValue = false;
+			if (GetFloat(Opacity_CHdl,FloatTemp))
+			{
+				if (FloatTemp >= 0 && FloatTemp <= 1)
+					Data.Opacity = FloatTemp;
+				else
+					BadValue = true;
+			} else
+				BadValue = true;
+			
+			if (BadValue)
+			{
+				SetFloat(Opacity_CHdl,Data.Opacity);
+				OverallBadValue = true;
+			}
+			
+			Data.Shape = GetControlValue(Shape_CHdl)-1;
+			
+			if (OverallBadValue)
+			{
 				SysBeep(30);
+				DrawDialog(Dialog);	// To do the reversion correctly
 				break;
 			}
-		
-			IsOK = true;
-			WillQuit = true;
+			
+			switch(ItemHit)
+			{
+			case Preview_Item:
+				DrawDialog(Dialog);
+				break;
+				
+			case OK_Item:
+				IsOK = true;
+				WillQuit = true;
+				break;
+			}
 			break;
 			
 		case Cancel_Item:
@@ -434,41 +492,6 @@ bool Configure_Crosshairs(CrosshairData &Data)
 			DrawDialog(Dialog);
 			break;
 		
-		case Preview_Item:
-			BadValue = false;
-			
-			if (GetShort(Thickness_CHdl,ShortTemp))
-			{
-				if (ShortTemp > 0)
-					Data.Thickness = ShortTemp;
-				else
-					BadValue = true;
-			} else
-				BadValue = true;
-			
-			if (GetShort(FromCenter_CHdl,ShortTemp))
-			{
-				if (ShortTemp > 0)
-					Data.FromCenter = ShortTemp;
-				else
-					BadValue = true;
-			} else
-				BadValue = true;
-			
-			if (GetShort(Length_CHdl,ShortTemp))
-			{
-				if (ShortTemp > 0)
-					Data.Length = ShortTemp;
-				else
-					BadValue = true;
-			} else
-				BadValue = true;
-						
-			if (BadValue) SysBeep(30);
-			
-			DrawDialog(Dialog);
-			break;
-		
 		case BkgdColor_Item:
 			if (GetColor(Center,"\pWhat preview background color?",&BkgdColor,&NewColor))
 				BkgdColor = NewColor;
@@ -480,10 +503,7 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	if (!IsOK)
 	{
 		// Revert all these values
-		Data.Thickness = Old_Thickness;
-		Data.FromCenter = Old_FromCenter;
-		Data.Length = Old_Length;
-		Data.Color = OldColor;
+		Data = SavedData;
 	}
 	
 	// Clean up

@@ -2662,11 +2662,12 @@ bool OGL_RenderCrosshairs()
 	glEnable(GL_BLEND);
 	
 	// What color; make 50% transparent (Alexander Strange's idea)
+	// Changed it to use the crosshairs data
 	GLfloat Color[4];
 	Color[0] = Crosshairs.Color.red/65535.;
 	Color[1] = Crosshairs.Color.green/65535.;
 	Color[2] = Crosshairs.Color.blue/65535.;
-	Color[3] = 0.5;
+	Color[3] = Crosshairs.Opacity;
 	glColor4fv(Color);
 	
 	// The center:
@@ -2687,19 +2688,57 @@ bool OGL_RenderCrosshairs()
 	// The line width
 	glLineWidth(Crosshairs.Thickness);
 	
-	// Draw the lines; make them foreground
-	// Made "float" to get around apparent bug in MacOS glVertex2s()
-	// (only the positive-side lines got shown)
-	glBegin(GL_LINES);
-	glVertex2f(- Crosshairs.FromCenter + 1, 0);
-	glVertex2f(- Crosshairs.FromCenter - Crosshairs.Length + 1, 0);
-	glVertex2f(0, - Crosshairs.FromCenter + 1);
-	glVertex2f(0, - Crosshairs.FromCenter - Crosshairs.Length + 1);
-	glVertex2f(Crosshairs.FromCenter - 1, 0);
-	glVertex2f(Crosshairs.FromCenter + Crosshairs.Length - 1, 0);
-	glVertex2f(0, Crosshairs.FromCenter - 1);
-	glVertex2f(0, Crosshairs.FromCenter + Crosshairs.Length - 1);
-	glEnd();
+	switch(Crosshairs.Shape)
+	{
+	case CHShape_RealCrosshairs:
+		// Draw the lines; make them foreground
+		// Made "float" to get around apparent bug in MacOS glVertex2s()
+		// (only the positive-side lines got shown)
+		
+		glBegin(GL_LINES);
+		glVertex2f(- Crosshairs.FromCenter + 1, 0);
+		glVertex2f(- Crosshairs.FromCenter - Crosshairs.Length + 1, 0);
+		glVertex2f(0, - Crosshairs.FromCenter + 1);
+		glVertex2f(0, - Crosshairs.FromCenter - Crosshairs.Length + 1);
+		glVertex2f(Crosshairs.FromCenter - 1, 0);
+		glVertex2f(Crosshairs.FromCenter + Crosshairs.Length - 1, 0);
+		glVertex2f(0, Crosshairs.FromCenter - 1);
+		glVertex2f(0, Crosshairs.FromCenter + Crosshairs.Length - 1);
+		glEnd();
+		break;
+	
+	case CHShape_Circle:
+		// This will really be an octagon, for OpenGL-rendering convenience
+		
+		// We need to do 12 line segments, so we do them in 2*2*3 fashion
+		for (int ix=0; ix<2; ix++)
+		{
+			for (int iy=0; iy<2; iy++)
+			{
+				// Do whatever flipping is necessary for each quadrant
+				glPushMatrix();
+				glScaled(2*ix-1,2*iy-1,1);
+
+				// The line endpoints
+				float Len0 = float(Crosshairs.Length);
+				float Len1 = Len0/2;
+				float Len2 = MIN(Len1,float(Crosshairs.FromCenter));
+				
+				// Draw!
+				glBegin(GL_LINE_STRIP);
+				glVertex2f(Len0,Len2);
+				glVertex2f(Len0,Len1);
+				glVertex2f(Len1,Len0);
+				glVertex2f(Len2,Len0);
+				glEnd();
+				
+				// Done with that flipping
+				glPopMatrix();
+			}
+		}
+		
+		break;
+	}
 	
 	// Done with that modelview matrix
 	glPopMatrix();
