@@ -23,7 +23,13 @@
 	
 July 29, 2000 (Loren Petrich):
 	Rewrote it a tiny bit.
+
+Aug 12, 2001 (Ian Rickard):
+	Added define to turn off ISP
 */
+
+// IR addition: preprocessor gimick to make debugging easier
+#define USE_ISp 0
 
 // Public Function Prototypes
 void initialize_ISp(void);

@@ -41,9 +41,15 @@ Sep 24, 2000 (Loren Petrich):
 Nov 13, 2000 (Loren Petrich):
 	Undefined USE_OLD_INPUT_SPROCKET_LABELS to make CW6 and Universal Headers 3.3 happy;
 	also, added another "nil" to the virtual elements, also to satisfy ISp's response under CW6.
+<<<<<<< ISp_Support.cpp
+
+Aug 12, 2001 (Ian Rickard):
+	Added define to turn off ISp
+=======
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Disable ISP under Carbon
+>>>>>>> 1.13
 */
 
 
@@ -294,7 +300,12 @@ void initialize_ISp(void)
 	return;
 #else
 	// Check if weak-linking was successful
+	// IR addition: preprocessor gimick to make debugging easier
+#if USE_ISp
 	if((Ptr)ISpStartup == (Ptr)kUnresolvedCFragSymbolAddress)
+#else
+	if (1)
+#endif
 	{
 		canDoISp = false;
 		return;
