@@ -4,6 +4,8 @@
 </head>
 <body bgcolor="#ffffff">
 
+<h3>Introduction</h3>
+
 The Marathon Markup Language (MML), a subset of the Extensible Markup Language (XML):
 This was created for the purpose of configuring the Marathon engine in a non-hardcoded way.
 On the MacOS version of Aleph One, MML scripts are stored as TEXT resources
@@ -1112,7 +1114,7 @@ This could be useful for aligning landscape features with map ones. (default: 0)
 
 This kind of element is for modifying the OpenGL rendering.
 Currently, only modifications of texture rendering are implemented,
-
+with opacity control and texture substitution.
 
 This element has two kinds of child elements, &lt;txtr_clear&gt; and &lt;texture&gt;.
 <p>
@@ -1134,15 +1136,28 @@ and there are two special values: -1 means all the color tables and 8 means the 
 (default: -1 -- all of the tables).
 <li>bitmap: which one to apply the options to (mandatory).
 <li>opac_type: what type of opacity to use (default: 0 -- crisp edges).
-<li>opac_scale: scaling value for the opacity; how much to multiply it by (default: 1 -- no change).
-<li>opac_shift: shift value for the opacity; how much to add after multiplying (default: 0 -- no change).
-<li>void_visible: can see into the void (what's not in any map polygon) through this texture; can cause smearing and weird show-through (default: false; cannot see into void).
+<li>opac_scale: scaling value for the opacity;
+how much to multiply it by (default: 1 -- no change).
+<li>opac_shift: shift value for the opacity;
+how much to add after multiplying (default: 0 -- no change).
+<li>void_visible: can see into the void (what's not in any map polygon) through this texture;
+can cause smearing and weird show-through (default: false; cannot see into void).
+<li>normal_image: the name of the file whose image content to substitute
+in "normal" rendering (sensitive to light levels).
+<li>normal_mask: the name of the file whose image content becomes the opacity mask
+for "normal" rendering (sensitive to light levels).
+It must be used with a normal_image file.
+<li>glow_image: the name of the file whose image content to substitute
+in "glowing" rendering (independent of light levels).
+<li>glow_mask: the name of the file whose image content becomes the opacity mask
+for "glowing" rendering (independent of light levels).
+It must be used with a glow_image file.
 </ul>
 Note: all resulting values will be pegged to the range 0 to 1.
 Here are the various opacity types:
 <ol type=1 start=1000>
-<li>Crisp edges. Unlike the others, this one does not have scaled opacity.
-<li>Fuzzy edges with constant opacity equal to 1.
+<li>Crisp edges. The opacity threshold is 0.5.
+<li>Fuzzy edges.
 <li>Fuzzy edges with opacity = average of color channels.
 <li>Fuzzy edges with opacity = maximum of color channels.
 </ol>
@@ -1153,7 +1168,7 @@ the others are good for clouds, flames, energy-weapon bolts, and so forth,
 which will not have sharp boundaries.
 The average and maximum modes were included as a way of producing variable opacity
 without adding any new files; this hack was inspired by the semitransparency handling
-in Tomb Raider 3.
+in the Tomb Raider series.
 The idea here is that the brighter regions are likely to be the more opaque ones
 in these cases.
 I've put both of them in because they behave somewhat differently;
