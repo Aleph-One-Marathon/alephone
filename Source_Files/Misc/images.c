@@ -11,6 +11,9 @@ Feb. 5, 2000 (Loren Petrich):
 
 Aug 21, 2000 (Loren Petrich):
 	Added object-oriented file handling
+	
+	LoadedResource handles are assumed to always be locked,
+	and HLock() and HUnlock() have been suppressed for that reason.
 */
 
 #include "macintosh_cseries.h"
@@ -41,7 +44,9 @@ enum {
 
 /* -------------- local prototypes */
 static void shutdown_images_handler(void);
-static short determine_pict_resource_id(OSType pict_resource_type, short base_id,
+// LP: looks in an opened resource file
+static short determine_pict_resource_id(OpenedResourceFile& OFile,
+	OSType pict_resource_type, short base_id,
 	short delta16, short delta32);
 static void draw_picture(LoadedResource& PictRsrc);
 // static void draw_picture(PicHandle picture);
@@ -51,7 +56,7 @@ void initialize_images_manager(
 	void)
 {
 	FileSpecifier File;
-	File.SetFileToApp();
+	File.SetToApp();
 	File.SetName(getcstr(temporary, strFILENAMES, filenameIMAGES),FileSpecifier::C_Images);
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 	
@@ -95,7 +100,9 @@ bool get_picture_resource_from_images(short base_resource, LoadedResource& PictR
 	assert(ImagesResources.IsOpen());
 	ImagesResources.Push();
 	
-	short RsrcID = determine_pict_resource_id('PICT', base_resource,
+	short RsrcID = determine_pict_resource_id(
+		ImagesResources,
+		'PICT', base_resource,
 		_images_file_delta16, _images_file_delta32);
 	bool Success = ImagesResources.Get('PICT',RsrcID,PictRsrc);
 	
@@ -177,15 +184,17 @@ bool get_picture_resource_from_scenario(short base_resource, LoadedResource& Pic
 	// short old_resfile;
 	PicHandle picture;
 
-	if (!ScenarioResources.IsOpen()) return NULL;
+	if (!ScenarioResources.IsOpen()) return false;
 	ScenarioResources.Push();
 	
-	short RsrcID = determine_pict_resource_id('PICT', base_resource,
+	short RsrcID = determine_pict_resource_id(
+		ScenarioResources,
+		'PICT', base_resource,
 		_images_file_delta16, _images_file_delta32);
-	bool Success = ScenarioResources.Get('PICT',RsrcID,PictRsrc);
+	bool WasSuccessful = ScenarioResources.Get('PICT',RsrcID,PictRsrc);
 	
 	// Trying to keep this HNoPurge, for whatever reason
-	if (Success)
+	if (WasSuccessful)
 	{
 		Handle PictHdl = PictRsrc.GetHandle();
 		if (PictHdl) HNoPurge(PictHdl);
@@ -201,19 +210,40 @@ bool get_picture_resource_from_scenario(short base_resource, LoadedResource& Pic
 	// if (picture) HNoPurge((Handle)picture);
 	// UseResFile(old_resfile);
 	
-	return Success;
+	return WasSuccessful;
 	// return picture;
 }
 
 struct color_table *calculate_picture_clut(
+	int CLUTSource,
 	short pict_resource_number)
 {
-	Handle resource;
+	// Handle resource;
 	struct color_table *picture_table= NULL;
-
-	resource= GetResource('clut', pict_resource_number);
-	if (resource)
+	
+	// Select the source
+	OpenedResourceFile *OFilePtr = NULL;
+	switch(CLUTSource)
 	{
+	case CLUTSource_Images:
+		OFilePtr = &ImagesResources;
+		break;
+		
+	case CLUTSource_Scenario:
+		OFilePtr = &ScenarioResources;
+		break;
+	
+	default:
+		vassert(false,csprintf(temporary,"Invalid resource-file selector: %d",CLUTSource));
+	}
+	
+	LoadedResource CLUT_Rsrc;
+	if (OFilePtr->Get('clut',pict_resource_number,CLUT_Rsrc))
+	// resource= GetResource('clut', pict_resource_number);
+	// if (resource)
+	{
+		Handle resource = CLUT_Rsrc.GetHandle();
+		
 		HNoPurge(resource);
 		
 		/* Allocate the space.. */
@@ -222,12 +252,13 @@ struct color_table *calculate_picture_clut(
 
 		if(interface_bit_depth==8)
 		{
-			build_color_table(picture_table, (CTabHandle) resource);
+			build_color_table(picture_table, (CTabHandle)resource);
 		} else {
 			build_direct_color_table(picture_table, interface_bit_depth);
 		}
-
-		ReleaseResource(resource);
+		
+		// Automatic from LoadedResource going out of scope
+		// ReleaseResource(resource);
 	}
 	
 	return picture_table;
@@ -272,7 +303,7 @@ boolean scenario_picture_exists(
 	short base_resource)
 {
 	LoadedResource PictRsrc;
-	return get_picture_resource_from_images(base_resource,PictRsrc);
+	return get_picture_resource_from_scenario(base_resource,PictRsrc);
 	
 	/*
 	PicHandle picture= get_picture_resource_from_scenario(base_resource);
@@ -373,9 +404,9 @@ void scroll_full_screen_pict_resource_from_scenario(
 				locked= LockPixels(pixmap);
 				assert(locked);
 
-				HLock((Handle) picture);
+				// HLock((Handle) picture);
 				DrawPicture(picture, &picture_frame);
-				HUnlock((Handle) picture);
+				// HUnlock((Handle) picture);
 				SetGWorld(old_port, old_device);
 				
 				{
@@ -446,12 +477,12 @@ void scroll_full_screen_pict_resource_from_scenario(
 					SetPort(old_port);
 				}
 
-				UnlockPixels(pixmap);				
+				// UnlockPixels(pixmap);				
 				DisposeGWorld(pixels);
 			}
 		}
 		
-		ReleaseResource((Handle)picture);
+		// ReleaseResource((Handle)picture);
 	}
 					
 	return;
@@ -459,6 +490,7 @@ void scroll_full_screen_pict_resource_from_scenario(
 
 /* ------------------ private code */
 static short determine_pict_resource_id(
+	OpenedResourceFile& OFile,
 	OSType pict_resource_type,
 	short base_id,
 	short delta16,
@@ -497,6 +529,8 @@ static short determine_pict_resource_id(
 				break;
 		}
 		
+		if (OFile.Check(pict_resource_type, actual_id)) done = TRUE;
+		/*
 		SetResLoad(FALSE);
 		resource= GetResource(pict_resource_type, actual_id);
 		if(resource)
@@ -505,7 +539,8 @@ static short determine_pict_resource_id(
 			done= TRUE;
 		}
 		SetResLoad(TRUE);
-
+		*/
+		
 		if(!done)
 		{
 			if(next_bit_depth)
@@ -572,9 +607,9 @@ static void draw_picture(LoadedResource& PictRsrc)
 				SectRgn(new_clip_region, old_clip_region, new_clip_region);
 				window->clipRgn= new_clip_region;
 
-				HLock((Handle) picture);
+				// HLock((Handle) picture);
 				DrawPicture(picture, &bounds);
-				HUnlock((Handle) picture);
+				// HUnlock((Handle) picture);
 				
 				window->clipRgn= old_clip_region;
 				
