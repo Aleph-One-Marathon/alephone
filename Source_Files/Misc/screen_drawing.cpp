@@ -10,6 +10,9 @@
 Apr 30, 2000 (Loren Petrich):
 	Added XML-parser support (actually, some days earlier, but had modified it
 	so as to have "interface" be defined in "game_window".
+
+Jul 2, 2000 (Loren Petrich):
+	The HUD is now always buffered; it is lazily allocated
 */
 
 #pragma segment drawing
@@ -22,6 +25,7 @@ Apr 30, 2000 (Loren Petrich):
 #include "screen_drawing.h"
 #include "fades.h"
 #include "screen.h"
+#include "my32bqd.h"
 
 // LP addition: color parser
 #include "ColorParser.h"
@@ -733,15 +737,21 @@ static void	load_screen_interface_colors(
 
 
 // LP addition: set the graphics port to the Heads-Up-Display buffer
-bool _set_port_to_HUD()
+void _set_port_to_HUD()
 {
-	if (!HUD_Buffer) return false;
+	// Do lazy allocation:
+	Rect HUD_Bounds = {320, 0, 480, 640};
+	if (!HUD_Buffer)
+	{
+		short error= myNewGWorld(&HUD_Buffer, 0, &HUD_Bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
+		if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
+	}
+	assert(HUD_Buffer);
 	
 	assert(!old_graphics_port && !old_graphics_device && !destination_graphics_port);
 	GetGWorld(&old_graphics_port, &old_graphics_device);
 	SetGWorld(HUD_Buffer, NULL);
 	destination_graphics_port= (GrafPtr)HUD_Buffer;
-	return true;
 }
 
 

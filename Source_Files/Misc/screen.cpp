@@ -79,6 +79,9 @@ May 28, 2000 (Loren Petrich):
 
 Jun 15, 2000 (Loren Petrich):
 	Added support for Chris Pruett's Pfhortran
+
+Jul 2, 2000 (Loren Petrich):
+	The HUD is now always buffered, and the terminal is always at 100%
 */
 
 /*
@@ -957,6 +960,9 @@ void render_computer_interface(
 	{
 			case _50_percent:
 			case _75_percent:
+			// LP change: moved "full screen" up here, because this is supposed to be like 100%
+			// in all cases
+			case _full_screen:
 				// LP change:
 				assert(false);
 				// halt();
@@ -965,9 +971,11 @@ void render_computer_interface(
 			case _100_percent:
 				data.vertical_offset= 0;
 				break;
+			/*
 			case _full_screen:
 				data.vertical_offset= (view->screen_height-DEFAULT_WORLD_HEIGHT)/2;
 				break;
+			*/
 	}
 	_render_computer_interface(&data);
 
@@ -1456,6 +1464,8 @@ static void set_terminal_status( /* It has changed, this is the new state.. */
 		{
 			case _50_percent:
 			case _75_percent:
+			// LP addition: always 100% even if full screen
+			case _full_screen:
 				screen_mode.size= _100_percent;
 				break;
 		}
@@ -1939,12 +1949,14 @@ bool SetTunnelVision(bool TunnelVisionOn)
 	return world_view->tunnel_vision_active;
 }
 
-// For drawing the Heads-Up Display if it has been buffered;
-// returns whether or not the buffer is present
-bool DrawBufferedHUD(Rect& SourceRect, Rect& DestRect)
+// For drawing the Heads-Up Display from its buffer
+void DrawBufferedHUD()
 {
 	// Check if the HUD buffer is there
-	if (!HUD_Buffer) return false;
+	assert(HUD_Buffer);
+	
+	Rect DestRect= {320, 0, 480, 640};
+	Rect SourceRect= {0, 0, 160, 640};
 	
 	// Do OpenGL drawing if possible
 	Rect ScreenBounds = screen_window->portRect;
@@ -1953,7 +1965,7 @@ bool DrawBufferedHUD(Rect& SourceRect, Rect& DestRect)
 		HUD_SourceRect = SourceRect;
 		HUD_DestRect = DestRect;
 		HUD_OGL_RenderRequest = true;
-		return true;
+		return;
 	}
 	
 	// Code cribbed from draw_panels() in game_window_macintosh.c
@@ -1973,33 +1985,5 @@ bool DrawBufferedHUD(Rect& SourceRect, Rect& DestRect)
 	RGBForeColor(&old_forecolor);
 	RGBBackColor(&old_backcolor);
 	SetPort(old_port);
-	
-	return true;
-}
-
-// Self-explanatory
-bool IsHUDBuffered()
-{
-	return (HUD_Buffer != NULL);
-}
-
-// This resets the HUD buffer to whatever state is appropriate
-// (on with OpenGL is having 2D graphics piped through it, off otherwise)
-void ResetHUDBuffer()
-{
-	// LP change: allocate and deallocate the HUD buffer here;
-	// it is to be active only when the 2D graphics are to be piped through OpenGL
-	// draw_interface() will draw the HUD background, so this is a good spot.
-	bool Get2D = OGL_Get2D();
-	if (Get2D && !HUD_Buffer)		
-	{
-		Rect HUD_Bounds = {320, 0, 480, 640};
-		myNewGWorld(&HUD_Buffer, 0, &HUD_Bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
-	}
-	else if (!Get2D && HUD_Buffer)
-	{
-		DisposeGWorld(HUD_Buffer);
-		HUD_Buffer = NULL;
-	}
 }
 

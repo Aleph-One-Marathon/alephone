@@ -16,16 +16,22 @@ Mar 18, 2000 (Loren Petrich):
 
 Jun 15, 2000 (Loren Petrich):
 	Added support for Chris Pruett's Pfhortran
+
+July 2, 2000 (Loren Petrich):
+	Reversed the order of the screen-size symbolic constants, in preparation for really big
+	screen sizes.
+	
+	The HUD is now always buffered
 */
 
 /* ---------- constants */
 
 enum /* screen sizes */
 {
-	_full_screen,
-	_100_percent,
+	_50_percent,
 	_75_percent,
-	_50_percent
+	_100_percent,
+	_full_screen,
 };
 
 enum /* hardware acceleration codes */
@@ -114,15 +120,7 @@ void dump_screen();
 bool GetTunnelVision();
 bool SetTunnelVision(bool TunnelVisionOn);
 
-// For drawing the Heads-Up Display if it has been buffered;
-// returns whether or not the buffer is present
-bool DrawBufferedHUD(Rect& SourceRect, Rect& DestRect);
-
-// Self-explanatory
-bool IsHUDBuffered();
-
-// This resets the HUD buffer to whatever state is appropriate
-// (on with OpenGL is having 2D graphics piped through it, off otherwise)
-void ResetHUDBuffer();
+// For drawing the Heads-Up Display; the code will assume that it is always buffered
+void DrawBufferedHUD();
 
 #endif

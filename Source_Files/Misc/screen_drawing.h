@@ -7,6 +7,9 @@
 	
 Apr 21, 2000 (Loren Petrich): Added XML parser object for the rectangle set,
 	and exporting color data for game_window color parser
+
+Jul 2, 2000 (Loren Petrich):
+	The HUD is now always buffered
 */
 
 #include "XML_ElementParser.h"
@@ -124,7 +127,7 @@ void _frame_rect(screen_rectangle *rectangle, short color_index);
 void _offset_screen_rect(screen_rectangle *rect, short dx, short dy);
 
 // LP addition: stuff to use a buffer for the Heads-Up Display
-bool _set_port_to_HUD();
+void _set_port_to_HUD();
 
 // LP addition: get the parser for the interface rectangles
 XML_ElementParser *InterfaceRectangles_GetParser();

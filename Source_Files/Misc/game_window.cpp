@@ -27,6 +27,9 @@ Apr 30, 2000 (Loren Petrich): Added XML parser object for all the screen_drawing
 	and also essentiall all the data here.
 
 May 28, 2000 (Loren Petrich): Added support for buffering the Heads-Up Display
+
+Jul 2, 2000 (Loren Petrich):
+	The HUD is now always buffered
 */
 
 #include "cseries.h"
@@ -420,20 +423,18 @@ void update_interface(
 	
 		// LP addition: added support for HUD buffer;
 		// added origin relocation to make the graphics paint into place
-		bool HUD_Is_Buffered = _set_port_to_HUD();
-		if (HUD_Is_Buffered) SetOrigin(0,320);
-		else _set_port_to_screen_window();
+		_set_port_to_HUD();
+		SetOrigin(0,320);
+		// _set_port_to_screen_window();
 		update_everything(time_elapsed);
-		if (HUD_Is_Buffered) SetOrigin(0,0);
+		SetOrigin(0,0);
 		_restore_port();
 		
 		// Draw the whole thing if doing so is requested
 		// (may need some smart way of drawing only what has to be drawn)
 		if (ForceUpdate)
 		{
-			Rect destination= {320, 0, 480, 640};
-			Rect source= {0, 0, 160, 640};
-			DrawBufferedHUD(source,destination);
+			DrawBufferedHUD();
 		}
 	}
 

@@ -4,6 +4,9 @@
 	Tuesday, August 29, 1995 6:09:18 PM- rdm created.
 
 	May 28, 2000 (Loren Petrich): Added support for buffering the Heads-Up Display
+
+Jul 2, 2000 (Loren Petrich):
+	The HUD is now always buffered
 */
 
 #include "macintosh_cseries.h"
@@ -31,29 +34,29 @@ extern void draw_panels(void);
 void draw_panels(
 	void)
 {
-	// LP addition: sets the HUD buffer to whatever is its appropriate state;
-	// reasonable to do this here, since this routine gets the background picture
-	// for the HUD.
-	ResetHUDBuffer();
+	// LP change: the drawing is now done into a special buffer (HUD_Buffer),
+	// and not to the screen or to world_pixels
 
 	struct screen_mode_data new_mode= graphics_preferences->screen_mode;
 	PicHandle picture;
 	Rect destination= {320, 0, 480, 640};
 	Rect source= {0, 0, 160, 640};
-
+	
+	/*
 	new_mode.acceleration= _no_acceleration;
 	new_mode.size= _100_percent;
 	new_mode.high_resolution= TRUE;
 	change_screen_mode(&new_mode, FALSE);
 
 	myLockPixels(world_pixels);
-
+	*/
+	
 	picture= get_picture_resource_from_images(INTERFACE_PANEL_BASE);
 	if(picture)
 	{
-		// LP addition: use HUD buffer if possible
-		if (!_set_port_to_HUD())
-			_set_port_to_gworld();
+		// LP addition: use HUD buffer
+		_set_port_to_HUD();
+		// _set_port_to_gworld();
 		SetOrigin(0, 320);
 
 		HLock((Handle) picture);
@@ -73,7 +76,8 @@ void draw_panels(
 	/* Note that you don't get here if the picture failed.. */
 	// LP addition: redirecting the HUD drawing to its own buffer
 	// if that buffer is available
-	if (!DrawBufferedHUD(source,destination))
+	DrawBufferedHUD();
+	/*
 	{
 		GrafPtr old_port;
 		RGBColor old_forecolor, old_backcolor;
@@ -86,7 +90,7 @@ void draw_panels(
 		RGBForeColor(&rgb_black);
 		RGBBackColor(&rgb_white);
 		
-		/* Slam it to the screen. */
+		*//* Slam it to the screen. *//*
 		CopyBits((BitMapPtr)*world_pixels->portPixMap, &screen_window->portBits, //(BitMapPtr)*screen_pixmap,
 			&source, &destination, srcCopy, (RgnHandle) NULL);
 		RGBForeColor(&old_forecolor);
@@ -96,4 +100,5 @@ void draw_panels(
 	myUnlockPixels(world_pixels);
 
 	change_screen_mode(&graphics_preferences->screen_mode, FALSE);
+	*/
 }
