@@ -89,6 +89,7 @@ Mar 13, 2002 (Br'fin (Jeremy Parsons)):
 // CP additions:
 #include "scripting.h"
 #include "script_parser.h"
+#include "script_instructions.h"
 
 // ZZZ additions:
 #include "ActionQueues.h"
@@ -143,6 +144,12 @@ short update_world(
 	short i, time_elapsed;
 	short player_index;
 	bool game_over= false;
+	ActionQueues* GameQueue = GetRealActionQueues();
+	
+	if (pfhortran_controls_player)
+	{
+		GameQueue = GetPfhortranActionQueues();
+	}
 
 	/* find who has the most and the least queued action flags (we can only advance the world
 		as far as we have action flags for every player).  the difference between the most and
@@ -184,7 +191,7 @@ short update_world(
 		update_platforms();
 		
 		update_control_panels(); // don't put after update_players
-		update_players(GetRealActionQueues());
+		update_players(GameQueue);
 		move_projectiles();
 		move_monsters();
 		update_effects();

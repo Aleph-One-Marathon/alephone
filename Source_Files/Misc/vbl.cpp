@@ -93,7 +93,6 @@ Feb 20, 2002 (Woody Zenfell):
 #include "FileHandler.h"
 #include "Packing.h"
 #include "ActionQueues.h"
-#include "script_instructions.h"
 
 #ifdef env68k
 #pragma segment input
@@ -407,14 +406,7 @@ void process_action_flags(
 		record_action_flags(player_identifier, action_flags, count);
 	}
 	
-	if (pfhortran_controls_player)
-	{
-	    GetPfhortranActionQueues()->enqueueActionFlags(player_identifier, action_flags, count);
-	}
-	else
-	{
-		GetRealActionQueues()->enqueueActionFlags(player_identifier, action_flags, count);
-	}
+	GetRealActionQueues()->enqueueActionFlags(player_identifier, action_flags, count);
 }
 
 static void record_action_flags(
