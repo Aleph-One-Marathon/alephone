@@ -169,5 +169,12 @@ void myTMReset(
 	PrimeTime((QElemPtr)task,task->time);
 }
 
-// WZ's dummy function
+// WZ's dummy functions
+// ZZZ thought: the Carbon version should probably use a mutex (or maybe just use
+// the mytm_sdl stuff wholesale) since I'm not sure that TMTasks, Open Transport
+// notifiers, etc. are guaranteed to execute atomically (with respect to one another).
+// For Classic, each such task is mutually exclusive with the others, so no problem.
 void myTMCleanup(bool) {}
+bool take_mytm_mutex() { return true; }	// we LIE so our callers don't freak out.
+bool release_mytm_mutex() { return true; }
+void mytm_initialize() {}

@@ -20,6 +20,8 @@
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 
     Sept-Nov 2001 (Woody Zenfell): new function myTMCleanup for SDL bookkeeping
+    
+    Jan 15, 2003 (Woody Zenfell): exposing new mytm mutex for locking/unlocking (primarily by packet listening thread)
 */
 
 #ifndef MYTM_H_
@@ -41,12 +43,15 @@ extern myTMTaskPtr myTMRemove(
 extern void myTMReset(
 	myTMTaskPtr task);
 
-#ifdef SDL
 // ZZZ: call this from time to time to collect leftover zombie threads and reclaim a little storage.
 // Pass false for fairly quick operation.  Pass true to make sure that we wait for folks to finish.
 extern void myTMCleanup(bool waitForFinishers);
-#else
-extern void myTMCleanup(bool);
-#endif
+
+// ZZZ: Use these for mutually exclusive operation with any emulated TMTasks
+extern bool take_mytm_mutex();
+extern bool release_mytm_mutex();
+
+// ZZZ: call before any other mytm routines
+extern void mytm_initialize();
 
 #endif //def MYTM_H_

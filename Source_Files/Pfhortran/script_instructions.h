@@ -45,10 +45,7 @@
 #include "world.h"
 #include "ActionQueues.h"
 
-static ActionQueues* sPfhortranActionQueues = NULL;
 ActionQueues* GetPfhortranActionQueues(void);
-
-static long pfhortran_timer = 0;
 
 struct path_point
 {

@@ -78,6 +78,7 @@ This element has no attributes and contains these child elements:
 <li><a href="#playername">Player-Name Element: &lt;player_name&gt;</a>
 <li><a href="#keyboard">Keyboard-Defaults Element: &lt;keyboard&gt;</a>
 <li><a href="#cheats">Cheating Element: &lt;cheats&gt;</a>
+<li><a href="#logging">Logging Configuration Element: &lt;logging&gt;</a>
 <li><a href="#levelscripts">Level Scripting</a>
 <li><a href="#appendix1">Appendix 1: Additional Elements</a>
 <li><a href="#appendix2">Appendix 2: Lists of Entity Types</a>
@@ -2115,6 +2116,49 @@ For example, making the energy cheat into "JUICE" means setting up
 <pre>
 &lt;keyword index="0"&gt;JUICE&lt;/keyword&gt;
 </pre>
+<p>
+
+<hr>
+
+<h3><a name="logging">Logging Configuration Element: &lt;logging&gt;</a></h3>
+
+This element is used to configure Aleph One's logging behavior.  It has no attributes of its own.  Its single child element, &lt;logging_domain&gt;, requests particular logging behaviors for a logging domain.
+
+<p>
+
+The &lt;logging_domain&gt; element has the following attributes:
+
+<ul>
+<li>domain (string, required): names the logging domain whose behavior should be modified.  At the moment, the only logging domain is "global", in which all logging is currently done.
+<li>threshhold (integer): only log messages at a level strictly lower than (i.e. less detailed than) the threshhold will appear.  See below for information about logging levels.
+<li>show_locations (boolean): determines whether log entries will include source code filenames and line numbers.
+<li>flush (boolean): determines whether output to the log file should be flushed after every log message (slower) or allowed to sit in a buffer for later writing (faster, but may fail to write log entries just before an application crash).
+</ul>
+
+The following are the currently-defined standard log levels:
+
+<ul>
+<li>logFatalLevel = 0: program must exit
+<li>logErrorLevel = 10: can't do something significant
+<li>logWarningLevel = 20: can continue but results could be really screwy
+<li>logAnomalyLevel = 30: can continue, results could be off a little, but no big deal
+<li>logNoteLevel = 40: something worth mentioning
+<li>logTraceLevel = 50: details of actions and logic
+<li>logDumpLevel = 60: values of data etc.
+</ul>
+
+Note that the &lt;threshhold&gt; attribute requires that the level be specified as an integer (but that it need not equal one of the standard levels), and further that log messages with level exactly equal to the threshhold level will NOT be seen.
+
+<p>
+
+Example:
+<pre>
+&lt;logging&gt;
+&lt;logging_domain domain="global" threshhold="40" show_locations="true" flush="true"/&gt;
+&lt;/logging&gt;
+</pre>
+This would set up the "global" logging domain such that only messages more important than "notes" would be seen; that source code filenames and line numbers would be included in the log; and that the log file would be flushed after every message, so a message logged just before an application crash would appear in the log file.
+
 <p>
 
 <hr>

@@ -181,11 +181,11 @@ int main(int argc, char **argv)
 	  "Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
 	  "TCP/IP networking by Woody Zenfell\n"
 	  "Expat XML library by James Clark\n"
-	  "SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n\n"
+	  "SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
 #if defined(__MACH__) && defined(__APPLE__)
 	  "Mac OS X/SDL version by Chris Lovell, Alexander Strange, and Woody Zenfell\n"
 #endif
-	  "This is free software with ABSOLUTELY NO WARRANTY.\n"
+	  "\nThis is free software with ABSOLUTELY NO WARRANTY.\n"
 	  "You are welcome to redistribute it under certain conditions.\n"
 	  "For details, see the file COPYING.\n"
 #ifdef __BEOS__

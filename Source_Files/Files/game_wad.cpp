@@ -119,6 +119,8 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 // For packing and unpacking some of the stuff
 #include "Packing.h"
 
+#include "motion_sensor.h" // ZZZ for reset_motion_sensor()
+
 #ifdef env68k
 #pragma segment file_io
 #endif
@@ -535,7 +537,7 @@ bool new_game(
 			set_local_player_index(0);
 			set_current_player_index(0);
 		}
-		
+
 		/* we need to alert the function that reverts the game of the game setup so that
 		 * new game can be called if the user wants to revert later.
 		 */
@@ -547,6 +549,9 @@ bool new_game(
 		/* Load the collections */
 		/* entering map might fail if NetSync() fails.. */
 		success= entering_map(false);
+		
+                // ZZZ: set motion sensor to sane state - needs to come after entering_map() (which calls load_collections())
+                reset_motion_sensor(current_player_index);
 	}
 	
 	// LP change: adding chase-cam initialization

@@ -29,6 +29,7 @@
 
 #include "cseries.h"
 #include "TextStrings.h"
+#include "Logging.h"
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -182,6 +183,7 @@ unsigned char *psprintf(unsigned char *buffer, const char *format, ...)
 	return buffer;
 }
 
+/*
 void dprintf(const char *format, ...)
 {
 	Str255 buffer;
@@ -192,7 +194,19 @@ void dprintf(const char *format, ...)
 	va_end(list);
 	fprintf(stderr, "dprintf: %s\n", buffer);
 }
+*/
 
+// dprintf() is obsolete with the general logging framework.  Migrate to log* (see Logging.h)
+// (if Logging doesn't do what you need, improve it :) )
+void
+dprintf(const char* format, ...) {
+    va_list list;
+    va_start(list, format);
+    GetCurrentLogger()->logMessageV(logDomain, logAnomalyLevel, "unknown", 0, format, list);
+    va_end(list);
+}
+
+/*
 void fdprintf(const char *format, ...)
 {
 	FILE *f = fopen("AlephOneDebugLog.txt", "a");
@@ -203,4 +217,15 @@ void fdprintf(const char *format, ...)
 	va_end(list);
 	fprintf(f, "\n");
 	fclose(f);
+}
+*/
+
+// fdprintf() is obsolete with the general logging framework.  Migrate to log* (see Logging.h)
+// (if Logging doesn't do what you need, improve it :) )
+void
+fdprintf(const char* format, ...) {
+    va_list list;
+    va_start(list, format);
+    GetCurrentLogger()->logMessageV(logDomain, logAnomalyLevel, "unknown", 0, format, list);
+    va_end(list);
 }

@@ -29,6 +29,9 @@
  *       so we can use CheckSockets() to see if a connection request has arrived.
  *     + Changes to ADSPRead/Write to correctly work with nonblocking TCP (a single TCP
  *       read/write may only get partial data; need to loop since caller expects complete).
+ *
+ *  Jan 18, 2003 (Woody Zenfell):
+ *     Moving diagnostic messages etc. to new Logging system
  */
 
 #ifdef __MWERKS__
@@ -38,6 +41,8 @@
 
 #include "cseries.h"
 #include "sdl_network.h"
+
+#include "Logging.h"
 
 
 /*
@@ -224,9 +229,7 @@ bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, NetAddrBlock *
 
 OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 {
-#ifdef DEBUG
-	fdprintf("NetADSPWrite %d: ", *count);
-#endif
+	logContext1("trying to write %d streaming bytes", *count);
 
 	int actual		= 0;
 	int num_tries	= 0;
@@ -242,18 +245,14 @@ OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 		actual += recent;
 
 		if(actual < *count) {
-#ifdef DEBUG
-			fdprintf("z");
-#endif
+                    logTrace1("sent %d bytes; delaying and retrying", recent);
 			SDL_Delay(10);
 		}
 
 		num_tries++;
 	}
 	
-#ifdef DEBUG
-	fdprintf("%d\n", actual);
-#endif
+	logTrace1("wrote %d total bytes", actual);
 	
 	return actual == *count ? 0 : -1;
 }
@@ -265,9 +264,7 @@ OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 
 OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 {
-#ifdef DEBUG
-	fdprintf("NetADSPRead %d: ", *count);
-#endif
+	logContext1("trying to read %d streaming bytes", *count);
 
 	int actual		= 0;
 	int num_tries	= 0;
@@ -281,9 +278,7 @@ OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
                     actual += recent;
 
 		if(actual < *count) {
-#ifdef DEBUG
-			fdprintf("z");
-#endif
+			logTrace1("read %d bytes; delaying and retrying", recent);
 			SDL_Delay(10);
 		}
 
@@ -292,9 +287,7 @@ OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 
 	*count = actual;
 
-#ifdef DEBUG
-	fdprintf("%d\n", actual);
-#endif
+	logTrace1("read %d total bytes", actual);
 
 	return actual > 0 ? 0 : -1;
 }

@@ -124,6 +124,7 @@ clearly this is all broken until we have packet types
 #include <string.h>
 
 #include <map>
+#include "Logging.h"
 
 #ifdef env68k
 #pragma segment network
@@ -2653,13 +2654,13 @@ update_adaptive_latency(int measurement) {
             && sCurrentAdaptiveLatency < kAdaptiveLatencyMaximumValue)
         {
             sCurrentAdaptiveLatency++;
-            fdprintf("adjusted latency upwards to %d\n", sCurrentAdaptiveLatency);
+            logNote1("adjusted latency upwards to %d", sCurrentAdaptiveLatency);
         }
         else if(theAverageLatencyMeasurement - sCurrentAdaptiveLatency < kNeedToDecreaseLatencyThreshhold
                     && sCurrentAdaptiveLatency > 1)
         {
             sCurrentAdaptiveLatency--;
-            fdprintf("adjusted latency downwards to %d\n", sCurrentAdaptiveLatency);
+            logNote1("adjusted latency downwards to %d", sCurrentAdaptiveLatency);
         }
     }
     
@@ -3556,6 +3557,8 @@ NetGetMostRecentChatMessage(player_info** outPlayerData, char** outMessage) {
 short NetUpdateJoinState(
 	void)
 {
+        logContext("updating network join status");
+
 	OSErr error;
 	short newState= netState;
 	short packet_type;
@@ -3570,7 +3573,7 @@ short NetUpdateJoinState(
 			{
 				error= NetReceiveStreamPacket(&packet_type, network_adsp_packet);
 
-                                fdprintf("NetReceiveStreamPacket returned %d\n", error);
+                                logTrace1("NetReceiveStreamPacket returned %d", error);
 
 				if(!error && packet_type==_join_player_packet)
 				{
@@ -3593,7 +3596,7 @@ short NetUpdateJoinState(
                                         /* Unregister ourselves */
                                         error= NetUnRegisterName();
 
-                                        fdprintf("NetUnRegisterName returned %d\n", error);
+                                        logTrace1("NetUnRegisterName returned %d", error);
 
                                         assert(!error);
                                 
@@ -3609,7 +3612,7 @@ short NetUpdateJoinState(
                                         netcpy(&new_player_data_NET, &new_player_data);
                                         error = NetSendStreamPacket(_accept_join_packet, &new_player_data_NET);
                                         
-                                        fdprintf("NetSendStreaPacket returned %d\n", error);
+                                        logTrace1("NetSendStreamPacket returned %d", error);
 
 //					error= NetSendStreamPacket(_accept_join_packet, &new_player_data);
 
@@ -3618,13 +3621,13 @@ short NetUpdateJoinState(
 						/* Close and reset the connection */
 						error= NetCloseStreamConnection(false);
                                                 
-                                                fdprintf("NetCloseStreamConnection returned %d\n", error);
+                                                logTrace1("NetCloseStreamConnection returned %d", error);
 
 						if (!error)
 						{
 							error= NetStreamWaitForConnection();
                                                         
-                                                        fdprintf("NetStreamWaitForConnection returned %d\n", error);
+                                                        logTrace1("NetStreamWaitForConnection returned %d", error);
                                                         
 							if (!error)
 							{
@@ -3638,7 +3641,7 @@ short NetUpdateJoinState(
 
 				if (error != noErr)
 				{
-                                        fdprintf("error != noErr; error == %d\n", error);
+                                        logAnomaly1("error != noErr; error == %d", error);
                                 
 					newState= netJoinErrorOccurred;
 					NetCloseStreamConnection(false);

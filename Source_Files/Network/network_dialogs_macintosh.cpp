@@ -1010,6 +1010,17 @@ static pascal Boolean join_dialog_filter_proc(
 			handled= true;
 			break;
 		
+                case netChatMessageReceived:
+                        player_info*	sending_player;
+                        char*		chat_message;
+                        
+                        if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
+                            // should actually do something with the message here
+                            // be sure to copy any info you need as the next call to
+                            // NetUpdateJoinState could overwrite the storage we're pointing at.
+                        }
+                break;
+
 		default:
 			assert(false);
 			break;

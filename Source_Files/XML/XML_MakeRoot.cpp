@@ -50,6 +50,7 @@
 #include "mysound.h"
 #include "vbl.h"
 #include "monsters.h"
+#include "Logging.h"
 
 #ifdef SDL
 #include "sdl_dialogs.h"
@@ -93,6 +94,7 @@ void SetupParseTree()
 	MarathonParser.AddChild(TextureLoading_GetParser());
 	MarathonParser.AddChild(Keyboard_GetParser());
 	MarathonParser.AddChild(DamageKicks_GetParser());
+        MarathonParser.AddChild(Logging_GetParser());
 #ifdef SDL
 	MarathonParser.AddChild(Theme_GetParser());
 #endif

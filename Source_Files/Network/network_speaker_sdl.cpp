@@ -28,6 +28,9 @@
  *  Realtime network audio playback support for SDL platforms.
  *
  *  Created by woody Mar 3-8, 2002.
+ *
+ *  14 January 2003 (Woody Zenfell): reworked memory management so all new/delete are called
+ *      from the main thread: buffers are released by the audio system and returned to us for reuse.
  */
 
 #include    "network_speaker_sdl.h"
@@ -40,20 +43,26 @@
 #include    "player.h"                  // in support of received_network_audio_proc
 
 enum {
-    kSoundBufferQueueSize = 256,    // should never get anywhere near here, but at 12 bytes/struct these are cheap.
+    kSoundBufferQueueSize = 32,     // should never get anywhere near here, but at 12 bytes/struct these are cheap.
     kNoiseBufferSize = 1280,        // how big a buffer we should use for noise (at 11025 this is about 1/9th of a second)
     kMaxDryDequeues = 1,            // how many consecutive empty-buffers before we stop playing?
-    kNumPumpPrimes = 1              // how many noise-buffers should we start with while buffering incoming data?
+    kNumPumpPrimes = 1,             // how many noise-buffers should we start with while buffering incoming data?
+    kNumSoundDataBuffers = 8,		// how many actual audio storage buffers should we have?
+    kSoundDataBufferSize = 2048		// how big will each audio storage buffer be?
 };
 
-static  CircularQueue<NetworkSpeakerSoundBuffer>    sSoundBuffers(kSoundBufferQueueSize);
+// "Send queue" of buffers from us to audio code (with descriptors)
+static  CircularQueue<NetworkSpeakerSoundBufferDescriptor>    sSoundBuffers(kSoundBufferQueueSize);
+
+// "Return queue" of buffers from audio code to us for reuse
+static	CircularQueue<byte*>				sSoundDataBuffers(kNumSoundDataBuffers + 2);  // +2: breathing room
 
 // We can provide static noise instead of a "real" buffer once in a while if we need to.
 // Also, we provide kNumPumpPrimes of static noise before getting to the "meat" as well.
-static  byte*                       sNoiseBufferStorage = NULL;
-static  NetworkSpeakerSoundBuffer   sNoiseBufferDesc;
-static  int                         sDryDequeues = 0;
-static  bool                        sSpeakerIsOn = false;
+static  byte*                       		sNoiseBufferStorage = NULL;
+static  NetworkSpeakerSoundBufferDescriptor	sNoiseBufferDesc;
+static  int                         		sDryDequeues = 0;
+static  bool                        		sSpeakerIsOn = false;
 
 
 void
@@ -75,8 +84,17 @@ open_network_speaker() {
     sNoiseBufferDesc.mLength    = kNoiseBufferSize;
     sNoiseBufferDesc.mFlags     = 0;
 
-    // Reset the buffer queue
+    // Reset the buffer descriptor queue
     sSoundBuffers.reset();
+    
+    // Reset the data buffer queue
+    sSoundDataBuffers.reset();
+    
+    // Allocate storage for audio data buffers
+    for(int i = 0; i < kNumSoundDataBuffers; i++) {
+        byte* theBuffer = new byte[kSoundDataBufferSize];
+        sSoundDataBuffers.enqueue(theBuffer);
+    }
 
     // Reset a couple others to sane values
     sDryDequeues    = 0;
@@ -86,26 +104,32 @@ open_network_speaker() {
 void
 queue_network_speaker_data(byte* inData, short inLength) {
     if(inLength > 0) {
-        // Fill out a descriptor for a new chunk of storage
-        NetworkSpeakerSoundBuffer   theBufferDesc;
-        theBufferDesc.mData     = new byte[inLength];
-        theBufferDesc.mLength   = inLength;
-        theBufferDesc.mFlags    = kSoundDataIsDisposable;
-
-        // and copy the data
-        memcpy(theBufferDesc.mData, inData, inLength);
-
-        // If we're just turning on, prime the queue with a few buffers of noise.
-        if(!sSpeakerIsOn) {
-            for(int i = 0; i < kNumPumpPrimes; i++) {
-                sSoundBuffers.enqueue(sNoiseBufferDesc);
+        if(sSoundDataBuffers.getCountOfElements() > 0) {
+            // Fill out a descriptor for a new chunk of storage
+            NetworkSpeakerSoundBufferDescriptor theBufferDesc;
+            theBufferDesc.mData     = sSoundDataBuffers.peek();
+            sSoundDataBuffers.dequeue();
+            theBufferDesc.mLength   = inLength;
+            theBufferDesc.mFlags    = kSoundDataIsDisposable;
+    
+            // and copy the data
+            memcpy(theBufferDesc.mData, inData, inLength);
+    
+            // If we're just turning on, prime the queue with a few buffers of noise.
+            if(!sSpeakerIsOn) {
+                for(int i = 0; i < kNumPumpPrimes; i++) {
+                    sSoundBuffers.enqueue(sNoiseBufferDesc);
+                }
+    
+                sSpeakerIsOn = true;
             }
-
-            sSpeakerIsOn = true;
+    
+            // Enqueue the actual sound data.
+            sSoundBuffers.enqueue(theBufferDesc);
         }
-
-        // Enqueue the actual sound data.
-        sSoundBuffers.enqueue(theBufferDesc);
+        else {
+            fdprintf("No sound data buffer space available - audio discarded");
+        }
     }
 }
 
@@ -117,10 +141,10 @@ network_speaker_idle_proc() {
 }
 
 
-NetworkSpeakerSoundBuffer*
+NetworkSpeakerSoundBufferDescriptor*
 dequeue_network_speaker_data() {
     // We need this to stick around between calls
-    static NetworkSpeakerSoundBuffer    sBufferDesc;
+    static NetworkSpeakerSoundBufferDescriptor    sBufferDesc;
 
     // If there is actual sound data, reset the "ran dry" count and return a pointer to the buffer descriptor
     if(sSoundBuffers.getCountOfElements() > 0) {
@@ -148,10 +172,17 @@ close_network_speaker() {
     stop_network_audio();
 
     // Bleed the queue dry of any leftover data
-    NetworkSpeakerSoundBuffer*  theDesc;
+    NetworkSpeakerSoundBufferDescriptor*  theDesc;
     while((theDesc = dequeue_network_speaker_data()) != NULL) {
         if(is_sound_data_disposable(theDesc))
-            delete [] theDesc->mData;
+            release_network_speaker_buffer(theDesc->mData);
+    }
+    
+    // Free the sound data buffers
+    while(sSoundDataBuffers.getCountOfElements() > 0) {
+        byte* theBuffer = sSoundDataBuffers.peek();
+        delete [] theBuffer;
+        sSoundDataBuffers.dequeue();
     }
 
     // Free the noise buffer and restore some values
@@ -161,6 +192,13 @@ close_network_speaker() {
     }
     sDryDequeues    = 0;
     sSpeakerIsOn    = false;
+}
+
+
+
+void
+release_network_speaker_buffer(byte* inBuffer) {
+    sSoundDataBuffers.enqueue(inBuffer);
 }
 
 

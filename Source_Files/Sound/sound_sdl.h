@@ -26,9 +26,13 @@
  *
  *  Feb 22, 2002 (Woody Zenfell)
  *     Added ability to disable DirectShow-based music playback for building on systems without the SDK.
+ *     Define preprocessor symbol WIN32_DISABLE_MUSIC if this is desired.
  *
  *  Mar 3-8, 2002 (Woody Zenfell)
  *     Realtime network microphone audio playback support
+ *
+ *  Jan 14, 2003 (Woody Zenfell)
+ *     Safer memory management scheme for network audio playback buffers
  */
 
 #include <SDL_endian.h>
@@ -38,10 +42,6 @@
 #include "song_definitions.h"
 #include "XML_LevelScript.h"   // For getting level music. 
 #include "network_speaker_sdl.h"
-
-// ZZZ: define this if you don't want to bring DirectShow into the mix
-// (e.g. if you can't build because you don't have the SDK)
-#undef WIN32_DISABLE_MUSIC
 
 // Number of sound channels used by Aleph One sound manager
 const int SM_SOUND_CHANNELS = MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHANNELS;
@@ -124,7 +124,7 @@ static IMediaEventEx* gp_media_event_ex = NULL;
 #endif
 
 // ZZZ: network_speaker support
-static NetworkSpeakerSoundBuffer*   sNetworkAudioBufferDesc;
+static NetworkSpeakerSoundBufferDescriptor*   sNetworkAudioBufferDesc;
 
 // From FileHandler_SDL.cpp
 extern void get_default_sounds_spec(FileSpecifier &file);
@@ -1023,7 +1023,7 @@ stop_network_audio() {
 	sdl_channels[NETWORK_AUDIO_CHANNEL].active = false;
     if(sNetworkAudioBufferDesc != NULL) {
         if(is_sound_data_disposable(sNetworkAudioBufferDesc))
-            delete [] sNetworkAudioBufferDesc->mData;
+            release_network_speaker_buffer(sNetworkAudioBufferDesc->mData);
         sNetworkAudioBufferDesc = NULL;
     }
 	SDL_UnlockAudio();
@@ -1119,9 +1119,8 @@ static inline void calc_buffer(T *p, int len, bool stereo)
                         else if (i == NETWORK_AUDIO_CHANNEL) {
 
                             // ZZZ: if we're supposed to dispose of the storage, so be it
-                            // (new/delete are thread-safe, right?)
                             if(is_sound_data_disposable(sNetworkAudioBufferDesc))
-                                delete [] sNetworkAudioBufferDesc->mData;
+                                release_network_speaker_buffer(sNetworkAudioBufferDesc->mData);
 
                             // Get the next buffer of data
                             sNetworkAudioBufferDesc = dequeue_network_speaker_data();

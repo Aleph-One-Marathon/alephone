@@ -33,6 +33,9 @@
 
  June 15, 2002 (Loren Petrich):
  	Added packing and unpacking, so as to avoid compiler dependency
+        
+ Jan 18, 2003 (Woody Zenfell):
+        Using A1's Logging system instead of older diagnostic-message schemes
 
  */
 
@@ -49,24 +52,9 @@
 #include	"SSLP_Protocol.h"
 #include	"SDL_netx.h"
 
-// In order to turn "printf" into "fdprintf"
-#include	"cseries.h"
+// We use the A1 logging facilities
+#include	"Logging.h"
 
-// DEBUGGING DEFINES
-// There's surely a better way to do this, but shrug.  If I spent all my time looking around for
-// the best way to do this sort of thing, I wouldn't ever get anything written!
-
-// Actually unfortunately this method spews out gobs of warnings when compiled.  Oh well.
-
-#define	SSLP_DEBUG
-
-#define BUG fdprintf
-
-#ifdef	SSLP_DEBUG
-#define	SSLP_DE(x)	(x);
-#else
-#define	SSLP_DE(x)  {};
-#endif
 
 // FILE-LOCAL CONSTANTS
 // flags for sBehaviorsDesired (tracks what should be going on)
@@ -74,6 +62,9 @@
 #define	SSLPINT_LOCATING	0x01
 #define	SSLPINT_RESPONDING	0x02
 #define	SSLPINT_HINTING		0x04
+
+// found service instances expire after not hearing from them for this many milliseconds
+#define SSLPINT_INSTANCE_TIMEOUT 20000
 
 
 
@@ -156,8 +147,10 @@ template<class T> void PacketCopyOutList(unsigned char* &Ptr, T *List, int Count
 // the ServiceInstance it passed us (but NOT any we return - that one's ours :) )
 static struct SSLP_ServiceInstance*
 SSLPint_FoundAnInstance(struct SSLP_ServiceInstance* inInstance) {
-    SSLP_DE(BUG("Found an instance!  %s, %s, %x:%d\n", inInstance->sslps_type, inInstance->sslps_name,
-            inInstance->sslps_address.host, inInstance->sslps_address.port));
+    logTrace4("Found an instance!  %s, %s, %x:%d", inInstance->sslps_type, inInstance->sslps_name,
+            SDL_SwapBE32(inInstance->sslps_address.host), SDL_SwapBE16(inInstance->sslps_address.port));
+    // this should (but doesn't) force string termination to appropriate lengths for type and name.
+    
     struct SSLPint_FoundInstance*	theCurrentFoundInstance = sFoundInstances;
     
     while(theCurrentFoundInstance != NULL) {
@@ -200,13 +193,15 @@ SSLPint_FoundAnInstance(struct SSLP_ServiceInstance* inInstance) {
 
 void
 SSLPint_RemoveTimedOutInstances() {
+    logContext("removing stale SSLP service instances");
+    
     struct SSLPint_FoundInstance* theCurrentInstance = sFoundInstances;
     struct SSLPint_FoundInstance* thePreviousInstance = NULL;
     
     Uint32 theCurrentTickCount = SDL_GetTicks();
     
     while(theCurrentInstance != NULL) {
-        if(theCurrentTickCount - theCurrentInstance->mTimestamp > 20000) {
+        if(theCurrentTickCount - theCurrentInstance->mTimestamp > SSLPINT_INSTANCE_TIMEOUT) {
             if(sBehaviorsDesired & SSLPINT_LOCATING) {
                 if(sLostCallback != NULL) {
                     sLostCallback(theCurrentInstance->mInstance);
@@ -240,8 +235,9 @@ SSLPint_RemoveTimedOutInstances() {
 // they passed us.
 static struct SSLP_ServiceInstance*
 SSLPint_LostAnInstance(struct SSLP_ServiceInstance* inInstance) {
-    SSLP_DE(BUG("Lost an instance...  %s, %s, %x:%d\n", inInstance->sslps_type, inInstance->sslps_name,
-            inInstance->sslps_address.host, inInstance->sslps_address.port));
+    logTrace4("Lost an instance...  %s, %s, %x:%d\n", inInstance->sslps_type, inInstance->sslps_name,
+            SDL_SwapBE32(inInstance->sslps_address.host), SDL_SwapBE16(inInstance->sslps_address.port));
+    // this should (but doesn't) force string termination to appropriate lengths for type and name.
 
     struct SSLPint_FoundInstance* 	theCurrentInstance = sFoundInstances;
     struct SSLPint_FoundInstance* 	thePreviousInstance = NULL;
@@ -277,6 +273,8 @@ SSLPint_LostAnInstance(struct SSLP_ServiceInstance* inInstance) {
 
 static void
 SSLPint_FlushAllFoundInstances() {
+    logContext("flushing out all found SSLP service instances");
+
     struct SSLPint_FoundInstance*	theInstance;
     
     // Intentional assignment in while() condition.
@@ -294,15 +292,15 @@ SSLPint_FlushAllFoundInstances() {
 
 static void
 SSLPint_ReceivedPacket() {
-    SSLP_DE(BUG("Received a packet..."));
+    logContext("processing a received SSLP packet");
 
     if(sReceivingPacket == NULL) {
-        SSLP_DE(BUG("NULL\n"));
+        logAnomaly("sReceivingPacket is NULL");
         return;
     }
     
     if(sReceivingPacket->len != SIZEOF_SSLP_Packet) {
-        SSLP_DE(BUG("wrong len (%d)\n", sReceivingPacket->len));
+        logNote1("packet has wrong len (%d)", sReceivingPacket->len);
         return;
     }
     
@@ -311,128 +309,142 @@ SSLPint_ReceivedPacket() {
     UnpackPacket(sReceivingPacket->data,theReceivedPacket);
     
     if(theReceivedPacket->sslpp_magic != SDL_SwapBE32(SSLPP_MAGIC)) {
-        SSLP_DE(BUG("wrong magic (%x)\n", theReceivedPacket->sslpp_magic));
+        logNote1("wrong magic (%x)", SDL_SwapBE32(theReceivedPacket->sslpp_magic));
         return;
     }
     
     if(theReceivedPacket->sslpp_version != SDL_SwapBE32(SSLPP_VERSION)) {
-        SSLP_DE(BUG("wrong version (%d)\n", theReceivedPacket->sslpp_version));
+        logNote1("packet has wrong version (%d)", SDL_SwapBE32(theReceivedPacket->sslpp_version));
         return;
     }
     
     switch(SDL_SwapBE32(theReceivedPacket->sslpp_message)) {
     case SSLPP_MESSAGE_FIND:
-        SSLP_DE(BUG("type is FIND..."));
-
-        // Someone is looking for services...
-        if(sBehaviorsDesired & SSLPINT_RESPONDING) {
-            SSLP_DE(BUG("we are responding..."));
-            
-    		struct SSLP_Packet UnpackedResponsePacket;
-			struct SSLP_Packet*	theResponsePacket = &UnpackedResponsePacket;
-    		UnpackPacket(sResponsePacket->data,theResponsePacket);
-            
-            // We have a service we want discovered...
-            if(strncmp(theReceivedPacket->sslpp_service_type,
-                theResponsePacket->sslpp_service_type,/* sDiscoverableService->sslps_type, */
-                    SSLP_MAX_TYPE_LENGTH) == 0) {
+        {
+            logContext("dealing with an SSLP FIND request");
+    
+            // Someone is looking for services...
+            if(sBehaviorsDesired & SSLPINT_RESPONDING) {
+                    struct SSLP_Packet UnpackedResponsePacket;
+                            struct SSLP_Packet*	theResponsePacket = &UnpackedResponsePacket;
+                    UnpackPacket(sResponsePacket->data,theResponsePacket);
                 
-                SSLP_DE(BUG("service type matches..."));
-                // We have a service of the same type they are looking for.  Let's tell them about us.
-                // Fortunately, we have a packet all ready to go just for this very purpose!  ;)
-                sResponsePacket->address.host = sReceivingPacket->address.host;
-                sResponsePacket->address.port = sReceivingPacket->address.port;
-                
-                SDLNet_UDP_Send(sSocketDescriptor, -1, sResponsePacket);
-                
-                SSLP_DE(BUG("tried to send response.\n"));
+                // We have a service we want discovered...
+                if(strncmp(theReceivedPacket->sslpp_service_type,
+                    theResponsePacket->sslpp_service_type,/* sDiscoverableService->sslps_type, */
+                        SSLP_MAX_TYPE_LENGTH) == 0) {
+                    
+                    // We have a service of the same type they are looking for.  Let's tell them about us.
+                    // Fortunately, we have a packet all ready to go just for this very purpose!  ;)
+                    sResponsePacket->address.host = sReceivingPacket->address.host;
+                    sResponsePacket->address.port = sReceivingPacket->address.port;
+                    
+                    SDLNet_UDP_Send(sSocketDescriptor, -1, sResponsePacket);
+                    
+                    logTrace("tried to send response");
+                }
+                else
+                {
+                    logNote2("type mismatch (%s != %s)", theReceivedPacket->sslpp_service_type, theResponsePacket->sslpp_service_type);
+                    // note: this printf does not clamp string at 32 chars (i.e. max length in packet)
+                }
             }
             else
-            {
-                SSLP_DE(BUG("type mismatch (%s != %s)\n", theReceivedPacket->sslpp_service_type, theResponsePacket->sslpp_service_type));
-                // note: this printf does not clamp string at 32 chars (i.e. max length in packet)
-            }
+                logTrace("we are not responding to FIND requests");
+    
+            return;
         }
-        else
-            SSLP_DE(BUG("we are not responding.\n"));
-
-        return;
     break;
     case SSLPP_MESSAGE_HAVE:
-        SSLP_DE(BUG("type is HAVE.\n"));
-
-        // Someone reports having an instance of some kind of service type!
-        if(sBehaviorsDesired & SSLPINT_LOCATING) {
-            // ... ok, and we're interested... so, let's make sure it's the service_type that we're looking for...
-            
-    		struct SSLP_Packet UnpackedFindPacket;
-			struct SSLP_Packet*	theFindPacket = &UnpackedFindPacket;
-    		UnpackPacket(sFindPacket->data,theFindPacket);
-    		
-           if(strncmp(theReceivedPacket->sslpp_service_type, theFindPacket->sslpp_service_type,
-                SSLP_MAX_TYPE_LENGTH) == 0) {
- 
-                // It's the right type!  We found an instance out there!  Set up a structure to report our findings.
-                struct SSLP_ServiceInstance	theReceivedInstance;
-                strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH);
-                strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH);
-                theReceivedInstance.sslps_address.host = sReceivingPacket->address.host;
-                theReceivedInstance.sslps_address.port = theReceivedPacket->sslpp_service_port;
+        {
+            logContext("processing an SSLP HAVE message");
+    
+            // Someone reports having an instance of some kind of service type!
+            if(sBehaviorsDesired & SSLPINT_LOCATING) {
+                // ... ok, and we're interested... so, let's make sure it's the service_type that we're looking for...
                 
-                // Report our findings to the "instance librarian".
-                struct SSLP_ServiceInstance* theReturnedInstance = SSLPint_FoundAnInstance(&theReceivedInstance);
-                
-                // Maybe this is old news (if so, it returns NULL)
-                if(theReturnedInstance != NULL) {
-                    // It didn't know about this instance, and has returned a pointer to its (new) permanent copy.  Spread the word.
-                    if(sFoundCallback != NULL) {
-                        sFoundCallback(theReturnedInstance);
+                    struct SSLP_Packet UnpackedFindPacket;
+                            struct SSLP_Packet*	theFindPacket = &UnpackedFindPacket;
+                    UnpackPacket(sFindPacket->data,theFindPacket);
+                    
+            if(strncmp(theReceivedPacket->sslpp_service_type, theFindPacket->sslpp_service_type,
+                    SSLP_MAX_TYPE_LENGTH) == 0) {
+    
+                    // It's the right type!  We found an instance out there!  Set up a structure to report our findings.
+                    struct SSLP_ServiceInstance	theReceivedInstance;
+                    strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH);
+                    strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH);
+                    theReceivedInstance.sslps_address.host = sReceivingPacket->address.host;
+                    theReceivedInstance.sslps_address.port = theReceivedPacket->sslpp_service_port;
+                    
+                    // Report our findings to the "instance librarian".
+                    struct SSLP_ServiceInstance* theReturnedInstance = SSLPint_FoundAnInstance(&theReceivedInstance);
+                    
+                    // Maybe this is old news (if so, it returns NULL)
+                    if(theReturnedInstance != NULL) {
+                        // It didn't know about this instance, and has returned a pointer to its (new) permanent copy.  Spread the word.
+                        if(sFoundCallback != NULL) {
+                            sFoundCallback(theReturnedInstance);
+                        }
+                        else
+                            logNote("no 'found instance' callback registered");
                     }
+                    else
+                        logTrace("service already known");
                 }
+                else
+                    logNote2("wrong service type (%s != %s)", theReceivedPacket->sslpp_service_type, theFindPacket->sslpp_service_type);
+                    // note we don't stop the string at SSLP_MAX_NAME_LENGTH as we should.
             }
+            else
+                logTrace("we are not currently locating instances");
+
+            return;
         }
-        return;
     break;
     case SSLPP_MESSAGE_LOST:
-        SSLP_DE(BUG("type is LOST.\n"));
-
-        // Someone reports having lost an instance of some kind of service type.
-        if(sBehaviorsDesired & SSLPINT_LOCATING) {
-            // ... ok, and we're interested... so, let's make sure it's the service_type that we're looking for...
+        {
+            logContext("processing an SSLP LOST message");
             
-    		struct SSLP_Packet UnpackedFindPacket;
-			struct SSLP_Packet*	theFindPacket = &UnpackedFindPacket;
-    		UnpackPacket(sFindPacket->data,theFindPacket);
-    		
-           if(strncmp(theReceivedPacket->sslpp_service_type, theFindPacket->sslpp_service_type,
-                SSLP_MAX_TYPE_LENGTH) == 0) {
-
-                // It's the right type.  Set up a structure to report our findings.
-                struct SSLP_ServiceInstance	theReceivedInstance;
-                strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH);
-                strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH);
-                theReceivedInstance.sslps_address.host = sReceivingPacket->address.host;
-                theReceivedInstance.sslps_address.port = theReceivedPacket->sslpp_service_port;
+            // Someone reports having lost an instance of some kind of service type.
+            if(sBehaviorsDesired & SSLPINT_LOCATING) {
+                // ... ok, and we're interested... so, let's make sure it's the service_type that we're looking for...
                 
-                // Report our findings to the "instance librarian".
-                struct SSLP_ServiceInstance*	theReturnedInstance = SSLPint_LostAnInstance(&theReceivedInstance);
-                
-                // It returns NULL if it had no record of that instance to begin with.
-                if(theReturnedInstance != NULL) {
-                    // This was news to it.  It has surrendered its pointer to its permanent copy.  Spread the word.
-                    if(sLostCallback != NULL) {
-                        sLostCallback(theReturnedInstance);
-                    }
+                    struct SSLP_Packet UnpackedFindPacket;
+                            struct SSLP_Packet*	theFindPacket = &UnpackedFindPacket;
+                    UnpackPacket(sFindPacket->data,theFindPacket);
                     
-                    // And now, we kill the instance record.
-                    free(theReturnedInstance);
+            if(strncmp(theReceivedPacket->sslpp_service_type, theFindPacket->sslpp_service_type,
+                    SSLP_MAX_TYPE_LENGTH) == 0) {
+    
+                    // It's the right type.  Set up a structure to report our findings.
+                    struct SSLP_ServiceInstance	theReceivedInstance;
+                    strncpy(theReceivedInstance.sslps_type, theReceivedPacket->sslpp_service_type, SSLP_MAX_TYPE_LENGTH);
+                    strncpy(theReceivedInstance.sslps_name, theReceivedPacket->sslpp_service_name, SSLP_MAX_NAME_LENGTH);
+                    theReceivedInstance.sslps_address.host = sReceivingPacket->address.host;
+                    theReceivedInstance.sslps_address.port = theReceivedPacket->sslpp_service_port;
+                    
+                    // Report our findings to the "instance librarian".
+                    struct SSLP_ServiceInstance*	theReturnedInstance = SSLPint_LostAnInstance(&theReceivedInstance);
+                    
+                    // It returns NULL if it had no record of that instance to begin with.
+                    if(theReturnedInstance != NULL) {
+                        // This was news to it.  It has surrendered its pointer to its permanent copy.  Spread the word.
+                        if(sLostCallback != NULL) {
+                            sLostCallback(theReturnedInstance);
+                        }
+                        
+                        // And now, we kill the instance record.
+                        free(theReturnedInstance);
+                    }
                 }
             }
+
+            return;
         }
-        return;
     break;
     default:
-        SSLP_DE(BUG("unknown type (%x)\n", theReceivedPacket->sslpp_message));
+        logNote1("unknown SSLP message type (%x)", SDL_SwapBE32(theReceivedPacket->sslpp_message));
 
         return;
     break;
@@ -445,6 +457,8 @@ SSLPint_ReceivedPacket() {
 // set up shared resources for lookups and allowing discovery
 static int
 SSLPint_Enter() {
+    logContext("setting up SSLP");
+
     // Set up shared socket (note SDL_net wants port number here in machine order, not network order)
     // Actually, looking at the behavior of the rest of SDL_net, this looks like a BUG (in SDL_net) to me.  Nowhere
     // else in the code does it swap between host/network order for you, so it seems inconsistent to do
@@ -474,18 +488,6 @@ SSLPint_Enter() {
 
     assert(sBehaviorsDesired == SSLPINT_NONE);
     
-/*    if(sReceivingThread != NULL)
-        return 1;
-    else {
-        SDLNet_UDP_Close(sSocketDescriptor);
-        sSocketDescriptor	= NULL;
-        SDLNet_FreePacket(sReceivingPacket);
-        sReceivingPacket	= NULL;
-        sBehaviorsDesired	= SSLPINT_NONE;
-        return 0;
-    }
-*/
-
     // Success
     return 1;
 }
@@ -496,6 +498,8 @@ SSLPint_Enter() {
 // break down shared resources
 static int
 SSLPint_Exit() {
+    logContext("shutting down SSLP");
+
     assert(sBehaviorsDesired == SSLPINT_NONE);
     
     // OK, everyone is done.  Clean up...
@@ -518,6 +522,8 @@ void
 SSLP_Locate_Service_Instances(const char* inServiceType, SSLP_Service_Instance_Status_Changed_Callback inFoundCallback,
                                 SSLP_Service_Instance_Status_Changed_Callback inLostCallback,
                                 SSLP_Service_Instance_Status_Changed_Callback inNameChangedCallback) {
+
+    logContext("starting to locate SSLP service instances");
 
     assert(inServiceType);
     
@@ -565,6 +571,8 @@ void
 SSLP_Stop_Locating_Service_Instances(const char* inServiceType) {
     // We ignore inServiceType since we only track one service at a time for now
     // truly, semantics should be: pointer == NULL, stop all location;  pointer == p, stop locating p.
+    
+    logContext("ceasing attempts to locate SSLP service instances");
 
     assert(sBehaviorsDesired & SSLPINT_LOCATING);
 
@@ -590,6 +598,8 @@ SSLP_Stop_Locating_Service_Instances(const char* inServiceType) {
 
 void
 SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstance) {
+    logContext("starting to allow SSLP service discovery");
+
     assert(inServiceInstance != NULL);
     
     assert(!(sBehaviorsDesired & (SSLPINT_RESPONDING | SSLPINT_HINTING)));
@@ -632,6 +642,8 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
 
 void
 SSLP_Hint_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstance, const IPaddress* inAddress) {
+    logContext("starting to hint SSLP service discovery");
+
     // If we're not already allowing discovery, start doing it
     if(!(sBehaviorsDesired & SSLPINT_RESPONDING))
         SSLP_Allow_Service_Discovery(inServiceInstance);
@@ -682,6 +694,8 @@ SSLP_Disallow_Service_Discovery(const struct SSLP_ServiceInstance* inInstance) {
     // Officially, we would walk through a list to find the right one to disallow (or, if NULL is passed in,
     // we'd walk through to disallow all).  For now, since we're cheating, we assume they want to disallow
     // the one instance that could be discovered, and stop that one (without even looking at what they passed).
+
+    logContext("disallowing SSLP service discovery");
 
     assert(sBehaviorsDesired & SSLPINT_RESPONDING);
 
@@ -738,6 +752,8 @@ SSLP_Pump() {
     // Do nothing if we're supposed to do nothing :)
     if(sBehaviorsDesired == SSLPINT_NONE)
         return;
+        
+    logContext("pumping SSLP protocol activity");
     
     static Uint32	theTimeLastWorked = 0;
     

@@ -118,7 +118,11 @@ enum /* team colors */
 };
 
 // Is here for script_instructions.cpp
-#define ACTION_QUEUE_BUFFER_DIAMETER 0x100
+// ZZZ: increasing this queue size so machines (esp. in netgames) are even more tolerant
+// of abnormalities (can probably reduce it back once the current biggest source of stalled
+// update_world() calls - OpenGL texture setup in PreloadTextures() etc. - comes before NetSync().)
+//#define ACTION_QUEUE_BUFFER_DIAMETER 0x100
+#define ACTION_QUEUE_BUFFER_DIAMETER 0x400
 
 /* ---------- action flags */
 

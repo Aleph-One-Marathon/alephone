@@ -25,10 +25,17 @@
  *
  *  3 December 2001 (Woody Zenfell): changed dependence on SDL_Threadx's SetRelativeThreadPriority
  *	to simply BoostThreadPriority(), a simpler function with a simpler interface.
+ *
+ *  14 January 2003 (Woody Zenfell): TMTasks lock each other out while running (better models
+ *      Time Manager behavior, so makes code safer).  Also removed missedDeadline stuff.
  */
 
 // The implementation is built on SDL_thread, and approximates the Time Manager behavior.
 // Obviously, it's not a perfect emulation.  :)
+// In particular, though TMTasks now lock one another out (as they should), TMTasks do not
+// (cannot?) effectively lock out the main thread (as they would in Mac OS 9)... but, their
+// threads ought to be higher-priority than the main thread, which means that as long as they
+// don't block (which they shouldn't anyway), the main thread will not run while they do.
 
 // I probably would have made life easier for myself by using SDL_timer instead, but frankly
 // the documentation does not inspire me to trust it.  I'll do things on my own.
@@ -38,13 +45,11 @@
 #include "mytm.h"
 
 #include <vector>
-#if defined(__MACH__) && defined(__APPLE__)
-#include <SDL/SDL_thread.h>
-#include <SDL/SDL_timer.h>
-#else
-#include    <SDL_thread.h>
-#include    <SDL_timer.h>
-#endif
+
+#include "SDL_thread.h"
+#include "SDL_timer.h"
+
+#include "Logging.h"
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;
@@ -77,6 +82,45 @@ struct myTMTask {
 #endif
 };
 
+// Only one TMTask should be scheduled at any given time, so they take this mutex.
+static SDL_mutex* sTMTaskMutex = NULL;
+
+
+void
+mytm_initialize() {
+    // XXX should provide a way to destroy the mutex too - currently we rely on process exit to do that.
+    if(sTMTaskMutex == NULL) {
+        sTMTaskMutex = SDL_CreateMutex();
+        
+        //logCheckWarn0(sTMTaskMutex != NULL, "unable to create mytm mutex lock");
+        if(sTMTaskMutex == NULL)
+            logWarning("unable to create mytm mutex lock");
+    }
+    else
+        logAnomaly("multiple invocations of mytm_initialize()");
+}
+
+
+// The logging system is not (currently) thread-safe, so these logging calls are potentially a Bad Idea
+// but if something's going wrong already, maybe it wouldn't hurt to take a small risk to shed some light.
+bool
+take_mytm_mutex() {
+    bool success = (SDL_LockMutex(sTMTaskMutex) != -1);
+    if(!success)
+        logAnomaly1("take_mytm_mutex(): SDL_LockMutex() failed: %s", SDL_GetError());
+    return success;
+}
+
+
+
+bool
+release_mytm_mutex() {
+    bool success = (SDL_UnlockMutex(sTMTaskMutex) != -1);
+    if(!success)
+        logAnomaly1("release_mytm_mutex(): SDL_UnlockMutex() failed: %s", SDL_GetError());
+    return success;
+}
+
 
 
 // Function that threads execute - does housekeeping and calls user callback
@@ -89,27 +133,6 @@ thread_loop(void* inData) {
     uint32	theCurrentRunTime;
     int32	theDrift	= 0;
 
-	// Added a little later: if we missed a period altogether, we might be pregnant.
-	// No really, we should avoid calling the function twice in a row, and here's why.
-	bool	missedDeadline	= false;
-
-	// If we miss a period, but the ring packet comes around, the packet-handler "smears" -
-	// that is, it effectively manufactures a queue entry since we didn't have one ready for it.
-	// If we then try to compensate for missing a period by queueing some action_flags for the
-	// chance we missed, we have effectively injected an extra element into the action_flags queue,
-	// That means, from then on, it will take an extra GAME_TICK for our inputs to be acted on...
-	// in essence, we've added latency.  Yuck.  Who would want to be responsible for that??
-
-	// So, we keep track of whether we missed a deadline this time through, and if so, we don't
-	// call the function we're supposed to be calling.  We just go through the motions, and let the
-	// (nearly immediate) next pass through the loop call the function.
-
-/* taken out again even later still, modified the queueing behavior in network.cpp instead.
-The new wisdom: the other way kept latency to a bare minimum, but left no room for things to jitter, I think.
-The "faux queue" approach will, I hope, correctly strike up a balance between low latency and smooth gameplay.
-We'll see!
-*/
-
 #ifdef DEBUG
     theTMTask->mProfilingData.mStartTime	= theLastRunTime;
 #endif
@@ -117,27 +140,23 @@ We'll see!
     while(theTMTask->mKeepRunning) {
         // Delay, unless we're at least a period behind schedule
         // Originally, I didn't compute theDelay explicitly as a signed quantity, which
-        // made for some VERY long waits if we were running late... :)
+        // made for some VERY long waits if we were running late...
         int32	theDelay 	= theTMTask->mPeriod - theDrift;
         if(theDelay > 0)
             SDL_Delay(theDelay);
         else {
-			// We missed a deadline!
+            // We missed a deadline!
 #ifdef DEBUG
             theTMTask->mProfilingData.mNumLateCalls++;
 #endif                
-			missedDeadline = true;
-		}
+        }
         
         // If a reset was requested, pretend we were last called at the reset time, clear the reset,
         // and delay some more if needed.
         // Note: this is a "while" so, in case another reset comes while we are in the Delay() inside
         // this block, we wait longer.
         while(theTMTask->mResetTime > 0) {
-			// Whoops, heh, maybe we didn't miss a deadline after all - we were reset.
-			missedDeadline = false;
-            
-			theLastRunTime	= theTMTask->mResetTime;
+            theLastRunTime	= theTMTask->mResetTime;
             theTMTask->mResetTime = 0;
             
 #ifdef DEBUG
@@ -162,13 +181,12 @@ We'll see!
             
             if(theDelay > 0)
                 SDL_Delay(theDelay);
-			else {
-				// We did miss a deadline!
-				missedDeadline = true;
+            else {
+                // We did miss a deadline!
 #ifdef DEBUG
                 theTMTask->mProfilingData.mNumLateCalls++;
 #endif                
-			}
+            }
         }
     
 	theCurrentRunTime	= SDL_GetTicks();
@@ -201,16 +219,17 @@ We'll see!
         theTMTask->mProfilingData.mNumCallsTotal++;
 #endif
 
-		// Don't call the function if we're already at least a period behind.
-        // later change: DO call the function extra times to catch up.  network.cpp does the right thing
-        // now that it has the "faux queue".
-//		if(!missedDeadline) {
-	        if(theTMTask->mFunction() != true)
-		        break;
-//		}
-//		else
-			missedDeadline = false;
-	}
+        bool runAgain = true;
+
+        // Lock out other tmtasks while we run ours
+        if(take_mytm_mutex()) {
+            runAgain = theTMTask->mFunction();
+            release_mytm_mutex();
+        }
+        
+        if(!runAgain)
+            break;
+    }
     
     theTMTask->mIsRunning = false;
     
@@ -302,13 +321,13 @@ myTMReset(myTMTaskPtr task) {
 
 #ifdef DEBUG
 // ZZZ addition (to myTM interface): dump profiling data
-#define DUMPIT_ZU(structure,field_name) printf("" #field_name ":\t%u\n", (structure).field_name)
-#define DUMPIT_ZS(structure,field_name) printf("" #field_name ":\t%d\n", (structure).field_name)
+#define DUMPIT_ZU(structure,field_name) logDump1("" #field_name ":\t%u", (structure).field_name)
+#define DUMPIT_ZS(structure,field_name) logDump1("" #field_name ":\t%d", (structure).field_name)
 
 void
 myTMDumpProfile(myTMTask* inTask) {
     if(inTask != NULL) {
-        printf("PROFILE FOR SDL TMTASK %p (function %p)\n", inTask, inTask->mFunction);
+        logDump2("PROFILE FOR SDL TMTASK %p (function %p)", inTask, inTask->mFunction);
         DUMPIT_ZU((*inTask), mPeriod);
         DUMPIT_ZU(inTask->mProfilingData, mStartTime);
         DUMPIT_ZU(inTask->mProfilingData, mFinishTime);

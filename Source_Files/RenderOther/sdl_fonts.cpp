@@ -30,6 +30,7 @@
 #include "byte_swapping.h"
 #include "resource_manager.h"
 #include "FileHandler.h"
+#include "Logging.h"
 
 #include <SDL_endian.h>
 #include <vector>
@@ -57,17 +58,27 @@ extern vector<DirectorySpecifier> data_search_path;
 
 void initialize_fonts(void)
 {
+        logContext("initializing fonts");
 	// Open font resource files
 	bool found = false;
 	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
 	while (i != end) {
 		FileSpecifier fonts = *i + "Fonts";
+
 		if (open_res_file(fonts))
 			found = true;
 		i++;
 	}
 	if (!found) {
-		fprintf(stderr, "Can't open font resource file.\n");
+		logFatal("Can't open font resource file");
+/*
+                vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+                while (i != end) {
+                        FileSpecifier fonts = *i + "Fonts";
+                        fdprintf(fonts.GetPath());
+                        i++;
+                }
+*/                
 		exit(1);
 	}
 }

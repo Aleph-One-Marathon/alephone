@@ -97,6 +97,7 @@ Jan 12, 2003 (Woody Zenfell):
 
 // ZZZ additions:
 #include "ActionQueues.h"
+#include "mytm.h"
 
 #include <limits.h>
 
@@ -127,6 +128,7 @@ void initialize_marathon(
 //	import_definition_structures();
 #endif
 	
+        mytm_initialize();
 	build_trig_tables();
 	allocate_map_memory();
 	// Rendering and flood-map done when starting a level,

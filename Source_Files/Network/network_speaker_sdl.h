@@ -62,11 +62,11 @@ const int   kNetworkAudioBytesPerFrame  = (kNetworkAudioIs16Bit ? 2 : 1) * (kNet
 
 // Flags for NetworkSpeakerSoundBuffer::mFlags below
 enum {
-    kSoundDataIsDisposable  = 0x01  // in fact, dequeuer is *expected* to free the storage.
+    kSoundDataIsDisposable  = 0x01  // dequeuer is expected to call release_network_speaker_buffer(mData)
 };
 
 // These are used to link the network_speaker routines to the sound_sdl routines.
-struct NetworkSpeakerSoundBuffer {
+struct NetworkSpeakerSoundBufferDescriptor {
     byte*   mData;
     uint32  mLength;
     uint32  mFlags;
@@ -74,7 +74,7 @@ struct NetworkSpeakerSoundBuffer {
 
 // To insulate callers from details of flag storage
 __inline__ bool
-is_sound_data_disposable(NetworkSpeakerSoundBuffer* inBuffer) {
+is_sound_data_disposable(NetworkSpeakerSoundBufferDescriptor* inBuffer) {
     return (inBuffer->mFlags & kSoundDataIsDisposable) ? true : false;
 }
 
@@ -94,7 +94,10 @@ void queue_network_speaker_data(byte* inData, short inLength);
 // Called by sound playback routines to get incoming network audio
 // (also called by main thread in close_network_speaker())
 // Calling this invalidates the pointer returned the previous call.
-NetworkSpeakerSoundBuffer* dequeue_network_speaker_data();
+NetworkSpeakerSoundBufferDescriptor* dequeue_network_speaker_data();
+
+// Called by sound playback routines to return storage-buffers to the freequeue
+void release_network_speaker_buffer(byte* inBuffer);
 
 // Called by network routines to store incoming network audio for playback
 void received_network_audio_proc(void *buffer, short buffer_size, short player_index);

@@ -39,7 +39,7 @@
 #include	<SDL_thread.h>
 
 #include	"thread_priority_sdl.h"
-
+#include	"mytm.h" // mytm_mutex stuff
 
 // Global variables (most comments and "sSomething" variables are ZZZ)
 // Storage for incoming packet data
@@ -50,6 +50,9 @@ static DDPPacketBuffer		ddpPacketBuffer;
 
 // Keep track of our one sending/receiving socket
 static UDPsocket 		socket			= NULL;
+
+// Keep track of the socket-set the receiving thread uses (so we don't have to allocate/free it in that thread)
+static	SDLNet_SocketSet	sSocketSet		= NULL;
 
 // Keep track of the function to call when we receive data
 static PacketHandlerProcPtr	sPacketHandler		= NULL;
@@ -65,12 +68,6 @@ static volatile bool		sKeepListening		= false;
 // packet handler when it gets something.
 static int
 receive_thread_function(void*) {
-    static	SDLNet_SocketSet	sSocketSet	= NULL;
-    
-    // Is it safe to do this in the non-main thread?
-    sSocketSet = SDLNet_AllocSocketSet(1);
-    SDLNet_UDP_AddSocket(sSocketSet, socket);
-
     while(true) {
         // We listen with a timeout so we can shut ourselves down when needed.
         int theResult = SDLNet_CheckSockets(sSocketSet, 1000);
@@ -81,20 +78,24 @@ receive_thread_function(void*) {
         if(theResult > 0) {
             theResult = SDLNet_UDP_Recv(socket, sUDPPacketBuffer);
             if(theResult > 0) {
-                ddpPacketBuffer.protocolType	= kPROTOCOL_TYPE;
-                ddpPacketBuffer.sourceAddress	= sUDPPacketBuffer->address;
-                ddpPacketBuffer.datagramSize	= sUDPPacketBuffer->len;
-                
-                // Hope the other guy is done using whatever's in there!
-                // (As I recall, all uses happen in sPacketHandler and its progeny, so we should be fine.)
-                memcpy(ddpPacketBuffer.datagramData, sUDPPacketBuffer->data, sUDPPacketBuffer->len);
-                
-                sPacketHandler(&ddpPacketBuffer);
+                if(take_mytm_mutex()) {
+                    ddpPacketBuffer.protocolType	= kPROTOCOL_TYPE;
+                    ddpPacketBuffer.sourceAddress	= sUDPPacketBuffer->address;
+                    ddpPacketBuffer.datagramSize	= sUDPPacketBuffer->len;
+                    
+                    // Hope the other guy is done using whatever's in there!
+                    // (As I recall, all uses happen in sPacketHandler and its progeny, so we should be fine.)
+                    memcpy(ddpPacketBuffer.datagramData, sUDPPacketBuffer->data, sUDPPacketBuffer->len);
+                    
+                    sPacketHandler(&ddpPacketBuffer);
+                    
+                    release_mytm_mutex();
+                }
+                else
+                    fdprintf("could not take mytm mutex - incoming packet dropped");
             }
         }
     }
-    
-    SDLNet_FreeSocketSet(sSocketSet);
     
     return 0;
 }
@@ -148,6 +149,10 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
 		sUDPPacketBuffer = NULL;
 		return -1;
 	}
+
+        // Set up socket set
+        sSocketSet = SDLNet_AllocSocketSet(1);
+        SDLNet_UDP_AddSocket(sSocketSet, socket);
         
         // Set up receiver
         sKeepListening		= true;
@@ -179,6 +184,11 @@ OSErr NetDDPCloseSocket(short portNumber)
             sReceivingThread	= NULL;
         }
 
+        if(sSocketSet) {
+            SDLNet_FreeSocketSet(sSocketSet);
+            sSocketSet = NULL;
+        }
+    
         // (CB's code follows)
 	if (sUDPPacketBuffer) {
 		SDLNet_FreePacket(sUDPPacketBuffer);

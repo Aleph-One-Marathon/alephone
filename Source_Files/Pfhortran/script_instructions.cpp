@@ -160,6 +160,12 @@ short old_size = _640_320_HUD;
 void (*instruction_lookup[NUMBER_OF_INSTRUCTIONS])(script_instruction);
 
 
+// ZZZ: these were in script_instructions.h; I think they were probably meant for here.
+static ActionQueues* sPfhortranActionQueues = NULL;
+static long pfhortran_timer = 0;
+
+
+
 /* function prototypes */
 
 void s_Camera_Move(script_instruction inst);

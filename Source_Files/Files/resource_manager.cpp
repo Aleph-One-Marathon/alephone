@@ -23,6 +23,9 @@
  *  resource_manager.cpp - MacOS resource handling for non-Mac platforms
  *
  *  Written in 2000 by Christian Bauer
+ *
+ *  Jan 16, 2003 (Woody Zenfell):
+ *      Reworked stemmed-file opening logic; now using new Logging facility
  */
 
 #include <SDL_endian.h>
@@ -30,6 +33,7 @@
 #include "cseries.h"
 #include "resource_manager.h"
 #include "FileHandler.h"
+#include "Logging.h"
 
 #include <stdio.h>
 #include <vector>
@@ -124,15 +128,27 @@ bool res_file_t::read_map(void)
 	SDL_RWseek(f, 0, SEEK_SET);
 	uint32 fork_start = 0;
 
+        if(file_size < 16) {
+            if(file_size == 0)
+                logNote("file has zero length");
+            else
+                logAnomaly1("file too small (%d bytes) to be valid", file_size);
+            return false;
+        }
+
 	// Determine file type (AppleSingle and MacBinary II files are handled transparently)
 	long offset, data_length, rsrc_length;
 	if (is_applesingle(f, true, offset, rsrc_length)) {
+                logTrace("file is_applesingle");
 		fork_start = offset;
 		file_size = offset + rsrc_length;
 	} else if (is_macbinary(f, data_length, rsrc_length)) {
+                logTrace("file is_macbinary");
 		fork_start = 128 + ((data_length + 0x7f) & ~0x7f);
 		file_size = fork_start + rsrc_length;
 	}
+        else
+                logTrace("file is raw resource fork format");
 
 	// Read resource header
 	SDL_RWseek(f, fork_start, SEEK_SET);
@@ -140,12 +156,12 @@ bool res_file_t::read_map(void)
 	uint32 map_offset = SDL_ReadBE32(f) + fork_start;
 	uint32 data_size = SDL_ReadBE32(f);
 	uint32 map_size = SDL_ReadBE32(f);
-	//printf(" data_offset %d, map_offset %d, data_size %d, map_size %d\n", data_offset, map_offset, data_size, map_size);
+        logDump4("resource header: data offset %d, map_offset %d, data_size %d, map_size %d", data_offset, map_offset, data_size, map_size);
 
 	// Verify integrity of resource header
 	if (data_offset >= file_size || map_offset >= file_size ||
 	    data_offset + data_size > file_size || map_offset + map_size > file_size) {
-		//fprintf(stderr, "Resource header corrupt\n");
+		logAnomaly("file's resource header corrupt");
 		return false;
 	}
 
@@ -157,7 +173,7 @@ bool res_file_t::read_map(void)
 
 	// Verify integrity of map header
 	if (type_list_offset >= file_size) {
-		//fprintf(stderr, "Resource map header corrupt\n");
+		logAnomaly("file's resource map header corrupt");
 		return false;
 	}
 
@@ -174,7 +190,7 @@ bool res_file_t::read_map(void)
 
 		// Verify integrity of item
 		if (ref_list_offset >= file_size) {
-			//fprintf(stderr, "Resource type list corrupt\n");
+			logAnomaly("file's resource type list corrupt");
 			return false;
 		}
 
@@ -194,7 +210,7 @@ bool res_file_t::read_map(void)
 
 			// Verify integrify of item
 			if (rsrc_data_offset >= file_size) {
-				//fprintf(stderr, "Resource reference list corrupt\n");
+				logAnomaly("file's resource reference list corrupt");
 				return false;
 			}
 
@@ -213,51 +229,85 @@ bool res_file_t::read_map(void)
 /*
  *  Open resource file, set current file to the newly opened one
  */
+ 
+static SDL_RWops*
+open_res_file_from_rwops(SDL_RWops* f) {
+    if (f) {
+
+            // Successful, create res_file_t object and read resource map
+            res_file_t *r = new res_file_t(f);
+            if (r->read_map()) {
+
+                    // Successful, add file to list of open files
+                    res_file_list.push_back(r);
+                    cur_res_file_t = --res_file_list.end();
+                    
+                    // ZZZ: this exists mostly to help the user understand (via logContexts) which of
+                    // potentially several copies of a resource fork is actually being used.
+                    logNote("success, using this resource data");
+
+            } else {
+
+                    // Error reading resource map
+                    SDL_RWclose(f);
+                    return NULL;
+            }
+    }
+    else
+            logNote("file could not be opened");
+    return f;
+}
+
+static SDL_RWops*
+open_res_file_from_path(const char* inPath) {
+    logContext1("trying path %s", inPath);
+/*
+    string theContextString("trying path ");
+    theContextString += inPath;
+    logContext(theContextString.c_str());
+*/
+    
+    return open_res_file_from_rwops(SDL_RWFromFile(inPath, "rb"));
+}
 
 SDL_RWops *open_res_file(FileSpecifier &file)
 {
-	string rsrc_file_name = file.GetPath();
-	string resources_file_name = rsrc_file_name;
-	string darwin_rsrc_file_name = rsrc_file_name;
-	rsrc_file_name += ".rsrc";
-	resources_file_name += ".resources";
-	darwin_rsrc_file_name += "/rsrc";
+    logContext1("opening resource file %s", file.GetPath());
+/*
+    string theContextString("trying to open resource file ");
+    theContextString += file.GetPath();
+    logContext(theContextString.c_str());
+*/
 
-	// Open file, try <name>.rsrc first, then <name>.resources, then <name>/rsrc then <name>
-	SDL_RWops *f = NULL;
+    string rsrc_file_name = file.GetPath();
+    string resources_file_name = rsrc_file_name;
+    string darwin_rsrc_file_name = rsrc_file_name;
+    rsrc_file_name += ".rsrc";
+    resources_file_name += ".resources";
+    darwin_rsrc_file_name += "/rsrc";
+
+    SDL_RWops* f = NULL;
+
+    // Open file, try <name>.rsrc first, then <name>.resources, then <name>/rsrc then <name>
 #ifdef __BEOS__
-	// On BeOS, try MACOS:RFORK attribute first
-	if (has_rfork_attribute(file.GetPath()))
-		f = sdl_rw_from_rfork(file.GetPath(), false);
+    // On BeOS, try MACOS:RFORK attribute first
+    if (has_rfork_attribute(file.GetPath())) {
+            f = sdl_rw_from_rfork(file.GetPath(), false);
+            f = open_res_file_from_rwops(f);
+    }
 #endif
-	if (f == NULL)
-		f = SDL_RWFromFile(rsrc_file_name.c_str(), "rb");
-	if (f == NULL)
-		f = SDL_RWFromFile(resources_file_name.c_str(), "rb");
-	if (f == NULL)
-		f = SDL_RWFromFile(darwin_rsrc_file_name.c_str(), "rb");
-	if (f == NULL)
-		f = SDL_RWFromFile(file.GetPath(), "rb");
-	if (f) {
+    if (f == NULL)
+            f = open_res_file_from_path(rsrc_file_name.c_str());
+    if (f == NULL)
+            f = open_res_file_from_path(resources_file_name.c_str());
+    if (f == NULL)
+            f = open_res_file_from_path(darwin_rsrc_file_name.c_str());
+    if (f == NULL)
+            f = open_res_file_from_path(file.GetPath());
 
-		// Successful, create res_file_t object and read resource map
-		res_file_t *r = new res_file_t(f);
-		if (r->read_map()) {
-
-			// Successful, add file to list of open files
-			res_file_list.push_back(r);
-			cur_res_file_t = --res_file_list.end();
-
-		} else {
-
-			// Error reading resource map
-			//fprintf(stderr, "Error reading resource map of '%s'\n", file.GetPath());
-			SDL_RWclose(f);
-			return NULL;
-		}
-	}
-	return f;
+    return f;
 }
+
 
 
 /*
