@@ -1241,36 +1241,36 @@ void set_map_index_buffer_size(long length);
 
 // LP: routines for packing and unpacking the data from streams of bytes
 
-uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count = 1);
-uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count = 1);
-uint8 *unpack_line_data(uint8 *Stream, line_data* Objects, int Count = 1);
-uint8 *pack_line_data(uint8 *Stream, line_data* Objects, int Count = 1);
-uint8 *unpack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
-uint8 *pack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
-uint8 *unpack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
-uint8 *pack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
+uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count);
+uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count);
+uint8 *unpack_line_data(uint8 *Stream, line_data* Objects, int Count);
+uint8 *pack_line_data(uint8 *Stream, line_data* Objects, int Count);
+uint8 *unpack_side_data(uint8 *Stream, side_data* Objects, int Count);
+uint8 *pack_side_data(uint8 *Stream, side_data* Objects, int Count);
+uint8 *unpack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count);
+uint8 *pack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count);
 
-uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count = 1);
-uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count = 1);
-uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, int Count = 1);
-uint8 *pack_map_object(uint8 *Stream, map_object* Objects, int Count = 1);
-uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count = 1);
-uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count = 1);
-uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, int Count = 1);
-uint8 *pack_static_data(uint8 *Stream, static_data* Objects, int Count = 1);
+uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count);
+uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count);
+uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, int Count);
+uint8 *pack_map_object(uint8 *Stream, map_object* Objects, int Count);
+uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count);
+uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count);
+uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, int Count);
+uint8 *pack_static_data(uint8 *Stream, static_data* Objects, int Count);
 
-uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count = 1);
-uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count = 1);
-uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count = 1);
-uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count = 1);
+uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count);
+uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count);
+uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count);
+uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count);
 
-uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count = 1);
-uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count = 1);
-uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, int Count = 1);
-uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count = 1);
+uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count);
+uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count);
+uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, int Count);
+uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count);
 
-uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count = 1);
-uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count = 1);
+uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count);
+uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count);
 
 /*
 	map_indexes, automap_lines, and automap_polygons do not have any special
