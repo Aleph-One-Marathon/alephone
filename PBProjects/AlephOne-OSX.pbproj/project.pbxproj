@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 32;
+	objectVersion = 34;
 	objects = {
 		00F9DA4F00AC72F57F000001 = {
 			isa = PBXFileReference;
@@ -109,7 +109,7 @@
 //174
 		17587328FF379C6511CA2CBB = {
 			isa = PBXApplicationReference;
-			path = "AlephOne-SDL-0.11.1.app";
+			path = "AlephOne-SDL-0.12.0.app";
 			refType = 3;
 		};
 //170
@@ -158,6 +158,11 @@
 				29B97317FDCFA39411CA2CEA,
 				29B97323FDCFA39411CA2CEA,
 				19C28FACFE9D520D11CA2CBB,
+				F5830B3801E7769D01BA387C,
+				F5830B3901E7769D01BA387C,
+				F5830B3A01E7769D01BA387C,
+				F5830B4001E776DE01BA387C,
+				F59FB19D01E780DF01BBE912,
 			);
 			isa = PBXGroup;
 			name = "SDL Application";
@@ -195,15 +200,16 @@
 				043355C9FE30361CC02AAC07,
 			);
 			buildSettings = {
-				DEPLOYMENT_OPTIMIZATION_CFLAGS = "-O1";
-				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /Users/bobv/Library/Frameworks";
-				HEADER_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\"";
-				INSTALL_PATH = "$(HOME)/Applications";
-				LIBRARY_SEARCH_PATHS = /usr/lib/gcc/darwin/2.95.2;
+				DEBUGGING_SYMBOLS = NO;
+				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\"";
+				HEADER_SEARCH_PATHS = "/System/Library/Frameworks/OpenGL.framework/Headers \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\"";
+				INSTALL_PATH = /Applications;
+				LIBRARY_SEARCH_PATHS = "";
 				OPTIMIZATION_CFLAGS = "-O1";
-				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H";
+				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -D__DARWIN__ -DMACOSX";
 				OTHER_LDFLAGS = "-framework SDL";
-				PRODUCT_NAME = "AlephOne-SDL-0.11.1";
+				PREBINDING = NO;
+				PRODUCT_NAME = "AlephOne-SDL-0.12.0";
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
 				WRAPPER_EXTENSION = app;
@@ -211,8 +217,8 @@
 			dependencies = (
 			);
 			isa = PBXApplicationTarget;
-			name = "AlephOne-SDL-0.11.1";
-			productInstallPath = "$(HOME)/Applications";
+			name = "AlephOne-SDL-0.12.0";
+			productInstallPath = /Applications;
 			productName = "SDL Application";
 			productReference = 17587328FF379C6511CA2CBB;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -222,17 +228,25 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>AlephOne-SDL-0.11.1</string>
+	<string>AlephOne-SDL-0.12.0</string>
+	<key>CFBundleGetInfoString</key>
+	<string>Aleph One SDL Test for OS X</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
+	<key>CFBundleIdentifier</key>
+	<string>org.bungie.source.AlephOneSDL</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Aleph One</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.12.0</string>
 	<key>CFBundleSignature</key>
-	<string>????</string>
+	<string>26.A</string>
 	<key>CFBundleVersion</key>
-	<string>0.11.1</string>
+	<string>0.12.0</string>
 	<key>NSMainNibFile</key>
 	<string>SDLMain.nib</string>
 	<key>NSPrincipalClass</key>
@@ -383,9 +397,6 @@
 				F522143F0136B78C01000001,
 				F52214400136B78C01000001,
 				F52214410136B78C01000001,
-				F52214420136B78C01000001,
-				F52214430136B78C01000001,
-				F52214440136B78C01000001,
 				F5CADB5C0136D95E01000001,
 			);
 			isa = PBXHeadersBuildPhase;
@@ -510,6 +521,10 @@
 				F52213A30136AC1601000001,
 				F52213A40136AC1601000001,
 				F52214450136BB2401000001,
+				F5830B4E01E77D5701BA387C,
+				F5830B4F01E77D5701BA387C,
+				F5830B5101E77D5701BA387C,
+				F5830B5201E77D5701BA387C,
 			);
 			isa = PBXSourcesBuildPhase;
 			name = Sources;
@@ -517,9 +532,11 @@
 		29B9732DFDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
 			files = (
-				F52211110136A30901000001,
-				F52213AB0136AD7401000001,
-				F5CADB610136E5C101000001,
+				F5830B3C01E7769D01BA387C,
+				F5830B3D01E7769D01BA387C,
+				F5830B3E01E7769D01BA387C,
+				F5830B4101E776DE01BA387C,
+				F59FB19E01E780DF01BBE912,
 			);
 			isa = PBXFrameworksBuildPhase;
 			name = "Frameworks & Libraries";
@@ -539,6 +556,7 @@
 			);
 			buildSettings = {
 				COPY_PHASE_STRIP = NO;
+				OPTIMIZATION_CFLAGS = "-O1";
 			};
 			isa = PBXBuildStyle;
 			name = Development;
@@ -570,12 +588,6 @@
 			path = "/usr/lib/gcc/darwin/2.95.2/libstdc++.a";
 			refType = 0;
 		};
-		F52211110136A30901000001 = {
-			fileRef = F52211100136A30901000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F52211120136A41F01000001 = {
 			isa = PBXFileReference;
 			name = config.h;
@@ -601,6 +613,9 @@
 			fileRef = F52211120136A41F01000001;
 			isa = PBXBuildFile;
 			settings = {
+				ATTRIBUTES = (
+					Private,
+				);
 			};
 		};
 		F522111D0136A4DD01000001 = {
@@ -2925,48 +2940,6 @@
 			settings = {
 			};
 		};
-		F52213730136ABAE01000001 = {
-			isa = PBXFileReference;
-			name = Model3D.cpp;
-			path = ../Source_Files/ModelView/Model3D.cpp;
-			refType = 2;
-		};
-		F52213740136ABAE01000001 = {
-			isa = PBXFileReference;
-			name = Model3D.h;
-			path = ../Source_Files/ModelView/Model3D.h;
-			refType = 2;
-		};
-		F52213750136ABAE01000001 = {
-			isa = PBXFileReference;
-			name = ModelRenderer.cpp;
-			path = ../Source_Files/ModelView/ModelRenderer.cpp;
-			refType = 2;
-		};
-		F52213760136ABAE01000001 = {
-			isa = PBXFileReference;
-			name = ModelRenderer.h;
-			path = ../Source_Files/ModelView/ModelRenderer.h;
-			refType = 2;
-		};
-		F52213770136ABAE01000001 = {
-			isa = PBXFileReference;
-			name = MV_Shell.cp;
-			path = ../Source_Files/ModelView/MV_Shell.cp;
-			refType = 2;
-		};
-		F52213780136ABAE01000001 = {
-			isa = PBXFileReference;
-			name = WavefrontLoader.cpp;
-			path = ../Source_Files/ModelView/WavefrontLoader.cpp;
-			refType = 2;
-		};
-		F52213790136ABAE01000001 = {
-			isa = PBXFileReference;
-			name = WavefrontLoader.h;
-			path = ../Source_Files/ModelView/WavefrontLoader.h;
-			refType = 2;
-		};
 		F522137A0136ABAE01000001 = {
 			isa = PBXFileReference;
 			name = network_adsp.cpp;
@@ -3206,12 +3179,6 @@
 			name = SDL.framework;
 			path = ../../../../../../Users/bobv/Library/Frameworks/SDL.framework;
 			refType = 4;
-		};
-		F52213AB0136AD7401000001 = {
-			fileRef = F52213A90136AD7401000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
 		};
 		F52213B80136B71101000001 = {
 			fileRef = F522119B0136A6FD01000001;
@@ -4035,24 +4002,6 @@
 			settings = {
 			};
 		};
-		F52214420136B78C01000001 = {
-			fileRef = F52213740136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F52214430136B78C01000001 = {
-			fileRef = F52213760136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F52214440136B78C01000001 = {
-			fileRef = F52213790136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F52214450136BB2401000001 = {
 			fileRef = F522137F0136ABAE01000001;
 			isa = PBXBuildFile;
@@ -4063,10 +4012,10 @@
 			children = (
 				F52211120136A41F01000001,
 				F5CADB5B0136D95E01000001,
+				F5830B4201E77D5701BA387C,
 				F522144A0136C0C401000001,
 				F522144C0136C0C401000001,
 				F522144E0136C0C401000001,
-				F52214500136C0C401000001,
 				F52214510136C0C401000001,
 				F52211190136A41F01000001,
 				00F9DA4F00AC72F57F000001,
@@ -4412,20 +4361,6 @@
 			name = Headers;
 			refType = 4;
 		};
-		F52214500136C0C401000001 = {
-			children = (
-				F52213730136ABAE01000001,
-				F52213740136ABAE01000001,
-				F52213750136ABAE01000001,
-				F52213760136ABAE01000001,
-				F52213770136ABAE01000001,
-				F52213780136ABAE01000001,
-				F52213790136ABAE01000001,
-			);
-			isa = PBXGroup;
-			name = ModelView;
-			refType = 4;
-		};
 		F52214510136C0C401000001 = {
 			children = (
 				F52214520136C0C401000001,
@@ -4464,6 +4399,164 @@
 			name = Headers;
 			refType = 4;
 		};
+		F5830B3801E7769D01BA387C = {
+			isa = PBXFrameworkReference;
+			name = SDL.framework;
+			path = /Users/astrange/Library/Frameworks/SDL.framework;
+			refType = 0;
+		};
+		F5830B3901E7769D01BA387C = {
+			isa = PBXFrameworkReference;
+			name = SDL_image.framework;
+			path = /Users/astrange/Library/Frameworks/SDL_image.framework;
+			refType = 0;
+		};
+		F5830B3A01E7769D01BA387C = {
+			isa = PBXFrameworkReference;
+			name = SDL_net.framework;
+			path = /Users/astrange/Library/Frameworks/SDL_net.framework;
+			refType = 0;
+		};
+		F5830B3C01E7769D01BA387C = {
+			fileRef = F5830B3801E7769D01BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5830B3D01E7769D01BA387C = {
+			fileRef = F5830B3901E7769D01BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5830B3E01E7769D01BA387C = {
+			fileRef = F5830B3A01E7769D01BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5830B4001E776DE01BA387C = {
+			isa = PBXFrameworkReference;
+			name = OpenGL.framework;
+			path = /System/Library/Frameworks/OpenGL.framework;
+			refType = 0;
+		};
+		F5830B4101E776DE01BA387C = {
+			fileRef = F5830B4001E776DE01BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5830B4201E77D5701BA387C = {
+			children = (
+				F5830B4301E77D5701BA387C,
+				F5830B4401E77D5701BA387C,
+				F5830B4501E77D5701BA387C,
+				F5830B4601E77D5701BA387C,
+				F5830B4701E77D5701BA387C,
+				F5830B4801E77D5701BA387C,
+				F5830B4901E77D5701BA387C,
+				F5830B4A01E77D5701BA387C,
+				F5830B4B01E77D5701BA387C,
+				F5830B4C01E77D5701BA387C,
+				F5830B4D01E77D5701BA387C,
+			);
+			isa = PBXGroup;
+			name = ModelView;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/ModelView;
+			refType = 0;
+		};
+		F5830B4301E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = Model3D.cpp;
+			refType = 4;
+		};
+		F5830B4401E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = Model3D.h;
+			refType = 4;
+		};
+		F5830B4501E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = ModelRenderer.cpp;
+			refType = 4;
+		};
+		F5830B4601E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = ModelRenderer.h;
+			refType = 4;
+		};
+		F5830B4701E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = MV_Shell.cp;
+			refType = 4;
+		};
+		F5830B4801E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = QD3D_Loader.cpp;
+			refType = 4;
+		};
+		F5830B4901E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = QD3D_Loader.h;
+			refType = 4;
+		};
+		F5830B4A01E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = StudioLoader.cpp;
+			refType = 4;
+		};
+		F5830B4B01E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = StudioLoader.h;
+			refType = 4;
+		};
+		F5830B4C01E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = WavefrontLoader.cpp;
+			refType = 4;
+		};
+		F5830B4D01E77D5701BA387C = {
+			isa = PBXFileReference;
+			path = WavefrontLoader.h;
+			refType = 4;
+		};
+		F5830B4E01E77D5701BA387C = {
+			fileRef = F5830B4301E77D5701BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5830B4F01E77D5701BA387C = {
+			fileRef = F5830B4501E77D5701BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5830B5101E77D5701BA387C = {
+			fileRef = F5830B4A01E77D5701BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5830B5201E77D5701BA387C = {
+			fileRef = F5830B4C01E77D5701BA387C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F59FB19D01E780DF01BBE912 = {
+			isa = PBXFrameworkReference;
+			name = Cocoa.framework;
+			path = /System/Library/Frameworks/Cocoa.framework;
+			refType = 0;
+		};
+		F59FB19E01E780DF01BBE912 = {
+			fileRef = F59FB19D01E780DF01BBE912;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F5CADB5B0136D95E01000001 = {
 			isa = PBXFileReference;
 			path = confpaths.h;
@@ -4473,6 +4566,9 @@
 			fileRef = F5CADB5B0136D95E01000001;
 			isa = PBXBuildFile;
 			settings = {
+				ATTRIBUTES = (
+					Private,
+				);
 			};
 		};
 		F5CADB600136E5C101000001 = {
@@ -4480,12 +4576,6 @@
 			name = SDL_net.framework;
 			path = /Users/bobv/Library/Frameworks/SDL_net.framework;
 			refType = 0;
-		};
-		F5CADB610136E5C101000001 = {
-			fileRef = F5CADB600136E5C101000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
 		};
 	};
 	rootObject = 29B97313FDCFA39411CA2CEA;
