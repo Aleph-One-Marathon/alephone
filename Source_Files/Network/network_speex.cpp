@@ -23,6 +23,7 @@
     
  */
 
+#include "cseries.h"
 #ifdef SPEEX
 #include "network_speex.h"
 #include "network_audio_shared.h"

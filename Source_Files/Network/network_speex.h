@@ -26,6 +26,7 @@
 #ifndef __NETWORK_SPEEX_H
 #define __NETWORK_SPEEX_H
 
+#include "cseries.h"
 #ifdef SPEEX
 #include "speex.h"
 

@@ -72,6 +72,14 @@ AC_CHECK_HEADERS(lua.h, [
   ])
 ])
 
+dnl Check for Speex
+AC_CHECK_HEADERS(speex.h, [
+  AC_CHECK_LIB(speex, speex_decoder_init, [
+    LIBS="$LIBS -lspeex"
+    AC_DEFINE(SPEEX, 1, [Speex support is enabled])
+  ])
+])
+
 dnl Figure out which OpenGL library to use
 case "$target" in
   *-*-cygwin* | *-*-mingw32*)
