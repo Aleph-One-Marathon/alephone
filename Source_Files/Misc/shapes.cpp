@@ -1893,6 +1893,8 @@ static struct high_level_shape_definition *get_high_level_shape_definition(
 	struct collection_definition *definition= get_collection_definition(collection_index);
 	uint32 *offset_table;
 	
+	if (!definition) return NULL;
+	
 	if (!(high_level_shape_index>=0&&high_level_shape_index<definition->high_level_shape_count))
 		return NULL;
 	
