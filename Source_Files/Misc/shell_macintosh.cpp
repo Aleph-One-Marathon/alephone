@@ -1507,18 +1507,24 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 			{
 				FileSpecifier FileSpec;
 				FileSpec.SetSpec(SLMember.Spec);
-				OpenedResourceFile OFile;
-				if (FileSpec.Open(OFile))
-				{
-					OFile.Push();
-					XML_ResourceForkLoader.ParseResourceSet('TEXT');
-					OFile.Pop();
-				}
+				XML_LoadFromResourceFork(FileSpec);
 			}
 			break;
 		
 		default:
 			vassert(false,csprintf(temporary,"Bad type: %d",SLMember.Type));
 		}
+	}
+}
+
+
+void XML_LoadFromResourceFork(FileSpecifier& File)
+{
+	OpenedResourceFile OFile;
+	if (File.Open(OFile))
+	{
+		OFile.Push();
+		XML_ResourceForkLoader.ParseResourceSet('TEXT');
+		OFile.Pop();
 	}
 }

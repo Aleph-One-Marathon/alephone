@@ -108,7 +108,7 @@ struct system_information_data
 
 extern struct system_information_data *system_information;
 
-/* ---------- prototypes/SHELL.C */
+/* ---------- prototypes/SHELL.C [now shell_misc.cpp, shell_macintosh.cpp, shell_sdl.cpp] */
 
 void global_idle_proc(void);
 
@@ -117,6 +117,10 @@ void global_idle_proc(void);
 void handle_game_key(EventRecord *event, short key);
 bool machine_has_quicktime();
 bool machine_has_nav_services();
+
+// For loading MML from shapes and sounds resource forks
+// when one of those files is opened
+void XML_LoadFromResourceFork(FileSpecifier& File);
 #endif
 
 // LP addition for handling XML stuff:

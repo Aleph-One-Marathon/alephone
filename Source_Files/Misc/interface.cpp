@@ -1338,7 +1338,7 @@ static bool begin_game(
 
 			/* Show the cursor here on failure. */
 			show_cursor();
-		
+			
 			/* The only time we don't clean up is on the replays.. */
 			if(clean_up_on_failure)
 			{
@@ -1598,7 +1598,7 @@ static void display_loading_map_error(
 	void)
 {
 	short error, type;
-
+	
 	/* Give them the error... */
 	error= get_game_error(&type);
 	if(type==gameError)

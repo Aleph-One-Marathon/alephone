@@ -334,18 +334,6 @@ bool load_level_from_map(
 		
 			/* Close the file.. */
 			close_wad_file(MapFile);
-			
-			// LP: carry over errors
-			short SavedType, SavedError;
-			SavedError = get_game_error(&SavedType);
-			
-			//CP Addition: load any scripts available [LP: now in XML_LevelScripts]
-			// if (load_script(1000+level_index) < 0)
-				;  //this sucks.
-			
-			// Restore carried-over error so that Pfhortran errors
-			// will not cause trouble
-			set_game_error(SavedType,SavedError);
 		} else {
 			// error code has been set..
 		}
@@ -508,7 +496,6 @@ bool new_game(
 	/* Load the level */	
 	assert(file_is_set);
 	success= goto_level(entry_point, true);
-
 	/* If we were able to load the map... */
 	if(success)
 	{
@@ -751,12 +738,15 @@ bool goto_level(
 		load_level_from_map(entry->level_number);
 		if(error_pending()) success= false;
 	}
-
+	
 	if (success)
 	{
 		// LP: doing this here because level-specific MML may specify which level-specific
-		// textures to load
+		// textures to load.
+		// Being careful to carry over errors so that Pfhortran errors can be ignored
+		short SavedType, SavedError = SavedError = get_game_error(&SavedType);
 		RunLevelScript(entry->level_number);
+		set_game_error(SavedType,SavedError);
 		
 		if (!new_game)
 		{
@@ -1112,7 +1102,10 @@ bool load_game_from_file(FileSpecifier& File)
 		if(use_map_file(parent_checksum))
 		{
 			// LP: getting the level scripting off of the map file
+			// Being careful to carry over errors so that Pfhortran errors can be ignored
+			short SavedType, SavedError = SavedError = get_game_error(&SavedType);
 			RunLevelScript(dynamic_world->current_level_number);
+			set_game_error(SavedType,SavedError);
 		}
 		else
 		{

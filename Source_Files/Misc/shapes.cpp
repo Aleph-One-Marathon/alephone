@@ -75,6 +75,7 @@ Jan 17, 2001 (Loren Petrich):
 #include "interface.h"
 #include "collection_definition.h"
 #include "screen.h"
+#include "game_errors.h"
 #include "FileHandler.h"
 
 #include "map.h"
@@ -269,6 +270,14 @@ void open_shapes_file(FileSpecifier& File)
 		assert((S - CollHdrStream) == Count*SIZEOF_collection_header);
 		
 		delete []CollHdrStream;
+		
+		// Load MML resources in file
+		// Be sure to ignore not-found errors
+#if defined(mac)
+		short SavedType, SavedError = SavedError = get_game_error(&SavedType);
+		XML_LoadFromResourceFork(File);
+		set_game_error(SavedType,SavedError);
+#endif
 	}
 }
 

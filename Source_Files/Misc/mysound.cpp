@@ -126,6 +126,7 @@ shortening radii on low-volume ambient sound sorces would be a good idea
 #include "world.h"
 #include "interface.h"
 #include "mysound.h"
+#include "game_errors.h"
 #include "FileHandler.h"
 #include "Packing.h"
 
@@ -570,7 +571,15 @@ bool open_sound_file(FileSpecifier& File)
 	if (header.source_count == 1)
 		_sm_globals->sound_source = _8bit_22k_source;
 	_sm_globals->base_sound_definitions= sound_definitions + _sm_globals->sound_source*number_of_sound_definitions;
-	
+		
+	// Load MML resources in file
+	// Be sure to ignore not-found errors
+#if defined(mac)
+	short SavedType, SavedError = SavedError = get_game_error(&SavedType);
+	XML_LoadFromResourceFork(File);
+	set_game_error(SavedType,SavedError);
+#endif
+		
 	return true;
 }
 
