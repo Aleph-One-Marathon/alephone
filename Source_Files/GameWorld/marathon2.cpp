@@ -195,6 +195,9 @@ short update_world(
 	highest_time= SHRT_MIN, lowest_time= SHRT_MAX;
 	for (player_index= 0;player_index<dynamic_world->player_count; ++player_index)
 	{
+		// Note: the arguments of MIN() are evaluated outside of that function,
+		// to avoid multiple evaluations inside of it, since it is a preprocessor macro.
+		
 		int queue_size, TimeDifference;
 		
 		int32 NumActionFlags = GameQueue->countActionFlags(player_index);
