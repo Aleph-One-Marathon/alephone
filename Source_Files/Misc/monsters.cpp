@@ -945,6 +945,10 @@ void activate_monster(
 	monster->path= NONE;
 	/* we used to set monster->target_index here, but it is invalid when mode==_monster_unlocked */
 	monster->mode= _monster_unlocked, monster->target_index= NONE;
+
+	if (definition->attack_frequency == 0) // IP: Avoid division by zero
+		definition->attack_frequency = 1;	 
+
 	monster->ticks_since_attack= (definition->flags&_monster_attacks_immediately) ?
 		definition->attack_frequency : global_random()%definition->attack_frequency;
 	monster->desired_height= object->location.z; /* best guess */
