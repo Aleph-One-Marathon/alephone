@@ -18,7 +18,11 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+ *  The portion of the star game protocol run on every player's machine.
+ * 
  *  Created by Woody Zenfell, III on Fri May 02 2003.
+ *
+ *  May 27, 2003 (Woody Zenfell): lossy byte-stream distribution.
  */
 
 #include "network_star.h"
@@ -32,6 +36,7 @@
 #include <map>
 
 extern void make_player_really_net_dead(size_t inPlayerIndex);
+extern void call_distribution_response_function_if_available(byte* inBuffer, uint16 inBufferSize, int16 inDistributionType, uint8 inSendingPlayerIndex);
 
 
 enum {
@@ -40,7 +45,8 @@ enum {
         kDefaultOutgoingFlagsQueueSize = TICKS_PER_SECOND / 2,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
 	kDefaultTimingWindowSize = 3 * TICKS_PER_SECOND,
-	kDefaultTimingNthElement = kDefaultTimingWindowSize / 2
+	kDefaultTimingNthElement = kDefaultTimingWindowSize / 2,
+	kLossyByteStreamDataBufferSize = 1280,
 };
 
 struct SpokePreferences
@@ -99,6 +105,11 @@ static int32 sSmallestUnreceivedTick;
 static WindowedNthElementFinder<int32> sNthElementFinder(kDefaultTimingWindowSize);
 static bool sTimingMeasurementValid;
 static int32 sTimingMeasurement;
+static byte sLossyByteStreamData[kLossyByteStreamDataBufferSize];
+static uint16 sOutstandingLossyByteStreamLength;
+static int16 sOutstandingLossyByteStreamType;
+static uint32 sOutstandingLossyByteStreamDestinations;
+static byte sScratchBuffer[kLossyByteStreamDataBufferSize];
 
 
 
@@ -108,6 +119,7 @@ static void process_messages(AIStream& ps, IncomingGameDataPacketProcessingConte
 static void handle_end_of_messages_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
 static void handle_player_net_dead_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
 static void handle_timing_adjustment_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
+static void handle_lossy_byte_stream_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
 static void process_optional_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context, uint16 inMessageType);
 static bool spoke_tick();
 static void send_packet();
@@ -199,10 +211,13 @@ spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inN
 	sNthElementFinder.reset(sSpokePreferences.mTimingWindowSize);
 	sTimingMeasurementValid = false;
 
+	sOutstandingLossyByteStreamLength = 0;
+
         sMessageTypeToMessageHandler.clear();
         sMessageTypeToMessageHandler[kEndOfMessagesMessageType] = handle_end_of_messages_message;
         sMessageTypeToMessageHandler[kTimingAdjustmentMessageType] = handle_timing_adjustment_message;
         sMessageTypeToMessageHandler[kPlayerNetDeadMessageType] = handle_player_net_dead_message;
+	sMessageTypeToMessageHandler[kHubToSpokeLossyByteStreamMessageType] = handle_lossy_byte_stream_message;
 
         sNeedToSendLocalOutgoingBuffer = false;
 
@@ -225,9 +240,12 @@ spoke_cleanup(bool inGraceful)
 		sSpokeTickTask = NULL;
 
                 sSpokeActive = false;
+
+		// We send one last packet here to try to not leave the hub hanging on our ACK.
 		send_packet();
 		check_send_packet_to_hub();
-                release_mytm_mutex();
+
+		release_mytm_mutex();
         }
 
         // This waits for the tick task to actually finish
@@ -256,6 +274,43 @@ spoke_get_net_time()
 	}
 
 	return (sConnected ? sOutgoingFlags.getWriteTick() - theDelay : sNetworkPlayers.at(sLocalPlayerIndex).mQueue->getWriteTick());
+}
+
+
+
+void
+spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistributionType, byte* inBytes, uint16 inLength, bool inExcludeLocalPlayer)
+{
+	uint32 theDestinations = 0;
+	for(size_t i = 0; i < sNetworkPlayers.size(); i++)
+	{
+		if((i != sLocalPlayerIndex || !inExcludeLocalPlayer) && !sNetworkPlayers[i].mZombie && sNetworkPlayers[i].mConnected)
+			theDestinations |= (((uint32)1) << i);
+	}
+
+	spoke_distribute_lossy_streaming_bytes(inDistributionType, theDestinations, inBytes, inLength);
+}
+
+
+
+void
+spoke_distribute_lossy_streaming_bytes(int16 inDistributionType, uint32 inDestinationsBitmask, byte* inBytes, uint16 inLength)
+{
+	if(sOutstandingLossyByteStreamLength > 0)
+		logNote2("spoke discarding %hu unsent bytes of outgoing lossy streaming type %hd", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType);
+
+	logDump3("spoke application decided to send %d bytes of lossy streaming type %d destined for players 0x%x", inLength, inDistributionType, inDestinationsBitmask);
+	
+	if(inLength > kLossyByteStreamDataBufferSize)
+	{
+		logAnomaly2("spoke passed too many (%hu) bytes of outgoing lossy streaming type %hd; truncating", inLength, inDistributionType);
+		inLength = kLossyByteStreamDataBufferSize;
+	}
+
+	memcpy(sLossyByteStreamData, inBytes, inLength);
+	sOutstandingLossyByteStreamLength = inLength;
+	sOutstandingLossyByteStreamType = inDistributionType;
+	sOutstandingLossyByteStreamDestinations = inDestinationsBitmask;
 }
 
 
@@ -582,6 +637,36 @@ handle_timing_adjustment_message(AIStream& ps, IncomingGameDataPacketProcessingC
 
 
 static void
+handle_lossy_byte_stream_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context)
+{
+	uint16 theMessageLength;
+	ps >> theMessageLength;
+
+	size_t theStartOfMessage = ps.tellg();
+
+	int16 theDistributionType;
+	uint8 theSendingPlayer;
+	ps >> theDistributionType >> theSendingPlayer;
+
+	uint16 theDataLength = theMessageLength - (ps.tellg() - theStartOfMessage);
+	uint16 theSpilloverDataLength = 0;
+	if(theDataLength > sizeof(sScratchBuffer))
+	{
+		logNote3("received too many bytes (%d) of lossy streaming data type %d from player %d; truncating", theDataLength, theDistributionType, theSendingPlayer);
+		theSpilloverDataLength = theDataLength - sizeof(sScratchBuffer);
+		theDataLength = sizeof(sScratchBuffer);
+	}
+	ps.read(sScratchBuffer, theDataLength);
+	ps.ignore(theSpilloverDataLength);
+
+	logDump3("received %d bytes of lossy streaming type %d data from player %d", theDataLength, theDistributionType, theSendingPlayer);
+
+	call_distribution_response_function_if_available(sScratchBuffer, theDataLength, theDistributionType, theSendingPlayer);
+}
+
+
+
+static void
 process_optional_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context, uint16 inMessageType)
 {
         // We don't know of any optional messages, so we just skip any we encounter.
@@ -660,6 +745,9 @@ spoke_tick()
 
 	logDump1("sOutstandingTimingAdjustment is now %d", sOutstandingTimingAdjustment);
 
+	if(sOutstandingLossyByteStreamLength > 0)
+		shouldSend = true;
+
         // If we're connected and (we generated new data or if it's been long enough since we last sent), send.
         if(sConnected)
 	{
@@ -711,6 +799,20 @@ send_packet()
                 ps << sSmallestUnreceivedTick;
         
                 // Messages
+		// Outstanding lossy streaming bytes?
+		if(sOutstandingLossyByteStreamLength > 0)
+		{
+			uint16 theMessageLength = sOutstandingLossyByteStreamLength + sizeof(sOutstandingLossyByteStreamType) + sizeof(sOutstandingLossyByteStreamDestinations);
+
+			ps << (uint16)kSpokeToHubLossyByteStreamMessageType
+				<< theMessageLength
+				<< sOutstandingLossyByteStreamType
+				<< sOutstandingLossyByteStreamDestinations;
+			ps.write(sLossyByteStreamData, sOutstandingLossyByteStreamLength);
+
+			sOutstandingLossyByteStreamLength = 0;
+		}
+		
                 // No more messages
                 ps << (uint16)kEndOfMessagesMessageType;
         

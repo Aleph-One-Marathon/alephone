@@ -39,6 +39,8 @@ enum {
         kEndOfMessagesMessageType = 0x454d,	// 'EM'
         kTimingAdjustmentMessageType = 0x5441,	// 'TA'
         kPlayerNetDeadMessageType = 0x4e44,	// 'ND'
+	kSpokeToHubLossyByteStreamMessageType = 0x534c,	// 'SL'
+	kHubToSpokeLossyByteStreamMessageType = 0x484c, // 'HL'
 
         kSpokeToHubGameDataPacketV1Magic = 0x53484731,	// 'SHG1'
         kHubToSpokeGameDataPacketV1Magic = 0x48534731,	// 'HSG1'
@@ -81,6 +83,11 @@ extern void spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick
 extern void spoke_cleanup(bool inGraceful);
 extern void spoke_received_network_packet(DDPPacketBufferPtr inPacket);
 extern int32 spoke_get_net_time();
+// "Distribute to everyone" helps to match the existing (legacy) interfaces etc.
+extern void spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistributionType, byte* inBytes, uint16 inLength, bool inExcludeLocalPlayer);
+// distribute_lossy_streaming_bytes offers a more direct interface (not yet used) to star's lossy
+//	distribution mechanism.  (e.g., can select certain recipients, send unregistered dist types, etc.)
+extern void spoke_distribute_lossy_streaming_bytes(int16 inDistributionType, uint32 inDestinationsBitmask, byte* inBytes, uint16 inLength);
 extern XML_ElementParser* Spoke_GetParser();
 extern void DefaultSpokePreferences();
 extern void WriteSpokePreferences(FILE* F);

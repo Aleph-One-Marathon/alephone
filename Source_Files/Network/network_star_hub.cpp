@@ -17,8 +17,13 @@
 	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
- 
+
+ *  The portion of the star game network protocol run on a single machine, perhaps (eventually)
+ *	without an actual player on the machine - or even without most of the game, for that matter.
+ *
  *  Created by Woody Zenfell, III on Mon Apr 28 2003.
+ *
+ *  May 27, 2003 (Woody Zenfell): lossy byte-stream distribution.
  */
 
 #include "network_star.h"
@@ -102,6 +107,7 @@ enum {
         kDefaultPregameTicksBeforeNetDeath = 20 * TICKS_PER_SECOND,
         kDefaultInGameTicksBeforeNetDeath = 3 * TICKS_PER_SECOND,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
+	kLossyStreamingDataBufferSize = 1280,
 };
 
 
@@ -219,6 +225,12 @@ static DDPFramePtr	sOutgoingFrame = NULL;
 static DDPPacketBuffer	sLocalOutgoingBuffer;
 static bool		sNeedToSendLocalOutgoingBuffer = false;
 
+static byte		sLossyStreamingData[kLossyStreamingDataBufferSize];
+static uint16		sOutstandingLossyByteStreamLength;
+static uint32		sOutstandingLossyByteStreamDestinations;
+static uint8		sOutstandingLossyByteStreamSender;
+static int16		sOutstandingLossyByteStreamType;
+
 static myTMTaskPtr	sHubTickTask = NULL;
 static bool		sHubActive = false;	// used to enable the packet handler
 static bool		sHubInitialized = false;
@@ -316,6 +328,8 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
         sFlagsQueues.resize(inNumPlayers, TickBasedActionQueue(kFlagsQueueSize));
         sAddressToPlayerIndex.clear();
         sConnectedPlayersBitmask = 0;
+
+	sOutstandingLossyByteStreamLength = 0;
 
         for(size_t i = 0; i < inNumPlayers; i++)
         {
@@ -723,6 +737,36 @@ process_messages(AIStream& ps, int inSenderIndex)
 
 
 static void
+process_lossy_byte_stream_message(AIStream& ps, int inSenderIndex, uint16 inLength)
+{
+	assert(inSenderIndex >= 0 && inSenderIndex < sNetworkPlayers.size());
+	
+	if(sOutstandingLossyByteStreamLength > 0)
+		logNote4("discarding %uh bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%x", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender, sOutstandingLossyByteStreamDestinations);
+
+	size_t theHeaderStreamPosition = ps.tellg();
+	ps >> sOutstandingLossyByteStreamType >> sOutstandingLossyByteStreamDestinations;
+	sOutstandingLossyByteStreamLength = inLength - (ps.tellg() - theHeaderStreamPosition);
+	sOutstandingLossyByteStreamSender = inSenderIndex;
+
+	logDump4("got %d bytes of lossy stream type %d from player %d for destinations 0x%x", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender, sOutstandingLossyByteStreamDestinations);
+
+	uint16 theSpilloverDataLength = 0;
+	
+	if(sOutstandingLossyByteStreamLength > kLossyStreamingDataBufferSize)
+	{
+		logNote4("too many (%uh) bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx; truncating", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender, sOutstandingLossyByteStreamDestinations);
+		theSpilloverDataLength = sOutstandingLossyByteStreamLength - kLossyStreamingDataBufferSize;
+		sOutstandingLossyByteStreamLength = kLossyStreamingDataBufferSize;
+	}
+
+	ps.read(sLossyStreamingData, sOutstandingLossyByteStreamLength);
+	ps.ignore(theSpilloverDataLength);
+}
+
+
+
+static void
 process_optional_message(AIStream& ps, int inSenderIndex, uint16 inMessageType)
 {
         // All optional messages are required to give their length in the two bytes
@@ -731,8 +775,13 @@ process_optional_message(AIStream& ps, int inSenderIndex, uint16 inMessageType)
         uint16 theMessageLength;
         ps >> theMessageLength;
 
-        // Currently we ignore (skip) all optional messages
-        ps.ignore(theMessageLength);
+	if(inMessageType == kSpokeToHubLossyByteStreamMessageType)
+		process_lossy_byte_stream_message(ps, inSenderIndex, theMessageLength);
+	else
+	{
+		// Currently we ignore (skip) all optional messages
+		ps.ignore(theMessageLength);
+	}
 }
 
 
@@ -832,6 +881,20 @@ send_packets()
                                                         << sNetworkPlayers[j].mNetDeadTick;
                                         }
                                 }
+
+				// Lossy streaming data?
+				if(sOutstandingLossyByteStreamLength > 0 && ((sOutstandingLossyByteStreamDestinations & (((uint32)1) << i)) != 0))
+				{
+					logDump4("packet to player %d will contain %d bytes of lossy byte stream type %d from player %d", i, sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender);
+					// In AStreams, sizeof(packed scalar) == sizeof(unpacked scalar)
+					uint16 theMessageLength = sizeof(sOutstandingLossyByteStreamType) + sizeof(sOutstandingLossyByteStreamSender) + sOutstandingLossyByteStreamLength;
+					
+					ps << (uint16)kHubToSpokeLossyByteStreamMessageType
+						<< theMessageLength
+						<< sOutstandingLossyByteStreamType
+						<< sOutstandingLossyByteStreamSender;
+					ps.write(sLossyStreamingData, sOutstandingLossyByteStreamLength);
+				}
         
                                 // End of messages
                                 ps << (uint16)kEndOfMessagesMessageType;
@@ -889,7 +952,7 @@ send_packets()
                         } // try
                         catch (...)
                         {
-                                // maybe we ought to log something here
+				logWarning("Caught exception while constructing/sending outgoing packet");
                         }
                         
                 } // if(connected)
@@ -897,6 +960,9 @@ send_packets()
         } // iterate over players
 
         sLastNetworkTickSent = sNetworkTicker;
+
+	sOutstandingLossyByteStreamLength = 0;
+	
 } // send_packets()
 
 
