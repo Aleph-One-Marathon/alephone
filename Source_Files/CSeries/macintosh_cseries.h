@@ -53,11 +53,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 */
 #endif
 
-// JTP: Move after includes to not stomp on Carbon.h's use of DEBUG
 #define HAVE_OPENGL
 #undef BIG_ENDIAN
 #define BIG_ENDIAN
-#define DEBUG
 #undef ALEPHONE_LITTLE_ENDIAN
 #define COMPLAIN_BAD_ALLOCS
 
