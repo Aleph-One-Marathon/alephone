@@ -1878,9 +1878,73 @@ static int L_Get_Player_Angle(lua_State *L)
 		lua_error(L);
 	}
 	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, (double)player->facing*AngleConvert);
-	lua_pushnumber(L, (double)player->elevation*AngleConvert);
+	lua_pushnumber(L, (double)FIXED_INTEGERAL_PART(player->variables.direction)*AngleConvert);
+	lua_pushnumber(L, (double)FIXED_INTEGERAL_PART(player->variables.elevation)*AngleConvert);
 	return 2;
+}
+
+static int L_Set_Player_Angle(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+	{
+		lua_pushstring(L, "set_player_angle: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	double facing = static_cast<double>(lua_tonumber(L,2));
+	double elevation = static_cast<double>(lua_tonumber(L,3));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "set_player_angle: invalid player index");
+		lua_error(L);
+	}
+	
+	player_data *player = get_player_data(player_index);
+	player->variables.direction = INTEGER_TO_FIXED((int)(facing/AngleConvert));
+	player->variables.elevation = INTEGER_TO_FIXED((int)(elevation/AngleConvert));
+	return 0;
+}
+
+static int L_Get_Player_Color(lua_State *L)
+{
+	if (!lua_isnumber(L,1))
+	{
+		lua_pushstring(L, "get_player_color: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "get_player_color: invalid player index");
+		lua_error(L);
+	}
+
+	player_data *player = get_player_data(player_index);
+	lua_pushnumber(L, player->color);
+	return 1;
+}
+
+static int L_Set_Player_Color(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	{
+		lua_pushstring(L, "set_player_color: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	int color = static_cast<int>(lua_tonumber(L,2));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "set_player_color: invalid player index");
+		lua_error(L);
+	}
+
+	player_data *player = get_player_data(player_index);
+	player->color = color;
+	return 0;
 }
 
 static int L_Get_Player_Team(lua_State *L)
@@ -1903,6 +1967,27 @@ static int L_Get_Player_Team(lua_State *L)
 	return 1;
 }
 
+static int L_Set_Player_Team(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	{
+		lua_pushstring(L, "set_player_team: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	int team = static_cast<int>(lua_tonumber(L,2));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "set_player_team: invalid player index");
+		lua_error(L);
+	}
+
+	player_data *player = get_player_data(player_index);
+	player->team = team;
+	return 0;
+}
+
 static int L_Get_Player_Name(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -1921,6 +2006,113 @@ static int L_Get_Player_Name(lua_State *L)
 	player_data *player = get_player_data(player_index);
 	lua_pushstring(L, player->name);
 	return 1;
+}
+
+static int L_Get_Player_Powerup_Duration(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	{
+		lua_pushstring(L, "get_player_powerup_duration: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "get_player_powerup_duration: invalid player index");
+		lua_error(L);
+	}
+	
+	int powerup = static_cast<int>(lua_tonumber(L,2));
+	if (powerup < 0 || powerup > 3){
+		lua_pushstring(L, "get_player_powerup_duration: invalid powerup type");
+		lua_error(L);
+	}
+	
+	player_data *player = get_player_data(player_index);
+	
+	switch(powerup){
+		case 0:
+			lua_pushnumber(L, player->invisibility_duration);
+			break;
+		
+		case 1:
+			lua_pushnumber(L, player->invincibility_duration);
+			break;
+		
+		case 2:
+			lua_pushnumber(L, player->infravision_duration);
+			break;
+		
+		case 3:
+			lua_pushnumber(L, player->extravision_duration);
+			break;
+	}
+	
+	return 1;
+}
+
+static int L_Set_Player_Powerup_Duration(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+	{
+		lua_pushstring(L, "set_player_powerup_duration: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	int powerup = static_cast<int>(lua_tonumber(L,2));
+	int duration = static_cast<int>(lua_tonumber(L,3));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "set_player_powerup_duration: invalid player index");
+		lua_error(L);
+	}
+	if (powerup < 0 || powerup > 3){
+		lua_pushstring(L, "set_player_powerup_duration: invalid powerup type");
+		lua_error(L);
+	}
+
+	player_data *player = get_player_data(player_index);
+	switch(powerup){
+		case 0:
+			player->invisibility_duration = duration;
+			break;
+		
+		case 1:
+			player->invincibility_duration = duration;
+			break;
+		
+		case 2:
+			player->infravision_duration = duration;
+			break;
+		
+		case 3:
+			player->extravision_duration = duration;
+			break;
+	}
+	return 0;
+}
+
+static int L_Get_Player_Internal_Velocity(lua_State *L)
+{
+	if (!lua_isnumber(L,1))
+	{
+		lua_pushstring(L, "get_player_internal_velocity: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "get_player_internal_velocity: invalid player index");
+		lua_error(L);
+	}
+
+	player_data *player = get_player_data(player_index);
+	lua_pushnumber(L, player->variables.velocity);
+	lua_pushnumber(L, player->variables.perpendicular_velocity);
+	return 2;
 }
 
 static int L_Get_Player_External_Velocity(lua_State *L)
@@ -3036,6 +3228,26 @@ static int L_Set_Terminal_Text_Number(lua_State *L)
 	return 0;
 }
 
+static int L_Activate_Terminal(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	{
+		lua_pushstring(L, "activate_terminal: incorrect argument type");
+		lua_error(L);
+	}
+
+	short player_index = static_cast<short>(lua_tonumber(L,1));
+	short text_index = static_cast<short>(lua_tonumber(L,2));
+	if (player_index < 0 || player_index >= dynamic_world->player_count){
+		lua_pushstring(L, "activate_terminal: invalid player index");
+		lua_error(L);
+	}
+	
+	enter_computer_interface(player_index, text_index, calculate_level_completion_state());
+	
+	return 0;
+}
+
 static int L_Get_Polygon_Floor_Height(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -3117,6 +3329,95 @@ static int L_Set_Polygon_Ceiling_Height(lua_State *L)
 	}
 	return 0;
 
+}
+
+static int L_Get_Polygon_Type(lua_State *L)
+{
+	if (!lua_isnumber(L,1))
+	{
+		lua_pushstring(L, "get_polygon_type: incorrect argument type");
+		lua_error(L);
+	}
+
+	int polygon_index = static_cast<int>(lua_tonumber(L,1));
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		lua_pushnumber(L, polygon->type);
+		return 1;
+	}
+	return 0;
+}
+
+static int L_Set_Polygon_Type(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	{
+		lua_pushstring(L, "get_polygon_type: incorrect argument type");
+		lua_error(L);
+	}
+
+	int polygon_index = static_cast<int>(lua_tonumber(L,1));
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		polygon->type = static_cast<int>(lua_tonumber(L,2));
+	}
+	return 0;
+}
+
+static int L_Get_Polygon_Center(lua_State *L)
+{
+	if (!lua_isnumber(L,1))
+	{
+		lua_pushstring(L, "get_polygon_center: incorrect argument type");
+		lua_error(L);
+	}
+
+	int polygon_index = static_cast<int>(lua_tonumber(L,1));
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		lua_pushnumber(L, polygon->center.x);
+		lua_pushnumber(L, polygon->center.y);
+		return 2;
+	}
+	return 0;
+}
+
+static int L_Get_Polygon_Permutation(lua_State *L)
+{
+	if (!lua_isnumber(L,1))
+	{
+		lua_pushstring(L, "get_polygon_permutation: incorrect argument type");
+		lua_error(L);
+	}
+
+	int polygon_index = static_cast<int>(lua_tonumber(L,1));
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		lua_pushnumber(L, polygon->permutation);
+		return 1;
+	}
+	return 0;
+}
+
+static int L_Set_Polygon_Permutation(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	{
+		lua_pushstring(L, "set_polygon_permutation: incorrect argument type");
+		lua_error(L);
+	}
+
+	int polygon_index = static_cast<int>(lua_tonumber(L,1));
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		polygon->permutation = static_cast<int>(lua_tonumber(L,2));
+	}
+	return 0;
 }
 
 static int L_New_Item(lua_State *L)
@@ -3517,8 +3818,15 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_player_position", L_Get_Player_Position);
 	lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
 	lua_register(state, "get_player_angle", L_Get_Player_Angle);
+	lua_register(state, "set_player_angle", L_Set_Player_Angle);
+	lua_register(state, "get_player_color", L_Get_Player_Color);
+	lua_register(state, "set_player_color", L_Get_Player_Color);
 	lua_register(state, "get_player_team", L_Get_Player_Team);
+	lua_register(state, "set_player_team", L_Set_Player_Team);
 	lua_register(state, "get_player_name", L_Get_Player_Name);
+	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);
+	lua_register(state, "set_player_powerup_duration", L_Set_Player_Powerup_Duration);
+		lua_register(state, "get_player_internal_velocity", L_Get_Player_Internal_Velocity);
         lua_register(state, "get_player_external_velocity", L_Get_Player_External_Velocity);
         lua_register(state, "set_player_external_velocity", L_Set_Player_External_Velocity);
         lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
@@ -3540,6 +3848,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_platform_ceiling_height", L_Set_Platform_Ceiling_Height);
 	lua_register(state, "set_platform_movement", L_Set_Platform_Movement);
 	lua_register(state, "get_platform_movement", L_Get_Platform_Movement);
+	lua_register(state, "get_platform_index", L_Get_Polygon_Permutation);
 	lua_register(state, "set_motion_sensor_state", L_Set_Motion_Sensor_State);
 	lua_register(state, "get_motion_sensor_state", L_Get_Motion_Sensor_State);
 	lua_register(state, "create_camera", L_Create_Camera);
@@ -3556,10 +3865,18 @@ void RegisterLuaFunctions()
 	lua_register(state, "start_fade", L_Screen_Fade);
 	lua_register(state, "get_terminal_text_number", L_Get_Terminal_Text_Number);
 	lua_register(state, "set_terminal_text_number", L_Set_Terminal_Text_Number);
+	lua_register(state, "activate_terminal", L_Activate_Terminal);
 	lua_register(state, "get_polygon_floor_height", L_Get_Polygon_Floor_Height);
 	lua_register(state, "get_polygon_ceiling_height", L_Get_Polygon_Ceiling_Height);
 	lua_register(state, "set_polygon_floor_height", L_Set_Polygon_Floor_Height);
 	lua_register(state, "set_polygon_ceiling_height", L_Set_Polygon_Ceiling_Height);
+	lua_register(state, "get_polygon_type", L_Get_Polygon_Type);
+	lua_register(state, "set_polygon_type", L_Set_Polygon_Type);
+	lua_register(state, "get_polygon_center", L_Get_Polygon_Center);
+	lua_register(state, "get_polygon_permutation", L_Get_Polygon_Permutation);
+	lua_register(state, "set_polygon_permutation", L_Set_Polygon_Permutation);
+	lua_register(state, "get_polygon_target", L_Get_Polygon_Permutation);
+	lua_register(state, "set_polygon_target", L_Set_Polygon_Permutation);
 	lua_register(state, "new_item", L_New_Item);
 	lua_register(state, "global_random", L_Global_Random);
 	lua_register(state, "local_random", L_Local_Random);

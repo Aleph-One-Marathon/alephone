@@ -40,6 +40,8 @@ Woody Zenfell
 3.9 Refuel Panels
 3.10 Compass Directions
 3.11 Projectile Types
+3.12 Polygon Types
+3.13 Powerup Types
 
 
 0. General
@@ -270,18 +272,32 @@ Returns the polygon player is standing on.
 
 
 get_player_angle (player)
+set_player_angle (player, yaw, pitch)
 
-Return both the facing (yaw) and the elevation (pitch) of player.
+Returns/Sets both the facing (yaw) and the elevation (pitch) of player.
+
+
+get_player_color (player)
+set_player_color (player, color)
+
+Gets/Sets the player's color.
 
 
 get_player_team (player)
+set_player_team (player, team)
 
-Returns the team of player.
+Returns/Sets the team of player.
 
 
 get_player_name (player)
 
 Returns the name of player.
+
+
+get_player_powerup_duration (player, powerup)
+set_player_powerup_duration (player, powerup, duration)
+
+Gets/Sets the duration of the player's powerup. See the mnemonics for the powerup list. No powerup has to be picked up before setting the duration.
 
 
 player_is_dead (player)
@@ -329,6 +345,10 @@ Returns the index of the local player.
 In the normal case, you shouldn't needed this.
 You'll just make the game go out of sync.
 
+
+get_player_internal_velocity (player)
+
+Returns the player's velocity and perpendicular velocity (= sidestepping).
 
 (jkvw: internal velocity is movement caused by the player running or sidestepping.  Everything else is external velocity.)
 
@@ -533,6 +553,23 @@ number_of_polygons ()
 Returns the number of polygons in the map.
 
 
+get_polygon_type (poly)
+set_polygon_type (poly, type)
+
+Sets/Gets the polygon type.
+
+
+get_polygon_center (poly)
+
+Returns the x and y coordinate of the polygon center.
+
+
+get_polygon_target (poly)
+set_polygon_target (poly, target)
+
+Gets/Sets the light/platform triggered by a polygon or the teleportation destination depending on the polygon's type.
+
+
 2.7 Platforms
 -------------
 
@@ -578,6 +615,11 @@ set_platform_ceiling_height (poly, height)
 
 These operate on the platform's heights.
 (that is, not on the polygon floor/ceiling, but the position of the platform itself)
+
+
+get_platform_index (poly)
+
+If poly is a platform, it returns the polygon's platform index.
 
 
 2.8 Camera
@@ -771,6 +813,11 @@ Return the permutation field (the terminal script ID) of the terminal of the lin
 set_terminal_text_number (poly, line, terminal_text_id)
 
 Sets the permutation field (the terminal script ID) of the terminal of the line contained in poly to terminal_text_id. It can be used to display multiple terminal messages without having to add hundred of terminals hidden behind the first...
+
+
+activate_terminal (player, text_no)
+
+Activates terminal text "text_no" for the player.
 
 
 play_sound(player, sound, pitch)
@@ -1281,4 +1328,42 @@ _projectile_yeti
 _projectile_sewage_yeti
 _projectile_lava_yeti
 _projectile_smg_bullet
+
+
+3.12 Polygon Types
+---------------------
+
+_polygon_is_normal
+_polygon_is_item_impassable
+_polygon_is_monster_impassable
+_polygon_is_hill
+_polygon_is_base
+_polygon_is_platform
+_polygon_is_light_on_trigger
+_polygon_is_platform_on_trigger
+_polygon_is_light_off_trigger
+_polygon_is_platform_off_trigger
+_polygon_is_teleporter
+_polygon_is_zone_border
+_polygon_is_goal
+_polygon_is_visible_monster_trigger
+_polygon_is_invisible_monster_trigger
+_polygon_is_dual_monster_trigger
+_polygon_is_item_trigger
+_polygon_must_be_explored
+_polygon_is_automatic_exit
+_polygon_is_minor_ouch
+_polygon_is_major_ouch
+_polygon_is_glue
+_polygon_is_glue_trigger
+_polygon_is_superglue
+
+
+3.13 Powerup Types
+---------------------
+
+_powerup_invisibility
+_powerup_invincibility
+_powerup_infravision
+_powerup_extravision
 

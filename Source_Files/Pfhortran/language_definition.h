@@ -8,6 +8,8 @@
  * jkvw 07/07/03 - Mnemonic naming conventions are being naughty - note how "shotgun" was defined as 0x16 then later as 0x17,
  *	resulting in the shotgun item type mnemonic being unusable in scripts.  This version should be more usable and consistent.
  *	Old names are retained for backwards compatability.
+ *
+ * Falko 02/21/05 - added mnemonics for polygon types and powerups
  */
 
 {"Camera_Move", Camera_Move},
@@ -770,7 +772,38 @@
 {"_projectile_lava_yeti", 0x25},
 {"_projectile_smg_bullet", 0x26},
         
-        
+// polygon types
+{"_polygon_is_normal", 0x00},
+{"_polygon_is_item_impassable", 0x01},
+{"_polygon_is_monster_impassable", 0x02},
+{"_polygon_is_hill", 0x03},
+{"_polygon_is_base", 0x04},
+{"_polygon_is_platform", 0x05},
+{"_polygon_is_light_on_trigger", 0x06},
+{"_polygon_is_platform_on_trigger", 0x07},
+{"_polygon_is_light_off_trigger", 0x08},
+{"_polygon_is_platform_off_trigger", 0x09},
+{"_polygon_is_teleporter", 0x0A},
+{"_polygon_is_zone_border", 0x0B},
+{"_polygon_is_goal", 0x0C},
+{"_polygon_is_visible_monster_trigger", 0x0D},
+{"_polygon_is_invisible_monster_trigger", 0x0E},
+{"_polygon_is_dual_monster_trigger", 0x0F},
+{"_polygon_is_item_trigger", 0x10},
+{"_polygon_must_be_explored", 0x11},
+{"_polygon_is_automatic_exit", 0x12},
+{"_polygon_is_minor_ouch", 0x13},
+{"_polygon_is_major_ouch", 0x14},
+{"_polygon_is_glue", 0x15},
+{"_polygon_is_glue_trigger", 0x16},
+{"_polygon_is_superglue", 0x17},
+
+// powerup types
+{"_powerup_invisibility", 0x00},
+{"_powerup_invincibility", 0x01},
+{"_powerup_infravision", 0x02},
+{"_powerup_extravision", 0x03},
+		
 #ifdef LUA_ACCESSING
 {"_refuel_oxygen", _panel_is_oxygen_refuel},
 {"_refuel_single_shield", _panel_is_shield_refuel},
