@@ -1170,8 +1170,11 @@
 			buildRules = (
 			);
 			buildSettings = {
+				CC = /usr/bin/gcc3;
 				COPY_PHASE_STRIP = NO;
+				CPLUSPLUS = "/usr/bin/g++3";
 				DEBUGGING_SYMBOLS = YES;
+				GCC_VERSION = 3.x;
 				OPTIMIZATION_CFLAGS = "-O0";
 				OTHER_CFLAGS = "\U0001-DDEBUG";
 			};
@@ -1182,8 +1185,11 @@
 			buildRules = (
 			);
 			buildSettings = {
+				CC = /usr/bin/gcc3;
 				COPY_PHASE_STRIP = YES;
+				CPLUSPLUS = "/usr/bin/g++3";
 				DEBUGGING_SYMBOLS = NO;
+				GCC_VERSION = 3.x;
 				WARNING_CFLAGS = "";
 			};
 			isa = PBXBuildStyle;
@@ -1533,8 +1539,11 @@
 			buildRules = (
 			);
 			buildSettings = {
+				CC = /usr/bin/gcc3;
 				COPY_PHASE_STRIP = NO;
+				CPLUSPLUS = "/usr/bin/g++3";
 				DEBUGGING_SYMBOLS = YES;
+				GCC_VERSION = 3.x;
 				OPTIMIZATION_CFLAGS = "-O0";
 				OTHER_CFLAGS = "\U0001-DDEBUG";
 				PRECOMPILE_PREFIX_HEADER = NO;
