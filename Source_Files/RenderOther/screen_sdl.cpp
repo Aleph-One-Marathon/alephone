@@ -99,6 +99,14 @@ static void DisplayPosition(SDL_Surface *s);
 static void DisplayMessages(SDL_Surface *s);
 static void DrawHUD(SDL_Rect &dest_rect);
 
+// LP addition:
+void start_tunnel_vision_effect(
+	bool out)
+{
+	// LP change: doing this by setting targets
+  world_view->target_field_of_view = (out && NetAllowTunnelVision()) ? TUNNEL_VISION_FIELD_OF_VIEW : 
+		((current_player->extravision_duration) ? EXTRAVISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW);
+}
 
 /*
  *  Initialize screen management

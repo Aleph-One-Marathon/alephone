@@ -207,6 +207,9 @@ Apr 22, 2003 (Woody Zenfell):
 // LP addition: OpenGL support
 #include "OGL_Render.h"
 
+// For NetAllowTunnelVision and NetAllowCrosshair
+#include "network.h"
+
 // LP addition: view control
 #include "ViewControl.h"
 #if !defined(TARGET_API_MAC_CARBON)
@@ -473,6 +476,15 @@ static pascal OSStatus CEvtWindowUpdateEvents (EventHandlerCallRef nextHandler, 
 #endif
 
 /* ---------- code */
+// LP addition:
+void start_tunnel_vision_effect(
+	bool out)
+{
+	// LP change: doing this by setting targets
+  world_view->target_field_of_view = (out && NetAllowTunnelVision()) ? TUNNEL_VISION_FIELD_OF_VIEW : 
+		((current_player->extravision_duration) ? EXTRAVISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW);
+}
+
 void initialize_screen(
 	struct screen_mode_data *mode, bool ShowFreqDialog)
 {
