@@ -110,6 +110,9 @@ Feb 20, 2002 (Woody Zenfell):
 
 May 20, 2002 (Woody Zenfell):
     get_ticks_since_local_player_in_terminal() mechanism
+
+Jan 12, 2003 (Woody Zenfell):
+	Single entry point (reset_action_queues()) to reset all ActionQueues that need to be reset
 */
 
 #define DONT_REPEAT_DEFINITIONS
@@ -432,6 +435,17 @@ void walk_player_list(
 	}
 }
 
+
+// ZZZ: need to reset other queues now besides just the RealActionQueues
+// This doesn't necessarily belong in this file, but I wasn't sure quite where to put it.
+static void
+reset_other_queues() {
+	// Not sure if we want to do this (not my code), put here as a reminder
+	//GetPfhortranActionQueues->reset();
+	
+	reset_intermediate_action_queues();
+}
+
 void initialize_players(
 	void)
 {
@@ -447,6 +461,7 @@ void initialize_players(
 	}
 
     sRealActionQueues->reset();
+    reset_other_queues();
 }
 
 /* This will be called by entering map for two reasons:
@@ -455,14 +470,22 @@ void initialize_players(
  */
 /* The above comment is stale.  Now loading map calls this and so does new_game. Calling this */
 /*  from entering map would bone us. */
-void reset_player_queues(
-	void)
+static void
+reset_player_queues()
 {
-    sRealActionQueues->reset();
+	sRealActionQueues->reset();
 	reset_recording_and_playback_queues();
 	sync_heartbeat_count(); //¥¥ÊMY ADDITION...
 }
 
+// ZZZ addition: need to reset (potentially) multiple sets of ActionQueues, not just the RealActionQueues.
+// This function doesn't necessarily belong in this file, but I wasn't sure where else to put it.
+void
+reset_action_queues()
+{
+	reset_player_queues();
+	reset_other_queues();
+}
 
 // ZZZ: queue_action_flags() replaced by ActionQueues::enqueueActionFlags()
 // ZZZ: dequeue_action_flags() replaced by ActionQueues::dequeueActionFlags()

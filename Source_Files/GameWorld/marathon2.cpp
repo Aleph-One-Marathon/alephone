@@ -57,6 +57,10 @@ Feb 20, 2002 (Woody Zenfell):
 
 Mar 13, 2002 (Br'fin (Jeremy Parsons)):
 	Altered enter_game to stop and reset fades after script_init
+  
+Jan 12, 2003 (Woody Zenfell):
+	Added ability to reset intermediate action queues (GameQueue)
+	Fixed potential out-of-sync bug
 */
 
 #include "cseries.h"
@@ -144,6 +148,11 @@ void initialize_marathon(
 	GameQueue = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER);
 }
 
+void
+reset_intermediate_action_queues() {
+	GameQueue->reset();
+}
+
 short update_world(
 	void)
 {
@@ -184,18 +193,21 @@ short update_world(
 	highest_time= SHRT_MIN, lowest_time= SHRT_MAX;
 	for (player_index= 0;player_index<dynamic_world->player_count; ++player_index)
 	{
-		int queue_size;
-
+		int queue_size, TimeDifference;
+		
+		int32 NumActionFlags = GameQueue->countActionFlags(player_index);
+		
 		if (game_is_networked)
 		{
-			queue_size= MIN(int(GameQueue->countActionFlags(player_index)),
-                NetGetNetTime() - dynamic_world->tick_count);
+			TimeDifference = NetGetNetTime() - dynamic_world->tick_count;
 		}
 		else
 		{
-			queue_size= MIN(int(GameQueue->countActionFlags(player_index)),
-                get_heartbeat_count() - dynamic_world->tick_count);
+			TimeDifference = get_heartbeat_count() - dynamic_world->tick_count;
 		}
+		
+		queue_size= MIN(NumActionFlags,TimeDifference);
+		
 		if (queue_size<0) queue_size= 0; // thumb in dike to prevent update_interface from getting -1
 		
 		if (queue_size>highest_time) highest_time= queue_size;
@@ -321,7 +333,7 @@ bool entering_map(bool restoring_saved)
 	if (dynamic_world->player_count>1) initialize_net_game();	
 	randomize_scenery_shapes();
 
-	reset_player_queues(); //¦¦
+	reset_action_queues(); //¦¦
 	//CP Addition: Run startup script (if available)
 	script_init(restoring_saved);
 //	sync_heartbeat_count();

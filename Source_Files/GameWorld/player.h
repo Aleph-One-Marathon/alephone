@@ -406,7 +406,7 @@ extern ActionQueues*    GetRealActionQueues();
 /* ---------- prototypes/PLAYER.C */
 
 void initialize_players(void);
-void reset_player_queues(void);
+void reset_action_queues(void);
 void allocate_player_memory(void);
 
 void set_local_player_index(short player_index);

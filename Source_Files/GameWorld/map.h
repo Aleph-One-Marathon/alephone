@@ -1008,6 +1008,8 @@ void leaving_map(void);
 bool entering_map(bool restoring_saved);
 
 int16 update_world(void);
+// ZZZ: this really doesn't go here, but it lives in marathon2.cpp where update_world() lives.....
+void reset_intermediate_action_queues();
 
 /* Called to activate lights, platforms, etc. (original polygon may be NONE) */
 void changed_polygon(short original_polygon_index, short new_polygon_index, short player_index);
