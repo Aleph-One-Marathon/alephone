@@ -193,31 +193,17 @@ int load_script_data(void *Data, int DataLen)
 }
 
 
-void script_init(void)
+void script_init(bool restoring_saved)
 {
 	if (!script_in_use())
 		return;
 	
 	s_camera_Control = false;
 	
-	/*int old_start = current_instruction;
+	// LP: always execute load instructions
+	activate_trap(load);
 	
-	int init_start = get_next_instruction();
-
-	current_instruction = old_start;
-	
-	bool success = true;
-	if (current_script[init_start].opcode == On_Init)
-	{
-		do
-			success = do_next_instruction();
-		while (is_startup && script_in_use() && success);
-
-	}*/
-	
-	activate_trap(init);
-	
-	if (trap_active(init))
+	if (trap_active(load))
 	{
 		current_trap = init;
 		is_startup = true;
@@ -225,9 +211,32 @@ void script_init(void)
 		bool success = true;
 		do
 			success = do_next_instruction();
-		while (trap_active(init) && script_in_use() && success);
+		while (trap_active(load) && script_in_use() && success);
 	
-		is_startup = false;;
+		is_startup = false;
+	}
+		
+	// LP: don't execute initial instructions if restoring a savegame
+	if (restoring_saved)
+	{
+		is_startup = false;
+	}
+	else
+	{
+		activate_trap(init);
+		
+		if (trap_active(init))
+		{
+			current_trap = init;
+			is_startup = true;
+			
+			bool success = true;
+			do
+				success = do_next_instruction();
+			while (trap_active(init) && script_in_use() && success);
+		
+			is_startup = false;
+		}
 	}
 	
 	activate_trap(idle);	/* start the idle script running */

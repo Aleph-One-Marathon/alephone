@@ -880,7 +880,10 @@ script_instruction *parse_script(char *input, int *length_ptr)
 					if (blats[2])
 					{
 						lowercase_string(blats[2]);
-						if (!strcmp(blats[2],"init"))
+						if (!strcmp(blats[2],"load"))
+						{
+							add_trap(load,line_count);
+						} else if (!strcmp(blats[2],"init"))
 						{
 							add_trap(init,line_count);
 						} else if (!strcmp(blats[2],"idle"))

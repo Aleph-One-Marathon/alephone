@@ -11,9 +11,12 @@ June 13, 2001 (Loren Petrich):
 
 #include "cstypes.h"
 
+// LP: added trap "load" for executing whenever a level is loaded;
+// "init" will be for starting a level, and not for loading a savegame
 enum /* procedure traps */
 {
 	idle = 1,
+	load,
 	init,
 	tag_switch,
 	light_switch,

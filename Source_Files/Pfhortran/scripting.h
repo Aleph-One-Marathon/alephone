@@ -24,8 +24,9 @@ void free_script(void);
 
 // LP addition:
 int load_script_data(void *Data, int DataLen);
- 
-void script_init(void);
+
+// LP: don't execute initial instructions if restoring a savegame
+void script_init(bool restoring_saved);
  
 bool script_in_use(void);
  

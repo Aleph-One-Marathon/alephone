@@ -1,6 +1,3 @@
-#
-# Keywords
-#
 Camera_Move 01
 Camera_Look 02
 Wait_Ticks 03
@@ -33,8 +30,8 @@ Get_Life 17
 Set_Life 18
 Get_Oxygen 19
 Set_Oxygen 1A
-On_Init 1B
-End_Init 1C
+End 1B
+Get_My_Value 1C
 Add_Item 1D
 Select_Weapon 1E
 Block_Start 1F
@@ -87,13 +84,10 @@ Set_UnderFog_Color 4D
 Get_UnderFog_Depth 4E	
 Get_UnderFog_Color 4F
 Get_Random 50
-#
-# Variable data
-#
 TRUE 1
 FALSE 0
-knife 00
-fist 00
+knife 0
+fist 0
 magnum 01
 magnum_magazine 02
 plasma_pistol 03
