@@ -217,17 +217,17 @@ void main(void)
 
 // User-interface stuff done; actual file-handling starts here
 
-char *GetTagString(WadDataType Tag)
+char *GetTypeString(int32 Type)
 {
-	static char TagString[5];
+	static char TypeString[5];
 	
-	TagString[0] = (unsigned char)(Tag >> 24);
-	TagString[1] = (unsigned char)(Tag >> 16);
-	TagString[2] = (unsigned char)(Tag >> 8);
-	TagString[3] = (unsigned char)(Tag);
-	TagString[4] = 0;
+	TypeString[0] = (unsigned char)(Type >> 24);
+	TypeString[1] = (unsigned char)(Type >> 16);
+	TypeString[2] = (unsigned char)(Type >> 8);
+	TypeString[3] = (unsigned char)(Type);
+	TypeString[4] = 0;
 	
-	return TagString;
+	return TypeString;
 }
 
 
@@ -236,27 +236,107 @@ void ListChunks()
 	FileSpecifier InFileSpec;
 	if (!InFileSpec.ReadDialog(_typecode_scenario,"List Chunks of")) return;
 	
+	// Compose a name for the chunk-list report
+	char Name[256];
+	InFileSpec.GetName(Name);
+	
+	strncat(Name," Report.txt",31);
+	Name[31] = 0;
+	
+	FileSpecifier OutFileSpec;
+	set_typecode(_typecode_patch,'TEXT');
+	if (!OutFileSpec.WriteDialog(_typecode_patch,"What report file?",Name)) return;
+	
 	OpenedFile InFile;
 	if (!open_wad_file_for_reading(InFileSpec,InFile)) return;
 	
+	// Mac stuff: save old default directory
+	short OldVRefNum;
+	long OldParID;
+	HGetVol(nil,&OldVRefNum,&OldParID);
+	
+	// Set default directory to the selected-output directory
+	if (HSetVol(nil, OutFileSpec.GetSpec().vRefNum, OutFileSpec.GetSpec().parID) != noErr) return;
+	
+	// Open the file
+	OutFileSpec.GetName(Name);
+	FILE *F = fopen(Name,"w");
+	
+	// All done with this fancy footwork
+	HSetVol(nil,OldVRefNum,OldParID);
+	
+	// What it's about
+	InFileSpec.GetName(Name);
+	fprintf(F,"Map File: %s\n\n",Name);
+	
 	wad_header Header;
-	if (!read_wad_header(InFile,&Header)) return;
+	if (!read_wad_header(InFile,&Header)) {fclose(F); return;}
+	
+	fprintf(F,"Chunks:\n");
+	
+	// Cribbed from calculate_directory_offset() in wad.cpp
+	// and the definition of directory_entry in wad.h
+	int IndexOffset = Header.directory_offset + 2*4;
+	int IndexStep = Header.application_specific_directory_data_size +
+		Header.directory_entry_base_size;
 	
 	for (int lvl = 0; lvl < Header.wad_count; lvl++)
 	{
-		fdprintf("\nLevel %d",lvl);
-		wad_data *Wad = read_indexed_wad_from_file(InFile, &Header, lvl, true);
+		short TrueLevel;
+		InFile.SetPosition(IndexOffset + lvl*IndexStep);
+		InFile.Read(2,&TrueLevel);
+		
+		fprintf(F,"\nLevel %d (%d):\n\n",lvl,TrueLevel);
+		
+		wad_data *Wad = read_indexed_wad_from_file(InFile, &Header, TrueLevel, true);
 		if (!Wad) continue;
 		
 		for (int itg = 0; itg < Wad->tag_count; itg++)
 		{
 			tag_data& Tag = Wad->tag_data[itg];
-			fdprintf("%s",GetTagString(Tag.tag));
-			fdprintf("%8d",Tag.length);
+			fprintf(F,"%s  %7d\n",GetTypeString(Tag.tag),Tag.length);
 		}
 		
 		// All done!
 		free_wad(Wad);
 	}
-	fdprintf("");
+	fprintf(F,"\nResources:\n");
+	
+	// Try reading the resource file
+	OpenedResourceFile InRes;
+	InFileSpec.Open(InRes);
+	
+	vector<uint32> ResourceTypes;
+	InRes.GetTypeList(ResourceTypes);
+	
+	for (int it=0; it<ResourceTypes.size(); it++)
+	{
+		int32 Type = ResourceTypes[it];
+		fprintf(F,"\nType: %s\n",GetTypeString(Type));
+		
+		vector<int16> ResourceIDs;
+		InRes.GetIDList(Type,ResourceIDs);
+		
+		for (int ir=0; ir<ResourceIDs.size(); ir++)
+		{
+			InRes.Push();
+			SetResLoad(false);
+			short ID = ResourceIDs[ir];
+			Handle ResourceHandle = Get1Resource(Type,ID);
+			ResType _Type;
+			short _ID;
+			Str255 _Name;
+			GetResInfo(ResourceHandle,&_ID,&_Type,_Name);
+			int Size = GetResourceSizeOnDisk(ResourceHandle);
+			memcpy(Name,_Name+1,_Name[0]);
+			Name[_Name[0]] = 0;
+						
+			fprintf(F,"  %6hd  %7d  %s\n",ID,Size,Name);
+			
+			ReleaseResource(ResourceHandle);
+			SetResLoad(true);
+			InRes.Pop();
+		}
+	}
+	fclose(F);
 }
