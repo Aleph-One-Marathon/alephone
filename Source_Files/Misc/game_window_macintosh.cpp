@@ -21,7 +21,7 @@ Aug 22, 2000 (Loren Petrich):
 #include "screen_drawing.h"
 #include "interface.h"
 #include "screen.h"
-#include "portable_files.h"
+// #include "portable_files.h"
 #include "mysound.h" // for screen_definitions.h
 #include "screen_definitions.h"
 #include "images.h"
