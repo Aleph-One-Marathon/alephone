@@ -38,7 +38,7 @@ struct physics_constants
 
 /* ---------- globals */
 
-struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS]=
+static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS]=
 {
 	/* game walking */
 	{

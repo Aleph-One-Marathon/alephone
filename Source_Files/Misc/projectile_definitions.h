@@ -61,7 +61,7 @@ struct projectile_definition
 
 /* ---------- projectile definitions */
 
-struct projectile_definition projectile_definitions[NUMBER_OF_PROJECTILE_TYPES]=
+static struct projectile_definition projectile_definitions[NUMBER_OF_PROJECTILE_TYPES]=
 {
 	{	/* player’s rocket */
 		_collection_rocket, 0, /* collection number, shape number */
@@ -774,6 +774,10 @@ struct projectile_definition projectile_definitions[NUMBER_OF_PROJECTILE_TYPES]=
 		NONE, NONE, /* flyby sound, rebound sound */
 	},
 };
+
+// Added for the convenience of the 1-2-3 Converter
+uint8 *unpack_projectile_definition(uint8 *Stream, projectile_definition *Objects, int Count);
+uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects, int Count);
 
 #endif
 

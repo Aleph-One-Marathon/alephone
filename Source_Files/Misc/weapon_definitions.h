@@ -104,7 +104,7 @@ struct shell_casing_definition
 	_fixed dvx, dvy;
 };
 
-struct shell_casing_definition shell_casing_definitions[NUMBER_OF_SHELL_CASING_TYPES]=
+static struct shell_casing_definition shell_casing_definitions[NUMBER_OF_SHELL_CASING_TYPES]=
 {
 	{ // _shell_casing_assault_rifle,
 		_collection_weapons_in_hand, 19, /* collection, shape */
@@ -204,7 +204,7 @@ struct weapon_definition {
 
 /* ------------------------ globals */
 
-int16 weapon_ordering_array[]= {
+static int16 weapon_ordering_array[]= {
 	_weapon_fist,
 	_weapon_pistol,
 	_weapon_plasma_pistol,
@@ -220,7 +220,7 @@ int16 weapon_ordering_array[]= {
 
 #define NUMBER_OF_WEAPONS (sizeof(weapon_definitions)/sizeof(struct weapon_definition))
 
-struct weapon_definition weapon_definitions[]=
+static struct weapon_definition weapon_definitions[]=
 {
 	/* Fist*/
 	{
