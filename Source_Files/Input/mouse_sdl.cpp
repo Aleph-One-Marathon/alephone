@@ -113,16 +113,18 @@ void mouse_idle(short type)
 		// Calculate axis deltas
 		_fixed vx = ((x - center_x) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
 		_fixed vy = -((y - center_y) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
-		if (input_preferences->modifiers & _inputmod_invert_mouse)
-			vy = -vy;
+		
+		// Mouse inversion
+		if (TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse))
+			vy *= -1;
 
+		// LP: modified for doing each axis separately;
 		// ZZZ: scale input by sensitivity
-		if(input_preferences->sensitivity != FIXED_ONE) {
-			float   theScalingFactor = ((float) input_preferences->sensitivity) / ((float) FIXED_ONE);
-			vx = (_fixed) (theScalingFactor * vx);
-			vy = (_fixed) (theScalingFactor * vy);
-		}
-
+		if (input_preferences->sens_horizontal != FIXED_ONE)
+			vx = _fixed((float(input_preferences->sens_horizontal)*vx)/float(FIXED_ONE));
+		if (input_preferences->sens_vertical != FIXED_ONE)
+			vy = _fixed((float(input_preferences->sens_vertical)*vy)/float(FIXED_ONE));
+		
 		// Pin and do nonlinearity
 		vx = PIN(vx, -FIXED_ONE/2, FIXED_ONE/2); vx >>= 1; vx *= (vx<0) ? -vx : vx; vx >>= 14;
 		vy = PIN(vy, -FIXED_ONE/2, FIXED_ONE/2); vy >>= 1; vy *= (vy<0) ? -vy : vy; vy >>= 13;
