@@ -223,7 +223,7 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 		OSType MusicHeader;
 		const OSType AIFF_Header = 'FORM';
 		
-		if (!music_state.OFile.ReadObject(MusicHeader)) return false;
+		if (!music_state.OFile.Read(sizeof(MusicHeader),&MusicHeader)) return false;
 		// long NumBytes = 4;
 		// error = FSRead(song_file_refnum, &NumBytes, &MusicHeader);
 		// if (error != noErr) return false;
