@@ -81,74 +81,35 @@ static boolean confirm_save_choice(FSSpec *file);
 
 
 /* --------- code begins */
+
 void get_default_map_spec(FileSpecifier& File)
-	// FileDesc *_new)
 {
-
 	File.SetToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP),FileSpecifier::C_Map);
+	File.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP),_typecode_scenario);
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
-	
-// LP: begin no-compile
-#if 0
-	static boolean first_try= TRUE;
-	static FSSpec default_map_spec;
-
-	if (first_try)
-	{
-		OSErr error;
-
-		/* Get the Marathon FSSpec */
-		error= get_file_spec(&default_map_spec, strFILENAMES, filenameDEFAULT_MAP, strPATHS);
-		if (error) alert_user(fatalError, strERRORS, badExtraFileLocations, error);
-		
-		first_try= FALSE;
-	}
-	
-	/* Copy it in. */
-	memcpy(_new, &default_map_spec, sizeof(FileDesc));
-	
-	return;
-// LP: end no-compile
-#endif
 }
 
 void get_default_physics_spec(FileSpecifier& File)
-//	FileDesc *_new)
 {
-
 	File.SetToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL),FileSpecifier::C_Phys);
+	File.SetName(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL),_typecode_physics);
 	// Don't care if it does not exist
-
-// LP: begin no-compile
-#if 0
-	static boolean first_try= TRUE;
-	static FSSpec default_physics_spec;
-
-	if (first_try)
-	{
-		OSErr error;
-
-		/* Get the Marathon FSSpec */
-		error= get_file_spec(&default_physics_spec, strFILENAMES, filenamePHYSICS_MODEL, strPATHS);
-		if(error)
-		{
-			get_my_fsspec(&default_physics_spec);
-			getpstr(default_physics_spec.name, strFILENAMES, filenamePHYSICS_MODEL);
-		}
-		
-		first_try= FALSE;
-	}
-	
-	/* Copy it in. */
-	memcpy(_new, &default_physics_spec, sizeof(FileDesc));
-	
-	return;
-
-// LP: end no-compile
-#endif
 }
+
+void get_default_shapes_spec(FileSpecifier& File)
+{
+	File.SetToApp();
+	File.SetName(getcstr(temporary, strFILENAMES, filenameSHAPES8),_typecode_shapes);
+	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+}
+
+void get_default_sounds_spec(FileSpecifier& File)
+{
+	File.SetToApp();
+	File.SetName(getcstr(temporary, strFILENAMES, filenameSOUNDS8),_typecode_sounds);
+	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+}
+
 
 // extern "C" {
 extern boolean choose_saved_game_to_load(FileSpecifier& File);
@@ -159,7 +120,7 @@ extern boolean choose_saved_game_to_load(FileSpecifier& File);
 boolean choose_saved_game_to_load(FileSpecifier& File)
 	// FSSpec *saved_game)
 {
-	return File.ReadDialog(FileSpecifier::C_Save);
+	return File.ReadDialog(_typecode_savegame);
 	/*
 	SFTypeList type_list;
 	short type_count= 0;
@@ -193,7 +154,7 @@ boolean save_game(
 	char Prompt[256];
 	// Must allow the sound to play in the background
 	boolean success = SaveFile.WriteDialogAsync(
-			FileSpecifier::C_Save,
+			_typecode_savegame,
 			getcstr(Prompt, strPROMPTS, _save_game_prompt),
 			GameName);
 
@@ -268,7 +229,7 @@ void add_finishing_touches_to_save_file(FileSpecifier &File)
 	if (ResError() != noErr) return;
 		
 	/* Save the STR resource that tells us what our application name is. */
-	refnum= FSpOpenResFile(&File.Spec, fsWrPerm);
+	refnum= FSpOpenResFile(&File.GetSpec(), fsWrPerm);
 	// resource_file_ref= FSpOpenResFile((FSSpec *) file, fsWrPerm);
 	if (refnum < 0) return;
 	

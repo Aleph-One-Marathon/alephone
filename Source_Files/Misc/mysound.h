@@ -16,7 +16,7 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
-class FileSpecifier;
+#include "FileHandler.h"
 
 /* ---------- constants */
 
@@ -472,7 +472,6 @@ void cause_ambient_sound_source_update(void);
 short random_sound_index_to_sound_index(short random_sound_index);
 
 // LP: generalized this: returns whether or not it was successful
-class FileSpecifier;
 bool open_sound_file(FileSpecifier& File);
 
 // Play MacOS sound resource
