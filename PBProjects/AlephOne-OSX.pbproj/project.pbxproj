@@ -141,6 +141,7 @@
 		};
 		29B97317FDCFA39411CA2CEA = {
 			children = (
+				F5F50D6C0215DACD01144D54,
 				F536740402014DC201A80001,
 				F536740602014E1C01A80001,
 				F536740702014E1C01A80001,
@@ -151,6 +152,13 @@
 				F56AEB6D01F8AA1201780311,
 				F53AB44B01F3CB1D01EF2901,
 				089C165CFE840E0CC02AAC07,
+				F5CFAD3D0200FA6B01D80110,
+				F5CFAD3E0200FA6B01D80110,
+				F5CFAD3F0200FA6B01D80110,
+				F5CFAD400200FA6B01D80110,
+				F5CFAD410200FA6B01D80110,
+				F5CFAD420200FA6B01D80110,
+				F5CFAD430200FA6B01D80110,
 			);
 			isa = PBXGroup;
 			name = Resources;
@@ -177,17 +185,20 @@
 		};
 		29B97326FDCFA39411CA2CEA = {
 			buildPhases = (
+				F5F50D6B0215CE8301144D54,
 				29B97327FDCFA39411CA2CEA,
 				29B97328FDCFA39411CA2CEA,
 				29B9732BFDCFA39411CA2CEA,
 				29B9732DFDCFA39411CA2CEA,
 				043355C9FE30361CC02AAC07,
+				F5F50D780215DB5801144D54,
 			);
 			buildSettings = {
+				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks /Users/astrange/Library/Frameworks";
 				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Library/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O0";
+				OPTIMIZATION_CFLAGS = "-O3";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H";
 				OTHER_LDFLAGS = "-noprebind -multiply_defined suppress -F$(HOME)/Library/Frameworks -framework SDL -framework SDL_image -framework SDL_net";
 				PREBINDING = NO;
@@ -441,6 +452,7 @@
 				F5FDA0890200C577013D663B,
 				F5FDA08A0200C577013D663B,
 				F5FDA08B0200C577013D663B,
+				F5CFAD3B0200F9D201D80110,
 			);
 			isa = PBXHeadersBuildPhase;
 			name = Headers;
@@ -453,6 +465,13 @@
 				F56AEB6E01F8AA1201780311,
 				F56AEB6F01F8AA1201780311,
 				F56AEB7001F8AA1201780311,
+				F5CFAD440200FA6B01D80110,
+				F5CFAD450200FA6B01D80110,
+				F5CFAD460200FA6B01D80110,
+				F5CFAD470200FA6B01D80110,
+				F5CFAD480200FA6B01D80110,
+				F5CFAD490200FA6B01D80110,
+				F5CFAD4A0200FA6B01D80110,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
@@ -584,6 +603,8 @@
 				F574330601FE6306013C4252,
 				F5FDA0870200C03B013D663B,
 				F5FDA08D0200C962013D663B,
+				F5CFAD3C0200F9D201D80110,
+				F5F50D6A0215CB9801144D54,
 			);
 			isa = PBXSourcesBuildPhase;
 			name = Sources;
@@ -713,8 +734,8 @@
 		F52211260136A4DD01000001 = {
 			isa = PBXFileReference;
 			name = csmisc.h;
-			path = ../Source_Files/CSeries/csmisc.h;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/CSeries/csmisc.h;
+			refType = 0;
 		};
 		F52211270136A4DD01000001 = {
 			isa = PBXFileReference;
@@ -1336,15 +1357,15 @@
 		};
 		F52211BC0136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = images_macintosh.cpp;
-			path = ../Source_Files/Misc/images_macintosh.cpp;
-			refType = 2;
+			name = images_macintosh.h;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/images_macintosh.h;
+			refType = 0;
 		};
 		F52211BD0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = images_sdl.cpp;
-			path = ../Source_Files/Misc/images_sdl.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/images_sdl.h;
+			refType = 0;
 		};
 		F52211BE0136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -1460,8 +1481,8 @@
 		F52211D00136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = low_level_textures.cpp;
-			path = ../Source_Files/Misc/low_level_textures.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/low_level_textures.h;
+			refType = 0;
 		};
 		F52211D10136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -1802,14 +1823,14 @@
 		F522120D0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = preferences_macintosh.cpp;
-			path = ../Source_Files/Misc/preferences_macintosh.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/preferences_macintosh.h;
+			refType = 0;
 		};
 		F522120E0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = preferences_sdl.cpp;
-			path = ../Source_Files/Misc/preferences_sdl.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/preferences_sdl.h;
+			refType = 0;
 		};
 		F522120F0136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2000,14 +2021,14 @@
 		F52212310136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = screen_drawing_macintosh.cpp;
-			path = ../Source_Files/Misc/screen_drawing_macintosh.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/screen_drawing_macintosh.h;
+			refType = 0;
 		};
 		F52212320136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = screen_drawing_sdl.cpp;
-			path = ../Source_Files/Misc/screen_drawing_sdl.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/screen_drawing_sdl.h;
+			refType = 0;
 		};
 		F52212330136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2030,8 +2051,8 @@
 		F52212360136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = screen_shared.cpp;
-			path = ../Source_Files/Misc/screen_shared.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/screen_shared.h;
+			refType = 0;
 		};
 		F52212380136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2101,15 +2122,15 @@
 		};
 		F52212430136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = shapes_macintosh.cpp;
-			path = ../Source_Files/Misc/shapes_macintosh.cpp;
-			refType = 2;
+			name = shapes_macintosh.h;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/shapes_macintosh.h;
+			refType = 0;
 		};
 		F52212440136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shapes_sdl.cpp;
-			path = ../Source_Files/Misc/shapes_sdl.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/shapes_sdl.h;
+			refType = 0;
 		};
 		F52212450136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2132,8 +2153,8 @@
 		F52212480136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shell_macintosh.cpp;
-			path = ../Source_Files/Misc/shell_macintosh.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/shell_macintosh.h;
+			refType = 0;
 		};
 		F52212490136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2144,8 +2165,8 @@
 		F522124A0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shell_sdl.cpp;
-			path = ../Source_Files/Misc/shell_sdl.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/shell_sdl.h;
+			refType = 0;
 		};
 		F522124B0136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2174,14 +2195,14 @@
 		F522124F0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = sound_macintosh.cpp;
-			path = ../Source_Files/Misc/sound_macintosh.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/sound_macintosh.h;
+			refType = 0;
 		};
 		F52212500136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = sound_sdl.cpp;
-			path = ../Source_Files/Misc/sound_sdl.cpp;
-			refType = 2;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/sound_sdl.h;
+			refType = 0;
 		};
 		F52212510136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -4068,10 +4089,10 @@
 				F52211230136A4DD01000001,
 				F52211240136A4DD01000001,
 				F52211250136A4DD01000001,
-				F52211260136A4DD01000001,
 				F52211270136A4DD01000001,
 				F52211280136A4DD01000001,
 				F52211290136A4DD01000001,
+				F52211260136A4DD01000001,
 				F522112A0136A4DD01000001,
 				F522112B0136A4DD01000001,
 				F522112C0136A4DD01000001,
@@ -5194,7 +5215,7 @@
 		F536742802014FC301A80001 = {
 			isa = PBXFileReference;
 			name = csdialogs_macintosh.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/CSeries/csdialogs_macintosh.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/CSeries/csdialogs_macintosh.cpp;
 			refType = 0;
 		};
 		F536742902014FC301A80001 = {
@@ -5206,7 +5227,7 @@
 		F536742A02014FE101A80001 = {
 			isa = PBXFileReference;
 			name = mytm_macintosh.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/CSeries/mytm_macintosh.cpp;
+			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/CSeries/mytm_macintosh.cpp;
 			refType = 0;
 		};
 		F536742C0201508B01A80001 = {
@@ -6850,6 +6871,8 @@
 				F5830B4B01E77D5701BA387C,
 				F5830B4C01E77D5701BA387C,
 				F5830B4D01E77D5701BA387C,
+				F5CFAD390200F9D201D80110,
+				F5CFAD3A0200F9D201D80110,
 			);
 			isa = PBXGroup;
 			name = ModelView;
@@ -6992,6 +7015,187 @@
 					Private,
 				);
 			};
+		};
+		F5CFAD390200F9D201D80110 = {
+			isa = PBXFileReference;
+			path = Dim3_Loader.cpp;
+			refType = 4;
+		};
+		F5CFAD3A0200F9D201D80110 = {
+			isa = PBXFileReference;
+			path = Dim3_Loader.h;
+			refType = 4;
+		};
+		F5CFAD3B0200F9D201D80110 = {
+			fileRef = F5CFAD3A0200F9D201D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5CFAD3C0200F9D201D80110 = {
+			fileRef = F5CFAD390200F9D201D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5CFAD3D0200FA6B01D80110 = {
+			isa = PBXFileReference;
+			path = FilmIcon.icns;
+			refType = 4;
+		};
+		F5CFAD3E0200FA6B01D80110 = {
+			isa = PBXFileReference;
+			path = MapIcon.icns;
+			refType = 4;
+		};
+		F5CFAD3F0200FA6B01D80110 = {
+			isa = PBXFileReference;
+			path = MMLIcon.icns;
+			refType = 4;
+		};
+		F5CFAD400200FA6B01D80110 = {
+			isa = PBXFileReference;
+			path = MusakIcon.icns;
+			refType = 4;
+		};
+		F5CFAD410200FA6B01D80110 = {
+			isa = PBXFileReference;
+			path = PFIcon.icns;
+			refType = 4;
+		};
+		F5CFAD420200FA6B01D80110 = {
+			isa = PBXFileReference;
+			path = PhysIcon.icns;
+			refType = 4;
+		};
+		F5CFAD430200FA6B01D80110 = {
+			isa = PBXFileReference;
+			path = SaveIcon.icns;
+			refType = 4;
+		};
+		F5CFAD440200FA6B01D80110 = {
+			fileRef = F5CFAD3D0200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5CFAD450200FA6B01D80110 = {
+			fileRef = F5CFAD3E0200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5CFAD460200FA6B01D80110 = {
+			fileRef = F5CFAD3F0200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5CFAD470200FA6B01D80110 = {
+			fileRef = F5CFAD400200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5CFAD480200FA6B01D80110 = {
+			fileRef = F5CFAD410200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5CFAD490200FA6B01D80110 = {
+			fileRef = F5CFAD420200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5CFAD4A0200FA6B01D80110 = {
+			fileRef = F5CFAD430200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5F50D6A0215CB9801144D54 = {
+			fileRef = F522124A0136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5F50D6B0215CE8301144D54 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			generatedFileNames = (
+			);
+			isa = PBXShellScriptBuildPhase;
+			name = "Shell Script";
+			neededFileNames = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "(cd $SRCROOT/../Source_Files/Pfhortran; awk >language_definition.h '!/^#/ {print \"{\\\"\" $1 \"\\\", 0x\" $2 \"},\";}' Pfhortran_Language_Definition )";
+		};
+		F5F50D6C0215DACD01144D54 = {
+			children = (
+				F5F50D6D0215DACD01144D54,
+				F5F50D720215DB2601144D54,
+			);
+			isa = PBXGroup;
+			name = DataFiles;
+			refType = 4;
+		};
+		F5F50D6D0215DACD01144D54 = {
+			children = (
+				F5F50D6E0215DB2601144D54,
+				F5F50D6F0215DB2601144D54,
+				F5F50D700215DB2601144D54,
+				F5F50D710215DB2601144D54,
+			);
+			isa = PBXGroup;
+			name = MML;
+			refType = 4;
+		};
+		F5F50D6E0215DB2601144D54 = {
+			isa = PBXFileReference;
+			name = Text_Strings.mml;
+			path = ../data/Text_Strings.mml;
+			refType = 2;
+		};
+		F5F50D6F0215DB2601144D54 = {
+			isa = PBXFileReference;
+			name = Transparent_Liquids.mml;
+			path = ../data/Transparent_Liquids.mml;
+			refType = 2;
+		};
+		F5F50D700215DB2601144D54 = {
+			isa = PBXFileReference;
+			name = Transparent_Sprites.mml;
+			path = ../data/Transparent_Sprites.mml;
+			refType = 2;
+		};
+		F5F50D710215DB2601144D54 = {
+			isa = PBXFileReference;
+			name = Interface_Rects.mml;
+			path = ../data/Interface_Rects.mml;
+			refType = 2;
+		};
+		F5F50D720215DB2601144D54 = {
+			isa = PBXFileReference;
+			name = Fonts;
+			path = ../data/Fonts;
+			refType = 2;
+		};
+		F5F50D780215DB5801144D54 = {
+			buildActionMask = 2147483647;
+			files = (
+			);
+			generatedFileNames = (
+			);
+			isa = PBXShellScriptBuildPhase;
+			name = "Shell Script";
+			neededFileNames = (
+			);
+			shellPath = /bin/csh;
+			shellScript = "mkdir -p $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML\ncp $SRCROOT/../data/*.mml $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML/\ncp $SRCROOT/../data/Fonts $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/";
 		};
 		F5FDA0860200C03B013D663B = {
 			fileRef = 00F9DA4F00AC72F57F000001;
