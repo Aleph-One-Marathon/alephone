@@ -323,7 +323,7 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     int32 theTotalCaptureBytesConsumed = 0;
 
     // Keep sending if we have data and either we're squeezing out the last drop or we have a packet's-worth.
-    while(inFirstChunkBytesRemaining >= sCaptureBytesPerNetworkAudioByte &&
+    while(inFirstChunkBytesRemaining >= static_cast<int32>(sCaptureBytesPerNetworkAudioByte) &&
         (inForceSend || inFirstChunkBytesRemaining + inSecondChunkBytesRemaining >= (int32)sCaptureBytesPerPacket)) {
 
         theBytesConsumed = copy_data_in_capture_format_to_network_format(theOutgoingAudioData,
@@ -359,7 +359,7 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     }
 
     // Now, the first chunk is exhausted.  See if there's any left in the second chunk.  Same rules apply.
-    while(inSecondChunkBytesRemaining >= sCaptureBytesPerNetworkAudioByte &&
+    while(inSecondChunkBytesRemaining >= static_cast<int32>(sCaptureBytesPerNetworkAudioByte) &&
         (inForceSend || inSecondChunkBytesRemaining >= kNetworkAudioDataBytesPerPacket)) {
         
         theBytesConsumed = copy_data_in_capture_format_to_network_format(theOutgoingAudioData, kNetworkAudioDataBytesPerPacket,
