@@ -76,7 +76,7 @@ static void QD3D_Error_Handler(TQ3Error FirstError, TQ3Error LastError, long Use
 	if (DBOut) fprintf(DBOut,"QD3D Error: %d\n",LastError);
 }
 
-// Loads a QD3D model as a group object; returns NULL if none could be loaded
+// Loads a QD3D model as a group object; returns NULL if it could not be loaded
 static TQ3Object LoadModel(FileSpecifier& File);
 
 // Creates a fake renderer (TriangulatorView) that decomposes surfaces into triangles;
@@ -93,8 +93,23 @@ static TQ3XFunctionPointer TriangulatorGeometry_MetaHandler(TQ3XMethodType Metho
 static TQ3Status TriangulatorGeometry_Triangle(TQ3ViewObject View, void *PrivateData,
 	TQ3GeometryObject Triangle, const TQ3TriangleData *TriangleData);
 
-// DEBUG:
-static int Index = 0;
+// Accumulated triangle vertices:
+bool TxtrCoordsPresent = false;
+bool NormalsPresent = false;
+bool ColorsPresent = false;
+
+struct FullVertexData
+{
+	GLfloat Position[3];
+	GLfloat TxtrCoord[2];
+	GLfloat Normal[3];
+	GLfloat Color[3];
+};
+static vector<FullVertexData> FullVertexList;
+
+static void StartAccumulatingVertices();
+static void GetVerticesIntoModel(Model3D& Model);
+
 
 bool LoadModel_QD3D(FileSpecifier& Spec, Model3D& Model)
 {
@@ -141,12 +156,12 @@ bool LoadModel_QD3D(FileSpecifier& Spec, Model3D& Model)
 	TQ3Object ModelObject = LoadModel(Spec);
 	if (!ModelObject) return false;
 	
-	// DEBUG
-	Index = 0;
+	StartAccumulatingVertices();
 	
 	if (Q3View_StartRendering(TriangulatorView) == kQ3Failure)
 	{
 		if (DBOut) fprintf(DBOut,"ERROR: couldn't start triangulation 'rendering'\n");
+		Q3Object_Dispose(ModelObject);
 		return false;
 	}
 	do
@@ -159,10 +174,12 @@ bool LoadModel_QD3D(FileSpecifier& Spec, Model3D& Model)
 	}
 	while (Q3View_EndRendering(TriangulatorView) == kQ3ViewStatusRetraverse);
 
-	// Clean up
-	Q3Object_Dispose(ModelObject); 
+	// Done with the model
+	Q3Object_Dispose(ModelObject);
 	
-	return false;
+	GetVerticesIntoModel(Model);
+	
+	return !Model.Positions.empty();
 }
 
 
@@ -366,15 +383,144 @@ TQ3XFunctionPointer TriangulatorGeometry_MetaHandler(TQ3XMethodType MethodType)
 TQ3Status TriangulatorGeometry_Triangle(TQ3ViewObject View, void *PrivateData,
 	TQ3GeometryObject Triangle, const TQ3TriangleData *TriangleData)
 {
+	// Just in case...
 	if (!TriangleData) return kQ3Success;
 	
-	// For now, just indicate that a triangle had been found
-	printf("Triangle %d\n",Index++);
+	// Get the overall normal and color (DiffuseColor)
+	TQ3Boolean OverallColorPresent =
+		Q3AttributeSet_Contains(TriangleData->triangleAttributeSet,kQ3AttributeTypeDiffuseColor);
+	
+	TQ3ColorRGB OverallColor;
+	if (OverallColorPresent);
+		Q3AttributeSet_Get(TriangleData->triangleAttributeSet,kQ3AttributeTypeDiffuseColor,&OverallColor);
+	
+	// Load the triangle's contents into a vertex object
 	for (int k=0; k<3; k++)
 	{
-		const TQ3Point3D P = TriangleData->vertices[k].point;
-		printf("%9f %9f %9f\n",P.x,P.y,P.z);
+		FullVertexData FullVertex;
+		obj_clear(FullVertex);
+		
+		const TQ3Vertex3D& Vertex = TriangleData->vertices[k];
+		FullVertex.Position[0] = Vertex.point.x;
+		FullVertex.Position[1] = Vertex.point.y;
+		FullVertex.Position[2] = Vertex.point.z;
+		
+		TQ3Param2D TxtrCoord;
+		TQ3Boolean TxtrCoord_Present =
+			Q3AttributeSet_Contains(Vertex.attributeSet,kQ3AttributeTypeShadingUV);
+		if (TxtrCoord_Present)
+			Q3AttributeSet_Get(Vertex.attributeSet,kQ3AttributeTypeShadingUV,&TxtrCoord);
+		else
+		{
+			TxtrCoord_Present =
+				Q3AttributeSet_Contains(Vertex.attributeSet,kQ3AttributeTypeSurfaceUV);
+			if (TxtrCoord_Present)
+				Q3AttributeSet_Get(Vertex.attributeSet,kQ3AttributeTypeSurfaceUV,&TxtrCoord);
+			else
+				TxtrCoordsPresent = false;
+		}
+		
+		if (TxtrCoordsPresent)
+		{
+			FullVertex.TxtrCoord[0] = TxtrCoord.u;
+			FullVertex.TxtrCoord[1] = TxtrCoord.v;
+		}
+		
+		TQ3Vector3D Normal;
+		TQ3Boolean Normal_Present =
+			Q3AttributeSet_Contains(Vertex.attributeSet,kQ3AttributeTypeNormal);
+		if (Normal_Present)
+			Q3AttributeSet_Get(Vertex.attributeSet,kQ3AttributeTypeNormal,&Normal);
+		else
+			NormalsPresent = false;
+		
+		if (NormalsPresent)
+		{
+			FullVertex.Normal[0] = Normal.x;
+			FullVertex.Normal[1] = Normal.y;
+			FullVertex.Normal[2] = Normal.z;
+		}
+		
+		TQ3ColorRGB Color;
+		TQ3Boolean Color_Present =
+			Q3AttributeSet_Contains(Vertex.attributeSet,kQ3AttributeTypeDiffuseColor);
+		if (Color_Present)
+			Q3AttributeSet_Get(Vertex.attributeSet,kQ3AttributeTypeDiffuseColor,&Color);
+		else if (OverallColorPresent)
+			Color = OverallColor;
+		else
+			ColorsPresent = false;
+		
+		if (ColorsPresent)
+		{
+			FullVertex.Color[0] = Color.r;
+			FullVertex.Color[1] = Color.g;
+			FullVertex.Color[2] = Color.b;
+		}
+		FullVertexList.push_back(FullVertex);
 	}
 	
 	return kQ3Success;
+}
+
+
+void StartAccumulatingVertices()
+{
+	// One of them absent means ignore all of them
+	TxtrCoordsPresent = true;
+	NormalsPresent = true;
+	ColorsPresent = true;
+	FullVertexList.clear();
+}
+
+void GetVerticesIntoModel(Model3D& Model)
+{
+	int NumVertices = FullVertexList.size();
+	Model.Positions.resize(3*NumVertices);
+	if (TxtrCoordsPresent)
+		Model.TxtrCoords.resize(2*NumVertices);
+	if (NormalsPresent)
+		Model.Normals.resize(3*NumVertices);
+	if (ColorsPresent)
+		Model.Colors.resize(3*NumVertices);
+	Model.VertIndices.resize(NumVertices);
+	
+	// Need to optimize the model by getting rid of redundant vertices;
+	// will search for them by index-sorting them,
+	// which will be done parameter by parameter.
+	
+	for (int k=0; k<NumVertices; k++)
+	{
+		FullVertexData& FullVertex = FullVertexList[k];
+		
+		GLfloat *Position = &Model.Positions[3*k];
+		for (int c=0; c<3; c++)
+			Position[c] = FullVertex.Position[c];
+		
+		if (TxtrCoordsPresent)
+		{
+			GLfloat *TxtrCoord = &Model.TxtrCoords[2*k];
+			for (int c=0; c<3; c++)
+				TxtrCoord[c] = FullVertex.TxtrCoord[c];
+		}
+		
+		if (NormalsPresent)
+		{
+			GLfloat *Normal = &Model.Normals[3*k];
+			for (int c=0; c<3; c++)
+				Normal[c] = FullVertex.Normal[c];
+		}
+		
+		if (ColorsPresent)
+		{
+			GLfloat *Color = &Model.Colors[3*k];
+			for (int c=0; c<3; c++)
+				Color[c] = FullVertex.Color[c];
+		}
+		
+		Model.VertIndices[k] = k;
+	}
+	
+	// All done!
+	FullVertexList.clear();
 }
