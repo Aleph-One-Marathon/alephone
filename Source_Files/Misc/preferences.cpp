@@ -67,7 +67,7 @@ Aug 12, 2000 (Loren Petrich):
 #include "extensions.h"
 
 #include "tags.h"
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 #ifdef env68k
 	#pragma segment dialogs
@@ -203,8 +203,10 @@ void initialize_preferences(
 {
 	OSErr err;
 
-	if(!w_open_preferences_file(getpstr(ptemporary, strFILENAMES, filenamePREFERENCES),
-		PREFERENCES_TYPE))
+	if(!w_open_preferences_file(getcstr(temporary, strFILENAMES, filenamePREFERENCES),
+		FileSpecifier::C_Prefs))
+	// if(!w_open_preferences_file(getpstr(ptemporary, strFILENAMES, filenamePREFERENCES),
+	// 	PREFERENCES_TYPE))
 	{
 		/* Major memory error.. */
 		alert_user(fatalError, strERRORS, outOfMemory, MemError());
@@ -1170,7 +1172,7 @@ static void default_environment_preferences(
 
 	memset(prefs, NONE, sizeof(struct environment_preferences_data));
 
-	FileObject_Mac DefaultFile;
+	FileSpecifier DefaultFile;
 	
 	get_default_map_spec(DefaultFile);
 	prefs->map_checksum= read_wad_file_checksum(DefaultFile);
@@ -1298,7 +1300,7 @@ static void hit_environment_item(
 void load_environment_from_preferences(
 	void)
 {
-	FileObject_Mac File;
+	FileSpecifier File;
 	// FileDesc file;
 	OSErr error;
 	struct environment_preferences_data *prefs= environment_preferences;
@@ -1350,10 +1352,6 @@ void load_environment_from_preferences(
 		}
 	}
 	
-	FileObject *FPtr = &File;
-	FSSpec *SpecPtr = &((FileObject_Mac *)FPtr)->Spec;
-	FileDesc& file = *((FileDesc *)SpecPtr);
-	
 	File.SetSpec(prefs->shapes_file);
 	/*
 	error= FSMakeFSSpec(prefs->shapes_file.vRefNum, prefs->shapes_file.parID, prefs->shapes_file.name,
@@ -1365,7 +1363,8 @@ void load_environment_from_preferences(
 		open_shapes_file(File);
 		// open_shapes_file((FSSpec *) &file);
 	} else {
-		if(find_file_with_modification_date(&file,
+		// if(find_file_with_modification_date(&file,
+		if(find_file_with_modification_date(File,
 			SHAPES_FILE_TYPE, strPATHS, prefs->shapes_mod_date))
 		{
 			open_shapes_file(File);
@@ -1386,7 +1385,8 @@ void load_environment_from_preferences(
 		open_sound_file(File);
 		// open_sound_file((FSSpec *) &file);
 	} else {
-		if(find_file_with_modification_date(&file,
+		// if(find_file_with_modification_date(&file,
+		if(find_file_with_modification_date(File,
 			SOUNDS_FILE_TYPE, strPATHS, prefs->sounds_mod_date))
 		{
 			open_sound_file(File);
@@ -1522,7 +1522,7 @@ static Boolean file_is_extension_and_add_callback(
 		OSType Filetype = pb->hFileInfo.ioFlFndrInfo.fdType;
 		if (Filetype == SCENARIO_FILE_TYPE || Filetype == PHYSICS_FILE_TYPE)
 		{
-			FileObject_Mac File;
+			FileSpecifier File;
 			File.SetSpec(*file);
 			checksum= read_wad_file_checksum(File);
 			// checksum= read_wad_file_checksum((FileDesc *) file);
@@ -1535,7 +1535,7 @@ static Boolean file_is_extension_and_add_callback(
 		}
 		else if (Filetype == PATCH_FILE_TYPE)
 		{
-			FileObject_Mac File;
+			FileSpecifier File;
 			File.SetSpec(*file);
 			checksum= read_wad_file_checksum(File);
 			// checksum= read_wad_file_checksum((FileDesc *) file);
