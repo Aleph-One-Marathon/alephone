@@ -156,7 +156,7 @@ void
 w_found_players::draw_item(vector<prospective_joiner_info>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const {
 	char	theNameBuffer[SSLP_MAX_NAME_LENGTH];
 
-	pstrncpy((unsigned char*)theNameBuffer, (*i).name, SSLP_MAX_NAME_LENGTH - 1);
+	pstrncpy((unsigned char*)theNameBuffer, (unsigned char*)(*i).name, SSLP_MAX_NAME_LENGTH - 1);
 	theNameBuffer[SSLP_MAX_NAME_LENGTH - 1] = '\0';
     
 	int computed_x = x + (width - text_width(&theNameBuffer[1], font, style)) / 2;
