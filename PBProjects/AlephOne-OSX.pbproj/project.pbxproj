@@ -123,6 +123,7 @@
 				EF2EF5F50483C7D900A8000D,
 				4A9504CDFFE6A4B311CA0CBA,
 				2B14B80104AB783A00A80001,
+				3D5482BA04D73ED300000107,
 			);
 			hasScannedForEncodings = 1;
 			isa = PBXProject;
@@ -138,9 +139,7 @@
 			children = (
 				F52214490136C0C401000001,
 				29B97317FDCFA39411CA2CEA,
-				EF2EF5AF0481982A00A8000D,
 				EF2EF5B004819A5C00A8000D,
-				EFBAF0090485B3A300A8000D,
 				29B97323FDCFA39411CA2CEA,
 				19C28FACFE9D520D11CA2CBB,
 			);
@@ -626,8 +625,6 @@
 				EF2EF5EE04819F8400A8000D,
 				EF2EF5F30481A07000A8000D,
 				EF2EF5F40481A07000A8000D,
-				EFBAF00E0485B41E00A8000D,
-				EFBAF00F0485B41E00A8000D,
 				EFBAF0210485BEA500A8000D,
 				EFBAF0220485BEA500A8000D,
 				EFBAF0240485BEA500A8000D,
@@ -818,9 +815,6 @@
 				F59FB19E01E780DF01BBE912,
 				F5281C0601F8C94301E83A66,
 				F5281C0A01F8CA2201E83A66,
-				EFBAF0120485B69900A8000D,
-				EFF8264004B4BD2000778F0B,
-				EFF8264104B4BD2100778F0B,
 				EFF8264304B5E20800778F0B,
 			);
 			isa = PBXFrameworksBuildPhase;
@@ -874,6 +868,19 @@
 			isa = PBXBuildFile;
 			settings = {
 			};
+		};
+		3D5482BA04D73ED300000107 = {
+			buildRules = (
+			);
+			buildSettings = {
+				CC = "/usr/bin/gcc-3.3";
+				COPY_PHASE_STRIP = YES;
+				CPLUSPLUS = "/usr/bin/g++-3.3";
+				DEBUGGING_SYMBOLS = NO;
+				GCC_VERSION = 3.x;
+			};
+			isa = PBXBuildStyle;
+			name = "Deployment (gcc 3.3)";
 		};
 		3D5F21430403230F00000104 = {
 			fileEncoding = 30;
@@ -1222,31 +1229,6 @@
 			settings = {
 			};
 		};
-		EF2EF5A4048194F100A8000D = {
-			fileRef = F51B05A9047ACD3401C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EF2EF5A5048194F200A8000D = {
-			fileRef = F51B05AB047ACD3D01C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EF2EF5AF0481982A00A8000D = {
-			children = (
-				F51B0589047AC6DA01C5C930,
-				F51B058A047AC6DA01C5C930,
-				F51B058D047AC6DA01C5C930,
-				F51B05A9047ACD3401C5C930,
-				F51B05AB047ACD3D01C5C930,
-			);
-			isa = PBXGroup;
-			name = "lua-5.0";
-			path = "/Library/Application Support/Lua/lua-5.0";
-			refType = 0;
-		};
 		EF2EF5B004819A5C00A8000D = {
 			children = (
 				F5281C0501F8C94101E83A66,
@@ -1557,73 +1539,6 @@
 			isa = PBXBuildStyle;
 			name = "Development no precomps";
 		};
-		EFBAF0090485B3A300A8000D = {
-			children = (
-				EFBAF00A0485B41E00A8000D,
-				EFBAF00B0485B41E00A8000D,
-				EFBAF0100485B69900A8000D,
-			);
-			isa = PBXGroup;
-			name = "speex-1.0";
-			path = "/Library/Application Support/Speex/speex-1.0";
-			refType = 0;
-		};
-		EFBAF00A0485B41E00A8000D = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = speex_bits.h;
-			path = libspeex/speex_bits.h;
-			refType = 4;
-		};
-		EFBAF00B0485B41E00A8000D = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = speex.h;
-			path = libspeex/speex.h;
-			refType = 4;
-		};
-		EFBAF00C0485B41E00A8000D = {
-			fileRef = EFBAF00A0485B41E00A8000D;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EFBAF00D0485B41E00A8000D = {
-			fileRef = EFBAF00B0485B41E00A8000D;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EFBAF00E0485B41E00A8000D = {
-			fileRef = EFBAF00A0485B41E00A8000D;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EFBAF00F0485B41E00A8000D = {
-			fileRef = EFBAF00B0485B41E00A8000D;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EFBAF0100485B69900A8000D = {
-			isa = PBXFileReference;
-			name = libspeex.a;
-			path = libspeex/.libs/libspeex.a;
-			refType = 4;
-		};
-		EFBAF0110485B69900A8000D = {
-			fileRef = EFBAF0100485B69900A8000D;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EFBAF0120485B69900A8000D = {
-			fileRef = EFBAF0100485B69900A8000D;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		EFBAF0130485BEA500A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -1795,18 +1710,6 @@
 			settings = {
 			};
 		};
-		EFF8264004B4BD2000778F0B = {
-			fileRef = F51B05A9047ACD3401C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EFF8264104B4BD2100778F0B = {
-			fileRef = F51B05AB047ACD3D01C5C930;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		EFF8264204B4BD2B00778F0B = {
 			fileRef = F51B058B047AC6DA01C5C930;
 			isa = PBXBuildFile;
@@ -1897,20 +1800,6 @@
 			path = ../Source_Files/Lua;
 			refType = 2;
 		};
-		F51B0589047AC6DA01C5C930 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = lauxlib.h;
-			path = include/lauxlib.h;
-			refType = 4;
-		};
-		F51B058A047AC6DA01C5C930 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = lua.h;
-			path = include/lua.h;
-			refType = 4;
-		};
 		F51B058B047AC6DA01C5C930 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -1921,25 +1810,6 @@
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = lua_script.h;
-			refType = 4;
-		};
-		F51B058D047AC6DA01C5C930 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = lualib.h;
-			path = include/lualib.h;
-			refType = 4;
-		};
-		F51B05A9047ACD3401C5C930 = {
-			isa = PBXFileReference;
-			name = liblua.a;
-			path = lib/liblua.a;
-			refType = 4;
-		};
-		F51B05AB047ACD3D01C5C930 = {
-			isa = PBXFileReference;
-			name = liblualib.a;
-			path = lib/liblualib.a;
 			refType = 4;
 		};
 		F51E8E300212A3E701A80001 = {
@@ -3564,7 +3434,7 @@
 			buildSettings = {
 				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
-				HEADER_SEARCH_PATHS = ". \"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
+				HEADER_SEARCH_PATHS = "/usr/local/include . \"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
@@ -3573,7 +3443,7 @@
 				LIBRARY_SEARCH_PATHS = "/usr/local/lib \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\"";
 				OPTIMIZATION_CFLAGS = "-O2 -fprefetch-loop-arrays -finline-limit=1000 -frerun-cse-after-loop -fstrength-reduce -fdelete-null-pointer-checks -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA -DSPEEX\n";
-				OTHER_LDFLAGS = "-flat_namespace";
+				OTHER_LDFLAGS = "-flat_namespace -llua -llualib -lspeex";
 				OTHER_REZFLAGS = "";
 				PRECOMPILE_PREFIX_HEADER = YES;
 				PREFIX_HEADER = precompiled_headers.h;
@@ -3990,8 +3860,6 @@
 				EF2EF5ED04819F8400A8000D,
 				EF2EF5F10481A07000A8000D,
 				EF2EF5F20481A07000A8000D,
-				EFBAF00C0485B41E00A8000D,
-				EFBAF00D0485B41E00A8000D,
 				EFBAF01A0485BEA500A8000D,
 				EFBAF01B0485BEA500A8000D,
 				EFBAF01D0485BEA500A8000D,
@@ -4190,9 +4058,6 @@
 				F56A4632021F7C5501A80001,
 				F56A4641021F88A301A80001,
 				3D5F21470403247500000104,
-				EF2EF5A4048194F100A8000D,
-				EF2EF5A5048194F200A8000D,
-				EFBAF0110485B69900A8000D,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
