@@ -432,32 +432,41 @@ static void draw_picture(LoadedResource &rsrc)
 	SDL_Surface *s = picture_to_surface(rsrc);
 	if (s == NULL)
 		return;
+	SDL_Surface *video = SDL_GetVideoSurface();
+
+	// Default source rectangle
+	SDL_Rect src_rect = {0, 0, s->w, s->h};
 
 	// Center picture on screen
-	SDL_Rect dest_rect = {(SDL_GetVideoSurface()->w - s->w) / 2, (SDL_GetVideoSurface()->h - s->h) / 2, s->w, s->h};
-	if (dest_rect.x < 0)
-		dest_rect.x = 0;
-	if (dest_rect.y < 0)
-		dest_rect.y = 0;
+	SDL_Rect dst_rect = {(video->w - s->w) / 2, (video->h - s->h) / 2, s->w, s->h};
+	if (dst_rect.x < 0)
+		dst_rect.x = 0;
+	if (dst_rect.y < 0)
+		dst_rect.y = 0;
 
-	// Set clipping rectangle if desired
-	if (draw_clip_rect_active)
-		SDL_SetClipping(s, draw_clip_rect.top, draw_clip_rect.left, draw_clip_rect.bottom, draw_clip_rect.right);
+	// Clip if desired (only used for menu buttons)
+	if (draw_clip_rect_active) {
+		src_rect.w = dst_rect.w = draw_clip_rect.right - draw_clip_rect.left;
+		src_rect.h = dst_rect.h = draw_clip_rect.bottom - draw_clip_rect.top;
+		src_rect.x = draw_clip_rect.left - dst_rect.x;
+		src_rect.y = draw_clip_rect.top - dst_rect.y;
+		dst_rect.x = draw_clip_rect.left;
+		dst_rect.y = draw_clip_rect.top;
+	} else {
+		// Clear destination to black
+		SDL_FillRect(video, NULL, SDL_MapRGB(video->format, 0, 0, 0));
+	}
 
 	// Blit picture to screen
-	SDL_BlitSurface(s, NULL, SDL_GetVideoSurface(), &dest_rect);
-
-	// Reset clipping rectangle
-	if (draw_clip_rect_active)
-		SDL_SetClipping(s, 0, 0, 0, 0);
+	SDL_BlitSurface(s, &src_rect, video, &dst_rect);
+	SDL_FreeSurface(s);
 
 	// Update display and free picture surface
-	SDL_UpdateRects(SDL_GetVideoSurface(), 1, &dest_rect);
+	SDL_UpdateRects(video, 1, &dst_rect);
 #ifdef HAVE_OPENGL
-	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+	if (video->flags & SDL_OPENGL)
 		SDL_GL_SwapBuffers();
 #endif
-	SDL_FreeSurface(s);
 }
 
 
