@@ -110,9 +110,9 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 //calculate_shading_table() needs to be inlined in a macro
 */
 
+#include "cseries.h"
 #ifndef DEBUG_FAST_CODE
 #undef DEBUG
-// #undef assert(x)
 #undef assert
 #define assert(x)
 #undef vassert
@@ -122,7 +122,6 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 #undef vhalt
 #define vhalt(x...)
 #endif
-#include "cseries.h"
 #include "render.h"
 #include "Rasterizer_SW.h"
 

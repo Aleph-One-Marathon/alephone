@@ -429,7 +429,7 @@ void set_sound_manager_parameters(struct sound_manager_parameters *parameters)
 		*_sm_parameters = *parameters;
 
 		// If it was initially on, turn the sound manager back on
-		if (initial_state)
+		if (initial_state && parameters->volume)
 			set_sound_manager_status(true);
 	}
 }

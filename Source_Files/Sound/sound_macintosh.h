@@ -118,7 +118,8 @@ void set_sound_manager_parameters(
 		*_sm_parameters= *parameters;
 		
 		/* if it was initially on, turn the sound manager back on */
-		if (initial_state) set_sound_manager_status(true);
+		if (initial_state && parameters->volume)
+			set_sound_manager_status(true);
 	}
 }
 
