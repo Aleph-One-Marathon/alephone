@@ -97,6 +97,11 @@ Jul 6, 2000 (Loren Petrich):
 	Got HUD's position generalized
 	Fixed dump_screen so that it works properly in higher resolutions
 	Added bigger screen-size values and increased the maximum size accordingly
+
+Jul 8, 2000 (Loren Petrich):
+	Modified render_screen() so that the two kinds of OpenGL rendering, for the main view
+	and for the map view, are distinct, and that OpenGL for map view would be handled properly
+	(text displayed in it, etc.)
 */
 
 /*
@@ -129,6 +134,7 @@ Jul 6, 2000 (Loren Petrich):
 #include "Crosshairs.h"
 // LP addition: OpenGL support
 #include "OGL_Render.h"
+#include "OGL_Map.h"
 
 // LP addition: view control
 #include "ViewControl.h"
@@ -288,6 +294,10 @@ static boolean screen_initialized= FALSE;
 
 short bit_depth= NONE;
 short interface_bit_depth= NONE;
+
+// LP addition: this is defined in overhead_map.c
+// It indicates whether to render the overhead map in OpenGL
+extern bool OGL_MapActive;
 
 /* ---------- private prototypes */
 
@@ -1002,7 +1012,17 @@ void render_screen(
 		world_view->show_weapons_in_hand =
 			!ChaseCam_GetPosition(world_view->origin,world_view->origin_polygon_index,world_view->yaw,world_view->pitch);
 	}
-		
+	
+	// Is map to be drawn with OpenGL?
+	if (OGL_IsActive() && world_view->overhead_map_active)
+		OGL_MapActive = (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Map) != 0);
+	else
+		OGL_MapActive = false;
+	
+	// Start the respective kinds of frames (main and map)
+	if (OGL_MapActive) OGL_StartMap();
+	if (!world_view->overhead_map_active && !world_view->terminal_mode_active) OGL_StartMain();
+	
 	render_view(world_view, world_pixels_structure);
 	
 	switch (screen_mode.acceleration)
@@ -1029,21 +1049,26 @@ void render_screen(
 					if (!OGL_RenderCrosshairs())
 						Crosshairs_Render((GrafPtr)world_pixels);
 // #ifndef DIRECT_SCREEN_TEST
-			// LP change: put in OpenGL buffer swapping when neither the map nor the terminal
-			// is active.
-			// Also, use OpenGL rendering of the terminal display / overhead map if available
-			bool OGL_Active = false;
-			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
+			// LP change: put in OpenGL buffer swapping when the main view or the overhead map
+			// are being rendered in OpenGL.
+			// Otherwise, if OpenGL is active, then blit the software rendering to the screen.
+			bool OGL_WasUsed = false;
+			if ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 			{
-				// Main view already rendered
-				OGL_Active = OGL_SwapBuffers();
+				// Finish up the frame rendering for each kind
+				if (OGL_MapActive) OGL_EndMap();
+				if (!world_view->overhead_map_active) OGL_EndMain();
+				
+				// Main or map view already rendered
+				OGL_WasUsed = OGL_SwapBuffers();
 			}
 			else
 			{
 				// Copy 2D rendering to screen
-				// Paint on top without any buffering
-				OGL_Active = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,false,false);
+				// Paint on top without any buffering if piping through OpenGL had been selected
+				OGL_WasUsed = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,false,false);
 			}
+			if (!OGL_WasUsed) update_screen(BufferRect,ViewRect,HighResolution);
 			if (HUD_RenderRequest)
 			{
 				if (OGL_Get2D())
@@ -1075,7 +1100,6 @@ void render_screen(
 					DrawHUD(HUD_SourceRect,HUD_DestRect);
 				HUD_RenderRequest = false;
 			}
-			if (!OGL_Active) update_screen(BufferRect,ViewRect,HighResolution);
 // #endif
 			break;
 		
@@ -1534,12 +1558,12 @@ void change_gamma_level(
 
 /* ---------- private code */
 
-// LP addition: routine for displaying
+// LP addition: routine for displaying text
 static void DisplayText(short BaseX, short BaseY, unsigned char *Text)
 {
 	// OpenGL version:
-	// activate only in the main view (not in overhead map or terminal)
-	if(!world_view->overhead_map_active && !world_view->terminal_mode_active)
+	// activate only in the main view, and also if OpenGL is being used for the overhead map
+	if((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 		if (OGL_RenderText(BaseX, BaseY, Text)) return;
 
 	// LP change: added drop-shadow rendering
