@@ -54,6 +54,9 @@ Aug 10, 2000 (Loren Petrich):
 
 Aug 22, 2000 (Loren Petrich):
 	Added object-oriented resource handling
+
+Sep 24, 2000 (Loren Petrich):
+	Banished OverallBounds as unnecessary; world_pixels->portRect does fine here
 */
 
 // add logon/logoff keywords. (& make terminal display them)
@@ -281,10 +284,10 @@ inline player_terminal_data *get_player_terminal_data(
 	return player_terminal;
 }
 
-#ifdef mac
+// #ifdef mac
 // LP addition: overall terminal boundary rect (needed for resetting the clipping rectangle)
-static Rect OverallBounds;
-#endif
+// static Rect OverallBounds;
+// #endif
 
 /* ------------ private prototypes */
 static void draw_logon_text(Rect *bounds, terminal_text_t *terminal_text,
@@ -1743,7 +1746,7 @@ static void present_checkpoint_text(
 		_render_overhead_map(&overhead_data);
 #ifdef mac
 		// Reset it to the overall bounds
-		ClipRect(&OverallBounds);
+		ClipRect(&world_pixels->portRect);
 #endif
 	} else {
 		char format_string[128];
