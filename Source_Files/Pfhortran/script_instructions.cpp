@@ -90,6 +90,8 @@ typedef float GLfloat;
 
 #include "script_parser.h"
 #include "script_instructions.h"
+#include "item_definitions.h" // EE add for Remove_Item
+#include "ActionQueues.h"
 
 #define sign(a) (a) < 0 ? -1 : 1
 
@@ -100,7 +102,7 @@ extern struct view_data *world_view;
 extern bool ready_weapon(short player_index, short weapon_index);
 extern void draw_panels(void);
 extern struct monster_data *get_monster_data(short monster_index);
-
+extern void IncrementHeartbeat();
 
 // ML addition: to use possible_intersecting_monsters
 static vector<short> IntersectedObjects;
@@ -260,6 +262,7 @@ void s_Get_UnderFog_Presence(script_instruction inst);
 void s_Set_UnderFog_Presence(script_instruction inst);
 void s_Remove_Item(script_instruction inst);
 void s_Player_Control(script_instruction inst);
+void s_Play_Sound(script_instruction inst);
 
 /*-------------------------------------------*/
 
@@ -393,6 +396,7 @@ void init_instructions(void)
 	instruction_lookup[Set_UnderFog_Presence] = s_Set_UnderFog_Presence;
 	instruction_lookup[Remove_Item] = s_Remove_Item;
 	instruction_lookup[Player_Control] = s_Player_Control;
+	instruction_lookup[Play_Sound] = s_Play_Sound;
 }
 
 // Suppressed for MSVC compatibility
@@ -405,6 +409,8 @@ void init_instructions(void)
 void update_path_camera(void)
 {
 	path_point old_point;
+	const float AngleConvert = 360/float(FULL_CIRCLE);
+	int currentTicks;
 	
 	/* copy over old location info so we can calculate new polygon index later */
 	
@@ -414,6 +420,9 @@ void update_path_camera(void)
 	old_point.position.y = camera_point.location.position.y;
 	old_point.position.z = camera_point.location.position.z;
 	old_point.polygon_index = camera_point.location.polygon_index;
+
+	//we are now at this time
+	//	currentTicks = machine_tick_count();	//this should be from 1 to many ticks after lastTicks
 	
 	if (offset_count)
 	{
@@ -467,6 +476,10 @@ void update_path_camera(void)
 		else if (check_yaw - new_yaw > HALF_CIRCLE)
 			camera_point.location.yaw = normalize_angle(camera_point.location.yaw  + (offset_yaw * sign(check_yaw)));
 
+		/*if (abs(check_yaw) + abs(new_yaw) > (180 - abs(check_yaw)) + (180 - abs(new_yaw)))
+			camera_point.location.yaw = normalize_angle((abs(check_yaw) + (180 - abs(check_yaw)) + (180 - abs(new_yaw)) / roll_count));
+		else
+			camera_point.location.yaw = normalize_angle((abs(check_yaw) + abs(new_yaw))/ roll_count);*/
 		
 		if (normalize_angle(camera_point.location.pitch) < normalize_angle(script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch))
 		{
@@ -478,7 +491,29 @@ void update_path_camera(void)
 			camera_point.location.pitch = normalize_angle(angle(camera_point.location.pitch - offset_pitch));
 		}
 	}
-	
+	/*if (roll_count)
+	{
+		if (camera_point.location.yaw < script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.yaw)
+		{
+			camera_point.location.yaw = normalize_angle(((float)(camera_point.location.yaw * AngleConvert) - offset_yaw) / AngleConvert);
+		}
+
+		if (camera_point.location.yaw > script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.yaw)
+		{
+			camera_point.location.yaw = normalize_angle(((float)(camera_point.location.yaw * AngleConvert) + offset_yaw) / AngleConvert);
+		}
+
+		if (camera_point.location.pitch < script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch)
+		{
+			camera_point.location.pitch = normalize_angle(((float)(camera_point.location.pitch * AngleConvert) - offset_pitch) / AngleConvert);
+		}
+
+		if (camera_point.location.pitch > script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch)
+		{
+			camera_point.location.pitch = normalize_angle(((float)(camera_point.location.pitch * AngleConvert) + offset_pitch) / AngleConvert);
+		}
+	}*/
+		
 	/* Loren Petrich's code... thanks Loren! */
 	
 	short CurrentPolygonIndex;
@@ -487,6 +522,13 @@ void update_path_camera(void)
 	// Set CurrentPosition to the old position of the camera
 	// Set TargetPosition to the new position of the camera
 	// Set CurrentPolygonIndex to the old polygon membership of the camera
+	
+/*	world_point2d CurrentPosition, TargetPosition;
+
+	TargetPosition.x = camera_point.location.position.x;
+	TargetPosition.y = camera_point.location.position.y;
+	CurrentPosition.x = old_point.position.x;
+	CurrentPosition.y = old_point.position.y; */
 
 	CurrentPolygonIndex = camera_point.location.polygon_index;
 
@@ -556,6 +598,8 @@ void update_path_camera(void)
 
 bool script_Camera_Active(void)
 {
+	const float AngleConvert = 360/float(FULL_CIRCLE);
+	
 	if (!script_in_use())
 		return false;
 
@@ -579,8 +623,16 @@ bool script_Camera_Active(void)
 				world_view->yaw = cameras[current_camera].location.yaw;
 				world_view->pitch = cameras[current_camera].location.pitch;
 				world_view->origin = cameras[current_camera].location.position;
-			} else
+			}
+			else
 			{
+				/* if (camera_point.location.yaw == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.yaw
+					&& camera_point.location.pitch == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.pitch
+					&& camera_point.location.position.x == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.position.x
+					&& camera_point.location.position.y == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.position.y
+					&& camera_point.location.position.z == script_paths[cameras[current_camera].path].the_path[cameras[current_camera].point].location.position.z)
+				*/
+				
 				if (offset_count == 0 && roll_count == 0) /* path end point reached */
 					current_path_point = cameras[current_camera].point;
 					
@@ -811,9 +863,11 @@ void s_Set_Tag_State(script_instruction inst)
 			case 1:
 				temp = get_variable(int(inst.op1));
 				break;
+				
 			case 2:
 				temp2 = get_variable(int(inst.op2));
 				break;
+				
 			case 3:
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
@@ -847,10 +901,10 @@ void s_Get_Tag_State(script_instruction inst)
 	if (inst.mode != 0)
 		switch(inst.mode)
 		{
-			
 			case 2:
 				temp2 = get_variable(int(inst.op2));
 				break;
+				
 			case 3:
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
@@ -862,7 +916,7 @@ void s_Get_Tag_State(script_instruction inst)
 	tag = (int)floor(temp);
 	
 	
-	for (light_index= 0, light= lights; light_index<short(MAXIMUM_LIGHTS_PER_MAP); ++light_index, ++light)
+	for (light_index= 0, light= lights; light_index<MAXIMUM_LIGHTS_PER_MAP; ++light_index, ++light)
 	{
 		if (light->static_data.tag==tag)
 		{
@@ -910,15 +964,17 @@ void s_sAdd(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-				temp = get_variable(int(inst.op1));
-				set_variable(int(inst.op1),temp+inst.op2);
-				break;
+			temp = get_variable(int(inst.op1));
+			set_variable(int(inst.op1),temp+inst.op2);
+			break;
+			
 		case 3:
-				temp = get_variable(int(inst.op1));
-				set_variable(int(inst.op1),temp+get_variable(int(inst.op2)));
-				break;
+			temp = get_variable(int(inst.op1));
+			set_variable(int(inst.op1),temp+get_variable(int(inst.op2)));
+			break;
+			
 		default:
-				break;
+			break;
 	}
  	 
 	 
@@ -934,13 +990,15 @@ void s_sSubtract(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-				temp = get_variable(int(inst.op1));
-				set_variable(int(inst.op1),temp-inst.op2);
-				break;
+			temp = get_variable(int(inst.op1));
+			set_variable(int(inst.op1),temp-inst.op2);
+			break;
+			
 		case 3:
-				temp = get_variable(int(inst.op1));
-				set_variable(int(inst.op1),temp-get_variable(int(inst.op2)));
-				break;
+			temp = get_variable(int(inst.op1));
+			set_variable(int(inst.op1),temp-get_variable(int(inst.op2)));
+			break;
+			
 		default:
 				break;
 	}
@@ -1007,15 +1065,17 @@ void s_Set(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-				temp = get_variable(int(inst.op1));
-				set_variable(int(inst.op1),inst.op2);
-				break;
+			temp = get_variable(int(inst.op1));
+			set_variable(int(inst.op1),inst.op2);
+			break;
+			
 		case 3:
-				temp = get_variable(int(inst.op1));
-				set_variable(int(inst.op1),get_variable(int(inst.op2)));
-				break;
+			temp = get_variable(int(inst.op1));
+			set_variable(int(inst.op1),get_variable(int(inst.op2)));
+			break;
+			
 		default:
-				break;
+			break;
 	}
  	 
 	 
@@ -1175,13 +1235,15 @@ void s_Set_Life(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				local_player->suit_energy = (int)floor(inst.op1);
-				break;
+			local_player->suit_energy = (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				local_player->suit_energy = (int)floor(get_variable(int(inst.op1)));
-				break;
+			local_player->suit_energy = (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				break;
+			break;
 	}
 	
 	mark_shield_display_as_dirty();
@@ -1203,13 +1265,15 @@ void s_Set_Oxygen(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				local_player->suit_oxygen = (int)floor(inst.op1);
-				break;
+			local_player->suit_oxygen = (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				local_player->suit_oxygen = (int)floor(get_variable(int(inst.op1)));
-				break;
+			local_player->suit_oxygen = (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				break;
+			break;
 	}
 	
 	mark_oxygen_display_as_dirty();
@@ -1235,15 +1299,17 @@ void s_Add_Item(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				if (!try_and_add_player_item(player_identifier_to_player_index(local_player->identifier), (int)floor(inst.op1)))
-					; /* this sucks */
-				break;
+			if (!try_and_add_player_item(player_identifier_to_player_index(local_player->identifier), (int)floor(inst.op1)))
+				; /* this sucks */
+			break;
+			
 		case 1:
-				if (!try_and_add_player_item(player_identifier_to_player_index(local_player->identifier), (int)floor(get_variable(int(inst.op1)))))
-					; /* this sucks */
-				break;
+			if (!try_and_add_player_item(player_identifier_to_player_index(local_player->identifier), (int)floor(get_variable(int(inst.op1)))))
+				; /* this sucks */
+			break;
+				
 		default:
-				break;
+			break;
 	}
 	
 	
@@ -1258,14 +1324,16 @@ void s_Select_Weapon(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	switch(temp)
@@ -1336,14 +1404,16 @@ void s_Init_Cameras(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	if (cameras || camera_count > 0)
@@ -1373,14 +1443,16 @@ void s_Select_Camera(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	current_camera = temp;
@@ -1406,14 +1478,16 @@ void s_Set_Camera_Poly(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	if (cameras)
@@ -1484,9 +1558,11 @@ void s_Set_Camera_YP(script_instruction inst)
 			case 1:
 				temp = get_variable(int(inst.op1));
 				break;
+				
 			case 2:
 				temp2 = get_variable(int(inst.op2));
 				break;
+				
 			case 3:
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
@@ -1521,14 +1597,16 @@ void s_Init_Paths(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	if (script_paths || path_count > 0)
@@ -1601,14 +1679,16 @@ void s_Dispose_Path(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	if (script_paths[temp-1].the_path)
@@ -1627,14 +1707,16 @@ void s_Select_Path(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	current_path = temp-1;
@@ -1648,14 +1730,16 @@ void s_Set_Path_Move_Speed(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= inst.op1;
-				break;
+			temp= inst.op1;
+			break;
+			
 		case 1:
-				temp= get_variable(int(inst.op1));
-				break;
+			temp= get_variable(int(inst.op1));
+			break;
+			
 		default:
-				temp= 0.0;
-				break;
+			temp= 0.0;
+			break;
 	}
 	
 	if (script_paths)
@@ -1669,14 +1753,16 @@ void s_Set_Path_Roll_Speed(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= inst.op1;
-				break;
+			temp= inst.op1;
+			break;
+			
 		case 1:
-				temp= get_variable(int(inst.op1));
-				break;
+			temp= get_variable(int(inst.op1));
+			break;
+			
 		default:
-				temp= 0.0;
-				break;
+			temp= 0.0;
+			break;
 	}
 	
 	if (script_paths)
@@ -1690,14 +1776,16 @@ void s_Select_Point(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	current_path_point = temp;
@@ -1711,14 +1799,16 @@ void s_Set_Point_Poly(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	if (script_paths)
@@ -1789,9 +1879,11 @@ void s_Set_Point_YP(script_instruction inst)
 			case 1:
 				temp = get_variable(int(inst.op1));
 				break;
+				
 			case 2:
 				temp2 = get_variable(int(inst.op2));
 				break;
+				
 			case 3:
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
@@ -1814,14 +1906,16 @@ void s_Start_Camera_On_Path(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				temp= (int)floor(inst.op1);
-				break;
+			temp= (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				temp= (int)floor(get_variable(int(inst.op1)));
-				break;
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				temp= 0;
-				break;
+			temp= 0;
+			break;
 	}
 	
 	if (cameras && script_paths)
@@ -1853,9 +1947,11 @@ void s_Change_Soundtrack(script_instruction inst)
 		case 0:
 			temp= (int)floor(inst.op1);
 			break;
+			
 		case 1:
 			temp= (int)floor(get_variable(inst.op1));
 			break;
+			
 		default:
 			temp= 0;
 			break;
@@ -1874,13 +1970,16 @@ void s_Set_Fog_Depth(script_instruction inst)
 		case 0:
 			temp= (int)floor(inst.op1);
 			break;
+			
 		case 1:
 			temp= (int)floor(get_variable(int(inst.op1)));
 			break;
+			
 		default:
 			temp= 0;
 			break;
  	}
+ 	
 	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = temp;
 }
 
@@ -1962,13 +2061,16 @@ void s_Set_UnderFog_Depth(script_instruction inst)
 		case 0:
 			temp= (int)floor(inst.op1);
 			break;
+			
 		case 1:
 			temp= (int)floor(get_variable(int(inst.op1)));
 			break;
+			
 		default:
 			temp= 0;
 			break;
  	}
+ 	
 	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = temp;
 }
 
@@ -2051,14 +2153,16 @@ void s_Teleport_Player(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				dest = (int)floor(inst.op1);
-				break;
+			dest = (int)floor(inst.op1);
+			break;
+			
 		case 1:
-				dest = (int)floor(get_variable(int(inst.op1)));
-				break;
+			dest = (int)floor(get_variable(int(inst.op1)));
+			break;
+			
 		default:
-				dest = 0;
-				break;
+			dest = 0;
+			break;
 	}
 	
 	
@@ -2091,9 +2195,6 @@ void s_Wait_For_Path(script_instruction inst)
 //op2: The type of monster to create
 //op3: The polygon to put him in (center)
 
-//THIS IS BROKEN
-//DO NOT USE
-
 void s_Monster_New(script_instruction inst)
 {
 	object_location theLocation;		//where we will put him
@@ -2102,10 +2203,6 @@ void s_Monster_New(script_instruction inst)
 	world_point2d theCenter;
 	short index;
 	short type, where;
-	
-	// dprintf("I TOLD YOU NOT TO USE THIS INSTRUCTION DAMMIT");
-	// set_variable(int(inst.op1), -1);
-	// return;
 	
 	switch(inst.mode)			//requires: var, both, both
 	{
@@ -2126,9 +2223,11 @@ void s_Monster_New(script_instruction inst)
 		where = (short)get_variable(int(inst.op3));	
 		break;
 	default:
-	return;			//if we don't have a variable as element 1, return
+		return;			//if we don't have a variable as element 1, return
 	}
 	
+	set_variable(int(inst.op1), -1);
+		
 	theLocation.polygon_index = (int16)where;
 	destination = NULL;
 	destination= get_polygon_data(theLocation.polygon_index);
@@ -2167,6 +2266,7 @@ void s_Monster_Sleep(script_instruction inst)
 	case 7:
 		theMonster = (short)get_variable(int(inst.op1));
 		break;
+		
 	default:
 		dprintf("Argument of Monster_Sleep must be a variable\n");
 		return;		//was not a var
@@ -2289,8 +2389,9 @@ void s_Monster_Attack(script_instruction inst)
 //[op3: other options]
 void s_Monster_Move(script_instruction inst)
 {
-	world_point2d *theEnd;	//center of dest
-	short endPoly;		//poly index for new_path
+	world_point2d theStart, *theEnd;	//where we start from. start is monster's pos, end is center of dest
+	short startPoly, endPoly;		//poly indexes for new_path
+	world_distance minSpace;		//3*monster_definition->radius
 	struct monster_pathfinding_data thePath;		//used by new_path
 	struct monster_data *theRealMonster;			//the monster data
 	struct monster_definition *theDef;				//the def of the monster
@@ -2815,7 +2916,7 @@ void s_Monster_Get_Item(script_instruction inst)
 	struct monster_data *theMonster;
 	short monsterIndex;
 	struct monster_definition *theDef;
-//	int32 monsterClass;
+	int32 monsterClass;
 //	dprintf("trying enemies\n");
 	switch(inst.mode)
 	{
@@ -2903,6 +3004,22 @@ void s_Get_Random(script_instruction inst)
 
 }
 
+void s_Get_Monster_Poly(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	short poly;
+	
+	if (inst.mode != 4)
+		return;
+	
+	monsterIndex = get_variable(int(inst.op1));
+	
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	
+	//poly = theMonster->Poly
+}
+
 void s_Set_Platform_State(script_instruction inst)
 {
 	float temp,temp2;
@@ -2916,18 +3033,22 @@ void s_Set_Platform_State(script_instruction inst)
 		{
 			case 1:
 				temp = get_variable(int(inst.op1));
+				temp2 = int(inst.op2);
 				break;
+				
 			case 2:
+				temp = int(inst.op1);
 				temp2 = get_variable(int(inst.op2));
 				break;
+				
 			case 3:
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
 				break;
 		}
 		
-	try_and_change_platform_state(int16(temp), temp2);
-	assume_correct_switch_position(_panel_is_platform_switch, int16(temp), temp2);
+	try_and_change_platform_state(int16(temp), temp2 != 0);
+	assume_correct_switch_position(_panel_is_platform_switch, int16(temp), temp2 != 0);
 	}	
 }
 
@@ -2943,12 +3064,11 @@ void s_Get_Platform_State(script_instruction inst)
 	{
 		switch(inst.mode)
 		{
-			case 1:
-				temp = get_variable(int(inst.op1));
-				break;
 			case 2:
+				temp = int(inst.op1);
 				temp2 = get_variable(int(inst.op2));
 				break;
+				
 			case 3:
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
@@ -2958,6 +3078,21 @@ void s_Get_Platform_State(script_instruction inst)
 		platform = get_platform_data(int(temp));
 		set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(platform) ? 1 : 0);		
 	}
+}
+
+void s_Play_Sound(script_instruction inst)
+{
+	float temp,temp2,temp3;
+	
+	temp = inst.op1;
+	temp2 = inst.op2;
+	
+	if (inst.mode != 1)
+		return;
+	
+	// Purely local sound: args are which sound index
+	// and which pitch multiplier (1.0 = no pitch change)
+	_play_sound(short(temp), NULL, NONE, _fixed(FIXED_ONE*temp2));
 }
 
 void s_Set_Light_State(script_instruction inst)
@@ -2974,16 +3109,18 @@ void s_Set_Light_State(script_instruction inst)
 			case 1:
 				temp = get_variable(int(inst.op1));
 				break;
+				
 			case 2:
 				temp2 = get_variable(int(inst.op2));
 				break;
+				
 			case 3:
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
 				break;
 		}
 		
-	set_light_status(int16(temp), temp2);
+	set_light_status(int16(temp), temp2 != 0);
 	}	
 }
 
@@ -3001,15 +3138,12 @@ void s_Get_Light_State(script_instruction inst)
 			case 1:
 				temp = get_variable(int(inst.op1));
 				break;
-			case 2:
-				temp2 = get_variable(int(inst.op2));
-				break;
+				
 			case 3:
 				temp = get_variable(int(inst.op1));
-				temp2 = get_variable(int(inst.op2));
 				break;
 		}
-		set_variable(int(inst.op2), get_light_status(int(temp)));
+		set_variable(int(inst.op2), get_light_status(int(temp)) ? 1 : 0);
 	}
 }
 
@@ -3040,7 +3174,11 @@ void s_Set_Fog_Presence(script_instruction inst)
 	float temp = inst.op1;
 
 	switch(inst.mode)
-	{
+	{		
+	case 0:
+		temp = int(inst.op1);
+		break;
+		
 	case 1:
 		temp = get_variable(int(inst.op1));
 		break;
@@ -3065,6 +3203,10 @@ void s_Set_UnderFog_Presence(script_instruction inst)
 
 	switch(inst.mode)
 	{
+	case 0:
+		temp = int(inst.op1);
+		break;
+		
 	case 1:
 		temp = get_variable(int(inst.op1));
 		break;
@@ -3075,6 +3217,7 @@ void s_Set_UnderFog_Presence(script_instruction inst)
 
 void s_Remove_Item(script_instruction inst)
 {
+	// op1 : item index
 	short Item_Type = short(inst.op1);
 	switch(inst.mode)
 	{
@@ -3089,12 +3232,14 @@ void s_Remove_Item(script_instruction inst)
 		if(local_player->items[Item_Type] >= 1 && definition->item_kind==_ammunition)
 			local_player->items[Item_Type]--;		/* Decrement your count.. */
 		
-		mark_ammo_display_as_dirty();
+		mark_player_inventory_as_dirty(local_player_index, Item_Type);
 	}
 }
 
 void s_Player_Control(script_instruction inst)
 {
+	// op1 : move type
+	// op2 : how many times
 	uint32 action_flags = 0;
 	short move_type = 0;
 	short value = 0;
@@ -3104,12 +3249,12 @@ void s_Player_Control(script_instruction inst)
 		case 1:
 			move_type = short(get_variable(int(inst.op1)));
 			value = int(inst.op2);
-		break;
+			break;
 			
 		case 3:
 			move_type = short(get_variable(int(inst.op1)));
 			value = short(get_variable(int(inst.op2)));
-		break;
+			break;
 			
 		default:
 			break;
@@ -3165,5 +3310,7 @@ void s_Player_Control(script_instruction inst)
 		break;
 	}
 	
-	process_action_flags(local_player_index, &action_flags, value);
+	// This is Pfhortran -- can control zombies
+	GetRealActionQueues()->enqueueActionFlags(local_player_index, &action_flags, value, true);
+	IncrementHeartbeat(); // ba-doom
 }
