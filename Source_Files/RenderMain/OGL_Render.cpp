@@ -794,6 +794,7 @@ void PreloadWallTexture(const TextureWithTransferMode& inTexture)
 
 	TextureManager TMgr;
 	TMgr.ShapeDesc = AnimTxtr_Translate(texture);
+	if(TMgr.ShapeDesc == UNONE) return;
 	
 	get_shape_bitmap_and_shading_table(
 		TMgr.ShapeDesc,

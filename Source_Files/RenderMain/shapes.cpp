@@ -814,6 +814,12 @@ void extended_get_shape_bitmap_and_shading_table(
 //	if (collection_code==_collection_marathon_control_panels) collection_code= 30, low_level_shape_index= 0;
 	short collection_index= GET_COLLECTION(collection_code);
 	short clut_index= GET_COLLECTION_CLUT(collection_code);
+	
+	// Forget about it if some one managed to call us with the NONE value
+	assert(clut_index+1 != MAXIMUM_CLUTS_PER_COLLECTION &&
+		collection_index+1 != MAXIMUM_COLLECTIONS &&
+		low_level_shape_index+1 != MAXIMUM_SHAPES_PER_COLLECTION);
+	
 	struct low_level_shape_definition *low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
 	// Return NULL pointers for bitmap and shading table if the frame does not exist
 	if (!low_level_shape)
