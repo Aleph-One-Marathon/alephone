@@ -22,7 +22,7 @@
 #undef PACKED_DATA_IS_LITTLE_ENDIAN
 #undef PACKED_DATA_IS_BIG_ENDIAN
 #define PACKING_INTERNAL
-#include "cstypes.h"
+#include "cseries.h"
 #include "Packing.h"
 
 //big endian
