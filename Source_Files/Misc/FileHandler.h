@@ -16,6 +16,10 @@
 	Merged all the Macintosh-specific code into these base classes, so that
 	it will be selected with a preprocessor statement when more than one file-I/O
 	API is supported.
+
+Dec 7, 2000 (Loren Petrich):
+	Added a MacOS-specific file-creation function that allows direct specification
+	of type and creator codes
 */
 
 
@@ -387,6 +391,9 @@ public:
 	// Filespec management
 	void SetSpec(FSSpec& _Spec);
 	FSSpec& GetSpec() {return Spec;}
+	
+	// MacOS-friendly file creation
+	bool Create(OSType TypeCode, OSType CreatorCode);
 	
 	// Replace the file name;
 	// The typecode is for automatically adding a suffix;

@@ -391,7 +391,11 @@ bool FileSpecifier::Create(int Type)
 {
 	OSType TypeCode = InRange(Type) ? get_typecode(Type) : '????';
 	OSType CreatorCode = get_typecode(_typecode_creator);
+	return Create(TypeCode,CreatorCode);
+}
 
+bool FileSpecifier::Create(OSType TypeCode, OSType CreatorCode)
+{
 	/* Assume that they already confirmed this is going to die.. */
 	Err = FSpDelete(&Spec);
 
