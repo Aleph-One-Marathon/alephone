@@ -210,7 +210,7 @@ enter_predictive_mode()
 {
 	if(sPredictedTicks == 0)
 	{
-		for(size_t i = 0; i < dynamic_world->player_count; i++)
+		for(short i = 0; i < dynamic_world->player_count; i++)
 		{
 			sSavedPlayerData[i] = *get_player_data(i);
 			if(sSavedPlayerData[i].monster_index != NONE)
@@ -233,6 +233,7 @@ enter_predictive_mode()
 }
 
 
+#if COMPARE_MEMORY
 // ZZZ: I wrote this function to help catch incomplete state save/restore operations on entering and exiting predictive mode
 // It's not currently in use anywhere, but may prove useful sometime?  so I'm including it in my submission.
 static void
@@ -268,7 +269,7 @@ compare_memory(const char* inChunk1, const char* inChunk2, size_t inSize, size_t
 			logWarning4("%s %d: differences in bytes [%d,%d)", inDescription, inDescriptionNumber, theDifferenceStart, inSize);
 	}
 }
-
+#endif
 
 // ZZZ: if in predictive mode, restore the saved partial game-state (it'd better take us back
 // to _exactly_ the same full game-state we saved earlier, else problems.)
@@ -277,7 +278,7 @@ exit_predictive_mode()
 {
 	if(sPredictedTicks > 0)
 	{
-		for(size_t i = 0; i < dynamic_world->player_count; i++)
+		for(short i = 0; i < dynamic_world->player_count; i++)
 		{
 			assert(get_player_data(i)->monster_index == sSavedPlayerData[i].monster_index);
 
@@ -455,7 +456,7 @@ update_world()
 		exit_predictive_mode();
 
 		// Capture the flags for each player for use in prediction
-		for(size_t i = 0; i < dynamic_world->player_count; i++)
+		for(short i = 0; i < dynamic_world->player_count; i++)
 			sMostRecentFlagsForPlayer[i] = GameQueue->peekActionFlags(i, 0);
 
 		theUpdateResult = update_world_elements_one_tick();
@@ -506,7 +507,7 @@ update_world()
 			enter_predictive_mode();
 
 			// Enqueue stuff into thePredictiveQueues
-			for(size_t thePlayerIndex = 0; thePlayerIndex < dynamic_world->player_count; thePlayerIndex++)
+			for(short thePlayerIndex = 0; thePlayerIndex < dynamic_world->player_count; thePlayerIndex++)
 			{
 				uint32 theFlags = (thePlayerIndex == local_player_index) ? GetRealActionQueues()->peekActionFlags(local_player_index, sPredictedTicks) : sMostRecentFlagsForPlayer[thePlayerIndex];
 				thePredictiveQueues.enqueueActionFlags(thePlayerIndex, &theFlags, 1);
