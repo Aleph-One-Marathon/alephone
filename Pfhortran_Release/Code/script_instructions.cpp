@@ -1,6 +1,10 @@
 /* script_instructions.c
 	2/16/00 Created - Chris Pruett
-	
+
+	July 7, 2000 (Loren Petrich):
+	Changed _full_screen to SizeWithoutHUD(old_size)
+	so as to be more general -- one wants to be able to change to more than just the
+	640*480 size.
 */
 
  
@@ -190,7 +194,9 @@ void s_Hide_Interface(script_instruction inst)
 	screen_mode_data *the_mode;
 	the_mode = get_screen_mode();
 	old_size = the_mode->size;
-	the_mode->size = _full_screen;
+	// LP change: using more general way to temporarily get rid of the HUD
+	the_mode->size = SizeWithoutHUD(old_size);
+	// the_mode->size = _full_screen;
 	change_screen_mode(the_mode,true);
 }
 
