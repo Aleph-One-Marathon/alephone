@@ -35,7 +35,11 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 */
 
 #include <stdarg.h>
-#include "snprintf.h"
+#ifndef HAVE_SNPRINTF
+#include "snprintf.h"	// for platforms that don't have it
+// Maybe someone will work some autoconf/manual config.h magic so we can really only
+// include snprintf.h (and snprintf.cpp in the build) when needed.
+#endif
 
 #define DESIRED_SCREEN_WIDTH 640
 #define DESIRED_SCREEN_HEIGHT 480
@@ -581,9 +585,9 @@ void RequestDrawingHUD()
 }
 
 // ZZZ: I feel bad doing this, but ... not sure what best way to handle it is.
-#ifdef __MWERKS__
-using std::vsnprintf;
-#endif
+// #ifdef __MWERKS__
+// using std::vsnprintf;
+// #endif
 
 // LP addition: display message on the screen;
 // this really puts the current message into a buffer
