@@ -96,7 +96,8 @@ static boolean input_task_active;
 static timer_task_proc input_task;
 
 // LP: defined this here so it will work properly
-static FileObject_Mac FilmFile;
+static FileSpecifier FilmFileSpec;
+static OpenedFile FilmFile;
 
 /* Not static because vbl_macintosh.c uses this.. */
 struct key_definition current_key_definitions[NUMBER_OF_STANDARD_KEY_DEFINITIONS];
@@ -121,7 +122,7 @@ static void save_recording_queue_chunk(short player_index);
 static void read_recording_queue_chunks(void);
 static boolean pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
-static bool vblFSRead(FileObject& File, long *count, void *dest, bool& HitEOF);
+static bool vblFSRead(OpenedFile& File, long *count, void *dest, bool& HitEOF);
 // static FileError vblFSRead(short refnum, long *count, void *dest);
 static void record_action_flags(short player_identifier, long *action_flags, short count);
 static short get_recording_queue_size(short which_queue);
@@ -290,7 +291,7 @@ void set_keys(
 boolean has_recording_file(
 	void)
 {
-	FileObject_Mac File;
+	FileSpecifier File;
 	return get_recording_filedesc(File);
 /*
 	FileDesc spec;
@@ -586,14 +587,14 @@ void get_recording_header_data(
 
 boolean setup_for_replay_from_file(
 //	FileDesc *file,
-	FileObject& File,
+	FileSpecifier& File,
 	unsigned long map_checksum)
 {
 	boolean successful= FALSE;
 
 	(void)(map_checksum);
-	FilmFile.CopySpec(File);
-	if (FilmFile.Open(FileObject::C_Film))
+	File.CopySpec(FilmFileSpec);
+	if (FilmFileSpec.Open(FilmFile))
 	// replay.recording_file_refnum= open_file_for_reading(file);
 	// if(replay.recording_file_refnum > 0)
 	{
@@ -649,15 +650,15 @@ void start_recording(
 		delete_file(&recording_file);
 	}
 	*/
-	if(get_recording_filedesc(FilmFile))
-		FilmFile.Delete();
+	if(get_recording_filedesc(FilmFileSpec))
+		FilmFileSpec.Delete();
 
-	if (FilmFile.Create(FileObject::C_Film))
+	if (FilmFileSpec.Create(FileSpecifier::C_Film))
 	// error= create_file(&recording_file, FILM_FILE_TYPE);	
 	// if(!error)
 	{
 		/* I debate the validity of fsCurPerm here, but Alain had it, and it has been working */
-		if (FilmFile.Open(true))
+		if (FilmFileSpec.Open(FilmFile,true))
 		// replay.recording_file_refnum= open_file_for_writing(&recording_file);
 		// if(replay.recording_file_refnum != NONE)
 		{
@@ -752,7 +753,7 @@ void check_recording_replaying(
 		{
 			boolean success;
 			unsigned long freespace = 0;
-			FileObject_Mac FilmFile_Check;
+			FileSpecifier FilmFile_Check;
 			// FileDesc recording_file;
 			
 			get_recording_filedesc(FilmFile_Check);
@@ -908,7 +909,7 @@ static void read_recording_queue_chunks(
 
 /* This is gross, (Alain wrote it, not me!) but I don't have time to clean it up */
 static bool vblFSRead(
-	FileObject& File,
+	OpenedFile& File,
 	// short refnum, 
 	long *count, 
 	void *dest,

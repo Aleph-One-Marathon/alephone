@@ -63,14 +63,14 @@ static void remove_input_controller(void);
 /* ------------ code */
 boolean find_replay_to_use(
 	boolean ask_user,
-	FileObject& File)
+	FileSpecifier& File)
 //	FileDesc *file)
 {
 	boolean successful = FALSE;
 	
 	if(ask_user)
 	{
-		successful = File.ReadDialog(FileObject::C_Film);
+		successful = File.ReadDialog(FileSpecifier::C_Film);
 		/*
 		StandardFileReply reply;
 		SFTypeList types;
@@ -95,7 +95,7 @@ boolean find_replay_to_use(
 	return successful;
 }
 
-// Now a member of FileObject
+// Now a member of FileSpecifier
 /*
 boolean get_freespace_on_disk(
 	FileDesc *file,
@@ -118,11 +118,11 @@ boolean get_freespace_on_disk(
 */
 
 /* true if it found it, false otherwise. always fills in vrefnum and dirid*/
-boolean get_recording_filedesc(FileObject& File)
+boolean get_recording_filedesc(FileSpecifier& File)
 //	FileDesc *file)
 {
 	File.SetParentToPreferences();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING),FileObject::C_Film);
+	File.SetName(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING),FileSpecifier::C_Film);
 	return File.Exists();
 /*
 	short vRef;
@@ -144,14 +144,14 @@ void move_replay(
 	void)
 {
 	// FSSpec source_spec;
-	FileObject_Mac OrigFilmFile, MovedFilmFile;
+	FileSpecifier OrigFilmFile, MovedFilmFile;
 	if(!get_recording_filedesc(OrigFilmFile)) return;
 	// if(!get_recording_filedesc((FileDesc *) &source_spec)) return;
 	
 	// Need this temporary space for getting the strings
 	char Prompt[256], DefaultName[256];
 	if (!MovedFilmFile.WriteDialog(
-			FileObject::C_Film,
+			FileSpecifier::C_Film,
 			getcstr(Prompt, strPROMPTS, _save_replay_prompt),
 			getcstr(DefaultName, strFILENAMES, filenameMARATHON_RECORDING)
 		))
