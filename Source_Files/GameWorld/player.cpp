@@ -151,6 +151,7 @@ May 22, 2003 (Woody Zenfell):
 // LP addition:
 #include "ChaseCam.h"
 #include "Packing.h"
+#include "network.h"
 
 // ZZZ additions:
 #include "ActionQueues.h"
