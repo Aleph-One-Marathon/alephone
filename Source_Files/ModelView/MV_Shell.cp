@@ -516,12 +516,13 @@ static void ViewSideRotate(GLfloat Angle, GLfloat X, GLfloat Y, GLfloat Z)
 	glMultMatrixf(Matrix);
 }
 
+// Convenient standard value: 1/4 of a right angel
+const GLfloat RotationAngle = 22.5;
 
 const char ESCAPE = 0x1b;
 
 void KeyInMainWindow(unsigned char key, int x, int y)
 {
-	const GLfloat RotationAngle = 22.5;
 	
 	key = toupper(key);
 	
@@ -603,7 +604,28 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 
 void SpecialInMainWindow(int key, int x, int y)
 {
-	// For now, do nothing
+	switch(key)
+	{
+		case GLUT_KEY_RIGHT:
+			ViewSideRotate(RotationAngle,0,1,0);
+			glutPostRedisplay();
+			break;
+		
+		case GLUT_KEY_LEFT:
+			ViewSideRotate(-RotationAngle,0,1,0);
+			glutPostRedisplay();
+			break;
+		
+		case GLUT_KEY_UP:
+			ViewSideRotate(RotationAngle,1,0,0);
+			glutPostRedisplay();
+			break;
+		
+		case GLUT_KEY_DOWN:
+			ViewSideRotate(-RotationAngle,1,0,0);
+			glutPostRedisplay();
+			break;
+	}
 }
 
 
