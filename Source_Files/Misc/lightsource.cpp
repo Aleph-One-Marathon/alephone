@@ -621,7 +621,7 @@ uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, int Count)
 		
 		S += 4*2;
 		
-		S = unpack_static_light_data(S,&ObjPtr->static_data);
+		S = unpack_static_light_data(S,&ObjPtr->static_data,1);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_light_data);
@@ -647,7 +647,7 @@ uint8 *pack_light_data(uint8 *Stream, light_data* Objects, int Count)
 		
 		S += 4*2;
 		
-		S = pack_static_light_data(S,&ObjPtr->static_data);
+		S = pack_static_light_data(S,&ObjPtr->static_data,1);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_light_data);
