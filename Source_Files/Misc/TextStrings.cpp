@@ -72,7 +72,7 @@ StringSet::StringSet(short _ID)
 	Strings = new unsigned char *[NumStrings];
 	
 	// Set all the string pointers to NULL
-	memset(Strings,0,NumStrings*sizeof(unsigned char *));
+	objlist_clear(Strings,NumStrings);
 	
 	// Last, but not least:
 	Next = NULL;
@@ -101,8 +101,8 @@ void StringSet::Add(short Index, unsigned char *String)
 	if (NewNumStrings > NumStrings)
 	{
 		unsigned char **NewStrings = new unsigned char *[NewNumStrings];
-		memset(NewStrings+NumStrings,0,(NewNumStrings-NumStrings)*sizeof(unsigned char *));
-		memcpy(NewStrings,Strings,NumStrings*sizeof(unsigned char *));
+		objlist_clear(NewStrings+NumStrings,(NewNumStrings-NumStrings));
+		objlist_copy(NewStrings,Strings,NumStrings);
 		delete []Strings;
 		Strings = NewStrings;
 		NumStrings = NewNumStrings;

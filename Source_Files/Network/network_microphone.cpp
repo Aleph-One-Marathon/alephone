@@ -336,7 +336,7 @@ static OSErr start_sound_recording(
 	void)
 {
 	/* This is a first time start recording.. */
-	memset(&net_microphone.param_block, 0, sizeof(struct SPB));
+	obj_clear(net_microphone.param_block);
 
 	net_microphone.param_block.inRefNum= net_microphone.refnum;
 	net_microphone.param_block.count= NETWORK_SOUND_CHUNK_BUFFER_SIZE;

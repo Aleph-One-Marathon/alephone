@@ -95,7 +95,7 @@ short flood_map(
 	if (first_polygon_index!=NONE)
 	{
 		/* clear the visited polygon array */
-		memset(visited_polygons, NONE, sizeof(short)*MAXIMUM_POLYGONS_PER_MAP);
+		objlist_set(visited_polygons, NONE, MAXIMUM_POLYGONS_PER_MAP);
 		
 		node_count= 0;
 		last_node_index_expanded= NONE;

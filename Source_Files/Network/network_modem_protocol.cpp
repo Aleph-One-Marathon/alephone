@@ -388,7 +388,7 @@ boolean ModemEnter(
 				status->sequence= 0;
 				modemState= netDown;
 #ifdef DEBUG_NET
-				memset(&modem_stats, 0, sizeof(modem_stats));
+				obj_clear(modem_stats);
 	#ifdef STREAM_NET
 				open_stream_file();
 	#endif
@@ -613,7 +613,7 @@ boolean ModemGatherPlayer(
 				topology->nextIdentifier+= 1;
 
 				/* Copy in the player data */
-				memcpy(topology->players+topology->player_count, &accept_packet->player, sizeof(ModemPlayer));
+				obj_copy(topology->players[topology->player_count], accept_packet->player);
 			
 				/* successfully added a player */
 				topology->player_count+= 1;
@@ -920,9 +920,8 @@ short ModemUpdateJoinState(
 								
 								/* Confirm. */
 								accept_packet->accepted= TRUE;
-								memcpy(&accept_packet->player, 
-									topology->players+status->localPlayerIndex, 
-									sizeof(ModemPlayer));
+								obj_copy(accept_packet->player, 
+									topology->players[status->localPlayerIndex]);
 							}
 	
 							/* Note we don't retry here... */
@@ -2059,14 +2058,12 @@ void ModemLookupInformation(
 
 	if(address)
 	{
-		memcpy(address, &lookup_data->entities[index].address,
-			sizeof(AddrBlock));
+		obj_copy(*address, lookup_data->entities[index].address);
 	}
 	
 	if(entity)
 	{
-		memcpy(entity, &lookup_data->entities[index].entity,
-			sizeof(EntityName));
+		obj_copy(*entity, lookup_data->entities[index].entity);
 	}
 	
 	return;
@@ -2101,7 +2098,7 @@ void ModemLookupUpdate(
 			AddrBlock address; /* Unused, so doesn't ever get initialized.. */
 	
 	// dprintf("Got lookup response!");
-			memset(&address, 0, sizeof(AddrBlock));
+			obj_clear(address);
 			
 			if (lookup_data->lookupFilterProc == NULL || lookup_data->lookupFilterProc(&response_packet->entity, &address))
 			{
@@ -2111,10 +2108,8 @@ void ModemLookupUpdate(
 				insertion_point= lookup_data->lookup_count++;
 	
 				/* Stuff into our array... */
-				memcpy(&lookup_data->entities[insertion_point].entity, &response_packet->entity,
-					sizeof(EntityName));
-				memcpy(&lookup_data->entities[insertion_point].address, &address,
-					sizeof(AddrBlock));
+				obj_copy(lookup_data->entities[insertion_point].entity, response_packet->entity);
+				obj_copy(lookup_data->entities[insertion_point].address, address);
 	
 				/* only tell the caller we inserted the new entry after weÕre ready to handle
 					him asking us about it */

@@ -209,7 +209,7 @@ short new_path(
 			short last_polygon_index;
 
 //#ifdef DEBUG
-			memset(path, 0x80, sizeof(struct path_definition));
+			obj_set(*path, 0x80);
 //#endif
 			
 			path->step_count= step_count>MAXIMUM_POINTS_PER_PATH ? MAXIMUM_POINTS_PER_PATH : step_count;
@@ -235,7 +235,7 @@ short new_path(
 #ifdef VERIFY_PATH_SYNC
 			if (path_run_count==1)
 			{
-				memcpy(path_validation_area+path_validation_area_index, path->points, sizeof(world_point2d)*path->step_count);
+				objlist_copy(path_validation_area+path_validation_area_index, path->points, path->step_count);
 				path_validation_area_index+= sizeof(world_point2d)*path->step_count;
 				assert(path_validation_area_index<PATH_VALIDATION_AREA_SIZE);
 			}

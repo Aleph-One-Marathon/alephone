@@ -285,7 +285,7 @@ short new_monster(
 					struct object_data *object= get_object_data(object_index);
 
 					/* not doing this in !DEBUG resulted in sync errors; mmm... random data, so tasty */
-					memset(monster, 0x80, sizeof(struct monster_data));
+					obj_set(*monster, 0x80);
 	
 					if (location->flags&_map_object_is_blind) flags|= _monster_is_blind;
 					if (location->flags&_map_object_is_deaf) flags|= _monster_is_deaf;

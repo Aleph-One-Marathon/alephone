@@ -108,7 +108,7 @@ void initialize_player_physics_variables(
 	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, 0);
 
 //#ifdef DEBUG
-	memset(variables, 0x80, sizeof(struct physics_variables));
+	obj_set(*variables, 0x80);
 //#endif
 	
 	variables->head_direction= 0;

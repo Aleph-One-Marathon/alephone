@@ -62,12 +62,12 @@ void load_placement_data(
 	memset(object_placement_info, 0, sizeof(object_placement_info));
 
 	/* Copy them in */
-	memcpy(monster_placement_info, monsters, 12 * MAXIMUM_OBJECT_TYPES);
-	byte_swap_data(monster_placement_info, 12, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
-	memcpy(item_placement_info, items, 12 * MAXIMUM_OBJECT_TYPES);
-	byte_swap_data(item_placement_info, 12, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
+	objlist_copy(monster_placement_info, monsters, MAXIMUM_OBJECT_TYPES);
+	byte_swap_object_list(monster_placement_info, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
+	objlist_copy(item_placement_info, items, MAXIMUM_OBJECT_TYPES);
+	byte_swap_object_list(item_placement_info, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
 
-	memset(monster_placement_info, 0, 12);
+	obj_clear(*monster_placement_info);
 
 #ifdef DEBUG
 	{
@@ -495,7 +495,7 @@ static void add_objects(
 	flags = (object_class == _object_is_monster) ? (monster_placement_info+object_type)->flags : (item_placement_info+object_type)->flags;
 	for (i = 0; i < count; i++)
 	{
-		memset(&location, 0, sizeof(struct object_location));
+		obj_clear(location);
 		location.polygon_index= NONE; /* This is unnecessary, but for psychological benefits.. */
 		
 		need_random_location= FALSE;
