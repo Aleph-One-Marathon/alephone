@@ -966,25 +966,31 @@ void process_player_powerup(
 	}
 		
 	else if (item_index == Powerup_TripleEnergy)
+	{
 		if (player->suit_energy<3*PLAYER_MAXIMUM_SUIT_ENERGY)
 		{
 			player->suit_energy= 3*PLAYER_MAXIMUM_SUIT_ENERGY;
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
+	}
 		
 	else if (item_index == Powerup_DoubleEnergy)
+	{
 		if (player->suit_energy<2*PLAYER_MAXIMUM_SUIT_ENERGY)
 		{
 			player->suit_energy= 2*PLAYER_MAXIMUM_SUIT_ENERGY;
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
+	}
 		
 	else if (item_index == Powerup_Energy)
+	{
 		if (player->suit_energy<1*PLAYER_MAXIMUM_SUIT_ENERGY)
 		{
 			player->suit_energy= 1*PLAYER_MAXIMUM_SUIT_ENERGY;
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
+	}
 		
 	else if (item_index == Powerup_Oxygen)
 	{
