@@ -1033,10 +1033,10 @@ void render_screen(
 					GDHandle old_device;
 					CGrafPtr old_port, curPort;
 #ifdef HAVE_CORE_GRAPHICS  
-                    curPort = port;
-#else
-                    curPort = world_pixels;
+                    if (screen_mode.acceleration == _no_acceleration)
+                    curPort = port; else 
 #endif
+                    curPort = world_pixels;
 					myGetGWorld(&old_port, &old_device);
 					mySetGWorld(curPort, (GDHandle) NULL);
 					RGBColor SavedColor;
@@ -1116,32 +1116,39 @@ void render_screen(
         else
                 OGL_HUDActive = false;
 #ifdef HAVE_CORE_GRAPHICS
-        LockPortBits(port);
+        if (screen_mode.acceleration == _no_acceleration) LockPortBits(port);
 #endif
         render_view(world_view, world_pixels_structure);
 #ifdef HAVE_CORE_GRAPHICS
-        UnlockPortBits(port);
+        if (screen_mode.acceleration == _no_acceleration) UnlockPortBits(port);
 #endif
         switch (screen_mode.acceleration)
         {
 		// LP change: OpenGL acceleration included with no acceleration here
-		case _opengl_acceleration:
-		case _no_acceleration:
 #ifdef HAVE_CORE_GRAPHICS
+		case _no_acceleration:
             LockPortBits(port);
             update_fps_display(port, ViewRect.left - ScreenRect.left,world_view->screen_height+ViewRect.top - ScreenRect.top);
             if (!world_view->terminal_mode_active)
 				DisplayPosition(port);
             DisplayMessages(port,ViewRect.left - ScreenRect.left,ViewRect.top - ScreenRect.top);
             UnlockPortBits(port);
+            goto blah;
 #else
+        case _opengl_acceleration:
+        case _no_acceleration:
+#endif
 			update_fps_display((GrafPtr)world_pixels,-1,-1);
             if (!world_view->terminal_mode_active)
 				DisplayPosition((GrafPtr)world_pixels);
             DisplayMessages((GrafPtr)world_pixels,0,0);
-#endif
 			// LP additions: display position and messages and show crosshairs
+#ifdef HAVE_CORE_GRAPHICS
+		case _opengl_acceleration:
 
+            blah:
+            ;
+#endif
 			
 			// Don't show the crosshairs when either the overhead map or the terminal is active
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
@@ -1173,8 +1180,13 @@ void render_screen(
 				// Paint onto the back buffer, so that it will be copied frontward properly
 //#if defined(USE_CARBON_ACCESSORS)
 				Rect portRect;
-				GetPortBounds(world_pixels, &portRect);
-				OGL_Copy2D(world_pixels, portRect, portRect,true,false);
+#ifdef HAVE_CORE_GRAPHICS
+                if (screen_mode.acceleration == _no_acceleration) {
+                GetPortBounds(port, &portRect);
+                OGL_Copy2D(port, portRect, portRect,true,false);} else
+#endif
+                {GetPortBounds(world_pixels, &portRect);
+                OGL_Copy2D(world_pixels, portRect, portRect,true,false);}
 /*
 #else
 				OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,true,false);
@@ -1375,6 +1387,7 @@ void render_computer_interface(
 
 	GetGWorld(&old_gworld, &old_device);
 #ifdef HAVE_CORE_GRAPHICS
+    if (screen_mode.acceleration == _no_acceleration) {
     CGrafPtr port = GetWindowPort(screen_window);
     SetGWorld(port, (GDHandle) NULL);
     
@@ -1382,8 +1395,9 @@ void render_computer_interface(
 	data.right = updateRect.right;
 	data.top = updateRect.top;
 	data.bottom = updateRect.bottom;
-#else
-
+    } else
+#endif
+    {
 	SetGWorld(world_pixels, (GDHandle) NULL);
 	Rect WPRect;
 	GetPortBounds(world_pixels, &WPRect);
@@ -1392,7 +1406,7 @@ void render_computer_interface(
 	data.right = WPRect.right;
 	data.top = WPRect.top;
 	data.bottom = WPRect.bottom;
-#endif
+    }
     data.vertical_offset = 0;
 
 	/*
@@ -1439,6 +1453,8 @@ void render_overhead_map(
 
 	GetGWorld(&old_gworld, &old_device);
 #ifdef HAVE_CORE_GRAPHICS
+    if (screen_mode.acceleration == _no_acceleration)
+    {
     CGrafPtr port = GetWindowPort(screen_window);
     Rect ScreenRect;
     SetGWorld(port, (GDHandle) NULL);
@@ -1449,7 +1465,9 @@ void render_overhead_map(
 	overhead_data.top = updateRect.top;
 	overhead_data.half_width = (overhead_data.width = RECTANGLE_WIDTH(&updateRect)) >> 1;
 	overhead_data.half_height = (overhead_data.height = RECTANGLE_HEIGHT(&updateRect)) >> 1;
-#else
+    } else
+#endif
+    {
 	SetGWorld(world_pixels, (GDHandle) NULL);
 	
 	Rect WPRect;
@@ -1460,7 +1478,7 @@ void render_overhead_map(
 	overhead_data.top = WPRect.top;
 	overhead_data.half_width = (overhead_data.width = RECTANGLE_WIDTH(&WPRect)) >> 1;
 	overhead_data.half_height = (overhead_data.height = RECTANGLE_HEIGHT(&WPRect)) >> 1;
-#endif
+    }
 
 	overhead_data.scale= view->overhead_map_scale;
 	overhead_data.mode= _rendering_game_map;
@@ -1979,7 +1997,7 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 {
 	if (hi_rez)
 	{
-#if defined(__APPLE__) && defined(__MACH__)
+#ifdef HAVE_CORE_GRAPHICS
 	/*    PixMapHandle screen_pixels = (*world_device)->gdPMap;
 	    PixMapHandle world_pixelspm = GetGWorldPixMap(world_pixels);
 	    Rect newDst, screenRect;
@@ -2046,13 +2064,19 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 		struct copy_screen_data data;
 		short source_rowBytes, destination_rowBytes, source_width, destination_width;
 		PixMapHandle screen_pixmap= (*world_device)->gdPMap;
-		
+#ifdef HAVE_CORE_GRAPHICS
+        source_rowBytes= (*myGetGWorldPixMap(GetWindowPort(screen_window)))->rowBytes&0x3fff;
+#else
 		source_rowBytes= (*myGetGWorldPixMap(world_pixels))->rowBytes&0x3fff;
+#endif
 		destination_rowBytes= (*screen_pixmap)->rowBytes&0x3fff;
 		source_width= RECTANGLE_WIDTH(&source);
 		destination_width= RECTANGLE_WIDTH(&destination);
-		
+#ifdef HAVE_CORE_GRAPHICS
+        data.source= (unsigned char *)myGetPixBaseAddr(GetWindowPort(screen_window));
+#else
 		data.source= (unsigned char *)myGetPixBaseAddr(world_pixels);
+#endif
 		data.source_slop= source_rowBytes-source_width*pelsize;
 		
 //#if defined(USE_CARBON_ACCESSORS)
