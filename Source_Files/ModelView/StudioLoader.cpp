@@ -36,6 +36,9 @@
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
+#ifdef __WIN32__
+#include <windows.h>
+#endif
 
 #include "StudioLoader.h"
 

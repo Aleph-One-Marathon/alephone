@@ -27,6 +27,10 @@
 
 #include "HUDRenderer_SW.h"
 
+#if defined(__WIN32__) || defined(__MINGW32__)
+#undef DrawText
+#endif
+
 extern bool MotionSensorActive;
 
 

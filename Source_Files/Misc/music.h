@@ -38,6 +38,13 @@ enum { // All of our songs.
 	NUMBER_OF_SONGS
 };
 
+#ifdef WIN32
+// We need to process window events to find out about media events. 
+#   define WM_DSHOW_GRAPH_NOTIFY (WM_APP+1)
+
+void process_music_event_win32(const SDL_Event& event); // in sound_sdl.cpp
+#endif
+
 // All this is for the introduction/ending song file
 
 bool initialize_music_handler(FileSpecifier& SongFile);
@@ -56,5 +63,8 @@ void fade_out_music(short duration);
 
 // LP: this is so that a level can have some music loaded when it starts running
 void PreloadLevelMusic();
+#ifdef WIN32
+void StopLevelMusic();
+#endif
 
 #endif

@@ -98,6 +98,8 @@ void free_and_unlock_memory(void);
 #include <windows.h>
 #endif
 
+#include "SDL_syswm.h"
+
 // Data directories
 vector<DirectorySpecifier> data_search_path;	// List of directories in which data files are searched for
 DirectorySpecifier local_data_dir;		// Local (per-user) data file directory
@@ -1155,6 +1157,21 @@ static void process_game_key(const SDL_Event &event)
 	}
 }
 
+static void process_system_event(const SDL_Event &event) 
+{
+    // In order to get music in Windows, we need to process
+    // system events. DirectShow notifies about events through
+    // window messages. 
+#ifdef WIN32
+    switch (event.syswm.msg->msg) {
+        case WM_DSHOW_GRAPH_NOTIFY: 
+            process_music_event_win32(event); 
+            break; 
+    }
+
+#endif
+}
+
 static void process_event(const SDL_Event &event)
 {
 	switch (event.type) {
@@ -1165,6 +1182,10 @@ static void process_event(const SDL_Event &event)
 		case SDL_KEYDOWN:
 			process_game_key(event);
 			break;
+
+        case SDL_SYSWMEVENT:
+            process_system_event(event); 
+            break; 
 
 		case SDL_QUIT:
 			set_game_state(_quit_game);
@@ -1227,3 +1248,12 @@ void dump_screen(void)
 	SDL_FreeSurface(t);
 #endif
 }
+
+
+// from shell.cpp -- ???
+void PlayInterfaceButtonSound(short SoundID)
+{
+	if (TEST_FLAG(input_preferences->modifiers,_inputmod_use_button_sounds))
+		play_sound(SoundID, (world_location3d *) NULL, NONE);
+}
+

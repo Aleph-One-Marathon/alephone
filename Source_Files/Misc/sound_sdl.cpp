@@ -30,7 +30,7 @@
 // Unlike the Mac version, we also do the music handling here
 #include "music.h"
 #include "song_definitions.h"
-
+#include "XML_LevelScript.h"   // For getting level music. 
 
 // Number of sound channels used by Aleph One sound manager
 const int SM_SOUND_CHANNELS = MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHANNELS;
@@ -95,6 +95,17 @@ static uint32 music_fade_duration;		// Music fade duration in ticks
 const int MUSIC_BUFFER_SIZE = 0x40000;
 static uint8 music_buffer[MUSIC_BUFFER_SIZE];
 
+// Win32 music support. 
+#ifdef WIN32
+#include <dshow.h>
+#include "SDL_syswm.h"
+
+static bool directshow_initialized = false; 
+static IGraphBuilder* gp_graph_builder = NULL; 
+static IMediaControl* gp_media_control = NULL;
+static IMediaSeeking* gp_media_seeking = NULL;
+static IMediaEventEx* gp_media_event_ex = NULL;
+#endif
 
 // From FileHandler_SDL.cpp
 extern void get_default_sounds_spec(FileSpecifier &file);
@@ -760,7 +771,100 @@ void music_idle_proc(void)
 
 void PreloadLevelMusic(void)
 {
+#ifdef WIN32
+
+    CoInitialize(NULL);
+    SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
+
+    // Create an IGraphBuilder object, through which 
+    //  we will create a DirectShow graph.
+    CoCreateInstance(CLSID_FilterGraph, NULL,
+                     CLSCTX_INPROC, IID_IGraphBuilder,
+                     (void **)&gp_graph_builder);
+    // Get the IMediaControl Interface
+    gp_graph_builder->QueryInterface(IID_IMediaControl,
+                                 (void **)&gp_media_control);
+   // Get the IMediaSeeking Interface
+    gp_graph_builder->QueryInterface(IID_IMediaSeeking,
+                                 (void **)&gp_media_seeking);
+    // Get the IMediaEventEx Interface
+    gp_graph_builder->QueryInterface(IID_IMediaEventEx,
+                                 (void **)&gp_media_event_ex);
+
+    // Set the event window. 
+    SDL_SysWMinfo wmi; 
+    SDL_VERSION(&wmi.version); 
+    SDL_GetWMInfo(&wmi); 
+    gp_media_event_ex->SetNotifyWindow((OAHWND)wmi.window, WM_DSHOW_GRAPH_NOTIFY, 0);
+
+    gp_media_control->Stop(); 
+
+	FileSpecifier* level_song_file = GetLevelMusic();
+    if (level_song_file) {
+        char level_song_name[_MAX_PATH];
+        WCHAR wlevel_song_name[_MAX_PATH]; 
+
+        strcpy(level_song_name, level_song_file->GetPath());
+
+        MultiByteToWideChar(CP_ACP, 0, level_song_name, -1, 
+                            wlevel_song_name, _MAX_PATH); 
+
+        fwprintf(stderr, L"Starting music (%s)...", wlevel_song_name); 
+        gp_graph_builder->RenderFile(wlevel_song_name, NULL);
+
+        gp_media_control->Run();
+    }
+#endif
 }
+
+#ifdef WIN32
+void StopLevelMusic(void)
+{
+    // Release everything.        
+    if (gp_media_control) {
+        gp_media_control->Stop();        
+        gp_media_control->Release();  gp_media_control = NULL;
+    }
+
+    if (gp_media_event_ex) {
+        gp_media_event_ex->Release(); gp_media_event_ex = NULL;
+    }
+
+    if (gp_media_seeking) {
+        gp_media_seeking->Release();  gp_media_seeking = NULL;
+    }
+
+    if (gp_graph_builder) {
+        gp_graph_builder->Release();  gp_graph_builder = NULL;
+    }
+
+    CoUninitialize();
+}
+
+void process_music_event_win32(const SDL_Event& event)
+{
+    long evCode, param1, param2;
+    HRESULT hr;
+
+    if (gp_media_event_ex == NULL)
+        return;
+    
+    // We must restart the music if it stops playing.
+    while (hr = gp_media_event_ex->GetEvent(&evCode, &param1, &param2, 0), SUCCEEDED(hr)) {
+        hr = gp_media_event_ex->FreeEventParams(evCode, param1, param2);
+        if ((EC_COMPLETE == evCode) || (EC_USERABORT == evCode)) { 
+
+   		// Re-seek the graph to the beginning
+	   		LONGLONG llPos = 0;
+   			gp_media_seeking->SetPositions(&llPos, AM_SEEKING_AbsolutePositioning,
+      								   &llPos, AM_SEEKING_NoPositioning);
+
+            gp_media_control->Run(); 
+            break;
+        } 
+    }
+ }
+#endif
 
 
 /*

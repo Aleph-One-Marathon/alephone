@@ -23,11 +23,19 @@
 */
 
 #include <string.h>
+#ifndef __WIN32__
 #include <alloca.h>
+#else
+#include <malloc.h>
+#endif
 
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
+
+#ifdef __WIN32__
+#include <windows.h>
+#endif
 
 #include "ModelRenderer.h"
 

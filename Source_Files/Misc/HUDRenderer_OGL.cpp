@@ -48,7 +48,7 @@
 
 #include <math.h>
 
-#if defined(__WIN32__) && defined(__MINGW32__)
+#if defined(__WIN32__) || defined(__MINGW32__)
 #undef DrawText
 #endif
 

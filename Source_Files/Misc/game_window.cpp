@@ -57,6 +57,10 @@ Jul 16, 2001 (Loren Petrich):
 
 #include "cseries.h"
 
+#ifdef __WIN32__
+#include <windows.h>
+#endif
+
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
 #  include <OpenGL/gl.h>

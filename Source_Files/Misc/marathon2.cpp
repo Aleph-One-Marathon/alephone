@@ -64,6 +64,7 @@ Aug 10, 2000 (Loren Petrich):
 #include "platforms.h"
 #include "lightsource.h"
 #include "media.h"
+#include "music.h"
 #include "fades.h"
 #include "items.h"
 #include "weapons.h"
@@ -238,6 +239,11 @@ void leaving_map(
 	/* stop counting world ticks */
 //	set_keyboard_controller_status(false);
 
+#ifdef WIN32
+    // Hackish. Should probably be in stop_all_sounds(), but that just
+    // doesn't work out. 
+    StopLevelMusic(); 
+#endif
 	stop_all_sounds();
 
 	return;

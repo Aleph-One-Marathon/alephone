@@ -1131,6 +1131,9 @@ static void transfer_to_new_level(
 
 	if(success)
 	{
+#ifdef WIN32
+		StopLevelMusic();
+#endif
 		set_keyboard_controller_status(false);
 		FindLevelMovie(entry.level_number);
 		show_movie(entry.level_number);

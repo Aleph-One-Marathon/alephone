@@ -137,7 +137,7 @@ void _fill_screen_rectangle(screen_rectangle *rectangle, short color_index);
 	
 screen_rectangle *get_interface_rectangle(short index);
 const rgb_color &get_interface_color(short index);
-class FontSpecifier;
+struct FontSpecifier;
 FontSpecifier &get_interface_font(short index);
 
 short _get_font_line_height(short font_index);
