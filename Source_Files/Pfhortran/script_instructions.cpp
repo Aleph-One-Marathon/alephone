@@ -109,7 +109,6 @@ extern struct view_data *world_view;
 extern bool ready_weapon(short player_index, short weapon_index);
 extern void draw_panels(void);
 extern struct monster_data *get_monster_data(short monster_index);
-extern void IncrementHeartbeat();
 
 // ML addition: to use possible_intersecting_monsters
 static vector<short> IntersectedObjects;
@@ -157,7 +156,6 @@ short roll_count;
 bool s_camera_Control;
 short old_size = _640_320_HUD;
 void (*instruction_lookup[NUMBER_OF_INSTRUCTIONS])(script_instruction);
-bool pfhortran_controls_player = false;
 
 /* function prototypes */
 
@@ -267,6 +265,11 @@ void s_Set_UnderFog_Presence(script_instruction inst);
 void s_Remove_Item(script_instruction inst);
 void s_Player_Control(script_instruction inst);
 void s_Play_Sound(script_instruction inst);
+void s_Display_Message(script_instruction inst);
+void s_Monster_Get_Action(script_instruction inst);
+void s_Monster_Get_Mode(script_instruction inst);
+void s_Monster_Get_Vitality(script_instruction inst);
+void s_Monster_Set_Vitality(script_instruction inst);
 
 /*-------------------------------------------*/
 
@@ -401,6 +404,11 @@ void init_instructions(void)
 	instruction_lookup[Remove_Item] = s_Remove_Item;
 	instruction_lookup[Player_Control] = s_Player_Control;
 	instruction_lookup[Play_Sound] = s_Play_Sound;
+	instruction_lookup[Display_Message] = s_Display_Message;
+	instruction_lookup[Monster_Get_Action] = s_Monster_Get_Action;
+	instruction_lookup[Monster_Get_Mode] = s_Monster_Get_Mode;
+	instruction_lookup[Monster_Get_Vitality] = s_Monster_Get_Vitality;
+	instruction_lookup[Monster_Set_Vitality] = s_Monster_Set_Vitality;
 }
 
 // Suppressed for MSVC compatibility
@@ -3278,7 +3286,7 @@ void s_Player_Control(script_instruction inst)
 	// op1 : move type
 	// op2 : how many times
 	uint32 action_flags = -1;
-	short move_type = 0;
+	short move_type = -1;
 	int value = 0;
 	
 	switch(inst.mode)
@@ -3364,11 +3372,11 @@ void s_Player_Control(script_instruction inst)
 		break;
 		
 		case 11: // start using pfhortran_action_queue
-			pfhortran_controls_player = true;
+			SET_PLAYER_IS_PFHORTRAN_CONTROLLED_STATUS(local_player, true);
 		break;
 		
 		case 12: // stop using pfhortran_action_queue
-			pfhortran_controls_player = false;
+			SET_PLAYER_IS_PFHORTRAN_CONTROLLED_STATUS(local_player, false);
 		break;
 		
 		case 13: // reset pfhortran_action_queue
@@ -3389,4 +3397,125 @@ void s_Player_Control(script_instruction inst)
 void s_Display_Message(script_instruction inst)
 {
 	screen_printf("%hd: %f %f %f",inst.mode,inst.op1,inst.op2,inst.op3);
+}
+
+void s_Monster_Get_Action(script_instruction inst)
+{
+	short monster_index;
+	struct monster_data *theMonster;
+	
+	switch(inst.mode)
+	{
+		case 2:
+			monster_index = int(inst.op1);
+			break;
+		
+		case 3:
+			monster_index = int(get_variable(inst.op1));
+			break;
+		
+		default:
+			return;
+	}
+	
+	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+	
+	if (SLOT_IS_USED(theMonster))
+	{
+		set_variable(int(inst.op2), theMonster->action);
+	}
+}
+
+void s_Monster_Get_Mode(script_instruction inst)
+{
+	short monster_index;
+	struct monster_data *theMonster;
+	
+	switch(inst.mode)
+	{
+		case 2:
+			monster_index = int(inst.op1);
+			break;
+		
+		case 3:
+			monster_index = int(get_variable(inst.op1));
+			break;
+		
+		default:
+			return;
+	}
+	
+	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+	
+	if (SLOT_IS_USED(theMonster))
+	{
+		set_variable(int(inst.op2), theMonster->mode);
+	}
+}
+
+void s_Monster_Get_Vitality(script_instruction inst)
+{
+	short monster_index;
+	struct monster_data *theMonster;
+	
+	switch(inst.mode)
+	{
+		case 2:
+			monster_index = int(inst.op1);
+			break;
+		
+		case 3:
+			monster_index = int(get_variable(inst.op1));
+			break;
+		
+		default:
+			return;
+	}
+	
+	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+	
+	if (SLOT_IS_USED(theMonster))
+	{
+		set_variable(int(inst.op2), theMonster->vitality);
+	}
+}
+
+void s_Monster_Set_Vitality(script_instruction inst)
+{
+	short monster_index;
+	struct monster_data *theMonster;
+	short vitality;
+	
+	switch(inst.mode)
+	{
+		case 0:
+			monster_index = int(inst.op1);
+			vitality = int(inst.op2);
+			break;
+		
+		case 1:
+			monster_index = int(get_variable(inst.op1));
+			vitality = int(inst.op2);
+			break;
+		
+		case 2:
+			monster_index = int(inst.op1);
+			vitality = int(get_variable(inst.op1));
+			break;
+		
+		case 3:
+			monster_index = int(get_variable(inst.op1));
+			vitality = int(get_variable(inst.op1));
+			break;
+		
+		default:
+			return;
+	}
+	
+	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+	
+	if (SLOT_IS_USED(theMonster))
+	{
+		theMonster->vitality = vitality;
+	}
 }

@@ -45,8 +45,6 @@
 #include "world.h"
 #include "ActionQueues.h"
 
-extern bool pfhortran_controls_player;
-
 static ActionQueues* sPfhortranActionQueues = NULL;
 ActionQueues* GetPfhortranActionQueues(void);
 
@@ -275,6 +273,16 @@ enum /* instruction defs */
 	Player_Control = 0x5B,
 	
 	Play_Sound = 0x5C,
+	
+	Display_Message = 0x5D,
+	
+	Monster_Get_Action = 0x5E,
+	
+	Monster_Get_Mode = 0x5F,
+	
+	Monster_Get_Vitality = 0x60,
+	
+	Monster_Set_Vitality = 0x61,
 	
 	NUMBER_OF_INSTRUCTIONS
 };
