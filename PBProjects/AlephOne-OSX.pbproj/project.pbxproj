@@ -195,7 +195,7 @@
 			);
 			buildSettings = {
 				DEBUGGING_SYMBOLS = NO;
-				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks /Users/astrange/Library/Frameworks";
+				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks";
 				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Library/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				LIBRARY_SEARCH_PATHS = "";
 				OPTIMIZATION_CFLAGS = "-O3";
@@ -297,7 +297,7 @@
 	<key>CFBundleVersion</key>
 	<string>0.13.0</string>
 	<key>NSMainNibFile</key>
-	<string>SDLMain.nib</string>
+	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>
@@ -447,7 +447,6 @@
 				F52214410136B78C01000001,
 				F5CADB5C0136D95E01000001,
 				F58BD22F01F7D34501F58C2F,
-				F5FDA0860200C03B013D663B,
 				F5FDA0880200C577013D663B,
 				F5FDA0890200C577013D663B,
 				F5FDA08A0200C577013D663B,
@@ -4107,6 +4106,9 @@
 			fileRef = F522139E0136AC1601000001;
 			isa = PBXBuildFile;
 			settings = {
+				ATTRIBUTES = (
+					Private,
+				);
 			};
 		};
 		F522143C0136B78C01000001 = {
@@ -7367,7 +7369,7 @@
 			refType = 2;
 		};
 		F5F50D780215DB5801144D54 = {
-			buildActionMask = 2147483647;
+			buildActionMask = 8;
 			files = (
 			);
 			generatedFileNames = (
@@ -7378,12 +7380,6 @@
 			);
 			shellPath = /bin/csh;
 			shellScript = "mkdir -p $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML\ncp $SRCROOT/../data/*.mml $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML/\ncp $SRCROOT/../data/Fonts $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/";
-		};
-		F5FDA0860200C03B013D663B = {
-			fileRef = 00F9DA4F00AC72F57F000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
 		};
 		F5FDA0870200C03B013D663B = {
 			fileRef = F522118F0136A6FD01000001;
