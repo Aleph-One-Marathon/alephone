@@ -143,9 +143,10 @@ short update_world(
 	for (i=0;i<time_elapsed;++i)
 	{
 		//CP Addition: Scripting handling stuff
-		if (script_in_use() /*&& instruction_finished()*/)
+		bool success = true;
+		if (script_in_use() && success /*&& instruction_finished()*/)
 		{
-			do_next_instruction();
+			success = do_next_instruction();
 		}
 		
 		update_lights();
