@@ -19,6 +19,9 @@
 
 June 13, 2001 (Loren Petrich): 
 	Added script-length output to script parser
+
+June 26, 2002 (Loren Petrich):
+	Got script_parser to store the parsed script in a STL vector 
 */
 
 
@@ -26,6 +29,7 @@ June 13, 2001 (Loren Petrich):
 #define _SCRIPT_PARSER_DEF
 
 #include "cstypes.h"
+#include <vector.h>
 
 // LP: added trap "load" for executing whenever a level is loaded;
 // "init" will be for starting a level, and not for loading a savegame
@@ -70,7 +74,7 @@ struct script_instruction
 bool init_pfhortran(void);
 void dispose_pfhortran(void);
 bool is_pfhortran_on(void);
-script_instruction *parse_script(char *input, int *length_ptr);
+void parse_script(char *input, vector<script_instruction>& instruction_list);
 
 void clear_bind_table(void);
 bind_table *get_bind_table(void);

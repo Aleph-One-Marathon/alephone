@@ -33,6 +33,9 @@ March 11, 2002 (Br'fin (Jeremy Parsons)):
 
 May 16, 2002 (Woody Zenfell):
     quick fix in comment-detection conditional (thanks msvc warning)
+
+June 26, 2002 (Loren Petrich):
+	Got script_parser to store the parsed script in a STL vector 
 */
 
 #include <stdio.h>
@@ -91,7 +94,6 @@ struct symbol_def
 	float val;
 	short mode;
 	struct symbol_def *next;
-
 };
 
 struct error_def
@@ -125,7 +127,7 @@ void dispose_pfhortran(void);
 /* Pfhortran Language Defination Init/Parsing Code
 
 This code opens up the Pfhortran Language Defination File and parses it so that 
-scripts can be parsed.  Each defination is added to the instruction_hash so that it can
+scripts can be parsed.  Each definition is added to the instruction_hash so that it can
 be identified later.  File manip is done with standard ansi C calls for compatability
 purposes.  These init/dispose functions are only called once at the application's startup
 and shutdown.
@@ -661,7 +663,7 @@ float evaluate_operand(char *input, short *mode)
 	
 }
 
-void add_error(error_def *error_log, short error, int offset)
+void add_error(vector<error_def>& error_log, short error, int offset)
 {
 	
 	error_log[error_count].error = error;
@@ -670,12 +672,14 @@ void add_error(error_def *error_log, short error, int offset)
 	error_count++;
 }
 
-void report_errors(error_def *error_log, int length)
+void report_errors(vector<error_def>& error_log)
 {
 	int x;
 	char error_string[64];
 	FileSpecifier FileSpec;
 	OpenedFile OFile;
+	
+	int length = error_log.size();
 	
 	if (error_count <= 0)
 		return;
@@ -745,29 +749,30 @@ void report_errors(error_def *error_log, int length)
 
 
 
-script_instruction *parse_script(char *input, int *length_ptr)
+void parse_script(char *input, vector<script_instruction>& instruction_list)
 {
 	bool done = false;
 	char current_line[256];
 	int offset = 0;
+	int line_count = 0;
 	//char **blats = NULL;
 	char blats[MAXBLATS][64];
 	
-	int line_count = 0;
-	// int total_lines;
-	script_instruction *instruction_list;
 	int mode;
 	short op1mode,op2mode,op3mode;
 	int var_count = 0;
 	float val;
 	
 	bool output_errors = false;
-	error_def *error_log=0;
-	
+	vector<error_def> error_log;
+		
 	init_hash();
 	clear_bind_table();
 	
 	error_count = 0;
+	
+	// Initially, no instructions to execute
+	instruction_list.clear();
 	
 	while (!done)
 	{
@@ -812,15 +817,10 @@ script_instruction *parse_script(char *input, int *length_ptr)
 	
 	done = false;
 	offset = 0;
-	
-	*length_ptr = line_count;
-	// total_lines = line_count;
-	
-	instruction_list = (script_instruction *)malloc(sizeof(script_instruction) * line_count);
-	error_log = (error_def *)malloc(sizeof(error_def) * line_count);
-	
-	memset(error_log,0,sizeof(error_def) * line_count);
-	
+		
+	instruction_list.resize(line_count);
+	error_log.resize(line_count);
+	objlist_clear(&error_log[0],line_count);
 	
 	line_count = 0;
 	
@@ -850,8 +850,6 @@ script_instruction *parse_script(char *input, int *length_ptr)
 				
 				if ((instruction_list[line_count].opcode = match_opcode(blats[1])) == 0)
 					add_error(error_log,kInvalid_Instruction,line_count);
-				
-				
 				
 				if ((instruction_list[line_count].op1 = evaluate_operand(blats[2], &op1mode)) != -32767)
 					if ((instruction_list[line_count].op2 = evaluate_operand(blats[3], &op2mode)) != -32767)
@@ -968,12 +966,9 @@ script_instruction *parse_script(char *input, int *length_ptr)
 	dispose_hash();
 	
 	if (output_errors)
-		report_errors(error_log, *length_ptr);
-		// report_errors(error_log, total_lines);
-	
-	free(error_log);
-	
-	return instruction_list;
-
+	{
+		report_errors(error_log);
+		// instruction_list.clear();
+	}
 }
 

@@ -156,7 +156,8 @@ int load_script(int text_id)
 		return script_TRUE;
 	}
 	
-	return load_script_data(TextRsrc.GetPointer(),TextRsrc.GetLength());
+	int errcode = load_script_data(TextRsrc.GetPointer(),TextRsrc.GetLength());
+	return errcode;
 }
 
 
@@ -185,15 +186,7 @@ int load_script_data(void *Data, int DataLen)
 	src[origlen] = 0;
 	
 	int parsed_script_length = 0;
-	script_instruction *parsed_script = parse_script(&src[0],&parsed_script_length);
-	if (parsed_script)
-	{
-		current_script.resize(parsed_script_length);
-		memcpy(&current_script[0],parsed_script,parsed_script_length*sizeof(script_instruction));
-		free(parsed_script);
-	}
-	else
-		current_script.clear();
+	parse_script(&src[0],current_script);
 	
 	current_instruction = 0;
 	/*instruction_decay = 0;*/
