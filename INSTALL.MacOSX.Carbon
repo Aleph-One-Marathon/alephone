@@ -105,6 +105,7 @@ Installing Speex:
 	cd into speex directory
 	setenv CFLAGS -O3
 	./configure --enable-shared=no
+	make
 	Make directory /Library/Application Support/Speex
 	Move speex-1.0 directory into /Library/Application Support/Speex
 
