@@ -1054,7 +1054,11 @@ bool XML_KeyParser::AttributesDone()
 	if (!(IsPresent[0]&&IsPresent[1])) return false;
 	
 	// Set the key value!
+#ifdef SDL
+	XML_KeySet[Index].offset = (SDLKey)Key;
+#else
 	XML_KeySet[Index].offset = Key;
+#endif
 	
 	return true;
 }
