@@ -785,9 +785,9 @@ static void	change_panel_state(
 #ifdef HAVE_LUA
                                 // Lua script hook
                                 if (player -> control_panel_side_index == panel_side_index)
-                                    L_Call_Start_Refuel (definition->_class, player_index);
+                                    L_Call_Start_Refuel (definition->_class, player_index, panel_side_index);
                                 else
-                                    L_Call_End_Refuel (definition->_class, player_index);
+                                    L_Call_End_Refuel (definition->_class, player_index, panel_side_index);
 #endif /* HAVE_LUA */
 			break;
 		case _panel_is_computer_terminal:
