@@ -175,10 +175,14 @@ ControlRef GetCtrlFromWindow(
 // Sets whether a control is active/enabled or inactive/disabled
 void SetControlActivity(ControlRef Ctrl, bool Activity);
 
-// All these are for getting and setting the text in editable text fields;
-// for static fields, get and set the text's "title"
+// All these are for getting and setting the text in static and editable text fields
 // Note that the getters all have some maximum length:
 //   the maximum number of characters that may be read in
+
+void GetStaticPascalText(ControlRef Ctrl, Str255 Text, int MaxLen = 255);
+void SetStaticPascalText(ControlRef Ctrl, ConstStr255Param Text);
+void GetStaticCText(ControlRef Ctrl, char *Text, int MaxLen = 255);
+void SetStaticCText(ControlRef Ctrl, const char *Text);
 
 void GetEditPascalText(ControlRef Ctrl, Str255 Text, int MaxLen = 255);
 void SetEditPascalText(ControlRef Ctrl, ConstStr255Param Text);

@@ -577,9 +577,67 @@ void SetControlActivity(ControlRef Ctrl, bool Activity)
 #endif
 }
 
+void GetStaticPascalText(ControlRef Ctrl, Str255 Text, int MaxLen)
+{
+	const int BufferLen = 255;
+	char Buffer[BufferLen];
+	Size ActualLen = 0;
+	
+	GetControlData(Ctrl,
+		kControlLabelPart,
+		kControlStaticTextTextTag,
+		BufferLen,
+		Buffer,
+		&ActualLen
+		);
+	
+	if (MaxLen < ActualLen) ActualLen = MaxLen;
+	Text[0] = ActualLen;
+	memcpy(Text+1,Buffer,ActualLen);
+}
+
+void SetStaticPascalText(ControlRef Ctrl, ConstStr255Param Text)
+{
+	SetControlData(Ctrl,
+		kControlLabelPart,
+		kControlStaticTextTextTag,
+		Text[0],
+		Text+1
+		);
+}
+
+void GetStaticCText(ControlRef Ctrl, char *Text, int MaxLen)
+{
+	const int BufferLen = 255;
+	char Buffer[BufferLen];
+	Size ActualLen = 0;
+	
+	GetControlData(Ctrl,
+		kControlLabelPart,
+		kControlStaticTextTextTag,
+		BufferLen,
+		Buffer,
+		&ActualLen
+		);
+	
+	if (MaxLen < ActualLen) ActualLen = MaxLen;
+	Text[ActualLen] = 0;
+	memcpy(Text,Buffer,ActualLen);
+}
+
+void SetStaticCText(ControlRef Ctrl, const char *Text)
+{
+	SetControlData(Ctrl,
+		kControlLabelPart,
+		kControlStaticTextTextTag,
+		strlen(Text),
+		Text
+		);
+}
+
 void GetEditPascalText(ControlRef Ctrl, Str255 Text, int MaxLen)
 {
-	const int BufferLen = 256;
+	const int BufferLen = 255;
 	char Buffer[BufferLen];
 	Size ActualLen = 0;
 	
@@ -608,7 +666,7 @@ void SetEditPascalText(ControlRef Ctrl, ConstStr255Param Text)
 
 void GetEditCText(ControlRef Ctrl, char *Text, int MaxLen)
 {
-	const int BufferLen = 256;
+	const int BufferLen = 255;
 	char Buffer[BufferLen];
 	Size ActualLen = 0;
 	
