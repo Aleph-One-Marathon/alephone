@@ -2064,7 +2064,7 @@ bool RenderModelSetup(rectangle_definition& RenderRectangle)
 		if (NumFrames > 0)
 		{
 			short ModelFrame = PIN(RenderRectangle.ModelFrame,0,NumFrames-1);
-			ModelPtr->Model.FindPositions(ModelSequence,ModelFrame);
+			ModelPtr->Model.FindPositions(true,ModelSequence,ModelFrame);
 		}
 		else
 			ModelPtr->Model.FindPositions(true);	// Fallback: neutral
