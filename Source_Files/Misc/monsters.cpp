@@ -3409,11 +3409,16 @@ static long nearest_goal_cost_function(
 void SetPlayerViewAttribs(int16 half_visual_arc, int16 half_vertical_visual_arc,
 	world_distance visual_range, world_distance dark_visual_range)
 {
+	// Added a modified version of AlexJS's changes: change only if necessary
 	monster_definition& PlayerAsMonster = monster_definitions[_monster_marine];
-	PlayerAsMonster.half_visual_arc = half_visual_arc;
-	PlayerAsMonster.half_vertical_visual_arc = half_vertical_visual_arc;
-	PlayerAsMonster.visual_range = visual_range;
-	PlayerAsMonster.dark_visual_range = dark_visual_range;
+	if (half_visual_arc > 0)
+		PlayerAsMonster.half_visual_arc = half_visual_arc;
+	if (half_vertical_visual_arc > 0)
+		PlayerAsMonster.half_vertical_visual_arc = half_vertical_visual_arc;
+	if (visual_range > 0)
+		PlayerAsMonster.visual_range = visual_range;
+	if (dark_visual_range > 0)
+		PlayerAsMonster.dark_visual_range = dark_visual_range;
 }
 
 

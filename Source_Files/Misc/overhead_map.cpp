@@ -123,7 +123,9 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 		{70*256, 90*256, 0},		// Sewage
 		{70*256, 90*256, 0},		// JjaroGoo
 		{137*256, 0, 137*256},		// PfhorSlime
-		{32768, 32768, 0}			// Hill
+		{32768, 32768, 0},			// Hill
+		{76*256, 27*256, 0},		// Minor Damage
+		{137*256, 0, 137*256}		// Major Damage
 	},
 	// Line definitions (color, 4 widths)
 	{
@@ -684,7 +686,7 @@ bool XML_OvhdMapParser::Start()
 	rgb_color *ColorPtr = Colors;
 	
 	rgb_color *PolyColorPtr = OvhdMap_ConfigData.polygon_colors;
-	for (int k=0; k<NUMBER_OF_POLYGON_COLORS; k++)
+	for (int k=0; k<NUMBER_OF_OLD_POLYGON_COLORS; k++)
 		*(ColorPtr++) = *(PolyColorPtr++);
 
 	line_definition *LineDefPtr = OvhdMap_ConfigData.line_definitions;
@@ -701,6 +703,9 @@ bool XML_OvhdMapParser::Start()
 	
 	*(ColorPtr++) = OvhdMap_ConfigData.map_name_data.color;
 	*(ColorPtr++) = OvhdMap_ConfigData.path_color;
+	
+	for (int k=NUMBER_OF_OLD_POLYGON_COLORS; k<NUMBER_OF_POLYGON_COLORS; k++)
+		*(ColorPtr++) = *(PolyColorPtr++);
 	
 	assert(ColorPtr == Colors + TOTAL_NUMBER_OF_COLORS);
 	
@@ -754,7 +759,7 @@ bool XML_OvhdMapParser::End()
 	rgb_color *ColorPtr = Colors;
 	
 	rgb_color *PolyColorPtr = OvhdMap_ConfigData.polygon_colors;
-	for (int k=0; k<NUMBER_OF_POLYGON_COLORS; k++)
+	for (int k=0; k<NUMBER_OF_OLD_POLYGON_COLORS; k++)
 		*(PolyColorPtr++) = *(ColorPtr++);
 
 	line_definition *LineDefPtr = OvhdMap_ConfigData.line_definitions;
@@ -771,7 +776,10 @@ bool XML_OvhdMapParser::End()
 	
 	OvhdMap_ConfigData.map_name_data.color = *(ColorPtr++);
 	OvhdMap_ConfigData.path_color = *(ColorPtr++);
-		
+	
+	for (int k=NUMBER_OF_OLD_POLYGON_COLORS; k<NUMBER_OF_POLYGON_COLORS; k++)
+		*(PolyColorPtr++) = *(ColorPtr++);
+	
 	assert(ColorPtr == Colors + TOTAL_NUMBER_OF_COLORS);
 	
 	// Copy out the fonts

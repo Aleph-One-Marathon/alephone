@@ -286,6 +286,10 @@ static short StrippedEnergy = PLAYER_MAXIMUM_SUIT_ENERGY/4;
 
 // Used in weapons.cpp: player can have guided missiles
 bool PlayerShotsGuided = false;
+short PlayerHalfVisualArc = QUARTER_CIRCLE/3;
+short PlayerHalfVertVisualArc = QUARTER_CIRCLE/3;
+float PlayerVisualRange = 31;
+float PlayerDarkVisualRange = 31;
 
 /* ---------- private prototypes */
 
@@ -390,8 +394,10 @@ short new_player(
 	SET_MONSTER_ACTIVE_STATUS(me,true);
 	
 	// LP: Fix the player physics so that guided missiles will work correctly
-	SetPlayerViewAttribs(QUARTER_CIRCLE,QUARTER_CIRCLE/3,31*WORLD_ONE,15*WORLD_ONE);
-		
+	SetPlayerViewAttribs(PlayerHalfVisualArc, PlayerHalfVertVisualArc,
+		short(WORLD_ONE*PlayerVisualRange+0.5),
+		short(WORLD_ONE*PlayerDarkVisualRange+0.5));
+	
 	return player_index;
 }
 
@@ -2666,6 +2672,22 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"guided") == 0)
 	{
 		return (ReadBooleanValue(Value,PlayerShotsGuided));
+	}
+	else if (strcmp(Tag,"half_visual_arc") == 0)
+	{
+		if (ReadNumericalValue(Value,"%hd",PlayerHalfVisualArc));
+	}
+	else if (strcmp(Tag,"half_vertical_visual_arc") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",PlayerHalfVertVisualArc));
+	}
+	else if (strcmp(Tag,"visual_range") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",PlayerVisualRange));
+	}
+	else if (strcmp(Tag,"dark_visual_range") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",PlayerDarkVisualRange));
 	}
 	UnrecognizedTag();
 	return false;

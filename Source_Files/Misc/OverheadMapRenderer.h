@@ -34,7 +34,11 @@ enum /* polygon colors */
 	_polygon_jjaro_color, 	// LP addition
 	_polygon_goo_color,		// LP: PfhorSlime moved down here
 	_polygon_hill_color,
-	NUMBER_OF_POLYGON_COLORS
+	_polygon_minor_ouch_color,	// LP, AlexJS: these two added for M1 compatibility
+	_polygon_major_ouch_color,
+	NUMBER_OF_POLYGON_COLORS,
+	// For backwards compatibility: all those before the "ouch" colors
+	NUMBER_OF_OLD_POLYGON_COLORS = _polygon_hill_color + 1
 };
 
 enum /* line colors */

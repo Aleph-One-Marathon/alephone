@@ -590,14 +590,6 @@ bool FileSpecifier::ReadDialog(int Type, char *Prompt)
 	return true;
 }
 
-// Haven't been able to find his in the CodeWarrior 6 headers
-// Thomas Herzog: This causes illegal name overloading with Universal Interfaces >= 3.4
-#if UNIVERSAL_INTERFACES_VERSION < 0x0340
-	// Haven't been able to find his in the CodeWarrior 6 headers
- 	const int kNavDontConfirmReplacement = 0;
-#endif
-// const int kNavDontConfirmReplacement = 0;
-
 bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 {
 	// For those who use return as the action key, queued returns can cause unwanted saves
@@ -613,7 +605,7 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 		CString_ToFilename(Prompt,opts.message);
 	if (DefaultName)
 		CString_ToFilename(DefaultName,opts.savedFileName);
-	opts.dialogOptionFlags &= ~(kNavDontConfirmReplacement | kNavAllowStationery);
+	opts.dialogOptionFlags &= ~kNavAllowStationery;
 	
 	NavReplyRecord reply;
 	NavEventUPP evUPP= NewNavEventUPP(NavIdler);
@@ -767,7 +759,7 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 		CString_ToFilename(Prompt,opts.message);
 	if (DefaultName)
 		CString_ToFilename(DefaultName,opts.savedFileName);
-	opts.dialogOptionFlags &= ~(kNavDontConfirmReplacement | kNavAllowStationery);
+	opts.dialogOptionFlags &= ~kNavAllowStationery;
 	
 	NavReplyRecord reply;
 	NavEventUPP evUPP= NewNavEventUPP(NavIdler);

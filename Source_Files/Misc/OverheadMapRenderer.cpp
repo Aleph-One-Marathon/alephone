@@ -82,7 +82,18 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 				
 				switch (polygon->type)
 				{
-					case _polygon_is_platform: color= PLATFORM_IS_SECRET(get_platform_data(polygon->permutation)) ? _polygon_color : _polygon_platform_color; break;
+					case _polygon_is_platform:
+						color= PLATFORM_IS_SECRET(get_platform_data(polygon->permutation)) ?
+							_polygon_color : _polygon_platform_color;
+						break;
+					
+					case _polygon_is_minor_ouch:
+						color = _polygon_minor_ouch_color;
+						break;
+					
+					case _polygon_is_major_ouch:
+						color = _polygon_major_ouch_color;
+						break;
 					
 					default:
 						color= _polygon_color;
