@@ -247,7 +247,7 @@ struct color_table *calculate_picture_clut(
 		HNoPurge(resource);
 		
 		/* Allocate the space.. */
-		picture_table= (struct color_table *) malloc(sizeof(struct color_table));
+		picture_table= new color_table;
 		assert(picture_table);
 
 		if(interface_bit_depth==8)
@@ -270,7 +270,7 @@ struct color_table *build_8bit_system_color_table(
 	struct color_table *system_colors;
 	CTabHandle clut= GetCTable(8);
 	
-	system_colors= (struct color_table *) malloc(sizeof(struct color_table));
+	system_colors= new color_table;
 	assert(system_colors);
 	
 	build_color_table(system_colors, clut);
