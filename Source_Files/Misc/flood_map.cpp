@@ -72,7 +72,10 @@ static void add_node(short parent_node_index, short polygon_index, short depth, 
 void allocate_flood_map_memory(
 	void)
 {
+	// Made reentrant because this must be called every time a map is loaded
+	if (nodes) delete []nodes;
 	nodes= new node_data[MAXIMUM_FLOOD_NODES];
+	if (visited_polygons) delete []visited_polygons;
 	visited_polygons= new short[MAXIMUM_POLYGONS_PER_MAP];
 	assert(nodes&&visited_polygons);
 	

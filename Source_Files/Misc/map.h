@@ -50,10 +50,11 @@ Nov 19, 2000 (Loren Petrich):
 
 /* These arrays are the absolute limits, and are used only by the small memory allocating */
 /*  arrays.  */
-#define MAXIMUM_POLYGONS_PER_MAP (KILO)
-#define MAXIMUM_SIDES_PER_MAP (4*KILO)
-#define MAXIMUM_ENDPOINTS_PER_MAP (8*KILO)
-#define MAXIMUM_LINES_PER_MAP (4*KILO)
+// LP: these are now defined as sizes of dynamically-allocated arrays of these objects
+// #define MAXIMUM_POLYGONS_PER_MAP (KILO)
+// #define MAXIMUM_SIDES_PER_MAP (4*KILO)
+// #define MAXIMUM_ENDPOINTS_PER_MAP (8*KILO)
+// #define MAXIMUM_LINES_PER_MAP (4*KILO)
 #define MAXIMUM_LEVELS_PER_MAP (128)
 
 #define LEVEL_NAME_LENGTH (64+2)
@@ -910,15 +911,19 @@ extern vector<object_data> ObjectList;
 
 extern vector<endpoint_data> EndpointList;
 #define map_endpoints (&EndpointList[0])
+#define MAXIMUM_ENDPOINTS_PER_MAP (EndpointList.size())
 
 extern vector<line_data> LineList;
 #define map_lines (&LineList[0])
+#define MAXIMUM_LINES_PER_MAP (LineList.size())
 
 extern vector<side_data> SideList;
 #define map_sides (&SideList[0])
+#define MAXIMUM_SIDES_PER_MAP (SideList.size())
 
 extern vector<polygon_data> PolygonList;
 #define map_polygons (&PolygonList[0])
+#define MAXIMUM_POLYGONS_PER_MAP (PolygonList.size())
 
 // extern struct polygon_data *map_polygons;
 // extern struct side_data *map_sides;

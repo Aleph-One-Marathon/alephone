@@ -17,6 +17,7 @@ Feb 19, 2000 (Loren Petrich):
 #include "effects.h"
 #include "monsters.h"
 #include "projectiles.h"
+#include "flood_map.h"
 
 // Reasonable defaults;
 // the original ones are in []'s
@@ -112,6 +113,9 @@ bool XML_DynLimParser::End()
 	objlist_clear(projectiles,  ProjectileList.size());
 	objlist_clear(monsters,  MonsterList.size());
 	objlist_clear(objects,  ObjectList.size());
+	
+	// Resize the array of paths also
+	allocate_pathfinding_memory();
 	
 	return true;
 }

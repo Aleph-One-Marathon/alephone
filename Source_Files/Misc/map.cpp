@@ -194,7 +194,7 @@ struct map_memory_data {
 	long index;
 };
 
-static struct map_memory_data map_structure_memory;
+// static struct map_memory_data map_structure_memory;
 
 // LP addition: growable list of intersected objects
 static vector<short> IntersectedObjects;
@@ -231,8 +231,8 @@ void allocate_map_memory(
 	// medias= new media_data[MAXIMUM_MEDIAS_PER_MAP];
 	// assert(objects&&monsters&&effects&&projectiles&&lights&&medias);
 
-	obj_clear(map_structure_memory);
-	reallocate_map_structure_memory(DEFAULT_MAP_MEMORY_SIZE);
+	// obj_clear(map_structure_memory);
+	// reallocate_map_structure_memory(DEFAULT_MAP_MEMORY_SIZE);
 	
 	// platforms= new platform_data[MAXIMUM_PLATFORMS_PER_MAP];
 	// assert(platforms);
@@ -306,6 +306,7 @@ void initialize_map_for_new_level(
 	return;
 }
 
+#ifdef OBSOLETE
 void *get_map_structure_chunk(
 	long chunk_size)
 {
@@ -365,6 +366,7 @@ void reallocate_map_structure_memory(
 	
 	return;
 }
+#endif
 
 bool collection_in_environment(
 	short collection_code,

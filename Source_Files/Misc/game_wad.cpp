@@ -88,8 +88,9 @@ Nov 26, 2000 (Loren Petrich):
 #include "computer_interface.h" // for loading/saving terminal state.
 #include "images.h"
 
-// LP change: added chase-cam init
+// LP change: added chase-cam init and render allocation
 #include "ChaseCam.h"
+#include "render.h"
 
 // CP Addition:  scripting.h necessary for script loading
 // LP: now obsolete
@@ -844,11 +845,16 @@ void allocate_map_for_counts(
 	PolygonList.resize(polygon_count);
 	AutomapLineList.resize(automap_line_count);
 	AutomapPolygonList.resize(automap_polygon_count);
+	
 	// Map indexes: start off with none of them (of course),
 	// but reserve a size equal to the map index length
 	MapIndexList.clear();
 	MapIndexList.reserve(map_index_count);
 	dynamic_world->map_index_count= 0;
+	
+	// Stuff that needs the max number of polygons
+	allocate_render_memory();
+	allocate_flood_map_memory();
 	
 	return;
 }
@@ -860,7 +866,7 @@ void load_points(
 	short loop;
 	
 	// LP change: fixed off-by-one error
-	assert(count>=0 && count<=MAXIMUM_ENDPOINTS_PER_MAP);
+	// assert(count>=0 && count<=MAXIMUM_ENDPOINTS_PER_MAP);
 	// assert(count>=0 && count<MAXIMUM_ENDPOINTS_PER_MAP);
 	// OK to modify input-data pointer since it's called by value
 	for(loop=0; loop<count; ++loop)
@@ -876,7 +882,7 @@ void load_lines(
 	uint8 *lines, 
 	short count)
 {
-	assert(count>=0 && count<=MAXIMUM_LINES_PER_MAP);
+	// assert(count>=0 && count<=MAXIMUM_LINES_PER_MAP);
 	unpack_line_data(lines,map_lines,count);
 	dynamic_world->line_count= count;
 }
@@ -888,7 +894,7 @@ void load_sides(
 {
 	short loop;
 	
-	assert(count>=0 && count<=MAXIMUM_SIDES_PER_MAP);
+	// assert(count>=0 && count<=MAXIMUM_SIDES_PER_MAP);
 
 	unpack_side_data(sides,map_sides,count);
 
@@ -912,7 +918,7 @@ void load_polygons(
 {
 	short loop;
 
-	assert(count>=0 && count<=MAXIMUM_POLYGONS_PER_MAP);
+	// assert(count>=0 && count<=MAXIMUM_POLYGONS_PER_MAP);
 	
 	unpack_polygon_data(polys,map_polygons,count);
 	dynamic_world->polygon_count= count;
@@ -1341,7 +1347,7 @@ bool process_map_wad(
 		data= (uint8 *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
 		count= data_length/SIZEOF_endpoint_data;
 		assert(data_length == count*SIZEOF_endpoint_data);
-		assert(count>=0 && count<MAXIMUM_ENDPOINTS_PER_MAP);
+		// assert(count>=0 && count<MAXIMUM_ENDPOINTS_PER_MAP);
 
 		/* Slam! */
 		unpack_endpoint_data(data,map_endpoints,count);

@@ -88,9 +88,11 @@ void initialize_marathon(
 	
 	build_trig_tables();
 	allocate_map_memory();
-	allocate_render_memory();
+	// Rendering and flood-map done when starting a level,
+	// since they require map-geometry sizes
+	// allocate_render_memory();
 	allocate_pathfinding_memory();
-	allocate_flood_map_memory();
+	// allocate_flood_map_memory();
 	allocate_texture_tables();
 	initialize_weapon_manager();
 	initialize_game_window();

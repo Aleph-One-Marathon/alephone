@@ -69,9 +69,9 @@ struct path_definition /* 256 bytes */
 
 /* ---------- globals */
 
-static struct path_definition *paths;
+static struct path_definition *paths = NULL;
 
-static byte *path_validation_area;
+static byte *path_validation_area = NULL;
 static long path_validation_area_index;
 static short path_run_count;
 
@@ -85,10 +85,13 @@ static void calculate_midpoint_of_shared_line(short polygon1, short polygon2,
 void allocate_pathfinding_memory(
 	void)
 {
+	// Made reentrant because this is called every time MAXIMUM_PATHS is changed
+	if (paths) delete []paths;
 	paths= new path_definition[MAXIMUM_PATHS];
 	assert(paths);
 
 #ifdef VERIFY_PATH_SYNC
+	if (path_validation_area) delete []path_validation_area;
 	path_validation_area= new byte[PATH_VALIDATION_AREA_SIZE];
 	assert(path_validation_area);
 	path_run_count= 0;

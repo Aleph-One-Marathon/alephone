@@ -140,7 +140,9 @@ struct view_data
 
 #define TEST_RENDER_FLAG(index, flag) (render_flags[index]&(flag))
 #define SET_RENDER_FLAG(index, flag) render_flags[index]|= (flag)
-#define RENDER_FLAGS_BUFFER_SIZE (8*KILO)
+
+#define RENDER_FLAGS_BUFFER_SIZE MAX(MAX(MAXIMUM_ENDPOINTS_PER_MAP,MAXIMUM_LINES_PER_MAP),MAX(MAXIMUM_SIDES_PER_MAP,MAXIMUM_POLYGONS_PER_MAP))
+//#define RENDER_FLAGS_BUFFER_SIZE (8*KILO)
 enum /* render flags */
 {
 	_polygon_is_visible_bit, /* some part of this polygon is horizontally in the view cone */
@@ -163,7 +165,10 @@ enum /* render flags */
 
 /* ---------- globals */
 
-extern uint16 *render_flags;
+extern vector<uint16> RenderFlagList;
+#define render_flags (&RenderFlagList[0])
+
+// extern uint16 *render_flags;
 
 /* ---------- prototypes/RENDER.C */
 

@@ -255,8 +255,9 @@ whitespace results when two adjacent polygons are clipped to different vertical 
 // Not used for anything
 #define CLIP_INDEX_BUFFER_SIZE 4096
 
-uint16 *render_flags;
+vector<uint16> RenderFlagList;
 
+// uint16 *render_flags;
 
 // LP additions: decomposition of the rendering code into various objects
 
@@ -297,12 +298,15 @@ void allocate_render_memory(
 	void)
 {
 	assert(NUMBER_OF_RENDER_FLAGS<=16);
+	RenderFlagList.resize(RENDER_FLAGS_BUFFER_SIZE);
+	/*
 	assert(MAXIMUM_LINES_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
 	assert(MAXIMUM_SIDES_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
 	assert(MAXIMUM_ENDPOINTS_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
 	assert(MAXIMUM_POLYGONS_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
 	render_flags= new uint16[RENDER_FLAGS_BUFFER_SIZE];
 	assert(render_flags);
+	*/
 	
 	// LP addition: check out pointer-arithmetic hack
 	assert(sizeof(void *) == sizeof(POINTER_DATA));
