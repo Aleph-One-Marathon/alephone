@@ -10,6 +10,7 @@
 #include "csalerts_sdl.cpp"
 #include "crc.cpp"
 #include "map.h"
+#include "Packing.cpp"
 
 #include <stdio.h>
 #include <stdlib.h>

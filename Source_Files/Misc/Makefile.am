@@ -2,9 +2,9 @@
 
 noinst_LIBRARIES = libmisc.a
 
-libmisc_a_SOURCES = ActionQueues.h CircularQueue.h game_errors.h interface.h \
-  interface_menus.h key_definitions.h PlayerImage_sdl.h PlayerName.h \
-  preferences.h preferences_private.h preferences_sdl.h \
+libmisc_a_SOURCES = ActionQueues.h alephversion.h CircularQueue.h game_errors.h \
+  interface.h interface_menus.h key_definitions.h PlayerImage_sdl.h \
+  PlayerName.h preferences.h preferences_private.h preferences_sdl.h \
   preferences_widgets_sdl.h progress.h Random.h sdl_dialogs.h sdl_network.h \
   sdl_widgets.h thread_priority_sdl.h vbl_definitions.h vbl.h VecOps.h \
   \
