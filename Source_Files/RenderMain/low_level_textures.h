@@ -86,7 +86,7 @@ void TEXTURE_HORIZONTAL_POLYGON_LINES(
 {
 	(void) (view);
 
-	while ((line_count-= 1)>=0)
+	while ((line_count--)>=0)
 	{
 		short x0= *x0_table++, x1= *x1_table++;
 		
@@ -127,8 +127,7 @@ void LANDSCAPE_HORIZONTAL_POLYGON_LINES(
 	register short landscape_texture_width_downshift= 32 - NextLowerExponent(texture->height);
 
 
-	//while ((line_count--)>=0)
-    for (;line_count>=0;line_count--)
+	while ((line_count--)>=0)
 	{
 		short x0= *x0_table++, x1= *x1_table++;
 		
@@ -139,7 +138,7 @@ void LANDSCAPE_HORIZONTAL_POLYGON_LINES(
 		register uint32 source_dx= data->source_dx;
 		register short count= x1-x0;
 		
-		while ((count-= 1)>=0)
+		while ((count--)>=0)
 		{
 			*write++= shading_table[read[source_x>>landscape_texture_width_downshift]];
 			source_x+= source_dx;
@@ -564,7 +563,7 @@ void TINT_VERTICAL_POLYGON_LINES(
 	
 	assert(tint_table_index>=0 && tint_table_index<number_of_shading_tables);
 
-	while ((line_count-= 1)>=0)
+	while ((line_count--)>=0)
 	{
 		short y0= *y0_table++, y1= *y1_table++;
 		register PEL *write= (PEL *) screen->row_addresses[y0] + x;
@@ -572,7 +571,7 @@ void TINT_VERTICAL_POLYGON_LINES(
 		register _fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
 		register short count= y1-y0;
 
-		while ((count-=1)>=0)
+		while ((count--)>=0)
 		{
 			if (read[FIXED_INTEGERAL_PART(texture_y)])
 			{
@@ -631,8 +630,7 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 	register uint16 drop_less_than= transfer_data;
 
 
-	//while ((line_count-= 1)>=0)
-        for (;line_count>=0;line_count--)
+	while ((line_count-- )>=0)
 	{
 		short y0= *y0_table++, y1= *y1_table++;
 		register PEL *write= (PEL *) screen->row_addresses[y0] + x;
@@ -640,7 +638,7 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 		register _fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
 		register short count= y1-y0;
 
-		while ((count-=1)>=0)
+		while ((count--)>=0)
 		{
 			if (read[FIXED_INTEGERAL_PART(texture_y)])
 			{
