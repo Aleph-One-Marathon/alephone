@@ -116,6 +116,10 @@ void reset_screen();
 // CP addition: added function to return the the game size
 screen_mode_data *get_screen_mode(void);
 
+// LP: gets a size ID's related size ID's that show or hide the HUD, respectively
+short GetSizeWithHUD(short Size);
+short GetSizeWithoutHUD(short Size);
+
 void initialize_screen(struct screen_mode_data *mode);
 void change_screen_mode(struct screen_mode_data *mode, bool redraw);
 
