@@ -130,6 +130,10 @@ Dec 23, 2000
 	
 Dec 29, 2000 (Loren Petrich):
 	Added stuff for doing screen messages
+	
+June 20, 2001 (Loren Petrich):
+	Removing the DrawSprocket and replacing it with the Display Manager,
+	so as to have less buggy resolution-switching. Something like Moo itself.
 */
 
 /*
@@ -166,6 +170,7 @@ Dec 29, 2000 (Loren Petrich):
 
 // LP addition: view control
 #include "ViewControl.h"
+#include <Displays.h>
 #include <DrawSprocket.h>
 
 //CP addition: scripting support
@@ -267,12 +272,8 @@ static Rect HUD_DestRect;
 static bool ScreenFix_OGL32 = false;
 
 // DrawSprocket activity:
-static bool DSp_Present = false;
-static bool DSp_Inited = false;
-
-// Current DrawSprocket context (NULL means none active)
-static DSpContextReference DSp_Ctxt = NULL;
-
+static bool DM_Present = false;
+static bool DM_Inited = false;
 
 // Moved after the globals because the shared stuff might use those values
 #include "screen_shared.cpp"
@@ -314,16 +315,19 @@ void DrawHUD(Rect& SourceRect, Rect& DestRect);
 
 // DrawSprocket handlers:
 
-// Checks on the DrawSprocket's presence and returns whether it is active;
-// it inits DSp if necessary
-static bool DSp_Check();
+// Checks on the Display Manager's presence
+static bool DM_Check();
 
-// For debugging DSp errors
-static bool DSp_HandleError(char *Description, OSStatus ErrorCode);
+// For debugging DM errors
+static bool DM_HandleError(char *Description, OSErr ErrorCode);
 
 // Changes the monitor's resolution;
 // returns the success of doing so
-static bool DSp_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height);
+static bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height);
+
+// Callback for getting display-mode info
+static void DM_ModeInfoCallback(void *UserData,
+	DMListIndexType Index, DMDisplayModeListEntryPtr ModeInfoPtr);
 
 
 /* ---------- code */
@@ -334,7 +338,7 @@ void initialize_screen(
 	Rect bounds;
 	GrafPtr old_port;
 	RgnHandle gray_region= GetGrayRgn();
-
+	
 	if (!screen_initialized)
 	{
 		/* Calculate the screen options-> 16, 32, full? */
@@ -383,20 +387,14 @@ void initialize_screen(
 	// When this is working, uncomment it and also change appropriately
 	// do_preferences() in interface_macintosh.cpp
 	
-	// Use the DrawSprocket to change the display resolution
+	// Use the Display Manager to change the display resolution
 	if (graphics_preferences->screen_mode.fullscreen)
 	{
 		short msize = screen_mode.size;
 		assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
 		const ViewSizeData& VS = ViewSizes[msize];
-		DSp_ChangeResolution(world_device, graphics_preferences->device_spec.bit_depth,
+		DM_ChangeResolution(world_device, graphics_preferences->device_spec.bit_depth,
 			VS.OverallWidth, VS.OverallHeight);
-	}
-	// If a context is present, get rid of it
-	else if (DSp_Ctxt)
-	{
-		DSp_HandleError("Init: Release",DSpContext_Release(DSp_Ctxt));
-		DSp_Ctxt = NULL;
 	}
 	
 	if (!screen_initialized)
@@ -1288,25 +1286,11 @@ void render_overhead_map(
 // Accessors for the screen's GDevice and GrafPort;
 // this abstraction is used for DrawSprocket support
 GDHandle GetWorldDevice()
-{
-	if (DSp_Check() && (DSp_Ctxt != NULL))
-	{
-		DisplayIDType DisplayID;
-		GDHandle DC_Handle;
-		assert(DSp_HandleError("Getting Display ID",DSpContext_GetDisplayID(DSp_Ctxt,&DisplayID)));
-		DMGetGDeviceByDisplayID(DisplayID,&DC_Handle,true);
-		return DC_Handle;
-	}
-	
+{	
 	return world_device;
 }
+
 CGrafPtr GetScreenGrafPort() {
-	if (DSp_Check() && (DSp_Ctxt != NULL))
-	{
-		CGrafPtr DC_Buffer;
-		assert(DSp_HandleError("Getting GrafPtr",DSpContext_GetFrontBuffer(DSp_Ctxt,&DC_Buffer)));
-		return DC_Buffer;
-	}
 	return (CGrafPtr)screen_window;
 }
 
@@ -2201,7 +2185,7 @@ void SuspendDisplay(EventRecord *EvPtr)
 		SetDepthGDSpec(&restore_spec);
 	
 	Boolean EvWasProcessed = false;
-	if (DSp_Check()) DSpProcessEvent(EvPtr,&EvWasProcessed);
+	// if (DM_Check()) DSpProcessEvent(EvPtr,&EvWasProcessed);
 	
 	HideWindow(screen_window);
 	HideWindow(backdrop_window);
@@ -2213,7 +2197,7 @@ void SuspendDisplay(EventRecord *EvPtr)
 void ResumeDisplay(EventRecord *EvPtr)
 {
 	Boolean EvWasProcessed = false;
-	if (DSp_Check()) DSpProcessEvent(EvPtr,&EvWasProcessed);
+	// if (DM_Check()) DSpProcessEvent(EvPtr,&EvWasProcessed);
 	
 	// The resolution may have changed when the app was switched out
 	BuildGDSpec(&restore_spec, world_device);
@@ -2227,114 +2211,197 @@ void ResumeDisplay(EventRecord *EvPtr)
 	ShowWindow(screen_window);
 }
 
-// Handling the resolution with the DrawSprocket
+// Handling the resolution with the Display Manager
 
-// Checks on the DrawSprocket's present and returns whether it is active;
-// it inits DSp if necessary
-bool DSp_Check()
+// Checks on whether the Display Manager is present
+bool DM_Check()
 {
-	if (DSp_Inited) return DSp_Present;
+	// Need to check only once
+	if (DM_Inited) return DM_Present;
+	DM_Inited = true;
 	
-	// Check on the weak linking...
-	if((Ptr)DMGetDisplayIDByGDevice == (Ptr)kUnresolvedCFragSymbolAddress) return DSp_Present;
-	if((Ptr)DSpStartup == (Ptr)kUnresolvedCFragSymbolAddress) return DSp_Present;
-	
-	// Set this because of having called this
-	DSp_Inited = true;
-	
-	// Now start!
-	return (DSp_Present = (DSpStartup() == noErr));
+	// Check by doing weak linking...
+	DM_Present = ((Ptr)DMGetDisplayIDByGDevice != (Ptr)kUnresolvedCFragSymbolAddress);
+
+	return DM_Present;
 }
 
 
 // For debugging convenience;
 // returns 1 for success, 0 for failure
-static bool DSp_HandleError(char *Description, OSStatus ErrorCode)
+static bool DM_HandleError(char *Description, OSErr ErrorCode)
 {
-	if (ErrorCode != noErr) dprintf("DSp: %s Error: %d",Description,ErrorCode);
+	if (ErrorCode != noErr) dprintf("DM: %s Error: %d",Description,ErrorCode);
 	return (ErrorCode == noErr);
 }
 
 
+// Classes for auto-dispose of various objects
+
+// When constructed, begins a DM display-configure session;
+// when destroyed, ends it.
+// LP: I got this trick from a Be Developer online newsletter;
+// one issue had discussed an auto-locker C++ class
+// that locks when created and unlocks when destroyed
+struct DM_Session
+{
+	Handle State;	// The display state
+	OSErr Err;		// Have to define this here, because constructors don't return anything
+	
+	DM_Session() {Err = DMBeginConfigureDisplays(&State);}
+	~DM_Session() {Err = DMEndConfigureDisplays(State);}
+};
+
+// When constructed, creates a DM mode list;
+// when destroyed, destroys it
+struct DM_ModeList
+{
+	DMListType List;			// The actual list
+	DMListIndexType Count;		// How many in it
+	DMDisplayModeListIteratorUPP ModeInfoCallbackUPP;	// For obtaining the mode
+	OSErr Err;		// Have to define this here, because constructors don't return anything
+	
+	// Returned pointer to mode-info record (NULL if unset)
+	DMDisplayModeListEntryPtr ModeInfoPtr;
+	
+	// Get a mode with some index value
+	void GetMode(DMListIndexType Index)
+	{
+		// This object will get the mode-info pointer
+		Err = DMGetIndexedDisplayModeFromList(List, Index, NULL, ModeInfoCallbackUPP, this);
+		if (Err != noErr) ModeInfoPtr = NULL;
+	}
+	
+	// Needs the ID of the display to look at
+	DM_ModeList(DisplayIDType DisplayID)
+	{
+		// Idiot-proofing
+		ModeInfoPtr = NULL;
+		List = NULL;
+		ModeInfoCallbackUPP = NewDMDisplayModeListIteratorUPP(DM_ModeInfoCallback);
+		Err = DMNewDisplayModeList(DisplayID, NULL, NULL, &Count, &List);
+	}
+	
+	~DM_ModeList()
+	{
+		DisposeDMDisplayModeListIteratorUPP(ModeInfoCallbackUPP);
+		if (List) DMDisposeList(List);
+	}
+};
+
+
+// Dimensions of a mode; use this for searching for biggest and best modes
+struct ModeDims
+{
+	int Index;			// What index in the list of modes?0
+	short Width, Height;	// What dimensions?
+	
+	void Set(int _Index, short _Width, short _Height)
+	{
+		Index = _Index; Width = _Width; Height = _Height;
+	}
+	
+	// Initialize to blank; the initial index value indicates a nonexistent index
+	ModeDims() {Index = NONE; Width = Height = 0;}
+};
+
 // Changes the monitor's resolution and creates a DSp context for the new resolution
 // and deletes the old one if necessary; returns the success of doing so
-bool DSp_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height)
+bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height)
 {
-	if (!DSp_Check()) return false;
+	if (!DM_Check()) return false;
 	
+	// Tell the Display Manager not to update the displays while changing resolution;
+	// they won't get updated as long as this object is in scope.
+	DM_Session Session;
+	
+	// Get which display ID
 	DisplayIDType DisplayID;
-	if (!DSp_HandleError("CR: Find Display ID",DMGetDisplayIDByGDevice(Device, &DisplayID, true))) return false;
+	OSErr Err = DMGetDisplayIDByGDevice(Device, &DisplayID, true);
+	if (!DM_HandleError("CR: Find Display ID",Err)) return false;
 	
-	// Deleting old context in advance
-	if (DSp_Ctxt)
+	DM_ModeList ModeList(DisplayID);
+	if (!DM_HandleError("CR: Creating mode-info list",ModeList.Err)) return false;
+	
+	// Search: find biggest mode and best mode with desired bit depth
+	ModeDims Biggest, Best;
+	
+	for (DMListIndexType Index=0; Index<ModeList.Count; Index++)
 	{
-		DSpContext_Release(DSp_Ctxt);
-		DSp_Ctxt = NULL;
-	}
-	
-	// This code does not appear to work; will have to iterate through the 
-	/*
-	DSpContextAttributes TargetAttribs;
-	
-	// Cribbed from some of Apple's and Mark Szymczyk's sample code
-	obj_clear(TargetAttribs);
-	TargetAttribs.displayWidth = Width;
-	TargetAttribs.displayHeight = Height;
-	TargetAttribs.displayBestDepth = BitDepth;
-	TargetAttribs.backBufferBestDepth = BitDepth;
-	TargetAttribs.colorNeeds = kDSpColorNeeds_Require;
-	TargetAttribs.displayDepthMask = kDSpDepthMask_All;
-	TargetAttribs.backBufferDepthMask = kDSpDepthMask_All;
-	TargetAttribs.pageCount = 1; // only the front buffer is needed
-	
-	DSpContextReference NewContext;
-	
-	if (!DSp_HandleError("CR: Find Context",DSpFindBestContextOnDisplayID(&TargetAttribs,&NewContext,DisplayID))) return false;
-	if (NewContext == NULL) return false;
-	*/
-	
-	// Iterate through possible contexts to find the best-matching dimensions:
-	short BestMatchWidth = 0;
-	short BestMatchHeight = 0;
-	bool BestMatchFound = false;
-	
-	DSpContextReference NewContext;
-	DSpContextAttributes TargetAttribs;
-	DSpGetFirstContext(DisplayID,&NewContext);
-	do {
-		DSpContext_GetAttributes(NewContext,&TargetAttribs);
-		if (TargetAttribs.displayBestDepth == BitDepth)
+		ModeList.GetMode(Index);
+		
+		VDResolutionInfoPtr ResInfoPtr = ModeList.ModeInfoPtr->displayModeResolutionInfo;
+		
+		// The mode name is a Pascal string pointed to by ModeList.ModeInfoPtr->displayModeName
+		// Need the depth info to find which
+		DMDepthInfoBlockPtr DepthInfoPtr = ModeList.ModeInfoPtr->displayModeDepthBlockInfo;
+		
+		// Is there a submode with a bit depth that matches the desired bit depth?
+		for (int id=0; id<DepthInfoPtr->depthBlockCount; id++)
 		{
-			// The "best matching" size is the smallest size that contains the target size
-			if (TargetAttribs.displayWidth >= Width && TargetAttribs.displayHeight >= Height)
+			DMDepthInfoPtr IndivDepthPtr = DepthInfoPtr->depthVPBlock + id;
+			VPBlockPtr IDBlockPtr = IndivDepthPtr->depthVPBlock;
+			if (IDBlockPtr->vpPixelSize != BitDepth) continue;
+			
+			// One was found...
+			Rect& Bounds = IDBlockPtr->vpBounds;
+			short ModeWidth = Bounds.right-Bounds.left;
+			short ModeHeight = Bounds.bottom-Bounds.top;
+			
+			Biggest.Set(Index,MAX(Biggest.Width,ModeWidth),MAX(Biggest.Height,ModeHeight));
+			
+			if (Best.Index < 0)
 			{
-				if (!BestMatchFound)
-				{
-					BestMatchWidth = TargetAttribs.displayWidth;
-					BestMatchHeight = TargetAttribs.displayHeight;
-					BestMatchFound = true;
-					break;
-				}
+				if (ModeWidth >= Width && ModeHeight >= Height)
+					Best.Set(Index,ModeWidth,ModeHeight);
 			}
+			break;
 		}
-	} while(DSpGetNextContext(NewContext,&NewContext) == noErr);
-	
-	// Don't switch if the size is too big
-	if (!BestMatchFound) return false;
-	
-	if (!DSp_HandleError("CR: Reserve",DSpContext_Reserve(NewContext, &TargetAttribs))) return false;
-	/*
-	if (DSp_Ctxt)
-	{
-		// Switch and delete old context if there is one
-		if (!DSp_HandleError("CR: Queue",DSpContext_Queue(DSp_Ctxt, NewContext, &TargetAttribs))) return false;
-		if (!DSp_HandleError("CR: Switch",DSpContext_Switch(DSp_Ctxt, NewContext))) return false;
-		if (!DSp_HandleError("CR: Release",DSpContext_Release(DSp_Ctxt))) return false;
 	}
-	*/
-	if (!DSp_HandleError("CR: Activate",DSpContext_SetState(NewContext, kDSpContextState_Active))) return false;
-	if (!DSp_HandleError("CR: Pause",DSpContext_SetState(NewContext, kDSpContextState_Paused))) return false;
-	DSp_Ctxt = NewContext;
 	
-	return true;
+	// What mode to switch to; check to see if the appropriate indices had been set
+	int Index = (Best.Index >= 0) ? Best.Index :
+		((Biggest.Index >= 0) ? Biggest.Index :
+			NONE);
+	if (Index < 0) return false;
+	
+	// Need to re-grab mode info
+	ModeList.GetMode(Index);
+			
+	VDResolutionInfoPtr ResInfoPtr = ModeList.ModeInfoPtr->displayModeResolutionInfo;
+		
+	// The mode name is a Pascal string pointed to by ModeList.ModeInfoPtr->displayModeName
+	// Need the depth info to find which
+	DMDepthInfoBlockPtr DepthInfoPtr = ModeList.ModeInfoPtr->displayModeDepthBlockInfo;
+	
+	// Is there a submode with a bit depth that matches the desired bit depth?
+	for (int id=0; id<DepthInfoPtr->depthBlockCount; id++)
+	{
+		DMDepthInfoPtr IndivDepthPtr = DepthInfoPtr->depthVPBlock + id;
+		VPBlockPtr IDBlockPtr = IndivDepthPtr->depthVPBlock;
+		if (IDBlockPtr->vpPixelSize != BitDepth) continue;
+		
+		/*
+		// How does one get from a VPBlockPtr to the screen size?
+		
+		// Switch!
+		unsigned long TempBitDepth = BitDepth;
+		Err = DMSetDisplayMode(Device,Index,&TempBitDepth,NULL,Session.State);
+		
+		// dprintf("Err = %hd",Err);
+		*/
+	}
+	
+	return false;
+}
+
+
+// Puts record into global
+void DM_ModeInfoCallback(void *UserData,
+	DMListIndexType Index, DMDisplayModeListEntryPtr ModeInfoPtr)
+{
+	// Ensures that my mode-list object will get the mode-info pointer
+	assert(UserData);
+	DM_ModeList *ModeListPtr = (DM_ModeList *)UserData;
+	ModeListPtr->ModeInfoPtr = ModeInfoPtr;
 }
