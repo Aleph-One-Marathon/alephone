@@ -418,8 +418,11 @@ short new_player(
 	player->invisibility_duration= 0;
 	player->infravision_duration= 0;
 	player->extravision_duration= 0;
-	player->identifier= identifier;
+	player->identifier= player_identifier_value(identifier);
 
+	SET_PLAYER_DOESNT_AUTO_RECENTER_STATUS(player, player_identifier_doesnt_auto_recenter(identifier));
+	SET_PLAYER_DOESNT_AUTO_SWITCH_WEAPONS_STATUS(player, player_identifier_doesnt_auto_switch_weapons(identifier));
+	
 	/* initialize inventory */	
 	for (loop=0;loop<NUMBER_OF_ITEMS;++loop) player->items[loop]= NONE;
 
@@ -1539,8 +1542,8 @@ static void recreate_player(
 		player_teleported_dead= true;
 	}
 
-//	player->flags= 0;
-	player->flags &= (_player_is_teleporting_flag | _player_is_interlevel_teleporting_flag); /* Player has cheated persists. */
+	/* Clear the transient flags, leave the persistant flags, like Player has cheated */
+	player->flags &= (_player_is_teleporting_flag | _player_is_interlevel_teleporting_flag | PLAYER_PERSISTANT_FLAGS );
 	player->monster_index= monster_index;
 	player->object_index= monster->object_index;
 

@@ -2700,7 +2700,7 @@ static bool should_switch_to_weapon(
 							// LP addition: Josh Elsasser's dont-switch-weapons patch
 							if(!TRIGGER_IS_DOWN(weapon))
 							{
-								if (!dont_switch_to_new_weapon())
+								if (!PLAYER_DOESNT_AUTO_SWITCH_WEAPONS(get_player_data(player_index)))
 									should_change= true;
 							}
 						}

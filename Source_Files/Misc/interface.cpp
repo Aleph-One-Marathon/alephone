@@ -470,6 +470,9 @@ static void construct_single_player_start(player_start_data* outStartArray, shor
         outStartArray[0].identifier = 0;
         memcpy(outStartArray[0].name, &(player_preferences->name[1]), player_preferences->name[0]);
         outStartArray[0].name[player_preferences->name[0]] = '\0';
+				
+        set_player_start_doesnt_auto_recenter_status(&outStartArray[0], dont_auto_recenter());
+        set_player_start_doesnt_auto_switch_weapons_status(&outStartArray[0], dont_switch_to_new_weapon());
 }
 
 static void construct_multiplayer_starts(player_start_data* outStartArray, short* outStartCount)

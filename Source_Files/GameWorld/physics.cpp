@@ -639,7 +639,7 @@ static void physics_update(
 			without any side-to-side motion, recenter our head vertically */
 
         // ZZZ: only do auto-recentering if the user wants it
-        if(!dont_auto_recenter()) {
+        if(!PLAYER_DOESNT_AUTO_RECENTER(player)) {
             if (!(action_flags&FLAGS_WHICH_PREVENT_RECENTERING)) /* canÕt recenter if any of these are true */
 		    {
 			    if (((action_flags&_moving_forward) && (variables->velocity==constants->maximum_forward_velocity)) ||
