@@ -27,6 +27,11 @@ May 16, 2000 (Loren Petrich):
 
 May 26, 2000 (Loren Petrich):
 	Added XML shapes support
+
+Jul 1, 2000 (Loren Petrich):
+	Did some inlining of the item-definition accessor
+	
+	Added Benad's netgame-type changes
 */
 
 #include "cseries.h"
@@ -466,21 +471,43 @@ boolean try_and_add_player_item(
 			break;
 		
 		case _ball:
-			/* Note that you can only carry ONE ball (ever) */	
+			// START Benad
+			/* Note that you can only carry ONE ball (ever) */
 			if(find_player_ball_color(player_index)==NONE)
 			{
-				player->items[type]= 1;
+				struct player_data *player= get_player_data(player_index);
 				
+				// When taking ball of your own team, it returns to its original
+				// position on the map, unless it's already in our base (or hill).
+				if ( (GET_GAME_TYPE() == _game_of_capture_the_flag) &&
+					 (type - BALL_ITEM_BASE == player->team)  )
+				{
+					struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
+					if (polygon->type==_polygon_is_base && polygon->permutation!=player->team)
+					{
+						object_was_just_destroyed(_object_is_item, type);
+						grabbed_sound_index= _snd_got_item;
+						success= TRUE;
+						goto DONE;
+					}
+				}
+				
+				player->items[type]= 1;
+
+				// OK, since only for loading weapon. Ignores item_type, cares
+				// only about item_kind (here, _ball).
 				/* Load the ball weapon.. */
 				process_new_item_for_reloading(player_index, _i_red_ball);
 				
 				/* Tell the interface to redraw next time it has to */
 				mark_player_inventory_as_dirty(player_index, type);
+				
 				success= TRUE;
 			}
 			grabbed_sound_index= NONE;
 			break;
-		
+			// END Benad
+					
 		case _weapon:
 		case _ammunition:
 		case _item:
@@ -519,7 +546,9 @@ boolean try_and_add_player_item(
 			assert(false);
 			// halt();
 	}
-	
+	// Benad. Burk.
+	DONE:
+		
 	/* Play the pickup sound */
 	if (success && player_index==current_player_index)
 	{

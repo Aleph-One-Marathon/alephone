@@ -52,6 +52,9 @@ Feb 17, 2000 (Loren Petrich):
 
 Feb 19, 2000 (Loren Petrich):
 	Added growable lists of indices of objects to be checked for collisions
+
+Jul 1, 2000 (Loren Petrich):
+	Added Benad's changes
 */
 
 #include "cseries.h"
@@ -403,6 +406,12 @@ void move_projectiles(
 										location.polygon_index= object->polygon;
 										location.yaw= location.pitch= 0;
 										location.flags= 0;
+										// START Benad
+										// Found it!
+										// With new_item(), current_item_count[item] increases, but not
+										// with try_and_add_player_item(). So reverse the effect of new_item in advance.
+										dynamic_world->current_item_count[projectile->permutation]--;
+										// END Benad
 										new_item(&location, projectile->permutation);
 										
 										destroy_persistent_projectile= TRUE;

@@ -42,6 +42,9 @@ Jun 15, 2000 (Loren Petrich):
 
 Jul 1, 2000 (Loren Petrich):
 	Made some accessors inline
+
+Jul 1, 2000 (Loren Petrich):
+	Added Benad's changes
 */
 
 #include "cseries.h"
@@ -797,7 +800,20 @@ void update_player_weapons(
 							world_point3d origin, vector;
 							short origin_polygon, item_type;
 
-							assert(ball_color!=NONE);
+							//START Benad
+							//assert(ball_color!=NONE);
+							if (ball_color != NONE)
+							{
+								item_type= ball_color+BALL_ITEM_BASE;
+
+								calculate_weapon_origin_and_vector(player_index, _primary_weapon, 
+									&origin, &vector, &origin_polygon, 0);
+
+								drop_the_ball(&origin, origin_polygon, player->monster_index, 
+									_monster_marine, item_type);
+								destroy_current_weapon(player_index);
+							}
+							// END Benad
 							item_type= ball_color+BALL_ITEM_BASE;
 
 							calculate_weapon_origin_and_vector(player_index, _primary_weapon, 
@@ -948,6 +964,39 @@ void update_player_weapons(
 	// dprintf("done;g");
 	return;
 }
+
+// START Benad
+void destroy_players_ball(
+	short player_index)
+{
+	struct player_data *player= get_player_data(player_index);
+	short ball_color= find_player_ball_color(player_index);
+	struct weapon_data *weapon= get_player_current_weapon(player_index);
+	world_point3d origin, vector;
+	short origin_polygon, item_type;
+
+	assert(ball_color!=NONE);
+	item_type= ball_color+BALL_ITEM_BASE;
+
+	/*calculate_weapon_origin_and_vector(player_index, _primary_weapon, 
+		&origin, &vector, &origin_polygon, 0);
+
+	drop_the_ball(&origin, origin_polygon, player->monster_index, 
+		_monster_marine, item_type);*/
+	
+	weapon->triggers[0].rounds_loaded = 0;
+	weapon->triggers[1].rounds_loaded = 0;
+	weapon->weapon_type = _weapon_ball;
+	player->items[item_type]= NONE;
+	object_was_just_destroyed(_object_is_item, item_type);
+	
+	//destroy_current_weapon(player_index);
+	
+	mark_player_inventory_as_dirty(player_index, _i_knife);
+	select_next_best_weapon(player_index);
+	
+}
+// END Benad
 
 short get_player_desired_weapon(
 	short player_index)
@@ -2056,9 +2105,13 @@ static void destroy_current_weapon(
 	{
 		/* Drop the ball.. */
 		short ball_color= find_player_ball_color(player_index);
-		
-		assert(ball_color!=NONE);
-		item_type= find_player_ball_color(player_index)+BALL_ITEM_BASE;
+		// START Benad
+		// assert(ball_color!=NONE);
+		if (ball_color != NONE)
+			item_type= find_player_ball_color(player_index)+BALL_ITEM_BASE;
+		else
+			return;
+		// END Benad
 	} else {
 		item_type= definition->item_type;
 	}

@@ -67,6 +67,9 @@ Jun 15, 2000 (Loren Petrich):
 
 Jun 28, 2000 (Loren Petrich):
 	Generalized the invincibility-powerup vulnerability and added XML support for that
+
+Jul 1, 2000 (Loren Petrich):
+	Added Benad's changes
 */
 
 #include "cseries.h"
@@ -525,8 +528,10 @@ void update_players(
 		}
 
 		// if weÕve got the ball we canÕt run (that sucks)
+		// Benad: also works with _game_of_rugby and _game_of_capture_the_flag
 		// LP change: made it possible to swim under a liquid if one has the ball
-		if (GET_GAME_TYPE()==_game_of_kill_man_with_ball && dynamic_world->game_player_index==player_index && !(player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) action_flags&= ~_run_dont_walk;
+		if (((GET_GAME_TYPE()==_game_of_kill_man_with_ball) || (GET_GAME_TYPE()==_game_of_rugby) || (GET_GAME_TYPE()==_game_of_capture_the_flag)) 
+		 && dynamic_world->game_player_index==player_index && !(player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) action_flags&= ~_run_dont_walk;
 		// if (GET_GAME_TYPE()==_game_of_kill_man_with_ball && dynamic_world->game_player_index==player_index) action_flags&= ~_run_dont_walk;
 		
 		// if our head is under media, we canÕt run (that sucks, too)
@@ -1608,7 +1613,9 @@ static void remove_dead_player_items(
 		{
 			short item_type= BALL_ITEM_BASE + ball_color;
 			
-			drop_the_ball(&player->camera_location, player->camera_polygon_index, 
+			// Benad: using location and supporting_polygon_index instead of
+			// camera_location and camera_polygon_index... D'uh...
+			drop_the_ball(&player->location, player->supporting_polygon_index, 
 				player->monster_index, _monster_marine, item_type);
 			player->items[item_type]= NONE;
 		}
@@ -1617,7 +1624,10 @@ static void remove_dead_player_items(
 	for (item_type= 0; item_type<NUMBER_OF_ITEMS; ++item_type)
 	{
 		short item_count= player->items[item_type];
-			
+		// START Benad
+		if ((item_type >= BALL_ITEM_BASE) && (item_type < BALL_ITEM_BASE+MAXIMUM_NUMBER_OF_PLAYERS))
+			continue;
+		// END Benad
 		while ((item_count-= 1)>=0)
 		{
 			short item_kind= get_item_kind(item_type);
@@ -1773,7 +1783,15 @@ static short calculate_player_team(
 		case _game_of_defense:
 		case _game_of_rugby:						
 		case _game_of_capture_the_flag:
-			team= base_team;
+			// START Benad
+			if ((dynamic_world->game_information.kill_limit == 819) ||
+				((GET_GAME_TYPE() == _game_of_defense) &&
+				(dynamic_world->game_information.kill_limit == 1080))) // 1080 seconds, or 18:00...
+				team= NONE;
+			else
+				//team= base_team;
+				vassert(false, csprintf(temporary, "Kill limit: %d", dynamic_world->game_information.kill_limit));
+			// END Benad
 			break;
 	}
 	
