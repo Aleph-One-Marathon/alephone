@@ -135,6 +135,9 @@ Feb 13, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Enabled networking under Carbon
+
+Apr 29, 2002 (Loren Petrich):
+	Added test for pressing modifier keys on startup
 */
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -220,6 +223,10 @@ static bool AppServicesInited = false;
 // The modifier for typing in cheat codes: defined in shell_misc.cpp
 extern short CheatCodeModMask;
 
+// Whether the modifier keys had been pressed when starting up the app
+static bool ModifierKeysInitiallyPressed = false;
+
+
 /* ---------- externs that I couldn't fit into the #include heirarchy nicely */
 extern bool load_and_start_game(FileSpecifier& File);
 extern bool handle_open_replay(FileSpecifier& File);
@@ -258,6 +265,10 @@ bool ComposeOSEventFromLocal(EventRecord& Event);
 
 // Looks for MML files and resources in that directory and parses them
 void FindAndParseFiles(DirectorySpecifier& DirSpec);
+
+// For detecting whether modifiers had initially been pressed
+static bool KeyIsPressed(KeyMap key_map, short key_code);
+static bool ModifierKeysPressed();
 
 
 /* ---------- code */
@@ -315,6 +326,9 @@ static int EscapeKeyRefractoryTime = 0;
 static void initialize_application_heap(
 	void)
 {
+	// For telling the screen-frequency dialog not to show
+	ModifierKeysInitiallyPressed = ModifierKeysPressed();
+
 #if !defined(TARGET_API_MAC_CARBON)
 	MaxApplZone();
 #endif
@@ -456,7 +470,7 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	initialize_ISp(); /* BT: Added April 16, 2000 ISp: Initialize Input Sprockets */
 
 	initialize_keyboard_controller();
-	initialize_screen(&graphics_preferences->screen_mode);
+	initialize_screen(&graphics_preferences->screen_mode, ModifierKeysInitiallyPressed);
 	initialize_marathon();
 	initialize_screen_drawing();
 	initialize_terminal_manager();
@@ -1792,4 +1806,26 @@ void XML_LoadFromResourceFork(FileSpecifier& File)
 		XML_ResourceForkLoader.ParseResourceSet('TEXT');
 		OFile.Pop();
 	}
+}
+
+
+// Taken from is_pressed() of keyboard_dialog.cpp (the Macintosh version)
+static bool KeyIsPressed(KeyMap key_map, short key_code)
+{
+	return ((((byte*)key_map)[key_code>>3] >> (key_code & 7)) & 1);
+}
+
+// Uses key codes listed in
+// http://developer.apple.com/techpubs/mac/Toolbox/Toolbox-40.html#HEADING40-39
+static bool ModifierKeysPressed()
+{
+	KeyMap key_map;
+	GetKeys(key_map);
+	
+	bool WerePressed = false;
+	WerePressed |= KeyIsPressed(key_map,0x38);	// Shift key
+	WerePressed |= KeyIsPressed(key_map,0x3a);	// Option key
+	WerePressed |= KeyIsPressed(key_map,0x37);	// Command key
+	
+	return WerePressed;
 }
