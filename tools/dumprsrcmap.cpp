@@ -7,6 +7,7 @@
 #include "resource_manager.cpp"
 #include "FileHandler_SDL.cpp"
 #include "csalerts_sdl.cpp"
+#include "Logging.cpp"
 
 #include <stdio.h>
 #include <stdlib.h>

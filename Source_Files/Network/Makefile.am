@@ -11,8 +11,9 @@ libnetwork_a_SOURCES = network.h network_data_formats.h \
   network.cpp network_data_formats.cpp network_dialogs.cpp \
   network_dialogs_sdl.cpp network_dialog_widgets_sdl.cpp network_games.cpp \
   network_lookup_sdl.cpp network_microphone_sdl_dummy.cpp \
-  network_speaker_sdl.cpp network_stream.cpp network_tcp.cpp network_udp.cpp \
-  SDL_netx.cpp SSLP_limited.cpp
+  network_microphone_shared.cpp network_speaker_sdl.cpp \
+  network_speaker_shared.cpp network_stream.cpp network_tcp.cpp \
+  network_udp.cpp SDL_netx.cpp SSLP_limited.cpp
 
 EXTRA_libnetwork_a_SOURCES = network_dummy.cpp network_microphone_sdl_win32.cpp
 
