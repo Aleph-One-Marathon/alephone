@@ -55,13 +55,13 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 
 
 // Global preferences data
-struct graphics_preferences_data *graphics_preferences;
-struct serial_number_data *serial_preferences;
-struct network_preferences_data *network_preferences;
-struct player_preferences_data *player_preferences;
-struct input_preferences_data *input_preferences;
-struct sound_manager_parameters *sound_preferences;
-struct environment_preferences_data *environment_preferences;
+struct graphics_preferences_data *graphics_preferences = NULL;
+struct serial_number_data *serial_preferences = NULL;
+struct network_preferences_data *network_preferences = NULL;
+struct player_preferences_data *player_preferences = NULL;
+struct input_preferences_data *input_preferences = NULL;
+struct sound_manager_parameters *sound_preferences = NULL;
+struct environment_preferences_data *environment_preferences = NULL;
 
 // LP: fake portable-files stuff
 #ifdef mac
@@ -127,7 +127,7 @@ void initialize_preferences(
 			dprintf("Preferences Init Error: %d type: %d prefs name: %s", err, type, Name);
 		set_game_error(systemError, noErr);
 	}
-	
+		
 	/* If we didn't open, we initialized.. */
 	graphics_preferences= (struct graphics_preferences_data *)get_graphics_pref_data();
 	player_preferences= (struct player_preferences_data *)get_player_pref_data();
@@ -234,36 +234,23 @@ static void default_graphics_preferences(
 	preferences->device_spec.width= 640;
 	preferences->device_spec.height= 480;
 	
-	/*
-	if (hardware_acceleration_code(&preferences->device_spec) == _valkyrie_acceleration)
-	{
-		preferences->screen_mode.size= _100_percent;
-		preferences->screen_mode.bit_depth = 16;
-		preferences->screen_mode.high_resolution = false;
-		preferences->screen_mode.acceleration = _valkyrie_acceleration;
-	}
-	else if (system_information->machine_is_68k)
-	{
-		preferences->screen_mode.size= _100_percent;
-		preferences->screen_mode.high_resolution= false;
-		preferences->screen_mode.acceleration = _no_acceleration;
-		preferences->screen_mode.bit_depth = 8;
-	}
-	*/
+	preferences->screen_mode.size = _100_percent;
+	preferences->screen_mode.fullscreen = false;
+	preferences->screen_mode.high_resolution = true;
+	
+	preferences->refresh_frequency = DEFAULT_MONITOR_REFRESH_FREQUENCY;
+	
 	if (hardware_acceleration_code(&preferences->device_spec) == _opengl_acceleration)
 	{
-		preferences->screen_mode.size= _100_percent;
-		preferences->screen_mode.high_resolution = true;
 		preferences->screen_mode.acceleration = _opengl_acceleration;
 		preferences->screen_mode.bit_depth = 32;
 	}
-	else // we got a good machine
+	else
 	{
-		preferences->screen_mode.size= _100_percent;
-		preferences->screen_mode.high_resolution= true;
 		preferences->screen_mode.acceleration = _no_acceleration;
-		preferences->screen_mode.bit_depth = 32;
+		preferences->screen_mode.bit_depth = 16;
 	}
+	
 #else
 	preferences->screen_mode.size = _100_percent;
 	preferences->screen_mode.acceleration = _no_acceleration;

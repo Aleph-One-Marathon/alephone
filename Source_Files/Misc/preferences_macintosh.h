@@ -148,10 +148,16 @@ void handle_preferences(
 	// while being able to revert to the original values
 	sound_manager_parameters OriginalSoundParameters;
 	obj_copy(OriginalSoundParameters,*sound_preferences);
+	
+	// Remember the old monitor resolution, in case we change it.
+	// When we change it, we'll set the monitor frequency to its default value.
+	short OldSize = graphics_preferences->screen_mode.size;
 
 	if(set_preferences(prefs_data, NUMBER_OF_PREFS_PANELS, initialize_preferences))
 	{
 		/* Save the new ones. */
+		if (graphics_preferences->screen_mode.size != OldSize)
+			graphics_preferences->refresh_frequency = DEFAULT_MONITOR_REFRESH_FREQUENCY;
 		write_preferences();
 		set_sound_manager_parameters(sound_preferences);
 		load_environment_from_preferences();

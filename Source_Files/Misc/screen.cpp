@@ -161,6 +161,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 		jump to case label ... crosses initialization of `bool Use_OGL_2D'
 	Included Steve Bytnar's OSX QDPort flushing code
 	Trusting Suspend/Resume OSX mechanics to do the right thing with mouse and menubar
+
+Feb 24, 2002 (Loren Petrich):
+	Modified to use the new refresh_frequency field in the graphics prefs,
+	so that a selection will be persistent.
 */
 
 /*
@@ -375,6 +379,13 @@ static pascal void DM_ModeInfoCallback(void *UserData,
 // it is for catching keyboard events
 static pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
 	EventRecord *Event, short *ItemHit);
+
+// Stuff for getting and setting monitor-refresh frequencies from the preferences:
+static float GetRefreshFreq();
+static void SetRefreshFreq(float Freq);
+
+// Parsing of mode name to get frequency:
+static float GetFreqFromName(Str255 Name);
 
 // Directly manipulate the video-driver color table.
 // Written so that the faders will work in MacOS X Classic.
@@ -2543,6 +2554,23 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 		((Biggest.NumMDs() > 0) ? &Biggest : NULL);
 	if (!MDPtr) return false;
 	
+	// Find the closest of the monitor frequences to the prefs frequency:
+	float PrevFreq = GetRefreshFreq();
+	float SmallestDiff = PrevFreq;
+	int BestFitIndex = 0;
+	
+	for (int im=0; im<MDPtr->NumMDs(); im++)
+	{
+		float Freq = GetFreqFromName(MDPtr->WhichMD(im).Name);
+		float FreqDiff = Freq - PrevFreq;
+		float AbsFreqDiff = ABS(FreqDiff);
+		if (AbsFreqDiff < SmallestDiff)
+		{
+			BestFitIndex = im;
+			SmallestDiff = AbsFreqDiff;
+		}
+	}
+	
 	// Build MacOS Classic dialog box
 	// and its keyboard-event catcher
 	DialogPtr Dialog = GetNewDialog(MonitorFreq_Dialog, nil, WindowPtr(-1));
@@ -2583,8 +2611,8 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 		SetMenuItemText(PopupMenuHandle, (im+1), MDPtr->WhichMD(im).Name);
 	}
 	
-	// Default: first one
-	int DefSelected = 0;
+	// Default: from the previous monitor-frequency value found earlier
+	int DefSelected = BestFitIndex;
 	int Selected = DefSelected;
 	int PrevSelected = Selected;
 	SetControlValue(PopupHandle, Selected+1);
@@ -2659,6 +2687,10 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	DisposeDialog(Dialog);
 	DisposeRoutineDescriptor(DialogEventHandler);
 	
+	// Remember the frequency setting for next time
+	if (ChangeSuccess)
+		SetRefreshFreq(GetFreqFromName(MDPtr->WhichMD(Selected).Name));
+	
 	return ChangeSuccess;
 }
 
@@ -2706,6 +2738,73 @@ pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
 	
 	// Ignore all other kinds of events
 	return false;
+}
+
+
+// Stuff for getting and setting monitor-refresh frequencies from the preferences:
+
+static float GetRefreshFreq()
+{
+	// Fixed to float
+	return graphics_preferences->refresh_frequency/65535.0;
+}
+
+static void SetRefreshFreq(float Freq)
+{
+	// Float to fixed
+	graphics_preferences->refresh_frequency = int(Freq*65536.0 + 0.5);
+}
+
+// Parsing of mode name to get frequency:
+static float GetFreqFromName(Str255 Name)
+{
+	// Failure value: zero frequency
+	float Freq = 0;
+
+	// Look for text "Hz" (many not work for some non-Roman-localized text)
+	int HZLoc = NONE;
+	for (int k=1; k<=Name[0]; k++)
+	{
+		if (Name[k] == 'H')
+		{
+			HZLoc = k;
+			break;
+		}
+	}
+	// Just in case:
+	if (HZLoc == NONE) return Freq;
+	
+	// Move backwards to first non-whitespace
+	for (int k=HZLoc-1; k>1; k--)
+	{
+		if (Name[k] != ' ')
+		{
+			HZLoc = k + 1;
+			break;
+		}
+	}
+	
+	// Look for number beginning
+	int NumLoc = NONE;
+	for (int k=HZLoc-1; k>1; k--)
+	{
+		if (Name[k] == ' ')
+		{
+			NumLoc = k + 1;
+			break;
+		}
+	}
+	// Just in case:
+	if (NumLoc == NONE) return Freq;
+	
+	// Extract and make a C string
+	int NumLen = HZLoc - NumLoc;
+	memcpy(temporary,Name+NumLoc,NumLen);
+	temporary[NumLen] = 0;
+	
+	sscanf(temporary,"%f",&Freq);
+	
+	return Freq;
 }
 
 
