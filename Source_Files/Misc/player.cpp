@@ -332,7 +332,7 @@ short new_player(
 	player= get_player_data(player_index);
 
 	/* and initialize it */
-	memset(player, 0, sizeof(struct player_data));
+	obj_clear(*player);
 	player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 	player->interface_flags= 0; // Doesn't matter-> give_player_initial_items will take care of it.
 	// LP change: using variables for these
@@ -402,7 +402,7 @@ void initialize_players(
 	/* reset the action flag queues and zero the player slots */
 	for (i=0;i<MAXIMUM_NUMBER_OF_PLAYERS;++i)
 	{
-		memset(players+i, 0, sizeof(struct player_data));
+		obj_clear(players[i]);
 		action_queues[i].read_index= action_queues[i].write_index= 0;
 	}
 	
@@ -1499,7 +1499,7 @@ static void recreate_player(
 	mark_player_inventory_screen_as_dirty(player_index, _weapon);
 
 	/* Nuke the physics */
-	memset(&player->variables, 0, sizeof(struct physics_variables));
+	obj_clear(player->variables);
 
 	/* Reset the player weapon data and the physics variable.. (after updating player_count) */
 	initialize_player_physics_variables(player_index);
