@@ -45,6 +45,7 @@ enum { // message types
   kJoinAcceptedMessage,
   kStopJoiningMessage,
   kTopologyMessage,
+  kChangeMapMessage,
   kMapMessage,
   kPhysicsMessage,
   kLuaMessage,
@@ -62,7 +63,7 @@ class NumberAndStringMessage : public SmallMessageHelper
     : mType(inType), mNumber(inNumber)
   {
     strncpy(mString, (inString == NULL) ? "" : inString, sizeof(mString));
-    mString[sizeof(mString)] = '\0';
+    mString[sizeof(mString)-1] = '\0';
   }
 
   COVARIANT_RETURN(Message*, NumberAndStringMessage*) clone() const { 
