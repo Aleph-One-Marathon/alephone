@@ -81,6 +81,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Included Bytnar inspired changes to disable InputSprocket controls under Carbon
+
+Feb 5, 2002 (Br'fin (Jeremy Parsons)):
+	Fixed non-display of network player name in Player Dialog
 */
 #if defined(TARGET_API_MAC_CARBON)
     #include <CoreServices/CoreServices.h>
@@ -411,14 +414,20 @@ static void setup_player_dialog(
 	Handle item;
 	short item_type;
 	Rect bounds;
+	ControlRef prefNameItem;
 
 	/* Setup the difficulty level */
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDIFFICULTY_LEVEL, first_item), NONE, 
 		preferences->difficulty_level+1);
 
 	/* Setup the name. */
-	GetDialogItem(dialog, LOCAL_TO_GLOBAL_DITL(iNAME, first_item), &item_type, &item, &bounds);
-	SetDialogItemText(item, preferences->name);
+	// JTP: When embedding is on, you should pass in the control handle produced by a
+	// call to GetDialogItemAsControl. If embedding is not on, pass in the handle
+	// produced by GetDialogItem.
+	// JTP: Embedding is on for this main preferences dialog box.
+	GetDialogItem(dialog, LOCAL_TO_GLOBAL_DITL(iNAME, first_item), &item_type, &item, &bounds);	
+	GetDialogItemAsControl(dialog, LOCAL_TO_GLOBAL_DITL(iNAME, first_item), &prefNameItem);
+	SetDialogItemText((Handle)prefNameItem, preferences->name);
 	SelectDialogItemText(dialog, LOCAL_TO_GLOBAL_DITL(iNAME, first_item), 0, SHRT_MAX);
 
 	/* Setup the color */
