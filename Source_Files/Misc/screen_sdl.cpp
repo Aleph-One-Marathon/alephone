@@ -59,6 +59,9 @@ extern bool OGL_MapActive;
 extern bool OGL_HUDActive;
 #endif
 
+// From shell_sdl.cpp
+extern bool option_nogamma;
+
 #include "screen_shared.cpp"
 
 
@@ -642,7 +645,8 @@ void animate_screen_clut(struct color_table *color_table, bool full_screen)
 			green[i] = color_table->colors[i].green;
 			blue[i] = color_table->colors[i].blue;
 		}
-		SDL_SetGammaRamp(red, green, blue);
+		if (!option_nogamma)
+			SDL_SetGammaRamp(red, green, blue);
 	}
 }
 

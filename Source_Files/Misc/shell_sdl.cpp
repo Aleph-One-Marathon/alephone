@@ -81,6 +81,7 @@ DirectorySpecifier recordings_dir;		// Directory for recordings (except film buf
 // Command-line options
 bool option_nogl = false;				// Disable OpenGL
 bool option_nosound = false;			// Disable sound output
+bool option_nogamma = false;			// Disable gamma table effects (menu fades)
 static bool force_fullscreen = false;	// Force fullscreen mode
 static bool force_windowed = false;		// Force windowed mode
 
@@ -125,6 +126,7 @@ static void usage(const char *prg_name)
 		"\t[-g | --nogl]          Do not use OpenGL\n"
 #endif
 		"\t[-s | --nosound]       Do not access the sound card\n"
+		"\t[-m | --nogamma]       Disable gamma table effects (menu fades)\n"
 #if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
 		"\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 		"the data directory.\n"
@@ -176,6 +178,8 @@ int main(int argc, char **argv)
 			option_nogl = true;
 		} else if (strcmp(*argv, "-s") == 0 || strcmp(*argv, "--nosound") == 0) {
 			option_nosound = true;
+		} else if (strcmp(*argv, "-m") == 0 || strcmp(*argv, "--nogamma") == 0) {
+			option_nogamma = true;
 		} else {
 			printf("Unrecognized argument '%s'.\n", *argv);
 			usage(prg_name);
