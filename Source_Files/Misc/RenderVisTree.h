@@ -1,0 +1,208 @@
+#ifndef _RENDER_VISIBILITY_TREE_CLASS_
+#define _RENDER_VISIBILITY_TREE_CLASS_
+/*
+	
+	Rendering Visibility-Tree Class
+	by Loren Petrich,
+	August 6, 2000
+	
+	Defines a class for doing rendering visibility; from render.c
+*/
+
+#include "GrowableList.h"
+#include "ResizableList.h"
+#include "world.h"
+#include "render.h"
+
+
+// For casting pointers to integer values -- use appropriate data type
+// The definition here is for 32-bit systems; for 64-bit systems use appropriate longer one.
+typedef unsigned long POINTER_DATA;
+#define POINTER_CAST(x) ((POINTER_DATA)(x))
+
+
+// LP addition: typecast for cross-products, since these can be large
+typedef double CROSSPROD_TYPE;
+
+
+// Macros
+#define WRAP_LOW(n,max) ((n)?((n)-1):(max))
+#define WRAP_HIGH(n,max) (((n)==(max))?0:((n)+1))
+
+
+// LP: put here since it also used in build_base_node_list()
+enum /* next_polygon_along_line() states */
+{
+	_looking_for_first_nonzero_vertex,
+	_looking_clockwise_for_right_vertex,
+	_looking_counterclockwise_for_left_vertex,
+	_looking_for_next_nonzero_vertex
+};
+
+
+/* ---------- clipping data */
+
+enum /* É_clip_data flags */
+{
+	_clip_left= 0x0001,
+	_clip_right= 0x0002,
+	_clip_up= 0x0004,
+	_clip_down= 0x0008
+};
+
+enum /* left and right sides of screen */
+{
+	indexLEFT_SIDE_OF_SCREEN,
+	indexRIGHT_SIDE_OF_SCREEN,
+	NUMBER_OF_INITIAL_ENDPOINT_CLIPS
+};
+
+enum /* top and bottom sides of screen */
+{
+	indexTOP_AND_BOTTOM_OF_SCREEN,
+	NUMBER_OF_INITIAL_LINE_CLIPS
+};
+
+struct line_clip_data
+{
+	word flags;
+	short x0, x1; /* clipping bounds */
+	
+	// LP change: made more long-distance friendly
+	long_vector2d top_vector, bottom_vector;
+	// world_vector2d top_vector, bottom_vector; /* viewer-space */
+	short top_y, bottom_y; /* screen-space */
+};
+
+struct endpoint_clip_data
+{
+	word flags;
+	short x; /* screen-space */
+	
+	// LP change: made into a long vector for long views
+	long_vector2d vector;
+	// world_vector2d vector; /* viewer-space */
+};
+
+struct clipping_window_data
+{
+	// LP change: split into two sets of vectors: left-right and top-bottom
+	long_vector2d left, right;
+	long_vector2d top, bottom;
+	// world_vector2d left, right, top, bottom; /* j is really k for top and bottom */
+	short x0, x1, y0, y1;
+	
+	struct clipping_window_data *next_window;
+};
+
+
+/* ---------- nodes */
+
+#define MAXIMUM_CLIPPING_ENDPOINTS_PER_NODE 4
+#define MAXIMUM_CLIPPING_LINES_PER_NODE (MAXIMUM_VERTICES_PER_POLYGON-2)
+
+struct node_data
+{
+	word flags;
+	short polygon_index;
+	
+	/* clipping effects all children (and was caused by crossing from parent) */
+	short clipping_endpoint_count;
+	short clipping_endpoints[MAXIMUM_CLIPPING_ENDPOINTS_PER_NODE];
+	short clipping_line_count;
+	short clipping_lines[MAXIMUM_CLIPPING_LINES_PER_NODE];
+
+	node_data *parent; /* a pointer to our parent node (NULL for the root) */	
+	node_data **reference; /* a pointer to the pointer which references us (NULL for the root) */
+	node_data *siblings; /* pointer to the next sibling */
+	node_data *children; /* pointer to the head of the child array */
+	
+	// LP addition: this is inspired by Rhys Hill's tree structures;
+	// this is for membership in a polygon-sort tree.
+	// As constructed, its root will be the first node in the list, the viewpoint node.
+	node_data *PS_Greater;	// To nodes with higher polygon indices
+	node_data *PS_Less;		// To nodes with lower polygon indices
+	node_data *PS_Shared;	// To other nodes at the same polygon
+};
+
+
+class RenderVisTreeClass
+{
+	// Auxiliary data and routines:
+	
+	// Polygon queue now a growable list; its working size is maintained separately
+	GrowableList<short> PolygonQueue;
+	short polygon_queue_size;
+	
+	ResizableList<short> line_clip_indexes;
+	
+	// Turned preprocessor macro into function
+	void PUSH_POLYGON_INDEX(short polygon_index);
+	
+	void initialize_polygon_queue(view_data *view);
+	
+	void initialize_render_tree(view_data *view);
+	
+	void initialize_clip_data(view_data *view);
+	
+	word next_polygon_along_line(short *polygon_index, world_point2d *origin, long_vector2d *vector,
+		short *clipping_endpoint_index, short *clipping_line_index, short bias);
+	
+	void cast_render_ray(view_data *view, long_vector2d *vector, short endpoint_index,
+		node_data *parent, short bias);
+	
+	word decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
+		world_point2d *origin, long_vector2d *vector, word clip_flags, short bias);
+
+	void calculate_line_clipping_information(view_data *view, short line_index, word clip_flags);
+	
+	short calculate_endpoint_clipping_information(view_data *view, short endpoint_index, word clip_flags);
+	
+	void ResetEndpointClips(void);
+	
+	void ResetLineClips();
+	
+public:
+
+	ResizableList<short> endpoint_x_coordinates; /* gives screen x-coordinates for a map endpoint (only valid if _endpoint_is_visible) */
+	
+	/* every time we find a unique endpoint which clips something, we build one of these for it */
+	// LP addition: growable list
+	// Length changed in calculate_endpoint_clipping_information() and ResetEndpointClips()
+	GrowableList<endpoint_clip_data> EndpointClips;
+
+	/* every time we find a unique line which clips something, we build one of these for it (notice
+		the translation table from line_indexes on the map to line_clip_indexes in our table for when
+		we cross the same clip line again */
+	// LP addition: growable list
+	// Length changed in calculate_line_clipping_information() and ResetLineClips()
+	GrowableList<line_clip_data> LineClips;
+
+	// Growable list of clipping windows
+	// Length changed in build_clipping_windows(), initialize_clip_data(),
+	// and build_aggregate_render_object_clipping_window();
+	// keep sorted-node clipping-window pointers in sync with render-object ones
+	GrowableList<clipping_window_data> ClippingWindows;
+	
+	// Growable list of node_data values
+	// Length changed in cast_render_ray() and initialize_render_tree()
+	GrowableList<node_data> Nodes;
+	
+	// Resizes all the objects defined inside;
+	// the resizing is lazy
+	void Resize(int NumEndpoints, int NumLines);
+	// Builds the visibility tree
+ 	void build_render_tree(view_data *view);
+ 	
+  	// Inits everything
+ 	RenderVisTreeClass();
+};
+
+
+#if 0
+// Some old debug code
+inline int DiffIndx(GrowableList<node_data>& Nodes, node_data *Node) {if (Node) return (Node - Nodes.Begin()); else return -1;}
+inline void DebugTree(char *Label, int q, GrowableList<node_data>& Nodes,  node_data &Node) {dprintf("%s %4d %4d %4d %4d %4d",Label,q,Node.polygon_index,DiffIndx(Nodes,Node.PS_Less),DiffIndx(Nodes,Node.PS_Greater),DiffIndx(Nodes,Node.PS_Shared));}
+#endif
+
+#endif
