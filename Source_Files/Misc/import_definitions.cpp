@@ -127,7 +127,7 @@ static struct wad_data *get_physics_wad_data(
 //	dprintf("Open is: %d %d %.*s", physics_file.vRefNum, physics_file.parID, physics_file.name[0], physics_file.name+1);
 
 	OpenedFile PhysicsFile;
-	if(open_wad_file_for_reading(PhysicsFileSpec,PhysicsFile));
+	if(open_wad_file_for_reading(PhysicsFileSpec,PhysicsFile))
 	{
 		struct wad_header header;
 
