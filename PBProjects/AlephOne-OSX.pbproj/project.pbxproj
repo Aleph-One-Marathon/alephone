@@ -254,7 +254,7 @@
 			<string>Aleph One Shapes File</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>shp°</string>
+				<string>shp∞</string>
 				<string>shp2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -269,7 +269,7 @@
 			<string>Aleph One Sound Data</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>snd°</string>
+				<string>snd∞</string>
 				<string>snd2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -284,7 +284,7 @@
 			<string>Aleph One Interface Images</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>img°</string>
+				<string>img∞</string>
 				<string>img2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -299,7 +299,7 @@
 			<string>Aleph One Replay</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>fil°</string>
+				<string>fil∞</string>
 				<string>fil2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -3872,7 +3872,7 @@
 			<string>Aleph One Shapes File</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>shp°</string>
+				<string>shp∞</string>
 				<string>shp2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -3887,7 +3887,7 @@
 			<string>Aleph One Sound Data</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>snd°</string>
+				<string>snd∞</string>
 				<string>snd2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -3902,7 +3902,7 @@
 			<string>Aleph One Interface Images</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>img°</string>
+				<string>img∞</string>
 				<string>img2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -3917,7 +3917,7 @@
 			<string>Aleph One Replay</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>fil°</string>
+				<string>fil∞</string>
 				<string>fil2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -3937,7 +3937,7 @@
 			<string>Aleph One Map File</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>sce°</string>
+				<string>sce∞</string>
 				<string>sce2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -3993,7 +3993,7 @@
 			<string>Aleph One Physics File</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>phy°</string>
+				<string>phy∞</string>
 				<string>phy2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
@@ -4008,7 +4008,7 @@
 			<string>Aleph One Saved Game</string>
 			<key>CFBundleTypeOSTypes</key>
 			<array>
-				<string>sga°</string>
+				<string>sga∞</string>
 				<string>sga2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
