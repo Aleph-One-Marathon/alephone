@@ -612,9 +612,11 @@ static int L_Set_Life(lua_State *L)
     }
     
     player_data *player = get_player_data(player_index);
-    
-    player->suit_energy = energy;
-    mark_shield_display_as_dirty();
+    if (player->suit_energy < 3*PLAYER_MAXIMUM_SUIT_ENERGY)
+    {
+	player->suit_energy = energy;
+	mark_shield_display_as_dirty();
+    }
     return 0;
 }
 
@@ -655,8 +657,11 @@ static int L_Set_Oxygen(lua_State *L)
     
     player_data *player = get_player_data(player_index);
     
-    player->suit_oxygen = oxygen;
-    mark_shield_display_as_dirty();
+    if (player->suit_oxygen < PLAYER_MAXIMUM_SUIT_OXYGEN)
+    {
+	player->suit_oxygen = oxygen;
+	mark_shield_display_as_dirty();
+    }
     return 0;
 }
 
@@ -839,10 +844,10 @@ static int L_Teleport_Player(lua_State *L)
     
     SET_PLAYER_TELEPORTING_STATUS(player, true);
     monster->action= _monster_is_teleporting;
-    local_player->teleporting_phase= 0;
-    local_player->delay_before_teleport= 0;
+    player->teleporting_phase= 0;
+    player->delay_before_teleport= 0;
     
-    local_player->teleporting_destination= dest;
+    player->teleporting_destination= dest;
     start_teleporting_effect(true);
     play_object_sound(player->object_index, Sound_TeleportOut());
     return 0;
@@ -1989,6 +1994,35 @@ static int L_Player_Control(lua_State *L)
     }
     return 0;
 }
+
+static int L_Teleport_Player_To_Level(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {	
+        lua_pushstring(L, "teleport_player_to_level: incorrect argument type");
+        lua_error(L);
+    }
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int dest = static_cast<int>(lua_tonumber(L,2));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "teleport_player_to_level: invalid player index");
+        lua_error(L);
+    }
+    player_data *player = get_player_data(player_index);
+    monster_data *monster= get_monster_data(player->monster_index);
+    
+    SET_PLAYER_TELEPORTING_STATUS(player, true);
+    monster->action= _monster_is_teleporting;
+    player->teleporting_phase= 0;
+    player->delay_before_teleport= 0;
+    
+    player->teleporting_destination= - dest -1;
+    start_teleporting_effect(true);
+    play_object_sound(player->object_index, Sound_TeleportOut());
+    return 0;
+}
+
 /*
 static int L_Set_Player_Global_Speed(lua_State *L)
 {
@@ -2813,7 +2847,6 @@ void RegisterLuaFunctions()
     lua_register(state, "set_underwater_fog_color", L_Set_Underwater_Fog_Color);
     lua_register(state, "get_underwater_fog_depth", L_Get_Underwater_Fog_Depth);
     lua_register(state, "get_underwater_fog_color", L_Get_Underwater_Fog_Color);
-    lua_register(state, "teleport_player", L_Teleport_Player);
     lua_register(state, "new_monster", L_New_Monster);
     lua_register(state, "activate_monster", L_Activate_Monster);
     lua_register(state, "deactivate_monster", L_Deactivate_Monster);
@@ -2844,6 +2877,8 @@ void RegisterLuaFunctions()
     lua_register(state, "get_player_angle", L_Get_Player_Angle);
     lua_register(state, "player_is_dead", L_Player_Is_Dead);
     lua_register(state, "player_control", L_Player_Control);
+    lua_register(state, "teleport_player", L_Teleport_Player);
+    lua_register(state, "teleport_player_to_level", L_Teleport_Player_To_Level);
     //lua_register(state, "set_player_global_speed", L_Set_Player_Global_Speed);
     lua_register(state, "set_platform_player_control", L_Set_Platform_Player_Control);
     lua_register(state, "get_platform_player_control", L_Get_Platform_Player_Control);
