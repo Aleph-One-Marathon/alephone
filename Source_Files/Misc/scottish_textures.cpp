@@ -306,8 +306,8 @@ inline int NextLowerExponent(int n)
 void allocate_texture_tables(
 	void)
 {
-	scratch_table0= (short *)malloc(sizeof(short)*MAXIMUM_SCRATCH_TABLE_ENTRIES);
-	scratch_table1= (short *)malloc(sizeof(short)*MAXIMUM_SCRATCH_TABLE_ENTRIES);
+	scratch_table0= new short[MAXIMUM_SCRATCH_TABLE_ENTRIES];
+	scratch_table1= new short[MAXIMUM_SCRATCH_TABLE_ENTRIES];
 	precalculation_table= malloc(MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE*MAXIMUM_SCRATCH_TABLE_ENTRIES);
 	assert(scratch_table0&&scratch_table1&&precalculation_table);
 
