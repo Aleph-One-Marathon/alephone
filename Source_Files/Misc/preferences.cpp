@@ -64,7 +64,7 @@ May 16, 2002 (Woody Zenfell):
 
 #include <string.h>
 #include <stdlib.h>
-
+#include <unistd.h>
 
 #ifdef mac
 // Marathon-engine dialog boxes:
@@ -231,6 +231,10 @@ void initialize_preferences(
 		FileSpecifier FileSpec;
 
 #if defined(mac)
+#ifdef __MACH__
+            chdir(getenv("HOME"));
+            chdir("./Library/Preferences/");
+#endif
 		FileSpec.SetParentToPreferences();
 		FileSpec.SetName(getcstr(temporary, strFILENAMES, filenamePREFERENCES),'TEXT');
 #elif defined(SDL)
@@ -266,6 +270,7 @@ void initialize_preferences(
 	catch(...)
 	{
 		// Could not open or read the preferences file, therefore we do nothing
+            
 	}
 	
 	// Check on the read-in prefs
@@ -330,15 +335,25 @@ void write_preferences(
 	// Mac stuff: save old default directory
 	short OldVRefNum;
 	long OldParID;
+        //AS: evil hack since HSetVol doesn't affect fopen() on OS X, so we fopen an absolute path
+        char str[257] = "";
+        strcat(str,getenv("HOME"));
+        strcat(str,"/Library/Preferences/");
+        strcat(str,getcstr(temporary, strFILENAMES, filenamePREFERENCES));
+        printf("%s\n",str);
 	HGetVol(nil,&OldVRefNum,&OldParID);
 	
 	// Set default directory to prefs directory
 	FileSpecifier FileSpec;
 	if (!FileSpec.SetParentToPreferences()) return;
 	if (HSetVol(nil, FileSpec.GetSpec().vRefNum, FileSpec.GetSpec().parID) != noErr) return;
-	
+    
 	// Open the file
-	FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
+#ifdef __MACH__
+        FILE *F = fopen(str,"w");
+#else
+        FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
+#endif
 
 #elif defined(SDL)
 	// Fix courtesy of mdadams@ku.edu
