@@ -35,45 +35,79 @@ TYPE=APP
 #	in folder names do not work well with this makefile.
 CS=Source_Files/CSeries
 EP=Source_Files/Expat
+FI=Source_Files/Files
+GW=Source_Files/GameWorld
+IP=Source_Files/Input
 MI=Source_Files/Misc
+MV=Source_Files/ModelView
 NW=Source_Files/Network
 PF=Source_Files/Pfhortran
+RM=Source_Files/RenderMain
+RO=Source_Files/RenderOther
+SN=Source_Files/Sound
+XM=Source_Files/XML
 SRCS=\
   $(CS)/byte_swapping.cpp $(CS)/csalerts_sdl.cpp $(CS)/cscluts_sdl.cpp \
-  $(CS)/csfiles_beos.cpp $(CS)/csmisc_sdl.cpp $(CS)/csstrings_sdl.cpp \
+  $(CS)/csdialogs_sdl.cpp $(CS)/csfiles_beos.cpp $(CS)/csmisc_sdl.cpp \
+  $(CS)/csstrings_sdl.cpp $(CS)/mytm_sdl.cpp \
   \
   $(EP)/hashtable.c $(EP)/xmlparse.c $(EP)/xmlrole.c $(EP)/xmltok.c \
   \
-  $(MI)/AnimatedTextures.cpp $(MI)/ChaseCam.cpp $(MI)/ColorParser.cpp \
-  $(MI)/Crosshairs_SDL.cpp $(MI)/DamageParser.cpp $(MI)/FileHandler_SDL.cpp \
-  $(MI)/FontHandler.cpp $(MI)/ImageLoader_SDL.cpp $(MI)/OGL_Render.cpp \
-  $(MI)/OGL_Setup.cpp $(MI)/OverheadMap_SDL.cpp $(MI)/OverheadMapRenderer.cpp \
-  $(MI)/PlayerName.cpp $(MI)/RenderPlaceObjs.cpp $(MI)/RenderRasterize.cpp \
-  $(MI)/RenderSortPoly.cpp $(MI)/RenderVisTree.cpp $(MI)/ShapesParser.cpp \
-  $(MI)/TextStrings.cpp $(MI)/ViewControl.cpp $(MI)/XML_Configure.cpp \
-  $(MI)/XML_DataBlock.cpp $(MI)/XML_ElementParser.cpp $(MI)/XML_LevelScript.cpp \
-  $(MI)/XML_MakeRoot.cpp $(MI)/XML_Loader_SDL.cpp $(MI)/computer_interface.cpp \
-  $(MI)/crc.cpp $(MI)/devices.cpp $(MI)/dynamic_limits.cpp $(MI)/effects.cpp \
-  $(MI)/fades.cpp $(MI)/find_files_sdl.cpp $(MI)/flood_map.cpp \
-  $(MI)/game_errors.cpp $(MI)/game_wad.cpp $(MI)/game_window.cpp \
-  $(MI)/game_window_sdl.cpp $(MI)/images.cpp $(MI)/import_definitions.cpp \
-  $(MI)/interface.cpp $(MI)/interface_sdl.cpp $(MI)/items.cpp \
-  $(MI)/lightsource.cpp $(MI)/map.cpp $(MI)/map_constructors.cpp \
-  $(MI)/marathon2.cpp $(MI)/media.cpp $(MI)/monsters.cpp \
-  $(MI)/motion_sensor.cpp $(MI)/mouse_sdl.cpp $(MI)/mysound.cpp \
-  $(MI)/overhead_map.cpp $(MI)/pathfinding.cpp $(MI)/physics.cpp \
-  $(MI)/placement.cpp $(MI)/platforms.cpp $(MI)/player.cpp \
-  $(MI)/preferences.cpp $(MI)/preprocess_map_sdl.cpp $(MI)/projectiles.cpp \
-  $(MI)/render.cpp $(MI)/resource_manager.cpp $(MI)/scenery.cpp \
-  $(MI)/scottish_textures.cpp $(MI)/screen_drawing.cpp \
-  $(MI)/screen_sdl.cpp $(MI)/sdl_dialogs.cpp $(MI)/sdl_fonts.cpp \
-  $(MI)/sdl_widgets.cpp $(MI)/shapes.cpp $(MI)/shell.cpp $(MI)/textures.cpp \
-  $(MI)/vbl.cpp $(MI)/vbl_sdl.cpp $(MI)/wad.cpp $(MI)/wad_sdl.cpp \
-  $(MI)/wad_prefs.cpp $(MI)/weapons.cpp $(MI)/world.cpp \
+  $(FI)/crc.cpp $(FI)/FileHandler_SDL.cpp $(FI)/find_files_sdl.cpp \
+  $(FI)/game_wad.cpp $(FI)/import_definitions.cpp $(FI)/preprocess_map_sdl.cpp \
+  $(FI)/resource_manager.cpp $(FI)/wad.cpp $(FI)/wad_prefs.cpp \
+  $(FI)/wad_sdl.cpp \
   \
-  $(NW)/network_dummy.cpp $(NW)/network_games.cpp \
+  $(GW)/devices.cpp $(GW)/dynamic_limits.cpp $(GW)/effects.cpp \
+  $(GW)/flood_map.cpp $(GW)/items.cpp $(GW)/lightsource.cpp \
+  $(GW)/map_constructors.cpp $(GW)/map.cpp $(GW)/marathon2.cpp $(GW)/media.cpp \
+  $(GW)/monsters.cpp $(GW)/pathfinding.cpp $(GW)/physics.cpp \
+  $(GW)/placement.cpp $(GW)/platforms.cpp $(GW)/player.cpp \
+  $(GW)/projectiles.cpp $(GW)/scenery.cpp $(GW)/weapons.cpp $(GW)/world.cpp \
   \
-  $(PF)/script_instructions.cpp $(PF)/script_parser.cpp $(PF)/scripting.cpp
+  $(IP)/mouse_sdl.cpp \
+  \
+  $(MI)/ActionQueues.cpp $(MI)/game_errors.cpp $(MI)/interface.cpp \
+  $(MI)/interface_sdl.cpp $(MI)/PlayerImage_sdl.cpp $(MI)/PlayerName.cpp \
+  $(MI)/preferences.cpp $(MI)/preferences_widgets_sdl.cpp \
+  $(MI)/sdl_dialogs.cpp $(MI)/sdl_widgets.cpp \
+  $(MI)/thread_priority_sdl_dummy.cpp $(MI)/vbl.cpp $(MI)/vbl_sdl.cpp \
+  \
+  $(MV)/Model3D.cpp $(MV)/ModelRenderer.cpp $(MV)/Dim3_Loader.cpp \
+  $(MV)/StudioLoader.cpp $(MV)/WavefrontLoader.cpp \
+  \
+  $(NW)/network.cpp $(NW)/network_data_formats.cpp $(NW)/network_dialogs.cpp \
+  $(NW)/network_dialogs_sdl.cpp $(NW)/network_dialog_widgets_sdl.cpp \
+  $(NW)/network_games.cpp $(NW)/network_lookup_sdl.cpp \
+  $(NW)/network_microphone_sdl_dummy.cpp $(NW)/network_speaker_sdl.cpp \
+  $(NW)/network_stream.cpp $(NW)/network_tcp.cpp $(NW)/network_udp.cpp \
+  $(NW)/SDL_netx.cpp $(NW)/SSLP_limited.cpp \
+  \
+  $(PF)/script_instructions.cpp $(PF)/script_parser.cpp $(PF)/scripting.cpp \
+  \
+  $(RM)/AnimatedTextures.cpp $(RM)/Crosshairs_SDL.cpp \
+  $(RM)/ImageLoader_SDL.cpp $(RM)/OGL_Faders.cpp $(RM)/OGL_Render.cpp \
+  $(RM)/OGL_Setup.cpp $(RM)/OGL_Textures.cpp $(RM)/render.cpp \
+  $(RM)/RenderPlaceObjs.cpp $(RM)/RenderRasterize.cpp $(RM)/RenderSortPoly.cpp \
+  $(RM)/RenderVisTree.cpp $(RM)/scottish_textures.cpp $(RM)/shapes.cpp \
+  $(RM)/textures.cpp \
+  \
+  $(RO)/ChaseCam.cpp $(RO)/computer_interface.cpp $(RO)/fades.cpp \
+  $(RO)/FontHandler.cpp $(RO)/game_window.cpp $(RO)/game_window_sdl.cpp \
+  $(RO)/HUDRenderer.cpp $(RO)/HUDRenderer_OGL.cpp $(RO)/HUDRenderer_SW.cpp \
+  $(RO)/images.cpp $(RO)/motion_sensor.cpp $(RO)/overhead_map.cpp \
+  $(RO)/OverheadMap_OGL.cpp $(RO)/OverheadMapRenderer.cpp \
+  $(RO)/OverheadMap_SDL.cpp $(RO)/screen_drawing.cpp $(RO)/screen_sdl.cpp \
+  $(RO)/sdl_fonts.cpp $(RO)/TextLayoutHelper.cpp $(RO)/TextStrings.cpp \
+  $(RO)/ViewControl.cpp \
+  \
+  $(SN)/mysound.cpp \
+  \
+  $(XM)/ColorParser.cpp $(XM)/DamageParser.cpp $(XM)/ShapesParser.cpp \
+  $(XM)/XML_Configure.cpp $(XM)/XML_DataBlock.cpp $(XM)/XML_ElementParser.cpp \
+  $(XM)/XML_LevelScript.cpp $(XM)/XML_Loader_SDL.cpp $(XM)/XML_MakeRoot.cpp \
+  \
+  Source_Files/shell.cpp Source_Files/shell_misc.cpp
 
 #	specify the resource files to use
 #	full path or a relative path to the resource file can be used.
@@ -96,9 +130,9 @@ RSRCS=
 #		library: my_lib.a entry: my_lib.a or path/my_lib.a
 MACHINE=$(shell uname -m)
 ifeq ($(MACHINE), BePC)
-  LIBS=be stdc++.r4 SDL_image png jpeg z
+  LIBS=be stdc++.r4 SDL_image SDL_net png z
 else
-  LIBS=be SDL_image png jpeg z
+  LIBS=be SDL_image SDL_net png jpeg z
 endif
 
 #	specify additional paths to directories following the standard
@@ -128,7 +162,7 @@ OPTIMIZE= FULL
 #	to use.  For example, setting DEFINES to "DEBUG=1" will cause the
 #	compiler option "-DDEBUG=1" to be used.  Setting DEFINES to "DEBUG"
 #	would pass "-DDEBUG" on the compiler's command line.
-DEFINES= SDL HAVE_SDL_IMAGE_H HAVE_SDL_IMAGE HAVE_UNISTD_H VERSION=\"$(version)\"
+DEFINES= SDL HAVE_SDL_IMAGE_H HAVE_SDL_IMAGE HAVE_SDL_NET_H HAVE_SDL_NET HAVE_UNISTD_H VERSION=\"$(version)\"
 
 #	specify special warning levels
 #	if unspecified default warnings will be used

@@ -25,8 +25,11 @@
 
 #include	<sys/types.h>
 
-#ifdef WIN32
+#if defined(WIN32)
 # include	<winsock.h>
+#elif defined(__BEOS__)
+# include	<sys/socket.h>
+# include	<netinet/in.h>
 #else
 # include	<sys/socket.h>
 # include	<netinet/in.h>
@@ -44,7 +47,7 @@
 # define MY_TYPE_CAST
 #endif
 
-#ifndef WIN32	// Win32 allows 255.255.255.255 as broadcast, much easier
+#if !defined(WIN32) && !defined(__BEOS__)	// Win32 allows 255.255.255.255 as broadcast, much easier
 // FILE-LOCAL (static) CONSTANTS
 static const int	kMaxNumBroadcastAddresses	= 8;
 static const int	kIFConfigBufferSize		= 1024;	// in bytes
@@ -64,7 +67,7 @@ static	int	SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket);
 // EXTERNALLY-VISIBLE FUNCTIONS
 int
 SDLNetx_EnableBroadcast(UDPsocket inSocket) {
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__BEOS__)
     if(!sCollectedBroadcastAddresses)
         SDLNetxint_CollectBroadcastAddresses(inSocket);
 #endif
@@ -79,7 +82,11 @@ SDLNetx_EnableBroadcast(UDPsocket inSocket) {
     // Sanity check
     if(theSocketFD < 0)
         return 0;
-    
+
+#ifdef __BEOS__
+	// Neither possible nor necessary
+	return 0;
+#else
     // Try to enable broadcast option on underlying socket
     int theOnValue = 1;
 
@@ -89,6 +96,7 @@ SDLNetx_EnableBroadcast(UDPsocket inSocket) {
         return 0;
     else
         return theOnValue;
+#endif
 }
 
 
@@ -105,6 +113,10 @@ SDLNetx_DisableBroadcast(UDPsocket inSocket) {
     if(theSocketFD < 0)
         return 0;
     
+#ifdef __BEOS__
+	// Neither possible nor necessary
+	return 0;
+#else
     // Try to disable broadcast option on underlying socket
     int theOffValue = 0;
     
@@ -114,10 +126,11 @@ SDLNetx_DisableBroadcast(UDPsocket inSocket) {
         return 0;
     else
         return (theOffValue == 0) ? 1 : 0;
+#endif
 }
 
 
-#ifndef WIN32  // see simpler function below for Win32
+#if !defined(WIN32) && !defined(__BEOS__)  // see simpler function below for Win32
 int
 SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
     int	theCountOfSuccessfulSends = 0;
@@ -153,7 +166,7 @@ SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
 
 
 // INTERNAL (static) FUNCTIONS
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__BEOS__)
 int
 SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket) {
     // Win or lose, we played the game.
