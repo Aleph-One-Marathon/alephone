@@ -16,6 +16,7 @@ Aug 15, 2000 (Loren Petrich):
 
 #include "cseries.h"
 
+#include "scripting.h"
 #include "script_instructions.h"
 #include "script_parser.h"
 
@@ -128,38 +129,60 @@ int load_script(int text_id)
 	
 	LoadedResource TextRsrc;
 	OFile.Get('T', 'E', 'X', 'T', text_id, TextRsrc);
-
-	clean_up_script();
 	
 	if (!TextRsrc.IsLoaded())
-		current_script=0;
-	else
 	{
-		char *origsrc = (char *)TextRsrc.GetPointer();
-		int origlen = TextRsrc.GetLength();
-		
-		// Create a new copy to avoid buffer overflows,
-		// and tack a C-string terminator on the end
-		src = new char[origlen+1];
-		memcpy(src,origsrc,origlen);
-		src[origlen] = 0;
-
-		current_script = parse_script(src);
-
-		delete []src;
-		
-		current_instruction = 0;
-		/*instruction_decay = 0;*/
-		
-		for (x=0;x < MAX_VARS;x++)
-			variable_lookup[x] = 0;
-		variable_count = 0;
+		clean_up_script();
+		current_script=0;
+		is_startup = false;
+		return script_TRUE;
 	}
+	
+	return load_script_data(TextRsrc.GetPointer(),TextRsrc.GetLength());
+}
+
+
+// LP addition:
+int load_script_data(void *Data, int Len)
+{
+	if (!is_pfhortran_on())	/* we can't do too much if the pfhortran isn't running */
+		return script_FALSE;
+	
+	char *origsrc = (char *)Data;
+	int origlen = Len;
+	
+	clean_up_script();
+	
+	if (!origsrc || origlen == 0)
+	{
+		current_script=0;
+		is_startup = false;
+		
+		return script_TRUE;
+	}
+	
+	
+	// Create a new copy to avoid buffer overflows,
+	// and tack a C-string terminator on the end
+	char *src = new char[origlen+1];
+	memcpy(src,origsrc,origlen);
+	src[origlen] = 0;
+	
+	current_script = parse_script(src);
+	delete []src;
+	
+	current_instruction = 0;
+	/*instruction_decay = 0;*/
+	
+	for (int x=0; x<MAX_VARS; x++)
+		variable_lookup[x] = 0;
+	variable_count = 0;
 
 	is_startup = false;
 
 	return script_TRUE;
 }
+
 
 void script_init(void)
 {
