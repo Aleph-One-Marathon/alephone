@@ -290,7 +290,7 @@ void allocate_render_memory(
 	assert(MAXIMUM_SIDES_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
 	assert(MAXIMUM_ENDPOINTS_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
 	assert(MAXIMUM_POLYGONS_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
-	render_flags= (word *) malloc(sizeof(word)*RENDER_FLAGS_BUFFER_SIZE);
+	render_flags= new word[RENDER_FLAGS_BUFFER_SIZE];
 	assert(render_flags);
 	
 	// LP addition: check out pointer-arithmetic hack
