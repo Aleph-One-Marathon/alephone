@@ -48,6 +48,12 @@ Aug 25, 2000 (Loren Petrich)
 
 Oct 14, 2000 (Loren Petrich):
 	Added music-volume stuff
+
+Sept 9, 2001 (Loren Petrich):
+	Modified the checkbox code to be much more reasonable.
+	Also added Ian Rickard's smart-dialog processing.
+	And added a routine for setting preferences to single files
+	if only single files of some type are present (idiot-proofing)
 */
 
 #ifdef env68k
@@ -79,16 +85,17 @@ enum {
 	iCROSSHAIRS
 };
 
+// LP: added music and Ian Rickard's relative-to-system flag
 enum {
 	ditlSOUND= 4003,
 	iSTEREO= 1,
 	iACTIVE_PANNING,
-	iHIGH_QUALITY,
 	iAMBIENT_SOUND,
+	iHIGH_QUALITY,
+	iMORE_SOUNDS,
+	iRELATIVE_VOLUME,
 	iVOLUME,
 	iCHANNELS,
-	iMORE_SOUNDS,
-	// LP addition:
 	iMUSIC
 };
 
@@ -154,6 +161,7 @@ static void build_extensions_list(void);
 static void search_from_directory(DirectorySpecifier& BaseDir);
 static unsigned long find_checksum_and_file_spec_from_dialog(DialogPtr dialog, 
 	short item_hit, uint32 type, FSSpec *file);
+static void SetToLoneFile(uint32 Type, FSSpec& File, unsigned long& Checksum);
 static void	rebuild_patchlist(DialogPtr dialog, short item, unsigned long parent_checksum,
 	struct environment_preferences_data *preferences);
 
@@ -251,7 +259,15 @@ static void setup_graphics_dialog(
 {
 	struct graphics_preferences_data *preferences= (struct graphics_preferences_data *) prefs;
 	short value, active;
-
+	
+	// IR-inspired: force to some reasonable value:
+	if (preferences->screen_mode.bit_depth >= 32)
+		preferences->screen_mode.bit_depth = 32;
+	else if (preferences->screen_mode.bit_depth >= 16)
+		preferences->screen_mode.bit_depth = 16;
+	else
+		preferences->screen_mode.bit_depth = 8;
+	
 	if(machine_supports_32bit(&preferences->device_spec))
 	{
 		active= true;
@@ -271,29 +287,13 @@ static void setup_graphics_dialog(
 	set_popup_enabled_state(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), _thousands_colors_menu_item, active);
 	set_popup_enabled_state(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), _billions_colors_menu_item, false);
 
-	/* Force the stuff for the valkyrie board.. */
-	if(preferences->screen_mode.acceleration==_valkyrie_acceleration)
-	{
-		preferences->screen_mode.high_resolution= false;
-		preferences->screen_mode.bit_depth= 16;
-		preferences->screen_mode.draw_every_other_line= false;
-		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), 
-			CONTROL_INACTIVE, _thousands_colors_menu_item);
-		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDETAIL, first_item), 
-			CONTROL_INACTIVE, NONE);
-
-		/* You can't choose a monitor with hardware acceleration enabled.. */
-		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iCHOOSE_MONITOR, first_item), 
-			CONTROL_INACTIVE, NONE);
-	} else {
-		/* Make sure it is enabled. */
-		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), 
-			CONTROL_ACTIVE, NONE);
-		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDETAIL, first_item), 
-			CONTROL_ACTIVE, NONE);
-		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iCHOOSE_MONITOR, first_item), 
-			CONTROL_ACTIVE, NONE);
-	}
+	/* Make sure it is enabled. */
+	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), 
+		CONTROL_ACTIVE, NONE);
+	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDETAIL, first_item), 
+		CONTROL_ACTIVE, NONE);
+	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iCHOOSE_MONITOR, first_item), 
+		CONTROL_ACTIVE, NONE);
 	
 	switch(preferences->screen_mode.bit_depth)
 	{
@@ -301,28 +301,13 @@ static void setup_graphics_dialog(
 		case 16: value= _thousands_colors_menu_item; break;
 		case 8:	 value= _hundreds_colors_menu_item; break;
 		default: value= _hundreds_colors_menu_item;
-			// LP change:
-			assert(false);
-			// halt();
 	}
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), NONE, value);
 
-#ifdef env68k
-	if(preferences->screen_mode.bit_depth != 8 || preferences->screen_mode.high_resolution)
-	{
-		preferences->screen_mode.draw_every_other_line= false;
-		active= CONTROL_INACTIVE;
-	} else {
-		active= CONTROL_ACTIVE;
-	}
-#else
+	// No more special 68K support either
 	preferences->screen_mode.draw_every_other_line= false;
 	active= CONTROL_INACTIVE;
-#endif
-/*
-	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDRAW_EVERY_OTHER_LINE, first_item), 
-		active, preferences->screen_mode.draw_every_other_line);
-*/
+	
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iWINDOW_SIZE, first_item), NONE, 
 		preferences->screen_mode.size+1);
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDETAIL, first_item), NONE, 
@@ -336,11 +321,7 @@ static void setup_graphics_dialog(
 	if (active!=CONTROL_ACTIVE) preferences->screen_mode.acceleration = _no_acceleration;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iHARDWARE_ACCELERATION, first_item), 
 		active, (preferences->screen_mode.acceleration == _opengl_acceleration));
-	/*
-	active = (hardware_acceleration_code(&preferences->device_spec) == _valkyrie_acceleration) ? CONTROL_ACTIVE : CONTROL_INACTIVE;
-	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iHARDWARE_ACCELERATION, first_item), 
-		active, (preferences->screen_mode.acceleration == _valkyrie_acceleration));
-	*/
+	
 	// LP: added full-screen option; will not activate it until it's in good working order
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iFILL_SCREEN, first_item), 
 		CONTROL_ACTIVE, (preferences->screen_mode.fullscreen));
@@ -366,11 +347,7 @@ static void hit_graphics_item(
 			display_device_dialog(&preferences->device_spec);
 			/* We resetup because the new device might not support millions, etc.. */
 			break;
-		/*
-		case iDRAW_EVERY_OTHER_LINE:
-			preferences->screen_mode.draw_every_other_line= !preferences->screen_mode.draw_every_other_line;
-			break;
-		*/	
+		
 		case iHARDWARE_ACCELERATION:
 			// LP change: added OpenGL support here
 			if(preferences->screen_mode.acceleration == _opengl_acceleration)
@@ -378,30 +355,25 @@ static void hit_graphics_item(
 				preferences->screen_mode.acceleration= _no_acceleration;
 			} else {
 				preferences->screen_mode.acceleration= _opengl_acceleration;
+				// Ian-Rickard-inspired change
+				// OpenGL mode is only reasonable with more than 8-bit
+				preferences->screen_mode.bit_depth = MAX(preferences->screen_mode.bit_depth, 16);
 			}
-			/*
-			preferences->screen_mode.draw_every_other_line= !preferences->screen_mode.draw_every_other_line;
-			if(preferences->screen_mode.acceleration == _valkyrie_acceleration)
-			{
-				preferences->screen_mode.acceleration= _no_acceleration;
-			} else {
-				preferences->screen_mode.acceleration= _valkyrie_acceleration;
-			}
-			*/
 			break;
 			
 		case iNUMBER_OF_COLORS:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
 			switch(GetControlValue(control))
 			{
-				case _hundreds_colors_menu_item: preferences->screen_mode.bit_depth= 8; break;
+				case _hundreds_colors_menu_item:
+					// IR-inspired change; no OpenGL mode in 8-bit color depth
+					preferences->screen_mode.bit_depth= 8;
+					preferences->screen_mode.acceleration= _no_acceleration;
+					break;
 				case _thousands_colors_menu_item: preferences->screen_mode.bit_depth= 16; break;
 				case _millions_colors_menu_item: preferences->screen_mode.bit_depth= 32; break;
 				case _billions_colors_menu_item:
 				default: preferences->screen_mode.bit_depth= 8;
-					// LP change:
-					assert(false);
-					// halt();
 			}
 			break;
 
@@ -586,6 +558,10 @@ static void setup_sound_dialog(
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iMORE_SOUNDS, first_item), active, 
 		(preferences->flags & _more_sounds_flag) ? true : false);
 
+	active= (available_flags & _relative_volume_flag) ? CONTROL_ACTIVE : CONTROL_INACTIVE;
+	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iRELATIVE_VOLUME, first_item), active, 
+		(preferences->flags & _relative_volume_flag) ? true : false);
+
 	return;
 }
 
@@ -604,52 +580,36 @@ static void hit_sound_item(
 	{
 		case iSTEREO:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			if(!GetControlValue(control))
-			{
-				preferences->flags |= _stereo_flag;
-			} else {
-				preferences->flags &= ~_stereo_flag;
-			}
+			SET_FLAG(preferences->flags,_stereo_flag,!GetControlValue(control));
 			break;
 
 		case iACTIVE_PANNING:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			if(!GetControlValue(control))
-			{
-				preferences->flags |= _dynamic_tracking_flag;
-			} else {
-				preferences->flags &= ~_dynamic_tracking_flag;
-			}
+			SET_FLAG(preferences->flags,_dynamic_tracking_flag,!GetControlValue(control));
 			break;
 			
 		case iHIGH_QUALITY:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			if(!GetControlValue(control))
-			{
-				preferences->flags |= _16bit_sound_flag;
-			} else {
-				preferences->flags &= ~_16bit_sound_flag;
-			}
+			SET_FLAG(preferences->flags,_16bit_sound_flag,!GetControlValue(control));
 			break;
 
 		case iAMBIENT_SOUND:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			if(!GetControlValue(control))
-			{
-				preferences->flags |= _ambient_sound_flag;
-			} else {
-				preferences->flags &= ~_ambient_sound_flag;
-			}
+			SET_FLAG(preferences->flags,_ambient_sound_flag,!GetControlValue(control));
 			break;
 
 		case iMORE_SOUNDS:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			if(!GetControlValue(control))
-			{
-				preferences->flags |= _more_sounds_flag;
-			} else {
-				preferences->flags &= ~_more_sounds_flag;
-			}
+			SET_FLAG(preferences->flags,_more_sounds_flag,!GetControlValue(control));
+			break;
+
+		case iRELATIVE_VOLUME:
+			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
+			SET_FLAG(preferences->flags,_relative_volume_flag,!GetControlValue(control));
+			// Need to hear relative/absolute distinction
+			test_sound_volume(preferences->volume, Sound_AdjustVolume());
+			// For checking out the music volume
+			set_sound_manager_parameters(sound_preferences);
 			break;
 			
 		case iVOLUME:
@@ -711,10 +671,6 @@ static void setup_input_dialog(
 	modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
 		LOCAL_TO_GLOBAL_DITL(iINPUT_SPROCKET_CONTROL, first_item), 
 		LOCAL_TO_GLOBAL_DITL(which, first_item));
-	//	which = (preferences->input_device == _mouse_yaw_pitch) ? iMOUSE_CONTROL : iKEYBOARD_CONTROL;
-	//		modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
-	//		LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), 
-	//		LOCAL_TO_GLOBAL_DITL(which, first_item));
 	
 	// LP addition: handle the input modifiers
 	short active;
@@ -757,8 +713,6 @@ static void hit_input_item(
 		case iINPUT_SPROCKET_CONTROL:
 					modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
 				LOCAL_TO_GLOBAL_DITL(iINPUT_SPROCKET_CONTROL, first_item), item_hit);
-			//	modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
-			//		LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), item_hit);
 			// LP change: added Ben Thompson's ISp support
 			preferences->input_device= GLOBAL_TO_LOCAL_DITL(item_hit, first_item)==iMOUSE_CONTROL ?
 				_mouse_yaw_pitch : (GLOBAL_TO_LOCAL_DITL(item_hit, first_item)==iINPUT_SPROCKET_CONTROL ? 
@@ -768,45 +722,27 @@ static void hit_input_item(
 		// Added run/walk and swim/sink interchange; renamed iSET_KEYS (LP: renamed it back)
 		case iINTERCHANGE_RUN_WALK:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			if(!GetControlValue(control))
-			{
-				preferences->modifiers |= _inputmod_interchange_run_walk;
-			} else {
-				preferences->modifiers &= ~_inputmod_interchange_run_walk;
-			}
+			SET_FLAG(preferences->modifiers,_inputmod_interchange_run_walk,!GetControlValue(control));
 			break;
 			
 		case iINTERCHANGE_SWIM_SINK:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			if(!GetControlValue(control))
-			{
-				preferences->modifiers |= _inputmod_interchange_swim_sink;
-			} else {
-				preferences->modifiers &= ~_inputmod_interchange_swim_sink;
-			}
+			SET_FLAG(preferences->modifiers,_inputmod_interchange_swim_sink,!GetControlValue(control));
 			break;
 			
 		// LP addition: Josh Elsasser's dont-switch-weapons patch
 		case iDONT_SWITCH_TO_NEW_WEAPON:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			if(!GetControlValue(control))
-			{
-				preferences->modifiers |= _inputmod_dont_switch_to_new_weapon;
-			} else {
-				preferences->modifiers &= ~_inputmod_dont_switch_to_new_weapon;
-			}
+			SET_FLAG(preferences->modifiers,_inputmod_dont_switch_to_new_weapon,!GetControlValue(control));
 			break;
 			
 		// LP addition: whether interface-button sounds are on (Ian Rickard)
 		case iUSE_INTERFACE_BUTTON_SOUNDS:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
+			SET_FLAG(preferences->modifiers,_inputmod_use_button_sounds,!GetControlValue(control));
 			if(!GetControlValue(control))
-			{
-				preferences->modifiers |= _inputmod_use_button_sounds;
-			} else {
-				preferences->modifiers &= ~_inputmod_use_button_sounds;
-			}
 			break;
+			
 		case iSET_KEYS:
 			{
 				short key_codes[NUMBER_OF_KEYS];
@@ -937,7 +873,12 @@ static bool teardown_environment_dialog(
 	short first_item,
 	void *prefs)
 {
+	// Clean up after dialogs; lone files may not be selected properly by them
 	struct environment_preferences_data *preferences= (struct environment_preferences_data *)prefs;
+	SetToLoneFile(_typecode_scenario, preferences->map_file, preferences->map_checksum);
+	SetToLoneFile(_typecode_physics, preferences->physics_file, preferences->physics_checksum);
+	SetToLoneFile(_typecode_shapes, preferences->shapes_file, preferences->shapes_mod_date);
+	SetToLoneFile(_typecode_sounds, preferences->sounds_file, preferences->sounds_mod_date);
 
 	(void) (dialog, first_item);
 	/* Proceses the entire physics file.. */
@@ -1284,6 +1225,32 @@ static unsigned long find_checksum_and_file_spec_from_dialog(
 
 	return checksum;
 }
+
+static void SetToLoneFile(uint32 Type, FSSpec& File, unsigned long& Checksum)
+{
+	int LoneFileIndex = NONE;	// Null value (-1)
+	
+	for (int index=0; index<accessory_file_count; index++)
+	{
+		if (file_descriptions[index].file_type == Type)
+		{
+			if (LoneFileIndex != NONE)
+				// No need to continue if duplicated
+				return;
+			else
+				// Don't quit here; check for another file with this type
+				LoneFileIndex = index;
+		}
+	}
+	
+	// Do the setting
+	if (LoneFileIndex != NONE)
+	{
+		File = accessory_files[LoneFileIndex].GetSpec();
+		Checksum = file_descriptions[LoneFileIndex].checksum;
+	}
+}
+
 
 static MenuHandle get_popup_menu_handle(
 	DialogPtr dialog,
