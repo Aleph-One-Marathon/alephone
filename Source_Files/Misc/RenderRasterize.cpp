@@ -7,6 +7,8 @@
 	Contains the calculation of clipping and rasterization; from render.c
 	
 	Made [view_data *view] a member and removed it as an argument
+	Also removed [bitmap_definition *destination] as superfluous,
+		now that there is a special rasterizer object that can contain it.
 */
 
 #include <string.h>
@@ -31,8 +33,7 @@ RenderRasterizerClass::RenderRasterizerClass():
 
 /* ---------- rendering the tree */
 
-void RenderRasterizerClass::render_tree(
-	bitmap_definition *destination)
+void RenderRasterizerClass::render_tree()
 {
 	assert(view);	// Idiot-proofing
 	assert(RSPtr);
@@ -134,7 +135,7 @@ void RenderRasterizerClass::render_tree(
 				if (ceiling_surface.height>view->origin.z)
 				{
 					// LP change: indicated that the void is on other side
-					render_node_floor_or_ceiling(destination, window, polygon, &ceiling_surface, true);
+					render_node_floor_or_ceiling(window, polygon, &ceiling_surface, true);
 					// render_node_floor_or_ceiling(view, destination, window, polygon, &ceiling_surface);
 				}
 				
@@ -171,7 +172,7 @@ void RenderRasterizerClass::render_tree(
 								surface.h1= polygon->ceiling_height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
 								surface.transfer_mode= side->primary_transfer_mode;
-								render_node_side(destination, window, &surface, true);
+								render_node_side(window, &surface, true);
 								// render_node_side(view, destination, window, &surface);
 								break;
 							case _split_side: /* render _low_side first */
@@ -181,7 +182,7 @@ void RenderRasterizerClass::render_tree(
 								surface.hmax= ceiling_surface.height - view->origin.z;
 								surface.texture_definition= &side->secondary_texture;
 								surface.transfer_mode= side->secondary_transfer_mode;
-								render_node_side(destination, window, &surface, true);
+								render_node_side(window, &surface, true);
 								// render_node_side(view, destination, window, &surface);
 								/* fall through and render high side */
 							case _high_side:
@@ -191,7 +192,7 @@ void RenderRasterizerClass::render_tree(
 								surface.h1= polygon->ceiling_height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
 								surface.transfer_mode= side->primary_transfer_mode;
-								render_node_side(destination, window, &surface, true);
+								render_node_side(window, &surface, true);
 								// render_node_side(view, destination, window, &surface);
 								break;
 							case _low_side:
@@ -201,7 +202,7 @@ void RenderRasterizerClass::render_tree(
 								surface.hmax= ceiling_surface.height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
 								surface.transfer_mode= side->primary_transfer_mode;
-								render_node_side(destination, window, &surface, true);
+								render_node_side(window, &surface, true);
 								// render_node_side(view, destination, window, &surface);
 								break;
 							
@@ -219,7 +220,7 @@ void RenderRasterizerClass::render_tree(
 							surface.hmax= ceiling_surface.height - view->origin.z;
 							surface.texture_definition= &side->transparent_texture;
 							surface.transfer_mode= side->transparent_transfer_mode;
-							render_node_side(destination, window, &surface, false);
+							render_node_side(window, &surface, false);
 							// render_node_side(view, destination, window, &surface);
 						}
 					}
@@ -229,7 +230,7 @@ void RenderRasterizerClass::render_tree(
 				if (floor_surface.height<view->origin.z)
 				{
 					// LP change: indicated that the void is on other side
-					render_node_floor_or_ceiling(destination, window, polygon, &floor_surface, true);
+					render_node_floor_or_ceiling(window, polygon, &floor_surface, true);
 					// render_node_floor_or_ceiling(view, destination, window, polygon, &floor_surface);
 				}
 			}
@@ -242,7 +243,7 @@ void RenderRasterizerClass::render_tree(
 			/* render exterior objects (with their own clipping windows) */
 			for (object= node->exterior_objects; object; object= object->next_object)
 			{
-				render_node_object(destination, object, true);
+				render_node_object(object, true);
 			}
 		}
 		
@@ -267,7 +268,7 @@ void RenderRasterizerClass::render_tree(
 				
 				for (window= node->clipping_windows; window; window= window->next_window)
 				{
-					render_node_floor_or_ceiling(destination, window, polygon, &LiquidSurface, false);
+					render_node_floor_or_ceiling(window, polygon, &LiquidSurface, false);
 				}
 			}
 		}
@@ -276,7 +277,7 @@ void RenderRasterizerClass::render_tree(
 		/* render exterior objects (with their own clipping windows) */
 		for (object= node->exterior_objects; object; object= object->next_object)
 		{
-			render_node_object(destination, object, false);
+			render_node_object(object, false);
 			// render_node_object(view, destination, object);
 		}
 	}
@@ -288,7 +289,6 @@ void RenderRasterizerClass::render_tree(
 
 // LP change: added "void present on other side" flag
 void RenderRasterizerClass::render_node_floor_or_ceiling(
-	bitmap_definition *destination,
 	clipping_window_data *window,
 	polygon_data *polygon,
 	horizontal_surface_data *surface,
@@ -415,7 +415,6 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 
 // LP change: added "void present on other side" flag
 void RenderRasterizerClass::render_node_side(
-	bitmap_definition *destination,
 	clipping_window_data *window,
 	vertical_surface_data *surface,
 	bool void_present)
@@ -571,7 +570,6 @@ void RenderRasterizerClass::render_node_side(
 /* ---------- rendering objects */
 
 void RenderRasterizerClass::render_node_object(
-	bitmap_definition *destination,
 	render_object_data *object,
 	bool other_side_of_media)
 	// struct render_object_data *object)
