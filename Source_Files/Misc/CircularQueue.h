@@ -29,6 +29,8 @@
  *  Hope it's useful.  (And correct.)
  *
  *  Created by woody in February 2002.
+ *
+ *  May 8, 2003 (Woody Zenfell): minor modifications.
  */
 
 #ifndef CIRCULAR_QUEUE_H
@@ -37,61 +39,77 @@
 template<typename T>
 class CircularQueue {
 public:
-    explicit    CircularQueue(unsigned int inSize) : mData(NULL) { reset(inSize); }
+        CircularQueue() : mData(NULL) { reset(0); }
+
+        explicit CircularQueue(unsigned int inSize) : mData(NULL) { reset(inSize); }
     
-    void		reset() { reset(mQueueSize); }
-    void		reset(unsigned int inSize) {
-        mReadIndex = mWriteIndex = 0;
-        if(inSize != mQueueSize || mData == NULL) {
-            mQueueSize = inSize;
-            if(mData != NULL)
-                delete [] mData;
-            mData = new T[mQueueSize];
+        void reset() { reset(mQueueSize); }
+        
+        void reset(unsigned int inSize) {
+                // We need size+1 elements of storage to allow size elements in queue
+                unsigned int theStorageCount = inSize + 1;
+
+                // Guard against wrap-around
+                assert(theStorageCount > inSize);
+
+                mReadIndex = mWriteIndex = 0;
+
+                if(inSize != mQueueSize || mData == NULL) {
+                        mQueueSize = inSize;
+                        if(mData != NULL)
+                                delete [] mData;
+                        mData = new T[mQueueSize];
+                }
         }
-    }
 
-    unsigned int	getCountOfElements()
+        unsigned int	getCountOfElements()
                             { return (mQueueSize + mWriteIndex - mReadIndex) % mQueueSize; }
-    unsigned int	getSpaceRemaining()
-                            { return mQueueSize - 1 - getCountOfElements(); }
-    
-    const T&        peek() { return mData[getReadIndex()]; }
-    void            dequeue() { advanceReadIndex(); }
-    void            enqueue(const T& inData) { mData[getWriteIndex()] = inData;  advanceWriteIndex(); }
 
-    ~CircularQueue() { if(mData != NULL) delete [] mData; }
+        unsigned int	getSpaceRemaining()
+                            { return mQueueSize - 1 - getCountOfElements(); }
+
+        unsigned int	getTotalSpace() { return mQueueSize; }
+    
+        const T&        peek() { return mData[getReadIndex()]; }
+
+        void            dequeue() { advanceReadIndex(); }
+
+        void            enqueue(const T& inData) { mData[getWriteIndex()] = inData;  advanceWriteIndex(); }
+
+        ~CircularQueue() { if(mData != NULL) delete [] mData; }
 
 protected:
-    unsigned int	getReadIndex(unsigned int inOffset = 0)
+        unsigned int	getReadIndex(unsigned int inOffset = 0)
                             { assert(getCountOfElements() > inOffset);  return (mReadIndex + inOffset) % mQueueSize; }
-    unsigned int	getWriteIndex(unsigned int inOffset = 0)
+        unsigned int	getWriteIndex(unsigned int inOffset = 0)
                             { assert(getSpaceRemaining() > inOffset);  return (mWriteIndex + inOffset) % mQueueSize; }
                             
-    unsigned int	advanceReadIndex(unsigned int inAmount = 1) {   
-        if(inAmount > 0) {
-            assert(getCountOfElements() > inAmount - 1);
-            mReadIndex = (mReadIndex + inAmount) % mQueueSize;
+        unsigned int advanceReadIndex(unsigned int inAmount = 1) {   
+                if(inAmount > 0) {
+                        assert(getCountOfElements() > inAmount - 1);
+                        mReadIndex = (mReadIndex + inAmount) % mQueueSize;
+                }
+                return mReadIndex;
         }
-        return mReadIndex;
-    }
-    unsigned int	advanceWriteIndex(unsigned int inAmount = 1) {
-        if(inAmount > 0) {
-            assert(getSpaceRemaining() > inAmount - 1);
-            mWriteIndex = (mWriteIndex + inAmount) % mQueueSize;
+        
+        unsigned int advanceWriteIndex(unsigned int inAmount = 1) {
+                if(inAmount > 0) {
+                        assert(getSpaceRemaining() > inAmount - 1);
+                        mWriteIndex = (mWriteIndex + inAmount) % mQueueSize;
+                }
+                return mWriteIndex;
         }
-        return mWriteIndex;
-    }
 
-    unsigned int	mReadIndex;
-    unsigned int	mWriteIndex;
-    unsigned int	mQueueSize;
+        unsigned int	mReadIndex;
+        unsigned int	mWriteIndex;
+        unsigned int	mQueueSize;
 
-    T*              mData;
+        T*              mData;
 
 private:
-    // disallow copying for now, just to be sure nobody tries it while it does the wrong thing.
-    CircularQueue(CircularQueue<T>&);
-    CircularQueue<T>& operator =(CircularQueue<T>&);
+        // disallow copying for now, just to be sure nobody tries it while it does the wrong thing.
+        CircularQueue(CircularQueue<T>&);
+        CircularQueue<T>& operator =(CircularQueue<T>&);
 };
 
 #endif // CIRCULAR_QUEUE_H

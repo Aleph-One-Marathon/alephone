@@ -171,7 +171,7 @@ OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd)
             // port in SDL_net are network byte order.
             IPaddress addr;
             addr.host = INADDR_NONE;
-            addr.port = SDL_SwapBE16(DEFAULT_PORT);
+            addr.port = SDL_SwapBE16(network_preferences->game_port);
             
             connectionEnd->server_socket = SDLNet_TCP_Open(&addr);
     

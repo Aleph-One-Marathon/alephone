@@ -1646,12 +1646,14 @@ void NetDDPPacketHandler(
 #ifndef NETWORK_IP
 #ifdef CLASSIC_MAC_NETWORKING
 					if (/*packet->sourceAddress.aNet == status->upringAddress.aNet && */
-						packet->sourceAddress.aNode == status->upringAddress.aNode &&
-						packet->sourceAddress.aSocket == status->upringAddress.aSocket)
+                                                network_preferences->accept_packets_from_anyone ||
+						(packet->sourceAddress.aNode == status->upringAddress.aNode &&
+						packet->sourceAddress.aSocket == status->upringAddress.aSocket))
 #endif
 #else
-					if (packet->sourceAddress.host == status->upringAddress.host &&
-					    packet->sourceAddress.port == status->upringAddress.port)
+					if (network_preferences->accept_packets_from_anyone ||
+                                            (packet->sourceAddress.host == status->upringAddress.host &&
+					     packet->sourceAddress.port == status->upringAddress.port))
 #endif
 					{
 						if (header->sequence==status->lastValidRingSequence+1)
@@ -1745,15 +1747,17 @@ void NetDDPPacketHandler(
 #ifndef NETWORK_IP
 #ifdef CLASSIC_MAC_NETWORKING
 						if (/* packet->sourceAddress.aNet == status->downringAddress.aNet && */
-							packet->sourceAddress.aNode == status->downringAddress.aNode &&
-							packet->sourceAddress.aSocket == status->downringAddress.aSocket)
+                                                        network_preferences->accept_packets_from_anyone ||
+							(packet->sourceAddress.aNode == status->downringAddress.aNode &&
+							 packet->sourceAddress.aSocket == status->downringAddress.aSocket))
 #else
 						if (0)	// LP: kludge to get it to compile
 #endif
 #else
 // LP: kludge to get it to compile
-						if (packet->sourceAddress.host == status->downringAddress.host &&
-						    packet->sourceAddress.port == status->downringAddress.port)
+						if (network_preferences->accept_packets_from_anyone ||
+                                                    (packet->sourceAddress.host == status->downringAddress.host &&
+						     packet->sourceAddress.port == status->downringAddress.port))
 #endif
 						{
 							if (header->sequence <= status->lastValidRingSequence)

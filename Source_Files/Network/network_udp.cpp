@@ -140,10 +140,10 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
         // NOTE: only SDLNet_UDP_Open wants port in host byte order.  All other uses of port in SDL_net
         // are in network byte order.
         // Note further that if, in the future, this behavior of SDL_net is deemed buggy, and it's altered
-        // to take a network byte order port, this DEFAULT_PORT will need to be changed to SDL_SwapBE16(DEFAULT_PORT).
+        // to take a network byte order port, this port number will need to be changed to SDL_SwapBE16(port).
         // Final note: At my suggestion, Sam Lantinga to update the SDL_net documentation to indicate that this is
         // the only place in SDL_net that the port is used in host byte order.  So it will probably stay this way!
-	socket = SDLNet_UDP_Open(DEFAULT_PORT);
+	socket = SDLNet_UDP_Open(network_preferences->game_port);
 	if (socket == NULL) {
 		SDLNet_FreePacket(sUDPPacketBuffer);
 		sUDPPacketBuffer = NULL;
@@ -165,7 +165,7 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
             fdprintf("warning: BoostThreadPriority() failed; network performance may suffer\n");
         
         //PORTGUESS but we should generally keep port in network order, I think?
-	*portNumber = SDL_SwapBE16(DEFAULT_PORT);
+	*portNumber = SDL_SwapBE16(network_preferences->game_port);
 	return 0;
 }
 

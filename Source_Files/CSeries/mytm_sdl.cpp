@@ -48,6 +48,7 @@
 
 #include "SDL_thread.h"
 #include "SDL_timer.h"
+#include "SDL_error.h"
 
 #include "Logging.h"
 

@@ -96,6 +96,8 @@ struct network_preferences_data
         char join_address[256];
         bool adapt_to_latency;
         int16 latency_hold_ticks;
+        uint16 game_port;	// TCP and UDP port number used for game traffic (not player-location traffic)
+        bool accept_packets_from_anyone;
 };
 
 struct player_preferences_data

@@ -314,7 +314,7 @@ short NetGetStreamSocketNumber(
 	return dspConnection->socketNum;
 #else
         //PORTGUESS we should usually keep port in network byte order?
-	return SDL_SwapBE16(DEFAULT_PORT);
+	return SDL_SwapBE16(network_preferences->game_port);
 #endif
 }
 

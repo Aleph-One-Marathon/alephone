@@ -484,6 +484,8 @@ void write_preferences(
         WriteXML_CString(F, "  join_address=\"",network_preferences->join_address,256,"\"\n");
         fprintf(F,"  adapt_to_latency=\"%s\"\n",BoolString(network_preferences->adapt_to_latency));
         fprintf(F,"  latency_hold_ticks=\"%hd\"\n",network_preferences->latency_hold_ticks);
+        fprintf(F,"  game_port=\"%hu\"\n",network_preferences->game_port);
+        fprintf(F,"  accept_packets_from_anyone=\"%s\"\n",BoolString(network_preferences->accept_packets_from_anyone));
 	fprintf(F,"/>\n\n");
 	
 	fprintf(F,"<environment\n");
@@ -670,6 +672,9 @@ static void default_network_preferences(network_preferences_data *preferences)
         obj_clear(preferences->join_address);
         preferences->adapt_to_latency= true;
         preferences->latency_hold_ticks= 2 * TICKS_PER_SECOND;
+        preferences->game_port= 4226;	// Magic number I guess, but this is the only place it's used
+                                        // (everyone else uses preferences->game_port)
+        preferences->accept_packets_from_anyone= false;
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -1760,6 +1765,14 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
         else if (StringsEqual(Tag,"latency_hold_ticks"))
         {
                 return ReadInt16Value(Value,network_preferences->latency_hold_ticks);
+        }
+        else if (StringsEqual(Tag,"game_port"))
+        {
+                return ReadUInt16Value(Value,network_preferences->game_port);
+        }
+        else if (StringsEqual(Tag,"accept_packets_from_anyone"))
+        {
+                return ReadBooleanValue(Value,network_preferences->accept_packets_from_anyone);
         }
         
 	UnrecognizedTag();

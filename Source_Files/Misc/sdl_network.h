@@ -44,9 +44,6 @@
 // Note that the SDL network microphone code is the one sending "big" packets these days.
 #define ddpMaxData 1500
 
-/* default IP port number for Marathon */
-const uint16 DEFAULT_PORT = 4226;
-
 typedef char NetEntityName[32];
 typedef IPaddress NetAddrBlock;
 
