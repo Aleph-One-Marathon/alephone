@@ -21,9 +21,11 @@ jkvw, 07/07/03
     Cleaned up some of the "odd" behaviors.  (e.g., new_monster/new_item would spawn their things at incorrect height.)
     Added triggers for player revival/death.
     
-tiennou, 20/07/03
+tiennou, 07/20/03
     Added mnemonics for sounds, changed L_Start_Fade to L_Screen_Fade, added side_index parameter to L_Call_Start/End_Refuel and updated the docs with the info I had...
     
+jkvw, 07/21/03
+    Lua access to network scoring and network compass, and get_player_name.
 */
 
 // cseries defines HAVE_LUA on A1/SDL
@@ -94,6 +96,8 @@ extern void draw_panels();
 
 extern bool MotionSensorActive;
 
+extern void destroy_players_ball(short player_index);
+
 struct monster_pathfinding_data
 {
 	struct monster_definition *definition;
@@ -117,6 +121,10 @@ vector<lua_camera> lua_cameras;
 int number_of_cameras = 0;
 
 uint32 *action_flags;
+
+bool use_lua_compass;
+world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
 double FindLinearValue(double startValue, double endValue, double timeRange, double timeTaken)
 {
@@ -160,6 +168,21 @@ void L_Call_Init()
     if (!lua_running)
         return;
     lua_pushstring(state, "init");
+    lua_gettable(state, LUA_GLOBALSINDEX);
+    if (!lua_isfunction(state, -1))
+    {
+        lua_pop(state, 1);
+        return;
+    }
+    if (lua_pcall(state, 0, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
+}
+
+void L_Call_Cleanup ()
+{
+    if (!lua_running)
+        return;
+    lua_pushstring(state, "cleanup");
     lua_gettable(state, LUA_GLOBALSINDEX);
     if (!lua_isfunction(state, -1))
     {
@@ -830,6 +853,21 @@ static int L_Count_Item(lua_State *L)
     player_data *player = get_player_data(player_index);
     lua_pushnumber(L, player->items[item_type]);
     return 1;
+}
+
+static int L_Destroy_Ball(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "destroy_ball: incorrect argument type");
+        lua_error(L);
+    }
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    
+    if (find_player_ball_color(player_index) != NONE)
+        destroy_players_ball(player_index);
+        
+    return 0;
 }
 
 static int L_Select_Weapon(lua_State *L)
@@ -1859,8 +1897,29 @@ static int L_Get_Player_Team(lua_State *L)
         lua_pushstring(L, "get_player_team: invalid player index");
         lua_error(L);
     }
+    
     player_data *player = get_player_data(player_index);
     lua_pushnumber(L, player->team);
+    return 1;
+}
+
+static int L_Get_Player_Name(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_player_name: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "get_player_name: invalid player index");
+        lua_error(L);
+    }
+    
+    player_data *player = get_player_data(player_index);
+    lua_pushstring(L, player->name);
     return 1;
 }
 
@@ -3026,6 +3085,205 @@ static int L_Local_Random (lua_State *L)
     return 1;
 }
 
+static int L_Award_Points (lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {	
+        lua_pushstring(L, "award_points: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int points = static_cast<int>(lua_tonumber(L,2));
+    
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring (L, "award_points: invalid player index");
+        lua_error (L);
+    }
+    player_data *player = get_player_data (player_index);
+    
+    player -> netgame_parameters[0] += points;
+    
+    return 0;
+}
+
+static int L_Award_Kills (lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+    {	
+        lua_pushstring(L, "award_kills: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int aggressor_player_index = static_cast<int>(lua_tonumber(L,1));
+    int slain_player_index = static_cast<int>(lua_tonumber(L,2));
+    int kills = static_cast<int>(lua_tonumber(L,3));
+    
+    if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring (L, "award_kills: invalid player index");
+        lua_error (L);
+    }
+    
+    if (slain_player_index < 0 || slain_player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring (L, "award_kills: invalid player index");
+        lua_error (L);
+    }
+    player_data *slain_player = get_player_data (slain_player_index);
+    
+    slain_player -> damage_taken [aggressor_player_index].kills += kills;
+    
+    return 0;
+}
+
+static int L_Set_Points (lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {	
+        lua_pushstring(L, "set_points: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int points = static_cast<int>(lua_tonumber(L,2));
+    
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring (L, "set_points: invalid player index");
+        lua_error (L);
+    }
+    player_data *player = get_player_data (player_index);
+    
+    player -> netgame_parameters[0] = points;
+    
+    return 0;
+}
+
+static int L_Set_Kills (lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+    {	
+        lua_pushstring(L, "set_kills: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int aggressor_player_index = static_cast<int>(lua_tonumber(L,1));
+    int slain_player_index = static_cast<int>(lua_tonumber(L,2));
+    int kills = static_cast<int>(lua_tonumber(L,3));
+    
+    if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring (L, "set_kills: invalid player index");
+        lua_error (L);
+    }
+    
+    if (slain_player_index < 0 || slain_player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring (L, "set_kills: invalid player index");
+        lua_error (L);
+    }
+    player_data *slain_player = get_player_data (slain_player_index);
+    
+    slain_player -> damage_taken [aggressor_player_index].kills = kills;
+    
+    return 0;
+}
+
+static int L_Get_Points (lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {	
+        lua_pushstring(L, "get_points: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring (L, "get_points: invalid player index");
+        lua_error (L);
+    }
+    player_data *player = get_player_data (player_index);
+    
+    lua_pushnumber (L, player -> netgame_parameters[0]);
+    
+    return 1;
+}
+
+static int L_Get_Kills (lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {	
+        lua_pushstring(L, "get_kills: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int aggressor_player_index = static_cast<int>(lua_tonumber(L,1));
+    int slain_player_index = static_cast<int>(lua_tonumber(L,2));
+    
+    if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring (L, "get_kills: invalid player index");
+        lua_error (L);
+    }
+    
+    if (slain_player_index < 0 || slain_player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring (L, "get_kills: invalid player index");
+        lua_error (L);
+    }
+    player_data *slain_player = get_player_data (slain_player_index);
+    
+    lua_pushnumber (L, slain_player -> damage_taken [aggressor_player_index].kills);
+    
+    return 1;
+}
+
+static int L_Use_Lua_Compass (lua_State *L)
+{
+    if (!lua_isboolean (L, 1))
+    {
+        lua_pushstring (L, "use_lua_compass: incorrect argument type");
+        lua_error (L);
+    }
+    
+    use_lua_compass = lua_toboolean (L, 1);
+    return 0;
+}
+
+static int L_Set_Lua_Compass_State (lua_State *L)
+{
+    if (!lua_isnumber (L, 1) || !lua_isnumber (L, 2))
+    {
+        lua_pushstring (L, "set_lua_compass_state: incorrect argument type");
+        lua_error (L);
+    }
+    
+    int player_index = static_cast<int>(lua_tonumber (L, 1));
+    int compass_state = static_cast<int>(lua_tonumber (L, 2));
+    lua_compass_states [player_index] = compass_state;
+    return 0;
+}
+
+static int L_Set_Lua_Compass_Beacon (lua_State *L)
+{
+    if (!lua_isnumber (L, 1) || !lua_isnumber (L, 2) || !lua_isnumber (L, 3))
+    {
+        lua_pushstring (L, "set_lua_compass_beacon: incorrect argument type");
+        lua_error (L);
+    }
+    
+    int player_index = static_cast<int>(lua_tonumber (L, 1));
+    int beacon_x = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
+    int beacon_y = static_cast<world_distance>(lua_tonumber(L,3)*WORLD_ONE);
+    lua_compass_beacons [player_index].x = beacon_x;
+    lua_compass_beacons [player_index].y = beacon_y;
+    return 0;
+}
+
 void RegisterLuaFunctions()
 {
     lua_register(state, "local_player_index", L_Local_Player_Index);
@@ -3048,6 +3306,7 @@ void RegisterLuaFunctions()
     lua_register(state, "add_item", L_Add_Item);
     lua_register(state, "remove_item", L_Remove_Item);
     lua_register(state, "count_item", L_Count_Item);
+    lua_register(state, "destroy_ball", L_Destroy_Ball);
     lua_register(state, "select_weapon", L_Select_Weapon);
     lua_register(state, "set_platform_state", L_Set_Platform_State);
     lua_register(state, "get_platform_state", L_Get_Platform_State);
@@ -3090,6 +3349,7 @@ void RegisterLuaFunctions()
     lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
     lua_register(state, "get_player_angle", L_Get_Player_Angle);
     lua_register(state, "get_player_team", L_Get_Player_Team);
+    lua_register(state, "get_player_name", L_Get_Player_Name);
     lua_register(state, "player_is_dead", L_Player_Is_Dead);
     lua_register(state, "player_control", L_Player_Control);
     lua_register(state, "teleport_player", L_Teleport_Player);
@@ -3130,6 +3390,15 @@ void RegisterLuaFunctions()
     lua_register(state, "new_item", L_New_Item);
     lua_register(state, "global_random", L_Global_Random);
     lua_register(state, "local_random", L_Local_Random);
+    lua_register(state, "award_points", L_Award_Points);
+    lua_register(state, "award_kills", L_Award_Kills);
+    lua_register(state, "set_points", L_Set_Points);
+    lua_register(state, "set_kills", L_Set_Kills);
+    lua_register(state, "get_points", L_Get_Points);
+    lua_register(state, "get_kills", L_Get_Kills);
+    lua_register(state, "use_lua_compass", L_Use_Lua_Compass);
+    lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
+    lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
 }
 
 void DeclareLuaConstants()
@@ -3190,6 +3459,7 @@ bool RunLuaScript()
 {
     if (!lua_loaded)
         return false;
+    use_lua_compass = false;
     int result = lua_pcall(state, 0, LUA_MULTRET, 0);
     lua_running = (result==0);
     return lua_running;

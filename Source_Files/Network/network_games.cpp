@@ -78,6 +78,11 @@ enum { // for capture the flag.
 static bool player_has_ball(short player_index, short color);
 extern void destroy_players_ball(short player_index);
 
+// for script controlled compass
+extern bool use_lua_compass;
+extern world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+extern short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+
 /* ------------------ code */
 long get_player_net_ranking(
 	short player_index,
@@ -235,63 +240,71 @@ short get_network_compass_state(
 	short state= _network_compass_all_off;
 	world_point2d *beacon= (world_point2d *) NULL;
 	
-	switch (GET_GAME_TYPE())
-	{
-		case _game_of_king_of_the_hill: // whereÕs the hill
-		// Benad
-		case _game_of_defense:
-			if (get_polygon_data(get_player_data(player_index)->supporting_polygon_index)->type==_polygon_is_hill)
-			{
-				state= _network_compass_all_on;
-			}
-			else
-			{
-				beacon= &dynamic_world->game_beacon;
-			}
-			break;
+        if (use_lua_compass)
+        {
+                if (lua_compass_states [player_index] > _network_compass_all_on)
+                    beacon = lua_compass_beacons + player_index;
+                else
+                    state = lua_compass_states [player_index];
+        } else {
+                switch (GET_GAME_TYPE())
+                {
+                        case _game_of_king_of_the_hill: // whereÕs the hill
+                        // Benad
+                        case _game_of_defense:
+                                if (get_polygon_data(get_player_data(player_index)->supporting_polygon_index)->type==_polygon_is_hill)
+                                {
+                                        state= _network_compass_all_on;
+                                }
+                                else
+                                {
+                                        beacon= &dynamic_world->game_beacon;
+                                }
+                                break;
 			
-		case _game_of_tag: // whereÕs it
-			if (dynamic_world->game_player_index==player_index)
-			{
-				state= _network_compass_all_on;
-			}
-			else
-			{
-				if (dynamic_world->game_player_index!=NONE)
-				{
-					beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
-				}
-			}
-			break;
-		// START Benad
-		case _game_of_rugby:
-			if (player_has_ball(player_index, SINGLE_BALL_COLOR))
-			{
-				state= _network_compass_all_on;
-			}
-			else
-			{
-				if (dynamic_world->game_player_index!=NONE)
-				{
-					beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
-				}
-			}
-			break;
-		//END Benad
-		case _game_of_kill_man_with_ball: // whereÕs the ball
-			if (player_has_ball(player_index, SINGLE_BALL_COLOR))
-			{
-				state= _network_compass_all_on;
-			}
-			else
-			{
-				if (dynamic_world->game_player_index!=NONE)
-				{
-					beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
-				}
-			}
-			break;
-	}
+                        case _game_of_tag: // whereÕs it
+                                if (dynamic_world->game_player_index==player_index)
+                                {
+                                        state= _network_compass_all_on;
+                                }
+                                else
+                                {
+                                        if (dynamic_world->game_player_index!=NONE)
+                                        {
+                                                beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
+                                        }
+                                }
+                                break;
+                        // START Benad
+                        case _game_of_rugby:
+                                if (player_has_ball(player_index, SINGLE_BALL_COLOR))
+                                {
+                                        state= _network_compass_all_on;
+                                }
+                                else
+                                {
+                                        if (dynamic_world->game_player_index!=NONE)
+                                        {
+                                                beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
+                                        }
+                                }
+                                break;
+                        //END Benad
+                        case _game_of_kill_man_with_ball: // whereÕs the ball
+                                if (player_has_ball(player_index, SINGLE_BALL_COLOR))
+                                {
+                                        state= _network_compass_all_on;
+                                }
+                                else
+                                {
+                                        if (dynamic_world->game_player_index!=NONE)
+                                        {
+                                                beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
+                                        }
+                                }
+                                break;
+                }
+        }
 
 	if (beacon)
 	{

@@ -2,10 +2,15 @@
 Aleph One Lua Scripters' Guide
                  
 Document created: July 10, 2003, by James Willson
-Revised: (First Version!)
+Revised: July 21, 2003
 
+Known Contributors:
+James Willson
+tiennou
 
-0. What is This?
+0. General
+0.1 What is This?
+0.2 Units
 1. Triggers
 2. A1 Functions
 2.1 Players
@@ -17,7 +22,8 @@ Revised: (First Version!)
 2.7 Platforms
 2.8 Camera
 2.9 Display
-2.10 Other
+2.10 Compass
+2.11 Other
 3. Mnemmonics
 3.1 Items
 3.2 Monsters
@@ -28,10 +34,15 @@ Revised: (First Version!)
 3.7 Faders
 3.8 Sounds
 3.9 Refuel Panels
+3.10 Compass Directions
 
 
-0. What is This?
-----------------
+0. General
+----------
+
+
+0.1 What is This?
+-----------------
 
 This is a reference for writing lua scripts to work in A1.
 At the time of creation, it lists every trigger and function available to lua scripts.
@@ -39,6 +50,32 @@ It is expected that lua functionality will grow in A1, and as it does, so will t
 Not everything here is completely documented, and any help fixing that would be appreciated.
 
 This is not a reference for lua itself - see lua.org for that.
+
+
+0.2 Units
+---------
+
+The unit for distance we use is World Units (WU)
+These are the same values you'd see in Forge or with F10 location display,
+and 1/1024 of what A1 uses internally and what you'd see in Pfhorte.
+
+Units for speed are . . . well let's say they're undecided.
+Let's define 1/1024 WU to be a "pfhorte".
+The units we might like to use are:
+
+pfhorte/tick
+WU/tick
+WU/s "real"
+WU/s "Forge"
+
+pfhorte/tick is what we're using currently, what A1 uses internally, and what you'd see in Pfhorte.
+WU/tick is the pfhorte/tick value divided by 1024 - the number of WU traveled in a tick, 1/30 s.
+WU/s "real" is the WU/tick value times 30 - the number of WU traveled in a second.
+WU/s "Forge" is the platform speed value as Forge would report it.
+That's right - Forge lies about platform speeds.  Forge's WU/s is a bad approximation.
+(jkvw: It's not that Forge's unit is evil, it has some nice properties, it's just not WU/s)
+
+(jkvw: and you better be grateful I'm not ripping out WU in favor of what A1 uses internally :))
 
 
 1. Triggers
@@ -50,6 +87,12 @@ These are functions scripts can define which A1 will call at specific times or e
 init()
 
 At beginning of level.
+
+
+cleanup()
+
+At end of the level.
+Primarily this is intended as a last chance for changing netgame scores before the postgame report.
 
 
 idle()
@@ -179,12 +222,17 @@ Returns the polygon player is standing on.
 
 get_player_angle (player)
 
-Return both the facing (yaw) nad the elevation (pitch) of player.
+Return both the facing (yaw) and the elevation (pitch) of player.
 
 
 get_player_team (player)
 
 Returns the team of player.
+
+
+get_player_name (player)
+
+Returns the name of player.
 
 
 player_is_dead (player)
@@ -199,7 +247,7 @@ Attempt to force player to ready the specifiec weapon.
 
 player_control (player, move_type, value)
 
-(? not sure how this works)
+(jkvw: not sure how this works)
 tiennou: In fact you can use it, but it's behavior is not really useful, and it's pretty hard to have a viable script with it. It's use is like "tell 'player' to 'move_type' by 'value' steps" (altought steps is not appropriate...)
 
 
@@ -212,6 +260,7 @@ teleport_player_to_level (player, level)
 
 Teleports player to level.  Of course, all the other players will also go to that level.
 (Note from tiennou: I'm not sure this actually work correctly, because the level index could be off by one... If anyone ever use this thing, tell me if it goes wrong)
+(jkvw: Also be aware that the life of a script expires when you change levels.  (regardless of whether it was initiated by mml or network gather dialog))
 
 
 enable_player(player)
@@ -354,11 +403,19 @@ remove_item (player, type)
 
 Takes away one item of the specified type from player.
 This only works for items that appear in inventory.
+(jkvw: Bad things happen when you try to gank balls with this.  Use destroy_ball for that.)
 
 
 count_item (player, type)
 
 Returns the number of items of the specified type player has ininventory.
+(jkvw: In some cases this will return -1, not 0, if a player has none of the specified item.  (I've observed this with balls and with dead players))
+
+
+destroy_ball (player)
+
+If player is carrying a ball, this destroys it.
+Otherwise, it does nothing.
 
 
 2.4 Tags
@@ -380,7 +437,7 @@ Activate/Deactivate all lights and platforms associated with tag
 
 set_light_state (light, state)
 
-Activate of deactivate light depending on state.
+Activate or deactivate light depending on state.
 
 
 get_light_state (light)
@@ -398,8 +455,9 @@ set_polygon_floor_height (poly, height)
 set_polygon_ceiling_height (poly, height)
 
 Sets/Queries the floor/ceiling height of poly.
-(? Is changing poly floor/ceiling heights on the fly a good idea)
+(jkvw: Is changing poly floor/ceiling heights on the fly a good idea)
 (tiennou: There is no real problem with changing, the only thing I was able to see is texture misalignement... You can also use this to make platform with both floor & ceiling moving)
+(jkvw: A careless mapmaker may create an untextured wall with this, too.  But yeah, using this is fine.)
 
 
 2.7 Platforms
@@ -445,7 +503,7 @@ get_platform_ceiling_height (poly)
 set_platform_floor_height (poly, height)
 set_platform_ceiling_height (poly, height)
 
-(? These appear to be the same as ..._poly_... except that they are unhappy if you pass a non-platform)
+(jkvw: These appear to be the same as ..._poly_... except that they are unhappy if you pass a non-platform)
 
 
 2.8 Camera
@@ -478,6 +536,8 @@ Stops the camera 'camera_index' for player. Only useful on local player.
 2.9 Display
 -----------
 
+(jkvw: Don't be scared off by "working only on local player" - these operate correctly, just in a roundabout way.  A1 compares the player index passed in to the local player index, calling the appropriate funciton if the indicies are the same.  (and does nothing otherwise)  So in a net game, screen_print(2, "hi") ends up printing "hi" to player 2 and doing nothing for the other players.  It may make sense to implement something like screen_print_all, since if you want to send a message to all players, it looks a little silly the way it's implemented now :))
+
 
 screen_print(player, message)
 
@@ -505,7 +565,6 @@ show_interface(player)
 Hides/Shows the HUD of player. Works only on local player.
 
 
-
 set_fog_depth(depth)
 set_fog_color(r, g, b)
 get_fog_depth()
@@ -515,8 +574,8 @@ set_underwater_fog_color(r, g, b)
 get_underwater_fog_depth()
 get_underwater_fog_color()
 
-(? foggy)
 (tiennou: actually, fog is broken, but those specify the fog parameters (color & depth)
+
 
 crosshairs_active(player)
 set_crosshairs_state(player, state)
@@ -530,16 +589,86 @@ set_zoom_state(player, state)
 Gets/Sets the tunnel (sniper-mode) vision for player. Works only on local player.
 
 
-2.10 Other
+2.10 Scoring
+------------
+
+
+(jkvw: different game types are scored differently.
+Time based games have scores in units of ticks.
+Every Man For Himself doesn't use network score at all - it relies on kills)
+
+
+award_points (player, amount)
+
+Increases player's network game score by amount.
+Negative values take points away.
+
+
+award_kills (aggressor_player, slain_player, amount)
+
+Increases aggressor_player's kill count against slain_player by amount.
+Negative values take kills away.
+Setting agressor_player and slain_player the same awards suicides.
+These changes will affect slain_player's death count.
+
+
+set_points (player, amount)
+
+Sets player's network game score to amount.
+
+
+set_kills (aggressor_player, slain_player, amount)
+
+Sets aggressor_player's kill count against slain_player.
+If aggressor_player and slain_player are the same, it sets suicides.
+This will affect slain_player's death count.
+
+
+get_points (player)
+
+Returns player's network game score.
+
+
+get_kills (aggressor_player, slain_player)
+
+Returns the kill count of aggressor_player against slain player.
+And of course, if they are the same, it returns the number of suicides.
+
+
+2.11 Compass
+------------
+
+
+use_lua_compass (state)
+
+Set who controls where the network compass points, either lua or normal network rules.
+
+
+set_lua_compass_state (player, compass_direction)
+
+Points player's compass in the specified directon.  (if the lua compass is enabled)
+The special value _network_compass_use_beacon doesn't point the compass in a specific direction;
+it tells the lua compass to point at the location specified by set_lua_compass_beacon.
+The "single wedge" mneumonics can be added to get bigger wedges.
+(so to point compass N you can do _network_compass_nw + _network_compass_ne)
+
+
+set_lua_compass_beacon (player, x, y)
+
+Points player's compass towards the location x, y.
+(if the lua compass is enabled and _network_compass_use_beacon is set for that player's lua compass state)
+
+
+2.12 Other
 ----------
 
 
 global_random ()
 
 Returns a random number from A1's global random number generator.
-(so for a random integer in [0, n-1], you can do "math.mod (global_random (), n)")
+(jkvw: so for a random integer in [0, n-1], you can do "math.mod (global_random (), n)")
 This is preferred over random number functionality from lua.
-(Using lua's functions you may get out of sync in net games and incorrect film playback.)
+(jkvw: Using lua's functions you may get out of sync in net games and incorrect film playback.)
 
 
 local_random ()
@@ -561,6 +690,7 @@ Sets the permutation field (the terminal script ID) of the terminal of the line 
 play_sound(player, sound, pitch)
 
 Plays sound to player at pitch. See the mnemonics for the sound list
+
 
 kill_script()
 
@@ -1010,4 +1140,16 @@ _refuel_oxygen
 _refuel_single_shield
 _refuel_double_shield
 _refuel_triple_shield
+
+
+3.10 Compass Directions
+-----------------------
+
+_network_compass_all_off
+_network_compass_nw
+_network_compass_ne
+_network_compass_sw
+_network_compass_se
+_network_compass_all_on
+_network_compass_use_beacon
 

@@ -660,6 +660,8 @@ fill_in_game_setup_dialog(
         // rather than some ridiculously large number
 	insert_number_into_text_item(dialog, iTIME_LIMIT, ((resuming_game && theAdjustedPreferences.game_is_untimed) ? network_preferences->time_limit : theAdjustedPreferences.time_limit)/TICKS_PER_SECOND/60);
 
+        SetNetscriptStatus (false);
+
 #ifdef mac
 #ifdef HAVE_LUA
         modify_boolean_control(dialog, iSELECT_SCRIPT, CONTROL_ACTIVE, NONE);

@@ -497,6 +497,18 @@
 {"_fade_tint_gross", 0x1F},
 {"_fade_tint_jjaro", 0x20},
 
+
+// compass directions
+
+{"_network_compass_all_off", 0x00},
+{"_network_compass_nw", 0x01},
+{"_network_compass_ne", 0x02},
+{"_network_compass_sw", 0x04},
+{"_network_compass_se", 0x08},
+{"_network_compass_all_on", 0x0F},
+{"_network_compass_use_beacon", 0x10},
+
+
 // sounds
 
 {"_snd_startup", 0},

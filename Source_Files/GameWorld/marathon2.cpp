@@ -541,7 +541,7 @@ void leaving_map(
 	mark_all_monster_collections(false);
 	mark_player_collections(false);
 #ifdef HAVE_LUA
-        
+	L_Call_Cleanup ();
         //Close and unload the Lua state
         CloseLuaScript();
 #endif /* HAVE_LUA */
