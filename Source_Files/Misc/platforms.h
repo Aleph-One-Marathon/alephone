@@ -248,7 +248,7 @@ struct platform_data /* 140 bytes */
 	short speed, delay;
 	world_distance minimum_floor_height, maximum_floor_height;
 	world_distance minimum_ceiling_height, maximum_ceiling_height;
-	long xxx; // was empty line
+	
 	short polygon_index;
 	uint16 dynamic_flags;
 	world_distance floor_height, ceiling_height;
