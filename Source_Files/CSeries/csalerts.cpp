@@ -59,11 +59,6 @@ void alert_user(
 	}
 }
 
-void pause(void)
-{
-	Debugger();
-}
-
 void vpause(
 	char *message)
 {

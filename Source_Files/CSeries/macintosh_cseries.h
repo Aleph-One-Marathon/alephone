@@ -27,8 +27,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #ifndef _MACINTOSH_CSERIES
 #define _MACINTOSH_CSERIES
 
-#undef mac
+
+#ifndef mac
 #define mac
+#endif
 
 #if defined(TARGET_API_MAC_CARBON)
     #include <Carbon/Carbon.h>
