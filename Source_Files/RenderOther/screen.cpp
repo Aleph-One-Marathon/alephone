@@ -572,7 +572,10 @@ void initialize_screen(
 #endif
 		//AS: slight speedup; disable shadow
 		ChangeWindowAttributes(screen_window,kWindowNoShadowAttribute,0);
+		// LP: So CodeWarrior can compile it
+#ifndef __MWERKS__
 		SetWindowAlpha(screen_window,1.0);
+#endif
 #else
 		screen_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
 		assert(screen_window);
