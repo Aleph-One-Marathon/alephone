@@ -657,7 +657,7 @@ void _render_computer_interface(
 		// Changed to actually-used buffer
 //#if defined(USE_CARBON_ACCESSORS)
 		Rect portRect;
-		GetPortBounds(world_pixels, &portRect);
+		GetPortBounds(GetWindowPort(screen_window), &portRect);
 		ClipRect(&portRect);
 /*
 #else
@@ -1722,7 +1722,7 @@ static void present_checkpoint_text(
 		// Reset it to the overall bounds
 //#if defined(USE_CARBON_ACCESSORS)
 		Rect portRect;
-		GetPortBounds(world_pixels, &portRect);
+		GetPortBounds(GetWindowPort(screen_window), &portRect);
 		ClipRect(&portRect);
 /*
 #else

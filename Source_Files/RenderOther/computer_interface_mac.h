@@ -27,6 +27,7 @@
 
 // LP addition: this is for getting the clipping rectangle to revert to
 // when done with drawing the terminal text
+extern WindowPtr screen_window;
 extern GrafPtr world_pixels;
 
 static struct terminal_key terminal_keys[]= {

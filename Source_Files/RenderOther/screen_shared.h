@@ -328,7 +328,7 @@ static short DisplayTextStyle = 0;
 
 
 #if defined(mac)
-static void update_fps_display(GrafPtr port)
+static void update_fps_display(GrafPtr port, short xoffset = -1, short yoffset = -1)
 #elif defined(SDL)
 static void update_fps_display(SDL_Surface *s)
 #endif
@@ -368,8 +368,8 @@ static void update_fps_display(SDL_Surface *s)
 //#if defined(USE_CARBON_ACCESSORS)
 		Rect portRect;
 		GetPortBounds(port, &portRect);
-		short X0 = portRect.left;
-		short Y0 = portRect.bottom;
+		short X0 = xoffset==-1?portRect.left:portRect.left+xoffset;
+		short Y0 = yoffset==-1?portRect.bottom:portRect.top + yoffset;
 /*
 #else
 		short X0 = port->portRect.left;
@@ -471,7 +471,7 @@ static void DisplayPosition(SDL_Surface *s)
 }
 
 #if defined(mac)
-static void DisplayMessages(GrafPtr port)
+static void DisplayMessages(GrafPtr port, short offWidth, short offHeight)
 #elif defined(SDL)
 static void DisplayMessages(SDL_Surface *s)
 #endif
@@ -487,8 +487,8 @@ static void DisplayMessages(SDL_Surface *s)
 //#if defined(USE_CARBON_ACCESSORS)
 	Rect portRect;
 	GetPortBounds(port, &portRect);
-	short X0 = portRect.left;
-	short Y0 = portRect.top;
+	short X0 = portRect.left+offWidth;
+	short Y0 = portRect.top+offHeight;
 /*
 #else
 	short X0 = port->portRect.left;

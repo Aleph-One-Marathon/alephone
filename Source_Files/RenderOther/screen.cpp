@@ -378,6 +378,8 @@ static bool ScreenFix_OGL32 = false;
 static bool DM_Present = false;
 static bool DM_Inited = false;
 
+static Rect updateRect;
+
 // Moved after the globals because the shared stuff might use those values
 #include "screen_shared.h"
 
@@ -555,8 +557,8 @@ void initialize_screen(
 
 #if defined(TARGET_API_MAC_CARBON)
 #ifdef USES_NIBS
-		error = CreateWindowFromNib(GUI_Nib,Window_Main_Backdrop, &backdrop_window);
-		assert(error == noErr);
+		//error = CreateWindowFromNib(GUI_Nib,Window_Main_Backdrop, &backdrop_window);
+		//assert(error == noErr);
 #else
 		backdrop_window= GetNewCWindow(windBACKDROP_WINDOW, NULL, (WindowPtr) -1);
 #endif
@@ -569,15 +571,15 @@ void initialize_screen(
 //#if defined(USE_CARBON_ACCESSORS)
 		Rect rgnBBox;
 		GetRegionBounds(gray_region, &rgnBBox);
-		MoveWindow(backdrop_window, rgnBBox.left, rgnBBox.top, false);
-		SizeWindow(backdrop_window, RECTANGLE_WIDTH(&rgnBBox), RECTANGLE_HEIGHT(&rgnBBox), true);
+	//	MoveWindow(backdrop_window, rgnBBox.left, rgnBBox.top, false);
+	//	SizeWindow(backdrop_window, RECTANGLE_WIDTH(&rgnBBox), RECTANGLE_HEIGHT(&rgnBBox), true);
 /*
 #else
 		MoveWindow(backdrop_window, (**gray_region).rgnBBox.left, (**gray_region).rgnBBox.top, false);
 		SizeWindow(backdrop_window, RECTANGLE_WIDTH(&(**gray_region).rgnBBox), RECTANGLE_HEIGHT(&(**gray_region).rgnBBox), true);
 #endif
 */
-		ShowWindow(backdrop_window);
+	//	ShowWindow(backdrop_window);
 
 #if defined(TARGET_API_MAC_CARBON)
 #ifdef USES_NIBS
@@ -586,12 +588,7 @@ void initialize_screen(
 #else
 		screen_window= GetNewCWindow(windGAME_WINDOW, NULL, (WindowPtr) -1);
 #endif
-		//AS: slight speedup; disable shadow
-		ChangeWindowAttributes(screen_window,kWindowNoShadowAttribute,0);
-		// LP: So CodeWarrior can compile it
-#ifndef __MWERKS__
-		SetWindowAlpha(screen_window,1.0);
-#endif
+
 #else
 		screen_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
 		assert(screen_window);
@@ -821,9 +818,7 @@ void render_screen(
 	short ticks_elapsed)
 {
 	PixMapHandle pixels;
-#ifdef CHUD_PROF
-    chudStartStopAmber();
-#endif
+
 	/* make whatever changes are necessary to the world_view structure based on whichever player
 		is frontmost */
 	world_view->ticks_elapsed= ticks_elapsed;
@@ -855,13 +850,14 @@ void render_screen(
 	screen_mode_data *mode = &screen_mode;
 //#if defined(USE_CARBON_ACCESSORS)
 	Rect ScreenRect;
+    Rect ViewRect;
 	GetPortBounds(GetWindowPort(screen_window), &ScreenRect);
 /*
 #else
 	Rect ScreenRect = screen_window->portRect;
 #endif
 */
-	Rect BufferRect, ViewRect;
+	Rect BufferRect;
 	bool HighResolution;
 	
 	short msize = mode->size;
@@ -986,7 +982,8 @@ void render_screen(
 	// LP: Resizing must come *before* locking the GWorld's pixels
 	myLockPixels(world_pixels);
 	pixels= myGetGWorldPixMap(world_pixels);
-	
+    CGrafPtr port;
+	RgnHandle r;
 	switch (screen_mode.acceleration)
 	{
 		/* if weÕre using the overhead map, fall through to no acceleration */
@@ -1007,8 +1004,25 @@ void render_screen(
 				WORLD_V*world_pixels_structure->bytes_per_row;
 			*//* blanking the screen is not supported in direct-to-screen mode */
 // #else /* !DIRECT_SCREEN_TEST */
+#ifdef HAVE_CORE_GRAPHICS
+            port = GetWindowPort(screen_window);
+            pixels = GetPortPixMap(port);
+            LockPortBits(port);
+            world_pixels_structure->bytes_per_row= GetPixRowBytes(pixels);
+			world_pixels_structure->row_addresses[0]= (pixel8 *) GetPixBaseAddr(pixels)
+                + (bit_depth/8)*(ViewRect.left - ScreenRect.left)
+                + world_pixels_structure->bytes_per_row*(ViewRect.top - ScreenRect.top);
+            r = NewRgn();
+            updateRect.left = ViewRect.left;
+            updateRect.top = ViewRect.top-1;
+            updateRect.bottom = updateRect.top + world_view->screen_height+1;
+            updateRect.right = updateRect.left + world_view->screen_width;
+            RectRgn(r, &updateRect);
+            UnlockPortBits(port);
+#else
 			world_pixels_structure->bytes_per_row= (*pixels)->rowBytes&0x3fff;
 			world_pixels_structure->row_addresses[0]= (pixel8 *) myGetPixBaseAddr(world_pixels);
+#endif
 // #ifdef WHITE_SCREEN_BETWEEN_FRAMES
 // LP change: will use OpenGL option for this
 			if (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_VoidColor))
@@ -1017,16 +1031,20 @@ void render_screen(
 				if(!world_view->terminal_mode_active)
 				{
 					GDHandle old_device;
-					CGrafPtr old_port;
-					
+					CGrafPtr old_port, curPort;
+#ifdef HAVE_CORE_GRAPHICS  
+                    curPort = port;
+#else
+                    curPort = world_pixels;
+#endif
 					myGetGWorld(&old_port, &old_device);
-					mySetGWorld(world_pixels, (GDHandle) NULL);
+					mySetGWorld(curPort, (GDHandle) NULL);
 					RGBColor SavedColor;
 					GetBackColor(&SavedColor);
 					RGBBackColor(&Get_OGL_ConfigureData().VoidColor);
 //#if defined(USE_CARBON_ACCESSORS)
 					Rect portRect;
-					GetPortBounds(world_pixels, &portRect);
+					GetPortBounds(curPort, &portRect);
 					EraseRect(&portRect);
 /*
 #else
@@ -1097,26 +1115,48 @@ void render_screen(
                 OGL_HUDActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_HUD);
         else
                 OGL_HUDActive = false;
-
+#ifdef HAVE_CORE_GRAPHICS
+        LockPortBits(port);
+#endif
         render_view(world_view, world_pixels_structure);
-	
-	switch (screen_mode.acceleration)
-	{
+#ifdef HAVE_CORE_GRAPHICS
+        UnlockPortBits(port);
+#endif
+        switch (screen_mode.acceleration)
+        {
 		// LP change: OpenGL acceleration included with no acceleration here
 		case _opengl_acceleration:
 		case _no_acceleration:
-			update_fps_display((GrafPtr)world_pixels);
-			// LP additions: display position and messages and show crosshairs
-			if (!world_view->terminal_mode_active)
+#ifdef HAVE_CORE_GRAPHICS
+            LockPortBits(port);
+            update_fps_display(port, ViewRect.left - ScreenRect.left,world_view->screen_height+ViewRect.top - ScreenRect.top);
+            if (!world_view->terminal_mode_active)
+				DisplayPosition(port);
+            DisplayMessages(port,ViewRect.left - ScreenRect.left,ViewRect.top - ScreenRect.top);
+            UnlockPortBits(port);
+#else
+			update_fps_display((GrafPtr)world_pixels,-1,-1);
+            if (!world_view->terminal_mode_active)
 				DisplayPosition((GrafPtr)world_pixels);
-			DisplayMessages((GrafPtr)world_pixels);
+            DisplayMessages((GrafPtr)world_pixels,0,0);
+#endif
+			// LP additions: display position and messages and show crosshairs
+
 			
 			// Don't show the crosshairs when either the overhead map or the terminal is active
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
-			  if (NetAllowCrosshair())
-			    if (Crosshairs_IsActive())
-			      if (!OGL_RenderCrosshairs())
-				Crosshairs_Render((GrafPtr)world_pixels);
+                if (NetAllowCrosshair())
+                    if (Crosshairs_IsActive())
+                        if (!OGL_RenderCrosshairs())
+#ifdef HAVE_CORE_GRAPHICS
+                        {
+                            LockPortBits(port);
+                            Crosshairs_Render(port);
+                            UnlockPortBits(port);
+                        }
+#else
+                            Crosshairs_Render((GrafPtr)world_pixels);
+#endif
 // #ifndef DIRECT_SCREEN_TEST
 			// LP change: put in OpenGL buffer swapping when the main view or the overhead map
 			// are being rendered in OpenGL.
@@ -1141,119 +1181,121 @@ void render_screen(
 #endif
 */
 			}
-			if (!OGL_IsActive())
-                                update_screen(BufferRect,ViewRect,HighResolution);
-
-                        if(OGL_HUDActive)
+                if (!OGL_IsActive()) {
+#ifdef HAVE_CORE_GRAPHICS
+                    QDSetDirtyRegion(port,r);
+                    DisposeRgn(r);
+#endif
+                    update_screen(BufferRect,ViewRect,HighResolution);
+                }
+                
+                if(OGL_HUDActive)
+                {
+                    if(VS.ShowHUD)
+                    {
+                        OGL_SetWindow(ScreenRect,ScreenRect,true);
+                        Rect theRealHUDDestRect;
+                        if(msize < 4)
+                            SetRect(&theRealHUDDestRect, 0, 320, 640, 480);
+                        else
                         {
-				if(VS.ShowHUD)
-				{
-					OGL_SetWindow(ScreenRect,ScreenRect,true);
-					Rect theRealHUDDestRect;
-					if(msize < 4)
-						SetRect(&theRealHUDDestRect, 0, 320, 640, 480);
-					else
-					{
-						short theHUDAreaHeight = VS.OverallHeight - VS.MainHeight;
-						theRealHUDDestRect.left = (VS.OverallWidth - kHUDWidth)/2;
-						theRealHUDDestRect.top = VS.MainHeight + (theHUDAreaHeight - kHUDHeight) / 2;
-						theRealHUDDestRect.right = theRealHUDDestRect.left + kHUDWidth;
-						theRealHUDDestRect.bottom = theRealHUDDestRect.top + kHUDHeight;
-					}
-
-					if(!graphics_preferences->screen_mode.fullscreen)
-					{
-						int theXOffset = (RECTANGLE_WIDTH(&ScreenRect) - VS.OverallWidth)/2;
-						int theYOffset = (RECTANGLE_HEIGHT(&ScreenRect) - VS.OverallHeight)/2;
-						OffsetRect(&theRealHUDDestRect, theXOffset, theYOffset);
-					}
-
-					// we try to log these once per game here.  log level is dump, so
-     // only those wanting lots of detail will ever see it.
-					static bool logged = false; // for debugging
-
-					if(dynamic_world->tick_count > 150 && dynamic_world->tick_count < 180)
-					{
-						if(!logged)
-						{
-							logDump4("ScreenRect: {%d, %d, %d, %d}", ScreenRect.left, ScreenRect.top, ScreenRect.right, ScreenRect.bottom);
-							logDump4("HUD_DestRect: {%d, %d, %d, %d}", HUD_DestRect.left, HUD_DestRect.top, HUD_DestRect.right, HUD_DestRect.bottom);
-							logDump4("theRealHUDDestRect: {%d, %d, %d, %d}", theRealHUDDestRect.left, theRealHUDDestRect.top, theRealHUDDestRect.right, theRealHUDDestRect.bottom);
-							logged = true;
-						}
-					}
-					else
-						logged = false;
-
-					OGL_DrawHUD(theRealHUDDestRect, ticks_elapsed);
-
-				} // current mode should show HUD
-
-			} // rendering HUD with OpenGL
-			else {
-                                if (HUD_RenderRequest)
-                                {
-                                        if (Use_OGL_2D)
-                                        {
-                                                // This horrid-looking resizing does manage to get the HUD to work properly...
-                                                struct DownwardOffsetSet
-                                                {
-                                                        short Top, Bottom;
-                                                };
-                                                // Formula: 1st value = 40 + (3/16)*(true 1st value)
-                                                const DownwardOffsetSet OGL_DownwardOffsets[NUMBER_OF_VIEW_SIZES] =
-                                                {
-                                                        {160, 480},		//  _320_160_HUD
-                                                        {160, 480},		//  _480_240_HUD
-                                                        {160, 480},		//  _640_320_HUD
-                                                        {160, 480},		//  _640_480
-                                                        {190, 600},		//  _800_400_HUD
-                                                        {190, 600},		//  _800_600
-                                                        {232, 768},		// _1024_512_HUD
-                                                        {232, 768},		// _1024_768
-                                                        {280, 1024},	// _1280_640_HUD
-                                                        {280, 1024},	// _1280_1024
-                                                        {340, 1200},	// _1600_800_HUD
-                                                        {340, 1200},	// _1600_1200
-                                                        {204, 640},	// _1024_440_HUD
-                                                        {204, 640},	// _1024_640
-                                                        {244, 800},	// _1280_600_HUD
-                                                        {244, 800},	// _1280_800
-                                                        {244, 854},	// _1280_640WS_HUD
-                                                        {244, 854},	// _1280_854
-                                                        {260, 854},	// _1440_700_HUD
-                                                        {260, 854},	// _1440_900
-                                                        {284, 1050},	// _1680_840_HUD
-                                                        {284, 1050},	// _1680_1050
-                                                        {340, 1200},	// _1920_950_HUD
-                                                        {340, 1200},	// _1920_1200
-                                                };
-                                                const DownwardOffsetSet& Set = OGL_DownwardOffsets[msize];
-                                                HUD_DestRect.top = Set.Top;
-                                                HUD_DestRect.bottom = Set.Bottom;
-                                                // Paint on the back buffer and flip it to the front
-                                                OGL_SetWindow(ScreenRect,HUD_DestRect,true);
-                                                OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,true,false);
-                                        }
-                                        else
-                                                DrawHUD(HUD_SourceRect,HUD_DestRect);
-                                        HUD_RenderRequest = false;
-                                }
+                            short theHUDAreaHeight = VS.OverallHeight - VS.MainHeight;
+                            theRealHUDDestRect.left = (VS.OverallWidth - kHUDWidth)/2;
+                            theRealHUDDestRect.top = VS.MainHeight + (theHUDAreaHeight - kHUDHeight) / 2;
+                            theRealHUDDestRect.right = theRealHUDDestRect.left + kHUDWidth;
+                            theRealHUDDestRect.bottom = theRealHUDDestRect.top + kHUDHeight;
                         }
-
-                        if(OGL_IsActive()) OGL_SwapBuffers();
-// #endif
-			break;
-		
+                        
+                        if(!graphics_preferences->screen_mode.fullscreen)
+                        {
+                            int theXOffset = (RECTANGLE_WIDTH(&ScreenRect) - VS.OverallWidth)/2;
+                            int theYOffset = (RECTANGLE_HEIGHT(&ScreenRect) - VS.OverallHeight)/2;
+                            OffsetRect(&theRealHUDDestRect, theXOffset, theYOffset);
+                        }
+                        
+                        // we try to log these once per game here.  log level is dump, so
+                        // only those wanting lots of detail will ever see it.
+                        static bool logged = false; // for debugging
+                        
+                        if(dynamic_world->tick_count > 150 && dynamic_world->tick_count < 180)
+                        {
+                            if(!logged)
+                            {
+                                logDump4("ScreenRect: {%d, %d, %d, %d}", ScreenRect.left, ScreenRect.top, ScreenRect.right, ScreenRect.bottom);
+                                logDump4("HUD_DestRect: {%d, %d, %d, %d}", HUD_DestRect.left, HUD_DestRect.top, HUD_DestRect.right, HUD_DestRect.bottom);
+                                logDump4("theRealHUDDestRect: {%d, %d, %d, %d}", theRealHUDDestRect.left, theRealHUDDestRect.top, theRealHUDDestRect.right, theRealHUDDestRect.bottom);
+                                logged = true;
+                            }
+                        }
+                        else
+                            logged = false;
+                        
+                        OGL_DrawHUD(theRealHUDDestRect, ticks_elapsed);
+                        
+                    } // current mode should show HUD
+                    
+                } // rendering HUD with OpenGL
+                    else {
+                        if (HUD_RenderRequest)
+                        {
+                            if (Use_OGL_2D)
+                            {
+                                // This horrid-looking resizing does manage to get the HUD to work properly...
+                                struct DownwardOffsetSet
+                            {
+                                short Top, Bottom;
+                            };
+                                // Formula: 1st value = 40 + (3/16)*(true 1st value)
+                                const DownwardOffsetSet OGL_DownwardOffsets[NUMBER_OF_VIEW_SIZES] =
+                                {
+                                {160, 480},		//  _320_160_HUD
+                                {160, 480},		//  _480_240_HUD
+                                {160, 480},		//  _640_320_HUD
+                                {160, 480},		//  _640_480
+                                {190, 600},		//  _800_400_HUD
+                                {190, 600},		//  _800_600
+                                {232, 768},		// _1024_512_HUD
+                                {232, 768},		// _1024_768
+                                {280, 1024},	// _1280_640_HUD
+                                {280, 1024},	// _1280_1024
+                                {340, 1200},	// _1600_800_HUD
+                                {340, 1200},	// _1600_1200
+                                {204, 640},	// _1024_440_HUD
+                                {204, 640},	// _1024_640
+                                {244, 800},	// _1280_600_HUD
+                                {244, 800},	// _1280_800
+                                {244, 854},	// _1280_640WS_HUD
+                                {244, 854},	// _1280_854
+                                {260, 854},	// _1440_700_HUD
+                                {260, 854},	// _1440_900
+                                {284, 1050},	// _1680_840_HUD
+                                {284, 1050},	// _1680_1050
+                                {340, 1200},	// _1920_950_HUD
+                                {340, 1200},	// _1920_1200
+                                };
+                                const DownwardOffsetSet& Set = OGL_DownwardOffsets[msize];
+                                HUD_DestRect.top = Set.Top;
+                                HUD_DestRect.bottom = Set.Bottom;
+                                // Paint on the back buffer and flip it to the front
+                                OGL_SetWindow(ScreenRect,HUD_DestRect,true);
+                                OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,true,false);
+                            }
+                            else
+                                DrawHUD(HUD_SourceRect,HUD_DestRect);
+                            HUD_RenderRequest = false;
+                        }
+                    }
+                    
+                    if(OGL_IsActive()) OGL_SwapBuffers();
+                    // #endif
+                    break;
+            
 		default:
 			assert(false);
 			break;
 	}
-
-	myUnlockPixels(world_pixels);
-#ifdef CHUD_PROF
-	chudStartStopAmber();
-#endif
+        
+        myUnlockPixels(world_pixels);
 }
 
 void change_interface_clut(
@@ -1332,23 +1374,27 @@ void render_computer_interface(
 	struct view_terminal_data data;
 
 	GetGWorld(&old_gworld, &old_device);
+#ifdef HAVE_CORE_GRAPHICS
+    CGrafPtr port = GetWindowPort(screen_window);
+    SetGWorld(port, (GDHandle) NULL);
+    
+    data.left = updateRect.left;
+	data.right = updateRect.right;
+	data.top = updateRect.top;
+	data.bottom = updateRect.bottom;
+#else
+
 	SetGWorld(world_pixels, (GDHandle) NULL);
-	
-	// LP change: calculate the view dimensions directly from the GWorld's boundaries
-//#if defined(USE_CARBON_ACCESSORS)
 	Rect WPRect;
 	GetPortBounds(world_pixels, &WPRect);
-/*
-#else
-	Rect& WPRect = ((CGrafPtr)world_pixels)->portRect;
-#endif
-*/
+    
 	data.left = WPRect.left;
 	data.right = WPRect.right;
 	data.top = WPRect.top;
 	data.bottom = WPRect.bottom;
-	data.vertical_offset = 0;
-	
+#endif
+    data.vertical_offset = 0;
+
 	/*
 	data.left= 0; data.right= view->screen_width;
 	data.top= 0; data.bottom= view->screen_height;
@@ -1392,28 +1438,29 @@ void render_overhead_map(
 	struct overhead_map_data overhead_data;
 
 	GetGWorld(&old_gworld, &old_device);
+#ifdef HAVE_CORE_GRAPHICS
+    CGrafPtr port = GetWindowPort(screen_window);
+    Rect ScreenRect;
+    SetGWorld(port, (GDHandle) NULL);
+    GetPortBounds(port,&ScreenRect);
+	PaintRect(&ScreenRect);
+    
+	overhead_data.left = updateRect.left;
+	overhead_data.top = updateRect.top;
+	overhead_data.half_width = (overhead_data.width = RECTANGLE_WIDTH(&updateRect)) >> 1;
+	overhead_data.half_height = (overhead_data.height = RECTANGLE_HEIGHT(&updateRect)) >> 1;
+#else
 	SetGWorld(world_pixels, (GDHandle) NULL);
 	
-//#if defined(USE_CARBON_ACCESSORS)
 	Rect WPRect;
 	GetPortBounds(world_pixels, &WPRect);
 	PaintRect(&WPRect);
-/*
-#else
-	PaintRect(&world_pixels->portRect);
-#endif
-*/
-	
-	// LP change: calculate the view dimensions directly from the GWorld's boundaries
-/*
-#if !defined(USE_CARBON_ACCESSORS)
-	Rect& WPRect = ((CGrafPtr)world_pixels)->portRect;
-#endif
-*/
+
 	overhead_data.left = WPRect.left;
 	overhead_data.top = WPRect.top;
 	overhead_data.half_width = (overhead_data.width = RECTANGLE_WIDTH(&WPRect)) >> 1;
 	overhead_data.half_height = (overhead_data.height = RECTANGLE_HEIGHT(&WPRect)) >> 1;
+#endif
 
 	overhead_data.scale= view->overhead_map_scale;
 	overhead_data.mode= _rendering_game_map;
@@ -1925,15 +1972,6 @@ void FlushGrafPortRect(const CGrafPtr port, const Rect &destination)
 #endif
 }
 
-static void memcpy_blit_image(char * __restrict src, char * __restrict dst,const int width, int height,const int srcRowBytes,const int dstRowBytes,const int pelSize)
-{
-    while (height--) {
-	memcpy(dst,src,width*pelSize);
-	src += srcRowBytes;
-	dst += dstRowBytes;
-    }
-}
-
 // LP changes: moved sizing and resolution outside of this function,
 // because they can be very variable
 /* pixels are already locked, etc. */
@@ -1942,7 +1980,7 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 	if (hi_rez)
 	{
 #if defined(__APPLE__) && defined(__MACH__)
-	    PixMapHandle screen_pixels = (*world_device)->gdPMap;
+	/*    PixMapHandle screen_pixels = (*world_device)->gdPMap;
 	    PixMapHandle world_pixelspm = GetGWorldPixMap(world_pixels);
 	    Rect newDst, screenRect;
 	    GetPortBounds(GetWindowPort(screen_window), &screenRect);
@@ -1954,7 +1992,9 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 	    unsigned long sourceRB = GetPixRowBytes(world_pixelspm), dstRB = GetPixRowBytes(screen_pixels);
 	    memcpy_blit_image(GetPixBaseAddr(world_pixelspm) + (source.left*pelsize) + (source.top * sourceRB),
 					     GetPixBaseAddr(screen_pixels) + (newDst.left*pelsize) + (newDst.top * dstRB),
-					     RECTANGLE_WIDTH(&source), RECTANGLE_HEIGHT(&source), sourceRB, dstRB, pelsize);
+					     RECTANGLE_WIDTH(&source), RECTANGLE_HEIGHT(&source), sourceRB, dstRB, pelsize);*/
+        CGrafPtr port = GetWindowPort(screen_window);
+        QDFlushPortBuffer(port, NULL);
 #else
 		GrafPtr old_port;
 		RGBColor old_forecolor, old_backcolor;
