@@ -9,8 +9,8 @@ PROG=alephone
 
 # Check how echo works in this /bin/sh
 case `echo -n` in
--n)     _echo_n=   _echo_c='\c';;
-*)      _echo_n=-n _echo_c=;;
+-n) _echo_n=   _echo_c='\c';;
+*)  _echo_n=-n _echo_c=;;
 esac
 
 (autoconf --version) < /dev/null > /dev/null 2>&1 || {
@@ -18,14 +18,6 @@ esac
         echo "You must have autoconf installed to compile $PROG."
         echo "Download the appropriate package for your distribution,"
         echo "or get the source tarball at ftp://ftp.gnu.org/pub/gnu/"
-        DIE=1
-}
-
-(libtoolize --version) < /dev/null > /dev/null 2>&1 || {
-        echo
-        echo "You must have libtool installed to compile $PROG."
-        echo "Get ftp://ftp.gnu.org/pub/gnu/libtool-1.4.tar.gz"
-        echo "(or a newer version if it is available)"
         DIE=1
 }
 
@@ -54,9 +46,6 @@ aclocalinclude="$ACLOCAL_FLAGS"; \
 (echo $_echo_n " + Running aclocal: $_echo_c"; \
     aclocal $aclocalinclude; \
  echo "done.") && \
-(echo $_echo_n " + Running libtoolize: $_echo_c"; \
-    libtoolize --force --copy >/dev/null 2>&1; \
- echo "done.") && \
 (echo $_echo_n " + Running autoheader: $_echo_c"; \
     autoheader; \
  echo "done.") && \
@@ -75,6 +64,5 @@ if [ x"$NO_CONFIGURE" = "x" ]; then
 	echo "   ** If you wish to pass arguments to ./configure, please"
         echo "   ** specify them on the command line."
     fi
-    ./configure "$@" && \
-    echo "Now type 'make' to compile $PROG" || exit 1
+    ./configure "$@"
 fi
