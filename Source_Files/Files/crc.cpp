@@ -182,20 +182,19 @@ static uint32 calculate_file_crc(
 {
 	uint32 crc;
 	long count;
-	// FileError err;
 	long file_length, initial_position;
 	
 	/* Save and restore the initial file position */
-	assert(OFile.GetPosition(initial_position));
-	// initial_position= get_fpos(refnum);
+	if (!OFile.GetPosition(initial_position))
+		return 0;
 
 	/* Get the file_length */
-	assert(OFile.GetLength(file_length));
-	// file_length= get_file_length(refnum);
+	if (!OFile.GetLength(file_length))
+		return 0;
 	
 	/* Set to the start of the file */
-	assert(OFile.SetPosition(0));
-	// set_fpos(refnum, 0l);
+	if (!OFile.SetPosition(0))
+		return 0;
 
 	crc = 0xFFFFFFFFL;
 	while(file_length) 
@@ -207,17 +206,15 @@ static uint32 calculate_file_crc(
 			count= file_length;
 		}
 
-		assert(OFile.Read(count,buffer));
-		// err= read_file(refnum, count, buffer);
-		// vassert(!err, csprintf(temporary, "Error: %d", err));
-		
+		if (!OFile.Read(count, buffer))
+			return 0;
+
 		crc = calculate_buffer_crc(count, crc, buffer);
 		file_length -= count;
 	}
 	
 	/* Restore the file position */
-	assert(OFile.SetPosition(initial_position));
-	// set_fpos(refnum, initial_position);
+	OFile.SetPosition(initial_position);
 
 	return (crc ^= 0xFFFFFFFFL);
 }
