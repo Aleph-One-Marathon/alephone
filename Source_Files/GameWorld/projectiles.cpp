@@ -258,7 +258,7 @@ void detonate_projectile(
 	
 	damage->scale= damage_scale;
 	damage_monsters_in_radius(NONE, owner_index, owner_type, origin, polygon_index,
-		definition->area_of_effect, damage);
+		definition->area_of_effect, damage, NONE);
 	if (definition->detonation_effect!=NONE) new_effect(origin, polygon_index, definition->detonation_effect, 0);
 }
 
@@ -452,11 +452,11 @@ void move_projectiles(
 								{
 									if (definition->area_of_effect)
 									{
-										damage_monsters_in_radius(monster_obstruction_index, projectile->owner_index, projectile->owner_type, &old_location, object->polygon, definition->area_of_effect, damage);
+										damage_monsters_in_radius(monster_obstruction_index, projectile->owner_index, projectile->owner_type, &old_location, object->polygon, definition->area_of_effect, damage, projectile_index);
 									}
 									else
 									{
-										if (monster_obstruction_index!=NONE) damage_monster(monster_obstruction_index, projectile->owner_index, projectile->owner_type, &old_location, damage);
+										if (monster_obstruction_index!=NONE) damage_monster(monster_obstruction_index, projectile->owner_index, projectile->owner_type, &old_location, damage, projectile_index);
 									}
 								}
 							}

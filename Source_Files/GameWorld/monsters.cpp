@@ -1344,7 +1344,8 @@ void damage_monsters_in_radius(
 	world_point3d *epicenter,
 	short epicenter_polygon_index,
 	world_distance radius,
-	struct damage_definition *damage)
+	struct damage_definition *damage,
+	short projectile_index)
 {
 	size_t object_count;
 
@@ -1374,7 +1375,7 @@ void damage_monsters_in_radius(
                                 {
                                         if (!line_is_obstructed(epicenter_polygon_index, (world_point2d*)epicenter, object->polygon, (world_point2d*)&object->location))
                                         {
-                                                damage_monster(object->permutation, aggressor_index, aggressor_type, epicenter, damage);
+                                                damage_monster(object->permutation, aggressor_index, aggressor_type, epicenter, damage, projectile_index);
                                         }
                                 }
                         }
@@ -1392,7 +1393,7 @@ void damage_monsters_in_radius(
                         {
                                 if (!line_is_obstructed(epicenter_polygon_index, (world_point2d*)epicenter, aggressor->polygon, (world_point2d*)&aggressor->location))
                                 {
-                                        damage_monster(aggressor->permutation, aggressor_index, aggressor_type, epicenter, damage);
+                                        damage_monster(aggressor->permutation, aggressor_index, aggressor_type, epicenter, damage, projectile_index);
                                         }
                                 }
                         }
@@ -1404,7 +1405,8 @@ void damage_monster(
 	short aggressor_index,
 	short aggressor_type,
 	world_point3d *epicenter,
-	struct damage_definition *damage)
+	struct damage_definition *damage,
+	short projectile_index)
 {
 	struct monster_data *monster= get_monster_data(target_index);
 	struct monster_definition *definition= get_monster_definition(monster->type);
@@ -1428,7 +1430,7 @@ void damage_monster(
 		
 		if (MONSTER_IS_PLAYER(monster))
 		{
-			damage_player(target_index, aggressor_index, aggressor_type, damage);
+			damage_player(target_index, aggressor_index, aggressor_type, damage, projectile_index);
 		}
 		else
 		{
@@ -1600,7 +1602,7 @@ bool legal_polygon_height_change(
 			{
 				if (damage)
 				{
-					damage_monster(object->permutation, NONE, NONE, (world_point3d *) NULL, damage);
+					damage_monster(object->permutation, NONE, NONE, (world_point3d *) NULL, damage, NONE);
 					play_object_sound(object_index, Sound_Crunched());
 				}
 				legal_change= false;
@@ -1725,7 +1727,7 @@ static void cause_shrapnel_damage(
 	if (definition->shrapnel_radius!=NONE)
 	{
 		damage_monsters_in_radius(NONE, NONE, NONE, &object->location, object->polygon,
-			definition->shrapnel_radius, &definition->shrapnel_damage);
+			definition->shrapnel_radius, &definition->shrapnel_damage, NONE);
 	}
 }
 
@@ -1754,7 +1756,7 @@ static void update_monster_vertical_physics_model(
 		{
 			struct damage_definition *damage= get_media_damage(polygon->media_index, FIXED_ONE);
 			
-			if (damage) damage_monster(monster_index, NONE, NONE, (world_point3d *) NULL, damage);
+			if (damage) damage_monster(monster_index, NONE, NONE, (world_point3d *) NULL, damage, NONE);
 		}
 	}
 	desired_height= (monster->desired_height==NONE||MONSTER_IS_DYING(monster)) ? polygon->floor_height : monster->desired_height;

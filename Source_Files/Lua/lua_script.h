@@ -19,8 +19,8 @@ void L_Call_Got_Item(short type, short player_index);
 void L_Call_Light_Activated(short index);
 void L_Call_Platform_Activated(short index);
 void L_Call_Player_Revived(short player_index);
-void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action);
-void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount);
+void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action, short projectile_index);
+void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
 
 
 bool LoadLuaScript(const char *buffer, size_t len);

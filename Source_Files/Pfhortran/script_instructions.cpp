@@ -846,7 +846,7 @@ void s_Inflict_Damage(script_instruction inst)
 	damage.random= 0;
 	damage.scale= FIXED_ONE;
 
-	damage_player(local_player->monster_index, NONE, NONE, &damage);
+	damage_player(local_player->monster_index, NONE, NONE, &damage, NONE);
 }
 
 
@@ -2397,7 +2397,7 @@ void s_Monster_Hurt(script_instruction inst)
 	if(target == -1) return;
 	theMonster= GetMemberWithBounds(monsters,target,MAXIMUM_MONSTERS_PER_MAP);
 	if(!SLOT_IS_USED(theMonster)) return;		//Only hurt existing monsters
-	damage_monster(target, NONE, NONE, &(get_monster_data(target)->sound_location), &theDamage);
+	damage_monster(target, NONE, NONE, &(get_monster_data(target)->sound_location), &theDamage, NONE);
 }
 
 

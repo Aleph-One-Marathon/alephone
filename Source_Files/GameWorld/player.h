@@ -443,7 +443,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive); /* as
 void walk_player_list(void);
 
 void damage_player(short monster_index, short aggressor_index, short aggressor_type,
-	struct damage_definition *damage);
+	struct damage_definition *damage, short projectile_index);
 
 void mark_player_collections(bool loading);
 

@@ -300,8 +300,8 @@ void get_monster_dimensions(short monster_index, world_distance *radius, world_d
 void activate_nearby_monsters(short target_index, short caller_index, short flags);
 
 void damage_monsters_in_radius(short primary_target_index, short aggressor_index, short aggressor_type,
-	world_point3d *epicenter, short epicenter_polygon_index, world_distance radius, struct damage_definition *damage);
-void damage_monster(short monster_index, short aggressor_index, short aggressor_type, world_point3d *epicenter, struct damage_definition *damage);
+	world_point3d *epicenter, short epicenter_polygon_index, world_distance radius, struct damage_definition *damage, short projectile_index);
+void damage_monster(short monster_index, short aggressor_index, short aggressor_type, world_point3d *epicenter, struct damage_definition *damage, short projectile_index);
 
 monster_data *get_monster_data(
 	short monster_index);

@@ -712,7 +712,8 @@ void damage_player(
 	short monster_index,
 	short aggressor_index,
 	short aggressor_type,
-	struct damage_definition *damage)
+	struct damage_definition *damage,
+	short projectile_index)
 {
 	short player_index= monster_index_to_player_index(monster_index);
 	short aggressor_player_index= NONE; /* will be valid if the aggressor is a player */
@@ -771,7 +772,7 @@ void damage_player(
 			{
 				// LP change: pegging to maximum value
 				player->suit_oxygen= int16(MIN(long(player->suit_oxygen)-long(damage_amount),long(INT16_MAX)));
-				L_Call_Player_Damaged(player_index, aggressor_player_index, aggressor_index, damage->type, damage_amount);
+				L_Call_Player_Damaged(player_index, aggressor_player_index, aggressor_index, damage->type, damage_amount, projectile_index);
 				if (player->suit_oxygen < 0) player->suit_oxygen= 0;
 				if (player_index==current_player_index) mark_oxygen_display_as_dirty();
 				break;
@@ -781,7 +782,7 @@ void damage_player(
 				// LP change: pegging to maximum value
 				player->suit_energy= int16(MIN(long(player->suit_energy)-long(damage_amount),long(INT16_MAX)));
 
-				L_Call_Player_Damaged(player_index, aggressor_player_index, aggressor_index, damage->type, damage_amount);
+				L_Call_Player_Damaged(player_index, aggressor_player_index, aggressor_index, damage->type, damage_amount, projectile_index);
 				
 				/* damage the player, recording the kill if the aggressor was another player and we died */
 				if (player->suit_energy<0)
@@ -818,7 +819,7 @@ void damage_player(
 								player->monster_damage_taken.kills+= 1;
 							}
 #ifdef HAVE_LUA
-                                                        L_Call_Player_Killed (player_index, aggressor_player_index, action);
+                                                        L_Call_Player_Killed (player_index, aggressor_player_index, action, projectile_index);
 #endif
 						}
 						
@@ -1128,7 +1129,7 @@ static void handle_player_in_vacuum(
 			damage.random= 0;
 			damage.scale= FIXED_ONE;
 			
-			damage_player(player->monster_index, NONE, NONE, &damage);
+			damage_player(player->monster_index, NONE, NONE, &damage, NONE);
 		}
 	}
 }
@@ -1210,7 +1211,7 @@ static void update_player_teleport(
 					damage.type= _damage_teleporter;
 					damage.base= damage.random= damage.flags= damage.scale= 0;
 					damage_monsters_in_radius(NONE, NONE, NONE, &destination, destination_polygon_index,
-						WORLD_ONE, &damage);
+						WORLD_ONE, &damage, NONE);
 
 					translate_map_object(player->object_index, &destination, destination_polygon_index);
 					initialize_player_physics_variables(player_index);
@@ -1351,7 +1352,7 @@ static void update_player_media(
 			if (!PLAYER_IS_DEAD(player) && external_magnitude<current_magnitude) accelerate_player(player->monster_index, 0, NORMALIZE_ANGLE(media->current_direction-HALF_CIRCLE), media->current_magnitude>>2);
 			
 			// cause damage if possible
-			if (damage) damage_player(player->monster_index, NONE, NONE, damage);
+			if (damage) damage_player(player->monster_index, NONE, NONE, damage, NONE);
 			
 			// feet entering media sound
 			if (!(player->variables.old_flags&_FEET_BELOW_MEDIA_BIT)) sound_type= _media_snd_feet_entering;

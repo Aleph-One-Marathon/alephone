@@ -266,6 +266,21 @@ L_Call_NNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2
 	}
 }
 
+static void
+L_Call_NNNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4, lua_Number inArg5, lua_Number inArg6)
+{
+	if(L_Should_Call(inLuaFunctionName))
+	{
+		lua_pushnumber(state, inArg1);
+		lua_pushnumber(state, inArg2);
+		lua_pushnumber(state, inArg3);
+		lua_pushnumber(state, inArg4);
+		lua_pushnumber(state, inArg5);
+		lua_pushnumber(state, inArg6);
+		L_Do_Call(inLuaFunctionName, 6);
+	}
+}
+
 void L_Call_Init()
 {
 	L_Call("init");
@@ -343,15 +358,21 @@ void L_Call_Player_Revived (short player_index)
 	L_Call_N("player_revived", player_index);
 }
 
-void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action)
+void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action, short projectile_index)
 {
-	L_Call_NNN("player_killed", player_index, aggressor_player_index, action);
+	L_Call_NNNN("player_killed", player_index, aggressor_player_index, action, projectile_index);
 }
 
 //  Woody Zenfell, 08/03/03
-void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount)
+void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
-	L_Call_NNNNN("player_damaged", player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount);
+	L_Call_NNNNNN("player_damaged", player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
+}
+
+static int L_Number_of_Polygons (lua_State *L)
+{
+	lua_pushnumber (L, dynamic_world->polygon_count);
+	return 1;
 }
 
 static int L_Number_of_Players(lua_State *L)
@@ -359,6 +380,7 @@ static int L_Number_of_Players(lua_State *L)
 	lua_pushnumber(L, dynamic_world->player_count);
 	return 1;
 }
+
 static int L_Local_Player_Index(lua_State *L)
 {
 	lua_pushnumber(L, local_player_index);
@@ -386,15 +408,23 @@ static int L_Player_To_Monster_Index(lua_State *L)
 
 static int L_Screen_Print(lua_State *L)
 {
-	if (!lua_isnumber(L,1) || !lua_isstring(L,2))
+	int args = lua_gettop(L);
+	
+	if (args == 2)
 	{
-		lua_pushstring(L, "screen_print: incorrect argument type");
-		lua_error(L);
+		if (!lua_isnumber(L,1) || !lua_isstring(L,2))
+		{
+			lua_pushstring(L, "screen_print: incorrect argument type");
+			lua_error(L);
+		}
+		int player_index = static_cast<int>(lua_tonumber(L,1));
+		if (local_player_index != player_index)
+			return 0;
+		screen_printf(lua_tostring(L, 2));
+	} else {
+		screen_printf(lua_tostring(L, 1));
 	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (local_player_index != player_index)
-		return 0;
-	screen_printf(lua_tostring(L, 2));
+
 	return 0;
 }
 /*
@@ -453,7 +483,7 @@ static int L_Inflict_Damage(lua_State *L)
 		damage.type = static_cast<int>(lua_tonumber(L,3));
 	}
 
-	damage_player(player->monster_index, NONE, NONE, &damage);
+	damage_player(player->monster_index, NONE, NONE, &damage, NONE);
 
 	return 0;
 }
@@ -1076,7 +1106,7 @@ static int L_Damage_Monster(lua_State *L)
 		lua_pushstring(L, "damage_monster: invalid monster index");
 		lua_error(L);
 	}
-	damage_monster(monster_index, NONE, NONE, &(get_monster_data(monster_index)->sound_location), &theDamage);
+	damage_monster(monster_index, NONE, NONE, &(get_monster_data(monster_index)->sound_location), &theDamage, NONE);
 	return 0;
 }
 
@@ -1847,6 +1877,103 @@ static int L_Get_Player_Name(lua_State *L)
 	return 1;
 }
 
+static int L_Get_Player_External_Velocity(lua_State *L)
+{
+	if (!lua_isnumber(L,1))
+	{
+		lua_pushstring(L, "get_player_external_velocity: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "get_player_external_velocity: invalid player index");
+		lua_error(L);
+	}
+
+	player_data *player = get_player_data(player_index);
+	lua_pushnumber(L, player->variables.external_velocity.i);
+        lua_pushnumber(L, player->variables.external_velocity.j);
+        lua_pushnumber(L, player->variables.external_velocity.k);
+	return 3;
+}
+
+static int L_Set_Player_External_Velocity(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3) || !lua_isnumber(L,4))
+	{
+		lua_pushstring(L, "set_player_external_velocity: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+        int raw_velocity_i = static_cast<int>(lua_tonumber(L,2));
+        int raw_velocity_j = static_cast<int>(lua_tonumber(L,3));
+        int raw_velocity_k = static_cast<int>(lua_tonumber(L,4));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "set_player_external_velocity: invalid player index");
+		lua_error(L);
+	}
+
+	player_data *player = get_player_data(player_index);
+	player->variables.external_velocity.i = raw_velocity_i;
+        player->variables.external_velocity.j = raw_velocity_j;
+        player->variables.external_velocity.k = raw_velocity_k;
+	return 0;
+}
+
+static int L_Add_To_Player_External_Velocity(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3) || !lua_isnumber(L,4))
+	{
+		lua_pushstring(L, "add_to_player_external_velocity: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+        int raw_velocity_i = static_cast<int>(lua_tonumber(L,2));
+        int raw_velocity_j = static_cast<int>(lua_tonumber(L,3));
+        int raw_velocity_k = static_cast<int>(lua_tonumber(L,4));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "add_to_player_external_velocity: invalid player index");
+		lua_error(L);
+	}
+
+	player_data *player = get_player_data(player_index);
+	player->variables.external_velocity.i += raw_velocity_i * WORLD_ONE;
+        player->variables.external_velocity.j += raw_velocity_j * WORLD_ONE;
+        player->variables.external_velocity.k += raw_velocity_k * WORLD_ONE;
+	return 0;
+}
+
+static int L_Accelerate_Player(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3) || !lua_isnumber(L,4))
+	{
+		lua_pushstring(L, "accelerate_player: incorrect argument type");
+		lua_error(L);
+	}
+
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+        double vertical_velocity = static_cast<double>(lua_tonumber(L,2));
+        double direction = static_cast<double>(lua_tonumber(L,3));
+        double velocity = static_cast<double>(lua_tonumber(L,4));
+	
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "accelerate_player: invalid player index");
+		lua_error(L);
+	}
+	player_data *player = get_player_data(player_index);
+	
+	accelerate_player(player->monster_index, static_cast<int>(vertical_velocity*WORLD_ONE), static_cast<int>(direction/AngleConvert), static_cast<int>(velocity*WORLD_ONE));
+
+	return 0;
+}
+
 static int L_Player_Is_Dead(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -2505,17 +2632,25 @@ static int L_Get_Light_State(lua_State *L)
 
 static int L_Screen_Fade(lua_State *L)
 {
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	int args = lua_gettop(L);
+	int fade_index;
+	
+	if (args == 2)
 	{
-		lua_pushstring(L, "start_fade: incorrect argument type");
-		lua_error(L);
+		if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+		{
+			lua_pushstring(L, "start_fade: incorrect argument type");
+			lua_error(L);
+		}
+		short player_index = static_cast<short>(lua_tonumber(L,1));
+		if (local_player_index != player_index)
+			return 0;
+
+		fade_index = static_cast<int>(lua_tonumber(L, 2));
+	} else {
+		fade_index = static_cast<int>(lua_tonumber(L, 1));
 	}
-	short player_index = static_cast<short>(lua_tonumber(L,1));
-	if (local_player_index != player_index)
-		return 0;
-
-	int fade_index = static_cast<int>(lua_tonumber(L, 2));
-
+	
 	start_fade(fade_index);
 	return 0;
 }
@@ -3234,8 +3369,20 @@ static int L_Set_Lua_Compass_Beacon (lua_State *L)
 	return 0;
 }
 
+static int L_Get_Projectile_Type (lua_State *L)
+{
+	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
+
+	struct projectile_data *projectile= get_projectile_data(projectile_index);
+	
+	lua_pushnumber (L, projectile->type);
+	
+	return 1;
+}
+
 void RegisterLuaFunctions()
 {
+	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
 	lua_register(state, "local_player_index", L_Local_Player_Index);
 	lua_register(state, "player_to_monster_index", L_Player_To_Monster_Index);
 	lua_register(state, "number_of_players", L_Number_of_Players);
@@ -3300,6 +3447,10 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_player_angle", L_Get_Player_Angle);
 	lua_register(state, "get_player_team", L_Get_Player_Team);
 	lua_register(state, "get_player_name", L_Get_Player_Name);
+        lua_register(state, "get_player_external_velocity", L_Get_Player_External_Velocity);
+        lua_register(state, "set_player_external_velocity", L_Set_Player_External_Velocity);
+        lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
+	lua_register(state, "accelerate_player", L_Accelerate_Player);
 	lua_register(state, "player_is_dead", L_Player_Is_Dead);
 	lua_register(state, "player_control", L_Player_Control);
 	lua_register(state, "teleport_player", L_Teleport_Player);
@@ -3349,6 +3500,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "use_lua_compass", L_Use_Lua_Compass);
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
+	lua_register(state, "get_projectile_type", L_Get_Projectile_Type);
 }
 
 void DeclareLuaConstants()
@@ -3424,6 +3576,8 @@ void CloseLuaScript()
 	lua_running = false;
 	lua_cameras.resize(0);
 	number_of_cameras = 0;
+	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
+		use_lua_compass [i] = false;
 }
 
 bool UseLuaCameras()
