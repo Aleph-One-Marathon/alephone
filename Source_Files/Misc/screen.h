@@ -30,13 +30,26 @@ Jul 5, 2000 (Loren Petrich):
 
 /* ---------- constants */
 
+// New screen-size definitions
+enum /* screen sizes */
+{
+	_320_160_HUD,
+	_480_240_HUD,
+	_640_320_HUD,
+	_640_480,
+	_800_400_HUD,
+	_800_600,
+	_1024_512_HUD,
+	_1024_768,
+	NUMBER_OF_VIEW_SIZES
+};
+// Original screen-size definitions
 enum /* screen sizes */
 {
 	_50_percent,
 	_75_percent,
 	_100_percent,
 	_full_screen,
-	NUMBER_OF_VIEW_SIZES
 };
 
 enum /* hardware acceleration codes */
