@@ -79,7 +79,7 @@ private:
 					logAnomaly1("received instruction to add item with same ID (%d) as known item; using the new one only", id);
 					m_entries.erase(id);
 				}
-				m_entries.insert(Map::value_type(id, update));
+				m_entries.insert(typename Map::value_type(id, update));
 				break;
 
 			case kDelete:
@@ -94,7 +94,7 @@ private:
 				{
 					logAnomaly1("received instruction to refresh unknown item (ID %d); treating it as an add", id);
 				}
-				m_entries.insert(Map::value_type(id, update));
+				m_entries.insert(typename Map::value_type(id, update));
 				break;
 
 			default:
