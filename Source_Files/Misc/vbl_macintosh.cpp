@@ -35,7 +35,7 @@ Jul 7, 2000 (Loren Petrich)
 #include "computer_interface.h"
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 
-#include "portable_files.h"
+// #include "portable_files.h"
 #include "vbl.h"
 
 #include "vbl_definitions.h"
@@ -62,13 +62,16 @@ static void remove_input_controller(void);
 
 /* ------------ code */
 boolean find_replay_to_use(
-	boolean ask_user, 
-	FileDesc *file)
+	boolean ask_user,
+	FileObject& File)
+//	FileDesc *file)
 {
 	boolean successful = FALSE;
 	
 	if(ask_user)
 	{
+		successful = File.ReadDialog(FileObject::C_Film);
+		/*
 		StandardFileReply reply;
 		SFTypeList types;
 		short type_count= 0;
@@ -81,15 +84,19 @@ boolean find_replay_to_use(
 			memcpy(file, &reply.sfFile, sizeof(FSSpec));
 			successful= TRUE;
 		}
+		*/
 	}
 	else
 	{
-		successful= get_recording_filedesc(file);
+		successful= get_recording_filedesc(File);
+		// successful= get_recording_filedesc(file);
 	}
 
 	return successful;
 }
 
+// Now a member of FileObject
+/*
 boolean get_freespace_on_disk(
 	FileDesc *file,
 	unsigned long *free_space)
@@ -108,11 +115,16 @@ boolean get_freespace_on_disk(
 		*free_space = (unsigned long) parms.volumeParam.ioVAlBlkSiz * (unsigned long) parms.volumeParam.ioVFrBlk;
 	return (error==noErr);
 }
+*/
 
 /* true if it found it, false otherwise. always fills in vrefnum and dirid*/
-boolean get_recording_filedesc(
-	FileDesc *file)
+boolean get_recording_filedesc(FileObject& File)
+//	FileDesc *file)
 {
+	File.SetParentToPreferences();
+	File.SetName(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING),FileObject::C_Film);
+	return File.Exists();
+/*
 	short vRef;
 	long parID;
 	OSErr error;
@@ -125,11 +137,35 @@ boolean get_recording_filedesc(
 	}
 	
 	return (error==noErr);
+*/
 }
 
 void move_replay(
 	void)
 {
+	// FSSpec source_spec;
+	FileObject_Mac OrigFilmFile, MovedFilmFile;
+	if(!get_recording_filedesc(OrigFilmFile)) return;
+	// if(!get_recording_filedesc((FileDesc *) &source_spec)) return;
+	
+	// Need this temporary space for getting the strings
+	char Prompt[256], DefaultName[256];
+	if (!MovedFilmFile.WriteDialog(
+			FileObject::C_Film,
+			getcstr(Prompt, strPROMPTS, _save_replay_prompt),
+			getcstr(DefaultName, strFILENAMES, filenameMARATHON_RECORDING)
+		))
+		return;
+	
+	// OSErr err= copy_file(&OrigFilmFile.Spec, &MovedFilmFile.Spec);
+	MovedFilmFile.CopyContents(OrigFilmFile);
+	
+	/* Alert them on problems */
+	OSErr Err = MovedFilmFile.Err;
+	if (Err != noErr) alert_user(infoError, strERRORS, fileError, Err);
+
+// Begin no-compile
+#if 0
 	Str255 suggested_name;
 	StandardFileReply reply;
 	
@@ -156,7 +192,9 @@ void move_replay(
 			if (err) alert_user(infoError, strERRORS, fileError, err);
 		}
 	}
-	
+// End no-compile
+#endif
+
 	return;
 }
 
