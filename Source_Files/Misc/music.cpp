@@ -49,8 +49,8 @@ Mar 14, 2001 (Loren Petrich):
 #include "macintosh_cseries.h"
 
 // #include "portable_files.h"
-#include "music.h"
 #include "shell.h"
+#include "music.h"
 
 #include "song_definitions.h"
 
@@ -689,9 +689,12 @@ static void allocate_music_channel(
 
 #include "world.h"
 #include "map.h"
-#include "shell.h"
 #include "mysound.h"
-#include "preferences.h"
+// Becuase something in preferences.h
+//    typedef float GLfloat
+// in GL/gl.h not to work properly.
+extern struct sound_manager_parameters *sound_preferences;
+// #include "preferences.h"
 
 /* Non reusable stuff */
 static short get_sound_volume(
