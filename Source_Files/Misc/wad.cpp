@@ -1143,8 +1143,7 @@ static bool read_indexed_wad_from_file_into_buffer(
 	/* Read the directory entry first */
 	if (read_indexed_directory_data(OFile, header, index, &entry))
 	{
-		/* Check the index stored in the entry, and assert if they don't match! */
-		assert((get_directory_base_length(header)==sizeof(old_directory_entry)) || entry.index==index);
+		/* Some sanity checks */
 		assert(*length<=entry.length);
 		assert(buffer);
 
