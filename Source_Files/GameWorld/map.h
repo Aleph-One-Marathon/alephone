@@ -1289,6 +1289,8 @@ void assume_correct_switch_position(short switch_type, short permutation, bool n
 
 void try_and_toggle_control_panel(short polygon_index, short line_index);
 
+bool line_side_has_control_panel(short line_index, short polygon_index, short *side_index_with_panel);
+
 /* ---------- prototypes/GAME_WAD.C */
 
 struct map_identifier {
