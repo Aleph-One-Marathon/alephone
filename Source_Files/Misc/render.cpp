@@ -201,7 +201,8 @@ extern WindowPtr screen_window;
 #include "RenderSortPoly.h"
 #include "RenderPlaceObjs.h"
 #include "RenderRasterize.h"
-#include "Rasterizer.h"
+#include "Rasterizer_SW.h"
+#include "Rasterizer_OGL.h"
 
 #ifdef env68k
 #pragma segment render
@@ -248,12 +249,13 @@ word *render_flags;
 
 // LP additions: decomposition of the rendering code into various objects
 
-static RenderVisTreeClass RenderVisTree;	// Visibility-tree object
-static RenderSortPolyClass RenderSortPoly;	// Polygon-sorting object
-static RenderPlaceObjsClass RenderPlaceObjs;	// Object-placement object
-static RenderRasterizerClass RenderRasterize;	// Clipping and rasterization class
+static RenderVisTreeClass RenderVisTree;			// Visibility-tree object
+static RenderSortPolyClass RenderSortPoly;			// Polygon-sorting object
+static RenderPlaceObjsClass RenderPlaceObjs;		// Object-placement object
+static RenderRasterizerClass RenderRasterize;		// Clipping and rasterization class
 
-static RasterizerClass Rasterizer;	// Temporary rasterizer object, to serve as scaffolding
+static Rasterizer_SW_Class Rasterizer_SW;			// Software rasterizer
+static Rasterizer_OGL_Class Rasterizer_OGL;			// OpenGL rasterizer
 
 
 /* ---------- private prototypes */
@@ -407,24 +409,35 @@ void render_view(
 			RenderPlaceObjs.build_render_object_list();
 			
 			// LP addition: set the current rasterizer to whichever is appropriate here
-			RasterizerClass *RasPtr = &Rasterizer;
+			RasterizerClass *RasPtr;
+			if (OGL_IsActive())
+				RasPtr = &Rasterizer_OGL;
+			else
+			{
+				// The software renderer needs this but the OpenGL one doesn't...
+				Rasterizer_SW.screen = destination;
+				RasPtr = &Rasterizer_SW;
+			}
 			
 			// Set its view:
 			RasPtr->SetView(*view);
 			
-			// Temporary:
-			RasPtr->destination = destination;
+			// Start rendering main view
+			RasPtr->Begin();
 			
 			// LP: now from the clipping/rasterizer class
 			/* render the object list, back to front, doing clipping on each surface before passing
 				it to the texture-mapping code */
 			RenderRasterize.view = view;
 			RenderRasterize.RasPtr = RasPtr;
-			RenderRasterize.render_tree(destination);
+			RenderRasterize.render_tree();
 			
 			// LP: won't put this into a separate class
 			/* render the playerÕs weapons, etc. */		
 			render_viewer_sprite_layer(view, RasPtr);
+			
+			// Finish rendering main view
+			RasPtr->End();
 		}
 	}
 
