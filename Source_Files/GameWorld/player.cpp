@@ -113,6 +113,10 @@ May 20, 2002 (Woody Zenfell):
 
 Jan 12, 2003 (Woody Zenfell):
 	Single entry point (reset_action_queues()) to reset all ActionQueues that need to be reset
+
+May 22, 2003 (Woody Zenfell):
+	Fixing damaging polygon types; giving player netgame penalty feedback; announcing player
+	net disconnects.
 */
 
 #define DONT_REPEAT_DEFINITIONS
@@ -463,8 +467,8 @@ void initialize_players(
 		obj_clear(players[i]);
 	}
 
-    sRealActionQueues->reset();
-    reset_other_queues();
+	sRealActionQueues->reset();
+	reset_other_queues();
 }
 
 /* This will be called by entering map for two reasons:
@@ -510,10 +514,10 @@ void update_players(ActionQueues* inActionQueuesToUse)
 	struct player_data *player;
 	short player_index;
 
-    // ZZZ: update ticks-since-terminal stuff
-    sLocalPlayerTicksSinceTerminal++;
-    if(player_in_terminal_mode(local_player_index))
-        sLocalPlayerTicksSinceTerminal = 0;
+        // ZZZ: update ticks-since-terminal stuff
+        sLocalPlayerTicksSinceTerminal++;
+        if(player_in_terminal_mode(local_player_index))
+                sLocalPlayerTicksSinceTerminal = 0;
 	
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{
@@ -522,16 +526,19 @@ void update_players(ActionQueues* inActionQueuesToUse)
 		if (action_flags == 0xffffffff)
 		{
 			// net dead
-			if (!PLAYER_IS_DEAD(player))
+			if(!player->netdead)
 			{
-				// kills invincible players, too
-				detonate_projectile(&player->location, player->camera_polygon_index, _projectile_minor_fusion_dispersal,
-					NONE, NONE, 10*FIXED_ONE);
-				
-				// AlexJLS patch: effect of dangerous polygons
-				cause_polygon_damage(player->supporting_polygon_index,player_index);
+				if (!PLAYER_IS_DEAD(player))
+				{
+					// kills invincible players, too  (ZZZ annotation: unless physics model says otherwise)
+					detonate_projectile(&player->location, player->camera_polygon_index, _projectile_minor_fusion_dispersal,
+			 NONE, NONE, 10*FIXED_ONE);
+				}
+
+				screen_printf("%s has become disconnected", player->name);
+				player->netdead = true;
 			}
-			
+
 			action_flags= 0;
 		}
 
@@ -568,7 +575,18 @@ void update_players(ActionQueues* inActionQueuesToUse)
 		player->invisibility_duration= FLOOR(player->invisibility_duration-1, 0);
 		player->invincibility_duration= FLOOR(player->invincibility_duration-1, 0);
 		player->infravision_duration= FLOOR(player->infravision_duration-1, 0);
-		player->reincarnation_delay= FLOOR(player->reincarnation_delay-1, 0);
+                // ZZZ: alert the player when he can respawn, if he was being penalized
+                if(player->reincarnation_delay > 0)
+                {
+                        --player->reincarnation_delay;
+                        if(((GET_GAME_OPTIONS()&_suicide_is_penalized) || (GET_GAME_OPTIONS()&_dying_is_penalized)) && (player_index == local_player_index))
+                        {
+                                if(player->reincarnation_delay == 0)
+                                        screen_printf("You may rise to fight again");
+                                else if(player->reincarnation_delay < 4 * TICKS_PER_SECOND && (player->reincarnation_delay % TICKS_PER_SECOND) == 0)
+                                        screen_printf("%d...", player->reincarnation_delay / TICKS_PER_SECOND);
+                        }
+                }
 		if (player->extravision_duration)
 		{
 			if (!(player->extravision_duration-= 1))
@@ -614,10 +632,24 @@ void update_players(ActionQueues* inActionQueuesToUse)
 			/* do things dead players do (sit around and check for self-reincarnation) */
 			if (PLAYER_HAS_MAP_OPEN(player))
 				SET_PLAYER_MAP_STATUS(player, false);
-			if (PLAYER_IS_TOTALLY_DEAD(player) && (action_flags&_action_trigger_state) && !player->reincarnation_delay && (player->variables.action==_player_stationary||dynamic_world->player_count==1))
+			if (PLAYER_IS_TOTALLY_DEAD(player) && (action_flags&_action_trigger_state) && (player->variables.action==_player_stationary||dynamic_world->player_count==1))
 			{
-				if (dynamic_world->player_count==1) set_game_state(_revert_game);
-				else revive_player(player_index);
+                                // ZZZ: let the player know why he's not respawning
+                                if(player->reincarnation_delay)
+                                {
+                                        if(player_index == local_player_index)
+                                        {
+                                                int theSeconds = player->reincarnation_delay / TICKS_PER_SECOND;
+                                                // If 3 or less, he'll be getting a countdown anyway, and may start spamming the action key.
+                                                if(theSeconds > 3)
+                                                        screen_printf("%d penalty seconds remain", theSeconds);
+                                        }
+                                }
+                                else
+                                {
+                                        if (dynamic_world->player_count==1) set_game_state(_revert_game);
+                                        else revive_player(player_index);
+                                }
 			}
 			update_player_weapons(player_index, 0);
 			update_action_key(player_index, false);
@@ -625,12 +657,16 @@ void update_players(ActionQueues* inActionQueuesToUse)
 		else
 		{
 			/* do things live players do (get items, update weapons, check action key, breathe) */
-			swipe_nearby_items(player_index);
+                        swipe_nearby_items(player_index);
 			update_player_weapons(player_index, action_flags);
 			update_action_key(player_index, (action_flags&_action_trigger_state) ? true : false);
 			if (action_flags&_toggle_map)
 				SET_PLAYER_MAP_STATUS(player, !PLAYER_HAS_MAP_OPEN(player));
-		}
+
+                        // ZZZ: moved this here out of "player becoming netdead" area above; that looked wrong
+                        // AlexJLS patch: effect of dangerous polygons
+                        cause_polygon_damage(player->supporting_polygon_index,player->monster_index);
+                }
 
 		update_player_teleport(player_index);
 		update_player_media(player_index);
@@ -1483,6 +1519,7 @@ static void recreate_player(
 	/* None of the weapons array data... */
 	/* None of the items array data.. */
 	/* The inventory offset/dirty flags.. */
+	// ZZZ: netdead...
 	mark_player_inventory_screen_as_dirty(player_index, _weapon);
 
 	/* Nuke the physics */
