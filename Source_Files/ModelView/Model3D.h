@@ -49,6 +49,9 @@ struct Model3D
 	// From the position data
 	void FindBoundingBox();
 	
+	// So they all have length 1
+	void NormalizeNormals();
+	
 	// For debugging bounding-box-handling code
 	// NULL means don't render one set of edges
 	void RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *DiagonalColor);

@@ -25,6 +25,7 @@ class ModelRenderer
 	vector<GLfloat> CentroidDepths;
 	vector<unsigned short> Indices;
 	vector<GLushort> SortedVertIndices;
+	vector<GLfloat> ExtLightColors;
 	
 	void SetupRenderPass(Model3D& Model, ModelRenderShader& Shader);
 	
@@ -33,10 +34,19 @@ public:
 	// Needed for depth-sorting the model triangles by centroid
 	GLfloat ViewDirection[3];
 	
+	// Needed for external colors;
+	// the first index is the color channel,
+	// while the second index is in two parts,
+	// the first three (0-2) multipled by the normal vector in dot-product fasion
+	// and the fourth (3) added
+	
+	GLfloat ExternalLight[3][4];
+	
 	// Render flags:
 	enum {
-		Textured = 0x0001,
-		Colored = 0x0002
+		Textured	= 0x0001,
+		Colored		= 0x0002,
+		ExtLight	= 0x0004,
 	};
 	
 	// Does the actual rendering; args:
@@ -47,14 +57,7 @@ public:
 	void Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader *Shaders, int NumShaders);
 	
 	// In case one wants to start over again with these persistent arrays
-	void Clear() {CentroidDepths.clear(); Indices.clear(); SortedVertIndices.clear();}
-
-	// Compare function for sorting;
-	// this is for back-to-front sorting, thus the >
-	operator()(int i1, int i2)
-	{
-		return (CentroidDepths[i1] > CentroidDepths[i2]);
-	}
+	void Clear();
 };
 
 

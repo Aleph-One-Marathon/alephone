@@ -5,6 +5,7 @@
 */
 
 #include <string.h>
+#include <math.h>
 #include <GL/gl.h>
 #include "cseries.h"
 #include "Model3D.h"
@@ -21,6 +22,25 @@ void Model3D::Clear()
 	FindBoundingBox();
 }
 
+
+// Normalize the normals
+void Model3D::NormalizeNormals()
+{
+	int NumNormals = Normals.size()/3;
+	for (int k=0; k<NumNormals; k++)
+	{
+		GLfloat *NormalPtr = &Normals[3*k];
+		GLfloat NormalSqr =
+			NormalPtr[0]*NormalPtr[0] + NormalPtr[1]*NormalPtr[1] + NormalPtr[2]*NormalPtr[2];
+		if (NormalSqr > 0)
+		{
+			GLfloat NormalRecip = 1/sqrt(NormalSqr);
+			NormalPtr[0] *= NormalRecip;
+			NormalPtr[1] *= NormalRecip;
+			NormalPtr[2] *= NormalRecip;
+		}
+	}
+}
 	
 // From the position data
 void Model3D::FindBoundingBox()

@@ -115,7 +115,9 @@ void LoadModelAction(int ModelType)
 	glutSetWindowTitle(Name);
 	
 	// Force the main window to use the model's bounding box
+	// And normalize the normals
 	Model.FindBoundingBox();
+	Model.NormalizeNormals();
 	ResizeMainWindow(glutGet(GLUT_WINDOW_WIDTH),glutGet(GLUT_WINDOW_HEIGHT));
 }
 
@@ -128,6 +130,9 @@ bool Show_Bounding_Box = false;
 // Texture management
 bool TxtrIsPresent = false;
 GLuint TxtrID;
+
+// External lighting?
+bool Use_Light = false;
 
 // How many rendering passes
 int NumRenderPasses = 1;
@@ -241,14 +246,19 @@ void DrawMainWindow()
 			TxtrIsPresent = true;
 		}
 		
-		if (!Use_Z_Buffer)
+		// Extract the view direction from the matrix
+		// Since it is pure rotation, transpose = inverse
+		GLfloat ModelViewMatrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX,ModelViewMatrix);
+		for (int k=0; k<3; k++)
+			Renderer.ViewDirection[k] = - ModelViewMatrix[4*k + 2];
+		
+		// Compose a set of external lights:
+		for (int c=0; c<3; c++)
 		{
-			// Extract the view direction from the matrix
-			// Since it is pure rotation, transpose = inverse
-			GLfloat ModelViewMatrix[16];
-			glGetFloatv(GL_MODELVIEW_MATRIX,ModelViewMatrix);
 			for (int k=0; k<3; k++)
-				Renderer.ViewDirection[k] = - ModelViewMatrix[4*k + 2];
+				Renderer.ExternalLight[c][k] = 0.5*ModelViewMatrix[4*k + c];
+			Renderer.ExternalLight[c][3] = 0;
 		}
 		
 		if (Use_Z_Buffer)
@@ -268,7 +278,11 @@ void DrawMainWindow()
 		
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		unsigned int Flags = ModelRenderer::Textured;
+		unsigned int Flags = 0;
+		SET_FLAG(Flags,ModelRenderer::Textured,TxtrIsPresent);
+		SET_FLAG(Flags,ModelRenderer::Colored,!TxtrIsPresent);
+		SET_FLAG(Flags,ModelRenderer::ExtLight,Use_Light);
+		Shaders[1].Flags = Shaders[0].Flags = Flags;
 		Renderer.Render(Model,Use_Z_Buffer,Shaders,NumRenderPasses);
 	}
 	
@@ -391,6 +405,15 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 			printf("Render passes: %d\n",NumRenderPasses);
 			glutPostRedisplay();
 			break;
+		
+		case 'L':
+			Use_Light = !Use_Light;
+			if (Use_Light)
+				printf("Light On\n");
+			else
+				printf("Light Off\n");
+			glutPostRedisplay();
+			break;
 	}
 }
 
@@ -502,9 +525,9 @@ int main(int argc, char **argv)
 	SetDebugOutput_Wavefront(stdout);
 
 	// Set up shader object
-	Shaders[0].Flags = ModelRenderer::Textured;
+	Shaders[0].Flags = 0;
 	Shaders[0].TextureCallback = ShaderCallback;
-	Shaders[1].Flags = ModelRenderer::Textured;
+	Shaders[1].Flags = 0;
 	Shaders[1].TextureCallback = ShaderCallback;
 	
 	// Set up for creating the main window

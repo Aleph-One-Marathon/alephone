@@ -10,7 +10,7 @@
 #include "ModelRenderer.h"
 
 
-// For doing
+// For doing sorting
 static GLfloat *Centroids;
 static int SortCompare(const void *P1, const void *P2)
 {
@@ -105,7 +105,7 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 {
 	assert(Shader.TextureCallback);
 	
-	// Test textured rendering
+	// Do textured rendering
 	if (!Model.TxtrCoords.empty() && TEST_FLAG(Shader.Flags,Textured))
 	{
 		glEnable(GL_TEXTURE_2D);
@@ -118,15 +118,62 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 	
-	// Test colored rendering
-	if (!Model.Colors.empty() && TEST_FLAG(Shader.Flags,Colored))
+	// Check whether to use external lighting
+	if (!Model.Normals.empty() && TEST_FLAG(Shader.Flags,ExtLight))
 	{
+		int NumVerts = Model.Positions.size()/3;
+		int NumCC = 3*NumVerts;
+		ExtLightColors.resize(NumCC);
+		
+		GLfloat *ColorPtr = &ExtLightColors[0];
+		for (int k=0; k<NumVerts; k++, ColorPtr+=3)
+		{
+			GLfloat *Normal = Model.NormBase() + 3*k;
+			for (int c=0; c<3; c++)
+			{
+				GLfloat *ELChannel = ExternalLight[c];
+				ColorPtr[c] =
+					ELChannel[0]*Normal[0] + 
+					ELChannel[1]*Normal[1] + 
+					ELChannel[2]*Normal[2] + 
+					ELChannel[3];
+			}
+		}
+		
+		if (!Model.Colors.empty() && TEST_FLAG(Shader.Flags,Colored))
+		{
+			GLfloat *ExtColorPtr = &ExtLightColors[0];
+			GLfloat *ColorPtr = Model.ColBase();
+			for (int k=0; k<NumCC; k++, ExtColorPtr++, ColorPtr++)
+				(*ExtColorPtr) *= (*ColorPtr);
+		}
+		
 		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(3,GL_FLOAT,0,Model.ColBase());
+		glColorPointer(3,GL_FLOAT,0,&ExtLightColors[0]);
 	}
 	else
-		glDisableClientState(GL_COLOR_ARRAY);
+	{
+		// Do colored rendering
+		if (!Model.Colors.empty() && TEST_FLAG(Shader.Flags,Colored))
+		{
+			// May want to recover the currently-set color and do the same kind
+			// of treatment as above
+			glEnableClientState(GL_COLOR_ARRAY);
+			glColorPointer(3,GL_FLOAT,0,Model.ColBase());
+		}
+		else
+			glDisableClientState(GL_COLOR_ARRAY);
+	}
 	
 	// Do whatever texture management is necessary
 	Shader.TextureCallback(Shader.TextureCallbackData);
+}
+
+
+void ModelRenderer::Clear()
+{
+	CentroidDepths.clear();
+	Indices.clear();
+	SortedVertIndices.clear();
+	ExtLightColors.clear();
 }
