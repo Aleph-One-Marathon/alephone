@@ -54,9 +54,12 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 #ifdef mac
 #if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <Files.h>
 #include <Resources.h>
+#endif
+*/
 #endif
 #endif
 
