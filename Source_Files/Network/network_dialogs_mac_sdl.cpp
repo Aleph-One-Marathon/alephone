@@ -172,8 +172,8 @@ extern void NetUpdateTopology(void);
 template<class T>
 static const int
 find_item_index_in_vector(const T& inItem, const vector<T>& inVector) {
-    vector<T>::const_iterator 	i	= inVector.begin();
-    vector<T>::const_iterator 	end	= inVector.end();
+std::vector<T>::const_iterator 	i	= inVector.begin();
+std::vector<T>::const_iterator 	end	= inVector.end();
     int				index	= 0;
 
     while(i != end) {
@@ -500,6 +500,8 @@ bool network_join(
 						modify_control(dialog, iJOIN_TEAM, CONTROL_INACTIVE, NONE);
 						modify_control(dialog, iJOIN_COLOR, CONTROL_INACTIVE, NONE);
 						modify_control(dialog, iJOIN, CONTROL_INACTIVE, NONE);
+						modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL, CONTROL_INACTIVE);
+						modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, CONTROL_INACTIVE);
 #ifdef USE_MODEM
 						modify_control(dialog, iJOIN_NETWORK_TYPE, CONTROL_INACTIVE, NONE);
 #endif
