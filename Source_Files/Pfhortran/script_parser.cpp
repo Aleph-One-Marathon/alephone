@@ -429,7 +429,7 @@ short put_symbol(char *symbol, float val, short mode, symbol_def **the_hash)
 	if (!new_symbol)
 		return false;
 	
-	new_symbol->symbol = (char *)malloc(sizeof(char) * strlen(symbol));
+	new_symbol->symbol = (char *)malloc(strlen(symbol) + 1);
 	
 	if (!new_symbol->symbol)
 		return false;
@@ -500,7 +500,7 @@ void get_blats(char *input, short max_blats, char blats[MAXBLATS][64])	/* return
 	if (!input)
 		return;
 	
-	//temp = (char *)malloc(sizeof(char) * strlen(input));
+	//temp = (char *)malloc(strlen(input) + 1);
 	
 	//if (!temp)
 		//return;
@@ -535,7 +535,7 @@ void get_blats(char *input, short max_blats, char blats[MAXBLATS][64])	/* return
 	
 	if (nexttok) 
 	{
-		//blats[0] = (char *)malloc(sizeof(char) * strlen(nexttok));
+		//blats[0] = (char *)malloc(strlen(nexttok) + 1);
 		for(;nexttok[0] < 'A' || nexttok[0] > 'z';nexttok++);
 		strcpy(blats[0], nexttok);
 	} else
@@ -551,7 +551,7 @@ void get_blats(char *input, short max_blats, char blats[MAXBLATS][64])	/* return
 		
 		if (nexttok) 
 		{
-			//blats[x] = (char *)malloc(sizeof(char) * strlen(nexttok));
+			//blats[x] = (char *)malloc(strlen(nexttok) + 1);
 			strcpy(blats[x], nexttok);
 		} else
 			blats[x][0] = 0;
@@ -578,7 +578,7 @@ void read_line(char *input, char output[256])
 	
 	for (x=0;(input[x] != '\r' && input[x] != '\n' && input[x] != 0 && input[x] != 0x11);x++);
 	
-	//output = (char *)malloc(sizeof(char) * x +1);
+	//output = (char *)malloc(x + 1);
 	
 	for (y=0;y < x;y++)
 		output[y]=input[y];
