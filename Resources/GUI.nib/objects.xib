@@ -4,35 +4,43 @@
   <object name="rootObject" class="NSCustomObject" id="1">
     <string name="customClass">NSApplication</string>
   </object>
-  <array count="639" name="allObjects">
+  <array count="630" name="allObjects">
     <object class="IBCarbonWindow" id="168">
-      <string name="windowRect">40 40 240 280 </string>
+      <string name="windowRect">44 40 244 280 </string>
       <string name="title">New Window</string>
       <object name="rootControl" class="IBCarbonRootControl" id="169">
         <string name="bounds">0 0 200 240 </string>
       </object>
+      <boolean name="receiveActivates">FALSE</boolean>
+      <boolean name="receiveUpdates">FALSE</boolean>
       <boolean name="hasCloseBox">FALSE</boolean>
       <boolean name="hasCollapseBox">FALSE</boolean>
       <boolean name="hasHorizontalZoom">FALSE</boolean>
       <boolean name="isResizable">FALSE</boolean>
       <boolean name="hasVerticalZoom">FALSE</boolean>
+      <boolean name="standardHandler">FALSE</boolean>
+      <int name="themeBrush">-1</int>
     </object>
     <reference idRef="169"/>
     <object class="IBCarbonWindow" id="170">
-      <string name="windowRect">40 40 240 280 </string>
+      <string name="windowRect">44 40 244 280 </string>
       <string name="title">New Window</string>
       <object name="rootControl" class="IBCarbonRootControl" id="171">
         <string name="bounds">0 0 200 240 </string>
       </object>
+      <boolean name="receiveActivates">FALSE</boolean>
+      <boolean name="receiveUpdates">FALSE</boolean>
       <boolean name="hasCloseBox">FALSE</boolean>
       <boolean name="hasCollapseBox">FALSE</boolean>
       <boolean name="hasHorizontalZoom">FALSE</boolean>
       <boolean name="isResizable">FALSE</boolean>
       <boolean name="hasVerticalZoom">FALSE</boolean>
+      <boolean name="standardHandler">FALSE</boolean>
+      <int name="themeBrush">-1</int>
     </object>
     <reference idRef="171"/>
     <object class="IBCarbonWindow" id="172">
-      <string name="windowRect">236 113 339 485 </string>
+      <string name="windowRect">254 31 357 403 </string>
       <string name="title"></string>
       <object name="rootControl" class="IBCarbonRootControl" id="173">
         <string name="bounds">0 0 103 372 </string>
@@ -67,7 +75,6 @@
       <boolean name="hasHorizontalZoom">FALSE</boolean>
       <boolean name="isResizable">FALSE</boolean>
       <boolean name="hasVerticalZoom">FALSE</boolean>
-      <int name="carbonWindowClass">3</int>
     </object>
     <reference idRef="173"/>
     <reference idRef="174"/>
@@ -260,7 +267,7 @@
     <reference idRef="205"/>
     <reference idRef="206"/>
     <object class="IBCarbonWindow" id="207">
-      <string name="windowRect">102 68 230 454 </string>
+      <string name="windowRect">101 20 229 406 </string>
       <string name="title"></string>
       <object name="rootControl" class="IBCarbonRootControl" id="208">
         <string name="bounds">0 0 128 386 </string>
@@ -318,70 +325,8 @@
     <reference idRef="213"/>
     <reference idRef="214"/>
     <reference idRef="215"/>
-    <object class="IBCarbonWindow" id="216">
-      <string name="windowRect">40 40 207 445 </string>
-      <string name="title"></string>
-      <object name="rootControl" class="IBCarbonRootControl" id="217">
-        <string name="bounds">0 0 167 405 </string>
-        <array count="7" name="subviews">
-          <object class="IBCarbonButton" id="218">
-            <string name="bounds">131 330 151 388 </string>
-            <int name="controlID">1</int>
-            <string name="title">OK</string>
-          </object>
-          <object class="IBCarbonButton" id="219">
-            <string name="bounds">131 259 151 317 </string>
-            <int name="controlID">2</int>
-            <string name="title">Cancel</string>
-          </object>
-          <object class="IBCarbonEditText" id="220">
-            <string name="bounds">133 111 149 146 </string>
-            <int name="controlID">3</int>
-            <string name="title">1</string>
-          </object>
-          <object class="IBCarbonStaticText" id="221">
-            <string name="bounds">133 12 149 104 </string>
-            <int name="controlID">4</int>
-            <boolean name="enabled">FALSE</boolean>
-            <string name="title">Start at level</string>
-          </object>
-          <object class="IBCarbonStaticText" id="222">
-            <string name="bounds">133 154 149 229 </string>
-            <int name="controlID">5</int>
-            <boolean name="enabled">FALSE</boolean>
-            <string name="title">of ^0.</string>
-          </object>
-          <object class="IBCarbonStaticText" id="223">
-            <string name="bounds">55 12 121 393 </string>
-            <int name="controlID">6</int>
-            <boolean name="enabled">FALSE</boolean>
-            <string name="title">“I pledge to punch all switches, to never shoot where I could use grenades, to admit the existence of no level except Total Carnage, to never use Caps Lock as my ‘run’ key, and to never, ever, leave a single Bob alive.”</string>
-          </object>
-          <object class="IBCarbonStaticText" id="224">
-            <string name="bounds">13 12 48 384 </string>
-            <int name="controlID">7</int>
-            <boolean name="enabled">FALSE</boolean>
-            <string name="title">Before proceeding any further, you must take the oath of the vidmaster:</string>
-          </object>
-        </array>
-      </object>
-      <boolean name="hasCloseBox">FALSE</boolean>
-      <boolean name="hasCollapseBox">FALSE</boolean>
-      <boolean name="hasHorizontalZoom">FALSE</boolean>
-      <boolean name="isResizable">FALSE</boolean>
-      <boolean name="hasVerticalZoom">FALSE</boolean>
-      <int name="carbonWindowClass">3</int>
-    </object>
-    <reference idRef="217"/>
-    <reference idRef="218"/>
-    <reference idRef="219"/>
-    <reference idRef="220"/>
-    <reference idRef="221"/>
-    <reference idRef="222"/>
-    <reference idRef="223"/>
-    <reference idRef="224"/>
     <object class="IBCarbonWindow" id="225">
-      <string name="windowRect">40 40 250 440 </string>
+      <string name="windowRect">69 19 279 419 </string>
       <string name="title"></string>
       <object name="rootControl" class="IBCarbonRootControl" id="226">
         <string name="bounds">0 0 210 400 </string>
@@ -390,11 +335,13 @@
             <string name="bounds">178 322 198 392 </string>
             <int name="controlID">1</int>
             <string name="title">OK</string>
+            <int name="buttonType">1</int>
           </object>
           <object class="IBCarbonButton" id="228">
             <string name="bounds">178 240 198 310 </string>
             <int name="controlID">2</int>
             <string name="title">Cancel</string>
+            <int name="buttonType">2</int>
           </object>
           <object class="IBCarbonPopupButton" id="229">
             <string name="bounds">141 12 161 382 </string>
@@ -404,6 +351,7 @@
               <string name="title">Levels</string>
               <array count="4" name="items">
                 <object class="IBCarbonMenuItem" id="231">
+                  <boolean name="checked">TRUE</boolean>
                   <string name="title">One</string>
                   <string name="keyEquivalent"> </string>
                 </object>
@@ -438,7 +386,7 @@
       <boolean name="hasHorizontalZoom">FALSE</boolean>
       <boolean name="isResizable">FALSE</boolean>
       <boolean name="hasVerticalZoom">FALSE</boolean>
-      <int name="carbonWindowClass">3</int>
+      <int name="themeBrush">1</int>
     </object>
     <reference idRef="226"/>
     <reference idRef="227"/>
@@ -3708,7 +3656,7 @@
     <reference idRef="805"/>
     <reference idRef="806"/>
   </array>
-  <array count="639" name="allParents">
+  <array count="630" name="allParents">
     <reference idRef="1"/>
     <reference idRef="168"/>
     <reference idRef="1"/>
@@ -3757,15 +3705,6 @@
     <reference idRef="208"/>
     <reference idRef="208"/>
     <reference idRef="208"/>
-    <reference idRef="1"/>
-    <reference idRef="216"/>
-    <reference idRef="217"/>
-    <reference idRef="217"/>
-    <reference idRef="217"/>
-    <reference idRef="217"/>
-    <reference idRef="217"/>
-    <reference idRef="217"/>
-    <reference idRef="217"/>
     <reference idRef="1"/>
     <reference idRef="225"/>
     <reference idRef="226"/>
@@ -4349,15 +4288,13 @@
     <reference idRef="797"/>
     <reference idRef="797"/>
   </array>
-  <dictionary count="29" name="nameTable">
+  <dictionary count="28" name="nameTable">
     <string>AppleTalk Game Gather</string>
     <reference idRef="741"/>
     <string>AppleTalk Game Join</string>
     <reference idRef="754"/>
     <string>Appletalk Distribute Map</string>
     <reference idRef="792"/>
-    <string>Backdrop Window</string>
-    <reference idRef="170"/>
     <string>Chase Cam</string>
     <reference idRef="389"/>
     <string>Crosshairs</string>
@@ -4372,18 +4309,20 @@
     <reference idRef="718"/>
     <string>File&apos;s Owner</string>
     <reference idRef="1"/>
-    <string>Game Window</string>
-    <reference idRef="168"/>
-    <string>Go To Level</string>
-    <reference idRef="216"/>
-    <string>Go To Level (New)</string>
+    <string>Game_Goto_Level</string>
     <reference idRef="225"/>
+    <string>Game_Quit_NoSave</string>
+    <reference idRef="172"/>
     <string>Graphics Preferences</string>
     <reference idRef="593"/>
     <string>Input Preferences</string>
     <reference idRef="705"/>
     <string>MY replace</string>
     <reference idRef="192"/>
+    <string>Main_Backdrop</string>
+    <reference idRef="170"/>
+    <string>Main_Game</string>
+    <reference idRef="168"/>
     <string>Net Damage Stats</string>
     <reference idRef="733"/>
     <string>Net Game Setup</string>
@@ -4400,8 +4339,6 @@
     <reference idRef="237"/>
     <string>Sound Preferences</string>
     <reference idRef="667"/>
-    <string>quit without saving?</string>
-    <reference idRef="172"/>
     <string>script number</string>
     <reference idRef="197"/>
     <string>serialization</string>
