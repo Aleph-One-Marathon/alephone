@@ -6,6 +6,10 @@
 #define HAVE_OPENGL
 #define DEBUG
 
+// This is better done here than in cstypes.h
+#define LP 1
+#undef CB
+
 #include <Events.h>
 #include <AppleEvents.h>
 #include <Aliases.h>

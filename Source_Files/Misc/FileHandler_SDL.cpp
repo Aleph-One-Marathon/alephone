@@ -240,7 +240,10 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 bool FileSpecifier::Exists()
 {
 #if defined(__unix__) || defined(__BEOS__)
+
+	// Check whether the file is readable
 	return access(name.c_str(), R_OK) == 0;
+
 #else
 #error FileSpecifier::Exists() not implemented for this platform
 #endif
@@ -249,13 +252,21 @@ bool FileSpecifier::Exists()
 TimeType FileSpecifier::GetDate()
 {
 #if defined(__unix__) || defined(__BEOS__)
+
 	struct stat st;
 	if (stat(name.c_str(), &st) < 0)
 		return 0;
 	return st.st_mtime;
+
 #else
 #error FileSpecifier::GetDate() not implemented for this platform
 #endif
+}
+
+int FileSpecifier::GetType()
+{
+	// No file types
+	return NONE;
 }
 
 bool FileSpecifier::GetFreeSpace(unsigned long &FreeSpace)

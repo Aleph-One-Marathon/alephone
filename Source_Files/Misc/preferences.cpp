@@ -193,13 +193,17 @@ static void setup_environment_dialog(DialogPtr dialog, short first_item, void *p
 static void hit_environment_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
 static boolean teardown_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void fill_in_popup_with_filetype(DialogPtr dialog, short item, int type, unsigned long checksum);
+#ifdef mac
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
+#endif
 static boolean allocate_extensions_memory(void);
 static void free_extensions_memory(void);
 static void build_extensions_list(void);
 static void search_from_directory(DirectorySpecifier& BaseDir);
+#ifdef mac
 static unsigned long find_checksum_and_file_spec_from_dialog(DialogPtr dialog, 
-	short item_hit, OSType type, FSSpec *file);
+	short item_hit, uint32 type, FSSpec *file);
+#endif
 static void	rebuild_patchlist(DialogPtr dialog, short item, unsigned long parent_checksum,
 	struct environment_preferences_data *preferences);
 
@@ -1202,7 +1206,6 @@ static boolean teardown_input_dialog(
 // #define MAXIMUM_FIND_FILES (32)
 
 struct file_description {
-	// OSType file_type;
 	// This is now the _typecode_stuff specified in tags.h (abstract file typing)
 	int file_type;
 	unsigned long checksum;
@@ -1554,9 +1557,8 @@ static void free_extensions_memory(
 	return;
 }
 
-static Boolean file_is_extension_and_add_callback(
+static bool file_is_extension_and_add_callback(
 	FileSpecifier& File,
-	// FSSpec *file,
 	void *data)
 {
 	unsigned long checksum;
@@ -1569,7 +1571,6 @@ static Boolean file_is_extension_and_add_callback(
 	{
 		// LP change, since the filetypes are no longer constants
 		int Filetype = File.GetType();
-		// OSType Filetype = pb->hFileInfo.ioFlFndrInfo.fdType;
 		if (Filetype == _typecode_scenario || Filetype == _typecode_physics)
 		{
 			checksum= read_wad_file_checksum(File);
@@ -1770,7 +1771,7 @@ static void fill_in_popup_with_filetype(
 static unsigned long find_checksum_and_file_spec_from_dialog(
 	DialogPtr dialog, 
 	short item_hit, 
-	OSType type,
+	uint32 type,
 	FSSpec *file)
 {
 	short index;

@@ -12,7 +12,7 @@
 #endif
 
 extern uint32 machine_tick_count(void);
-extern boolean wait_for_click_or_keypress(
+extern bool wait_for_click_or_keypress(
 	uint32 ticks);
 
 #ifdef env68k
@@ -38,7 +38,7 @@ extern long set_a5(
 extern void kill_screen_saver(void);
 
 #ifdef DEBUG
-extern void initialize_debugger(Boolean);
+extern void initialize_debugger(bool on);
 #endif
 
 #endif

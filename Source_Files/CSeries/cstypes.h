@@ -45,6 +45,7 @@ typedef int32 fixed;
 #define LONG_MAX 2147483647
 #define LONG_MIN (-LONG_MAX-1)
 
+// Hmmm, these should be removed one day...
 typedef uint16 word;
 typedef uint8 byte;
 typedef unsigned char boolean;
@@ -58,7 +59,6 @@ typedef unsigned char boolean;
 
 // Distinction between Loren Petrich's and Christian Bauer's code;
 // define whichever one is appropriate
-#define LP
-#undef CB
+// -> to sdl_cseries.h or macintosh_cseries.h
 
 #endif

@@ -55,7 +55,7 @@ enum {
 // Initializer: loads from resource fork
 void initialize_typecodes();
 // Accessor
-OSType get_typecode(int which);
+uint32 get_typecode(int which);
 
 // These are no longer constants, which will cause trouble for switch/case constructions
 // These have been eliminated in favor of using the above enum of abstracted filetypes

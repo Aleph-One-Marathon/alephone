@@ -249,7 +249,7 @@ public:
 #if defined(mac)
 typedef unsigned long TimeType;
 #else
-typedef time_t TimeType;
+typedef time_t TimeType;	// Maybe this can also be used on MacOS, so there wouldn't be any need for TimeType?
 #endif
 
 

@@ -108,7 +108,10 @@ extern struct system_information_data *system_information;
 /* ---------- prototypes/SHELL.C */
 
 void global_idle_proc(void);
+
+#ifdef mac
 void handle_game_key(EventRecord *event, short key);
+#endif
 
 // LP addition for handling XML stuff:
 XML_ElementParser *Cheats_GetParser();
@@ -116,6 +119,7 @@ XML_ElementParser *Cheats_GetParser();
 /* ---------- prototypes/SHAPES.C */
 
 void initialize_shape_handler(void);
+
 #if defined(mac)
 PixMapHandle get_shape_pixmap(short shape, boolean force_copy);
 #elif defined(SDL)
@@ -134,10 +138,12 @@ void _get_interface_color(int color_index, SDL_Color *color);
 #endif
 
 /* ---------- protoypes/INTERFACE_MACINTOSH.C */
+#ifdef mac
 boolean try_for_event(boolean *use_waitnext);
 void process_game_key(EventRecord *event, short key);
 void update_game_window(WindowPtr window, EventRecord *event);
 boolean has_cheat_modifiers(EventRecord *event);
+#endif
 
 /* ---------- prototypes/PREFERENCES.C */
 void load_environment_from_preferences(void);

@@ -17,6 +17,9 @@
 
 #define DEBUG
 
+#define CB 1
+#undef LP
+
 
 /*
  *  General definitions
@@ -38,9 +41,7 @@
  *  Emulation of MacOS data types and definitions
  */
 
-typedef bool Boolean;
 typedef int OSErr;
-typedef uint32 OSType;
 typedef unsigned char Str255[256];
 
 struct RGBColor {
@@ -52,19 +53,7 @@ struct Rect {
 	int16 bottom, right;
 };
 
-typedef void *WindowPtr;
 typedef void *DialogPtr;
-typedef void *MenuHandle;
-typedef SDL_Surface *PixMapHandle;
-typedef SDL_Surface *GrafPtr;
-typedef void *CGrafPtr;
-typedef void *GWorldPtr;
-typedef void ModalFilterUPP;
-
-#define EventRecord SDL_Event
-
-struct FileDesc;
-#define FSSpec FileDesc
 
 struct GDSpec {
 	int bit_depth;
@@ -74,7 +63,6 @@ struct GDSpec {
 typedef GDSpec *GDSpecPtr;
 
 #define noErr 0
-#define pascal
 
 #define kFontIDMonaco 4
 #define normal 0

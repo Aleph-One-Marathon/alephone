@@ -10,6 +10,9 @@ static sdl_font_info *terminal_font = NULL;
 static uint32 current_pixel;			// Current color pixel value
 static uint16 current_style = normal;	// Current style flags
 
+// From screen_sdl.cpp
+extern SDL_Surface *world_pixels;
+
 
 // Terminal key definitions
 static struct terminal_key terminal_keys[]= {

@@ -1145,6 +1145,7 @@ short monster_can_enter_platform(
 
 #include <string.h>
 
+#ifdef LP
 void pack_platform_data(platform_data& source, saved_platform& dest)
 {
 	dest.type = source.type;
@@ -1236,7 +1237,7 @@ void unpack_static_platform_data(saved_static_platform& source, static_platform_
 	dest.polygon_index = source.polygon_index;
 	dest.tag = source.tag;
 }
-
+#endif
 
 class XML_PlatformParser: public XML_ElementParser
 {

@@ -23,10 +23,10 @@ extern void AdjustRect(
 	Rect *out,
 	short how);
 
+#ifdef mac
 extern void get_window_frame(
 	WindowPtr win,
 	Rect *frame);
-
 
 extern DialogPtr myGetNewDialog(
 	short id,
@@ -74,5 +74,6 @@ typedef void (*dialog_header_proc_ptr)(
 
 extern void set_dialog_header_proc(
 	dialog_header_proc_ptr proc);
+#endif
 
 #endif

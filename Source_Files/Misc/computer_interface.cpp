@@ -228,10 +228,6 @@ struct font_dimensions {
 byte *map_terminal_data;
 long map_terminal_data_length;
 
-// LP addition: this is for getting the clipping rectangle to revert to
-// when done with drawing the terminal text
-extern GrafPtr world_pixels;
-
 /* internal global structure */
 static struct player_terminal_data *player_terminals;
 static struct font_dimensions font_data;

@@ -248,7 +248,7 @@ struct platform_data /* 140 bytes */
 	short speed, delay;
 	world_distance minimum_floor_height, maximum_floor_height;
 	world_distance minimum_ceiling_height, maximum_ceiling_height;
-	long xxx; // was empty line
+
 	short polygon_index;
 	uint16 dynamic_flags;
 	world_distance floor_height, ceiling_height;
@@ -372,11 +372,13 @@ struct platform_data *get_platform_data(short platform_index);
 #endif
 */
 
+#ifdef LP
 // Split and join the misaligned 4-byte values
 void pack_platform_data(platform_data& source, saved_platform& dest);
 void unpack_platform_data(saved_platform& source, platform_data& dest);
 void pack_static_platform_data(static_platform_data& source, saved_static_platform& dest);
 void unpack_static_platform_data(saved_static_platform& source, static_platform_data& dest);
+#endif
 
 // LP change: added platform-parser export
 XML_ElementParser *Platforms_GetParser();

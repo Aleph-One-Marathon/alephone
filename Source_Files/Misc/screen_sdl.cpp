@@ -255,7 +255,7 @@ void ReloadViewContext(void)
 {
 	if (screen_mode.acceleration == _opengl_acceleration) {
 #ifdef HAVE_OPENGL
-		OGL_StartRun((CGrafPtr)screen_window);
+		OGL_StartRun();
 #else
 		screen_mode.acceleration = _no_acceleration;
 #endif

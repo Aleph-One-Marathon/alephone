@@ -980,6 +980,7 @@ void touch_polygon(
 
 #include <string.h>
 
+#ifdef LP
 void pack_side_data(side_data& source, saved_side& dest)
 {
 	dest.type = source.type;
@@ -1035,3 +1036,4 @@ void unpack_side_data(saved_side& source, side_data& dest)
 	
 	memcpy(&dest.ambient_delta,source.ambient_delta,4);
 }
+#endif

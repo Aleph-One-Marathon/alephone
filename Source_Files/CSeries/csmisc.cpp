@@ -11,7 +11,7 @@ unsigned long machine_tick_count(void)
 	return TickCount();
 }
 
-Boolean wait_for_click_or_keypress(
+bool wait_for_click_or_keypress(
 	unsigned long ticks)
 {
 	unsigned long end;

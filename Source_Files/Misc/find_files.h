@@ -11,10 +11,7 @@ Aug 26, 2000 (Loren Petrich):
 
 */
 
-// LP: CodeWarrior complains unless I give the full definition of these classes
 #include "FileHandler.h"
-// class FileSpecifier;
-// class DirectorySpecifier;
 
 
 /* Find all files of a given type.. */
@@ -66,7 +63,7 @@ public:
 
 	/* Callback	functions, if returns TRUE, you add it.  If */
 	/*  callback==NULL, adds all found.							<-  */
-	Boolean (*callback)(FileSpecifier& File, void *data);
+	bool (*callback)(FileSpecifier& File, void *data);
 	void *user_data;		/* Passed to callback above.		<-  */
 	
 	// Clears out the memory contents

@@ -582,7 +582,7 @@ void complete_loading_level(
 		scan_and_add_platforms(platform_data, platform_data_count);
 	} else {
 		assert(actual_platform_data);
-#ifdef SDL
+#ifdef CB
 		// CB: convert saved_platform_data to platform_data
 		for (int i=0; i<actual_platform_data_count; i++) {
 			struct platform_data *p = platforms + i;
@@ -605,7 +605,8 @@ void complete_loading_level(
 			p->parent_platform_index = q->parent_platform_index;
 			p->tag = q->tag;
 		}
-#else
+#endif
+#ifdef LP
 		objlist_copy(platforms, actual_platform_data, actual_platform_data_count);
 #endif
 		dynamic_world->platform_count= actual_platform_data_count;
@@ -1039,14 +1040,9 @@ void load_sides(
 		unpack_side_data(*sides,map_sides[loop]);
 #endif
 #ifdef CB
-#ifdef SDL
 		map_sides[loop]= *(side_data *)sides;
 		byte_swap_data(map_sides + loop, SIZEOF_saved_side, 1, _bs_saved_side);
 		map_sides[loop].ambient_delta = (sides->ambient_delta_hi << 16) | sides->ambient_delta_lo;
-#else
-		map_sides[loop]= *sides;
-		byte_swap_object(map_sides[loop], _bs_side_data);
-#endif
 #endif
 
 		if(version==MARATHON_ONE_DATA_VERSION)
@@ -1116,7 +1112,7 @@ void load_lights(
 	saved_static_light *_lights, 
 #endif
 #ifdef CB
-	struct saved_static_light_data *lights,
+	struct saved_static_light_data *_lights,
 #endif
 	short count,
 	short version)
@@ -1175,7 +1171,7 @@ void load_lights(
 				struct saved_static_light *light= _lights;
 #endif
 #ifdef CB
-				struct saved_static_light_data *light= lights;
+				struct saved_static_light_data *light= _lights;
 #endif				
 				for(loop= 0; loop<count; ++loop)
 				{
@@ -1188,7 +1184,6 @@ void load_lights(
 					new_index= new_light(&temp_light);
 #endif
 #ifdef CB
-#ifdef SDL
 					// CB: convert saved_static_light_data to static_light_data
 					saved_static_light_data tmp = *light;
 					byte_swap_data(&tmp, SIZEOF_saved_static_light_data, 1, _bs_saved_static_light_data);
@@ -1204,10 +1199,6 @@ void load_lights(
 					convert_lighting_function_spec(tmp2.becoming_inactive, tmp.becoming_inactive);
 					tmp2.tag = tmp.tag;
 					new_index = new_light(&tmp2);
-#else
-					byte_swap_object(*light, _bs_static_light_data);
-					new_index = new_light(light);
-#endif
 #endif
 					assert(new_index==loop);
 					light++;
@@ -1274,11 +1265,12 @@ void load_media(
 
 	for(ii= 0; ii<count; ++ii)
 	{
-#ifdef SDL
+#ifdef CB
 		media_data tmp = *media;
 		byte_swap_data(&tmp, SIZEOF_media_data, 1, _bs_media_data);
 		short new_index = new_media(&tmp);
-#else
+#endif
+#ifdef LP
 		byte_swap_object(media, _bs_media_data);
 		short new_index= new_media(media);
 #endif
@@ -1295,10 +1287,11 @@ void load_ambient_sound_images(
 	short count)
 {
 	assert(count>=0 &&count<=MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
-#ifdef SDL
+#ifdef CB
 	memcpy(ambient_sound_images, data, count*SIZEOF_ambient_sound_image_data);
 	byte_swap_data(ambient_sound_images, SIZEOF_ambient_sound_image_data, count, _bs_ambient_sound_image_data);
-#else
+#endif
+#ifdef LP
 	objlist_copy(ambient_sound_images, data, count);
 	byte_swap_object_list(ambient_sound_images, count, _bs_ambient_sound_image_data);
 #endif
@@ -1310,10 +1303,11 @@ void load_random_sound_images(
 	short count)
 {
 	assert(count>=0 &&count<=MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
-#ifdef SDL
+#ifdef CB
 	memcpy(random_sound_images, data, count*sizeof(struct random_sound_image_data));
 	byte_swap_data(random_sound_images, SIZEOF_random_sound_image_data, count, _bs_random_sound_image_data);
-#else
+#endif
+#ifdef LP
 	objlist_copy(random_sound_images, data, count);
 	byte_swap_object_list(random_sound_images, count, _bs_random_sound_image_data);
 #endif
@@ -1583,7 +1577,7 @@ static void scan_and_add_platforms(
 			{
 				if(static_data->polygon_index==loop)
 				{
-#ifdef SDL
+#ifdef CB
 					// CB: convert saved_static_platform_data to static_platform_data
 					static_platform_data tmp;
 					tmp.type = static_data->type;
@@ -1595,7 +1589,8 @@ static void scan_and_add_platforms(
 					tmp.polygon_index = static_data->polygon_index;
 					tmp.tag = static_data->tag;
 					new_platform(&tmp, loop);
-#else
+#endif
+#ifdef LP
 					new_platform(static_data, loop);
 #endif
 					break;
@@ -1849,7 +1844,7 @@ boolean process_map_wad(
 
 		assert(is_preprocessed_map&&map_index_count || !is_preprocessed_map&&!map_index_count);
 
-#ifdef SDL
+#ifdef CB
 		data= (unsigned char *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
 		count= data_length/SIZEOF_saved_static_platform_data;
 		assert(count*SIZEOF_saved_static_platform_data==data_length);
@@ -1859,7 +1854,8 @@ boolean process_map_wad(
 		platform_structure_count= data_length/SIZEOF_saved_platform_data;
 		assert(platform_structure_count*SIZEOF_saved_platform_data==data_length);
 		byte_swap_data(platform_structures, SIZEOF_saved_platform_data, platform_structure_count, _bs_saved_platform_data);
-#else
+#endif
+#ifdef LP
 		data= (unsigned char *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
 		count= data_length/sizeof(saved_static_platform);
 		assert(count*sizeof(saved_static_platform)==data_length);
@@ -1878,7 +1874,7 @@ boolean process_map_wad(
 		platform_structure_count= data_length/sizeof(saved_platform);
 		assert(platform_structure_count*sizeof(saved_platform)==data_length);
 		byte_swap_object_list(platform_structures, platform_structure_count, _bs_platform_data);
-#ifdef LP		
+
 		platform_data *unpacked_platform_structures = NULL;
 		if (platform_structure_count > 0)
 		{
@@ -1886,8 +1882,6 @@ boolean process_map_wad(
 			for (int i=0; i<platform_structure_count; i++)
 				unpack_platform_data(platform_structures[i], unpacked_platform_structures[i]);
 		}
-		
-#endif
 #endif
 		complete_loading_level((short *) map_index_data, map_index_count,
 #ifdef LP
@@ -1898,8 +1892,10 @@ boolean process_map_wad(
 #endif
 			platform_structure_count, version);
 		
+#ifdef LP
 		if (unpacked_static_platform_structures) delete []unpacked_static_platform_structures;
 		if (unpacked_platform_structures) delete []unpacked_platform_structures;
+#endif
 	}
 
 	/* ... and bail */

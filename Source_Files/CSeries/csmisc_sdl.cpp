@@ -21,7 +21,7 @@ uint32 machine_tick_count(void)
  *  Wait for mouse click or keypress
  */
 
-boolean wait_for_click_or_keypress(uint32 ticks)
+bool wait_for_click_or_keypress(uint32 ticks)
 {
 	uint32 start = SDL_GetTicks();
 	SDL_Event event;

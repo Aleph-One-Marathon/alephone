@@ -5,6 +5,11 @@
  */
 
 
+// LP addition: this is for getting the clipping rectangle to revert to
+// when done with drawing the terminal text
+extern GrafPtr world_pixels;
+
+
 static struct terminal_key terminal_keys[]= {
 	{0x7e, 0, 0, _terminal_page_up},  // arrow up
 	{0x7d, 0, 0, _terminal_page_down},// arrow down

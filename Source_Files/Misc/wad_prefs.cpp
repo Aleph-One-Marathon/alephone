@@ -204,6 +204,8 @@ void w_write_preferences_file(
 	prefInfo->PrefsFile.Delete();
 	
 	// Re-creating the file
+	// CB: is Create() supposed to truncate the file to zero length
+	// if it already exists? Then the Delete() call above can go away.
 	prefInfo->PrefsFile.Create(Type);
 	
 	OpenedFile PrefsFile;
