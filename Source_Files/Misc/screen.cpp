@@ -567,8 +567,8 @@ void enter_screen(
 	// Kludge to stop annoying 32-bit-mode flickering -- set to 16-bit, then to 32-bit again
 	if ((screen_mode.acceleration == _opengl_acceleration) && screen_mode.bit_depth == 32)
 	{
-		// Be sure to do this only once...
-		if (!ScreenFix_OGL32)
+		// Be sure to do this only once, and only if one isn't doing 2D through OpenGL...
+		if (!ScreenFix_OGL32 && !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_2DGraphics) != 0))
 		{
 			GDSpec& DevSpec = graphics_preferences->device_spec;
 			DevSpec.bit_depth = 16;
