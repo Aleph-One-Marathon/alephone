@@ -65,6 +65,12 @@ Jul 9, 2000:
 Jul 17, 2000:
 	Reorganized the fog setting a bit; now it's set at the beginning of ecah frame.
 	That ought to make it easier for stuff like Pfhortran to change it.
+
+Aug 10, 2000:
+	Changed the fog handling so that the fog preferences get consulted only once,
+	when an OpenGL context is created. This will make it easier to change
+	the fog color and depth on the fly. Also, the presence flag, the depth, and the color
+	were made nonstatic so that Pfhortran can see them.
 */
 
 #include <GL/gl.h>
@@ -275,8 +281,11 @@ static fixed SelfLuminosity;
 
 
 // Self-explanatory :-)
-static bool FogPresent = false;
-static GLfloat FogColor[4] = {0,0,0,0};
+// CP Addition: Un-static'd FogColor for Matthew Hielscher's code
+// LP: removed "static" for all the other fog parameters
+bool FogPresent = false;
+GLfloat FogColor[4] = {0,0,0,0};
+GLfloat FogDepth = 1;
 
 
 // Stipple patterns for that static look
@@ -434,6 +443,10 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 	// Reset the font into for overhead-map fonts done in OpenGL fashion
 	OGL_ResetMapFonts();
 	
+	// Initialize the fog color and depth
+	MakeFloatColor(ConfigureData.FogColor,FogColor);
+	FogDepth = ConfigureData.FogDepth;
+	
 	// Success!
 	JustInited = true;
 	return (_OGL_IsActive = true);
@@ -554,16 +567,18 @@ bool OGL_StartMain()
 	
 	// Moved this test down here for convenience; the overhead map won't have fog,
 	// so be sure to turn it on when leaving the overhead map
+	// Also, added support for changing fog parameters on the fly,
+	// by moving the setting of initial values to where the context gets created.
 	if (FogPresent)
 	{
 		glEnable(GL_FOG);
-		// Set the fog color appropriately
-		OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-		MakeFloatColor(ConfigureData.FogColor,FogColor);
+		GLfloat TempColor[4];
+		for (int k=0; k<4; k++)
+			TempColor[k] = FogColor[k];
 		if (IsInfravisionActive())
-			FindInfravisionVersion(_collection_landscape1+static_world->song_index,FogColor);
-		glFogfv(GL_FOG_COLOR,FogColor);
-		glFogf(GL_FOG_DENSITY,1.0/ConfigureData.FogDepth);
+			FindInfravisionVersion(_collection_landscape1+static_world->song_index,TempColor);
+		glFogfv(GL_FOG_COLOR,TempColor);
+		glFogf(GL_FOG_DENSITY,1.0/MAX(1,FogDepth));
 	}
 	else
 		glDisable(GL_FOG);
