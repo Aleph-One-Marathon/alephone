@@ -1422,7 +1422,7 @@ static OSErr modem_send_packet(
 static void allocate_modem_buffer(
 	void)
 {
-	stream_read_queue.data= (byte *) malloc(MODEM_QUEUE_SIZE*sizeof(byte));
+	stream_read_queue.data= new byte[MODEM_QUEUE_SIZE];
 	assert(stream_read_queue.data);
 }
 
@@ -1658,7 +1658,7 @@ static byte *receive_map(
 		progress_data.total= map_size;
 		progress_data.sent= 0l;
 
-		map_buffer = (byte *) malloc(map_size); // because my caller expects it to be portable.
+		map_buffer = new byte[map_size]; // because my caller expects it to be portable.
 // dprintf("Map size: %x;g", map_size);
 		if (map_buffer)
 		{
@@ -1669,7 +1669,7 @@ static byte *receive_map(
 			if(error)
 			{
 				alert_user(infoError, strNETWORK_ERRORS, netErrMapDistribFailed, error);
-				free(map_buffer);
+				delete []map_buffer;
 				map_buffer= NULL;
 			} else {
 				/* Fill the progress bar. */
