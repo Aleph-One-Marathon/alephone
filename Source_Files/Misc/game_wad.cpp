@@ -185,6 +185,20 @@ static _bs_field _bs_saved_side[] = { // 64 bytes
 	_2byte
 };
 
+static _bs_field _bs_side_data[] = { // 6
+	_2byte, _2byte,
+	_2byte, _2byte, _2byte,
+	_2byte, _2byte, _2byte,
+	_2byte, _2byte, _2byte,
+	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte,
+	_2byte, _2byte,
+	_2byte, _2byte, _2byte,
+	_2byte, _2byte,
+	_2byte, _2byte, _2byte,
+	_4byte,
+	_2byte
+};
+
 static _bs_field _bs_polygon_data[] = { // 128 bytes
 	_2byte, _2byte, _2byte,
 	_2byte,
@@ -217,6 +231,18 @@ static _bs_field _bs_saved_static_light_data[] = { // 100 bytes
     4*sizeof(int16)
 };
 
+static _bs_field _bs_static_light_data[] = { // 100 bytes
+    _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _4byte, _4byte,
+    _2byte, _2byte, _2byte, _4byte, _4byte,
+    _2byte, _2byte, _2byte, _4byte, _4byte,
+    _2byte, _2byte, _2byte, _4byte, _4byte,
+    _2byte, _2byte, _2byte, _4byte, _4byte,
+    _2byte, _2byte, _2byte, _4byte, _4byte,
+    _2byte,
+    4*sizeof(int16)
+};
+
 static _bs_field _bs_saved_static_platform_data[] = { // 32 bytes
 	_2byte, _2byte, _2byte, _2byte, _2byte,
 	_2byte, _2byte,
@@ -225,8 +251,33 @@ static _bs_field _bs_saved_static_platform_data[] = { // 32 bytes
 	7*sizeof(int16)
 };
 
+static _bs_field _bs_static_platform_data[] = { // 32 bytes
+	_2byte, _2byte, _2byte, _2byte, _2byte,
+	_4byte,
+	_2byte,
+	_2byte,
+	7*sizeof(int16)
+};
+
 static _bs_field _bs_saved_platform_data[] = { // 140 bytes
     _2byte, _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte,
+    _2byte, _2byte, _2byte, _2byte,
+    _2byte,
+    _2byte,
+    22*sizeof(int16)
+};
+
+static _bs_field _bs_platform_data[] = { // 140 bytes
+    _2byte, _4byte, _2byte, _2byte,
     _2byte, _2byte, _2byte, _2byte,
     _2byte, _2byte, _2byte, _2byte, _2byte,
     _2byte, _2byte, _2byte, _2byte,
@@ -282,6 +333,40 @@ static _bs_field _bs_random_sound_image_data[] = { // 32 bytes
 };
 
 /* -------- static functions */
+static void scan_and_add_scenery(void);
+static void complete_restoring_level(struct wad_data *wad);
+static void load_redundant_map_data(short *redundant_data, short count);
+static void allocate_map_structure_for_map(struct wad_data *wad);
+static struct wad_data *build_save_game_wad(struct wad_header *header, long *length);
+
+#ifdef LP
+static void allocate_map_for_counts(short polygon_count, short side_count,
+	short endpoint_count, short line_count, long terminal_data_length);
+static void load_points(saved_map_pt *points, short count);
+static void load_lines(saved_line *lines, short count);
+static void load_sides(saved_side *sides, short count, short version);
+static void load_polygons(saved_poly *polys, short count, short version);
+static void load_lights(saved_static_light *_lights, short count, short version);
+static void load_annotations(saved_annotation *annotations, short count);
+static void load_objects(saved_object *map_objects, short count);
+static void load_media(struct media_data *media, short count);
+static void load_map_info(saved_map_data *map_info);
+static void load_ambient_sound_images(struct ambient_sound_image_data *data, short count);
+static void load_random_sound_images(struct random_sound_image_data *data, short count);
+static void load_terminal_data(byte *data, long length);
+
+/* Used _ONLY_ by game_wad.c internally and precalculate.c. */
+static boolean process_map_wad(struct wad_data *wad, boolean restoring_game, short version);
+
+/* Final three calls, must be in this order! */
+static void recalculate_redundant_map(void);
+static void scan_and_add_platforms(struct static_platform_data *platform_static_data, short count);
+static void complete_loading_level(short *map_indexes, short map_index_count, 
+	struct static_platform_data *platform_data, short platform_data_count,
+	struct platform_data *actual_platform_data, short actual_platform_data_count, short version);
+
+#endif
+#ifdef CB
 static void allocate_map_for_counts(short polygon_count, short side_count,
 	short endpoint_count, short line_count, long terminal_data_length);
 static void load_points(saved_map_pt *points, short count);
@@ -303,6 +388,9 @@ static boolean process_map_wad(struct wad_data *wad, boolean restoring_game, sho
 static void allocate_map_structure_for_map(struct wad_data *wad);
 static struct wad_data *build_save_game_wad(struct wad_header *header, long *length);
 
+/* Used _ONLY_ by game_wad.c internally and precalculate.c. */
+boolean process_map_wad(struct wad_data *wad, boolean restoring_game, short version);
+
 // Final three calls, must be in this order!
 static void recalculate_redundant_map(void);
 static void scan_and_add_platforms(struct saved_static_platform_data *platform_static_data,
@@ -311,6 +399,7 @@ static void complete_loading_level(short *map_indexes, short map_index_count,
 	struct saved_static_platform_data *platform_data, short platform_data_count,
 	struct saved_platform_data *actual_platform_data, short actual_platform_data_count, short version);
 
+#endif
 /* ------------------------ Net functions */
 long get_net_map_data_length(
 	void *data) 
@@ -467,9 +556,19 @@ boolean load_level_from_map(
 void complete_loading_level(
 	short *map_indexes,
 	short map_index_count,
+#ifdef LP
+	struct static_platform_data *platform_data,
+#endif
+#ifdef CB
 	struct saved_static_platform_data *platform_data,
+#endif
 	short platform_data_count,
+#ifdef LP
+	struct platform_data *actual_platform_data,
+#endif
+#ifdef CB
 	struct saved_platform_data *actual_platform_data,
+#endif
 	short actual_platform_data_count,
 	short version)
 {
@@ -934,6 +1033,12 @@ void load_sides(
 
 	for(loop=0; loop<count; ++loop)
 	{
+#ifdef LP
+		// map_sides[loop]= *sides;
+		byte_swap_object(*sides, _bs_side_data);
+		unpack_side_data(*sides,map_sides[loop]);
+#endif
+#ifdef CB
 #ifdef SDL
 		map_sides[loop]= *(side_data *)sides;
 		byte_swap_data(map_sides + loop, SIZEOF_saved_side, 1, _bs_saved_side);
@@ -941,6 +1046,7 @@ void load_sides(
 #else
 		map_sides[loop]= *sides;
 		byte_swap_object(map_sides[loop], _bs_side_data);
+#endif
 #endif
 
 		if(version==MARATHON_ONE_DATA_VERSION)
@@ -1006,7 +1112,12 @@ static void convert_lighting_function_spec(lighting_function_specification &dst,
 }
 
 void load_lights(
+#ifdef LP
+	saved_static_light *_lights, 
+#endif
+#ifdef CB
 	struct saved_static_light_data *lights,
+#endif
 	short count,
 	short version)
 {
@@ -1019,7 +1130,7 @@ void load_lights(
 	{
 		case MARATHON_ONE_DATA_VERSION:
 			{	
-				struct old_light_data *light= (struct old_light_data *) lights;
+				struct old_light_data *light= (struct old_light_data *) _lights;
 				
 				/* As time goes on, we should add functions below to make the lights */
 				/*  behave more like their bacward compatible cousins. */
@@ -1060,11 +1171,23 @@ void load_lights(
 		// LP addition:
 		case MARATHON_INFINITY_DATA_VERSION:
 			{
+#ifdef LP
+				struct saved_static_light *light= _lights;
+#endif
+#ifdef CB
 				struct saved_static_light_data *light= lights;
-				
+#endif				
 				for(loop= 0; loop<count; ++loop)
 				{
 					short new_index;
+#ifdef LP
+					byte_swap_object(light, _bs_static_light_data);
+					static_light_data temp_light;
+					unpack_light_data(*light,temp_light);
+					
+					new_index= new_light(&temp_light);
+#endif
+#ifdef CB
 #ifdef SDL
 					// CB: convert saved_static_light_data to static_light_data
 					saved_static_light_data tmp = *light;
@@ -1084,6 +1207,7 @@ void load_lights(
 #else
 					byte_swap_object(*light, _bs_static_light_data);
 					new_index = new_light(light);
+#endif
 #endif
 					assert(new_index==loop);
 					light++;
@@ -1221,14 +1345,30 @@ boolean load_game_from_file(FileSpecifier& File)
 	assert(sizeof(random_sound_image_data) == SIZEOF_random_sound_image_data);
 	assert(sizeof(endpoint_data) == SIZEOF_endpoint_data);
 	assert(sizeof(line_data) == SIZEOF_line_data);
+#ifdef LP
+	assert(sizeof(saved_side) == SIZEOF_side_data);
+#endif
+#ifdef CB
 	assert(sizeof(saved_side) == SIZEOF_saved_side);
+#endif
 	assert(sizeof(polygon_data) == SIZEOF_polygon_data);
 	assert(sizeof(object_frequency_definition) == SIZEOF_object_frequency_definition);
 	assert(sizeof(static_data) == SIZEOF_static_data);
+#ifdef LP
+	assert(sizeof(saved_static_light) == SIZEOF_static_light_data);
+#endif
+#ifdef CB
 	assert(sizeof(saved_static_light_data) == SIZEOF_saved_static_light_data);
+#endif
 	assert(sizeof(media_data) == SIZEOF_media_data);
+#ifdef LP
+	assert(sizeof(saved_static_platform) == SIZEOF_static_platform_data);
+	assert(sizeof(saved_platform) == SIZEOF_platform_data);
+#endif
+#ifdef CB
 	assert(sizeof(saved_static_platform_data) == SIZEOF_saved_static_platform_data);
 	assert(sizeof(saved_platform_data) == SIZEOF_saved_platform_data);
+#endif
 
 	/* Must reset this, in case they played a net game before this one. */
 	game_is_networked= FALSE;
@@ -1413,12 +1553,22 @@ boolean save_game_file(FileSpecifier& File)
 
 /* -------- static functions */
 static void scan_and_add_platforms(
+#ifdef LP
+	struct static_platform_data *platform_static_data,
+#endif
+#ifdef CB
 	struct saved_static_platform_data *platform_static_data,
+#endif
 	short count)
 {
 	struct polygon_data *polygon;
 	short loop;
+#ifdef LP
+	struct static_platform_data *static_data;
+#endif
+#ifdef CB
 	struct saved_static_platform_data *static_data;
+#endif
 	short platform_static_data_index;
 	
 	polygon= map_polygons;
@@ -1525,11 +1675,23 @@ boolean process_map_wad(
 			/* We have an old style light */
 			count= data_length/sizeof(struct old_light_data);
 			assert(count*sizeof(struct old_light_data)==data_length);
+#ifdef LP
+			load_lights((saved_static_light *) data, count, version);
+#endif
+#ifdef CB
 			load_lights((struct saved_static_light_data *) data, count, version);
+#endif
 		} else {
+#ifdef LP
+			count= data_length/sizeof(saved_static_light);
+			assert(count*sizeof(saved_static_light)==data_length);
+			load_lights((saved_static_light *) data, count, version);
+#endif
+#ifdef CB
 			count= data_length/sizeof(struct saved_static_light_data);
 			assert(count*sizeof(struct saved_static_light_data)==data_length);
 			load_lights((struct saved_static_light_data *) data, count, version);
+#endif
 		}
 
 		//	HACK!!!!!!!!!!!!!!! vulcan doesnÕt NONE .first_object field after adding scenery
@@ -1666,7 +1828,12 @@ boolean process_map_wad(
 	} else {
 		byte *map_index_data;
 		short map_index_count;
+#ifdef LP
+		saved_platform *platform_structures;
+#endif
+#ifdef CB
 		struct saved_platform_data *platform_structures;
+#endif
 		short platform_structure_count;
 
 		if(version==MARATHON_ONE_DATA_VERSION)
@@ -1694,19 +1861,45 @@ boolean process_map_wad(
 		byte_swap_data(platform_structures, SIZEOF_saved_platform_data, platform_structure_count, _bs_saved_platform_data);
 #else
 		data= (unsigned char *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
-		count= data_length/sizeof(struct static_platform_data);
-		assert(count*sizeof(struct static_platform_data)==data_length);
+		count= data_length/sizeof(saved_static_platform);
+		assert(count*sizeof(saved_static_platform)==data_length);
 		byte_swap_object_list(data, count, _bs_static_platform_data);
+		
+		static_platform_data *unpacked_static_platform_structures = NULL;
+		if (count > 0)
+		{
+			unpacked_static_platform_structures = new static_platform_data[count];
+			saved_static_platform *static_platform_structures = (saved_static_platform *)data;
+			for (int i=0; i<count; i++)
+				unpack_static_platform_data(static_platform_structures[i], unpacked_static_platform_structures[i]);
+		}
 
-		platform_structures= (struct platform_data *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
-		platform_structure_count= data_length/sizeof(struct platform_data);
-		assert(platform_structure_count*sizeof(struct platform_data)==data_length);
+		platform_structures= (saved_platform *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
+		platform_structure_count= data_length/sizeof(saved_platform);
+		assert(platform_structure_count*sizeof(saved_platform)==data_length);
 		byte_swap_object_list(platform_structures, platform_structure_count, _bs_platform_data);
+#ifdef LP		
+		platform_data *unpacked_platform_structures = NULL;
+		if (platform_structure_count > 0)
+		{
+			unpacked_platform_structures = new platform_data[platform_structure_count];
+			for (int i=0; i<platform_structure_count; i++)
+				unpack_platform_data(platform_structures[i], unpacked_platform_structures[i]);
+		}
+		
 #endif
-
+#endif
 		complete_loading_level((short *) map_index_data, map_index_count,
+#ifdef LP
+			unpacked_static_platform_structures, count, unpacked_platform_structures, 
+#endif
+#ifdef CB
 			(struct saved_static_platform_data *) data, count, platform_structures,
+#endif
 			platform_structure_count, version);
+		
+		if (unpacked_static_platform_structures) delete []unpacked_static_platform_structures;
+		if (unpacked_platform_structures) delete []unpacked_platform_structures;
 	}
 
 	/* ... and bail */
@@ -1880,7 +2073,8 @@ struct save_game_data save_data[]=
 /* the sizes are the sizes to save in the file, be aware! */
 static void *tag_to_global_array_and_size(
 	long tag, 
-	long *size)
+	long *size
+	)
 {
 	void *array= NULL;
 	short unit_size, index;
@@ -1917,6 +2111,7 @@ static void *tag_to_global_array_and_size(
 			*size= dynamic_world->polygon_count*unit_size;
 			break;
 		case LIGHTSOURCE_TAG:
+			assert(sizeof(saved_static_light)==sizeof(struct static_light_data));
 			array= lights;
 			*size= dynamic_world->light_count*unit_size;
 			break;
@@ -2076,7 +2271,7 @@ static void complete_restoring_level(
 	byte *data;
 	long size, data_length;
 	short count;
-
+	
 	for(loop= 0; loop<NUMBER_OF_SAVE_ARRAYS; ++loop)
 	{
 		/* If it hasn't already been loaded */
@@ -2092,7 +2287,7 @@ static void complete_restoring_level(
 			memcpy(array, data, data_length);
 		}
 	}
-
+	
 	/* Loading games needs this done. */
 	reset_player_queues();
 }
