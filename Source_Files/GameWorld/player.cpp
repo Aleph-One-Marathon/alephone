@@ -139,6 +139,7 @@ May 22, 2003 (Woody Zenfell):
 #include "computer_interface.h"
 #include "projectiles.h"
 #include "network_games.h"
+#include "network.h"
 #include "screen.h"
 #include "shell.h" // for screen_printf()
 
