@@ -56,37 +56,41 @@ static RGBColor BkgdColor = rgb_black;
 
 // These need to return whether the text field was correctly parsed or not
 
-inline bool GetShort(ControlHandle Hdl, short& Value)
+static bool GetShort(ControlHandle Hdl, short& Value)
 {
 	GetDialogItemText((Handle)Hdl,ptemporary);
 	ptemporary[ptemporary[0]+1] = 0;
 	return (sscanf(temporary+1,"%hd",&Value) == 1);
 }
 
-inline bool GetFloat(ControlHandle Hdl, float& Value)
+static bool GetFloat(ControlHandle Hdl, float& Value)
 {
 	GetDialogItemText((Handle)Hdl,ptemporary);
 	ptemporary[ptemporary[0]+1] = 0;
 	return (sscanf(temporary+1,"%f",&Value) == 1);
 }
 
-inline void SetShort(ControlHandle Hdl, short Value)
+static void SetShort(ControlHandle Hdl, short Value)
 {
 	NumToString(Value,ptemporary);
 	SetDialogItemText((Handle)Hdl, ptemporary);
 }
 
-inline void SetFloat(ControlHandle Hdl, float Value)
+static void SetFloat(ControlHandle Hdl, float Value)
 {
 	psprintf(ptemporary, "%f",Value);
 	SetDialogItemText((Handle)Hdl, ptemporary);
 }
 
-inline void ToggleControl(ControlHandle Hdl)
+static void ToggleControl(ControlHandle Hdl)
 {
 	SetControlValue(Hdl, 1 - GetControlValue(Hdl));
 }
 
+static int FloatRoundoff(float x)
+{
+	return (x >= 0) ? int(x + 0.5) : - int(-x + 0.5);
+}
 
 // True for OK, false for cancel
 bool Configure_ChaseCam(ChaseCamData &Data)
@@ -141,19 +145,20 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 			BadValue = false;
 			
 			// Now doing roundoff correctly
+			// Using a modification of AlexJLS's corrected version
 			
 			if (GetFloat(Behind_CHdl,FloatTemp))
-				New_Behind = WORLD_ONE * FloatTemp + (FloatTemp >= 0 ? 0.5 : -0.5);
+				New_Behind = FloatRoundoff(WORLD_ONE * FloatTemp);
 			else
 				BadValue = true;
 			
 			if (GetFloat(Upward_CHdl,FloatTemp))
-				New_Upward = WORLD_ONE * FloatTemp + (FloatTemp >= 0 ? 0.5 : -0.5);
+				New_Upward = FloatRoundoff(WORLD_ONE * FloatTemp);
 			else
 				BadValue = true;
 			
 			if (GetFloat(Rightward_CHdl,FloatTemp))
-				New_Rightward = WORLD_ONE * FloatTemp + (FloatTemp >= 0 ? 0.5 : -0.5);
+				New_Rightward = FloatRoundoff(WORLD_ONE * FloatTemp);
 			else
 				BadValue = true;
 			
@@ -279,7 +284,7 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	SetShort(Length_CHdl,Data.Length);
 	
 	// Create a UPP for the crosshair preview and store it
-	UserItemUPP DoPreviewUPP = NewUserItemProc(DoPreview);
+	UserItemUPP DoPreviewUPP = NewUserItemUPP(DoPreview);
 	ControlHandle Show_CHdl;
 	GetDialogItem(Dialog, Show_Item, &ItemType, (Handle *)&Show_CHdl, &Bounds);	
 	SetDialogItem(Dialog, Show_Item, ItemType, Handle(DoPreviewUPP), &Bounds);
@@ -420,7 +425,7 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	
 	// Clean up
 	HideWindow(Dialog);
-	DisposeRoutineDescriptor(UniversalProcPtr(DoPreviewUPP));
+	DisposeUserItemUPP(DoPreviewUPP);
 	DisposeDialog(Dialog);
 	
 	return IsOK;
