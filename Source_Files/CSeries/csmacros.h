@@ -1,9 +1,11 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 /*
 	Jul 1, 2000 (Loren Petrich):
 		Added accessor template function
 
 */
-// LP note: this is probably Bo Lindbergh's stuff
+#ifndef _CSERIES_MACROS_
+#define _CSERIES_MACROS_
 
 #define FLOOR(value,floor) ((value)<(floor) ? (floor) : (value))
 #define CEILING(value,ceiling) ((value)>(ceiling) ? (ceiling) : (value))
@@ -47,3 +49,6 @@ template<class T> T* GetMemberWithBounds(T* Array, const int Index, const int Nu
 	// The appropriate pointer
 	return (Array + Index);
 }
+
+#endif
+

@@ -1,3 +1,4 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 typedef struct myTMTask myTMTask,*myTMTaskPtr;
 
 extern myTMTaskPtr myTMSetup(

@@ -1,3 +1,7 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_KEYS_
+#define _CSERIES_KEYS_
+
 /*
 	[Original author not listed]
 Feb 13, 2000 (Loren Petrich):
@@ -53,3 +57,4 @@ Feb 24, 2000 (Loren Petrich):
 #define kcF14	0x6B
 #define kcF15	0x71
 
+#endif

@@ -1,3 +1,7 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _MY_32BIT_QUICKDRAW_
+#define _MY_32BIT_QUICKDRAW_
+
 #include <QDOffscreen.h>
 
 
@@ -42,3 +46,5 @@ extern void LowLevelSetEntries(
 	short start,
 	short count0,
 	ColorSpec *specs);
+
+#endif

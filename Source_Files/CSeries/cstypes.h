@@ -1,4 +1,17 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_TYPES_
+#define _CSERIES_TYPES_
+
 #define NONE (-1)
+
+// LP: moved these types here for convenience
+// Integer types with specific bit size
+typedef SInt8 int8;
+typedef UInt8 uint8;
+typedef SInt16 int16;
+typedef UInt16 uint16;
+typedef SInt32 int32;
+typedef UInt32 uint32;
 
 typedef int32 fixed;
 
@@ -28,3 +41,4 @@ typedef unsigned char boolean;
 #define TRUE true
 #endif
 
+#endif

@@ -1,3 +1,7 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_ALERTS_
+#define _CSERIES_ALERTS_
+
 enum {
 	infoError,
 	fatalError
@@ -39,3 +43,4 @@ extern void _warn(
 #define vwarn(what,message) ((void)(what))
 #endif
 
+#endif

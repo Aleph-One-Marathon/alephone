@@ -1,3 +1,7 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_FONTS_
+#define _CSERIES_FONTS_
+
 typedef struct TextSpec {
 	short font;
 	unsigned short style;
@@ -13,4 +17,6 @@ extern void GetFont(
 	TextSpec *spec);
 extern void SetFont(
 	TextSpec *spec);
+
+#endif
 

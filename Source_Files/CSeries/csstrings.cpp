@@ -1,3 +1,4 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>

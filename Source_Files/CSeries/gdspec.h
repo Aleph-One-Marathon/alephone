@@ -1,3 +1,7 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_GDSPEC_
+#define _CSERIES_GDSPEC_
+
 typedef struct GDSpec {
 	short slot;
 	short flags;
@@ -26,3 +30,5 @@ extern short GetSlotFromGDevice(
 
 extern void display_device_dialog(
 	GDSpecPtr spec);
+
+#endif

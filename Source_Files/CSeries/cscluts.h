@@ -1,4 +1,11 @@
- typedef struct rgb_color {
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_CLUTS_
+#define _CSERIES_CLUTS_
+
+// Need this here
+#include "cstypes.h"
+
+typedef struct rgb_color {
 	uint16 red;
 	uint16 green;
 	uint16 blue;
@@ -26,3 +33,4 @@ extern RGBColor rgb_black;
 extern RGBColor rgb_white;
 extern RGBColor system_colors[NUM_SYSTEM_COLORS];
 
+#endif

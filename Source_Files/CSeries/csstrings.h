@@ -1,3 +1,7 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_STRINGS_
+#define _CSERIES_STRINGS_
+
 extern char temporary[256];
 #define ptemporary (*(Str255 *)temporary)
 
@@ -31,4 +35,6 @@ extern unsigned char *psprintf(
 extern void dprintf(
 	const char *format,
 	...);
+
+#endif
 

@@ -1,3 +1,10 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_PIXELS_
+#define _CSERIES_PIXELS_
+
+// Need this here
+#include "cstypes.h"
+
 typedef uint8 pixel8;
 typedef uint16 pixel16;
 typedef uint32 pixel32;
@@ -25,3 +32,4 @@ typedef uint32 pixel32;
 #define GREEN32(p) ((p)>>8&0xFF)
 #define BLUE32(p) ((p)&0xFF)
 
+#endif

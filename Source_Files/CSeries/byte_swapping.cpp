@@ -1,3 +1,4 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #include "cseries.h"
 #include "byte_swapping.h"
 

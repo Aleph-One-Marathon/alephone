@@ -1,3 +1,7 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_DIALOGS_
+#define _CSERIES_DIALOGS_
+
 #define iOK					1
 #define iCANCEL				2
 
@@ -71,3 +75,4 @@ typedef void (*dialog_header_proc_ptr)(
 extern void set_dialog_header_proc(
 	dialog_header_proc_ptr proc);
 
+#endif

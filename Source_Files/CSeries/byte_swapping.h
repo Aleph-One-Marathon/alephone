@@ -1,3 +1,7 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _BYTE_SWAPPING_
+#define _BYTE_SWAPPING_
+
 typedef short _bs_field;
 
 enum {
@@ -28,4 +32,6 @@ extern void byte_swap_memory(
 #elif defined(mac)
 #define SDL_SwapBE16(x) (x)
 #define SDL_SwapBE32(x) (x)
+#endif
+
 #endif

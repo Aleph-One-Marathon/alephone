@@ -1,3 +1,4 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #include <Dialogs.h>
 #include <TextUtils.h>
 //#include <ControlDefinitions.h>

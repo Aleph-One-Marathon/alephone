@@ -1,3 +1,7 @@
+// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+#ifndef _CSERIES_FILES_
+#define _CSERIES_FILES_
+
 extern OSErr get_file_spec(
 	FSSpec *spec,
 	short listid,
@@ -6,3 +10,5 @@ extern OSErr get_file_spec(
 
 extern OSErr get_my_fsspec(
 	FSSpec *spec);
+
+#endif
