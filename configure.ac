@@ -167,6 +167,7 @@ Source_Files/Lua/Makefile
 Source_Files/Misc/Makefile
 Source_Files/ModelView/Makefile
 Source_Files/Network/Makefile
+Source_Files/Network/Metaserver/Makefile
 Source_Files/Pfhortran/Makefile
 Source_Files/RenderMain/Makefile
 Source_Files/RenderOther/Makefile
