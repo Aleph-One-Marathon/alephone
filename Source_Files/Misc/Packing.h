@@ -36,10 +36,12 @@
 
 #include <string.h>
 
-#if !(defined(BIG_ENDIAN)) && !(defined(LITTLE_ENDIAN))
-#error "At least one of BIG_ENDIAN and LITTLE_ENDIAN must be defined!"
-#elif (defined(BIG_ENDIAN)) && (defined(LITTLE_ENDIAN))
-#error "BIG_ENDIAN and LITTLE_ENDIAN cannot both be defined at the same time!"
+#define PACKED_DATA_IS_BIG_ENDIAN
+
+#if !(defined(PACKED_DATA_IS_BIG_ENDIAN)) && !(defined(PACKED_DATA_IS_LITTLE_ENDIAN))
+#error "At least one of PACKED_DATA_IS_BIG_ENDIAN and PACKED_DATA_IS_LITTLE_ENDIAN must be defined!"
+#elif (defined(PACKED_DATA_IS_BIG_ENDIAN)) && (defined(PACKED_DATA_IS_LITTLE_ENDIAN))
+#error "PACKED_DATA_IS_BIG_ENDIAN and PACKED_DATA_IS_LITTLE_ENDIAN cannot both be defined at the same time!"
 #endif
 
 inline void StreamToValue(uint8* &Stream, uint16 &Value)
@@ -48,9 +50,9 @@ inline void StreamToValue(uint8* &Stream, uint16 &Value)
 	uint16 Byte0 = uint16(*(Stream++));
 	uint16 Byte1 = uint16(*(Stream++));
 
-#if defined(BIG_ENDIAN)
+#if defined(PACKED_DATA_IS_BIG_ENDIAN)
 	Value = (Byte0 << 8) | Byte1;
-#elif defined(LITTLE_ENDIAN)
+#elif defined(PACKED_DATA_IS_LITTLE_ENDIAN)
 	Value = (Byte1 << 8) | Byte0;
 #endif
 }
@@ -70,9 +72,9 @@ inline void StreamToValue(uint8* &Stream, uint32 &Value)
 	uint32 Byte2 = uint32(*(Stream++));
 	uint32 Byte3 = uint32(*(Stream++));
 
-#if defined(BIG_ENDIAN)
+#if defined(PACKED_DATA_IS_BIG_ENDIAN)
 	Value = (Byte0 << 24) | (Byte1 << 16) | (Byte2 << 8) | Byte3;
-#elif defined(LITTLE_ENDIAN)
+#elif defined(PACKED_DATA_IS_LITTLE_ENDIAN)
 	Value = (Byte3 << 24) | (Byte2 << 16) | (Byte1 << 8) | Byte0;
 #endif
 }
@@ -86,10 +88,10 @@ inline void StreamToValue(uint8* &Stream, int32 &Value)
 
 inline void ValueToStream(uint8* &Stream, uint16 Value)
 {
-#if defined(BIG_ENDIAN)
+#if defined(PACKED_DATA_IS_BIG_ENDIAN)
 	*(Stream++) = uint8(Value >> 8);
 	*(Stream++) = uint8(Value);
-#elif defined(LITTLE_ENDIAN)
+#elif defined(PACKED_DATA_IS_LITTLE_ENDIAN)
 	*(Stream++) = uint8(Value);
 	*(Stream++) = uint8(Value >> 8);
 #endif
@@ -102,12 +104,12 @@ inline void ValueToStream(uint8* &Stream, int16 Value)
 
 inline void ValueToStream(uint8* &Stream, uint32 Value)
 {
-#if defined(BIG_ENDIAN)
+#if defined(PACKED_DATA_IS_BIG_ENDIAN)
 	*(Stream++) = uint8(Value >> 24);
 	*(Stream++) = uint8(Value >> 16);
 	*(Stream++) = uint8(Value >> 8);
 	*(Stream++) = uint8(Value);
-#elif defined(LITTLE_ENDIAN)
+#elif defined(PACKED_DATA_IS_LITTLE_ENDIAN)
 	*(Stream++) = uint8(Value);
 	*(Stream++) = uint8(Value >> 8);
 	*(Stream++) = uint8(Value >> 16);
