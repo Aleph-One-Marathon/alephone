@@ -246,19 +246,17 @@ void initialize_preferences(
 		
 		OFile.Close();
 
-#if defined(mac)
 		if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
 		{
+#if defined(mac)
 			ParamText("\pThere were preferences-file parsing errors",0,0,0);
 			Alert(FatalErrorAlert,NULL);
 			ExitToShell();
-		}
 #elif defined(SDL)
-		{
 			fprintf(stderr, "There were preferences-file parsing errors");
 			exit(0);
-		}
 #endif
+		}
 	}
 	catch(...)
 	{
@@ -389,8 +387,8 @@ void write_preferences(
 	for (int k=0; k<OGL_NUMBER_OF_TEXTURE_TYPES; k++)
 	{
 		OGL_Texture_Configure& TxtrConfig = graphics_preferences->OGL_Configure.TxtrConfigList[k];
-		fprintf(F,"  <texture index=\"%d\" near_filter=\"%d\" far_filter=\"%d\" resolution=\"%d\" color_format=\"%d\"/>\n",
-			k, int(TxtrConfig.NearFilter), int(TxtrConfig.FarFilter), int(TxtrConfig.Resolution), int(TxtrConfig.ColorFormat));
+		fprintf(F,"  <texture index=\"%hd\" near_filter=\"%hd\" far_filter=\"%hd\" resolution=\"%hd\" color_format=\"%d\"/>\n",
+			k, TxtrConfig.NearFilter, TxtrConfig.FarFilter, TxtrConfig.Resolution, TxtrConfig.ColorFormat);
 	}
 	fprintf(F,"</graphics>\n\n");
 	
@@ -1101,8 +1099,7 @@ static XML_LandscapePrefsParser LandscapePrefsParser;
 class XML_TexturePrefsParser: public XML_ElementParser
 {
 	bool IndexPresent, ValuesPresent[4];
-	int16 Index;
-	uint16 Values[4];
+	int16 Index, Values[4];
 	
 public:
 	bool Start();
@@ -1135,7 +1132,7 @@ bool XML_TexturePrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"near_filter"))
 	{
-		if (ReadUInt16Value(Value,Values[0]))
+		if (ReadInt16Value(Value,Values[0]))
 		{
 			ValuesPresent[0] = true;
 			return true;
@@ -1145,7 +1142,7 @@ bool XML_TexturePrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"far_filter"))
 	{
-		if (ReadUInt16Value(Value,Values[1]))
+		if (ReadInt16Value(Value,Values[1]))
 		{
 			ValuesPresent[1] = true;
 			return true;
@@ -1155,7 +1152,7 @@ bool XML_TexturePrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"resolution"))
 	{
-		if (ReadUInt16Value(Value,Values[2]))
+		if (ReadInt16Value(Value,Values[2]))
 		{
 			ValuesPresent[2] = true;
 			return true;
@@ -1165,7 +1162,7 @@ bool XML_TexturePrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"color_format"))
 	{
-		if (ReadUInt16Value(Value,Values[3]))
+		if (ReadInt16Value(Value,Values[3]))
 		{
 			ValuesPresent[3] = true;
 			return true;
@@ -1717,7 +1714,7 @@ static XML_MacFSSpecPrefsParser MacFSSpecPrefsParser;
 
 #else
 
-static XML_ElementParser MacFSSpecPrefsParser;
+static XML_ElementParser MacFSSpecPrefsParser("mac_fsspec");
 
 #endif
 
