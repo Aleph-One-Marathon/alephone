@@ -30,6 +30,11 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 3, 2002 (Br'fin (Jeremy Parsons)):
 	For carbon, replaced framing of our own group boxes with a theme seperator line at the top
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Adjusted modify_control to call the recommended De/ActivateControl
+		for controls in a control hierarchy under Carbon
+	Added utility routine GetListBoxListHandle for Carbon
 */
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -289,8 +294,27 @@ void modify_control(
 
 	GetDialogItem(dlg,item,&it,&ih,&ir);
 	control=(ControlHandle)ih;
+#if defined(TARGET_API_MAC_CARBON)
+	if (hilite!=NONE)
+	{
+		// JTP: This works well for non-buttons, such as labels and edit text boxes
+		// but is useless without a control hierarchy enabled, so we fall back to the old ways
+		ControlRef hierarchyControl;
+		if((hilite == CONTROL_INACTIVE || hilite == CONTROL_ACTIVE)
+			&& (GetDialogItemAsControl( dlg, item, &hierarchyControl ) == noErr))
+		{
+			if(hilite == CONTROL_INACTIVE)
+				DeactivateControl(hierarchyControl);
+			else
+				ActivateControl(hierarchyControl);
+		}
+		else
+			HiliteControl(control,hilite);
+	}
+#else	
 	if (hilite!=NONE)
 		HiliteControl(control,hilite);
+#endif
 	if (value!=NONE)
 		SetControlValue(control,value);
 }
@@ -431,4 +455,30 @@ copy_pstring_to_text_field(DialogPtr dialog, short item, const unsigned char* ps
     SetDialogItemText(item_handle, pstring);
 }
 
+#endif
+
+#if defined(TARGET_API_MAC_CARBON)
+// JTP: Taken from an AppearanceManager code sample
+//ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
+//	¥ GetListBoxListHandle
+//ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
+//	Returns the list handle from a list box control.
+//
+pascal OSStatus
+GetListBoxListHandle( ControlHandle control, ListHandle* list )
+{
+	Size		actualSize;
+	OSStatus	err;
+	
+	if ( control == nil )
+		return paramErr;
+		
+	if ( list == nil )
+		return paramErr;
+		
+	err = GetControlData( control, 0, kControlListBoxListHandleTag, sizeof( ListHandle ),
+			 (Ptr)list, &actualSize );
+		
+	return err;
+}
 #endif

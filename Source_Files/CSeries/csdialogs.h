@@ -23,6 +23,9 @@ Sept-Nov 2001 (Woody Zenfell): approximate emulations of originally Mac OS-only 
     the SDL dialog system, lets us share more code.  Using API that's a bit more specific, so
     we can split what were originally single functions into several related ones.  Mac OS
     implementation of these "split" functions is still handled by the original function.
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Added utility routine GetListBoxListHandle for Carbon
 */
 #ifndef _CSERIES_DIALOGS_
 #define _CSERIES_DIALOGS_
@@ -215,5 +218,10 @@ extern short get_boolean_control_value(
 void HideDialogItem(DialogPtr dialog, short item_index);
 void ShowDialogItem(DialogPtr dialog, short item_index);
 #endif // !mac
+
+#if defined(TARGET_API_MAC_CARBON)
+// JTP: Get the list manager handle for a listbox control
+pascal OSStatus GetListBoxListHandle( ControlHandle control, ListHandle* list );
+#endif
 
 #endif//_CSERIES_DIALOGS_
