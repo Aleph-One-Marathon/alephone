@@ -175,7 +175,7 @@ int main(int argc, char **argv)
 static void initialize_application(void)
 {
 	// Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO | (option_nosound ? 0 : SDL_INIT_AUDIO) | SDL_INIT_NOPARACHUTE) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | (option_nosound ? 0 : SDL_INIT_AUDIO)) < 0) {
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
 	}
