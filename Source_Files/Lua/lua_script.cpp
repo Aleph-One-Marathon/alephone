@@ -26,6 +26,9 @@
 
  jkvw, 07/21/03
  Lua access to network scoring and network compass, and get_player_name.
+
+ Woody Zenfell, 08/05/03
+ Refactored L_Call_* to share common code; reporting runtime Lua script errors via screen_printf
  */
 
 // cseries defines HAVE_LUA on A1/SDL
@@ -164,294 +167,191 @@ static void OpenStdLibs(lua_State* l)
 	}
 }
 
-void L_Call_Init()
+static void
+L_Error(const char* inMessage)
+{
+	screen_printf(inMessage);
+	logError(inMessage);
+}
+
+static bool
+L_Should_Call(const char* inLuaFunctionName)
 {
 	if (!lua_running)
-		return;
-	lua_pushstring(state, "init");
+		return false;
+	
+	lua_pushstring(state, inLuaFunctionName);
 	lua_gettable(state, LUA_GLOBALSINDEX);
+
 	if (!lua_isfunction(state, -1))
 	{
 		lua_pop(state, 1);
-		return;
+		return false;
 	}
-	if (lua_pcall(state, 0, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+
+	return true;
+}
+
+static void
+L_Do_Call(const char* inLuaFunctionName, int inNumArgs = 0, int inNumResults = 0)
+{
+	if (lua_pcall(state, inNumArgs, inNumResults, 0)==LUA_ERRRUN)
+		L_Error(lua_tostring(state,-1));
+}
+
+static void
+L_Call(const char* inLuaFunctionName)
+{
+	if(L_Should_Call(inLuaFunctionName))
+		L_Do_Call(inLuaFunctionName);
+}
+
+static void
+L_Call_N(const char* inLuaFunctionName, lua_Number inArg1)
+{
+	if(L_Should_Call(inLuaFunctionName))
+	{
+		lua_pushnumber(state, inArg1);
+		L_Do_Call(inLuaFunctionName, 1);
+	}
+}
+
+static void
+L_Call_NN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2)
+{
+	if(L_Should_Call(inLuaFunctionName))
+	{
+		lua_pushnumber(state, inArg1);
+		lua_pushnumber(state, inArg2);
+		L_Do_Call(inLuaFunctionName, 2);
+	}
+}
+
+static void
+L_Call_NNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3)
+{
+	if(L_Should_Call(inLuaFunctionName))
+	{
+		lua_pushnumber(state, inArg1);
+		lua_pushnumber(state, inArg2);
+		lua_pushnumber(state, inArg3);
+		L_Do_Call(inLuaFunctionName, 3);
+	}
+}
+
+static void
+L_Call_NNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4)
+{
+	if(L_Should_Call(inLuaFunctionName))
+	{
+		lua_pushnumber(state, inArg1);
+		lua_pushnumber(state, inArg2);
+		lua_pushnumber(state, inArg3);
+		lua_pushnumber(state, inArg4);
+		L_Do_Call(inLuaFunctionName, 4);
+	}
+}
+
+static void
+L_Call_NNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4, lua_Number inArg5)
+{
+	if(L_Should_Call(inLuaFunctionName))
+	{
+		lua_pushnumber(state, inArg1);
+		lua_pushnumber(state, inArg2);
+		lua_pushnumber(state, inArg3);
+		lua_pushnumber(state, inArg4);
+		lua_pushnumber(state, inArg5);
+		L_Do_Call(inLuaFunctionName, 5);
+	}
+}
+
+void L_Call_Init()
+{
+	L_Call("init");
 }
 
 void L_Call_Cleanup ()
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "cleanup");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	if (lua_pcall(state, 0, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call("cleanup");
 }
 
 void L_Call_Idle()
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "idle");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	if (lua_pcall(state, 0, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call("idle");
 }
 
 void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
 {
-	if (!lua_running)
-		return;
-
-	lua_pushstring (state, "start_refuel");
-	lua_gettable (state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction (state, -1))
-	{
-		lua_pop (state, 1);
-		return;
-	}
-	lua_pushnumber (state, type);
-	lua_pushnumber (state, player_index);
-	if (lua_pcall (state, 2, 0, 0) == LUA_ERRRUN)
-		logError (lua_tostring (state, -1));
+	// ZZZ: Preserving existing behavior which is to only pass along two of these parameters
+	L_Call_NN("start_refuel", type, player_index);
 }
 
 void L_Call_End_Refuel (short type, short player_index, short panel_side_index)
 {
-	if (!lua_running)
-		return;
-
-	lua_pushstring (state, "end_refuel");
-	lua_gettable (state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction (state, -1))
-	{
-		lua_pop (state, 1);
-		return;
-	}
-	lua_pushnumber (state, type);
-	lua_pushnumber (state, player_index);
-	if (lua_pcall (state, 2, 0, 0) == LUA_ERRRUN)
-		logError (lua_tostring (state, -1));
+	// ZZZ: Preserving existing behavior which is to only pass along two of these parameters
+	L_Call_NN("end_refuel", type, player_index);
 }
 
 void L_Call_Tag_Switch(short tag, short player_index)
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "tag_switch");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	lua_pushnumber(state, tag);
-	lua_pushnumber(state, player_index);
-	if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call_NN("tag_switch", tag, player_index);
 }
 
 void L_Call_Light_Switch(short light, short player_index)
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "light_switch");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	lua_pushnumber(state, light);
-	lua_pushnumber(state, player_index);
-	if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call_NN("light_switch", light, player_index);
 }
 
 void L_Call_Platform_Switch(short platform, short player_index)
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "platform_switch");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	lua_pushnumber(state, platform);
-	lua_pushnumber(state, player_index);
-	if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call_NN("platform_switch", platform, player_index);
 }
 
 void L_Call_Terminal_Enter(short terminal_id, short player_index)
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "terminal_enter");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	lua_pushnumber(state, terminal_id);
-	lua_pushnumber(state, player_index);
-	if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call_NN("terminal_enter", terminal_id, player_index);
 }
 
 void L_Call_Terminal_Exit(short terminal_id, short player_index)
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "terminal_exit");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	lua_pushnumber(state, terminal_id);
-	lua_pushnumber(state, player_index);
-	if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call_NN("terminal_exit", terminal_id, player_index);
 }
 
 void L_Call_Pattern_Buffer(short buffer_id, short player_index)
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "pattern_buffer");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	lua_pushnumber(state, buffer_id);
-	lua_pushnumber(state, player_index);
-	if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call_NN("pattern_buffer", buffer_id, player_index);
 }
 
 void L_Call_Got_Item(short type, short player_index)
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "got_item");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	lua_pushnumber(state, type);
-	lua_pushnumber(state, player_index);
-	if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call_NN("got_item", type, player_index);
 }
 
 void L_Call_Light_Activated(short index)
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "light_activated");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	lua_pushnumber(state, index);
-	if (lua_pcall(state, 1, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call_N("light_activated", index);
 }
 
 void L_Call_Platform_Activated(short index)
 {
-	if (!lua_running)
-		return;
-	lua_pushstring(state, "platform_activated");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 1);
-		return;
-	}
-	lua_pushnumber(state, index);
-	if (lua_pcall(state, 1, 0, 0)==LUA_ERRRUN)
-		logError(lua_tostring(state,-1));
+	L_Call_N("platform_activated", index);
 }
 
 void L_Call_Player_Revived (short player_index)
 {
-	if (!lua_running)
-		return;
-
-	lua_pushstring (state, "player_revived");
-	lua_gettable (state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction (state, -1))
-	{
-		lua_pop (state, 1);
-		return;
-	}
-	lua_pushnumber (state, player_index);
-	if (lua_pcall (state, 1, 0, 0) == LUA_ERRRUN)
-		logError (lua_tostring (state, -1));
+	L_Call_N("player_revived", player_index);
 }
 
 void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action)
 {
-	if (!lua_running)
-		return;
-
-	lua_pushstring (state, "player_killed");
-	lua_gettable (state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction (state, -1))
-	{
-		lua_pop (state, 1);
-		return;
-	}
-	lua_pushnumber (state, player_index);
-	lua_pushnumber (state, aggressor_player_index);
-	lua_pushnumber (state, action);
-	if (lua_pcall (state, 3, 0, 0) == LUA_ERRRUN)
-		logError (lua_tostring (state, -1));
+	L_Call_NNN("player_killed", player_index, aggressor_player_index, action);
 }
 
 //  Woody Zenfell, 08/03/03
 void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount)
 {
-	if (!lua_running)
-		return;
-
-	lua_pushstring (state, "player_damaged");
-	lua_gettable (state, LUA_GLOBALSINDEX);
-	if (!lua_isfunction (state, -1))
-	{
-		lua_pop (state, 1);
-		return;
-	}
-	lua_pushnumber (state, player_index);
-	lua_pushnumber (state, aggressor_player_index);
-	lua_pushnumber (state, aggressor_monster_index);
-	lua_pushnumber (state, damage_type);
-	lua_pushnumber (state, damage_amount);
-	if (lua_pcall (state, 5, 0, 0) == LUA_ERRRUN)
-		logError (lua_tostring (state, -1));
+	L_Call_NNNNN("player_damaged", player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount);
 }
 
 static int L_Number_of_Players(lua_State *L)
