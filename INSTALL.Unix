@@ -24,6 +24,11 @@ Precompiled RPM packages of Lua can be downloaded from:
 
   http://www.mupsych.org/~rrt/Lua
 
+The mutiplayer audio chat feature of Aleph One requires the Speex library
+which can be downloaded from
+
+  http://www.speex.org/
+
 
 Installing the program
 ----------------------
