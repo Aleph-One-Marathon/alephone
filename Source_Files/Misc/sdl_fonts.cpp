@@ -56,13 +56,19 @@ sdl_font_info *load_font(const TextSpec &spec)
 
 	// Look for ID/size in list of loaded fonts
 	id_and_size_t id_and_size(spec.font, spec.size);
-	font_list_t::const_iterator it = font_list.find(id_and_size);
-	if (it != font_list.end()) {	// already loaded
-		info = (*it).second;
-		info->ref_count++;
-		return info;
+	
+	// LP: using explicit find code to get around some MSVC STL bugs
+	font_list_t::const_iterator i = font_list.begin(), end = font_list.end();
+	while (i != end) {
+		if ((*i).first == id_and_size) {
+			// Already loaded
+			info = (*i).second;
+			info->ref_count++;
+			return info;
+		}
+		i++;
 	}
-
+	
 	// Load font family resource
 	LoadedResource fond;
 	if (!get_resource(FOUR_CHARS_TO_INT('F', 'O', 'N', 'D'), spec.font, fond)) {
