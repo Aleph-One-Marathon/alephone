@@ -1398,10 +1398,8 @@ bool XML_AmmoDisplayParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"right_to_left") == 0)
 	{
-		short RightToLeft;
-		if (ReadNumericalValue(Value,"%hd",RightToLeft))
+		if (ReadBooleanValue(Value,Data.right_to_left))
 		{
-			Data.right_to_left = (RightToLeft != 0);
 			IsPresent[9] = true;
 			return true;
 		}
@@ -1544,10 +1542,8 @@ bool XML_WeaponDisplayParser::HandleAttribute(const char *Tag, const char *Value
 	}
 	else if (strcmp(Tag,"multiple") == 0)
 	{
-		short IsMultiple;
-		if (ReadNumericalValue(Value,"%hd",IsMultiple))
+		if (ReadBooleanValue(Value,Data.multi_weapon))
 		{
-			Data.multi_weapon = (IsMultiple != 0);
 			IsPresent[7] = true;
 			return true;
 		}
