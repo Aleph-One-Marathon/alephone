@@ -45,6 +45,9 @@ Aug 12, 2000 (Loren Petrich):
 
 Aug 25, 2000 (Loren Petrich)
 	Confined searches to the app's directory
+
+Oct 14, 2000 (Loren Petrich):
+	Added music-volume stuff
 */
 
 #ifdef env68k
@@ -83,7 +86,9 @@ enum {
 	iAMBIENT_SOUND,
 	iVOLUME,
 	iCHANNELS,
-	iMORE_SOUNDS
+	iMORE_SOUNDS,
+	// LP addition:
+	iMUSIC
 };
 
 // LP additions: InputSprocket, run/walk and swim/sink reversers;
@@ -168,6 +173,11 @@ void handle_preferences(
 {
 	/* Save the existing preferences, in case we have to reload them. */
 	write_preferences();
+	
+	// Preserve the old sound preferences, so that music volume can be previewed,
+	// while being able to revert to the original values
+	sound_manager_parameters OriginalSoundParameters;
+	obj_copy(OriginalSoundParameters,*sound_preferences);
 
 	if(set_preferences(prefs_data, NUMBER_OF_PREFS_PANELS, initialize_preferences))
 	{
@@ -176,6 +186,8 @@ void handle_preferences(
 		set_sound_manager_parameters(sound_preferences);
 		load_environment_from_preferences();
 	}
+	else
+		set_sound_manager_parameters(&OriginalSoundParameters);
 	
 	return;
 }
@@ -534,6 +546,9 @@ static void setup_sound_dialog(
 		preferences->volume+1);
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iCHANNELS, first_item), NONE, 
 		preferences->channel_count);
+	// LP addition:
+	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iMUSIC, first_item), NONE, 
+		preferences->music+1);
 
 	active= (available_flags & _stereo_flag) ? CONTROL_ACTIVE : CONTROL_INACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iSTEREO, first_item), active, 
@@ -631,11 +646,22 @@ static void hit_sound_item(
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
 			preferences->volume= GetControlValue(control)-1;
 			test_sound_volume(preferences->volume, _snd_adjust_volume);
+			// For checking out the music volume
+			set_sound_manager_parameters(sound_preferences);
 			break;
 
 		case iCHANNELS:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
 			preferences->channel_count= GetControlValue(control);	
+			break;
+			
+		// LP addition:
+		case iMUSIC:
+			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
+			preferences->music= GetControlValue(control)-1;
+			// For checking out the music volume
+			set_sound_manager_parameters(sound_preferences);
+			music_idle_proc();
 			break;
 			
 		default:

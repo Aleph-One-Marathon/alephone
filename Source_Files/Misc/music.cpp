@@ -116,8 +116,10 @@ static double MusicVolume = 0;				// 0 to 1
 static double MusicVolumeChange = 0;		// Change per tick [TickCount()]
 static long MostRecentUpdateTicks = 0;
 
+// This returns a value from between 0 and 1
+static double GetOverallMusicVolume();
 // Turned into a form more useful for QT
-inline short GetQTMusicVolume() {return short(double(0x100)*MusicVolume + 0.5);}
+inline short GetQTMusicVolume() {return short(double(0x100)*GetOverallMusicVolume()*MusicVolume + 0.5);}
 
 
 /* ----------------- local prototypes */
@@ -361,7 +363,8 @@ void music_idle_proc(
 					stop_music();
 					return;
 				}
-				
+				SetMovieVolume(QTMusicMovie,GetQTMusicVolume());
+			
 				// Keep it going
 				MoviesTask(QTMusicMovie,0);
 			}
@@ -605,4 +608,10 @@ static short get_sound_volume(
 	void)
 {
 	return sound_preferences->volume;
+}
+
+// LP: added music volume
+static double GetOverallMusicVolume()
+{
+	return double(sound_preferences->music)/double(NUMBER_OF_SOUND_VOLUME_LEVELS-1);
 }

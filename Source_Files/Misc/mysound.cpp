@@ -94,6 +94,9 @@ Sep 2, 2000 (Loren Petrich):
 Sep 23, 2000 (Loren Petrich):
 	Added XML support for changing the ambient and random sound definitions,
 	in order to support Shebob's Pfh'Joueur
+
+Oct 14, 2000 (Loren Petrich):
+	Added music-volume stuff
 */
 
 /*
@@ -132,6 +135,9 @@ enum
 	MAXIMUM_OUTPUT_SOUND_VOLUME= 2*MAXIMUM_SOUND_VOLUME,
 	SOUND_VOLUME_DELTA= MAXIMUM_OUTPUT_SOUND_VOLUME/NUMBER_OF_SOUND_VOLUME_LEVELS,
 	DEFAULT_SOUND_LEVEL= NUMBER_OF_SOUND_VOLUME_LEVELS/3,
+	
+	// LP addition:
+	DEFAULT_MUSIC_LEVEL = NUMBER_OF_SOUND_VOLUME_LEVELS/2,
 
 	ABORT_AMPLITUDE_THRESHHOLD= (MAXIMUM_SOUND_VOLUME/6),
 	MINIMUM_RESTART_TICKS= MACHINE_TICKS_PER_SECOND/12,
@@ -738,6 +744,8 @@ void default_sound_manager_parameters(
 	parameters->volume= DEFAULT_SOUND_LEVEL;
 	parameters->flags= _more_sounds_flag;
 	parameters->pitch= FIXED_ONE;
+	// LP addition:
+	parameters->music = DEFAULT_MUSIC_LEVEL;
 
 #ifndef mac
 	// Beef it up

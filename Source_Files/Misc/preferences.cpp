@@ -9,6 +9,7 @@
 #include "shell.h" /* For the screen_mode structure */
 #include "interface.h"
 #include "mysound.h"
+#include "music.h"
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 
 #include "preferences.h"

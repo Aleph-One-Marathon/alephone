@@ -410,8 +410,10 @@ struct sound_manager_parameters
 
 	int32 unused_long;
 	fixed pitch;
+
+	int16 music; /* Music volume: [0,NUMBER_OF_SOUND_VOLUME_LEVELS) */
 	
-	int16 unused[9];
+	int16 unused[8];
 };
 
 struct dynamic_sound_data
