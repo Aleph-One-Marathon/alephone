@@ -31,6 +31,10 @@
  *
  *  May 16, 2002 (Woody Zenfell):
  *      support for Escape (in-game) and Alt+F4 (Windows only) as quit gestures
+ *
+ *  August 27, 2003 (Woody Zenfell):
+ *	Created w_directory_browsing_list widget (like w_file_list but can navigate
+ *	directories); now using that in FileSpecifier::ReadDialog()
  */
 
 #ifdef __MVCPP__
@@ -602,6 +606,129 @@ short get_level_number_from_user(void)
  *  File selection dialogs
  */
 
+// ZZZ: Filesystem browsing list that lets user actually navigate directories...
+class w_directory_browsing_list : public w_list<dir_entry>
+{
+public:
+	w_directory_browsing_list(const FileSpecifier& inStartingDirectory, dialog* inParentDialog)
+	: w_list<dir_entry>(entries, 400, 15, 0), parent_dialog(inParentDialog), current_directory(inStartingDirectory)
+	{
+		refresh_entries();
+	}
+
+
+	w_directory_browsing_list(const FileSpecifier& inStartingDirectory, dialog* inParentDialog, const string& inStartingFile)
+	: w_list<dir_entry>(entries, 400, 15, 0), parent_dialog(inParentDialog), current_directory(inStartingDirectory)
+	{
+		refresh_entries();
+		if(entries.size() != 0)
+			select_entry(inStartingFile, false);
+	}
+
+
+	void set_directory_changed_callback(action_proc inCallback, void* inArg = NULL)
+	{
+		directory_changed_proc = inCallback;
+		directory_changed_proc_arg = inArg;
+	}
+
+
+	void draw_item(vector<dir_entry>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const
+	{
+		y += font->get_ascent();
+		set_drawing_clip_rectangle(0, x, s->h, x + width);
+
+		if(i->is_directory)
+		{
+			string theName = i->name + "/";
+			draw_text(s, theName.c_str (), x, y, selected ? get_dialog_color (ITEM_ACTIVE_COLOR) : get_dialog_color (ITEM_COLOR), font, style);
+		}
+		else
+			draw_text(s, i->name.c_str (), x, y, selected ? get_dialog_color (ITEM_ACTIVE_COLOR) : get_dialog_color (ITEM_COLOR), font, style);
+
+		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+	}
+
+
+	bool can_move_up_a_level()
+	{
+		string base;
+		string part;
+		current_directory.SplitPath(base, part);
+		return (part != string());
+	}
+
+
+	void move_up_a_level()
+	{
+		string base;
+		string part;
+		current_directory.SplitPath(base, part);
+		if(part != string())
+		{
+			FileSpecifier parent_directory(base);
+			if(parent_directory.Exists())
+			{
+				current_directory = parent_directory;
+				refresh_entries();
+				select_entry(part, true);
+				announce_directory_changed();
+			}
+		}
+	}
+
+
+	void item_selected(void)
+	{
+		current_directory.AddPart(entries[selection].name);
+
+		if(entries[selection].is_directory)
+		{
+			refresh_entries();
+			announce_directory_changed();
+		}
+		else
+			parent_dialog->quit(0);
+	}
+
+
+	const FileSpecifier& get_file() { return current_directory; }
+	
+	
+private:
+	vector<dir_entry>	entries;
+	FileSpecifier 		current_directory;
+	dialog*			parent_dialog;
+	action_proc		directory_changed_proc;
+	void*			directory_changed_proc_arg;
+	
+	void refresh_entries()
+	{
+		if(current_directory.ReadDirectory(entries))
+		{
+			sort(entries.begin(), entries.end());
+			num_items = entries.size();
+			new_items();
+		}
+	}
+
+	void select_entry(const string& inName, bool inIsDirectory)
+	{
+		dir_entry theEntryToFind(inName, NONE /* length - ignored for our purpose */, inIsDirectory);
+		vector<dir_entry>::iterator theEntry = lower_bound(entries.begin(), entries.end(), theEntryToFind);
+		if(theEntry != entries.end())
+			set_selection(theEntry - entries.begin());
+	}
+
+	void announce_directory_changed()
+	{
+		if(directory_changed_proc != NULL)
+			directory_changed_proc(directory_changed_proc_arg);
+	}
+};
+
+
+
 class w_file_list : public w_list<dir_entry> {
 public:
 	w_file_list(const vector<dir_entry> &items) : w_list<dir_entry>(items, 400, 15, 0) {}
@@ -628,6 +755,37 @@ private:
 	dialog *parent;
 };
 
+static void
+bounce_up_a_directory_level(void* inWidget)
+{
+	w_directory_browsing_list* theBrowser = static_cast<w_directory_browsing_list*>(inWidget);
+	theBrowser->move_up_a_level();
+}
+
+enum
+{
+	iDIRBROWSE_UP_BUTTON = 100,
+	iDIRBROWSE_DIR_NAME,
+	iDIRBROWSE_BROWSER
+};
+
+static void
+respond_to_directory_changed(void* inArg)
+{
+	// Get dialog and its directory browser
+	dialog* theDialog = static_cast<dialog*>(inArg);
+	w_directory_browsing_list* theBrowser = dynamic_cast<w_directory_browsing_list*>(theDialog->get_widget_by_id(iDIRBROWSE_BROWSER));
+	
+	// Update static text listing current directory
+	w_static_text* theDirectoryName = dynamic_cast<w_static_text*>(theDialog->get_widget_by_id(iDIRBROWSE_DIR_NAME));
+	theBrowser->get_file().GetName(temporary);
+	theDirectoryName->set_text(temporary);
+	
+	// Update enabled state of Up button
+	w_button* theUpButton = dynamic_cast<w_button*>(theDialog->get_widget_by_id(iDIRBROWSE_UP_BUTTON));
+	theUpButton->set_enabled(theBrowser->can_move_up_a_level());
+}
+
 bool FileSpecifier::ReadDialog(Typecode type, char *prompt)
 {
 	// Set default prompt
@@ -647,6 +805,7 @@ bool FileSpecifier::ReadDialog(Typecode type, char *prompt)
 
 	// Read directory
 	FileSpecifier dir;
+	string filename;
 	switch (type) {
 		case _typecode_savegame:
 			dir.SetToSavedGamesDir();
@@ -654,32 +813,53 @@ bool FileSpecifier::ReadDialog(Typecode type, char *prompt)
 		case _typecode_film:
 			dir.SetToRecordingsDir();
 			break;
+		case _typecode_netscript:
+		{
+			// Go to most recently-used directory
+			DirectorySpecifier theDirectory;
+			SplitPath(theDirectory, filename);
+			dir.FromDirectory(theDirectory);
+			break;
+		}
 		default:
 			dir.SetToLocalDataDir();
 			break;
 	}
-	vector<dir_entry> entries;
-	if (!dir.ReadDirectory(entries))
-		return false;
-	sort(entries.begin(), entries.end());
 
 	// Create dialog
 	dialog d;
 	d.add(new w_static_text(prompt, TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
-	w_read_file_list *list_w = new w_read_file_list(entries, &d);
-	d.add(list_w);
+
+	dir.GetName(temporary);
+	w_static_text* directory_name_w = new w_static_text(temporary, LABEL_FONT);
+	directory_name_w->set_identifier(iDIRBROWSE_DIR_NAME);
+	directory_name_w->set_full_width();
+	directory_name_w->set_alignment(widget::kAlignCenter);
+	d.add(directory_name_w);
+
 	d.add(new w_spacer());
-	d.add(new w_button("CANCEL", dialog_cancel, &d));
+
+	w_directory_browsing_list* list_w = ((type == _typecode_netscript)
+		? new w_directory_browsing_list(dir, &d, filename)
+		: new w_directory_browsing_list(dir, &d));
+	list_w->set_identifier(iDIRBROWSE_BROWSER);
+	list_w->set_directory_changed_callback(respond_to_directory_changed, &d);
+	d.add(list_w);
+
+	d.add(new w_spacer());
+
+	w_left_button* up_button_w = new w_left_button("UP", bounce_up_a_directory_level, list_w);
+	up_button_w->set_identifier(iDIRBROWSE_UP_BUTTON);
+	d.add(up_button_w);
+
+	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
 	// Run dialog
 	bool result = false;
 	if (d.run() == 0) { // OK
-		if (entries.size()) {
-			name = dir.name;
-			AddPart(entries[list_w->get_selection()].name);
-			result = true;
-		}
+		*this = list_w->get_file();
+		result = true;
 	}
 
 	// Redraw game window
