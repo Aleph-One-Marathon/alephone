@@ -440,11 +440,16 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 					#else
 					// Extract the mouse delta directly from the event record
 					Point Loc;
-					OSStatus err = GetEventParameter(theEvent,
+					err = GetEventParameter(theEvent,
 						kEventParamMouseDelta, typeQDPoint,
 						NULL, sizeof(Loc), NULL, &Loc);
-					_CE_delta_x = Loc.h;
-					_CE_delta_y = Loc.v;
+					if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationForever)) == noErr)
+					{
+						_CE_delta_x = Loc.h;
+						_CE_delta_y = Loc.v;
+						MPExitCriticalRegion(CE_MouseLock);
+					}
+					err = noErr;
 					#endif
 					break;
 
