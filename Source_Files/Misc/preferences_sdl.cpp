@@ -175,10 +175,6 @@ static void player_dialog(void *arg)
 		if (changed)
 			write_preferences();
 	}
-
-	// Redraw parent dialog
-	clear_screen();
-	parent->draw();
 }
 
 
@@ -265,10 +261,6 @@ static void graphics_dialog(void *arg)
 		if (changed)
 			write_preferences();
 	}
-
-	// Redraw parent dialog
-	clear_screen();
-	parent->draw();
 }
 
 
@@ -330,10 +322,6 @@ static void opengl_dialog(void *arg)
 		if (changed)
 			write_preferences();
 	}
-
-	// Redraw parent dialog
-	clear_screen();
-	parent->draw();
 }
 
 
@@ -446,10 +434,6 @@ static void sound_dialog(void *arg)
 			write_preferences();
 		}
 	}
-
-	// Redraw parent dialog
-	clear_screen();
-	parent->draw();
 }
 
 
@@ -507,10 +491,6 @@ static void controls_dialog(void *arg)
 		if (changed)
 			write_preferences();
 	}
-
-	// Redraw parent dialog
-	clear_screen();
-	parent->draw();
 }
 
 
@@ -528,7 +508,7 @@ static const char *action_name[NUM_KEYS] = {
 	"Action", "Auto Map"
 };
 
-static short default_keys[NUM_KEYS] = {
+static SDLKey default_keys[NUM_KEYS] = {
 	SDLK_KP8, SDLK_KP5, SDLK_KP4, SDLK_KP6,		// moving/turning
 	SDLK_z, SDLK_x,								// sidestepping
 	SDLK_a, SDLK_s,								// horizontal looking
@@ -540,7 +520,7 @@ static short default_keys[NUM_KEYS] = {
 	SDLK_m										// map
 };
 
-static short default_mouse_keys[NUM_KEYS] = {
+static SDLKey default_mouse_keys[NUM_KEYS] = {
 	SDLK_w, SDLK_x, SDLK_LEFT, SDLK_RIGHT,		// moving/turning
 	SDLK_a, SDLK_d,								// sidestepping
 	SDLK_q, SDLK_e,								// horizontal looking
@@ -552,15 +532,80 @@ static short default_mouse_keys[NUM_KEYS] = {
 	SDLK_TAB									// map
 };
 
-static w_key *key_w[NUM_KEYS];
+class w_prefs_key;
+
+static w_prefs_key *key_w[NUM_KEYS];
+
+class w_prefs_key : public w_key {
+public:
+	w_prefs_key(const char *name, SDLKey key) : w_key(name, key) {}
+
+	void set_key(SDLKey new_key)
+	{
+		// Key used for in-game function?
+		int error = NONE;
+		switch (new_key) {
+			case SDLK_PERIOD:		// Sound volume up/down
+			case SDLK_COMMA:
+				error = keyIsUsedForSound;
+				break;
+
+			case SDLK_EQUALS:		// Map zoom
+			case SDLK_MINUS:
+				error = keyIsUsedForMapZooming;
+				break;
+
+			case SDLK_LEFTBRACKET:	// Inventory scrolling
+			case SDLK_RIGHTBRACKET:
+				error = keyIsUsedForScrolling;
+				break;
+
+			case SDLK_BACKSPACE:
+			case SDLK_BACKSLASH:
+			case SDLK_F1:
+			case SDLK_F2:
+			case SDLK_F3:
+			case SDLK_F4:
+			case SDLK_F5:
+			case SDLK_F6:
+			case SDLK_F7:
+			case SDLK_F8:
+			case SDLK_F9:
+			case SDLK_F10:
+			case SDLK_F11:
+			case SDLK_F12:
+				error = keyIsUsedAlready;
+				break;
+
+			default:
+				break;
+		}
+		if (error != NONE) {
+			alert_user(infoError, strERRORS, error, 0);
+			return;
+		}
+
+		w_key::set_key(new_key);
+		if (new_key == SDLK_UNKNOWN)
+			return;
+
+		// Remove binding to this key from all other widgets
+		for (int i=0; i<NUM_KEYS; i++) {
+			if (key_w[i] && key_w[i] != this && key_w[i]->get_key() == new_key) {
+				key_w[i]->set_key(SDLK_UNKNOWN);
+				key_w[i]->dirty = true;
+			}
+		}
+	}
+};
 
 static void load_default_keys(void *arg)
 {
 	// Load default keys, depending on state of "Mouse control" widget
 	dialog *d = (dialog *)arg;
-	short *keys = (mouse_w->get_selection() ? default_mouse_keys : default_keys);
+	SDLKey *keys = (mouse_w->get_selection() ? default_mouse_keys : default_keys);
 	for (int i=0; i<NUM_KEYS; i++)
-		key_w[i]->set_key(SDLKey(input_preferences->keycodes[i] = keys[i]));
+		key_w[i]->set_key(keys[i]);
 	d->draw();
 }
 
@@ -568,12 +613,16 @@ static void keyboard_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
 
+	// Clear array of key widgets (because w_prefs_key::set_key() scans it)
+	for (int i=0; i<NUM_KEYS; i++)
+		key_w[i] = NULL;
+
 	// Create dialog
 	dialog d;
 	d.add(new w_static_text("CONFIGURE KEYBOARD", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
 	for (int i=0; i<NUM_KEYS; i++) {
-		key_w[i] = new w_key(action_name[i], SDLKey(input_preferences->keycodes[i]));
+		key_w[i] = new w_prefs_key(action_name[i], SDLKey(input_preferences->keycodes[i]));
 		d.add(key_w[i]);
 	}
 	d.add(new w_spacer());
@@ -601,10 +650,6 @@ static void keyboard_dialog(void *arg)
 		if (changed)
 			write_preferences();
 	}
-
-	// Redraw parent dialog
-	clear_screen();
-	parent->draw();
 }
 
 
@@ -808,10 +853,6 @@ void w_env_select::select_item(dialog *parent)
 		if (items.size())
 			set_path(items[list_w->get_selection()].spec.GetPath());
 	}
-
-	// Redraw parent dialog
-	clear_screen();
-	parent->draw();
 }
 
 static void environment_dialog(void *arg)
@@ -891,9 +932,6 @@ static void environment_dialog(void *arg)
 	}
 
 	// Redraw parent dialog
-	clear_screen();
 	if (theme_changed)
 		parent->quit(0);	// Quit the parent dialog so it won't draw in the old theme
-	else
-		parent->draw();
 }

@@ -359,8 +359,8 @@ bool open_sound_file(FileSpecifier& File)
 
 	assert((S - HeaderBuffer) == SIZEOF_sound_file_header);
 	
-	if (header.version!=SOUND_FILE_VERSION ||
-		header.tag!=SOUND_FILE_TAG ||
+	if ((header.version != 0 && header.version != SOUND_FILE_VERSION) ||
+		header.tag != SOUND_FILE_TAG ||
 		header.sound_count < 0 ||
 		header.source_count < 0)
 	{
@@ -368,24 +368,12 @@ bool open_sound_file(FileSpecifier& File)
 		return false;
 	}
 	
-	/*
-	struct sound_file_header header;
-	if (!SoundFile.ReadObject(header))
-	{
-		SoundFile.Close();
-		return false;
+	// Version 0 data file (M2 demo)
+	if (header.sound_count == 0) {
+		header.sound_count = header.source_count;
+		header.source_count = 1;
 	}
 
-	if (header.version!=SOUND_FILE_VERSION ||
-		header.tag!=SOUND_FILE_TAG ||
-		header.sound_count!=NUMBER_OF_SOUND_DEFINITIONS ||
-		header.source_count!=NUMBER_OF_SOUND_SOURCES)
-	{
-		SoundFile.Close();
-		return false;
-	}
-	*/
-	
 	long DefsBufferSize = header.source_count*header.sound_count*SIZEOF_sound_definition;
 	uint8 *DefsBuffer = new uint8[DefsBufferSize];
 	assert(DefsBuffer);
@@ -441,17 +429,11 @@ bool open_sound_file(FileSpecifier& File)
 	
 	delete []DefsBuffer;
 	
-	/*
-	if (!SoundFile.ReadObjectList(NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS,sound_definitions))
-	{
-		SoundFile.Close();
-		return false;
-	}
-	*/
-	
 	// LP: code copied from sound_macintosh.cpp;
 	// keeps the _sm_globals values in sync with what had been most recently read.
 	_sm_globals->sound_source= (_sm_parameters->flags&_16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
+	if (header.source_count == 1)
+		_sm_globals->sound_source = _8bit_22k_source;
 	_sm_globals->base_sound_definitions= sound_definitions + _sm_globals->sound_source*number_of_sound_definitions;
 	
 	return true;

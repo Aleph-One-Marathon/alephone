@@ -278,7 +278,7 @@ public:
 	void click(int x, int y);
 	void event(SDL_Event &e);
 
-	void set_key(SDLKey key);
+	virtual void set_key(SDLKey key);
 	SDLKey get_key(void) {return key;}
 
 private:

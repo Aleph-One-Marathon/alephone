@@ -126,6 +126,6 @@ bool save_game(void)
 
 void add_finishing_touches_to_save_file(FileSpecifier &file)
 {
-printf("*** add_finishing_touches_to_save_file(%s)\n", file.GetPath());
-	//!! overhead thumbnail, level name
+	// The MacOS version stores an overhead thumbnail and the level name
+	// in resources. Do we want to imitate this?
 }

@@ -461,7 +461,7 @@ int FileSpecifier::GetType()
 		f.SetPosition(0);
 		uint32 version = SDL_ReadBE32(p);
 		uint32 tag = SDL_ReadBE32(p);
-		if (version == 1 && tag == FOUR_CHARS_TO_INT('s', 'n', 'd', '2'))
+		if ((version == 0 || version == 1) && tag == FOUR_CHARS_TO_INT('s', 'n', 'd', '2'))
 			return _typecode_sounds;
 	}
 

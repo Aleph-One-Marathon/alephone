@@ -1,5 +1,13 @@
 Change log of the SDL version of Aleph One
 
+October 17, 2000
+ - added support for version 0 sound files as found in the M2 demo
+ - it's no longer possible to bind a key to more than one function or to bind
+   a key that has a fixed function in the game
+ - fixed a bug that caused the "Default" button in the keyboard configuration
+   dialog to not work properly
+ - bumped version number to 0.11
+
 October 6, 2000
  - new default theme, donated by Ian Pitcher
  - removed MacOS theme (will be available as a separate download)

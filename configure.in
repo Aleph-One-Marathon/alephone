@@ -5,7 +5,7 @@ AC_INIT(Source_Files/Misc/shell_sdl.cpp)
 AC_PREREQ(2.13)
 
 dnl This defines PACKAGE and VERSION.
-AM_INIT_AUTOMAKE([AlephOne], [0.10.6])
+AM_INIT_AUTOMAKE([AlephOne], [0.11])
 AM_CONFIG_HEADER(config.h)
 
 dnl Configure options.
@@ -69,6 +69,8 @@ if [[ "x$enable_opengl" = "xyes" ]]; then
     AC_MSG_WARN([Could not find OpenGL, ignoring --enable-opengl.])
     SYS_GL_LIBS=
   fi
+else
+  SYS_GL_LIBS=
 fi
 AC_SUBST(SYS_GL_LIBS)
 

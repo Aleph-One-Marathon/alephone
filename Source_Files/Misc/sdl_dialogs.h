@@ -64,6 +64,9 @@ private:
 	SDL_Surface *frame_tl, *frame_t, *frame_tr, *frame_l, *frame_r, *frame_bl, *frame_b, *frame_br;
 };
 
+// Pointer to top-level dialog, NULL = no dialog active
+extern dialog *top_dialog;
+
 // Fonts
 enum {
 	TITLE_FONT,

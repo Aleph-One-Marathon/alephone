@@ -1,6 +1,6 @@
 
   Aleph One/SDL
-  A 3D first-person shooter game
+  An Open Source 3D action game
 
   Copyright (C) 1995 Bungie Software Corporation
   Portions Copyright (C) 2000 Christian Bauer, Loren Petrich, Chris Pruett,
@@ -412,9 +412,6 @@ them:
 And a list of known bugs:
 
  - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown
- - It shouldn't be possible to bind the same key to more than one function,
-   or to bind a key that is already used by the game (sound volume, map zoom
-   etc.)
 
 If you find a bug that's not already in the list above, please submit it
 using the bug database on SourceForge:

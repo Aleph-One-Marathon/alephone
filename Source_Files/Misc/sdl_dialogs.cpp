@@ -23,6 +23,8 @@
 
 
 // Global variables
+dialog *top_dialog = NULL;
+
 static SDL_Surface *dialog_surface = NULL;
 
 static sdl_font_info *default_font = NULL;
@@ -983,6 +985,10 @@ void dialog::event(SDL_Event &e)
 
 int dialog::run(bool intro_exit_sounds)
 {
+	// Set new active dialog
+	dialog *parent_dialog = top_dialog;
+	top_dialog = this;
+
 	// Clear dialog surface
 	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
 
@@ -1063,6 +1069,13 @@ int dialog::run(bool intro_exit_sounds)
 	if (frame_l) SDL_FreeSurface(frame_l);
 	if (frame_r) SDL_FreeSurface(frame_r);
 	if (frame_b) SDL_FreeSurface(frame_b);
+
+	// Restore active dialog
+	top_dialog = parent_dialog;
+	if (top_dialog) {
+		clear_screen();
+		top_dialog->draw();
+	}
 
 	return result;
 }

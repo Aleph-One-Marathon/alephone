@@ -11,7 +11,8 @@ Group: Amusements/Games
 Source: %{name}-%{version}.tar.gz
 URL: http://www.uni-mainz.de/~bauec002/A1Main.html
 BuildRoot: %{_tmppath}/%{name}-root
-Prefix: %{_prefix}
+# not relocatable because the data file packages depend upon the location
+# of the data files in this package
 
 Requires: AlephOne-core-data
 Requires: SDL >= 1.1.4

@@ -374,7 +374,7 @@ void alert_user(short severity, short resid, short item, OSErr error)
 		d.add(new w_spacer());
 		d.add(new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d));
 		d.run();
-		if (severity == infoError)
+		if (severity == infoError && top_dialog == NULL)
 			update_game_window();
 	}
 	if (severity != infoError)
