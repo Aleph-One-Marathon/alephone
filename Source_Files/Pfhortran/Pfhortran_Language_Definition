@@ -84,6 +84,11 @@ Set_UnderFog_Color 4D
 Get_UnderFog_Depth 4E	
 Get_UnderFog_Color 4F
 Get_Random 50
+Set_Platform_State 51
+Get_Platform_State 52
+Set_Light_State 53
+Get_Light_State 54
+Get_Player_Poly 55
 TRUE 1
 FALSE 0
 knife 0
