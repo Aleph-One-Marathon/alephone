@@ -475,7 +475,7 @@ spoke_received_game_data_packet_v1(AIStream& ps)
 					while(thePlayer.mQueue->getWriteTick() < theSmallestUnacknowledgedTick)
 					{
 						logDumpNMT2("enqueued NET_DEAD_ACTION_FLAG for player %d tick %d", i, thePlayer.mQueue->getWriteTick());
-						thePlayer.mQueue->enqueue(NET_DEAD_ACTION_FLAG);
+						thePlayer.mQueue->enqueue(static_cast<action_flags_t>(NET_DEAD_ACTION_FLAG));
 					}
 				}
 			}
@@ -564,7 +564,7 @@ spoke_received_game_data_packet_v1(AIStream& ps)
                         action_flags_t theFlags;
                         if(shouldEnqueueNetDeadFlags)
                                 // We effectively generate a tick's worth of flags in lieu of reading it from the packet.
-                                theFlags = NET_DEAD_ACTION_FLAG;
+                                theFlags = static_cast<action_flags_t>(NET_DEAD_ACTION_FLAG);
                         else
                                 // We should have a flag for this player for this tick!
                                 ps >> theFlags;
@@ -812,7 +812,7 @@ spoke_tick()
 				while(thePlayer.mQueue->getWriteTick() < theLocalPlayerWriteTick)
 				{
 					logDumpNMT2("enqueueing NET_DEAD_ACTION_FLAG for player %d tick %d", i, thePlayer.mQueue->getWriteTick());
-					thePlayer.mQueue->enqueue(NET_DEAD_ACTION_FLAG);
+					thePlayer.mQueue->enqueue(static_cast<action_flags_t>(NET_DEAD_ACTION_FLAG));
 				}
 			}
 		}

@@ -620,7 +620,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 	}
 
         // Make the pregame -> ingame transition
-        if(thePlayer.mSmallestUnheardTick >= sSmallestRealGameTick && thePlayer.mNthElementFinder.window_size() != sHubPreferences.mInGameWindowSize)
+        if(thePlayer.mSmallestUnheardTick >= sSmallestRealGameTick && static_cast<int32>(thePlayer.mNthElementFinder.window_size()) != sHubPreferences.mInGameWindowSize)
 		thePlayer.mNthElementFinder.reset(sHubPreferences.mInGameWindowSize);
 
 	if(thePlayer.mOutstandingTimingAdjustment == 0 && thePlayer.mNthElementFinder.window_full())
@@ -763,7 +763,7 @@ process_messages(AIStream& ps, int inSenderIndex)
 static void
 process_lossy_byte_stream_message(AIStream& ps, int inSenderIndex, uint16 inLength)
 {
-	assert(inSenderIndex >= 0 && inSenderIndex < sNetworkPlayers.size());
+	assert(inSenderIndex >= 0 && inSenderIndex < static_cast<int>(sNetworkPlayers.size()));
 
 	HubLossyByteStreamChunkDescriptor theDescriptor;
 
