@@ -11,6 +11,7 @@
 
 #include	<SDL/SDL_Thread.h>
 #include	<pthread.h>
+#include        <sched.h>
 
 bool
 BoostThreadPriority(SDL_Thread* inThread) {
@@ -22,8 +23,7 @@ BoostThreadPriority(SDL_Thread* inThread) {
     if(pthread_getschedparam(theTargetThread, &theSchedulingPolicy, &theSchedulingParameters) != 0)
         return false;
     
-    // 127 was experimentally determined to be the max value for which the call below will succeed.
-    theSchedulingParameters.sched_priority = 127;
+    theSchedulingParameters.sched_priority = sched_get_priority_max(theSchedulingPolicy);
     
     if(pthread_setschedparam(theTargetThread, theSchedulingPolicy, &theSchedulingParameters) != 0)
         return false;
