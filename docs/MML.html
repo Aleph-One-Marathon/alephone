@@ -738,8 +738,10 @@ these are made variable for Marathon 1 compatibility:
 </ul>
 <p>
 
-It has child elements that specify which ambient and random sound assignments to use.
-These are assignments from their indices to the list of (general) sound definitions,
+It has child elements that specify which ambient and random sound assignments to use,
+and also which external files to use, if desired.
+The ambient and random sound assigments
+are assignments from their indices to the list of (general) sound definitions,
 and are specified with child elements &lt;ambient&gt; and &lt;random&gt;.
 Each of them has these attributes, both mandatory:
 <ul>
@@ -786,6 +788,13 @@ The random sounds are:
 <li>Creak
 </ol>
 <p>
+
+The external sounds are specified with the child element &lt;sound&gt;,
+which has these attributes:
+<ul>
+<li>index: which index in the list of sounds
+<li>slot: which of the slots (0 to 4) gets its sound replaced with the external sound.
+<li>file: the name of he soundfile to use; can include a path
 
 <hr>
 
@@ -881,6 +890,7 @@ The attributes are:
 <li>oxygen_replenish: how much oxygen one gains per engine tick in air (default: 0)
 <li>vulnerability: what kind of damage (true damage type) one is vulnerable to when the
 invincibility powerup is active (can be -1 (NONE)) (default: 9, fusion-bolt damage)
+<li>guided: whether the players' projectiles seek their targets (default: false)
 </ul>
 Note: the oxygen depletion and replenishment rates can be negative
 if one so desires, making changes in the opposite direction.
