@@ -478,7 +478,7 @@ boolean NetEnter(
 										status->single_player= FALSE;
 										netState= netDown;
 #ifdef DEBUG_NET
-										memset(&net_stats, 0, sizeof(net_stats));
+										obj_clear(net_stats);
 #ifdef STREAM_NET
 										open_stream_file();
 #endif
@@ -2928,7 +2928,7 @@ short NetUpdateJoinState(
 						
 						/* Confirm. */
 						new_player_data.accepted= TRUE;
-						memcpy(&new_player_data.player, topology->players+localPlayerIndex, sizeof(NetPlayer));
+						obj_copy(new_player_data.player, topology->players[localPlayerIndex]);
 					}
 
 					error= NetSendStreamPacket(_accept_join_packet, &new_player_data);
@@ -3094,7 +3094,7 @@ boolean NetGatherPlayer(
 						topology->nextIdentifier+= 1;
 
 						/* Copy in the player data */
-						memcpy(topology->players+topology->player_count, &new_player_data->player, sizeof(NetPlayer));
+						obj_copy(topology->players[topology->player_count], new_player_data->player);
 						
 						/* force in some addresses we know are correct */
 						topology->players[topology->player_count].dspAddress= address;
