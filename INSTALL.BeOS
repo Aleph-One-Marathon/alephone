@@ -6,7 +6,7 @@ version of SDL, so you don't need to install SDL to play Aleph One on BeOS
 (unless you want to compile the Aleph One sources).
 
 
-INSTALLING THE PROGRAM
+Installing the program
 ----------------------
 
 Simply uncompress the Aleph One/SDL BeOS archive. It contains the Aleph One
@@ -21,7 +21,7 @@ If you downloaded the Aleph One/SDL source, see "Compiling From Source",
 below.
 
 
-INSTALLING THE DATA FILES
+Installing the data files
 -------------------------
 
 To play Aleph One, you will also need Marathon graphics, sound and map
@@ -57,7 +57,7 @@ Here's how to copy these files from a Mac Marathon CD under BeOS:
   <to be written...>
 
 
-COMPILING FROM SOURCE
+Compiling from source
 ---------------------
 
 If you didn't install SDL from source, you have to install the "SDL-devel"

@@ -1,8 +1,8 @@
 Aleph One/SDL Unix Installation Instructions
 ============================================
 
-As implied by its name, Aleph One/SDL requires the Simple DirectMedia (SDL)
-library, available from the official SDL site:
+As implied by its name, Aleph One/SDL requires the Simple DirectMedia Layer
+(SDL) library, available from the official SDL site:
 
   http://www.libsdl.org/
 
@@ -10,7 +10,7 @@ If you didn't install SDL from source, you have to install the "SDL-devel"
 package to compile Aleph One.
 
 
-INSTALLING THE PROGRAM
+Installing the program
 ----------------------
 
 As with any autoconfiguring GNU software, installation is as easy as this:
@@ -29,14 +29,14 @@ The most important option is
  --prefix=PREFIX
 
 which you can use to specify a different installation directory (the default
-is /usr/local). The Aleph One executable will be installed in PREFIX/bin, and
-the data files in PREFIX/share/AlephOne.
+is /usr/local). The "alephone" executable will be installed in PREFIX/bin,
+and the data files in PREFIX/share/AlephOne.
 
 If you don't have hardware accelerated OpenGL, you may want to specify the
 "--disable-opengl" option to the configure script.
 
 
-INSTALLING THE DATA FILES
+Installing the data files
 -------------------------
 
 To play Aleph One, you will also need Marathon graphics, sound and map

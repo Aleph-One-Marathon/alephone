@@ -18,8 +18,9 @@ Requires: SDL >= 1.1.4
 
 %description
 Aleph One is an Open Source 3D first-person shooter game, based on the game
-Marathon 2 by Bungie Software. It supports OpenGL, but doesn't require, for
-rendering.
+Marathon 2 by Bungie Software. It is set in a Sci-Fi universe dominated by
+deviant computer AIs and features a well thought-out plot. Aleph One
+supports, but doesn't require, OpenGL for rendering.
 
 This package requires additional data -- shape, sound, and map information
 -- in order to be installed. One source of this core data is the

@@ -1,8 +1,14 @@
-Aleph One/SDL README file
-=========================
+
+  Aleph One/SDL
+  A 3D first-person shooter game
+
+  Copyright (C) 1995 Bungie Software Corporation
+  Portions Copyright (C) 2000 Christian Bauer, Loren Petrich, Chris Pruett,
+    Rhys Hill, Ben Thompson, Mihai Pararita, Bo Lindbergh et al.
+  Expat XML Library Copyright (C) 1998, 1999 James Clark
 
 
-LICENSE
+License
 -------
 
 Aleph One is available under the terms of the GNU General Public License.
@@ -16,11 +22,20 @@ for details. The source code for this version of SDL is available on
   http://www.uni-mainz.de/~bauec002/A1Main.html
 
 
-SYSTEM REQUIREMENTS
+What is Aleph One?
+------------------
+
+Aleph One is an Open Source 3D first-person shooter game, based on the game
+Marathon 2 by Bungie Software. It is set in a Sci-Fi universe dominated by
+deviant computer AIs and features a well thought-out plot.
+
+
+System Requirements
 -------------------
 
-Aleph One/SDL runs on all Unix systems supported by SDL (Linux, FreeBSD,
-Solaris, IRIX) and on BeOS. It does currently not run on Win32 and MacOS.
+Aleph One/SDL runs on all Unix systems supported by SDL (which includes
+Linux, FreeBSD, Solaris and IRIX) and on BeOS R4.5 or later versions. It
+does currently not run on Win32 and MacOS.
 
 Successfully tested systems include:
  - Linux/i386
@@ -34,8 +49,10 @@ To compile Aleph One/SDL, you need a pretty up-to-date C++ compiler. Using
 gcc >= 2.95 should give the best results. Users of pre-ISO C++ compilers
 need not apply.
 
+Aleph One/SDL supports, but doesn't require, OpenGL for rendering.
 
-INSTALLING ALEPH ONE
+
+Installing Aleph One
 --------------------
 
 See the files "INSTALL.Unix" and "INSTALL.BeOS".
@@ -45,7 +62,7 @@ distribution, so you should read the installation instructions even if
 you have downloaded an executable version of Aleph One/SDL.
 
 
-PLAYING ALEPH ONE
+Playing Aleph One
 -----------------
 
 Unix:
@@ -153,7 +170,7 @@ control has been turned on you will get a different keyboard layout, more
 suited to mouse play.
 
 
-PLAYING THIRD-PARTY MAPS WITH ALEPH ONE
+Playing third-party maps with Aleph One
 ---------------------------------------
 
 (If the following instructions are too technical for you, see the "Map
@@ -228,7 +245,7 @@ application that only runs under MacOS. Such files cannot be used with
 Aleph One/SDL.
 
 
-MAP INSTALLATION FOR DUMMIES UNDER LINUX
+Map installation for dummies under Linux
 ----------------------------------------
 
 First, download and install the "StuffIt Expander" beta for Linux:
@@ -274,7 +291,7 @@ a Marathon 2 or Infinity map.
    the Environment preferences section of Aleph One.
 
 
-FILMS AND SAVED GAMES
+Films and saved games
 ---------------------
 
 Saved games and films are stored in
@@ -295,7 +312,7 @@ they won't show up when clicking on "Continue Saved Game" or "Replay Saved
 Film" on the main menu.
 
 
-THEMES
+Themes
 ------
 
 Aleph One/SDL supports selectable user interface themes which determine the
@@ -317,7 +334,7 @@ unpacking them into the "Themes" directory. Additional themes can be found
 on the Aleph One/SDL home page (see below).
 
 
-FILE COMPATIBILITY
+File compatibility
 ------------------
 
 This section gives a summary of the cross-platform compatibility of the
@@ -353,8 +370,8 @@ various data files used by Aleph One and the original Marathon games:
     versions of Aleph One and Marathon don't support themes
 
 
-MARATHON MARKUP LANGUAGE
-------------------------
+Marathon Markup Language (MML)
+------------------------------
 
 The Marathon Markup Language (MML) is a subset of the Extensible Markup
 Language (XML). MML scripts can be used to configure some aspects of
@@ -376,7 +393,7 @@ what you can do by writing your own MML scripts, please consult the file
 "docs/MML.html" that comes in the Aleph One/SDL distribution archive.
 
 
-MISSING FEATURES AND BUGS
+Missing features and bugs
 -------------------------
 
 The SDL version of Aleph One is a work in progress. Here is an (incomplete)
@@ -405,7 +422,7 @@ using the bug database on SourceForge:
   http://sourceforge.net/bugs/?group_id=1997
 
 
-TIPS
+Tips
 ----
 
 You can start the game at any level by holding the Shift and Control keys
@@ -420,7 +437,7 @@ If you're stuck in the game, there's an excellent walkthrough at
   http://pinky.wtower.com/marathon/
 
 
-TROUBLESHOOTING
+Troubleshooting
 ---------------
 
 If Aleph One crashes or behaves strangely on startup, try deleting the file
@@ -440,7 +457,7 @@ using OpenGL, disable the "Multitexturing" and "Static Effect" options in
 the Graphics/OpenGL preferences menu.
 
 
-SUPPORT
+Support
 -------
 
 Aleph One is not officially supported by Bungie Software, so don't bother
