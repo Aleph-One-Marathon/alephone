@@ -108,7 +108,7 @@ CommunicationsChannel::receive_some(TCPsocket inSocket, byte* inBuffer, size_t& 
 	{
 		int theResult = SDLNet_TCP_Recv(inSocket, inBuffer + ioBufferPosition, theBytesLeft);
 
-		std::cout << "  theResult is " << theResult << std::endl;
+		//		std::cout << "  theResult is " << theResult << std::endl;
 
 // Unfortunately, SDLNet_TCP_Recv() often returns -1 even when there's no error, and I
 // don't think I have any legitimate way to distinguish this case from a true error condition.
