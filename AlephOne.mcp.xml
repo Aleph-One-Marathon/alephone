@@ -4,7 +4,7 @@
 <!DOCTYPE PROJECT [
 <!ELEMENT PROJECT (TARGETLIST, TARGETORDER, GROUPLIST, DESIGNLIST?)>
 <!ELEMENT TARGETLIST (TARGET+)>
-<!ELEMENT TARGET (NAME, SETTINGLIST, FILELIST?, LINKORDER?, SEGMENTLIST?, OVERLAYGROUPLIST?, SUBTARGETLIST?, SUBPROJECTLIST?, FRAMEWORKLIST)>
+<!ELEMENT TARGET (NAME, SETTINGLIST, FILELIST?, LINKORDER?, SEGMENTLIST?, OVERLAYGROUPLIST?, SUBTARGETLIST?, SUBPROJECTLIST?, FRAMEWORKLIST?)>
 <!ELEMENT NAME (#PCDATA)>
 <!ELEMENT USERSOURCETREETYPE (#PCDATA)>
 <!ELEMENT PATH (#PCDATA)>
@@ -599,7 +599,7 @@
                 <SETTING><NAME>DumpBrowserInfo</NAME><VALUE>false</VALUE></SETTING>
                 <SETTING><NAME>CacheSubprojects</NAME><VALUE>true</VALUE></SETTING>
                 <SETTING><NAME>UseThirdPartyDebugger</NAME><VALUE>false</VALUE></SETTING>
-                <SETTING><NAME>BrowserGenerator</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>BrowserGenerator</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>DebuggerAppPath</NAME>
                     <SETTING><NAME>Path</NAME><VALUE></VALUE></SETTING>
                     <SETTING><NAME>PathFormat</NAME><VALUE>Generic</VALUE></SETTING>
@@ -638,6 +638,15 @@
                 <SETTING><NAME>DownloadPath</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>LaunchRemoteApp</NAME><VALUE>false</VALUE></SETTING>
                 <SETTING><NAME>RemoteAppPath</NAME><VALUE></VALUE></SETTING>
+                <SETTING><NAME>CoreID</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>JTAGClockSpeed</NAME><VALUE>8000</VALUE></SETTING>
+                <SETTING><NAME>IsMultiCore</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>OSDownload</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>UseGlobalOSDownload</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>OSDownloadConnectionName</NAME><VALUE></VALUE></SETTING>
+                <SETTING><NAME>OSDownloadPath</NAME><VALUE></VALUE></SETTING>
+                <SETTING><NAME>AltDownload</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>AltDownloadConnectionName</NAME><VALUE></VALUE></SETTING>
 
                 <!-- Settings for "Auto-target" panel -->
                 <SETTING><NAME>OtherExecutables</NAME><VALUE></VALUE></SETTING>
@@ -710,7 +719,7 @@
                 <!-- Settings for "FTP Panel" panel -->
                 <SETTING><NAME>MWFTP_Post_hostName</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_username</NAME><VALUE></VALUE></SETTING>
-                <SETTING><NAME>MWFTP_Post_password</NAME><VALUE>0&#255;&#196;0&#195;&#129;0&#144;"&#168;T</VALUE></SETTING>
+                <SETTING><NAME>MWFTP_Post_password</NAME><VALUE>0&#255;&#196;`&#203;!&#144;"&#168;T</VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_remoteDir</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_ftp_PathVersion</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_ftp_PathType</NAME><VALUE>0</VALUE></SETTING>
@@ -1044,7 +1053,7 @@
 
                 <!-- Settings for "PPC Project" panel -->
                 <SETTING><NAME>MWProject_PPC_type</NAME><VALUE>Application</VALUE></SETTING>
-                <SETTING><NAME>MWProject_PPC_outfile</NAME><VALUE>AlephOne.app</VALUE></SETTING>
+                <SETTING><NAME>MWProject_PPC_outfile</NAME><VALUE>Aleph One.app</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_filecreator</NAME><VALUE>????</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_filetype</NAME><VALUE>APPL</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_size</NAME><VALUE>65536</VALUE></SETTING>
@@ -1099,6 +1108,70 @@
                 <SETTING><NAME>MWRez_Language_escapecontrolchars</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWRez_Language_prefixname</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWRez_Language_filteredtypes</NAME><VALUE>'CODE' 'DATA' 'PICT'</VALUE></SETTING>
+
+                <!-- Settings for "x86 CodeGen" panel -->
+                <SETTING><NAME>MWCodeGen_X86_processor</NAME><VALUE>Generic</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_alignment</NAME><VALUE>bytes8</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_exceptions</NAME><VALUE>ZeroOverhead</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_name_mangling</NAME><VALUE>MWWin32</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_use_extinst</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_extinst_mmx</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_extinst_3dnow</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_use_mmx_3dnow_convention</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_extinst_cmov</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_extinst_sse</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_extinst_sse2</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_intrinsics</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_optimizeasm</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_disableopts</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_profile</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_runtime</NAME><VALUE>Custom</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_X86_readonlystrings</NAME><VALUE>0</VALUE></SETTING>
+
+                <!-- Settings for "x86 COFF" panel -->
+                <SETTING><NAME>MWLinker_X86_subsysmajorid</NAME><VALUE>4</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_subsysminorid</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCOFF_X86_opsysmajorid</NAME><VALUE>4</VALUE></SETTING>
+                <SETTING><NAME>MWCOFF_X86_opsysminorid</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_usrmajorid</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_usrminorid</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_maxstacksize</NAME><VALUE>1024</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_minstacksize</NAME><VALUE>4</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_size</NAME><VALUE>1024</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_minsize</NAME><VALUE>4</VALUE></SETTING>
+                <SETTING><NAME>MWCOFF_X86_coff_flags</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCOFF_X86_dll_flags</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_baseaddress</NAME><VALUE>4194304</VALUE></SETTING>
+                <SETTING><NAME>MWCOFF_X86_filealign</NAME><VALUE>512</VALUE></SETTING>
+                <SETTING><NAME>MWCOFF_X86_sectionalign</NAME><VALUE>4096</VALUE></SETTING>
+
+                <!-- Settings for "x86 Linker" panel -->
+                <SETTING><NAME>MWLinker_X86_entrypointusage</NAME><VALUE>Default</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_entrypoint</NAME><VALUE></VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_subsystem</NAME><VALUE>Unknown</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_commandfile</NAME><VALUE></VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_generatemap</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_linksym</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_linkCV</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_symfullpath</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_linkdebug</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_checksum</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_zero_init_bss</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_mergedata</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_usedefaultlibs</NAME><VALUE>true</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_adddefaultlibs</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_nowarnings</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_X86_verbose</NAME><VALUE>false</VALUE></SETTING>
+
+                <!-- Settings for "x86 Project" panel -->
+                <SETTING><NAME>MWProject_X86_type</NAME><VALUE>Application</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_outfile</NAME><VALUE>noname.exe</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_importlib</NAME><VALUE></VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_setimportlibdir</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_dontgenerateimportlib</NAME><VALUE>true</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_oldformatlib</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_replaceobjextension</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWProject_X86_copyallfiles</NAME><VALUE>false</VALUE></SETTING>
             </SETTINGLIST>
             <FILELIST>
                 <FILE>
