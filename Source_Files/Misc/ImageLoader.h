@@ -47,9 +47,17 @@ public:
 	ImageDescriptor(): Width(0), Height(0) {}
 };
 
+// What to load: image colors (must be loaded first)
+// or image opacity (replaces the default, which is 100% opaque everywhere).
+// The image-opacity image must have the same size as the color image;
+// it is interpreted as a grayscale image.
+enum {
+	ImageLoader_Colors,
+	ImageLoader_Opacity
+};
 
 // Returns whether or not the loading was successful
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File);
+bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode);
 
 
 #endif
