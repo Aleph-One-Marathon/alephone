@@ -1,6 +1,10 @@
 /* script_instructions.h
 	2/16/00 Created -  Chris Pruett
 	
+	10/20/00 - Mark Levin
+		Added instructions for monster control
+		
+
 */
 
 
@@ -163,6 +167,45 @@ enum /* instruction defs */
 	Get_Fog_Color = 0x38,
 	
 	Teleport_Player = 0x39,
+	
+	//Additions for monster control
+	// -- Mark Levin
+	
+	Monster_New = 0x3A,
+	
+	Monster_Sleep = 0x3B,
+		
+	Monster_Hurt = 0x3C,
+	
+	Monster_Attack = 0x3D,
+	
+	Monster_Move = 0x3E,
+	
+	Monster_Select = 0x3F,
+	
+	Monster_Get_Immunity = 0x40,
+	
+	Monster_Set_Immunity = 0x41,
+	
+	Monster_Get_Weakness = 0x42,
+	
+	Monster_Set_Weakness = 0x43,
+	
+	Monster_Get_Friend = 0x44,
+	
+	Monster_Set_Friend = 0x45,
+	
+	Monster_Get_Enemy = 0x46,
+	
+	Monster_Set_Enemy = 0x47,
+
+	Monster_Get_Item = 0x48,
+	
+	Monster_Set_Item = 0x49,
+	
+	Monster_Get_Nuke = 0x4A,
+	
+	Monster_Set_Nuke = 0x4B,
 
 	NUMBER_OF_INSTRUCTIONS
 };

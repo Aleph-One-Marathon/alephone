@@ -377,40 +377,6 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 		return true;
 }
 
-// Open data file given relative path name, traverse search path
-bool FileSpecifier::OpenRelative(OpenedFile &OFile)
-{
-	OFile.Close();
-
-	FileSpecifier full_path;
-	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-	while (i != end) {
-		full_path = *i + name;
-		if (full_path.Open(OFile))
-			return true;
-		clear_game_error();
-		i++;
-	}
-	return false;
-}
-
-// Open data file given relative path name, traverse search path
-bool FileSpecifier::OpenRelative(OpenedResourceFile &OFile)
-{
-	OFile.Close();
-
-	FileSpecifier full_path;
-	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-	while (i != end) {
-		full_path = *i + name;
-		if (full_path.Open(OFile))
-			return true;
-		clear_game_error();
-		i++;
-	}
-	return false;
-}
-
 // Check for existence of file
 bool FileSpecifier::Exists()
 {
@@ -549,6 +515,34 @@ void FileSpecifier::SetToSavedGamesDir()
 void FileSpecifier::SetToRecordingsDir()
 {
 	name = recordings_dir.name;
+}
+
+// Traverse search path, look for file given relative path name
+bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
+{
+	FileSpecifier full_path;
+	string rel_path = NameWithPath;
+
+#ifdef __WIN32__
+	// For cross-platform compatibility reasons, "NameWithPath" uses Unix path
+	// syntax, so we have to convert it to MS-DOS syntax here (replacing '/' by '\')
+	for (int k=0; k<rel_path.size(); k++)
+		if (rel_path[k] == '/')
+			rel_path[k] = '\\';
+#endif
+
+	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+	while (i != end) {
+		full_path = *i + rel_path;
+		if (full_path.Exists()) {
+			name = full_path.name;
+			err = 0;
+			return true;
+		}
+		i++;
+	}
+	err = ENOENT;
+	return false;
 }
 
 // Get last element of path

@@ -5,6 +5,10 @@
 
 Feb. 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
+
+Oct 25, 200 (Mark Levin)
+	Revealed monster_placement_info to allow P-tran Monster_New access
+
 */
 
 #include "cseries.h"
@@ -22,7 +26,7 @@ Feb. 4, 2000 (Loren Petrich):
 /* Global variables */
 /* This is done in a single array to facilitate the saving of the game state. */
 static struct object_frequency_definition object_placement_info[2*MAXIMUM_OBJECT_TYPES];
-static struct object_frequency_definition *monster_placement_info;
+/*static*/ struct object_frequency_definition *monster_placement_info;
 static struct object_frequency_definition *item_placement_info;
 
 /* private functions */

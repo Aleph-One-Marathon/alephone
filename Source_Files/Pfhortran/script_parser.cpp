@@ -1,5 +1,9 @@
 /* script_parser.c
 4/14/2000 - Created by Chris Pruett
+
+10/29/00 - Mark Levin
+	Change error code of evalute_operand to -32767 from -1 to avoid conflicts with -1 
+	appearing in scripts
 		
 */
 
@@ -84,6 +88,9 @@ bind_table procedure_bindings[NUMBER_OF_TRAPS];	/*Binding table for procedure tr
 
 symbol_def *get_hash(short key, symbol_def **the_hash);
 void init_hash();
+
+void dispose_hash();
+
 void lowercase_string(char *string);
 short put_symbol(char *symbol, float val, short mode, symbol_def **the_hash);
 void dispose_pfhortran(void);
@@ -108,6 +115,12 @@ bool init_pfhortran(void)
 	if (!instruction_hash)
 		return false;
 
+	//init the other hash
+/*	hash = (symbol_def **)malloc(sizeof(symbol_def *) * 256);
+	memset(hash,0,sizeof(symbol_def *) * 256);
+	if (!hash)
+		return false;
+*/
 	bool err = false;
 
 #ifdef SDL
@@ -343,6 +356,7 @@ void clear_hash()
 }
 
 // we need to dispose all the contents of the hash as well...
+//cleaned up by Mark Levin
 
 void dispose_hash()
 {
@@ -585,10 +599,10 @@ void read_line(char *input, char output[256])
 	int x,y;
 
 	if (strlen(input) == 0 || *(input-1) == 0x11)
-	{
+		{
 		output[0] = EOF;
 		return;
-	}
+		}
 	
 	for (x=0;(input[x] != '\r' && input[x] != '\n' && input[x] != 0 && input[x] != 0x11);x++);
 	
@@ -626,7 +640,7 @@ float evaluate_operand(char *input, short *mode)
 	*mode = absolute;
 	
 	if (!input || (input && input[0]) == '#' || (input[0] == 0))	// start of a comment?
-		return -1;
+		return -32767;
 	
 	symbol = get_symbol(input, hash);
 	
@@ -740,7 +754,7 @@ script_instruction *parse_script(char *input)
 	float val;
 	
 	bool output_errors = false;
-	error_def *error_log;
+	error_def *error_log=0;
 	
 	init_hash();
 	clear_bind_table();
@@ -830,8 +844,8 @@ script_instruction *parse_script(char *input)
 				
 				
 				
-				if ((instruction_list[line_count].op1 = evaluate_operand(blats[2], &op1mode)) != -1)
-					if ((instruction_list[line_count].op2 = evaluate_operand(blats[3], &op2mode)) != -1)
+				if ((instruction_list[line_count].op1 = evaluate_operand(blats[2], &op1mode)) != -32767)
+					if ((instruction_list[line_count].op2 = evaluate_operand(blats[3], &op2mode)) != -32767)
 						instruction_list[line_count].op3 = evaluate_operand(blats[4], &op3mode);
 				
 				if (op1mode == absolute && op2mode == absolute && op3mode == absolute)

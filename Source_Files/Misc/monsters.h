@@ -22,6 +22,9 @@ Aug 30, 2000 (Loren Petrich):
 	
 Oct 13, 2000 (Loren Petrich)
 	Converted the intersected-objects list into a Standard Template Library vector
+
+Oct 24, 2000 (Mark Levin)
+	Revealed some functions for P-tran
 */
 
 // LP additions:
@@ -256,6 +259,11 @@ void load_monster_sounds(short monster_type);
 void monster_moved(short target_index, short old_polygon_index);
 short legal_monster_move(short monster_index, angle facing, world_point3d *new_location);
 short legal_player_move(short monster_index, world_point3d *new_location, world_distance *object_floor);
+
+//ML: Revealed these function for Pfhortran
+void change_monster_target(short monster_index, short target_index);
+struct monster_definition *get_monster_definition_external(const short type);
+
 
 // LP change: made these settable from the resource fork
 // and used a growable list for the indices

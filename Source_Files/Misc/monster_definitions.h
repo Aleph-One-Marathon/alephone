@@ -10,7 +10,15 @@ Jan 30, 2000 (Loren Petrich):
 
 Feb 3, 2000 (Loren Petrich):
 	Added VacBobs and their physics
+	
+Oct 26, 2000 (Mark Levin)
+	Added some includes that this file depends on
 */
+
+//New includes
+#include "effects.h"
+#include "projectiles.h"
+
 
 /* ---------- macros */
 
@@ -202,7 +210,7 @@ struct monster_definition /* <128 bytes */
 
 /* ---------- monster definitions */
 
-struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
+static struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 {
 	{ /* _monster_marine (canÕt be used as a regular monster) */
 		_collection_player, /* shape collection */

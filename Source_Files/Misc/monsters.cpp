@@ -65,6 +65,9 @@ Aug 30, 2000 (Loren Petrich):
 	
 Oct 13, 2000 (Loren Petrich)
 	Converted the intersected-objects list into a Standard Template Library vector
+
+Oct 26, 2000 (Mark Levin)
+	Revealed a few functions needed by Pfhortran
 */
 
 #include <string.h>
@@ -182,6 +185,10 @@ inline struct monster_definition *get_monster_definition(
 	return definition;
 }
 
+//ML change: A non-inlined version so that it can be accessed from Pfhortran
+
+
+
 /*
 #ifdef DEBUG
 struct monster_definition *get_monster_definition(short type);
@@ -192,10 +199,10 @@ struct monster_definition *get_monster_definition(short type);
 
 static void monster_needs_path(short monster_index, bool immediately);
 static void generate_new_path_for_monster(short monster_index);
-static void advance_monster_path(short monster_index);
+void advance_monster_path(short monster_index);
 
 static short get_monster_attitude(short monster_index, short target_index);
-static void change_monster_target(short monster_index, short target_index);
+void change_monster_target(short monster_index, short target_index);
 static bool switch_target_check(short monster_index, short attacker_index, short delta_vitality);
 static bool clear_line_of_sight(short viewer_index, short target_index, bool full_circle);
 
@@ -205,11 +212,11 @@ static void kill_monster(short monster_index);
 static bool translate_monster(short monster_index, world_distance distance);
 static bool try_monster_attack(short monster_index);
 			
-static long monster_pathfinding_cost_function(short source_polygon_index, short line_index,
+long monster_pathfinding_cost_function(short source_polygon_index, short line_index,
 	short destination_polygon_index, void *data);
 
-static void set_monster_action(short monster_index, short action);
-static void set_monster_mode(short monster_index, short new_mode, short target_index);
+void set_monster_action(short monster_index, short action);
+void set_monster_mode(short monster_index, short new_mode, short target_index);
 
 static short find_obstructing_terrain_feature(short monster_index, short *feature_index, short *relevant_polygon_index);
 
@@ -230,7 +237,19 @@ static long nearest_goal_cost_function(short source_polygon_index, short line_in
 
 static void cause_shrapnel_damage(short monster_index);
 
+struct monster_definition *get_monster_definition_external(const short type);
 /* ---------- code */
+
+//a non-inlined version for external use
+struct monster_definition *get_monster_definition_external(
+	const short type)
+{
+	monster_definition *definition = GetMemberWithBounds(monster_definitions,type,NUMBER_OF_MONSTER_TYPES);
+	assert(definition);
+	
+	return definition;
+}
+
 
 /* returns new monster index if successful, NONE otherwise */
 short new_monster(
@@ -926,8 +945,6 @@ void activate_monster(
 	monster->path= NONE;
 	/* we used to set monster->target_index here, but it is invalid when mode==_monster_unlocked */
 	monster->mode= _monster_unlocked, monster->target_index= NONE;
-	if (definition->attack_frequency == 0) // Avoid division by zero 
-		definition->attack_frequency = 1;
 	monster->ticks_since_attack= (definition->flags&_monster_attacks_immediately) ?
 		definition->attack_frequency : global_random()%definition->attack_frequency;
 	monster->desired_height= object->location.z; /* best guess */
@@ -1373,7 +1390,9 @@ void damage_monster(
 	struct monster_data *monster= get_monster_data(target_index);
 	struct monster_definition *definition= get_monster_definition(monster->type);
 	struct monster_data *aggressor_monster= aggressor_index!=NONE ? get_monster_data(aggressor_index) : (struct monster_data *) NULL;
+//	dprintf("%d base, %d random, %d scale.\n", damage->base, damage->random, damage->scale);
 	short delta_vitality= calculate_damage(damage);
+//	dprintf("we are doing %d damage\n", delta_vitality);
 	world_distance external_velocity= 0;
 	bool vertical_component= false;
 
@@ -1423,6 +1442,7 @@ void damage_monster(
 			}
 			else
 			{
+				monster->unused[0]=-1;			//steal an unused for monster death
 				if (!MONSTER_IS_DYING(monster))
 				{
 					short action;
@@ -1900,7 +1920,7 @@ static void monster_needs_path(
 	return;
 }
 
-static void set_monster_mode(
+void set_monster_mode(
 	short monster_index,
 	short new_mode,
 	short target_index)
@@ -2338,7 +2358,7 @@ static bool clear_line_of_sight(
 
 /* lock the given monster onto the given target, playing a locking sound if the monster
 	previously didn’t have a lock */
-static void change_monster_target(
+void change_monster_target(
 	short monster_index,
 	short target_index)
 {
@@ -2474,7 +2494,7 @@ static void handle_moving_or_stationary_monster(
 	return;
 }
 
-static void set_monster_action(
+void set_monster_action(
 	short monster_index,
 	short action)
 {
@@ -2833,7 +2853,7 @@ static bool attempt_evasive_manouvers(
 	return successful;
 }
 
-static void advance_monster_path(
+void advance_monster_path(
 	short monster_index)
 {
 	struct monster_data *monster= get_monster_data(monster_index);
@@ -3047,7 +3067,7 @@ static void execute_monster_attack(
 	return;
 }
 
-static long monster_pathfinding_cost_function(
+long monster_pathfinding_cost_function(
 	short source_polygon_index,
 	short line_index,
 	short destination_polygon_index,

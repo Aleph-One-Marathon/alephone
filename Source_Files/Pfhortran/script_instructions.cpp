@@ -2,6 +2,10 @@
 	2/16/00 Created - Chris Pruett
 	
 	Aug 10, 2000 (Loren Petrich): renamed dynamic_fog_depth to FogDepth
+	
+	10/20/00 - Mark Levin
+	Functions created for monster support
+	
 */
 
  
@@ -39,6 +43,12 @@ typedef float GLfloat;
 
 //#include "Soundtrack.h"
 
+//we need to be able to access monster definitions
+
+#include "monster_definitions.h"
+
+#include "flood_map.h"
+
 #include "script_parser.h"
 #include "script_instructions.h"
 
@@ -59,6 +69,11 @@ extern bool FogPresent;
 extern GLfloat FogDepth;
 extern GLfloat FogColor[4];
 
+
+// ML addition: to use possible_intersecting_monsters
+static vector<short> IntersectedObjects;
+//extern struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES];
+//trying to access the monster type list
 
 
 /*extern'd references to the script code (to avoid circular includes) */
@@ -90,6 +105,8 @@ extern path_list camera_point;
 
 
 world_point3d offset_position;
+//for camera timing
+//int lastTicks;		//the tickCount at which we last updated the path
 short offset_polygon_index;
 float offset_yaw;
 float offset_pitch;
@@ -178,8 +195,48 @@ void s_Get_Fog_Color(script_instruction inst);
 
 void s_Teleport_Player(script_instruction inst);
 
+void s_Monster_New(script_instruction inst);
+void s_Monster_Sleep(script_instruction inst);
+void s_Monster_Hurt(script_instruction inst);
+void s_Monster_Attack(script_instruction inst);
+void s_Monster_Move(script_instruction inst);
+void s_Monster_Select(script_instruction inst);
+void s_Monster_Get_Immunity(script_instruction inst);
+void s_Monster_Set_Immunity(script_instruction inst);
+void s_Monster_Get_Weakness(script_instruction inst);
+void s_Monster_Set_Weakness(script_instruction inst);
+void s_Monster_Get_Friend(script_instruction inst);
+void s_Monster_Set_Friend(script_instruction inst);
+void s_Monster_Get_Enemy(script_instruction inst);
+void s_Monster_Set_Enemy(script_instruction inst);
+void s_Monster_Get_Item(script_instruction inst);
+void s_Monster_Set_Item(script_instruction inst);
+void s_Monster_Get_Nuke(script_instruction inst);
+void s_Monster_Set_Nuke(script_instruction inst);
 
 /*-------------------------------------------*/
+
+//Steal the monster_pathfinding_data structure?
+
+struct monster_pathfinding_data
+{
+	struct monster_definition *definition;
+	struct monster_data *monster;
+	
+	bool cross_zone_boundaries;
+};
+
+//steal this mb
+
+
+//Steal the monster functions
+
+extern void advance_monster_path(short monster_index);
+extern long monster_pathfinding_cost_function(short source_polygon_index, short line_index,
+	short destination_polygon_index, void *data);
+extern void set_monster_action(short monster_index, short action);
+extern void set_monster_mode(short monster_index, short new_mode, short target_index);
+
 
 /*init_instructions sets up the instruction_lookup array so that
 functions can be called by casting back the pointer.  This is only
@@ -187,7 +244,7 @@ called once.*/
 void init_instructions(void)
 {
 
-	
+	//dprintf("pfhortran inited\n");
 
 	instruction_lookup[Camera_Move] = s_Camera_Move;
 	instruction_lookup[Camera_Look] = s_Camera_Look;
@@ -250,10 +307,31 @@ void init_instructions(void)
 	// ----
 	
 	instruction_lookup[Teleport_Player] = s_Teleport_Player;
+
+	//monster funcs added by Mark Levin
 	
+	instruction_lookup[Monster_Hurt] = s_Monster_Hurt;
+	instruction_lookup[Monster_New] = s_Monster_New;
+	instruction_lookup[Monster_Move] = s_Monster_Move;
+	instruction_lookup[Monster_Sleep] = s_Monster_Sleep;
+	instruction_lookup[Monster_Attack] = s_Monster_Attack;
+	instruction_lookup[Monster_Select] = s_Monster_Select;
+	instruction_lookup[Monster_Get_Immunity] = s_Monster_Get_Immunity;
+	instruction_lookup[Monster_Set_Immunity] = s_Monster_Set_Immunity;
+	instruction_lookup[Monster_Get_Weakness] = s_Monster_Get_Weakness;
+	instruction_lookup[Monster_Set_Weakness] = s_Monster_Set_Weakness;
+	instruction_lookup[Monster_Get_Friend] = s_Monster_Get_Friend;
+	instruction_lookup[Monster_Set_Friend] = s_Monster_Set_Friend;
+	instruction_lookup[Monster_Get_Enemy] = s_Monster_Get_Enemy;
+	instruction_lookup[Monster_Set_Enemy] = s_Monster_Set_Enemy;
+	instruction_lookup[Monster_Get_Item] = s_Monster_Get_Item;
+	instruction_lookup[Monster_Set_Item] = s_Monster_Set_Item;
+	instruction_lookup[Monster_Get_Nuke] = s_Monster_Get_Nuke;
+	instruction_lookup[Monster_Set_Nuke] = s_Monster_Set_Nuke;
 
 
-}
+
+	}
 
 #pragma mark -
 
@@ -263,6 +341,7 @@ void update_path_camera(void)
 {
 	path_point old_point;
 	const float AngleConvert = 360/float(FULL_CIRCLE);
+	int currentTicks;
 	
 	/* copy over old location info so we can calculate new polygon index later */
 	
@@ -272,7 +351,10 @@ void update_path_camera(void)
 	old_point.position.y = camera_point.location.position.y;
 	old_point.position.z = camera_point.location.position.z;
 	old_point.polygon_index = camera_point.location.polygon_index;
-
+	
+	//we are now at this time
+//	currentTicks = machine_tick_count();	//this should be from 1 to many ticks after lastTicks
+	
 	if (offset_count)
 	{
 		if (camera_point.location.position.x < 
@@ -498,7 +580,7 @@ bool script_Camera_Active(void)
 					if (cameras[current_camera].point > script_paths[cameras[current_camera].path].length) /*path is finished */
 					{
 						current_path_point = 0;
-						cameras[current_camera].point = 0;
+						cameras[current_camera].point = 0;		//step back to end
 						cameras[current_camera].path = -1;
 						current_camera = 0;
 						s_camera_Control = false;
@@ -609,6 +691,7 @@ void s_Wait_Ticks(script_instruction inst)
 		
 		
 	set_instruction_decay(uint32(machine_tick_count() + temp));
+	//set_instruction_decay(uint32(dynamic_world->tick_count + temp));
 }
 
 void s_Inflict_Dammage(script_instruction inst)
@@ -860,30 +943,39 @@ void s_If_Equal(script_instruction inst)
 	{
 		case 0:
 		case 4:
+//				dprintf("%f = %f? if so, go to %f\n", inst.op1, inst.op2,temp);
 			if (inst.op1 == inst.op2)
+				{
 				jump_to_line((int)floor(temp));
+				}
 			break;
 		case 1:
 		case 5:
+//				dprintf("%f = %f? if so, go to %f\n", get_variable(int(inst.op1)), inst.op2,temp);
 			if (get_variable(int(inst.op1)) == inst.op2)
+				{
 				jump_to_line((int)floor(temp));
-			
+				}
 			break;
 		case 2:
 		case 6:
+//				dprintf("%f = %f? if so, go to %f\n", inst.op1,get_variable(int(inst.op2)), temp);
 			if (get_variable(int(inst.op2)) == inst.op1)
+				{
 				jump_to_line((int)floor(temp));
-			
+				}
 			break;
 		case 3:
 		case 7:
+//				dprintf("%f = %f? if so, go to %f\n", get_variable(int(inst.op1)), get_variable(int(inst.op2)),temp);
 			if (get_variable(int(inst.op1)) == get_variable(int(inst.op2)))
+				{
 				jump_to_line((int)floor(temp));
+				}
 			break;
 		default:
 				break;
 	}
- 	 
 	 
 }
 
@@ -1718,12 +1810,16 @@ void s_Start_Camera_On_Path(script_instruction inst)
 		cameras[current_camera].path = temp-1;
 		cameras[current_camera].point = 0;
 		
+		//try some timing
+		
 	/*	cameras[current_camera].location.position = script_paths[cameras[current_camera].path].the_path[0].location.position;
 		cameras[current_camera].location.polygon_index = script_paths[cameras[current_camera].path].the_path[0].location.polygon_index;
 		cameras[current_camera].location.yaw = script_paths[cameras[current_camera].path].the_path[0].location.yaw;
 		cameras[current_camera].location.pitch = script_paths[cameras[current_camera].path].the_path[0].location.pitch;
 	*/
 		current_path_point = 0;
+		
+//		lastTicks = machine_tick_count();	//set this as the start point
 		
 		s_Activate_Camera(inst);
 	}
@@ -1878,3 +1974,810 @@ void s_Wait_For_Path(script_instruction inst)
 
 }
 
+
+//op1: Return the monster's index number
+//op2: The type of monster to create
+//op3: The polygon to put him in (center)
+
+//THIS IS BROKEN
+//DO NOT USE
+
+void s_Monster_New(script_instruction inst)
+{
+	object_location theLocation;		//where we will put him
+	struct polygon_data *destination;
+	world_point3d theDestination;
+	short index;
+	short type, where;
+	
+	dprintf("I TOLD YOU NOT TO USE THIS INSTRUCTION DAMMIT");
+	set_variable(int(inst.op1), -1);
+	return;
+	
+	switch(inst.mode)			//requires: var, both, both
+	{
+	case 1: 
+		type = (short)inst.op2;
+		where= (short)inst.op3;
+		break;
+	case 3:
+		type = (short)get_variable(int(inst.op2));
+		where = (short)inst.op3;
+		break;
+	case 5:
+		type = (short)inst.op2;
+		where = (short)get_variable(int(inst.op3));
+		break;
+	case 7:
+		type = (short)get_variable(int(inst.op2));
+		where = (short)get_variable(int(inst.op3));	
+		break;
+	default:
+	return;			//if we don't have a variable as element 1, return
+	}
+	
+	theLocation.polygon_index = (int16)where;
+	destination = NULL;
+	destination= get_polygon_data(theLocation.polygon_index);
+	if(destination==NULL)
+		return;
+	*((world_point2d *)&theDestination)= destination->center;	//stolen, assuming it works
+	theDestination.z= destination->floor_height;
+	theLocation.p = theDestination;
+	theLocation.yaw = 0;
+	theLocation.pitch=0;
+	theLocation.flags = 0;//(monster_placement_info+type)->flags;			//so far
+	
+	index = new_monster(&theLocation, (short)type);
+//	dprintf("We have created monster %d", index);
+	set_variable(int(inst.op1), index);
+	
+	return;			//blank for now
+}
+
+//op1: The monster to euthanize
+void s_Monster_Sleep(script_instruction inst)
+{
+	
+	short theMonster;
+	struct monster_data *theMonsterData;
+	//requires: var
+	switch(inst.mode)
+	{
+	case 1:
+	case 3:
+	case 5:
+	case 7:
+		theMonster = (short)get_variable(int(inst.op1));
+		break;
+	default:
+		dprintf("Argument of Monster_Sleep must be a variable\n");
+		return;		//was not a var
+	}
+//	dprintf("Trying to put monster %d to sleep\n", theMonster);
+	if(theMonster == -1) return;
+
+	theMonsterData = GetMemberWithBounds(monsters,theMonster,MAXIMUM_MONSTERS_PER_MAP);
+
+	if(SLOT_IS_USED(theMonsterData))		//Only hurt existing monsters
+		{
+//		dprintf("monster %d snoozing\n", theMonster);
+		if(MONSTER_IS_ACTIVE(theMonsterData))
+			deactivate_monster(theMonster);
+		}
+	return;			//blank for now
+}
+
+
+//op1: The monster to damage
+//op2: The damage taken
+//[op3: the type of damage]
+void s_Monster_Hurt(script_instruction inst)
+{
+	
+	struct damage_definition theDamage;		//create some damage to deal
+	struct monster_data *theMonster;
+	short damage, target;
+	
+	//required: var, any
+	switch(inst.mode)
+	{
+/*	case 0:
+	case 4:
+		target= (short)inst.op1;
+		damage = (short)inst.op2;
+		break; */
+	case 1:
+	case 5:
+		target = (short)get_variable(int(inst.op1));
+		damage = (short)inst.op2;
+		break;
+/*	case 2:
+	case 6:
+		target = (short)inst.op1;
+		damage = (short)get_variable(int(inst.op2));
+		break;	*/
+	case 3:
+	case 7:
+		target = (short)get_variable(int(inst.op1));	
+		damage = (short)get_variable(int(inst.op2));
+		break;
+	default:
+		dprintf("Argument 1 of Monster_Hurt must be a variable\n");
+		return;
+	}	
+	theDamage.type = _damage_fist;			//we do Fist of God damage :)
+	theDamage.base = damage;		//user selects damage
+	theDamage.random = 0;
+	theDamage.flags = 0;
+	theDamage.scale = 65536;				//something involving fixed-point math
+//	dprintf("trying to damage monster %d\n", inst.op1);
+//	SysBeep(30);
+//	exit(1);
+//	dprintf("We want monster at address %d\n", SLOT_IS_USED(theMonster));
+	if(target == -1) return;
+	theMonster= GetMemberWithBounds(monsters,target,MAXIMUM_MONSTERS_PER_MAP);
+	if(!SLOT_IS_USED(theMonster)) return;		//Only hurt existing monsters
+	damage_monster(target, NONE, NONE, &(get_monster_data(target)->sound_location), &theDamage);
+}
+
+
+//op1: The monster that will attack
+//op2: the monster that will be attacked
+void s_Monster_Attack(script_instruction inst)
+{
+	struct monster_data *bully, *poorHelplessVictim;
+	short attacker, attackee;
+	
+	
+	switch(inst.mode)				//requires: var, var
+	{
+/*	case 0:
+	case 4:
+		attacker = (short)inst.op1;
+		attackee = (short)inst.op2;
+		break;
+	case 1:
+	case 5:
+		attacker = (short)get_variable(int(inst.op1));
+		attackee = (short)inst.op2;
+		break;
+	case 2:
+	case 6:
+		attacker = (short)inst.op1;
+		attackee = (short)get_variable(int(inst.op2));
+		break; */
+	case 3:
+	case 7:
+		attacker = (short)get_variable(int(inst.op1));
+		attackee = (short)get_variable(int(inst.op2));
+		break;
+	default:
+		dprintf("Arguments of Monster_Attack must be variables\n");
+		return;
+	}
+	
+	if(attacker == -1 || attackee ==-1) return;	
+	bully = GetMemberWithBounds(monsters,attacker,MAXIMUM_MONSTERS_PER_MAP);
+	poorHelplessVictim = GetMemberWithBounds(monsters,attackee,MAXIMUM_MONSTERS_PER_MAP);
+	if(!SLOT_IS_USED(bully) || !SLOT_IS_USED(poorHelplessVictim)) return;
+//	dprintf("monster %d attacks monster %d", attacker, attackee);
+	change_monster_target(attacker, attackee);
+	
+	return;			//blank for now
+}
+
+//op1: The monster to move
+//op2: The polygon to move to. Monster heads for center.
+//[op3: other options]
+void s_Monster_Move(script_instruction inst)
+{
+	world_point2d theStart, *theEnd;	//where we start from. start is monster's pos, end is center of dest
+	short startPoly, endPoly;		//poly indexes for new_path
+	world_distance minSpace;		//3*monster_definition->radius
+	struct monster_pathfinding_data thePath;		//used by new_path
+	struct monster_data *theRealMonster;			//the monster data
+	struct monster_definition *theDef;				//the def of the monster
+	struct object_data *theObject;						//the monster's physical form
+	short theMonster;
+	
+	//dprintf("we are moving a monster\n");
+	//required: var, any
+	switch(inst.mode)
+	{
+	case 1:
+	case 5:
+		theMonster = (short)get_variable(int(inst.op1));
+		endPoly = (short)inst.op2;
+		break;
+	case 3:
+	case 7:
+		theMonster = (short)get_variable(int(inst.op1));
+		endPoly = (short)get_variable(int(inst.op2));
+		break;
+	default:
+		dprintf("Argument 1 of Monster_Move must be a variable\n");	
+	return;			//blank for now
+	}
+	if(theMonster == -1) return;
+	theRealMonster = GetMemberWithBounds(monsters,theMonster,MAXIMUM_MONSTERS_PER_MAP);
+	if(!SLOT_IS_USED(theRealMonster)) return;		//we must have a legal monster
+	theDef = get_monster_definition_external(theRealMonster->type);
+	theObject = get_object_data(theRealMonster->object_index);
+	//some checks stolen from generate_new_path_for_monster
+	if(!MONSTER_IS_ACTIVE(theRealMonster))
+		activate_monster(theMonster);
+	if (theRealMonster->path!=NONE)
+		{
+		delete_path(theRealMonster->path);
+		theRealMonster->path= NONE;
+		}
+	SET_MONSTER_NEEDS_PATH_STATUS(theRealMonster, false);
+	
+	thePath.definition = get_monster_definition_external(theRealMonster->type);		//we want to move this type of monster
+	thePath.monster = theRealMonster;	//specifically, this one
+	thePath.cross_zone_boundaries = true;	//because we have a poly...
+	
+	theEnd = &(get_polygon_data(endPoly)->center);
+	
+
+	
+	theRealMonster->path = new_path((world_point2d *)&theObject->location, theObject->polygon, theEnd,
+		endPoly, 3*get_monster_definition_external(theRealMonster->type)->radius, monster_pathfinding_cost_function, &thePath);
+	if (theRealMonster->path==NONE)
+		{
+		if(theRealMonster->action!=_monster_is_being_hit || MONSTER_IS_DYING(theRealMonster)) set_monster_action(theMonster, _monster_is_stationary);
+		set_monster_mode(theMonster, _monster_unlocked, NONE);
+		return;
+		}
+	advance_monster_path(theMonster);	//this seems to be called
+
+
+}
+
+//op1: return the mionster selected
+//op2: the monster type to get
+//op3: the polygon to look in
+void s_Monster_Select(script_instruction inst)
+{
+	//we are using IntersectedObjects
+	int found, i;
+	int objectCount;
+	struct monster_data * theMonster;
+	short type, where;
+//	dprintf("Selecting...\n");
+	switch(inst.mode)			//requires: var, any, any
+	{
+	case 1: 
+		type = (short)inst.op2;
+		where= (short)inst.op3;
+		break;
+	case 3:
+		type = (short)get_variable(int(inst.op2));
+		where = (short)inst.op3;
+		break;
+	case 5:
+		type = (short)inst.op2;
+		where = (short)get_variable(int(inst.op3));
+		break;
+	case 7:
+		type = (short)get_variable(int(inst.op2));
+		where = (short)get_variable(int(inst.op3));	
+		break;
+	default:
+	dprintf("Argument 1 of Monster_Select must be a variable\n");
+	return;			//if we don't have a variable as element 1, return
+	}
+//	dprintf("searching polygon %d for monsters of type %d\n", where, type);
+	found = possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, (short)where, false);
+	//now we have a list of stuff
+	objectCount = IntersectedObjects.size();
+	set_variable(int(inst.op1), -1);
+	for(i=0;i<objectCount;i++)
+		{
+		theMonster = GetMemberWithBounds(monsters,get_object_data(IntersectedObjects[i])->permutation,MAXIMUM_MONSTERS_PER_MAP); //please tell me this works
+//		dprintf("checking a monster found in polygon %d\n", theMonster->sound_polygon_index);
+		if((theMonster->type == type) && SLOT_IS_USED(theMonster) && theMonster->unused[0] != where)		//if we have a monster of the same type
+			{
+			if(get_object_data(theMonster->object_index)->polygon == where)		//double if because get_object_data only works if the monster is legal in the first place
+				{
+//				dprintf("We have selected monster %d\n", get_object_data(IntersectedObjects[i])->permutation);
+				theMonster->unused[0]=where;
+				set_variable(int(inst.op1), get_object_data(IntersectedObjects[i])->permutation);
+				return;
+				}
+			}
+		}
+//	dprintf("No monster found, returning -1\n");
+	set_variable(int(inst.op1), -1);
+//	dprintf("we return %d\n", (short)get_variable(int(inst.op1)));
+	return;
+}
+
+//op1: the monster to edit (this is global for all monsters of this type)
+//op2: the damage type to check
+//op3: the value of the damage type (var)
+void s_Monster_Get_Immunity(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int16 damageType;
+	int theValue;
+//	dprintf("trying vulnerability\n");
+	switch(inst.mode)
+	{
+	case 5:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)inst.op2;
+		break;
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)get_variable(int(inst.op2));
+		break;
+	default:
+		dprintf("First and last arguments of Monster_Get_Immunity must be variables\n");
+	return; 
+	}
+	
+//	dprintf("checking type %d of monster %d\n", damageType, monsterIndex);
+	if(monsterIndex == -1) return;
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(SLOT_IS_USED(theMonster))
+		{
+		theDef = get_monster_definition_external(theMonster->type);
+		set_variable((int)inst.op3, theDef->immunities & 1<<damageType);
+//		dprintf("invulnerability was %d\n", theDef->immunities & 1<<damageType);
+		}
+}
+
+//op1: the monster to edit (this is global for all monsters of this type)
+//op2: the damage type to set
+//op3: the value of the damage type
+void s_Monster_Set_Immunity(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int16 damageType;
+	int theValue;
+//	dprintf("trying vulnerability\n");
+	switch(inst.mode)
+	{
+	case 1:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)inst.op2;
+		theValue = (int)inst.op3;
+		break;
+	case 3:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)get_variable(int(inst.op2));
+		theValue = (int)inst.op3;
+	case 5:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)inst.op2;
+		theValue = (int)get_variable(int(inst.op3));
+		break;
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)get_variable(int(inst.op2));
+		theValue = (int)get_variable(int(inst.op3));
+		break;
+	default:
+		dprintf("First and last arguments of Monster_Set_Immunity must be variables\n");
+	return; 
+	}
+	
+//	dprintf("checking type %d of monster %d\n", damageType, monsterIndex);
+	if(monsterIndex == -1) return;
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(SLOT_IS_USED(theMonster))
+		{
+		if(theValue == 1)
+		{
+			theDef = get_monster_definition_external(theMonster->type);
+//			dprintf("invulnerability was %d\n", theDef->immunities & 1<<damageType);
+			theDef->immunities = theDef->immunities | 1<<damageType;
+//			dprintf("invulnerability is now %d\n", theDef->immunities & 1<<damageType);
+			return;
+		}
+		if(theValue == 0)
+		{
+			theDef = get_monster_definition_external(theMonster->type);
+//			dprintf("invulnerability was %d\n", theDef->immunities & 1<<damageType);
+			theDef->immunities = theDef->immunities & ~(1<<damageType);
+//			dprintf("invulnerability is now %d\n", theDef->immunities & 1<<damageType);
+			return;
+		}
+		dprintf("Invulnerability value must be 0 or 1\n");
+		}
+}
+
+//op1: the monster to edit (this is global for all monsters of this type)
+//op2: the damage type to check
+//op3: the value of the damage type (var)
+void s_Monster_Get_Weakness(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int16 damageType;
+	int theValue;
+//	dprintf("trying weakness\n");
+	switch(inst.mode)
+	{
+	case 5:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)inst.op2;
+		break;
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)get_variable(int(inst.op2));
+		break;
+	default:
+		dprintf("First and last arguments of Monster_Get_Weakness must be variables\n");
+	return; 
+	}
+	
+//	dprintf("checking type %d of monster %d\n", damageType, monsterIndex);
+	if(monsterIndex == -1) return;
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(SLOT_IS_USED(theMonster))
+		{
+		theDef = get_monster_definition_external(theMonster->type);
+		set_variable((int)inst.op3, theDef->weaknesses & 1<<damageType);
+//		dprintf("weakness was %d\n", theDef->weaknesses & 1<<damageType);
+		}
+}
+
+//op1: the monster to edit (this is global for all monsters of this type)
+//op2: the damage type to check
+//op3: the value of the damage type (var)
+void s_Monster_Set_Weakness(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int16 damageType;
+	int theValue;
+//	dprintf("trying weakness set\n");
+	switch(inst.mode)
+	{
+	case 1:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)inst.op2;
+		theValue = (int)inst.op3;
+		break;
+	case 3:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)get_variable(int(inst.op2));
+		theValue = (int)inst.op3;
+	case 5:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)inst.op2;
+		theValue = (int)get_variable(int(inst.op3));
+		break;
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		damageType = (int16)get_variable(int(inst.op2));
+		theValue = (int)get_variable(int(inst.op3));
+		break;
+	default:
+		dprintf("First and last arguments of Monster_Set_Weakness must be variables\n");
+	return; 
+	}
+	
+//	dprintf("checking type %d of monster %d\n", damageType, monsterIndex);
+	if(monsterIndex == -1) return;
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(SLOT_IS_USED(theMonster))
+		{
+		if(theValue == 1)
+		{
+			theDef = get_monster_definition_external(theMonster->type);
+//			dprintf("weakness was %d\n", theDef->weaknesses & 1<<damageType);
+			theDef->weaknesses = theDef->weaknesses | 1<<damageType;
+//			dprintf("weakness is now %d\n", theDef->weaknesses & 1<<damageType);
+			return;
+		}
+		if(theValue == 0)
+		{
+			theDef = get_monster_definition_external(theMonster->type);
+//			dprintf("weaknesses was %d\n", theDef->weaknesses & 1<<damageType);
+			theDef->weaknesses = theDef->weaknesses & ~(1<<damageType);
+//			dprintf("weaknesses is now %d\n", theDef->weaknesses & 1<<damageType);
+			return;
+		}
+		dprintf("weaknesses value must be 0 or 1\n");
+		}
+}
+
+//op1: the monster to edit (this is global for all monsters of this type)
+//op2: the type to check
+//op3: the value of the friend setting (var)
+void s_Monster_Get_Friend(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int32 monsterClass;
+	int theValue;
+//	dprintf("trying firends\n");
+	switch(inst.mode)
+	{
+	case 5:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)inst.op2;
+		break;
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)get_variable(int(inst.op2));
+		break;
+	default:
+		dprintf("First and last arguments of Monster_Get_Friend must be variables\n");
+	return; 
+	}
+	
+//	dprintf("checking friend %d of monster %d\n", monsterClass, monsterIndex);
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(monsterIndex == -1) return;
+	if(SLOT_IS_USED(theMonster))
+		{
+		theDef = get_monster_definition_external(theMonster->type);
+		set_variable((int)inst.op3, theDef->friends & 1<<monsterClass);
+//		dprintf("weakness was %d\n", theDef->friends & 1<<monsterClass);
+		}
+
+}
+
+//op1: the monster to edit (this is global for all monsters of this type)
+//op2: the damage type to check
+//op3: the value of the damage type (var)
+void s_Monster_Set_Friend(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int32 monsterClass;
+	int theValue;
+//	dprintf("trying weakness set\n");
+	switch(inst.mode)
+	{
+	case 1:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int32)inst.op2;
+		theValue = (int)inst.op3;
+		break;
+	case 3:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)get_variable(int(inst.op2));
+		theValue = (int)inst.op3;
+	case 5:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)inst.op2;
+		theValue = (int)get_variable(int(inst.op3));
+		break;
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)get_variable(int(inst.op2));
+		theValue = (int)get_variable(int(inst.op3));
+		break;
+	default:
+		dprintf("First argument of Monster_Set_Weakness must be variables\n");
+	return; 
+	}
+	
+//	dprintf("checking type %d of monster %d\n", monsterClass, monsterIndex);
+	if(monsterIndex == -1) return;
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(SLOT_IS_USED(theMonster))
+		{
+		if(theValue == 1)
+		{
+			theDef = get_monster_definition_external(theMonster->type);
+//			dprintf("friendliness was %d\n", theDef->friends & 1<<monsterClass);
+			theDef->friends = theDef->friends | 1<<monsterClass;
+			//theDef->friends | FLAG(monsterClass);
+//			dprintf("friendliness is now %d\n", theDef->friends & 1<<monsterClass);
+			return;
+		}
+		if(theValue == 0)
+		{
+			theDef = get_monster_definition_external(theMonster->type);
+//			dprintf("friendliness was %d\n", theDef->friends & 1<<monsterClass);
+			theDef->friends = theDef->friends & ~(1<<monsterClass);
+//			dprintf("friendliness is now %d\n", theDef->friends & 1<<monsterClass);
+			return;
+		}
+		dprintf("friendliness value must be 0 or 1\n");
+		}
+}
+
+//op1: the monster to edit (this is global for all monsters of this type)
+//op2: the damage type to check
+//op3: the value of the damage type (var)
+void s_Monster_Get_Enemy(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int32 monsterClass;
+	int theValue;
+//	dprintf("trying enemies\n");
+	switch(inst.mode)
+	{
+	case 5:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)inst.op2;
+		break;
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)get_variable(int(inst.op2));
+		break;
+	default:
+		dprintf("First and last arguments of Monster_Get_Enemy must be variables\n");
+	return; 
+	}
+	
+	//"SHOW ME, EPYON! WHO IS MY ENEMY?"
+	
+//	dprintf("checking enemy %d of monster %d\n", monsterClass, monsterIndex);
+	if(monsterIndex == -1) return;
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(SLOT_IS_USED(theMonster))
+		{
+		theDef = get_monster_definition_external(theMonster->type);
+		set_variable((int)inst.op3, theDef->enemies & 1<<monsterClass);
+//		dprintf("enemy was %d\n", theDef->friends & 1<<monsterClass);
+		}
+}
+
+//op1: The monster to edit (this is global for all monsters of this type)
+//op2: The class to make friend or enemy
+//op3: What to make it (true is checked, false is unchecked)
+void s_Monster_Set_Enemy(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int32 monsterClass;
+	int theValue;
+//	dprintf("trying to set enemy set\n");
+	switch(inst.mode)
+	{
+	case 1:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int32)inst.op2;
+		theValue = (int)inst.op3;
+		break;
+	case 3:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)get_variable(int(inst.op2));
+		theValue = (int)inst.op3;
+	case 5:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)inst.op2;
+		theValue = (int)get_variable(int(inst.op3));
+		break;
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		monsterClass = (int16)get_variable(int(inst.op2));
+		theValue = (int)get_variable(int(inst.op3));
+		break;
+	default:
+		dprintf("First argument of Monster_Set_Enemy must be variables\n");
+	return; 
+	}
+	
+//	dprintf("checking enemy %d of monster %d\n", monsterClass, monsterIndex);
+	if(monsterIndex == -1) return;
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(SLOT_IS_USED(theMonster))
+		{
+		if(theValue == 1)
+		{
+			theDef = get_monster_definition_external(theMonster->type);
+//			dprintf("eneminess was %d\n", theDef->enemies & 1<<monsterClass);
+			theDef->enemies = theDef->enemies | 1<<monsterClass;
+			//theDef->friends | FLAG(monsterClass);
+//			dprintf("eneminess is now %d\n", theDef->enemies & 1<<monsterClass);
+			return;
+		}
+		if(theValue == 0)
+		{
+			theDef = get_monster_definition_external(theMonster->type);
+//			dprintf("eneminess was %d\n", theDef->enemies & 1<<monsterClass);
+			theDef->enemies = theDef->enemies & ~(1<<monsterClass);
+//			dprintf("eneminess is now %d\n", theDef->enemies & 1<<monsterClass);
+			return;
+		}
+		dprintf("eneminess value must be 0 or 1\n");
+		}
+
+}
+
+//op1: The monster to edit (this is global for all monsters of this type)
+//op2: The class to make friend or enemy
+//op3: What to make it (true is checked, false is unchecked)
+void s_Monster_Get_Item(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int32 monsterClass;
+//	dprintf("trying enemies\n");
+	switch(inst.mode)
+	{
+	case 3:
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+	default:
+		dprintf("First and second arguments of Monster_Get_Item must be variables\n");
+	return; 
+	}
+
+//	dprintf("checking enemy %d of monster %d\n", monsterClass, monsterIndex);
+	if(monsterIndex == -1) return;
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(SLOT_IS_USED(theMonster))
+		{
+		theDef = get_monster_definition_external(theMonster->type);
+		set_variable((int)inst.op2, theDef->carrying_item_type);
+//		dprintf("enemy was %d\n", theDef->friends & 1<<monsterClass);
+		}
+
+}
+
+//op1: The monster to edit (this is global for all monsters of this type)
+//op2: The class to make friend or enemy
+//op3: What to make it (true is checked, false is unchecked)
+void s_Monster_Set_Item(script_instruction inst)
+{
+	struct monster_data *theMonster;
+	short monsterIndex;
+	struct monster_definition *theDef;
+	int16 itemClass;
+//	dprintf("trying enemies\n");
+	switch(inst.mode)
+	{
+	case 1:
+	case 5:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		itemClass = (int16)inst.op2;
+		break;
+	case 3:
+	case 7:
+		monsterIndex = (short)get_variable(int(inst.op1));
+		itemClass = (int16)get_variable(int(inst.op2));
+		break;
+	default:
+		dprintf("First and last arguments of Monster_Get_Item must be variables\n");
+	return; 
+	}
+
+//	dprintf("checking enemy %d of monster %d\n", monsterClass, monsterIndex);
+	if(monsterIndex == -1) return;
+	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	if(SLOT_IS_USED(theMonster))
+		{
+		theDef = get_monster_definition_external(theMonster->type);
+		theDef->carrying_item_type = itemClass;
+//		dprintf("enemy was %d\n", theDef->friends & 1<<monsterClass);
+		}
+
+
+}
+
+//op1: The monster to edit (this is global for all monsters of this type)
+//op2: The class to make friend or enemy
+//op3: What to make it (true is checked, false is unchecked)
+void s_Monster_Get_Nuke(script_instruction inst)
+{
+}
+
+//op1: The monster to edit (this is global for all monsters of this type)
+//op2: The class to make friend or enemy
+//op3: What to make it (true is checked, false is unchecked)
+void s_Monster_Set_Nuke(script_instruction inst)
+{
+}

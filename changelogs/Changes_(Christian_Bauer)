@@ -1,5 +1,8 @@
 Change log of the SDL version of Aleph One
 
+November 14, 2000
+ - included patches for Pfhortran monster control, contributed by Mark Levin
+
 October 17, 2000
  - added support for version 0 sound files as found in the M2 demo
  - it's no longer possible to bind a key to more than one function or to bind

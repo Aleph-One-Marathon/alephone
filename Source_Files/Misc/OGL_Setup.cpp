@@ -223,14 +223,18 @@ void OGL_LoadImages(int Collection)
 		{
 			// Load the normal image if it has a filename specified for it
 			if (!(TOIter->OptionsData.NormalColors.size() > 1)) throw 0;
+#ifdef mac
 			if (!File.SetToApp()) throw 0;
+#endif
 			if (!File.SetNameWithPath(&TOIter->OptionsData.NormalColors[0])) throw 0;
 			if (!LoadImageFromFile(TOIter->OptionsData.NormalImg,File,ImageLoader_Colors)) throw 0;
 			
 			// Load the normal mask if it has a filename specified for it;
 			// only loaded if an image has been loaded for it
 			if (!(TOIter->OptionsData.NormalMask.size() > 1)) throw 0;
+#ifdef mac
 			if (!File.SetToApp()) throw 0;
+#endif
 			if (!File.SetNameWithPath(&TOIter->OptionsData.NormalMask[0])) throw 0;
 			if (!LoadImageFromFile(TOIter->OptionsData.NormalImg,File,ImageLoader_Opacity)) throw 0;
 		}

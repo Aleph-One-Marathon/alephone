@@ -307,12 +307,18 @@ public:
 	// assumes enough space to hold it if getting (max. 256 bytes)
 	void GetName(char *Name) const;
 	
-	// Sets the file specifier to its current parent directory +
-	// the directories and name in "NameWithPath".
+	// MacOS:
+	//   Sets the file specifier to its current parent directory +
+	//   the directories and name in "NameWithPath".
+	// SDL:
+	//   Looks in all directories in the current data search
+	//   path for a file with the relative path "NameWithPath" and
+	//   sets the file specifier to the full path of the first file
+	//   found.
 	// "NameWithPath" follows Unix-like syntax: <dirname>/<dirname>/<dirname>/filename
 	// A ":" will be translated into a "/" in the MacOS.
 	// Returns whether or not the setting was successful
-	bool SetNameWithPath(char *NameWithPath);
+	bool SetNameWithPath(const char *NameWithPath);
 
 	// These functions take an appropriate one of the typecodes used earlier;
 	// this is to try to cover the cases of both typecode attributes
@@ -402,11 +408,6 @@ private:
 	void SetToPreferencesDir();		// Directory for preferences (per-user)
 	void SetToSavedGamesDir();		// Directory for saved games (per-user)
 	void SetToRecordingsDir();		// Directory for recordings (per-user)
-
-	// Opens a file, looking in all directories in the current search path;
-	// the FileSpecifier must contain a relative path to the file
-	bool OpenRelative(OpenedFile& OFile);
-	bool OpenRelative(OpenedResourceFile& OFile);
 
 	const char *GetPath(void) const {return name.c_str();}
 
