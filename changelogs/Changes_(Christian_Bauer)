@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+October 6, 2000
+ - new default theme, donated by Ian Pitcher
+ - removed MacOS theme (will be available as a separate download)
+
 October 4, 2000
  - the ALEPHONE_DATA environment variable can specify a colon-separated list
    of data directories

@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in 
 
-SUBDIRS = default_theme macos_theme
+SUBDIRS = default_theme
 
 pkgdata_DATA = Fonts
 

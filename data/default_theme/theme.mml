@@ -1,11 +1,12 @@
-<!-- Default Aleph One/SDL GUI theme -->
-<!-- Written in 2000 by Christian Bauer -->
+<!-- This Aleph One/SDL them is an imitation of Marathon Infinity's menu -->
+<!-- The buttons are clearly stolen from Bungie's menu -->
+<!-- Ian Pitcher <ipitcher@technician.org> -->
 
 <marathon>
 <theme>
 
 <!-- Dialog frame -->
-<frame top="8" bottom="8" left="8" right="8">
+<frame top="12" bottom="12" left="12" right="12">
   <image index="0" file="frame_tl.bmp" scale="false"/>
   <image index="1" file="frame_t.bmp" scale="false"/>
   <image index="2" file="frame_tr.bmp" scale="false"/>
@@ -18,56 +19,58 @@
 
 <!-- Dialog background -->
 <background>
-  <color red="0" green="0" blue="0"/>
+  <color red="0.145" green="0.145" blue="0.145"/>
 </background>
 
 <!-- Dialog title -->
 <title>
-  <font id="174" size="18" style="1"/>
-  <color red="0.75" green="0.75" blue="0.75"/>
+  <font id="1400" size="32" style="0"/>
+  <color red="0.85" green="0.85" blue="0.80"/>
 </title>
 
 <!-- Spacer -->
 <spacer height="8"/>
 
 <!-- Button -->
-<button top="0" left="0" right="0" height="20">
-  <font id="174" size="18" style="0"/>
-  <color index="0" red="0.75" green="0" blue="0"/>
-  <color index="1" red="1" green="1" blue="1"/>
-  <!-- no images -->
+<button top="5" left="16" right="16" height="32">
+  <font id="128" size="14" style="0"/>
+  <color index="0" red="0.5" green="0.5" blue="0.5"/>
+  <color index="1" red="0.95" green="0.70" blue="0.28"/>
+  <image index="0" file="button_l.bmp" scale="false"/>
+  <image index="1" file="button_c.bmp" scale="false"/>
+  <image index="2" file="button_r.bmp" scale="false"/>
 </button>
 
 <!-- Label -->
 <label>
-  <font id="221" size="14" style="0"/>
-  <color index="0" red="0.125" green="0.125" blue="1"/>
-  <color index="1" red="0.5" green="0.5" blue="1"/>
+  <font id="128" size="16" style="0"/>
+  <color index="0" red="0.875" green="0.65" blue="0.65"/>
+  <color index="1" red="0.75" green="0.875" blue="0.65"/>
 </label>
 
 <!-- Item -->
-<item space="16">
-  <font id="221" size="14" style="0"/>
-  <color index="0" red="0.25" green="1" blue="0.25"/>
-  <color index="1" red="1" green="1" blue="1"/>
+<item space="10">
+  <font id="128" size="16" style="0"/>
+  <color index="0" red="0.75" green="0.25" blue="0.25"/>
+  <color index="1" red="0.25" green="0.75" blue="0.25"/>
 </item>
 
 <!-- Text message -->
 <message>
-  <font id="174" size="14" style="0"/>
-  <color red="1" green="1" blue="1"/>
+  <font id="1402" size="10" style="0"/>
+  <color red="0.875" green="0.875" blue="0.75"/>
 </message>
 
 <!-- Text entry widget -->
 <text_entry>
-  <font id="221" size="14" style="0"/>
-  <color index="0" red="0.25" green="1" blue="0.25"/>
+  <font id="128" size="16" style="0"/>
+  <color index="0" red="1" green="0.875" blue="0.875"/>
   <color index="1" red="1" green="1" blue="1"/>
-  <color index="2" red="1" green="1" blue="1"/>
+  <color index="2" red="0.875" green="1" blue="0.875"/>
 </text_entry>
 
 <!-- List selection widget -->
-<list top="5" bottom="5" left="5" right="21">
+<list top="10" bottom="12" left="10" right="32">
   <image index="0" file="list_tl.bmp" scale="false"/>
   <image index="1" file="list_t.bmp" scale="false"/>
   <image index="2" file="list_tr.bmp" scale="false"/>
@@ -76,7 +79,7 @@
   <image index="5" file="list_bl.bmp" scale="false"/>
   <image index="6" file="list_b.bmp" scale="false"/>
   <image index="7" file="list_br.bmp" scale="false"/>
-  <trough top="3" right="16" bottom="3" width="13"/>
+  <trough top="6" right="16" bottom="6" width="22"/>
   <thumb>
     <image index="0" file="thumb_t.bmp" scale="false"/>
     <image index="1" file="thumb_tc.bmp" scale="false"/>
@@ -87,7 +90,7 @@
 </list>
 
 <!-- Slider -->
-<slider top="1" left="-3" right="0">
+<slider top="3" left="1" right="1">
   <image index="0" file="slider_l.bmp" scale="false"/>
   <image index="1" file="slider_c.bmp" scale="false"/>
   <image index="2" file="slider_r.bmp" scale="false"/>
