@@ -61,6 +61,10 @@ Jul 9, 2000:
 	this makes it unnecessary to hardcode their ID's. Also, grabbed a display list ID
 	for a text string; this makes it easier to repeat its rendering.
 	Calling OGL_ResetMapFonts() near there -- it resets the font-info cache for the overhead map
+	
+Jul 17, 2000:
+	Reorganized the fog setting a bit; now it's set at the beginning of ecah frame.
+	That ought to make it easier for stuff like Pfhortran to change it.
 */
 
 #include <GL/gl.h>
@@ -271,6 +275,7 @@ static fixed SelfLuminosity;
 
 
 // Self-explanatory :-)
+static bool FogPresent = false;
 static GLfloat FogColor[4] = {0,0,0,0};
 
 
@@ -418,14 +423,9 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 	// Initialize the texture accounting
 	OGL_StartTextures();
 	
-	if (TEST_FLAG(ConfigureData.Flags,OGL_Flag_Fog))
-	{
-		glEnable(GL_FOG);
-		glFogf(GL_FOG_DENSITY,1.0/ConfigureData.FogDepth);
-		MakeFloatColor(ConfigureData.FogColor,FogColor);
-		glFogfv(GL_FOG_COLOR,FogColor);
-	}
-	
+	// Fog status:
+	FogPresent = TEST_FLAG(ConfigureData.Flags,OGL_Flag_Fog);
+		
 	// Convenient function for setting up fonts;
 	// set aside some display lists for them
 	FontDisplayList = glGenLists(256);
@@ -552,6 +552,22 @@ bool OGL_StartMain()
 	else
 		glDisable(GL_DEPTH_TEST);
 	
+	// Moved this test down here for convenience; the overhead map won't have fog,
+	// so be sure to turn it on when leaving the overhead map
+	if (FogPresent)
+	{
+		glEnable(GL_FOG);
+		// Set the fog color appropriately
+		OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
+		MakeFloatColor(ConfigureData.FogColor,FogColor);
+		if (IsInfravisionActive())
+			FindInfravisionVersion(_collection_landscape1+static_world->song_index,FogColor);
+		glFogfv(GL_FOG_COLOR,FogColor);
+		glFogf(GL_FOG_DENSITY,1.0/ConfigureData.FogDepth);
+	}
+	else
+		glDisable(GL_FOG);
+	
 	// Set the color of the void
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	if (TEST_FLAG(ConfigureData.Flags,OGL_Flag_VoidColor))
@@ -562,7 +578,7 @@ bool OGL_StartMain()
 		GLfloat Blue = VoidColor.blue/65535.0;
 		
 		// The color of the void will be the color of fog
-		if (TEST_FLAG(ConfigureData.Flags,OGL_Flag_Fog))
+		if (FogPresent)
 		{
 			Red = FogColor[0];
 			Green = FogColor[1];
@@ -782,17 +798,7 @@ bool OGL_SetView(view_data &View)
 		
 	// Is infravision active?
 	IsInfravisionActive() = (View.shading_mode == _shading_infravision);
-	
-	// Set the fog color appropriately
-	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	if (TEST_FLAG(ConfigureData.Flags,OGL_Flag_Fog))
-	{
-		MakeFloatColor(ConfigureData.FogColor,FogColor);
-		if (IsInfravisionActive())
-			FindInfravisionVersion(_collection_landscape1+static_world->song_index,FogColor);
-		glFogfv(GL_FOG_COLOR,FogColor);
-	}	
-	
+		
 	// Finally...
 	SelfLuminosity = View.maximum_depth_intensity;
 	
@@ -1453,7 +1459,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 {
 	// Check for fog
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	if (TEST_FLAG(ConfigureData.Flags,OGL_Flag_Fog))
+	if (FogPresent)
 	{
 		// Render as fog at infinity
 		glDisable(GL_FOG);
