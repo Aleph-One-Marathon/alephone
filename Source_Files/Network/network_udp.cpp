@@ -50,7 +50,7 @@ static UDPpacket*		sUDPPacketBuffer	= NULL;
 static DDPPacketBuffer		ddpPacketBuffer;
 
 // Keep track of our one sending/receiving socket
-static UDPsocket 		socket			= NULL;
+static UDPsocket 		sSocket			= NULL;
 
 // Keep track of the socket-set the receiving thread uses (so we don't have to allocate/free it in that thread)
 static	SDLNet_SocketSet	sSocketSet		= NULL;
@@ -77,7 +77,7 @@ receive_thread_function(void*) {
             break;
         
         if(theResult > 0) {
-            theResult = SDLNet_UDP_Recv(socket, sUDPPacketBuffer);
+            theResult = SDLNet_UDP_Recv(sSocket, sUDPPacketBuffer);
             if(theResult > 0) {
                 if(take_mytm_mutex()) {
                     ddpPacketBuffer.protocolType	= kPROTOCOL_TYPE;
@@ -144,7 +144,7 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
         // to take a network byte order port, this port number will need to be changed to SDL_SwapBE16(port).
         // Final note: At my suggestion, Sam Lantinga to update the SDL_net documentation to indicate that this is
         // the only place in SDL_net that the port is used in host byte order.  So it will probably stay this way!
-	socket = SDLNet_UDP_Open(network_preferences->game_port);
+	sSocket = SDLNet_UDP_Open(network_preferences->game_port);
 	if (socket == NULL) {
 		SDLNet_FreePacket(sUDPPacketBuffer);
 		sUDPPacketBuffer = NULL;
@@ -195,8 +195,8 @@ OSErr NetDDPCloseSocket(short portNumber)
 		SDLNet_FreePacket(sUDPPacketBuffer);
 		sUDPPacketBuffer = NULL;
 
-		SDLNet_UDP_Close(socket);
-		socket = NULL;
+		SDLNet_UDP_Close(sSocket);
+		sSocket = NULL;
 	}
 	return 0;
 }
@@ -212,7 +212,7 @@ DDPFramePtr NetDDPNewFrame(void)
 	DDPFramePtr frame = (DDPFramePtr)malloc(sizeof(DDPFrame));
 	if (frame) {
 		memset(frame, 0, sizeof(DDPFrame));
-		frame->socket = socket;
+		frame->socket = sSocket;
 	}
 	return frame;
 }
@@ -243,5 +243,5 @@ OSErr NetDDPSendFrame(DDPFramePtr frame, NetAddrBlock *address, short protocolTy
 	memcpy(sUDPPacketBuffer->data, frame->data, frame->data_size);
 	sUDPPacketBuffer->len = frame->data_size;
 	sUDPPacketBuffer->address = *address;
-	return SDLNet_UDP_Send(socket, -1, sUDPPacketBuffer) ? 0 : -1;
+	return SDLNet_UDP_Send(sSocket, -1, sUDPPacketBuffer) ? 0 : -1;
 }
