@@ -123,10 +123,37 @@ static bool snapshot_button_state;
 #define MAX_BUTTONS 3
 static bool snapshot_button_state[MAX_BUTTONS];
 static int snapshot_delta_scrollwheel;
-static MPCriticalRegionID CE_MouseLock;
+static MPCriticalRegionID CE_MouseLock = NULL;
 static int _CE_delta_x, _CE_delta_y, _CE_delta_scrollwheel;
-static EventHandlerUPP _CEMouseTrackerUPP;
-static EventHandlerRef _CEMouseTracker;
+static EventHandlerUPP _CEMouseTrackerUPP = NULL;
+static EventHandlerRef _CEMouseTracker = NULL;
+
+// For getting mouse deltas while doing Classic-mode fallback:
+static Point PrevPosition;
+
+#ifndef __MACH__
+
+// Cribbed from CGDirectDisplay.h
+
+typedef void
+(*CGGetLastMouseDelta_Type)(
+  CGMouseDelta *  deltaX,
+  CGMouseDelta *  deltaY);
+
+typedef CGDisplayErr
+(*CGWarpMouseCursorPosition_Type)
+(CGPoint Point);
+
+CGGetLastMouseDelta_Type CGGetLastMouseDelta_Ptr = NULL;
+
+CGWarpMouseCursorPosition_Type CGWarpMouseCursorPosition_Ptr = NULL;
+
+static void LoadCGMouseFunctions();
+
+#include <CGDirectDisplay.h>
+
+#endif
+
 //#endif
 /* ---------- code */
 
@@ -168,6 +195,12 @@ void enter_mouse(
 	InstallApplicationEventHandler (_CEMouseTrackerUPP,
 		5, mouseEvents, NULL, &_CEMouseTracker);
 	MPCreateCriticalRegion(&CE_MouseLock);
+	
+	// Fallback in case the lock cannot be allocated (possible with Classic):
+	if (!CE_MouseLock)
+		GetGlobalMouse(&PrevPosition);
+	
+	LoadCGMouseFunctions();
 //#endif
 }
 
@@ -222,9 +255,11 @@ void exit_mouse(
 
 //#if defined(TARGET_API_MAC_CARBON)
 	RemoveEventHandler(_CEMouseTracker);
+	_CEMouseTracker = NULL;
 	DisposeEventHandlerUPP(_CEMouseTrackerUPP);
 	_CEMouseTrackerUPP = NULL;
 	MPDeleteCriticalRegion(CE_MouseLock);
+	CE_MouseLock = NULL;
 //#endif
 }
 
@@ -243,7 +278,7 @@ void mouse_idle(
 	static long last_tick_count;
 	long tick_count= TickCount();
 	long ticks_elapsed= tick_count-last_tick_count;
-
+	
 	if(first_run)
 	{
 		ticks_elapsed = 0;
@@ -333,8 +368,23 @@ static void get_mouse_location(
 	}
 	else
 	{
-		where->h = CENTER_MOUSE_X;
-		where->v = CENTER_MOUSE_Y;
+		// where->h = CENTER_MOUSE_X;
+		// where->v = CENTER_MOUSE_Y;
+		// Don't use GetMouse() here -- it does global-to-local,
+		// which makes the mouse position unstable
+		// Fallback in case the lock cannot be allocated (possible with Classic):
+		Point Position;
+		GetGlobalMouse(&Position);
+		
+		// OSX-native code tracks deltas; this code will also
+		short dh = Position.h - PrevPosition.h;
+		short dv = Position.v - PrevPosition.v;
+				
+		where->h = CENTER_MOUSE_X + dh;
+		where->v = CENTER_MOUSE_Y + dv;
+		
+		// Get ready for next round
+		PrevPosition = Position;
 	}
 /*
 #else
@@ -359,6 +409,9 @@ static void set_mouse_location(
 //#if defined(TARGET_API_MAC_CARBON)
 	#ifdef __MACH__
 	CGWarpMouseCursorPosition(CGPointMake(where.h, where.v));
+	#else
+	if (CGWarpMouseCursorPosition_Ptr)
+		CGWarpMouseCursorPosition_Ptr(CGPointMake(where.h, where.v));
 	#endif
 /*
 #else
@@ -392,13 +445,16 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 	OSStatus 		err = eventNotHandledErr;
 	CGMouseDelta 		CGx, CGy;
 	short			game_state;
-//	extern qboolean		background;
+//	extern boolean		background;
 
 	event_kind = GetEventKind(theEvent);
 	event_class = GetEventClass(theEvent);
 	
 	if (nextHandler)
 		err = CallNextEventHandler (nextHandler, theEvent);
+
+	// Just in case this is still being called when it's supposed to be absent...
+	if (!_CEMouseTracker) return err;
 
 	if (err == noErr || err == eventNotHandledErr)
 	{
@@ -444,16 +500,32 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 					CGWarpMouseCursorPosition(CGPointMake(CENTER_MOUSE_X, CENTER_MOUSE_Y));
 					#else
 					// Extract the mouse delta directly from the event record
-					Point Loc;
-					err = GetEventParameter(theEvent,
-						kEventParamMouseDelta, typeQDPoint,
-						NULL, sizeof(Loc), NULL, &Loc);
-					if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationForever)) == noErr)
+					if (CGGetLastMouseDelta_Ptr)
 					{
-						_CE_delta_x = Loc.h;
-						_CE_delta_y = Loc.v;
-						MPExitCriticalRegion(CE_MouseLock);
+						CGGetLastMouseDelta_Ptr(&CGx, &CGy);
+						if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationForever)) == noErr)
+						{
+							_CE_delta_x += CGx;
+							_CE_delta_y += CGy;
+							MPExitCriticalRegion(CE_MouseLock);
+						}
 					}
+					else
+					{
+						// Fallback: get it from the event structure itself
+						Point Loc;
+						err = GetEventParameter(theEvent,
+							kEventParamMouseDelta, typeQDPoint,
+							NULL, sizeof(Loc), NULL, &Loc);
+						if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationForever)) == noErr)
+						{
+							_CE_delta_x = Loc.h;
+							_CE_delta_y = Loc.v;
+							MPExitCriticalRegion(CE_MouseLock);
+						}
+					}
+					if (CGWarpMouseCursorPosition_Ptr)
+						CGWarpMouseCursorPosition_Ptr(CGPointMake(CENTER_MOUSE_X, CENTER_MOUSE_Y));
 					err = noErr;
 					#endif
 					break;
@@ -495,6 +567,16 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 	return err;
 }
 #endif
+
+void LoadCGMouseFunctions()
+{
+	CGWarpMouseCursorPosition_Ptr = (CGWarpMouseCursorPosition_Type)
+		GetSystemFunctionPointer(CFSTR("CGWarpMouseCursorPosition"));
+	
+	CGGetLastMouseDelta_Ptr = (CGGetLastMouseDelta_Type)
+		GetSystemFunctionPointer(CFSTR("CGGetLastMouseDelta"));
+}
+
 
 /*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
