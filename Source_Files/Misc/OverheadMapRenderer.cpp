@@ -396,8 +396,8 @@ void OverheadMapClass::generate_false_automap(
 	automap_polygon_buffer_size= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0))*sizeof(byte);
 
 	/* allocate memory for the old automap memory */
-	saved_automap_lines= (byte *) malloc(automap_line_buffer_size);
-	saved_automap_polygons= (byte *) malloc(automap_polygon_buffer_size);
+	saved_automap_lines= new byte[automap_line_buffer_size];
+	saved_automap_polygons= new byte[automap_polygon_buffer_size];
 
 	if (saved_automap_lines && saved_automap_polygons)
 	{
@@ -425,7 +425,7 @@ void OverheadMapClass::replace_real_automap(
 	{
 		long automap_line_buffer_size= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0))*sizeof(byte);
 		memcpy(automap_lines, saved_automap_lines, automap_line_buffer_size);
-		free(saved_automap_lines);
+		delete []saved_automap_lines;
 		saved_automap_lines= (byte *) NULL;
 	}
 	
@@ -434,7 +434,7 @@ void OverheadMapClass::replace_real_automap(
 		long automap_polygon_buffer_size= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0))*sizeof(byte);
 	
 		memcpy(automap_polygons, saved_automap_polygons, automap_polygon_buffer_size);
-		free(saved_automap_polygons);
+		delete []saved_automap_polygons;
 		saved_automap_polygons= (byte *) NULL;
 	}
 	
