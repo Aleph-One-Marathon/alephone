@@ -841,9 +841,9 @@ void s_Set_Tag_State(script_instruction inst)
 				break;
 		}
 		
-		
-	if (set_tagged_light_statuses(int16(temp), temp2));
-	if (try_and_change_tagged_platform_states(int16(temp), temp2)); 
+	// AlexJLS: needless if statements removed
+	set_tagged_light_statuses(int16(temp), temp2);
+	try_and_change_tagged_platform_states(int16(temp), temp2); 
 	
 	assume_correct_switch_position(_panel_is_tag_switch, int16(temp), temp2);
 	
@@ -2916,12 +2916,12 @@ void s_Monster_Set_Nuke(script_instruction inst)
 }
 
 //Random variable, useful in mazes or something
-//should i use GM_Random?
+//should i use GM_Random? (AlexJLS: Setting of random seed removed)
 void s_Get_Random(script_instruction inst)
 {
 	if (inst.mode != 1)
 		return;
 
-	set_variable(int(inst.op1),(set_random_seed(clock()),global_random()));
+	set_variable(int(inst.op1),global_random());
 
 }
