@@ -287,6 +287,18 @@ enum /* instruction defs */
 	Not = 0x62,
 	
 	Start_Fade = 0x63,
+	
+	Get_Platform_Player_Control = 0x64,
+	
+	Set_Platform_Player_Control = 0x65,
+	
+	Get_Platform_Monster_Control = 0x66,
+	
+	Set_Platform_Monster_Control = 0x67,
+	
+	Get_Platform_Speed = 0x68,
+	
+	Set_Platform_Speed = 0x69,
 		
 	NUMBER_OF_INSTRUCTIONS
 };

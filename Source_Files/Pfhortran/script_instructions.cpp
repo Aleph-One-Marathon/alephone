@@ -274,6 +274,12 @@ void s_Monster_Get_Vitality(script_instruction inst);
 void s_Monster_Set_Vitality(script_instruction inst);
 void s_Not(script_instruction inst);
 void s_Start_Fade(script_instruction inst);
+void s_Set_Platform_Player_Control(script_instruction inst);
+void s_Get_Platform_Player_Control(script_instruction inst);
+void s_Set_Platform_Monster_Control(script_instruction inst);
+void s_Get_Platform_Monster_Control(script_instruction inst);
+void s_Get_Platform_Speed(script_instruction inst);
+void s_Set_Platform_Speed(script_instruction inst);
 
 /*-------------------------------------------*/
 
@@ -415,6 +421,12 @@ void init_instructions(void)
 	instruction_lookup[Monster_Set_Vitality] = s_Monster_Set_Vitality;
 	instruction_lookup[Not] = s_Not;
 	instruction_lookup[Start_Fade] = s_Start_Fade;
+	instruction_lookup[Get_Platform_Player_Control] = s_Set_Platform_Player_Control;
+	instruction_lookup[Set_Platform_Player_Control] = s_Set_Platform_Player_Control;
+	instruction_lookup[Get_Platform_Monster_Control] = s_Get_Platform_Monster_Control;
+	instruction_lookup[Set_Platform_Monster_Control] = s_Set_Platform_Monster_Control;
+	instruction_lookup[Get_Platform_Speed] = s_Get_Platform_Speed;
+	instruction_lookup[Set_Platform_Speed] = s_Set_Platform_Speed;
 }
 
 // Suppressed for MSVC compatibility
@@ -3027,24 +3039,21 @@ void s_Get_Random(script_instruction inst)
 
 void s_Get_Monster_Poly(script_instruction inst)
 {
-	struct monster_data *theMonster;
 	short monster_index;
-	short poly;
 	
-	if (inst.mode != 4)
-		return;
+	if (inst.mode != 4) return;
 	
 	monster_index = get_variable(int(inst.op1));
 	
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+	struct monster_data *theMonster = get_monster_data(monster_index);
+	struct object_data *object= get_object_data(theMonster->object_index);
 	
-	//poly = theMonster->Poly
+	set_variable(int(inst.op2), object->polygon);
 }
 
 void s_Set_Platform_State(script_instruction inst)
 {
 	float polygon_index, state;
-	struct polygon_data *polygon;
 	
 	switch(inst.mode)
 	{
@@ -3071,7 +3080,7 @@ void s_Set_Platform_State(script_instruction inst)
 		default:
 			return;
 	}
-	polygon = get_polygon_data(short(polygon_index));
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
 	if (polygon)
 	{
 		if (polygon->type == _polygon_is_platform)
@@ -3085,7 +3094,6 @@ void s_Set_Platform_State(script_instruction inst)
 void s_Get_Platform_State(script_instruction inst)
 {
 	float polygon_index;
-	struct polygon_data *polygon;
 	
 	polygon_index = inst.op1;
 	
@@ -3103,7 +3111,7 @@ void s_Get_Platform_State(script_instruction inst)
 			return;
 	}
 	
-	polygon = get_polygon_data(short(polygon_index));
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
 	if (polygon)
 	{
 		if (polygon->type == _polygon_is_platform)
@@ -3151,7 +3159,6 @@ void s_Play_Sound(script_instruction inst)
 void s_Set_Light_State(script_instruction inst)
 {
 	float light_index, state;
-	bool WasChanged = false;
 	
 	switch(inst.mode)
 	{
@@ -3177,8 +3184,9 @@ void s_Set_Light_State(script_instruction inst)
 		
 		default:
 			return;
-	}	
-	WasChanged = set_light_status(short(light_index), state ? 1 : 0);
+	}
+	bool WasChanged = set_light_status(short(light_index), state ? 1 : 0);
+	assume_correct_switch_position(_panel_is_light_switch, short(light_index), state ? 1 : 0);
 }
 
 void s_Get_Light_State(script_instruction inst)
@@ -3203,7 +3211,8 @@ void s_Get_Light_State(script_instruction inst)
 
 void s_Get_Player_Poly(script_instruction inst)
 {
-	set_variable(int(inst.op1), local_player->supporting_polygon_index);
+	if (inst.mode == 1)
+		set_variable(int(inst.op1), local_player->supporting_polygon_index);
 }
 
 // LP: adding this stuff for "EE"
@@ -3215,7 +3224,7 @@ void s_Get_Fog_Presence(script_instruction inst)
 
 void s_Set_Fog_Presence(script_instruction inst)
 {
-	float temp = 0;
+	float temp;
 
 	switch(inst.mode)
 	{		
@@ -3226,6 +3235,9 @@ void s_Set_Fog_Presence(script_instruction inst)
 	case 1:
 		temp = get_variable(int(inst.op1));
 		break;
+		
+	default:
+		return;
 	}
 	
 	OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent = (temp != 0);
@@ -3238,7 +3250,7 @@ void s_Get_UnderFog_Presence(script_instruction inst)
 
 void s_Set_UnderFog_Presence(script_instruction inst)
 {
-	float temp = 0;
+	float temp;
 
 	switch(inst.mode)
 	{
@@ -3249,6 +3261,9 @@ void s_Set_UnderFog_Presence(script_instruction inst)
 	case 1:
 		temp = get_variable(int(inst.op1));
 		break;
+		
+	default:
+		return;
 	}
 	
 	OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent = (temp != 0);
@@ -3258,18 +3273,30 @@ void s_Remove_Item(script_instruction inst)
 {
 	// op1 : item index
 	
-	if (inst.mode != 1) return;
+	short item_type;
 	
-	short Item_Type = short(get_variable(int(inst.op1)));
+	switch (inst.mode)
+	{
+		case 0:
+			item_type = short(inst.op1);
+			break;
+		
+		case 1:
+			item_type = get_variable(short(inst.op1));
+			break;
+			
+		default:
+			return;
+	}
 	
-	struct item_definition *definition= get_item_definition_external(Item_Type);
+	struct item_definition *definition= get_item_definition_external(item_type);
 	
 	if (definition)
 	{
-		if(local_player->items[Item_Type] >= 1 && definition->item_kind==_ammunition)
-			local_player->items[Item_Type]--;		/* Decrement your count.. */
+		if(local_player->items[item_type] >= 1 && definition->item_kind==_ammunition)
+			local_player->items[item_type]--;		/* Decrement your count.. */
 		
-		mark_player_inventory_as_dirty(local_player_index, Item_Type);
+		mark_player_inventory_as_dirty(local_player_index,item_type);
 	}
 }
 
@@ -3277,7 +3304,6 @@ void s_Player_Control(script_instruction inst)
 {
 	// op1 : move type
 	// op2 : how many times
-	uint32 action_flags = -1;
 	int move_type = -1;
 	int value = 0;
 	
@@ -3294,8 +3320,9 @@ void s_Player_Control(script_instruction inst)
 			break;
 			
 		default:
-			break;
+			return;
 	}
+	uint32 action_flags = -1;
 	
 	if (sPfhortranActionQueues == NULL)
 	{
@@ -3439,6 +3466,9 @@ void s_Display_Message(script_instruction inst)
 			op2 = get_variable(inst.op2);
 			op3 = get_variable(inst.op3);
 			break;
+			
+		default:
+			return;
 	}
 	
 	screen_printf("%hd: %f %f %f",inst.mode,op1,op2,op3);
@@ -3447,7 +3477,6 @@ void s_Display_Message(script_instruction inst)
 void s_Monster_Get_Action(script_instruction inst)
 {
 	short monster_index;
-	struct monster_data *theMonster;
 	
 	switch(inst.mode)
 	{
@@ -3465,15 +3494,14 @@ void s_Monster_Get_Action(script_instruction inst)
 	}
 	
 	
-	theMonster = get_monster_data(monster_index);
-	if (theMonster)
+	struct monster_data *theMonster = get_monster_data(monster_index);
+	if (theMonster && SLOT_IS_USED(theMonster))
 		set_variable(int(inst.op2), theMonster->action);
 }
 
 void s_Monster_Get_Mode(script_instruction inst)
 {
 	short monster_index;
-	struct monster_data *theMonster;
 	
 	switch(inst.mode)
 	{
@@ -3490,15 +3518,14 @@ void s_Monster_Get_Mode(script_instruction inst)
 			return;
 	}
 	
-	theMonster = get_monster_data(monster_index);
-	if (theMonster)
+	struct monster_data *theMonster = get_monster_data(monster_index);
+	if (theMonster && SLOT_IS_USED(theMonster))
 		set_variable(int(inst.op2), theMonster->mode);
 }
 
 void s_Monster_Get_Vitality(script_instruction inst)
 {
 	short monster_index;
-	struct monster_data *theMonster;
 	
 	switch(inst.mode)
 	{
@@ -3515,15 +3542,14 @@ void s_Monster_Get_Vitality(script_instruction inst)
 			return;
 	}
 	
-	theMonster = get_monster_data(monster_index);
-	if (theMonster)
+	struct monster_data *theMonster = get_monster_data(monster_index);
+	if (theMonster && SLOT_IS_USED(theMonster))
 		set_variable(int(inst.op2), theMonster->vitality);
 }
 
 void s_Monster_Set_Vitality(script_instruction inst)
 {
 	short monster_index;
-	struct monster_data *theMonster;
 	short vitality;
 	
 	switch(inst.mode)
@@ -3553,8 +3579,8 @@ void s_Monster_Set_Vitality(script_instruction inst)
 			return;
 	}
 	
-	theMonster = get_monster_data(monster_index);
-	if (theMonster)
+	struct monster_data *theMonster = get_monster_data(monster_index);
+	if (theMonster && SLOT_IS_USED(theMonster))
 		theMonster->vitality = vitality;	
 }
 
@@ -3582,4 +3608,232 @@ void s_Start_Fade(script_instruction inst)
 	}
 	
 	start_fade(fade_index);
+}
+
+
+void s_Set_Platform_Player_Control(script_instruction inst)
+{
+	int polygon_index, state;
+	
+	switch(inst.mode)
+	{
+		case 0:
+			polygon_index = int(inst.op1);
+			state = int(inst.op2);
+			break;
+			
+		case 1:
+			polygon_index = get_variable(int(inst.op1));
+			state = int(inst.op2);
+			break;
+			
+		case 2:
+			polygon_index = int(inst.op1);
+			state = get_variable(int(inst.op2));
+			break;
+			
+		case 3:
+			polygon_index = get_variable(int(inst.op1));
+			state = get_variable(int(inst.op2));
+			break;
+			
+		default:
+			return;
+	}
+	
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		if (polygon->type == _polygon_is_platform)
+		{
+			struct platform_data *platform = get_platform_data(polygon->permutation);
+			if (platform)
+				SET_PLATFORM_IS_PLAYER_CONTROLLABLE(platform, state);
+		}
+	}
+}
+
+void s_Get_Platform_Player_Control(script_instruction inst)
+{
+	int polygon_index;
+	
+	switch(inst.mode)
+	{
+		case 2:
+			polygon_index = int(inst.op1);
+			break;
+			
+		case 3:
+			polygon_index = get_variable(int(inst.op1));
+			break;
+			
+		default:
+			return;
+		
+	}
+	
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		if (polygon->type == _polygon_is_platform)
+		{
+			struct platform_data *platform = get_platform_data(polygon->permutation);
+			if (platform)
+				set_variable(int(inst.op1), PLATFORM_IS_PLAYER_CONTROLLABLE(platform) ? 1 : 0);
+		}
+	}
+}
+
+void s_Set_Platform_Monster_Control(script_instruction inst)
+{
+	int polygon_index, state;
+	
+	switch(inst.mode)
+	{
+		case 0:
+			polygon_index = int(inst.op1);
+			state = int(inst.op2);
+			break;
+			
+		case 1:
+			polygon_index = get_variable(int(inst.op1));
+			state = int(inst.op2);
+			break;
+			
+		case 2:
+			polygon_index = int(inst.op1);
+			state = get_variable(int(inst.op2));
+			break;
+			
+		case 3:
+			polygon_index = get_variable(int(inst.op1));
+			state = get_variable(int(inst.op2));
+			break;
+			
+		default:
+			return;
+		
+	}
+	
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		if (polygon->type == _polygon_is_platform)
+		{
+			struct platform_data *platform = get_platform_data(polygon->permutation);
+			if (platform)
+				SET_PLATFORM_IS_MONSTER_CONTROLLABLE(platform, state);
+		}
+	}
+}
+
+void s_Get_Platform_Monster_Control(script_instruction inst)
+{
+	int polygon_index, state;
+	struct polygon_data *polygon;
+	struct platform_data *platform;
+	
+	switch(inst.mode)
+	{
+		case 2:
+			polygon_index = int(inst.op1);
+			break;
+			
+		case 3:
+			polygon_index = get_variable(int(inst.op1));
+			break;
+			
+		default:
+			return;
+		
+	}
+	
+	polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		if (polygon->type == _polygon_is_platform)
+		{
+			platform = get_platform_data(polygon->permutation);
+			if (platform)
+			{
+				set_variable(int(inst.op1), PLATFORM_IS_MONSTER_CONTROLLABLE(platform) ? 1 : 0);
+			}
+		}
+	}
+}
+
+void s_Get_Platform_Speed(script_instruction inst)
+{
+	int polygon_index;
+	int16 speed;
+	
+	switch(inst.mode)
+	{
+		case 2:
+			polygon_index = int(inst.op1);
+			break;
+			
+		case 3:
+			polygon_index = get_variable(int(inst.op1));
+			break;
+			
+		default:
+			return;
+		
+	}
+	
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		if (polygon->type == _polygon_is_platform)
+		{
+			struct platform_data *platform = get_platform_data(polygon->permutation);
+			if (platform)
+				set_variable(int(inst.op1), float(platform->speed));
+		}
+	}
+}
+
+void s_Set_Platform_Speed(script_instruction inst)
+{
+	int polygon_index;
+	int16 speed;
+	
+	switch(inst.mode)
+	{
+		case 0:
+			polygon_index = int(inst.op1);
+			speed = int16(inst.op2);
+			break;
+			
+		case 1:
+			polygon_index = get_variable(int(inst.op1));
+			speed = int16(inst.op2);
+			break;
+			
+		case 2:
+			polygon_index = int(inst.op1);
+			speed = get_variable(int16(inst.op2));
+			break;
+			
+		case 3:
+			polygon_index = get_variable(int(inst.op1));
+			speed = get_variable(int16(inst.op2));
+			break;
+			
+		default:
+			return;
+		
+	}
+	
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		if (polygon->type == _polygon_is_platform)
+		{
+			struct platform_data *platform = get_platform_data(polygon->permutation);
+			if (platform)
+				platform->speed = speed;
+		}
+	}
 }
