@@ -67,6 +67,9 @@ Dec 31, 2000 (Loren Petrich):
 Jan 6, 2001 (Loren Petrich):
 	Added modification of guided-projectile patch from AlexJLS@aol.com;
 	one can now shoot guided missiles.
+
+Feb 1, 2001 (Loren Petrich):
+	Added fix for firing-animation wraparound; prevent_wrap is true for those animations also.
 */
 
 #include "cseries.h"
@@ -1381,6 +1384,7 @@ bool get_weapon_display_information(
 				/* setup the positioning information */
 				high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 					shape_index));
+				
 				// LP: bug out if there is no weapon sequence to render
 				if (!high_level_data) return false;
 				if (!(frame>=0 && frame<high_level_data->frames_per_view)) return false;
@@ -1391,7 +1395,7 @@ bool get_weapon_display_information(
 					which_trigger, weapon->triggers[which_trigger].state, *count, 
 					weapon->triggers[which_trigger].phase));
 				*/
-
+				
 				data->collection= BUILD_COLLECTION(definition->collection, 0);
 				data->low_level_shape_index= high_level_data->low_level_shape_indexes[frame];
 				data->vertical_positioning_mode= _position_center;
@@ -3209,6 +3213,7 @@ static void update_automatic_sequence(
 				short frame;
 		
 				frame= GET_SEQUENCE_FRAME(trigger->sequence);
+				
 				if(++frame>=high_level_data->frames_per_view)
 				{
 					frame= 0;
@@ -3302,6 +3307,7 @@ static void update_sequence(
 	{
 		case _weapon_firing:
 		case _weapon_recovering:
+			prevent_wrap = true;	// These animations should not repeat
 			if(which_trigger==_primary_weapon && (definition->flags & _weapon_is_automatic)
 				|| (which_trigger==_secondary_weapon && (definition->flags & _weapon_is_automatic) && (definition->flags & _weapon_secondary_has_angular_flipping)))
 			{
@@ -3372,8 +3378,12 @@ static void update_sequence(
 				if(prevent_wrap)
 				{
 					frame--;
+					frame = MAX(frame,0);
+					/*
+					frame--;
 					assert(trigger->phase==1);
 					assert(frame>=0);
+					*/
 				} else {
 					frame= 0;
 				}
