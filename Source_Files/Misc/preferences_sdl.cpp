@@ -85,9 +85,11 @@ void handle_preferences(void)
 	write_preferences();
 
 	// Load sensible palette
-	struct color_table *system_colors = build_8bit_system_color_table();
-	assert_world_color_table(system_colors, system_colors);
-	delete system_colors;
+	if (SDL_GetVideoSurface()->format->BitsPerPixel == 8) {
+		struct color_table *system_colors = build_8bit_system_color_table();
+		assert_world_color_table(system_colors, system_colors);
+		delete system_colors;
+	}
 
 	// Create top-level dialog
 	dialog d;

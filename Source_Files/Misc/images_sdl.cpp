@@ -164,7 +164,7 @@ static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int 
 					uncompress_rle32(src, row_bytes, dst, dst_pitch, height);
 					break;
 				default:
-					fprintf(stderr, "Unimplemented packing type %d in PICT resource\n", pack_type);
+					fprintf(stderr, "Unimplemented packing type %d (depth %d) in PICT resource\n", pack_type, depth);
 					break;
 			}
 		}
