@@ -44,7 +44,39 @@ char *GetVertIndxSet(char *Buffer, short& Presence,
 char *GetVertIndx(char *Buffer, bool& WasFound, short& Val, bool& HitEnd);
 
 
+// The purpose of the sorting is to find all the unique index sets;
+// this is some data for the STL sorter
+struct IndexedVertListCompare
+{
+	short *VertIndxSets;
+	
+	// The comparison operation
+	bool operator() (int i1, int i2)
+	{
+		short *VISet1 = VertIndxSets + 4*i1;
+		short *VISet2 = VertIndxSets + 4*i2;
+		
+		// Sort by position first, then texture coordinate, then normal
+		
+		if (VISet1[1] > VISet2[1])
+			return false;
+		else if (VISet1[1] < VISet2[1])
+			return true;
+		
+		if (VISet1[2] > VISet2[2])
+			return false;
+		else if (VISet1[2] < VISet2[2])
+			return true;
+		
+		if (VISet1[3] > VISet2[3])
+			return false;
+		else if (VISet1[3] < VISet2[3])
+			return true;
 
+		// All equal!
+		return true;
+	}
+};
 
 
 void SetDebugOutput_Wavefront(FILE *DebugOutput)
@@ -146,32 +178,32 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		char *RestOfLine = NULL;
 		if (RestOfLine = CompareToKeyword("v")) // Vertex position
 		{
-			GLfloat Vertex[Model3D::VertexDim];
-			objlist_clear(Vertex,Model3D::VertexDim);
+			GLfloat Vertex[3];
+			objlist_clear(Vertex,3);
 			
 			sscanf(RestOfLine," %f %f %f",Vertex,Vertex+1,Vertex+2);
 			
-			for (int k=0; k<Model3D::VertexDim; k++)
+			for (int k=0; k<3; k++)
 				Positions.push_back(Vertex[k]);
 		}
 		else if (RestOfLine = CompareToKeyword("vt")) // Vertex texture coordinate
 		{
-			GLfloat TxtrCoord[Model3D::TxtrCoordDim];
-			objlist_clear(TxtrCoord,Model3D::TxtrCoordDim);
+			GLfloat TxtrCoord[2];
+			objlist_clear(TxtrCoord,2);
 			
 			sscanf(RestOfLine," %f %f",TxtrCoord,TxtrCoord+1);
 			
-			for (int k=0; k<Model3D::TxtrCoordDim; k++)
+			for (int k=0; k<2; k++)
 				TxtrCoords.push_back(TxtrCoord[k]);
 		}
 		else if (RestOfLine = CompareToKeyword("vn")) // Vertex normal
 		{
-			GLfloat Normal[Model3D::NormalDim];
-			objlist_clear(Normal,Model3D::NormalDim);
+			GLfloat Normal[3];
+			objlist_clear(Normal,3);
 			
 			sscanf(RestOfLine," %f %f %f",Normal,Normal+1,Normal+2);
 			
-			for (int k=0; k<Model3D::NormalDim; k++)
+			for (int k=0; k<3; k++)
 				Normals.push_back(Normal[k]);
 		}
 		/*
@@ -343,6 +375,12 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		*/
 	}
 	
+	if (PolygonSizes.size() <= 0)
+	{
+		if (DBOut) fprintf(DBOut,"ERROR: the model has no polygons\n");
+		return false;
+	}
+		
 	// How many vertices do the polygons have?
 	bool AllPolygonsGood = true;
 	
@@ -413,10 +451,88 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	if (!AllInRange) return false;
 	
 	// Find unique vertex sets:
+	
+	// First, do an index sort of them
 	vector<int> VertIndxRefs(VertIndxSets.size()/4);
+	for (int k=0; k<VertIndxRefs.size(); k++)
+		VertIndxRefs[k] = k;
 	
+	IndexedVertListCompare Compare;
+	Compare.VertIndxSets = &VertIndxSets[0];
+	sort(VertIndxRefs.begin(),VertIndxRefs.end(),Compare);
 	
-	qsort();
+	// Find the unique entries:
+	vector<int> WhichUniqueSet(VertIndxRefs.size());
+	
+	// Previous index values:
+	short PrevPosIndx = -1, PrevTCIndx = -1, PrevNormIndx = -1;
+	// For doing zero-based indexing
+	int NumUnique = -1;
+	
+	// Scan the vertices in index-sort order:
+	for (int k=0; k<VertIndxRefs.size(); k++)
+	{
+		int n = VertIndxRefs[k];
+		
+		short *VISet = &VertIndxSets[4*n];
+		short PosIndx = VISet[1];
+		short TCIndx = VISet[2];
+		short NormIndx = VISet[3];
+		
+		if (PosIndx == PrevPosIndx && TCIndx == PrevTCIndx && NormIndx == PrevNormIndx)
+		{
+			WhichUniqueSet[n] = NumUnique;
+			continue;
+		}
+		
+		// Found a unique set
+		WhichUniqueSet[n] = ++NumUnique;
+		
+		// Load the positions
+		{
+			GLfloat *PosPtr = &Positions[3*PosIndx];
+			for (int m=0; m<3; m++)
+				Model.Positions.push_back(*(PosPtr++));
+		}
+		
+		// Load the texture coordinates
+		if (WhatsPresent & Present_TxtrCoord)
+		{
+			GLfloat *TCPtr = &Positions[2*TCIndx];
+			for (int m=0; m<2; m++)
+				TxtrCoords.push_back(*(TCPtr++));
+		}
+		
+		// Load the normals
+		if (WhatsPresent & Present_Normal)
+		{
+			GLfloat *NormPtr = &Positions[3*NormIndx];
+			for (int m=0; m<3; m++)
+				Normals.push_back(*(NormPtr++));
+		}
+		
+		// Save these new unique-set values for comparison to the next ones
+		PrevPosIndx = PosIndx;
+		PrevTCIndx = TCIndx;
+		PrevNormIndx = NormIndx;
+	}
+	
+	// Decompose the polygons into triangles by turning them into fans
+	int IndxBase = 0;
+	for (int k=0; k<PolygonSizes.size(); k++)
+	{
+		short PolySize = PolygonSizes[k];
+		int *PolyIndices = &WhichUniqueSet[IndxBase];
+		
+		for (int m=0; m<PolySize-2; m++)
+		{
+			Model.VertIndices.push_back(PolyIndices[0]);
+			Model.VertIndices.push_back(PolyIndices[m+1]);
+			Model.VertIndices.push_back(PolyIndices[m+2]);
+		}
+		
+		IndxBase += PolySize;
+	}
 	
 	if (DBOut) fprintf(DBOut,"Successfully read the file\n");
 	return true;

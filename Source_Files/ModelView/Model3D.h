@@ -16,11 +16,9 @@ using namespace std;
 struct Model3D
 {
 	// Assumed dimensions:
-	enum {
-		VertexDim = 3,
-		TxtrCoordDim = 2,
-		NormalDim = 3
-	};
+	// Positions: 3
+	// Texture coordinates: 2
+	// Normals: 3
 	
 	// Positions assumed to be 3-dimensional
 	vector<GLfloat> Positions;
@@ -41,8 +39,17 @@ struct Model3D
 	GLushort *VIBase() {return &VertIndices[0];}
 	int NumVI() {return VertIndices.size();}
 	
+	// Bounding box (0 = min, 1 = max)
+	GLfloat BoundingBox[2][3];
+	
+	// From the position data
+	void SetBoundingBox();
+	
 	// Erase everything
-	void Clear() {Positions.clear(); TxtrCoords.clear(); Normals.clear(); VertIndices.clear();}
+	void Clear();
+	
+	// Constructor
+	Model3D() {SetBoundingBox();}
 };
 
 

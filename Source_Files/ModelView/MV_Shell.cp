@@ -4,10 +4,12 @@
 	in order to test model-reading code
 */
 
+#include <math.h>
 #include <string.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+#include "cseries.h"
 #include "FileHandler.h"
 #include "WavefrontLoader.h"
 
@@ -69,6 +71,14 @@ void global_idle_proc() {} // Do nothing
 
 
 
+// GLUT window ID in case there is more than one GLUT window;
+// however, Apple GLUT does not like more than one such window,
+// so this program will be one-window-only for now.
+int MainWindowID;
+
+void ResizeMainWindow(int _Width, int _Height);
+
+
 // Model and skin objects:
 Model3D Model;
 
@@ -93,6 +103,15 @@ void LoadModelAction(int ModelType)
 			LoadModel_Wavefront(File, Model);
 		break;	
 	}
+	
+	glutSetWindow(MainWindowID);
+	char Name[256];
+	File.GetName(Name);
+	glutSetWindowTitle(Name);
+	
+	// Force the main window to use the model's bounding box
+	Model.SetBoundingBox();
+	ResizeMainWindow(glutGet(GLUT_WINDOW_WIDTH),glutGet(GLUT_WINDOW_HEIGHT));
 }
 
 
@@ -102,9 +121,9 @@ void LoadSkin()
 }
 
 
-// In case there is more than one GLUT window;
-// however, Apple GLUT does not like more than one such window.
-int MainWindowID;
+// Vertex false colors
+static vector<GLfloat> Colors;
+
 
 // Callback for drawing that window
 void DrawMainWindow()
@@ -112,25 +131,128 @@ void DrawMainWindow()
 	// No smearing allowed!
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
+	// Render the model
+	if (!Model.Positions.empty())
+	{
+		// In the absence of a skin...
+		const GLfloat FalseColors[12][3] =
+		{
+			{  1,   0,   0},
+			{  1, 0.5,   0},
+			{  1,   1,   0},
+			
+			{0.5,   1,   0},
+			{  0,   1,   0},
+			{  0,   1, 0.5},
+			
+			{  0,   1,   1},
+			{  0, 0.5,   1},
+			{  0,   0,   1},
+			
+			{0.5,   0,   1},
+			{  1,   0,   1},
+			{  1,   0, 0.5}
+		};
+		int NumColors = 3*(Model.Positions.size()/3);
+		if (Colors.size() != 3*NumColors)
+			Colors.resize(3*NumColors);
+		for (int k=0; k<NumColors; k++)
+			memcpy(&Colors[3*k],FalseColors[k%12],3*sizeof(GLfloat));
+		
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CW);
+		glAlphaFunc(GL_GREATER,0.5);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_COLOR_ARRAY);
+		glVertexPointer(3,GL_FLOAT,0,Model.PosBase());
+		glColorPointer(3,GL_FLOAT,0,&Colors[0]);
+		glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,Model.VIBase());
+	}
+	
 	// All done -- ready to show	
 	glutSwapBuffers();
 }
 
 void ResizeMainWindow(int _Width, int _Height)
 {
-
+	if (!Model.Positions.empty())
+	{
+		// For getting the aspect ratio straight
+		int MinDim = MAX(MIN(_Width,_Height),1);
+		
+		// Bounding-box "radius"	
+		GLfloat BBRadius = 0;
+		for (int m=0; m<3; m++)
+		{
+			BBRadius = MAX(BBRadius,-Model.BoundingBox[0][m]);
+			BBRadius = MAX(BBRadius,Model.BoundingBox[1][m]);
+		}
+		
+		GLfloat XDim = BBRadius*_Width/MinDim;
+		GLfloat YDim = BBRadius*_Height/MinDim;
+		GLfloat ZDim = BBRadius;
+		
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(-XDim,XDim,-YDim,YDim,-ZDim,ZDim);
+		glutPostRedisplay();
+		// glTranslatef(0.6*BBRadius,0.3*BBRadius,0);
+	}
 }
 
 const char ESCAPE = 0x1b;
 
 void KeyInMainWindow(unsigned char key, int x, int y)
 {
-
+	const GLfloat RotationAngle = 22.5;
+	
+	switch(key)
+	{
+		case '6':
+			glMatrixMode(GL_MODELVIEW);
+			glRotatef(RotationAngle,0,1,0);
+			glutPostRedisplay();
+			break;
+		
+		case '4':
+			glMatrixMode(GL_MODELVIEW);
+			glRotatef(-RotationAngle,0,1,0);
+			glutPostRedisplay();
+			break;
+		
+		case '8':
+			glMatrixMode(GL_MODELVIEW);
+			glRotatef(RotationAngle,1,0,0);
+			glutPostRedisplay();
+			break;
+		
+		case '2':
+			glMatrixMode(GL_MODELVIEW);
+			glRotatef(-RotationAngle,1,0,0);
+			glutPostRedisplay();
+			break;
+		
+		case '9':
+			glMatrixMode(GL_MODELVIEW);
+			glRotatef(RotationAngle,0,0,1);
+			glutPostRedisplay();
+			break;
+		
+		case '7':
+			glMatrixMode(GL_MODELVIEW);
+			glRotatef(-RotationAngle,0,0,1);
+			glutPostRedisplay();
+			break;
+		
+	}
 }
 
 void SpecialInMainWindow(int key, int x, int y)
 {
-
+	// For now, do nothing
 }
 
 
@@ -245,7 +367,7 @@ int main(int argc, char **argv)
 	SetBackgroundColor();
 	
 	// Actually create that window
-	MainWindowID = glutCreateWindow("Aleph One Model Viewer");
+	MainWindowID = glutCreateWindow("Pfhormz");
 	
 	// Set its main callbacks
 	glutDisplayFunc(DrawMainWindow);
