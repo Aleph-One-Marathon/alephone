@@ -478,6 +478,10 @@ void set_indexed_directory_offset_and_length(
 	data_offset= calculate_directory_offset(header, index) - header->directory_offset;
 
 	data_ptr+= data_offset;
+	
+	// LP: eliminating this dangerous sort of casting;
+	// should work correctly for wadfiles with size more than 1
+	/*
 	entry= (struct directory_entry *) data_ptr;
 	
 	entry->length= length;
@@ -487,19 +491,27 @@ void set_indexed_directory_offset_and_length(
 	{
 		entry->index= wad_index;
 	}
+	*/
 	
 	// LP: should be correct for packing also
 	if (header->version>=WADFILE_SUPPORTS_OVERLAYS)
 	{
-		uint8 buffer[SIZEOF_directory_entry];
-		memcpy(buffer,data_ptr,SIZEOF_directory_entry);
-		unpack_directory_entry(buffer,(directory_entry *)data_ptr,1);
+		directory_entry Entry;
+		
+		Entry.length = length;
+		Entry.offset_to_start = offset;
+		Entry.index = wad_index;
+		
+		pack_directory_entry(data_ptr, &Entry, 1);
 	}
 	else
 	{
-		uint8 buffer[SIZEOF_old_directory_entry];
-		memcpy(buffer,data_ptr,SIZEOF_old_directory_entry);
-		unpack_old_directory_entry(buffer,(old_directory_entry *)data_ptr,1);
+		old_directory_entry Entry;
+		
+		Entry.length = length;
+		Entry.offset_to_start = offset;
+		
+		pack_old_directory_entry(data_ptr, &Entry, 1);
 	}
 }
 
