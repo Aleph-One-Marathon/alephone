@@ -60,6 +60,9 @@ Oct 19, 2000 (Loren Petrich):
 
 Dec 24, 2000 (Loren Petrich):
 	Added support for idle-weapon animations
+
+Dec 31, 2000 (Loren Petrich):
+	Turned a remaining out-of-range assert into a no-render
 */
 
 #include "cseries.h"
@@ -1376,11 +1379,14 @@ bool get_weapon_display_information(
 					shape_index));
 				// LP: bug out if there is no weapon sequence to render
 				if (!high_level_data) return false;
+				if (!(frame>=0 && frame<high_level_data->frames_per_view)) return false;
+				/*
 				vassert(frame>=0 && frame<high_level_data->frames_per_view,
 					csprintf(temporary, "frame: %d max: %d trigger: %d state: %d count: %d phase: %d", 
 					frame, high_level_data->frames_per_view,
 					which_trigger, weapon->triggers[which_trigger].state, *count, 
 					weapon->triggers[which_trigger].phase));
+				*/
 
 				data->collection= BUILD_COLLECTION(definition->collection, 0);
 				data->low_level_shape_index= high_level_data->low_level_shape_indexes[frame];
