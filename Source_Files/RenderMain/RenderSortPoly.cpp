@@ -312,7 +312,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				if (j!=NONE) /* if the endpoint was not a duplicate */
 				{
 					/* expand the array, if necessary, and add the new endpoint */
-					size_t Length = AccumulatedEndpointClips.size();
+					int Length = AccumulatedEndpointClips.size();
 					AccumulatedEndpointClips.push_back(NULL);
 					assert(AccumulatedEndpointClips.size() <= 32767);		// Originally a short value
 					if (j!=Length) memmove(&AccumulatedEndpointClips[j+1], &AccumulatedEndpointClips[j],
