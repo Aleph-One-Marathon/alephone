@@ -1237,6 +1237,7 @@ void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
 		
 	case iFORCE_UNIQUE_TEAMS:
 		SetControlActivity(Data.PlayerTeamCtrl, GetControl32BitValue(Ctrl.Ctrl));
+		break;
 
 	case iGAME_TYPE:
 		{
