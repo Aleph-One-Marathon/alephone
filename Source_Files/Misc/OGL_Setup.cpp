@@ -176,10 +176,29 @@ struct TextureOptionsEntry
 // to speed up searching
 static vector<TextureOptionsEntry> TOList[NUMBER_OF_COLLECTIONS];
 
+// Texture-options hash table for extra-fast searching;
+// the top bit of the hashtable index is set if some specific CLUT had been matched to.
+// If it is clear, then an ALL_CLUTS texture-options entry had been used.
+// This is OK because the maximum reasonable number of texture-option entries per collection
+// is around 10*256 or 2560, much less than 32K.
+const int16 Specific_CLUT_Flag = 0x8000;
+static vector<int16> TOHash[NUMBER_OF_COLLECTIONS];
+
+// Hash-table size and function
+const int TOHashSize = 1 << 8;
+const int TOHashMask = TOHashSize - 1;
+inline uint8 TOHashFunc(short CLUT, short Bitmap)
+{
+	// This function will avoid collisions when accessing bitmaps with close indices
+	return (uint8)((CLUT << 4) ^ Bitmap);
+}
+
+
 // Deletes a collection's texture-options sequences
 static void TODelete(int c)
 {
 	TOList[c].clear();
+	TOHash[c].clear();
 }
 
 // Deletes all of them
@@ -188,18 +207,50 @@ static void TODeleteAll()
 	for (int c=0; c<NUMBER_OF_COLLECTIONS; c++) TODelete(c);
 }
 
-
 OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bitmap)
 {
 	// Silhouette textures always have the default
 	if (CLUT == SILHOUETTE_BITMAP_SET) return &DefaultTextureOptions;
 	
-	vector<TextureOptionsEntry>& TOL = TOList[Collection];
-	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
+	// Initialize the hash table if necessary
+	if (TOHash[Collection].empty())
 	{
-		if (TOIter->CLUT == CLUT || TOIter->CLUT == ALL_CLUTS)
+		TOHash[Collection].resize(TOHashSize);
+		objlist_set(&TOHash[Collection][0],NONE,TOHashSize);
+	}
+	
+	// Set up a *reference* to the appropriate hashtable entry
+	int16& HashVal = TOHash[Collection][TOHashFunc(CLUT,Bitmap)];
+	
+	// Check to see if the texture-option entry is correct;
+	// if it is, then we're done.
+	// Be sure to blank out the specific-CLUT flag when indexing the texture-options list with the hash value.
+	if (HashVal != NONE)
+	{
+		vector<TextureOptionsEntry>::iterator TOIter = TOList[Collection].begin() + (HashVal & ~Specific_CLUT_Flag);
+		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
+		bool Hash_SCS = (TEST_FLAG(HashVal,Specific_CLUT_Flag) != 0);
+		if ((Specific_CLUT_Set && Hash_SCS) || ((TOIter->CLUT == ALL_CLUTS) && !Hash_SCS))
 			if (TOIter->Bitmap == Bitmap)
+			{
 				return &TOIter->OptionsData;
+			}
+	}
+	
+	// Fallback for the case of a hashtable miss;
+	// do a linear search and then update the hash entry appropriately.
+	vector<TextureOptionsEntry>& TOL = TOList[Collection];
+	int16 Indx = 0;
+	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++, Indx++)
+	{
+		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
+		if (Specific_CLUT_Set || (TOIter->CLUT == ALL_CLUTS))
+			if (TOIter->Bitmap == Bitmap)
+			{
+				HashVal = Indx;
+				SET_FLAG(HashVal,Specific_CLUT_Flag,Specific_CLUT_Set);
+				return &TOIter->OptionsData;
+			}
 	}
 	
 	return &DefaultTextureOptions;
