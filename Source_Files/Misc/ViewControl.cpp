@@ -9,12 +9,16 @@ Oct 13, 2000 (Loren Petrich)
 Nov 29, 2000 (Loren Petrich):
 	Added making view-folding effect optional
 	Added making teleport static/fold effect optional
+
+Dec 17, 2000 (Loren Petrich:
+	Added teleport-sound control for Marathon 1 compatibility
 */
 
 #include <vector.h>
 #include <string.h>
 #include "cseries.h"
-
+#include "world.h"
+#include "mysound.h"
 #include "ViewControl.h"
 
 
@@ -39,10 +43,21 @@ static float FOV_ChangeRate = 1.66666667;	// this is 50 degrees/s
 static bool DoFoldEffect = true;
 static bool DoStaticEffect = true;
 
+// Standard teleport sounds:
+static short _Sound_TeleportIn = _snd_teleport_in;
+static short _Sound_TeleportOut = _snd_teleport_out;
+
+static FontSpecifier OnScreenFont = {"Monaco", 12, FontSpecifier::Normal};
+
 // Accessors:
 float View_FOV_Normal() {return FOV_Normal;}
 float View_FOV_ExtraVision() {return FOV_ExtraVision;}
 float View_FOV_TunnelVision() {return FOV_TunnelVision;}
+
+short Sound_TeleportIn() {return _Sound_TeleportIn;}
+short Sound_TeleportOut() {return _Sound_TeleportOut;}
+
+FontSpecifier& GetOnScreenFont() {return OnScreenFont;}
 
 // Move field-of-view value closer to some target value:
 bool View_AdjustFOV(float& FOV, float FOV_Target)
@@ -167,10 +182,17 @@ static XML_FOVParser FOVParser;
 class XML_ViewParser: public XML_ElementParser
 {
 public:
+	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 
 	XML_ViewParser(): XML_ElementParser("view") {}
 };
+
+bool XML_ViewParser::Start()
+{
+	Font_SetArray(&OnScreenFont);
+	return true;
+}
 
 bool XML_ViewParser::HandleAttribute(const char *Tag, const char *Value)
 {
@@ -186,6 +208,14 @@ bool XML_ViewParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return (ReadBooleanValue(Value,DoStaticEffect));
 	}
+	else if (strcmp(Tag,"sound_teleport_in") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_TeleportIn));
+	}
+	else if (strcmp(Tag,"sound_teleport_out") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_TeleportOut));
+	}
 	UnrecognizedTag();
 	return false;
 }
@@ -197,6 +227,7 @@ static XML_ViewParser ViewParser;
 XML_ElementParser *View_GetParser()
 {
 	ViewParser.AddChild(&FOVParser);
+	ViewParser.AddChild(Font_GetParser());
 	
 	return &ViewParser;
 }
