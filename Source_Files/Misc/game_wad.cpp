@@ -353,12 +353,12 @@ static void load_lines(byte *lines, short count);
 static void load_sides(byte *sides, short count, short version);
 static void load_polygons(byte *polys, short count, short version);
 static void load_lights(saved_static_light *_lights, short count, short version);
-static void load_annotations(saved_annotation *annotations, short count);
-static void load_objects(saved_object *map_objects, short count);
+static void load_annotations(byte *annotations, short count);
+static void load_objects(byte *map_objects, short count);
 static void load_media(struct media_data *media, short count);
-static void load_map_info(saved_map_data *map_info);
-static void load_ambient_sound_images(struct ambient_sound_image_data *data, short count);
-static void load_random_sound_images(struct random_sound_image_data *data, short count);
+static void load_map_info(byte *map_info);
+static void load_ambient_sound_images(byte *data, short count);
+static void load_random_sound_images(byte *data, short count);
 static void load_terminal_data(byte *data, long length);
 /*
 static void load_points(saved_map_pt *points, short count);
@@ -1263,42 +1263,49 @@ void load_lights(
 }
 
 void load_annotations(
-	saved_annotation *annotations, 
+	byte *annotations, 
 	short count)
 {
-	short ii;
+	// short ii;
 	
 	assert(count>=0 && count<=MAXIMUM_ANNOTATIONS_PER_MAP);
 	
+	unpack_map_annotation(annotations,map_annotations,count);
+	/*
 	for(ii=0; ii<count; ++ii)
 	{
 		map_annotations[ii]= annotations[ii];
 		byte_swap_object(map_annotations[ii], _bs_map_annotation);
 	}
+	*/
 	dynamic_world->default_annotation_count= count;
 	
 	return;
 }
 
-void load_objects(saved_object *map_objects, short count)
+void load_objects(byte *map_objects, short count)
 {
-	short ii;
+	// short ii;
 	
 	assert(count>=0 && count<=MAXIMUM_SAVED_OBJECTS);
 	
+	unpack_map_object(map_objects,saved_objects,count);
+	/*
 	for(ii=0; ii<count; ++ii)
 	{
 		saved_objects[ii]= map_objects[ii];	
 		byte_swap_object(saved_objects[ii], _bs_map_object);
-	} 
+	}
+	*/
 	dynamic_world->initial_objects_count= count;
 }
 
 void load_map_info(
-	saved_map_data *map_info)
+	byte *map_info)
 {
-	memcpy(static_world, map_info, sizeof(struct static_data));
-	byte_swap_data(static_world, SIZEOF_static_data, 1, _bs_static_data);
+	unpack_static_data(map_info,static_world);
+	// memcpy(static_world, map_info, sizeof(struct static_data));
+	// byte_swap_data(static_world, SIZEOF_static_data, 1, _bs_static_data);
 }
 
 void load_media(
@@ -1329,10 +1336,13 @@ void load_media(
 }
 
 void load_ambient_sound_images(
-	struct ambient_sound_image_data *data,
+	byte *data,
 	short count)
 {
 	assert(count>=0 &&count<=MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
+
+	unpack_ambient_sound_image_data(data,ambient_sound_images,count);
+#if 0
 #ifdef SDL
 	memcpy(ambient_sound_images, data, count*SIZEOF_ambient_sound_image_data);
 	byte_swap_data(ambient_sound_images, SIZEOF_ambient_sound_image_data, count, _bs_ambient_sound_image_data);
@@ -1340,14 +1350,19 @@ void load_ambient_sound_images(
 	objlist_copy(ambient_sound_images, data, count);
 	byte_swap_object_list(ambient_sound_images, count, _bs_ambient_sound_image_data);
 #endif
+#endif
+
 	dynamic_world->ambient_sound_image_count= count;
 }
 
 void load_random_sound_images(
-	struct random_sound_image_data *data,
+	byte *data,
 	short count)
 {
 	assert(count>=0 &&count<=MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
+
+	unpack_random_sound_image_data(data,random_sound_images,count);
+#if 0
 #ifdef SDL
 	memcpy(random_sound_images, data, count*sizeof(struct random_sound_image_data));
 	byte_swap_data(random_sound_images, SIZEOF_random_sound_image_data, count, _bs_random_sound_image_data);
@@ -1355,6 +1370,8 @@ void load_random_sound_images(
 	objlist_copy(random_sound_images, data, count);
 	byte_swap_object_list(random_sound_images, count, _bs_random_sound_image_data);
 #endif
+#endif
+
 	dynamic_world->random_sound_image_count= count;
 }
 
@@ -1667,12 +1684,15 @@ boolean process_map_wad(
 	/* Extract points */
 	data= (unsigned char *)extract_type_from_wad(wad, POINT_TAG, &data_length);
 	count= data_length/SIZEOF_world_point2d;
+	assert(data_length == count*SIZEOF_world_point2d);
+	
 	if(count)
 	{
 		load_points(data, count);
 	} else {
 		data= (unsigned char *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
 		count= data_length/SIZEOF_endpoint_data;
+		assert(data_length == count*SIZEOF_endpoint_data);
 		assert(count>=0 && count<MAXIMUM_ENDPOINTS_PER_MAP);
 
 		/* Slam! */
@@ -1688,15 +1708,21 @@ boolean process_map_wad(
 
 	/* Extract lines */
 	data= (unsigned char *)extract_type_from_wad(wad, LINE_TAG, &data_length);
-	load_lines(data, data_length/SIZEOF_line_data);
+	count = data_length/SIZEOF_line_data;
+	assert(data_length == count*SIZEOF_line_data);
+	load_lines(data, count);
 
 	/* Order is important! */
 	data= (unsigned char *)extract_type_from_wad(wad, SIDE_TAG, &data_length);
-	load_sides(data, data_length/SIZEOF_side_data, version);
+	count = data_length/SIZEOF_side_data;
+	assert(data_length == count*SIZEOF_side_data);
+	load_sides(data, count, version);
 
 	/* Extract polygons */
 	data= (unsigned char *)extract_type_from_wad(wad, POLYGON_TAG, &data_length);
-	load_polygons(data, data_length/SIZEOF_polygon_data, version);
+	count = data_length/SIZEOF_polygon_data;
+	assert(data_length == count*SIZEOF_polygon_data);
+	load_polygons(data, count, version);
 
 	/* Extract the lightsources */
 	if(!restoring_game)
@@ -1738,27 +1764,24 @@ boolean process_map_wad(
 
 	/* Extract the annotations */
 	data= (unsigned char *)extract_type_from_wad(wad, ANNOTATION_TAG, &data_length);
-	count= data_length/sizeof(saved_annotation);
-	assert(count*sizeof(saved_annotation)==data_length);
-	load_annotations((saved_annotation *) data, count);
+	count = data_length/SIZEOF_map_annotation;
+	assert(data_length == count*SIZEOF_map_annotation);
+	load_annotations(data, count);
 
 	/* Extract the objects */
 	data= (unsigned char *)extract_type_from_wad(wad, OBJECT_TAG, &data_length);
-	count= data_length/sizeof(saved_object);
-	assert(count*sizeof(saved_object)==data_length);
-	load_objects((saved_object *) data, count);
+	count = data_length/SIZEOF_map_object;
+	assert(data_length == count*SIZEOF_map_object);
+	load_objects(data, count);
 
 	/* Extract the map info data */
 	data= (unsigned char *)extract_type_from_wad(wad, MAP_INFO_TAG, &data_length);
 	// LP change: made this more Pfhorte-friendly
-	assert(sizeof(saved_map_data)==data_length || (sizeof(saved_map_data)-2)==data_length);
-	// assert(sizeof(saved_map_data)==data_length);
-	load_map_info((saved_map_data *) data);
+	assert(SIZEOF_static_data==data_length || (SIZEOF_static_data-2)==data_length);
+	load_map_info(data);
 
 	/* Extract the game difficulty info.. */
 	data= (unsigned char *)extract_type_from_wad(wad, ITEM_PLACEMENT_STRUCTURE_TAG, &data_length);
-	vassert(data_length==MAXIMUM_OBJECT_TYPES*sizeof(struct object_frequency_definition)*2,
-		csprintf(temporary, "data length for placement stuff is wrong (it's %d bytes)", data_length));
 	load_placement_data(((struct object_frequency_definition *) data)+MAXIMUM_OBJECT_TYPES,
 		(struct object_frequency_definition *) data);
 
@@ -1777,26 +1800,26 @@ boolean process_map_wad(
 
 	/* Extract the ambient sound images */
 	data= (unsigned char *)extract_type_from_wad(wad, AMBIENT_SOUND_TAG, &data_length);
-	count= data_length/sizeof(struct ambient_sound_image_data);
-	assert(count*sizeof(struct ambient_sound_image_data)==data_length);
-	load_ambient_sound_images((struct ambient_sound_image_data *) data, count);
+	count = data_length/SIZEOF_ambient_sound_image_data;
+	assert(data_length == count*SIZEOF_ambient_sound_image_data);
+	load_ambient_sound_images(data, count);
+	load_ambient_sound_images(data, data_length/SIZEOF_ambient_sound_image_data);
 
 	/* Extract the random sound images */
 	data= (unsigned char *)extract_type_from_wad(wad, RANDOM_SOUND_TAG, &data_length);
-	count= data_length/sizeof(struct random_sound_image_data);
-	assert(count*sizeof(struct random_sound_image_data)==data_length);
-	load_random_sound_images((struct random_sound_image_data *) data, count);
+	count = data_length/SIZEOF_random_sound_image_data;
+	assert(data_length == count*SIZEOF_random_sound_image_data);
+	load_random_sound_images(data, count);
 
 	// LP addition: load the physics-model chunks (all fixed-size)
-	int NumChunks;
 	bool PhysicsModelLoaded = false;
 	
 #ifdef mac	//!! most of these structures have non-portable alignment requirements; to be fixed later
 	data= (unsigned char *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
 	// dprintf("Monsters: %d %d: %d",NUMBER_OF_MONSTER_TYPES,get_monster_defintion_size(),data_length);
-	NumChunks = data_length/get_monster_defintion_size();
-	assert(NumChunks*get_monster_defintion_size() == data_length);
-	assert(NumChunks <= NUMBER_OF_MONSTER_TYPES);
+	count = data_length/get_monster_defintion_size();
+	assert(count*get_monster_defintion_size() == data_length);
+	assert(count <= NUMBER_OF_MONSTER_TYPES);
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
@@ -1805,9 +1828,9 @@ boolean process_map_wad(
 	
 	data= (unsigned char *)extract_type_from_wad(wad, EFFECTS_PHYSICS_TAG, &data_length);
 	// dprintf("Effects: %d %d: %d",NUMBER_OF_EFFECT_TYPES,get_effect_defintion_size(),data_length);
-	NumChunks = data_length/get_effect_defintion_size();
-	assert(NumChunks*get_effect_defintion_size() == data_length);
-	assert(NumChunks <= NUMBER_OF_EFFECT_TYPES);
+	count = data_length/get_effect_defintion_size();
+	assert(count*get_effect_defintion_size() == data_length);
+	assert(count <= NUMBER_OF_EFFECT_TYPES);
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
@@ -1816,9 +1839,9 @@ boolean process_map_wad(
 	
 	data= (unsigned char *)extract_type_from_wad(wad, PROJECTILE_PHYSICS_TAG, &data_length);
 	// dprintf("Projectiles: %d %d: %d",NUMBER_OF_PROJECTILE_TYPES,get_projectile_definition_size(),data_length);
-	NumChunks = data_length/get_projectile_definition_size();
-	assert(NumChunks*get_projectile_definition_size() == data_length);
-	assert(NumChunks <= NUMBER_OF_PROJECTILE_TYPES);
+	count = data_length/get_projectile_definition_size();
+	assert(count*get_projectile_definition_size() == data_length);
+	assert(count <= NUMBER_OF_PROJECTILE_TYPES);
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
@@ -1827,9 +1850,9 @@ boolean process_map_wad(
 	
 	data= (unsigned char *)extract_type_from_wad(wad, PHYSICS_PHYSICS_TAG, &data_length);
 	// dprintf("Physics: %d %d: %d",get_number_of_physics_models(),get_physics_definition_size(),data_length);
-	NumChunks = data_length/get_physics_definition_size();
-	assert(NumChunks*get_physics_definition_size() == data_length);
-	assert(NumChunks <= get_number_of_physics_models());
+	count = data_length/get_physics_definition_size();
+	assert(count*get_physics_definition_size() == data_length);
+	assert(count <= get_number_of_physics_models());
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
@@ -1838,9 +1861,9 @@ boolean process_map_wad(
 	
 	data= (unsigned char *)extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
 	// dprintf("Weapons: %d %d: %d",get_number_of_weapons(),get_weapon_defintion_size(),data_length);
-	NumChunks = data_length/get_weapon_defintion_size();
-	assert(NumChunks*get_weapon_defintion_size() == data_length);
-	assert(NumChunks <= get_number_of_weapons());
+	count = data_length/get_weapon_defintion_size();
+	assert(count*get_weapon_defintion_size() == data_length);
+	assert(count <= get_number_of_weapons());
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
