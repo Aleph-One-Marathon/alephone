@@ -28,6 +28,7 @@ struct sdl_channel {
 
 	bool sixteen_bit;		// Flag: 16-bit sound data (8-bit otherwise)
 	bool stereo;			// Flag: stereo sound data (mono otherwise)
+	bool signed_8bit;		// Flag: 8-bit sound data is signed (unsigned otherwise, 16-bit data is always signed)
 	int bytes_per_frame;	// Bytes per sample frame (1, 2 or 4)
 
 	uint8 *data;			// Current pointer to sound data
@@ -150,69 +151,121 @@ bool initialize_music_handler(FileSpecifier &song_file)
 
 		SDL_RWops *p = music_file.GetRWops();
 
-		// Check to see if the file is an AIFF file
-		if (SDL_ReadBE32(p) != FOUR_CHARS_TO_INT('F', 'O', 'R', 'M'))
-			return false;
-		uint32 total_size = SDL_ReadBE32(p);
-		if (SDL_ReadBE32(p) != FOUR_CHARS_TO_INT('A', 'I', 'F', 'F'))
-			return false;
+		// Read magic ID
+		uint32 magic = SDL_ReadBE32(p);
+		if (magic == FOUR_CHARS_TO_INT('F', 'O', 'R', 'M')) {
 
-		// Seems so, look for COMM and SSND chunks
-		bool comm_found = false;
-		bool ssnd_found = false;
-		do {
+			// Maybe an AIFF file, check further
+			uint32 total_size = SDL_ReadBE32(p);
+			if (SDL_ReadBE32(p) != FOUR_CHARS_TO_INT('A', 'I', 'F', 'F'))
+				return false;
 
-			// Read chunk ID and size
-			uint32 id = SDL_ReadBE32(p);
-			uint32 size = SDL_ReadBE32(p);
-			int pos = SDL_RWtell(p);
+			// Seems so, look for COMM and SSND chunks
+			bool comm_found = false;
+			bool ssnd_found = false;
+			do {
 
-			switch (id) {
-				case FOUR_CHARS_TO_INT('C', 'O', 'M', 'M'): {
-					comm_found = true;
+				// Read chunk ID and size
+				uint32 id = SDL_ReadBE32(p);
+				uint32 size = SDL_ReadBE32(p);
+				int pos = SDL_RWtell(p);
 
-					c->stereo = (SDL_ReadBE16(p) == 2);
-					SDL_RWseek(p, 4, SEEK_CUR);
-					c->sixteen_bit = (SDL_ReadBE16(p) == 16);
+				switch (id) {
+					case FOUR_CHARS_TO_INT('C', 'O', 'M', 'M'): {
+						comm_found = true;
 
-					c->bytes_per_frame = 1;
-					if (c->stereo)
-						c->bytes_per_frame *= 2;
-					if (c->sixteen_bit)
-						c->bytes_per_frame *= 2;
-					music_data_length *= c->bytes_per_frame;
+						c->stereo = (SDL_ReadBE16(p) == 2);
+						SDL_RWseek(p, 4, SEEK_CUR);
+						c->sixteen_bit = (SDL_ReadBE16(p) == 16);
+						c->signed_8bit = true;
 
-					uint32 srate = SDL_ReadBE32(p);	// This is a 6888x 80-bit floating point number, but we only read the first 4 bytes and try to guess the sample rate
-					switch (srate) {
-						case 0x400eac44:
-							music_sample_rate = 44100;
-							break;
-						case 0x400dac44:
-						default:
-							music_sample_rate = 22050;
-							break;
+						c->bytes_per_frame = 1;
+						if (c->stereo)
+							c->bytes_per_frame *= 2;
+						if (c->sixteen_bit)
+							c->bytes_per_frame *= 2;
+
+						uint32 srate = SDL_ReadBE32(p);	// This is a 6888x 80-bit floating point number, but we only read the first 4 bytes and try to guess the sample rate
+						switch (srate) {
+							case 0x400eac44:
+								music_sample_rate = 44100;
+								break;
+							case 0x400dac44:
+							default:
+								music_sample_rate = 22050;
+								break;
+						}
+						break;
 					}
-					break;
+
+					case FOUR_CHARS_TO_INT('S', 'S', 'N', 'D'):
+						ssnd_found = true;
+
+						music_data_length = size;
+						SDL_RWseek(p, 8, SEEK_CUR);
+						music_data_offset = SDL_RWtell(p);
+						break;
 				}
 
-				case FOUR_CHARS_TO_INT('S', 'S', 'N', 'D'):
-					ssnd_found = true;
+				// Skip to next chunk
+				if (size & 1)
+					size++;
+				SDL_RWseek(p, pos + size, SEEK_SET);
 
-					music_data_length = size;
-					SDL_RWseek(p, 8, SEEK_CUR);
-					music_data_offset = SDL_RWtell(p);
-					break;
-			}
+			} while (SDL_RWtell(p) < total_size);
 
-			// Skip to next chunk
-			if (size & 1)
-				size++;
-			SDL_RWseek(p, pos + size, SEEK_SET);
+			if (comm_found && ssnd_found)
+				music_initialized = true;
 
-		} while (SDL_RWtell(p) < total_size);
+		} else if (magic == FOUR_CHARS_TO_INT('R', 'I', 'F', 'F')) {
 
-		if (comm_found && ssnd_found)
-			music_initialized = true;
+			// Maybe a WAV file, check further
+			uint32 total_size = SDL_ReadLE32(p);
+			if (SDL_ReadBE32(p) != FOUR_CHARS_TO_INT('W', 'A', 'V', 'E'))
+				return false;
+
+			// Seems so, look for fmt and data chunks
+			bool fmt_found = false;
+			bool data_found = false;
+			do {
+
+				// Read chunk ID and size
+				uint32 id = SDL_ReadBE32(p);
+				uint32 size = SDL_ReadLE32(p);
+				int pos = SDL_RWtell(p);
+
+				switch (id) {
+					case FOUR_CHARS_TO_INT('f', 'm', 't', ' '):
+						fmt_found = true;
+
+						if (SDL_ReadLE16(p) != 1) // PCM encoding
+							return false;
+						c->stereo = (SDL_ReadLE16(p) == 2);
+						music_sample_rate = SDL_ReadLE32(p);
+						SDL_RWseek(p, 4, SEEK_CUR);
+						c->bytes_per_frame = SDL_ReadLE16(p);
+						c->sixteen_bit = (SDL_ReadLE16(p) == 16);
+						c->signed_8bit = false;
+						break;
+
+					case FOUR_CHARS_TO_INT('d', 'a', 't', 'a'):
+						data_found = true;
+
+						music_data_length = size;
+						music_data_offset = SDL_RWtell(p);
+						break;
+				}
+
+				// Skip to next chunk
+				if (size & 1)
+					size++;
+				SDL_RWseek(p, pos + size, SEEK_SET);
+
+			} while (SDL_RWtell(p) < total_size);
+
+			if (fmt_found && data_found)
+				music_initialized = true;
+		}
 	}
 
 	return music_initialized;
@@ -603,11 +656,10 @@ void queue_song(short song_index)
 	music_data_remaining = music_data_length;
 	uint32 to_read = music_data_remaining > MUSIC_BUFFER_SIZE ? MUSIC_BUFFER_SIZE : music_data_remaining;
 	SDL_RWread(p, music_buffer, 1, to_read);
-	if (!c->sixteen_bit) {
-		// AIFF data is always signed
-		for (int i=0; i<MUSIC_BUFFER_SIZE; i++)
-			music_buffer[i] ^= 0x80;
-	}
+//!!	if (!c->sixteen_bit && !c->signed) {
+//		for (int i=0; i<MUSIC_BUFFER_SIZE; i++)
+//			music_buffer[i] ^= 0x80;
+//	}
 	music_data_remaining -= to_read;
 
 	// Lock sound subsystem
@@ -713,6 +765,7 @@ static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch)
 
 	// Parse sound header
 	c->bytes_per_frame = 1;
+	c->signed_8bit = false;
 	if (header_type == 0x00) {			// Standard sound header
 		//printf("standard sound header\n");
 		c->data = data + 22;
@@ -735,7 +788,7 @@ static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch)
 		SDL_RWseek(p, 2, SEEK_CUR);
 		c->length = SDL_ReadBE32(p) * c->bytes_per_frame;
 		SDL_RWseek(p, 22, SEEK_CUR);
-		c->sixteen_bit = SDL_ReadBE16(p) == 16;
+		c->sixteen_bit = (SDL_ReadBE16(p) == 16);
 		if (c->sixteen_bit) {
 			c->bytes_per_frame *= 2;
 			c->length *= 2;
@@ -783,6 +836,9 @@ inline static void calc_buffer(T *p, int len, bool stereo)
 					if (c->sixteen_bit) {
 						dleft = (int16)SDL_SwapBE16(0[(int16 *)c->data]);
 						dright = (int16)SDL_SwapBE16(1[(int16 *)c->data]);
+					} else if (c->signed_8bit) {
+						dleft = (int32)(int8)(0[c->data]) * 256;
+						dright = (int32)(int8)(1[c->data]) * 256;
 					} else {
 						dleft = (int32)(int8)(0[c->data] ^ 0x80) * 256;
 						dright = (int32)(int8)(1[c->data] ^ 0x80) * 256;
@@ -790,6 +846,8 @@ inline static void calc_buffer(T *p, int len, bool stereo)
 				} else {
 					if (c->sixteen_bit)
 						dleft = dright = (int16)SDL_SwapBE16(*(int16 *)c->data);
+					else if (c->signed_8bit)
+						dleft = dright = (int32)(int8)(*(c->data)) << 8;
 					else
 						dleft = dright = (int32)(int8)(*(c->data) ^ 0x80) << 8;
 				}
@@ -824,11 +882,11 @@ inline static void calc_buffer(T *p, int len, bool stereo)
 
 								// Read next buffer of music data
 								SDL_RWread(music_file.GetRWops(), music_buffer, 1, to_read);
-								if (!c->sixteen_bit) {
-									// AIFF data is always signed
-									for (int i=0; i<MUSIC_BUFFER_SIZE; i++)
-										music_buffer[i] ^= 0x80;
-								}
+//!!								if (!c->sixteen_bit) {
+//									// AIFF data is always signed
+//									for (int i=0; i<MUSIC_BUFFER_SIZE; i++)
+//										music_buffer[i] ^= 0x80;
+//								}
 								music_data_remaining -= to_read;
 								c->data = music_buffer;
 								c->length = to_read;
