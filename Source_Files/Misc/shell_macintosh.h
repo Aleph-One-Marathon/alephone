@@ -158,6 +158,9 @@ Feb 13, 2002 (Br'fin (Jeremy Parsons)):
 #include <algorithm>
 #include <functional>
 
+#ifdef __MWERKS__
+#include <new.h>
+#endif
 
 #define kMINIMUM_NETWORK_HEAP (3*MEG)
 
@@ -327,6 +330,10 @@ static void initialize_application_heap(
 
 	long response;
 	OSErr error;
+
+#if  defined(__MWERKS__) && !defined(COMPLAIN_BAD_ALLOCS)
+std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try throws_bad_allocs instead
+#endif
 
 	error= Gestalt(gestaltQuickTime, &response);
 	if(!error) 
