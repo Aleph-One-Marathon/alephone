@@ -20,6 +20,9 @@ Jan 31, 2002 (Loren Petrich):
 #define HAVE_SDL_NET 1
 // #endif
 
+// Debugging always on (mistaken asserts will always print out their info)
+#define DEBUG
+
 // WIll use QD3D
 #define HAVE_QUESA 1
 
