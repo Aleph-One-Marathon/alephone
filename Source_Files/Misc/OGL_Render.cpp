@@ -2153,22 +2153,8 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	// Paint onto the currently-visible area:
 	if (!UseBackBuffer) glDrawBuffer(GL_FRONT);
 	
-	// Where to draw
-	Rect& ViewBounds = ((CGrafPtr)BufferPtr)->portRect;
-	
-	// Reallocate strip buffer if necessary
-	short Width = ViewBounds.right - ViewBounds.left;
-	if (Width != Buffer2D_Width)
-	{
-		if (Width > 0)
-		{
-			Buffer2D.resize(Buffer2D_Width*Buffer2D_Height);
-			Buffer2D_Width = Width;
-		} else {
-			Buffer2D.empty();
-			Buffer2D_Width = 0;
-		}
-	}
+	// Where the image comes from
+	Rect& ImgBounds = ((CGrafPtr)BufferPtr)->portRect;
 	
 	// Number of source bytes (destination bytes = 4)
 	short NumSrcBytes = bit_depth/8;
@@ -2181,16 +2167,29 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	LockPixels(Pxls);
 	
 	// Row-start address and row length
-	byte *BufferStart = (byte *)GetPixBaseAddr(Pxls);
+	byte *SourceStart = (byte *)GetPixBaseAddr(Pxls);
 	long StrideBytes = (**Pxls).rowBytes & 0x7fff;
 	
 	// How many pixels to draw per line
 	short SourceWidth = SourceBounds.right - SourceBounds.left;
 	
+	// Reallocate strip buffer if necessary
+	if (SourceWidth != Buffer2D_Width)
+	{
+		if (SourceWidth > 0)
+		{
+			Buffer2D_Width = SourceWidth;
+			Buffer2D.resize(Buffer2D_Width*Buffer2D_Height);
+		} else {
+			Buffer2D_Width = 0;
+			Buffer2D.clear();
+		}
+	}
+	
 	for (int h=SourceBounds.top, hstrip=0; h<SourceBounds.bottom; h++)
 	{
 		// Set where to read from the input buffer
-		byte *InPtr = BufferStart + (h-ViewBounds.top)*StrideBytes + NumSrcBytes*(SourceBounds.left-ViewBounds.left);
+		byte *InPtr = SourceStart + (h-ImgBounds.top)*StrideBytes + NumSrcBytes*(SourceBounds.left-ImgBounds.left);
 		
 		// Set the strip buffer's current-pixel pointer;
 		// be careful to reverse the row order, because most 2D graphics
