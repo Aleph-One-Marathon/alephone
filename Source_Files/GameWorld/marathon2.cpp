@@ -54,6 +54,9 @@ Feb 4, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 20, 2002 (Woody Zenfell):
     Changed action queues operations to ActionQueues operations on GetRealActionQueues()
+
+Mar 13, 2002 (Br'fin (Jeremy Parsons)):
+	Altered enter_game to stop and reset fades after script_init
 */
 
 #include "cseries.h"
@@ -263,8 +266,6 @@ bool entering_map(bool restoring_saved)
 {
 	bool success= true;
 
-	set_fade_effect(NONE);
-
 	/* if any active monsters think they have paths, we'll make them reconsider */
 	initialize_monsters_for_new_level();
 
@@ -295,6 +296,10 @@ bool entering_map(bool restoring_saved)
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
 
+	// Zero out fades *AND* any inadvertant fades from script start...
+	stop_fade();
+	set_fade_effect(NONE);
+	
 	if (!success) leaving_map();
 
 	return success;
