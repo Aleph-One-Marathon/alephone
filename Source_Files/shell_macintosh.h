@@ -289,6 +289,8 @@ static void FindAndParseFiles(DirectorySpecifier& DirSpec);
 static bool KeyIsPressed(KeyMap key_map, short key_code);
 static bool ModifierKeysPressed();
 
+// A function for loading a framework bundle
+static OSStatus LoadFrameworkBundle(CFStringRef framework, CFBundleRef *bundlePtr);
 
 /* ---------- code */
 
@@ -2011,4 +2013,108 @@ static bool ModifierKeysPressed()
 	WerePressed |= KeyIsPressed(key_map,0x37);	// Command key
 	
 	return WerePressed;
+}
+
+
+// Gets a function pointer for a MacOS-X function
+// that may not be explicitly available for CFM Carbon (Carbon/Classic).
+// Returns NULL if such a function pointer could not be found
+void *GetSystemFunctionPointer(const CFStringRef FunctionName)
+{
+	static bool AlreadyLoaded = false;
+	static CFBundleRef SysBundle = NULL;
+
+	if (!AlreadyLoaded)
+	{
+		OSStatus err;
+		
+		// Get the bundle that contains CoreGraphics	
+		err = LoadFrameworkBundle(CFSTR("ApplicationServices.framework"), &SysBundle);
+		
+		if (err != noErr) SysBundle = NULL;
+		AlreadyLoaded = true;
+	}
+	
+	return (SysBundle) ? CFBundleGetFunctionPointerForName(SysBundle,FunctionName) : NULL;
+}
+
+
+
+// Cribbed from some of Apple's sample code -- CallMachOFramework.c
+// For locating a Mach-O bundle for some CFM code,
+// like this Carbon/Classic code
+static OSStatus LoadFrameworkBundle(CFStringRef framework, CFBundleRef *bundlePtr)
+	// This routine finds a the named framework and creates a CFBundle 
+	// object for it.  It looks for the framework in the frameworks folder, 
+	// as defined by the Folder Manager.  Currently this is 
+	// "/System/Library/Frameworks", but we recommend that you avoid hard coded 
+	// paths to ensure future compatibility.
+	//
+	// You might think that you could use CFBundleGetBundleWithIdentifier but 
+	// that only finds bundles that are already loaded into your context. 
+	// That would work in the case of the System framework but it wouldn't 
+	// work if you're using some other, less-obvious, framework.
+{
+	OSStatus  err;
+	FSRef   frameworksFolderRef;
+	CFURLRef baseURL;
+	CFURLRef bundleURL;
+	
+	//MoreAssertQ(bundlePtr != nil);
+	
+	*bundlePtr = nil;
+	
+	baseURL = nil;
+	bundleURL = nil;
+	
+	// Find the frameworks folder and create a URL for it.
+	
+	err = FSFindFolder(kOnAppropriateDisk, kFrameworksFolderType, true, &frameworksFolderRef);
+	if (err == noErr) {
+		baseURL = CFURLCreateFromFSRef(kCFAllocatorSystemDefault, &frameworksFolderRef);
+		if (baseURL == nil) {
+			err = coreFoundationUnknownErr;
+		}
+	}
+	
+	// Append the name of the framework to the URL.
+	
+	if (err == noErr) {
+		bundleURL = CFURLCreateCopyAppendingPathComponent(kCFAllocatorSystemDefault, baseURL, framework, false);
+		if (bundleURL == nil) {
+			err = coreFoundationUnknownErr;
+		}
+	}
+	
+	// Create a bundle based on that URL and load the bundle into memory.
+	// We never unload the bundle, which is reasonable in this case because 
+	// the sample assumes that you'll be calling functions from this 
+	// framework throughout the life of your application.
+	
+	if (err == noErr) {
+		*bundlePtr = CFBundleCreate(kCFAllocatorSystemDefault, bundleURL);
+		if (*bundlePtr == nil) {
+			err = coreFoundationUnknownErr;
+		}
+	}
+	if (err == noErr) {
+		if ( ! CFBundleLoadExecutable( *bundlePtr ) ) {
+			err = coreFoundationUnknownErr;
+		}
+	}
+
+	// Clean up.
+	
+	if (err != noErr && *bundlePtr != nil) {
+		CFRelease(*bundlePtr);
+		*bundlePtr = nil;
+	}
+	if (bundleURL != nil) {
+		CFRelease(bundleURL);
+	} 
+	if (baseURL != nil) {
+		CFRelease(baseURL);
+	} 
+	
+	return err;
 }

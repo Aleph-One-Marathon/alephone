@@ -150,6 +150,15 @@ bool machine_has_nav_services();
 // For loading MML from shapes and sounds resource forks
 // when one of those files is opened
 void XML_LoadFromResourceFork(FileSpecifier& File);
+
+#ifdef TARGET_API_MAC_CARBON
+
+// Gets a function pointer for a MacOS-X function
+// that may not be explicitly available for CFM Carbon (Carbon/Classic).
+// Returns NULL if such a function pointer could not be found
+void *GetSystemFunctionPointer(const CFStringRef FunctionName);
+
+#endif
 #endif
 
 // LP addition for handling XML stuff:
