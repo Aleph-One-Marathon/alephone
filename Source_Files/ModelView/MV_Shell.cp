@@ -7,9 +7,15 @@
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
+#if defined (__APPLE__) && defined (__MACH__)
+# include <OpenGL/gl.h>
+# include <OpenGL/glu.h>
+# include <OpenGL/glut.h>
+#else
+# include <GL/gl.h>
+# include <GL/glu.h>
+# include <GL/glut.h>
+#endif
 #include "cseries.h"
 #include "FileHandler.h"
 #include "ImageLoader.h"

@@ -11,7 +11,12 @@ using namespace std;
 
 #ifdef HAVE_OPENGL
 
-#include <GL/gl.h>
+#if defined (__APPLE__) && defined (__MACH__)
+# include <OpenGL/gl.h>
+#else
+# include <GL/gl.h>
+#endif
+
 #include <vector>
 
 
@@ -21,6 +26,7 @@ struct Model3D
 	// Positions: 3
 	// Texture coordinates: 2
 	// Normals: 3
+	// Colors: 3 [should an alpha channel also be included?]
 	
 	// Positions assumed to be 3-dimensional
 	vector<GLfloat> Positions;
@@ -51,12 +57,28 @@ struct Model3D
 	// From the position data
 	void FindBoundingBox();
 	
-	// So they all have length 1
-	void NormalizeNormals();
-	
 	// For debugging bounding-box-handling code
 	// NULL means don't render one set of edges
 	void RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *DiagonalColor);
+	
+	// Process the normals in various ways
+	enum
+	{
+		None,					// Gets rid of them
+		Original,				// Uses the model's original normals
+		Reversed,				// Reverses the direction of the original normals
+		ClockwiseSide,			// Normals point in the sides' clockwise direction
+		CounterclockwiseSide,	// Normals point in the sides' counterclockwise direction
+		NUMBER_OF_NORMAL_TYPES
+	};
+	// The second is for deciding whether a vertex is to have
+	// the average of its neighboring polygons' normals
+	// or whether a vertex is to be split into separate vertices,
+	// each with a polygon's normal
+	void AdjustNormals(int NormalType, float SmoothThreshold = 0.5);
+	
+	// So they all have length 1
+	void NormalizeNormals() {AdjustNormals(Original);}
 	
 	// Erase everything
 	void Clear();
@@ -65,10 +87,6 @@ struct Model3D
 	Model3D() {FindBoundingBox();}
 };
 
-#else
-
-struct Model3D;
-
-#endif // def HAVE_OPENGL
+#endif
 
 #endif

@@ -6,7 +6,6 @@
 
 #include <string.h>
 #include <math.h>
-
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
@@ -26,25 +25,318 @@ void Model3D::Clear()
 	FindBoundingBox();
 }
 
+// Normalize an individual normal; return whether the normal had a nonzero length
+static bool NormalizeNormal(GLfloat *Normal)
+{
+	GLfloat NormalSqr =
+		Normal[0]*Normal[0] + Normal[1]*Normal[1] + Normal[2]*Normal[2];
+	
+	if (NormalSqr <= 0) return false;
+	
+	GLfloat NormalRecip = 1/sqrt(NormalSqr);
+	
+	Normal[0] *= NormalRecip;
+	Normal[1] *= NormalRecip;
+	Normal[2] *= NormalRecip;
+	
+	return true;
+}
+
+// Flagged vector for per-polygon and per-vertex normals;
+// the flag is "true" for nonzero vectors and vectors meant to be used
+struct FlaggedVector
+{
+	GLfloat Vec[3];
+	bool Flag;
+};
 
 // Normalize the normals
-void Model3D::NormalizeNormals()
+void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 {
-	int NumNormals = Normals.size()/3;
-	for (int k=0; k<NumNormals; k++)
+	// Which kind of special processing?
+	switch(NormalType)
 	{
-		GLfloat *NormalPtr = &Normals[3*k];
-		GLfloat NormalSqr =
-			NormalPtr[0]*NormalPtr[0] + NormalPtr[1]*NormalPtr[1] + NormalPtr[2]*NormalPtr[2];
-		if (NormalSqr > 0)
+	case None:
+		Normals.clear();
+		break;
+		
+	case Original:
+	case Reversed:
+	default:
+		// Normalize
+		for (int k=0; k<Normals.size()/3; k++)
+			NormalizeNormal(&Normals[3*k]);
+		break;
+	
+	case ClockwiseSide:
+	case CounterclockwiseSide:
+		// The really interesting stuff
 		{
-			GLfloat NormalRecip = 1/sqrt(NormalSqr);
-			NormalPtr[0] *= NormalRecip;
-			NormalPtr[1] *= NormalRecip;
-			NormalPtr[2] *= NormalRecip;
+			// First, create a list of per-polygon normals
+			int NumPolys = NumVI()/3;
+			vector<FlaggedVector> PerPolygonNormalList(NumPolys);
+			
+			GLushort *IndxPtr = VIBase();
+			for (int k=0; k<NumPolys; k++)
+			{
+				// The three vertices:
+				GLfloat *P0 = &Positions[3*(*(IndxPtr++))];
+				GLfloat *P1 = &Positions[3*(*(IndxPtr++))];
+				GLfloat *P2 = &Positions[3*(*(IndxPtr++))];
+				// The two in-polygon vectors:
+				GLfloat P01[3];
+				P01[0] = P1[0] - P0[0];
+				P01[1] = P1[1] - P0[1];
+				P01[2] = P1[2] - P0[2];
+				GLfloat P02[3];
+				P02[0] = P2[0] - P0[0];
+				P02[1] = P2[1] - P0[1];
+				P02[2] = P2[2] - P0[2];
+				// Those vectors' normal:
+				FlaggedVector& PPN = PerPolygonNormalList[k];
+				PPN.Vec[0] = P01[1]*P02[2] - P01[2]*P02[1];
+				PPN.Vec[1] = P01[2]*P02[0] - P01[0]*P02[2];
+				PPN.Vec[2] = P01[0]*P02[1] - P01[1]*P02[0];
+				PPN.Flag = NormalizeNormal(PPN.Vec);
+			}
+			
+			// Create a list of per-vertex normals
+			int NumVerts = Positions.size()/3;
+			vector<FlaggedVector> PerVertexNormalList(NumVerts);
+			objlist_clear(&PerVertexNormalList[0],NumVerts);
+			IndxPtr = VIBase();
+			for (int k=0; k<NumPolys; k++)
+			{
+				FlaggedVector& PPN = PerPolygonNormalList[k];
+				for (int c=0; c<3; c++)
+				{
+					GLushort VertIndx = *(IndxPtr++);
+					GLfloat *V = PerVertexNormalList[VertIndx].Vec;
+					*(V++) += PPN.Vec[0];
+					*(V++) += PPN.Vec[1];
+					*(V++) += PPN.Vec[2];
+				}
+			}
+			
+			// Normalize the per-vertex normals
+			for (int k=0; k<NumVerts; k++)
+			{
+				FlaggedVector& PVN = PerVertexNormalList[k];
+				PVN.Flag = NormalizeNormal(PVN.Vec);
+			}
+			
+			// Find the variance of each of the per-vertex normals;
+			// use that to decide whether to keep them unsplit;
+			// this also needs counting up the number of polygons per vertex.
+			vector<GLfloat> Variances(NumVerts);
+			objlist_clear(&Variances[0],NumVerts);
+			vector<short> NumPolysPerVert(NumVerts);
+			objlist_clear(&NumPolysPerVert[0],NumVerts);
+			IndxPtr = VIBase();
+			for (int k=0; k<NumPolys; k++)
+			{
+				FlaggedVector& PPN = PerPolygonNormalList[k];
+				for (int c=0; c<3; c++)
+				{
+					GLushort VertIndx = *(IndxPtr++);
+					FlaggedVector& PVN = PerVertexNormalList[VertIndx];
+					if (PVN.Flag)
+					{
+						GLfloat *V = PVN.Vec;
+						GLfloat D0 = *(V++) - PPN.Vec[0];
+						GLfloat D1 = *(V++) - PPN.Vec[1];
+						GLfloat D2 = *(V++) - PPN.Vec[2];
+						Variances[VertIndx] += (D0*D0 + D1*D1 + D2*D2);
+						NumPolysPerVert[VertIndx]++;
+					}
+				}
+			}
+			
+			// Decide whether to split each vertex;
+			// if the flag is "true", a vertex is not to be split
+			for (int k=0; k<NumVerts; k++)
+			{
+				// Vertices without contributions will automatically have
+				// their flags be false, as a result of NormalizeNormal()
+				short NumVertPolys = NumPolysPerVert[k];
+				if (NumVertPolys > 0 && PerVertexNormalList[k].Flag)
+					PerVertexNormalList[k].Flag =
+						sqrt(Variances[k]/NumVertPolys) <= SmoothThreshold;
+			}
+			
+			// The vertex flags are now set for whether to use that vertex's normal;
+			// re-count the number of polygons per vertex.
+			// Use NONE for unsplit ones
+			objlist_clear(&NumPolysPerVert[0],NumVerts);
+			IndxPtr = VIBase();
+			for (int k=0; k<NumPolys; k++)
+			{
+				for (int c=0; c<3; c++)
+				{
+					GLushort VertIndx = *(IndxPtr++);
+					FlaggedVector& PVN = PerVertexNormalList[VertIndx];
+					if (PVN.Flag)
+						NumPolysPerVert[VertIndx] = NONE;
+					else
+						NumPolysPerVert[VertIndx]++;
+				}
+			}
+			
+			// Construct a polygon-association list; this will indicate
+			// which polygons are associated with each of the resulting instances
+			// of a split vertex (unsplit: NONE).
+			// NumPolysPerVert will be recycled as a counter list,
+			// after being used to construct a cumulative index-in-list array.
+			// Finding that list will be used to find how many new vertices there are.
+			vector<short> IndicesInList(NumVerts);
+			short IndxInList = 0;
+			for (int k=0; k<NumVerts; k++)
+			{
+				IndicesInList[k] = IndxInList;
+				FlaggedVector& PVN = PerVertexNormalList[k];
+				IndxInList += PVN.Flag ? 1 : NumPolysPerVert[k];
+			}
+			GLushort NewNumVerts = IndxInList;
+			vector<short> VertexPolygons(NewNumVerts);
+			objlist_clear(&NumPolysPerVert[0],NumVerts);
+			
+			// In creating that list, also remap the triangles' vertices
+			GLushort *VIPtr = VIBase();
+			for (int k=0; k<NumPolys; k++)
+			{
+				for (int c=0; c<3; c++)
+				{
+					GLushort VertIndx = *VIPtr;
+					GLushort NewVertIndx = IndicesInList[VertIndx];
+					FlaggedVector& PVN = PerVertexNormalList[VertIndx];
+					if (PVN.Flag)
+					{
+						NumPolysPerVert[VertIndx] = NONE;
+						VertexPolygons[NewVertIndx] = NONE;
+					}
+					else
+					{
+						NewVertIndx += (NumPolysPerVert[VertIndx]++);
+						VertexPolygons[NewVertIndx] = k;
+					}
+					*VIPtr = NewVertIndx;
+					VIPtr++;
+				}
+			}
+			
+			// Split the vertices
+			vector<GLfloat> NewPositions(3*NewNumVerts);
+			vector<GLfloat> NewTxtrCoords;
+			vector<GLfloat> NewNormals(3*NewNumVerts);
+			vector<GLfloat> NewColors;
+			
+			bool TCPresent = !TxtrCoords.empty();
+			if (TCPresent) NewTxtrCoords.resize(2*NewNumVerts);
+			
+			bool ColPresent = !Colors.empty();
+			if (ColPresent) NewColors.resize(3*NewNumVerts);
+			
+			// Use marching pointers to speed up the copy-over
+			GLfloat *OldP = &Positions[0];
+			GLfloat *NewP = &NewPositions[0];
+			GLfloat *OldT = &TxtrCoords[0];
+			GLfloat *NewT = &NewTxtrCoords[0];
+			GLfloat *OldC = &Colors[0];
+			GLfloat *NewC = &NewColors[0];
+			GLfloat *NewN = &NewNormals[0];
+			for (int k=0; k<NumVerts; k++)
+			{
+				FlaggedVector& PVN = PerVertexNormalList[k];
+				int NumVertPolys = PVN.Flag ? 1 : NumPolysPerVert[k];
+				for (int c=0; c<NumVertPolys; c++)
+				{
+					GLfloat *OldPP = OldP;
+					*(NewP++) = *(OldPP++);
+					*(NewP++) = *(OldPP++);
+					*(NewP++) = *(OldPP++);
+				}
+				if (TCPresent)
+				{
+					for (int c=0; c<NumVertPolys; c++)
+					{
+						GLfloat *OldTP = OldT;
+						*(NewT++) = *(OldTP++);
+						*(NewT++) = *(OldTP++);
+					}
+				}
+				if (ColPresent)
+				{
+					for (int c=0; c<NumVertPolys; c++)
+					{
+						GLfloat *OldCP = OldC;
+						*(NewC++) = *(OldCP++);
+						*(NewC++) = *(OldCP++);
+						*(NewC++) = *(OldCP++);
+					}
+				}
+				if (PVN.Flag)
+				{
+					GLfloat *VP = PVN.Vec;
+					*(NewN++) = *(VP++);
+					*(NewN++) = *(VP++);
+					*(NewN++) = *(VP++);
+				}
+				else
+				{
+					// A reference so that the incrementing can work on it
+					short& IndxInList = IndicesInList[k];
+					for (int c=0; c<NumVertPolys; c++)
+					{
+						GLfloat *VP = PerPolygonNormalList[VertexPolygons[IndxInList++]].Vec;
+						*(NewN++) = *(VP++);
+						*(NewN++) = *(VP++);
+						*(NewN++) = *(VP++);
+					}	
+				}
+				
+				// Advance!
+				OldP += 3;
+				if (TCPresent)
+					OldT += 2;
+				if (ColPresent)
+					OldC += 3;
+			}
+			assert(OldP == &Positions[3*NumVerts]);
+			assert(NewP == &NewPositions[3*NewNumVerts]);
+			if (TCPresent)
+			{
+				assert(OldT == &TxtrCoords[2*NumVerts]);
+				assert(NewT == &NewTxtrCoords[2*NewNumVerts]);
+			}
+			if (ColPresent)
+			{
+				assert(OldC == &Colors[3*NumVerts]);
+				assert(NewC == &NewColors[3*NewNumVerts]);
+			}
+			assert(NewN == &NewNormals[3*NewNumVerts]);
+			
+			// Accept the new vectors
+			Positions.swap(NewPositions);
+			TxtrCoords.swap(NewTxtrCoords);
+			Normals.swap(NewNormals);
+			Colors.swap(NewColors);
+		}
+		break;
+	}
+	
+	// Now flip
+	switch(NormalType)
+	{
+	case Reversed:
+	case CounterclockwiseSide:
+		{
+			GLfloat *NormalPtr = NormBase();
+			for (int k=0; k<Normals.size(); k++)
+				*(NormalPtr++) *= -1;
 		}
 	}
 }
+
 	
 // From the position data
 void Model3D::FindBoundingBox()
