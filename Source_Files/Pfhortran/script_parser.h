@@ -45,6 +45,8 @@ enum /* procedure traps */
 	terminal_exit,
 	pattern_buffer,
 	got_item,
+	light_activated,
+	platform_activated,
 	
 	NUMBER_OF_TRAPS
 

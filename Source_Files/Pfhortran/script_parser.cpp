@@ -1167,6 +1167,12 @@ void parse_script(char *input, vector<script_instruction>& instruction_list)
 						} else if (!strcmp(blats[2],"got_item"))
 						{
 							add_trap(got_item,line_count);
+						} else if (!strcmp(blats[2],"light_activated"))
+						{
+							add_trap(light_activated,line_count);
+						} else if (!strcmp(blats[2],"platform_activated"))
+						{
+							add_trap(platform_activated,line_count);
 						
 						} else 
 							add_error(error_log,kBad_Arguments,line_count);

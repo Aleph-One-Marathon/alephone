@@ -61,5 +61,8 @@ void activate_terminal_enter_trap(int which);
 void activate_terminal_exit_trap(int which);
 void activate_pattern_buffer_trap(int which);
 void activate_got_item_trap(int which);
- 
+void activate_tag_activated_trap(int which);
+void activate_light_activated_trap(int which);
+void activate_platform_activated_trap(int which);
+
 #endif

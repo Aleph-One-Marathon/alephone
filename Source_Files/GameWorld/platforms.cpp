@@ -56,6 +56,9 @@ Dec 19, 2000 (Loren Petrich):
 	failure mode for get_platform_definition().
 	Also suppressed an assertion that platform[polygon[platform]] = platform;
 	currently handling failure in that by skipping over the platform.
+	
+Jun 30, 2002 (tiennou):
+	Added support for Pfhortran Procedure: platform_activated
 */
 
 #include <string.h>
@@ -73,6 +76,7 @@ Dec 19, 2000 (Loren Petrich):
 #include "items.h"
 #include "Packing.h"
 #include "DamageParser.h"
+#include "scripting.h"
 
 #include <string.h>
 
@@ -718,6 +722,7 @@ static bool set_platform_state(
 				
 				/* assume the correct state, and correctly update all switches referencing this platform */
 				SET_PLATFORM_IS_ACTIVE(platform, state);
+				activate_platform_activated_trap(platform->polygon_index); // Hook for Pfhortran procedures
 				assume_correct_switch_position(_panel_is_platform_switch, platform->polygon_index, state);
 				
 				new_state= state;

@@ -3140,6 +3140,7 @@ void s_Play_Sound(script_instruction inst)
 void s_Set_Light_State(script_instruction inst)
 {
 	float light_index, state;
+	bool WasChanged = false;
 	
 	light_index = inst.op1;
 	state = inst.op2;
@@ -3162,7 +3163,7 @@ void s_Set_Light_State(script_instruction inst)
 		default:
 			return;
 	}	
-	set_light_status(short(light_index), state ? 1 : 0);
+	WasChanged = set_light_status(short(light_index), state ? 1 : 0);
 }
 
 void s_Get_Light_State(script_instruction inst)

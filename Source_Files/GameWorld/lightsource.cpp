@@ -38,6 +38,9 @@ July 1, 2000 (Loren Petrich):
 
 Aug 29, 2000 (Loren Petrich):
 	Added packing routines for the light data; also moved old light stuff (M1) here
+
+Jul 3, 2002 (Loren Petrich):
+	Added support for Pfhortran Procedure: light_activated
 */
 
 #include "cseries.h"
@@ -45,6 +48,7 @@ Aug 29, 2000 (Loren Petrich):
 #include "map.h"
 #include "lightsource.h"
 #include "Packing.h"
+#include "scripting.h"
 
 #ifdef env68k
 #pragma segment marathon
@@ -274,6 +278,7 @@ bool set_light_status(
 		if (!LIGHT_IS_STATELESS(light))
 		{
 			change_light_state(light_index, new_status ? _light_becoming_active : _light_becoming_inactive);
+			activate_light_activated_trap(light_index); // Hook for Pfhortran procedures
 			assume_correct_switch_position(_panel_is_light_switch, light_index, new_status);
 			changed= true;
 		}

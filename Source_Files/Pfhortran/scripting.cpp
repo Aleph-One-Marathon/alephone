@@ -464,3 +464,15 @@ void activate_got_item_trap(int which)
 	activate_trap(got_item);
 	set_trap_value(got_item, which);
 }
+
+void activate_light_activated_trap(int which)
+{
+	activate_trap(light_activated);
+	set_trap_value(light_activated, which);
+}
+
+void activate_platform_activated_trap(int which)
+{
+	activate_trap(platform_activated);
+	set_trap_value(platform_activated, which);
+}
