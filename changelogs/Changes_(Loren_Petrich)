@@ -1373,3 +1373,20 @@ Added support of movies that can begin at any level.
 Nov 26, 2000
 
 Added support of end-screen control
+
+Nov 29, 2000
+
+Added support for view-folding and teleport-static control
+
+Dec 1, 2000
+
+Added support for subdirectory searches for MML files/resources
+
+Dec 3, 2000
+
+Attempted to add DrawSprocket support without much success; added even bigger sound caching.
+
+Dec 17, 2000
+
+Added MML support for OpenGL fog and abstracted font. Also added MML support for changing
+overhead-map line thickness. Fixed buffer-overflow bug for precalculate_line_indexes().
