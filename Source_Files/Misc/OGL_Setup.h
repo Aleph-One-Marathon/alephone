@@ -32,7 +32,9 @@ Sep 9, 2000:
 */
 
 #include "shape_descriptors.h"
+#include "ImageLoader.h"
 #include "XML_ElementParser.h"
+
 
 // These functions return whether OpenGL can be present
 
@@ -163,8 +165,8 @@ enum
 {
 	OGL_OpacType_Crisp,		// The default: crisp edges, complete opacity
 	OGL_OpacType_Flat,		// Fuzzy edges, but with flat opacity
-	OGL_OpacType_Avg,		// Fuzzy edges, and opacity = max(color channel values)
-	OGL_OpacType_Max,		// Fuzzy edges, and opacity = average(color channel values)
+	OGL_OpacType_Avg,		// Fuzzy edges, and opacity = average(color channel values)
+	OGL_OpacType_Max,		// Fuzzy edges, and opacity = max(color channel values)
 	OGL_NUMBER_OF_OPACITY_TYPES
 };
 
@@ -176,9 +178,22 @@ struct OGL_TextureOptions
 	float OpacityShift;		// How much to shift the opacity
 	bool VoidVisible;		// Can see the void through texture if semitransparent
 	
-	OGL_TextureOptions(): OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
+	// Names of files to load; these will be extended ones with directory specifications
+	// <dirname>/<dirname>/<filename>
+	vector<char> NormalColors, NormalMask, GlowColors, GlowMask;
+	
+	// Normal and glow-mapped images
+	ImageDescriptor NormalImg, GlowImg;
+	
+	OGL_TextureOptions():
+		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
 		VoidVisible(false) {}
 };
+
+
+// for managing the image loading and unloading
+void OGL_LoadImages(int Collection);
+void OGL_UnloadImages(int Collection);
 
 
 // Get the texture options that are currently set
