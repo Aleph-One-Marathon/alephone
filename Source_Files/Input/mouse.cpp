@@ -200,7 +200,9 @@ void enter_mouse(
 	if (!CE_MouseLock)
 		GetGlobalMouse(&PrevPosition);
 	
+#ifndef __MACH__
 	LoadCGMouseFunctions();
+#endif
 //#endif
 }
 
@@ -568,6 +570,7 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 }
 #endif
 
+#ifndef __MACH__
 void LoadCGMouseFunctions()
 {
 	CGWarpMouseCursorPosition_Ptr = (CGWarpMouseCursorPosition_Type)
@@ -576,7 +579,7 @@ void LoadCGMouseFunctions()
 	CGGetLastMouseDelta_Ptr = (CGGetLastMouseDelta_Type)
 		GetSystemFunctionPointer(CFSTR("CGGetLastMouseDelta"));
 }
-
+#endif
 
 /*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
