@@ -206,6 +206,9 @@ GLuint TxtrID;
 // External lighting?
 bool Use_Light = false;
 
+// Model overall transform?
+bool Use_Model_Transform = false;
+
 // How many rendering passes
 int NumRenderPasses = 1;
 
@@ -475,15 +478,15 @@ void DrawMainWindow()
 		switch(ShowAnim)
 		{
 		case ShowAnim_Neutral:
-			Model.FindPositions();
+			Model.FindPositions(Use_Model_Transform);
 			break;
 		
 		case ShowAnim_Frames:
-			Model.FindPositions(ThisFrame);
+			Model.FindPositions(Use_Model_Transform,ThisFrame);
 			break;
 		
 		case ShowAnim_Sequences:
-			Model.FindPositions(ThisSeq,ThisFrame);
+			Model.FindPositions(Use_Model_Transform,ThisSeq,ThisFrame);
 			break;
 		}
 		
@@ -630,6 +633,15 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 				printf("Light On\n");
 			else
 				printf("Light Off\n");
+			glutPostRedisplay();
+			break;
+		
+		case 'T':
+			Use_Model_Transform = !Use_Model_Transform;
+			if (Use_Model_Transform)
+				printf("Model Transform On\n");
+			else
+				printf("Model Transform Off\n");
 			glutPostRedisplay();
 			break;
 		
@@ -911,6 +923,10 @@ int main(int argc, char **argv)
 {
 	// Setting up for using frames and sequences
 	Model3D::BuildTrigTables();
+
+	// For debugging of use of overall model transforms: inverts the model	
+	for (int k=0; k<3; k++)
+		Model.TransformPos.M[k][k] = Model.TransformNorm.M[k][k] = -1;
 	
 	// Must be up here
 	glutInit(&argc, argv);

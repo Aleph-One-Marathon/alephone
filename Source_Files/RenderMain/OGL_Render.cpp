@@ -2067,10 +2067,10 @@ bool RenderModelSetup(rectangle_definition& RenderRectangle)
 			ModelPtr->Model.FindPositions(ModelSequence,ModelFrame);
 		}
 		else
-			ModelPtr->Model.FindPositions();	// Fallback: neutral
+			ModelPtr->Model.FindPositions(true);	// Fallback: neutral
 	}
 	else
-		ModelPtr->Model.FindPositions();	// Fallback: neutral (will do nothing for static models)
+		ModelPtr->Model.FindPositions(true);	// Fallback: neutral (will do nothing for static models)
 	
 	// For finding the clip planes: 0, 1, 2, 3, and 4
 	bool ClipLeft = false, ClipRight = false, ClipTop = false, ClipBottom = false, ClipLiquid = false;

@@ -227,17 +227,20 @@ struct Model3D
 	// No arguments is for the model's neutral position (uses only source array);
 	// this is also the case for bad frame and sequence indices.
 	
+	// The position-finding has an argument that determines whether to use the model's
+	// overall transform -- only applied to animated models.
+	
 	// Returns whether vertex-source data was used (present in animated models)
-	bool FindPositions();
+	bool FindPositions(bool UseModelTransform);
 	
 	// Returns whether or not the index was within range.
-	bool FindPositions(GLshort FrameIndex);
+	bool FindPositions(bool UseModelTransform, GLshort FrameIndex);
 	
 	// returns 0 for out-of-range sequence
 	GLshort NumSeqFrames(GLshort SeqIndex);
 	
 	// Returns whether or not the indices were in range.
-	bool FindPositions(GLshort SeqIndex, GLshort FrameIndex);
+	bool FindPositions(bool UseModelTransform, GLshort SeqIndex, GLshort FrameIndex);
 	
 	// Constructor
 	Model3D() {FindBoundingBox(); TransformPos.Identity(); TransformNorm.Identity();}
