@@ -3140,7 +3140,7 @@ void s_Remove_Item(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 1:
-	 	Item_Type = get_variable(int(inst.op1));
+	 	Item_Type = short(get_variable(int(inst.op1)));
 	}
 	
 	struct item_definition *definition= get_item_definition_external(Item_Type);
@@ -3163,13 +3163,13 @@ void s_Player_Control(script_instruction inst)
 	switch(inst.mode)
 	{			
 		case 1:
-			move_type = get_variable(int(inst.op1));
+			move_type = short(get_variable(int(inst.op1)));
 			value = int(inst.op2);
 		break;
 			
 		case 3:
-			move_type = get_variable(int(inst.op1));
-			value = get_variable(int(inst.op2));
+			move_type = short(get_variable(int(inst.op1)));
+			value = short(get_variable(int(inst.op2)));
 		break;
 			
 		default:

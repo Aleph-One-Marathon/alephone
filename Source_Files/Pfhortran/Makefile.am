@@ -8,16 +8,9 @@ libpfhortran_a_SOURCES = script_instructions.h script_parser.h scripting.h \
 
 EXTRA_libpfhortran_a_SOURCES = language_definition.h
 
-EXTRA_DIST = Pfhortran_Language_Definition
-
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
   -I$(top_srcdir)/Source_Files/Misc -I$(top_srcdir)/Source_Files/ModelView \
   -I$(top_srcdir)/Source_Files/Network -I$(top_srcdir)/Source_Files/RenderMain \
   -I$(top_srcdir)/Source_Files/RenderOther -I$(top_srcdir)/Source_Files/Sound \
   -I$(top_srcdir)/Source_Files/XML -I$(top_srcdir)/Source_Files
-
-$(srcdir)/language_definition.h: Pfhortran_Language_Definition
-	awk >$@ '!/^#/ {print "{\"" $$1 "\", 0x" $$2 "},";}' $<
-
-script_parser.o: $(srcdir)/language_definition.h
