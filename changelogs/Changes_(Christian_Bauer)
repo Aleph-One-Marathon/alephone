@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+September 14, 2000
+ - Pfhortran language definition is now compiled into the application; the
+   "Pfhortran_Language_Definition" file is not needed any more at runtime
+
 September 13, 2000
  - resource fork of MacBinary II files was not correctly accessed if data
    fork size was a multiple of 128 (or 0)

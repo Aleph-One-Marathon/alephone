@@ -1,0 +1,72 @@
+Aleph One/SDL BeOS Installation Instructions
+============================================
+
+The BeOS version of Aleph One/SDL is statically linked against a special
+version of SDL, so you don't need to install SDL to play Aleph One on BeOS
+(unless you want to compile the Aleph One sources).
+
+
+INSTALLING THE PROGRAM
+----------------------
+
+Simply uncompress the Aleph One/SDL BeOS archive. It contains the Aleph One
+application and associated data files ("Fonts" and an "MML" directory).
+You can move the Aleph One directory anywhere you like as long as the
+application is kept together with the data files.
+
+You also have to install Marathon data files, which is described in the
+next section.
+
+If you downloaded the Aleph One/SDL source, see "Compiling From Source",
+below.
+
+
+INSTALLING THE DATA FILES
+-------------------------
+
+To play Aleph One, you will also need Marathon graphics, sound and map
+files. Unfortunately, Bungie has not released these files to the public, so
+you must own a copy of Marathon 2 or Marathon Infinity (Marathon 1 data
+files don't work with Aleph One). For your convenience, I've created an
+archive containing the data files from the freely available Marathon
+Infinity Demo, converted to the formats needed by the SDL version of Aleph
+One, which can be downloaded from my Aleph One/SDL page:
+
+  http://www.uni-mainz.de/~bauec002/A1Main.html
+
+The archive contains the files "Images", "Map", "Map.resources", "Shapes",
+"Sounds" and "README" and has to be unpacked to the same directory as the
+"AlephOne" application.
+
+Alternatively, if you have a Marathon 2, Marathon Infinity or Marathon
+Trilogy Box Set CD, you can copy the needed files from the CD. This is a bit
+complicated, however, due to some ideosyncracies of the Mac HFS file system
+(every Mac file is really two files, one "data fork" and one "resource
+fork"). Aleph One/SDL needs these files:
+
+ "Images" (resource fork)
+ "Map" (data fork)
+ "Map.resources" (resource fork of "Map" file)
+ "Music" (data fork, optional, not included in Demo)
+ "Shapes" (data fork)
+ "Sounds" (data fork)
+
+Here's how to copy these files from a Mac Marathon CD under BeOS:
+
+  <to be written...>
+
+
+COMPILING FROM SOURCE
+---------------------
+
+If you didn't install SDL from source, you have to install the "SDL-devel"
+package to compile Aleph One.
+
+Under BeOS, you don't run the "configure" script. Instead, there is a
+special Makefile for compiling:
+
+ $ make -f Makefile.BeOS install
+
+This will create a new directory "AlephOne" in your "home" directory that
+contains the "AlephOne" application, the "Fonts" data file, and an "MML"
+directory.

@@ -4,6 +4,9 @@
 ## makefile-engine will do all of the hard work for you.  This handles both
 ## Intel and PowerPC builds of the BeOS.
 
+# Get version number from configure.in
+A1_VERSION := $(shell grep <configure.in INIT_AUTOMAKE | sed -e 's/.*\[//' -e 's/\].*//')
+
 ## Application Specific Settings ---------------------------------------------
 
 # specify the name of the binary
@@ -93,7 +96,7 @@ MACHINE=$(shell uname -m)
 ifeq ($(MACHINE), BePC)
   LIBS=be stdc++.r4
 else
-  LIBS=be game device media GL textencoding
+  LIBS=be game device media textencoding
 endif
 
 #	specify additional paths to directories following the standard
@@ -123,7 +126,7 @@ OPTIMIZE=
 #	to use.  For example, setting DEFINES to "DEBUG=1" will cause the
 #	compiler option "-DDEBUG=1" to be used.  Setting DEFINES to "DEBUG"
 #	would pass "-DDEBUG" on the compiler's command line.
-DEFINES= SDL HAVE_UNISTD_H VERSION=\"0.10.5\"
+DEFINES= SDL HAVE_UNISTD_H VERSION=\"$(A1_VERSION)\"
 
 #	specify special warning levels
 #	if unspecified default warnings will be used
@@ -163,16 +166,28 @@ DRIVER_PATH =
 include $(BUILDHOME)/etc/makefile-engine
 
 # Install under BeOS
+INSTALLDIR = /boot/home/AlephOne
 install: $(TARGET)
-	@if [ x$(prefix) == x ]; then \
-	  dest=/boot/home/AlephOne; \
-	else \
-	  dest=$(prefix)/AlephOne; \
-	fi; \
-	./mkinstalldirs $$dest; \
-	./mkinstalldirs $$dest/MML; \
-	cp $(TARGET) $$dest/AlephOne; \
-	cp data/Fonts $$dest; \
-	cp data/Pfhortran_Language_Definition $$dest; \
-	cp data/*.mml $$dest/MML; \
-	mimeset -f $$dest
+	./mkinstalldirs $(INSTALLDIR)
+	./mkinstalldirs $(INSTALLDIR)/MML
+	cp $(TARGET) $(INSTALLDIR)/AlephOne
+	cp data/Fonts $(INSTALLDIR)
+	cp data/*.mml $(INSTALLDIR)/MML
+	mimeset -f $(INSTALLDIR)
+
+# Make BeOS binary distribution
+DISTDIR = AlephOne-$(A1_VERSION)
+ARCHIVE = AlephOne-$(A1_VERSION)-BeOS-$(CPU).zip
+dist: $(TARGET)
+	-rm -rf $(DISTDIR)
+	mkdir $(DISTDIR)
+	mkdir $(DISTDIR)/MML
+	mkdir $(DISTDIR)/docs
+	cp $(TARGET) $(DISTDIR)/AlephOne
+	cp README INSTALL.BeOS COPYING COPYING.SDL $(DISTDIR)
+	cp data/Fonts $(DISTDIR)
+	cp data/*.mml $(DISTDIR)/MML
+	cp docs/MML.html docs/Cheat_Codes $(DISTDIR)/docs
+	mimeset -f $(DISTDIR)
+	zip -ry $(ARCHIVE) $(DISTDIR)
+	rm -rf $(DISTDIR)

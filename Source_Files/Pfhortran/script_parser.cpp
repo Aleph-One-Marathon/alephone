@@ -20,11 +20,7 @@
 
 // The name of the Pfhortran Language Def File.  Path could be included here.
 
-#ifdef SDL
-#define LANGDEFPATH "Pfhortran_Language_Definition"
-#else
 #define LANGDEFPATH "Pfhortran Language Definition"
-#endif
 
 
 enum /* symbol modes */
@@ -104,32 +100,47 @@ and shutdown.
 
 bool init_pfhortran(void)
 {	
-	FILE *lang_def;
-	char input_str[256];
-	int input_val;
-	bool err = false;
-	
 	pfhortran_is_on = false;	// In case we have some errors
-	
+
 	// init the instruction hash
 	instruction_hash = (symbol_def **)malloc(sizeof(symbol_def *) * 256);
 	memset(instruction_hash,0,sizeof(symbol_def *) * 256);
 	if (!instruction_hash)
 		return false;
 
+	bool err = false;
+
 #ifdef SDL
-	FileSpecifier lang_def_path;
-	lang_def_path.SetToGlobalDataDir();
-	lang_def_path.AddPart(LANGDEFPATH);
-	lang_def = fopen(lang_def_path.GetPath(), "r");
+
+	// Read tokens from array
+	static const struct {
+		const char *str;
+		int val;
+	} tokens[] = {
+#include "language_definition.h"
+		NULL, 0
+	};
+
+	for (int i=0; tokens[i].str != NULL; i++) {
+		char str[256];
+		strcpy(str, tokens[i].str);	// string gets modified by lowercase_string()
+		if (!put_symbol(str, (float)tokens[i].val, absolute, instruction_hash)) {
+			err = true;
+			break;
+		}
+	}
+
 #else
-	lang_def = fopen(LANGDEFPATH,"r");
-#endif
+
+	// Read tokens from language definition file
+	FILE *lang_def = fopen(LANGDEFPATH,"r");
 	if (lang_def == NULL) {
 		dispose_pfhortran();
 		return false;
 	}
 
+	char input_str[256];
+	int input_val;
 	while (fscanf(lang_def, "%s %x\n", input_str, &input_val) != EOF)
 	{
 		if (input_str && input_str[0] != '#')
@@ -148,6 +159,8 @@ bool init_pfhortran(void)
 	
 	}
 	fclose(lang_def);
+
+#endif
 	
 	if (err)
 	{

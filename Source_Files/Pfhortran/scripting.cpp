@@ -25,12 +25,7 @@ Aug 15, 2000 (Loren Petrich):
 #include "game_wad.h"
 #include "game_errors.h"
 
-// LP addition:
 #include "FileHandler.h"
-
-#ifdef SDL
-#include "resource_manager.h"
-#endif
 
 #include <string.h>
 #include <stdlib.h>
@@ -72,13 +67,9 @@ void execute_instruction(int inst);
 bool script_in_use(void);
 void do_next_instruction(void);
 bool instruction_finished(void);
- 
 
- 
- 
- 
 
- 
+
 void clean_up_script(void)
 {
 	if (current_script)
@@ -418,8 +409,3 @@ void activate_got_item_trap(int which)
 	activate_trap(got_item);
 	set_trap_value(got_item, which);
 }
- 
- 
- 
- 
- 

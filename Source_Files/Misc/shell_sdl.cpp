@@ -61,12 +61,6 @@ static void process_event(const SDL_Event &event);
 static void usage(const char *prg_name)
 {
 	printf(
-		"Aleph One " VERSION "\n"
-		"http://source.bungie.org/\n\n"
-		"Original code by Bungie Software <http://www.bungie.com/>\n"
-		"Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
-	    "Expat XML library by James Clark\n"
-		"SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
 		"\nUsage: %s\n"
 		"\t[-h | --help]          Display this help message\n"
 		"\t[-v | --version]       Display the game version\n"
@@ -86,6 +80,25 @@ static void usage(const char *prg_name)
 
 int main(int argc, char **argv)
 {
+	// Print banner
+	printf(
+		"Aleph One " VERSION "\n"
+		"http://source.bungie.org/\n\n"
+		"Original code by Bungie Software <http://www.bungie.com/>\n"
+		"Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
+	    "Expat XML library by James Clark\n"
+		"SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n\n"
+		"This is free software with ABSOLUTELY NO WARRANTY.\n"
+		"You are welcome to redistribute it under certain conditions.\n"
+		"For details, see the file COPYING.\n"
+#ifdef __BEOS__
+		// BeOS versions is statically linked against SDL, so we have to include this:
+		"\nSimple DirectMedia Layer (SDL) Library included under the terms of the\n"
+		"GNU Library General Public License.\n"
+		"For details, see the file COPYING.SDL.\n"
+#endif
+	);
+
 	// Parse arguments
 	char *prg_name = argv[0];
 	argc--; argv++;

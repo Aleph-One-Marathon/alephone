@@ -43,7 +43,7 @@ Set_Camera_Pos 24
 Set_Camera_YP 25
 Activate_Camera 26
 Use_Camera 27
---Variable_Data--
+#--Variable_Data--
 TRUE 1
 FALSE 0
 knife 0
