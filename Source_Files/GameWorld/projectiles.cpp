@@ -441,7 +441,11 @@ void move_projectiles(
 									}
 									else
 									{
-										destroy_persistent_projectile= try_and_add_player_item(monster_obstruction_index, projectile->permutation);
+										if(MONSTER_IS_PLAYER(get_monster_data(monster_obstruction_index)))
+										{
+											short player_obstruction_index= monster_index_to_player_index(monster_obstruction_index);
+											destroy_persistent_projectile= try_and_add_player_item(player_obstruction_index, projectile->permutation);
+										}
 									}
 								}
 								else
