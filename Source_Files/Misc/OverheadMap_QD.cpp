@@ -6,6 +6,10 @@
 	
 	Subclass of OverheadMapClass for doing rendering with Classic MacOS Quickdraw
 	Code originally from overhead_map_macintosh.c
+
+Aug 6, 2000 (Loren Petrich):
+	Added perimeter drawing to drawing commands for the player object;
+	this guarantees that this object will always be drawn reasonably correctly
 */
 
 #include <string.h>
@@ -73,6 +77,7 @@ void OverheadMap_QD_Class::draw_thing(
 	}
 }
 
+
 void OverheadMap_QD_Class::draw_player(
 	world_point2d& center,
 	angle facing,
@@ -95,8 +100,12 @@ void OverheadMap_QD_Class::draw_player(
 	translate_point2d(triangle+0, front>>shrink, facing);
 	translate_point2d(triangle+1, rear>>shrink, normalize_angle(facing+rear_theta));
 	translate_point2d(triangle+2, rear>>shrink, normalize_angle(facing-rear_theta));
+		
+	// LP: Modified this to check on whether the sides are too short;
+	// if so, then will render a line
 	
 	// Get the scale back
+	/*
 	short scale = (OVERHEAD_MAP_MAXIMUM_SCALE-shrink);
 	if (scale < 2)
 	{
@@ -107,6 +116,7 @@ void OverheadMap_QD_Class::draw_player(
 			LineTo(triangle[2].x, triangle[2].y);
 	}
 	else
+	*/
 	{
 		polygon= OpenPoly();
 		MoveTo(triangle[2].x, triangle[2].y);
@@ -114,6 +124,7 @@ void OverheadMap_QD_Class::draw_player(
 		ClosePoly();
 		PenSize(1, 1);
 		FillPoly(polygon, &qd.black);
+		FramePoly(polygon);	// LP addition: perimeter drawing makes small version easier to see
 		KillPoly(polygon);
 	}
 }
