@@ -119,10 +119,60 @@ int w_right_button::layout(void)
 
 
 /*
- *  Selection widget (base class)
+ *  Selection button
  */
 
 const int SPACING = 8;
+const int VISIBLE_CHARS = 32;
+
+w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a) : widget(NORMAL_FONT), name(n), selection(s), proc(p), arg(a) {}
+
+int w_select_button::layout(void)
+{
+	int name_width = text_width(name, font, style);
+	int max_selection_width = font_width(font) * VISIBLE_CHARS;
+
+	rect.x = -(SPACING + name_width);
+	rect.w = name_width + 2 * SPACING + max_selection_width;
+	rect.h = font_line_height(font);
+	selection_x = name_width + 2 * SPACING;
+
+	return rect.h;
+}
+
+void w_select_button::draw(SDL_Surface *s) const
+{
+	int y = rect.y + font_ascent(font);
+
+	// Name
+	draw_text(s, name, rect.x, y, active ? get_dialog_color(s, LABEL_ACTIVE_COLOR) : get_dialog_color(s, LABEL_COLOR), font, style);
+
+	// Selection
+	set_drawing_clip_rectangle(0, rect.x + selection_x, s->h, rect.x + rect.w);
+	draw_text(s, selection, rect.x + selection_x, y, active ? get_dialog_color(s, ITEM_ACTIVE_COLOR) : get_dialog_color(s, ITEM_COLOR), font, style);
+	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+
+	// Cursor
+	if (active) {
+		//!!
+	}
+}
+
+void w_select_button::click(int x, int y)
+{
+	proc(arg);
+}
+
+void w_select_button::set_selection(const char *s)
+{
+	selection = s;
+	dirty = true;
+}
+
+
+/*
+ *  Selection widget (base class)
+ */
 
 w_select::w_select(const char *n, int s, const char **l) : widget(NORMAL_FONT), name(n), labels(l), selection(s)
 {
@@ -257,7 +307,7 @@ void w_player_color::draw(SDL_Surface *s) const
  *  Text entry widget
  */
 
-const int VISIBLE_CHARS = 16;
+const int TE_VISIBLE_CHARS = 16;
 
 w_text_entry::w_text_entry(const char *n, int max, const char *initial_text) : widget(NORMAL_FONT), name(n), max_chars(max)
 {
@@ -277,7 +327,7 @@ w_text_entry::~w_text_entry()
 int w_text_entry::layout(void)
 {
 	int name_width = text_width(name, font, style);
-	max_text_width = font_width(text_font) * VISIBLE_CHARS;
+	max_text_width = font_width(text_font) * TE_VISIBLE_CHARS;
 
 	rect.x = -(SPACING + name_width);
 	rect.w = name_width + 2 * SPACING + max_text_width;
@@ -450,7 +500,7 @@ void w_key::event(SDL_Event &e)
 				set_key(e.key.keysym.sym);
 			dirty = true;
 			binding = false;
-			e.type = SDL_NOEVENT;
+			e.key.keysym.sym = SDLK_DOWN;	// Activate next widget
 		}
 	}
 }

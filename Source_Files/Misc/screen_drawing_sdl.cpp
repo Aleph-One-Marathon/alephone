@@ -654,6 +654,29 @@ void _fill_screen_rectangle(screen_rectangle *rectangle, short color_index)
 	_fill_rect(rectangle, color_index);
 }
 
+void draw_rectangle(SDL_Surface *s, const SDL_Rect *rectangle, uint32 pixel)
+{
+	bool do_update = (s == SDL_GetVideoSurface());
+	SDL_Rect r = {rectangle->x, rectangle->y, rectangle->w, 1};
+	SDL_FillRect(s, &r, pixel);
+	if (do_update)
+		SDL_UpdateRects(s, 1, &r);
+	r.y += rectangle->h - 1;
+	SDL_FillRect(s, &r, pixel);
+	if (do_update)
+		SDL_UpdateRects(s, 1, &r);
+	r.y = rectangle->y;
+	r.w = 1;
+	r.h = rectangle->h;
+	SDL_FillRect(s, &r, pixel);
+	if (do_update)
+		SDL_UpdateRects(s, 1, &r);
+	r.x += rectangle->w - 1;
+	SDL_FillRect(s, &r, pixel);
+	if (do_update)
+		SDL_UpdateRects(s, 1, &r);
+}
+
 void _frame_rect(screen_rectangle *rectangle, short color_index)
 {
 	// Get color
@@ -662,22 +685,8 @@ void _frame_rect(screen_rectangle *rectangle, short color_index)
 	uint32 pixel = SDL_MapRGB(draw_surface->format, color.r, color.g, color.b);
 
 	// Draw rectangle
-	SDL_Rect r = {rectangle->left, rectangle->top, rectangle->right - rectangle->left, 1};
-	SDL_FillRect(draw_surface, &r, pixel);
-	r.y = rectangle->bottom - 1;
-	SDL_FillRect(draw_surface, &r, pixel);
-	r.y = rectangle->top;
-	r.w = 1;
-	r.h = rectangle->bottom - rectangle->top;
-	SDL_FillRect(draw_surface, &r, pixel);
-	r.x = rectangle->right - 1;
-	SDL_FillRect(draw_surface, &r, pixel);
-	if (draw_surface == SDL_GetVideoSurface()) {
-		if (rectangle)
-			SDL_UpdateRects(draw_surface, 1, &r);
-		else
-			SDL_UpdateRect(draw_surface, 0, 0, 0, 0);
-	}
+	SDL_Rect r = {rectangle->left, rectangle->top, rectangle->right - rectangle->left, rectangle->bottom - rectangle->top};
+	draw_rectangle(draw_surface, &r, pixel);
 }
 
 void _erase_screen(short color_index)

@@ -60,9 +60,9 @@ static Boolean match_wad_checksum_callback(FSSpec *file, void *data);
 static Boolean checksum_and_not_base_callback(FSSpec *file, void *data);
 static Boolean match_modification_date_callback(FSSpec *file, void *data);
 static bool find_wad_file_with_checksum_in_directory(FSSpec *matching_file, short vRefNum,
-	long parID, unsigned long file_type, unsigned long checksum);
+	long parID, unsigned long file_type, uint32 checksum);
 static bool find_file_with_modification_date_in_directory(FSSpec *matching_file, short vRefNum,
-	long parID, unsigned long file_type, unsigned long modification_date);
+	long parID, unsigned long file_type, TimeType modification_date);
 */
 
 /* ------------- code! */
@@ -184,7 +184,7 @@ bool find_file_with_modification_date(
 	// FileDesc *matching_file,
 	int file_type,
 	short path_resource_id,
-	unsigned long modification_date)
+	TimeType modification_date)
 {
 	OSErr err;
 	FSSpec app_spec;
@@ -376,7 +376,7 @@ static bool find_file_with_modification_date_in_directory(
 	long parID,
 	*/
 	int file_type,
-	unsigned long modification_date)
+	TimeType modification_date)
 {
 	bool success= false;
 	FileFinder pb;

@@ -125,7 +125,7 @@ bool res_file_t::read_map(void)
 	// Verify integrity of resource header
 	if (data_offset >= file_size || map_offset >= file_size ||
 	    data_offset + data_size > file_size || map_offset + map_size > file_size) {
-		fprintf(stderr, "Resource header corrupt\n");
+		//fprintf(stderr, "Resource header corrupt\n");
 		return false;
 	}
 
@@ -137,7 +137,7 @@ bool res_file_t::read_map(void)
 
 	// Verify integrity of map header
 	if (type_list_offset >= file_size) {
-		fprintf(stderr, "Resource map header corrupt\n");
+		//fprintf(stderr, "Resource map header corrupt\n");
 		return false;
 	}
 
@@ -154,7 +154,7 @@ bool res_file_t::read_map(void)
 
 		// Verify integrity of item
 		if (ref_list_offset >= file_size) {
-			fprintf(stderr, "Resource type list corrupt\n");
+			//fprintf(stderr, "Resource type list corrupt\n");
 			return false;
 		}
 
@@ -174,7 +174,7 @@ bool res_file_t::read_map(void)
 
 			// Verify integrify of item
 			if (rsrc_data_offset >= file_size) {
-				fprintf(stderr, "Resource reference list corrupt\n");
+				//fprintf(stderr, "Resource reference list corrupt\n");
 				return false;
 			}
 
@@ -216,7 +216,7 @@ SDL_RWops *open_res_file(FileSpecifier &file)
 		} else {
 
 			// Error reading resource map
-			fprintf(stderr, "Error reading resource map of '%s'\n", file.GetName());
+			//fprintf(stderr, "Error reading resource map of '%s'\n", file.GetName());
 			SDL_FreeRW(f);
 			return NULL;
 		}

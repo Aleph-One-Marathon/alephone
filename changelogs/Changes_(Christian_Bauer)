@@ -1,5 +1,18 @@
 Change log of the SDL version of Aleph One
 
+September 6, 2000
+ - implemented environment preferences dialog
+ - moved TimeType to cstypes.h
+ - implemented file finding facilities
+ - implemented find_wad_file_that_has_checksum() and find_file_with_modification_date()
+ - find_file_with_modification_date() now takes TimeType argument
+
+September 5, 2000
+ - the rendering engine now uses the native pixel format of the machine it's
+   running on, not MacOS xRGB 1555 or 8888 formats; this can provide a
+   significant speedup, especially on PCs where 16 bit pixels are usually
+   RGB 565
+
 September 4, 2000
  - implemented dialog/widget system for SDL
  - first version of preferences dialogs for SDL version (some items still

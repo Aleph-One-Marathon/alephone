@@ -8,10 +8,18 @@
 #include "sdl_widgets.h"
 #include "screen.h"
 #include "images.h"
+#include "find_files.h"
+#include "screen_drawing.h"
+
+#include <string.h>
+#include <vector>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>	// for getlogin()
 #endif
+
+// From shell_sdl.cpp
+extern FileSpecifier global_data_dir, local_data_dir;
 
 // Prototypes
 static void player_dialog(void *arg);
@@ -71,7 +79,7 @@ void handle_preferences(void)
 	d.add(new w_button("GRAPHICS", graphics_dialog, &d));
 	d.add(new w_button("SOUND", sound_dialog, &d));
 	d.add(new w_button("CONTROLS", controls_dialog, &d));
-//	d.add(new w_button("ENVIRONMENT", environment_dialog, &d));
+	d.add(new w_button("ENVIRONMENT", environment_dialog, &d));
 	d.add(new w_spacer());
 	d.add(new w_button("RETURN", dialog_cancel, &d));
 
@@ -387,40 +395,6 @@ static void controls_dialog(void *arg)
 
 
 /*
- *  Handle environment dialog
- */
-
-static void environment_dialog(void *arg)
-{
-	dialog *parent = (dialog *)arg;
-
-	// Create dialog
-	dialog d;
-	d.add(new w_static_text("ENVIRONMENT SETTINGS", TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
-	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
-
-	// Clear screen
-	clear_screen();
-
-	// Run dialog
-	if (d.run() == 0) {	// Accepted
-		bool changed = false;
-
-		if (changed) {
-			load_environment_from_preferences();
-			write_preferences();
-		}
-	}
-
-	// Redraw parent dialog
-	clear_screen();
-	parent->draw();
-}
-
-
-/*
  *  Keyboard dialog
  */
 
@@ -506,6 +480,180 @@ static void keyboard_dialog(void *arg)
 		set_keys(input_preferences->keycodes);
 		if (changed)
 			write_preferences();
+	}
+
+	// Redraw parent dialog
+	clear_screen();
+	parent->draw();
+}
+
+
+/*
+ *  Handle environment dialog
+ */
+
+class w_env_list : public w_list<FileSpecifier> {
+public:
+	w_env_list(const vector<FileSpecifier> &items, const char *selection, dialog *d) : w_list<FileSpecifier>(items, 400, 15, 0), parent(d)
+	{
+		vector<FileSpecifier>::const_iterator i, end = items.end();
+		int num = 0;
+		for (i = items.begin(); i != end; i++, num++) {
+			if (strcmp(i->GetName(), selection) == 0) {
+				set_selection(num);
+				break;
+			}
+		}
+	}
+
+	void item_selected(void)
+	{
+		parent->quit(0);
+	}
+
+	void draw_item(vector<FileSpecifier>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
+	{
+		y += font_ascent(font);
+		char str[256];
+		i->GetLastPart(str);
+		set_drawing_clip_rectangle(0, x, s->h, x + width);
+		draw_text(s, str, x, y, selected ? get_dialog_color(s, ITEM_ACTIVE_COLOR) : get_dialog_color(s, ITEM_COLOR), font, style);
+		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+	}
+
+private:
+	dialog *parent;
+};
+
+class w_env_select : public w_select_button {
+public:
+	w_env_select(const char *name, const char *path, const char *m, int t, dialog *d) : w_select_button(name, item_name, select_item_callback, this), parent(d), menu_title(m), type(t)
+	{
+		set_path(path);
+	}
+	~w_env_select() {}
+
+	void set_path(const char *p)
+	{
+		item.SetName(p, type);
+		item.GetLastPart(item_name);
+		set_selection(item_name);
+	}
+
+	const char *get_path(void) const
+	{
+		return item.GetName();
+	}
+
+	FileSpecifier &get_file_specifier(void)
+	{
+		return item;
+	}
+
+private:
+	void select_item(dialog *parent);
+	static void select_item_callback(void *arg)
+	{
+		w_env_select *obj = (w_env_select *)arg;
+		obj->select_item(obj->parent);
+	}
+
+	dialog *parent;
+	const char *menu_title;	// Selection menu title
+
+	FileSpecifier item;		// File specification
+	int type;				// File type
+	char item_name[256];	// File name (excluding directory part)
+};
+
+void w_env_select::select_item(dialog *parent)
+{
+	// Find available files
+	vector<FileSpecifier> files;
+	FindAllFiles finder(files);
+	finder.Find(global_data_dir, type);
+	finder.Find(local_data_dir, type);
+
+	// Create dialog
+	dialog d;
+	d.add(new w_static_text(menu_title, TITLE_FONT, TITLE_COLOR));
+	d.add(new w_spacer());
+	w_env_list *list_w = new w_env_list(files, item.GetName(), &d);
+	d.add(list_w);
+	d.add(new w_spacer());
+	d.add(new w_button("CANCEL", dialog_cancel, &d));
+
+	// Clear screen
+	clear_screen();
+
+	// Run dialog
+	if (d.run() == 0) // Accepted
+		set_path(files[list_w->get_selection()].GetName());
+
+	// Redraw parent dialog
+	clear_screen();
+	parent->draw();
+}
+
+static void environment_dialog(void *arg)
+{
+	dialog *parent = (dialog *)arg;
+
+	// Create dialog
+	dialog d;
+	d.add(new w_static_text("ENVIRONMENT SETTINGS", TITLE_FONT, TITLE_COLOR));
+	d.add(new w_spacer());
+	w_env_select *map_w = new w_env_select("Map", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
+	d.add(map_w);
+//	w_env_select *physics_w = new w_env_select("Physics", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
+//	d.add(physics_w);
+	w_env_select *shapes_w = new w_env_select("Shapes", environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
+	d.add(shapes_w);
+	w_env_select *sounds_w = new w_env_select("Sounds", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
+	d.add(sounds_w);
+	d.add(new w_spacer());
+	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
+	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+	// Clear screen
+	clear_screen();
+
+	// Run dialog
+	if (d.run() == 0) {	// Accepted
+		bool changed = false;
+
+		const char *path = map_w->get_path();
+		if (strcmp(path, environment_preferences->map_file)) {
+			strcpy(environment_preferences->map_file, path);
+			environment_preferences->map_checksum = read_wad_file_checksum(map_w->get_file_specifier());
+			changed = true;
+		}
+
+//		path = physics_w->get_path();
+//		if (strcmp(path, environment_preferences->physics_file)) {
+//			strcpy(environment_preferences->physics_file, path);
+//			environment_preferences->physics_checksum = read_wad_file_checksum(physics_w->get_file_specifier());
+//			changed = true;
+//		}
+
+		path = shapes_w->get_path();
+		if (strcmp(path, environment_preferences->shapes_file)) {
+			strcpy(environment_preferences->shapes_file, path);
+			environment_preferences->shapes_mod_date = shapes_w->get_file_specifier().GetDate();
+			changed = true;
+		}
+
+		path = sounds_w->get_path();
+		if (strcmp(path, environment_preferences->sounds_file)) {
+			strcpy(environment_preferences->sounds_file, path);
+			environment_preferences->sounds_mod_date = sounds_w->get_file_specifier().GetDate();
+			changed = true;
+		}
+
+		if (changed) {
+			load_environment_from_preferences();
+			write_preferences();
+		}
 	}
 
 	// Redraw parent dialog

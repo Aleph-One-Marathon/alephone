@@ -13,12 +13,12 @@ Aug 26, 2000 (Loren Petrich):
 
 #include "FileHandler.h"
 
-
-/* Find all files of a given type.. */
-
 // Finds every type of file
 const int WILDCARD_TYPE = NONE;
 
+#if defined(mac)
+
+/* Find all files of a given type.. */
 
 enum {
 	_fill_buffer, 				/* Fill the buffer with matches */
@@ -39,13 +39,6 @@ class FileFinder
 {
 	// Temporary stuff:
 	FileSpecifier TempFile;
-	
-#ifdef mac
-	// MacOS-specific temporary stuff
-	CInfoPBRec pb; /* static to prevent stack overflow.. */
-	OSType type_to_find;
-	OSErr Err;
-#endif
 	
 	bool Enumerate(DirectorySpecifier& Dir);
 
@@ -72,9 +65,42 @@ public:
 	// Does the finding
 	bool Find();
 	
-#ifdef mac
+	// Platform-specific members
 	short GetError() {return Err;}
-#endif
+
+private:
+	CInfoPBRec pb; /* static to prevent stack overflow.. */
+	OSType type_to_find;
+	OSErr Err;
 };
+
+#elif defined(SDL)
+
+#include <vector>
+
+// File-finder base class
+class FileFinder {
+public:
+	FileFinder() {}
+	virtual ~FileFinder() {}
+
+	void Find(DirectorySpecifier &dir, int type, bool recursive = true);
+
+protected:
+	// Gets called for each found file, returns true if search is to be aborted
+	virtual bool found(FileSpecifier &file) = 0;
+};
+
+// Find all files of given type and append them to a vector
+class FindAllFiles : public FileFinder {
+public:
+	FindAllFiles(vector<FileSpecifier> &v) : dest_vector(v) {dest_vector.clear();}
+
+private:
+	bool found(FileSpecifier &file);
+	vector<FileSpecifier> &dest_vector;
+};
+
+#endif
 
 #endif

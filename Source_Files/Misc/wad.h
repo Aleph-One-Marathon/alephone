@@ -169,7 +169,7 @@ bool find_wad_file_that_has_checksum(FileSpecifier& File,
 
 /* Added in here for simplicity.  Really should be somewhere else.. */
 bool find_file_with_modification_date(FileSpecifier& File,
-	int file_type, short path_resource_id, unsigned long modification_date);
+	int file_type, short path_resource_id, TimeType modification_date);
 
 /* ------------ Flat wad functions */
 /* These functions are used for transferring data, and it completely encapsulates */

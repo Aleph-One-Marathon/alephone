@@ -310,6 +310,8 @@ short get_level_number_from_user(void)
 	int maximum_level_number = 0;
 	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point))
 		maximum_level_number++;
+	if (maximum_level_number == 0)
+		maximum_level_number = 1;
 
 	// Create dialog
 	dialog d;

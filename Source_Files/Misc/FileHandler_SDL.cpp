@@ -16,6 +16,8 @@
 #include <errno.h>
 #include <string>
 
+#include <SDL_endian.h>
+
 #ifdef HAVE_UNISTD_H
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -204,12 +206,12 @@ const FileSpecifier &FileSpecifier::operator=(const FileSpecifier &other)
 	return *this;
 }
 
-void FileSpecifier::GetName(char *Name)
+void FileSpecifier::GetName(char *Name) const
 {
 	strcpy(Name, name.c_str());
 }
 
-void FileSpecifier::SetName(char *Name, int Type)
+void FileSpecifier::SetName(const char *Name, int Type)
 {
 	name = Name;
 }
@@ -223,7 +225,7 @@ bool FileSpecifier::Create(int Type)
 }
 
 // Create directory
-bool FileSpecifier::CreateDirectory()
+bool FileSpecifier::CreateDirectory() const
 {
 #if defined(__unix__) || defined(__BEOS__)
 
@@ -282,10 +284,66 @@ TimeType FileSpecifier::GetDate()
 #endif
 }
 
-// Get file types
+// Determine file type
 int FileSpecifier::GetType()
 {
-	// No file types
+	// Open file
+	OpenedFile f;
+	if (!Open(f))
+		return NONE;
+	SDL_RWops *p = f.GetRWops();
+	long file_length = 0;
+	f.GetLength(file_length);
+
+	// Check for Sounds file
+	{
+		SDL_RWseek(p, 0, SEEK_SET);
+		uint32 version = SDL_ReadBE32(p);
+		uint32 tag = SDL_ReadBE32(p);
+		if (version == 1 && tag == FOUR_CHARS_TO_INT('s', 'n', 'd', '2'))
+			return _typecode_sounds;
+	}
+
+	// Check for Map/Physics file
+	{
+		SDL_RWseek(p, 0, SEEK_SET);
+		int version = SDL_ReadBE16(p);
+		int data_version = SDL_ReadBE16(p);
+		if ((version == 0 || version == 1 || version == 2 || version == 4) && (data_version == 0 || data_version == 1 || data_version == 2)) {
+			SDL_RWseek(p, 68, SEEK_CUR);
+			int32 directory_offset = SDL_ReadBE32(p);
+			if (directory_offset >= file_length)
+				goto not_map;
+			SDL_RWseek(p, 128, SEEK_SET);
+			uint32 tag = SDL_ReadBE32(p);
+			if (tag == FOUR_CHARS_TO_INT('L', 'I', 'N', 'S') || tag == FOUR_CHARS_TO_INT('P', 'N', 'T', 'S'))
+				return _typecode_scenario;
+			if (tag == FOUR_CHARS_TO_INT('M', 'N', 'p', 'x'))
+				return _typecode_physics;
+		}
+not_map: ;
+	}
+
+	// Check for Shapes file
+	{
+		SDL_RWseek(p, 0, SEEK_SET);
+		for (int i=0; i<32; i++) {
+			uint32 status_flags = SDL_ReadBE32(p);
+			int32 offset = SDL_ReadBE32(p);
+			int32 length = SDL_ReadBE32(p);
+			int32 offset16 = SDL_ReadBE32(p);
+			int32 length16 = SDL_ReadBE32(p);
+			if (status_flags != 0
+			 || (offset != NONE && (offset >= file_length || offset + length > file_length))
+			 || (offset16 != NONE && (offset16 >= file_length || offset16 + length16 > file_length)))
+				goto not_shapes;
+			SDL_RWseek(p, 12, SEEK_CUR);
+		}
+		return _typecode_shapes;
+not_shapes: ;
+	}
+
+	// Not identified
 	return NONE;
 }
 
@@ -332,7 +390,7 @@ void FileSpecifier::AddPart(const string &part)
 }
 
 // Get last element of path
-void FileSpecifier::GetLastPart(char *part)
+void FileSpecifier::GetLastPart(char *part) const
 {
 #if defined(__unix__) || defined(__BEOS__)
 
@@ -348,7 +406,7 @@ void FileSpecifier::GetLastPart(char *part)
 }
 
 // Read directory contents
-bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
+bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec) const
 {
 #if defined(__unix__) || defined(__BEOS__)
 

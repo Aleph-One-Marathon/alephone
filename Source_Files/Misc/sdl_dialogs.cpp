@@ -34,6 +34,7 @@ static TextSpec dialog_font_spec[NUM_DIALOG_FONTS] = {
 
 static SDL_Color dialog_color[NUM_DIALOG_COLORS] = {
 	{0x00, 0x00, 0x00}, // BLACK COLOR
+	{0xff, 0xff, 0xff}, // WHITE COLOR
 	{0xc0, 0xc0, 0xc0}, // TITLE_COLOR
 	{0xc0, 0x00, 0x00}, // BUTTON_COLOR
 	{0xff, 0x80, 0x80}, // BUTTON_ACTIVE_COLOR
@@ -42,7 +43,10 @@ static SDL_Color dialog_color[NUM_DIALOG_COLORS] = {
 	{0x40, 0xff, 0x40}, // ITEM_COLOR
 	{0xff, 0xff, 0xff}, // ITEM_ACTIVE_COLOR
 	{0x40, 0x40, 0x40}, // DISABLED_COLOR
-	{0xff, 0xff, 0xff}  // MESSAGE_COLOR
+	{0xff, 0xff, 0xff}, // MESSAGE_COLOR
+	{0xff, 0xff, 0xff}, // BORDER_COLOR
+	{0xff, 0x80, 0x00}, // THUMB_COLOR
+	{0xff, 0xff, 0x00}  // THUMB_ACTIVE_COLOR
 };
 
 
@@ -342,14 +346,18 @@ void dialog::event(SDL_Event &e)
 					quit(-1);
 					break;
 				case SDLK_UP:			// Up = Activate previous widget
-				case SDLK_PAGEUP:
 				case SDLK_LEFT:
 					activate_prev_widget();
 					break;
 				case SDLK_DOWN:			// Down = Activate next widget
-				case SDLK_PAGEDOWN:
 				case SDLK_RIGHT:
 					activate_next_widget();
+					break;
+				case SDLK_TAB:
+					if (e.key.keysym.mod & KMOD_SHIFT)
+						activate_prev_widget();
+					else
+						activate_next_widget();
 					break;
 				case SDLK_RETURN:		// Return = Action on widget
 					active_widget->click(0, 0);
@@ -360,23 +368,26 @@ void dialog::event(SDL_Event &e)
 			}
 			break;
 
+		// Mouse moved
+		case SDL_MOUSEMOTION: {
+			int x = e.motion.x, y = e.motion.y;
+			int num = find_widget(x, y);
+			if (num >= 0) {
+				activate_widget(num);
+				widget *w = widgets[num];
+				w->mouse_move(x - rect.x - w->rect.x, y - rect.y - w->rect.y);
+			}
+			break;
+		}
+
 		// Mouse button pressed
 		case SDL_MOUSEBUTTONDOWN: {
 			int x = e.button.x, y = e.button.y;
 			int num = find_widget(x, y);
 			if (num >= 0) {
 				widget *w = widgets[num];
-				w->click(x - rect.x - w->rect.x, y - rect.x - w->rect.y);
+				w->click(x - rect.x - w->rect.x, y - rect.y - w->rect.y);
 			}
-			break;
-		}
-
-		// Mouse moved
-		case SDL_MOUSEMOTION: {
-			int x = e.motion.x, y = e.motion.y;
-			int num = find_widget(x, y);
-			if (num >= 0)
-				activate_widget(num);
 			break;
 		}
 

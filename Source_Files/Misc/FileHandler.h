@@ -249,14 +249,6 @@ public:
 #endif
 
 
-// Time-specification data type (can be set to 64-bit if desired)
-#if defined(mac)
-typedef unsigned long TimeType;
-#else
-typedef time_t TimeType;	// Maybe this can also be used on MacOS, so there wouldn't be any need for TimeType?
-#endif
-
-
 #ifdef SDL
 // Directory entry, returned by FileSpecifier::ReadDirectory()
 struct dir_entry {
@@ -309,8 +301,8 @@ public:
 	// The typecode is for automatically adding a suffix;
 	// NONE means add none
 	
-	void GetName(char *Name);
-	void SetName(char *Name, int Type);
+	void GetName(char *Name) const;
+	void SetName(const char *Name, int Type);
 	
 #ifdef mac
 	// Move the directory specification
@@ -362,7 +354,7 @@ public:
 	// Copy file specification
 	const FileSpecifier &operator=(const FileSpecifier &other);
 	
-	// Platform-dependent parts
+	// Platform-specific members
 #ifdef mac
 
 	FileSpecifier(): Err(noErr) {}
@@ -392,17 +384,20 @@ private:
 	FileSpecifier(const char *s) : name(s) {}
 	FileSpecifier(const FileSpecifier &other) : name(other.name) {}
 
+	bool operator==(const FileSpecifier &other) const {return name == other.name;}
+	bool operator!=(const FileSpecifier &other) const {return name != other.name;}
+
 	void SetToLocalDataDir();	// Per-user directory, where prefs, recordings and saved games go
 	void SetToGlobalDataDir();	// Data file directory, where "Images", "Shapes" etc. are stored
 
 	void AddPart(const string &part);
-	void GetLastPart(char *part);
-	const char *GetName(void) {return name.c_str();}
+	void GetLastPart(char *part) const;
+	const char *GetName(void) const {return name.c_str();}
 
-	bool CreateDirectory();
-	bool ReadDirectory(vector<dir_entry> &vec);
+	bool CreateDirectory() const;
+	bool ReadDirectory(vector<dir_entry> &vec) const;
 
-	int GetError() {return errno;}
+	int GetError() const {return errno;}
 
 private:
 	string name;	// Path name

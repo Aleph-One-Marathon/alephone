@@ -12,8 +12,10 @@ typedef SInt16 int16;
 typedef UInt16 uint16;
 typedef SInt32 int32;
 typedef UInt32 uint32;
+typedef uint32 TimeType;
 #elif defined(__BEOS__)
 #include <support/SupportDefs.h>
+typedef time_t TimeType;
 #elif defined(SDL)
 typedef Uint8 uint8;
 typedef Sint8 int8;
@@ -21,6 +23,7 @@ typedef Uint16 uint16;
 typedef Sint16 int16;
 typedef Uint32 uint32;
 typedef Sint32 int32;
+typedef time_t TimeType;
 #endif
 
 // Minimum and maximum values for these types

@@ -107,10 +107,10 @@ struct environment_preferences_data
 	char shapes_file[256];
 	char sounds_file[256];
 #endif
-	unsigned long map_checksum;
-	unsigned long physics_checksum;
-	unsigned long shapes_mod_date;
-	unsigned long sounds_mod_date;
+	uint32 map_checksum;
+	uint32 physics_checksum;
+	TimeType shapes_mod_date;
+	TimeType sounds_mod_date;
 	unsigned long patches[MAXIMUM_PATCHES_PER_ENVIRONMENT];
 };
 

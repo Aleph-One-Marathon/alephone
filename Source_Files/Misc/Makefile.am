@@ -31,7 +31,7 @@ alephone_SOURCES = \
   RenderRasterize.cpp RenderSortPoly.cpp RenderVisTree.cpp ShapesParser.cpp \
   TextStrings.cpp ViewControl.cpp XML_Configure.cpp XML_ElementParser.cpp \
   XML_MakeRoot.cpp XML_Loader_SDL.cpp computer_interface.cpp crc.cpp \
-  devices.cpp dynamic_limits.cpp effects.cpp fades.cpp flood_map.cpp \
+  devices.cpp dynamic_limits.cpp effects.cpp fades.cpp find_files_sdl.cpp flood_map.cpp \
   game_errors.cpp game_wad.cpp game_window.cpp game_window_sdl.cpp images.cpp \
   import_definitions.cpp interface.cpp interface_sdl.cpp items.cpp \
   lightsource.cpp map.cpp map_constructors.cpp marathon2.cpp media.cpp \

@@ -264,8 +264,6 @@ them:
 
  - Text rendering under OpenGL (overhead map doesn't show level name and
    annotations)
- - The game could run faster in 16-bit mode on some machines if an RGB 565
-   renderer was implemented
  - Physics models in map files are not loaded (needed for playing Marathon
    Infinity properly)
  - Saving/restoring games (save terminals don't work and the "Continue Saved
@@ -316,10 +314,8 @@ BeOS:
 
 and try again.
 
-If the game runs very slowly, setting your screen to 15 bit color depth (RGB
-555) instead of 16 bit (RGB 565) will make it run much faster. If you can't
-do this, you may want to run Aleph One in 8 bit mode. Using XFree86 4.0
-instead of 3.x will also greatly increase the speed. If you don't have
+If the game runs very slowly, try running it in 8 bit mode. Using XFree86
+4.0 instead of 3.x will also greatly increase the speed. If you don't have
 hardware accelerated OpenGL, you should specify the "-g" argument to enable
 software rendering (unless you configured Aleph One with the
 "--disable-opengl" option).
