@@ -173,6 +173,7 @@ static void shutdown_sound_manager(void)
 
 bool initialize_music_handler(FileSpecifier &song_file)
 {
+#ifndef SDL_RFORK_HACK
 	assert(NUMBER_OF_SONGS == sizeof(songs) / sizeof(struct song_definition));
 	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
 
@@ -301,6 +302,9 @@ bool initialize_music_handler(FileSpecifier &song_file)
 	}
 
 	return music_initialized;
+#else
+return false;
+#endif
 }
 
 
@@ -679,7 +683,7 @@ void queue_song(short song_index)
 {
 	if (!_sm_initialized || !_sm_active || !music_initialized)
 		return;
-
+#ifndef SDL_RFORK_HACK
 	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
 	SDL_RWops *p = music_file.GetRWops();
 
@@ -705,6 +709,7 @@ void queue_song(short song_index)
 
 	// Unlock sound subsystem
 	SDL_UnlockAudio();
+#endif
 }
 
 
@@ -941,6 +946,7 @@ static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch)
 template <class T>
 static inline void calc_buffer(T *p, int len, bool stereo)
 {
+#ifndef SDL_RFORK_HACK
 	while (len--) {
 		int32 left = 0, right = 0;	// 16-bit internally
 
@@ -1065,6 +1071,7 @@ static inline void calc_buffer(T *p, int len, bool stereo)
 			*p++ = right;						// Write to output buffer
 		}
 	}
+#endif
 }
 
 static void sound_callback(void *usr, uint8 *stream, int len)
