@@ -123,6 +123,13 @@ item_definition *get_item_definition(
 	return GetMemberWithBounds(item_definitions,type,NUMBER_OF_DEFINED_ITEMS);
 }
 
+//a non-inlined version for external use
+item_definition *get_item_definition_external(
+	const short type)
+{
+	return get_item_definition(type);
+}
+
 short new_item(
 	struct object_location *location,
 	short type)

@@ -77,8 +77,13 @@ typedef float GLfloat;
 
 //#include "Soundtrack.h"
 
-//we need to be able to access monster definitions
+//we need to be able to access item and monster definitions;
+// be sure not to repeat the item and monster definitions --
+// the originals could get changed by MML, and the accessor functions
+// get_*_definition_external() should suffice for them.
 
+#define DONT_REPEAT_DEFINITIONS
+#include "item_definitions.h"
 #include "monster_definitions.h"
 
 #include "flood_map.h"
@@ -244,6 +249,17 @@ void s_Monster_Set_Item(script_instruction inst);
 void s_Monster_Get_Nuke(script_instruction inst);
 void s_Monster_Set_Nuke(script_instruction inst);
 void s_Get_Random(script_instruction inst);
+void s_Set_Platform_State(script_instruction inst);
+void s_Get_Platform_State(script_instruction inst);
+void s_Set_Light_State(script_instruction inst);
+void s_Get_Light_State(script_instruction inst);
+void s_Get_Player_Poly(script_instruction inst);
+void s_Get_Fog_Presence(script_instruction inst);
+void s_Set_Fog_Presence(script_instruction inst);
+void s_Get_UnderFog_Presence(script_instruction inst);
+void s_Set_UnderFog_Presence(script_instruction inst);
+void s_Remove_Item(script_instruction inst);
+void s_Player_Control(script_instruction inst);
 
 /*-------------------------------------------*/
 
@@ -365,8 +381,19 @@ void init_instructions(void)
 	instruction_lookup[Get_UnderFog_Depth] = s_Get_UnderFog_Depth;
 	instruction_lookup[Get_UnderFog_Color] = s_Get_UnderFog_Color;
  	instruction_lookup[Get_Random] = s_Get_Random;
-
-	}
+	// LP: Added for EE
+ 	instruction_lookup[Set_Platform_State] = s_Set_Platform_State;
+	instruction_lookup[Get_Platform_State] = s_Get_Platform_State;
+	instruction_lookup[Set_Light_State] = s_Set_Light_State;
+	instruction_lookup[Get_Light_State] = s_Get_Light_State;
+	instruction_lookup[Get_Player_Poly] = s_Get_Player_Poly;
+	instruction_lookup[Get_Fog_Presence] = s_Get_Fog_Presence;
+	instruction_lookup[Set_Fog_Presence] = s_Set_Fog_Presence;
+	instruction_lookup[Get_UnderFog_Presence] = s_Get_UnderFog_Presence;
+	instruction_lookup[Set_UnderFog_Presence] = s_Set_UnderFog_Presence;
+	instruction_lookup[Remove_Item] = s_Remove_Item;
+	instruction_lookup[Player_Control] = s_Player_Control;
+}
 
 // Suppressed for MSVC compatibility
 #if 0
@@ -2127,12 +2154,13 @@ void s_Monster_New(script_instruction inst)
 	object_location theLocation;		//where we will put him
 	struct polygon_data *destination;
 	world_point3d theDestination;
+	world_point2d theCenter;
 	short index;
 	short type, where;
 	
-	dprintf("I TOLD YOU NOT TO USE THIS INSTRUCTION DAMMIT");
-	set_variable(int(inst.op1), -1);
-	return;
+	// dprintf("I TOLD YOU NOT TO USE THIS INSTRUCTION DAMMIT");
+	// set_variable(int(inst.op1), -1);
+	// return;
 	
 	switch(inst.mode)			//requires: var, both, both
 	{
@@ -2161,11 +2189,15 @@ void s_Monster_New(script_instruction inst)
 	destination= get_polygon_data(theLocation.polygon_index);
 	if(destination==NULL)
 		return;
-	*((world_point2d *)&theDestination)= destination->center;	//stolen, assuming it works
+	find_center_of_polygon(where, &theCenter);
+	// *((world_point2d *)&theDestination)= destination->center;
+	//stolen, assuming it works
+	theDestination.x = theCenter.x;
+	theDestination.y = theCenter.y;
 	theDestination.z= destination->floor_height;
 	theLocation.p = theDestination;
 	theLocation.yaw = 0;
-	theLocation.pitch=0;
+	theLocation.pitch = 0;
 	theLocation.flags = 0;//(monster_placement_info+type)->flags;			//so far
 	
 	index = new_monster(&theLocation, (short)type);
@@ -2984,12 +3016,7 @@ void s_Get_Platform_State(script_instruction inst)
 		}
 		
 		platform = get_platform_data(int(temp));
-		
-		if (PLATFORM_IS_ACTIVE(platform))
-			set_variable(int(inst.op2), 1);
-		else
-			set_variable(int(inst.op2), 0);
-		
+		set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(platform) ? 1 : 0);		
 	}
 }
 
@@ -3043,19 +3070,161 @@ void s_Get_Light_State(script_instruction inst)
 				temp2 = get_variable(int(inst.op2));
 				break;
 		}
-                set_variable(int(inst.op2), get_light_status(int(temp)));
+		set_variable(int(inst.op2), get_light_status(int(temp)));
 	}
 }
 
 void s_Get_Player_Poly(script_instruction inst)
 {
-	if (inst.mode == 0)
-		return;
-		
+	switch(inst.mode)
+	{
+	case 1:
+		set_variable(int(inst.op1), get_polygon_index_supporting_player(current_player_index));
+		break;
+	}
+}
+
+// LP: adding this stuff for "EE"
+
+void s_Get_Fog_Presence(script_instruction inst)
+{
+	switch(inst.mode)
+	{
+	case 1:
+		set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent ? 1 : 0);
+		break;
+	}
+}
+
+void s_Set_Fog_Presence(script_instruction inst)
+{
+	float temp = inst.op1;
+
+	switch(inst.mode)
+	{
+	case 1:
+		temp = get_variable(int(inst.op1));
+		break;
+	}
+	
+	OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent = (temp != 0);
+}
+
+void s_Get_UnderFog_Presence(script_instruction inst)
+{
+	switch(inst.mode)
+	{
+	case 1:
+		set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent ? 1 : 0);
+		break;
+	}
+}
+
+void s_Set_UnderFog_Presence(script_instruction inst)
+{
+	float temp = inst.op1;
+
+	switch(inst.mode)
+	{
+	case 1:
+		temp = get_variable(int(inst.op1));
+		break;
+	}
+	
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent = (temp != 0);
+}
+
+void s_Remove_Item(script_instruction inst)
+{
+	short Item_Type = short(inst.op1);
 	switch(inst.mode)
 	{
 		case 1:
-			set_variable(int(inst.op1), get_polygon_index_supporting_player(current_player_index));
+	 	Item_Type = get_variable(int(inst.op1));
+	}
+	
+	struct item_definition *definition= get_item_definition_external(Item_Type);
+	
+	if (definition)
+	{
+		if(current_player->items[Item_Type] >= 1 && definition->item_kind==_ammunition)
+			current_player->items[Item_Type]--;		/* Decrement your count.. */
+		
+		mark_ammo_display_as_dirty();
+	}
+}
+
+void s_Player_Control(script_instruction inst)
+{
+	uint32 action_flags;
+	short move_type;
+	short value;
+	
+	switch(inst.mode)
+	{			
+		case 1:
+			move_type = get_variable(int(inst.op1));
+			value = int(inst.op2);
+		break;
+			
+		case 3:
+			move_type = get_variable(int(inst.op1));
+			value = get_variable(int(inst.op2));
+		break;
+			
+		default:
 			break;
 	}
+	
+	switch(move_type)
+	{
+		case 0:
+			action_flags = _moving_forward;
+		break;
+		
+		case 1:
+			action_flags = _moving_backward;
+		break;
+		
+		case 2:
+			action_flags = _sidestepping_left;
+		break;
+		
+		case 3:
+			action_flags = _sidestepping_right;
+		break;
+		
+		case 4:
+			action_flags = _turning_left;
+		break;
+		
+		case 5:
+			action_flags = _turning_right;
+		break;
+		
+		case 6:
+			action_flags = _looking_up;
+		break;
+		
+		case 7:
+			action_flags = _looking_down;
+		break;
+		
+		case 8:
+			action_flags = _action_trigger_state;
+		break;
+		
+		case 9:
+			action_flags = _left_trigger_state;
+		break;
+		
+		case 10:
+			action_flags = _right_trigger_state;
+		break;
+		
+		default:
+		break;
+	}
+	
+	process_action_flags(current_player_index, &action_flags, value);
 }

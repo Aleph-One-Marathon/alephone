@@ -89,10 +89,12 @@ Get_Platform_State 52
 Set_Light_State 53
 Get_Light_State 54
 Get_Player_Poly 55
-Enable_Fog 56
-Disable_Fog 57
-Remove_Item 58
-Player_Control 59
+Get_Fog_Presence 56
+Set_Fog_Presence 57
+Get_UnderFog_Presence 58
+Set_UnderFog_Presence 59
+Remove_Item 5A
+Player_Control 5B
 TRUE 1
 FALSE 0
 knife 0

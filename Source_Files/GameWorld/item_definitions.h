@@ -40,9 +40,13 @@ struct item_definition
 	int16 invalid_environments;
 };
 
+
+// So as not to repeat in script_instructions.cpp (Pfhortran)
+#ifndef DONT_REPEAT_DEFINITIONS
+
 /* ---------- globals */
 
-struct item_definition item_definitions[]=
+static struct item_definition item_definitions[]=
 {
 	/* Knife */
 	{_weapon, 0, 0, NONE, 1, 0},
@@ -108,6 +112,8 @@ struct item_definition item_definitions[]=
 	{_weapon, 41, 41, BUILD_DESCRIPTOR(_collection_items, 25), 1, 0},
 	{_ammunition, 42, 43, BUILD_DESCRIPTOR(_collection_items, 24), 8, 0},
 };
+
+#endif
 
 #endif
 

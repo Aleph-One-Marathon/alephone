@@ -120,6 +120,9 @@ short find_player_ball_color(short player_index); /* returns the color of the ba
 short get_item_shape(short item_id);
 bool try_and_add_player_item(short player_index, short type);
 
+// LP: Revealed this function for Pfhortran
+struct item_definition *get_item_definition_external(const short type);
+
 /* Returns NONE if this player is not carrying a ball */
 short find_player_ball_color(short player_index);
 
