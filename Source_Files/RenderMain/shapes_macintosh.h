@@ -152,7 +152,10 @@ PixMapHandle get_shape_pixmap(
 	if (!bitmap) return NULL;
 	
 	/* setup the pixmap (canÕt wait to change this for Copland) */
-	SetRect(&(*hollow_pixmap)->bounds, 0, 0, bitmap->width, bitmap->height);
+	(*hollow_pixmap)->bounds.top= 0;
+	(*hollow_pixmap)->bounds.left= 0;
+	(*hollow_pixmap)->bounds.bottom= bitmap->height;
+	(*hollow_pixmap)->bounds.right= bitmap->width;
 	(*hollow_pixmap)->rowBytes= bitmap->width|0x8000;
 	(*hollow_pixmap)->baseAddr= (Ptr)bitmap->row_addresses[0];
 	
