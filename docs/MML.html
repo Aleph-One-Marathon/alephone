@@ -114,6 +114,7 @@ which has a numerical value corresponding to the original resource ID:
 This element contains child elements with form &lt;string&gt;,
 which have an attribute of "index",
 and contents of whatever the string is supposed to be.
+The index is zero-based, unlike the original STR# resources, whose indices are one-based.
 For example, the filenames are specified in this fashion:
 
 <pre>
@@ -140,7 +141,9 @@ For example, the filenames are specified in this fashion:
 This kind of element specifies stuff used in the heads-up display (HUD).
 It has one attribute, "motion_sensor", which is <a name="#boolean">boolean</a>,
 and which indicates whether or not the motion sensor will be active.
-It also contains these kinds of child elements:
+In what follows, the HUD coordinates used will be x = rightward and y = downward,
+with the HUD's top left corner being at x = 0, y = 320.
+This element also contains these kinds of child elements:
 <ul>
 <li>&lt;rect&gt;, with all interface rectangles;
 it contains the attributes
@@ -1274,6 +1277,10 @@ in "glowing" rendering (independent of light levels).
 <li>glow_mask: the name of the file whose image content becomes the opacity mask
 for "glowing" rendering (independent of light levels).
 It must be used with a glow_image file.
+<li>image_scale: The amount to scale a substituted sprite, from pixel units to internal distance units.
+If it is zero or less, then it and the offsets are ignored.
+<li>x_offset: The amount to shift the top left corner rightward, in internal units.
+<li>y_offset: The amount to shift the top left corner downward, in internal units. 
 </ul>
 Note: all resulting values will be pegged to the range 0 to 1.
 Here are the various opacity types:
@@ -1428,6 +1435,7 @@ If there is more than one ending chapter screen, then this is for finding the fi
 
 Colors are specified with the element &lt;color&gt;
 colors may be either indexed (being list members), or non-indexed (being in isolation).
+The color channels are red, green, and blue, with values that range from 0 to 1.
 <ul>
 <li>index (mandatory if indexed; must be absent if not indexed)
 <li>red
