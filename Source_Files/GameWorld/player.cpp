@@ -366,7 +366,7 @@ player_data *get_player_data(
 {
 	player_data *data = GetMemberWithBounds(players,player_index,dynamic_world->player_count);
 	vassert(data,
-		csprintf(temporary, "asked for player #%d/#%d", player_index, dynamic_world->player_count));
+		csprintf(temporary, "asked for player #%lu/#%d", player_index, dynamic_world->player_count));
 	
 	return data;
 }
@@ -1768,8 +1768,10 @@ static void get_player_transfer_mode(
 			switch (duration/(TICKS_PER_SECOND/6))
 			{
 				case 46: case 37: case 29: case 22: case 16: case 11: case 7: case 4: case 2:
-					*transfer_mode= (player->invincibility_duration && player->invisibility_duration) ?
-						(player->invisibility_duration>kINVISIBILITY_DURATION ? _xfer_subtle_invisibility : _xfer_invisibility) : NONE;
+					if(player->invincibility_duration && player->invisibility_duration)
+						*transfer_mode= player->invisibility_duration>kINVISIBILITY_DURATION ? _xfer_subtle_invisibility : _xfer_invisibility;
+					else
+						*transfer_mode= NONE;
 					break;
 			}
 		}
