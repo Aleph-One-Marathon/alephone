@@ -58,6 +58,13 @@
 #include <string.h>
 #include <vector>
 #include <math.h>    // logf and expf, for sensitivity slider (ZZZ)
+// JTP: GCC3.1 on OSX was lacking these functions in math.h
+#ifndef logf
+#define logf log
+#endif
+#ifndef expf
+#define expf exp
+#endif
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>	// for getlogin()

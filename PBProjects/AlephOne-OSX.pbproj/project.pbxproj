@@ -604,6 +604,7 @@
 				F5CC944A0240DE0F01A80001,
 				F5CF585B024599B701A80001,
 				F50D2BD702F86DDA01000105,
+				F5D11AE60326A93E01000105,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2207,6 +2208,7 @@
 				F52212560136A6FD01000001,
 				F522125A0136A6FD01000001,
 				F50D2BD502F86DDA01000105,
+				F5D11AE40326A93E01000105,
 			);
 			isa = PBXGroup;
 			name = Headers;
@@ -2724,6 +2726,7 @@
 				F5CC945E0240DE0F01A80001,
 				F5FA5D2A0248632901A80001,
 				F50D2BD602F86DDA01000105,
+				F5D11AE50326A93E01000105,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4322,8 +4325,8 @@
 			);
 			isa = PBXGroup;
 			name = Files;
-			path = "/Volumes/Sprawl/Users/astrange/Desktop/Development/Aleph One/alephcvs/aleph/Source_Files/Files";
-			refType = 0;
+			path = ../Source_Files/Files;
+			refType = 2;
 		};
 		F5CC92000240D09B01A80001 = {
 			isa = PBXFileReference;
@@ -7924,6 +7927,24 @@
 		};
 		F5CFAD4A0200FA6B01D80110 = {
 			fileRef = F5CFAD430200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5D11AE40326A93E01000105 = {
+			isa = PBXFileReference;
+			name = alephversion.h;
+			path = ../Source_Files/Misc/alephversion.h;
+			refType = 2;
+		};
+		F5D11AE50326A93E01000105 = {
+			fileRef = F5D11AE40326A93E01000105;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5D11AE60326A93E01000105 = {
+			fileRef = F5D11AE40326A93E01000105;
 			isa = PBXBuildFile;
 			settings = {
 			};

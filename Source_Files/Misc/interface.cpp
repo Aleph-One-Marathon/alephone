@@ -134,6 +134,7 @@ extern TP2PerfGlobals perf_globals;
 // LP addition: getting OpenGL rendering stuff
 #include "render.h"
 #include "OGL_Render.h"
+#include "alephversion.h"
 
 // To tell it to stop playing,
 // and also to run the end-game script
@@ -664,6 +665,54 @@ void display_main_menu(
 		queue_song(_introduction_song);
 	}
 
+        // Draw AlephOne Version to screen
+        FontSpecifier& Font = GetOnScreenFont();
+
+#if defined(mac)
+        extern WindowPtr screen_window;
+        WindowPtr window= screen_window;
+        GrafPtr old_port, port;
+#if defined(TARGET_API_MAC_CARBON)
+        port = GetWindowPort(window);
+#else
+        port = (GrafPtr)window;
+#endif
+        GetPort(&old_port);
+        SetPort(port);
+
+        Font.Use();
+#if defined(USE_CARBON_ACCESSORS)
+        Rect portRect;
+        GetPortBounds(port, &portRect);
+        short X0 = portRect.right;
+        short Y0 = portRect.bottom;
+#else
+        short X0 = port-portRect.right;
+        short Y0 = port-portRect.bottom;
+#endif
+#elif defined(SDL)
+        // JTP: This works, but I don't know correctness
+        SDL_Surface *world_pixels = SDL_GetVideoSurface();
+        short X0 = world_pixels-w;
+        short Y0 = world_pixels-h;
+#endif
+        // The line spacing is a generalization of "5" for larger fonts
+        short Offset = Font.LineSpacing / 3;
+        short RightJustOffset = Font.TextWidth(VERSION_STRING);
+        short X = X0 - RightJustOffset;
+        short Y = Y0 - Offset;
+
+#if defined(mac)
+        MoveTo(X, Y);
+        RGBForeColor(&(RGBColor){0x4000, 0x4000, 0x4000});
+        DrawString("\p"VERSION_STRING);
+        RGBForeColor(&rgb_black);
+        SetPort(old_port);
+#elif defined(SDL)
+        draw_text(world_pixels, VERSION_STRING, X, Y, SDL_MapRGB(world_pixels-format, 0x40, 0x40,
+                                                                 0x40), Font.Info, Font.Style);
+#endif
+        
 	game_state.main_menu_display_count++;
 }
 
@@ -674,6 +723,7 @@ void do_menu_item_command(
 {
 	switch(menu_id)
 	{
+            
 		case mGame:
 			switch(menu_item)
 			{

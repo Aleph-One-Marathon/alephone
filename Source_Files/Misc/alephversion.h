@@ -5,10 +5,10 @@
 	#define MAJOR_VERSION_S "1"
 	#define MINOR_VERSION   0
 	#define MINOR_VERSION_S "0"
-	#define STEPPING        "d"
+	#define STEPPING        "a"
 	#define BUILDNUM        1
 	#define BUILDSTR        "1"
-	#define BRANCH          "(inio)"
+	#define BRANCH          "(trunk)"
 	#define FINAL	        0
 	
 	#if FINAL

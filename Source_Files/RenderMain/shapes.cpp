@@ -849,8 +849,7 @@ struct shape_information_data *extended_get_shape_information(
 	short collection_code,
 	short low_level_shape_index)
 {
-    if((collection_code < 0) || (collection_code >= NUMBER_OF_COLLECTIONS)) return NULL;
-    if(low_level_shape_index < 0) return NULL;
+if((GET_COLLECTION(collection_code) < 0) || (GET_COLLECTION(collection_code) >= NUMBER_OF_COLLECTIONS)) return NULL;    if(low_level_shape_index < 0) return NULL;
 	short collection_index= GET_COLLECTION(collection_code);
 	struct low_level_shape_definition *low_level_shape;
 
