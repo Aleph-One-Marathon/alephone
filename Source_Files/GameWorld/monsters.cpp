@@ -86,6 +86,9 @@ Oct 13, 2000 (Loren Petrich)
 
 Oct 26, 2000 (Mark Levin)
 	Revealed a few functions needed by Pfhortran
+
+Jan 12, 2003 (Loren Petrich)
+	Added controllable damage kicks
 */
 
 #include <string.h>
@@ -181,6 +184,45 @@ struct monster_pathfinding_data
 	struct monster_data *monster;
 	
 	bool cross_zone_boundaries;
+};
+
+// How much external velocity is imparted by some damage?
+struct damage_kick_definition
+{
+	short base_value;
+	float delta_vitality_multiplier;
+	bool is_also_vertical;
+};
+
+/* ---------- definitions */
+
+// LP: implements commented-out damage-kick code
+struct damage_kick_definition damage_kick_definitions[NUMBER_OF_DAMAGE_TYPES] = 
+{
+	{0, 1, true}, // _damage_explosion,
+	{0, 3, true}, // _damage_electrical_staff,
+	{0, 1, false}, // _damage_projectile,
+	{0, 1, false}, // _damage_absorbed,
+	{0, 1, false}, // _damage_flame,
+	{0, 1, false}, // _damage_hound_claws,
+	{0, 1, false}, // _damage_alien_projectile,
+	{0, 1, false}, // _damage_hulk_slap,
+	{0, 3, true}, // _damage_compiler_bolt,
+	{0, 0, false}, // _damage_fusion_bolt,
+	{0, 1, false}, // _damage_hunter_bolt,
+	{0, 1, false}, // _damage_fist,
+	{250, 0, false}, // _damage_teleporter,
+	{0, 1, false}, // _damage_defender,
+	{0, 3, true}, // _damage_yeti_claws,
+	{0, 1, false}, // _damage_yeti_projectile,
+	{0, 1, false}, // _damage_crushing,
+	{0, 1, false}, // _damage_lava,
+	{0, 1, false}, // _damage_suffocation,
+	{0, 1, false}, // _damage_goo,
+	{0, 1, false}, // _damage_energy_drain,
+	{0, 1, false}, // _damage_oxygen_drain,
+	{0, 1, false}, // _damage_hummer_bolt,
+	{0, 0, true} // _damage_shotgun_projectile,
 };
 
 /* ---------- globals */
@@ -1435,7 +1477,16 @@ void damage_monster(
 				}
 			}
 		}
-	
+		
+		if (damage->type >= 0 && damage->type < NUMBER_OF_DAMAGE_TYPES)
+		{
+			damage_kick_definition& kick_def = damage_kick_definitions[damage->type];
+			
+			external_velocity = kick_def.base_value + kick_def.delta_vitality_multiplier*delta_vitality;
+			vertical_component = kick_def.is_also_vertical;
+		}
+		
+		/*
 		switch (damage->type)
 		{
 			case _damage_teleporter:
@@ -1466,6 +1517,7 @@ void damage_monster(
 				external_velocity= delta_vitality;
 				break;
 		}
+		*/
 	
 		if (MONSTER_IS_DYING(monster) && external_velocity<MINIMUM_DYING_EXTERNAL_VELOCITY) external_velocity= MINIMUM_DYING_EXTERNAL_VELOCITY;
 		external_velocity= (external_velocity*definition->external_velocity_scale)>>FIXED_FRACTIONAL_BITS;
@@ -3581,4 +3633,105 @@ uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, int C
 	
 	assert((S - Stream) == Count*SIZEOF_monster_definition);
 	return S;
+}
+
+
+class XML_DamageKickParser: public XML_ElementParser
+{
+	short Index;
+	damage_kick_definition Data;
+	
+	// What is present?
+	bool IndexPresent;
+	enum {NumberOfValues = 3};
+	bool IsPresent[NumberOfValues];
+	
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	XML_DamageKickParser(): XML_ElementParser("kick") {}
+};
+
+bool XML_DamageKickParser::Start()
+{
+	IndexPresent = false;
+	for (int k=0; k<NumberOfValues; k++)
+		IsPresent[k] = false;
+	
+	return true;
+}
+
+bool XML_DamageKickParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"index"))
+	{
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_DAMAGE_TYPES-1))
+		{
+			IndexPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag,"base"))
+	{
+		if (ReadInt16Value(Value,Data.base_value))
+		{
+			IsPresent[0] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag,"mult"))
+	{
+		if (ReadFloatValue(Value,Data.delta_vitality_multiplier))
+		{
+			IsPresent[1] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag,"vertical"))
+	{
+		if (ReadBooleanValue(Value,Data.is_also_vertical))
+		{
+			IsPresent[2] = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_DamageKickParser::AttributesDone()
+{
+	// Verify...
+	if (!IndexPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+	damage_kick_definition& OrigData = damage_kick_definitions[Index];
+	
+	if (IsPresent[0]) OrigData.base_value = Data.base_value;
+	if (IsPresent[1]) OrigData.delta_vitality_multiplier = Data.delta_vitality_multiplier;
+	if (IsPresent[2]) OrigData.is_also_vertical = Data.is_also_vertical;
+	
+	return true;
+}
+
+static XML_DamageKickParser DamageKickParser;
+
+
+static XML_ElementParser DamageKicksParser("damage_kicks");
+
+
+// XML-parser support
+XML_ElementParser *DamageKicks_GetParser()
+{
+	DamageKicksParser.AddChild(&DamageKickParser);
+	
+	return &DamageKicksParser;
 }

@@ -47,6 +47,7 @@ Oct 24, 2000 (Mark Levin)
 
 // LP additions:
 #include "dynamic_limits.h"
+#include "XML_ElementParser.h"
 #include <vector>
 
 /* ---------- constants */
@@ -334,5 +335,8 @@ uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, int Count);
 uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, int Count);
 uint8 *unpack_monster_definition(uint8 *Stream, int Count);
 uint8 *pack_monster_definition(uint8 *Stream, int Count);
+
+
+XML_ElementParser *DamageKicks_GetParser();
 
 #endif
