@@ -1,7 +1,0 @@
-makefile
-
-buildprogram cseries.debug.lib
-buildprogram cseries.lib
-buildprogram cseries.debug.xcoff
-buildprogram cseries.sym.xcoff
-buildprogram cseries.xcoff
