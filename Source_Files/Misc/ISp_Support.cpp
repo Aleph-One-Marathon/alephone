@@ -16,6 +16,9 @@ Jul 30, 2000 (Loren Petrich):
 
 Jul 31, 2000 (Loren Petrich):
 	Added an axis for changing weapons, for use in mouse wheels and the like.
+
+Sep 24, 2000 (Loren Petrich):
+	Added some stuff for using old ISP labels, as suggested by Peter Stirling <pstirling@computing.dundee.ac.uk>
 */
 
 
@@ -176,6 +179,12 @@ ISpElementReference			gVirtualElements[HowManyNeeds] =
 // LP change:
 #define kISpNeedFlag_Delta_AlreadyButton kISpNeedFlag_Axis_AlreadyButton
 
+#ifdef USE_OLD_INPUT_SPROCKET_LABELS
+#define kISpElementLabel_Btn_Quit kISpElementLabel_Btn_PauseResume
+#define kISpElementLabel_Btn_StartPause kISpElementLabel_Btn_PauseResume
+#endif
+
+
 // LP change: removed the second "0," so that it fits with my version of the ISp SDK
 // LP change: removed the "kISpNeedFlag_Button_ActiveWhenDown" from the flags (4th entry from right),
 // because that does not seem to do anything. It presumably means "send out event only when pressing starts" or something
@@ -206,8 +215,8 @@ static ISpNeed gNeeds[HowManyNeeds] =
 	{ "\pMicrophone",	 	Icon_Microphone,		0, kISpElementKind_Button,		kISpElementLabel_None,				kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
 	
 	// Local actions
-	{ "\pQuit",				Icon_Quit, 				0, kISpElementKind_Button,		kISpElementLabel_Btn_PauseResume,	kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
-	{ "\pPause",			Icon_Pause, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_PauseResume,	kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pQuit",				Icon_Quit, 				0, kISpElementKind_Button,		kISpElementLabel_Btn_Quit,			kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pPause",			Icon_Pause, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_StartPause,	kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
 	{ "\pSound Down",		Icon_SoundDown, 		0, kISpElementKind_Button,		kISpElementLabel_None,				kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
 	{ "\pSound Up",			Icon_SoundUp, 			0, kISpElementKind_Button,		kISpElementLabel_None,				kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
 	{ "\pMap Outward",		Icon_MapOut, 			0, kISpElementKind_Button,		kISpElementLabel_None,				kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
