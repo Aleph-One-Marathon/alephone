@@ -174,6 +174,9 @@ Nov 12, 2000 (Loren Petrich):
 
 Nov 29, 2000 (Loren Petrich):
 	Made teleport static/fold effect optional
+
+Jan 17, 2001 (Loren Petrich):
+	Added vertical flipping
 */
 
 
@@ -871,6 +874,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 		if (!shape_information) continue;
 		
 		if (shape_information->flags&_X_MIRRORED_BIT) display_data.flip_horizontal= !display_data.flip_horizontal;
+		if (shape_information->flags&_Y_MIRRORED_BIT) display_data.flip_vertical= !display_data.flip_vertical;
 
 		/* calculate shape rectangle */
 		position_sprite_axis(&textured_rectangle.x0, &textured_rectangle.x1, view->screen_height, view->screen_width, display_data.horizontal_positioning_mode,

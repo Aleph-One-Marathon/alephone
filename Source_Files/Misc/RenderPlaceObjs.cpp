@@ -16,6 +16,9 @@ Oct 13, 2000 (Loren Petrich):
 
 Oct 19, 2000 (Loren Petrich):
 	Added graceful escape in case of nonexistent shape in build_render_object().
+
+Jan 17, 2001 (Loren Petrich):
+	Added vertical flipping
 */
 
 #include "cseries.h"
@@ -255,7 +258,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				// LP change: for the convenience of the OpenGL renderer
 				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,data.low_level_shape_index);
 				
-				render_object->rectangle.flip_vertical= false;
+				render_object->rectangle.flip_vertical= (shape_information->flags&_Y_MIRRORED_BIT) ? true : false;
 				render_object->rectangle.flip_horizontal= (shape_information->flags&_X_MIRRORED_BIT) ? true : false;
 				
 				render_object->rectangle.depth= transformed_origin.x;
