@@ -169,11 +169,15 @@ include $(BUILDHOME)/etc/makefile-engine
 # Install under BeOS
 INSTALLDIR = /boot/home/AlephOne
 install: $(TARGET)
-	./mkinstalldirs $(INSTALLDIR)
-	./mkinstalldirs $(INSTALLDIR)/MML
+	mkdir -p $(INSTALLDIR)
+	mkdir -p $(INSTALLDIR)/MML
+	mkdir -p $(INSTALLDIR)/Themes/Default
 	cp $(TARGET) $(INSTALLDIR)/AlephOne
 	cp data/Fonts $(INSTALLDIR)
 	cp data/*.mml $(INSTALLDIR)/MML
+	cp data/default_theme/*.bmp $(INSTALLDIR)/Themes/Default
+	cp data/default_theme/resources $(INSTALLDIR)/Themes/Default
+	cp data/default_theme/theme.mml $(INSTALLDIR)/Themes/Default
 	mimeset -f $(INSTALLDIR)
 
 # Make BeOS binary distribution
@@ -184,11 +188,15 @@ dist: $(TARGET)
 	mkdir $(DISTDIR)
 	mkdir $(DISTDIR)/MML
 	mkdir $(DISTDIR)/docs
+	mkdir -p $(DISTDIR)/Themes/Default
 	cp $(TARGET) $(DISTDIR)/AlephOne
 	cp README INSTALL.BeOS COPYING COPYING.SDL $(DISTDIR)
 	cp data/Fonts $(DISTDIR)
 	cp data/*.mml $(DISTDIR)/MML
 	cp docs/MML.html docs/Cheat_Codes $(DISTDIR)/docs
+	cp data/default_theme/*.bmp $(DISTDIR)/Themes/Default
+	cp data/default_theme/resources $(DISTDIR)/Themes/Default
+	cp data/default_theme/theme.mml $(DISTDIR)/Themes/Default
 	mimeset -f $(DISTDIR)
 	zip -ry $(ARCHIVE) $(DISTDIR)
 	rm -rf $(DISTDIR)
