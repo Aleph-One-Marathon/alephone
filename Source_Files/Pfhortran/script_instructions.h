@@ -24,6 +24,12 @@
 		
 	01/26/02 - EE
 	Added Get_Platform_State, Set_Platform_State, Get_Light_State, Set_Light_State & Get_Player_Poly
+	
+	06/09/02 - tiennou:
+		Added s_Play_Sound, s_Remove_Item, and stuff for Pfhortran Player control
+		(GetPfhortranActionQueues & lots of changes in s_Player_Control).
+		Added definition for the new Pfhortran ActionQueues.
+		Added pfhortran_controls_player flag used in vbl.cpp:process_action_flags
 */
 
 
@@ -37,6 +43,12 @@
 
 #include "cseries.h"
 #include "world.h"
+#include "ActionQueues.h"
+
+const bool pfhortran_controls_player = false;
+
+static ActionQueues* sPfhortranActionQueues = NULL;
+ActionQueues* GetPfhortranActionQueues(void);
 
 struct path_point
 {
@@ -268,7 +280,5 @@ enum /* instruction defs */
 };
 
 void init_instructions(void);
- 
-
 
 #endif

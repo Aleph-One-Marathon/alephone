@@ -30,6 +30,13 @@
 
 	01/26/02 - EE via AS
 	Added Get_Platform_Sate, Set_Platform_State, Get_Light_State, Set_Light_State & Get_Player_Poly
+
+	06/09/02 - tiennou:
+		Added s_Play_Sound, s_Remove_Item, and stuff for Pfhortran Player control
+		(GetPfhortranActionQueues & lots of changes in s_Player_Control).
+		Changed s_Monster_New: it should now work if another monster of the same type is present on the level.
+		Added some other unfonctionnal coding (s_Display_Message, s_Get_Monster_Poly) will try to make them
+		work in the mext release.
 */
 
  
@@ -134,9 +141,6 @@ extern short current_path;
 extern path_header *script_paths;
 extern short current_path_point;
 extern path_list camera_point;
-
-
-
 
 world_point3d offset_position;
 //for camera timing
@@ -405,6 +409,8 @@ void init_instructions(void)
 #endif
 
 /* ----------------------------------------- */
+
+ActionQueues* GetPfhortranActionQueues() { return sPfhortranActionQueues; }
 
 void update_path_camera(void)
 {
@@ -3045,6 +3051,9 @@ void s_Set_Platform_State(script_instruction inst)
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
 				break;
+			
+			default:
+				return;
 		}
 		
 	try_and_change_platform_state(int16(temp), temp2 != 0);
@@ -3073,6 +3082,9 @@ void s_Get_Platform_State(script_instruction inst)
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
 				break;
+			
+			default:
+				return;
 		}
 		
 		platform = get_platform_data(int(temp));
@@ -3082,13 +3094,34 @@ void s_Get_Platform_State(script_instruction inst)
 
 void s_Play_Sound(script_instruction inst)
 {
-	float temp,temp2,temp3;
+	float temp,temp2;
 	
 	temp = inst.op1;
 	temp2 = inst.op2;
 	
-	if (inst.mode != 1)
-		return;
+	if (inst.mode != 0)
+	{
+		switch(inst.mode)
+		{
+			case 1:
+				temp = get_variable(int(inst.op1));
+				temp2 = int(inst.op2);
+				break;
+				
+			case 2:
+				temp = int(inst.op1);
+				temp2 = get_variable(int(inst.op2));
+				break;
+				
+			case 3:
+				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
+				break;
+			
+			default:
+				return;
+		}
+	}
 	
 	// Purely local sound: args are which sound index
 	// and which pitch multiplier (1.0 = no pitch change)
@@ -3118,6 +3151,9 @@ void s_Set_Light_State(script_instruction inst)
 				temp = get_variable(int(inst.op1));
 				temp2 = get_variable(int(inst.op2));
 				break;
+			
+			default:
+				return;
 		}
 		
 	set_light_status(int16(temp), temp2 != 0);
@@ -3135,13 +3171,18 @@ void s_Get_Light_State(script_instruction inst)
 	{
 		switch(inst.mode)
 		{
-			case 1:
-				temp = get_variable(int(inst.op1));
+			case 2:
+				temp = int(inst.op1);
+				temp2 = get_variable(int(inst.op2));
 				break;
-				
+			
 			case 3:
 				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
 				break;
+			
+			default:
+				return;
 		}
 		set_variable(int(inst.op2), get_light_status(int(temp)) ? 1 : 0);
 	}
@@ -3149,11 +3190,9 @@ void s_Get_Light_State(script_instruction inst)
 
 void s_Get_Player_Poly(script_instruction inst)
 {
-	switch(inst.mode)
+	if (inst.mode != 1)
 	{
-	case 1:
 		set_variable(int(inst.op1), get_polygon_index_supporting_player(local_player_index));
-		break;
 	}
 }
 
@@ -3218,12 +3257,10 @@ void s_Set_UnderFog_Presence(script_instruction inst)
 void s_Remove_Item(script_instruction inst)
 {
 	// op1 : item index
-	short Item_Type = short(inst.op1);
-	switch(inst.mode)
-	{
-		case 1:
-	 	Item_Type = short(get_variable(int(inst.op1)));
-	}
+	
+	if (inst.mode != 1) return;
+	
+	short Item_Type = short(get_variable(int(inst.op1)));
 	
 	struct item_definition *definition= get_item_definition_external(Item_Type);
 	
@@ -3240,9 +3277,9 @@ void s_Player_Control(script_instruction inst)
 {
 	// op1 : move type
 	// op2 : how many times
-	uint32 action_flags = 0;
+	uint32 action_flags = -1;
 	short move_type = 0;
-	short value = 0;
+	int value = 0;
 	
 	switch(inst.mode)
 	{			
@@ -3253,64 +3290,95 @@ void s_Player_Control(script_instruction inst)
 			
 		case 3:
 			move_type = short(get_variable(int(inst.op1)));
-			value = short(get_variable(int(inst.op2)));
+			value = int(get_variable(int(inst.op2)));
 			break;
 			
 		default:
 			break;
 	}
 	
+	if (sPfhortranActionQueues == NULL)
+	{
+		sPfhortranActionQueues = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER);
+	}
+	
+	// Put the enqueuing of the action flags in one place in the code,
+	// so it will be easier to change if necessary
+	bool DoAction = false;
+	
 	switch(move_type)
 	{
 		case 0:
 			action_flags = _moving_forward;
+			DoAction = true;
 		break;
 		
 		case 1:
 			action_flags = _moving_backward;
+			DoAction = true;
 		break;
 		
 		case 2:
 			action_flags = _sidestepping_left;
+			DoAction = true;
 		break;
 		
 		case 3:
 			action_flags = _sidestepping_right;
+			DoAction = true;
 		break;
 		
 		case 4:
 			action_flags = _turning_left;
+			DoAction = true;
 		break;
 		
 		case 5:
 			action_flags = _turning_right;
+			DoAction = true;
 		break;
 		
 		case 6:
 			action_flags = _looking_up;
+			DoAction = true;
 		break;
 		
 		case 7:
 			action_flags = _looking_down;
+			DoAction = true;
 		break;
 		
 		case 8:
 			action_flags = _action_trigger_state;
+			DoAction = true;
 		break;
 		
 		case 9:
 			action_flags = _left_trigger_state;
+			DoAction = true;
 		break;
 		
 		case 10:
 			action_flags = _right_trigger_state;
+			DoAction = true;
+		break;
+		
+		case 13: // reset pfhortran_action_queue
+			GetPfhortranActionQueues()->reset;
 		break;
 		
 		default:
 		break;
 	}
 	
-	// This is Pfhortran -- can control zombies
-	GetRealActionQueues()->enqueueActionFlags(local_player_index, &action_flags, value, true);
-	IncrementHeartbeat(); // ba-doom
+	if (DoAction)
+	{
+		GetPfhortranActionQueues()->enqueueActionFlags(local_player_index,
+			&action_flags, value, true);
+	}
+}
+
+void s_Display_Message(script_instruction inst)
+{
+	screen_printf("%hd: %f %f %f",inst.mode,inst.op1,inst.op2,inst.op3);
 }

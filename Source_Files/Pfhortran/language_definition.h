@@ -228,3 +228,6 @@
 {"_action_trigger_state", 0x08},
 {"_left_trigger_state", 0x09},
 {"_right_trigger_state", 0x0A},
+{"_start_queue",0x0A},
+{"_stop_queue",0x0B},
+{"_reset_queue",0x0C},
