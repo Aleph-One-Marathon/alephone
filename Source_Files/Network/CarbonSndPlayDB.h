@@ -49,7 +49,13 @@
 */
 
 #ifdef TARGET_API_MAC_CARBON
+// LP: so it will be OK with CodeWarrior
+#ifndef __MWERKS__
 #include <sys/cdefs.h>
+#else
+#define __BEGIN_DECLS
+#define __END_DECLS
+#endif
 struct SndDoubleBuffer {
   long                dbNumFrames;
   long                dbFlags;
