@@ -202,11 +202,6 @@ send_text(w_text_entry* te) {
 	if(strlen(te->get_text()) <= 0)
 		return;
 
-	dialog* d = te->get_owning_dialog();
-
-	w_chat_history* ch = dynamic_cast<w_chat_history*>(d->get_widget_by_id(iCHAT_HISTORY));
-	assert(ch != NULL);
-
 	sMetaserverClient->sendChatMessage(std::string(te->get_text()));
 
 	te->set_text("");
@@ -289,8 +284,6 @@ static void
 setupAndConnectClient(MetaserverClient& client) {}
 #endif // ifdef SDL
 
-set<GameAvailableMetaserverAnnouncer*> GameAvailableMetaserverAnnouncer::s_instances;
-
 GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_info& info)
 {
 	setupAndConnectClient(m_client);
@@ -304,23 +297,4 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	description.m_teamsAllowed = !(info.game_options & _force_unique_teams);
 
 	m_client.announceGame(GAME_PORT, description);
-
-	s_instances.insert(this);
-}
-
-GameAvailableMetaserverAnnouncer::~GameAvailableMetaserverAnnouncer()
-{
-	s_instances.erase(this);
-}
-
-void
-GameAvailableMetaserverAnnouncer::pump()
-{
-	m_client.pump();
-}
-
-void
-GameAvailableMetaserverAnnouncer::pumpAll()
-{
-	for_each(s_instances.begin(), s_instances.end(), mem_fun(&GameAvailableMetaserverAnnouncer::pump));
 }

@@ -30,6 +30,8 @@
 #include <vector>
 #include <map>
 #include <memory> // auto_ptr
+#include <set>
+
 #include "Logging.h"
 
 template <typename tElement>
@@ -178,6 +180,7 @@ public:
         const std::vector<GameListMessage::GameListEntry> gamesInRoom() const { return m_gamesInRoom.entries(); }
 
 	void pump();
+	static void pumpAll();
 
 	void sendChatMessage(const std::string& message);
 	void announceGame(uint16 gamePort, const GameDescription& description);
@@ -215,6 +218,8 @@ private:
 	std::string				m_teamName;
         NotificationAdapter*			m_notificationAdapter;
 	uint32					m_playerID;
+
+	static std::set<MetaserverClient*>	s_instances;
 };
 
 #endif // NETWORK_METASERVER_H

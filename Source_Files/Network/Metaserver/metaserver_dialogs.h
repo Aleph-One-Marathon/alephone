@@ -26,7 +26,6 @@
 #define METASERVER_DIALOGS_H
 
 #include "network_metaserver.h"
-#include <set>
 
 const IPaddress run_network_metaserver_ui();
 
@@ -36,17 +35,11 @@ class GameAvailableMetaserverAnnouncer
 {
 public:
 	GameAvailableMetaserverAnnouncer(const game_info& info);
-	~GameAvailableMetaserverAnnouncer();
 
-	void pump();
 	MetaserverClient& client() { return m_client; }
-
-	static void pumpAll();
 
 private:
 	MetaserverClient	m_client;
-
-	static std::set<GameAvailableMetaserverAnnouncer*> s_instances;
 };
 
 #endif // METASERVER_DIALOGS_H

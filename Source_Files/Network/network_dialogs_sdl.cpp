@@ -829,8 +829,81 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 
 
 
+/////// Shared metaserver chat hookup stuff
+
+class PregameDialogNotificationAdapter : public MetaserverClient::NotificationAdapter
+{
+public:
+	PregameDialogNotificationAdapter(w_chat_history& chatHistory)
+	: m_chatHistory(chatHistory)
+	{
+	}
+
+	void receivedChatMessage(const std::string& senderName, uint16 senderID, const std::string& message)
+	{
+		m_chatHistory.append_chat_entry(senderName.c_str(), 0xaaaaaaaa, 0xaaaaaaaa, message.c_str());
+		m_chatHistory.get_owning_dialog()->draw_dirty_widgets();
+	}
+
+	void receivedBroadcastMessage(const std::string& message)
+	{
+		receivedChatMessage("Metaserver", 0, message);
+	}
+
+	void playersInRoomChanged() {}
+	void gamesInRoomChanged() {}
+
+private:
+	w_chat_history&	m_chatHistory;
+
+	PregameDialogNotificationAdapter(const PregameDialogNotificationAdapter&);
+	PregameDialogNotificationAdapter& operator =(const PregameDialogNotificationAdapter&);
+};
 
 
+static MetaserverClient* sMetaserverClient = NULL;
+
+static void
+send_text(w_text_entry* te) {
+	assert(te != NULL);
+
+	// Make sure there's something worth sending
+	if(strlen(te->get_text()) <= 0)
+		return;
+
+	sMetaserverClient->sendChatMessage(te->get_text());
+	te->set_text("");
+}
+
+static void
+setup_metaserver_chat_ui(
+			 dialog& inDialog,
+			 MetaserverClient& metaserverClient,
+			 int historyLines,
+			 auto_ptr<PregameDialogNotificationAdapter>& outNotificationAdapter,
+			 auto_ptr<MetaserverClient::NotificationAdapterInstaller>& outNotificationAdapterInstaller
+			 )
+{
+	assert (metaserverClient.isConnected());
+
+	sMetaserverClient = &metaserverClient;
+
+	w_chat_history* chatHistory = new w_chat_history(600, historyLines);
+	chatHistory->set_identifier(iCHAT_HISTORY);
+	inDialog.add(chatHistory);
+
+	w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
+	chatentry_w->set_identifier(iCHAT_ENTRY);
+	chatentry_w->set_enter_pressed_callback(send_text);
+	chatentry_w->set_alignment(widget::kAlignLeft);
+	chatentry_w->set_full_width();
+	inDialog.add(chatentry_w);
+
+	inDialog.add(new w_spacer());
+
+	outNotificationAdapter.reset(new PregameDialogNotificationAdapter(*chatHistory));
+	outNotificationAdapterInstaller.reset(new MetaserverClient::NotificationAdapterInstaller(outNotificationAdapter.get(), metaserverClient));	
+}
 
 
 /*
@@ -838,45 +911,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
  */
 
 
- // Currently only the gatherer should call this one.
- 
  // jkvw: The meaty bits here should be moved to shared code
-
-static MetaserverClient* sMetaserverClient = NULL;
- 
-static void
-send_text(w_text_entry* te) {
-    assert(te != NULL);
-
-    // Make sure there's something worth sending
-    if(strlen(te->get_text()) <= 0)
-        return;
-
-	sMetaserverClient->sendChatMessage(te->get_text());
-	te->set_text("");
-
-#ifdef OLDSCHOOL_SEND
-    dialog* d = te->get_owning_dialog();
-    
-    w_chat_history* ch = dynamic_cast<w_chat_history*>(d->get_widget_by_id(iCHAT_HISTORY));
-    assert(ch != NULL);
-
-	int netState = NetState();
-    
-    if(netState != netUninitialized && netState != netJoining && netState != netDown
-        && !(netState == netGathering && NetGetNumberOfPlayers() <= 1))
-    {
-        NetDistributeChatMessage(NetGetPlayerIdentifier(NetGetLocalPlayerIndex()), te->get_text());
-        player_info* info = (player_info*)NetGetPlayerData(NetGetLocalPlayerIndex());
-        ch->append_chat_entry(info, te->get_text());
-    
-        te->set_text("");
-    }
-    else {
-        ch->append_chat_entry(NULL, "There is nobody in the game to hear you yet.");
-    }
-#endif
-}
 
 // This is called when the user clicks on a found player to attempt to gather him in.
 static void
@@ -945,7 +980,7 @@ found_player(dialog* inDialog, prospective_joiner_info &player) {
 static void
 gather_processing_function(dialog* inDialog)
 {
-	GameAvailableMetaserverAnnouncer::pumpAll();
+	MetaserverClient::pumpAll();
 
 	prospective_joiner_info player;
 
@@ -954,41 +989,10 @@ gather_processing_function(dialog* inDialog)
 }
 
 
-class GatherDialogNotificationAdapter : public MetaserverClient::NotificationAdapter
-{
-public:
-	GatherDialogNotificationAdapter(w_chat_history& chatHistory)
-		: m_chatHistory(chatHistory)
-	{
-	}
-
-	void receivedChatMessage(const std::string& senderName, uint16 senderID, const std::string& message)
-	{
-		m_chatHistory.append_chat_entry(senderName.c_str(), 0xaaaaaaaa, 0xaaaaaaaa, message.c_str());
-	}
-
-	void receivedBroadcastMessage(const std::string& message)
-	{
-		receivedChatMessage("Metaserver", 0, message);
-	}
-
-	void playersInRoomChanged() {}
-	void gamesInRoomChanged() {}
-
-private:
-	w_chat_history&	m_chatHistory;
-
-	GatherDialogNotificationAdapter(const GatherDialogNotificationAdapter&);
-	GatherDialogNotificationAdapter& operator =(const GatherDialogNotificationAdapter&);
-};
-
-
 #ifndef NETWORK_TEST_POSTGAME_DIALOG // because that test code replaces the real gather box
 #ifndef NETWORK_TEST_MICROPHONE_LOCALLY // same deal
 bool run_network_gather_dialog(MetaserverClient* metaserverClient)
 {
-	sMetaserverClient = metaserverClient;
-
 	dialog d;
 	
 	d.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
@@ -997,7 +1001,7 @@ bool run_network_gather_dialog(MetaserverClient* metaserverClient)
 	
 	d.add(new w_static_text("Players on Network"));
 	
-	w_found_players* foundplayers_w = new w_found_players(320, 4);
+	w_found_players* foundplayers_w = new w_found_players(320, 3);
 	foundplayers_w->set_identifier(iNETWORK_LIST_BOX);
 	foundplayers_w->set_player_selected_callback(gather_player_callback);
 	d.add(foundplayers_w);
@@ -1016,23 +1020,11 @@ bool run_network_gather_dialog(MetaserverClient* metaserverClient)
 	players_w->start_displaying_actual_information();
 	players_w->update_display();
 
-	w_chat_history* chatHistory = NULL;
+	auto_ptr<PregameDialogNotificationAdapter> notificationAdapter;
+	auto_ptr<MetaserverClient::NotificationAdapterInstaller> notificationAdapterInstaller;
 	if (metaserverClient != NULL)
-	{
-		chatHistory = new w_chat_history(600, 4);
-		chatHistory->set_identifier(iCHAT_HISTORY);
-		d.add(chatHistory);
-		
-		w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
-		chatentry_w->set_identifier(iCHAT_ENTRY);
-		chatentry_w->set_enter_pressed_callback(send_text);
-		chatentry_w->set_alignment(widget::kAlignLeft);
-		chatentry_w->set_full_width();
-		d.add(chatentry_w);
-		
-		d.add(new w_spacer());
-	}
-                    
+		setup_metaserver_chat_ui(d, *metaserverClient, 5, notificationAdapter, notificationAdapterInstaller);
+
 	// "Play" (OK) button starts off disabled.  It's enabled in the gather callback when a player is gathered (see above).
 	// This prevents trying to start a net game by yourself (which doesn't work at the moment, whether it ought to or not).
 	w_left_button* play_button_w = new w_left_button("PLAY", dialog_ok, &d);
@@ -1045,14 +1037,6 @@ bool run_network_gather_dialog(MetaserverClient* metaserverClient)
 	d.set_processing_function(gather_processing_function);
 	
 	sGathererMayStartGame= true;
-
-	auto_ptr<GatherDialogNotificationAdapter> notificationAdapter;
-	if (metaserverClient != NULL)
-		notificationAdapter.reset(new GatherDialogNotificationAdapter(*chatHistory));
-
-	auto_ptr<MetaserverClient::NotificationAdapterInstaller> notificationAdapterInstaller;
-	if (metaserverClient != NULL)
-		notificationAdapterInstaller.reset(new MetaserverClient::NotificationAdapterInstaller(notificationAdapter.get(), *metaserverClient));
 
 	return !(d.run());
 }
@@ -1072,11 +1056,13 @@ bool run_network_gather_dialog(MetaserverClient* metaserverClient)
  *  Joining dialog
  */
 
-// So the processing funciton can access it
+// So the processing function can access it
 static join_dialog_data* my_join_dialog_data_ptr;
 
 static void
-join_processing_function(dialog* inDialog) {
+join_processing_function(dialog* inDialog)
+{
+	MetaserverClient::pumpAll();
 	
 	/* check and see if we've gotten any connection requests */
 	join_dialog_gatherer_search ();
@@ -1137,6 +1123,24 @@ join_by_metaserver_clicked(void *arg)
 {
 	dialog *d = (dialog *)arg;
 	d->quit(1);
+}
+
+
+// Ugh - there's way too much duplicated code between here and metaserver_dialogs.
+// This function was copied-and-pasted from there, in fact.  Will clean up later.
+// Or maybe _you_ will.  :)
+static void
+setupAndConnectClient(MetaserverClient& client)
+{
+	{
+		unsigned char* playerNameCStringStorage = pstrdup(player_preferences->name);
+		char* playerNameCString = a1_p2cstr(playerNameCStringStorage);
+		client.setPlayerName(playerNameCString);
+		free(playerNameCStringStorage);
+	}
+	
+	client.setPlayerTeamName("");
+	client.connect("myth.mariusnet.com", 6321, "guest", "0000000000000000");
 }
 
 
@@ -1250,28 +1254,17 @@ void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
 					d2.add(players_w);
 	
 					d2.add(new w_spacer());
-#ifdef	NETWORK_PREGAME_CHAT
-#ifdef	NETWORK_TWO_WAY_CHAT                
-					d2.add(new w_static_text("Chat"));
-#else
-					d2.add(new w_static_text("Messages from Gatherer"));
-#endif // NETWORK_TWO_WAY_CHAT
-					d2.add(new w_spacer());
-	
-					w_chat_history* chat_history_w = new w_chat_history(600, 6);
-					chat_history_w->set_identifier(iCHAT_HISTORY);
-					d2.add(chat_history_w);
-#ifdef	NETWORK_TWO_WAY_CHAT
-					w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
-					chatentry_w->set_identifier(iCHAT_ENTRY);
-					chatentry_w->set_enter_pressed_callback(send_text_fake);
-					chatentry_w->set_alignment(widget::kAlignLeft);
-					chatentry_w->set_full_width();
-					d2.add(chatentry_w);
-                
-#endif // NETWORK_TWO_WAY_CHAT
-					d2.add(new w_spacer());
-#endif // NETWORK_PREGAME_CHAT
+
+					auto_ptr<MetaserverClient> metaserverClient;
+					auto_ptr<PregameDialogNotificationAdapter> notificationAdapter;
+					auto_ptr<MetaserverClient::NotificationAdapterInstaller> notificationAdapterInstaller;
+					if (joinResult == 1)
+					{
+						metaserverClient.reset(new MetaserverClient());
+						setupAndConnectClient(*metaserverClient);
+						setup_metaserver_chat_ui(d2, *metaserverClient, 8, notificationAdapter, notificationAdapterInstaller);
+					}
+
 					w_static_text*	status_w = new w_static_text(
 						TS_GetCString(strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string));
 					status_w->set_identifier(iJOIN_MESSAGES);
@@ -1282,6 +1275,8 @@ void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
 					w_button*	cancel_w = new w_button("CANCEL", dialog_cancel, &d2);
 					cancel_w->set_identifier(iCANCEL);
 					d2.add(cancel_w);
+
+					
 	
 					d2.set_processing_function(join_processing_function);
 		

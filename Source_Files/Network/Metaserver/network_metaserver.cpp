@@ -42,6 +42,9 @@
 using namespace std;
 
 
+set<MetaserverClient*> MetaserverClient::s_instances;
+
+
 static const int kKeyLength = 16;
 
 
@@ -144,7 +147,10 @@ MetaserverClient::MetaserverClient()
 	m_dispatcher->setHandlerForType(m_playerListMessageHandler.get(), PlayerListMessage::kType);
 	m_dispatcher->setHandlerForType(m_roomListMessageHandler.get(), RoomListMessage::kType);
 	m_dispatcher->setHandlerForType(m_gameListMessageHandler.get(), GameListMessage::kType);
+
+	s_instances.insert(this);
 }
+
 
 
 void
@@ -224,6 +230,16 @@ MetaserverClient::pump()
 
 
 
+
+void
+MetaserverClient::pumpAll()
+{
+	for_each(s_instances.begin(), s_instances.end(), mem_fun(&MetaserverClient::pump));
+}
+
+
+
+
 void
 MetaserverClient::sendChatMessage(const std::string& message)
 {
@@ -291,4 +307,5 @@ MetaserverClient::setPlayerTeamName(const std::string& name)
 MetaserverClient::~MetaserverClient()
 {
 	disconnect();
+	s_instances.erase(this);
 }

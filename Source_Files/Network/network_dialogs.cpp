@@ -252,7 +252,6 @@ bool network_gather(bool inResumingGame)
 bool gather_dialog_player_search (prospective_joiner_info& player)
 {
 	GathererAvailableAnnouncer::pump();
-	GameAvailableMetaserverAnnouncer::pumpAll();
 
 	if (NetCheckForNewJoiner(player)) {
 		ungathered_players.insert (map<int, const prospective_joiner_info>::value_type (player.stream_id, player));
