@@ -142,7 +142,7 @@ Aug 12, 2000 (Loren Petrich):
 #include "XML_ResourceFork.h"
 #include "XML_ParseTreeRoot.h"
 
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
 // #ifndef FINAL
 #include "weapons.h" /* To remove process_new_item_for_reloading warning and debug_print_weapon_status warning */
@@ -191,9 +191,9 @@ unsigned long LocalEventFlags = 0;
 bool CheatsActive = false;
 
 /* ---------- externs that I couldn't fit into the #include heirarchy nicely */
-extern boolean load_and_start_game(FileObject& File);
+extern boolean load_and_start_game(FileSpecifier& File);
 // extern boolean load_and_start_game(FileDesc *file);
-extern boolean handle_open_replay(FileObject& File);
+extern boolean handle_open_replay(FileSpecifier& File);
 // extern boolean handle_open_replay(FileDesc *replay_file);
 
 /* ---------- private code */
@@ -743,7 +743,7 @@ static pascal OSErr handle_open_document(
 
 						FSpGetFInfo(&myFSS, &theFInfo);
 						// Create a file object to use instead
-						FileObject_Mac InputFile;
+						FileSpecifier InputFile;
 						InputFile.SetSpec(myFSS);
 						
 						// LP change, since the filetypes are no longer constants
