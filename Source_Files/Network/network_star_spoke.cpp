@@ -171,7 +171,7 @@ check_send_packet_to_hub()
 {
         if(sNeedToSendLocalOutgoingBuffer)
 	{
-		logContext("delivering stored packet to local hub");
+		logContextNMT("delivering stored packet to local hub");
                 hub_received_network_packet(&sLocalOutgoingBuffer);
 	}
 
@@ -317,13 +317,13 @@ spoke_distribute_lossy_streaming_bytes(int16 inDistributionType, uint32 inDestin
 {
 	if(inLength > sOutgoingLossyByteStreamData.getRemainingSpace())
 	{
-		logNote2("spoke has insufficient buffer space for %hu bytes of outgoing lossy streaming type %hd; discarded", inLength, inDistributionType);
+		logNoteNMT2("spoke has insufficient buffer space for %hu bytes of outgoing lossy streaming type %hd; discarded", inLength, inDistributionType);
 		return;
 	}
 
 	if(sOutgoingLossyByteStreamDescriptors.getRemainingSpace() < 1)
 	{
-		logNote2("spoke has exhausted descriptor buffer space; discarding %hu bytes of outgoing lossy streaming type %hd", inLength, inDistributionType);
+		logNoteNMT2("spoke has exhausted descriptor buffer space; discarding %hu bytes of outgoing lossy streaming type %hd", inLength, inDistributionType);
 		return;
 	}
 	
@@ -332,7 +332,7 @@ spoke_distribute_lossy_streaming_bytes(int16 inDistributionType, uint32 inDestin
 	theDescriptor.mDestinations = inDestinationsBitmask;
 	theDescriptor.mType = inDistributionType;
 
-	logDump3("spoke application decided to send %d bytes of lossy streaming type %d destined for players 0x%x", inLength, inDistributionType, inDestinationsBitmask);
+	logDumpNMT3("spoke application decided to send %d bytes of lossy streaming type %d destined for players 0x%x", inLength, inDistributionType, inDestinationsBitmask);
 	
 	sOutgoingLossyByteStreamData.enqueueBytes(inBytes, inLength);
 	sOutgoingLossyByteStreamDescriptors.enqueue(theDescriptor);
@@ -356,7 +356,7 @@ spoke_became_disconnected()
 void
 spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 {
-	logContext("spoke processing a received packet");
+	logContextNMT("spoke processing a received packet");
 	
         // If we've already given up on the connection, ignore packets.
         if(!sConnected || !sSpokeActive)
@@ -380,7 +380,7 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 
                         default:
                                 // Ignore unknown packet types
-				logTrace1("unknown packet magic %x", thePacketMagic);
+				logTraceNMT1("unknown packet magic %x", thePacketMagic);
                                 break;
                 }
         }
@@ -404,7 +404,7 @@ spoke_received_game_data_packet_v1(AIStream& ps)
         // If ACK is early, ignore the rest of the packet to be safer
         if(theSmallestUnacknowledgedTick > sOutgoingFlags.getWriteTick())
 	{
-		logTrace2("early ack (%d > %d)", theSmallestUnacknowledgedTick, sOutgoingFlags.getWriteTick());
+		logTraceNMT2("early ack (%d > %d)", theSmallestUnacknowledgedTick, sOutgoingFlags.getWriteTick());
                 return;
 	}
 
@@ -414,7 +414,7 @@ spoke_received_game_data_packet_v1(AIStream& ps)
         // Remove acknowledged elements from outgoing queue
         for(int tick = sOutgoingFlags.getReadTick(); tick < theSmallestUnacknowledgedTick; tick++)
 	{
-		logTrace1("dequeueing tick %d from sOutgoingFlags", tick);
+		logTraceNMT1("dequeueing tick %d from sOutgoingFlags", tick);
                 sOutgoingFlags.dequeue();
 	}
 
@@ -424,7 +424,7 @@ spoke_received_game_data_packet_v1(AIStream& ps)
         if(!context.mGotTimingAdjustmentMessage)
 	{
 		if(sRequestedTimingAdjustment != 0)
-			logTrace("timing adjustment no longer requested");
+			logTraceNMT("timing adjustment no longer requested");
 		
                 sRequestedTimingAdjustment = 0;
 	}
@@ -456,7 +456,7 @@ spoke_received_game_data_packet_v1(AIStream& ps)
 		
 		if(weAreAlone)
 		{
-			logContext("handling special \"we are alone\" case");
+			logContextNMT("handling special \"we are alone\" case");
 			
 			for(size_t i = 0; i < sNetworkPlayers.size(); i++)
 			{
@@ -465,14 +465,14 @@ spoke_received_game_data_packet_v1(AIStream& ps)
 				{
 					while(thePlayer.mQueue->getWriteTick() < theSmallestUnacknowledgedTick)
 					{
-						logDump2("enqueued NET_DEAD_ACTION_FLAG for player %d tick %d", i, thePlayer.mQueue->getWriteTick());
+						logDumpNMT2("enqueued NET_DEAD_ACTION_FLAG for player %d tick %d", i, thePlayer.mQueue->getWriteTick());
 						thePlayer.mQueue->enqueue(NET_DEAD_ACTION_FLAG);
 					}
 				}
 			}
 
 			sSmallestUnreceivedTick = theSmallestUnacknowledgedTick;
-			logDump1("sSmallestUnreceivedTick is now %d", sSmallestUnreceivedTick);
+			logDumpNMT1("sSmallestUnreceivedTick is now %d", sSmallestUnreceivedTick);
 		}
 		
                 return;
@@ -484,7 +484,7 @@ spoke_received_game_data_packet_v1(AIStream& ps)
         // Can't accept packets that skip ticks
         if(theSmallestUnreadTick > sSmallestUnreceivedTick)
 	{
-		logTrace2("early flags (%d > %d)", theSmallestUnreadTick, sSmallestUnreceivedTick);
+		logTraceNMT2("early flags (%d > %d)", theSmallestUnreadTick, sSmallestUnreceivedTick);
                 return;
 	}
 
@@ -514,7 +514,7 @@ spoke_received_game_data_packet_v1(AIStream& ps)
                         theSmallestQueueSpace = theQueueSpace;
         }
 
-	logDump1("%d queue space available", theSmallestQueueSpace);
+	logDumpNMT1("%d queue space available", theSmallestQueueSpace);
 
         // Read and enqueue the actual action_flags from the packet
         // The body of this loop is a bit more convoluted than you might
@@ -568,7 +568,7 @@ spoke_received_game_data_packet_v1(AIStream& ps)
 					WritableTickBasedActionQueue& theQueue = *(sNetworkPlayers[i].mQueue);
 					assert(theQueue.getWriteTick() == sSmallestUnreceivedTick);
 					assert(theQueue.availableCapacity() > 0);
-					logTrace3("enqueueing flags %x for player %d tick %d", theFlags, i, theQueue.getWriteTick());
+					logTraceNMT3("enqueueing flags %x for player %d tick %d", theFlags, i, theQueue.getWriteTick());
 					theQueue.enqueue(theFlags);
 				}
                         }
@@ -582,12 +582,18 @@ spoke_received_game_data_packet_v1(AIStream& ps)
 			sSmallestUnreceivedTick = theSmallestUnreadTick;
 
 			int32 theLatencyMeasurement = sOutgoingFlags.getWriteTick() - sSmallestUnreceivedTick;
-			logDump1("latency measurement: %d", theLatencyMeasurement);
+			logDumpNMT1("latency measurement: %d", theLatencyMeasurement);
+
+// We can't use NthElementFinder at interrupt time in Mac OS 9 since its std::set can [de]allocate memory
+// We don't really use it for anything on the spoke-side now anyway, thanks to player motion prediction...
+#if !(defined(mac) && !defined(__MACH__))
 			sNthElementFinder.insert(theLatencyMeasurement);
 			// We capture these values here so we don't have to take a lock in GetNetTime.
 			sTimingMeasurementValid = sNthElementFinder.window_full();
 			if(sTimingMeasurementValid)
 				sTimingMeasurement = sNthElementFinder.nth_largest_element(sSpokePreferences.mTimingNthElement);
+#endif
+
 		}
 
 	} // loop while there's packet data left
@@ -637,7 +643,7 @@ handle_player_net_dead_message(AIStream& ps, IncomingGameDataPacketProcessingCon
         sNetworkPlayers[thePlayerIndex].mConnected = false;
         sNetworkPlayers[thePlayerIndex].mNetDeadTick = theTick;
 
-	logDump2("netDead message: player %d in tick %d", thePlayerIndex, theTick);
+	logDumpNMT2("netDead message: player %d in tick %d", thePlayerIndex, theTick);
 }
 
 
@@ -653,7 +659,7 @@ handle_timing_adjustment_message(AIStream& ps, IncomingGameDataPacketProcessingC
         {
                 sOutstandingTimingAdjustment = theAdjustment;
                 sRequestedTimingAdjustment = theAdjustment;
-		logTrace2("new timing adjustment message; requested: %d outstanding: %d", sRequestedTimingAdjustment, sOutstandingTimingAdjustment);
+		logTraceNMT2("new timing adjustment message; requested: %d outstanding: %d", sRequestedTimingAdjustment, sOutstandingTimingAdjustment);
         }
 
         context.mGotTimingAdjustmentMessage = true;
@@ -677,14 +683,14 @@ handle_lossy_byte_stream_message(AIStream& ps, IncomingGameDataPacketProcessingC
 	uint16 theSpilloverDataLength = 0;
 	if(theDataLength > sizeof(sScratchBuffer))
 	{
-		logNote3("received too many bytes (%d) of lossy streaming data type %d from player %d; truncating", theDataLength, theDistributionType, theSendingPlayer);
+		logNoteNMT3("received too many bytes (%d) of lossy streaming data type %d from player %d; truncating", theDataLength, theDistributionType, theSendingPlayer);
 		theSpilloverDataLength = theDataLength - sizeof(sScratchBuffer);
 		theDataLength = sizeof(sScratchBuffer);
 	}
 	ps.read(sScratchBuffer, theDataLength);
 	ps.ignore(theSpilloverDataLength);
 
-	logDump3("received %d bytes of lossy streaming type %d data from player %d", theDataLength, theDistributionType, theSendingPlayer);
+	logDumpNMT3("received %d bytes of lossy streaming type %d data from player %d", theDataLength, theDistributionType, theSendingPlayer);
 
 	call_distribution_response_function_if_available(sScratchBuffer, theDataLength, theDistributionType, theSendingPlayer);
 }
@@ -709,7 +715,7 @@ process_optional_message(AIStream& ps, IncomingGameDataPacketProcessingContext& 
 static bool
 spoke_tick()
 {
-	logContext1("processing spoke_tick %d", sNetworkTicker);
+	logContextNMT1("processing spoke_tick %d", sNetworkTicker);
 	
         sNetworkTicker++;
 
@@ -719,7 +725,7 @@ spoke_tick()
         
                 if(sNetworkTicker - sLastNetworkTickHeard > theSilentTicksBeforeNetDeath)
                 {
-			logTrace("giving up on hub; disconnecting");
+			logTraceNMT("giving up on hub; disconnecting");
                         spoke_became_disconnected();
                         return true;
                 }
@@ -733,7 +739,7 @@ spoke_tick()
         {
                 int theNumberOfFlagsToProvide = -sOutstandingTimingAdjustment + 1;
 
-		logDump1("want to provide %d flags", theNumberOfFlagsToProvide);
+		logDumpNMT1("want to provide %d flags", theNumberOfFlagsToProvide);
 
                 // If we're not connected, write only to our local game's queue.
                 // If we are connected,
@@ -748,7 +754,7 @@ spoke_tick()
                         if(theTargetQueue.availableCapacity() <= 0)
                                 break;
 
-			logDump1("enqueueing flags for tick %d", theTargetQueue.getWriteTick());
+			logDumpNMT1("enqueueing flags for tick %d", theTargetQueue.getWriteTick());
 
                         theTargetQueue.enqueue(parse_keymap());
                         shouldSend = true;
@@ -764,11 +770,11 @@ spoke_tick()
         // so we just throw away this local tick.
         else
 	{
-		logDump("ignoring this tick for timing adjustment"); 
+		logDumpNMT("ignoring this tick for timing adjustment"); 
                 sOutstandingTimingAdjustment--;
 	}
 
-	logDump1("sOutstandingTimingAdjustment is now %d", sOutstandingTimingAdjustment);
+	logDumpNMT1("sOutstandingTimingAdjustment is now %d", sOutstandingTimingAdjustment);
 
 	if(sOutgoingLossyByteStreamDescriptors.getCountOfElements() > 0)
 		shouldSend = true;
@@ -796,7 +802,7 @@ spoke_tick()
 			{
 				while(thePlayer.mQueue->getWriteTick() < theLocalPlayerWriteTick)
 				{
-					logDump2("enqueueing NET_DEAD_ACTION_FLAG for player %d tick %d", i, thePlayer.mQueue->getWriteTick());
+					logDumpNMT2("enqueueing NET_DEAD_ACTION_FLAG for player %d tick %d", i, thePlayer.mQueue->getWriteTick());
 					thePlayer.mQueue->enqueue(NET_DEAD_ACTION_FLAG);
 				}
 			}
@@ -863,7 +869,7 @@ send_packet()
                                 ps << sOutgoingFlags.peek(tick);
                 }
 
-		logDump3("preparing to send packet: ACK %d, flags [%d,%d)", sSmallestUnreceivedTick, sOutgoingFlags.getReadTick(), sOutgoingFlags.getWriteTick());
+		logDumpNMT3("preparing to send packet: ACK %d, flags [%d,%d)", sSmallestUnreceivedTick, sOutgoingFlags.getReadTick(), sOutgoingFlags.getWriteTick());
 
                 // Send the packet
                 sOutgoingFrame->data_size = ps.tellp();
