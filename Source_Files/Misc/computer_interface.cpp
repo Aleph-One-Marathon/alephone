@@ -335,7 +335,7 @@ static void decode_text(struct static_preprocessed_terminal_data *terminal_text)
 /* ------------ machine-specific code */
 
 #if defined(mac)
-#include "computer_interface_macintosh.c"
+#include "computer_interface_mac.cpp"
 #elif defined(SDL)
 #include "computer_interface_sdl.cpp"
 #endif
