@@ -58,4 +58,4 @@ confpaths.h: Makefile
 
 DISTCLEANFILES = confpaths.h
 
-shell_sdl.o: confpaths.h
+shell.o: confpaths.h

@@ -587,9 +587,11 @@ void render_screen(short ticks_elapsed)
 		HUD_RenderRequest = false;
 	}
 
+#ifdef HAVE_OPENGL
 	// Swap OpenGL double-buffers
 	if (screen_mode.acceleration == _opengl_acceleration)
 		OGL_SwapBuffers();
+#endif
 }
 
 

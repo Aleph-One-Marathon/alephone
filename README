@@ -301,12 +301,10 @@ And a list of known bugs:
 
  - Palette tricks (fading, underwater, red flash when being hit etc.) don't
    work
+ - Mouse control under BeOS doesn't work (SDL problem)
  - Lo-res mode (F3) doesn't work
- - All error messages are those of the Mac version, which are often
-   inappropriate or misleading. For example, the program will ask the user
-   to put the data files into the same directory as the Aleph One executable,
-   which is wrong under Unix. There, the data files have to be in
-   /usr/local/share/AlephOne.
+ - Some error messages are those of the Mac version, which are often
+   inappropriate or misleading
 
 
 TROUBLESHOOTING

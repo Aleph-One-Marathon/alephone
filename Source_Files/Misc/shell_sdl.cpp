@@ -28,7 +28,11 @@ FileSpecifier recordings_dir;	// Directory for recordings (except film buffer, w
 bool option_fullscreen = false;		// Run fullscreen
 bool option_8bit = false;			// Run in 8 bit color depth
 bool option_nogl = false;			// Disable OpenGL
+#ifdef __BEOS__
+bool option_nomouse = true;
+#else
 bool option_nomouse = false;		// Disable mouse control
+#endif
 bool option_nosound = false;		// Disable sound output
 int option_level = 1;				// Start level for Ctrl-Shift-New Game
 
