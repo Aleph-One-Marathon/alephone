@@ -280,9 +280,24 @@ exit_predictive_mode()
 	{
 		for(short i = 0; i < dynamic_world->player_count; i++)
 		{
-			assert(get_player_data(i)->monster_index == sSavedPlayerData[i].monster_index);
+			player_data* player = get_player_data(i);
+			
+			assert(player->monster_index == sSavedPlayerData[i].monster_index);
 
-			*get_player_data(i) = sSavedPlayerData[i];
+			{
+				// We *don't* restore this tiny part of the game-state back because
+				// otherwise the player can't use [] to scroll the inventory panel.
+				// [] scrolling happens outside the normal input/update system, so that's
+				// enough to persuade me that not restoring this won't OOS any more often
+				// than []-scrolling did before prediction.  :)
+				int16 saved_interface_flags = player->interface_flags;
+				int16 saved_interface_decay = player->interface_decay;
+				
+				*player = sSavedPlayerData[i];
+
+				player->interface_flags = saved_interface_flags;
+				player->interface_decay = saved_interface_decay;
+			}
 
 			if(sSavedPlayerData[i].monster_index != NONE)
 			{
