@@ -2476,7 +2476,12 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 	bool IsInvisible = false;
 	if (RenderRectangle.transfer_mode == _static_transfer)
 	{
-		// Do nothing
+		// Crisp, no glowmap
+		IsBlended = false;
+		IsGlowmappable = false;
+		glEnable(GL_ALPHA_TEST);
+		glDisable(GL_BLEND);
+		return;
 	}
 	else if (RenderRectangle.transfer_mode == _tinted_transfer)
 	{
