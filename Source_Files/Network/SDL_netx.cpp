@@ -51,7 +51,9 @@
 # define MY_TYPE_CAST
 #endif
 
-#if !defined(WIN32) && !defined(__BEOS__)	// Win32 allows 255.255.255.255 as broadcast, much easier
+
+// Win32 allows 255.255.255.255 as broadcast, much easier
+#if !defined(WIN32) && !defined(__BEOS__) && !(defined(mac) && !defined(TARGET_API_MAC_CARBON))
 // FILE-LOCAL (static) CONSTANTS
 static const int	kMaxNumBroadcastAddresses	= 8;
 static const int	kIFConfigBufferSize		= 1024;	// in bytes
@@ -71,7 +73,7 @@ static	int	SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket);
 // EXTERNALLY-VISIBLE FUNCTIONS
 int
 SDLNetx_EnableBroadcast(UDPsocket inSocket) {
-#if !defined(WIN32) && !defined(__BEOS__) && !defined(__MWERKS__)
+#if !defined(WIN32) && !defined(__BEOS__) && !(defined(mac) && !defined(TARGET_API_MAC_CARBON))
     if(!sCollectedBroadcastAddresses)
         SDLNetxint_CollectBroadcastAddresses(inSocket);
 #endif
@@ -134,7 +136,8 @@ SDLNetx_DisableBroadcast(UDPsocket inSocket) {
 }
 
 
-#if !defined(WIN32) && !defined(__BEOS__)  // see simpler function below for Win32
+// see simpler function below for Win32
+#if !defined(WIN32) && !defined(__BEOS__) && !(defined(mac) && !defined(TARGET_API_MAC_CARBON))
 int
 SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
     int	theCountOfSuccessfulSends = 0;
@@ -157,6 +160,7 @@ SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
 #else
 // Win32 (at least, Win 98) seems to accept 255.255.255.255 as a valid broadcast address.
 // I'll live with that for now.
+// Also doing that for the BeOS and Mac Classic
 int
 SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
 	Uint32 theSavedHostAddress = inPacket->address.host;
@@ -170,7 +174,7 @@ SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
 
 
 // INTERNAL (static) FUNCTIONS
-#if !defined(WIN32) && !defined(__BEOS__) && !defined(__MWERKS__)
+#if !defined(WIN32) && !defined(__BEOS__) && !(defined(mac) && !defined(TARGET_API_MAC_CARBON))
 int
 SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket) {
     // Win or lose, we played the game.
