@@ -125,7 +125,7 @@ void dump_screen();
 bool GetTunnelVision();
 bool SetTunnelVision(bool TunnelVisionOn);
 
-// For drawing the Heads-Up Display; the code will assume that it is always buffered
-void DrawBufferedHUD();
+// Request for drawing the HUD
+void RequestDrawingHUD();
 
 #endif
