@@ -157,7 +157,7 @@ void initialize_keyboard_controller(
 	// get globals initialized
 	heartbeat_count= 0;
 	input_task_active= FALSE;
-	memset(&replay, 0, sizeof(struct replay_private_data));
+	obj_clear(replay);
 
 	input_task= install_timer_task(TICKS_PER_SECOND, input_controller);
 	assert(input_task);
@@ -564,13 +564,13 @@ void set_recording_header_data(
 	struct game_data *game_information)
 {
 	assert(!replay.valid);
-	memset(&replay.header, 0, sizeof(struct recording_header));
+	obj_clear(replay.header);
 	replay.header.num_players= number_of_players;
 	replay.header.level_number= level_number;
 	replay.header.map_checksum= map_checksum;
 	replay.header.version= version;
-	memcpy(replay.header.starts, starts, MAXIMUM_NUMBER_OF_PLAYERS*sizeof(struct player_start_data));
-	memcpy(&replay.header.game_information, game_information, sizeof(struct game_data));
+	objlist_copy(replay.header.starts, starts, MAXIMUM_NUMBER_OF_PLAYERS);
+	obj_copy(replay.header.game_information, *game_information);
 	replay.header.length= sizeof(struct recording_header);
 
 	return;
@@ -589,8 +589,8 @@ void get_recording_header_data(
 	*level_number= replay.header.level_number;
 	*map_checksum= replay.header.map_checksum;
 	*version= replay.header.version;
-	memcpy(starts, replay.header.starts, MAXIMUM_NUMBER_OF_PLAYERS*sizeof(struct player_start_data));
-	memcpy(game_information, &replay.header.game_information, sizeof(struct game_data));
+	objlist_copy(starts, replay.header.starts, MAXIMUM_NUMBER_OF_PLAYERS);
+	obj_copy(*game_information, replay.header.game_information);
 	
 	return;
 }
