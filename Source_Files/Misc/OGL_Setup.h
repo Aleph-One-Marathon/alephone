@@ -192,7 +192,7 @@ const int ALL_CLUTS = -1;
 
 
 // Here are the texture-opacity types.
-// Opacity is the value of the alpha channel
+// Opacity is the value of the alpha channel, sometimes called transparency
 enum
 {
 	OGL_OpacType_Crisp,		// The default: crisp edges, complete opacity
@@ -202,6 +202,13 @@ enum
 	OGL_NUMBER_OF_OPACITY_TYPES
 };
 
+// Here are the texture-blend types
+enum
+{
+	OGL_BlendType_Crossfade,	// The default: crossfade from background to texture value
+	OGL_BlendType_Add,			// Add texture value to background
+	OGL_NUMBER_OF_BLEND_TYPES
+};
 
 // Shared options for wall/sprite textures and for skins
 struct OGL_TextureOptionsBase
@@ -217,12 +224,16 @@ struct OGL_TextureOptionsBase
 	// Normal and glow-mapped images
 	ImageDescriptor NormalImg, GlowImg;
 	
+	// Normal and glow blending
+	short NormalBlend, GlowBlend;
+	
 	// For convenience
 	void Load();
 	void Unload();
 	
 	OGL_TextureOptionsBase():
-		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0)
+		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
+		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade)
 		{}
 };
 
