@@ -51,7 +51,7 @@ void myDisposeGWorld(
 	DisposeGWorld(gw);
 }
 
-Boolean myLockPixels(
+bool myLockPixels(
 	GWorldPtr gw)
 {
 	return LockPixels(GetGWorldPixMap(gw));

@@ -4,7 +4,7 @@
 #include "cstypes.h"
 #include "csmisc.h"
 
-extern void initialize_debugger(Boolean);
+extern void initialize_debugger(bool);
 
 unsigned long machine_tick_count(void)
 {
@@ -31,7 +31,7 @@ void kill_screen_saver(void)
 }
 
 void initialize_debugger(
-	Boolean ignore)
+	bool ignore)
 {
 	(void)ignore;
 }

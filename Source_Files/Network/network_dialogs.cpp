@@ -378,7 +378,7 @@ bool network_join(
 
 		GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
 		SetDialogItemText(item_handle, myPlayerInfo.name);
-		SelectDialogItemText(dialog, iJOIN_NAME, 0, SHORT_MAX);
+		SelectDialogItemText(dialog, iJOIN_NAME, 0, INT16_MAX);
 		modify_control(dialog, iJOIN_TEAM, CONTROL_ACTIVE, player_preferences->team+1);
 		modify_control(dialog, iJOIN_COLOR, CONTROL_ACTIVE, player_preferences->color+1);
 		if (myPlayerInfo.name[0] == 0) modify_control(dialog, iOK, CONTROL_INACTIVE, NONE);
@@ -688,7 +688,7 @@ static short fill_in_game_setup_dialog(
 	
 	GetDialogItem(dialog, iGATHER_NAME, &item_type, &item_handle, &item_rect);
 	SetDialogItemText(item_handle, player_information->name);
-	SelectDialogItemText(dialog, iGATHER_NAME, 0, SHORT_MAX);
+	SelectDialogItemText(dialog, iGATHER_NAME, 0, INT16_MAX);
 
 	/* Set the menu values */
 	modify_control(dialog, iGATHER_COLOR, CONTROL_ACTIVE, player_preferences->color+1);
@@ -1104,7 +1104,7 @@ bool check_setup_information(
 	if (!information_is_acceptable)
 	{
 		SysBeep(3);
-		SelectDialogItemText(dialog, bad_item, 0, SHORT_MAX);
+		SelectDialogItemText(dialog, bad_item, 0, INT16_MAX);
 	}
 
 	return information_is_acceptable;
@@ -1143,7 +1143,7 @@ static pascal Boolean gather_dialog_filter_proc(
 	GrafPtr old_port;
 	bool handled;
 	Point where;
-	Boolean cell_is_selected;
+	bool cell_is_selected;
 	Cell selected_cell;
 	short cell_count;
 

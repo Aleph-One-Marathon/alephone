@@ -290,12 +290,12 @@ OSErr NetADSPWaitForConnection(
 	return error;
 }
 
-Boolean NetADSPCheckConnectionStatus(
+bool NetADSPCheckConnectionStatus(
 	ConnectionEndPtr connectionEnd,
 	AddrBlock *address)
 {
 	DSPPBPtr myDSPPBPtr= &connectionEnd->pb; /* use private DSPPBPtr (ocPassive call was asynchronous) */
-	Boolean connectionEstablished= false;
+	bool connectionEstablished= false;
 	OSErr error;
 	
 	/* check to make sure we’re waiting for a connection like we expect */

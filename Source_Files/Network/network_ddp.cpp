@@ -295,7 +295,7 @@ OSErr NetDDPSendFrame(
 
 #ifdef OBSOLETE
 #ifdef envppc
-static Boolean NetDDPSocketListener(
+static bool NetDDPSocketListener(
 	Ptr SCCAddr1,
 	Ptr SCCAddr2,
 	Ptr MPPLocalVars,

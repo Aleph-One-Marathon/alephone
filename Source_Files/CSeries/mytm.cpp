@@ -22,8 +22,8 @@ struct myTMTask {
 #endif
 	bool (*func)(void);
 	long time;
-	Boolean insX;
-	Boolean primed;
+	bool insX;
+	bool primed;
 };
 
 #ifdef env68k

@@ -14,7 +14,7 @@ extern void activate_any_window(
 	EventRecord *event,
 	bool active);
 
-static Boolean cursor_tracking=true;
+static bool cursor_tracking=true;
 static dialog_header_proc_ptr header_proc;
 
 DialogPtr myGetNewDialog(
@@ -137,7 +137,7 @@ ModalFilterUPP get_general_filter_upp(void)
 }
 
 void set_dialog_cursor_tracking(
-	Boolean tracking)
+	bool tracking)
 {
 	cursor_tracking=tracking;
 }
@@ -173,7 +173,7 @@ void insert_number_into_text_item(
 	SetDialogItemText(ih,str);
 }
 
-Boolean hit_dialog_button(
+bool hit_dialog_button(
 	DialogPtr dlg,
 	short item)
 {

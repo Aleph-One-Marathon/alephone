@@ -29,7 +29,7 @@ extern OSErr myUpdateGWorld(
 	unsigned long flags);
 extern void myDisposeGWorld(
 	GWorldPtr gw);
-extern Boolean myLockPixels(
+extern bool myLockPixels(
 	GWorldPtr gw);
 extern void myUnlockPixels(
 	GWorldPtr gw);

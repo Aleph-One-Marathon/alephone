@@ -41,7 +41,7 @@ extern pascal Boolean general_filter_proc(
 extern ModalFilterUPP get_general_filter_upp(void);
 
 extern void set_dialog_cursor_tracking(
-	Boolean tracking);
+	bool tracking);
 
 extern long extract_number_from_text_item(
 	DialogPtr dlg,
@@ -52,7 +52,7 @@ extern void insert_number_into_text_item(
 	short item,
 	long number);
 
-extern Boolean hit_dialog_button(
+extern bool hit_dialog_button(
 	DialogPtr dlg,
 	short item);
 

@@ -19,9 +19,9 @@ extern void SetDepthGDSpec(
 extern void BuildGDSpec(
 	GDSpecPtr spec,
 	GDHandle dev);
-extern Boolean HasDepthGDSpec(
+extern bool HasDepthGDSpec(
 	GDSpecPtr spec);
-extern Boolean EqualGDSpec(
+extern bool EqualGDSpec(
 	GDSpecPtr spec1,
 	GDSpecPtr spec2);
 

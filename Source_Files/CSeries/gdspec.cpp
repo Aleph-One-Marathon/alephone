@@ -95,7 +95,7 @@ void BuildGDSpec(
 	spec->height=bounds.bottom-bounds.top;
 }
 
-Boolean HasDepthGDSpec(
+bool HasDepthGDSpec(
 	GDSpecPtr spec)
 {
 	GDHandle dev;
@@ -113,7 +113,7 @@ Boolean HasDepthGDSpec(
 	return !!HasDepth(dev,spec->bit_depth,0,0);
 }
 
-Boolean EqualGDSpec(
+bool EqualGDSpec(
 	GDSpecPtr spec1,
 	GDSpecPtr spec2)
 {
@@ -293,7 +293,7 @@ void display_device_dialog(
 	Rect one,all,small;
 	int width,height;
 	ControlHandle graysradio,colorsradio;
-	Boolean done;
+	bool done;
 	short hit;
 
 	maindev=GetMainDevice();
