@@ -722,7 +722,7 @@ class XML_ItemParser: public XML_ElementParser
 	
 	// What is present?
 	bool IndexPresent;
-	enum {NumberOfValues = 4};
+	enum {NumberOfValues = 5};
 	bool IsPresent[NumberOfValues];
 	
 public:
@@ -789,6 +789,15 @@ bool XML_ItemParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
+	else if (strcmp(Tag,"type") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Data.item_kind,short(0),short(NUMBER_OF_ITEM_TYPES)))
+		{
+			IsPresent[4] = true;
+			return true;
+		}
+		else return false;
+	}
 	UnrecognizedTag();
 	return false;
 }
@@ -807,6 +816,7 @@ bool XML_ItemParser::AttributesDone()
 	if (IsPresent[1]) OrigData.plural_name_id = Data.plural_name_id;
 	if (IsPresent[2]) OrigData.maximum_count_per_player = Data.maximum_count_per_player;
 	if (IsPresent[3]) OrigData.invalid_environments = Data.invalid_environments;
+	if (IsPresent[4]) OrigData.item_kind = Data.item_kind;
 	
 	Shape_SetPointer(&OrigData.base_shape);
 	
