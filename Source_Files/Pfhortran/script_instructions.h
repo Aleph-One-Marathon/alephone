@@ -45,7 +45,7 @@
 #include "world.h"
 #include "ActionQueues.h"
 
-const bool pfhortran_controls_player = false;
+extern bool pfhortran_controls_player;
 
 static ActionQueues* sPfhortranActionQueues = NULL;
 ActionQueues* GetPfhortranActionQueues(void);

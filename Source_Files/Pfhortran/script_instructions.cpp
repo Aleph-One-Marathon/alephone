@@ -157,7 +157,7 @@ short roll_count;
 bool s_camera_Control;
 short old_size = _640_320_HUD;
 void (*instruction_lookup[NUMBER_OF_INSTRUCTIONS])(script_instruction);
-
+bool pfhortran_controls_player = false;
 
 /* function prototypes */
 
@@ -3361,6 +3361,14 @@ void s_Player_Control(script_instruction inst)
 		case 10:
 			action_flags = _right_trigger_state;
 			DoAction = true;
+		break;
+		
+		case 11: // start using pfhortran_action_queue
+			pfhortran_controls_player = true;
+		break;
+		
+		case 12: // stop using pfhortran_action_queue
+			pfhortran_controls_player = false;
 		break;
 		
 		case 13: // reset pfhortran_action_queue
