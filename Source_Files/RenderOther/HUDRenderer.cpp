@@ -344,7 +344,7 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
                         int seconds = dynamic_world->game_information.game_time_remaining / TICKS_PER_SECOND;
                         if (seconds / 60 < 1000) // start counting down at 999 minutes
                         { 
-                                sprintf(remaining_time, "%ld:%02ld", seconds/60, seconds%60);
+                                sprintf(remaining_time, "%d:%02d", seconds/60, seconds%60);
                                 draw_inventory_time(remaining_time, current_row-1); // compensate for current_row++ above
                         } else if (GET_GAME_OPTIONS() & _game_has_kill_limit) 
                         {
