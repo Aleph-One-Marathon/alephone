@@ -432,10 +432,10 @@ void HUD_OGL_Class::FrameRect(screen_rectangle *r, short color_index)
 	glDisable(GL_TEXTURE_2D);
 	glLineWidth(1);
 	glBegin(GL_LINE_LOOP);
-		glVertex2i(r->left, r->top + 1);
-		glVertex2i(r->right - 1, r->top + 1);
-		glVertex2i(r->right - 1, r->bottom);
-		glVertex2i(r->left, r->bottom);
+		glVertex2i(r->left + 1, r->top + 1);
+		glVertex2i(r->right, r->top + 1);
+		glVertex2i(r->right, r->bottom);
+		glVertex2i(r->left + 1, r->bottom);
 	glEnd();
 }
 
