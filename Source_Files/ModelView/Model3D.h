@@ -106,5 +106,5 @@ struct Model3D
 };
 
 #endif
-
+class Model3D;
 #endif
