@@ -835,8 +835,13 @@ void get_object_shape_and_transfer_mode(
 	if (NextFrame >= animation->frames_per_view)
 		NextFrame = animation->loop_frame;
 	data->NextFrame = NextFrame;
-	data->Phase = GET_SEQUENCE_PHASE(object->sequence);
-	data->Ticks = animation->ticks_per_frame;
+	
+	// Work out the phase in the cycle; be sure to start a cycle with 0 and not 1
+	short Phase = GET_SEQUENCE_PHASE(object->sequence);
+	short Ticks = animation->ticks_per_frame;
+	if (Phase >= Ticks) Phase -= Ticks;
+	data->Phase = Phase;
+	data->Ticks = Ticks;
 	
 	// What bitmap, etc.
 	data->low_level_shape_index= animation->low_level_shape_indexes[view*animation->frames_per_view + Frame];
