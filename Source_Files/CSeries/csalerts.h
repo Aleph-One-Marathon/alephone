@@ -58,7 +58,7 @@ extern void _alephone_warn(
 	long line,
 	char *what);
 
-#ifdef TARGET_API_MAC_CARBON
+#if TARGET_API_MAC_CARBON && !defined(SDL)
 DialogItemIndex SimpleAlert(AlertType Type, const char *Message, const char *Explain = NULL);
 #endif
 
