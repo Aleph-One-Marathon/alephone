@@ -78,8 +78,6 @@ public:
 
     void set_player_selected_callback(player_selected_callback_t callback) { player_selected_callback = callback; }
     
-    void handle_ungathered_players();
-    
 private:
     vector<prospective_joiner_info>	found_players;		// players that are out there
     vector<prospective_joiner_info>	hidden_players;		// players we don't want displayed - may include some not in found_players.

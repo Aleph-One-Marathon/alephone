@@ -27,11 +27,15 @@ Feb 14, 2003 (Woody Zenfell):
 July 03, 2003 (jkvw):
         Lua script selection in gather network game dialog
 
- August 27, 2003 (Woody Zenfell):
+August 27, 2003 (Woody Zenfell):
 	Reworked netscript selection stuff to be more cross-platform and more like other dialog code
+	
+January 27, 2005 (James Willson):
+	Forked off from network_dialogs_mac_sdl.cpp; NIBs code updated for firewall-friendly
+	netgame dialogs.
 */
 /*
- *  network_dialogs_mac_sdl.cpp - Network dialogs for Carbon with SDL networking
+ *  network_dialogs_mac_nibs_sdl.cpp - NIBS based network dialogs for Carbon with SDL networking
  */
 //#define NETWORK_TEST_POSTGAME_DIALOG
 //#define ALSO_TEST_PROGRESS_BAR
@@ -115,14 +119,10 @@ struct network_speeds
 static int sStartJoinedGameResult;
 static ListHandle network_list_box= (ListHandle) NULL;
 
-// List of found player info when gathering a game
-static vector<const SSLP_ServiceInstance*> found_players;
-
 /* from screen_drawing.c */
 extern TextSpec *_get_font_spec(short font_index);
 
 /* ---------- private code */
-static bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame);
 /* static */ short fill_in_game_setup_dialog(DialogPtr dialog, player_info *player_information, bool allow_all_levels);
 /* static */ void extract_setup_dialog_information(DialogPtr dialog, player_info *player_information, 
 	game_info *game_information, short game_limit_type, bool allow_all_levels);
@@ -133,16 +133,12 @@ static void update_netscript_file_display(DialogPtr inDialog);
 // ZZZ: moved to csdialogs
 //static short get_dialog_control_value(DialogPtr dialog, short which_control);
 
-static pascal Boolean gather_dialog_filter_proc(DialogPtr dialog, EventRecord *event, short *item_hit);
-static pascal Boolean join_dialog_filter_proc(DialogPtr dialog, EventRecord *event, short *item_hit);
-static pascal Boolean game_setup_filter_proc(DialogPtr dialog, EventRecord *event, short *item_hit);
-
-static void setup_network_list_box(WindowPtr window, Rect *frame, unsigned char *zone);
-static void dispose_network_list_box(void);
+// static void setup_network_list_box(WindowPtr window, Rect *frame, unsigned char *zone); maybe unused?
+// static void dispose_network_list_box(void);
 static pascal void update_player_list_item(DialogPtr dialog, short item_num);
-static void found_player_callback(const SSLP_ServiceInstance* player);
-static void lost_player_callback(const SSLP_ServiceInstance* player);
-static void player_name_changed_callback(const SSLP_ServiceInstance* player);
+static void found_player(const prospective_joiner_info* player);
+static void lost_player(const prospective_joiner_info* player);
+// static void player_name_changed_callback(const SSLP_ServiceInstance* player); jkvw: unused
 
 // ZZZ: moved to network.cpp (network.h) so we can share
 //static void reassign_player_colors(short player_index, short num_players);
@@ -160,11 +156,9 @@ static short get_game_duration_radio(DialogPtr dialog);
 static bool key_is_down(short key_code);
 #pragma mark -
 
-#ifdef USES_NIBS
 static bool CheckSetupInformation(
 	NetgameSetupData& Data, 
 	short game_limit_type);
-#endif
 
 /* ---------- code */
 
@@ -214,8 +208,6 @@ void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
  *
  *************************************************************************************************/
 
-#ifdef USES_NIBS
-
 // Ought to be a property of the player-list control...
 NetgameGatherData *GatherDataPtr;
 
@@ -230,13 +222,13 @@ static pascal OSStatus SetPlayerListMember(
 	NetgameGatherData& Data = *GatherDataPtr;
 	
 	// Find the player entry
-	map<DataBrowserItemID, const SSLP_ServiceInstance*>::iterator Entry = 
+	map<DataBrowserItemID, const prospective_joiner_info*>::iterator Entry = 
 		Data.FoundPlayers.find(ItemID);
 	
 	// Was it really found? if not, quit
 	if (Entry == Data.FoundPlayers.end()) return noErr;
 	
-	const byte *NameBytes = (const byte *)Entry->second->sslps_name;
+	const byte *NameBytes = (const byte *)Entry->second->name;
 	
 	CFStringRef NameStr = CFStringCreateWithBytes(
 					NULL, NameBytes+1, NameBytes[0],
@@ -366,25 +358,20 @@ static void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
 				continue;
 			
 			// Examine each entry in the list
-			map<DataBrowserItemID, const SSLP_ServiceInstance*>::iterator Entry = 
+			map<DataBrowserItemID, const prospective_joiner_info*>::iterator Entry = 
 				Data.FoundPlayers.find(ItemsPtr[k]);
 			
 			// Was it really found? if not, then try the next one
 			if (Entry == Data.FoundPlayers.end()) continue;
 	
-			const SSLP_ServiceInstance *player = Entry->second;
+			const prospective_joiner_info *player = Entry->second;
 			
 			// Remove player from lists
-			lost_player_callback(player);
+			lost_player(player);
 			
 			// Gather player
-			int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
-			if (theGatherPlayerResult != kGatherPlayerFailed)
-			{
+			if (gather_dialog_gathered_player (*player))
 				Draw1Control(Data.PlayerDisplayCtrl);
-				if(theGatherPlayerResult == kGatheredUnacceptablePlayer)
-					Data.AllPlayersOK = false;
-			}
 		}
 		
 		// Note: ADD button is handled in list-box callback
@@ -407,38 +394,27 @@ static void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
 const double PollingInterval = 1.0/30.0;
 
 static pascal void NetgameGather_Poller(EventLoopTimerRef Timer, void *UserData)
-{
+{	
 	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
 	NetgameGatherData& Data = *DPtr;
 	
-	SSLP_Pump();
+	prospective_joiner_info info;
+	if (gather_dialog_player_search(info)) {
+		prospective_joiner_info* infoPtr = new prospective_joiner_info;
+		*infoPtr = info;
+		found_player(infoPtr);
+	}
 	
 	Draw1Control(Data.PlayerDisplayCtrl);
 }
 
 #ifndef NETWORK_TEST_POSTGAME_DIALOG
 
-bool network_gather(bool ResumingGame)
+bool run_network_gather_dialog()
 {
 	bool successful= false;
-	game_info myGameInfo;
-	player_info myPlayerInfo;
 
 	show_cursor(); // JTP: Hidden one way or another
-	
-	// Do early returns if these inits failed
-	
-	if (!network_game_setup(&myPlayerInfo, &myGameInfo, ResumingGame))
-		return successful;
-	
-	myPlayerInfo.desired_color= myPlayerInfo.color;
-	
-	if (!NetEnter())
-		return successful;
-
-	if (!NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
-		sizeof(myPlayerInfo), ResumingGame))
-		return successful;
 	
 	// Now for the dialog box
 	
@@ -449,11 +425,7 @@ bool network_gather(bool ResumingGame)
 
 	// Actually a Data Browser control, a sort of super list box introduced in Carbon/OSX
 	Data.NetworkDisplayCtrl = GetCtrlFromWindow(Window(), 0, iNETWORK_LIST_BOX);
-	
-	/* spawn an asynchronous network name lookup */
-	NetLookupClose();	// Quit previous looking up -- from setup_network_list_box()
-	NetLookupOpen_SSLP(PLAYER_TYPE, get_network_version(), found_player_callback, lost_player_callback, player_name_changed_callback);
-	
+		
 	DataBrowserCallbacks Callbacks;
 	obj_clear(Callbacks);	// Makes everything NULL
 	Callbacks.version = kDataBrowserLatestCallbacks;
@@ -476,21 +448,14 @@ bool network_gather(bool ResumingGame)
 	SetControlActivity(Data.OK_Ctrl,false);
 
 	AutoTimer Poller(0, PollingInterval, NetgameGather_Poller, &Data);
-
-#ifdef NETWORK_TEST_GATHER_DIALOG
-	SSLP_ServiceInstance test[] = {
-		{"type", "\pTesting one", {0, 0}}, {"type", "\pTesting two", {0, 0}},
-		{"type", "\pTesting three", {0, 0}}, {"type", "\pTesting four", {0, 0}},
-		{"type", "\pTesting five", {0, 0}}, {"type", "\pTesting six", {0, 0}},
-		{"type", "\pTesting seven", {0, 0}}, {"type", "\pTesting eight", {0, 0}},
-		{"type", "\pTesting nine", {0, 0}}, {"type", "\pTesting ten", {0, 0}},
-		{"type", "\pTesting eleven", {0, 0}}, {"type", "\pTesting twelve", {0, 0}}};
-	const int test_count= sizeof(test)/sizeof(SSLP_ServiceInstance);
-	for(int i= 0; i < test_count; i++)
-		found_player_callback(&test[i]);
-#endif
 	
 	successful = RunModalDialog(Window(), false, NetgameGather_Handler, &Data);
+	
+	// Free the joiner infos we collected
+	set<const prospective_joiner_info*>::iterator it;
+	for (it = Data.SeenPlayers.begin(); it != Data.SeenPlayers.end(); ++it)
+		delete *it;
+	Data.SeenPlayers.clear ();
 	
 	if (!successful)
 	{
@@ -509,181 +474,12 @@ bool network_gather(bool ResumingGame)
 
 #endif //ndef NETWORK_TEST_POSTGAME_DIALOG
 
-#else
-
-#ifndef NETWORK_TEST_POSTGAME_DIALOG
-
-bool network_gather(bool inResumingGame)
-{
-	bool successful= false;
-	game_info myGameInfo;
-	player_info myPlayerInfo;
-
-	show_cursor(); // JTP: Hidden one way or another
-	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame))
-	{
-		myPlayerInfo.desired_color= myPlayerInfo.color;
-		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
-	
-		if(NetEnter())
-		{
-			DialogPtr dialog;
-			Rect item_rectangle;
-			Handle item_handle;
-			ModalFilterUPP gather_dialog_upp;
-			UserItemUPP update_player_list_item_upp = NewUserItemUPP(update_player_list_item);
-			short current_zone_index, item_type;
-			Cell cell;
-			short item_hit;
-			ControlRef control;
-
-#if LIST_BOX_AS_CONTROL
-			dialog= myGetNewDialog(dlogGATHER, NULL, (WindowPtr) -1, 0);
-#else
-			dialog= myGetNewDialog(dlogGATHER, NULL, (WindowPtr) -1, refNETWORK_GATHER_DIALOG);
-#endif
-			assert(dialog);
-			gather_dialog_upp= NewModalFilterUPP(gather_dialog_filter_proc);
-			assert(gather_dialog_upp);
-		
-			GetDialogItem(dialog, iZONES_MENU, &item_type, &item_handle, &item_rectangle);
-			SetControlValue((ControlHandle) item_handle, current_zone_index);
-			GetDialogItem(dialog, iNETWORK_LIST_BOX, &item_type, &item_handle, &item_rectangle);
-			setup_network_list_box(GetDialogWindow(dialog), &item_rectangle, (unsigned char *)"\p*");
-
-			GetDialogItem(dialog, iPLAYER_DISPLAY_AREA, &item_type, &item_handle, &item_rectangle);
-			SetDialogItem(dialog, iPLAYER_DISPLAY_AREA, kUserDialogItem|kItemDisableBit,
-				(Handle)update_player_list_item_upp, &item_rectangle);
-			
-			// We're on the internet, just show item "Players in Network:"
-			HideDialogItem(dialog, iZONES_MENU);
-			
-#if LIST_BOX_AS_CONTROL
-			GetDialogItemAsControl( dialog, iNETWORK_LIST_BOX, &control );
-			SetKeyboardFocus(GetDialogWindow(dialog), control, kControlListBoxPart);
-#endif
-
-			ShowWindow(GetDialogWindow(dialog));
-
-#ifdef NETWORK_TEST_GATHER_DIALOG
-			SSLP_ServiceInstance test[] = {
-				{"type", "\pTesting one", {0, 0}}, {"type", "\pTesting two", {0, 0}},
-				{"type", "\pTesting three", {0, 0}}, {"type", "\pTesting four", {0, 0}},
-				{"type", "\pTesting five", {0, 0}}, {"type", "\pTesting six", {0, 0}},
-				{"type", "\pTesting seven", {0, 0}}, {"type", "\pTesting eight", {0, 0}},
-				{"type", "\pTesting nine", {0, 0}}, {"type", "\pTesting ten", {0, 0}},
-				{"type", "\pTesting eleven", {0, 0}}, {"type", "\pTesting twelve", {0, 0}}};
-			const int test_count= sizeof(test)/sizeof(SSLP_ServiceInstance);
-			for(int i= 0; i < test_count; i++)
-			{
-				found_player_callback(&test[i]);
-			}
-#endif
-			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
-				sizeof(myPlayerInfo), inResumingGame))
-			{
-				do
-				{
-					short number_of_players= NetGetNumberOfPlayers();
-					bool gathered_unacceptable_player= false;
-					
-					/* set button states */
-					SetPt(&cell, 0, 0);
-					short iADD_state= CONTROL_INACTIVE;
-					if(number_of_players < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS &&
-						LGetSelect(true, &cell, network_list_box))
-					{
-						iADD_state= CONTROL_ACTIVE;
-					}
-					short iOK_state= CONTROL_INACTIVE;
-					if(number_of_players>1 && !gathered_unacceptable_player)
-					{
-						iOK_state= CONTROL_ACTIVE;
-					}
-					modify_control(dialog, iADD, iADD_state, 0);
-					modify_control(dialog, iOK, iOK_state, 0);
-					
-					ModalDialog(gather_dialog_upp, &item_hit);
-			
-					switch (item_hit)
-					{
-#if LIST_BOX_AS_CONTROL
-						case iNETWORK_LIST_BOX:
-							Boolean gotDoubleClick;
-							Size actualSize;
-							OSStatus err;
-							
-							GetDialogItemAsControl( dialog, iNETWORK_LIST_BOX, &control );
-							err = GetControlData( control, 0, kControlListBoxDoubleClickTag,
-								sizeof( Boolean ), (Ptr)&gotDoubleClick, &actualSize );
-							if(!gotDoubleClick) break;
-#endif
-
-						case iADD:
-							SetPt(&cell, 0, 0);
-							if (LGetSelect(true, &cell, network_list_box)) /* if no selection, we goofed */
-							{
-								// Get player info
-								const SSLP_ServiceInstance* player = found_players[cell.v];
-								
-								// Remove player from lists
-								lost_player_callback(player);
-								
-								// Gather player
-								int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
-								if (theGatherPlayerResult != kGatherPlayerFailed)
-								{
-									update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
-									if(theGatherPlayerResult == kGatheredUnacceptablePlayer)
-									{
-										gathered_unacceptable_player= true;
-									}
-								}
-							}
-							break;
-					}
-				} while(item_hit!=iCANCEL && item_hit!=iOK);
-			} else {
-				/* Failed on NetGather */
-				item_hit=iCANCEL;
-			}
-
-			dispose_network_list_box();
-		
-			DisposeUserItemUPP(update_player_list_item_upp);
-			DisposeModalFilterUPP(gather_dialog_upp);
-			DisposeDialog(dialog);
-		
-			if (item_hit==iOK)
-			{
-				successful= true;
-			}
-			else
-			{
-				NetCancelGather();
-				NetExit();
-			}
-		} else {
-			/* error correction handled in the network code now.. */
-		}
-	}
-
-	hide_cursor();
-	return successful;
-}
-
-#endif
-
-#endif //ndef NETWORK_TEST_POSTGAME_DIALOG
-
 /*************************************************************************************************
  *
  * Function: network_join
  * Purpose:  do the dialog to join a network game.
  *
  *************************************************************************************************/
-
-#ifdef USES_NIBS
 
 static bool RecentHostAddressMenuBuilder(
 	int indx, Str255 ItemName, bool &ThisIsInitial, void *Data)
@@ -721,7 +517,7 @@ static pascal OSStatus Join_PlayerNameWatcher(
 	// after it's been changed, not before.
 	// Adjust the OK button's activity as needed
 	GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
-	SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (Data.JoinState == NONE));
+	SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (!Data.my_join_dialog_data_ptr->did_join));
 	
 	return err;
 }
@@ -758,34 +554,29 @@ static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 		
 		GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
 		if (ptemporary[0] > MAX_NET_PLAYER_NAME_LENGTH) ptemporary[0] = MAX_NET_PLAYER_NAME_LENGTH;
-		pstrcpy(Data.myPlayerInfo.name, ptemporary);
+		pstrcpy(Data.my_join_dialog_data_ptr->myPlayerInfo.name, ptemporary);
 		
-		Data.myPlayerInfo.team = GetControl32BitValue(Data.PlayerTeamCtrl) - 1;
-		Data.myPlayerInfo.color = GetControl32BitValue(Data.PlayerColorCtrl) - 1;
-		Data.myPlayerInfo.desired_color = Data.myPlayerInfo.color;
+		Data.my_join_dialog_data_ptr->myPlayerInfo.team = GetControl32BitValue(Data.PlayerTeamCtrl) - 1;
+		Data.my_join_dialog_data_ptr->myPlayerInfo.color = GetControl32BitValue(Data.PlayerColorCtrl) - 1;
+		Data.my_join_dialog_data_ptr->myPlayerInfo.desired_color = Data.my_join_dialog_data_ptr->myPlayerInfo.color;
 		
 		if (GetControl32BitValue(Data.ByHost_Ctrl))
 		{
-			network_preferences->join_by_address = true;
+			Data.my_join_dialog_data_ptr->join_by_ip = true;
 			
 			GetEditPascalText(Data.ByHost_AddressCtrl, ptemporary);
 			
 			if (ptemporary[0] > kJoinHintingAddressLength)
 				ptemporary[0] = kJoinHintingAddressLength;
-			CopyPascalStringToC(ptemporary, network_preferences->join_address);
-			RecentHostAddresses_Add(network_preferences->join_address);
+			CopyPascalStringToC(ptemporary, Data.my_join_dialog_data_ptr->ip_for_join_by_ip);
+			RecentHostAddresses_Add(Data.my_join_dialog_data_ptr->ip_for_join_by_ip);
 		}
 		else
-			network_preferences->join_by_address = false;
+			Data.my_join_dialog_data_ptr->join_by_ip = false;
 		
-		Data.DidJoin =
-			NetGameJoin(Data.myPlayerInfo.name, PLAYER_TYPE,
-				(void *) &Data.myPlayerInfo, sizeof(Data.myPlayerInfo), 
-				get_network_version(),
-				network_preferences->join_by_address ? network_preferences->join_address : NULL
-				);
+		join_dialog_attempt_join ();
 		
-		if (Data.DidJoin)
+		if (Data.my_join_dialog_data_ptr->did_join)
 		{
 			SetControlActivity(Data.PlayerNameCtrl, false);
 			SetControlActivity(Data.PlayerTeamCtrl, false);
@@ -798,12 +589,6 @@ static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 			SetControlActivity(Data.ByHost_RecentCtrl, false);
 			
 			SetControlActivity(Data.JoinCtrl, false);
-						
-			// update preferences for user (Eat Gaseous Worms!)
-			pstrcpy(player_preferences->name, Data.myPlayerInfo.name);
-			player_preferences->team = Data.myPlayerInfo.team;
-			player_preferences->color = Data.myPlayerInfo.color;
-			write_preferences();
 			
 			getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
 			SetStaticPascalText(Data.MessageCtrl, ptemporary);	
@@ -832,97 +617,49 @@ static pascal void NetgameJoin_Poller(EventLoopTimerRef Timer, void *UserData)
 	NetgameJoinData *DPtr = (NetgameJoinData *)(UserData);
 	NetgameJoinData& Data = *DPtr;
 	
-	// Cribbed from join_dialog_filter_proc
+	// check and see if weÕve gotten any connection requests,
+	// or pursue the connection request we already received.
+	join_dialog_gatherer_search ();
 	
-	// Let SSLP do its thing (respond to FIND messages, hint out HAVE messages, etc.)
-	SSLP_Pump();
+	if (Data.my_join_dialog_data_ptr->complete)
+		StopModalDialog(ActiveNonFloatingWindow(),false);
 	
-	/* check and see if weÕve gotten any connection requests */
-	int JoinState = NetUpdateJoinState();
-	switch (JoinState)
-	{
-		case NONE: // haven't Joined yet.
-			break;
+	if (Data.my_join_dialog_data_ptr->topology_is_dirty) {
 
-		case netJoining:
-			break;
-
-		case netCancelled: /* the server cancelled the game; force bail */
-			StopModalDialog(ActiveNonFloatingWindow(),false);
-			break;
-
-		case netWaiting: /* if we just changed netJoining to netWaiting change the dialog text */
-#ifdef OBSOLETE
-			if (last_join_state==netJoining)
-			{
-				getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_accepted_string);
-				SetStaticPascalText(Data.MessageCtrl, ptemporary);
-			}
-#endif
-			SetControlActivity(Data.CancelCtrl, false);
-			break;
-
-		case netStartingUp: /* the game is starting up (we have the network topography) */
-			Data.JoinResult = kNetworkJoinedNewGame;
-			StopModalDialog(ActiveNonFloatingWindow(),false);
-			break;
-
-		case netStartingResumeGame: /* the game is starting up a resume game (we have the network topography) */
-			Data.JoinResult = kNetworkJoinedResumeGame;
-			StopModalDialog(ActiveNonFloatingWindow(),false);
-			break;
-
-		case netPlayerAdded:
-			if(Data.JoinState==netWaiting)
-			{
-				char joinMessage[256];
+		char joinMessage[256];
 				
-				game_info *info= (game_info *)NetGetGameData();
+		game_info *info= (game_info *)NetGetGameData();
 
-				get_network_joined_message(joinMessage, info->net_game_type);
-				SetStaticCText(Data.MessageCtrl, joinMessage);
-			}
-			// Update!
-			Draw1Control(Data.PlayerDisplayCtrl);
-			break;
-
-		case netJoinErrorOccurred:
-			StopModalDialog(ActiveNonFloatingWindow(),false);
-			break;
-                
-		case netChatMessageReceived:
-			{
-				player_info*	sending_player;
-				char*		chat_message;
-				
-				if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
-					// should actually do something with the message here
-					// be sure to copy any info you need as the next call to
-					// NetUpdateJoinState could overwrite the storage we're pointing at.
-				}
-			}
-			break;
-
-		default:
-			// LP change:
-			assert(false);
-			// halt();
+		get_network_joined_message(joinMessage, info->net_game_type);
+		SetStaticCText(Data.MessageCtrl, joinMessage);
+	
+		Data.my_join_dialog_data_ptr->topology_is_dirty = false;
+		
+		// Update!
+		Draw1Control(Data.PlayerDisplayCtrl);
 	}
-	Data.JoinState = JoinState;
+	
+	if (Data.my_join_dialog_data_ptr->chat_message_waiting)
+	{
+		player_info*	sending_player;
+		char*		chat_message;
+				
+		if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
+			// should actually do something with the message here
+			// be sure to copy any info you need as the next call to
+			// NetUpdateJoinState could overwrite the storage we're pointing at.
+		}
+	}
 	
 	// Update the "Join" button
-	GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
-	SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (Data.JoinState == NONE));
+	// GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
+	// SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (Data.JoinState == NONE));
 }
 
-int network_join(
-	void)
+void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
 {
 	show_cursor(); // Hidden one way or another
-	
-	/* If we can enter the network... */
-	if(!NetEnter()) return kNetworkJoinFailed;
-	
+
 	// Now for the dialog box
 	
 	AutoNibWindow Window(GUI_Nib, Window_Network_Join);
@@ -930,22 +667,18 @@ int network_join(
 	NetgameJoinData Data;
 
 	Data.PlayerNameCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_NAME);
-
-	short name_length= player_preferences->name[0];
-	if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
-	memcpy(Data.myPlayerInfo.name, player_preferences->name, name_length+1);
 	
-	SetEditPascalText(Data.PlayerNameCtrl, Data.myPlayerInfo.name);
+	SetEditPascalText(Data.PlayerNameCtrl, my_join_dialog_data.myPlayerInfo.name);
 	
 	Data.PlayerTeamCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_TEAM);
-	SetControl32BitValue(Data.PlayerTeamCtrl, player_preferences->team+1);
+	SetControl32BitValue(Data.PlayerTeamCtrl, my_join_dialog_data.myPlayerInfo.team+1);
 
 	AutoKeyboardWatcher Watcher(Join_PlayerNameWatcher);
 	
 	Watcher.Watch(Data.PlayerNameCtrl, &Data);
 	
 	Data.PlayerColorCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_COLOR);
-	SetControl32BitValue(Data.PlayerColorCtrl, player_preferences->color+1);
+	SetControl32BitValue(Data.PlayerColorCtrl, my_join_dialog_data.myPlayerInfo.color+1);
 
 	Data.MessageCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_MESSAGES);
 	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
@@ -957,24 +690,24 @@ int network_join(
 	Drawability(Data.PlayerDisplayCtrl, PlayerDisplayDrawer, &Data);	
 	
 	Data.ByHost_Ctrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST);
-	SetControl32BitValue(Data.ByHost_Ctrl, network_preferences->join_by_address);
+	SetControl32BitValue(Data.ByHost_Ctrl, my_join_dialog_data.join_by_ip);
 	
 	Data.ByHost_LabelCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_LABEL);
-	SetControlActivity(Data.ByHost_LabelCtrl, network_preferences->join_by_address);
+	SetControlActivity(Data.ByHost_LabelCtrl, my_join_dialog_data.join_by_ip);
 	
 	Data.ByHost_AddressCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_ADDRESS);
-	CopyCStringToPascal(network_preferences->join_address, ptemporary);
+	CopyCStringToPascal(my_join_dialog_data.ip_for_join_by_ip, ptemporary);
 	SetEditPascalText(Data.ByHost_AddressCtrl, ptemporary);
-	SetControlActivity(Data.ByHost_AddressCtrl, network_preferences->join_by_address);
+	SetControlActivity(Data.ByHost_AddressCtrl, my_join_dialog_data.ip_for_join_by_ip);
 	
 	Data.ByHost_RecentLabelCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_RECENT_LABEL);
-	SetControlActivity(Data.ByHost_RecentLabelCtrl, network_preferences->join_by_address);
+	SetControlActivity(Data.ByHost_RecentLabelCtrl, my_join_dialog_data.join_by_ip);
 	
 	Data.ByHost_RecentCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_RECENT);
-	SetControlActivity(Data.ByHost_RecentCtrl, network_preferences->join_by_address);
+	SetControlActivity(Data.ByHost_RecentCtrl, my_join_dialog_data.join_by_ip);
 	
 	// Add the most recently joined sites, earliest to latest
-	RecentHostAddresses_Add(network_preferences->join_address);
+	RecentHostAddresses_Add(my_join_dialog_data.ip_for_join_by_ip);
 	
 	// "_Startiter()" must be before the "_NextIter()"'s in the menu builder
 	RecentHostAddresses_StartIter();
@@ -982,224 +715,16 @@ int network_join(
 	
 	Data.CancelCtrl = GetCtrlFromWindow(Window(), 0, iCANCEL);
 	Data.JoinCtrl = GetCtrlFromWindow(Window(), 0, iOK_SPECIAL);
-	if (Data.myPlayerInfo.name[0] == 0) SetControlActivity(Data.JoinCtrl, false);
+	if (my_join_dialog_data.myPlayerInfo.name[0] == 0) SetControlActivity(Data.JoinCtrl, false);
 	
-	Data.DidJoin = false;
-	Data.JoinState = NONE;	// Have not joined
-	Data.JoinResult = kNetworkJoinFailed;	// Change if succeeded, of course
+	Data.my_join_dialog_data_ptr = &my_join_dialog_data;
 	
 	AutoTimer Poller(0, PollingInterval, NetgameJoin_Poller, &Data);
 	
 	RunModalDialog(Window(), false, NetgameJoin_Handler, &Data);
 	
-	if (Data.JoinResult != kNetworkJoinFailed)
-	{
-		game_info *GameInfoPtr = (game_info *)NetGetGameData();
-		NetSetInitialParameters(
-			GameInfoPtr->initial_updates_per_packet,
-			GameInfoPtr->initial_update_latency);
-	}
-	else
-	{
-		if (Data.DidJoin)
-			NetCancelJoin();
-		
-		NetExit();
-	}
-	
 	hide_cursor();
-	return Data.JoinResult;
 }
-
-
-#else
-
-int network_join(
-	void)
-{
-	show_cursor(); // Hidden one way or another
-	
-	/* If we can enter the network... */
-	if(NetEnter())
-	{
-		short item_hit, item_type;
-		GrafPtr old_port;
-		bool did_join = false;
-		DialogPtr dialog;
-		player_info myPlayerInfo;
-		game_info *myGameInfo;
-		ModalFilterUPP join_dialog_upp;
-		UserItemUPP update_player_list_item_upp = NewUserItemUPP(update_player_list_item);
-		Rect item_rect;
-		Handle item_handle;
-		short name_length;
-		
-		dialog= myGetNewDialog(dlogJOIN, NULL, (WindowPtr) -1, 0);
-		assert(dialog);
-		join_dialog_upp = NewModalFilterUPP(join_dialog_filter_proc);
-		assert(join_dialog_upp);
-	
-		name_length= player_preferences->name[0];
-		if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
-		memcpy(myPlayerInfo.name, player_preferences->name, name_length+1);
-
-		copy_pstring_to_text_field(dialog, iJOIN_NAME, myPlayerInfo.name);
-		SelectDialogItemText(dialog, iJOIN_NAME, 0, INT16_MAX);
-		modify_control(dialog, iJOIN_TEAM, CONTROL_ACTIVE, player_preferences->team+1);
-		modify_control(dialog, iJOIN_COLOR, CONTROL_ACTIVE, player_preferences->color+1);
-		if (myPlayerInfo.name[0] == 0) modify_control(dialog, iOK, CONTROL_INACTIVE, NONE);
-	
-		copy_pstring_to_static_text(dialog, iJOIN_MESSAGES,
-			getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string));
-
-		GetDialogItem(dialog, iPLAYER_DISPLAY_AREA, &item_type, &item_handle, &item_rect);
-		SetDialogItem(dialog, iPLAYER_DISPLAY_AREA, kUserDialogItem|kItemDisableBit,
-			(Handle)update_player_list_item_upp, &item_rect);
-
-#if TARGET_API_MAC_CARBON
-		CopyCStringToPascal(network_preferences->join_address, ptemporary);
-#else
-		strncpy(temporary, network_preferences->join_address, 256);
-		c2pstr(temporary);
-#endif
-		copy_pstring_to_text_field(dialog, iJOIN_BY_HOST_ADDRESS, ptemporary);
-
-		modify_boolean_control(dialog, iJOIN_BY_HOST, NONE, network_preferences->join_by_address);
-
-		// JTP: Requires control embedding
-		// I would have put these in a pane by themselves if I could have figured out
-		// how to without having a visible group box
-		modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL,   network_preferences->join_by_address?CONTROL_ACTIVE:CONTROL_INACTIVE);
-		modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, network_preferences->join_by_address?CONTROL_ACTIVE:CONTROL_INACTIVE);
-	
-		sStartJoinedGameResult = kNetworkJoinFailed;
-
-		GetPort(&old_port);
-		SetPort(GetWindowPort(GetDialogWindow(dialog)));
-		ShowWindow(GetDialogWindow(dialog));
-		
-		do
-		{
-			ModalDialog(join_dialog_upp, &item_hit);
-			switch(item_hit)
-			{
-				case iJOIN:
-					SetPort(GetWindowPort(GetDialogWindow(dialog)));
-					GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
-					GetDialogItemText(item_handle, ptemporary);
-					if (*temporary > MAX_NET_PLAYER_NAME_LENGTH) *temporary = MAX_NET_PLAYER_NAME_LENGTH;
-					pstrcpy(myPlayerInfo.name, ptemporary);
-					GetDialogItem(dialog, iJOIN_TEAM, &item_type, &item_handle, &item_rect);
-					myPlayerInfo.team= GetControlValue((ControlHandle) item_handle) - 1;
-					GetDialogItem(dialog, iJOIN_COLOR, &item_type, &item_handle, &item_rect);
-					myPlayerInfo.color= GetControlValue((ControlHandle) item_handle) - 1;
-					myPlayerInfo.desired_color= myPlayerInfo.color;
-					memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
-					if(get_boolean_control_value(dialog, iJOIN_BY_HOST))
-					{
-						network_preferences->join_by_address = true;
-						GetDialogItem(dialog, iJOIN_BY_HOST_ADDRESS, &item_type, &item_handle, &item_rect);
-						GetDialogItemText(item_handle, ptemporary);
-						if (*temporary > kJoinHintingAddressLength)
-							*temporary = kJoinHintingAddressLength;
-						CopyPascalStringToC(ptemporary, network_preferences->join_address);
-					}
-					else
-						network_preferences->join_by_address = false;
-/*
-#if !TARGET_API_MAC_CARBON
-					// Aqua will handle if we're unresponseive
-					SetCursor(*GetCursor(watchCursor));
-#endif
-*/
-					did_join= NetGameJoin(myPlayerInfo.name, PLAYER_TYPE, (void *) &myPlayerInfo, sizeof(myPlayerInfo), 
-						get_network_version(),
-						network_preferences->join_by_address ? network_preferences->join_address : NULL
-						);
-
-/*					
-#if !TARGET_API_MAC_CARBON
-					SetCursor(&qd.arrow);
-#endif
-*/
-					if(did_join)
-					{
-						modify_control_enabled(dialog, iJOIN_NAME, CONTROL_INACTIVE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST, CONTROL_INACTIVE);
-						modify_control(dialog, iJOIN_TEAM, CONTROL_INACTIVE, NONE);
-						modify_control(dialog, iJOIN_COLOR, CONTROL_INACTIVE, NONE);
-						modify_control(dialog, iJOIN, CONTROL_INACTIVE, NONE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL, CONTROL_INACTIVE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, CONTROL_INACTIVE);
-	
-						// update preferences for user (Eat Gaseous Worms!)
-						pstrcpy(player_preferences->name, myPlayerInfo.name);
-						player_preferences->team = myPlayerInfo.team;
-						player_preferences->color = myPlayerInfo.color;
-						write_preferences();
-	
-						copy_pstring_to_static_text(dialog, iJOIN_MESSAGES,
-							getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string));
-					} else {
-						/* If you fail in joining the game, print the error and return */
-						/*  to the main menu (this is primarily for modem) */
-						item_hit= iCANCEL;
-					}
-					break;
-					
-				case iCANCEL:
-					break;
-					
-				case iJOIN_TEAM:
-					break;
-	
-				case iJOIN_BY_HOST:
-					modify_control(dialog, item_hit, NONE, !get_dialog_control_value(dialog, item_hit));
-					if(get_dialog_control_value(dialog, item_hit))
-					{
-						modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL, CONTROL_ACTIVE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, CONTROL_ACTIVE);
-					}
-					else
-					{
-						modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL, CONTROL_INACTIVE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, CONTROL_INACTIVE);
-					}
-					break;
-					
-				default:
-					break;
-			}
-		}
-		while (sStartJoinedGameResult == kNetworkJoinFailed && item_hit != iCANCEL);
-	
-		SetPort(old_port);
-	
-		DisposeUserItemUPP(update_player_list_item_upp);
-		DisposeModalFilterUPP(join_dialog_upp);
-		DisposeDialog(dialog);
-	
-		if (sStartJoinedGameResult != kNetworkJoinFailed)
-		{
-			myGameInfo= (game_info *)NetGetGameData();
-			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
-		}
-		else
-		{
-			if (did_join)
-			{
-				NetCancelJoin();
-			}
-			
-			NetExit();
-		}
-	}
-	
-	hide_cursor();
-	return sStartJoinedGameResult;
-}
-
-#endif
 
 /* ---------- private code */
 
@@ -1209,8 +734,6 @@ int network_join(
  * Purpose:  handle the dialog to setup a network game.
  *
  *************************************************************************************************/
-
-#ifdef USES_NIBS
 
 static pascal OSStatus Setup_PlayerNameWatcher(
 	EventHandlerCallRef HandlerCallRef,
@@ -1373,7 +896,7 @@ bool network_game_setup(
 	
 	if (IsOK)
 	{
-		short game_limit_type= GetControl32BitValue(Data.DurationCtrl) - 1;
+		short game_limit_type= GetControl32BitValue(Data.DurationCtrl); // - 1; jkvw says don't subtract 1
 		
 		NetgameSetup_Extract(Data, player_information, game_information,
 			game_limit_type, allow_all_levels, ResumingGame);
@@ -1381,163 +904,6 @@ bool network_game_setup(
 	
 	return IsOK;
 }
-
-#else
-
-static FileSpecifier sNetscriptFile;
-
-bool network_game_setup(
-	player_info *player_information,
-	game_info *game_information,
-        bool inResumingGame)
-{
-	short item_hit;
-	GrafPtr old_port;
-	bool information_is_acceptable;
-	DialogPtr dialog;
-	ModalFilterUPP game_setup_filter_upp;
-	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
-
-	dialog= myGetNewDialog(dlogGAME_SETUP, NULL, (WindowPtr) -1, refNETWORK_SETUP_DIALOG);
-	assert(dialog);
-	game_setup_filter_upp= NewModalFilterUPP(game_setup_filter_proc);
-	assert(game_setup_filter_upp);
-	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
-
-	game_information->net_game_type= fill_in_game_setup_dialog(dialog, player_information, allow_all_levels, inResumingGame);
-
-	ShowWindow(GetDialogWindow(dialog));
-
-	do
-	{
-		do
-		{
-			ModalDialog(game_setup_filter_upp, &item_hit);
-			
-			SetPort(GetWindowPort(GetDialogWindow(dialog)));
-			
-			switch (item_hit)
-			{
-				case iRADIO_NO_TIME_LIMIT:
-					setup_for_untimed_game(dialog);
-					break;
-					
-				case iRADIO_TIME_LIMIT:
-					setup_for_timed_game(dialog);
-					break;
-					
-				case iRADIO_KILL_LIMIT:
-					setup_for_score_limited_game(dialog);
-					break;
-
-				case iFORCE_UNIQUE_TEAMS:
-					modify_control(dialog, item_hit, NONE, !get_dialog_control_value(dialog, item_hit));
-					if(!get_dialog_control_value(dialog, item_hit))
-					{
-						modify_control(dialog, iGATHER_TEAM, CONTROL_INACTIVE, NONE);
-					} else {
-						modify_control(dialog, iGATHER_TEAM, CONTROL_ACTIVE, NONE);
-					}
-					break;
-
-				case iUNLIMITED_MONSTERS:
-				case iMOTION_SENSOR_DISABLED:
-				case iDYING_PUNISHED:
-				case iSUICIDE_PUNISHED:
-				case iBURN_ITEMS_ON_DEATH:
-				case iREALTIME_NET_STATS:
-					modify_control(dialog, item_hit, NONE, !get_dialog_control_value(dialog, item_hit));
-					break;
-
-				case iGAME_TYPE:
-					{
-						short new_game_type;
-						
-						new_game_type= get_dialog_control_value(dialog, iGAME_TYPE)-1;
-						
-						if(new_game_type != game_information->net_game_type)
-						{
-							long entry_flags, old_entry_flags;
-							struct entry_point entry;
-
-							if(allow_all_levels)
-							{
-								entry_flags= old_entry_flags= NONE;
-							} else {
-								old_entry_flags= get_entry_point_flags_for_game_type(game_information->net_game_type);
-								entry_flags= get_entry_point_flags_for_game_type(new_game_type);
-							}
-
-							menu_index_to_level_entry(get_dialog_control_value(dialog, iENTRY_MENU), old_entry_flags, &entry);
-							
-							/* Get the old one and reset.. */
-							fill_in_entry_points(dialog, iENTRY_MENU, entry_flags, entry.level_number);
-							game_information->net_game_type= new_game_type;
-
-							setup_dialog_for_game_type(dialog, new_game_type);
-						}
-					}
-					break;
-
-				case iREAL_TIME_SOUND:
-					modify_control(dialog, iREAL_TIME_SOUND, NONE, !get_dialog_control_value(dialog, iREAL_TIME_SOUND));
-					break;
-                                        
-                                case iUSE_SCRIPT:
-                                        if (get_boolean_control_value(dialog, item_hit)) {
-						modify_boolean_control(dialog, item_hit, NONE, false);
-                                        } else {
-                                            if (sNetscriptFile.ReadDialog (_typecode_unknown, "Script Select"))
-					    {
-						    modify_boolean_control(dialog, item_hit, NONE, true);
-					    }
-                                        }
-					update_netscript_file_display(dialog);
-                                        break;
-			}
-                        
-		} while (item_hit != iOK && item_hit != iCANCEL);
-		
-		if (item_hit==iCANCEL)
-		{
-			information_is_acceptable= true;
-		}
-		else
-		{
-			// START Benad
-			if (get_dialog_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
-			{
-				information_is_acceptable = (check_setup_information(dialog, iRADIO_TIME_LIMIT) &&
-					check_setup_information(dialog, iRADIO_KILL_LIMIT));
-			}
-			else
-			{
-				short game_limit_type= get_game_duration_radio(dialog);
-			
-				information_is_acceptable= check_setup_information(dialog, game_limit_type);
-			}
-			// END Benad
-		}
-	} while (!information_is_acceptable);	
-
-	if (item_hit == iOK)
-	{
-		short game_limit_type= get_game_duration_radio(dialog);
-			
-		extract_setup_dialog_information(dialog, player_information, game_information, 
-			game_limit_type, allow_all_levels, inResumingGame);
-	}
-	
-	SetPort(old_port);
-	DisposeModalFilterUPP(game_setup_filter_upp);
-	DisposeDialog(dialog);	
-
-	return (item_hit==iOK);
-}
-
-#endif
-
 
 /*************************************************************************************************
  *
@@ -1597,9 +963,6 @@ static short get_game_duration_radio(
  *************************************************************************************************/
 // ZZZ: moved this function to shared network_dialogs.cpp
 
-
-#ifdef USES_NIBS
-
 struct EntryPointMenuData
 {
 	long entry_flags;
@@ -1641,67 +1004,6 @@ void EntryPoints_FillIn(
 	BuildMenu(EntryPointCtrl, EntryPointMenuBuilder, &MenuData);
 }
 
-#else
-
-// ZZZ: exposed this function
-void fill_in_entry_points(
-	DialogPtr dialog,
-	short item,
-	long entry_flags,
-	short default_level)
-{
-	short item_type;
-	Rect bounds;
-	ControlHandle control;
-	MenuHandle menu;
-	short map_index, menu_index;
-	struct entry_point entry;
-	short default_item= NONE;
-
-	/* Add the maps.. */
-	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
-	menu= get_popup_menu_handle(dialog, item);
-
-	/* Nix the maps */
-	while(CountMenuItems(menu))
-	{
-		DeleteMenuItem(menu, 1);
-	}
-	
-	map_index= menu_index= 0;
-	while (get_indexed_entry_point(&entry, &map_index, entry_flags))
-	{
-		AppendMenu(menu, "\p ");
-		CopyCStringToPascal(entry.level_name, ptemporary);
-		menu_index++;
-		if(entry.level_name[0])
-		{
-			SetMenuItemText(menu, menu_index, ptemporary);
-		}
-
-		if(entry.level_number==default_level) 
-		{
-			default_item= menu_index;
-		}
-	}
-	SetControlMaximum(control, menu_index);
-	
-	if(default_item != NONE)
-	{
-		SetControlValue(control, default_item);	
-	} 
-	else if(GetControlValue(control)>=GetControlMaximum(control)) 
-	{	
-		SetControlValue(control, 1);
-	}
-
-	if (!CountMenuItems(menu)) modify_control(dialog, iOK, CONTROL_INACTIVE, 0);
-
-	return;
-}
-
-#endif
-
 // ZZZ: new function
 void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
 {
@@ -1715,8 +1017,6 @@ void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
  * Purpose:  check to make sure that the user entered usable information in the dialog.
  *
  *************************************************************************************************/
-
-#ifdef USES_NIBS
 
 bool CheckSetupInformation(
 	NetgameSetupData& Data, 
@@ -1764,104 +1064,6 @@ bool CheckSetupInformation(
 	return information_is_acceptable;
 }
 
-
-#else
-
-bool check_setup_information(
-	DialogPtr dialog, 
-	short game_limit_type)
-{
-	Rect     item_rect;
-	short    item_type;
-	short    limit;
-	short    bad_item;
-	Handle   item_handle;
-	bool  information_is_acceptable;
-	
-	limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
-	if (game_limit_type == iRADIO_TIME_LIMIT && limit <= 0)
-	{
-		bad_item = iTIME_LIMIT;
-		information_is_acceptable = false;
-	}
-	else
-	{
-		limit = extract_number_from_text_item(dialog, iKILL_LIMIT);
-		if (game_limit_type == iRADIO_KILL_LIMIT && limit <= 0)
-		{
-			bad_item = iKILL_LIMIT;
-			information_is_acceptable = false;
-		}
-		else
-		{
-			GetDialogItem(dialog, iGATHER_NAME, &item_type, &item_handle, &item_rect);
-			GetDialogItemText(item_handle, ptemporary);
-			if (*temporary == 0)
-			{
-				bad_item = iGATHER_NAME;
-				information_is_acceptable = false;
-			}
-			else
-				information_is_acceptable = true;
-		}
-	}
-	
-	if (!information_is_acceptable)
-	{
-		SysBeep(3);
-		SelectDialogItemText(dialog, bad_item, 0, INT16_MAX);
-	}
-
-	return information_is_acceptable;
-}
-
-
-
-void
-update_netscript_file_display(DialogPtr inDialog)
-{
-	bool shouldUseNetscript = get_boolean_control_value(inDialog, iUSE_SCRIPT);
-	const unsigned char* theStringToUse = NULL;
-	
-	if(shouldUseNetscript)
-	{
-		if (sNetscriptFile.Exists())
-		{
-			char name [256];
-
-			sNetscriptFile.GetName (name);
-			c2pstrcpy (ptemporary, name);
-
-			theStringToUse = ptemporary;
-		}
-		else
-		{
-			theStringToUse = "\p(invalid selection)";
-		}
-	}
-	else
-		theStringToUse = "\p";
-
-	assert(theStringToUse != NULL);
-
-	copy_pstring_to_static_text(inDialog, iTEXT_SCRIPT_NAME, theStringToUse);
-}
-
-void
-set_dialog_netscript_file(DialogPtr inDialog, const FileSpecifier& inFile)
-{
-	sNetscriptFile = inFile;
-	update_netscript_file_display(inDialog);
-}
-
-const FileSpecifier&
-get_dialog_netscript_file(DialogPtr inDialog)
-{
-	return sNetscriptFile;
-}
-
-#endif
-
 /*************************************************************************************************
  *
  * Function: get_dialog_control_value
@@ -1888,16 +1090,16 @@ autogather_callback(w_select* inAutoGather) {
 }
 #endif
 
-#ifdef USES_NIBS
-
 static void
-found_player_callback(const SSLP_ServiceInstance* player)
+found_player(const prospective_joiner_info* player)
 {
 	NetgameGatherData& Data = *GatherDataPtr;
 
 	DataBrowserItemID ItemID = Data.ItemID++;	// Get current value, then move to next one
 	Data.FoundPlayers[ItemID] = player;
 	Data.ReverseFoundPlayers[player] = ItemID;
+	
+	Data.SeenPlayers.insert(player);
 	
 	AddDataBrowserItems(Data.NetworkDisplayCtrl,
 		kDataBrowserNoItem,
@@ -1908,11 +1110,11 @@ found_player_callback(const SSLP_ServiceInstance* player)
 
 
 static void
-lost_player_callback(const SSLP_ServiceInstance* player)
+lost_player(const prospective_joiner_info* player)
 {
 	NetgameGatherData& Data = *GatherDataPtr;
 
-	map<const SSLP_ServiceInstance*, DataBrowserItemID>::iterator Entry =
+	map<const prospective_joiner_info*, DataBrowserItemID>::iterator Entry =
 		Data.ReverseFoundPlayers.find(player);
 	
 	// Could the player entry be found?
@@ -1928,6 +1130,8 @@ lost_player_callback(const SSLP_ServiceInstance* player)
 		NULL
 		);
 }
+
+/* jkvw: unused function
 
 static void
 player_name_changed_callback(const SSLP_ServiceInstance* player)
@@ -1948,413 +1152,7 @@ player_name_changed_callback(const SSLP_ServiceInstance* player)
 		NULL, NULL
 		);
 }
-
-#else
-
-static void
-found_player_callback(const SSLP_ServiceInstance* player)
-{
-	Cell cell;
-	ListBounds bounds;
-	short theIndex;
-	
-	found_players.push_back(player);
-	
-#if TARGET_API_MAC_CARBON
-	GetListDataBounds(network_list_box, &bounds);
-#else
-	bounds = (*network_list_box)->dataBounds;
-#endif
-	theIndex = bounds.bottom + 1;
-	LAddRow(1, theIndex, network_list_box);
-	SetPt(&cell, 0, theIndex - 1);
-
-	LSetCell(&(player->sslps_name[1]), player->sslps_name[0], cell, network_list_box);
-
-#if LIST_BOX_AS_CONTROL
-	WindowRef window = ActiveNonFloatingWindow();
-	Rect portBounds;
-	GetPortBounds(GetWindowPort(window), &portBounds);
-	InvalWindowRect(window, &portBounds);
-#endif
-}
-
-static void
-lost_player_callback(const SSLP_ServiceInstance* player) {
-	int theIndex = find_item_index_in_vector(player, found_players);
-	
-	if(theIndex == -1)
-		return;	// didn't know about it anyway
-	
-	// Axe it
-	found_players.erase(found_players.begin() + theIndex);
-	
-	// Remove from either hidden list or displayed list.
-	LDelRow(1, theIndex, network_list_box);
-
-#if LIST_BOX_AS_CONTROL
-	WindowRef window = ActiveNonFloatingWindow();
-	Rect bounds;
-	GetPortBounds(GetWindowPort(window), &bounds);
-	InvalWindowRect(window, &bounds);
-#endif
-}
-
-static void
-player_name_changed_callback(const SSLP_ServiceInstance* player) {
-	Cell cell;
-	int theIndex = find_item_index_in_vector(player, found_players);
-	
-	if(theIndex == -1)
-		return;	// didn't know about it anyway
-
-	SetPt(&cell, 0, theIndex);
-
-	LSetCell(&(player->sslps_name[1]), player->sslps_name[0], cell, network_list_box);
-#if LIST_BOX_AS_CONTROL
-	WindowRef window = ActiveNonFloatingWindow();
-	Rect bounds;
-	GetPortBounds(GetWindowPort(window), &bounds);
-	InvalWindowRect(window, &bounds);
-#endif
-}
-
-#endif
-
-/*************************************************************************************************
- *
- * Function: gather_dialog_filter_proc
- * Purpose:  the dialog filter procedure passed to ModalDialog() for the gathering dialog
- *
- *************************************************************************************************/
-static pascal Boolean gather_dialog_filter_proc(
-	DialogPtr dialog,
-	EventRecord *event,
-	short *item_hit)
-{
-#if !LIST_BOX_AS_CONTROL			
-	short item_type, charcode;
-	Handle item_handle;
-	Rect item_rectangle;
-	Point where;
-	bool cell_is_selected;
-	short cell_count;
-#endif
-	GrafPtr old_port;
-	bool handled;
-	Cell selected_cell;
-
-	/* preprocess events */	
-	handled= false;
-	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
-
-	/* update the names list box; if we donÕt have a selection afterwords, dim the ADD button */
-
-	// NetLookupUpdate unused - as long as SSLP_Pump() is called, e.g. by the dialog, its unnecessary 
-	// Let SSLP do its thing (respond to FIND messages, hint out HAVE messages, etc.)
-	SSLP_Pump();
-
-	SetPt(&selected_cell, 0, 0);
-	if (!LGetSelect(true, &selected_cell, network_list_box)) modify_control(dialog, iADD, CONTROL_INACTIVE, 0);
-
-	switch(event->what)
-	{
-#if !LIST_BOX_AS_CONTROL			
-		case mouseDown:
-			/* get the mouse in local coordinates */
-			where= event->where;
-			GlobalToLocal(&where);
-			
-			/* check for clicks in the list box */
-			GetDialogItem(dialog, iNETWORK_LIST_BOX, &item_type, &item_handle, &item_rectangle);
-			if (PtInRect(where, &item_rectangle))
-			{
-#if TARGET_API_MAC_CARBON 
-				CGrafPtr port = GetWindowPort(GetDialogWindow(dialog));
-				SInt16   pixelDepth = (*GetPortPixMap(port))->pixelSize;
-			
-				ThemeDrawingState savedState;
-				GetThemeDrawingState(&savedState);
-				SetThemeBackground(kThemeBrushListViewBackground, pixelDepth, pixelDepth > 1);
-#endif
-				if (LClick(where, event->modifiers, network_list_box))
-				{
-					GetDialogItem(dialog, iADD, &item_type, &item_handle, &item_rectangle);
-					if (hit_dialog_button(dialog, iADD)) *item_hit= iADD;
-				}
-				
-				handled= true;
-				
-#if TARGET_API_MAC_CARBON
-				SetThemeDrawingState(savedState, true);
-#endif
-			}
-
-			/* check for clicks in the zone popup menu */
-			break;
-#endif
-
-#if !LIST_BOX_AS_CONTROL
-		case updateEvt:
-			if ((WindowPtr)event->message==GetDialogWindow(dialog))
-			{
-				/* update the zone popup menu */
-				
-				/* update the network list box and itÕs frame */
-#if TARGET_API_MAC_CARBON
-				GetDialogItem(dialog, iNETWORK_LIST_BOX, &item_type, &item_handle, &item_rectangle);
-				InsetRect(&item_rectangle, -1, -1);
-				item_rectangle.right --;
-
-				CGrafPtr port = GetWindowPort(GetDialogWindow(dialog));
-				SInt16   pixelDepth = (*GetPortPixMap(port))->pixelSize;
-			
-				ThemeDrawingState savedState;
-				ThemeDrawState curState =
-					IsWindowActive(GetDialogWindow(dialog))?kThemeStateActive:kThemeStateInactive;
-			
-				GetThemeDrawingState(&savedState);
-				SetThemeBackground(kThemeBrushListViewBackground, pixelDepth, pixelDepth > 1);
-				EraseRect(&item_rectangle);
-#endif
-
-				RgnHandle visRgn = NewRgn();
-				GetPortVisibleRegion(GetWindowPort(GetDialogWindow(dialog)), visRgn);
-				LUpdate(visRgn, network_list_box);
-				DisposeRgn(visRgn);
-//#if TARGET_API_MAC_CARBON
-				DrawThemePrimaryGroup(&item_rectangle, curState);
-				SetThemeDrawingState(savedState, true);
-/*
-#else
-				GetDialogItem(dialog, iNETWORK_LIST_BOX, &item_type, &item_handle, &item_rectangle);
-				InsetRect(&item_rectangle, -1, -1);
-				FrameRect(&item_rectangle);
-#endif
 */
-				/* update the player area */
-				update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
-			}
-			break;
-#endif
-#if !LIST_BOX_AS_CONTROL
-		case keyDown:
-			charcode = event->message & charCodeMask;
-
-			cell_count = (**network_list_box).dataBounds.bottom - (**network_list_box).dataBounds.top;		
-			SetPt(&selected_cell, 0, 0);
-			cell_is_selected = LGetSelect(true, &selected_cell, network_list_box);
-
-			if (cell_count)
-			{
-				*item_hit = iNETWORK_LIST_BOX; // for ADD button to be updated.
-				switch(charcode)
-				{
-					case kUP_ARROW:
-						if (cell_is_selected)
-						{
-							if (selected_cell.v > 0)
-							{
-								LSetSelect(false, selected_cell, network_list_box);
-								selected_cell.v--;
-								LSetSelect(true, selected_cell, network_list_box);
-								LAutoScroll(network_list_box);
-							}
-						}
-						else
-						{
-							SetPt(&selected_cell, 0, cell_count-1);
-							LSetSelect(true, selected_cell, network_list_box);
-							LAutoScroll(network_list_box);
-						}
-						*item_hit = iNETWORK_LIST_BOX; // for ADD button to be updated.
-						handled = true;
-						break;
-
-					case kDOWN_ARROW:
-						if (cell_is_selected)
-						{
-							if (selected_cell.v < cell_count-1)
-							{
-								LSetSelect(false, selected_cell, network_list_box);
-								selected_cell.v++;
-								LSetSelect(true, selected_cell, network_list_box);
-								LAutoScroll(network_list_box);
-							}
-						}
-						else
-						{
-							SetPt(&selected_cell, 0, 0);
-							LSetSelect(true, selected_cell, network_list_box);
-							LAutoScroll(network_list_box);
-						}
-						*item_hit = iNETWORK_LIST_BOX; // for ADD button to be updated.
-						handled = true;
-						break;
-				}
-			}
-			break;
-#endif
-	}
-
-	/* give the player area time (for animation, etc.) */
-
-	/* check and see if weÕve gotten any connection requests */	
-	
-	SetPort(old_port);
-
-	return handled ? true : general_filter_proc(dialog, event, item_hit);
-}
-
-/*************************************************************************************************
- *
- * Function: join_dialog_filter_proc
- * Purpose:  the dialog filter procedure passed to ModalDialog() for the joining dialog
- *
- *************************************************************************************************/
-static pascal Boolean join_dialog_filter_proc(
-	DialogPtr dialog,
-	EventRecord *event,
-	short *item_hit)
-{
-	Rect     item_rect;
-	short    join_state;
-	short    item_type;
-	Handle   item_handle;
-	bool  handled= false;
-	GrafPtr  old_port;
-	static short last_join_state;
-
-	// Let SSLP do its thing (respond to FIND messages, hint out HAVE messages, etc.)
-	SSLP_Pump();
-
-	/* preprocess events */	
-	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
-
-	/* give the player area time (for animation, etc.) */
-
-	/* check and see if weÕve gotten any connection requests */
-	join_state= NetUpdateJoinState();
-	switch (join_state)
-	{
-		case NONE: // haven't Joined yet.
-			break;
-
-		case netJoining:
-			break;
-
-		case netCancelled: /* the server cancelled the game; force bail */
-			*item_hit= iCANCEL;
-			handled= true;
-			break;
-
-		case netWaiting: /* if we just changed netJoining to netWaiting change the dialog text */
-#ifdef OBSOLETE
-			if (last_join_state==netJoining)
-			{
-				GetDialogItem(dialog, iJOIN_MESSAGES, &item_type, &item_handle, &item_rect);
-				SetDialogItemText(item_handle, getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_accepted_string));
-			}
-#endif
-			modify_control(dialog, iCANCEL, CONTROL_INACTIVE, 0);
-			break;
-
-		case netStartingUp: /* the game is starting up (we have the network topography) */
-			sStartJoinedGameResult= kNetworkJoinedNewGame;
-			handled= true;
-			break;
-
-		case netStartingResumeGame: /* the game is starting up a resume game (we have the network topography) */
-			sStartJoinedGameResult= kNetworkJoinedResumeGame;
-			handled= true;
-			break;
-
-		case netPlayerAdded:
-			if(last_join_state==netWaiting)
-			{
-				char joinMessage[256];
-				
-				game_info *info= (game_info *)NetGetGameData();
-
-				get_network_joined_message(joinMessage, info->net_game_type);
-#if TARGET_API_MAC_CARBON
-				CopyCStringToPascal(joinMessage, ptemporary);
-#else
-				strcpy(temporary, joinMessage); 
-				c2pstr(temporary);
-#endif
-				copy_pstring_to_static_text(dialog, iJOIN_MESSAGES, ptemporary);
-			}
-			update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
-			break;
-
-		case netJoinErrorOccurred:
-			*item_hit= iCANCEL;
-			handled= true;
-			break;
-                
-		case netChatMessageReceived:
-			{
-				player_info*	sending_player;
-				char*		chat_message;
-				
-				if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
-					// should actually do something with the message here
-					// be sure to copy any info you need as the next call to
-					// NetUpdateJoinState could overwrite the storage we're pointing at.
-				}
-			}
-			break;
-
-		default:
-			// LP change:
-			assert(false);
-			// halt();
-	}
-	last_join_state= join_state;
-
-	GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
-	GetDialogItemText(item_handle, ptemporary);
-	if (join_state == NONE && *temporary)
-		modify_control(dialog, iOK, CONTROL_ACTIVE, NONE);
-	else
-		modify_control(dialog, iOK, CONTROL_INACTIVE, NONE);
-
-	SetPort(old_port);
-	
-	return handled ? true : general_filter_proc(dialog, event, item_hit);
-}
-
-/*************************************************************************************************
- *
- * Function: game_setup_filter_proc
- * Purpose:  the dialog filter procedure passed to ModalDialog() for the net game setup dialog
- *
- *************************************************************************************************/
-static pascal Boolean game_setup_filter_proc(
-	DialogPtr dialog,
-	EventRecord *event,
-	short *item_hit)
-{
-	Rect     item_rect;
-	short    item_type;
-	Handle   item_handle;
-	GrafPtr  old_port;
-
-	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
-	GetDialogItem(dialog, iGATHER_NAME, &item_type, &item_handle, &item_rect);
-	GetDialogItemText(item_handle, ptemporary);
-	if (*temporary)
-		modify_control(dialog, iOK, CONTROL_ACTIVE, NONE);
-	else
-		modify_control(dialog, iOK, CONTROL_INACTIVE, NONE);
-	SetPort(old_port);
-
-	return general_filter_proc(dialog, event, item_hit);
-}
 
 /*************************************************************************************************
  *
@@ -2362,7 +1160,8 @@ static pascal Boolean game_setup_filter_proc(
  * Purpose:  allocates or clears the list that will list all the players in a zone.
  *
  *************************************************************************************************/
-static void setup_network_list_box(
+
+/*static void setup_network_list_box(
 	WindowPtr window,
 	Rect *frame,
 	unsigned char *zone)
@@ -2373,7 +1172,7 @@ static void setup_network_list_box(
 	{
 		Rect bounds;
 
-		/* allocate the list */
+		// allocate the list
 
 		SetPt(&cell, 0, 0);
 		SetRect(&bounds, 0, 0, 1, 0);
@@ -2396,18 +1195,18 @@ static void setup_network_list_box(
 	}
 	else
 	{
-		/* the list is already allocated; delete all rows and close the existing network name lookup */
+		// the list is already allocated; delete all rows and close the existing network name lookup
 		
 		LDelRow(0, 0, network_list_box);
 		NetLookupClose();
 	}
 	found_players.clear();
 
-	/* spawn an asynchronous network name lookup */
+	// spawn an asynchronous network name lookup
 	NetLookupOpen_SSLP(PLAYER_TYPE, get_network_version(), found_player_callback, lost_player_callback, player_name_changed_callback);
 
 	return;
-}
+}*/
 
 /*************************************************************************************************
  *
@@ -2415,7 +1214,7 @@ static void setup_network_list_box(
  * Purpose:  destroys the list that contains the list of players for a zone.
  *
  *************************************************************************************************/
-static void dispose_network_list_box(
+/*static void dispose_network_list_box(
 	void)
 {
 	assert(network_list_box);
@@ -2431,7 +1230,7 @@ static void dispose_network_list_box(
 	network_list_box= (ListHandle) NULL;
 	
 	return;
-}
+}*/
 
 /*************************************************************************************************
  *
@@ -2742,20 +1541,15 @@ static void draw_team_totals_graph(DialogPtr dialog);
 static void draw_total_scores_graph(DialogPtr dialog);
 static void draw_team_total_scores_graph(DialogPtr dialog);
 */
-#ifdef USES_NIBS
+
 static void calculate_maximum_bar(NetgameOutcomeData &Data, Rect *kill_bar_rect);
-#else
-static void calculate_maximum_bar(DialogPtr dialog, Rect *kill_bar_rect);
-#endif
+
 /*
 static void draw_score_bars(DialogPtr dialog, struct net_rank *ranks, short bar_count);
 */
 static bool will_new_mode_reorder_dialog(short new_mode, short previous_mode);
 
 /* ---------------- code */
-
-#ifdef USES_NIBS
-
 
 static void SetupStatsSelectionMenu(ControlRef Ctrl)
 {	
@@ -2954,442 +1748,10 @@ void display_net_game_stats()
 	RunModalDialog(Window(), false, NetgameOutcome_Handler, &Data);
 }
 
-#else
-
-void display_net_game_stats(
-	void)
-{
-	Rect item_rect;
-	short item_hit, item_type, value, current_graph_selection;
-	Handle item_handle;
-	GrafPtr old_port;
-	DialogPtr dialog;
-	ModalFilterUPP stats_dialog_upp;
-	UserItemUPP update_damage_item_upp;
-	short previous_mode;
-	
-	// eat all stray keypresses
-	{
-		EventRecord event;
-		
-		while (WaitNextEvent(keyDownMask|keyUpMask|autoKeyMask, &event, 0, (RgnHandle) NULL))
-			;
-	}
-	
-	dialog = myGetNewDialog(dlogNET_GAME_STATS, NULL, (WindowPtr) -1, refNETWORK_CARNAGE_DIALOG);
-	assert(dialog);
-	stats_dialog_upp= NewModalFilterUPP(display_net_stats_proc);
-	assert(stats_dialog_upp);
-	update_damage_item_upp = NewUserItemUPP(update_damage_item_proc);
-
-	GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
-	SetDialogItem(dialog, iDAMAGE_STATS, kUserDialogItem|kItemDisableBit,
-		(Handle)update_damage_item_upp, &item_rect);
-
-	/* Calculate the rankings (once) for the entire graph */
-	calculate_rankings(rankings, dynamic_world->player_count);
-	qsort(rankings, dynamic_world->player_count, sizeof(struct net_rank), rank_compare);
-
-	/* Create the graph popup menu */
-	current_graph_selection= create_graph_popup_menu(dialog, iGRAPH_POPUP);
-	previous_mode= find_graph_mode(dialog, NULL);
-	
-	ShowWindow(GetDialogWindow(dialog));
-	
-	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
-
-	do
-	{
-		ModalDialog(stats_dialog_upp, &item_hit);
-		switch (item_hit)
-		{
-			case iGRAPH_POPUP:
-				value= get_dialog_control_value(dialog, iGRAPH_POPUP);
-				if (current_graph_selection != value)
-				{
-					short new_mode;
-				
-					/* Determine what we need to delete. */
-					GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
-					Rect inval_rect(item_rect);
-					InsetRect(&item_rect, 1, 1); /* Avoid the grey border */
-
-					new_mode= find_graph_mode(dialog, NULL);
-					if (!will_new_mode_reorder_dialog(new_mode, previous_mode))
-					{
-						item_rect.left += GRAPH_LEFT_INSET + NAME_BOX_WIDTH + GRAPH_BAR_SPACING - 1;
-					}
-					item_rect.top += GRAPH_TOP_INSET-1;
-					previous_mode= new_mode;
-
-					/* Erase! */
-					EraseRect(&item_rect);
-#if TARGET_API_MAC_CARBON
-					InvalWindowRect(GetDialogWindow(dialog), &inval_rect);
-#else
-					InvalRect(&inval_rect);	// Assumed to be the dialog-box window
-#endif
-
-					current_graph_selection= value;
-				}
-				break;
-		}
-	} while(item_hit != iOK);
-
-	SetPort(old_port);
-
-	DisposeModalFilterUPP(stats_dialog_upp);
-	DisposeDialog(dialog);
-	DisposeUserItemUPP(update_damage_item_upp);
-
-	return;
-}
-
-
-/* ------------------------- private code */
-static short create_graph_popup_menu(
-	DialogPtr dialog, 
-	short item)
-{
-	MenuHandle graph_popup;
-	short index, item_type;
-	Handle item_handle;
-	Rect item_rect;
-	short current_graph_selection;
-	bool has_scores;
-
-	/* Clear the graph popup */
-	graph_popup= get_popup_menu_handle(dialog, item);
-	while(CountMenuItems(graph_popup))
-		DeleteMenuItem(graph_popup, 1);
-
-	/* Setup the player names */
-	for (index= 0; index<dynamic_world->player_count; index++)
-	{
-		struct player_data *player= get_player_data(rankings[index].player_index);
-		
-#if TARGET_API_MAC_CARBON
-		CopyCStringToPascal(player->name, ptemporary);
-#else		
-		strcpy(temporary, player->name); 
-		c2pstr(temporary);
-#endif
-		AppendMenu(graph_popup, "\p ");
-		SetMenuItemText(graph_popup, index+1, ptemporary); // +1 since it is 1's based
-	}
-	
-	/* Add in the separator line */
-	AppendMenu(graph_popup, "\p-");
-
-	/* Add in the total carnage.. */
-	AppendMenu(graph_popup, getpstr(ptemporary, strNET_STATS_STRINGS, strTOTALS_STRING));
-	current_graph_selection= CountMenuItems(graph_popup);
-	
-	/* Add in the scores */
-	has_scores= get_network_score_text_for_postgame(temporary, false);
-	if(has_scores)
-	{
-		Str255 pscore_temp;
-		CopyCStringToPascal(temporary, pscore_temp);
-		AppendMenu(graph_popup, pscore_temp);
-		current_graph_selection= CountMenuItems(graph_popup);
-	}
-	
-	/* If the game has teams, show the team stats. */
-	if (!(dynamic_world->game_information.game_options & _force_unique_teams)) 
-	{
-		/* Separator line */
-		if(has_scores) AppendMenu(graph_popup, "\p-");
-
-		AppendMenu(graph_popup, getpstr(ptemporary, strNET_STATS_STRINGS, strTEAM_TOTALS_STRING));
-
-		if(has_scores)
-		{
-			get_network_score_text_for_postgame(temporary, true);
-			Str255 ppostgame;
-			CopyCStringToPascal(temporary, ppostgame);
-			AppendMenu(graph_popup, ppostgame);
-		}
-	} 
-
-	GetDialogItem(dialog, iGRAPH_POPUP, &item_type, &item_handle, &item_rect);
-	SetControlMaximum((ControlHandle) item_handle, CountMenuItems(graph_popup));
-	SetControlValue((ControlHandle) item_handle, current_graph_selection); 
-	
-	return current_graph_selection;
-}
-
-
-static pascal Boolean display_net_stats_proc(
-	DialogPtr dialog,
-	EventRecord *event,
-	short *item_hit)
-{
-	GrafPtr old_port;
-	bool handled= false;
-	short item_type;
-	Rect item_rect;
-	Handle item_handle;
-	short key, value, max;
-
-	/* preprocess events */	
-	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
-	
-	switch(event->what)
-	{
-		case updateEvt:
-			if ((DialogPtr)event->message==dialog)
-			{
-				/* update the damage stats */
-				update_damage_item(GetDialogWindow(dialog));
-			}
-			break;
-			
-		case keyDown: 
-		case autoKey:
-			key = event->message & charCodeMask;
-			GetDialogItem(dialog, iGRAPH_POPUP, &item_type, &item_handle, &item_rect);
-			value= GetControlValue((ControlHandle) item_handle);
-			max= GetControlMaximum((ControlHandle) item_handle);
-			
-			switch(key)
-			{
-				case kUP_ARROW:
-				case kLEFT_ARROW:
-				case kPAGE_UP:
-					if(value>1)
-					{
-						short new_value= value-1;
-	
-						switch(new_value-dynamic_world->player_count-1)
-						{
-							case 0:
-							case 3:
-								/* This is a separator line-> skip it */
-								new_value--;
-								break;
-						}
-						
-						SetControlValue((ControlHandle) item_handle, new_value);
-						*item_hit= iGRAPH_POPUP; 
-						handled= true;
-					}
-					break;
-					
-				case kDOWN_ARROW:
-				case kRIGHT_ARROW:
-				case kPAGE_DOWN:
-					if(value<max)
-					{
-						short new_value= value+1;
-	
-						switch(new_value-dynamic_world->player_count-1)
-						{
-							case 0:
-							case 3:
-								/* This is a separator line-> skip it */
-								new_value++;
-								break;
-						}
-
-						SetControlValue((ControlHandle) item_handle, new_value);
-						*item_hit= iGRAPH_POPUP; 
-						handled= true;
-					}
-					break;
-			
-				default:
-					break;
-			}
-			break;
-			
-		case mouseDown:
-			{
-				Rect   box;
-				short  index, max;
-				Point  where;
-				bool in_box = false;
-
-				where = event->where;
-				GlobalToLocal(&where);
-				GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
-				SetRect(&box, 0, 0, NAME_BOX_WIDTH, NAME_BOX_HEIGHT);
-				OffsetRect(&box, item_rect.left+GRAPH_LEFT_INSET, item_rect.top+GRAPH_TOP_INSET);
-				
-				/* Find if they clicked in an area.. */
-				switch(find_graph_mode(dialog, NULL))
-				{
-					case _player_graph:
-					case _total_carnage_graph:
-					case _total_scores_graph:
-						max= dynamic_world->player_count;
-						break;
-
-					case _total_team_carnage_graph:
-					case _total_team_scores_graph:
-						max= 0; /* Don't let them click in any of these. (what would you do?) */
-						break;
-						
-					default:
-						// LP change:
-						assert(false);
-						// halt();
-						break;
-				}
-				
-				/* Find the one clicked in.. */
-				for (index= 0; index<max; index++)
-				{
-					if (PtInRect(where, &box))
-					{
-						in_box = true;
-						break;
-					}
-					OffsetRect(&box, 0, RECTANGLE_HEIGHT(&box)+GRAPH_BAR_SPACING);
-				}
-				
-				/* IF the one that they clicked in isn't the current one.. */
-				GetDialogItem(dialog, iGRAPH_POPUP, &item_type, &item_handle, &item_rect);
-				if (in_box && (index+1) != GetControlValue((ControlHandle) item_handle))
-				{
-					struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
-	
-					/* Use a private copy to avoid boning things */
-					objlist_copy(ranks, rankings, dynamic_world->player_count);
-
-					if(find_graph_mode(dialog, NULL) == _total_scores_graph)
-					{
-						/* First qsort the rankings arrray by game_ranking.. */
-						qsort(ranks, dynamic_world->player_count,
-							sizeof(struct net_rank), score_rank_compare);
-					}
-
-					bool last_in_box= false;
-					RGBColor color;
-
-					_get_player_color(ranks[index].color, &color);
-								
-					while (StillDown())
-					{
-						GetMouse(&where);
-						in_box = PtInRect(where, &box);
-
-						if (last_in_box != in_box)
-						{
-							if(ranks[index].player_index==NONE)
-							{
-								draw_beveled_text_box(in_box, &box, NAME_BEVEL_SIZE, &color, 
-									"", _center_horizontal|_center_vertical, true);
-							} else {
-								struct player_data *player= get_player_data(ranks[index].player_index);
-							
-								draw_beveled_text_box(in_box, &box, NAME_BEVEL_SIZE, &color, 
-									player->name, _center_horizontal|_center_vertical, true);
-							}
-							last_in_box= in_box;
-						}
-					}
-					
-					/* IF we were still in at the end.. */
-					if (in_box)
-					{
-						// Find the right value for an adjusted sorting
-						int popup_index;
-						for(popup_index= 0; popup_index < dynamic_world->player_count;  popup_index++)
-						{
-							if(ranks[index].player_index == rankings[popup_index].player_index)
-							{
-								break;
-							}
-						}
-						GetDialogItem(dialog, iGRAPH_POPUP, &item_type, &item_handle, &item_rect);
-						SetControlValue((ControlHandle) item_handle, popup_index+1); // 1 based
-						*item_hit = iGRAPH_POPUP; 
-						handled = true;
-
-						// One last set of drawing... reset the box bevel
-						if(ranks[index].player_index==NONE)
-						{
-							draw_beveled_text_box(false, &box, NAME_BEVEL_SIZE, &color, 
-								"", _center_horizontal|_center_vertical, true);
-						} else {
-							struct player_data *player= get_player_data(ranks[index].player_index);
-						
-							draw_beveled_text_box(false, &box, NAME_BEVEL_SIZE, &color, 
-								player->name, _center_horizontal|_center_vertical, true);
-						}
-					}
-				}
-			}
-			break;
-	}
-
-	SetPort(old_port);
-
-	return handled ? true : general_filter_proc(dialog, event, item_hit);
-}
-
-
-
-static pascal void update_damage_item_proc(
-	DialogPtr dialog,
-	short item_num)
-{
-	GrafPtr old_port;
-  	TextSpec font_info;
-	TextSpec old_font;
-	
-	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
-
-	GetNewTextSpec(&font_info, fontTOP_LEVEL_FONT, 0);
-	GetFont(&old_font);
-	SetFont(&font_info);
-
-	// ZZZ: ripped this out into separate function for better
-	draw_new_graph(dialog);
-	
-	SetFont(&old_font);	
-	SetPort(old_port);
-}
-	
-static void update_damage_item(
-	WindowPtr dialog)
-{
-#if 0
-// Now handled as UPP
-	GrafPtr old_port;
-  	TextSpec font_info;
-	TextSpec old_font;
-
-	GetPort(&old_port);
-	SetPort(GetWindowPort(dialog));
-
-	GetNewTextSpec(&font_info, fontTOP_LEVEL_FONT, 0);
-	GetFont(&old_font);
-	SetFont(&font_info);
-
-	// ZZZ: ripped this out into separate function for better
-	draw_new_graph(GetDialogFromWindow(dialog));
-	
-	SetFont(&old_font);	
-	SetPort(old_port);
-#endif
-}
-
-#endif
-
-
 /* This function takes a rank structure because the rank structure contains the team & is */
 /*  sorted.  */
 void draw_names(
-#ifdef USES_NIBS
 	NetgameOutcomeData &Data,
-#else
-	DialogPtr dialog,
-#endif
 	struct net_rank *ranks, 
 	short number_of_bars,
 	short which_player)
@@ -3400,11 +1762,7 @@ void draw_names(
 	RGBColor color;
 
 	SetRect(&name_rect, 0, 0, NAME_BOX_WIDTH, NAME_BOX_HEIGHT);
-#ifdef USES_NIBS
 	GetControlBounds(Data.DisplayCtrl, &item_rect);
-#else
-	GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
-#endif
 	OffsetRect(&name_rect, item_rect.left+GRAPH_LEFT_INSET, item_rect.top+GRAPH_TOP_INSET);
 	for (i = 0; i <number_of_bars; i++)
 	{
@@ -3429,11 +1787,7 @@ void draw_names(
 
 
 void draw_kill_bars(
-#ifdef USES_NIBS
 	NetgameOutcomeData &Data,
-#else
-	DialogPtr dialog,
-#endif 
 	struct net_rank *ranks, 
 	short num_players, 
 	short suicide_index, 
@@ -3455,11 +1809,7 @@ void draw_kill_bars(
 	getcstr(death_string_format, strNET_STATS_STRINGS, strDEATHS_STRING);
 	getcstr(suicide_string_format, strNET_STATS_STRINGS, strSUICIDES_STRING);
 
-#ifdef USES_NIBS
 	GetControlBounds(Data.DisplayCtrl, &item_rect);
-#else
-	GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
-#endif
 	kill_bar_rect.left = item_rect.left + GRAPH_LEFT_INSET + NAME_BOX_WIDTH + GRAPH_BAR_SPACING;
 	kill_bar_rect.top = item_rect.top + GRAPH_TOP_INSET;
 	kill_bar_rect.bottom = kill_bar_rect.top + KILL_BAR_HEIGHT;
@@ -3551,11 +1901,7 @@ void draw_kill_bars(
 	}
 
     // ZZZ: ripped this out into a new function for sharing with SDL version
-#ifdef USES_NIBS
     update_carnage_summary(Data, ranks, num_players, suicide_index, do_totals, friendly_fire);
-#else
-    update_carnage_summary(dialog, ranks, num_players, suicide_index, do_totals, friendly_fire);
-#endif
 
 	return;
 }
@@ -3648,22 +1994,14 @@ static void draw_beveled_box(
 }
 
 static void calculate_maximum_bar(	
-#ifdef USES_NIBS
 	NetgameOutcomeData &Data,
-#else
-	DialogPtr dialog,
-#endif
 	Rect *kill_bar_rect)
 {
 	short item_type;
 	Handle item_handle;
 	Rect item_rect;
 
-#ifdef USES_NIBS
 	GetControlBounds(Data.DisplayCtrl, &item_rect);
-#else
-	GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
-#endif
 	kill_bar_rect->left = item_rect.left + GRAPH_LEFT_INSET + NAME_BOX_WIDTH + GRAPH_BAR_SPACING;
 	kill_bar_rect->right = item_rect.right - GRAPH_RIGHT_INSET;
 	kill_bar_rect->top = item_rect.top + GRAPH_TOP_INSET;
@@ -3671,11 +2009,7 @@ static void calculate_maximum_bar(
 }
 
 void draw_score_bars(
-#ifdef USES_NIBS
 	NetgameOutcomeData &Data,
-#else
-	DialogPtr dialog,
-#endif 
 	struct net_rank *ranks, 
 	short bar_count)
 {
@@ -3693,11 +2027,7 @@ void draw_score_bars(
 		if(ranks[index].game_ranking<lowest_ranking) lowest_ranking= ranks[index].game_ranking;
 	}
 
-#ifdef USES_NIBS
 	calculate_maximum_bar(Data, &maximum_bar);
-#else
-	calculate_maximum_bar(dialog, &maximum_bar);
-#endif
 	bar= maximum_bar;
 	maximum_width= RECTANGLE_WIDTH(&bar);
 
@@ -3730,15 +2060,8 @@ void draw_score_bars(
 	}
 
 	/* And clear the text. */
-#ifdef USES_NIBS
 	SetStaticCText(Data.KillsTextCtrl,"");
 	SetStaticCText(Data.DeathsTextCtrl,"");
-#else
-	GetDialogItem(dialog, iTOTAL_DEATHS, &item_type, &item_handle, &bar);
-	SetDialogItemText(item_handle, "\p");
-	GetDialogItem(dialog, iTOTAL_KILLS, &item_type, &item_handle, &bar);
-	SetDialogItemText(item_handle, "\p");
-#endif
 }
 
 static bool will_new_mode_reorder_dialog(

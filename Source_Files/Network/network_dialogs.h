@@ -38,12 +38,15 @@ Mar 1, 2002 (Woody Zenfell):
 #define	NETWORK_DIALOGS_H
 
 #include    "player.h"  // for MAXIMUM_NUMBER_OF_PLAYERS
-#include    "network.h" 
+#include    "network.h"
+
+#include    <string>
 
 #ifdef USES_NIBS
 
 // For the found players
 #include <map>
+#include <set>
 
 const CFStringRef Window_Network_Setup = CFSTR("Network_Setup");
 const CFStringRef Window_Network_Gather = CFSTR("Network_Gather");
@@ -299,8 +302,10 @@ struct NetgameGatherData
 				// Players who leave and re-join will be counted separately each time.
 	
 	// For searchability on both fields; be sure to change both arrays in sync
-	map<DataBrowserItemID, const SSLP_ServiceInstance*> FoundPlayers;
-	map<const SSLP_ServiceInstance*, DataBrowserItemID> ReverseFoundPlayers;
+	map<DataBrowserItemID, const prospective_joiner_info*> FoundPlayers;
+	map<const prospective_joiner_info*, DataBrowserItemID> ReverseFoundPlayers;
+	
+	set<const prospective_joiner_info*> SeenPlayers;
 	
 	ControlRef AddCtrl;
 	ControlRef OK_Ctrl;
@@ -308,6 +313,7 @@ struct NetgameGatherData
 	bool AllPlayersOK;
 };
 
+struct join_dialog_data;
 struct NetgameJoinData
 {
 	ControlRef PlayerNameCtrl;
@@ -326,11 +332,8 @@ struct NetgameJoinData
 	
 	ControlRef CancelCtrl;
 	ControlRef JoinCtrl;
-	
-	player_info myPlayerInfo;
-	bool DidJoin;
-	int JoinState;
-	int JoinResult;
+
+	join_dialog_data* my_join_dialog_data_ptr;
 };
 
 
@@ -352,6 +355,35 @@ struct NetgameOutcomeData
 /* ---------------------- globals */
 extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 
+/* ---------------------- new stuff :) */
+
+// Gather Dialog Goodies
+// shared routines
+bool gather_dialog_player_search (prospective_joiner_info& player);
+bool gather_dialog_gathered_player (const prospective_joiner_info& player);
+// non-shared routines
+bool run_network_gather_dialog ();
+// netgame setup dialog - unconverted routine called by network_gather()
+bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
+
+// Join Dialog Goodies
+typedef struct join_dialog_data
+{
+	bool complete;
+	int result;
+	bool did_join;
+	bool topology_is_dirty;
+	bool chat_message_waiting;
+	bool join_by_ip;
+	char ip_for_join_by_ip[256];
+	player_info myPlayerInfo;
+	std::string metaserver_provided_address;
+} join_dialog_data;
+// shared routines
+void join_dialog_gatherer_search ();
+void join_dialog_attempt_join ();
+// non-shared routines
+void run_network_join_dialog (join_dialog_data& my_join_dialog_data);
 
 /* ---------------------- prototypes */
 // And now, some shared routines.

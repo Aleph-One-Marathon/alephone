@@ -74,6 +74,9 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"network_dialogs.h"
 #include	"network_games.h"
 #include    "player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
+#include	"metaserver_dialogs.h" // GameAvailableMetaserverAnnouncer
+
+#include <map>
 
 // For LAN netgame location services
 #include	<sstream>
@@ -179,7 +182,240 @@ JoinerSeekingGathererAnnouncer::lost_gatherer_callback(const SSLP_ServiceInstanc
 }
 
 
+/****************************************************
+ *
+ *	Shared Network Gather Dialog Code
+ *
+ ****************************************************/
 
+static bool gathered_unacceptable_player;
+static map<int, const prospective_joiner_info> ungathered_players;
+
+bool network_gather(bool inResumingGame)
+{
+	bool successful= false;
+	game_info myGameInfo;
+	player_info myPlayerInfo;
+	bool advertiseOnMetaserver = false;
+
+	show_cursor(); // JTP: Hidden one way or another
+	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver))
+	{
+		myPlayerInfo.desired_color= myPlayerInfo.color;
+		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
+	
+		if(NetEnter())
+		{
+			bool gather_dialog_result;
+			gathered_unacceptable_player = false;
+		
+			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
+				sizeof(myPlayerInfo), inResumingGame))
+			{
+				GathererAvailableAnnouncer announcer;
+
+				auto_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
+				if(advertiseOnMetaserver)
+					metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
+
+				gather_dialog_result = run_network_gather_dialog ();
+				if (gathered_unacceptable_player)
+					gather_dialog_result = false;
+			} else {
+				gather_dialog_result = false;
+			}
+			
+			if (gather_dialog_result) {
+				for (map<int, const prospective_joiner_info>::iterator it = ungathered_players.begin (); it != ungathered_players.end (); ++it)
+					NetHandleUngatheredPlayer ((*it).second);
+				NetDoneGathering();
+				successful= true;
+			}
+			else
+			{
+				NetCancelGather();
+				NetExit();
+			}
+		} else {
+			/* error correction handled in the network code now.. */
+		}
+	}
+
+	// jkvw: whoops, need to discover/write autogather setting - will fix
+
+	ungathered_players.clear ();
+
+	hide_cursor();
+	return successful;
+}
+
+bool gather_dialog_player_search (prospective_joiner_info& player)
+{
+	GathererAvailableAnnouncer::pump();
+	GameAvailableMetaserverAnnouncer::pumpAll();
+
+	if (NetCheckForNewJoiner(player)) {
+		ungathered_players.insert (map<int, const prospective_joiner_info>::value_type (player.stream_id, player));
+		return true;
+	} else
+		return false;
+}
+
+bool gather_dialog_gathered_player (const prospective_joiner_info& player)
+{
+	int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
+	
+	if (theGatherPlayerResult == kGatheredUnacceptablePlayer)
+		gathered_unacceptable_player= true;
+	
+	if (theGatherPlayerResult != kGatherPlayerFailed) {
+		ungathered_players.erase (ungathered_players.find (player.stream_id));
+		return true;
+	} else
+		return false;
+}
+
+/****************************************************
+ *
+ *	Shared Network Join Dialog Code
+ *
+ ****************************************************/
+
+static JoinerSeekingGathererAnnouncer* join_announcer;
+static join_dialog_data my_join_dialog_data;
+
+int network_join(
+	void)
+{
+	int join_dialog_result;
+
+	show_cursor(); // Hidden one way or another
+	
+	/* If we can enter the network... */
+	if(NetEnter())
+	{
+		// Look for local gatherer
+		join_announcer = new JoinerSeekingGathererAnnouncer (true);
+		
+		// Initialise dialog data
+		my_join_dialog_data.complete = false;
+		my_join_dialog_data.did_join = false;
+		my_join_dialog_data.topology_is_dirty = false;
+		my_join_dialog_data.chat_message_waiting = false;
+		my_join_dialog_data.metaserver_provided_address = string();
+		
+		my_join_dialog_data.join_by_ip = network_preferences->join_by_address;
+		my_join_dialog_data.ip_for_join_by_ip = network_preferences->join_address;
+		
+		int name_length= player_preferences->name[0];
+		if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
+		memcpy(my_join_dialog_data.myPlayerInfo.name, player_preferences->name, name_length+1);
+		my_join_dialog_data.myPlayerInfo.desired_color = player_preferences->color;
+		my_join_dialog_data.myPlayerInfo.team = player_preferences->team;
+		my_join_dialog_data.myPlayerInfo.color = player_preferences->color;
+		
+		run_network_join_dialog (my_join_dialog_data);
+		join_dialog_result = my_join_dialog_data.result;
+		delete join_announcer;
+		
+		// update preferences
+		if (my_join_dialog_data.join_by_ip)
+		{
+			network_preferences->join_by_address = true;
+			network_preferences->join_address = my_join_dialog_data.ip_for_join_by_ip;
+		}
+		else
+			network_preferences->join_by_address = false;
+	
+		pstrcpy(player_preferences->name, my_join_dialog_data.myPlayerInfo.name);
+		player_preferences->team = my_join_dialog_data.myPlayerInfo.team;
+		player_preferences->color = my_join_dialog_data.myPlayerInfo.color;
+		
+		write_preferences();
+		
+		if (join_dialog_result != kNetworkJoinFailed)
+		{
+			game_info* myGameInfo= (game_info *)NetGetGameData();
+			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
+		}
+		else
+		{
+			if (my_join_dialog_data.did_join)
+				NetCancelJoin();
+			
+			NetExit();
+		}
+	} else { // Failed NetEnter
+		join_dialog_result = kNetworkJoinFailed;
+	}
+	
+	hide_cursor();
+	return join_dialog_result;
+}
+
+void join_dialog_attempt_join ()
+{
+	const char* hintString = NULL;
+
+	if(my_join_dialog_data.metaserver_provided_address != string())
+		hintString = my_join_dialog_data.metaserver_provided_address.c_str();
+	else if(my_join_dialog_data.join_by_ip)
+		hintString = my_join_dialog_data.ip_for_join_by_ip;
+	
+	my_join_dialog_data.did_join = NetGameJoin(
+						(void *) &my_join_dialog_data.myPlayerInfo,
+						sizeof(my_join_dialog_data.myPlayerInfo), 
+						hintString);
+}
+
+void join_dialog_gatherer_search ()
+{
+	JoinerSeekingGathererAnnouncer::pump();
+	
+	switch (NetUpdateJoinState())
+	{
+		case NONE: // haven't Joined yet.
+			break;
+
+		case netConnecting:
+		case netJoining:
+			break;
+
+		case netCancelled: // the server cancelled the game; force bail
+			my_join_dialog_data.complete = true;
+			my_join_dialog_data.result = kNetworkJoinFailed;
+			break;
+
+		case netWaiting:
+			break;
+
+		case netStartingUp: // the game is starting up (we have the network topography)
+			my_join_dialog_data.complete = true;
+			my_join_dialog_data.result = kNetworkJoinedNewGame;
+			break;
+
+		case netStartingResumeGame: // the game is starting up a resume game (we have the network topography)
+			my_join_dialog_data.complete = true;
+			my_join_dialog_data.result = kNetworkJoinedResumeGame;
+			break;
+
+		case netPlayerAdded:
+			my_join_dialog_data.topology_is_dirty = true;
+			break;
+
+		case netJoinErrorOccurred:
+			my_join_dialog_data.complete = true;
+			my_join_dialog_data.result = kNetworkJoinFailed;
+			break;
+                
+		case netChatMessageReceived:
+			my_join_dialog_data.chat_message_waiting = true;
+			break;
+
+		default:
+			assert(false);
+	}
+}
 
 /*************************************************************************************************
  *

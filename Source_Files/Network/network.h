@@ -171,16 +171,14 @@ int NetGatherPlayer(
 short player_index,
 #else
 // ZZZ: in my formulation, player info is all passed along in one structure from the dialog here.
-prospective_joiner_info &player,
+const prospective_joiner_info &player,
 #endif
 CheckPlayerProcPtr check_player);
 
 void NetHandleUngatheredPlayer(prospective_joiner_info ungathered_player);
 
 // jkvw: replaced SSLP hinting address with host address
-bool NetGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data,
-				 short player_data_size, short version_number, const char* host_address_string
-				 );
+bool NetGameJoin(void *player_data, short player_data_size, const char* host_address_string);
 
 bool NetCheckForNewJoiner (prospective_joiner_info &info);
 short NetUpdateJoinState(void);

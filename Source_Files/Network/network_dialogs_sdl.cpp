@@ -611,7 +611,8 @@ respond_to_map_file_change(w_env_select* inWidget) {
 
         // We don't write_preferences in case user cancels (in which case environment_preferences->map_file
         // and map_checksum are restored).
-		dynamic_cast<w_entry_point_selector*>(inWidget->get_owning_dialog()->get_widget_by_id(iENTRY_MENU))->reset();
+
+        dynamic_cast<w_entry_point_selector*>(inWidget->get_owning_dialog()->get_widget_by_id(iENTRY_MENU))->reset();
 
         // There might not be any levels for the currently selected game-type; need to double-check the OK button.
         update_setup_ok_button_enabled(inWidget->get_owning_dialog());
@@ -619,14 +620,14 @@ respond_to_map_file_change(w_env_select* inWidget) {
 }
 
 
-bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame)
+bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver)
 {
     // Save the map file path on entering, so we can restore it if user cancels.
     string  theSavedMapFilePath(environment_preferences->map_file);
 
 	// Create dialog
-	// ZZZ note: the initial values here are nice, but now are not too important.
-	// the now cross-platform fill_in_game_setup_dialog() will re-set most of them anyway.
+    // ZZZ note: the initial values here are nice, but now are not too important.
+    // the now cross-platform fill_in_game_setup_dialog() will re-set most of them anyway.
 	dialog d;
 	d.add(new w_static_text("SETUP NETWORK GAME", TITLE_FONT, TITLE_COLOR));
         
@@ -772,32 +773,33 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 	// Run dialog
 	if (d.run() == 0) { // Accepted
 
-		short   theLimitType;
-	
-		switch(endcondition_w->get_selection()) {
-		case kScoreLimit:
-		theLimitType = iRADIO_KILL_LIMIT;
-		break;
-	
-		case kTimeLimit:
-		theLimitType = iRADIO_TIME_LIMIT;
-		break;
-	
-		case kNoLimit:
-		theLimitType = iRADIO_NO_TIME_LIMIT;
-		break;
-	
-		default:
-		// This avoids a compiler warning
-		theLimitType = NONE;
-		assert(false);
-		break;
-		}
-	
-		// This will write preferences changes (including change of map file if applicable)
-		extract_setup_dialog_information(&d, player_information, game_information, theLimitType, false /*allow all levels*/, inResumingGame);
+        short   theLimitType;
+
+        switch(endcondition_w->get_selection()) {
+        case kScoreLimit:
+            theLimitType = iRADIO_KILL_LIMIT;
+        break;
+
+        case kTimeLimit:
+            theLimitType = iRADIO_TIME_LIMIT;
+        break;
+
+        case kNoLimit:
+            theLimitType = iRADIO_NO_TIME_LIMIT;
+        break;
+
+        default:
+            // This avoids a compiler warning
+            theLimitType = NONE;
+            assert(false);
+        break;
+        }
+
+        // This will write preferences changes (including change of map file if applicable)
+        extract_setup_dialog_information(&d, player_information, game_information, theLimitType, false /*allow all levels*/, inResumingGame);
 
 		sAdvertiseGameOnMetaserver = advertise_on_metaserver_w->get_selection() != 0;
+		outAdvertiseGameOnMetaserver = sAdvertiseGameOnMetaserver;
 
 		return true;
 	} // d.run() == 0
@@ -834,6 +836,9 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 
 
  // Currently only the gatherer should call this one.
+ 
+ // jkvw: The meaty bits here should be moved to shared code
+ 
 static void
 send_text(w_text_entry* te) {
     assert(te != NULL);
@@ -876,9 +881,8 @@ gather_player_callback(w_found_players* foundPlayersWidget, prospective_joiner_i
 
         assert(theDialog != NULL);
         
-        int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
+	if (gather_dialog_gathered_player (player)) {
 
-        if(theGatherPlayerResult != kGatherPlayerFailed) {
                 w_players_in_game2* thePlayersDisplay =
 			dynamic_cast<w_players_in_game2*>(theDialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
 
@@ -886,12 +890,7 @@ gather_player_callback(w_found_players* foundPlayersWidget, prospective_joiner_i
 
 		thePlayersDisplay->update_display();
                 
-                if(theGatherPlayerResult == kGatheredUnacceptablePlayer)
-                {
-                        sGathererMayStartGame= false;
-                }
-                
-                modify_control_enabled(theDialog, iOK, sGathererMayStartGame ? CONTROL_ACTIVE : CONTROL_INACTIVE);
+                modify_control_enabled(theDialog, iOK, CONTROL_ACTIVE);
 	}
         
         theDialog->draw_dirty_widgets();
@@ -935,127 +934,81 @@ found_player(dialog* inDialog, prospective_joiner_info &player) {
 // This is a callback of sorts; the dialog will invoke it during its idle time.
 static void
 gather_processing_function(dialog* inDialog) {
-	GathererAvailableAnnouncer::pump();
-	GameAvailableMetaserverAnnouncer::pumpAll();
 
 	prospective_joiner_info player;
 
-	if (NetCheckForNewJoiner(player))
+	if (gather_dialog_player_search(player))
 		found_player(inDialog, player);
 }
 
 
 #ifndef NETWORK_TEST_POSTGAME_DIALOG // because that test code replaces the real gather box
 #ifndef NETWORK_TEST_MICROPHONE_LOCALLY // same deal
-bool network_gather(bool inResumingGame)
+bool run_network_gather_dialog()
 {
-	// Display game setup dialog
-	game_info myGameInfo;
-	player_info myPlayerInfo;
-	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame)) {
-		myPlayerInfo.desired_color = myPlayerInfo.color;
-		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
-
-		if (NetEnter()) {               
-                        // ZZZ: gather network game dialog
-                        dialog d;
-                        
-                        d.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
-                    
-                        d.add(new w_spacer());
-                    
-                        d.add(new w_static_text("Players on Network"));
-                        
-                        w_found_players* foundplayers_w = new w_found_players(320, 4);
-                        foundplayers_w->set_identifier(iNETWORK_LIST_BOX);
-                        foundplayers_w->set_player_selected_callback(gather_player_callback);
-                        d.add(foundplayers_w);
-        
-                        w_toggle*	autogather_w = new w_toggle("Auto-Gather", network_preferences->autogather);
-                        autogather_w->set_identifier(iAUTO_GATHER);
-                        autogather_w->set_selection_changed_callback(autogather_callback);
-                        d.add(autogather_w);
-                        
-                        d.add(new w_spacer());
-        
-                        w_players_in_game2* players_w = new w_players_in_game2(false);
-                                                players_w->set_identifier(iPLAYER_DISPLAY_AREA);
-                                                d.add(players_w);
+	
+	// ZZZ: gather network game dialog
+	dialog d;
+	
+	d.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
+	
+	d.add(new w_spacer());
+	
+	d.add(new w_static_text("Players on Network"));
+	
+	w_found_players* foundplayers_w = new w_found_players(320, 4);
+	foundplayers_w->set_identifier(iNETWORK_LIST_BOX);
+	foundplayers_w->set_player_selected_callback(gather_player_callback);
+	d.add(foundplayers_w);
+	
+	w_toggle*	autogather_w = new w_toggle("Auto-Gather", network_preferences->autogather);
+	autogather_w->set_identifier(iAUTO_GATHER);
+	autogather_w->set_selection_changed_callback(autogather_callback);
+	d.add(autogather_w);
+	
+	d.add(new w_spacer());
+	
+	w_players_in_game2* players_w = new w_players_in_game2(false);
+				players_w->set_identifier(iPLAYER_DISPLAY_AREA);
+				d.add(players_w);
 
 #ifdef NETWORK_PREGAME_CHAT
 
 #ifdef	NETWORK_TWO_WAY_CHAT
-                        w_chat_history* chat_history_w = new w_chat_history(600, 4);
+	w_chat_history* chat_history_w = new w_chat_history(600, 4);
 #else
-                        // Signal gatherer that he won't be hearing anything back ;)
-                        d.add(new w_static_text("Messages sent to other players"));
-                        w_chat_history* chat_history_w = new w_chat_history(600, 3);
+	// Signal gatherer that he won't be hearing anything back ;)
+	d.add(new w_static_text("Messages sent to other players"));
+	w_chat_history* chat_history_w = new w_chat_history(600, 3);
 #endif // NETWORK_TWO_WAY_CHAT
 
-                        chat_history_w->set_identifier(iCHAT_HISTORY);
-                        d.add(chat_history_w);
-                        
-                        w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
-                        chatentry_w->set_identifier(iCHAT_ENTRY);
-                        chatentry_w->set_enter_pressed_callback(send_text);
-                        chatentry_w->set_alignment(widget::kAlignLeft);
-                        chatentry_w->set_full_width();
-                        d.add(chatentry_w);
-                        
-                        d.add(new w_spacer());
+	chat_history_w->set_identifier(iCHAT_HISTORY);
+	d.add(chat_history_w);
+	
+	w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
+	chatentry_w->set_identifier(iCHAT_ENTRY);
+	chatentry_w->set_enter_pressed_callback(send_text);
+	chatentry_w->set_alignment(widget::kAlignLeft);
+	chatentry_w->set_full_width();
+	d.add(chatentry_w);
+	
+	d.add(new w_spacer());
 #endif // NETWORK_PREGAME_CHAT
                     
-                        // "Play" (OK) button starts off disabled.  It's enabled in the gather callback when a player is gathered (see above).
-                        // This prevents trying to start a net game by yourself (which doesn't work at the moment, whether it ought to or not).
-                        w_left_button* play_button_w = new w_left_button("PLAY", dialog_ok, &d);
-                        play_button_w->set_identifier(iOK);
-                        play_button_w->set_enabled(false);
-                        d.add(play_button_w);
-                        
-                        d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+	// "Play" (OK) button starts off disabled.  It's enabled in the gather callback when a player is gathered (see above).
+	// This prevents trying to start a net game by yourself (which doesn't work at the moment, whether it ought to or not).
+	w_left_button* play_button_w = new w_left_button("PLAY", dialog_ok, &d);
+	play_button_w->set_identifier(iOK);
+	play_button_w->set_enabled(false);
+	d.add(play_button_w);
+	
+	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
-			GathererAvailableAnnouncer announcer;
-			auto_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
-			if(sAdvertiseGameOnMetaserver)
-				metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
+	d.set_processing_function(gather_processing_function);
+	
+	sGathererMayStartGame= true;
                         
-                        d.set_processing_function(gather_processing_function);
-                        
-                        sGathererMayStartGame= true;
-                        
-                        int theDialogResult;
-                    
-                        if (NetGather(&myGameInfo, sizeof(game_info), (void *)&myPlayerInfo, sizeof(player_info), inResumingGame)) {
-				players_w->start_displaying_actual_information();
-				players_w->update_display();
-                                theDialogResult = d.run();
-                        }
-                        else {
-                                theDialogResult = -1;	// simulate "cancel" clicked if NetGather failed.
-                        }
-                  
-                        if(theDialogResult == 0) {
-                                bool new_autogather_setting = autogather_w->get_selection() ? true : false;
-                                if(network_preferences->autogather != new_autogather_setting)
-                                {
-                                        network_preferences->autogather = new_autogather_setting; 
-                                        write_preferences();
-                                }
-				
-				// jkvw: Give network code a chance to deal with prospective joiners we chose not to gather.
-				// (right now I'm just dropping connection)
-				foundplayers_w->handle_ungathered_players();
-				
-				NetDoneGathering();
-				
-                                return true;
-                        }
-                    
-                        NetCancelGather();
-                        NetExit();
-		}
-	}
-	return false;
+	return !(d.run());
 }
 #endif // ndef NETWORK_TEST_MICROPHONE_LOCALLY
 #endif // ndef NETWORK_TEST_POSTGAME_DIALOG
@@ -1073,90 +1026,45 @@ bool network_gather(bool inResumingGame)
  *  Joining dialog
  */
 
+// So the processing funciton can access it
+static join_dialog_data* my_join_dialog_data_ptr;
+
 static void
 join_processing_function(dialog* inDialog) {
-	JoinerSeekingGathererAnnouncer::pump();
-
-	// The rest of this taken almost directly from the join_dialog_filter_proc in the Mac version:
-
-	static int last_join_state = NONE;
 	
 	/* check and see if we've gotten any connection requests */
-	int join_state= NetUpdateJoinState();
+	join_dialog_gatherer_search ();
 
-	switch (join_state)
-	{
-		case NONE: // haven't Joined yet.
-			break;
-
-	case netConnecting:
-		case netJoining:
-			break;
-
-		case netCancelled: /* the server cancelled the game; force bail */
+	if (my_join_dialog_data_ptr->complete) {
 			assert(inDialog != NULL);
 			inDialog->quit(-1);
+	}
 
-			break;
-
-		case netWaiting: /* if we just changed netJoining to netWaiting change the dialog text */
+	if (my_join_dialog_data_ptr->topology_is_dirty) {
+		// Change Dialog Text (or keep it the same, if we already changed it)
 			modify_control_enabled(inDialog, iCANCEL, CONTROL_INACTIVE);
 
-			break;
-
-		case netStartingUp: /* the game is starting up (we have the network topography) */
-			// dialog is finished (successfully) when game is starting.
-			assert(inDialog != NULL);
-			inDialog->quit(kNetworkJoinedNewGame);
-
-			break;
-                        
-                case netStartingResumeGame: // like netStartingUp but we're resuming, not starting anew
-                        assert(inDialog != NULL);
-                        inDialog->quit(kNetworkJoinedResumeGame);
-                        
-                        break;
-
-		case netPlayerAdded:
-			if(last_join_state==netWaiting)
-			{
-                // Tell user they got accepted.  Hmm, this should eventually be reworked into
-                // something that looks nicer and is more informative (we know the end conditions,
-                // options, level name, etc. by now if I'm not mistaken - may as well pass that
-                // info along to the user).
                 game_info *info= (game_info *)NetGetGameData();
-
 				static char	sStringBuffer[240];
-
 				get_network_joined_message(sStringBuffer, info->net_game_type);
-
 				assert(inDialog != NULL);
-
 				w_static_text* join_status_w =
 					dynamic_cast<w_static_text*>(inDialog->get_widget_by_id(iJOIN_MESSAGES));
-
 				assert(join_status_w != NULL);
-
 				join_status_w->set_text(sStringBuffer);
-            }
 
-			assert(inDialog != NULL);
-
-			{
 				w_players_in_game2*	players_w =
 					dynamic_cast<w_players_in_game2*>(inDialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
-
 				assert(players_w != NULL);
-
 				players_w->start_displaying_actual_information();
 				players_w->update_display();
-			}
+		
+		my_join_dialog_data_ptr->topology_is_dirty = false;
 
                         inDialog->draw_dirty_widgets();
+	}
                         
-			break;
-                        
-                case netChatMessageReceived:
+	if (my_join_dialog_data_ptr->chat_message_waiting) {
                         player_info*	sending_player;
                         char*		chat_message;
                         
@@ -1165,19 +1073,9 @@ join_processing_function(dialog* inDialog) {
                             ch->append_chat_entry(sending_player, chat_message);
                             inDialog->draw_dirty_widgets();
                         }
-                break;
-
-		case netJoinErrorOccurred:
-			assert(inDialog != NULL);
-			inDialog->quit(-1);
-			
-			break;
 		
-		default:
-			assert(false);
+		my_join_dialog_data_ptr->chat_message_waiting = false;
 	}
-
-	last_join_state = join_state;
 }
 
 
@@ -1196,11 +1094,11 @@ join_by_metaserver_clicked(void *arg)
 }
 
 
-int network_join(void)
+void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
 {
-	if (NetEnter())
-	{
-                dialog d;
+	dialog d;
+                
+	my_join_dialog_data_ptr = &my_join_dialog_data;
                 
                 d.add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR));
                 d.add(new w_spacer());
@@ -1213,22 +1111,22 @@ int network_join(void)
                 name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
                 d.add(name_w);
         
-                w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
+	w_player_color *pcolor_w = new w_player_color("Color", my_join_dialog_data.myPlayerInfo.color);
                 pcolor_w->set_identifier(iJOIN_COLOR);
                 d.add(pcolor_w);
         
-                w_player_color *tcolor_w = new w_player_color("Team Color", player_preferences->team);
+	w_player_color *tcolor_w = new w_player_color("Team Color", my_join_dialog_data.myPlayerInfo.team);
                 tcolor_w->set_identifier(iJOIN_TEAM);
                 d.add(tcolor_w);
         
                 d.add(new w_spacer());
 
-                w_toggle*	hint_w = new w_toggle("Join by address", network_preferences->join_by_address);
+	w_toggle*	hint_w = new w_toggle("Join by address", my_join_dialog_data.join_by_ip);
                 hint_w->set_identifier(iHINT_TOGGLE);
                 hint_w->set_selection_changed_callback(respond_to_hint_toggle);
                 d.add(hint_w);
 
-                w_text_entry*	hint_address_w = new w_text_entry("Join address", kJoinHintingAddressLength, network_preferences->join_address);
+	w_text_entry*	hint_address_w = new w_text_entry("Join address", kJoinHintingAddressLength, my_join_dialog_data.ip_for_join_by_ip);
                 hint_address_w->set_identifier(iHINT_ADDRESS_ENTRY);
                 if(!hint_w->get_selection())
                         hint_address_w->set_enabled(false);
@@ -1239,7 +1137,7 @@ int network_join(void)
                 d.add(new w_static_text(TS_GetCString(strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string)));
 
                 d.add(new w_spacer());
-
+                
 		d.add(new w_button("JOIN BY METASERVER", join_by_metaserver_clicked, &d));
 
 		d.add(new w_spacer());
@@ -1251,34 +1149,22 @@ int network_join(void)
                 d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
                 // We do this here since it (indirectly) invokes the respond_to_typing callback, which needs iOK in place.
-                copy_pstring_to_text_field(&d, iJOIN_NAME, player_preferences->name);
+		copy_pstring_to_text_field(&d, iJOIN_NAME, my_join_dialog_data.myPlayerInfo.name);
 
-		int joinResult = d.run();
+ 		int joinResult = d.run();
 	
                 if(joinResult >= 0)
 		{
-                        network_preferences->join_by_address = hint_w->get_selection() ? true : false;
-                        if(network_preferences->join_by_address) {
-                                strncpy(network_preferences->join_address, hint_address_w->get_text(), kJoinHintingAddressLength);
-                                network_preferences->join_address[kJoinHintingAddressLength - 1] = '\0';
+			my_join_dialog_data.join_by_ip = hint_w->get_selection();
+			if (hint_w->get_selection()) {
+				strncpy(my_join_dialog_data.ip_for_join_by_ip, hint_address_w->get_text(), kJoinHintingAddressLength);
                         }
                 
-                        // Set up the player_info
-                        player_info myPlayerInfo;
-        
-                        copy_pstring_from_text_field(&d, iJOIN_NAME, myPlayerInfo.name);
-                        myPlayerInfo.color = static_cast<int16>(pcolor_w->get_selection());
-                                                myPlayerInfo.team = static_cast<int16>(tcolor_w->get_selection());
-                                                myPlayerInfo.desired_color = myPlayerInfo.color;
-                        memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
-
-			// Store user prefs
-			pstrcpy(player_preferences->name, myPlayerInfo.name);
-			player_preferences->team = myPlayerInfo.team;
-			player_preferences->color = myPlayerInfo.color;
-			write_preferences();
-
-			string metaserverProvidedAddress;
+			copy_pstring_from_text_field(&d, iJOIN_NAME, my_join_dialog_data.myPlayerInfo.name);
+			my_join_dialog_data.myPlayerInfo.color = static_cast<int16>(pcolor_w->get_selection());
+			my_join_dialog_data.myPlayerInfo.team = static_cast<int16>(tcolor_w->get_selection());
+			my_join_dialog_data.myPlayerInfo.desired_color = my_join_dialog_data.myPlayerInfo.color;
+	
 			bool keepGoing = true;
 			if(joinResult == 1)
 			{
@@ -1288,26 +1174,20 @@ int network_join(void)
 					uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
 					char buffer[16];
 					snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
-					metaserverProvidedAddress = string(buffer);
+					my_join_dialog_data.metaserver_provided_address = string(buffer);
 				}
 				else
 				{
 					keepGoing = false;
 				}
 			}
-
+	
 			if(keepGoing)
 			{
-				const char* hintString = NULL;
-				if(metaserverProvidedAddress != string())
-					hintString = metaserverProvidedAddress.c_str();
-				else if(hint_w->get_selection())
-					hintString = hint_address_w->get_text();
-
-				bool did_join = NetGameJoin(myPlayerInfo.name, PLAYER_TYPE,
-								(void *)&myPlayerInfo, sizeof(player_info), get_network_version(),
-								hintString);
-				if (did_join) {
+				join_dialog_attempt_join ();
+        
+				if (my_join_dialog_data.did_join) {
+		
 					// Join network game 2 box (players in game, chat, etc.)
 					dialog d2;
 		
@@ -1324,28 +1204,28 @@ int network_join(void)
 					d2.add(players_w);
 	
 					d2.add(new w_spacer());
-	#ifdef	NETWORK_PREGAME_CHAT
-	#ifdef	NETWORK_TWO_WAY_CHAT                
+#ifdef	NETWORK_PREGAME_CHAT
+#ifdef	NETWORK_TWO_WAY_CHAT                
 					d2.add(new w_static_text("Chat"));
-	#else
+#else
 					d2.add(new w_static_text("Messages from Gatherer"));
-	#endif // NETWORK_TWO_WAY_CHAT
+#endif // NETWORK_TWO_WAY_CHAT
 					d2.add(new w_spacer());
 	
 					w_chat_history* chat_history_w = new w_chat_history(600, 6);
 					chat_history_w->set_identifier(iCHAT_HISTORY);
 					d2.add(chat_history_w);
-	#ifdef	NETWORK_TWO_WAY_CHAT
+#ifdef	NETWORK_TWO_WAY_CHAT
 					w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
 					chatentry_w->set_identifier(iCHAT_ENTRY);
 					chatentry_w->set_enter_pressed_callback(send_text_fake);
 					chatentry_w->set_alignment(widget::kAlignLeft);
 					chatentry_w->set_full_width();
 					d2.add(chatentry_w);
-			
-	#endif // NETWORK_TWO_WAY_CHAT
+                
+#endif // NETWORK_TWO_WAY_CHAT
 					d2.add(new w_spacer());
-	#endif // NETWORK_PREGAME_CHAT
+#endif // NETWORK_PREGAME_CHAT
 					w_static_text*	status_w = new w_static_text(
 						TS_GetCString(strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string));
 					status_w->set_identifier(iJOIN_MESSAGES);
@@ -1357,32 +1237,25 @@ int network_join(void)
 					cancel_w->set_identifier(iCANCEL);
 					d2.add(cancel_w);
 	
-					JoinerSeekingGathererAnnouncer announcer(hint_w->get_selection() == 0);
-	
 					d2.set_processing_function(join_processing_function);
 		
 					int theDialogResult = d2.run(false /*play intro/exit sounds?  no because our retvalues always sound like cancels*/);
 					// d2.run() returns -1 if player clicked cancel or error occured; kNetworkJoined{New|Resume}Game if accepted into game.
-					if (theDialogResult != -1) {
-						game_info *myGameInfo = (game_info *)NetGetGameData();
-						NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
-						
+					if (my_join_dialog_data.result != kNetworkJoinFailed) {
+							
 						// We make up for muting the dialog proper...
 						play_dialog_sound(DIALOG_OK_SOUND);
-			
-						return theDialogResult;
-					}// theDialogResult != -1 (accepted into game)
-	
+				
+						return;
+					}// my_join_dialog_data.result != kNetworkJoinFailed (accepted into game)
+
 				}// did_join == true (call to NetGameJoin() worked)
 
 			}// keepGoing (user didn't pick Cancel in metaserver dialog)
 
                 }// d.run() == 0 (player wanted to join, not cancel, in first box)
 
-		NetExit();
-	} // NetEnter() succeeded
-
-	return false;
+	my_join_dialog_data.result = kNetworkJoinFailed;
 }
 
 

@@ -708,20 +708,13 @@ can’t be called after the player has been gathered
 */
 
 bool NetGameJoin(
-	unsigned char *player_name,
-	unsigned char *player_type,
 	void *player_data,
 	short player_data_size,
-	short version_number,
 	const char* host_addr_string
 	)
 {
 	OSErr error = noErr;
 	bool success= false;
-
-#ifdef TEST_MODEM
-	success= ModemGameJoin(player_name, player_type, player_data, player_data_size, version_number);
-#else
 	
 	/* Attempt a connection to host */
 
@@ -749,7 +742,6 @@ bool NetGameJoin(
 		/* initialize default topology (no game data) */
 		NetInitializeTopology((void *) NULL, 0, player_data, player_data_size);
 	}
-#endif
 	
 	return success;
 }
@@ -1881,7 +1873,7 @@ int NetGatherPlayer(
         /* player_index in our lookup list */
 	short player_index,
 #else
-        prospective_joiner_info &player,
+        const prospective_joiner_info &player,
 #endif
 	CheckPlayerProcPtr check_player)
 {
