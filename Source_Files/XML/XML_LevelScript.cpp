@@ -30,6 +30,10 @@ Oct 13, 2000 (Loren Petrich)
 Nov 25, 2000 (Loren Petrich)
 	Added support for specifying movies for levels, as Jesse Simko had requested.
 	Also added end-of-game support.
+
+Jul 31, 2002 (Loren Petrich):
+	Added images.cpp/h accessor for TEXT resources,
+	because it can support the M2-Win95 map format.
 */
 
 #include <vector>
@@ -41,6 +45,7 @@ Nov 25, 2000 (Loren Petrich)
 #include "XML_ParseTreeRoot.h"
 #include "scripting.h"
 #include "Random.h"
+#include "images.h"
 
 
 // The "command" is an instruction to process a file/resource in a certain sort of way
@@ -159,6 +164,8 @@ static void GeneralRunScript(int LevelIndex);
 // Similar generic function for movies
 static void FindMovieInScript(int LevelIndex);
 
+// Defined in images.cpp and 
+extern bool get_text_resource_from_scenario(int resource_number, LoadedResource& TextRsrc);
 
 static void SetupLSParseTree()
 {
@@ -196,13 +203,15 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	SetupLSParseTree();
 	LSXML_Loader.CurrentElement = &LSRootParser;
 
-	OpenedResourceFile OFile;
-	if (!MapFile.Open(OFile)) return;
+	// OpenedResourceFile OFile;
+	// if (!MapFile.Open(OFile)) return;
 	
 	// The script is stored at a special resource ID;
 	// simply quit if it could not be found
 	LoadedResource ScriptRsrc;
-	if (!OFile.Get('T','E','X','T',128,ScriptRsrc)) return;
+	
+	// if (!OFile.Get('T','E','X','T',128,ScriptRsrc)) return;
+	if (!get_text_resource_from_scenario(128,ScriptRsrc)) return;
 	
 	// Load the script
 	LSXML_Loader.SourceName = "[Map Script]";
@@ -275,9 +284,9 @@ void GeneralRunScript(int LevelIndex)
 	// Insures that this order is the last order set
 	RandomOrder = CurrScriptPtr->RandomOrder;
 	
-	OpenedResourceFile OFile;
-	FileSpecifier& MapFile = get_map_file();
-	if (!MapFile.Open(OFile)) return;
+	// OpenedResourceFile OFile;
+	// FileSpecifier& MapFile = get_map_file();
+	// if (!MapFile.Open(OFile)) return;
 	
 	for (unsigned k=0; k<CurrScriptPtr->Commands.size(); k++)
 	{
@@ -293,7 +302,8 @@ void GeneralRunScript(int LevelIndex)
 		{
 		case LevelScriptCommand::MML:
 		case LevelScriptCommand::Pfhortran:
-			if (Cmd.RsrcPresent() && OFile.Get('T','E','X','T',Cmd.RsrcID,ScriptRsrc))
+			// if (Cmd.RsrcPresent() && OFile.Get('T','E','X','T',Cmd.RsrcID,ScriptRsrc))
+			if (Cmd.RsrcPresent() && get_text_resource_from_scenario(Cmd.RsrcID,ScriptRsrc))
 			{
 				Data = (char *)ScriptRsrc.GetPointer();
 				DataLen = ScriptRsrc.GetLength();
