@@ -295,7 +295,7 @@ void FileSpecifier::GetName(char *part) const
 
 	string::size_type pos = name.rfind('/');
 	if (pos == string::npos)
-		part[0] = 0;
+		strcpy(part, name.c_str());
 	else
 		strcpy(part, name.substr(pos + 1).c_str());
 
@@ -338,7 +338,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 	SDL_RWops *f = OFile.f = SDL_RWFromFile(name.c_str(), Writable ? "wb" : "rb");
 	err = f ? 0 : errno;
 	if (f == NULL) {
-		set_game_error(systemError, OFile.GetError());
+		set_game_error(systemError, err);
 		return false;
 	}
 	if (Writable)
@@ -370,7 +370,7 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 	OFile.f = open_res_file(*this);
 	err = OFile.f ? 0 : errno;
 	if (OFile.f == NULL) {
-		set_game_error(systemError, OFile.GetError());
+		set_game_error(systemError, err);
 		return false;
 	} else
 		return true;

@@ -61,12 +61,6 @@ Sep 11, 2000 (Loren Petrich):
 #include "FileHandler.h"
 #include "Packing.h"
 
-#ifdef SDL
-#include <SDL_endian.h>
-#else
-#define SDL_SwapBE32(x) (x)
-#endif
-
 // Formerly in portable_files.h
 #ifdef mac
 inline short memory_error() {return MemError();}
@@ -104,7 +98,6 @@ static short count_raw_tags(byte *raw_wad);
 static struct wad_data *convert_wad_from_raw(struct wad_header *header, byte *data,	long wad_start_offset,
 	long raw_length);
 static struct wad_data *convert_wad_from_raw_modifiable(struct wad_header *header, byte *raw_wad, long raw_length);
-static void patch_wad_from_raw(struct wad_header *header, byte *raw_wad, struct wad_data *read_wad);
 static void patch_wad_from_raw(struct wad_header *header, byte *raw_wad, struct wad_data *read_wad);
 static bool size_of_indexed_wad(OpenedFile& OFile, struct wad_header *header, short index, 
 	long *length);
@@ -1200,7 +1193,6 @@ static struct wad_data *convert_wad_from_raw(
 			wad->tag_data= (struct tag_data *) malloc(tag_count * sizeof(struct tag_data));
 			if(wad->tag_data)
 			{
-				struct entry_header *wad_entry_header;
 				short index;
 				short entry_header_size;
 			
@@ -1208,19 +1200,23 @@ static struct wad_data *convert_wad_from_raw(
 				objlist_clear(wad->tag_data, tag_count);
 				
 				entry_header_size= get_entry_header_length(header);
-				wad_entry_header= (struct entry_header *) raw_wad;
+				entry_header wad_entry_header;
+				uint8 *raw_wad_entry_header = raw_wad;
+				unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
 
 				/* Note that this is a read only wad.. */	
 				wad->read_only_data= data;
 	
 				for(index= 0; index<tag_count; ++index)
 				{
-					assert(header->version<WADFILE_SUPPORTS_OVERLAYS || SDL_SwapBE32(wad_entry_header->offset)==0l);
-					wad->tag_data[index].tag= SDL_SwapBE32(wad_entry_header->tag);
-					wad->tag_data[index].length= SDL_SwapBE32(wad_entry_header->length);
-					wad->tag_data[index].offset= 0l;
-					wad->tag_data[index].data= ((byte *) wad_entry_header)+entry_header_size;
-					wad_entry_header= (struct entry_header *) (raw_wad + SDL_SwapBE32(wad_entry_header->next_offset));
+					assert(header->version<WADFILE_SUPPORTS_OVERLAYS || wad_entry_header.offset == 0);
+					wad->tag_data[index].tag = wad_entry_header.tag;
+					wad->tag_data[index].length = wad_entry_header.length;
+					wad->tag_data[index].offset = 0;
+					wad->tag_data[index].data = raw_wad_entry_header + entry_header_size;
+
+					raw_wad_entry_header = raw_wad + wad_entry_header.next_offset;
+					unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
 #ifdef OBSOLETE					
 					if(wad->tag_data[index].data)
 					{
@@ -1273,7 +1269,6 @@ static struct wad_data *convert_wad_from_raw_modifiable(
 			wad->tag_data= (struct tag_data *) malloc(tag_count * sizeof(struct tag_data));
 			if(wad->tag_data)
 			{
-				struct entry_header *wad_entry_header;
 				short index;
 				short entry_header_size;
 			
@@ -1281,13 +1276,15 @@ static struct wad_data *convert_wad_from_raw_modifiable(
 				objlist_clear(wad->tag_data, tag_count);
 				
 				entry_header_size= get_entry_header_length(header);
-				wad_entry_header= (struct entry_header *) raw_wad;
+				entry_header wad_entry_header;
+				uint8 *raw_wad_entry_header = raw_wad;
+				unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
 	
 				for(index= 0; index<tag_count; ++index)
 				{
-					wad->tag_data[index].tag= SDL_SwapBE32(wad_entry_header->tag);
-					wad->tag_data[index].length= SDL_SwapBE32(wad_entry_header->length);
-					wad->tag_data[index].data= (byte *) malloc(wad->tag_data[index].length);
+					wad->tag_data[index].tag = wad_entry_header.tag;
+					wad->tag_data[index].length = wad_entry_header.length;
+					wad->tag_data[index].data = (byte *) malloc(wad->tag_data[index].length);
 					if(!wad->tag_data[index].data)
 					{
 						alert_user(fatalError, strERRORS, outOfMemory, memory_error());
@@ -1295,13 +1292,12 @@ static struct wad_data *convert_wad_from_raw_modifiable(
 					wad->tag_data[index].offset= 0l;
 					
 					/* This MUST be a base! */
-					assert(header->version<WADFILE_SUPPORTS_OVERLAYS || SDL_SwapBE32(wad_entry_header->offset)==0l);
+					assert(header->version<WADFILE_SUPPORTS_OVERLAYS || wad_entry_header.offset == 0);
 	
 					/* Copy the data.. */
-					memcpy(wad->tag_data[index].data, 
-						(((byte *) wad_entry_header)+entry_header_size), 
-						wad->tag_data[index].length);
-					wad_entry_header= (struct entry_header *) (raw_wad + SDL_SwapBE32(wad_entry_header->next_offset));
+					memcpy(wad->tag_data[index].data, raw_wad_entry_header + entry_header_size, wad->tag_data[index].length);
+					raw_wad_entry_header = raw_wad + wad_entry_header.next_offset;
+					unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
 				} 
 			}
 		}
@@ -1314,18 +1310,22 @@ static short count_raw_tags(
 	byte *raw_wad)
 {
 	int tag_count = 0;
-	entry_header *header = (entry_header *)raw_wad;
+
+	entry_header header;
+	unpack_entry_header(raw_wad, &header, 1);
 	while (true) {
 		tag_count++;
-		uint32 next_offset = SDL_SwapBE32(header->next_offset);
+		uint32 next_offset = header.next_offset;
 		if (next_offset == 0)
 			break;
-		header = (entry_header *)((uint8 *)raw_wad + next_offset);
+		unpack_entry_header(raw_wad + next_offset, &header, 1);
 	}
 
 	return tag_count;
 }
 
+// Unused function...
+#if 0
 /* Patch it! */
 static void patch_wad_from_raw(
 	struct wad_header *header, 
@@ -1337,11 +1337,6 @@ static void patch_wad_from_raw(
 	short index;
 	short entry_header_size= get_entry_header_length(header);
 
-#ifdef SDL
-printf("+++ patch_wad_from_raw\n");	//!!
-abort();
-#endif
-	
 	/* Count the tags */
 	tag_count= count_raw_tags(raw_wad);
 
@@ -1378,21 +1373,23 @@ abort();
 		wad_entry_header= (struct entry_header *) (raw_wad + wad_entry_header->next_offset);
 	} 
 }
+#endif
 
 static long calculate_raw_wad_length(
 	struct wad_header *file_header,
 	byte *wad)
 {
 	int entry_header_size = get_entry_header_length(file_header);
-
 	long length = 0;
-	entry_header *header = (entry_header *)wad;
+
+	entry_header header;
+	unpack_entry_header(wad, &header, 1);
 	while (true) {
-		length += SDL_SwapBE32(header->length) + entry_header_size;
-		uint32 next_offset = SDL_SwapBE32(header->next_offset);
+		length += header.length + entry_header_size;
+		uint32 next_offset = header.next_offset;
 		if (next_offset == 0)
 			break;
-		header = (entry_header *)((uint8 *)wad + next_offset);
+		unpack_entry_header(wad + next_offset, &header, 1);
 	}
 
 	return length;

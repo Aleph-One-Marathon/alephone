@@ -467,16 +467,16 @@ static void draw_picture(LoadedResource &rsrc)
 
 struct color_table *build_8bit_system_color_table(void)
 {
-	// RGB 332 color cube
+	// 6*6*6 RGB color cube
 	color_table *table = new color_table;
-	table->color_count = 256;
+	table->color_count = 6*6*6;
 	int index = 0;
-	for (int red=0; red<8; red++) {
-		for (int green=0; green<8; green++) {
-			for (int blue=0; blue<4; blue++) {
-				int r = (red * 0x24) | (red >> 1);
-				int g = (green * 0x24) | (green >> 1);
-				int b = blue * 0x55;
+	for (int red=0; red<6; red++) {
+		for (int green=0; green<6; green++) {
+			for (int blue=0; blue<6; blue++) {
+				uint8 r = red * 0x33;
+				uint8 g = green * 0x33;
+				uint8 b = blue * 0x33;
 				table->colors[index].red = (r << 8) | r;
 				table->colors[index].green = (g << 8) | g;
 				table->colors[index].blue = (b << 8) | b;

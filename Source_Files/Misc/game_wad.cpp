@@ -56,7 +56,6 @@ Aug 28, 2000 (Loren Petrich):
 // This needs to do the right thing on save game, which is storing the precalculated crap.
 
 #include "cseries.h"
-#include "byte_swapping.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -160,11 +159,6 @@ enum /* old light types */
 };
 #endif
 
-/* -------- definitions for byte-swapping */
-static _bs_field _bs_directory_data[] = { // 74 bytes
-	_2byte, _2byte, _4byte, LEVEL_NAME_LENGTH,
-};
-
 /* -------- static functions */
 static void scan_and_add_scenery(void);
 static void complete_restoring_level(struct wad_data *wad);
@@ -196,6 +190,9 @@ static void scan_and_add_platforms(uint8 *platform_static_data, short count);
 static void complete_loading_level(short *_map_indexes, short map_index_count, 
 	uint8 *_platform_data, short platform_data_count,
 	uint8 *actual_platform_data, short actual_platform_data_count, short version);
+
+static uint8 *unpack_directory_data(uint8 *Stream, directory_data *Objects, int Count);
+static uint8 *pack_directory_data(uint8 *Stream, directory_data *Objects, int Count);
 
 /* ------------------------ Net functions */
 long get_net_map_data_length(
@@ -573,18 +570,16 @@ bool get_indexed_entry_point(
 				assert(total_directory_data);
 				for(actual_index= *index; actual_index<header.wad_count; ++actual_index)
 				{
-					struct directory_data *directory;
-					
-					directory= (struct directory_data *)get_indexed_directory_data(&header, actual_index, 
-						total_directory_data);
-					byte_swap_data(directory, SIZEOF_directory_data, 1, _bs_directory_data);
+					uint8 *p = (uint8 *)get_indexed_directory_data(&header, actual_index, total_directory_data);
+					directory_data directory;
+					unpack_directory_data(p, &directory, 1);
 
 					/* Find the flags that match.. */
-					if(directory->entry_point_flags & type)
+					if(directory.entry_point_flags & type)
 					{
 						/* This one is valid! */
 						entry_point->level_number= actual_index;
-						strcpy(entry_point->level_name, directory->level_name);
+						strcpy(entry_point->level_name, directory.level_name);
 			
 						*index= actual_index+1;
 						success= true;
@@ -1954,4 +1949,43 @@ static void complete_restoring_level(
 FileSpecifier& get_map_file()
 {
 	return MapFileSpec; // (FileDesc *)&MapFile.Spec;
+}
+
+
+/*
+ *  Unpacking/packing functions
+ */
+
+static uint8 *unpack_directory_data(uint8 *Stream, directory_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	directory_data* ObjPtr = Objects;
+
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->mission_flags);
+		StreamToValue(S,ObjPtr->environment_flags);
+		StreamToValue(S,ObjPtr->entry_point_flags);
+		StreamToBytes(S,ObjPtr->level_name,LEVEL_NAME_LENGTH);
+	}
+
+	assert((S - Stream) == SIZEOF_directory_data);
+	return S;
+}
+
+static uint8 *pack_directory_data(uint8 *Stream, directory_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	directory_data* ObjPtr = Objects;
+
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->mission_flags);
+		ValueToStream(S,ObjPtr->environment_flags);
+		ValueToStream(S,ObjPtr->entry_point_flags);
+		BytesToStream(S,ObjPtr->level_name,LEVEL_NAME_LENGTH);
+	}
+
+	assert((S - Stream) == SIZEOF_directory_data);
+	return S;
 }

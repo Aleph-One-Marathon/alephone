@@ -4,6 +4,8 @@
  *  Written in 2000 by Christian Bauer
  */
 
+#include <SDL_endian.h>
+
 // Unlike the Mac version, we also do the music handling here
 #include "music.h"
 #include "song_definitions.h"
@@ -85,15 +87,6 @@ static void shutdown_music_handler(void);
 static void set_sound_manager_status(bool active);
 static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch);
 static void sound_callback(void *userdata, uint8 *stream, int len);
-
-
-/*
- *  Open sounds file, parse sound definitions
- */
-
-static _bs_field _bs_sound_file_header[] = { // 260 bytes
-	_4byte, _4byte, _2byte, _2byte, 124*sizeof(int16)
-};
 
 
 /*

@@ -322,7 +322,8 @@ static void default_environment_preferences(
 #ifdef mac
 	obj_copy(prefs->map_file, DefaultFile.GetSpec());
 #else
-	DefaultFile.GetName(prefs->map_file);
+	strncpy(prefs->map_file, DefaultFile.GetPath(), 256);
+	prefs->map_file[255] = 0;
 #endif
 	
 	get_default_physics_spec(DefaultFile);
@@ -330,7 +331,8 @@ static void default_environment_preferences(
 #ifdef mac
 	obj_copy(prefs->physics_file, DefaultFile.GetSpec());
 #else
-	DefaultFile.GetName(prefs->physics_file);
+	strncpy(prefs->physics_file, DefaultFile.GetPath(), 256);
+	prefs->physics_file[255] = 0;
 #endif
 	
 	get_default_shapes_spec(DefaultFile);
@@ -339,7 +341,8 @@ static void default_environment_preferences(
 #ifdef mac
 	obj_copy(prefs->shapes_file, DefaultFile.GetSpec());
 #else
-	DefaultFile.GetName(prefs->shapes_file);
+	strncpy(prefs->shapes_file, DefaultFile.GetPath(), 256);
+	prefs->shapes_file[255] = 0;
 #endif
 
 	get_default_sounds_spec(DefaultFile);
@@ -348,7 +351,8 @@ static void default_environment_preferences(
 #ifdef mac
 	obj_copy(prefs->sounds_file, DefaultFile.GetSpec());
 #else
-	DefaultFile.GetName(prefs->sounds_file);
+	strncpy(prefs->sounds_file, DefaultFile.GetPath(), 256);
+	prefs->sounds_file[255] = 0;
 #endif
 }
 

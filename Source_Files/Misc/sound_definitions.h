@@ -202,13 +202,6 @@ static struct random_sound_definition random_sound_definitions[NUMBER_OF_RANDOM_
 
 /* ---------- sound definition structures */
 
-_bs_field _bs_sound_definition[] = { // 64 bytes
-	_2byte, _2byte, _2byte, _2byte, _4byte, _4byte,
-	_2byte, _2byte, _4byte, _4byte, _4byte, _4byte,
-	_4byte, _4byte, _4byte, _4byte, _4byte, sizeof(int32),
-	2*sizeof(int16)
-};
-
 // #ifndef STATIC_DEFINITIONS
 
 // LP: making this dynamically allocatable;

@@ -77,7 +77,6 @@ Aug 22, 2000 (Loren Petrich):
 #include <vector>
 
 #include "cseries.h"
-#include "byte_swapping.h"
 #include "FileHandler.h"
 
 #include "world.h"
@@ -2563,8 +2562,6 @@ void unpack_map_terminal_data(uint8 *p, int count)
 		// Create new terminal_text_t
 		terminal_text_t t;
 		map_terminal_text.push_back(t);
-		// LP: CodeWarrior 4 does not seem to like empty push_back()'s.
-		// map_terminal_text.push_back();
 		terminal_text_t &data = map_terminal_text.back();
 
 		// Read header

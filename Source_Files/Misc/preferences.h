@@ -50,13 +50,13 @@ struct network_preferences_data
 {
 	bool allow_microphone;
 	bool  game_is_untimed;
-	short type; // look in network_dialogs.c for _ethernet, etc...
-	short game_type;
-	short difficulty_level;
-	short game_options; // Penalize suicide, etc... see map.h for constants
-	long time_limit;
-	short kill_limit;
-	short entry_point;
+	int16 type; // look in network_dialogs.c for _ethernet, etc...
+	int16 game_type;
+	int16 difficulty_level;
+	uint16 game_options; // Penalize suicide, etc... see map.h for constants
+	int32 time_limit;
+	int16 kill_limit;
+	int16 entry_point;
 };
 
 struct player_preferences_data
@@ -66,10 +66,10 @@ struct player_preferences_data
 #else
 	char name[PREFERENCES_NAME_LENGTH+1];
 #endif
-	short color;
-	short team;
-	unsigned long last_time_ran;
-	short difficulty_level;
+	int16 color;
+	int16 team;
+	uint32 last_time_ran;
+	int16 difficulty_level;
 	bool background_music_on;
 	struct ChaseCamData ChaseCam;
 	struct CrosshairData Crosshairs;
@@ -86,10 +86,10 @@ enum {
 
 struct input_preferences_data
 {
-	short input_device;
-	short keycodes[NUMBER_OF_KEYS];
+	int16 input_device;
+	int16 keycodes[NUMBER_OF_KEYS];
 	// LP addition: input modifiers
-	short modifiers;
+	uint16 modifiers;
 };
 
 #define MAXIMUM_PATCHES_PER_ENVIRONMENT (32)
@@ -111,7 +111,7 @@ struct environment_preferences_data
 	uint32 physics_checksum;
 	TimeType shapes_mod_date;
 	TimeType sounds_mod_date;
-	unsigned long patches[MAXIMUM_PATCHES_PER_ENVIRONMENT];
+	uint32 patches[MAXIMUM_PATCHES_PER_ENVIRONMENT];
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

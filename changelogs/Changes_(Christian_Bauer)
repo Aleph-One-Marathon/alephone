@@ -1,5 +1,12 @@
 Change log of the SDL version of Aleph One
 
+September 11, 2000
+ - fixed some remaining alignment bugs, now works on Solaris/sparc (with gcc
+   2.95.2)
+ - fixed problems when no preferences file was present
+ - removed the byte_swap_data() and byte_swap_object() functions since they are
+   superseded by the new pack/unpack functions
+
 September 10, 2000
  - improved error handling of OpenedFile, OpenedResourceFile and FileSpecifier
  - implemented file selection dialogs

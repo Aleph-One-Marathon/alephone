@@ -112,7 +112,6 @@ shortening radii on low-volume ambient sound sorces would be a good idea
 #include "world.h"
 #include "interface.h"
 #include "mysound.h"
-#include "byte_swapping.h"
 #include "FileHandler.h"
 #include "Packing.h"
 
