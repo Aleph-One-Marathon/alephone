@@ -303,6 +303,27 @@ void toggle_menus(
 	{
 		MenuHandle menu;
 
+#ifdef USES_NIBS
+
+		for (int n=0; n<NumMenus; n++)
+		{
+			OSStatus err;
+			err = CreateMenuFromNib(GUI_Nib,MenuNames[n],&menu);
+			
+			const int BufferSize = 192;	// Smaller than 256, the size of "temporary"
+			char Buffer[BufferSize];
+			if (err != noErr)
+			{
+				CFStringGetCString(MenuNames[n], Buffer, BufferSize, kCFStringEncodingMacRoman);
+				Buffer[BufferSize-1] = 0; // Null terminator byte
+			}
+			vassert(err == noErr,
+				csprintf(temporary,"CreateMenuFromNib error: %d for menu %s",err,Buffer));
+			
+			// Now that we have it, insert it
+			InsertMenu(menu, 0);
+		}
+#else
 		/* Insert our fake menu */
 		menu= GetMenu(mFakeEmptyMenu);
 		assert(menu);
@@ -323,6 +344,7 @@ void toggle_menus(
 		InsertMenu(menu, 0);
 #else
 		InsertMenu(menu, -1);
+#endif
 #endif
 
 		first_time= false;
