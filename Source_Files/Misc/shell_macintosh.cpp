@@ -1423,7 +1423,7 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 		{
 			DummySpec.Spec.parID = ParentDir;
 			OSType Type = PB.hFileInfo.ioFlFndrInfo.fdType;
-			if (Type == 'TEXT')
+			if (Type == 'TEXT' || Type=='MML ')
 			{
 				DummySpec.Type = TypedSpec::TextFile;
 			
