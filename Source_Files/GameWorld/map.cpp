@@ -820,7 +820,9 @@ void get_object_shape_and_transfer_mode(
 
 	/* fill in the structure (transfer modes in the animation override transfer modes in the object */
 	data->collection_code= GET_DESCRIPTOR_COLLECTION(object->shape);
-	data->low_level_shape_index= animation->low_level_shape_indexes[view*animation->frames_per_view + GET_SEQUENCE_FRAME(object->sequence)];
+	short Frame = GET_SEQUENCE_FRAME(object->sequence);
+	data->Frame = Frame;
+	data->low_level_shape_index= animation->low_level_shape_indexes[view*animation->frames_per_view + Frame];
 	if (animation->transfer_mode==_xfer_normal && object->transfer_mode!=NONE)
 	{
 		data->transfer_mode= object->transfer_mode;

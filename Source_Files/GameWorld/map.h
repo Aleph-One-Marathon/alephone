@@ -1045,6 +1045,9 @@ struct shape_and_transfer_mode
 	/* extended shape descriptor */
 	short collection_code, low_level_shape_index;
 	
+	// Needed for animated models: which frame in an individual sequence (0, 1, 2, ...)
+	short Frame;
+	
 	short transfer_mode;
 	_fixed transfer_phase; /* [0,FIXED_ONE] */
 };
