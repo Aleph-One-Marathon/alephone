@@ -32,6 +32,7 @@ Jan 12, 2001 (Loren Petrich):
 #include "screen_drawing.h"
 #endif
 
+
 // MacOS-specific: stuff that gets reused
 // static CTabHandle Grays = NULL;
 
@@ -63,7 +64,9 @@ void FontSpecifier::Init()
 	Info = NULL;
 #endif
 	Update();
+#ifdef HAVE_OPENGL
 	OGL_Texture = NULL;
+#endif
 }
 
 
@@ -155,9 +158,12 @@ void FontSpecifier::Update()
 	}
 	
 	// Simply implements format "#<value>"; may want to generalize this
-	short ID = 0;
-	sscanf(File+1,"%hd",&ID);
-	assert(ID != 0);
+	short ID;
+	if (File[0] != '#') {
+		fprintf(stderr, "WARNING: Font file names not (yet) supported\n");
+		return;
+	}
+	sscanf(File+1, "%hd", &ID);
 	
 	// Actual loading
 	TextSpec Spec;
@@ -239,7 +245,6 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	Descent = Info->descent;
 	for (int k = 0; k < 256; k++)
 		Widths[k] = char_width(k, Info, Style);
-	
 #endif
 		
 	// Put some padding around each glyph so as to avoid clipping it
@@ -323,11 +328,10 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 
 #elif defined(SDL)
 	// Render the font glyphs into the SDL surface
-	SDL_Surface *FontSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, TxtrWidth, TxtrHeight, 32, 
-														0xFF, 0xFF, 0xFF, 0xFF);
-	if (SDL_MUSTLOCK(FontSurface))
-		SDL_LockSurface(FontSurface);
-	
+	SDL_Surface *FontSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, TxtrWidth, TxtrHeight, 32, 0xff0000, 0x00ff00, 0x0000ff, 0);
+	if (FontSurface == NULL)
+		return;
+
 	// Set background to black
 	SDL_FillRect(FontSurface, NULL, SDL_MapRGB(FontSurface->format, 0, 0, 0));
 	Uint32 White = SDL_MapRGB(FontSurface->format, 0xFF, 0xFF, 0xFF);
@@ -335,16 +339,12 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	// Copy to surface
 	for (int k = 0; k <= LastLine; k++)
 	{
-		int Which = CharStarts[k];
+		char Which = CharStarts[k];
 		int VPos = (k * GlyphHeight) + Ascent;
 		int HPos = Pad;
 		for (int m = 0; m < CharCounts[k]; m++)
 		{
-			// Make a C string out of the character
-			char Text[2];
-			Text[0] = Which;
-			Text[1] = 0;
-			::draw_text(FontSurface, Text, HPos, VPos, White, Info, Style);
+			::draw_text(FontSurface, &Which, 1, HPos, VPos, White, Info, Style);
 			HPos += Widths[Which++];
 		}
 	}
@@ -394,8 +394,6 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  	}
 	
 	// Clean up
-	if (SDL_MUSTLOCK(FontSurface))
-		SDL_UnlockSurface(FontSurface);
 	SDL_FreeSurface(FontSurface);
 #endif
 	

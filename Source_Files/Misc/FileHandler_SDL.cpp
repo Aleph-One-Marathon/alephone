@@ -629,9 +629,9 @@ void FileSpecifier::canonicalize_path(void)
 // Read directory contents
 bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 {
-#if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
-
 	vec.clear();
+
+#if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
 
 	DIR *d = opendir(name.c_str());
 	if (d == NULL) {

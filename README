@@ -433,8 +433,6 @@ them:
 
  - Some preferences items are missing (mouse sensitivity, OpenGL on/off,
    chase cam, crosshairs, OpenGL texture/landscape/fog options)
- - Text rendering under OpenGL (overhead map doesn't show level name and
-   annotations)
  - Networking (the "Gather Network Game" and "Join Network Game" buttons on
    the title screen are nonfunctional)
  - Support for named fonts and TrueType fonts
