@@ -6,8 +6,12 @@ As implied by its name, Aleph One/SDL requires the Simple DirectMedia Layer
 
   http://www.libsdl.org/
 
-You also have to install the "SDL_image" library which can be found in the
-"Libraries" section of the SDL site.
+Aleph One also requires the "SDL_image" and "SDL_net" libraries, which can
+be found in the "Libraries" section of the SDL site.
+
+Windows binary distributions tend to include these files, so you should only
+need to download them if you're looking for an updated version or are
+planning to build Aleph One yourself.
 
 
 Installing the program
@@ -16,7 +20,12 @@ Installing the program
 Simply uncompress the Aleph One/SDL Windows archive. It contains the Aleph
 One application and associated data files ("Fonts" and the "MML" and
 "Themes" folders). You can move the Aleph One directory anywhere you like as
-long as the application is kept together with the data files.
+long as the application is kept together with the data files.  Note, though,
+that moving the directory after you've already run Aleph One may confuse
+some of the preferences.  In this case, the simplest recovery is to delete
+"Aleph One Preferences" and let it be regenerated.  Alternatively, the file
+could be hand-edited to repair paths or to simply remove the offending
+entries (they'll be regenerated the next time A1 runs).
 
 You also have to install Marathon data files, which is described in the
 next section.
@@ -42,6 +51,7 @@ The archive contains the files "Images", "Map", "Shapes", "Sounds" and
 "README" and has to be unpacked to the same directory as the "AlephOne"
 application.
 
+
 If you have a copy of Marathon 2 for Windows 95, you can copy the needed
 files from the CD. Copy the following files and rename them as indicated:
 
@@ -50,6 +60,7 @@ files from the CD. Copy the following files and rename them as indicated:
   "music.mus2" -> "Music"
   "shapes.shp2" -> "Shapes"
   "sounds.snd2" -> "Sounds"
+
 
 Alternatively, if you have a MacOS Marathon 2, Marathon Infinity or Marathon
 Trilogy Box Set CD, you can also get the data files from there. This is a
@@ -65,11 +76,12 @@ system (every Mac file is really two files, one "data fork" and one
  "Shapes" (data fork)
  "Sounds" (data fork)
 
+
 Here's how to copy these files from a Mac Marathon CD under Windows:
 
 Get HFVexplorer from:
 
-  http://homepages.compuserve.de/axelfindling/mirror/HFVExplorer/hdexp131setup.exe
+  http://gamma.nic.fi/~lpesonen/HFVExplorer/
 
 Install it, and put your M2/Infinity CD in the CDROM drive. Run HFVexplorer.
 
@@ -107,7 +119,26 @@ For each file in this list:
      prompt if the ".bin" filetype is registered.
 
 
+Alternatively, if you have access to a Mac OS X machine, you may copy the
+files using its Terminal:
+
+% cp Map destination-folder/Map
+% cp Map/rsrc destination-folder/Map.resources
+
+... and so on, copying the appropriate forks as listed above.  Ship the
+split-up files over to the Windows machine and have fun.
+
+
 Compiling from source
 ---------------------
 
 <to be written...>
+
+
+Document History
+----------------
+Originally written by Christian Bauer.
+
+May 27, 2003 (Woody Zenfell):  Added Mac OS X conversion method, note about
+  SDL libs coming with the binary, and note about moving Aleph One after
+  running it.  Updated link to HFVExplorer (thanks Alex Ramos).
