@@ -340,18 +340,8 @@ void OverheadMap_OGL_Class::draw_text(
 	rgb_color& color,
 	char *text,
 	FontSpecifier& FontData,
-	short which,
 	short justify)
-{
-#ifdef mac
-	// Pascalify the name; watch out for buffer overflows
-	Str255 pascal_text;
-	strncpy((char *)pascal_text, text, 255);
-	c2pstr((char *)pascal_text);
-	
-	// Needed up here for finding the width of the text string
-	FontData.Use();
-	
+{	
 	// Find the left-side location
 	world_point2d left_location = location;
 	switch(justify)
@@ -360,7 +350,7 @@ void OverheadMap_OGL_Class::draw_text(
 		break;
 		
 	case _justify_center:
-		left_location.x -= (StringWidth(pascal_text)>>1);
+		left_location.x -= (FontData.TextWidth(text)>>1);
 		break;
 		
 	default:
@@ -369,28 +359,13 @@ void OverheadMap_OGL_Class::draw_text(
 	
 	// Set color and location	
 	SetColor(color);
-	glRasterPos2sv((short *)(&left_location));
 	
-	FontCacheData& CacheMember = FontCache[which];
-	
-	// Is an update of the font info desired?
-	bool RequestUpdate = !CacheMember.WasInited;
-	if (!RequestUpdate)
-		RequestUpdate = (CacheMember.FontData != FontData);
-	
-	// If so, then do it
-	if (RequestUpdate)
-	{
-		CacheMember.FontData = FontData;
-		CacheMember.Update();
-	}
-	
-	for (int b=1; b<=pascal_text[0]; b++)
-	{
-		GLuint ByteDisplayList = CacheMember.DispList + pascal_text[b];
-		glCallLists(1,GL_UNSIGNED_INT,&ByteDisplayList);
-	}
-#endif
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(left_location.x,left_location.y,0);	
+	FontData.OGL_Render(text);
+	glPopMatrix();
 }
 	
 void OverheadMap_OGL_Class::set_path_drawing(rgb_color& color)
@@ -415,41 +390,4 @@ void OverheadMap_OGL_Class::finish_path()
 	glVertexPointer(2,GL_SHORT,sizeof(world_point2d),&PathPoints.front());
 	glDrawArrays(GL_LINE_STRIP,0,PathPoints.size());
 }
-
-
-// Font-cache handling
-
-// This is for updating the font display list when the font info has changed
-void FontCacheData::Update()
-{
-	if (WasInited)
-	{
-		glDeleteLists(DispList,256);
-	} else {
-		WasInited = true;
-	}
-	
-	DispList = glGenLists(256);
-#ifdef mac
-	aglUseFont(RenderContext, FontData.ID, FontData.Style, FontData.Size, 0, 256, DispList);
-#endif
-}
-
-// This is for clearing the font display list
-void FontCacheData::Clear()
-{
-	if (WasInited)
-	{
-		glDeleteLists(DispList,256);
-		WasInited = false;
-	}
-}
-
-// This is for resetting the fonts
-void OverheadMap_OGL_Class::ResetFonts()
-{
-	for (int ic=0; ic<FONT_CACHE_SIZE; ic++)
-		FontCache[ic].Clear();
-}
-
 #endif // def HAVE_OPENGL

@@ -40,7 +40,6 @@ protected:
 		rgb_color &color,
 		char *text,
 		FontDataStruct &FontData,
-		short which,
 		short justify);
 
 	void set_path_drawing(rgb_color &color);

@@ -43,7 +43,6 @@ class OverheadMap_QD_Class: public OverheadMapClass
 		rgb_color& color,
 		char *text,
 		FontSpecifier& FontData,
-		short which,
 		short justify);
 	
 	void set_path_drawing(rgb_color& color);

@@ -16,23 +16,6 @@ Oct 13, 2000 (Loren Petrich)
 #include "OverheadMapRenderer.h"
 
 
-// Font-cache data, so fonts don't have to be repeatedly re-uploaded
-struct FontCacheData
-{
-	FontSpecifier FontData;	// Font details
-	unsigned long DispList;		// OpenGL display list for fonts
-	bool WasInited;				// Was this dataset inited?
-	
-	// Update font display list
-	void Update();
-	
-	// Clear font display list
-	void Clear();
-	
-	FontCacheData() {WasInited = false;}
-};
-
-
 class OverheadMap_OGL_Class: public OverheadMapClass
 {
 	void begin_overall();
@@ -81,7 +64,6 @@ class OverheadMap_OGL_Class: public OverheadMapClass
 		rgb_color& colorr,
 		char *text,
 		FontSpecifier& FontData,
-		short which,
 		short justify);
 	
 	void set_path_drawing(rgb_color& color);
@@ -101,14 +83,8 @@ class OverheadMap_OGL_Class: public OverheadMapClass
 	
 	// Cached lines For drawing monster paths
 	vector<world_point2d> PathPoints;
-	
-	// Font caching: the cache has space for all the different-sized annotation fonts
-	// and also for the map-name font
-	enum {FONT_CACHE_SIZE = NUMBER_OF_ANNOTATION_SIZES+1};
-	FontCacheData FontCache[FONT_CACHE_SIZE];
 
 public:
-	void ResetFonts();
 };
 
 #endif

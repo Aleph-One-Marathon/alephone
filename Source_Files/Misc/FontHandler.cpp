@@ -105,6 +105,14 @@ void FontSpecifier::Use()
 }
 
 
+int FontSpecifier::TextWidth(char *Text)
+{
+	int Len = MIN(strlen(Text),255);
+	// MacOS-specific; note the :: for getting the top-level function instead of a member one
+	return int(::TextWidth(Text,0,Len));
+}
+
+
 // Next power of 2; since OpenGL prefers powers of 2, it is necessary to work out
 // the next one up for each texture dimension.
 inline int NextPowerOfTwo(int n)
@@ -347,6 +355,9 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 // One can surround it with glPushMatrix() and glPopMatrix() to remember the original.
 void FontSpecifier::OGL_Render(char *Text)
 {
+	// Bug out if no texture to render
+	if (!OGL_Texture) return;
+	
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	
 	glEnable(GL_TEXTURE_2D);

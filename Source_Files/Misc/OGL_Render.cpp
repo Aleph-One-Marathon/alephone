@@ -343,7 +343,7 @@ static bool OnePassMultitexturing = false;
 
 // Function for resetting map fonts when starting up an OpenGL rendering context;
 // defined in OGL_Map.c
-extern void OGL_ResetMapFonts();
+extern void OGL_ResetMapFonts(bool IsStarting);
 
 
 #ifdef mac
@@ -479,7 +479,7 @@ bool OGL_StartRun()
 	GetOnScreenFont().OGL_Reset(true);
 	
 	// Reset the font into for overhead-map fonts done in OpenGL fashion
-	OGL_ResetMapFonts();
+	OGL_ResetMapFonts(true);
 		
 	// Success!
 	JustInited = true;

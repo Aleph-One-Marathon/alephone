@@ -1104,6 +1104,7 @@ TextureManager::~TextureManager()
 }
 
 extern void ResetScreenFont();
+extern void OGL_ResetMapFonts(bool IsStarting);
 
 void OGL_ResetTextures()
 {
@@ -1129,6 +1130,7 @@ void OGL_ResetTextures()
 	
 	// Reset the font textures
 	ResetScreenFont();
+	OGL_ResetMapFonts(false);
 }
 
 

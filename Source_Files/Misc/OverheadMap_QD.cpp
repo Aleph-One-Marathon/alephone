@@ -135,7 +135,6 @@ void OverheadMap_QD_Class::draw_text(
 	rgb_color& color,
 	char *text,
 	FontSpecifier& FontData,
-	short which,
 	short justify)
 {
 	// Pascalify the name; watch out for buffer overflows

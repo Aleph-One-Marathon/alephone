@@ -195,7 +195,6 @@ protected:
 		rgb_color& color,
 		char *text,
 		FontSpecifier& FontData,
-		short which,		// Index to cached font
 		short justify) {}
 	
 	virtual void set_path_drawing(rgb_color& color) {}
@@ -272,9 +271,7 @@ private:
 		if (!(scale>=OVERHEAD_MAP_MINIMUM_SCALE&&scale<=OVERHEAD_MAP_MAXIMUM_SCALE)) return;
 		annotation_definition& NoteDef = ConfigPtr->annotation_definitions[color];
 		draw_text(*location,NoteDef.color, text,
-			NoteDef.Fonts[scale-OVERHEAD_MAP_MINIMUM_SCALE],
-				scale-OVERHEAD_MAP_MINIMUM_SCALE,_justify_left);
-		
+			NoteDef.Fonts[scale-OVERHEAD_MAP_MINIMUM_SCALE],_justify_left);
 	}
 	void draw_map_name(
 		overhead_map_data &Control,
@@ -285,8 +282,7 @@ private:
 		location.x = Control.half_width;
 		location.y = map_name_data.offset_down;
 		draw_text(location, map_name_data.color, name,
-			map_name_data.Font,
-			NUMBER_OF_ANNOTATION_SIZES, _justify_center);
+			map_name_data.Font, _justify_center);
 	}
 
 	void set_path_drawing()

@@ -123,7 +123,7 @@ void OverheadMap_SDL_Class::draw_player(world_point2d &center, angle facing, rgb
  *  Draw text
  */
 
-void OverheadMap_SDL_Class::draw_text(world_point2d &location, rgb_color &color, char *text, FontDataStruct &FontData, short which, short justify)
+void OverheadMap_SDL_Class::draw_text(world_point2d &location, rgb_color &color, char *text, FontDataStruct &FontData, short justify)
 {
 	// Load font
 	TextSpec spec;

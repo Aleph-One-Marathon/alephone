@@ -55,7 +55,10 @@ struct FontSpecifier
 	// Use this font (MacOS-specific); has this form because MacOS Quickdraw has a global font value
 	// for each GrafPort (draw context)
 	void Use();
-
+	
+	// Get text width for text that must be centered (map title)
+	int TextWidth(char *Text);
+	
 #ifdef HAVE_OPENGL	
 	// Reset the OpenGL fonts; its arg indicates whether this is for starting an OpenGL session
 	// (this is to avoid texture and display-list memory leaks and other such things)
