@@ -4,16 +4,16 @@ dnl Written in 2000 by Christian Bauer <Christian.Bauer@uni-mainz.de>
 AC_INIT(Source_Files/Misc/shell_sdl.cpp)
 AC_PREREQ(2.13)
 
+dnl Detect the canonical host and target build environment.
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
+
 dnl This defines PACKAGE and VERSION.
 AM_INIT_AUTOMAKE([AlephOne], [0.12.0])
 AM_CONFIG_HEADER(config.h)
 
 dnl Configure options.
 AC_ARG_ENABLE(opengl, [  --enable-opengl         use OpenGL for rendering [default=yes]], , enable_opengl=yes)
-
-dnl Detect the canonical host and target build environment.
-AC_CANONICAL_HOST
-AC_CANONICAL_TARGET
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -31,6 +31,10 @@ case "$target" in
     ;;
   *-*-beos*)
     SYS_GL_LIBS="-lGL"
+    ;;
+  *-*-darwin*)
+    SYS_GL_LIBS="-F/System/Library/Frameworks -framework AGL -framework OpenGL"
+    CPPFLAGS="$CPPFLAGS -D__DARWIN__ -F/System/Library/Frameworks  -I/System/Library/Frameworks/OpenGL.framework/Headers"
     ;;
   *)
     AC_PATH_X
@@ -74,7 +78,11 @@ if [[ "x$enable_opengl" = "xyes" ]]; then
   AC_MSG_CHECKING(for OpenGL support)
   have_opengl=no
   AC_TRY_COMPILE([
+   #ifndef __DARWIN__
    #include <GL/gl.h>
+   #else
+   #include <OpenGL/gl.h>
+   #endif
   ],[
   ],[
   have_opengl=yes
