@@ -207,113 +207,6 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 }
 
 
-void OGL_TextureOptions::FindImagePosition()
-{
-	Right = Left + short(ImageScale*NormalImg.GetWidth() + 0.5);
-	Bottom = Top + short(ImageScale*NormalImg.GetHeight() + 0.5);
-}
-
-
-// Texture-options stuff;
-// defaults for whatever might need them
-static OGL_TextureOptions DefaultTextureOptions;
-
-
-// Store texture-options stuff in a set of STL vectors
-struct TextureOptionsEntry
-{
-	// Which color table and bitmap to apply to:
-	short CLUT, Bitmap;
-	
-	// Make a member for more convenient access
-	OGL_TextureOptions OptionsData;
-	
-	TextureOptionsEntry(): CLUT(ALL_CLUTS), Bitmap(NONE) {}
-};
-
-// Separate texture-options sequence lists for each collection ID,
-// to speed up searching
-static vector<TextureOptionsEntry> TOList[NUMBER_OF_COLLECTIONS];
-
-// Texture-options hash table for extra-fast searching;
-// the top bit of the hashtable index is set if some specific CLUT had been matched to.
-// If it is clear, then an ALL_CLUTS texture-options entry had been used.
-// This is OK because the maximum reasonable number of texture-option entries per collection
-// is around 10*256 or 2560, much less than 32K.
-const uint16 Specific_CLUT_Flag = 0x8000;
-static vector<int16> TOHash[NUMBER_OF_COLLECTIONS];
-
-// Hash-table size and function
-const int TOHashSize = 1 << 8;
-const int TOHashMask = TOHashSize - 1;
-inline uint8 TOHashFunc(short CLUT, short Bitmap)
-{
-	// This function will avoid collisions when accessing bitmaps with close indices
-	return (uint8)((CLUT << 4) ^ Bitmap);
-}
-
-
-// Deletes a collection's texture-options sequences
-static void TODelete(int c)
-{
-	TOList[c].clear();
-	TOHash[c].clear();
-}
-
-// Deletes all of them
-static void TODeleteAll()
-{
-	for (int c=0; c<NUMBER_OF_COLLECTIONS; c++) TODelete(c);
-}
-
-OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bitmap)
-{
-	// Initialize the hash table if necessary
-	if (TOHash[Collection].empty())
-	{
-		TOHash[Collection].resize(TOHashSize);
-		objlist_set(&TOHash[Collection][0],NONE,TOHashSize);
-	}
-	
-	// Set up a *reference* to the appropriate hashtable entry;
-	// this makes setting this entry a bit more convenient
-	int16& HashVal = TOHash[Collection][TOHashFunc(CLUT,Bitmap)];
-	
-	// Check to see if the texture-option entry is correct;
-	// if it is, then we're done.
-	// Be sure to blank out the specific-CLUT flag when indexing the texture-options list with the hash value.
-	if (HashVal != NONE)
-	{
-		vector<TextureOptionsEntry>::iterator TOIter = TOList[Collection].begin() + (HashVal & ~Specific_CLUT_Flag);
-		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
-		bool Hash_SCS = TEST_FLAG(HashVal,Specific_CLUT_Flag);
-		if ((Specific_CLUT_Set && Hash_SCS) || ((TOIter->CLUT == ALL_CLUTS) && !Hash_SCS))
-			if (TOIter->Bitmap == Bitmap)
-			{
-				return &TOIter->OptionsData;
-			}
-	}
-	
-	// Fallback for the case of a hashtable miss;
-	// do a linear search and then update the hash entry appropriately.
-	vector<TextureOptionsEntry>& TOL = TOList[Collection];
-	int16 Indx = 0;
-	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++, Indx++)
-	{
-		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
-		if (Specific_CLUT_Set || (TOIter->CLUT == ALL_CLUTS))
-			if (TOIter->Bitmap == Bitmap)
-			{
-				HashVal = Indx;
-				SET_FLAG(HashVal,Specific_CLUT_Flag,Specific_CLUT_Set);
-				return &TOIter->OptionsData;
-			}
-	}
-	
-	return &DefaultTextureOptions;
-}
-
-
 #ifdef HAVE_OPENGL
 
 // Model-data stuff;
@@ -463,57 +356,12 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence, short& ModelSe
 #endif // def HAVE_OPENGL
 
 
-// Does this for a set of several pixel values or color-table values;
-// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
-void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels)
-{
-	for (int k=0; k<NumPixels; k++)
-	{
-		uint8 *PxlPtr = (uint8 *)(Pixels + k);
-		
-		// This won't be scaled to (0,1), but will be left at (0,255) here
-		float Opacity;
-		switch(Options.OpacityType)
-		{
-		// Two versions of the Tomb Raider texture-opacity hack
-		case OGL_OpacType_Avg:
-			{
-				uint32 Red = uint32(PxlPtr[0]);
-				uint32 Green = uint32(PxlPtr[1]);
-				uint32 Blue = uint32(PxlPtr[2]);
-				Opacity = (Red + Green + Blue)/3.0F;
-			}
-			break;
-			
-		case OGL_OpacType_Max:
-			{
-				uint32 Red = uint32(PxlPtr[0]);
-				uint32 Green = uint32(PxlPtr[1]);
-				uint32 Blue = uint32(PxlPtr[2]);
-				Opacity = (float)MAX(MAX(Red,Green),Blue);
-			}
-			break;
-		
-		// Use pre-existing alpha value; useful if the opacity was loaded from a mask image
-		default:
-			Opacity = PxlPtr[3];
-			break;
-		}
-		
-		// Scale, shift, and put back the edited opacity;
-		// round off and pin to the appropriate range.
-		// The shift has to be scaled to the color-channel range (1 -> 255).
-		PxlPtr[3] = PIN(int32(Options.OpacityScale*Opacity + 255*Options.OpacityShift + 0.5),0,255);
-	}
-}
-
-
 inline bool StringPresent(vector<char>& String)
 {
 	return (String.size() > 1);
 }
 
-#if 0
+#if UNUSED
 static bool StringsEqual(vector<char>& Str1, vector<char>& Str2)
 {
 	bool Pres1 = StringPresent(Str1);
@@ -741,6 +589,54 @@ static void MatVecMult(const GLfloat Mat[3][3], const GLfloat *SrcVec, GLfloat *
 	}
 }
 
+
+
+
+// Does this for a set of several pixel values or color-table values;
+// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
+void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels)
+{
+	for (int k=0; k<NumPixels; k++)
+	{
+		uint8 *PxlPtr = (uint8 *)(Pixels + k);
+		
+		// This won't be scaled to (0,1), but will be left at (0,255) here
+		float Opacity;
+		switch(Options.OpacityType)
+		{
+		// Two versions of the Tomb Raider texture-opacity hack
+		case OGL_OpacType_Avg:
+			{
+				uint32 Red = uint32(PxlPtr[0]);
+				uint32 Green = uint32(PxlPtr[1]);
+				uint32 Blue = uint32(PxlPtr[2]);
+				Opacity = (Red + Green + Blue)/3.0F;
+			}
+			break;
+			
+		case OGL_OpacType_Max:
+			{
+				uint32 Red = uint32(PxlPtr[0]);
+				uint32 Green = uint32(PxlPtr[1]);
+				uint32 Blue = uint32(PxlPtr[2]);
+				Opacity = (float)MAX(MAX(Red,Green),Blue);
+			}
+			break;
+		
+		// Use pre-existing alpha value; useful if the opacity was loaded from a mask image
+		default:
+			Opacity = PxlPtr[3];
+			break;
+		}
+		
+		// Scale, shift, and put back the edited opacity;
+		// round off and pin to the appropriate range.
+		// The shift has to be scaled to the color-channel range (1 -> 255).
+		PxlPtr[3] = PIN(int32(Options.OpacityScale*Opacity + 255*Options.OpacityShift + 0.5),0,255);
+	}
+}
+
+
 void OGL_ModelData::Load()
 {
 	// Already loaded?
@@ -790,7 +686,7 @@ void OGL_ModelData::Load()
 		catch(...)
 		{}
 	}
-#if defined(mac) && !defined(TARGET_API_MAC_CARBON)
+#if HAVE_QUESA
 	else if (StringsEqual(Type,"qd3d") || StringsEqual(Type,"3dmf") || StringsEqual(Type,"quesa"))
 	{
 		// QuickDraw 3D / Quesa
@@ -952,21 +848,12 @@ void OGL_ModelData::Unload()
 
 
 // for managing the model and image loading and unloading
-void OGL_LoadModelsImages(int Collection)
+void OGL_LoadModelsImages(short Collection)
 {
 	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
 	
 	// For wall/sprite images
-	vector<TextureOptionsEntry>& TOL = TOList[Collection];
-	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
-	{
-		// Load the images
-		TOIter->OptionsData.Load();
-		
-		// Find adjusted-frame image-data positioning;
-		// this is for doing sprites with textures with sizes different from the originals
-		TOIter->OptionsData.FindImagePosition();
-	}
+	OGL_LoadTextures(Collection);
 	
 	// For models
 	bool UseModels = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_3D_Models) ? true : false;
@@ -980,16 +867,12 @@ void OGL_LoadModelsImages(int Collection)
 	}
 }
 
-void OGL_UnloadModelsImages(int Collection)
+void OGL_UnloadModelsImages(short Collection)
 {
 	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
 	
 	// For wall/sprite images
-	vector<TextureOptionsEntry>& TOL = TOList[Collection];
-	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
-	{
-		TOIter->OptionsData.Unload();
-	}
+	OGL_UnloadTextures(Collection);
 	
 	// For models
 	vector<ModelDataEntry>& ML = MdlList[Collection];
@@ -1033,202 +916,6 @@ OGL_FogData *OGL_GetFogData(int Type)
 
 
 // XML-parsing stuff
-
-class XML_TO_ClearParser: public XML_ElementParser
-{
-	bool IsPresent;
-	short Collection;
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-
-	XML_TO_ClearParser(): XML_ElementParser("txtr_clear") {}
-};
-
-bool XML_TO_ClearParser::Start()
-{
-	IsPresent = false;
-	return true;
-}
-
-bool XML_TO_ClearParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"coll"))
-	{
-		if (ReadBoundedInt16Value(Value,Collection,0,NUMBER_OF_COLLECTIONS-1))
-		{
-			IsPresent = true;
-			return true;
-		}
-		else return false;
-	}
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_TO_ClearParser::AttributesDone()
-{
-	if (IsPresent)
-		TODelete(Collection);
-	else
-		TODeleteAll();
-	
-	return true;
-}
-
-static XML_TO_ClearParser TO_ClearParser;
-
-
-class XML_TextureOptionsParser: public XML_ElementParser
-{
-	bool CollIsPresent, BitmapIsPresent;
-	short Collection, CLUT, Bitmap;
-	
-	OGL_TextureOptions Data;
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-	
-	XML_TextureOptionsParser(): XML_ElementParser("texture") {}
-};
-
-bool XML_TextureOptionsParser::Start()
-{
-	Data = DefaultTextureOptions;
-	CollIsPresent = BitmapIsPresent = false;
-	CLUT = ALL_CLUTS;
-		
-	return true;
-}
-
-bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"coll"))
-	{
-		if (ReadBoundedInt16Value(Value,Collection,0,NUMBER_OF_COLLECTIONS-1))
-		{
-			CollIsPresent = true;
-			return true;
-		}
-		else return false;
-	}
-	else if (StringsEqual(Tag,"clut"))
-	{
-		return ReadBoundedInt16Value(Value,CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET));
-	}
-	else if (StringsEqual(Tag,"bitmap"))
-	{
-		if (ReadBoundedInt16Value(Value,Bitmap,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
-		{
-			BitmapIsPresent = true;
-			return true;
-		}
-		else return false;
-	}
-	else if (StringsEqual(Tag,"opac_type"))
-	{
-		return ReadBoundedInt16Value(Value,Data.OpacityType,0,OGL_NUMBER_OF_OPACITY_TYPES-1);
-	}
-	else if (StringsEqual(Tag,"opac_scale"))
-	{
-		return ReadFloatValue(Value,Data.OpacityScale);
-	}
-	else if (StringsEqual(Tag,"opac_shift"))
-	{
-		return ReadFloatValue(Value,Data.OpacityShift);
-	}
-	else if (StringsEqual(Tag,"void_visible"))
-	{
-		return ReadBooleanValueAsBool(Value,Data.VoidVisible);
-	}
-	else if (StringsEqual(Tag,"normal_image"))
-	{
-		size_t nchars = strlen(Value)+1;
-		Data.NormalColors.resize(nchars);
-		memcpy(&Data.NormalColors[0],Value,nchars);
-		return true;
-	}
-	else if (StringsEqual(Tag,"normal_mask"))
-	{
-		size_t nchars = strlen(Value)+1;
-		Data.NormalMask.resize(nchars);
-		memcpy(&Data.NormalMask[0],Value,nchars);
-		return true;
-	}
-	else if (StringsEqual(Tag,"glow_image"))
-	{
-		size_t nchars = strlen(Value)+1;
-		Data.GlowColors.resize(nchars);
-		memcpy(&Data.GlowColors[0],Value,nchars);
-		return true;
-	}
-	else if (StringsEqual(Tag,"glow_mask"))
-	{
-		size_t nchars = strlen(Value)+1;
-		Data.GlowMask.resize(nchars);
-		memcpy(&Data.GlowMask[0],Value,nchars);
-		return true;
-	}
-	else if (StringsEqual(Tag,"normal_blend"))
-	{
-		return ReadBoundedInt16Value(Value,Data.NormalBlend,0,OGL_NUMBER_OF_BLEND_TYPES-1);
-	}
-	else if (StringsEqual(Tag,"glow_blend"))
-	{
-		return ReadBoundedInt16Value(Value,Data.GlowBlend,0,OGL_NUMBER_OF_BLEND_TYPES-1);
-	}
-	else if (StringsEqual(Tag,"image_scale"))
-	{
-		return ReadFloatValue(Value,Data.ImageScale);
-	}
-	else if (StringsEqual(Tag,"x_offset"))
-	{
-		return ReadInt16Value(Value,Data.Left);
-	}
-	else if (StringsEqual(Tag,"y_offset"))
-	{
-		return ReadInt16Value(Value,Data.Top);
-	}
-	UnrecognizedTag();
-	return false;
-}
-
-bool XML_TextureOptionsParser::AttributesDone()
-{
-	// Verify...
-	if (!CollIsPresent || !BitmapIsPresent)
-	{
-		AttribsMissing();
-		return false;
-	}
-	
-	// Check to see if a frame is already accounted for
-	vector<TextureOptionsEntry>& TOL = TOList[Collection];
-	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
-	{
-		if (TOIter->CLUT == CLUT && TOIter->Bitmap == Bitmap)
-		{
-			// Replace the data
-			TOIter->OptionsData = Data;
-			return true;
-		}
-	}
-	
-	// If not, then add a new frame entry
-	TextureOptionsEntry DataEntry;
-	DataEntry.CLUT = CLUT;
-	DataEntry.Bitmap = Bitmap;
-	DataEntry.OptionsData = Data;
-	TOL.push_back(DataEntry);
-	
-	return true;
-}
-
-static XML_TextureOptionsParser TextureOptionsParser;
 
 
 #ifdef HAVE_OPENGL
@@ -1710,11 +1397,11 @@ static XML_FogParser FogParser;
 static XML_ElementParser OpenGL_Parser("opengl");
 
 
-// XML-parser support
+// XML-parser support:
 XML_ElementParser *OpenGL_GetParser()
 {
-	OpenGL_Parser.AddChild(&TextureOptionsParser);
-	OpenGL_Parser.AddChild(&TO_ClearParser);
+	OpenGL_Parser.AddChild(TextureOptions_GetParser());
+	OpenGL_Parser.AddChild(TO_Clear_GetParser());
 	
 #ifdef HAVE_OPENGL
 	ModelDataParser.AddChild(&SkinDataParser);

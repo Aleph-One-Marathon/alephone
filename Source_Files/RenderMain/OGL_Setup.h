@@ -62,10 +62,9 @@ Aug 21, 2001 (Loren Petrich):
 	Adding support for 3D-model inhabitant objects
 */
 
-#include "shape_descriptors.h"
-#include "ImageLoader.h"
 #include "Model3D.h"
 #include "XML_ElementParser.h"
+#include "OGL_Subst_Texture_Def.h"
 
 
 // Initializer; returns whether or not OpenGL is present
@@ -173,95 +172,11 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data);
 void OGL_SetDefaults(OGL_ConfigureData& Data);
 
 
-/*
-	Since Apple OpenGL currently does not support indexed-color images in direct-color
-	rendering, it's necessary to keep track of all possible images separately, and this means
-	not only all possible color tables, but also infravision and silhouette images.
-	OpenGL 1.2 will change all of that, however :-)
-*/
-
-enum {
-	// The bitmap sets for the different color tables do not need to be listed
-	INFRAVISION_BITMAP_SET = MAXIMUM_CLUTS_PER_COLLECTION,
-	SILHOUETTE_BITMAP_SET,
-	NUMBER_OF_OPENGL_BITMAP_SETS
-};
-
-// If the color-table value has this value, it means all color tables:
-const int ALL_CLUTS = -1;
+// for managing the model and image loading and unloading;
+void OGL_LoadModelsImages(short Collection);
+void OGL_UnloadModelsImages(short Collection);
 
 
-// Here are the texture-opacity types.
-// Opacity is the value of the alpha channel, sometimes called transparency
-enum
-{
-	OGL_OpacType_Crisp,		// The default: crisp edges, complete opacity
-	OGL_OpacType_Flat,		// Fuzzy edges, but with flat opacity
-	OGL_OpacType_Avg,		// Fuzzy edges, and opacity = average(color channel values)
-	OGL_OpacType_Max,		// Fuzzy edges, and opacity = max(color channel values)
-	OGL_NUMBER_OF_OPACITY_TYPES
-};
-
-// Here are the texture-blend types
-enum
-{
-	OGL_BlendType_Crossfade,	// The default: crossfade from background to texture value
-	OGL_BlendType_Add,			// Add texture value to background
-	OGL_NUMBER_OF_BLEND_TYPES
-};
-
-// Shared options for wall/sprite textures and for skins
-struct OGL_TextureOptionsBase
-{
-	short OpacityType;		// Which type of opacity to use?
-	float OpacityScale;		// How much to scale the opacity
-	float OpacityShift;		// How much to shift the opacity
-	
-	// Names of files to load; these will be extended ones with directory specifications
-	// <dirname>/<dirname>/<filename>
-	vector<char> NormalColors, NormalMask, GlowColors, GlowMask;
-	
-	// Normal and glow-mapped images
-	ImageDescriptor NormalImg, GlowImg;
-	
-	// Normal and glow blending
-	short NormalBlend, GlowBlend;
-	
-	// For convenience
-	void Load();
-	void Unload();
-	
-	OGL_TextureOptionsBase():
-		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
-		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade)
-		{}
-};
-
-
-// Options for wall textures and sprites
-struct OGL_TextureOptions: public OGL_TextureOptionsBase
-{
-	bool VoidVisible;		// Can see the void through texture if semitransparent
-	
-	// Parameters for mapping substitute sprites (inhabitants, weapons in hand)
-	// How many internal units (world unit = 1024) per pixel
-	float ImageScale;
-	
-	// Positioning of sprite's corners relative to top left corner of original bitmap,
-	// in internal units. Left and Top are specified as X_Offset and Y_Offset in MML;
-	// Right and Bottom are calculated from these.
-	short Left;
-	short Top;
-	short Right;
-	short Bottom;
-	
-	// Find Right and Bottom from Left and Top and the image size and scaling
-	void FindImagePosition();
-	
-	OGL_TextureOptions():
-		VoidVisible(false), ImageScale(0),
-		Left(0), Top(0), Right(0), Bottom(0) {}
-};
 
 
 // Does this for a set of several pixel values or color-table values;
@@ -269,16 +184,9 @@ struct OGL_TextureOptions: public OGL_TextureOptionsBase
 void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels);
 
 
-// for managing the model and image loading and unloading;
-void OGL_LoadModelsImages(int Collection);
-void OGL_UnloadModelsImages(int Collection);
-
-
-// Get the texture options that are currently set
-OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bitmap);
-
 
 // Reset the textures (walls, sprites, and model skins) (good if they start to crap out)
+// Implemented in OGL_Textures.cpp
 void OGL_ResetTextures();
 
 
