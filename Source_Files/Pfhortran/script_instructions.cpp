@@ -761,7 +761,7 @@ void s_Wait_Ticks(script_instruction inst)
 
 void s_Inflict_Damage(script_instruction inst)
 {
-	if (PLAYER_IS_DEAD(current_player) || PLAYER_IS_TOTALLY_DEAD(current_player))
+	if (PLAYER_IS_DEAD(local_player) || PLAYER_IS_TOTALLY_DEAD(local_player))
 		return;
 		
 	
@@ -787,7 +787,7 @@ void s_Inflict_Damage(script_instruction inst)
 	damage.random= 0;
 	damage.scale= FIXED_ONE;
 
-	damage_player(current_player->monster_index, NONE, NONE, &damage);
+	damage_player(local_player->monster_index, NONE, NONE, &damage);
 }
 
 
@@ -811,15 +811,15 @@ void s_Jump(script_instruction inst)
 
 void s_Enable_Player(script_instruction inst)
 {
-	SET_PLAYER_ZOMBIE_STATUS(current_player,script_FALSE);
+	SET_PLAYER_ZOMBIE_STATUS(local_player,script_FALSE);
 }
 
 void s_Disable_Player(script_instruction inst)
 {
-	if (PLAYER_IS_DEAD(current_player) || PLAYER_IS_TOTALLY_DEAD(current_player))
+	if (PLAYER_IS_DEAD(local_player) || PLAYER_IS_TOTALLY_DEAD(local_player))
 		return;
 		
-	SET_PLAYER_ZOMBIE_STATUS(current_player,script_TRUE);
+	SET_PLAYER_ZOMBIE_STATUS(local_player,script_TRUE);
 }
 
 void s_Script_End(script_instruction inst)
@@ -1220,7 +1220,7 @@ void s_Get_Life(script_instruction inst)
 	if (inst.mode == 0)
 		return;
 		
-	set_variable(int(inst.op1),current_player->suit_energy);
+	set_variable(int(inst.op1),local_player->suit_energy);
 
 }
 
@@ -1230,10 +1230,10 @@ void s_Set_Life(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				current_player->suit_energy = (int)floor(inst.op1);
+				local_player->suit_energy = (int)floor(inst.op1);
 				break;
 		case 1:
-				current_player->suit_energy = (int)floor(get_variable(int(inst.op1)));
+				local_player->suit_energy = (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1249,7 +1249,7 @@ void s_Get_Oxygen(script_instruction inst)
 	if (inst.mode == 0)
 		return;
 		
-	set_variable(int(inst.op1),current_player->suit_oxygen);
+	set_variable(int(inst.op1),local_player->suit_oxygen);
 
 }
 
@@ -1258,10 +1258,10 @@ void s_Set_Oxygen(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				current_player->suit_oxygen = (int)floor(inst.op1);
+				local_player->suit_oxygen = (int)floor(inst.op1);
 				break;
 		case 1:
-				current_player->suit_oxygen = (int)floor(get_variable(int(inst.op1)));
+				local_player->suit_oxygen = (int)floor(get_variable(int(inst.op1)));
 				break;
 		default:
 				break;
@@ -1290,11 +1290,11 @@ void s_Add_Item(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 0:
-				if (!try_and_add_player_item(player_identifier_to_player_index(current_player->identifier), (int)floor(inst.op1)))
+				if (!try_and_add_player_item(player_identifier_to_player_index(local_player->identifier), (int)floor(inst.op1)))
 					; /* this sucks */
 				break;
 		case 1:
-				if (!try_and_add_player_item(player_identifier_to_player_index(current_player->identifier), (int)floor(get_variable(int(inst.op1)))))
+				if (!try_and_add_player_item(player_identifier_to_player_index(local_player->identifier), (int)floor(get_variable(int(inst.op1)))))
 					; /* this sucks */
 				break;
 		default:
@@ -1357,7 +1357,7 @@ void s_Select_Weapon(script_instruction inst)
 			break;
 	}	
 	
-	if (!ready_weapon(player_identifier_to_player_index(current_player->identifier), weapon_index))
+	if (!ready_weapon(player_identifier_to_player_index(local_player->identifier), weapon_index))
 		; /* this sucks */
 		
 	
@@ -2100,7 +2100,7 @@ void s_Get_UnderFog_Color(script_instruction inst)
 void s_Teleport_Player(script_instruction inst)
 {
 	int dest;
-	monster_data *monster= get_monster_data(current_player->monster_index);
+	monster_data *monster= get_monster_data(local_player->monster_index);
 	
 	
 	switch(inst.mode)
@@ -2118,14 +2118,14 @@ void s_Teleport_Player(script_instruction inst)
 	
 	
 	
-	SET_PLAYER_TELEPORTING_STATUS(current_player, true);
+	SET_PLAYER_TELEPORTING_STATUS(local_player, true);
 	monster->action= _monster_is_teleporting;
-	current_player->teleporting_phase= 0;
-	current_player->delay_before_teleport= 0;
+	local_player->teleporting_phase= 0;
+	local_player->delay_before_teleport= 0;
 	
-	current_player->teleporting_destination= dest;
+	local_player->teleporting_destination= dest;
 	start_teleporting_effect(true);
-	play_object_sound(current_player->object_index, Sound_TeleportOut());
+	play_object_sound(local_player->object_index, Sound_TeleportOut());
 }
 
 void s_Wait_For_Path(script_instruction inst)
@@ -3079,7 +3079,7 @@ void s_Get_Player_Poly(script_instruction inst)
 	switch(inst.mode)
 	{
 	case 1:
-		set_variable(int(inst.op1), get_polygon_index_supporting_player(current_player_index));
+		set_variable(int(inst.op1), get_polygon_index_supporting_player(local_player_index));
 		break;
 	}
 }
@@ -3147,8 +3147,8 @@ void s_Remove_Item(script_instruction inst)
 	
 	if (definition)
 	{
-		if(current_player->items[Item_Type] >= 1 && definition->item_kind==_ammunition)
-			current_player->items[Item_Type]--;		/* Decrement your count.. */
+		if(local_player->items[Item_Type] >= 1 && definition->item_kind==_ammunition)
+			local_player->items[Item_Type]--;		/* Decrement your count.. */
 		
 		mark_ammo_display_as_dirty();
 	}
@@ -3226,5 +3226,5 @@ void s_Player_Control(script_instruction inst)
 		break;
 	}
 	
-	process_action_flags(current_player_index, &action_flags, value);
+	process_action_flags(local_player_index, &action_flags, value);
 }
