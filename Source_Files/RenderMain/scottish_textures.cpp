@@ -111,6 +111,7 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 */
 
 #include "cseries.h"
+#ifndef __MWERKS__
 #ifndef DEBUG_FAST_CODE
 #undef DEBUG
 #undef assert
@@ -121,6 +122,7 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 #define csprintf(x...) 
 #undef vhalt
 #define vhalt(x...)
+#endif
 #endif
 #include "render.h"
 #include "Rasterizer_SW.h"
