@@ -53,10 +53,19 @@ Jun 26, 2002 (Loren Petrich):
 #include "Crosshairs.h"
 #include "OGL_Setup.h"
 #include "MacCheckbox.h"
+#include "shell.h"
 #include <math.h>
 #include <stdio.h>
 
 const float FLOAT_WORLD_ONE = float(WORLD_ONE);
+
+#ifdef USES_NIBS
+
+const CFStringRef Window_Prefs_ChaseCam = CFSTR("Prefs_ChaseCam");
+
+const CFStringRef Window_Prefs_Crosshairs = CFSTR("Prefs_Crosshairs");
+
+#endif
 
 enum
 {
@@ -75,6 +84,7 @@ enum
 	Damping_Item = 16,
 	Spring_Item = 18,
 	CC_Opacity_Item = 20,
+	VerifyNumbers_Item = 21,
 	
 	Crosshairs_Dialog = 1600,
 	Thickness_Item = 5,
@@ -90,6 +100,247 @@ enum
 
 // Background color
 static RGBColor BkgdColor = rgb_black;
+
+
+#ifdef USES_NIBS
+
+
+// These need to return whether the text field was correctly parsed or not
+
+static bool GetShort(ControlRef Ctrl, short& Value)
+{
+	GetEditCText(Ctrl, temporary);
+	return (sscanf(temporary, "%hd", &Value) == 1);
+}
+
+static bool GetFloat(ControlRef Ctrl, float& Value)
+{
+	GetEditCText(Ctrl, temporary);
+	return (sscanf(temporary, "%f", &Value) == 1);
+}
+
+static void SetShort(ControlRef Ctrl, short Value)
+{
+	sprintf(temporary, "%hd", Value);
+	SetEditCText(Ctrl, temporary);
+}
+
+static void SetFloat(ControlRef Ctrl, float Value)
+{
+	sprintf(temporary, "%f", Value);
+	SetEditCText(Ctrl, temporary);
+}
+
+static int FloatRoundoff(float x)
+{
+	return (x >= 0) ? int(x + 0.5) : - int(-x + 0.5);
+}
+
+
+struct Configure_ChaseCam_HandlerData
+{
+	// All these must be verified
+	ControlRef BehindCtrl;
+	ControlRef UpwardCtrl;
+	ControlRef RightwardCtrl;
+	ControlRef DampingCtrl;
+	ControlRef SpringCtrl;
+	ControlRef CC_OpacityCtrl;
+	
+	// Void color to be picked
+	RGBColor VoidColor;
+	
+	// Verifies and performs necessary adjustments;
+	// returns whether all values were OK
+	bool VerifyAndAdjust();
+};
+
+bool Configure_ChaseCam_HandlerData::VerifyAndAdjust()
+{
+	vpause("In VerifyAndAdjust()");
+	float Temp;
+	float Damping, Spring;
+	bool IsOK = true;
+	
+	// First, check the spring-constant factors
+	if (GetFloat(DampingCtrl,Damping))
+	{
+		// Simple damping-factor validation
+		float NewTemp = PIN(Damping, -1, 1);
+		if (NewTemp != Damping)
+		{
+			Damping = NewTemp;
+			SetFloat(DampingCtrl,Damping);
+			IsOK = false;
+		}
+	}
+	else
+		IsOK = false;
+
+	IsOK = IsOK && GetFloat(SpringCtrl,Spring);
+
+	if (IsOK)
+	{
+		// Do validation: will the chase cam be unstable?			
+
+		if (Spring >= 0)
+		{
+			// Oscillatory case
+			float DampSq = Damping*Damping;
+			if ((DampSq + Spring) >= 1)
+			{
+				Spring = 1 - DampSq;
+				SetFloat(SpringCtrl,Spring);
+				IsOK = false;
+			}
+		}
+		else
+		{
+			// Overdamped case
+			float DampAbs = fabs(Damping);
+			if ((DampAbs + sqrt(-Spring)) >= 1)
+			{
+				float DACmpl = 1 - DampAbs;
+				Spring = - DACmpl*DACmpl;
+				SetFloat(SpringCtrl,Spring);
+				IsOK = false;
+			}
+		}
+	}
+	
+	// Don't really need these values here
+	IsOK = IsOK && GetFloat(BehindCtrl,Temp);
+	IsOK = IsOK && GetFloat(UpwardCtrl,Temp);
+	IsOK = IsOK && GetFloat(RightwardCtrl,Temp);
+	
+	// Get the opacity to within a reasonable range
+	if (GetFloat(CC_OpacityCtrl,Temp))
+	{
+		float NewTemp = PIN(Temp, 0, 1);
+		if (NewTemp != Temp)
+		{
+			SetFloat(CC_OpacityCtrl, NewTemp);
+			IsOK = false;
+		}
+	}
+	else
+		IsOK = false;
+	
+	if (!IsOK) SysBeep(30);
+	
+	return IsOK;
+}
+
+
+static void Configure_ChaseCam_Handler(ParsedControl &Ctrl, void *Data)
+{
+	Configure_ChaseCam_HandlerData *HDPtr = (Configure_ChaseCam_HandlerData *)(Data);
+
+	switch (Ctrl.ID.id)
+	{
+	case VoidColorSelect_Item:
+		PickControlColor(Ctrl.Ctrl, &HDPtr->VoidColor, "\pSelect Color of Void");
+		break;
+	
+	case VerifyNumbers_Item:
+		HDPtr->VerifyAndAdjust();
+		break;
+	}
+}
+
+
+// True for OK, false for cancel
+bool Configure_ChaseCam(ChaseCamData &Data)
+{
+	// Get the window
+	AutoNibWindow Window(GUI_Nib,Window_Prefs_ChaseCam);
+
+	// Get the controls
+	Configure_ChaseCam_HandlerData HandlerData;
+	
+	HandlerData.BehindCtrl = GetCtrlFromWindow(Window(), 0, Behind_Item);
+	SetFloat(HandlerData.BehindCtrl,Data.Behind/FLOAT_WORLD_ONE);
+	
+	HandlerData.UpwardCtrl = GetCtrlFromWindow(Window(), 0, Upward_Item);
+	SetFloat(HandlerData.UpwardCtrl,Data.Upward/FLOAT_WORLD_ONE);
+	
+	HandlerData.RightwardCtrl = GetCtrlFromWindow(Window(), 0, Rightward_Item);
+	SetFloat(HandlerData.RightwardCtrl,Data.Rightward/FLOAT_WORLD_ONE);
+	
+	HandlerData.DampingCtrl = GetCtrlFromWindow(Window(), 0, Damping_Item);
+	SetFloat(HandlerData.DampingCtrl,Data.Damping);
+	
+	HandlerData.SpringCtrl = GetCtrlFromWindow(Window(), 0, Spring_Item);
+	SetFloat(HandlerData.SpringCtrl,Data.Spring);
+	
+	HandlerData.CC_OpacityCtrl = GetCtrlFromWindow(Window(), 0, CC_Opacity_Item);
+	SetFloat(HandlerData.CC_OpacityCtrl,Data.Opacity);
+	
+	ControlRef PassThruWall_Ctrl = GetCtrlFromWindow(Window(), 0, PassThruWall_Item);
+	SetControl32BitValue(PassThruWall_Ctrl, TEST_FLAG(Data.Flags,_ChaseCam_ThroughWalls));
+	
+	ControlRef NeverActive_Ctrl = GetCtrlFromWindow(Window(), 0, NeverActive_Item);
+	SetControl32BitValue(NeverActive_Ctrl, TEST_FLAG(Data.Flags,_ChaseCam_NeverActive));
+	
+	ControlRef OnWhenEntering_Ctrl = GetCtrlFromWindow(Window(), 0, OnWhenEntering_Item);
+	SetControl32BitValue(OnWhenEntering_Ctrl, TEST_FLAG(Data.Flags,_ChaseCam_OnWhenEntering));
+	
+	// Get void color from OpenGL-parameters data
+	OGL_ConfigureData& OGLData = Get_OGL_ConfigureData();
+	
+	ControlRef VoidColorOnOff_Ctrl = GetCtrlFromWindow(Window(), 0, VoidColorOnOff_Item);
+	SetControl32BitValue(VoidColorOnOff_Ctrl, TEST_FLAG(OGLData.Flags,OGL_Flag_VoidColor));
+		
+	HandlerData.VoidColor = OGLData.VoidColor;
+
+	// For making the swatch drawable and hittable
+	AutoDrawability Drawability;
+	AutoHittability Hittability;
+	
+	ControlRef VoidSwatchCtrl = GetCtrlFromWindow(Window(), 0, VoidColorSelect_Item);
+	
+	Drawability(VoidSwatchCtrl, SwatchDrawer, &HandlerData.VoidColor);
+	Hittability(VoidSwatchCtrl);
+		
+	bool IsOK = RunModalDialog(Window(), true, Configure_ChaseCam_Handler, &HandlerData);
+	
+	if (IsOK)
+	{
+		HandlerData.VerifyAndAdjust();
+		
+		float Temp;
+		
+		if (GetFloat(HandlerData.BehindCtrl,Temp))
+			Data.Behind = FloatRoundoff(FLOAT_WORLD_ONE*Temp);
+		
+		if (GetFloat(HandlerData.UpwardCtrl,Temp));
+			Data.Upward = FloatRoundoff(FLOAT_WORLD_ONE*Temp);
+		
+		if (GetFloat(HandlerData.RightwardCtrl,Temp));
+			Data.Rightward = FloatRoundoff(FLOAT_WORLD_ONE*Temp);
+		
+		GetFloat(HandlerData.DampingCtrl, Data.Damping);
+		
+		GetFloat(HandlerData.SpringCtrl, Data.Spring);
+		
+		GetFloat(HandlerData.CC_OpacityCtrl, Data.Opacity);
+		
+		SET_FLAG(Data.Flags,_ChaseCam_ThroughWalls,GetControl32BitValue(PassThruWall_Ctrl));
+		
+		SET_FLAG(Data.Flags,_ChaseCam_NeverActive,GetControl32BitValue(NeverActive_Ctrl));
+		
+		SET_FLAG(Data.Flags,_ChaseCam_OnWhenEntering,GetControl32BitValue(OnWhenEntering_Ctrl));
+	
+		SET_FLAG(OGLData.Flags,OGL_Flag_VoidColor,GetControl32BitValue(VoidColorOnOff_Ctrl));
+		
+		OGLData.VoidColor = HandlerData.VoidColor;
+	}
+	
+	return IsOK;
+}
+
+
+#else
 
 // These need to return whether the text field was correctly parsed or not
 
@@ -130,6 +381,7 @@ static int FloatRoundoff(float x)
 {
 	return (x >= 0) ? int(x + 0.5) : - int(-x + 0.5);
 }
+
 
 // True for OK, false for cancel
 bool Configure_ChaseCam(ChaseCamData &Data)
@@ -346,6 +598,172 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	
 	return IsOK;
 }
+
+
+#endif
+
+
+#ifdef USES_NIBS
+
+
+void PreviewDrawer(ControlRef Ctrl, void *Data)
+{
+	// Don't need the data arg here
+	CrosshairData &Crosshairs = GetCrosshairData();	// An alias for the global crosshair data
+	
+	// No need for the window context -- it's assumed
+	Rect Bounds = {0,0,0,0};
+	
+	GetControlBounds(Ctrl, &Bounds);
+	
+	// Get ready to draw!
+	PenNormal();
+	
+	// Draw the background
+	RGBForeColor(&BkgdColor);
+	PaintRect(&Bounds);
+	
+	// Clip to inside of box
+	ClipRect(&Bounds);
+	
+	// Draw the crosshairs
+	Crosshairs_Render(Bounds);
+	
+	// Draw the boundary line
+	ForeColor(blackColor);
+	FrameRect(&Bounds);
+}
+
+
+struct Configure_Crosshair_HandlerData
+{
+	// Will need to read off of these controls
+	ControlRef ThicknessCtrl;
+	ControlRef FromCenterCtrl;
+	ControlRef LengthCtrl;
+	ControlRef OpacityCtrl;
+	ControlRef ShapeCtrl;
+	
+	ControlRef ShowCtrl;
+	// Background color is a global
+};
+
+
+static void Configure_Crosshair_Handler(ParsedControl &Ctrl, void *Data)
+{
+	Configure_Crosshair_HandlerData *HDPtr = (Configure_Crosshair_HandlerData *)Data;
+	
+	CrosshairData &Crosshairs = GetCrosshairData();	// An alias for the global crosshair data
+	
+	bool IsOK;
+	
+	switch(Ctrl.ID.id)
+	{
+	case Shape_Item:
+	case Preview_Item:
+	
+		// Update the crosshair data
+		IsOK = true;
+		
+		IsOK = IsOK && GetShort(HDPtr->ThicknessCtrl, Crosshairs.Thickness);
+		
+		IsOK = IsOK && GetShort(HDPtr->FromCenterCtrl, Crosshairs.FromCenter);
+		
+		IsOK = IsOK && GetShort(HDPtr->LengthCtrl, Crosshairs.Length);
+		
+		IsOK = IsOK && GetFloat(HDPtr->OpacityCtrl, Crosshairs.Opacity);
+		
+		if (!IsOK) SysBeep(30);
+		
+		Crosshairs.Shape = GetControl32BitValue(HDPtr->ShapeCtrl) - 1;
+		
+		Draw1Control(HDPtr->ShowCtrl);
+		
+		break;
+		
+	case GetColor_Item:
+		PickControlColor(HDPtr->ShowCtrl, &Crosshairs.Color, "\pSelect Crosshair Color");
+		break;
+		
+	case BkgdColor_Item:
+		PickControlColor(HDPtr->ShowCtrl, &BkgdColor, "\pSelect Background Color");
+		break;
+	}
+}
+
+
+// True for OK, false for cancel
+bool Configure_Crosshairs(CrosshairData &Data)
+{
+
+	// Get the window
+	AutoNibWindow Window(GUI_Nib,Window_Prefs_Crosshairs);
+
+	// Push old crosshair state;
+	// will always want to draw it
+	bool OldCrosshairActive = Crosshairs_IsActive();
+	Crosshairs_SetActive(true);
+	CrosshairData &Crosshairs = GetCrosshairData();	// An alias for the global crosshair data
+	CrosshairData OldCrosshairs = Crosshairs;
+	
+	// Get the controls
+	Configure_Crosshair_HandlerData HandlerData;
+	
+	HandlerData.ThicknessCtrl = GetCtrlFromWindow(Window(), 0, Thickness_Item);
+	SetShort(HandlerData.ThicknessCtrl, Crosshairs.Thickness);	
+	
+	HandlerData.FromCenterCtrl = GetCtrlFromWindow(Window(), 0, FromCenter_Item);
+	SetShort(HandlerData.FromCenterCtrl, Crosshairs.FromCenter);
+	
+	HandlerData.LengthCtrl = GetCtrlFromWindow(Window(), 0, Length_Item);
+	SetShort(HandlerData.LengthCtrl, Crosshairs.Length);
+	
+	HandlerData.OpacityCtrl = GetCtrlFromWindow(Window(), 0, CH_Opacity_Item);
+	SetFloat(HandlerData.OpacityCtrl, Crosshairs.Opacity);
+	
+	HandlerData.ShapeCtrl = GetCtrlFromWindow(Window(), 0, Shape_Item);
+	SetControl32BitValue(HandlerData.ShapeCtrl, Crosshairs.Shape+1);
+
+	// For making the preview drawable
+	AutoDrawability Drawability;
+	
+	HandlerData.ShowCtrl = GetCtrlFromWindow(Window(), 0, Show_Item);
+	
+	Drawability(HandlerData.ShowCtrl, PreviewDrawer);
+	
+	bool IsOK = RunModalDialog(Window(), true, Configure_Crosshair_Handler, &HandlerData);
+	
+	// Save the new color, in case we want it
+	RGBColor Color = Crosshairs.Color;
+	
+	// Pop old crosshair state
+	Crosshairs_SetActive(OldCrosshairActive);
+	Crosshairs = OldCrosshairs;
+	
+	// After that popping, just in case that data is the data being currently edited
+	if (IsOK)
+	{
+		GetShort(HandlerData.ThicknessCtrl, Crosshairs.Thickness);
+		
+		GetShort(HandlerData.FromCenterCtrl, Crosshairs.FromCenter);
+		
+		GetShort(HandlerData.LengthCtrl, Crosshairs.Length);
+		
+		GetFloat(HandlerData.OpacityCtrl, Crosshairs.Opacity);
+		
+		Crosshairs.Shape = GetControl32BitValue(HandlerData.ShapeCtrl) - 1;
+		
+		Crosshairs.Color = Color;
+	}
+	
+	// Reset OpenGL precalculation
+	Crosshairs.PreCalced = false;
+	
+	return IsOK;	
+}
+
+
+#else
 
 
 // Procedure for displaying the preview
@@ -611,3 +1029,5 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	
 	return IsOK;
 }
+
+#endif
