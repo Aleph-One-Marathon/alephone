@@ -10,6 +10,9 @@
 	the main CPU can be too slow for this.
 	
 	Note, all the context set-up and blit-to-screen is specified in OGL_Render.c/h
+
+July 16, 2000 (Loren Petrich):
+	Added begin/end pairs for managing caching of polygon and line data
 */
 
 // Special stuff for starting and ending a frame
@@ -21,17 +24,28 @@ void OGL_ResetMapFonts();
 
 // These are cribbed from overhead_map_macintosh.c
 
+void OGL_begin_overhead_polygons();
+void OGL_end_overhead_polygons();
 void OGL_draw_overhead_polygon(short vertex_count, short *vertices,
 	RGBColor &color);
+
+void OGL_begin_overhead_lines();
+void OGL_end_overhead_lines();
 void OGL_draw_overhead_line(short line_index, RGBColor &color,
 	short pen_size);
+
 void OGL_draw_overhead_thing(world_point2d &center, RGBColor &color,
 	short shape, short radius);
+
 void OGL_draw_overhead_player(world_point2d &center, angle facing, RGBColor &color,
 	short reduce, short front, short rear, short rear_theta);
+
 void OGL_draw_map_text(world_point2d &location, RGBColor &color,
 	unsigned char *text_pascal, short font, short face, short size);
+
 void OGL_SetPathDrawing(RGBColor &color);
+
 void OGL_DrawPath(short step, world_point2d &location);
+void OGL_FinishPath();
 
 #endif
