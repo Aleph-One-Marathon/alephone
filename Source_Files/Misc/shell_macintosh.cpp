@@ -92,6 +92,9 @@ Oct 12, 2000 (Loren Petrich):
 Dec 1, 2000 (Loren Petrich):
 	Added scheme for reading STR# resource 128 to find directories to read MML script files from;
 	both 'TEXT' files and 'rsrc' archives can be read.
+
+Dec 2, 2000 (Loren Petrich):
+	Added more reasonable suspend-and-resume, so as to hide and show the app properly
 */
 
 #include <exception.h>
@@ -1159,14 +1162,29 @@ static void process_event(
 			switch (event->message>>24)
 			{
 				case suspendResumeMessage:
+					// LP: added some reasonable behavior --
+					// the Marathon app will be hidden when switched away from
 					if (event->message&resumeFlag)
 					{
 						/* resume */
-						SetCursor(&qd.arrow);
+						ResumeDisplay();
+						if (get_game_state()==_game_in_progress)
+						{
+							hide_cursor();
+							set_keyboard_controller_status(true);
+						}
+						else
+							// whatever is necessary to update it
+							InvalRect(&screen_window->portRect);
 					}
 					else
 					{
 						/* suspend */
+						if (get_game_state()==_game_in_progress)
+						{
+							set_keyboard_controller_status(false);
+						}
+						SuspendDisplay();
 					}
 					break;
 			}

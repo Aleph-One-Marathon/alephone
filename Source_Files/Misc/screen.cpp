@@ -120,6 +120,9 @@ Sept 9, 2000 (Loren Petrich):
 
 Nov 29, 2000 (Loren Petrich):
 	Added making view-folding effect optional
+
+Dec 2, 2000 (Loren Petrich):
+	Added support for hiding and re-showing the app
 */
 
 /*
@@ -2343,4 +2346,33 @@ short SizeWithoutHUD(short _size)
 {
 	assert(_size >= 0 && _size < NUMBER_OF_VIEW_SIZES);
 	return ViewSizes[_size].WithoutHUD;
+}
+
+// For switching to another process and returning (suspend/resume events)
+
+void SuspendDisplay()
+{
+	// Switch resolution only if necessary
+	if (restore_spec.bit_depth != graphics_preferences->device_spec.bit_depth)
+		SetDepthGDSpec(&restore_spec);
+	
+	HideWindow(screen_window);
+	HideWindow(backdrop_window);
+	SetCursor(&qd.arrow);
+	myShowMenuBar();
+	show_cursor();
+}
+
+void ResumeDisplay()
+{
+	// The resolution may have changed when the app was switched out
+	BuildGDSpec(&restore_spec, world_device);
+	if (restore_spec.bit_depth != graphics_preferences->device_spec.bit_depth)
+		SetDepthGDSpec(&graphics_preferences->device_spec);
+	
+	SetCursor(&qd.arrow);
+	myHideMenuBar(GetMainDevice());
+	ShowWindow(backdrop_window);
+	SelectWindow(screen_window);
+	ShowWindow(screen_window);
 }

@@ -26,6 +26,9 @@ July 2, 2000 (Loren Petrich):
 Jul 5, 2000 (Loren Petrich):
 	Prepared for expanding the number of resolutions available
 	by defining a number of view sizes
+
+Dec 2, 2000 (Loren Petrich):
+	Added support for hiding and re-showing the app
 */
 
 /* ---------- constants */
@@ -126,6 +129,11 @@ short hardware_acceleration_code(GDSpecPtr spec);
 
 void activate_screen_window(WindowPtr window, EventRecord *event, bool active);
 void update_screen_window(WindowPtr window, EventRecord *event);
+
+// LP: for switching to another process and returning (suspend/resume events)
+void SuspendDisplay();
+void ResumeDisplay();
+
 #elif defined(SDL)
 void toggle_fullscreen(bool fs);
 void update_screen_window(void);
