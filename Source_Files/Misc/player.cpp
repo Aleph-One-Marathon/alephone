@@ -2675,7 +2675,7 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"half_visual_arc") == 0)
 	{
-		if (ReadNumericalValue(Value,"%hd",PlayerHalfVisualArc));
+		return (ReadNumericalValue(Value,"%hd",PlayerHalfVisualArc));
 	}
 	else if (strcmp(Tag,"half_vertical_visual_arc") == 0)
 	{
