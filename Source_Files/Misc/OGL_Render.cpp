@@ -34,7 +34,7 @@
 	
 	Added partial transparency of textures (IsBlended)
 	
-	June 11, 2000:
+June 11, 2000:
 	
 	Added support of IsSeeThrough flag for polygons
 	a texture overlaid on other visible textures is see-through,
@@ -44,9 +44,14 @@
 	
 	Made semitransparency optional if the void is on one side of the texture
 
-	July 7, 2000:
+July 7, 2000:
 	
 	Calculated center correctly in OGL_RenderCrosshairs()
+	
+Jul 8, 2000:
+
+	Modified OGL_SetView() so that one can control whether to allocate a back buffer to draw in
+	Modified OGL_Copy2D() so that one can control which buffer (front or back)
 */
 
 #include <GL/gl.h>
@@ -446,7 +451,8 @@ inline void DebugRect(Rect &R, char *Label)
 // these are calculated using the following boundary Rects:
 // The screen (gotten from its portRect)
 // The view (here, the main rendering view)
-bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds)
+// Whether to allocate a back buffer
+bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 {
 	if (!OGL_IsActive()) return false;
 	
@@ -484,16 +490,19 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds)
 	RectBounds[0] -= ScreenBounds.left;
 	RectBounds[1] += ScreenBounds.top;
 	
-	// This could not be gotten to work quite right, so a more roundabout way is being done;
-	// the screen's portRect gets offset when it is bigger than 640*480.
-	/*
-	aglEnable(RenderContext,AGL_BUFFER_RECT);
-	aglSetInteger(RenderContext,AGL_BUFFER_RECT,RectBounds);
-	*/
-	
-	// Set aside swap area
-	aglEnable(RenderContext,AGL_SWAP_RECT);
-	aglSetInteger(RenderContext,AGL_SWAP_RECT,RectBounds);
+	if (UseBackBuffer)
+	{
+		// This could not be gotten to work quite right, so a more roundabout way is being done;
+		// the screen's portRect gets offset when it is bigger than 640*480.
+		/*
+		aglEnable(RenderContext,AGL_BUFFER_RECT);
+		aglSetInteger(RenderContext,AGL_BUFFER_RECT,RectBounds);
+		*/
+		
+		// Set aside swap area
+		aglEnable(RenderContext,AGL_SWAP_RECT);
+		aglSetInteger(RenderContext,AGL_SWAP_RECT,RectBounds);
+	}
 	
 	// Do OpenGL bounding
 	glScissor(RectBounds[0], RectBounds[1], RectBounds[2], RectBounds[3]);
@@ -1946,10 +1955,13 @@ bool OGL_Get2D()
 }
 
 // Copying 2D display: status bar, overhead map, terminal
-bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool FrameEnd)
+bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool UseBackBuffer, bool FrameEnd)
 {
 	// Check to see whether to do the copying (returns false when OpenGL is inactive)
 	if (!OGL_Get2D()) return false;
+	
+	// Paint onto the currently-visible area:
+	if (!UseBackBuffer) glDrawBuffer(GL_FRONT);
 	
 	// Where to draw
 	Rect& ViewBounds = ((CGrafPtr)BufferPtr)->portRect;
@@ -2039,8 +2051,9 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	}
 	
 	// All done!
-	if (FrameEnd) aglSwapBuffers(RenderContext);	
-	
+	if (FrameEnd) aglSwapBuffers(RenderContext);		
 	UnlockPixels(Pxls);
+	if (!UseBackBuffer) glDrawBuffer(GL_BACK);
+	
 	return true;
 }
