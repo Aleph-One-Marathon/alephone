@@ -416,6 +416,9 @@ struct endpoint_data /* 16 bytes */
 };
 const int SIZEOF_endpoint_data = 16;
 
+// For loading plain points:
+const int SIZEOF_world_point2d = 4;
+
 /* ------------ line definition */
 
 #define SOLID_LINE_BIT 0x4000
