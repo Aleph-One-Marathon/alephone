@@ -68,30 +68,15 @@ static pascal void Idler(EventLoopTimerRef Timer, void *Data)
 bool quit_without_saving(
 	void)
 {
-	OSStatus err;
-	
 	// Get the window
 	AutoNibWindow Window(GUI_Nib,Window_Game_Quit_NoSave);
 	
-	// Add a timer for keeping the global idle task going	
-	EventLoopRef EventLoop = GetCurrentEventLoop();
-	EventLoopTimerRef Timer;
-	
-	EventLoopTimerUPP IdlerUPP = NewEventLoopTimerUPP(Idler);
-	err = InstallEventLoopTimer(
-			EventLoop,
-			1, 1,	// One second
-			IdlerUPP, NULL,
-			&Timer
-			);
-	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",err));
+	// Add a timer for keeping the global idle task going;
+	// it fires once a second
+	AutoTimer Timer(1, 1, Idler);
 	
 	bool HitOK = RunModalDialog(Window(), false);
 	
-	// Clean up
-	DisposeEventLoopTimerUPP(IdlerUPP);
-	RemoveEventLoopTimer(Timer);
-		
 	return HitOK;
 }
 
