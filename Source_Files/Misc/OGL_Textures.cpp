@@ -1211,6 +1211,103 @@ void OGL_ResetTextures()
 }
 
 
+void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT)
+{
+	// A lot of this is copies of TextureManager member code
+	
+	// Texture-buffer management
+	GLuint *Buffer;
+	vector<GLuint> ImageBuffer;
+	vector<GLuint> ShrunkBuffer;
+	
+	int TxtrWidth = Image.GetWidth();
+	int TxtrHeight = Image.GetHeight();
+	Buffer = Image.GetPixelBasePtr();
+	
+	bool IsInfravision = (CLUT == INFRAVISION_BITMAP_SET);
+	bool IsSilhouette = (CLUT == SILHOUETTE_BITMAP_SET);
+	
+	// Use special texture buffer because the originals may be needed for "normal" textures
+	int ImageSize = Image.GetNumPixels();
+	if (IsInfravision || IsSilhouette)
+	{
+		ImageBuffer.resize(ImageSize);
+		objlist_copy(&ImageBuffer[0],Buffer,ImageSize);
+		Buffer = &ImageBuffer[0];
+	}
+	
+	if (IsInfravision)
+	{
+		for (int k=0; k<ImageSize; k++)
+		{
+			uint32& IntPxl = Buffer[k];
+			GLfloat FloatPxl[4];
+			MakeFloatColor(IntPxl,FloatPxl);
+			FindInfravisionVersion(Collection,FloatPxl);
+			IntPxl = MakeIntColor(FloatPxl);
+		}
+	}
+	
+	if (IsSilhouette)
+	{
+		for (int k=0; k<ImageSize; k++)
+		{
+			// Make the color white, but keep the opacity
+			uint8 *PxlPtr = (uint8 *)(Buffer + k);
+			PxlPtr[0] = PxlPtr[1] = PxlPtr[2] = 0xff;
+		}
+	}
+	
+	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[OGL_Txtr_Inhabitant];
+
+	// Display size: may be shrunk
+	int LoadedWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
+	int LoadedHeight = MAX(TxtrHeight >> TxtrTypeInfo.Resolution, 1);
+	
+	if (LoadedWidth != TxtrWidth || LoadedHeight != TxtrHeight)
+	{
+		int NumPixels = int(LoadedWidth)*int(LoadedHeight);
+		ShrunkBuffer.resize(NumPixels);
+		gluScaleImage(GL_RGBA, TxtrWidth, TxtrHeight, GL_UNSIGNED_BYTE, Buffer,
+			LoadedWidth, LoadedHeight, GL_UNSIGNED_BYTE, &ShrunkBuffer[0]);
+		
+		Buffer = &ShrunkBuffer[0];
+	}
+
+	// Load the texture
+	switch(TxtrTypeInfo.FarFilter)
+	{
+	case GL_NEAREST:
+	case GL_LINEAR:
+		glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
+			0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+		break;
+	case GL_NEAREST_MIPMAP_NEAREST:
+	case GL_LINEAR_MIPMAP_NEAREST:
+	case GL_NEAREST_MIPMAP_LINEAR:
+	case GL_LINEAR_MIPMAP_LINEAR:
+		gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
+			GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+		break;
+	
+	default:
+		// Shouldn't happen
+		assert(false);
+	}
+	
+	// Set texture-mapping features
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, TxtrTypeInfo.NearFilter);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, TxtrTypeInfo.FarFilter);
+
+	
+	// Like sprites, model textures have both horizontal and vertical limits
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+}
+
+
 // Infravision (I'm blue, are you?)
 bool& IsInfravisionActive() {return InfravisionActive;}
 

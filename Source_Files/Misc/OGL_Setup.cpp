@@ -578,17 +578,20 @@ OGL_SkinData *OGL_SkinManager::GetSkin(short CLUT)
 }
 
 
-void OGL_SkinManager::Use(short CLUT, short Which)
+bool OGL_SkinManager::Use(short CLUT, short Which)
 {
 	// References so they can be written into
 	GLuint& TxtrID = IDs[CLUT][Which];
 	bool& InUse = IDsInUse[CLUT][Which];
+	bool LoadSkin = false;
 	if (!InUse)
 	{
 		glGenTextures(1,&TxtrID);
 		InUse = true;
+		LoadSkin = true;
 	}
 	glBindTexture(GL_TEXTURE_2D,TxtrID);
+	return LoadSkin;
 }
 
 

@@ -353,7 +353,7 @@ extern void OGL_ResetHUDFonts(bool IsStarting);
 // Function for rendering a 3D model
 // Returns whether or not the model could be rendered
 // (lack of a skin appropriate for the CLUT, for example)
-static bool RenderModel(rectangle_definition& RenderRectangle, short CLUT);
+static bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT);
 
 // Does the lighting and blending setup;
 // returns whether or not the texture can be glowmapped
@@ -373,7 +373,7 @@ struct ShaderDataStruct
 {
 	OGL_ModelData *ModelPtr;
 	OGL_SkinData *SkinPtr;
-	short CLUT;
+	short Collection, CLUT;
 };
 static ShaderDataStruct ShaderData;
 
@@ -1814,8 +1814,9 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			
 			// Be sure to include texture-mode effects as appropriate.
 			short CollColor = GET_DESCRIPTOR_COLLECTION(RenderRectangle.ShapeDesc);
+			short Collection = GET_COLLECTION(CollColor);
 			short CLUT = ModifyCLUT(RenderRectangle.transfer_mode,GET_COLLECTION_CLUT(CollColor));
-			RenderModel(RenderRectangle,CLUT);
+			RenderModel(RenderRectangle,Collection,CLUT);
 			
 			glPopMatrix();
 			return true;
@@ -2025,10 +2026,6 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			glEnable(GL_BLEND);
 			glAlphaFunc(GL_GREATER,0.25);
 			
-#ifdef UNUSED
-			TMgr.RenderGlowing(false);
-#endif
-			
 			TMgr.RenderGlowing();
 			glDrawArrays(GL_POLYGON,0,4);
 			
@@ -2040,7 +2037,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	return true;
 }
 
-bool RenderModel(rectangle_definition& RenderRectangle, short CLUT)
+bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT)
 {
 	OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
 	assert(ModelPtr);
@@ -2055,6 +2052,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short CLUT)
 	
 	ShaderData.ModelPtr = ModelPtr;
 	ShaderData.SkinPtr = SkinPtr;
+	ShaderData.Collection = Collection;
 	ShaderData.CLUT = CLUT;
 	
 	if (RenderRectangle.transfer_mode == _static_transfer)
@@ -2130,7 +2128,8 @@ void NormalShader(void *Data)
 {
 	// Normal setup: nothing special
 	
-	ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Glowing);
+	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Normal))
+		LoadModelSkin(ShaderData.SkinPtr->NormalImg,ShaderData.Collection, ShaderData.CLUT);
 }
 
 void GlowingShader(void *Data)
@@ -2140,7 +2139,8 @@ void GlowingShader(void *Data)
 	glEnable(GL_BLEND);
 	glAlphaFunc(GL_GREATER,0.25);
 	
-	ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Glowing);
+	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Glowing))
+		LoadModelSkin(ShaderData.SkinPtr->GlowImg, ShaderData.Collection, ShaderData.CLUT);
 }
 
 

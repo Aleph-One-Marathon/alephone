@@ -264,6 +264,8 @@ extern GLuint *ConversionTable_16to32;
 extern void MakeConversion_16to32(int BitDepth);
 */
 
+void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT);
+
 // Infravision (I'm blue, are you?)
 bool& IsInfravisionActive();
 

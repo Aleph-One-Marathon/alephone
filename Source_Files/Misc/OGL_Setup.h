@@ -285,7 +285,7 @@ struct OGL_SkinManager
 	void Reset();	// Resets the skins so that they may be reloaded
 	
 	OGL_SkinData *GetSkin(short CLUT);		// Gets a pointer to a skin-data object; NULL for no skin available
-	void Use(short CLUT, short Which);		// Uses a skin	
+	bool Use(short CLUT, short Which);		// Uses a skin; returns whether to load one	
 	
 	// For convenience
 	void Load();
