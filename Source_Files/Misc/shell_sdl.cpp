@@ -493,6 +493,10 @@ static void handle_game_key(const SDL_Event &event)
 			break;
 		}
 
+		case SDLK_ESCAPE:
+			do_menu_item_command(mGame, iQuitGame, false);
+			break;
+
 		case SDLK_F1:	// Decrease screen size
 			if (graphics_preferences->screen_mode.size > 0) {
 				graphics_preferences->screen_mode.size--;
@@ -586,7 +590,7 @@ static void process_game_key(const SDL_Event &event)
 {
 	switch (get_game_state()) {
 		case _game_in_progress:
-			if (event.key.keysym.mod & KMOD_META) {
+			if (event.key.keysym.mod & KMOD_CTRL) {
 				int item = -1;
 				switch (event.key.keysym.sym) {
 					case SDLK_p: item = iPause; break;
