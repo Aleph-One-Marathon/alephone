@@ -328,7 +328,8 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 
 	// Copy the text to draw
 	char text_to_draw[256];
-	strcpy(text_to_draw, text);
+	strncpy(text_to_draw, text, 256);
+	text_to_draw[255] = 0;
 
 	// Check for wrapping, and if it occurs, be recursive
 	if (flags & _wrap_text) {
@@ -399,8 +400,7 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 
 static TextSpec NullSpec = {0, 0, 0};
 
-TextSpec *_get_font_spec(
-	short font_index)
+TextSpec *_get_font_spec(short font_index)
 {
 	return &NullSpec;
 }
@@ -515,19 +515,6 @@ void _frame_rect(screen_rectangle *rectangle, short color_index)
 void _erase_screen(short color_index)
 {
 	_fill_rect(NULL, color_index);
-}
-
-
-/*
- *  Move rectangle
- */
-
-void _offset_screen_rect(screen_rectangle *rect, short dx, short dy)
-{
-	rect->top += dy;
-	rect->left += dx;
-	rect->bottom += dy;
-	rect->right += dx;
 }
 
 
@@ -935,12 +922,6 @@ void _get_player_color(short color_index, RGBColor *color)
 /*
  *  Rectangle XML parser
  */
-
-screen_rectangle *get_interface_rectangle(short index)
-{
-	assert(index>=0 && index<NUMBER_OF_INTERFACE_RECTANGLES);
-	return interface_rectangles + index;
-}
 
 static void load_interface_rectangles(void)
 {

@@ -341,8 +341,12 @@ static bool OnePassMultitexturing = false;
 
 
 // Function for resetting map fonts when starting up an OpenGL rendering context;
-// defined in OGL_Map.c
+// defined in overhead_map.cpp
 extern void OGL_ResetMapFonts(bool IsStarting);
+
+// Function for resetting HUD fonts when starting up an OpenGL rendering context;
+// defined in game_window.cpp
+extern void OGL_ResetHUDFonts(bool IsStarting);
 
 
 #ifdef mac
@@ -477,8 +481,9 @@ bool OGL_StartRun()
 	// Initialize the on-screen font for OpenGL rendering
 	GetOnScreenFont().OGL_Reset(true);
 	
-	// Reset the font into for overhead-map fonts done in OpenGL fashion
+	// Reset the font into for overhead-map and HUD fonts done in OpenGL fashion
 	OGL_ResetMapFonts(true);
+	OGL_ResetHUDFonts(true);
 		
 	// Success!
 	JustInited = true;

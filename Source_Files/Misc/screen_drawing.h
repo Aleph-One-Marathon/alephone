@@ -118,14 +118,15 @@ void _scroll_window(short dy, short rectangle_id, short background_color_index);
 void _fill_screen_rectangle(screen_rectangle *rectangle, short color_index);
 	
 screen_rectangle *get_interface_rectangle(short index);
+const rgb_color &get_interface_color(short index);
+class FontSpecifier;
+FontSpecifier &get_interface_font(short index);
 
 short _get_font_line_height(short font_index);
 
 void _fill_rect(screen_rectangle *rectangle, short color_index);
 
 void _frame_rect(screen_rectangle *rectangle, short color_index);
-
-void _offset_screen_rect(screen_rectangle *rect, short dx, short dy);
 
 // LP addition: stuff to use a buffer for the Heads-Up Display
 void _set_port_to_HUD();

@@ -1,5 +1,10 @@
 Change log of the SDL version of Aleph One
 
+August 2, 2001
+ - added OpenGL HUD rendering (controlled by OGL_Flag_HUD, similar to the
+   overhead map); motion sensor is not yet implemented but everything else
+   should work
+
 March 12, 2001
  - added support for M2/Win95 music file (uncompressed WAV)
 

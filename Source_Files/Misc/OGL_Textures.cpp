@@ -67,6 +67,7 @@ June 14, 2001 (Loren Petrich):
 #include "interface.h"
 #include "render.h"
 #include "map.h"
+#include "collection_definition.h"
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
@@ -261,8 +262,7 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, uint32 *Col
 	// Stretch the original color table to 4 bytes per value for OpenGL convenience;
 	// all the intermediate calculations will be done in RGBA 8888 form,
 	// because that is what OpenGL prefers as a texture input
-	switch(NumSrcBytes)
-	{
+	switch(NumSrcBytes) {
 	case 2:
 		for (int k=0; k<MAXIMUM_SHADING_TABLE_INDEXES; k++)
 		{
@@ -800,9 +800,26 @@ void TextureManager::FindColorTables()
 			NormalColorTable[k] = 0xffffffff;
 		return;
 	}
+
+	// Interface collection? Then use the CLUT directly
+	if (Collection == 0) {
+		int num_colors;
+		struct rgb_color_value *q = get_collection_colors(Collection, CTable, num_colors);
+		uint8 *p = (uint8 *)NormalColorTable;
+		for (int k=0; k<num_colors; k++) {
+			int idx = q[k].value;
+			p[idx * 4 + 0] = q[k].red >> 8;
+			p[idx * 4 + 1] = q[k].green >> 8;
+			p[idx * 4 + 2] = q[k].blue >> 8;
+			p[idx * 4 + 3] = 0xff;
+		}
+		SetPixelOpacities(*TxtrOptsPtr, MAXIMUM_SHADING_TABLE_INDEXES, NormalColorTable);
+		NormalColorTable[0] = 0;
+		return;
+	}
 	
 	// Number of source bytes, for reading off of the shading table
-	short NumSrcBytes = bit_depth/8;
+	short NumSrcBytes = bit_depth / 8;
 	
 	// Shadeless polygons use the first, instead of the last, shading table
 	byte *OrigColorTable = (byte *)ShadingTables;
@@ -1153,6 +1170,7 @@ TextureManager::~TextureManager()
 
 extern void ResetScreenFont();
 extern void OGL_ResetMapFonts(bool IsStarting);
+extern void OGL_ResetHUDFonts(bool IsStarting);
 
 void OGL_ResetTextures()
 {
@@ -1179,6 +1197,7 @@ void OGL_ResetTextures()
 	// Reset the font textures
 	ResetScreenFont();
 	OGL_ResetMapFonts(false);
+	OGL_ResetHUDFonts(false);
 }
 
 

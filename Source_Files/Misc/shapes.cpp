@@ -1934,9 +1934,7 @@ static void *collection_offset(
 static struct collection_definition *get_collection_definition(
 	short collection_index)
 {
-	struct collection_definition *collection= get_collection_header(collection_index)->collection;
-	
-	return collection;
+	return get_collection_header(collection_index)->collection;
 }
 
 static struct rgb_color_value *get_collection_colors(
@@ -1947,6 +1945,19 @@ static struct rgb_color_value *get_collection_colors(
 
 	if (!(clut_number>=0&&clut_number<definition->clut_count)) return NULL;
 	
+	return (struct rgb_color_value *) collection_offset(definition, definition->color_table_offset+clut_number*sizeof(struct rgb_color_value)*definition->color_count);
+}
+
+struct rgb_color_value *get_collection_colors(
+	short collection_index,
+	short clut_number,
+	int &num_colors)
+{
+	struct collection_definition *definition= get_collection_definition(collection_index);
+
+	if (!(clut_number>=0&&clut_number<definition->clut_count)) return NULL;
+
+	num_colors = definition->color_count;
 	return (struct rgb_color_value *) collection_offset(definition, definition->color_table_offset+clut_number*sizeof(struct rgb_color_value)*definition->color_count);
 }
 

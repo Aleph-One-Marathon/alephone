@@ -122,6 +122,7 @@ enum
 	OGL_Flag_LiqSeeThru	= 0x0100,	// Whether the liquids can be seen through
 	OGL_Flag_Map		= 0x0200,	// Whether to do the overhead map with OpenGL
 	OGL_Flag_TextureFix	= 0x0400,	// Whether to apply a texture fix for old Apple OpenGL
+	OGL_Flag_HUD		= 0x0800,	// Whether to do the HUD with OpenGL
 };
 
 struct OGL_ConfigureData

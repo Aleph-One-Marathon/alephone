@@ -328,6 +328,8 @@ static void opengl_dialog(void *arg)
 	d.add(liq_w);
 	w_toggle *map_w = new w_toggle("OpenGL Overhead Map", prefs.Flags & OGL_Flag_Map);
 	d.add(map_w);
+	w_toggle *hud_w = new w_toggle("OpenGL HUD", prefs.Flags & OGL_Flag_HUD);
+	d.add(hud_w);
 	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
@@ -348,6 +350,7 @@ static void opengl_dialog(void *arg)
 		if (fader_w->get_selection()) flags |= OGL_Flag_Fader;
 		if (liq_w->get_selection()) flags |= OGL_Flag_LiqSeeThru;
 		if (map_w->get_selection()) flags |= OGL_Flag_Map;
+		if (hud_w->get_selection()) flags |= OGL_Flag_HUD;
 
 		if (flags != prefs.Flags) {
 			prefs.Flags = flags;

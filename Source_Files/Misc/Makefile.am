@@ -4,13 +4,14 @@ bin_PROGRAMS = alephone
 
 alephone_SOURCES = \
   AnimatedTextures.h ChaseCam.h ColorParser.h Crosshairs.h DamageParser.h \
-  FileHandler.h FontHandler.h ImageLoader.h ISp_Support.h OGL_Faders.h \
-  OGL_Render.h OGL_Setup.h OGL_Textures.h OverheadMap_OGL.h OverheadMap_SDL.h \
-  OverheadMapRenderer.h PlayerName.h Random.h Rasterizer.h Rasterizer_OGL.h \
-  Rasterizer_SW.h RenderPlaceObjs.h RenderRasterize.h RenderSortPoly.h \
-  RenderVisTree.h ShapesParser.h TextStrings.h VectorOps.h ViewControl.h \
-  XML_Configure.h XML_DataBlock.h XML_ElementParser.h XML_LevelScript.h \
-  XML_ParseTreeRoot.h XML_Loader_SDL.h \
+  FileHandler.h FontHandler.h HUDRenderer.h HUDRenderer_SW.h HUDRenderer_OGL.h \
+  ImageLoader.h ISp_Support.h OGL_Faders.h OGL_Render.h OGL_Setup.h \
+  OGL_Textures.h OverheadMap_OGL.h OverheadMap_SDL.h OverheadMapRenderer.h \
+  PlayerName.h Random.h Rasterizer.h Rasterizer_OGL.h Rasterizer_SW.h \
+  RenderPlaceObjs.h RenderRasterize.h RenderSortPoly.h RenderVisTree.h \
+  ShapesParser.h TextStrings.h VectorOps.h ViewControl.h XML_Configure.h \
+  XML_DataBlock.h XML_ElementParser.h XML_LevelScript.h XML_ParseTreeRoot.h \
+  XML_Loader_SDL.h \
   collection_definition.h computer_interface.h crc.h dynamic_limits.h editor.h \
   effect_definitions.h effects.h extensions.h fades.h find_files.h flood_map.h \
   game_errors.h game_wad.h game_window.h images.h interface.h interface_menus.h \
@@ -26,13 +27,14 @@ alephone_SOURCES = \
   weapons.h world.h \
   \
   AnimatedTextures.cpp ChaseCam.cpp ColorParser.cpp Crosshairs_SDL.cpp \
-  DamageParser.cpp FileHandler_SDL.cpp FontHandler.cpp ImageLoader_SDL.cpp \
-  OGL_Faders.cpp OGL_Render.cpp OGL_Setup.cpp OGL_Textures.cpp \
-  OverheadMap_OGL.cpp OverheadMap_SDL.cpp OverheadMapRenderer.cpp Packing.h \
-  PlayerName.cpp RenderPlaceObjs.cpp RenderRasterize.cpp RenderSortPoly.cpp \
-  RenderVisTree.cpp ShapesParser.cpp TextStrings.cpp ViewControl.cpp \
-  XML_Configure.cpp XML_DataBlock.cpp XML_ElementParser.cpp XML_LevelScript.cpp \
-  XML_MakeRoot.cpp XML_Loader_SDL.cpp \
+  DamageParser.cpp FileHandler_SDL.cpp FontHandler.cpp HUDRenderer.cpp \
+  HUDRenderer_SW.cpp HUDRenderer_OGL.cpp ImageLoader_SDL.cpp OGL_Faders.cpp \
+  OGL_Render.cpp OGL_Setup.cpp OGL_Textures.cpp OverheadMap_OGL.cpp \
+  OverheadMap_SDL.cpp OverheadMapRenderer.cpp Packing.h PlayerName.cpp \
+  RenderPlaceObjs.cpp RenderRasterize.cpp RenderSortPoly.cpp RenderVisTree.cpp \
+  ShapesParser.cpp TextStrings.cpp ViewControl.cpp XML_Configure.cpp \
+  XML_DataBlock.cpp XML_ElementParser.cpp XML_LevelScript.cpp XML_MakeRoot.cpp \
+  XML_Loader_SDL.cpp \
   computer_interface.cpp crc.cpp devices.cpp dynamic_limits.cpp effects.cpp \
   fades.cpp find_files_sdl.cpp flood_map.cpp game_errors.cpp game_wad.cpp \
   game_window.cpp game_window_sdl.cpp images.cpp import_definitions.cpp \

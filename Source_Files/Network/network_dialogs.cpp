@@ -1938,57 +1938,6 @@ static void draw_player_box_with_team(
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* -------------------------- Statics for PostGame Carnage Report (redone) (sorta) */
 
 // #include "network_games.h"

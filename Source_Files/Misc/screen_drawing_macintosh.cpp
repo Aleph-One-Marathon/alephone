@@ -47,6 +47,7 @@ void _restore_port(
 {
 	assert(old_graphics_port && old_graphics_device && destination_graphics_port);
 	SetGWorld(old_graphics_port, old_graphics_device);
+	SetOrigin(0, 0);
 	old_graphics_port= NULL;
 	old_graphics_device= NULL;
 	destination_graphics_port= NULL;
@@ -447,13 +448,6 @@ void _draw_screen_text(
 	SetFont(&old_font);
 }
 
-screen_rectangle *get_interface_rectangle(
-	short index)
-{
-	assert(index>=0 && index<NUMBER_OF_INTERFACE_RECTANGLES);
-	return interface_rectangles+index;
-}
-
 void _erase_screen(
 	short color_index)
 {
@@ -494,14 +488,6 @@ void _frame_rect(
 	RGBForeColor(&new_color);
 	FrameRect((Rect *) rectangle);
 	RGBForeColor(&old_color);
-}
-
-void _offset_screen_rect(
-	screen_rectangle *rect, 
-	short dx, 
-	short dy)
-{
-	OffsetRect((Rect *) rect, dx, dy);
 }
 
 static TextSpec NullSpec = {0, 0, 0};
@@ -691,4 +677,5 @@ void _set_port_to_HUD()
 	GetGWorld(&old_graphics_port, &old_graphics_device);
 	SetGWorld(HUD_Buffer, NULL);
 	destination_graphics_port= (GrafPtr)HUD_Buffer;
+	SetOrigin(0, 320);
 }

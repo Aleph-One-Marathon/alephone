@@ -30,6 +30,8 @@ Jan 14, 2001 (Loren Petrich):
 #endif
 
 
+struct screen_rectangle;
+
 struct FontSpecifier
 {
 	enum {
@@ -52,6 +54,8 @@ struct FontSpecifier
 	// Derived quantities: sync with parameters by calling Update()
 	short Height;			// How tall is it?
 	short LineSpacing;		// From same positions in each line
+	short Ascent, Descent, Leading;
+	short Widths[256];
 	
 	// MacOS- and SDL-specific stuff
 #if defined(mac)
@@ -76,6 +80,9 @@ struct FontSpecifier
 	
 	// Get text width for text that must be centered (map title)
 	int TextWidth(char *Text);
+
+	// Get width of one character
+	int CharWidth(char c) const { return Widths[c]; }
 	
 #ifdef HAVE_OPENGL	
 	// Reset the OpenGL fonts; its arg indicates whether this is for starting an OpenGL session
@@ -87,6 +94,10 @@ struct FontSpecifier
 	// Alters the modelview matrix so that the next characters will be drawn at the proper place.
 	// One can surround it with glPushMatrix() and glPopMatrix() to remember the original.
 	void OGL_Render(const char *Text);
+
+	// Renders text a la _draw_screen_text() (see screen_drawing.h), with
+	// alignment and wrapping. Modelview matrix is unaffected.
+	void OGL_DrawText(const char *Text, const screen_rectangle &r, short flags);
 #endif
 	
 	// Equality and assignment operators

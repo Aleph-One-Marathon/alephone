@@ -27,10 +27,8 @@ Jan 12, 2001 (Loren Petrich):
 #include <string.h>
 #include "FontHandler.h"
 
-#ifdef SDL
 #include "shape_descriptors.h"
 #include "screen_drawing.h"
-#endif
 
 
 // MacOS-specific: stuff that gets reused
@@ -113,8 +111,14 @@ void FontSpecifier::Update()
 	FontInfo Info;
 	GetFontInfo(&Info);
 	
-	Height = Info.ascent+Info.leading;
-	LineSpacing = Info.ascent+Info.descent+Info.leading;
+	Ascent = Info.ascent;
+	Descent = Info.descent;
+	Leading = Info.leading;
+	Height = Ascent + Leading;
+	LineSpacing = Ascent + Descent + Leading;
+
+	for (int k=0; k<256; k++)
+		Widths[k] = ::CharWidth(k);
 	
 	// pop old font
 	SetFont(&OldFont);
@@ -173,19 +177,27 @@ void FontSpecifier::Update()
 	Info = load_font(Spec);
 	
 	if (Info) {
-		Height = Info->ascent+Info->leading;
-		LineSpacing = Info->ascent+Info->descent+Info->leading;
+		Ascent = Info->ascent;
+		Descent = Info->descent;
+		Leading = Info->leading;
+		Height = Ascent + Leading;
+		LineSpacing = Ascent + Descent + Leading;
+		for (int k=0; k<256; k++)
+			Widths[k] = char_width(k, Info, Style);
 	} else
-		Height = LineSpacing = 0;
+		Ascent = Descent = Leading = Height = LineSpacing = 0;
 }
 
 // Defined in screen_drawing_sdl.cpp
-extern int text_width(const char *text, const sdl_font_info *font, uint16 style);
 extern int char_width(uint8 c, const sdl_font_info *font, uint16 style);
 
-int FontSpecifier::TextWidth(char *Text)
+int FontSpecifier::TextWidth(char *text)
 {
-	return text_width(Text, Info, Style);
+	int width = 0;
+	char c;
+	while ((c = *text++) != 0)
+		width += Widths[c];
+	return width;
 }
 
 #endif
@@ -200,7 +212,7 @@ inline int NextPowerOfTwo(int n)
 }
 
 
-#ifdef HAVE_OPENGL		
+#ifdef HAVE_OPENGL
 // Reset the OpenGL fonts; its arg indicates whether this is for starting an OpenGL session
 // (this is to avoid texture and display-list memory leaks and other such things)
 void FontSpecifier::OGL_Reset(bool IsStarting)
@@ -220,49 +232,22 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 		OGL_Texture = NULL;
 	}
 	
-	// Get horizontal and vertical extents of the glyphs;
-	// will assume only 1-byte fonts.
-	short Ascent = 0, Descent = 0;
-	short Widths[256];
-	
-#if defined(mac)
-	TextSpec OldFont;
-	GetFont(&OldFont);
-	
-	Use();
-	FontInfo MFInfo;
-	GetFontInfo(&MFInfo);
-	
-	Ascent = MFInfo.ascent;
-	Descent = MFInfo.descent;
-	for (int k=0; k<256; k++)
-		Widths[k] = CharWidth(k);
-	
-	SetFont(&OldFont);
-
-#elif defined(SDL)
-	Ascent = Info->ascent;
-	Descent = Info->descent;
-	for (int k = 0; k < 256; k++)
-		Widths[k] = char_width(k, Info, Style);
-#endif
-		
 	// Put some padding around each glyph so as to avoid clipping it
-	const short Pad = 1;
-	Ascent += Pad;
-	Descent += Pad;
-	for (int k=0; k<256; k++)
-		Widths[k] += 2*Pad;
+	const int Pad = 1;
+	int ascent_p = Ascent + Pad, descent_p = Descent + Pad;
+	int widths_p[256];
+	for (int i=0; i<256; i++)
+		widths_p[i] = Widths[i] + 2*Pad;
 	
 	// Now for the totals and dimensions
 	int TotalWidth = 0;
 	for (int k=0; k<256; k++)
-		TotalWidth += Widths[k];
+		TotalWidth += widths_p[k];
 	
 	// For an empty font, clear out
 	if (TotalWidth <= 0) return;
 	
-	int GlyphHeight = Ascent + Descent;
+	int GlyphHeight = ascent_p + descent_p;
 	
 	int EstDim = int(sqrt(TotalWidth*GlyphHeight) + 0.5);
 	TxtrWidth = MAX(128, NextPowerOfTwo(EstDim));
@@ -276,12 +261,12 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	for (int k=0; k<256; k++)
 	{
 		// Over the edge? If so, then start a new line
-		short NewPos = Pos + Widths[k];
+		short NewPos = Pos + widths_p[k];
 		if (NewPos > TxtrWidth)
 		{
 			LastLine++;
 			CharStarts[LastLine] = k;
-			Pos = Widths[k];
+			Pos = widths_p[k];
 			CharCounts[LastLine] = 1;
 		} else {
 			Pos = NewPos;
@@ -316,13 +301,13 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  	for (int k=0; k<=LastLine; k++)
  	{
  		int Which = CharStarts[k];
- 		int VPos = k*GlyphHeight + Ascent;
+ 		int VPos = k*GlyphHeight + ascent_p;
  		int HPos = Pad;
  		for (int m=0; m<CharCounts[k]; m++)
  		{
  			MoveTo(HPos,VPos);
  			DrawChar(Which);
- 			HPos += Widths[Which++];
+ 			HPos += widths_p[Which++];
  		}
  	}
 
@@ -340,12 +325,12 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	for (int k = 0; k <= LastLine; k++)
 	{
 		char Which = CharStarts[k];
-		int VPos = (k * GlyphHeight) + Ascent;
+		int VPos = (k * GlyphHeight) + ascent_p;
 		int HPos = Pad;
 		for (int m = 0; m < CharCounts[k]; m++)
 		{
 			::draw_text(FontSurface, &Which, 1, HPos, VPos, White, Info, Style);
-			HPos += Widths[Which++];
+			HPos += widths_p[Which++];
 		}
 	}
 #endif
@@ -422,7 +407,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  		int Pos = 0;
  		for (int m=0; m<CharCounts[k]; m++)
  		{
- 			short Width = Widths[Which];
+ 			short Width = widths_p[Which];
  			int NewPos = Pos + Width;
  			GLfloat Left = TWidNorm*Pos;
  			GLfloat Right = TWidNorm*NewPos;
@@ -433,16 +418,16 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  			glBegin(GL_POLYGON);
  			
  			glTexCoord2f(Left,Top);
-  			glVertex2s(0,-Ascent);
+  			glVertex2s(0,-ascent_p);
   			
  			glTexCoord2f(Right,Top);
-  			glVertex2s(Width,-Ascent);
+  			glVertex2s(Width,-ascent_p);
   			
  			glTexCoord2f(Right,Bottom);
- 			glVertex2s(Width,Descent);
+ 			glVertex2s(Width,descent_p);
  			
  			glTexCoord2f(Left,Bottom);
-			glVertex2s(0,Descent);
+			glVertex2s(0,descent_p);
 			
 			glEnd();
 			
@@ -486,7 +471,98 @@ void FontSpecifier::OGL_Render(const char *Text)
 	
 	glPopAttrib();
 }
-#endif
+
+
+// Renders text a la _draw_screen_text() (see screen_drawing.h), with
+// alignment and wrapping. Modelview matrix is unaffected.
+void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, short flags)
+{
+	// Copy the text to draw
+	char text_to_draw[256];
+	strncpy(text_to_draw, text, 256);
+	text_to_draw[255] = 0;
+
+	// Check for wrapping, and if it occurs, be recursive
+	if (flags & _wrap_text) {
+		int last_non_printing_character = 0, text_width = 0, count = 0;
+		while (count < strlen(text_to_draw) && text_width < RECTANGLE_WIDTH(&r)) {
+			text_width += CharWidth(text_to_draw[count]);
+			if (text_to_draw[count] == ' ')
+				last_non_printing_character = count;
+			count++;
+		}
+		
+		if( count != strlen(text_to_draw)) {
+			char remaining_text_to_draw[256];
+			
+			// If we ever have to wrap text, we can't also center vertically. Sorry.
+			flags &= ~_center_vertical;
+			flags |= _top_justified;
+			
+			// Pass the rest of it back in, recursively, on the next line
+			memcpy(remaining_text_to_draw, text_to_draw + last_non_printing_character + 1, strlen(text_to_draw + last_non_printing_character + 1) + 1);
+	
+			screen_rectangle new_destination = r;
+			new_destination.top += LineSpacing;
+			OGL_DrawText(remaining_text_to_draw, new_destination, flags);
+	
+			// Now truncate our text to draw
+			text_to_draw[last_non_printing_character] = 0;
+		}
+	}
+
+	// Truncate text if necessary
+	int t_width = TextWidth(text_to_draw);
+	if (t_width > RECTANGLE_WIDTH(&r)) {
+		int width = 0;
+		int num = 0;
+		char c, *p = text_to_draw;
+		while ((c = *p++) != 0) {
+			width += CharWidth(c);
+			if (width > RECTANGLE_WIDTH(&r))
+				break;
+			num++;
+		}
+		text_to_draw[num] = 0;
+		t_width = TextWidth(text_to_draw);
+	}
+
+
+	// Horizontal positioning
+	int x, y;
+	if (flags & _center_horizontal)
+		x = r.left + ((RECTANGLE_WIDTH(&r) - t_width) / 2);
+	else if (flags & _right_justified)
+		x = r.right - t_width;
+	else
+		x = r.left;
+
+	// Vertical positioning
+	if (flags & _center_vertical) {
+		if (Height > RECTANGLE_HEIGHT(&r))
+			y = r.top;
+		else {
+			y = r.bottom;
+			int offset = RECTANGLE_HEIGHT(&r) - Height;
+			y -= (offset / 2) + (offset & 1) + 1;
+		}
+	} else if (flags & _top_justified) {
+		if (Height > RECTANGLE_HEIGHT(&r))
+			y = r.bottom;
+		else
+			y = r.top + Height;
+	} else
+		y = r.bottom;
+
+	// Draw text
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(x, y, 0);
+	OGL_Render(text_to_draw);
+	glPopMatrix();
+}
+#endif // def HAVE_OPENGL
 
 	
 // Given a pointer to somewhere in a name set, returns the pointer

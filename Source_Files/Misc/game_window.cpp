@@ -38,19 +38,16 @@ Jul 16, 2001 (Loren Petrich):
 */
 
 #include "cseries.h"
-#include <string.h>
-#include <stdio.h>
 
-#include "map.h"
-#include "interface.h"
-#include "player.h"
-#include "screen_drawing.h"
-#include "motion_sensor.h"
-#include "mysound.h"
-#include "items.h"
-#include "weapons.h"
+#ifdef HAVE_OPENGL
+#include <GL/gl.h>
+#endif
+
+#include "HUDRenderer_SW.h"
+#include "HUDRenderer_OGL.h"
 #include "game_window.h"
-#include "network_games.h"
+#include "screen_definitions.h"
+#include "images.h"
 
 // LP addition: color and font parsers
 #include "ColorParser.h"
@@ -62,163 +59,17 @@ Jul 16, 2001 (Loren Petrich):
 #endif
 
 extern void draw_panels(void);
-
-/* --------- constants */
-
-#define TEXT_INSET 2
-#define NAME_OFFSET 23
-#define TOP_OF_BAR_WIDTH 8
-
-#define MOTION_SENSOR_SIDE_LENGTH 123
-#define DELAY_TICKS_BETWEEN_OXYGEN_REDRAW (2*TICKS_PER_SECOND)
-#define RECORDING_LIGHT_FLASHING_DELAY (TICKS_PER_SECOND)
-
-#define MICROPHONE_STOP_CLICK_SOUND ((short) 1250)
-#define MICROPHONE_START_CLICK_SOUND ((short) 1280)
-
-#define TOP_OF_BAR_HEIGHT 4
-
-/* ---------- flag macros */
-/* Note for reference: */
-/* enum { _weapon, _ammunition, _powerup, NUMBER_OF_ITEM_TYPES }; */
-
-#define INVENTORY_MASK_BITS 0x0007
-#define INVENTORY_DIRTY_BIT 0x0010
-#define INTERFACE_DIRTY_BIT 0x0020
-
-#define GET_CURRENT_INVENTORY_SCREEN(p) ((p)->interface_flags & INVENTORY_MASK_BITS)
-static void set_current_inventory_screen(short player_index, short screen);
-
-#define INVENTORY_IS_DIRTY(p) ((p)->interface_flags & INVENTORY_DIRTY_BIT)
-#define SET_INVENTORY_DIRTY_STATE(p, v) ((void)((v)?((p)->interface_flags|=(uint16)INVENTORY_DIRTY_BIT):((p)->interface_flags&=(uint16)~INVENTORY_DIRTY_BIT)))
-
-#define INTERFACE_IS_DIRTY(p) ((p)->interface_flags & INTERFACE_DIRTY_BIT)
-#define SET_INTERFACE_DIRTY_STATE(p, v) ((v)?((p)->interface_flags |= INTERFACE_DIRTY_BIT):(p)->interface_flags &= ~INTERFACE_DIRTY_BIT)
-
-/* ---------- enums */
-/* texture id's */
-enum {
-	_empty_energy_bar=0,
-	_energy_bar,
-	_energy_bar_right,
-	_double_energy_bar,
-	_double_energy_bar_right,
-	_triple_energy_bar,
-	_triple_energy_bar_right,
-	_empty_oxygen_bar,
-	_oxygen_bar,
-	_oxygen_bar_right,
-	_motion_sensor_mount,
-	_motion_sensor_virgin_mount,
-	_motion_sensor_alien,
-	_motion_sensor_friend= _motion_sensor_alien+6,
-	_motion_sensor_enemy= _motion_sensor_friend+6,
-	_network_panel= _motion_sensor_enemy+6,
-
-	_magnum_bullet,
-	_magnum_casing,
-	_assault_rifle_bullet,
-	_assault_rifle_casing,
-	_alien_weapon_panel,
-	_flamethrower_panel,
-	_magnum_panel,
-	_left_magnum,
-	_zeus_panel,
-	_assault_panel,
-	_missile_panel,
-	_left_magnum_unusable,
-	_assault_rifle_grenade,
-	_assault_rifle_grenade_casing,
-	_shotgun_bullet,
-	_shotgun_casing,
-	_single_shotgun,
-	_double_shotgun,
-	_missile,
-	_missile_casing,
-	
-	_network_compass_shape_nw,
-	_network_compass_shape_ne,
-	_network_compass_shape_sw,
-	_network_compass_shape_se,
-
-	_skull,
-	
-	// LP additions:
-	_smg,
-	_smg_bullet,
-	_smg_casing,
-
-	
-	/* These are NOT done. */
-	_mike_button_unpressed,
-	_mike_button_pressed
-};
-
-enum {
-	_unused_interface_data,
-	_uses_energy,
-	_uses_bullets
-};
-
-enum { /* Passed to update_ammo_display_in_panel */
-	_primary_interface_ammo,
-	_secondary_interface_ammo,
-	NUMBER_OF_WEAPON_INTERFACE_ITEMS
-};
-
-/* ------------ structures */
-struct weapon_interface_ammo_data 
-{
-	short type;
-	short screen_left;
-	short screen_top;
-	short ammo_across; /* max energy for beam weapons */
-	short ammo_down; /* Unused for energy weapons */
-	short delta_x; /* Or width, if uses energy */
-	short delta_y; /* Or height if uses energy */
-	shape_descriptor bullet;	 /* or fill color index */
-	shape_descriptor empty_bullet; /* or empty color index */
-	bool right_to_left; /* Which way do the bullets go as they are used? */
-};
-
-struct weapon_interface_data 
-{
-	short item_id;
-	short weapon_panel_shape;
-	short weapon_name_start_y;
-	short weapon_name_end_y;
-	short weapon_name_start_x;	/* NONE means center in the weapon rectangle */
-	short weapon_name_end_x;	/* NONE means center in the weapon rectangle */
-	short standard_weapon_panel_top;
-	short standard_weapon_panel_left;
-	bool multi_weapon;
-	struct weapon_interface_ammo_data ammo_data[NUMBER_OF_WEAPON_INTERFACE_ITEMS];
-};
-
-struct interface_state_data
-{
-	bool ammo_is_dirty;
-	bool weapon_is_dirty;
-	bool shield_is_dirty;
-	bool oxygen_is_dirty;
-};
-
 extern void validate_world_window(void);
+static void set_current_inventory_screen(short player_index, short screen);
 
 /* --------- globals */
 
 // LP addition: whether or not the motion sensor is active
-static bool MotionSensorActive = true;
+bool MotionSensorActive = true;
 
-// LP addition: whether= to force an update of the HUD display;
-// the purpose is to avoid redrawing the HUD more than is necessary.
-static bool ForceUpdate = false;
+struct interface_state_data interface_state;
 
-static struct interface_state_data interface_state;
-
-#define MAXIMUM_WEAPON_INTERFACE_DEFINITIONS (sizeof(weapon_interface_definitions)/sizeof(struct weapon_interface_data))
-
-struct weapon_interface_data weapon_interface_definitions[]=
+struct weapon_interface_data weapon_interface_definitions[10] =
 {
 	/* Mac, the knife.. */
 	{
@@ -362,33 +213,21 @@ struct weapon_interface_data weapon_interface_definitions[]=
 	},
 };
 
+// Is OpenGL rendering of the HUD currently active?
+bool OGL_HUDActive = false;
 
-/* --------- private prototypes */
-static void update_inventory_panel(bool force_redraw);
-static void update_motion_sensor(short time_elapsed);
-static void update_weapon_panel(bool force_redraw);
-static void update_ammo_display(bool force_redraw);
-static void	draw_inventory_header(char *text, short offset);
-static void	draw_bar(screen_rectangle *rectangle, short actual_height,
-	shape_descriptor top_piece, shape_descriptor full_bar,
-	shape_descriptor background_piece);
+// Software rendering
+HUD_SW_Class HUD_SW;
 
-static void calculate_inventory_rectangle_from_offset(screen_rectangle *r, short offset);
-static short max_displayable_inventory_lines(void);
-static void draw_ammo_display_in_panel(short trigger_id);
-static void update_suit_energy(short time_elapsed);
-static void update_suit_oxygen(short time_elapsed);
-static void draw_inventory_item(char *text, short count, short offset, 
-	bool erase_first, bool valid_in_this_environment);
-static void draw_player_name(void);
-static void draw_message_area(short time_elapsed);
+// OpenGL rendering
+#ifdef HAVE_OPENGL
+static HUD_OGL_Class HUD_OGL;
+#endif
 
-void update_everything(short time_elapsed);
 
 /* --------- code */
 
-void initialize_game_window(
-	void)
+void initialize_game_window(void)
 {
 	initialize_motion_sensor(
 		BUILD_DESCRIPTOR(_collection_interface, _motion_sensor_mount),
@@ -398,14 +237,14 @@ void initialize_game_window(
 		BUILD_DESCRIPTOR(_collection_interface, _motion_sensor_enemy),
 		BUILD_DESCRIPTOR(_collection_interface, _network_compass_shape_nw),
 		MOTION_SENSOR_SIDE_LENGTH);
-
-	return;
 }
 
 /* draws the entire interface */
-void draw_interface(
-	void)
+void draw_interface(void)
 {
+	if (OGL_HUDActive)
+		return;
+
 	if (!game_window_is_full_screen())
 	{
 		/* draw the frame */
@@ -413,92 +252,202 @@ void draw_interface(
 	}
 		
 	validate_world_window();
-	
-	return;
+}
+
+#ifdef HAVE_OPENGL
+/* draws the entire interface using OpenGL */
+void OGL_DrawHUD(Rect &dest)
+{
+	// We are using 6 textures to render the 640x160 pixel HUD:
+	//
+	//     256      256    128
+	//  +--------+--------+----+
+	//  |   0    |   1    | 2  | 128
+    //  |        |        |    |
+	//  +--------+--------+----+
+	//  |   3    |   4    | 5  | 32
+    //  +--------+--------+----+
+	const int NUM_TEX = 6;
+	static GLuint txtr_id[NUM_TEX];
+	static const int txtr_width[NUM_TEX] = {256, 256, 128, 256, 256, 128};
+	static const int txtr_height[NUM_TEX] = {128, 128, 128, 32, 32, 32};
+	static const int txtr_x[NUM_TEX] = {0, 256, 512, 0, 256, 512};
+	static const int txtr_y[NUM_TEX] = {0, 0, 0, 128, 128, 128};
+
+	// Load static HUD picture if necessary
+	static bool hud_pict_loaded = false;
+	static bool hud_pict_not_found = false;
+	if (!hud_pict_loaded && !hud_pict_not_found) {
+		LoadedResource PictRsrc;
+		if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, PictRsrc))
+			hud_pict_loaded = true;
+		else
+			hud_pict_not_found = true;
+
+		if (hud_pict_loaded) {
+			uint8 *txtr_data[NUM_TEX];
+			for (int i=0; i<NUM_TEX; i++)
+				txtr_data[i] = new uint8[txtr_width[i] * txtr_height[i] * 4];
+
+#if defined(mac)
+			// Render picture to GWorld, convert to GL textures
+#warning This needs to be implemented!
+#elif defined(SDL)
+			// Render picture into SDL surface, convert to GL textures
+			SDL_Surface *hud_pict = picture_to_surface(PictRsrc);
+			if (hud_pict) {
+				SDL_Surface *hud_pict_rgb = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 160, 32, 0xff0000, 0x00ff00, 0x0000ff, 0);
+				if (hud_pict_rgb) {
+					SDL_Rect rect = {0, 0, 640, 160};
+					SDL_BlitSurface(hud_pict, &rect, hud_pict_rgb, &rect);
+					for (int i=0; i<NUM_TEX; i++) {
+						uint32 *p = (uint32 *)((uint8 *)hud_pict_rgb->pixels + txtr_y[i] * hud_pict_rgb->pitch) + txtr_x[i];
+						uint8 *q = txtr_data[i];
+						for (int y=0; y<txtr_height[i]; y++) {
+							for (int x=0; x<txtr_width[i]; x++) {
+								uint32 v = p[x];
+								*q++ = v >> 16;
+								*q++ = v >> 8;
+								*q++ = v;
+								*q++ = 0xff;
+							}
+							p = (uint32 *)((uint8 *)p + hud_pict_rgb->pitch);
+						}
+					}
+					SDL_FreeSurface(hud_pict_rgb);
+				}
+				SDL_FreeSurface(hud_pict);
+			}
+#endif
+
+			glGenTextures(NUM_TEX, txtr_id);
+			for (int i=0; i<NUM_TEX; i++) {
+				glBindTexture(GL_TEXTURE_2D, txtr_id[i]);
+				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, txtr_width[i], txtr_height[i],
+					0, GL_RGBA, GL_UNSIGNED_BYTE, txtr_data[i]);
+				delete[] txtr_data[i];
+			}
+
+			hud_pict_loaded = true;
+		}
+	}
+
+	if (hud_pict_loaded) {
+
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+		glEnable(GL_TEXTURE_2D);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_ALPHA_TEST);
+		glDisable(GL_BLEND);
+		glDisable(GL_FOG);
+
+		// Draw static HUD picture
+		for (int i=0; i<NUM_TEX; i++) {
+			glBindTexture(GL_TEXTURE_2D, txtr_id[i]);
+			glColor3f(1.0, 1.0, 1.0);
+			glBegin(GL_TRIANGLE_FAN);
+				glTexCoord2f(0.0, 0.0);
+				glVertex2i(txtr_x[i] + dest.left, txtr_y[i] + dest.top);
+				glTexCoord2f(1.0, 0.0);
+				glVertex2i(txtr_x[i] + txtr_width[i] + dest.left, txtr_y[i] + dest.top);
+				glTexCoord2f(1.0, 1.0);
+				glVertex2i(txtr_x[i] + txtr_width[i] + dest.left, txtr_y[i] + txtr_height[i] + dest.top);
+				glTexCoord2f(0.0, 1.0);
+				glVertex2i(txtr_x[i] + dest.left, txtr_y[i] + txtr_height[i] + dest.top);
+			glEnd();
+		}
+
+		// Add dynamic elements
+		glScissor(dest.left, dest.bottom, 640, 160);
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glTranslatef(dest.left, dest.top - 320, 0.0);
+		HUD_OGL.update_everything(NONE);
+		glPopMatrix();
+
+		glPopAttrib();
+	}
+}
+#endif
+
+// Call this from outside
+void OGL_ResetHUDFonts(bool IsStarting)
+{
+#ifdef HAVE_OPENGL
+	get_interface_font(_interface_font).OGL_Reset(IsStarting);
+	get_interface_font(_interface_item_count_font).OGL_Reset(IsStarting);
+	get_interface_font(_weapon_name_font).OGL_Reset(IsStarting);
+	get_interface_font(_player_name_font).OGL_Reset(IsStarting);
+#endif
 }
 
 /* updates only what needs changing (time_elapsed==NONE means redraw everything no matter what,
 	but skip the interface frame) */
-void update_interface(
-	short time_elapsed)
+void update_interface(short time_elapsed)
 {
+	if (OGL_HUDActive)
+		return;
+
 	if (!game_window_is_full_screen())
 	{
 		// LP addition: don't force an update unless explicitly requested
-		ForceUpdate = (time_elapsed == NONE);
-	
+		bool force_update = (time_elapsed == NONE);
+
 		// LP addition: added support for HUD buffer;
-		// added origin relocation to make the graphics paint into place
 		_set_port_to_HUD();
-#ifdef mac
-		SetOrigin(0,320);
-#endif
-		// _set_port_to_screen_window();
-		update_everything(time_elapsed);
-#ifdef mac
-		SetOrigin(0,0);
-#endif
+		if (HUD_SW.update_everything(time_elapsed))
+			force_update = true;
 		_restore_port();
 		
 		// Draw the whole thing if doing so is requested
 		// (may need some smart way of drawing only what has to be drawn)
-		if (ForceUpdate)
-		{
+		if (force_update)
 			RequestDrawingHUD();
-		}
 	}
-
-	return;
 }
 
-void mark_interface_collections(
-	bool loading)
+void mark_interface_collections(bool loading)
 {
 	loading ? mark_collection_for_loading(_collection_interface) : 
 		mark_collection_for_unloading(_collection_interface);
-	
-	return;
 }
 
-void mark_weapon_display_as_dirty(
-	void)
+void mark_weapon_display_as_dirty(void)
 {
-	interface_state.weapon_is_dirty= true;
+	interface_state.weapon_is_dirty = true;
 }
 
-void mark_ammo_display_as_dirty(
-	void)
+void mark_ammo_display_as_dirty(void)
 {
-	interface_state.ammo_is_dirty= true;
+	interface_state.ammo_is_dirty = true;
 }
 
-void mark_shield_display_as_dirty(
-	void)
+void mark_shield_display_as_dirty(void)
 {
-	interface_state.shield_is_dirty= true;
+	interface_state.shield_is_dirty = true;
 }
 
-void mark_oxygen_display_as_dirty(
-	void)
+void mark_oxygen_display_as_dirty(void)
 {
-	interface_state.oxygen_is_dirty= true;
+	interface_state.oxygen_is_dirty = true;
 }
 
-void mark_player_inventory_screen_as_dirty(
-	short player_index,
-	short screen)
+void mark_player_inventory_screen_as_dirty(short player_index, short screen)
 {
 	struct player_data *player= get_player_data(player_index);
 
 	set_current_inventory_screen(player_index, screen);
 	SET_INVENTORY_DIRTY_STATE(player, true);
-	
-	return;
 }
 
-void mark_player_inventory_as_dirty(
-	short player_index, 
-	short dirty_item)
+void mark_player_inventory_as_dirty(short player_index, short dirty_item)
 {
 	struct player_data *player= get_player_data(player_index);
 
@@ -508,7 +457,7 @@ void mark_player_inventory_as_dirty(
 		short item_kind= get_item_kind(dirty_item);
 		short current_screen= GET_CURRENT_INVENTORY_SCREEN(player);
 
-		/* Don't change if it is a powerup, or you are in the network statistics screen */		
+		/* Don't change if it is a powerup, or you are in the network statistics screen */
 		if(item_kind != _powerup && item_kind != current_screen) // && current_screen!=_network_statistics)
 		{
 			/* Goto that type of item.. */
@@ -518,8 +467,7 @@ void mark_player_inventory_as_dirty(
 	SET_INVENTORY_DIRTY_STATE(player, true);
 }
 
-void mark_player_network_stats_as_dirty(
-	short player_index)
+void mark_player_network_stats_as_dirty(short player_index)
 {
 	if (GET_GAME_OPTIONS()&_live_network_stats)
 	{
@@ -528,30 +476,14 @@ void mark_player_network_stats_as_dirty(
 		set_current_inventory_screen(player_index, _network_statistics);
 		SET_INVENTORY_DIRTY_STATE(player, true);
 	}
-	
-	return;
 }
 
-void set_interface_microphone_recording_state(
-	bool state)
+void set_interface_microphone_recording_state(bool state)
 {
-	(void) (state);
-#ifdef OBSOLETE
-	const short sounds[]={MICROPHONE_STOP_CLICK_SOUND, MICROPHONE_START_CLICK_SOUND};
-	const short shapes[]={_mike_button_unpressed, _mike_button_pressed};
-	screen_rectangle *rectangle= get_interface_rectangle(_microphone_rect);
-
-	play_local_sound(sounds[state]);
-	if(!game_window_is_full_screen())
-	{
-		_draw_screen_shape(BUILD_DESCRIPTOR(_collection_interface, shapes[state]), 
-			rectangle, NULL);
-	}
-#endif
+	(void)(state);
 }
 
-void scroll_inventory(
-	short dy)
+void scroll_inventory(short dy)
 {
 	short mod_value, index, current_inventory_screen, section_count, test_inventory_screen;
 	short section_items[NUMBER_OF_ITEMS];
@@ -610,655 +542,6 @@ void scroll_inventory(
 	SET_INVENTORY_DIRTY_STATE(current_player, true);	
 }
 
-/* This function is only called from macintosh_game_window.c */
-void update_everything(
-	short time_elapsed)
-{
-	update_motion_sensor(time_elapsed);
-	update_inventory_panel((time_elapsed==NONE) ? true : false);
-	update_weapon_panel((time_elapsed==NONE) ? true : false);
-	update_ammo_display((time_elapsed==NONE) ? true : false);
-	update_suit_energy(time_elapsed);
-	update_suit_oxygen(time_elapsed);
-
-	/* Handle the network microphone.. */
-//		handle_microphone(local_player_index==dynamic_world->speaking_player_index);
-
-	/* Draw the message area if the player count is greater than one. */
-	if(dynamic_world->player_count>1)
-	{
-		draw_message_area(time_elapsed);
-	}
-		
-	return;
-}
-
-/* ---------- private code */
-static void update_suit_energy(
-	short time_elapsed)
-{
-	/* time_elapsed==NONE means force redraw */
-	if (time_elapsed==NONE || (interface_state.shield_is_dirty))
-	{
-		// LP addition: display needs to be updated
-		ForceUpdate = true;
-		
-		screen_rectangle *shield_rect= get_interface_rectangle(_shield_rect);
-		short width= shield_rect->right-shield_rect->left;
-		short actual_width, suit_energy;
-		short background_shape_id, bar_shape_id, bar_top_shape_id;
-
-		suit_energy = current_player->suit_energy%PLAYER_MAXIMUM_SUIT_ENERGY;
-
-		if(	!suit_energy && 
-			current_player->suit_energy==PLAYER_MAXIMUM_SUIT_ENERGY ||
-			current_player->suit_energy==2*PLAYER_MAXIMUM_SUIT_ENERGY || 
-			current_player->suit_energy==3*PLAYER_MAXIMUM_SUIT_ENERGY) 
-		{
-			suit_energy= PLAYER_MAXIMUM_SUIT_ENERGY;
-		}
-
-		actual_width= (suit_energy*width)/PLAYER_MAXIMUM_SUIT_ENERGY;
-
-		/* Setup the bars.. */
-		if(current_player->suit_energy>2*PLAYER_MAXIMUM_SUIT_ENERGY)
-		{
-			background_shape_id= _double_energy_bar;
-			bar_shape_id= _triple_energy_bar;
-			bar_top_shape_id= _triple_energy_bar_right;
-		} 
-		else if(current_player->suit_energy>PLAYER_MAXIMUM_SUIT_ENERGY)
-		{
-			background_shape_id= _energy_bar;
-			bar_shape_id= _double_energy_bar;
-			bar_top_shape_id= _double_energy_bar_right;
-		} 
-		else 
-		{
-			background_shape_id= _empty_energy_bar;
-			bar_shape_id= _energy_bar;
-			bar_top_shape_id= _energy_bar_right;
-			if(current_player->suit_energy<0) actual_width= 0;
-		} 
-
-		draw_bar(shield_rect, actual_width, 
-			BUILD_DESCRIPTOR(_collection_interface, bar_top_shape_id), 
-			BUILD_DESCRIPTOR(_collection_interface, bar_shape_id),
-			BUILD_DESCRIPTOR(_collection_interface, background_shape_id));
-
-		interface_state.shield_is_dirty= false;
-	}
-	
-	return;
-}
-
-static void update_suit_oxygen(
-	short time_elapsed)
-{
-	static short delay_time= 0;
-
-	/* Redraw the oxygen only if the interface is visible and only if enough delay has passed.. */
-	if(((delay_time-= time_elapsed)<0) || time_elapsed==NONE || interface_state.oxygen_is_dirty)
-	{
-		// LP addition: display needs to be updated
-		ForceUpdate = true;
-		
-		screen_rectangle *oxygen_rect= get_interface_rectangle(_oxygen_rect);
-		short width, actual_width;
-		short suit_oxygen;
-		
-		suit_oxygen= MIN(current_player->suit_oxygen, PLAYER_MAXIMUM_SUIT_OXYGEN);
-		width= oxygen_rect->right-oxygen_rect->left;
-		actual_width= (suit_oxygen*width)/PLAYER_MAXIMUM_SUIT_OXYGEN;
-
-		draw_bar(oxygen_rect, actual_width, 
-			BUILD_DESCRIPTOR(_collection_interface, _oxygen_bar_right), 
-			BUILD_DESCRIPTOR(_collection_interface, _oxygen_bar),
-			BUILD_DESCRIPTOR(_collection_interface, _empty_oxygen_bar));
-	
-		delay_time= DELAY_TICKS_BETWEEN_OXYGEN_REDRAW;
-		interface_state.oxygen_is_dirty= false;
-	}
-
-	return;
-}
-
-static void draw_player_name(
-	void)
-{
-	struct player_data *player= get_player_data(current_player_index);
-	screen_rectangle *player_name_rect= get_interface_rectangle(_player_name_rect);
-
-	_draw_screen_text(player->name, player_name_rect, 
-		_center_vertical | _center_horizontal, _player_name_font, 
-		player->color+PLAYER_COLOR_BASE_INDEX);
-}
-
-static void update_motion_sensor(
-	short time_elapsed)
-{
-	if (!MotionSensorActive) GET_GAME_OPTIONS() |= _motion_sensor_does_not_work;
-	
-	if(!(GET_GAME_OPTIONS() & _motion_sensor_does_not_work))
-	{
-		if (time_elapsed==NONE)
-		{
-			// LP addition: display needs to be updated
-			ForceUpdate = true;
-		
-			reset_motion_sensor(current_player_index);
-		}
-
-		motion_sensor_scan(time_elapsed);
-		
-		if (motion_sensor_has_changed())
-		{
-			// LP addition: display needs to be updated
-			ForceUpdate = true;
-				
-			screen_rectangle *destination= get_interface_rectangle(_motion_sensor_rect);
-
-			_draw_screen_shape_at_x_y(BUILD_DESCRIPTOR(_collection_interface, 
-				_motion_sensor_mount), destination->left, destination->top);
-		}
-	}
-		
-	return;
-}
-
-/* A change of weapon has occurred, change the weapon display panel */
-static void update_weapon_panel(
-	bool force_redraw)
-{
-	if(force_redraw || interface_state.weapon_is_dirty)
-	{
-		// LP addition: display needs to be updated
-		ForceUpdate = true;
-		
-		char *weapon_name = temporary;
-		struct weapon_interface_data *definition;
-		screen_rectangle *destination= get_interface_rectangle(_weapon_display_rect);
-		screen_rectangle source;
-		short desired_weapon= get_player_desired_weapon(current_player_index);
-
-		/* Now we have to erase, because the panel won't do it for us.. */
-		_fill_rect(destination, _inventory_background_color);
-	
-		if(desired_weapon != NONE)
-		{
-			assert(desired_weapon>=0 && desired_weapon<MAXIMUM_WEAPON_INTERFACE_DEFINITIONS);
-
-			definition= weapon_interface_definitions+desired_weapon;
-	
-			/* Check if it is a multi weapon - actually special cased for the magnum... */
-			if(definition->multi_weapon)
-			{
-#define MAGNUM_DELTA_X 97
-				if(definition->item_id==_i_magnum)
-				{
-					/* Either way, draw the single */
-					_draw_screen_shape_at_x_y(definition->weapon_panel_shape, 
-						definition->standard_weapon_panel_left, 
-						definition->standard_weapon_panel_top);
-
-					if(current_player->items[definition->item_id]>1)
-					{
-						_draw_screen_shape_at_x_y(
-							BUILD_DESCRIPTOR(_collection_interface, _left_magnum), 
-							definition->standard_weapon_panel_left-MAGNUM_DELTA_X, 
-							definition->standard_weapon_panel_top);
-					} 
-					else 
-					{
-						/* Draw the empty one.. */
-						_draw_screen_shape_at_x_y(
-							BUILD_DESCRIPTOR(_collection_interface, _left_magnum_unusable), 
-							definition->standard_weapon_panel_left-MAGNUM_DELTA_X, 
-							definition->standard_weapon_panel_top);
-					}
-				} 
-				else if(definition->item_id==_i_shotgun)
-				{
-					if(current_player->items[definition->item_id]>1)
-					{
-						_draw_screen_shape_at_x_y(
-							BUILD_DESCRIPTOR(_collection_interface, _double_shotgun), 
-							definition->standard_weapon_panel_left, 
-							definition->standard_weapon_panel_top-12);
-					} else {
-						_draw_screen_shape_at_x_y(definition->weapon_panel_shape, 
-							definition->standard_weapon_panel_left, 
-							definition->standard_weapon_panel_top);
-					}
-				}
-			} else {
-				/* Slam it to the screen! */
-				if(definition->weapon_panel_shape != NONE)
-				{
-					_draw_screen_shape_at_x_y(definition->weapon_panel_shape, 
-						definition->standard_weapon_panel_left, 
-						definition->standard_weapon_panel_top);
-				}
-			}
-		
-			/* Get the weapon name.. */
-			if(desired_weapon != _weapon_ball)
-			{
-#define strWEAPON_NAME_LIST 137
-				getcstr(weapon_name, strWEAPON_NAME_LIST, desired_weapon);
-			} else {
-				short item_index;
-				
-				/* Which ball do they actually have? */
-				for(item_index= BALL_ITEM_BASE; item_index<BALL_ITEM_BASE+MAXIMUM_NUMBER_OF_PLAYERS; ++item_index)
-				{
-					if(current_player->items[item_index]>0) break;
-				}
-				assert(item_index != BALL_ITEM_BASE+MAXIMUM_NUMBER_OF_PLAYERS);
-				get_item_name(weapon_name, item_index, false);
-			}
-
-			/* Draw the weapon name.. */
-			source= *destination;
-			source.top= definition->weapon_name_start_y;
-			source.bottom= definition->weapon_name_end_y;
-			if(definition->weapon_name_start_x != NONE)
-			{
-				source.left= definition->weapon_name_start_x;
-			}
-			
-			if(definition->weapon_name_end_x != NONE)
-			{
-				source.right= definition->weapon_name_end_x;
-			}
-			
-			_draw_screen_text(weapon_name, &source, _center_horizontal|_center_vertical|_wrap_text,
-				_weapon_name_font, _inventory_text_color);
-				
-			/* And make sure that the ammo knows it needs to update */
-			interface_state.ammo_is_dirty= true;
-		} 
-		interface_state.weapon_is_dirty= false;
-	}
-}
-
-static void update_ammo_display(
-	bool force_redraw)
-{
-	if(force_redraw || interface_state.ammo_is_dirty)
-	{
-		// LP addition: display needs to be updated
-		ForceUpdate = true;
-		
-		draw_ammo_display_in_panel(_primary_interface_ammo);
-		draw_ammo_display_in_panel(_secondary_interface_ammo);
-		interface_state.ammo_is_dirty= false;
-	}
-}
-
-/* changed_item gets erased first.. */
-/* This should probably go to a gworld first, or something */
-static void update_inventory_panel(
-	bool force_redraw)
-{
-	short section_items[NUMBER_OF_ITEMS];
-	short section_counts[NUMBER_OF_ITEMS];
-	short section_count, loop;
-	short item_type, current_row;
-
-	if(INVENTORY_IS_DIRTY(current_player) || force_redraw)
-	{
-		// LP addition: display needs to be updated
-		ForceUpdate = true;
-		
-		screen_rectangle *destination= get_interface_rectangle(_inventory_rect);
-		screen_rectangle text_rectangle;
-		short max_lines= max_displayable_inventory_lines();
-	
-		/* Recalculate and redraw.. */
-		item_type= GET_CURRENT_INVENTORY_SCREEN(current_player);
-					
-		/* Reset the row.. */
-		current_row= 0;
-		if(item_type!=_network_statistics)
-		{
-			/* Get the types and names */
-			calculate_player_item_array(current_player_index, item_type,
-				section_items, section_counts, &section_count);
-		}
-				
-		/* Draw the header. */
-		get_header_name(temporary, item_type);
-		draw_inventory_header(temporary, current_row++);
-	
-		/* Erase the panel.. */
-		text_rectangle= *destination;
-		text_rectangle.top+= _get_font_line_height(_interface_font);
-		_fill_rect(&text_rectangle, _inventory_background_color);
-				
-		if(item_type==_network_statistics)
-		{
-			struct player_ranking_data rankings[MAXIMUM_NUMBER_OF_PLAYERS];
-	
-			calculate_player_rankings(rankings);
-		
-			/* Calculate the network statistics. */
-			for(loop= 0; loop<dynamic_world->player_count; ++loop)
-			{
-				screen_rectangle dest_rect;
-				struct player_data *player= get_player_data(rankings[loop].player_index);
-				short width;
-				
-				calculate_inventory_rectangle_from_offset(&dest_rect, current_row++);
-				calculate_ranking_text(temporary, rankings[loop].ranking);
-
-				/* Draw the player name.. */
-				width= _text_width(temporary, _interface_font);
-				dest_rect.right-= width;
-				dest_rect.left+= TEXT_INSET;
-				_draw_screen_text(player->name, &dest_rect, _center_vertical, 
-					_interface_font, PLAYER_COLOR_BASE_INDEX+player->color);
-
-				/* Now draw the ranking_text */
-				dest_rect.right+= width;
-				dest_rect.left= dest_rect.right-width;
-				_draw_screen_text(temporary, &dest_rect, _center_vertical, 
-					_interface_font, PLAYER_COLOR_BASE_INDEX+player->color);
-			}
-		} else {
-			/* Draw the items. */
-			for(loop= 0; loop<section_count && current_row<max_lines; ++loop)
-			{
-				bool valid_in_this_environment;
-			
-				/* Draw the item */
-				get_item_name(temporary, section_items[loop], (section_counts[loop]!=1));
-				valid_in_this_environment= item_valid_in_current_environment(section_items[loop]);
-				draw_inventory_item(temporary, section_counts[loop], current_row++, false, valid_in_this_environment);
-			}
-		}
-		
-		SET_INVENTORY_DIRTY_STATE(current_player, false);
-	}
-}
-
-/* Draw the text in the rectangle, starting at the given offset, on the */
-/* far left.  Headers also have their backgrounds erased first */
-static void draw_inventory_header(
-	char *text, 
-	short offset)
-{
-	screen_rectangle destination;
-
-	calculate_inventory_rectangle_from_offset(&destination, offset);
-
-	/* Erase.. */
-	_fill_rect(&destination, _inventory_header_background_color);
-
-	/* Now draw the text. */	
-	destination.left+= TEXT_INSET;
-	_draw_screen_text(text, &destination, _center_vertical, _interface_font,
-		_inventory_text_color);
-}
-
-static void calculate_inventory_rectangle_from_offset(
-	screen_rectangle *r, 
-	short offset)
-{
-	screen_rectangle *inventory_rect= get_interface_rectangle(_inventory_rect);
-	short line_height= _get_font_line_height(_interface_font);
-	
-	*r= *inventory_rect;
-	r->top += offset*line_height;
-	r->bottom= r->top + line_height;
-}
-
-static short max_displayable_inventory_lines(
-	void)
-{
-	screen_rectangle *destination= get_interface_rectangle(_inventory_rect);
-	
-	return (destination->bottom-destination->top)/_get_font_line_height(_interface_font);
-}
-
-static void	draw_bar(
-	screen_rectangle *rectangle,
-	short width,
-	shape_descriptor top_piece,
-	shape_descriptor full_bar,
-	shape_descriptor background_texture)
-{
-	screen_rectangle destination= *rectangle;
-	screen_rectangle source;
-	screen_rectangle bar_section;
-
-	/* Draw the background (right). */
-	destination.left+= width;
-	source= destination;
-
-	_offset_screen_rect(&source, -rectangle->left, -rectangle->top);
-	_draw_screen_shape(background_texture, &destination, &source);
-
-	/* Draw the top bit.. */
-	if(width>2*TOP_OF_BAR_WIDTH)
-	{
-		_draw_screen_shape_at_x_y(top_piece, rectangle->left+width-TOP_OF_BAR_WIDTH, 
-			rectangle->top);
-	} else {
-		destination= *rectangle;
-
-		/* Gotta take lines off the top, so that the bottom stuff is still visible.. */
-		destination.left= rectangle->left+width/2+width%2;
-		destination.right= destination.left+width/2;
-
-		source= destination;			
-		_offset_screen_rect(&source, -source.left+TOP_OF_BAR_WIDTH-width/2, -source.top);
-		_draw_screen_shape(top_piece, &destination, &source);
-	}
-
-	/* Copy the bar.. */
-	bar_section= *rectangle;
-	bar_section.right= bar_section.left+width-TOP_OF_BAR_WIDTH;
-	
-	if(bar_section.left<bar_section.right)
-	{
-		screen_rectangle bar_section_source= bar_section;
-		
-		_offset_screen_rect(&bar_section_source, -rectangle->left, -rectangle->top);
-		_draw_screen_shape(full_bar, &bar_section, &bar_section_source);
-	}
-}
-
-static void draw_ammo_display_in_panel(
-	short trigger_id)
-{
-	struct weapon_interface_data *current_weapon_data;
-	struct weapon_interface_ammo_data *current_ammo_data;
-	short ammunition_count;
-	short desired_weapon= get_player_desired_weapon(current_player_index);
-
-	/* Based on desired weapon, so we can get ammo updates as soon as we change */
-	if(desired_weapon != NONE)
-	{
-		current_weapon_data= weapon_interface_definitions+desired_weapon;
-		current_ammo_data= &current_weapon_data->ammo_data[trigger_id];
-
-		if(trigger_id==_primary_interface_ammo)
-		{
-			ammunition_count= get_player_weapon_ammo_count(current_player_index, desired_weapon, _primary_weapon);
-		} else {
-			ammunition_count= get_player_weapon_ammo_count(current_player_index, desired_weapon, _secondary_weapon);
-		}
-		
-		/* IF we have ammo for this trigger.. */
-		if(current_ammo_data->type!=_unused_interface_data && ammunition_count!=NONE)
-		{
-			if(current_ammo_data->type==_uses_energy)
-			{
-				/* Energy beam weapon-> progress bar type.. */
-				short  fill_height;
-				screen_rectangle bounds;
-
-				/* Pin it.. */
-				ammunition_count= PIN(ammunition_count, 0, current_ammo_data->ammo_across);
-				fill_height= (ammunition_count*(current_ammo_data->delta_y-2))/current_ammo_data->ammo_across;
-				
-				/* Setup the energy left bar... */				
-				bounds.left= current_ammo_data->screen_left;
-				bounds.right= current_ammo_data->screen_left+current_ammo_data->delta_x;
-				bounds.bottom= current_ammo_data->screen_top+current_ammo_data->delta_y;
-				bounds.top= current_ammo_data->screen_top;
-				
-				/* Frame the rectangle */
-				_frame_rect(&bounds, current_ammo_data->bullet);
-				
-				/* Inset the rectangle.. */
-				bounds.left+=1; bounds.right-=1; bounds.bottom-= 1; bounds.top+=1;
-				
-				/* Fill with the full stuff.. */
-				bounds.top= bounds.bottom-fill_height;
-				_fill_rect(&bounds, current_ammo_data->bullet);
-
-				/* Now erase the rest of the rectangle */
-				bounds.bottom= bounds.top;
-				bounds.top= current_ammo_data->screen_top+1;
-				
-				/* Fill it. */
-				_fill_rect(&bounds, current_ammo_data->empty_bullet);
-				
-				/* We be done.. */
-			} else {
-				/* Uses ammunition, a little trickier.. */
-				short row, x, y;
-				screen_rectangle destination, source;
-				short max, partial_row_count;
-				
-				x= current_ammo_data->screen_left;
-				y= current_ammo_data->screen_top;
-				
-				destination.left= x;
-				destination.top= y;
-				
-				/* Pin it.. */
-				max= current_ammo_data->ammo_down*current_ammo_data->ammo_across;
-				ammunition_count= PIN(ammunition_count, 0, max);
-									
-				/* Draw all of the full rows.. */
-				for(row=0; row<(ammunition_count/current_ammo_data->ammo_across); ++row)
-				{
-					_draw_screen_shape_at_x_y(current_ammo_data->bullet,
-						x, y);
-					y+= current_ammo_data->delta_y;
-				}
-				
-				/* Draw the partially used row.. */
-				partial_row_count= ammunition_count%current_ammo_data->ammo_across;
-				if(partial_row_count)
-				{
-					/* If we use ammo from right to left.. */
-					if(current_ammo_data->right_to_left)
-					{
-						/* Draw the unused part of the row.. */
-						destination.left= x, destination.top= y;
-						destination.right= x+(partial_row_count*current_ammo_data->delta_x);
-						destination.bottom= y+current_ammo_data->delta_y;
-						source= destination;
-						_offset_screen_rect(&source, -source.left, -source.top);
-						_draw_screen_shape(current_ammo_data->bullet, &destination, &source);
-						
-						/* Draw the used part of the row.. */
-						destination.left= destination.right, 
-						destination.right= destination.left+(current_ammo_data->ammo_across-partial_row_count)*current_ammo_data->delta_x;
-						source= destination;
-						_offset_screen_rect(&source, -source.left, -source.top);
-						_draw_screen_shape(current_ammo_data->empty_bullet, &destination, &source);
-					} else {
-						/* Draw the used part of the row.. */
-						destination.left= x, destination.top= y;
-						destination.right= x+(current_ammo_data->ammo_across-partial_row_count)*current_ammo_data->delta_x;
-						destination.bottom= y+current_ammo_data->delta_y;
-						source= destination;
-						_offset_screen_rect(&source, -source.left, -source.top);
-						_draw_screen_shape(current_ammo_data->empty_bullet, &destination, &source);
-						
-						/* Draw the unused part of the row */
-						destination.left= destination.right;
-						destination.right= destination.left+(partial_row_count*current_ammo_data->delta_x);
-						source= destination;
-						_offset_screen_rect(&source, -source.left, -source.top);
-						_draw_screen_shape(current_ammo_data->bullet, &destination, &source);
-					}
-					y+= current_ammo_data->delta_y;
-				}
-				
-				/* Draw the remaining rows. */
-				x= current_ammo_data->screen_left;
-				for(row=0; row<(max-ammunition_count)/current_ammo_data->ammo_across; ++row)
-				{
-					_draw_screen_shape_at_x_y(current_ammo_data->empty_bullet,
-						x, y);
-					y+= current_ammo_data->delta_y;
-				}
-			}
-		}
-	}
-}
-
-static void draw_inventory_item(
-	char *text, 
-	short count, 
-	short offset, 
-	bool erase_first,
-	bool valid_in_this_environment)
-{
-	screen_rectangle destination, text_destination;
-	char *count_text = temporary;
-	short color;
-
-	calculate_inventory_rectangle_from_offset(&destination, offset);
-
-	/* Select the color for the text.. */
-	color= (valid_in_this_environment) ? (_inventory_text_color) : (_invalid_weapon_color);
-
-	/* Erase on items that changed only in count.. */
-	if(erase_first)
-	{
-		_fill_rect(&destination, _inventory_background_color);
-	} else {
-		/* Unfortunately, we must always erase the numbers.. */
-		text_destination= destination;
-		text_destination.right= text_destination.left+NAME_OFFSET+TEXT_INSET;
-		_fill_rect(&text_destination, _inventory_background_color);
-	}
-
-	/* Draw the text name.. */
-	text_destination= destination;
-	text_destination.left+= NAME_OFFSET+TEXT_INSET;
-	_draw_screen_text(text, &text_destination, _center_vertical, _interface_font, color);
-
-	/* Draw the text count-> Change the font!! */
-	text_destination= destination;
-	text_destination.left+= TEXT_INSET;
-	sprintf(count_text, "%3d", count);
-	_draw_screen_text(count_text, &text_destination, _center_vertical, _interface_item_count_font, color);
-}
-
-/* Draw the message area, and then put messages or player name in the buffer. */
-#define MESSAGE_AREA_X_OFFSET 291
-#define MESSAGE_AREA_Y_OFFSET 321
-
-static void draw_message_area(
-	short time_elapsed)
-{
-	if(time_elapsed==NONE)
-	{
-		_draw_screen_shape_at_x_y(
-			BUILD_DESCRIPTOR(_collection_interface, _network_panel), 
-			MESSAGE_AREA_X_OFFSET, MESSAGE_AREA_Y_OFFSET);
-		draw_player_name();
-	}
-}
-
 static void set_current_inventory_screen(
 	short player_index,
 	short screen)
@@ -1270,11 +553,12 @@ static void set_current_inventory_screen(
 	player->interface_flags&= ~INVENTORY_MASK_BITS;
 	player->interface_flags|= screen;
 	player->interface_decay= 5*TICKS_PER_SECOND;
-	
-	return;
 }
 
 
+/*
+ *  MML parser for interface elements
+ */
 
 class XML_AmmoDisplayParser: public XML_ElementParser
 {
@@ -1598,7 +882,7 @@ public:
 	{
 		if (strcmp(Tag,"motion_sensor") == 0)
 		{
-			return ReadBooleanValue(Value,MotionSensorActive);
+			return ReadBooleanValue(Value, MotionSensorActive);
 		}
 		UnrecognizedTag();
 		return false;

@@ -158,6 +158,24 @@ void initialize_screen_drawing(
 	}
 }
 
+screen_rectangle *get_interface_rectangle(short index)
+{
+	assert(index>=0 && index<NUMBER_OF_INTERFACE_RECTANGLES);
+	return interface_rectangles + index;
+}
+
+const rgb_color &get_interface_color(short index)
+{
+	assert(index>=0 && index<NumInterfaceColors);
+	return InterfaceColors[index];
+}
+
+FontSpecifier &get_interface_font(short index)
+{
+	assert(index >= 0 && index < NUMBER_OF_INTERFACE_FONTS);
+	return InterfaceFonts[index];
+}
+
 // Load platform-specific stuff
 #if defined(mac)
 #include "screen_drawing_macintosh.cpp"

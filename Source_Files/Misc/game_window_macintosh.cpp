@@ -15,27 +15,27 @@ Aug 22, 2000 (Loren Petrich):
 #include "macintosh_cseries.h"
 #include "my32bqd.h"
 
-#include "map.h"
+#include "HUDRenderer_SW.h"
+
 #include "shell.h"
 #include "preferences.h"
-#include "screen_drawing.h"
-#include "interface.h"
 #include "screen.h"
-// #include "portable_files.h"
-#include "mysound.h" // for screen_definitions.h
 #include "screen_definitions.h"
 #include "images.h"
 
 extern GrafPtr screen_window;
 extern GWorldPtr world_pixels;
-
-extern void update_everything(short time_elapsed);
+extern HUD_SW_Class HUD_SW;
+extern bool OGL_HUDActive;
 
 extern void draw_panels(void);
 
-/* ------------- code begins! */
-void draw_panels(
-	void)
+
+/*
+ *  Draw HUD (to HUD buffer)
+ */
+
+void draw_panels(void)
 {
 	// LP change: the drawing is now done into a special buffer (HUD_Buffer),
 	// and not to the screen or to world_pixels
@@ -63,18 +63,15 @@ void draw_panels(
 		
 		// LP addition: use HUD buffer
 		_set_port_to_HUD();
-		// _set_port_to_gworld();
-		SetOrigin(0, 320);
 
 		HLock((Handle) picture);
 		DrawPicture(picture, &destination);
 		HUnlock((Handle) picture);
 
-		update_everything(NONE);
+		HUD_SW.update_everything(NONE);
 		// LP: handled inside of the resource wrapper object
 		// ReleaseResource((Handle) picture);	
 		
-		SetOrigin(0, 0);
 		_restore_port();
 	} else {
 		/* Either they don't have the picture, or they are out of memory.  Most likely no memory */

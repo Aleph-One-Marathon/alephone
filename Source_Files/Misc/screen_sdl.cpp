@@ -55,6 +55,8 @@ static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable 
 // This is defined in overhead_map.c
 // It indicates whether to render the overhead map in OpenGL
 extern bool OGL_MapActive;
+// This is the same for the HUD
+extern bool OGL_HUDActive;
 #endif
 
 #include "screen_shared.cpp"
@@ -447,12 +449,16 @@ void render_screen(short ticks_elapsed)
 #ifdef HAVE_OPENGL
 	// Is map to be drawn with OpenGL?
 	if (OGL_IsActive() && world_view->overhead_map_active)
-		OGL_MapActive = (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Map) != 0);
+		OGL_MapActive = (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Map) != 0);
 	else
 		OGL_MapActive = false;
-#endif
 
-#ifdef HAVE_OPENGL
+	// Is HUD to be drawn with OpenGL?
+	if (OGL_IsActive())
+		OGL_HUDActive = (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_HUD) != 0);
+	else
+		OGL_HUDActive = false;
+
 	// Set OpenGL viewport to world view
 	Rect sr = {ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
 	Rect vr = {ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
@@ -491,17 +497,29 @@ void render_screen(short ticks_elapsed)
 			// Copy 2D rendering to screen
 			update_screen(BufferRect, ViewRect, HighResolution);
 		}
+
+		if (VS.ShowHUD) {
+			if (OGL_HUDActive) {
+				Rect dr = {HUD_DestRect.y, HUD_DestRect.x, HUD_DestRect.y + HUD_DestRect.h, HUD_DestRect.x + HUD_DestRect.w};
+				OGL_DrawHUD(dr);
+			} else {
+				if (HUD_RenderRequest) {
+					DrawHUD(HUD_DestRect);
+					HUD_RenderRequest = false;
+				}
+			}
+		}
 #endif
 	} else {
 
 		// Update world window
 		update_screen(BufferRect, ViewRect, HighResolution);
-	}
 
-	// Update HUD
-	if (HUD_RenderRequest) {
-		DrawHUD(HUD_DestRect);
-		HUD_RenderRequest = false;
+		// Update HUD
+		if (HUD_RenderRequest) {
+			DrawHUD(HUD_DestRect);
+			HUD_RenderRequest = false;
+		}
 	}
 
 #ifdef HAVE_OPENGL
@@ -834,15 +852,16 @@ void validate_world_window(void)
 
 
 /*
- *  Draw the HUD
+ *  Draw the HUD (non-OpenGL)
  */
 
 void DrawHUD(SDL_Rect &dest_rect)
 {
-	assert(HUD_Buffer);
-	SDL_Rect src_rect = {0, 320, 640, 160};
-	SDL_BlitSurface(HUD_Buffer, &src_rect, main_surface, &dest_rect);
-	SDL_UpdateRects(main_surface, 1, &dest_rect);
+	if (HUD_Buffer) {
+		SDL_Rect src_rect = {0, 320, 640, 160};
+		SDL_BlitSurface(HUD_Buffer, &src_rect, main_surface, &dest_rect);
+		SDL_UpdateRects(main_surface, 1, &dest_rect);
+	}
 }
 
 

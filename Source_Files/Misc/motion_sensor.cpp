@@ -236,8 +236,6 @@ void initialize_motion_sensor(
 
 	/* reset_motion_sensor() should be called before the motion sensor is used, but after it’s
 		shapes are loaded (because it will do bitmap copying) */
-		
-	return;
 }
 
 void reset_motion_sensor(
@@ -261,8 +259,6 @@ void reset_motion_sensor(
 	for (i= 0; i<MAXIMUM_MOTION_SENSOR_ENTITIES; ++i) MARK_SLOT_AS_FREE(entities+i);
 	
 	network_compass_state= _network_compass_all_off;
-
-	return;
 }
 
 /* every ten ticks, regardless of frame rate, this will update the positions of the objects we
@@ -308,8 +304,6 @@ void motion_sensor_scan(
 		ticks_since_last_update= MOTION_SENSOR_UPDATE_FREQUENCY;
 		motion_sensor_changed= true;
 	}
-	
-	return;
 }
 
 /* the interface code will call this function and only draw the motion sensor if we return true */
@@ -327,7 +321,6 @@ bool motion_sensor_has_changed(
 void adjust_motion_sensor_range(
 	void)
 {
-	return;
 }
 
 /* ---------- private code */
@@ -344,8 +337,6 @@ static void draw_network_compass(
 	if (difference&_network_compass_sw) draw_or_erase_unclipped_shape(36, 61, compass_shapes+2, new_state&_network_compass_sw);
 	
 	network_compass_state= new_state;
-	
-	return;
 }
 
 static void erase_all_entity_blips(
@@ -431,8 +422,6 @@ static void erase_all_entity_blips(
 			}
 		}
 	}
-	
-	return;
 }
 
 static void draw_all_entity_blips(
@@ -454,8 +443,6 @@ static void draw_all_entity_blips(
 			}
 		}
 	}
-	
-	return;
 }
 
 static void draw_or_erase_unclipped_shape(
@@ -476,8 +463,6 @@ static void draw_or_erase_unclipped_shape(
 	draw ?
 		unclipped_solid_sprite_copy(blip, mount, x, y) :
 		bitmap_window_copy(virgin_mount, mount, x, y, x+blip->width, y+blip->height);
-	
-	return;
 }
 
 static void erase_entity_blip(
@@ -498,8 +483,6 @@ static void erase_entity_blip(
 	y= location->y + (motion_sensor_side_length>>1) - (blip->height>>1);
 
 	bitmap_window_copy(virgin_mount, mount, x, y, x+blip->width, y+blip->height);
-
-	return;
 }
 
 static void draw_entity_blip(
@@ -516,8 +499,6 @@ static void draw_entity_blip(
 	clipped_transparent_sprite_copy(blip, mount, sensor_region,
 		location->x + (motion_sensor_side_length>>1) - (blip->width>>1),
 		location->y + (motion_sensor_side_length>>1) - (blip->height>>1));
-	
-	return;
 }
 
 /* if we find an entity that is being removed, we continue with the removal process and ignore
@@ -592,8 +573,6 @@ static void precalculate_sensor_region(
 		sensor_region[i].x0= int16(half_side_length-x);
 		sensor_region[i].x1= int16(x+half_side_length);
 	}
-
-	return;
 }
 
 /* (x0,y0) and (x1,y1) specify a window to be copied from the source to (x2,y2) in the destination.
@@ -628,8 +607,6 @@ static void bitmap_window_copy(
 		
 		for (count=x1-x0;count>0;--count) *write++= *read++;
 	}
-	
-	return;
 }
 
 static void clipped_transparent_sprite_copy(
@@ -680,8 +657,6 @@ static void clipped_transparent_sprite_copy(
 
 		y+= 1;
 	}
-	
-	return;
 }
 
 static void unclipped_solid_sprite_copy(
@@ -710,8 +685,6 @@ static void unclipped_solid_sprite_copy(
 
 		y+= 1;
 	}
-	
-	return;
 }
 
 static shape_descriptor get_motion_sensor_entity_shape(

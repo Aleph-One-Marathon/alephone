@@ -7,23 +7,24 @@
 #include "cseries.h"
 #include "FileHandler.h"
 
-#include "map.h"
+#include "HUDRenderer_SW.h"
+
 #include "shell.h"
 #include "preferences.h"
-#include "screen_drawing.h"
-#include "interface.h"
 #include "screen.h"
-#include "mysound.h" // for screen_definitions.h
 #include "screen_definitions.h"
 #include "images.h"
 
 
-// From game_window.cpp
-extern void update_everything(short time_elapsed);
-
 // From sreen_sdl.cpp
 extern SDL_Surface *HUD_Buffer;
 extern void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
+
+// From game_window.cpp
+extern HUD_SW_Class HUD_SW;
+extern bool OGL_HUDActive;
+
+extern void draw_panels(void);
 
 
 /*
@@ -32,6 +33,9 @@ extern void build_sdl_color_table(const color_table *color_table, SDL_Color *col
 
 void draw_panels(void)
 {
+	if (OGL_HUDActive)
+		return;
+
 	// Allocate surface for HUD if not present
 	if (HUD_Buffer == NULL) {
 		SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 8, 0xff, 0xff, 0xff, 0xff);
@@ -59,7 +63,7 @@ void draw_panels(void)
 
 	// Add dynamic elements
 	_set_port_to_HUD();
-	update_everything(NONE);
+	HUD_SW.update_everything(NONE);
 	_restore_port();
 
 	// Tell main loop to render the HUD in the next run
