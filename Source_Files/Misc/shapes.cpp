@@ -670,7 +670,7 @@ static byte *read_object_from_file(
 		delete []data;
 		return NULL;
 	}
-	if (!OFile.ReadObjectList(length,data))
+	if (!OFile.Read(length,data))
 	{
 		delete []data;
 		return NULL;
@@ -692,6 +692,7 @@ void unload_all_collections(
 		{
 			unload_collection(header);
 		}
+		OGL_UnloadImages(collection_index);
 	}
 	
 	return;
@@ -952,6 +953,7 @@ void load_collections(
 			{
 				unload_collection(header);
 			}
+			OGL_UnloadImages(collection_index);
 		}
 		else
 		{
@@ -969,6 +971,8 @@ void load_collections(
 		/* don’t reload collections which are already in memory, but do lock them */
 		if (collection_loaded(header))
 		{
+			// In case the substitute images had been changed by some level-specific MML...
+			OGL_LoadImages(collection_index);
 			lock_collection(header);
 		}
 		else
@@ -980,6 +984,7 @@ void load_collections(
 				{
 					alert_user(fatalError, strERRORS, outOfMemory, -1);
 				}
+				OGL_LoadImages(collection_index);
 			}
 		}
 		
