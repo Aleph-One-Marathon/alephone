@@ -1614,7 +1614,7 @@ static void StreamToGameData(uint8* &S, game_data& Object)
 	StreamToValue(S,Object.kill_limit);
 	StreamToValue(S,Object.initial_random_seed);
 	StreamToValue(S,Object.difficulty_level);
-	S += 2*2;
+	StreamToList(S,Object.parameters,2);
 }
 
 static void GameDataToStream(uint8* &S, game_data& Object)
@@ -1625,7 +1625,7 @@ static void GameDataToStream(uint8* &S, game_data& Object)
 	ValueToStream(S,Object.kill_limit);
 	ValueToStream(S,Object.initial_random_seed);
 	ValueToStream(S,Object.difficulty_level);
-	S += 2*2;
+	ListToStream(S,Object.parameters,2);
 }
 
 
