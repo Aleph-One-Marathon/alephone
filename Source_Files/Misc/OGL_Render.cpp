@@ -413,6 +413,10 @@ void StaticModeShader(void *Data);
 struct LightingDataStruct
 {
 	short Type;
+	short ProjDistance;
+	GLfloat *Dir;
+	GLfloat AvgLight;
+	GLfloat LightDiff;
 	
 	// This is in 3 sets of 4 values:
 	// R0, R1, R2, R3, G0, G1, G2, G3, B0, B1, B2, B3;
@@ -2221,16 +2225,39 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			FindShadingColor(RenderRectangle.LightDepth,int(FIXED_ONE*LightInDir + 0.5),Color);
 			
 			LightingData.Type = ModelPtr->LightType;
+			LightingData.ProjDistance = RenderRectangle.ProjDistance;
+			LightingData.Dir = Dir;
+			LightingData.AvgLight = AvgLight;
+			LightingData.LightDiff = LightDiff;
 			
-			for (int c=0; c<3; c++)
+			// Whether to fade miner's light toward model sides
+			bool NoFade = false;
+			
+			switch(LightingData.Type)
 			{
-				// Note: the miner's-light effect adds to the existing light,
-				// thus we subtract the bkgd before adding to the rest of the light
-				GLfloat HC = (Color[c] - LightInDir)/2;
-				LightingData.Colors[c][0] = - HC*Dir[0];
-				LightingData.Colors[c][1] = - HC*Dir[1];
-				LightingData.Colors[c][2] = LightDiff - HC*Dir[2];
-				LightingData.Colors[c][3] = AvgLight + HC;
+			case OGL_MLight_Fast_NoFade:
+				NoFade = true;
+			case OGL_MLight_Fast:
+				for (int c=0; c<3; c++)
+				{
+					// Note: the miner's-light effect adds to the existing light,
+					// thus we subtract the bkgd before adding to the rest of the light
+					if (NoFade)
+					{
+						LightingData.Colors[c][0] = 0;
+						LightingData.Colors[c][1] = 0;
+						LightingData.Colors[c][2] = LightDiff;
+						LightingData.Colors[c][3] = AvgLight + (Color[c] - LightInDir);
+					}
+					else
+					{
+						GLfloat HC = (Color[c] - LightInDir)/2;
+						LightingData.Colors[c][0] = - HC*Dir[0];
+						LightingData.Colors[c][1] = - HC*Dir[1];
+						LightingData.Colors[c][2] = LightDiff - HC*Dir[2];
+						LightingData.Colors[c][3] = AvgLight + HC;
+					}
+				}
 			}
 		}
 		
@@ -2431,8 +2458,8 @@ void StaticModeShader(void *Data)
 void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors)
 {
 	LightingDataStruct *LPtr = (LightingDataStruct *)Data;
-	
-// Attempting to keep CB's code on hand
+
+// Keeping CB's code on hand
 #if 0
 
 	// Register usage:
@@ -2489,32 +2516,68 @@ void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Posit
 		: "eax", "memory"
 	);
 
-#else
-
-	GLfloat *el0 = LPtr->Colors[0], *el1 = LPtr->Colors[1], *el2 = LPtr->Colors[2];
-	for (int k=0; k<NumVerts; k++)
-	{
-		GLfloat N0 = *(Normals++);
-		GLfloat N1 = *(Normals++);
-		GLfloat N2 = *(Normals++);
-		*(Colors++) =
-			el0[0]*N0 + 
-			el0[1]*N1 + 
-			el0[2]*N2 + 
-			el0[3];
-		*(Colors++) =
-			el1[0]*N0 + 
-			el1[1]*N1 + 
-			el1[2]*N2 + 
-			el1[3];
-		*(Colors++) =
-			el2[0]*N0 + 
-			el2[1]*N1 + 
-			el2[2]*N2 + 
-			el2[3];
-	}
-
 #endif
+	
+	// Whether to fade miner's light toward model sides
+	bool NoFade = false;
+	
+	switch(LPtr->Type)
+	{
+	case OGL_MLight_Fast_NoFade:
+		NoFade = true;
+	case OGL_MLight_Fast:
+	{
+		GLfloat *el0 = LPtr->Colors[0], *el1 = LPtr->Colors[1], *el2 = LPtr->Colors[2];
+		for (int k=0; k<NumVerts; k++)
+		{
+			GLfloat N0 = *(Normals++);
+			GLfloat N1 = *(Normals++);
+			GLfloat N2 = *(Normals++);
+			*(Colors++) =
+				el0[0]*N0 + 
+				el0[1]*N1 + 
+				el0[2]*N2 + 
+				el0[3];
+			*(Colors++) =
+				el1[0]*N0 + 
+				el1[1]*N1 + 
+				el1[2]*N2 + 
+				el1[3];
+			*(Colors++) =
+				el2[0]*N0 + 
+				el2[1]*N1 + 
+				el2[2]*N2 + 
+				el2[3];
+		}
+	}
+	break;
+	
+	case OGL_MLight_Indiv_NoFade:
+	NoFade = true;
+	case OGL_MLight_Indiv:
+	{
+		for (int k=0; k<NumVerts; k++, Normals += 3, Positions +=3, Colors +=3)
+		{
+			GLfloat *Dir = LPtr->Dir;
+			GLfloat Depth = LPtr->ProjDistance + (Dir[0]*Positions[0] + Dir[1]*Positions[1]);
+			GLfloat Light = LPtr->AvgLight + LPtr->LightDiff*Normals[2];
+			if (NoFade)
+				FindShadingColor(Depth,int(FIXED_ONE*Light + 0.5),Colors);
+			else
+			{
+				GLfloat FrontColor[3], BackColor[3];
+				BackColor[0] = BackColor[1] = BackColor[2] = Light;
+				FindShadingColor(Depth,int(FIXED_ONE*Light + 0.5),FrontColor);
+				GLfloat NProd = -(Normals[0]*Dir[0] + Normals[1]*Dir[1] + Normals[2]*Dir[2]);
+				GLfloat BackMult = (1-NProd)/2;
+				GLfloat FrontMult = (1+NProd)/2;
+				for (int c=0; c<3; c++)
+					Colors[c] = BackMult*BackColor[c] + FrontMult*FrontColor[c];
+			}
+		}
+	}
+	break;
+	}	
 }
 
 

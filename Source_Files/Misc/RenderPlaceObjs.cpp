@@ -47,7 +47,9 @@ static void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	GLfloat Scale,
 	short RelativeAngle,
 	shape_information_data& ShapeInfo,
+	short DepthType,
 	int& Farthest,
+	int& ProjDistance,
 	int& DistanceRef,
 	int& LightDepth,
 	GLfloat *Direction
@@ -178,6 +180,9 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			// Maximum distance of object parts (use position if a sprite)
 			int Farthest = transformed_origin.x;
 			
+			// Projected distance of centroid
+			int ProjDistance = transformed_origin.x;
+			
 			// Reference distance for frame calculation (use position if a sprite)
 			int DistanceRef = transformed_origin.x;
 			
@@ -215,7 +220,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				
 				FindProjectedBoundingBox(ModelPtr->Model.BoundingBox,
 					transformed_origin, Scale, object->facing - view->yaw,
-					model_shape_information, Farthest, DistanceRef, LightDepth, LightDirection);
+					model_shape_information, ModelPtr->DepthType,
+					Farthest, ProjDistance, DistanceRef, LightDepth, LightDirection);
 				
 				// Set pointer back
 				shape_information = &model_shape_information;
@@ -331,6 +337,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 						view->half_screen_width + (int(transformed_origin.y)*view->world_to_screen_x)/DistanceRef;
 				}
 				
+				render_object->rectangle.ProjDistance = PIN(ProjDistance,SHRT_MIN,SHRT_MAX);			
 				render_object->rectangle.depth= DistanceRef;
 				instantiate_rectangle_transfer_mode(view, &render_object->rectangle, data.transfer_mode, data.transfer_phase);
 				
@@ -859,7 +866,9 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	GLfloat Scale,
 	short RelativeAngle,
 	shape_information_data& ShapeInfo,
+	short DepthType,
 	int& Farthest,
+	int& ProjDistance,
 	int& DistanceRef,
 	int& LightDepth,
 	GLfloat *Direction
@@ -930,10 +939,6 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	GLfloat XMin, XMax;
 	GLfloat Proj_YMin, Proj_YMax, Proj_ZMin, Proj_ZMax;
 	
-	// Reference distance for projected bounding box
-	GLfloat XRef = MAX(X0,MINIMUM_OBJECT_DISTANCE);
-	DistanceRef = int(XRef + 0.5);
-	
 	for (int k=0; k<8; k++)
 	{
 		GLfloat X = ExpandedBB[k][0];
@@ -942,7 +947,7 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 		
 		GLfloat XClip = MAX(X,MINIMUM_OBJECT_DISTANCE);
 		
-		GLfloat Proj = (XRef/XClip);
+		GLfloat Proj = 1/XClip;
 		GLfloat Proj_Y = Proj*Y;
 		GLfloat Proj_Z = Proj*Z;
 		
@@ -963,7 +968,21 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 			Proj_ZMax = MAX(Proj_ZMax,Proj_Z);
 		}
 	}
-		
+	
+	// Projected distance of the center point
+	ProjDistance = (X0 >= 0) ? int(X0 + 0.5) : - int(-X0 + 0.5);
+	
+	// Reference distance for projected bounding box
+	GLfloat XRef = (DepthType > 0) ? XMax : ((DepthType < 0) ? XMin : X0);
+	DistanceRef = int(MAX(XRef,MINIMUM_OBJECT_DISTANCE) + 0.5);
+	
+	// Moved multiplication by XRef down here,
+	// since one needs to find it afterwards
+	Proj_YMin *= XRef;
+	Proj_YMax *= XRef;
+	Proj_ZMin *= XRef;
+	Proj_ZMax *= XRef;
+	
 	// Unshift by the object's position
 	Proj_YMin -= Y0;
 	Proj_YMax -= Y0;

@@ -128,6 +128,7 @@ struct rectangle_definition
 	_fixed ceiling_light;		// The ambient_shade is the floor light
 	OGL_ModelData *ModelPtr;
 	world_point3d Position;		// In overall world coordinates
+	short ProjDistance;			// Of centroid, from view plane
 	short Azimuth;				// Facing angle
 	float Scale;				// how big
 	float HorizScale;			// For teleporting

@@ -299,8 +299,10 @@ struct OGL_SkinManager
 // Mode
 enum
 {
-	OGL_ModelLight_Fast,		// Fast method -- only one miner's-light calculation
-	OGL_ModelLight_Indiv,		// Miner's light calculated for each vertex
+	OGL_MLight_Fast,			// Fast method -- only one miner's-light calculation
+	OGL_MLight_Fast_NoFade,		// Like above, but miner's light doesn't fade toward sides
+	OGL_MLight_Indiv,			// Miner's light calculated for each vertex
+	OGL_MLight_Indiv_NoFade,	// Like above, but miner's light doesn't fade toward sides
 	NUMBER_OF_MODEL_LIGHT_TYPES
 };
 
