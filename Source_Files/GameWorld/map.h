@@ -1045,11 +1045,14 @@ struct shape_and_transfer_mode
 	/* extended shape descriptor */
 	short collection_code, low_level_shape_index;
 	
-	// Needed for animated models: which frame in an individual sequence (0, 1, 2, ...)
-	short Frame;
-	
 	short transfer_mode;
 	_fixed transfer_phase; /* [0,FIXED_ONE] */
+	
+	// Needed for animated models: which frame in an individual sequence (0, 1, 2, ...)
+	short Frame, NextFrame;
+	
+	// Needed for animated models: which tick in a frame, and total ticks per frame
+	short Phase, Ticks;
 };
 
 void get_object_shape_and_transfer_mode(world_point3d *camera_location, short object_index, struct shape_and_transfer_mode *data);

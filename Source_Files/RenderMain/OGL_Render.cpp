@@ -2044,7 +2044,6 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	return true;
 }
 
-
 bool RenderModelSetup(rectangle_definition& RenderRectangle)
 {
 	OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
@@ -2081,7 +2080,10 @@ bool RenderModelSetup(rectangle_definition& RenderRectangle)
 		if (NumFrames > 0)
 		{
 			short ModelFrame = PIN(RenderRectangle.ModelFrame,0,NumFrames-1);
-			ModelPtr->Model.FindPositions_Sequence(true,ModelSequence,ModelFrame);
+			short NextModelFrame = PIN(RenderRectangle.NextModelFrame,0,NumFrames-1);
+			float MixFrac = RenderRectangle.MixFrac;
+			ModelPtr->Model.FindPositions_Sequence(true,
+				ModelSequence,ModelFrame,MixFrac,NextModelFrame);
 		}
 		else
 			ModelPtr->Model.FindPositions_Neutral(true);	// Fallback: neutral

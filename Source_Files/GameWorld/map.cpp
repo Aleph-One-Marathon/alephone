@@ -822,6 +822,16 @@ void get_object_shape_and_transfer_mode(
 	data->collection_code= GET_DESCRIPTOR_COLLECTION(object->shape);
 	short Frame = GET_SEQUENCE_FRAME(object->sequence);
 	data->Frame = Frame;
+	
+	// Guess next frame
+	short NextFrame = Frame + 1;
+	if (NextFrame >= animation->frames_per_view)
+		NextFrame = animation->loop_frame;
+	data->NextFrame = NextFrame;
+	data->Phase = GET_SEQUENCE_PHASE(object->sequence);
+	data->Ticks = animation->ticks_per_frame;
+	
+	// What bitmap, etc.
 	data->low_level_shape_index= animation->low_level_shape_indexes[view*animation->frames_per_view + Frame];
 	if (animation->transfer_mode==_xfer_normal && object->transfer_mode!=NONE)
 	{

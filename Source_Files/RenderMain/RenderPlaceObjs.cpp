@@ -318,6 +318,9 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				{
 					render_object->rectangle.ModelSequence = ModelSequence;
 					render_object->rectangle.ModelFrame = data.Frame;
+					render_object->rectangle.NextModelFrame = data.NextFrame;
+					render_object->rectangle.MixFrac = data.Ticks > 0 ?
+						float(data.Phase)/float(data.Ticks) : 0;
 					render_object->rectangle.Position = object->location;
 					render_object->rectangle.Azimuth = object->facing;
 					render_object->rectangle.Scale = Scale;
