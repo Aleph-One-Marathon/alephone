@@ -36,6 +36,7 @@ static float FOV_Normal = 80;
 static float FOV_ExtraVision = 130;
 static float FOV_TunnelVision = 30;
 static float FOV_ChangeRate = 1.66666667;	// this is 50 degrees/s
+static bool FOV_FixHorizontalNotVertical = false;
 
 // Defaults:
 // do the view folding effect (stretch horizontally, squeeze vertically) when teleporting,
@@ -83,6 +84,10 @@ bool View_AdjustFOV(float& FOV, float FOV_Target)
 	
 	return Changed;
 }
+
+// Indicates whether to fix the horizontal or the vertical field-of-view angle
+// (default: fix vertical FOV angle)
+bool View_FOV_FixHorizontalNotVertical() {return FOV_FixHorizontalNotVertical;}
 
 // Indicates whether to do fold-in/fold-out effect when one is teleporting
 bool View_DoFoldEffect() {return DoFoldEffect;}
@@ -173,6 +178,10 @@ bool XML_FOVParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"rate") == 0)
 	{
 		return (ReadBoundedNumericalValue(Value,"%f",FOV_ChangeRate,float(0),float(180)));
+	}
+	else if (strcmp(Tag,"fix_h_not_v") == 0)
+	{
+		return (ReadBooleanValue(Value,FOV_FixHorizontalNotVertical));
 	}
 	UnrecognizedTag();
 	return false;

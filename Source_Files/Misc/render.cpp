@@ -336,7 +336,9 @@ void initialize_view_data(
 {
 	double two_pi= 8.0*atan(1.0);
 	double half_cone= view->field_of_view*(two_pi/360.0)/2;
-	double adjusted_half_cone= asin(view->screen_width*sin(half_cone)/view->standard_screen_width);
+	double adjusted_half_cone= View_FOV_FixHorizontalNotVertical() ?
+		half_cone :
+		asin(view->screen_width*sin(half_cone)/view->standard_screen_width);
 	double world_to_screen;
 	
 	view->half_screen_width= view->screen_width/2;

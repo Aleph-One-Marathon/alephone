@@ -40,13 +40,15 @@ float View_FOV_TunnelVision();
 // returns whether or not the FOV had been changed.
 bool View_AdjustFOV(float& FOV, float FOV_Target);
 
+// Indicates whether to fix the horizontal or the vertical field-of-view angle
+// (default: fix vertical FOV angle)
+bool View_FOV_FixHorizontalNotVertical();
 
 // Indicates whether to do fold-in/fold-out effect when one is teleporting
 bool View_DoFoldEffect();
 
 // Indicates whether to do the "static" effect when one is teleporting
 bool View_DoStaticEffect();
-
 
 // Gets the on-screen-display font
 FontSpecifier& GetOnScreenFont();
