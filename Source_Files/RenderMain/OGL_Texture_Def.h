@@ -35,6 +35,8 @@ using namespace std;
 #include "shape_descriptors.h"
 #include "ImageLoader.h"
 
+#ifdef HAVE_OPENGL
+
 
 /*
 	Since Apple OpenGL currently does not support indexed-color images in direct-color
@@ -101,3 +103,6 @@ struct OGL_TextureOptionsBase
 };
 
 #endif
+
+#endif
+
