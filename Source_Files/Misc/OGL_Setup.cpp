@@ -33,6 +33,9 @@ Dec 17, 2000 (Loren Petrich):
 	Eliminated fog parameters from the preferences;
 	there is still a "fog present" switch, which is used to indicate
 	whether fog will not be suppressed.
+
+Apr 27, 2001 (Loren Petrich):
+	Modified the OpenGL fog support so as to enable below-liquid fogs
 */
 
 #include <vector>
@@ -88,10 +91,12 @@ bool OGL_Initialize()
 bool OGL_IsPresent() {return _OGL_IsPresent;}
 
 
-// These are global so that Pfhortran can manipulate them
-bool FogPresent = false;				// Fog inactive
-GLfloat FogColor[4] = {0.5,0.5,0.5,0};	// Gray
-GLfloat FogDepth = 8;					// Not too thick
+// Sensible defaults for the fog:
+static OGL_FogData FogData[OGL_NUMBER_OF_FOG_TYPES] = 
+{
+	{{0x8000,0x8000,0x8000},8,false},
+	{{0x8000,0x8000,0x8000},8,false}
+};
 
 
 // For flat landscapes:
@@ -462,6 +467,12 @@ void OGL_UnloadImages(int Collection)
 }
 
 
+OGL_FogData *OGL_GetFogData(int Type)
+{
+	return GetMemberWithBounds(FogData,Type,OGL_NUMBER_OF_FOG_TYPES);
+}
+
+
 // XML-parsing stuff
 
 class XML_TO_ClearParser: public XML_ElementParser
@@ -655,22 +666,23 @@ static XML_TextureOptionsParser TextureOptionsParser;
 
 class XML_FogParser: public XML_ElementParser
 {
-	rgb_color Color;
+	bool IsPresent[2];
+	bool FogPresent;
+	float Depth;
+	int Type;
 	
 public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
-	bool End();
+	bool AttributesDone();
 	
 	XML_FogParser(): XML_ElementParser("fog") {}
 };
 
 bool XML_FogParser::Start()
 {
-	Color.red = PIN(int(65535*FogColor[0]+0.5),0,65535);
-	Color.green = PIN(int(65535*FogColor[1]+0.5),0,65535);
-	Color.blue = PIN(int(65535*FogColor[2]+0.5),0,65535);
-	Color_SetArray(&Color);		
+	IsPresent[0] = IsPresent[1] = false;
+	Type = 0;
 	return true;
 }
 
@@ -678,21 +690,36 @@ bool XML_FogParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (strcmp(Tag,"on") == 0)
 	{
-		return (ReadBooleanValue(Value,FogPresent));
+		if (ReadBooleanValue(Value,FogPresent))
+		{
+			IsPresent[0] = true;
+			return true;
+		}
+		else return false;
 	}
 	else if (strcmp(Tag,"depth") == 0)
 	{
-		return (ReadNumericalValue(Value,"%f",FogDepth));
+		if (ReadNumericalValue(Value,"%f",Depth))
+		{
+			IsPresent[1] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"type") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%d",Type,0,OGL_NUMBER_OF_FOG_TYPES-1));
 	}
 	UnrecognizedTag();
 	return false;
 }
 
-bool XML_FogParser::End()
+bool XML_FogParser::AttributesDone()
 {
-	FogColor[0] = Color.red/65535.0;
-	FogColor[1] = Color.green/65535.0;
-	FogColor[2] = Color.blue/65535.0;
+	OGL_FogData& Data = FogData[Type];
+	if (IsPresent[0]) Data.IsPresent = FogPresent;
+	if (IsPresent[1]) Data.Depth = Depth;
+	Color_SetArray(&Data.Color);	
 	return true;
 }
 

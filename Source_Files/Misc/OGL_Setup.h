@@ -37,6 +37,9 @@ Dec 17, 2000 (Loren Petrich):
 	Eliminated fog parameters from the preferences;
 	there is still a "fog present" switch, which is used to indicate
 	whether fog will not be suppressed.
+
+Apr 27, 2001 (Loren Petrich):
+	Modified the OpenGL fog support so as to enable below-liquid fogs
 */
 
 #include "shape_descriptors.h"
@@ -227,6 +230,24 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 
 // Reset the textures (good if they start to crap out)
 void OGL_ResetTextures();
+
+// Fog data record
+struct OGL_FogData
+{
+	rgb_color Color;
+	float Depth;		// In World Units (1024 internal units)
+	bool IsPresent;
+};
+
+// Fog types
+enum
+{
+	OGL_Fog_AboveLiquid,
+	OGL_Fog_BelowLiquid,
+	OGL_NUMBER_OF_FOG_TYPES
+};
+
+OGL_FogData *OGL_GetFogData(int Type);
 
 
 // XML support:

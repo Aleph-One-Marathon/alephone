@@ -108,6 +108,7 @@ Dec 17, 2000 (Loren Petrich):
 #include "interface.h"
 #include "render.h"
 #include "map.h"
+#include "player.h"
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
 #include "Crosshairs.h"
@@ -307,24 +308,19 @@ static double LandscapeRescale;
 // Self-luminosity (the "miner's light" effect and weapons flare)
 static _fixed SelfLuminosity;
 
-
-// Self-explanatory :-)
-// CP Addition: Un-static'd FogColor for Matthew Hielscher's code
-// LP: removed "static" for all the other fog parameters.
-// LP: made its habitat OGL_Setup.cpp, where it can be controlled with MML.
-extern bool FogPresent;
-extern GLfloat FogColor[4];
-extern GLfloat FogDepth;
+// Pointer to current fog data:
+OGL_FogData *CurrFog = NULL;
 
 inline bool FogActive()
 {
+	if (!CurrFog) return false;
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	bool FogAllowed = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog) != 0;
-	return FogPresent && FogAllowed;
+	return CurrFog->IsPresent && FogAllowed;
 }
 
 // Current fog color; may be different from the fog color above because of infravision being on
-static GLfloat CurrFogColor[4];
+static GLfloat CurrFogColor[4] = {0,0,0,0};
 
 
 // Stipple patterns for that static look
@@ -618,11 +614,16 @@ bool OGL_StartMain()
 	// so be sure to turn it on when leaving the overhead map
 	// Also, added support for changing fog parameters on the fly,
 	// by moving the setting of initial values to where the context gets created.
+	int FogType = (local_player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ?
+		OGL_Fog_BelowLiquid : OGL_Fog_AboveLiquid;
+	CurrFog = OGL_GetFogData(FogType);
 	if (FogActive())
 	{
 		glEnable(GL_FOG);
-		for (int k=0; k<4; k++)
-			CurrFogColor[k] = FogColor[k];
+		CurrFogColor[0] = CurrFog->Color.red/65535.0;
+		CurrFogColor[1] = CurrFog->Color.green/65535.0;
+		CurrFogColor[2] = CurrFog->Color.blue/65535.0;
+		CurrFogColor[3] = 0;
 		if (IsInfravisionActive())
 		{
 			if (LandscapesLoaded)
@@ -631,7 +632,7 @@ bool OGL_StartMain()
 				FindInfravisionVersion(LoadedWallTexture,CurrFogColor);
 		}
 		glFogfv(GL_FOG_COLOR,CurrFogColor);
-		glFogf(GL_FOG_DENSITY,1.0/MAX(1,WORLD_ONE*FogDepth));
+		glFogf(GL_FOG_DENSITY,1.0/MAX(1,WORLD_ONE*CurrFog->Depth));
 	}
 	else
 		glDisable(GL_FOG);
