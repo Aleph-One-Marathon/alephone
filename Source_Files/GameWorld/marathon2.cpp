@@ -88,8 +88,8 @@ Mar 13, 2002 (Br'fin (Jeremy Parsons)):
 
 // CP additions:
 #include "scripting.h"
-#include "script_parser.h"
 #include "script_instructions.h"
+#include "script_parser.h"
 
 // ZZZ additions:
 #include "ActionQueues.h"
@@ -101,6 +101,12 @@ Mar 13, 2002 (Br'fin (Jeremy Parsons)):
 #endif
 
 /* ---------- constants */
+
+/* ---------- globals */
+
+// This is an intermediate action-flags queue for transferring action flags
+// from whichever source to the engine's event handling
+static ActionQueues* GameQueue = NULL;
 
 /* ---------- private prototypes */
 
@@ -135,6 +141,7 @@ void initialize_marathon(
 #endif
 	// CP addition: init pfhortran
 	init_pfhortran();
+	GameQueue = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER);
 }
 
 short update_world(
@@ -144,11 +151,30 @@ short update_world(
 	short i, time_elapsed;
 	short player_index;
 	bool game_over= false;
-	ActionQueues* GameQueue = GetRealActionQueues();
+	uint32 action_flag;
+	short queue_index;
 	
-	if (pfhortran_controls_player)
+	/* See if player is_pfhortran_controlled; if this is the case, put the corresponding
+		sPfhortranActionQueues into GameQueue; else put the corresponding sRealActionQueues
+		into GameQueue.	*/
+	for (player_index= 0; player_index<dynamic_world->player_count; ++player_index)
 	{
-		GameQueue = GetPfhortranActionQueues();
+		if PLAYER_IS_PFHORTRAN_CONTROLLED(get_player_data(player_index))
+		{
+			for (queue_index= 0; GetPfhortranActionQueues()->countActionFlags(player_index, true); ++queue_index)
+			{
+				action_flag = GetPfhortranActionQueues()->dequeueActionFlags(player_index, true);
+				GameQueue->enqueueActionFlags(player_index, &action_flag, 1, true);
+			}
+		}
+		else
+		{
+			for (queue_index= 0; GetRealActionQueues()->countActionFlags(player_index, true); ++queue_index)
+			{
+				action_flag = GetRealActionQueues()->dequeueActionFlags(player_index, true);
+				GameQueue->enqueueActionFlags(player_index, &action_flag, 1, true);
+			}		
+		}
 	}
 
 	/* find who has the most and the least queued action flags (we can only advance the world
@@ -162,12 +188,12 @@ short update_world(
 
 		if (game_is_networked)
 		{
-			queue_size= MIN(int(GetRealActionQueues()->countActionFlags(player_index)),
+			queue_size= MIN(int(GameQueue->countActionFlags(player_index)),
                 NetGetNetTime() - dynamic_world->tick_count);
 		}
 		else
 		{
-			queue_size= MIN(int(GetRealActionQueues()->countActionFlags(player_index)),
+			queue_size= MIN(int(GameQueue->countActionFlags(player_index)),
                 get_heartbeat_count() - dynamic_world->tick_count);
 		}
 		if (queue_size<0) queue_size= 0; // thumb in dike to prevent update_interface from getting -1
