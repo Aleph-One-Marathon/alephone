@@ -132,6 +132,13 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 }
 
 
+void OGL_TextureOptions::FindImagePosition()
+{
+	Right = Left + short(ImageScale*NormalImg.GetWidth() + 0.5);
+	Bottom = Top + short(ImageScale*NormalImg.GetHeight() + 0.5);
+}
+
+
 // Texture-options stuff
 static OGL_TextureOptions DefaultTextureOptions;
 
@@ -531,6 +538,18 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 		memcpy(&Data.GlowMask[0],Value,nchars);
 		return true;
 	}
+	else if (strcmp(Tag,"image_scale") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.ImageScale));
+	}
+	else if (strcmp(Tag,"x_offset") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",Data.Left));
+	}
+	else if (strcmp(Tag,"y_offset") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",Data.Top));
+	}
 	UnrecognizedTag();
 	return false;
 }
@@ -552,6 +571,7 @@ bool XML_TextureOptionsParser::AttributesDone()
 		{
 			// Replace the data
 			TOIter->OptionsData = Data;
+			TOIter->OptionsData.FindImagePosition();
 			return true;
 		}
 	}
@@ -562,6 +582,7 @@ bool XML_TextureOptionsParser::AttributesDone()
 	DataEntry.Bitmap = Bitmap;
 	DataEntry.OptionsData = Data;
 	TOL.push_back(DataEntry);
+	TOL.back().OptionsData.FindImagePosition();
 		
 	return true;
 }
