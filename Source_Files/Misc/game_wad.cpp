@@ -485,7 +485,7 @@ void complete_loading_level(
 		scan_and_add_platforms(platform_data, platform_data_count);
 	} else {
 		assert(actual_platform_data);
-		memcpy(platforms, actual_platform_data, actual_platform_data_count*sizeof(struct platform_data));
+		objlist_copy(platforms, actual_platform_data, actual_platform_data_count);
 		dynamic_world->platform_count= actual_platform_data_count;
 	}
 
@@ -610,7 +610,7 @@ boolean new_game(
 	/* ajr-this used to be done only when we successfully loaded the map. however, goto_level
 	 * will place the initial monsters on a level, which calls new_monster, which relies
 	 * on this information being setup properly, so we do it here instead. */
-	memcpy(&dynamic_world->game_information, game_information, sizeof(struct game_data));
+	obj_copy(dynamic_world->game_information, *game_information);
 
 	/* Load the level */	
 	assert(file_is_set);
@@ -697,7 +697,7 @@ boolean get_indexed_entry_point(
 					
 					directory= (struct directory_data *)get_indexed_directory_data(&header, actual_index, 
 						total_directory_data);
-					byte_swap_data(directory, SIZEOF_directory_data, 1, _bs_directory_data);
+					byte_swap_object(directory, _bs_directory_data);
 
 					/* Find the flags that match.. */
 					if(directory->entry_point_flags & type)
@@ -882,7 +882,7 @@ void load_points(
 	for(loop=0; loop<count; ++loop)
 	{
 		map_endpoints[loop].vertex= *points;
-		byte_swap_data(&map_endpoints[loop].vertex, sizeof(world_point2d), 1, _bs_world_point_2d);
+		byte_swap_object(map_endpoints[loop].vertex, _bs_world_point_2d);
 		++points;
 	}
 	dynamic_world->endpoint_count= count;
@@ -900,7 +900,7 @@ void load_lines(
 	for(loop=0; loop<count; ++loop)
 	{
 		map_lines[loop]= *lines;
-		byte_swap_data(map_lines + loop, SIZEOF_line_data, 1, _bs_line_data);
+		byte_swap_object(map_lines[loop], _bs_line_data);
 		++lines;
 	}
 	dynamic_world->line_count= count;
@@ -919,7 +919,7 @@ void load_sides(
 	for(loop=0; loop<count; ++loop)
 	{
 		map_sides[loop]= *sides;
-		byte_swap_data(map_sides + loop, SIZEOF_side_data, 1, _bs_side_data);
+		byte_swap_object(map_sides[loop], _bs_side_data);
 
 		if(version==MARATHON_ONE_DATA_VERSION)
 		{
@@ -945,7 +945,7 @@ void load_polygons(
 	for(loop=0; loop<count; ++loop)
 	{
 		map_polygons[loop]= *polys;
-		byte_swap_data(map_polygons + loop, SIZEOF_polygon_data, 1, _bs_polygon_data);
+		byte_swap_object(map_polygons[loop], _bs_polygon_data);
 		++polys;
 	}
 	dynamic_world->polygon_count= count;
@@ -1039,7 +1039,7 @@ void load_lights(
 				{
 					short new_index;
 
-					byte_swap_data(light, SIZEOF_static_light_data, 1, _bs_saved_static_light_data);
+					byte_swap_object(light, _bs_static_light_data);
 					
 					new_index= new_light(light);
 					assert(new_index==loop);
@@ -1070,7 +1070,7 @@ void load_annotations(
 	for(ii=0; ii<count; ++ii)
 	{
 		map_annotations[ii]= annotations[ii];
-		byte_swap_data(map_annotations + ii, SIZEOF_map_annotation, 1, _bs_map_annotation);
+		byte_swap_object(map_annotations[ii], _bs_map_annotation);
 	}
 	dynamic_world->default_annotation_count= count;
 	
@@ -1088,7 +1088,7 @@ void load_objects(saved_object *map_objects, short count)
 	for(ii=0; ii<count; ++ii)
 	{
 		saved_objects[ii]= map_objects[ii];	
-		byte_swap_data(saved_objects + ii, SIZEOF_map_object, 1, _bs_map_object);
+		byte_swap_object(saved_objects[ii], _bs_map_object);
 	} 
 	dynamic_world->initial_objects_count= count;
 }
@@ -1111,7 +1111,7 @@ void load_media(
 	// assert(count>=0 && count<MAXIMUM_MEDIAS_PER_MAP);
 	for(ii= 0; ii<count; ++ii)
 	{
-		byte_swap_data(media, SIZEOF_media_data, 1, _bs_media_data);
+		byte_swap_object(media, _bs_media_data);
 		short new_index= new_media(media);
 		
 		assert(new_index==ii);
@@ -1128,8 +1128,8 @@ void load_ambient_sound_images(
 	// LP change: fixed off-by-one error
 	assert(count>=0 &&count<=MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
 	// assert(count>=0 &&count<MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
-	memcpy(ambient_sound_images, data, count*sizeof(struct ambient_sound_image_data));
-	byte_swap_data(ambient_sound_images, SIZEOF_ambient_sound_image_data, count, _bs_ambient_sound_image_data);
+	objlist_copy(ambient_sound_images, data, count);
+	byte_swap_object_list(ambient_sound_images, count, _bs_ambient_sound_image_data);
 	dynamic_world->ambient_sound_image_count= count;
 }
 
@@ -1140,8 +1140,8 @@ void load_random_sound_images(
 	// LP change: fixed off-by-one error
 	assert(count>=0 &&count<=MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
 	// assert(count>=0 &&count<MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
-	memcpy(random_sound_images, data, count*sizeof(struct random_sound_image_data));
-	byte_swap_data(random_sound_images, SIZEOF_random_sound_image_data, count, _bs_random_sound_image_data);
+	objlist_copy(random_sound_images, data, count);
+	byte_swap_object_list(random_sound_images, count, _bs_random_sound_image_data);
 	dynamic_world->random_sound_image_count= count;
 }
 
@@ -1163,6 +1163,23 @@ boolean load_game_from_file(FileSpecifier& File)
 	// FileDesc *file)
 {
 	boolean success= FALSE;
+	
+	// LP: verify sizes:
+	assert(sizeof(map_object) == SIZEOF_map_object);
+	assert(sizeof(directory_data) == SIZEOF_directory_data);
+	assert(sizeof(map_annotation) == SIZEOF_map_annotation);
+	assert(sizeof(ambient_sound_image_data) == SIZEOF_ambient_sound_image_data);
+	assert(sizeof(random_sound_image_data) == SIZEOF_random_sound_image_data);
+	assert(sizeof(endpoint_data) == SIZEOF_endpoint_data);
+	assert(sizeof(line_data) == SIZEOF_line_data);
+	assert(sizeof(side_data) == SIZEOF_side_data);
+	assert(sizeof(polygon_data) == SIZEOF_polygon_data);
+	assert(sizeof(object_frequency_definition) == SIZEOF_object_frequency_definition);
+	assert(sizeof(static_data) == SIZEOF_static_data);
+	assert(sizeof(static_light_data) == SIZEOF_static_light_data);
+	assert(sizeof(media_data) == SIZEOF_media_data);
+	assert(sizeof(static_platform_data) == SIZEOF_static_platform_data);
+	assert(sizeof(platform_data) == SIZEOF_platform_data);
 
 	/* Must reset this, in case they played a net game before this one. */
 	game_is_networked= FALSE;
@@ -1216,9 +1233,9 @@ void setup_revert_game_info(
 	struct entry_point *entry)
 {
 	revert_game_data.game_is_from_disk = FALSE;
-	memcpy(&revert_game_data.game_information, game_info, sizeof(struct game_data));
-	memcpy(&revert_game_data.player_start, start, sizeof(struct player_start_data));
-	memcpy(&revert_game_data.entry_point, entry, sizeof(struct entry_point));
+	obj_copy(revert_game_data.game_information, *game_info);
+	obj_copy(revert_game_data.player_start, *start);
+	obj_copy(revert_game_data.entry_point, *entry);
 	
 	return;
 }
@@ -1433,8 +1450,8 @@ boolean process_map_wad(
 		assert(count>=0 && count<MAXIMUM_ENDPOINTS_PER_MAP);
 
 		/* Slam! */
-		memcpy(map_endpoints, data, count*sizeof(struct endpoint_data));
-		byte_swap_data(map_endpoints, SIZEOF_endpoint_data, count, _bs_endpoint_data);
+		memcpy(map_endpoints, data, count*sizeof(endpoint_data));
+		byte_swap_object_list(map_endpoints, count, _bs_endpoint_data);
 		dynamic_world->endpoint_count= count;
 
 		is_preprocessed_map= TRUE;
@@ -1620,12 +1637,12 @@ boolean process_map_wad(
 		data= (unsigned char *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
 		count= data_length/sizeof(struct static_platform_data);
 		assert(count*sizeof(struct static_platform_data)==data_length);
-		byte_swap_data(data, SIZEOF_static_platform_data, count, _bs_saved_static_platform_data);
+		byte_swap_object_list(data, count, _bs_static_platform_data);
 
 		platform_structures= (struct platform_data *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
 		platform_structure_count= data_length/sizeof(struct platform_data);
 		assert(platform_structure_count*sizeof(struct platform_data)==data_length);
-		byte_swap_data(platform_structures, SIZEOF_platform_data, platform_structure_count, _bs_saved_platform_data);
+		byte_swap_object_list(platform_structures, platform_structure_count, _bs_platform_data);
 
 		complete_loading_level((short *) map_index_data, map_index_count,
 			(struct static_platform_data *) data, count, platform_structures, 
@@ -1687,7 +1704,7 @@ static void load_redundant_map_data(
 	if (redundant_data)
 	{
 		assert(redundant_data && map_indexes);
-		memcpy(map_indexes, redundant_data, count*sizeof(short));
+		objlist_copy(map_indexes, redundant_data, count);
 		byte_swap_memory(map_indexes, _2byte, count);
 		dynamic_world->map_index_count= count;
 	}
