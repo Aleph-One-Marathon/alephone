@@ -95,8 +95,14 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	static const int txtr_x[NUM_TEX] = {0, 256, 512, 0, 256, 512};
 	static const int txtr_y[NUM_TEX] = {0, 0, 0, 128, 128, 128};
 
+	if(hud_pict_loaded && time_elapsed == NONE)
+	{
+		glDeleteTextures(NUM_TEX, txtr_id);
+		hud_pict_loaded= false;
+	}
+	
 	// Load static HUD picture if necessary
-	if ((!hud_pict_loaded && !hud_pict_not_found) || (time_elapsed == NONE)) {
+	if (!hud_pict_loaded && !hud_pict_not_found) {
 		LoadedResource PictRsrc;
 		if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, PictRsrc))
 			hud_pict_loaded = true;
