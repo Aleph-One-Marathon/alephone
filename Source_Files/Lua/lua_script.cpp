@@ -566,9 +566,9 @@ static int L_Set_Tag_State(lua_State *L)
 	int tag = static_cast<int>(lua_tonumber(L,1));
 	bool tag_state = lua_toboolean(L,2);
 
-	set_tagged_light_statuses(int16(tag), (tag_state < -0.5) || (tag_state > 0.5));
-	try_and_change_tagged_platform_states(int16(tag), (tag_state < -0.5) || (tag_state > 0.5));
-	assume_correct_switch_position(_panel_is_tag_switch, int16(tag), (tag_state < -0.5) || (tag_state > 0.5));
+	set_tagged_light_statuses(int16(tag), tag_state);
+	try_and_change_tagged_platform_states(int16(tag), tag_state);
+	assume_correct_switch_position(_panel_is_tag_switch, int16(tag), tag_state);
 
 	return 0;
 }
@@ -751,10 +751,10 @@ static int L_Remove_Item(lua_State *L)
 	if (definition)
 	{
 		if(player->items[item_type] >= 1)// && definition->item_kind==_ammunition)
-			player->items[item_type]--;		/* Decrement your count.. */
+		{   player->items[item_type]--; }		/* Decrement your count.. */
 		mark_player_inventory_as_dirty(player_index,item_type);
 		if (player->items[item_type] == 0 && definition->item_kind==_weapon)
-			select_next_best_weapon(player_index);
+		{    select_next_best_weapon(player_index); }
     }
 	return 0;
 }
@@ -1064,6 +1064,7 @@ static int L_Damage_Monster(lua_State *L)
 		theDamage.type = damage_type;
 	else
 		theDamage.type = _damage_fist;
+
 	theDamage.base = damage_amount;
 	theDamage.random = 0;
 	theDamage.flags = 0;
@@ -1148,7 +1149,7 @@ static int L_Move_Monster(lua_State *L)
 	if (theRealMonster->path==NONE)
 	{
 		if(theRealMonster->action!=_monster_is_being_hit || MONSTER_IS_DYING(theRealMonster))
-			set_monster_action(monster_index, _monster_is_stationary);
+		{	set_monster_action(monster_index, _monster_is_stationary); }
 		set_monster_mode(monster_index, _monster_unlocked, NONE);
 		return 0;
 	}
@@ -2631,7 +2632,7 @@ static int L_Get_Platform_Speed(lua_State *L)
 
 	int polygon_index = static_cast<int>(lua_tonumber(L,1));
 	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon && polygon->type == _polygon_is_platform);
+	if (polygon && polygon->type == _polygon_is_platform)
 	{
 		struct platform_data *platform = get_platform_data(polygon->permutation);
 		if (platform)
@@ -2654,7 +2655,7 @@ static int L_Set_Platform_Speed(lua_State *L)
 	int polygon_index = static_cast<int>(lua_tonumber(L,1));
 	int16 speed = static_cast<int16>(lua_tonumber(L,2));
 	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon && polygon->type == _polygon_is_platform);
+	if (polygon && polygon->type == _polygon_is_platform)
 	{
 		struct platform_data *platform = get_platform_data(polygon->permutation);
 		if (platform)
@@ -2675,7 +2676,7 @@ static int L_Get_Platform_Floor_Height(lua_State *L)
 
 	int polygon_index = static_cast<int>(lua_tonumber(L,1));
 	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon && polygon->type == _polygon_is_platform);
+	if (polygon && polygon->type == _polygon_is_platform)
 	{
 		struct platform_data *platform = get_platform_data(polygon->permutation);
 		if (platform)
@@ -2697,7 +2698,7 @@ static int L_Get_Platform_Ceiling_Height(lua_State *L)
 
 	int polygon_index = static_cast<int>(lua_tonumber(L,1));
 	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon && polygon->type == _polygon_is_platform);
+	if (polygon && polygon->type == _polygon_is_platform)
 	{
 		struct platform_data *platform = get_platform_data(polygon->permutation);
 		if (platform)
@@ -2719,7 +2720,7 @@ static int L_Set_Platform_Floor_Height(lua_State *L)
 
 	int polygon_index = static_cast<int>(lua_tonumber(L,1));
 	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon && polygon->type == _polygon_is_platform);
+	if (polygon && polygon->type == _polygon_is_platform)
 	{
 		struct platform_data *platform = get_platform_data(polygon->permutation);
 		if (platform)
@@ -2742,7 +2743,7 @@ static int L_Set_Platform_Ceiling_Height(lua_State *L)
 
 	int polygon_index = static_cast<int>(lua_tonumber(L,1));
 	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon && polygon->type == _polygon_is_platform);
+	if (polygon && polygon->type == _polygon_is_platform)
 	{
 		struct platform_data *platform = get_platform_data(polygon->permutation);
 		if (platform)
@@ -2797,19 +2798,10 @@ static int L_Set_Platform_Movement(lua_State *L)
 		struct platform_data *platform = get_platform_data(polygon->permutation);
 		if (platform)
 		{
-			switch (movement)
-			{
-				case true:
-					SET_PLATFORM_IS_EXTENDING(platform);
-					break;
-
-				case false:
-					SET_PLATFORM_IS_CONTRACTING(platform);
-					break;
-
-				default:
-					break;
-			}
+			if (movement)
+			{	SET_PLATFORM_IS_EXTENDING(platform); }
+			else
+			{	SET_PLATFORM_IS_CONTRACTING(platform); }
 		}
 	}
 	return 0;
@@ -2826,7 +2818,7 @@ static int L_Get_Terminal_Text_Number(lua_State *L)
 	short polygon_index = static_cast<short>(lua_tonumber(L,1));
 	short line_index = static_cast<short>(lua_tonumber(L,2));
 	short side_index;
-	if (line_side_has_control_panel(line_index, polygon_index, &side_index));
+	if (line_side_has_control_panel(line_index, polygon_index, &side_index))
 	{
 		struct side_data *side_data = get_side_data(side_index);
 		if (side_data && SIDE_IS_CONTROL_PANEL(side_data) && side_data->control_panel_type == _panel_is_computer_terminal)
@@ -2851,7 +2843,7 @@ static int L_Set_Terminal_Text_Number(lua_State *L)
 	short line_index = static_cast<short>(lua_tonumber(L,2));
 	int16 terminal_text_id = static_cast<int16>(lua_tonumber(L,3));
 	short side_index;
-	if (line_side_has_control_panel(line_index, polygon_index, &side_index));
+	if (line_side_has_control_panel(line_index, polygon_index, &side_index))
 	{
 		struct side_data *side_data = get_side_data(side_index);
 		if (side_data && SIDE_IS_CONTROL_PANEL(side_data) && side_data->control_panel_type == _panel_is_computer_terminal)
