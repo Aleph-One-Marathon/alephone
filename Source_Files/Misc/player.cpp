@@ -153,6 +153,16 @@ static short OxygenDepletion = 1, OxygenReplenishment = 0, OxygenChange = 0;
 
 // LP addition: invincibility-powerup vulnerability
 static short Vulnerability = _damage_fusion_bolt;
+
+// LP: the various powerup item ID's are changeable, but set to appropriate defaults here
+static short Powerup_Invincibility = _i_invincibility_powerup;
+static short Powerup_Invisibility = _i_invisibility_powerup;
+static short Powerup_Infravision = _i_infravision_powerup;
+static short Powerup_Extravision = _i_extravision_powerup;
+static short Powerup_TripleEnergy = _i_triple_energy_powerup;
+static short Powerup_DoubleEnergy = _i_double_energy_powerup;
+static short Powerup_Energy = _i_energy_powerup;
+static short Powerup_Oxygen = _i_oxygen_powerup;
 				
 /* ---------- structures */
 
@@ -871,7 +881,32 @@ bool legal_player_powerup(
 {
 	struct player_data *player= get_player_data(player_index);
 	bool legal= true;
+
+	if (item_index == Powerup_Invincibility)
+		if (player->invincibility_duration) legal= false;
+		
+	else if (item_index == Powerup_Invisibility)
+		if (player->invisibility_duration>kINVISIBILITY_DURATION) legal= false;
+		
+	else if (item_index == Powerup_Infravision)
+		if (player->infravision_duration) legal= false;
+		
+	else if (item_index == Powerup_Extravision)
+		if (player->extravision_duration) legal= false;
+		
+	else if (item_index == Powerup_TripleEnergy)
+		if (player->suit_energy>=3*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
+		
+	else if (item_index == Powerup_DoubleEnergy)
+		if (player->suit_energy>=2*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
+		
+	else if (item_index == Powerup_Energy)
+		if (player->suit_energy>=PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
+		
+	else if (item_index == Powerup_Oxygen)
+		if (player->suit_oxygen>=5*PLAYER_MAXIMUM_SUIT_OXYGEN/6) legal= false;
 	
+	/*	
 	switch (item_index)
 	{
 		case _i_invisibility_powerup:
@@ -904,6 +939,7 @@ bool legal_player_powerup(
 			if (player->suit_energy>=3*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
 			break;
 	}
+	*/
 
 	return legal;
 }
@@ -914,6 +950,49 @@ void process_player_powerup(
 {
 	struct player_data *player= get_player_data(player_index);
 	
+	if (item_index == Powerup_Invincibility)
+		player->invincibility_duration+= kINVINCIBILITY_DURATION;
+		
+	else if (item_index == Powerup_Invisibility)
+		player->invisibility_duration+= kINVISIBILITY_DURATION;
+		
+	else if (item_index == Powerup_Infravision)
+		player->infravision_duration+= kINFRAVISION_DURATION;
+		
+	else if (item_index == Powerup_Extravision)
+	{
+		if (player_index==current_player_index) start_extravision_effect(true);
+		player->extravision_duration+= kEXTRAVISION_DURATION;
+	}
+		
+	else if (item_index == Powerup_TripleEnergy)
+		if (player->suit_energy<3*PLAYER_MAXIMUM_SUIT_ENERGY)
+		{
+			player->suit_energy= 3*PLAYER_MAXIMUM_SUIT_ENERGY;
+			if (player_index==current_player_index) mark_shield_display_as_dirty();
+		}
+		
+	else if (item_index == Powerup_DoubleEnergy)
+		if (player->suit_energy<2*PLAYER_MAXIMUM_SUIT_ENERGY)
+		{
+			player->suit_energy= 2*PLAYER_MAXIMUM_SUIT_ENERGY;
+			if (player_index==current_player_index) mark_shield_display_as_dirty();
+		}
+		
+	else if (item_index == Powerup_Energy)
+		if (player->suit_energy<1*PLAYER_MAXIMUM_SUIT_ENERGY)
+		{
+			player->suit_energy= 1*PLAYER_MAXIMUM_SUIT_ENERGY;
+			if (player_index==current_player_index) mark_shield_display_as_dirty();
+		}
+		
+	else if (item_index == Powerup_Oxygen)
+	{
+		player->suit_oxygen= CEILING(player->suit_oxygen+PLAYER_MAXIMUM_SUIT_OXYGEN/2, PLAYER_MAXIMUM_SUIT_OXYGEN);
+		if (player_index==current_player_index) mark_oxygen_display_as_dirty();
+	}
+
+	/*
 	switch (item_index)
 	{
 		case _i_invisibility_powerup:
@@ -960,6 +1039,7 @@ void process_player_powerup(
 			}
 			break;
 	}
+	*/
 
 	return;
 }
@@ -2353,6 +2433,38 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"vulnerability") == 0)
 	{
 		return (ReadBoundedNumericalValue(Value,"%hd",Vulnerability,short(NONE),short(NUMBER_OF_DAMAGE_TYPES-1)));
+	}
+	else if (strcmp(Tag,"invincibility_powerup") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Invincibility,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"invisibility_powerup") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Invisibility,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"infravision_powerup") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Infravision,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"extravision_powerup") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Extravision,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"triple_energy_powerup") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_TripleEnergy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"double_energy_powerup") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_DoubleEnergy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"energy_powerup") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Energy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"oxygen_powerup") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Oxygen,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
 	}
 	UnrecognizedTag();
 	return false;
