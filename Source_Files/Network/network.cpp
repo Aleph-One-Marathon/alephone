@@ -178,7 +178,7 @@ static short localPlayerIndex;
 static short localPlayerIdentifier;
 static NetTopologyPtr topology;
 static char *network_adsp_packet;
-static size_t sServerPlayerIndex;
+static short sServerPlayerIndex;
 static bool sOldSelfSendStatus;
 static RingGameProtocol sRingGameProtocol;
 static StarGameProtocol sStarGameProtocol;
