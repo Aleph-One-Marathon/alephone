@@ -45,6 +45,9 @@ May 20, 2000 (Loren Petrich):
 	get_indexed_grouping()
 	get_indexed_font_changes()
 	These will return NULL for an invalid index
+
+July 5, 2000 (Loren Petrich):
+	Using world_pixels instead of screen_window
 */
 
 // add logon/logoff keywords. (& make terminal display them)
@@ -212,7 +215,7 @@ long map_terminal_data_length;
 
 // LP addition: this is for getting the clipping rectangle to revert to
 // when done with drawing the terminal text
-extern GrafPtr screen_window;
+extern GrafPtr world_pixels;
 
 /* internal global structure */
 static struct player_terminal_data *player_terminals;
@@ -605,7 +608,8 @@ void _render_computer_interface(
 		}
 		
 		// LP change: restore overall clipping
-		ClipRect(&screen_window->portRect);
+		// Changed to actually-used buffer
+		ClipRect(&world_pixels->portRect);
 		
 		SET_TERMINAL_IS_DIRTY(terminal_data, FALSE);
 	}
