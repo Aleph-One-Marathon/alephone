@@ -26,11 +26,6 @@
 
 #include "metaserver_messages.h"
 
-// metaserver_client.cpp - driving dealy for attempted connection to Myth-style metaserver
-// using TCPMess.
-//
-// Woody Zenfell, III - April 15, 2004
-
 #include "CommunicationsChannel.h"
 #include "Message.h"
 #include "MessageDispatcher.h"
@@ -44,9 +39,6 @@
 #include <iterator>
 
 using namespace std;
-
-// Some compilers (e.g. MSVC++6.0) don't support covariant return types
-#define COVARIANT_RETURN(base,derived) derived
 
 static const char* sRoomNames[] = {
 	"Crows Bridge",
@@ -84,27 +76,9 @@ static const char* sRoomNames[] = {
 const int kRoomNameCount = sizeof(sRoomNames) / sizeof(sRoomNames[0]);
 
 
-static const char* sServiceName = "MARATHON";
+static const char* kServiceName = "MARATHON";
 
 const int kKeyLength = 16;
-
-/*
- public static final int SENDCHAT = 200;
- public static final int CREATEGAME = 104;
- public static final int REMOVEGAME = 105;
- public static final int SYNCPLAYER =  97;
- public static final int SYNCGAMES = 110;
- public static final int PRIVATE_MESSAGE = 201;
- public static final int SETPLAYERMODE = 107;
- public static final int SETPLAYERDATA = 103;
- public static final int GETBUDDIES = 118;
-
- public static int DENY_LOGIN = 3;
-
- public static final int RANK_DAGGER = 0;
- public static final int RANK_COMET = 16;
- public static final int RANK_UNRANKED = 255;
- */
 
 enum
 {
@@ -120,30 +94,9 @@ enum
 	kMNetType = 1,		// whatever that is
 };
 
-static const uint16 sPlayerStatus = kSTATE_AWAKE;
+static const uint16 kPlayerStatus = kSTATE_AWAKE;
 static const uint8 kPlayerIcon = 0;
-
-
-enum ClientState
-{
-	kUninitialized,
-	kUnconnected,
-
-	// Interactions with login server
-	kWaitingForKey,
-	kWaitingForAcceptance,
-	kWaitingForLoginData,
-	kWaitingForMythData,
-	kWaitingForRoomList,
-
-	// Interactions with room server
-	kWaitingForIDAndLimit,
-	kWaitingForRoomAcceptance,
-
-	kConnectedToRoom,
-};
-
-
+static const uint16 kAlephOneClientVersion = 5000;
 
 static void
 write_padded_bytes(AOStream& inStream, const char* inBytes, size_t inByteCount, size_t inTargetLength)
@@ -198,30 +151,28 @@ read_string(AIStream& in)
 void
 write_player_aux_data(AOStream& out, const string& name, const string& team)
 {
-	// "aux player data"
-	/* @bnetpacket Byte - Their icon
-	* @bnetpacket Short - Awake status (0 is awake, 1 is afk)
-	* @bnetpacket byte - skipped
-	* @bnetpacket byte[6] - Primary Colors
-	* @bnetpacket 2 Bytes - Skipped
-	* @bnetpacket byte[6] - Seconary Colors
-	* @bnetpacket 20 bytes - Skipped
-	* @bnetpacket String - Name
-	* @bnetpacket String - Team
-	*/
+	uint8	unused8 = 0;
+	uint16	primaryColor[3] = { 0x7777, 0x7777, 0x7777 };
+	uint16	unused16 = 0;
+	uint16	secondaryColor[3] = { 0x7777, 0x7777, 0x7777 };
+	uint16	orderIndex = 0;
 
-	out << kPlayerIcon
-	<< sPlayerStatus
-	<< (uint8)0
-	<< (uint16)256
-	<< (uint16)256
-	<< (uint16)256
-	<< (uint16)0
-	<< (uint16)256
-	<< (uint16)256
-	<< (uint16)256;
+	out
+		<< kPlayerIcon
+		<< kPlayerStatus
+		<< unused8
+		<< primaryColor[0]
+		<< primaryColor[1]
+		<< primaryColor[2]
+		<< unused16
+		<< secondaryColor[0]
+		<< secondaryColor[1]
+		<< secondaryColor[2]
+		<< unused16
+		<< orderIndex
+		<< kAlephOneClientVersion;
 
-	write_padded_bytes(out, NULL, 0, 20);
+	write_padded_bytes(out, NULL, 0, 14);
 
 	write_string(out, name);
 	write_string(out, team);
@@ -236,14 +187,16 @@ LoginAndPlayerInfoMessage::reallyDeflateTo(AOStream& thePacket) const
 	// I'd much rather write the stuff and THEN figure out how much there is, but
 	// given the way AStreams work currently, this is much easier.  Trust me.  :)
 	uint16 thePlayerDataSize = 40 + strlen(m_playerName.c_str()) + strlen(m_teamName.c_str());
+	uint32 unknown32 = 0;
+	uint16 mystery = 1;
 
 	thePacket << (uint32)kPlatformType
-		<< (uint32)0	// no explanation given in gooey
-		<< (uint32)0	// this one is a seemingly-uninitialized 'userID' in gooey
-		<< (uint16)1	// this is called "maxA" in gooey
+		<< unknown32
+		<< unknown32
+		<< mystery
 		<< thePlayerDataSize;
 
-	write_padded_string(thePacket, sServiceName, 32);
+	write_padded_string(thePacket, kServiceName, 32);
 	write_padded_string(thePacket, __DATE__, 32);
 	write_padded_string(thePacket, __TIME__, 32);
 	write_padded_string(thePacket, m_userName.c_str(), 32);
@@ -266,11 +219,16 @@ SaltMessage::reallyInflateFrom(AIStream& inStream)
 void
 LocalizationMessage::reallyDeflateTo(AOStream& thePacket) const
 {
-	// I have no idea what these mean - just copying them from 'gooey'
-	thePacket << (uint32)1
-		<< (uint32)2
-		<< (uint32)3
-		<< (uint32)0;
+	uint32 mystery1 = 1;
+	uint32 mystery2 = 2;
+	uint32 mystery3 = 3;
+	uint32 unknown32 = 0;
+
+	thePacket
+		<< mystery1
+		<< mystery2
+		<< mystery3
+		<< unknown32;
 }
 
 
@@ -354,10 +312,12 @@ NameAndTeamMessage::reallyDeflateTo(AOStream& out) const
 bool
 IDAndLimitMessage::reallyInflateFrom(AIStream& inStream)
 {
-	inStream >> m_playerID
-		>> m_playerLimit;
+	uint16 ignore16;
 
-	inStream.ignore(2);
+	inStream
+		>> m_playerID
+		>> m_playerLimit
+		>> ignore16;
 
 	return true;
 }
@@ -453,23 +413,23 @@ ChatMessage::reallyInflateFrom(AIStream& inStream)
 
 MetaserverPlayerInfo::MetaserverPlayerInfo(AIStream& inStream)
 {
+	uint32 ignore32;
+	uint8 ignore8;
+
 	inStream
 		>> m_verb
-		>> m_adminFlags;
-	inStream.ignore(4);
-	inStream
+		>> m_adminFlags
+		>> ignore32
 		>> m_playerID
-		>> m_roomID;
-	inStream.ignore(1);
-	inStream
+		>> m_roomID
+		>> ignore8
 		>> m_rank
-		>> m_playerDataSize;
-	inStream.ignore(4);
-	inStream
-		>> m_icon;
-	inStream.ignore(1);
-	inStream
+		>> m_playerDataSize
+		>> ignore32
+		>> m_icon
+		>> ignore8
 		>> m_status;
+
 	inStream.read(m_primaryColor, 3);
 	inStream.ignore(2);
 	inStream.read(m_secondaryColor, 3);
