@@ -29,6 +29,10 @@ Aug 21, 2000 (Loren Petrich)
 
 Aug 26, 2000 (Loren Petrich)
 	Added object-oriented file handling
+
+Jul 31, 2002 (Loren Petrich)
+	Added text-resource access in analogy with others' image- and sound-resource access;
+	this is for supporting the M2-Win95 file format
 */
 
 // LP: CodeWarrior complains unless I give the full definition of these classes
@@ -61,7 +65,8 @@ extern void scroll_full_screen_pict_resource_from_scenario(int pict_resource_num
 extern bool get_picture_resource_from_images(int base_resource, LoadedResource& PictRsrc);
 extern bool get_picture_resource_from_scenario(int base_resource, LoadedResource& PictRsrc);
 
-extern bool get_sound_resource_from_scenario(int resource_number, LoadedResource& SndRsrc);
+extern bool get_sound_resource_from_scenario(int resource_number, LoadedResource& SoundRsrc);
+extern bool get_text_resource_from_scenario(int resource_number, LoadedResource& TextRsrc);
 
 #ifdef SDL
 // Convert MacOS PICT resource to SDL surface

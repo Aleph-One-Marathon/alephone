@@ -37,6 +37,10 @@ Jul 6, 2001 (Loren Petrich):
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Quicktime.h
+
+Jul 31, 2002 (Loren Petrich)
+	Added text-resource access in analogy with others' image- and sound-resource access;
+	this is for supporting the M2-Win95 file format
  */
 
 #include "cseries.h"
@@ -81,6 +85,7 @@ public:
 	bool get_pict(int id, LoadedResource &rsrc);
 	bool get_clut(int id, LoadedResource &rsrc);
 	bool get_snd(int id, LoadedResource &rsrc);
+	bool get_text(int id, LoadedResource &rsrc);
 
 private:
 	bool has_rsrc(uint32 rsrc_type, uint32 wad_type, int id);
@@ -287,6 +292,13 @@ bool image_file_t::get_rsrc(uint32 rsrc_type, uint32 wad_type, int id, LoadedRes
 					rsrc.SetData(snd_data, raw_length);
 					success = true;
 				}
+				else if (rsrc_type == FOUR_CHARS_TO_INT('T','E','X','T'))
+				{
+					void *text_data = malloc(raw_length);
+					memcpy(text_data, raw, raw_length);
+					rsrc.SetData(text_data, raw_length);
+					success = true;
+				}
 			}
 			free_wad(d);
 			return success;
@@ -309,6 +321,11 @@ bool image_file_t::get_clut(int id, LoadedResource &rsrc)
 bool image_file_t::get_snd(int id, LoadedResource &rsrc)
 {
 	return get_rsrc(FOUR_CHARS_TO_INT('s','n','d',' '), FOUR_CHARS_TO_INT('s','n','d',' '), id, rsrc);
+}
+
+bool image_file_t::get_text(int id, LoadedResource &rsrc)
+{
+	return get_rsrc(FOUR_CHARS_TO_INT('T','E','X','T'), FOUR_CHARS_TO_INT('t','e','x','t'), id, rsrc);
 }
 
 
@@ -396,6 +413,24 @@ bool get_sound_resource_from_scenario(int resource_number, LoadedResource &Sound
 	if (success) {
 		Handle SndHdl = SoundRsrc.GetHandle();
 		if (SndHdl) HNoPurge(SndHdl);
+	}
+#endif
+	return success;
+}
+
+
+// LP: do the same for text resources
+
+bool get_text_resource_from_scenario(int resource_number, LoadedResource &TextRsrc)
+{
+	if (!ScenarioFile.is_open())
+		return false;
+
+	bool success = ScenarioFile.get_text(resource_number, TextRsrc);
+#ifdef mac
+	if (success) {
+		Handle TxtHdl = TextRsrc.GetHandle();
+		if (TxtHdl) HNoPurge(TxtHdl);
 	}
 #endif
 	return success;
