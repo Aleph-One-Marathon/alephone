@@ -1601,6 +1601,14 @@ static void transfer_to_new_level(
 #ifdef WIN32
 		StopLevelMusic();
 #endif
+#ifdef mac
+		if(OGL_IsActive())
+		{
+			set_fade_effect(NONE);
+			exit_screen();
+			// Enter_screen will be called again in start_game
+		}
+#endif
 		set_keyboard_controller_status(false);
 		FindLevelMovie(entry.level_number);
 		show_movie(entry.level_number);
