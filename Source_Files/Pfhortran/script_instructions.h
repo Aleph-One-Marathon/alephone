@@ -238,15 +238,15 @@ enum /* instruction defs */
 	
 	Get_Random = 0x50,
 	
-	Set_Platform_State = 0x51
+	Set_Platform_State = 0x51,
 	
-	Get__Platform_State = 0x52
+	Get__Platform_State = 0x52,
 	
-	Set_Light_State = 0x53
+	Set_Light_State = 0x53,
 	
-	Get__Light_State = 0x54
+	Get__Light_State = 0x54,
 	
-	Get__Player_Poly = 0x55
+	Get__Player_Poly = 0x55,
 
 	NUMBER_OF_INSTRUCTIONS
 };

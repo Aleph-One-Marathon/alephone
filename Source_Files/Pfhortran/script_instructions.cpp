@@ -154,7 +154,7 @@ void s_Camera_Move(script_instruction inst);
 void s_Camera_Look(script_instruction inst);
 
 void s_Wait_Ticks(script_instruction inst);
-void s_Inflict_Dammage(script_instruction inst);
+void s_Inflict_Damage(script_instruction inst);
 void s_Jump(script_instruction inst);
 void s_Enable_Player(script_instruction inst);
 void s_Disable_Player(script_instruction inst);
@@ -3001,14 +3001,13 @@ void s_Get_Platform_State(script_instruction inst)
 				break;
 		}
 		
-		platform = get_platform_data(temp)
+		platform = get_platform_data(temp);
 		
 		if (PLATFORM_IS_ACTIVE(platform))
-		{
 			set_variable(int(inst.op2), 1);
 		else
 			set_variable(int(inst.op2), 0);
-		}
+		
 	}
 }
 
@@ -3041,7 +3040,7 @@ void s_Set_Light_State(script_instruction inst)
 
 void s_Get_Light_State(script_instruction inst)
 {
-	float temp,temp2;
+	float temp, temp2;
 	struct light_data *light;
 	
 	temp = inst.op1;
@@ -3062,9 +3061,7 @@ void s_Get_Light_State(script_instruction inst)
 				temp2 = get_variable(int(inst.op2));
 				break;
 		}
-		
-		light = get_light_data(temp);
-		set_variable(int(inst.op2), get_light_status(light));
+                set_variable(int(inst.op2), get_light_status(temp));
 	}
 }
 
