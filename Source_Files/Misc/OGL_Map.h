@@ -27,23 +27,23 @@ void OGL_ResetMapFonts();
 void OGL_begin_overhead_polygons();
 void OGL_end_overhead_polygons();
 void OGL_draw_overhead_polygon(short vertex_count, short *vertices,
-	RGBColor &color);
+	rgb_color &color);
 
 void OGL_begin_overhead_lines();
 void OGL_end_overhead_lines();
-void OGL_draw_overhead_line(short line_index, RGBColor &color,
+void OGL_draw_overhead_line(short line_index, rgb_color &color,
 	short pen_size);
 
-void OGL_draw_overhead_thing(world_point2d &center, RGBColor &color,
+void OGL_draw_overhead_thing(world_point2d &center, rgb_color &color,
 	short shape, short radius);
 
-void OGL_draw_overhead_player(world_point2d &center, angle facing, RGBColor &color,
+void OGL_draw_overhead_player(world_point2d &center, angle facing, rgb_color &color,
 	short reduce, short front, short rear, short rear_theta);
 
-void OGL_draw_map_text(world_point2d &location, RGBColor &color,
+void OGL_draw_map_text(world_point2d &location, rgb_color &color,
 	unsigned char *text_pascal, short font, short face, short size);
 
-void OGL_SetPathDrawing(RGBColor &color);
+void OGL_SetPathDrawing(rgb_color &color);
 
 void OGL_DrawPath(short step, world_point2d &location);
 void OGL_FinishPath();
