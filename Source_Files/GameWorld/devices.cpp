@@ -91,7 +91,8 @@ Aug 10, 2000 (Loren Petrich):
 enum
 {
 	_target_is_platform,
-	_target_is_control_panel
+	_target_is_control_panel,
+	_target_is_unrecognized
 };
 
 /* ---------- structures */
@@ -190,6 +191,10 @@ static struct control_panel_definition control_panel_definitions[]=
 	{_panel_is_tag_switch, 0, _collection_walls4, 0, 1, {_snd_chip_insertion, NONE, NONE}, FIXED_ONE, _i_uplink_chip},
 	{_panel_is_tag_switch, 0, _collection_walls4, 1, 0, {_snd_destroy_control_panel, NONE, NONE}, FIXED_ONE, NONE},
 };
+
+// How far can one reach to activate the controls?
+static short ReachDistance = MAXIMUM_CONTROL_ACTIVATION_RANGE;
+static short ReachHorizontal = 2;
 
 /* ------------ private prototypes */
 
@@ -344,7 +349,7 @@ void update_action_key(
 	if(triggered) 
 	{
 		object_index= find_action_key_target(player_index, MAXIMUM_ACTIVATION_RANGE, &target_type);
-
+		
 		if(object_index != NONE)
 		{
 			switch(target_type) 
@@ -356,6 +361,9 @@ void update_action_key(
 					change_panel_state(player_index, object_index);
 					break;
 
+				case _target_is_unrecognized:
+					break;
+					
 				default:
 					vhalt(csprintf(temporary, "%d is not a valid target type", target_type));
 					break;
@@ -554,6 +562,9 @@ static short find_action_key_target(
 	bool done= false;
 	short itemhit, line_index;
 	struct polygon_data *polygon;
+	
+	// In case we don't hit anything
+	*target_type = _target_is_unrecognized;
 
 	/* Should we use this one, the physics one, or the object one? */
 	ray_to_line_segment((world_point2d *) &player->location, &destination, player->facing, range);
@@ -564,7 +575,7 @@ static short find_action_key_target(
 	while (!done)
 	{
 		line_index= find_line_crossed_leaving_polygon(current_polygon, (world_point2d *) &player->location, &destination);
-			
+		
 		if (line_index==NONE)
 		{
 			done= true;
@@ -577,9 +588,9 @@ static short find_action_key_target(
 			line= get_line_data(line_index);
 			original_polygon= current_polygon;
 			current_polygon= find_adjacent_polygon(current_polygon, line_index);
-			
+
 //			dprintf("leaving polygon #%d through line #%d to polygon #%d", original_polygon, line_index, current_polygon);
-			
+
 			if (current_polygon!=NONE)
 			{
 				polygon= get_polygon_data(current_polygon);
@@ -600,7 +611,7 @@ static short find_action_key_target(
 			}
 
 			/* Slammed a wall */
-			if (line_is_within_range(player->monster_index, line_index, MAXIMUM_CONTROL_ACTIVATION_RANGE))
+			if (line_is_within_range(player->monster_index, line_index, ReachDistance))
 			{
 				if (line_side_has_control_panel(line_index, original_polygon, &itemhit))
 				{
@@ -637,7 +648,7 @@ static bool line_is_within_range(
 	
 	dx= monster_origin.x-line_origin.x;
 	dy= monster_origin.y-line_origin.y;
-	dz= 2*(monster_origin.z-line_origin.z); /* dz is weighted */
+	dz= ReachHorizontal*(monster_origin.z-line_origin.z); /* dz is weighted */
 	
 	return isqrt(dx*dx + dy*dy + dz*dz)<range ? true : false;
 }
@@ -1047,7 +1058,35 @@ bool XML_ControlPanelParser::AttributesDone()
 static XML_ControlPanelParser ControlPanelParser;
 
 
-static XML_ElementParser ControlPanelsParser("control_panels");
+class XML_ControlPanelsParser: public XML_ElementParser
+{	
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+	
+	XML_ControlPanelsParser(): XML_ElementParser("control_panels") {}
+};
+
+bool XML_ControlPanelsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"reach"))
+	{
+		float FVal;
+		if (ReadFloatValue(Value,FVal))
+		{
+			ReachDistance = int(WORLD_ONE*FVal + 0.5);
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag,"horiz"))
+	{
+		return ReadInt16Value(Value,ReachHorizontal);
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_ControlPanelsParser ControlPanelsParser;
 
 
 // XML-parser support
