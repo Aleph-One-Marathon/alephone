@@ -10,8 +10,11 @@
 	
 	Made [view_data *view] a member and removed it as an argument
 	
-Sep. 11, 2000 (Loren Petrich:
+Sep. 11, 2000 (Loren Petrich):
 	Made POINTER_DATA more general -- byte *, so one can do pointer arithmetic on it correctly.
+
+Sep. 15, 2000 (Loren Petrich):
+	Fixed stale-pointer bug in cast_render_ray() by using index instead of pointer to parent node
 */
 
 #include "GrowableList.h"
@@ -153,8 +156,11 @@ class RenderVisTreeClass
 	uint16 next_polygon_along_line(short *polygon_index, world_point2d *origin, long_vector2d *vector,
 		short *clipping_endpoint_index, short *clipping_line_index, short bias);
 	
+	// LP: referring to parent node by index instead of by pointer, to avoid stale-pointer bug
 	void cast_render_ray(long_vector2d *vector, short endpoint_index,
-		node_data *parent, short bias);
+		int ParentIndex, short bias);
+	// void cast_render_ray(long_vector2d *vector, short endpoint_index,
+	//	node_data *parent, short bias);
 	
 	uint16 decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
 		world_point2d *origin, long_vector2d *vector, uint16 clip_flags, short bias);

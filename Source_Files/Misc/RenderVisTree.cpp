@@ -7,6 +7,10 @@
 	Contains the finding of the visibility tree for rendering; from render.c
 	
 	Made [view_data *view] a member and removed it as an argument
+
+Sep. 15, 2000 (Loren Petrich):
+	Fixed stale-pointer bug in cast_render_ray() by using index instead of pointer to parent node.
+	Added some code to keep parent and ParentIndex in sync.
 */
 
 #include "cseries.h"
@@ -108,11 +112,12 @@ void RenderVisTreeClass::build_render_tree()
 	
 	// LP change:
 	// Adjusted for long-vector handling
+	// Using start index of list of nodes: 0
 	long_vector2d view_edge;
 	short_to_long_2d(view->left_edge,view_edge);
-	cast_render_ray(&view_edge, NONE, Nodes.Begin(), _counterclockwise_bias);
+	cast_render_ray(&view_edge, NONE, 0, _counterclockwise_bias);
 	short_to_long_2d(view->right_edge,view_edge);
-	cast_render_ray(&view_edge, NONE, Nodes.Begin(), _clockwise_bias);
+	cast_render_ray(&view_edge, NONE, 0, _clockwise_bias);
 	/*
 	cast_render_ray(view, &view->left_edge, NONE, nodes, _counterclockwise_bias);
 	cast_render_ray(view, &view->right_edge, NONE, nodes, _clockwise_bias);
@@ -170,7 +175,7 @@ void RenderVisTreeClass::build_render_tree()
 				if ((view->right_edge.i*vector.j - view->right_edge.j*vector.i)<=0 && (view->left_edge.i*vector.j - view->left_edge.j*vector.i)>=0)
 				{
 					// LP change:
-					cast_render_ray(&vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, Nodes.Begin(), _no_bias);
+					cast_render_ray(&vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, 0, _no_bias);
 					// cast_render_ray(view, &vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, nodes, _no_bias);
 				}
 				
@@ -185,12 +190,17 @@ void RenderVisTreeClass::build_render_tree()
 /* ---------- building the render tree */
 
 // LP change: make it better able to do long-distance views
+// Using parent index instead of pointer to avoid stale-pointer bug
 void RenderVisTreeClass::cast_render_ray(
 	long_vector2d *vector, // world_vector2d *vector,
 	short endpoint_index,
-	node_data *parent, /* nodes==root */
+	int ParentIndex, /* 0==root */
+	// node_data *parent, /* nodes==root */
 	short bias) /* _clockwise or _counterclockwise for walking endpoints */
 {
+	// LP: keep the parent-node pointer and index in sync with each other:
+	node_data *parent =  Nodes + ParentIndex;
+	
 	short polygon_index= parent->polygon_index;
 
 //	dprintf("shooting at e#%d of p#%d", endpoint_index, polygon_index);
@@ -205,8 +215,12 @@ void RenderVisTreeClass::cast_render_ray(
 		{
 			if (clip_flags&_split_render_ray)
 			{
-				cast_render_ray(vector, endpoint_index, parent, _clockwise_bias);
-				cast_render_ray(vector, endpoint_index, parent, _counterclockwise_bias);
+				cast_render_ray(vector, endpoint_index, ParentIndex, _clockwise_bias);
+				// cast_render_ray(vector, endpoint_index, parent, _clockwise_bias);
+				cast_render_ray(vector, endpoint_index, ParentIndex, _counterclockwise_bias);
+				// cast_render_ray(vector, endpoint_index, parent, _counterclockwise_bias);
+				// LP: could have reallocated, so keep in sync!
+				node_data *parent =  Nodes + ParentIndex;
 			}
 		}
 		else
@@ -267,8 +281,9 @@ void RenderVisTreeClass::cast_render_ray(
 					delete []SavedNodes;
 
 					// Edit parent-node pointer also
-					if (parent != NULL)
-						parent = (node_data *)(NewNodePointer + (POINTER_CAST(parent) - OldNodePointer));
+					parent =  Nodes + ParentIndex;
+					// if (parent != NULL)
+					//	parent = (node_data *)(NewNodePointer + (POINTER_CAST(parent) - OldNodePointer));
 
 					// CB: Find the node reference again, the old one may point to stale memory
 					for (node_reference= &parent->children;
@@ -362,6 +377,8 @@ void RenderVisTreeClass::cast_render_ray(
 			}
 			
 			parent= node;
+			// LP: keep in sync!
+			ParentIndex = parent - Nodes.Begin();
 		}
 	}
 	while (polygon_index!=NONE);
