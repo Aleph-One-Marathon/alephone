@@ -144,7 +144,7 @@ extern void netcpy(IPaddress* dest, const IPaddress_NET* src);
 
 // ZZZ fix: a NetPlayer holds a player_info, not general player data as might be implied
 //const int SIZEOF_NetPlayer = 2*SIZEOF_IPaddress + MAXIMUM_PLAYER_DATA_SIZE + 3;
-const int SIZEOF_NetPlayer = 2*SIZEOF_IPaddress + SIZEOF_player_info + 3;
+const int SIZEOF_NetPlayer = 2*SIZEOF_IPaddress + SIZEOF_player_info + 5;
 
 struct NetPlayer_NET {
 	uint8 data[SIZEOF_NetPlayer];
@@ -210,5 +210,15 @@ struct network_audio_header_NET {
 
 extern void netcpy(network_audio_header_NET* dest, const network_audio_header* src);
 extern void netcpy(network_audio_header* dest, const network_audio_header_NET* src);
+
+
+const int SIZEOF_prospective_joiner_info = MAX_NET_PLAYER_NAME_LENGTH + 4;
+
+struct prospective_joiner_info_NET {
+    uint8 data[SIZEOF_prospective_joiner_info];
+};
+
+extern void netcpy(prospective_joiner_info_NET* dest, const prospective_joiner_info* src);
+extern void netcpy(prospective_joiner_info* dest, const prospective_joiner_info_NET* src);
 
 #endif//NETWORK_DATA_FORMATS_H

@@ -57,20 +57,18 @@ struct player_info;
 
 class w_found_players;
 
-typedef void (*player_selected_callback_t)(w_found_players*, const SSLP_ServiceInstance*);
+typedef void (*player_selected_callback_t)(w_found_players*, prospective_joiner_info &player);
 
-class w_found_players : public w_list<const SSLP_ServiceInstance*> {
+class w_found_players : public w_list<prospective_joiner_info> {
 public:
     w_found_players(int width, int numRows) :
-        w_list<const SSLP_ServiceInstance*>(listed_players, width, numRows, 0), player_selected_callback(NULL)
+        w_list<prospective_joiner_info>(listed_players, width, numRows, 0), player_selected_callback(NULL)
         { num_items = 0; }
         // must update num_items here since listed_players had not been initialized earlier when passed to w_list<>()
     
-    void found_player(const SSLP_ServiceInstance* player);
-    void lost_player(const SSLP_ServiceInstance* player);
-    void player_name_changed(const SSLP_ServiceInstance* player);
+    void found_player(prospective_joiner_info &player);
     
-    void hide_player(const SSLP_ServiceInstance* player);
+    void hide_player(prospective_joiner_info &player);
     
     void item_selected();
 
@@ -81,20 +79,17 @@ public:
     void set_player_selected_callback(player_selected_callback_t callback) { player_selected_callback = callback; }
     
 private:
-    vector<const SSLP_ServiceInstance*>	found_players;		// players that are out there
-    vector<const SSLP_ServiceInstance*>	hidden_players;		// players we don't want displayed - may include some not in found_players.
-    vector<const SSLP_ServiceInstance*>	listed_players;		// {found_players} - {hidden_players} (keyed by particular found instance, not name
-                                                                // nor address)
-
-	// Note: no need to clean up serviceInstances when done; SSLP will free the storage as
-	// services become unavailable or when lookup is stopped.
+    vector<prospective_joiner_info>	found_players;		// players that are out there
+    vector<prospective_joiner_info>	hidden_players;		// players we don't want displayed - may include some not in found_players.
+    vector<prospective_joiner_info>	listed_players;		// {found_players} - {hidden_players} (keyed by particular found instance, not name
+									// nor address)
 
     player_selected_callback_t		player_selected_callback;	// called when a player is clicked on
 
-    void list_player(const SSLP_ServiceInstance* player);
-    void unlist_player(const SSLP_ServiceInstance* player);
+    void list_player(prospective_joiner_info &player);
+    void unlist_player(prospective_joiner_info &player);
     
-    void draw_item(vector<const SSLP_ServiceInstance*>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
+    void draw_item(vector<prospective_joiner_info>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
 };
 
 

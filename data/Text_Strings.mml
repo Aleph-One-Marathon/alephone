@@ -84,7 +84,7 @@
 <stringset index="132">
 <string index="0">Sorry, that player could not be found on the network.  He may have cancelled his Join Game dialog.</string>
 <string index="1">One or more of the players in the game could not be found to receive the map.  The game has been cancelled.</string>
-<string index="2">Aleph One could not register on your network and therefore cannot join a game.</string>
+<string index="2">Could not connect to server.</string>
 <string index="3">Sorry, the gathering computer has cancelled the game (you should all gang up on him next game).</string>
 <string index="4">One or more of the players in the game could not be found on the network and the game has been cancelled.</string>
 <string index="5">The gathering computer never sent the map, so the game has been cancelled.  Maybe one of the other machines in the game went down.</string>

@@ -35,6 +35,11 @@
  *
  *  July 9, 2003 (Woody Zenfell):
  *	Preliminary support for standalone hub (define A1_NETWORK_STANDALONE_HUB).
+ *
+ *  September 17, 2004 (jkvw):
+ *	NAT-friendly networking - we no longer get spoke addresses form topology -
+ *	instead spokes send identification packets to hub with player ID.
+ *	Hub can then associate the ID in the identification packet with the paket's source address.
  */
 
 #include "network_star.h"
@@ -94,7 +99,8 @@
 
 // What do we need to know, initially, from the outside world?
 // number of players
-// address for each player
+// address for each player - jkvw: We no longer know this, since we want spokes to operate behind firewalls,
+//				   and their packets may be subject to port remapping.  We do have player IDs though.
 // whether each player is actually connected
 // starting game-tick
 // local player index (only for data received reference tick and for hacky communicate-with-local-spoke stuff)
@@ -169,6 +175,7 @@ typedef ConcreteTickBasedCircularQueue<int> WindowedAverageQueue;
 
 struct NetworkPlayer_hub {
         NetAddrBlock	mAddress;		// network address of player
+	bool		mAddressKnown;		// did player tell us his address yet?
         bool		mConnected;		// is player still connected?
         int32		mLastNetworkTickHeard;	// our sNetworkTicker last time we got a packet from them
         int32		mSmallestUnacknowledgedTick;
@@ -266,6 +273,7 @@ static void hub_check_for_completion();
 static void player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowledgedTick);
 static bool player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTick, int32 inSmallestUnreceivedTick);
 static void hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex);
+static void hub_received_identification_packet(AIStream& ps, NetAddrBlock address);
 static void process_messages(AIStream& ps, int inSenderIndex);
 static void process_optional_message(AIStream& ps, int inSenderIndex, uint16 inMessageType);
 static void make_player_netdead(int inPlayerIndex);
@@ -381,11 +389,16 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
                 {
                         thePlayer.mConnected = true;
                         sConnectedPlayersBitmask |= (((uint32)1) << i);
-                        thePlayer.mAddress = *(inPlayerAddresses[i]);
+			thePlayer.mAddressKnown = false;
+                        // thePlayer.mAddress = *(inPlayerAddresses[i]); (jkvw: see note below)
                         // Currently, all-0 address is cue for local spoke.
-                        if(i == sLocalPlayerIndex)
+			// jkvw: The "real" addresses for spokes won't be known unti we get some UDP traffic
+			//	 from them - we'll update as they become known.
+                        if(i == sLocalPlayerIndex) { // jkvw: I don't need this, do I?
                                 obj_clear(thePlayer.mAddress);
-                        sAddressToPlayerIndex[thePlayer.mAddress] = i;
+				sAddressToPlayerIndex[thePlayer.mAddress] = i;
+				thePlayer.mAddressKnown = true;
+			}
                 }
                 else
                 {
@@ -509,28 +522,34 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 	
         AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
 
-        // Find sender
-        AddressToPlayerIndexType::iterator theEntry = sAddressToPlayerIndex.find(inPacket->sourceAddress);
-        if(theEntry == sAddressToPlayerIndex.end())
-                return;
-
-        int theSenderIndex = theEntry->second;
-
-        // Unconnected players should not have entries in sAddressToPlayerIndex
-        assert(getNetworkPlayer(theSenderIndex).mConnected);
-
         try {
-                uint32	thePacketMagic;
-                ps >> thePacketMagic;
-        
+		uint32	thePacketMagic;
+		ps >> thePacketMagic;
+	
                 switch(thePacketMagic)
                 {
                         case kSpokeToHubGameDataPacketV1Magic:
-                                hub_received_game_data_packet_v1(ps, theSenderIndex);
-                                break;
-        
+			{
+				// Find sender
+				AddressToPlayerIndexType::iterator theEntry = sAddressToPlayerIndex.find(inPacket->sourceAddress);
+				if(theEntry == sAddressToPlayerIndex.end())
+					return;
+	
+				int theSenderIndex = theEntry->second;
+					
+				// Unconnected players should not have entries in sAddressToPlayerIndex
+				assert(getNetworkPlayer(theSenderIndex).mConnected);
+				
+				hub_received_game_data_packet_v1(ps, theSenderIndex);
+			}
+			break;
+
+			case kSpokeToHubIdentificationMagic:
+				hub_received_identification_packet(ps, inPacket->sourceAddress);
+			break;
+
                         default:
-                                break;
+			break;
                 }
         }
         catch (...)
@@ -541,6 +560,20 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
         check_send_packet_to_spoke();
 }
 
+
+static void
+hub_received_identification_packet(AIStream& ps, NetAddrBlock address)
+{
+	int16 theSenderIndex;
+	ps >> theSenderIndex;
+	
+	if (!sNetworkPlayers[theSenderIndex].mAddressKnown) {
+		sAddressToPlayerIndex[address] = theSenderIndex;
+		sNetworkPlayers[theSenderIndex].mAddressKnown = true;
+		sNetworkPlayers[theSenderIndex].mAddress = address;
+	}
+
+} // hub_received_idetification_packet()
 
 
 // I suppose to be safer, this should check the entire packet before acting on any of it.
@@ -915,7 +948,7 @@ send_packets()
         for(size_t i = 0; i < sNetworkPlayers.size(); i++)
         {
                 NetworkPlayer_hub& thePlayer = sNetworkPlayers[i];
-                if(thePlayer.mConnected)
+                if(thePlayer.mConnected && thePlayer.mAddressKnown)
                 {
                         AOStreamBE ps(sOutgoingFrame->data, ddpMaxData);
 

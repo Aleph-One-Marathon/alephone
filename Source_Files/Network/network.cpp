@@ -76,7 +76,7 @@ Mar 3-8, 2002 (Woody Zenfell):
     {lossy, handling procedure}.  Now different endstations can have different distribution
     types installed for handling (previously they had to all install the same handlers in the
     same order to get the same distribution type ID's).
-    
+
 Feb 5, 2003 (Woody Zenfell):
         Preliminary support for resuming saved-games networked.
         
@@ -90,6 +90,10 @@ May 24, 2003 (Woody Zenfell):
         
 July 03, 2003 (jkvw):
         Added network lua scripts.
+
+September 17, 2004 (jkvw):
+	NAT-friendly networking.  That is, joiners behind firewalls should be able to play.
+	Also moved to TCPMess for TCP communications.
 */
 
 /*
@@ -122,7 +126,8 @@ clearly this is all broken until we have packet types
 #endif
 
 #include "game_errors.h"
-#include "network_stream.h"
+#include "CommunicationsChannel.h"
+#include "MessageInflater.h"
 #include "progress.h"
 #include "extensions.h"
 
@@ -193,6 +198,15 @@ static byte *deferred_script_data = NULL;
 static size_t deferred_script_length = 0;
 static bool do_netscript;
 
+static CommunicationsChannelFactory *server = NULL;
+typedef std::map<int, CommunicationsChannel*> connection_map_t;
+static connection_map_t connections_to_clients;
+static CommunicationsChannel *connection_to_server = NULL;
+static int next_stream_id = 0;
+static IPaddress host_address;
+static MessageInflater *inflater = NULL;
+static uint32 next_join_attempt;
+
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
 // don't matter as much.  Do observe, though, that users of the "distribution" mechanism will have
@@ -239,10 +253,36 @@ static bool NetSetSelfSend(bool on);
 
 static void NetDDPPacketHandler(DDPPacketBufferPtr inPacket);
 
-static void *receive_stream_data(size_t *length, OSErr *receive_error);
-static OSErr send_stream_data(void *data, size_t length);
+static void *receive_stream_data(CommunicationsChannel *channel, size_t *length, OSErr *receive_error);
+static OSErr send_stream_data(CommunicationsChannel *channel, void *data, size_t length);
 
-/* ADSP Packets.. */
+// jkvw: moved from (now unused) network_streams.h
+
+uint16 MaxStreamPacketLength(void);
+uint16 NetStreamPacketLength(short packet_type);
+
+enum {
+	kNetworkTransportType= 0,
+	kModemTransportType,
+	NUMBER_OF_TRANSPORT_TYPES
+};
+
+static short transport_type= kNetworkTransportType;
+
+short NetGetTransportType(
+	void)
+{
+	return transport_type;
+}
+void NetSetTransportType(
+	short type)
+{
+	assert(type>=0 && type<NUMBER_OF_TRANSPORT_TYPES);
+#ifndef USE_MODEM
+	assert(type==kNetworkTransportType);
+#endif
+	transport_type= type;
+}
 
 /* ---------- code */
 
@@ -312,12 +352,11 @@ bool NetEnter(
 				/* Set the server player identifier */
 				NetSetServerIdentifier(0);
 
-				error= NetStreamEstablishConnectionEnd();
 				if (error==noErr)
 				{
 					// ZZZ: Sorry, if this swapping is not supported on all current A1
 					// platforms, feel free to rewrite it in a way that is.
-					ddpSocket= SDL_SwapBE16(network_preferences->game_port);
+					ddpSocket= SDL_SwapBE16(GAME_PORT);
 					error= NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
 					if (error==noErr)
 					{
@@ -332,6 +371,17 @@ bool NetEnter(
 			}
 		}
 	}
+
+	if (!inflater) {
+		inflater = new MessageInflater ();
+		for (int i = 0; i < NUMBER_OF_STREAM_PACKET_TYPES; i++) {
+			BigChunkOfDataMessage *prototype = new BigChunkOfDataMessage (i);
+			inflater->learnPrototypeForType (i, *prototype);
+			delete prototype;
+		}
+	}
+	
+	next_join_attempt = machine_tick_count();
 
 	/* Handle our own errors.. */
 	if(error)
@@ -348,7 +398,7 @@ bool NetEnter(
 void NetExit(
 	void)
 {
-	OSErr error;
+	OSErr error = noErr;
 
 #ifdef TEST_MODEM
 	ModemExit();
@@ -362,10 +412,7 @@ void NetExit(
 
 	if (netState!=netUninitialized)
 	{
-		error= NetCloseStreamConnection(false);
-		vwarn(!error, csprintf(temporary, "NetADSPCloseConnection returned %d", error));
-		error= NetStreamDisposeConnectionEnd();
-		vwarn(!error, csprintf(temporary, "NetADSPDisposeConnectionEnd returned %d", error));
+		
 		if (!error)
 		{
 			error= NetDDPCloseSocket(ddpSocket);
@@ -384,8 +431,23 @@ void NetExit(
 		}
 	}
 
-	NetUnRegisterName();
-	NetLookupClose();
+	
+
+	if (connection_to_server) {
+		delete connection_to_server;
+		connection_to_server = NULL;
+	}
+	
+	connection_map_t::iterator it;
+	for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++)
+		delete(it->second);
+	connections_to_clients.clear();
+	
+	if (server) {
+		delete server;
+		server = NULL;
+	}
+	
 	NetDDPClose();
 	NetADSPClose();
 #endif
@@ -531,6 +593,10 @@ bool NetGather(
 #else
 
 	NetInitializeTopology(game_data, game_data_size, player_data, player_data_size);
+	
+	// Start listening for joiners
+	server = new CommunicationsChannelFactory(GAME_PORT);
+	
 	netState= netGathering;
 #endif
 	
@@ -617,7 +683,7 @@ NetGameJoin
 	---> player data (no larger than MAXIMUM_PLAYER_DATA_SIZE)
 	---> size of player data
 	---> version number of network protocol (used with player type to construct entity name)
-	---> ZZZ: SDL version only: SSLP hinting address, passed along to NetRegisterName
+	---> host address
 	
 	<--- error
 
@@ -641,10 +707,8 @@ bool NetGameJoin(
 	unsigned char *player_type,
 	void *player_data,
 	short player_data_size,
-	short version_number
-#if HAVE_SDL_NET
-	, const char* hint_addr_string
-#endif
+	short version_number,
+	const char* host_addr_string
 	)
 {
 	OSErr error;
@@ -653,31 +717,30 @@ bool NetGameJoin(
 #ifdef TEST_MODEM
 	success= ModemGameJoin(player_name, player_type, player_data, player_data_size, version_number);
 #else
-	/* initialize default topology (no game data) */
-	NetInitializeTopology((void *) NULL, 0, player_data, player_data_size);
 	
-	/* register our downring socket with the net so gather dialogs can find us */
-	error= NetRegisterName(player_name, player_type, version_number, 
-		NetGetStreamSocketNumber()
-#if HAVE_SDL_NET
-		, hint_addr_string
-#endif
-		);
+	/* Attempt a connection to host */
 	
-	if (error==noErr)
-	{
-		error= NetStreamWaitForConnection();
-		if (error==noErr)
-		{
-			/* weÕre registered and awaiting a connection request */
-			netState= netJoining;
-			success= true;
-		}
+	// SDL_net declares ResolveAddress without "const" on the char; we can't guarantee
+	// our caller that it will remain const unless we protect it like this.
+	char*		theStringCopy = strdup(host_addr_string);
+
+	error = SDLNet_ResolveHost(&host_address, theStringCopy, GAME_PORT);
+
+	free(theStringCopy);
+	
+	if (!error) {
+		connection_to_server = new CommunicationsChannel();
+		connection_to_server->setMessageInflater(inflater);
+		netState = netConnecting;
+		success = true;
 	}
 	
 	if(error)
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntJoin, error);
+	} else {
+		/* initialize default topology (no game data) */
+		NetInitializeTopology((void *) NULL, 0, player_data, player_data_size);
 	}
 #endif
 	
@@ -687,23 +750,10 @@ bool NetGameJoin(
 void NetCancelJoin(
 	void)
 {
-	OSErr error;
-
 #ifdef TEST_MODEM
 	ModemCancelJoin();
 #else
-	
-	assert(netState==netJoining||netState==netWaiting||netState==netCancelled||netState==netJoinErrorOccurred);
-	
-	error= NetUnRegisterName();
-	if (error==noErr)
-	{
-		error= NetCloseStreamConnection(true); /* this should stop the ocPassive OpenConnection */
-		if (error==noErr)
-		{
-			/* our name has been unregistered and our connection end has been closed */
-		}
-	}
+	assert(netState==netConnecting||netState==netJoining||netState==netWaiting||netState==netCancelled||netState==netJoinErrorOccurred);
 #endif	
 }
 
@@ -944,9 +994,7 @@ static void NetInitializeTopology(
 
 	if(NetGetTransportType()!=kModemTransportType)
 	{
-		short adsp_socket_number= NetGetStreamSocketNumber();
-
-		NetLocalAddrBlock(&local_player->dspAddress, adsp_socket_number);
+		NetLocalAddrBlock(&local_player->dspAddress, GAME_PORT);
 		NetLocalAddrBlock(&local_player->ddpAddress, ddpSocket);
 	}
 	memcpy(local_player->player_data, player_data, player_data_size);
@@ -1131,31 +1179,27 @@ OSErr NetDistributeGameDataToAllPlayers(
 			/* Send the physics.. */
 			set_progress_dialog_message(physics_message_id);
 
-			error= NetOpenStreamToPlayer(playerIndex);
 			if (!error)
 			{
 #ifdef NO_PHYSICS
 				if(do_physics)
-                                        error= send_stream_data(physics_buffer, physics_length);
+                                        error= send_stream_data(connections_to_clients[topology->players[playerIndex].stream_id], physics_buffer, physics_length);
 #endif
 
 				if(!error)
 				{
 					set_progress_dialog_message(message_id);
 					reset_progress_bar(); /* Reset the progress bar */
-					error= send_stream_data(wad_buffer, wad_length);
+					error= send_stream_data(connections_to_clients[topology->players[playerIndex].stream_id], wad_buffer, wad_length);
 				}
 
                                 if(!error && do_netscript)
                                 {
 					reset_progress_bar ();
-					error = send_stream_data (deferred_script_data, deferred_script_length);
+					error = send_stream_data (connections_to_clients[topology->players[playerIndex].stream_id], deferred_script_data, deferred_script_length);
 				}
 
 			}
-
-			/* Note that we try to close regardless of error. */
-			NetCloseStreamConnection(false);
                         
 		}
 		
@@ -1205,7 +1249,8 @@ byte *NetReceiveGameData(bool do_physics)
 
 	// wait for our connection to start up. server will contact us.
 	ticks= machine_tick_count();
-	while (!NetStreamCheckConnectionStatus() && !timed_out)
+	
+	while (!connection_to_server->isMessageAvailable() && !timed_out)
 	{
 		if((machine_tick_count()-ticks)>MAP_TRANSFER_TIME_OUT)  timed_out= true;
 	}
@@ -1225,7 +1270,7 @@ byte *NetReceiveGameData(bool do_physics)
 
 #ifdef NO_PHYSICS
                 if(do_physics)
-                        physics_buffer= (unsigned char *)receive_stream_data(&physics_length, &error);
+                        physics_buffer= (unsigned char *)receive_stream_data(connection_to_server, &physics_length, &error);
 #endif
 
 		if(!error)
@@ -1237,27 +1282,22 @@ byte *NetReceiveGameData(bool do_physics)
 			/* receiving the map.. */
 			set_progress_dialog_message(_receiving_map);
 			reset_progress_bar(); /* Reset the progress bar */
-			map_buffer= (unsigned char *)receive_stream_data(&map_length, &error);
+			map_buffer= (unsigned char *)receive_stream_data(connection_to_server, &map_length, &error);
 		}
                 
 #ifdef HAVE_LUA
                 if (!error && do_netscript)
                 {
                         reset_progress_bar(); /* Reset the progress bar */
-			script_buffer = (byte*)receive_stream_data(&script_length, &error);
+			script_buffer = (byte*)receive_stream_data(connection_to_server, &script_length, &error);
                         LoadLuaScript ((char*)script_buffer, script_length);
                 }
 #endif
-
-		// close everything up.
-		NetCloseStreamConnection(false);
 
 		/* And close our dialog.. */
 		draw_progress_bar(10, 10);
 		close_progress_dialog();
 	
-		/* Await for the next connection attempt. */
-		error= NetStreamWaitForConnection();
 		if (error != noErr || map_buffer == NULL)
 		{
 			if(error)
@@ -1309,7 +1349,7 @@ get_network_version()
 	// (OK OK this is a bit pedantic - I mean, I don't think IPring is going to accidentally start
 	// sending or receiving AppleTalk traffic ;) - but, you know, it's the principle of the thing.)
 #if HAVE_SDL_NET
-	// Ring is 10; star is 11.
+	// Ring is 12; star is 13.
 	return (network_preferences->game_protocol == _network_game_protocol_ring) ? _ip_ring_network_version : _ip_star_network_version;
 #else
 	return _appletalk_ring_network_version;
@@ -1317,45 +1357,56 @@ get_network_version()
 }
 
 
-
-static OSErr
-NetReceiveStreamPacketGraceful(short* outPacketType, void* outPacketData, bool inTryRepeatedly)
+static void
+NetSendPacket (CommunicationsChannel *channel, short packet_type, const void *packet_data)
 {
-	OSErr error;
-	short packet_type;
-
-	do
-	{
-		error= NetReceiveStreamPacket(&packet_type, outPacketData);
-		if(!error && get_network_version() >= kMinimumNetworkVersionForGracefulUnknownStreamPackets)
-		{
-			if(packet_type >= NUMBER_OF_STREAM_PACKET_TYPES)
-			{
-				short packet_type_NET = SDL_SwapBE16(packet_type);
-				error= NetSendStreamPacket(_unknown_packet_type_response_packet, &packet_type_NET);
-			}
-		}
-	} while(inTryRepeatedly && !error && packet_type >= NUMBER_OF_STREAM_PACKET_TYPES);
-
-	*outPacketType = packet_type;
+	BigChunkOfDataMessage *message;
 	
-	return error;
+	message = new BigChunkOfDataMessage(packet_type, (const Uint8*)packet_data, NetStreamPacketLength(packet_type));
+	channel->enqueueOutgoingMessage(*message);
+	channel->flushOutgoingMessages(false, 30000, 30000);
+	delete message;
+}
+
+static bool
+NetReceivePacket (CommunicationsChannel *channel, short &packet_type, void *packet_data, bool wait)
+{
+	Message *premessage;
+	
+	int timeout = wait ? 30000 : 0;
+	
+	premessage = channel->receiveMessage(timeout, timeout);
+	if (!premessage)
+		return false;
+	
+	if (premessage->type() == 0xffff) {
+		UninflatedMessage *message = dynamic_cast<UninflatedMessage*>(premessage);
+		uint16 bad_packet_type = message->inflatedType();
+		NetSendPacket (channel, _unknown_packet_type_response_packet, &bad_packet_type);
+		delete message;
+		return false;
+	} else {
+		BigChunkOfDataMessage *message = dynamic_cast<BigChunkOfDataMessage*>(premessage);
+		packet_type = message->type();
+		memcpy(packet_data, message->buffer(), NetStreamPacketLength(packet_type));
+		delete message;
+		return true;
+	}
 }
 
 
 	
 static void *receive_stream_data(
+	CommunicationsChannel *channel,
 	size_t *length,
 	OSErr *receive_error)
 {
-	OSErr error;
+	OSErr error = noErr;
 	short packet_type;
 	void *buffer= NULL;
 
 	// first we'll get the map length
-	error= NetReceiveStreamPacketGraceful(&packet_type, network_adsp_packet, true);
-
-	if (!error)
+	if (NetReceivePacket(channel, packet_type, network_adsp_packet, true))
 	{
 		if(packet_type==_stream_size_packet)
 		{
@@ -1381,17 +1432,21 @@ static void *receive_stream_data(
 
 						expected_count = MIN(STREAM_TRANSFER_CHUNK_SIZE, *length - offset);
 
-						error= NetReceiveStreamPacketGraceful(&packet_type, network_adsp_packet, true);
-						if(packet_type != _stream_data_packet)
+						if (NetReceivePacket(channel, packet_type, network_adsp_packet, true))
 						{
-							error= errInvalidMapPacket;
+							if(packet_type != _stream_data_packet)
+							{
+								error= errInvalidMapPacket;
+							} else {
+								/* Copy the data in.  This is done in two steps because the final */
+								/*  packet would overrite the map buffer, unless it was perfectly */
+								/*  a multiple of the STREAM_TRANSFER_CHUNK_SIZE */
+								memcpy(((byte *)buffer)+offset, network_adsp_packet, expected_count);
+							}
+							draw_progress_bar(offset, *length);
 						} else {
-							/* Copy the data in.  This is done in two steps because the final */
-							/*  packet would overrite the map buffer, unless it was perfectly */
-							/*  a multiple of the STREAM_TRANSFER_CHUNK_SIZE */
-							memcpy(((byte *)buffer)+offset, network_adsp_packet, expected_count);
+							// probably should error here :)
 						}
-						draw_progress_bar(offset, *length);
 					}
 				}
 			}
@@ -1404,10 +1459,11 @@ static void *receive_stream_data(
 } // receive_stream_data
 
 static OSErr send_stream_data(
+	CommunicationsChannel* channel,
 	void *data,
 	size_t length)
 {
-	OSErr error;
+	OSErr error = noErr;
 
 	// transfer the length of the level.
         // ZZZ: byte-swap if necessary
@@ -1419,7 +1475,7 @@ static OSErr send_stream_data(
         length_NET = (long)length;
 #endif
 
-	error= NetSendStreamPacket(_stream_size_packet, &length_NET);
+	NetSendPacket(channel, _stream_size_packet, &length_NET);
 
 	if(!error)
 	{
@@ -1436,7 +1492,7 @@ static OSErr send_stream_data(
 			/*  end of the packet, but it doesn't matter since we know the length */
 			/*  of the map. */
 			memcpy(network_adsp_packet, ((byte *) data)+offset, adsp_count);
-			error= NetSendStreamPacket(_stream_data_packet, network_adsp_packet);
+			NetSendPacket(channel, _stream_data_packet, network_adsp_packet);
 			
 			length_written+= adsp_count;
 			draw_progress_bar(length_written, length);
@@ -1470,25 +1526,7 @@ OSErr NetDistributeChatMessage(
 	{
                 // ZZZ: skip players with identifier NONE - they don't really exist... also skip ourselves
                 if(topology->players[playerIndex].identifier != NONE || playerIndex == localPlayerIndex)
-                {
-                        error= NetOpenStreamToPlayer(playerIndex);
-                        if (!error)
-                        {
-                                error= NetSendStreamPacket(_chat_packet, &theChatMessage_NET);
-                                if (!error)
-                                {
-                                        error= NetCloseStreamConnection(false);
-                                        if (!error)
-                                        {
-                                                /* successfully distributed topology to this player */
-                                        }
-                                }
-                                else
-                                {
-                                        NetCloseStreamConnection(true);
-                                }
-                        }
-                }
+			NetSendPacket(connections_to_clients[topology->players[playerIndex].stream_id], _chat_packet, &theChatMessage_NET);
 	}
 	
 	return error;
@@ -1515,6 +1553,46 @@ NetGetMostRecentChatMessage(player_info** outPlayerData, char** outMessage) {
 }
 #endif // NETWORK_CHAT
 
+// If a potential joiner has connected to us, handle em
+bool NetCheckForNewJoiner (prospective_joiner_info &info)
+{
+	OSErr error = noErr;
+	short packet_type;
+	
+	CommunicationsChannel *new_joiner = server->newIncomingConnection();
+	
+	if (new_joiner) {
+		
+		new_joiner->setMessageInflater(inflater);
+		
+		int no_data_to_send_silly;
+		NetSendPacket (new_joiner, _hello_packet, &no_data_to_send_silly);
+		
+		if (NetReceivePacket (new_joiner, packet_type, network_adsp_packet, true)) {
+			if (packet_type != _joiner_info_packet)
+				error = 1; // wrong response
+		} else {
+			error = 1; // timed out
+		}
+		
+		if (!error) { 
+			netcpy(&info,(prospective_joiner_info_NET*)network_adsp_packet);
+			if (info.network_version == get_network_version()) {
+				info.stream_id = next_stream_id;
+				connections_to_clients[next_stream_id]=new_joiner;
+				next_stream_id++;
+			} else {
+				error = 1;
+			}
+		}
+		
+		if (error)
+			delete new_joiner;
+		else
+			return true;
+	}
+	return false;
+}
 
 /* check for messages from gather nodes; returns new state */
 short NetUpdateJoinState(
@@ -1522,30 +1600,54 @@ short NetUpdateJoinState(
 {
         logContext("updating network join status");
 
-	OSErr error;
+	OSErr error = noErr;
 	short newState= netState;
 	short packet_type;
 
 #ifdef TEST_MODEM
 	newState= ModemUpdateJoinState();
 #else
-        
+	
 	switch (netState)
 	{
+		case netConnecting:	// trying to connect to gatherer
+			// jkvw: Here's what's up - We want to be able to click join before gatherer
+			//	 has started gathering.  So after a join click we attempt a connection
+			//	 every five seconds.  This is fine so long as remote computer quickly
+			//	 refuses connection each time we poll; the dialog will remain responsive.
+			//	 It's possible that a connection attempt will take a long time, however,
+			//	 so we look for that and abort dialog when it happens.
+			if (machine_tick_count() >= next_join_attempt) {
+				uint32 ticks_before_connection_attempt = machine_tick_count();
+				connection_to_server->connect(host_address);
+				if (connection_to_server->isConnected())
+					newState = netJoining;
+				else if (ticks_before_connection_attempt + 180 < machine_tick_count ()) {
+					newState= netJoinErrorOccurred;
+					alert_user(infoError, strNETWORK_ERRORS, netErrCouldntJoin, 3);
+				}
+				next_join_attempt = machine_tick_count() + 300;
+			}
+			break;
+
 		case netJoining:	// waiting to be gathered
-			if (NetStreamCheckConnectionStatus())
+			if (NetReceivePacket(connection_to_server, packet_type, network_adsp_packet, false))
 			{
-				error= NetReceiveStreamPacketGraceful(&packet_type, network_adsp_packet, false);
-
-                                logTrace1("NetReceiveStreamPacketGraceful returned %d", error);
-
+				if(!error && packet_type==_hello_packet)
+				{
+					prospective_joiner_info my_info;
+					prospective_joiner_info_NET my_info_NET;
+					pstrcpy((unsigned char*)my_info.name,player_preferences->name);
+					my_info.network_version = get_network_version();
+					netcpy(&my_info_NET, &my_info);
+					NetSendPacket(connection_to_server, _joiner_info_packet, &my_info_NET);
+				}
+				
 				if(!error && packet_type==_script_packet)
                                 {	// Gatherer wants to know if we can handle net scripts before he commits to gathering us
                                 	int16 message_in, message_out;
                                         message_in = *(int16*)network_adsp_packet;
-#ifdef HAVE_SDL_NET
                                         message_in = SDL_SwapBE16(message_in);
-#endif
                                         if (message_in == _netscript_query_message)
                                         {
 #ifdef HAVE_LUA
@@ -1553,17 +1655,13 @@ short NetUpdateJoinState(
 #else
                                                 message_out = _netscript_no_script_message;
 #endif
-#ifdef HAVE_SDL_NET
                                                 message_out = SDL_SwapBE16(message_out);
-#endif
-                                                error = NetSendStreamPacket(_script_packet, &message_out);
+                                                NetSendPacket(connection_to_server, _script_packet, &message_out);
                                         } else {
                                                 // Must be newer build asking for net script functionality we can't handle
                                                 message_out = _netscript_no_script_message;
-#ifdef HAVE_SDL_NET
                                                 message_out = SDL_SwapBE16(message_out);
-#endif
-                                                error = NetSendStreamPacket(_script_packet, &message_out);
+                                                NetSendPacket(connection_to_server, _script_packet, &message_out);
                                         }
                                 }
 
@@ -1581,13 +1679,6 @@ short NetUpdateJoinState(
 
 					/* Note that we could set accepted to false if we wanted to for some */
 					/*  reason- such as bad serial numbers.... */
-
-                                        /* Unregister ourselves */
-                                        error= NetUnRegisterName();
-
-                                        logTrace1("NetUnRegisterName returned %d", error);
-
-                                        assert(!error);
                                 
                                         SetNetscriptStatus (false); // Unless told otherwise, we don't expect a netscript
                                         
@@ -1601,31 +1692,10 @@ short NetUpdateJoinState(
                                         obj_copy(new_player_data.player, topology->players[localPlayerIndex]);
 
                                         netcpy(&new_player_data_NET, &new_player_data);
-                                        error = NetSendStreamPacket(_accept_join_packet, &new_player_data_NET);
-                                        
-                                        logTrace1("NetSendStreamPacket returned %d", error);
+                                        NetSendPacket(connection_to_server, _accept_join_packet, &new_player_data_NET);
 
-					if(!error)
-					{
-						/* Close and reset the connection */
-						error= NetCloseStreamConnection(false);
-                                                
-                                                logTrace1("NetCloseStreamConnection returned %d", error);
-
-						if (!error)
-						{
-							error= NetStreamWaitForConnection();
-                                                        
-                                                        logTrace1("NetStreamWaitForConnection returned %d", error);
-                                                        
-							if (!error)
-							{
-								/* start waiting for another connection */
-//fdprintf("Accepted: %d", new_player_data.accepted);
-								if(new_player_data.accepted) newState= netWaiting;
-							}
-						}
-					}
+					if(new_player_data.accepted)
+						newState= netWaiting;
 				} 
 
 				if (error != noErr)
@@ -1633,7 +1703,7 @@ short NetUpdateJoinState(
                                         logAnomaly1("error != noErr; error == %d", error);
                                 
 					newState= netJoinErrorOccurred;
-					NetCloseStreamConnection(false);
+					// no way to get here
 					alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
 				}
 			}
@@ -1641,11 +1711,10 @@ short NetUpdateJoinState(
                     // netJoining
 		
 		case netWaiting:	// have been gathered, waiting for other players / game start
-			if (NetStreamCheckConnectionStatus())
+			if (NetReceivePacket(connection_to_server, packet_type, network_adsp_packet, false))
 			{
 				/* and now, the packet youÕve all been waiting for ... (the server is trying to
 					hook us up with the network topology) */
-				error= NetReceiveStreamPacketGraceful(&packet_type, network_adsp_packet, false);
 				if(!error)
 				{	// ZZZ change to accept more kinds of packets here
                                     switch(packet_type) {
@@ -1654,18 +1723,9 @@ short NetUpdateJoinState(
                                     {	// Gatherer wants to tell us to expect script goodness
                                 	int16 message_in;
                                         message_in = *(int16*)network_adsp_packet;
-#ifdef HAVE_SDL_NET
                                         message_in = SDL_SwapBE16(message_in);
-#endif
                                         if (message_in == _netscript_script_intent_message)
                                             SetNetscriptStatus (true);
-                                            
-                                        /* Close and reset the connection */
-                                        error= NetCloseStreamConnection(false);
-                                        if (!error)
-                                        {
-                                                error= NetStreamWaitForConnection();
-                                        }
                                     }
                                     break;
                                     
@@ -1680,7 +1740,7 @@ short NetUpdateJoinState(
 						
 						// LP: NetAddrBlock is the trouble here
 						#ifdef NETWORK_IP
-						NetGetStreamAddress(&address);
+						address = connection_to_server->peerAddress();
 						#endif
 						
                                                 // ZZZ: the code below used to assume the server was _index_ 0; now, we merely
@@ -1734,17 +1794,6 @@ short NetUpdateJoinState(
 						default:
 							break;
 					}
-				
-					error= NetCloseStreamConnection(false);
-					if (!error)
-					{
-						error= NetStreamWaitForConnection();
-						if (!error)
-						{
-							/* successfully got a new topology structure from the server and closed
-								the connection */
-						}
-					}
 					
 					if (error)
 					{
@@ -1758,35 +1807,24 @@ short NetUpdateJoinState(
                                     case _chat_packet:
                                         netcpy(&incoming_chat_message_buffer, (NetChatMessage_NET*) network_adsp_packet);
                                         
-					error= NetCloseStreamConnection(false);
-					if (!error)
-					{
-						error= NetStreamWaitForConnection();
-						if (!error)
-						{
-							/* successfully got a chat message from the server and closed
-								the connection */
+							/* successfully got a chat message from the server */
                                                         newState = netChatMessageReceived;
                                                         new_incoming_chat_message = true;
-						}
-					}
 					
                                     break;
                                     // _chat_packet
 
                                     default:	// unrecognized stream packet type
-                                    // shouldn't we at least, like, close the connection and stuff?  Bungie's code didn't...
+
                                     break;
                                     
                                     } // switch(packet_type)
 				}
 				else	// error
 				{
-//					if(error) 
-//					{
-						newState= netJoinErrorOccurred;
-						alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
-//					}
+					newState= netJoinErrorOccurred;
+					// jkvw: It's not possible to get here right now
+					alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
 				}
 			}
 			break;
@@ -1819,13 +1857,11 @@ int NetGatherPlayer(
         /* player_index in our lookup list */
 	short player_index,
 #else
-        // ZZZ: in my formulation, the player information is passed along from the dialog here -
-        // there's no mechanism to go back and ask for it later.
-        const SSLP_ServiceInstance* player_instance,
+        prospective_joiner_info &player,
 #endif
 	CheckPlayerProcPtr check_player)
 {
-	OSErr error;
+	OSErr error = noErr;
 	NetAddrBlock address;
 	short packet_type;
 	short stream_transport_type= NetGetTransportType();
@@ -1845,10 +1881,7 @@ int NetGatherPlayer(
 	NetLookupInformation(player_index, &address, NULL);
 	#endif
 #else
-        // ZZZ: in my formulation, this info is passed along directly from the dialog
-        // There's no "inquiry" function to go back and get it later.
-        address.host = player_instance->sslps_address.host;
-        address.port = player_instance->sslps_address.port;
+	address = connections_to_clients[player.stream_id]->peerAddress();
 #endif
 
 	/* Note that the address will be garbage for modem, but that's okay.. */
@@ -1864,31 +1897,25 @@ int NetGatherPlayer(
 #endif
 
         int thePlayerAcceptNumber = 0;
-
-	error= NetOpenStreamToPlayer(topology->player_count);
 	
         // reject a player if e can't handle our script demands
         if (!error && do_netscript)
         {
                 int16 message_out = _netscript_query_message;
-#ifdef HAVE_SDL_NET
                 message_out = SDL_SwapBE16(message_out);
-#endif
-                error = NetSendStreamPacket(_script_packet, &message_out);
+
+                NetSendPacket(connections_to_clients[player.stream_id], _script_packet, &message_out);
                 if (!error)
                 {
                         short packet_type;
-                        error = NetReceiveStreamPacketGraceful(&packet_type, network_adsp_packet, true);
-                        if (!error)
+                        if (NetReceivePacket(connections_to_clients[player.stream_id], packet_type, network_adsp_packet, true))
                         {
                                 int16 message_in;
                         	switch(packet_type)
                                 {
                                         case _script_packet:
                                                 message_in = *((int16*) network_adsp_packet);
-#ifdef HAVE_SDL_NET
                                                 message_in = SDL_SwapBE16(message_in);
-#endif
                                                 if (message_in == _netscript_yes_script_message)
                                                         ; // accept
                                                 else
@@ -1900,13 +1927,14 @@ int NetGatherPlayer(
                                                 break;
                                 }
                                 
-                        }
+                        } else {
+				error = 1; // Didn't receive response to stream query
+			}
                 }
         }
         
         if (preGatherRejection)
         {
-                NetCloseStreamConnection(false);
                 alert_user(infoError, strNETWORK_ERRORS, netErrUngatheredPlayerUnacceptable, 0);
                 theResult = kGatherPlayerFailed;
         }
@@ -1920,12 +1948,11 @@ int NetGatherPlayer(
 		gather_data.new_local_player_identifier= topology->nextIdentifier;
 
                 netcpy(&gather_data_NET, &gather_data);
-                error = NetSendStreamPacket(_join_player_packet, &gather_data_NET);
+                NetSendPacket(connections_to_clients[player.stream_id], _join_player_packet, &gather_data_NET);
 
 		if(!error)
 		{
-			error= NetReceiveStreamPacketGraceful(&packet_type, network_adsp_packet, true);
-			if(!error)
+			if (NetReceivePacket(connections_to_clients[player.stream_id], packet_type, network_adsp_packet, true))
 			{
 				if(packet_type==_accept_join_packet)
 				{
@@ -1938,32 +1965,23 @@ int NetGatherPlayer(
 
 					if(new_player_data->accepted)
 					{
-                                                // ZZZ: these decisions ought to be made at a higher level
-                                                //  this is getting ugly.
-                                                // ZZZ: cannot gather a "naive" player into a resume-game
-                                                if(resuming_saved_game && new_player_data->accepted < kResumeNetgameSavvyJoinerAccepted)
-                                                {
-                                                        theResult = kGatheredUnacceptablePlayer;
-                                                }
-
-                                                // ZZZ: to play tag or ball with new, fixed rules,
-                                                // gathered player must use new rules too. (unfortunately
-                                                // this won't catch the other way around when old gatherer
-                                                // gathers new joiner, but better than nothing)
-                                                // Oh, behavior with aliens off has changed also.
-                                                int16 net_game_type = ((game_info*)topology->game_data)->net_game_type;
-                                                bool aliens = (((game_info*)topology->game_data)->game_options & _monsters_replenish) != 0;
-
-                                                if(new_player_data->accepted < kFixedTagAndBallJoinerAccepted && (net_game_type == _game_of_tag || net_game_type == _game_of_kill_man_with_ball || !aliens))
-                                                {
-                                                        theResult = kGatheredUnacceptablePlayer;
-                                                }
+						// jkvw: Here we used to check if we had gathered an unacceptable player.
+						//	 There's no need to perform the check any more, however,
+						//	 since the old builds aren't going to interoperate with
+						//	 the new firewall-friendly builds anyway.
+						//
+						//	 If we have need for a new interoperability check, I strongly
+						//	 reccomend doing it before commiting to the gather, similar to the check
+						//	 for lua capability.
                                                 
 						/* make sure everybody gets a unique identifier */
 						topology->nextIdentifier+= 1;
 
 						/* Copy in the player data */
 						obj_copy(topology->players[topology->player_count], new_player_data->player);
+						
+						/* this is how gatherer remembers how to contact joiners */
+						topology->players[topology->player_count].stream_id = player.stream_id;
 						
 						/* force in some addresses we know are correct */
 						topology->players[topology->player_count].dspAddress= address;
@@ -1977,13 +1995,10 @@ int NetGatherPlayer(
 #endif
 //						fdprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[topology->player_count].ddpAddress),
 //							*((long*)&topology->players[topology->player_count].dspAddress));
-							
-                                                error= NetCloseStreamConnection(false);
                                                     
                                                 if (!error)
                                                 {
-                                                        /* closed connection successfully, remove this player from the list of players so
-                                                                we canÕt even try to add him again */
+                                                        /* remove this player from the list of players so we canÕt even try to add him again */
                                                         if(stream_transport_type!=kModemTransportType)
                                                         {
 // ZZZ: in my formulation, entry is removed from list instantly by widget when clicked
@@ -2008,36 +2023,35 @@ int NetGatherPlayer(
 					}
 					else 
 					{
-						NetCloseStreamConnection(false);
+						// joiner did not accept
+						error = 1;
 					}
 				} 
 				else
 				{
-					NetCloseStreamConnection(false);
+					// got wrong packet type
+					error = 1;
 				}
 			}
 			else
 			{
-				NetCloseStreamConnection(false);
+				// got no packet
+				error = 1;
 			}
 		}  
 		else 
 		{
-			NetCloseStreamConnection(false);
+			// shouldn't get here
 		}
 	}
 
         if (!error && do_netscript && !preGatherRejection)
         {  // Let joiner know to expect a script
-                error= NetOpenStreamToPlayer(topology->player_count-1);
-                if (!error) {
-                    int16 message_out = _netscript_script_intent_message;
+		int16 message_out = _netscript_script_intent_message;
 #ifdef HAVE_SDL_NET
-                    message_out = SDL_SwapBE16(message_out);
+        	message_out = SDL_SwapBE16(message_out);
 #endif
-                    error = NetSendStreamPacket(_script_packet, &message_out);
-                    NetCloseStreamConnection(false);
-                }
+        	NetSendPacket(connections_to_clients[player.stream_id], _script_packet, &message_out);
         } 
                                                         
 	if(error)
@@ -2051,10 +2065,13 @@ int NetGatherPlayer(
 	}
 #endif
 
-        if(theResult == kGatheredUnacceptablePlayer)
-        {
+        if (theResult == kGatheredUnacceptablePlayer) {
                 alert_user(infoError, strNETWORK_ERRORS, netErrGatheredPlayerUnacceptable, thePlayerAcceptNumber);
-        }
+        } else if (theResult != kGatherPlayerSuccessful) {
+		// Drop connection of failed joiner
+		delete connections_to_clients[player.stream_id];
+		connections_to_clients.erase(player.stream_id);
+	}
 	
 	return theResult;
 }
@@ -2088,27 +2105,11 @@ static OSErr NetDistributeTopology(
                 // ZZZ: skip players with identifier NONE - they don't really exist... also skip ourselves.
                 if(topology->players[playerIndex].identifier != NONE && playerIndex != localPlayerIndex)
                 {
-                        error= NetOpenStreamToPlayer(playerIndex);
-                        if (!error)
-                        {
-                                error= NetSendStreamPacket(_topology_packet, topology_NET);
-                                if (!error)
-                                {
-                                        error= NetCloseStreamConnection(false);
-                                        if (!error)
-                                        {
-                                                /* successfully distributed topology to this player */
-                                        }
-                                }
-                                else
-                                {
-                                        NetCloseStreamConnection(true);
-                                }
-                        }
+			NetSendPacket(connections_to_clients[topology->players[playerIndex].stream_id], _topology_packet, topology_NET);
                 }
 	}
 	
-	return error;
+	return error; // must be noErr (not like we check return value anyway :))
 }
 
 /* -------------------- application specific code */
@@ -2134,6 +2135,14 @@ uint16 NetStreamPacketLength(
 
 	switch(packet_type)
 	{
+		case _hello_packet:
+			length= 0;
+			break;
+			
+		case _joiner_info_packet:
+			length= sizeof(prospective_joiner_info_NET);
+			break;
+	
 		case _join_player_packet:
 			length= sizeof(gather_player_data_NET);
 			break;

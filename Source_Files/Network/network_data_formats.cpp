@@ -198,6 +198,7 @@ netcpy(NetPlayer_NET* dest, const NetPlayer* src)
 	netcpy(&TempIPAddr,&src->ddpAddress);
 	BytesToStream(S,&TempIPAddr.data,SIZEOF_IPaddress);
 	ValueToStream(S,src->identifier);
+	ValueToStream(S,src->stream_id);
 	*(S++) = src->net_dead ? 1 : 0;
 
     // ZZZ fix: need to process player_info now also (the rest of the code assumes it is processed here).
@@ -219,6 +220,7 @@ netcpy(NetPlayer* dest, const NetPlayer_NET* src)
 	StreamToBytes(S,&TempIPAddr.data,SIZEOF_IPaddress);
 	netcpy(&dest->ddpAddress,&TempIPAddr);
 	StreamToValue(S,dest->identifier);
+	StreamToValue(S,dest->stream_id);
 	dest->net_dead = *(S++) != 0;
 
     // ZZZ: process player_info now; nobody else does it later :)
@@ -349,4 +351,24 @@ netcpy(network_audio_header* dest, const network_audio_header_NET* src) {
     StreamToValue(S, dest->mReserved);
     StreamToValue(S, dest->mFlags);
     assert(S == src->data + SIZEOF_network_audio_header);
+}
+
+void
+netcpy(prospective_joiner_info_NET* dest, const prospective_joiner_info* src)
+{
+	uint8 *S = dest->data;
+	ValueToStream(S,src->network_version);
+	ValueToStream(S,src->stream_id);
+	BytesToStream(S,src->name,sizeof(src->name));
+	assert(S == dest->data + SIZEOF_prospective_joiner_info);
+}
+
+void
+netcpy(prospective_joiner_info* dest, const prospective_joiner_info_NET* src)
+{
+	uint8 *S = (uint8 *)src->data;
+	StreamToValue(S,dest->network_version);
+	StreamToValue(S,dest->stream_id);
+	StreamToBytes(S,dest->name,sizeof(dest->name));
+	assert(S == src->data + SIZEOF_prospective_joiner_info);
 }

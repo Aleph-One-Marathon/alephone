@@ -49,6 +49,7 @@ enum {
 
         kSpokeToHubGameDataPacketV1Magic = 0x53484731,	// 'SHG1'
         kHubToSpokeGameDataPacketV1Magic = 0x48534731,	// 'HSG1'
+	kSpokeToHubIdentificationMagic = 0x53484944, // 'SHID'
 
         kPregameTicks = TICKS_PER_SECOND * 3,	// Synchronization/timing adjustment before real data
         kActionFlagsSerializedLength = 4,	// bytes for each serialized action_flags_t (should be elsewhere)

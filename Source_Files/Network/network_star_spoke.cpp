@@ -26,6 +26,11 @@
  *
  *  June 30, 2003 (Woody Zenfell): lossy byte-stream distribution more tolerant of scheduling jitter
  *	(i.e. will queue multiple chunks before send, instead of dropping all data but most recent)
+ *
+ *  September 17, 2004 (jkvw):
+ *	NAT-friendly networking - we no longer get spoke addresses form topology -
+ *	instead spokes send identification packets to hub with player ID.
+ *	Hub can then associate the ID in the identification packet with the paket's source address.
  */
 
 #include "network_star.h"
@@ -111,6 +116,7 @@ static int32 sSmallestUnreceivedTick;
 static WindowedNthElementFinder<int32> sNthElementFinder(kDefaultTimingWindowSize);
 static bool sTimingMeasurementValid;
 static int32 sTimingMeasurement;
+static bool sHeardFromHub = false;
 
 
 struct SpokeLossyByteStreamChunkDescriptor
@@ -130,7 +136,6 @@ static CircularQueue<SpokeLossyByteStreamChunkDescriptor> sOutgoingLossyByteStre
 static byte sScratchBuffer[kLossyByteStreamDataBufferSize];
 
 
-
 static void spoke_became_disconnected();
 static void spoke_received_game_data_packet_v1(AIStream& ps);
 static void process_messages(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
@@ -141,7 +146,7 @@ static void handle_lossy_byte_stream_message(AIStream& ps, IncomingGameDataPacke
 static void process_optional_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context, uint16 inMessageType);
 static bool spoke_tick();
 static void send_packet();
-
+static void send_identification_packet();
 
 
 static inline NetworkPlayer_spoke&
@@ -251,6 +256,8 @@ spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inN
 
         sSpokeActive = true;
         sSpokeTickTask = myXTMSetup(1000/TICKS_PER_SECOND, spoke_tick);
+	
+	sHeardFromHub = false;
 }
 
 
@@ -404,6 +411,8 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 static void
 spoke_received_game_data_packet_v1(AIStream& ps)
 {
+	sHeardFromHub = true;
+
         IncomingGameDataPacketProcessingContext context;
         
         // Piggybacked ACK
@@ -791,8 +800,13 @@ spoke_tick()
         // If we're connected and (we generated new data or if it's been long enough since we last sent), send.
         if(sConnected)
 	{
-		if(shouldSend || (sNetworkTicker - sLastNetworkTickSent) >= sSpokePreferences.mRecoverySendPeriod)
-			send_packet();
+		if (sHeardFromHub) {
+			if(shouldSend || (sNetworkTicker - sLastNetworkTickSent) >= sSpokePreferences.mRecoverySendPeriod)
+				send_packet();
+		} else {
+			if (!(sNetworkTicker % 30))
+				send_identification_packet();
+		}
 	}
 	else
 	{
@@ -888,6 +902,31 @@ send_packet()
                         NetDDPSendFrame(sOutgoingFrame, &sHubAddress, kPROTOCOL_TYPE, 0 /* ignored */);
 
                 sLastNetworkTickSent = sNetworkTicker;
+        }
+        catch (...) {
+        }
+}
+
+
+
+static void
+send_identification_packet()
+{
+        try {
+                AOStreamBE ps(sOutgoingFrame->data, ddpMaxData);
+        
+                // Packet magic
+                ps << (uint32)kSpokeToHubIdentificationMagic;
+        
+                // ID
+                ps << (uint16)sLocalPlayerIndex;
+
+                // Send the packet
+                sOutgoingFrame->data_size = ps.tellp();
+                if(sHubIsLocal)
+                        send_frame_to_local_hub(sOutgoingFrame, &sHubAddress, kPROTOCOL_TYPE, 0 /* ignored */);
+                else
+                        NetDDPSendFrame(sOutgoingFrame, &sHubAddress, kPROTOCOL_TYPE, 0 /* ignored */);
         }
         catch (...) {
         }

@@ -73,7 +73,7 @@ Oct 15, 2001 (Woody Zenfell):
 #include "screen_drawing.h"
 
 #include "network_games.h"
-#include "network_stream.h"
+//#include "network_stream.h"
 
 // ZZZ: shared dialog item ID constants
 #include "network_dialogs.h"

@@ -46,9 +46,12 @@ Feb 5, 2003 (Woody Zenfell):
 Apr 10, 2003 (Woody Zenfell):
     Join hinting and autogathering have Preferences entries now
 
- August 27, 2003 (Woody Zenfell):
+August 27, 2003 (Woody Zenfell):
 	SDL UI for selecting netscript
- */
+
+September 17, 2004 (jkvw):
+	Changes to accomodate NAT-friendly networking
+*/
 
 #include "cseries.h"
 #include "sdl_network.h"
@@ -858,7 +861,7 @@ static dialog* sActiveDialog;
 
 // This is called when the user clicks on a found player to attempt to gather him in.
 static void
-gather_player_callback(w_found_players* foundPlayersWidget, const SSLP_ServiceInstance* player) {
+gather_player_callback(w_found_players* foundPlayersWidget, prospective_joiner_info &player) {
         assert(foundPlayersWidget != NULL);
     
 	// Either gather will succeed, in which case we don't want to see player, or
@@ -906,9 +909,8 @@ autogather_callback(w_select* inAutoGather) {
 }
 
 
-// These three callbacks are called during an SSLP_Pump(), by SSLP to notify us of its findings.
 static void
-found_player_callback(const SSLP_ServiceInstance* player) {
+found_player(prospective_joiner_info &player) {
         assert(sActiveDialog != NULL);
         
         w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
@@ -925,35 +927,15 @@ found_player_callback(const SSLP_ServiceInstance* player) {
         sActiveDialog->draw_dirty_widgets();
 }
 
-static void
-lost_player_callback(const SSLP_ServiceInstance* player) {
-        assert(sActiveDialog != NULL);
-        
-        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
-        assert(theFoundPlayers != NULL);
-        
-        theFoundPlayers->lost_player(player);
-
-        sActiveDialog->draw_dirty_widgets();
-}
-
-static void
-player_name_changed_callback(const SSLP_ServiceInstance* player) {
-        assert(sActiveDialog != NULL);
-        
-        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
-        assert(theFoundPlayers != NULL);
-        
-        theFoundPlayers->player_name_changed(player);
-                
-        sActiveDialog->draw_dirty_widgets();
-}
-
 
 // This is a callback of sorts; the dialog will invoke it during its idle time.
 static void
 gather_processing_function(dialog* inDialog) {
-	SSLP_Pump();
+
+	prospective_joiner_info player;
+
+	if (NetCheckForNewJoiner(player))
+		found_player(player);
 }
 
 
@@ -1029,8 +1011,6 @@ bool network_gather(bool inResumingGame)
                         d.add(play_button_w);
                         
                         d.add(new w_right_button("CANCEL", dialog_cancel, &d));
-                        
-                        NetLookupOpen_SSLP(PLAYER_TYPE, get_network_version(), found_player_callback, lost_player_callback, player_name_changed_callback);
                         
                         d.set_processing_function(gather_processing_function);
                         

@@ -50,6 +50,11 @@
 #include <string>
 
 
+// jkvw: I'm putting this here because we only really want it for find_item_index_in_vecotr,
+//	 and of course we shouldn't be doing that anyway :).
+bool operator==(const prospective_joiner_info &left, const prospective_joiner_info &right)
+{ return left.stream_id == right.stream_id; }
+
 
 ////// helper functions //////
 // Actually, as it turns out, there should be a generic STL algorithm that does this, I think.
@@ -75,13 +80,10 @@ find_item_index_in_vector(const T& inItem, const vector<T>& inVector) {
 }
 
 
+
 ////// w_found_players //////
 void
-w_found_players::found_player(const SSLP_ServiceInstance* player) {
-    // SSLP ought to do the right thing in terms of checking for duplicate etc. so I think we can make
-    // some assumptions.  Also I think we want to have the exclusion-list exclude particular *instances*,
-    // not necessarily by address, so if a player becomes available, is clicked, the gather fails, and
-    // the player becomes available again, he will reappear.
+w_found_players::found_player(prospective_joiner_info &player) {
 
     // Found one
     found_players.push_back(player);
@@ -90,40 +92,9 @@ w_found_players::found_player(const SSLP_ServiceInstance* player) {
     list_player(player);
 }
 
-
-void
-w_found_players::lost_player(const SSLP_ServiceInstance* player) {
-    size_t theIndex = find_item_index_in_vector(player, found_players);
-    
-    if(theIndex == -1)
-        return;	// didn't know about it anyway
-    
-    // Axe it
-    found_players.erase(found_players.begin() + theIndex);
-
-    // Remove from either hidden list or displayed list.
-    theIndex = find_item_index_in_vector(player, hidden_players);
-    
-    if(theIndex != -1)
-        hidden_players.erase(hidden_players.begin() + theIndex);
-    else
-        unlist_player(player);
-}
-
-
-void
-w_found_players::player_name_changed(const SSLP_ServiceInstance* player) {
-
-    if(find_item_index_in_vector(player, hidden_players) != -1)
-        return;	// Player is hidden, name change will not show up in list anyway.
-    
-    // Length of vector has not changed, but some of its contents have.
-    new_items();
-}
-
     
 void
-w_found_players::hide_player(const SSLP_ServiceInstance* player) {
+w_found_players::hide_player(prospective_joiner_info &player) {
     found_players.push_back(player);
     
     unlist_player(player);
@@ -131,7 +102,7 @@ w_found_players::hide_player(const SSLP_ServiceInstance* player) {
 
 
 void
-w_found_players::list_player(const SSLP_ServiceInstance* player) {
+w_found_players::list_player(prospective_joiner_info &player) {
     listed_players.push_back(player);
     num_items = listed_players.size();
     new_items();
@@ -139,7 +110,7 @@ w_found_players::list_player(const SSLP_ServiceInstance* player) {
 
 
 void
-w_found_players::unlist_player(const SSLP_ServiceInstance* player) {
+w_found_players::unlist_player(prospective_joiner_info &player) {
     size_t theIndex = find_item_index_in_vector(player, listed_players);
 
     if(theIndex == -1)
@@ -182,10 +153,10 @@ w_found_players::callback_on_all_items() {
 
 
 void
-w_found_players::draw_item(vector<const SSLP_ServiceInstance*>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const {
+w_found_players::draw_item(vector<prospective_joiner_info>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const {
 	char	theNameBuffer[SSLP_MAX_NAME_LENGTH];
 
-	pstrncpy((unsigned char*)theNameBuffer, (unsigned char*)(*i)->sslps_name, SSLP_MAX_NAME_LENGTH - 1);
+	pstrncpy((unsigned char*)theNameBuffer, (*i).name, SSLP_MAX_NAME_LENGTH - 1);
 	theNameBuffer[SSLP_MAX_NAME_LENGTH - 1] = '\0';
     
 	int computed_x = x + (width - text_width(&theNameBuffer[1], font, style)) / 2;

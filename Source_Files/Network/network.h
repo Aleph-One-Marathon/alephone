@@ -69,10 +69,10 @@ enum // base network speeds
 enum
 {
 	_appletalk_ring_network_version = 9,
-	_ip_ring_network_version = 10,
-	_ip_star_network_version = 11,
+	_ip_ring_network_version = 12,
+	_ip_star_network_version = 13,
 
-	kMinimumNetworkVersionForGracefulUnknownStreamPackets = _ip_star_network_version
+	kMinimumNetworkVersionForGracefulUnknownStreamPackets = 11
 };
 
 typedef struct game_info
@@ -120,6 +120,7 @@ enum /* states */
 {
 	netUninitialized, /* NetEnter() has not been called */
 	netGathering, /* looking for players */
+	netConnecting, /* trying to establish connection to gatherer */
 	netJoining, /* waiting to be gathered */
 	netWaiting, /* have been gathered, waiting for start message */
 	netStartingUp, /* waiting for everyone to report (via NetSync) and begin queueing commands */
@@ -156,23 +157,27 @@ enum { // NetGatherPlayer results
         // but we can't start a game with him - upper-level code needs to make sure gathering is cancelled.
 };
 
+struct prospective_joiner_info {
+	uint16 network_version;
+	uint16 stream_id;
+	char name[MAX_NET_PLAYER_NAME_LENGTH];
+};
+
 int NetGatherPlayer(
 #if !HAVE_SDL_NET
 short player_index,
 #else
 // ZZZ: in my formulation, player info is all passed along in one structure from the dialog here.
-const SSLP_ServiceInstance* player_instance,
+prospective_joiner_info &player,
 #endif
 CheckPlayerProcPtr check_player);
 
-// ZZZ: added support for SSLP hinting
+// jkvw: replaced SSLP hinting address with host address
 bool NetGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data,
-				 short player_data_size, short version_number
-#if HAVE_SDL_NET
-				 , const char* hint_address_string
-#endif
+				 short player_data_size, short version_number, const char* host_address_string
 				 );
 
+bool NetCheckForNewJoiner (prospective_joiner_info &info);
 short NetUpdateJoinState(void);
 void NetCancelJoin(void);
 
@@ -225,6 +230,6 @@ void NetAddDistributionFunction(int16 type, NetDistributionProc proc, bool lossy
 void NetDistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self);
 void NetRemoveDistributionFunction(short type);
 
-extern short get_network_version();
+short get_network_version();
 
 #endif

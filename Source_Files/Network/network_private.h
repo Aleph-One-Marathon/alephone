@@ -46,7 +46,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 #include	"network.h"
 
-
+#define	GAME_PORT 4226
 
 // (ZZZ:) Moved here from sdl_network.h and macintosh_network.h
 
@@ -188,6 +188,8 @@ struct NetPlayer
 	
 	int16 identifier;
 
+	int16 stream_id; // to remind gatherer how to contact joiners
+
 	bool net_dead; // only valid if you are the server.
 
 	uint8 player_data[MAXIMUM_PLAYER_DATA_SIZE];
@@ -264,6 +266,8 @@ enum {
 
 // Altering these constants requires changes to get_network_version().  - Woody
 enum {
+	_hello_packet,
+	_joiner_info_packet,
 	_join_player_packet,
 	_accept_join_packet,
 	_topology_packet,

@@ -133,7 +133,7 @@ static char* sStringSetNumber131[] = {
 static char* sStringSetNumber132[] = {
     "Sorry, that player could not be found on the network.  He may have cancelled his Join Game dialog.",
     "One or more of the players in the game could not be found to receive the map.  The game has been cancelled.",
-    "Aleph One could not register on your network and therefore cannot join a game.",
+    "Could not connect to server.",
     "Sorry, the gathering computer has cancelled the game (you should all gang up on him next game).",
     "One or more of the players in the game could not be found on the network and the game has been cancelled.",
     "The gathering computer never sent the map, so the game has been cancelled.  Maybe one of the other machines in the game went down.",
