@@ -27,6 +27,9 @@
 	Apr 27, 2001 (Loren Petrich):
 		Modified access to OpenGL color data; Pfhortran now affects only the above-liquid color,
 		though below-liquid color should be easy to control with appropriate modifications
+
+	01/26/02 - EE via AS
+	Added Get_Platform_Sate, Set_Platform_State, Get_Light_State, Set_Light_State & Get_Player_Poly
 */
 
  
@@ -277,7 +280,7 @@ void init_instructions(void)
 	instruction_lookup[Camera_Move] = s_Camera_Move;
 	instruction_lookup[Camera_Look] = s_Camera_Look;
 	instruction_lookup[Wait_Ticks] = s_Wait_Ticks;
-	instruction_lookup[Inflict_Dammage] = s_Inflict_Dammage;
+	instruction_lookup[Inflict_Damage] = s_Inflict_Damage;
 	instruction_lookup[Jump] = s_Jump;
 	instruction_lookup[Enable_Player] = s_Enable_Player;
 	instruction_lookup[Disable_Player] = s_Disable_Player;
@@ -729,7 +732,7 @@ void s_Wait_Ticks(script_instruction inst)
 	//set_instruction_decay(uint32(dynamic_world->tick_count + temp));
 }
 
-void s_Inflict_Dammage(script_instruction inst)
+void s_Inflict_Damage(script_instruction inst)
 {
 	if (PLAYER_IS_DEAD(current_player) || PLAYER_IS_TOTALLY_DEAD(current_player))
 		return;
@@ -2936,8 +2939,7 @@ void s_Monster_Set_Nuke(script_instruction inst)
 {
 }
 
-//Random variable, useful in mazes or something
-//should i use GM_Random? (AlexJLS: Setting of random seed removed)
+//Random variable, useful in mazes or something (PiD conversion, anyone?)
 void s_Get_Random(script_instruction inst)
 {
 	if (inst.mode != 1)
@@ -2945,4 +2947,138 @@ void s_Get_Random(script_instruction inst)
 
 	set_variable(int(inst.op1),global_random());
 
+}
+
+void s_Set_Platform_State(script_instruction inst)
+{
+	float temp,temp2;
+	
+	temp = inst.op1;
+	temp2 = inst.op2;
+	
+	if (inst.mode != 0)
+	{
+		switch(inst.mode)
+		{
+			case 1:
+				temp = get_variable(int(inst.op1));
+				break;
+			case 2:
+				temp2 = get_variable(int(inst.op2));
+				break;
+			case 3:
+				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
+				break;
+		}
+		
+	try_and_change_platform_state(int16(temp), temp2);
+	assume_correct_switch_position(_panel_is_platform_switch, int16(temp), temp2);
+	}	
+}
+
+void s_Get_Platform_State(script_instruction inst)
+{
+	float temp,temp2;
+	struct platform_data *platform;
+	
+	temp = inst.op1;
+	temp2 = inst.op2;
+
+	if (inst.mode != 0)
+	{
+		switch(inst.mode)
+		{
+			case 1:
+				temp = get_variable(int(inst.op1));
+				break;
+			case 2:
+				temp2 = get_variable(int(inst.op2));
+				break;
+			case 3:
+				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
+				break;
+		}
+		
+		platform = get_platform_data(temp)
+		
+		if (PLATFORM_IS_ACTIVE(platform))
+		{
+			set_variable(int(inst.op2), 1);
+		else
+			set_variable(int(inst.op2), 0);
+		}
+	}
+}
+
+void s_Set_Light_State(script_instruction inst)
+{
+	float temp,temp2;
+	
+	temp = inst.op1;
+	temp2 = inst.op2;
+	
+	if (inst.mode != 0)
+	{
+		switch(inst.mode)
+		{
+			case 1:
+				temp = get_variable(int(inst.op1));
+				break;
+			case 2:
+				temp2 = get_variable(int(inst.op2));
+				break;
+			case 3:
+				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
+				break;
+		}
+		
+	set_light_status(int16(temp), temp2);
+	}	
+}
+
+void s_Get_Light_State(script_instruction inst)
+{
+	float temp,temp2;
+	struct light_data *light;
+	
+	temp = inst.op1;
+	temp2 = inst.op2;
+
+	if (inst.mode != 0)
+	{
+		switch(inst.mode)
+		{
+			case 1:
+				temp = get_variable(int(inst.op1));
+				break;
+			case 2:
+				temp2 = get_variable(int(inst.op2));
+				break;
+			case 3:
+				temp = get_variable(int(inst.op1));
+				temp2 = get_variable(int(inst.op2));
+				break;
+		}
+		
+		light = get_light_data(temp);
+		set_variable(int(inst.op2), get_light_status(light));
+	}
+}
+
+void s_Get_Player_Poly(script_instruction inst)
+{
+
+	if (inst.mode == 0)
+		return;
+		
+		switch(inst.mode)
+		{
+			case 1:
+				set_variable(int(inst.op1), get_polygon_index_supporting_player(current_player_index));
+				break;
+		}
+return;
 }

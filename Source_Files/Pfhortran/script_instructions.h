@@ -22,7 +22,8 @@
 	10/20/00 - Mark Levin
 		Added instructions for monster control
 		
-
+	01/26/02 - EE
+	Added Get_Platform_State, Set_Platform_State, Get_Light_State, Set_Light_State & Get_Player_Poly
 */
 
 
@@ -78,7 +79,7 @@ enum /* instruction defs */
 
 	Wait_Ticks = 0x03,
 
-	Inflict_Dammage = 0x04,
+	Inflict_Damage = 0x04,
 
 	Jump = 0x05,
 
@@ -225,7 +226,9 @@ enum /* instruction defs */
 	
 	Monster_Set_Nuke = 0x4B,
 	
-	Set_UnderFog_Depth = 0x4C, //Alexander Strange's underwater fog stuff, a straight copy of Matthew Hielscher's code
+	//Alexander Strange's underwater fog stuff, a straight copy of Matthew Hielscher's code
+
+	Set_UnderFog_Depth = 0x4C,
 	
 	Set_UnderFog_Color = 0x4D,
 	
@@ -233,7 +236,17 @@ enum /* instruction defs */
 	
 	Get_UnderFog_Color = 0x4F,
 	
-	Get_Random = 0x50, //now, we just need flying rats and a flashlight
+	Get_Random = 0x50,
+	
+	Set_Platform_State = 0x51
+	
+	Get__Platform_State = 0x52
+	
+	Set_Light_State = 0x53
+	
+	Get__Light_State = 0x54
+	
+	Get__Player_Poly = 0x55
 
 	NUMBER_OF_INSTRUCTIONS
 };
