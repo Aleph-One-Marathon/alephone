@@ -1,6 +1,6 @@
 /*
 
-	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
+	Copyright (C) 1991-2001 and beyond by Bo Lindbergh
 	and the "Aleph One" developers.
  
 	This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,6 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	LowLevelSetEntries simply asserts under Carbon (Device control unavailable)
 	Included Steve Bytnar's Carbon menubar handling code
 */
-
-// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 
 #include "my32bqd.h"
 

@@ -1,6 +1,6 @@
 /*
 
-	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
+	Copyright (C) 1991-2001 and beyond by Bo Lindbergh
 	and the "Aleph One" developers.
  
 	This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 		to use CopyCStringToPascal
 */
 
-// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 // LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
 
 #include <stdio.h>

@@ -21,7 +21,7 @@
 // Loren Petrich: the author(s) of the "cseries" files is not given, but is probably
 // either Bo Lindbergh, Mihai Parparita, or both, given their efforts in getting the
 // code working initially.
-
+// AS: It was almost certainly Bo Lindbergh
 #ifndef _CSERIES
 #define _CSERIES
 

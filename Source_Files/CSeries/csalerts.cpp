@@ -1,6 +1,6 @@
 /*
 
-	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
+	Copyright (C) 1991-2001 and beyond by Bo Lindbergh
 	and the "Aleph One" developers.
  
 	This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@ April 22, 2003 (Woody Zenfell):
 	Now dumping alert text etc. with Logging as well
 */
 
-// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #include <stdlib.h>
 #include <string.h>
 

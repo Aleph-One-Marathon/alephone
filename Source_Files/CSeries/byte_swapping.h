@@ -1,6 +1,6 @@
 /*
 
-	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
+	Copyright (C) 1991-2001 and beyond by Bo Lindbergh
 	and the "Aleph One" developers.
  
 	This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,6 @@
 	http://www.gnu.org/licenses/gpl.html
 
 */
-// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 #ifndef _BYTE_SWAPPING_
 #define _BYTE_SWAPPING_
 

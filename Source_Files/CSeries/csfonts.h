@@ -1,6 +1,6 @@
 /* csfonts.h
 
-	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
+	Copyright (C) 1991-2001 and beyond by Bo Lindbergh
 	and the "Aleph One" developers.
  
 	This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,6 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-// LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 
     Sept-Nov 2001 (Woody Zenfell): new styleOutline helps put a "halo" (heh) around text.
 */
