@@ -8,6 +8,8 @@ http://connect.apple.com. You must be a registered Apple Developer Connection
 (ADC) member, but a free registration is available which gives you access to a
 version of the developer tools.
 
+This is not the MacOS X Carbon version. For that see INSTALL.MacOSX.Carbon.
+
 Required Libraries
 ------------------
 
@@ -46,7 +48,7 @@ Project Builder needs to know where to find SDL.framework and SDL_net.framework
 
 Now, build the program (click on the hammer icon or choose "Build" from the Build menu).
 
-If all goes well, you'll have an executable called "AlephOne-SDL-0.11.1" in
+If all goes well, you'll have an executable called "AlephOne" in
 aleph/PBProjects/build. You can run this from within Project Builder (probably a
 good way to test the program, as Project Builder will give you console output),
 or move this wherever you want it installed.
@@ -69,9 +71,14 @@ with the ability to read Mac filesystems. For details on how to do this, look at
 the file "INSTALL.Unix".
 
 Note that by default, the OSX version of Aleph One expects the data files to be
-in /Users/Shared/AlephOne. You can change this by modifying confpaths.h in the
-"Sources" group. It might be more Mac-like to have this point to the same
-directory as the executable eventually.
+in /Library/Application Support/AlephOne. You can change this by modifying
+confpaths.h in the "Sources" group. It might be more Mac-like to have this point
+to the same directory as the executable eventually.
+
+To enable the default SDL UI theme you need to do the following. Star by cd'ing
+to the aleph/data directory and enter these commands:
+	mkdir -p ~/.alephone/Themes
+	cp -r default_theme ~/.alephone/Themes/Default
 
 Issues, Bugs, and annoyances
 ----------------------------
