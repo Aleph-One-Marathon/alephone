@@ -235,8 +235,9 @@ int main(int argc, char **argv)
 	// Must be up here
 	glutInit(&argc, argv);
 	
-	// See if QT and NavSvcs are present
+	// See if QT and NavSvcs (MacOS) are present
 	InitMacServices();
+	SetDebugOutput_Wavefront(stdout);
 	
 	// Set up for creating the main window
 	glutInitWindowSize(MainWindowWidth,MainWindowHeight);
