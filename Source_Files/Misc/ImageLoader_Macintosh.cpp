@@ -6,6 +6,9 @@
 
 	This file contains a function for loading an image;
 	it is MacOS-specific, but it should be easy to create an SDL version.
+
+Nov 12, 2000 (Loren Petrich):
+	Added opacity-loading support
 */
 
 
@@ -15,11 +18,24 @@
 #include "shell.h"
 
 
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File)
+bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 {
 	// Needs QT, of course:
-	if (!machine_has_quicktime()) return false;
+	if (!machine_has_quicktime()) return false;	
 	
+	// Don't load opacity if there is no color component:
+	switch(ImgMode)
+	{
+	case ImageLoader_Colors:
+		break;
+		
+	case ImageLoader_Opacity:
+		if (!Img.IsPresent()) return false;
+		break;
+		
+	default:
+		vassert(false,csprintf(temporary,"Bad image mode for loader: %d",ImgMode));
+	}
 	
 	// Get the graphics-importing component
 	GraphicsImportComponent Importer;
@@ -58,28 +74,67 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File)
 	// Get image dimensions and set its size
 	int Width = ImgRect.right - ImgRect.left;
 	int Height = ImgRect.bottom - ImgRect.top;
-	Img.Resize(Width,Height);
+	switch(ImgMode)
+	{
+	case ImageLoader_Colors:
+		Img.Resize(Width,Height);
+		break;
+		
+	case ImageLoader_Opacity:
+		// If the wrong size, then bug out
+		if (Width != Img.GetWidth() || Height != Img.GetHeight())
+		{
+			UnlockPixels(PxlMapHdl);
+			DisposeGWorld(ImgGW);
+			return false;
+		}
+		break;
+	}
 	
 	// Set pointers:
 	byte *PixMap = (byte *)GetPixBaseAddr(PxlMapHdl);
-	int NumRowPixels = int((**PxlMapHdl).rowBytes & 0x7fff);
+	int NumRowBytes = int((**PxlMapHdl).rowBytes & 0x7fff);
 	byte *RowBegin = PixMap;
 	uint32 *DestPxlPtr = Img.GetPixelBasePtr();
 	
-	for (int h=0; h<Height; h++) {
-		byte *PixPtr = RowBegin;
-		for (int w=0; w<Width; w++) {
-			int32 DestPxl;
-			byte *DPCP = (byte *)(&DestPxl);
-			// ARGB to RGBA
-			PixPtr++;
-			DPCP[0] = *(PixPtr++);
-			DPCP[1] = *(PixPtr++);
-			DPCP[2] = *(PixPtr++);
-			DPCP[3] = 0xff;			// Completely opaque
-			*(DestPxlPtr++) = DestPxl;
+	switch(ImgMode)
+	{
+	case ImageLoader_Colors:
+		for (int h=0; h<Height; h++) {
+			byte *PixPtr = RowBegin;
+			for (int w=0; w<Width; w++) {
+				uint32 DestPxl;
+				byte *DPCP = (byte *)(&DestPxl);
+				// ARGB to RGBA
+				PixPtr++;
+				DPCP[0] = *(PixPtr++);
+				DPCP[1] = *(PixPtr++);
+				DPCP[2] = *(PixPtr++);
+				DPCP[3] = 0xff;			// Completely opaque
+				*(DestPxlPtr++) = DestPxl;
+			}
+			RowBegin += NumRowBytes;
 		}
-		RowBegin += NumRowPixels;
+		break;
+	
+	case ImageLoader_Opacity:
+		for (int h=0; h<Height; h++) {
+			byte *PixPtr = RowBegin;
+			for (int w=0; w<Width; w++) {
+				uint32 DestPxl = *DestPxlPtr;
+				byte *DPCP = (byte *)(&DestPxl);
+				// ARGB to grayscale value, and then to the opacity
+				PixPtr++;
+				float Red = float(*(PixPtr++));
+				float Green = float(*(PixPtr++));
+				float Blue = float(*(PixPtr++));
+				float Opacity = (Red + Green + Blue)/3;
+				DPCP[3] = PIN(int(Opacity + 0.5),0,255);
+				*(DestPxlPtr++) = DestPxl;
+			}
+			RowBegin += NumRowBytes;
+		}
+		break;
 	}
 	
 	UnlockPixels(PxlMapHdl);
