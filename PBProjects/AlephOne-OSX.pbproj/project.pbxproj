@@ -602,6 +602,7 @@
 				F5CC94480240DE0F01A80001,
 				F5CC94490240DE0F01A80001,
 				F5CC944A0240DE0F01A80001,
+				F5CF585B024599B701A80001,
 			);
 			isa = PBXHeadersBuildPhase;
 			name = Headers;
@@ -1370,31 +1371,31 @@
 		F52212480136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shell_macintosh.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/shell_macintosh.h;
+			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/shell_macintosh.h;
 			refType = 0;
 		};
 		F52212490136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shell_misc.cpp;
-			path = ../Source_Files/Misc/shell_misc.cpp;
+			path = ../Source_Files/shell_misc.cpp;
 			refType = 2;
 		};
 		F522124A0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shell_sdl.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/shell_sdl.h;
+			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/shell_sdl.h;
 			refType = 0;
 		};
 		F522124B0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shell.cpp;
-			path = ../Source_Files/Misc/shell.cpp;
+			path = ../Source_Files/shell.cpp;
 			refType = 2;
 		};
 		F522124C0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shell.h;
-			path = ../Source_Files/Misc/shell.h;
+			path = ../Source_Files/shell.h;
 			refType = 2;
 		};
 		F52212560136A6FD01000001 = {
@@ -2038,16 +2039,13 @@
 		};
 		F52214490136C0C401000001 = {
 			children = (
-				F5CADB5B0136D95E01000001,
+				F5CF58580245987901A80001,
 				F5830B4201E77D5701BA387C,
 				F522144A0136C0C401000001,
 				F522144C0136C0C401000001,
 				F522144E0136C0C401000001,
 				F52214510136C0C401000001,
 				F52211190136A41F01000001,
-				00F9DA4F00AC72F57F000001,
-				00F9DA5100AC730E7F000001,
-				F58BD22E01F7D34501F58C2F,
 				F5CC942A0240DE0E01A80001,
 				F5CC94110240DA4301A80001,
 				F5CC936E0240D85D01A80001,
@@ -2161,8 +2159,6 @@
 				F52211CC0136A6FD01000001,
 				F522120F0136A6FD01000001,
 				F52212130136A6FD01000001,
-				F522124B0136A6FD01000001,
-				F52212490136A6FD01000001,
 				F52212590136A6FD01000001,
 				F5574EF601F4EC8501FEABBD,
 			);
@@ -2184,7 +2180,6 @@
 				F52212100136A6FD01000001,
 				F52212140136A6FD01000001,
 				F522123E0136A6FD01000001,
-				F522124C0136A6FD01000001,
 				F52212560136A6FD01000001,
 				F522125A0136A6FD01000001,
 			);
@@ -4018,7 +4013,7 @@
 		F58BD22E01F7D34501F58C2F = {
 			isa = PBXFileReference;
 			path = config.h;
-			refType = 4;
+			refType = 2;
 		};
 		F58BD22F01F7D34501F58C2F = {
 			fileRef = F58BD22E01F7D34501F58C2F;
@@ -4249,7 +4244,7 @@
 		F5CADB5B0136D95E01000001 = {
 			isa = PBXFileReference;
 			path = confpaths.h;
-			refType = 4;
+			refType = 2;
 		};
 		F5CADB5C0136D95E01000001 = {
 			fileRef = F5CADB5B0136D95E01000001;
@@ -7332,7 +7327,6 @@
 				F52211D10136A6FD01000001,
 				F52211D20136A6FD01000001,
 				F522120D0136A6FD01000001,
-				F52212480136A6FD01000001,
 				F52211C10136A6FD01000001,
 				F52212570136A6FD01000001,
 			);
@@ -7346,7 +7340,6 @@
 				F5A0002B023FDAD101A80001,
 				F522123B0136A6FD01000001,
 				F52212400136A6FD01000001,
-				F522124A0136A6FD01000001,
 				F5A00023023FDA1601A80001,
 				F52211C30136A6FD01000001,
 				F522123A0136A6FD01000001,
@@ -7743,6 +7736,44 @@
 			name = SDL;
 			path = "";
 			refType = 4;
+		};
+		F5CF58580245987901A80001 = {
+			children = (
+				F5CF5859024599B601A80001,
+				F5CF585A024599B601A80001,
+				F522124C0136A6FD01000001,
+				F522124B0136A6FD01000001,
+				F52212490136A6FD01000001,
+			);
+			isa = PBXGroup;
+			name = Main;
+			refType = 4;
+		};
+		F5CF5859024599B601A80001 = {
+			children = (
+				F52212480136A6FD01000001,
+			);
+			isa = PBXGroup;
+			name = Macintosh;
+			refType = 4;
+		};
+		F5CF585A024599B601A80001 = {
+			children = (
+				F522124A0136A6FD01000001,
+				F5CADB5B0136D95E01000001,
+				00F9DA4F00AC72F57F000001,
+				00F9DA5100AC730E7F000001,
+				F58BD22E01F7D34501F58C2F,
+			);
+			isa = PBXGroup;
+			name = SDL;
+			refType = 4;
+		};
+		F5CF585B024599B701A80001 = {
+			fileRef = 00F9DA4F00AC72F57F000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
 		};
 		F5CFAD390200F9D201D80110 = {
 			isa = PBXFileReference;
