@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 34;
+	objectVersion = 38;
 	objects = {
 		00F9DA4F00AC72F57F000001 = {
 			isa = PBXFileReference;
@@ -36,7 +36,6 @@
 			files = (
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
 		};
 //040
 //041
@@ -605,7 +604,6 @@
 				F5CF585B024599B701A80001,
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
 		};
 		29B97328FDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
@@ -624,7 +622,6 @@
 				F5CFAD4A0200FA6B01D80110,
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
 		};
 		29B9732BFDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
@@ -760,7 +757,6 @@
 				F5CC94540240DE0F01A80001,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
 		};
 		29B9732DFDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
@@ -772,7 +768,6 @@
 				F5281C0A01F8CA2201E83A66,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
 		};
 //290
 //291
@@ -1073,7 +1068,7 @@
 		F52211560136A66601000001 = {
 			isa = PBXFileReference;
 			name = nametab.h;
-			path = ../Source_Files/Expat/nametab.h;
+			path = ../Expat/xmltok/nametab.h;
 			refType = 2;
 		};
 		F52211570136A66601000001 = {
@@ -2289,16 +2284,18 @@
 				F53673F302014B3F01A80001,
 			);
 			buildSettings = {
-				DEBUGGING_SYMBOLS = NO;
+				DEBUGGING_SYMBOLS = YES;
 				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
 				HEADER_SEARCH_PATHS = "\"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O1 -ffast-math -fno-unroll-loops";
+				OPTIMIZATION_CFLAGS = "-O2 -fno-unroll-loops -fno-inline-functions -mdynamic-no-pic";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1";
 				OTHER_LDFLAGS = "-lobjc";
 				OTHER_REZFLAGS = "";
+				PREBINDING = NO;
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
+				USE_GCC3 = YES;
 				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas -Wno-precomp";
 				WRAPPER_EXTENSION = app;
 			};
@@ -2695,7 +2692,6 @@
 				F5FA5D2A0248632901A80001,
 			);
 			isa = PBXHeadersBuildPhase;
-			name = Headers;
 		};
 		F53673F002014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -2714,7 +2710,6 @@
 				F552048002173FFA01A80001,
 			);
 			isa = PBXResourcesBuildPhase;
-			name = "Bundle Resources";
 		};
 		F53673F102014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -2850,7 +2845,6 @@
 				F5CC94670240DE0F01A80001,
 			);
 			isa = PBXSourcesBuildPhase;
-			name = Sources;
 		};
 		F53673F202014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -2865,7 +2859,6 @@
 				F56A4641021F88A301A80001,
 			);
 			isa = PBXFrameworksBuildPhase;
-			name = "Frameworks & Libraries";
 		};
 		F53673F302014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -2876,7 +2869,6 @@
 				F536740902014E1C01A80001,
 			);
 			isa = PBXRezBuildPhase;
-			name = "ResourceManager Resources";
 		};
 		F53673F502014D2D01A80001 = {
 			isa = PBXFrameworkReference;
@@ -4223,7 +4215,6 @@
 				F5A2534B023B71CF01A80001,
 			);
 			isa = PBXCopyFilesBuildPhase;
-			name = "Copy Files";
 		};
 		F5A2534A023B71CF01A80001 = {
 			fileRef = F5281C0501F8C94101E83A66;
@@ -7915,7 +7906,6 @@
 			generatedFileNames = (
 			);
 			isa = PBXShellScriptBuildPhase;
-			name = "Shell Script";
 			neededFileNames = (
 			);
 			shellPath = /bin/sh;
@@ -7978,7 +7968,6 @@
 			generatedFileNames = (
 			);
 			isa = PBXShellScriptBuildPhase;
-			name = "Shell Script";
 			neededFileNames = (
 			);
 			shellPath = /bin/sh;
