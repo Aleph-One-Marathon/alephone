@@ -306,7 +306,7 @@ void FileSpecifier::SetName(const char *Name, int Type)
 
 
 // Parses the directory path and updates the parent directory appropriately
-bool FileSpecifier:: SetNameWithPath(char *NameWithPath)
+bool FileSpecifier:: SetNameWithPath(const char *NameWithPath)
 {
 	// String setup
 	int NNPChars = strlen(NameWithPath);
