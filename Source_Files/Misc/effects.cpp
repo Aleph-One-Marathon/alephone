@@ -39,20 +39,16 @@ ryan reports get_object_data() failing on effect->data after a teleport effect t
 
 /* ---------- private prototypes */
 
-/*
-#ifdef DEBUG
-struct effect_definition *get_effect_definition(short type);
-#else
-#define get_effect_definition(i) (effect_definitions+(i))
-#endif
-*/
-
 /* ---------- globals */
 
 /* import effect definition constants, structures and globals */
 #include "effect_definitions.h"
 
-struct effect_data *effects = NULL;
+// Turned the list of active effects into a variable array
+
+vector<effect_data> EffectList(MAXIMUM_EFFECTS_PER_MAP);
+
+// struct effect_data *effects = NULL;
 
 /* ---------- code */
 

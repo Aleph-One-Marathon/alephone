@@ -13,6 +13,10 @@ Feb 19, 2000 (Loren Petrich):
 
 #include <string.h>
 #include "dynamic_limits.h"
+#include "map.h"
+#include "effects.h"
+#include "monsters.h"
+#include "projectiles.h"
 
 // Reasonable defaults;
 // the original ones are in []'s
@@ -88,7 +92,31 @@ static XML_DynLimValueParser
 	DynLimParser6("local_collision",dynamic_limits + _dynamic_limit_local_collision),
 	DynLimParser7("global_collision",dynamic_limits + _dynamic_limit_global_collision);
 
-static XML_ElementParser DynamicLimitsParser("dynamic_limits");
+class XML_DynLimParser: public XML_ElementParser
+{
+public:
+	bool End();
+	XML_DynLimParser(): XML_ElementParser("dynamic_limits") {}
+};
+
+bool XML_DynLimParser::End()
+{
+	// Resize and clear the arrays of objects, monsters, effects, and projectiles
+	
+	EffectList.resize(MAXIMUM_EFFECTS_PER_MAP);
+	ObjectList.resize(MAXIMUM_OBJECTS_PER_MAP);
+	MonsterList.resize(MAXIMUM_MONSTERS_PER_MAP);
+	ProjectileList.resize(MAXIMUM_PROJECTILES_PER_MAP);
+
+	objlist_clear(effects, EffectList.size());
+	objlist_clear(projectiles,  ProjectileList.size());
+	objlist_clear(monsters,  MonsterList.size());
+	objlist_clear(objects,  ObjectList.size());
+	
+	return true;
+}
+
+static XML_DynLimParser DynamicLimitsParser;
 
 // XML-parser support
 XML_ElementParser *DynamicLimits_GetParser()

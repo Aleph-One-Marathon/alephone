@@ -23,12 +23,13 @@ Aug 29, 2000 (Loren Petrich):
 	Added packing and unpacking routines
 */
 
+#include <vector>
 #include "map.h"
 #include "XML_ElementParser.h"
 
 /* ---------- constants */
 
-#define MAXIMUM_MEDIAS_PER_MAP 16
+// #define MAXIMUM_MEDIAS_PER_MAP 16
 
 // LP addition: added JjaroGoo support
 enum /* media types */
@@ -112,7 +113,15 @@ const int SIZEOF_media_data = 32;
 
 /* --------- globals */
 
-extern struct media_data *medias;
+
+// Turned the list of lights into a variable array;
+// took over their maximum number as how many of them
+
+extern vector<media_data> MediaList;
+#define medias (&MediaList[0])
+#define MAXIMUM_MEDIAS_PER_MAP (MediaList.size())
+
+// extern struct media_data *medias;
 
 /* --------- prototypes/MEDIA.C */
 
@@ -141,14 +150,6 @@ inline struct media_data *get_media_data(
 	
 	return media;
 }
-
-/*
-#ifdef DEBUG
-struct media_data *get_media_data(short media_index);
-#else
-#define get_media_data(i) (medias+(i))
-#endif
-*/
 
 // LP addition: count number of media types used,
 // for better Infinity compatibility when saving games

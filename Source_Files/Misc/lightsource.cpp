@@ -34,18 +34,14 @@ Aug 29, 2000 (Loren Petrich):
 
 /* ---------- globals */
 
-struct light_data *lights = NULL;
+// Turned the list of lights into a variable array;
+// took over their maximum number as how many of them
+
+vector<light_data> LightList;
+
+// struct light_data *lights = NULL;
 
 /* ---------- private prototypes */
-
-
-/*
-#ifdef DEBUG
-static struct light_definition *get_light_definition(short type);
-#else
-#define get_light_definition(t) (light_definitions+(t))
-#endif
-*/
 
 static void rephase_light(short light_index);
 
@@ -153,13 +149,12 @@ short new_light(
 			change_light_state(light_index, LIGHT_IS_INITIALLY_ACTIVE(data) ? _light_secondary_active : _light_secondary_inactive);
 			light->intensity= light->final_intensity;
 			change_light_state(light_index, LIGHT_IS_INITIALLY_ACTIVE(data) ? _light_primary_active : _light_primary_inactive);
-
-			light->phase= data->phase;
+					light->phase= data->phase;
 			rephase_light(light_index);		
-				
+			
 			light->intensity= lighting_function_dispatch(get_lighting_function_specification(&light->static_data, light->state)->function,
 				light->initial_intensity, light->final_intensity, light->phase, light->period);
-
+			
 			break;
 		}
 	}
@@ -293,40 +288,7 @@ _fixed get_light_intensity(
 	// return get_light_data(light_index)->intensity;
 }
 
-/*
-#ifdef DEBUG
-struct light_data *get_light_data(
-	short light_index)
-{
-	struct light_data *light;
-	
-	// LP change: made this return NULL
-	if (!(light_index>=0&&light_index<MAXIMUM_LIGHTS_PER_MAP)) return NULL;;
-	// vassert(light_index>=0&&light_index<MAXIMUM_LIGHTS_PER_MAP, csprintf(temporary, "light index #%d is out of range", light_index));
-	
-	light= lights+light_index;
-	if (!SLOT_IS_USED(light)) return NULL;
-	/// vassert(SLOT_IS_USED(light), csprintf(temporary, "light index #%d is unused", light_index));
-	
-	return light;
-}
-#endif
-*/
-
 /* ---------- private code */
-
-/*
-#ifdef DEBUG
-static struct light_definition *get_light_definition(
-	short type)
-{
-	// LP change: put in fallback
-	if (!(type>=0&&type<NUMBER_OF_LIGHT_TYPES)) return NULL;
-	// assert(type>=0&&type<NUMBER_OF_LIGHT_TYPES);
-	return light_definitions+type;
-}
-#endif
-*/
 
 /* given a state, initialize .phase, .period, .initial_intensity, and .final_intensity */
 // LP: "static" removed

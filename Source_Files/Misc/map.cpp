@@ -139,28 +139,38 @@ static struct environment_definition environment_definitions[]=
 
 /* ---------- map globals */
 
+// Turned some of these lists into variable arrays;
+// took over their maximum numbers as how many of them
+
 struct static_data *static_world = NULL;
 struct dynamic_data *dynamic_world = NULL;
 
-struct object_data *objects = NULL;
-struct monster_data *monsters = NULL;
-struct projectile_data *projectiles = NULL;
+vector<object_data> ObjectList(MAXIMUM_OBJECTS_PER_MAP);
+vector<monster_data> MonsterList(MAXIMUM_MONSTERS_PER_MAP);
+vector<projectile_data> ProjectileList(MAXIMUM_PROJECTILES_PER_MAP);
+// struct object_data *objects = NULL;
+// struct monster_data *monsters = NULL;
+// struct projectile_data *projectiles = NULL;
 
+vector<platform_data> PlatformList;
 struct polygon_data *map_polygons = NULL;
 struct side_data *map_sides = NULL;
 struct line_data *map_lines = NULL;
 struct endpoint_data *map_endpoints = NULL;
-struct platform_data *platforms = NULL;
+// struct platform_data *platforms = NULL;
 
-struct ambient_sound_image_data *ambient_sound_images = NULL;
-struct random_sound_image_data *random_sound_images = NULL;
+vector<ambient_sound_image_data> AmbientSoundImageList;
+vector<random_sound_image_data> RandomSoundImageList;
+// struct ambient_sound_image_data *ambient_sound_images = NULL;
+// struct random_sound_image_data *random_sound_images = NULL;
 
 short *map_indexes = NULL;
 
 byte *automap_lines = NULL;
 byte *automap_polygons = NULL;
 
-struct map_annotation *map_annotations = NULL;
+vector<map_annotation> MapAnnotationList;
+// struct map_annotation *map_annotations = NULL;
 
 struct map_object *saved_objects = NULL;
 struct item_placement_data *placement_information = NULL;
@@ -203,27 +213,28 @@ void allocate_map_memory(
 	dynamic_world= new dynamic_data;
 	assert(static_world&&dynamic_world);
 
-	monsters= new monster_data[MAXIMUM_MONSTERS_PER_MAP];
-	projectiles= new projectile_data[MAXIMUM_PROJECTILES_PER_MAP];
-	objects= new object_data[MAXIMUM_OBJECTS_PER_MAP];
-	effects= new effect_data[MAXIMUM_EFFECTS_PER_MAP];
-	lights= new light_data[MAXIMUM_LIGHTS_PER_MAP];
-	medias= new media_data[MAXIMUM_MEDIAS_PER_MAP];
-	assert(objects&&monsters&&effects&&projectiles&&lights&&medias);
+	// monsters= new monster_data[MAXIMUM_MONSTERS_PER_MAP];
+	// projectiles= new projectile_data[MAXIMUM_PROJECTILES_PER_MAP];
+	// objects= new object_data[MAXIMUM_OBJECTS_PER_MAP];
+	// effects= new effect_data[MAXIMUM_EFFECTS_PER_MAP];
+	// lights= new light_data[MAXIMUM_LIGHTS_PER_MAP];
+	// medias= new media_data[MAXIMUM_MEDIAS_PER_MAP];
+	// assert(objects&&monsters&&effects&&projectiles&&lights&&medias);
 
 	obj_clear(map_structure_memory);
 	reallocate_map_structure_memory(DEFAULT_MAP_MEMORY_SIZE);
 
-	platforms= new platform_data[MAXIMUM_PLATFORMS_PER_MAP];
-	assert(platforms);
+	// platforms= new platform_data[MAXIMUM_PLATFORMS_PER_MAP];
+	// assert(platforms);
 
-	ambient_sound_images= new ambient_sound_image_data[MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP];
-	random_sound_images= new random_sound_image_data[MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP];
-	assert(ambient_sound_images && random_sound_images);
+	// ambient_sound_images= new ambient_sound_image_data[MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP];
+	// random_sound_images= new random_sound_image_data[MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP];
+	// assert(ambient_sound_images && random_sound_images);
 	
-	map_annotations= new map_annotation[MAXIMUM_ANNOTATIONS_PER_MAP];
+	// map_annotations= new map_annotation[MAXIMUM_ANNOTATIONS_PER_MAP];
 	saved_objects= new map_object[MAXIMUM_SAVED_OBJECTS];
-	assert(map_annotations && saved_objects);
+	assert(saved_objects);
+	// assert(map_annotations && saved_objects);
 
 	allocate_player_memory();
 
@@ -270,12 +281,10 @@ void initialize_map_for_new_level(
 
 	obj_clear(*static_world);
 
-	objlist_clear(effects, MAXIMUM_EFFECTS_PER_MAP);
-	objlist_clear(projectiles, MAXIMUM_PROJECTILES_PER_MAP);
-	objlist_clear(monsters, MAXIMUM_MONSTERS_PER_MAP);
-	objlist_clear(objects, MAXIMUM_OBJECTS_PER_MAP);
-	objlist_clear(lights, MAXIMUM_LIGHTS_PER_MAP);
-	objlist_clear(medias, MAXIMUM_MEDIAS_PER_MAP);
+	objlist_clear(effects, EffectList.size());
+	objlist_clear(projectiles,  ProjectileList.size());
+	objlist_clear(monsters,  MonsterList.size());
+	objlist_clear(objects,  ObjectList.size());
 
 	/* Note that these pointers just point into a larger structure, so this is not a bad thing */
 	map_polygons= NULL;

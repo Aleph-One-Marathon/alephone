@@ -12,9 +12,11 @@ Aug 29, 2000 (Loren Petrich):
 	Added packing routines for the light data; also moved old light stuff (M1) here
 */
 
+#include <vector>
+
 /* ---------- constants */
 
-#define MAXIMUM_LIGHTS_PER_MAP 64
+// #define MAXIMUM_LIGHTS_PER_MAP 64
 
 enum /* default light types */
 {
@@ -163,7 +165,14 @@ const int SIZEOF_old_light_data = 32;
 
 /* --------- globals */
 
-extern struct light_data *lights;
+// Turned the list of lights into a variable array;
+// took over their maximum number as how many of them
+
+extern vector<light_data> LightList;
+#define lights (&LightList[0])
+#define MAXIMUM_LIGHTS_PER_MAP (LightList.size())
+
+// extern struct light_data *lights;
 
 /* --------- prototypes/LIGHTSOURCE.C */
 
@@ -190,13 +199,6 @@ inline struct light_data *get_light_data(
 	return light;
 }
 
-/*
-#ifdef DEBUG
-struct light_data *get_light_data(short light_index);
-#else
-#define get_light_data(i) (lights+(i))
-#endif
-*/
 
 // Split and join the misaligned 4-byte values
 uint8 *pack_light_data(static_light_data& source, saved_static_light& dest);

@@ -377,6 +377,7 @@ void complete_loading_level(
 		scan_and_add_platforms(_platform_data, platform_data_count);
 	} else {
 		assert(actual_platform_data);
+		PlatformList.resize(actual_platform_data_count);
 		unpack_platform_data(actual_platform_data,platforms,actual_platform_data_count);
 		dynamic_world->platform_count= actual_platform_data_count;
 	}
@@ -931,9 +932,11 @@ void load_lights(
 	short version)
 {
 	short loop, new_index;
-
-	vassert(count>=0 && count<=MAXIMUM_LIGHTS_PER_MAP, csprintf(temporary, "Light count: %d vers: %d",
-		count, version));
+	
+	LightList.resize(count);
+	objlist_clear(lights,count);
+	// vassert(count>=0 && count<=MAXIMUM_LIGHTS_PER_MAP, csprintf(temporary, "Light count: %d vers: %d",
+	//	count, version));
 	
 	old_light_data *OldLights;
 	
@@ -981,7 +984,8 @@ void load_annotations(
 	uint8 *annotations, 
 	short count)
 {
-	assert(count>=0 && count<=MAXIMUM_ANNOTATIONS_PER_MAP);
+	// assert(count>=0 && count<=MAXIMUM_ANNOTATIONS_PER_MAP);
+	MapAnnotationList.resize(count);
 	unpack_map_annotation(annotations,map_annotations,count);
 	dynamic_world->default_annotation_count= count;
 }
@@ -1006,7 +1010,9 @@ void load_media(
 	// struct media_data *media= _medias;
 	short ii;
 	
-	assert(count>=0 && count<=MAXIMUM_MEDIAS_PER_MAP);
+	MediaList.resize(count);
+	objlist_clear(medias,count);
+	// assert(count>=0 && count<=MAXIMUM_MEDIAS_PER_MAP);
 	
 	for(ii= 0; ii<count; ++ii)
 	{
@@ -1024,7 +1030,8 @@ void load_ambient_sound_images(
 	uint8 *data,
 	short count)
 {
-	assert(count>=0 &&count<=MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
+	// assert(count>=0 &&count<=MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
+	AmbientSoundImageList.resize(count);
 	unpack_ambient_sound_image_data(data,ambient_sound_images,count);
 	dynamic_world->ambient_sound_image_count= count;
 }
@@ -1033,7 +1040,8 @@ void load_random_sound_images(
 	uint8 *data,
 	short count)
 {
-	assert(count>=0 &&count<=MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
+	// assert(count>=0 &&count<=MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
+	RandomSoundImageList.resize(count);
 	unpack_random_sound_image_data(data,random_sound_images,count);
 	dynamic_world->random_sound_image_count= count;
 }
@@ -1250,6 +1258,8 @@ static void scan_and_add_platforms(
 	short loop;
 	short platform_static_data_index;
 	
+	PlatformList.resize(count);
+	objlist_clear(platforms,count);
 	polygon= map_polygons;
 	for(loop=0; loop<dynamic_world->polygon_count; ++loop)
 	{
@@ -1347,6 +1357,7 @@ bool process_map_wad(
 		data= (uint8 *)extract_type_from_wad(wad, LIGHTSOURCE_TAG, &data_length);
 		count = data_length/SIZEOF_light_data;
 		assert(data_length == count*SIZEOF_light_data);
+		LightList.resize(count);
 		unpack_light_data(data,lights,count);
 	}
 	else
@@ -1417,6 +1428,7 @@ bool process_map_wad(
 		data= (uint8 *)extract_type_from_wad(wad, MEDIA_TAG, &data_length);
 		count= data_length/SIZEOF_media_data;
 		assert(count*SIZEOF_media_data==data_length);
+		MediaList.resize(count);
 		unpack_media_data(data,medias,count);
 	}
 	else
@@ -1546,6 +1558,7 @@ bool process_map_wad(
 		data= (uint8 *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_platform_data;
 		assert(count*SIZEOF_platform_data==data_length);
+		PlatformList.resize(count);
 		unpack_platform_data(data,platforms,count);
 		
 		data= (uint8 *)extract_type_from_wad(wad, WEAPON_STATE_TAG, &data_length);

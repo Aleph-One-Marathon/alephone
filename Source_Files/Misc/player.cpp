@@ -883,29 +883,37 @@ bool legal_player_powerup(
 	bool legal= true;
 
 	if (item_index == Powerup_Invincibility)
+	{
 		if (player->invincibility_duration) legal= false;
-		
+	}
 	else if (item_index == Powerup_Invisibility)
+	{
 		if (player->invisibility_duration>kINVISIBILITY_DURATION) legal= false;
-		
+	}
 	else if (item_index == Powerup_Infravision)
+	{
 		if (player->infravision_duration) legal= false;
-		
+	}
 	else if (item_index == Powerup_Extravision)
+	{
 		if (player->extravision_duration) legal= false;
-		
+	}
 	else if (item_index == Powerup_TripleEnergy)
+	{
 		if (player->suit_energy>=3*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
-		
+	}
 	else if (item_index == Powerup_DoubleEnergy)
+	{
 		if (player->suit_energy>=2*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
-		
+	}
 	else if (item_index == Powerup_Energy)
+	{
 		if (player->suit_energy>=PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
-		
+	}
 	else if (item_index == Powerup_Oxygen)
+	{
 		if (player->suit_oxygen>=5*PLAYER_MAXIMUM_SUIT_OXYGEN/6) legal= false;
-	
+	}
 	/*	
 	switch (item_index)
 	{
@@ -951,20 +959,22 @@ void process_player_powerup(
 	struct player_data *player= get_player_data(player_index);
 	
 	if (item_index == Powerup_Invincibility)
+	{
 		player->invincibility_duration+= kINVINCIBILITY_DURATION;
-		
+	}
 	else if (item_index == Powerup_Invisibility)
+	{
 		player->invisibility_duration+= kINVISIBILITY_DURATION;
-		
+	}
 	else if (item_index == Powerup_Infravision)
+	{
 		player->infravision_duration+= kINFRAVISION_DURATION;
-		
+	}
 	else if (item_index == Powerup_Extravision)
 	{
 		if (player_index==current_player_index) start_extravision_effect(true);
 		player->extravision_duration+= kEXTRAVISION_DURATION;
 	}
-		
 	else if (item_index == Powerup_TripleEnergy)
 	{
 		if (player->suit_energy<3*PLAYER_MAXIMUM_SUIT_ENERGY)
@@ -973,7 +983,6 @@ void process_player_powerup(
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
-		
 	else if (item_index == Powerup_DoubleEnergy)
 	{
 		if (player->suit_energy<2*PLAYER_MAXIMUM_SUIT_ENERGY)
@@ -982,7 +991,6 @@ void process_player_powerup(
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
-		
 	else if (item_index == Powerup_Energy)
 	{
 		if (player->suit_energy<1*PLAYER_MAXIMUM_SUIT_ENERGY)
@@ -991,7 +999,6 @@ void process_player_powerup(
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
-		
 	else if (item_index == Powerup_Oxygen)
 	{
 		player->suit_oxygen= CEILING(player->suit_oxygen+PLAYER_MAXIMUM_SUIT_OXYGEN/2, PLAYER_MAXIMUM_SUIT_OXYGEN);

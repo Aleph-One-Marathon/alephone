@@ -16,7 +16,7 @@ May 18, 2000 (Loren Petrich):
 
 /* ---------- constants */
 
-#define MAXIMUM_PLATFORMS_PER_MAP 64
+// #define MAXIMUM_PLATFORMS_PER_MAP 64
 
 enum /* platform types */
 {
@@ -231,7 +231,14 @@ const int SIZEOF_platform_data = 140;
 
 /* --------- globals */
 
-extern struct platform_data *platforms;
+// Turned the list of platforms into a variable array;
+// took over their maximum number as how many of them
+
+extern vector<platform_data> PlatformList;
+#define platforms (&PlatformList[0])
+#define MAXIMUM_PLATFORMS_PER_MAP (PlatformList.size())
+
+// extern struct platform_data *platforms;
 
 /* --------- prototypes/PLATFORMS.C */
 

@@ -130,7 +130,12 @@ const int SIZEOF_effect_definition = 14;
 
 /* ---------- globals */
 
-extern struct effect_data *effects;
+// Turned the list of active effects into a variable array
+
+extern vector<effect_data> EffectList;
+#define effects (&EffectList[0])
+
+// extern struct effect_data *effects;
 
 /* ---------- prototypes/EFFECTS.C */
 
@@ -156,14 +161,6 @@ inline struct effect_data *get_effect_data(
 	
 	return effect;
 }
-
-/*
-#ifdef DEBUG
-struct effect_data *get_effect_data(short effect_index);
-#else
-#define get_effect_data(i) (effects+(i))
-#endif
-*/
 
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world

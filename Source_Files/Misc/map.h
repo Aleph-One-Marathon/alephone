@@ -195,7 +195,7 @@ const int SIZEOF_directory_data = 74;
 
 /* ---------- map annotations */
 
-#define MAXIMUM_ANNOTATIONS_PER_MAP 20
+// #define MAXIMUM_ANNOTATIONS_PER_MAP 20
 #define MAXIMUM_ANNOTATION_TEXT_LENGTH 64
 
 struct map_annotation
@@ -213,7 +213,7 @@ struct map_annotation *get_next_map_annotation(int16 *count);
 
 /* ---------- ambient sound images */
 
-#define MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP 64
+// #define MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP 64
 
 // non-directional ambient component
 struct ambient_sound_image_data // 16 bytes
@@ -229,7 +229,7 @@ const int SIZEOF_ambient_sound_image_data = 16;
 
 /* ---------- random sound images */
 
-#define MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP 64
+// #define MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP 64
 
 enum // sound image flags
 {
@@ -897,25 +897,43 @@ const int SIZEOF_dynamic_data = 604;
 
 /* ---------- map globals */
 
+// Turned some of these lists into variable arrays;
+// took over their maximum numbers as how many of them
+
 extern struct static_data *static_world;
 extern struct dynamic_data *dynamic_world;
 
-extern struct object_data *objects;
+extern vector<object_data> ObjectList;
+#define objects (&ObjectList[0])
+
+// extern struct object_data *objects;
 
 extern struct polygon_data *map_polygons;
 extern struct side_data *map_sides;
 extern struct line_data *map_lines;
 extern struct endpoint_data *map_endpoints;
 
-extern struct ambient_sound_image_data *ambient_sound_images;
-extern struct random_sound_image_data *random_sound_images;
+extern vector<ambient_sound_image_data> AmbientSoundImageList;
+#define MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP (AmbientSoundImageList.size())
+#define ambient_sound_images (&AmbientSoundImageList[0])
+
+extern vector<random_sound_image_data> RandomSoundImageList;
+#define MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP (RandomSoundImageList.size())
+#define random_sound_images (&RandomSoundImageList[0])
+
+// extern struct ambient_sound_image_data *ambient_sound_images;
+// extern struct random_sound_image_data *random_sound_images;
 
 extern int16 *map_indexes;
 
 extern byte *automap_lines;
 extern byte *automap_polygons;
 
-extern struct map_annotation *map_annotations;
+extern vector<map_annotation> MapAnnotationList;
+#define MAXIMUM_ANNOTATIONS_PER_MAP (MapAnnotationList.size())
+#define map_annotations (&MapAnnotationList[0])
+
+// extern struct map_annotation *map_annotations;
 extern struct map_object *saved_objects;
 
 extern bool game_is_networked; /* true if this is a network game */

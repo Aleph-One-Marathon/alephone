@@ -117,7 +117,12 @@ const int SIZEOF_projectile_definition = 48;
 
 /* ---------- globals */
 
-extern struct projectile_data *projectiles;
+// Turned the list of active projectiles into a variable array
+
+extern vector<projectile_data> ProjectileList;
+#define projectiles (&ProjectileList[0])
+
+// extern struct projectile_data *projectiles;
 
 /* ---------- prototypes/PROJECTILES.C */
 

@@ -45,19 +45,16 @@ Aug 29, 2000 (Loren Petrich):
 
 /* ---------- globals */
 
-struct media_data *medias;
+// Turned the list of liquids into a variable array;
+// took over their maximum number as how many of them
+
+vector<media_data> MediaList;
+
+// struct media_data *medias;
 
 /* ---------- private prototypes */
 
 static void update_one_media(short media_index, bool force_update);
-
-/*
-#ifdef DEBUG
-static struct media_definition *get_media_definition(short type);
-#else
-#define get_media_definition(t) (media_definitions+(t))
-#endif
-*/
 
 /* ---------- globals */
 
@@ -214,40 +211,7 @@ bool IsMediaDangerous(short media_index)
 	else return (damage->base > 0);
 }
 
-/*
-#ifdef DEBUG
-struct media_data *get_media_data(
-	short media_index)
-{
-	struct media_data *media;
-	
-	// LP change: made this idiot-proof
-	if (!(media_index>=0&&media_index<MAXIMUM_MEDIAS_PER_MAP)) return NULL;
-	// vassert(media_index>=0&&media_index<MAXIMUM_MEDIAS_PER_MAP, csprintf(temporary, "media index #%d is out of range", media_index));
-	
-	media= medias+media_index;
-	if (!(SLOT_IS_USED(media))) return NULL;
-	// vassert(SLOT_IS_USED(media), csprintf(temporary, "media index #%d is unused", media_index));
-	
-	return media;
-}
-#endif
-*/
-
 /* ---------- private code */
-
-/*
-#ifdef DEBUG
-static struct media_definition *get_media_definition(
-	short type)
-{
-	// LP change: made this idiot-proof
-	if (!(type>=0&&type<NUMBER_OF_MEDIA_TYPES)) return NULL;
-	// assert(type>=0&&type<NUMBER_OF_MEDIA_TYPES);
-	return media_definitions+type;
-}
-#endif
-*/
 
 static void update_one_media(
 	short media_index,
