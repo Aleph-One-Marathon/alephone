@@ -26,6 +26,11 @@ July 8, 2000:
 // Test for activity
 bool OGL_IsActive();
 
+
+// It will be black; whether OpenGL is active will be returned
+bool OGL_ClearScreen();
+
+
 // Start an OpenGL run (creates a rendering context)
 #ifdef mac
 bool OGL_StartRun(CGrafPtr WindowPtr);
@@ -35,6 +40,7 @@ bool OGL_StartRun();
 
 // Stop an OpenGL run (destroys a rendering context)
 bool OGL_StopRun();
+
 
 // Sets the infravision tinting color for a shapes collection, and whether to use such tinting;
 // the color values are from 0 to 1.

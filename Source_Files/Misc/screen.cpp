@@ -920,6 +920,7 @@ void render_screen(
 			// are being rendered in OpenGL.
 			// Otherwise, if OpenGL is active, then blit the software rendering to the screen.
 			bool OGL_WasUsed = false;
+			bool Use_OGL_2D = OGL_Get2D();
 			if ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 			{
 				// Main or map view already rendered
@@ -928,13 +929,13 @@ void render_screen(
 			else
 			{
 				// Copy 2D rendering to screen
-				// Paint on top without any buffering if piping through OpenGL had been selected
-				OGL_WasUsed = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,false,false);
+				// Paint onto the back buffer, so that it will be copied frontward properly
+				OGL_WasUsed = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,true,true);
 			}
 			if (!OGL_WasUsed) update_screen(BufferRect,ViewRect,HighResolution);
 			if (HUD_RenderRequest)
 			{
-				if (OGL_Get2D())
+				if (Use_OGL_2D)
 				{
 					// This horrid-looking resizing does manage to get the HUD to work properly...
 					struct DownwardOffsetSet
@@ -960,9 +961,9 @@ void render_screen(
 					const DownwardOffsetSet& Set = OGL_DownwardOffsets[msize];
 					HUD_DestRect.top = Set.Top;
 					HUD_DestRect.bottom = Set.Bottom;
-					// Paint on top without any buffering
-					OGL_SetWindow(ScreenRect,HUD_DestRect,false);
-					OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,false,false);
+					// Paint on the back buffer and flip it to the front
+					OGL_SetWindow(ScreenRect,HUD_DestRect,true);
+					OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,true,true);
 				}
 				else
 					DrawHUD(HUD_SourceRect,HUD_DestRect);
@@ -2069,6 +2070,9 @@ void ClearScreen()
 	SetPort(screen_window);
 	PaintRect(&screen_window->portRect);
 	SetPort(old_port);
+	
+	// To be extra safe, for MacOS X Classic compatibility
+	OGL_ClearScreen();
 }
 
 // For switching to another process and returning (suspend/resume events)

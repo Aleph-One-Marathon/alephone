@@ -451,6 +451,23 @@ const int Buffer2D_Height = 16;
 bool OGL_IsActive() {if (OGL_IsPresent()) return _OGL_IsActive; else return false;}
 
 
+// It will be black; whether OpenGL is active will be returned
+bool OGL_ClearScreen()
+{
+	if (OGL_IsActive())
+	{
+#ifdef mac
+		// So as to paint the entire screen buffer
+		aglDisable(RenderContext,AGL_SWAP_RECT);
+#endif
+		glClearColor(0,0,0,0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		return true;
+	}
+	else return false;
+}
+
+
 // Start an OpenGL run (creates a rendering context)
 #ifdef mac
 bool OGL_StartRun(CGrafPtr WindowPtr)
@@ -680,7 +697,6 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 #endif
 	
 	// Do OpenGL bounding
-	glScissor(RectBounds[0], RectBounds[1], RectBounds[2], RectBounds[3]);
 	glViewport(RectBounds[0], RectBounds[1], RectBounds[2], RectBounds[3]);
 	
 	// Create the screen -> clip (fundamental) matrix; this will be needed

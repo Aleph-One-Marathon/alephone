@@ -79,9 +79,25 @@ inline bool ColorsEqual(rgb_color& Color1, rgb_color& Color2)
 extern AGLContext RenderContext;
 #endif
 
+
+// For marking out the area to be blanked out when starting rendering;
+// these are defined in OGL_Render.cpp
+extern short ViewWidth, ViewHeight;
+
 void OverheadMap_OGL_Class::begin_overall()
 {
 	// Blank out the screen
+	// Do that by painting a black polygon
+	
+	glColor3f(0,0,0);
+	glBegin(GL_POLYGON);
+	glVertex2f(0,0);
+	glVertex2f(0,ViewHeight);
+	glVertex2f(ViewWidth,ViewHeight);
+	glVertex2f(ViewWidth,0);
+	glEnd();
+	
+/*
 #ifndef mac
 	glEnable(GL_SCISSOR_TEST);	// Don't erase the HUD
 #endif
@@ -90,6 +106,7 @@ void OverheadMap_OGL_Class::begin_overall()
 #ifndef mac
 	glDisable(GL_SCISSOR_TEST);
 #endif
+*/
 	
 	// Here's for the overhead map
 	glDisable(GL_CULL_FACE);
