@@ -165,7 +165,7 @@ void set_sound_manager_status(
 	return;
 }
 
-bool open_sound_file(FileObject& File)
+bool open_sound_file(FileSpecifier& File)
 	// FSSpec *spec)
 {
 	// LP: rewrote the whole g*dd*mn thing
@@ -210,7 +210,7 @@ bool open_sound_file(FileObject& File)
 		// LP: using file object instead
 		SoundFile.Close();
 		SoundFile.GetSpec(*spec);
-		if (SoundFile.Open(FileObject::C_Sound))
+		if (SoundFile.Open(FileSpecifier::C_Sound))
 		// LP addition: resolving sounds file if it was an alias
 		Boolean is_folder, was_aliased;
 		ResolveAliasFile((FSSpec *)spec, TRUE, &is_folder, &was_aliased);
@@ -350,13 +350,13 @@ static void initialize_machine_sound_manager(
 		
 		if ((error= MemError())==noErr)
 		{
-			FileObject_Mac InitialSoundFile;
+			FileSpecifier InitialSoundFile;
 			// FSSpec sounds_file;
 			
 			/* initialize _sm_globals */
 			_sm_globals->loaded_sounds_size= 0;
 			_sm_globals->total_channel_count= 0;
-			// Auto-initialize by FileObject_Mac constructor
+			// Auto-initialize by FileSpecifier_Mac constructor
 			// _sm_globals->sound_file_refnum= -1;
 			
 			get_default_sounds_spec(InitialSoundFile);
