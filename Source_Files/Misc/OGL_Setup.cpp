@@ -16,6 +16,11 @@
 
 Oct 13, 2000 (Loren Petrich)
 	Converted the OpenGL-addition accounting into Standard Template Library vectors
+
+Nov 12, 2000 (Loren Petrich):
+	Implemented texture substitution, also moved pixel-opacity editing into here;
+	the code is carefully constructed to assume RGBA byte order whether integers are
+	big- or little-endian.
 */
 
 #include <vector.h>
@@ -159,6 +164,52 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 }
 
 
+
+// Does this for a set of several pixel values or color-table values;
+// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
+void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels)
+{
+	for (int k=0; k<NumPixels; k++)
+	{
+		uint8 *PxlPtr = (uint8 *)(Pixels + k);
+		
+		// This won't be scaled to (0,1), but will be left at (0,255) here
+		float Opacity;
+		switch(Options.OpacityType)
+		{
+		// Two versions of the Tomb Raider texture-opacity hack
+		case OGL_OpacType_Avg:
+			{
+				uint32 Red = uint32(PxlPtr[0]);
+				uint32 Green = uint32(PxlPtr[1]);
+				uint32 Blue = uint32(PxlPtr[2]);
+				Opacity = (Red + Green + Blue)/3.0;
+			}
+			break;
+			
+		case OGL_OpacType_Max:
+			{
+				uint32 Red = uint32(PxlPtr[0]);
+				uint32 Green = uint32(PxlPtr[1]);
+				uint32 Blue = uint32(PxlPtr[2]);
+				Opacity = MAX(MAX(Red,Green),Blue);
+			}
+			break;
+		
+		// Use pre-existing alpha value; useful if the opacity was loaded from a mask image
+		default:
+			Opacity = PxlPtr[3];
+			break;
+		}
+		
+		// Scale, shift, and put back the edited opacity;
+		// round off and pin to the appropriate range.
+		// The shift has to be scaled to the color-channel range (1 -> 255).
+		PxlPtr[3] = PIN(int32(Options.OpacityScale*Opacity + 255*Options.OpacityShift + 0.5),0,255);
+	}
+}
+
+
 // for managing the image loading and unloading
 void OGL_LoadImages(int Collection)
 {
@@ -174,7 +225,14 @@ void OGL_LoadImages(int Collection)
 			if (!(TOIter->OptionsData.NormalColors.size() > 1)) throw 0;
 			if (!File.SetToApp()) throw 0;
 			if (!File.SetNameWithPath(&TOIter->OptionsData.NormalColors[0])) throw 0;
-			if (!LoadImageFromFile(TOIter->OptionsData.NormalImg,File)) throw 0;
+			if (!LoadImageFromFile(TOIter->OptionsData.NormalImg,File,ImageLoader_Colors)) throw 0;
+			
+			// Load the normal mask if it has a filename specified for it;
+			// only loaded if an image has been loaded for it
+			if (!(TOIter->OptionsData.NormalMask.size() > 1)) throw 0;
+			if (!File.SetToApp()) throw 0;
+			if (!File.SetNameWithPath(&TOIter->OptionsData.NormalMask[0])) throw 0;
+			if (!LoadImageFromFile(TOIter->OptionsData.NormalImg,File,ImageLoader_Opacity)) throw 0;
 		}
 		catch(...)
 		{}
