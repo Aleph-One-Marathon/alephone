@@ -6,6 +6,11 @@
 	<string>401 34 375 519 0 0 800 578 </string>
 	<key>IBFramework Version</key>
 	<string>291.0</string>
+	<key>IBOpenObjects</key>
+	<array>
+		<integer>733</integer>
+		<integer>796</integer>
+	</array>
 	<key>IBSystem Version</key>
 	<string>6L60</string>
 	<key>targetFramework</key>
