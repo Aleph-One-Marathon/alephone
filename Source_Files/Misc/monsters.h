@@ -16,6 +16,9 @@ Feb 10, 2000 (Loren Petrich):
 
 Feb 19, 2000 (Loren Petrich):
 	Added growable lists of indices of objects to be checked for collisions
+
+Aug 30, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 // LP additions:
@@ -222,6 +225,9 @@ struct monster_data /* 64 bytes */
 	
 	short unused[7];
 };
+const int SIZEOF_monster_data = 64;
+
+const int SIZEOF_monster_definition = 156;
 
 /* ---------- globals */
 
@@ -310,8 +316,12 @@ short get_monster_melee_impact_effect(short monster_index);
 
 boolean live_aliens_on_map(void);
 
-// LP addition: get monster-definition size
-int get_monster_defintion_size();
+// LP: to pack and unpack this data;
+// these do not make the definitions visible to the outside world
+
+uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, int Count = 1);
+uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, int Count = 1);
+uint8 *unpack_monster_definition(uint8 *Stream, int Count = 1);
+uint8 *pack_monster_definition(uint8 *Stream, int Count = 1);
 
 #endif
-
