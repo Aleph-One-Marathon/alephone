@@ -60,10 +60,16 @@ bool XML_ResourceFork::GetData()
 void XML_ResourceFork::ReportReadError()
 {
 	const char *Name = SourceName ? SourceName : "[]";
+#ifdef TARGET_API_MAC_CARBON
+	csprintf(temporary,
+		"Error in reading resource fork of object %s",Name);
+	SimpleAlert(kAlertStopAlert,temporary);
+#else
 	psprintf(ptemporary,
 		"Error in reading resource fork of object %s",Name);
 	ParamText(ptemporary,0,0,0);
 	Alert(FatalErrorAlert,NULL);
+#endif
 	ExitToShell();
 }
 
@@ -72,9 +78,15 @@ void XML_ResourceFork::ReportReadError()
 void XML_ResourceFork::ReportParseError(const char *ErrorString, int LineNumber)
 {
 	const char *Name = SourceName ? SourceName : "[]";
+#ifdef TARGET_API_MAC_CARBON
+	csprintf(temporary,
+		"XML parsing error: %s at line %d in object %s",ErrorString,LineNumber,Name);
+	SimpleAlert(kAlertStopAlert,temporary);
+#else
 	psprintf(ptemporary,"XML parsing error: %s at line %d in object %s",ErrorString,LineNumber,Name);
 	ParamText(ptemporary,0,0,0);
 	Alert(FatalErrorAlert,NULL);
+#endif
 	ExitToShell();
 }
 
@@ -85,8 +97,12 @@ const int MaxErrorsToShow = 7;
 // Reports an interpretation error
 void XML_ResourceFork::ReportInterpretError(const char *ErrorString)
 {
+#ifdef TARGET_API_MAC_CARBON
+	if (GetNumInterpretErrors() < MaxErrorsToShow)
+		SimpleAlert(kAlertNoteAlert,ErrorString);
+#else
 //#if defined(USE_CARBON_ACCESSORS)
-	CopyCStringToPascal(ErrorString, (unsigned char *)temporary);
+	CopyCStringToPascal(ErrorString, ptemporary);
 /*
 #else
 	strncpy(temporary,ErrorString,255);
@@ -96,6 +112,7 @@ void XML_ResourceFork::ReportInterpretError(const char *ErrorString)
 	ParamText(ptemporary,0,0,0);
 	if (GetNumInterpretErrors() < MaxErrorsToShow)
 		Alert(NonFatalErrorAlert,NULL);
+#endif
 }
 
 // Requests aborting of parsing (reasonable if there were lots of errors)
@@ -115,10 +132,16 @@ bool XML_ResourceFork::ParseResource(ResType Type, short ID)
 	if (!DoParse())
 	{
 		const char *Name = SourceName ? SourceName : "[]";
+#ifdef TARGET_API_MAC_CARBON
+		csprintf(temporary,
+			"There were configuration-file parsing errors in resource %hd of object %s",ID,Name);
+		SimpleAlert(kAlertStopAlert,temporary);
+#else
 		psprintf(ptemporary,
 			"There were configuration-file parsing errors in resource %hd of object %s",ID,Name);
 		ParamText(ptemporary,0,0,0);
 		Alert(FatalErrorAlert,NULL);
+#endif
 		ExitToShell();
 	}
 	HUnlock(ResourceHandle);

@@ -65,9 +65,15 @@ void XML_DataBlock::ReportReadError()
 	const char *Name = SourceName ? SourceName : "[]";
 
 #ifdef mac
+#ifdef TARGET_API_MAC_CARBON
+	csprintf(temporary,
+		"Error in reading data/resources from object %s",Name);
+	SimpleAlert(kAlertStopAlert,temporary);
+#else
 	psprintf(ptemporary,"Error in reading data/resources from object %s",Name);
 	ParamText(ptemporary,0,0,0);
 	Alert(FatalErrorAlert,NULL);
+#endif
 	ExitToShell();
 #endif
 	
@@ -84,9 +90,15 @@ void XML_DataBlock::ReportParseError(const char *ErrorString, int LineNumber)
 	const char *Name = SourceName ? SourceName : "[]";
 
 #ifdef mac
+#ifdef TARGET_API_MAC_CARBON
+	csprintf(temporary,
+		"XML parsing error: %s at line %d in object %s",ErrorString,LineNumber,Name);
+	SimpleAlert(kAlertStopAlert,temporary);
+#else
 	psprintf(ptemporary,"XML parsing error: %s at line %d in object %s",ErrorString,LineNumber,Name);
 	ParamText(ptemporary,0,0,0);
 	Alert(FatalErrorAlert,NULL);
+#endif
 	ExitToShell();
 #endif
 
