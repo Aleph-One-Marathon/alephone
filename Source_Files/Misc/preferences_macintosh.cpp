@@ -757,7 +757,6 @@ static void hit_input_item(
 		case iUSE_INTERFACE_BUTTON_SOUNDS:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
 			SET_FLAG(preferences->modifiers,_inputmod_use_button_sounds,!GetControlValue(control));
-			if(!GetControlValue(control))
 			break;
 			
 		case iSET_KEYS:
