@@ -161,7 +161,7 @@ void FontSpecifier::Use()
 }
 
 
-int FontSpecifier::TextWidth(char *Text)
+int FontSpecifier::TextWidth(const char *Text)
 {
 	// csfonts -- push old font
 	TextSpec OldFont;
@@ -218,7 +218,7 @@ void FontSpecifier::Update()
 // Defined in screen_drawing_sdl.cpp
 extern int char_width(uint8 c, const sdl_font_info *font, uint16 style);
 
-int FontSpecifier::TextWidth(char *text)
+int FontSpecifier::TextWidth(const char *text)
 {
 	int width = 0;
 	char c;

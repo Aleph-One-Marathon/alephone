@@ -26,6 +26,9 @@
  *
  *  11 Mar 2002 (Woody Zenfell): renamed XML_FrameParser to XML_DFrameParser
  *      to resolve conflict with new animated-model frame parsing code.
+ *
+ *  5 Feb 2003 (Woody Zenfell): exposed draw_dirty_widgets() functionality
+ *	also trying to fix fullscreen drawing problems related to flipping
  */
 
 #include "cseries.h"
@@ -726,6 +729,17 @@ void play_dialog_sound(int which)
 
 
 /*
+ *  Dialog constructor
+ */
+
+dialog::dialog() : active_widget(NULL), active_widget_num(-1), done(false),
+            cursor_was_visible(false), parent_dialog(NULL),
+            processing_function(NULL)
+{
+}
+
+
+/*
  *  Dialog destructor
  */
 
@@ -803,9 +817,19 @@ void dialog::layout()
 void dialog::update(SDL_Rect r) const
 {
 	SDL_Surface *video = SDL_GetVideoSurface();
+// ZZZ: this less efficient way (copies more stuff) is an attempt to fix dialog updating
+// in the face of double-buffered page-flipping.
+/*
 	SDL_Rect dst_rect = {r.x + rect.x, r.y + rect.y, r.w, r.h};
 	SDL_BlitSurface(dialog_surface, &r, video, &dst_rect);
 	SDL_UpdateRects(video, 1, &dst_rect);
+*/
+        // this is needed because 'rect' is const here and SDL_* don't seem to use const.
+        SDL_Rect dst_rect = rect;
+        SDL_Rect src_rect = { 0, 0, rect.w, rect.h };
+        SDL_BlitSurface(dialog_surface, &src_rect, video, &dst_rect);
+        SDL_UpdateRects(video, 1, &dst_rect);
+
 #ifdef HAVE_OPENGL
 	if (video->flags & SDL_OPENGL)
 		SDL_GL_SwapBuffers();
@@ -859,6 +883,13 @@ void dialog::draw(void) const
 	update(r);
 }
 
+void
+dialog::draw_dirty_widgets() const
+{
+        for (unsigned i=0; i<widgets.size(); i++)
+		if (widgets[i]->dirty)
+			draw_widget(widgets[i]);
+}       
 
 /*
  *  Deactivate currently active widget
@@ -1070,9 +1101,7 @@ void dialog::event(SDL_Event &e)
 	}
 
 	// Redraw dirty widgets
-	for (unsigned i=0; i<widgets.size(); i++)
-		if (widgets[i]->dirty)
-			draw_widget(widgets[i]);
+        draw_dirty_widgets();
 }
 
 

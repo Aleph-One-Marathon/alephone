@@ -26,15 +26,19 @@ May 9, 2002 (Loren Petrich):
 	
 Jun 9, 2002 (tiennou):
 	Following the above example, I modified dequeueActionFlags() & countActionFlags().
+
+Feb 3, 2003 (Woody Zenfell):
+        Made 'ZombiesControllable' a property of a queue-set rather than an argument to the methods.
 	
  *  An ActionQueues object encapsulates a set of players' action_queues.
  *
  *  Created by woody on Wed Feb 20 2002.
  */
 
-#include	"ActionQueues.h"
+#include "ActionQueues.h"
 
-#include    "player.h"  // for get_player_data()
+#include "player.h"  // for get_player_data()
+#include "Logging.h"
 
 // Lifted from player.cpp; changed short to int
 struct ActionQueues::action_queue {
@@ -46,7 +50,7 @@ struct ActionQueues::action_queue {
 
 
 // basically ripped from player.cpp::allocate_player_memory().
-ActionQueues::ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize) : mNumPlayers(inNumPlayers), mQueueSize(inQueueSize) {
+ActionQueues::ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize, bool inZombiesControllable) : mNumPlayers(inNumPlayers), mQueueSize(inQueueSize), mZombiesControllable(inZombiesControllable) {
 
     /* allocate space for our action queue headers and the queues themselves */
     mQueueHeaders	= new action_queue[mNumPlayers];
@@ -92,14 +96,13 @@ void
 ActionQueues::enqueueActionFlags(
 	int player_index,
 	uint32 *action_flags,
-	int count,
-	bool ZombiesControllable)
+	int count)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct action_queue *queue= mQueueHeaders+player_index;
 
-	//assert(!PLAYER_IS_ZOMBIE(player)); // CP: Changed for scripting
-	if (!ZombiesControllable && PLAYER_IS_ZOMBIE(player))
+        // Cannot enqueue onto a Zombie queue unless explicitly allowed
+	if (!mZombiesControllable && PLAYER_IS_ZOMBIE(player))
 		return;
                 
 	while ((count-= 1)>=0)
@@ -107,7 +110,7 @@ ActionQueues::enqueueActionFlags(
 		queue->buffer[queue->write_index]= *action_flags++;
 		queue->write_index= (queue->write_index+1) % mQueueSize;
 		if (queue->write_index==queue->read_index)
-			fdprintf("blew player %dÕs queue", player_index);
+			logError1("blew player %dÕs queue", player_index);
 	}
 	
 	return;
@@ -118,24 +121,23 @@ ActionQueues::enqueueActionFlags(
 /* dequeueÕs a single action flag from the given queue (zombies always return zero) */
 uint32
 ActionQueues::dequeueActionFlags(
-	int player_index,
-	bool ZombiesControllable)
+	int player_index)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct action_queue *queue= mQueueHeaders+player_index;
 
 	uint32 action_flags;
 
-	if (!ZombiesControllable && PLAYER_IS_ZOMBIE(player))
+        // Non-controllable zombies always just return 0 for their action_flags.
+	if (!mZombiesControllable && PLAYER_IS_ZOMBIE(player))
 	{
-		//dprintf("Player is zombie!", player_index);	// CP: Disabled for scripting
 		action_flags= 0;
 	}
 	else if (queue->read_index==queue->write_index)
 	{
 		// None to be read
 		action_flags= 0;
-		fdprintf("dequeueing empty ActionQueue for player %d", player_index);
+		logError1("dequeueing empty ActionQueue for player %d", player_index);
 	}
 	else
 	{
@@ -153,25 +155,36 @@ ActionQueues::dequeueActionFlags(
 /* returns the number of elements sitting in the given queue (zombies always return queue diameter) */
 unsigned int
 ActionQueues::countActionFlags(
-	int player_index,
-	bool ZombiesControllable)
+	int player_index)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct action_queue *queue= mQueueHeaders+player_index;
 	unsigned int size;
 
-	if (!ZombiesControllable && PLAYER_IS_ZOMBIE(player))
+        // Non-controllable zombies have lots and lots of do-nothing flags available.
+	if (!mZombiesControllable && PLAYER_IS_ZOMBIE(player))
 	{
-		//dprintf("PLayer %d is a zombie", player_index);  // CP: Disabled for scripting
 		size= mQueueSize;
 	} 
 	else
 	{
                 // ZZZ: better? phrasing of this operation (no branching; only one store; also, works with unsigned's)
                 size = (mQueueSize + queue->write_index - queue->read_index) % mQueueSize;
-                
-		//if ((size= queue->write_index-queue->read_index)<0) size+= mQueueSize;
 	}
 	
 	return size;
+}
+
+
+
+bool
+ActionQueues::zombiesControllable() {
+        return mZombiesControllable;
+}
+
+
+
+void
+ActionQueues::setZombiesControllable(bool inZombiesControllable) {
+        mZombiesControllable = inZombiesControllable;
 }

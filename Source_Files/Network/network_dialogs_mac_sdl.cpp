@@ -20,6 +20,9 @@ NETWORK_DIALOGS.C  (now network_dialogs_mac_sdl.cpp)
 
 Feb 26, 2002 (Br'fin (Jeremy Parsons)):
 	Forked off from network_dialogs_macintosh.cpp to tie to SDL networking apis
+        
+Feb 14, 2003 (Woody Zenfell):
+        Support for resuming saved games as network games.
 */
 /*
  *  network_dialogs_mac_sdl.cpp - Network dialogs for Carbon with SDL networking
@@ -99,7 +102,10 @@ struct network_speeds
 
 /* ---------- globals */
 
-static int accepted_into_game;
+// ZZZ: this is used to communicate between the join game dialog filter proc
+// and the join game entry point.  kNetworkJoinFailed is used in this variable
+// not to indicate failure, but to indicate that no game has started yet.
+static int sStartJoinedGameResult;
 static ListHandle network_list_box= (ListHandle) NULL;
 
 // these speeds correspond to what's in the popup menu
@@ -119,7 +125,7 @@ static vector<const SSLP_ServiceInstance*> found_players;
 extern TextSpec *_get_font_spec(short font_index);
 
 /* ---------- private code */
-static bool network_game_setup(player_info *player_information, game_info *game_information);
+static bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame);
 /* static */ short fill_in_game_setup_dialog(DialogPtr dialog, player_info *player_information, bool allow_all_levels);
 /* static */ void extract_setup_dialog_information(DialogPtr dialog, player_info *player_information, 
 	game_info *game_information, short game_limit_type, bool allow_all_levels);
@@ -188,6 +194,18 @@ std::vector<T>::const_iterator 	end	= inVector.end();
     return -1;
 }
 
+
+void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
+{
+        if(inChangeEnable != NONE)
+        {
+                modify_control_enabled(dialog, iRADIO_NO_TIME_LIMIT, inChangeEnable);
+                modify_control_enabled(dialog, iRADIO_TIME_LIMIT, inChangeEnable);
+                modify_control_enabled(dialog, iRADIO_KILL_LIMIT, inChangeEnable);
+        }
+}
+
+
 /*************************************************************************************************
  *
  * Function: network_gather
@@ -195,15 +213,14 @@ std::vector<T>::const_iterator 	end	= inVector.end();
  *
  *************************************************************************************************/
 #ifndef NETWORK_TEST_POSTGAME_DIALOG
-bool network_gather(
-	void)
+bool network_gather(bool inResumingGame)
 {
 	bool successful= false;
 	game_info myGameInfo;
 	player_info myPlayerInfo;
 
 	show_cursor(); // JTP: Hidden one way or another
-	if (network_game_setup(&myPlayerInfo, &myGameInfo))
+	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame))
 	{
 		myPlayerInfo.desired_color= myPlayerInfo.color;
 		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
@@ -286,16 +303,19 @@ bool network_gather(
 			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing twelve", {0, 0}});
 #endif
 			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
-				sizeof(myPlayerInfo)))
+				sizeof(myPlayerInfo), inResumingGame))
 			{
 				do
 				{
 					short number_of_players= NetGetNumberOfPlayers();
+                                        bool gathered_unacceptable_player= false;
 					
 					/* set button states */
 					SetPt(&cell, 0, 0);
 					modify_control(dialog, iADD, (number_of_players<MAXIMUM_NUMBER_OF_NETWORK_PLAYERS && LGetSelect(true, &cell, network_list_box)) ? CONTROL_ACTIVE : CONTROL_INACTIVE, 0);
-					modify_control(dialog, iOK, number_of_players>1 ? CONTROL_ACTIVE : CONTROL_INACTIVE, 0);
+					modify_control(dialog, iOK, number_of_players>1 ?
+                                                        (gathered_unacceptable_player ? CONTROL_INACTIVE : CONTROL_ACTIVE)
+                                                        : CONTROL_INACTIVE, 0);
 					
 					ModalDialog(gather_dialog_upp, &item_hit);
 			
@@ -324,9 +344,14 @@ bool network_gather(
 								lost_player_callback(player);
 								
 								// Gather player
-								if (NetGatherPlayer(player, reassign_player_colors))
+                                                                int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
+								if (theGatherPlayerResult != kGatherPlayerFailed)
 								{
 									update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
+                                                                        if(theGatherPlayerResult == kGatheredUnacceptablePlayer)
+                                                                        {
+                                                                                gathered_unacceptable_player= true;
+                                                                        }
 								}
 							}
 							break;
@@ -344,7 +369,7 @@ bool network_gather(
 		
 			if (item_hit==iOK)
 			{
-				successful= NetStart();
+				successful= true;
 			}
 			else
 			{
@@ -367,11 +392,9 @@ bool network_gather(
  * Purpose:  do the dialog to join a network game.
  *
  *************************************************************************************************/
-bool network_join(
+int network_join(
 	void)
 {
-	bool successful= false;
-
 	show_cursor(); // Hidden one way or another
 	
 	/* If we can enter the network... */
@@ -426,7 +449,7 @@ bool network_join(
 		setup_network_speed_for_join(dialog);
 #endif
 	
-		accepted_into_game = false;
+		sStartJoinedGameResult = kNetworkJoinFailed;
 
 		GetPort(&old_port);
 		SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
@@ -553,7 +576,7 @@ bool network_join(
 					break;
 			}
 		}
-		while (!accepted_into_game && item_hit != iCANCEL);
+		while (sStartJoinedGameResult == kNetworkJoinFailed && item_hit != iCANCEL);
 	
 		SetPort(old_port);
 	
@@ -561,9 +584,8 @@ bool network_join(
 		DisposeRoutineDescriptor(join_dialog_upp);
 		DisposeDialog(dialog);
 	
-		if (accepted_into_game)
+		if (sStartJoinedGameResult != kNetworkJoinFailed)
 		{
-			successful= true;
 			myGameInfo= (game_info *)NetGetGameData();
 			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
 		}
@@ -579,7 +601,7 @@ bool network_join(
 	}
 	
 	hide_cursor();
-	return successful;
+	return sStartJoinedGameResult;
 }
 
 /* ---------- private code */
@@ -592,7 +614,8 @@ bool network_join(
  *************************************************************************************************/
 bool network_game_setup(
 	player_info *player_information,
-	game_info *game_information)
+	game_info *game_information,
+        bool inResumingGame)
 {
 	short item_hit;
 	GrafPtr old_port;
@@ -608,7 +631,7 @@ bool network_game_setup(
 	GetPort(&old_port);
 	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 
-	game_information->net_game_type= fill_in_game_setup_dialog(dialog, player_information, allow_all_levels);
+	game_information->net_game_type= fill_in_game_setup_dialog(dialog, player_information, allow_all_levels, inResumingGame);
 
 	ShowWindow(GetDialogWindow(dialog));
 
@@ -631,22 +654,6 @@ bool network_game_setup(
 					break;
 					
 				case iRADIO_KILL_LIMIT:
-                                /* // ZZZ: changed to use function like the others
-					// START Benad
-					if (get_dialog_control_value(dialog, iGAME_TYPE)-1 != _game_of_defense)
-					{
-						HideDialogItem(dialog, iTIME_LIMIT); HideDialogItem(dialog, iTEXT_TIME_LIMIT);
-						ShowDialogItem(dialog, iTEXT_KILL_LIMIT); ShowDialogItem(dialog, iKILL_LIMIT);
-					}
-					else
-					{
-						ShowDialogItem(dialog, iTIME_LIMIT); ShowDialogItem(dialog, iTEXT_TIME_LIMIT);
-						ShowDialogItem(dialog, iTEXT_KILL_LIMIT); ShowDialogItem(dialog, iKILL_LIMIT);
-					}
-					// END Benad
-					
-					modify_radio_button_family(dialog, iRADIO_NO_TIME_LIMIT, iRADIO_KILL_LIMIT, iRADIO_KILL_LIMIT);
-                                */
                                         setup_for_score_limited_game(dialog);
                                 	break;
 
@@ -732,7 +739,7 @@ bool network_game_setup(
 		short game_limit_type= get_game_duration_radio(dialog);
 			
 		extract_setup_dialog_information(dialog, player_information, game_information, 
-			game_limit_type, allow_all_levels);
+			game_limit_type, allow_all_levels, inResumingGame);
 	}
 	
 	SetPort(old_port);
@@ -861,6 +868,12 @@ void fill_in_entry_points(
 	if (!CountMenuItems(menu)) modify_control(dialog, iOK, CONTROL_INACTIVE, 0);
 
 	return;
+}
+
+// ZZZ: new function
+void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
+{
+        modify_selection_control(inDialog, inItem, CONTROL_ACTIVE, inLevelNumber+1);
 }
 
 
@@ -1261,7 +1274,12 @@ static pascal Boolean join_dialog_filter_proc(
 			break;
 
 		case netStartingUp: /* the game is starting up (we have the network topography) */
-			accepted_into_game = true;
+			sStartJoinedGameResult= kNetworkJoinedNewGame;
+			handled= true;
+			break;
+
+		case netStartingResumeGame: /* the game is starting up a resume game (we have the network topography) */
+			sStartJoinedGameResult= kNetworkJoinedResumeGame;
 			handled= true;
 			break;
 

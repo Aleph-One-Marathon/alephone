@@ -199,7 +199,8 @@ static void load_random_sound_images(uint8 *data, short count);
 static void load_terminal_data(uint8 *data, long length);
 
 /* Used _ONLY_ by game_wad.c internally and precalculate.c. */
-static bool process_map_wad(struct wad_data *wad, bool restoring_game, short version);
+// ZZZ: hmm, no longer true, now using when resuming a network saved-game... hope that's ok?...
+//static bool process_map_wad(struct wad_data *wad, bool restoring_game, short version);
 
 /* Final three calls, must be in this order! */
 static void recalculate_redundant_map(void);
@@ -244,7 +245,6 @@ void *get_map_for_net_transfer(
 	
 	/* false means don't use union maps.. */
 	return get_flat_data(MapFileSpec, false, entry->level_number);
-	// return get_flat_data(&current_map_file, false, entry->level_number);
 }
 
 /* ---------------------- End Net Functions ----------- */
@@ -282,14 +282,11 @@ bool use_map_file(
 	uint32 checksum)
 {
 	FileSpecifier File;
-	// FileDesc file;
 	bool success= false;
 
 	if(find_wad_file_that_has_checksum(File, _typecode_scenario, strPATHS, checksum))
-	// if(find_wad_file_that_has_checksum(&file, SCENARIO_FILE_TYPE, strPATHS, checksum))
 	{
 		set_map_file(File);
-		// set_map_file(&file);
 		success= true;
 	}
 
@@ -465,6 +462,19 @@ uint32 get_current_map_checksum(
 	return header.checksum;
 }
 
+// ZZZ: split this out from new_game for sharing
+void set_saved_game_name_to_default()
+{
+#if defined(mac) || defined(SDL_RFORK_HACK)
+	revert_game_data.SavedGame.SetToApp();
+	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),_typecode_savegame);
+#endif
+#if defined(SDL) && !defined(SDL_RFORK_HACK)
+	revert_game_data.SavedGame.SetToSavedGamesDir();
+	revert_game_data.SavedGame += getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME);
+#endif
+}
+
 bool new_game(
 	short number_of_players, 
 	bool network,
@@ -482,14 +492,7 @@ bool new_game(
 	game_is_networked= network;
 	
 	/* If we want to save it, this is an untitled map.. */
-#if defined(mac) || defined(SDL_RFORK_HACK)
-	revert_game_data.SavedGame.SetToApp();
-	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),_typecode_savegame);
-#endif
-#if defined(SDL) && !defined(SDL_RFORK_HACK)
-	revert_game_data.SavedGame.SetToSavedGamesDir();
-	revert_game_data.SavedGame += getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME);
-#endif
+        set_saved_game_name_to_default();
 
 	/* Set the random seed. */
 	set_random_seed(game_information->initial_random_seed);
@@ -1083,9 +1086,6 @@ bool load_game_from_file(FileSpecifier& File)
 {
 	bool success= false;
 	
-	/* Must reset this, in case they played a net game before this one. */
-	game_is_networked= false;
-
 	/* Setup for a revert.. */
 	revert_game_data.game_is_from_disk = true;
 	revert_game_data.SavedGame = File;
@@ -1099,10 +1099,6 @@ bool load_game_from_file(FileSpecifier& File)
 	{
 		uint32 parent_checksum;
 	
-		/* Set the non-saved data.... */
-		set_current_player_index(0);
-		set_local_player_index(0);
-
 		/* Find the original scenario this saved game was a part of.. */
 		parent_checksum= read_wad_file_parent_checksum(File);
 		if(use_map_file(parent_checksum))
@@ -1124,12 +1120,6 @@ bool load_game_from_file(FileSpecifier& File)
 			/* Set to the default map. */
 			set_to_default_map();
 		}
-
-		/* Set the random seed. */
-		set_random_seed(dynamic_world->random_seed);
-		
-		/* Load the shapes and whatnot.. */		
-		entering_map(true);
 	} 
 
 	return success;
@@ -1159,7 +1149,6 @@ bool revert_game(
 	{
 		/* Reload their last saved game.. */
 		successful= load_game_from_file(revert_game_data.SavedGame);
-		// successful= load_game_from_file(&revert_game_data.saved_game);
 
 		/* And they don't get to continue. */
 		stop_recording();

@@ -139,6 +139,8 @@ static char* sStringSetNumber132[] = {
     "An error ocurred while trying to join a game (an incompatible version of Aleph One may have tried to gather you).  Try again.",
     "Sorry, a network error ocurred and Aleph One is unable to continue.",
     "That player could not be added to the game because your versions of Aleph One are incompatible.",
+    "The player you just added is using an older version of Aleph One that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game.",
+    "Aleph One was unable to locate the Map file this level came from.  Some terminals may not display properly, and saving this game on this computer is not recommended."
 };
 
 // STR# Resource: "Key Codes To Names"
@@ -285,7 +287,7 @@ static char* sStringSetNumber135[] = {
     "U.E.S.C. Marathon",
     "Opening Connection to b.4.5-23",
     "CAS.qterm//CyberAcme Systems Inc.",
-    "&lt;931.461.60231.14.vt920&gt;",
+    "<931.461.60231.14.vt920>",
     "UESCTerm 802.11 (remote override)",
     "PgUp/PgDown/Arrows To Scroll",
     "Return/Enter To Acknowledge",
@@ -296,8 +298,8 @@ static char* sStringSetNumber135[] = {
 
 // STR# Resource: "Join Dialog Messages"
 static char* sStringSetNumber136[] = {
-    "Click “Join” to wait for an invitation into a network game of Aleph One.",
-    "Now waiting to be gathered into a network game by a server.  Click “Cancel” to give up.",
+    "Click 'Join' to wait for an invitation into a network game of Aleph One.",
+    "Now waiting to be gathered into a network game by a server.  Click 'Cancel' to give up.",
     "You have been accepted into a game.  Now waiting for the server to add the remaining players… ",
 };
 
@@ -337,7 +339,7 @@ static char* sStringSetNumber140[] = {
     "Team",
     "Time With Ball",
     "Flags Captured",
-    "Time “It” ",
+    "Time 'It'",
     "Goals",
     "Time On Hill",
     "Time On Hill",
@@ -357,9 +359,9 @@ static char* sStringSetNumber141[] = {
 
 // STR# Resource: "New Join Dialog Messages"
 static char* sStringSetNumber142[] = {
-    "You have been accepted into a game of “%s”.  Now waiting for the server to add the remaining players… ",
+    "You have been accepted into a game of '%s'.  Now waiting for the server to add the remaining players...",
     "Every Man For Himself",
-    "You have been accepted into a cooperative game.  Now waiting for the server to add the remaining players… ",
+    "You have been accepted into a cooperative game.  Now waiting for the server to add the remaining players...",
     "Capture the Flag",
     "King of the Hill",
     "Kill the Man With the Ball",
@@ -427,10 +429,16 @@ static char*    sEndConditionTypeStrings[] = {
     "Time Limit",
 };
 
+static char*	sSingleOrNetworkStrings[] = {
+    "Single-player game",
+    "Network game"
+};
+
+
 BUILD_STRINGSET(kDifficultyLevelsStringSetID,   sDifficultyLevelsStrings);
 BUILD_STRINGSET(kNetworkGameTypesStringSetID,   sNetworkGameTypesStrings);
 BUILD_STRINGSET(kEndConditionTypeStringSetID,   sEndConditionTypeStrings);
-
+BUILD_STRINGSET(kSingleOrNetworkStringSetID,	sSingleOrNetworkStrings);
 
 
 // More Mac OS string-resource stringsets.

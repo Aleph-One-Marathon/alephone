@@ -61,6 +61,12 @@ Mar 13, 2002 (Br'fin (Jeremy Parsons)):
 Jan 12, 2003 (Woody Zenfell):
 	Added ability to reset intermediate action queues (GameQueue)
 	Fixed potential out-of-sync bug
+        
+Feb 8, 2003 (Woody Zenfell):
+        Reformulated main update loop and multiple ActionFlags queue handling.
+        PLAYER_IS_PFHORTRAN_CONTROLLED is now no longer used - if a player has
+        entries in the PfhortranActionQueues, they'll be used; if not, his
+        entries from the RealActionQueues will be.
 */
 
 #include "cseries.h"
@@ -147,7 +153,7 @@ void initialize_marathon(
 #endif
 	// CP addition: init pfhortran
 	init_pfhortran();
-	GameQueue = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER);
+	GameQueue = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, true);
 }
 
 void
@@ -155,6 +161,159 @@ reset_intermediate_action_queues() {
 	GameQueue->reset();
 }
 
+// ZZZ: move a single tick's flags (if there's one present for each player in the Base Queues)
+// from the Base Queues into the Output Queues, overriding each with the corresponding player's
+// flags from the Overlay Queues, if non-empty.
+static bool
+overlay_queue_with_queue_into_queue(ActionQueues* inBaseQueues, ActionQueues* inOverlayQueues, ActionQueues* inOutputQueues)
+{
+        bool haveFlagsForAllPlayers = true;
+        for(int p = 0; p < dynamic_world->player_count; p++)
+        {
+                if(inBaseQueues->countActionFlags(p) <= 0)
+                {
+                        haveFlagsForAllPlayers = false;
+                        break;
+                }
+        }
+        
+        if(!haveFlagsForAllPlayers)
+        {
+                return false;
+        }
+        
+        for(int p = 0; p < dynamic_world->player_count; p++)
+        {
+                // Trust me, this is right - we dequeue from the Base Queues whether or not they get overridden.
+                uint32 action_flags = inBaseQueues->dequeueActionFlags(p);
+                
+                if(inOverlayQueues != NULL && inOverlayQueues->countActionFlags(p) > 0)
+                {
+                        action_flags = inOverlayQueues->dequeueActionFlags(p);
+                }
+                
+                inOutputQueues->enqueueActionFlags(p, &action_flags, 1);
+        }
+        
+        return true;
+}
+
+// Return values for update_world_elements_one_tick()
+enum {
+        kUpdateNormalCompletion,
+        kUpdateGameOver,
+        kUpdateChangeLevel
+};
+
+// ZZZ: split out from update_world()'s loop.
+static int
+update_world_elements_one_tick()
+{
+        //CP Addition: Scripting handling stuff
+//AS: removed "success"; it's pointless
+        if (script_in_use())
+                do_next_instruction();
+        
+        update_lights();
+        update_medias();
+        update_platforms();
+        
+        update_control_panels(); // don't put after update_players
+        update_players(GameQueue);
+        move_projectiles();
+        move_monsters();
+        update_effects();
+        recreate_objects();
+        
+        handle_random_sound_image();
+        animate_scenery();
+        // LP additions:
+        animate_items();
+        AnimTxtr_Update();
+        ChaseCam_Update();
+
+        update_net_game();
+
+        if(check_level_change()) 
+        {
+                return kUpdateChangeLevel;
+        }
+
+        if(game_is_over())
+        {
+                return kUpdateGameOver;
+        }
+        
+        dynamic_world->tick_count+= 1;
+        dynamic_world->game_information.game_time_remaining-= 1;
+        
+        return kUpdateNormalCompletion;
+}
+
+// ZZZ: new formulation of update_world(), should be simpler and clearer I hope.
+short update_world()
+{
+        short theElapsedTime = 0;
+        bool canUpdate = true;
+        int theUpdateResult = kUpdateNormalCompletion;
+        
+        while(canUpdate)
+        {
+                // If we have flags in the GameQueue, or can put a tick's-worth there, we're ok.
+                // Note that GameQueue should be stocked evenly (i.e. every player has the same # of flags)
+                if(GameQueue->countActionFlags(0) == 0)
+                {
+                        canUpdate = overlay_queue_with_queue_into_queue(GetRealActionQueues(), GetPfhortranActionQueues(), GameQueue);
+                }
+                
+                // See if the speed-limiter (net time or heartbeat count) will let us advance a tick
+                int theMostRecentAllowedTick = game_is_networked ? NetGetNetTime() : get_heartbeat_count();
+                
+                if(dynamic_world->tick_count >= theMostRecentAllowedTick)
+                {
+                        canUpdate = false;
+                }
+                
+                // If we can't update, we can't update.  We're done for now.
+                if(!canUpdate)
+                {
+                        break;
+                }
+                
+                theUpdateResult = update_world_elements_one_tick();
+
+                theElapsedTime++;
+
+                if(theUpdateResult != kUpdateNormalCompletion)
+                {
+                        canUpdate = false;
+                }
+	}
+        
+        // This and the following voodoo comes, effectively, from Bungie's code.
+        if(theUpdateResult == kUpdateChangeLevel)
+        {
+                theElapsedTime = 0;
+        }
+
+	/* Game is over. */
+	if(theUpdateResult == kUpdateGameOver) 
+	{
+		game_timed_out();
+		theElapsedTime = 0;
+	} 
+	else if (theElapsedTime)
+	{
+		update_interface(theElapsedTime);
+		update_fades();
+	}
+	
+	check_recording_replaying();
+        
+        return theElapsedTime;
+}
+
+#ifdef OBSOLETE
 short update_world(
 	void)
 {
@@ -162,6 +321,7 @@ short update_world(
 	short i, time_elapsed;
 	short player_index;
 	bool game_over= false;
+        int theUpdateResult;
 	uint32 action_flag;
 	short queue_index;
 	
@@ -172,18 +332,18 @@ short update_world(
 	{
 		if PLAYER_IS_PFHORTRAN_CONTROLLED(get_player_data(player_index))
 		{
-			for (queue_index= 0; GetPfhortranActionQueues()->countActionFlags(player_index, true); ++queue_index)
+			for (queue_index= 0; GetPfhortranActionQueues()->countActionFlags(player_index); ++queue_index)
 			{
-				action_flag = GetPfhortranActionQueues()->dequeueActionFlags(player_index, true);
-				GameQueue->enqueueActionFlags(player_index, &action_flag, 1, true);
+				action_flag = GetPfhortranActionQueues()->dequeueActionFlags(player_index);
+				GameQueue->enqueueActionFlags(player_index, &action_flag, 1);
 			}
 		}
 		else
 		{
-			for (queue_index= 0; GetRealActionQueues()->countActionFlags(player_index, true); ++queue_index)
+			for (queue_index= 0; GetRealActionQueues()->countActionFlags(player_index); ++queue_index)
 			{
-				action_flag = GetRealActionQueues()->dequeueActionFlags(player_index, true);
-				GameQueue->enqueueActionFlags(player_index, &action_flag, 1, true);
+				action_flag = GetRealActionQueues()->dequeueActionFlags(player_index);
+				GameQueue->enqueueActionFlags(player_index, &action_flag, 1);
 			}		
 		}
 	}
@@ -222,46 +382,16 @@ short update_world(
 	time_elapsed= lowest_time;
 	for (i=0;i<time_elapsed;++i)
 	{
-		//CP Addition: Scripting handling stuff
-  //AS: removed "success"; it's pointless
-		if (script_in_use())
-			do_next_instruction();
-		
-		update_lights();
-		update_medias();
-		update_platforms();
-		
-		update_control_panels(); // don't put after update_players
-		update_players(GameQueue);
-		move_projectiles();
-		move_monsters();
-		update_effects();
-		recreate_objects();
-		
-		handle_random_sound_image();
-		animate_scenery();
-		// LP additions:
-		animate_items();
-		AnimTxtr_Update();
-		ChaseCam_Update();
-
-		update_net_game();
-
-		if(check_level_change()) 
-		{
-			time_elapsed= 0; /* So that we don't update things & try to render the world. */
-			break; /* Break if we change the level */
-		}
-		game_over= game_is_over();
-		if(game_over)
-			break;
-		
-		dynamic_world->tick_count+= 1;
-		dynamic_world->game_information.game_time_remaining-= 1;
+                theUpdateResult = update_world_elements_one_tick();
+                if(theUpdateResult != kUpdateNormalCompletion)
+                        break;
 	}
+        
+        if(theUpdateResult == kUpdateChangeLevel)
+                time_elapsed = 0;
 
 	/* Game is over. */
-	if(game_over) 
+	if(theUpdateResult == kUpdateGameOver) 
 	{
 		game_timed_out();
 		time_elapsed= 0;
@@ -276,6 +406,7 @@ short update_world(
 
 	return time_elapsed;
 }
+#endif // OBSOLETE
 
 /* call this function before leaving the old level, but DO NOT call it when saving the player.
 	it should be called when you're leaving the game (i.e., quitting or reverting, etc.) */
@@ -335,7 +466,7 @@ bool entering_map(bool restoring_saved)
 	/* make sure nobodyÕs holding a weapon illegal in the new environment */
 	check_player_weapons_for_environment_change();
 
-	if (dynamic_world->player_count>1) initialize_net_game();	
+	if (dynamic_world->player_count>1 && !restoring_saved) initialize_net_game();
 	randomize_scenery_shapes();
 
 	reset_action_queues(); //¦¦

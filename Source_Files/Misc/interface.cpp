@@ -86,6 +86,13 @@ Jun 5, 2002 (Loren Petrich):
 Feb 1, 2003 (Woody Zenfell):
         Reenabling network microphone support on all platforms, trying to share code
         and present consistent interfaces to the greatest degree practical.
+        
+Feb 8-12, 2003 (Woody Zenfell):
+        Introducing support for generalized game startup (will enable resumption of saved-games
+        as netgames, among other things).
+
+Feb 13, 2003 (Woody Zenfell):
+        We can now resume games as network games.
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -148,6 +155,11 @@ extern TP2PerfGlobals perf_globals;
 #include "network_sound.h"
 #include "network_distribution_types.h"
 
+// ZZZ: should the function that uses these (join_networked_resume_game()) go elsewhere?
+#include "wad.h"
+#include "game_wad.h"
+
+#include "motion_sensor.h" // for reset_motion_sensor()
 
 #ifdef env68k
 	#pragma segment shell
@@ -268,6 +280,7 @@ static void start_game(short user, bool changing_level);
 void handle_load_game(void);
 static void handle_save_film(void);
 static void finish_game(bool return_to_main_menu);
+static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool inFullCleanup);
 static void handle_network_game(bool gatherer);
 static void next_game_screen(void);
 static void handle_interface_menu_screen_click(short x, short y, bool cheatkeys_down);
@@ -428,26 +441,441 @@ static short get_difficulty_level(void)
 	return player_preferences->difficulty_level;
 }
 
+
+// ----- ZZZ start support for generalized game startup -----
+// (should this be split out (with some other game startup code) to a new file?)
+
+// In this scheme, a "start" corresponds to a player available at the moment, who will
+// participate in the game we're starting up.  In general when this code talks about a
+// 'player', it is referring to an already-existing player in the game world (which should
+// already be restored or initialized fairly well before these routines are used).
+// Generalized game startup will match starts to existing players, set leftover players
+// as "zombies" so they exist but just stand there, and create new players to correspond
+// with any remaining starts.  As such it can handle both resume-game (some players already
+// exist) and new-game (dynamic_world->player_count == 0) operations.
+
+static void construct_single_player_start(player_start_data* outStartArray, short* outStartCount)
+{
+        if(outStartCount != NULL)
+        {
+                *outStartCount = 1;
+        }
+
+        outStartArray[0].team = player_preferences->color;
+        outStartArray[0].color = player_preferences->color;
+        outStartArray[0].identifier = 0;
+        memcpy(outStartArray[0].name, &(player_preferences->name[1]), player_preferences->name[0]);
+        outStartArray[0].name[player_preferences->name[0]] = '\0';
+}
+
+static void construct_multiplayer_starts(player_start_data* outStartArray, short* outStartCount)
+{
+        int number_of_players = NetGetNumberOfPlayers();
+        
+        if(outStartCount != NULL)
+        {
+                *outStartCount = number_of_players;
+        }
+    
+        for(int player_index= 0; player_index<number_of_players; ++player_index)
+        {
+                player_info *player_information = (player_info *)NetGetPlayerData(player_index);
+                outStartArray[player_index].team = player_information->team;
+                outStartArray[player_index].color= player_information->color;
+                outStartArray[player_index].identifier = NetGetPlayerIdentifier(player_index);
+    
+                /* Copy and translate from pascal string to cstring */
+                memcpy(outStartArray[player_index].name, &player_information->name[1],
+                        player_information->name[0]);
+                outStartArray[player_index].name[player_information->name[0]]= 0;
+        }
+}
+
+// This should be safe to use whether starting or resuming and whether single-player or multiplayer.
+void match_starts_with_existing_players(player_start_data* ioStartArray, short* ioStartCount)
+{
+        // This code could be smarter, but it doesn't run very often, doesn't get big data sets, etc.
+        // so I'm not going to worry about it.
+        
+        bool startAssigned[MAXIMUM_NUMBER_OF_PLAYERS];
+        int8 startAssignedToPlayer[MAXIMUM_NUMBER_OF_PLAYERS];
+        for(int i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; i++)
+        {
+                startAssigned[i] = false;
+                startAssignedToPlayer[i] = NONE;
+        }
+        
+        // First, match starts to players by name.
+        for(int s = 0; s < *ioStartCount; s++)
+        {
+                for(int p = 0; p < dynamic_world->player_count; p++)
+                {
+                        if(startAssignedToPlayer[p] == NONE)
+                        {
+                                if(strcmp(ioStartArray[s].name, get_player_data(p)->name) == 0)
+                                {
+                                        startAssignedToPlayer[p] = s;
+                                        startAssigned[s] = true;
+                                        break;
+                                }
+                        }
+                }
+        }
+        
+        // Match remaining starts to remaining players arbitrarily.
+        for(int s = 0; s < *ioStartCount; s++)
+        {
+                if(!startAssigned[s])
+                {
+                        for(int p = 0; p < dynamic_world->player_count; p++)
+                        {
+                                if(startAssignedToPlayer[p] == NONE)
+                                {
+                                        startAssignedToPlayer[p] = s;
+                                        startAssigned[s] = true;
+                                        break;
+                                }
+                        }
+                }
+        }
+        
+        // Create new starts for any players not covered.
+        int p = 0;        
+        while(*ioStartCount < dynamic_world->player_count)
+        {
+                if(startAssignedToPlayer[p] == NONE)
+                {
+                        player_data* thePlayer = get_player_data(p);
+                        ioStartArray[*ioStartCount].team = thePlayer->team;
+                        ioStartArray[*ioStartCount].color = thePlayer->color;
+                        ioStartArray[*ioStartCount].identifier = NONE;
+                        strcpy(ioStartArray[*ioStartCount].name, thePlayer->name);
+                        startAssignedToPlayer[p] = *ioStartCount;
+                        startAssigned[*ioStartCount] = true;
+                        (*ioStartCount)++;
+                }
+                
+                p++;
+        }
+        
+        // Assign remaining starts to players that don't exist yet
+        p = dynamic_world->player_count;
+        for(int s = 0; s < *ioStartCount; s++)
+        {
+                if(!startAssigned[s])
+                {
+                        startAssignedToPlayer[p] = s;
+                        startAssigned[s] = true;
+                        p++;
+                }
+        }
+        
+        // Reorder starts to match players - this is particularly unclever
+        player_start_data theOriginalStarts[MAXIMUM_NUMBER_OF_PLAYERS];
+        memcpy(theOriginalStarts, ioStartArray, sizeof(theOriginalStarts));
+        for(p = 0; p < *ioStartCount; p++)
+        {
+                ioStartArray[p] = theOriginalStarts[startAssignedToPlayer[p]];
+        }
+}
+
+// This should be safe to use whether starting or resuming, and whether single- or multiplayer.
+static void synchronize_players_with_starts(const player_start_data* inStartArray, short inStartCount)
+{
+        // s will walk through all the starts
+        int s = 0;
+        
+        // First we process existing players
+        for( ; s < dynamic_world->player_count; s++)
+        {
+                player_data* thePlayer = get_player_data(s);
+
+                if(inStartArray[s].identifier == NONE)
+                {
+                        // No start (live player) to go with this player (stored player)
+                        SET_PLAYER_ZOMBIE_STATUS(thePlayer, true);
+                }
+                else
+                {
+                        // Update player's appearance to match the start
+                        thePlayer->team = inStartArray[s].team;
+                        thePlayer->color = inStartArray[s].color;
+                        thePlayer->identifier = inStartArray[s].identifier;
+                        strcpy(thePlayer->name, inStartArray[s].name);
+
+                        // Make sure if player was saved as zombie, they're not now.
+                        SET_PLAYER_ZOMBIE_STATUS(thePlayer, false);
+                }
+        }
+        
+        // If there are any starts left, we need new players for them
+        for( ; s < inStartCount; s++)
+        {
+                int theIndex = new_player(inStartArray[s].team, inStartArray[s].color, inStartArray[s].identifier);
+                assert(theIndex == s);
+                player_data* thePlayer = get_player_data(theIndex);
+                strcpy(thePlayer->name, inStartArray[s].name);
+        }
+}
+
+static short find_start_for_identifier(const player_start_data* inStartArray, short inStartCount, short inIdentifier)
+{
+        short s;
+        for(s = 0; s < inStartCount; s++)
+        {
+                if(inStartArray[s].identifier == inIdentifier)
+                {
+                        break;
+                }
+        }
+        
+        return (s == inStartCount) ? NONE : s;
+}
+
+// The single-player machine, gatherer, and joiners all will use this routine.  It should take most of its
+// cues from the "extras" that load_game_from_file() does.
+static bool make_restored_game_relevant(bool inNetgame, const player_start_data* inStartArray, short inStartCount)
+{
+        game_is_networked = inNetgame;
+        
+        // set_random_seed() needs to happen before synchronize_players_with_starts()
+        // since the latter calls new_player() which almost certainly uses global_random().
+        // Note we always take the random seed directly from the dynamic_world, no need to screw around
+        // with copying it from game_information or the like.
+        set_random_seed(dynamic_world->random_seed);
+        
+        synchronize_players_with_starts(inStartArray, inStartCount);
+        
+        short theLocalPlayerIndex;
+        
+        // Much of the code in this if()...else is very similar to code in begin_game(), should probably try to share.
+        if(inNetgame)
+        {
+                game_info *network_game_info= (game_info *)NetGetGameData();
+                
+                dynamic_world->game_information.game_time_remaining= network_game_info->time_limit;
+                dynamic_world->game_information.kill_limit= network_game_info->kill_limit;
+                dynamic_world->game_information.game_type= network_game_info->net_game_type;
+                dynamic_world->game_information.game_options= network_game_info->game_options;
+                dynamic_world->game_information.initial_random_seed= network_game_info->initial_random_seed;
+                dynamic_world->game_information.difficulty_level= network_game_info->difficulty_level;
+
+                if (network_game_info->allow_mic)
+                {
+                        install_network_microphone();
+                        game_state.current_netgame_allows_microphone= true;
+                } else {
+                        game_state.current_netgame_allows_microphone= false;
+                }
+
+                // ZZZ: until players specify their behavior modifiers over the network,
+                // to avoid out-of-sync we must force them all the same.
+                standardize_player_behavior_modifiers();
+                
+                theLocalPlayerIndex = NetGetLocalPlayerIndex();
+        }
+        else
+        {
+                dynamic_world->game_information.difficulty_level= get_difficulty_level();
+                restore_custom_player_behavior_modifiers();
+                theLocalPlayerIndex = find_start_for_identifier(inStartArray, inStartCount, 0);
+        }
+        
+        assert(theLocalPlayerIndex != NONE);
+        set_local_player_index(theLocalPlayerIndex);
+        set_current_player_index(theLocalPlayerIndex);
+
+        bool success = entering_map(true /*restoring game*/);
+
+        reset_motion_sensor(theLocalPlayerIndex);
+
+        if(!success) clean_up_after_failed_game(inNetgame, false /*recording*/, true /*full cleanup*/);
+
+        return success;
+}
+
+// ZZZ end generalized game startup support -----
+
+
+// ZZZ: this will get called (eventually) shortly after NetUpdateJoinState() returns netStartingResumeGame
+bool join_networked_resume_game()
+{
+        bool success = true;
+        
+        // Get the saved-game data
+        byte* theSavedGameFlatData = NetReceiveGameData(false /* do_physics */);
+        if(theSavedGameFlatData == NULL)
+        {
+                success = false;
+        }
+        
+        if(success)
+        {
+                // Use the saved-game data
+                wad_header theWadHeader;
+                wad_data* theWad;
+                
+                theWad = inflate_flat_data(theSavedGameFlatData, &theWadHeader);
+                if(theWad == NULL)
+                {
+                        success = false;
+                        free(theSavedGameFlatData);
+                }
+                
+                if(success)
+                {
+                        success = process_map_wad(theWad, true /* resuming */, theWadHeader.data_version);
+                        free_wad(theWad); /* Note that the flat data points into the wad. */
+                        // ZZZ: maybe this is what the Bungie comment meant, but apparently
+                        // free_wad() somehow (voodoo) frees theSavedGameFlatData as well.
+                }
+                
+                if(success)
+                {
+                        // try to locate the Map file for the saved-game, so that (1) we have a crack
+                        // at continuing the game if the original gatherer disappears, and (2) we can
+                        // save the game on our own machine and continue it properly (as part of a bigger scenario) later.
+                        uint32 theParentChecksum = theWadHeader.parent_checksum;
+                        if(use_map_file(theParentChecksum))
+                        {
+                                // LP: getting the level scripting off of the map file
+                                // Being careful to carry over errors so that Pfhortran errors can be ignored
+                                short SavedType, SavedError = SavedError = get_game_error(&SavedType);
+                                RunLevelScript(dynamic_world->current_level_number);
+                                set_game_error(SavedType,SavedError);
+                        }
+                        else
+                        {
+                                /* Tell the user theyÕre screwed when they try to leave this level. */
+                                // ZZZ: should really issue a different warning since the ramifications are different
+                                alert_user(infoError, strERRORS, cantFindMap, 0);
+        
+                                // LP addition: makes the game look normal
+                                hide_cursor();
+                        
+                                /* Set to the default map. */
+                                set_to_default_map();
+                        }
+                        
+                        // set the revert-game info to defaults (for full-auto saving on the local machine)
+                        set_saved_game_name_to_default();
+                        
+                        player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
+                        short theStartCount;
+                        construct_multiplayer_starts(theStarts, &theStartCount);
+                        
+                        success = make_restored_game_relevant(true /* multiplayer */, theStarts, theStartCount);
+                }
+        }
+        
+        if(success) start_game(_network_player, false /*changing level?*/);
+        
+        return success;
+}
+
 extern bool load_and_start_game(FileSpecifier& File);
 
+// ZZZ: changes to use generalized game startup support
+// This will be used only on the machine that picked "Continue Saved Game".
 bool load_and_start_game(FileSpecifier& File)
 {
 	bool success;
-	
+
 	hide_cursor();
 	if(can_interface_fade_out()) 
 	{
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
+
 	success= load_game_from_file(File);
+        
+        if(!success)
+        {
+                /* Reset the system colors, since the screen clut is all black.. */
+                force_system_colors();
+                show_cursor(); // JTP: Was hidden by force system colors
+                display_loading_map_error();
+        }
+        
+        bool userWantsMultiplayer;	
+        int theResult = NONE;
+        
+        if(success)
+        {
+                theResult = should_restore_game_networked();
+        }
+        
+        if(theResult == NONE)
+        {
+                // cancelled
+                success = false;
+        }
+        else
+        {
+                userWantsMultiplayer = (theResult != 0);
+        }
+        
 	if (success)
 	{
-		dynamic_world->game_information.difficulty_level= get_difficulty_level();
-        if(dynamic_world->player_count == 1) {
-            restore_custom_player_behavior_modifiers();
-		    start_game(_single_player, false);
+                if(userWantsMultiplayer)
+                {
+                        set_game_state(_displaying_network_game_dialogs);
+                        success = network_gather(true /*resuming*/);
+                }
+                
+                if(success)
+                {
+                        player_start_data	theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
+                        short			theNumberOfStarts;
+        
+                        if(userWantsMultiplayer)
+                        {
+                                construct_multiplayer_starts(theStarts, &theNumberOfStarts);
+                        }
+                        else
+                        {
+                                construct_single_player_start(theStarts, &theNumberOfStarts);
+                        }
+                        
+                        match_starts_with_existing_players(theStarts, &theNumberOfStarts);
+                        
+                        if(userWantsMultiplayer)
+                        {
+                                NetSetupTopologyFromStarts(theStarts, theNumberOfStarts);
+                                success = NetStart();
+                                if(success)
+                                {
+                                        byte* theSavedGameFlatData = (byte*)get_flat_data(File, false /* union wad? */, 0 /* level # */);
+                                        if(theSavedGameFlatData == NULL)
+                                        {
+                                                success = false;
+                                        }
+                                        
+                                        if(success)
+                                        {
+                                                long theSavedGameFlatDataLength = get_flat_data_length(theSavedGameFlatData);
+                                                OSErr theError = NetDistributeGameDataToAllPlayers(theSavedGameFlatData, theSavedGameFlatDataLength, false /* do_physics? */);
+                                                if(theError != noErr)
+                                                {
+                                                        success = false;
+                                                }
+                                                free(theSavedGameFlatData);
+                                        }
+                                }
+                        }
+                        
+                        if(success)
+                        {
+                                success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
+                                if(success)
+                                {
+                                        start_game(userWantsMultiplayer ? _network_player : _single_player, false);
+                                }
+                        }
+                }
         }
-	} else {
+        
+        if(!success) {
 		/* We failed.  Balance the cursor */
 		/* Should this also force the system colors or something? */
 		show_cursor();
@@ -707,19 +1135,23 @@ void display_main_menu(
 #endif
         // The line spacing is a generalization of "5" for larger fonts
         short Offset = Font.LineSpacing / 3;
-        short RightJustOffset = Font.TextWidth(VERSION_STRING);
+        short RightJustOffset = Font.TextWidth(A1_VERSION_STRING);
         short X = X0 - RightJustOffset;
         short Y = Y0 - Offset;
 
 #if defined(mac)
         MoveTo(X, Y);
         RGBForeColor(&(RGBColor){0x4000, 0x4000, 0x4000});
-        DrawString("\p"VERSION_STRING);
+        DrawString("\p"A1_VERSION_STRING);
         RGBForeColor(&rgb_black);
         SetPort(old_port);
 #elif defined(SDL)
-        draw_text(world_pixels, VERSION_STRING, X, Y, SDL_MapRGB(world_pixels->format, 0x40, 0x40,
+        // ZZZ: this still won't work for fullscreen (drawing to wrong surface as usual), but at
+        // least in windowed mode it will draw.
+        _set_port_to_screen_window();
+        draw_text(world_pixels, A1_VERSION_STRING, X, Y, SDL_MapRGB(world_pixels->format, 0x40, 0x40,
                                                                  0x40), Font.Info, Font.Style);
+        _restore_port();
 #endif
         
 	game_state.main_menu_display_count++;
@@ -1211,11 +1643,11 @@ static void handle_replay( /* This is gross. */
 	if(!success) display_main_menu();
 }
 
+// ZZZ: some modifications to use generalized game-startup
 static bool begin_game(
 	short user,
 	bool cheat)
 {
-	short player_index;
 	struct entry_point entry;
 	struct player_start_data starts[MAXIMUM_NUMBER_OF_PLAYERS];
 	struct game_data game_information;
@@ -1232,20 +1664,8 @@ static bool begin_game(
 		case _network_player:
 			{
 				game_info *network_game_info= (game_info *)NetGetGameData();
-				number_of_players= NetGetNumberOfPlayers();
-
-				for(player_index= 0; player_index<number_of_players; ++player_index)
-				{
-					player_info *player_information = (player_info *)NetGetPlayerData(player_index);
-					starts[player_index].team = player_information->team;
-					starts[player_index].color= player_information->color;
-					starts[player_index].identifier = NetGetPlayerIdentifier(player_index);
-
-					/* Copy and translate from pascal string to cstring */
-					memcpy(starts[player_index].name, &player_information->name[1],
-						player_information->name[0]);
-					starts[player_index].name[player_information->name[0]]= 0;
-				}
+                                
+                                construct_multiplayer_starts(starts, &number_of_players);
 
 				game_information.game_time_remaining= network_game_info->time_limit;
 				game_information.kill_limit= network_game_info->kill_limit;
@@ -1315,7 +1735,7 @@ static bool begin_game(
 					starts, &game_information);
 
 				entry.level_name[0] = 0;
-//				header.game_information.game_options |= _overhead_map_is_omniscient;
+				game_information.game_options |= _overhead_map_is_omniscient;
 				record_game= false;
                 // ZZZ: until films store behavior modifiers, we must require
                 // that they record and playback only with standard modifiers.
@@ -1333,24 +1753,23 @@ static bool begin_game(
 			}
 	
 			entry.level_name[0] = starts[0].identifier = 0;
-              //AS: make things clearer
-              memset(entry.level_name,0,66);
-			// LP change: use player color in Preferences for single-player game
-			starts[0].team = starts[0].color = player_preferences->color;
-			strcpy(starts[0].name, "");
+                        //AS: make things clearer
+                        memset(entry.level_name,0,66);
+
+                        construct_single_player_start(starts, &number_of_players);
+
 			game_information.game_time_remaining= INT32_MAX;
 			game_information.kill_limit = 0;
 			game_information.game_type= _game_of_kill_monsters;
 			game_information.game_options= _burn_items_on_death|_ammo_replenishes|_weapons_replenish|_monsters_replenish;
 			game_information.initial_random_seed= machine_tick_count();
 			game_information.difficulty_level= get_difficulty_level();
-			number_of_players= 1;
 
-            // ZZZ: let the user use his behavior modifiers in single-player.
-            restore_custom_player_behavior_modifiers();
-            
-            // ZZZ: until film files store player behavior flags, we must require
-            // that all films recorded be made with standard behavior.
+                        // ZZZ: let the user use his behavior modifiers in single-player.
+                        restore_custom_player_behavior_modifiers();
+                        
+                        // ZZZ: until film files store player behavior flags, we must require
+                        // that all films recorded be made with standard behavior.
 			record_game= is_player_behavior_standard();
 			
             break;
@@ -1390,35 +1809,7 @@ static bool begin_game(
 		{
 			start_game(user, false);
 		} else {
-			/* Stop recording.. */
-			if(record_game)
-			{
-				stop_recording();
-			}
-
-			/* Show the cursor here on failure. */
-			show_cursor();
-			
-			/* The only time we don't clean up is on the replays.. */
-			if(clean_up_on_failure)
-			{
-				if (user==_network_player)
-				{
-					if(game_state.current_netgame_allows_microphone)
-					{
-						remove_network_microphone();
-					}
-					exit_networking();
-				} else {
-/* NOTE: The network code is now responsible for displaying its own errors!!!! */
-					/* Give them the error... */
-					display_loading_map_error();
-				}
-
-				/* Display the main menu on failure.... */
-				display_main_menu();
-			}
-			set_game_error(systemError, errNone);
+                        clean_up_after_failed_game(user == _network_player, record_game, clean_up_on_failure);
 		}
 	} else {
 		/* This means that some weird replay problem happened: */
@@ -1484,13 +1875,8 @@ void handle_load_game(
 	show_cursor(); // JTP: Was hidden by force system colors
 	if(choose_saved_game_to_load(FileToLoad))
 	{
-		if(!load_and_start_game(FileToLoad))
-		{
-			/* Reset the system colors, since the screen clut is all black.. */
-			force_system_colors();
-			show_cursor(); // JTP: Was hidden by force system colors
-			display_loading_map_error();
-		} else {
+		if(load_and_start_game(FileToLoad))
+                {
 			success= true;
 		}
 	}
@@ -1573,11 +1959,45 @@ static void finish_game(
 	if(return_to_main_menu) display_main_menu();
 }
 
+static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool inFullCleanup)
+{
+        /* Stop recording.. */
+        if(inRecording)
+        {
+                stop_recording();
+        }
+
+        /* Show the cursor here on failure. */
+        show_cursor();
+        
+        /* The only time we don't clean up is on the replays.. */
+        if(inFullCleanup)
+        {
+                if (inNetgame)
+                {
+                        if(game_state.current_netgame_allows_microphone)
+                        {
+                                remove_network_microphone();
+                        }
+                        exit_networking();
+                } else {
+/* NOTE: The network code is now responsible for displaying its own errors!!!! */
+                        /* Give them the error... */
+                        display_loading_map_error();
+                }
+
+                /* Display the main menu on failure.... */
+                display_main_menu();
+        }
+        set_game_error(systemError, errNone);
+}
+
 static void handle_network_game(
 	bool gatherer)
 {
 #if 1
-	bool successful_gather;
+	bool successful_gather = false;
+        bool joined_resume_game = false;
 	
 	force_system_colors();
 
@@ -1585,14 +2005,24 @@ static void handle_network_game(
 	game_state.state= _displaying_network_game_dialogs;
 	if(gatherer)
 	{
-		successful_gather= network_gather();
+		successful_gather= network_gather(false);
+                if(successful_gather) successful_gather= NetStart();
 	} else {
-		successful_gather= network_join();
+                int theNetworkJoinResult= network_join();
+                if(theNetworkJoinResult != kNetworkJoinFailed) successful_gather= true;
+                if(theNetworkJoinResult == kNetworkJoinedResumeGame) joined_resume_game= true;
 	}
 	
 	if (successful_gather)
 	{
-		begin_game(_network_player, false);
+                if(joined_resume_game)
+                {
+                        if(join_networked_resume_game() == false) clean_up_after_failed_game(true /*netgame*/, false /*recording*/, true /*full cleanup*/);
+                }
+                else
+                {
+                        begin_game(_network_player, false);
+                }
 	} else {
 		/* We must restore the colors on cancel. */
 		display_main_menu();

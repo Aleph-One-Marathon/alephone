@@ -42,6 +42,30 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #endif
 
 
+// (ZZZ:) Moved here from sdl_network.h and macintosh_network.h
+
+/* ---------- constants */
+
+#define asyncUncompleted 1	/* ioResult value */
+
+#define strNETWORK_ERRORS 132
+enum /* error string for user */
+{
+	netErrCantAddPlayer,
+	netErrCouldntDistribute,
+	netErrCouldntJoin,
+	netErrServerCanceled,
+	netErrMapDistribFailed,
+	netErrWaitedTooLongForMap,
+	netErrSyncFailed,
+	netErrJoinFailed,
+	netErrCantContinue,
+        netErrIncompatibleVersion,
+        netErrPlayerUnacceptable,
+        netErrJoinerCantFindScenario
+};
+
+
 // (ZZZ:) Moved here from network.cpp
 
 /* ---------- constants */
@@ -85,7 +109,10 @@ enum /* tag */
 	
         // ZZZ annotation: these (in NetPacketHeader) indicate the rest of the datagram is a NetDistributionPacket.
 	tagLOSSY_DISTRIBUTION,     // for transfer data other than action flags
-	tagLOSSLESS_DISTRIBUTION   // ditto, but currently unimplemented
+	tagLOSSLESS_DISTRIBUTION,   // ditto, but currently unimplemented
+        
+        // ZZZ: more streaming data (topology) packet types
+        tagRESUME_GAME	// ZZZ addition: trying to resume a saved-game rather than start a new netgame.
 };
 
 enum
@@ -231,8 +258,6 @@ typedef struct NetQueue NetQueue, *NetQueuePtr;
 // ZZZ: same here (should be safe to alter)
 struct NetDistributionInfo
 {
-    // ZZZ: now using a map to hold these; type_in_use obsolete
-//	bool              type_in_use;
 	bool              lossy;
 	NetDistributionProc  distribution_proc;
 };
@@ -240,6 +265,8 @@ struct NetDistributionInfo
 typedef struct NetDistributionInfo NetDistributionInfo, *NetDistributionInfoPtr;
 
 #define errInvalidMapPacket (42)
+// ZZZ: taking a cue... used when trying to gather a player whose A1 doesn't support all the features we need.
+#define errPlayerTooNaive (43)
 
 /* ===== application specific data structures/enums */
 
@@ -248,8 +275,16 @@ struct gather_player_data {
 	int16 new_local_player_identifier;
 };
 
+// used in accept_gather_data::accepted - this is a sneaky way of detecting whether
+// we're playing with a resume netgame-capable player or not.  (Old code always sent
+// 1 on accept, never 2; old code interprets any nonzero 'accepted' as an accept.)
+enum {
+        kNaiveJoinerAccepted = 1,
+        kResumeNetgameSavvyJoinerAccepted = 2
+};
+
 struct accept_gather_data {
-	bool accepted;
+	uint8 accepted;
 	NetPlayer player;
 };
 
@@ -260,9 +295,7 @@ enum {
 	_topology_packet,
 	_stream_size_packet,
 	_stream_data_packet,
-#ifdef NETWORK_CHAT
-    _chat_packet,       // ZZZ addition
-#endif
+        _chat_packet,       // ZZZ addition
 	NUMBER_OF_BUFFERED_STREAM_PACKET_TYPES,
 	NUMBER_OF_STREAM_PACKET_TYPES= 	NUMBER_OF_BUFFERED_STREAM_PACKET_TYPES
 };

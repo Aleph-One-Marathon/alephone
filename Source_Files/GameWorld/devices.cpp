@@ -51,6 +51,9 @@ June 3, 2000 (Loren Petrich):
 
 Aug 10, 2000 (Loren Petrich):
 	Added Chris Pruett's Pfhortran changes
+        
+Feb 3, 2003 (Woody Zenfell):
+        Support for network saved-games
 */
 
 #include "cseries.h"
@@ -68,6 +71,7 @@ Aug 10, 2000 (Loren Petrich):
 #include "items.h"
 //CP Addition: Scripting Hooks
 #include "scripting.h"
+#include "shell.h"	// screen_printf()
 
 #include <string.h>
 #include <limits.h>
@@ -87,6 +91,11 @@ Aug 10, 2000 (Loren Petrich):
 #define OBJECT_RADIUS 50
 
 #define MINIMUM_RESAVE_TICKS (2*TICKS_PER_SECOND)
+
+// For detecting double-save (overwrite) in a netgame
+enum {
+        kDoubleClickTicks = 10
+};
 
 enum
 {
@@ -211,6 +220,7 @@ static control_panel_definition *get_control_panel_definition(
 
 static short find_action_key_target(short player_index, world_distance range, short *target_type);
 static bool line_side_has_control_panel(short line_index, short polygon_index, short *side_index_with_panel);
+static void	somebody_save_full_auto(player_data* inWhoSaved, bool inOverwrite);
 static void	change_panel_state(short player_index, short panel_side_index);
 static void set_control_panel_texture(struct side_data *side);
 
@@ -282,68 +292,80 @@ void update_control_panels(
 			// LP change: idiot-proofing
 			struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
 			if (!definition) continue;
-			bool still_in_use= false;
+                                                
+                        if(definition->_class == _panel_is_pattern_buffer)
+                        {	// Player was working on a full-auto save
+                                if(dynamic_world->tick_count - player->ticks_at_last_successful_save > kDoubleClickTicks)
+                                {	// no double-click - need to safe save
+                                        somebody_save_full_auto(player, false);
+                                }
+                        }
+                        else
+                        {
+                        
+                                bool still_in_use= false;
+                                
+                                if (player->variables.direction == player->variables.last_direction &&
+                                        player->variables.last_position.x == player->variables.position.x &&
+                                        player->variables.last_position.y == player->variables.position.y &&
+                                        player->variables.last_position.z == player->variables.position.z)
+                                {
+                                        switch (definition->_class)
+                                        {
+                                                case _panel_is_oxygen_refuel:
+                                                        if (!(dynamic_world->tick_count&OXYGEN_RECHARGE_FREQUENCY))
+                                                        {
+                                                                if (player->suit_oxygen<PLAYER_MAXIMUM_SUIT_OXYGEN)
+                                                                {
+                                                                        player->suit_oxygen+= TICKS_PER_SECOND;
+                                                                        mark_oxygen_display_as_dirty();
+                                                                        still_in_use= true;
+                                                                }
+                                                        }
+                                                        break;
+                                                
+                                                case _panel_is_shield_refuel:
+                                                case _panel_is_double_shield_refuel:
+                                                case _panel_is_triple_shield_refuel:
+                                                        if (!(dynamic_world->tick_count&ENERGY_RECHARGE_FREQUENCY))
+                                                        {
+                                                                short maximum, rate;
+                                                                
+                                                                switch (definition->_class)
+                                                                {
+                                                                        case _panel_is_shield_refuel: maximum= SingleEnergy, rate= SingleEnergyRate; break;
+                                                                        case _panel_is_double_shield_refuel: maximum= DoubleEnergy, rate= DoubleEnergyRate; break;
+                                                                        case _panel_is_triple_shield_refuel: maximum= TripleEnergy, rate= TripleEnergyRate; break;
+                                                                        default:
+                                                                                assert(false);
+                                                                }
+                                                                if (player->suit_energy<maximum)
+                                                                {
+                                                                        player->suit_energy= CEILING(player->suit_energy+rate, maximum);
+                                                                        mark_shield_display_as_dirty();
+                                                                        still_in_use= true;
+                                                                }
+                                                        }
+                                                        break;
+                                                
+                                                default:
+                                                        assert(false);
+                                                        break;
+                                        }
+                                }
 			
-			if (player->variables.direction == player->variables.last_direction &&
-				player->variables.last_position.x == player->variables.position.x &&
-				player->variables.last_position.y == player->variables.position.y &&
-				player->variables.last_position.z == player->variables.position.z)
-			{
-				switch (definition->_class)
-				{
-					case _panel_is_oxygen_refuel:
-						if (!(dynamic_world->tick_count&OXYGEN_RECHARGE_FREQUENCY))
-						{
-							if (player->suit_oxygen<PLAYER_MAXIMUM_SUIT_OXYGEN)
-							{
-								player->suit_oxygen+= TICKS_PER_SECOND;
-								mark_oxygen_display_as_dirty();
-								still_in_use= true;
-							}
-						}
-						break;
-					
-					case _panel_is_shield_refuel:
-					case _panel_is_double_shield_refuel:
-					case _panel_is_triple_shield_refuel:
-						if (!(dynamic_world->tick_count&ENERGY_RECHARGE_FREQUENCY))
-						{
-							short maximum, rate;
-							
-							switch (definition->_class)
-							{
-								case _panel_is_shield_refuel: maximum= SingleEnergy, rate= SingleEnergyRate; break;
-								case _panel_is_double_shield_refuel: maximum= DoubleEnergy, rate= DoubleEnergyRate; break;
-								case _panel_is_triple_shield_refuel: maximum= TripleEnergy, rate= TripleEnergyRate; break;
-								default:
-									assert(false);
-							}
-							if (player->suit_energy<maximum)
-							{
-								player->suit_energy= CEILING(player->suit_energy+rate, maximum);
-								mark_shield_display_as_dirty();
-								still_in_use= true;
-							}
-						}
-						break;
-					
-					default:
-						assert(false);
-						break;
-				}
-			}
-			
-			if (still_in_use)
-			{
-				set_control_panel_texture(side);
-				play_control_panel_sound(side_index, _activating_sound);
-			}
-			else
-			{
-				change_panel_state(player_index, side_index);
-				stop_sound(NONE, definition->sounds[_activating_sound]);
-			}
-		}
+                                if (still_in_use)
+                                {
+                                        set_control_panel_texture(side);
+                                        play_control_panel_sound(side_index, _activating_sound);
+                                }
+                                else
+                                {
+                                        change_panel_state(player_index, side_index);
+                                        stop_sound(NONE, definition->sounds[_activating_sound]);
+                                }
+                        }
+                }
 	}
 }
 
@@ -698,6 +720,26 @@ static bool line_side_has_control_panel(
 	return has_panel;
 }
 
+static void
+somebody_save_full_auto(player_data* inWhoSaved, bool inOverwrite)
+{
+        play_control_panel_sound(inWhoSaved->control_panel_side_index, _activating_sound);
+
+        // These need to happen before the save so that a freshly restored player
+        // doesn't end up automatically saving the game :)
+        inWhoSaved->control_panel_side_index = NONE;
+        inWhoSaved->ticks_at_last_successful_save = dynamic_world->tick_count;
+
+        if(inWhoSaved == local_player)
+        {
+                save_game_full_auto(inOverwrite);
+        }
+        else
+        {
+                screen_printf("%s has saved the game", inWhoSaved->name);
+        }
+}
+
 static void	change_panel_state(
 	short player_index,
 	short panel_side_index)
@@ -769,24 +811,44 @@ static void	change_panel_state(
 			
 			break;
 		case _panel_is_pattern_buffer:
-			if (dynamic_world->tick_count-player->ticks_at_last_successful_save>MINIMUM_RESAVE_TICKS &&
-				player_controlling_game() && !PLAYER_HAS_CHEATED(local_player) && !game_is_networked)
-			{
-				play_control_panel_sound(panel_side_index, _activating_sound);
-				
-				//CP Addition: Script Hook
-				activate_pattern_buffer_trap(side->control_panel_permutation);
-			
-//				fade_out_background_music(30);
-
-				/* Assume a successful save- prevents vidding of the save game key.. */
-				player->ticks_at_last_successful_save= dynamic_world->tick_count;
-				if (!save_game()) 
-				{
-					player->ticks_at_last_successful_save= 0;
-				}
-//				fade_in_background_music(30);
-			}
+                        if (player_controlling_game() && !PLAYER_HAS_CHEATED(local_player))
+                        {
+                                if(game_is_networked)
+                                {
+                                        if(player->control_panel_side_index != panel_side_index)
+                                        {
+                                                if(dynamic_world->tick_count - player->ticks_at_last_successful_save > MINIMUM_RESAVE_TICKS)
+                                                {	// User pressed "action" - we'll see if they're going to do it again.
+                                                        player->ticks_at_last_successful_save = dynamic_world->tick_count;
+                                                        player->control_panel_side_index = panel_side_index;
+                                                }
+                                        }
+                                        else
+                                        {	// Double-press - overwrite recent saved game
+                                                somebody_save_full_auto(player, true);
+                                        }
+                                }
+                                else
+                                {	// game is not networked
+                                        if(dynamic_world->tick_count-player->ticks_at_last_successful_save>MINIMUM_RESAVE_TICKS)
+                                        {
+                                                play_control_panel_sound(panel_side_index, _activating_sound);
+                                                
+                                                //CP Addition: Script Hook
+                                                activate_pattern_buffer_trap(side->control_panel_permutation);
+                                        
+                //				fade_out_background_music(30);
+                
+                                                /* Assume a successful save- prevents vidding of the save game key.. */
+                                                player->ticks_at_last_successful_save= dynamic_world->tick_count;
+                                                if (!save_game()) 
+                                                {
+                                                        player->ticks_at_last_successful_save= 0;
+                                                }
+                //				fade_in_background_music(30);
+                                        }
+                                }
+                        }
 			break;
 	}
 	

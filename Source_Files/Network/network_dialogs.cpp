@@ -54,6 +54,9 @@ Mar 1, 2002 (Woody Zenfell):
 
 Mar 8, 2002 (Woody Zenfell):
     Network microphone UI is now handled for SDL version as well (since SDL has net-audio now)
+    
+Feb 12, 2003 (Woody Zenfell):
+    Support for resuming netgames (optionally get game options from saved-game not prefs, optionally don't save options into prefs)
 */
 
 #include	"cseries.h"
@@ -75,6 +78,7 @@ static long get_dialog_game_options(DialogPtr dialog, short game_type);
 static void set_dialog_game_options(DialogPtr dialog, long game_options);
 
 
+
 /*************************************************************************************************
  *
  * Function: extract_setup_dialog_information
@@ -87,7 +91,8 @@ extract_setup_dialog_information(
 	player_info *player_information,
 	game_info *game_information,
 	short game_limit_type,
-	bool allow_all_levels)
+	bool allow_all_levels,
+        bool resuming_game)
 {
 #if !HAVE_SDL_NET
 	short               network_speed;
@@ -97,8 +102,6 @@ extract_setup_dialog_information(
 	long entry_flags;
 	
 	// get player information
-//	GetDialogItem(dialog, iGATHER_NAME, &item_type, &item_handle, &item_rect);
-//	GetDialogItemText(item_handle, ptemporary);
         copy_pstring_from_text_field(dialog, iGATHER_NAME, ptemporary);
 	if (*temporary > MAX_NET_PLAYER_NAME_LENGTH) 
 		*temporary = MAX_NET_PLAYER_NAME_LENGTH;
@@ -115,48 +118,58 @@ extract_setup_dialog_information(
 
 	// get game information
 	game_information->game_options= get_dialog_game_options(dialog, game_information->net_game_type);
-	if (game_limit_type == iRADIO_NO_TIME_LIMIT)
-	{
-		game_information->time_limit = LONG_MAX;
-	}
-	else if (game_limit_type == iRADIO_KILL_LIMIT)
-	{
-		// START Benad
-		if (get_selection_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
-		{
-			game_information->game_options |= _game_has_kill_limit;
-			game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
-			game_information->time_limit *= TICKS_PER_SECOND * 60;
-		}
-		else
-		{
-			game_information->game_options |= _game_has_kill_limit;
-			game_information->time_limit = LONG_MAX;
-		}
-		// END Benad
-	}
-	else
-	{
-		// START Benad
-		if (get_selection_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
-		{
-			game_information->game_options |= _game_has_kill_limit;
-			game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
-			game_information->time_limit *= TICKS_PER_SECOND * 60;
-		}
-		else
-		{
-			game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
-			game_information->time_limit *= TICKS_PER_SECOND * 60;
-		}
-		// END Benad
-	}
-	game_information->kill_limit = extract_number_from_text_item(dialog, iKILL_LIMIT);
-	// START Benad
-	if (get_selection_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
-		game_information->kill_limit *= 60; // It's "Time On Hill" limit, in seconds.
-	// END Benad
 
+        // ZZZ: don't screw with the limits if resuming.
+        if(resuming_game)
+        {
+                game_information->time_limit = dynamic_world->game_information.game_time_remaining;
+                game_information->kill_limit = dynamic_world->game_information.kill_limit;
+        }
+        else
+        {
+                if (game_limit_type == iRADIO_NO_TIME_LIMIT)
+                {
+                        game_information->time_limit = LONG_MAX;
+                }
+                else if (game_limit_type == iRADIO_KILL_LIMIT)
+                {
+                        // START Benad
+                        if (get_selection_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
+                        {
+                                game_information->game_options |= _game_has_kill_limit;
+                                game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
+                                game_information->time_limit *= TICKS_PER_SECOND * 60;
+                        }
+                        else
+                        {
+                                game_information->game_options |= _game_has_kill_limit;
+                                game_information->time_limit = LONG_MAX;
+                        }
+                        // END Benad
+                }
+                else
+                {
+                        // START Benad
+                        if (get_selection_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
+                        {
+                                game_information->game_options |= _game_has_kill_limit;
+                                game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
+                                game_information->time_limit *= TICKS_PER_SECOND * 60;
+                        }
+                        else
+                        {
+                                game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
+                                game_information->time_limit *= TICKS_PER_SECOND * 60;
+                        }
+                        // END Benad
+                }
+                game_information->kill_limit = extract_number_from_text_item(dialog, iKILL_LIMIT);
+                // START Benad
+                if (get_selection_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
+                        game_information->kill_limit *= 60; // It's "Time On Hill" limit, in seconds.
+                // END Benad
+        }
+        
 	/* Determine the entry point flags by the game type. */
     if(allow_all_levels)
 	{
@@ -169,8 +182,6 @@ extract_setup_dialog_information(
 #else
     get_selected_entry_point(dialog, iENTRY_MENU, &entry);
 #endif
-    network_preferences->game_type= game_information->net_game_type;
-
 	game_information->level_number = entry.level_number;
 	strcpy(game_information->level_name, entry.level_name);
 	game_information->difficulty_level = get_selection_control_value(dialog, iDIFFICULTY_MENU)-1;
@@ -188,36 +199,41 @@ extract_setup_dialog_information(
 	game_information->initial_update_latency = update_latency;
 	NetSetInitialParameters(updates_per_packet, update_latency);
 	
-	game_information->initial_random_seed = (uint16) machine_tick_count(); // was (uint16) TickCount(); // bo-ring
+	game_information->initial_random_seed = resuming_game ? dynamic_world->random_seed : (uint16) machine_tick_count();
 
-	// now save some of these to the preferences
+	// now save some of these to the preferences - only if not resuming a game
+        if(!resuming_game)
+        {
+                network_preferences->game_type= game_information->net_game_type;
+
 #if !HAVE_SDL_NET
-	network_preferences->type = network_speed; 
+                network_preferences->type = network_speed; 
 #endif
-	network_preferences->allow_microphone = game_information->allow_mic;
-	network_preferences->difficulty_level = game_information->difficulty_level;
+                network_preferences->allow_microphone = game_information->allow_mic;
+                network_preferences->difficulty_level = game_information->difficulty_level;
 #ifdef mac
-	network_preferences->entry_point= get_selection_control_value(dialog, iENTRY_MENU)-1;
+                network_preferences->entry_point= get_selection_control_value(dialog, iENTRY_MENU)-1;
 #else
-    network_preferences->entry_point = entry.level_number;
+                network_preferences->entry_point = entry.level_number;
 #endif
-	network_preferences->game_options = game_information->game_options;
-	network_preferences->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT)*60*TICKS_PER_SECOND;
-	if (network_preferences->time_limit <= 0) // if it wasn't chosen, this could be so
-	{
-		network_preferences->time_limit = 10*60*TICKS_PER_SECOND;
-	}
-	if (game_information->time_limit == LONG_MAX)
-	{
-		network_preferences->game_is_untimed = true;
-	}
-	else
-	{
-		network_preferences->game_is_untimed = false;	
-	}
-	network_preferences->kill_limit = game_information->kill_limit;
-
-	write_preferences();
+                network_preferences->game_options = game_information->game_options;
+                network_preferences->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT)*60*TICKS_PER_SECOND;
+                if (network_preferences->time_limit <= 0) // if it wasn't chosen, this could be so
+                {
+                        network_preferences->time_limit = 10*60*TICKS_PER_SECOND;
+                }
+                if (game_information->time_limit == LONG_MAX)
+                {
+                        network_preferences->game_is_untimed = true;
+                }
+                else
+                {
+                        network_preferences->game_is_untimed = false;	
+                }
+                network_preferences->kill_limit = game_information->kill_limit;
+        
+                write_preferences();
+        }
 
 	/* Don't save the preferences of their team... */
 	if(game_information->game_options & _force_unique_teams)
@@ -238,18 +254,41 @@ short
 fill_in_game_setup_dialog(
 	DialogPtr dialog, 
 	player_info *player_information,
-	bool allow_all_levels)
+	bool allow_all_levels,
+        bool resuming_game)
 {
 	short name_length;
 	long entry_flags;
-	short net_game_type;
 
+        // We use a temporary structure so that we can change things without messing with the real preferences
+        network_preferences_data theAdjustedPreferences = *network_preferences;
+        if(resuming_game)
+        {
+                // Adjust the apparent preferences to get values from the loaded game (dynamic_world)
+                // rather than from the actual network_preferences.
+                theAdjustedPreferences.game_type = GET_GAME_TYPE();
+                theAdjustedPreferences.difficulty_level = dynamic_world->game_information.difficulty_level;
+                theAdjustedPreferences.entry_point = dynamic_world->current_level_number;
+                theAdjustedPreferences.kill_limit = dynamic_world->game_information.kill_limit;
+                theAdjustedPreferences.time_limit = dynamic_world->game_information.game_time_remaining;
+                theAdjustedPreferences.game_options = GET_GAME_OPTIONS();
+                // If the time limit is longer than a week, we figure it's untimed (  ;)
+                theAdjustedPreferences.game_is_untimed = (dynamic_world->game_information.game_time_remaining > 7 * 24 * 3600 * TICKS_PER_SECOND);
+                // If they are resuming a single-player game, assume they want cooperative play now.
+                if(dynamic_world->player_count == 1 && GET_GAME_TYPE() == _game_of_kill_monsters)
+                {
+                        theAdjustedPreferences.game_type = _game_of_cooperative_play;
+                        theAdjustedPreferences.game_options |= _live_network_stats; // single-player game doesn't, and they probably want it
+                }
+                allow_all_levels = true;
+        }
+        
 	/* Fill in the entry points */
 	if(allow_all_levels)
 	{
 		entry_flags= NONE;
 	} else {
-		entry_flags= get_entry_point_flags_for_game_type(network_preferences->game_type);
+		entry_flags= get_entry_point_flags_for_game_type(theAdjustedPreferences.game_type);
 	}
 
     // ZZZ: SDL version takes care of this its own way, simpler not to change.
@@ -257,9 +296,8 @@ fill_in_game_setup_dialog(
     fill_in_entry_points(dialog, iENTRY_MENU, entry_flags, NONE);
 #endif
 
-	modify_selection_control(dialog, iGAME_TYPE, CONTROL_ACTIVE, network_preferences->game_type+1);
-    setup_dialog_for_game_type(dialog, network_preferences->game_type);
-    net_game_type= network_preferences->game_type;
+	modify_selection_control(dialog, iGAME_TYPE, CONTROL_ACTIVE, theAdjustedPreferences.game_type+1);
+        setup_dialog_for_game_type(dialog, theAdjustedPreferences.game_type);
 
 	/* set up the name of the player. */
 	name_length= player_preferences->name[0];
@@ -268,8 +306,6 @@ fill_in_game_setup_dialog(
         // not sure if this is a problem in practice, but the Bungie guys were usually pretty careful about this sort of thing.
 	memcpy(player_information->name, player_preferences->name, name_length+1);
 	
-//	GetDialogItem(dialog, iGATHER_NAME, &item_type, &item_handle, &item_rect);
-//	SetDialogItemText(item_handle, player_information->name);
         copy_pstring_to_text_field(dialog, iGATHER_NAME, player_information->name);
 #ifdef mac
 	SelectDialogItemText(dialog, iGATHER_NAME, 0, INT16_MAX);
@@ -278,27 +314,26 @@ fill_in_game_setup_dialog(
 	/* Set the menu values */
 	modify_selection_control(dialog, iGATHER_COLOR, CONTROL_ACTIVE, player_preferences->color+1);
 	modify_selection_control(dialog, iGATHER_TEAM, CONTROL_ACTIVE, player_preferences->team+1);
-	modify_selection_control(dialog, iDIFFICULTY_MENU, CONTROL_ACTIVE, network_preferences->difficulty_level+1);
-#ifdef mac
-    modify_selection_control(dialog, iENTRY_MENU, CONTROL_ACTIVE, network_preferences->entry_point+1);
-#else
-    select_entry_point(dialog, iENTRY_MENU, network_preferences->entry_point);
-#endif
+        modify_selection_control(dialog, iDIFFICULTY_MENU, CONTROL_ACTIVE, theAdjustedPreferences.difficulty_level+1);
+        select_entry_point(dialog, iENTRY_MENU, theAdjustedPreferences.entry_point);
 
 	// START Benad
-	if (network_preferences->game_type == _game_of_defense)
-		insert_number_into_text_item(dialog, iKILL_LIMIT, network_preferences->kill_limit/60);
+	if (theAdjustedPreferences.game_type == _game_of_defense)
+		insert_number_into_text_item(dialog, iKILL_LIMIT, theAdjustedPreferences.kill_limit/60);
 	else
-		insert_number_into_text_item(dialog, iKILL_LIMIT, network_preferences->kill_limit);
+		insert_number_into_text_item(dialog, iKILL_LIMIT, theAdjustedPreferences.kill_limit);
 	// END Benad
-	insert_number_into_text_item(dialog, iTIME_LIMIT, network_preferences->time_limit/TICKS_PER_SECOND/60);
 
-	if (network_preferences->game_options & _game_has_kill_limit)
+        // If resuming an untimed game, show the "time limit" from the prefs in the grayed-out widget
+        // rather than some ridiculously large number
+	insert_number_into_text_item(dialog, iTIME_LIMIT, ((resuming_game && theAdjustedPreferences.game_is_untimed) ? network_preferences->time_limit : theAdjustedPreferences.time_limit)/TICKS_PER_SECOND/60);
+
+	if (theAdjustedPreferences.game_options & _game_has_kill_limit)
 	{
                 // ZZZ: factored out into new function
                 setup_for_score_limited_game(dialog);
 	}
-	else if (network_preferences->game_is_untimed)
+	else if (theAdjustedPreferences.game_is_untimed)
 	{
 		setup_for_untimed_game(dialog);
 	}
@@ -311,22 +346,34 @@ fill_in_game_setup_dialog(
 
 	// set up the game options
 	modify_boolean_control(dialog, iREAL_TIME_SOUND, CONTROL_ACTIVE, network_preferences->allow_microphone);
-	set_dialog_game_options(dialog, network_preferences->game_options);
+	set_dialog_game_options(dialog, theAdjustedPreferences.game_options);
+
+        // If they're resuming a single-player game, now we overwrite any existing options with the cooperative-play options.
+        // (We presumably twiddled the game_type from _game_of_kill_monsters up at the top there.)
+        if(resuming_game && dynamic_world->player_count == 1 && theAdjustedPreferences.game_type == _game_of_cooperative_play)
+        {
+                setup_dialog_for_game_type(dialog, theAdjustedPreferences.game_type);
+        }
 
 	/* Setup the team popup.. */
-	if(!get_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS))
-	{
-		modify_control_enabled(dialog, iGATHER_TEAM, CONTROL_INACTIVE);
-	} else {
-		modify_control_enabled(dialog, iGATHER_TEAM, CONTROL_ACTIVE);
-	}
+        modify_control_enabled(dialog, iGATHER_TEAM, get_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS) ? CONTROL_ACTIVE : CONTROL_INACTIVE);
 
 #if !HAVE_SDL_NET
 	// set up network options
 	modify_selection_control(dialog, iNETWORK_SPEED, CONTROL_ACTIVE, network_preferences->type+1);
 #endif
 
-	return net_game_type;
+        // Disable certain elements when resuming a game
+        if(resuming_game)
+        {
+                modify_control_enabled(dialog, iGAME_TYPE, CONTROL_INACTIVE);
+                modify_control_enabled(dialog, iENTRY_MENU, CONTROL_INACTIVE);
+                modify_control_enabled(dialog, iKILL_LIMIT, CONTROL_INACTIVE);
+                modify_control_enabled(dialog, iTIME_LIMIT, CONTROL_INACTIVE);
+                modify_limit_type_choice_enabled(dialog, CONTROL_INACTIVE);
+        }
+
+	return theAdjustedPreferences.game_type;
 }
 
 
@@ -389,10 +436,6 @@ void setup_dialog_for_game_type(
 	DialogPtr dialog, 
 	short game_type)
 {
-/*	Handle item;
-	short item_type;
-	Rect bounds;
-*/	
 	switch(game_type)
 	{
 		case _game_of_cooperative_play:
@@ -405,15 +448,6 @@ void setup_dialog_for_game_type(
 		
 			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, killLimitString,
                                         iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, killsString);
-                        /*
-                        GetDialogItem(dialog, iRADIO_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, killLimitString);
-			SetControlTitle((ControlHandle) item, ptemporary);
-			
-			GetDialogItem(dialog, iTEXT_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, killsString);
-			SetDialogItemText(item, ptemporary);
-                        */
                         
 			/* Untimed.. */
 			setup_for_untimed_game(dialog);
@@ -424,22 +458,13 @@ void setup_dialog_for_game_type(
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
 			// Benad
-			modify_boolean_control(dialog, iFORCE_UNIQUE_TEAMS, CONTROL_ACTIVE, NONE);
+			modify_control_enabled(dialog, iFORCE_UNIQUE_TEAMS, CONTROL_ACTIVE);
 			
 			modify_boolean_control(dialog, iBURN_ITEMS_ON_DEATH, CONTROL_ACTIVE, false);
-			modify_boolean_control(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE, NONE);
+			modify_control_enabled(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE);
 
 			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, killLimitString,
                                         iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, killsString);
-                        /*
-			GetDialogItem(dialog, iRADIO_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, killLimitString);
-			SetControlTitle((ControlHandle) item, ptemporary);
-			
-			GetDialogItem(dialog, iTEXT_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, killsString);
-			SetDialogItemText(item, ptemporary);
-                        */
 
 			setup_for_timed_game(dialog);
 			break;
@@ -451,19 +476,10 @@ void setup_dialog_for_game_type(
 			// END Benad
 			/* Allow them to decide on the burn items on death */
 			modify_boolean_control(dialog, iBURN_ITEMS_ON_DEATH, CONTROL_ACTIVE, false);
-			modify_boolean_control(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE, NONE);
+			modify_control_enabled(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE);
 
 			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, flagPullsString,
                                         iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, flagsString);
-                        /*
-			GetDialogItem(dialog, iRADIO_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, flagPullsString);
-			SetControlTitle((ControlHandle) item, ptemporary);
-			
-			GetDialogItem(dialog, iTEXT_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, flagsString);
-			SetDialogItemText(item, ptemporary);
-                        */
                         
 			setup_for_timed_game(dialog);
 			break;
@@ -471,19 +487,10 @@ void setup_dialog_for_game_type(
 		case _game_of_rugby:
 			/* Allow them to decide on the burn items on death */
 			modify_boolean_control(dialog, iBURN_ITEMS_ON_DEATH, CONTROL_ACTIVE, false);
-			modify_boolean_control(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE, NONE);
+			modify_control_enabled(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE);
 
 			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, pointLimitString,
                                         iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, pointsString);
-                        /*
-			GetDialogItem(dialog, iRADIO_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, pointLimitString);
-			SetControlTitle((ControlHandle) item, ptemporary);
-			
-			GetDialogItem(dialog, iTEXT_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, pointsString);
-			SetDialogItemText(item, ptemporary);
-                        */
 
 			// START Benad
 			// Disable "Allow teams", and force it to be checked.
@@ -501,22 +508,13 @@ void setup_dialog_for_game_type(
 			
 			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, timeOnBaseString,
                                         iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, minutesString);
-                        /*
-			GetDialogItem(dialog, iRADIO_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, timeOnBaseString);
-			SetControlTitle((ControlHandle) item, ptemporary);
-			
-			GetDialogItem(dialog, iTEXT_KILL_LIMIT, &item_type, &item, &bounds);
-			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, minutesString);
-			SetDialogItemText(item, ptemporary);
-                        */
 			
 			ShowDialogItem(dialog, iTEXT_KILL_LIMIT); ShowDialogItem(dialog, iKILL_LIMIT);
 			ShowDialogItem(dialog, iTIME_LIMIT); ShowDialogItem(dialog, iTEXT_TIME_LIMIT);
 			
 			// END Benad
 			modify_boolean_control(dialog, iBURN_ITEMS_ON_DEATH, CONTROL_ACTIVE, false);
-			modify_boolean_control(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE, NONE);
+			modify_control_enabled(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE);
 			setup_for_timed_game(dialog);
 			break;
 			

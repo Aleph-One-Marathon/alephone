@@ -41,6 +41,11 @@ bool save_game_file(FileSpecifier& File);
 void pause_game(void);
 void resume_game(void);
 void get_current_saved_game_name(FileSpecifier& File);
+// ZZZ: split this out from new_game; it sets a default filespec in the revert-game info
+void set_saved_game_name_to_default();
+
+// ZZZ: exposed this for netgame-resuming code
+bool process_map_wad(struct wad_data *wad, bool restoring_game, short version);
 
 bool match_checksum_with_map(short vRefNum, long dirID, uint32 checksum, 
 	FileSpecifier& File);

@@ -800,7 +800,6 @@ void *get_flat_data(
 	struct wad_header header;
 	bool success= false;
 	uint8 *data= NULL;
-	// struct encapsulated_wad_data *data= NULL;
 	
 	assert(!use_union);
 	
@@ -818,12 +817,10 @@ void *get_flat_data(
 			/* Allocate the conglomerate data.. */
 			if (size_of_indexed_wad(OFile, &header, wad_index, &length))
 			{
-				// data= (struct encapsulated_wad_data *) malloc(length+sizeof(struct encapsulated_wad_data));
 				data= (uint8 *)malloc(length+SIZEOF_encapsulated_wad_data);
 				if(data)
 				{
 					uint8 *buffer= data + SIZEOF_encapsulated_wad_data;
-					// uint8 *buffer= ((uint8 *) data)+sizeof(struct encapsulated_wad_data);
 					
 					// Pack the encapsulated header
 					uint8 *S = data;
@@ -832,18 +829,11 @@ void *get_flat_data(
 					S = pack_wad_header(S,&header,1);
 					assert((S - data) == SIZEOF_encapsulated_wad_data);
 					
-					/*
-					data->magic_cookie= CURRENT_FLAT_MAGIC_COOKIE;
-					data->length= length+sizeof(struct encapsulated_wad_data);
-					obj_copy(data->header, header);
-					*/
-					
 					/* Read into our buffer... */
 					success = read_indexed_wad_from_file_into_buffer(OFile, &header, wad_index, 
 						buffer, &length);
 					
 					if (!success)
-					// if(error)
 					{
 						/* Error-> didn't get it.. */
 						free(data);
@@ -875,8 +865,6 @@ long get_flat_data_length(
 	S += 4;
 	StreamToValue(S,Length);
 	return Length;
-	// struct encapsulated_wad_data *d= (struct encapsulated_wad_data *) data;
-	// return d->length;
 }
 
 /* This is how you dispose of it-> you inflate it, then use free_wad() */
@@ -884,10 +872,8 @@ struct wad_data *inflate_flat_data(
 	void *data, 
 	struct wad_header *header)
 {
-	// struct encapsulated_wad_data *d= (struct encapsulated_wad_data *) data;
 	struct wad_data *wad= NULL;
 	uint8 *buffer= ((uint8 *) data)+SIZEOF_encapsulated_wad_data;
-	// uint8 *buffer= ((uint8 *) data)+sizeof(struct encapsulated_wad_data);
 	long raw_length;
 
 	assert(data);
@@ -897,7 +883,6 @@ struct wad_data *inflate_flat_data(
 	uint8 *S = (uint8 *)data;
 	StreamToValue(S,MagicCookie);
 	assert(MagicCookie==CURRENT_FLAT_MAGIC_COOKIE);
-	// assert(d->magic_cookie==CURRENT_FLAT_MAGIC_COOKIE);
 	
 	// Get the length here, where it's convenient
 	int32 Length;
@@ -905,11 +890,9 @@ struct wad_data *inflate_flat_data(
 	
 	S = unpack_wad_header(S,header,1);
 	assert((S - (uint8 *)data) == SIZEOF_encapsulated_wad_data);
-	// obj_copy(*header, (d->header));
 
 	raw_length= calculate_raw_wad_length(header, buffer);
 	assert(raw_length==Length-SIZEOF_encapsulated_wad_data);
-	// assert(raw_length==d->length-sizeof(struct encapsulated_wad_data));
 	
 	/* Now inflate.. */
 	wad= convert_wad_from_raw(header, (uint8 *)data, SIZEOF_encapsulated_wad_data, raw_length);

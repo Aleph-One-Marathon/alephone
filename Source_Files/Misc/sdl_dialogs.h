@@ -59,9 +59,7 @@ typedef void (*processing_function_t)(dialog*);
 // Dialog structure
 class dialog {
 public:
-	dialog() : active_widget(NULL), active_widget_num(-1), done(false),
-	           cursor_was_visible(false), parent_dialog(NULL),
-	           processing_function(NULL) {}
+        dialog();
 	~dialog();
 
 	// Add widget to dialog
@@ -84,6 +82,12 @@ public:
 
 	// Draw dialog
 	void draw(void) const;
+        
+        // ZZZ: Draw those widgets that are marked as needing redraw
+        // This is used automatically by the dialog code in response to user events --
+        // other code doesn't need to call this unless it's altering dialog widgets
+        // on its own (e.g. on a timer, or according to network activity, etc.)
+        void draw_dirty_widgets() const;
         
 	// Find the first widget with matching numerical ID
 	widget *get_widget_by_id(short inID) const;

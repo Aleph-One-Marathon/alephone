@@ -105,6 +105,9 @@ void free_and_unlock_memory(void);
 
 #include "SDL_syswm.h"
 
+#include "alephversion.h"
+
+
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
 DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
@@ -175,7 +178,7 @@ static void usage(const char *prg_name)
 int main(int argc, char **argv)
 {
 	// Print banner (don't bother if this doesn't appear when started from a GUI)
-	printf ("Aleph One " VERSION "\n"
+	printf ("Aleph One " A1_VERSION_STRING "\n"
 	  "http://source.bungie.org/\n\n"
 	  "Original code by Bungie Software <http://www.bungie.com/>\n"
 	  "Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
@@ -204,7 +207,7 @@ int main(int argc, char **argv)
 		if (strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0) {
 			usage(prg_name);
 		} else if (strcmp(*argv, "-v") == 0 || strcmp(*argv, "--version") == 0) {
-			printf("Aleph One " VERSION "\n");
+			printf("Aleph One " A1_VERSION_STRING "\n");
 			exit(0);
 		} else if (strcmp(*argv, "-f") == 0 || strcmp(*argv, "--fullscreen") == 0) {
 			force_fullscreen = true;
@@ -415,6 +418,13 @@ static void initialize_application(void)
 
 static void shutdown_application(void)
 {
+        // ZZZ: seem to be having weird recursive shutdown problems esp. with fullscreen modes...
+        static bool already_shutting_down = false;
+        if(already_shutting_down)
+                return;
+        
+        already_shutting_down = true;
+        
 #ifdef HAVE_SDL_NET
 	SDLNet_Quit();
 #endif

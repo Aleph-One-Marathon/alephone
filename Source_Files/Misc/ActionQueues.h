@@ -26,6 +26,9 @@ May 9, 2002 (Loren Petrich):
 Jun 9, 2002 (tiennou):
 	Following the above example, I modified dequeueActionFlags() & countActionFlags().
 	 	
+Feb 3, 2003 (Woody Zenfell):
+        Made 'ZombiesControllable' a property of a queue-set rather than an argument to the methods.
+	
  *  Encapsulates a set of action_queues, so we can have multiple sets and explicitly choose one.
  *
  *  Created by woody on Wed Feb 20 2002.
@@ -38,17 +41,15 @@ Jun 9, 2002 (tiennou):
 
 class ActionQueues {
 public:
-    ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize);
+    ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize, bool inZombiesControllable);
     
     void		reset();
 
-    void		enqueueActionFlags(int inPlayerIndex, uint32* inFlags, int inFlagsCount,
-    				bool ZombiesControllable = false);
-    uint32		dequeueActionFlags(int inPlayerIndex,
-    				bool ZombiesControllable = false);
-    
-    unsigned int	countActionFlags(int inPlayerIndex,
-    					bool ZombiesControllable = false);
+    void		enqueueActionFlags(int inPlayerIndex, uint32* inFlags, int inFlagsCount);
+    uint32		dequeueActionFlags(int inPlayerIndex);
+    unsigned int	countActionFlags(int inPlayerIndex);
+    bool		zombiesControllable();
+    void		setZombiesControllable(bool inZombiesControllable);
     
     ~ActionQueues();
     
@@ -59,6 +60,7 @@ protected:
     unsigned int	mQueueSize;
     action_queue*	mQueueHeaders;
     uint32*		mFlagsBuffer;
+    bool		mZombiesControllable;
 
 // Hide these until they have valid implementation
 private:

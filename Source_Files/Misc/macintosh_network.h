@@ -40,23 +40,6 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 /* ---------- constants */
 
-#define asyncUncompleted 1	/* ioResult value */
-
-
-#define strNETWORK_ERRORS 132
-enum /* error string for user */
-{
-	netErrCantAddPlayer,
-	netErrCouldntDistribute,
-	netErrCouldntJoin,
-	netErrServerCanceled,
-	netErrMapDistribFailed,
-	netErrWaitedTooLongForMap,
-	netErrSyncFailed,
-	netErrJoinFailed,
-	netErrCantContinue
-};
-
 /* missing from AppleTalk.h */
 #define ddpMaxData 586
 

@@ -76,6 +76,12 @@ Mar 3-8, 2002 (Woody Zenfell):
     {lossy, handling procedure}.  Now different endstations can have different distribution
     types installed for handling (previously they had to all install the same handlers in the
     same order to get the same distribution type ID's).
+    
+Feb 5, 2003 (Woody Zenfell):
+        Preliminary support for resuming saved-games networked.
+        
+Feb 13, 2003 (Woody Zenfell):
+        Resuming saved-games as network games works.
 */
 
 /*
@@ -520,6 +526,15 @@ static	NetChatMessage	incoming_chat_message_buffer;
 static bool		new_incoming_chat_message = false;
 #endif
 
+
+// ZZZ: are we trying to start a new game or resume a saved-game?
+// This is only valid on the gatherer after NetGather() is called;
+// only valid on a joiner once he receives the final topology (tagRESUME_GAME)
+// Hmm (later) hindsight is 20/20 - this is nearly useless here currently.
+// But I think it works as advertised nonetheless.
+static bool resuming_saved_game = false;
+
+
 /* ---------- private prototypes */
 void NetPrintInfo(void);
 
@@ -571,9 +586,6 @@ static short NetSizeofLocalQueue(void);
 
 static void process_packet_buffer_flags(void *buffer, long buffer_size, short packet_tag);
 static void process_flags(NetPacketPtr packet_data);
-
-static OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer, long wad_length);
-static byte *NetReceiveGameData(void);
 
 /* Note that both of these functions may result in a change of gatherer.  the first one is */
 /*  called when the other guy hasn't responded after a kRETRY times to our packet, so we */
@@ -1025,8 +1037,11 @@ bool NetGather(
 	void *game_data,
 	short game_data_size,
 	void *player_data,
-	short player_data_size)
+	short player_data_size,
+        bool resuming_game)
 {
+        resuming_saved_game = resuming_game;
+        
 #ifdef TEST_MODEM
 	return ModemGather(game_data, game_data_size, player_data, player_data_size);
 #else
@@ -1067,14 +1082,21 @@ bool NetStart(
 	// sort on hop counts) but we'll just order them by their network numbers.
 	// however, we need to leave the server player index 0 because we assume that the person
 	// that starts out at index 0 is the server.
+        
+        // ZZZ: do that sorting in a new game only - in a resume game, the ordering is significant
+        // (it's how netplayers will line up with existing saved-game players).
 	
-	if (topology->player_count > 2)
-	{
-		qsort(topology->players+1, topology->player_count-1, sizeof(struct NetPlayer), net_compare);
-	}
+        if(!resuming_saved_game)
+        {
+                if (topology->player_count > 2)
+                {
+                        qsort(topology->players+1, topology->player_count-1, sizeof(struct NetPlayer), net_compare);
+                }
+        
+                NetUpdateTopology();
+        }
 
-	NetUpdateTopology();
-	error= NetDistributeTopology(tagSTART_GAME);
+	error= NetDistributeTopology(resuming_saved_game ? tagRESUME_GAME : tagSTART_GAME);
 
 	if(error)
 	{
@@ -1245,6 +1267,11 @@ bool NetSync(
 	return ModemSync();
 #else
 
+        // ZZZ: taking the net-time from the dynamic_world; whittling away at network/game code separation again?
+        // anyway we need to do this for restoring a saved-game, since DWTC won't start at 0 in that case (but
+        // without the following line, the netTime would have...)  Anyway yeah NetSync() is only called after
+        // the dynamic_world is set up - I'm pretty sure ;) - so this should be ok.
+        status->localNetTime= dynamic_world->tick_count;
 	status->action_flags_per_packet= initial_updates_per_packet;
 	status->update_latency= initial_update_latency;
 	status->lastValidRingSequence= 0;
@@ -1440,6 +1467,62 @@ void *NetGetGameData(
 	
 	return topology->game_data;
 #endif
+}
+
+/* ZZZ addition:
+--------------------------
+NetSetupTopologyFromStarts
+--------------------------
+
+        ---> array of starts
+        ---> count of starts
+        
+        This should be called once (at most) per game, after deciding who's going to take over which player,
+        before calling NetStart().
+*/
+
+void NetSetupTopologyFromStarts(const player_start_data* inStartArray, short inStartCount)
+{
+	NetPlayer thePlayers[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+        memcpy(thePlayers, topology->players, sizeof(thePlayers));
+        for(int s = 0; s < inStartCount; s++)
+        {
+                if(inStartArray[s].identifier == NONE)
+                {
+                        // Is this really all I have to do here?
+                        // NO, I need to set up the player name, color, team, etc. for transmission to others.
+                        // That requires knowledge of the player_info or player_data (whichever one the net system
+                        // uses for such transmission.)
+                        topology->players[s].identifier = NONE;
+                        // XXX ZZZ violation of separation of church and state - oops I mean net code and game code
+                        player_info* thePlayerInfo = (player_info*)topology->players[s].player_data;
+                        // XXX ZZZ faux security - we strncpy but the following line assumes the length is within range (i.e. that there's a null)
+                        strncpy((char*)&(thePlayerInfo->name[1]), inStartArray[s].name, MAX_NET_PLAYER_NAME_LENGTH);
+                        thePlayerInfo->name[0] = strlen(inStartArray[s].name);
+                        thePlayerInfo->desired_color = 0; // currently unused
+                        thePlayerInfo->team = inStartArray[s].team;
+                        thePlayerInfo->color = inStartArray[s].color;
+                        memset(thePlayerInfo->long_serial_number, 0, LONG_SERIAL_NUMBER_LENGTH);
+                        //topology->nextIdentifier++;
+                }
+                else
+                {
+                        int p;
+                        for(p = 0; p < topology->player_count; p++)
+                        {
+                                if(thePlayers[p].identifier == inStartArray[s].identifier)
+                                        break;
+                        }
+                        
+                        assert(p != topology->player_count);
+                        
+                        topology->players[s] = thePlayers[p];
+                }
+        }
+        
+        topology->player_count = inStartCount;
+        
+        NetUpdateTopology();
 }
 
 /*
@@ -1749,7 +1832,6 @@ static void NetProcessLossyDistribution(
         
         netcpy(packet_data, packet_data_NET);
         
-//	packet_data = (NetDistributionPacketPtr)buffer;
 	type = packet_data->distribution_type;
 
         // Act upon the data, if possible
@@ -1759,7 +1841,6 @@ static void NetProcessLossyDistribution(
 
 	if (theEntry != distribution_info_map.end())
 	{
-//		distribution_info[type].distribution_proc(&packet_data->data[0], packet_data->data_size, packet_data->first_player_index);
 		theEntry->second.distribution_proc(((char*) buffer) + sizeof(NetDistributionPacket_NET), packet_data->data_size,
                                                             packet_data->first_player_index);
         }
@@ -1791,11 +1872,8 @@ static void NetProcessLossyDistribution(
                 memcpy(distributionFrame->data + sizeof(NetPacketHeader_NET),
                         buffer,
                         sizeof(NetDistributionPacket_NET) + packet_data->data_size);
-                //BlockMove(buffer, distributionFrame->data+sizeof(NetPacketHeader), sizeof(NetDistributionPacket) + packet_data->data_size);
-                // LP: NetAddrBlock is the trouble here
-                #ifdef NETWORK_IP
+
                 NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
-                #endif
         }
 } // NetProcessLossyDistribution
 
@@ -1835,13 +1913,9 @@ static void NetProcessIncomingBuffer(
         // ZZZ: copy (byte-swapped) the action_flags into the unpacked buffer.
         netcpy(&packet_data->action_flags[0], (uint32*) (((char*) buffer) + sizeof(NetPacket_NET)), NetPacketSize(packet_data));
         
-//	NetPacketPtr packet_data;
 	short packet_tag= NONE;
 	long previous_lastValidRingSequence= status->lastValidRingSequence;
 
-//	assert(buffer_size == NetPacketSize(buffer));
-
-//	packet_data= (NetPacketPtr) buffer;
 	status->server_player_index= packet_data->server_player_index;
 
 	/* remember this as the last valid ring sequence we received (set it now so we can send sequence+1) */
@@ -2602,12 +2676,24 @@ static void NetUpdateTopology(
 	if (localPlayerIndex==topology->player_count) fdprintf("couldn’t find my identifier: %p", topology);
 #endif
 	
-	/* recalculate downringAddress */				
-	previousPlayerIndex= localPlayerIndex ? localPlayerIndex-1 : topology->player_count-1;
-	status->downringAddress= topology->players[previousPlayerIndex].ddpAddress;
+        // ZZZ: changes to these to skip players with identifier NONE, in support of generalized resume-game
+        // (They Might Be Zombies)
+	/* recalculate downringAddress */
+        previousPlayerIndex = localPlayerIndex;
+	do
+        {
+                previousPlayerIndex = (topology->player_count + previousPlayerIndex - 1) % topology->player_count;
+        } while(topology->players[previousPlayerIndex].identifier == NONE && previousPlayerIndex != localPlayerIndex);
+        
+        status->downringAddress= topology->players[previousPlayerIndex].ddpAddress;
 	
 	/* recalculate upringAddress */
-	nextPlayerIndex= localPlayerIndex==topology->player_count-1 ? 0 : localPlayerIndex+1;
+        nextPlayerIndex = localPlayerIndex;
+	do
+        {
+                nextPlayerIndex = (topology->player_count + nextPlayerIndex + 1) % topology->player_count;
+        } while(topology->players[nextPlayerIndex].identifier == NONE && nextPlayerIndex != localPlayerIndex);
+
 	status->upringAddress= topology->players[nextPlayerIndex].ddpAddress;
 	status->upringPlayerIndex = nextPlayerIndex;
 }
@@ -2697,7 +2783,13 @@ static short NetAdjustUpringAddressUpwards(
 	}
 	assert(nextPlayerIndex != topology->player_count);
 
-	newNextPlayerIndex= nextPlayerIndex==topology->player_count-1 ? 0 : nextPlayerIndex+1;
+        // ZZZ: changed to deal with 'gaps' (players with identifier NONE), in support of generalized game-resumption
+        newNextPlayerIndex = nextPlayerIndex;
+        do
+        {
+                newNextPlayerIndex = (topology->player_count + newNextPlayerIndex + 1) % topology->player_count;
+        } while(topology->players[newNextPlayerIndex].identifier == NONE && newNextPlayerIndex != localPlayerIndex);
+        
 	status->upringAddress= topology->players[newNextPlayerIndex].ddpAddress;
 	status->upringPlayerIndex= newNextPlayerIndex;
 	
@@ -2834,6 +2926,7 @@ static void drop_upring_player(
 /* ------ this needs to let the gatherer keep going if there was an error.. */
 /* ••• Marathon Specific Code ••• */
 /* Returns error code.. */
+// ZZZ annotation: this function doesn't seem to belong here - maybe more like interface.cpp?
 bool NetChangeMap(
 	struct entry_point *entry)
 {
@@ -2847,6 +2940,8 @@ bool NetChangeMap(
 #else
 
 	/* If the guy that was the server died, and we are trying to change levels, we lose */
+        // ZZZ: if we used the parent_wad_checksum stuff to locate the containing Map file,
+        // this would be the case somewhat less frequently, probably...
 	if(localPlayerIndex==status->server_player_index && localPlayerIndex != 0)
 	{
 #ifdef DEBUG_NET
@@ -2864,7 +2959,7 @@ bool NetChangeMap(
 			if(wad)
 			{
 				length= get_net_map_data_length(wad);
-				error= NetDistributeGameDataToAllPlayers(wad, length);
+				error= NetDistributeGameDataToAllPlayers(wad, length, true);
 				if(error) success= false;
 				set_game_error(systemError, error);
 			} else {
@@ -2874,7 +2969,7 @@ bool NetChangeMap(
 		} 
 		else // wait for de damn map.
 		{
-			wad= NetReceiveGameData();
+			wad= NetReceiveGameData(true);
 			if(!wad) success= false;
 			// Note that NetReceiveMap handles display of its own errors, therefore we don't
 			//  assert that an error is pending.....
@@ -2892,9 +2987,14 @@ bool NetChangeMap(
 	return success;
 }
 
-static OSErr NetDistributeGameDataToAllPlayers(
+// ZZZ this "ought" to distribute to all players simultaneously (by interleaving send calls)
+// in case the server bandwidth is much greater than the others' bandwidths.  But that would
+// take a fair amount of reworking of the streaming system, which only groks talking with one
+// machine at a time.
+OSErr NetDistributeGameDataToAllPlayers(
 	byte *wad_buffer, 
-	long wad_length)
+	long wad_length,
+        bool do_physics)
 {
 	short playerIndex, message_id;
 	OSErr error= noErr;
@@ -2913,13 +3013,14 @@ static OSErr NetDistributeGameDataToAllPlayers(
 	length_written= 0l;
 
 	/* Get the physics crap. */
-	physics_buffer= (unsigned char *)get_network_physics_buffer(&physics_length);
+        if(do_physics)
+                physics_buffer= (unsigned char *)get_network_physics_buffer(&physics_length);
 
 	// go ahead and transfer the map to each player
-	for (playerIndex= 1; !error && playerIndex<topology->player_count; playerIndex++)
+	for (playerIndex= 0; !error && playerIndex<topology->player_count; playerIndex++)
 	{
-		/* If the player is not net dead. */
-		if(!topology->players[playerIndex].net_dead)
+		/* If the player is not net dead. */ // ZZZ: and is not going to be a zombie and is not us
+		if(!topology->players[playerIndex].net_dead && topology->players[playerIndex].identifier != NONE && playerIndex != localPlayerIndex)
 		{
 
 			/* Send the physics.. */
@@ -2929,7 +3030,8 @@ static OSErr NetDistributeGameDataToAllPlayers(
 			if (!error)
 			{
 #ifdef NO_PHYSICS
-				error= send_stream_data(physics_buffer, physics_length);
+				if(do_physics)
+                                        error= send_stream_data(physics_buffer, physics_length);
 #endif
 
 				if(!error)
@@ -2959,7 +3061,9 @@ static OSErr NetDistributeGameDataToAllPlayers(
 	if (!error) 
 	{
 		/* Process the physics file & frees it!.. */
-		process_network_physics_model(physics_buffer);
+                if(do_physics)
+                        process_network_physics_model(physics_buffer);
+                
 		draw_progress_bar(total_length, total_length);
 	}
 
@@ -2968,13 +3072,12 @@ static OSErr NetDistributeGameDataToAllPlayers(
 	return error;
 }
 
-static byte *NetReceiveGameData(
-	void)
+byte *NetReceiveGameData(bool do_physics)
 {
 	byte *map_buffer= NULL;
 	long map_length;
 	uint32 ticks;
-	OSErr error;
+	OSErr error= noErr;
 	bool timed_out= false;
 
 	open_progress_dialog(_awaiting_map);
@@ -2988,26 +3091,27 @@ static byte *NetReceiveGameData(
 	
 	if (timed_out)
 	{
+                close_progress_dialog();
 			alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, 0);
 	} 
 	else
 	{
-		byte *physics_buffer;
+		byte *physics_buffer= NULL;
 		long physics_length;
 
 		/* Receiving map.. */
 		set_progress_dialog_message(_receiving_physics);
 
 #ifdef NO_PHYSICS
-		physics_buffer= (unsigned char *)receive_stream_data(&physics_length, &error);
-#else
-		physics_buffer= NULL;
+                if(do_physics)
+                        physics_buffer= (unsigned char *)receive_stream_data(&physics_length, &error);
 #endif
 
 		if(!error)
 		{
 			/* Process the physics file & frees it!.. */
-			process_network_physics_model(physics_buffer);
+                        if(do_physics)
+                                process_network_physics_model(physics_buffer);
 
 			/* receiving the map.. */
 			set_progress_dialog_message(_receiving_map);
@@ -3068,7 +3172,8 @@ long NetGetNetTime(
     // This is it - this is the only place sCurrentAdaptiveLatency has any effect in adaptive_latency_2.
     // The effect is to get the game engine to drain the player_queues more smoothly than they would
     // if we returned status_localNetTime.
-    return status->localNetTime - sCurrentAdaptiveLatency;
+    // Later: adding 1 in an effort to decrease lag (is this a good idea?)
+    return status->localNetTime - sCurrentAdaptiveLatency + 1;
 #else
 	return status->localNetTime - 2*status->action_flags_per_packet - status->update_latency;
 #endif
@@ -3507,25 +3612,29 @@ OSErr NetDistributeChatMessage(
         
         netcpy(&theChatMessage_NET, &theChatMessage);
 
-	for (playerIndex=1; playerIndex<topology->player_count; ++playerIndex)
+	for (playerIndex=0; playerIndex<topology->player_count; ++playerIndex)
 	{
-		error= NetOpenStreamToPlayer(playerIndex);
-		if (!error)
-		{
-			error= NetSendStreamPacket(_chat_packet, &theChatMessage_NET);
-			if (!error)
-			{
-				error= NetCloseStreamConnection(false);
-				if (!error)
-				{
-					/* successfully distributed topology to this player */
-				}
-			}
-			else
-			{
-				NetCloseStreamConnection(true);
-			}
-		}
+                // ZZZ: skip players with identifier NONE - they don't really exist... also skip ourselves
+                if(topology->players[playerIndex].identifier != NONE || playerIndex == localPlayerIndex)
+                {
+                        error= NetOpenStreamToPlayer(playerIndex);
+                        if (!error)
+                        {
+                                error= NetSendStreamPacket(_chat_packet, &theChatMessage_NET);
+                                if (!error)
+                                {
+                                        error= NetCloseStreamConnection(false);
+                                        if (!error)
+                                        {
+                                                /* successfully distributed topology to this player */
+                                        }
+                                }
+                                else
+                                {
+                                        NetCloseStreamConnection(true);
+                                }
+                        }
+                }
 	}
 	
 	return error;
@@ -3587,9 +3696,6 @@ short NetUpdateJoinState(
                                         accept_gather_data	new_player_data;
                                         accept_gather_data_NET	new_player_data_NET;
 
-//					struct gather_player_data *gathering_data= (struct gather_player_data *) network_adsp_packet;
-//					struct accept_gather_data new_player_data;
-
 					/* Note that we could set accepted to false if we wanted to for some */
 					/*  reason- such as bad serial numbers.... */
 
@@ -3606,15 +3712,13 @@ short NetUpdateJoinState(
                                         topology->players[localPlayerIndex].net_dead= false;
                                         
                                         /* Confirm. */
-                                        new_player_data.accepted= true;
+                                        new_player_data.accepted= kResumeNetgameSavvyJoinerAccepted;
                                         obj_copy(new_player_data.player, topology->players[localPlayerIndex]);
 
                                         netcpy(&new_player_data_NET, &new_player_data);
                                         error = NetSendStreamPacket(_accept_join_packet, &new_player_data_NET);
                                         
                                         logTrace1("NetSendStreamPacket returned %d", error);
-
-//					error= NetSendStreamPacket(_accept_join_packet, &new_player_data);
 
 					if(!error)
 					{
@@ -3663,10 +3767,8 @@ short NetUpdateJoinState(
                                     
                                     case _topology_packet:
 
-                                        netcpy(topology, (NetTopology_NET*)network_adsp_packet);
-
 					/* Copy it in */
-//					memcpy(topology, network_adsp_packet, sizeof(NetTopology));
+                                        netcpy(topology, (NetTopology_NET*)network_adsp_packet);
 
 					if(NetGetTransportType()==kNetworkTransportType)
 					{
@@ -3677,15 +3779,25 @@ short NetUpdateJoinState(
 						NetGetStreamAddress(&address);
 						#endif
 						
+                                                // ZZZ: the code below used to assume the server was _index_ 0; now, we merely
+                                                // assume the server has _identifier_ 0.
+                                                int theServerIndex;
+                                                for(theServerIndex = 0; theServerIndex < topology->player_count; theServerIndex++)
+                                                {
+                                                        if(topology->players[theServerIndex].identifier == 0) break;
+                                                }
+                                                
+                                                assert(theServerIndex != topology->player_count);
+                                                
 						/* for ARA, make stuff in an address we know is correct (don’t believe the server) */
-						topology->players[0].dspAddress= address;
+						topology->players[theServerIndex].dspAddress= address;
 #ifndef NETWORK_IP
 #ifdef CLASSIC_MAC_NETWORKING
-						topology->players[0].ddpAddress.aNet= address.aNet;
-						topology->players[0].ddpAddress.aNode= address.aNode;
+						topology->players[theServerIndex].ddpAddress.aNet= address.aNet;
+						topology->players[theServerIndex].ddpAddress.aNode= address.aNode;
 #endif
 #else
-						topology->players[0].ddpAddress.host = address.host;
+						topology->players[theServerIndex].ddpAddress.host = address.host;
 #endif
 //						fdprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[0].ddpAddress),
 //							*((long*)&topology->players[0].dspAddress));
@@ -3706,7 +3818,14 @@ short NetUpdateJoinState(
 							
 						case tagSTART_GAME:
 							newState= netStartingUp;
+                                                        resuming_saved_game = false;
 							break;
+                                                
+                                                // ZZZ addition
+                                                case tagRESUME_GAME:
+                                                        newState = netStartingResumeGame;
+                                                        resuming_saved_game = true;
+                                                        break;
 							
 						default:
 							break;
@@ -3731,7 +3850,7 @@ short NetUpdateJoinState(
                                     break;
                                     // _topology_packet
 
-#ifdef NETWORK_CHAT	// ZZZ addition
+                                    // ZZZ addition
                                     case _chat_packet:
                                         netcpy(&incoming_chat_message_buffer, (NetChatMessage_NET*) network_adsp_packet);
                                         
@@ -3750,7 +3869,6 @@ short NetUpdateJoinState(
 					
                                     break;
                                     // _chat_packet
-#endif // NETWORK_CHAT
 
                                     default:	// unrecognized stream packet type
                                     // shouldn't we at least, like, close the connection and stuff?  Bungie's code didn't...
@@ -3776,12 +3894,13 @@ short NetUpdateJoinState(
 	}
 	
 	/* return netPlayerAdded to tell the caller to refresh his topology, but don’t change netState to that */
-#ifdef NETWORK_CHAT
-        // ZZZ: similar behavior for netChatMessageReceived
-        if(newState != netChatMessageReceived)
-#endif
-
-	if (newState!=netPlayerAdded && newState != NONE) netState= newState;
+        // ZZZ: similar behavior for netChatMessageReceived and netStartingResumeGame
+	if (newState!=netPlayerAdded && newState != netChatMessageReceived && newState != netStartingResumeGame && newState != NONE)
+                netState= newState;
+        
+        // ZZZ: netStartingResumeGame is used as a return value only; the corresponding netState is netStartingUp.
+        if(newState == netStartingResumeGame)
+                netState = netStartingUp;
 #endif // !TEST_MODEM
 
 	return newState;
@@ -3789,7 +3908,9 @@ short NetUpdateJoinState(
 
 
 
-bool NetGatherPlayer(
+// ZZZ: hindsight is 20/20 - probably we should just return the joiner's acceptance number and let higher-level
+// code figure out whether that number is acceptable, etc.
+int NetGatherPlayer(
 #if !HAVE_SDL_NET
         /* player_index in our lookup list */
 	short player_index,
@@ -3804,7 +3925,7 @@ bool NetGatherPlayer(
 	NetAddrBlock address;
 	short packet_type;
 	short stream_transport_type= NetGetTransportType();
-	bool success= true;
+	int theResult = kGatherPlayerSuccessful;
 
 #ifdef TEST_MODEM
 	success= ModemGatherPlayer(player_index, check_player);
@@ -3836,6 +3957,9 @@ bool NetGatherPlayer(
 #else
 	topology->players[topology->player_count].ddpAddress.host = address.host;
 #endif
+
+        int thePlayerAcceptNumber = 0;
+
 	error= NetOpenStreamToPlayer(topology->player_count);
 	
 	if (!error)
@@ -3849,8 +3973,6 @@ bool NetGatherPlayer(
                 netcpy(&gather_data_NET, &gather_data);
                 error = NetSendStreamPacket(_join_player_packet, &gather_data_NET);
 
-//		error= NetSendStreamPacket(_join_player_packet, &gather_data);
-
 		if(!error)
 		{
 			error= NetReceiveStreamPacket(&packet_type, network_adsp_packet);
@@ -3862,11 +3984,17 @@ bool NetGatherPlayer(
                                         accept_gather_data	new_player_data_storage;
                                         accept_gather_data*	new_player_data = &new_player_data_storage;
                                         netcpy(new_player_data, new_player_data_NET);
-
-//					struct accept_gather_data *new_player_data= (struct accept_gather_data *) network_adsp_packet;
+                                        
+                                        thePlayerAcceptNumber = new_player_data->accepted;
 
 					if(new_player_data->accepted)
 					{
+                                                // ZZZ: cannot gather a "naive" player into a resume-game
+                                                if(resuming_saved_game && new_player_data->accepted < kResumeNetgameSavvyJoinerAccepted)
+                                                {
+                                                        theResult = kGatheredUnacceptablePlayer;
+                                                }
+                                                
 						/* make sure everybody gets a unique identifier */
 						topology->nextIdentifier+= 1;
 
@@ -3941,11 +4069,16 @@ bool NetGatherPlayer(
 #if !HAVE_SDL_NET
 		NetLookupRemove(player_index); /* get this guy out of here, he didn’t respond */
 #endif
-		success= false;
+		theResult = kGatherPlayerFailed;
 	}
 #endif
+
+        if(theResult == kGatheredUnacceptablePlayer)
+        {
+                alert_user(infoError, strNETWORK_ERRORS, netErrPlayerUnacceptable, thePlayerAcceptNumber);
+        }
 	
-	return success;
+	return theResult;
 }
 
 /*
@@ -3972,27 +4105,29 @@ static OSErr NetDistributeTopology(
         NetTopology_NET* topology_NET = &topology_NET_storage;
         netcpy(topology_NET, topology);
 
-//        NetTopology_NET* topology_NET = topology;
-
-	for (playerIndex=1; playerIndex<topology->player_count; ++playerIndex)
+	for (playerIndex=0; playerIndex<topology->player_count; ++playerIndex)
 	{
-		error= NetOpenStreamToPlayer(playerIndex);
-		if (!error)
-		{
-			error= NetSendStreamPacket(_topology_packet, topology_NET);
-			if (!error)
-			{
-				error= NetCloseStreamConnection(false);
-				if (!error)
-				{
-					/* successfully distributed topology to this player */
-				}
-			}
-			else
-			{
-				NetCloseStreamConnection(true);
-			}
-		}
+                // ZZZ: skip players with identifier NONE - they don't really exist... also skip ourselves.
+                if(topology->players[playerIndex].identifier != NONE && playerIndex != localPlayerIndex)
+                {
+                        error= NetOpenStreamToPlayer(playerIndex);
+                        if (!error)
+                        {
+                                error= NetSendStreamPacket(_topology_packet, topology_NET);
+                                if (!error)
+                                {
+                                        error= NetCloseStreamConnection(false);
+                                        if (!error)
+                                        {
+                                                /* successfully distributed topology to this player */
+                                        }
+                                }
+                                else
+                                {
+                                        NetCloseStreamConnection(true);
+                                }
+                        }
+                }
 	}
 	
 	return error;

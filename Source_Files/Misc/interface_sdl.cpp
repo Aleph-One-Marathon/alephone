@@ -29,6 +29,9 @@
  *
  *  1 Feb 2003 (Woody Zenfell):
  *      network audio stuff now handled in shared interface.cpp instead of per-platform.
+ *
+ *  12 Feb 2003 (Woody Zenfell):
+ *	should_restore_game_networked() implementation
  */
 
 #include "cseries.h"
@@ -52,6 +55,10 @@
 
 #include "interface_menus.h"
 
+// ZZZ: for should_restore_game_networked()
+#include "sdl_dialogs.h"
+#include "sdl_widgets.h"
+#include "network_dialog_widgets_sdl.h"
 
 
 /*
@@ -130,4 +137,37 @@ void exit_networking(void)
 void show_movie(short index)
 {
 	// unused by official scenarios
+}
+
+
+int should_restore_game_networked()
+{
+        dialog d;
+        
+        d.add(new w_static_text("RESUME GAME", TITLE_FONT, TITLE_COLOR));
+        d.add(new w_spacer());
+
+        w_toggle* theRestoreAsNetgameToggle = new w_toggle("Resume as", dynamic_world->player_count > 1);
+        theRestoreAsNetgameToggle->set_labels_stringset(kSingleOrNetworkStringSetID);
+        d.add(theRestoreAsNetgameToggle);
+        
+        d.add(new w_spacer());
+        d.add(new w_spacer());
+        
+        d.add(new w_left_button("RESUME", dialog_ok, &d));
+        d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+        // We return -1 (NONE) for "cancel", 0 for "not networked", and 1 for "networked".
+        int theResult;
+
+        if(d.run() == 0)
+        {
+                theResult = theRestoreAsNetgameToggle->get_selection();
+        }
+        else
+        {
+                theResult = NONE;
+        }
+
+        return theResult;
 }

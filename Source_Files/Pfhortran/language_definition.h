@@ -118,6 +118,8 @@
 {"Timer_Get", Timer_Get},
 {"Timer_Stop", Timer_Stop},
 {"Display_Message", Display_Message},
+{"Get_Motion_Sensor_State", Get_Motion_Sensor_State},
+{"Set_Motion_Sensor_State", Set_Motion_Sensor_State},
 {"TRUE", 0x1},
 {"FALSE", 0x0},
 {"knife", 0x0},

@@ -275,6 +275,11 @@ void toggle_menus(bool game_started);
 void install_network_microphone(void);
 void remove_network_microphone(void);
 
+// Should return NONE if user cancels, 0 for single player, or 1 for multiplayer.
+// Game has been loaded from file before this is called so elements like
+// dynamic_world->player_count are available.  Cursor has been hidden when called.
+int should_restore_game_networked();
+
 void show_movie(short index);
 
 void exit_networking(void);
@@ -338,6 +343,7 @@ void setup_revert_game_info(struct game_data *game_info, struct player_start_dat
 bool revert_game(void);
 bool load_game(bool use_last_load);
 bool save_game(void);
+bool save_game_full_auto(bool inOverwriteRecent);
 void restart_game(void);
 
 /* ---------- prototypes/GAME_WAD.C */
@@ -381,8 +387,14 @@ void scroll_inventory(short dy);
 
 /* ---------- prototypes/NETWORK.C */
 
-bool network_gather(void);
-bool network_join(void);
+enum {	// Results for network_join
+        kNetworkJoinFailed,
+        kNetworkJoinedNewGame,
+        kNetworkJoinedResumeGame
+};
+
+bool network_gather(bool inResumingGame);
+int network_join(void);
 
 /* ---------- prototypes/NETWORK_MICROPHONE.C */
 

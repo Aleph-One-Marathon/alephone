@@ -50,6 +50,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Uses generalized networking under Carbon instead of macintosh_network.h
+
+Feb 13, 2003 (Woody Zenfell):
+	Trivial implementation of should_restore_game_networked(), lets folks resume netgames until
+	someone builds a proper dialog box or something.
 */
 
 #include "macintosh_cseries.h"
@@ -744,3 +748,10 @@ void show_movie(
 }
 
 // "Has Quicktime" test moved to shell_macintosh.cpp
+
+
+int should_restore_game_networked() {
+	// We should return 1 for netgame, 0 for single-player game, and -1 (NONE) for "cancel".
+	// Currently we just choose based on the number of players, should be right most of the time.
+	return dynamic_world->player_count > 1 ? 1 : 0;
+}

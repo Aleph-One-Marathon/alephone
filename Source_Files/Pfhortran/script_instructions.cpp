@@ -34,9 +34,18 @@
 	06/09/02 - tiennou:
 		Added s_Play_Sound, s_Remove_Item, and stuff for Pfhortran Player control
 		(GetPfhortranActionQueues & lots of changes in s_Player_Control).
-		Changed s_Monster_New: it should now work if another monster of the same type is present on the level.
-		Added some other unfonctionnal coding (s_Display_Message, s_Get_Monster_Poly) will try to make them
-		work in the mext release.
+		Changed s_Monster_New: it should now work if another monster of the same type
+		is present on the level.
+		Added some other unfonctionnal coding (s_Display_Message, s_Get_Monster_Poly)
+		will try to make them work in the next release.
+		
+Sat 02, 2003 (tiennou):
+    Made lots of bug fixes in there, mainly cast errors; this file should issue
+    no more warnings.
+    'Activated' some of the work in there. The task of making Pfhortran recognize
+    something is a pain (first add proto in the start of the file, add a line
+    in init_instruction(), add another in script_instruction.h, and finally the
+    real one in language_definition).
 */
 
  
@@ -294,6 +303,7 @@ void s_Timer_Get(script_instruction inst);
 void s_Timer_Stop(script_instruction inst);
 void s_Display_Message(script_instruction inst);
 void s_Get_Motion_Sensor_State(script_instruction inst);
+void s_Set_Motion_Sensor_State(script_instruction inst);
 
 
 /*-------------------------------------------*/
@@ -461,8 +471,8 @@ ActionQueues* GetPfhortranActionQueues() { return sPfhortranActionQueues; }
 void update_path_camera(void)
 {
 	path_point old_point;
-	const float AngleConvert = 360/float(FULL_CIRCLE);
-	int currentTicks;
+	//const float AngleConvert = 360/float(FULL_CIRCLE);	//tiennou: unused !
+	//int currentTicks;					//tiennou: unused !
 	
 	/* copy over old location info so we can calculate new polygon index later */
 	
@@ -650,7 +660,7 @@ void update_path_camera(void)
 
 bool script_Camera_Active(void)
 {
-	const float AngleConvert = 360/float(FULL_CIRCLE);
+	//const float AngleConvert = 360/float(FULL_CIRCLE);	//tiennou: unused !
 	
 	if (!script_in_use())
 		return false;
@@ -2442,9 +2452,11 @@ void s_Monster_Attack(script_instruction inst)
 //[op3: other options]
 void s_Monster_Move(script_instruction inst)
 {
-	world_point2d theStart, *theEnd;	//where we start from. start is monster's pos, end is center of dest
-	short startPoly, endPoly;		//poly indexes for new_path
-	world_distance minSpace;		//3*monster_definition->radius
+	//world_point2d theStart //tiennou: unused !
+	world_point2d *theEnd;	//where we start from. start is monster's pos, end is center of dest
+	//short startPoly;	//tiennou: unused !
+	short endPoly;		//poly indexes for new_path
+	//world_distance minSpace;		//3*monster_definition->radius	//tiennou: unused !
 	struct monster_pathfinding_data thePath;		//used by new_path
 	struct monster_data *theRealMonster;			//the monster data
 	struct monster_definition *theDef;				//the def of the monster
@@ -2969,7 +2981,7 @@ void s_Monster_Get_Item(script_instruction inst)
 	struct monster_data *theMonster;
 	short monsterIndex;
 	struct monster_definition *theDef;
-	int32 monsterClass;
+	//int32 monsterClass;			//tiennou: unused !
 //	dprintf("trying enemies\n");
 	switch(inst.mode)
 	{
@@ -3059,11 +3071,11 @@ void s_Get_Random(script_instruction inst)
 
 void s_Get_Monster_Poly(script_instruction inst)
 {
-	short monster_index;
+	int monster_index;
 	
 	if (inst.mode != 4) return;
 	
-	monster_index = get_variable(int(inst.op1));
+	monster_index = int(get_variable(int(inst.op1)));
 	
 	struct monster_data *theMonster = get_monster_data(monster_index);
 	struct object_data *object= get_object_data(theMonster->object_index);
@@ -3205,7 +3217,7 @@ void s_Set_Light_State(script_instruction inst)
 		default:
 			return;
 	}
-	bool WasChanged = set_light_status(short(light_index), state ? 1 : 0);
+	set_light_status(short(light_index), state ? 1 : 0);
 	assume_correct_switch_position(_panel_is_light_switch, short(light_index), state ? 1 : 0);
 }
 
@@ -3293,16 +3305,16 @@ void s_Remove_Item(script_instruction inst)
 {
 	// op1 : item index
 	
-	short item_type;
+	int item_type;
 	
 	switch (inst.mode)
 	{
 		case 0:
-			item_type = short(inst.op1);
+			item_type = int(inst.op1);
 			break;
 		
 		case 1:
-			item_type = get_variable(short(inst.op1));
+			item_type = int(get_variable(int(inst.op1)));
 			break;
 			
 		default:
@@ -3342,11 +3354,11 @@ void s_Player_Control(script_instruction inst)
 		default:
 			return;
 	}
-	uint32 action_flags = -1;
+	uint32 action_flags = NULL;
 	
 	if (sPfhortranActionQueues == NULL)
 	{
-		sPfhortranActionQueues = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER);
+		sPfhortranActionQueues = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, true);
 	}
 	
 	// Put the enqueuing of the action flags in one place in the code,
@@ -3429,7 +3441,7 @@ void s_Player_Control(script_instruction inst)
 	if (DoAction)
 	{
 		GetPfhortranActionQueues()->enqueueActionFlags(local_player_index,
-			&action_flags, value, true);
+			&action_flags, value);
 		if (PLAYER_IS_PFHORTRAN_CONTROLLED(local_player))
 			increment_heartbeat_count(value); // ba-doom
 	}
@@ -3448,45 +3460,45 @@ void s_Debug_Message(script_instruction inst)
 			break;
 	
 		case 1:
-			op1 = get_variable(inst.op1);
+			op1 = get_variable(int(inst.op1));
 			op2 = inst.op2;
 			op3 = inst.op3;
 			break;
 			
 		case 2:
 			op1 = inst.op1;
-			op2 = get_variable(inst.op2);
+			op2 = get_variable(int(inst.op2));
 			op3 = inst.op3;
 			break;
 	
 		case 3:
-			op1 = get_variable(inst.op1);
-			op2 = get_variable(inst.op2);
+			op1 = get_variable(int(inst.op1));
+			op2 = get_variable(int(inst.op2));
 			op3 = inst.op3;
 			break;
 	
 		case 4:
 			op1 = inst.op1;
 			op2 = inst.op2;
-			op3 = get_variable(inst.op3);
+			op3 = get_variable(int(inst.op3));
 			break;
 	
 		case 5:
-			op1 = get_variable(inst.op1);
+			op1 = get_variable(int(inst.op1));
 			op2 = inst.op2;
-			op3 = get_variable(inst.op3);
+			op3 = get_variable(int(inst.op3));
 			break;
 	
 		case 6:
 			op1 = inst.op1;
-			op2 = get_variable(inst.op2);
-			op3 = get_variable(inst.op3);
+			op2 = get_variable(int(inst.op2));
+			op3 = get_variable(int(inst.op3));
 			break;
 	
 		case 7:
-			op1 = get_variable(inst.op1);
-			op2 = get_variable(inst.op2);
-			op3 = get_variable(inst.op3);
+			op1 = get_variable(int(inst.op1));
+			op2 = get_variable(int(inst.op2));
+			op3 = get_variable(int(inst.op3));
 			break;
 			
 		default:
@@ -3498,7 +3510,7 @@ void s_Debug_Message(script_instruction inst)
 
 void s_Monster_Get_Action(script_instruction inst)
 {
-	short monster_index;
+	int monster_index;
 	
 	switch(inst.mode)
 	{
@@ -3507,7 +3519,7 @@ void s_Monster_Get_Action(script_instruction inst)
 			break;
 		
 		case 3:
-			monster_index = int(get_variable(inst.op1));
+			monster_index = int(get_variable(int(inst.op1)));
 			break;
 		
 		default:
@@ -3522,7 +3534,7 @@ void s_Monster_Get_Action(script_instruction inst)
 
 void s_Monster_Get_Mode(script_instruction inst)
 {
-	short monster_index;
+	int monster_index;
 	
 	switch(inst.mode)
 	{
@@ -3531,7 +3543,7 @@ void s_Monster_Get_Mode(script_instruction inst)
 			break;
 		
 		case 3:
-			monster_index = int(get_variable(inst.op1));
+			monster_index = int(get_variable(int(inst.op1)));
 			break;
 		
 		default:
@@ -3546,7 +3558,7 @@ void s_Monster_Get_Mode(script_instruction inst)
 
 void s_Monster_Get_Vitality(script_instruction inst)
 {
-	short monster_index;
+	int monster_index;
 	
 	switch(inst.mode)
 	{
@@ -3555,7 +3567,7 @@ void s_Monster_Get_Vitality(script_instruction inst)
 			break;
 		
 		case 3:
-			monster_index = int(get_variable(inst.op1));
+			monster_index = int(get_variable(int(inst.op1)));
 			break;
 		
 		default:
@@ -3570,8 +3582,8 @@ void s_Monster_Get_Vitality(script_instruction inst)
 
 void s_Monster_Set_Vitality(script_instruction inst)
 {
-	short monster_index;
-	short vitality;
+	int monster_index;
+	int vitality;
 	
 	switch(inst.mode)
 	{
@@ -3581,18 +3593,18 @@ void s_Monster_Set_Vitality(script_instruction inst)
 			break;
 		
 		case 1:
-			monster_index = int(get_variable(inst.op1));
+			monster_index = int(get_variable(int(inst.op1)));
 			vitality = int(inst.op2);
 			break;
 		
 		case 2:
 			monster_index = int(inst.op1);
-			vitality = int(get_variable(inst.op1));
+			vitality = int(get_variable(int(inst.op1)));
 			break;
 		
 		case 3:
-			monster_index = int(get_variable(inst.op1));
-			vitality = int(get_variable(inst.op1));
+			monster_index = int(get_variable(int(inst.op1)));
+			vitality = int(get_variable(int(inst.op1)));
 			break;
 		
 		default:
@@ -3607,7 +3619,7 @@ void s_Monster_Set_Vitality(script_instruction inst)
 
 void s_Not(script_instruction inst)
 {
-	if (inst.mode = 1) set_variable(int(inst.op1), !(int(get_variable(inst.op1))));
+	if (inst.mode = 1) set_variable(int(inst.op1), !(int(get_variable(int(inst.op1)))));
 }
 
 void s_Start_Fade(script_instruction inst)
@@ -3621,7 +3633,7 @@ void s_Start_Fade(script_instruction inst)
 			break;
 	
 		case 1:
-			fade_index = int(get_variable(inst.op1));
+			fade_index = int(get_variable(int(inst.op1)));
 			break;
 		
 		default:
@@ -3644,18 +3656,18 @@ void s_Set_Platform_Player_Control(script_instruction inst)
 			break;
 			
 		case 1:
-			polygon_index = get_variable(int(inst.op1));
+			polygon_index = int(get_variable(int(inst.op1)));
 			state = int(inst.op2);
 			break;
 			
 		case 2:
 			polygon_index = int(inst.op1);
-			state = get_variable(int(inst.op2));
+			state = int(get_variable(int(inst.op2)));
 			break;
 			
 		case 3:
-			polygon_index = get_variable(int(inst.op1));
-			state = get_variable(int(inst.op2));
+			polygon_index = int(get_variable(int(inst.op1)));
+			state = int(get_variable(int(inst.op2)));
 			break;
 			
 		default:
@@ -3685,7 +3697,7 @@ void s_Get_Platform_Player_Control(script_instruction inst)
 			break;
 			
 		case 3:
-			polygon_index = get_variable(int(inst.op1));
+			polygon_index = int(get_variable(int(inst.op1)));
 			break;
 			
 		default:
@@ -3717,18 +3729,18 @@ void s_Set_Platform_Monster_Control(script_instruction inst)
 			break;
 			
 		case 1:
-			polygon_index = get_variable(int(inst.op1));
+			polygon_index = int(get_variable(int(inst.op1)));
 			state = int(inst.op2);
 			break;
 			
 		case 2:
 			polygon_index = int(inst.op1);
-			state = get_variable(int(inst.op2));
+			state = int(get_variable(int(inst.op2)));
 			break;
 			
 		case 3:
-			polygon_index = get_variable(int(inst.op1));
-			state = get_variable(int(inst.op2));
+			polygon_index = int(get_variable(int(inst.op1)));
+			state = int(get_variable(int(inst.op2)));
 			break;
 			
 		default:
@@ -3750,7 +3762,7 @@ void s_Set_Platform_Monster_Control(script_instruction inst)
 
 void s_Get_Platform_Monster_Control(script_instruction inst)
 {
-	int polygon_index, state;
+	int polygon_index;
 	struct polygon_data *polygon;
 	struct platform_data *platform;
 	
@@ -3761,7 +3773,7 @@ void s_Get_Platform_Monster_Control(script_instruction inst)
 			break;
 			
 		case 3:
-			polygon_index = get_variable(int(inst.op1));
+			polygon_index = int(get_variable(int(inst.op1)));
 			break;
 			
 		default:
@@ -3785,9 +3797,7 @@ void s_Get_Platform_Monster_Control(script_instruction inst)
 
 void s_Get_Platform_Speed(script_instruction inst)
 {
-	int polygon_index;
-	int16 speed;
-	
+	int polygon_index;	
 	switch(inst.mode)
 	{
 		case 2:
@@ -3795,7 +3805,7 @@ void s_Get_Platform_Speed(script_instruction inst)
 			break;
 			
 		case 3:
-			polygon_index = get_variable(int(inst.op1));
+			polygon_index = int(get_variable(int(inst.op1)));
 			break;
 			
 		default:
@@ -3828,18 +3838,18 @@ void s_Set_Platform_Speed(script_instruction inst)
 			break;
 			
 		case 1:
-			polygon_index = get_variable(int(inst.op1));
+			polygon_index = int(get_variable(int(inst.op1)));
 			speed = int16(inst.op2);
 			break;
 			
 		case 2:
 			polygon_index = int(inst.op1);
-			speed = get_variable(int16(inst.op2));
+			speed = int16(get_variable(int(inst.op2)));
 			break;
 			
 		case 3:
-			polygon_index = get_variable(int(inst.op1));
-			speed = get_variable(int16(inst.op2));
+			polygon_index = int(get_variable(int(inst.op1)));
+			speed = int16(get_variable(int(inst.op2)));
 			break;
 			
 		default:
@@ -3866,11 +3876,11 @@ void s_Get_Platform_Height(script_instruction inst)
 	switch(inst.mode)
 	{	
 		case 6:
-			polygon_index = inst.op1;
+			polygon_index = int(inst.op1);
 			break;
 	
 		case 7:
-			polygon_index = get_variable(inst.op1);
+			polygon_index = int(get_variable(int(inst.op1)));
 			break;
 			
 		default:
@@ -3883,8 +3893,8 @@ void s_Get_Platform_Height(script_instruction inst)
 		struct platform_data *platform = get_platform_data(polygon->permutation);
 		if (platform)
 		{
-			set_variable(inst.op2, platform->floor_height);
-			set_variable(inst.op2, platform->ceiling_height);
+			set_variable(int(inst.op2), platform->floor_height);
+			set_variable(int(inst.op3), platform->ceiling_height);
 		}
 	}
 }
@@ -3898,7 +3908,7 @@ void s_Timer_Start(script_instruction inst)
 void s_Timer_Get(script_instruction inst)
 {
 	if (inst.mode != 1) return;
-	set_variable(inst.op1, (long)get_heartbeat_count - pfhortran_timer);
+	set_variable(int(inst.op1), (long)get_heartbeat_count - pfhortran_timer);
 }
 
 void s_Timer_Stop(script_instruction inst)
@@ -3909,28 +3919,28 @@ void s_Timer_Stop(script_instruction inst)
 
 void s_Display_Message(script_instruction inst)
 {
-	short stringset, string;
+	int stringset, string;
 	
 	switch(inst.mode)
 	{
 		case 0:
-			stringset = inst.op1;
-			string = inst.op2;
+			stringset = int(inst.op1);
+			string = int(inst.op2);
 			break;
 	
 		case 1:
-			stringset = get_variable(inst.op1);
-			string = inst.op2;
+			stringset = int(get_variable(int(inst.op1)));
+			string = int(inst.op2);
 			break;
 			
 		case 2:
-			stringset = inst.op1;
-			string = get_variable(inst.op2);
+			stringset = int(inst.op1);
+			string = int(get_variable(int(inst.op2)));
 			break;
 	
 		case 3:
-			stringset = get_variable(inst.op1);
-			string = get_variable(inst.op2);
+			stringset = int(get_variable(int(inst.op1)));
+			string = int(get_variable(int(inst.op2)));
 			break;
 			
 		default:
@@ -3950,11 +3960,11 @@ void s_Get_Motion_Sensor_State(script_instruction inst)
 	switch(inst.mode)
 	{			
 		case 2:
-			value = inst.op1;
+			value = int(inst.op1);
 			break;
 	
 		case 3:
-			value = get_variable(inst.op1);
+			value = int(get_variable(int(inst.op1)));
 			break;
 			
 		default:
@@ -3975,7 +3985,7 @@ void s_Set_Motion_Sensor_State(script_instruction inst)
 			break;
 			
 		case 1:
-			value = get_variable(int(inst.op1));
+			value = int(get_variable(int(inst.op1)));
 			break;
 			
 		default:

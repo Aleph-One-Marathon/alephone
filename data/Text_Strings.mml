@@ -91,6 +91,8 @@
 <string index="7">An error ocurred while trying to join a game (an incompatible version of Aleph One may have tried to gather you).  Try again.</string>
 <string index="8">Sorry, a network error ocurred and Aleph One is unable to continue.</string>
 <string index="9">That player could not be added to the game because your versions of Aleph One are incompatible.</string>
+<string index="10">The player you just added is using an older version of Aleph One that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game.</string>
+<string index="11">Aleph One was unable to locate the Map file this level came from.  Some terminals may not display properly, and saving this game on this computer is not recommended.</string>
 </stringset>
 
 <!-- STR# Resource: "Key Codes To Names" -->
@@ -370,6 +372,12 @@
 <string index="5">Time in Enemy Bases</string>
 <string index="6">Score Limit</string>
 <string index="7">Kill Limit</string>
+</stringset>
+
+<!-- ZZZ: custom labels for "Restore saved-game as..." selector -->
+<stringset index="149">
+<string index="0">Single-player game</string>
+<string index="1">Network game</string>
 </stringset>
 
 <!-- STR# Resource: "Item names" -->

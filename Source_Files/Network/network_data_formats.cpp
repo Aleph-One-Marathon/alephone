@@ -378,7 +378,7 @@ void
 netcpy(accept_gather_data_NET* dest, const accept_gather_data* src)
 {
 	uint8 *S = dest->data;
-	*(S++) = src->accepted ? 1 : 0;
+	*(S++) = src->accepted;
 	NetPlayer_NET TempPlyrData;
 	netcpy(&TempPlyrData,&src->player);
 	BytesToStream(S,TempPlyrData.data,SIZEOF_NetPlayer);
@@ -389,7 +389,7 @@ void
 netcpy(accept_gather_data* dest, const accept_gather_data_NET* src)
 {
 	uint8 *S = (uint8 *)src->data;
-	dest->accepted = *(S++) != 0;
+	dest->accepted = *(S++);
 	NetPlayer_NET TempPlyrData;
 	StreamToBytes(S,TempPlyrData.data,SIZEOF_NetPlayer);
 	netcpy(&dest->player,&TempPlyrData);

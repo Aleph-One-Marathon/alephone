@@ -41,7 +41,9 @@ Tuesday, June 21, 1994 3:26:46 PM
 #endif
 
 #define MAX_LEVEL_NAME_LENGTH 64
-#define MAX_NET_DISTRIBUTION_BUFFER_SIZE 512
+// ZZZ: there probably should be a published max size somewhere, but this isn't used anywhere; better
+// not to pretend it's real.
+//#define MAX_NET_DISTRIBUTION_BUFFER_SIZE 512
 
 #if HAVE_SDL_NET
 #define NETWORK_CHAT
@@ -112,6 +114,8 @@ enum /* message types passed to the user’s names lookup update procedure */
 	insertEntity
 };
 
+// ZZZ note: netPlayerAdded, netChatMessageReceived, and netStartingResumeGame are 'pseudo-states';
+// they are returned from NetUpdateJoinState() but will never be assigned to the actual "NetState()".
 enum /* states */
 {
 	netUninitialized, /* NetEnter() has not been called */
@@ -124,10 +128,9 @@ enum /* states */
 	netDown, /* game over, waiting for new gather or join call */
 	netCancelled, /* the game was just cancelled */
 	netPlayerAdded, /* a new player was just added to the topology (will return to netWaiting) */
-	netJoinErrorOccurred
-#ifdef NETWORK_CHAT
-        , netChatMessageReceived
-#endif
+	netJoinErrorOccurred,
+        netChatMessageReceived, // ZZZ addition
+        netStartingResumeGame // ZZZ addition: like netStartingUp, but starting a resume-game instead of a new game
 };
 
 /* -------- typedefs */
@@ -140,13 +143,20 @@ bool NetEnter(void);
 void NetExit(void);
 
 bool NetGather(void *game_data, short game_data_size, void *player_data, 
-	short player_data_size);
+	short player_data_size, bool resuming_game);
 
 #if HAVE_SDL_NET // ZZZ: quick decl for prototype below
 struct SSLP_ServiceInstance;
 #endif
 
-bool NetGatherPlayer(
+enum { // NetGatherPlayer results
+        kGatherPlayerFailed, // generic
+        kGatherPlayerSuccessful, // generic
+        kGatheredUnacceptablePlayer // we had already committed to gathering this jimmy,
+        // but we can't start a game with him - upper-level code needs to make sure gathering is cancelled.
+};
+
+int NetGatherPlayer(
 #if !HAVE_SDL_NET
 short player_index,
 #else
@@ -166,7 +176,7 @@ bool NetGameJoin(unsigned char *player_name, unsigned char *player_type, void *p
 short NetUpdateJoinState(void);
 void NetCancelJoin(void);
 
-#ifdef NETWORK_CHAT // ZZZ addition - pre-game/(eventually) postgame chat
+// ZZZ addition - pre-game/(eventually) postgame chat
 // Returns true if there was a pending message.
 // Returns pointer to chat text.
 // Returns pointer to sending player's data (does not copy player data).
@@ -175,7 +185,6 @@ bool NetGetMostRecentChatMessage(player_info** outSendingPlayerData, char** outM
 
 // Gatherer should use this to send out his messages or to broadcast a message received from a joiner
 OSErr NetDistributeChatMessage(short sender_identifier, const char* message);
-#endif // NETWORK_CHAT
 
 short NetGetLocalPlayerIndex(void);
 short NetGetPlayerIdentifier(short player_index);
@@ -185,6 +194,10 @@ short NetGetNumberOfPlayers(void);
 
 void *NetGetPlayerData(short player_index);
 void *NetGetGameData(void);
+
+struct player_start_data;
+// Gatherer may call this once after all players are gathered but before NetStart()
+void NetSetupTopologyFromStarts(const player_start_data* inStartArray, short inStartCount);
 
 void NetSetInitialParameters(short updates_per_packet, short update_latency);
 
@@ -197,6 +210,8 @@ void NetCancelGather(void);
 long NetGetNetTime(void);
 
 bool NetChangeMap(struct entry_point *entry);
+OSErr NetDistributeGameDataToAllPlayers(byte* wad_buffer, long wad_length, bool do_physics);
+byte* NetReceiveGameData(bool do_physics);
 
 void display_net_game_stats(void);
 
@@ -204,7 +219,6 @@ void display_net_game_stats(void);
 // passed along but ignored.  Uses an STL 'map' so ID's need not be consecutive or in any particular
 // sub-range.
 void NetAddDistributionFunction(int16 type, NetDistributionProc proc, bool lossy);
-//short NetAddDistributionFunction(NetDistributionProc proc, bool lossy);
 void NetDistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self);
 void NetRemoveDistributionFunction(short type);
 

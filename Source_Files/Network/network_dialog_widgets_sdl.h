@@ -43,7 +43,8 @@ enum {
     kDifficultyLevelsStringSetID	= 145,
     kNetworkGameTypesStringSetID	= 146,
     kEndConditionTypeStringSetID	= 147,
-    kScoreLimitTypeStringSetID		= 148
+    kScoreLimitTypeStringSetID		= 148,
+    kSingleOrNetworkStringSetID		= 149
 };
 
 

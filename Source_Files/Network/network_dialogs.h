@@ -199,7 +199,8 @@ extern short
 fill_in_game_setup_dialog(
 	DialogPtr dialog, 
 	player_info *player_information,
-	bool allow_all_levels);
+	bool allow_all_levels,
+        bool resuming_game);
 
 extern void
 extract_setup_dialog_information(
@@ -207,7 +208,8 @@ extract_setup_dialog_information(
 	player_info *player_information,
 	game_info *game_information,
 	short game_limit_type,
-	bool allow_all_levels);
+	bool allow_all_levels,
+        bool resuming_game);
 
 extern void reassign_player_colors(short player_index, short num_players);
 
@@ -254,16 +256,17 @@ extern void fill_in_entry_points(DialogPtr dialog, short item, long entry_flags,
 #else//!mac
 // SDL-only routines called by shared routines.
 extern void get_selected_entry_point(dialog* inDialog, short inItem, entry_point* outEntryPoint);
-extern void select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber);
 
 #endif//!mac
 
 // Routines with different implementations on different platforms, which are called by
 // shared routines.
 extern void menu_index_to_level_entry(short index, long entry_flags, struct entry_point *entry);
+extern void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber);
 
 // ZZZ: new function manipulates radio buttons on Mac; changes w_select widget on SDL.
 extern void set_limit_type(DialogPtr dialog, short limit_type);
+extern void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable);
 
 // ZZZ: new function manipulates radio button title and units ("Point Limit", "points")
 extern void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id, short radio_string_index,

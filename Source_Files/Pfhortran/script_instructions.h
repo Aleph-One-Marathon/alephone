@@ -309,6 +309,12 @@ enum /* instruction defs */
 	
 	Display_Message = 0x6E,
 	
+	Get_Platform_Height = 0x6F,
+	
+	Set_Motion_Sensor_State = 0x70,
+	
+	Get_Motion_Sensor_State = 0x71,
+	
 	NUMBER_OF_INSTRUCTIONS
 };
 

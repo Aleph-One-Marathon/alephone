@@ -104,7 +104,7 @@ public:
 #endif
 	
 	// Get text width for text that must be centered (map title)
-	int TextWidth(char *Text);
+	int TextWidth(const char *Text);
 
 	// Get width of one character
 	int CharWidth(char c) const { return Widths[c]; }

@@ -38,7 +38,10 @@ Mar 1, 2002 (Woody Zenfell):  Setup Network Game changes.
 Mar 8, 2002 (Woody Zenfell):
     Realtime microphone can be enabled now in setup network game.
     Added UI for testing out a microphone implementation on the local machine.
-
+    
+Feb 5, 2003 (Woody Zenfell):
+    Dialog should now display found/lost players, gathered players, chat messages, etc.
+    without the user generating events.
  */
 
 #include "cseries.h"
@@ -129,7 +132,9 @@ enum {
         iCHAT_ENTRY,				// Where chat text is entered
 		iHINT_TOGGLE,			// Join by Address on/off
 		iHINT_ADDRESS_ENTRY,		// Join by address address
-                iAUTO_GATHER			// Auto-gather on/off
+                iAUTO_GATHER,			// Auto-gather on/off
+        iMAP_FILE_SELECTOR			// Choose Map file (not choose level within map)
+                
 };
 
 
@@ -366,6 +371,7 @@ void display_net_game_stats(void)
  *  Game setup dialog
  */
 
+static bool sGathererMayStartGame= false;
 
 // ZZZ: this is kinda like check_setup_information on the Mac.
 static bool
@@ -491,6 +497,11 @@ void set_limit_type(DialogPtr dialog, short limit_type) {
     }
 }
 
+void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
+{
+        modify_control_enabled(dialog, iENDCONDITION_TYPE_MENU, inChangeEnable);
+}
+
 
 void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id, short radio_string_index,
                                 short units_item, short units_stringset_id, short units_string_index)
@@ -578,7 +589,7 @@ respond_to_map_file_change(w_env_select* inWidget) {
 }
 
 
-bool network_game_setup(player_info *player_information, game_info *game_information)
+bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame)
 {
 //printf("network_game_setup\n");
 
@@ -622,6 +633,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 	    w_env_select *map_w = new w_env_select("Map file", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
         map_w->set_selection_made_callback(respond_to_map_file_change);
         map_w->set_full_width();
+        map_w->set_identifier(iMAP_FILE_SELECTOR);
 	    d.add(map_w);
 
         w_entry_point_selector* entry_point_w = new w_entry_point_selector("Level", network_preferences->game_type, 0);
@@ -699,7 +711,14 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
         cancel_w->set_identifier(iCANCEL);
 	d.add(cancel_w);
 
-    fill_in_game_setup_dialog(&d, player_information, false);
+        fill_in_game_setup_dialog(&d, player_information, false, inResumingGame);
+    
+        if(inResumingGame)
+        {
+                // If resuming, they shouldn't be allowed to change the Map file
+                // (this should go in fill_in_game_setup_dialog() if the Mac version gets a Map file selector)
+                modify_control_enabled(&d, iMAP_FILE_SELECTOR, CONTROL_INACTIVE);
+        }
     
         // or is it called automatically by fill_in_game_setup_dialog somehow?  the interactions are getting complex... :/
         // in any event, the data SHOULD be ok, or else we wouldn't have let the user save the info in prefs, but....
@@ -733,7 +752,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
         }
 
         // This will write preferences changes (including change of map file if applicable)
-        extract_setup_dialog_information(&d, player_information, game_information, theLimitType, false);
+        extract_setup_dialog_information(&d, player_information, game_information, theLimitType, false /*allow all levels*/, inResumingGame);
 
 		return true;
 	} // d.run() == 0
@@ -807,26 +826,35 @@ static dialog* sActiveDialog;
 // This is called when the user clicks on a found player to attempt to gather him in.
 static void
 gather_player_callback(w_found_players* foundPlayersWidget, const SSLP_ServiceInstance* player) {
-    assert(foundPlayersWidget != NULL);
+        assert(foundPlayersWidget != NULL);
     
 	// Either gather will succeed, in which case we don't want to see player, or
 	// an error will occur in gathering, in which case we also don't want to see player.
-    foundPlayersWidget->hide_player(player);
+        foundPlayersWidget->hide_player(player);
     
-    if(NetGatherPlayer(player, reassign_player_colors)) {
-		dialog* theDialog = foundPlayersWidget->get_owning_dialog();
+        dialog* theDialog = foundPlayersWidget->get_owning_dialog();
 
-		assert(theDialog != NULL);
+        assert(theDialog != NULL);
+        
+        int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
 
-		w_players_in_game2* thePlayersDisplay =
+        if(theGatherPlayerResult != kGatherPlayerFailed) {
+                w_players_in_game2* thePlayersDisplay =
 			dynamic_cast<w_players_in_game2*>(theDialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
 
 		assert(thePlayersDisplay != NULL);
 
 		thePlayersDisplay->update_display();
                 
-                modify_control_enabled(theDialog, iOK, CONTROL_ACTIVE);
+                if(theGatherPlayerResult == kGatheredUnacceptablePlayer)
+                {
+                        sGathererMayStartGame= false;
+                }
+                
+                modify_control_enabled(theDialog, iOK, sGathererMayStartGame ? CONTROL_ACTIVE : CONTROL_INACTIVE);
 	}
+        
+        theDialog->draw_dirty_widgets();
 }
 
 
@@ -853,38 +881,44 @@ autogather_callback(w_select* inAutoGather) {
 // These three callbacks are called during an SSLP_Pump(), by SSLP to notify us of its findings.
 static void
 found_player_callback(const SSLP_ServiceInstance* player) {
-    assert(sActiveDialog != NULL);
-    
-    w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
-    assert(theFoundPlayers != NULL);
-    
-    theFoundPlayers->found_player(player);
-    
-    w_toggle*	theAutoGather = dynamic_cast<w_toggle*>(sActiveDialog->get_widget_by_id(iAUTO_GATHER));
-    assert(theAutoGather != NULL);
-    
-    if(theAutoGather->get_selection() > 0)
-        gather_player_callback(theFoundPlayers, player);
+        assert(sActiveDialog != NULL);
+        
+        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
+        assert(theFoundPlayers != NULL);
+        
+        theFoundPlayers->found_player(player);
+        
+        w_toggle*	theAutoGather = dynamic_cast<w_toggle*>(sActiveDialog->get_widget_by_id(iAUTO_GATHER));
+        assert(theAutoGather != NULL);
+        
+        if(theAutoGather->get_selection() > 0)
+                gather_player_callback(theFoundPlayers, player);
+                
+        sActiveDialog->draw_dirty_widgets();
 }
 
 static void
 lost_player_callback(const SSLP_ServiceInstance* player) {
-    assert(sActiveDialog != NULL);
-    
-    w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
-    assert(theFoundPlayers != NULL);
-    
-    theFoundPlayers->lost_player(player);
+        assert(sActiveDialog != NULL);
+        
+        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
+        assert(theFoundPlayers != NULL);
+        
+        theFoundPlayers->lost_player(player);
+
+        sActiveDialog->draw_dirty_widgets();
 }
 
 static void
 player_name_changed_callback(const SSLP_ServiceInstance* player) {
-    assert(sActiveDialog != NULL);
-    
-    w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
-    assert(theFoundPlayers != NULL);
-    
-    theFoundPlayers->player_name_changed(player);
+        assert(sActiveDialog != NULL);
+        
+        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
+        assert(theFoundPlayers != NULL);
+        
+        theFoundPlayers->player_name_changed(player);
+                
+        sActiveDialog->draw_dirty_widgets();
 }
 
 
@@ -897,14 +931,14 @@ gather_processing_function(dialog* inDialog) {
 
 #ifndef NETWORK_TEST_POSTGAME_DIALOG // because that test code replaces the real gather box
 #ifndef NETWORK_TEST_MICROPHONE_LOCALLY // same deal
-bool network_gather(void)
+bool network_gather(bool inResumingGame)
 {
 //printf("network_gather\n");
 
 	// Display game setup dialog
 	game_info myGameInfo;
 	player_info myPlayerInfo;
-	if (network_game_setup(&myPlayerInfo, &myGameInfo)) {
+	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame)) {
 		myPlayerInfo.desired_color = myPlayerInfo.color;
 		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
 
@@ -973,9 +1007,11 @@ bool network_gather(void)
                     
                     d.set_processing_function(gather_processing_function);
                     
+                    sGathererMayStartGame= true;
+                    
                     int theDialogResult;
                     
-                    if (NetGather(&myGameInfo, sizeof(game_info), (void *)&myPlayerInfo, sizeof(player_info))) {
+                    if (NetGather(&myGameInfo, sizeof(game_info), (void *)&myPlayerInfo, sizeof(player_info), inResumingGame)) {
 						players_w->start_displaying_actual_information();
 						players_w->update_display();
                         theDialogResult = d.run();
@@ -989,7 +1025,7 @@ bool network_gather(void)
                 
                     if(theDialogResult == 0) {
                         sUserWantsAutogather = autogather_w->get_selection() ? true : false;
-                        return NetStart();
+                        return true;
                     }
                     
                     NetCancelGather();
@@ -1053,9 +1089,15 @@ join_processing_function(dialog* inDialog) {
 		case netStartingUp: /* the game is starting up (we have the network topography) */
 			// dialog is finished (successfully) when game is starting.
 			assert(inDialog != NULL);
-			inDialog->quit(0);
+			inDialog->quit(kNetworkJoinedNewGame);
 
 			break;
+                        
+                case netStartingResumeGame: // like netStartingUp but we're resuming, not starting anew
+                        assert(inDialog != NULL);
+                        inDialog->quit(kNetworkJoinedResumeGame);
+                        
+                        break;
 
 		case netPlayerAdded:
 			if(last_join_state==netWaiting)
@@ -1092,6 +1134,8 @@ join_processing_function(dialog* inDialog) {
 				players_w->update_display();
 			}
 
+                        inDialog->draw_dirty_widgets();
+                        
 			break;
                         
                 case netChatMessageReceived:
@@ -1101,6 +1145,7 @@ join_processing_function(dialog* inDialog) {
                         if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
                             w_chat_history*	ch = dynamic_cast<w_chat_history*>(inDialog->get_widget_by_id(iCHAT_HISTORY));
                             ch->append_chat_entry(sending_player, chat_message);
+                            inDialog->draw_dirty_widgets();
                         }
                 break;
 
@@ -1125,7 +1170,7 @@ respond_to_hint_toggle(w_select* inToggle) {
 }
 
 
-bool network_join(void)
+int network_join(void)
 {
 //printf("network_join\n");
 
@@ -1257,16 +1302,20 @@ bool network_join(void)
                                                 cancel_w->set_identifier(iCANCEL);
 						d2.add(cancel_w);
  
-						// Need to pump SSLP to respond to FIND messages, to hint, etc.
-	                    d2.set_processing_function(join_processing_function);
-
-						// d2.run() returns -1 if player clicked cancel or error occured; 0 if accepted into game.
-						if (d2.run() == 0) {
+                        // Need to pump SSLP to respond to FIND messages, to hint, etc.
+                        d2.set_processing_function(join_processing_function);
+    
+                        int theDialogResult = d2.run(false /*play intro/exit sounds?  no because our retvalues always sound like cancels*/);
+                        // d2.run() returns -1 if player clicked cancel or error occured; kNetworkJoined{New|Resume}Game if accepted into game.
+                        if (theDialogResult != -1) {
                             game_info *myGameInfo = (game_info *)NetGetGameData();
                             NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
+                            
+                            // We make up for muting the dialog proper...
+                            play_dialog_sound(DIALOG_OK_SOUND);
 
-                            return true;
-                        }// d2.run() == 0 (accepted into game)
+                            return theDialogResult;
+                        }// theDialogResult != -1 (accepted into game)
 
                     }// did_join == true (call to NetGameJoin() worked to publish name)
 
