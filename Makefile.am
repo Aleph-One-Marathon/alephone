@@ -2,8 +2,8 @@
 
 SUBDIRS = Source_Files tools data
 
-# Requires automake 1.4
-AUTOMAKE_OPTIONS = 1.4 foreign
+# Requires automake 1.5
+AUTOMAKE_OPTIONS = 1.5 foreign
 
 EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows Makefile.BeOS \
   docs/MML.html docs/Cheat_Codes
