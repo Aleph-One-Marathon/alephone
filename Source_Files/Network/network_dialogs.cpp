@@ -346,9 +346,9 @@ get_dialog_game_options(
 	
 	// These used to be options in the dialog. now they are always true, i guess.
 	game_options |= (_ammo_replenishes | _weapons_replenish | _specials_replenish);
-#ifdef DEBUG
-	game_options |= _overhead_map_is_omniscient;
-#endif
+//#ifdef DEBUG
+//	game_options |= _overhead_map_is_omniscient;
+//#endif
 	if(game_type==_game_of_cooperative_play) game_options |= _overhead_map_is_omniscient;
 	if (get_boolean_control_value(dialog, iUNLIMITED_MONSTERS)) game_options |= _monsters_replenish;
 	if (get_boolean_control_value(dialog, iMOTION_SENSOR_DISABLED)) game_options |= _motion_sensor_does_not_work;
