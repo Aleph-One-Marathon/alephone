@@ -15,4 +15,4 @@ EXTRA_libnetwork_a_SOURCES = network_dummy.cpp network.cpp network_tcp.cpp \
   network_udp.cpp network_dialogs_sdl.cpp network_lookup_sdl.cpp network_stream.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries \
-  -I$(top_srcdir)/Source_Files/Misc
+  -I$(top_srcdir)/Source_Files/Misc -I$(top_srcdir)/Source_Files/ModelView
