@@ -190,6 +190,32 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	// Set these up now
 	if (Model.InverseVSIndices.empty()) Model.BuildInverseVSIndices();
 	
+	// Handle the normals; the read-in routine reads to Normals
+	if (!Model.Normals.empty() && Model.NormSources.empty())
+	{
+		// Are all the normals zero?
+		bool AllZero = true;
+		int NumNormVals = Model.Normals.size();
+		for (int k=0; k<NumNormVals; k++)
+		{
+			if (Model.Normals[k] != 0)
+			{
+				AllZero = false;
+				break;
+			}
+		}
+		
+		// If so, then don't use normals; otherwise, save them in NormSources,
+		// an array that serves as a source of transformed normals
+		if (AllZero)
+			Model.Normals.clear();
+		else
+		{
+			Model.NormSources.resize(NumNormVals);
+			objlist_copy(Model.NormSrcBase(),Model.NormBase(),NumNormVals);
+		}
+	}
+	
 	// First, find the neutral-position vertices
 	Model.FindPositions();
 	
@@ -374,6 +400,8 @@ bool XML_Dim3DataBlock::RequestAbort()
 static XML_ElementParser
 	CreatorParser("Creator"),
 	ViewBoxParser("View_Box"),
+	ShadingParser("Shading"),
+	ShadowBoxParser("Shadow_Box"),
 	VerticesParser("Vertexes"),
 	BonesParser("Bones"),
 	EffectsParser("Effects"),
@@ -625,6 +653,7 @@ class XML_TriVertexParser: public XML_ElementParser
 {
 	uint16 ID;
 	float Txtr_X, Txtr_Y;
+	float Norm_X, Norm_Y, Norm_Z;
 	
 public:
 	bool Start();
@@ -640,6 +669,7 @@ bool XML_TriVertexParser::Start()
 	// Reasonable defaults:
 	ID = (uint16)NONE;
 	Txtr_X = 0.5, Txtr_Y = 0.5;
+	Norm_X = Norm_Y = Norm_Z = 0;
 	
 	return true;
 }
@@ -649,6 +679,14 @@ bool XML_TriVertexParser::HandleAttribute(const char *Tag, const char *Value)
 	if (StringsEqual(Tag,"ID"))
 	{
 		return ReadUInt16Value(Value,ID);
+	}
+	else if (StringsEqual(Tag,"uv"))
+	{
+		return (sscanf(Value,"%f,%f",&Txtr_X,&Txtr_Y) == 2);
+	}
+	else if (StringsEqual(Tag,"n"))
+	{
+		return (sscanf(Value,"%f,%f,%f",&Norm_X,&Norm_Z,&Norm_Y) == 3);	// Dim3's odd order
 	}
 	else if (StringsEqual(Tag,"xtxt"))
 	{
@@ -665,11 +703,24 @@ bool XML_TriVertexParser::HandleAttribute(const char *Tag, const char *Value)
 
 bool XML_TriVertexParser::AttributesDone()
 {
+	// Normalize the normal, if nonzero
+	float NSQ = Norm_X*Norm_X + Norm_Y*Norm_Y + Norm_Z*Norm_Z;
+	if (NSQ != 0)
+	{
+		float NMult = 1/sqrt(NSQ);
+		Norm_X *= NMult;
+		Norm_Y *= NMult;
+		Norm_Z *= NMult;
+	}
+
 	GLushort Index = ModelPtr->VertIndices.size();
 	ModelPtr->VertIndices.push_back(Index);
 	ModelPtr->VtxSrcIndices.push_back(ID);
 	ModelPtr->TxtrCoords.push_back(Txtr_X);
-	ModelPtr->TxtrCoords.push_back(Txtr_Y);	
+	ModelPtr->TxtrCoords.push_back(Txtr_Y);
+	ModelPtr->Normals.push_back(Norm_X);
+	ModelPtr->Normals.push_back(Norm_Y);
+	ModelPtr->Normals.push_back(Norm_Z);
 	return true;
 }
 
@@ -721,7 +772,7 @@ bool XML_FrameParser::End()
 {
 	// Some of the data was set up by child elements, so all the processing
 	// can be back here.
-	for (unsigned b=0; b<ReadFrame.size(); b++)
+	for (int b=0; b<ReadFrame.size(); b++)
 		ModelPtr->Frames.push_back(ReadFrame[b]);
 	
 	FrameTags.push_back(NT);
@@ -984,6 +1035,8 @@ void Dim3_SetupParseTree()
 	Dim3_Parser.AddChild(&CreatorParser);
 	Dim3_Parser.AddChild(&BoundingBoxParser);	
 	Dim3_Parser.AddChild(&ViewBoxParser);
+	Dim3_Parser.AddChild(&ShadingParser);
+	Dim3_Parser.AddChild(&ShadowBoxParser);
 
 	VerticesParser.AddChild(&VertexParser);
 	Dim3_Parser.AddChild(&VerticesParser);
@@ -1010,6 +1063,8 @@ void Dim3_SetupParseTree()
 	FramesParser.AddChild(&FrameParser);
 	Dim3_Parser.AddChild(&FramesParser);
 	
+	SeqFramesParser.AddChild(&SeqFrameParser);
+	SequenceParser.AddChild(&SeqFramesParser);
 	SequenceParser.AddChild(&SeqLoopParser);
 	SequencesParser.AddChild(&SequenceParser);
 	Dim3_Parser.AddChild(&SequencesParser);

@@ -60,6 +60,16 @@ inline void TransformPoint(GLfloat *Dest, GLfloat *Src, Model3D_Transform& T)
 	}
 }
 
+// Like above, but a vector, such as a normal (source and dest must be different arrays)
+inline void TransformVector(GLfloat *Dest, GLfloat *Src, Model3D_Transform& T)
+{
+	for (int ic=0; ic<3; ic++)
+	{
+		GLfloat *Row = T.M[ic];
+		Dest[ic] = ScalarProd(Src,Row);
+	}
+}
+
 // Bone and Frame (positions, angles) -> Transform Matrix
 static void FindFrameTransform(Model3D_Transform& T, Model3D_Frame& Frame);
 static void FindBoneTransform(Model3D_Transform& T, Model3D_Frame& Frame, Model3D_Bone& Bone);
@@ -81,6 +91,7 @@ void Model3D::Clear()
 	Colors.clear();
 	VtxSrcIndices.clear();
 	VtxSources.clear();
+	NormSources.clear();
 	InverseVSIndices.clear();
 	InvVSIPointers.clear();
 	Bones.clear();
@@ -119,6 +130,13 @@ struct FlaggedVector
 // Normalize the normals
 void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 {
+	// Copy in normal sources for processing
+	if (!NormSources.empty())
+	{
+		Normals.resize(NormSources.size());
+		objlist_copy(NormBase(),NormSrcBase(),NormSources.size());
+	}
+	
 	// Which kind of special processing?
 	switch(NormalType)
 	{
@@ -421,6 +439,17 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 				*(NormalPtr++) *= -1;
 		}
 	}
+	
+	// Copy back out to the normal sources;
+	// do the copying out if the vertices have sources,
+	// which is the case for boned models.
+	if (!VtxSources.empty())
+	{
+		NormSources.resize(Normals.size());
+		objlist_copy(NormSrcBase(),NormBase(),NormSources.size());
+	}
+	else
+		NormSources.clear();
 }
 
 	
@@ -577,6 +606,8 @@ void Model3D::FindPositions()
 	// Positions already there
 	if (VtxSrcIndices.empty()) return;
 	
+	// Straight copy of the vertices:
+	
 	int NumVertices = VtxSrcIndices.size();
 	Positions.resize(3*NumVertices);
 	
@@ -603,25 +634,21 @@ void Model3D::FindPositions()
 			*(PP++) = 0;
 		}
 	}
+	
+	// Copy in the normals
+	Normals.resize(NormSources.size());
+	objlist_copy(NormBase(),NormSrcBase(),NormSources.size());
 }
 
 // Frame case
 bool Model3D::FindPositions(GLshort FrameIndex)
 {
-	// Fallback in case of bad inputs: the neutral position
+	// Bad inputs: do nothing and return false
 	
-	if (Frames.empty())
-	{
-		FindPositions();
-		return false;
-	}
+	if (Frames.empty()) return false;
 	
-	unsigned NumBones = Bones.size();
-	if (FrameIndex < 0 || NumBones*FrameIndex >= Frames.size())
-	{
-		FindPositions();
-		return false;
-	}
+	int NumBones = Bones.size();
+	if (FrameIndex < 0 || NumBones*FrameIndex >= Frames.size()) return false;
 	
 	if (InverseVSIndices.empty()) BuildInverseVSIndices();
 	
@@ -673,6 +700,9 @@ bool Model3D::FindPositions(GLshort FrameIndex)
 		Parent = ib;
 	}
 	
+	bool NormalsPresent = !NormSources.empty();
+	if (NormalsPresent) Normals.resize(NormSources.size());
+	
 	for (unsigned ivs=0; ivs<VtxSources.size(); ivs++)
 	{
 		Model3D_VertexSource& VS = VtxSources[ivs];
@@ -682,6 +712,16 @@ bool Model3D::FindPositions(GLshort FrameIndex)
 		{
 			Model3D_Transform& T0 = BoneMatrices[VS.Bone0];
 			TransformPoint(Position,VS.Position,T0);
+
+			if (NormalsPresent)
+			{
+				for (int iv=InvVSIPointers[ivs]; iv<InvVSIPointers[ivs+1]; iv++)
+				{
+					int Indx = 3*InverseVSIndices[iv];
+					TransformVector(NormBase() + Indx, NormSrcBase() + Indx, T0);
+				}
+			}			
+			
 			GLfloat Blend = VS.Blend;
 			if (VS.Bone1 >= 0 && Blend != 0)
 			{
@@ -692,11 +732,38 @@ bool Model3D::FindPositions(GLshort FrameIndex)
 				VecSub(PosExtra,Position,PosDiff);
 				VecScalarMultTo(PosDiff,Blend);
 				VecAddTo(Position,PosDiff);
+				
+				if (NormalsPresent)
+				{
+					for (int iv=InvVSIPointers[ivs]; iv<InvVSIPointers[ivs+1]; iv++)
+					{
+						int Indx = 3*InverseVSIndices[iv];
+						GLfloat NormExtra[3];
+						GLfloat NormDiff[3];
+						GLfloat *OrigNorm = NormSrcBase() + Indx;
+						GLfloat *Norm = NormBase() + Indx;
+						TransformVector(NormExtra,OrigNorm,T1);
+						VecSub(NormExtra,Norm,NormDiff);
+						VecScalarMultTo(NormDiff,Blend);
+						VecAddTo(Norm,NormDiff);
+					}
+				}			
 			}
 		}
 		else	// The assumed root bone (identity transformation)
+		{
 			VecCopy(VS.Position,Position);
+			if (NormalsPresent)
+			{
+				for (int iv=InvVSIPointers[ivs]; iv<InvVSIPointers[ivs+1]; iv++)
+				{
+					int Indx = 3*InverseVSIndices[iv];
+					VecCopy(NormSrcBase() + Indx, NormBase() + Indx);
+				}
+			}
+		}
 		
+		// Copy found position into vertex array!
 		for (int iv=InvVSIPointers[ivs]; iv<InvVSIPointers[ivs+1]; iv++)
 			VecCopy(Position,PosBase() + 3*InverseVSIndices[iv]);
 	}
@@ -714,18 +781,13 @@ GLshort Model3D::NumSeqFrames(GLshort SeqIndex)
 }
 
 bool Model3D::FindPositions(GLshort SeqIndex, GLshort FrameIndex)
-{	
+{
+	// Bad inputs: do nothing and return false
+	
 	GLshort NumSF = NumSeqFrames(SeqIndex);
-	if (NumSF <= 0)
-	{
-		FindPositions();
-		return false;
-	}
-	if (FrameIndex < 0 || FrameIndex >= NumSF)
-	{
-		FindPositions();
-		return false;
-	}
+	if (NumSF <= 0) return false;
+	
+	if (FrameIndex < 0 || FrameIndex >= NumSF) return false;
 	
 	Model3D_SeqFrame& SF = SeqFrames[SeqFrmPointers[SeqIndex] + FrameIndex];
 	
@@ -735,7 +797,7 @@ bool Model3D::FindPositions(GLshort SeqIndex, GLshort FrameIndex)
 	FindFrameTransform(TSF,SF);
 	
 	Model3D_Transform TTot;
-	TMatMultiply(TTot,Transform,TSF);
+	TMatMultiply(TTot,TransformPos,TSF);
 	
 	int NumVerts = Positions.size()/3;
 	GLfloat *Pos = PosBase();
@@ -745,6 +807,22 @@ bool Model3D::FindPositions(GLshort SeqIndex, GLshort FrameIndex)
 		TransformPoint(NewPos,Pos,TTot);
 		VecCopy(NewPos,Pos);
 		Pos += 3;
+	}
+	
+	bool NormalsPresent = !NormSources.empty();
+	if (NormalsPresent)
+	{	
+		// OK, since the bones don't change bulk
+		TMatMultiply(TTot,TransformNorm,TSF);
+		
+		GLfloat *Norm = NormBase();
+		for (int iv=0; iv<NumVerts; iv++)
+		{
+			GLfloat NewNorm[3];
+			TransformVector(NewNorm,Norm,TTot);
+			VecCopy(NewNorm,Norm);
+			Norm += 3;
+		}
 	}
 	
 	return true;
