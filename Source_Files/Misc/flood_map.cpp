@@ -60,8 +60,8 @@ struct node_data /* 16 bytes */
 /* ---------- globals */
 
 static short node_count= 0, last_node_index_expanded= NONE;
-static struct node_data *nodes;
-static short *visited_polygons;
+static struct node_data *nodes = NULL;
+static short *visited_polygons = NULL;
 
 /* ---------- private prototypes */
 

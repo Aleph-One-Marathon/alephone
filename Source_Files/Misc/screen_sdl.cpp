@@ -32,6 +32,7 @@
 #include "ViewControl.h"
 #include "scripting.h"
 #include "screen_drawing.h"
+#include "mouse.h"
 
 
 // Constants
@@ -356,6 +357,7 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 		assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
 		change_screen_mode(ViewSizes[msize].OverallWidth, ViewSizes[msize].OverallHeight, mode->bit_depth, false);
 		clear_screen();
+		recenter_mouse();
 	}
 
 	frame_count = frame_index = 0;
@@ -588,9 +590,43 @@ void render_screen(short ticks_elapsed)
  *  Blit world view to screen
  */
 
+template <class T>
+static inline void quadruple(const T *src, int src_pitch, T *dst, int dst_pitch, const SDL_Rect &dst_rect)
+{
+	int width = dst_rect.w / 2;
+	int height = dst_rect.h / 2;
+	dst += dst_rect.y * dst_pitch / sizeof(T) + dst_rect.x;
+	T *dst2 = dst + dst_pitch / sizeof(T);
+
+	while (height-- > 0) {
+		for (int x=0; x<width; x++) {
+			T p = src[x];
+			dst[x * 2] = dst[x * 2 + 1] = p;
+			dst2[x * 2] = dst2[x * 2 + 1] = p;
+		}
+		src += src_pitch / sizeof(T);
+		dst += dst_pitch * 2 / sizeof(T);
+		dst2 += dst_pitch * 2 / sizeof(T);
+	}
+}
+
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 {
-	SDL_BlitSurface(world_pixels, NULL, main_surface, &destination);
+	if (hi_rez) {
+		SDL_BlitSurface(world_pixels, NULL, main_surface, &destination);
+	} else {
+		switch (world_pixels->format->BytesPerPixel) {
+			case 1:
+				quadruple((pixel8 *)world_pixels->pixels, world_pixels->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
+				break;
+			case 2:
+				quadruple((pixel16 *)world_pixels->pixels, world_pixels->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination);
+				break;
+			case 4:
+				quadruple((pixel32 *)world_pixels->pixels, world_pixels->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
+				break;
+		}
+	}
 	SDL_UpdateRects(main_surface, 1, &destination);
 }
 
@@ -918,13 +954,13 @@ void darken_world_window(void)
 	// Draw pattern
 	switch (main_surface->format->BytesPerPixel) {
 		case 1:
-			draw_pattern_rect((uint8 *)main_surface->pixels, main_surface->pitch, pixel, r);
+			draw_pattern_rect((pixel8 *)main_surface->pixels, main_surface->pitch, pixel, r);
 			break;
 		case 2:
-			draw_pattern_rect((uint16 *)main_surface->pixels, main_surface->pitch, pixel, r);
+			draw_pattern_rect((pixel16 *)main_surface->pixels, main_surface->pitch, pixel, r);
 			break;
 		case 4:
-			draw_pattern_rect((uint32 *)main_surface->pixels, main_surface->pitch, pixel, r);
+			draw_pattern_rect((pixel32 *)main_surface->pixels, main_surface->pitch, pixel, r);
 			break;
 	}
 

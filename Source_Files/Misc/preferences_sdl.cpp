@@ -174,13 +174,17 @@ static const char *depth_labels[3] = {
 	"8 Bit", "16 Bit", NULL
 };
 
+static const char *resolution_labels[3] = {
+	"Low", "High", NULL
+};
+
 static const char *size_labels[9] = {
 	"320x160", "480x240", "640x320", "640x480 (no HUD)",
 	"800x400", "800x600 (no HUD)", "1024x512", "1024x768 (no HUD)", NULL
 };
 
 static const char *gamma_labels[9] = {
-	"Darkest", "Darker", "Dark", "Normal", "Light", "Really Light", "Even Lighter", "Lightest"
+	"Darkest", "Darker", "Dark", "Normal", "Light", "Really Light", "Even Lighter", "Lightest", NULL
 };
 
 static void graphics_dialog(void *arg)
@@ -192,9 +196,12 @@ static void graphics_dialog(void *arg)
 	d.add(new w_static_text("GRAPHICS SETUP", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
 	w_toggle *depth_w = new w_toggle("Color Depth", graphics_preferences->screen_mode.bit_depth == 16, depth_labels);
-	if (graphics_preferences->screen_mode.acceleration == _no_acceleration)
+	w_toggle *resolution_w = new w_toggle("Resolution", graphics_preferences->screen_mode.high_resolution, resolution_labels);
+	if (graphics_preferences->screen_mode.acceleration == _no_acceleration) {
 		d.add(depth_w);
-	w_select *size_w = new w_select("Resolution", graphics_preferences->screen_mode.size, size_labels);
+		d.add(resolution_w);
+	}
+	w_select *size_w = new w_select("Screen Size", graphics_preferences->screen_mode.size, size_labels);
 	d.add(size_w);
 	w_select *gamma_w = new w_select("Brightness", graphics_preferences->screen_mode.gamma_level, gamma_labels);
 	d.add(gamma_w);
@@ -218,6 +225,12 @@ static void graphics_dialog(void *arg)
 			graphics_preferences->screen_mode.bit_depth = depth;
 			changed = true;
 			// don't change mode now; it will be changed when the game starts
+		}
+
+		bool hi_res = resolution_w->get_selection();
+		if (hi_res != graphics_preferences->screen_mode.high_resolution) {
+			graphics_preferences->screen_mode.high_resolution = hi_res;
+			changed = true;
 		}
 
 		int size = size_w->get_selection();

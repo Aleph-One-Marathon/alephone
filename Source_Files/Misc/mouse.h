@@ -10,5 +10,6 @@ void enter_mouse(short type);
 void test_mouse(short type, uint32 *action_flags, fixed *delta_yaw, fixed *delta_pitch, fixed *delta_velocity);
 void exit_mouse(short type);
 void mouse_idle(short type);
+void recenter_mouse(void);
 
 #endif

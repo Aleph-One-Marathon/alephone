@@ -1,5 +1,10 @@
 Change log of the SDL version of Aleph One
 
+September 13, 2000
+ - resource fork of MacBinary II files was not correctly accessed if data
+   fork size was a multiple of 128 (or 0)
+ - implemented low-resolution display
+
 September 12, 2000
  - moved RECTANGLE_WIDTH/HEIGHT to csmacros.h; csdialogs*.* is not used any more
    by the SDL version

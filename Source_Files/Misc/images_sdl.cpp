@@ -405,13 +405,13 @@ SDL_Surface *rescale_surface(SDL_Surface *s, int width, int height)
 
 	switch (s->format->BytesPerPixel) {
 		case 1:
-			rescale((uint8 *)s->pixels, s->pitch, (uint8 *)s2->pixels, s2->pitch, width, height, dx, dy);
+			rescale((pixel8 *)s->pixels, s->pitch, (pixel8 *)s2->pixels, s2->pitch, width, height, dx, dy);
 			break;
 		case 2:
-			rescale((uint16 *)s->pixels, s->pitch, (uint16 *)s2->pixels, s2->pitch, width, height, dx, dy);
+			rescale((pixel16 *)s->pixels, s->pitch, (pixel16 *)s2->pixels, s2->pitch, width, height, dx, dy);
 			break;
 		case 4:
-			rescale((uint32 *)s->pixels, s->pitch, (uint32 *)s2->pixels, s2->pitch, width, height, dx, dy);
+			rescale((pixel32 *)s->pixels, s->pitch, (pixel32 *)s2->pixels, s2->pitch, width, height, dx, dy);
 			break;
 	}
 

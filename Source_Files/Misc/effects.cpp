@@ -52,7 +52,7 @@ struct effect_definition *get_effect_definition(short type);
 /* import effect definition constants, structures and globals */
 #include "effect_definitions.h"
 
-struct effect_data *effects;
+struct effect_data *effects = NULL;
 
 /* ---------- code */
 

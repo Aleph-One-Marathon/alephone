@@ -116,7 +116,7 @@ struct fade_data
 
 /* ---------- globals */
 
-static struct fade_data *fade;
+static struct fade_data *fade = NULL;
 
 static uint16 fades_random_seed= 0x1;
 

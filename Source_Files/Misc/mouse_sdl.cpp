@@ -26,14 +26,9 @@ void enter_mouse(short type)
 		SDL_WM_GrabInput(SDL_GRAB_ON);
 #endif
 		SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
-		SDL_Surface *s = SDL_GetVideoSurface();
-		center_x = s->w / 2;
-		center_y = s->h / 2;
-		SDL_WarpMouse(center_x, center_y);
-
-		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
-
 		mouse_active = true;
+		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
+		recenter_mouse();
 	}
 }
 
@@ -50,6 +45,21 @@ void exit_mouse(short type)
 #endif
 		SDL_EventState(SDL_MOUSEMOTION, SDL_ENABLE);
 		mouse_active = false;
+	}
+}
+
+
+/*
+ *  Calculate new center mouse position when screen size has changed
+ */
+
+void recenter_mouse(void)
+{
+	if (mouse_active) {
+		SDL_Surface *s = SDL_GetVideoSurface();
+		center_x = s->w / 2;
+		center_y = s->h / 2;
+		SDL_WarpMouse(center_x, center_y);
 	}
 }
 

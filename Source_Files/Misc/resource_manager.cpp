@@ -99,7 +99,7 @@ bool res_file_t::read_map(void)
 		fork_start = offset;
 		file_size = offset + rsrc_length;
 	} else if (is_macbinary(f, data_length, rsrc_length)) {
-		fork_start = 128 + (data_length | 0x7f) + 1;
+		fork_start = 128 + ((data_length + 0x7f) & ~0x7f);
 		file_size = fork_start + rsrc_length;
 	}
 

@@ -228,6 +228,7 @@ keyboard; all keys are mapped by position):
 
     F1      - Decrease screen size
     F2      - Increase screen size
+    F3      - Toggle high/low resolution
     F4      - Reset OpenGL textures
     F5      - Make the chase cam switch sides
     F6      - Toggle chase cam
@@ -469,7 +470,6 @@ them:
 And a list of known bugs:
 
  - Mouse control under BeOS doesn't work (SDL problem)
- - Lo-res mode (F3) doesn't work
  - Snapshots (F9) don't work when OpenGL is active
  - darken_world_window() doesn't work when OpenGL is active
  - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown

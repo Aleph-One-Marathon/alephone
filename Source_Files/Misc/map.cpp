@@ -108,33 +108,33 @@ static struct environment_definition environment_definitions[]=
 
 /* ---------- map globals */
 
-struct static_data *static_world;
-struct dynamic_data *dynamic_world;
+struct static_data *static_world = NULL;
+struct dynamic_data *dynamic_world = NULL;
 
-struct object_data *objects;
-struct monster_data *monsters;
-struct projectile_data *projectiles;
+struct object_data *objects = NULL;
+struct monster_data *monsters = NULL;
+struct projectile_data *projectiles = NULL;
 
-struct polygon_data *map_polygons;
-struct side_data *map_sides;
-struct line_data *map_lines;
-struct endpoint_data *map_endpoints;
-struct platform_data *platforms;
+struct polygon_data *map_polygons = NULL;
+struct side_data *map_sides = NULL;
+struct line_data *map_lines = NULL;
+struct endpoint_data *map_endpoints = NULL;
+struct platform_data *platforms = NULL;
 
-struct ambient_sound_image_data *ambient_sound_images;
-struct random_sound_image_data *random_sound_images;
+struct ambient_sound_image_data *ambient_sound_images = NULL;
+struct random_sound_image_data *random_sound_images = NULL;
 
-short *map_indexes;
+short *map_indexes = NULL;
 
-byte *automap_lines;
-byte *automap_polygons;
+byte *automap_lines = NULL;
+byte *automap_polygons = NULL;
 
-struct map_annotation *map_annotations;
+struct map_annotation *map_annotations = NULL;
 
-struct map_object *saved_objects;
-struct item_placement_data *placement_information;
+struct map_object *saved_objects = NULL;
+struct item_placement_data *placement_information = NULL;
 
-bool game_is_networked;
+bool game_is_networked = false;
 
 // This could be a handle
 struct map_memory_data {
@@ -1331,22 +1331,21 @@ bool keep_line_segment_out_of_walls(
 					world_distance lowest_ceiling;
 					world_distance highest_floor;
 
-					// CB: If there is no adjacent polygon, we assume a solid side
-					if (adjacent_polygon == NULL)
-						goto line_is_solid;
-
-					lowest_ceiling= adjacent_polygon->ceiling_height<polygon->ceiling_height ? adjacent_polygon->ceiling_height : polygon->ceiling_height;
-					highest_floor= adjacent_polygon->floor_height>polygon->floor_height ? adjacent_polygon->floor_height : polygon->floor_height;
+					if (adjacent_polygon) {
+						lowest_ceiling= adjacent_polygon->ceiling_height<polygon->ceiling_height ? adjacent_polygon->ceiling_height : polygon->ceiling_height;
+						highest_floor= adjacent_polygon->floor_height>polygon->floor_height ? adjacent_polygon->floor_height : polygon->floor_height;
+					} else {
+						lowest_ceiling = highest_floor = 0;
+					}
 
 					/* if a) this line is solid, b) the new polygon is farther than maximum_delta height
 						above our feet, or c) the new polygon is lower than the top of our head then
 						we canÕt move into the new polygon */
-					if (LINE_IS_SOLID(line) ||
+					if (LINE_IS_SOLID(line) || adjacent_polygon == NULL ||
 						adjacent_polygon->floor_height-p1->z>maximum_delta_height ||
 						adjacent_polygon->ceiling_height-p1->z<height ||
 						lowest_ceiling-highest_floor<height)
 					{
-					line_is_solid:
 					//	if (unsigned_line_index==104) dprintf("inside solid line #%d (%p) in polygon #%d", unsigned_line_index, line, polygon_index);
 						
 						switch (state)
@@ -1378,15 +1377,18 @@ bool keep_line_segment_out_of_walls(
 								break;
 							
 							default:
-							// LP change:
-							assert(false);
-							// halt();
+								assert(false);
 						}
 					}
 					else
 					{
-						if (adjacent_polygon->floor_height>*adjusted_floor_height) *adjusted_floor_height= adjacent_polygon->floor_height, *supporting_polygon_index= adjacent_polygon_index;
-						if (adjacent_polygon->ceiling_height>*adjusted_ceiling_height) *adjusted_ceiling_height= adjacent_polygon->ceiling_height;
+						if (adjacent_polygon->floor_height>*adjusted_floor_height) {
+							*adjusted_floor_height= adjacent_polygon->floor_height;
+							*supporting_polygon_index= adjacent_polygon_index;
+						}
+						if (adjacent_polygon->ceiling_height>*adjusted_ceiling_height) {
+							*adjusted_ceiling_height= adjacent_polygon->ceiling_height;
+						}
 					}
 				}
 			}

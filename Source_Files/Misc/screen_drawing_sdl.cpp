@@ -362,13 +362,13 @@ int draw_text(SDL_Surface *s, const char *text, int length, int x, int y, uint32
 	int width = 0;
 	switch (s->format->BytesPerPixel) {
 		case 1:
-			width = draw_text((const uint8 *)text, length, x, y, (uint8 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
+			width = draw_text((const uint8 *)text, length, x, y, (pixel8 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
 			break;
 		case 2:
-			width = draw_text((const uint8 *)text, length, x, y, (uint16 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
+			width = draw_text((const uint8 *)text, length, x, y, (pixel16 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
 			break;
 		case 4:
-			width = draw_text((const uint8 *)text, length, x, y, (uint32 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
+			width = draw_text((const uint8 *)text, length, x, y, (pixel32 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
 			break;
 	}
 	if (s == SDL_GetVideoSurface())
@@ -806,13 +806,13 @@ clip_line:
 			// Line completely visible, draw it
 			switch (s->format->BytesPerPixel) {
 				case 1:
-					draw_thin_line_noclip((uint8 *)s->pixels, s->pitch, v1, v2, pixel);
+					draw_thin_line_noclip((pixel8 *)s->pixels, s->pitch, v1, v2, pixel);
 					break;
 				case 2:
-					draw_thin_line_noclip((uint16 *)s->pixels, s->pitch, v1, v2, pixel);
+					draw_thin_line_noclip((pixel16 *)s->pixels, s->pitch, v1, v2, pixel);
 					break;
 				case 4:
-					draw_thin_line_noclip((uint32 *)s->pixels, s->pitch, v1, v2, pixel);
+					draw_thin_line_noclip((pixel32 *)s->pixels, s->pitch, v1, v2, pixel);
 					break;
 			}
 

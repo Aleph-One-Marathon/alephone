@@ -34,7 +34,7 @@ Aug 29, 2000 (Loren Petrich):
 
 /* ---------- globals */
 
-struct light_data *lights;
+struct light_data *lights = NULL;
 
 /* ---------- private prototypes */
 
