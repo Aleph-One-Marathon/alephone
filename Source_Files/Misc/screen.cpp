@@ -92,6 +92,11 @@ Jul 5, 2000 (Loren Petrich):
 	render_screen(), and of getting as much resizing as possible into render_screen().
 	The unavoidable exceptions are resized to 640*480, because Bungie's original resizers
 	are inadequate for the task ahead.
+
+Jul 6, 2000 (Loren Petrich):
+	Got HUD's position generalized
+	Fixed dump_screen so that it works properly in higher resolutions
+	Added bigger screen-size values and increased the maximum size accordingly
 */
 
 /*
@@ -163,8 +168,11 @@ Jul 5, 2000 (Loren Petrich):
 #define DESIRED_SCREEN_HEIGHT 480
 
 /* standard screen width is twice height */
-#define MAXIMUM_WORLD_WIDTH 640
-#define MAXIMUM_WORLD_HEIGHT 480
+// LP change: to what's in the definitions below
+#define MAXIMUM_WORLD_WIDTH 1024
+#define MAXIMUM_WORLD_HEIGHT 768
+// #define MAXIMUM_WORLD_WIDTH 640
+// #define MAXIMUM_WORLD_HEIGHT 480
 
 #define DEFAULT_WORLD_WIDTH 640
 #define DEFAULT_WORLD_HEIGHT 320
@@ -201,8 +209,11 @@ const ViewSizeData ViewSizes[NUMBER_OF_VIEW_SIZES] =
 	{640, 480, 480, 240, true},
 	{640, 480, 640, 320, true},
 	{640, 480, 640, 480, false},
+	{800, 600, 800, 400, true},
+	{800, 600, 800, 600, false},
+	{1024, 768, 1024, 512, true},
+	{1024, 768, 1024, 768, false},
 };
-
 
 // Note: the overhead map will always fill all of the screen except for the HUD,
 // and the terminal display will always have a size of 640*320.
@@ -786,10 +797,15 @@ void render_screen(
 	short OverallHeight = VS.OverallHeight - (VS.ShowHUD ? 160 : 0);
 	short BufferWidth, BufferHeight;
 	
+	// Offsets for placement in the screen
+	short ScreenOffsetWidth = ((RECTANGLE_WIDTH(&ScreenRect) - VS.OverallWidth) >> 1) + ScreenRect.left;
+	short ScreenOffsetHeight = ((RECTANGLE_HEIGHT(&ScreenRect) - VS.OverallHeight) >> 1) + ScreenRect.top;
+	
 	// HUD location
 	Rect HUD_DestRect;
 	short HUD_Offset = (OverallWidth - 640) >> 1;
 	SetRect(&HUD_DestRect, HUD_Offset, OverallHeight, HUD_Offset + 640, VS.OverallHeight);
+	OffsetRect(&HUD_DestRect, ScreenOffsetWidth, ScreenOffsetHeight);
 	
 	bool ChangedSize = false;
 	
@@ -832,7 +848,7 @@ void render_screen(
 	SetRect(&ViewRect,0,0,BufferWidth,BufferHeight);
 	short OffsetWidth = (OverallWidth - BufferWidth) >> 1;
 	short OffsetHeight = (OverallHeight - BufferHeight) >> 1;
-	OffsetRect(&ViewRect,OffsetWidth,OffsetHeight);
+	OffsetRect(&ViewRect, OffsetWidth+ScreenOffsetWidth, OffsetHeight+ScreenOffsetHeight);
 	
 	if (OffsetWidth != PrevOffsetWidth)
 	{
@@ -1629,12 +1645,15 @@ static void set_overhead_map_status( /* it has changed, this is the new status *
 {
 	static struct screen_mode_data previous_screen_mode;
 	
+	// LP: this stuff is now superfluous
+	/*
 	if (!status)
 	{
 		screen_mode= previous_screen_mode;
 	}
 	else
 	{
+	
 		previous_screen_mode= screen_mode;
 		screen_mode.high_resolution= TRUE;
 		switch (screen_mode.size)
@@ -1645,6 +1664,7 @@ static void set_overhead_map_status( /* it has changed, this is the new status *
 				break;
 		}
 	}
+	*/
 	world_view->overhead_map_active= status;
 	// LP change: keep the sounds going
 	// change_screen_mode_keep_sounds(&screen_mode, TRUE);
@@ -1663,7 +1683,8 @@ static void set_terminal_status( /* It has changed, this is the new state.. */
 	
 	if(!status)
 	{
-		screen_mode= previous_screen_mode;
+		// LP: this stuff is now superfluous
+		// screen_mode= previous_screen_mode;
 		if(world_view->effect==_render_effect_fold_out)
 		{
 			effect= world_view->effect;
@@ -1673,6 +1694,8 @@ static void set_terminal_status( /* It has changed, this is the new state.. */
 	}
 	else
 	{
+		// LP: this stuff is now superfluous
+		/*
 		previous_screen_mode= screen_mode;
 		screen_mode.high_resolution= TRUE;
 		switch(screen_mode.size)
@@ -1684,6 +1707,7 @@ static void set_terminal_status( /* It has changed, this is the new state.. */
 				screen_mode.size= _100_percent;
 				break;
 		}
+		*/
 	}
 	world_view->terminal_mode_active= status;
 	// LP change: keep the sounds going
@@ -2053,7 +2077,28 @@ void dump_screen()
 	// Find out how the area that gets copied;
 	// this is intended to be done as the game runs (including terminal mode)
 	Rect DumpRect;
-	calculate_destination_frame(_full_screen,true,&DumpRect);
+
+	short msize = screen_mode.size;
+	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
+	ViewSizeData& VS = ViewSizes[msize];
+	
+	// Rectangle where the view is to go (must not overlap the HUD)
+	short OverallWidth = VS.OverallWidth;
+	short OverallHeight = VS.OverallHeight;
+	
+	// Offsets for placement in the screen
+	Rect ScreenRect = screen_window->portRect;
+	short ScreenOffsetWidth = ((RECTANGLE_WIDTH(&ScreenRect) - VS.OverallWidth) >> 1) + ScreenRect.left;
+	short ScreenOffsetHeight = ((RECTANGLE_HEIGHT(&ScreenRect) - VS.OverallHeight) >> 1) + ScreenRect.top;
+	
+	SetRect(&DumpRect, 0, 0, OverallWidth, OverallHeight);
+	OffsetRect(&DumpRect, ScreenOffsetWidth, ScreenOffsetHeight);
+	
+	// Just in case it's too big...
+	DumpRect.left = MAX(DumpRect.left,ScreenRect.left);
+	DumpRect.top = MAX(DumpRect.top,ScreenRect.top);
+	DumpRect.right = MIN(DumpRect.right,ScreenRect.right);
+	DumpRect.bottom = MIN(DumpRect.bottom,ScreenRect.bottom);
 	
 	// Now create a picture
 	OpenCPicParams PicParams;
