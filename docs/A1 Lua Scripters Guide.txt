@@ -1,0 +1,757 @@
+
+Aleph One Lua Scripters' Guide
+                 
+Document created: July 10, 2003, by James Willson
+Revised: (First Version!)
+
+
+0. What is This?
+1. Triggers
+2. A1 Functions
+2.1 Players
+2.2 Monsters
+2.3 Items
+2.4 Tags
+2.5 Lights
+2.6 Polygons
+2.7 Platforms
+2.8 Camera
+2.9 Display
+2.10 Other
+3. Mnemmonics
+3.1 Items
+3.2 Monsters
+3.3 Monster Classes
+3.4 Damage Types
+3.5 Monster Actions
+3.6 Monster Modes
+3.7 Faders
+3.8 Refuel Panels
+
+
+0. What is This?
+----------------
+
+This is a reference for writing lua scripts to work in A1.
+At the time of creation, it lists every trigger and function available to lua scripts.
+It is expected that lua functionality will grow in A1, and as it does, so will this document.
+Not everything here is completely documented, and any help fixing that would be appreciated.
+
+This is not a reference for lua itself - see lua.org for that.
+
+
+1. Triggers
+-----------
+
+These are functions scripts can define which A1 will call at specific times or events.
+
+
+init()
+
+At beginning of level.
+
+
+idle()
+
+At each tick.
+
+
+start_refuel(type, player)
+
+Whenever a player starts to use a refuel panel.
+
+
+end_refuel(type, player)
+
+Whenever a player stops using a refuel panel.
+
+
+tag_switch(tag, player)
+
+Whenever a player uses a tag switch.
+Not called when a projectile (e.g., fists) uses a tag switch.
+
+
+light_switch(light, player)
+
+Whenever a player uses a light switch.
+Not called when a projectile (e.g., fists) uses a light switch.
+
+
+platform_switch(platform, short player)
+
+Whenever a player uses a platform switch.
+Not called when a projectile (e.g., fists) uses a platform switch.
+
+
+terminal_enter(terminal_id, player)
+
+Whenever a player starts using a terminal.
+
+
+terminal_exit(terminal_id, player)
+
+Whenever a player stops using a terminal.
+
+
+pattern_buffer(buffer_id, player)
+
+Whenever a player uses a pattern buffer.
+
+
+got_item(type, player)
+
+Whenever a player picks up an item.
+Also whenever a player gets an item when a script calls add_item().
+
+
+light_activated(index)
+
+Whenever a light is activated or deactivated.
+
+
+platform_activated(index)
+
+Whenever a platform is activated or deactivated.
+
+
+player_revived(player)
+
+Whenever a player revives.  (Presumably only happens in a netgame)
+Not called when a player first enters into a level.
+
+
+player_killed(player, aggressor_player, action)
+
+Whenver a player dies.
+aggressor_player is the player index of who killed em, possibly emself, or -1 if killed by non-player.
+There are no mnemonics for "action" at this time, making its use difficult.
+
+
+2 A1 Functions
+--------------
+
+These are functions defined in A1 which scripts can call.
+
+
+2.1 Players
+-----------
+
+
+number_of_players ()
+
+Returns the number of players in the game.
+
+
+inflict_damage(player, amount [, type])
+
+Inflicts damage on player.
+"amount" is how much damage is dealt; type is the damage type used.
+If no type is specified, crusher damage is dealt.
+
+
+get_life(player)
+get_oxygen(player)
+
+Returns the shield/oxygen level of player.
+
+
+set_life(player, shield)
+
+Sets the shield level of player to the amount specified or triple energy (full purple), whichever is less.
+
+
+set_oxygen(player, oxygen)
+
+Sets the oxygen level of player to the amount specified or one full tank, whichever is less.
+
+
+get_player_position (player)
+
+(? Returns three values - the x, y, and z coordinates of player)
+
+
+get_player_polygon (player)
+get_player_angle (player)
+get_player_team (player)
+
+Returns the poly/angle/team of player.
+
+
+player_is_dead (player)
+
+Returns true if player is dead, false if alive.
+
+
+select_weapon(player, type)
+
+Attempt to force player to ready the specifiec weapon.
+
+
+player_control (player, move_type, value)
+
+(? not sure how this works)
+
+
+teleport_player (player, poly)
+
+(? Teleports player to poly, similarly to using a teleporter)
+
+
+teleport_player_to_level (player, level)
+
+(? Teleports player to level.  Of course, all the other players will also go to that level.)
+
+
+enable_player(player)
+disable_player(player)
+
+(? Sets/Clears the zombie flag of player.)
+
+
+player_to_monster (player)
+
+Returns the monster index of player.
+
+
+local_player ()
+
+Returns the index of the local player.
+In the normal case, you shouldn't needed this.
+You'll just make the game go out of sync.
+
+
+2.2 Monsters
+------------
+
+
+new_monster (type, poly [, facing [, height]])
+
+Creates a new monster of the chosen type in poly.
+Facing is in degrees.  (default 0)
+Height is distance above the poly floor.  (default 0)
+Returns the new monster's monster index.
+
+
+activate_monster (monster)
+deactivate_monster (monster)
+
+Activates/Deactivates monster
+
+
+damage_monster (monster, amount [, type])
+
+Inflicts damage on monster.
+"amount" is how much damage is dealt; type is the damage type used.
+If no type is specified, fist damage is dealt.
+
+
+attack_monster (attack_monster, target_monster)
+
+Instructs attack_monster to attack target_monster.
+
+
+move_monster (monster, poly)
+
+Instructs monster to move to poly.
+Once it gets there, it probably won't choose to stay.
+
+
+select_monster (type, poly)
+
+If there is a monster of type in poly, then returns the index of such a monster.
+
+
+get_monster_position (monster)
+get_monster_facing (monster)
+get_monster_polygon (monster)
+
+Returns the position/angle/polygon of monster.
+
+
+get_monster_immunity (monster, type)
+set_monster_immunity (monster, type, state)
+
+Sets/Queries monster's immunity to type damage.
+
+
+get_monster_weakness (monster, type)
+set_monster_weakness (monster, type, state)
+
+Sets/Queries monster's weakness to type damage.
+
+
+get_monster_friend (monster, type)
+set_monster_friend (monster, type, state)
+
+Sets/Queries monster's friendliness to monsters of class type.
+
+
+get_monster_enemy (monster, type)
+set_monster_enemy (monster, type, state)
+
+Sets/Queries monster's "enemyness?" to monsters of class type.
+
+
+get_monster_item (monster)
+set_monster_item (monster, type)
+
+Sets/Queries the item monster drops when it dies.
+(? But what about "no item")
+
+
+get_monster_vitality (monster)
+set_monster_vitality (monster)
+
+Sets/Queries the vitality of monster.
+
+
+get_monster_action (monster)
+
+Queries the current action of monster.
+
+
+get_monster_mode (monster)
+
+Queries the current mode of monster.
+
+
+2.3 Items
+---------
+
+
+new_item (type, poly [, height])
+Creates a new monster of the chosen type in poly.
+Height is distance above the poly floor.  (default 0)
+Returns the new item's item index.
+(Currently no function makes use of item indicies)
+
+
+add_item (player, type)
+
+Attempts to give one item of the specified type to player.
+Uses marathon's rules for item aquisition.
+(for example, you can't use this to give a player a third shotgun
+or more ammo than e is allowed to carry.)
+Can be used to give players items that don't normally appear in inventory.
+(such as invisibility)
+
+
+remove_item (player, type)
+
+Takes away one item of the specified type from player.
+This only works for items that appear in inventory.
+
+
+count_item (player, type)
+
+Returns the number of items of the specified type player has ininventory.
+
+
+2.4 Tags
+--------
+
+
+get_tag_state (tag)
+
+Returns true iff there exists a platform or light which is both active and is associated with the chosen tag.
+
+
+set_tag_state (tag, state)
+
+Activate/Deactivate all lights and platforms associated with tag
+
+
+2.5 Lights
+----------
+
+set_light_state (light, state)
+
+Activate of deactivate light depending on state.
+
+
+get_light_state (light)
+
+Return true if light is active; false if inactive.
+
+
+2.6 Polygons
+------------
+
+
+get_polygon_floor_height (poly)
+get_polygon_ceiling_height (poly)
+set_polygon_floor_height (poly, height)
+set_polygon_ceiling_height (poly, height)
+
+Sets/Queries the floor/ceiling height of poly.
+(? Is changing poly floor/ceiling heights on the fly a good idea)
+
+
+2.7 Platforms
+-------------
+
+
+set_platform_state (poly, state)
+
+If poly is a platform, activate or deactivate it depending on state.
+
+
+get_platform_state (poly)
+
+If poly is a platform, return true if active; false if inactive.
+
+
+set_platform_player_control (poly, state)
+get_platform_player_control (poly)
+
+Sets/Queries the "player controllable" flag.
+
+
+set_platform_monster_control (poly, state)
+get_platform_monster_control (poly)
+
+Sets/Queries the "monster controllable" flag.
+
+
+set_platform_speed (poly, speed)
+get_platform_speed (poly)
+
+Sets/Queries the platforms speed.
+
+
+set_platform_movement (poly, state)
+get_platform_movement (poly)
+
+(? Platforms are either contracting or extending.  This sets/queries that.)
+
+
+get_platform_floor_height (poly)
+get_platform_ceiling_height (poly)
+set_platform_floor_height (poly, height)
+set_platform_ceiling_height (poly, height)
+
+(? These appear to be the same as ..._poly_... except that they are unhappy if you pass a non-platform)
+
+
+2.8 Camera
+----------
+
+create_camera
+add_path_point
+add_path_angle
+activate_camera
+deactivate_camera
+
+(? camera controls)
+(! Yeah, someone who knows how these work should document them)
+
+
+2.9 Display
+-----------
+
+
+screen_print(player, message)
+
+Prints message on the screen of player.
+
+
+start_fade (fade)
+
+(? Don't use this - oughtn't it specify a player)
+
+
+set_motion_sensor_state (player, state)
+
+Turn on/off the motion sensor for player.
+
+
+get_motion_sensor_state (player)
+
+Returns true if player's motion sensor is enabled, false if it is disabled.
+
+
+hide_interface(player)
+show_interface(player)
+
+Hides/Shows the HUD of player.
+(? and weapon graphic)
+
+
+set_fog_depth(depth)
+set_fog_color(r, g, b)
+get_fog_depth()
+get_fog_color()
+set_underwater_fog_depth(depth)
+set_underwater_fog_color(r, g, b)
+get_underwater_fog_depth()
+get_underwater_fog_color()
+
+(? foggy)
+
+
+crosshairs_active
+set_crosshairs_state
+zoom_active
+set_zoom_state
+
+(? do these work)
+
+
+2.10 Other
+----------
+
+
+global_random ()
+
+Returns a random number from A1's global random number generator.
+(so for a random integer in [0, n-1], you can do "math.mod (global_random (), n)")
+This is preferred over random number functionality from lua.
+(Using lua's functions you may get out of sync in net games and incorrect film playback.)
+
+
+local_random ()
+
+Returns a random number from A1's local random number generator.
+This is a good way to put net games out of sync.
+
+
+get_terminal_text_number (poly, line)
+set_terminal_text_number (poly, line, terminal_text_id)
+
+(? I'm not sure exactly how these are expected to work)
+
+
+play_sound (player, sound, pitch)
+
+(? Plays sound to player at pitch.  But there are no sound mnemonics, so good luck burrito)
+
+
+kill_script()
+
+Stops the execution of the script.
+(No more triggers will activate, but whichever one called kill_script() will continue normally.)
+
+
+3 Mnemonics
+-----------
+
+Symbols for referring to A1 item types, monster types, and such.
+
+
+3.1 Items
+---------
+
+_item_knife
+_item_fist
+_item_magnum
+_item_magnum_magazine
+_item_plasma_pistol
+_item_plasma_magazine
+_item_assault_rifle
+_item_assault_rifle_magazine
+_item_assault_grenade_magazine
+_item_missile_launcher
+_item_missile_launcher_magazine
+_item_invisibility_powerup
+_item_invincibility_powerup
+_item_infravision_powerup
+_item_alien_weapon
+_item_alien_weapon_magazine
+_item_flamethrower
+_item_flamethrower_canister
+_item_extravision_powerup
+_item_oxygen_powerup
+_item_energy_powerup
+_item_double_energy_powerup
+_item_triple_energy_powerup
+_item_shotgun
+_item_shotgun_magazine
+_item_spht_door_key
+_item_uplink_chip
+_item_light_blue_ball
+_item_red_ball
+_item_violet_ball
+_item_yellow_ball
+_item_brown_ball
+_item_orange_ball
+_item_blue_ball
+_item_green_ball
+_item_smg
+_item_smg_ammo
+
+
+3.2 Monsters
+------------
+
+_monster_minor_tick
+_monster_major_tick
+_monster_kamikaze_tick
+_monster_minor_compiler
+_monster_major_compiler
+_monster_minor_invisible_compiler
+_monster_major_invisible_compiler
+_monster_minor_fighter
+_monster_major_fighter
+_monster_minor_projectile_fighter
+_monster_major_projectile_fighter
+_monster_green_bob
+_monster_blue_bob
+_monster_security_bob
+_monster_explodabob
+_monster_minor_drone
+_monster_major_drone
+_monster_big_minor_drone
+_monster_big_major_drone
+_monster_possessed_drone
+_monster_minor_cyborg
+_monster_major_cyborg
+_monster_minor_flame_cyborg
+_monster_major_flame_cyborg
+_monster_minor_enforcer
+_monster_major_enforcer
+_monster_minor_hunter
+_monster_major_hunter
+_monster_minor_trooper
+_monster_major_trooper
+_monster_mega_cyborg
+_monster_mega_hunter
+_monster_sewage_yeti
+_monster_water_yeti
+_monster_lava_yeti
+_monster_minor_defender
+_monster_major_defender
+_monster_minor_juggernaut
+_monster_major_juggernaut
+_monster_tiny_pfhor
+_monster_tiny_bob
+_monster_tiny_yeti
+_monster_green_vacbob
+_monster_blue_vacbob
+_monster_security_vacbob
+_monster_explodavacbob
+
+
+3.3 Monster Classes
+-------------------
+
+_monster_class_player
+_monster_class_bob
+_monster_class_madd
+_monster_class_possessed_drone
+_monster_class_defender
+_monster_class_fighter
+_monster_class_trooper
+_monster_class_hunter
+_monster_class_enforcer
+_monster_class_juggernaut
+_monster_class_drone
+_monster_class_compiler
+_monster_class_cyborg
+_monster_class_explodabob
+_monster_class_tick
+_monster_class_yeti
+
+
+3.4 Damage Types
+----------------
+
+_damage_explosion
+_damage_staff
+_damage_projectile
+_damage_absorbed
+_damage_flame
+_damage_claws
+_damage_alien_weapon
+_damage_hulk_slap
+_damage_compiler
+_damage_fusion
+_damage_hunter
+_damage_fists
+_damage_teleporter
+_damage_defender
+_damage_yeti_claws
+_damage_yeti_projectile
+_damage_crushing
+_damage_lava
+_damage_suffocation
+_damage_goo
+_damage_energy_drain
+_damage_oxygen_drain
+_damage_drone
+_damage_shotgun
+
+
+3.5 Monster Actions
+-------------------
+
+_monster_is_stationary
+_monster_is_waiting_to_attack_again
+_monster_is_moving
+_monster_is_attacking_close
+_monster_is_attacking_far
+_monster_is_being_hit
+_monster_is_dying_hard
+_monster_is_dying_soft
+_monster_is_dying_flaming
+_monster_is_teleporting
+_monster_is_teleporting_in
+_monster_is_teleporting_out
+
+
+3.6 Monster Modes
+-----------------
+
+_monster_mode_locked
+_monster_mode_losing_lock
+_monster_mode_lost_lock
+_monster_mode_unlocked
+_monster_mode_running
+
+
+3.7 Faders
+----------
+
+_fade_start_cinematic_fade_in
+_fade_cinematic_fade_in
+_fade_long_cinematic_fade_in
+_fade_cinematic_fade_out
+_fade_end_cinematic_fade_out
+_fade_red
+_fade_big_red
+_fade_bonus
+_fade_bright
+_fade_long_bright
+_fade_yellow
+_fade_big_yellow
+_fade_purple
+_fade_cyan
+_fade_white
+_fade_big_white
+_fade_orange
+_fade_long_orange
+_fade_green
+_fade_long_green
+_fade_static
+_fade_negative
+_fade_big_negative
+_fade_flicker_negative
+_fade_dodge_purple
+_fade_burn_cyan
+_fade_dodge_yellow
+_fade_burn_green
+_fade_tint_green
+_fade_tint_blue
+_fade_tint_orange
+_fade_tint_gross
+_fade_tint_jjaro
+
+
+3.8 Refuel Panels
+-----------------
+
+_refuel_oxygen
+_refuel_single_shield
+_refuel_double_shield
+_refuel_triple_shield
+
