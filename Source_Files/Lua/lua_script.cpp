@@ -8,6 +8,10 @@ Matthew Hielscher, 05-28-03
     
 tiennou, 06/23/03
     Added stuff on platforms (speed, heights, movement), terminals (text index), &polygon (heights).
+    
+tiennou, 06/25/03
+    Removed the last useless logError around. They prevented some functions to behave properly.
+    Added L_Get_Player_Angle, returns player->facing & player->elevation.
 */
 
 // cseries defines HAVE_LUA on A1/SDL
@@ -1267,7 +1271,6 @@ static int L_Set_Monster_Weakness(lua_State *L)
     struct monster_data *theMonster;
     struct monster_definition *theDef;
     
-        logError("get_monster_weakness: incorrect argument type");
     if(monster_index == NONE)
     {
         lua_pushstring(L, "set_monster_weakness: invalid monster index");
@@ -1334,7 +1337,6 @@ static int L_Set_Monster_Friend(lua_State *L)
     bool friendly = lua_toboolean(L,3);
     
     struct monster_data *theMonster;
-        logError("get_monster_friend: incorrect argument type");
     struct monster_definition *theDef;
     
     if(monster_index == NONE)
@@ -1689,6 +1691,26 @@ static int L_Get_Player_Position(lua_State *L)
     return 3;
 }
 
+static int L_Get_Player_Angle(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_player_angle: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "get_player_angle: invalid player index");
+        lua_error(L);
+    }
+    player_data *player = get_player_data(player_index);
+    lua_pushnumber(L, (double)player->facing*AngleConvert);
+    lua_pushnumber(L, (double)player->elevation*AngleConvert);
+    return 2;
+}
+
 static int L_Player_Is_Dead(lua_State *L)
 {
     if (!lua_isnumber(L,1))
@@ -1711,12 +1733,14 @@ static int L_Player_Is_Dead(lua_State *L)
     return 1;
 }
 
+#if TIENNOU_PLAYER_CONTROL
 enum
 {
     move_player = 1,
     turn_player,
     look_at
 };
+#endif
 
 static int L_Player_Control(lua_State *L)
 {
@@ -1733,8 +1757,9 @@ static int L_Player_Control(lua_State *L)
     }
     int move_type = static_cast<int>(lua_tonumber(L,2));
     int value = static_cast<int>(lua_tonumber(L,3));
+    #if TIENNOU_PLAYER_CONTROL
     player_data *player = get_player_data(player_index);
-	
+    #endif
     
     // uses the Pfhortran action queue
     if (sPfhortranActionQueues == NULL)
@@ -1756,7 +1781,7 @@ static int L_Player_Control(lua_State *L)
     prev_value = value;
     
     bool DoAction = false;
-    #if 0
+    #if TIENNOU_PLAYER_CONTROL
     struct physics_variables variables;
     struct physics_variables *variablesptr;
     struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, action_flags);
@@ -1766,7 +1791,7 @@ static int L_Player_Control(lua_State *L)
     
     switch(move_type)
     {
-    #if 0
+    #if TIENNOU_PLAYER_CONTROL
         case move_player:
 	    if (!lua_isnumber(L,3) || !lua_isnumber(L,4) || !lua_isnumber(L,5))
 	    {
@@ -1876,7 +1901,6 @@ static int L_Player_Control(lua_State *L)
 	case look_at:
 	    if (!lua_isnumber(L,3) || !lua_isnumber(L,4) || !lua_isnumber(L,5))
 	    {
-		logError("player_control: incorrect argument type for look_at");
 		lua_pushstring(L, "player_control: incorrect argument type for look_at");
 		lua_error(L);
 	    }
@@ -1891,6 +1915,7 @@ static int L_Player_Control(lua_State *L)
 	
 	break;
     #endif
+    #if !TIENNOU_PLAYER_CONTROL
             case 0:
             action_flags[0] = _moving_forward;
             DoAction = true;
@@ -1949,7 +1974,7 @@ static int L_Player_Control(lua_State *L)
         case 13: // reset pfhortran_action_queue
             GetPfhortranActionQueues()->reset();
         break;
-	
+	#endif
         default:
         break;
     }
@@ -2064,7 +2089,6 @@ static int L_Add_Path_Angle(lua_State *L)
     }
     int yaw = static_cast<int>(lua_tonumber(L,2));
     int pitch = static_cast<int>(lua_tonumber(L,3));
-        logError("add_path_point: incorrect argument type");
     long time = static_cast<int>(lua_tonumber(L,4));
     int angle_index = lua_cameras[camera_index].path.path_angles.size();
     
@@ -2118,15 +2142,13 @@ static int L_Deactivate_Camera(lua_State *L)
     lua_cameras[camera_index].path.last_point_time = 0;
     lua_cameras[camera_index].path.last_angle_time = 0;
     return 0;
-        logError("add_path_angle: incorrect argument type");
 }
 
 static int L_Crosshairs_Active(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {
-        logError("add_path_angle: bad camera index");
-        lua_pushstring(L, "crosshairs_active: incorrect argument type");
+	lua_pushstring(L, "crosshairs_active: incorrect argument type");
         lua_error(L);
     }
     int player_index = static_cast<int>(lua_tonumber(L,1));
@@ -2147,7 +2169,6 @@ static int L_Set_Crosshairs_State(lua_State *L)
     int player_index = static_cast<int>(lua_tonumber(L,1));
     bool state = lua_toboolean(L,2);
     if (local_player_index != player_index)
-        logError("activate_camera: incorrect argument type");
         return 0;
     
     Crosshairs_SetActive(state);
@@ -2206,8 +2227,11 @@ static int L_Set_Motion_Sensor_State(lua_State *L)
     /* MH: on the contrary, it's better to have it disable a single player's
         motion sensor and do nothing for the others, right?
     */
+    /* tiennou: Changed the code to reflect this behavior, so that the local_player
+	motion_sensor wasn't disabled/enabled when this function was passed another player_index
+    */
     bool state = lua_toboolean(L,2);
-    if (state)
+    if (state && player_index == local_player_index)
         MotionSensorActive = true;
     else
         MotionSensorActive = false;
@@ -2812,6 +2836,7 @@ void RegisterLuaFunctions()
     //lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
     lua_register(state, "get_player_position", L_Get_Player_Position);
     lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
+    lua_register(state, "get_player_angle", L_Get_Player_Angle);
     lua_register(state, "player_is_dead", L_Player_Is_Dead);
     lua_register(state, "player_control", L_Player_Control);
     //lua_register(state, "set_player_global_speed", L_Set_Player_Global_Speed);
