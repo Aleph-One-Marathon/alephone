@@ -288,6 +288,7 @@ public:
 	void Set_vRefNum(short _vRefNum) {vRefNum = _vRefNum;}
 	void Set_parID(long _parID) {parID = _parID;}
 	
+	// Starts with the current root directory
 	// Can go to subdirectory of subdirectory;
 	// uses Unix-style path syntax (/ instead of : as the separator)
 	bool SetToSubdirectory(const char *NameWithPath);
@@ -347,6 +348,19 @@ struct dir_entry {
 #endif
 
 
+// Root-directory stuff; unnecessary for SDL?
+#ifdef mac
+
+// Useful for scenarios -- submit the subdirectory string.
+// Originally the app's parent directory. To revert to that, submit an empty string.
+// Returns the level of success.
+bool Files_SetRootDirectory(const char *NameWithPath);
+
+void Files_GetRootDirectory(DirectorySpecifier& Dir);
+
+#endif
+
+
 /*
 	Abstraction for file specifications;
 	designed to encapsulate both directly-specified paths
@@ -362,8 +376,9 @@ public:
 	void GetName(char *Name) const;
 	
 	// MacOS:
-	//   Sets the file specifier to its current parent directory +
+	//   Sets the file specifier to the current root directory +
 	//   the directories and name in "NameWithPath".
+	//   Formerly used the object's own parent directory.
 	// SDL:
 	//   Looks in all directories in the current data search
 	//   path for a file with the relative path "NameWithPath" and

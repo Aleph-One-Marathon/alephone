@@ -75,6 +75,14 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 // The path separator is '/' the Unix/URL convention, instead of MacOS ':'
 static bool ParsePath_MacOS(const char *NameWithPath, FSSpec &Spec, bool WantDirectory);
 
+// Root-directory stuff; one needs to know whether it had been set.
+// Alternative approach: have a subclass of DirectorySpecifier with
+// a constructor that sets it to the app's directory.
+// Not sure how that will coexist with MacOS init, however.
+static bool RootDirectorySet = false;
+static DirectorySpecifier RootDirectory;
+
+
 /*
 	Abstraction for opened files; it does reading, writing, and closing of such files,
 	without doing anything to the files' specifications
@@ -365,6 +373,8 @@ bool OpenedResourceFile::Close()
 // uses Unix-style path syntax (/ instead of : as the separator)
 bool DirectorySpecifier::SetToSubdirectory(const char *NameWithPath)
 {
+	Files_GetRootDirectory(*this);
+	
 	FSSpec Spec;
 	Spec.vRefNum = vRefNum;
 	Spec.parID = parID;
@@ -374,7 +384,6 @@ bool DirectorySpecifier::SetToSubdirectory(const char *NameWithPath)
 	parID = Spec.parID;
 	return true;
 }
-	
 
 
 bool DirectorySpecifier::SetToAppParent()
@@ -396,6 +405,36 @@ bool DirectorySpecifier::SetToPreferencesParent()
 	return (Err == noErr);
 }
 
+
+// Useful for scenarios -- submit the subdirectory string.
+// Originally the app's parent directory. To revert to that, submit an empty string.
+// Returns the level of success.
+bool Files_SetRootDirectory(const char *NameWithPath)
+{
+	if (strlen(NameWithPath) > 0)
+	{
+		// Necessary because Files_GetRootDirectory() will be called in SetToSubdirectory,
+		// and we want to tell it to refer to the app parent.
+		RootDirectorySet = false;
+		
+		RootDirectory.SetToSubdirectory(NameWithPath);
+		
+		RootDirectorySet = true;
+	}
+	else
+	{
+		RootDirectorySet = false;
+	}
+	return true;
+}
+
+void Files_GetRootDirectory(DirectorySpecifier& Dir)
+{
+	if (RootDirectorySet)
+		Dir = RootDirectory;
+	else
+		Dir.SetToAppParent();
+}
 
 	
 // The name as a C string:
@@ -446,6 +485,12 @@ void FileSpecifier::SetName(const char *Name, int Type)
 // Parses the directory path and updates the parent directory appropriately
 bool FileSpecifier:: SetNameWithPath(const char *NameWithPath)
 {
+	DirectorySpecifier Dir;
+	Files_GetRootDirectory(Dir);
+	
+	Spec.vRefNum = Dir.vRefNum;
+	Spec.parID = Dir.parID;
+	
 	return ParsePath_MacOS(NameWithPath, Spec, false);
 }
 
