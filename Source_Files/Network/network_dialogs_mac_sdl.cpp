@@ -22,7 +22,7 @@ Feb 26, 2002 (Br'fin (Jeremy Parsons)):
 	Forked off from network_dialogs_macintosh.cpp to tie to SDL networking apis
         
 Feb 14, 2003 (Woody Zenfell):
-        Support for resuming saved games as network games.
+	Support for resuming saved games as network games.
 */
 /*
  *  network_dialogs_mac_sdl.cpp - Network dialogs for Carbon with SDL networking
@@ -30,8 +30,10 @@ Feb 14, 2003 (Woody Zenfell):
 //#define NETWORK_TEST_POSTGAME_DIALOG
 //#define NETWORK_TEST_GATHER_DIALOG
 
-#if defined(TARGET_API_MAC_CARBON)
-#define LIST_BOX_AS_CONTROL
+#if TARGET_API_MAC_CARBON
+	#define LIST_BOX_AS_CONTROL 1
+#else
+	#define LIST_BOX_AS_CONTROL 0
 #endif
 
 // add a taunt window for postgame.
@@ -73,8 +75,6 @@ Feb 14, 2003 (Woody Zenfell):
 #pragma segment network_dialogs
 #endif
 
-// #define USE_MODEM
-
 struct network_speeds
 {
 	short updates_per_packet;
@@ -108,16 +108,6 @@ struct network_speeds
 static int sStartJoinedGameResult;
 static ListHandle network_list_box= (ListHandle) NULL;
 
-// these speeds correspond to what's in the popup menu
-static struct network_speeds net_speeds[] =
-{
-	{3, 2},  // Appletalk Remote
-	{2, 1},  // LocalTalk
-	{1, 0},  // TokenTalk
-	{1, 0},  // Ethernet
-	{2, 1}	 // Modem stats
-};
-
 // List of found player info when gathering a game
 static vector<const SSLP_ServiceInstance*> found_players;
 
@@ -140,7 +130,6 @@ static pascal Boolean game_setup_filter_proc(DialogPtr dialog, EventRecord *even
 
 static void setup_network_list_box(WindowPtr window, Rect *frame, unsigned char *zone);
 static void dispose_network_list_box(void);
-static void network_list_box_update_proc(short message, short index);
 static pascal void update_player_list_item(DialogPtr dialog, short item_num);
 static void found_player_callback(const SSLP_ServiceInstance* player);
 
@@ -155,8 +144,6 @@ static void draw_beveled_text_box(bool inset, Rect *box, short bevel_size, RGBCo
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
 static void draw_player_box_with_team(Rect *rectangle, short player_index);
 
-static void setup_network_speed_for_join(DialogPtr dialog);
-static void setup_network_speed_for_gather(DialogPtr dialog);
 static short get_game_duration_radio(DialogPtr dialog);
 
 static void lost_player_callback(const SSLP_ServiceInstance* player);
@@ -174,32 +161,34 @@ extern void NetUpdateTopology(void);
 // Shrug, this was what I came up with before I knew anything about STL, and I'm too lazy to change it.
 template<class T>
 static const int
-find_item_index_in_vector(const T& inItem, const vector<T>& inVector) {
-std::vector<T>::const_iterator 	i	= inVector.begin();
-std::vector<T>::const_iterator 	end	= inVector.end();
-    int				index	= 0;
+find_item_index_in_vector(const T& inItem, const vector<T>& inVector)
+{
+	typedef typename std::vector<T>::const_iterator const_iterator;
+	const_iterator i(inVector.begin());
+	const_iterator end(inVector.end());
+	int index	= 0;
 
-    while(i != end) {
-        if(*i == inItem)
-            return index;
-        
-        index++;
-        i++;
-    }
-    
-    // Didn't find it
-    return -1;
+	while(i != end) {
+		if(*i == inItem)
+			return index;
+		
+		index++;
+		i++;
+	}
+	
+	// Didn't find it
+	return -1;
 }
 
 
 void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
 {
-        if(inChangeEnable != NONE)
-        {
-                modify_control_enabled(dialog, iRADIO_NO_TIME_LIMIT, inChangeEnable);
-                modify_control_enabled(dialog, iRADIO_TIME_LIMIT, inChangeEnable);
-                modify_control_enabled(dialog, iRADIO_KILL_LIMIT, inChangeEnable);
-        }
+	if(inChangeEnable != NONE)
+	{
+		modify_control_enabled(dialog, iRADIO_NO_TIME_LIMIT, inChangeEnable);
+		modify_control_enabled(dialog, iRADIO_TIME_LIMIT, inChangeEnable);
+		modify_control_enabled(dialog, iRADIO_KILL_LIMIT, inChangeEnable);
+	}
 }
 
 
@@ -225,34 +214,16 @@ bool network_gather(bool inResumingGame)
 		if(NetEnter())
 		{
 			DialogPtr dialog;
-			MenuHandle zones_menu;
 			Rect item_rectangle;
 			Handle item_handle;
-			bool internet= false;
 			ModalFilterUPP gather_dialog_upp;
 			UserItemUPP update_player_list_item_upp = NewUserItemUPP(update_player_list_item);
 			short current_zone_index, item_type;
-			OSErr error;
 			Cell cell;
 			short item_hit;
 			ControlRef control;
 
-			zones_menu= GetMenuHandle(menuZONES);
-			if (!zones_menu)
-			{
-				zones_menu= GetMenu(menuZONES);
-				assert(zones_menu);
-				InsertMenu(zones_menu, -1);
-			}
-			
-#if !HAVE_SDL_NET
-			error= NetGetZonePopupMenu(zones_menu, &current_zone_index);
-			if (error==noErr) internet= true;
-#else
-			internet= true;
-#endif
-
-#if defined(LIST_BOX_AS_CONTROL)
+#if LIST_BOX_AS_CONTROL
 			dialog= myGetNewDialog(dlogGATHER, NULL, (WindowPtr) -1, 0);
 #else
 			dialog= myGetNewDialog(dlogGATHER, NULL, (WindowPtr) -1, refNETWORK_GATHER_DIALOG);
@@ -270,14 +241,10 @@ bool network_gather(bool inResumingGame)
 			SetDialogItem(dialog, iPLAYER_DISPLAY_AREA, kUserDialogItem|kItemDisableBit,
 				(Handle)update_player_list_item_upp, &item_rectangle);
 			
-			// we'll show either the zone list, or a text item "Players in Network:"
-#if HAVE_SDL_NET
+			// We're on the internet, just show item "Players in Network:"
 			HideDialogItem(dialog, iZONES_MENU);
-#else
-			HideDialogItem(dialog, internet ? iPLAYER_LIST_TEXT : iZONES_MENU);
-#endif
 			
-#if defined(LIST_BOX_AS_CONTROL)
+#if LIST_BOX_AS_CONTROL
 			GetDialogItemAsControl( dialog, iNETWORK_LIST_BOX, &control );
 			SetKeyboardFocus(GetDialogWindow(dialog), control, kControlListBoxPart);
 #endif
@@ -285,19 +252,18 @@ bool network_gather(bool inResumingGame)
 			ShowWindow(GetDialogWindow(dialog));
 
 #ifdef NETWORK_TEST_GATHER_DIALOG
-			//SSLP_ServiceInstance test = {"type", "Testing one", {0, 0}};
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing one", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing two", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing three", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing four", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing five", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing six", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing seven", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing eight", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing nine", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing ten", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing eleven", {0, 0}});
-			found_player_callback(&(SSLP_ServiceInstance){"type", "Testing twelve", {0, 0}});
+			SSLP_ServiceInstance test[] = {
+				{"type", "\pTesting one", {0, 0}}, {"type", "\pTesting two", {0, 0}},
+				{"type", "\pTesting three", {0, 0}}, {"type", "\pTesting four", {0, 0}},
+				{"type", "\pTesting five", {0, 0}}, {"type", "\pTesting six", {0, 0}},
+				{"type", "\pTesting seven", {0, 0}}, {"type", "\pTesting eight", {0, 0}},
+				{"type", "\pTesting nine", {0, 0}}, {"type", "\pTesting ten", {0, 0}},
+				{"type", "\pTesting eleven", {0, 0}}, {"type", "\pTesting twelve", {0, 0}}};
+			const int test_count= sizeof(test)/sizeof(SSLP_ServiceInstance);
+			for(int i= 0; i < test_count; i++)
+			{
+				found_player_callback(&test[i]);
+			}
 #endif
 			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
 				sizeof(myPlayerInfo), inResumingGame))
@@ -305,20 +271,29 @@ bool network_gather(bool inResumingGame)
 				do
 				{
 					short number_of_players= NetGetNumberOfPlayers();
-                                        bool gathered_unacceptable_player= false;
+					bool gathered_unacceptable_player= false;
 					
 					/* set button states */
 					SetPt(&cell, 0, 0);
-					modify_control(dialog, iADD, (number_of_players<MAXIMUM_NUMBER_OF_NETWORK_PLAYERS && LGetSelect(true, &cell, network_list_box)) ? CONTROL_ACTIVE : CONTROL_INACTIVE, 0);
-					modify_control(dialog, iOK, number_of_players>1 ?
-                                                        (gathered_unacceptable_player ? CONTROL_INACTIVE : CONTROL_ACTIVE)
-                                                        : CONTROL_INACTIVE, 0);
+					short iADD_state= CONTROL_INACTIVE;
+					if(number_of_players < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS &&
+						LGetSelect(true, &cell, network_list_box))
+					{
+						iADD_state= CONTROL_ACTIVE;
+					}
+					short iOK_state= CONTROL_INACTIVE;
+					if(number_of_players>1 && !gathered_unacceptable_player)
+					{
+						iOK_state= CONTROL_ACTIVE;
+					}
+					modify_control(dialog, iADD, iADD_state, 0);
+					modify_control(dialog, iOK, iOK_state, 0);
 					
 					ModalDialog(gather_dialog_upp, &item_hit);
 			
 					switch (item_hit)
 					{
-#if defined(LIST_BOX_AS_CONTROL)
+#if LIST_BOX_AS_CONTROL
 						case iNETWORK_LIST_BOX:
 							Boolean gotDoubleClick;
 							Size actualSize;
@@ -341,14 +316,14 @@ bool network_gather(bool inResumingGame)
 								lost_player_callback(player);
 								
 								// Gather player
-                                                                int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
+								int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
 								if (theGatherPlayerResult != kGatherPlayerFailed)
 								{
 									update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
-                                                                        if(theGatherPlayerResult == kGatheredUnacceptablePlayer)
-                                                                        {
-                                                                                gathered_unacceptable_player= true;
-                                                                        }
+									if(theGatherPlayerResult == kGatheredUnacceptablePlayer)
+									{
+										gathered_unacceptable_player= true;
+									}
 								}
 							}
 							break;
@@ -398,9 +373,6 @@ int network_join(
 	if(NetEnter())
 	{
 		short item_hit, item_type;
-#ifdef USE_MODEM
-		short transport_type;
-#endif
 		GrafPtr old_port;
 		bool did_join = false;
 		DialogPtr dialog;
@@ -449,16 +421,11 @@ int network_join(
 		// how to without having a visible group box
 		modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL,   network_preferences->join_by_address?CONTROL_ACTIVE:CONTROL_INACTIVE);
 		modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, network_preferences->join_by_address?CONTROL_ACTIVE:CONTROL_INACTIVE);
-
-#ifdef USE_MODEM	
-		/* Adjust the transport layer using what's available */
-		setup_network_speed_for_join(dialog);
-#endif
 	
 		sStartJoinedGameResult = kNetworkJoinFailed;
 
 		GetPort(&old_port);
-		SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+		SetPort(GetWindowPort(GetDialogWindow(dialog)));
 		ShowWindow(GetDialogWindow(dialog));
 	
 		do
@@ -467,7 +434,7 @@ int network_join(
 			switch(item_hit)
 			{
 				case iJOIN:
-					SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+					SetPort(GetWindowPort(GetDialogWindow(dialog)));
 					GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
 					GetDialogItemText(item_handle, ptemporary);
 					if (*temporary > MAX_NET_PLAYER_NAME_LENGTH) *temporary = MAX_NET_PLAYER_NAME_LENGTH;
@@ -485,19 +452,12 @@ int network_join(
 						GetDialogItemText(item_handle, ptemporary);
 						if (*temporary > kJoinHintingAddressLength)
 							*temporary = kJoinHintingAddressLength;
-//#if defined(TARGET_API_MAC_CARBON)
 						CopyPascalStringToC(ptemporary, network_preferences->join_address);
-/*
-#else
-						pstrcpy((unsigned char *)network_preferences->join_address, ptemporary); 
-						p2cstr((unsigned char *)network_preferences->join_address);
-#endif
-*/
 					}
 					else
 						network_preferences->join_by_address = false;
 /*
-#if !defined(TARGET_API_MAC_CARBON)
+#if !TARGET_API_MAC_CARBON
 					// Aqua will handle if we're unresponseive
 					SetCursor(*GetCursor(watchCursor));
 #endif
@@ -508,48 +468,19 @@ int network_join(
 						);
 
 /*					
-#if !defined(USE_CARBON_ACCESSORS)
+#if !TARGET_API_MAC_CARBON
 					SetCursor(&qd.arrow);
 #endif
 */
 					if(did_join)
 					{
-//#if TARGET_API_MAC_CARBON
 						modify_control_enabled(dialog, iJOIN_NAME, CONTROL_INACTIVE);
 						modify_control_enabled(dialog, iJOIN_BY_HOST, CONTROL_INACTIVE);
-/*
-#else
-						SelectDialogItemText(dialog, iJOIN_NAME, 0, 0);
-						GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
-						SetDialogItem(dialog, iJOIN_NAME, statText, item_handle, &item_rect);
-#endif
-*/
-						// Remove the selection
-//#if defined(USE_CARBON_ACCESSORS)
-						SelectDialogItemText(dialog, -1, 0, 0);
-/*
-#else
-						((DialogPeek)(dialog))->editField = -1;
-#endif
-*/
-						InsetRect(&item_rect, -4, -4);
-						EraseRect(&item_rect);
-//#ifdef TARGET_API_MAC_CARBON
-						InvalWindowRect(GetDialogWindow(dialog), &item_rect); // force it to be updated
-/*
-#else
-						InvalRect(&item_rect);	// Assumed to be the dialog-box window
-#endif
-*/
-
 						modify_control(dialog, iJOIN_TEAM, CONTROL_INACTIVE, NONE);
 						modify_control(dialog, iJOIN_COLOR, CONTROL_INACTIVE, NONE);
 						modify_control(dialog, iJOIN, CONTROL_INACTIVE, NONE);
 						modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL, CONTROL_INACTIVE);
 						modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, CONTROL_INACTIVE);
-#ifdef USE_MODEM
-						modify_control(dialog, iJOIN_NETWORK_TYPE, CONTROL_INACTIVE, NONE);
-#endif
 	
 						// update preferences for user (Eat Gaseous Worms!)
 						pstrcpy(player_preferences->name, myPlayerInfo.name);
@@ -572,14 +503,6 @@ int network_join(
 				case iJOIN_TEAM:
 					break;
 	
-				case iJOIN_NETWORK_TYPE:
-#ifdef USE_MODEM
-					GetDialogItem(dialog, iJOIN_NETWORK_TYPE, &item_type, &item_handle, &item_rect);
-					transport_type= GetControlValue((ControlHandle) item_handle);
-					NetSetTransportType(transport_type-1);
-#endif
-					break;
-
 				case iJOIN_BY_HOST:
 					modify_control(dialog, item_hit, NONE, !get_dialog_control_value(dialog, item_hit));
 					if(get_dialog_control_value(dialog, item_hit))
@@ -641,7 +564,7 @@ bool network_game_setup(
 {
 	short item_hit;
 	GrafPtr old_port;
-	bool successful = false, information_is_acceptable;
+	bool information_is_acceptable;
 	DialogPtr dialog;
 	ModalFilterUPP game_setup_filter_upp;
 	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
@@ -651,7 +574,7 @@ bool network_game_setup(
 	game_setup_filter_upp= NewModalFilterUPP(game_setup_filter_proc);
 	assert(game_setup_filter_upp);
 	GetPort(&old_port);
-	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+	SetPort(GetWindowPort(GetDialogWindow(dialog)));
 
 	game_information->net_game_type= fill_in_game_setup_dialog(dialog, player_information, allow_all_levels, inResumingGame);
 
@@ -663,7 +586,7 @@ bool network_game_setup(
 		{
 			ModalDialog(game_setup_filter_upp, &item_hit);
 			
-			SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+			SetPort(GetWindowPort(GetDialogWindow(dialog)));
 			
 			switch (item_hit)
 			{
@@ -676,8 +599,8 @@ bool network_game_setup(
 					break;
 					
 				case iRADIO_KILL_LIMIT:
-                                        setup_for_score_limited_game(dialog);
-                                	break;
+					setup_for_score_limited_game(dialog);
+					break;
 
 				case iFORCE_UNIQUE_TEAMS:
 					modify_control(dialog, item_hit, NONE, !get_dialog_control_value(dialog, item_hit));
@@ -782,7 +705,7 @@ bool network_game_setup(
 
 // ZZZ: new function (has different implementation on SDL)
 void set_limit_type(DialogPtr dialog, short limit_type) {
-    modify_radio_button_family(dialog, iRADIO_NO_TIME_LIMIT, iRADIO_KILL_LIMIT, limit_type);
+	modify_radio_button_family(dialog, iRADIO_NO_TIME_LIMIT, iRADIO_KILL_LIMIT, limit_type);
 }
 
 
@@ -790,7 +713,7 @@ static short get_game_duration_radio(
 	DialogPtr dialog)
 {
 	short items[]= {iRADIO_NO_TIME_LIMIT, iRADIO_TIME_LIMIT, iRADIO_KILL_LIMIT};
-	short index, item_hit;
+	unsigned short index, item_hit;
 	
 	for(index= 0; index<sizeof(items)/sizeof(items[0]); ++index)
 	{
@@ -859,12 +782,7 @@ void fill_in_entry_points(
 	while (get_indexed_entry_point(&entry, &map_index, entry_flags))
 	{
 		AppendMenu(menu, "\p ");
-#if defined(TARGET_API_MAC_CARBON)
 		CopyCStringToPascal(entry.level_name, ptemporary);
-#else		
-		strcpy(temporary, entry.level_name); 
-		c2pstr(temporary);
-#endif
 		menu_index++;
 		if(entry.level_name[0])
 		{
@@ -895,7 +813,7 @@ void fill_in_entry_points(
 // ZZZ: new function
 void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
 {
-        modify_selection_control(inDialog, inItem, CONTROL_ACTIVE, inLevelNumber+1);
+	modify_selection_control(inDialog, inItem, CONTROL_ACTIVE, inLevelNumber+1);
 }
 
 
@@ -967,15 +885,15 @@ bool check_setup_information(
 #if 0
 static void
 autogather_callback(w_select* inAutoGather) {
-    if(inAutoGather->get_selection() > 0) {
-        dialog* theDialog = inAutoGather->get_owning_dialog();
-        assert(theDialog != NULL);
-        
-        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(theDialog->get_widget_by_id(iNETWORK_LIST_BOX));
-        assert(theFoundPlayers != NULL);
-        
-        theFoundPlayers->callback_on_all_items();
-    }
+	if(inAutoGather->get_selection() > 0) {
+		dialog* theDialog = inAutoGather->get_owning_dialog();
+		assert(theDialog != NULL);
+		
+		w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(theDialog->get_widget_by_id(iNETWORK_LIST_BOX));
+		assert(theFoundPlayers != NULL);
+		
+		theFoundPlayers->callback_on_all_items();
+	}
 }
 #endif
 
@@ -988,7 +906,7 @@ found_player_callback(const SSLP_ServiceInstance* player)
 	
 	found_players.push_back(player);
 	
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 	GetListDataBounds(network_list_box, &bounds);
 #else
 	bounds = (*network_list_box)->dataBounds;
@@ -997,9 +915,9 @@ found_player_callback(const SSLP_ServiceInstance* player)
 	LAddRow(1, theIndex, network_list_box);
 	SetPt(&cell, 0, theIndex - 1);
 
-        LSetCell(&(player->sslps_name[1]), player->sslps_name[0], cell, network_list_box);
+	LSetCell(&(player->sslps_name[1]), player->sslps_name[0], cell, network_list_box);
 
-#if defined(LIST_BOX_AS_CONTROL)
+#if LIST_BOX_AS_CONTROL
 	WindowRef window = ActiveNonFloatingWindow();
 	Rect portBounds;
 	GetPortBounds(GetWindowPort(window), &portBounds);
@@ -1021,7 +939,7 @@ lost_player_callback(const SSLP_ServiceInstance* player) {
 	// Remove from either hidden list or displayed list.
 	LDelRow(1, theIndex, network_list_box);
 
-#if defined(LIST_BOX_AS_CONTROL)
+#if LIST_BOX_AS_CONTROL
 	WindowRef window = ActiveNonFloatingWindow();
 	Rect bounds;
 	GetPortBounds(GetWindowPort(window), &bounds);
@@ -1040,8 +958,8 @@ player_name_changed_callback(const SSLP_ServiceInstance* player) {
 
 	SetPt(&cell, 0, theIndex);
 
-        LSetCell(&(player->sslps_name[1]), player->sslps_name[0], cell, network_list_box);
-#if defined(LIST_BOX_AS_CONTROL)
+	LSetCell(&(player->sslps_name[1]), player->sslps_name[0], cell, network_list_box);
+#if LIST_BOX_AS_CONTROL
 	WindowRef window = ActiveNonFloatingWindow();
 	Rect bounds;
 	GetPortBounds(GetWindowPort(window), &bounds);
@@ -1060,20 +978,22 @@ static pascal Boolean gather_dialog_filter_proc(
 	EventRecord *event,
 	short *item_hit)
 {
+#if !LIST_BOX_AS_CONTROL			
 	short item_type, charcode;
 	Handle item_handle;
 	Rect item_rectangle;
-	GrafPtr old_port;
-	bool handled;
 	Point where;
 	bool cell_is_selected;
-	Cell selected_cell;
 	short cell_count;
+#endif
+	GrafPtr old_port;
+	bool handled;
+	Cell selected_cell;
 
 	/* preprocess events */	
 	handled= false;
 	GetPort(&old_port);
-	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+	SetPort(GetWindowPort(GetDialogWindow(dialog)));
 
 	/* update the names list box; if we donÕt have a selection afterwords, dim the ADD button */
 
@@ -1086,7 +1006,7 @@ static pascal Boolean gather_dialog_filter_proc(
 
 	switch(event->what)
 	{
-#if !defined(LIST_BOX_AS_CONTROL)			
+#if !LIST_BOX_AS_CONTROL			
 		case mouseDown:
 			/* get the mouse in local coordinates */
 			where= event->where;
@@ -1096,7 +1016,7 @@ static pascal Boolean gather_dialog_filter_proc(
 			GetDialogItem(dialog, iNETWORK_LIST_BOX, &item_type, &item_handle, &item_rectangle);
 			if (PtInRect(where, &item_rectangle))
 			{
-#if defined(TARGET_API_MAC_CARBON) 
+#if TARGET_API_MAC_CARBON 
 				CGrafPtr port = GetWindowPort(GetDialogWindow(dialog));
 				SInt16   pixelDepth = (*GetPortPixMap(port))->pixelSize;
 			
@@ -1112,7 +1032,7 @@ static pascal Boolean gather_dialog_filter_proc(
 				
 				handled= true;
 				
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 				SetThemeDrawingState(savedState, true);
 #endif
 			}
@@ -1121,14 +1041,14 @@ static pascal Boolean gather_dialog_filter_proc(
 			break;
 #endif
 
-#if !defined(LIST_BOX_AS_CONTROL)
+#if !LIST_BOX_AS_CONTROL
 		case updateEvt:
 			if ((WindowPtr)event->message==GetDialogWindow(dialog))
 			{
 				/* update the zone popup menu */
 				
 				/* update the network list box and itÕs frame */
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 				GetDialogItem(dialog, iNETWORK_LIST_BOX, &item_type, &item_handle, &item_rectangle);
 				InsetRect(&item_rectangle, -1, -1);
 				item_rectangle.right --;
@@ -1145,19 +1065,12 @@ static pascal Boolean gather_dialog_filter_proc(
 				EraseRect(&item_rectangle);
 #endif
 
-//#if defined(USE_CARBON_ACCESSORS)
 				RgnHandle visRgn = NewRgn();
 				GetPortVisibleRegion(GetWindowPort(GetDialogWindow(dialog)), visRgn);
 				LUpdate(visRgn, network_list_box);
 				DisposeRgn(visRgn);
-/*
-#else
-				LUpdate(dialog->visRgn, network_list_box);
-#endif
-*/
-//#if defined(TARGET_API_MAC_CARBON)
+//#if TARGET_API_MAC_CARBON
 				DrawThemePrimaryGroup(&item_rectangle, curState);
-//				DrawThemeFocusRect(&item_rectangle, (curState == kThemeStateActive));
 				SetThemeDrawingState(savedState, true);
 /*
 #else
@@ -1171,7 +1084,7 @@ static pascal Boolean gather_dialog_filter_proc(
 			}
 			break;
 #endif
-#if !defined(LIST_BOX_AS_CONTROL)
+#if !LIST_BOX_AS_CONTROL
 		case keyDown:
 			charcode = event->message & charCodeMask;
 
@@ -1264,7 +1177,7 @@ static pascal Boolean join_dialog_filter_proc(
 
 	/* preprocess events */	
 	GetPort(&old_port);
-	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+	SetPort(GetWindowPort(GetDialogWindow(dialog)));
 
 	/* give the player area time (for animation, etc.) */
 
@@ -1312,7 +1225,7 @@ static pascal Boolean join_dialog_filter_proc(
 				game_info *info= (game_info *)NetGetGameData();
 
 				get_network_joined_message(joinMessage, info->net_game_type);
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 				CopyCStringToPascal(joinMessage, ptemporary);
 #else
 				strcpy(temporary, joinMessage); 
@@ -1328,18 +1241,18 @@ static pascal Boolean join_dialog_filter_proc(
 			handled= true;
 			break;
                 
-                case netChatMessageReceived:
-                    {
-                        player_info*	sending_player;
-                        char*		chat_message;
-                        
-                        if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
-                            // should actually do something with the message here
-                            // be sure to copy any info you need as the next call to
-                            // NetUpdateJoinState could overwrite the storage we're pointing at.
-                        }
-                    }
-                break;
+		case netChatMessageReceived:
+			{
+				player_info*	sending_player;
+				char*		chat_message;
+				
+				if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
+					// should actually do something with the message here
+					// be sure to copy any info you need as the next call to
+					// NetUpdateJoinState could overwrite the storage we're pointing at.
+				}
+			}
+			break;
 
 		default:
 			// LP change:
@@ -1376,10 +1289,8 @@ static pascal Boolean game_setup_filter_proc(
 	Handle   item_handle;
 	GrafPtr  old_port;
 
-	(void)(event, item_hit);
-
 	GetPort(&old_port);
-	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+	SetPort(GetWindowPort(GetDialogWindow(dialog)));
 	GetDialogItem(dialog, iGATHER_NAME, &item_type, &item_handle, &item_rect);
 	GetDialogItemText(item_handle, ptemporary);
 	if (*temporary)
@@ -1403,25 +1314,24 @@ static void setup_network_list_box(
 	unsigned char *zone)
 {
 	Cell cell;
-	OSErr error;
 	
 	if (!network_list_box)
 	{
 		Rect bounds;
-		Rect adjusted_frame;
 
 		/* allocate the list */
 
 		SetPt(&cell, 0, 0);
 		SetRect(&bounds, 0, 0, 1, 0);
 	
-#if defined(LIST_BOX_AS_CONTROL)
+#if LIST_BOX_AS_CONTROL
 		ControlRef control;
 		OSStatus err;
 		
 		GetDialogItemAsControl( GetDialogFromWindow(window), iNETWORK_LIST_BOX, &control );
 		err = GetListBoxListHandle( control, &network_list_box );
 #else
+		Rect adjusted_frame;
 		adjusted_frame= *frame;
 		adjusted_frame.right-= SCROLLBAR_WIDTH-1;
 		network_list_box= LNew(&adjusted_frame, &bounds, cell, 0, window, false, false, false, true);
@@ -1442,14 +1352,6 @@ static void setup_network_list_box(
 	/* spawn an asynchronous network name lookup */
 	NetLookupOpen_SSLP(PLAYER_TYPE, MARATHON_NETWORK_VERSION, found_player_callback, lost_player_callback, player_name_changed_callback);
 
-	// LP: kludge to get the code to compile
-	#ifndef mac
-	// JTP: Of course the following code makes no sense on any platform
-	error= NetLookupOpen("\p=", PLAYER_TYPE, zone, MARATHON_NETWORK_VERSION,
-		network_list_box_update_proc, NetEntityNotInGame);
-	if (error!=noErr) dprintf("NetLookupOpen() returned %d", error);
-	#endif
-
 	return;
 }
 
@@ -1468,7 +1370,7 @@ static void dispose_network_list_box(
 	
 	NetLookupClose();
 
-#if !defined(LIST_BOX_AS_CONTROL)
+#if !LIST_BOX_AS_CONTROL
 	// JTP: Only dispose of it if we created it
 	LDispose(network_list_box);
 #endif
@@ -1494,33 +1396,24 @@ static pascal void update_player_list_item(
 	Handle       item_handle;
 	GrafPtr      old_port;
 	FontInfo     finfo;
-	
-	CGrafPtr     port = GetWindowPort(GetDialogWindow(dialog));
-//#if defined(USE_CARBON_ACCESSORS)
-	SInt16       pixelDepth = (*GetPortPixMap(port))->pixelSize;
-/*
-#else
-	SInt16       pixelDepth = (*port->portPixMap)->pixelSize;
-#endif
-*/
 
 // LP: the Classic version I've kept theme-less for simplicity
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 	ThemeDrawingState savedState;
 	ThemeDrawState curState =
 		IsWindowActive(GetDialogWindow(dialog))?kThemeStateActive:kThemeStateInactive;
 #endif
 
 	GetPort(&old_port);
-	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+	SetPort(GetWindowPort(GetDialogWindow(dialog)));
 	
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 	GetThemeDrawingState(&savedState);
 #endif
 	
 	GetDialogItem(dialog, item_num, &item_type, &item_handle, &item_rect);
 	
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 	DrawThemePrimaryGroup (&item_rect, curState);
 #endif
 	
@@ -1542,7 +1435,7 @@ static pascal void update_player_list_item(
 		}
 	}
 	
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 	SetThemeDrawingState(savedState, true);
 #endif
 	
@@ -1594,7 +1487,7 @@ void menu_index_to_level_entry(
 {
 	short  i, map_index;
 
-#if !defined(TARGET_API_MAC_CARBON)
+#if !TARGET_API_MAC_CARBON
 	// JTP: Aqua will put up a watch if we take too long
 	SetCursor(*GetCursor(watchCursor));
 #endif
@@ -1605,7 +1498,7 @@ void menu_index_to_level_entry(
 		get_indexed_entry_point(entry, &map_index, entry_flags);
 	}
 	
-#if !defined(TARGET_API_MAC_CARBON)
+#if !TARGET_API_MAC_CARBON
 	SetCursor(&qd.arrow);
 #endif
 	return;
@@ -1615,7 +1508,6 @@ static MenuHandle get_popup_menu_handle(
 	DialogPtr dialog,
 	short item)
 {
-	struct PopupPrivateData **privateHndl;
 	MenuHandle menu;
 	short item_type;
 	ControlHandle control;
@@ -1624,17 +1516,7 @@ static MenuHandle get_popup_menu_handle(
 	/* Add the maps.. */
 	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
 
-//#if defined(USE_CARBON_ACCESSORS)
 	menu= GetControlPopupMenuHandle(control);
-/*
-#else
-	*//* I don't know how to assert that it is a popup control... <sigh> *//*
-	privateHndl= (PopupPrivateData **) ((*control)->contrlData);
-	assert(privateHndl);
-
-	menu= (*privateHndl)->mHandle;
-#endif
-*/
 	assert(menu);
 
 	return menu;
@@ -1663,19 +1545,19 @@ static void fake_initialize_stat_data(void)
 
 // ZZZ: new function used by setup_dialog_for_game_type
 void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id, short radio_string_index,
-                                short units_item, short units_stringset_id, short units_string_index)
+	short units_item, short units_stringset_id, short units_string_index)
 {
 	Handle item;
 	short item_type;
 	Rect bounds;
 
-        GetDialogItem(dialog, radio_item, &item_type, &item, &bounds);
-        getpstr(ptemporary, radio_stringset_id, radio_string_index);
-        SetControlTitle((ControlHandle) item, ptemporary);
-        
-        GetDialogItem(dialog, units_item, &item_type, &item, &bounds);
-        getpstr(ptemporary, units_stringset_id, units_string_index);
-        SetDialogItemText(item, ptemporary);
+	GetDialogItem(dialog, radio_item, &item_type, &item, &bounds);
+	getpstr(ptemporary, radio_stringset_id, radio_string_index);
+	SetControlTitle((ControlHandle) item, ptemporary);
+	
+	GetDialogItem(dialog, units_item, &item_type, &item, &bounds);
+	getpstr(ptemporary, units_stringset_id, units_string_index);
+	SetDialogItemText(item, ptemporary);
 }
 
 /* For join & gather dialogs. */
@@ -1751,14 +1633,7 @@ static void draw_player_box_with_team(
 	/* Finally, draw the name. */
 	text_box= *rectangle;
 	InsetRect(&text_box, NAME_BEVEL_SIZE, NAME_BEVEL_SIZE);
-//#if defined(USE_CARBON_ACCESSORS)
 	CopyPascalStringToC(player->name, temporary);
-/*
-#else
-	pstrcpy(ptemporary, player->name); 
-	p2cstr(ptemporary);
-#endif
-*/
 	_draw_screen_text(temporary, (screen_rectangle *) &text_box, 
 		_center_horizontal|_center_vertical, _net_stats_font, _white_color);		
 
@@ -1858,7 +1733,7 @@ void display_net_game_stats(
 	ShowWindow(GetDialogWindow(dialog));
 	
 	GetPort(&old_port);
-	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+	SetPort(GetWindowPort(GetDialogWindow(dialog)));
 
 	do
 	{
@@ -1928,7 +1803,7 @@ static short create_graph_popup_menu(
 	{
 		struct player_data *player= get_player_data(rankings[index].player_index);
 		
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 		CopyCStringToPascal(player->name, ptemporary);
 #else		
 		strcpy(temporary, player->name); 
@@ -1950,14 +1825,7 @@ static short create_graph_popup_menu(
 	if(has_scores)
 	{
 		Str255 pscore_temp;
-//#if defined(USE_CARBON_ACCESSORS)
 		CopyCStringToPascal(temporary, pscore_temp);
-/*
-#else		
-		strcpy((char *)pscore_temp, temporary); 
-		c2pstr((char *)pscore_temp);
-#endif
-*/
 		AppendMenu(graph_popup, pscore_temp);
 		current_graph_selection= CountMenuItems(graph_popup);
 	}
@@ -1974,12 +1842,7 @@ static short create_graph_popup_menu(
 		{
 			get_network_score_text_for_postgame(temporary, true);
 			Str255 ppostgame;
-#if defined(TARGET_API_MAC_CARBON)
 			CopyCStringToPascal(temporary, ppostgame);
-#else
-			strcpy((char *)ppostgame,temporary);
-			c2pstr((char *)ppostgame);
-#endif
 			AppendMenu(graph_popup, ppostgame);
 		}
 	} 
@@ -2006,7 +1869,7 @@ static pascal Boolean display_net_stats_proc(
 
 	/* preprocess events */	
 	GetPort(&old_port);
-	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+	SetPort(GetWindowPort(GetDialogWindow(dialog)));
 	
 	switch(event->what)
 	{
@@ -2190,7 +2053,7 @@ static pascal void update_damage_item_proc(
 	TextSpec old_font;
 	
 	GetPort(&old_port);
-	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+	SetPort(GetWindowPort(GetDialogWindow(dialog)));
 
 	GetNewTextSpec(&font_info, fontTOP_LEVEL_FONT, 0);
 	GetFont(&old_font);
@@ -2633,66 +2496,6 @@ static bool will_new_mode_reorder_dialog(
 	return may_reorder;
 }
 
-static void setup_network_speed_for_join(
-	DialogPtr dialog)
-{
-	MenuHandle menu;
-	short index;
-	
-	menu= get_popup_menu_handle(dialog, iJOIN_NETWORK_TYPE);
-	for(index= 0; index<NUMBER_OF_TRANSPORT_TYPES; ++index)
-	{
-		if(!NetTransportAvailable(index))
-		{
-			DisableMenuItem(menu, index+1);
-		}
-	}
-
-	return;
-}
-
-static void setup_network_speed_for_gather(
-	DialogPtr dialog)
-{
-	short index;
-	MenuHandle menu;
-	
-	menu= get_popup_menu_handle(dialog, iNETWORK_SPEED);
-	for(index= 0; index<NUMBER_OF_NETWORK_TYPES; ++index)
-	{
-		switch(index)
-		{
-			case _appletalk_remote:
-				/* Should actually be able to check for appletalk remote */
-//				break;
-			case _localtalk:
-			case _tokentalk:
-			case _ethernet:
-				if(!NetTransportAvailable(kNetworkTransportType))
-				{
-					DisableMenuItem(menu, index+1);
-				}
-				break;
-				
-#ifdef USE_MODEM
-			case _modem:
-				if(!NetTransportAvailable(kModemTransportType))
-				{
-					DisableMenuItem(menu, index+1);
-				}
-				break;
-#endif				
-			default:
-				// LP change:
-				assert(false);
-				// halt();
-				break;
-		}
-	}
-
-	return;
-}
-
 /* Stupid function, here as a hack.. */
 static bool key_is_down(
 	short key_code)
@@ -2705,55 +2508,65 @@ static bool key_is_down(
 
 #ifdef NETWORK_TEST_POSTGAME_DIALOG
 static const char*    sTestingNames[] = {
-        "Doctor Burrito",
-        "Carnage Asada",
-        "Bongo Bob",
-        "The Napalm Man",
-        "Kissy Monster",
-        "lala",
-        "Prof. Windsurf",
-        "<<<-ZED-<<<"
+	"Doctor Burrito",
+	"Carnage Asada",
+	"Bongo Bob",
+	"The Napalm Man",
+	"Kissy Monster",
+	"lala",
+	"Prof. Windsurf",
+	"<<<-ZED-<<<"
 };
 
 // THIS ONE IS FAKE - used to test postgame report dialog without going through a game.
-bool network_gather(void) {
-    short i, j;
-    player_info thePlayerInfo;
-    game_info   theGameInfo;
-	
-    show_cursor(); // JTP: Hidden one way or another
-    if(network_game_setup(&thePlayerInfo, &theGameInfo)) {
+bool network_gather(bool inResumingGame) {
+	short i, j;
+	player_info thePlayerInfo;
+	game_info   theGameInfo;
+
+	show_cursor(); // JTP: Hidden one way or another
+	if(network_game_setup(&thePlayerInfo, &theGameInfo, false)) {
 
 	// Test the progress bar while we're at it
 	#include "progress.h"
-	open_progress_dialog(_distribute_map_single);
-	for(i=0; i < 9999; i++)
-		draw_progress_bar(i, 9999);
+	open_progress_dialog(_distribute_physics_single);
+	for(i=0; i < 100; i++)
+	{
+		nanosleep(&(timespec){0,50000000},NULL);
+		idle_progress_bar();
+	}
+	set_progress_dialog_message(_distribute_map_single);
+	reset_progress_bar();
+	for(i=0; i < 100; i++)
+	{
+		nanosleep(&(timespec){0,90000000},NULL);
+		draw_progress_bar(i, 100);
+	}
 	close_progress_dialog();
 	
 	for (i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; i++)
 	{
-        // make up a name
-        /*int theNameLength = (local_random() % MAXIMUM_PLAYER_NAME_LENGTH) + 1;
-        for(int n = 0; n < theNameLength; n++)
-            players[i].name[n] = 'a' + (local_random() % ('z' - 'a'));
+		// make up a name
+		/*int theNameLength = (local_random() % MAXIMUM_PLAYER_NAME_LENGTH) + 1;
+		for(int n = 0; n < theNameLength; n++)
+				players[i].name[n] = 'a' + (local_random() % ('z' - 'a'));
 
-        players[i].name[theNameLength] = '\0';
+		players[i].name[theNameLength] = '\0';
 */
-        strcpy(players[i].name, sTestingNames[i]);
+		strcpy(players[i].name, sTestingNames[i]);
 
-        // make up a team and color
-        players[i].color = local_random() % 8;
-        int theNumberOfTeams = 2 + (local_random() % 3);
-        players[i].team  = local_random() % theNumberOfTeams;
+		// make up a team and color
+		players[i].color = local_random() % 8;
+		int theNumberOfTeams = 2 + (local_random() % 3);
+		players[i].team  = local_random() % theNumberOfTeams;
 
 		(players+i)->monster_damage_taken.damage = abs(local_random()%200);
 		(players+i)->monster_damage_taken.kills = abs(local_random()%30);
 		(players+i)->monster_damage_given.damage = abs(local_random()%200);
 		(players+i)->monster_damage_given.kills = abs(local_random()%30);
-                
-                players[i].netgame_parameters[0] = local_random() % 200;
-                players[i].netgame_parameters[1] = local_random() % 200;
+		
+		players[i].netgame_parameters[0] = local_random() % 200;
+		players[i].netgame_parameters[1] = local_random() % 200;
 		
 		for (j = 0; j < MAXIMUM_NUMBER_OF_PLAYERS; j++)
 		{
@@ -2762,10 +2575,10 @@ bool network_gather(void) {
 		}
 	}
 
-    dynamic_world->player_count = MAXIMUM_NUMBER_OF_PLAYERS;
+	dynamic_world->player_count = MAXIMUM_NUMBER_OF_PLAYERS;
 
-    game_data& game_information = dynamic_world->game_information;
-    game_info* network_game_info = &theGameInfo;
+	game_data& game_information = dynamic_world->game_information;
+	game_info* network_game_info = &theGameInfo;
 
 	game_information.game_time_remaining= network_game_info->time_limit;
 	game_information.kill_limit= network_game_info->kill_limit;
@@ -2774,9 +2587,9 @@ bool network_gather(void) {
 	game_information.initial_random_seed= network_game_info->initial_random_seed;
 	game_information.difficulty_level= network_game_info->difficulty_level;
 
-    display_net_game_stats();
-    } // if setup box was OK'd
-    hide_cursor();
-    return false;
+	display_net_game_stats();
+	} // if setup box was OK'd
+	hide_cursor();
+	return false;
 }
 #endif
