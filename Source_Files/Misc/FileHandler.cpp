@@ -18,9 +18,8 @@ Feb 3, 2000 (Loren Petrich):
 #include <Folders.h>
 #include "cseries.h"
 #include "game_errors.h"
-#include "tags.h"
+#include "shell.h"
 #include "FileHandler.h"
-#include "MoreFilesExtract.h"
 
 
 /*
@@ -115,7 +114,30 @@ bool OpenedResourceFile::Pop()
 	}
 	return true;
 }
+
+
+bool OpenedResourceFile::Check(OSType Type, short ID)
+{
+	Push();
 	
+	SetResLoad(FALSE);
+	Handle RsrcHandle = Get1Resource(Type,ID);
+	Err = ResError();
+	
+	bool RsrcPresent = (RsrcHandle != NULL);
+	if (RsrcPresent)
+	{
+		ReleaseResource(RsrcHandle);
+		RsrcHandle = NULL;
+		RsrcPresent = (Err == noErr);
+	}
+	
+	SetResLoad(TRUE);
+	
+	Pop();
+	return RsrcPresent;
+}
+
 
 bool OpenedResourceFile::Get(OSType Type, short ID, LoadedResource& Rsrc)
 {
@@ -123,18 +145,24 @@ bool OpenedResourceFile::Get(OSType Type, short ID, LoadedResource& Rsrc)
 	
 	Push();
 	
+	SetResLoad(TRUE);
 	Handle RsrcHandle = Get1Resource(Type,ID);
 	Err = ResError();
-	if (!RsrcHandle) return false;
-	if (Err != noErr)
+	
+	bool RsrcLoaded = (RsrcHandle != NULL);
+	if (RsrcLoaded)
 	{
-		DisposeHandle(RsrcHandle);
-		return false;
+		if (Err == noErr)
+			Rsrc.RsrcHandle = RsrcHandle;
+		else
+		{
+			ReleaseResource(RsrcHandle);
+			RsrcLoaded = false;
+		}
 	}
-	Rsrc.RsrcHandle = RsrcHandle;
 	
 	Pop();
-	return (Err == noErr);
+	return RsrcLoaded;
 }
 
 bool OpenedResourceFile::Close()
@@ -144,6 +172,26 @@ bool OpenedResourceFile::Close()
 	CloseResFile(RefNum);
 	Err = ResError();
 	RefNum = RefNum_Closed;
+	
+	return (Err == noErr);
+}
+
+
+bool DirectorySpecifier::SetToAppParent()
+{
+	FileSpecifier F;
+
+	F.SetToApp();	
+	F.ToDirectory(*this);
+	
+	Err = F.GetError();
+	return (Err == noErr);
+}
+
+bool DirectorySpecifier::SetToPreferencesParent()
+{
+	Err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
+		&vRefNum, &parID);
 	
 	return (Err == noErr);
 }
@@ -179,7 +227,7 @@ inline void MacFilename_To_CString(unsigned char *Source, char *Destination)
 }
 
 // Typecode in range
-inline bool InRange(int Type) {return (Type >= 0 && Type < FileSpecifier::C_NUMBER_OF_TYPECODES);}
+inline bool InRange(int Type) {return (Type >= 0 && Type < NUMBER_OF_TYPECODES);}
 
 
 void FileSpecifier::GetName(char *Name)
@@ -200,7 +248,19 @@ void FileSpecifier::SetSpec(FSSpec& _Spec)
 
 // Parent directories:
 
-bool FileSpecifier::SetFileToApp()
+void FileSpecifier::ToDirectory(DirectorySpecifier& Dir)
+{
+	Dir.vRefNum = Spec.vRefNum;
+	Dir.parID = Spec.parID;
+}
+
+void FileSpecifier::FromDirectory(DirectorySpecifier& Dir)
+{
+	Spec.vRefNum = Dir.vRefNum;
+	Spec.parID = Dir.parID;
+}
+
+bool FileSpecifier::SetToApp()
 {
 	get_my_fsspec(&Spec);
 	
@@ -209,9 +269,13 @@ bool FileSpecifier::SetFileToApp()
 
 bool FileSpecifier::SetParentToPreferences()
 {
-	Err = FindFolder(kOnSystemDisk, kPreferencesFolderType, kCreateFolder,
-		&Spec.vRefNum, &Spec.parID);
-
+	DirectorySpecifier D;
+	
+	D.SetToPreferencesParent();
+	FromDirectory(D);
+	
+	Err = D.GetError();
+	
 	return (Err == noErr);
 }
 
@@ -220,7 +284,7 @@ bool FileSpecifier::SetParentToPreferences()
 bool FileSpecifier::Create(int Type)
 {
 	OSType TypeCode = InRange(Type) ? get_typecode(Type) : '????';
-	OSType CreatorCode = get_typecode(C_Creator);
+	OSType CreatorCode = get_typecode(_typecode_creator);
 
 	/* Assume that they already confirmed this is going to die.. */
 	Err = FSpDelete(&Spec);
@@ -344,12 +408,169 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 	return true;
 }
 
+// Stuff for the asynchronous save dialog for savegames...
+#define kFolderBit 0x10
+#define strSAVE_LEVEL_NAME 128
+#define dlogMY_REPLACE 131
+
+#define REPLACE_H_OFFSET 52
+#define REPLACE_V_OFFSET 52
+
+/* Doesn't actually use it as an FSSpec, just easier */
+/* Return TRUE if we want to pass it through, otherwise return FALSE. */
+static boolean confirm_save_choice(
+	FSSpec *file)
+{
+	OSErr err;
+	HFileParam pb;
+	boolean pass_through= TRUE;
+	DialogPtr dialog;
+	short item_hit;
+	Rect frame;
+
+	/* Clear! */
+	memset(&pb, 0, sizeof(HFileParam));
+	pb.ioNamePtr= file->name;
+	pb.ioVRefNum= file->vRefNum;
+	pb.ioDirID= file->parID;
+	err= PBHGetFInfo((HParmBlkPtr) &pb, FALSE); 
+
+	if(!err)
+	{
+		/* IF we aren't a folder.. */
+		if(!(pb.ioFlAttrib & kFolderBit))
+		{
+			if(pb.ioFlFndrInfo.fdType==get_typecode(_typecode_savegame))
+			{
+				/* Get the default dialog's frame.. */
+				get_window_frame(FrontWindow(), &frame);
+
+				/* Slam the ParamText */
+				ParamText(file->name, "\p", "\p", "\p");
+
+				/* Load in the dialog.. */
+				dialog= myGetNewDialog(dlogMY_REPLACE, NULL, (WindowPtr) -1, 0);
+				assert(dialog);
+				
+				/* Move the window to the proper location.. */
+				MoveWindow((WindowPtr) dialog, frame.left+REPLACE_H_OFFSET, 
+					frame.top+REPLACE_V_OFFSET, FALSE);
+
+				/* Show the window. */
+				ShowWindow((WindowPtr) dialog);			
+				do {
+					ModalDialog(get_general_filter_upp(), &item_hit);
+				} while(item_hit > iCANCEL);
+
+				/* Restore and cleanup.. */				
+				ParamText("\p", "\p", "\p", "\p");
+				DisposeDialog(dialog);
+				
+				if(item_hit==iOK) /* replace.. */
+				{
+					/* Want to delete it... */
+					err= FSpDelete(file);
+					/* Pass it on through.. they won't bring up the replace now. */
+				} else {
+					/* They cancelled.. */
+					pass_through= FALSE;
+				}
+			}
+		}
+	}
+	
+	return pass_through;
+}
+
+/* load_file_reply is valid.. */
+static pascal short custom_put_hook(
+	short item, 
+	DialogPtr theDialog,
+	void *user_data)
+{
+	FSSpec *selected_file= (FSSpec *) user_data;
+
+	global_idle_proc();
+
+	if(GetWRefCon((WindowPtr) theDialog)==sfMainDialogRefCon)
+	{
+		if(item==sfItemOpenButton)
+		{
+			if(!confirm_save_choice(selected_file))
+			{
+				item= sfHookNullEvent;
+			}
+		}
+	}
+	
+	return item;
+}
+
+bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
+{
+	Str31 PasPrompt, PasDefaultName;
+	StandardFileReply Reply;
+	if (Prompt)
+		CString_ToFilename(Prompt,PasPrompt);
+	else
+		PasPrompt[0] = 0;
+	if (DefaultName)
+		CString_ToFilename(DefaultName,PasDefaultName);
+	else
+		PasDefaultName[0] = 0;
+	
+	DlgHookYDUPP dlgHook;
+	Point top_left= {-1, -1}; /* auto center */
+	
+	/* Create the UPP's */
+	dlgHook= NewDlgHookYDProc(custom_put_hook);
+	assert(dlgHook);
+
+	/* The drawback of this method-> I don't get a New Folder button. */
+	/* If this is terribly annoying, I will add the Sys7 only code. */
+	CustomPutFile(PasPrompt, 
+		PasDefaultName, &Reply, 0, top_left, dlgHook, NULL, NULL, NULL, &Reply.sfFile);
+
+	/* Free them... */
+	DisposeRoutineDescriptor((UniversalProcPtr) dlgHook);
+	
+	if (!Reply.sfGood) return false;
+	
+	SetSpec(Reply.sfFile);
+	
+	if (Reply.sfReplacing)
+		FSpDelete(&Spec);
+	
+	return true;
+}
+
 bool FileSpecifier::Exists()
 {
 	// Test for the existence of a file by re-creating its FSSpec
 	Err = FSMakeFSSpec(Spec.vRefNum, Spec.parID, Spec.name, &Spec);
 	
 	return (Err == noErr);
+}
+
+// Code from get_file_modification_date() in preferences.c
+TimeType FileSpecifier::GetDate()
+{
+	CInfoPBRec pb;
+	OSErr error;
+	TimeType modification_date= 0;
+	
+	memset(&pb, 0, sizeof(pb));
+	pb.hFileInfo.ioVRefNum= Spec.vRefNum;
+	pb.hFileInfo.ioNamePtr= Spec.name;
+	pb.hFileInfo.ioDirID= Spec.parID;
+	pb.hFileInfo.ioFDirIndex= 0;
+	error= PBGetCatInfoSync(&pb);
+	if(!error)
+	{
+		modification_date= pb.hFileInfo.ioFlMdDat;
+	}
+	
+	return modification_date;
 }
 
 // Returns NONE if the type could not be identified
@@ -361,7 +582,7 @@ int FileSpecifier::GetType()
 	
 	OSType MacType = FileInfo.fdType;
 	
-	for (int k=0; k<C_NUMBER_OF_TYPECODES; k++)
+	for (int k=0; k<NUMBER_OF_TYPECODES; k++)
 	{
 		if (MacType == get_typecode(k)) return k;
 	}
@@ -389,15 +610,6 @@ bool FileSpecifier::GetFreeSpace(unsigned long& FreeSpace)
 	return (Err==noErr);
 }
 
-bool FileSpecifier::CopySpec(FileSpecifier& File)
-{
-	// Cast to the Macintosh version; how does RTTI work?
-	FileSpecifier *FPtr = &File;
-	FileSpecifier& MacFile = *((FileSpecifier *)FPtr);
-	
-	SetSpec(MacFile.Spec);
-	return true;
-}
 bool FileSpecifier::CopyContents(FileSpecifier& File)
 {	
 	// Copied out of vbl_macintosh.c;
@@ -470,5 +682,22 @@ bool FileSpecifier::Delete()
 	Err = FSpDelete(&Spec);
 	
 	return (Err == noErr);
+}
+
+	
+// Is this file specifier the same as some other one?
+bool FileSpecifier::operator==(FileSpecifier& F)
+{
+	// Copied out of find_files.c
+	Boolean equal= false;
+	
+	if(Spec.vRefNum==F.Spec.vRefNum && Spec.parID==F.Spec.parID && 
+		EqualString(Spec.name, F.Spec.name, false, false))
+	{
+		equal= true;
+	}
+	
+	return equal;
+
 }
 
