@@ -206,6 +206,16 @@ enum /* instruction defs */
 	Monster_Get_Nuke = 0x4A,
 	
 	Monster_Set_Nuke = 0x4B,
+	
+	Set_UnderFog_Depth = 0x4C, //Alexander Strange's underwater fog stuff, a straight copy of Matthew Hielscher's code
+	
+	Set_UnderFog_Color = 0x4D,
+	
+	Get_UnderFog_Depth = 0x4E,
+	
+	Get_UnderFog_Color = 0x4F,
+	
+	Get_Random = 0x50, //now, we just need flying rats and a flashlight
 
 	NUMBER_OF_INSTRUCTIONS
 };

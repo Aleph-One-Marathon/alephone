@@ -193,7 +193,10 @@ void s_Set_Fog_Depth(script_instruction inst);
 void s_Set_Fog_Color(script_instruction inst);
 void s_Get_Fog_Depth(script_instruction inst);
 void s_Get_Fog_Color(script_instruction inst);
-
+void s_Set_UnderFog_Depth(script_instruction inst);
+void s_Set_UnderFog_Color(script_instruction inst);
+void s_Get_UnderFog_Depth(script_instruction inst);
+void s_Get_UnderFog_Color(script_instruction inst);
 
 void s_Teleport_Player(script_instruction inst);
 
@@ -215,6 +218,7 @@ void s_Monster_Get_Item(script_instruction inst);
 void s_Monster_Set_Item(script_instruction inst);
 void s_Monster_Get_Nuke(script_instruction inst);
 void s_Monster_Set_Nuke(script_instruction inst);
+void s_Get_Random(script_instruction inst);
 
 /*-------------------------------------------*/
 
@@ -330,8 +334,12 @@ void init_instructions(void)
 	instruction_lookup[Monster_Set_Item] = s_Monster_Set_Item;
 	instruction_lookup[Monster_Get_Nuke] = s_Monster_Get_Nuke;
 	instruction_lookup[Monster_Set_Nuke] = s_Monster_Set_Nuke;
-
-
+ 	//Alexander Strange's underwater fog stuff, a straight copy of Matthew Hielscher's code	
+	instruction_lookup[Set_UnderFog_Depth] = s_Set_UnderFog_Depth;
+	instruction_lookup[Set_UnderFog_Color] = s_Set_UnderFog_Color;
+	instruction_lookup[Get_UnderFog_Depth] = s_Get_UnderFog_Depth;
+	instruction_lookup[Get_UnderFog_Color] = s_Get_UnderFog_Color;
+ 	instruction_lookup[Get_Random] = s_Get_Random;
 
 	}
 
@@ -1962,6 +1970,95 @@ void s_Get_Fog_Color(script_instruction inst)
 
 }
 
+void s_Set_UnderFog_Depth(script_instruction inst)
+{
+	int temp;
+
+	switch(inst.mode)
+	{
+		case 0:
+			temp= (int)floor(inst.op1);
+			break;
+		case 1:
+			temp= (int)floor(get_variable(int(inst.op1)));
+			break;
+		default:
+			temp= 0;
+			break;
+ 	}
+	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = temp;
+}
+
+void s_Set_UnderFog_Color(script_instruction inst)
+{
+	float r,g,b;
+
+	r= inst.op1;
+	g= inst.op2;
+	b= inst.op3;
+
+	switch(inst.mode)
+	{
+		case 1:
+			r= get_variable(int(inst.op1));
+			break;
+		case 2:
+			g= get_variable(int(inst.op2));
+			break;
+		case 3:
+			r= get_variable(int(inst.op1));
+			g= get_variable(int(inst.op2));
+			break;
+		case 4:
+			b= get_variable(int(inst.op3));
+			break;
+		case 5:
+			r= get_variable(int(inst.op1));
+			b= get_variable(int(inst.op3));
+			break;
+		case 6:
+			g= get_variable(int(inst.op2));
+			b= get_variable(int(inst.op3));
+			break;
+		case 7:
+			r= get_variable(int(inst.op1));
+			g= get_variable(int(inst.op2));
+			b= get_variable(int(inst.op3));
+			break;
+		default:
+			break;
+	}
+	
+	rgb_color& Color = OGL_GetFogData(OGL_Fog_BelowLiquid)->Color;
+
+	Color.red = PIN(int(65535*r+0.5),0,65535);
+	Color.green = PIN(int(65535*g+0.5),0,65535);
+	Color.blue = PIN(int(65535*b+0.5),0,65535);
+}
+
+void s_Get_UnderFog_Depth(script_instruction inst)
+{
+	if (inst.mode != 1)
+		return;
+
+	set_variable(int(inst.op1),OGL_GetFogData(OGL_Fog_BelowLiquid)->Depth);
+
+}
+
+void s_Get_UnderFog_Color(script_instruction inst)
+{
+	if (inst.mode != 7)
+		return;
+	
+	rgb_color& Color = OGL_GetFogData(OGL_Fog_BelowLiquid)->Color;
+	
+	set_variable(int(inst.op1),Color.red/65535.0);
+	set_variable(int(inst.op2),Color.green/65535.0);
+	set_variable(int(inst.op3),Color.blue/65535.0);
+
+}
+
+
 void s_Teleport_Player(script_instruction inst)
 {
 	int dest;
@@ -2812,4 +2909,15 @@ void s_Monster_Get_Nuke(script_instruction inst)
 //op3: What to make it (true is checked, false is unchecked)
 void s_Monster_Set_Nuke(script_instruction inst)
 {
+}
+
+//Random variable, useful in mazes or something
+//should i use GM_Random?
+void s_Get_Random(script_instruction inst)
+{
+	if (inst.mode != 1)
+		return;
+
+	set_variable(int(inst.op1),(set_random_seed(clock()),global_random()));
+
 }

@@ -82,6 +82,11 @@ Monster_Get_Item 48
 Monster_Set_Item 49
 Monster_Get_Nuke 4A
 Monster_Set_Nuke 4B
+Set_UnderFog_Depth 4C	
+Set_UnderFog_Color 4D
+Get_UnderFog_Depth 4E	
+Get_UnderFog_Color 4F
+Get_Random 50
 #
 # Variable data
 #
