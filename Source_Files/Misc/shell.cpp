@@ -55,7 +55,7 @@ static void handle_keyword(int type_of_cheat);
 
 
 /*
- *  Somebody want to do something important; free as much temporary memory as possible
+ *  Somebody wants to do something important; free as much temporary memory as possible
  */
 
 void free_and_unlock_memory(void)

@@ -72,11 +72,6 @@ struct network_speeds
 
 #define MONSTER_TEAM                8
 
-// This number needs to be changed whenever a change occurs in the networking code
-// that would make 2 versions incompatible, or a change in the game occurs that
-// would make 2 versions out of sync.
-#define MARATHON_NETWORK_VERSION 9
-
 #define fontTOP_LEVEL_FONT        130
 #define menuZONES                1002
 

@@ -28,6 +28,10 @@
 #include <GL/gl.h>
 #endif
 
+#ifdef HAVE_SDL_NET_H
+#include <SDL_net.h>
+#endif
+
 #ifdef __WIN32__
 #include <windows.h>
 #endif
@@ -45,6 +49,7 @@ bool option_nogl = false;				// Disable OpenGL
 bool option_nosound = false;			// Disable sound output
 static bool force_fullscreen = false;	// Force fullscreen mode
 static bool force_windowed = false;		// Force windowed mode
+
 
 #ifdef __BEOS__
 // From csfiles_beos.cpp
@@ -181,6 +186,14 @@ static void initialize_application(void)
 	}
 	SDL_WM_SetCaption("Aleph One", "Aleph One");
 	atexit(shutdown_application);
+
+#ifdef HAVE_SDL_NET
+	// Initialize SDL_net
+	if (SDLNet_Init() < 0) {
+		fprintf(stderr, "Couldn't initialize SDL_net (%s)\n", SDLNet_GetError());
+		exit(1);
+	}
+#endif
 
 	// Find data directories, construct search path
 	DirectorySpecifier default_data_dir;
@@ -324,6 +337,7 @@ static void initialize_application(void)
 
 static void shutdown_application(void)
 {
+	SDLNet_Quit();
 	SDL_Quit();
 }
 
@@ -334,7 +348,11 @@ static void shutdown_application(void)
 
 bool networking_available(void)
 {
+#ifdef HAVE_SDL_NET
+	return true;
+#else
 	return false;
+#endif
 }
 
 

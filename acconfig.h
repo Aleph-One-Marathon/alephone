@@ -17,6 +17,9 @@
 /* Define if OpenGL support is enabled. */
 #undef HAVE_OPENGL
 
+/* Define if SDL_net support is enabled. */
+#undef HAVE_SDL_NET
+
 
 /* Leave that blank line there!!  Autoheader needs it.
    If you're adding to this file, keep in mind:

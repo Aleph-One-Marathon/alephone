@@ -15,8 +15,13 @@ Feb. 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
 */
 
-#include "macintosh_cseries.h"
+#include "cseries.h"
+
+#if defined(mac)
 #include "macintosh_network.h"
+#elif defined(SDL)
+#include "sdl_network.h"
+#endif
 
 #include "network_modem.h"
 #include "network_stream.h"
@@ -265,7 +270,11 @@ short NetGetStreamSocketNumber(
 {
 	assert(transport_type==kNetworkTransportType);
 
+#ifdef mac
 	return dspConnection->socketNum;
+#else
+	return DEFAULT_PORT;
+#endif
 }
 
 bool NetTransportAvailable(
@@ -276,7 +285,13 @@ bool NetTransportAvailable(
 	switch(type)
 	{
 		case kNetworkTransportType:
+#if defined(mac)
 			available= system_information->appletalk_is_available;
+#elif defined(HAVE_SDL_NET)
+			available= true;
+#else
+			available= false;
+#endif
 			break;
 		case kModemTransportType:
 #ifdef USE_MODEM

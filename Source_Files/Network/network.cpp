@@ -44,16 +44,21 @@ NetADSPRead() should time out by calling PBControl(dspStatus, ...) to see if the
 clearly this is all broken until we have packet types
 */
 
-#include "macintosh_cseries.h"
-#include "mytm.h"
+#include "cseries.h"
 #include "map.h"       // for TICKS_PER_SECOND and "struct entry_point"
 #include "interface.h" // for transfering map
+
+#if defined(mac)
+#include "mytm.h"
 #include "macintosh_network.h"
+#elif defined(SDL)
+#include "sdl_network.h"
+#endif
+
 #include "game_errors.h"
 #include "network_stream.h"
 #include "network_modem.h"
 #include "progress.h"
-// #include "portable_files.h"
 #include "extensions.h"
 
 // #define TEST_MODEM
@@ -88,11 +93,11 @@ clearly this is all broken until we have packet types
 
 #define NET_QUEUE_SIZE (MAXIMUM_UPDATES_PER_PACKET+1)
 
-#define UNSYNC_TIMEOUT (3*MACINTOSH_TICKS_PER_SECOND) // 3 seconds
+#define UNSYNC_TIMEOUT (3*MACHINE_TICKS_PER_SECOND) // 3 seconds
 
 #define STREAM_TRANSFER_CHUNK_SIZE (10000)
-#define MAP_TRANSFER_TIME_OUT   (60*70) // 70 seconds to wait for map.
-#define NET_SYNC_TIME_OUT       (60*50) // 50 seconds to time out of syncing. 
+#define MAP_TRANSFER_TIME_OUT   (MACHINE_TICKS_PER_SECOND*70) // 70 seconds to wait for map.
+#define NET_SYNC_TIME_OUT       (MACHINE_TICKS_PER_SECOND*50) // 50 seconds to time out of syncing. 
 
 #define kACK_TIMEOUT 40
 #define kRETRIES     50  // how many timeouts allowed before dropping the next player
@@ -267,9 +272,11 @@ static char *network_adsp_packet;
 
 static short netState= netUninitialized;
 
+#ifdef mac
 static myTMTaskPtr resendTMTask = (myTMTaskPtr) NULL;
 static myTMTaskPtr serverTMTask = (myTMTaskPtr) NULL;
 static myTMTaskPtr queueingTMTask= (myTMTaskPtr) NULL;
+#endif
 
 static volatile NetQueue local_queue;
 
@@ -442,30 +449,42 @@ bool NetEnter(
 		error= NetADSPOpen();
 		if (!error)
 		{
-			topology= (NetTopologyPtr) NewPtrClear(sizeof(NetTopology));
-			status= (NetStatusPtr) NewPtrClear(sizeof(NetStatus));
-			network_adsp_packet= (char *) NewPtrClear(MaxStreamPacketLength());
-			error= MemError();
-			if(!error) 
+			topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
+			memset(topology, 0, sizeof(NetTopology));
+			//topology= (NetTopologyPtr) NewPtrClear(sizeof(NetTopology));
+			status = (NetStatusPtr)malloc(sizeof(NetStatus));
+			memset(status, 0, sizeof(NetStatus));
+			//status= (NetStatusPtr) NewPtrClear(sizeof(NetStatus));
+			network_adsp_packet = (char *)malloc(MaxStreamPacketLength());
+			memset(network_adsp_packet, 0, MaxStreamPacketLength());
+			//network_adsp_packet= (char *) NewPtrClear(MaxStreamPacketLength());
+			if (topology && status && network_adsp_packet)
+			//error= MemError();
+			//if(!error) 
 			{
-				status->buffer= (byte *) NewPtrClear(ddpMaxData);
-				error= MemError();
-				if(!error)
+				status->buffer = (byte *)malloc(ddpMaxData);
+				//status->buffer= (byte *) NewPtrClear(ddpMaxData);
+				if (status->buffer)
+				//error= MemError();
+				//if(!error)
 				{
 					/* Set the server player identifier */
 					NetSetServerIdentifier(0);
 				
 					ringFrame= NetDDPNewFrame();
-					error= MemError();
-					if(!error)
+					if (ringFrame)
+					//error= MemError();
+					//if(!error)
 					{
 						ackFrame= NetDDPNewFrame();
-						error= MemError();
-						if(!error)
+						if (ackFrame)
+						//error= MemError();
+						//if(!error)
 						{
 							distributionFrame= NetDDPNewFrame();
-							error= MemError();
-							if (!error)
+							if (distributionFrame)
+							//error= MemError();
+							//if (!error)
 							{
 								error= NetStreamEstablishConnectionEnd();
 								if (error==noErr)
@@ -514,10 +533,12 @@ void NetExit(
 	ModemExit();
 #else
 
+#ifdef mac
 	/* These functions do the right thing for NULL pointers */
 	resendTMTask= myTMRemove(resendTMTask);
 	serverTMTask= myTMRemove(serverTMTask);
 	queueingTMTask= myTMRemove(queueingTMTask);
+#endif
 
 	if (netState!=netUninitialized)
 	{
@@ -539,9 +560,12 @@ void NetExit(
 				close_stream_file();
 #endif
 #endif
-				DisposePtr((Ptr)topology);
-				DisposePtr((Ptr)status->buffer);
-				DisposePtr((Ptr)status);
+				free(topology);
+				//DisposePtr((Ptr)topology);
+				free(status->buffer);
+				//DisposePtr((Ptr)status->buffer);
+				free(status);
+				//DisposePtr((Ptr)status);
 				status= NULL;
 				topology= NULL;
 				
@@ -654,10 +678,12 @@ void NetDistributeInformation(
 	distribution_header.distribution_type = type;
 	distribution_header.first_player_index = localPlayerIndex;
 	distribution_header.data_size = buffer_size;
-	BlockMove(&distribution_header, distributionFrame->data+sizeof(NetPacketHeader), sizeof(NetDistributionPacket));
-	BlockMove(buffer, 
-		distributionFrame->data + (sizeof(NetPacketHeader) + sizeof(NetDistributionPacket) - (2*sizeof(byte))), 
-		buffer_size);
+	memcpy(distributionFrame->data + sizeof(NetPacketHeader), &distribution_header, sizeof(NetDistributionPacket));
+	//BlockMove(&distribution_header, distributionFrame->data+sizeof(NetPacketHeader), sizeof(NetDistributionPacket));
+	memcpy(distributionFrame->data + sizeof(NetPacketHeader) + sizeof(NetDistributionPacket) - 2*sizeof(byte), buffer, buffer_size);
+	//BlockMove(buffer, 
+	//	distributionFrame->data + (sizeof(NetPacketHeader) + sizeof(NetDistributionPacket) - (2*sizeof(byte))), 
+	//	buffer_size);
 	
 	NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 #endif
@@ -786,6 +812,7 @@ static int net_compare(
 	void const *p1, 
 	void const *p2)
 {
+#if defined(mac)
 	uint16 base_network_number;
 	uint16 p1_network_number, p2_network_number;
 	
@@ -802,6 +829,11 @@ static int net_compare(
 		return -1;
 	else // p2_network_number >= base_network_number
 		return 1;
+#else
+	uint32 p1_host = ((const NetPlayer *)p1)->ddpAddress.host;
+	uint32 p2_host = ((const NetPlayer *)p2)->ddpAddress.host;
+	return p2_host - p1_host;
+#endif
 }
 
 /*
@@ -933,7 +965,7 @@ void NetSetServerIdentifier(
 bool NetSync(
 	void)
 {
-	long ticks;
+	uint32 ticks;
 	bool success= true;
 #ifdef TEST_MODEM
 	return ModemSync();
@@ -968,10 +1000,10 @@ bool NetSync(
 	}
 
 	/* once we get a normal packet, netState will be set, and we can cruise. */
-	ticks= TickCount();
+	ticks= machine_tick_count();
 	while (success && netState != netActive) // packet handler changes this variable.
 	{
-		if (TickCount() - ticks > NET_SYNC_TIME_OUT)
+		if (machine_tick_count() - ticks > NET_SYNC_TIME_OUT)
 		{
 			alert_user(infoError, strNETWORK_ERRORS, netErrSyncFailed, 0);
 
@@ -996,7 +1028,7 @@ bool NetUnSync(
 	void)
 {
 	bool success= true;
-	long ticks;
+	uint32 ticks;
 
 #ifdef TEST_MODEM
 	success= ModemUnsync();
@@ -1012,11 +1044,11 @@ bool NetUnSync(
 		/*  to the server, the server sends an unsync ring packet.  This will cause all the other */
 		/*  machines to unsync, and when the server gets the packet back, it turns the net off */
 
-		ticks= TickCount();
+		ticks= machine_tick_count();
 		// we wait until the packet handler changes "acceptPackets" or until we hit a serious
 		// timeout, in case we are quitting and someone else is refusing to give up the ring.
 		while((status->acceptRingPackets || !status->receivedAcknowledgement)
-				&& (TickCount()-ticks<UNSYNC_TIMEOUT))
+				&& (machine_tick_count()-ticks<UNSYNC_TIMEOUT))
 			;
 	}
 	if(status->acceptRingPackets) 
@@ -1118,9 +1150,8 @@ static void NetSetPlayerData(
 	long data_size)
 {
 	assert(data_size>=0&&data_size<=MAXIMUM_PLAYER_DATA_SIZE);
-	BlockMove(data, topology->players[player_index].player_data, data_size);
-	
-	return;
+	memcpy(topology->players[player_index].player_data, data, data_size);
+	//BlockMove(data, topology->players[player_index].player_data, data_size);
 }
 
 void *NetGetGameData(
@@ -1162,8 +1193,12 @@ bool NetEntityNotInGame(
 	{
 		AddrBlock *player_address= &topology->players[player_index].dspAddress;
 		
+#ifdef mac
 		if (address->aNode==player_address->aNode && address->aSocket==player_address->aSocket &&
 			address->aNet==player_address->aNet)
+#else
+		if (address->host == player_address->host && address->port == player_address->port)
+#endif
 		{
 			valid= false;
 			break;
@@ -1191,7 +1226,7 @@ be acknowledged) at a time.
 void NetDDPPacketHandler(
 	DDPPacketBufferPtr packet)
 {
-	static int already_here= false;
+	static bool already_here = false;
 	NetPacketHeaderPtr header= (NetPacketHeaderPtr) packet->datagramData;
 	
 	assert(!already_here);
@@ -1210,9 +1245,14 @@ void NetDDPPacketHandler(
 					NetProcessLossyDistribution(packet->datagramData+sizeof(NetPacketHeader));
 					break;
 				case tagACKNOWLEDGEMENT:
+#ifdef mac
 					if (/*packet->sourceAddress.aNet == status->upringAddress.aNet && */
 						packet->sourceAddress.aNode == status->upringAddress.aNode &&
 						packet->sourceAddress.aSocket == status->upringAddress.aSocket)
+#else
+					if (packet->sourceAddress.host == status->upringAddress.host &&
+					    packet->sourceAddress.port == status->upringAddress.port)
+#endif
 					{
 						if (header->sequence==status->lastValidRingSequence+1)
 						{
@@ -1277,9 +1317,13 @@ void NetDDPPacketHandler(
 					break;
 					
 				case tagCHANGE_RING_PACKET:
+#ifdef mac
 					status->downringAddress.aNet= packet->sourceAddress.aNet;
 					status->downringAddress.aNode= packet->sourceAddress.aNode;
 					status->downringAddress.aSocket= packet->sourceAddress.aSocket;
+#else
+					status->downringAddress = packet->sourceAddress;
+#endif
 
 #ifdef DEBUG_NET
 					net_stats.change_ring_packet_count++;
@@ -1290,9 +1334,14 @@ void NetDDPPacketHandler(
 				case tagRING_PACKET:
 					if(status->acceptRingPackets)
 					{
+#ifdef mac
 						if (/* packet->sourceAddress.aNet == status->downringAddress.aNet && */
 							packet->sourceAddress.aNode == status->downringAddress.aNode &&
 							packet->sourceAddress.aSocket == status->downringAddress.aSocket)
+#else
+						if (packet->sourceAddress.host == status->downringAddress.host &&
+						    packet->sourceAddress.port == status->downringAddress.port)
+#endif
 						{
 							if (header->sequence <= status->lastValidRingSequence)
 							{
@@ -1399,7 +1448,8 @@ static void NetProcessLossyDistribution(
 			header->tag = tagLOSSY_DISTRIBUTION;
 			header->sequence = 0;
 
-			BlockMove(buffer, distributionFrame->data+sizeof(NetPacketHeader), sizeof(NetDistributionPacket) + packet_data->data_size);
+			memcpy(distributionFrame->data + sizeof(NetPacketHeader), buffer, sizeof(NetDistributionPacket) + packet_data->data_size);
+			//BlockMove(buffer, distributionFrame->data+sizeof(NetPacketHeader), sizeof(NetDistributionPacket) + packet_data->data_size);
 			NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 		}
 	}
@@ -1450,6 +1500,7 @@ static void NetProcessIncomingBuffer(
 //				packet_data->server_net_time= dynamic_world->tick_count;
 //				status->localNetTime= dynamic_world->tick_count;
 
+#ifdef mac
 				if(serverTMTask)
 				{
 					/* This can only happen if we are resyncing for a changed level */
@@ -1457,6 +1508,7 @@ static void NetProcessIncomingBuffer(
 				} else {
 					serverTMTask= myXTMSetup(1000/TICKS_PER_SECOND, NetServerTask);
 				}
+#endif
 			}
 			/* else forward immediately. */
 			break;
@@ -1473,6 +1525,7 @@ static void NetProcessIncomingBuffer(
 //				status->localNetTime= 0;
 //				status->localNetTime= packet_data->server_net_time;
 
+#ifdef mac
 				if(queueingTMTask)
 				{
 					/* This can only happen if we are resyncing for a changed level */
@@ -1480,6 +1533,7 @@ static void NetProcessIncomingBuffer(
 				} else {
 					queueingTMTask= myXTMSetup(1000/TICKS_PER_SECOND, NetQueueingTask);
 				}
+#endif
 			}
 			break;
 			
@@ -1634,9 +1688,10 @@ static void NetAddFlagsToPacket(
 		vassert(count>=0 && count<=(MAXIMUM_UPDATES_PER_PACKET * MAXIMUM_NUMBER_OF_NETWORK_PLAYERS),
 			csprintf(temporary, "bad count. count = %d. packet:; dm #%d", count, ((byte*)packet)-sizeof(NetPacketHeader)));
 
-		BlockMove(action_flags + packet->action_flag_count[localPlayerIndex],
-			action_flags + packet->required_action_flags,
-			count * sizeof(long));
+		memcpy(action_flags + packet->required_action_flags, action_flags + packet->action_flag_count[localPlayerIndex], count * sizeof(uint32));
+		//BlockMove(action_flags + packet->action_flag_count[localPlayerIndex],
+		//	action_flags + packet->required_action_flags,
+		//	count * sizeof(long));
 	}
 
 #ifdef DEBUG_NET
@@ -1715,12 +1770,14 @@ static void NetInitializeTopology(
 		NetLocalAddrBlock(&local_player->dspAddress, adsp_socket_number);
 		NetLocalAddrBlock(&local_player->ddpAddress, ddpSocket);
 	}
-	BlockMove(player_data, local_player->player_data, player_data_size);
+	memcpy(local_player->player_data, player_data, player_data_size);
+	//BlockMove(player_data, local_player->player_data, player_data_size);
 	
 	/* initialize the network topology (assume weÕre the only player) */
 	topology->player_count= 1;
 	topology->nextIdentifier= 1;
-	BlockMove(game_data, topology->game_data, game_data_size);
+	memcpy(topology->game_data, game_data, game_data_size);
+	//BlockMove(game_data, topology->game_data, game_data_size);
 
 	return;
 }
@@ -1731,11 +1788,16 @@ static void NetLocalAddrBlock(
 {
 	short node, network;
 	
+#ifdef mac
 	GetNodeAddress(&node, &network);
 	
 	address->aSocket= socketNumber;
 	address->aNode= node;
 	address->aNet= network;
+#else
+	address->host = 0x7f000001;	//!!
+	address->port = socketNumber;
+#endif
 	
 	return;
 }
@@ -1804,7 +1866,8 @@ static void NetBuildFirstRingPacket(
 	short player_index;
 	NetPacketPtr  data;
 	
-	data = (NetPacketPtr) NewPtr(sizeof(NetPacket));
+	data = (NetPacketPtr)malloc(sizeof(NetPacket));
+	//data = (NetPacketPtr) NewPtr(sizeof(NetPacket));
 	assert(data);
 	
 	data->server_player_index= localPlayerIndex;
@@ -1820,9 +1883,8 @@ static void NetBuildFirstRingPacket(
 
 	NetBuildRingPacket(frame, (byte *)data, NetPacketSize(data), sequence);
 	
-	DisposePtr((Ptr) data);
-	
-	return;
+	free(data);
+	//DisposePtr((Ptr) data);
 }
 
 static void NetBuildRingPacket(
@@ -1839,7 +1901,8 @@ static void NetBuildRingPacket(
 	header->sequence= sequence;
 
 	assert(data_size>=0&&data_size<ddpMaxData);
-	BlockMove(data, frame->data+sizeof(NetPacketHeader), data_size);
+	memcpy(frame->data + sizeof(NetPacketHeader), data, data_size);
+	//BlockMove(data, frame->data+sizeof(NetPacketHeader), data_size);
 
 	return;
 }
@@ -1863,12 +1926,14 @@ static void NetSendRingPacket(
 	status->retries= 0; // needs to be here, in case retry task was canceled (Õcuz it likes to set retries)
 	status->receivedAcknowledgement= false; /* will not be set until we receive an acknowledgement for this packet */
 
+#ifdef mac
 	if (!resendTMTask) 
 	{
 		resendTMTask= myTMSetup(kACK_TIMEOUT, NetCheckResendRingPacket);
 	} else {
 		myTMReset(resendTMTask);
 	}
+#endif
 
 	status->canForwardRing= false; /* will not be set unless this task fires without a packet to forward */
 	status->clearToForwardRing= false; /* will not be set until we receive the next valid ring packet but will be irrelevant if serverCanForwardRing is true */
@@ -2099,9 +2164,14 @@ static short NetAdjustUpringAddressUpwards(
 	for (nextPlayerIndex= 0; nextPlayerIndex<topology->player_count; nextPlayerIndex++)
 	{
 		address = &(topology->players[nextPlayerIndex].ddpAddress);
+#ifdef mac
 		if (address->aNet == status->upringAddress.aNet 
 			&& address->aNode == status->upringAddress.aNode
 			&& address->aSocket == status->upringAddress.aSocket)
+#else
+		if (address->host == status->upringAddress.host &&
+		    address->port == status->upringAddress.port)
+#endif
 		{
 			break;
 		}
@@ -2119,6 +2189,7 @@ static short NetAdjustUpringAddressUpwards(
 static bool NetSetSelfSend(
 	bool on)
 {
+#ifdef mac
 	OSErr          err;
 	MPPParamBlock  pb;
 	
@@ -2126,6 +2197,9 @@ static bool NetSetSelfSend(
 	err = PSetSelfSend(&pb, false);
 	assert(err == noErr);
 	return pb.SETSELF.oldSelfFlag;
+#else
+	return false;
+#endif
 }
 
 static void drop_upring_player(
@@ -2162,9 +2236,11 @@ static void drop_upring_player(
 #endif
 
 		// now down to work. gotta switch tasks. Take a deep breath...
+#ifdef mac
 		queueingTMTask = myTMRemove(queueingTMTask);
 		assert(!serverTMTask);
 		serverTMTask = myXTMSetup(1000/TICKS_PER_SECOND, NetServerTask);
+#endif
 		packet_data->server_net_time= status->localNetTime;
 	}
 	
@@ -2191,8 +2267,9 @@ static void drop_upring_player(
 	if (flag_count > 0) 
 	{
 		// changed "flag_count" to "sizeof(long)*flag_count"
-		BlockMove(action_flags + packet_data->action_flag_count[oldNextPlayerIndex], 
-			action_flags, sizeof(long)*flag_count);
+		memcpy(action_flags, action_flags + packet_data->action_flag_count[oldNextPlayerIndex], flag_count * sizeof(uint32));
+		//BlockMove(action_flags + packet_data->action_flag_count[oldNextPlayerIndex], 
+		//	action_flags, sizeof(long)*flag_count);
 	}
 	/* Mark the server as net dead */
 	packet_data->action_flag_count[oldNextPlayerIndex]= NET_DEAD_ACTION_FLAG_COUNT;
@@ -2280,7 +2357,7 @@ static OSErr NetDistributeGameDataToAllPlayers(
 	short playerIndex, message_id;
 	OSErr error= noErr;
 	long total_length, length_written;
-	long initial_ticks= TickCount();
+	uint32 initial_ticks= machine_tick_count();
 	short physics_message_id;
 	byte *physics_buffer;
 	long physics_length;
@@ -2329,7 +2406,7 @@ static OSErr NetDistributeGameDataToAllPlayers(
 		{
 			alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
 		} 
-		else if  (TickCount()-initial_ticks>(topology->player_count*MAP_TRANSFER_TIME_OUT))
+		else if  (machine_tick_count()-initial_ticks>(topology->player_count*MAP_TRANSFER_TIME_OUT))
 		{
 			alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, error);
 			error= 1;
@@ -2353,17 +2430,18 @@ static byte *NetReceiveGameData(
 	void)
 {
 	byte *map_buffer= NULL;
-	long map_length, ticks;
+	long map_length;
+	uint32 ticks;
 	OSErr error;
 	bool timed_out= false;
 
 	open_progress_dialog(_awaiting_map);
 
 	// wait for our connection to start up. server will contact us.
-	ticks= TickCount();
+	ticks= machine_tick_count();
 	while (!NetStreamCheckConnectionStatus() && !timed_out)
 	{
-		if((TickCount()-ticks)>MAP_TRANSFER_TIME_OUT)  timed_out= true;
+		if((machine_tick_count()-ticks)>MAP_TRANSFER_TIME_OUT)  timed_out= true;
 	}
 	
 	if (timed_out)
@@ -2410,7 +2488,11 @@ static byte *NetReceiveGameData(
 			{
 				alert_user(infoError, strNETWORK_ERRORS, netErrMapDistribFailed, error);
 			} else {
+#ifdef mac
 				alert_user(infoError, strERRORS, outOfMemory, MemError());
+#else
+				alert_user(infoError, strERRORS, outOfMemory, -1);
+#endif
 			}
 	
 			if(map_buffer)
@@ -2632,7 +2714,8 @@ static void process_packet_buffer_flags(
 	// tell the server task to send on the packet
 	else
 	{
-		BlockMove(buffer, status->buffer, buffer_size);
+		memcpy(status->buffer, buffer, buffer_size);
+		//BlockMove(buffer, status->buffer, buffer_size);
 		status->clearToForwardRing = true;
 		status->new_packet_tag= packet_tag;
 	}
@@ -2694,7 +2777,7 @@ static void process_flags(
 //			dprintf("will stuff %d flags", packet_data->required_action_flags);				
 			for (index= 0; index<packet_data->required_action_flags; index++)
 			{
-				uint32 flag= NET_DEAD_ACTION_FLAG;
+				uint32 flag= (uint32)NET_DEAD_ACTION_FLAG;
 
 				topology->players[player_index].net_dead= true;
 				
@@ -2742,9 +2825,11 @@ static void become_the_gatherer(
 #endif
 
 		// now down to work. gotta switch tasks. Take a deep breath...
+#ifdef mac
 		queueingTMTask = myTMRemove(queueingTMTask);
 		assert(!serverTMTask);
 		serverTMTask = myXTMSetup(1000/TICKS_PER_SECOND, NetServerTask);
+#endif
 		packet_data->server_net_time= status->localNetTime;
 	}
 	
@@ -2770,8 +2855,9 @@ static void become_the_gatherer(
 	/* Remove the servers flags.. */
 	if (flag_count > 0) 
 	{
-		BlockMove(action_flags + packet_data->action_flag_count[oldNextPlayerIndex], 
-			action_flags, sizeof(long)*flag_count);
+		memcpy(action_flags, action_flags + packet_data->action_flag_count[oldNextPlayerIndex], flag_count * sizeof(uint32));
+		//BlockMove(action_flags + packet_data->action_flag_count[oldNextPlayerIndex], 
+		//	action_flags, sizeof(long)*flag_count);
 	}
 	/* Mark the server as net dead */
 	packet_data->action_flag_count[oldNextPlayerIndex]= NET_DEAD_ACTION_FLAG_COUNT;
@@ -2978,8 +3064,12 @@ short NetUpdateJoinState(
 						
 						/* for ARA, make stuff in an address we know is correct (donÕt believe the server) */
 						topology->players[0].dspAddress= address;
+#ifdef mac
 						topology->players[0].ddpAddress.aNet= address.aNet;
 						topology->players[0].ddpAddress.aNode= address.aNode;
+#else
+						topology->players[0].ddpAddress.host = address.host;
+#endif
 //						dprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[0].ddpAddress),
 //							*((long*)&topology->players[0].dspAddress));
 					}
@@ -3068,8 +3158,12 @@ bool NetGatherPlayer(
 	/* Note that the address will be garbage for modem, but that's okay.. */
 	/* Force the address to be correct, so we can use our stream system.. */
 	topology->players[topology->player_count].dspAddress= address;
+#ifdef mac
 	topology->players[topology->player_count].ddpAddress.aNet= address.aNet;
 	topology->players[topology->player_count].ddpAddress.aNode= address.aNode;
+#else
+	topology->players[topology->player_count].ddpAddress.host = address.host;
+#endif
 	error= NetOpenStreamToPlayer(topology->player_count);
 	
 	if (!error)
@@ -3098,8 +3192,12 @@ bool NetGatherPlayer(
 						
 						/* force in some addresses we know are correct */
 						topology->players[topology->player_count].dspAddress= address;
+#ifdef mac
 						topology->players[topology->player_count].ddpAddress.aNet= address.aNet;
 						topology->players[topology->player_count].ddpAddress.aNode= address.aNode;
+#else
+						topology->players[topology->player_count].ddpAddress.host = address.host;
+#endif
 //						dprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[topology->player_count].ddpAddress),
 //							*((long*)&topology->players[topology->player_count].dspAddress));
 							

@@ -1512,7 +1512,7 @@ static void finish_game(
 static void handle_network_game(
 	bool gatherer)
 {
-#ifdef mac
+#if 1
 	bool successful_gather;
 	
 	force_system_colors();

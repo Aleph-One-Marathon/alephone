@@ -49,6 +49,15 @@ AM_PATH_SDL(1.1.6, , AC_MSG_ERROR([You need SDL to run Aleph One.]))
 CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
 LIBS="$LIBS $SDL_LIBS"
 
+dnl Check for SDL_net.
+AC_CHECK_HEADERS(SDL_net.h, [
+  AC_CHECK_LIB(SDL_net, SDLNet_Init, [
+    LIBS="$LIBS -lSDL_net"
+    AC_DEFINE(HAVE_SDL_NET)
+  ])
+])
+AM_CONDITIONAL(HAVE_SDL_NET, test x$ac_cv_lib_SDL_net_SDLNet_Init = xyes)
+
 dnl Checks for headers.
 AC_CHECK_HEADERS(unistd.h)
 

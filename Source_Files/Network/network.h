@@ -17,6 +17,11 @@ Tuesday, June 21, 1994 3:26:46 PM
 #define MAX_LEVEL_NAME_LENGTH 64
 #define MAX_NET_DISTRIBUTION_BUFFER_SIZE 512
 
+// This number needs to be changed whenever a change occurs in the networking code
+// that would make 2 versions incompatible, or a change in the game occurs that
+// would make 2 versions out of sync.
+#define MARATHON_NETWORK_VERSION 9
+
 enum // base network speeds
 {
 	_appletalk_remote, // ARA

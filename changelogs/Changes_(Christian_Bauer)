@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+February 2, 2001
+ - imported first code for TCP/IP networking based on SDL_net; nothing
+   functional yet, however
+
 January 28, 2001
  - Makefile.BeOS fixed
  - under BeOS, Aleph One now supports reading resource forks from "MACOS:RFORK"

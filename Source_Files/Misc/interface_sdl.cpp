@@ -90,28 +90,19 @@ void update_game_window(void)
  *  Network microphone handling
  */
 
-#if 0
-static void network_speaker_proc(void *buffer, short size, short player_index)
+void network_speaker_idle_proc(void)
 {
-	queue_network_speaker_data((byte *) buffer, size);
+	// nothing to do
 }
-#endif
 
 void install_network_microphone(void)
 {
-#if 0
-	open_network_speaker(NETWORK_SOUND_CHUNK_BUFFER_SIZE, 2);
-	short id = NetAddDistributionFunction(network_speaker_proc, true);
-	open_network_microphone(id);
-#endif
+	// nothing to do
 }
 
 void remove_network_microphone(void)
 {
-#if 0
-	close_network_speaker();
-	close_network_microphone();
-#endif
+	// nothing to do
 }
 
 
