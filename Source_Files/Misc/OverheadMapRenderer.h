@@ -9,6 +9,7 @@
 	The definitions had been moved out of overhead_map.c and overhead_map_macintosh.c
 */
 
+#include "cseries.h"
 #include "world.h"
 #include "map.h"
 #include "monsters.h"
