@@ -390,7 +390,10 @@ bool TextureManager::Setup()
 		U_Scale = V_Scale = 1;
 		U_Offset = V_Offset = 0;
 		
-		if (!SetupTextureGeometry()) return false;
+		// Try to load a substitute texture, and if that fails,
+		// get the geometry from the shapes bitmap.
+		if (!LoadSubstituteTexture())
+			if (!SetupTextureGeometry()) return false;
 		
 		// Store sprite scale/offset
 		CBTS.U_Scale = U_Scale;
@@ -403,13 +406,18 @@ bool TextureManager::Setup()
 		
 		// Load the fake landscape if selected
 		if (TextureType == OGL_Txtr_Landscape)
+		{
 			if (IsLandscapeFlatColored())
+			{
+				if (NormalBuffer) delete []NormalBuffer;
 				NormalBuffer = GetFakeLandscape();
+			}
+		}
 		
 		// If not, then load the expected textures
 		if (!NormalBuffer)
 			NormalBuffer = GetOGLTexture(NormalColorTable);
-		if (IsGlowing)
+		if (IsGlowing && !GlowBuffer)
 			GlowBuffer = GetOGLTexture(GlowColorTable);
 		
 		// Display size: may be shrunk
@@ -473,8 +481,44 @@ inline bool WhetherTextureFix()
 	return (TEST_FLAG(ConfigureData.Flags,OGL_Flag_TextureFix) != 0);
 }
 
-bool TextureManager::SetupTextureGeometry()
+
+bool TextureManager::LoadSubstituteTexture()
 {
+	// Is there a texture to be substituted?
+	ImageDescriptor& NormalImg = TxtrOptsPtr->NormalImg;
+	if (!NormalImg.IsPresent()) return false;
+	
+	int Width = NormalImg.GetWidth();
+	int Height = NormalImg.GetHeight();
+	
+	switch(TextureType)
+	{
+	case OGL_Txtr_Wall:
+		// For tiling to be possible, the width and height must be powers of 2;
+		// also, be sure to transpose the texture
+		TxtrWidth = Height;
+		TxtrHeight = Width;
+		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
+		
+		NormalBuffer = new GLuint[TxtrWidth*TxtrHeight];
+		for (int v=0; v<Height; v++)
+			for (int h=0; h<Width; h++)
+				NormalBuffer[h*Height+v] = NormalImg.GetPixel(h,v);
+		
+		break;
+	
+	// Not supported yet
+	case OGL_Txtr_Landscape:
+	case OGL_Txtr_Inhabitant:
+	case OGL_Txtr_WeaponsInHand:
+		return false;
+	}
+	return true;
+}
+
+bool TextureManager::SetupTextureGeometry()
+{	
 	// How many rows (scanlines) and columns
 	if (Texture->flags&_COLUMN_ORDER_BIT)
 	{
