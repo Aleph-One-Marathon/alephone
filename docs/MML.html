@@ -1265,7 +1265,7 @@ The index is which one of these scenery-object types:
 
 This kind of element is for modifying landscape rendering.
 
-This element has two kinds of child elements, &lt;clear&gt; and &lt;sequence&gt;.
+This element has two kinds of child elements, &lt;clear&gt; and &lt;landscape&gt;.
 <p>
 
 The first one, &lt;clear&gt;, clears the landscape options,
@@ -1331,6 +1331,8 @@ Those for Marathon 1 are, in order (walls, control panels, scenery):
 <li>19, 8, 23 -- Marathon Set 3
 <li>2, 24, 25 -- Pfhor
 </ol>
+<p>
+
 Note also that Marathon 1 has its landscapes in the wall-texture collections;
 the attribute "landscapes" is to be false for it.
 <p>
@@ -1340,15 +1342,15 @@ the attribute "landscapes" is to be false for it.
 <h3><a name="opengl">OpenGL-Rendering Element: &lt;opengl&gt;</a></h3>
 
 This kind of element is for modifying the OpenGL rendering.
-Currently, only modifications of texture rendering are implemented,
-with opacity control and texture substitution.
+Currently, both texture-rendering modification and fog are supported;
+texture-rendering modification modifies the rendering of each bitmap.
 
 This element has these kinds of child elements, &lt;txtr_clear&gt;, &lt;texture&gt;,
 and &lt;fog&gt;.
 <p>
 
-The first one, &lt;txtr_clear&gt;, clears the landscape options,
-setting them back to their defaults; if it has an attribute of "coll",
+The first one, &lt;txtr_clear&gt;, clears the texture options,
+setting them back to their defaults. If it has an attribute of "coll",
 it will clear the sequences for the collection specified in that attribute's value;
 if not, it will clear all the sequences.
 However, this command can be followed by commands to set up texture options,
@@ -1360,8 +1362,12 @@ It takes these attributes:
 <ul>
 <li>coll: which collection (mandatory).
 <li>clut: which color table. Values 0 to 7 are the familiar color-table values,
-and there are two special values: -1 means all the color tables and 8 means the infravision color table
-(default: -1 -- all of the tables).
+and there are these special values:
+<ul>
+<li>All color tables: -1
+<li>Infravision: 8
+<li>Silhouette: 9 [used for invisibility and static effect]
+</ul>
 <li>bitmap: which one to apply the options to (mandatory).
 <li>opac_type: what type of opacity to use (default: 0 -- crisp edges).
 <li>opac_scale: scaling value for the opacity;
@@ -1385,6 +1391,7 @@ If it is zero or less, then it and the offsets are ignored.
 <li>x_offset: The amount to shift the top left corner rightward, in internal units.
 <li>y_offset: The amount to shift the top left corner downward, in internal units. 
 </ul>
+<p>
 Note: all resulting values will be pegged to the range 0 to 1.
 Here are the various opacity types:
 <ol type=1 start=1000>
@@ -1393,6 +1400,8 @@ Here are the various opacity types:
 <li>Fuzzy edges with opacity = average of color channels.
 <li>Fuzzy edges with opacity = maximum of color channels.
 </ol>
+<p>
+
 The opacities of all but the first will be scaled and shifted
 with opac_scale and opac_shift.
 The first one of these is good for objects with well-defined edges;
@@ -1419,6 +1428,8 @@ The default is 0 (above liquid).
 <li>on: (<a href="#boolean">boolean</a>; default: false)
 <li>depth: the fog depth in World Units (default: 8)
 </ul>
+<p>
+
 and a <a href="#color">color</a> subelement, which indicates the fog color
 (default: gray [red = green = blue = 0.5]).
 <p>
