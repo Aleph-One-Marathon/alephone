@@ -73,6 +73,10 @@ Aug 28, 2000 (Loren Petrich):
 Nov 26, 2000 (Loren Petrich):
 	Movied a RunLevelScript() before some other stuff, such as entering_map(),
 	so that textures to be loaded can be specified before they actually get loaded.
+
+Feb 15, 2002 (Br'fin (Jeremy Parsons)):
+	Additional save data is now applied to the Temporary file instead of the original
+	(Old level preview info is now saved under Macintosh again)
 */
 
 // This needs to do the right thing on save game, which is storing the precalculated crap.
@@ -1268,7 +1272,7 @@ bool save_game_file(FileSpecifier& File)
 							/*  as adding the string resource that tells you what it is when */
 							/*  it is clicked on & Marathon2 isn't installed.  Obviously, both */
 							/*  of these are superfluous for a dos environment. */
-							add_finishing_touches_to_save_file(File);
+							add_finishing_touches_to_save_file(TempFile);
 
 							/* We win. */
 							success= true;

@@ -37,6 +37,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 	Put player chase cam and crosshair dialogs in sheets under Carbon
+
+Feb 14, 2002 (Br'fin (Jeremy Parsons)):
+	Made the Carbon sheets backgrounds transparent
 */
 
 #include "cseries.h"
@@ -151,6 +154,7 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
+	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
 #else
 	SelectWindow(GetDialogWindow(Dialog));
@@ -353,6 +357,7 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
+	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
 #else
 	SelectWindow(GetDialogWindow(Dialog));

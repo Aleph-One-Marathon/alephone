@@ -101,6 +101,7 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #include "OGL_Setup.h"
 #include "ColorParser.h"
 
+#include "Dim3_Loader.h"
 #include "StudioLoader.h"
 #include "WavefrontLoader.h"
 #include "QD3D_Loader.h"
@@ -724,6 +725,11 @@ void OGL_ModelData::Load()
 	{
 		// 3D Studio Max
 		Success = LoadModel_Studio(File, Model);
+	}
+	else if (StringsEqual(Type,"dim3",4))
+	{
+		// 3D Studio Max
+		Success = LoadModel_Dim3(File, Model);
 	}
 #if defined(mac) && !defined(TARGET_API_MAC_CARBON)
 	else if (StringsEqual(Type,"qd3d") || StringsEqual(Type,"3dmf") || StringsEqual(Type,"quesa"))

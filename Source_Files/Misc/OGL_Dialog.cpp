@@ -46,6 +46,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 	Shifted functions so we weren't trying to get a menu from a needlessly locked control handle
 	Put OpenGL dialogs in sheets under Carbon
+
+Feb 14, 2002 (Br'fin (Jeremy Parsons)):
+	Made the Carbon sheets backgrounds transparent
 */
 
 #include "cseries.h"
@@ -171,6 +174,7 @@ static bool TextureConfigureDialog(short WhichTexture)
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
+	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
 	WindowRef frontWindow = ActiveNonFloatingWindow();
 	ShowSheetWindow(GetDialogWindow(Dialog), frontWindow);
 #else
@@ -389,6 +393,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
+	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
 #else
 	SelectWindow(GetDialogWindow(Dialog));

@@ -42,8 +42,12 @@ Jan 31, 2001 (Loren Petrich);
 	Delete some old MacOS-specific load-and-save junk.
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
-	Replaced a c2pstr with CopyCStrin2Pascal for Carbon
+	Replaced a c2pstr with CopyCString2Pascal for Carbon
 	Added accessors for datafields now opaque in Carbon
+
+Feb 16, 2002 (Br'fin (Jeremy Parsons)):
+	Removed enums for long removed standard file preview junk
+	Replaced creation of old preview junk with NavigationServices preview junk
 */
 
 #include "macintosh_cseries.h"
@@ -71,10 +75,19 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #pragma segment file_io
 #endif
 
+#define kNavServicesVersion_2_0 0x02000000
+
 #define kFolderBit 0x10
 #define THUMBNAIL_ID 128
 #define THUMBNAIL_WIDTH 100
 #define THUMBNAIL_HEIGHT 100
+#define PREVIEW_WIDTH 128
+#define PREVIEW_HEIGHT 124
+#define PREVIEW_IMAGE_X ((PREVIEW_WIDTH - THUMBNAIL_WIDTH)/2)
+#define PREVIEW_IMAGE_Y 0
+#define PREVIEW_LABEL_X 0
+#define PREVIEW_LABEL_Y 105
+
 #define strSAVE_LEVEL_NAME 128
 
 #define dlogMY_REPLACE 131
@@ -82,14 +95,8 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 /* Needed for thumbnail crap.. */
 extern GWorldPtr world_pixels;
 
-enum {
-	dlogCUSTOM_GET= 130,
-	iTHUMBNAIL_RECT= 11,
-	iLEVEL_NAME
-};
-
 /* ---- local prototypes */
-static void add_overhead_thumbnail(void);
+static void add_overhead_thumbnail(FileSpecifier &File);
 
 
 /* --------- code begins */
@@ -202,21 +209,8 @@ void add_finishing_touches_to_save_file(FileSpecifier &File)
 	
 	Handle resource;
 	
-	/* Add in the save level name */
-#if defined(USE_CARBON_ACCESSORS)
-	CopyCStringToPascal(static_world->level_name, name);
-#else
-	strcpy((char *)name, static_world->level_name);
-	c2pstr((char *)name);
-#endif
-	err= PtrToHand(name, &resource, name[0]+1);
-	assert(!err && resource);
-	
-	AddResource(resource, 'STR ', strSAVE_LEVEL_NAME, "\p");
-	ReleaseResource(resource);
-
 	/* Add in the overhead thumbnail. */
-	add_overhead_thumbnail();
+	add_overhead_thumbnail(File);
 	
 	/* Add the application name resource.. */
 	getpstr(name, strFILENAMES, filenameMARATHON_NAME);
@@ -238,14 +232,26 @@ void add_finishing_touches_to_save_file(FileSpecifier &File)
 
 /* ------------ Local code */
 static void add_overhead_thumbnail(
-	void)
+	FileSpecifier &File)
 {
 	PicHandle picture;
+	PicHandle preview;
+	RgnHandle clip_region;
+	FontInfo info;
+	short text_x, text_y;
+	short text_length;
+	Str255 temporary;
 	GWorldPtr old_gworld;
 	GDHandle old_device;
 	struct overhead_map_data overhead_data;
 	Rect bounds;
-
+	AEDesc aeFileSpec;
+	FSSpec *SpecPtr;
+	
+	// Skip all this if there's no nav services to install the preview
+	if(!machine_has_nav_services() || NavLibraryVersion() < kNavServicesVersion_2_0)
+		return;
+	
 	GetGWorld(&old_gworld, &old_device);
 	SetGWorld(world_pixels, (GDHandle) NULL);
 
@@ -286,8 +292,52 @@ static void add_overhead_thumbnail(
 
 	ClosePicture();
 	
-	AddResource((Handle) picture, 'PICT', THUMBNAIL_ID, "\p");
-	ReleaseResource((Handle) picture);
+	// JTP: Add Nav Services style preview
+	SetRect(&bounds, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+	preview= OpenPicture(&bounds);
+	
+	SetRect(&bounds, PREVIEW_IMAGE_X, PREVIEW_IMAGE_Y,
+		THUMBNAIL_WIDTH + PREVIEW_IMAGE_X, THUMBNAIL_HEIGHT + PREVIEW_IMAGE_Y);
+	clip_region= NewRgn();
+	GetClip(clip_region);
+	ClipRect(&bounds);
+	DrawPicture(picture, &bounds);
+	SetClip(clip_region);
+
+	/* Center the text in the rectangle */
+	// LP: Classic doesn't have this function
+#ifdef TARGET_API_MAC_CARBON
+	CopyCStringToPascal(static_world->level_name, temporary);
+#else
+	strncpy((char *)temporary,static_world->level_name,LEVEL_NAME_LENGTH);
+	c2pstr((char *)temporary);
+#endif
+	// LP: fix to allow lengths more than 127 bytes (not really necessary, but...)
+	text_length = *ptemporary;
+	TruncText(PREVIEW_WIDTH, (char *)temporary+1, &text_length, smTruncEnd);
+	*ptemporary = text_length;
+
+	GetFontInfo(&info);
+	text_y= PREVIEW_HEIGHT - info.descent;
+	text_x= PREVIEW_LABEL_X + (PREVIEW_WIDTH-StringWidth(temporary))/2;
+	MoveTo(text_x, text_y);
+	DrawString(temporary);
+
+	ClosePicture();
+	
+	// This requires NavServices 2.0, what's the inline check?
+	// From FSS get a AEDesc
+	OSStatus err;
+	SpecPtr = &File.GetSpec();
+	err = AECreateDesc(typeFSS, SpecPtr, sizeof(FSSpec), &aeFileSpec);
+
+	HLock((Handle)preview);
+	err = NavCreatePreview(&aeFileSpec, 'PICT', *preview, GetHandleSize((Handle)preview));
+	HUnlock((Handle)preview);
+
+	AEDisposeDesc(&aeFileSpec);
+	KillPicture(preview);	
+	KillPicture(picture);
 
 	SetGWorld(old_gworld, old_device);
 	
