@@ -21,18 +21,7 @@ struct collection_header /* 32 bytes on disk */
 	int32 offset16, length16;
 
 	// LP: handles to pointers
-	// Flat chunk now replaced with separate objects
-	// collection_definition *collection;
-	
-	// LP: unpacked shapes data.
-	// Note that Sequences and Images are pointers to lists,
-	// because the header structs are followed with varying amounts of data
-	collection_definition *Definition;
-	rgb_color_value *Colors;
-	high_level_shape_definition **Sequences;
-	low_level_shape_definition *Frames;
-	bitmap_definition **Bitmaps;
-	
+	collection_definition *collection;
 	byte *shading_tables;
 	
 	// int16 unused[2];
