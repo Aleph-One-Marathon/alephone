@@ -428,7 +428,10 @@ int stack_pop(void)
 	return -1;
 }
  
+// Suppressed for MSVC compatibility
+#if 0
 #pragma mark -
+#endif
 
 void activate_tag_switch_trap(int which)
 {
