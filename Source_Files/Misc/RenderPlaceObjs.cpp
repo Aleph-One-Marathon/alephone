@@ -348,14 +348,18 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					
 					if (parasitic_render_object)
 					{
-						assert(!parasitic_render_object->next_object); /* one parasite only, please */
+						// Code will now allow multiple parasites
+						// assert(!parasitic_render_object->next_object); /* one parasite only, please */
 	
 						/* take the maximum intensity of the host and parasite as the intensity of the
 							aggregate (does not handle multiple parasites correctly) */
+						// Suppressed as possibly confusing for models
+						/*
 						parasitic_render_object->rectangle.ambient_shade= render_object->rectangle.ambient_shade=
 							MAX(parasitic_render_object->rectangle.ambient_shade, render_object->rectangle.ambient_shade);
 						parasitic_render_object->rectangle.ceiling_light= render_object->rectangle.ceiling_light=
 							MAX(parasitic_render_object->rectangle.ceiling_light, render_object->rectangle.ceiling_light);
+						*/
 						
 						if (shape_information->flags&_KEYPOINT_OBSCURED_BIT) /* host obscures parasite */
 						{
