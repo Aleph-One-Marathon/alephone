@@ -371,7 +371,6 @@ them:
 
 And a list of known bugs:
 
- - Mouse control under BeOS doesn't work (SDL problem)
  - Snapshots (F9) don't work when OpenGL is active
  - darken_world_window() doesn't work when OpenGL is active
  - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown

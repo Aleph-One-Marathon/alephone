@@ -439,7 +439,7 @@ int FileSpecifier::GetType()
 				goto not_map;
 			f.SetPosition(128);
 			uint32 tag = SDL_ReadBE32(p);
-			if (tag == FOUR_CHARS_TO_INT('L', 'I', 'N', 'S') || tag == FOUR_CHARS_TO_INT('P', 'N', 'T', 'S'))
+			if (tag == FOUR_CHARS_TO_INT('L', 'I', 'N', 'S') || tag == FOUR_CHARS_TO_INT('P', 'N', 'T', 'S') || tag == FOUR_CHARS_TO_INT('S', 'I', 'D', 'S'))
 				return _typecode_scenario;
 			if (tag == FOUR_CHARS_TO_INT('M', 'N', 'p', 'x'))
 				return _typecode_physics;

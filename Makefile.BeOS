@@ -96,7 +96,7 @@ MACHINE=$(shell uname -m)
 ifeq ($(MACHINE), BePC)
   LIBS=be stdc++.r4
 else
-  LIBS=be game device media textencoding
+  LIBS=be
 endif
 
 #	specify additional paths to directories following the standard
@@ -148,7 +148,7 @@ DEBUGGER =
 COMPILER_FLAGS = `sdl-config --cflags`
 
 #	specify additional linker flags
-LINKER_FLAGS = `sdl-config --libs`
+LINKER_FLAGS = `sdl-config --static-libs`
 
 #	specify the version of this particular item
 #	(for example, -app 3 4 0 d 0 -short 340 -long "340 "`echo -n -e '\302\251'`"1999 GNU GPL") 
