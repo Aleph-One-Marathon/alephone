@@ -35,6 +35,9 @@ Jul 17, 2000:
 Aug 6, 2000 (Loren Petrich):
 	Added perimeter drawing to drawing commands for the player object;
 	this guarantees that this object will always be drawn reasonably correctly
+	
+Oct 13, 2000 (Loren Petrich)
+	Converted the various lists into Standard Template Library vectors
 */
 
 #include <math.h>
@@ -116,7 +119,7 @@ void OverheadMap_OGL_Class::begin_polygons()
 	SetColor(SavedColor);
 	
 	// Reset cache to zero length
-	PolygonCache.ResetLength();
+	PolygonCache.clear();
 }
 
 void OverheadMap_OGL_Class::draw_polygon(
@@ -140,9 +143,9 @@ void OverheadMap_OGL_Class::draw_polygon(
 #ifdef mac
 	for (int k=2; k<vertex_count; k++)
 	{
-		assert(PolygonCache.Add(vertices[0]));
-		assert(PolygonCache.Add(vertices[k-1]));
-		assert(PolygonCache.Add(vertices[k]));
+		PolygonCache.push_back(vertices[0]);
+		PolygonCache.push_back(vertices[k-1]);
+		PolygonCache.push_back(vertices[k]);
 	}
 #else
 	glBegin(GL_POLYGON);
@@ -165,10 +168,10 @@ void OverheadMap_OGL_Class::end_polygons()
 void OverheadMap_OGL_Class::DrawCachedPolygons()
 {
 #ifdef mac
-	glDrawElements(GL_TRIANGLES, PolygonCache.GetLength(),
-		GL_UNSIGNED_SHORT, PolygonCache.Begin());
+	glDrawElements(GL_TRIANGLES, PolygonCache.size(),
+		GL_UNSIGNED_SHORT, &PolygonCache.front());
 #endif
-	PolygonCache.ResetLength();
+	PolygonCache.clear();
 }
 
 void OverheadMap_OGL_Class::begin_lines()
@@ -181,7 +184,7 @@ void OverheadMap_OGL_Class::begin_lines()
 	glLineWidth(SavedPenSize);
 	
 	// Reset cache to zero length
-	LineCache.ResetLength();
+	LineCache.clear();
 }
 
 
@@ -212,8 +215,8 @@ void OverheadMap_OGL_Class::draw_line(
 	
 #ifdef mac
 	// Add the line's points to the cached line		
-	assert(LineCache.Add(vertices[0]));
-	assert(LineCache.Add(vertices[1]));
+	LineCache.push_back(vertices[0]);
+	LineCache.push_back(vertices[1]);
 #else
 	glBegin(GL_LINES);
 	world_point2d v = GetVertex(vertices[0]);
@@ -232,10 +235,10 @@ void OverheadMap_OGL_Class::end_lines()
 void OverheadMap_OGL_Class::DrawCachedLines()
 {
 #ifdef mac
-	glDrawElements(GL_LINES,LineCache.GetLength(),
-		GL_UNSIGNED_SHORT,LineCache.Begin());
+	glDrawElements(GL_LINES,LineCache.size(),
+		GL_UNSIGNED_SHORT,&LineCache.front());
 #endif
-	LineCache.ResetLength();
+	LineCache.clear();
 }
 
 
@@ -403,16 +406,16 @@ void OverheadMap_OGL_Class::draw_path(
 	world_point2d &location)
 {
 	// At first step, reset the length
-	if (step <= 0) PathPoints.ResetLength();
+	if (step <= 0) PathPoints.clear();
 	
 	// Add the point
-	assert(PathPoints.Add(location));
+	PathPoints.push_back(location);
 }
 
 void OverheadMap_OGL_Class::finish_path()
 {
-	glVertexPointer(2,GL_SHORT,sizeof(world_point2d),PathPoints.Begin());
-	glDrawArrays(GL_LINE_STRIP,0,PathPoints.GetLength());
+	glVertexPointer(2,GL_SHORT,sizeof(world_point2d),&PathPoints.front());
+	glDrawArrays(GL_LINE_STRIP,0,PathPoints.size());
 }
 
 

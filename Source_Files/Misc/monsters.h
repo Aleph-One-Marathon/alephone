@@ -19,11 +19,14 @@ Feb 19, 2000 (Loren Petrich):
 
 Aug 30, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+	
+Oct 13, 2000 (Loren Petrich)
+	Converted the intersected-objects list into a Standard Template Library vector
 */
 
 // LP additions:
 #include "dynamic_limits.h"
-#include "GrowableList.h"
+#include <vector.h>
 
 /* ---------- constants */
 
@@ -258,7 +261,7 @@ short legal_player_move(short monster_index, world_point3d *new_location, world_
 // and used a growable list for the indices
 #define LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE (get_dynamic_limit(_dynamic_limit_local_collision))
 #define GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE (get_dynamic_limit(_dynamic_limit_global_collision))
-bool possible_intersecting_monsters(GrowableList<short> *IntersectedObjectsPtr, short maximum_object_count, short polygon_index, bool include_scenery);
+bool possible_intersecting_monsters(vector<short> *IntersectedObjectsPtr, short maximum_object_count, short polygon_index, bool include_scenery);
 #define monsters_nearby(polygon_index) possible_intersecting_monsters(0, 0, (polygon_index), false)
 /*
 #define LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE 16

@@ -58,6 +58,9 @@ Jul 1, 2000 (Loren Petrich):
 
 Aug 30, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+	
+Oct 13, 2000 (Loren Petrich)
+	Converted the intersected-objects list into a Standard Template Library vector
 */
 
 #include "cseries.h"
@@ -73,7 +76,6 @@ Aug 30, 2000 (Loren Petrich):
 #include "items.h"
 
 // LP additions
-#include "GrowableList.h"
 #include "dynamic_limits.h"
 #include "Packing.h"
 
@@ -142,7 +144,7 @@ short alien_projectile_override= NONE;
 short human_projectile_override= NONE;
 
 // LP addition: growable list of intersected objects
-static GrowableList<short> IntersectedObjects(64);
+static vector<short> IntersectedObjects;
 
 /* ---------- private prototypes */
 
@@ -842,7 +844,7 @@ uint16 translate_projectile(
 
 	contact= _hit_nothing;
 	// LP change:
-	IntersectedObjects.ResetLength();
+	IntersectedObjects.clear();
 	// intersected_object_count= 0;
 	old_polygon= get_polygon_data(old_polygon_index);
 	if (new_polygon_index) *new_polygon_index= old_polygon_index;
@@ -860,7 +862,7 @@ uint16 translate_projectile(
 		
 		/* add this polygon’s monsters to our non-redundant list of possible intersections */
 		possible_intersecting_monsters(&IntersectedObjects, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
-		intersected_object_count = IntersectedObjects.GetLength();
+		intersected_object_count = IntersectedObjects.size();
 		// possible_intersecting_monsters(intersected_object_indexes, &intersected_object_count, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
 		
  		line_index= find_line_crossed_leaving_polygon(old_polygon_index, (world_point2d *)old_location, (world_point2d *)new_location);

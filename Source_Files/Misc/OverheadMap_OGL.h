@@ -7,9 +7,12 @@
 	August 3, 2000
 	
 	Subclass of OverheadMapClass for doing rendering in OpenGL
+	
+Oct 13, 2000 (Loren Petrich)
+	Converted the various lists into Standard Template Library vectors
 */
 
-#include "GrowableList.h"
+#include <vector.h>
 #include "OverheadMapRenderer.h"
 
 
@@ -89,15 +92,15 @@ class OverheadMap_OGL_Class: public OverheadMapClass
 	void finish_path();
 	
 	// Cached polygons and their color
-	GrowableList<unsigned short> PolygonCache;
+	vector<unsigned short> PolygonCache;
 	rgb_color SavedColor;
 
 	// Cached polygon lines and their width
-	GrowableList<unsigned short> LineCache;
+	vector<unsigned short> LineCache;
 	short SavedPenSize;
 	
 	// Cached lines For drawing monster paths
-	GrowableList<world_point2d> PathPoints;
+	vector<world_point2d> PathPoints;
 	
 	// Font caching: the cache has space for all the different-sized annotation fonts
 	// and also for the map-name font

@@ -13,8 +13,13 @@
 	Had added XML parsing before that; most recently, added "opac_shift".
 	
 	Made semitransparency optional if the void is on one side of the texture
+
+Oct 13, 2000 (Loren Petrich)
+	Converted the OpenGL-addition accounting into Standard Template Library vectors
 */
 
+#include <vector.h>
+#include <string.h>
 #include "cseries.h"
 
 #ifdef mac
@@ -23,8 +28,6 @@
 
 #include "shape_descriptors.h"
 #include "OGL_Setup.h"
-
-#include <string.h>
 
 
 // Whether or not OpenGL is present and usable
@@ -111,36 +114,25 @@ const int ALL_CLUTS = -1;
 
 // Store landscape stuff as a linked list;
 // do in analogy with animated textures.
-struct TextureOptionsLink: public OGL_TextureOptions
+struct TextureOptionsEntry
 {
 	// Which color table and bitmap to apply to:
 	short CLUT, Bitmap;
-	TextureOptionsLink *Next;
 	
-	TextureOptionsLink(): CLUT(ALL_CLUTS), Bitmap(-1), Next(NULL) {}
+	// Make a member for more convenient access
+	OGL_TextureOptions OptionsData;
+	
+	TextureOptionsEntry(): CLUT(ALL_CLUTS), Bitmap(NONE) {}
 };
 
 // Separate texture-options sequence lists for each collection ID,
 // to speed up searching
-static TextureOptionsLink *TORootList[NUMBER_OF_COLLECTIONS] =
-{
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-};
+static vector<TextureOptionsEntry> TOList[NUMBER_OF_COLLECTIONS];
 
 // Deletes a collection's texture-options sequences
 static void TODelete(int c)
 {
-	TextureOptionsLink *TOPtr = TORootList[c];
-	while(TOPtr)
-	{
-		TextureOptionsLink *NextTOPtr = TOPtr->Next;
-		delete TOPtr;
-		TOPtr = NextTOPtr;
-	}
-	TORootList[c] = NULL;
+	TOList[c].clear();
 }
 
 // Deletes all of them
@@ -154,14 +146,13 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 {
 	// Silhouette textures always have the default
 	if (CLUT == SILHOUETTE_BITMAP_SET) return &DefaultTextureOptions;
-		
-	TextureOptionsLink *TOPtr = TORootList[Collection];
-	while(TOPtr)
+	
+	vector<TextureOptionsEntry>& TOL = TOList[Collection];
+	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
 	{
-		if (TOPtr->CLUT == CLUT || TOPtr->CLUT == ALL_CLUTS)
-			if (TOPtr->Bitmap == Bitmap)
-				return TOPtr;
-		TOPtr = TOPtr->Next;
+		if (TOIter->CLUT == CLUT || TOIter->CLUT == ALL_CLUTS)
+			if (TOIter->Bitmap == Bitmap)
+				return &TOIter->OptionsData;
 	}
 	
 	return &DefaultTextureOptions;
@@ -294,28 +285,24 @@ bool XML_TextureOptionsParser::AttributesDone()
 	}
 	
 	// Check to see if a frame is already accounted for
-	TextureOptionsLink *TOPtr = TORootList[Collection], *PrevTOPtr = NULL;
-	while(TOPtr)
+	vector<TextureOptionsEntry>& TOL = TOList[Collection];
+	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
 	{
-		if (TOPtr->CLUT == CLUT && TOPtr->Bitmap == Bitmap)
+		if (TOIter->CLUT == CLUT && TOIter->Bitmap == Bitmap)
 		{
 			// Replace the data
-			*((OGL_TextureOptions *)TOPtr) = Data;
+			TOIter->OptionsData = Data;
 			return true;
 		}
-		PrevTOPtr = TOPtr;
-		TOPtr = TOPtr->Next;
 	}
-	// If not, then add a new frame
-	TextureOptionsLink *NewTOPtr = new TextureOptionsLink;
-	NewTOPtr->CLUT = CLUT;
-	NewTOPtr->Bitmap = Bitmap;
-	*((OGL_TextureOptions *)NewTOPtr) = Data;
-	if (PrevTOPtr)
-		PrevTOPtr->Next = NewTOPtr;
-	else
-		 TORootList[Collection] = NewTOPtr;
 	
+	// If not, then add a new frame entry
+	TextureOptionsEntry DataEntry;
+	DataEntry.CLUT = CLUT;
+	DataEntry.Bitmap = Bitmap;
+	DataEntry.OptionsData = Data;
+	TOL.push_back(DataEntry);
+		
 	return true;
 }
 

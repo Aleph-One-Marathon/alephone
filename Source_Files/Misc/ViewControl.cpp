@@ -2,13 +2,16 @@
 	May 22, 2000 (Loren Petrich)
 	
 	The work of the view controller.
+
+Oct 13, 2000 (Loren Petrich)
+	Using the STL for the landscape-option-data container
 */
 
+#include <vector.h>
+#include <string.h>
 #include "cseries.h"
 
 #include "ViewControl.h"
-
-#include <string.h>
 
 
 // Is the overhead map active?
@@ -18,11 +21,11 @@ static bool MapActive = true;
 bool View_MapActive() {return MapActive;}
 
 
-// Field-of-view stuff:
+// Field-of-view stuff with defaults:
 static float FOV_Normal = 80;
 static float FOV_ExtraVision = 130;
 static float FOV_TunnelVision = 30;
-static float FOV_ChangeRate = 1.667;	// this is 50 degrees/s
+static float FOV_ChangeRate = 1.66666667;	// this is 50 degrees/s
 
 // Accessors:
 float View_FOV_Normal() {return FOV_Normal;}
@@ -52,42 +55,30 @@ bool View_AdjustFOV(float& FOV, float FOV_Target)
 }
 
 
-// Landscape stuff
+// Landscape stuff: this is for being able to return a pointer to the default one
 static LandscapeOptions DefaultLandscape;
 
 
-// Store landscape stuff as a linked list;
-// do in analogy with animated textures.
-struct LandscapeOptionsLink: public LandscapeOptions
+// Store landscape stuff as a vector member
+struct LandscapeOptionsEntry
 {
 	// Which frame to apply to (default: 0, since there is usually only one)
 	short Frame;
-	LandscapeOptionsLink *Next;
 	
-	LandscapeOptionsLink(): Frame(0), Next(NULL) {}
+	// Make a member for more convenient access
+	LandscapeOptions OptionsData;
+	
+	LandscapeOptionsEntry(): Frame(0) {}
 };
 
 // Separate landscape-texture sequence lists for each collection ID,
-// to speed up searching
-static LandscapeOptionsLink *LORootList[NUMBER_OF_COLLECTIONS] =
-{
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-	NULL, NULL, NULL, NULL,  NULL, NULL, NULL, NULL,
-};
+// to speed up searching.
+static vector<LandscapeOptionsEntry> LOList[NUMBER_OF_COLLECTIONS];
 
 // Deletes a collection's landscape-texture sequences
 static void LODelete(int c)
 {
-	LandscapeOptionsLink *LOPtr = LORootList[c];
-	while(LOPtr)
-	{
-		LandscapeOptionsLink *NextLOPtr = LOPtr->Next;
-		delete LOPtr;
-		LOPtr = NextLOPtr;
-	}
-	LORootList[c] = NULL;
+	LOList[c].clear();
 }
 
 // Deletes all of them
@@ -104,14 +95,17 @@ LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc)
 	short CollCT = GET_DESCRIPTOR_COLLECTION(Desc);
 	short Collection = GET_COLLECTION(CollCT);
 	
-	LandscapeOptionsLink *LOPtr = LORootList[Collection];
-	while(LOPtr)
+	vector<LandscapeOptionsEntry>& LOL = LOList[Collection];
+	for (vector<LandscapeOptionsEntry>::iterator LOIter = LOL.begin(); LOIter < LOL.end(); LOIter++)
 	{
-		if (LOPtr->Frame == Frame)
-			return LOPtr;
-		LOPtr = LOPtr->Next;
+		if (LOIter->Frame == Frame)
+		{
+			// Get a pointer from the iterator in order to return it
+			return &(LOIter->OptionsData);
+		}
 	}
 	
+	// Return the default if no matching entry was found
 	return &DefaultLandscape;
 }
 
@@ -304,25 +298,22 @@ bool XML_LandscapeParser::AttributesDone()
 	}
 	
 	// Check to see if a frame is already accounted for
-	LandscapeOptionsLink *LOPtr = LORootList[Collection], *PrevLOPtr = NULL;
-	while(LOPtr)
+	vector<LandscapeOptionsEntry>& LOL = LOList[Collection];
+	for (vector<LandscapeOptionsEntry>::iterator LOIter = LOL.begin(); LOIter < LOL.end(); LOIter++)
 	{
-		if (LOPtr->Frame == Frame)
+		if (LOIter->Frame == Frame)
 		{
 			// Replace the data
-			*((LandscapeOptions *)LOPtr) = Data;
+			LOIter->OptionsData = Data;
 			return true;
 		}
-		PrevLOPtr = LOPtr;
-		LOPtr = LOPtr->Next;
 	}
-	// If not, then add a new frame
-	LandscapeOptionsLink *NewLOPtr = new LandscapeOptionsLink;
-	*((LandscapeOptions *)NewLOPtr) = Data;
-	if (PrevLOPtr)
-		PrevLOPtr->Next = NewLOPtr;
-	else
-		 LORootList[Collection] = NewLOPtr;
+	
+	// If not, then add a new frame entry
+	LandscapeOptionsEntry DataEntry;
+	DataEntry.Frame = Frame;
+	DataEntry.OptionsData = Data;
+	LOL.push_back(DataEntry);
 	
 	return true;
 }

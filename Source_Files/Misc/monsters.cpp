@@ -62,7 +62,13 @@ Jul 1, 2000 (Loren Petrich):
 
 Aug 30, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+	
+Oct 13, 2000 (Loren Petrich)
+	Converted the intersected-objects list into a Standard Template Library vector
 */
+
+#include <string.h>
+#include <limits.h>
 
 #include "cseries.h"
 #include "map.h"
@@ -81,8 +87,6 @@ Aug 30, 2000 (Loren Petrich):
 #include "media.h"
 #include "Packing.h"
 
-#include <string.h>
-#include <limits.h>
 
 #ifdef env68k
 #pragma segment objects
@@ -164,7 +168,7 @@ struct monster_pathfinding_data
 #include "monster_definitions.h"
 
 // LP addition: growable list of intersected objects
-static GrowableList<short> IntersectedObjects(64);
+static vector<short> IntersectedObjects;
 
 /* ---------- private prototypes */
 
@@ -998,7 +1002,7 @@ void deactivate_monster(
 	up to maximum_object_count. */
 // LP change: called with growable list
 bool possible_intersecting_monsters(
-	GrowableList<short> *IntersectedObjectsPtr,
+	vector<short> *IntersectedObjectsPtr,
 /*
 	short *object_indexes,
 	short *object_count,
@@ -1054,16 +1058,16 @@ bool possible_intersecting_monsters(
 						found_solid_object= true;
 						
 						// LP change:
-						if (IntersectedObjectsPtr && IntersectedObjectsPtr->GetLength()<maximum_object_count) /* do we have enough space to add it? */
+						if (IntersectedObjectsPtr && IntersectedObjectsPtr->size()<maximum_object_count) /* do we have enough space to add it? */
 						{
 							short j;
 							
 							/* only add this object_index if it's not already in the list */
-							GrowableList<short>& IntersectedObjects = *IntersectedObjectsPtr;
-							for (j=0; j<IntersectedObjects.GetLength() && IntersectedObjects[j]!=object_index; ++j)
+							vector<short>& IntersectedObjects = *IntersectedObjectsPtr;
+							for (j=0; j<IntersectedObjects.size() && IntersectedObjects[j]!=object_index; ++j)
 								;
-							if (j==IntersectedObjects.GetLength())
-								IntersectedObjects.Add(object_index);
+							if (j==IntersectedObjects.size())
+								IntersectedObjects.push_back(object_index);
 						}
 					}
 				}
@@ -1153,11 +1157,11 @@ short legal_player_move(
 	get_monster_dimensions(monster_index, &radius, &height);	
 	
 	// LP change:
-	IntersectedObjects.ResetLength();
+	IntersectedObjects.clear();
 	// monster_count= 0;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
 	// possible_intersecting_monsters(object_indexes, &monster_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
-	monster_count = IntersectedObjects.GetLength();
+	monster_count = IntersectedObjects.size();
 	for (i=0;i<monster_count;++i)
 	{
 		// LP change:
@@ -1238,11 +1242,11 @@ short legal_monster_move(
 	get_monster_dimensions(monster_index, &radius, &height);	
 	
 	// LP change:
-	IntersectedObjects.ResetLength();
+	IntersectedObjects.clear();
 	// monster_count= 0;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
 	// possible_intersecting_monsters(object_indexes, &monster_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
-	monster_count= IntersectedObjects.GetLength();
+	monster_count= IntersectedObjects.size();
 	for (i=0;i<monster_count;++i)
 	{
 		// LP change:
@@ -1325,11 +1329,11 @@ void damage_monsters_in_radius(
 	(void) (primary_target_index);
 	
 	// LP change:
-	IntersectedObjects.ResetLength();
+	IntersectedObjects.clear();
 	// object_count= 0;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, epicenter_polygon_index, false);
 	// possible_intersecting_monsters(object_indexes, &object_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, epicenter_polygon_index, false);
-	object_count= IntersectedObjects.GetLength();
+	object_count= IntersectedObjects.size();
 	for (i=0;i<object_count;++i)
 	{
 		// LP change:

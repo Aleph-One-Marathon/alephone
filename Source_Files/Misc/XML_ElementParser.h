@@ -9,11 +9,14 @@
 	
 	May 3, 2000
 	Added a change to adding a child so as not to add one with the same name twice.
+
+Oct 13, 2000 (Loren Petrich)
+	Changed to STL container
 */
 
 
+#include <vector.h>
 #include <stdio.h>
-#include "GrowableList.h"
 
 
 extern bool XML_GetBooleanValue(const char *String, bool &Value);
@@ -25,7 +28,7 @@ class XML_ElementParser
 	char *Name;
 		
 	// List of child elements
-	GrowableList<XML_ElementParser *> Children;
+	vector<XML_ElementParser *> Children;
 
 protected:
 	// Designed for easy reading of numerical values:

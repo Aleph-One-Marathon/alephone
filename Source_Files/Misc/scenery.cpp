@@ -22,7 +22,16 @@ May 18, 2000 (Loren Petrich):
 
 May 26, 2000 (Loren Petrich):
 	Added XML shapes support
+
+Oct 13, 2000 (Loren Petrich):
+	Converted list to STL;
+	also modified get_scenery_definition to return NULL for out-of-range scenery
 */
+
+#include <string.h>
+#include <stdlib.h>
+#include <vector.h>
+#include "ShapesParser.h"
 
 #include "cseries.h"
 #include "map.h"
@@ -35,12 +44,6 @@ May 26, 2000 (Loren Petrich):
 #include "player.h"
 #include "platforms.h"
 #include "scenery.h"
-// LP addition:
-#include "GrowableList.h"
-
-#include <string.h>
-#include <stdlib.h>
-#include "ShapesParser.h"
 
 #ifdef env68k
 #pragma segment objects
@@ -59,31 +62,20 @@ enum
 
 
 // LP change: growable list of animated scenery objects
-static GrowableList<short> AnimatedSceneryObjects(16);
-/*
-static short animated_scenery_object_count;
-static short *animated_scenery_object_indexes;
-*/
+static vector<short> AnimatedSceneryObjects;
 
 
 /* ---------- private prototypes */
 
-#ifdef DEBUG
 struct scenery_definition *get_scenery_definition(short scenery_type);
-#else
-#define get_scenery_definition(i) (scenery_definitions+(i))
-#endif
 
 /* ---------- code */
 
 void initialize_scenery(
 	void)
 {
-	// LP: no longert necessary
-	/*
-	animated_scenery_object_indexes= (short *)malloc(sizeof(short)*MAXIMUM_ANIMATED_SCENERY_OBJECTS);
-	assert(animated_scenery_object_indexes);
-	*/
+	// Will reserve some space for them
+	AnimatedSceneryObjects.reserve(32);
 	
 	return;
 }
@@ -95,21 +87,20 @@ short new_scenery(
 {
 	short object_index= NONE;
 	
-	if (scenery_type<NUMBER_OF_SCENERY_DEFINITIONS)
-	{
-		struct scenery_definition *definition= get_scenery_definition(scenery_type);
-		
-		object_index= new_map_object(location, definition->shape);
-		if (object_index!=NONE)
-		{
-			struct object_data *object= get_object_data(object_index);
-			
-			SET_OBJECT_OWNER(object, _object_is_scenery);
-			SET_OBJECT_SOLIDITY(object, (definition->flags&_scenery_is_solid) ? true : false);
-			object->permutation= scenery_type;
-		}
-	}
+	// This get function will do the bounds checking
+	struct scenery_definition *definition= get_scenery_definition(scenery_type);
+	if (!definition) return NONE;
 	
+	object_index= new_map_object(location, definition->shape);
+	if (object_index!=NONE)
+	{
+		struct object_data *object= get_object_data(object_index);
+		
+		SET_OBJECT_OWNER(object, _object_is_scenery);
+		SET_OBJECT_SOLIDITY(object, (definition->flags&_scenery_is_solid) ? true : false);
+		object->permutation= scenery_type;
+	}
+
 	return object_index;
 }
 
@@ -118,16 +109,10 @@ void animate_scenery(
 {
 	short i;
 	
-	for (i= 0; i<AnimatedSceneryObjects.GetLength(); ++i)
+	for (i= 0; i<AnimatedSceneryObjects.size(); ++i)
 	{
 		animate_object(AnimatedSceneryObjects[i]);
 	}
-	/*
-	for (i= 0; i<animated_scenery_object_count; ++i)
-	{
-		animate_object(animated_scenery_object_indexes[i]);
-	}
-	*/
 	
 	return;
 }
@@ -139,7 +124,7 @@ void randomize_scenery_shapes(
 	short object_index;
 	
 	// LP Change:
-	AnimatedSceneryObjects.ResetLength();
+	AnimatedSceneryObjects.clear();
 	// animated_scenery_object_count= 0;
 	
 	for (object_index= 0, object= objects; object_index<MAXIMUM_OBJECTS_PER_MAP; ++object_index, ++object)
@@ -147,17 +132,11 @@ void randomize_scenery_shapes(
 		if (GET_OBJECT_OWNER(object)==_object_is_scenery)
 		{
 			struct scenery_definition *definition= get_scenery_definition(object->permutation);
+			if (!definition) continue;
 			
 			if (!randomize_object_sequence(object_index, definition->shape))
 			{
-				// LP change:
-				assert(AnimatedSceneryObjects.Add(object_index));
-				/*
-				if (animated_scenery_object_count<MAXIMUM_ANIMATED_SCENERY_OBJECTS)
-				{
-					animated_scenery_object_indexes[animated_scenery_object_count++]= object_index;
-				}
-				*/
+				AnimatedSceneryObjects.push_back(object_index);
 			}
 		}
 	}
@@ -171,6 +150,13 @@ void get_scenery_dimensions(
 	world_distance *height)
 {
 	struct scenery_definition *definition= get_scenery_definition(scenery_type);
+	if (!definition)
+	{
+		// Fallback
+		*radius = 0;
+		*height = 0;
+		return;
+	}
 
 	*radius= definition->radius;
 	*height= definition->height;
@@ -183,6 +169,7 @@ void damage_scenery(
 {
 	struct object_data *object= get_object_data(object_index);
 	struct scenery_definition *definition= get_scenery_definition(object->permutation);
+	if (!definition) return;
 	
 	if (definition->flags&_scenery_can_be_destroyed)
 	{
@@ -198,15 +185,11 @@ void damage_scenery(
 
 /* ---------- private code */
 
-#ifdef DEBUG
 struct scenery_definition *get_scenery_definition(
 	short scenery_type)
 {
-	assert(scenery_type>=0 && scenery_type<NUMBER_OF_SCENERY_DEFINITIONS);
-	
-	return scenery_definitions + scenery_type;
+	return GetMemberWithBounds(scenery_definitions,scenery_type,NUMBER_OF_SCENERY_DEFINITIONS);
 }
-#endif
 
 
 // For being more specific about the shapes -- either normal or destroyed

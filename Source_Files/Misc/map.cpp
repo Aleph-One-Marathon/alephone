@@ -48,6 +48,9 @@ Jul 7, 2000 (Loren Petrich): Did yet another frame-checking readjustment, in ord
 	the reactivated Hunter soft-death bug.
 
 Aug 20, 2000 (Loren Petrich): eliminated a "pause()" statement -- some debugging statement?
+	
+Oct 13, 2000 (Loren Petrich)
+	Converted the intersected-objects list into a Standard Template Library vector
 */
 
 /*
@@ -146,7 +149,7 @@ struct map_memory_data {
 static struct map_memory_data map_structure_memory;
 
 // LP addition: growable list of intersected objects
-static GrowableList<short> IntersectedObjects(64);
+static vector<short> IntersectedObjects;
 
 /* ---------- private prototypes */
 
@@ -1725,11 +1728,11 @@ bool point_is_monster_visible(
 	*distance = INT32_MAX; /* infinite */
 	
 	// LP change:
-	IntersectedObjects.ResetLength();
+	IntersectedObjects.clear();
 	// object_count= 0;
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, polygon_index, false);
 	// possible_intersecting_monsters(object_indexes, &object_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, polygon_index, false);
-	object_count = IntersectedObjects.GetLength();
+	object_count = IntersectedObjects.size();
 	
 	for (i=0;i<object_count;++i)
 	{
