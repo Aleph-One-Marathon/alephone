@@ -198,21 +198,22 @@ typedef ReqListRec *ReqListPtr;
 
 struct ViewSizeData
 {
-	short OverallWidth, OverallHeight;
-	short MainWidth, MainHeight;
-	bool ShowHUD;
+	short OverallWidth, OverallHeight;	// Of the display area, so as to properly center everything
+	short MainWidth, MainHeight;		// Of the main 3D-rendered view
+	short WithHUD, WithoutHUD;			// Corresponding entries that are with the HUD or without it
+	bool ShowHUD;						// Will it be visible?
 };
 
 const ViewSizeData ViewSizes[NUMBER_OF_VIEW_SIZES] =
 {
-	{640, 480, 320, 160, true},
-	{640, 480, 480, 240, true},
-	{640, 480, 640, 320, true},
-	{640, 480, 640, 480, false},
-	{800, 600, 800, 400, true},
-	{800, 600, 800, 600, false},
-	{1024, 768, 1024, 512, true},
-	{1024, 768, 1024, 768, false},
+	{ 640, 480,	 320, 160,	 _320_160_HUD,  _640_480,	 true},		//  _320_160_HUD
+	{ 640, 480,	 480, 240,	 _480_240_HUD,  _640_480,	 true},		//  _480_240_HUD
+	{ 640, 480,	 640, 320,	 _640_320_HUD,  _640_480,	 true},		//  _640_320_HUD
+	{ 640, 480,	 640, 480,	 _640_320_HUD,  _640_480,	false},		//  _640_480
+	{ 800, 600,	 800, 400,	 _800_400_HUD,  _800_600,	 true},		//  _800_400_HUD
+	{ 800, 600,	 800, 600,	 _800_400_HUD,  _800_600,	false},		//  _800_600
+	{1024, 768,	1024, 512,	_1024_512_HUD, _1024_768,	 true},		// _1024_512_HUD
+	{1024, 768,	1024, 768,	_1024_512_HUD, _1024_768,	false},		// _1024_768
 };
 
 // Note: the overhead map will always fill all of the screen except for the HUD,
@@ -2260,3 +2261,15 @@ void ClearScreen()
 	SetPort(old_port);
 }
 
+// Corresponding sizes for with and without HUD
+short SizeWithHUD(short _size)
+{
+	assert(_size >= 0 && _size < NUMBER_OF_VIEW_SIZES);
+	return ViewSizes[_size].WithHUD;
+}
+
+short SizeWithoutHUD(short _size)
+{
+	assert(_size >= 0 && _size < NUMBER_OF_VIEW_SIZES);
+	return ViewSizes[_size].WithoutHUD;
+}
