@@ -171,6 +171,9 @@ Apr 29, 2002 (Loren Petrich):
 
 Apr 22, 2003 (Woody Zenfell):
         Enabling use of OGL_DrawHUD(); reducing unnecessary OGL_SwapBuffers()
+
+  Aug 6, 2003 (Woody Zenfell):
+	Fixing OGL HUD placement on widescreen displays; only drawing it in HUD screen modes.
 */
 
 /*
@@ -259,6 +262,12 @@ extern bool OGL_HUDActive;
 #define WORLD_H 0
 #define WORLD_V 0
 #endif
+
+enum
+{
+	kHUDHeight	= 160,
+	kHUDWidth	= 640,
+};
 
 // now in screen_shared.cpp
 //#define DESIRED_SCREEN_WIDTH 640
@@ -841,7 +850,7 @@ void render_screen(
 	
 	// Rectangle where the view is to go (must not overlap the HUD)
 	short OverallWidth = VS.OverallWidth;
-	short OverallHeight = VS.OverallHeight - (VS.ShowHUD ? 160 : 0);
+	short OverallHeight = VS.OverallHeight - (VS.ShowHUD ? kHUDHeight : 0);
 	short BufferWidth, BufferHeight;
 	
 	// Offsets for placement in the screen
@@ -850,8 +859,8 @@ void render_screen(
 	
 	// HUD location
 	Rect HUD_DestRect;
-	short HUD_Offset = (OverallWidth - 640) >> 1;
-	SetRect(&HUD_DestRect, HUD_Offset, OverallHeight, HUD_Offset + 640, VS.OverallHeight);
+	short HUD_Offset = (OverallWidth - kHUDWidth) / 2;
+	SetRect(&HUD_DestRect, HUD_Offset, OverallHeight, HUD_Offset + kHUDWidth, VS.OverallHeight);
 	OffsetRect(&HUD_DestRect, ScreenOffsetWidth, ScreenOffsetHeight);
 	
 	bool ChangedSize = false;
@@ -875,7 +884,7 @@ void render_screen(
 	{
 		BufferWidth = VS.MainWidth;
 		BufferHeight = VS.MainHeight;
-		HighResolution = mode->high_resolution;
+		HighResolution = OGL_IsActive() ? true : mode->high_resolution;
 	}
 	
 	if (BufferWidth != PrevBufferWidth)
@@ -1120,45 +1129,51 @@ void render_screen(
 
                         if(OGL_HUDActive)
                         {
-                                OGL_SetWindow(ScreenRect,ScreenRect,true);
-                                Rect theRealHUDDestRect;
-                                if(msize < 4)
-                                        SetRect(&theRealHUDDestRect, 0, 320, 640, 480);
-                                else
-                                {
-                                        theRealHUDDestRect.left = (VS.OverallWidth - 640)/2;
-                                        theRealHUDDestRect.top = 5*VS.OverallHeight/6 - 160/2;
-                                        theRealHUDDestRect.right = theRealHUDDestRect.left + 640;
-                                        theRealHUDDestRect.bottom = theRealHUDDestRect.top + 160;
-                                }
+				if(VS.ShowHUD)
+				{
+					OGL_SetWindow(ScreenRect,ScreenRect,true);
+					Rect theRealHUDDestRect;
+					if(msize < 4)
+						SetRect(&theRealHUDDestRect, 0, 320, 640, 480);
+					else
+					{
+						short theHUDAreaHeight = VS.OverallHeight - VS.MainHeight;
+						theRealHUDDestRect.left = (VS.OverallWidth - kHUDWidth)/2;
+						theRealHUDDestRect.top = VS.MainHeight + (theHUDAreaHeight - kHUDHeight) / 2;
+						theRealHUDDestRect.right = theRealHUDDestRect.left + kHUDWidth;
+						theRealHUDDestRect.bottom = theRealHUDDestRect.top + kHUDHeight;
+					}
 
-                                if(!graphics_preferences->screen_mode.fullscreen)
-                                {
-                                        int theXOffset = (RECTANGLE_WIDTH(&ScreenRect) - VS.OverallWidth)/2;
-                                        int theYOffset = (RECTANGLE_HEIGHT(&ScreenRect) - VS.OverallHeight)/2;
-                                        OffsetRect(&theRealHUDDestRect, theXOffset, theYOffset);
-                                }
+					if(!graphics_preferences->screen_mode.fullscreen)
+					{
+						int theXOffset = (RECTANGLE_WIDTH(&ScreenRect) - VS.OverallWidth)/2;
+						int theYOffset = (RECTANGLE_HEIGHT(&ScreenRect) - VS.OverallHeight)/2;
+						OffsetRect(&theRealHUDDestRect, theXOffset, theYOffset);
+					}
 
-                                // we try to log these once per game here.  log level is dump, so
-                                // only those wanting lots of detail will ever see it.
-                                static bool logged = false; // for debugging
+					// we try to log these once per game here.  log level is dump, so
+     // only those wanting lots of detail will ever see it.
+					static bool logged = false; // for debugging
 
-                                if(dynamic_world->tick_count > 150 && dynamic_world->tick_count < 180)
-                                {
-                                        if(!logged)
-                                        {
-                                                logDump4("ScreenRect: {%d, %d, %d, %d}", ScreenRect.left, ScreenRect.top, ScreenRect.right, ScreenRect.bottom);
-                                                logDump4("HUD_DestRect: {%d, %d, %d, %d}", HUD_DestRect.left, HUD_DestRect.top, HUD_DestRect.right, HUD_DestRect.bottom);
-                                                logDump4("theRealHUDDestRect: {%d, %d, %d, %d}", theRealHUDDestRect.left, theRealHUDDestRect.top, theRealHUDDestRect.right, theRealHUDDestRect.bottom);
-                                                logged = true;
-                                        }
-                                }
-                                else
-                                        logged = false;
+					if(dynamic_world->tick_count > 150 && dynamic_world->tick_count < 180)
+					{
+						if(!logged)
+						{
+							logDump4("ScreenRect: {%d, %d, %d, %d}", ScreenRect.left, ScreenRect.top, ScreenRect.right, ScreenRect.bottom);
+							logDump4("HUD_DestRect: {%d, %d, %d, %d}", HUD_DestRect.left, HUD_DestRect.top, HUD_DestRect.right, HUD_DestRect.bottom);
+							logDump4("theRealHUDDestRect: {%d, %d, %d, %d}", theRealHUDDestRect.left, theRealHUDDestRect.top, theRealHUDDestRect.right, theRealHUDDestRect.bottom);
+							logged = true;
+						}
+					}
+					else
+						logged = false;
 
-                                OGL_DrawHUD(theRealHUDDestRect, ticks_elapsed);
-                        }
-                        else {
+					OGL_DrawHUD(theRealHUDDestRect, ticks_elapsed);
+
+				} // current mode should show HUD
+
+			} // rendering HUD with OpenGL
+			else {
                                 if (HUD_RenderRequest)
                                 {
                                         if (Use_OGL_2D)
