@@ -268,8 +268,9 @@ bool ShowPosition = false;
 // (if not allocated, then it's the null pointer).
 // Also the currently-requested rendering area when doing in piped-through-OpenGL mode
 GWorldPtr HUD_Buffer = NULL;
-static Rect HUD_SourceRect, HUD_DestRect;
-static bool HUD_OGL_RenderRequest = false;
+static Rect HUD_SourceRect = {0, 0, 160, 640};
+static Rect HUD_DestRect;
+static bool HUD_RenderRequest = false;
 
 static boolean screen_initialized= FALSE;
 
@@ -308,6 +309,10 @@ static void DisplayPosition(GrafPtr port);
 static void calculate_screen_options(void);
 
 static void ClearScreen();
+
+// Draws HUD in software mode
+void DrawHUD(Rect& SourceRect, Rect& DestRect);
+
 
 /* ---------- code */
 void initialize_screen(
@@ -781,6 +786,11 @@ void render_screen(
 	short OverallHeight = VS.OverallHeight - (VS.ShowHUD ? 160 : 0);
 	short BufferWidth, BufferHeight;
 	
+	// HUD location
+	Rect HUD_DestRect;
+	short HUD_Offset = (OverallWidth - 640) >> 1;
+	SetRect(&HUD_DestRect, HUD_Offset, OverallHeight, HUD_Offset + 640, VS.OverallHeight);
+	
 	bool ChangedSize = false;
 	
 	// Each kind of display needs its own size
@@ -1015,14 +1025,18 @@ void render_screen(
 				// Copy 2D rendering to screen
 				OGL_Active = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,true);
 			}
-			if (HUD_OGL_RenderRequest)
+			if (HUD_RenderRequest)
 			{
-				// This horrid-looking resizing does manage to get the HUD to work properly...
-				HUD_DestRect.top = 160;
-				HUD_DestRect.bottom = 480;
-				OGL_SetWindow(ScreenRect,HUD_DestRect);
-				OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,true);
-				HUD_OGL_RenderRequest = false;
+				if (OGL_Get2D())
+				{
+					// This horrid-looking resizing does manage to get the HUD to work properly...
+					HUD_DestRect.top -= (HUD_DestRect.bottom - HUD_DestRect.top);
+					OGL_SetWindow(ScreenRect,HUD_DestRect);
+					OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,true);
+				}
+				else
+					DrawHUD(HUD_SourceRect,HUD_DestRect);
+				HUD_RenderRequest = false;
 			}
 			if (!OGL_Active) update_screen(BufferRect,ViewRect,HighResolution);
 // #endif
@@ -2158,24 +2172,18 @@ bool SetTunnelVision(bool TunnelVisionOn)
 	return world_view->tunnel_vision_active;
 }
 
-// For drawing the Heads-Up Display from its buffer
-void DrawBufferedHUD()
+// This is for requesting the drawing of the Heads-Up Display;
+// this is done because its drawing is now done when the main display is drawn
+void RequestDrawingHUD()
+{
+	HUD_RenderRequest = true;
+}
+
+// Actually do the drawing, in software mode
+void DrawHUD(Rect& SourceRect, Rect& DestRect)
 {
 	// Check if the HUD buffer is there
 	assert(HUD_Buffer);
-	
-	Rect DestRect= {320, 0, 480, 640};
-	Rect SourceRect= {0, 0, 160, 640};
-	
-	// Do OpenGL drawing if possible
-	Rect ScreenBounds = screen_window->portRect;
-	if (OGL_Get2D())
-	{
-		HUD_SourceRect = SourceRect;
-		HUD_DestRect = DestRect;
-		HUD_OGL_RenderRequest = true;
-		return;
-	}
 	
 	// Code cribbed from draw_panels() in game_window_macintosh.c
 	GrafPtr old_port;
