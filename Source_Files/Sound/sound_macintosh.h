@@ -275,7 +275,7 @@ static void initialize_machine_sound_manager(
 {
 	OSErr error;
 
-	assert(kFullVolume==MAXIMUM_SOUND_VOLUME);
+	assert(static_cast<uint32>(kFullVolume)==static_cast<uint32>(MAXIMUM_SOUND_VOLUME));
 
  	// Thomas Herzog: Updated for Universal Interfaces 3.4
  	#if UNIVERSAL_INTERFACES_VERSION < 0x0340
