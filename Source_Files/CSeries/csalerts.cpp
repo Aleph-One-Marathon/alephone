@@ -32,8 +32,19 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include <TextUtils.h>
 #endif
 
+// IR addition:
+#ifdef INIO
+#include <time.h>
+#endif
+
 #include "csalerts.h"
 #include "csstrings.h"
+
+#ifdef INIO
+#if __MWERKS__
+#include <MetroNubUtils.h> // located in {Compiler}:(Deubgger Extras)
+#endif
+#endif
 
 static Str255 alert_text;
 
@@ -59,7 +70,11 @@ void alert_user(
 	}
 }
 
+#ifdef INIO
+void pause_debug(void)
+#else
 void pause(void)
+#endif
 {
 	Debugger();
 }
@@ -103,12 +118,33 @@ void vhalt(
 
 static char assert_text[256];
 
+// IR addition: copied this preprocessor junk from Debugging.h
+#define LocalLMGetMacJmp() (*(( unsigned long *)0x0120))
+#define LocalLMGetMacJmpFlag() (*(( UInt8 *)0x0BFF))
+
+#define ISLOWLEVELDEBUGGERCALLABLE()                                    \
+    ( ( LocalLMGetMacJmpFlag() != (UInt8) 0xff ) &&                     \
+      ( (LocalLMGetMacJmpFlag() & (UInt8) 0xe0) == (UInt8) 0x60 ) &&    \
+      ( LocalLMGetMacJmp() != 0 ) &&                                    \
+      ( LocalLMGetMacJmp() != (unsigned long) 0xffffffff ) )
+
 void _alephone_assert(
 	char *file,
 	long line,
 	char *what)
 {
-	vhalt(csprintf(assert_text,"%s:%ld: %s",file,line,what));
+#ifdef INIO
+	#if __MWERKS__
+		if (AmIBeingMWDebugged()) {
+			SysBreakStr(psprintf((unsigned char*)assert_text,"assert failed: %s",what));
+		}
+	#endif
+	// IR change: made this a little more informative
+	DebugLog(csprintf(assert_text,"assert: %s:%ld: %s",file,line,what));
+	vhalt(csprintf(assert_text,"%s:%ld: %s  This has been logged.",file,line,what));
+#else
+     vhalt(csprintf(assert_text,"%s:%ld: %s",file,line,what));
+#endif
 }
 
 void _alephone_warn(
@@ -118,3 +154,20 @@ void _alephone_warn(
 {
 	vpause(csprintf(assert_text,"%s:%ld: %s",file,line,what));
 }
+
+#ifdef INIO
+// IR added:
+void DebugLog(const char* text) {
+// IR changed: changed it to use fdprintf.
+//	static FILE* ofile = NULL;
+//	if (!ofile) {
+//		ofile = fopen("aleph.log", "a");
+//		if (!ofile) return;
+//	}
+	char time[100];
+	time_t now = ::time(NULL);
+	strftime(time, 100, "%b %d %X: ", localtime(&now));
+	fdprintf("%s%s", time, text);
+//	fflush(ofile);
+}
+#endif
