@@ -1160,7 +1160,7 @@ static void main_event_loop(
 	void)
 {
 #if defined(TARGET_API_MAC_CARBON)
-	static EventTypeSpec mouseMovedEvents[] = {
+	static EventTypeSpec mouseEvents[] = {
 		{kEventClassMouse, kEventMouseDown},
 		{kEventClassMouse, kEventMouseUp},
 		{kEventClassMouse, kEventMouseWheelMoved},
