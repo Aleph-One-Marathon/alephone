@@ -113,9 +113,7 @@ if [[ "x$enable_opengl" = "xyes" ]]; then
     AC_DEFINE(HAVE_OPENGL, 1, [OpenGL support is enabled])
     AC_CHECK_LIB(GLU, gluScaleImage, [SYS_GL_LIBS="$SYS_GL_LIBS -lGLU"], , $SYS_GL_LIBS)
     LIBS="$LIBS $SYS_GL_LIBS"
-    AC_CHECK_HEADERS(GL/glext.h, [
-      AC_DEFINE(HAVE_GL_GLEXT_H, 1, [GL/glext.h header is available])
-    ])
+    AC_CHECK_HEADERS(GL/glext.h, [], [], [#include <GL/gl.h>])
   else
     AC_MSG_WARN([Could not find OpenGL, ignoring --enable-opengl.])
   fi
