@@ -839,7 +839,7 @@ void render_screen(
 	
 	short msize = mode->size;
 	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
-	ViewSizeData& VS = ViewSizes[msize];
+	const ViewSizeData& VS = ViewSizes[msize];
 	
 	// Rectangle where the view is to go (must not overlap the HUD)
 	short OverallWidth = VS.OverallWidth;
@@ -1119,7 +1119,7 @@ void render_screen(
 						{232, 768},		// _1024_512_HUD
 						{232, 768},		// _1024_768
 					};
-					DownwardOffsetSet& Set = OGL_DownwardOffsets[msize];
+					const DownwardOffsetSet& Set = OGL_DownwardOffsets[msize];
 					HUD_DestRect.top = Set.Top;
 					HUD_DestRect.bottom = Set.Bottom;
 					// Paint on top without any buffering
@@ -2155,7 +2155,7 @@ void dump_screen()
 
 	short msize = screen_mode.size;
 	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
-	ViewSizeData& VS = ViewSizes[msize];
+	const ViewSizeData& VS = ViewSizes[msize];
 	
 	// Rectangle where the view is to go (must not overlap the HUD)
 	short OverallWidth = VS.OverallWidth;
