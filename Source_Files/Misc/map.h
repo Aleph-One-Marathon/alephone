@@ -21,6 +21,10 @@ Thursday, June 16, 1994 7:32:13 PM
 Jul 1, 2000 (Loren Petrich):
 	moved all its contens out to map.h
 [End moved notes]
+
+Aug 29, 2000 (Loren Petrich):
+	Created packing and unpacking functions for all the
+		externally-accessible data types defined here
 */
 
 #include "world.h"
@@ -1241,6 +1245,18 @@ void unpack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
 void pack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
 void unpack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
 void pack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
+
+void unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count = 1);
+void pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count = 1);
+void unpack_map_object(uint8 *Stream, map_object* Objects, int Count = 1);
+void pack_map_object(uint8 *Stream, map_object* Objects, int Count = 1);
+void unpack_static_data(uint8 *Stream, static_data* Objects, int Count = 1);
+void pack_static_data(uint8 *Stream, static_data* Objects, int Count = 1);
+
+void unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count = 1);
+void pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count = 1);
+void unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count = 1);
+void pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count = 1);
 
 /* ---------- prototypes/PLACEMENT.C */
 
