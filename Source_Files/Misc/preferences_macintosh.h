@@ -369,6 +369,9 @@ void handle_preferences(
 	SetControl32BitValue(GRFX_Acceleration,graphics_preferences->screen_mode.acceleration == _opengl_acceleration ? 1 : 0);
 	SetControlActivity(GRFX_Acceleration, OGL_IsPresent());
 	
+	ControlRef GRFX_FillScreen = GetCtrlFromWindow(Window(),Sig_Graphics,iFILL_SCREEN);
+	SetControl32BitValue(GRFX_FillScreen,graphics_preferences->screen_mode.fullscreen);
+	
 	// Sound:
 	
 	ControlRef SNDS_Volume = GetCtrlFromWindow(Window(),Sig_Sound,iVOLUME);
@@ -506,6 +509,8 @@ void handle_preferences(
 		// IR-inspired change; no OpenGL mode in 8-bit color depth
 		if (graphics_preferences->screen_mode.bit_depth == 8)
 			graphics_preferences->screen_mode.acceleration= _no_acceleration;
+		
+		graphics_preferences->screen_mode.fullscreen = GetControl32BitValue(GRFX_FillScreen);
 		
 		// Sound:
 	
