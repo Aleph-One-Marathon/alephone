@@ -6,7 +6,7 @@
 <string index="1">Sorry, Aleph One requires Color QuickDraw.</string>
 <string index="2">Sorry, Aleph One requires System Software 7.0 or higher.</string>
 <string index="3">Sorry, Aleph One requires at least 3000k of free RAM.</string>
-<string index="4">Sorry, Aleph One requires a 13” monitor (640x480) or larger which can be set to at least 256 colors or grays.</string>
+<string index="4">Sorry, Aleph One requires a 13&#xD3; monitor (640x480) or larger which can be set to at least 256 colors or grays.</string>
 <string index="5">Please be sure the files 'Map', 'Shapes', 'Images' and 'Sounds' are correctly installed and try again.</string>
 <string index="6">Aleph One couldn't initialize the sound.</string>
 <string index="7">Aleph One has encountered a file system error.  Check to make sure you have enough disk space and that you are not trying to save to a locked volume.</string>
@@ -229,7 +229,7 @@
 <stringset index="134">
 <string index="0">Be sure your external speakers or headphones are connected properly, and that you have enabled stereo output from the Sound Control Panel.</string>
 <string index="1">Be sure that your Cybermaxx helmet is properly hooked up to the serial port and turned on.</string>
-<string index="2">Please check to be sure you have the file “QuickTime[TM] Musical Instruments” in your “Extensions” folder, because Aleph One's background music will sound really, really stupid without it.</string>
+<string index="2">Please check to be sure you have the file &#xD2;QuickTime[TM] Musical Instruments&#xD3; in your &#xD2;Extensions&#xD3; folder, because Aleph One's background music will sound really, really stupid without it.</string>
 </stringset>
 
 <!-- STR# Resource: "Computer Interface" -->
@@ -248,9 +248,9 @@
 
 <!-- STR# Resource: "Join Dialog Messages" -->
 <stringset index="136">
-<string index="0">Click “Join” to wait for an invitation into a network game of Aleph One.</string>
-<string index="1">Now waiting to be gathered into a network game by a server.  Click “Cancel” to give up.</string>
-<string index="2">You have been accepted into a game.  Now waiting for the server to add the remaining players… </string>
+<string index="0">Click &#xD2;Join&#xD3; to wait for an invitation into a network game of Aleph One.</string>
+<string index="1">Now waiting to be gathered into a network game by a server.  Click &#xD2;Cancel&#xD3; to give up.</string>
+<string index="2">You have been accepted into a game.  Now waiting for the server to add the remaining players&#xC9; </string>
 </stringset>
 
 <!-- STR# Resource: "Weapon Names" -->
@@ -269,7 +269,7 @@
 
 <!-- STR# Resource: "file search path" -->
 <stringset index="138">
-<string index="0">Marathon Trilogy:Marathon Infinity ƒ:Marathon Infinity:</string>
+<string index="0">Marathon Trilogy:Marathon Infinity &#xC4;:Marathon Infinity:</string>
 </stringset>
 
 <!-- STR# Resource: "Preferences Groupings" -->
@@ -289,7 +289,7 @@
 <string index="3">Team</string>
 <string index="4">Time With Ball</string>
 <string index="5">Flags Captured</string>
-<string index="6">Time “It” </string>
+<string index="6">Time &#xD2;It&#xD3; </string>
 <string index="7">Goals</string>
 <string index="8">Time On Hill</string>
 <string index="9">Time On Hill</string>
@@ -309,9 +309,9 @@
 
 <!-- STR# Resource: "New Join Dialog Messages" -->
 <stringset index="142">
-<string index="0">You have been accepted into a game of “%s”.  Now waiting for the server to add the remaining players… </string>
+<string index="0">You have been accepted into a game of &#xD2;%s&#xD3;.  Now waiting for the server to add the remaining players&#xC9; </string>
 <string index="1">Every Man For Himself</string>
-<string index="2">You have been accepted into a cooperative game.  Now waiting for the server to add the remaining players… </string>
+<string index="2">You have been accepted into a cooperative game.  Now waiting for the server to add the remaining players&#xC9; </string>
 <string index="3">Capture the Flag</string>
 <string index="4">King of the Hill</string>
 <string index="5">Kill the Man With the Ball</string>
@@ -403,11 +403,11 @@
 <string index="26">THE PLANS</string>
 <string index="27">WSTE-M COMBAT SHOTGUN</string>
 <string index="28">WSTE-M COMBAT SHOTGUNS</string>
-<string index="29">S’PHT CARD KEY</string>
-<string index="30">S’PHT CARD KEYS</string>
+<string index="29">S&#xD5;PHT CARD KEY</string>
+<string index="30">S&#xD5;PHT CARD KEYS</string>
 <string index="31">UPLINK CHIP</string>
 <string index="32">UPLINK CHIPS</string>
-<string index="33">Ryan’s Light Blue Ball</string>
+<string index="33">Ryan&#xD5;s Light Blue Ball</string>
 <string index="34">SKULL</string>
 <string index="35">Violet Ball</string>
 <string index="36">Yellow Ball</string>
