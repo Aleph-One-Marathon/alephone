@@ -439,7 +439,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		short PosIndx = VertIndxSets[4*k+1];
 		if (PosIndx < 0 && PosIndx >= int(Positions.size()))
 		{
-			if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %u: %d (0,%u)\n",k,PosIndx,Positions.size()-1);
+			if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %u: %d (0,%lu)\n",k,PosIndx,Positions.size()-1);
 			AllInRange = false;
 		}
 		
@@ -448,7 +448,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			short TCIndx = VertIndxSets[4*k+2];
 			if (TCIndx < 0 && TCIndx >= int(TxtrCoords.size()))
 			{
-				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %u: %d (0,%u)\n",k,TCIndx,TxtrCoords.size()-1);
+				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %u: %d (0,%lu)\n",k,TCIndx,TxtrCoords.size()-1);
 				AllInRange = false;
 			}
 		}
@@ -460,7 +460,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			short NormIndx = VertIndxSets[4*k+3];
 			if (NormIndx < 0 && NormIndx >= int(Normals.size()))
 			{
-				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %u: %d (0,%u)\n",k,NormIndx,Normals.size()-1);
+				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %u: %d (0,%lu)\n",k,NormIndx,Normals.size()-1);
 				AllInRange = false;
 			}
 		}

@@ -161,7 +161,7 @@ bool ReadChunkHeader(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 bool LoadChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
 	if (DBOut)
-		fprintf(DBOut,"Loading chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
+		fprintf(DBOut,"Loading chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
 	long DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	SetChunkBufferSize(DataSize);
 	if (!OFile.Read(DataSize,ChunkBufferBase()))
@@ -176,7 +176,7 @@ bool LoadChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 bool SkipChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
 	if (DBOut)
-		fprintf(DBOut,"Skipping chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
+		fprintf(DBOut,"Skipping chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
 	long DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	
 	long Location = 0;
@@ -190,7 +190,7 @@ bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
 	bool (*ContainerCallback)(OpenedFile&,long))
 {
 	if (DBOut)
-		fprintf(DBOut,"Entering chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
+		fprintf(DBOut,"Entering chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
 	
 	long ChunkEnd = 0;
 	OFile.GetPosition(ChunkEnd);
@@ -199,7 +199,7 @@ bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
 	if (!ContainerCallback(OFile,ChunkEnd)) return false;
 	
 	if (DBOut)
-		fprintf(DBOut,"Exiting chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
+		fprintf(DBOut,"Exiting chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
 	return true;
 }
 

@@ -720,7 +720,7 @@ bool Model3D::FindPositions_Frame(bool UseModelTransform,
 	// Find the cumulative-bone transformation matrices:
 	int StackIndx = -1;
 	size_t Parent = UNONE;
-	for (int ib=0; ib<NumBones; ib++)
+	for (unsigned int ib=0; ib<NumBones; ib++)
 	{
 		Model3D_Bone& Bone = Bones[ib];
 		
