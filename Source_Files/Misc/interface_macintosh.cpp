@@ -169,6 +169,22 @@ static void LevelNumberHandler(int ID, void *Data)
 	}
 }
 
+static bool LevelNumberMenuBuilder(
+	int indx, Str255 ItemName, bool &ThisIsInitial, void *BuildMenuData)
+{
+	(void)(BuildMenuData);
+	short LevelIndex = indx-1; // 1-based to 0-based
+	entry_point entry;
+	bool UseThis = get_indexed_entry_point(
+		&entry, &LevelIndex,
+			_single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point);
+	
+	if (UseThis)
+		psprintf(ItemName, "%d: %s",entry.level_number+1,entry.level_name);
+	
+	return UseThis;
+}
+
 short get_level_number_from_user(
 	void)
 {
@@ -180,33 +196,9 @@ short get_level_number_from_user(
 	vassert(err == noErr, csprintf(temporary,"CreateWindowFromNib error: %hd",err));
 	
 	// Set up the popup menu
-	ControlID MenuID;
-	MenuID.signature = 0;
-	MenuID.id = iLEVEL_SELECTOR;
+	ControlRef MenuCtrl = GetCtrlFromWindow(Window, 0, iLEVEL_SELECTOR);
 	
-	ControlRef MenuCtrl;
-	err = GetControlByID(Window,&MenuID,&MenuCtrl);
-	vassert(err == noErr, csprintf(temporary,"GetControlByID error: %hd",err));
-	
-	MenuRef Menu = GetControlPopupMenuHandle(MenuCtrl);
-	
-	// Get rid of old contents
-	while(CountMenuItems(Menu)) DeleteMenuItem(Menu, 1);
-	
-	// Add level names
-	struct entry_point entry;
-	short index = 0, maximum_level_number = 0;
-	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point))
-	{
-		psprintf(ptemporary, "%d: %s",entry.level_number+1,entry.level_name);
-		AppendMenu(Menu, "\pSome Level");
-		maximum_level_number++;
-		SetMenuItemText(Menu, maximum_level_number, ptemporary);
-	}
-	
-	/* Set our max value.. */
-	SetControl32BitMaximum(MenuCtrl, maximum_level_number);
-	SetControl32BitValue(MenuCtrl, 1);
+	BuildMenu(MenuCtrl, LevelNumberMenuBuilder, NULL);
 	
 	LevelNumberData Data;
 	Data.MenuCtrl = MenuCtrl;

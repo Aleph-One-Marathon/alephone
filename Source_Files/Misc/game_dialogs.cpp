@@ -49,11 +49,45 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	#pragma segment dialogs
 #endif
 
+#ifdef USES_NIBS
+const CFStringRef Window_Game_Quit_NoSave = CFSTR("Game_Quit_NoSave");
+#else
 enum {
 	dlogQUIT_WITHOUT_SAVING= 129
 };
+#endif
 
 /* ----------- code */
+#ifdef USES_NIBS
+
+// The data is a pointer to the button hit to exit
+
+static void Quit_NoSave_Handler(int ID, void *Data)
+{
+	int *IDPtr = (int *)(Data);
+	*IDPtr = ID;
+}
+
+bool quit_without_saving(
+	void)
+{
+	OSErr err;
+	
+	// Get the window
+	WindowRef Window;
+	err = CreateWindowFromNib(GUI_Nib,Window_Game_Quit_NoSave,&Window);
+	vassert(err == noErr, csprintf(temporary,"CreateWindowFromNib error: %hd",err));
+	
+	int ItemHit;
+	
+	RunModalDialog(Window, Quit_NoSave_Handler, &ItemHit);
+	
+	DisposeWindow(Window);
+	
+	return (ItemHit == iOK) ? true : false;
+}
+
+#else
 bool quit_without_saving(
 	void)
 {
@@ -83,3 +117,4 @@ bool quit_without_saving(
 	
 	return item_hit!=iOK ? false : true; /* note default button is the safe, don’t quit, one */
 }
+#endif
