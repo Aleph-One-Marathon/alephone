@@ -31,6 +31,7 @@
 
 #include "Logging.h"
 
+#include <streambuf>
 
 #ifndef HAVE_SNPRINTF
 int
