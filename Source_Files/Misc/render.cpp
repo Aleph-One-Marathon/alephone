@@ -194,6 +194,9 @@ extern WindowPtr screen_window;
 #include <string.h>
 #include <stdlib.h>
 
+// LP additions for decomposition of this code:
+#include "RenderVisTree.h"
+
 #ifdef env68k
 #pragma segment render
 #endif
@@ -229,7 +232,7 @@ whitespace results when two adjacent polygons are clipped to different vertical 
 /* ---------- constants */
 
 // LP change: increased this one to maximum possible
-#define POLYGON_QUEUE_SIZE (MAXIMUM_POLYGONS_PER_MAP)
+// #define POLYGON_QUEUE_SIZE (MAXIMUM_POLYGONS_PER_MAP)
 // #define POLYGON_QUEUE_SIZE 256
 
 /* maximum number of vertices a polygon can be world-clipped into (one per clip line) */
@@ -282,7 +285,8 @@ struct vertical_surface_data
 };
 
 /* ---------- clipping data */
-
+// LP: begin no-compile
+#if 0
 #define MAXIMUM_LINE_CLIPS 256
 #define MAXIMUM_ENDPOINT_CLIPS 64
 #define MAXIMUM_CLIPPING_WINDOWS 128
@@ -385,6 +389,9 @@ struct node_data
 	(node)->PS_Shared = (struct node_data *) NULL; \
 	}
 	// LP addition above: polygon-sort tree data
+// LP: end no-compile
+#endif
+
 
 /* ---------- sorted nodes */
 
@@ -423,19 +430,21 @@ struct render_object_data
 #define WRAP_LOW(n,max) ((n)?((n)-1):(max))
 #define WRAP_HIGH(n,max) (((n)==(max))?0:((n)+1))
 
+/*
 #define PUSH_POLYGON_INDEX(polygon_index) \
 	if (!TEST_RENDER_FLAG(polygon_index, _polygon_is_visible)) \
 	{ \
 		polygon_queue[polygon_queue_size++]= polygon_index; \
 		SET_RENDER_FLAG(polygon_index, _polygon_is_visible); \
 	}
+*/
 
 /* ---------- globals */
 
 /* every time we find a unique endpoint which clips something, we build one of these for it */
 // LP addition: growable list
 // Length changed in calculate_endpoint_clipping_information() and ResetEndpointClips()
-static GrowableList<endpoint_clip_data> EndpointClips(64);
+// static GrowableList<endpoint_clip_data> EndpointClips(64);
 /*
 static short next_endpoint_clip_index;
 static struct endpoint_clip_data *endpoint_clips, *next_endpoint_clip;
@@ -445,7 +454,7 @@ static struct endpoint_clip_data *endpoint_clips, *next_endpoint_clip;
 	we cross the same clip line again */
 // LP addition: growable list
 // Length changed in calculate_line_clipping_information() and ResetLineClips()
-static GrowableList<line_clip_data> LineClips(256);
+// static GrowableList<line_clip_data> LineClips(256);
 /*
 static short next_line_clip_index;
 static struct line_clip_data *line_clips, *next_line_clip;
@@ -461,13 +470,13 @@ static GrowableList<line_clip_data *> AccumulatedLineClips(64);
 // Length changed in build_clipping_windows(), initialize_clip_data(),
 // and build_aggregate_render_object_clipping_window();
 // keep sorted-node clipping-window pointers in sync with render-object ones
-static GrowableList<clipping_window_data> ClippingWindows(128);
+// static GrowableList<clipping_window_data> ClippingWindows(128);
 // static short next_clipping_window_index; /* used only when DEBUG is TRUE */
 // static struct clipping_window_data *clipping_windows, *next_clipping_window;
 
 // LP addition: growable list of node_data values
 // Length changed in cast_render_ray() and initialize_render_tree()
-static GrowableList<node_data> Nodes(512);
+// static GrowableList<node_data> Nodes(512);
 // static short node_count; /* used only when DEBUG is TRUE */
 // static struct node_data *nodes, *next_node;
 
@@ -478,8 +487,26 @@ static GrowableList<sorted_node_data> SortedNodes(128);
 // static short sorted_node_count; /* used only when DEBUG is TRUE */
 // static struct sorted_node_data *sorted_nodes, *next_sorted_node;
 
-static short polygon_queue_size;
-static short *polygon_queue;
+// LP change: made this a growable list
+// static short polygon_queue_size;
+// static GrowableList<short> PolygonQueue(128);
+// static short *polygon_queue;
+/*
+inline void PUSH_POLYGON_INDEX(short polygon_index)
+{
+	if (!TEST_RENDER_FLAG(polygon_index, _polygon_is_visible))
+	{
+		// Grow the list only if necessary
+		if (polygon_queue_size < PolygonQueue.GetLength())
+			PolygonQueue[polygon_queue_size]= polygon_index;
+		else
+			assert(PolygonQueue.Add(polygon_index));
+		polygon_queue_size++;
+		// polygon_queue[polygon_queue_size++]= polygon_index;
+		SET_RENDER_FLAG(polygon_index, _polygon_is_visible);
+	}
+}
+*/
 
 // LP additions: growable list of render objects; these are all the inhabitants
 // Length changed in build_render_object()
@@ -488,7 +515,7 @@ static GrowableList<render_object_data> RenderObjects(64);
 // static short render_object_count;
 // static struct render_object_data *render_objects, *next_render_object;
 
-static short *endpoint_x_coordinates; /* gives screen x-coordinates for a map endpoint (only valid if _endpoint_is_visible) */
+// static short *endpoint_x_coordinates; /* gives screen x-coordinates for a map endpoint (only valid if _endpoint_is_visible) */
 static struct sorted_node_data **polygon_index_to_sorted_node; /* converts map polygon indexes to sorted nodes (only valid if _polygon_is_visible) */
 
 word *render_flags;
@@ -514,17 +541,26 @@ static GrowableList<PolyNodeLoc> PolyNodeLocList;
 // This list will be reallocated only when the node-list capacity increases.
 static int PSNILSize = 0;
 
+
+// LP additions: decomposition of the rendering code into various object
+
+static RenderVisTreeClass RenderVisTree;	// Visibility-tree object
+
+// Temporary: a pointer to the above object
+static RenderVisTreeClass *RVPtr = &RenderVisTree;
+
+
 /* ---------- private prototypes */
 
 static void update_view_data(struct view_data *view);
 static void update_render_effect(struct view_data *view);
 static void shake_view_origin(struct view_data *view, world_distance delta);
 
-static void initialize_polygon_queue(struct view_data *view);
+// static void initialize_polygon_queue(struct view_data *view);
 static void initialize_sorted_render_tree(void);
-static void initialize_render_tree(struct view_data *view);
+// static void initialize_render_tree(struct view_data *view);
 static void initialize_render_object_list(void);
-static void initialize_clip_data(struct view_data *view);
+// static void initialize_clip_data(struct view_data *view);
 
 static void build_render_object_list(struct view_data *view);
 // LP change to make it more long-distance-friendly:
@@ -571,29 +607,30 @@ static void render_node_object(struct view_data *view, struct bitmap_definition 
 	struct render_object_data *object);
 */
 
-static void build_render_tree(struct view_data *view);
+// static void build_render_tree(struct view_data *view);
 // LP changes for better long-distance support:
+/*
 static void cast_render_ray(struct view_data *view, long_vector2d *vector, short endpoint_index,
 	struct node_data *parent, short bias);
-/*
+
 static void cast_render_ray(struct view_data *view, world_vector2d *vector, short endpoint_index,
 	struct node_data *parent, short bias);
-*/
+
 static word next_polygon_along_line(short *polygon_index, world_point2d *origin, long_vector2d *vector,
 	short *clipping_endpoint_index, short *clipping_line_index, short bias);
-/*
+
 static word next_polygon_along_line(short *polygon_index, world_point2d *origin, world_vector2d *vector,
 	short *clipping_endpoint_index, short *clipping_line_index, short bias);
-*/
+
 static word decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
 	world_point2d *origin, long_vector2d *vector, word clip_flags, short bias);
-/*
+
 static word decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
 	world_point2d *origin, world_vector2d *vector, word clip_flags, short bias);
 */
 
-static void calculate_line_clipping_information(struct view_data *view, short line_index, word clip_flags);
-static short calculate_endpoint_clipping_information(struct view_data *view, short endpoint_index, word clip_flags);
+// static void calculate_line_clipping_information(struct view_data *view, short line_index, word clip_flags);
+// static short calculate_endpoint_clipping_information(struct view_data *view, short endpoint_index, word clip_flags);
 
 // LP changes for better long-distance support
 static short xy_clip_horizontal_polygon(flagged_world_point2d *vertices, short vertex_count,
@@ -668,8 +705,8 @@ static struct shape_information_data *rescale_shape_information(struct shape_inf
 	struct shape_information_data *scaled, word flags);
 
 // LP addition: resetters for some of the lists:
-static void ResetEndpointClips(void);
-static void ResetLineClips(void);
+// static void ResetEndpointClips(void);
+// static void ResetLineClips(void);
 
 #ifdef QUICKDRAW_DEBUG
 static void debug_flagged_points(flagged_world_point2d *points, short count);
@@ -694,15 +731,21 @@ void allocate_render_memory(
 	// LP addition: check out pointer-arithmetic hack
 	assert(sizeof(void *) == sizeof(POINTER_DATA));
 	
+	// LP change: do max allocation
+	RenderVisTree.Resize(MAXIMUM_ENDPOINTS_PER_MAP,MAXIMUM_LINES_PER_MAP);
+	
 	// LP change: no longer needed
 	/*
 	nodes= (struct node_data *) malloc(sizeof(struct node_data)*MAXIMUM_NODES);
 	assert(nodes);
 	*/
-
+	
+	// LP change: no longer needed
+	/*
 	polygon_queue= (short *) malloc(sizeof(short)*POLYGON_QUEUE_SIZE);
 	assert(polygon_queue);
-
+	*/
+	
 	// LP change: no longer needed
 	/*
 	sorted_nodes= (struct sorted_node_data *) malloc(sizeof(struct sorted_node_data)*MAXIMUM_SORTED_NODES);
@@ -721,9 +764,9 @@ void allocate_render_memory(
 	assert(endpoint_clips);
 
 	line_clips= (struct line_clip_data *)malloc(MAXIMUM_LINE_CLIPS*sizeof(struct line_clip_data));
-	*/
 	line_clip_indexes= (short *)malloc(MAXIMUM_LINES_PER_MAP*sizeof(short));
 	assert(line_clip_indexes);
+	*/
 	// assert(line_clips&&line_clip_indexes);
 
 	// LP change: no longer needed
@@ -732,9 +775,10 @@ void allocate_render_memory(
 	assert(clipping_windows);
 	*/
 
-	endpoint_x_coordinates= (short *)malloc(MAXIMUM_ENDPOINTS_PER_MAP*sizeof(short));
+	// LP change: no longer needed
+	// endpoint_x_coordinates= (short *)malloc(MAXIMUM_ENDPOINTS_PER_MAP*sizeof(short));
 	polygon_index_to_sorted_node= (struct sorted_node_data **)malloc(MAXIMUM_POLYGONS_PER_MAP*sizeof(struct sorted_node *));
-	assert(endpoint_x_coordinates&&polygon_index_to_sorted_node);
+	// assert(endpoint_x_coordinates&&polygon_index_to_sorted_node);
 	
 	return;
 }
@@ -815,7 +859,7 @@ void render_view(
 	else
 	{
 		/* build the render tree, regardless of map mode, so the automap updates while active */
-		build_render_tree(view);
+		RenderVisTree.build_render_tree(view);
 		
 		if (view->overhead_map_active)
 		{
@@ -1032,7 +1076,8 @@ static void update_render_effect(
 }
 
 /* ---------- building the render tree */
-
+// LP: begin no-compile
+#if 0
 enum /* cast_render_ray(), next_polygon_along_line() biases */
 {
 	_no_bias, /* will split at the given endpoint or travel clockwise otherwise */
@@ -1040,8 +1085,8 @@ enum /* cast_render_ray(), next_polygon_along_line() biases */
 	_counterclockwise_bias /* cross the line counterclockwise from this endpoint */
 };
 
-static void build_render_tree(
-	struct view_data *view)
+void RenderVisTreeClass::build_render_tree(
+	view_data *view)
 {
 	/* initialize the queue where we remember polygons we need to fire at */
 	initialize_polygon_queue(view);
@@ -1068,7 +1113,8 @@ static void build_render_tree(
 	while (polygon_queue_size)
 	{
 		short vertex_index;
-		short polygon_index= polygon_queue[--polygon_queue_size];
+		short polygon_index= PolygonQueue[--polygon_queue_size];
+		// short polygon_index= polygon_queue[--polygon_queue_size];
 		struct polygon_data *polygon= get_polygon_data(polygon_index);
 		
 		assert(!POLYGON_IS_DETACHED(polygon));
@@ -1133,11 +1179,11 @@ enum /* cast_render_ray() flags */
 };
 
 // LP change: make it better able to do long-distance views
-static void cast_render_ray(
-	struct view_data *view,
+void RenderVisTreeClass::cast_render_ray(
+	view_data *view,
 	long_vector2d *vector, // world_vector2d *vector,
 	short endpoint_index,
-	struct node_data *parent, /* nodes==root */
+	node_data *parent, /* nodes==root */
 	short bias) /* _clockwise or _counterclockwise for walking endpoints */
 {
 	short polygon_index= parent->polygon_index;
@@ -1311,8 +1357,8 @@ static void cast_render_ray(
 	return;
 }
 
-static void initialize_polygon_queue(
-	struct view_data *view)
+void RenderVisTreeClass::initialize_polygon_queue(
+	view_data *view)
 {
 	(void) (view);
 	
@@ -1329,8 +1375,9 @@ enum /* next_polygon_along_line() states */
 	_looking_for_next_nonzero_vertex
 };
 
+
 // LP change: make it better able to do long-distance views
-static word next_polygon_along_line(
+word RenderVisTreeClass::next_polygon_along_line(
 	short *polygon_index,
 	world_point2d *origin, /* not necessairly in polygon_index */
 	long_vector2d *vector, // world_vector2d *vector,
@@ -1505,7 +1552,7 @@ static word next_polygon_along_line(
 }
 
 // LP change: make it better able to do long-distance views
-static word decide_where_vertex_leads(
+word RenderVisTreeClass::decide_where_vertex_leads(
 	short *polygon_index,
 	short *line_index,
 	short *side_index,
@@ -1594,8 +1641,8 @@ static word decide_where_vertex_leads(
 	return clip_flags;
 }
 
-static void initialize_render_tree(
-	struct view_data *view)
+void RenderVisTreeClass::initialize_render_tree(
+	view_data *view)
 {
 	// LP change: using growable list
 	Nodes.ResetLength();
@@ -1609,6 +1656,8 @@ static void initialize_render_tree(
 	
 	return;
 }
+// LP: end no-compile
+#endif
 
 /* ---------- sorting (decomposing) the render tree */
 
@@ -1641,13 +1690,12 @@ pick a leaf polygon
 // #define MAXIMUM_NODE_ALIASES 20
 // #define MAXIMUM_NODE_ALIASES 32
 
-static int DiffIndx(node_data *Node) {if (Node) return (Node - Nodes.Begin()); else return -1;}
-static void DebugTree(char *Label, int q, node_data &Node) {dprintf("%s %4d %4d %4d %4d %4d",Label,q,Node.polygon_index,DiffIndx(Node.PS_Less),DiffIndx(Node.PS_Greater),DiffIndx(Node.PS_Shared));}
-
 static void sort_render_tree(
 	struct view_data *view)
 {
 	struct node_data *leaf, *last_leaf;
+	// LP: reference to simplify the code
+	GrowableList<node_data>& Nodes = RVPtr->Nodes;
 
 	initialize_sorted_render_tree();
 	
@@ -1872,6 +1920,11 @@ static struct clipping_window_data *build_clipping_windows(
 	struct line_clip_data *line;
 	short x0, x1; /* ignoring what clipping parameters we’ve gotten, this is the left and right borders of this node on the screen */
 	short i, j, k;
+	// LP: references to simplify the code
+	GrowableList<endpoint_clip_data>& EndpointClips = RVPtr->EndpointClips;
+	GrowableList<line_clip_data>& LineClips = RVPtr->LineClips;
+	GrowableList<clipping_window_data>& ClippingWindows = RVPtr->ClippingWindows;
+	ResizableList<short>& endpoint_x_coordinates = RVPtr->endpoint_x_coordinates;
 	
 	/* calculate x0,x1 (real left and right borders of this node) in case the left and right borders
 		of the window are sloppy */
@@ -2200,8 +2253,9 @@ static void calculate_vertical_clip_data(
 }
 
 /* ---------- initializing and calculating clip data */
-
-static void initialize_clip_data(
+// LP: begin no-compile
+#if 0
+void RenderVisTreeClass::initialize_clip_data(
 	struct view_data *view)
 {
 	// LP change:
@@ -2269,8 +2323,8 @@ static void initialize_clip_data(
 	return;
 }
 
-static void calculate_line_clipping_information(
-	struct view_data *view,
+void RenderVisTreeClass::calculate_line_clipping_information(
+	view_data *view,
 	short line_index,
 	word clip_flags)
 {
@@ -2395,8 +2449,8 @@ static void calculate_line_clipping_information(
 
 /* we can actually rely on the given endpoint being transformed because we only set clipping
 	information for endpoints we’re aiming at, and we transform endpoints before firing at them */
-static short calculate_endpoint_clipping_information(
-	struct view_data *view,
+short RenderVisTreeClass::calculate_endpoint_clipping_information(
+	view_data *view,
 	short endpoint_index,
 	word clip_flags)
 {
@@ -2454,6 +2508,8 @@ static short calculate_endpoint_clipping_information(
 	return LastIndex;
 	// return next_endpoint_clip_index++;
 }
+// LP: end no-compile
+#endif
 
 /* ---------- initializing, building and sorting the object list */
 
@@ -2981,6 +3037,8 @@ void build_aggregate_render_object_clipping_window(
 	short base_node_count)
 {
 	struct clipping_window_data *first_window= (struct clipping_window_data *) NULL;
+	// LP: reference to simplify the code
+	GrowableList<clipping_window_data>& ClippingWindows = RVPtr->ClippingWindows;
 	
 	if (base_node_count==1)
 	{
@@ -4993,18 +5051,21 @@ static void sort_render_object_into_tree(
 }
 #endif
 
-
+// LP: begin no-compile
+#if 0
 // LP addition: resetters for some of the lists:
-void ResetEndpointClips(void)
+void RenderVisTreeClass::ResetEndpointClips(void)
 {
 	EndpointClips.ResetLength();
 	for (int k=0; k<NUMBER_OF_INITIAL_ENDPOINT_CLIPS; k++)
 		EndpointClips.Add();
 }
 
-void ResetLineClips(void)
+void RenderVisTreeClass::ResetLineClips(void)
 {
 	LineClips.ResetLength();
 	for (int k=0; k<NUMBER_OF_INITIAL_LINE_CLIPS; k++)
 		LineClips.Add();
 }
+// LP: end no-compile
+#endif
