@@ -249,7 +249,7 @@ void music_idle_proc(
 					OSErr error;
 
 					music_state.sound_buffer_size= kDefaultSoundBufferSize;
-					music_state.sound_buffer= (char *)malloc(music_state.sound_buffer_size);
+					music_state.sound_buffer= new char[music_state.sound_buffer_size];
 					if (music_state.sound_buffer)
 					{
 						assert(music_state.channel);					
@@ -347,7 +347,7 @@ void stop_music(
 		vwarn(error==noErr, csprintf(temporary, "StopFilePlay returned %d;g", error));
 		music_state.state= _no_song_playing;
 		
-		free(music_state.sound_buffer);
+		delete []music_state.sound_buffer;
 		music_state.sound_buffer= NULL;
 	}
 }

@@ -1585,7 +1585,7 @@ static void force_system_colors(
 
 		assert_world_color_table(system_colors, (struct color_table *) NULL);
 
-		free(system_colors);
+		delete system_colors;
 	}
 }
 
@@ -1808,7 +1808,7 @@ static void start_interface_fade(
 {
 	hide_cursor();
 	assert(!interface_fade_in_progress);
-	animated_color_table= (struct color_table *) malloc(sizeof(struct color_table));
+	animated_color_table= new color_table;
 	obj_copy(*animated_color_table, *original_color_table);
 
 	if(animated_color_table)
@@ -1846,7 +1846,7 @@ void stop_interface_fade(
 		interface_fade_in_progress= FALSE;
 		
 		assert(animated_color_table);
-		free(animated_color_table);
+		delete animated_color_table;
 
 		if (interface_bit_depth==8) 
 		{
@@ -1875,14 +1875,14 @@ void interface_fade_out(
 		/*  the evil swine. */
 		if(current_picture_clut_depth != interface_bit_depth)
 		{
-			free(current_picture_clut);
+			delete current_picture_clut;
 			current_picture_clut= calculate_picture_clut(CLUTSource_Images,pict_resource_number);
 			current_picture_clut_depth= interface_bit_depth;
 		}
 		
 		hide_cursor();
 			
-		fadeout_animated_color_table= (struct color_table *) malloc(sizeof(struct color_table));
+		fadeout_animated_color_table= new color_table;
 		obj_copy(*fadeout_animated_color_table, *current_picture_clut);
 
 		if(fade_music) fade_out_music(MACHINE_TICKS_PER_SECOND/2);
@@ -1892,7 +1892,7 @@ void interface_fade_out(
 			while (update_fades()) music_idle_proc();
 
 			/* Oops.  Founda  memory leak.. */
-			free(fadeout_animated_color_table);
+			delete fadeout_animated_color_table;
 		}
 		
 		if(fade_music) 
@@ -1907,7 +1907,7 @@ void interface_fade_out(
 		full_fade(_end_cinematic_fade_out, current_picture_clut);
 
 		/* Hopefully we can do this here.. */
-		free(current_picture_clut);
+		delete current_picture_clut;
 		current_picture_clut= NULL;
 	}
 
