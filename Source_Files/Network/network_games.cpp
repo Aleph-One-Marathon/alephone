@@ -80,9 +80,11 @@ static bool player_has_ball(short player_index, short color);
 extern void destroy_players_ball(short player_index);
 
 // for script controlled compass
+#ifdef HAVE_LUA
 extern bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 extern world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 extern short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+#endif
 
 /* ------------------ code */
 long get_player_net_ranking(
@@ -240,14 +242,18 @@ short get_network_compass_state(
 {
 	short state= _network_compass_all_off;
 	world_point2d *beacon= (world_point2d *) NULL;
-	
+
+#ifdef HAVE_LUA
         if (use_lua_compass [player_index])
         {
                 if (lua_compass_states [player_index] > _network_compass_all_on)
                     beacon = lua_compass_beacons + player_index;
                 else
                     state = lua_compass_states [player_index];
-        } else {
+        }
+	else
+#endif
+	{
                 switch (GET_GAME_TYPE())
                 {
                         case _game_of_king_of_the_hill: // where’s the hill
