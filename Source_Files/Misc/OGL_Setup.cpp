@@ -135,14 +135,14 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 		if (k == OGL_Txtr_Wall)
 			TxtrData.FarFilter = 5;		// GL_LINEAR_MIPMAP_LINEAR
 		else
-			TxtrData.FarFilter = 0;		// GL_NEAREST
+			TxtrData.FarFilter = 1;		// GL_LINEAR
 		TxtrData.Resolution = 0;		// 1x
 		TxtrData.ColorFormat = 0;		// 32-bit color
 	}
 #ifdef SDL
 	Data.Flags = OGL_Flag_FlatStatic | OGL_Flag_Fader | OGL_Flag_Map | OGL_Flag_LiqSeeThru;	// Reasonable default flags ("static" effect causes massive slowdown, so we turn it off)
 #else
-	Data.Flags = 0;						// Everything off
+	Data.Flags = OGL_Flag_Map | OGL_Flag_LiqSeeThru; // Reasonable default flags
 #endif
 	Data.VoidColor = rgb_black;			// Self-explanatory
 	for (int il=0; il<4; il++)

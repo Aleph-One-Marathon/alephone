@@ -1223,7 +1223,7 @@ bool machine_supports_32bit(
 short hardware_acceleration_code(
 	GDSpecPtr spec)
 {
-	short acceleration_code= _no_acceleration;
+	short acceleration_code= OGL_IsPresent() ? _opengl_acceleration : _no_acceleration;
 	
 	calculate_screen_options();
 	

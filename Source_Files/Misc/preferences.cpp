@@ -205,10 +205,11 @@ static void default_graphics_preferences(
 #ifdef mac
 	preferences->device_spec.slot= NONE;
 	preferences->device_spec.flags= deviceIsColor;
-	preferences->device_spec.bit_depth= 8;
+	preferences->device_spec.bit_depth= 32;
 	preferences->device_spec.width= 640;
 	preferences->device_spec.height= 480;
-
+	
+	/*
 	if (hardware_acceleration_code(&preferences->device_spec) == _valkyrie_acceleration)
 	{
 		preferences->screen_mode.size= _100_percent;
@@ -223,12 +224,20 @@ static void default_graphics_preferences(
 		preferences->screen_mode.acceleration = _no_acceleration;
 		preferences->screen_mode.bit_depth = 8;
 	}
+	*/
+	if (hardware_acceleration_code(&preferences->device_spec) == _opengl_acceleration)
+	{
+		preferences->screen_mode.size= _100_percent;
+		preferences->screen_mode.high_resolution = true;
+		preferences->screen_mode.acceleration = _opengl_acceleration;
+		preferences->screen_mode.bit_depth = 32;
+	}
 	else // we got a good machine
 	{
 		preferences->screen_mode.size= _100_percent;
 		preferences->screen_mode.high_resolution= true;
 		preferences->screen_mode.acceleration = _no_acceleration;
-		preferences->screen_mode.bit_depth = 8;
+		preferences->screen_mode.bit_depth = 32;
 	}
 #else
 	preferences->screen_mode.size = _100_percent;
