@@ -75,4 +75,4 @@ void destroy_speex_decoder() {
     }
 }
 
-#endif SPEEX
+#endif //def SPEEX

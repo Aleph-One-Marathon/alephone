@@ -241,7 +241,7 @@ int32 copy_and_speex_encode(uint8* outStorage, void* inStorage, int32 inCount, i
    
     return bytesWritten;
 }
-#endif SPEEX
+#endif //def SPEEX
 
 // Returns pair (used network storage bytes, used capture storage bytes)
 // assumes inAmountOfCaptureStorage > sCaptureBytesPerNetworkAudioByte

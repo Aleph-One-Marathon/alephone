@@ -40,6 +40,6 @@ void init_speex_encoder();
 void destroy_speex_encoder();
 void init_speex_decoder();
 void destroy_speex_decoder();
-#endif SPEEX
+#endif //def SPEEX
 
 #endif

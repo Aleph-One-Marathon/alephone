@@ -43,7 +43,7 @@
 
 #ifdef SPEEX
 #include "network_speex.h"
-#endif SPEEX
+#endif //def SPEEX
 
 enum {
     kSoundBufferQueueSize = 32,     // should never get anywhere near here, but at 12 bytes/struct these are cheap.
