@@ -1738,9 +1738,6 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	}
 	else return true;
 	
-	// Use that texture
-	if (!TMgr.Setup()) return true;
-	
 	// Find texture coordinates
 	ExtendedVertexData ExtendedVertexList[4];
 	
@@ -1779,6 +1776,9 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	// Completely clipped away?
 	if (BottomRight.x <= TopLeft.x) return true;
 	if (BottomRight.y <= TopLeft.y) return true;
+	
+	// Use that texture
+	if (!TMgr.Setup()) return true;
 	
 	// Calculate the texture coordinates;
 	// the scanline direction is downward, (texture coordinate 0)
