@@ -1000,7 +1000,8 @@ static int L_Teleport_Player(lua_State *L)
 	player->delay_before_teleport= 0;
 
 	player->teleporting_destination= dest;
-	start_teleporting_effect(true);
+	if (local_player_index == player_index)
+		start_teleporting_effect(true);
 	play_object_sound(player->object_index, Sound_TeleportOut());
 	return 0;
 }
@@ -2646,7 +2647,7 @@ static int L_Get_Platform_State(lua_State *L)
 
 static int L_Set_Light_State(lua_State *L)
 {
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	if (!lua_isnumber(L,1))
 	{
 		lua_pushstring(L, "set_light_state: incorrect argument type");
 		lua_error(L);
