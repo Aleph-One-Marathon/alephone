@@ -169,10 +169,13 @@ void initialize_screen(struct screen_mode_data *mode)
 		world_view->vertical_scale = 1;
 		world_view->tunnel_vision_active = false;
 
-		world_pixels = NULL;
+	} else {
 
-	} else
 		unload_all_collections();
+		if (world_pixels)
+			SDL_FreeSurface(world_pixels);
+	}
+	world_pixels = NULL;
 
 	// Set screen to 640x480 without OpenGL for menu
 	screen_mode = *mode;
@@ -192,6 +195,7 @@ static void reallocate_world_pixels(int width, int height)
 		SDL_FreeSurface(world_pixels);
 		world_pixels = NULL;
 	}
+#if 0
 	uint32 Rmask, Gmask, Bmask;
 	switch (bit_depth) {
 		case 8:
@@ -209,6 +213,10 @@ static void reallocate_world_pixels(int width, int height)
 			break;
 	}
 	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bit_depth, Rmask, Gmask, Bmask, 0);
+#else
+	SDL_PixelFormat *f = main_surface->format;
+	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bit_depth, f->Rmask, f->Gmask, f->Bmask, f->Amask);
+#endif
 	if (world_pixels == NULL)
 		alert_user(fatalError, strERRORS, outOfMemory, -1);
 	else if (bit_depth == 8) {

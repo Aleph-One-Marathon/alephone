@@ -553,6 +553,11 @@ void TINT_VERTICAL_POLYGON_LINES(
 #endif
 
 	(void) (view);
+
+#ifdef SDL
+	extern SDL_Surface *world_pixels;
+	SDL_PixelFormat *fmt = world_pixels->format;
+#endif
 	
 	assert(tint_table_index>=0 && tint_table_index<number_of_shading_tables);
 
@@ -569,20 +574,32 @@ void TINT_VERTICAL_POLYGON_LINES(
 			if (read[FIXED_INTEGERAL_PART(texture_y)])
 			{
 #if BIT_DEPTH==8			
+				// In color index mode, this is easy
 				*write= tint_tables[*write];
-#endif
-
-#if BIT_DEPTH==16
+#else
 				register PEL pixel= *write;
+
+#ifdef SDL
+				// Under SDL, the pixel format is not fixed, so we need to be more flexible
+				uint8 r = (((pixel&fmt->Rmask)>>fmt->Rshift)<<fmt->Rloss);
+				uint8 g = (((pixel&fmt->Gmask)>>fmt->Gshift)<<fmt->Gloss);
+				uint8 b = (((pixel&fmt->Bmask)>>fmt->Bshift)<<fmt->Bloss);
+#if BIT_DEPTH==16
+				*write = tint_tables->red[r >> 3] | tint_tables->green[g >> 3] | tint_tables->blue[b >> 3];
+#elif BIT_DEPTH==32
+				*write = tint_tables->red[r] | tint_tables->green[g] | tint_tables->blue[b];
+#endif
+#else
+				// Under MacOS, there is only one 16 and 32 bit pixel format, so this is easier (and faster)
+#if BIT_DEPTH==16
 				*write= tint_tables->red[RED16(pixel)] | tint_tables->green[GREEN16(pixel)] |
 					tint_tables->blue[BLUE16(pixel)];
-#endif
-
-#if BIT_DEPTH==32
-				register PEL pixel= *write;
+#elif BIT_DEPTH==32
 				*write= tint_tables->red[RED32(pixel)] | tint_tables->green[GREEN32(pixel)] |
 					tint_tables->blue[BLUE32(pixel)];
 #endif
+#endif // def SDL
+#endif // BIT_DEPTH==8
 			}
 
 			write = (PEL *)((byte *)write + bytes_per_row);
