@@ -43,10 +43,11 @@ typedef time_t TimeType;
 #endif
 
 // Fixed point (16.16) type
-typedef int32 fixed;
+// LP: changed to _fixed to get around MSVC namespace conflict
+typedef int32 _fixed;
 
 #define FIXED_FRACTIONAL_BITS 16
-#define INTEGER_TO_FIXED(i) ((fixed)(i)<<FIXED_FRACTIONAL_BITS)
+#define INTEGER_TO_FIXED(i) ((_fixed)(i)<<FIXED_FRACTIONAL_BITS)
 #define FIXED_INTEGERAL_PART(f) ((f)>>FIXED_FRACTIONAL_BITS)
 
 #define FIXED_ONE		(1L<<FIXED_FRACTIONAL_BITS)
