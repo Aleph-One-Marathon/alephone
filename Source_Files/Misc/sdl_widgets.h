@@ -29,9 +29,6 @@
  *    alter widget parts not previously alterable, addition of callback mechanisms to
  *    let user code respond to various events of interest, addition of widget enabling/disabling,
  *    addition of mechanisms to let user code find a widget in a dialog and get a widget's dialog
- *
- *  Mar 1, 2002 (Woody Zenfell):
- *      moved w_levels here (from shell_sdl); am using it in Setup Network Game dialog box.
  */
 
 #ifndef SDL_WIDGETS_H
@@ -41,8 +38,6 @@
 
 #include	"cseries.h"
 #include	"sdl_dialogs.h"
-
-#include    "map.h" // for entry_point, for w_levels
 
 #include	<vector>
 
@@ -621,29 +616,6 @@ protected:
 
 private:
 	virtual void draw_item(vector<T>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const = 0;
-};
-
-
-
-/*
- *  Level number dialog
- *
- *  ZZZ: new constructor gives more control over appearance (including omission of level numbers).
- */
-
-class w_levels : public w_list<entry_point> {
-public:
-	w_levels(const vector<entry_point> &items, dialog *d);
-    w_levels(const vector<entry_point>& items, dialog* d, int inWidth,
-        int inNumLines, int inSelectedItem, bool in_show_level_numbers);
-
-	void item_selected(void);
-
-	void draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const;
-
-private:
-	dialog *parent;
-    bool    show_level_numbers;
 };
 
 #endif

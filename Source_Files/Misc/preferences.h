@@ -37,9 +37,15 @@ Mar 14, 2000 (Loren Petrich):
 
 Apr 27, 2000 (Loren Petrich):
 	Added Josh Elsasser's "don't switch weapons" patch
+<<<<<<< preferences.h
+
+Aug 23, 2001 (Ian Rickard):
+	added enum for input option to disable beeps for res change.
+=======
 
 Oct 22, 2001 (Woody Zenfell):
     Changed the player name in player_preferences_data back to a Pstring (was Cstring in SDL version)
+>>>>>>> 1.13
 */
 
 #include "interface.h"

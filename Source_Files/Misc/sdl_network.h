@@ -53,11 +53,15 @@ enum /* error string for user */
 };
 
 /* missing from AppleTalk.h */
+<<<<<<< sdl_network.h
+#define ddpMaxData 586
+=======
 // ZZZ: note that this determines only the amount of storage allocated for packets, not
 // the size of actual packets sent.  I believe UDP on Ethernet should be able to carry
 // around 1.5K per packet, not sure of the exact figure off the top of my head though.
 // Note that the SDL network microphone code is the one sending "big" packets these days.
 #define ddpMaxData 1500
+>>>>>>> 1.6
 
 /* default IP port number for Marathon */
 const uint16 DEFAULT_PORT = 4226;

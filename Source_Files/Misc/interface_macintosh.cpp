@@ -39,6 +39,11 @@ Dec 23, 2000 (Loren Petrich):
 
 Jan 12, 2001 (Loren Petrich):
 	Added popup-menu level selector
+<<<<<<< interface_macintosh.cpp
+
+Aug 19, 2001 (Ian Rickard):
+	Minor change for dithering.
+=======
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Quicktime.h
@@ -50,6 +55,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Uses generalized networking under Carbon instead of macintosh_network.h
+>>>>>>> 1.22
 */
 
 #include "macintosh_cseries.h"
@@ -90,8 +96,6 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #include "XML_LevelScript.h"
 #include "music.h"
 
-#include "network_distribution_types.h"
-
 #ifdef env68k
 	#pragma segment macintosh_
 #endif
@@ -122,7 +126,8 @@ void do_preferences(
 	
 	handle_preferences();
 	if (!EqualGDSpec(&graphics_preferences->device_spec, &old_spec) ||
-		mode.bit_depth != graphics_preferences->screen_mode.bit_depth ||
+		// IR change: abstracted bit depth
+		mode.display_mode != graphics_preferences->screen_mode.display_mode ||
 		mode.fullscreen || graphics_preferences->screen_mode.fullscreen)
 		// mode.acceleration != graphics_preferences->screen_mode.acceleration)
 	{
@@ -533,8 +538,8 @@ void install_network_microphone(
 	short id;
 
 	open_network_speaker(NETWORK_SOUND_CHUNK_BUFFER_SIZE, 2);
-	NetAddDistributionFunction(kOriginalNetworkAudioDistributionTypeID, network_speaker_proc, true);
-	open_network_microphone(kOriginalNetworkAudioDistributionTypeID);
+	id = NetAddDistributionFunction(network_speaker_proc, true);
+	open_network_microphone(id);
 }
 
 void remove_network_microphone(

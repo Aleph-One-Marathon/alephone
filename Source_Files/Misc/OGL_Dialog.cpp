@@ -61,28 +61,29 @@ enum
 	OK_Item = 1,
 	Cancel_Item = 2,
 	
+// IR change: re-ordered DITL for more logical item ordering, and re-arranged this list.
 	OpenGL_Dialog = 2000,
-	Walls_Item = 5,
-	Landscape_Item = 6,
-	Inhabitants_Item = 7,
-	WeaponsInHand_Item = 8,
-	ZBuffer_Item = 9,
-	ColorVoid_Item = 10,
-	ColorVoidSwatch_Item = 11,
-	FlatColorLandscapes_Item = 12,
+	Walls_Item = 3,
+	Landscape_Item,
+	Inhabitants_Item,
+	WeaponsInHand_Item,
 	
+	FlatColorLandscapes_Item = 7,
 	// The first of 8 items, in order:
 	// Day Ground, Day Sky, Night Ground, Night Sky, ...
-	LandscapeSwatch_ItemBase = 17,
-	
-	TwoDimGraphics_Item = 25,
-	FlatStaticEffect_Item = 26,
-	Fader_Item = 27,
-	LiquidSeeThru_Item = 28,
-	Map_Item = 29,
-	TextureFix_Item = 30,
-	AllowFog_Item = 31,
-	Model_Item = 37,
+	LandscapeSwatch_ItemBase = 8,
+		
+	LiquidSeeThru_Item = 16,
+	NoLogicOp_Item,
+	AllowFog_Item,
+	Map_Item,
+	Fader_Item,
+	Model_Item,
+	ZBuffer_Item,
+	TwoDimGraphics_Item,
+	TextureFix_Item,
+	ColorVoid_Item,
+	ColorVoidSwatch_Item,
 	
 	ColorPicker_PromptStrings = 200,
 	ColorVoid_String = 0,
@@ -377,7 +378,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	MacCheckbox Fog_CB(Dialog, AllowFog_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fog) != 0);
 		
 	MacCheckbox TwoDimGraphics_CB(Dialog, TwoDimGraphics_Item, TEST_FLAG(Data.Flags,OGL_Flag_2DGraphics) != 0);
-	MacCheckbox FlatStaticEffect_CB(Dialog, FlatStaticEffect_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatStatic) != 0);
+	MacCheckbox NoLogicOp_CB(Dialog, NoLogicOp_Item, TEST_FLAG(Data.Flags,OGL_Flag_NoLogicOp) != 0);
 	MacCheckbox FaderEffect_CB(Dialog, Fader_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fader) != 0);
 	MacCheckbox SeeThruLiquids_CB(Dialog, LiquidSeeThru_Item, TEST_FLAG(Data.Flags,OGL_Flag_LiqSeeThru) != 0);
 	MacCheckbox Map_CB(Dialog, Map_Item, TEST_FLAG(Data.Flags,OGL_Flag_Map) != 0);
@@ -458,7 +459,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			if (FlatColorLandscapes_CB.ToggleIfHit(ItemHit)) break;
 			if (Fog_CB.ToggleIfHit(ItemHit)) break;
 			if (TwoDimGraphics_CB.ToggleIfHit(ItemHit)) break;
-			if (FlatStaticEffect_CB.ToggleIfHit(ItemHit)) break;
+			if (NoLogicOp_CB.ToggleIfHit(ItemHit)) break;
 			if (FaderEffect_CB.ToggleIfHit(ItemHit)) break;
 			if (SeeThruLiquids_CB.ToggleIfHit(ItemHit)) break;
 			if (Map_CB.ToggleIfHit(ItemHit)) break;
@@ -502,7 +503,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		SET_FLAG(Data.Flags,OGL_Flag_FlatLand,FlatColorLandscapes_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_Fog,Fog_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_2DGraphics,TwoDimGraphics_CB.GetState());
-		SET_FLAG(Data.Flags,OGL_Flag_FlatStatic,FlatStaticEffect_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_NoLogicOp,NoLogicOp_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_Fader,FaderEffect_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_LiqSeeThru,SeeThruLiquids_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_Map,Map_CB.GetState());

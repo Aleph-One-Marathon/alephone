@@ -71,9 +71,6 @@ Aug 12, 2000 (Loren Petrich):
 Aug 26, 2000 (Loren Petrich):
 	Created alternative to SetLength(): delete a file, then re-create it.
 	This should be more stdio-friendly.
-
-Feb 20, 2002 (Woody Zenfell):
-    Uses GetRealActionQueues()->enqueueActionFlags() rather than queue_action_flags().
 */
 
 #include "cseries.h"
@@ -92,7 +89,6 @@ Feb 20, 2002 (Woody Zenfell):
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 #include "FileHandler.h"
 #include "Packing.h"
-#include "ActionQueues.h"
 
 #ifdef env68k
 #pragma segment input
@@ -220,13 +216,6 @@ void set_keyboard_controller_status(
 #ifdef mac
 	if(active) Start_ISp();
 	else Stop_ISp();
-#endif
-
-#if defined(TARGET_API_MAC_CARBON)
-	if (active)
-		enter_mouse(0);
-	else
-		exit_mouse(0);
 #endif
 
 #ifdef SDL
@@ -406,7 +395,7 @@ void process_action_flags(
 		record_action_flags(player_identifier, action_flags, count);
 	}
 
-    GetRealActionQueues()->enqueueActionFlags(player_identifier, action_flags, count);
+	queue_action_flags(player_identifier, action_flags, count);
 }
 
 static void record_action_flags(
@@ -542,7 +531,7 @@ static bool pull_flags_from_recording(
 #ifdef DEBUG_REPLAY
 					debug_stream_of_flags(*(queue->buffer+queue->read_index), player_index);
 #endif
-                    GetRealActionQueues()->enqueueActionFlags(player_index, queue->buffer + queue->read_index, 1);
+					queue_action_flags(player_index, queue->buffer+queue->read_index, 1);
 					INCREMENT_QUEUE_COUNTER(queue->read_index);
 				} else {
 					dprintf("Dropping flag?");

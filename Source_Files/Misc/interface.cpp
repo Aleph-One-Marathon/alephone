@@ -104,8 +104,10 @@ extern TP2PerfGlobals perf_globals;
 #include "network.h"
 #include "vbl.h"
 #include "shell.h"
+#include "readout_data.h"
 #include "preferences.h"
 #include "FileHandler.h"
+
 
 /* Change this when marathon changes & replays are no longer valid */
 #define RECORDING_VERSION 0
@@ -116,6 +118,9 @@ extern TP2PerfGlobals perf_globals;
 // LP addition: getting OpenGL rendering stuff
 #include "render.h"
 #include "OGL_Render.h"
+
+// IR addition:
+#include "alephversion.h"
 
 // To tell it to stop playing,
 // and also to run the end-game script
@@ -615,10 +620,12 @@ void idle_game_state(
 		last time), render a frame */
 	if(game_state.state==_game_in_progress)
 	{
+		gUsageTimers.totalUsed.Start();
 		if (get_keyboard_controller_status() && (ticks_elapsed= update_world())!=0)
 		{
 			render_screen(ticks_elapsed);
 		}
+		gUsageTimers.totalUsed.Stop();
 	} else {
 		/* Update the fade ins, etc.. */
 		update_interface_fades();
@@ -642,6 +649,24 @@ void display_main_menu(
 	{
 		queue_song(_introduction_song);
 	}
+	
+	FontSpecifier& Font = GetOnScreenFont();
+	Font.Use();
+	
+	extern WindowPtr screen_window;
+	WindowPtr window= screen_window;
+	GrafPtr old_port;
+	GetPort(&old_port);
+	SetPort(window);
+	
+	Str255 versionString = "\p" VERSION_STRING;
+	
+	MoveTo(window->portRect.right-StringWidth(versionString)-5, window->portRect.bottom-5);
+	RGBForeColor(&(RGBColor){0x4000, 0x4000, 0x4000});
+	DrawString("\p"VERSION_STRING);
+	RGBForeColor(&rgb_black);
+	
+	SetPort(old_port);
 
 	game_state.main_menu_display_count++;
 }

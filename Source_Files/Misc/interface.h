@@ -46,6 +46,9 @@ Apr 30, 2000 (Loren Petrich):
 May 1, 2000 (Loren Petrich): Added XML parser object for the infravision stuff.
 
 May 16, 2000 (Loren Petrich): Added XML parser for the control panels
+
+Aug 22, 2001 (Ian Rickard):
+	Added prototype for get_bitmap_alpha_table.
 */
 
 #include "XML_ElementParser.h"
@@ -298,6 +301,8 @@ short get_shape_descriptors(short shape_type, shape_descriptor *buffer);
 	GET_DESCRIPTOR_SHAPE(shape), (bitmap), (shading_table), (shading_mode))
 void extended_get_shape_bitmap_and_shading_table(short collection_code, short low_level_shape_index,
 	struct bitmap_definition **bitmap, void **shading_tables, short shading_mode);
+// IR addition:
+uint8* get_bitmap_alpha_table(short collection_index, short bitmap_index);
 
 #define get_shape_information(shape) extended_get_shape_information(GET_DESCRIPTOR_COLLECTION(shape), GET_DESCRIPTOR_SHAPE(shape))
 struct shape_information_data *extended_get_shape_information(short collection_code, short low_level_shape_index);

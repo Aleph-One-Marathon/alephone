@@ -23,9 +23,6 @@
  *  interface_sdl.cpp - Top-level game interface, SDL implementation
  *
  *  Written in 2000 by Christian Bauer
- *
- *  5 Mar 2002 (Woody Zenfell):
- *      network_speaker and network_microphone routines actually do something now :)
  */
 
 #include "cseries.h"
@@ -36,10 +33,7 @@
 #include "player.h"
 
 #include "network.h"
-#include "network_speaker_sdl.h"
-#include "network_microphone_sdl.h"
-#include "network_data_formats.h"
-#include "network_distribution_types.h"
+#include "network_sound.h"
 
 #include "screen_drawing.h"
 #include "mysound.h"
@@ -52,8 +46,6 @@
 #include "images.h"
 
 #include "interface_menus.h"
-
-#include "network_speaker_sdl.h"
 
 
 /*
@@ -119,18 +111,19 @@ void update_game_window(void)
  *  Network microphone handling
  */
 
+void network_speaker_idle_proc(void)
+{
+	// nothing to do
+}
+
 void install_network_microphone(void)
 {
-    open_network_speaker();
-    NetAddDistributionFunction(kNewNetworkAudioDistributionTypeID, received_network_audio_proc, true);
-    open_network_microphone(/*kNewNetworkAudioDistributionTypeID*/);
+	// nothing to do
 }
 
 void remove_network_microphone(void)
 {
-    close_network_microphone();
-    NetRemoveDistributionFunction(kNewNetworkAudioDistributionTypeID);
-	close_network_speaker();
+	// nothing to do
 }
 
 

@@ -24,6 +24,14 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 
 /*
  *  preferences.cpp - Preferences handling
+ *
+ 
+Aug 19, 2001 (Ian Rickard):
+	Tweaks and changes for dithering and abstracted bit depths.
+ 
+Aug 21, 2001 (Ian Rickard):
+	R.I.P. Valkyrie
+
  */
 
 #include "cseries.h"
@@ -243,12 +251,18 @@ static void default_graphics_preferences(
 	if (hardware_acceleration_code(&preferences->device_spec) == _opengl_acceleration)
 	{
 		preferences->screen_mode.acceleration = _opengl_acceleration;
-		preferences->screen_mode.bit_depth = 32;
+		// IR change: dithering/abstracted bit depths
+		preferences->screen_mode.display_mode = kScreenDepth32;
 	}
 	else
 	{
 		preferences->screen_mode.acceleration = _no_acceleration;
+<<<<<<< preferences.cpp
+		// IR change: dithering/abstracted bit depths
+		preferences->screen_mode.display_mode = kScreenDepth32;
+=======
 		preferences->screen_mode.bit_depth = 16;
+>>>>>>> 1.31
 	}
 	
 #else
@@ -256,7 +270,8 @@ static void default_graphics_preferences(
 	preferences->screen_mode.acceleration = _no_acceleration;
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = false;
-	preferences->screen_mode.bit_depth = 16;
+	// IR change: dithering/abstracted bit depths
+	preferences->screen_mode.display_mode = kScreenDepth16;
 #endif
 	
 	preferences->screen_mode.draw_every_other_line= false;
@@ -410,25 +425,70 @@ static bool validate_graphics_preferences(
 	}
 
 #ifdef mac
-
-	if (preferences->screen_mode.bit_depth==32 && !machine_supports_32bit(&preferences->device_spec))
+// IR change: R.I.P. Valkyrie
+#if OBSOLETE
+	if (preferences->screen_mode.acceleration==_valkyrie_acceleration)
 	{
-		preferences->screen_mode.bit_depth= 16;
+		if (hardware_acceleration_code(&preferences->device_spec) != _valkyrie_acceleration)
+		{
+			preferences->screen_mode.size= _100_percent;
+			// IR change: dithering/abstracted bit depths
+			preferences->screen_mode.display_mode = kScreenDepth8;
+			preferences->screen_mode.high_resolution = false;
+			preferences->screen_mode.acceleration = _no_acceleration;
+			changed= true;
+		} else {
+			if(preferences->screen_mode.high_resolution)
+			{
+				preferences->screen_mode.high_resolution= false;
+				changed= true;
+			}
+			
+			// IR change: dithering/abstracted bit depths
+			if(preferences->screen_mode.display_mode != kScreenDepth16)
+			{
+				preferences->screen_mode.display_mode= kScreenDepth16;
+				changed= true;
+			}
+			
+			if(preferences->screen_mode.draw_every_other_line)
+			{
+				preferences->screen_mode.draw_every_other_line= false;
+				changed= true;
+			}
+		}
+	}
+#endif
+
+	// IR change: dithering/abstracted bit depths
+	if (preferences->screen_mode.display_mode==kScreenDepth32 && !machine_supports_32bit(&preferences->device_spec))
+	{
+		preferences->screen_mode.display_mode= kScreenDepthDithered32;
 		changed= true;
 	}
 
-	/* Don't change out of 16 bit if we are in valkyrie mode. */
-	// LP: good riddance to that old video card :-P
-	if (preferences->screen_mode.bit_depth==16 && !machine_supports_16bit(&preferences->device_spec))
+	// IR addition: dithering
+	if (preferences->screen_mode.display_mode==kScreenDepthDithered32 && !machine_supports_dithered_32bit(&preferences->device_spec))
 	{
-		preferences->screen_mode.bit_depth= 8;
+		preferences->screen_mode.display_mode= kScreenDepth16;
+		changed= true;
+	}
+
+	/* Don't change out of 16 bit if we are in valkyrie mode. */	
+	// IR removed: R.I.P. Valkyrie
+//	if (preferences->screen_mode.acceleration!=_valkyrie_acceleration && 
+	// IR change: dithering/abstracted bit depths
+	if (preferences->screen_mode.display_mode==kScreenDepth16 && !machine_supports_16bit(&preferences->device_spec))
+	{
+		preferences->screen_mode.display_mode= kScreenDepth8;
 		changed= true;
 	}
 #else
 	// OpenGL requires at least 16 bit color depth
+	// IR change: dithering/abstracted bit depths
 	if (preferences->screen_mode.acceleration == _opengl_acceleration && preferences->screen_mode.bit_depth == 8)
 	{
-		preferences->screen_mode.bit_depth= 16;
+		preferences->screen_mode.display_mode= kScreenDepth16;
 		changed= true;
 	}
 #endif
