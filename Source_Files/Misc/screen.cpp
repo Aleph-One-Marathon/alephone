@@ -322,11 +322,14 @@ short interface_bit_depth= NONE;
 extern bool OGL_MapActive;
 
 // Flag for making 32-bit-OGL screen resetting done only once.
-bool ScreenFix_OGL32 = false;
+static bool ScreenFix_OGL32 = false;
 
 // DrawSprocket activity:
-bool DSp_Present = false;
-bool DSp_Inited = false;
+static bool DSp_Present = false;
+static bool DSp_Inited = false;
+
+// Current DrawSprocket context (NULL means none active)
+static DSpContextReference DSp_Ctxt = NULL;
 
 
 /* ---------- private prototypes */
@@ -367,9 +370,12 @@ void DrawHUD(Rect& SourceRect, Rect& DestRect);
 
 // DrawSprocket handlers:
 
-// Checks on the DrawSprocket's present and returns whether it is active;
+// Checks on the DrawSprocket's presence and returns whether it is active;
 // it inits DSp if necessary
 static bool DSp_Check();
+
+// For debugging DSp errors
+static bool DSp_HandleError(char *Description, OSStatus ErrorCode);
 
 // Changes the monitor's resolution;
 // returns the success of doing so
@@ -430,14 +436,23 @@ void initialize_screen(
 	if (!world_device) alert_user(fatalError, strERRORS, badMonitor, -1);
 #endif
 	
-	// Haven't quite gotten this working
+	// When this is working, uncomment it and also change appropriately
+	// do_preferences() in interface_macintosh.cpp
 	/*
-	// Change the display resolution
-	short msize = screen_mode.size;
-	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
-	const ViewSizeData& VS = ViewSizes[msize];
-	DSp_ChangeResolution(world_device, graphics_preferences->device_spec.bit_depth,
-		VS.OverallWidth, VS.OverallHeight);
+	// Use the DrawSprocket to change the display resolution
+	if (graphics_preferences->screen_mode.fullscreen)
+	{
+		short msize = screen_mode.size;
+		assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
+		const ViewSizeData& VS = ViewSizes[msize];
+		DSp_ChangeResolution(world_device, graphics_preferences->device_spec.bit_depth,
+			VS.OverallWidth, VS.OverallHeight);
+	}
+	else if (DSp_Ctxt)
+	{
+		DSp_HandleError("Init: Release",DSpContext_Release(DSp_Ctxt));
+		DSp_Ctxt = NULL;
+	}
 	*/
 	
 	if (!screen_initialized)
@@ -590,7 +605,7 @@ void ReloadViewContext()
 		// LP addition: doing OpenGL if present;
 		// otherwise, switching OpenGL off (kludge for having it not appear)
 		case _opengl_acceleration:
-			if (graphics_preferences->screen_mode.bit_depth > 8)
+			if (screen_mode.bit_depth > 8)
 				OGL_StartRun((CGrafPtr)screen_window);
 			else screen_mode.acceleration = _no_acceleration;
 			break;
@@ -644,7 +659,7 @@ void enter_screen(
 		// LP addition: doing OpenGL if present
 		// otherwise, switching OpenGL off (kludge for having it not appear)
 		case _opengl_acceleration:
-			if (graphics_preferences->screen_mode.bit_depth > 8)
+			if (screen_mode.bit_depth > 8)
 				OGL_StartRun((CGrafPtr)screen_window);
 			else screen_mode.acceleration = _no_acceleration;
 			break;
@@ -1410,10 +1425,39 @@ short GetSizeWithoutHUD(short Size)
 	return ViewSizes[Size].WithoutHUD;
 }
 
+
+// For debugging convenience;
+// returns 1 for success, 0 for failure
+static bool DSp_HandleError(char *Description, OSStatus ErrorCode)
+{
+	if (ErrorCode != noErr) dprintf("DSp: %s Error: %d",Description,ErrorCode);
+	return (ErrorCode == noErr);
+}
+
 // Accessors for the screen's GDevice and GrafPort;
 // this abstraction is used for DrawSprocket support
-GDHandle GetWorldDevice() {return world_device;}
-CGrafPtr GetScreenGrafPort() {return (CGrafPtr)screen_window;}
+GDHandle GetWorldDevice()
+{
+	if (DSp_Check() && (DSp_Ctxt != NULL))
+	{
+		DisplayIDType DisplayID;
+		GDHandle DC_Handle;
+		assert(DSp_HandleError("Getting Display ID",DSpContext_GetDisplayID(DSp_Ctxt,&DisplayID)));
+		DMGetGDeviceByDisplayID(DisplayID,&DC_Handle,true);
+		return DC_Handle;
+	}
+	
+	return world_device;
+}
+CGrafPtr GetScreenGrafPort() {
+	if (DSp_Check() && (DSp_Ctxt != NULL))
+	{
+		CGrafPtr DC_Buffer;
+		assert(DSp_HandleError("Getting GrafPtr",DSpContext_GetFrontBuffer(DSp_Ctxt,&DC_Buffer)));
+		return DC_Buffer;
+	}
+	return (CGrafPtr)screen_window;
+}
 
 
 /* These should be replaced with better preferences control functions */
@@ -2447,28 +2491,22 @@ bool DSp_Check()
 	if((Ptr)DMGetDisplayIDByGDevice == (Ptr)kUnresolvedCFragSymbolAddress) return DSp_Present;
 	if((Ptr)DSpStartup == (Ptr)kUnresolvedCFragSymbolAddress) return DSp_Present;
 	
+	// Set this because of having called this
+	DSp_Inited = true;
+	
 	// Now start!
 	return (DSp_Present = (DSpStartup() == noErr));
 }
 
-// For debugging convenience;
-// returns 1 for success, 0 for failure
-static bool DSp_HandleError(char *Description, OSStatus ErrorCode)
-{
-	if (ErrorCode != noErr) dprintf("DSp: %s Error: %d",Description,ErrorCode);
-	return (ErrorCode == noErr);
-}
 
-// Changes the monitor's resolution;
-// returns the success of doing so
+// Changes the monitor's resolution and creates a DSp context for the new resolution
+// and deletes the old one if necessary; returns the success of doing so
 bool DSp_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height)
 {
 	if (!DSp_Check()) return false;
 	
 	DisplayIDType DisplayID;
-	if (!DSp_HandleError("Find Display ID",DMGetDisplayIDByGDevice(Device, &DisplayID, true))) return false;
-	
-	dprintf("Target resolution: %d %d %d",BitDepth,Width,Height);
+	if (!DSp_HandleError("CR: Find Display ID",DMGetDisplayIDByGDevice(Device, &DisplayID, true))) return false;
 	
 	DSpContextAttributes TargetAttribs;
 	
@@ -2483,14 +2521,21 @@ bool DSp_ChangeResolution(GDHandle Device, short BitDepth, short Width, short He
 	TargetAttribs.backBufferDepthMask = kDSpDepthMask_All;
 	TargetAttribs.pageCount = 1; // only the front buffer is needed
 	
-	DSpContextReference Ctxt;
+	DSpContextReference NewContext;
 	
-	if (!DSp_HandleError("Find Context",DSpFindBestContextOnDisplayID(&TargetAttribs,&Ctxt,DisplayID))) return false;
-	if (Ctxt == NULL) return false;
-	if (!DSp_HandleError("Reserve",DSpContext_Reserve(Ctxt, &TargetAttribs))) return false;
-	if (!DSp_HandleError("Activate",DSpContext_SetState(Ctxt, kDSpContextState_Active))) return false;
-	if (!DSp_HandleError("Pause",DSpContext_SetState(Ctxt, kDSpContextState_Paused))) return false;
-	// if (!DSp_HandleError("Release",DSPContext_Release(Ctxt))) return false;
+	if (!DSp_HandleError("CR: Find Context",DSpFindBestContextOnDisplayID(&TargetAttribs,&NewContext,DisplayID))) return false;
+	if (NewContext == NULL) return false;
+	if (!DSp_HandleError("CR: Reserve",DSpContext_Reserve(NewContext, &TargetAttribs))) return false;
+	if (DSp_Ctxt)
+	{
+		// Switch and delete old context if there is one
+		if (!DSp_HandleError("CR: Queue",DSpContext_Queue(DSp_Ctxt, NewContext, &TargetAttribs))) return false;
+		if (!DSp_HandleError("CR: Switch",DSpContext_Switch(DSp_Ctxt, NewContext))) return false;
+		if (!DSp_HandleError("CR: Release",DSpContext_Release(DSp_Ctxt))) return false;
+	}
+	if (!DSp_HandleError("CR: Activate",DSpContext_SetState(NewContext, kDSpContextState_Active))) return false;
+	if (!DSp_HandleError("CR: Pause",DSpContext_SetState(NewContext, kDSpContextState_Paused))) return false;
+	DSp_Ctxt = NewContext;
 	
 	return true;
 }

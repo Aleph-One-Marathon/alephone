@@ -15,6 +15,10 @@ Oct 12, 2000 (Loren Petrich):
 Nov 25, 2000 (Loren Petrich):
 	Added support for movies played at the beginning of any level,
 	at the request of Jesse Simko
+
+Dec 23, 2000 (Loren Petrich):
+	Added some code for reiniting the screen if in full-screen mode or going into or out of it;
+	won't be active until the DrawSprocket works properly
 */
 
 #include "macintosh_cseries.h"
@@ -70,12 +74,15 @@ void do_preferences(
 {
 	struct screen_mode_data mode= graphics_preferences->screen_mode;
 	GDSpec old_spec= graphics_preferences->device_spec;
-
+	
 	handle_preferences();
 	if (!EqualGDSpec(&graphics_preferences->device_spec, &old_spec) ||
 		mode.bit_depth != graphics_preferences->screen_mode.bit_depth ||
-		// LP change: no need for reinit
 		false)
+		// mode.fullscreen || graphics_preferences->screen_mode.fullscreen)
+		// Currently not active because the DrawSprocket is not yet working properly
+		// LP change: no need for reinit because of OpenGL-mode changes;
+		// however, reiniting if ever in fullscreen mode
 		// mode.acceleration != graphics_preferences->screen_mode.acceleration)
 	{
 		paint_window_black();

@@ -341,9 +341,8 @@ static void setup_graphics_dialog(
 		active, (preferences->screen_mode.acceleration == _valkyrie_acceleration));
 	*/
 	// LP: added full-screen option; will not activate it until it's in good working order
-	active = CONTROL_INACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iFILL_SCREEN, first_item), 
-		active, (preferences->screen_mode.fullscreen));
+		CONTROL_ACTIVE, (preferences->screen_mode.fullscreen));
 		
 	return;
 }
