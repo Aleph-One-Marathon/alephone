@@ -809,6 +809,9 @@ void damage_player(
 							{
 								player->monster_damage_taken.kills+= 1;
 							}
+#ifdef HAVE_LUA
+                                                        L_Call_Player_Killed (player_index, aggressor_player_index, action);
+#endif
 						}
 						
 						player->suit_oxygen= 0;
@@ -1617,10 +1620,6 @@ static void kill_player(
 	if (aggressor_player_index==player_index && (GET_GAME_OPTIONS()&_suicide_is_penalized)) player->reincarnation_delay+= SUICIDE_REINCARNATION_DELAY;
 
 	kill_player_physics_variables(player_index);
-        
-#ifdef HAVE_LUA
-        L_Call_Player_Killed (player_index, aggressor_player_index, action);
-#endif
 }
 
 static void give_player_initial_items(

@@ -123,7 +123,7 @@ int number_of_cameras = 0;
 
 uint32 *action_flags;
 
-bool use_lua_compass;
+bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
@@ -3121,12 +3121,6 @@ static int L_Award_Kills (lua_State *L)
     int slain_player_index = static_cast<int>(lua_tonumber(L,2));
     int kills = static_cast<int>(lua_tonumber(L,3));
     
-    if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
-    {
-        lua_pushstring (L, "award_kills: invalid player index");
-        lua_error (L);
-    }
-    
     if (slain_player_index < 0 || slain_player_index >= dynamic_world->player_count)
     {
         lua_pushstring (L, "award_kills: invalid player index");
@@ -3134,8 +3128,18 @@ static int L_Award_Kills (lua_State *L)
     }
     player_data *slain_player = get_player_data (slain_player_index);
     
-    slain_player -> damage_taken [aggressor_player_index].kills += kills;
-    
+    if (aggressor_player_index == -1)
+        slain_player -> monster_damage_taken.kills += kills;
+    else
+    {    
+        if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
+        {
+            lua_pushstring (L, "award_kills: invalid player index");
+            lua_error (L);
+        }
+        slain_player -> damage_taken [aggressor_player_index].kills += kills;
+    }
+
     return 0;
 }
 
@@ -3174,12 +3178,6 @@ static int L_Set_Kills (lua_State *L)
     int slain_player_index = static_cast<int>(lua_tonumber(L,2));
     int kills = static_cast<int>(lua_tonumber(L,3));
     
-    if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
-    {
-        lua_pushstring (L, "set_kills: invalid player index");
-        lua_error (L);
-    }
-    
     if (slain_player_index < 0 || slain_player_index >= dynamic_world->player_count)
     {
         lua_pushstring (L, "set_kills: invalid player index");
@@ -3187,7 +3185,17 @@ static int L_Set_Kills (lua_State *L)
     }
     player_data *slain_player = get_player_data (slain_player_index);
     
-    slain_player -> damage_taken [aggressor_player_index].kills = kills;
+    if (aggressor_player_index == -1)
+        slain_player -> monster_damage_taken.kills = kills;
+    else
+    {
+        if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
+        {
+            lua_pushstring (L, "set_kills: invalid player index");
+            lua_error (L);
+        }
+        slain_player -> damage_taken [aggressor_player_index].kills = kills;
+    }
     
     return 0;
 }
@@ -3225,12 +3233,6 @@ static int L_Get_Kills (lua_State *L)
     int aggressor_player_index = static_cast<int>(lua_tonumber(L,1));
     int slain_player_index = static_cast<int>(lua_tonumber(L,2));
     
-    if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
-    {
-        lua_pushstring (L, "get_kills: invalid player index");
-        lua_error (L);
-    }
-    
     if (slain_player_index < 0 || slain_player_index >= dynamic_world->player_count)
     {
         lua_pushstring (L, "get_kills: invalid player index");
@@ -3238,20 +3240,53 @@ static int L_Get_Kills (lua_State *L)
     }
     player_data *slain_player = get_player_data (slain_player_index);
     
-    lua_pushnumber (L, slain_player -> damage_taken [aggressor_player_index].kills);
-    
+    if (aggressor_player_index == -1)
+        lua_pushnumber (L, slain_player -> monster_damage_taken.kills);
+    else
+    {
+        if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
+        {
+            lua_pushstring (L, "get_kills: invalid player index");
+            lua_error (L);
+        }
+        lua_pushnumber (L, slain_player -> damage_taken [aggressor_player_index].kills);
+    }
+
     return 1;
 }
 
 static int L_Use_Lua_Compass (lua_State *L)
 {
-    if (!lua_isboolean (L, 1))
+
+    int args = lua_gettop(L);
+    
+    if (args == 1)
     {
-        lua_pushstring (L, "use_lua_compass: incorrect argument type");
-        lua_error (L);
+        if (!lua_isboolean (L, 1))
+        {
+            lua_pushstring (L, "use_lua_compass: incorrect argument type");
+            lua_error (L);
+        }
+    
+        for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
+        {
+            use_lua_compass [i] = lua_toboolean (L, 1);
+        }
     }
     
-    use_lua_compass = lua_toboolean (L, 1);
+    if (args == 2)
+    {
+        if (!lua_isnumber (L, 1) || !lua_isboolean (L, 2))
+        {
+            lua_pushstring (L, "use_lua_compass: incorrect argument type");
+            lua_error (L);
+        }
+        
+        int player_index = static_cast<int>(lua_tonumber(L,1));
+        
+        use_lua_compass [player_index] = lua_toboolean (L, 2);
+    }
+    
     return 0;
 }
 
@@ -3460,7 +3495,8 @@ bool RunLuaScript()
 {
     if (!lua_loaded)
         return false;
-    use_lua_compass = false;
+    for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
+        use_lua_compass [i] = false;
     int result = lua_pcall(state, 0, LUA_MULTRET, 0);
     lua_running = (result==0);
     return lua_running;

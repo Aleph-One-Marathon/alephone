@@ -80,7 +80,7 @@ static bool player_has_ball(short player_index, short color);
 extern void destroy_players_ball(short player_index);
 
 // for script controlled compass
-extern bool use_lua_compass;
+extern bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 extern world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 extern short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
@@ -241,7 +241,7 @@ short get_network_compass_state(
 	short state= _network_compass_all_off;
 	world_point2d *beacon= (world_point2d *) NULL;
 	
-        if (use_lua_compass)
+        if (use_lua_compass [player_index])
         {
                 if (lua_compass_states [player_index] > _network_compass_all_on)
                     beacon = lua_compass_beacons + player_index;
@@ -308,7 +308,7 @@ short get_network_compass_state(
         }
 
 	if (beacon)
-	{
+	{        
 		struct player_data *player= get_player_data(player_index);
 		struct world_point2d *origin= (world_point2d *) &player->location;
 		angle theta= NORMALIZE_ANGLE(get_object_data(player->object_index)->facing-arctangent(origin->x-beacon->x, origin->y-beacon->y));
