@@ -105,12 +105,14 @@ extern void byte_swap_terminal_data(uint8 *data, int length);
 // these hide the unpacked data from the outside world.
 // "Map terminal" means the terminal data read in from the map;
 // "player terminal" means the terminal state for each player.
-// For the map terminal data, the "count" is the number of bytes.
+// For the map terminal data, the "count" is number of packed bytes.
 
-uint8 *unpack_map_terminal_data(uint8 *Stream, int Count = 1);
-uint8 *pack_map_terminal_data(uint8 *Stream, int Count = 1);
-uint8 *unpack_player_terminal_data(uint8 *Stream, int Count = 1);
-uint8 *pack_player_terminal_data(uint8 *Stream, int Count = 1);
+uint8 *unpack_map_terminal_data(uint8 *Stream, int Count);
+uint8 *pack_map_terminal_data(uint8 *Stream, int Count);
+uint8 *unpack_player_terminal_data(uint8 *Stream, int Count);
+uint8 *pack_player_terminal_data(uint8 *Stream, int Count);
+
+int calculate_packed_terminal_data_length();
 
 
 #ifdef PREPROCESSING_CODE
