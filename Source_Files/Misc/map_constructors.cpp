@@ -1099,7 +1099,7 @@ inline void SideTxtrToStream(uint8* &S, side_texture_definition& Object)
 }
 
 
-inline void StreamToSideExclZone(uint8* &S, side_exclusion_zone& Object)
+void StreamToSideExclZone(uint8* &S, side_exclusion_zone& Object)
 {
 	StreamToValue(S,Object.e0.x);
 	StreamToValue(S,Object.e0.y);
@@ -1111,7 +1111,7 @@ inline void StreamToSideExclZone(uint8* &S, side_exclusion_zone& Object)
 	StreamToValue(S,Object.e3.y);
 }
 
-inline void SideExclZoneToStream(uint8* &S, side_exclusion_zone& Object)
+void SideExclZoneToStream(uint8* &S, side_exclusion_zone& Object)
 {
 	ValueToStream(S,Object.e0.x);
 	ValueToStream(S,Object.e0.y);
@@ -1831,5 +1831,44 @@ uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count)
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_object_data);
+	return S;
+}
+
+
+uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count)
+{
+	uint8* S = Stream;
+	damage_definition* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->base);
+		StreamToValue(S,ObjPtr->random);
+		StreamToValue(S,ObjPtr->scale);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_damage_definition);
+	return S;
+}
+
+uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count)
+{
+	uint8* S = Stream;
+	damage_definition* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->base);
+		ValueToStream(S,ObjPtr->random);
+		ValueToStream(S,ObjPtr->scale);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_damage_definition);
 	return S;
 }
