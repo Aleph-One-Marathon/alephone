@@ -1013,6 +1013,8 @@ boolean possible_intersecting_monsters(
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 	short *neighbor_indexes= get_map_indexes(polygon->first_neighbor_index, polygon->neighbor_count);
 	boolean found_solid_object= FALSE;
+	// Skip this step if neighbor indexes were not found
+	if (!neighbor_indexes) return found_solid_object;
 	short i;
 	
 	for (i=0;i<polygon->neighbor_count;++i)
