@@ -37,6 +37,9 @@ May 30, 2000 (Loren Petrich):
 
 Jul 1, 2000 (Loren Petrich):
 	Added some idiot-proofing to the fader accessors
+
+Jan 31, 2001 (Loren Petrich):
+	Added delayed action for the fader effect, so as to get around certain MacOS oddities
 */
 
 #include "cseries.h"
@@ -123,6 +126,8 @@ static uint16 fades_random_seed= 0x1;
 // LP addition: pointer to OpenGL fader to be used in the color-table functions below
 // It is NULL if OpenGL is inactive
 static OGL_Fader *CurrentOGLFader = NULL;
+
+static int FadeEffectDelay = 0;
 
 /* ---------- fade definitions */
 
@@ -275,10 +280,22 @@ bool update_fades(
 	return FADE_IS_ACTIVE(fade) ? true : false;
 }
 
+void SetFadeEffectDelay(int _FadeEffectDelay)
+{
+	FadeEffectDelay = _FadeEffectDelay;
+}
+
 void set_fade_effect(
 	short type)
 {
-	if (fade->fade_effect_type!=type)
+	bool ForceFEUpdate = false;
+	if (FadeEffectDelay > 0)
+	{
+		ForceFEUpdate = true;
+		FadeEffectDelay--;
+	}
+	
+	if (ForceFEUpdate || fade->fade_effect_type!=type)
 	{
 		fade->fade_effect_type= type;
 		

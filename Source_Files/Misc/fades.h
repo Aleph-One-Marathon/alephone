@@ -10,6 +10,9 @@ May 17, 2000 (Loren Petrich):
 
 May 20, 2000 (Loren Petrich):
 	Added XML-parser support
+
+Jan 31, 2001 (Loren Petrich):
+	Added delayed action for the fader effect, so as to get around certain MacOS oddities
 */
 
 #include "XML_ElementParser.h"
@@ -106,6 +109,11 @@ void gamma_correct_color_table(struct color_table *uncorrected_color_table, stru
 
 void explicit_start_fade(short type, struct color_table *original_color_table, struct color_table *animated_color_table);
 void full_fade(short type, struct color_table *original_color_table);
+
+// LP: sets the number of calls of set_fade_effect() that get ignored;
+// this is a workaround for a MacOS-version bug where something gets painted on the screen
+// after certain dialog boxes are cleared, thus canceling out the fader effect.
+void SetFadeEffectDelay(int _FadeEffectDelay);
 
 // LP change: added fader-parser export
 XML_ElementParser *Faders_GetParser();
