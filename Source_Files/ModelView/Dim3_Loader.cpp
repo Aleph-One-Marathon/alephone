@@ -134,6 +134,9 @@ static vector<NameTagWrapper> FrameTags;
 // the bones may be only partially listed or not listed at all.
 static vector<Model3D_Frame> ReadFrame;
 
+// Normals (per vertex source)
+static vector<GLfloat> Normals;
+
 
 // For feeding into the read-in routines
 static Model3D *ModelPtr = NULL;
@@ -150,6 +153,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		BoneOwnTags.clear();
 		BoneIndices.clear();
 		FrameTags.clear();
+		Normals.clear();
 	}
 	
 	if (DBOut)
@@ -192,30 +196,25 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	// Set these up now
 	if (Model.InverseVSIndices.empty()) Model.BuildInverseVSIndices();
 	
-	// Handle the normals; the read-in routine reads to Normals
-	if (!Model.Normals.empty() && Model.NormSources.empty())
+	if (!Normals.empty())
 	{
-		// Are all the normals zero?
-		bool AllZero = true;
-		size_t NumNormVals = Model.Normals.size();
-		for (size_t k=0; k<NumNormVals; k++)
+		Model.NormSources.resize(3*Model.VtxSrcIndices.size());
+		Model.Normals.resize(Model.NormSources.size());
+		for (int k=0; k<Model.VtxSources.size(); k++)
 		{
-			if (Model.Normals[k] != 0)
+			GLfloat *Norm = &Normals[3*k];
+			GLushort P0 = Model.InvVSIPointers[k];
+			GLushort P1 = Model.InvVSIPointers[k+1];
+			for (int p=P0; p<P1; p++)
 			{
-				AllZero = false;
-				break;
+				GLfloat *DestNorm = &Model.NormSources[3*Model.InverseVSIndices[p]];
+				for (int c=0; c<3; c++)
+					DestNorm[c] = Norm[c];
 			}
 		}
+		// All done with them
 		
-		// If so, then don't use normals; otherwise, save them in NormSources,
-		// an array that serves as a source of transformed normals
-		if (AllZero)
-			Model.Normals.clear();
-		else
-		{
-			Model.NormSources.resize(NumNormVals);
-			objlist_copy(Model.NormSrcBase(),Model.NormBase(),NumNormVals);
-		}
+		Normals.clear();
 	}
 	
 	// First, find the neutral-position vertices
@@ -396,7 +395,8 @@ bool XML_Dim3DataBlock::RequestAbort()
 // Dummy elements:
 static XML_ElementParser
 	CreatorParser("Creator"),
-	ViewBoxParser("View_Box"),
+	CenterParser("Center"),
+	LightParser("Light"),
 	ShadingParser("Shading"),
 	ShadowBoxParser("Shadow_Box"),
 	VerticesParser("Vertexes"),
@@ -428,7 +428,7 @@ public:
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
 	
-	XML_BoundingBoxParser(): XML_ElementParser("Bound_Box") {}
+	XML_BoundingBoxParser(const char *Name): XML_ElementParser(Name) {}
 };
 
 
@@ -442,7 +442,15 @@ bool XML_BoundingBoxParser::Start()
 
 bool XML_BoundingBoxParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (StringsEqual(Tag,"x_size"))
+	if (StringsEqual(Tag,"size"))
+	{
+		return (sscanf(Value,"%f,%f,%f",&x_size,&y_size,&z_size) == 3);
+	}
+	else if (StringsEqual(Tag,"offset"))
+	{
+		return (sscanf(Value,"%f,%f,%f",&x_offset,&y_offset,&z_offset) == 3);
+	}
+	else if (StringsEqual(Tag,"x_size"))
 	{
 		return ReadFloatValue(Value,x_size);
 	}
@@ -486,12 +494,14 @@ bool XML_BoundingBoxParser::AttributesDone()
 	return true;
 }
 
-static XML_BoundingBoxParser BoundingBoxParser;
+static XML_BoundingBoxParser BoundingBoxParser("Bound_Box");
+static XML_BoundingBoxParser ViewBoxParser("View_Box");
 
 
 class XML_VertexParser: public XML_ElementParser
 {
 	Model3D_VertexSource Data;
+	GLfloat Norm[3];
 	
 	// For adding to the bone-tag array as each vertex is added
 	BoneTagWrapper BT;
@@ -508,7 +518,7 @@ public:
 bool XML_VertexParser::Start()
 {
 	for (int c=0; c<3; c++)
-		Data.Position[c] = 0;
+		Norm[c] = Data.Position[c] = 0;
 	
 	// Initially: no bones
 	Data.Bone0 = Data.Bone1 = (GLushort)NONE;
@@ -522,7 +532,16 @@ bool XML_VertexParser::Start()
 
 bool XML_VertexParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (StringsEqual(Tag,"x"))
+	if (StringsEqual(Tag,"c3"))
+	{
+		GLfloat *Pos = Data.Position;
+		return (sscanf(Value,"%f,%f,%f",&Pos[0],&Pos[1],&Pos[2]) == 3);
+	}
+	else if (StringsEqual(Tag,"n3"))
+	{
+		return (sscanf(Value,"%f,%f,%f",&Norm[0],&Norm[1],&Norm[2]) == 3);
+	}
+	else if (StringsEqual(Tag,"x"))
 	{
 		return ReadFloatValue(Value,Data.Position[0]);
 	}
@@ -564,7 +583,10 @@ bool XML_VertexParser::HandleAttribute(const char *Tag, const char *Value)
 bool XML_VertexParser::AttributesDone()
 {
 	// Always handle the bone data, even for a blank bone, to maintain coherence.
+	// Also always handle normal data for that reason.
 	ModelPtr->VtxSources.push_back(Data);
+	for (int c=0; c<3; c++)
+		Normals.push_back(Norm[c]);
 	VertexBoneTags.push_back(BT);
 	
 	return true;
@@ -606,7 +628,12 @@ bool XML_BoneParser::Start()
 
 bool XML_BoneParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (StringsEqual(Tag,"x"))
+	if (StringsEqual(Tag,"c3"))
+	{
+		GLfloat *Pos = Data.Position;
+		return (sscanf(Value,"%f,%f,%f",&Pos[0],&Pos[1],&Pos[2]) == 3);
+	}
+	else if (StringsEqual(Tag,"x"))
 	{
 		return ReadFloatValue(Value,Data.Position[0]);
 	}
@@ -700,6 +727,8 @@ bool XML_TriVertexParser::HandleAttribute(const char *Tag, const char *Value)
 
 bool XML_TriVertexParser::AttributesDone()
 {
+	// Older dim3-Animator normal support suppressed
+	/*
 	// Normalize the normal, if nonzero
 	float NSQ = Norm_X*Norm_X + Norm_Y*Norm_Y + Norm_Z*Norm_Z;
 	if (NSQ != 0)
@@ -709,15 +738,18 @@ bool XML_TriVertexParser::AttributesDone()
 		Norm_Y *= NMult;
 		Norm_Z *= NMult;
 	}
+	*/
 
 	GLushort Index = ((GLushort)ModelPtr->VertIndices.size());
 	ModelPtr->VertIndices.push_back(Index);
 	ModelPtr->VtxSrcIndices.push_back(ID);
 	ModelPtr->TxtrCoords.push_back(Txtr_X);
 	ModelPtr->TxtrCoords.push_back(Txtr_Y);
+	/*
 	ModelPtr->Normals.push_back(Norm_X);
 	ModelPtr->Normals.push_back(Norm_Y);
 	ModelPtr->Normals.push_back(Norm_Z);
+	*/
 	return true;
 }
 
@@ -814,7 +846,29 @@ bool XML_FrameBoneParser::Start()
 
 bool XML_FrameBoneParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (StringsEqual(Tag,"xmove"))
+	if (StringsEqual(Tag,"rot"))
+	{
+		float InAngle[3];
+		if (sscanf(Value,"%f,%f,%f",&InAngle[0],&InAngle[1],&InAngle[2]) == 3)
+		{
+			for (int c=0; c<3; c++)
+				Data.Angles[c] = GetAngle(- InAngle[c]);
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"move"))
+	{
+		GLfloat *Ofst = Data.Offset;
+		return (sscanf(Value,"%f,%f,%f",&Ofst[0],&Ofst[1],&Ofst[2]) == 3);
+	}
+	else if (StringsEqual(Tag,"acceleration"))
+	{
+		// Ignore the acceleration for now
+		return true;
+	}
+	else if (StringsEqual(Tag,"xmove"))
 	{
 		return ReadFloatValue(Value,Data.Offset[0]);
 	}
@@ -942,7 +996,24 @@ bool XML_SeqFrameParser::Start()
 
 bool XML_SeqFrameParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (StringsEqual(Tag,"xmove"))
+	if (StringsEqual(Tag,"sway"))
+	{
+		float InAngle[3];
+		if (sscanf(Value,"%f,%f,%f",&InAngle[0],&InAngle[1],&InAngle[2]) == 3)
+		{
+			for (int c=0; c<3; c++)
+				Data.Angles[c] = GetAngle(- InAngle[c]);
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"move"))
+	{
+		GLfloat *Ofst = Data.Offset;
+		return (sscanf(Value,"%f,%f,%f",&Ofst[0],&Ofst[1],&Ofst[2]) == 3);
+	}
+	else if (StringsEqual(Tag,"xmove"))
 	{
 		return ReadFloatValue(Value,Data.Offset[0]);
 	}
@@ -1030,6 +1101,8 @@ void Dim3_SetupParseTree()
 	Dim3_RootParser.AddChild(&Dim3_Parser);
 	
 	Dim3_Parser.AddChild(&CreatorParser);
+	Dim3_Parser.AddChild(&CenterParser);
+	Dim3_Parser.AddChild(&LightParser);
 	Dim3_Parser.AddChild(&BoundingBoxParser);	
 	Dim3_Parser.AddChild(&ViewBoxParser);
 	Dim3_Parser.AddChild(&ShadingParser);
