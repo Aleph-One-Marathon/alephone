@@ -30,6 +30,7 @@ struct recording_header
 	struct player_start_data starts[MAXIMUM_NUMBER_OF_PLAYERS];
 	struct game_data game_information;
 };
+const int SIZEOF_recording_header = 352;
 
 struct replay_private_data {
 	boolean valid;
