@@ -4,6 +4,12 @@
  *  Written in 2000 by Christian Bauer
  */
 
+/*
+Oct 19, 2000 (Loren Petrich):
+	Added graceful degradation in the case of frames or bitmaps not being found;
+	get_shape_surface() returns NULL when that happens
+*/
+
 #include <SDL_endian.h>
 
 #include "byte_swapping.h"
@@ -31,7 +37,9 @@ SDL_Surface *get_shape_surface(int shape)
 	int low_level_shape_index = GET_DESCRIPTOR_SHAPE(shape);
 	struct collection_definition *collection = get_collection_definition(collection_index);
 	struct low_level_shape_definition *low_level_shape = get_low_level_shape_definition(collection_index, low_level_shape_index);
+	if (!low_level_shape) return NULL;
 	struct bitmap_definition *bitmap = get_bitmap_definition(collection_index, low_level_shape->bitmap_index);
+	if (!bitmap) return NULL;
 
 	// Extract color table
 	SDL_Color colors[256];

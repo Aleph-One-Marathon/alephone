@@ -49,8 +49,12 @@ Jul 7, 2000 (Loren Petrich): Did yet another frame-checking readjustment, in ord
 
 Aug 20, 2000 (Loren Petrich): eliminated a "pause()" statement -- some debugging statement?
 	
-Oct 13, 2000 (Loren Petrich)
+Oct 13, 2000 (Loren Petrich):
 	Converted the intersected-objects list into a Standard Template Library vector
+
+Oct 19, 2000 (Loren Petrich):
+	Changed get_object_shape_and_transfer_mode() so that it makes data->collection_code equal to NONE
+	if it does not find a valid sequence or view.
 */
 
 /*
@@ -639,8 +643,18 @@ void get_object_shape_and_transfer_mode(
 	short view;
 	
 	animation= get_shape_animation_data(object->shape);
-	assert(animation);
-	assert(animation->frames_per_view>=1);
+	// Added bug-outs in case of incorrect data; turned asserts into these tests:
+	if (!animation)
+	{
+		data->collection_code = NONE; // Deliberate bad value
+		return;
+	}
+	else if (!(animation->frames_per_view>=1))
+	{
+		data->collection_code = NONE; // Deliberate bad value
+		return;
+	}
+	// assert(animation->frames_per_view>=1);
 	
 	/* get correct base shape */
 	// LP change: made long-distance friendly
@@ -663,7 +677,9 @@ void get_object_shape_and_transfer_mode(
 				case 3: view= 2; break; /* ±180¡ (facing away) */
 				default:
 					// LP change:
-					assert(false);
+					data->collection_code = NONE; // Deliberate bad value
+					return;
+					// assert(false);
 					// halt();
 			}
 			break;
@@ -680,7 +696,9 @@ void get_object_shape_and_transfer_mode(
 				case 4: view= 0; break;
 				default:
 					// LP change:
-					assert(false);
+					data->collection_code = NONE; // Deliberate bad value
+					return;
+					// assert(false);
 					// halt();
 			}
 			break;
@@ -700,14 +718,18 @@ void get_object_shape_and_transfer_mode(
 				case 7: view= 4; break; /* ±180¡ (facing away) */
 				default:
 					// LP change:
-					assert(false);
+					data->collection_code = NONE; // Deliberate bad value
+					return;
+					// assert(false);
 					// halt();
 			}
 			break;
 		
 		default:
 			// LP change:
-			assert(false);
+			data->collection_code = NONE; // Deliberate bad value
+			return;
+			// assert(false);
 			// halt();
 	}
 

@@ -13,6 +13,10 @@ Apr 30, 2000 (Loren Petrich):
 
 Jul 2, 2000 (Loren Petrich):
 	The HUD is now always buffered; it is lazily allocated
+
+Oct 19, 2000 (Loren Petrich):
+	Added graceful degradation if get_shape_pixmap() returns NULL; CB had already done that
+	with the SDL version.
 */
 
 #pragma segment drawing
@@ -172,6 +176,14 @@ void _draw_screen_shape(
 	
 	/* Draw the panels... */
 	pixmap= get_shape_pixmap(shape_id, false);
+	if (!pixmap)
+	{
+		/* Restore the colors.. */
+		RGBForeColor(&old_fore);
+		RGBBackColor(&old_back);
+		return;
+	}
+	
 	if(!source)
 	{
 		actual_source= (*pixmap)->bounds;
@@ -287,6 +299,13 @@ void _draw_screen_shape_at_x_y(
 	
 	/* Draw the panels... */
 	pixmap= get_shape_pixmap(shape, false);
+	if (!pixmap)
+	{
+		/* Restore the colors.. */
+		RGBForeColor(&old_fore);
+		RGBBackColor(&old_back);
+		return;
+	}
 	
 	/* Offset to zero base, and add in x, y */
 	destination= (*pixmap)->bounds;
@@ -320,6 +339,13 @@ return;
 	
 	/* Draw the panels... */
 	pixmap= get_shape_pixmap(shape, false);
+	if (!pixmap)
+	{
+		/* Restore the colors.. */
+		RGBForeColor(&old_fore);
+		RGBBackColor(&old_back);
+		return;
+	}
 	
 	/* Offset to zero base, and add in x, y */
 	destination= source= (*pixmap)->bounds;

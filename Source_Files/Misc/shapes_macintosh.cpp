@@ -12,6 +12,10 @@ Aug 14, 2000 (Loren Petrich):
 	Turned collection and shading-table handles into pointers,
 	because handles are needlessly MacOS-specific,
 	and because these are variable-format objects.
+
+Oct 19, 2000 (Loren Petrich):
+	Added graceful degradation in the case of frames or bitmaps not being found;
+	get_shape_pixmap() returns NULL when that happens
 */
 
 /* ---------- constants */
@@ -121,7 +125,9 @@ PixMapHandle get_shape_pixmap(
 	}
 
 	low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
+	if (!low_level_shape) return NULL;
 	bitmap= get_bitmap_definition(collection_index, low_level_shape->bitmap_index);
+	if (!bitmap) return NULL;
 	
 	/* setup the pixmap (canÕt wait to change this for Copland) */
 	SetRect(&(*hollow_pixmap)->bounds, 0, 0, bitmap->width, bitmap->height);

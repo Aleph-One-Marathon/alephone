@@ -11,8 +11,11 @@
 Sep 2, 2000 (Loren Petrich):
 	Added some idiot-proofing, since the shapes accessor now returns NULL for nonexistent bitmaps
 	
-Oct 13, 2000
-	LP: replaced GrowableLists and ResizableLists with STL vectors
+Oct 13, 2000 (Loren Petrich):
+	Replaced GrowableLists and ResizableLists with STL vectors
+
+Oct 19, 2000 (Loren Petrich):
+	Added graceful escape in case of nonexistent shape in build_render_object().
 */
 
 #include "cseries.h"
@@ -150,6 +153,9 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			shape_information_data scaled_shape_information; // if necessary
 			
 			get_object_shape_and_transfer_mode(&view->origin, object_index, &data);
+			// Nonexistent shape: skip
+			if (data.collection_code == NONE) return NULL;
+			
 			shape_information= rescale_shape_information(
 				extended_get_shape_information(data.collection_code, data.low_level_shape_index),
 				&scaled_shape_information, GET_OBJECT_SCALE_FLAGS(object));

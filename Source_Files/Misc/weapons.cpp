@@ -52,6 +52,11 @@ Aug 31, 2000 (Loren Petrich):
 Sep 3, 2000 (Loren Petrich):
 	Suppressed "assert(weapon_type!=NUMBER_OF_WEAPONS);" in a search-for-which-weapon loop;
 	some physics models get to this without causing other trouble
+
+Oct 19, 2000 (Loren Petrich):
+	Weapon-sprite absence in get_weapon_display_information() handled by bugging out instead of
+	a failed assertion; having a SMG will not crash if one's using a M2 shapes file.
+	Also, added a bug-out in case of no view being found.
 */
 
 #include "cseries.h"
@@ -1354,7 +1359,8 @@ bool get_weapon_display_information(
 				/* setup the positioning information */
 				high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 					shape_index));
-				assert(high_level_data);
+				// LP: bug out if there is no weapon sequence to render
+				if (!high_level_data) return false;
 				vassert(frame>=0 && frame<high_level_data->frames_per_view,
 					csprintf(temporary, "frame: %d max: %d trigger: %d state: %d count: %d phase: %d", 
 					frame, high_level_data->frames_per_view,
@@ -1389,6 +1395,9 @@ bool get_weapon_display_information(
 				
 					get_object_shape_and_transfer_mode(&player->camera_location, player->object_index, 
 						&owner_transfer_data);
+					// Bug out in case of nonexistent shape
+					if (owner_transfer_data.collection_code == NONE) return false;
+					
 					data->transfer_mode= owner_transfer_data.transfer_mode;
 					data->transfer_phase= owner_transfer_data.transfer_phase;
 				}
