@@ -656,10 +656,6 @@ void queue_song(short song_index)
 	music_data_remaining = music_data_length;
 	uint32 to_read = music_data_remaining > MUSIC_BUFFER_SIZE ? MUSIC_BUFFER_SIZE : music_data_remaining;
 	SDL_RWread(p, music_buffer, 1, to_read);
-//!!	if (!c->sixteen_bit && !c->signed) {
-//		for (int i=0; i<MUSIC_BUFFER_SIZE; i++)
-//			music_buffer[i] ^= 0x80;
-//	}
 	music_data_remaining -= to_read;
 
 	// Lock sound subsystem
@@ -882,11 +878,6 @@ inline static void calc_buffer(T *p, int len, bool stereo)
 
 								// Read next buffer of music data
 								SDL_RWread(music_file.GetRWops(), music_buffer, 1, to_read);
-//!!								if (!c->sixteen_bit) {
-//									// AIFF data is always signed
-//									for (int i=0; i<MUSIC_BUFFER_SIZE; i++)
-//										music_buffer[i] ^= 0x80;
-//								}
 								music_data_remaining -= to_read;
 								c->data = music_buffer;
 								c->length = to_read;
