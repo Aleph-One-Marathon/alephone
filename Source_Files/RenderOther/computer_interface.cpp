@@ -1651,7 +1651,11 @@ static void get_date_string(
 {
 	char temp_string[101];
 	long game_time_passed;
+#ifdef mac
 	unsigned long seconds;
+#else
+	time_t seconds;
+#endif
 	struct tm game_time;
 
 	/* Treat the date as if it were recent. */
@@ -1659,6 +1663,7 @@ static void get_date_string(
 	
 	/* convert the game seconds to machine seconds */
 #ifdef mac
+	// XXX Why is this here? Doesn't localtime() work on the Mac? - CB
 	seconds = 2882914937;
 	seconds += (game_time_passed/TICKS_PER_SECOND)*MACINTOSH_TICKS_PER_SECOND; 
 	DateTimeRec converted_date;

@@ -59,7 +59,7 @@ public:
         explicit LegacyActionQueueToTickBasedQueueAdapter(int inTargetPlayerIndex) : mPlayerIndex(inTargetPlayerIndex) { reset(0); }
         void reset(int32 inTick) { mWriteTick = inTick; GetRealActionQueues()->resetQueue(mPlayerIndex); }
         int32 availableCapacity() const { return GetRealActionQueues()->availableCapacity(mPlayerIndex); }
-        void enqueue(const tValueType& inFlags) { process_action_flags(mPlayerIndex, &inFlags, 1);  ++mWriteTick; }
+        void enqueue(const tValueType& inFlags) { process_action_flags(mPlayerIndex, static_cast<const uint32 *>(&inFlags), 1);  ++mWriteTick; }
         int32 getWriteTick() const { return mWriteTick; }
 
 protected:

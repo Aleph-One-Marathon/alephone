@@ -156,7 +156,7 @@ static void read_recording_queue_chunks(void);
 static bool pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
 static bool vblFSRead(OpenedFile& File, long *count, void *dest, bool& HitEOF);
-static void record_action_flags(short player_identifier, uint32 *action_flags, short count);
+static void record_action_flags(short player_identifier, const uint32 *action_flags, short count);
 static short get_recording_queue_size(short which_queue);
 
 static uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, size_t Count);
@@ -403,7 +403,7 @@ bool input_controller(
 
 void process_action_flags(
 	short player_identifier, 
-	uint32 *action_flags, 
+	const uint32 *action_flags, 
 	short count)
 {
 	if (replay.game_is_being_recorded)
@@ -416,7 +416,7 @@ void process_action_flags(
 
 static void record_action_flags(
 	short player_identifier, 
-	uint32 *action_flags, 
+	const uint32 *action_flags, 
 	short count)
 {
 	short index;

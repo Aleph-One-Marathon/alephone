@@ -23,6 +23,8 @@
  *  Implementation of the old ring-topology network game protocol, as a module in the new scheme.
  */
 
+#include "cseries.h"
+
 #ifdef EXPLICIT_CARBON_HEADER
 #include <Carbon/Carbon.h>
 #endif
@@ -2163,7 +2165,7 @@ static void drop_upring_player(
 
 
 
-long
+int32
 RingGameProtocol::GetNetTime(void)
 {
         // ZZZ: modified so as not to introduce ANY gratuitous latency.  May make play a little choppy.

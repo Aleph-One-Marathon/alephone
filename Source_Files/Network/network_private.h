@@ -75,7 +75,7 @@ enum /* error string for user */
 /* ---------- constants */
 
 #define NET_DEAD_ACTION_FLAG_COUNT (-1)
-#define NET_DEAD_ACTION_FLAG (NONE)
+#define NET_DEAD_ACTION_FLAG (UNONE)
 
 #define MAXIMUM_GAME_DATA_SIZE       256
 #define MAXIMUM_PLAYER_DATA_SIZE     128

@@ -23,6 +23,8 @@
  *  Glue to make the star network protocol code interface with the rest of A1.
  */
 
+#include "cseries.h"
+
 #ifdef EXPLICIT_CARBON_HEADER
 #include <Carbon/Carbon.h>
 #endif

@@ -108,7 +108,7 @@ ActionQueues::resetQueue(int inPlayerIndex)
 void
 ActionQueues::enqueueActionFlags(
 	int player_index,
-	uint32 *action_flags,
+	const uint32 *action_flags,
 	int count)
 {
 	struct player_data *player= get_player_data(player_index);

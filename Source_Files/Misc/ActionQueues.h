@@ -49,7 +49,7 @@ public:
     void		reset();
     void		resetQueue(int inPlayerIndex);
 
-    void		enqueueActionFlags(int inPlayerIndex, uint32* inFlags, int inFlagsCount);
+    void		enqueueActionFlags(int inPlayerIndex, const uint32* inFlags, int inFlagsCount);
     uint32		dequeueActionFlags(int inPlayerIndex);
     unsigned int	countActionFlags(int inPlayerIndex);
     unsigned int	totalCapacity(int inPlayerIndex) { return mQueueSize - 1; }

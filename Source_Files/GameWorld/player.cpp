@@ -137,6 +137,7 @@ May 22, 2003 (Woody Zenfell):
 #include "projectiles.h"
 #include "network_games.h"
 #include "screen.h"
+#include "shell.h" // for screen_printf()
 
 /*
 //anybody on the receiving pad of a teleport should explode (what happens to invincible guys?)
