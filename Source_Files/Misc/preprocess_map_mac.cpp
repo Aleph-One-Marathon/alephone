@@ -16,6 +16,9 @@ Jan 30, 2000 (Loren Petrich):
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Aug 24, 2000 (Loren Petrich):
+	Moved save-dialog Mac-specific code out to FileHandler
 */
 
 #include "macintosh_cseries.h"
@@ -82,7 +85,7 @@ void get_default_map_spec(FileSpecifier& File)
 	// FileDesc *_new)
 {
 
-	File.SetFileToApp();
+	File.SetToApp();
 	File.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP),FileSpecifier::C_Map);
 	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 	
@@ -114,7 +117,7 @@ void get_default_physics_spec(FileSpecifier& File)
 //	FileDesc *_new)
 {
 
-	File.SetFileToApp();
+	File.SetToApp();
 	File.SetName(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL),FileSpecifier::C_Phys);
 	// Don't care if it does not exist
 
@@ -188,7 +191,8 @@ boolean save_game(
 	SaveFile.GetName(GameName);
 	
 	char Prompt[256];
-	boolean success = SaveFile.WriteDialog(
+	// Must allow the sound to play in the background
+	boolean success = SaveFile.WriteDialogAsync(
 			FileSpecifier::C_Save,
 			getcstr(Prompt, strPROMPTS, _save_game_prompt),
 			GameName);
@@ -250,82 +254,53 @@ boolean save_game(
 void add_finishing_touches_to_save_file(FileSpecifier &File)
 // 	FileDesc *file)
 {
-	short resource_file_ref;
+	short refnum;
 	unsigned char name[64+1];
+	OSErr err;
 	
-	/* Save the STR resource that tells us what our application name is. */
-	resource_file_ref= FSpOpenResFile(&File.Spec, fsWrPerm);
-	// resource_file_ref= FSpOpenResFile((FSSpec *) file, fsWrPerm);
-	if(resource_file_ref>= 0)
-	{
-		Handle resource;
-		OSErr err;
-
-		/* Add in the save level name */
-		strcpy((char *)name, static_world->level_name);
-		c2pstr((char *)name);
-		err= PtrToHand(name, &resource, name[0]+1);
-		assert(!err);
+	FSSpec *SpecPtr = &File.GetSpec();
+	
+	FInfo finder_info;
+	err = FSpGetFInfo((FSSpec *)SpecPtr, &finder_info);
+	if (err != noErr) return;
+	
+	FSpCreateResFile(SpecPtr,  finder_info.fdCreator, finder_info.fdType, smSystemScript);
+	if (ResError() != noErr) return;
 		
-		AddResource(resource, 'STR ', strSAVE_LEVEL_NAME, "\p");
-		ReleaseResource(resource);
+	/* Save the STR resource that tells us what our application name is. */
+	refnum= FSpOpenResFile(&File.Spec, fsWrPerm);
+	// resource_file_ref= FSpOpenResFile((FSSpec *) file, fsWrPerm);
+	if (refnum < 0) return;
+	
+	Handle resource;
+	
+	/* Add in the save level name */
+	strcpy((char *)name, static_world->level_name);
+	c2pstr((char *)name);
+	err= PtrToHand(name, &resource, name[0]+1);
+	assert(!err && resource);
+	
+	AddResource(resource, 'STR ', strSAVE_LEVEL_NAME, "\p");
+	ReleaseResource(resource);
 
-		/* Add in the overhead thumbnail. */
-		add_overhead_thumbnail();
-
-		CloseResFile(resource_file_ref);
-	}
-
+	/* Add in the overhead thumbnail. */
+	add_overhead_thumbnail();
+	
 	/* Add the application name resource.. */
 	getpstr(name, strFILENAMES, filenameMARATHON_NAME);
 	// add_application_name_to_fsspec((FileDesc *) file, name);
 	
 	// LP: copied out of files_macintosh.c -- add_application_name_to_fsspec();
 	// this is the only place that uses this code
-	short err;
-	FInfo finder_info;
-	short refnum;
-	
-	FSSpec *SpecPtr = &File.GetSpec();
-	
-	err = FSpGetFInfo((FSSpec *)SpecPtr, &finder_info);
-	if(!err)
-	{
-		refnum= FSpOpenResFile((FSSpec *)SpecPtr, fsWrPerm);
-		err= ResError();
-		if(err)
-		{
-			/* This file doesn't have a res fork.. */
-			if(err==fnfErr)
-			{
-				FSpCreateResFile((FSSpec *)SpecPtr, finder_info.fdCreator, 
-					finder_info.fdType, smSystemScript);
-				err= ResError();
+									
+	/* Add in the application name */
+	err= PtrToHand(name, &resource, name[0]+1);
+	assert(!err && resource);
+							
+	AddResource(resource, 'STR ', -16396, "\p");
+	ReleaseResource(resource);
 				
-				if(!err)
-				{
-					refnum= FSpOpenResFile((FSSpec *)SpecPtr, fsWrPerm);
-					err= ResError();
-				}
-			}
-		}
-	}
-	
-	if(!err)
-	{
-		Handle resource;
-		
-		assert(refnum>=0);
-								
-		/* Add in the application name */
-		err= PtrToHand(name, &resource, name[0]+1);
-		assert(!err && resource);
-								
-		AddResource(resource, 'STR ', -16396, "\p");
-		ReleaseResource(resource);
-					
-		CloseResFile(refnum);
-	}
+	CloseResFile(refnum);
 	// End copying
 }
 
@@ -380,6 +355,8 @@ static void add_overhead_thumbnail(
 	return;
 }
 
+// LP: begin no-compile
+#if 0
 /* load_file_reply is valid.. */
 pascal short custom_put_hook(
 	short item, 
@@ -472,6 +449,9 @@ static boolean confirm_save_choice(
 	
 	return pass_through;
 }
+
+// LP: end no-compile
+#endif
 
 #ifdef OBSOLETE
 static pascal short custom_get_hook(

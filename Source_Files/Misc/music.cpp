@@ -36,9 +36,8 @@ Aug 12, 2000 (Loren Petrich):
 
 #include "macintosh_cseries.h"
 
-#include "portable_files.h"
+// #include "portable_files.h"
 #include "music.h"
-#include "FileHandler.h"
 
 #include "song_definitions.h"
 
@@ -108,8 +107,8 @@ static short get_sound_volume(void);
 /* ----------------- code */
 
 /* If channel is null, we don't initialize */
-boolean initialize_music_handler(
-	FileDesc *song_file)
+boolean initialize_music_handler(FileSpecifier& SongFile)
+//	FileDesc *song_file)
 {
 	short song_file_refnum;
 	OSErr error;
@@ -123,10 +122,8 @@ boolean initialize_music_handler(
 		
 	/* Does the file exist? */
 	// LP change: using a file object
-	FileSpecifier File;
-	File.SetSpec(*((FSSpec *)song_file));
 	// error= FSpOpenDF((FSSpec *) song_file, fsRdPerm, &song_file_refnum);
-	if(File.Open(music_state.OFile))
+	if(SongFile.Open(music_state.OFile))
 	{
 		
 		// LP change: check to see if the file is an AIFF one;
