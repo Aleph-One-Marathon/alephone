@@ -348,8 +348,10 @@ void global_idle_proc(void)
 void free_and_unlock_memory(void)
 {
 	stop_all_sounds();
+#ifdef mac
     PurgeMem(maxSize);
     CompactMem(maxSize);
+#endif
 }
 
 /*

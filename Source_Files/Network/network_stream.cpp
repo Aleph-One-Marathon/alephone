@@ -48,7 +48,10 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #include "macintosh_network.h"
 #endif
 
+#ifdef TEST_MODEM
 #include "network_modem.h"
+#endif
+
 #include "network_stream.h"
 
 #include "shell.h" //--> only for system_information!

@@ -110,13 +110,13 @@ clearly this is all broken until we have packet types
 
 #include "game_errors.h"
 #include "network_stream.h"
-#include "network_modem.h"
 #include "progress.h"
 #include "extensions.h"
 
 // #define TEST_MODEM
 
 #ifdef TEST_MODEM
+#include "network_modem.h"
 #include "network_modem_protocol.h"
 #endif
 
