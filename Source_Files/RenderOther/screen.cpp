@@ -2589,6 +2589,7 @@ static pascal void FreqDialogTimer(EventLoopTimerRef Timer, void *Data)
 
 const EventTimerInterval TimeoutTime = 7;
 
+#ifdef USES_NIBS
 static void FreqDialogHandler(ParsedControl &Ctrl, void *Data)
 {
 	FreqDialogHandlerData *HDPtr = (FreqDialogHandlerData *)(Data);
@@ -2610,7 +2611,7 @@ static void FreqDialogHandler(ParsedControl &Ctrl, void *Data)
 		SetEventLoopTimerNextFireTime(HDPtr->Timer, TimeoutTime);
 	}
 }
-
+#endif // USES_NIBS
 
 
 // Changes the monitor's resolution and creates a DSp context for the new resolution
