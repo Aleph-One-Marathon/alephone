@@ -47,6 +47,9 @@ AC_CHECK_HEADERS(SDL_net.h, [
     AC_DEFINE(HAVE_SDL_NET, 1, [SDL_net support is enabled])
   ])
 ])
+if [[ "x$ac_cv_lib_SDL_net_SDLNet_Init" != xyes ]]; then
+  AC_MSG_ERROR([You need SDL_net to run Aleph One.])
+fi
 AM_CONDITIONAL(HAVE_SDL_NET, test x$ac_cv_lib_SDL_net_SDLNet_Init = xyes)
 
 dnl Check for Lua.
