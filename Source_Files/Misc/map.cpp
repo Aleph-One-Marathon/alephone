@@ -1400,6 +1400,14 @@ bool keep_line_segment_out_of_walls(
 	short state;
 	short i;
 
+	// Skip the whole thing if exclusion-zone indexes were not found
+	if (!indexes)
+	{
+		polygon->line_exclusion_zone_count = 0;
+		polygon->point_exclusion_zone_count = 0;
+		return clipped;
+	}
+
 //	if (polygon_index==23) dprintf("#%d lines, #%d endpoints at %p", polygon->line_exclusion_zone_count, polygon->point_exclusion_zone_count, indexes);
 
 	state= _first_line_pass;
@@ -1409,9 +1417,6 @@ bool keep_line_segment_out_of_walls(
 	*adjusted_ceiling_height= polygon->ceiling_height;
 	do
 	{
-		// Skip if exclusion-zone indexes were not found
-		if (indexes)
-		{
 		for (i=0;i<polygon->line_exclusion_zone_count&&state!=_aborted;++i)
 		{
 			short signed_line_index= indexes[i];
@@ -1495,7 +1500,6 @@ bool keep_line_segment_out_of_walls(
 					}
 				}
 			}
-		}
 		}
 		
 		switch (state)
@@ -2258,7 +2262,7 @@ void _sound_add_ambient_sources_proc(
 		world_location3d source;
 		bool under_media= false;
 		short index;
-	
+		
 		// add ambient sound image
 		if (media && listener->point.z<media->height)
 		{

@@ -325,6 +325,7 @@ void swipe_nearby_items(
 
 	polygon= get_polygon_data(player_object->polygon);
 	neighbor_indexes= get_map_indexes(polygon->first_neighbor_index, polygon->neighbor_count);
+	
 	// Skip this step if neighbor indexes were not found
 	if (!neighbor_indexes) return;
 

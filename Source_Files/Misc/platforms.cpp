@@ -852,8 +852,8 @@ static void adjust_platform_endpoint_and_line_heights(
 		short j;
 		
 		/* adjust line heights and set proper line transparency and solidity */
-		// Skip this step if polygon or line indexes were not found
-		if (polygon->adjacent_polygon_indexes[i]!=NONE && polygon_indexes && line_indexes)
+		// Skip this step if line indexes were not found
+		if (polygon->adjacent_polygon_indexes[i]!=NONE && line_indexes)
 		{
 			adjacent_polygon= get_polygon_data(polygon->adjacent_polygon_indexes[i]);
 			line->highest_adjacent_floor= MAX(polygon->floor_height, adjacent_polygon->floor_height);
@@ -881,11 +881,15 @@ static void adjust_platform_endpoint_and_line_heights(
 		}
 
 		/* adjust endpoint heights */
-		for (j= 0; j<polygon_count; ++j)
+		// Skip this step if no polygon indexes were found
+		if (polygon_indexes)
 		{
-			adjacent_polygon= get_polygon_data(polygon_indexes[j]);
-			if (!j || highest_adjacent_floor<adjacent_polygon->floor_height) highest_adjacent_floor= adjacent_polygon->floor_height, supporting_polygon_index= polygon_indexes[j];
-			if (!j || lowest_adjacent_ceiling>adjacent_polygon->ceiling_height) lowest_adjacent_ceiling= adjacent_polygon->ceiling_height;
+			for (j= 0; j<polygon_count; ++j)
+			{
+				adjacent_polygon= get_polygon_data(polygon_indexes[j]);
+				if (!j || highest_adjacent_floor<adjacent_polygon->floor_height) highest_adjacent_floor= adjacent_polygon->floor_height, supporting_polygon_index= polygon_indexes[j];
+				if (!j || lowest_adjacent_ceiling>adjacent_polygon->ceiling_height) lowest_adjacent_ceiling= adjacent_polygon->ceiling_height;
+			}
 		}
 		endpoint->highest_adjacent_floor_height= highest_adjacent_floor;
 		endpoint->lowest_adjacent_ceiling_height= lowest_adjacent_ceiling;
