@@ -1218,11 +1218,6 @@ uint8 *pack_projectile_data(uint8 *Stream, projectile_data* Objects, int Count)
 }
 
 
-uint8 *unpack_projectile_definition(uint8 *Stream, int Count)
-{
-	return unpack_projectile_definition(Stream,projectile_definitions,Count);
-}
-
 uint8 *unpack_projectile_definition(uint8 *Stream, projectile_definition *Objects, int Count)
 {
 	uint8* S = Stream;
@@ -1257,11 +1252,11 @@ uint8 *unpack_projectile_definition(uint8 *Stream, projectile_definition *Object
 	return S;
 }
 
-
-uint8 *pack_projectile_definition(uint8 *Stream, int Count)
+uint8 *unpack_projectile_definition(uint8 *Stream, int Count)
 {
-	return pack_projectile_definition(Stream,projectile_definitions,Count);
+	return unpack_projectile_definition(Stream,projectile_definitions,Count);
 }
+
 
 uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects, int Count)
 {
@@ -1295,4 +1290,9 @@ uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects,
 	
 	assert((S - Stream) == Count*SIZEOF_projectile_definition);
 	return S;
+}
+
+uint8 *pack_projectile_definition(uint8 *Stream, int Count)
+{
+	return pack_projectile_definition(Stream,projectile_definitions,Count);
 }
