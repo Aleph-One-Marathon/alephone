@@ -42,11 +42,20 @@ The archive contains the files "Images", "Map", "Shapes", "Sounds" and
 "README" and has to be unpacked to the same directory as the "AlephOne"
 application.
 
-Alternatively, if you have a Marathon 2, Marathon Infinity or Marathon
-Trilogy Box Set CD, you can copy the needed files from the CD. This is a bit
-complicated, however, due to some ideosyncracies of the Mac HFS file system
-(every Mac file is really two files, one "data fork" and one "resource
-fork"). Aleph One/SDL needs these files:
+If you have a copy of Marathon 2 for Windows 95, you can copy the needed
+files from the CD. Copy the following files and rename them as indicated:
+
+  "images.img2" -> "Images"
+  "map.sce2" -> "Map"
+  "music.mus2" -> "Music"
+  "shapes.shp2" -> "Shapes"
+  "sounds.snd2" -> "Sounds"
+
+Alternatively, if you have a MacOS Marathon 2, Marathon Infinity or Marathon
+Trilogy Box Set CD, you can also get the data files from there. This is a
+bit complicated, however, due to some ideosyncracies of the Mac HFS file
+system (every Mac file is really two files, one "data fork" and one
+"resource fork"). Aleph One/SDL needs these files:
 
  "Images" (resource fork)
  "Map" (combined data and resource fork of "Map" file in AppleSingle or
