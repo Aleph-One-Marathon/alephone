@@ -11,8 +11,10 @@ Aug 26, 2000 (Loren Petrich):
 
 */
 
-class FileSpecifier;
-class DirectorySpecifier;
+// LP: CodeWarrior complains unless I give the full definition of these classes
+#include "FileHandler.h"
+// class FileSpecifier;
+// class DirectorySpecifier;
 
 
 /* Find all files of a given type.. */
