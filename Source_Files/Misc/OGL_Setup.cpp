@@ -728,8 +728,8 @@ void OGL_ModelData::Load()
 	}
 	else if (StringsEqual(Type,"dim3",4))
 	{
-		// 3D Studio Max
-		Success = LoadModel_Dim3(File, Model);
+		// Brian Barnes's "Dim3" model format (first pass)
+		Success = LoadModel_Dim3(File, Model, LoadModelDim3_First);
 	}
 #if defined(mac) && !defined(TARGET_API_MAC_CARBON)
 	else if (StringsEqual(Type,"qd3d") || StringsEqual(Type,"3dmf") || StringsEqual(Type,"quesa"))
