@@ -484,7 +484,7 @@ bool XML_LqSoundParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"which") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Which,short(NONE),short(NUMBER_OF_SOUND_DEFINITIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Which,short(NONE),short(SHORT_MAX)))
 		{
 			IsPresent[1] = true;
 			return true;
