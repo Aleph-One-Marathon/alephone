@@ -24,6 +24,16 @@ Nov 5, 2000 (Loren Petrich):
 #include "shell.h"
 #include "FileHandler.h"
 
+// Parses a filespec or a directory spec with a path.
+// Args:
+// Name: filename or directory name with a path
+// Spec:
+//   In: FSSpec record containing original directory's vRefNum and parID
+//   Out: FSSpec record of file, or vRefNum and parID of directory
+// WantDirectory: whether one wants a directory instead of a file
+// Returns whether the function operation had been successful
+// The path separator is '/' the Unix/URL convention, instead of MacOS ':'
+static bool ParsePath_MacOS(const char *NameWithPath, FSSpec &Spec, bool WantDirectory);
 
 /*
 	Abstraction for opened files; it does reading, writing, and closing of such files,
@@ -239,6 +249,22 @@ bool OpenedResourceFile::Close()
 }
 
 
+// Can go to subdirectory of subdirectory;
+// uses Unix-style path syntax (/ instead of : as the separator)
+bool DirectorySpecifier::SetToSubdirectory(const char *NameWithPath)
+{
+	FSSpec Spec;
+	Spec.vRefNum = vRefNum;
+	Spec.parID = parID;
+	if (!ParsePath_MacOS(NameWithPath, Spec, true)) return false;
+	
+	vRefNum = Spec.vRefNum;
+	parID = Spec.parID;
+	return true;
+}
+	
+
+
 bool DirectorySpecifier::SetToAppParent()
 {
 	FileSpecifier F;
@@ -308,122 +334,7 @@ void FileSpecifier::SetName(const char *Name, int Type)
 // Parses the directory path and updates the parent directory appropriately
 bool FileSpecifier:: SetNameWithPath(const char *NameWithPath)
 {
-	// String setup
-	int NNPChars = strlen(NameWithPath);
-	int StrPos = 0;
-	
-	// File-info block and name of file found
-	CInfoPBRec PB;
-	Str31 FoundFileName;
-	
-	// Maintained separately, since updating this ought not to affect the FSSpec,
-	// which will be left unchanged in case of failure.
-	long ParentDir = Spec.parID;
-	
-	// Member of a path (either directory or file)
-	Str31 PathMember;
-	
-	// Directory-recursion loop
-	while(true)
-	{
-		// Pull characters off the input string until
-		// either the directory separator or the string end is reached
-		bool IsDir = false;
-		
-		int PathMemberLen = 0;
-		while(StrPos < NNPChars)
-		{
-			// One character at a time
-			char c = NameWithPath[StrPos++];
-			
-			// Hit a directory separator
-			if (c == '/')
-			{
-				IsDir = true;
-				break;
-			}
-			
-			// Put it in
-			if (PathMemberLen < 31)
-			{
-				if (c == ':') c = '/';	// Translate for the MacOS filesystem (separator is : instead of /)
-				PathMember[++PathMemberLen] = c;
-				PathMember[0] = PathMemberLen;
-			}
-		}
-		
-		// Empty directory: ignore; empty file: bomb out
-		if (PathMember[0] == 0)
-		{
-			if (IsDir) continue;
-			else return false;
-		}
-		
-		// Resetting for each directory walk
-		obj_clear(PB);
-		PB.hFileInfo.ioVRefNum = Spec.vRefNum;
-		PB.hFileInfo.ioNamePtr = FoundFileName;
-		
-		// Walk the directory, searching for a file with a matching name
-		int FileIndex = 1;
-		bool FileFound = false;
-		while(true)
-		{
-			// Resetting to look for next file in directory
-			PB.hFileInfo.ioDirID = ParentDir;
-			PB.hFileInfo.ioFDirIndex = FileIndex;
-			
-			// Quit if ran out of files
-			OSErr Err = PBGetCatInfo(&PB, false);
-			if (Err != noErr) break;
-			
-			// Compare names
-			bool NamesEqual = true;
-			for (int i=0; i<=PathMember[0]; i++)
-			{
-				if (FoundFileName[i] != PathMember[i])
-				{
-					NamesEqual = false;
-					break;
-				}
-			}
-						
-			if (NamesEqual)
-			{
-				FileFound = true;
-				// Do the path and the PB agree on whether it's a directory or a file?
-				if (PB.hFileInfo.ioFlAttrib & 0x10)
-				{
-					if (IsDir)
-					{
-						// Grab the new parent-directory ID
-						ParentDir = PB.dirInfo.ioDrDirID;
-						break;
-					}
-					else return false;
-				}
-				else
-				{
-					if (!IsDir)
-					{
-						// Found the file! Now set the FSSpec and exit triumphantly
-						Spec.parID = ParentDir;
-						memset(Spec.name,0,32);
-						memcpy(Spec.name,FoundFileName,int(FoundFileName[0])+1);
-						return true;
-					}
-					else return false;
-				}
-			}
-			// Otherwise, continue to the next file
-			
-			// Next one
-			FileIndex++;
-		}
-		if (!FileFound) return false;
-	}
-	
-	return false;
+	return ParsePath_MacOS(NameWithPath, Spec, false);
 }
 
 
@@ -894,5 +805,134 @@ bool FileSpecifier::operator==(const FileSpecifier& F)
 	
 	return equal;
 
+}
+
+
+bool ParsePath_MacOS(const char *NameWithPath, FSSpec &Spec, bool WantDirectory)
+{
+	// String setup
+	int NNPChars = strlen(NameWithPath);
+	int StrPos = 0;
+	
+	// File-info block and name of file found
+	CInfoPBRec PB;
+	Str31 FoundFileName;
+	
+	// Maintained separately, since updating this ought not to affect the FSSpec,
+	// which will be left unchanged in case of failure.
+	long ParentDir = Spec.parID;
+	
+	// Member of a path (either directory or file)
+	Str31 PathMember;
+	
+	// Directory-recursion loop;
+	while(StrPos < NNPChars)
+	{
+		// Pull characters off the input string until
+		// either the directory separator or the string end is reached.
+		// WantDirectory means that the last name in sequence ought to be a directory
+		// instead of a file.
+		bool IsDir = WantDirectory;
+		
+		int PathMemberLen = 0;
+		while(StrPos < NNPChars)
+		{
+			// One character at a time
+			char c = NameWithPath[StrPos++];
+			
+			// Hit a directory separator
+			if (c == '/')
+			{
+				IsDir = true;
+				break;
+			}
+			
+			// Put it in
+			if (PathMemberLen < 31)
+			{
+				if (c == ':') c = '/';	// Translate for the MacOS filesystem (separator is : instead of /)
+				PathMember[++PathMemberLen] = c;
+				PathMember[0] = PathMemberLen;
+			}
+		}
+		
+		// Empty directory: ignore; empty file: bomb out
+		if (PathMember[0] == 0)
+		{
+			if (IsDir) continue;
+			else return false;
+		}
+		
+		// Resetting for each directory walk
+		obj_clear(PB);
+		PB.hFileInfo.ioVRefNum = Spec.vRefNum;
+		PB.hFileInfo.ioNamePtr = FoundFileName;
+		
+		// Walk the directory, searching for a file with a matching name
+		int FileIndex = 1;
+		bool FileFound = false;
+		while(true)
+		{
+			// Resetting to look for next file in directory
+			PB.hFileInfo.ioDirID = ParentDir;
+			PB.hFileInfo.ioFDirIndex = FileIndex;
+			
+			// Quit if ran out of files
+			OSErr Err = PBGetCatInfo(&PB, false);
+			if (Err != noErr) break;
+			
+			// Compare names
+			bool NamesEqual = true;
+			for (int i=0; i<=PathMember[0]; i++)
+			{
+				if (FoundFileName[i] != PathMember[i])
+				{
+					NamesEqual = false;
+					break;
+				}
+			}
+						
+			if (NamesEqual)
+			{
+				FileFound = true;
+				// Do the path and the PB agree on whether it's a directory or a file?
+				if (PB.hFileInfo.ioFlAttrib & 0x10)
+				{
+					if (IsDir)
+					{
+						// Grab the new parent-directory ID
+						ParentDir = PB.dirInfo.ioDrDirID;
+						break;
+					}
+					else return false;
+				}
+				else
+				{
+					if (!IsDir)
+					{
+						// Found the file! Now set the FSSpec and exit triumphantly
+						Spec.parID = ParentDir;
+						memset(Spec.name,0,32);
+						memcpy(Spec.name,FoundFileName,int(FoundFileName[0])+1);
+						return true;
+					}
+					else return false;
+				}
+			}
+			// Otherwise, continue to the next file
+			FileIndex++;
+		}
+		if (!FileFound) return false;
+	}
+	
+	// Arriving here is appropriate if a directory had been wanted,
+	// though not if a file had been wanted; be sure to update "Spec" as appropriate
+	if (WantDirectory)
+	{
+		Spec.parID = ParentDir;
+		return true;
+	}
+	else
+		return false;
 }
 
