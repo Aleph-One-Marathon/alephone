@@ -735,6 +735,9 @@ void OGL_ModelData::Load()
 		objlist_copy(Norms,NewNorms,3);
 	}	
 	
+	// Will need this to find bounding rectangles
+	Model.FindBoundingBox();
+	
 	// Don't forget the skins
 	OGL_SkinManager::Load();
 }

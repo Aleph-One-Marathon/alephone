@@ -37,6 +37,14 @@ Jan 17, 2001 (Loren Petrich):
 #define MAXIMUM_RENDER_OBJECTS 72
 #define MAXIMUM_OBJECT_BASE_NODES 6
 
+// Function defined at the end
+static void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
+	long_point3d& TransformedPosition,
+	GLfloat Scale,
+	short RelativeAngle,
+	shape_information_data& ShapeInfo);
+
+
 // Inits everything
 RenderPlaceObjsClass::RenderPlaceObjsClass():
 	view(NULL),	// Idiot-proofing
@@ -155,6 +163,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			shape_and_transfer_mode data;
 			shape_information_data *shape_information;
 			shape_information_data scaled_shape_information; // if necessary
+			shape_information_data model_shape_information;	// also if necessary
 			
 			get_object_shape_and_transfer_mode(&view->origin, object_index, &data);
 			// Nonexistent shape: skip
@@ -164,13 +173,30 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			OGL_ModelData *ModelPtr =
 				OGL_GetModelData(GET_COLLECTION(data.collection_code),GET_DESCRIPTOR_SHAPE(object->shape));
 			
-#warning Implement bounding-box code here; it will create a fake sprite rectangle
-			
 			shape_information= rescale_shape_information(
 				extended_get_shape_information(data.collection_code, data.low_level_shape_index),
 				&scaled_shape_information, GET_OBJECT_SCALE_FLAGS(object));
 			// Nonexistent frame: skip
 			if (!shape_information) return NULL;
+			
+			// Create a fake sprite rectangle using the model's bounding box
+			float Scale = 1;
+			if (ModelPtr)
+			{
+				// Copy over
+				model_shape_information = *shape_information;
+				
+				// Set up scaling and return pointer
+				if (TEST_FLAG(object->flags,_object_is_enlarged)) Scale = 1.25;
+				else if (TEST_FLAG(object->flags,_object_is_tiny)) Scale = 0.5;
+				
+				FindProjectedBoundingBox(ModelPtr->Model.BoundingBox,
+					transformed_origin, Scale, object->facing-view->yaw,
+					model_shape_information);
+				
+				// Set pointer back
+				shape_information = &model_shape_information;
+			}
 			
 			/* if the caller wants it, give him the left and right extents of this shape */
 			if (base_nodes)
@@ -269,6 +295,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				{
 					render_object->rectangle.Position = object->location;
 					render_object->rectangle.Azimuth = object->facing;
+					render_object->rectangle.Scale = Scale;
 				}
 					
 				render_object->rectangle.flip_vertical= (shape_information->flags&_Y_MIRRORED_BIT) ? true : false;
@@ -778,4 +805,139 @@ shape_information_data *RenderPlaceObjsClass::rescale_shape_information(
 	}
 	
 	return scaled;
+}
+
+
+// Creates a fake sprite rectangle from a model's bounding box
+void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
+	long_point3d& TransformedPosition,
+	GLfloat Scale,
+	short RelativeAngle,
+	shape_information_data& ShapeInfo)
+{
+	// Reduce to circle range then find trig values
+	short ReducedRA = RelativeAngle & (FULL_CIRCLE - 1);
+	const double TrigMagReciprocal = 1/double(TRIG_MAGNITUDE);
+	double ScaledCosine = Scale*TrigMagReciprocal*double(cosine_table[ReducedRA]);
+	double ScaledSine = Scale*TrigMagReciprocal*double(sine_table[ReducedRA]);
+	
+	// Binary representation: (000) (001) (010) (011) (100) (101) (110) (111)
+	// where 0 is the first BB vertex and 1 is the second;
+	// these are converted into binary numbers for the index
+	GLfloat ExpandedBB[8][3];
+	
+	GLfloat BB00C = ScaledCosine*BoundingBox[0][0];
+	GLfloat BB00S = ScaledSine*BoundingBox[0][0];
+	GLfloat BB01C = ScaledCosine*BoundingBox[0][1];
+	GLfloat BB01S = ScaledSine*BoundingBox[0][1];
+	GLfloat BB02 = Scale*BoundingBox[0][2];
+	GLfloat BB10C = ScaledCosine*BoundingBox[1][0];
+	GLfloat BB10S = ScaledSine*BoundingBox[1][0];
+	GLfloat BB11C = ScaledCosine*BoundingBox[1][1];
+	GLfloat BB11S = ScaledSine*BoundingBox[1][1];
+	GLfloat BB12 = Scale*BoundingBox[1][2];
+	
+	// 000, 001
+	ExpandedBB[0][0] = ExpandedBB[1][0] = BB00C - BB01S;
+	ExpandedBB[0][1] = ExpandedBB[1][1] = BB00S + BB01C;
+	ExpandedBB[0][2] = BB02;
+	ExpandedBB[1][2] = BB12;
+	
+	// 010, 011
+	ExpandedBB[2][0] = ExpandedBB[3][0] = BB00C - BB11S;
+	ExpandedBB[2][1] = ExpandedBB[3][1] = BB00S + BB11C;
+	ExpandedBB[2][2] = BB02;
+	ExpandedBB[3][2] = BB12;
+	
+	// 100, 101
+	ExpandedBB[4][0] = ExpandedBB[5][0] = BB10C - BB01S;
+	ExpandedBB[4][1] = ExpandedBB[5][1] = BB10S + BB01C;
+	ExpandedBB[4][2] = BB02;
+	ExpandedBB[5][2] = BB12;
+	
+	// 110, 111
+	ExpandedBB[6][0] = ExpandedBB[7][0] = BB10C - BB11S;
+	ExpandedBB[6][1] = ExpandedBB[7][1] = BB10S + BB11C;
+	ExpandedBB[6][2] = BB02;
+	ExpandedBB[7][2] = BB12;
+	
+	// Shift by the object's position
+	for (int k=0; k<8; k++)
+	{
+		ExpandedBB[k][0] += TransformedPosition.x;
+		ExpandedBB[k][1] += TransformedPosition.y;
+		ExpandedBB[k][2] += TransformedPosition.z;
+	}
+	
+	// Find minimum and maximum projected Y, Z;
+	// scale to the object's position to be compatible
+	// with the rest of the code.
+	//
+	// Three sets of variables to be found:
+	// Y and Z limits at object's position
+	// Y and Z limits after appropriate projection (ones ultimately used)
+	// Whether the Y and Z limits are out of bounds
+	//
+	// The projected Y and Z will be clipped to some multiple of the
+	// object-position-distance values.
+
+	GLfloat YMin, YMax, ZMin, ZMax;
+	GLfloat Proj_YMin, Proj_YMax, Proj_ZMin, Proj_ZMax;
+	bool OOB_YMin = false, OOB_YMax = false, OOB_ZMin = false, OOB_ZMax = false;
+	
+	for (int k=0; k<8; k++)
+	{
+		GLfloat X = ExpandedBB[k][0];
+		GLfloat Y = ExpandedBB[k][1];
+		GLfloat Z = ExpandedBB[k][2];
+		
+		// Vertex on wrong side; make out-of-bounds
+		if (X <= 0)
+		{
+			if (Y > 0) OOB_YMax = true;
+			else if (Y < 0) OOB_YMin = true;
+			
+			if (Z > 0) OOB_ZMax = true;
+			else if (Z < 0) OOB_ZMin = true;
+		}
+		else
+		{
+			// Vetex on right side; do the projection and compare
+			GLfloat Proj = (TransformedPosition.x/X);
+			GLfloat Proj_Y = Proj*Y;
+			GLfloat Proj_Z = Proj*Z;
+			
+			if (k == 0)
+			{
+				YMin = YMax = Y;
+				ZMin = ZMax = Z;
+				Proj_YMin = Proj_YMax = Proj_Y;
+				Proj_ZMin = Proj_ZMax = Proj_Z;
+			}
+			else
+			{
+				YMin = MIN(YMin,Y);
+				YMax = MAX(YMax,Y);
+				ZMin = MIN(ZMin,Z);
+				ZMax = MAX(ZMax,Z);
+				Proj_YMin = MIN(Proj_YMin,Proj_Y);
+				Proj_YMax = MAX(Proj_YMax,Proj_Y);
+				Proj_ZMin = MIN(Proj_ZMin,Proj_Z);
+				Proj_ZMax = MAX(Proj_ZMax,Proj_Z);
+			}
+		}
+	}
+	
+	// Limit the projection expansion to avoid awkwardly large fake-sprite sizes
+	const GLfloat MAXMULT = 2;
+	YMin *= MAXMULT;
+	YMax *= MAXMULT;
+	ZMin *= MAXMULT;
+	ZMax *= MAXMULT;
+	if (OOB_YMin || Proj_YMin < YMin) Proj_YMin = YMin;
+	if (OOB_YMax || Proj_YMax > YMax) Proj_YMax = YMax;
+	if (OOB_ZMin || Proj_ZMin < ZMin) Proj_ZMin = ZMin;
+	if (OOB_ZMax || Proj_ZMax > ZMax) Proj_ZMax = ZMax;
+	
+	// Plug back into the sprite
 }

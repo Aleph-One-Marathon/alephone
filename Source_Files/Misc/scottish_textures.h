@@ -124,6 +124,7 @@ struct rectangle_definition
 	OGL_ModelData *ModelPtr;
 	world_point3d Position;
 	short Azimuth;
+	float Scale;
 };
 
 struct polygon_definition

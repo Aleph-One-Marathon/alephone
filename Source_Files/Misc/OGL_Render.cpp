@@ -1824,7 +1824,9 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			glLoadMatrixd(World_2_OGLEye);
 			world_point3d& Position = RenderRectangle.Position;
 			glTranslated(Position.x,Position.y,Position.z);
-			glRotated(RenderRectangle.Azimuth,0,0,1);
+			glRotated((360.0/FULL_CIRCLE)*RenderRectangle.Azimuth,0,0,1);
+			float Scale = RenderRectangle.Scale;
+			glScalef(Scale,Scale,Scale);
 			
 			// Be sure to include texture-mode effects as appropriate.
 			short CollColor = GET_DESCRIPTOR_COLLECTION(RenderRectangle.ShapeDesc);
@@ -1994,6 +1996,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	return true;
 }
 
+
 bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT)
 {
 	OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
@@ -2002,6 +2005,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	// Get the skin; test for whether one was actually found
 	OGL_SkinData *SkinPtr = ModelPtr->GetSkin(CLUT);
 	if (!SkinPtr) return false;
+	
+	const GLfloat EdgeColor[3] = {1,1,0};
+	const GLfloat DiagColor[3] = {0,1,1};
+	ModelPtr->Model.RenderBoundingBox(EdgeColor,DiagColor);
 	
 	// Parallel to TextureManager::IsBlended() in OGL_Textures.h
 	bool IsBlended = SkinPtr->OpacityType != OGL_OpacType_Crisp;
