@@ -88,7 +88,9 @@ Aug 28, 2000 (Loren Petrich):
 #include "ChaseCam.h"
 
 // CP Addition:  scripting.h necessary for script loading
-#include "scripting.h"
+// LP: now obsolete
+// #include "scripting.h"
+#include "XML_LevelScript.h"
 
 // For packing and unpacking some of the stuff
 #include "Packing.h"
@@ -235,8 +237,13 @@ void *get_map_for_net_transfer(
 /* This takes a cstring */
 void set_map_file(FileSpecifier& File)
 {
+	// Do whatever parameter restoration is specified before changing the file
+	if (file_is_set) RunRestorationScript();
+
 	MapFileSpec = File;
 	set_scenario_images_file(File);
+	// Only need to do this here
+	LoadLevelScripts(File);
 
 	// Don't care whether there was an error when checking on the file's scenario images
 	clear_game_error();
@@ -327,7 +334,7 @@ bool load_level_from_map(
 			short SavedType, SavedError;
 			SavedError = get_game_error(&SavedType);
 			
-			//CP Addition: load any scripts available
+			//CP Addition: load any scripts available [LP: now in XML_LevelScripts]
 			// if (load_script(1000+level_index) < 0)
 				;  //this sucks.
 			
@@ -764,10 +771,14 @@ bool goto_level(
 			initialize_control_panels_for_level(); /* must be called after the players are initialized */
 	
 			dynamic_world->current_level_number= entry->level_number;
+
+			// LP: doing this here because it's after everything else has been set up
+			RunLevelScript(entry->level_number);
 		} else {
 //			assert(error_pending());
 		}
 	}
+
 //	if(!success) alert_user(fatalError, strERRORS, badReadMap, -1);
 
 	/* We be done.. */
@@ -1061,7 +1072,12 @@ bool load_game_from_file(FileSpecifier& File)
 
 		/* Find the original scenario this saved game was a part of.. */
 		parent_checksum= read_wad_file_parent_checksum(File);
-		if(!use_map_file(parent_checksum))
+		if(use_map_file(parent_checksum))
+		{
+			// LP: getting the level scripting off of the map file
+			RunLevelScript(dynamic_world->current_level_number);
+		}
+		else
 		{
 			/* Tell the user they’re screwed when they try to leave this level. */
 			alert_user(infoError, strERRORS, cantFindMap, 0);
