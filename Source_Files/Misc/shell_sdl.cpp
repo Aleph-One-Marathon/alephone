@@ -1248,12 +1248,3 @@ void dump_screen(void)
 	SDL_FreeSurface(t);
 #endif
 }
-
-
-// from shell.cpp -- ???
-void PlayInterfaceButtonSound(short SoundID)
-{
-	if (TEST_FLAG(input_preferences->modifiers,_inputmod_use_button_sounds))
-		play_sound(SoundID, (world_location3d *) NULL, NONE);
-}
-
