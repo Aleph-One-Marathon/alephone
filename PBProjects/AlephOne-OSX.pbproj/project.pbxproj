@@ -122,6 +122,7 @@
 				4A9504CCFFE6A4B311CA0CBA,
 				4A9504CDFFE6A4B311CA0CBA,
 			);
+			hasScannedForEncodings = 1;
 			isa = PBXProject;
 			mainGroup = 29B97314FDCFA39411CA2CEA;
 			projectDirPath = "";
@@ -445,7 +446,6 @@
 </dict>
 </plist>
 ";
-			shouldUseHeadermap = 0;
 		};
 		29B97327FDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
@@ -1215,30 +1215,35 @@
 			);
 			isa = PBXGroup;
 			name = Lua;
-			path = "/Users/restorer/aleph/aleph lua/Source_Files/Lua";
-			refType = 0;
+			path = ../Source_Files/Lua;
+			refType = 2;
 		};
 		F51B0589047AC6DA01C5C930 = {
+			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = lauxlib.h;
 			refType = 4;
 		};
 		F51B058A047AC6DA01C5C930 = {
+			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = lua.h;
 			refType = 4;
 		};
 		F51B058B047AC6DA01C5C930 = {
+			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = lua_script.cpp;
 			refType = 4;
 		};
 		F51B058C047AC6DA01C5C930 = {
+			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = lua_script.h;
 			refType = 4;
 		};
 		F51B058D047AC6DA01C5C930 = {
+			fileEncoding = 30;
 			isa = PBXFileReference;
 			path = lualib.h;
 			refType = 4;
@@ -3152,7 +3157,6 @@
 </dict>
 </plist>
 ";
-			shouldUseHeadermap = 0;
 		};
 		F53673EF02014B3F01A80001 = {
 			buildActionMask = 2147483647;
@@ -4896,7 +4900,6 @@
 			productInstallPath = /usr/local/bin;
 			productName = "Carbon Standalone";
 			productReference = F5A25343023B713601A80001;
-			shouldUseHeadermap = 0;
 		};
 		F5A25345023B713601A80001 = {
 			isa = PBXTargetDependency;
