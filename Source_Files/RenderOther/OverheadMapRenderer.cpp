@@ -183,7 +183,7 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 				{
 					if (clockwise_polygon->floor_height!=counterclockwise_polygon->floor_height)
 					{
-						line_color= LINE_IS_LANDSCAPED(line) ? NONE : _elevation_line_color;
+						line_color= LINE_IS_LANDSCAPED(line) ? NONE : static_cast<short>(_elevation_line_color);
 					}
 				}
 			}
