@@ -159,6 +159,41 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 }
 
 
+// for managing the image loading and unloading
+void OGL_LoadImages(int Collection)
+{
+	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
+	
+	vector<TextureOptionsEntry>& TOL = TOList[Collection];
+	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
+	{
+		FileSpecifier File;
+		try
+		{
+			// Load the normal image if it has a filename specified for it
+			if (!(TOIter->OptionsData.NormalColors.size() > 1)) throw 0;
+			if (!File.SetToApp()) throw 0;
+			if (!File.SetNameWithPath(&TOIter->OptionsData.NormalColors[0])) throw 0;
+			if (!LoadImageFromFile(TOIter->OptionsData.NormalImg,File)) throw 0;
+		}
+		catch(...)
+		{}
+		TOIter->OptionsData.GlowImg.Clear();
+	}
+}
+void OGL_UnloadImages(int Collection)
+{
+	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
+	
+	vector<TextureOptionsEntry>& TOL = TOList[Collection];
+	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
+	{
+		TOIter->OptionsData.NormalImg.Clear();
+		TOIter->OptionsData.GlowImg.Clear();
+	}
+}
+
+
 // XML-parsing stuff
 
 class XML_TO_ClearParser: public XML_ElementParser
@@ -212,6 +247,7 @@ class XML_TextureOptionsParser: public XML_ElementParser
 {
 	bool CollIsPresent, BitmapIsPresent;
 	short Collection, CLUT, Bitmap;
+	
 	OGL_TextureOptions Data;
 
 public:
@@ -270,6 +306,34 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	else if (strcmp(Tag,"void_visible") == 0)
 	{
 		return (ReadBooleanValue(Value,Data.VoidVisible));
+	}
+	else if (strcmp(Tag,"normal_image") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.NormalColors.resize(nchars);
+		memcpy(&Data.NormalColors[0],Value,nchars);
+		return true;
+	}
+	else if (strcmp(Tag,"normal_mask") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.NormalMask.resize(nchars);
+		memcpy(&Data.NormalMask[0],Value,nchars);
+		return true;
+	}
+	else if (strcmp(Tag,"glow_image") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.GlowColors.resize(nchars);
+		memcpy(&Data.GlowColors[0],Value,nchars);
+		return true;
+	}
+	else if (strcmp(Tag,"glow_mask") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.GlowMask.resize(nchars);
+		memcpy(&Data.GlowMask[0],Value,nchars);
+		return true;
 	}
 	UnrecognizedTag();
 	return false;
