@@ -221,23 +221,11 @@ static void PreferencesHandler(ParsedControl &Ctrl, void *UserData)
 		switch(Ctrl.ID.id)
 		{
 		case iCHOOSE_MONITOR:
-#ifndef USE_SHEETS
-			HideWindow(HDPtr->Window);
-#endif
 			display_device_dialog(&graphics_preferences->device_spec);
-#ifndef USE_SHEETS
-			ShowWindow(HDPtr->Window);
-#endif
 			break;
 			
 		case iOPENGL_OPTIONS:
-#ifndef USE_SHEETS
-			HideWindow(HDPtr->Window);
-#endif
 			OGL_ConfigureDialog(graphics_preferences->OGL_Configure);
-#ifndef USE_SHEETS
-			ShowWindow(HDPtr->Window);
-#endif
 			break; 
 		}
 		break;
@@ -484,7 +472,7 @@ void handle_preferences(
 	short OldSize = graphics_preferences->screen_mode.size;
 	
 	// Run!
-	if (RunModalDialog(Window(),PreferencesHandler,&HandlerData))
+	if (RunModalDialog(Window(), false, PreferencesHandler, &HandlerData))
 	{
 		// OK
 		

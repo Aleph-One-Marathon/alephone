@@ -175,7 +175,7 @@ short get_level_number_from_user(
 	
 	BuildMenu(MenuCtrl, LevelNumberMenuBuilder);
 	
-	short LevelNumber = RunModalDialog(Window()) ?
+	short LevelNumber = RunModalDialog(Window(), false) ?
 		(GetControl32BitValue(MenuCtrl) - 1) :
 		NONE;
 

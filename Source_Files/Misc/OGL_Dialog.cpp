@@ -52,6 +52,7 @@ Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 */
 
 #include "cseries.h"
+#include "shell.h"
 #include "OGL_Setup.h"
 #include "MacCheckbox.h"
 #include <stdio.h>
@@ -100,6 +101,250 @@ enum
 	BasedOn_Menu = 12140
 };
 
+
+#ifdef USES_NIBS
+
+const CFStringRef Window_Prefs_OpenGL = CFSTR("Prefs_OpenGL");
+const CFStringRef Window_Prefs_OpenGL_Textures = CFSTR("Prefs_OpenGL_Textures");
+
+// For doing checkboxes en masse
+// Which checkbox, flag value
+const int NumCheckboxes = 11;
+const int CheckboxDispatch[NumCheckboxes][2] = {
+	{ZBuffer_Item, OGL_Flag_ZBuffer},
+	{ColorVoid_Item, OGL_Flag_VoidColor},
+	{FlatColorLandscapes_Item, OGL_Flag_FlatLand},
+	{AllowFog_Item, OGL_Flag_Fog},
+	{Model_Item, OGL_Flag_3D_Models},
+	
+	{TwoDimGraphics_Item, OGL_Flag_2DGraphics},
+	{FlatStaticEffect_Item, OGL_Flag_FlatStatic},
+	{Fader_Item, OGL_Flag_Fader},
+	{LiquidSeeThru_Item, OGL_Flag_LiqSeeThru},
+	{Map_Item, OGL_Flag_Map},
+	
+	{TextureFix_Item, OGL_Flag_TextureFix}
+};
+
+struct TextureConfigDlgHandlerData
+{
+	OGL_Texture_Configure *TxtrConfigList;
+	short WhichTexture;
+	ControlRef NearCtrl, FarCtrl, ResCtrl, ColorCtrl;
+};
+
+static void TextureConfigDlgHandler(ParsedControl &Ctrl, void *Data)
+{
+	TextureConfigDlgHandlerData *HDPtr = (TextureConfigDlgHandlerData *)(Data);
+	
+	if (Ctrl.ID.id == BasedOn_Item)
+	{
+		// Where to copy from
+		int WhichSource = GetControl32BitValue(Ctrl.Ctrl) - 1;
+		
+		// Don't copy from oneself!
+		if (WhichSource != HDPtr->WhichTexture)
+		{
+			OGL_Texture_Configure &TxtrConfig = HDPtr->TxtrConfigList[WhichSource];
+			
+			SetControl32BitValue(HDPtr->NearCtrl, TxtrConfig.NearFilter+1);
+		
+			SetControl32BitValue(HDPtr->FarCtrl, TxtrConfig.FarFilter+1);
+			
+			SetControl32BitValue(HDPtr->ResCtrl, TxtrConfig.Resolution+1);
+			
+			SetControl32BitValue(HDPtr->ColorCtrl, TxtrConfig.ColorFormat+1);
+		}
+	}
+}
+
+
+// Texture-configuration dialog box
+// True for OK, false for cancel
+static bool TextureConfigureDialog(OGL_Texture_Configure *TxtrConfigList, short WhichTexture)
+{
+	OSStatus err;
+	
+	// Get the window
+	AutoNibWindow Window(GUI_Nib,Window_Prefs_OpenGL_Textures);
+	
+	// Set up the dialog box
+	OGL_Texture_Configure &TxtrConfig = TxtrConfigList[WhichTexture];
+
+	ControlRef NearCtrl = GetCtrlFromWindow(Window(), 0, Near_Item);
+	SetControl32BitValue(NearCtrl, TxtrConfig.NearFilter+1);
+
+	ControlRef FarCtrl = GetCtrlFromWindow(Window(), 0, Far_Item);
+	SetControl32BitValue(FarCtrl, TxtrConfig.FarFilter+1);
+
+	ControlRef ResCtrl = GetCtrlFromWindow(Window(), 0, Resolution_Item);
+	SetControl32BitValue(ResCtrl, TxtrConfig.Resolution+1);
+
+	ControlRef ColorCtrl = GetCtrlFromWindow(Window(), 0, ColorDepth_Item);
+	SetControl32BitValue(ColorCtrl, TxtrConfig.ColorFormat+1);
+
+	ControlRef BasedOnCtrl = GetCtrlFromWindow(Window(), 0, BasedOn_Item);
+	SetControl32BitValue(BasedOnCtrl, WhichTexture+1);
+
+	ControlRef WhichOneCtrl = GetCtrlFromWindow(Window(), 0, WhichOne_Item);
+	
+	MenuRef BasedOnMenu = GetControlPopupMenuHandle(BasedOnCtrl);
+	Str255 WhichTxtrLabel;
+	GetMenuItemText(BasedOnMenu, WhichTexture+1, WhichTxtrLabel);
+	
+	SetControlData(WhichOneCtrl,
+		kControlLabelPart,
+		kControlStaticTextTextTag,
+		WhichTxtrLabel[0],
+		WhichTxtrLabel+1
+		);
+	
+	TextureConfigDlgHandlerData HandlerData;
+	HandlerData.TxtrConfigList = TxtrConfigList;
+	HandlerData.WhichTexture = WhichTexture;
+	HandlerData.NearCtrl = NearCtrl;
+	HandlerData.FarCtrl = FarCtrl;
+	HandlerData.ResCtrl = ResCtrl;
+	HandlerData.ColorCtrl = ColorCtrl;
+	
+
+	bool IsOK = RunModalDialog(Window(),true, TextureConfigDlgHandler, &HandlerData);
+	
+	if (IsOK)
+	{
+		TxtrConfig.NearFilter = GetControl32BitValue(NearCtrl) - 1;
+		
+		TxtrConfig.FarFilter = GetControl32BitValue(FarCtrl) - 1;
+		
+		TxtrConfig.Resolution = GetControl32BitValue(ResCtrl) - 1;
+		
+		TxtrConfig.ColorFormat = GetControl32BitValue(ColorCtrl) - 1;
+	}
+	
+	return IsOK;
+}
+
+
+
+struct OGL_Dialog_Handler_Data
+{
+	RGBColor VoidColor, LscpColors[4][2];
+	OGL_Texture_Configure TxtrConfigList[OGL_NUMBER_OF_TEXTURE_TYPES];
+};
+
+
+static void OGL_Dialog_Handler(ParsedControl &Ctrl, void *Data)
+{
+	OGL_Dialog_Handler_Data *HDPtr = (OGL_Dialog_Handler_Data *)(Data);
+	
+	if (Ctrl.ID.id == ColorVoidSwatch_Item)
+	{
+		RGBColor *ClrPtr = &HDPtr->VoidColor;
+		getpstr(ptemporary, ColorPicker_PromptStrings, ColorVoid_String);
+		PickControlColor(Ctrl.Ctrl, ClrPtr, ptemporary);
+	}
+	else if (
+		(Ctrl.ID.id >= LandscapeSwatch_ItemBase) &&
+		(Ctrl.ID.id < (LandscapeSwatch_ItemBase+8))
+		)
+	{
+		int ix = Ctrl.ID.id - LandscapeSwatch_ItemBase;
+		int il = ix/2;
+		int ie = ix - 2*il;
+		
+		RGBColor *ClrPtr = &HDPtr->LscpColors[il][ie];
+		getpstr(ptemporary, ColorPicker_PromptStrings, FlatColorLandscapes_StringBase+ix);
+		PickControlColor(Ctrl.Ctrl, ClrPtr, ptemporary);
+	}
+	else
+	{
+		switch(Ctrl.ID.id)
+		{
+		case Walls_Item:
+			TextureConfigureDialog(HDPtr->TxtrConfigList, OGL_Txtr_Wall);
+			break;
+		
+		case Landscape_Item:
+			TextureConfigureDialog(HDPtr->TxtrConfigList, OGL_Txtr_Landscape);
+			break;
+		
+		case Inhabitants_Item:
+			TextureConfigureDialog(HDPtr->TxtrConfigList, OGL_Txtr_Inhabitant);
+			break;
+		
+		case WeaponsInHand_Item:
+			TextureConfigureDialog(HDPtr->TxtrConfigList, OGL_Txtr_WeaponsInHand);
+			break;
+		}
+	}
+}
+
+
+// True for OK, false for cancel
+bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
+{
+	OSStatus err;
+	
+	// Get the window
+	AutoNibWindow Window(GUI_Nib,Window_Prefs_OpenGL);
+
+	ControlRef Checkboxes[NumCheckboxes];
+	for (int k=0; k<NumCheckboxes; k++)
+	{
+		Checkboxes[k] = GetCtrlFromWindow(Window(), 0, CheckboxDispatch[k][0]);
+		SetControl32BitValue(Checkboxes[k], TEST_FLAG(Data.Flags, CheckboxDispatch[k][1]));
+	}
+
+	// For making the swatches drawable and hittable
+	AutoDrawability Drawability;
+	AutoHittability Hittability;
+	
+	// Temporary area for the colors;
+	OGL_Dialog_Handler_Data HandlerData;
+	HandlerData.VoidColor = Data.VoidColor;
+	for (int il=0; il<4; il++)
+		for (int ie=0; ie<2; ie++)
+			HandlerData.LscpColors[il][ie] = Data.LscpColors[il][ie];
+	
+	// The swatch controls:
+	ControlRef VoidSwatch = GetCtrlFromWindow(Window(), 0, ColorVoidSwatch_Item);
+	Drawability(VoidSwatch, SwatchDrawer, &HandlerData.VoidColor);
+	Hittability(VoidSwatch);
+	
+	ControlRef LscpSwatches[4][2];
+	int cwid = LandscapeSwatch_ItemBase;
+	for (int il=0; il<4; il++)
+		for (int ie=0; ie<2; ie++)
+		{
+			LscpSwatches[il][ie] = GetCtrlFromWindow(Window(), 0, cwid++);
+			Drawability(LscpSwatches[il][ie], SwatchDrawer, &HandlerData.LscpColors[il][ie]);
+			Hittability(LscpSwatches[il][ie]);
+		}
+	
+	for (int k=0; k<OGL_NUMBER_OF_TEXTURE_TYPES; k++)
+		HandlerData.TxtrConfigList[k] = Data.TxtrConfigList[k];
+	
+	bool IsOK = RunModalDialog(Window(), true, OGL_Dialog_Handler, &HandlerData);
+	
+	if (IsOK)
+	{
+		for (int k=0; k<NumCheckboxes; k++)
+			SET_FLAG(Data.Flags, CheckboxDispatch[k][1], GetControl32BitValue(Checkboxes[k]));
+		
+		Data.VoidColor = HandlerData.VoidColor;
+		for (int il=0; il<4; il++)
+			for (int ie=0; ie<2; ie++)
+				Data.LscpColors[il][ie] = HandlerData.LscpColors[il][ie];
+		
+		for (int k=0; k<OGL_NUMBER_OF_TEXTURE_TYPES; k++)
+			Data.TxtrConfigList[k] = HandlerData.TxtrConfigList[k];
+	}
+	
+	return IsOK;
+}
+
+
+#else
 
 inline void ToggleControl(ControlHandle Hdl)
 {
@@ -517,3 +762,5 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	
 	return IsOK;
 }
+
+#endif

@@ -66,7 +66,7 @@ bool quit_without_saving(
 	// Get the window
 	AutoNibWindow Window(GUI_Nib,Window_Game_Quit_NoSave);
 	
-	bool HitOK = RunModalDialog(Window());
+	bool HitOK = RunModalDialog(Window(), false);
 		
 	return HitOK;
 }
