@@ -45,6 +45,7 @@ Nov 25, 2000 (Loren Petrich):
 #include "interface_menus.h"
 
 #include "XML_LevelScript.h"
+#include "music.h"
 
 #ifdef env68k
 	#pragma segment macintosh_
@@ -686,6 +687,10 @@ void set_drawing_clip_rectangle(
 void show_movie(
 	short index)
 {
+	// What scale factor for the movie?
+	// Note: its default value is the original scaling of movie files
+	float PlaybackSize = 2;
+
 	// LP: can do this with any index
 	// if(index==0) /* Only one valid.. */
 	{
@@ -694,7 +699,7 @@ void show_movie(
 			FSSpec movie_spec; // <===== fill in based on index!
 			OSErr err= noErr;
 			
-			FileSpecifier *File = GetLevelMovie();
+			FileSpecifier *File = GetLevelMovie(PlaybackSize);
 			if (File)
 			{
 				movie_spec = File->GetSpec();
@@ -722,12 +727,26 @@ void show_movie(
 						{
 							Rect dispBounds;
 							bool aborted= false;
-				
+							
+							// Any better way of doing this? This simply causes
+							// the upcoming sound to stutter
+							/*
+							// Don't want previous level's music playing...
+							stop_music();
+							
+							// Busy-wait to clear QT's sound buffers;
+							// wait 1/4 second
+							int TargetTickCount = machine_tick_count() + 15;
+							while(machine_tick_count() < TargetTickCount)
+								global_idle_proc();
+							*/
+							
 							/* Find movie bounds and zero base it.... */
 							GetMovieBox(movie, &dispBounds);
 							OffsetRect(&dispBounds, -dispBounds.left, -dispBounds.top);
-							dispBounds.right= RECTANGLE_WIDTH(&dispBounds)*2;
-							dispBounds.bottom= RECTANGLE_HEIGHT(&dispBounds)*2;
+							// Original scaling: 2
+							dispBounds.right= short(PlaybackSize*RECTANGLE_WIDTH(&dispBounds) + 0.5);
+							dispBounds.bottom= short(PlaybackSize*RECTANGLE_HEIGHT(&dispBounds) + 0.5);
 							
 							/* ‚enter... */
 							AdjustRect(&screen_window->portRect, &dispBounds, &dispBounds, centerRect);

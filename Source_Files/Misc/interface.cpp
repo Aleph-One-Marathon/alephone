@@ -46,7 +46,8 @@ Aug 24, 2000 (Loren Petrich):
 	object-oriented file handlers
 
 Nov 25, 2000 (Loren Petrich):
-	Added support for movies that start at any level, including at the end of a game
+	Added support for movies that start at any level, including at the end of a game.
+	Also added end-screen control.
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -151,9 +152,6 @@ extern TP2PerfGlobals perf_globals;
 // #define NUMBER_OF_FINAL_SCREENS 1
 // #endif
 #define FINAL_SCREEN_DURATION (INDEFINATE_TIME_DELAY)
-
-// This is a fake level index for the end of the game
-const short FAKE_END_LEVEL_INDEX = 99;
 
 
 /* ------------- structures */
@@ -1039,8 +1037,10 @@ static void display_epilogue(
 	
 	hide_cursor();
 	FindEndMovie();
-	show_movie(FAKE_END_LEVEL_INDEX);	
-	try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+FAKE_END_LEVEL_INDEX, true, true);
+	// Setting of the end-screen parameters has been moved to XML_LevelScript.cpp
+	show_movie(EndScreenIndex);	
+	for (int i=0; i<NumEndScreens; i++)
+		try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+EndScreenIndex+i, true, true);
 	show_cursor();
 	
 	return;

@@ -9,7 +9,7 @@
 	only on certain levels.
 
 Nov 25, 2000 (Loren Petrich)
-	Added support for specifying movies for levels, as Jesse Simko had requested
+	Added support for specifying movies for levels, as Jesse Simko had requested.
 */
 
 
@@ -48,7 +48,14 @@ void FindLevelMovie(short index);
 void FindEndMovie();
 
 // Gets the pointer of a movie to play at a level, as a pointer to the file specifier.
-// A NULL pointer means no movie to play
-FileSpecifier *GetLevelMovie();
+// A NULL pointer means no movie to play.
+// Its arg is the playback size, which will not be changed if not specified explicitly.
+FileSpecifier *GetLevelMovie(float& PlaybackSize);
+
+// For selecting the end-of-game screens --
+// what fake level index for them, and how many to display
+// (resource numbers increasing in sequence) 
+extern short EndScreenIndex;
+extern short NumEndScreens;
 
 #endif

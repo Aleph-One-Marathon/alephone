@@ -53,7 +53,12 @@ struct LevelScriptCommand
 	// with the root directory being the map file's directory
 	vector<char> FileSpec;
 	
-	LevelScriptCommand(): RsrcID(UnsetResource) {}
+	// Additional data:
+	
+	// Relative size for a movie (negative means don't use)
+	float Size;
+	
+	LevelScriptCommand(): RsrcID(UnsetResource), Size(NONE) {}
 };
 
 struct LevelScriptHeader
@@ -105,6 +110,14 @@ static bool PfhortranFound = false;
 // Movie filespec and whether it points to a real file
 static FileSpecifier MovieFile;
 static bool MovieFileExists = false;
+static float MovieSize = NONE;
+
+// For selecting the end-of-game screens --
+// what fake level index for them, and how many to display
+// (resource numbers increasing in sequence) 
+// (defaults from interface.cpp)
+short EndScreenIndex = 99;
+short NumEndScreens = 1;
 
 
 // The level-script parsers are separate from the main MML ones,
@@ -119,6 +132,7 @@ static XML_ElementParser *LevelScript_GetParser();
 static XML_ElementParser *EndLevelScript_GetParser();
 static XML_ElementParser *DefaultLevelScript_GetParser();
 static XML_ElementParser *RestoreLevelScript_GetParser();
+static XML_ElementParser *EndScreens_GetParser();
 
 
 // This is for searching for a script and running it -- works for pseudo-levels
@@ -143,6 +157,7 @@ static void SetupLSParseTree()
 	LevelScriptSetParser.AddChild(EndLevelScript_GetParser());
 	LevelScriptSetParser.AddChild(DefaultLevelScript_GetParser());
 	LevelScriptSetParser.AddChild(RestoreLevelScript_GetParser());
+	LevelScriptSetParser.AddChild(EndScreens_GetParser());
 }
 
 
@@ -159,6 +174,10 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	
 	// Get rid of the previous level script
 	LevelScripts.clear();
+	
+	// Set these to their defaults before trying to change them
+	EndScreenIndex = 99;
+	NumEndScreens = 1;
 	
 	// Lazy setup of XML parsing definitions
 	SetupLSParseTree();
@@ -339,6 +358,9 @@ void FindMovieInScript(int LevelIndex)
 				MovieFile = MapParentDir + &Cmd.FileSpec[0];
 				MovieFileExists = MovieFile.Exists();
 #endif
+				// Set the size only if there was a movie file here
+				if (MovieFileExists)
+					MovieSize = Cmd.Size;
 			}
 			break;
 		}
@@ -380,6 +402,7 @@ FileSpecifier *GetLevelMusic()
 void FindLevelMovie(short index)
 {
 	MovieFileExists = false;
+	MovieSize = NONE;
 	FindMovieInScript(LevelScriptHeader::Default);
 	FindMovieInScript(index);
 }
@@ -387,15 +410,20 @@ void FindLevelMovie(short index)
 void FindEndMovie()
 {
 	MovieFileExists = false;
+	MovieSize = NONE;
 	FindMovieInScript(LevelScriptHeader::Default);
 	FindMovieInScript(LevelScriptHeader::End);
 }
 
 
-FileSpecifier *GetLevelMovie()
+FileSpecifier *GetLevelMovie(float& Size)
 {
 	if (MovieFileExists)
+	{
+		// Set only if the movie-size value is positive
+		if (MovieSize >= 0) Size = MovieSize;
 		return &MovieFile;
+	}
 	else
 		return NULL;
 }
@@ -443,6 +471,10 @@ bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 		memcpy(&Cmd.FileSpec[0],Value,vlen);
 		ObjectWasFound = true;
 		return true;
+	}
+	else if (strcmp(Tag,"size") == 0)
+	{
+		return ReadNumericalValue(Value,"%f",Cmd.Size);
 	}
 	UnrecognizedTag();
 	return false;
@@ -592,6 +624,36 @@ static XML_SpecialLevelScriptParser
 	RestoreScriptParser("restore",LevelScriptHeader::Restore);
 
 
+// For setting up end-screen control
+class XML_EndScreenParser: public XML_ElementParser
+{
+	// Need to get a level ID
+	bool LevelWasFound;
+	
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+	
+	XML_EndScreenParser(): XML_ElementParser("end_screens") {}
+};
+
+
+bool XML_EndScreenParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"index") == 0)
+	{
+		return ReadNumericalValue(Value,"%hd",EndScreenIndex);
+	}
+	else if (strcmp(Tag,"count") == 0)
+	{
+		return ReadBoundedNumericalValue(Value,"%hd",NumEndScreens,short(0),short(SHRT_MAX));
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_EndScreenParser EndScreenParser;
+
+
 // XML-parser support
 XML_ElementParser *LevelScript_GetParser()
 {
@@ -616,4 +678,8 @@ XML_ElementParser *RestoreLevelScript_GetParser()
 	AddScriptCommands(RestoreScriptParser);
 
 	return &RestoreScriptParser;
+}
+XML_ElementParser *EndScreens_GetParser()
+{
+	return &EndScreenParser;
 }
