@@ -570,8 +570,9 @@ void initialize_screen(
 #else
 		screen_window= GetNewCWindow(windGAME_WINDOW, NULL, (WindowPtr) -1);
 #endif
-        //AS: slight speedup; disable shadow
-        ChangeWindowAttributes(screen_window,kWindowNoShadowAttribute,0);
+		//AS: slight speedup; disable shadow
+		ChangeWindowAttributes(screen_window,kWindowNoShadowAttribute,0);
+		SetWindowAlpha(screen_window,1.0);
 #else
 		screen_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
 		assert(screen_window);
@@ -1924,10 +1925,19 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 		RGBBackColor(&rgb_white);
 		
 //#if defined(USE_CARBON_ACCESSORS)
-		CopyBits(GetPortBitMapForCopyBits(world_pixels), GetPortBitMapForCopyBits(GetWindowPort(screen_window)),
-			&source, &destination, srcCopy, (RgnHandle) NULL);
-		/* flush part of the port */
-		FlushGrafPortRect(GetWindowPort(screen_window), destination);
+		Rect screenRect;
+		GetPortBounds(GetWindowPort(screen_window), &screenRect);
+		Rect adjustedRect;
+		adjustedRect.top= destination.top- screenRect.top;
+		adjustedRect.left= destination.left- screenRect.left;
+		adjustedRect.bottom= adjustedRect.top + RECTANGLE_HEIGHT(&source);
+		adjustedRect.right= adjustedRect.left + RECTANGLE_WIDTH(&source);
+		
+		PixMapHandle screen_pixmap= (*world_device)->gdPMap;
+		LockPixels(screen_pixmap);
+		CopyBits(GetPortBitMapForCopyBits(world_pixels), reinterpret_cast<BitMap*>(*screen_pixmap),
+			&source, &adjustedRect, srcCopy, (RgnHandle) NULL);
+		UnlockPixels(screen_pixmap);
 /*
 #else
 		CopyBits((BitMapPtr)*world_pixels->portPixMap, &screen_window->portBits,
