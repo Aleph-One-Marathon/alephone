@@ -86,12 +86,17 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include <windows.h>
 #endif
 
-#if defined (__APPLE__) && defined (__MACH__)
-# include <OpenGL/gl.h>
-# include <OpenGL/glu.h>
-#else
-# include <GL/gl.h>
-# include <GL/glu.h>
+#ifdef HAVE_OPENGL
+# if defined (__APPLE__) && defined (__MACH__)
+#   include <OpenGL/gl.h>
+#   include <OpenGL/glu.h>
+# elif defined mac
+#   include "gl.h"
+#   include "glu.h"
+# else
+#   include <GL/gl.h>
+#   include <GL/glu.h>
+# endif
 #endif
 
 #ifdef mac

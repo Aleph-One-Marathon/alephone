@@ -66,7 +66,9 @@ Mar 08, 2002 (Woody Zenfell):
 
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
-#  include <OpenGL/gl.h>
+#   include <OpenGL/gl.h>
+# elif defined mac
+#   include "gl.h"
 # else
 #  include <GL/gl.h>
 # endif
@@ -86,9 +88,11 @@ Mar 08, 2002 (Woody Zenfell):
 
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
-#  include <OpenGL/gl.h>
+#   include <OpenGL/gl.h>
+# elif defined mac
+#   include "gl.h"
 # else
-#  include <GL/gl.h>
+#   include <GL/gl.h>
 # endif
 #endif
 

@@ -127,13 +127,19 @@ Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
 #include <windows.h>
 #endif
 
-#if defined (__APPLE__) && defined (__MACH__)
-# include <OpenGL/gl.h>
-# include <OpenGL/glu.h>
-#else
-# include <GL/gl.h>
-# include <GL/glu.h>
+#ifdef HAVE_OPENGL
+# if defined (__APPLE__) && defined (__MACH__)
+#   include <OpenGL/gl.h>
+#   include <OpenGL/glu.h>
+# elif defined mac
+#   include "gl.h"
+#   include "glu.h"
+# else
+#   include <GL/gl.h>
+#   include <GL/glu.h>
+# endif
 #endif
+
 
 #ifdef mac
 #if defined(TARGET_API_MAC_CARBON)
