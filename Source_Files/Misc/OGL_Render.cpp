@@ -363,11 +363,6 @@ static uint16 FlatStaticColor[4];
 static GM_Random StaticRandom;
 
 
-#ifdef UNUSED
-// Whether to do one-pass multitexturing
-static bool OnePassMultitexturing = false;
-#endif
-
 // Function for resetting map fonts when starting up an OpenGL rendering context;
 // defined in overhead_map.cpp
 extern void OGL_ResetMapFonts(bool IsStarting);
@@ -450,6 +445,13 @@ static void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat
 
 // Set up the shader data
 static void SetupShaders();
+
+
+// Remember the last blend set so as to avoid redundant blend resettings
+static short BlendType = OGL_BlendType_Crossfade;
+
+// Set the blend, being sure to remember the blend type set to
+static void SetBlend(short _BlendType);
 
 
 #ifdef mac
@@ -577,25 +579,12 @@ bool OGL_StartRun()
 	glAlphaFunc(GL_GREATER,0.5);
 	
 	// [DEFAULT]
-	// Set standard blending function (for smooth transitions)
+	// Set standard crossfade blending function (for smooth transitions)
 	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	
 	// Switch on use of vertex and texture-coordinate arrays
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
-#ifdef UNUSED
-	OnePassMultitexturing = false;
-	// Texture 0 is the default one; texture 1 is the additional texture
-#ifdef GL_ARB_multitexture
-	if (OnePassMultitexturing)
-	{
-		glClientActiveTextureARB(GL_TEXTURE1_ARB);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glClientActiveTextureARB(GL_TEXTURE0_ARB);
-	}
-#endif
-#endif
 	
 	// Initialize the texture accounting
 	OGL_StartTextures();
@@ -1486,30 +1475,8 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	// Painting a texture...
 	glEnable(GL_TEXTURE_2D);
 	
-#ifdef UNUSED
-	bool DoTwoSimultaneousTextures = OnePassMultitexturing && TMgr.IsGlowMapped();
-#ifdef GL_ARB_multitexture
-	if (DoTwoSimultaneousTextures)
-	{
-		glClientActiveTextureARB(GL_TEXTURE1_ARB);
-		glTexCoordPointer(2,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
-		glClientActiveTextureARB(GL_TEXTURE0_ARB);
-	}
-#endif
-
-	TMgr.RenderNormal();
-#ifdef GL_ARB_multitexture
-	if (DoTwoSimultaneousTextures)
-	{
-		glActiveTextureARB(GL_TEXTURE1_ARB);
-		glEnable(GL_TEXTURE_2D);
-		TMgr.RenderGlowing(true);
-		glActiveTextureARB(GL_TEXTURE0_ARB);
-	}
-#endif
-#endif
-	
-	TMgr.RenderNormal();
+	TMgr.RenderNormal();	
+	SetBlend(TMgr.NormalBlend());
 	
 	if (PolygonVariableShade)
 	{
@@ -1639,20 +1606,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		// Go!
 		// Don't care about triangulation here, because the polygon never got split
 		glDrawArrays(GL_POLYGON,0,NumVertices);
-
-#ifdef UNUSED
-#ifdef GL_ARB_multitexture
-	if (DoTwoSimultaneousTextures)
-	{
-		glActiveTextureARB(GL_TEXTURE1_ARB);
-		glBindTexture(GL_TEXTURE_2D,0);
-		glDisable(GL_TEXTURE_2D);
-		glActiveTextureARB(GL_TEXTURE0_ARB);
-	}
-	else
-#endif
-#endif
-
+	
 	// Do textured rendering
 	if (TMgr.IsGlowMapped())
 	{
@@ -1666,13 +1620,13 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		glEnable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
 		
-#ifdef UNUSED
-		TMgr.RenderGlowing(false);
-#endif
-
 		TMgr.RenderGlowing();
+		SetBlend(TMgr.GlowBlend());
 		glDrawArrays(GL_POLYGON,0,NumVertices);
 	}
+	
+	// Revert to default blend
+	SetBlend(OGL_BlendType_Crossfade);
 	
 	return true;
 }
@@ -1814,7 +1768,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	
 	// Painting a texture...
 	glEnable(GL_TEXTURE_2D);
-	TMgr.RenderNormal();
+	TMgr.RenderNormal();		
 	
 	// Go!
 	glDrawArrays(GL_POLYGON,0,NumVertices);
@@ -2008,26 +1962,8 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	}
 	else
 	{
-
-#ifdef UNUSED
-#ifdef GL_ARB_multitexture
-		if (DoTwoSimultaneousTextures)
-		{
-			glActiveTextureARB(GL_TEXTURE1_ARB);
-			glEnable(GL_TEXTURE_2D);
-			TMgr.RenderGlowing(true);
-			glActiveTextureARB(GL_TEXTURE0_ARB);
-			
-			glDrawArrays(GL_POLYGON,0,4);
-			
-			glActiveTextureARB(GL_TEXTURE1_ARB);
-			glBindTexture(GL_TEXTURE_2D,0);
-			glDisable(GL_TEXTURE_2D);
-			glActiveTextureARB(GL_TEXTURE0_ARB);
-		}
-		else
-#endif
-#endif
+		// Ought not to set this for static mode
+		SetBlend(TMgr.NormalBlend());
 
 		// Do textured rendering
 		glDrawArrays(GL_POLYGON,0,4);
@@ -2041,9 +1977,13 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			glDisable(GL_ALPHA_TEST);
 			
 			TMgr.RenderGlowing();
+			SetBlend(TMgr.GlowBlend());
 			glDrawArrays(GL_POLYGON,0,4);
 		}
 	}
+	
+	// Revert to default blend
+	SetBlend(OGL_BlendType_Crossfade);
 		
 	return true;
 }
@@ -2296,6 +2236,9 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		
 		ModelRenderObject.Render(ModelPtr->Model, Actual_Z_Buffering, StandardShaders, NumShaders);
 		
+		// Revert to default blend
+		SetBlend(OGL_BlendType_Crossfade);
+		
 		// Restore default
 		if (ExternallyLit) glDisableClientState(GL_COLOR_ARRAY);
 	}
@@ -2441,7 +2384,10 @@ void NormalShader(void *Data)
 	glColor4fv(ShaderData.Color);
 	
 	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Normal))
+	{
 		LoadModelSkin(ShaderData.SkinPtr->NormalImg,ShaderData.Collection, ShaderData.CLUT);
+		SetBlend(ShaderData.SkinPtr->NormalBlend);
+	}
 }
 
 void GlowingShader(void *Data)
@@ -2452,7 +2398,10 @@ void GlowingShader(void *Data)
 	glDisable(GL_ALPHA_TEST);
 	
 	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Glowing))
+	{
 		LoadModelSkin(ShaderData.SkinPtr->GlowImg, ShaderData.Collection, ShaderData.CLUT);
+		SetBlend(ShaderData.SkinPtr->GlowBlend);
+	}
 }
 
 
@@ -2652,12 +2601,19 @@ bool OGL_RenderCrosshairs()
 	
 	// Proper projection
 	SetProjectionType(Projection_Screen);
-	
-	// What color
-	glColor3usv((GLushort *)&Crosshairs.Color);
 
-	// No textures painted here	
+	// No textures painted here, but will blend
 	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_ALPHA_TEST);
+	glEnable(GL_BLEND);
+	
+	// What color; make 50% transparent (Alexander Strange's idea)
+	GLfloat Color[4];
+	Color[0] = Crosshairs.Color.red/65535.;
+	Color[1] = Crosshairs.Color.green/65535.;
+	Color[2] = Crosshairs.Color.blue/65535.;
+	Color[3] = 0.5;
+	glColor4fv(Color);
 	
 	// The center:
 	short XCen = ViewWidth >> 1;
@@ -2678,15 +2634,17 @@ bool OGL_RenderCrosshairs()
 	glLineWidth(Crosshairs.Thickness);
 	
 	// Draw the lines; make them foreground
+	// Made "float" to get around apparent bug in MacOS glVertex2s()
+	// (only the positive-side lines got shown)
 	glBegin(GL_LINES);
-	glVertex2s(- Crosshairs.FromCenter + 1, 0);
-	glVertex2s(- Crosshairs.FromCenter - Crosshairs.Length + 1, 0);
-	glVertex2s(0, - Crosshairs.FromCenter + 1);
-	glVertex2s(0, - Crosshairs.FromCenter - Crosshairs.Length + 1);
-	glVertex2s(Crosshairs.FromCenter - 1, 0);
-	glVertex2s(Crosshairs.FromCenter + Crosshairs.Length - 1, 0);
-	glVertex2s(0, Crosshairs.FromCenter - 1);
-	glVertex2s(0, Crosshairs.FromCenter + Crosshairs.Length - 1);
+	glVertex2f(- Crosshairs.FromCenter + 1, 0);
+	glVertex2f(- Crosshairs.FromCenter - Crosshairs.Length + 1, 0);
+	glVertex2f(0, - Crosshairs.FromCenter + 1);
+	glVertex2f(0, - Crosshairs.FromCenter - Crosshairs.Length + 1);
+	glVertex2f(Crosshairs.FromCenter - 1, 0);
+	glVertex2f(Crosshairs.FromCenter + Crosshairs.Length - 1, 0);
+	glVertex2f(0, Crosshairs.FromCenter - 1);
+	glVertex2f(0, Crosshairs.FromCenter + Crosshairs.Length - 1);
 	glEnd();
 	
 	// Done with that modelview matrix
@@ -2781,6 +2739,29 @@ bool OGL_SetInfravisionTint(short Collection, bool IsTinted, float Red, float Gr
 
 	// A way of defining some OGL_Textures stuff in OGL_Render.h
 	return SetInfravisionTint(Collection, IsTinted, Red, Green, Blue);
+}
+
+
+// Set the blend, being sure to remember the blend type set to
+static void SetBlend(short _BlendType)
+{
+	// Don't need to do anything if no change
+	if (_BlendType == BlendType) return;
+	
+	// Remember what's being set to
+	BlendType = _BlendType;
+	
+	switch(BlendType)
+	{
+	// Blend-function args are incoming pixel, then background/previous pixel
+	case OGL_BlendType_Crossfade:
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		break;
+		
+	case OGL_BlendType_Add:
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+		break;
+	}
 }
 
 
