@@ -114,6 +114,7 @@ enum // input devices
 struct system_information_data
 {
 	bool has_seven;
+	bool has_ten;
 	bool has_apple_events;
 	bool appletalk_is_available;
 	bool machine_is_68k;
