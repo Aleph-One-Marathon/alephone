@@ -44,6 +44,11 @@
 #include    "Logging.h"
 #include    <dsound.h>
 
+#ifdef SPEEX
+#include "preferences.h"
+#include "network_speex.h"
+#endif
+
 
 
 static  LPDIRECTSOUNDCAPTURE        sDirectSoundCapture     = NULL;
@@ -95,12 +100,12 @@ transmit_captured_data(bool inForceSend) {
 
     // If we don't have a full packet's worth yet, don't send unless we're squeezing out the end.
     if(theAmountOfDataAvailable >= get_capture_byte_count_per_packet() || inForceSend) {
-
         // Lock capture buffer so we can copy audio out
         void*           theFirstChunkStart;
         unsigned long   theFirstChunkSize;
         void*           theSecondChunkStart;
         unsigned long   theSecondChunkSize;
+
     
         sCaptureBuffer->Lock(sNextReadStartPosition, theAmountOfDataAvailable, &theFirstChunkStart, &theFirstChunkSize,
             &theSecondChunkStart, &theSecondChunkSize, 0);
@@ -167,7 +172,7 @@ open_network_microphone() {
             theWaveFormat.cbSize            = 0;
 
             // Let's try a half-second buffer.
-            sCaptureBufferSize              = theWaveFormat.nAvgBytesPerSec / 2;
+            sCaptureBufferSize              = (theWaveFormat.nAvgBytesPerSec / 2);
 
             DSCBUFFERDESC   theRecordingBufferDescription;
             ZeroMemory(&theRecordingBufferDescription, sizeof(theRecordingBufferDescription));
@@ -192,6 +197,12 @@ open_network_microphone() {
             }
         }
     }
+
+#ifdef SPEEX
+	if (network_preferences->use_speex_encoder) {
+		init_speex_encoder();
+	}
+#endif
 
     if(!sCaptureSystemReady)
         logAnomaly("Could not set up DirectSoundCapture - network microphone disabled");
@@ -243,6 +254,12 @@ close_network_microphone() {
         sDirectSoundCapture->Release();
         sDirectSoundCapture = NULL;
     }
+
+#ifdef SPEEX
+	if (network_preferences->use_speex_encoder) {
+		destroy_speex_encoder();
+	}
+#endif
 
     sCaptureSystemReady = false;
 }

@@ -153,6 +153,32 @@ int32 copy_and_speex_encode(uint8* outStorage, void* inStorage, int32 inCount, i
     static int storedSamples = 0;
     int bytesWritten = 0;
     float frame[160];
+	if (inCount + storedSamples < 160) {
+		// not enough to encode a frame; add the data to storedFrame
+	    while (inCount > 0) {
+		    if (s16Bit) {
+			    if (sStereo) {
+				    // downmix to mono
+					storedFrame[storedSamples] = (((int16 *) inStorage)[0] + ((int16 *) inStorage)[1]) / 2.0;
+			    } else {
+			       storedFrame[storedSamples] = *((int16  *) inStorage);
+			    }
+			    inStorage = static_cast<int16*>(inStorage) + sCaptureStride;
+		   } else {
+		       if (sStereo) {
+		          storedFrame[storedSamples] = ((int16) ((((uint8 *)inStorage)[0] + ((uint8 *)inStorage)[1]) / 2) - 128) << 8;
+		      } else {
+		          storedFrame[storedSamples] = ((int16) (*((uint8 *)inStorage) - 128)) << 8;            
+		     }
+		     inStorage = static_cast<uint8*>(inStorage) + sCaptureStride;
+		   }
+		   inCount--;
+		   storedSamples++;
+		}
+		return 0;
+	}
+
+
     // first, use the old stored samples
     while (inCount + storedSamples >= 160) {
         // build a frame	
@@ -218,6 +244,7 @@ int32 copy_and_speex_encode(uint8* outStorage, void* inStorage, int32 inCount, i
 #endif SPEEX
 
 // Returns pair (used network storage bytes, used capture storage bytes)
+// assumes inAmountOfCaptureStorage > sCaptureBytesPerNetworkAudioByte
 static pair<int32, int32>
 copy_data_in_capture_format_to_network_format(uint8* inNetworkStorage, int inAmountOfNetworkStorage,
                                               void* inCaptureStorage, int inAmountOfCaptureStorage) {
@@ -296,7 +323,7 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     int32 theTotalCaptureBytesConsumed = 0;
 
     // Keep sending if we have data and either we're squeezing out the last drop or we have a packet's-worth.
-    while(inFirstChunkBytesRemaining > 0 &&
+    while(inFirstChunkBytesRemaining >= sCaptureBytesPerNetworkAudioByte &&
         (inForceSend || inFirstChunkBytesRemaining + inSecondChunkBytesRemaining >= (int32)sCaptureBytesPerPacket)) {
 
         theBytesConsumed = copy_data_in_capture_format_to_network_format(theOutgoingAudioData,
@@ -332,7 +359,7 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     }
 
     // Now, the first chunk is exhausted.  See if there's any left in the second chunk.  Same rules apply.
-    while(inSecondChunkBytesRemaining > 0 &&
+    while(inSecondChunkBytesRemaining >= sCaptureBytesPerNetworkAudioByte &&
         (inForceSend || inSecondChunkBytesRemaining >= kNetworkAudioDataBytesPerPacket)) {
         
         theBytesConsumed = copy_data_in_capture_format_to_network_format(theOutgoingAudioData, kNetworkAudioDataBytesPerPacket,
