@@ -549,7 +549,7 @@ bool new_game(
 		
 		/* Load the collections */
 		/* entering map might fail if NetSync() fails.. */
-		success= entering_map();
+		success= entering_map(false);
 	}
 	
 	// LP change: adding chase-cam initialization
@@ -767,7 +767,7 @@ bool goto_level(
 
 			/* entering_map might fail if netsync fails, but we will have already displayed */
 			/* the error.. */
-			success= entering_map();
+			success= entering_map(false);
 		}
 
 		if(success) /* successfully switched. (guaranteed except in net games) */
@@ -1130,7 +1130,7 @@ bool load_game_from_file(FileSpecifier& File)
 		set_random_seed(dynamic_world->random_seed);
 		
 		/* Load the shapes and whatnot.. */		
-		entering_map();
+		entering_map(true);
 	} 
 
 	return success;

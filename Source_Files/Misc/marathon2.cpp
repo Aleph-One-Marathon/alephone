@@ -228,8 +228,8 @@ void leaving_map(
 /* call this function after the new level has been completely read into memory, after
 	player->location and player->facing have been updated, and as close to the end of
 	the loading process in general as possible. */
-bool entering_map(
-	void)
+// LP: added whether a savegame is being restored (skip Pfhortran init if that's the case)
+bool entering_map(bool restoring_saved)
 {
 	bool success= true;
 
@@ -261,7 +261,7 @@ bool entering_map(
 
 	reset_player_queues(); //¦¦
 	//CP Addition: Run startup script (if available)
-	script_init();
+	script_init(restoring_saved);
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
 

@@ -992,7 +992,8 @@ extern short LoadedWallTexture;
 void initialize_marathon(void);
 
 void leaving_map(void);
-bool entering_map(void);
+// LP: added whether a savegame is being restored (skip Pfhortran init if that's the case)
+bool entering_map(bool restoring_saved);
 
 int16 update_world(void);
 
