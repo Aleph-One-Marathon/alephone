@@ -3354,7 +3354,7 @@ void s_Player_Control(script_instruction inst)
 		default:
 			return;
 	}
-	uint32 action_flags = NULL;
+	uint32 action_flags = 0;
 	
 	if (sPfhortranActionQueues == NULL)
 	{
