@@ -873,8 +873,8 @@
 		3D3A410C04DF92C400000107 = {
 			isa = PBXFileReference;
 			name = GUI.nib;
-			path = /Users/astrange/aleph/Resources/GUI.nib;
-			refType = 0;
+			path = ../Resources/GUI.nib;
+			refType = 2;
 		};
 		3D3A410D04DF92C400000107 = {
 			fileRef = 3D3A410C04DF92C400000107;
