@@ -165,6 +165,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 Feb 24, 2002 (Loren Petrich):
 	Modified to use the new refresh_frequency field in the graphics prefs,
 	so that a selection will be persistent.
+
+Apr 29, 2002 (Loren Petrich):
+	Added automatic setting of screen resolution on request
 */
 
 /*
@@ -373,7 +376,8 @@ static bool DM_HandleError(char *Description, OSErr ErrorCode);
 
 // Changes the monitor's resolution;
 // returns the success of doing so
-static bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height);
+static bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height,
+	bool ShowFreqDialog);
 
 // Callback for getting display-mode info
 static pascal void DM_ModeInfoCallback(void *UserData,
@@ -383,10 +387,6 @@ static pascal void DM_ModeInfoCallback(void *UserData,
 // it is for catching keyboard events
 static pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
 	EventRecord *Event, short *ItemHit);
-
-// Stuff for getting and setting monitor-refresh frequencies from the preferences:
-static float GetRefreshFreq();
-static void SetRefreshFreq(float Freq);
 
 // Parsing of mode name to get frequency:
 static float GetFreqFromName(Str255 Name);
@@ -400,7 +400,7 @@ static void direct_animate_screen_clut(
 
 /* ---------- code */
 void initialize_screen(
-	struct screen_mode_data *mode)
+	struct screen_mode_data *mode, bool ShowFreqDialog)
 {
 	OSErr error;
 	Rect bounds;
@@ -445,7 +445,7 @@ void initialize_screen(
 		assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
 		const ViewSizeData& VS = ViewSizes[msize];
 		DM_ChangeResolution(world_device, graphics_preferences->device_spec.bit_depth,
-			VS.OverallWidth, VS.OverallHeight);
+			VS.OverallWidth, VS.OverallHeight, ShowFreqDialog);
 	}
 	else if (screen_initialized)
 	{
@@ -2389,7 +2389,8 @@ void DM_ModeDimList::SetDims(short _Width, short _Height)
 
 // Changes the monitor's resolution and creates a DSp context for the new resolution
 // and deletes the old one if necessary; returns the success of doing so
-bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height)
+bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height,
+	bool ShowFreqDialog)
 {
 	if (!DM_Check()) return false;
 	
@@ -2458,7 +2459,7 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	if (!MDPtr) return false;
 	
 	// Find the closest of the monitor frequences to the prefs frequency:
-	float PrevFreq = GetRefreshFreq();
+	float PrevFreq = graphics_preferences->refresh_frequency;
 	float SmallestDiff = PrevFreq;
 	int BestFitIndex = 0;
 	
@@ -2472,6 +2473,19 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 			BestFitIndex = im;
 			SmallestDiff = AbsFreqDiff;
 		}
+	}
+	
+	// Set monitor resolution and frequency automatically if requested;
+	// don't use the dialog box for that.
+	if (!ShowFreqDialog)
+	{
+		unsigned long TempBitDepth = BitDepth;
+		Err = DMSetDisplayMode(Device,MDPtr->WhichMD(BestFitIndex).csData,&TempBitDepth,NULL,Session.State);
+		bool ChangeSuccess = (Err == noErr);
+		if (ChangeSuccess)
+			graphics_preferences->refresh_frequency = 
+				GetFreqFromName(MDPtr->WhichMD(BestFitIndex).Name);
+		return ChangeSuccess;
 	}
 	
 	// Build MacOS Classic dialog box
@@ -2592,7 +2606,8 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	
 	// Remember the frequency setting for next time
 	if (ChangeSuccess)
-		SetRefreshFreq(GetFreqFromName(MDPtr->WhichMD(Selected).Name));
+		graphics_preferences->refresh_frequency = 
+			GetFreqFromName(MDPtr->WhichMD(Selected).Name);
 	
 	return ChangeSuccess;
 }
@@ -2643,20 +2658,6 @@ pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
 	return false;
 }
 
-
-// Stuff for getting and setting monitor-refresh frequencies from the preferences:
-
-static float GetRefreshFreq()
-{
-	// Fixed to float
-	return graphics_preferences->refresh_frequency/65535.0;
-}
-
-static void SetRefreshFreq(float Freq)
-{
-	// Float to fixed
-	graphics_preferences->refresh_frequency = int(Freq*65536.0 + 0.5);
-}
 
 // Parsing of mode name to get frequency:
 static float GetFreqFromName(Str255 Name)
