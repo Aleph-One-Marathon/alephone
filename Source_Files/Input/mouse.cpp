@@ -429,8 +429,6 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 				case kEventMouseDragged:
 					#if defined(HAVE_CORE_GRAPHICS)
 					CGGetLastMouseDelta(&CGx, &CGy);
-					#endif
-					OSStatus err;
 					if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationForever)) == noErr)
 					{
 						_CE_delta_x += CGx;
@@ -438,8 +436,15 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 						MPExitCriticalRegion(CE_MouseLock);
 					}
 					err = noErr;
-					#if defined(HAVE_CORE_GRAPHICS)
 					CGWarpMouseCursorPosition(CGPointMake(CENTER_MOUSE_X, CENTER_MOUSE_Y));
+					#else
+					// Extract the mouse delta directly from the event record
+					Point Loc;
+					OSStatus err = GetEventParameter(theEvent,
+						kEventParamMouseDelta, typeQDPoint,
+						NULL, sizeof(Loc), NULL, &Loc);
+					_CE_delta_x = Loc.h;
+					_CE_delta_y = Loc.v;
 					#endif
 					break;
 
