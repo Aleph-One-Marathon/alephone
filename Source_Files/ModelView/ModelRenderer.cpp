@@ -14,11 +14,20 @@
 typedef unsigned short SORT_INDEX_TYPE;
 typedef GLfloat SORT_VALUE_TYPE;
 
-template<class T> void Swap(T& Indx1, T& Indx2)
+// Templates are a bit slow on my system, so expanding...
+
+inline void Swap(SORT_INDEX_TYPE& Indx1, SORT_INDEX_TYPE& Indx2)
 {
-	T Temp = Indx1;
+	SORT_INDEX_TYPE Temp = Indx1;
 	Indx1 = Indx2;
 	Indx2 = Temp;
+}
+
+inline void SwapValues(SORT_VALUE_TYPE& Val1, SORT_VALUE_TYPE& Val2)
+{
+	SORT_VALUE_TYPE Temp = Val1;
+	Val1 = Val2;
+	Val2 = Temp;
 }
 
 
@@ -146,18 +155,18 @@ void GNU_IndexedQuickSort(SORT_INDEX_TYPE *pbase, SORT_INDEX_TYPE total_elems)
 			if (WrongOrder(LoVal,MidVal))
 			{
 				Swap(*lo,*mid);
-				Swap(LoVal,MidVal);
+				SwapValues(LoVal,MidVal);
 			}
 				
 			if (WrongOrder(MidVal,HiVal))
 			{
 				Swap(*mid,*hi);
-				Swap(MidVal,HiVal);
+				SwapValues(MidVal,HiVal);
 			
 				if (WrongOrder(LoVal,MidVal))
 				{
 					Swap(*lo,*mid);
-					Swap(LoVal,MidVal);
+					SwapValues(LoVal,MidVal);
 				}
 			}
 			
@@ -235,7 +244,8 @@ void GNU_IndexedQuickSort(SORT_INDEX_TYPE *pbase, SORT_INDEX_TYPE total_elems)
 	
 	SORT_INDEX_TYPE *end_ptr = base_ptr + (total_elems - 1);
     SORT_INDEX_TYPE *tmp_ptr = base_ptr;
-    SORT_INDEX_TYPE *thresh = MIN(end_ptr, base_ptr + MAX_THRESH);
+    SORT_INDEX_TYPE *base_ptr_with_thresh = base_ptr + MAX_THRESH;
+    SORT_INDEX_TYPE *thresh = MIN(end_ptr, base_ptr_with_thresh);
     register SORT_INDEX_TYPE *run_ptr;
 
 	/* Find smallest element in first threshold and place it at the
@@ -311,13 +321,13 @@ static void IndexedQuickSort(SORT_INDEX_TYPE *First, SORT_INDEX_TYPE *Last)
 		if (WrongOrder(FirstVal,MidVal))
 		{
 			Swap(*First,*Mid);
-			Swap(FirstVal,MidVal);
+			SwapValues(FirstVal,MidVal);
 		}
 		
 		if (WrongOrder(MidVal,LastVal))
 		{
 			Swap(*Mid,*Last);
-			Swap(MidVal,LastVal);
+			SwapValues(MidVal,LastVal);
 			
 			if (WrongOrder(FirstVal,MidVal))
 			{
@@ -427,11 +437,14 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 		SetupRenderPass(Model,Shaders[0]);
 		
 		SortedVertIndices.resize(Model.NumVI());
+		GLushort *DestTriangle = &SortedVertIndices[0];
 		for (int k=0; k<NumTriangles; k++)
 		{
 			GLushort *SourceTriangle = &Model.VertIndices[3*Indices[k]];
-			GLushort *DestTriangle = &SortedVertIndices[3*k];
-			objlist_copy(DestTriangle,SourceTriangle,3);
+			// Copy-over unrolled for speed
+			*(DestTriangle++) = *(SourceTriangle++);
+			*(DestTriangle++) = *(SourceTriangle++);
+			*(DestTriangle++) = *(SourceTriangle++);
 		}
 		
 		// Go!
