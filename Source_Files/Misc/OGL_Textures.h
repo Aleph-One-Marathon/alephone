@@ -119,6 +119,10 @@ class TextureManager
 		
 	// Private methods
 	
+	// This one tries to load substitute textures into NormalBuffer and GlowBuffer;
+	// it returns whether such textures were loaded.
+	bool LoadSubstituteTexture();
+	
 	// This one finds the width, height, etc. of a texture type;
 	// it returns "false" if some texture's dimensions do not fit.
 	bool SetupTextureGeometry();
