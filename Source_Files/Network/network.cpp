@@ -204,6 +204,7 @@ static connection_map_t connections_to_clients;
 static CommunicationsChannel *connection_to_server = NULL;
 static int next_stream_id = 0;
 static IPaddress host_address;
+static bool host_address_specified = false;
 static MessageInflater *inflater = NULL;
 static uint32 next_join_attempt;
 
@@ -715,7 +716,7 @@ bool NetGameJoin(
 	const char* host_addr_string
 	)
 {
-	OSErr error;
+	OSErr error = noErr;
 	bool success= false;
 
 #ifdef TEST_MODEM
@@ -723,14 +724,16 @@ bool NetGameJoin(
 #else
 	
 	/* Attempt a connection to host */
-	
-	// SDL_net declares ResolveAddress without "const" on the char; we can't guarantee
-	// our caller that it will remain const unless we protect it like this.
-	char*		theStringCopy = strdup(host_addr_string);
 
-	error = SDLNet_ResolveHost(&host_address, theStringCopy, GAME_PORT);
-
-	free(theStringCopy);
+	host_address_specified = (host_addr_string != NULL);
+	if (host_address_specified)
+	{
+		// SDL_net declares ResolveAddress without "const" on the char; we can't guarantee
+		// our caller that it will remain const unless we protect it like this.
+		char*		theStringCopy = strdup(host_addr_string);
+		error = SDLNet_ResolveHost(&host_address, theStringCopy, GAME_PORT);
+		free(theStringCopy);
+	}
 	
 	if (!error) {
 		connection_to_server = new CommunicationsChannel();
@@ -749,6 +752,16 @@ bool NetGameJoin(
 #endif
 	
 	return success;
+}
+
+void NetRetargetJoinAttempts(const IPaddress* inAddress)
+{
+	host_address_specified = (inAddress != NULL);
+	if(host_address_specified)
+	{
+		host_address = *inAddress;
+		host_address.port = SDL_SwapBE16(GAME_PORT);
+	}
 }
 
 void NetCancelJoin(
@@ -1623,7 +1636,8 @@ short NetUpdateJoinState(
 			//	 so we look for that and abort dialog when it happens.
 			if (machine_tick_count() >= next_join_attempt) {
 				uint32 ticks_before_connection_attempt = machine_tick_count();
-				connection_to_server->connect(host_address);
+				if(host_address_specified)
+					connection_to_server->connect(host_address);
 				if (connection_to_server->isConnected())
 					newState = netJoining;
 				else if (ticks_before_connection_attempt + 3*MACHINE_TICKS_PER_SECOND < machine_tick_count ()) {

@@ -81,6 +81,9 @@ September 17, 2004 (jkvw):
 // get_entry_point_flags_for_game_type
 #include	"network_games.h"
 
+// LAN game-location services
+#include	"network_private.h"
+
 
 
 
@@ -145,7 +148,6 @@ enum {
         iMAP_FILE_SELECTOR			// Choose Map file (not choose level within map)
                 
 };
-
 
 
 
@@ -854,11 +856,6 @@ send_text(w_text_entry* te) {
     }
 }
 
-// Is this even useful anymore?  This dates back before widgets and dialogs could find each other.
-// Anyway it probably replicates "top_dialog" or whatever that is already in the dialog code.
-// ANSWER: yes, it is still useful; critical, in fact, for the SSLP callbacks to find the w_found_players widget.
-static dialog* sActiveDialog;
-
 // This is called when the user clicks on a found player to attempt to gather him in.
 static void
 gather_player_callback(w_found_players* foundPlayersWidget, prospective_joiner_info &player) {
@@ -910,32 +907,33 @@ autogather_callback(w_select* inAutoGather) {
 
 
 static void
-found_player(prospective_joiner_info &player) {
-        assert(sActiveDialog != NULL);
+found_player(dialog* inDialog, prospective_joiner_info &player) {
+        assert(inDialog != NULL);
         
-        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(sActiveDialog->get_widget_by_id(iNETWORK_LIST_BOX));
+        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(inDialog->get_widget_by_id(iNETWORK_LIST_BOX));
         assert(theFoundPlayers != NULL);
         
         theFoundPlayers->found_player(player);
         
-        w_toggle*	theAutoGather = dynamic_cast<w_toggle*>(sActiveDialog->get_widget_by_id(iAUTO_GATHER));
+        w_toggle*	theAutoGather = dynamic_cast<w_toggle*>(inDialog->get_widget_by_id(iAUTO_GATHER));
         assert(theAutoGather != NULL);
         
         if(theAutoGather->get_selection() > 0)
                 gather_player_callback(theFoundPlayers, player);
                 
-        sActiveDialog->draw_dirty_widgets();
+        inDialog->draw_dirty_widgets();
 }
 
 
 // This is a callback of sorts; the dialog will invoke it during its idle time.
 static void
 gather_processing_function(dialog* inDialog) {
+	GathererAvailableAnnouncer::pump();
 
 	prospective_joiner_info player;
 
 	if (NetCheckForNewJoiner(player))
-		found_player(player);
+		found_player(inDialog, player);
 }
 
 
@@ -955,8 +953,6 @@ bool network_gather(bool inResumingGame)
 		if (NetEnter()) {               
                         // ZZZ: gather network game dialog
                         dialog d;
-                        
-                        sActiveDialog = &d;
                         
                         d.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
                     
@@ -1011,6 +1007,8 @@ bool network_gather(bool inResumingGame)
                         d.add(play_button_w);
                         
                         d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+			GathererAvailableAnnouncer announcer;
                         
                         d.set_processing_function(gather_processing_function);
                         
@@ -1027,8 +1025,6 @@ bool network_gather(bool inResumingGame)
                                 theDialogResult = -1;	// simulate "cancel" clicked if NetGather failed.
                         }
                   
-                        sActiveDialog = NULL;
-                
                         if(theDialogResult == 0) {
                                 bool new_autogather_setting = autogather_w->get_selection() ? true : false;
                                 if(network_preferences->autogather != new_autogather_setting)
@@ -1070,9 +1066,7 @@ bool network_gather(bool inResumingGame)
 
 static void
 join_processing_function(dialog* inDialog) {
-	// Let SSLP do its thing (respond to FIND messages, hint out HAVE messages, etc.)
-	SSLP_Pump();
-
+	JoinerSeekingGathererAnnouncer::pump();
 
 	// The rest of this taken almost directly from the join_dialog_filter_proc in the Mac version:
 
@@ -1187,10 +1181,8 @@ respond_to_hint_toggle(w_select* inToggle) {
 
 int network_join(void)
 {
-//printf("network_join\n");
-
-	if (NetEnter()) {
-        
+	if (NetEnter())
+	{
                 dialog d;
                 
                 d.add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR));
@@ -1260,8 +1252,6 @@ int network_join(void)
                                                         (void *)&myPlayerInfo, sizeof(player_info), get_network_version(),
                                                         hint_w->get_selection() ? hint_address_w->get_text() : NULL);
                         if (did_join) {
-                                // OK, system is now advertising this player so gatherers can find us.
-        
                                 // Store user prefs
                                 pstrcpy(player_preferences->name, myPlayerInfo.name);
                                 player_preferences->team = myPlayerInfo.team;
@@ -1316,8 +1306,9 @@ int network_join(void)
                                 w_button*	cancel_w = new w_button("CANCEL", dialog_cancel, &d2);
                                 cancel_w->set_identifier(iCANCEL);
                                 d2.add(cancel_w);
+
+				JoinerSeekingGathererAnnouncer announcer(hint_w->get_selection() != 0);
  
-                                // Need to pump SSLP to respond to FIND messages, to hint, etc.
                                 d2.set_processing_function(join_processing_function);
         
                                 int theDialogResult = d2.run(false /*play intro/exit sounds?  no because our retvalues always sound like cancels*/);
@@ -1332,7 +1323,7 @@ int network_join(void)
                                         return theDialogResult;
                                 }// theDialogResult != -1 (accepted into game)
 
-                        }// did_join == true (call to NetGameJoin() worked to publish name)
+                        }// did_join == true (call to NetGameJoin() worked)
 
                 }// d.run() == 0 (player wanted to join, not cancel, in first box)
 

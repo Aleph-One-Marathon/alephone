@@ -64,6 +64,7 @@ September 17, 2004 (jkvw):
 #include "network_games.h"
 //#include "network_stream.h"
 #include "network_lookup_sdl.h"
+#include "network_private.h" // actually only need "network_dialogs_private.h"
 
 // STL Libraries
 #include <vector>
@@ -259,6 +260,7 @@ bool network_gather(bool inResumingGame)
 			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
 				sizeof(myPlayerInfo), inResumingGame))
 			{
+				GathererAvailableAnnouncer announcer;
 				do
 				{
 					short number_of_players= NetGetNumberOfPlayers();
@@ -429,6 +431,8 @@ int network_join(
 		GetPort(&old_port);
 		SetPort(GetWindowPort(GetDialogWindow(dialog)));
 		ShowWindow(GetDialogWindow(dialog));
+
+		JoinerSeekingGathererAnnouncer announcer(get_boolean_control_value(dialog, iJOIN_BY_HOST));
 		
 		do
 		{
@@ -1037,8 +1041,9 @@ static pascal Boolean gather_dialog_filter_proc(
 	GetPort(&old_port);
 	SetPort(GetWindowPort(GetDialogWindow(dialog)));
 
+	GathererAvailableAnnouncer::pump();
+	
 	/* update the names list box; if we don’t have a selection afterwords, dim the ADD button */
-
 	prospective_joiner_info info;
 
 	if (NetCheckForNewJoiner(info)) {
@@ -1219,6 +1224,8 @@ static pascal Boolean join_dialog_filter_proc(
 	/* preprocess events */	
 	GetPort(&old_port);
 	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+
+	JoinerSeekingGathererAnnouncer::pump();
 
 	/* give the player area time (for animation, etc.) */
 

@@ -46,6 +46,9 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 #include	"network.h"
 
+// "network_dialogs_private.h"
+#include	"SSLP_API.h"
+
 #define	GAME_PORT 4226
 
 // (ZZZ:) Moved here from sdl_network.h and macintosh_network.h
@@ -285,5 +288,36 @@ enum {
 /* ===== end of application specific data structures/enums */
 
 const NetDistributionInfo* NetGetDistributionInfoForType(int16 inType);
+
+
+
+// "network_dialogs_private.h" follows
+
+class GathererAvailableAnnouncer
+{
+public:
+	GathererAvailableAnnouncer();
+	~GathererAvailableAnnouncer();
+	static void pump();
+
+private:
+	SSLP_ServiceInstance	mServiceInstance;
+};
+
+
+class JoinerSeekingGathererAnnouncer
+{
+public:
+	JoinerSeekingGathererAnnouncer(bool shouldSeek);
+	~JoinerSeekingGathererAnnouncer();
+	static void pump();
+
+private:
+	static void found_gatherer_callback(const SSLP_ServiceInstance* instance);
+	static void lost_gatherer_callback(const SSLP_ServiceInstance* instance);
+	
+	bool mShouldSeek;
+};
+
 
 #endif//NETWORK_PRIVATE_H

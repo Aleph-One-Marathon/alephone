@@ -75,6 +75,12 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"network_games.h"
 #include    "player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
 
+// For LAN netgame location services
+#include	<sstream>
+#include	"network_private.h" // actually just need "network_dialogs_private.h"
+#include	"SSLP_API.h"
+extern void NetRetargetJoinAttempts(const IPaddress* inAddress);
+
 
 #ifdef HAVE_SDL_NET
 
@@ -102,6 +108,77 @@ static uint16 GetDialogGameOptions(NetgameSetupData& Data, short game_type);
 static void SetDialogGameOptions(NetgameSetupData& Data, uint16 game_options);
 
 #endif
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// LAN game-location services support
+
+static const string
+get_sslp_service_type()
+{
+	stringstream ss;
+	ss << "A1 Gatherer V" << get_network_version();
+	return ss.str();
+}
+
+
+GathererAvailableAnnouncer::GathererAvailableAnnouncer()
+{
+	strncpy(mServiceInstance.sslps_type, get_sslp_service_type().c_str(), SSLP_MAX_TYPE_LENGTH);
+	strncpy(mServiceInstance.sslps_name, "Boomer", SSLP_MAX_NAME_LENGTH);
+	memset(&(mServiceInstance.sslps_address), '\0', sizeof(mServiceInstance.sslps_address));
+	SSLP_Allow_Service_Discovery(&mServiceInstance);
+}
+
+GathererAvailableAnnouncer::~GathererAvailableAnnouncer()
+{
+	SSLP_Disallow_Service_Discovery(&mServiceInstance);
+}
+
+void // static
+GathererAvailableAnnouncer::pump()
+{
+	SSLP_Pump();
+}
+
+
+JoinerSeekingGathererAnnouncer::JoinerSeekingGathererAnnouncer(bool shouldSeek) : mShouldSeek(shouldSeek)
+{
+	if(mShouldSeek)
+		SSLP_Locate_Service_Instances(
+				get_sslp_service_type().c_str(),
+				found_gatherer_callback,
+				lost_gatherer_callback,
+				found_gatherer_callback
+				);
+}
+
+JoinerSeekingGathererAnnouncer::~JoinerSeekingGathererAnnouncer()
+{
+	if(mShouldSeek)
+		SSLP_Stop_Locating_Service_Instances(get_sslp_service_type().c_str());
+}
+
+void // static
+JoinerSeekingGathererAnnouncer::pump()
+{
+	SSLP_Pump();
+}
+
+void // static
+JoinerSeekingGathererAnnouncer::found_gatherer_callback(const SSLP_ServiceInstance* instance)
+{
+	NetRetargetJoinAttempts(&instance->sslps_address);
+}
+
+void // static
+JoinerSeekingGathererAnnouncer::lost_gatherer_callback(const SSLP_ServiceInstance* instance)
+{
+	NetRetargetJoinAttempts(NULL);
+}
+
+
 
 
 /*************************************************************************************************
