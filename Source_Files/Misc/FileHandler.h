@@ -120,7 +120,7 @@ public:
 	
 	// Get pointer (always present)
 	void *GetPointer(bool DoDetach = false);
-
+	
 	LoadedResource();
 	~LoadedResource() {Unload();}	// Auto-unload when destroying
 
@@ -135,6 +135,10 @@ public:
 
 	Handle GetHandle(bool DoDetach = false)
 		{Handle ret = RsrcHandle; if (DoDetach) Detach(); return ret;}
+	
+	// Gets some suitable default color table
+	void GetSystemColorTable()
+		{Unload(); RsrcHandle = Handle(GetCTable(8));}
 
 private:
 	Handle RsrcHandle;
