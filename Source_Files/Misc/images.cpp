@@ -1,5 +1,19 @@
 /*
- *  images.cpp - Image management
+
+	images.c
+	Thursday, July 20, 1995 3:29:30 PM- rdm created.
+
+Feb. 4, 2000 (Loren Petrich):
+	Changed halt() to assert(false) for better debugging
+
+Feb. 5, 2000 (Loren Petrich):
+	Better handling of case of no scenario-file resource fork
+
+Aug 21, 2000 (Loren Petrich):
+	Added object-oriented file handling
+	
+	LoadedResource handles are assumed to always be locked,
+	and HLock() and HUnlock() have been suppressed for that reason.
  */
 
 #include "cseries.h"

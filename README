@@ -1,0 +1,321 @@
+Aleph One/SDL README file
+=========================
+
+
+LICENSE
+-------
+
+Aleph One is available under the terms of the GNU General Public License.
+See the file "COPYING" that is included in the distribution for details.
+
+
+SYSTEM REQUIREMENTS
+-------------------
+
+Aleph One/SDL has so far only been developed and tested on Linux/i386 and
+BeOS/x86 R5. It will not work on other operating systems, and may not work on
+architectures other than i386, PowerPC and 680x0 because there are still some
+portablilty problems with the code (mainly data alignment problems and
+assumptions that sizeof(long) = sizeof(void *) = 4, which are not yet
+completely removed). You are, however, invited to test or fix it to run on
+other systems.
+
+
+PREREQUISITES
+-------------
+
+Aleph One/SDL requires the Simple DirectMedia (SDL) library, available from
+the official SDL site:
+
+  http://www.libsdl.org/
+
+Note that if you didn't install SDL from source, you also have to install the
+"SDL-devel" package.
+
+
+INSTALLATION
+------------
+
+Unix:
+  As with any autoconfiguring GNU software, installation is as easy as this:
+
+   $ ./configure
+   $ make
+   [become root]
+   # make install
+
+  For a complete list of options that the "configure" script takes, type
+
+   $ ./configure --help
+
+  The most important option is
+
+   --prefix=PREFIX
+
+  which you can use to specify a different installation directory (the default
+  is /usr/local). The Aleph One executable will be installed in PREFIX/bin, and
+  the data files in PREFIX/share/AlephOne.
+
+BeOS:
+  There is a special Makefile for compiling under BeOS. Install Aleph One as
+  follows:
+
+   $ make -f Makefile.BeOS install
+
+  This will create a new directory "AlephOne" in your "home" directory that
+  contains the "AlephOne" application and the "Fonts", "Resources" and
+  "Pfhortran_Language_Definition" data files. You can move the "AlephOne"
+  directory anywhere you like as long as the application is kept together
+  with the data files.
+
+To play Aleph One, you will also need Marathon graphics, sound and map
+files. Unfortunately, Bungie has not released these files to the public, so
+you must own a copy of Marathon Infinity or the Marathon Infinity Demo
+(although Aleph One was originally based on Marathon 2, it was extended to
+use the Marathon Infinity data files). The Demo is freely available, but in
+Mac format, so I've created an archive containing the necessary data files
+from the Marathon Infinity Demo, converted to the formats needed by the SDL
+version of Aleph One. Download this archive from my Aleph One/SDL page:
+
+  http://www.uni-mainz.de/~bauec002/A1Main.html
+
+The archive contains the files "Images", "Map", "Map.resources", "Shapes",
+"Sounds" and "README". This archive has to be unpacked to
+
+Unix:
+  /usr/local/share/AlephOne  (unless you specified a different PREFIX above)
+
+BeOS:
+  The same directory as the "AlephOne" application.
+
+If you have a Marathon Infinity or Marathon Trilogy Box Set CD, you can copy
+the needed files from the CD. This is a bit complicated, however, due to some
+ideosyncracies of the Mac HFS file system (every Mac file is really two files,
+one "data fork" and one "resource fork"). Aleph One/SDL needs these files:
+
+ "Images" (resource fork)
+ "Map" (data fork)
+ "Map.resources" (resource fork of "Map" file)
+ "Music" (data fork, optional, not included in Demo)
+ "Shapes" (data fork)
+ "Sounds" (data fork)
+
+Aleph One also needs the files "Fonts" and "Pfhortran_Language_Definition"
+and "Resources", but these are included with the Aleph One/SDL distribution
+and installed by "make install". Here's how to copy these files from an
+Infinity/Trilogy CD under Linux:
+
+ 1. Mount the CD with the HFS file system (you will probably have to be
+    root to do this):
+
+     # mount -t hfs /dev/cdrom /mnt/cdrom
+
+    If you mount CDs on a different mount point, such as "/cdrom", use that
+    instead.
+
+ 2. Change to the right directory on the CD. This can be complicated because
+    of the Mac special characters in the file names, but with TAB-completion
+    or copying and pasting you will succeed.
+
+     $ cd /mnt/cdrom/....
+
+    You should now be in a directory containing the above mentioned files.
+
+ 3. The Linux HFS file system module has the useful property of handling
+    Mac data and resource forks and making them available as separate files
+    (the resource forks are in a hidden ".resource" directory). You can
+    now copy the files:
+
+     $ cp .resource/Images /usr/local/share/AlephOne/Images
+     $ cp Map /usr/local/share/AlephOne/Map
+     $ cp .resource/Map /usr/local/share/AlephOne/Map.resources
+     $ cp Music /usr/local/share/AlephOne/Music
+     $ cp Shapes /usr/local/share/AlephOne/Shapes
+     $ cp Sounds /usr/local/share/AlephOne/Sounds
+
+    That's it.
+
+
+PLAYING ALEPH ONE
+-----------------
+
+Unix:
+  To start Aleph One, type
+
+   $ alephone
+
+BeOS:
+  To start Aleph One, double click the "AlephOne" application icon. If you want
+  to specify arguments or see error messages, you will have to start it from the
+  shell, however.
+
+The program can take a number of command line arguments. Here is a complete
+list:
+
+  [-h | --help]        Display the help message
+  [-v | --version]     Display the game version
+  [-f | --fullscreen]  Run the game fullscreen
+  [-s | --nosound]     Do not access the sound card
+
+If Aleph One complains about missing data files, and you are sure that you
+have installed them, try setting the ALEPHONE_DATA environment variable to
+the path of the data file directory. You can also use this to switch between
+different scenarios, but you will have to delete the preferences file
+
+Unix:
+  ~/.alephone/Aleph One Preferences
+
+BeOS:
+  /boot/home/config/settings/Aleph One/Aleph One Preferences
+
+if you do so.
+
+The background story of the game and the keyboard controls are explained in
+the manual or README file on your Marathon CD or in the Demo archive.
+Here is a rundown of the default keyboard configuration (assuming a US
+keyboard; all keys are mapped by position):
+
+  On the menu screen:
+    N - Start new game
+    C - Show game credits
+    Q - Quit
+
+  During the game:
+    KP8     - Walk forward
+    KP5     - Walk backward
+    KP4     - Turn left
+    KP6     - Turn right
+
+    Z       - Sidestep left
+    X       - Sidestep right
+
+    D       - Look up
+    C       - Look down
+    V       - Look ahead
+
+    A       - Glance left
+    S       - Glance right
+
+    Space   - Fire weapon, primary trigger
+    Alt     - Fire weapon, secondary trigger (e.g. grenades)
+    KP7     - Select previous weapon
+    KP9     - Select next weapon
+
+    Tab     - Action (open doors, flip switches, log in to computer terminals)
+
+    Shift   - Sidestep
+    Ctrl    - Walk slowly (this is different from the original Marathon games;
+              in Aleph One you run by default)
+    Meta    - Keyboard look
+
+    M       - Overhead map
+    -       - Zoom overhead map out
+    =       - Zoom overhead map in
+
+    \       - Toggle FPS display
+
+    Esc     - Quit game
+    Ctrl-Q  - Quit game
+    Ctrl-P  - Pause game (press Ctrl-P again to resume)
+
+    F1      - Decrease screen size
+    F2      - Increase screen size
+    F6      - Toggle chase cam
+    F7      - Toggle tunnel vision
+    F8      - Toggle crosshairs
+    F9      - Screen dump (saved in ~/.alephone/Screenshot_*.bmp files)
+    F10     - Toggle position display
+    F11     - Decrease gamma level (8-bit mode only)
+    F12     - Increase gamma level (8-bit mode only)
+
+    ,       - Decrease sound volume
+    .       - Increase sound volume
+    [ and ] - Scroll player inventory view
+
+See also the list of missing features and bugs, below.
+
+
+MISSING FEATURES AND BUGS
+-------------------------
+
+The SDL version of Aleph One is a work in progress. Here is an (incomplete)
+list of the missing features, listed in roughly the order I plan to implement
+them:
+
+ - Mouse control
+ - Chapter screen sounds
+ - Intro music (not included in Demo, anyway)
+ - Physics models in map files are not loaded (needed for playing Marathon
+   Infinity properly)
+ - Saving/restoring games (save terminals don't work and the "Continue Saved
+   Game" button on the title screen is nonfunctional)
+ - Saving/replaying films (the "Replay Saved Film", "Replay Last Film" and
+   "Save Last Film" buttons on the title screen are nonfunctional)
+ - OpenGL rendering
+ - Preferences menus (the "Preferences" button on the title screen is
+   nonfunctional)
+ - Networking (the "Gather Network Game" and "Join Network Game" buttons on
+   the title screen are nonfunctional)
+ - The game could run faster in 16-bit mode on some machines if an RGB 565
+   renderer was implemented
+
+And a list of known bugs:
+
+ - Palette tricks (fading, underwater, red flash when being hit etc.) don't
+   work
+ - Lo-res mode (F3) doesn't work
+ - All error messages are those of the Mac version, which are often
+   inappropriate or misleading. For example, the program will ask the user
+   to put the data files into the same directory as the Aleph One executable,
+   which is wrong under Unix. There, the data files have to be in
+   /usr/local/share/AlephOne.
+
+
+TROUBLESHOOTING
+---------------
+
+If Aleph One crashes or behaves strangely on startup, try deleting the files
+
+Unix:
+  ~/.alephone/Aleph One Preferences
+  ~/.alephone/Aleph One Recording
+
+BeOS:
+  /boot/home/config/settings/Aleph One/Aleph One Preferences
+  /boot/home/config/settings/Aleph One/Aleph One Recording
+
+and try again.
+
+If the game runs very slowly, you may want to run it in 8 bit mode (default
+is 16 bit). To do this, you have to change the line
+
+  graphics_preferences->screen_mode.bit_depth = 16;
+
+in Misc/shell_sdl.cpp to
+
+  graphics_preferences->screen_mode.bit_depth = 8;
+
+and recompile. Setting your screen to 15 bit color depth (RGB 555) instead of
+16 bit (RGB 565) may also help.
+
+
+SUPPORT
+-------
+
+Aleph One is not officially supported by Bungie Software, so don't bother
+contacting them about it.
+
+The official Aleph One home page is at
+
+  http://source.bungie.org/
+
+My home page for the SDL port is at
+
+  http://www.uni-mainz.de/~bauec002/A1Main.html
+
+If you have questions about Marathon in general, you should post them to
+the established marathon forums, such as alt.games.marathon.
+
+
+Happy carnage!
+Christian Bauer <Christian.Bauer@uni-mainz.de>

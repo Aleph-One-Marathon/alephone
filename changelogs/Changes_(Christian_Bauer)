@@ -1,3 +1,9 @@
+Change log of the SDL version of Aleph One
+
+August 29, 2000
+ - intro music and chapter screen sounds now work
+ - implemented darken_world_window()
+
 August 28, 2000
  - restructured images.c: platform-independant parts are now in images.cpp,
    which includes images_macintosh.cpp or images_sdl.cpp

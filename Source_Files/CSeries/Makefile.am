@@ -1,0 +1,9 @@
+## Process this file with automake to produce Makefile.in 
+
+noinst_LIBRARIES = libcseries.a
+libcseries_a_SOURCES = byte_swapping.cpp byte_swapping.h csalerts_sdl.cpp \
+  csalerts.h cscluts_sdl.cpp cscluts.h csdialogs_sdl.cpp csdialogs.h \
+  cseries.h csfiles.h csfonts.h csmacros.h csmisc_sdl.cpp csmisc.h \
+  cspixels.h csstrings_sdl.cpp csstrings.h cstypes.h sdl_cseries.h
+
+INCLUDES = -I../Misc

@@ -1,0 +1,7 @@
+This directory contains data files needed by the SDL version of Aleph One:
+
+  Fonts - A MacOS resource fork with the fonts needed by Aleph One
+  Resources - A MacOS resource fork with all the other needed resources
+    (extracted from the Mac "Aleph One" application)
+  Pfhortran_Language_Definition - The Pfhortran defs file, actually the
+    same as the one in "Pfhortran Release"
