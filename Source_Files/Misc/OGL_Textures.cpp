@@ -332,6 +332,20 @@ static void MakeAverage(int Length, GLuint *Buffer)
 		Buffer[k] = AvgVal;
 }
 
+// Modify color-table index if necessary;
+// makes it the infravision or silhouette one if necessary
+short ModifyCLUT(short TransferMode, short CLUT)
+{
+	short CTable;
+	
+	// Tinted mode is only used for invisibility, and infravision will make objects visible
+	if (TransferMode == _static_transfer) CTable = SILHOUETTE_BITMAP_SET;
+	else if (TransferMode == _tinted_transfer) CTable = SILHOUETTE_BITMAP_SET;
+	else if (InfravisionActive) CTable = INFRAVISION_BITMAP_SET;
+	else CTable = CLUT;
+	
+	return CTable;
+}
 
 /*
 	Routine for using some texture; it will load the texture if necessary.
@@ -350,15 +364,10 @@ bool TextureManager::Setup()
 	// is the texture's intended type
 	short CollColor = GET_DESCRIPTOR_COLLECTION(ShapeDesc);
 	Collection = GET_COLLECTION(CollColor);
-	CTable = GET_COLLECTION_CLUT(CollColor);
+	CTable = ModifyCLUT(TransferMode,GET_COLLECTION_CLUT(CollColor));
 	Frame = GET_DESCRIPTOR_SHAPE(ShapeDesc);
 	Bitmap = get_bitmap_index(Collection,Frame);
 	if (Bitmap == NONE) return false;
-	
-	// Tinted mode is only used for invisibility, and infravision will make objects visible
-	if (TransferMode == _static_transfer) CTable = SILHOUETTE_BITMAP_SET;
-	else if (TransferMode == _tinted_transfer) CTable = SILHOUETTE_BITMAP_SET;
-	else if (InfravisionActive) CTable = INFRAVISION_BITMAP_SET;
 	
 	// Get the texture-state info: first, per-collection, then per-bitmap
 	CollBitmapTextureState *CBTSList = TextureStateSets[TextureType][Collection];
@@ -1055,7 +1064,7 @@ uint32 *TextureManager::Shrink(uint32 *Buffer)
 
 // This places a texture into the OpenGL software and gives it the right
 // mapping attributes
-void TextureManager::PlaceTexture(bool IsOverlaid, uint32 *Buffer)
+void TextureManager::PlaceTexture(uint32 *Buffer)
 {
 
 	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[TextureType];
@@ -1082,10 +1091,7 @@ void TextureManager::PlaceTexture(bool IsOverlaid, uint32 *Buffer)
 	}
 	
 	// Set texture-mapping features
-	if (IsOverlaid)
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-	else
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, TxtrTypeInfo.NearFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, TxtrTypeInfo.FarFilter);
 	
@@ -1126,17 +1132,17 @@ void TextureManager::RenderNormal()
 	if (TxtrStatePtr->UseNormal())
 	{
 		assert(NormalBuffer);
-		PlaceTexture(false,NormalBuffer);
+		PlaceTexture(NormalBuffer);
 	}
 }
 
 // Call this one after RenderNormal()
-void TextureManager::RenderGlowing(bool IsOverlaid)
+void TextureManager::RenderGlowing()
 {
 	if (TxtrStatePtr->UseGlowing())
 	{
 		assert(GlowBuffer);
-		PlaceTexture(IsOverlaid,GlowBuffer);
+		PlaceTexture(GlowBuffer);
 	}
 }
 

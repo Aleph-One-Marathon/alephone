@@ -40,6 +40,9 @@ Apr 27, 2001 (Loren Petrich):
 Jul 8, 2001 (Loren Petrich):
 	Made it possible to read in silhouette bitmaps; one can now use the silhouette index
 	as a MML color-table index
+
+Aug 21, 2001 (Loren Petrich):
+	Adding support for 3D-model inhabitant objects
 */
 
 #include <vector>
@@ -59,6 +62,8 @@ Jul 8, 2001 (Loren Petrich):
 #include "shape_descriptors.h"
 #include "OGL_Setup.h"
 #include "ColorParser.h"
+
+#include "WavefrontLoader.h"
 
 #ifdef __WIN32__
 #include "OGL_Win32.h"
@@ -314,6 +319,8 @@ static void MdlDeleteAll()
 
 OGL_ModelData *OGL_GetModelData(short Collection, short Sequence)
 {
+	if (!OGL_IsActive()) return NULL;
+	
 	// Initialize the hash table if necessary
 	if (MdlHash[Collection].empty())
 	{
@@ -446,7 +453,7 @@ void OGL_TextureOptionsBase::Load()
 		// Load the normal image if it has a filename specified for it
 		if (!StringPresent(NormalColors)) throw 0;
 #ifdef mac
-		if (!File.SetToApp()) return;
+		if (!File.SetToApp()) throw 0;
 #endif
 		if (!File.SetNameWithPath(&NormalColors[0])) throw 0;
 		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Colors)) throw 0;
@@ -588,8 +595,30 @@ void OGL_SkinManager::Use(short CLUT, short Which)
 
 void OGL_ModelData::Load()
 {
-#warning Load the model here
+	// Already loaded?
+	if (ModelPresent()) return;
+	
+	// Load the model
+	FileSpecifier File;
+	Model.Clear();
+	
+	if (!StringPresent(ModelFile)) return;;
+#ifdef mac
+	if (!File.SetToApp()) return;
+#endif
+	if (!File.SetNameWithPath(&ModelFile[0])) return;
 
+	// Alias|Wavefront is all that's supported now
+	if (strncmp(&ModelType[0],"wave",4) == 0)
+	{
+		if (!LoadModel_Wavefront(File, Model))
+		{
+			Model.Clear();
+			return;
+		}
+	}
+	
+	// Don't forget the skins
 	OGL_SkinManager::Load();
 }
 
@@ -598,6 +627,7 @@ void OGL_ModelData::Unload()
 {
 	Model.Clear();
 	
+	// Don't forget the skins
 	OGL_SkinManager::Unload();
 }
 
@@ -1015,6 +1045,7 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
+	bool End();
 	
 	XML_ModelDataParser(): XML_ElementParser("model") {}
 };
@@ -1078,6 +1109,10 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return (ReadNumericalValue(Value,"%f",Data.ZShift));
 	}
+	else if (strcmp(Tag,"side") == 0)
+	{
+		return (ReadNumericalValue(Value,"%d",Data.Sidedness));
+	}
 	else if (strcmp(Tag,"file") == 0)
 	{
 		int nchars = strlen(Value)+1;
@@ -1104,6 +1139,12 @@ bool XML_ModelDataParser::AttributesDone()
 		AttribsMissing();
 		return false;
 	}
+	return true;
+}
+
+bool XML_ModelDataParser::End()
+{
+	// Do this at the end because the model data will then include the skin data
 	
 	// Check to see if a frame is already accounted for
 	vector<ModelDataEntry>& ML = MdlList[Collection];

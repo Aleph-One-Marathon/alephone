@@ -71,6 +71,10 @@ struct CollBitmapTextureState
 };
 
 
+// Modify color-table index if necessary;
+// makes it the infravision or silhouette one if necessary
+short ModifyCLUT(short TransferMode, short CLUT);
+
 
 // Intended to be the no-texture default argument
 const int BadTextureType = 32767;
@@ -143,7 +147,7 @@ class TextureManager
 	uint32 *Shrink(uint32 *Buffer);
 	
 	// This si for placing a texture in OpenGL
-	void PlaceTexture(bool IsOverlaid, uint32 *Buffer);
+	void PlaceTexture(uint32 *Buffer);
 	
 public:
 
@@ -184,13 +188,11 @@ public:
 	GLdouble U_Scale, V_Scale, U_Offset, V_Offset;
 	
 	// What to render:
-	// "IsOverlaid" is to be on if this one is to be done simultaneously,
-	// using ARB_multitexture
 	
 	// Always call this one and call it first; safe to allocate texture ID's in it
 	void RenderNormal();
 	// Call this one after RenderNormal()
-	void RenderGlowing(bool IsOverlaid);
+	void RenderGlowing();
 	
 	TextureManager();
 	~TextureManager();
