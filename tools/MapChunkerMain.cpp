@@ -344,7 +344,7 @@ bool OutFileData::Open(char *Prompt, char *Default)
 	if (!Spec.WriteDialog(_typecode_scenario,Prompt,Default)) return false;
 	
 	fill_default_wad_header(Spec, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION,
-		0, sizeof(directory_entry) - SIZEOF_directory_entry, &Header);
+		0, 0, &Header);
 	
 	if (!create_wadfile(Spec,_typecode_scenario)) return false;
 	
