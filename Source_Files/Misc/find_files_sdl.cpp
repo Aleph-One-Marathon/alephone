@@ -16,12 +16,12 @@
  *  File finder base class
  */
 
-void FileFinder::Find(DirectorySpecifier &dir, int type, bool recursive)
+bool FileFinder::Find(DirectorySpecifier &dir, int type, bool recursive)
 {
 	// Get list of entries in directory
 	vector<dir_entry> entries;
 	if (!dir.ReadDirectory(entries))
-		return;
+		return false;
 	sort(entries.begin(), entries.end());
 
 	// Iterate through entries
@@ -36,16 +36,18 @@ void FileFinder::Find(DirectorySpecifier &dir, int type, bool recursive)
 
 			// Recurse into directory
 			if (recursive)
-				Find(file, type, recursive);
+				if (Find(file, type, recursive))
+					return true;
 
 		} else {
 
 			// Check file type and call found() function
 			if (type == WILDCARD_TYPE || type == file.GetType())
 				if (found(file))
-					return;
+					return true;
 		}
 	}
+	return false;
 }
 
 

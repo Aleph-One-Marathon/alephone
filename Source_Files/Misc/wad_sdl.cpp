@@ -20,10 +20,9 @@ extern FileSpecifier global_data_dir, local_data_dir;
 
 class FindByChecksum : public FileFinder {
 public:
-	FindByChecksum(uint32 checksum) : found_it(false), look_for_checksum(checksum) {}
+	FindByChecksum(uint32 checksum) : look_for_checksum(checksum) {}
 	~FindByChecksum() {}
 
-	bool found_it;
 	FileSpecifier found_what;
 
 private:
@@ -31,16 +30,15 @@ private:
 	{
 		OpenedFile f;
 		if (!file.Open(f))
-			return true;
+			return false;
 		f.SetPosition(0x44);
 		SDL_RWops *p = f.GetRWops();
 		uint32 checksum = SDL_ReadBE32(p);
 		if (checksum == look_for_checksum) {
-			found_it = true;
 			found_what = file;
-			return false;
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	uint32 look_for_checksum;
@@ -49,10 +47,10 @@ private:
 bool find_wad_file_that_has_checksum(FileSpecifier &matching_file, int file_type, short path_resource_id, uint32 checksum)
 {
 	FindByChecksum finder(checksum);
-	finder.Find(global_data_dir, file_type);
-	if (!finder.found_it)
-		finder.Find(local_data_dir, file_type);
-	if (finder.found_it) {
+	bool found_it = finder.Find(global_data_dir, file_type);
+	if (!found_it)
+		found_it = finder.Find(local_data_dir, file_type);
+	if (found_it) {
 		matching_file = finder.found_what;
 		return true;
 	} else
@@ -66,21 +64,19 @@ bool find_wad_file_that_has_checksum(FileSpecifier &matching_file, int file_type
 
 class FindByDate : public FileFinder {
 public:
-	FindByDate(time_t date) : found_it(false), look_for_date(date) {}
+	FindByDate(time_t date) : look_for_date(date) {}
 	~FindByDate() {}
 
-	bool found_it;
 	FileSpecifier found_what;
 
 private:
 	bool found(FileSpecifier &file)
 	{
 		if (file.GetDate() == look_for_date) {
-			found_it = true;
 			found_what = file;
-			return false;
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	TimeType look_for_date;
@@ -89,10 +85,10 @@ private:
 bool find_file_with_modification_date(FileSpecifier &matching_file, int file_type, short path_resource_id, TimeType modification_date)
 {
 	FindByDate finder(modification_date);
-	finder.Find(global_data_dir, file_type);
-	if (!finder.found_it)
-		finder.Find(local_data_dir, file_type);
-	if (finder.found_it) {
+	bool found_it = finder.Find(global_data_dir, file_type);
+	if (!found_it)
+		found_it = finder.Find(local_data_dir, file_type);
+	if (found_it) {
 		matching_file = finder.found_what;
 		return true;
 	} else

@@ -84,7 +84,7 @@ public:
 	FileFinder() {}
 	virtual ~FileFinder() {}
 
-	void Find(DirectorySpecifier &dir, int type, bool recursive = true);
+	bool Find(DirectorySpecifier &dir, int type, bool recursive = true);
 
 protected:
 	// Gets called for each found file, returns true if search is to be aborted
