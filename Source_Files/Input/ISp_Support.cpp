@@ -157,11 +157,14 @@ enum {
 // Give the local-event buttons a refractory period so that they will not
 // repeat too fast
 const int LocalButtonRefractoryTime = 10;
+#if !defined(TARGET_API_MAC_CARBON)
 static int LocalButtonTimes[Button_LastLocal-Button_FirstLocal+1] =
 	{0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0};
+#endif
 
 static bool	canDoISp = true;
 static bool	active = false;
+#if !defined(TARGET_API_MAC_CARBON)
 static long		gElementActions[HowManyNeeds] =
 					{
 					// Global actions
@@ -191,7 +194,6 @@ static long		gElementActions[HowManyNeeds] =
 					// Axis stuff
 					0, 0, 0, 0};
 
-#if !defined(TARGET_API_MAC_CARBON)
 ISpElementListReference		gVirtualList = NULL;
 ISpElementReference			gVirtualElements[HowManyNeeds] =
 	{	// LP: prettyprinted to make them easier to match with gElementActions members
