@@ -40,7 +40,6 @@ typedef float GLfloat;
 #include "monsters.h"
 #include "mysound.h"
 #include "OGL_Render.h"
-#include "ViewControl.h"
 
 //#include "Soundtrack.h"
 
