@@ -125,6 +125,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Jan 29, 2002 (Br'fin (Jeremy Parsons)):
 	Added a RunCurrentEventLoop to let our Carbon input timer run
+
+Feb 4, 2002 (Br'fin (Jeremy Parsons)):
+	Moved OGL_Initialize to shell_macintosh.cpp from marathon2.cpp
 */
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -420,6 +423,10 @@ static void initialize_application_heap(
 		}
 	}
 	
+	// JTP: OpenGL Needs to be initialized *before* we handle preferences
+	// otherwise OGL_IsPresent() hasn't been decided yet
+	// This is ok to call if HAVE_OPENGL is false.
+	OGL_Initialize();
 	initialize_preferences();
 	GetDateTime(&player_preferences->last_time_ran);
 	write_preferences();

@@ -48,6 +48,9 @@ June 15, 2000 (Loren Petrich):
 
 Aug 10, 2000 (Loren Petrich):
 	Added Chris Pruett's Pfhortran changes
+
+Feb 4, 2002 (Br'fin (Jeremy Parsons)):
+	Moved Macintosh call to OGL_Initialize to shell_macintosh.cpp
 */
 
 #include "cseries.h"
@@ -118,7 +121,7 @@ void initialize_marathon(
 	initialize_scenery();
 	// LP additions:
 	initialize_items();
-#ifdef HAVE_OPENGL
+#if defined(HAVE_OPENGL) && !defined(mac)
 	OGL_Initialize();
 #endif
 	// CP addition: init pfhortran
