@@ -25,6 +25,9 @@ Nov 12, 2000 (Loren Petrich):
 Nov 18, 2000 (Loren Petrich):
 	Added support for glow mapping; constrained it to only be present
 	when a normal texture is present, and to have the same size
+
+Nov 26, 2000 (Loren Petrich):
+	Added system for reloading textures only when their filenames change.
 */
 
 #include <vector.h>
@@ -131,6 +134,9 @@ struct TextureOptionsEntry
 	// Make a member for more convenient access
 	OGL_TextureOptions OptionsData;
 	
+	// Most recent files that the textures had been loaded from
+	vector<char> NormalColors, NormalMask, GlowColors, GlowMask;
+	
 	TextureOptionsEntry(): CLUT(ALL_CLUTS), Bitmap(NONE) {}
 };
 
@@ -214,6 +220,37 @@ void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixel
 }
 
 
+inline bool StringPresent(vector<char>& String)
+{
+	return (String.size() > 1);
+}
+
+static bool StringsEqual(vector<char>& Str1, vector<char>& Str2)
+{
+	bool Pres1 = StringPresent(Str1);
+	bool Pres2 = StringPresent(Str2);
+	if (Pres1 || Pres2)
+	{
+		if (Pres1 && Pres2)
+		{
+			return strcmp(&Str1[0],&Str2[0]);
+		}
+		else
+			return false;
+	}
+	else
+		return false;
+	return false;
+}
+
+static void StringCopy(vector<char>& StrDest, vector<char>& StrSrc)
+{
+	int Len = StrSrc.size();
+	StrDest.resize(Len);
+	memcpy(&StrDest[0],&StrSrc[0],Len);
+}
+
+
 // for managing the image loading and unloading
 void OGL_LoadImages(int Collection)
 {
@@ -227,8 +264,27 @@ void OGL_LoadImages(int Collection)
 		// Load the normal image with alpha channel
 		try
 		{
+			// Check to see if loading needs to be done;
+			// it does not need to be if the filenames are the same and an image is present.
+			// The image is always cleared before loading, for safety in case of invalidity.
+			if (StringsEqual(TOIter->OptionsData.NormalColors,TOIter->NormalColors) &&
+				StringsEqual(TOIter->OptionsData.NormalMask,TOIter->NormalMask))
+			{
+				if (TOIter->OptionsData.NormalImg.IsPresent())
+					throw 0;
+				else
+					TOIter->OptionsData.NormalImg.Clear();
+			}
+			else
+			{
+				StringCopy(TOIter->NormalColors,TOIter->OptionsData.NormalColors);
+				StringCopy(TOIter->NormalMask,TOIter->OptionsData.NormalMask);
+				TOIter->OptionsData.NormalImg.Clear();
+			}
+			
 			// Load the normal image if it has a filename specified for it
-			if (!(TOIter->OptionsData.NormalColors.size() > 1)) throw 0;
+			if (!StringPresent(TOIter->OptionsData.NormalColors))
+				throw 0;
 #ifdef mac
 			if (!File.SetToApp()) throw 0;
 #endif
@@ -237,7 +293,7 @@ void OGL_LoadImages(int Collection)
 			
 			// Load the normal mask if it has a filename specified for it;
 			// only loaded if an image has been loaded for it
-			if (!(TOIter->OptionsData.NormalMask.size() > 1)) throw 0;
+			if (!StringPresent(TOIter->OptionsData.NormalMask)) throw 0;
 #ifdef mac
 			if (!File.SetToApp()) throw 0;
 #endif
@@ -250,8 +306,26 @@ void OGL_LoadImages(int Collection)
 		// Load the glow image with alpha channel
 		try
 		{
+			// Check to see if loading needs to be done;
+			// it does not need to be if the filenames are the same and an image is present.
+			// The image is always cleared before loading, for safety in case of invalidity.
+			if (StringsEqual(TOIter->OptionsData.GlowColors,TOIter->GlowColors) &&
+				StringsEqual(TOIter->OptionsData.GlowMask,TOIter->GlowMask))
+			{
+				if (TOIter->OptionsData.GlowImg.IsPresent())
+					throw 0;
+				else
+					TOIter->OptionsData.GlowImg.Clear();
+			}
+			else
+			{
+				StringCopy(TOIter->GlowColors,TOIter->OptionsData.GlowColors);
+				StringCopy(TOIter->GlowMask,TOIter->OptionsData.GlowMask);
+				TOIter->OptionsData.GlowImg.Clear();
+			}
+			
 			// Load the glow image if it has a filename specified for it
-			if (!(TOIter->OptionsData.GlowColors.size() > 1)) throw 0;
+			if (!StringPresent(TOIter->OptionsData.GlowColors)) throw 0;
 #ifdef mac
 			if (!File.SetToApp()) throw 0;
 #endif
@@ -260,7 +334,7 @@ void OGL_LoadImages(int Collection)
 			
 			// Load the glow mask if it has a filename specified for it;
 			// only loaded if an image has been loaded for it
-			if (!(TOIter->OptionsData.GlowMask.size() > 1)) throw 0;
+			if (!StringPresent(TOIter->OptionsData.GlowMask)) throw 0;
 #ifdef mac
 			if (!File.SetToApp()) throw 0;
 #endif
@@ -287,6 +361,7 @@ void OGL_LoadImages(int Collection)
 		}
 	}
 }
+
 void OGL_UnloadImages(int Collection)
 {
 	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
