@@ -29,4 +29,7 @@ Jan 31, 2002 (Loren Petrich):
 #define env68k
 #endif
 
+// Both CodeWarrior and OSX gcc have it
+#define HAVE_SNPRINTF 1
+
 #endif
