@@ -238,8 +238,8 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		for (size_t ib=0; ib<NumBones; ib++)
 		{		
 			// Scan down the bone stack to find a bone that's the parent of some unlisted bone;
-			size_t ibsrch = NumBones;	// "Bone not found" value
-			size_t ibstck = -1;		// Empty stack
+			int ibsrch = NumBones;	// "Bone not found" value
+			int ibstck = -1;		// Empty stack
 			for (ibstck=StackTop; ibstck>=0; ibstck--)
 			{
 				// Note: the bone stack is indexed relative to the original,
