@@ -257,7 +257,7 @@ polygon_data *get_polygon_data(
 	assert(map_polygons);	
 	struct polygon_data *polygon = GetMemberWithBounds(map_polygons,polygon_index,dynamic_world->polygon_count);
 	
-	vassert(map_polygons, csprintf(temporary, "polygon index #%d is out of range", polygon_index));
+	vassert(polygon, csprintf(temporary, "polygon index #%d is out of range", polygon_index));
 	
 	return polygon;
 }
