@@ -146,20 +146,23 @@ void do_preferences(
 	}
 }
 
+
+const int32 AllPlayableLevels = _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point;
+
 #ifdef USES_NIBS
 
 static bool LevelNumberMenuBuilder(
-	int indx, Str255 ItemName, bool &ThisIsInitial, void *BuildMenuData)
+	int Indx, Str255 ItemName, bool &ThisIsInitial, void *BuildMenuData)
 {
-	(void)(BuildMenuData);
-	short LevelIndex = indx-1; // 1-based to 0-based
-	entry_point entry;
-	bool UseThis = get_indexed_entry_point(
-		&entry, &LevelIndex,
-			_single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point);
+	vector<entry_point> *LvPtr = (vector<entry_point> *)(BuildMenuData);
+	vector<entry_point> &Levels = *LvPtr;
 	
+	bool UseThis = (Indx <= Levels.size()); // One-based test
 	if (UseThis)
-		psprintf(ItemName, "%d: %s",entry.level_number+1,entry.level_name);
+	{
+		entry_point &Level = Levels[Indx-1];	// One-based to zero-based
+		psprintf(ItemName, "%d: %s",Level.level_number+1,Level.level_name);
+	}
 	
 	return UseThis;
 }
@@ -173,12 +176,21 @@ short get_level_number_from_user(
 	// Set up the popup menu
 	ControlRef MenuCtrl = GetCtrlFromWindow(Window(), 0, iLEVEL_SELECTOR);
 	
-	BuildMenu(MenuCtrl, LevelNumberMenuBuilder);
+	vector<entry_point> Levels;
+	if (!get_entry_points(Levels, AllPlayableLevels)) {
+		entry_point dummy;
+		dummy.level_number = 0;
+		strcpy(dummy.level_name, "Untitled Level");
+		Levels.push_back(dummy);
+	}
+		
+	BuildMenu(MenuCtrl, LevelNumberMenuBuilder, &Levels);
 	
+	// Should do noncontiguous map files OK
 	short LevelNumber = RunModalDialog(Window(), false) ?
-		(GetControl32BitValue(MenuCtrl) - 1) :
+		Levels[(GetControl32BitValue(MenuCtrl) - 1)].level_number :
 		NONE;
-
+	
 	return LevelNumber;
 }
 #else
@@ -223,7 +235,7 @@ short get_level_number_from_user(
 	while(CountMenuItems(mHandle)) DeleteMenuItem(mHandle, 1);
 	
 	// Add level names
-	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point))
+	while (get_indexed_entry_point(&entry, &index, AllPlayableLevels))
 	{
 		psprintf(ptemporary, "%d: %s",entry.level_number+1,entry.level_name);
 		AppendMenu(mHandle, "\pSome Level");

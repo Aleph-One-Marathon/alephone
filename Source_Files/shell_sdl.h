@@ -553,14 +553,16 @@ bool quit_without_saving(void)
 
 // ZZZ: moved level-numbers widget into sdl_widgets for a wider audience.
 
+const int32 AllPlayableLevels = _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point;
+
 short get_level_number_from_user(void)
 {
 	// Get levels
 	vector<entry_point> levels;
-	if (!get_entry_points(levels, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point)) {
+	if (!get_entry_points(levels, AllPlayableLevels)) {
 		entry_point dummy;
 		dummy.level_number = 0;
-		strcpy(dummy.level_name, "untitled");
+		strcpy(dummy.level_name, "Untitled Level");
 		levels.push_back(dummy);
 	}
 
@@ -585,7 +587,8 @@ short get_level_number_from_user(void)
 	// Run dialog
 	short level;
 	if (d.run() == 0)		// OK
-		level = static_cast<short>(level_w->get_selection());
+		// Should do noncontiguous map files OK
+		level = levels[level_w->get_selection()].level_number;
 	else
 		level = NONE;
 
