@@ -1577,8 +1577,8 @@ static void reassign_player_colors(
 	assert(num_players<=MAXIMUM_NUMBER_OF_PLAYERS);
 	game= (game_info *)NetGetGameData();
 
-	memset(colors_taken, FALSE, sizeof(colors_taken));
-	memset(actual_colors, NONE, sizeof(actual_colors));
+	objlist_set(colors_taken, FALSE, NUMBER_OF_TEAM_COLORS);
+	objlist_set(actual_colors, NONE, MAXIMUM_NUMBER_OF_PLAYERS);
 
 	if(game->game_options & _force_unique_teams)
 	{
@@ -2983,7 +2983,7 @@ static void draw_team_totals_graph(
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 	
 	// first of all, set up the rankings array.
-	memset(ranks, 0, sizeof(ranks));
+	objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
 	for (team_index= 0, num_teams = 0; team_index<NUMBER_OF_TEAM_COLORS; team_index++)
 	{
 		found_team_of_current_color = FALSE;
@@ -3042,7 +3042,7 @@ static void draw_total_scores_graph(
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 	
 	/* Use a private copy to avoid boning things */
-	memcpy(ranks, rankings, dynamic_world->player_count*sizeof(struct net_rank));
+	objlist_copy(ranks, rankings, dynamic_world->player_count);
 
 	/* First qsort the rankings arrray by game_ranking.. */
 	qsort(ranks, dynamic_world->player_count, sizeof(struct net_rank), score_rank_compare);
@@ -3061,7 +3061,7 @@ static void draw_team_total_scores_graph(
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 	
 	// first of all, set up the rankings array.
-	memset(ranks, 0, sizeof(ranks));
+	objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
 	team_count= 0;
 	
 	for(team_index= 0; team_index<NUMBER_OF_TEAM_COLORS; ++team_index)
