@@ -5,11 +5,16 @@ Monday, August 28, 1995 1:41:36 PM  (Jason)
 Feb 3, 2000 (Loren Petrich):
 	Jjaro-goo color is the same as the sewage color
 
-Feb. 4, 2000 (Loren Petrich):
+Feb 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
+
+Jul 8, 2000 (Loren Petrich):
+	Added support for OpenGL rendering, in the form of calls to OpenGL versions
 */
 
 /* ---------- private code */
+
+#include "OGL_Map.h"
 
 // #define NUMBER_OF_POLYGON_COLORS (sizeof(polygon_colors)/sizeof(RGBColor))
 
@@ -32,6 +37,13 @@ static void draw_overhead_polygon(
 	short color,
 	short scale)
 {
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		OGL_draw_overhead_polygon(vertex_count,vertices,polygon_colors[color]);
+		return;
+	}
+
 	PolyHandle polygon;
 	world_point2d *vertex;
 	short i;
@@ -76,6 +88,15 @@ static void draw_overhead_line(
 	short color,
 	short scale)
 {
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		assert(color>=0&&color<NUMBER_OF_LINE_DEFINITIONS);
+		line_definition& LineDef = line_definitions[color];
+		OGL_draw_overhead_line(line_index,LineDef.color,LineDef.pen_sizes[scale-OVERHEAD_MAP_MINIMUM_SCALE]);
+		return;
+	}
+
 	struct line_data *line= get_line_data(line_index);
 	world_point2d *vertex1= &get_endpoint_data(line->endpoint_indexes[0])->transformed;
 	world_point2d *vertex2= &get_endpoint_data(line->endpoint_indexes[1])->transformed;
@@ -134,7 +155,7 @@ struct thing_definition thing_definitions[NUMBER_OF_THINGS]=
 	{{65535, 0, 0}, _rectangle_thing, {1, 2, 4, 8}}, /* non-player monster */
 	{{65535, 65535, 65535}, _rectangle_thing, {1, 2, 3, 4}}, /* item */
 	{{65535, 65535, 0}, _rectangle_thing, {1, 1, 2, 3}}, /* projectiles */
-	{{65535, 0, 0}, _circle_thing, {8, 16, 16, 16}}
+	{{65535, 0, 0}, _circle_thing, {8, 16, 16, 16}}	// LP note: this is for checkpoint locations
 };
 
 static void draw_overhead_thing(
@@ -143,6 +164,15 @@ static void draw_overhead_thing(
 	short color,
 	short scale)
 {
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		assert(color>=0&&color<NUMBER_OF_THINGS);
+		thing_definition& ThingDef = thing_definitions[color];
+		OGL_draw_overhead_thing(*center,ThingDef.color,ThingDef.shape,ThingDef.radii[scale-OVERHEAD_MAP_MINIMUM_SCALE]);
+		return;
+	}
+	
 	Rect bounds;
 	short radius;
 	struct thing_definition *definition;
@@ -154,7 +184,12 @@ static void draw_overhead_thing(
 	radius= definition->radii[scale-OVERHEAD_MAP_MINIMUM_SCALE];
 
 	RGBForeColor(&definition->color);
-	SetRect(&bounds, center->x-(radius>>1), center->y-(radius>>1), center->x+radius, center->y+radius);
+	// LP change: adjusted object display so that objects get properly centered;
+	// they were inadvertently made 50% too large
+	short raddown = short(0.75*radius);
+	short radup = short(1.5*radius) - raddown;
+	SetRect(&bounds, center->x-raddown, center->y-raddown, center->x+radup, center->y+radup);
+//	SetRect(&bounds, center->x-(radius>>1), center->y-(radius>>1), center->x+radius, center->y+radius);
 	switch (definition->shape)
 	{
 		case _rectangle_thing:
@@ -197,6 +232,17 @@ static void draw_overhead_player(
 	short color,
 	short scale)
 {
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		assert(color>=0&&color<NUMBER_OF_ENTITY_DEFINITIONS);
+		RGBColor PlayerColor;
+		_get_player_color(color, &PlayerColor);
+		entity_definition& EntityDef = entity_definitions[color];
+		OGL_draw_overhead_player(*center,facing,PlayerColor,OVERHEAD_MAP_MAXIMUM_SCALE-scale,EntityDef.front,EntityDef.rear,EntityDef.rear_theta);
+		return;
+	}
+	
 	short i;
 	PolyHandle polygon;
 	world_point2d triangle[3];
@@ -258,6 +304,7 @@ static void draw_overhead_annotation(
 	char *text,
 	short scale)
 {
+	
 	struct annotation_definition *definition;
 	Str255 pascal_text;
 
@@ -266,6 +313,15 @@ static void draw_overhead_annotation(
 	
 	strcpy((char *)pascal_text, text);
 	c2pstr((char *)pascal_text);
+	
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		annotation_definition& NoteDef = *definition;
+		OGL_draw_map_text(*location,NoteDef.color,pascal_text,NoteDef.font,NoteDef.face,NoteDef.sizes[scale-OVERHEAD_MAP_MINIMUM_SCALE]);
+		return;
+	}
+	
 	MoveTo(location->x, location->y);
 	TextFont(definition->font);
 	TextFace(definition->face);
@@ -287,11 +343,32 @@ static void draw_map_name(
 	strcpy((char *)pascal_name, name);
 	c2pstr((char *)pascal_name);
 	
+	// LP change: allowed for easier generalization
+	const short font = kFontIDMonaco;
+	const short face = normal;
+	const short size = 18;
+	// Need this stuff here so as to calculate the width of the title string
+	TextFont(font);
+	TextFace(face);
+	TextSize(size);
+	world_point2d location;
+	location.x = data->half_width - (StringWidth(pascal_name)>>1);
+	location.y = 25; 
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		OGL_draw_map_text(location,map_name_color,pascal_name,font,face,size);
+		return;
+	}
+	RGBForeColor(&map_name_color);
+	MoveTo(location.x,location.y);
+	/*
 	TextFont(kFontIDMonaco);
 	TextFace(normal);
 	TextSize(18);
 	RGBForeColor(&map_name_color);
 	MoveTo(data->half_width - (StringWidth(pascal_name)>>1), 25);
+	*/
 	DrawString(pascal_name);
 	
 	return;
@@ -304,12 +381,23 @@ static RGBColor PathColor = {0xffff, 0xffff, 0xffff};
 
 static void SetPathDrawing()
 {
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		OGL_SetPathDrawing(PathColor);
+		return;
+	}
 	PenSize(1, 1);
 	RGBForeColor(&PathColor);
 }
 
 static void DrawPath(short step, world_point2d &location)
 {
+	if (OGL_MapActive)
+	{
+		OGL_DrawPath(step, location);
+		return;
+	}
 	step ? LineTo(location.x, location.y) : MoveTo(location.x, location.y);
 }
 
