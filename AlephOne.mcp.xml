@@ -992,7 +992,7 @@
                     <PATH>InterfaceLib</PATH>
                     <PATHFORMAT>MacOS</PATHFORMAT>
                     <FILEKIND>Library</FILEKIND>
-                    <FILEFLAGS></FILEFLAGS>
+                    <FILEFLAGS>WeakImport</FILEFLAGS>
                 </FILE>
                 <FILE>
                     <PATHTYPE>Name</PATHTYPE>
