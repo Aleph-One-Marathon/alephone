@@ -713,7 +713,12 @@ void stop_recording(
 		FilmFile.SetPosition(0);
 		byte Header[SIZEOF_recording_header];
 		pack_recording_header(Header,&replay.header,1);
-		assert(FilmFile.Write(SIZEOF_recording_header,Header));
+
+		// ZZZ: removing code that does stuff from assert() argument.  BUT...
+		// should we really be asserting on this anyway?  I mean, the write could fail
+		// in 'normal operation' too, not just when we screwed something up in writing the program?
+		bool successfulWrite = FilmFile.Write(SIZEOF_recording_header,Header);
+		assert(successfulWrite);
 		
 		FilmFile.GetLength(total_length);
 		assert(total_length==replay.header.length);
