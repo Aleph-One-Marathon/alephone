@@ -69,10 +69,10 @@ DialogItemIndex SimpleAlert(AlertType Type, const char *Message, const char *Exp
 #define warn(what) ((what) ? (void)0 : _alephone_warn(__FILE__,__LINE__,"Assertion failed: " #what))
 #define vwarn(what,message) ((what) ? (void)0 : _alephone_warn(__FILE__,__LINE__,(message)))
 #else
-#define assert(what) ((void)(what))
-#define vassert(what,message) ((void)(what))
-#define warn(what) ((void)(what))
-#define vwarn(what,message) ((void)(what))
+#define assert(what) ((void) 0)
+#define vassert(what,message) ((void) 0)
+#define warn(what) ((void) 0)
+#define vwarn(what,message) ((void) 0)
 #endif
 
 #endif
