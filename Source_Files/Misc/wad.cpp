@@ -36,6 +36,10 @@ Aug 12, 2000 (Loren Petrich):
 Aug 15, 2000 (Loren Petrich):
 	Suppressed union-wad stuff; that was probably some abortive attempt at creating some sort of
 	fancy archive format.
+
+Aug 25, 2000 (Loren Petrich):
+	Fixed a stupid bug in my reworking of the file handling --
+		"if (!open_...)" is now "if (open...)" -- checksumming should now work correctly.
 */
 
 // Note that level_transition_malloc is specific to marathon...
@@ -339,7 +343,9 @@ unsigned long read_wad_file_checksum(FileSpecifier& File)
 	unsigned long checksum= 0l;
 	
 	OpenedFile OFile;
-	if (!open_wad_file_for_reading(File,OFile))
+	if (open_wad_file_for_reading(File,OFile))
+	// file_id= open_wad_file_for_reading(file);
+	// if(file_id>=0)
 	{
 		// if(read_wad_header(file_id, &header))
 		if(read_wad_header(OFile, &header))
@@ -361,7 +367,9 @@ unsigned long read_wad_file_parent_checksum(FileSpecifier& File)
 	unsigned long checksum= 0l;
 
 	OpenedFile OFile;
-	if (!open_wad_file_for_reading(File,OFile))
+	if (open_wad_file_for_reading(File,OFile))
+	// file_id= open_wad_file_for_reading(file);
+	// if(file_id>=0)
 	{
 		if(read_wad_header(OFile, &header))
 		// if(read_wad_header(file_id, &header))
@@ -385,7 +393,9 @@ boolean wad_file_has_parent_checksum(
 	struct wad_header header;
 
 	OpenedFile OFile;
-	if (!open_wad_file_for_reading(File,OFile))
+	if (open_wad_file_for_reading(File,OFile))
+	// file_id= open_wad_file_for_reading(file);
+	// if(file_id>=0)
 	{
 		if(read_wad_header(OFile, &header))
 		// if(read_wad_header(file_id, &header))
@@ -1131,6 +1141,9 @@ static bool size_of_indexed_wad(
 	long *length)
 {
 	struct directory_entry entry;
+	// FileError error;
+	
+	// assert(file_id>=0); /* No union wads! */
 	
 	if (read_indexed_directory_data(OFile, header, index, &entry))
 	{

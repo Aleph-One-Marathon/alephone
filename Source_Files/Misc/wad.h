@@ -164,19 +164,22 @@ void *read_directory_data(OpenedFile& OFile, struct wad_header *header);
 unsigned long read_wad_file_checksum(FileSpecifier& File);
 unsigned long read_wad_file_parent_checksum(FileSpecifier& File);
 
+// Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
+
 // boolean find_wad_file_that_has_checksum(FileDesc *matching_file,
 boolean find_wad_file_that_has_checksum(FileSpecifier& File,
-	unsigned long file_type, short path_resource_id, unsigned long checksum);
+	int file_type, short path_resource_id, unsigned long checksum);
 
 /* Added in here for simplicity.  Really should be somewhere else.. */
 boolean find_file_with_modification_date(FileSpecifier& File,
-	unsigned long file_type, short path_resource_id, unsigned long modification_date);
+	int file_type, short path_resource_id, unsigned long modification_date);
 
-#ifdef mac
+// LP: no need of this anymore due to file/directory abstracting
+// #ifdef mac
 /* Handy function to have.  Given the fsspec of a directory, returns the id needed */
 /*  to search inside it.. */
-OSErr get_directories_parID(FSSpec *directory, long *parID);
-#endif
+// OSErr get_directories_parID(FSSpec *directory, long *parID);
+// #endif
 
 /* ------------ Flat wad functions */
 /* These functions are used for transferring data, and it completely encapsulates */
