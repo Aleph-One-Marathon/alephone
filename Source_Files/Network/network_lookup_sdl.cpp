@@ -158,6 +158,8 @@ OSErr NetRegisterName(const unsigned char *name, const unsigned char *type, shor
 {
 //    fdprintf("NetRegisterName %d, %d\n", version, socketNumber);
 
+	OSErr theError = noErr;
+
     // Construct a service-instance for the player
     struct SSLP_ServiceInstance	thePlayer;
 
@@ -188,14 +190,15 @@ OSErr NetRegisterName(const unsigned char *name, const unsigned char *type, shor
 		// our caller that it will remain const unless we protect it like this.
 		char*		theStringCopy = strdup(hint_addr_string);
 
-		if(SDLNet_ResolveHost(&theAddress, theStringCopy, 0) == 0) {
+		theError = SDLNet_ResolveHost(&theAddress, theStringCopy, 0);
+		if(theError == 0) {
 			SSLP_Hint_Service_Discovery(&thePlayer, &theAddress);
 		}
 
 		free(theStringCopy);
 	}
     
-    return 0;
+    return theError;
 }
 
 
