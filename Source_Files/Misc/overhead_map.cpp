@@ -253,14 +253,14 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 	{
 		{{0, 65535, 0},
 		{
-			{"Monaco", 5, FontSpecifier::Bold},
-			{"Monaco", 9, FontSpecifier::Bold},
-			{"Monaco", 12, FontSpecifier::Bold},
-			{"Monaco", 18, FontSpecifier::Bold},
+			{"Monaco",  5, FontSpecifier::Bold, "monaco.ttf"},
+			{"Monaco",  9, FontSpecifier::Bold, "monaco.ttf"},
+			{"Monaco", 12, FontSpecifier::Bold, "monaco.ttf"},
+			{"Monaco", 18, FontSpecifier::Bold, "monaco.ttf"},
 		}}
 	},
 	// Map name (color, font)
-	{{0, 65535, 0}, {"Monaco", 18, FontSpecifier::Normal}, 25},
+	{{0, 65535, 0}, {"Monaco", 18, FontSpecifier::Normal, "monaco.ttf"}, 25},
 	// Path color
 	{65535, 65535, 65535},
 	// What to show (aliens, items, projectiles, paths)
