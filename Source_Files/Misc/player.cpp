@@ -76,6 +76,9 @@ Jul 10, 2000 (Loren Petrich):
 
 Aug 31, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+
+Apr 27, 2001 (Loren Petrich):
+	Made player guided missiles optional
 */
 
 #include "cseries.h"
@@ -280,6 +283,9 @@ static struct damage_response_definition damage_response_definitions[]=
 static short InitialEnergy = PLAYER_MAXIMUM_SUIT_ENERGY;
 static short InitialOxygen = PLAYER_MAXIMUM_SUIT_OXYGEN;
 static short StrippedEnergy = PLAYER_MAXIMUM_SUIT_ENERGY/4;
+
+// Used in weapons.cpp: player can have guided missiles
+bool PlayerShotsGuided = false;
 
 /* ---------- private prototypes */
 
@@ -2656,6 +2662,10 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"vulnerability") == 0)
 	{
 		return (ReadBoundedNumericalValue(Value,"%hd",Vulnerability,short(NONE),short(NUMBER_OF_DAMAGE_TYPES-1)));
+	}
+	else if (strcmp(Tag,"guided") == 0)
+	{
+		return (ReadBooleanValue(Value,PlayerShotsGuided));
 	}
 	UnrecognizedTag();
 	return false;

@@ -211,6 +211,9 @@ struct player_weapon_data {
 /* The array of player weapon states */
 static struct player_weapon_data *player_weapons_array;
 
+// Defined in player.cpp: whether one can have guided missiles
+extern bool PlayerShotsGuided; 
+
 /* ------------- macros */
 #define get_maximum_number_of_players() (MAXIMUM_NUMBER_OF_PLAYERS)
 #define BUILD_WEAPON_IDENTIFIER(weapon, trigger) (weapon<<1+trigger)
@@ -1885,9 +1888,10 @@ static void fire_weapon(
 			// avoid doing search for targets for an unguided projectile.
 			if(trigger_definition->projectile_type!=_projectile_ball_dropped)
 			{
-				short Target = ProjectileIsGuided(trigger_definition->projectile_type) ?
-					find_closest_appropriate_target(player->monster_index,false) :
-					NONE;
+				short Target = PlayerShotsGuided ?
+					(ProjectileIsGuided(trigger_definition->projectile_type) ?
+						find_closest_appropriate_target(player->monster_index,false) :
+						NONE) : NONE;
 				new_projectile(&origin, origin_polygon, &_vector, 
 					trigger_definition->theta_error+flailing_bonus, 
 					trigger_definition->projectile_type, 
