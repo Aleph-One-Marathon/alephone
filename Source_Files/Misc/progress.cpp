@@ -23,6 +23,10 @@
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Replaced proc pointers with UPP for Carbon
 	Added accessors for datafields now opaque in Carbon
+
+Feb 27, 2002 (Br'fin (Jeremy Parsons)):
+	Reimplemented for Carbon to use a fancy progress bar control
+	Fixed that it wouldn't actually update its window under carbon
 */
 
 #include "macintosh_cseries.h"
@@ -40,6 +44,9 @@ struct progress_data {
 	DialogPtr dialog;
 	GrafPtr old_port;
 	UserItemUPP progress_bar_upp;
+#if defined(TARGET_API_MAC_CARBON)
+	ControlRef control;
+#endif
 };
 
 /* ------ private prototypes */
@@ -58,6 +65,16 @@ void open_progress_dialog(
 		
 	progress_data.dialog= GetNewDialog(dialogPROGRESS, NULL, (WindowPtr) -1);
 	assert(progress_data.dialog);
+	
+#if defined(TARGET_API_MAC_CARBON)
+// Carbon code, let's use a progress control!
+	GetDialogItem(progress_data.dialog, iPROGRESS_BAR, &item_type, &item_handle, &item_box);
+	CreateProgressBarControl(GetDialogWindow(progress_data.dialog), &item_box,
+		0, 0, RECTANGLE_WIDTH(&item_box), // Values: current, min, max
+		false, &progress_data.control);
+	assert(progress_data.control);
+#else
+// Old code, draws a pretty plain meter
 #if defined(TARGET_API_MAC_CARBON)
 	progress_data.progress_bar_upp= NewUserItemUPP(draw_distribute_progress);
 #else
@@ -73,7 +90,7 @@ void open_progress_dialog(
 #endif
 	GetDialogItem(progress_data.dialog, iPROGRESS_BAR, &item_type, &item_handle, &item_box);
 	SetDialogItem(progress_data.dialog, iPROGRESS_BAR, item_type, (Handle) progress_data.progress_bar_upp, &item_box);
-
+#endif
 	/* Set the message.. */
 	set_progress_dialog_message(message_id);
 
@@ -83,7 +100,14 @@ void open_progress_dialog(
 	ShowWindow(progress_data.dialog);
 #endif
 	DrawDialog(progress_data.dialog);
+
+#if defined(TARGET_API_MAC_CARBON)
+	if (QDIsPortBuffered(GetDialogPort(progress_data.dialog)))
+		QDFlushPortBuffer(GetDialogPort(progress_data.dialog), NULL);
+	// Busy cursor already provided by OSX
+#else
 	SetCursor(*(GetCursor(watchCursor)));
+#endif
 
 	return;
 }
@@ -108,15 +132,19 @@ void close_progress_dialog(
 {
 	SetPort(progress_data.old_port);
 
-#if defined(USE_CARBON_ACCESSORS)
-	Cursor arrow;
-	GetQDGlobalsArrow(&arrow);
-	SetCursor(&arrow);
-#else
+#if !defined(TARGET_API_MAC_CARBON)
+	// Unneeded under OSX
 	SetCursor(&qd.arrow);
 #endif
+
+#if defined(TARGET_API_MAC_CARBON)
+	HideWindow(GetDialogWindow(progress_data.dialog));
+	DisposeControl(progress_data.control);
+	DisposeDialog(progress_data.dialog);
+#else
 	DisposeDialog(progress_data.dialog);
 	DisposeRoutineDescriptor(progress_data.progress_bar_upp);
+#endif
 
 	return;
 }
@@ -132,11 +160,18 @@ void draw_progress_bar(
 	
 	GetDialogItem(progress_data.dialog, iPROGRESS_BAR, &item_type, &item, &bounds);
 	width= (sent*RECTANGLE_WIDTH(&bounds))/total;
+
+#if defined(TARGET_API_MAC_CARBON)
+	SetControlValue(progress_data.control, width);
 	
+	if (QDIsPortBuffered(GetDialogPort(progress_data.dialog)))
+		QDFlushPortBuffer(GetDialogPort(progress_data.dialog), NULL);
+#else
 	bounds.right= bounds.left+width;
 	RGBForeColor(system_colors+gray15Percent);
 	PaintRect(&bounds);
 	ForeColor(blackColor);
+#endif
 
 	return;
 }
@@ -144,7 +179,11 @@ void draw_progress_bar(
 void reset_progress_bar(
 	void)
 {
+#if defined(TARGET_API_MAC_CARBON)
+	draw_progress_bar(0, 100);
+#else
 	draw_distribute_progress(progress_data.dialog, iPROGRESS_BAR);
+#endif
 
 	return;
 }
