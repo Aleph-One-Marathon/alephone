@@ -129,6 +129,31 @@ files using its Terminal:
 split-up files over to the Windows machine and have fun.
 
 
+Or, if you have a Mac with StuffIt Deluxe installed:  (these instructions were prepared using Stuffit Deluxe 5.1.5 under Mac OS 9.2)
+
+StuffIt Deluxe adds what it calls the 'magic menu' just to the Special menu in Finder.
+
+To convert data files:
+
+  1. 	Select them in Finder (one at a time other or all together, it makes no difference)
+
+  2.	Go to the Magic menu and select 'encode'
+	a sub menu should appear; in this select 'MacBinary (.bin)'
+
+	It should then encode each file you have selected into a macbinary file,
+	the output being in the same folder with the same name plus a .bin extension.
+
+	i.e.,
+	'Shapes' goes to 'Shapes.bin'
+	'Sounds' to 'Sounds.bin', etc.
+
+  3.	Remove the .bin extension (you will have to move the file first so as not to have 2 
+	files with the same name in the same folder)
+
+  4.	Transfer the converted data files to the Aleph One folder on your PC by your preferred method
+	(Zip disk, Memory Stick, LAN connection, etc.)
+
+
 Compiling from source
 ---------------------
 
@@ -142,3 +167,5 @@ Originally written by Christian Bauer.
 May 27, 2003 (Woody Zenfell):  Added Mac OS X conversion method, note about
   SDL libs coming with the binary, and note about moving Aleph One after
   running it.  Updated link to HFVExplorer (thanks Alex Ramos).
+
+June 9, 2004 ("ben"):  Added Mac OS 9 StuffIt Deluxe conversion method.
