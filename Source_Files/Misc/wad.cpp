@@ -86,19 +86,19 @@ struct wad_internal_data *internal_data[MAXIMUM_OPEN_WADFILES]= {NULL, NULL, NUL
 
 /* ---------------- private prototypes */
 static long calculate_directory_offset(struct wad_header *header, short index);
-static void dump_raw_wad(byte *wad);
+static void dump_raw_wad(uint8 *wad);
 static short get_directory_base_length(struct wad_header *header);
 static short get_entry_header_length(struct wad_header *header);
 static bool read_indexed_directory_data(OpenedFile& OFile, struct wad_header *header,
 	short index, struct directory_entry *entry);
-static long calculate_raw_wad_length(struct wad_header *file_header, byte *wad);
+static long calculate_raw_wad_length(struct wad_header *file_header, uint8 *wad);
 static bool read_indexed_wad_from_file_into_buffer(OpenedFile& OFile, 
 	struct wad_header *header, short index, void *buffer, long *length);
-static short count_raw_tags(byte *raw_wad);
-static struct wad_data *convert_wad_from_raw(struct wad_header *header, byte *data,	long wad_start_offset,
+static short count_raw_tags(uint8 *raw_wad);
+static struct wad_data *convert_wad_from_raw(struct wad_header *header, uint8 *data,	long wad_start_offset,
 	long raw_length);
-static struct wad_data *convert_wad_from_raw_modifiable(struct wad_header *header, byte *raw_wad, long raw_length);
-//static void patch_wad_from_raw(struct wad_header *header, byte *raw_wad, struct wad_data *read_wad);
+static struct wad_data *convert_wad_from_raw_modifiable(struct wad_header *header, uint8 *raw_wad, long raw_length);
+//static void patch_wad_from_raw(struct wad_header *header, uint8 *raw_wad, struct wad_data *read_wad);
 static bool size_of_indexed_wad(OpenedFile& OFile, struct wad_header *header, short index, 
 	long *length);
 
@@ -157,7 +157,7 @@ struct wad_data *read_indexed_wad_from_file(
 	bool read_only)
 {
 	struct wad_data *read_wad= (struct wad_data *) NULL;
-	byte *raw_wad;
+	uint8 *raw_wad;
 	long length;
 	int error = 0;
 
@@ -166,9 +166,9 @@ struct wad_data *read_indexed_wad_from_file(
 		if (size_of_indexed_wad(OFile, header, index, &length))
 		{
 #if 0
-			raw_wad= (byte *) malloc(length);
+			raw_wad= (uint8 *) malloc(length);
 #else
-			raw_wad= (byte *) level_transition_malloc(length);
+			raw_wad= (uint8 *) level_transition_malloc(length);
 #endif
 			if(raw_wad)
 			{
@@ -416,8 +416,8 @@ void *get_indexed_directory_data(
 	short index,
 	void *directories)
 {
-	// LP: changed "char *" to "byte *"
-	byte *data_ptr= (byte *)directories;
+	// LP: changed "char *" to "uint8 *"
+	uint8 *data_ptr= (uint8 *)directories;
 	short base_entry_size= get_directory_base_length(header);
 
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
@@ -436,7 +436,7 @@ void set_indexed_directory_offset_and_length(
 	long length,
 	short wad_index)
 {
-	byte *data_ptr= (byte *)entries;
+	uint8 *data_ptr= (uint8 *)entries;
 	struct directory_entry *entry;
 	long data_offset;
 
@@ -477,12 +477,12 @@ void *read_directory_data(
 	struct wad_header *header)
 {
 	long size;
-	byte *data;
+	uint8 *data;
 	
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
 	
 	size= get_size_of_directory_data(header);
-	data= (byte *)malloc(size);
+	data= (uint8 *)malloc(size);
 	if(data)
 	{
 		read_from_file(OFile, header->directory_offset, data, size);
@@ -539,7 +539,7 @@ struct wad_data *append_data_to_wad(
 
 	/* Copy it in.. */
 	assert(index>=0 && index<wad->tag_count);
-	wad->tag_data[index].data= (byte *) malloc(size);
+	wad->tag_data[index].data= (uint8 *) malloc(size);
 	if(!wad->tag_data[index].data)
 	{
 		alert_user(fatalError, strERRORS, outOfMemory, memory_error());
@@ -780,7 +780,7 @@ void *get_flat_data(
 {
 	struct wad_header header;
 	bool success= false;
-	byte *data= NULL;
+	uint8 *data= NULL;
 	// struct encapsulated_wad_data *data= NULL;
 	
 	assert(!use_union);
@@ -800,14 +800,14 @@ void *get_flat_data(
 			if (size_of_indexed_wad(OFile, &header, wad_index, &length))
 			{
 				// data= (struct encapsulated_wad_data *) malloc(length+sizeof(struct encapsulated_wad_data));
-				data= (byte *)malloc(length+SIZEOF_encapsulated_wad_data);
+				data= (uint8 *)malloc(length+SIZEOF_encapsulated_wad_data);
 				if(data)
 				{
-					byte *buffer= data + SIZEOF_encapsulated_wad_data;
-					// byte *buffer= ((byte *) data)+sizeof(struct encapsulated_wad_data);
+					uint8 *buffer= data + SIZEOF_encapsulated_wad_data;
+					// uint8 *buffer= ((uint8 *) data)+sizeof(struct encapsulated_wad_data);
 					
 					// Pack the encapsulated header
-					byte *S = data;
+					uint8 *S = data;
 					ValueToStream(S,uint32(CURRENT_FLAT_MAGIC_COOKIE));
 					ValueToStream(S,int32(length + SIZEOF_encapsulated_wad_data));
 					S = pack_wad_header(S,&header,1);
@@ -852,7 +852,7 @@ long get_flat_data_length(
 	void *data)
 {
 	int32 Length;
-	byte *S = (byte *)data;
+	uint8 *S = (uint8 *)data;
 	S += 4;
 	StreamToValue(S,Length);
 	return Length;
@@ -867,15 +867,15 @@ struct wad_data *inflate_flat_data(
 {
 	// struct encapsulated_wad_data *d= (struct encapsulated_wad_data *) data;
 	struct wad_data *wad= NULL;
-	byte *buffer= ((byte *) data)+SIZEOF_encapsulated_wad_data;
-	// byte *buffer= ((byte *) data)+sizeof(struct encapsulated_wad_data);
+	uint8 *buffer= ((uint8 *) data)+SIZEOF_encapsulated_wad_data;
+	// uint8 *buffer= ((uint8 *) data)+sizeof(struct encapsulated_wad_data);
 	long raw_length;
 
 	assert(data);
 	assert(header);
 	
 	uint32 MagicCookie;
-	byte *S = (byte *)data;
+	uint8 *S = (uint8 *)data;
 	StreamToValue(S,MagicCookie);
 	assert(MagicCookie==CURRENT_FLAT_MAGIC_COOKIE);
 	// assert(d->magic_cookie==CURRENT_FLAT_MAGIC_COOKIE);
@@ -885,7 +885,7 @@ struct wad_data *inflate_flat_data(
 	StreamToValue(S,Length);
 	
 	S = unpack_wad_header(S,header,1);
-	assert((S - (byte *)data) == SIZEOF_encapsulated_wad_data);
+	assert((S - (uint8 *)data) == SIZEOF_encapsulated_wad_data);
 	// obj_copy(*header, (d->header));
 
 	raw_length= calculate_raw_wad_length(header, buffer);
@@ -893,7 +893,7 @@ struct wad_data *inflate_flat_data(
 	// assert(raw_length==d->length-sizeof(struct encapsulated_wad_data));
 	
 	/* Now inflate.. */
-	wad= convert_wad_from_raw(header, (byte *)data, SIZEOF_encapsulated_wad_data, raw_length);
+	wad= convert_wad_from_raw(header, (uint8 *)data, SIZEOF_encapsulated_wad_data, raw_length);
 	
 	return wad;
 }
@@ -1156,7 +1156,7 @@ static bool read_indexed_wad_from_file_into_buffer(
 
 		/* Veracity Check */
 		/* ! an error, it has a length non-zero and calculated != actual */
-		assert(entry.length==calculate_raw_wad_length(header, (byte *)buffer));
+		assert(entry.length==calculate_raw_wad_length(header, (uint8 *)buffer));
 	}
 	
 	return error;
@@ -1165,12 +1165,12 @@ static bool read_indexed_wad_from_file_into_buffer(
 /* This *MUST* be a base wad.. */
 static struct wad_data *convert_wad_from_raw(
 	struct wad_header *header, 
-	byte *data,
+	uint8 *data,
 	long wad_start_offset,
 	long raw_length)
 {
 	struct wad_data *wad;
-	byte *raw_wad;
+	uint8 *raw_wad;
 
 	/* In case we are somewhere else, like, for example, in a net transferred level.. */
 	raw_wad= data+wad_start_offset;
@@ -1226,7 +1226,7 @@ static struct wad_data *convert_wad_from_raw(
 		
 						/* Copy the data.. */
 						memcpy(wad->tag_data[index].data, 
-							(((byte *) wad_entry_header)+entry_header_size), 
+							(((uint8 *) wad_entry_header)+entry_header_size), 
 							wad_entry_header->length);
 						wad_entry_header= (struct entry_header *) (raw_wad + wad_entry_header->next_offset);
 					} else {
@@ -1246,7 +1246,7 @@ static struct wad_data *convert_wad_from_raw(
 /* This *MUST* be a base wad.. */
 static struct wad_data *convert_wad_from_raw_modifiable(
 	struct wad_header *header, 
-	byte *raw_wad,
+	uint8 *raw_wad,
 	long raw_length)
 {
 	struct wad_data *wad;
@@ -1285,7 +1285,7 @@ static struct wad_data *convert_wad_from_raw_modifiable(
 				{
 					wad->tag_data[index].tag = wad_entry_header.tag;
 					wad->tag_data[index].length = wad_entry_header.length;
-					wad->tag_data[index].data = (byte *) malloc(wad->tag_data[index].length);
+					wad->tag_data[index].data = (uint8 *) malloc(wad->tag_data[index].length);
 					if(!wad->tag_data[index].data)
 					{
 						alert_user(fatalError, strERRORS, outOfMemory, memory_error());
@@ -1308,7 +1308,7 @@ static struct wad_data *convert_wad_from_raw_modifiable(
 }
 
 static short count_raw_tags(
-	byte *raw_wad)
+	uint8 *raw_wad)
 {
 	int tag_count = 0;
 
@@ -1330,7 +1330,7 @@ static short count_raw_tags(
 /* Patch it! */
 static void patch_wad_from_raw(
 	struct wad_header *header, 
-	byte *raw_wad, 
+	uint8 *raw_wad, 
 	struct wad_data *read_wad)
 {
 	short tag_count;
@@ -1358,7 +1358,7 @@ static void patch_wad_from_raw(
 				
 				/* Copy it in.. */
 				memcpy(read_wad->tag_data[actual_index].data+wad_entry_header->offset,
-					(((byte *) wad_entry_header)+entry_header_size),
+					(((uint8 *) wad_entry_header)+entry_header_size),
 					wad_entry_header->length);
 				
 				break;
@@ -1378,7 +1378,7 @@ static void patch_wad_from_raw(
 
 static long calculate_raw_wad_length(
 	struct wad_header *file_header,
-	byte *wad)
+	uint8 *wad)
 {
 	int entry_header_size = get_entry_header_length(file_header);
 	long length = 0;
@@ -1398,7 +1398,7 @@ static long calculate_raw_wad_length(
 
 /* -------- debug privates */
 static void dump_raw_wad(
-	byte *wad)
+	uint8 *wad)
 {
 	struct entry_header *header;
 	long offset;
@@ -1414,7 +1414,7 @@ static void dump_raw_wad(
 		offset = header->next_offset;
 		dprintf("%d Tag: %x Length: %d Next Offset: %d", tag_count, header->tag, header->length, header->next_offset);
 		tag_count++;
-		header= (struct entry_header *) (((byte *) wad) + offset);
+		header= (struct entry_header *) (((uint8 *) wad) + offset);
 	}
 	dprintf("%d Tag: %x Length: %d Next Offset: %d", tag_count, header->tag, header->length, header->next_offset);
 }
