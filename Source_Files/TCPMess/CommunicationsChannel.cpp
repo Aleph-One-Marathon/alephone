@@ -33,6 +33,7 @@
 
 #include <iostream> // debugging
 #include "cseries.h"
+#include <fcntl.h> // hacky non-cross-platform setting of nonblocking
 
 enum
 {
@@ -86,13 +87,7 @@ CommunicationsChannel::CommunicationsChannel(TCPsocket inSocket)
 
 CommunicationsChannel::~CommunicationsChannel()
 {
-	delete mIncomingMessage;
-
-	for(MessageQueue::iterator i = mIncomingMessages.begin(); i != mIncomingMessages.end(); ++i)
-		delete *i;
-
-	for(UninflatedMessageQueue::iterator i = mOutgoingMessages.begin(); i != mOutgoingMessages.end(); ++i)
-		delete *i;
+    disconnect();
 }
 
 
@@ -102,61 +97,65 @@ CommunicationsChannel::receive_some(TCPsocket inSocket, byte* inBuffer, size_t& 
 {
 	size_t theBytesLeft = inBufferLength - ioBufferPosition;
 
-	int theResult = SDLNet_TCP_Recv(inSocket, inBuffer + ioBufferPosition, theBytesLeft);
+	if(theBytesLeft > 0)
+	{
+		int theResult = SDLNet_TCP_Recv(inSocket, inBuffer + ioBufferPosition, theBytesLeft);
 
 // Unfortunately, SDLNet_TCP_Recv() often returns -1 even when there's no error, and I
 // don't think I have any legitimate way to distinguish this case from a true error condition.
 #ifdef SANE_RECV_RESULTS
-	if(theResult < 0)
-	{
-		disconnect();
-		return kError;
-	}
-	else
-	{
+		if(theResult < 0)
+		{
+			disconnect();
+			return kError;
+		}
+		else
+		{
+			if(theResult > 0)
+			{
+				mTicksAtLastReceive = SDL_GetTicks();
+			}
+	
+			ioBufferPosition += theResult;
+			return (ioBufferPosition == inBufferLength) ? kComplete : kIncomplete;
+		}
+#else
+		if(theResult == 0)
+		{
+			// For some reason we get 0 back if the connection is lost ...
+			disconnect();
+			return kError;
+		}
+		
+		if(theResult < 0)
+		{
+			// Please close your eyes for this part ... we get -1 back from SDL_net,
+			// then peek around behind its back to try to figure out why.  YUCK
+			// Hmm surely this is doomed to fail on non-UNIXy systems?  sigh ...
+			// Perhaps we should treat 0 and < 0 the same here, and change what it
+			// means to be connected.  Maybe we could use the Get Peer function to
+			// detect connected/disconnected.
+			if(errno == EAGAIN)
+			{
+				theResult = 0;
+			}
+			else
+			{
+				std::cout << "theResult == " << theResult << " ; errno == " << errno << " ; strerror() == " << strerror(errno) << " ; SDL_GetError() == " << SDL_GetError() << std::endl;
+				
+				disconnect();
+				return kError;
+			}
+		}
+	
 		if(theResult > 0)
 		{
 			mTicksAtLastReceive = SDL_GetTicks();
 		}
-
-		ioBufferPosition += theResult;
-		return (ioBufferPosition == inBufferLength) ? kComplete : kIncomplete;
-	}
-#else
-	if(theResult == 0)
-	{
-		// For some reason we get 0 back if the connection is lost ...
-		disconnect();
-		return kError;
-	}
 	
-	if(theResult < 0)
-	{
-		// Please close your eyes for this part ... we get -1 back from SDL_net,
-		// then peek around behind its back to try to figure out why.  YUCK
-		// Hmm surely this is doomed to fail on non-UNIXy systems?  sigh ...
-		// Perhaps we should treat 0 and < 0 the same here, and change what it
-		// means to be connected.  Maybe we could use the Get Peer function to
-		// detect connected/disconnected.
-		if(errno == EAGAIN)
-		{
-			theResult = 0;
-		}
-		else
-		{
-			std::cout << "theResult == " << theResult << " ; errno == " << errno << " ; strerror() == " << strerror(errno) << " ; SDL_GetError() == " << SDL_GetError() << std::endl;
-			
-			disconnect();
-			return kError;
-		}
-	}
-
-	if(theResult > 0)
-	{
-		mTicksAtLastReceive = SDL_GetTicks();
-	}
-
-	ioBufferPosition += theResult;
+		ioBufferPosition += theResult;
+	} // if we actually expect to receive something
+	
 	return (ioBufferPosition == inBufferLength) ? kComplete : kIncomplete;
 #endif // SANE_RECV_RESULTS
 }
@@ -205,6 +204,9 @@ CommunicationsChannel::receiveHeader()
 		theHeaderStream >> theMagic
 			>> theMessageType
 			>> theMessageLength;
+
+		// Incoming length includes header length
+		theMessageLength -= kHeaderPackedSize;
 
 		if(theMagic != kHeaderMagic || theMessageLength > kMaximumMessageLength)
 		{
@@ -352,7 +354,7 @@ CommunicationsChannel::pumpSendingSide()
 			AOStreamBE theHeaderStream(mOutgoingHeader, kHeaderPackedSize);
 			theHeaderStream << (Uint16)kHeaderMagic
 				<< theMessage->inflatedType()
-				<< (Uint32)theMessage->length();
+				<< (Uint32)(theMessage->length() + kHeaderPackedSize);
 		}
 
 		if(mOutgoingHeaderPosition < kHeaderPackedSize)
@@ -397,8 +399,11 @@ CommunicationsChannel::dispatchIncomingMessages()
 void
 CommunicationsChannel::enqueueOutgoingMessage(const Message& inMessage)
 {
-	UninflatedMessage* theUninflatedMessage = inMessage.deflate();
-	mOutgoingMessages.push_back(theUninflatedMessage);
+    if(isConnected())
+    {
+        UninflatedMessage* theUninflatedMessage = inMessage.deflate();
+        mOutgoingMessages.push_back(theUninflatedMessage);
+    }
 }
 
 
@@ -410,8 +415,21 @@ CommunicationsChannel::connect(const IPaddress& inAddress)
 	// Have to copy the address since we get a const, but SDL_net takes a non-const
 	IPaddress theAddress = inAddress;
 	mSocket = SDLNet_TCP_Open(&theAddress);
+
 	if(mSocket != NULL)
+	{
 		mConnected = true;
+
+        mTicksAtLastReceive = SDL_GetTicks();
+        mTicksAtLastSend = SDL_GetTicks();
+
+        // SET NONBLOCKING MODE
+		// XXX: this depends on intimate carnal knowledge of the SDL_net struct _UDPsocket
+		// if it changes that structure, we are hosed.
+		int	theSocketFD = ((int*)mSocket)[1];
+
+		fcntl(theSocketFD, F_SETFL, O_NONBLOCK);
+	}
 }
 
 
@@ -441,6 +459,26 @@ CommunicationsChannel::disconnect()
 		mSocket = NULL;
 		mConnected = false;
 	}
+
+    // Discard all data so next connect()ion starts with a clean slate
+    mIncomingHeaderPosition = 0;
+    mIncomingMessagePosition = 0;
+
+    mOutgoingHeaderPosition = 0;
+    mOutgoingMessagePosition = 0;
+
+    delete mIncomingMessage;
+    mIncomingMessage = NULL;
+
+    for(MessageQueue::iterator i = mIncomingMessages.begin(); i != mIncomingMessages.end(); ++i)
+        delete *i;
+
+    mIncomingMessages.clear();
+
+    for(UninflatedMessageQueue::iterator i = mOutgoingMessages.begin(); i != mOutgoingMessages.end(); ++i)
+        delete *i;
+
+    mOutgoingMessages.clear();
 }
 
 
