@@ -628,15 +628,15 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
     // note: my strncpy states it fills remaining buffer with 0.  If yours doesn't, fill it yourself.
     strncpy(theResponsePacket->sslpp_service_type, inServiceInstance->sslps_type, SSLP_MAX_TYPE_LENGTH);
     strncpy(theResponsePacket->sslpp_service_name, inServiceInstance->sslps_name, SSLP_MAX_NAME_LENGTH);
+
+    // Load into the "real" packet
+    PackPacket(sResponsePacket->data,theResponsePacket);
     
     // Broadcast the HAVE once to speed things up, maybe
     SDLNetx_UDP_Broadcast(sSocketDescriptor, sResponsePacket);
     
     // Allow receiving code to respond to incoming FIND messages
     sBehaviorsDesired		|= SSLPINT_RESPONDING;
-    
-    // Load into the "real" packet
-    PackPacket(sResponsePacket->data,theResponsePacket);
 }
 
 
