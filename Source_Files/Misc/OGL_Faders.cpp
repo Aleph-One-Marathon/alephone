@@ -9,11 +9,20 @@
 
 #include "cseries.h"
 #include "fades.h"
+#include "Random.h"
 #include "render.h"
 #include "OGL_Render.h"
 #include "OGL_Faders.h"
 
 #ifdef HAVE_OPENGL
+
+// The randomizer for the flat-static color
+static GM_Random FlatStaticRandom;
+
+// Alternative: partially-transparent instead of the logic-op effect
+static bool UseFlatStatic;
+static uint16 FlatStaticColor[4];
+
 
 #include <GL/gl.h>
 
@@ -96,17 +105,31 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			break;
 		
 		case _randomize_fader_type:
-			// Do random flipping of the lower bits of color values;
-			// the stronger the opacity (alpha), the more bits to flip.
-			glDisable(GL_BLEND);
-			MultAlpha(Fader.Color,BlendColor);
-			glColor3fv(BlendColor);
-			glEnable(GL_COLOR_LOGIC_OP);
-			glLogicOp(GL_XOR);
-			glDrawArrays(GL_POLYGON,0,4);
-			// Revert to defaults
-			glDisable(GL_COLOR_LOGIC_OP);
-			glEnable(GL_BLEND);
+			UseFlatStatic = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic);
+			if (UseFlatStatic)
+			{
+				for (int c=0; c<3; c++)
+					FlatStaticColor[c] = FlatStaticRandom.KISS() + FlatStaticRandom.LFIB4();
+				FlatStaticColor[3] = PIN(int(65535*Fader.Color[3]+0.5),0,65535);
+				glDisable(GL_ALPHA_TEST);
+				glEnable(GL_BLEND);
+				glColor4usv(FlatStaticColor);
+				glDrawArrays(GL_POLYGON,0,4);
+			}
+			else
+			{
+				// Do random flipping of the lower bits of color values;
+				// the stronger the opacity (alpha), the more bits to flip.
+				glDisable(GL_BLEND);
+				MultAlpha(Fader.Color,BlendColor);
+				glColor3fv(BlendColor);
+				glEnable(GL_COLOR_LOGIC_OP);
+				glLogicOp(GL_XOR);
+				glDrawArrays(GL_POLYGON,0,4);
+				// Revert to defaults
+				glDisable(GL_COLOR_LOGIC_OP);
+				glEnable(GL_BLEND);
+			}
 			break;
 		
 		case _negate_fader_type:
