@@ -44,10 +44,7 @@ Jul 16, 2001 (Loren Petrich):
 #endif
 
 #include "HUDRenderer_SW.h"
-#include "HUDRenderer_OGL.h"
 #include "game_window.h"
-#include "screen_definitions.h"
-#include "images.h"
 
 // LP addition: color and font parsers
 #include "ColorParser.h"
@@ -219,11 +216,6 @@ bool OGL_HUDActive = false;
 // Software rendering
 HUD_SW_Class HUD_SW;
 
-// OpenGL rendering
-#ifdef HAVE_OPENGL
-static HUD_OGL_Class HUD_OGL;
-#endif
-
 
 /* --------- code */
 
@@ -252,145 +244,6 @@ void draw_interface(void)
 	}
 		
 	validate_world_window();
-}
-
-#ifdef HAVE_OPENGL
-/* draws the entire interface using OpenGL */
-void OGL_DrawHUD(Rect &dest, short time_elapsed)
-{
-	// We are using 6 textures to render the 640x160 pixel HUD:
-	//
-	//     256      256    128
-	//  +--------+--------+----+
-	//  |   0    |   1    | 2  | 128
-    //  |        |        |    |
-	//  +--------+--------+----+
-	//  |   3    |   4    | 5  | 32
-    //  +--------+--------+----+
-	const int NUM_TEX = 6;
-	static GLuint txtr_id[NUM_TEX];
-	static const int txtr_width[NUM_TEX] = {256, 256, 128, 256, 256, 128};
-	static const int txtr_height[NUM_TEX] = {128, 128, 128, 32, 32, 32};
-	static const int txtr_x[NUM_TEX] = {0, 256, 512, 0, 256, 512};
-	static const int txtr_y[NUM_TEX] = {0, 0, 0, 128, 128, 128};
-
-	// Load static HUD picture if necessary
-	static bool hud_pict_loaded = false;
-	static bool hud_pict_not_found = false;
-	if (!hud_pict_loaded && !hud_pict_not_found) {
-		LoadedResource PictRsrc;
-		if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, PictRsrc))
-			hud_pict_loaded = true;
-		else
-			hud_pict_not_found = true;
-
-		if (hud_pict_loaded) {
-			uint8 *txtr_data[NUM_TEX];
-			for (int i=0; i<NUM_TEX; i++)
-				txtr_data[i] = new uint8[txtr_width[i] * txtr_height[i] * 4];
-
-#if defined(mac)
-			// Render picture to GWorld, convert to GL textures
-#warning This needs to be implemented!
-#elif defined(SDL)
-			// Render picture into SDL surface, convert to GL textures
-			SDL_Surface *hud_pict = picture_to_surface(PictRsrc);
-			if (hud_pict) {
-				SDL_Surface *hud_pict_rgb = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 160, 32, 0xff0000, 0x00ff00, 0x0000ff, 0);
-				if (hud_pict_rgb) {
-					SDL_Rect rect = {0, 0, 640, 160};
-					SDL_BlitSurface(hud_pict, &rect, hud_pict_rgb, &rect);
-					for (int i=0; i<NUM_TEX; i++) {
-						uint32 *p = (uint32 *)((uint8 *)hud_pict_rgb->pixels + txtr_y[i] * hud_pict_rgb->pitch) + txtr_x[i];
-						uint8 *q = txtr_data[i];
-						for (int y=0; y<txtr_height[i]; y++) {
-							for (int x=0; x<txtr_width[i]; x++) {
-								uint32 v = p[x];
-								*q++ = v >> 16;
-								*q++ = v >> 8;
-								*q++ = v;
-								*q++ = 0xff;
-							}
-							p = (uint32 *)((uint8 *)p + hud_pict_rgb->pitch);
-						}
-					}
-					SDL_FreeSurface(hud_pict_rgb);
-				}
-				SDL_FreeSurface(hud_pict);
-			}
-#endif
-
-			glGenTextures(NUM_TEX, txtr_id);
-			for (int i=0; i<NUM_TEX; i++) {
-				glBindTexture(GL_TEXTURE_2D, txtr_id[i]);
-				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, txtr_width[i], txtr_height[i],
-					0, GL_RGBA, GL_UNSIGNED_BYTE, txtr_data[i]);
-				delete[] txtr_data[i];
-			}
-
-			hud_pict_loaded = true;
-		}
-	}
-
-	if (hud_pict_loaded) {
-
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-		glEnable(GL_TEXTURE_2D);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_ALPHA_TEST);
-		glDisable(GL_BLEND);
-		glDisable(GL_FOG);
-
-		// Draw static HUD picture
-		for (int i=0; i<NUM_TEX; i++) {
-			glBindTexture(GL_TEXTURE_2D, txtr_id[i]);
-			glColor3f(1.0, 1.0, 1.0);
-			glBegin(GL_TRIANGLE_FAN);
-				glTexCoord2f(0.0, 0.0);
-				glVertex2i(txtr_x[i] + dest.left, txtr_y[i] + dest.top);
-				glTexCoord2f(1.0, 0.0);
-				glVertex2i(txtr_x[i] + txtr_width[i] + dest.left, txtr_y[i] + dest.top);
-				glTexCoord2f(1.0, 1.0);
-				glVertex2i(txtr_x[i] + txtr_width[i] + dest.left, txtr_y[i] + txtr_height[i] + dest.top);
-				glTexCoord2f(0.0, 1.0);
-				glVertex2i(txtr_x[i] + dest.left, txtr_y[i] + txtr_height[i] + dest.top);
-			glEnd();
-		}
-
-		// Add dynamic elements (redraw everything)
-		mark_weapon_display_as_dirty();
-		mark_ammo_display_as_dirty();
-		mark_shield_display_as_dirty();
-		mark_oxygen_display_as_dirty();
-		mark_player_inventory_as_dirty(current_player_index, NONE);
-		glScissor(dest.left, dest.bottom, 640, 160);
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glTranslatef(dest.left, dest.top - 320, 0.0);
-		HUD_OGL.update_everything(time_elapsed);
-		glPopMatrix();
-
-		glPopAttrib();
-	}
-}
-#endif
-
-// Call this from outside
-void OGL_ResetHUDFonts(bool IsStarting)
-{
-#ifdef HAVE_OPENGL
-	get_interface_font(_interface_font).OGL_Reset(IsStarting);
-	get_interface_font(_interface_item_count_font).OGL_Reset(IsStarting);
-	get_interface_font(_weapon_name_font).OGL_Reset(IsStarting);
-	get_interface_font(_player_name_font).OGL_Reset(IsStarting);
-#endif
 }
 
 /* updates only what needs changing (time_elapsed==NONE means redraw everything no matter what,

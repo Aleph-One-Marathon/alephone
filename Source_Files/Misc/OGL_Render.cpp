@@ -481,7 +481,7 @@ bool OGL_StartRun()
 	// Initialize the on-screen font for OpenGL rendering
 	GetOnScreenFont().OGL_Reset(true);
 	
-	// Reset the font into for overhead-map and HUD fonts done in OpenGL fashion
+	// Reset the font info for overhead-map and HUD fonts done in OpenGL fashion
 	OGL_ResetMapFonts(true);
 	OGL_ResetHUDFonts(true);
 		
