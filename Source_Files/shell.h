@@ -127,6 +127,15 @@ struct system_information_data
 
 extern struct system_information_data *system_information;
 
+#ifdef TARGET_API_MAC_CARBON
+#ifdef APPLICATION_IS_BUNDLED
+
+extern CFBundleRef MainBundle;
+extern IBNibRef GUI_Nib;
+
+#endif
+#endif
+
 /* ---------- prototypes/SHELL.C [now shell_misc.cpp, shell_macintosh.cpp, shell_sdl.cpp] */
 
 void global_idle_proc(void);
