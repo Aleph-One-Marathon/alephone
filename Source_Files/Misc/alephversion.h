@@ -50,8 +50,15 @@
 #  ifndef A1_VERSION_MINOR_PLATFORM
 
 #   ifdef TARGET_API_MAC_CARBON
-#    define A1_VERSION_MINOR_PLATFORM "Carbon"
-// if anyone ever (again) builds a PEF Carbon, might be worth noting that distinction too...
+#    ifdef __APPLE_CC__
+#     define A1_VERSION_MINOR_PLATFORM "Carbon (PB)"
+#    else
+#     ifdef __MWERKS__
+#      define A1_VERSION_MINOR_PLATFORM "Carbon (CW)"
+#     else
+#      define A1_VERSION_MINOR_PLATFORM "Carbon (Other)"
+#     endif
+#    endif
 #   else
 #    define A1_VERSION_MINOR_PLATFORM "Classic"
 #   endif
