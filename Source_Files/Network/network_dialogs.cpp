@@ -60,6 +60,10 @@ Feb 12, 2003 (Woody Zenfell):
 
 Apr 10, 2003 (Woody Zenfell):
     Join hinting and autogathering have Preferences entries now
+
+ August 27, 2003 (Woody Zenfell):
+	Reworked netscript selection stuff to use Preferences and to be more cross-platform
+	and more consistent with other dialog code
 */
 
 #include	"cseries.h"
@@ -389,6 +393,37 @@ extract_setup_dialog_information(
 	
 	game_information->initial_random_seed = resuming_game ? dynamic_world->random_seed : (uint16) machine_tick_count();
 
+	bool shouldUseNetscript = get_boolean_control_value(dialog, iUSE_SCRIPT);
+	FileSpecifier theNetscriptFile = get_dialog_netscript_file(dialog);
+
+	// This will be set true below if appropriate
+	SetNetscriptStatus(false);
+	
+	if(shouldUseNetscript)
+	{
+		OpenedFile script_file;
+
+		if(theNetscriptFile.Open (script_file))
+		{
+			long script_length;
+			script_file.GetLength (script_length);
+
+			// DeferredScriptSend will delete this storage the *next time* we call it (!)
+			byte* script_buffer = new byte [script_length];
+			
+			if (script_file.Read (script_length, script_buffer))
+			{
+				DeferredScriptSend (script_buffer, script_length);
+				SetNetscriptStatus (true);
+			}
+			
+			script_file.Close ();
+		}
+		else
+			// hmm failing quietly is probably not the best course of action, but ...
+			shouldUseNetscript = false;
+	}
+
 	// now save some of these to the preferences - only if not resuming a game
         if(!resuming_game)
         {
@@ -419,6 +454,18 @@ extract_setup_dialog_information(
                         network_preferences->game_is_untimed = false;	
                 }
                 network_preferences->kill_limit = game_information->kill_limit;
+
+		network_preferences->use_netscript = shouldUseNetscript;
+		if(shouldUseNetscript)
+		{
+			// Sorry, probably should use a FileSpecifier in the prefs,
+			// but that means prefs reading/writing have to be reworked instead
+#ifdef SDL
+			strncpy(network_preferences->netscript_file, theNetscriptFile.GetPath(), sizeof(network_preferences->netscript_file));
+#else
+			network_preferences->netscript_file = theNetscriptFile.GetSpec();
+#endif
+		}
         }
 
         // We write the preferences here (instead of inside the if) because they may have changed
@@ -660,14 +707,18 @@ fill_in_game_setup_dialog(
         // rather than some ridiculously large number
 	insert_number_into_text_item(dialog, iTIME_LIMIT, ((resuming_game && theAdjustedPreferences.game_is_untimed) ? network_preferences->time_limit : theAdjustedPreferences.time_limit)/TICKS_PER_SECOND/60);
 
-        SetNetscriptStatus (false);
-
-#ifdef mac
 #ifdef HAVE_LUA
-        modify_boolean_control(dialog, iSELECT_SCRIPT, CONTROL_ACTIVE, NONE);
+        modify_boolean_control(dialog, iUSE_SCRIPT, CONTROL_ACTIVE, theAdjustedPreferences.use_netscript);
 #else
-        modify_boolean_control(dialog, iSELECT_SCRIPT, CONTROL_INACTIVE, false);
+        modify_boolean_control(dialog, iUSE_SCRIPT, CONTROL_INACTIVE, false);
 #endif
+	
+#ifdef SDL
+# ifdef HAVE_LUA
+	modify_control_enabled(dialog, iCHOOSE_SCRIPT, theAdjustedPreferences.use_netscript ? CONTROL_ACTIVE : CONTROL_INACTIVE);
+# else
+	modify_control_enabled(dialog, iCHOOSE_SCRIPT, CONTROL_INACTIVE);
+# endif
 #endif
 
 	if (theAdjustedPreferences.game_options & _game_has_kill_limit)
@@ -687,7 +738,7 @@ fill_in_game_setup_dialog(
 	if (player_information->name[0]==0) modify_control_enabled(dialog, iOK, CONTROL_INACTIVE);
 
 	// set up the game options
-	modify_boolean_control(dialog, iREAL_TIME_SOUND, CONTROL_ACTIVE, network_preferences->allow_microphone);
+	modify_boolean_control(dialog, iREAL_TIME_SOUND, CONTROL_ACTIVE, theAdjustedPreferences.allow_microphone);
 	set_dialog_game_options(dialog, theAdjustedPreferences.game_options);
 
         // If they're resuming a single-player game, now we overwrite any existing options with the cooperative-play options.
@@ -704,7 +755,7 @@ fill_in_game_setup_dialog(
 
 #if !HAVE_SDL_NET
 	// set up network options
-	modify_selection_control(dialog, iNETWORK_SPEED, CONTROL_ACTIVE, network_preferences->type+1);
+	modify_selection_control(dialog, iNETWORK_SPEED, CONTROL_ACTIVE, theAdjustedPreferences.type+1);
 #endif
 
         // Disable certain elements when resuming a game
@@ -716,6 +767,16 @@ fill_in_game_setup_dialog(
                 modify_control_enabled(dialog, iTIME_LIMIT, CONTROL_INACTIVE);
                 modify_limit_type_choice_enabled(dialog, CONTROL_INACTIVE);
         }
+
+	FileSpecifier theFile
+#ifdef SDL
+		(theAdjustedPreferences.netscript_file);
+#else
+	;
+	theFile.SetSpec(theAdjustedPreferences.netscript_file);
+#endif
+	
+	set_dialog_netscript_file(dialog, theFile);
 
 	return theAdjustedPreferences.game_type;
 }

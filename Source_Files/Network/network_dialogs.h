@@ -199,7 +199,8 @@ enum {
 	iSUICIDE_PUNISHED= 24,
 	iGAME_TYPE,
 	iGATHER_COLOR,
-        iSELECT_SCRIPT= 28,
+        iUSE_SCRIPT= 28,
+	iCHOOSE_SCRIPT,
 	iTEXT_TIME_LIMIT= 35,
 	iMICROPHONE_TYPE,
         iTEXT_SCRIPT_NAME
@@ -450,6 +451,9 @@ extern void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEna
 // ZZZ: new function manipulates radio button title and units ("Point Limit", "points")
 extern void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id, short radio_string_index,
                                 short units_item, short units_stringset_id, short units_string_index);
+
+extern void set_dialog_netscript_file(DialogPtr inDialog, const FileSpecifier& inFile);
+extern const FileSpecifier& get_dialog_netscript_file(DialogPtr inDialog);
 
 // (Postgame carnage report)
 #ifdef USES_NIBS
