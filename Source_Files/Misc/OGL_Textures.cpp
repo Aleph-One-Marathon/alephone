@@ -677,16 +677,8 @@ bool TextureManager::LoadSubstituteTexture()
 	if (CTable == INFRAVISION_BITMAP_SET)
 	{
 		if (NormalBuffer)
-		{
-			for (int k=0; k<TxtrWidth*TxtrHeight; k++)
-			{
-				uint32& IntPxl = NormalBuffer[k];
-				GLfloat FloatPxl[4];
-				MakeFloatColor(IntPxl,FloatPxl);
-				FindInfravisionVersion(Collection,FloatPxl);
-				IntPxl = MakeIntColor(FloatPxl);
-			}
-		}
+			FindInfravisionVersion(Collection,TxtrWidth*TxtrHeight,NormalBuffer);
+		
 		// Infravision textures don't glow
 		if (GlowBuffer)
 		{
@@ -1245,16 +1237,7 @@ void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT)
 	}
 	
 	if (IsInfravision)
-	{
-		for (int k=0; k<ImageSize; k++)
-		{
-			uint32& IntPxl = Buffer[k];
-			GLfloat FloatPxl[4];
-			MakeFloatColor(IntPxl,FloatPxl);
-			FindInfravisionVersion(Collection,FloatPxl);
-			IntPxl = MakeIntColor(FloatPxl);
-		}
-	}
+		FindInfravisionVersion(Collection,ImageSize,Buffer);
 	
 	if (IsSilhouette)
 	{
@@ -1340,18 +1323,40 @@ bool SetInfravisionTint(short Collection, bool IsTinted, float Red, float Green,
 // it makes no change if infravision is inactive.
 void FindInfravisionVersion(short Collection, GLfloat *Color)
 {
-	if (InfravisionActive)
+	if (!InfravisionActive) return;
+	
+	InfravisionData& IVData = IVDataList[Collection];
+	if (!IVData.IsTinted) return;
+	
+	GLfloat AvgColor = (Color[0] + Color[1] + Color[2])/3;
+	Color[0] = IVData.Red*AvgColor;
+	Color[1] = IVData.Green*AvgColor;
+	Color[2] = IVData.Blue*AvgColor;
+}
+
+
+// Mass-production version of above; suitable for textures
+void FindInfravisionVersion(short Collection, int NumPixels, uint32 *Pixels)
+{
+	if (!InfravisionActive) return;
+	
+	InfravisionData& IVData = IVDataList[Collection];
+	if (!IVData.IsTinted) return;
+	
+	// OK to use marching-pointer optimization here;
+	// the float-to-int and int-to-float conversions have been simplified,
+	// because the infravision-value-finding does not care if the values
+	// had been multipled by 255 (int <-> float color-value multiplier/divider)
+	for (int k=0; k<NumPixels; k++, Pixels++)
 	{
-		InfravisionData& IVData = IVDataList[Collection];
-		if (IVData.IsTinted)
-		{
-			GLfloat AvgColor = (Color[0] + Color[1] + Color[2])/3;
-			Color[0] = IVData.Red*AvgColor;
-			Color[1] = IVData.Green*AvgColor;
-			Color[2] = IVData.Blue*AvgColor;
-		}
+		uint8 *PxlPtr = (uint8 *)Pixels;
+		GLfloat AvgColor = GLfloat(int(PxlPtr[0]) + int(PxlPtr[1]) + int(PxlPtr[2]))/3;
+		PxlPtr[0] = PIN(int(IVData.Red*AvgColor + 0.5),0,255);
+		PxlPtr[1] = PIN(int(IVData.Green*AvgColor + 0.5),0,255);
+		PxlPtr[2] = PIN(int(IVData.Blue*AvgColor + 0.5),0,255);
 	}
 }
+
 
 /*
 // Stuff for doing 16->32 pixel-format conversion, 1555 ARGB to 8888 RGBA

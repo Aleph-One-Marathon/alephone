@@ -403,11 +403,29 @@ struct ShaderDataStruct
 };
 static ShaderDataStruct ShaderData;
 
-// Shader callbacks
+// Shader callbacks for textures
 void NormalShader(void *Data);
 void GlowingShader(void *Data);
 void StaticModeIndivSetup(int SeqNo);
 void StaticModeShader(void *Data);
+
+// External-lighting data (given to callback)
+struct LightingDataStruct
+{
+	short Type;
+	
+	// This is in 3 sets of 4 values:
+	// R0, R1, R2, R3, G0, G1, G2, G3, B0, B1, B2, B3;
+	// the color components are calculated with
+	// R0*N0 + R1*N1 + R2*N2 + R3
+	// G0*N0 + G1*N1 + G2*N2 + G3
+	// B0*N0 + B1*N1 + B2*N2 + B3
+	GLfloat Colors[3][4];
+};
+static LightingDataStruct LightingData;
+
+// Shader callback for lighting
+static void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors);
 
 // Set up the shader data
 static void SetupShaders();
@@ -2202,15 +2220,17 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			GLfloat Color[3];
 			FindShadingColor(RenderRectangle.LightDepth,int(FIXED_ONE*LightInDir + 0.5),Color);
 			
+			LightingData.Type = ModelPtr->LightType;
+			
 			for (int c=0; c<3; c++)
 			{
 				// Note: the miner's-light effect adds to the existing light,
 				// thus we subtract the bkgd before adding to the rest of the light
 				GLfloat HC = (Color[c] - LightInDir)/2;
-				ModelRenderObject.ExternalLight[c][0] = - HC*Dir[0];
-				ModelRenderObject.ExternalLight[c][1] = - HC*Dir[1];
-				ModelRenderObject.ExternalLight[c][2] = LightDiff - HC*Dir[2];
-				ModelRenderObject.ExternalLight[c][3] = AvgLight + HC;
+				LightingData.Colors[c][0] = - HC*Dir[0];
+				LightingData.Colors[c][1] = - HC*Dir[1];
+				LightingData.Colors[c][2] = LightDiff - HC*Dir[2];
+				LightingData.Colors[c][3] = AvgLight + HC;
 			}
 		}
 		
@@ -2408,10 +2428,102 @@ void StaticModeShader(void *Data)
 
 
 
+void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors)
+{
+	LightingDataStruct *LPtr = (LightingDataStruct *)Data;
+	
+// Attempting to keep CB's code on hand
+#if 0
+
+	// Register usage:
+	// mm0/mm1: ExternalLight[0] (4 components)
+	// mm2/mm3: ExternalLight[1] (4 components)
+	// mm4/mm5: ExternalLight[2] (4 components)
+	// mm6:     Normal[0]/Normal[1]
+	// mm7:     Normal[2]/1.0
+
+	GLfloat tmp[2] = {0.0, 1.0};
+	__asm__ __volatile__("
+			femms\n
+			movq	0x00(%3),%%mm0\n
+			movq	0x08(%3),%%mm1\n
+			movq	0x10(%3),%%mm2\n
+			movq	0x18(%3),%%mm3\n
+			movq	0x20(%3),%%mm4\n
+			movq	0x28(%3),%%mm5\n
+			movl	8(%0),%%eax\n
+			movl	%%eax,(%4)\n
+		0:\n
+			prefetch 192(%0)\n
+			movq	(%0),%%mm6\n
+			movq	(%4),%%mm7\n
+			pfmul	%%mm0,%%mm6\n
+			pfmul	%%mm1,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			movd	%%mm7,(%1)\n
+			movq	(%0),%%mm6\n
+			movq	(%4),%%mm7\n
+			pfmul	%%mm2,%%mm6\n
+			pfmul	%%mm3,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			movd	%%mm7,4(%1)\n
+			movq	(%0),%%mm6\n
+			movq	(%4),%%mm7\n
+			pfmul	%%mm4,%%mm6\n
+			pfmul	%%mm5,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			movd	%%mm7,8(%1)\n
+		\n
+			add		$0x0c,%0\n
+			movl	8(%0),%%eax\n
+			movl	%%eax,(%4)\n
+			add		$0x0c,%1\n
+			dec		%2\n
+			jne		0b\n
+			femms\n"
+		:
+		: "g" (Normals), "g" (ColorPtr), "g" (NumVerts), "g" (LPtr->Colors), "g" (&tmp)
+		: "eax", "memory"
+	);
+
+#else
+
+	GLfloat *el0 = LPtr->Colors[0], *el1 = LPtr->Colors[1], *el2 = LPtr->Colors[2];
+	for (int k=0; k<NumVerts; k++)
+	{
+		GLfloat N0 = *(Normals++);
+		GLfloat N1 = *(Normals++);
+		GLfloat N2 = *(Normals++);
+		*(Colors++) =
+			el0[0]*N0 + 
+			el0[1]*N1 + 
+			el0[2]*N2 + 
+			el0[3];
+		*(Colors++) =
+			el1[0]*N0 + 
+			el1[1]*N1 + 
+			el1[2]*N2 + 
+			el1[3];
+		*(Colors++) =
+			el2[0]*N0 + 
+			el2[1]*N1 + 
+			el2[2]*N2 + 
+			el2[3];
+	}
+
+#endif
+}
+
+
 void SetupShaders()
 {
 	StandardShaders[0].Flags = ModelRenderer::Textured;
 	StandardShaders[0].TextureCallback = NormalShader;
+	StandardShaders[0].LightingCallback = LightingCallback;
+	StandardShaders[0].LightingCallbackData = &LightingData;
 
 	StandardShaders[1].Flags = ModelRenderer::Textured;
 	StandardShaders[1].TextureCallback = GlowingShader;

@@ -273,9 +273,11 @@ bool& IsInfravisionActive();
 // the color values are from 0 to 1.
 bool SetInfravisionTint(short Collection, bool IsTinted, float Red, float Green, float Blue);
 
-// Finds the infravision version of a color for some collection set;
+// Finds the infravision version of a color;
 // it makes no change if infravision is inactive.
 void FindInfravisionVersion(short Collection, GLfloat *Color);
 
+// Mass-production version of above; suitable for textures
+void FindInfravisionVersion(short Collection, int NumPixels, uint32 *Pixels);
 
 #endif
