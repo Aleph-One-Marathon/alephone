@@ -1366,8 +1366,7 @@ bool XML_TexturePrefsParser::HandleAttribute(const char *Tag, const char *Value)
 		else
 			return false;
 	}
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 
@@ -1496,8 +1495,7 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	  {
 	    return ReadInt16Value(Value, graphics_preferences->OGL_Configure.Multisamples);
 	  }
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 static XML_GraphicsPrefsParser GraphicsPrefsParser;
@@ -1542,8 +1540,7 @@ bool XML_ChaseCamPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	{
 		return ReadFloatValue(Value,player_preferences->ChaseCam.Opacity);
 	}
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 static XML_ChaseCamPrefsParser ChaseCamPrefsParser;
@@ -1591,8 +1588,7 @@ bool XML_CrosshairsPrefsParser::HandleAttribute(const char *Tag, const char *Val
 	{
 		return ReadFloatValue(Value,player_preferences->Crosshairs.Opacity);
 	}
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 bool XML_CrosshairsPrefsParser::End()
@@ -1641,8 +1637,7 @@ bool XML_PlayerPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return ReadBooleanValue(Value,player_preferences->background_music_on);
 	}
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 static XML_PlayerPrefsParser PlayerPrefsParser;
@@ -1688,8 +1683,7 @@ bool XML_KeyPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 bool XML_KeyPrefsParser::AttributesDone()
@@ -1758,8 +1752,7 @@ bool XML_InputPrefsParser::HandleAttribute(const char *Tag, const char *Value)
     {
         return ReadInt32Value(Value, input_preferences->sens_vertical);
     }
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 static XML_InputPrefsParser InputPrefsParser;
@@ -1791,8 +1784,7 @@ bool XML_SoundPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return ReadUInt16Value(Value,sound_preferences->flags);
 	}
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 static XML_SoundPrefsParser SoundPrefsParser;
@@ -1901,8 +1893,7 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 		return true;
 	}
         
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 static XML_NetworkPrefsParser NetworkPrefsParser;
@@ -1976,8 +1967,7 @@ bool XML_MacFSSpecPrefsParser::HandleAttribute(const char *Tag, const char *Valu
 		IsPresent[3] = true;
 		return true;
 	}
-	UnrecognizedTag();
-	return false;
+	return true;
 }
 
 bool XML_MacFSSpecPrefsParser::AttributesDone()
@@ -2095,8 +2085,7 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
         {
                 return ReadBooleanValue(Value,environment_preferences->non_bungie_warning);
         }
-        UnrecognizedTag();
-	return false;
+	return true;
 }
 
 static XML_EnvironmentPrefsParser EnvironmentPrefsParser;
