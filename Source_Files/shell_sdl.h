@@ -819,6 +819,8 @@ bool FileSpecifier::ReadDialog(Typecode type, char *prompt)
 			DirectorySpecifier theDirectory;
 			SplitPath(theDirectory, filename);
 			dir.FromDirectory(theDirectory);
+			if(!dir.Exists())
+				dir.SetToLocalDataDir();
 			break;
 		}
 		default:
