@@ -303,6 +303,13 @@ public:
 	// Get the name (final path element) as a C string:
 	// assumes enough space to hold it if getting (max. 256 bytes)
 	void GetName(char *Name) const;
+	
+	// Sets the file specifier to its current parent directory +
+	// the directories and name in "NameWithPath".
+	// "NameWithPath" follows Unix-like syntax: <dirname>/<dirname>/<dirname>/filename
+	// A ":" will be translated into a "/" in the MacOS.
+	// Returns whether or not the setting was successful
+	bool SetNameWithPath(char *NameWithPath);
 
 	// These functions take an appropriate one of the typecodes used earlier;
 	// this is to try to cover the cases of both typecode attributes
@@ -350,9 +357,9 @@ public:
 #ifdef mac
 
 	FileSpecifier(): Err(noErr) {}
-	FileSpecifier(FileSpecifier& F) {*this = F;}
-	bool operator==(FileSpecifier& F);
-	bool operator!=(FileSpecifier& F) {return !(*this == F);}
+	FileSpecifier(const FileSpecifier& F) {*this = F;}
+	bool operator==(const FileSpecifier& F);
+	bool operator!=(const FileSpecifier& F) {return !(*this == F);}
 
 	// Filespec management
 	void SetSpec(FSSpec& _Spec);
