@@ -2442,7 +2442,9 @@ void TeardownStaticMode()
 	}
 	else
 	{
-		glDisable(GL_COLOR_LOGIC_OP);
+		// Restore the default blending
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		// glDisable(GL_COLOR_LOGIC_OP);
 		glDisable(GL_POLYGON_STIPPLE);
 	}
 }
@@ -2483,12 +2485,17 @@ void StaticModeIndivSetup(int SeqNo)
 	switch(SeqNo)
 	{
 	case 0:	// In case of another go-around, as in z-buffer-less rendering
-		glDisable(GL_COLOR_LOGIC_OP);
+		// Paint on the backing color by making it unblended
+		glDisable(GL_BLEND);
+		// glDisable(GL_COLOR_LOGIC_OP);
 		break;
 		
 	case 1:	// No need to do this for cases 2 and 3, since they will follow
-		glEnable(GL_COLOR_LOGIC_OP);
-		glLogicOp(GL_OR);
+		// Add the color-channel contributions with appropriate blending
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+		// glEnable(GL_COLOR_LOGIC_OP);
+		// glLogicOp(GL_OR);
 	}
 	
 	glColor3fv(StaticBaseColors[SeqNo]);			
