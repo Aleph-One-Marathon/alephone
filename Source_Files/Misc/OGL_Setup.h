@@ -40,6 +40,9 @@ Dec 17, 2000 (Loren Petrich):
 
 Apr 27, 2001 (Loren Petrich):
 	Modified the OpenGL fog support so as to enable below-liquid fogs
+
+Aug 21, 2001 (Loren Petrich):
+	Adding support for 3D-model inhabitant objects
 */
 
 #include "shape_descriptors.h"
@@ -307,6 +310,8 @@ struct OGL_ModelData: public OGL_SkinManager
 	float Scale;					// From model units to engine internal units (not World Units)
 	float XRot, YRot, ZRot;			// In degrees
 	float XShift, YShift, ZShift;	// In internal units
+	short Sidedness;				// Which side of the polygons is visible?
+									// (+: clockwise, -: counterclockwise, 0: both)
 	
 	// Should a rotation rate be included, in order to get that Quake look?
 	
