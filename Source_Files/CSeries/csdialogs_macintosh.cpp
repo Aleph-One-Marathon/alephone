@@ -957,15 +957,7 @@ static pascal OSStatus ModalDialogHandler(
 		HDPtr->IsOK = (Ctrl.ID.id == iOK);
 		
 		// Done with the window
-		QuitAppModalLoopForWindow(HDPtr->DlgWindow);
-		if (HDPtr->IsSheet)
-#if USE_SHEETS
-			HideSheetWindow(HDPtr->DlgWindow);
-#else
-			HideWindow(HDPtr->DlgWindow);
-#endif
-		else
-			HideWindow(HDPtr->DlgWindow);
+		StopModalDialog(HDPtr->DlgWindow,HDPtr->IsSheet);
 	}
 	
 	return noErr;
@@ -1015,6 +1007,51 @@ bool RunModalDialog(
 	DisposeEventHandlerUPP(HandlerUPP);
 	
 	return HandlerData.IsOK;
+}
+
+
+void StopModalDialog(
+	WindowRef DlgWindow,
+	bool IsSheet
+	)
+{
+	QuitAppModalLoopForWindow(DlgWindow);
+	if (IsSheet)
+#if USE_SHEETS
+		HideSheetWindow(DlgWindow);
+#else
+		HideWindow(DlgWindow);
+#endif
+	else
+		HideWindow(DlgWindow);
+}
+
+
+AutoTimer::AutoTimer(
+	EventTimerInterval Delay,
+	EventTimerInterval Interval,
+	EventLoopTimerProcPtr Handler,
+	void *HandlerData
+	)
+{
+	OSStatus err;
+	
+	EventLoopRef EventLoop = GetCurrentEventLoop();
+	HandlerUPP = NewEventLoopTimerUPP(Handler);
+	err = InstallEventLoopTimer(
+		EventLoop,
+		Delay, Interval,
+		HandlerUPP, HandlerData,
+		&Timer
+	);
+	
+	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",err));
+}
+
+AutoTimer::~AutoTimer()
+{
+	RemoveEventLoopTimer(Timer);	
+	DisposeEventLoopTimerUPP(HandlerUPP);
 }
 
 #endif

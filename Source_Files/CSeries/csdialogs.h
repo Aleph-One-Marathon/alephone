@@ -282,6 +282,36 @@ bool RunModalDialog(
 	void *DlgData = NULL
 	);
 
+
+// Stops a running modal dialog; needs:
+//   Dialog window
+//   Whether the dialog will be a sheet if sheets are available
+void StopModalDialog(
+	WindowRef DlgWindow,
+	bool IsSheet
+	);
+
+
+// Adds a timer to the current event loop;
+// it cleans up when it goes out of scope
+
+class AutoTimer
+{
+	EventLoopTimerUPP HandlerUPP;
+	EventLoopTimerRef Timer;
+	
+public:
+	AutoTimer(
+		EventTimerInterval Delay,		// Before the timer starts
+		EventTimerInterval Interval,	// How often it fires (0 is once-off)
+		EventLoopTimerProcPtr Handler,
+		void *HandlerData = NULL
+		);
+	~AutoTimer();
+	
+	EventLoopTimerRef operator() () {return Timer;}
+};
+
 #endif
 
 #endif//mac
