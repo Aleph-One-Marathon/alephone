@@ -37,3 +37,39 @@ static void	set_text_face(
 	_get_interface_color(text_face->color+_computer_interface_text_color, &color);
 	RGBForeColor(&color);
 }
+
+static boolean calculate_line(
+	char *base_text, 
+	short width,
+	short start_index,
+	short text_end_index,
+	short *end_index)
+{
+	boolean done= FALSE;
+
+	if(start_index!=text_end_index)
+	{
+		StyledLineBreakCode code;
+		Fixed text_width;
+		long end_of_line_offset= 1; /* non-zero.. */
+
+		text_width= width;
+		text_width <<= 16;
+
+		code= StyledLineBreak(base_text, text_end_index, start_index,
+			text_end_index, 0, &text_width, &end_of_line_offset);
+		*end_index= end_of_line_offset;
+
+		/* We assume the last line is empty, always.. */
+		if(code==smBreakOverflow)
+		{
+			done= TRUE;
+		}
+//dprintf("Code: %d Length: %d Start: %d TextEnd: %d End: %d Star Text: %x", code, 
+//	text_end_index, start_index, text_end_index, *end_index, &base_text[start_index]);
+	} else {
+		done= TRUE;
+	}
+	
+	return done;
+}

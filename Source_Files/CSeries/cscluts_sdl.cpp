@@ -5,6 +5,7 @@
  */
 
 #include "cseries.h"
+#include "FileHandler.h"
 #include "SDL_endian.h"
 
 
@@ -23,10 +24,10 @@ RGBColor system_colors[NUM_SYSTEM_COLORS] =
  *  Convert Mac CLUT resource to color_table
  */
 
-void build_color_table(color_table *table, void *clut)
+void build_color_table(color_table *table, LoadedResource &clut)
 {
 	// Open stream to CLUT resource
-	SDL_RWops *p = SDL_RWFromMem(clut, 8 + 256 * 8);
+	SDL_RWops *p = SDL_RWFromMem(clut.GetPointer(), clut.GetLength());
 	assert(p);
 
 	// Check number of colors

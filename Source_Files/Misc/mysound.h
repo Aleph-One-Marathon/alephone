@@ -16,7 +16,8 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
-#include "FileHandler.h"
+class FileSpecifier;
+class LoadedResource;
 
 /* ---------- constants */
 
@@ -476,7 +477,7 @@ bool open_sound_file(FileSpecifier& File);
 
 // Play MacOS sound resource
 #ifdef SDL
-extern void play_sound_resource(void *sound, uint32 sound_size);
+extern void play_sound_resource(LoadedResource &rsrc);
 extern void stop_sound_resource(void);
 #endif
 

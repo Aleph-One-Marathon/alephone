@@ -14,6 +14,7 @@ Aug 12, 2000 (Loren Petrich):
 */
 
 #include "cseries.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdexcept>
@@ -24,8 +25,6 @@ Aug 12, 2000 (Loren Petrich):
 #include "game_errors.h"
 
 #include "wad_prefs.h"
-
-#include "FileHandler.h"
 
 #ifdef env68k
 	#pragma segment file_io
@@ -67,7 +66,7 @@ boolean w_open_preferences_file(
 		prefInfo->PrefsFile.SetName(PrefName,Type);
 		/* check for the preferences folder using FindFolder, creating it if necessary */
 #elif defined(SDL)
-		prefInfo->PrefsFile = local_data_dir;
+		prefInfo->PrefsFile.SetToLocalDataDir();
 		prefInfo->PrefsFile.AddPart(PrefName);
 #endif
 
@@ -186,15 +185,19 @@ void w_write_preferences_file(
 	void)
 {
 	struct wad_header header;
-	OpenedFile OFile;
 
 	/* We can be called atexit. */
 	if(error_pending())
 	{
 		set_game_error(systemError, errNone);
 	}
-	
+
 	assert(!error_pending());
+
+	// CB: delete old prefs file, we're overwriting it
+	// (writing can go wrong when the old file is still in place)
+	prefInfo->PrefsFile.Delete();
+	
 	OpenedFile PrefsFile;
 	if (open_wad_file_for_writing(prefInfo->PrefsFile,PrefsFile))
 	{
@@ -265,7 +268,6 @@ static void load_preferences(
 			prefInfo->wad= read_indexed_wad_from_file(PrefsFile, &header, 0, FALSE);
 			// LP change: more graceful degradation
 			if (!prefInfo->wad) set_game_error(gameError, errUnknownWadVersion);
-			// assert(prefInfo->wad);
 		}
 				
 		/* Close the file.. */

@@ -22,9 +22,6 @@ Jul 1, 2000 (Loren Petrich):
 #ifndef _WORLD_H
 #define _WORLD_H
 
-// LP addition:
-#include "cseries.h"
-
 /* ---------- constants */
 
 #define TRIG_SHIFT 10

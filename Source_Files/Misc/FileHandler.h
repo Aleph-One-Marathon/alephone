@@ -22,10 +22,15 @@
 // For the filetypes
 #include "tags.h"
 
+#include <stddef.h>	// For size_t
+#include <time.h>	// For time_t
+
 #ifdef SDL
 #include <errno.h>
 #include <string>
+#define fnfErr ENOENT
 #endif
+
 
 // Symbolic constant for a closed file's reference number (refnum) (MacOS only)
 const short RefNum_Closed = -1;
@@ -68,15 +73,12 @@ public:
 	template<class T> bool WriteObjectList(int NumObjects, T* ObjectList)
 		{return Write(NumObjects*sizeof(T),ObjectList);}
 	
-	// Auto-close when destroying
-	~OpenedFile() {Close();}
+	OpenedFile();
+	~OpenedFile() {Close();}	// Auto-close when destroying
 
 	// Platform-specific members
 #if defined(mac)
 
-	// Set the file to initially closed
-	OpenedFile(): RefNum(RefNum_Closed), Err(noErr) {}
-	
 	short GetRefNum() {return RefNum;}
 	OSErr GetError() {return Err;}
 
@@ -86,21 +88,16 @@ private:
 
 #elif defined(SDL)
 
-	OpenedFile() : handle(NULL) {}
-
 	int GetError() {return errno;}
-	#define errFileNotFound ENOENT
-
-	FILE *GetFILE() {return handle;}
+	SDL_RWops *GetRWops() {return f;}
 
 private:
-	FILE *handle;	// File handle
+	SDL_RWops *f;	// File handle
 
 #endif
 };
 
 
-#ifdef mac
 /*
 	Abstraction for loaded resources;
 	this object will release that resource when it finishes.
@@ -111,41 +108,42 @@ class LoadedResource
 	// This class grabs a resource to be loaded into here
 	friend class OpenedResourceFile;
 	
-	// MacOS-specific:
-	Handle RsrcHandle;
-	
-	// Detaches an allocated handle from this object
-	// (keep private to avoid memory leaks)
-	void Detach()
-		{if (RsrcHandle)
-			{HUnlock(RsrcHandle); RsrcHandle = NULL;}}
 public:
+	// Resource loaded?
+	bool IsLoaded();
 	
-	// Handle loaded?
-	bool IsLoaded() {return (RsrcHandle != NULL);}
+	// Unloads the resource
+	void Unload();
 	
-	// Unloads an allocated handle
-	void Unload()
-		{if (RsrcHandle)
-			{HUnlock(RsrcHandle); ReleaseResource(RsrcHandle); RsrcHandle = NULL;}}
-	
-	// Get size of loaded object (the MacOS makes it easy)
-	int GetLength() {return (RsrcHandle) ? GetHandleSize(RsrcHandle) : 0;}
+	// Get size of loaded resource
+	size_t GetLength();
 	
 	// Get pointer (always present)
-	void *GetPointer(bool DoDetach = false)
-		{
-		if (RsrcHandle)
-			{return *RsrcHandle; if (DoDetach) Detach();}
-		else
-			return NULL;
-		}
-	// MacOS-specific, for stuff that only accepts handles
-	Handle GetHandle(bool DoDetach = false)
-		{return RsrcHandle; if (DoDetach) Detach();}
+	void *GetPointer(bool DoDetach = false);
 
-	LoadedResource(): RsrcHandle(NULL) {}
-	~LoadedResource() {Unload();}
+	LoadedResource();
+	~LoadedResource() {Unload();}	// Auto-unload when destroying
+
+private:
+	// Detaches an allocated resource from this object
+	// (keep private to avoid memory leaks)
+	void Detach();
+
+public:
+	// Platform-specific members
+#if defined(mac)
+
+	Handle GetHandle(bool DoDetach = false)
+		{Handle ret = RsrcHandle; if (DoDetach) Detach(); return ret;}
+
+private:
+	Handle RsrcHandle;
+	
+#elif defined(SDL)
+
+	void *p;
+	uint32 size;
+#endif
 };
 
 
@@ -159,17 +157,8 @@ class OpenedResourceFile
 	// This class will need to set the refnum and error value appropriately 
 	friend class FileSpecifier;
 	
-	// MacOS-specific variables:
-	short RefNum;	// File reference number
-	OSErr Err;		// Error code
-	
-	short SavedRefNum;
 public:
 	
-	// MacOS-specific
-	short GetRefNum() {return RefNum;}
-	OSErr GetError() {return Err;}
-
 	// Pushing and popping the current file -- necessary in the MacOS version,
 	// since resource forks are globally open with one of them the current top one.
 	// Push() saves the earlier top one makes the current one the top one,
@@ -181,21 +170,38 @@ public:
 	// Pushing and popping are unnecessary for the MacOS versions of Get() and Check()
 	// Check simply checks if a resource is present; returns whether it is or not
 	// Get loads a resource; returns whether or not one had been successfully loaded
-	bool Check(OSType Type, short ID);
-	bool Get(OSType Type, short ID, LoadedResource& Rsrc);
+	bool Check(uint32 Type, int16 ID);
+	bool Get(uint32 Type, int16 ID, LoadedResource& Rsrc);
 
-	bool IsOpen() {return (RefNum != RefNum_Closed);}
+	bool IsOpen();
 	bool Close();
 	
-	// Set the file to initially closed
-	OpenedResourceFile(): RefNum(RefNum_Closed), Err(noErr), SavedRefNum(RefNum_Closed) {}
+	OpenedResourceFile();
+	~OpenedResourceFile() {Close();}	// Auto-close when destroying
+
+	// Platform-specific members
+#if defined(mac)
+
+	short GetRefNum() {return RefNum;}
+	OSErr GetError() {return Err;}
+
+private:
+	short RefNum;	// File reference number
+	OSErr Err;		// Error code
 	
-	// Auto-close when destroying
-	~OpenedResourceFile() {Close();}
-};
+	short SavedRefNum;
+
+#elif defined(SDL)
+
+	int GetError() {return errno;}
+
+private:
+	SDL_RWops *f, *saved_f;
 #endif
+};
 
 
+#ifdef mac
 /*
 	Abstraction for directory specifications;
 	designed to encapsulate both directly-specified paths
@@ -230,10 +236,17 @@ public:
 	DirectorySpecifier(): vRefNum(0), parID(0) {}
 	DirectorySpecifier(DirectorySpecifier& D) {*this = D;}
 };
+#else
+#define DirectorySpecifier FileSpecifier
+#endif
 
 
 // Time-specification data type (can be set to 64-bit if desired)
+#if defined(mac)
 typedef unsigned long TimeType;
+#else
+typedef time_t TimeType;
+#endif
 
 
 /*
@@ -244,7 +257,6 @@ typedef unsigned long TimeType;
 class FileSpecifier
 {	
 public:
-
 	// The typecodes here are the symbolic constants defined in tags.h (_typecode_creator, etc.)
 	
 	// The name as a C string:
@@ -255,14 +267,12 @@ public:
 	void GetName(char *Name);
 	void SetName(char *Name, int Type);
 	
+#ifdef mac
 	// Move the directory specification
 	void ToDirectory(DirectorySpecifier& Dir);
 	void FromDirectory(DirectorySpecifier& Dir);
+#endif
 	
-	// Set special directories:
-	bool SetToApp();
-	bool SetParentToPreferences();
-
 	// Partially inspired by portable_files.h:
 	
 	// These functions take an appropriate one of the typecodes used earlier;
@@ -273,10 +283,8 @@ public:
 	// Opens a file:
 	bool Open(OpenedFile& OFile, bool Writable=false);
 	
-#ifdef mac
 	// Opens either a MacOS resource fork or some imitation of it:
 	bool Open(OpenedResourceFile& OFile, bool Writable=false);
-#endif
 	
 	// These calls are for creating dialog boxes to set the filespec
 	// A null pointer means an empty string
@@ -300,32 +308,33 @@ public:
 	// How many bytes are free in the disk that the file lives in?
 	bool GetFreeSpace(unsigned long& FreeSpace);
 	
-	// Copying: either copy the filespec ("=") or copy the whole file
-	// into the current file object	
-	FileSpecifier& operator=(FileSpecifier& F)
-		{SetSpec(F.GetSpec()); return *this;}
-
+	// Copy file contents
 	bool CopyContents(FileSpecifier& File);
 	
+	// Delete file
 	bool Delete();
-	
-	// Is this file specifier the same as some other one?
-	bool operator==(FileSpecifier& F);
-	bool operator!=(FileSpecifier& F) {return !(*this == F);}
-	
-	FileSpecifier(FileSpecifier& F) {*this = F;}
 
+	// Copy file specification
+	const FileSpecifier &operator=(const FileSpecifier &other);
+	
 	// Platform-dependent parts
 #ifdef mac
+
+	FileSpecifier(): Err(noErr) {}
+	FileSpecifier(FileSpecifier& F) {*this = F;}
+	bool operator==(FileSpecifier& F);
+	bool operator!=(FileSpecifier& F) {return !(*this == F);}
 
 	// Filespec management
 	void SetSpec(FSSpec& _Spec);
 	FSSpec& GetSpec() {return Spec;}
 	
+	// Set special directories:
+	bool SetToApp();
+	bool SetParentToPreferences();
+
 	// The error:
 	OSErr GetError() {return Err;}
-	
-	FileSpecifier(): Err(noErr) {}
 	
 private:
 	FSSpec Spec;
@@ -337,7 +346,9 @@ private:
 	FileSpecifier(const string &s) : name(s) {}
 	FileSpecifier(const char *s) : name(s) {}
 	FileSpecifier(const FileSpecifier &other) : name(other.name) {}
-	const FileSpecifier &operator=(const FileSpecifier &other);
+
+	void SetToLocalDataDir();	// Per-user directory, where prefs, recordings and saved games go
+	void SetToGlobalDataDir();	// Data file directory, where "Images", "Shapes" etc. are stored
 
 	void AddPart(const string &part);
 	void GetLastPart(char *part);

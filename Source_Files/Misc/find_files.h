@@ -10,14 +10,15 @@ Aug 26, 2000 (Loren Petrich):
 	Creating an object-oriented file finder
 
 */
-#include "FileHandler.h"
+
+class FileSpecifier;
+class DirectorySpecifier;
 
 
 /* Find all files of a given type.. */
 
 // Finds every type of file
 const int WILDCARD_TYPE = NONE;
-// #define WILDCARD_TYPE '****'
 
 
 enum {
@@ -40,35 +41,30 @@ class FileFinder
 	// Temporary stuff:
 	FileSpecifier TempFile;
 	
+#ifdef mac
 	// MacOS-specific temporary stuff
 	CInfoPBRec pb; /* static to prevent stack overflow.. */
 	OSType type_to_find;
 	OSErr Err;
+#endif
 	
 	bool Enumerate(DirectorySpecifier& Dir);
 
-	public:
-// struct find_file_pb {
+public:
 	short version;			/* Version Control (Set to 0)		<-  */
 	short flags;			/* Search flags 					<-  */
 	short search_type;		/* Search type						<-  */
 	
 	DirectorySpecifier BaseDir;
-	// short vRefNum;			/* Search start 					<-  */
-	// long directory_id;		/* directory start 					<-  */
-	// Finds files using _typecode_whatever in tags.h
 	int Type;				/* OSType to find					<-  */
-	// OSType type_to_find;	/* OSType to find					<-  */
 	
 	FileSpecifier *buffer; 	/* Destination						<-> */
-	// FSSpec *buffer; 		/* Destination						<-> */
 	short max;				/* Maximum matches to return		<-  */
 	short count;			/* Count of matches found 			->  */
 
 	/* Callback	functions, if returns TRUE, you add it.  If */
 	/*  callback==NULL, adds all found.							<-  */
 	Boolean (*callback)(FileSpecifier& File, void *data);
-	// Boolean (*callback)(FSSpec *file, void *data);
 	void *user_data;		/* Passed to callback above.		<-  */
 	
 	// Clears out the memory contents
@@ -77,14 +73,9 @@ class FileFinder
 	// Does the finding
 	bool Find();
 	
+#ifdef mac
 	short GetError() {return Err;}
+#endif
 };
-
-/* Find the files! */
-// OSErr find_files(struct find_file_pb *param_block);
-
-/* Useful function for comparing FSSpecs... */
-// Moved to operator== in FileHandler.h
-// Boolean equal_fsspecs(FSSpec *a, FSSpec *b);
 
 #endif

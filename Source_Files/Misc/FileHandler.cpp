@@ -26,6 +26,9 @@ Feb 3, 2000 (Loren Petrich):
 	Abstraction for opened files; it does reading, writing, and closing of such files,
 	without doing anything to the files' specifications
 */
+
+OpenedFile::OpenedFile() : RefNum(RefNum_Closed), Err(noErr) {}	// Set the file to initially closed
+
 bool OpenedFile::IsOpen()
 {
 	return (RefNum != RefNum_Closed);
@@ -86,10 +89,63 @@ bool OpenedFile::Write(long Count, void *Buffer)
 }
 
 /*
+    Abstraction for loaded resources:
+	this object will release that resource when it finishes.
+	MacOS resource handles will be assumed to be locked.
+*/
+
+LoadedResource::LoadedResource()
+{
+}
+
+bool LoadedResource::IsLoaded()
+{
+	return (RsrcHandle != NULL);
+}
+
+void LoadedResource::Unload()
+{
+	if (RsrcHandle)
+	{
+		HUnlock(RsrcHandle);
+		ReleaseResource(RsrcHandle);
+		RsrcHandle = NULL;
+	}
+}
+
+size_t LoadedResource::GetLength()
+{
+	return (RsrcHandle) ? GetHandleSize(RsrcHandle) : 0;
+}
+
+void *LoadedResource::GetPointer(bool DoDetach)
+{
+	if (RsrcHandle)
+	{
+		void *ret = *RsrcHandle;
+		if (DoDetach) Detach();
+		return ret;
+	} else
+		return NULL;
+}
+
+void LoadedResource::Detach()
+{
+	if (RsrcHandle)
+	{
+		HUnlock(RsrcHandle);
+		RsrcHandle = NULL;
+	}
+}
+
+
+/*
 	Abstraction for opened resource files:
 	it does opening, setting, and closing of such files;
 	also getting "LoadedResource" objects that return pointers
 */
+
+OpenedResourceFile::OpenedResourceFile() : RefNum(RefNum_Closed), Err(noErr), SavedRefNum(RefNum_Closed) {}
 
 // MacOS resource files are globally open; push and pop the current top one
 bool OpenedResourceFile::Push()
@@ -115,8 +171,7 @@ bool OpenedResourceFile::Pop()
 	return true;
 }
 
-
-bool OpenedResourceFile::Check(OSType Type, short ID)
+bool OpenedResourceFile::Check(uint32 Type, int16 ID)
 {
 	Push();
 	
@@ -138,8 +193,7 @@ bool OpenedResourceFile::Check(OSType Type, short ID)
 	return RsrcPresent;
 }
 
-
-bool OpenedResourceFile::Get(OSType Type, short ID, LoadedResource& Rsrc)
+bool OpenedResourceFile::Get(uint32 Type, int16 ID, LoadedResource& Rsrc)
 {
 	Rsrc.Unload();
 	
@@ -163,6 +217,11 @@ bool OpenedResourceFile::Get(OSType Type, short ID, LoadedResource& Rsrc)
 	
 	Pop();
 	return RsrcLoaded;
+}
+
+bool OpenedResourceFile::IsOpen()
+{
+	return (RefNum != RefNum_Closed);
 }
 
 bool OpenedResourceFile::Close()
@@ -240,6 +299,13 @@ void FileSpecifier::SetName(char *Name, int Type)
 }
 
 // Filespec management:
+
+const FileSpecifier &FileSpecifier::operator=(const FileSpecifier &other)
+{
+	if (this != &other)
+		SetSpec(other.GetSpec());
+	return *this;
+}
 
 void FileSpecifier::SetSpec(FSSpec& _Spec)
 {

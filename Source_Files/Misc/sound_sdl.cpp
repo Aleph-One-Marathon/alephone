@@ -1,5 +1,5 @@
 /*
- *  sound_sdl.cpp - Sound management, SDL specific stuff
+ *  sound_sdl.cpp - Sound management, SDL specific stuff (included by mysound.cpp)
  *
  *  Written in 2000 by Christian Bauer
  */
@@ -448,9 +448,9 @@ static void buffer_sound(struct channel_data *channel, short sound_index, fixed 
  *  Start playback of MacOS sound resource
  */
 
-void play_sound_resource(void *sound, uint32 sound_size)
+void play_sound_resource(LoadedResource &rsrc)
 {
-printf("*** play_sound_resource %p, size %d\n", sound, sound_size);
+printf("*** play_sound_resource\n");
 	//!!
 }
 

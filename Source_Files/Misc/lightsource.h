@@ -66,37 +66,36 @@ enum /* static flags */
 #define SET_LIGHT_IS_INITIALLY_ACTIVE(s, v) SET_FLAG16((s)->flags, _light_is_initially_active, (v))
 #define SET_LIGHT_IS_STATELESS(s, v) SET_FLAG16((s)->flags, _light_is_stateless, (v))
 
-struct static_light_data /* 8*2 + 6*14 == 100 bytes */
+struct static_light_data /* size platform-specific */
 {
-	short type;
+	int16 type;
 	uint16 flags;
 
-	short phase; // initializer, so lights may start out-of-phase with each other
+	int16 phase; // initializer, so lights may start out-of-phase with each other
 	
 	struct lighting_function_specification primary_active, secondary_active, becoming_active;
 	struct lighting_function_specification primary_inactive, secondary_inactive, becoming_inactive;
 	
-	short tag;
+	int16 tag;
 	
-	short unused[4];
+	int16 unused[4];
 };
-const int SIZEOF_static_light_data = 100;
 
 /* ---------- dynamic light data */
 
 struct light_data /* 14*2 + 100 == 128 bytes */
 {
 	uint16 flags;
-	short state;
+	int16 state;
 	
 	// result of lighting function
 	fixed intensity;
 	
 	// data recalculated each function changed; passed to lighting_function each update
-	short phase, period;
+	int16 phase, period;
 	fixed initial_intensity, final_intensity;
 
-	short unused[4];
+	int16 unused[4];
 
 	struct static_light_data static_data;
 };

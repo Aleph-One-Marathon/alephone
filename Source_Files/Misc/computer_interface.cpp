@@ -75,6 +75,7 @@ Aug 22, 2000 (Loren Petrich):
 
 #include "cseries.h"
 #include "byte_swapping.h"
+#include "FileHandler.h"
 
 #include "world.h"
 #include "map.h"
@@ -913,96 +914,6 @@ static short count_total_lines(
 	return total_line_count;
 }
 
-#ifndef mac
-static boolean calculate_line(
-	char *base_text, 
-	short width,
-	short start_index,
-	short text_end_index,
-	short *end_index)
-{
-	boolean done= FALSE;
-
-	if(base_text[start_index])
-	{
-		short index, running_width;
-
-		index= start_index;
-		running_width= 0;
-		while(running_width<width && base_text[index] && base_text[index]!=MAC_LINE_END)
-		{
-			running_width += char_width(base_text[index], terminal_font, current_style);
-			index++;
-		}
-//dprintf("base: %x start: %d index: %d", base_text, start_index, index);		
-		
-		/* Now go backwards, looking for whitespace to split on.. */
-		if(base_text[index]==MAC_LINE_END)
-		{
-			index++;
-		} 
-		else if(base_text[index])
-		{
-			short break_point= index;
-
-			while(break_point>start_index) 
-			{
-				if(base_text[break_point]==' ') break; /* Non printing.. */
-				break_point--; /* this needs to be in front of the test.. */
-			}
-			
-			if(break_point!=start_index) 
-			{
-				index= break_point+1; /* Space at the end of the line.. */
-			} /* else punt.. */
-		}
-//dprintf("End: %d", index);
-		
-		*end_index= index;
-	} else {
-		done= TRUE;
-	}
-	
-	return done;
-}
-#else
-static boolean calculate_line(
-	char *base_text, 
-	short width,
-	short start_index,
-	short text_end_index,
-	short *end_index)
-{
-	boolean done= FALSE;
-
-	if(start_index!=text_end_index)
-	{
-		StyledLineBreakCode code;
-		Fixed text_width;
-		long end_of_line_offset= 1; /* non-zero.. */
-
-		text_width= width;
-		text_width <<= 16;
-
-		code= StyledLineBreak(base_text, text_end_index, start_index,
-			text_end_index, 0, &text_width, &end_of_line_offset);
-		*end_index= end_of_line_offset;
-
-		/* We assume the last line is empty, always.. */
-		if(code==smBreakOverflow)
-		{
-			done= TRUE;
-		}
-//dprintf("Code: %d Length: %d Start: %d TextEnd: %d End: %d Star Text: %x", code, 
-//	text_end_index, start_index, text_end_index, *end_index, &base_text[start_index]);
-	} else {
-		done= TRUE;
-	}
-	
-	return done;
-}
-#endif
-
 static void draw_line(
 	char *base_text, 
 	short start_index, 
@@ -1165,26 +1076,20 @@ static void display_picture(
 	Rect *frame,
 	short flags)
 {
+	LoadedResource PictRsrc;
 #ifdef mac
 	PicHandle picture;
-	LoadedResource PictRsrc;
 #else
-	uint32 picture_size;
-	void *picture;
+	SDL_Surface *s = NULL;
 #endif
 	boolean drawn= FALSE;
 
-#ifdef mac
 	if (get_picture_resource_from_scenario(picture_id, PictRsrc))
 	{
+#ifdef mac
 		picture = PicHandle(PictRsrc.GetHandle());
 #else
-	SDL_Surface *s = NULL;
-	picture = get_picture_resource_from_scenario(picture_id, picture_size);
-	if (picture) {
-		s = picture_to_surface(picture, picture_size);
-		if (s == NULL)
-			free(picture);
+		s = picture_to_surface(PictRsrc);
 	}
 	if (s)
 	{

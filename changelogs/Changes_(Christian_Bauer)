@@ -1,3 +1,11 @@
+August 28, 2000
+ - restructured images.c: platform-independant parts are now in images.cpp,
+   which includes images_macintosh.cpp or images_sdl.cpp
+ - restored SDL map loading routines in game_wad.cpp...
+ - ...and fixed the byte-swapping stuff again; could someone please stop
+   Loren from messing with it every day?
+ - SDL code changed to use LoadedResource and OpenedResourceFile classes
+
 August 27, 2000
  - now compiles and works under BeOS (far slower than the Linux version on
    the same machine, however; probably an SDL issue)

@@ -1,5 +1,5 @@
 /* 
- *  shapes_sdl.cpp - Shapes handling, SDL specific stuff
+ *  shapes_sdl.cpp - Shapes handling, SDL specific stuff (included by shapes.cpp)
  *
  *  Written in 2000 by Christian Bauer
  */
@@ -9,27 +9,21 @@
 #include "byte_swapping.h"
 
 
-// Global variables
-static SDL_RWops *shapes_file = NULL;
-
 // From FileHandler_SDL.cpp
 extern void get_default_shapes_spec(FileSpecifier &File);
-
-// Prototypes
-static void close_shapes_file(void);
-static void shutdown_shape_handler(void);
 
 
 /*
  *  Open shapes file, read collection headers
  */
 
-void open_shapes_file(FileSpecifier &file)
+void open_shapes_file(FileSpecifier &File)
 {
 	// Open stream to shapes file
-	SDL_RWops *p = SDL_RWFromFile(file.GetName(), "rb");
-	if (p == NULL)
+	if (!File.Open(ShapesFile))
 		return;
+	SDL_RWops *p = ShapesFile.GetRWops();
+	SDL_RWseek(p, 0, SEEK_SET);
 
 	// Read collection headers
 	collection_header *h = collection_headers;
@@ -45,23 +39,6 @@ void open_shapes_file(FileSpecifier &file)
 		h->collection = NULL;
 		h->shading_tables = NULL;
 	}
-
-	// Close old shapes file, set new one
-	close_shapes_file();
-	shapes_file = p;
-}
-
-
-/*
- *  Close shapes file
- */
-
-static void close_shapes_file(void)
-{
-	if (shapes_file) {
-		SDL_FreeRW(shapes_file);
-		shapes_file = NULL;
-	}
 }
 
 
@@ -69,16 +46,9 @@ static void close_shapes_file(void)
  *  Initialize shapes handling
  */
 
-void initialize_shape_handler(void)
+static void initialize_pixmap_handler()
 {
-	FileSpecifier shapes;
-	get_default_shapes_spec(shapes);
-	open_shapes_file(shapes);
-
-	if (shapes_file == NULL)
-		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
-	else
-		atexit(shutdown_shape_handler);
+	// nothing to do
 }
 
 
@@ -135,8 +105,8 @@ SDL_Surface *get_shape_surface(int shape)
 
 static boolean load_collection(short collection_index, boolean strip)
 {
-	SDL_RWops *p = shapes_file;	// Source stream
-	uint32 *t;					// Offset table pointer
+	SDL_RWops *p = ShapesFile.GetRWops();	// Source stream
+	uint32 *t;								// Offset table pointer
 
 	// Get offset and length of data in source file from header
 	collection_header *header = get_collection_header(collection_index);

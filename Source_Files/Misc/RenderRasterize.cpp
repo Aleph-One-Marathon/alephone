@@ -11,13 +11,16 @@
 		now that there is a special rasterizer object that can contain it.
 */
 
-#include <string.h>
+#include "cseries.h"
+
 #include "map.h"
 #include "lightsource.h"
 #include "media.h"
 #include "RenderRasterize.h"
 #include "AnimatedTextures.h"
 #include "OGL_Setup.h"
+
+#include <string.h>
 
 
 /* maximum number of vertices a polygon can be world-clipped into (one per clip line) */

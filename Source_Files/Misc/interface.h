@@ -30,8 +30,9 @@ May 1, 2000 (Loren Petrich): Added XML parser object for the infravision stuff.
 May 16, 2000 (Loren Petrich): Added XML parser for the control panels
 */
 
-#include "FileHandler.h"
 #include "XML_ElementParser.h"
+
+class FileSpecifier;
 
 /* ---------- constants */
 
@@ -248,7 +249,6 @@ void paint_window_black(void);
 void do_preferences(void);
 short get_level_number_from_user(void);
 void toggle_menus(boolean game_started);
-short get_difficulty_level(void);
 void install_network_microphone(void);
 void remove_network_microphone(void);
 

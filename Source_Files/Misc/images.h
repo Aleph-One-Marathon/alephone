@@ -14,47 +14,41 @@ Aug 26, 2000 (Loren Petrich)
 	Added object-oriented file handling
 */
 
-#include "FileHandler.h"
+class FileSpecifier;
+class LoadedResource;
 
-void initialize_images_manager(void);
+extern void initialize_images_manager(void);
 
-boolean images_picture_exists(short base_resource);
-boolean scenario_picture_exists(short base_resource);
+extern bool images_picture_exists(int base_resource);
+extern bool scenario_picture_exists(int base_resource);
 
-// Modified to select what resource file is to be the source of the color table;
+// Select what resource file is to be the source of the color table;
 // this is for the benefit of resource-file 
 enum
 {
 	CLUTSource_Images,
 	CLUTSource_Scenario
 };
-struct color_table *calculate_picture_clut(int CLUTSource, short pict_resource_number);
-// struct color_table *calculate_picture_clut(short pict_resource_number);
-struct color_table *build_8bit_system_color_table(void);
+extern struct color_table *calculate_picture_clut(int CLUTSource, int pict_resource_number);
+extern struct color_table *build_8bit_system_color_table(void);
 
-void set_scenario_images_file(FileSpecifier& File);
+extern void set_scenario_images_file(FileSpecifier& File);
 
-void draw_full_screen_pict_resource_from_images(short pict_resource_number);
-void draw_full_screen_pict_resource_from_scenario(short pict_resource_number);
+extern void draw_full_screen_pict_resource_from_images(int pict_resource_number);
+extern void draw_full_screen_pict_resource_from_scenario(int pict_resource_number);
 
-void scroll_full_screen_pict_resource_from_scenario(short pict_resource_number, boolean text_block);
-
-#ifdef mac
+extern void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, boolean text_block);
 
 // Places a MacOS resource handle into an appropriate wrapper object;
 // a resource-fork emulator may put a pointer instead.
-bool get_picture_resource_from_images(short base_resource, LoadedResource& PictRsrc);
-bool get_picture_resource_from_scenario(short base_resource, LoadedResource& PictRsrc);
+extern bool get_picture_resource_from_images(int base_resource, LoadedResource& PictRsrc);
+extern bool get_picture_resource_from_scenario(int base_resource, LoadedResource& PictRsrc);
 
-bool get_sound_resource_from_scenario(short resource_number, LoadedResource& SndRsrc);
+extern bool get_sound_resource_from_scenario(int resource_number, LoadedResource& SndRsrc);
 
-#elif defined(SDL)
-
-extern void *get_picture_resource_from_images(short base_resource, uint32 &size);
-extern void *get_picture_resource_from_scenario(short base_resource, uint32 &size);
-
-extern void *get_sound_resource_from_scenario(short resource_number, uint32 &size);
-
+#ifdef SDL
+// Convert MacOS PICT resource to SDL surface
+extern SDL_Surface *picture_to_surface(LoadedResource &rsrc);
 #endif
 
 #endif

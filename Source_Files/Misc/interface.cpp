@@ -378,11 +378,14 @@ void set_change_level_destination(
 	return;
 }
 
+static short get_difficulty_level(void)
+{
+	return player_preferences->difficulty_level;
+}
+
 extern boolean load_and_start_game(FileSpecifier& File);
-// extern boolean load_and_start_game(FileDesc *file);
 
 boolean load_and_start_game(FileSpecifier& File)
-	// FileDesc *file)
 {
 	boolean success;
 	
@@ -392,7 +395,6 @@ boolean load_and_start_game(FileSpecifier& File)
 		interface_fade_out(MAIN_MENU_BASE, TRUE);
 	}
 	success= load_game_from_file(File);
-	// success= load_game_from_file(file);
 	if (success)
 	{
 		dynamic_world->game_information.difficulty_level= get_difficulty_level();
@@ -411,7 +413,6 @@ extern boolean handle_open_replay(FileSpecifier& File);
 boolean handle_open_replay(FileSpecifier& File)
 {
 	DraggedReplayFile = File;
-	// dragged_replay_file= *replay_file;
 	
 	return begin_game(_replay_from_file, FALSE);
 }
@@ -1736,13 +1737,10 @@ static void try_and_display_chapter_screen(
 		
 		if (current_picture_clut)
 		{
+			LoadedResource SoundRsrc;
 #if defined(mac)
 			SndChannelPtr channel= NULL;
-			LoadedResource SoundRsrc;
 			SndListHandle sound= NULL;
-#elif defined(SDL)
-			uint32 sound_size = 0;
-			void *sound = NULL;
 #endif
 
 			/* slam the entire clut to black, now. */
@@ -1755,9 +1753,9 @@ static void try_and_display_chapter_screen(
 			/* Draw the picture */
 			draw_full_screen_pict_resource_from_scenario(pict_resource_number);
 
-#if defined(mac)
 			if (get_sound_resource_from_scenario(pict_resource_number,SoundRsrc))
 			{
+#if defined(mac)
 				sound = SndListHandle(SoundRsrc.GetHandle());
 				
 				OSErr sound_error= SndNewChannel(&channel, 0, 0, (SndCallBackUPP) NULL);
@@ -1767,13 +1765,10 @@ static void try_and_display_chapter_screen(
 					HLockHi((Handle)sound);
 					SndPlay(channel, sound, TRUE);
 				}
-			}
 #elif defined(SDL)
-			sound = get_sound_resource_from_scenario(pict_resource_number, sound_size);
-			if (sound) {
-				play_sound_resource(sound, sound_size);
-			}
+				play_sound_resource(SoundRsrc);
 #endif
+			}
 			
 			/* Fade in.... */
 			assert(current_picture_clut);	
@@ -1791,8 +1786,6 @@ static void try_and_display_chapter_screen(
 				SndDisposeChannel(channel, TRUE);
 #elif defined(SDL)
 			stop_sound_resource();
-			if (sound)
-				free(sound);
 #endif
 		}
 	}

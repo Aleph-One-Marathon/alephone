@@ -9,11 +9,14 @@
 	Made [view_data *view] a member and removed it as an argument
 */
 
-#include <string.h>
+#include "cseries.h"
+
 #include "map.h"
 #include "lightsource.h"
 #include "media.h"
 #include "RenderPlaceObjs.h"
+
+#include <string.h>
 
 
 // LP: "recommended" sizes of stuff in growable lists

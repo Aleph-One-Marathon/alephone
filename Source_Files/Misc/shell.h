@@ -105,10 +105,6 @@ struct system_information_data
 
 extern struct system_information_data *system_information;
 
-#ifdef SDL
-extern FileSpecifier local_data_dir, global_data_dir;
-#endif
-
 /* ---------- prototypes/SHELL.C */
 
 void global_idle_proc(void);
@@ -122,7 +118,7 @@ XML_ElementParser *Cheats_GetParser();
 void initialize_shape_handler(void);
 #if defined(mac)
 PixMapHandle get_shape_pixmap(short shape, boolean force_copy);
-#else if defined(SDL)
+#elif defined(SDL)
 SDL_Surface *get_shape_surface(int shape);
 #endif
 

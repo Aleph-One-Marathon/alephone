@@ -130,9 +130,7 @@ static pixel32 *global_shading_table32= (pixel32 *) NULL;
 short number_of_shading_tables, shading_table_fractional_bits, shading_table_size;
 
 // LP addition: opened-shapes-file object
-#ifndef SDL
-OpenedFile ShapesFile;
-#endif
+static OpenedFile ShapesFile;
 
 /* ---------- private prototypes */
 
@@ -168,15 +166,12 @@ static boolean load_collection(short collection_index, boolean strip);
 
 static void debug_shapes_memory(void);
 
-// LP: moved from shapes_macintosh.c
 static void shutdown_shape_handler(void);
 static void close_shapes_file(void);
 
 static byte *read_object_from_file(OpenedFile& OFile, long offset, long length);
-// static Handle read_handle_from_file(short refNum, long offset, long length);
 
 static byte *make_stripped_collection(byte *collection);
-// static void strip_collection_handle(struct collection_definition **collection);
 
 /* --------- collection accessor prototypes */
 
@@ -203,12 +198,29 @@ static struct bitmap_definition *get_bitmap_definition(short collection_index, s
 
 /* --------- private code */
 
-static void shutdown_shape_handler(
-	void)
+void initialize_shape_handler()
+{
+	// M1 uses the resource fork, but M2 and Moo use the data fork
+
+	FileSpecifier File;
+	get_default_shapes_spec(File);
+	open_shapes_file(File);
+	if (!ShapesFile.IsOpen())
+		alert_user(fatalError, strERRORS, badExtraFileLocations, ShapesFile.GetError());
+	else
+		atexit(shutdown_shape_handler);
+	
+	initialize_pixmap_handler();
+}
+
+static void close_shapes_file(void)
+{
+	ShapesFile.Close();
+}
+
+static void shutdown_shape_handler(void)
 {
 	close_shapes_file();
-	
-	return;
 }
 
 static byte *make_stripped_collection(byte *collection)
@@ -222,95 +234,6 @@ static byte *make_stripped_collection(byte *collection)
 	
 	return new_collection;
 }
-/*
-static void strip_collection_handle(
-	struct collection_definition **collection)
-{
-	SetHandleSize((Handle)collection, (*collection)->low_level_shape_offset_table_offset);
-	(*collection)->low_level_shape_count= 0;
-	(*collection)->bitmap_count= 0;
-	
-	return;
-}
-*/
-
-static boolean load_collection(
-	short collection_index,
-	boolean strip)
-{
-	struct collection_header *header= get_collection_header(collection_index);
-	// Handle collection= NULL, shading_tables= NULL;
-	byte *collection = NULL, *shading_tables = NULL;
-	OSErr error= noErr;
-	
-	if (bit_depth==8 || header->offset16==-1)
-	{
-		vassert(header->offset!=-1, csprintf(temporary, "collection #%d does not exist.", collection_index));
-		collection= read_object_from_file(ShapesFile, header->offset, header->length);
-		// collection= read_handle_from_file(shapes_file_refnum, header->offset, header->length);
-	}
-	else
-	{
-		collection= read_object_from_file(ShapesFile, header->offset16, header->length16);
-		// collection= read_handle_from_file(shapes_file_refnum, header->offset16, header->length16);
-	}
-	error = ShapesFile.GetError();
-	if (!collection && error==noErr) error = MemError();
-	vwarn(error==noErr, csprintf(temporary, "read_handle_from_file() got error #%d", error));
-
-	if (collection)
-	{
-		if (strip) {
-			byte *new_collection = make_stripped_collection(collection);
-			delete []collection;
-			collection = new_collection;
-		}
-		// if (strip) strip_collection_handle((struct collection_definition **) collection);
-		// MoveHHi(collection), HLock(collection);
-		// header->collection= (struct collection_definition **) collection;
-		header->collection= (collection_definition *) collection;
-	
-		/* allocate enough space for this collectionÕs shading tables */
-		if (strip)
-		{
-			shading_tables = NULL;
-			// shading_tables= NewHandle(0);
-		}
-		else
-		{
-			struct collection_definition *definition= get_collection_definition(collection_index);
-			
-			shading_tables = new byte[get_shading_table_size(collection_index)*definition->clut_count +
-				shading_table_size*NUMBER_OF_TINT_TABLES];
-			// shading_tables= NewHandle(get_shading_table_size(collection_index)*definition->clut_count +
-			// 	shading_table_size*NUMBER_OF_TINT_TABLES);
-			if ((error= MemError())==noErr)
-			{
-				assert(shading_tables);
-				// MoveHHi(shading_tables), HLock(shading_tables);
-			}
-		}
-		
-		header->shading_tables= shading_tables;
-		// header->shading_tables= (void **)shading_tables;
-	}
-	else
-	{
-		error= MemError();
-//		vhalt(csprintf(temporary, "couldnÕt load collection #%d (error==#%d)", collection_index, error));
-	}
-
-	/* if any errors ocurred, free whatever memory we used */
-	if (error!=noErr)
-	{
-		if (collection) delete []collection;
-		if (shading_tables) delete []shading_tables;
-		// if (collection) DisposeHandle(collection);
-		// if (shading_tables) DisposeHandle(shading_tables);
-	}
-	
-	return error==noErr ? TRUE : FALSE;
-}
 
 static boolean collection_loaded(
 	struct collection_header *header)
@@ -318,20 +241,6 @@ static boolean collection_loaded(
 	return header->collection ? TRUE : FALSE;
 }
 
-static void unload_collection(
-	struct collection_header *header)
-{
-	assert(header->collection);
-	
-	/* unload collection */
-	delete []header->collection;
-	delete []header->shading_tables;
-	// DisposeHandle((Handle)header->collection);
-	// DisposeHandle((Handle)header->shading_tables);
-	header->collection= NULL;
-	
-	return;
-}
 
 static void lock_collection(
 	struct collection_header *header)

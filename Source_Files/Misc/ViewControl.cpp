@@ -4,9 +4,12 @@
 	The work of the view controller.
 */
 
-#include "ViewControl.h"
-#include <string.h>
 #include "cseries.h"
+
+#include "ViewControl.h"
+
+#include <string.h>
+
 
 // Is the overhead map active?
 static bool MapActive = true;

@@ -19,11 +19,11 @@
 
 bool XML_Resources_SDL::GetData()
 {
-	if (data == NULL)
+	if (!rsrc.IsLoaded())
 		return false;
 
-	Buffer = (char *)data;
-	BufLen = data_size;
+	Buffer = (char *)rsrc.GetPointer();
+	BufLen = rsrc.GetLength();
 	LastOne = true;
 
 	return true;
@@ -81,24 +81,24 @@ bool XML_Resources_SDL::RequestAbort()
 
 bool XML_Resources_SDL::ParseResourceSet(uint32 Type)
 {
-	int num = CountResources(Type);
+	int num = count_resources(Type);
 	if (num <= 0)
 		return false;
 
 	// Get sorted list of available resource IDs
 	vector<int> ids;
-	GetResourceIDList(Type, ids);
+	get_resource_id_list(Type, ids);
 	sort(ids.begin(), ids.end());
 
 	// Parse each resource
 	vector<int>::const_iterator i, end = ids.end();
 	for (i=ids.begin(); i!=end; i++) {
-		data = GetResource(Type, *i, &data_size);
-		if (!DoParse()) {
-			fprintf(stderr, "There were configuration file parsing errors\n");
-			exit(1);
+		if (get_resource(Type, *i, rsrc)) {
+			if (!DoParse()) {
+				fprintf(stderr, "There were configuration file parsing errors\n");
+				exit(1);
+			}
+			rsrc.Unload();
 		}
-		free(data);
-		data = NULL;
 	}
 }

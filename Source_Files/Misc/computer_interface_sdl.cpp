@@ -10,9 +10,6 @@ static sdl_font_info *terminal_font = NULL;
 static uint32 current_pixel;			// Current color pixel value
 static uint16 current_style = normal;	// Current style flags
 
-// From images_sdl.cpp
-extern SDL_Surface *picture_to_surface(void *picture, uint32 size);
-
 
 // Terminal key definitions
 static struct terminal_key terminal_keys[]= {
@@ -70,4 +67,40 @@ static void	set_text_face(struct text_face_data *text_face)
 	SDL_Color color;
 	_get_interface_color(text_face->color + _computer_interface_text_color, &color);
 	current_pixel = SDL_MapRGB(world_pixels->format, color.r, color.g, color.b);
+}
+
+
+static boolean calculate_line(char *base_text, short width, short start_index, short text_end_index, short *end_index)
+{
+	bool done = false;
+
+	if (base_text[start_index]) {
+		int index = start_index, running_width = 0;
+
+		while (running_width < width && base_text[index] && base_text[index] != MAC_LINE_END) {
+			running_width += char_width(base_text[index], terminal_font, current_style);
+			index++;
+		}
+		
+		// Now go backwards, looking for whitespace to split on
+		if (base_text[index] == MAC_LINE_END)
+			index++;
+		else if (base_text[index]) {
+			int break_point = index;
+
+			while (break_point>start_index) {
+				if (base_text[break_point] == ' ')
+					break; 	// Non printing
+				break_point--;	// this needs to be in front of the test
+			}
+			
+			if (break_point != start_index)
+				index = break_point+1;	// Space at the end of the line
+		}
+		
+		*end_index= index;
+	} else
+		done = true;
+	
+	return done;
 }

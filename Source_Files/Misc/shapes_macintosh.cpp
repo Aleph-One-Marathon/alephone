@@ -1,5 +1,5 @@
 /*
-SHAPES_MACINTOSH.C
+SHAPES_MACINTOSH.C - Shapes handling, MacOS specific stuff (included by shapes.c)
 Monday, August 28, 1995 1:28:48 PM  (Jason)
 
 Feb. 4, 2000 (Loren Petrich):
@@ -31,43 +31,11 @@ static pixel8 *hollow_data;
 /* --------- private prototypes */
 
 // LP: separating out initing the hollow pixmap, used for reading in PICT resources
-void initialize_pixmap_handler();
+static void initialize_pixmap_handler();
 
 /* --------- code */
 
-void initialize_shape_handler()
-{
-	// FSSpec shapes_file;
-	// OSErr error;
-
-	// LP: this is an out-of-date comment!
-	// M1 uses the resource fork, but M2 and Moo use the data fork
-	/* open the resource fork of our shape file for reading */
-		
-	/*
-	error= get_file_spec(&shapes_file, strFILENAMES, filenameSHAPES8, strPATHS);
-	if (error==noErr)
-	{
-		open_shapes_file(&shapes_file);
-	}
-	*/
-	
-	FileSpecifier File;
-	get_default_shapes_spec(File);
-	if (!File.Open(ShapesFile))
-	{
-		alert_user(fatalError, strERRORS, badExtraFileLocations, ShapesFile.GetError());
-	}
-	else
-	{
-		atexit(shutdown_shape_handler);
-	}
-	
-	// This still remains in shapes_macintosh.c
-	initialize_pixmap_handler();
-}
-
-void initialize_pixmap_handler()
+static void initialize_pixmap_handler()
 {
 	hollow_pixmap= NewPixMap();
 	assert(hollow_pixmap);
@@ -88,62 +56,12 @@ void initialize_pixmap_handler()
 }
 
 void open_shapes_file(FileSpecifier& File)
-	// FSSpec *spec)
 {
-	/*
-	short refNum;
-	OSErr error;
-		
-	// LP addition: resolving shapes file if it was an alias
-	Boolean is_folder, was_aliased;
-	ResolveAliasFile((FSSpec *)spec, TRUE, &is_folder, &was_aliased);
-	
-	error= FSpOpenDF(spec, fsRdPerm, &refNum);
-	if (error==noErr)
-	*/
 	if (File.Open(ShapesFile))
 	{
-		// long count= MAXIMUM_COLLECTIONS*sizeof(struct collection_header);
-		
 		if (!ShapesFile.ReadObjectList(MAXIMUM_COLLECTIONS,collection_headers))
 			ShapesFile.Close();
-		/*
-		FSRead(refNum, &count, (void *) &collection_headers);
-		if (error==noErr)
-		{
-		}
-		
-		if (error!=noErr)
-		{
-			FSClose(refNum);
-			refNum= -1;
-		}
-		*/
-
-		// close_shapes_file();
-		// shapes_file_refnum= refNum;
 	}
-	
-	return;
-}
-
-static void close_shapes_file(
-	void)
-{
-	ShapesFile.Close();
-	/*
-	OSErr error= noErr;
-	if (shapes_file_refnum!=-1)
-	{
-		error= FSClose(shapes_file_refnum);
-		if (error!=noErr)
-		{
-			shapes_file_refnum= -1;
-		}
-	}
-	*/
-	
-	return;
 }
 
 PixMapHandle get_shape_pixmap(
@@ -260,3 +178,82 @@ PixMapHandle get_shape_pixmap(
 	return hollow_pixmap;
 }
 
+static boolean load_collection(
+	short collection_index,
+	boolean strip)
+{
+	struct collection_header *header= get_collection_header(collection_index);
+	byte *collection = NULL, *shading_tables = NULL;
+	OSErr error= noErr;
+	
+	if (bit_depth==8 || header->offset16==-1)
+	{
+		vassert(header->offset!=-1, csprintf(temporary, "collection #%d does not exist.", collection_index));
+		collection= read_object_from_file(ShapesFile, header->offset, header->length);
+	}
+	else
+	{
+		collection= read_object_from_file(ShapesFile, header->offset16, header->length16);
+	}
+	error = ShapesFile.GetError();
+	if (!collection && error==noErr) error = MemError();
+	vwarn(error==noErr, csprintf(temporary, "read_handle_from_file() got error #%d", error));
+
+	if (collection)
+	{
+		if (strip) {
+			byte *new_collection = make_stripped_collection(collection);
+			delete []collection;
+			collection = new_collection;
+		}
+		header->collection= (collection_definition *) collection;
+	
+		/* allocate enough space for this collectionÕs shading tables */
+		if (strip)
+		{
+			shading_tables = NULL;
+		}
+		else
+		{
+			struct collection_definition *definition= get_collection_definition(collection_index);
+			
+			shading_tables = new byte[get_shading_table_size(collection_index)*definition->clut_count +
+				shading_table_size*NUMBER_OF_TINT_TABLES];
+			if ((error= MemError())==noErr)
+			{
+				assert(shading_tables);
+			}
+		}
+		
+		header->shading_tables= shading_tables;
+	}
+	else
+	{
+		error= MemError();
+//		vhalt(csprintf(temporary, "couldnÕt load collection #%d (error==#%d)", collection_index, error));
+	}
+
+	/* if any errors ocurred, free whatever memory we used */
+	if (error!=noErr)
+	{
+		if (collection) delete []collection;
+		if (shading_tables) delete []shading_tables;
+	}
+	
+	return error==noErr ? TRUE : FALSE;
+}
+
+static void unload_collection(
+	struct collection_header *header)
+{
+	assert(header->collection);
+	
+	/* unload collection */
+	delete []header->collection;
+	delete []header->shading_tables;
+	// DisposeHandle((Handle)header->collection);
+	// DisposeHandle((Handle)header->shading_tables);
+	header->collection= NULL;
+	
+	return;
+}

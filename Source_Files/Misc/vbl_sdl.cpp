@@ -79,7 +79,7 @@ boolean find_replay_to_use(boolean ask_user, FileSpecifier &file)
 
 boolean get_recording_filedesc(FileSpecifier &file)
 {
-	file = local_data_dir;
+	file.SetToLocalDataDir();
 	file.AddPart(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING));
 	return true;
 }
@@ -169,7 +169,7 @@ boolean setup_replay_from_random_resource(unsigned long map_checksum)
 	static int index_of_last_film_played = 0;
 	bool success = false;
 
-	int number_of_films = CountResources(FILM_RESOURCE_TYPE);
+	int number_of_films = count_resources(FILM_RESOURCE_TYPE);
 	printf("%d films\n", number_of_films);
 
 	if (number_of_films > 0) {
@@ -185,29 +185,25 @@ boolean setup_replay_from_random_resource(unsigned long map_checksum)
 			index_of_last_film_played = which_film_to_play;
 		}
 
-		uint32 size;
-		void *resource = GetIndResource(FILM_RESOURCE_TYPE, which_film_to_play + 1, &size);
-		printf("film %d, resource %p\n", which_film_to_play, resource);
-		vassert(resource, csprintf(temporary, "film_to_play = %d", which_film_to_play+1));
+		LoadedResource rsrc;
+		get_ind_resource(FILM_RESOURCE_TYPE, which_film_to_play + 1, rsrc);
 
-		replay.resource_data = (char *)malloc(size);
+		replay.resource_data = (char *)malloc(rsrc.GetLength());
 		if (!replay.resource_data)
 			alert_user(fatalError, strERRORS, outOfMemory, 0);
 
-		memcpy(&replay.header, resource, sizeof(recording_header));
+		memcpy(&replay.header, rsrc.GetPointer(), sizeof(recording_header));
 		byte_swap_data(&replay.header, sizeof(recording_header), 1, _bs_recording_header);
 		byte_swap_data(&replay.header.starts, sizeof(player_start_data), MAXIMUM_NUMBER_OF_PLAYERS, _bs_player_start_data);
 		byte_swap_data(&replay.header.game_information, sizeof(game_data), 1, _bs_game_data);
-		memcpy(replay.resource_data, resource, size);
-
-		free(resource);
+		memcpy(replay.resource_data, rsrc.GetPointer(), rsrc.GetLength());
 
 		if (replay.header.map_checksum == map_checksum) {
 			replay.have_read_last_chunk = FALSE;
 			replay.game_is_being_replayed = TRUE;
 
 			replay.film_resource_offset = sizeof(struct recording_header);
-			replay.resource_data_size = size;
+			replay.resource_data_size = rsrc.GetLength();
 
 			replay.valid = TRUE;
 			

@@ -125,16 +125,16 @@ boolean read_wad_header(
 	boolean union_file= FALSE;
 	int error = 0;
 	boolean success= TRUE;
-	
-	// LP: verify sizes:
+
+	// LP: verify sizes of on-disk structures
 	assert(sizeof(wad_header) == SIZEOF_wad_header);
 	assert(sizeof(old_directory_entry) == SIZEOF_old_directory_entry);
 	assert(sizeof(old_entry_header) == SIZEOF_old_entry_header);
 	assert(sizeof(entry_header) == SIZEOF_entry_header);
 	
 	read_from_file(OFile, 0, header, sizeof(wad_header));
-	byte_swap_object(header, _bs_wad_header);
-	
+	byte_swap_object(*header, _bs_wad_header);
+
 	if(error)
 	{
 		set_game_error(systemError, error);
@@ -169,8 +169,6 @@ struct wad_data *read_indexed_wad_from_file(
 	// if(file_id>=0) /* NOT a union wadfile... */
 	{
 		if (size_of_indexed_wad(OFile, header, index, &length))
-		// error= size_of_indexed_wad(file_id, header, index, &length);
-		// if(!error)
 		{
 #if 0
 			raw_wad= (byte *) malloc(length);
@@ -181,8 +179,6 @@ struct wad_data *read_indexed_wad_from_file(
 			{
 				/* Read into the buffer */
 				if (read_indexed_wad_from_file_into_buffer(OFile, header, index, raw_wad, &length))
-				// error= read_indexed_wad_from_file_into_buffer(file_id, header, index, raw_wad, &length);
-				// if(!error)
 				{
 					/* Got the raw wad. Convert it into our internal representation... */
 					if(read_only)
@@ -372,13 +368,13 @@ void fill_default_wad_header(
 	if(!header->entry_header_size) 
 	{
 		/* Default.. */
-		header->entry_header_size = sizeof(entry_header);
+		header->entry_header_size = SIZEOF_entry_header;
 	}
 
 	header->directory_entry_base_size= get_directory_base_length(header);
 	if(!header->directory_entry_base_size)
 	{
-		header->directory_entry_base_size = sizeof(directory_entry);
+		header->directory_entry_base_size = SIZEOF_directory_entry;
 	}
 
 	/* Things left for caller to fill in: */
@@ -387,7 +383,6 @@ void fill_default_wad_header(
 
 boolean write_wad_header(
 	OpenedFile& OFile, 
-	// fileref file_id, 
 	struct wad_header *header)
 {
 	boolean success= TRUE;
@@ -402,14 +397,6 @@ boolean write_wad_header(
 	byte_swap_object(tmp, _bs_wad_header);
 	write_to_file(OFile, 0, &tmp, sizeof(wad_header));
 
-	/*
-	if(error)
-	{
-		set_game_error(systemError, error);
-		success= FALSE;
-	}
-	*/
-	
 	return success;
 }
 
@@ -426,16 +413,6 @@ boolean write_directorys(
 	write_to_file(OFile, header->directory_offset, entries, 
 		size_to_write);
 
-	/*
-	error= write_to_file(file_id, header->directory_offset, entries, 
-		size_to_write);
-	if(error)
-	{
-		set_game_error(systemError, error);
-		success= FALSE;
-	}
-	*/
-	
 	return success;
 }
 
@@ -498,7 +475,7 @@ void set_indexed_directory_offset_and_length(
 		entry->index= wad_index;
 	}
 	
-	byte_swap_data(data_ptr, header->version>=WADFILE_SUPPORTS_OVERLAYS ? sizeof(old_directory_entry) : sizeof(directory_entry), 1, _bs_directory_entry);
+	byte_swap_data(data_ptr, header->version>=WADFILE_SUPPORTS_OVERLAYS ? SIZEOF_old_directory_entry : SIZEOF_directory_entry, 1, _bs_directory_entry);
 }
 
 // Returns raw, unswapped directory data
@@ -909,7 +886,6 @@ bool open_wad_file_for_writing(FileSpecifier& File, OpenedFile& OFile)
 }
 
 void close_wad_file(OpenedFile& File)
-	// fileref file_id)
 {
 	File.Close();
 #if 0
@@ -989,7 +965,7 @@ static short get_entry_header_length(
 	{
 		case PRE_ENTRY_POINT_WADFILE_VERSION:
 		case WADFILE_HAS_DIRECTORY_ENTRY:
-			size = sizeof(old_entry_header);
+			size = SIZEOF_old_entry_header;
 			break;
 
 		default:
@@ -1013,7 +989,7 @@ static short get_directory_base_length(
 	{
 		case PRE_ENTRY_POINT_WADFILE_VERSION:
 		case WADFILE_HAS_DIRECTORY_ENTRY:
-			size = sizeof(old_directory_entry);
+			size = SIZEOF_old_directory_entry;
 			break;
 
 		default:

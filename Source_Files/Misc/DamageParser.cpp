@@ -7,8 +7,11 @@
 	This parses damage info and places the results into a pointer
 */
 
-#include <string.h>
+#include "cseries.h"
+
 #include "DamageParser.h"
+
+#include <string.h>
 
 
 // Damage-parser object:

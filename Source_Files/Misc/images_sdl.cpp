@@ -1,36 +1,14 @@
 /*
- *  images_sdl.cpp - Image management, SDL implementation
+ *  images_sdl.cpp - Image management, SDL implementation (included by images.cpp)
  *
  *  Written in 2000 by Christian Bauer
  */
 
 #include <SDL/SDL_endian.h>
 
-#include "cseries.h"
-#include "FileHandler.h"
-#include "resource_manager.h"
 #include "byte_swapping.h"
-
-#include "interface.h"
-#include "shell.h"
-#include "images.h"
-#include "screen.h" // for build_direct_color_table
 #include "screen_drawing.h"
 
-#include <stdlib.h>
-
-
-// Constants
-enum {
-	_images_file_delta16= 1000,
-	_images_file_delta32= 2000,
-	_scenario_file_delta16= 10000,
-	_scenario_file_delta32= 20000
-};
-
-// Global variables
-static SDL_RWops *images_file_handle = NULL;	// Handle to global images file
-static SDL_RWops *scenario_file_handle = NULL;	// Handle to current scenario file
 
 // From screen_sdl.cpp
 extern short interface_bit_depth;
@@ -38,60 +16,6 @@ extern short interface_bit_depth;
 // From screen_drawing_sdl.cpp
 extern bool draw_clip_rect_active;
 extern screen_rectangle draw_clip_rect;
-
-// From FileHandler_SDL.cpp
-void get_default_images_spec(FileSpecifier& File);
-
-// Prototypes
-static void shutdown_images_handler(void);
-static short determine_pict_resource_id(uint32 pict_resource_type, short base_id, short delta16, short delta32);
-
-
-/*
- *  Initialize image management
- */
-
-void initialize_images_manager(void)
-{
-	FileSpecifier file;
-	get_default_images_spec(file);
-	images_file_handle = OpenResFile(file);
-
-	if (images_file_handle == NULL)
-		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
-	else
-		atexit(shutdown_images_handler);
-}
-
-
-/*
- *  Shutdown image management
- */
-
-static void shutdown_images_handler(void)
-{
-	CloseResFile(images_file_handle);
-	images_file_handle = NULL;
-	if (scenario_file_handle) {
-		CloseResFile(scenario_file_handle);
-		scenario_file_handle = NULL;
-	}
-}
-
-
-/*
- *  Set map file to load images from
- */
-
-void set_scenario_images_file(FileSpecifier &file)
-{
-	if (scenario_file_handle) {
-		CloseResFile(scenario_file_handle);
-		scenario_file_handle = NULL;
-	}
-
-	scenario_file_handle = OpenResFile(file);
-}
 
 
 /*
@@ -253,15 +177,15 @@ static void uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int 
  *  Convert picture resource to SDL surface
  */
 
-SDL_Surface *picture_to_surface(void *picture, uint32 size)
+SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 {
-	if (picture == NULL)
+	if (!rsrc.IsLoaded())
 		return NULL;
 
 	SDL_Surface *s = NULL;
 
 	// Open stream to picture resource
-	SDL_RWops *p = SDL_RWFromMem(picture, size);
+	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), rsrc.GetLength());
 	if (p == NULL)
 		return NULL;
 	SDL_RWseek(p, 10, SEEK_CUR);	// skip picSize and picRect
@@ -360,7 +284,7 @@ SDL_Surface *picture_to_surface(void *picture, uint32 size)
 				SDL_RWseek(p, 18, SEEK_CUR);
 
 				// 4. graphics data
-				uncompress_picture((uint8 *)picture + SDL_RWtell(p), row_bytes, (uint8 *)s->pixels, s->pitch, pixel_size, height, pack_type);
+				uncompress_picture((uint8 *)rsrc.GetPointer() + SDL_RWtell(p), row_bytes, (uint8 *)s->pixels, s->pitch, pixel_size, height, pack_type);
 
 				done = true;
 				break;
@@ -380,15 +304,13 @@ SDL_Surface *picture_to_surface(void *picture, uint32 size)
 
 
 /*
- *  Draw Mac picture resource
+ *  Draw picture resource centered on screen
  */
 
-// Draw picture resource centered on screen, free resource
-static void draw_picture(void *picture, uint32 size)
+static void draw_picture(LoadedResource &rsrc)
 {
 	// Convert picture resource to surface, free resource
-	SDL_Surface *s = picture_to_surface(picture, size);
-	free(picture);
+	SDL_Surface *s = picture_to_surface(rsrc);
 	if (s == NULL)
 		return;
 
@@ -417,87 +339,29 @@ static void draw_picture(void *picture, uint32 size)
 
 
 /*
- *  Get/draw image from image file
+ *  Get system color table
  */
 
-boolean images_picture_exists(short base_resource)
+const int NUM_SYS_COLORS = 8;
+
+static rgb_color sys_colors[NUM_SYS_COLORS] = {
+	{0x0000, 0x0000, 0x0000},
+	{0xffff, 0x0000, 0x0000},
+	{0x0000, 0xffff, 0x0000},
+	{0xffff, 0xffff, 0x0000},
+	{0x0000, 0x0000, 0xffff},
+	{0xffff, 0x0000, 0xffff},
+	{0x0000, 0xffff, 0xffff},
+	{0xffff, 0xffff, 0xffff}
+};
+
+struct color_table *build_8bit_system_color_table(void)
 {
-	assert(images_file_handle);
-	SDL_RWops *old_resfile = CurResFile();
-	UseResFile(images_file_handle);
-	bool exists = Has1Resource('PICT', determine_pict_resource_id('PICT', base_resource, _images_file_delta16, _images_file_delta32));
-	UseResFile(old_resfile);
-	return exists;
-}
-
-void *get_picture_resource_from_images(short base_resource, uint32 &size)
-{
-	assert(images_file_handle);
-	SDL_RWops *old_resfile = CurResFile();
-	UseResFile(images_file_handle);
-	void *picture = Get1Resource('PICT', determine_pict_resource_id('PICT', base_resource, _images_file_delta16, _images_file_delta32), &size);
-	UseResFile(old_resfile);
-	return picture;
-}
-
-void draw_full_screen_pict_resource_from_images(short pict_resource_number)
-{
-	uint32 size;
-	void *picture = get_picture_resource_from_images(pict_resource_number, size);
-	draw_picture(picture, size);
-}
-
-
-/*
- *  Get/draw image from scenario
- */
-
-boolean scenario_picture_exists(short base_resource)
-{
-	if (scenario_file_handle == NULL)
-		return false;
-
-	SDL_RWops *old_resfile = CurResFile();
-	UseResFile(scenario_file_handle);
-	bool exists = Has1Resource('PICT', determine_pict_resource_id('PICT', base_resource, _scenario_file_delta16, _scenario_file_delta32));
-	UseResFile(old_resfile);
-	return exists;
-}
-
-void *get_picture_resource_from_scenario(short base_resource, uint32 &size)
-{
-	if (scenario_file_handle == NULL)
-		return NULL;
-
-	SDL_RWops *old_resfile = CurResFile();
-	UseResFile(scenario_file_handle);
-	void *picture = Get1Resource('PICT', determine_pict_resource_id('PICT', base_resource, _scenario_file_delta16, _scenario_file_delta32), &size);
-	UseResFile(old_resfile);
-	return picture;
-}
-
-void draw_full_screen_pict_resource_from_scenario(short pict_resource_number)
-{
-	uint32 size;
-	void *picture = get_picture_resource_from_scenario(pict_resource_number, size);
-	draw_picture(picture, size);
-}
-
-
-/*
- *  Get sound resource from scenario
- */
-
-void *get_sound_resource_from_scenario(short resource_number, uint32 &size)
-{
-	if (scenario_file_handle == NULL)
-		return NULL;
-
-	SDL_RWops *old_resfile = CurResFile();
-	UseResFile(scenario_file_handle);
-	void *sound = Get1Resource('snd ', resource_number, &size);
-	UseResFile(old_resfile);
-	return sound;
+	color_table *table = new color_table;
+	table->color_count = NUM_SYS_COLORS;
+	for (int i=0; i<NUM_SYS_COLORS; i++)
+		table->colors[i] = sys_colors[i];
+	return table;
 }
 
 
@@ -507,15 +371,12 @@ void *get_sound_resource_from_scenario(short resource_number, uint32 &size)
 
 #define SCROLLING_SPEED (MACHINE_TICKS_PER_SECOND / 20)
 
-void scroll_full_screen_pict_resource_from_scenario(short pict_resource_number, boolean text_block)
+void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, boolean text_block)
 {
 	// Convert picture resource to surface, free resource
-	uint32 size;
-	void *picture = get_picture_resource_from_scenario(pict_resource_number, size);
-	if (picture == NULL)
-		return;
-	SDL_Surface *s = picture_to_surface(picture, size);
-	free(picture);
+	LoadedResource rsrc;
+	get_picture_resource_from_scenario(pict_resource_number, rsrc);
+	SDL_Surface *s = picture_to_surface(rsrc);
 	if (s == NULL)
 		return;
 
@@ -577,111 +438,4 @@ void scroll_full_screen_pict_resource_from_scenario(short pict_resource_number, 
 
 	// Free surface
 	SDL_FreeSurface(s);
-}
-
-
-/*
- *  Calculate color table for image
- */
-
-struct color_table *calculate_picture_clut(short pict_resource_number)
-{
-	struct color_table *picture_table = NULL;
-
-	// Find CLUT resource for picture
-	void *clut = GetResource('clut', pict_resource_number);
-	if (clut) {
-
-		// Allocate color table
-		picture_table = (struct color_table *)malloc(sizeof(struct color_table));
-		assert(picture_table);
-
-		// Convert Mac CLUT to color table
-		if (interface_bit_depth == 8)
-			build_color_table(picture_table, clut);
-		else
-			build_direct_color_table(picture_table, interface_bit_depth);
-
-		// Free CLUT resource
-		free(clut);
-	}
-	return picture_table;
-}
-
-
-/*
- *  Get system color table
- */
-
-const int NUM_SYS_COLORS = 8;
-
-static rgb_color sys_colors[NUM_SYS_COLORS] = {
-	{0x0000, 0x0000, 0x0000},
-	{0xffff, 0x0000, 0x0000},
-	{0x0000, 0xffff, 0x0000},
-	{0xffff, 0xffff, 0x0000},
-	{0x0000, 0x0000, 0xffff},
-	{0xffff, 0x0000, 0xffff},
-	{0x0000, 0xffff, 0xffff},
-	{0xffff, 0xffff, 0xffff}
-};
-
-struct color_table *build_8bit_system_color_table(void)
-{
-	color_table *table = (color_table *)malloc(sizeof(color_table));
-	assert(table);
-	table->color_count = NUM_SYS_COLORS;
-	for (int i=0; i<NUM_SYS_COLORS; i++)
-		table->colors[i] = sys_colors[i];
-	return table;
-}
-
-
-/*
- *  Determine ID for picture resource
- */
-
-static short determine_pict_resource_id(uint32 pict_resource_type, short base_id, short delta16, short delta32)
-{
-	short actual_id = base_id;
-	bool done = false;
-	short bit_depth = interface_bit_depth;
-
-	while (!done) {
-		short next_bit_depth;
-	
-		actual_id = base_id;
-		switch(bit_depth) {
-			case 8:	
-				next_bit_depth = 0; 
-				break;
-				
-			case 16: 
-				next_bit_depth = 8;
-				actual_id += delta16; 
-				break;
-				
-			case 32: 
-				next_bit_depth = 16;
-				actual_id += delta32;	
-				break;
-				
-			default: 
-				assert(false);
-				break;
-		}
-		
-		if (HasResource(pict_resource_type, actual_id))
-			done = true;
-
-		if (!done) {
-			if (next_bit_depth)
-				bit_depth = next_bit_depth;
-			else {
-				// Didn't find it. Return the 8 bit version and bail..
-				done = true;
-			}
-		}
-	}
-	return actual_id;
 }

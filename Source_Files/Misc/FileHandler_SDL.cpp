@@ -6,6 +6,8 @@
 
 #include "cseries.h"
 #include "FileHandler.h"
+#include "resource_manager.h"
+
 #include "shell.h"
 #include "interface.h"
 #include "game_errors.h"
@@ -15,78 +17,177 @@
 #include <string>
 
 #ifdef HAVE_UNISTD_H
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
+
+
+// From shell_sdl.cpp
+extern FileSpecifier global_data_dir, local_data_dir;
 
 
 /*
  *  Opened file
  */
 
+OpenedFile::OpenedFile() : f(NULL) {}
+
 bool OpenedFile::IsOpen()
 {
-	return handle != NULL;
+	return f != NULL;
 }
 
 bool OpenedFile::Close()
 {
-	if (!handle)
-		return true;
-
-	int res = fclose(handle);
-	handle = NULL;
-	return res == 0;
+	if (f) {
+		SDL_FreeRW(f);
+		f = NULL;
+	}
+	return true;
 }
 
 bool OpenedFile::GetPosition(long &Position)
 {
-	if (!handle)
+	if (f == NULL)
 		return false;
 
-	Position = ftell(handle);
+	Position = SDL_RWtell(f);
 	return true;
 }
 
 bool OpenedFile::SetPosition(long Position)
 {
-	if (!handle)
+	if (f == NULL)
 		return false;
 
-	return fseek(handle, Position, SEEK_SET) == 0;
+	return SDL_RWseek(f, Position, SEEK_SET) >= 0;
 }
 
 bool OpenedFile::GetLength(long &Length)
 {
-	if (!handle)
+	if (f == NULL)
 		return false;
 
-	long pos = ftell(handle);
-	fseek(handle, 0, SEEK_END);
-	Length = ftell(handle);
-	fseek(handle, 0, SEEK_SET);
+	long pos = SDL_RWtell(f);
+	SDL_RWseek(f, 0, SEEK_END);
+	Length = SDL_RWtell(f);
+	SDL_RWseek(f, pos, SEEK_SET);
 	return true;
 }
 
 bool OpenedFile::SetLength(long Length)
 {
 	// impossible to do in a platform-independant way
+	printf("*** OpenedFile::SetLength(%d)\n", Length);
 	return false;
 }
 
 bool OpenedFile::Read(long Count, void *Buffer)
 {
-	if (!handle)
+	if (f == NULL)
 		return false;
 
-	return fread(Buffer, 1, Count, handle) == Count;
+	return SDL_RWread(f, Buffer, 1, Count) == Count;
 }
 
 bool OpenedFile::Write(long Count, void *Buffer)
 {
-	if (!handle)
+	if (f == NULL)
 		return false;
 
-	return fwrite(Buffer, 1, Count, handle) == Count;
+	return SDL_RWwrite(f, Buffer, 1, Count) == Count;
+}
+
+
+/*
+ *  Loaded resource
+ */
+
+LoadedResource::LoadedResource() : p(NULL), size(0) {}
+
+bool LoadedResource::IsLoaded()
+{
+	return p != NULL;
+}
+
+void LoadedResource::Unload()
+{
+	if (p) {
+		free(p);
+		p = NULL;
+		size = 0;
+	}
+}
+
+size_t LoadedResource::GetLength()
+{
+	return size;
+}
+
+void *LoadedResource::GetPointer(bool DoDetach)
+{
+	void *ret = p;
+	if (DoDetach)
+		Detach();
+	return ret;
+}
+
+void LoadedResource::Detach()
+{
+	p = NULL;
+	size = 0;
+}
+
+
+/*
+ *  Opened resource file
+ */
+
+OpenedResourceFile::OpenedResourceFile() : f(NULL), saved_f(NULL) {}
+
+bool OpenedResourceFile::Push()
+{
+	saved_f = cur_res_file();
+	if (saved_f != f)
+		use_res_file(f);
+	return true;
+}
+
+bool OpenedResourceFile::Pop()
+{
+	if (f != saved_f)
+		use_res_file(saved_f);
+	return true;
+}
+
+bool OpenedResourceFile::Check(uint32 Type, int16 ID)
+{
+	Push();
+	bool result = has_1_resource(Type, ID);
+	Pop();
+	return result;
+}
+
+bool OpenedResourceFile::Get(uint32 Type, int16 ID, LoadedResource &Rsrc)
+{
+	Push();
+	bool success = get_1_resource(Type, ID, Rsrc);
+	Pop();
+	return success;
+}
+
+bool OpenedResourceFile::IsOpen()
+{
+	return f != NULL;
+}
+
+bool OpenedResourceFile::Close()
+{
+	if (f) {
+		close_res_file(f);
+		f = NULL;
+	}
+	return true;
 }
 
 
@@ -113,14 +214,24 @@ void FileSpecifier::SetName(char *Name, int Type)
 
 bool FileSpecifier::Create(int Type)
 {
+	Delete();
 	// files are automatically created when opened for writing
 	return true;
 }
 
-bool FileSpecifier::Open(OpenedFile &OFile, bool Writable = false)
+bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 {
 	OFile.Close();
-	OFile.handle = fopen(name.c_str(), Writable ? "wb" : "rb");
+	OFile.f = SDL_RWFromFile(name.c_str(), Writable ? "wb" : "rb");
+	if (!OFile.IsOpen())
+		set_game_error(systemError, OFile.GetError());
+	return OFile.IsOpen();
+}
+
+bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
+{
+	OFile.Close();
+	OFile.f = open_res_file(*this);
 	if (!OFile.IsOpen())
 		set_game_error(systemError, OFile.GetError());
 	return OFile.IsOpen();
@@ -135,6 +246,18 @@ bool FileSpecifier::Exists()
 #endif
 }
 
+TimeType FileSpecifier::GetDate()
+{
+#if defined(__unix__) || defined(__BEOS__)
+	struct stat st;
+	if (stat(name.c_str(), &st) < 0)
+		return 0;
+	return st.st_mtime;
+#else
+#error FileSpecifier::GetDate() not implemented for this platform
+#endif
+}
+
 bool FileSpecifier::GetFreeSpace(unsigned long &FreeSpace)
 {
 	// This is impossible to do in a platform-independant way, so we
@@ -146,6 +269,18 @@ bool FileSpecifier::GetFreeSpace(unsigned long &FreeSpace)
 bool FileSpecifier::Delete()
 {
 	return remove(name.c_str()) == 0;
+}
+
+// Set to local (per-user) data directory
+void FileSpecifier::SetToLocalDataDir()
+{
+	name = local_data_dir.name;
+}
+
+// Set to global data directory
+void FileSpecifier::SetToGlobalDataDir()
+{
+	name = global_data_dir.name;
 }
 
 // Add part to path name
@@ -215,21 +350,8 @@ bool get_default_music_spec(FileSpecifier &file)
 	return get_file_spec(file, strFILENAMES, filenameMUSIC, strPATHS);
 }
 
-void get_default_images_spec(FileSpecifier &file)
-{
-	if (!get_file_spec(file, strFILENAMES, filenameIMAGES, strPATHS))
-		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
-}
-
 void get_default_shapes_spec(FileSpecifier &file)
 {
 	if (!get_file_spec(file, strFILENAMES, filenameSHAPES8, strPATHS))
 		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
-}
-
-void get_savegame_filedesc(FileSpecifier &file)
-{
-	file = local_data_dir;
-	if (getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME))
-		file.AddPart(temporary);
 }

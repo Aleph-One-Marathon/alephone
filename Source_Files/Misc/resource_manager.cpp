@@ -4,18 +4,11 @@
  *  Written in 2000 by Christian Bauer
  */
 
-/*
- *  NOTE:
- *  This module only emulates the "data retrieval" aspect of Mac resources.
- *  It doesn't emulate handles, and the data returned by GetResource() is
- *  a malloc()ed block.
- */
-
 #include <SDL/SDL_endian.h>
 
 #include "cseries.h"
-#include "FileHandler.h"
 #include "resource_manager.h"
+#include "FileHandler.h"
 
 #include <stdio.h>
 #include <vector>
@@ -40,8 +33,8 @@ struct res_file_t {
 	bool read_map(void);
 	int count_resources(uint32 type) const;
 	void get_resource_id_list(uint32 type, vector<int> &ids) const;
-	void *get_resource(uint32 type, int id, uint32 *size_ret) const;
-	void *get_ind_resource(uint32 type, int index, uint32 *size_ret) const;
+	bool get_resource(uint32 type, int id, LoadedResource &rsrc) const;
+	bool get_ind_resource(uint32 type, int index, LoadedResource &rsrc) const;
 	bool has_resource(uint32 type, int id) const;
 
 	SDL_RWops *f;		// Opened resource file
@@ -80,7 +73,7 @@ static list<res_file_t *>::iterator find_res_file_t(SDL_RWops *f)
 
 void initialize_resources(FileSpecifier &global_resources)
 {
-	if (OpenResFile(global_resources) == NULL) {
+	if (open_res_file(global_resources) == NULL) {
 		fprintf(stderr, "Can't open global resource file '%s'\n", global_resources.GetName());
 		exit(1);
 	}
@@ -201,7 +194,7 @@ bool res_file_t::read_map(void)
  *  Open resource file, set current file to the newly opened one
  */
 
-SDL_RWops *OpenResFile(FileSpecifier &file)
+SDL_RWops *open_res_file(FileSpecifier &file)
 {
 	string rsrc_file_name = file.GetName();
 	rsrc_file_name += ".resources";
@@ -236,7 +229,7 @@ SDL_RWops *OpenResFile(FileSpecifier &file)
  *  Close resource file
  */
 
-void CloseResFile(SDL_RWops *file)
+void close_res_file(SDL_RWops *file)
 {
 	if (file == NULL)
 		return;
@@ -259,7 +252,7 @@ void CloseResFile(SDL_RWops *file)
  *  Return current resource file
  */
 
-SDL_RWops *CurResFile(void)
+SDL_RWops *cur_res_file(void)
 {
 	res_file_t *r = *cur_res_file_t;
 	assert(r);
@@ -271,7 +264,7 @@ SDL_RWops *CurResFile(void)
  *  Set current resource file
  */
 
-void UseResFile(SDL_RWops *file)
+void use_res_file(SDL_RWops *file)
 {
 	list<res_file_t *>::iterator i = find_res_file_t(file);
 	assert(i != res_file_list.end());
@@ -292,12 +285,12 @@ int res_file_t::count_resources(uint32 type) const
 		return i->second.size();
 }
 
-int Count1Resources(uint32 type)
+int count_1_resources(uint32 type)
 {
 	return (*cur_res_file_t)->count_resources(type);
 }
 
-int CountResources(uint32 type)
+int count_resources(uint32 type)
 {
 	int count = 0;
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
@@ -325,13 +318,13 @@ void res_file_t::get_resource_id_list(uint32 type, vector<int> &ids) const
 	}
 }
 
-void Get1ResourceIDList(uint32 type, vector<int> &ids)
+void get_1_resource_id_list(uint32 type, vector<int> &ids)
 {
 	ids.clear();
 	(*cur_res_file_t)->get_resource_id_list(type, ids);
 }
 
-void GetResourceIDList(uint32 type, vector<int> &ids)
+void get_resource_id_list(uint32 type, vector<int> &ids)
 {
 	ids.clear();
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
@@ -348,8 +341,10 @@ void GetResourceIDList(uint32 type, vector<int> &ids)
  *  Get resource data (must be freed with free())
  */
 
-void *res_file_t::get_resource(uint32 type, int id, uint32 *size_ret) const
+bool res_file_t::get_resource(uint32 type, int id, LoadedResource &rsrc) const
 {
+	rsrc.Unload();
+
 	// Find resource in map
 	type_map_t::const_iterator i = types.find(type);
 	if (i != types.end()) {
@@ -363,34 +358,35 @@ void *res_file_t::get_resource(uint32 type, int id, uint32 *size_ret) const
 			// Allocate memory and read data
 			void *p = malloc(size);
 			if (p == NULL)
-				return NULL;
+				return false;
 			SDL_RWread(f, p, 1, size);
-			if (size_ret)
-				*size_ret = size;
+			rsrc.p = p;
+			rsrc.size = size;
+
 			//printf("get_resource type %c%c%c%c, id %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, id, p, size);
-			return p;
+			return true;
 		}
 	}
-	return NULL;
+	return false;
 }
 
-void *Get1Resource(uint32 type, int id, uint32 *size_ret)
+bool get_1_resource(uint32 type, int id, LoadedResource &rsrc)
 {
-	return (*cur_res_file_t)->get_resource(type, id, size_ret);
+	return (*cur_res_file_t)->get_resource(type, id, rsrc);
 }
 
-void *GetResource(uint32 type, int id, uint32 *size_ret)
+bool get_resource(uint32 type, int id, LoadedResource &rsrc)
 {
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
 	while (true) {
-		void *data = (*i)->get_resource(type, id, size_ret);
-		if (data)
-			return data;
+		bool found = (*i)->get_resource(type, id, rsrc);
+		if (found)
+			return true;
 		if (i == begin)
 			break;
 		i--;
 	}
-	return NULL;
+	return false;
 }
 
 
@@ -398,13 +394,15 @@ void *GetResource(uint32 type, int id, uint32 *size_ret)
  *  Get resource data by index (must be freed with free())
  */
 
-void *res_file_t::get_ind_resource(uint32 type, int index, uint32 *size_ret) const
+bool res_file_t::get_ind_resource(uint32 type, int index, LoadedResource &rsrc) const
 {
+	rsrc.Unload();
+
 	// Find resource in map
 	type_map_t::const_iterator i = types.find(type);
 	if (i != types.end()) {
 		if (index < 1 || index > i->second.size())
-			return NULL;
+			return false;
 		id_map_t::const_iterator j = i->second.begin();
 		for (int k=1; k<index; k++)
 			++j;
@@ -416,33 +414,34 @@ void *res_file_t::get_ind_resource(uint32 type, int index, uint32 *size_ret) con
 		// Allocate memory and read data
 		void *p = malloc(size);
 		if (p == NULL)
-			return NULL;
+			return false;
 		SDL_RWread(f, p, 1, size);
-		if (size_ret)
-			*size_ret = size;
+		rsrc.p = p;
+		rsrc.size = size;
+
 		//printf("get_ind_resource type %c%c%c%c, index %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, index, p, size);
-		return p;
+		return true;
 	}
-	return NULL;
+	return false;
 }
 
-void *Get1IndResource(uint32 type, int index, uint32 *size_ret)
+bool get_1_ind_resource(uint32 type, int index, LoadedResource &rsrc)
 {
-	return (*cur_res_file_t)->get_ind_resource(type, index, size_ret);
+	return (*cur_res_file_t)->get_ind_resource(type, index, rsrc);
 }
 
-void *GetIndResource(uint32 type, int index, uint32 *size_ret)
+bool get_ind_resource(uint32 type, int index, LoadedResource &rsrc)
 {
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
 	while (true) {
-		void *data = (*i)->get_ind_resource(type, index, size_ret);
-		if (data)
-			return data;
+		bool found = (*i)->get_ind_resource(type, index, rsrc);
+		if (found)
+			return true;
 		if (i == begin)
 			break;
 		i--;
 	}
-	return NULL;
+	return false;
 }
 
 
@@ -461,12 +460,12 @@ bool res_file_t::has_resource(uint32 type, int id) const
 	return false;
 }
 
-bool Has1Resource(uint32 type, int id)
+bool has_1_resource(uint32 type, int id)
 {
 	return (*cur_res_file_t)->has_resource(type, id);
 }
 
-bool HasResource(uint32 type, int id)
+bool has_resource(uint32 type, int id)
 {
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
 	while (true) {

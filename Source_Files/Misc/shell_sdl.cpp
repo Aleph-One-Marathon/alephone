@@ -86,6 +86,9 @@ extern string get_application_directory(void);
 extern string get_preferences_directory(void);
 #endif
 
+// From FileHandler_SDL.cpp
+extern bool get_default_music_spec(FileSpecifier &file);
+
 // Prototypes
 static void initialize_application(void);
 static void shutdown_application(void);
@@ -265,7 +268,7 @@ sound_preferences->pitch = 0x00010000;				// 22050Hz
 
 	initialize_game_state();
 
-#if 0
+#if 1
 //!! sorry, uhm, this will of course be gone once the preferences dialogs are implemented...
 short cebix_keys[] = {
 	SDLK_KP8, SDLK_KP2, SDLK_KP4, SDLK_KP6,		// moving/turning
@@ -423,15 +426,15 @@ static void main_event_loop(void)
  *  Process SDL event
  */
 
-static bool has_cheat_modifiers(const SDL_Event &event)
+static bool has_cheat_modifiers(void)
 {
-	SDLMod m = event.key.keysym.mod;
+	SDLMod m = SDL_GetModState();
 	return (m & KMOD_SHIFT) && (m & KMOD_CTRL) && !(m & KMOD_ALT) && !(m & KMOD_META);
 }
 
 static void process_screen_click(const SDL_Event &event)
 {
-	portable_process_screen_click(event.button.x, event.button.y, has_cheat_modifiers(event));
+	portable_process_screen_click(event.button.x, event.button.y, has_cheat_modifiers());
 }
 
 static bool is_keypad(SDLKey key)
@@ -593,7 +596,7 @@ static void process_game_key(const SDL_Event &event)
 					case SDLK_q: item = iQuitGame; break;
 				}
 				if (item > 0)
-					do_menu_item_command(mGame, item, has_cheat_modifiers(event));
+					do_menu_item_command(mGame, item, has_cheat_modifiers());
 				else
 					handle_game_key(event);
 			} else
@@ -642,7 +645,7 @@ static void process_game_key(const SDL_Event &event)
 			}
 			if (item > 0) {
 				draw_menu_button_for_command(item);
-				do_menu_item_command(mInterface, item, has_cheat_modifiers(event));
+				do_menu_item_command(mInterface, item, has_cheat_modifiers());
 			}
 			break;
 		}

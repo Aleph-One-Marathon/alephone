@@ -58,7 +58,7 @@ short get_level_number_from_user(void)
 {
 printf("*** get_level_number_from_user()\n");
 	//!!
-	return 33;
+	return 19;
 }
 
 
@@ -69,16 +69,6 @@ printf("*** get_level_number_from_user()\n");
 void toggle_menus(boolean game_started)
 {
 	// nothing to do
-}
-
-
-/*
- *  Get difficulty level from preferences
- */
-
-short get_difficulty_level(void)
-{
-	return player_preferences->difficulty_level;
 }
 
 

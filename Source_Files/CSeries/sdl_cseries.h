@@ -59,7 +59,6 @@ typedef SDL_Surface *PixMapHandle;
 typedef SDL_Surface *GrafPtr;
 typedef void *CGrafPtr;
 typedef void *GWorldPtr;
-typedef void *CTabHandle;
 typedef void ModalFilterUPP;
 
 #define EventRecord SDL_Event

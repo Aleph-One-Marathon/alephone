@@ -11,27 +11,28 @@
 #include <vector>
 
 class FileSpecifier;
+class LoadedResource;
 
 extern void initialize_resources(FileSpecifier &global_resources);
 
-extern SDL_RWops *OpenResFile(FileSpecifier &file);
-extern void CloseResFile(SDL_RWops *file);
-extern SDL_RWops *CurResFile(void);
-extern void UseResFile(SDL_RWops *file);
+extern SDL_RWops *open_res_file(FileSpecifier &file);
+extern void close_res_file(SDL_RWops *file);
+extern SDL_RWops *cur_res_file(void);
+extern void use_res_file(SDL_RWops *file);
 
-extern int Count1Resources(uint32 type);
-extern int CountResources(uint32 type);
+extern int count_1_resources(uint32 type);
+extern int count_resources(uint32 type);
 
-extern void Get1ResourceIDList(uint32 type, vector<int> &ids);
-extern void GetResourceIDList(uint32 type, vector<int> &ids);
+extern void get_1_resource_id_list(uint32 type, vector<int> &ids);
+extern void get_resource_id_list(uint32 type, vector<int> &ids);
 
-extern void *Get1Resource(uint32 type, int id, uint32 *size_ret = NULL);
-extern void *GetResource(uint32 type, int id, uint32 *size_ret = NULL);
+extern bool get_1_resource(uint32 type, int id, LoadedResource &rsrc);
+extern bool get_resource(uint32 type, int id, LoadedResource &rsrc);
 
-extern void *Get1IndResource(uint32 type, int index, uint32 *size_ret = NULL);
-extern void *GetIndResource(uint32 type, int index, uint32 *size_ret = NULL);
+extern bool get_1_ind_resource(uint32 type, int index, LoadedResource &rsrc);
+extern bool get_ind_resource(uint32 type, int index, LoadedResource &rsrc);
 
-extern bool Has1Resource(uint32 type, int id);
-extern bool HasResource(uint32 type, int id);
+extern bool has_1_resource(uint32 type, int id);
+extern bool has_resource(uint32 type, int id);
 
 #endif

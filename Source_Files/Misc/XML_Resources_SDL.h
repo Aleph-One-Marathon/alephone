@@ -8,12 +8,13 @@
 #define _XML_RESOURCES_SDL_
 
 #include "XML_Configure.h"
+#include "FileHandler.h"
 
 class XML_Resources_SDL : public XML_Configure
 {
 public:
-	XML_Resources_SDL() : data(NULL), data_size(0) {}
-	virtual ~XML_Resources_SDL() {if (data) free(data);}
+	XML_Resources_SDL() {}
+	virtual ~XML_Resources_SDL() {rsrc.Unload();}
 
 	bool ParseResourceSet(uint32 Type);
 
@@ -25,8 +26,7 @@ protected:
 	virtual bool RequestAbort();
 
 private:
-	void *data;
-	uint32 data_size;
+	LoadedResource rsrc;
 };
 
 #endif

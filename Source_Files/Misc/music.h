@@ -10,7 +10,7 @@ Aug 24, 2000 (Loren Petrich):
 	Adding object-oriented file handling
 */
 
-#include "FileHandler.h"
+class FileSpecifier;
 
 enum { // All of our songs.
 	_introduction_song= 0,
@@ -18,7 +18,6 @@ enum { // All of our songs.
 };
 
 boolean initialize_music_handler(FileSpecifier& SongFile);
-// boolean initialize_music_handler(FileDesc *song_file);
 
 void queue_song(short song_index);
 

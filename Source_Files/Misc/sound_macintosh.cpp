@@ -1,5 +1,5 @@
 /*
-SOUND_MACINTOSH.C
+SOUND_MACINTOSH.C - Sound management, MacOS specific stuff (included by mysound.c)
 Friday, August 25, 1995 4:51:06 PM  (Jason)
 
 Tuesday, August 29, 1995 8:56:06 AM  (Jason)

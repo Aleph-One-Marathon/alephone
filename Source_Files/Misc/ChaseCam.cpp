@@ -6,6 +6,8 @@
 	Moved out of player.c
 */
 
+#include "cseries.h"
+
 #include "map.h"
 #include "player.h"
 #include "ChaseCam.h"

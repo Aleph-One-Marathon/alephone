@@ -194,12 +194,6 @@ void toggle_menus(
 	return;
 }
 
-short get_difficulty_level(
-	void)
-{
-	return player_preferences->difficulty_level;
-}
-
 void update_game_window(
 	WindowPtr window,
 	EventRecord *event)

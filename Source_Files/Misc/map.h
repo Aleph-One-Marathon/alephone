@@ -24,7 +24,6 @@ Jul 1, 2000 (Loren Petrich):
 */
 
 #include "world.h"
-// LP addition:
 #include "dynamic_limits.h"
 
 /* ---------- constants */
@@ -47,7 +46,7 @@ Jul 1, 2000 (Loren Petrich):
 #define MAXIMUM_LINES_PER_MAP (4*KILO)
 #define MAXIMUM_LEVELS_PER_MAP (128)
 
-#define LEVEL_NAME_LENGTH (64+1)
+#define LEVEL_NAME_LENGTH (64+2)
 
 /* ---------- shape descriptors */
 
@@ -141,7 +140,6 @@ const int SIZEOF_map_object = 16;
 
 typedef world_point2d saved_map_pt;
 typedef struct line_data saved_line;
-typedef struct side_data saved_side;
 typedef struct polygon_data saved_poly;
 typedef struct map_annotation saved_annotation;
 typedef struct map_object saved_object;
@@ -525,7 +523,39 @@ struct side_exclusion_zone
 	world_point2d e0, e1, e2, e3;
 };
 
-struct side_data /* 64 bytes */
+struct saved_side /* 64 bytes */
+{
+	int16 type;
+	uint16 flags;
+	
+	struct side_texture_definition primary_texture;
+	struct side_texture_definition secondary_texture;
+	struct side_texture_definition transparent_texture; /* not drawn if .texture==NONE */
+
+	/* all sides have the potential of being impassable; the exclusion zone is the area near
+		the side which cannot be walked through */
+	struct side_exclusion_zone exclusion_zone;
+
+	int16 control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
+	int16 control_panel_permutation; /* platform index, light source index, etc... */
+	
+	int16 primary_transfer_mode; /* These should be in the side_texture_definition.. */
+	int16 secondary_transfer_mode;
+	int16 transparent_transfer_mode;
+
+	int16 polygon_index, line_index;
+
+	int16 primary_lightsource_index;	
+	int16 secondary_lightsource_index;
+	int16 transparent_lightsource_index;
+
+	int16 ambient_delta_hi, ambient_delta_lo;
+
+	int16 unused[1];
+};
+const int SIZEOF_saved_side = 64;
+
+struct side_data /* size platform-dependant */
 {
 	short type;
 	word flags;
@@ -555,7 +585,6 @@ struct side_data /* 64 bytes */
 
 	short unused[1];
 };
-const int SIZEOF_side_data = 64;
 
 /* ----------- polygon definition */
 
@@ -653,6 +682,32 @@ struct polygon_data /* 128 bytes */
 };
 const int SIZEOF_polygon_data = 128;
 
+/* ----------- static light definition */
+
+struct saved_lighting_function_specification /* 7*2 == 14 bytes */
+{
+	int16 function;
+	
+	int16 period, delta_period;
+	int16 intensity_hi, intensity_lo, delta_intensity_hi, delta_intensity_lo;
+};
+
+struct saved_static_light_data /* 8*2 + 6*14 == 100 bytes */
+{
+	int16 type;
+	uint16 flags;
+
+	int16 phase; // initializer, so lights may start out-of-phase with each other
+	
+	struct saved_lighting_function_specification primary_active, secondary_active, becoming_active;
+	struct saved_lighting_function_specification primary_inactive, secondary_inactive, becoming_inactive;
+	
+	int16 tag;
+	
+	int16 unused[4];
+};
+const int SIZEOF_saved_static_light_data = 100;
+
 /* ---------- random placement data structures.. */
 
 enum /* game difficulty levels */
@@ -714,17 +769,17 @@ enum /* environment flags */
 /* current map number is in player->map */
 struct static_data
 {
-	short environment_code;
+	int16 environment_code;
 	
-	short physics_model;
-	short song_index;
-	short mission_flags;
-	short environment_flags;
+	int16 physics_model;
+	int16 song_index;
+	int16 mission_flags;
+	int16 environment_flags;
 	
-	short unused[4];
+	int16 unused[4];
 
 	char level_name[LEVEL_NAME_LENGTH];
-	long entry_point_flags;
+	uint32 entry_point_flags;
 };
 const int SIZEOF_static_data = 88;
 

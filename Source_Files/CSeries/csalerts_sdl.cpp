@@ -61,7 +61,7 @@ void halt(void)
 void vhalt(char *message)
 {
 	fprintf(stderr, "vhalt %s\n", message);
-	exit(1);
+	abort();
 }
 
 

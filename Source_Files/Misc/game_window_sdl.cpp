@@ -5,6 +5,7 @@
  */
 
 #include "cseries.h"
+#include "FileHandler.h"
 
 #include "map.h"
 #include "shell.h"
@@ -23,9 +24,6 @@ extern void update_everything(short time_elapsed);
 // From sreen_sdl.cpp
 extern SDL_Surface *HUD_Buffer;
 extern void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
-
-// From images_sdl.cpp
-extern SDL_Surface *picture_to_surface(void *picture, uint32 size);
 
 
 /*
@@ -46,15 +44,13 @@ void draw_panels(void)
 	}
 
 	// Draw static HUD picture
-	uint32 size;
-	void *picture = get_picture_resource_from_images(INTERFACE_PANEL_BASE, size);
-	if (picture) {
-		SDL_Surface *s = picture_to_surface(picture, size);
-		free(picture);
+	LoadedResource rsrc;
+	if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, rsrc)) {
+		SDL_Surface *s = picture_to_surface(rsrc);
 		if (s) {
 			SDL_Rect dst_rect = {0, 320, 640, 160};
 			SDL_BlitSurface(s, NULL, HUD_Buffer, &dst_rect);
-			free(s);
+			SDL_FreeSurface(s);
 
 			// Add dynamic elements
 			_set_port_to_HUD();

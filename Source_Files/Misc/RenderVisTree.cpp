@@ -9,6 +9,8 @@
 	Made [view_data *view] a member and removed it as an argument
 */
 
+#include "cseries.h"
+
 #include "map.h"
 #include "RenderVisTree.h"
 

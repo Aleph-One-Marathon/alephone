@@ -117,8 +117,6 @@ boolean wad_file_has_parent_checksum(FileSpecifier& File, unsigned long checksum
 short number_of_wads_in_file(FileSpecifier& File); /* returns -1 on error */
 
 /* ----- Open/Close functions */
-/* Should be OSType, or extension for dos. */
-// FileError create_wadfile(FileDesc *file, unsigned long file_type);
 // Use one of the FileSpecifier enum types
 bool create_wadfile(FileSpecifier& File, int Type);
 
@@ -166,20 +164,12 @@ unsigned long read_wad_file_parent_checksum(FileSpecifier& File);
 
 // Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
 
-// boolean find_wad_file_that_has_checksum(FileDesc *matching_file,
 boolean find_wad_file_that_has_checksum(FileSpecifier& File,
 	int file_type, short path_resource_id, unsigned long checksum);
 
 /* Added in here for simplicity.  Really should be somewhere else.. */
 boolean find_file_with_modification_date(FileSpecifier& File,
 	int file_type, short path_resource_id, unsigned long modification_date);
-
-// LP: no need of this anymore due to file/directory abstracting
-// #ifdef mac
-/* Handy function to have.  Given the fsspec of a directory, returns the id needed */
-/*  to search inside it.. */
-// OSErr get_directories_parID(FSSpec *directory, long *parID);
-// #endif
 
 /* ------------ Flat wad functions */
 /* These functions are used for transferring data, and it completely encapsulates */

@@ -9,14 +9,17 @@
 */
 
 
-#include <string.h>
-#include <stdlib.h>
+#include "cseries.h"
+
 #include "OverheadMapRenderer.h"
 #include "flood_map.h"
 #include "media.h"
 #include "platforms.h"
 #include "player.h"
 #include "render.h"
+
+#include <string.h>
+#include <stdlib.h>
 
 
 enum /* render flags */

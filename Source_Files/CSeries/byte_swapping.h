@@ -30,11 +30,18 @@ extern void byte_swap_memory(
 // LP: convenient templates for byte-swapping single objects and object lists;
 // they will work out the number of bytes from the object type.
 
-template<class T> void byte_swap_object(T& object, _bs_field *fields)
-	{byte_swap_data(&object,sizeof(object),1,fields);}
+// CB: my plan is to eventually get rid of all byte-swapping stuff here;
+// the idea was nice, but the current method of reading C structures from
+// disk and swapping them in memory has portability problems (and makes
+// writing more difficult); instead, functions to read and write data items
+// (uint8, uint16, uint32, not more) in big-endian order should be added to
+// OpenedFile
+
+template<class T> void byte_swap_object(T &object, _bs_field *fields)
+	{byte_swap_data(&object, sizeof(T), 1, fields);}
 
 template<class T> void byte_swap_object_list(T *object_list, int num_objects, _bs_field *fields)
-	{byte_swap_data(object_list,sizeof(object),num_objects,fields);}
+	{byte_swap_data(object_list, sizeof(T), num_objects, fields);}
 
 
 #if defined(SDL)

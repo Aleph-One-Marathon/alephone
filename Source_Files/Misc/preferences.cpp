@@ -51,6 +51,7 @@ Aug 25, 2000 (Loren Petrich)
 #include <stdlib.h>
 
 #include "cseries.h"
+#include "FileHandler.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>	// for getlogin()
@@ -74,7 +75,6 @@ Aug 25, 2000 (Loren Petrich)
 #include "extensions.h"
 
 #include "tags.h"
-#include "FileHandler.h"
 
 #ifdef env68k
 	#pragma segment dialogs
@@ -193,20 +193,15 @@ static void setup_environment_dialog(DialogPtr dialog, short first_item, void *p
 static void hit_environment_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
 static boolean teardown_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void fill_in_popup_with_filetype(DialogPtr dialog, short item, int type, unsigned long checksum);
-// static void fill_in_popup_with_filetype(DialogPtr dialog, short item, OSType type, unsigned long checksum);
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
 static boolean allocate_extensions_memory(void);
 static void free_extensions_memory(void);
 static void build_extensions_list(void);
 static void search_from_directory(DirectorySpecifier& BaseDir);
-// static void search_from_directory(FSSpec *file);
 static unsigned long find_checksum_and_file_spec_from_dialog(DialogPtr dialog, 
 	short item_hit, OSType type, FSSpec *file);
 static void	rebuild_patchlist(DialogPtr dialog, short item, unsigned long parent_checksum,
 	struct environment_preferences_data *preferences);
-
-// LP: turned into a file-specifier method
-// static unsigned long get_file_modification_date(FSSpec *file);
 
 // LP: fake portable-files stuff
 #ifdef mac
@@ -223,8 +218,6 @@ void initialize_preferences(
 
 	if(!w_open_preferences_file(getcstr(temporary, strFILENAMES, filenamePREFERENCES),
 		_typecode_preferences))
-	// if(!w_open_preferences_file(getpstr(ptemporary, strFILENAMES, filenamePREFERENCES),
-	// 	PREFERENCES_TYPE))
 	{
 		/* Major memory error.. */
 		alert_user(fatalError, strERRORS, outOfMemory, memory_error());
@@ -1247,7 +1240,6 @@ static void default_environment_preferences(
 	get_default_shapes_spec(DefaultFile);
 	
 	prefs->shapes_mod_date = DefaultFile.GetDate();
-	// prefs->shapes_mod_date= get_file_modification_date(&DefaultFile.Spec);
 #ifdef mac
 	obj_copy(prefs->shapes_file, DefaultFile.GetSpec());
 #else
@@ -1257,7 +1249,6 @@ static void default_environment_preferences(
 	get_default_sounds_spec(DefaultFile);
 	
 	prefs->sounds_mod_date = DefaultFile.GetDate();
-	// prefs->sounds_mod_date= get_file_modification_date(&DefaultFile.Spec);
 #ifdef mac
 	obj_copy(prefs->sounds_file, DefaultFile.GetSpec());
 #else
@@ -1368,151 +1359,79 @@ void load_environment_from_preferences(
 	struct environment_preferences_data *prefs= environment_preferences;
 
 #ifdef mac
-
 	File.SetSpec(prefs->map_file);
-	/*
-	error= FSMakeFSSpec(prefs->map_file.vRefNum, prefs->map_file.parID, prefs->map_file.name,
-		(FSSpec *) &file);
-	if(!error)
-	*/
+#else
+	File.SetName(prefs->map_file, _typecode_scenario);
+#endif
 	if (File.Exists())
 	{
 		set_map_file(File);
-		// set_map_file(&file);
 	} else {
 		/* Try to find the checksum */
-		// if(find_wad_file_that_has_checksum(&file,
 		if(find_wad_file_that_has_checksum(File,
 			_typecode_scenario, strPATHS, prefs->map_checksum))
 		{
 			set_map_file(File);
-			// set_map_file(&file);
 		} else {
 			set_to_default_map();
 		}
 	}
 
+#ifdef mac
 	File.SetSpec(prefs->physics_file);
-	/*
-	error= FSMakeFSSpec(prefs->physics_file.vRefNum, prefs->physics_file.parID, prefs->physics_file.name,
-		(FSSpec *) &file);
-	if(!error)
-	*/
+#else
+	File.SetName(prefs->physics_file, _typecode_physics);
+#endif
 	if (File.Exists())
 	{
 		set_physics_file(File);
-		// set_physics_file(&file);
 		import_definition_structures();
 	} else {
-		// if(find_wad_file_that_has_checksum(&file,
 		if(find_wad_file_that_has_checksum(File,
 			_typecode_physics, strPATHS, prefs->physics_checksum))
 		{
 			set_physics_file(File);
-			// set_physics_file(&file);
 			import_definition_structures();
 		} else {
 			/* Didn't find it.  Don't change them.. */
 		}
 	}
 	
+#ifdef mac
 	File.SetSpec(prefs->shapes_file);
-	/*
-	error= FSMakeFSSpec(prefs->shapes_file.vRefNum, prefs->shapes_file.parID, prefs->shapes_file.name,
-		(FSSpec *) &file);
-	if(!error)
-	*/
+#else
+	File.SetName(prefs->shapes_file, _typecode_shapes);
+#endif
 	if (File.Exists())
 	{
 		open_shapes_file(File);
-		// open_shapes_file((FSSpec *) &file);
 	} else {
-		// if(find_file_with_modification_date(&file,
 		if(find_file_with_modification_date(File,
 			_typecode_shapes, strPATHS, prefs->shapes_mod_date))
 		{
 			open_shapes_file(File);
-			// open_shapes_file((FSSpec *) &file);
 		} else {
 			/* What should I do? */
 		}
 	}
 
+#ifdef mac
 	File.SetSpec(prefs->sounds_file);
-	/*
-	error= FSMakeFSSpec(prefs->sounds_file.vRefNum, prefs->sounds_file.parID, prefs->sounds_file.name,
-		(FSSpec *) &file);
-	if(!error)
-	*/
+#else
+	File.SetName(prefs->sounds_file, _typecode_sounds);
+#endif
 	if (File.Exists())
 	{
 		open_sound_file(File);
-		// open_sound_file((FSSpec *) &file);
 	} else {
-		// if(find_file_with_modification_date(&file,
 		if(find_file_with_modification_date(File,
 			_typecode_sounds, strPATHS, prefs->sounds_mod_date))
 		{
 			open_sound_file(File);
-			// open_sound_file((FSSpec *) &file);
 		} else {
 			/* What should I do? */
 		}
 	}
-	
-	return;
-#else
-
-	File.SetName(prefs->map_file, FileSpecifier::C_Map);
-	if (File.Exists())
-		set_map_file(File);
-	else {
-		/* Try to find the checksum */
-		if (find_wad_file_that_has_checksum(File, SCENARIO_FILE_TYPE, strPATHS, prefs->map_checksum))
-			set_map_file(File);
-		else
-			set_to_default_map();
-	}
-
-	File.SetName(prefs->physics_file, FileSpecifier::C_Phys);
-	if (File.Exists()) {
-		set_physics_file(File);
-		import_definition_structures();
-	} else {
-		if (find_wad_file_that_has_checksum(File, PHYSICS_FILE_TYPE, strPATHS, prefs->physics_checksum)) {
-			set_physics_file(File);
-			import_definition_structures();
-		} else {
-			/* Didn't find it.  Don't change them.. */
-		}
-	}
-	
-	File.SetName(prefs->shapes_file, FileSpecifier::C_Shape);
-	if (File.Exists())
-		open_shapes_file(File);
-	else {
-#if 0	//!!
-		if (find_file_with_modification_date(File, SHAPES_FILE_TYPE, strPATHS, prefs->shapes_mod_date))
-			open_shapes_file(File);
-		else {
-			/* What should I do? */
-		}
-#endif
-	}
-
-	File.SetName(prefs->sounds_file, FileSpecifier::C_Sound);
-	if (File.Exists())
-		open_sound_file(File);
-	else {
-#if 0	//!!
-		if (find_file_with_modification_date(File, SOUNDS_FILE_TYPE, strPATHS, prefs->sounds_mod_date))
-			open_sound_file(File);
-		else {
-			/* What should I do? */
-		}
-#endif
-	}
-#endif
 }
 
 static boolean teardown_environment_dialog(

@@ -28,10 +28,8 @@ static SDL_Surface *draw_surface = NULL;	// Target surface for drawing commands
 static SDL_Surface *old_draw_surface = NULL;
 
 struct sdl_font_info {
-	sdl_font_info() : resource(NULL), first_character(0), last_character(0),
+	sdl_font_info() : first_character(0), last_character(0),
 		ascent(0), descent(0), leading(0) {}
-
-	void *resource;			// NULL = font not loaded
 
 	uint8 first_character, last_character;
 	int16 maximum_kerning;
@@ -79,15 +77,15 @@ void initialize_screen_drawing(void)
 	old_draw_surface = NULL;
 
 	// Open font resources
-	FileSpecifier fonts = global_data_dir;
+	FileSpecifier fonts;
+	fonts.SetToGlobalDataDir();
 	fonts.AddPart("Fonts");
-	OpenResFile(fonts);
+	open_res_file(fonts);
 
 	// Init fonts
-	uint32 size;
-	void *res = GetResource('finf', 128, &size);
-	if (res) {
-		SDL_RWops *p = SDL_RWFromMem(res, size);
+	LoadedResource rsrc;
+	if (get_resource('finf', 128, rsrc)) {
+		SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), rsrc.GetLength());
 		assert(p);
 		int count = SDL_ReadBE16(p);
 		if (count > NUMBER_OF_INTERFACE_FONTS)
@@ -104,7 +102,6 @@ void initialize_screen_drawing(void)
 		}
 
 		SDL_FreeRW(p);
-		free(res);
 	}
 }
 
@@ -473,13 +470,12 @@ sdl_font_info *load_font(const TextSpec &spec)
 		return it->second;	// already loaded
 
 	// Load font family resource
-	uint32 fond_size;
-	void *fond = GetResource('FOND', spec.font, &fond_size);
-	if (fond == NULL) {
+	LoadedResource fond;
+	if (!get_resource('FOND', spec.font, fond)) {
 		fprintf(stderr, "Font family resource for font ID %d not found\n", spec.font);
 		return NULL;
 	}
-	SDL_RWops *p = SDL_RWFromMem(fond, fond_size);
+	SDL_RWops *p = SDL_RWFromMem(fond.GetPointer(), fond.GetLength());
 	assert(p);
 
 	// Look for font size in association table
@@ -492,20 +488,19 @@ sdl_font_info *load_font(const TextSpec &spec)
 		if (size == spec.size) {
 
 			// Size found, load bitmap font resource
-			uint32 font_size;
-			void *font = GetResource('NFNT', id, &font_size);
-			if (font == NULL)
-				font = GetResource('FONT', id, &font_size);
-			if (font) {
+			LoadedResource font;
+			if (!get_resource('NFNT', id, font))
+				get_resource('FONT', id, font);
+			if (font.IsLoaded()) {
 
 				// Found, switch stream to font resource
 				SDL_FreeRW(p);
-				p = SDL_RWFromMem(font, font_size);
+				p = SDL_RWFromMem(font.GetPointer(), font.GetLength());
 				assert(p);
+				void *font_ptr = font.GetPointer(true);
 
 				// Read font information
 				info = new sdl_font_info;
-				info->resource = font;
 				SDL_RWseek(p, 2, SEEK_CUR);
 				info->first_character = SDL_ReadBE16(p);
 				info->last_character = SDL_ReadBE16(p);
@@ -526,7 +521,7 @@ sdl_font_info *load_font(const TextSpec &spec)
 
 				// Convert bitmap to pixmap (1 byte/pixel)
 				info->bytes_per_row = bytes_per_row * 8;
-				uint8 *src = (uint8 *)font + SDL_RWtell(p);
+				uint8 *src = (uint8 *)font_ptr + SDL_RWtell(p);
 				uint8 *dst = info->pixmap = (uint8 *)malloc(info->rect_height * info->bytes_per_row);
 				assert(dst);
 				for (int y=0; y<info->rect_height; y++) {
@@ -546,10 +541,10 @@ sdl_font_info *load_font(const TextSpec &spec)
 
 				// Set table pointers
 				int table_size = info->last_character - info->first_character + 3;	// Tables contain 2 additional entries
-				info->location_table = (uint16 *)((uint8 *)font + SDL_RWtell(p));
+				info->location_table = (uint16 *)((uint8 *)font_ptr + SDL_RWtell(p));
 				byte_swap_memory(info->location_table, _2byte, table_size);
 				SDL_RWseek(p, table_size * 2, SEEK_CUR);
-				info->width_table = (int8 *)font + SDL_RWtell(p);
+				info->width_table = (int8 *)font_ptr + SDL_RWtell(p);
 
 				// Add font information to list of known fonts
 				font_list[id_and_size] = info;
@@ -559,7 +554,6 @@ sdl_font_info *load_font(const TextSpec &spec)
 
 	// Free resources
 	SDL_FreeRW(p);
-	free(fond);
 	return info;
 }
 

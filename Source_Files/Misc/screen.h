@@ -113,7 +113,6 @@ void reset_screen();
 // CP addition: added function to return the the game size
 screen_mode_data *get_screen_mode(void);
 
-#if defined(mac) || defined(SDL)
 void initialize_screen(struct screen_mode_data *mode);
 void change_screen_mode(struct screen_mode_data *mode, boolean redraw);
 
@@ -128,7 +127,6 @@ void activate_screen_window(WindowPtr window, EventRecord *event, boolean active
 void update_screen_window(WindowPtr window, EventRecord *event);
 
 void calculate_destination_frame(short size, boolean high_resolution, Rect *frame);
-#endif
 
 // LP addition: a routine for dumping the screen contents into a file.
 // May need to be modified for pass-through video cards like the older 3dfx ones.
