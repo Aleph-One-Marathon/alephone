@@ -3132,12 +3132,12 @@ void s_Play_Sound(script_instruction inst)
 	{
 		case 0:
 			sound_index = int(inst.op1);
-			pitch = int(inst.op2);
+			pitch = inst.op2;
 			break;
 			
 		case 1:
 			sound_index = get_variable(int(inst.op1));
-			pitch = int(inst.op2);
+			pitch = inst.op2;
 			break;
 			
 		case 2:
