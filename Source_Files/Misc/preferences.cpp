@@ -17,6 +17,9 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
+Feb 5, 2002 (Br'fin (Jeremy Parsons)):
+	Default to keyboard and mouse control under Carbon
+	for there are no InputSprockets
 */
 
 /*
@@ -334,7 +337,12 @@ static void default_input_preferences(
 {
 	struct input_preferences_data *preferences=(struct input_preferences_data *)prefs;
 
-	preferences->input_device= _keyboard_or_game_pad;
+#if defined(TARGET_API_MAC_CARBON)
+	// JTP: No ISP, go with default option
+	preferences->input_device= _mouse_yaw_pitch;
+#else
+  	preferences->input_device= _keyboard_or_game_pad;
+#endif
 	set_default_keys(preferences->keycodes, _standard_keyboard_setup);
 	
 	// LP addition: set up defaults for modifiers:

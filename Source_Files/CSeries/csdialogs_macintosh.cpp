@@ -27,6 +27,9 @@
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 	Added accessors for datafields now opaque in Carbon
+
+Feb 3, 2002 (Br'fin (Jeremy Parsons)):
+	For carbon, replaced framing of our own group boxes with a theme seperator line at the top
 */
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -90,6 +93,7 @@ static void frame_useritems(
 	short it;
 	Handle ih;
 	Rect ir;
+	Boolean fillRegion = false;
 
 	good=NewRgn();
 	bad=NewRgn();
@@ -99,6 +103,23 @@ static void frame_useritems(
 	for (i=1; i<=n; i++) {
 		GetDialogItem(dlg,i,&it,&ih,&ir);
 		if ((it&~kItemDisableBit)==kUserDialogItem && !ih) {
+#if defined(TARGET_API_MAC_CARBON)
+		/*
+		 * A user item with no drawing proc installed is assumed to be a group box.
+		 * Use the appearance manager to draw a seperator line at the top of the group
+		 */
+			// And keep it from being painted over
+			RectRgn(outer,&ir);
+			UnionRgn(bad,outer,bad);
+
+			ThemeDrawState curState =
+				IsWindowActive(GetDialogWindow(dlg))?kThemeStateActive:kThemeStateInactive;
+			
+			ir.bottom = ir.top + 2;
+			ir.left += 10;
+			
+			DrawThemeSeparator(&ir, curState);
+#else
 		/*
 		 * A user item with no drawing proc installed is assumed to be a group box.
 		 * Make a 1-pixel-thick frame from its rect and add it to the region to paint.
@@ -108,6 +129,7 @@ static void frame_useritems(
 			InsetRgn(inner,1,1);
 			DiffRgn(outer,inner,outer);
 			UnionRgn(good,outer,good);
+#endif
 		} else {
 		/*
 		 * For all other items, add its rect to the region _not_ to paint.
@@ -120,8 +142,11 @@ static void frame_useritems(
 	DisposeRgn(outer);
 	DiffRgn(good,bad,good);
 	DisposeRgn(bad);
-	RGBForeColor(&third);
-	PaintRgn(good);
+	if(fillRegion)
+	{
+		RGBForeColor(&third);
+		PaintRgn(good);
+	}
 	ForeColor(blackColor);
 	DisposeRgn(good);
 }

@@ -34,6 +34,9 @@
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added accessors for datafields now opaque in Carbon
+
+Feb 5, 2002 (Br'fin (Jeremy Parsons)):
+	Put player chase cam and crosshair dialogs in sheets under Carbon
 */
 
 #include "cseries.h"
@@ -147,8 +150,12 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
+#else
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
+#endif
 #else
 	SelectWindow(Dialog);
 	ShowWindow(Dialog);
@@ -231,7 +238,11 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	
 	// Clean up
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	HideSheetWindow(GetDialogWindow(Dialog));
+#else
 	HideWindow(GetDialogWindow(Dialog));
+#endif
 #else
 	HideWindow(Dialog);
 #endif
@@ -341,8 +352,12 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
+#else
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
+#endif
 #else
 	SelectWindow(Dialog);
 	ShowWindow(Dialog);
@@ -466,7 +481,11 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	
 	// Clean up
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	HideSheetWindow(GetDialogWindow(Dialog));
+#else
 	HideWindow(GetDialogWindow(Dialog));
+#endif
 #else
 	HideWindow(Dialog);
 #endif

@@ -42,6 +42,10 @@ Dec 17, 2000 (Loren Petrich):
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added accessors for datafields now opaque in Carbon
 	Proc pointers are now UPP
+
+Feb 5, 2002 (Br'fin (Jeremy Parsons)):
+	Shifted functions so we weren't trying to get a menu from a needlessly locked control handle
+	Put OpenGL dialogs in sheets under Carbon
 */
 
 #include "cseries.h"
@@ -138,10 +142,10 @@ static bool TextureConfigureDialog(short WhichTexture)
 	SetControlValue(BasedOn_CHdl, WhichTexture+1);
 	
 	// Edit the title
-	HLock(Handle(BasedOn_CHdl));
 #if defined(USE_CARBON_ACCESSORS)
 	MenuHandle BasedOn_MHdl = GetControlPopupMenuHandle(BasedOn_CHdl);
 #else
+	HLock(Handle(BasedOn_CHdl));
 	ControlRecord *PopupPtr = *BasedOn_CHdl;
 	
 	Handle CtrlDataHdl = PopupPtr->contrlData;
@@ -159,15 +163,20 @@ static bool TextureConfigureDialog(short WhichTexture)
 	
 #if !defined(USE_CARBON_ACCESSORS)
 	HUnlock(CtrlDataHdl);
-#endif
 	HUnlock(Handle(BasedOn_CHdl));
+#endif
 	
 	short WhichAltTxtr;	// Which alternative one selected
 	
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	WindowRef frontWindow = ActiveNonFloatingWindow();
+	ShowSheetWindow(GetDialogWindow(Dialog), frontWindow);
+#else
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
+#endif
 #else
 	SelectWindow(Dialog);
 	ShowWindow(Dialog);
@@ -222,7 +231,12 @@ static bool TextureConfigureDialog(short WhichTexture)
 	
 	// Clean up
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	HideSheetWindow(GetDialogWindow(Dialog));
+	SelectWindow(frontWindow);
+#else
 	HideWindow(GetDialogWindow(Dialog));
+#endif
 #else
 	HideWindow(Dialog);
 #endif
@@ -374,8 +388,12 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	
 	// Reveal it
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
+#else
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
+#endif
 #else
 	SelectWindow(Dialog);
 	ShowWindow(Dialog);
@@ -493,7 +511,11 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	
 	// Clean up
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	HideSheetWindow(GetDialogWindow(Dialog));
+#else
 	HideWindow(GetDialogWindow(Dialog));
+#endif
 #else
 	HideWindow(Dialog);
 #endif

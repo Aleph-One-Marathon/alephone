@@ -30,6 +30,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added accessors for datafields now opaque in Carbon
 	Carbon proc routines all allocated as UPP's
 	GetSlotFromGDevice does nothing under Carbon (Slot field now opaque)
+
+Feb 5, 2002 (Br'fin (Jeremy Parsons)):
+	Put screen choosing dialog in a sheet under Carbon
 */
 
 #include <stdlib.h>
@@ -401,7 +404,11 @@ void display_device_dialog(
 	colorsradio=(ControlHandle)ih;
 	SetControlValue((spec->flags&1<<gdDevType) ? colorsradio : graysradio,1);
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	ShowSheetWindow(GetDialogWindow(dlg), ActiveNonFloatingWindow());
+#else
 	ShowWindow(GetDialogWindow(dlg));
+#endif
 #else
 	ShowWindow(dlg);
 #endif
@@ -423,7 +430,11 @@ void display_device_dialog(
 		}
 	}
 #if defined(USE_CARBON_ACCESSORS)
+#if USE_SHEETS
+	HideSheetWindow(GetDialogWindow(dlg));
+#else
 	HideWindow(GetDialogWindow(dlg));
+#endif
 #else
 	HideWindow(dlg);
 #endif

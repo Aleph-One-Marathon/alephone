@@ -65,6 +65,8 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for OpenGL.h, AGL.h
 	Removed QuickDraw3D support from Carbon
 
+Feb 5, 2002 (Br'fin (Jeremy Parsons)):
+	Refined OGL default preferences for Carbon
 */
 
 #include <vector>
@@ -182,14 +184,21 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 		TxtrData.Resolution = 0;		// 1x
 		TxtrData.ColorFormat = 0;		// 32-bit color
 	}
+	
 #ifdef SDL
 	// Reasonable default flags ("static" effect causes massive slowdown, so we turn it off)
 	Data.Flags = OGL_Flag_FlatStatic | OGL_Flag_Fader | OGL_Flag_Map |
 		OGL_Flag_HUD | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models;
+#elif defined(TARGET_API_MAC_CARBON)
+	// Reasonable default OS X flags
+	Data.Flags = OGL_Flag_Map | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models |
+		OGL_Flag_2DGraphics | OGL_Flag_Fader;
 #else
 	// Reasonable default flags
-	Data.Flags = OGL_Flag_Map | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models;
+	Data.Flags = OGL_Flag_Map | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models |
+		OGL_Flag_2DGraphics;
 #endif
+	
 	Data.VoidColor = rgb_black;			// Self-explanatory
 	for (int il=0; il<4; il++)
 		for (int ie=0; ie<2; ie++)

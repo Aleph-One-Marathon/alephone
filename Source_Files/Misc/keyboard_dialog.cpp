@@ -23,6 +23,9 @@
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added accessors for datafields now opaque in Carbon
 	Now use UPP for callback procedures
+
+Feb 6, 2002 (Br'fin (Jeremy Parsons)):
+	Correcting usage of GetDialogKeyboardFocusItem() (already offset by 1)
 */
 
 #include <string.h>
@@ -231,7 +234,7 @@ static pascal Boolean key_setup_filter_proc(
 			if (memcmp(key_map, keyboard_setup_globals.old_key_map, sizeof(KeyMap))) // the user has hit a new key
 			{
 #if defined(USE_CARBON_ACCESSORS)
-				current_edit_field= GetDialogKeyboardFocusItem(dialog) + 1;
+				current_edit_field= GetDialogKeyboardFocusItem(dialog);
 #else
 				current_edit_field= ((DialogRecord *) dialog)->editField + 1;
 #endif
