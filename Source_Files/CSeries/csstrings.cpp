@@ -46,7 +46,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 char temporary[256];
 
 
-short countstr(
+size_t countstr(
 	short resid)
 {
 	return TS_CountStrings(resid);
