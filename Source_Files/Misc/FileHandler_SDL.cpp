@@ -745,4 +745,5 @@ bool FileSpecifier::CopyContents(FileSpecifier &source_name)
 		Delete();
 	return err == 0;
 }
+
 #endif

@@ -4,11 +4,12 @@ noinst_LIBRARIES = libexpat.a
 libexpat_a_SOURCES = asciitab.h hashtable.c hashtable.h iasciitab.h \
   latin1tab.h utf8tab.h xmldef.h xmlparse.c xmlparse.h xmlrole.c xmlrole.h \
   xmltok.c xmltok.h xmltok_impl.h
-EXTRA_libexpat_a_SOURCES = xmltok_impl.c xmltok_ns.c nametab.h
+EXTRA_libexpat_a_SOURCES = xmltok_impl.c xmltok_ns.c
 
 noinst_PROGRAMS = gennmtab
+CLEANFILES = nametab.h
 
-$(srcdir)/nametab.h: gennmtab
+nametab.h: gennmtab
 	./gennmtab >$@
 
-xmltok.o: $(srcdir)/nametab.h
+xmltok.o: nametab.h

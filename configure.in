@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Written in 2000 by Christian Bauer <Christian.Bauer@uni-mainz.de>
 
-AC_INIT(Source_Files/Misc/shell_sdl.cpp)
+AC_INIT(Source_Files/Misc/shell.cpp)
 AC_PREREQ(2.13)
 
 dnl Detect the canonical host and target build environment.
@@ -9,7 +9,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl This defines PACKAGE and VERSION.
-AM_INIT_AUTOMAKE([AlephOne], [0.12.0])
+AM_INIT_AUTOMAKE([AlephOne], [0.13.0])
 AM_CONFIG_HEADER(config.h)
 
 dnl Configure options.
