@@ -1,6 +1,6 @@
 #define NONE (-1)
 
-typedef long fixed;
+typedef int32 fixed;
 
 #define FIXED_FRACTIONAL_BITS 16
 #define INTEGER_TO_FIXED(i) ((fixed)(i)<<FIXED_FRACTIONAL_BITS)
@@ -17,8 +17,8 @@ typedef long fixed;
 #define LONG_MAX 2147483647
 #define LONG_MIN (-LONG_MAX-1)
 
-typedef unsigned short word;
-typedef unsigned char byte;
+typedef uint16 word;
+typedef uint8 byte;
 typedef unsigned char boolean;
 
 #ifndef FALSE

@@ -20,6 +20,14 @@
 #include <Lists.h>
 //#include <ControlDefinitions.h>
 
+// Integer types with specific bit size
+typedef SInt8 int8;
+typedef UInt8 uint8;
+typedef SInt16 int16;
+typedef UInt16 uint16;
+typedef SInt32 int32;
+typedef UInt32 uint32;
+
 #include "cstypes.h"
 #include "csmacros.h"
 #include "cscluts.h"

@@ -1,6 +1,6 @@
-typedef unsigned char pixel8;
-typedef unsigned short pixel16;
-typedef unsigned long pixel32;
+typedef uint8 pixel8;
+typedef uint16 pixel16;
+typedef uint32 pixel32;
 
 #define PIXEL8_MAXIMUM_COLORS 256
 #define PIXEL16_MAXIMUM_COMPONENT 31

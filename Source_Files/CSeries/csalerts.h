@@ -9,7 +9,7 @@ extern void alert_user(
 	short item,
 	OSErr error);
 
-extern void pause(void);
+extern void pause_debug(void);
 extern void vpause(
 	char *message);
 
@@ -26,6 +26,7 @@ extern void _warn(
 	long line,
 	char *what);
 
+#undef assert
 #ifdef DEBUG
 #define assert(what) ((what) ? (void)0 : _assert(__FILE__,__LINE__,"Assertion failed: " #what))
 #define vassert(what,message) ((what) ? (void)0 : _assert(__FILE__,__LINE__,(message)))

@@ -5,9 +5,9 @@
 #ifndef _CSERIES
 #define _CSERIES
 
-#define mac
-
-#ifdef mac
+#if defined(SDL)
+#include "sdl_cseries.h"
+#elif defined(mac)
 #include "macintosh_cseries.h"
 #endif
 

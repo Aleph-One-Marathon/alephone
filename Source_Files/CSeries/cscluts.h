@@ -1,7 +1,7 @@
  typedef struct rgb_color {
-	unsigned short red;
-	unsigned short green;
-	unsigned short blue;
+	uint16 red;
+	uint16 green;
+	uint16 blue;
 } rgb_color;
 
 typedef struct color_table {

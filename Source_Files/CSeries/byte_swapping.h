@@ -23,3 +23,9 @@ extern void byte_swap_memory(
 #define byte_swap_memory(memory,type,elcount) ((void)0)
 #endif
 
+#if defined(SDL)
+#include <SDL/SDL_endian.h>
+#elif defined(mac)
+#define SDL_SwapBE16(x) (x)
+#define SDL_SwapBE32(x) (x)
+#endif

@@ -1,3 +1,4 @@
+#include "cseries.h"
 #include "byte_swapping.h"
 
 #ifdef LITTLE_ENDIAN
@@ -8,12 +9,12 @@ void byte_swap_data(
 	size_t elcount,
 	_bs_field *fields)
 {
-	unsigned char *walk,*lim;
+	uint8 *walk,*lim;
 	int tmp;
 	_bs_field *field;
 	long one;
 
-	walk=data;
+	walk=(uint8 *)data;
 	while (elcount>0) {
 		field=fields;
 		lim=walk+elsize;
@@ -37,7 +38,6 @@ void byte_swap_data(
 				walk+=4;
 				break;
 			default:
-				// Christian Bauer bug fix
 				if (one>0)
 					walk+=one;
 			}
@@ -52,10 +52,10 @@ void byte_swap_memory(
 	_bs_field type,
 	size_t fieldcount)
 {
-	unsigned char *walk;
+	uint8 *walk;
 	int tmp;
 
-	walk=memory;
+	walk=(uint8 *)memory;
 	switch (type) {
 	case _2byte:
 		while (fieldcount>0) {
