@@ -757,7 +757,7 @@
                 <SETTING><NAME>MWCodeGen_PPC_tocdata</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_profiler</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_fpcontract</NAME><VALUE>1</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_PPC_schedule</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_schedule</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_peephole</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_processorspecific</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_altivec</NAME><VALUE>0</VALUE></SETTING>
@@ -790,7 +790,7 @@
                 <SETTING><NAME>MWDisassembler_PPC_shownames</NAME><VALUE>1</VALUE></SETTING>
 
                 <!-- Settings for "PPC Global Optimizer" panel -->
-                <SETTING><NAME>GlobalOptimizer_PPC_optimizationlevel</NAME><VALUE>Level1</VALUE></SETTING>
+                <SETTING><NAME>GlobalOptimizer_PPC_optimizationlevel</NAME><VALUE>Level2</VALUE></SETTING>
                 <SETTING><NAME>GlobalOptimizer_PPC_optfor</NAME><VALUE>Speed</VALUE></SETTING>
 
                 <!-- Settings for "PPC Linker" panel -->
@@ -856,7 +856,7 @@
                 <SETTING><NAME>MWProject_PPC_outfile</NAME><VALUE>Aleph One</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_filecreator</NAME><VALUE>26.A</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_filetype</NAME><VALUE>APPL</VALUE></SETTING>
-                <SETTING><NAME>MWProject_PPC_size</NAME><VALUE>40960</VALUE></SETTING>
+                <SETTING><NAME>MWProject_PPC_size</NAME><VALUE>51200</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_minsize</NAME><VALUE>8192</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_stacksize</NAME><VALUE>256</VALUE></SETTING>
                 <SETTING><NAME>MWProject_PPC_flags</NAME><VALUE>22720</VALUE></SETTING>
