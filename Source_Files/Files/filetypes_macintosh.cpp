@@ -89,7 +89,7 @@ static file_type_to_a1_typecode_rec additional_typecodes[] =
         { 'pat2', _typecode_patch },
 
         // Additional mappings in case A1 wants its own filetypes at some point
-        { 'sceA', _typecode_savegame },
+        { 'sceA', _typecode_scenario },
         { 'sgaA', _typecode_savegame },
         { 'filA', _typecode_film },
         { 'phyA', _typecode_physics },
