@@ -512,9 +512,9 @@ bool FileSpecifier::Exchange(FileSpecifier &other)
 	err = 0;
 	if (rename(GetPath(), tmp.GetPath()) < 0)
 		err = errno;
-	else if (rename(other.GetPath(), GetPath()) < 0)
-		err = errno;
-	else if (rename(tmp.GetPath(), other.GetPath()) < 0)
+	else
+		rename(other.GetPath(), GetPath());
+	if (rename(tmp.GetPath(), other.GetPath()) < 0)
 		err = errno;
 	return err == 0;
 }

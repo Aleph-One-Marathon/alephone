@@ -42,8 +42,9 @@ alephone_SOURCES = \
   placement.cpp platforms.cpp player.cpp preferences.cpp preprocess_map_sdl.cpp \
   projectiles.cpp render.cpp resource_manager.cpp scenery.cpp \
   scottish_textures.cpp screen_drawing.cpp screen_sdl.cpp sdl_dialogs.cpp \
-  sdl_fonts.cpp sdl_widgets.cpp shapes.cpp shell.cpp textures.cpp vbl.cpp \
-  vbl_sdl.cpp wad.cpp wad_sdl.cpp wad_prefs.cpp weapons.cpp world.cpp
+  sdl_fonts.cpp sdl_widgets.cpp shapes.cpp shell.cpp shell_misc.cpp \
+  textures.cpp vbl.cpp vbl_sdl.cpp wad.cpp wad_sdl.cpp wad_prefs.cpp \
+  weapons.cpp world.cpp
 
 alephone_LDADD = ../CSeries/libcseries.a ../Expat/libexpat.a \
   ../Network/libnetwork.a ../Pfhortran/libpfhortran.a @SYS_GL_LIBS@

@@ -44,8 +44,8 @@ extern bool CheatsActive;
 
 // Prototypes
 static void main_event_loop(void);
-static int process_keyword_key(char key);
-static void handle_keyword(int type_of_cheat);
+extern int process_keyword_key(char key);
+extern void handle_keyword(int type_of_cheat);
 
 // Include platform-specific files
 #if defined(mac)

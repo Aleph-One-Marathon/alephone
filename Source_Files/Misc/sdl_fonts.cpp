@@ -57,7 +57,7 @@ sdl_font_info *load_font(const TextSpec &spec)
 	// Look for ID/size in list of loaded fonts
 	id_and_size_t id_and_size(spec.font, spec.size);
 	font_list_t::const_iterator it = font_list.find(id_and_size);
-	if (*it != *(font_list.end()) ) {	// already loaded
+	if (it != font_list.end()) {	// already loaded
 		info = (*it).second;
 		info->ref_count++;
 		return info;

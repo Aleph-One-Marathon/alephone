@@ -26,15 +26,7 @@
 #include "interface_menus.h"
 #include "items.h"
 
-static void main_event_loop(void);
-
-extern bool CheatsActive;
-
-extern int process_keyword_key(char key);
-//extern short get_item_kind(short item_id);
-
 void global_idle_proc(void);
-void handle_keyword(int type_of_cheat);
 void free_and_unlock_memory(void);
 
 #endif

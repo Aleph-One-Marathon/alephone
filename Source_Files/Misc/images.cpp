@@ -68,7 +68,8 @@ private:
 	wad_header wad_hdr;
 };
 
-// M2/Win picture structures
+#ifdef mac
+// M2/Win picture structures (do not use in portable code)
 typedef struct pict_head {
 	screen_rectangle bounds;	/* screen_rectangle from screen_drawing.h */
 	short depth;				/* 8 or 16 */
@@ -81,6 +82,7 @@ typedef struct clut_record {
 	short id;
 	rgb_color colors[256];		/* rgb_color from cscluts.h */
 } clut_record;
+#endif
 
 // Global variables
 static image_file_t ImagesFile;

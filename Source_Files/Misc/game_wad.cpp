@@ -1222,8 +1222,8 @@ bool save_game_file(FileSpecifier& File)
 	TempFile.AddPart("savetemp.dat");
 #endif
 	
-	/* Fill in the default wad header */
-	fill_default_wad_header(TempFile, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
+	/* Fill in the default wad header (we are using File instead of TempFile to get the name right in the header) */
+	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
 		
 	/* Assume that we confirmed on save as... */
 	if (create_wadfile(TempFile,_typecode_savegame))
@@ -1279,8 +1279,8 @@ bool save_game_file(FileSpecifier& File)
 				create_wadfile(File,_typecode_savegame);
 			
 			TempFile.Exchange(File);
-			TempFile.Delete();
 			err = TempFile.GetError();
+			TempFile.Delete(); // it's not an error if this fails
 		}
 	}
 	
