@@ -27,6 +27,7 @@
 	for the walls and the sprites
 */
 
+#ifdef HAVE_OPENGL
 
 #include "OGL_Texture_Def.h"
 #include "XML_ElementParser.h"
@@ -68,5 +69,7 @@ void OGL_UnloadTextures(short Collection);
 // XML support:
 XML_ElementParser *TextureOptions_GetParser();
 XML_ElementParser *TO_Clear_GetParser();
+
+#endif // def HAVE_OPENGL
 
 #endif
