@@ -44,10 +44,12 @@
 #include "Logging.h"
 #include "WindowedNthElementFinder.h"
 #include "CircularByteBuffer.h"
+#include "XML_ElementParser.h"
 #include "SDL_timer.h" // SDL_Delay()
 
 #include <vector>
 #include <map>
+#include <algorithm> // std::min()
 
 // Synchronization:
 // hub_received_network_packet() is not reentrant
@@ -112,7 +114,6 @@ enum {
         kDefaultInGameWindowSize = TICKS_PER_SECOND * 5,
 	kDefaultPregameNthElement = 2,
 	kDefaultInGameNthElement = kDefaultInGameWindowSize / 2,
-//        kAverageTickArrivalOffsetMaximumWindowSize = kInGameWindowSize,
         kDefaultPregameTicksBeforeNetDeath = 20 * TICKS_PER_SECOND,
         kDefaultInGameTicksBeforeNetDeath = 3 * TICKS_PER_SECOND,
 	kDefaultSendPeriod = 1,
@@ -164,8 +165,6 @@ static TickBasedActionQueueCollection	sFlagsQueues;
 typedef ConcreteTickBasedCircularQueue<int> WindowedAverageQueue;
 
 struct NetworkPlayer_hub {
-//        NetworkPlayer_hub() {} // : mAverageTickArrivalOffsetQueue(kAverageTickArrivalOffsetMaximumWindowSize) {}
-        
         NetAddrBlock	mAddress;		// network address of player
         bool		mConnected;		// is player still connected?
         int32		mLastNetworkTickHeard;	// our sNetworkTicker last time we got a packet from them
@@ -174,20 +173,6 @@ struct NetworkPlayer_hub {
 	WindowedNthElementFinder<int32>	mNthElementFinder;
 	// We can "hear" ticks that we can't enqueue - this is useful for timing data.
 	int32		mSmallestUnheardTick;
-
-        // These three are used to implement a windowed average.  Although they're
-        // TickBasedActionQueues, the ticks are not synchronized with game-ticks.
-        // There's an element for each packet we received from this player (up to
-        // mAverageTickArrivalOffsetWindowSize, at which point older ones are discarded)
-        // The value of each element is the difference (positive or negative) between the
-        // packet's highest-numbered tick and our reference spoke's highest-numbered tick.
-        // (Currently there's expected to be a player on the hub, so the reference spoke
-        // is the one corresponding to the local player.)  So, the average can be used to
-        // tell us if this player is delivering data consistently early or consistently late.
-        // If he is, we can send him a message telling him to adjust appropriately.
-//        WindowedAverageQueue	mAverageTickArrivalOffsetQueue;
-//        int32		mAverageTickArrivalOffsetRunningSum;
-//        int		mAverageTickArrivalOffsetWindowSize;
 
         // When we decide a timing adjustment is needed, we include the timing adjustment
         // request in every packet outbound to the player until we're sure he's seen it.
@@ -236,11 +221,17 @@ static AddressToPlayerIndexType	sAddressToPlayerIndex;
 
 typedef std::vector<NetworkPlayer_hub>	NetworkPlayerCollection;
 static NetworkPlayerCollection	sNetworkPlayers;
+
+// Local player index is used to decide how to send a packet; ref is used for timing.
 static size_t			sLocalPlayerIndex;
+static size_t			sReferencePlayerIndex;
 
 static DDPFramePtr	sOutgoingFrame = NULL;
+
+#ifndef A1_NETWORK_STANDALONE_HUB
 static DDPPacketBuffer	sLocalOutgoingBuffer;
 static bool		sNeedToSendLocalOutgoingBuffer = false;
+#endif
 
 
 struct HubLossyByteStreamChunkDescriptor
@@ -305,16 +296,21 @@ operator <(const NetAddrBlock& a, const NetAddrBlock& b)
 }
 
 
-
 static OSErr
 send_frame_to_local_spoke(DDPFramePtr frame, NetAddrBlock *address, short protocolType, short port)
 {
+#ifndef A1_NETWORK_STANDALONE_HUB
         sLocalOutgoingBuffer.datagramSize = frame->data_size;
         memcpy(sLocalOutgoingBuffer.datagramData, frame->data, frame->data_size);
         sLocalOutgoingBuffer.protocolType = protocolType;
         // We ignore the 'source address' because the spoke does too.
         sNeedToSendLocalOutgoingBuffer = true;
         return noErr;
+#else
+	// Standalone hub should never call this routine
+	assert(false);
+	return noErr;
+#endif // A1_NETWORK_STANDALONE_HUB
 }
 
 
@@ -322,10 +318,13 @@ send_frame_to_local_spoke(DDPFramePtr frame, NetAddrBlock *address, short protoc
 static inline void
 check_send_packet_to_spoke()
 {
+	// Routine exists but has no implementation on standalone hub.
+#ifndef A1_NETWORK_STANDALONE_HUB
         if(sNeedToSendLocalOutgoingBuffer)
                 spoke_received_network_packet(&sLocalOutgoingBuffer);
 
         sNeedToSendLocalOutgoingBuffer = false;
+#endif // A1_NETWORK_STANDALONE_HUB
 }
 
 
@@ -343,6 +342,12 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
 
         assert(inLocalPlayerIndex < inNumPlayers);
         sLocalPlayerIndex = inLocalPlayerIndex;
+	sReferencePlayerIndex = sLocalPlayerIndex;
+
+#ifdef A1_NETWORK_STANDALONE_HUB
+	// There is no local player on standalone hub.
+	sLocalPlayerIndex = (size_t)NONE;
+#endif
 
 	sSmallestPostGameTick = INT32_MAX;
         sSmallestRealGameTick = inStartingTick;
@@ -351,7 +356,9 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
         if(sOutgoingFrame == NULL)
                 sOutgoingFrame = NetDDPNewFrame();
 
+#ifndef A1_NETWORK_STANDALONE_HUB
         sNeedToSendLocalOutgoingBuffer = false;
+#endif
 
         sNetworkPlayers.clear();
         sFlagsQueues.clear();
@@ -385,9 +392,6 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
                 thePlayer.mLastNetworkTickHeard = 0;
                 thePlayer.mSmallestUnacknowledgedTick = theFirstTick;
 		thePlayer.mSmallestUnheardTick = theFirstTick;
-//                thePlayer.mAverageTickArrivalOffsetQueue.reset(theFirstTick);
-//                thePlayer.mAverageTickArrivalOffsetRunningSum = 0;
-//                thePlayer.mAverageTickArrivalOffsetWindowSize = kPregameWindowSize;
 		thePlayer.mNthElementFinder.reset(sHubPreferences.mPregameWindowSize);
                 thePlayer.mOutstandingTimingAdjustment = 0;
                 thePlayer.mTimingAdjustmentTick = 0;
@@ -591,7 +595,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
         // Enqueue flags that are new to us
         int	theUsefulActionFlagsCount = theActionFlagsCount - theRedundantActionFlagsCount;
         int	theRemainingQueueSpace = theQueue.availableCapacity();
-        int	theEnqueueableFlagsCount = min(theUsefulActionFlagsCount, theRemainingQueueSpace);
+        int	theEnqueueableFlagsCount = std::min(theUsefulActionFlagsCount, theRemainingQueueSpace);
         
         for(int i = 0; i < theEnqueueableFlagsCount; i++)
         {
@@ -602,10 +606,10 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 
 	// Update timing data
 	NetworkPlayer_hub& thePlayer = getNetworkPlayer(inSenderIndex);
-	NetworkPlayer_hub& theLocalPlayer = getNetworkPlayer(sLocalPlayerIndex);
+	NetworkPlayer_hub& theReferencePlayer = getNetworkPlayer(sReferencePlayerIndex);
 	while(thePlayer.mSmallestUnheardTick < theStartTick + theActionFlagsCount)
 	{
-		int32 theReferenceTick = theLocalPlayer.mSmallestUnheardTick;
+		int32 theReferenceTick = theReferencePlayer.mSmallestUnheardTick;
 		int32 theArrivalOffset = thePlayer.mSmallestUnheardTick - theReferenceTick;
 		logDump2("player %d's arrivalOffset is %d", inSenderIndex, theArrivalOffset);
 		thePlayer.mNthElementFinder.insert(theArrivalOffset);
@@ -614,15 +618,10 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 
         // Make the pregame -> ingame transition
         if(thePlayer.mSmallestUnheardTick >= sSmallestRealGameTick && thePlayer.mNthElementFinder.window_size() != sHubPreferences.mInGameWindowSize)
-		//                thePlayer.mAverageTickArrivalOffsetWindowSize = kInGameWindowSize;
 		thePlayer.mNthElementFinder.reset(sHubPreferences.mInGameWindowSize);
 
 	if(thePlayer.mOutstandingTimingAdjustment == 0 && thePlayer.mNthElementFinder.window_full())
 	{
-		/*                        float theAverageOffset = ((float)thePlayer.mAverageTickArrivalOffsetRunningSum) / ((float)thePlayer.mAverageTickArrivalOffsetWindowSize);
-		theAverageOffset = floor(theAverageOffset);
-		thePlayer.mOutstandingTimingAdjustment = static_cast<int>(theAverageOffset);
-		*/
 		thePlayer.mOutstandingTimingAdjustment = thePlayer.mNthElementFinder.nth_smallest_element((thePlayer.mSmallestUnheardTick >= sSmallestRealGameTick) ? sHubPreferences.mInGameNthElement : sHubPreferences.mPregameNthElement);
 		if(thePlayer.mOutstandingTimingAdjustment != 0)
 		{
@@ -687,8 +686,6 @@ player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowled
         {
                 thePlayer.mOutstandingTimingAdjustment = 0;
 		thePlayer.mNthElementFinder.reset();
-//                thePlayer.mAverageTickArrivalOffsetQueue.reset(thePlayer.mAverageTickArrivalOffsetQueue.getWriteTick());
-//                thePlayer.mAverageTickArrivalOffsetRunningSum = 0;
         }
 
 	hub_check_for_completion();
@@ -727,20 +724,10 @@ player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTi
                         sPlayerDataDisposition[i] = sConnectedPlayersBitmask;
                 }
 
-/*                while(thePlayer.mAverageTickArrivalOffsetQueue.size() >= thePlayer.mAverageTickArrivalOffsetWindowSize)
-                {
-                        thePlayer.mAverageTickArrivalOffsetRunningSum -= thePlayer.mAverageTickArrivalOffsetQueue.peek(thePlayer.mAverageTickArrivalOffsetQueue.getReadTick());
-                        thePlayer.mAverageTickArrivalOffsetQueue.dequeue();
-                }
-                thePlayer.mAverageTickArrivalOffsetRunningSum += theArrivalOffset;
-                thePlayer.mAverageTickArrivalOffsetQueue.enqueue(theArrivalOffset);
-*/
-                // If player's data is not arriving along with our reference player's data,
-                // ask player to adjust his timing
-//                if(thePlayer.mOutstandingTimingAdjustment == 0 && thePlayer.mAverageTickArrivalOffsetQueue.size() == thePlayer.mAverageTickArrivalOffsetWindowSize)
         } // loop over ticks with new data
 
         return shouldSend;
+
 } // player_provided_flags_from_tick_to_tick()
 
 
@@ -978,7 +965,7 @@ send_packets()
                                 // Action_flags!!
                                 // First, preprocess the players to figure out at what tick they'll each stop
                                 // contributing
-                                vector<int32> theSmallestTickWeWontSend;
+				std::vector<int32> theSmallestTickWeWontSend;
                                 theSmallestTickWeWontSend.resize(sNetworkPlayers.size());
                                 for(size_t j = 0; j < sNetworkPlayers.size(); j++)
                                 {
