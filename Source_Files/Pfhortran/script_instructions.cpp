@@ -157,6 +157,7 @@ bool s_camera_Control;
 short old_size = _640_320_HUD;
 void (*instruction_lookup[NUMBER_OF_INSTRUCTIONS])(script_instruction);
 
+
 /* function prototypes */
 
 void s_Camera_Move(script_instruction inst);
@@ -270,6 +271,7 @@ void s_Monster_Get_Action(script_instruction inst);
 void s_Monster_Get_Mode(script_instruction inst);
 void s_Monster_Get_Vitality(script_instruction inst);
 void s_Monster_Set_Vitality(script_instruction inst);
+void s_Not(script_instruction inst);
 
 /*-------------------------------------------*/
 
@@ -409,6 +411,7 @@ void init_instructions(void)
 	instruction_lookup[Monster_Get_Mode] = s_Monster_Get_Mode;
 	instruction_lookup[Monster_Get_Vitality] = s_Monster_Get_Vitality;
 	instruction_lookup[Monster_Set_Vitality] = s_Monster_Set_Vitality;
+	instruction_lookup[Not] = s_Not;
 }
 
 // Suppressed for MSVC compatibility
@@ -3021,109 +3024,103 @@ void s_Get_Random(script_instruction inst)
 void s_Get_Monster_Poly(script_instruction inst)
 {
 	struct monster_data *theMonster;
-	short monsterIndex;
+	short monster_index;
 	short poly;
 	
 	if (inst.mode != 4)
 		return;
 	
-	monsterIndex = get_variable(int(inst.op1));
+	monster_index = get_variable(int(inst.op1));
 	
-	theMonster = GetMemberWithBounds(monsters,monsterIndex,MAXIMUM_MONSTERS_PER_MAP);
+	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	
 	//poly = theMonster->Poly
 }
 
 void s_Set_Platform_State(script_instruction inst)
 {
-	float temp,temp2;
+	float platform_index,state;
 	
-	temp = inst.op1;
-	temp2 = inst.op2;
+	platform_index = inst.op1;
+	state = inst.op2;
 	
 	if (inst.mode != 0)
 	{
 		switch(inst.mode)
 		{
 			case 1:
-				temp = get_variable(int(inst.op1));
-				temp2 = int(inst.op2);
+				platform_index = get_variable(int(inst.op1));
+				state = int(inst.op2);
 				break;
 				
 			case 2:
-				temp = int(inst.op1);
-				temp2 = get_variable(int(inst.op2));
+				platform_index = int(inst.op1);
+				state = get_variable(int(inst.op2));
 				break;
 				
 			case 3:
-				temp = get_variable(int(inst.op1));
-				temp2 = get_variable(int(inst.op2));
+				platform_index = get_variable(int(inst.op1));
+				state = get_variable(int(inst.op2));
 				break;
 			
 			default:
 				return;
 		}
 		
-	try_and_change_platform_state(int16(temp), temp2 != 0);
-	assume_correct_switch_position(_panel_is_platform_switch, int16(temp), temp2 != 0);
+	try_and_change_platform_state(short(platform_index), state != 0);
+	assume_correct_switch_position(_panel_is_platform_switch, short(platform_index), state != 0);
 	}	
 }
 
 void s_Get_Platform_State(script_instruction inst)
 {
-	float temp,temp2;
-	struct platform_data *platform;
+	float platform_index;
 	
-	temp = inst.op1;
-	temp2 = inst.op2;
+	platform_index = inst.op1;
 
 	if (inst.mode != 0)
 	{
 		switch(inst.mode)
 		{
 			case 2:
-				temp = int(inst.op1);
-				temp2 = get_variable(int(inst.op2));
+				platform_index = int(inst.op1);
 				break;
 				
 			case 3:
-				temp = get_variable(int(inst.op1));
-				temp2 = get_variable(int(inst.op2));
+				platform_index = get_variable(int(inst.op1));
 				break;
 			
 			default:
 				return;
 		}
 		
-		platform = get_platform_data(int(temp));
-		set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(platform) ? 1 : 0);		
-	}
+		set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(get_platform_data(int(platform_index))) ? 1 : 0);	}
 }
 
 void s_Play_Sound(script_instruction inst)
 {
-	float temp,temp2;
+	float sound_index, pitch;
 	
-	temp = inst.op1;
-	temp2 = inst.op2;
+	sound_index = inst.op1;
+	pitch = inst.op2;
 	
 	if (inst.mode != 0)
 	{
 		switch(inst.mode)
 		{
 			case 1:
-				temp = get_variable(int(inst.op1));
-				temp2 = int(inst.op2);
+				sound_index = get_variable(int(inst.op1));
+				pitch = int(inst.op2);
 				break;
 				
 			case 2:
-				temp = int(inst.op1);
-				temp2 = get_variable(int(inst.op2));
+				sound_index = int(inst.op1);
+				pitch = get_variable(int(inst.op2));
 				break;
 				
 			case 3:
-				temp = get_variable(int(inst.op1));
-				temp2 = get_variable(int(inst.op2));
+				sound_index = get_variable(int(inst.op1));
+				pitch = get_variable(int(inst.op2));
 				break;
 			
 			default:
@@ -3133,66 +3130,61 @@ void s_Play_Sound(script_instruction inst)
 	
 	// Purely local sound: args are which sound index
 	// and which pitch multiplier (1.0 = no pitch change)
-	_play_sound(short(temp), NULL, NONE, _fixed(FIXED_ONE*temp2));
+	_play_sound(short(sound_index), NULL, NONE, _fixed(FIXED_ONE*pitch));
 }
 
 void s_Set_Light_State(script_instruction inst)
 {
-	float temp,temp2;
+	float light_index, state;
 	
-	temp = inst.op1;
-	temp2 = inst.op2;
+	light_index = inst.op1;
+	state = inst.op2;
 	
 	if (inst.mode != 0)
 	{
 		switch(inst.mode)
 		{
 			case 1:
-				temp = get_variable(int(inst.op1));
+				light_index = get_variable(int(inst.op1));
 				break;
 				
 			case 2:
-				temp2 = get_variable(int(inst.op2));
+				light_index = get_variable(int(inst.op2));
 				break;
 				
 			case 3:
-				temp = get_variable(int(inst.op1));
-				temp2 = get_variable(int(inst.op2));
+				light_index = get_variable(int(inst.op1));
+				state = get_variable(int(inst.op2));
 				break;
 			
 			default:
 				return;
 		}
 		
-	set_light_status(int16(temp), temp2 != 0);
+	set_light_status(int16(light_index), state != 0);
 	}	
 }
 
 void s_Get_Light_State(script_instruction inst)
 {
-	float temp, temp2;
-	
-	temp = inst.op1;
-	temp2 = inst.op2;
+	float light_index;
 
 	if (inst.mode != 0)
 	{
 		switch(inst.mode)
 		{
 			case 2:
-				temp = int(inst.op1);
-				temp2 = get_variable(int(inst.op2));
+				light_index = int(inst.op1);
 				break;
 			
 			case 3:
-				temp = get_variable(int(inst.op1));
-				temp2 = get_variable(int(inst.op2));
+				light_index = get_variable(int(inst.op1));
 				break;
 			
 			default:
 				return;
 		}
-		set_variable(int(inst.op2), get_light_status(int(temp)) ? 1 : 0);
+		set_variable(int(inst.op2), get_light_status(int(light_index)) ? 1 : 0);
 	}
 }
 
@@ -3449,7 +3441,7 @@ void s_Monster_Get_Mode(script_instruction inst)
 	
 	if (SLOT_IS_USED(theMonster))
 	{
-		set_variable(int(inst.op2), theMonster->mode);
+		set_variable(int(inst.op2), int(theMonster->mode));
 	}
 }
 
@@ -3518,4 +3510,12 @@ void s_Monster_Set_Vitality(script_instruction inst)
 	{
 		theMonster->vitality = vitality;
 	}
+}
+
+void s_Not(script_instruction inst)
+{
+	if (inst.mode!=1) return
+	
+	set_variable(int(get_variable(inst.op1)), !(int(get_variable(inst.op1))));
+	
 }

@@ -104,6 +104,8 @@
 {"Monster_Get_Mode",Monster_Get_Mode},
 {"Monster_Get_Vitality",Monster_Get_Vitality},
 {"Monster_Set_Vitality",Monster_Set_Vitality},
+{"Not",Not},
+{"!",Not},
 {"TRUE", 0x1},
 {"FALSE", 0x0},
 {"knife", 0x0},
