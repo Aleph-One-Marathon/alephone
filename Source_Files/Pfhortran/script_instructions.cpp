@@ -116,7 +116,7 @@ extern struct monster_data *get_monster_data(short monster_index);
 static vector<short> IntersectedObjects;
 //extern struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES];
 //trying to access the monster type list
-
+extern bool MotionSensorActive;
 
 /*extern'd references to the script code (to avoid circular includes) */
 extern  void free_script(void);
@@ -282,6 +282,13 @@ void s_Set_Platform_Monster_Control(script_instruction inst);
 void s_Get_Platform_Monster_Control(script_instruction inst);
 void s_Get_Platform_Speed(script_instruction inst);
 void s_Set_Platform_Speed(script_instruction inst);
+void s_Get_Platform_Height(script_instruction inst);
+void s_Timer_Start(script_instruction inst);
+void s_Timer_Get(script_instruction inst);
+void s_Timer_Stop(script_instruction inst);
+void s_Display_Message(script_instruction inst);
+void s_Get_Motion_Sensor_State(script_instruction inst);
+
 
 /*-------------------------------------------*/
 
@@ -430,6 +437,10 @@ void init_instructions(void)
 	instruction_lookup[Get_Platform_Speed] = s_Get_Platform_Speed;
 	instruction_lookup[Set_Platform_Speed] = s_Set_Platform_Speed;
  	instruction_lookup[Get_Monster_Poly] = s_Get_Monster_Poly;
+ 	instruction_lookup[Timer_Start] = s_Timer_Start;
+ 	instruction_lookup[Timer_Get] = s_Timer_Get;
+ 	instruction_lookup[Timer_Stop] = s_Timer_Stop;
+ 	instruction_lookup[Display_Message] = s_Display_Message;
  }
 
 // Suppressed for MSVC compatibility
@@ -3840,4 +3851,132 @@ void s_Set_Platform_Speed(script_instruction inst)
 				platform->speed = speed;
 		}
 	}
+}
+
+void s_Get_Platform_Height(script_instruction inst)
+{
+	int polygon_index;
+	
+	switch(inst.mode)
+	{	
+		case 6:
+			polygon_index = inst.op1;
+			break;
+	
+		case 7:
+			polygon_index = get_variable(inst.op1);
+			break;
+			
+		default:
+			return;
+	}
+	
+	struct polygon_data *polygon = get_polygon_data(polygon_index);
+	if (polygon && polygon->type == _polygon_is_platform)
+	{
+		struct platform_data *platform = get_platform_data(polygon->permutation);
+		if (platform)
+		{
+			set_variable(inst.op2, platform->floor_height);
+			set_variable(inst.op2, platform->ceiling_height);
+		}
+	}
+}
+
+void s_Timer_Start(script_instruction inst)
+{
+	if (inst.mode != 0) return;
+	pfhortran_timer = (long)get_heartbeat_count;
+}
+
+void s_Timer_Get(script_instruction inst)
+{
+	if (inst.mode != 1) return;
+	set_variable(inst.op1, (long)get_heartbeat_count - pfhortran_timer);
+}
+
+void s_Timer_Stop(script_instruction inst)
+{
+	if (inst.mode != 0) return;
+	pfhortran_timer = 0;
+}
+
+void s_Display_Message(script_instruction inst)
+{
+	short stringset, string;
+	
+	switch(inst.mode)
+	{
+		case 0:
+			stringset = inst.op1;
+			string = inst.op2;
+			break;
+	
+		case 1:
+			stringset = get_variable(inst.op1);
+			string = inst.op2;
+			break;
+			
+		case 2:
+			stringset = inst.op1;
+			string = get_variable(inst.op2);
+			break;
+	
+		case 3:
+			stringset = get_variable(inst.op1);
+			string = get_variable(inst.op2);
+			break;
+			
+		default:
+			return;
+	}
+	
+	char text;
+	getcstr(&text, stringset, string);
+	
+	screen_printf("%c",text);
+}
+
+void s_Get_Motion_Sensor_State(script_instruction inst)
+{
+	int value;
+
+	switch(inst.mode)
+	{			
+		case 2:
+			value = inst.op1;
+			break;
+	
+		case 3:
+			value = get_variable(inst.op1);
+			break;
+			
+		default:
+			return;
+	}
+	
+	set_variable(int(inst.op1), MotionSensorActive);
+}
+
+void s_Set_Motion_Sensor_State(script_instruction inst)
+{
+	int value;
+	
+	switch(inst.mode)
+	{
+		case 0:
+			value = int(inst.op1);
+			break;
+			
+		case 1:
+			value = get_variable(int(inst.op1));
+			break;
+			
+		default:
+			return;
+		
+	}
+	
+	MotionSensorActive = value;
+
 }

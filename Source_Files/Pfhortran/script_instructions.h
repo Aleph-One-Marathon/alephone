@@ -48,6 +48,8 @@
 static ActionQueues* sPfhortranActionQueues = NULL;
 ActionQueues* GetPfhortranActionQueues(void);
 
+static long pfhortran_timer = 0;
+
 struct path_point
 {
 	world_point3d position;
@@ -300,7 +302,15 @@ enum /* instruction defs */
 	
 	Set_Platform_Speed = 0x69,
 
-	Get_Monster_Poly = 0x70,
+	Get_Monster_Poly = 0x6A,
+	
+	Timer_Start = 0x6B,
+	
+	Timer_Get = 0x6C,
+	
+	Timer_Stop = 0x6D,
+	
+	Display_Message = 0x6E,
 	
 	NUMBER_OF_INSTRUCTIONS
 };
