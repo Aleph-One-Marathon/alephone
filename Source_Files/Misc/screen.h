@@ -141,4 +141,10 @@ bool SetTunnelVision(bool TunnelVisionOn);
 // Request for drawing the HUD
 void RequestDrawingHUD();
 
+// Corresponding with-and-without-HUD sizes for some view-size index,
+// for the convenience of Pfhortran scripting;
+// the purpose is to get a similar size of display with the HUD status possibly changed
+short SizeWithHUD(short _size);
+short SizeWithoutHUD(short _size);
+
 #endif
