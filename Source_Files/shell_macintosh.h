@@ -669,7 +669,8 @@ void handle_game_key(
 			
 			case 0x1b:
 				// "Escape" posts a "quit" event
-				PostLocalEvent(LocalEvent_Quit);
+				do_menu_item_command(mGame,iQuitGame,false);
+				// PostLocalEvent(LocalEvent_Quit);
 				break;
 						
 			default: // well, let's check the function keys then, using the keycodes.
@@ -1099,10 +1100,12 @@ static void initialize_system_information(
 
 	/* System Version */
 	system_information->has_seven= false;
+	system_information->has_ten= false;
 	err= Gestalt(gestaltSystemVersion, &system_version);
 	if (!err)
 	{
-		if(system_version>=0x0700) system_information->has_seven= true;;
+		if(system_version>=0x0700) system_information->has_seven= true;
+		if(system_version>=0x1000) system_information->has_ten= true;
 	}
 
 	system_information->machine_has_network_memory= (FreeMem()>5000000) ? true : false;
@@ -1176,6 +1179,7 @@ static void initialize_system_information(
 			}
 		}
 	}
+		
 	//Are we in Classic?
 	err= Gestalt(gestaltMacOSCompatibilityBoxAttr, &classic_mode);
 	if(!err && (classic_mode & 1<<gestaltMacOSCompatibilityBoxPresent))
