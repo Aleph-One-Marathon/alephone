@@ -37,8 +37,9 @@ void byte_swap_data(
 				walk+=4;
 				break;
 			default:
+				// Christian Bauer bug fix
 				if (one>0)
-					tmp+=one;
+					walk+=one;
 			}
 		}
 		walk=lim;
