@@ -1912,6 +1912,15 @@ void FlushGrafPortRect(const CGrafPtr port, const Rect &destination)
 #endif
 }
 
+static void memcpy_blit_image(char * __restrict src, char * __restrict dst,const int width, int height,const int srcRowBytes,const int dstRowBytes,const int pelSize)
+{
+    while (height--) {
+	memcpy(dst,src,width*pelSize);
+	src += srcRowBytes;
+	dst += dstRowBytes;
+    }
+}
+
 // LP changes: moved sizing and resolution outside of this function,
 // because they can be very variable
 /* pixels are already locked, etc. */
@@ -1919,6 +1928,21 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 {
 	if (hi_rez)
 	{
+#if defined(__APPLE__) && defined(__MACH__)
+	    PixMapHandle screen_pixels = (*world_device)->gdPMap;
+	    PixMapHandle world_pixelspm = GetGWorldPixMap(world_pixels);
+	    Rect newDst, screenRect;
+	    GetPortBounds(GetWindowPort(screen_window), &screenRect);
+	    newDst.top = destination.top-screenRect.top;
+	    newDst.left = destination.left- screenRect.left;
+	    newDst.bottom = newDst.top + RECTANGLE_HEIGHT(&source);
+	    newDst.right = newDst.left + RECTANGLE_WIDTH(&source);
+	    short pelsize = bit_depth/8;
+	    unsigned long sourceRB = GetPixRowBytes(world_pixelspm), dstRB = GetPixRowBytes(screen_pixels);
+	    memcpy_blit_image(GetPixBaseAddr(world_pixelspm) + (source.left*pelsize) + (source.top * sourceRB),
+					     GetPixBaseAddr(screen_pixels) + (newDst.left*pelsize) + (newDst.top * dstRB),
+					     RECTANGLE_WIDTH(&source), RECTANGLE_HEIGHT(&source), sourceRB, dstRB, pelsize);
+#else
 		GrafPtr old_port;
 		RGBColor old_forecolor, old_backcolor;
 		
@@ -1960,6 +1984,7 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 		RGBForeColor(&old_forecolor);
 		RGBBackColor(&old_backcolor);
 		SetPort(old_port);
+#endif
 	}
 	else
 	{
