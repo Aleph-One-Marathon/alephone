@@ -619,6 +619,11 @@ private:
 // Environment item
 class env_item {
 public:
+	env_item() : indent(0), selectable(false)
+	{
+		name[0] = 0;
+	}
+
 	env_item(const FileSpecifier &fs, int i, bool sel) : spec(fs), indent(i), selectable(sel)
 	{
 		spec.GetName(name);
