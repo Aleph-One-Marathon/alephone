@@ -28,9 +28,68 @@ SDL webpage does install as a framework.
 The SDL_net library, available from the "Libraries" section of the SDL site, is
 also required.
 
+For the standalone version, instead of downloading the installers for development
+libraries and runtime libraries, one must download the source code for both SDL
+and SDL_net.
 
 Building and Installing the Program
 -----------------------------------
+
+If you aren't building the standalone version, skip down to AlephOne-Carbon.
+
+Before you can build the standalone version you must build your own copies of
+SDL and SDL_net. Why? Because we need to prepare the libraries for inclusion as
+private frameworks. By default, if a program can't locate the libraries in the
+usual places (User space, shared space and system space Library/Frameworks
+directories) then it uses the install path listed in the original library it was
+compiled from. Except that for the binary distributions of SDL and SDL_net this
+is something useless for us like /Users/henry/... No idea if requesting this
+would be a bug request or a feature request for the particular libraries, or if
+it would just be pushed back as 'if you want to do it, compile the variance
+yourself as we'd rather have everyone actually install the shared libs'
+
+Anyhow.
+
+To Recompile SDL:
+
+	Unarchive the SDL source code
+	Unarchive PBProjects.tar.gz within it
+	Open PBProjects/SDL/SDL.pbproj
+	Open the Targets Tab on the left
+	Select Framework
+	Select the Build Tab for the Target: Framework
+	Under Installation Location
+		Select Path for the install location (as opposed to None)
+		Changed Path to: @executable_path/../Frameworks
+	Under Build Settings
+		Add SKIP_INSTALL=YES
+	Now select Standard Package as the product to be built. Select Deployment as the
+	build style and build it.
+
+Under PBProjects/SDL/build you'll find the installer it created. Run that to install
+these libraries into /Library/Framework. Yes they should work fine from there as
+SDL runtime libraries for any other SDL projects you may have.
+
+To Recompile SDL_net:
+
+The process is almost exactly the same. And you need to do it *after* you've already
+rebuilt SDL otherwise it'll still be looking for SDL in the wrong place.
+
+There is one difference, in addition to Installation Location and Build Setting changes
+you need to add:
+	Under Other Linker Flags
+		Add to the line:  -seg1addr 0x30040000
+
+Otherwise SDL_net will clash with other segments and prevent prebinding of the AlephOne
+application. Not fatal, but not optimal either.
+
+Once both SDL and SDL_net are compiled and installed procede on to compile AlephOne.
+One difference though, instead of building AlephOne-Carbon, select Carbon Standalone
+from the menu of targets. It depends upon and will compile AlephOne-Carbon for you and
+then copy the SDL and SDL_net frameworks into AlephOne's private Frameworks directory
+for distribution.
+
+AlephOne-Carbon:
 
 Go to the aleph/PBProjects directory and open the AlephOne-OSX.pbproj within
 Project Builder.
@@ -66,7 +125,6 @@ For the curious the build flags currently are:
 		When defined as true (1) specifies that SDL style networking should
 		be used.
 		
-		
 Installing the data files
 -------------------------
 
@@ -85,13 +143,6 @@ Choice of Frequencies for full screen display is funky. Also leads to
 AlephOne getting confused about screen capabilities. (Fires off the warning
 that AlephOne requires a screen capable of 256 colors or more and is 13" or
 bigger) and to a corruption of the preferences file.
-
-Screen fading is operational. But there appears to be a race condition
-between when screen updates occur and when the screen gamma is changed. (The screen
-can be updated, but not yet flushed to the window buffer when you start changing
-screen gamma. Lots of short term artifacts)
-
-After suspending and resuming AlephOne it is possible the cursor won't disappear.
 
 Marathon 2's starting music doesn't play because it's an AIFF with
 a different file type (mus2) so Quicktime doesn't recognize it.
@@ -116,7 +167,7 @@ on a Mac with multiple monitors doesn't actually do anything.
 The Gather dialog often has the ok button active even if it should be deactivated.
 For instance, when no other users than the host have been gathered.
 
-Network play is not necessarilly full features, or even stable. There isn't
+Network play is not necessarilly full featured, or even stable. There isn't
 even a way for the gatherer to send messages to the player as the SDL version
 purports. It is included in the build because otherwise there's no networking.
 Hopefully with partial networking either things will come together as networking
@@ -124,11 +175,3 @@ in general comes together or as someone focuses on the Carbon build details.
 
 There is currently no way to build without Networking. (And without requireing the
 SDL libraries either)
-
-The resulting executable currently requires SDL and SDL_Net frameworks to be
-installed. In the future we hope to install these as private frameworks of the
-application. In order to do this yourself, download the source for both these
-libraries and follow Project Builder's documentation on preparing a framework
-for inclusion within an application. Once you have the runtime lib all prepared
-you can have Project Builder install that into the private frameworks directory
-of the AlephOne Carbon application.

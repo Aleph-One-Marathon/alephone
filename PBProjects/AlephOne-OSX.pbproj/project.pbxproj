@@ -99,6 +99,7 @@
 			children = (
 				17587328FF379C6511CA2CBB,
 				F53673ED02014B3E01A80001,
+				F5A25343023B713601A80001,
 			);
 			isa = PBXGroup;
 			name = Products;
@@ -125,6 +126,7 @@
 			targets = (
 				29B97326FDCFA39411CA2CEA,
 				F53673EE02014B3F01A80001,
+				F5A25344023B713601A80001,
 			);
 		};
 		29B97314FDCFA39411CA2CEA = {
@@ -7604,6 +7606,62 @@
 		};
 		F59FB19E01E780DF01BBE912 = {
 			fileRef = F59FB19D01E780DF01BBE912;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5A25343023B713601A80001 = {
+			isa = PBXExecutableFileReference;
+			path = "Carbon Standalone";
+			refType = 3;
+		};
+		F5A25344023B713601A80001 = {
+			buildPhases = (
+				F5A25349023B71CF01A80001,
+			);
+			buildSettings = {
+				OPTIMIZATION_CFLAGS = "";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "Carbon Standalone";
+				REZ_EXECUTABLE = YES;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "-Wmost -Wno-four-char-constants -Wno-unknown-pragmas";
+			};
+			dependencies = (
+				F5A25345023B713601A80001,
+			);
+			isa = PBXToolTarget;
+			name = "Carbon Standalone";
+			productInstallPath = /usr/local/bin;
+			productName = "Carbon Standalone";
+			productReference = F5A25343023B713601A80001;
+			shouldUseHeadermap = 0;
+		};
+		F5A25345023B713601A80001 = {
+			isa = PBXTargetDependency;
+			target = F53673EE02014B3F01A80001;
+		};
+		F5A25349023B71CF01A80001 = {
+			buildActionMask = 2147483647;
+			dstPath = AlephOne.app/Contents/Frameworks;
+			dstSubfolderSpec = 16;
+			files = (
+				F5A2534A023B71CF01A80001,
+				F5A2534B023B71CF01A80001,
+			);
+			isa = PBXCopyFilesBuildPhase;
+			name = "Copy Files";
+		};
+		F5A2534A023B71CF01A80001 = {
+			fileRef = F5281C0501F8C94101E83A66;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5A2534B023B71CF01A80001 = {
+			fileRef = F5281C0801F8CA2101E83A66;
 			isa = PBXBuildFile;
 			settings = {
 			};
