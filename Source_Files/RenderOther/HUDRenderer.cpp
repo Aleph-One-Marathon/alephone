@@ -226,7 +226,7 @@ void HUD_Class::update_weapon_panel(bool force_redraw)
 				}
 			} else {
 				/* Slam it to the screen! */
-				if(definition->weapon_panel_shape != NONE)
+				if(definition->weapon_panel_shape != UNONE)
 				{
 					DrawShapeAtXY(definition->weapon_panel_shape, 
 						definition->standard_weapon_panel_left, 

@@ -115,7 +115,7 @@ struct weapon_interface_data weapon_interface_definitions[10] =
 	/* Mac, the knife.. */
 	{
 		_i_knife,
-		NONE,
+		UNONE,
 		433, 432,
 		NONE, NONE,
 		0, 0,
@@ -672,7 +672,7 @@ bool XML_WeaponDisplayParser::HandleAttribute(const char *Tag, const char *Value
 	}
 	else if (StringsEqual(Tag,"shape"))
 	{
-		if (ReadInt16Value(Value,Data.weapon_panel_shape))
+		if (ReadUInt16Value(Value,Data.weapon_panel_shape))
 		{
 			IsPresent[0] = true;
 			return true;

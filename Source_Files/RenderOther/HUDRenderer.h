@@ -159,7 +159,7 @@ struct weapon_interface_ammo_data
 struct weapon_interface_data 
 {
 	short item_id;
-	short weapon_panel_shape;
+	shape_descriptor weapon_panel_shape;
 	short weapon_name_start_y;
 	short weapon_name_end_y;
 	short weapon_name_start_x;	/* NONE means center in the weapon rectangle */
