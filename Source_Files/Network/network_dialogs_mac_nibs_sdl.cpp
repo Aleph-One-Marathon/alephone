@@ -457,15 +457,6 @@ bool run_network_gather_dialog(MetaserverClient*)
 		delete *it;
 	Data.SeenPlayers.clear ();
 	
-	if (!successful)
-	{
-		NetCancelGather();
-		NetExit();
-	}
-	
-	// Clean up
-	NetLookupClose();	// from dispose_network_list_box()
-	
 	DisposeDataBrowserItemDataUPP(Callbacks.u.v1.itemDataCallback);
 	DisposeDataBrowserItemNotificationUPP(Callbacks.u.v1.itemNotificationCallback);
 	
