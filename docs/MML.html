@@ -173,7 +173,8 @@ it contains the attributes
 <li>end_x: if centered, then equal to -1
 <li>top: weapon sprite's position in screen
 <li>left
-<li>multiple: whether the display will show two of them (1) or only one (0)
+<li>multiple: whether the display will show two of them instead of only one,
+which is a <a name="#boolean">boolean</a> value.
 </ul>
 and an optional child element, &lt;ammo&gt;, which contains the attributes
 <ul>
@@ -192,7 +193,8 @@ and an optional child element, &lt;ammo&gt;, which contains the attributes
 <li>delta_y: bullet offset (energy-weapon height)
 <li>bullet_shape: the shape number for a bullet, or the full-region color index
 <li>empty_shape: the shape number for an empty bullet, or the empty-region color index
-<li>right_to_left: which way the bullets go as they are used (0 is left-to-right)
+<li>right_to_left: whether the bullets go right-to-left instead of left-to-right,
+which is a <a name="#boolean">boolean</a> value.
 </ul>
 </ul>
 <p>
@@ -866,7 +868,7 @@ The index is which one of these liquid types:
 This kind of element specifies various player-character features,
 such as starting energy, starting oxygen, rebellion-map stripped energy
 (specified with attributes), and starting items, damage types,
-and powerup durations (specified with child elements).
+and powerup durations and item assignments (specified with child elements).
 The attributes are:
 <ul>
 <li>energy: how much to start with (default: 150)
@@ -879,7 +881,7 @@ The attributes are:
 invincibility powerup is active (can be -1 (NONE)) (default: 9, fusion-bolt damage)
 </ul>
 Note: the oxygen depletion and replenishment rates can be negative
-if one so desires.
+if one so desires, making changes in the opposite direction.
 <p>
 
 The starting items can be set with an element of &lt;item&gt;,
@@ -933,6 +935,22 @@ It has these attributes
 </ul>
 These have a value of the number of engine ticks the powerup lasts;
 an engine tick is 1/30 second.
+<p>
+
+The item assignments of the powerups can be said with an element of &lt;powerup_assign&gt;.
+It has these attributes
+<ul>
+<li>invincibility: item ID (default: 11)
+<li>invisibility: item ID (default: 10)
+<li>infravision: item ID (default: 12)
+<li>extravision: item ID (default: 17)
+<li>triple_energy: item ID (default: 21)
+<li>double_energy: item ID (default: 20)
+<li>energy: item ID (default: 19)
+<li>oxygen: item ID (default: 18)
+</ul>
+If one turns some ammo or other non-powerup item into a powerup, be sure to set its item type to be "powerup"
+with the <a href="#items">items</a> element.
 <p>
 
 <hr>
@@ -1038,6 +1056,15 @@ These are specified with the child element &lt;item&gt;,
 which has these attributes:
 <ul>
 <li>index (mandatory)
+<li>type: what kind of item:
+<ol type=1 start=1000>
+<li>weapon
+<li>ammunition
+<li>powerup
+<li>generic item
+<li>weapon powerup
+<li>ball
+</ol>
 <li>singular: index of singular name string (only one of them)
 <li>plural: index of plural name string (more than one of them)
 <li>maximum: maximum number that a player may possess
@@ -1793,7 +1820,7 @@ The effects:
 <li>Lava F'lickta Projectile Hit
 <li>F'lickta Claw
 <li>Juggernaut Hit
-<li>Juggernaut Missile Contail
+<li>Juggernaut Missile Contrail
 <li>Small Jjaro Splash
 <li>Medium Jjaro Splash
 <li>Large Jjaro Splash
@@ -2065,7 +2092,7 @@ The sounds:
 <li>Shotgun Firing
 <li>Shotgun Reloading
 <li>Ball Bounce
-<li>You Are it
+<li>You Are It
 <li>Got Ball
 <li>Computer interface Logon
 <li>Computer interface Logout
