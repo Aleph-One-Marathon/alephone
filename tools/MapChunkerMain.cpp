@@ -25,7 +25,14 @@
 
 // Parallel resource/chunk ID's to handle with this app:
 
-const int NumMovedTypes = 4;
+enum
+{
+	Type_Picture,
+	Type_CLUT,
+	Type_Sound,
+	Type_Text,
+	NumMovedTypes
+};
 const OSType MovedResourceTypes[NumMovedTypes] = {'PICT','clut','snd ','TEXT'};
 const OSType MovedChunkTypes[NumMovedTypes] = {'pict','clut','snd ','text'};
 
@@ -256,6 +263,7 @@ char *GetTypeString(int32 Type)
 struct WadContainer
 {
 	wad_data *Ptr;
+	
 	
 	void Clear() {if (Ptr) free_wad(Ptr); Ptr = create_empty_wad();}
 	void Set(wad_data *_Ptr) {if (Ptr) free_wad(Ptr); Ptr = _Ptr;}
@@ -534,6 +542,239 @@ int FindInIDList(vector<int16>& IDList, int16 ID)
 }
 
 
+// For creating an 8-bit PICT; it needs the previously-found color table
+CTabHandle SavedCLUT = NULL;
+
+// For a grayscale CLUT in case there is no "real" one
+CTabHandle GrayCLUT = NULL;
+
+CTabHandle GetSavedCLUT()
+{
+	if (SavedCLUT) return SavedCLUT;
+	
+	// Fallback for absent CLUT:
+	// Create a grayscale one instead
+	if (!GrayCLUT)
+	{
+		GrayCLUT = (CTabHandle)NewHandleClear(256*8 + 8);
+		CTabPtr GC = *GrayCLUT;
+		GC->ctSize = 255;
+		for (int i=0; i<=255; i++)
+		{
+			ColorSpec& CS = GC->ctTable[i];
+			CS.value = i;
+			int cval = (i<<8) + i;
+			CS.rgb.red = CS.rgb.green = CS.rgb.blue = cval;
+		}
+	}
+	
+	return GrayCLUT;
+}
+
+
+Handle MakeCLUT(byte *Data, int Length)
+{
+	if (Length != (6 + 256 * 6)) return NULL;
+
+	Handle CLUT = NewHandleClear(8 + 256 * 8);
+	
+	uint8 *In = Data;
+	uint8 *Out = (uint8 *)(*CLUT);
+	
+	Out[6] = In[0];
+	Out[7] = In[1];
+	In += 6;
+	Out += 8;
+	
+	for (int i=0; i<256; i++)
+	{
+		Out++;	// Index value
+		*Out++ = i;
+		*Out++ = *In++;	// Red
+		*Out++ = *In++;
+		*Out++ = *In++;	// Green
+		*Out++ = *In++;
+		*Out++ = *In++;	// Blue
+		*Out++ = *In++;
+	}
+	
+	return CLUT;
+}
+
+void LoadCLUTIntoArray(LoadedResource Rsrc, vector<uint8>& Data)
+{
+	Data.clear();
+	if (Rsrc.GetLength() != (8 + 256 * 8)) return;
+	
+	Data.resize(6 + 256 * 6);
+	objlist_clear(&Data[0],Data.size());
+	
+	uint8 *In = (uint8 *)(Rsrc.GetPointer());
+	uint8 *Out = &Data[0];
+	
+	Out[0] = In[6];
+	Out[1] = In[7];
+	In += 8;
+	Out += 6;
+	
+	for (int i=0; i<256; i++)
+	{
+		In++;	// Index value
+		In++;
+		*Out++ = *In++;	// Red
+		*Out++ = *In++;
+		*Out++ = *In++;	// Green
+		*Out++ = *In++;
+		*Out++ = *In++;	// Blue
+		*Out++ = *In++;
+	}
+}
+
+Handle MakePicture(byte *Data, int Length)
+{
+	if (Length < 10)
+		return NULL;
+
+	// The Win95 chunk format is big-endian, fortunately for MacOS duty
+	
+	// MacOS version already properly packed
+	Rect Bounds;
+	memcpy(&Bounds,Data,8);
+	Data += 8;
+	
+	short ColorDepth;
+	memcpy(&ColorDepth,Data,2);
+	Data += 2;
+	
+	short Width = Bounds.right - Bounds.left;
+	GWorldPtr Canvas = NULL;
+	switch(ColorDepth)
+	{
+	case 8:
+	
+		QTNewGWorldFromPtr(&Canvas, k8IndexedPixelFormat, &Bounds, GetSavedCLUT(), NULL, 0, Data, Width);
+		break;
+	
+	case 16:
+	
+		QTNewGWorldFromPtr(&Canvas, k16BE555PixelFormat, &Bounds, NULL, NULL, 0, Data, 2*Width);
+		break;
+		
+	case 24:
+	
+		QTNewGWorldFromPtr(&Canvas, k24RGBPixelFormat, &Bounds, NULL, NULL, 0, Data, 3*Width);
+		break;
+		
+	case 32:
+	
+		QTNewGWorldFromPtr(&Canvas, k32ARGBPixelFormat, &Bounds, NULL, NULL, 0, Data, 4*Width);
+		break;
+	}
+	
+	if (!Canvas) return false;
+
+	PenNormal();
+	
+	CGrafPtr OldPort;
+	GetGWorld(&OldPort, NULL);
+	SetGWorld(Canvas, NULL);
+	
+	ForeColor(blackColor);
+	BackColor(whiteColor);
+	
+	// Now create a picture; cribbed off of some Tomb Raider data-dumping code
+	OpenCPicParams PicParams;
+	PicParams.srcRect = Bounds;
+	PicParams.hRes = 0x00480000; // 72 dpi
+	PicParams.vRes = 0x00480000; // 72 dpi
+	PicParams.version = -2;
+	PicParams.reserved1 = 0;
+	PicParams.reserved2 = 0;
+	PicHandle Pic = OpenCPicture(&PicParams);
+	
+	if (Pic)
+	{
+		ClipRect(&Bounds);
+		PixMapHandle PMap =  GetGWorldPixMap(Canvas);
+   	    CopyBits((BitMap *)*PMap, (BitMap *)*PMap, &Bounds, &Bounds, srcCopy, NULL);
+		ClosePicture();
+	}
+	
+	SetGWorld(OldPort, NULL);
+	DisposeGWorld(Canvas);
+	
+	return (Handle)Pic;
+}
+
+void LoadPictureIntoArray(LoadedResource Rsrc, vector<uint8>& Data)
+{
+	// Empty: indicates failure
+	Data.clear();
+	
+	// Get info on the picture
+	PicHandle Pic = (PicHandle)Rsrc.GetHandle();
+	if (!Pic) return;
+	
+	PictInfo Info;
+	GetPictInfo(Pic, &Info, returnColorTable, 256, 0, 0);
+	
+	GWorldPtr Canvas = NULL;
+	
+	CTabHandle CLUT = Info.depth <= 8 ? Info.theColorTable : NULL;
+	
+	// Supporting only multiples of 8 bpp (an integer number of bytes per pixel)
+	short NBytes = max(Info.depth >> 3, 1);
+	short ColorDepth = NBytes << 3;
+	
+	Rect& Bounds = Info.sourceRect;
+	
+	NewGWorld(&Canvas, ColorDepth, &Bounds, CLUT, NULL, 0);
+	if (!Canvas) return;
+	
+	// We don't expect to fail after this, so set the size and start writing:
+	short Width = Bounds.right - Bounds.left;
+	short Height = Bounds.bottom - Bounds.top;
+	Data.resize(ColorDepth*int(Width)*int(Height) + 10);
+	
+	uint8 *DPtr = &Data[0];
+	
+	memcpy(DPtr,&Bounds,8);
+	DPtr += 8;
+	
+	memcpy(DPtr,&ColorDepth,2);
+	DPtr += 2;
+	
+	CGrafPtr OldPort;
+	GetGWorld(&OldPort, NULL);
+	SetGWorld(Canvas, NULL);
+	
+	ForeColor(blackColor);
+	BackColor(whiteColor);
+	
+	DrawPicture(Pic,&Bounds);
+	
+	SetGWorld(OldPort, NULL);
+	
+	// Extract the data from the GWorld:
+	
+	PixMapHandle Pixels = GetGWorldPixMap(Canvas);
+	LockPixels(Pixels);
+	
+	uint8 *PPtr = (uint8 *)((*Pixels)->baseAddr);
+	short PAdv = (*Pixels)->rowBytes;
+	int RowBytes = ColorDepth*int(Width);
+	for (int h=0; h<Height; h++)
+	{
+		memcpy(DPtr,PPtr,RowBytes);
+		PPtr += PAdv;
+		DPtr += RowBytes;
+	}
+	
+	UnlockPixels(Pixels);
+	DisposeGWorld(Canvas);
+}
+
+
 void LoadResourceIntoArray(int TypeIndex, int16 RsrcID, OpenedResourceFile InRes,
 	vector<uint8>& Data)
 {	
@@ -546,46 +787,16 @@ void LoadResourceIntoArray(int TypeIndex, int16 RsrcID, OpenedResourceFile InRes
 	// Details cribbed from images.cpp in the engine code
 	switch(TypeIndex)
 	{
-	case 0:
-		// PICT
-		// The most complicated :-)
-		// Simply copy over
-		Data.resize(RsrcLen);
-		memcpy(&Data[0],Rsrc.GetPointer(),RsrcLen);
+	case Type_Picture:
+		LoadPictureIntoArray(Rsrc,Data);
 		break;
 		
-	case 1:
-		// clut
-		if (RsrcLen != (8 + 256 * 8)) return;
-		Data.resize(6 + 256 * 6);
-		objlist_clear(&Data[0],Data.size());
-		{
-			uint8 *In = (uint8 *)(Rsrc.GetPointer());
-			uint8 *Out = &Data[0];
-			
-			Out[0] = In[6];
-			Out[1] = In[7];
-			In += 8;
-			Out += 6;
-			
-			for (int i=0; i<256; i++)
-			{
-				In++;	// Index value
-				In++;
-				*Out++ = *In++;	// Red
-				*Out++ = *In++;
-				*Out++ = *In++;	// Green
-				*Out++ = *In++;
-				*Out++ = *In++;	// Blue
-				*Out++ = *In++;
-			}
-		}
+	case Type_CLUT:
+		LoadCLUTIntoArray(Rsrc,Data);
 		break;
 		
-	case 2:
-		// snd
-	case 3:
-		// TEXT
+	case Type_Sound:
+	case Type_Text:
 		// Simply copy over
 		Data.resize(RsrcLen);
 		memcpy(&Data[0],Rsrc.GetPointer(),RsrcLen);
@@ -599,67 +810,37 @@ bool LoadDataIntoResource(int TypeIndex, byte *Data, int32 Length, OpenedResourc
 {
 	if (Length <= 0) return false;
 	
-	bool Success = false;
 	OutRes.Push();
 	
+	bool Success = false;
 	Handle Rsrc = NULL;
 
 	// Details cribbed from images.cpp in the engine code
 	switch(TypeIndex)
 	{
-	case 0:
-		// PICT
-		// The most complicated :-)
-		// Simply copy over
-		PtrToHand(Data,&Rsrc,Length);
+	case Type_Picture:
+
+		Rsrc = MakePicture(Data, Length);
 		break;
 		
-	case 1:
-		// clut
-		if (Length != (6 + 256 * 6))
-		{
-			Success = false;
-			break;
-		}
-		Rsrc = NewHandleClear(8 + 256 * 8);
-		{
-			uint8 *In = Data;
-			uint8 *Out = (uint8 *)(*Rsrc);
-			
-			Out[6] = In[0];
-			Out[7] = In[1];
-			In += 6;
-			Out += 8;
-			
-			for (int i=0; i<256; i++)
-			{
-				Out++;	// Index value
-				*Out++ = i;
-				*Out++ = *In++;	// Red
-				*Out++ = *In++;
-				*Out++ = *In++;	// Green
-				*Out++ = *In++;
-				*Out++ = *In++;	// Blue
-				*Out++ = *In++;
-			}
-		}
+	case Type_CLUT:
+
+		Rsrc = MakeCLUT(Data, Length);
 		break;
 		
-	case 2:
-		// snd
-	case 3:
-		// TEXT
+	case Type_Sound:
+	case Type_Text:
 		// Simply copy over
 		PtrToHand(Data,&Rsrc,Length);
 		break;
 	}
 	
-	if (Success)
+	if (Rsrc)
 	{
 		AddResource(Rsrc, MovedResourceTypes[TypeIndex], RsrcID, "\p");
 		Success = (ResError() == noErr);
+		DisposeHandle(Rsrc);
 	}
-	if (Rsrc) DisposeHandle(Rsrc);
 	
 	OutRes.Pop();
 	return Success;
@@ -761,8 +942,6 @@ void AddChunks()
 		
 		OutFile.AddWad(TrueLevel,OutWad);
 	}
-	
-	// Write out the remaining resources
 	
 	// Set to before the first one
 	int Indices[NumMovedTypes];
@@ -868,13 +1047,36 @@ void ExtractChunks()
 	if (!OutFile.Open("What unchunked file?",Name)) return;
 
 	OpenedResourceFile OutRes;
-	if (!OutFile.Spec.Open(OutRes,true)) return;
 	
+	// Create the resource fork before opening it
+	FInfo Info;
+	FSpGetFInfo(&OutFile.Spec.GetSpec(), &Info);
+	FSpCreateResFile(&OutFile.Spec.GetSpec(), Info.fdCreator, Info.fdType, smSystemScript);
+	
+	if (!OutFile.Spec.Open(OutRes,true)) return;
+		
 	for (int lvl=0; lvl<InFile.NumWads(); lvl++)
 	{
 		WadContainer InWad, OutWad;
 		short TrueLevel = InFile.LevelIndices[lvl];
 		InFile.GetWad(TrueLevel,InWad);
+		
+		// Preliminary pass: load the CLUT so that an upcoming PICT can use it
+		if (SavedCLUT)
+		{	
+			DisposeHandle((Handle)SavedCLUT);
+			SavedCLUT = NULL;
+		}
+		for (int itg=0; itg<InWad.Ptr->tag_count; itg++)
+		{
+			tag_data& Tag = InWad.Ptr->tag_data[itg];
+			
+			if (Tag.tag == MovedChunkTypes[Type_CLUT])
+			{
+				SavedCLUT = (CTabHandle)MakeCLUT(Tag.data,Tag.length);
+				break;
+			}
+		}
 		
 		// Load the already-existing chunks; be sure to replace those that have
 		// corresponding resources
@@ -889,6 +1091,11 @@ void ExtractChunks()
 				{
 					// Move the chunk into the resource fork
 					WasMoved = LoadDataIntoResource(it,Tag.data,Tag.length,OutRes,TrueLevel);
+					
+					// Kludge for forcing the program to read all the map file's resources
+					OutRes.Close();
+					OutFile.Spec.Open(OutRes,true);
+					
 					break;
 				}
 			}
