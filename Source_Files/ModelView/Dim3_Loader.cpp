@@ -219,7 +219,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	}
 	
 	// First, find the neutral-position vertices
-	Model.FindPositions(false);
+	Model.FindPositions_Neutral(false);
 	
 	// Work out the sorted order for the bones; be sure not to repeat this if already done.
 	if (BoneIndices.empty() && !Model.Bones.empty())
