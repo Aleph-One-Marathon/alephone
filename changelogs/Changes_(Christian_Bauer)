@@ -1,5 +1,8 @@
 Change log of the SDL version of Aleph One
 
+October 10, 2001
+ - FileSpecified::ReadDirectory() ignores file names starting with '.'
+
 September 2, 2001
  - integrated patches for MaxOS X by Chris Lovell
  - integrated patches for MSVC++ by Jeremy

@@ -676,11 +676,12 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 	}
 	struct dirent *de = readdir(d);
 	while (de) {
-		if (de->d_name[0] != '.' || (de->d_name[1] && de->d_name[1] != '.')) {
-			FileSpecifier full_path = name;
-			full_path += de->d_name;
-			struct stat st;
-			if (stat(full_path.GetPath(), &st) == 0)
+		FileSpecifier full_path = name;
+		full_path += de->d_name;
+		struct stat st;
+		if (stat(full_path.GetPath(), &st) == 0) {
+			// Ignore files starting with '.' and the directories '.' and '..'
+			if (de->d_name[0] != '.' || (S_ISDIR(st.st_mode) && !(de->d_name[1] == '\0' || de->d_name[1] == '.')))
 				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false));
 		}
 		de = readdir(d);

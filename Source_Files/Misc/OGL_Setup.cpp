@@ -689,11 +689,13 @@ void OGL_ModelData::Load()
 		// 3D Studio Max
 		Success = LoadModel_Studio(File, Model);
 	}
+#ifdef mac
 	else if (strcmp(Type,"qd3d") == 0 || strcmp(Type,"3dmf") == 0 || strcmp(Type,"quesa") == 0)
 	{
 		// QuickDraw 3D / Quesa
 		Success = LoadModel_QD3D(File, Model);
 	}
+#endif
 	
 	if (!Success)
 	{
