@@ -234,7 +234,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		
 		// Add the bones, one by one;
 		// the bone stack's height is originally zero
-		size_t StackTop = -1;
+		int StackTop = -1;
 		for (size_t ib=0; ib<NumBones; ib++)
 		{		
 			// Scan down the bone stack to find a bone that's the parent of some unlisted bone;
