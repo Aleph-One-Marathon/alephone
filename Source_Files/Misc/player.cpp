@@ -70,6 +70,9 @@ Jun 28, 2000 (Loren Petrich):
 
 Jul 1, 2000 (Loren Petrich):
 	Added Benad's changes
+
+Jul 10, 2000 (Loren Petrich):
+	Changed calculate_player_team() slightly; no more first vassert()
 */
 
 #include "cseries.h"
@@ -1789,8 +1792,8 @@ static short calculate_player_team(
 				(dynamic_world->game_information.kill_limit == 1080))) // 1080 seconds, or 18:00...
 				team= NONE;
 			else
-				//team= base_team;
-				vassert(false, csprintf(temporary, "Kill limit: %d", dynamic_world->game_information.kill_limit));
+				team= base_team;
+				// vassert(false, csprintf(temporary, "Kill limit: %d", dynamic_world->game_information.kill_limit));
 			// END Benad
 			break;
 	}
