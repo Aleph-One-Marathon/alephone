@@ -13,7 +13,12 @@ Jul 5, 2000 (Loren Petrich):
 
 Jul 7, 2000 (Loren Petrich):
 	Added Ben Thompson's change: an Input-Sprocket-only input mode
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
+
+#include "FileHandler.h"
 
 /* ---------- constants */
 
@@ -113,7 +118,8 @@ XML_ElementParser *Cheats_GetParser();
 void initialize_shape_handler(void);
 PixMapHandle get_shape_pixmap(short shape, boolean force_copy);
 
-void open_shapes_file(FSSpec *spec);
+void open_shapes_file(FileObject& File);
+// void open_shapes_file(FSSpec *spec);
 
 /* ---------- prototypes/SCREEN_DRAWING.C */
 
