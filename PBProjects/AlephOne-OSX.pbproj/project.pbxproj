@@ -202,7 +202,7 @@
 			buildSettings = {
 				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks";
-				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" \"/System/Li\nbrary/Frameworks/OpenGL.framework/Headers\\nary/Frameworks/OpenGL.framework/Headers\" /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
+				HEADER_SEARCH_PATHS = "\"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex\" \"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Linbrary/Frameworks/OpenGL.framework/Headersnary/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
@@ -210,7 +210,7 @@
 				LIBRARY_SEARCH_PATHS = "\"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\"";
 				OPTIMIZATION_CFLAGS = "-O2 -frename-registers -fprefetch-loop-arrays -fschedule-insns -fschedule-insns2 -finline-functions -finline-limit=600 -fregmove -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fgcse -fgcse-lm -fgcse-sm -fdelete-null-pointer-checks   -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -DSPEEX -DHAVE_LUA -x objective-c++";
-				OTHER_LDFLAGS = "-flat_namespace -multiply_defined suppress -framework SDL -framework SDL_image -framework SDL_net -framework AppKit";
+				OTHER_LDFLAGS = "-flat_namespace -multiply_defined suppress -framework SDL -framework SDL_image -framework SDL_net -framework AppKit -lspeex -llua -llualib";
 				PRODUCT_NAME = AlephOneSDL;
 				SECTORDER_FLAGS = "";
 				USE_GCC3_PFE_SUPPORT = YES;
