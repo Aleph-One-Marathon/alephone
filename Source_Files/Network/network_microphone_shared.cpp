@@ -168,14 +168,14 @@ int32 copy_and_speex_encode(uint8* outStorage, void* inStorage, int32 inCount, i
                     } else {
                         frame[i] = *((int16  *) inStorage);
                     }
-                    (int16 *) inStorage += sCaptureStride;
+                    inStorage = static_cast<int16*>(inStorage) + sCaptureStride;
                 } else {
                     if (sStereo) {
                         frame[i] = ((int16) ((((uint8 *)inStorage)[0] + ((uint8 *)inStorage)[1]) / 2) - 128) << 8;
                     } else {
                         frame[i] = ((int16) (*((uint8 *)inStorage) - 128)) << 8;            
                     }
-                    (uint8 *) inStorage += sCaptureStride;
+                    inStorage = static_cast<uint8*>(inStorage) + sCaptureStride;
                 }
                 inCount--;
             }
@@ -184,7 +184,7 @@ int32 copy_and_speex_encode(uint8* outStorage, void* inStorage, int32 inCount, i
         // encode the frame
         speex_bits_reset(&gEncoderBits);
         speex_encode(gEncoderState, frame, &gEncoderBits);
-        uint8 nbytes = (speex_bits_write(&gEncoderBits, outStorage + 1, 200));
+        uint8 nbytes = speex_bits_write(&gEncoderBits, reinterpret_cast<char*>(outStorage) + 1, 200);
         bytesWritten += nbytes + 1;
         // first put the size of this frame in storage
         *(outStorage) = nbytes;
@@ -200,14 +200,14 @@ int32 copy_and_speex_encode(uint8* outStorage, void* inStorage, int32 inCount, i
             } else {
                 storedFrame[storedSamples] = *((int16  *) inStorage);
             }
-            (int16 *) inStorage += sCaptureStride;
+            inStorage = static_cast<int16*>(inStorage) + sCaptureStride;
         } else {
             if (sStereo) {
                 storedFrame[storedSamples] = ((int16) ((((uint8 *)inStorage)[0] + ((uint8 *)inStorage)[1]) / 2) - 128) << 8;
             } else {
                 storedFrame[storedSamples] = ((int16) (*((uint8 *)inStorage) - 128)) << 8;            
             }
-            (uint8 *) inStorage += sCaptureStride;
+            inStorage = static_cast<uint8*>(inStorage) + sCaptureStride;
         }
         inCount--;
         storedSamples++;

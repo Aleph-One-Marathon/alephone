@@ -73,7 +73,7 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
             
             // allocate buffer space
             int numFrames = 0;
-            while (theSoundData < buffer + buffer_size) {
+            while (theSoundData < static_cast<byte*>(buffer) + buffer_size) {
                 nbytes = *theSoundData++;
                 theSoundData += nbytes;
                 numFrames++;
@@ -81,7 +81,7 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
             newBuffer = (byte *) malloc (sizeof(char) * 160 * numFrames);
             theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
             
-            while (theSoundData < buffer + buffer_size) {
+            while (theSoundData < static_cast<byte*>(buffer) + buffer_size) {
                 // copy a frame into the decoder
                 nbytes = *theSoundData++;
                 for (i = 0; i < nbytes; i++) {
