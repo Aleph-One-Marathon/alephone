@@ -820,7 +820,7 @@ bool XML_SpokeConfigurationParser::HandleAttribute(const char *Tag, const char *
 	{
 		for(size_t i = 0; i < kNumInt32Attributes; i++)
 		{
-			if(strcasecmp(Tag,sAttributeStrings[i]) == 0)
+			if(StringsEqual(Tag,sAttributeStrings[i]))
 			{
 				if(!mAttributePresent[i]) {
 					if(ReadInt32Value(Value,mAttribute[i])) {

@@ -1791,7 +1791,7 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 		size_t i;
 		for(i = 0; i < NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES; i++)
 		{
-			if(strcasecmp(Value,sNetworkGameProtocolNames[i]) == 0)
+			if(StringsEqual(Value,sNetworkGameProtocolNames[i]))
 				break;
 		}
 		if(i < NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES)

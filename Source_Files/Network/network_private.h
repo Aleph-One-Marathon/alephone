@@ -39,11 +39,13 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #define	NETWORK_PRIVATE_H
 
 #include	"cstypes.h"
-#include	"network.h"
 
 #if defined(SDL) || HAVE_SDL_NET
 #include	"sdl_network.h"
 #endif
+
+#include	"network.h"
+
 
 
 // (ZZZ:) Moved here from sdl_network.h and macintosh_network.h

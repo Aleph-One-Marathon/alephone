@@ -21,82 +21,82 @@
  */
 #include "AStream.h"
 
-AIStream& AIStream::operator>>(uint8 &__value)
+AIStream& AIStream::operator>>(uint8 &value)
         throw(AStream::failure)
 {
         if(bound_check(1))
         {
-                __value = (*(_M_stream_pos++));
+                value = (*(_M_stream_pos++));
         }
         return *this;
 }
 
-AIStream& AIStream::operator>>(int8 &__value)
+AIStream& AIStream::operator>>(int8 &value)
         throw(AStream::failure)
 {
         uint8 UValue;
         operator>>(UValue);
-        __value = int8(UValue);
+        value = int8(UValue);
 
         return *this;
 }
 
-AIStream& AIStream::read(char *__ptr, uint32 __count)
+AIStream& AIStream::read(char *ptr, uint32 count)
 	throw(AStream::failure)
 {
-	if(bound_check(__count))
+	if(bound_check(count))
 	{
-		memcpy(__ptr, _M_stream_pos, __count);
-		_M_stream_pos += __count;
+		memcpy(ptr, _M_stream_pos, count);
+		_M_stream_pos += count;
 	}
 	return *this;
 }
 
-AIStream& AIStream::ignore(uint32 __count)
+AIStream& AIStream::ignore(uint32 count)
 	throw(AStream::failure)
 {
-	if(bound_check(__count))
+	if(bound_check(count))
 	{
-		_M_stream_pos += __count;
+		_M_stream_pos += count;
 	}
 	return *this;
 }
 
 
 
-AOStream& AOStream::operator<<(uint8 __value)
+AOStream& AOStream::operator<<(uint8 value)
         throw(AStream::failure)
 {
         if(bound_check(1))
         {
-                *(_M_stream_pos++) = __value;
+                *(_M_stream_pos++) = value;
         }
         return *this;
 }
 
-AOStream& AOStream::operator<<(int8 __value)
+AOStream& AOStream::operator<<(int8 value)
         throw(AStream::failure)
 {
-        return operator<<(uint8(__value));
+        return operator<<(uint8(value));
 }
 
-AOStream& AOStream::write(char *__ptr, uint32 __count)
+AOStream& AOStream::write(char *ptr, uint32 count)
 	throw(AStream::failure)
 {
-	if(bound_check(__count))
+	if(bound_check(count))
 	{
-		memcpy(_M_stream_pos, __ptr, __count);
-		_M_stream_pos += __count;
+		memcpy(_M_stream_pos, ptr, count);
+		_M_stream_pos += count;
 	}
 	return *this;
 }
 
-AOStream& AOStream::ignore(uint32 __count)
+AOStream& AOStream::ignore(uint32 count)
 	throw(AStream::failure)
 {
-	if(bound_check(__count))
+	if(bound_check(count))
 	{
-		_M_stream_pos += __count;
+		_M_stream_pos += count;
 	}
 	return *this;
 }
@@ -105,7 +105,7 @@ AOStream& AOStream::ignore(uint32 __count)
 
 //big endian
 
-AIStream& AIStreamBE::operator>>(uint16 &__value)
+AIStream& AIStreamBE::operator>>(uint16 &value)
         throw(AStream::failure)
 {
         if(bound_check(2))
@@ -114,22 +114,22 @@ AIStream& AIStreamBE::operator>>(uint16 &__value)
                 uint16 Byte0 = uint16(*(_M_stream_pos++));
                 uint16 Byte1 = uint16(*(_M_stream_pos++));
 
-                __value = (Byte0 << 8) | Byte1;
+                value = (Byte0 << 8) | Byte1;
         }
         return *this;
 }
 
-AIStream& AIStreamBE::operator>>(int16 &__value)
+AIStream& AIStreamBE::operator>>(int16 &value)
         throw(AStream::failure)
 {
         uint16 UValue;
         operator>>(UValue);
-        __value = int16(UValue);
+        value = int16(UValue);
 
         return *this;
 }
 
-AIStream& AIStreamBE::operator>>(uint32 &__value)
+AIStream& AIStreamBE::operator>>(uint32 &value)
 	throw(AStream::failure)
 {
 	if(bound_check(4))
@@ -140,64 +140,64 @@ AIStream& AIStreamBE::operator>>(uint32 &__value)
 		uint32 Byte2 = uint32(*(_M_stream_pos++));
 		uint32 Byte3 = uint32(*(_M_stream_pos++));
 	
-		__value = (Byte0 << 24) | (Byte1 << 16) | (Byte2 << 8) | Byte3;
+		value = (Byte0 << 24) | (Byte1 << 16) | (Byte2 << 8) | Byte3;
 	}
 	return *this;
 }
 
-AIStream& AIStreamBE::operator>>(int32 &__value)
+AIStream& AIStreamBE::operator>>(int32 &value)
 	throw(AStream::failure)
 {
 	uint32 UValue;
 	operator>>(UValue);
-	__value = int32(UValue);
+	value = int32(UValue);
   
 	return *this;
 }
 
 
 
-AOStream& AOStreamBE::operator<<(uint16 __value)
+AOStream& AOStreamBE::operator<<(uint16 value)
 	throw(AStream::failure)
 {
 	if(bound_check(2))
 	{
-		*(_M_stream_pos++) = uint8(__value >> 8);
-		*(_M_stream_pos++) = uint8(__value);
+		*(_M_stream_pos++) = uint8(value >> 8);
+		*(_M_stream_pos++) = uint8(value);
 	}
 	return *this;
 }
 
-AOStream& AOStreamBE::operator<<(int16 __value)
+AOStream& AOStreamBE::operator<<(int16 value)
 	throw(AStream::failure)
 {
-	return operator<<(uint16(__value));
+	return operator<<(uint16(value));
 }
 
-AOStream& AOStreamBE::operator<<(uint32 __value)
+AOStream& AOStreamBE::operator<<(uint32 value)
 	throw(AStream::failure)
 {
 	if(bound_check(4))
 	{
-		*(_M_stream_pos++) = uint8(__value >> 24);
-		*(_M_stream_pos++) = uint8(__value >> 16);
-		*(_M_stream_pos++) = uint8(__value >> 8);
-		*(_M_stream_pos++) = uint8(__value);
+		*(_M_stream_pos++) = uint8(value >> 24);
+		*(_M_stream_pos++) = uint8(value >> 16);
+		*(_M_stream_pos++) = uint8(value >> 8);
+		*(_M_stream_pos++) = uint8(value);
 	}
 	return *this;
 }
 
-AOStream& AOStreamBE::operator<<(int32 __value)
+AOStream& AOStreamBE::operator<<(int32 value)
 	throw(AStream::failure)
 {
-	return operator<<(uint32(__value));
+	return operator<<(uint32(value));
 }
 
 
 
 // little endian
 
-AIStream& AIStreamLE::operator>>(uint16 &__value)
+AIStream& AIStreamLE::operator>>(uint16 &value)
 	throw(AStream::failure)
 {
 	if(bound_check(2))
@@ -206,22 +206,22 @@ AIStream& AIStreamLE::operator>>(uint16 &__value)
 		uint16 Byte0 = uint16(*(_M_stream_pos++));
 		uint16 Byte1 = uint16(*(_M_stream_pos++));
 	
-		__value = (Byte1 << 8) | Byte0;
+		value = (Byte1 << 8) | Byte0;
 	}
 	return *this;
 }
 
-AIStream& AIStreamLE::operator>>(int16 &__value)
+AIStream& AIStreamLE::operator>>(int16 &value)
 	throw(AStream::failure)
 {
 	uint16 UValue;
 	operator>>(UValue);
-	__value = int16(UValue);
+	value = int16(UValue);
   
 	return *this;
 }
 
-AIStream& AIStreamLE::operator>>(uint32 &__value)
+AIStream& AIStreamLE::operator>>(uint32 &value)
 	throw(AStream::failure)
 {
 	if(bound_check(4))
@@ -232,65 +232,65 @@ AIStream& AIStreamLE::operator>>(uint32 &__value)
 		uint32 Byte2 = uint32(*(_M_stream_pos++));
 		uint32 Byte3 = uint32(*(_M_stream_pos++));
 	
-		__value = (Byte3 << 24) | (Byte2 << 16) | (Byte1 << 8) | Byte0;
+		value = (Byte3 << 24) | (Byte2 << 16) | (Byte1 << 8) | Byte0;
 	}
 	return *this;
 }
 
-AIStream& AIStreamLE::operator>>(int32 &__value)
+AIStream& AIStreamLE::operator>>(int32 &value)
 	throw(AStream::failure)
 {
 	uint32 UValue;
 	operator>>(UValue);
-	__value = int32(UValue);
+	value = int32(UValue);
     
 	return *this;
 }
 
 
 
-AOStream& AOStreamLE::operator<<(uint16 __value)
+AOStream& AOStreamLE::operator<<(uint16 value)
 	throw(AStream::failure)
 {
 	if(bound_check(2))
 	{
-		*(_M_stream_pos++) = uint8(__value);
-		*(_M_stream_pos++) = uint8(__value >> 8);
+		*(_M_stream_pos++) = uint8(value);
+		*(_M_stream_pos++) = uint8(value >> 8);
 	}
 	return *this;
 }
 
-AOStream& AOStreamLE::operator<<(int16 __value)
+AOStream& AOStreamLE::operator<<(int16 value)
 	throw(AStream::failure)
 {
-	return operator<<(uint16(__value));
+	return operator<<(uint16(value));
 }
 
-AOStream& AOStreamLE::operator<<(uint32 __value)
+AOStream& AOStreamLE::operator<<(uint32 value)
 	throw(AStream::failure)
 {
 	if(bound_check(4))
 	{
-		*(_M_stream_pos++) = uint8(__value);
-		*(_M_stream_pos++) = uint8(__value >> 8);
-		*(_M_stream_pos++) = uint8(__value >> 16);
-		*(_M_stream_pos++) = uint8(__value >> 24);
+		*(_M_stream_pos++) = uint8(value);
+		*(_M_stream_pos++) = uint8(value >> 8);
+		*(_M_stream_pos++) = uint8(value >> 16);
+		*(_M_stream_pos++) = uint8(value >> 24);
 	}
 	return *this;
 }
 
-AOStream& AOStreamLE::operator<<(int32 __value)
+AOStream& AOStreamLE::operator<<(int32 value)
 	throw(AStream::failure)
 {
-	return operator<<(uint32(__value));
+	return operator<<(uint32(value));
 }
 
 
 
-bool AStream::basic_astream::bound_check(uint32 __delta)
+bool AStream::basic_astream::bound_check(uint32 delta)
 	throw(AStream::failure)
 {
-	if(_M_stream_pos + __delta > _M_stream_end)
+	if(_M_stream_pos + delta > _M_stream_end)
 	{
 		this->setstate(AStream::failbit);
 		if ((this->exceptions() & AStream::failbit) != 0)
@@ -301,9 +301,9 @@ bool AStream::basic_astream::bound_check(uint32 __delta)
 	return !(this->fail());
 }
 
-AStream::failure::failure(const std::string& __str) throw()
+AStream::failure::failure(const std::string& str) throw()
 {
-	strncpy(_M_name, __str.c_str(), _M_bufsize);
+	strncpy(_M_name, str.c_str(), _M_bufsize);
 	_M_name[_M_bufsize] = 0;
 }
 

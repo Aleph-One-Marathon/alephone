@@ -97,8 +97,8 @@ namespace AStream
 		{ return _M_exception; }
 		
 		void
-		exceptions(iostate __except)
-		{ _M_exception= __except; }
+		exceptions(iostate except)
+		{ _M_exception= except; }
 		
 		basic_astream(uint8* __stream, uint32 __length, uint32 __offset) :
 			_M_stream_begin(__stream),

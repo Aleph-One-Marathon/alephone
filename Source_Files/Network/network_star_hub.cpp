@@ -968,7 +968,7 @@ bool XML_HubConfigurationParser::HandleAttribute(const char *Tag, const char *Va
 {
 	for(size_t i = 0; i < kNumAttributes; i++)
 	{
-		if(strcasecmp(Tag,sAttributeStrings[i]) == 0)
+		if(StringsEqual(Tag,sAttributeStrings[i]))
 		{
 			if(!mAttributePresent[i]) {
 				if(ReadInt32Value(Value,mAttribute[i])) {
