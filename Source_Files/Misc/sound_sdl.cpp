@@ -76,6 +76,9 @@ static _bs_field _bs_sound_file_header[] = { // 260 bytes
 	_4byte, _4byte, _2byte, _2byte, 124*sizeof(int16)
 };
 
+// LP: now done in mysound.cpp
+#if 0
+
 bool open_sound_file(FileSpecifier &File)
 {
 	if (!(sound_definitions && _sm_globals))
@@ -111,6 +114,8 @@ bool open_sound_file(FileSpecifier &File)
 	byte_swap_data(sound_definitions, 64, NUMBER_OF_SOUND_SOURCES * NUMBER_OF_SOUND_DEFINITIONS, _bs_sound_definition);
 	return true;
 }
+
+#endif
 
 
 /*
@@ -195,7 +200,7 @@ static void set_sound_manager_status(bool active)
 					_sm_globals->total_buffer_size *= 2;
 
 				_sm_globals->sound_source = (_sm_parameters->flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
-				_sm_globals->base_sound_definitions = sound_definitions + _sm_globals->sound_source * NUMBER_OF_SOUND_DEFINITIONS;
+				_sm_globals->base_sound_definitions = sound_definitions + _sm_globals->sound_source * number_of_sound_definitions;
 
 				// Initialize channels
 				struct channel_data *channel = _sm_globals->channels;
