@@ -48,9 +48,9 @@ alephone_SOURCES = \
   textures.cpp thread_priority_sdl_dummy.cpp vbl.cpp vbl_sdl.cpp wad.cpp \
   wad_sdl.cpp wad_prefs.cpp weapons.cpp world.cpp
 
-alephone_LDADD = ../CSeries/libcseries.a ../Expat/libexpat.a \
-  ../ModelView/libmodelview.a ../Network/libnetwork.a \
-  ../Pfhortran/libpfhortran.a @SYS_GL_LIBS@
+alephone_LDADD = ../Expat/libexpat.a ../ModelView/libmodelview.a \
+  ../Network/libnetwork.a ../Pfhortran/libpfhortran.a ../CSeries/libcseries.a \
+  @SYS_GL_LIBS@
 
 EXTRA_alephone_SOURCES = computer_interface_sdl.cpp images_sdl.cpp \
   low_level_textures.cpp preferences_sdl.cpp screen_shared.cpp \
