@@ -6,6 +6,9 @@
 
 Aug 15, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Nov 6, 2000 (Loren Petrich);
+	Suppressed commented-out FileSpecifier function
 */
 
 #include <stdlib.h>
@@ -186,7 +189,7 @@ static uint32 calculate_file_crc(
 			count= file_length;
 		}
 
-		assert(OFile.ReadObjectList(count,buffer));
+		assert(OFile.Read(count,buffer));
 		// err= read_file(refnum, count, buffer);
 		// vassert(!err, csprintf(temporary, "Error: %d", err));
 		
