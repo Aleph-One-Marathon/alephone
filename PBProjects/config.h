@@ -44,7 +44,7 @@
 #define PACKAGE "AlephOne"
 
 /* Version number of package */
-#define VERSION "0.12.0"
+#define VERSION "0.13.0"
 
 /* Define if the X Window System is missing or not being used. */
 /* #undef X_DISPLAY_MISSING */
