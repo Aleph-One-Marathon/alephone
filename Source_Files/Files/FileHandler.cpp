@@ -44,6 +44,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 	Added accessors for datafields now opaque in Carbon
 	Standard File Dialogs now assert under carbon
+
+March 18, 2002 (Br'fin (Jeremy Parsons)):
+	Added FileSpecifier::SetParentToResources for Carbon
 */
 
 #if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
@@ -415,6 +418,23 @@ bool FileSpecifier::SetToApp()
 	
 	return (Err == noErr);
 }
+
+#if defined(TARGET_API_MAC_CARBON)
+bool FileSpecifier::SetParentToResources()
+{
+	FSSpec appSpec;
+	char name[256];
+	OSStatus err;
+	
+	get_my_fsspec(&appSpec);
+	CopyPascalStringToC(appSpec.name, temporary);
+	sprintf(name, ":%s:Contents:Resources:AlephOne.rsrc", temporary);
+	CopyCStringToPascal(name, ptemporary);
+	
+	err = FSMakeFSSpec(appSpec.vRefNum, appSpec.parID, ptemporary, &Spec);
+	return (err == noErr);
+}
+#endif
 
 bool FileSpecifier::SetParentToPreferences()
 {

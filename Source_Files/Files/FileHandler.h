@@ -42,6 +42,9 @@ Dec 7, 2000 (Loren Petrich):
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 	Rearranged initializers in DirectorySpecifier constructor to appease compiler warnings
+
+March 18, 2002 (Br'fin (Jeremy Parsons)):
+	Added FileSpecifier::SetParentToResources for Carbon
 */
 #ifdef SDL_RFORK_HACK
 #undef SDL
@@ -435,6 +438,9 @@ public:
 	
 	// Set special directories:
 	bool SetToApp();
+#if defined(TARGET_API_MAC_CARBON)
+	bool SetParentToResources();	// OSX Resources directory: AlephOne.app/Contents/Resources
+#endif
 	bool SetParentToPreferences();
 
 	// The error:
