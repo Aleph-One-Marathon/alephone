@@ -44,6 +44,7 @@ Apr 27, 2001 (Loren Petrich):
 
 #include "shape_descriptors.h"
 #include "ImageLoader.h"
+#include "Model3D.h"
 #include "XML_ElementParser.h"
 
 
@@ -115,14 +116,13 @@ enum
 	OGL_Flag_VoidColor	= 0x0002,	// Whether to color the void
 	OGL_Flag_FlatLand	= 0x0004,	// Whether to use flat-textured landscapes
 	OGL_Flag_Fog		= 0x0008,	// Whether to make fog
-	OGL_Flag_SnglPass	= 0x0010,	// Whether to do two textures in one rendering pass
-	OGL_Flag_2DGraphics	= 0x0020,	// Whether to pipe 2D graphics through OpenGL
-	OGL_Flag_FlatStatic	= 0x0040,	// Whether to make the "static" effect look flat
-	OGL_Flag_Fader		= 0x0080,	// Whether to do the fader effects in OpenGL
-	OGL_Flag_LiqSeeThru	= 0x0100,	// Whether the liquids can be seen through
-	OGL_Flag_Map		= 0x0200,	// Whether to do the overhead map with OpenGL
-	OGL_Flag_TextureFix	= 0x0400,	// Whether to apply a texture fix for old Apple OpenGL
-	OGL_Flag_HUD		= 0x0800,	// Whether to do the HUD with OpenGL
+	OGL_Flag_2DGraphics	= 0x0010,	// Whether to pipe 2D graphics through OpenGL
+	OGL_Flag_FlatStatic	= 0x0020,	// Whether to make the "static" effect look flat
+	OGL_Flag_Fader		= 0x0040,	// Whether to do the fader effects in OpenGL
+	OGL_Flag_LiqSeeThru	= 0x0080,	// Whether the liquids can be seen through
+	OGL_Flag_Map		= 0x0100,	// Whether to do the overhead map with OpenGL
+	OGL_Flag_TextureFix	= 0x0200,	// Whether to apply a texture fix for old Apple OpenGL
+	OGL_Flag_HUD		= 0x0400,	// Whether to do the HUD with OpenGL
 };
 
 struct OGL_ConfigureData
@@ -166,6 +166,9 @@ enum {
 	NUMBER_OF_OPENGL_BITMAP_SETS
 };
 
+// If the color-table value has this value, it means all color tables:
+const int ALL_CLUTS = -1;
+
 
 // Here are the texture-opacity types.
 // Opacity is the value of the alpha channel
@@ -179,12 +182,12 @@ enum
 };
 
 
-struct OGL_TextureOptions
+// Shared options for wall/sprite textures and for skins
+struct OGL_TextureOptionsBase
 {
 	short OpacityType;		// Which type of opacity to use?
 	float OpacityScale;		// How much to scale the opacity
 	float OpacityShift;		// How much to shift the opacity
-	bool VoidVisible;		// Can see the void through texture if semitransparent
 	
 	// Names of files to load; these will be extended ones with directory specifications
 	// <dirname>/<dirname>/<filename>
@@ -192,6 +195,21 @@ struct OGL_TextureOptions
 	
 	// Normal and glow-mapped images
 	ImageDescriptor NormalImg, GlowImg;
+	
+	// For convenience
+	void Load();
+	void Unload();
+	
+	OGL_TextureOptionsBase():
+		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0)
+		{}
+};
+
+
+// Options for wall textures and sprites
+struct OGL_TextureOptions: public OGL_TextureOptionsBase
+{
+	bool VoidVisible;		// Can see the void through texture if semitransparent
 	
 	// Parameters for mapping substitute sprites (inhabitants, weapons in hand)
 	// How many internal units (world unit = 1024) per pixel
@@ -209,7 +227,6 @@ struct OGL_TextureOptions
 	void FindImagePosition();
 	
 	OGL_TextureOptions():
-		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
 		VoidVisible(false), ImageScale(0),
 		Left(0), Top(0), Right(0), Bottom(0) {}
 };
@@ -220,17 +237,91 @@ struct OGL_TextureOptions
 void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels);
 
 
-// for managing the image loading and unloading
-void OGL_LoadImages(int Collection);
-void OGL_UnloadImages(int Collection);
+// for managing the model and image loading and unloading;
+void OGL_LoadModelsImages(int Collection);
+void OGL_UnloadModelsImages(int Collection);
 
 
 // Get the texture options that are currently set
 OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bitmap);
 
 
-// Reset the textures (good if they start to crap out)
+// Reset the textures (walls, sprites, and model skins) (good if they start to crap out)
 void OGL_ResetTextures();
+
+
+// 3D-Model and Skin Support
+
+// Model-skin options
+struct OGL_SkinData: public OGL_TextureOptionsBase
+{
+	short CLUT;				// Which color table is this skin for? (-1 is all)
+	
+	OGL_SkinData(): CLUT(ALL_CLUTS) {}
+};
+
+// Manages skins, in case we decide to have separate static and animated models
+struct OGL_SkinManager
+{
+	// List of skins that a model will "own"
+	vector<OGL_SkinData> SkinData;
+	
+	// OpenGL skin ID's (one for each possible
+	// Copied from TextureState in OGL_Textures	
+	// Which member textures?
+	enum
+	{
+		Normal,		// Used for all normally-shaded and shadeless textures
+		Glowing,	// Used for self-luminous textures
+		NUMBER_OF_TEXTURES
+	};
+	GLuint IDs[NUMBER_OF_OPENGL_BITMAP_SETS][NUMBER_OF_TEXTURES];		// Texture ID's
+	bool IDsInUse[NUMBER_OF_OPENGL_BITMAP_SETS][NUMBER_OF_TEXTURES];	// Which ID's are being used?
+	void ResetSkins();					// Resets the skins so that they may be reloaded
+	
+	// For convenience
+	void Load();
+	void Unload();
+	
+	// Initially all unused (of course)
+	OGL_SkinManager() {objlist_clear(IDsInUse[0],NUMBER_OF_OPENGL_BITMAP_SETS*NUMBER_OF_TEXTURES);}
+};
+
+// Static 3D-Model Data and Options
+struct OGL_ModelData: public OGL_SkinManager
+{
+	// Name of the model file
+	vector<char> ModelFile;
+	
+	// Type of model-file data (guess the model-file type if empty)
+	vector<char> ModelType;
+	
+	// Preprocessing: rotation scaling, shifting
+	// Scaling and rotation are applied before shifting
+	// Scaling can be negative, thus producing mirroring
+	float Scale;					// From model units to engine internal units (not World Units)
+	float XRot, YRot, ZRot;			// In degrees
+	float XShift, YShift, ZShift;	// In internal units
+	
+	// Should a rotation rate be included, in order to get that Quake look?
+	
+	// The model itself (static, single-skin [only one skin at a time])
+	Model3D Model;
+	bool ModelPresent() {return !Model.Positions.empty();}
+	
+	// For convenience
+	void Load();
+	void Unload();
+	
+	OGL_ModelData():
+		Scale(1), XRot(0), YRot(0), ZRot(0), XShift(0), YShift(0), ZShift(0)
+		{}
+};
+
+
+// Returns NULL if a collectiona and sequence do not have an associated model
+OGL_ModelData *OGL_GetModelData(short Collection, short Sequence);
+
 
 // Fog data record
 struct OGL_FogData

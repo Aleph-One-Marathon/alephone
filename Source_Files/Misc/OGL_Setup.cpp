@@ -160,15 +160,12 @@ void OGL_TextureOptions::FindImagePosition()
 }
 
 
-// Texture-options stuff
+// Texture-options stuff;
+// defaults for whatever might need them
 static OGL_TextureOptions DefaultTextureOptions;
 
-// If the color-table value has this value, it means all color tables:
-const int ALL_CLUTS = -1;
 
-
-// Store landscape stuff as a linked list;
-// do in analogy with animated textures.
+// Store texture-options stuff in a set of STL vectors
 struct TextureOptionsEntry
 {
 	// Which color table and bitmap to apply to:
@@ -176,9 +173,6 @@ struct TextureOptionsEntry
 	
 	// Make a member for more convenient access
 	OGL_TextureOptions OptionsData;
-	
-	// Most recent files that the textures had been loaded from
-	vector<char> NormalColors, NormalMask, GlowColors, GlowMask;
 	
 	TextureOptionsEntry(): CLUT(ALL_CLUTS), Bitmap(NONE) {}
 };
@@ -227,7 +221,8 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 		objlist_set(&TOHash[Collection][0],NONE,TOHashSize);
 	}
 	
-	// Set up a *reference* to the appropriate hashtable entry
+	// Set up a *reference* to the appropriate hashtable entry;
+	// this makes setting this entry a bit more convenient
 	int16& HashVal = TOHash[Collection][TOHashFunc(CLUT,Bitmap)];
 	
 	// Check to see if the texture-option entry is correct;
@@ -262,6 +257,100 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 	}
 	
 	return &DefaultTextureOptions;
+}
+
+
+// Model-data stuff;
+// defaults for whatever might need them
+// Including skin stuff for convenience here
+static OGL_ModelData DefaultModelData;
+static OGL_SkinData DefaultSkinData;
+
+// Store model-data stuff in a set of STL vectors
+struct ModelDataEntry
+{
+	// Which sequence to apply to:
+	// For models to be mapped to multiple sequences,
+	// such as animated models,
+	// this will need to be more complicated
+	short Sequence;
+	
+	// Make a member for more convenient access
+	OGL_ModelData ModelData;
+	
+	ModelDataEntry(): Sequence(NONE) {}
+};
+
+
+// Separate model-data sequence lists for each collection ID,
+// to speed up searching
+static vector<ModelDataEntry> MdlList[NUMBER_OF_COLLECTIONS];
+
+// Model-data hash table for extra-fast searching:
+static vector<int16> MdlHash[NUMBER_OF_COLLECTIONS];
+
+// Hash-table size and function
+const int MdlHashSize = 1 << 8;
+const int MdlHashMask = TOHashSize - 1;
+inline uint8 MdlHashFunc(short Sequence)
+{
+	// E-Z
+	return (uint8)(Sequence & MdlHashMask);
+}
+
+
+// Deletes a collection's model-data sequences
+static void MdlDelete(int c)
+{
+	MdlList[c].clear();
+	MdlHash[c].clear();
+}
+
+// Deletes all of them
+static void MdlDeleteAll()
+{
+	for (int c=0; c<NUMBER_OF_COLLECTIONS; c++) MdlDelete(c);
+}
+
+OGL_ModelData *OGL_GetModelData(short Collection, short Sequence)
+{
+	// Initialize the hash table if necessary
+	if (MdlHash[Collection].empty())
+	{
+		MdlHash[Collection].resize(MdlHashSize);
+		objlist_set(&MdlHash[Collection][0],NONE,MdlHashSize);
+	}
+	
+	// Set up a *reference* to the appropriate hashtable entry;
+	// this makes setting this entry a bit more convenient
+	int16& HashVal = MdlHash[Collection][MdlHashFunc(Sequence)];
+	
+	// Check to see if the model-data entry is correct;
+	// if it is, then we're done.
+	if (HashVal != NONE)
+	{
+		vector<ModelDataEntry>::iterator MdlIter = MdlList[Collection].begin() + HashVal;
+		if (MdlIter->Sequence == Sequence)
+		{
+			return &MdlIter->ModelData;
+		}
+	}
+	
+	// Fallback for the case of a hashtable miss;
+	// do a linear search and then update the hash entry appropriately.
+	vector<ModelDataEntry>& ML = MdlList[Collection];
+	int16 Indx = 0;
+	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++, Indx++)
+	{
+		if (MdlIter->Sequence == Sequence)
+		{
+			HashVal = Indx;
+			return &MdlIter->ModelData;
+		}
+	}
+	
+	// None found!
+	return NULL;
 }
 
 
@@ -342,130 +431,176 @@ static void StringCopy(vector<char>& StrDest, vector<char>& StrSrc)
 }
 
 
-// for managing the image loading and unloading
-void OGL_LoadImages(int Collection)
+void OGL_TextureOptionsBase::Load()
+{
+	FileSpecifier File;
+	
+	// Load the normal image with alpha channel
+	try
+	{
+		// Check to see if loading needs to be done;
+		// it does not need to be if an image is present.
+		if (NormalImg.IsPresent()) throw 0;
+		NormalImg.Clear();
+		
+		// Load the normal image if it has a filename specified for it
+		if (!StringPresent(NormalColors)) throw 0;
+#ifdef mac
+		if (!File.SetToApp()) return;
+#endif
+		if (!File.SetNameWithPath(&NormalColors[0])) throw 0;
+		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Colors)) throw 0;
+	}
+	catch(...)
+	{
+		// A texture must have a normal colored part
+		return;
+	}
+	
+	try
+	{
+		// Load the normal mask if it has a filename specified for it
+		if (!StringPresent(NormalMask)) throw 0;
+#ifdef mac
+		if (!File.SetToApp()) throw 0;
+#endif
+		if (!File.SetNameWithPath(&NormalMask[0])) throw 0;
+		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Opacity)) throw 0;
+	}
+	catch(...)
+	{}
+	
+	// Load the glow image with alpha channel
+	try
+	{
+		// Check to see if loading needs to be done;
+		// it does not need to be if an image is present.
+		if (GlowImg.IsPresent()) throw 0;
+		GlowImg.Clear();
+		
+		// Load the glow image if it has a filename specified for it
+		if (!StringPresent(GlowColors)) throw 0;
+#ifdef mac
+		if (!File.SetToApp()) throw 0;
+#endif
+		if (!File.SetNameWithPath(&GlowColors[0])) throw 0;
+		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Colors)) throw 0;
+		
+		// Load the glow mask if it has a filename specified for it;
+		// only loaded if an image has been loaded for it
+		if (!StringPresent(GlowMask)) throw 0;
+#ifdef mac
+		if (!File.SetToApp()) throw 0;
+#endif
+		if (!File.SetNameWithPath(&GlowMask[0])) throw 0;
+		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Opacity)) throw 0;
+	}
+	catch(...)
+	{}
+	
+	// The rest of the code is made simpler by these constraints:
+	// that the glow texture only be present if the normal texture is also present,
+	// and that the normal and glow textures have the same dimensions
+	if (NormalImg.IsPresent())
+	{
+		int W0 = NormalImg.GetWidth();
+		int W1 = GlowImg.GetWidth();
+		int H0 = NormalImg.GetHeight();
+		int H1 = GlowImg.GetHeight();
+		if ((W1 != W0) || (H1 != H0)) GlowImg.Clear();
+	}
+	else
+	{
+		GlowImg.Clear();
+	}
+}
+
+void OGL_TextureOptionsBase::Unload()
+{
+	NormalImg.Clear();
+	GlowImg.Clear();
+}
+
+// Any easy STL ways of doing this mapping of functions onto members of arrays?
+
+void OGL_SkinManager::Load()
+{
+	// Assumed to be done between OpenGL contexts, as it were; clear the texture-use flags
+	objlist_clear(IDsInUse[0],NUMBER_OF_OPENGL_BITMAP_SETS*NUMBER_OF_TEXTURES);
+	
+	for (vector<OGL_SkinData>::iterator SkinIter = SkinData.begin(); SkinIter < SkinData.end(); SkinIter++)
+		SkinIter->Load();
+}
+
+
+void OGL_SkinManager::Unload()
+{
+	// Assumed to be done between OpenGL contexts, as it were; clear the texture-use flags
+	objlist_clear(IDsInUse[0],NUMBER_OF_OPENGL_BITMAP_SETS*NUMBER_OF_TEXTURES);
+	
+	for (vector<OGL_SkinData>::iterator SkinIter = SkinData.begin(); SkinIter < SkinData.end(); SkinIter++)
+		SkinIter->Unload();
+}
+
+
+void OGL_ModelData::Load()
+{
+#warning Load the model here
+
+	OGL_SkinManager::Load();
+}
+
+
+void OGL_ModelData::Unload()
+{
+	Model.Clear();
+	
+	OGL_SkinManager::Unload();
+}
+
+
+
+// for managing the model and image loading and unloading
+void OGL_LoadModelsImages(int Collection)
 {
 	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
 	
+	// For wall/sprite images
 	vector<TextureOptionsEntry>& TOL = TOList[Collection];
 	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
 	{
-		FileSpecifier File;
-		
-		// Load the normal image with alpha channel
-		try
-		{
-			// Check to see if loading needs to be done;
-			// it does not need to be if the filenames are the same and an image is present.
-			// The image is always cleared before loading, for safety in case of invalidity.
-			if (StringsEqual(TOIter->OptionsData.NormalColors,TOIter->NormalColors) &&
-				StringsEqual(TOIter->OptionsData.NormalMask,TOIter->NormalMask))
-			{
-				if (TOIter->OptionsData.NormalImg.IsPresent())
-					throw 0;
-				else
-					TOIter->OptionsData.NormalImg.Clear();
-			}
-			else
-			{
-				StringCopy(TOIter->NormalColors,TOIter->OptionsData.NormalColors);
-				StringCopy(TOIter->NormalMask,TOIter->OptionsData.NormalMask);
-				TOIter->OptionsData.NormalImg.Clear();
-			}
-			
-			// Load the normal image if it has a filename specified for it
-			if (!StringPresent(TOIter->OptionsData.NormalColors))
-				throw 0;
-#ifdef mac
-			if (!File.SetToApp()) throw 0;
-#endif
-			if (!File.SetNameWithPath(&TOIter->OptionsData.NormalColors[0])) throw 0;
-			if (!LoadImageFromFile(TOIter->OptionsData.NormalImg,File,ImageLoader_Colors)) throw 0;
-			
-			// Load the normal mask if it has a filename specified for it;
-			// only loaded if an image has been loaded for it
-			if (!StringPresent(TOIter->OptionsData.NormalMask)) throw 0;
-#ifdef mac
-			if (!File.SetToApp()) throw 0;
-#endif
-			if (!File.SetNameWithPath(&TOIter->OptionsData.NormalMask[0])) throw 0;
-			if (!LoadImageFromFile(TOIter->OptionsData.NormalImg,File,ImageLoader_Opacity)) throw 0;
-		}
-		catch(...)
-		{}
-		
-		// Load the glow image with alpha channel
-		try
-		{
-			// Check to see if loading needs to be done;
-			// it does not need to be if the filenames are the same and an image is present.
-			// The image is always cleared before loading, for safety in case of invalidity.
-			if (StringsEqual(TOIter->OptionsData.GlowColors,TOIter->GlowColors) &&
-				StringsEqual(TOIter->OptionsData.GlowMask,TOIter->GlowMask))
-			{
-				if (TOIter->OptionsData.GlowImg.IsPresent())
-					throw 0;
-				else
-					TOIter->OptionsData.GlowImg.Clear();
-			}
-			else
-			{
-				StringCopy(TOIter->GlowColors,TOIter->OptionsData.GlowColors);
-				StringCopy(TOIter->GlowMask,TOIter->OptionsData.GlowMask);
-				TOIter->OptionsData.GlowImg.Clear();
-			}
-			
-			// Load the glow image if it has a filename specified for it
-			if (!StringPresent(TOIter->OptionsData.GlowColors)) throw 0;
-#ifdef mac
-			if (!File.SetToApp()) throw 0;
-#endif
-			if (!File.SetNameWithPath(&TOIter->OptionsData.GlowColors[0])) throw 0;
-			if (!LoadImageFromFile(TOIter->OptionsData.GlowImg,File,ImageLoader_Colors)) throw 0;
-			
-			// Load the glow mask if it has a filename specified for it;
-			// only loaded if an image has been loaded for it
-			if (!StringPresent(TOIter->OptionsData.GlowMask)) throw 0;
-#ifdef mac
-			if (!File.SetToApp()) throw 0;
-#endif
-			if (!File.SetNameWithPath(&TOIter->OptionsData.GlowMask[0])) throw 0;
-			if (!LoadImageFromFile(TOIter->OptionsData.GlowImg,File,ImageLoader_Opacity)) throw 0;
-		}
-		catch(...)
-		{}
-		
-		// The rest of the code is made simpler by these constraints:
-		// that the glow texture only be present if the normal texture is also present,
-		// and that the normal and glow textures have the same dimensions
-		if (TOIter->OptionsData.NormalImg.IsPresent())
-		{
-			int W0 = TOIter->OptionsData.NormalImg.GetWidth();
-			int W1 = TOIter->OptionsData.GlowImg.GetWidth();
-			int H0 = TOIter->OptionsData.NormalImg.GetHeight();
-			int H1 = TOIter->OptionsData.GlowImg.GetHeight();
-			if ((W1 != W0) || (H1 != H0)) TOIter->OptionsData.GlowImg.Clear();
-		}
-		else
-		{
-			TOIter->OptionsData.GlowImg.Clear();
-		}
+		// Load the images
+		TOIter->OptionsData.Load();
 		
 		// Find adjusted-frame image-data positioning;
 		// this is for doing sprites with textures with sizes different from the originals
 		TOIter->OptionsData.FindImagePosition();
 	}
+	
+	// For models
+	vector<ModelDataEntry>& ML = MdlList[Collection];
+	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
+	{
+		MdlIter->ModelData.Load();
+	}
 }
 
-void OGL_UnloadImages(int Collection)
+void OGL_UnloadModelsImages(int Collection)
 {
 	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
 	
+	// For wall/sprite images
 	vector<TextureOptionsEntry>& TOL = TOList[Collection];
 	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
 	{
-		TOIter->OptionsData.NormalImg.Clear();
-		TOIter->OptionsData.GlowImg.Clear();
+		TOIter->OptionsData.Unload();
+	}
+	
+	// For models
+	vector<ModelDataEntry>& ML = MdlList[Collection];
+	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
+	{
+		MdlIter->ModelData.Unload();
 	}
 }
 
@@ -667,6 +802,277 @@ bool XML_TextureOptionsParser::AttributesDone()
 static XML_TextureOptionsParser TextureOptionsParser;
 
 
+class XML_SkinDataParser: public XML_ElementParser
+{
+	short CLUT;
+	
+	OGL_SkinData Data;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	vector<OGL_SkinData> *SkinDataPtr;
+	
+	XML_SkinDataParser(): XML_ElementParser("skin"), SkinDataPtr(NULL) {}
+};
+
+bool XML_SkinDataParser::Start()
+{
+	Data = DefaultSkinData;
+	CLUT = ALL_CLUTS;
+	
+	return true;
+}
+
+bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"clut") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET)));
+	}
+	else if (strcmp(Tag,"opac_type") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Data.OpacityType,short(0),short(OGL_NUMBER_OF_OPACITY_TYPES-1)));
+	}
+	else if (strcmp(Tag,"opac_scale") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.OpacityScale));
+	}
+	else if (strcmp(Tag,"opac_shift") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.OpacityShift));
+	}
+	else if (strcmp(Tag,"normal_image") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.NormalColors.resize(nchars);
+		memcpy(&Data.NormalColors[0],Value,nchars);
+		return true;
+	}
+	else if (strcmp(Tag,"normal_mask") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.NormalMask.resize(nchars);
+		memcpy(&Data.NormalMask[0],Value,nchars);
+		return true;
+	}
+	else if (strcmp(Tag,"glow_image") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.GlowColors.resize(nchars);
+		memcpy(&Data.GlowColors[0],Value,nchars);
+		return true;
+	}
+	else if (strcmp(Tag,"glow_mask") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.GlowMask.resize(nchars);
+		memcpy(&Data.GlowMask[0],Value,nchars);
+		return true;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_SkinDataParser::AttributesDone()
+{
+	// Check to see if a frame is already accounted for
+	assert(SkinDataPtr);
+	vector<OGL_SkinData>& SkinData = *SkinDataPtr;
+	for (vector<OGL_SkinData>::iterator SDIter = SkinData.begin(); SDIter < SkinData.end(); SDIter++)
+	{
+		if (SDIter->CLUT == CLUT)
+		{
+			// Replace the data
+			*SDIter = Data;
+			return true;
+		}
+	}
+	
+	// If not, then add a new frame entry
+	SkinData.push_back(Data);
+	
+	return true;
+}
+
+static XML_SkinDataParser SkinDataParser;
+
+
+class XML_MdlClearParser: public XML_ElementParser
+{
+	bool IsPresent;
+	short Collection;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+
+	XML_MdlClearParser(): XML_ElementParser("model_clear") {}
+};
+
+bool XML_MdlClearParser::Start()
+{
+	IsPresent = false;
+	return true;
+}
+
+bool XML_MdlClearParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"coll") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		{
+			IsPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_MdlClearParser::AttributesDone()
+{
+	if (IsPresent)
+		MdlDelete(Collection);
+	else
+		MdlDeleteAll();
+	
+	return true;
+}
+
+static XML_MdlClearParser Mdl_ClearParser;
+
+
+class XML_ModelDataParser: public XML_ElementParser
+{
+	bool CollIsPresent, SeqIsPresent;
+	short Collection, Sequence;
+	
+	OGL_ModelData Data;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	XML_ModelDataParser(): XML_ElementParser("model") {}
+};
+
+bool XML_ModelDataParser::Start()
+{
+	Data = DefaultModelData;
+	CollIsPresent = SeqIsPresent = false;
+	
+	// For doing the model skins
+	SkinDataParser.SkinDataPtr = &Data.SkinData;
+		
+	return true;
+}
+
+bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"coll") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Collection,short(0),short(NUMBER_OF_COLLECTIONS-1)))
+		{
+			CollIsPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"sequence") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Sequence,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		{
+			SeqIsPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"scale") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.Scale));
+	}
+	else if (strcmp(Tag,"x_rot") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.XRot));
+	}
+	else if (strcmp(Tag,"y_rot") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.YRot));
+	}
+	else if (strcmp(Tag,"z_rot") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.ZRot));
+	}
+	else if (strcmp(Tag,"x_shift") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.XShift));
+	}
+	else if (strcmp(Tag,"y_shift") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.YShift));
+	}
+	else if (strcmp(Tag,"z_shift") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.ZShift));
+	}
+	else if (strcmp(Tag,"file") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.ModelFile.resize(nchars);
+		memcpy(&Data.ModelFile[0],Value,nchars);
+		return true;
+	}
+	else if (strcmp(Tag,"type") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.ModelType.resize(nchars);
+		memcpy(&Data.ModelType[0],Value,nchars);
+		return true;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_ModelDataParser::AttributesDone()
+{
+	// Verify...
+	if (!CollIsPresent || !SeqIsPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	// Check to see if a frame is already accounted for
+	vector<ModelDataEntry>& ML = MdlList[Collection];
+	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
+	{
+		if (MdlIter->Sequence == Sequence)
+		{
+			// Replace the data
+			MdlIter->ModelData = Data;
+			return true;
+		}
+	}
+	
+	// If not, then add a new frame entry
+	ModelDataEntry DataEntry;
+	DataEntry.Sequence = Sequence;
+	DataEntry.ModelData = Data;
+	ML.push_back(DataEntry);
+	
+	return true;
+}
+
+static XML_ModelDataParser ModelDataParser;
+
+
+
 class XML_FogParser: public XML_ElementParser
 {
 	bool IsPresent[2];
@@ -736,6 +1142,11 @@ XML_ElementParser *OpenGL_GetParser()
 {
 	OpenGL_Parser.AddChild(&TextureOptionsParser);
 	OpenGL_Parser.AddChild(&TO_ClearParser);
+	
+	ModelDataParser.AddChild(&SkinDataParser);
+	OpenGL_Parser.AddChild(&ModelDataParser);
+	OpenGL_Parser.AddChild(&Mdl_ClearParser);
+	
 	FogParser.AddChild(Color_GetParser());
 	OpenGL_Parser.AddChild(&FogParser);
 	
