@@ -81,6 +81,9 @@ Jun 3, 2000 (Loren Petrich):
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Aug 26, 2000 (Loren Petrich):
+	Moved get_default_sounds_spec() to preprocess_map_mac.c
 */
 
 /*
@@ -1383,13 +1386,3 @@ static void add_one_ambient_sound_source(
 	
 	return;
 }
-
-#ifdef mac
-// Clone of similar functions for getting default map and physics specs
-void get_default_sounds_spec(FileSpecifier& File)
-{
-	File.SetFileToApp();
-	File.SetName(getcstr(temporary, strFILENAMES, filenameSOUNDS8),FileSpecifier::C_Sound);
-	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
-}
-#endif
