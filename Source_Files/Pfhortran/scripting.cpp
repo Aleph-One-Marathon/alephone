@@ -143,13 +143,13 @@ int load_script(int text_id)
 
 
 // LP addition:
-int load_script_data(void *Data, int Len)
+int load_script_data(void *Data, int DataLen)
 {
 	if (!is_pfhortran_on())	/* we can't do too much if the pfhortran isn't running */
 		return script_FALSE;
-	
+		
 	char *origsrc = (char *)Data;
-	int origlen = Len;
+	int origlen = DataLen;
 	
 	clean_up_script();
 	
@@ -160,7 +160,6 @@ int load_script_data(void *Data, int Len)
 		
 		return script_TRUE;
 	}
-	
 	
 	// Create a new copy to avoid buffer overflows,
 	// and tack a C-string terminator on the end
@@ -179,7 +178,7 @@ int load_script_data(void *Data, int Len)
 	variable_count = 0;
 
 	is_startup = false;
-
+	
 	return script_TRUE;
 }
 
@@ -188,7 +187,7 @@ void script_init(void)
 {
 	if (!script_in_use())
 		return;
-
+	
 	s_camera_Control = false;
 	
 	/*int old_start = current_instruction;
@@ -220,7 +219,7 @@ void script_init(void)
 	}
 	
 	activate_trap(idle);	/* start the idle script running */
-
+	
 }
  
 /*do_next_instruction gets the next instruction and executes it*/
@@ -326,7 +325,7 @@ void free_script(void)
 is currently a script loaded, false if there is not.*/
 bool script_in_use(void)
 {
-	return (current_script);
+	return (current_script != NULL);
 }
 
 

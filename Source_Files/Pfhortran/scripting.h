@@ -19,7 +19,7 @@ int load_script(int text_id);
 void free_script(void);
 
 // LP addition:
-int load_script_data(void *Data, int Len);
+int load_script_data(void *Data, int DataLen);
  
 void script_init(void);
  
