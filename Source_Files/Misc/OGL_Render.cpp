@@ -43,6 +43,10 @@
 	Removed TRANSPARENT_BIT test as irrelevant
 	
 	Made semitransparency optional if the void is on one side of the texture
+
+	July 7, 2000:
+	
+	Calculated center correctly in OGL_RenderCrosshairs()
 */
 
 #include <GL/gl.h>
@@ -1826,10 +1830,14 @@ bool OGL_RenderCrosshairs()
 	// No textures painted here	
 	glDisable(GL_TEXTURE_2D);
 	
-	// The center
+	// The center:
+	short XCen = ViewWidth >> 1;
+	short YCen = ViewHeight >> 1;
+	/*
 	short XCen = ((SavedViewBounds.left + SavedViewBounds.right) >> 1);
 	short YCen = ((SavedViewBounds.top + SavedViewBounds.bottom) >> 1);
-
+	*/
+	
 	// Create a new modelview matrix for the occasion
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
