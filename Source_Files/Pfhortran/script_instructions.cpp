@@ -2243,6 +2243,7 @@ void s_Monster_New(script_instruction inst)
 		where = (short)get_variable(int(inst.op3));	
 		break;
 	default:
+		dprintf("Argument 1 of Monster_New must be a variable\n");
 		return;			//if we don't have a variable as element 1, return
 	}
 	
@@ -3045,11 +3046,13 @@ void s_Set_Platform_State(script_instruction inst)
 	float polygon_index, state;
 	struct polygon_data *polygon;
 	
-	polygon_index = inst.op1;
-	state = inst.op2;
-	
 	switch(inst.mode)
 	{
+		case 0:
+			polygon_index = int(inst.op1);
+			state = int(inst.op2);
+			break;
+			
 		case 1:
 			polygon_index = get_variable(int(inst.op1));
 			state = int(inst.op2);
@@ -3070,11 +3073,13 @@ void s_Set_Platform_State(script_instruction inst)
 	}
 	polygon = get_polygon_data(short(polygon_index));
 	if (polygon)
+	{
 		if (polygon->type == _polygon_is_platform)
 		{	
 			try_and_change_platform_state(short(polygon->permutation), state != 0);
 			assume_correct_switch_position(_panel_is_platform_switch, short(polygon->permutation), state != 0);
 		}
+	}
 }
 
 void s_Get_Platform_State(script_instruction inst)
@@ -3100,19 +3105,25 @@ void s_Get_Platform_State(script_instruction inst)
 	
 	polygon = get_polygon_data(short(polygon_index));
 	if (polygon)
+	{
 		if (polygon->type == _polygon_is_platform)
-			set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(get_platform_data(short(polygon->permutation))) ? 1 : 0);		
+		{
+			set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(get_platform_data(short(polygon->permutation))) ? 1 : 0);
+		}
+	}
 }
 
 void s_Play_Sound(script_instruction inst)
 {
 	float sound_index, pitch;
 	
-	sound_index = inst.op1;
-	pitch = inst.op2;
-	
 	switch(inst.mode)
 	{
+		case 0:
+			sound_index = int(inst.op1);
+			pitch = int(inst.op2);
+			break;
+			
 		case 1:
 			sound_index = get_variable(int(inst.op1));
 			pitch = int(inst.op2);
@@ -3142,17 +3153,21 @@ void s_Set_Light_State(script_instruction inst)
 	float light_index, state;
 	bool WasChanged = false;
 	
-	light_index = inst.op1;
-	state = inst.op2;
-	
 	switch(inst.mode)
 	{
+		case 0:
+			light_index = int(inst.op1);
+			state = int(inst.op2);
+			break;
+			
 		case 1:
+			state = int(inst.op2);
 			light_index = get_variable(int(inst.op1));
 			break;
 			
 		case 2:
-			light_index = get_variable(int(inst.op2));
+			light_index = int(inst.op1);
+			state = get_variable(int(inst.op2));
 			break;
 			
 		case 3:
@@ -3188,25 +3203,19 @@ void s_Get_Light_State(script_instruction inst)
 
 void s_Get_Player_Poly(script_instruction inst)
 {
-	if (inst.mode == 1)
-		set_variable(int(inst.op1), get_polygon_index_supporting_player(local_player->monster_index));
+	set_variable(int(inst.op1), local_player->supporting_polygon_index);
 }
 
 // LP: adding this stuff for "EE"
 
 void s_Get_Fog_Presence(script_instruction inst)
 {
-	switch(inst.mode)
-	{
-	case 1:
-		set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent ? 1 : 0);
-		break;
-	}
+	if (inst.mode = 1) set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent ? 1 : 0);
 }
 
 void s_Set_Fog_Presence(script_instruction inst)
 {
-	float temp = inst.op1;
+	float temp = 0;
 
 	switch(inst.mode)
 	{		
@@ -3224,17 +3233,12 @@ void s_Set_Fog_Presence(script_instruction inst)
 
 void s_Get_UnderFog_Presence(script_instruction inst)
 {
-	switch(inst.mode)
-	{
-	case 1:
-		set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent ? 1 : 0);
-		break;
-	}
+	if (inst.mode = 1) set_variable(int(inst.op1), OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent ? 1 : 0);
 }
 
 void s_Set_UnderFog_Presence(script_instruction inst)
 {
-	float temp = inst.op1;
+	float temp = 0;
 
 	switch(inst.mode)
 	{
@@ -3274,18 +3278,18 @@ void s_Player_Control(script_instruction inst)
 	// op1 : move type
 	// op2 : how many times
 	uint32 action_flags = -1;
-	short move_type = -1;
+	int move_type = -1;
 	int value = 0;
 	
 	switch(inst.mode)
 	{			
 		case 1:
-			move_type = short(get_variable(int(inst.op1)));
+			move_type = int(get_variable(int(inst.op1)));
 			value = int(inst.op2);
 			break;
 			
 		case 3:
-			move_type = short(get_variable(int(inst.op1)));
+			move_type = int(get_variable(int(inst.op1)));
 			value = int(get_variable(int(inst.op2)));
 			break;
 			
@@ -3384,7 +3388,60 @@ void s_Player_Control(script_instruction inst)
 
 void s_Display_Message(script_instruction inst)
 {
-	screen_printf("%hd: %f %f %f",inst.mode,inst.op1,inst.op2,inst.op3);
+	float op1, op2, op3;
+
+	switch(inst.mode)
+	{
+		case 0:
+			op1 = inst.op1;
+			op2 = inst.op2;
+			op3 = inst.op3;
+			break;
+	
+		case 1:
+			op1 = get_variable(inst.op1);
+			op2 = inst.op2;
+			op3 = inst.op3;
+			break;
+			
+		case 2:
+			op1 = inst.op1;
+			op2 = get_variable(inst.op2);
+			op3 = inst.op3;
+			break;
+	
+		case 3:
+			op1 = get_variable(inst.op1);
+			op2 = get_variable(inst.op2);
+			op3 = inst.op3;
+			break;
+	
+		case 4:
+			op1 = inst.op1;
+			op2 = inst.op2;
+			op3 = get_variable(inst.op3);
+			break;
+	
+		case 5:
+			op1 = get_variable(inst.op1);
+			op2 = inst.op2;
+			op3 = get_variable(inst.op3);
+			break;
+	
+		case 6:
+			op1 = inst.op1;
+			op2 = get_variable(inst.op2);
+			op3 = get_variable(inst.op3);
+			break;
+	
+		case 7:
+			op1 = get_variable(inst.op1);
+			op2 = get_variable(inst.op2);
+			op3 = get_variable(inst.op3);
+			break;
+	}
+	
+	screen_printf("%hd: %f %f %f",inst.mode,op1,op2,op3);
 }
 
 void s_Monster_Get_Action(script_instruction inst)
@@ -3403,6 +3460,7 @@ void s_Monster_Get_Action(script_instruction inst)
 			break;
 		
 		default:
+			dprintf("Argument 1 of Monster_Get_Action must be a variable\n");
 			return;
 	}
 	
@@ -3428,6 +3486,7 @@ void s_Monster_Get_Mode(script_instruction inst)
 			break;
 		
 		default:
+			dprintf("Argument 1 of Monster_Get_Mode must be a variable\n");
 			return;
 	}
 	
@@ -3452,6 +3511,7 @@ void s_Monster_Get_Vitality(script_instruction inst)
 			break;
 		
 		default:
+			dprintf("Argument 1 of Monster_Get_Vitality must be a variable\n");
 			return;
 	}
 	
@@ -3489,6 +3549,7 @@ void s_Monster_Set_Vitality(script_instruction inst)
 			break;
 		
 		default:
+			dprintf("Argument 1 of Monster_Set_Vitality must be a variable\n");
 			return;
 	}
 	
@@ -3499,10 +3560,7 @@ void s_Monster_Set_Vitality(script_instruction inst)
 
 void s_Not(script_instruction inst)
 {
-	if (inst.mode != 1) return
-	
-	set_variable(int(get_variable(inst.op1)), !(int(get_variable(inst.op1))));
-	
+	if (inst.mode = 1) set_variable(int(inst.op1), !(int(get_variable(inst.op1))));
 }
 
 void s_Start_Fade(script_instruction inst)
