@@ -151,7 +151,7 @@ Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
 #include "Crosshairs.h"
-#include "VectorOps.h"
+#include "VecOps.h"
 #include "Random.h"
 #include "ViewControl.h"
 #include "OGL_Faders.h"
