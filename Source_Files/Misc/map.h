@@ -597,7 +597,6 @@ struct saved_side /* 64 bytes */
 };
 #endif
 const int SIZEOF_saved_side = 64;
-const int SIZEOF_side_data = 64;
 
 struct side_data /* size platform-dependant */
 {
@@ -625,10 +624,11 @@ struct side_data /* size platform-dependant */
 	short secondary_lightsource_index;
 	short transparent_lightsource_index;
 
-	short ambient_delta;
+	long ambient_delta;
 
 	short unused[1];
 };
+const int SIZEOF_side_data = 64;
 
 /* ----------- polygon definition */
 
@@ -1232,9 +1232,15 @@ void guess_side_lightsource_indexes(short side_index);
 
 void set_map_index_buffer_size(long length);
 
-// Split and join the misaligned 4-byte values
-void pack_side_data(side_data& source, saved_side& dest);
-void unpack_side_data(saved_side& source, side_data& dest);
+// LP: routines for packing and unpacking the data from streams of bytes
+void unpack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count = 1);
+void pack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count = 1);
+void unpack_line_data(uint8 *Stream, line_data* Objects, int Count = 1);
+void pack_line_data(uint8 *Stream, line_data* Objects, int Count = 1);
+void unpack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
+void pack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
+void unpack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
+void pack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
 
 /* ---------- prototypes/PLACEMENT.C */
 
