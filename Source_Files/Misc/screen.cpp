@@ -413,7 +413,7 @@ void initialize_screen(
 		}
 		else
 		{
-			memset(&resolution_restore_spec, 0, sizeof(GDSpec));
+			obj_clear(resolution_restore_spec);
 		}
 #endif
 		
@@ -1131,7 +1131,7 @@ void process_screen_click(
 void change_interface_clut(
 	struct color_table *color_table)
 {
-	memcpy(interface_color_table, color_table, sizeof(struct color_table));
+	obj_copy(*interface_color_table, *color_table);
 
 	return;
 }
@@ -1143,8 +1143,8 @@ void change_screen_clut(
 {
 	if (interface_bit_depth==8 && bit_depth==8)
 	{
-		memcpy(uncorrected_color_table, color_table, sizeof(struct color_table));
-		memcpy(interface_color_table, color_table, sizeof(struct color_table));
+		obj_copy(*uncorrected_color_table, *color_table);
+		obj_copy(*interface_color_table, *color_table);
 	}
 	
 	if (bit_depth==16 || bit_depth==32)
@@ -1152,12 +1152,12 @@ void change_screen_clut(
 		build_direct_color_table(uncorrected_color_table, bit_depth);
 		if (interface_bit_depth!=8)
 		{
-			memcpy(interface_color_table, uncorrected_color_table, sizeof(struct color_table));
+			obj_copy(*interface_color_table, *uncorrected_color_table);
 		}
 	}
 
 	gamma_correct_color_table(uncorrected_color_table, world_color_table, screen_mode.gamma_level);
-	memcpy(visible_color_table, world_color_table, sizeof(struct color_table));
+	obj_copy(*visible_color_table, *world_color_table);
 
 	/* switch to our device, stuff in our corrected color table */
 	assert_world_color_table(interface_color_table, world_color_table);
@@ -1555,7 +1555,7 @@ void change_gamma_level(
 	screen_mode.gamma_level= gamma_level;
 	gamma_correct_color_table(uncorrected_color_table, world_color_table, gamma_level);
 	stop_fade();
-	memcpy(visible_color_table, world_color_table, sizeof(struct color_table));
+	obj_copy(*visible_color_table, *world_color_table);
 	assert_world_color_table(interface_color_table, world_color_table);
 	change_screen_mode(&screen_mode, FALSE);
 	set_fade_effect(NONE);
