@@ -346,12 +346,18 @@ static void initialize_application_heap(
 	InitDialogs(0); /* resume procedure ignored for multifinder and >=system 7.0 */
 #endif
 	InitCursor();
-#if __GNUC__ >= 3
+#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__) && defined(CARBON_USE_QUARTZ_RENDERING)
+#if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
 	QDSwapTextFlags(1 | 2 | 4);
+#endif
 #endif
 	long response;
 	OSErr error;
 
+#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
+	chdir(getenv("HOME"));
+#endif
+	
 #if  defined(__MWERKS__) && !defined(COMPLAIN_BAD_ALLOCS)
 std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try throws_bad_allocs instead
 #endif
@@ -422,7 +428,7 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	Handle PathStrings = Get1Resource('STR#',PathID);
 	if (PathStrings)
 	{
-		// fdprintf("Parsing external files");
+		//fdprintf("Parsing external files");
 		// Count how many there are
 		HLock(PathStrings);
 		short *NumPtr = (short *)(*PathStrings);
@@ -446,7 +452,7 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 			// Make a C string from this Pascal string
 			p2cstr(PathSpec);
 #endif
-			// fdprintf("Dir Path = %s",PathSpec);
+			//fdprintf("Dir Path = %s",PathSpec);
 			
 			DirectorySpecifier DirSpec;
 			if (!DirSpec.SetToAppParent()) break;
@@ -1697,6 +1703,14 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 				// Add!
 				SpecList.push_back(DummySpec);
 				SpecIndices.push_back(ListedFileIndex++);
+			}
+			else
+			{
+			    DummySpec.Type = TypedSpec::TextFile;
+
+			    // Add!
+			    SpecList.push_back(DummySpec);
+			    SpecIndices.push_back(ListedFileIndex++);
 			}
 		}
 		
