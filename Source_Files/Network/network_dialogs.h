@@ -38,7 +38,7 @@ Mar 1, 2002 (Woody Zenfell):
 #define	NETWORK_DIALOGS_H
 
 #include    "player.h"  // for MAXIMUM_NUMBER_OF_PLAYERS
-
+#include    "network.h" 
 
 #ifdef USES_NIBS
 
