@@ -894,7 +894,12 @@ bool handle_open_replay(FileSpecifier& File)
 {
 	DraggedReplayFile = File;
 	
-	return begin_game(_replay_from_file, false);
+	bool success;
+	
+	force_system_colors();
+	success= begin_game(_replay_from_file, false);
+	if(!success) display_main_menu();
+	return success;
 }
 
 // Called from within update_world..
