@@ -463,6 +463,14 @@ static void game_timed_out(
 	}
 }
 
+
+// LP: suppressed this as superfluous; won't try to reassign these sounds for M1 compatibility
+static void load_all_game_sounds(
+	short environment_code)
+{
+}
+
+/*
 #define NUMBER_OF_PRELOAD_SOUNDS (sizeof(preload_sounds)/sizeof(short))
 static short preload_sounds[]=
 {
@@ -498,3 +506,4 @@ static void load_all_game_sounds(
 	
 	return;
 }
+*/
