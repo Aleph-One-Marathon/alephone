@@ -86,6 +86,9 @@ extern TP2PerfGlobals perf_globals;
 #include "render.h"
 #include "OGL_Render.h"
 
+// To tell it to stop playing
+#include "XML_LevelScript.h"
+
 #ifdef env68k
 	#pragma segment shell
 #endif
@@ -1433,7 +1436,11 @@ static void finish_game(
 	show_cursor();
 
 	leaving_map();
-
+	
+	// LP: stop playing the background music if it was present
+	StopLevelMusic();
+	fade_out_music(MACHINE_TICKS_PER_SECOND/2);
+	
 	/* Get as much memory back as we can. */
 	free_and_unlock_memory(); // this could call free_map.. 
 	unload_all_collections();

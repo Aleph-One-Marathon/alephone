@@ -13,10 +13,12 @@ Oct 13, 2000 (Loren Petrich)
 #include <vector.h>
 #include "cseries.h"
 #include "game_wad.h"
+#include "music.h"
 #include "XML_DataBlock.h"
 #include "XML_LevelScript.h"
 #include "XML_ParseTreeRoot.h"
 #include "scripting.h"
+#include "Random.h"
 
 
 // The "command" is an instruction to process a file/resource in a certain sort of way
@@ -43,7 +45,10 @@ struct LevelScriptCommand
 	
 	bool RsrcPresent() {return RsrcID != UnsetResource;}
 	
-	// WIll need a filename to read
+	// This is a Unix-style filespec, with form
+	// <dirname>/<dirname>/<filename>
+	// with the root directory being the map file's directory
+	vector<char> FileSpec;
 	
 	LevelScriptCommand(): RsrcID(UnsetResource) {}
 };
@@ -62,14 +67,35 @@ struct LevelScriptHeader
 	// Thanx to the Standard Template Library,
 	// the copy constructor and the assignment operator will be automatically implemented
 	
-	LevelScriptHeader(): Level(Default) {}
+	// Whether the music files are to be played in random order;
+	// it defaults to false (sequential order)
+	bool RandomOrder;
+	
+	LevelScriptHeader(): Level(Default), RandomOrder(false) {}
 };
 
 // Scripts for current map file
 static vector<LevelScriptHeader> LevelScripts;
 
-// Current script for adding commands to
+// Current script for adding commands to and for running
 static LevelScriptHeader *CurrScriptPtr = NULL;
+
+// Current playlist:
+static vector<FileSpecifier> Playlist;
+
+// Which song is now playing?
+static int SongNumber = 0;
+
+// Whether the order is random, and a random-number generator
+static bool RandomOrder = false;
+static GM_Random MusicRandomizer;
+
+// Map-file parent directory (where all map-related files are supposed to live)
+static DirectorySpecifier MapParentDir;
+
+// Whether Pfhortran had been found for the current level,
+// so as to do the dummy Pfhortran if none was found
+static bool PfhortranFound = false;
 
 
 // The level-script parsers are separate from the main MML ones,
@@ -109,6 +135,9 @@ static void SetupLSParseTree()
 // Loads all those in resource 128 in a map file (or some appropriate equivalent)
 void LoadLevelScripts(FileSpecifier& MapFile)
 {
+	// Because all the files are to live in the map file's parent directory
+	MapFile.ToDirectory(MapParentDir);
+	
 	// Get rid of the previous level script
 	LevelScripts.clear();
 	
@@ -133,8 +162,28 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 // runs level-specific MML...
 void RunLevelScript(int LevelIndex)
 {
+	// None found just yet...
+	PfhortranFound = false;
+	
+	// For whatever previous music had been playing...
+	fade_out_music(MACHINE_TICKS_PER_SECOND/2);
+	
+	// If no scripts were loaded or none of them had music specified,
+	// then don't play any music
+	Playlist.clear();
+	
 	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelIndex);
+	
+	// Set to first song
+	SongNumber = 0;
+	
+	// Do randomization
+	MusicRandomizer.z ^= TickCount();
+	MusicRandomizer.SetTable();
+	
+	// Dummy Pfhortran loading if no Pfhortran script had been found
+	if (!PfhortranFound) load_script_data(NULL,0);
 }
 
 // Intended for restoring old parameter values, because MML sets values at a variety
@@ -148,6 +197,7 @@ void RunRestorationScript()
 // Search for level script and then run it
 void GeneralRunScript(int LevelIndex)
 {
+	// Find the pointer to the current script
 	CurrScriptPtr = NULL;
 	for (vector<LevelScriptHeader>::iterator ScriptIter = LevelScripts.begin(); ScriptIter < LevelScripts.end(); ScriptIter++)
 	{
@@ -158,7 +208,10 @@ void GeneralRunScript(int LevelIndex)
 		}
 	}
 	if (!CurrScriptPtr) return;
-
+	
+	// Insures that this order is the last order set
+	RandomOrder = CurrScriptPtr->RandomOrder;
+	
 	OpenedResourceFile OFile;
 	FileSpecifier& MapFile = get_map_file();
 	if (!MapFile.Open(OFile)) return;
@@ -199,11 +252,52 @@ void GeneralRunScript(int LevelIndex)
 		
 		case LevelScriptCommand::Pfhortran:
 			{
+				// Skip if not loaded
+				if (Data == NULL || DataLen <= 0) break;
+				
+				// Load and indicate whether loading was successful
+				if (load_script_data(Data,DataLen) == script_TRUE)
+					PfhortranFound = true;
 			}
 			break;
 		
+		case LevelScriptCommand::Music:
+			{
+				FileSpecifier MusicFile;
+				MusicFile.FromDirectory(MapParentDir);
+				if (MusicFile.SetNameWithPath(&Cmd.FileSpec[0]))
+					Playlist.push_back(MusicFile);
+			}
+			break;
 		}
 	}
+}
+
+
+// Music functions
+
+bool IsLevelMusicActive() {return (!Playlist.empty());}
+
+void StopLevelMusic() {Playlist.clear();}
+
+FileSpecifier *GetLevelMusic()
+{
+	// No songs to play
+	if (Playlist.empty()) return NULL;
+	
+	// Only one song to play
+	int NumSongs = Playlist.size();
+	if (NumSongs == 1) return &Playlist[0];
+	
+	if (RandomOrder)
+		SongNumber = MusicRandomizer.KISS() % NumSongs;
+	
+	// Get the song number to within range if playing sequentially;
+	// if the song number gets too big, then it's reset back to the first one
+	if (SongNumber < 0) SongNumber = 0;
+	else if (SongNumber >= NumSongs) SongNumber = 0;
+	
+	return &Playlist[SongNumber++];
 }
 
 
@@ -242,6 +336,14 @@ bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 		else
 			return false;
 	}
+	else if (strcmp(Tag,"file") == 0)
+	{
+		int vlen = strlen(Value) + 1;
+		Cmd.FileSpec.resize(vlen);
+		memcpy(&Cmd.FileSpec[0],Value,vlen);
+		ObjectWasFound = true;
+		return true;
+	}
 	UnrecognizedTag();
 	return false;
 }
@@ -258,11 +360,41 @@ bool XML_LSCommandParser::AttributesDone()
 
 static XML_LSCommandParser MMLParser("mml",LevelScriptCommand::MML);
 static XML_LSCommandParser PfhortranParser("pfhortran",LevelScriptCommand::Pfhortran);
+static XML_LSCommandParser MusicParser("music",LevelScriptCommand::Music);
+
+class XML_RandomOrderParser: public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value)
+	{
+		if (strcmp(Tag,"on") == 0)
+		{
+			bool RandomOrder;
+			bool Success = ReadBooleanValue(Value,RandomOrder);
+			if (Success)
+			{
+				assert(CurrScriptPtr);
+				CurrScriptPtr->RandomOrder = RandomOrder;
+			}
+			return Success;
+		}
+		UnrecognizedTag();
+		return false;
+	}
+	
+	XML_RandomOrderParser(): XML_ElementParser("random_order") {}
+};
+
+
+static XML_RandomOrderParser RandomOrderParser;
+
 
 static void AddScriptCommands(XML_ElementParser& ElementParser)
 {
 	ElementParser.AddChild(&MMLParser);
 	ElementParser.AddChild(&PfhortranParser);
+	ElementParser.AddChild(&MusicParser);
+	ElementParser.AddChild(&RandomOrderParser);
 }
 
 

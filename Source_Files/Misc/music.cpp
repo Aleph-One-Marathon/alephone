@@ -21,6 +21,9 @@ Aug 12, 2000 (Loren Petrich):
 Oct 12, 2000 (Loren Petrich):
 	Added Quicktime support; will use Quicktime for playback
 	whenever it is available
+
+Oct 14, 2000 (Loren Petrich):
+	Added support for per-level music that is specified in a level script
 */
 
 /*
@@ -39,6 +42,7 @@ Oct 12, 2000 (Loren Petrich):
 #include <stdlib.h>
 #include <string.h>
 
+#include "XML_LevelScript.h"
 #include "macintosh_cseries.h"
 
 // #include "portable_files.h"
@@ -115,6 +119,7 @@ static bool QTMMPlaying = false;
 static double MusicVolume = 0;				// 0 to 1
 static double MusicVolumeChange = 0;		// Change per tick [TickCount()]
 static long MostRecentUpdateTicks = 0;
+static bool IsLooped = false;				// Whether or not it repeats endlessly
 
 // This returns a value from between 0 and 1
 static double GetOverallMusicVolume();
@@ -276,10 +281,12 @@ void free_music_channel(
 void queue_song(
 	short song_index)
 {
-	// This routine plays only the introductory song
+	// This routine plays only the introductory song;
+	// it is looped, and will repeat unless stopped by something
 	if (machine_has_quicktime())
 	{
 		PlayMusic(IntroMusicFile);
+		IsLooped = true;
 		return;
 	}
 
@@ -343,12 +350,18 @@ void music_idle_proc(
 	// Quicktime: what could be easier?
 	if (machine_has_quicktime())
 	{
+		// Keep the music going if it is already going
 		if (QTMusicMovie && QTMMPlaying)
+		{
 			if (IsMovieDone(QTMusicMovie))
 			{
-				// Automatically loop
-				GoToBeginningOfMovie(QTMusicMovie);
-				StartMusic();
+				if (IsLooped)
+				{
+					GoToBeginningOfMovie(QTMusicMovie);
+					StartMusic();
+				}
+				else
+					QTMMPlaying = false;
 			}
 			else
 			{
@@ -368,6 +381,20 @@ void music_idle_proc(
 				// Keep it going
 				MoviesTask(QTMusicMovie,0);
 			}
+		}
+		
+		// Get some music to play if in a level;
+		// it will play only once, and has to be explicitly restarted to repeat
+		if (!QTMMPlaying)
+		{
+			FileSpecifier *LevelSongFilePtr = GetLevelMusic();
+			if (LevelSongFilePtr)
+			{
+				PlayMusic(*LevelSongFilePtr);
+				IsLooped = false;
+			}
+		}
+		
 		return;
 	}
 
