@@ -424,10 +424,10 @@ static void record_action_flags(
 void save_recording_queue_chunk(
 	short player_index)
 {
-	byte *location;
+	uint8 *location;
 	int32 last_flag, count, flag = 0;
 	int16 i, run_count, num_flags_saved, max_flags;
-	static byte *buffer= NULL;
+	static uint8 *buffer= NULL;
 	ActionQueue *queue;
 	
 	// The data format is (run length (int16)) + (action flag (int32))

@@ -73,19 +73,16 @@ BeOS:
 
 To play Aleph One, you will also need Marathon graphics, sound and map
 files. Unfortunately, Bungie has not released these files to the public, so
-you must own a copy of Marathon Infinity or the Marathon Infinity Demo
-(although Aleph One was originally based on Marathon 2, it was extended to
-use the Marathon Infinity data files; you can play the Marathon 2 scenario,
-but you will still need Infinity data files, see below). The Demo is freely
-available, but in Mac format, so I've created an archive containing the
-necessary data files from the Marathon Infinity Demo, converted to the
-formats needed by the SDL version of Aleph One. Download this archive from
-my Aleph One/SDL page:
+you must own a copy of Marathon 2 or Marathon Infinity (Marathon 1 data
+files don't work with Aleph One). For your convenience, I've created an
+archive containing the data files from the freely available Marathon
+Infinity Demo, converted to the formats needed by the SDL version of Aleph
+One, which can be downloaded from my Aleph One/SDL page:
 
   http://www.uni-mainz.de/~bauec002/A1Main.html
 
 The archive contains the files "Images", "Map", "Map.resources", "Shapes",
-"Sounds" and "README". This archive has to be unpacked to
+"Sounds" and "README" and has to be unpacked to
 
 Unix:
   /usr/local/share/AlephOne  (unless you specified a different PREFIX above)
@@ -93,10 +90,11 @@ Unix:
 BeOS:
   The same directory as the "AlephOne" application.
 
-If you have a Marathon Infinity or Marathon Trilogy Box Set CD, you can copy
-the needed files from the CD. This is a bit complicated, however, due to some
-ideosyncracies of the Mac HFS file system (every Mac file is really two files,
-one "data fork" and one "resource fork"). Aleph One/SDL needs these files:
+Alternatively, if you have a Marathon 2, Marathon Infinity or Marathon
+Trilogy Box Set CD, you can copy the needed files from the CD. This is a bit
+complicated, however, due to some ideosyncracies of the Mac HFS file system
+(every Mac file is really two files, one "data fork" and one "resource
+fork"). Aleph One/SDL needs these files:
 
  "Images" (resource fork)
  "Map" (data fork)
@@ -107,8 +105,8 @@ one "data fork" and one "resource fork"). Aleph One/SDL needs these files:
 
 Aleph One also needs the files "Fonts" and "Pfhortran_Language_Definition"
 and "Resources", but these are included with the Aleph One/SDL distribution
-and installed by "make install". Here's how to copy these files from an
-Infinity/Trilogy CD under Linux:
+and installed by "make install". Here's how to copy these files from a Mac
+Marathon CD under Linux:
 
  1. Mount the CD with the HFS file system (you will probably have to be
     root to do this):
@@ -140,13 +138,6 @@ Infinity/Trilogy CD under Linux:
 
     That's it.
 
-Playing Marathon 2:
-
-It is possible to play the Marathon 2 scenario by copying the data files from
-a Marathon 2 CD in the same way as described above, but you need to replace
-the "Shapes" and "Sounds" files with their Infinity versions or the game will
-not work (some textures will be wrong but the game will be playable).
-
 
 PLAYING ALEPH ONE
 -----------------
@@ -173,15 +164,8 @@ list:
 If Aleph One complains about missing data files, and you are sure that you
 have installed them, try setting the ALEPHONE_DATA environment variable to
 the path of the data file directory. You can also use this to switch between
-different scenarios, but you will have to delete the preferences file
-
-Unix:
-  ~/.alephone/Aleph One Preferences
-
-BeOS:
-  /boot/home/config/settings/Aleph One/Aleph One Preferences
-
-if you do so.
+different scenarios, but you will have to reselect the Map, Shapes and Sound
+files in the "Environment" preferences menu every time you do so.
 
 The background story of the game and the keyboard controls are explained in
 the manual or README file on your Marathon CD or in the Demo archive.
@@ -233,7 +217,7 @@ keyboard; all keys are mapped by position):
 
     \       - Toggle FPS display
 
-    Alt-Q   - Quit game
+    Esc     - Quit game
     Alt-P   - Pause game (press Alt-P again to resume)
 
     F1      - Decrease screen size
@@ -255,6 +239,10 @@ keyboard; all keys are mapped by position):
     Backspace - Switch player view in replays
     [ and ] - Adjust film replay speed
 
+If you click on "Defaults" in the keyboard configuration menu when mouse
+control has been turned on you will get a different keyboard layout, more
+suited to mouse play.
+
 
 PLAYING THIRD-PARTY MAPS WITH ALEPH ONE
 ---------------------------------------
@@ -262,8 +250,8 @@ PLAYING THIRD-PARTY MAPS WITH ALEPH ONE
 (If the following instructions are too technical for you, see the "Map
 installation for dummies" section, below)
 
-Aleph One can be extended with custom map, shape and sound files which
-can be selected in the "Environment" section of the preferences menu.
+Aleph One can be extended with custom map, physics, shape and sound files
+which can be selected in the "Environment" section of the preferences menu.
 Aleph One/SDL looks for these files in two places:
 
 Unix:
@@ -276,12 +264,11 @@ BeOS:
  and
   /boot/home/config/settings/Aleph One
 
-Aleph One looks in both of these directories (and in all subdirectories)
-for map, shape and sound files it recognizes and shows a list of them in
-the "Environment" preferences menu when clicking on one of the "Map",
-"Shapes" or "Sounds" items. So, for example, under Unix you could create
-a directory ~/.alephone/maps and place all map files you downloaded in
-there.
+Aleph One looks in both of these directories (and in all subdirectories) for
+map, shape and sound files it recognizes and shows a list of them in the
+"Environment" preferences menu when clicking on one of the "Map", "Physics",
+"Shapes" or "Sounds" items. So, for example, under Unix you could create a
+directory ~/.alephone/maps and place all map files you downloaded in there.
 
 Most 3rd-party maps for Marathon 2 and Marathon Infinity you can find on the
 internet, for example in the Marathon HyperArchive
@@ -308,23 +295,23 @@ to a place where Aleph One can find it (see above).
 
 If the map does have a resource fork (most single-player maps do), you
 have three options:
- - Extract the data and resource forks into separate files, as I did with
-   the Infinity map in the installation instructions above. If the file
-   containing the data fork has the name "foo", the resource file must be
-   called "foo.rsrc" or "foo.resource" and kept in the same directory as
-   the data file. Splitting files into data and resource forks is easy
-   to do when copying unpacked files from Mac CD-ROMs (see above) or when
-   unpacking downloaded map files under MacOS with my Basilisk II Mac
-   emulator (copy the unpacked map to the external file system where the
-   resource fork will be stored in a ".rsrc" directory).
- - Convert the dual-forked Mac map file into a single "AppleSingle" encoded
-   file. This is the preferred option because it will combine the data and
-   resource forks into a single file which is easier to move around than
-   two separate files. The "tools" directory of the Aleph One/SDL source
-   archive contains two utilities for handling AppleSingle files.
- - Convert the dual-forked Mac map file into a single "MacBinary II" encoded
-   file. This will also leave you with a single map file. The Linux "unstuff"
-   program will produce MacBinary files when giving it the "-m=auto" option.
+ a) Extract the data and resource forks into separate files, as I did with
+    the map file in the installation instructions above. If the file
+    containing the data fork has the name "foo", the resource file must be
+    called "foo.rsrc" or "foo.resource" and kept in the same directory as
+    the data file. Splitting files into data and resource forks is easy
+    to do when copying unpacked files from Mac CD-ROMs (see above) or when
+    unpacking downloaded map files under MacOS with my Basilisk II Mac
+    emulator (copy the unpacked map to the external file system where the
+    resource fork will be stored in a ".rsrc" directory).
+ b) Convert the dual-forked Mac map file into a single "AppleSingle" encoded
+    file. This is the preferred option because it will combine the data and
+    resource forks into a single file which is easier to move around than
+    two separate files. The "tools" directory of the Aleph One/SDL source
+    archive contains two utilities for handling AppleSingle files.
+ c) Convert the dual-forked Mac map file into a single "MacBinary II" encoded
+    file. This will also leave you with a single map file. The Linux "unstuff"
+    program will produce MacBinary files when giving it the "-m=auto" option.
 
 The shape and sound files don't require special treatment to work under
 Aleph One/SDL. Some shape files, however, come in the form of a "patcher"
@@ -359,12 +346,12 @@ a Marathon 2 or Infinity map.
      $ unstuff -m=auto CoolMap.sit
      Scanning CoolMap.sit
      Expanding CoolMap.sit
-     /home/cbauer/downloads/Cool Map/Cool Map ............
-     /home/cbauer/downloads/Cool Map/Read Me
+     /home/cbauer/downloads/Cool Map Folder/Cool Map ............
+     /home/cbauer/downloads/Cool Map Folder/Read Me
      done
      $ ls
-     'Cool Map'   CoolMap.sit  CoolMap.sit.hqx
-     $ cd "Cool Map"
+     'Cool Map Folder/'   CoolMap.sit  CoolMap.sit.hqx
+     $ cd "Cool Map Folder"
      $ ls
      'Cool Map'  'Read Me'
 
@@ -403,21 +390,23 @@ FILE COMPATIBILITY
 ------------------
 
 This section gives a summary of the cross-platform compatibility of the
-various files used by Aleph One and the original Marathon games:
+various data files used by Aleph One and the original Marathon games:
 
   "Images" - on Aleph One/SDL this is a data file and not a resource file
     as on the MacOS versions of Aleph One and Marathon, but the file format
     is exactly the same, and compatible across all platforms supported by
     Aleph One/SDL
-  "Shapes" - fully compatible across all versions of Aleph One/Marathon Infinity
-  "Sounds" - fully compatible across all versions of Aleph One/Marathon Infinity
+  "Shapes" - fully compatible across all versions of Aleph One/Marathon 2/
+    Marathon Infinity
+  "Sounds" - fully compatible across all versions of Aleph One/Marathon 2/
+    Marathon Infinity
   Map files - maps without resource forks are fully compatible across all
     versions of Aleph One/Marathon 2/Marathon Infinity; maps with resource
     forks need to be in one of three formats:
-      - data and resource forks in separate files, such as "Map" and
-        "Map.resources"
-      - an AppleSingle encoded file containing data and resource fork
-      - a MacBinary II encoded file containing data and resource fork
+      a) data and resource forks in separate files, <name> and <name>.rsrc/
+         <name>.resources
+      b) an AppleSingle encoded file containing data and resource fork
+      c) a MacBinary II encoded file containing data and resource fork
     All of these formats are fully compatible across all platforms supported
     by Aleph One/SDL.
   Saved games - fully compatible across all versions of Aleph One/
@@ -449,9 +438,9 @@ BeOS:
   /boot/home/config/settings/Aleph One/MML
 
 Upon startup, Aleph One reads and parses all scripts found in these
-directories. For a description of their contents and what you can do by
-writing your own MML scripts, please consult the file "docs/MML.html"
-that comes in the Aleph One distribution archive.
+directories, in alphabetical order. For a description of their contents and
+what you can do by writing your own MML scripts, please consult the file
+"docs/MML.html" that comes in the Aleph One/SDL distribution archive.
 
 
 MISSING FEATURES AND BUGS
@@ -479,8 +468,12 @@ And a list of known bugs:
  - darken_world_window() doesn't work when OpenGL is active
  - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown
  - "Checkpoint" map displays in terminals don't show circle shapes
- - Some error messages are those of the Mac version, which are often
-   inappropriate or misleading
+ - Clicking on buttons in the "Save game" etc. dialog boxes will cause a shot
+   to be fired when the dialog box closes; the workaround is to use the
+   Return key instead
+ - It shouldn't be possible to bind the same key to more than one function,
+   or to bind a key that is already used by the game (sound volume, map zoom
+   etc.)
 
 
 TIPS
@@ -501,7 +494,7 @@ If you're stuck in the game, there's an excellent walkthrough at
 TROUBLESHOOTING
 ---------------
 
-If Aleph One crashes or behaves strangely on startup, delete the file
+If Aleph One crashes or behaves strangely on startup, try deleting the file
 
 Unix:
   ~/.alephone/Aleph One Preferences
@@ -509,13 +502,13 @@ Unix:
 BeOS:
   /boot/home/config/settings/Aleph One/Aleph One Preferences
 
-and try again.
-
 If the game runs very slowly, try running it in 8 bit mode. Using XFree86
 4.0 instead of 3.x may also greatly increase the speed. If you don't have
 hardware accelerated OpenGL, you should specify the "-g" argument to enable
 software rendering (unless you configured Aleph One with the
-"--disable-opengl" option).
+"--disable-opengl" option). If Aleph One crashes or performs poorly when
+using OpenGL, disable the "Multitexturing" and "Static Effect" options in
+the Graphics/OpenGL preferences menu.
 
 
 SUPPORT

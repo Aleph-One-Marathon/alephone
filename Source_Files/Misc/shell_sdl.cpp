@@ -583,6 +583,11 @@ bool FileSpecifier::WriteDialog(int type, char *prompt, char *default_name)
 again:
 	bool result = false;
 	if (d.run() == 0) { // OK
+		if (strlen(name_w->get_text()) == 0) {
+			play_sound(DIALOG_ERROR_SOUND, NULL, NONE);
+			name_w->set_text(default_name);
+			goto again;
+		}
 		name = dir.name;
 		AddPart(name_w->get_text());
 		result = confirm_save_choice(*this);
@@ -737,10 +742,14 @@ static void handle_game_key(const SDL_Event &event)
 	}
 
 	switch (key) {
-		case SDLK_PERIOD:		// sound volume up
+		case SDLK_ESCAPE:		// Quit
+			do_menu_item_command(mGame, iQuitGame, has_cheat_modifiers());
+			break;
+
+		case SDLK_PERIOD:		// Sound volume up
 			changed_prefs = adjust_sound_volume_up(sound_preferences, _snd_adjust_volume);
 			break;
-		case SDLK_COMMA:		// sound volume down
+		case SDLK_COMMA:		// Sound volume down
 			changed_prefs = adjust_sound_volume_down(sound_preferences, _snd_adjust_volume);
 			break;
 
