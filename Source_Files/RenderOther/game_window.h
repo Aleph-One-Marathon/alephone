@@ -30,6 +30,7 @@ Apr 30, 2000 (Loren Petrich): Added XML parser object for all the interface stuf
 void initialize_game_window(void);
 
 void draw_interface(void);
+void ensure_HUD_buffer(void);
 void update_interface(short time_elapsed);
 void scroll_inventory(short dy);
 

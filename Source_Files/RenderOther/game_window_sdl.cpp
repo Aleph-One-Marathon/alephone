@@ -47,6 +47,19 @@ extern bool OGL_HUDActive;
 
 extern void draw_panels(void);
 
+void ensure_HUD_buffer(void) {
+
+  // Allocate surface for HUD if not present
+  if (HUD_Buffer == NULL) {
+    SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 8, 0xff, 0xff, 0xff, 0xff);
+    if (s == NULL)
+      alert_user(fatalError, strERRORS, outOfMemory, -1);
+    HUD_Buffer = SDL_DisplayFormat(s);
+    if (HUD_Buffer == NULL)
+      alert_user(fatalError, strERRORS, outOfMemory, -1);
+    SDL_FreeSurface(s);
+  }
+}
 
 /*
  *  Draw HUD (to HUD surface)
@@ -57,16 +70,7 @@ void draw_panels(void)
 	if (OGL_HUDActive)
 		return;
 
-	// Allocate surface for HUD if not present
-	if (HUD_Buffer == NULL) {
-		SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 8, 0xff, 0xff, 0xff, 0xff);
-		if (s == NULL)
-			alert_user(fatalError, strERRORS, outOfMemory, -1);
-		HUD_Buffer = SDL_DisplayFormat(s);
-		if (HUD_Buffer == NULL)
-			alert_user(fatalError, strERRORS, outOfMemory, -1);
-		SDL_FreeSurface(s);
-	}
+	ensure_HUD_buffer();
 
 	// Draw static HUD picture
 	static SDL_Surface *static_hud_pict = NULL;

@@ -46,6 +46,9 @@ extern bool OGL_HUDActive;
 
 extern void draw_panels(void);
 
+void ensure_HUD_buffer(void) {
+  // only needed for SDL
+};
 
 /*
  *  Draw HUD (to HUD buffer)

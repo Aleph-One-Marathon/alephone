@@ -305,6 +305,8 @@ void update_interface(short time_elapsed)
 		// LP addition: don't force an update unless explicitly requested
 		bool force_update = (time_elapsed == NONE);
 
+		ensure_HUD_buffer();
+
 		// LP addition: added support for HUD buffer;
 		_set_port_to_HUD();
 		if (HUD_SW.update_everything(time_elapsed))
