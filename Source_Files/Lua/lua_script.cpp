@@ -35,6 +35,54 @@
  */
 
 // cseries defines HAVE_LUA on A1/SDL
+#include "cseries.h"
+
+#include "mouse.h"
+#include "interface.h"
+
+#ifdef HAVE_LUA
+extern "C"
+{
+#include "lua.h"
+#include "lauxlib.h"
+#include "lualib.h"
+}
+#endif
+
+#include <string>
+using namespace std;
+#include <stdlib.h>
+
+#include "screen.h"
+#include "tags.h"
+#include "player.h"
+#include "render.h"
+#include "shell.h"
+#include "Logging.h"
+#include "lightsource.h"
+#include "game_window.h"
+#include "items.h"
+#include "platforms.h"
+#include "weapons.h"
+#include "monsters.h"
+#include "flood_map.h"
+#include "vbl.h"
+#include "fades.h"
+#include "physics_models.h"
+#include "Crosshairs.h"
+#include "OGL_Setup.h"
+#include "mysound.h"
+#include "world.h"
+#include "computer_interface.h"
+#include "network.h"
+
+#include "script_instructions.h"
+#include "lua_script.h"
+
+#define DONT_REPEAT_DEFINITIONS
+#include "item_definitions.h"
+#include "monster_definitions.h"
+
 
 bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
@@ -71,54 +119,6 @@ void CloseLuaScript() {}
 bool UseLuaCameras() { return false; }
 
 #else /* HAVE_LUA */
-
-#include "cseries.h"
-
-#include "mouse.h"
-#include "interface.h"
-
-#ifdef HAVE_LUA
-
-extern "C"
-{
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-}
-
-#include <string>
-using namespace std;
-#include <stdlib.h>
-
-#include "screen.h"
-#include "tags.h"
-#include "player.h"
-#include "render.h"
-#include "shell.h"
-#include "Logging.h"
-#include "lightsource.h"
-#include "game_window.h"
-#include "items.h"
-#include "platforms.h"
-#include "weapons.h"
-#include "monsters.h"
-#include "flood_map.h"
-#include "vbl.h"
-#include "fades.h"
-#include "physics_models.h"
-#include "Crosshairs.h"
-#include "OGL_Setup.h"
-#include "mysound.h"
-#include "world.h"
-#include "computer_interface.h"
-#include "network.h"
-
-#include "script_instructions.h"
-#include "lua_script.h"
-
-#define DONT_REPEAT_DEFINITIONS
-#include "item_definitions.h"
-#include "monster_definitions.h"
 
 // LP: used by several functions here
 const float AngleConvert = 360/float(FULL_CIRCLE);
@@ -3701,7 +3701,5 @@ bool UseLuaCameras()
 	}
 	return using_lua_cameras;
 }
-
-#endif
 
 #endif /* HAVE_LUA */

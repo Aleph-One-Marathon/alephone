@@ -27,6 +27,7 @@ Tuesday, June 21, 1994 3:26:46 PM
 	compile-time constant MARATHON_NETWORK_VERSION replaced with runtime get_network_version()
 */
 
+#include        "cseries.h"
 #include	"cstypes.h"
 
 // This file should be used only for stuff that folks outside the network subsystem care about
