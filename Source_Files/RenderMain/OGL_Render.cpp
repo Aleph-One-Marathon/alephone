@@ -116,12 +116,17 @@ Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
 Dec 13, 2002 (Loren Petrich):
 	Added initial preloading of textures to avoid lazy loading of wall textures
 	on start/restore of level
+        
+Feb 1, 2003 (Woody Zenfell):
+        Trying to reduce texture-preloading time by eliminating redundant processing
 */
 
 #include <vector>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <set>
+#include <algorithm>	// pair<>, for_each()
 
 #include "cseries.h"
 
@@ -178,8 +183,9 @@ static bool _OGL_IsActive = false;
 
 // Reads off of the current map;
 // call it to avoid lazy loading of textures
+typedef pair<shape_descriptor,int16> TextureWithTransferMode;
 static void PreloadTextures();
-static void PreloadWallTexture(shape_descriptor texture, int16 transfer_mode);
+static void PreloadWallTexture(const TextureWithTransferMode& inTexture);
 
 
 #ifdef mac
@@ -693,15 +699,20 @@ bool OGL_StopRun()
 
 // Reads off of the current map;
 // call it to avoid lazy loading of textures
+// ZZZ: changes to try to do less redundant work (using a set of pairs etc.)
 void PreloadTextures()
 {
+        typedef set<TextureWithTransferMode> TextureWithTransferModeSet;
+
+        TextureWithTransferModeSet theSetOfTexturesUsed;
+
 	// Loop through the map polygons
 	for (int n=0; n<dynamic_world->polygon_count; n++)
 	{
 		polygon_data *polygon = map_polygons + n;
 		
-		PreloadWallTexture(polygon->floor_texture,polygon->floor_transfer_mode);
-		PreloadWallTexture(polygon->ceiling_texture,polygon->ceiling_transfer_mode);
+		theSetOfTexturesUsed.insert(TextureWithTransferMode(polygon->floor_texture,polygon->floor_transfer_mode));
+		theSetOfTexturesUsed.insert(TextureWithTransferMode(polygon->ceiling_texture,polygon->ceiling_transfer_mode));
 		
 		for (int i=0; i<polygon->vertex_count; i++)
 		{
@@ -711,29 +722,35 @@ void PreloadTextures()
 			switch (side->type)
 			{
 			case _full_side:
-				PreloadWallTexture(side->primary_texture.texture,side->primary_transfer_mode);
+				theSetOfTexturesUsed.insert(TextureWithTransferMode(side->primary_texture.texture,side->primary_transfer_mode));
 				break;
 			case _split_side:
-				PreloadWallTexture(side->secondary_texture.texture,side->secondary_transfer_mode);
+				theSetOfTexturesUsed.insert(TextureWithTransferMode(side->secondary_texture.texture,side->secondary_transfer_mode));
 				// Fall through to the high-side case
 			case _high_side:
-				PreloadWallTexture(side->primary_texture.texture,side->primary_transfer_mode);
+				theSetOfTexturesUsed.insert(TextureWithTransferMode(side->primary_texture.texture,side->primary_transfer_mode));
 				break;
 			case _low_side:
-				PreloadWallTexture(side->primary_texture.texture,side->primary_transfer_mode);
+				theSetOfTexturesUsed.insert(TextureWithTransferMode(side->primary_texture.texture,side->primary_transfer_mode));
 				break;
 			}
 			
-			PreloadWallTexture(side->transparent_texture.texture,side->transparent_transfer_mode);
+			theSetOfTexturesUsed.insert(TextureWithTransferMode(side->transparent_texture.texture,side->transparent_transfer_mode));
 		}
 	}
 	
 	// May want to preload the liquid texture also
 	// Sprites will have the problem of guessing which ones to preload
+        
+        // ZZZ: now we have a fairly (we hope) minimal set of texture stuffs, let's load them in.
+        for_each(theSetOfTexturesUsed.begin(), theSetOfTexturesUsed.end(), PreloadWallTexture);
 }
 
-void PreloadWallTexture(shape_descriptor texture, int16 transfer_mode)
+void PreloadWallTexture(const TextureWithTransferMode& inTexture)
 {
+        shape_descriptor	texture		= inTexture.first;
+        int16			transfer_mode	= inTexture.second;
+
 	// In case of an empty side
 	if (texture == NONE) return;
 

@@ -43,10 +43,7 @@ bool CheatsActive = false;
 #include "player.h"
 #include "music.h"
 #include "items.h"
-
-#ifdef  SDL
-#include    "network_microphone_sdl.h"
-#endif
+#include "network_sound.h"
 
 #include <ctype.h>
 
@@ -332,12 +329,8 @@ void handle_keyword(int tag)
 void global_idle_proc(void)
 {
 	music_idle_proc();
-#if !defined(TARGET_API_MAC_CARBON)
 	network_speaker_idle_proc();
-#endif
-#ifdef  SDL
-    network_microphone_idle_proc();
-#endif
+        network_microphone_idle_proc();
 	sound_manager_idle_proc();
 }
 

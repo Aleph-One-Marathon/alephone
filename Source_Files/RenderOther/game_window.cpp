@@ -82,9 +82,7 @@ Mar 08, 2002 (Woody Zenfell):
 #include "FontHandler.h"
 #include "screen.h"
 
-#ifdef SDL
-#include    "network_microphone_sdl.h"
-#endif
+#include    "network_sound.h"
 
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
@@ -386,11 +384,7 @@ void mark_player_network_stats_as_dirty(short player_index)
 
 void set_interface_microphone_recording_state(bool state)
 {
-#ifdef SDL
-    set_network_microphone_state(state);
-#else
-    (void)(state);
-#endif
+        set_network_microphone_state(state);
 }
 
 void scroll_inventory(short dy)

@@ -33,14 +33,13 @@
  *      from the main thread: buffers are released by the audio system and returned to us for reuse.
  */
 
+#include    "network_sound.h"
 #include    "network_speaker_sdl.h"
 
 #include    "network_distribution_types.h"
 #include    "CircularQueue.h"
 #include    "world.h"   // local_random()
 #include    "mysound.h"
-#include    "network_data_formats.h"    // in support of received_network_audio_proc
-#include    "player.h"                  // in support of received_network_audio_proc
 
 enum {
     kSoundBufferQueueSize = 32,     // should never get anywhere near here, but at 12 bytes/struct these are cheap.
@@ -65,7 +64,7 @@ static  int                         		sDryDequeues = 0;
 static  bool                        		sSpeakerIsOn = false;
 
 
-void
+OSErr
 open_network_speaker() {
     // Allocate storage for noise data - assume if pointer not NULL, already have storage.
     if(sNoiseBufferStorage == NULL) {
@@ -99,6 +98,8 @@ open_network_speaker() {
     // Reset a couple others to sane values
     sDryDequeues    = 0;
     sSpeakerIsOn    = false;
+    
+    return 0;
 }
 
 void
@@ -199,24 +200,4 @@ close_network_speaker() {
 void
 release_network_speaker_buffer(byte* inBuffer) {
     sSoundDataBuffers.enqueue(inBuffer);
-}
-
-
-
-// This is what the network distribution system calls when audio is received.
-void
-received_network_audio_proc(void *buffer, short buffer_size, short player_index) {
-    network_audio_header_NET* theHeader_NET = (network_audio_header_NET*) buffer;
-
-    network_audio_header    theHeader;
-
-    netcpy(&theHeader, theHeader_NET);
-
-    // For now, this should always be 0
-    assert(theHeader.mReserved == 0);
-
-    if(!(theHeader.mFlags & kNetworkAudioForTeammatesOnlyFlag) || (local_player->team == get_player_data(player_index)->team)) {
-        byte* theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
-        queue_network_speaker_data(theSoundData, buffer_size - sizeof(network_audio_header_NET));
-    }
 }

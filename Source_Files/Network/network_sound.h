@@ -22,28 +22,54 @@ NETWORK_SOUND.H
 	http://www.gnu.org/licenses/gpl.html
 
 Sunday, August 14, 1994 3:36:17 AM- go nuts
+
+Feb 1, 2003 (Woody Zenfell):
+        Merged SDL-style and Mac-style network audio interfaces.  Both use this now.
+        This is the main interface for external code wanting to use the network audio support.
 */
 
+#include "cseries.h"
+
 /* ---------- constants */
-#define NETWORK_SOUND_CHUNK_BUFFER_SIZE 512
 
 /* ---------- prototypes: NETWORK_SPEAKER.C */
 
-OSErr open_network_speaker(short block_size, short connection_threshold);
-void close_network_speaker(void);
-void quiet_network_speaker(void);
+// Called by main thread to initialize network speaker system
+OSErr open_network_speaker();
 
-void queue_network_speaker_data(byte *buffer, short count);
-void network_speaker_idle_proc(void);
+// Called by main thread between game updates
+void network_speaker_idle_proc();
+
+// Called by main thread to shut down network speaker system
+void close_network_speaker();
+
+// Called by received_network_audio_proc, but also available to others
+void queue_network_speaker_data(byte* inData, short inLength);
+
+// Called by network routines to store incoming network audio for playback
+void received_network_audio_proc(void *buffer, short buffer_size, short player_index);
+
+void quiet_network_speaker(void);
 
 /* ---------- prototypes: NETWORK_MICROPHONE.C */
 
-OSErr open_network_microphone(short network_distribution_type);
-void close_network_microphone(void);
+// "true" does not guarantee that the user has a microphone, or even that sound capture will work...
+// but "false" means you have no hope whatsoever.  :)
+bool    is_network_microphone_implemented();
 
-bool has_sound_input_capability(void);
+// This may answer the question a bit more accurately.
+bool	has_sound_input_capability(void);
 
-/* This function is defined in interface.h */
-// void handle_microphone_key(bool triggered);
+// Setup - don't call twice without intervening close...()
+OSErr   open_network_microphone();
+
+// Activate/deactivate a network microphone that's been open()ed
+void    set_network_microphone_state(bool inActive);
+
+// Call this from time to time to let audio get processed
+void    network_microphone_idle_proc();
+
+// Cleanup - multiple calls should be safe.
+void    close_network_microphone();
 
 #endif

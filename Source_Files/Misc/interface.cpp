@@ -82,6 +82,10 @@ May 16, 2002 (Woody Zenfell):
 Jun 5, 2002 (Loren Petrich):
 	Added do-nothing "case _revert_game:" in portable_process_screen_click()
 	at the request of Michael Adams.
+        
+Feb 1, 2003 (Woody Zenfell):
+        Reenabling network microphone support on all platforms, trying to share code
+        and present consistent interfaces to the greatest degree practical.
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -139,6 +143,11 @@ extern TP2PerfGlobals perf_globals;
 // To tell it to stop playing,
 // and also to run the end-game script
 #include "XML_LevelScript.h"
+
+// Network microphone/speaker
+#include "network_sound.h"
+#include "network_distribution_types.h"
+
 
 #ifdef env68k
 	#pragma segment shell
@@ -1249,12 +1258,8 @@ static bool begin_game(
 	
 				if (network_game_info->allow_mic)
 				{
-#if !defined(TARGET_API_MAC_CARBON)
 					install_network_microphone();
 					game_state.current_netgame_allows_microphone= true;
-#else
-					game_state.current_netgame_allows_microphone= false;
-#endif
 				} else {
 					game_state.current_netgame_allows_microphone= false;
 				}
@@ -1399,12 +1404,10 @@ static bool begin_game(
 			{
 				if (user==_network_player)
 				{
-#if !defined(TARGET_API_MAC_CARBON)
 					if(game_state.current_netgame_allows_microphone)
 					{
 						remove_network_microphone();
 					}
-#endif
 					exit_networking();
 				} else {
 /* NOTE: The network code is now responsible for displaying its own errors!!!! */
@@ -1555,9 +1558,7 @@ static void finish_game(
 	{
 		if(game_state.current_netgame_allows_microphone)
 		{
-#if !defined(TARGET_API_MAC_CARBON)
 			remove_network_microphone();
-#endif
 		}
 		NetUnSync(); // gracefully exit from the game
 
@@ -1910,6 +1911,29 @@ static void try_and_display_chapter_screen(
 		}
 	}
 }
+
+
+
+/*
+ *  Network microphone handling
+ */
+
+void install_network_microphone(
+	void)
+{
+	open_network_speaker();
+	NetAddDistributionFunction(kNewNetworkAudioDistributionTypeID, received_network_audio_proc, true);
+	open_network_microphone();
+}
+
+void remove_network_microphone(
+	void)
+{
+	close_network_microphone();
+	NetRemoveDistributionFunction(kNewNetworkAudioDistributionTypeID);
+	close_network_speaker();
+}
+
 
 /* ------------ interface fade code */
 /* Be aware that we could try to change bit depths before a fade is completed. */

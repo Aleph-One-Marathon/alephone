@@ -1,5 +1,5 @@
 /*
- *  network_microphone_sdl.h
+ *  network_speaker_shared.cpp
  *  created for Marathon: Aleph One <http://source.bungie.org/>
 
 	Copyright (C) 2002 and beyond by Woody Zenfell, III
@@ -25,31 +25,31 @@
  *  if I were to use a modified version, I would be a licensee of whomever modified it, and
  *  thus must observe the GPL terms.
  *
- *  Interface to various platform-specific network microphone implementations.
+ *  Network speaker-related code usable by multiple platforms.
  *
- *  See network_microphone_sdl_dummy.cpp if you need something to link against in lieu
- *  of an actual implementation.  See also network_speaker_sdl.* for the playback routines.
- *
- *  Created by woody March 3-8, 2002.
+ *  Created by woody Feb 1, 2003, largely from stuff in network_speaker_sdl.cpp.
  */
 
-#ifndef	NETWORK_MICROPHONE_SDL_H
-#define	NETWORK_MICROPHONE_SDL_H
+#include "cseries.h"
+#include "network_sound.h"
+#include "network_data_formats.h"
+#include "network_audio_shared.h"
+#include "player.h"
 
-// "true" does not guarantee that the user has a microphone, or even that sound capture will work...
-// but "false" means you have no hope whatsoever.  :)
-bool    is_network_microphone_implemented();
+// This is what the network distribution system calls when audio is received.
+void
+received_network_audio_proc(void *buffer, short buffer_size, short player_index) {
+    network_audio_header_NET* theHeader_NET = (network_audio_header_NET*) buffer;
 
-// Setup - don't call twice without intervening close...()
-void    open_network_microphone();
+    network_audio_header    theHeader;
 
-// Activate/deactivate a network microphone that's been open()ed
-void    set_network_microphone_state(bool inActive);
+    netcpy(&theHeader, theHeader_NET);
 
-// Call this from time to time to let audio get processed
-void    network_microphone_idle_proc();
-
-// Cleanup - multiple calls should be safe.
-void    close_network_microphone();
-
-#endif	// NETWORK_MICROPHONE_SDL_H
+    // For now, this should always be 0
+    if(theHeader.mReserved == 0) {
+        if(!(theHeader.mFlags & kNetworkAudioForTeammatesOnlyFlag) || (local_player->team == get_player_data(player_index)->team)) {
+            byte* theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
+            queue_network_speaker_data(theSoundData, buffer_size - sizeof(network_audio_header_NET));
+        }
+    }
+}

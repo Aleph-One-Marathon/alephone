@@ -28,11 +28,19 @@
 #include "cseries.h"
 #include "sdl_network.h"	// trust me, you don't even want to ask...
 #include "network_private.h"	// for kPROTOCOL_TYPE
+#include "Logging.h"
 
+// ZZZ: guarding with MACH since building this in the Carbon version on Mac OS X
+// doesn't like these #includes
+#ifndef __MACH__
 // LP: had to do these includes to satisfy CodeWarrior's Classic support
 #include <OpenTransport.h>
 #include <OpenTransportProviders.h>
+#endif // __MACH__
 
+// ZZZ: Can define this symbol in a pinch for some additional debug logging.
+// Don't do it in most cases because Logging is not thread-safe yet.
+//#define UNSAFE_OTUDP_LOGGING
 
 static const int kReserved	= 0;
 static const int kUnused	= 0;
@@ -70,6 +78,9 @@ NetDDPOpen() {
     // I'm guessing here.  Indeed, it seems OT is probably already going to be initialized
     // by the time we get here since SSLP and the streaming stuff use SDL_net which uses OT.
     // The Apple docs make no statement as to whether multiple initializations are safe.
+    
+    if(theResult != noErr)
+        logError1("cannot initialize Open Transport: returned %d", theResult);
 
     return theResult;
 }
@@ -107,6 +118,10 @@ handleDataArrival() {
         }
         theResult = OTRcvUData(sEndpoint, &sIncomingUnitData, &theFlags);
     }
+#ifdef UNSAFE_OTUDP_LOGGING
+    if(theResult != kOTNoDataErr)
+        logAnomaly1("OTRcvUData returned %d", theResult);
+#endif
 }
 
 
@@ -114,6 +129,12 @@ handleDataArrival() {
 // This code is called (potentially at "deferred task time") by OT whenever interesting stuff happens.
 static pascal void
 udpNotifier(void* inContext, OTEventCode inEventCode, OTResult inResult, void* cookie) {
+#ifdef UNSAFE_OTUDP_LOGGING
+    // This is fairly unsafe (calling this routine from deferred task time), probably...
+    // but if it works even just for now, it can help us understand why networking isn't working right in Classic.
+    logTrace2("udpNotifier called with eventCode=0x%x result=0x%x", inEventCode, inResult);
+#endif
+
     switch(inEventCode) {
         case T_UDERR:
             // Need to clear out error even if we don't care about it
@@ -146,7 +167,7 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
 #endif
     
     if(theResult != noErr) {
-        fdprintf("NetDDPOpenSocket: OTOpenEndpoint error (%d)", theResult);
+        logError1("NetDDPOpenSocket: OTOpenEndpoint error (%d)", theResult);
         return theResult;
     }
     
@@ -155,7 +176,7 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
     
     // Allocate storage for packet
     if(theEndpointInfo.tsdu <= 0) {
-        fdprintf("NetDDPOpenSocket: endpoint tsdu nonpositive (%d)", theEndpointInfo.tsdu);
+        logError1("NetDDPOpenSocket: endpoint tsdu nonpositive (%d)", theEndpointInfo.tsdu);
         theResult = -1;
         goto close_and_return;
     }
@@ -165,12 +186,12 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
         sIncomingUnitData.udata.maxlen = theEndpointInfo.tsdu;
         
         if(sIncomingUnitData.udata.buf == NULL) {
-            fdprintf("NetDDPOpenSocket: could not allocate %d bytes for sPacketBuffer", theEndpointInfo.tsdu);
+            logError1("NetDDPOpenSocket: could not allocate %d bytes for sPacketBuffer", theEndpointInfo.tsdu);
             goto close_and_return;
         }
     }
     else
-        fdprintf("NetDDPOpenSocket: packet buffer already allocated?");
+        logNote("NetDDPOpenSocket: packet buffer already allocated?");
 
     // Bind the endpoint
     InetAddress theDesiredAddress;
@@ -195,7 +216,7 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
     theResult = OTBind(sEndpoint, &theDesiredAddressBind, &theActualAddressBind);
     
     if(theResult != noErr) {
-        fdprintf("NetDDPOpenSocket: OTBind error (%d)", theResult);
+        logError1("NetDDPOpenSocket: OTBind error (%d)", theResult);
         goto dealloc_close_and_return;
     }
     
@@ -203,7 +224,7 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
     theResult = OTSetBlocking(sEndpoint);
     
     if(theResult != noErr) {
-        fdprintf("NetDDPOpenSocket: OTSetBlocking error (%d)", theResult);
+        logError1("NetDDPOpenSocket: OTSetBlocking error (%d)", theResult);
         goto unbind_dealloc_close_and_return;
     }
     
@@ -211,7 +232,7 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
     theResult = OTSetAsynchronous(sEndpoint);
     
     if(theResult != noErr) {
-        fdprintf("NetDDPOpenSocket: OTSetAsynchronous error (%d)", theResult);
+        logError1("NetDDPOpenSocket: OTSetAsynchronous error (%d)", theResult);
         goto unbind_dealloc_close_and_return;
     }
     
@@ -223,7 +244,7 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
     theResult = OTInstallNotifier(sEndpoint, sNotifierUPP, kUnused);
     
     if(theResult != noErr) {
-        fdprintf("NetDDPOpenSocket: OTInstallNotifier error (%d)", theResult);
+        logError1("NetDDPOpenSocket: OTInstallNotifier error (%d)", theResult);
         goto unbind_dealloc_close_and_return;
     }
     
@@ -330,6 +351,11 @@ NetDDPSendFrame(DDPFramePtr inFrame, NetAddrBlock* inAddress, short inProtocolTy
     theOutgoingData.opt.len = 0;
     theOutgoingData.udata.buf = inFrame->data;
     theOutgoingData.udata.len = inFrame->data_size;
-    
-    return OTSndUData(sEndpoint, &theOutgoingData);
+
+    OSErr theResult = OTSndUData(sEndpoint, &theOutgoingData);
+#ifdef UNSAFE_OTUDP_LOGGING
+    if(theResult != noErr)
+        logAnomaly1("NetDDPSendFrame: OTSndUData returned %d", theResult);
+#endif
+    return theResult;
 }

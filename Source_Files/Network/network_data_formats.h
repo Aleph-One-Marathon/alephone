@@ -38,7 +38,7 @@
 #include	"cseries.h"		// Need ALEPHONE_LITTLE_ENDIAN, if appropriate.
 #include	"network.h"
 #include	"network_private.h"
-#include    "network_speaker_sdl.h"
+#include    "network_audio_shared.h"
 
 
 

@@ -22,21 +22,36 @@ Sunday, August 14, 1994 1:08:47 AM- go nuts
 
 Tuesday, December 6, 1994 10:38:50 PM  (Jason)
 	choose closest sample rate on target device to rate22khz.
+
+Feb 1, 2003 (Woody Zenfell):
+        Resurrected for A1.  Reworked to be more tolerant of different supported
+        capture rates and formats, thanks to network_microphone_shared.cpp.
+        Made interface match that of the SDL network microphone stuff.
 */
 
 #include <string.h>
 #include <stdlib.h>
 
-#include "macintosh_cseries.h"
+// ZZZ: trying to get this Mac OS code to compile in the SDL context for Mac OS X SDL version.
+#ifdef SDL
+#define SDL_RFORK_HACK
+#endif
 
+#include "cseries.h"
+
+#if !defined(TARGET_API_MAC_CARBON) && !defined(SDL)
 #include <SoundInput.h>
 #include <AIFF.h>
 #include <Gestalt.h>
+#else
+#include <Carbon/Carbon.h>
+#endif
 
-#include "macintosh_network.h"
 #include "shell.h"
 #include "network_sound.h"
 #include "interface.h"
+#include "network_data_formats.h"
+#include "network_microphone_shared.h"
 
 #ifdef env68k
 #pragma segment sound
@@ -46,15 +61,13 @@ Tuesday, December 6, 1994 10:38:50 PM  (Jason)
 /* Need to implement delay for maximum recording time.. */
 /* Possible scale data up at interrupt time.. */
 
-//#define TESTING
-
 /* ---------- constants */
 
 /* ---------- structures */
 struct sound_device_settings 
 {
 	short num_channels;
-	Fixed sample_rate;
+	UnsignedFixed sample_rate;
 	short sample_size;
 	OSType compression_type;
 };
@@ -68,7 +81,6 @@ struct net_microphone_data
 	Ptr buffer;
 	struct SPB param_block;
 	bool recording;
-	short network_distribution_type;
 };
 
 /* -------- constants */
@@ -76,9 +88,9 @@ struct net_microphone_data
 struct sound_device_settings game_mic_settings=
 {
 	1, /* number of channels */
-	rate22khz, /* sample rate */
+        rate11025hz, /* sample rate */
 	8, /* sample size */
-	MACE6Type /* MACE 6:1 */
+        0 /* compression type (0 = no compression) */
 };
 
 /* -------- Globals.. */
@@ -92,9 +104,19 @@ static OSErr get_device_settings(long refnum, struct sound_device_settings *sett
 static pascal void sound_recording_completed(SPBPtr pb);
 static OSErr start_sound_recording(void);
 
-static OSErr closest_supported_sample_rate(long refNum, Fixed *sampleRate);
+static OSErr closest_supported_sample_rate(long refNum, UnsignedFixed *sampleRate);
 
 /* ------------- Code */
+
+bool is_network_microphone_implemented()
+{
+        return true;
+}
+
+void network_microphone_idle_proc()
+{
+        // nothing to do
+}
 
 bool has_sound_input_capability(
 	void)
@@ -112,11 +134,10 @@ bool has_sound_input_capability(
 		}
 	}
 
-	return false; //AS: mic doesn't work, so this disables the code
+        return is_capable;
 }
 
-OSErr open_network_microphone(
-	short network_distribution_type)
+OSErr open_network_microphone()
 {
 	OSErr err;
 
@@ -137,11 +158,9 @@ OSErr open_network_microphone(
 		if (has_sound_input_capability())
 		{
 			net_microphone.recording= false;
-			net_microphone.network_distribution_type= network_distribution_type;
-			net_microphone.buffer= NewPtr(NETWORK_SOUND_CHUNK_BUFFER_SIZE);
-			net_microphone.completion_proc= NewSICompletionProc(sound_recording_completed);
+			net_microphone.completion_proc= NewSICompletionUPP(sound_recording_completed);
 			
-			if (net_microphone.buffer && net_microphone.completion_proc)
+			if (net_microphone.completion_proc)
 			{
 				err= SPBOpenDevice("\p", siWritePermission, &net_microphone.refnum);
 				if(!err)
@@ -157,9 +176,31 @@ OSErr open_network_microphone(
 							/* Set to our settings.. */
 							closest_supported_sample_rate(net_microphone.refnum, &game_mic_settings.sample_rate);
 							err= set_device_settings(net_microphone.refnum, (struct sound_device_settings *) &game_mic_settings);
-							if(!err)
+
+                                                        // ZZZ: some settings may have failed to 'take'.  That's ok, we'll double-check the
+                                                        // settings to get an accurate reading, and deal with it.
+                                                        if(err == notEnoughHardwareErr)
+                                                                err = noErr;
+                                                                
+							if(err == noErr)
 							{
-								net_microphone_installed= true;
+                                                                get_device_settings(net_microphone.refnum, &game_mic_settings);
+                                                                if(!announce_microphone_capture_format(game_mic_settings.sample_rate / 65536,
+                                                                        game_mic_settings.num_channels == 2, game_mic_settings.sample_size == 16))
+                                                                {
+                                                                        // network microphone support layer rejected our capture format!
+                                                                        err = notEnoughHardwareErr;
+                                                                }
+                                                                else {
+                                                                        net_microphone.buffer = new char[get_capture_byte_count_per_packet()];
+                                                                        if(!net_microphone.buffer)
+                                                                        {
+                                                                                err = notEnoughMemoryErr;
+                                                                        }
+                                                                        else {
+                                                                                net_microphone_installed= true;
+                                                                        }
+                                                                }
 							}
 						}
 					}
@@ -198,13 +239,18 @@ void close_network_microphone(void)
 		err= SPBCloseDevice(net_microphone.refnum);
 
 		/* Get rid of the routine descriptor */
-		DisposeRoutineDescriptor(net_microphone.completion_proc);
+		DisposeSICompletionUPP(net_microphone.completion_proc);
+                
+                if(net_microphone.buffer != NULL) {
+                    delete [] net_microphone.buffer;
+                    net_microphone.buffer = NULL;
+                }
 
 		net_microphone_installed= false;
 	}
 }
 
-void handle_microphone(bool triggered)
+void set_network_microphone_state(bool triggered)
 {
 	OSErr err= noErr;
 	bool success= false;
@@ -224,18 +270,10 @@ void handle_microphone(bool triggered)
 				}
 			} else {
 				/* We are recording.... restart the recording if we are done. */
-				switch(net_microphone.param_block.error)
-				{
-					case asyncUncompleted:
-					case noErr:
-						/* Start up the next one.. */
-						/* No error.. */
-						break;
-						
-					default:
-						dprintf("Error in completion: %d", net_microphone.param_block.error);
-						net_microphone.recording= false;
-						break;
+                                if(net_microphone.param_block.error < 0)
+                                {
+                                        dprintf("Error in completion: %d", net_microphone.param_block.error);
+                                        net_microphone.recording= false;
 				}
 			}
 		} else {
@@ -276,46 +314,71 @@ static OSErr get_device_settings(
 	return error;
 }
 
+// ZZZ change: set as much as we can; if we attempt any invalid settings, return notEnoughHardwareErr.
 static OSErr set_device_settings(
 	long refnum,
 	struct sound_device_settings *settings)
 {
 	OSErr error;
+        bool notEnoughHardware = false;
 	
 	error= SPBSetDeviceInfo(refnum, siNumberChannels, &settings->num_channels);
+        if(error == notEnoughHardwareErr) {
+            notEnoughHardware = true;
+            error = noErr;
+        }
 	if (error==noErr)
 	{
 		error= SPBSetDeviceInfo(refnum, siSampleRate, &settings->sample_rate);
+                if(error == notEnoughHardwareErr) {
+                    notEnoughHardware = true;
+                    error = noErr;
+                }
 		if (error==noErr)
 		{
 			error= SPBSetDeviceInfo(refnum, siSampleSize, &settings->sample_size);
+                        if(error == notEnoughHardwareErr) {
+                            notEnoughHardware = true;
+                            error = noErr;
+                        }
 			if (error==noErr)
 			{
 				error= SPBSetDeviceInfo(refnum, siCompressionType, &settings->compression_type);
+                                if(error == notEnoughHardwareErr) {
+                                    notEnoughHardware = true;
+                                    error = noErr;
+                                }
 			}
 		}
 	}
 	
-	return error;
+	return (error == noErr && notEnoughHardware) ? notEnoughHardwareErr : error;
 }
 
+
+// ZZZ: some changes here to account for packing problems
 struct siSampleRateAvailableData
 {
 	short sampleRateCount;
 	Handle sampleRates;
 };
 
+enum { SIZEOF_siSampleRateAvailableData = 2 + 4 };
+
 static OSErr closest_supported_sample_rate(
 	long refNum,
-	Fixed *sampleRate)
+	UnsignedFixed *sampleRate)
 {
 	struct siSampleRateAvailableData data;
+        byte sampleRateBuffer[SIZEOF_siSampleRateAvailableData];
 	OSErr error;
 	
-	error= SPBGetDeviceInfo(refNum, siSampleRateAvailable, &data);
+	error= SPBGetDeviceInfo(refNum, siSampleRateAvailable, sampleRateBuffer);
 	if (error==noErr)
 	{
-		Fixed *sampleRates= (Fixed *) *data.sampleRates;
+                data.sampleRateCount = *((short*)(&(sampleRateBuffer[0])));
+                data.sampleRates = *((Handle*)(&(sampleRateBuffer[2])));
+		UnsignedFixed *sampleRates= (UnsignedFixed *) *data.sampleRates;
 		
 		if (!data.sampleRateCount)
 		{
@@ -325,7 +388,7 @@ static OSErr closest_supported_sample_rate(
 		}
 		else
 		{
-			Fixed closestRate;
+			UnsignedFixed closestRate;
 			unsigned long closest_delta= 0;
 			short i;
 
@@ -355,9 +418,9 @@ static OSErr start_sound_recording(
 	obj_clear(net_microphone.param_block);
 
 	net_microphone.param_block.inRefNum= net_microphone.refnum;
-	net_microphone.param_block.count= NETWORK_SOUND_CHUNK_BUFFER_SIZE;
+	net_microphone.param_block.count= get_capture_byte_count_per_packet();
 	net_microphone.param_block.milliseconds= 0;
-	net_microphone.param_block.bufferLength= NETWORK_SOUND_CHUNK_BUFFER_SIZE;
+	net_microphone.param_block.bufferLength= get_capture_byte_count_per_packet();
 	net_microphone.param_block.bufferPtr= net_microphone.buffer;
 	net_microphone.param_block.completionRoutine= net_microphone.completion_proc;
 #ifdef env68k								
@@ -376,20 +439,16 @@ static pascal void sound_recording_completed(
 	long old_a5= set_a5(pb->userLong); /* set our a5 world */
 #endif
 
-	/* Send the data, or play it if we are just testing.. */
-#ifdef TESTING
-	queue_network_speaker_data(net_microphone.buffer, pb->count);
-#else
-	NetDistributeInformation(net_microphone.network_distribution_type, net_microphone.buffer, pb->count, false);
-#endif
+        // Whatever we've got, convert and send it out.
+        copy_and_send_audio_data((byte*)net_microphone.buffer, pb->count, NULL, 0, true);
 
 	switch (pb->error)
 	{
 		case noErr:
 			/* Reset the sounds.. */
-			pb->count= NETWORK_SOUND_CHUNK_BUFFER_SIZE;
+			pb->count= get_capture_byte_count_per_packet();
 			pb->milliseconds= 0;
-			pb->bufferLength= NETWORK_SOUND_CHUNK_BUFFER_SIZE;
+			pb->bufferLength= get_capture_byte_count_per_packet();
 			pb->bufferPtr= net_microphone.buffer;
 			pb->completionRoutine= net_microphone.completion_proc;
 

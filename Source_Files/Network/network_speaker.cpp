@@ -19,6 +19,12 @@ NETWORK_SPEAKER.C
 	http://www.gnu.org/licenses/gpl.html
 
 Sunday, August 14, 1994 1:20:55 AM
+
+Feb 1, 2003 (Woody Zenfell):
+        Resurrected for A1.  Using Apple's sample CarbonSndPlayDoubleBuffer
+        to emulate missing SndPlayDoubleBuffer call (in Carbon, anyway).
+        Using bigger blocks and bigger buffers in general, and SDL-format
+        network audio (11025Hz 8-bit mono unsigned) instead of MACE 6:1.
 */
 
 /*
@@ -31,7 +37,15 @@ Sunday, August 14, 1994 1:20:55 AM
 
 #include "macintosh_cseries.h"
 
+#if defined(TARGET_API_MAC_CARBON)
+#include "CarbonSndPlayDB.h"
+#define SndPlayDoubleBuffer CarbonSndPlayDoubleBuffer
+#define SndDoImmediate MySndDoImmediate
+#endif
+
 #include "network_sound.h"
+
+#include "Logging.h"
 
 #ifdef env68k
 #pragma segment sound
@@ -40,7 +54,11 @@ Sunday, August 14, 1994 1:20:55 AM
 /* ---------- constants */
 
 #define MAXIMUM_DOUBLE_BUFFER_SIZE 1024
-#define MAXIMUM_QUEUE_SIZE (3*MAXIMUM_DOUBLE_BUFFER_SIZE)
+#define MAXIMUM_QUEUE_SIZE (16*MAXIMUM_DOUBLE_BUFFER_SIZE)
+
+// ZZZ: these used to be passed-in at open() time, now we'll just assume them.
+// This helps us present a consistent interface with the SDL speaker stuff.
+enum { kConnectionThreshhold = 2, kBlockSize = 1024 };
 
 enum /* speaker states */
 {
@@ -80,13 +98,15 @@ static void fill_double_buffer_with_static(SndDoubleBufferPtr buffer);
 
 static pascal void network_speaker_doubleback_procedure(SndChannelPtr channel, SndDoubleBufferPtr doubleBufferPtr);
 void fill_network_speaker_buffer(SndDoubleBufferPtr doubleBufferPtr);
+static void silence_network_speaker();
+static void reset_network_speaker();
 
 /* ---------- code */
 
-OSErr open_network_speaker(
-	short block_size,
-	short connection_threshold)
+OSErr open_network_speaker()
 {
+        short block_size = kBlockSize;
+        short connection_threshold = kConnectionThreshhold;
 	OSErr error;
 	
 	assert(!speaker);
@@ -99,6 +119,11 @@ OSErr open_network_speaker(
 		
 		if (initialization)
 		{
+// ZZZ: Sorry, it looks like the CarbonSndPlayDoubleBuffer stuff really wants a plain C function
+// pointer, sitting in the structure typed as a SndDoubleBackUPP.  (Don't ask me!)
+#if defined(TARGET_API_MAC_CARBON)
+                        doubleback_routine_descriptor= (SndDoubleBackUPP)network_speaker_doubleback_procedure;
+#else
 			// Thomas Herzog fix
  			#if UNIVERSAL_INTERFACES_VERSION < 0x0340
  				doubleback_routine_descriptor= NewSndDoubleBackProc((ProcPtr)network_speaker_doubleback_procedure);
@@ -106,6 +131,7 @@ OSErr open_network_speaker(
  				doubleback_routine_descriptor= NewSndDoubleBackUPP(network_speaker_doubleback_procedure);
  			#endif
  			// doubleback_routine_descriptor= NewSndDoubleBackProc((ProcPtr)network_speaker_doubleback_procedure);
+#endif
 			assert(doubleback_routine_descriptor);
 			
 			atexit(close_network_speaker);
@@ -128,9 +154,9 @@ OSErr open_network_speaker(
 			
 			header->dbhNumChannels= 1;
 			header->dbhSampleSize= 8;
-			header->dbhCompressionID= sixToOne;
-			header->dbhPacketSize= sixToOnePacketSize;
-			header->dbhSampleRate= rate22khz;
+                        header->dbhCompressionID= 0;
+                        header->dbhPacketSize= 0;
+                        header->dbhSampleRate= rate11025hz;
 			header->dbhDoubleBack= doubleback_routine_descriptor;
 			header->dbhBufferPtr[0]= (SndDoubleBufferPtr) NewPtrClear(sizeof(SndDoubleBuffer)+MAXIMUM_DOUBLE_BUFFER_SIZE);	
 			header->dbhBufferPtr[1]= (SndDoubleBufferPtr) NewPtrClear(sizeof(SndDoubleBuffer)+MAXIMUM_DOUBLE_BUFFER_SIZE);	
@@ -192,7 +218,17 @@ void queue_network_speaker_data(
 				/* we were off but now weÕre getting data; fill one double buffer with static and
 					change our state to _turning_on (weÕll wait until we receive another full
 					double buffer worth of data before beginning to replay) */
+
+//				ZZZ: CarbonSndPlayDB emulation layer specifically warns against calling
+//				SndDoImmediate() with a quietCmd at interrupt time - which is what
+//				quiet_network_speaker() would do.  So instead here we try resetting
+//				the speaker (which ought to be safe I think) now, but delay issuing the
+//				quiet commands until just before we start playing again.
+#if defined(TARGET_API_MAC_CARBON)
+                                reset_network_speaker();
+#else
 				quiet_network_speaker(); /* we could be playing trailing static */
+#endif
 				speaker->state= _speaker_is_turning_on;
 				fill_network_speaker_buffer(speaker->header->dbhBufferPtr[0]);
 				break;
@@ -222,7 +258,8 @@ void queue_network_speaker_data(
 		}
 		else
 		{
-			vpause(csprintf(temporary, "queue_net_speaker_data() is ignoring data: #%d+#%d>#%d", speaker->queue_size, count, MAXIMUM_QUEUE_SIZE));
+                        // This really shouldn't log in the non-main thread yet...
+                        logAnomaly3("queue_net_speaker_data() is ignoring data: #%d+#%d>#%d", speaker->queue_size, count, MAXIMUM_QUEUE_SIZE);
 		}
 	
 #ifdef SNDPLAYDOUBLEBUFFER_DOESNT_SUCK
@@ -245,9 +282,8 @@ void queue_network_speaker_data(
 	}
 }
 
-void quiet_network_speaker(
-	void)
-{
+static void
+silence_network_speaker() {
 	if (speaker)
 	{
 		SndCommand command;
@@ -264,14 +300,28 @@ void quiet_network_speaker(
 		command.param2= 0;
 		error= SndDoImmediate(speaker->channel, &command);
 		assert(error==noErr);
-		
+
+		speaker->header->dbhBufferPtr[0]->dbFlags= 0;
+		speaker->header->dbhBufferPtr[1]->dbFlags= 0;
+        }
+}
+
+static void
+reset_network_speaker() {
+	if (speaker)
+	{
 		/* speaker is off, no missed doublebacks, queue is empty, double buffers are not ready */
 		speaker->state= _speaker_is_off;
 		speaker->connection_status= 0;
 		speaker->queue_size= 0;
-		speaker->header->dbhBufferPtr[0]->dbFlags= 0;
-		speaker->header->dbhBufferPtr[1]->dbFlags= 0;
 	}
+}
+
+void quiet_network_speaker(
+	void)
+{
+        silence_network_speaker();
+        reset_network_speaker();
 }
 
 /* because SndPlayDoubleBuffer() is not safe at interrupt time */
@@ -289,9 +339,14 @@ void network_speaker_idle_proc(
 				{
 					OSErr error;
 					
+#if defined(TARGET_API_MAC_CARBON)
+                                        silence_network_speaker();
+#endif
+
 					fill_network_speaker_buffer(speaker->header->dbhBufferPtr[1]);
 					error= SndPlayDoubleBuffer(speaker->channel, speaker->header);
-					vwarn(error==noErr, csprintf(temporary, "SndPlayDoubleBuffer(%p,%p)==#%d", speaker->channel, speaker->header, error));
+                                        if(error != noErr)
+                                                logAnomaly3("SndPlayDoubleBuffer(%p,%p)==#%d", speaker->channel, speaker->header, error);
 					
 					speaker->state= _speaker_is_on;
 				}
@@ -316,7 +371,13 @@ static void fill_buffer_with_static(
 	speaker->random_seed= seed;
 }
 
-static pascal void network_speaker_doubleback_procedure(
+// ZZZ: Sorry, but it seems Apple's CarbonSndPlayDoubleBuffer stuff wants a plain
+// C function pointer, not a UPP or anything.
+static
+#if !defined(TARGET_API_MAC_CARBON)
+pascal
+#endif
+void network_speaker_doubleback_procedure(
 	SndChannelPtr channel,
 	SndDoubleBufferPtr doubleBufferPtr)
 {

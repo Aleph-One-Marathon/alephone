@@ -967,7 +967,7 @@ found_player_callback(const SSLP_ServiceInstance* player)
 	LAddRow(1, theIndex, network_list_box);
 	SetPt(&cell, 0, theIndex - 1);
 
-	LSetCell(player->sslps_name, strlen(player->sslps_name), cell, network_list_box);
+        LSetCell(&(player->sslps_name[1]), player->sslps_name[0], cell, network_list_box);
 
 #if defined(LIST_BOX_AS_CONTROL)
 	WindowRef window = ActiveNonFloatingWindow();
@@ -1009,14 +1009,8 @@ player_name_changed_callback(const SSLP_ServiceInstance* player) {
 		return;	// didn't know about it anyway
 
 	SetPt(&cell, 0, theIndex);
-#if defined(TARGET_API_MAC_CARBON)
-	CopyCStringToPascal(player->sslps_name, ptemporary);
-#else		
-	strcpy(temporary, player->sslps_name); 
-	c2pstr(temporary);
-#endif
-	LSetCell(ptemporary+1, ptemporary[0], cell, network_list_box);
-	
+
+        LSetCell(&(player->sslps_name[1]), player->sslps_name[0], cell, network_list_box);
 #if defined(LIST_BOX_AS_CONTROL)
 	WindowRef window = ActiveNonFloatingWindow();
 	Rect bounds;

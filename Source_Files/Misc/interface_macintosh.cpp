@@ -72,7 +72,6 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #else
 #include "macintosh_network.h"
 #endif
-#include "network_sound.h"
 
 #include "screen_drawing.h"
 #include "mysound.h"
@@ -89,8 +88,6 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "XML_LevelScript.h"
 #include "music.h"
-
-#include "network_distribution_types.h"
 
 #ifdef env68k
 	#pragma segment macintosh_
@@ -109,7 +106,6 @@ enum { /* Cheat level dialog */
 #define MAXIMUM_CONSECUTIVE_GETOSEVENT_CALLS 12 // 2 seconds
 
 /* -------- local prototypes */
-static void network_speaker_proc(void *buffer, short size, short player_index);
 // static bool machine_has_quicktime(void);
 #if defined(USE_CARBON_ACCESSORS)
 static void draw_picture_into_gworld(GWorldPtr gworld, PicHandle picture);
@@ -529,34 +525,6 @@ bool try_for_event(
 	
 	return try_for_event;
 }
-
-#if !defined(TARGET_API_MAC_CARBON)
-void install_network_microphone(
-	void)
-{
-	short id;
-
-	open_network_speaker(NETWORK_SOUND_CHUNK_BUFFER_SIZE, 2);
-	NetAddDistributionFunction(kOriginalNetworkAudioDistributionTypeID, network_speaker_proc, true);
-	open_network_microphone(kOriginalNetworkAudioDistributionTypeID);
-}
-
-void remove_network_microphone(
-	void)
-{
-	close_network_speaker();
-	close_network_microphone();
-}
-
-static void network_speaker_proc(
-	void *buffer, 
-	short size, 
-	short player_index)
-{
-	(void)(player_index);
-	queue_network_speaker_data((byte *) buffer, size);
-}
-#endif
 
 void exit_networking(
 	void)

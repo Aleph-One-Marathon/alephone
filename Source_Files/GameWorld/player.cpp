@@ -1464,7 +1464,7 @@ static void recreate_player(
 	}
 
 //	player->flags= 0;
-	player->flags &= (_player_has_cheated_flag | _player_is_teleporting_flag | _player_is_interlevel_teleporting_flag); /* Player has cheated persists. */
+	player->flags &= (_player_is_teleporting_flag | _player_is_interlevel_teleporting_flag); /* Player has cheated persists. */
 	player->monster_index= monster_index;
 	player->object_index= monster->object_index;
 
@@ -1807,7 +1807,7 @@ static void try_and_strip_player_items(
 }
 
 
-void adjust_player_physics(monster_data *me)
+static void adjust_player_physics(monster_data *me)
 {	
 	// LP: Fix the player physics so that guided missiles will work correctly
 	if (PlayerShotsGuided)
@@ -1818,9 +1818,9 @@ void adjust_player_physics(monster_data *me)
 		
 		// Gets called once for every player character created or re-created;
 		// that seems to be OK
-		SetPlayerViewAttribs(vacbob->half_visual_arc,vacbob->half_vertical_visual_arc,
-			vacbob->visual_range,
-			vacbob->dark_visual_range);
+		SetPlayerViewAttribs(vacbob->half_visual_arc,vacbob->half_vertical_visual_arc / 3,
+			vacbob->visual_range * 2,
+			vacbob->dark_visual_range * 2);
 	}
 }
 

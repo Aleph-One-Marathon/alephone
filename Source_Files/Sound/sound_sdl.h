@@ -42,6 +42,7 @@
 #include "song_definitions.h"
 #include "XML_LevelScript.h"   // For getting level music. 
 #include "network_speaker_sdl.h"
+#include "network_audio_shared.h"
 
 // Number of sound channels used by Aleph One sound manager
 const int SM_SOUND_CHANNELS = MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHANNELS;

@@ -28,37 +28,17 @@
  *  Realtime audio (network microphone) playback support for SDL platforms.
  *
  *  Created by woody Mar 3-8, 2002.
+ *
+ *  Feb 1, 2003 (Woody Zenfell):
+ *     This file now describes only the interface between the SDL network speaker receiving
+ *     code and the SDL sound code.  The main interface to the actual speaker stuff will be
+ *     in network_audio.h.
  */
 
 #ifndef NETWORK_SPEAKER_SDL_H
 #define NETWORK_SPEAKER_SDL_H
 
 #include    "cseries.h"
-
-// In-memory header for sound data
-struct network_audio_header {
-    uint32  mReserved;  // Should be 0 for now, later maybe use a FourCharCode for format?  shrug
-    uint32  mFlags;
-};
-
-// For network_audio_header::mFlags
-enum {
-    kNetworkAudioForTeammatesOnlyFlag = 0x01
-};
-
-
-// Useful information about the network audio
-// Note: at present, the Win32 microphone routines ignore these settings and target
-// 11025 unsigned 8-bit mono.  If you want to change formats you'll need to edit those
-// routines too (hopefully to make them more general ;) ).  Also you'll want to somehow
-// differentiate your format from this one (use a Flag, or value in Reserved, or an
-// entirely new distribution type, or something).
-const bool  kNetworkAudioIsStereo       = false;
-const bool  kNetworkAudioIs16Bit        = false;
-const bool  kNetworkAudioIsSigned8Bit   = false;
-const int   kNetworkAudioSampleRate     = 11025;
-const int   kNetworkAudioBytesPerFrame  = (kNetworkAudioIs16Bit ? 2 : 1) * (kNetworkAudioIsStereo ? 2 : 1);
-
 
 // Flags for NetworkSpeakerSoundBuffer::mFlags below
 enum {
@@ -79,18 +59,6 @@ is_sound_data_disposable(NetworkSpeakerSoundBufferDescriptor* inBuffer) {
 }
 
 
-// Called by main thread to initialize network speaker system
-void open_network_speaker();
-
-// Called by main thread between game updates
-void network_speaker_idle_proc();
-
-// Called by main thread to shut down network speaker system
-void close_network_speaker();
-
-// Called by received_network_audio_proc, but also available to others
-void queue_network_speaker_data(byte* inData, short inLength);
-
 // Called by sound playback routines to get incoming network audio
 // (also called by main thread in close_network_speaker())
 // Calling this invalidates the pointer returned the previous call.
@@ -98,8 +66,5 @@ NetworkSpeakerSoundBufferDescriptor* dequeue_network_speaker_data();
 
 // Called by sound playback routines to return storage-buffers to the freequeue
 void release_network_speaker_buffer(byte* inBuffer);
-
-// Called by network routines to store incoming network audio for playback
-void received_network_audio_proc(void *buffer, short buffer_size, short player_index);
 
 #endif // NETWORK_SPEAKER_SDL_H
