@@ -718,7 +718,7 @@ static pascal void ControlDrawer(ControlRef Ctrl, short Part)
 	err = GetControlProperty(Ctrl,
 			AppTag, DrawTag,
 			sizeof(CtrlDD), &ActualSize, &CtrlDD);
-	vassert(err == noErr, csprintf(temporary,"SetControlProperty error: %d",err));
+	vassert(err == noErr, csprintf(temporary,"GetControlProperty error: %d",err));
 	
 	assert(CtrlDD.DrawFunction);
 	CtrlDD.DrawFunction(Ctrl,CtrlDD.DrawData);
