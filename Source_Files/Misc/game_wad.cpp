@@ -777,6 +777,8 @@ bool goto_level(
 			place_initial_objects();
 	
 			initialize_control_panels_for_level(); /* must be called after the players are initialized */
+			
+			dynamic_world->current_level_number= entry->level_number;
 		} else {
 //			assert(error_pending());
 		}
