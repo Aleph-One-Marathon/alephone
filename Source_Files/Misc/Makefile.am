@@ -21,7 +21,7 @@ alephone_SOURCES = \
   platforms.h player.h preferences.h progress.h projectile_definitions.h \
   projectiles.h render.h resource_manager.h scenery.h scenery_definitions.h \
   scottish_textures.h screen.h screen_definitions.h screen_drawing.h \
-  sdl_dialogs.h sdl_fonts.h sdl_widgets.h shape_definitions.h \
+  sdl_dialogs.h sdl_fonts.h sdl_network.h sdl_widgets.h shape_definitions.h \
   shape_descriptors.h shell.h song_definitions.h sound_definitions.h tags.h \
   textures.h vbl.h vbl_definitions.h wad.h wad_prefs.h weapon_definitions.h \
   weapons.h world.h \

@@ -16,7 +16,7 @@ BuildRoot: %{_tmppath}/%{name}-root
 
 Requires: AlephOne-core-data
 Requires: SDL >= 1.2.0
-Required: SDL_image >= 1.2.0
+Requires: SDL_image >= 1.2.0
 
 %description
 Aleph One is an Open Source 3D first-person shooter game, based on the game
