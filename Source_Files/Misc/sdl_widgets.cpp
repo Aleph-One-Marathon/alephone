@@ -1165,7 +1165,7 @@ void w_slider::set_selection(int s)
  *  List selection
  */
 
-w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(ITEM_FONT), shown_items(lines), thumb_dragging(false)
+w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : num_items(0), widget(ITEM_FONT), shown_items(lines), thumb_dragging(false)
 {
 	font_height = font->get_line_height();
 	rect.w = width;
@@ -1205,12 +1205,6 @@ w_list_base::~w_list_base()
 	if (frame_b) SDL_FreeSurface(frame_b);
 	if (thumb_tc) SDL_FreeSurface(thumb_tc);
 	if (thumb_bc) SDL_FreeSurface(thumb_bc);
-}
-
-int w_list_base::layout(void)
-{
-	rect.x = -rect.w / 2;
-	return rect.h;
 }
 
 void w_list_base::draw_image(SDL_Surface *dst, SDL_Surface *s, int16 x, int16 y) const

@@ -565,7 +565,6 @@ public:
 	w_list_base(uint16 width, size_t lines, size_t sel);
 	~w_list_base();
 
-	int layout(void);
 	void draw(SDL_Surface *s) const;
 	void mouse_move(int x, int y);
 	void click(int x, int y);
