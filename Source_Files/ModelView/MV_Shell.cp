@@ -94,18 +94,7 @@ bool machine_has_nav_services()
 	return HasNavServices;
 }
 
-// Intended typecode of model/skin files to open
-OSType TypeCode;
-
-OSType get_typecode(int TypeCodeIndex)
-{
-	// Either that intended typecode or the creator code (index 0)
- 	return TypeCodeIndex ? TypeCode : 'APPL';
-}
-
-void global_idle_proc() {} // Do nothing
-
-
+void global_idle_proc() {}	// Do nothing
 
 // GLUT window ID in case there is more than one GLUT window;
 // however, Apple GLUT does not like more than one such window,
@@ -146,28 +135,28 @@ void LoadModelAction(int ModelType)
 	switch(ModelType)
 	{
 	case ModelWavefront:
-		TypeCode = 'TEXT';
-		if (File.ReadDialog(1,"Model Type: Alias|Wavefront"))
+		set_typecode(_typecode_patch,'TEXT');
+		if (File.ReadDialog(_typecode_patch,"Model Type: Alias|Wavefront"))
 			Success = LoadModel_Wavefront(File, Model);
 		break;
 	case ModelStudio:
 		// No canonical MacOS assignment of this model type
-		if (File.ReadDialog(-1,"Model Type: 3D Studio Max"))
+		if (File.ReadDialog(_typecode_unknown,"Model Type: 3D Studio Max"))
 			Success = LoadModel_Studio(File, Model);
 		break;
 	case Model_QD3D:
-		TypeCode = '3DMF';
-		if (File.ReadDialog(1,"Model Type: QuickDraw 3D"))
+		set_typecode(_typecode_patch,'3DMF');
+		if (File.ReadDialog(_typecode_patch,"Model Type: QuickDraw 3D"))
 			Success = LoadModel_QD3D(File, Model);
 		break;
 	case Model_Dim3_First:
-		TypeCode = 'TEXT';
-		if (File.ReadDialog(1,"Model Type: Dim3 (First Part)"))
+		set_typecode(_typecode_patch,'TEXT');
+		if (File.ReadDialog(_typecode_patch,"Model Type: Dim3 (First Part)"))
 			Success = LoadModel_Dim3(File, Model, LoadModelDim3_First);
 		break;
 	case Model_Dim3_Rest:
-		TypeCode = 'TEXT';
-		if (File.ReadDialog(1,"Model Type: Dim3 (Later Parts)"))
+		set_typecode(_typecode_patch,'TEXT');
+		if (File.ReadDialog(_typecode_patch,"Model Type: Dim3 (Later Parts)"))
 			Success = LoadModel_Dim3(File, Model,LoadModelDim3_Rest);
 		break;
 	}
@@ -255,7 +244,7 @@ void LoadSkinAction(int SkinType)
 	FileSpecifier File;
 	
 	bool Success = false;
-	if (File.ReadDialog(-1,"Skin Image"))
+	if (File.ReadDialog(_typecode_unknown,"Skin Image"))
 		Success = LoadImageFromFile(Image,File,SkinType);
 	if (!Success) return;
 	
