@@ -713,8 +713,26 @@ The sounds:
 
 <h3><a name="sounds">Sounds Element: &lt;sounds&gt;</a></h3>
 
-This kind of element specifies various sound features,
-in particular, what ambient and random sound assignments to use.
+This kind of element specifies various sound features.
+Its attributes are various formerly-hardcoded sounds here and there;
+these are made variable for Marathon 1 compatibility:
+<ul>
+<li>terminal_logon: Logging-on sound at a terminal
+<li>terminal_logoff: Logging-off sound at a terminal
+<li>terminal_page: Next-page sound at a terminal
+<li>teleport_in: Teleporting in
+<li>teleport_out: Teleporting out
+<li>got_powerup: Picked up a powerup
+<li>got_item: Picked up anything else
+<li>crunched: Monster getting crunched
+<li>exploding: Juggernaut exploding
+<li>breathing: Breathing sound (currently unused)
+<li>oxygen_warning: Warning when getting low on oxygen
+<li>adjust_volume: Sound made when sound volume gets changed
+</ul>
+<p>
+
+It has child elements that specify which ambient and random sound assignments to use.
 These are assignments from their indices to the list of (general) sound definitions,
 and are specified with child elements &lt;ambient&gt; and &lt;random&gt;.
 Each of them has these attributes, both mandatory:
@@ -926,8 +944,6 @@ It has these attributes:
 and squeeze vertically as one teleports (<a name="#boolean">boolean</a>; default: true)
 <li>static_effect: indicates whether or not to make teleporting objects have the sparkling
 "static" effect and whether they get squeezed horizontally as they teleport (<a name="#boolean">boolean</a>; default: true)
-<li>sound_teleport_in: the sound ID for the otherwise-hardcoded teleport-in sound
-<li>sound_teleport_out: the sound ID for the otherwise-hardcoded teleport-out sound
 </ul>
 <p>
 This element has the child elements &lt;font&gt;, for setting on-screen-display fonts
@@ -1479,6 +1495,7 @@ attributes are used:
 <li>64: Extend
 </ul>
 Normal is none of these attributes, or 0.
+<li>file: this is for SDL support, and indicate which font file to use.
 </ul>
 None of the font attributes proper are mandatory.
 This example sets font 4 to the default font for the computer terminals.
