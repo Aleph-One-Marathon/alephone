@@ -6,7 +6,7 @@
 
 
 // Global variables
-static sdl_font_info *terminal_font = NULL;
+static const sdl_font_info *terminal_font = NULL;
 static uint32 current_pixel;			// Current color pixel value
 static uint16 current_style = normal;	// Current style flags
 

@@ -389,7 +389,7 @@ bool adjust_sound_volume_up(struct sound_manager_parameters *parameters, short s
 	if (_sm_active && parameters->volume < NUMBER_OF_SOUND_VOLUME_LEVELS) {
 		_sm_parameters->volume = (parameters->volume += 1);
 		main_volume = parameters->volume * SOUND_VOLUME_DELTA;
-		play_sound(sound_index, (world_location3d *)NULL, NONE);
+		play_sound(sound_index, NULL, NONE);
 		return true;
 	}
 	return false;
@@ -400,7 +400,7 @@ bool adjust_sound_volume_down(struct sound_manager_parameters *parameters, short
 	if (_sm_active && parameters->volume > 0) {
 		_sm_parameters->volume = (parameters->volume -= 1);
 		main_volume = parameters->volume * SOUND_VOLUME_DELTA;
-		play_sound(sound_index, (world_location3d *)NULL, NONE);
+		play_sound(sound_index, NULL, NONE);
 		return true;
 	}
 	return false;
@@ -886,6 +886,10 @@ inline static void calc_buffer(T *p, int len, bool stereo)
 				}
 			}
 		}
+
+		// Mix left+right for mono
+		if (!stereo)
+			left = (left + right) / 2;
 
 		// Finalize left channel
 		left = (left * main_volume) >> 8;		// Apply main volume setting

@@ -25,6 +25,7 @@ void enter_mouse(short type)
 #ifndef DEBUG
 		SDL_WM_GrabInput(SDL_GRAB_ON);
 #endif
+		SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 		SDL_Surface *s = SDL_GetVideoSurface();
 		center_x = s->w / 2;
 		center_y = s->h / 2;
@@ -47,6 +48,7 @@ void exit_mouse(short type)
 #ifndef DEBUG
 		SDL_WM_GrabInput(SDL_GRAB_OFF);
 #endif
+		SDL_EventState(SDL_MOUSEMOTION, SDL_ENABLE);
 		mouse_active = false;
 	}
 }
@@ -112,4 +114,44 @@ void test_mouse(short type, long *flags, fixed *delta_yaw, fixed *delta_pitch, f
 		*delta_pitch = snapshot_delta_pitch;
 		*delta_velocity = snapshot_delta_velocity;
 	}
+}
+
+
+/*
+ *  Hide/show mouse pointer
+ */
+
+void hide_cursor(void)
+{
+	SDL_ShowCursor(0);
+}
+
+void show_cursor(void)
+{
+	SDL_ShowCursor(1);
+}
+
+
+/*
+ *  Get current mouse position
+ */
+
+void get_mouse_position(short *x, short *y)
+{
+	int mx, my;
+	SDL_GetMouseState(&mx, &my);
+	*x = mx;
+	*y = my;
+}
+
+
+/*
+ *  Mouse button still down?
+ */
+
+bool mouse_still_down(void)
+{
+	SDL_PumpEvents();
+	Uint8 buttons = SDL_GetMouseState(NULL, NULL);
+	return buttons & SDL_BUTTON_LMASK;
 }

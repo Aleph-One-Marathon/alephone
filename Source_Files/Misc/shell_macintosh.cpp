@@ -132,6 +132,8 @@ QDGlobals qd;
 TP2PerfGlobals perf_globals;
 #endif
 
+struct system_information_data *system_information;
+
 extern long first_frame_tick, frame_count; /* for determining frame rate */
 
 // LP addition: the local event flags

@@ -49,7 +49,7 @@ static font_list_t font_list;				// List of all loaded fonts
 
 static struct interface_font_info {
 	TextSpec font[NUMBER_OF_INTERFACE_FONTS];
-	sdl_font_info *info[NUMBER_OF_INTERFACE_FONTS];
+	const sdl_font_info *info[NUMBER_OF_INTERFACE_FONTS];
 	int height[NUMBER_OF_INTERFACE_FONTS];
 	int line_spacing[NUMBER_OF_INTERFACE_FONTS];
 } interface_fonts;
@@ -222,7 +222,7 @@ int char_width(uint8 c, const sdl_font_info *font, uint16 style)
 }
 
 // Calculate width of text string
-int text_width(char *text, const sdl_font_info *font, uint16 style)
+int text_width(const char *text, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
 	char c;
@@ -231,7 +231,7 @@ int text_width(char *text, const sdl_font_info *font, uint16 style)
 	return width;
 }
 
-int text_width(char *text, int length, const sdl_font_info *font, uint16 style)
+int text_width(const char *text, int length, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
 	while (length--)
@@ -256,7 +256,7 @@ static int trunc_text(char *text, int max_width, const sdl_font_info *font, uint
 
 // Draw single glyph at given position in frame buffer, return glyph width
 template <class T>
-inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int xmax, int ymax, uint32 pixel, const sdl_font_info *font, bool oblique)
+inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int clip_left, int clip_top, int clip_right, int clip_bottom, uint32 pixel, const sdl_font_info *font, bool oblique)
 {
 	int cpos = c - font->first_character;
 
@@ -272,33 +272,33 @@ inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int xmax, i
 		p += font->ascent / 2 - 1;
 
 	// Clip on top
-	if (y < 0) {
-		height += y;
+	if (y < clip_top) {
+		height -= clip_top - y;
 		if (height <= 0)
 			return advance;
-		p -= y * pitch / sizeof(T);
-		src -= y * font->bytes_per_row;
+		p += (clip_top - y) * pitch / sizeof(T);
+		src += (clip_top - y) * font->bytes_per_row;
 	}
 
 	// Clip on bottom
-	if (y + height - 1 > ymax) {
-		height -= y + height - 1 - ymax;
+	if (y + height - 1 > clip_bottom) {
+		height -= y + height - 1 - clip_bottom;
 		if (height <= 0)
 			return advance;
 	}
 
 	// Clip on left
-	if (x < 0) {
-		width += x;
+	if (x < clip_left) {
+		width -= (clip_left - x);
 		if (width <= 0)
 			return advance;
-		p -= x;
-		src -= x;
+		p += (clip_left - x);
+		src += (clip_left - x);
 	}
 
 	// Clip on right
-	if (x + width - 1 > xmax) {
-		width -= x + width - 1 - xmax;
+	if (x + width - 1 > clip_right) {
+		width -= x + width - 1 - clip_right;
 		if (width <= 0)
 			return advance;
 	}
@@ -320,7 +320,7 @@ inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int xmax, i
 
 // Draw text at given position in frame buffer, return width
 template <class T>
-inline static int draw_text(uint8 *text, int length, int x, int y, T *p, int pitch, int xmax, int ymax, uint32 pixel, const sdl_font_info *font, uint16 style)
+inline static int draw_text(const uint8 *text, int length, int x, int y, T *p, int pitch, int clip_left, int clip_top, int clip_right, int clip_bottom, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
 	bool oblique = style & italic;
 	int total_width = 0;
@@ -331,9 +331,9 @@ inline static int draw_text(uint8 *text, int length, int x, int y, T *p, int pit
 		if (c < font->first_character || c > font->last_character)
 			continue;
 
-		int width = draw_glyph(c, x, y, p, pitch, xmax, ymax, pixel, font, oblique);
+		int width = draw_glyph(c, x, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
 		if (style & bold) {
-			draw_glyph(c, x + 1, y, p, pitch, xmax, ymax, pixel, font, oblique);
+			draw_glyph(c, x + 1, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
 			width++;
 		}
 		if (style & underline) {
@@ -348,18 +348,31 @@ inline static int draw_text(uint8 *text, int length, int x, int y, T *p, int pit
 }
 
 // Draw text at given coordinates, return total width
-int draw_text(SDL_Surface *s, char *text, int length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
+int draw_text(SDL_Surface *s, const char *text, int length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
+	// Get clipping rectangle
+	int clip_top, clip_bottom, clip_left, clip_right;
+	if (draw_clip_rect_active) {
+		clip_top = draw_clip_rect.top;
+		clip_bottom = draw_clip_rect.bottom - 1;
+		clip_left = draw_clip_rect.left;
+		clip_right = draw_clip_rect.right - 1;
+	} else {
+		clip_top = clip_left = 0;
+		clip_right = s->w - 1;
+		clip_bottom = s->h - 1;
+	}
+
 	int width = 0;
 	switch (s->format->BytesPerPixel) {
 		case 1:
-			width = draw_text((uint8 *)text, length, x, y, (uint8 *)s->pixels, s->pitch, s->w - 1, s->h - 1, pixel, font, style);
+			width = draw_text((const uint8 *)text, length, x, y, (uint8 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
 			break;
 		case 2:
-			width = draw_text((uint8 *)text, length, x, y, (uint16 *)s->pixels, s->pitch, s->w - 1, s->h - 1, pixel, font, style);
+			width = draw_text((const uint8 *)text, length, x, y, (uint16 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
 			break;
 		case 4:
-			width = draw_text((uint8 *)text, length, x, y, (uint32 *)s->pixels, s->pitch, s->w - 1, s->h - 1, pixel, font, style);
+			width = draw_text((const uint8 *)text, length, x, y, (uint32 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
 			break;
 	}
 	if (s == SDL_GetVideoSurface())
@@ -367,12 +380,12 @@ int draw_text(SDL_Surface *s, char *text, int length, int x, int y, uint32 pixel
 	return width;
 }
 
-static void draw_text(char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
+static void draw_text(const char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
 	draw_text(draw_surface, text, strlen(text), x, y, pixel, font, style);
 }
 
-void _draw_screen_text(char *text, screen_rectangle *destination, short flags, short font_id, short text_color)
+void _draw_screen_text(const char *text, screen_rectangle *destination, short flags, short font_id, short text_color)
 {
 	int x, y;
 
@@ -459,7 +472,7 @@ void _draw_screen_text(char *text, screen_rectangle *destination, short flags, s
 }
 
 // Load font from resources and allocate sdl_font_info
-sdl_font_info *load_font(const TextSpec &spec)
+const sdl_font_info *load_font(const TextSpec &spec)
 {
 	sdl_font_info *info = NULL;
 
@@ -578,7 +591,22 @@ static int _get_font_line_spacing(const sdl_font_info *info)
 	return info->ascent + info->descent + info->leading;
 }
 
-short _text_width(char *text, short font_id)
+int font_line_height(const sdl_font_info *info)
+{
+	return info->ascent + info->descent + info->leading;
+}
+
+int font_width(const sdl_font_info *info)
+{
+	return info->rect_width;
+}
+
+int font_ascent(const sdl_font_info *info)
+{
+	return info->ascent;
+}
+
+short _text_width(const char *text, short font_id)
 {
 	// Find font information
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
@@ -675,7 +703,7 @@ void _offset_screen_rect(screen_rectangle *rect, short dx, short dy)
  *  Draw line
  */
 
-static inline uint8 cs_code(world_point2d *p, int clip_top, int clip_bottom, int clip_left, int clip_right)
+static inline uint8 cs_code(const world_point2d *p, int clip_top, int clip_bottom, int clip_left, int clip_right)
 {
 	uint8 code = 0;
 	if (p->x < clip_left)
@@ -690,7 +718,7 @@ static inline uint8 cs_code(world_point2d *p, int clip_top, int clip_bottom, int
 }
 
 template <class T>
-static inline void draw_thin_line_noclip(T *p, int pitch, world_point2d *v1, world_point2d *v2, uint32 pixel)
+static inline void draw_thin_line_noclip(T *p, int pitch, const world_point2d *v1, const world_point2d *v2, uint32 pixel)
 {
 	int xdelta = v2->x - v1->x;
 	int ydelta = v2->y - v1->y;
@@ -735,11 +763,11 @@ static inline void draw_thin_line_noclip(T *p, int pitch, world_point2d *v1, wor
 	}
 }
 
-void draw_line(SDL_Surface *s, world_point2d *v1, world_point2d *v2, uint32 pixel, int pen_size)
+void draw_line(SDL_Surface *s, const world_point2d *v1, const world_point2d *v2, uint32 pixel, int pen_size)
 {
 	// Make line going downwards
 	if (v1->y > v2->y) {
-		world_point2d *tmp = v1;
+		const world_point2d *tmp = v1;
 		v1 = v2;
 		v2 = tmp;
 	}
@@ -868,7 +896,7 @@ clip_line:
  *  Draw clipped, filled, convex polygon
  */
 
-void draw_polygon(SDL_Surface *s, world_point2d *vertex_array, int vertex_count, uint32 pixel)
+void draw_polygon(SDL_Surface *s, const world_point2d *vertex_array, int vertex_count, uint32 pixel)
 {
 	if (vertex_count == 0)
 		return;
@@ -898,7 +926,8 @@ void draw_polygon(SDL_Surface *s, world_point2d *vertex_array, int vertex_count,
 	}
 
 	// Clip polygon
-	world_point2d *v1, *v2, *vp;
+	const world_point2d *v1, *v2;
+	world_point2d *vp;
 	world_point2d clip_point;
 	int new_vertex_count;
 

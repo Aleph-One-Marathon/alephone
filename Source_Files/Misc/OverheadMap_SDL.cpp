@@ -116,7 +116,7 @@ void OverheadMap_SDL_Class::draw_text(world_point2d &location, rgb_color &color,
 	spec.font = FontData.font;
 	spec.style = FontData.face;
 	spec.size = FontData.size;
-	sdl_font_info *font = load_font(spec);
+	const sdl_font_info *font = load_font(spec);
 
 	// Find left-side location
 	int xpos = location.x;

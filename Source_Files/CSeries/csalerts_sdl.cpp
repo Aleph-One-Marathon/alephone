@@ -10,18 +10,6 @@
 
 extern "C" void debugger(const char *message);
 
-/*
- *  Display alert message
- */
-
-void alert_user(short severity, short resid, short item, OSErr error)
-{
-	char str[256];
-	fprintf(stderr, "%s: %s (error %d)\n", severity == infoError ? "INFO" : "FATAL", getcstr(str, resid, item), error);
-	if (severity != infoError)
-		exit(1);
-}
-
 
 /*
  *  Jump into debugger (and return)

@@ -1300,7 +1300,7 @@ short get_player_starting_location_and_facing(short team, short index,
 void pause_game(void);
 void resume_game(void);
 
-bool get_indexed_entry_point(struct entry_point *entry_point, 
+bool get_indexed_entry_point(struct entry_point *entry_point,
 	short *index, int32 type);
 bool new_game(short number_of_players, bool network, 
 	struct game_data *game_information,

@@ -131,7 +131,6 @@ static void DisplayPosition(SDL_Surface *s);
 static void set_overhead_map_status(bool status);
 static void set_terminal_status(bool status);
 static void DrawHUD(SDL_Rect &dest_rect);
-static void ClearScreen(void);
 
 
 /*
@@ -143,9 +142,6 @@ void initialize_screen(struct screen_mode_data *mode)
 	interface_bit_depth = bit_depth = mode->bit_depth;
 
 	if (!screen_initialized) {
-
-		graphics_preferences->device_spec.width = DESIRED_SCREEN_WIDTH;
-		graphics_preferences->device_spec.height = DESIRED_SCREEN_HEIGHT;
 
 		uncorrected_color_table = (struct color_table *)malloc(sizeof(struct color_table));
 		world_color_table = (struct color_table *)malloc(sizeof(struct color_table));
@@ -322,7 +318,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #ifdef HAVE_OPENGL
 	// The original idea was to only enable OpenGL for the in-game display, but
 	// SDL crashes if OpenGL is turned on later
-	if (/*!nogl && */ screen_mode.acceleration == _opengl_acceleration) {
+	if (/*!nogl &&*/ screen_mode.acceleration == _opengl_acceleration) {
 		flags |= SDL_OPENGLBLIT;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
@@ -361,14 +357,13 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 	// Get the screen mode here
 	screen_mode = *mode;
 
-	// Open SDL display
-	int msize = mode->size;
-	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
-	change_screen_mode(ViewSizes[msize].OverallWidth, ViewSizes[msize].OverallHeight, mode->bit_depth, false);
-	
-	// "Redraw" means clear the screen
-	if (redraw)
-		ClearScreen();
+	// "Redraw" change now and clear the screen
+	if (redraw) {
+		int msize = mode->size;
+		assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
+		change_screen_mode(ViewSizes[msize].OverallWidth, ViewSizes[msize].OverallHeight, mode->bit_depth, false);
+		clear_screen();
+	}
 
 	frame_count = frame_index = 0;
 }
@@ -492,7 +487,7 @@ void render_screen(short ticks_elapsed)
 		ChangedSize = true;
 
 	if (ChangedSize) {
-		ClearScreen();
+		clear_screen();
 		if (VS.ShowHUD)
 			draw_interface();
 
@@ -603,6 +598,17 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 {
 	SDL_BlitSurface(world_pixels, NULL, main_surface, &destination);
 	SDL_UpdateRects(main_surface, 1, &destination);
+}
+
+
+/*
+ *  Update game display if it was overdrawn
+ */
+
+void update_screen_window(void)
+{
+	draw_interface();
+	assert_world_color_table(interface_color_table, world_color_table);
 }
 
 
@@ -850,31 +856,6 @@ bool game_window_is_full_screen(void)
 
 
 /*
- *  16/32 bit supported?
- */
-
-bool machine_supports_16bit(GDSpecPtr spec)
-{
-	return true;
-}
-
-bool machine_supports_32bit(GDSpecPtr spec)
-{
-	return true;
-}
-
-
-/*
- *  Hardware acceleration supported?
- */
-
-short hardware_acceleration_code(GDSpecPtr spec)
-{
-	return _no_acceleration;
-}
-
-
-/*
  *  Get world view destination frame for given screen size
  */
 
@@ -937,9 +918,8 @@ void darken_world_window(void)
 	uint32 pixel = SDL_MapRGB(main_surface->format, 0, 0, 0);
 
 	// Get world window bounds
-	Rect bounds;
-	calculate_destination_frame(screen_mode.size, screen_mode.high_resolution, &bounds);
-	SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
+	int size = screen_mode.size;
+	SDL_Rect r = {0, 0, ViewSizes[size].MainWidth, ViewSizes[size].MainHeight};
 
 	// Draw pattern
 	switch (main_surface->format->BytesPerPixel) {
@@ -1039,7 +1019,7 @@ bool SetTunnelVision(bool TunnelVisionOn)
  *  Clear screen
  */
 
-static void ClearScreen(void)
+void clear_screen(void)
 {
 	SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
 	SDL_UpdateRect(main_surface, 0, 0, 0, 0);

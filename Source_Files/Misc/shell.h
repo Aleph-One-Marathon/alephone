@@ -143,6 +143,8 @@ bool try_for_event(bool *use_waitnext);
 void process_game_key(EventRecord *event, short key);
 void update_game_window(WindowPtr window, EventRecord *event);
 bool has_cheat_modifiers(EventRecord *event);
+#elif defined(SDL)
+void update_game_window(void);
 #endif
 
 /* ---------- prototypes/PREFERENCES.C */

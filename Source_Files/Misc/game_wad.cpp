@@ -790,7 +790,7 @@ bool new_game(
 bool get_indexed_entry_point(
 	struct entry_point *entry_point, 
 	short *index, 
-	long type)
+	int32 type)
 {
 	// short file_handle;
 	struct wad_header header;
@@ -816,7 +816,7 @@ bool get_indexed_entry_point(
 					
 					directory= (struct directory_data *)get_indexed_directory_data(&header, actual_index, 
 						total_directory_data);
-					byte_swap_object(*directory, _bs_directory_data);
+					byte_swap_data(directory, SIZEOF_directory_data, 1, _bs_directory_data);
 
 					/* Find the flags that match.. */
 					if(directory->entry_point_flags & type)

@@ -13,12 +13,12 @@ SYSTEM REQUIREMENTS
 -------------------
 
 Aleph One/SDL has so far only been developed and tested on Linux/i386,
-FreeBSD 4.x/i386 and BeOS/x86 R5. It will not work on other operating
-systems, and may not work on architectures other than i386, PowerPC and
-680x0 because there are still some portablilty problems with the code
-(mainly data alignment problems and assumptions that sizeof(long) =
-sizeof(void *) = 4, which are not yet completely removed). You are, however,
-invited to test or fix it to run on other systems.
+FreeBSD 4.x/i386 and BeOS/x86 R5. It may not work on other operating systems
+or on architectures other than i386, PowerPC and 680x0 because there are
+still some portablilty problems with the code (mainly data alignment
+problems and assumptions that sizeof(long) = sizeof(void *) = 4, which are
+not yet completely removed). You are, however, invited to test or fix it to
+run on other systems.
 
 
 PREREQUISITES
@@ -116,11 +116,11 @@ Infinity/Trilogy CD under Linux:
      # mount -t hfs /dev/cdrom /mnt/cdrom
 
     If you mount CDs on a different mount point, such as "/cdrom", use that
-    instead.
+    instead of "/mnt/cdrom".
 
  2. Change to the right directory on the CD. This can be complicated because
-    of the Mac special characters in the file names, but with TAB-completion
-    or copying and pasting you will succeed.
+    of the Mac special characters in the directory names, but with TAB-
+    completion or copying and pasting you will succeed.
 
      $ cd /mnt/cdrom/....
 
@@ -145,7 +145,7 @@ Playing Marathon 2:
 It is possible to play the Marathon 2 scenario by copying the data files from
 a Marathon 2 CD in the same way as described above, but you need to replace
 the "Shapes" and "Sounds" files with their Infinity versions or the game will
-not work (some textures will be wrong but the game will work).
+not work (some textures will be wrong but the game will be playable).
 
 
 PLAYING ALEPH ONE
@@ -167,13 +167,8 @@ list:
   [-h | --help]          Display the help message
   [-v | --version]       Display the game version
   [-f | --fullscreen]    Run the game fullscreen
-  [-8 | --8bit]          Run the game in 8 bit color depth
   [-g | --nogl]          Do not use OpenGL
-  [-m | --nomouse]       Disable mouse control
   [-s | --nosound]       Do not access the sound card
-  [-l | --level] number  Holding Ctrl and Shift while clicking
-                         on 'Begin New Game' will start at the
-                         specified level
 
 If Aleph One complains about missing data files, and you are sure that you
 have installed them, try setting the ALEPHONE_DATA environment variable to
@@ -196,32 +191,10 @@ keyboard; all keys are mapped by position):
   On the menu screen:
     N - Start new game
     C - Show game credits
+    P - Preferences
     Q - Quit
 
-  In-game (mouse control on):
-    W       - Walk forward
-    X       - Walk backward
-
-    A       - Sidestep left
-    D       - Sidestep right
-
-    Q       - Glance left
-    E       - Glance right
-
-    Left mouse button
-            - Fire weapon, primary trigger
-    Right mouse button or Space
-            - Fire weapon, secondary trigger (e.g. grenades)
-    C       - Select previous weapon
-    Z       - Select next weapon
-
-    S       - Action (open doors, flip switches, log in to computer terminals)
-
-    Shift   - Walk slowly/swim
-
-    TAB     - Overhead map
-
-  In-game (mouse control on):
+  In-game:
     KP8     - Walk forward
     KP5     - Walk backward
     KP4     - Turn left
@@ -237,7 +210,9 @@ keyboard; all keys are mapped by position):
     A       - Glance left
     S       - Glance right
 
+    Left mouse button/
     Space   - Fire weapon, primary trigger
+    Right mouse button/
     Alt     - Fire weapon, secondary trigger (e.g. grenades)
     KP7     - Select previous weapon
     KP9     - Select next weapon
@@ -250,7 +225,7 @@ keyboard; all keys are mapped by position):
 
     M       - Overhead map
 
-  Other keys:
+  Other keys (not configurable):
     -       - Zoom overhead map out
     =       - Zoom overhead map in
 
@@ -261,6 +236,8 @@ keyboard; all keys are mapped by position):
 
     F1      - Decrease screen size
     F2      - Increase screen size
+    F4      - Reset OpenGL textures
+    F5      - Make the chase cam switch sides
     F6      - Toggle chase cam
     F7      - Toggle tunnel vision
     F8      - Toggle crosshairs
@@ -273,6 +250,8 @@ keyboard; all keys are mapped by position):
     .       - Increase sound volume
     [ and ] - Scroll player inventory view
 
+    Backspace - Switch player view in replays
+
 See also the list of missing features and bugs, below.
 
 
@@ -283,9 +262,8 @@ The SDL version of Aleph One is a work in progress. Here is an (incomplete)
 list of the missing features, listed in roughly the order I plan to implement
 them:
 
- - Preferences menus (the "Preferences" button on the title screen is
-   nonfunctional)
- - Text rendering under OpenGL
+ - Text rendering under OpenGL (overhead map doesn't show level name and
+   annotations)
  - The game could run faster in 16-bit mode on some machines if an RGB 565
    renderer was implemented
  - Physics models in map files are not loaded (needed for playing Marathon
@@ -303,8 +281,19 @@ And a list of known bugs:
    work
  - Mouse control under BeOS doesn't work (SDL problem)
  - Lo-res mode (F3) doesn't work
+ - Some preferences items are missing
  - Some error messages are those of the Mac version, which are often
    inappropriate or misleading
+
+
+TIPS
+----
+
+You can start the game at any level by holding the Shift and Control keys
+while clicking on the "Begin New Game" button on the main menu.
+
+To activate the cheat codes, see the file "docs/Cheat_Codes" that is included
+in the Aleph One archive.
 
 
 TROUBLESHOOTING
@@ -322,12 +311,13 @@ BeOS:
 
 and try again.
 
-If the game runs very slowly, setting your screen to 15 bit color depth
-(RGB 555) instead of 16 bit (RGB 565) will make it run much faster. If you
-can't do this, you may want to run Aleph One in 8 bit mode by specifying
-the "-8" argument. If you don't have hardware accelerated OpenGL, you should
-specify the "-g" argument to enable software rendering (unless you configured
-Aleph One with the "--disable-opengl" option).
+If the game runs very slowly, setting your screen to 15 bit color depth (RGB
+555) instead of 16 bit (RGB 565) will make it run much faster. If you can't
+do this, you may want to run Aleph One in 8 bit mode. Using XFree86 4.0
+instead of 3.x will also greatly increase the speed. If you don't have
+hardware accelerated OpenGL, you should specify the "-g" argument to enable
+software rendering (unless you configured Aleph One with the
+"--disable-opengl" option).
 
 
 MARATHON MARKUP LANGUAGE

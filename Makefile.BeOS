@@ -51,19 +51,20 @@ SRCS=\
   $(MI)/XML_ElementParser.cpp $(MI)/XML_MakeRoot.cpp $(MI)/XML_Loader_SDL.cpp \
   $(MI)/computer_interface.cpp $(MI)/crc.cpp $(MI)/devices.cpp \
   $(MI)/dynamic_limits.cpp $(MI)/effects.cpp $(MI)/fades.cpp \
-  $(MI)/filetypes_sdl.cpp $(MI)/flood_map.cpp $(MI)/game_errors.cpp \
-  $(MI)/game_wad.cpp $(MI)/game_window.cpp $(MI)/game_window_sdl.cpp \
-  $(MI)/images.cpp $(MI)/import_definitions.cpp $(MI)/interface.cpp \
-  $(MI)/interface_sdl.cpp $(MI)/items.cpp $(MI)/lightsource.cpp $(MI)/map.cpp \
-  $(MI)/map_constructors.cpp $(MI)/marathon2.cpp $(MI)/media.cpp $(MI)/monsters.cpp \
-  $(MI)/motion_sensor.cpp $(MI)/mouse_sdl.cpp $(MI)/mysound.cpp \
-  $(MI)/overhead_map.cpp $(MI)/pathfinding.cpp $(MI)/physics.cpp \
-  $(MI)/placement.cpp $(MI)/platforms.cpp $(MI)/player.cpp $(MI)/preferences.cpp \
-  $(MI)/preprocess_map_sdl.cpp $(MI)/projectiles.cpp $(MI)/render.cpp \
-  $(MI)/resource_manager.cpp $(MI)/scenery.cpp $(MI)/scottish_textures.cpp \
-  $(MI)/screen_drawing_sdl.cpp $(MI)/screen_sdl.cpp $(MI)/shapes.cpp \
-  $(MI)/shell.cpp $(MI)/textures.cpp $(MI)/vbl.cpp $(MI)/vbl_sdl.cpp \
-  $(MI)/wad.cpp $(MI)/wad_sdl.cpp $(MI)/wad_prefs.cpp $(MI)/wad_prefs_sdl.cpp \
+  $(MI)/flood_map.cpp $(MI)/game_errors.cpp $(MI)/game_wad.cpp \
+  $(MI)/game_window.cpp $(MI)/game_window_sdl.cpp $(MI)/images.cpp \
+  $(MI)/import_definitions.cpp $(MI)/interface.cpp $(MI)/interface_sdl.cpp \
+  $(MI)/items.cpp $(MI)/lightsource.cpp $(MI)/map.cpp \
+  $(MI)/map_constructors.cpp $(MI)/marathon2.cpp $(MI)/media.cpp \
+  $(MI)/monsters.cpp $(MI)/motion_sensor.cpp $(MI)/mouse_sdl.cpp \
+  $(MI)/mysound.cpp $(MI)/overhead_map.cpp $(MI)/pathfinding.cpp \
+  $(MI)/physics.cpp $(MI)/placement.cpp $(MI)/platforms.cpp $(MI)/player.cpp \
+  $(MI)/preferences.cpp $(MI)/preprocess_map_sdl.cpp $(MI)/projectiles.cpp \
+  $(MI)/render.cpp $(MI)/resource_manager.cpp $(MI)/scenery.cpp \
+  $(MI)/scottish_textures.cpp $(MI)/screen_drawing_sdl.cpp \
+  $(MI)/screen_sdl.cpp $(MI)/sdl_dialogs.cpp $(MI)/sdl_widgets.cpp \
+  $(MI)/shapes.cpp $(MI)/shell.cpp $(MI)/textures.cpp $(MI)/vbl.cpp \
+  $(MI)/vbl_sdl.cpp $(MI)/wad.cpp $(MI)/wad_sdl.cpp $(MI)/wad_prefs.cpp \
   $(MI)/weapons.cpp $(MI)/world.cpp \
   \
   $(NW)/network_dummy.cpp $(NW)/network_games.cpp \

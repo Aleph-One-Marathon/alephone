@@ -31,7 +31,9 @@ Apr 27, 2000 (Loren Petrich):
 struct graphics_preferences_data
 {
 	struct screen_mode_data screen_mode;
+#ifdef mac
 	GDSpec device_spec;
+#endif
 	// LP change: added OpenGL support
 	OGL_ConfigureData OGL_Configure;
 };
@@ -59,7 +61,11 @@ struct network_preferences_data
 
 struct player_preferences_data
 {
+#ifdef mac
 	unsigned char name[PREFERENCES_NAME_LENGTH+1];
+#else
+	char name[PREFERENCES_NAME_LENGTH+1];
+#endif
 	short color;
 	short team;
 	unsigned long last_time_ran;

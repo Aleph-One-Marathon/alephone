@@ -1163,7 +1163,7 @@ static void display_picture(
 			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
 		DrawText(temporary, 0, strlen(temporary));
 #elif defined(SDL)
-		sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
+		const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
 		int width = text_width(temporary, font, normal);
 		draw_text(world_pixels, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
@@ -1771,7 +1771,7 @@ static void present_checkpoint_text(
 			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
 		DrawText(temporary, 0, strlen(temporary));
 #elif defined(SDL)
-		sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
+		const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
 		int width = text_width(temporary, font, normal);
 		draw_text(world_pixels, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,

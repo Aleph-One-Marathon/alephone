@@ -774,6 +774,7 @@ void do_menu_item_command(
 					break;
 		
 				case iJoinGame:
+#ifdef mac
 					if (system_information->machine_has_network_memory)
 					{
 						handle_network_game(false);
@@ -782,9 +783,13 @@ void do_menu_item_command(
 					{
 						alert_user(infoError, strERRORS, notEnoughNetworkMemory, 0);
 					}
+#else
+					handle_network_game(false);
+#endif
 					break;
 		
 				case iGatherGame:
+#ifdef mac
 					if (system_information->machine_has_network_memory)
 					{
 						handle_network_game(true);
@@ -793,6 +798,9 @@ void do_menu_item_command(
 					{
 						alert_user(infoError, strERRORS, notEnoughNetworkMemory, 0);
 					}
+#else
+					handle_network_game(true);
+#endif
 					break;
 					
 				case iLoadGame:

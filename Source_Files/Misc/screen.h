@@ -116,18 +116,19 @@ screen_mode_data *get_screen_mode(void);
 void initialize_screen(struct screen_mode_data *mode);
 void change_screen_mode(struct screen_mode_data *mode, bool redraw);
 
-#ifdef mac
+#if defined(mac)
 void process_screen_key(EventRecord *event, short key);
 void process_screen_click(EventRecord *event);
-#endif
 
 bool machine_supports_16bit(GDSpecPtr spec);
 bool machine_supports_32bit(GDSpecPtr spec);
 short hardware_acceleration_code(GDSpecPtr spec);
 
-#ifdef mac
 void activate_screen_window(WindowPtr window, EventRecord *event, bool active);
 void update_screen_window(WindowPtr window, EventRecord *event);
+#elif defined(SDL)
+void update_screen_window(void);
+void clear_screen(void);
 #endif
 
 void calculate_destination_frame(short size, bool high_resolution, Rect *frame);

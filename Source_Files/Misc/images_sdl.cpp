@@ -346,25 +346,25 @@ static void draw_picture(LoadedResource &rsrc)
  *  Get system color table
  */
 
-const int NUM_SYS_COLORS = 8;
-
-static rgb_color sys_colors[NUM_SYS_COLORS] = {
-	{0x0000, 0x0000, 0x0000},
-	{0xffff, 0x0000, 0x0000},
-	{0x0000, 0xffff, 0x0000},
-	{0xffff, 0xffff, 0x0000},
-	{0x0000, 0x0000, 0xffff},
-	{0xffff, 0x0000, 0xffff},
-	{0x0000, 0xffff, 0xffff},
-	{0xffff, 0xffff, 0xffff}
-};
-
 struct color_table *build_8bit_system_color_table(void)
 {
+	// RGB 332 color cube
 	color_table *table = new color_table;
-	table->color_count = NUM_SYS_COLORS;
-	for (int i=0; i<NUM_SYS_COLORS; i++)
-		table->colors[i] = sys_colors[i];
+	table->color_count = 256;
+	int index = 0;
+	for (int red=0; red<8; red++) {
+		for (int green=0; green<8; green++) {
+			for (int blue=0; blue<4; blue++) {
+				int r = (red * 0x24) | (red >> 1);
+				int g = (green * 0x24) | (green >> 1);
+				int b = blue * 0x55;
+				table->colors[index].red = (r << 8) | r;
+				table->colors[index].green = (g << 8) | g;
+				table->colors[index].blue = (b << 8) | b;
+				index++;
+			}
+		}
+	}
 	return table;
 }
 

@@ -42,9 +42,6 @@
 // LP addition: whether or not the cheats are active
 bool CheatsActive = false;
 
-// Global variables
-struct system_information_data *system_information;
-
 #ifndef HAVE_OPENGL
 // No OpenGL, so define these here
 float FogDepth = 1;

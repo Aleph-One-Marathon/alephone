@@ -57,13 +57,6 @@ struct Rect {
 
 typedef void *DialogPtr;
 
-struct GDSpec {
-	int bit_depth;
-	int width, height;
-};
-
-typedef GDSpec *GDSpecPtr;
-
 #define noErr 0
 
 #define kFontIDMonaco 4

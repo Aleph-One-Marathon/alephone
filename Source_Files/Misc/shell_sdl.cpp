@@ -6,6 +6,8 @@
 
 #include "XML_Loader_SDL.h"
 #include "resource_manager.h"
+#include "sdl_dialogs.h"
+#include "sdl_widgets.h"
 
 #ifdef HAVE_CONFIG_H
 #include "confpaths.h"
@@ -26,15 +28,8 @@ FileSpecifier recordings_dir;	// Directory for recordings (except film buffer, w
 
 // Command-line options
 bool option_fullscreen = false;		// Run fullscreen
-bool option_8bit = false;			// Run in 8 bit color depth
 bool option_nogl = false;			// Disable OpenGL
-#ifdef __BEOS__
-bool option_nomouse = true;
-#else
-bool option_nomouse = false;		// Disable mouse control
-#endif
 bool option_nosound = false;		// Disable sound output
-int option_level = 1;				// Start level for Ctrl-Shift-New Game
 
 
 #ifdef __BEOS__
@@ -70,13 +65,10 @@ static void usage(const char *prg_name)
 		"\t[-h | --help]          Display this help message\n"
 		"\t[-v | --version]       Display the game version\n"
 		"\t[-f | --fullscreen]    Run the game fullscreen\n"
-		"\t[-8 | --8bit]          Run the game in 8 bit color depth\n"
 #ifdef HAVE_OPENGL
 		"\t[-g | --nogl]          Do not use OpenGL\n"
 #endif
-		"\t[-m | --nomouse]       Disable mouse control\n"
 		"\t[-s | --nosound]       Do not access the sound card\n"
-		"\t[-l | --level] number  Holding Ctrl and Shift while clicking\n"
 		"\t                       on 'Begin New Game' will start at the\n"
 		"\t                       specified level\n"
 #if defined(__unix__) || defined(__BEOS__)
@@ -101,22 +93,10 @@ int main(int argc, char **argv)
 			exit(0);
 		} else if (strcmp(*argv, "-f") == 0 || strcmp(*argv, "--fullscreen") == 0) {
 			option_fullscreen = true;
-		} else if (strcmp(*argv, "-8") == 0 || strcmp(*argv, "--8bit") == 0) {
-			option_8bit = true;
 		} else if (strcmp(*argv, "-g") == 0 || strcmp(*argv, "--nogl") == 0) {
 			option_nogl = true;
-		} else if (strcmp(*argv, "-m") == 0 || strcmp(*argv, "--nomouse") == 0) {
-			option_nomouse = true;
 		} else if (strcmp(*argv, "-s") == 0 || strcmp(*argv, "--nosound") == 0) {
 			option_nosound = true;
-		} else if (strcmp(*argv, "-l") == 0 || strcmp(*argv, "--level") == 0) {
-			if (argc > 1) {
-				argc--; argv++;
-				option_level = atoi(*argv);
-			} else {
-				fprintf(stderr, "%s option requires level number\n", *argv);
-				exit(1);
-			}
 		} else {
 			printf("Unrecognized argument '%s'.\n", *argv);
 			usage(prg_name);
@@ -145,11 +125,7 @@ static void initialize_application(void)
 		exit(1);
 	}
 	SDL_WM_SetCaption("Aleph One", "Aleph One");
-	SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 	atexit(shutdown_application);
-
-	system_information = new system_information_data();
-	memset(system_information, 0, sizeof(system_information));
 
 	// Get paths of local and global data directories
 #if defined(__unix__)
@@ -203,62 +179,30 @@ static void initialize_application(void)
 	XML_Loader.ParseDirectory(global_mml_dir);
 	XML_Loader.ParseDirectory(local_mml_dir);
 
+	// Load preferences
 	initialize_preferences();
-	graphics_preferences->screen_mode.bit_depth = option_8bit ? 8 : 16;
-	input_preferences->input_device = option_nomouse ? _keyboard_or_game_pad :  _mouse_yaw_pitch;
-	sound_preferences->flags = _more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag;
-	sound_preferences->pitch = 0x00010000;				// 22050Hz
-#ifdef HAVE_OPENGL
-	graphics_preferences->screen_mode.acceleration = option_nogl ? _no_acceleration : _opengl_acceleration;
-#else
 	graphics_preferences->screen_mode.acceleration = _no_acceleration;
+#ifdef HAVE_OPENGL
+	// Can't be switched later because of an SDL bug
+	if (!option_nogl && graphics_preferences->screen_mode.bit_depth == 16)
+		graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
 #endif
-	Get_OGL_ConfigureData().Flags = OGL_Flag_LiqSeeThru | OGL_Flag_Fader | OGL_Flag_FlatStatic | OGL_Flag_Map;
 	write_preferences();
 
+	// Initialize everything
 	initialize_sound_manager(sound_preferences);
 	initialize_marathon_music_handler();
 	initialize_keyboard_controller();
 	initialize_screen(&graphics_preferences->screen_mode);
 	initialize_marathon();
 	initialize_screen_drawing();
+	initialize_dialogs();
 	initialize_terminal_manager();
 	initialize_shape_handler();
 	initialize_fades();
 	initialize_images_manager();
 	load_environment_from_preferences();
 	initialize_game_state();
-
-#if 0
-	// Sorry, uhm, this will of course be gone once the preferences dialogs are implemented...
-	static short cebix_keys[] = {
-		SDLK_KP8, SDLK_KP2, SDLK_KP4, SDLK_KP6,		// moving/turning
-		SDLK_KP1, SDLK_KP_PLUS,						// sidestepping
-		SDLK_KP7, SDLK_KP9,							// horizontal looking
-		SDLK_UP, SDLK_DOWN, SDLK_KP0,				// vertical looking
-		SDLK_QUOTE, SDLK_SEMICOLON,					// weapon cycling
-		SDLK_RETURN, SDLK_RALT,						// weapon trigger
-		SDLK_RMETA, SDLK_RSHIFT, SDLK_RCTRL,		// modifiers
-		SDLK_KP5,									// action trigger
-		SDLK_RIGHT,									// map
-		SDLK_PAGEDOWN								// microphone
-	};
-#endif
-	if (input_preferences->input_device == _mouse_yaw_pitch) {
-		static short mouse_keys[] = {
-			SDLK_w, SDLK_x, SDLK_LEFT, SDLK_RIGHT,		// moving/turning
-			SDLK_a, SDLK_d,								// sidestepping
-			SDLK_q, SDLK_e,								// horizontal looking
-			SDLK_UP, SDLK_DOWN, SDLK_KP0,				// vertical looking
-			SDLK_c, SDLK_z,								// weapon cycling
-			SDLK_RETURN, SDLK_SPACE,					// weapon trigger
-			SDLK_LMETA, SDLK_LSHIFT, SDLK_LCTRL,		// modifiers
-			SDLK_s,										// action trigger
-			SDLK_TAB,									// map
-			SDLK_BACKQUOTE								// microphone
-		};
-		set_keys(mouse_keys);
-	}
 }
 
 
@@ -295,14 +239,118 @@ static void initialize_marathon_music_handler(void)
 
 
 /*
+ *  Display alert message
+ */
+
+void alert_user(short severity, short resid, short item, OSErr error)
+{
+	char str[256];
+	getcstr(str, resid, item);
+	if (SDL_GetVideoSurface() == NULL) {
+		fprintf(stderr, "%s: %s (error %d)\n", severity == infoError ? "INFO" : "FATAL", str, error);
+	} else {
+		char message[256];
+		sprintf(str, "%s (error %d)", str, error);
+		dialog d;
+		d.add(new w_static_text(severity == infoError ? "WARNING" : "ERROR", TITLE_FONT, TITLE_COLOR));
+		d.add(new w_spacer());
+		d.add(new w_static_text(str));
+		d.add(new w_spacer());
+		d.add(new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d));
+		d.run();
+		if (severity == infoError)
+			update_game_window();
+	}
+	if (severity != infoError)
+		exit(1);
+}
+
+
+/*
  *  Put up "Quit without saving" dialog
  */
 
 bool quit_without_saving(void)
 {
-printf("*** quit_without_saving()\n");
-	//!!
-	return true;
+	dialog d;
+	d.add(new w_static_text("Are you sure you wish to"));
+	d.add(new w_static_text("cancel the game in progress?"));
+	d.add(new w_spacer());
+	d.add(new w_left_button("YES", dialog_ok, &d));
+	d.add(new w_right_button("NO", dialog_cancel, &d));
+	return d.run() == 0;
+}
+
+
+/*
+ *  Level number dialog
+ */
+
+class w_level_number : public w_number_entry {
+public:
+	w_level_number(const char *name, dialog *dia) : w_number_entry(name, 1), d(dia) {}
+
+	void event(SDL_Event &e)
+	{
+		// Return = close dialog
+		if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_RETURN)
+			d->quit(0);
+		w_number_entry::event(e);
+	}
+
+private:
+	dialog *d;
+};
+
+short get_level_number_from_user(void)
+{
+	// Find number of levels
+	struct entry_point entry;
+	short index = 0;
+	int maximum_level_number = 0;
+	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point))
+		maximum_level_number++;
+
+	// Create dialog
+	dialog d;
+	d.add(new w_static_text("Before proceeding any further, you", MESSAGE_FONT, TITLE_COLOR));
+	d.add(new w_static_text("must take the oath of the vidmaster:", MESSAGE_FONT, TITLE_COLOR));
+	d.add(new w_spacer());
+	d.add(new w_static_text("\xd2I pledge to punch all switches,"));
+	d.add(new w_static_text("to never shoot where I could use grenades,"));
+	d.add(new w_static_text("to admit the existence of no level"));
+	d.add(new w_static_text("except Total Carnage,"));
+	d.add(new w_static_text("to never use Caps Lock as my \xd4run\xd5 key,"));
+	d.add(new w_static_text("and to never, ever, leave a single Bob alive.\xd3"));
+	d.add(new w_spacer());
+	w_level_number *level_w = new w_level_number("Start at level", &d);
+	d.add(level_w);
+	char str[64];
+	sprintf(str, "(Available levels: 1..%d)", maximum_level_number);
+	d.add(new w_static_text(str, MESSAGE_FONT, LABEL_COLOR));
+	d.add(new w_spacer());
+	d.add(new w_left_button("OK", dialog_ok, &d));
+	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+	// Run dialog
+	play_sound(DIALOG_INTRO_SOUND, NULL, NONE);
+again:
+	int level = NONE;
+	if (d.run(false) == 0) {	// OK
+		level = level_w->get_number();
+		if (level <= 0 || level > maximum_level_number) {
+			play_sound(DIALOG_ERROR_SOUND, NULL, NONE);
+			level_w->set_number(1);
+			goto again;
+		}
+		play_sound(DIALOG_OK_SOUND, NULL, NONE);
+		level--;
+	} else
+		play_sound(DIALOG_CANCEL_SOUND, NULL, NONE);
+
+	// Redraw main menu
+	update_game_window();
+	return level;
 }
 
 

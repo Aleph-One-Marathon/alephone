@@ -27,10 +27,6 @@
 #include "interface_menus.h"
 
 
-// From shell_sdl.cpp
-extern int option_level;
-
-
 /*
  *  Set up and handle preferences menu
  */
@@ -47,22 +43,8 @@ void do_preferences(void)
 
 		/* Re fade in, so that we get the proper colortable loaded.. */
 		display_main_menu();
-
-	} else if (memcmp(&mode, &graphics_preferences->screen_mode, sizeof(struct screen_mode_data))) {
+	} else if (memcmp(&mode, &graphics_preferences->screen_mode, sizeof(struct screen_mode_data)))
 		change_screen_mode(&graphics_preferences->screen_mode, false);
-	}
-}
-
-
-/*
- *  Level number dialog
- */
-
-short get_level_number_from_user(void)
-{
-printf("*** get_level_number_from_user()\n");
-	//!!
-	return option_level;
 }
 
 
@@ -73,6 +55,34 @@ printf("*** get_level_number_from_user()\n");
 void toggle_menus(bool game_started)
 {
 	// nothing to do
+}
+
+
+/*
+ *  Update game window
+ */
+
+void update_game_window(void)
+{
+	switch(get_game_state()) {
+		case _game_in_progress:
+			update_screen_window();
+			break;
+			
+		case _display_quit_screens:
+		case _display_intro_screens_for_demo:
+		case _display_intro_screens:
+		case _display_chapter_heading:
+		case _display_prologue:
+		case _display_epilogue:
+		case _display_credits:
+		case _display_main_menu:
+			update_interface_display();
+			break;
+			
+		default:
+			break;
+	}
 }
 
 
@@ -118,51 +128,10 @@ void exit_networking(void)
 
 
 /*
- *  Hide/show mouse pointer
- */
-
-void hide_cursor(void)
-{
-	SDL_ShowCursor(0);
-}
-
-void show_cursor(void)
-{
-	SDL_ShowCursor(1);
-}
-
-
-/*
- *  Mouse button still down?
- */
-
-bool mouse_still_down(void)
-{
-	SDL_PumpEvents();
-	Uint8 buttons = SDL_GetMouseState(NULL, NULL);
-	return buttons & SDL_BUTTON_LMASK;
-}
-
-
-/*
- *  Get current mouse position
- */
-
-void get_mouse_position(short *x, short *y)
-{
-	int mx, my;
-	SDL_GetMouseState(&mx, &my);
-	*x = mx;
-	*y = my;
-}
-
-
-/*
  *  Show movie
  */
 
 void show_movie(short index)
 {
-printf("*** show_movie(%d)\n", index);
-	//!!
+	// unused by official scenarios
 }
