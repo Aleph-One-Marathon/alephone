@@ -709,7 +709,7 @@ void display_main_menu(
         RGBForeColor(&rgb_black);
         SetPort(old_port);
 #elif defined(SDL)
-        draw_text(world_pixels, VERSION_STRING, X, Y, SDL_MapRGB(world_pixels-format, 0x40, 0x40,
+        draw_text(world_pixels, VERSION_STRING, X, Y, SDL_MapRGB(world_pixels->format, 0x40, 0x40,
                                                                  0x40), Font.Info, Font.Style);
 #endif
         
