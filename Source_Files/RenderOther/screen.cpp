@@ -2728,31 +2728,21 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	int OriginalSelection = Selection;
 	SetControl32BitValue(FreqPopup, Selection+1);
 	
-	EventLoopRef EventLoop = GetCurrentEventLoop();
-	EventLoopTimerRef Timer;
-	
 	FreqDialogHandlerData HandlerData;
 	HandlerData.FreqChanged = false;
-		
-	EventLoopTimerUPP DialogTimerUPP = NewEventLoopTimerUPP(FreqDialogTimer);
-	err = InstallEventLoopTimer(
-			EventLoop,
-			0, 0,	// Originally off
-			DialogTimerUPP, &HandlerData,
-			&Timer
-			);
+	
+	// Originally off	
+	AutoTimer Timer(0, 0, FreqDialogTimer, &HandlerData);
 	
 	HandlerData.Device = Device;
 	HandlerData.BitDepth = BitDepth;
 	HandlerData.MDPtr = MDPtr;
 	HandlerData.SessPtr = &Session;
 
-	HandlerData.Timer = Timer;
+	HandlerData.Timer = Timer();
 	HandlerData.FreqPopup = FreqPopup;
 	HandlerData.FreqChanged = false;
 	HandlerData.PreviousSelection = Selection;
-	
-	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",err));
 	
 	bool ChangeSuccess = RunModalDialog(Window(), false, FreqDialogHandler, &HandlerData);
 	
@@ -2770,10 +2760,6 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 		Selection = OriginalSelection;
 		DMSetDisplayMode(Device,MDPtr->WhichMD(Selection).csData,&TempBitDepth,NULL,Session.State);
 	}
-	
-	// Clean up
-	DisposeEventLoopTimerUPP(DialogTimerUPP);
-	RemoveEventLoopTimer(Timer);
 	
 #else
 	
