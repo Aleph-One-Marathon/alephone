@@ -3155,6 +3155,9 @@ static int L_Award_Points (lua_State *L)
 
 	player -> netgame_parameters[0] += points;
 
+	if(points != 0)
+		mark_player_network_stats_as_dirty(current_player_index);
+
 	return 0;
 }
 
@@ -3189,6 +3192,9 @@ static int L_Award_Kills (lua_State *L)
 		slain_player -> damage_taken [aggressor_player_index].kills += kills;
 	}
 
+	if(kills != 0)
+		mark_player_network_stats_as_dirty(current_player_index);
+
 	return 0;
 }
 
@@ -3210,7 +3216,11 @@ static int L_Set_Points (lua_State *L)
 	}
 	player_data *player = get_player_data (player_index);
 
-	player -> netgame_parameters[0] = points;
+	if(player->netgame_parameters[0] != points)
+	{
+		player -> netgame_parameters[0] = points;
+		mark_player_network_stats_as_dirty(current_player_index);
+	}
 
 	return 0;
 }
@@ -3234,8 +3244,16 @@ static int L_Set_Kills (lua_State *L)
 	}
 	player_data *slain_player = get_player_data (slain_player_index);
 
+	bool score_changed = false;
+	
 	if (aggressor_player_index == -1)
-		slain_player -> monster_damage_taken.kills = kills;
+	{
+		if(slain_player->monster_damage_taken.kills != kills)
+		{
+			slain_player -> monster_damage_taken.kills = kills;
+			score_changed = true;
+		}
+	}
 	else
 	{
 		if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
@@ -3243,8 +3261,15 @@ static int L_Set_Kills (lua_State *L)
 			lua_pushstring (L, "set_kills: invalid player index");
 			lua_error (L);
 		}
-		slain_player -> damage_taken [aggressor_player_index].kills = kills;
+		if(slain_player->damage_taken[aggressor_player_index].kills != kills)
+		{
+			slain_player -> damage_taken [aggressor_player_index].kills = kills;
+			score_changed = true;
+		}
 	}
+
+	if(score_changed)
+		mark_player_network_stats_as_dirty(current_player_index);
 
 	return 0;
 }
