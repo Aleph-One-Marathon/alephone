@@ -36,10 +36,11 @@
 static bool _ChaseCam_IsActive = false;
 static bool _ChaseCam_IsReset = true;
 
-// Chase-cam position globals
+// Chase-cam position globals;
+// the extra positions are the chase cam's previous positions
+static world_point3d CC_Position, CC_Position_1, CC_Position_2;
+static short CC_Polygon, CC_Yaw, CC_Pitch;
 
-world_point3d CC_Position;
-short CC_Polygon, CC_Yaw, CC_Pitch;
 
 // LP addition: chase-cam functions
 // This function returns whether the chase cam can possibly activate;
@@ -117,6 +118,14 @@ bool ChaseCam_GetPosition(world_point3d &position,
 }
 
 
+// For updating the position with the help of the cam's springiness
+static int CC_PosUpdate(float Damping, float Spring, short x0, short x1, short x2)
+{
+	float x = x0 + (2*Damping)*(x1 - x0) - (Damping*Damping + Spring)*(x2 - x0);
+	return ((x > 0) ? int(x + 0.5) : int(x - 0.5));
+}
+
+
 // This function updates the chase cam's position in one game tick
 bool ChaseCam_Update()
 {
@@ -125,11 +134,11 @@ bool ChaseCam_Update()
 	
 	ChaseCamData &ChaseCam = GetChaseCamData();
 	
-	// For debugging the reset feature
-	if (_ChaseCam_IsReset)
+	// Move positions backward in time if the chase cam was not reset
+	if (!_ChaseCam_IsReset)
 	{
-		ChaseCam.Rightward *= -1;
-		_ChaseCam_IsReset = false;
+		CC_Position_2 = CC_Position_1;
+		CC_Position_1 = CC_Position;
 	}
 	
 	// Crude chase-cam: copy over everything;
@@ -144,6 +153,17 @@ bool ChaseCam_Update()
 	translate_point3d(&CC_Position,-ChaseCam.Behind,CC_Yaw,CC_Pitch);
 	CC_Position.z += ChaseCam.Upward;
 	translate_point2d((world_point2d *)&CC_Position,ChaseCam.Rightward,NORMALIZE_ANGLE(CC_Yaw+QUARTER_CIRCLE));
+		
+	// Use inertia to update the chase cam's position if it had not been reset.
+	if (!_ChaseCam_IsReset)
+	{
+		CC_Position.x = CC_PosUpdate(ChaseCam.Damping,ChaseCam.Spring,
+			CC_Position.x,CC_Position_1.x,CC_Position_2.x);
+		CC_Position.y = CC_PosUpdate(ChaseCam.Damping,ChaseCam.Spring,
+			CC_Position.y,CC_Position_1.y,CC_Position_2.y);
+		CC_Position.z = CC_PosUpdate(ChaseCam.Damping,ChaseCam.Spring,
+			CC_Position.z,CC_Position_1.z,CC_Position_2.z);
+	}
 	
 	// Prevent short-integer wraparound
 	const short HALF_SHORT_MIN = SHRT_MIN >> 1;
@@ -248,6 +268,13 @@ bool ChaseCam_Update()
 		else
 			break;
 	}
-		
+	
+	// If the chase cam had to be reset, then set the previous positions to the current position
+	if (_ChaseCam_IsReset)
+	{
+		CC_Position_2 = CC_Position_1 = CC_Position;
+		_ChaseCam_IsReset = false;
+	}
+	
 	return true;
 }

@@ -41,7 +41,8 @@ struct ChaseCamData
 	short Upward;
 	short Rightward;
 	short Flags;
-	float Inertia;
+	float Damping;
+	float Spring;
 	float Opacity;
 };
 
