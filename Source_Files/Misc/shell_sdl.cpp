@@ -74,6 +74,7 @@ bool option_fullscreen = false;		// Run fullscreen
 bool option_nosound = false;		// Disable sound output
 bool option_8bit = false;			// Run in 8 bit color depth
 bool option_nomouse = false;		// Disable mouse control
+int option_level = 1;				// Start level for Ctrl-Shift-New Game
 
 #ifndef HAVE_OPENGL
 // No OpenGL, so define these here
@@ -115,12 +116,15 @@ static void usage(const char *prg_name)
 	    "Expat XML library by James Clark\n"
 		"SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
 		"\nUsage: %s\n"
-		"\t[-h | --help]        Display this help message\n"
-		"\t[-v | --version]     Display the game version\n"
-		"\t[-f | --fullscreen]  Run the game fullscreen\n"
-		"\t[-8 | --8bit]        Run the game in 8 bit color depth\n"
-		"\t[-m | --nomouse]     Disable mouse control\n"
-		"\t[-s | --nosound]     Do not access the sound card\n"
+		"\t[-h | --help]          Display this help message\n"
+		"\t[-v | --version]       Display the game version\n"
+		"\t[-f | --fullscreen]    Run the game fullscreen\n"
+		"\t[-8 | --8bit]          Run the game in 8 bit color depth\n"
+		"\t[-m | --nomouse]       Disable mouse control\n"
+		"\t[-s | --nosound]       Do not access the sound card\n"
+		"\t[-l | --level] number  Holding Ctrl and Shift while clicking\n"
+		"\t                       on 'Begin New Game' will start at the\n"
+		"\t                       specified level\n"
 #if defined(__unix__) || defined(__BEOS__)
 		"\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 		"the data directory.\n"
@@ -149,6 +153,14 @@ int main(int argc, char **argv)
 			option_nomouse = true;
 		} else if (strcmp(*argv, "-s") == 0 || strcmp(*argv, "--nosound") == 0) {
 			option_nosound = true;
+		} else if (strcmp(*argv, "-l") == 0 || strcmp(*argv, "--level") == 0) {
+			if (argc > 1) {
+				argc--; argv++;
+				option_level = atoi(*argv);
+			} else {
+				fprintf(stderr, "%s option requires level number\n", *argv);
+				exit(1);
+			}
 		} else {
 			printf("Unrecognized argument '%s'.\n", *argv);
 			usage(prg_name);

@@ -152,12 +152,15 @@ BeOS:
 The program can take a number of command line arguments. Here is a complete
 list:
 
-  [-h | --help]        Display the help message
-  [-v | --version]     Display the game version
-  [-f | --fullscreen]  Run the game fullscreen
-  [-8 | --8bit]        Run the game in 8 bit color depth
-  [-m | --nomouse]     Disable mouse control
-  [-s | --nosound]     Do not access the sound card
+  [-h | --help]          Display the help message
+  [-v | --version]       Display the game version
+  [-f | --fullscreen]    Run the game fullscreen
+  [-8 | --8bit]          Run the game in 8 bit color depth
+  [-m | --nomouse]       Disable mouse control
+  [-s | --nosound]       Do not access the sound card
+  [-l | --level] number  Holding Ctrl and Shift while clicking
+                         on 'Begin New Game' will start at the
+                         specified level
 
 If Aleph One complains about missing data files, and you are sure that you
 have installed them, try setting the ALEPHONE_DATA environment variable to
@@ -235,7 +238,6 @@ keyboard; all keys are mapped by position):
     M       - Overhead map
 
   Other keys:
-
     -       - Zoom overhead map out
     =       - Zoom overhead map in
 

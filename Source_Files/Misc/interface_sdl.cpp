@@ -27,6 +27,10 @@
 #include "interface_menus.h"
 
 
+// From shell_sdl.cpp
+extern int option_level;
+
+
 /*
  *  Set up and handle preferences menu
  */
@@ -58,7 +62,7 @@ short get_level_number_from_user(void)
 {
 printf("*** get_level_number_from_user()\n");
 	//!!
-	return 19;
+	return option_level;
 }
 
 
