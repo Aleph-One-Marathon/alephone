@@ -105,11 +105,11 @@ class TextureManager
 	
 	// Color table: need it for going from indexed to true color;
 	// both normal and glow-mapped versions are needed
-	GLuint NormalColorTable[MAXIMUM_SHADING_TABLE_INDEXES];
-	GLuint GlowColorTable[MAXIMUM_SHADING_TABLE_INDEXES];
+	uint32 NormalColorTable[MAXIMUM_SHADING_TABLE_INDEXES];
+	uint32 GlowColorTable[MAXIMUM_SHADING_TABLE_INDEXES];
 	
 	// Texture buffers for OpenGL
-	GLuint *NormalBuffer, *GlowBuffer;
+	uint32 *NormalBuffer, *GlowBuffer;
 	
 	// Pointer to the appropriate texture-state object
 	TextureState *TxtrStatePtr;
@@ -131,16 +131,16 @@ class TextureManager
 	void FindColorTables();
 	
 	// This one allocates an OpenGL texture buffer and uses a color table
-	GLuint *GetOGLTexture(GLuint *ColorTable);
+	uint32 *GetOGLTexture(GLuint *ColorTable);
 	
 	// This one creates a fake landscape
-	GLuint *GetFakeLandscape();
+	uint32 *GetFakeLandscape();
 	
 	// This is for shrinking a texture
-	GLuint *Shrink(GLuint *Buffer);
+	uint32 *Shrink(uint32 *Buffer);
 	
 	// This si for placing a texture in OpenGL
-	void PlaceTexture(bool IsOverlaid, GLuint *Buffer);
+	void PlaceTexture(bool IsOverlaid, uint32 *Buffer);
 	
 public:
 
