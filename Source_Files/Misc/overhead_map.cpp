@@ -62,6 +62,9 @@ Jul 16, 2000 (Loren Petrich):
 Aug 3, 2000 (Loren Petrich):
 	All the code here has been transferred to either OverheadMapRenderer.c/h or OverheadMap_QuickDraw.c/h
 [End notes for overhead_map_macintosh.c]
+
+Nov 12, 2000 (Loren Petrich):
+	Added automap reset function and XML parsing
 */
 
 #include "cseries.h"
@@ -281,6 +284,15 @@ static OverheadMap_SDL_Class OverheadMap_SW;
 static OverheadMap_OGL_Class OverheadMap_OGL;
 #endif
 
+// Overhead-map-rendering mode
+enum {
+	OverheadMap_Normal,
+	OverheadMap_CurrentlyVisible,
+	OverheadMap_All,
+	NUMBER_OF_OVERHEAD_MAP_MODES
+};
+static short OverheadMapMode = OverheadMap_Normal;
+
 
 /* ---------- code */
 // LP: most of it has been moved into OverheadMapRenderer.c
@@ -310,6 +322,28 @@ void OGL_ResetMapFonts()
 	OverheadMap_OGL.ResetFonts();
 #endif
 }
+
+void ResetOverheadMap()
+{
+	// Default: nothing (mapping is cumulative)
+	switch(OverheadMapMode)
+	{
+	case OverheadMap_CurrentlyVisible:
+		// No previous visibility is carried over
+		memset(automap_lines, 0, (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0)*sizeof(byte)));
+		memset(automap_polygons, 0, (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0)*sizeof(byte)));
+		
+		break;
+		
+	case OverheadMap_All:
+		// Everything is assumed visible
+		memset(automap_lines, 0xff, (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0)*sizeof(byte)));
+		memset(automap_polygons, 0xff, (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0)*sizeof(byte)));
+		
+		break;
+	};
+}
+
 
 
 // XML elements for parsing motion-sensor specification;
@@ -515,7 +549,7 @@ static XML_OvhdMapBooleanParser
 // Subclassed to set the color objects appropriately
 const int TOTAL_NUMBER_OF_COLORS =
 	NUMBER_OF_POLYGON_COLORS + NUMBER_OF_LINE_DEFINITIONS +
-	NUMBER_OF_THINGS + + NUMBER_OF_ANNOTATION_DEFINITIONS + 2;
+	NUMBER_OF_THINGS + NUMBER_OF_ANNOTATION_DEFINITIONS + 2;
 
 class XML_OvhdMapParser: public XML_ElementParser
 {
@@ -570,6 +604,14 @@ bool XML_OvhdMapParser::Start()
 
 bool XML_OvhdMapParser::HandleAttribute(const char *Tag, const char *Value)
 {
+	if (strcmp(Tag,"mode") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",OverheadMapMode,short(0),short(NUMBER_OF_OVERHEAD_MAP_MODES-1)))
+		{
+			return true;
+		}
+		else return false;
+	}
 	UnrecognizedTag();
 	return false;
 }

@@ -16,6 +16,9 @@ Feb 25, 2000 (Loren Petrich):
 May 22, 2000 (Loren Petrich):
 	Moved field-of-view definitions into ViewControl.c;
 	using accessors to that file to get field-of-view parameters
+
+Nov 12, 2000 (Loren Petrich):
+	Added automap reset function
 */
 
 #include "world.h"	
@@ -186,5 +189,10 @@ void instantiate_rectangle_transfer_mode(view_data *view,
 
 void instantiate_polygon_transfer_mode(view_data *view,
 	polygon_definition *polygon, short transfer_mode, short transfer_phase, bool horizontal);
+
+
+// In overhead_map.cpp:
+
+void ResetOverheadMap();
 
 #endif

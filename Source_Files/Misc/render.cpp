@@ -168,6 +168,9 @@ Aug 9, 2000 (Loren Petrich):
 
 Sep 2, 2000 (Loren Petrich):
 	Added some idiot-proofing, since the shapes accessor now returns NULL for nonexistent bitmaps
+
+Nov 12, 2000 (Loren Petrich):
+	Added automap reset before rendering
 */
 
 
@@ -374,10 +377,13 @@ void render_view(
 	/* clear the render flags */
 	objlist_clear(render_flags, RENDER_FLAGS_BUFFER_SIZE);
 
+	ResetOverheadMap();
+/*
 #ifdef AUTOMAP_DEBUG
 	memset(automap_lines, 0, (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0)*sizeof(byte)));
 	memset(automap_polygons, 0, (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0)*sizeof(byte)));
 #endif
+*/
 	
 	if(view->terminal_mode_active)
 	{
