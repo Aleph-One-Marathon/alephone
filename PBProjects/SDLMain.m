@@ -16,7 +16,8 @@
 #define		SDL_USE_NIB_FILE	0
 
 /* Use this flag to determine whether we use CPS (docking) or not */
-#define		SDL_USE_CPS		1
+//#define		SDL_USE_CPS		1
+
 #ifdef SDL_USE_CPS
 /* Portions of CPS.h */
 typedef struct CPSProcessSerNum
@@ -171,7 +172,7 @@ void setupWindowMenu(void)
 }
 
 /* Replacement for NSApplicationMain */
-void CustomApplicationMain (argc, argv)
+void CustomApplicationMain (int argc, char* argv[])
 {
     NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
     SDLMain				*sdlMain;
