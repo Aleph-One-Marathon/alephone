@@ -121,7 +121,8 @@ enum {
 	ModelWavefront = 1,
 	ModelStudio,
 	Model_QD3D,
-	Model_Dim3
+	Model_Dim3_First,
+	Model_Dim3_Rest
 };
 const int LoadSkinItem = 1;
 
@@ -149,10 +150,15 @@ void LoadModelAction(int ModelType)
 		if (File.ReadDialog(1,"Model Type: QuickDraw 3D"))
 			Success = LoadModel_QD3D(File, Model);
 		break;
-	case Model_Dim3:
+	case Model_Dim3_First:
 		TypeCode = 'TEXT';
-		if (File.ReadDialog(1,"Model Type: Dim3"))
-			Success = LoadModel_Dim3(File, Model);
+		if (File.ReadDialog(1,"Model Type: Dim3 (First Part)"))
+			Success = LoadModel_Dim3(File, Model, LoadModelDim3_First);
+		break;
+	case Model_Dim3_Rest:
+		TypeCode = 'TEXT';
+		if (File.ReadDialog(1,"Model Type: Dim3 (Later Parts)"))
+			Success = LoadModel_Dim3(File, Model,LoadModelDim3_Rest);
 		break;
 	}
 	
@@ -816,7 +822,8 @@ int main(int argc, char **argv)
 	glutAddMenuEntry("Alias-Wavefront...",ModelWavefront);
 	glutAddMenuEntry("3D Studio Max...",ModelStudio);
 	glutAddMenuEntry("QuickDraw 3D...",Model_QD3D);
-	glutAddMenuEntry("Dim3...",Model_Dim3);
+	glutAddMenuEntry("Dim3 (First)...",Model_Dim3_First);
+	glutAddMenuEntry("Dim3 (Rest)...",Model_Dim3_Rest);
 
 	int SkinMenu = glutCreateMenu(LoadSkinAction);
 	glutAddMenuEntry("Colors...",ImageLoader_Colors);

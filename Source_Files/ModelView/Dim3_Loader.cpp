@@ -87,6 +87,8 @@ bool Dim3_ParserInited = false;
 static void Dim3_SetupParseTree();
 
 
+// Local globals; these are to be persistent across calls when loading several files.
+
 // Bone-tag intermediate arrays:
 
 const int BoneTagSize = 8;
@@ -100,17 +102,25 @@ struct BoneTagWrapper
 // For BoneOwnTags, this means its own tag, then its parent tag.
 static vector<BoneTagWrapper> VertexBoneTags, BoneOwnTags;
 
+// Translation from read-in bone order to "true" order
+static vector<short> BoneIndices;
+
 
 // For feeding into the read-in routines
 static Model3D *ModelPtr = NULL;
 
-bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model)
+bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 {
 	ModelPtr = &Model;
-	// Clear everything
-	Model.Clear();
-	VertexBoneTags.clear();
-	BoneOwnTags.clear();
+	
+	if (WhichPass == LoadModelDim3_First)
+	{
+		// Clear everything
+		Model.Clear();
+		VertexBoneTags.clear();
+		BoneOwnTags.clear();
+		BoneIndices.clear();
+	}
 	
 	if (DBOut)
 	{
@@ -177,6 +187,120 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model)
 			*(PP++) = 0;
 			*(PP++) = 0;
 			*(PP++) = 0;
+		}
+	}
+	
+	// Work out the sorted order for the bones
+	if (BoneIndices.empty() && !Model.Bones.empty())
+	{
+		int NumBones = Model.Bones.size();
+		BoneIndices.resize(NumBones);
+		fill(BoneIndices.begin(),BoneIndices.end(),NONE);	// No bones listed -- yet
+		vector<Model3D_Bone> SortedBones(NumBones);
+		vector<short> BoneStack(NumBones);
+		vector<bool> BonesUsed(NumBones);
+		fill(BonesUsed.begin(),BonesUsed.end(),false);
+		
+		for (int q=0; q<NumBones; q++)
+			printf("%3d:  %8s %8s\n",q,BoneOwnTags[q].Tag0,BoneOwnTags[q].Tag1);
+		
+		// Add the bones, one by one;
+		// the bone stack's height is originally zero
+		int StackTop = -1;
+		for (int ib=0; ib<NumBones; ib++)
+		{		
+			// Scan down the bone stack to find a bone that's the parent of some unlisted bone;
+			int ibsrch = NumBones;	// "Bone not found" value
+			int ibstck = -1;		// Empty stack
+			for (ibstck=StackTop; ibstck>=0; ibstck--)
+			{
+				// Note: the bone stack is indexed relative to the original,
+				// as is the bones-used list
+				char *StackBoneTag = BoneOwnTags[BoneStack[ibstck]].Tag0;
+				for (ibsrch=0; ibsrch<NumBones; ibsrch++)
+				{
+					if (BonesUsed[ibsrch]) continue;
+					char *ParentTag = BoneOwnTags[ibsrch].Tag1;
+					if (strncmp(ParentTag,StackBoneTag,BoneTagSize)==0)
+						break;
+				}
+				// If a bone was found, then readjust the stack size appropriately and quit.
+				if (ibsrch < NumBones)
+				{
+					if (ibstck < StackTop)
+					{
+						// Be sure to get the traversal push/pop straight.
+						Model.Bones[BoneStack[ibstck+1]].Flags |= Model3D_Bone::Push;
+						Model.Bones[ibsrch].Flags |= Model3D_Bone::Pop;
+						StackTop = ibstck;
+					}
+					break;
+				}
+			}
+			// If none was found, then the bone's parent is the assumed root bone.
+			if (ibstck < 0)
+			{
+				for (ibsrch=0; ibsrch<NumBones; ibsrch++)
+				{
+					if (BonesUsed[ibsrch]) continue;
+					
+					// Check if the parent is not one of the bones
+					char *ParentTag = BoneOwnTags[ibsrch].Tag1;
+					int ibsx;
+					for (ibsx=0; ibsx<NumBones; ibsx++)
+					{
+						if (strncmp(ParentTag,BoneOwnTags[ibsx].Tag0,BoneTagSize)==0)
+							break;
+					}
+					// If a match was not found, then quit searching
+					if (ibsx >= NumBones) break;
+				}
+				
+				// Not sure how to handle this sort of error;
+				// it could be produced by circular bone references:
+				// B1 -> B2 -> B3 -> ... -> B1
+				assert(ibsrch < NumBones);
+				
+				// Be sure to get the traversal push/pop straight.
+				if (StackTop >= 0)
+				{
+					Model.Bones[BoneStack[0]].Flags |= Model3D_Bone::Push;
+					Model.Bones[ibsrch].Flags |= Model3D_Bone::Pop;
+					StackTop = -1;
+				}
+			}
+			
+			// Add the bone to the stack
+			BoneStack[++StackTop] = ibsrch;
+			
+			// Don't look for it anymore
+			BonesUsed[ibsrch] = true;
+			
+			// Index for remapping
+			BoneIndices[ibsrch] = ib;
+
+			// DEBUG
+			printf("%3d: %3d\n",ib,StackTop);
+			for (int q=0; q<=StackTop; q++)
+				printf("   %3d: %3d\n",q,BoneStack[q]);
+		}
+		
+		// Reorder the bones
+		for (int ib=0; ib<NumBones; ib++)
+			SortedBones[BoneIndices[ib]] = Model.Bones[ib];
+		
+		// Put them back into the model in one step
+		Model.Bones.swap(SortedBones);
+		
+		// DEBUG
+		vector<short> BoneRanks(NumBones);
+		for (int q=0; q<NumBones; q++)
+			BoneRanks[BoneIndices[q]] = q;
+		
+		for (int q=0; q<NumBones; q++)
+		{
+			short r = BoneRanks[q];
+			printf("%3d:  %8s %8s  %2d\n",q,BoneOwnTags[r].Tag0,BoneOwnTags[r].Tag1,Model.Bones[q].Flags);
 		}
 	}
 	
@@ -426,8 +550,9 @@ bool XML_BoneParser::Start()
 	for (int c=0; c<3; c++)
 		Data.Position[c] = 0;
 	
-	// Initially: descent only from the assumed root bone
-	Data.Flags = Model3D_Bone::Pop;
+	// Initially: don't do anything special
+	// (might produce screwy models without further processing)
+	Data.Flags = 0;
 	
 	// No bone: zero-length strings:
 	BT.Tag0[0] = BT.Tag1[0] = 0;

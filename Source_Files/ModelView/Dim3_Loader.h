@@ -28,7 +28,16 @@
 #include "Model3D.h"
 #include "FileHandler.h"
 
-bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model);
+
+// Do multifile models by doing multiple passes;
+// the first one is special because it sets up for the run
+enum
+{
+	LoadModelDim3_First,
+	LoadModelDim3_Rest
+};
+
+bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass);
 
 // Where to emit status messages
 void SetDebugOutput_Dim3(FILE *DebugOutput);
