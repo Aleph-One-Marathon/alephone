@@ -51,6 +51,10 @@ Aug 25, 2000 (Loren Petrich):
 
 Aug 28, 2000 (Loren Petrich):
 	Started on using new pack/unpack routines
+
+Nov 26, 2000 (Loren Petrich):
+	Movied a RunLevelScript() before some other stuff, such as entering_map(),
+	so that textures to be loaded can be specified before they actually get loaded.
 */
 
 // This needs to do the right thing on save game, which is storing the precalculated crap.
@@ -748,6 +752,10 @@ bool goto_level(
 
 	if (success)
 	{
+		// LP: doing this here because level-specific MML may specify which level-specific
+		// textures to load
+		RunLevelScript(entry->level_number);
+		
 		if (!new_game)
 		{
 			recreate_players_for_new_level();
@@ -769,11 +777,6 @@ bool goto_level(
 			place_initial_objects();
 	
 			initialize_control_panels_for_level(); /* must be called after the players are initialized */
-	
-			dynamic_world->current_level_number= entry->level_number;
-
-			// LP: doing this here because it's after everything else has been set up
-			RunLevelScript(entry->level_number);
 		} else {
 //			assert(error_pending());
 		}
