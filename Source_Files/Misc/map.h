@@ -91,9 +91,9 @@ enum /* damage flags */
 
 struct damage_definition
 {
-	int16 type, flags;
+	short type, flags;
 	
-	int16 base, random;
+	short base, random;
 	fixed scale;
 };
 
@@ -129,18 +129,19 @@ enum /* map object flags */
 
 struct map_object /* 16 bytes */
 {
-	int16 type; /* _saved_monster, _saved_object, _saved_item, ... */
-	int16 index;
-	int16 facing;
-	int16 polygon_index;
+	short type; /* _saved_monster, _saved_object, _saved_item, ... */
+	short index;
+	short facing;
+	short polygon_index;
 	world_point3d location; // .z is a delta
 	
-	uint16 flags;
+	word flags;
 };
 const int SIZEOF_map_object = 16;
 
 typedef world_point2d saved_map_pt;
 typedef struct line_data saved_line;
+typedef struct side_data saved_side;
 typedef struct polygon_data saved_poly;
 typedef struct map_annotation saved_annotation;
 typedef struct map_object saved_object;
@@ -160,7 +161,7 @@ enum { /* entry point types- this is per map level (long). */
 
 struct entry_point 
 {
-	int16 level_number;
+	short level_number;
 	char level_name[64+1];
 };
 
@@ -168,16 +169,16 @@ struct entry_point
 
 struct player_start_data 
 {
-	int16 team;
-	int16 identifier;
-	int16 color;
+	short team;
+	short identifier;
+	short color;
 	char name[MAXIMUM_PLAYER_START_NAME_LENGTH+1]; /* PLAYER_NAME_LENGTH+1 */
 };
 
 struct directory_data {
-	int16 mission_flags;
-	int16 environment_flags;
-	int32 entry_point_flags;
+	short mission_flags;
+	short environment_flags;
+	long entry_point_flags;
 	char level_name[LEVEL_NAME_LENGTH];
 };
 const int SIZEOF_directory_data = 74;
@@ -187,12 +188,12 @@ const int SIZEOF_directory_data = 74;
 #define MAXIMUM_ANNOTATIONS_PER_MAP 20
 #define MAXIMUM_ANNOTATION_TEXT_LENGTH 64
 
-struct map_annotation /* 72 bytes */
+struct map_annotation
 {
-	int16 type; /* turns into color, font, size, style, etc... */
+	short type; /* turns into color, font, size, style, etc... */
 	
 	world_point2d location; /* where to draw this (lower left) */
-	int16 polygon_index; /* only displayed if this polygon is in the automap */
+	short polygon_index; /* only displayed if this polygon is in the automap */
 	
 	char text[MAXIMUM_ANNOTATION_TEXT_LENGTH];
 };
@@ -205,14 +206,14 @@ struct map_annotation *get_next_map_annotation(short *count);
 #define MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP 64
 
 // non-directional ambient component
-struct ambient_sound_image_data /* 16 bytes */
+struct ambient_sound_image_data // 16 bytes
 {
-	uint16 flags;
+	word flags;
 	
-	int16 sound_index;
-	int16 volume;
+	short sound_index;
+	short volume;
 
-	int16 unused[5];
+	short unused[5];
 };
 const int SIZEOF_ambient_sound_image_data = 16;
 
@@ -226,23 +227,23 @@ enum // sound image flags
 };
 
 // possibly directional random sound effects
-struct random_sound_image_data /* 32 bytes */
+struct random_sound_image_data // 32 bytes
 {
-	uint16 flags;
+	word flags;
 	
-	int16 sound_index;
+	short sound_index;
 	
-	int16 volume, delta_volume;
-	int16 period, delta_period;
+	short volume, delta_volume;
+	short period, delta_period;
 	angle direction, delta_direction;
 	fixed pitch, delta_pitch;
 	
 	// only used at run-time; initialize to NONE
-	int16 phase;
+	short phase;
 	
-	int16 unused[3];
+	short unused[3];
 };
-const int SIZEOF_random_sound_image_data = 32;
+const int SIZEOF_random_sound_image_data = 16;
 
 /* ---------- object structure */
 // LP change: made this settable from the resource fork
@@ -251,14 +252,14 @@ const int SIZEOF_random_sound_image_data = 32;
 
 /* SLOT_IS_USED(), SLOT_IS_FREE(), MARK_SLOT_AS_FREE(), MARK_SLOT_AS_USED() macros are also used
 	for monsters, effects and projectiles */
-#define SLOT_IS_USED(o) ((o)->flags&(uint16)0x8000)
+#define SLOT_IS_USED(o) ((o)->flags&(word)0x8000)
 #define SLOT_IS_FREE(o) (!SLOT_IS_USED(o))
-#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0x8000)
-#define MARK_SLOT_AS_USED(o) ((o)->flags|=(uint16)0x8000)
+#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(word)~0x8000)
+#define MARK_SLOT_AS_USED(o) ((o)->flags|=(word)0x8000)
 
-#define OBJECT_WAS_RENDERED(o) ((o)->flags&(uint16)0x4000)
-#define SET_OBJECT_RENDERED_FLAG(o) ((o)->flags|=(uint16)0x4000)
-#define CLEAR_OBJECT_RENDERED_FLAG(o) ((o)->flags&=(uint16)~0x4000)
+#define OBJECT_WAS_RENDERED(o) ((o)->flags&(word)0x4000)
+#define SET_OBJECT_RENDERED_FLAG(o) ((o)->flags|=(word)0x4000)
+#define CLEAR_OBJECT_RENDERED_FLAG(o) ((o)->flags&=(word)~0x4000)
 
 /* this field is only valid after transmogrify_object_shape is called; in terms of our pipeline, that
 	means that itÕs only valid if OBJECT_WAS_RENDERED returns true *and* was cleared before
@@ -268,9 +269,9 @@ const int SIZEOF_random_sound_image_data = 32;
 	also, when any of the flags below are set, the phase of the .sequence field can be examined
 	to determine exactly how many ticks the last frame took to animate (that is, .sequence.phase
 	is not reset until the next loop). */
-#define OBJECT_WAS_ANIMATED(o) ((o)->flags&(uint16)_obj_animated)
-#define GET_OBJECT_ANIMATION_FLAGS(o) ((o)->flags&(uint16)0x3c00)
-#define SET_OBJECT_ANIMATION_FLAGS(o,n) { (o)->flags&= (uint16)~0x3c00; (o)->flags|= (n); }
+#define OBJECT_WAS_ANIMATED(o) ((o)->flags&(word)_obj_animated)
+#define GET_OBJECT_ANIMATION_FLAGS(o) ((o)->flags&(word)0x3c00)
+#define SET_OBJECT_ANIMATION_FLAGS(o,n) { (o)->flags&= (word)~0x3c00; (o)->flags|= (n); }
 enum /* object was animated flags */
 {
 	_obj_not_animated= 0x0000, /* nothing happened */
@@ -293,20 +294,20 @@ enum /* object scale flags */
 #define SET_OBJECT_IS_MEDIA_EFFECT(o) ((o)->flags|= 128)
 
 /* ignored by renderer if INVISIBLE */
-#define OBJECT_IS_INVISIBLE(o) ((o)->flags&(uint16)32)
+#define OBJECT_IS_INVISIBLE(o) ((o)->flags&(word)32)
 #define OBJECT_IS_VISIBLE(o) (!OBJECT_IS_INVISIBLE(o))
-#define SET_OBJECT_INVISIBILITY(o,v) ((void)((v)?((o)->flags|=(uint16)32):((o)->flags&=(uint16)~32)))
+#define SET_OBJECT_INVISIBILITY(o,v) ((void)((v)?((o)->flags|=(word)32):((o)->flags&=(word)~32)))
 
 /* call get_object_dimensions(object_index, &radius, &height) for SOLID objects to get their dimensions */
-#define OBJECT_IS_SOLID(o) ((o)->flags&(uint16)16)
-#define SET_OBJECT_SOLIDITY(o,v) ((void)((v)?((o)->flags|=(uint16)16):((o)->flags&=(uint16)~16)))
+#define OBJECT_IS_SOLID(o) ((o)->flags&(word)16)
+#define SET_OBJECT_SOLIDITY(o,v) ((void)((v)?((o)->flags|=(word)16):((o)->flags&=(word)~16)))
 
-#define GET_OBJECT_STATUS(o) ((o)->flags&(uint16)8)
-#define SET_OBJECT_STATUS(o,v) ((v)?((o)->flags|=(uint16)8):((o)->flags&=(uint16)~8))
-#define TOGGLE_OBJECT_STATUS(o) ((o)->flags^=(uint16)8)
+#define GET_OBJECT_STATUS(o) ((o)->flags&(word)8)
+#define SET_OBJECT_STATUS(o,v) ((v)?((o)->flags|=(word)8):((o)->flags&=(word)~8))
+#define TOGGLE_OBJECT_STATUS(o) ((o)->flags^=(word)8)
 
-#define GET_OBJECT_OWNER(o) ((o)->flags&(uint16)7)
-#define SET_OBJECT_OWNER(o,n) { assert((n)>=0&&(n)<=7); (o)->flags&= (uint16)~7; (o)->flags|= (n); }
+#define GET_OBJECT_OWNER(o) ((o)->flags&(word)7)
+#define SET_OBJECT_OWNER(o,n) { assert((n)>=0&&(n)<=7); (o)->flags&= (word)~7; (o)->flags|= (n); }
 enum /* object owners (8) */
 {
 	_object_is_normal, /* normal */
@@ -355,11 +356,11 @@ enum /* object transfer modes (high-level) */
 struct object_location
 {
 	struct world_point3d p;
-	int16 polygon_index;
+	short polygon_index;
 	
 	angle yaw, pitch;
 	
-	uint16 flags;
+	word flags;
 };
 
 struct object_data /* 32 bytes */
@@ -367,7 +368,7 @@ struct object_data /* 32 bytes */
 	/* these fields are in the order of a world_location3d structure, but are missing the pitch
 		and velocity fields */
 	world_point3d location;
-	int16 polygon;
+	short polygon;
 	
 	angle facing;
 	
@@ -376,14 +377,14 @@ struct object_data /* 32 bytes */
 		shape index is an index into the animated shape array for that collection. */
 	shape_descriptor shape;
 
-	uint16 sequence; /* for shape animation */
-	uint16 flags; /* [used_slot.1] [rendered.1] [animated.4] [unused.4] [invisible.1] [solid.1] [status.1] [owner.3] */
-	int16 transfer_mode, transfer_period; /* if NONE take from shape data */
-	int16 transfer_phase; /* for transfer mode animations */
-	int16 permutation; /* usually index into owner array */
+	word sequence; /* for shape animation */
+	word flags; /* [used_slot.1] [rendered.1] [animated.4] [unused.4] [invisible.1] [solid.1] [status.1] [owner.3] */
+	short transfer_mode, transfer_period; /* if NONE take from shape data */
+	short transfer_phase; /* for transfer mode animations */
+	short permutation; /* usually index into owner array */
 	
-	int16 next_object; /* or NONE */
-	int16 parasitic_object; /* or NONE */
+	short next_object; /* or NONE */
+	short parasitic_object; /* or NONE */
 
 	/* used when playing sounds */
 	fixed sound_pitch;
@@ -392,24 +393,24 @@ struct object_data /* 32 bytes */
 /* ------------ endpoint definition */
 
 #define ENDPOINT_IS_SOLID(e) ((e)->flags&1)
-#define SET_ENDPOINT_SOLIDITY(e,s) ((s)?((e)->flags|=1):((e)->flags&=~(uint16)1))
+#define SET_ENDPOINT_SOLIDITY(e,s) ((s)?((e)->flags|=1):((e)->flags&=~(word)1))
 
 #define ENDPOINT_IS_TRANSPARENT(e) ((e)->flags&4)
-#define SET_ENDPOINT_TRANSPARENCY(e,s) ((s)?((e)->flags|=4):((e)->flags&=~(uint16)4))
+#define SET_ENDPOINT_TRANSPARENCY(e,s) ((s)?((e)->flags|=4):((e)->flags&=~(word)4))
 
 /* FALSE if all polygons sharing this endpoint have the same height */
 #define ENDPOINT_IS_ELEVATION(e) ((e)->flags&2)
-#define SET_ENDPOINT_ELEVATION(e,s) ((s)?((e)->flags|=2):((e)->flags&=~(uint16)2))
+#define SET_ENDPOINT_ELEVATION(e,s) ((s)?((e)->flags|=2):((e)->flags&=~(word)2))
 
 struct endpoint_data /* 16 bytes */
 {
-	uint16 flags;
+	word flags;
 	world_distance highest_adjacent_floor_height, lowest_adjacent_ceiling_height;
 	
 	world_point2d vertex;
 	world_point2d transformed;
 	
-	int16 supporting_polygon_index;
+	short supporting_polygon_index;
 };
 const int SIZEOF_endpoint_data = 16;
 
@@ -422,41 +423,41 @@ const int SIZEOF_endpoint_data = 16;
 #define VARIABLE_ELEVATION_LINE_BIT 0x400
 #define LINE_HAS_TRANSPARENT_SIDE_BIT 0x200
 
-#define SET_LINE_SOLIDITY(l,v) ((v)?((l)->flags|=(uint16)SOLID_LINE_BIT):((l)->flags&=(uint16)~SOLID_LINE_BIT))
+#define SET_LINE_SOLIDITY(l,v) ((v)?((l)->flags|=(word)SOLID_LINE_BIT):((l)->flags&=(word)~SOLID_LINE_BIT))
 #define LINE_IS_SOLID(l) ((l)->flags&SOLID_LINE_BIT)
 
-#define SET_LINE_TRANSPARENCY(l,v) ((v)?((l)->flags|=(uint16)TRANSPARENT_LINE_BIT):((l)->flags&=(uint16)~TRANSPARENT_LINE_BIT))
+#define SET_LINE_TRANSPARENCY(l,v) ((v)?((l)->flags|=(word)TRANSPARENT_LINE_BIT):((l)->flags&=(word)~TRANSPARENT_LINE_BIT))
 #define LINE_IS_TRANSPARENT(l) ((l)->flags&TRANSPARENT_LINE_BIT)
 
-#define SET_LINE_LANDSCAPE_STATUS(l,v) ((v)?((l)->flags|=(uint16)LANDSCAPE_LINE_BIT):((l)->flags&=(uint16)~LANDSCAPE_LINE_BIT))
+#define SET_LINE_LANDSCAPE_STATUS(l,v) ((v)?((l)->flags|=(word)LANDSCAPE_LINE_BIT):((l)->flags&=(word)~LANDSCAPE_LINE_BIT))
 #define LINE_IS_LANDSCAPED(l) ((l)->flags&LANDSCAPE_LINE_BIT)
 
-#define SET_LINE_ELEVATION(l,v) ((v)?((l)->flags|=(uint16)ELEVATION_LINE_BIT):((l)->flags&=(uint16)~ELEVATION_LINE_BIT))
+#define SET_LINE_ELEVATION(l,v) ((v)?((l)->flags|=(word)ELEVATION_LINE_BIT):((l)->flags&=(word)~ELEVATION_LINE_BIT))
 #define LINE_IS_ELEVATION(l) ((l)->flags&ELEVATION_LINE_BIT)
 
-#define SET_LINE_VARIABLE_ELEVATION(l,v) ((v)?((l)->flags|=(uint16)VARIABLE_ELEVATION_LINE_BIT):((l)->flags&=(uint16)~VARIABLE_ELEVATION_LINE_BIT))
+#define SET_LINE_VARIABLE_ELEVATION(l,v) ((v)?((l)->flags|=(word)VARIABLE_ELEVATION_LINE_BIT):((l)->flags&=(word)~VARIABLE_ELEVATION_LINE_BIT))
 #define LINE_IS_VARIABLE_ELEVATION(l) ((l)->flags&VARIABLE_ELEVATION_LINE_BIT)
 
-#define SET_LINE_HAS_TRANSPARENT_SIDE(l,v) ((v)?((l)->flags|=(uint16)LINE_HAS_TRANSPARENT_SIDE_BIT):((l)->flags&=(uint16)~LINE_HAS_TRANSPARENT_SIDE_BIT))
+#define SET_LINE_HAS_TRANSPARENT_SIDE(l,v) ((v)?((l)->flags|=(word)LINE_HAS_TRANSPARENT_SIDE_BIT):((l)->flags&=(word)~LINE_HAS_TRANSPARENT_SIDE_BIT))
 #define LINE_HAS_TRANSPARENT_SIDE(l) ((l)->flags&LINE_HAS_TRANSPARENT_SIDE_BIT)
 
 struct line_data /* 32 bytes */
 {
-	int16 endpoint_indexes[2];
-	uint16 flags; /* no permutation field */
+	short endpoint_indexes[2];
+	word flags; /* no permutation field */
 
 	world_distance length;
 	world_distance highest_adjacent_floor, lowest_adjacent_ceiling;
 	
 	/* the side definition facing the clockwise polygon which references this side, and the side
 		definition facing the counterclockwise polygon (can be NONE) */
-	int16 clockwise_polygon_side_index, counterclockwise_polygon_side_index;
+	short clockwise_polygon_side_index, counterclockwise_polygon_side_index;
 	
 	/* a line can be owned by a clockwise polygon, a counterclockwise polygon, or both (but never
 		two of the same) (can be NONE) */
-	int16 clockwise_polygon_owner, counterclockwise_polygon_owner;
+	short clockwise_polygon_owner, counterclockwise_polygon_owner;
 	
-	int16 unused[6];
+	short unused[6];
 };
 const int SIZEOF_line_data = 32;
 
@@ -490,18 +491,18 @@ enum /* control panel side types */
 };
 
 #define SIDE_IS_CONTROL_PANEL(s) ((s)->flags & _side_is_control_panel)
-#define SET_SIDE_CONTROL_PANEL(s, t) ((void)((t) ? (s->flags |= (uint16) _side_is_control_panel) : (s->flags &= (uint16)~_side_is_control_panel)))
+#define SET_SIDE_CONTROL_PANEL(s, t) ((void)((t) ? (s->flags |= (word) _side_is_control_panel) : (s->flags &= (word)~_side_is_control_panel)))
 
 #define GET_CONTROL_PANEL_STATUS(s) ((s)->flags & _control_panel_status)
-#define SET_CONTROL_PANEL_STATUS(s, t) ((t) ? (s->flags |= (uint16) _control_panel_status) : (s->flags &= (uint16)~_control_panel_status))
+#define SET_CONTROL_PANEL_STATUS(s, t) ((t) ? (s->flags |= (word) _control_panel_status) : (s->flags &= (word)~_control_panel_status))
 #define TOGGLE_CONTROL_PANEL_STATUS(s) ((s)->flags ^= _control_panel_status)
 
 #define SIDE_IS_REPAIR_SWITCH(s) ((s)->flags & _side_is_repair_switch)
-#define SET_SIDE_IS_REPAIR_SWITCH(s, t) ((t) ? (s->flags |= (uint16) _side_is_repair_switch) : (s->flags &= (uint16)~_side_is_repair_switch))
+#define SET_SIDE_IS_REPAIR_SWITCH(s, t) ((t) ? (s->flags |= (word) _side_is_repair_switch) : (s->flags &= (word)~_side_is_repair_switch))
 
 /* Flags used by Vulcan */
 #define SIDE_IS_DIRTY(s) ((s)->flags&_editor_dirty_bit)
-#define SET_SIDE_IS_DIRTY(s, t) ((t)?(s->flags|=(uint16)_editor_dirty_bit):(s->flags&=(uint16)~_editor_dirty_bit))
+#define SET_SIDE_IS_DIRTY(s, t) ((t)?(s->flags|=(word)_editor_dirty_bit):(s->flags&=(word)~_editor_dirty_bit))
 
 enum /* side types (largely redundant; most of this could be guessed for examining adjacent polygons) */
 {
@@ -524,10 +525,10 @@ struct side_exclusion_zone
 	world_point2d e0, e1, e2, e3;
 };
 
-struct saved_side /* 64 bytes */
+struct side_data /* 64 bytes */
 {
-	int16 type;
-	uint16 flags;
+	short type;
+	word flags;
 	
 	struct side_texture_definition primary_texture;
 	struct side_texture_definition secondary_texture;
@@ -537,55 +538,24 @@ struct saved_side /* 64 bytes */
 		the side which cannot be walked through */
 	struct side_exclusion_zone exclusion_zone;
 
-	int16 control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
-	int16 control_panel_permutation; /* platform index, light source index, etc... */
+	short control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
+	short control_panel_permutation; /* platform index, light source index, etc... */
 	
-	int16 primary_transfer_mode; /* These should be in the side_texture_definition.. */
-	int16 secondary_transfer_mode;
-	int16 transparent_transfer_mode;
+	short primary_transfer_mode; /* These should be in the side_texture_definition.. */
+	short secondary_transfer_mode;
+	short transparent_transfer_mode;
 
-	int16 polygon_index, line_index;
+	short polygon_index, line_index;
 
-	int16 primary_lightsource_index;	
-	int16 secondary_lightsource_index;
-	int16 transparent_lightsource_index;
-
-	int16 ambient_delta_hi, ambient_delta_lo;
-
-	int16 unused[1];
-};
-const int SIZEOF_saved_side = 64;
-
-struct side_data /* size platform-specific because ambient_delta is not aligned naturally */
-{
-	int16 type;
-	uint16 flags;
-	
-	struct side_texture_definition primary_texture;
-	struct side_texture_definition secondary_texture;
-	struct side_texture_definition transparent_texture; /* not drawn if .texture==NONE */
-
-	/* all sides have the potential of being impassable; the exclusion zone is the area near
-		the side which cannot be walked through */
-	struct side_exclusion_zone exclusion_zone;
-
-	int16 control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
-	int16 control_panel_permutation; /* platform index, light source index, etc... */
-	
-	int16 primary_transfer_mode; /* These should be in the side_texture_definition.. */
-	int16 secondary_transfer_mode;
-	int16 transparent_transfer_mode;
-
-	int16 polygon_index, line_index;
-
-	int16 primary_lightsource_index;	
-	int16 secondary_lightsource_index;
-	int16 transparent_lightsource_index;
+	short primary_lightsource_index;	
+	short secondary_lightsource_index;
+	short transparent_lightsource_index;
 
 	fixed ambient_delta;
 
-	int16 unused[1];
+	short unused[1];
 };
+const int SIZEOF_side_data = 64;
 
 /* ----------- polygon definition */
 
@@ -621,93 +591,67 @@ enum /* polygon types */
 struct horizontal_surface_data /* should be in polygon structure */
 {
 	world_distance height;
-	int16 lightsource_index;
+	short lightsource_index;
 	shape_descriptor texture;
-	int16 transfer_mode, transfer_mode_data;
+	short transfer_mode, transfer_mode_data;
 	
 	world_point2d origin;
 };
 
 struct polygon_data /* 128 bytes */
 {
-	int16 type;
-	uint16 flags;
-	int16 permutation;
+	short type;
+	word flags;
+	short permutation;
 
-	int16 vertex_count;
-	int16 endpoint_indexes[MAXIMUM_VERTICES_PER_POLYGON]; /* clockwise */
-	int16 line_indexes[MAXIMUM_VERTICES_PER_POLYGON];
+	short vertex_count;
+	short endpoint_indexes[MAXIMUM_VERTICES_PER_POLYGON]; /* clockwise */
+	short line_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	
 	shape_descriptor floor_texture, ceiling_texture;
 	world_distance floor_height, ceiling_height;
-	int16 floor_lightsource_index, ceiling_lightsource_index;
+	short floor_lightsource_index, ceiling_lightsource_index;
 	
-	int32 area; /* in world_distance^2 units */
+	long area; /* in world_distance^2 units */
 	
-	int16 first_object;
+	short first_object;
 	
 	/* precalculated impassability information; each polygon has a list of lines and points
 		that anything big (i.e., monsters but not projectiles) inside it must check against when
 		ending a move inside it. */
-	int16 first_exclusion_zone_index;
-	int16 line_exclusion_zone_count;
-	int16 point_exclusion_zone_count;
+	short first_exclusion_zone_index;
+	short line_exclusion_zone_count;
+	short point_exclusion_zone_count;
 
-	int16 floor_transfer_mode;
-	int16 ceiling_transfer_mode;
+	short floor_transfer_mode;
+	short ceiling_transfer_mode;
 	
-	int16 adjacent_polygon_indexes[MAXIMUM_VERTICES_PER_POLYGON];
+	short adjacent_polygon_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	
 	/* a list of polygons within WORLD_ONE of us */
-	int16 first_neighbor_index;
-	int16 neighbor_count;
+	short first_neighbor_index;
+	short neighbor_count;
 	
 	world_point2d center;
 	
-	int16 side_indexes[MAXIMUM_VERTICES_PER_POLYGON];
+	short side_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	
 	world_point2d floor_origin, ceiling_origin;
 	
-	int16 media_index;
-	int16 media_lightsource_index;
+	short media_index;
+	short media_lightsource_index;
 	
 	/* NONE terminated list of _saved_sound_source indexes which must be checked while a
 		listener is inside this polygon (can be none) */
-	int16 sound_source_indexes;
+	short sound_source_indexes;
 	
 	// either can be NONE
-	int16 ambient_sound_image_index;
-	int16 random_sound_image_index;
+	short ambient_sound_image_index;
+	short random_sound_image_index;
 	
-	int16 unused[1];
+	short unused[1];
 };
 const int SIZEOF_polygon_data = 128;
-
-/* ----------- static light definition */
-
-struct saved_lighting_function_specification /* 7*2 == 14 bytes */
-{
-	int16 function;
-	
-	int16 period, delta_period;
-	int16 intensity_hi, intensity_lo, delta_intensity_hi, delta_intensity_lo;
-};
-
-struct saved_static_light_data /* 8*2 + 6*14 == 100 bytes */
-{
-	int16 type;
-	uint16 flags;
-
-	int16 phase; // initializer, so lights may start out-of-phase with each other
-	
-	struct saved_lighting_function_specification primary_active, secondary_active, becoming_active;
-	struct saved_lighting_function_specification primary_inactive, secondary_inactive, becoming_inactive;
-	
-	int16 tag;
-	
-	int16 unused[4];
-};
-const int SIZEOF_saved_static_light_data = 100;
 
 /* ---------- random placement data structures.. */
 
@@ -732,14 +676,14 @@ enum // flags for object_frequency_definition
 
 struct object_frequency_definition
 {
-	uint16 flags;
+	word flags;
 	
-	int16 initial_count;   // number that initially appear. can be greater than maximum_count
-	int16 minimum_count;   // this number of objects will be maintained.
-	int16 maximum_count;   // canÕt exceed this, except at the beginning of the level.
+	short initial_count;   // number that initially appear. can be greater than maximum_count
+	short minimum_count;   // this number of objects will be maintained.
+	short maximum_count;   // canÕt exceed this, except at the beginning of the level.
 	
-	int16 random_count;    // maximum random occurences of the object
-	uint16 random_chance;    // in (0, 65535]
+	short random_count;    // maximum random occurences of the object
+	word random_chance;    // in (0, 65535]
 };
 
 /* ---------- map */
@@ -767,19 +711,19 @@ enum /* environment flags */
 };
 
 /* current map number is in player->map */
-struct static_data /* 88 bytes */
+struct static_data
 {
-	int16 environment_code;
+	short environment_code;
 	
-	int16 physics_model;
-	int16 song_index;
-	int16 mission_flags;
-	int16 environment_flags;
+	short physics_model;
+	short song_index;
+	short mission_flags;
+	short environment_flags;
 	
-	int16 unused[4];
+	short unused[4];
 
-	char level_name[LEVEL_NAME_LENGTH + 1];	// 66 bytes
-	int32 entry_point_flags;
+	char level_name[LEVEL_NAME_LENGTH];
+	long entry_point_flags;
 };
 const int SIZEOF_static_data = 88;
 
@@ -852,7 +796,7 @@ struct dynamic_data
 	long tick_count;
 	
 	/* the real seed is static in WORLD.C; must call set_random_seed() */
-	uint16 random_seed;
+	word random_seed;
 	
 	/* This is stored in the dynamic_data so that it is valid across */
 	/* saves. */
