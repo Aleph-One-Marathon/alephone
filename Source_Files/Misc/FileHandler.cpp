@@ -619,7 +619,7 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 	ExtractSingleItem(&reply,&temp);
 	SetSpec(temp);
 	
-	if (reply.replacing) FSpDelete(temp);
+	if (reply.replacing) FSpDelete(&temp);
 	
 	} else {
 	
@@ -775,7 +775,7 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 	ExtractSingleItem(&reply,&temp);
 	SetSpec(temp);
 	
-	if (reply.replacing) FSpDelete(temp);
+	if (reply.replacing) FSpDelete(&temp);
 	
 	} else {
 	
