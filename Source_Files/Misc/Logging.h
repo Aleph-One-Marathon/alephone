@@ -19,7 +19,7 @@
 	http://www.gnu.org/licenses/gpl.html
 
 
-    Jan. 16, 2003 (Woody Zenfell): Created.
+ Jan. 16, 2003 (Woody Zenfell): Created.
 
 */
 
@@ -29,26 +29,26 @@
 #include <stdarg.h>
 
 enum {
-    logFatalLevel	= 0,	// program must exit
-    logErrorLevel	= 10,	// can't do something significant
-    logWarningLevel	= 20,	// can continue but results could be really screwy
-    logAnomalyLevel	= 30,	// can continue, results could be off a little, but no big deal
-    logNoteLevel	= 40,	// something worth mentioning
-    logTraceLevel	= 50,	// details of actions and logic
-    logDumpLevel	= 60	// values of data etc.
+	logFatalLevel	= 0,	// program must exit
+	logErrorLevel	= 10,	// can't do something significant
+	logWarningLevel	= 20,	// can continue but results could be really screwy
+	logAnomalyLevel	= 30,	// can continue, results could be off a little, but no big deal
+	logNoteLevel	= 40,	// something worth mentioning
+	logTraceLevel	= 50,	// details of actions and logic
+	logDumpLevel	= 60	// values of data etc.
 };
 
 
 class Logger {
 public:
-    virtual void pushLogContext(const char* inFile, int inLine, const char* inContext, ...);
-    virtual void logMessage(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, ...);
+	virtual void pushLogContext(const char* inFile, int inLine, const char* inContext, ...);
+	virtual void logMessage(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, ...);
 
-    virtual void pushLogContextV(const char* inFile, int inLine, const char* inContext, va_list inArgList) = 0;
-    virtual void popLogContext() = 0;
-    virtual void logMessageV(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, va_list inArgList) = 0;
+	virtual void pushLogContextV(const char* inFile, int inLine, const char* inContext, va_list inArgList) = 0;
+	virtual void popLogContext() = 0;
+	virtual void logMessageV(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, va_list inArgList) = 0;
     
-    virtual ~Logger();
+	virtual ~Logger();
 };
 
 
@@ -157,44 +157,44 @@ extern const char* logDomain;
 // Class intended for stack-based use for entering/leaving a logging subcontext
 class LogContext {
 public:
-    LogContext() : contextSet(false) {}
+	LogContext() : contextSet(false) {}
     
-    LogContext(const char* inFile, int inLine, const char* inContext, ...) : contextSet(false) {
-        va_list theVarArgs;
-        va_start(theVarArgs, inContext);
-        enterContextV(inFile, inLine, inContext, theVarArgs);
-        va_end(theVarArgs);        
-    }
-    
-    void enterContext(const char* inFile, int inLine, const char* inContext, ...) {
-        va_list theVarArgs;
-        va_start(theVarArgs, inContext);
-        enterContextV(inFile, inLine, inContext, theVarArgs);
-        va_end(theVarArgs);        
-    }
-    
-    void enterContextV(const char* inFile, int inLine, const char* inContext, va_list inArgs) {
-        if(contextSet)
-            leaveContext();
+	LogContext(const char* inFile, int inLine, const char* inContext, ...) : contextSet(false) {
+		va_list theVarArgs;
+		va_start(theVarArgs, inContext);
+		enterContextV(inFile, inLine, inContext, theVarArgs);
+		va_end(theVarArgs);
+	}
 
-        GetCurrentLogger()->pushLogContextV(inFile, inLine, inContext, inArgs);
-        
-        contextSet = true;
-    }
-    
-    void leaveContext() {
-        if(contextSet)
-            GetCurrentLogger()->popLogContext();
-        
-        contextSet = false;
-    }
-    
-    ~LogContext() {
-        leaveContext();
-    }
+	void enterContext(const char* inFile, int inLine, const char* inContext, ...) {
+		va_list theVarArgs;
+		va_start(theVarArgs, inContext);
+		enterContextV(inFile, inLine, inContext, theVarArgs);
+		va_end(theVarArgs);
+	}
 
+	void enterContextV(const char* inFile, int inLine, const char* inContext, va_list inArgs) {
+		if(contextSet)
+			leaveContext();
+
+		GetCurrentLogger()->pushLogContextV(inFile, inLine, inContext, inArgs);
+
+		contextSet = true;
+	}
+
+	void leaveContext() {
+		if(contextSet)
+			GetCurrentLogger()->popLogContext();
+
+		contextSet = false;
+	}
+
+	~LogContext() {
+		leaveContext();
+	}
+	
 protected:
-    bool contextSet;
+	bool contextSet;
 };
 
 
@@ -208,20 +208,20 @@ protected:
 /*
 class SubLogger : public Logger {
 public:
-    virtual void pushLogContext(const char* inFile, int inLine, const char* inContext, ...);
-    virtual void popLogContext();
-    virtual void logMessage(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, ...);
+	virtual void pushLogContext(const char* inFile, int inLine, const char* inContext, ...);
+	virtual void popLogContext();
+	virtual void logMessage(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, ...);
 protected:
-    struct LogAction {
-        enum { ePushContext, ePopContext, eMessage } mType;
-        string	mDomain;
-        int	mLevel;
-        string	mMessage;
-        string	mFile;
-        int	mLine;
-    };
-
-    vector<LogAction> mLogActions;
+	struct LogAction {
+		enum { ePushContext, ePopContext, eMessage } mType;
+		string	mDomain;
+		int	mLevel;
+		string	mMessage;
+		string	mFile;
+		int	mLine;
+	};
+	
+	vector<LogAction> mLogActions;
 };
 */
 
