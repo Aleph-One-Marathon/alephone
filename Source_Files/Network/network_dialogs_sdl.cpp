@@ -1023,7 +1023,7 @@ bool network_gather(bool inResumingGame)
                                 bool new_autogather_setting = autogather_w->get_selection() ? true : false;
                                 if(network_preferences->autogather != new_autogather_setting)
                                 {
-                                        network_preferences->autogather = autogather_w->get_selection() 
+                                        network_preferences->autogather = new_autogather_setting; 
                                         write_preferences();
                                 }
                                 return true;

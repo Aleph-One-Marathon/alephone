@@ -213,6 +213,8 @@ Apr 22, 2003 (Woody Zenfell):
 //CP addition: scripting support
 #include "scripting.h"
 
+#include "Logging.h"
+
 // ZZZ: egads, this stuff just keeps getting hairier
 extern bool OGL_HUDActive;
 
@@ -1022,7 +1024,42 @@ void render_screen(
                         if(OGL_HUDActive)
                         {
                                 OGL_SetWindow(ScreenRect,ScreenRect,true);
-                                OGL_DrawHUD(HUD_DestRect, ticks_elapsed);
+                                Rect theRealHUDDestRect;
+                                if(msize < 4)
+                                        SetRect(&theRealHUDDestRect, 0, 320, 640, 480);
+                                else
+                                {
+                                        theRealHUDDestRect.left = (VS.OverallWidth - 640)/2;
+                                        theRealHUDDestRect.top = 5*VS.OverallHeight/6 - 160/2;
+                                        theRealHUDDestRect.right = theRealHUDDestRect.left + 640;
+                                        theRealHUDDestRect.bottom = theRealHUDDestRect.top + 160;
+                                }
+
+                                if(!graphics_preferences->screen_mode.fullscreen)
+                                {
+                                        int theXOffset = (RECTANGLE_WIDTH(&ScreenRect) - VS.OverallWidth)/2;
+                                        int theYOffset = (RECTANGLE_HEIGHT(&ScreenRect) - VS.OverallHeight)/2;
+                                        OffsetRect(&theRealHUDDestRect, theXOffset, theYOffset);
+                                }
+
+                                // we try to log these once per game here.  log level is dump, so
+                                // only those wanting lots of detail will ever see it.
+                                static bool logged = false; // for debugging
+
+                                if(dynamic_world->tick_count > 150 && dynamic_world->tick_count < 180)
+                                {
+                                        if(!logged)
+                                        {
+                                                logDump4("ScreenRect: {%d, %d, %d, %d}", ScreenRect.left, ScreenRect.top, ScreenRect.right, ScreenRect.bottom);
+                                                logDump4("HUD_DestRect: {%d, %d, %d, %d}", HUD_DestRect.left, HUD_DestRect.top, HUD_DestRect.right, HUD_DestRect.bottom);
+                                                logDump4("theRealHUDDestRect: {%d, %d, %d, %d}", theRealHUDDestRect.left, theRealHUDDestRect.top, theRealHUDDestRect.right, theRealHUDDestRect.bottom);
+                                                logged = true;
+                                        }
+                                }
+                                else
+                                        logged = false;
+
+                                OGL_DrawHUD(theRealHUDDestRect, ticks_elapsed);
                         }
                         else {
                                 if (HUD_RenderRequest)

@@ -481,7 +481,9 @@ void write_preferences(
 	fprintf(F,"  entry_point=\"%hd\"\n",network_preferences->entry_point);
         fprintf(F,"  autogather=\"%s\"\n",BoolString(network_preferences->autogather));
         fprintf(F,"  join_by_address=\"%s\"\n",BoolString(network_preferences->join_by_address));
-        WriteXML_CString(F, "  join_address=\"",network_preferences->join_address,256,"\"\n");        
+        WriteXML_CString(F, "  join_address=\"",network_preferences->join_address,256,"\"\n");
+        fprintf(F,"  adapt_to_latency=\"%s\"\n",BoolString(network_preferences->adapt_to_latency));
+        fprintf(F,"  latency_hold_ticks=\"%hd\"\n",network_preferences->latency_hold_ticks);
 	fprintf(F,"/>\n\n");
 	
 	fprintf(F,"<environment\n");
@@ -498,6 +500,7 @@ void write_preferences(
 	fprintf(F,"  sounds_mod_date=\"%u\"\n",uint32(environment_preferences->sounds_mod_date));
         fprintf(F,"  group_by_directory=\"%s\"\n",BoolString(environment_preferences->group_by_directory));
         fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
+        fprintf(F,"  non_bungie_warning=\"%s\"\n",BoolString(environment_preferences->non_bungie_warning));
 	fprintf(F,">\n");
 #ifdef mac
 	WriteXML_FSSpec(F,"  ",0,environment_preferences->map_file);
@@ -665,6 +668,8 @@ static void default_network_preferences(network_preferences_data *preferences)
         preferences->autogather= false;
         preferences->join_by_address= false;
         obj_clear(preferences->join_address);
+        preferences->adapt_to_latency= true;
+        preferences->latency_hold_ticks= 2 * TICKS_PER_SECOND;
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -774,13 +779,15 @@ static void default_environment_preferences(environment_preferences_data *prefer
 #endif
 
 #ifdef SDL
-	get_default_theme_spec(DefaultFile);
-	strncpy(preferences->theme_dir, DefaultFile.GetPath(), 256);
+        FileSpecifier DefaultThemeFile;
+	get_default_theme_spec(DefaultThemeFile);
+	strncpy(preferences->theme_dir, DefaultThemeFile.GetPath(), 256);
 	preferences->theme_dir[255] = 0;
 #endif
 
         preferences->group_by_directory = true;
         preferences->reduce_singletons = true;
+        preferences->non_bungie_warning = true;
 }
 
 
@@ -879,6 +886,12 @@ static bool validate_network_preferences(network_preferences_data *preferences)
 	}
 
         // ZZZ: is this relevant anymore now with XML prefs?  if so, should validate autogather, join_by_address, and join_address.
+
+        if(preferences->latency_hold_ticks < 2)
+        {
+                preferences->latency_hold_ticks= 2;
+                changed= true;
+        }
 	
 	return changed;
 }
@@ -1740,7 +1753,15 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
                 DeUTF8_C(Value,strlen(Value),network_preferences->join_address,255);
                 return true;
         }
-    
+        else if (StringsEqual(Tag,"adapt_to_latency"))
+        {
+                return ReadBooleanValue(Value,network_preferences->adapt_to_latency);
+        }
+        else if (StringsEqual(Tag,"latency_hold_ticks"))
+        {
+                return ReadInt16Value(Value,network_preferences->latency_hold_ticks);
+        }
+        
 	UnrecognizedTag();
 	return false;
 }
@@ -1949,7 +1970,11 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
         {
                 return ReadBooleanValue(Value,environment_preferences->reduce_singletons);
         }
-	UnrecognizedTag();
+        else if (StringsEqual(Tag,"non_bungie_warning"))
+        {
+                return ReadBooleanValue(Value,environment_preferences->non_bungie_warning);
+        }
+        UnrecognizedTag();
 	return false;
 }
 

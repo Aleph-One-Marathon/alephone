@@ -1729,10 +1729,10 @@ static void load_redundant_map_data(
 	}
 	else
 	{
-		bool have_been_warned= false;
+		static bool have_been_warned= false;
 
 #if !defined(ALPHA) && !defined(BETA)
-		if(!have_been_warned)
+		if(!have_been_warned && environment_preferences->non_bungie_warning)
 		{
 			/* Only warn the gatherer.. */
 			if(!game_is_networked || (game_is_networked && local_player_index==0))

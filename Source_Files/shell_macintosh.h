@@ -180,6 +180,8 @@ Apr 29, 2002 (Loren Petrich):
 #include <Perf.h>
 #endif
 
+#include "Logging.h"
+
 #ifdef env68k
 #pragma segment shell
 #endif
@@ -1337,17 +1339,14 @@ static void process_event(
 			part_code= FindWindow(event->where, &window);
 			switch (part_code)
 			{
-				case inSysWindow: /* DAs and the menu bar can blow me */
-				case inMenuBar:
-					assert(false);
-					break;
-					
 				case inContent:
 					process_screen_click(event);
 					break;
-					
+
+                                case inSysWindow: /* DAs and the menu bar can blow me */
+                                case inMenuBar:
 				default:
-					assert(false);
+                                        logAnomaly1("mouseDown in unexpected part_code %d", part_code);
 					break;
 			}
 			break;

@@ -94,6 +94,8 @@ struct network_preferences_data
         bool autogather;
         bool join_by_address;
         char join_address[256];
+        bool adapt_to_latency;
+        int16 latency_hold_ticks;
 };
 
 struct player_preferences_data
@@ -156,6 +158,9 @@ struct environment_preferences_data
         // preferences that affect the environment preferences dialog
         bool group_by_directory;	// if not, display popup as one giant flat list
         bool reduce_singletons;		// make groups of a single element part of a larger parent group
+
+        // ZZZ: Hmm and these aren't even that
+        bool non_bungie_warning;	// if not, then don't pop up warning about non-Bungie content
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

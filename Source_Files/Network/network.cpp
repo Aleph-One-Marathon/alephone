@@ -155,7 +155,8 @@ clearly this is all broken until we have packet types
 #if HAVE_SDL_NET
 #undef	NETWORK_FAUX_QUEUE		// honest intentions, but perhaps ultimately useless.
 #undef	NETWORK_ADAPTIVE_LATENCY	// should be better - oops, heh, or not.
-#define	NETWORK_ADAPTIVE_LATENCY_2	// use this one instead; it should be good.
+#undef	NETWORK_ADAPTIVE_LATENCY_2	// use this one instead; it should be good.  no wait...
+#define NETWORK_ADAPTIVE_LATENCY_3	// there, this one ought to get it right, finally.
 #define	NETWORK_IP			// needed if using IPaddress { host, port }; (as in SDL_net) rather than NetAddrBlock for addressing.
 #undef	NETWORK_USE_RECENT_FLAGS	// if the game stalls, use flags at the end of the stall, not the more stale ones at the beginning
 #define	NETWORK_SMARTER_FLAG_DITCHING	// this mechanism won't be quite as hasty to toss flags as Bungie's
@@ -516,6 +517,21 @@ enum {
 // reins on the consumer a bit.
 
 
+#ifdef NETWORK_ADAPTIVE_LATENCY_3
+// ZZZ: and now for something completely different...
+// Instead of considering average latency as above, we're going to look at the largest
+// recent latency value, and go with that for a while.  If we don't see any latency value
+// that big or bigger for a while, then we'll go with the second-highest latency value we've
+// seen recently for a while, etc.
+// This ought to handle jittery cases more easily, I think.
+
+static int sCurrentAdaptiveLatency;
+static int sGreatestRecentLatencyMeasurement;
+static int sGreatestRecentLatencyTick;
+static int sSecondGreatestRecentLatencyMeasurement;
+#endif
+
+
 // ZZZ change: now using an STL 'map' to, well, _map_ distribution types to info records.
 typedef map<int16, NetDistributionInfo> distribution_info_map_t;
 static  distribution_info_map_t distribution_info_map;
@@ -569,10 +585,11 @@ static bool NetCheckResendRingPacket(void);
 static bool NetServerTask(void);
 static bool NetQueueingTask(void);
 
-#if defined(NETWORK_ADAPTIVE_LATENCY) || defined(NETWORK_ADAPTIVE_LATENCY_2)
+#if defined(NETWORK_ADAPTIVE_LATENCY) || defined(NETWORK_ADAPTIVE_LATENCY_2) || defined(NETWORK_ADAPTIVE_LATENCY_3)
 // ZZZ addition, for adaptive latency business.  measurement is only used for adaptive_latency_2
-static void update_adaptive_latency(int measurement = 0);
-#endif//NETWORK_ADAPTIVE_LATENCY || NETWORK_ADAPTIVE_LATENCY_2
+// tick is used only for adaptive_latency_3.
+static void update_adaptive_latency(int measurement = 0, int tick = 0);
+#endif//NETWORK_ADAPTIVE_LATENCY || NETWORK_ADAPTIVE_LATENCY_2 || NETWORK_ADAPTIVE_LATENCY_3
 
 static int net_compare(void const *p1, void const *p2);
 
@@ -1294,6 +1311,14 @@ bool NetSync(
         sAdaptiveLatencyWindowEdge	= 0;
 #endif
 
+#if defined(NETWORK_ADAPTIVE_LATENCY_3)
+        // ZZZ addition: initialize adaptive latency mechanism
+        sCurrentAdaptiveLatency = 0;
+        sGreatestRecentLatencyTick = 0;
+        sGreatestRecentLatencyMeasurement = 0;
+        sSecondGreatestRecentLatencyMeasurement = 0;
+#endif
+
 	netState= netStartingUp;
 	
 	/* if we are the server (player index zero), start the ring */
@@ -1903,11 +1928,11 @@ static void NetProcessIncomingBuffer(
         record_profile(packet_data->required_action_flags);
 #endif
 
-#ifdef NETWORK_ADAPTIVE_LATENCY_2
-        // ZZZ: this is the only spot we sample/adjust our adaptive_latency_2: when we've received a valid ring packet.
+#if defined(NETWORK_ADAPTIVE_LATENCY_2) || defined(NETWORK_ADAPTIVE_LATENCY_3)
+        // ZZZ: this is the only spot we sample/adjust our adaptive_latency_2 (or 3): when we've received a valid ring packet.
         // We sample the server's required_action_flags (set to its SizeofLocalQueue before sent) as that should be a
         // good indicator of actual ring latency.
-        update_adaptive_latency(packet_data->required_action_flags);
+        update_adaptive_latency(packet_data->required_action_flags, packet_data->server_net_time);
 #endif
         
         // ZZZ: copy (byte-swapped) the action_flags into the unpacked buffer.
@@ -2703,8 +2728,9 @@ static void NetUpdateTopology(
 
 #if defined(NETWORK_ADAPTIVE_LATENCY) || defined(NETWORK_ADAPTIVE_LATENCY_2)
 // ZZZ addition: adaptive latency business.  measurement used only in adaptive_latency_2.
+// tick used only in adaptive_latency_3.
 static void
-update_adaptive_latency(int measurement) {
+update_adaptive_latency(int measurement, int tick) {
 
 #ifdef NETWORK_ADAPTIVE_LATENCY_2
     // Use the provided measurement
@@ -2754,6 +2780,48 @@ update_adaptive_latency(int measurement) {
     
 } // update_adaptive_latency
 #endif// NETWORK_ADAPTIVE_LATENCY || NETWORK_ADAPTIVE_LATENCY_2
+
+#ifdef NETWORK_ADAPTIVE_LATENCY_3
+// ZZZ addition: adaptive latency business.
+static void
+update_adaptive_latency(int measurement, int tick) {
+        // Ignore samples from old packets that may show up; also bail if user doesn't love us
+        if(tick <= sGreatestRecentLatencyTick || !network_preferences->adapt_to_latency)
+                return;
+
+        // Update our measurements etc.
+        if(measurement > sGreatestRecentLatencyMeasurement)
+        {
+                sSecondGreatestRecentLatencyMeasurement = sGreatestRecentLatencyMeasurement;
+                sGreatestRecentLatencyMeasurement = measurement;
+                sGreatestRecentLatencyTick = tick;
+        }
+        else if(measurement == sGreatestRecentLatencyMeasurement)
+        {
+                sGreatestRecentLatencyTick = tick;
+        }
+        else if(measurement > sSecondGreatestRecentLatencyMeasurement)
+        {
+                sSecondGreatestRecentLatencyMeasurement = measurement;
+        }
+
+        // If it's been long enough since we've seen our current greatest, fall back to second-greatest
+        if(tick - sGreatestRecentLatencyTick > network_preferences->latency_hold_ticks)
+        {
+                sGreatestRecentLatencyTick = tick;
+                sGreatestRecentLatencyMeasurement = sSecondGreatestRecentLatencyMeasurement;
+                sSecondGreatestRecentLatencyMeasurement = 0;
+        }
+
+        int theNewAdaptiveLatency = min(sGreatestRecentLatencyMeasurement, MAXIMUM_UPDATES_PER_PACKET);
+
+        if(sCurrentAdaptiveLatency != theNewAdaptiveLatency)
+        {
+                logDump2("tick %d: setting adaptive latency to %d", tick, theNewAdaptiveLatency);
+                sCurrentAdaptiveLatency = theNewAdaptiveLatency;
+        }
+}
+#endif // NETWORK_ADAPTIVE_LATENCY_3
 
 
 // This function does two things. It changes the upring address to be the upring address
@@ -3170,8 +3238,8 @@ long NetGetNetTime(
     // (later) Took that back out.  It did make play nicely responsive, but opened us up wide to latency and jitter.
     // I hope adaptive_latency_2 will be the final meddling with this stuff.
 //    return status->localNetTime;
-#ifdef NETWORK_ADAPTIVE_LATENCY_2
-    // This is it - this is the only place sCurrentAdaptiveLatency has any effect in adaptive_latency_2.
+#if defined(NETWORK_ADAPTIVE_LATENCY_2) || defined(NETWORK_ADAPTIVE_LATENCY_3)
+    // This is it - this is the only place sCurrentAdaptiveLatency has any effect in adaptive_latency_2 (or 3).
     // The effect is to get the game engine to drain the player_queues more smoothly than they would
     // if we returned status_localNetTime.
     // Later: adding 1 in an effort to decrease lag (is this a good idea?)
