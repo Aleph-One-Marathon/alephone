@@ -1204,6 +1204,18 @@ each of them has the actual shape value specified with a
 <a href="#shape">shape</a> child element.
 <p>
 
+Some notes on the flags:
+<p>
+
+"Animated" isn't really used by the engine;
+the engine reads the animations off of the sequences without reference to it.
+<p>
+
+"Destroyable" is not meaningful unless the object is also "solid";
+this is because a projectile must collide with the object in order to destroy it.
+Thus, a solid but indestructible object would get flags="1",
+and a destroyable one would get flags="5".
+<p>
 
 The index is which one of these scenery-object types:
 <ol type=1 start=1000>
