@@ -37,6 +37,10 @@ Jul 8, 2000 (Loren Petrich):
 	Added support for OpenGL rendering;
 	in these routines, it's the global flag OGL_MapActive,
 	which indicates whether to do so in the overhead map
+
+Jul 16, 2000 (Loren Petrich):
+	Added begin/end pairs for polygons and lines,
+	so that caching of them can be more efficient (important for OpenGL)
 */
 
 #include "macintosh_cseries.h"
@@ -267,12 +271,25 @@ static void generate_false_automap(short polygon_index);
 static long false_automap_cost_proc(short source_polygon_index, short line_index, short destination_polygon_index, void *caller_data);
 static void replace_real_automap(void);
 
+// Begins and ends are LP additions
+
+static void begin_overhead_polygons();
+static void end_overhead_polygons();
 static void draw_overhead_polygon(short vertex_count, short *vertices, short color, short scale);
+
+static void begin_overhead_lines();
+static void end_overhead_lines();
 static void draw_overhead_line(short line_index, short color, short scale);
+
 static void draw_overhead_player(world_point2d *center, angle facing, short color, short scale);
 static void draw_overhead_thing(world_point2d *center, angle facing, short color, short scale);
 static void draw_overhead_annotation(world_point2d *location, short color, char *text, short scale);
 static void draw_map_name(struct overhead_map_data *data, char *name);
+
+// LP addition: for drawing monster paths:
+// Draws to next point; starts if "step" is zero / Finishes drawing a path
+static void DrawPath(short step, world_point2d &location);
+static void FinishPath();
 
 /* ---------- machine-specific code */
 
@@ -299,7 +316,7 @@ void _render_overhead_map(
 	if (data->mode==_rendering_checkpoint_map) generate_false_automap(data->origin_polygon_index);
 	
 	transform_endpoints_for_overhead_map(data);
-
+	
 #if 0	
 	RgnHandle old_clip, new_clip;
 	Rect bounds;
@@ -313,6 +330,9 @@ void _render_overhead_map(
 	RectRgn(new_clip, &bounds);
 	SetClip(new_clip);
 #endif
+
+	// LP addition
+	begin_overhead_polygons();
 	
 	/* shade all visible polygons */
 	for (i=0;i<dynamic_world->polygon_count;++i)
@@ -379,6 +399,12 @@ void _render_overhead_map(
 			}
 		}
 	}
+
+	// LP addition
+	end_overhead_polygons();
+
+	// LP addition
+	begin_overhead_lines();
 	
 	/* draw all visible lines */
 	for (i=0;i<dynamic_world->line_count;++i)
@@ -421,6 +447,9 @@ void _render_overhead_map(
 			if (line_color!=NONE) draw_overhead_line(i, line_color, scale);
 		}
 	}
+
+	// LP addition
+	end_overhead_lines();
 	
 	/* print all visible tags */
 	if (scale!=OVERHEAD_MAP_MINIMUM_SCALE)
@@ -468,6 +497,8 @@ void _render_overhead_map(
 					// step ? LineTo(location.x, location.y) : MoveTo(location.x, location.y);
 				}
 			}
+			// LP addition: indicate when a path is complete
+			FinishPath();
 		}
 	}
 
