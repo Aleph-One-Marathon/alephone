@@ -1,4 +1,4 @@
- The project file is a CodeWarrior 4 one, and the 68K and FAT targets have been removed
+The project file is a CodeWarrior 4 one, and the 68K and FAT targets have been removed
 because I was too lazy to change the target every time. However, it should be easy to add
 such targets if one so desires.
 
@@ -1211,3 +1211,56 @@ in that department, especially in the directory walking.
 Also, the shapes and sounds have been converted from handles to pointers, thus eliminating
 a certain MacOS dependency. I expect to be able to clean out most of shapes_macintosh.c
 and sound_macintosh.c before too long.
+
+August 20, 2000
+
+Got up-to-date with the first of Christian Bauer's changes, and flattened the inheritance
+hierarchy of the file-handler objects. CB proposes making platform-specific stuff selectable
+with preprocessor statements.
+
+August 23, 2000
+
+Decided to commit what I'd done so far. I'm almost done abstracting the resource-fork stuff,
+and the main file stuff remaining undone is abstraction of the directory-walking code
+and the getting of the data.
+
+August 24, 2000
+
+Put in asynchronous write dialog box for saving games;
+this is the dialog-box code in the original game, which had been temporarily
+left behind when abstracting the filesystem.
+
+August 25, 2000
+
+Got set_map_file() and load_level_from_map() in game_wad.c
+to ignore errors set in game_errors.c/h.
+
+Tracking down file-search bugs. Fixed them -- they were some bugs in wad-header-reading code.
+Continuing the file abstraction; it is now reaching into file-finding.
+
+I've eradicated portable_files.h and files_macintosh.c from the working codebase.
+Still must check for any GetSpecs() that are not absolutely necessary.
+
+August 27, 2000
+
+Abstraction of the files code is essentially complete; the only thing that remains is
+abstraction of loading and saving of flattened/serialized file specifications.
+
+Discovered that Christian Bauer's endianness-handling code would f*** up some of the read-in
+data. Am replacing it with more reasonable such code, and of using asserts to check against
+his SIZEOF symbolic constants.
+
+Also created some template functions (smart macros) in byte_swapping.h;
+these are wrappers for byte_swap_data: byte_swap_object and byte_swap_object_list
+
+portable_files.h and files_macintosh.h are now obsolete.
+
+August 28, 2000
+
+Added images and preferences filetype names to marathon2.resource's 'FTyp' resource
+by editing its template in TMPL.
+
+Started putting in packing and unpacking routines, beginning in wad.cpp. Which is now complete.
+Moving on to game_wad.c, with the map and the physics stuff.
+
+
