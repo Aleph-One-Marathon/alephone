@@ -1,0 +1,60 @@
+April 16, 2000
+	Added files ISp_Support.c and ISp_Support.h to provide input sprockets.
+	
+Current version:
+	Input Sprockets is always enabled unless it is not available or Mouse and Keyboard is the
+	selected method of input.
+	
+	InputSprockets only is currently disabled because when the keyboard is treated as an Input
+	Sprockets Device, the rest of the game cannot recieve keyboard events such as cmd+Q.
+	
+	
+Changed files:
+	preferences.c
+	shell.c and shell.h
+	vbl.c
+	vbl_macintosh.c
+	marathon2.resource
+
+Comments:			
+preferences.c
+	
+	Modification:
+			preferences->input_device= GLOBAL_TO_LOCAL_DITL(item_hit, first_item)==iMOUSE_CONTROL ?
+					_mouse_yaw_pitch : _keyboard_or_game_pad;
+				
+		changed to:
+			preferences->input_device= GLOBAL_TO_LOCAL_DITL(item_hit, first_item)==iMOUSE_CONTROL ?
+				_mouse_yaw_pitch : (GLOBAL_TO_LOCAL_DITL(item_hit, first_item)==iINPUT_SPROCKET_CONTROL ? 
+				_input_sprocket_only : _keyboard_or_game_pad);
+		reason:
+			change preference option of which input method is selected
+			
+	Modification:
+				which = (preferences->input_device == _mouse_yaw_pitch) ? iMOUSE_CONTROL : iKEYBOARD_CONTROL;
+					modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
+					LOCAL_TO_GLOBAL_DITL(iKEYBOARD_CONTROL, first_item), 
+					LOCAL_TO_GLOBAL_DITL(which, first_item));
+					
+		changed to:
+				which = (preferences->input_device == _mouse_yaw_pitch) ? iMOUSE_CONTROL : (preferences->input_device == _input_sprocket_only ? iINPUT_SPROCKET_CONTROL : iKEYBOARD_CONTROL);
+					modify_radio_button_family(dialog, LOCAL_TO_GLOBAL_DITL(iMOUSE_CONTROL, first_item), 
+					LOCAL_TO_GLOBAL_DITL(iINPUT_SPROCKET_CONTROL, first_item), 
+					LOCAL_TO_GLOBAL_DITL(which, first_item));
+					
+shell.c and shell.h
+	Added an initiliation command at the game startup
+	Added a shutdown command at the end
+	Added an input type _input_sprocket_only to the related enum
+	
+vbl.c
+	Added commands to suspend and resume input sprockets when the keyboard controller changes.  The function
+	is generally used to tell the game when it is getting keystrokes for gameplay.
+	
+vbl_macintosh.c
+	Added commands to get actionflags from the Input Sprocket devices
+	Added conditions to prevent Input Sprockets and the mouse to be active at the same time
+	Added condition to prevent keymap parsing when it is set to Input Sprockets only (This is not used right now)
+
+marathon2.resource
+	Changed the Input DITL to add an InputSprocket Config button.
