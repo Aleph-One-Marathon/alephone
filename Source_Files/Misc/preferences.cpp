@@ -28,6 +28,10 @@ May 16, 2002 (Woody Zenfell):
     Added UI/preferences elements for configurable mouse sensitivity
     Support for "don't auto-recenter" behavior modifier
     Routines to let other code disable/reenable/query behavior modification
+   
+Jul 21, 2002 (Loren Petrich):
+	AS had added some code to fix the OSX preferences behavior;
+	I modified it so that it would not be used in the Classic version
 */
 
 /*
@@ -231,7 +235,7 @@ void initialize_preferences(
 		FileSpecifier FileSpec;
 
 #if defined(mac)
-#ifdef __MACH__
+#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
             chdir(getenv("HOME"));
             chdir("./Library/Preferences/");
 #endif
@@ -335,12 +339,14 @@ void write_preferences(
 	// Mac stuff: save old default directory
 	short OldVRefNum;
 	long OldParID;
+#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
         //AS: evil hack since HSetVol doesn't affect fopen() on OS X, so we fopen an absolute path
         char str[257] = "";
         strcat(str,getenv("HOME"));
         strcat(str,"/Library/Preferences/");
         strcat(str,getcstr(temporary, strFILENAMES, filenamePREFERENCES));
         printf("%s\n",str);
+#endif
 	HGetVol(nil,&OldVRefNum,&OldParID);
 	
 	// Set default directory to prefs directory
@@ -349,7 +355,7 @@ void write_preferences(
 	if (HSetVol(nil, FileSpec.GetSpec().vRefNum, FileSpec.GetSpec().parID) != noErr) return;
     
 	// Open the file
-#ifdef __MACH__
+#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
         FILE *F = fopen(str,"w");
 #else
         FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
