@@ -434,7 +434,7 @@ void update_interface(
 		// (may need some smart way of drawing only what has to be drawn)
 		if (ForceUpdate)
 		{
-			DrawBufferedHUD();
+			RequestDrawingHUD();
 		}
 	}
 

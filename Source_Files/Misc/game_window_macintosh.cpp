@@ -76,7 +76,7 @@ void draw_panels(
 	/* Note that you don't get here if the picture failed.. */
 	// LP addition: redirecting the HUD drawing to its own buffer
 	// if that buffer is available
-	DrawBufferedHUD();
+	RequestDrawingHUD();
 	/*
 	{
 		GrafPtr old_port;
