@@ -459,9 +459,8 @@ bool network_join(
 #if defined(TARGET_API_MAC_CARBON)
 						CopyPascalStringToC(ptemporary, sJoinHintingAddress);
 #else
-						int len = ptemporary[0];
-						memcpy(sJoinHintingAddress,ptemporary+1,len);
-						sJoinHintingAddress[len] = 0;
+						pstrcpy((unsigned char *)sJoinHintingAddress, ptemporary); 
+						p2cstr((unsigned char *)sJoinHintingAddress);
 #endif
 					}
 					else
@@ -960,7 +959,7 @@ found_player_callback(const SSLP_ServiceInstance* player)
 #if defined(TARGET_API_MAC_CARBON)
 	GetListDataBounds(network_list_box, &bounds);
 #else
-	(*network_list_box)->dataBounds = bounds;
+	bounds = (*network_list_box)->dataBounds;
 #endif
 	theIndex = bounds.bottom + 1;
 	LAddRow(1, theIndex, network_list_box);
@@ -1465,10 +1464,14 @@ static pascal void update_player_list_item(
 
 	GetPort(&old_port);
 	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+	
 #if defined(TARGET_API_MAC_CARBON)
 	GetThemeDrawingState(&savedState);
+#endif
 	
 	GetDialogItem(dialog, item_num, &item_type, &item_handle, &item_rect);
+	
+#if defined(TARGET_API_MAC_CARBON)
 	DrawThemePrimaryGroup (&item_rect, curState);
 #endif
 	
@@ -1493,6 +1496,7 @@ static pascal void update_player_list_item(
 #if defined(TARGET_API_MAC_CARBON)
 	SetThemeDrawingState(savedState, true);
 #endif
+	
 	SetPort(old_port);
 }
 
