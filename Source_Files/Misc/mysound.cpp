@@ -97,6 +97,9 @@ Sep 23, 2000 (Loren Petrich):
 
 Oct 14, 2000 (Loren Petrich):
 	Added music-volume stuff
+
+Apr 8, 2001 (Loren Petrich):
+	Added support for loading external sounds
 */
 
 /*
@@ -112,6 +115,7 @@ shortening radii on low-volume ambient sound sorces would be a good idea
 
 #ifdef mac
 #include <Gestalt.h>
+#include <Movies.h>
 #endif
 
 #include "shell.h"
@@ -170,6 +174,65 @@ enum /* channel flags */
 
 /* ---------- structures */
 
+
+// Handling of loaded external-file sounds:
+struct LoadedSound
+{
+
+	// Loaded-sound object
+#ifdef mac
+	Movie QTSnd;
+#endif
+	
+	LoadedSound()
+	{
+#ifdef mac
+		QTSnd = NULL;
+#endif
+	}
+
+	~LoadedSound() {Unload();}
+
+	// These functions return whether the operation succeeded or failed,
+	// with the exceptions being the "is" functions.
+
+	bool Load(FileSpecifier& File);
+	bool Unload();
+	bool IsLoaded();
+	
+	// Note, the pitch multiplier is in fixed-integer units (FIXED_ONE = 1.0)
+	bool Play(_fixed Pitch);
+	bool Stop();
+	bool IsPlaying();
+	
+	// Necessary for classic MacOS; real OSes like MacOS X ought not to need this
+	bool Update();
+};
+
+
+// Sound-options stuff:
+struct SoundOptions
+{
+	vector<char> File;
+	
+	LoadedSound Sound;
+};
+
+
+struct SoundOptionsEntry
+{
+	short Index;
+	short Slot;
+	SoundOptions OptionsData;
+};
+
+
+// Get the sound-options record for a sound index and a sound slot (or permutation)
+// Will return NULL if there is no such record;
+// use the native-Marathon soundfile for the sound and use the bare MacOS Sound Manager
+static SoundOptions *GetSoundOptions(short Index, short Slot);
+
+
 struct sound_variables
 {
 	short volume, left_volume, right_volume;
@@ -193,6 +256,7 @@ struct channel_data
 
 #if defined(mac)
 	SndChannelPtr channel;
+	LoadedSound *SndPtr;	// For external-file sounds; set whenever a sound is active
 #elif defined(SDL)
 	void *channel;
 #endif
@@ -219,6 +283,7 @@ struct sound_manager_globals
 #endif
 };
 
+
 /* ---------- globals */
 
 static bool _sm_initialized, _sm_active;
@@ -232,6 +297,22 @@ static OpenedFile SoundFile;
 /* include globals */
 #include "sound_definitions.h"
 
+// List of sound-options records
+// and a hash table for them
+static vector<SoundOptionsEntry> SOList;
+static vector<int16> SOHash;
+
+// Hash table for sounds
+const int SOHashSize = 1 << 8;
+const int SOHashMask = SOHashSize - 1;
+inline uint8 SOHashFunc(short Index, short Slot)
+{
+	// This function will avoid collisions when accessing sounds with the same index
+	// and different slots (permutations)
+	return (uint8)(Index ^ (Slot << 4));
+}
+
+// List of sounds
 
 // Extra formerly-hardcoded sounds and their accessors; this is done for M1 compatibility:
 
@@ -520,6 +601,21 @@ void sound_manager_idle_proc(
 		unlock_locked_sounds();
 		track_stereo_sounds();
 		cause_ambient_sound_source_update();
+		
+#ifdef mac
+		// Update QuickTime-played sounds
+		for (int ic = 0; ic<MAXIMUM_SOUND_CHANNELS+MAXIMUM_AMBIENT_SOUND_CHANNELS; ++ic)
+		{
+			LoadedSound *SndPtr = _sm_globals->channels[ic].SndPtr;
+			if (!SndPtr) continue;
+			if (!SndPtr->Update()) continue;
+			if (!SndPtr->IsPlaying())
+			{
+				// Blank out inactive sound
+				_sm_globals->channels[ic].SndPtr = NULL;
+			}
+		}	
+#endif
 	}
 	
 	return;
@@ -1502,6 +1598,50 @@ static void add_one_ambient_sound_source(
 }
 
 
+// Get the sound-options record for a sound index and a sound slot (or permutation)
+// Will return NULL if there is no such record;
+// use the native-Marathon soundfile for the sound and use the bare MacOS Sound Manager
+SoundOptions *GetSoundOptions(short Index, short Slot)
+{
+
+	// Initialize the hash table if necessary
+	if (SOHash.empty())
+	{
+		SOHash.resize(SOHashSize);
+		objlist_set(&SOHash[0],NONE,SOHashSize);
+	}
+	
+	// Set up a *reference* to the appropriate hashtable entry
+	int16& HashVal = SOHash[SOHashFunc(Index,Slot)];
+	
+	// Check to see if the sound-option entry is correct;
+	// if it is, then we're done.
+	if (HashVal != NONE)
+	{
+		vector<SoundOptionsEntry>::iterator SOIter = SOList.begin() + HashVal;
+		if (SOIter->Index == Index && SOIter->Slot == Slot)
+		{
+			return &SOIter->OptionsData;
+		}
+	}
+	
+	// Fallback for the case of a hashtable miss;
+	// do a linear search and then update the hash entry appropriately.
+	int16 Indx = 0;
+	for (vector<SoundOptionsEntry>::iterator SOIter = SOList.begin(); SOIter < SOList.end(); SOIter++, Indx++)
+	{
+		if (SOIter->Index == Index && SOIter->Slot == Slot)
+		{
+			HashVal = Indx;
+			return &SOIter->OptionsData;
+		}
+	}
+	
+	// None found
+	return NULL;
+}
+
+
 // XML elements for parsing sound specifications;
 // this is currently what ambient and random sounds are to be used
 
@@ -1601,6 +1741,111 @@ static XML_AmbientRandomAssignParser
 	RandomSoundAssignParser("random",XML_AmbientRandomAssignParser::Random);
 
 
+
+class XML_SO_ClearParser: public XML_ElementParser
+{
+public:
+	bool Start();
+
+	XML_SO_ClearParser(): XML_ElementParser("sound_clear") {}
+};
+
+bool XML_SO_ClearParser::Start()
+{
+	// Clear the list
+	SOList.clear();
+	return true;
+}
+
+
+static XML_SO_ClearParser SO_ClearParser;
+
+
+class XML_SoundOptionsParser: public XML_ElementParser
+{
+	bool IndexPresent;
+	short Index, Slot;
+	
+	SoundOptions Data;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	XML_SoundOptionsParser(): XML_ElementParser("sound") {}
+};
+
+bool XML_SoundOptionsParser::Start()
+{
+	IndexPresent = false;
+	Index = NONE;
+	Slot = 0;			// Default: first slot
+	Data.File.clear();	// Default: no file
+	
+	return true;
+}
+
+bool XML_SoundOptionsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"index") == 0)
+	{
+		if (ReadNumericalValue(Value,"%hd",Index))
+		{
+			IndexPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"slot") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Slot,short(0),short(MAXIMUM_PERMUTATIONS_PER_SOUND-1)));
+	}
+	else if (strcmp(Tag,"file") == 0)
+	{
+		int nchars = strlen(Value)+1;
+		Data.File.resize(nchars);
+		memcpy(&Data.File[0],Value,nchars);
+		return true;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_SoundOptionsParser::AttributesDone()
+{
+	// Verify...
+	if (!IndexPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	// Check to see if a frame is already accounted for
+	for (vector<SoundOptionsEntry>::iterator SOIter = SOList.begin(); SOIter < SOList.end(); SOIter++)
+	{
+		if (SOIter->Index == Index && SOIter->Slot == Slot)
+		{
+			// Replace the data
+			SOIter->OptionsData = Data;
+			return true;
+		}
+	}
+	
+	// If not, then add a new frame entry
+	SoundOptionsEntry DataEntry;
+	DataEntry.Index = Index;
+	DataEntry.Slot = Slot;
+	DataEntry.OptionsData = Data;
+	SOList.push_back(DataEntry);
+	
+	return true;
+}
+
+static XML_SoundOptionsParser SoundOptionsParser;
+
+
+
 // Subclassed to set the sounds appropriately
 class XML_SoundsParser: public XML_ElementParser
 {
@@ -1673,6 +1918,8 @@ XML_ElementParser *Sounds_GetParser()
 {
 	SoundsParser.AddChild(&AmbientSoundAssignParser);
 	SoundsParser.AddChild(&RandomSoundAssignParser);
+	SoundsParser.AddChild(&SoundOptionsParser);
+	SoundsParser.AddChild(&SO_ClearParser);
 	
 	return &SoundsParser;
 }

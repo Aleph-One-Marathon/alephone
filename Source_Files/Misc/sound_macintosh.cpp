@@ -124,6 +124,7 @@ static void set_sound_manager_status(
 					obj_clear(*(channel->channel));
 					channel->channel->qLength= stdQLength;
 					channel->channel->userInfo= (long) &channel->callback_count;
+					channel->SndPtr = NULL;
 
 					error= SndNewChannel(&channel->channel, sampledSynth, (_sm_parameters->flags&_stereo_flag) ? initStereo : initMono,
 						_sm_globals->sound_callback_upp);
@@ -317,19 +318,7 @@ static bool channel_busy(
 static void unlock_sound(
 	short sound_index)
 {
-	// LP: don't need this anymore
-	/*
-	struct sound_definition *definition= get_sound_definition(sound_index);
-	// LP change: idiot-proofing
-	if (!definition) return;
-	
-	assert(definition->handle);
-	
-	if (definition->handle)
-	{
-		HUnlock((Handle)definition->handle);
-	}
-	*/
+	// LP: nlocking a sound handle is now superfluous
 	return;
 }
 
@@ -346,13 +335,6 @@ static void dispose_sound(
 	delete []definition->ptr;
 	definition->ptr = NULL;
 	definition->size = 0;
-	/*	
-	assert(definition->handle);
-	
-	_sm_globals->loaded_sounds_size-= GetHandleSize((Handle)definition->handle);
-	DisposeHandle((Handle)definition->handle);
-	definition->handle= 0;
-	*/
 	
 	return;
 }
@@ -367,6 +349,30 @@ static byte *read_sound_from_file(
 	// LP change: idiot-proofing
 	size = 0;
 	if (!definition) return NULL;
+	
+	// Load all the external-file sounds for each index; fill the slots appropriately.
+	// Don't lokad any of them is QuickTime is not present.
+	int NumSlots = (_sm_parameters->flags&_more_sounds_flag) ? definition->permutations : 1;
+	if (!machine_has_quicktime()) NumSlots = 0;
+	for (int k=0; k<NumSlots; k++)
+	{
+		FileSpecifier File;
+		SoundOptions *SndOpts = GetSoundOptions(sound_index,k);
+		if (!SndOpts) continue;
+		
+		try
+		{
+			// Load only if necessary
+			if (!SndOpts->Sound.IsLoaded()) throw 0;
+#ifdef mac
+			if (!File.SetToApp()) throw 0;
+#endif
+			if (!File.SetNameWithPath(&SndOpts->File[0])) throw 0;
+			if (!SndOpts->Sound.Load(File)) throw 0;
+		}
+		catch(...)
+		{}
+	}
 	
 	bool success= false;
 	byte *data= NULL;
@@ -396,36 +402,6 @@ static byte *read_sound_from_file(
 				data = NULL;
 				error = SoundFile.GetError();
 			}
-		
-		/*
-		if ((data= NewHandle(size))!=NULL)
-		{
-			ParamBlockRec param;
-			
-			HLock(data);
-			
-			param.ioParam.ioCompletion= (IOCompletionUPP) NULL;
-			param.ioParam.ioRefNum= SoundFile.RefNum;
-			// param.ioParam.ioRefNum= _sm_globals->sound_file_refnum;
-			param.ioParam.ioBuffer= *data;
-			param.ioParam.ioReqCount= size;
-			param.ioParam.ioPosMode= fsFromStart;
-			param.ioParam.ioPosOffset= definition->group_offset;
-			
-			error= PBReadSync(&param);
-			if (error==noErr)
-			{
-				HUnlock(data);
-				
-				_sm_globals->loaded_sounds_size+= size;
-			}
-			else
-			{
-				DisposeHandle(data);
-				
-				data= NULL;
-			}
-			*/
 		}
 		else
 		{
@@ -443,6 +419,15 @@ static byte *read_sound_from_file(
 static void quiet_channel(
 	struct channel_data *channel)
 {
+	// If loaded sound had been active, shut it up
+	LoadedSound *SndPtr = channel->SndPtr;
+	if (SndPtr)
+	{
+		SndPtr->Stop();
+		channel->SndPtr = NULL;
+		return;
+	}
+	
 	SndCommand command;
 	OSErr error;
 	
@@ -498,19 +483,34 @@ static void buffer_sound(
 	struct sound_definition *definition= get_sound_definition(sound_index);
 	// LP change: idiot-proofing
 	if (!definition) return;
-
+	
 	short permutation= get_random_sound_permutation(sound_index);
+	
+	// Handle externally-loaded sound
+	LoadedSound *SndPtr = channel->SndPtr;
+	if (SndPtr)
+	{
+		SndPtr->Stop();
+		SndPtr = NULL;
+	}
+	
+	SoundOptions *SndOpts = GetSoundOptions(sound_index,permutation);
+	if (SndOpts)
+	{
+		SndPtr = &SndOpts->Sound;
+		channel->SndPtr = SndPtr;
+		SndPtr->Play(calculate_pitch_modifier(sound_index, pitch));
+		return;
+	}
+	
 	SoundHeaderPtr sound_header;
 	SndCommand command;
 	OSErr error;
 
 	assert(definition->ptr);
-	// assert(definition->handle);
-	// HLock((Handle)definition->handle);
 	
 	assert(permutation>=0 && permutation<definition->permutations);
 	sound_header= (SoundHeaderPtr) (definition->ptr + definition->sound_offsets[permutation]);
-	// sound_header= (SoundHeaderPtr) ((*(byte **)definition->handle) + definition->sound_offsets[permutation]);
 
 	/* play the sound */
 	command.cmd= bufferCmd; /* high bit not set: we’re sending a real pointer */
@@ -640,3 +640,74 @@ static synchronous_global_fade_to_silence(
 	return;
 }
 #endif
+
+
+// LP additions: QuickTime sound handling
+	
+bool LoadedSound::Load(FileSpecifier& File)
+{
+	Unload();
+	
+	OSErr Err;
+	short RefNum;
+	short ResID = 0;	// Only use the first resource
+	Boolean WasChanged;
+	Err = OpenMovieFile(&File.GetSpec(), &RefNum, fsRdPerm);
+	if (Err != noErr) return false;
+	Err = NewMovieFromFile(&QTSnd, RefNum, &ResID, NULL, newMovieActive, &WasChanged);
+	CloseMovieFile(RefNum);
+	if (Err != noErr) return false;
+	
+	// Want the sound to be ready to go when it's time to play
+	PrerollMovie(QTSnd,0,FIXED_ONE);
+	
+	return true;
+}
+
+bool LoadedSound::Unload()
+{
+	if (!QTSnd) return true;
+	
+	DisposeMovie(QTSnd);
+	QTSnd = NULL;
+	return true;
+}
+
+bool LoadedSound::IsLoaded()
+{
+	return (QTSnd != NULL);
+}
+
+bool LoadedSound::Play(_fixed Pitch)
+{
+	if (!QTSnd) return false;
+	
+	SetMovieRate(QTSnd,Pitch);
+	
+	GoToBeginningOfMovie(QTSnd);
+	StartMovie(QTSnd);
+	return true;
+}
+
+bool LoadedSound::Stop()
+{
+	if (!QTSnd) return false;
+	
+	StopMovie(QTSnd);
+	return true;
+}
+
+bool LoadedSound::IsPlaying()
+{
+	if (!QTSnd) return false;
+	
+	return !IsMovieDone(QTSnd);
+}
+
+bool LoadedSound::Update()
+{
+	if (!QTSnd) return false;
+	
+	MoviesTask(QTSnd,0);
+	return true;
+}
