@@ -120,7 +120,8 @@ enum {
 #if HAVE_SDL_NET
 /* SDL/TCP hinting info. JTP: moved here from network_dialogs_sdl.cpp */
 enum {
-    kJoinHintingAddressLength = 64
+    kJoinHintingAddressLength = 64,
+    kMaximumRecentAddresses = 16
 };
 
 extern bool sUserWantsJoinHinting;
@@ -170,7 +171,9 @@ enum {
 	iJOIN_NETWORK_TYPE= 13,
 	iJOIN_BY_HOST = 14,
 	iJOIN_BY_HOST_LABEL,
-	iJOIN_BY_HOST_ADDRESS
+	iJOIN_BY_HOST_ADDRESS,
+	iJOIN_BY_HOST_RECENT_LABEL,
+	iJOIN_BY_HOST_RECENT
 };
 
 enum {
@@ -315,6 +318,8 @@ struct NetgameJoinData
 	ControlRef ByHost_Ctrl;
 	ControlRef ByHost_LabelCtrl;
 	ControlRef ByHost_AddressCtrl;
+	ControlRef ByHost_RecentLabelCtrl;
+	ControlRef ByHost_RecentCtrl;
 	
 	ControlRef CancelCtrl;
 	ControlRef JoinCtrl;
@@ -343,7 +348,6 @@ struct NetgameOutcomeData
 
 /* ---------------------- globals */
 extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
-
 
 
 /* ---------------------- prototypes */
@@ -501,6 +505,27 @@ void NetgameSetup_Extract(
 	bool allow_all_levels,
 	bool ResumingGame
 	);
+
+#endif
+
+
+#ifdef HAVE_SDL_NET
+
+// For manipulating the list of recent host addresses:
+
+// Sets it to empty, of course
+void ResetHostAddresses_Reset();
+
+// Returns whether adding an address could be done
+// without knocking an existing address off the list
+bool RecentHostAddresses_Add(const char *Address);
+
+// Start iterating over it
+void RecentHostAddresses_StartIter();
+
+// Returns the next member in sequence;
+// if it ran off the end, then it returns NULL
+char *RecentHostAddresses_NextIter();
 
 #endif
 

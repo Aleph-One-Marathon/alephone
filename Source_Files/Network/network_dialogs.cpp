@@ -71,9 +71,26 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"network_games.h"
 #include    "player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
 
+
+#ifdef HAVE_SDL_NET
+
+// For the recent host addresses
+#include <list>
+
+struct HostName_Type
+{
+	// C string
+	char Name[kJoinHintingAddressLength+1];
+};
+
+static list<HostName_Type> RecentHostAddresses;
+static list<HostName_Type>::iterator RHAddrIter = RecentHostAddresses.end();
+
+#endif
+
+
 static uint16 get_dialog_game_options(DialogPtr dialog, short game_type);
 static void set_dialog_game_options(DialogPtr dialog, uint16 game_options);
-
 
 #ifdef USES_NIBS
 
@@ -1955,3 +1972,87 @@ void get_net_color(
 			break;
 	}
 }
+
+
+#ifdef HAVE_SDL_NET
+
+// For manipulating the list of recent host addresses:
+
+// Sets it to empty, of course
+void ResetHostAddresses_Reset()
+{
+	RecentHostAddresses.clear();
+	RHAddrIter = RecentHostAddresses.end();
+}
+
+// Returns whether doing so knocked an existing address off the list
+bool RecentHostAddresses_Add(const char *Address)
+{
+	// How many addresses
+	int NumAddresses = 0;
+	
+	// Iterator value for old value to be removed; set to "none"
+	list<HostName_Type>::iterator OldAddrIter = RecentHostAddresses.end();
+	
+	// Check if the new address is present and add up
+	for(RHAddrIter = RecentHostAddresses.begin();
+		RHAddrIter != RecentHostAddresses.end();
+			RHAddrIter++, NumAddresses++)
+	{
+		if (strncmp(RHAddrIter->Name, Address, kJoinHintingAddressLength) == 0)
+			OldAddrIter = RHAddrIter;
+	}
+	
+	// If it is already present, then delete!
+	if (OldAddrIter != RecentHostAddresses.end())
+	{
+		RecentHostAddresses.erase(OldAddrIter);
+		NumAddresses--;
+	}
+	
+	// Remove extra ones from the back
+	bool NoneRemoved = true;
+	while(NumAddresses >= kMaximumRecentAddresses)
+	{
+		RecentHostAddresses.pop_back();
+		NumAddresses--;
+		NoneRemoved = false;
+	}
+	
+	// Add to the front
+	HostName_Type NewAddress;
+	strncpy(NewAddress.Name,Address,kJoinHintingAddressLength);
+	NewAddress.Name[kJoinHintingAddressLength] = 0;
+	
+	RecentHostAddresses.push_front(NewAddress);
+	
+	// Set to no more iteration to be done
+	RHAddrIter = RecentHostAddresses.end();
+	
+	return NoneRemoved;
+}
+
+// Start iterating over it
+void RecentHostAddresses_StartIter()
+{
+	// Start the iterations
+	RHAddrIter = RecentHostAddresses.begin();
+}
+
+// Returns the next member in sequence;
+// if it ran off the end, then it returns NULL
+char *RecentHostAddresses_NextIter()
+{
+	char *Addr = NULL;
+	
+	if (RHAddrIter != RecentHostAddresses.end())
+	{
+		Addr = RHAddrIter->Name;
+		RHAddrIter++;
+	}
+	
+	return Addr;
+}
+
+#endif
+

@@ -655,6 +655,26 @@ bool network_gather(bool inResumingGame)
 
 #ifdef USES_NIBS
 
+static bool RecentHostAddressMenuBuilder(
+	int indx, Str255 ItemName, bool &ThisIsInitial, void *Data)
+{
+	// First one is one selected
+	ThisIsInitial = (indx == 1);
+	
+	// Get the next address string;
+	// Be sure to call "_StartIter()" before calling this
+	char *Addr = RecentHostAddresses_NextIter();
+	
+	if (Addr)
+	{
+		CopyCStringToPascal(Addr,ItemName);
+		return true;
+	}
+	else
+		return false;
+}
+
+
 static pascal OSStatus Join_PlayerNameWatcher(
 	EventHandlerCallRef HandlerCallRef,
 	EventRef Event,
@@ -683,9 +703,25 @@ void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 	
 	int Value;
 	bool did_join;
+	char *Addr;
 
 	switch(Ctrl.ID.id)
 	{
+	case iJOIN_BY_HOST_RECENT:
+		// Set the current address string to the selected one
+		Value = GetControl32BitValue(Ctrl.Ctrl);
+		RecentHostAddresses_StartIter();
+		for (int k=0; k<Value; k++)
+			Addr = RecentHostAddresses_NextIter();
+		
+		if (Addr)
+		{
+			strcpy(network_preferences->join_address, Addr);
+			SetEditCText(Data.ByHost_AddressCtrl,Addr);
+			Draw1Control(Data.ByHost_AddressCtrl);
+		}
+		break;
+	
 	case iOK_SPECIAL:
 		// Try to join!
 		
@@ -706,6 +742,7 @@ void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 			if (ptemporary[0] > kJoinHintingAddressLength)
 				ptemporary[0] = kJoinHintingAddressLength;
 			CopyPascalStringToC(ptemporary, network_preferences->join_address);
+			RecentHostAddresses_Add(network_preferences->join_address);
 		}
 		else
 			network_preferences->join_by_address = false;
@@ -726,9 +763,11 @@ void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 			SetControlActivity(Data.ByHost_Ctrl, false);
 			SetControlActivity(Data.ByHost_LabelCtrl, false);
 			SetControlActivity(Data.ByHost_AddressCtrl, false);
+			SetControlActivity(Data.ByHost_RecentLabelCtrl, false);
+			SetControlActivity(Data.ByHost_RecentCtrl, false);
 			
 			SetControlActivity(Data.JoinCtrl, false);
-			
+						
 			// update preferences for user (Eat Gaseous Worms!)
 			pstrcpy(player_preferences->name, Data.myPlayerInfo.name);
 			player_preferences->team = Data.myPlayerInfo.team;
@@ -748,8 +787,10 @@ void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 		
 	case iJOIN_BY_HOST:
 		Value = GetControl32BitValue(Ctrl.Ctrl);
-		SetControlActivity(Data.ByHost_AddressCtrl, Value);
 		SetControlActivity(Data.ByHost_LabelCtrl, Value);
+		SetControlActivity(Data.ByHost_AddressCtrl, Value);
+		SetControlActivity(Data.ByHost_RecentLabelCtrl, Value);
+		SetControlActivity(Data.ByHost_RecentCtrl, Value);
 		
 		break;
 	}
@@ -894,7 +935,20 @@ int network_join(
 	CopyCStringToPascal(network_preferences->join_address, ptemporary);
 	SetEditPascalText(Data.ByHost_AddressCtrl, ptemporary);
 	SetControlActivity(Data.ByHost_AddressCtrl, network_preferences->join_by_address);
-		
+	
+	Data.ByHost_RecentLabelCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_RECENT_LABEL);
+	SetControlActivity(Data.ByHost_RecentLabelCtrl, network_preferences->join_by_address);
+	
+	Data.ByHost_RecentCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_RECENT);
+	SetControlActivity(Data.ByHost_RecentCtrl, network_preferences->join_by_address);
+	
+	// Add the most recently joined sites, earliest to latest
+	RecentHostAddresses_Add(network_preferences->join_address);
+	
+	// "_Startiter()" must be before the "_NextIter()"'s in the menu builder
+	RecentHostAddresses_StartIter();
+	BuildMenu(Data.ByHost_RecentCtrl, RecentHostAddressMenuBuilder);
+	
 	Data.CancelCtrl = GetCtrlFromWindow(Window(), 0, iCANCEL);
 	Data.JoinCtrl = GetCtrlFromWindow(Window(), 0, iOK_SPECIAL);
 	if (Data.myPlayerInfo.name[0] == 0) SetControlActivity(Data.JoinCtrl, false);
@@ -1519,7 +1573,7 @@ static bool EntryPointMenuBuilder(
 	ThisIsInitial = (MDPtr->level_index == MDPtr->default_level);
 	
 	if (UseThis)
-		psprintf(ItemName, "%d: %s",entry.level_number,entry.level_name);
+		psprintf(ItemName, "%s",entry.level_name);
 	
 	return UseThis;
 }
