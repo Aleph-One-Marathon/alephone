@@ -57,6 +57,8 @@ Sept 11, 2001 (Loren Petrich):
 #define MAXIMUM_RENDER_OBJECTS 72
 #define MAXIMUM_OBJECT_BASE_NODES 6
 
+#define CLIPPING_WINDOW_DEPTH_FUDGE_VALUE 100
+
 // For finding the 2D projection of the bounding box;
 // also finds other useful info
 static void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
@@ -685,7 +687,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 		short left, right, left_count, right_count;
 		short x0[MAXIMUM_OBJECT_BASE_NODES], x1[MAXIMUM_OBJECT_BASE_NODES]; /* sorted, left to right */
 		clipping_window_data *window;
-		world_distance depth= render_object->rectangle.depth;
+		world_distance depth= render_object->rectangle.depth + CLIPPING_WINDOW_DEPTH_FUDGE_VALUE;
 		
 		/* find the upper and lower bounds of the windows; we could do a better job than this by
 			doing the same thing we do when the windows are originally built (i.e., calculating a
