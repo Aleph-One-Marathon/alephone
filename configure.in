@@ -65,11 +65,12 @@ if [[ "x$enable_opengl" = "xyes" ]]; then
   if test x$have_opengl = xyes; then
     AC_DEFINE(HAVE_OPENGL)
     AC_CHECK_LIB(GLU, gluScaleImage, [SYS_GL_LIBS="$SYS_GL_LIBS -lGLU"], , $SYS_GL_LIBS)
-    AC_SUBST(SYS_GL_LIBS)
   else
     AC_MSG_WARN([Could not find OpenGL, ignoring --enable-opengl.])
+    SYS_GL_LIBS=
   fi
 fi
+AC_SUBST(SYS_GL_LIBS)
 
 dnl Generate Makefiles.
 AC_OUTPUT([
