@@ -963,7 +963,7 @@ static void handle_game_key(const SDL_Event &event)
 
 		case SDLK_BACKSPACE:	// switch player view
 			walk_player_list();
-			render_screen(0);
+			render_screen(NONE);
 			break;
 
 		case SDLK_EQUALS:

@@ -612,7 +612,7 @@ void handle_game_key(
 				break;
 			case kDELETE: // switch player view
 				walk_player_list();
-				render_screen(0);
+				render_screen(NONE);
 				break;
 			case '+': case '=':
 				if (zoom_overhead_map_in())

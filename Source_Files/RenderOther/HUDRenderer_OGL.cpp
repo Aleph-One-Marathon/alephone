@@ -96,7 +96,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	static const int txtr_y[NUM_TEX] = {0, 0, 0, 128, 128, 128};
 
 	// Load static HUD picture if necessary
-	if (!hud_pict_loaded && !hud_pict_not_found) {
+	if ((!hud_pict_loaded && !hud_pict_not_found) || (time_elapsed == NONE)) {
 		LoadedResource PictRsrc;
 		if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, PictRsrc))
 			hud_pict_loaded = true;

@@ -296,7 +296,8 @@ void update_interface(short time_elapsed)
 	if (OGL_HUDActive) {
 		if (time_elapsed == NONE)
 			reset_motion_sensor(current_player_index);
-		return;
+		else
+			return;
 	}
 
 	if (!game_window_is_full_screen())
