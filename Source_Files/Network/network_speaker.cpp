@@ -107,7 +107,6 @@ static SndDoubleBackUPP doubleback_routine_descriptor;
 /* ---------- private code */
 
 static void fill_buffer_with_static(byte *buffer, short count);
-static void fill_double_buffer_with_static(SndDoubleBufferPtr buffer);
 
 static /*pascal*/ void network_speaker_doubleback_procedure(SndChannelPtr channel, SndDoubleBufferPtr doubleBufferPtr);
 void fill_network_speaker_buffer(SndDoubleBufferPtr doubleBufferPtr);
