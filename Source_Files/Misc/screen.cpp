@@ -82,6 +82,9 @@ Jun 15, 2000 (Loren Petrich):
 
 Jul 2, 2000 (Loren Petrich):
 	The HUD is now always buffered, and the terminal is always at 100%
+
+Jul 3, 2000 (Loren Petrich):
+	OpenGL gets switched off if one tries to start in 256-color mode.
 */
 
 /*
@@ -465,10 +468,12 @@ void ReloadViewContext()
 	// Cribbed from enter_screen
 	switch (screen_mode.acceleration)
 	{
-		// LP addition: doing OpenGL if present
+		// LP addition: doing OpenGL if present;
+		// otherwise, switching OpenGL off (kludge for having it not appear)
 		case _opengl_acceleration:
 			if (graphics_preferences->screen_mode.bit_depth > 8)
 				OGL_StartRun((CGrafPtr)screen_window);
+			else screen_mode.acceleration = _no_acceleration;
 			break;
 		
 		/*
@@ -498,9 +503,11 @@ void enter_screen(
 	switch (screen_mode.acceleration)
 	{
 		// LP addition: doing OpenGL if present
+		// otherwise, switching OpenGL off (kludge for having it not appear)
 		case _opengl_acceleration:
 			if (graphics_preferences->screen_mode.bit_depth > 8)
 				OGL_StartRun((CGrafPtr)screen_window);
+			else screen_mode.acceleration = _no_acceleration;
 			break;
 		
 		/*
