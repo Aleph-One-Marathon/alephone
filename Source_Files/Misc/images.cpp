@@ -26,6 +26,7 @@ Aug 21, 2000 (Loren Petrich):
 #include "images.h"
 #include "screen.h"
 #include "wad.h"
+#include "screen_drawing.h"
 
 
 // Constants
@@ -66,6 +67,20 @@ private:
 	OpenedFile wad_file;
 	wad_header wad_hdr;
 };
+
+// M2/Win picture structures
+typedef struct pict_head {
+	screen_rectangle bounds;	/* screen_rectangle from screen_drawing.h */
+	short depth;				/* 8 or 16 */
+								/* pixel data follows here */
+} pict_head;
+
+typedef struct clut_record {
+	short count;
+	short unknown;
+	short id;
+	rgb_color colors[256];		/* rgb_color from cscluts.h */
+} clut_record;
 
 // Global variables
 static image_file_t ImagesFile;
@@ -428,6 +443,140 @@ int image_file_t::determine_pict_resource_id(int base_id, int delta16, int delta
  *  Convert picture and CLUT data from wad file to PICT resource
  */
 
+#ifdef mac
+
+// MacOS version
+bool image_file_t::make_rsrc_from_pict(void *data, long length, LoadedResource &rsrc, void *clut_data, long clut_length)
+{
+	pict_head		*head;
+	PicHandle		picture;
+	Rect			bounds;
+	short			i;
+	GWorldPtr		gworld;
+	PixMapHandle	pixmap;
+	void			*pict_data;
+	void			*clut;
+	uint8			*p, *q;
+	CTabHandle		clut_handle;
+	CGrafPtr		saveport;
+	Ptr				tmp_ptr;
+	
+	if (length < 10)
+		return false;
+	
+	head = (pict_head *)data;
+	
+	bounds.left		= head->bounds.left;
+	bounds.top		= head->bounds.top;
+	bounds.right	= head->bounds.right;
+	bounds.bottom	= head->bounds.bottom;
+	
+	if (head->depth == 8)
+	{
+		
+		clut = malloc(8 + 256 * 8);
+		
+		memset(clut, 0, 8 + 256 * 8);
+		
+		p = (uint8 *)clut_data;
+		q = (uint8 *)clut;
+		
+		// 1. Header
+		q[6] = p[0]; // color count
+		q[7] = p[1];
+		p += 6;
+		q += 8;
+
+		// 2. Color table
+		for (i = 0; i < 256; i++)
+		{
+			q++;
+			*q++ = i;		// value
+			*q++ = *p++;	// red
+			*q++ = *p++;
+			*q++ = *p++;	// green
+			*q++ = *p++;
+			*q++ = *p++;	// blue
+			*q++ = *p++;
+		}
+		
+		clut_handle = (CTabHandle)NewHandleClear(8 + 256 * 8);
+		
+		PtrToHand(clut, (Handle *)&clut_handle, 8 + 256 * 8);
+		
+		tmp_ptr = NewPtrClear((bounds.right - bounds.left) * (bounds.bottom - bounds.top));
+		BlockMove((uint8 *)data + 10, tmp_ptr, GetPtrSize(tmp_ptr));
+		
+		QTNewGWorldFromPtr(&gworld, k8IndexedPixelFormat, &bounds, clut_handle, NULL, 0, tmp_ptr, head->bounds.right - head->bounds.left);
+		
+		free(clut);
+		DisposeHandle((Handle)clut_handle);
+	}
+	else if (head->depth == 16)
+	{
+		tmp_ptr = NewPtrClear(((bounds.right - bounds.left) * (bounds.bottom - bounds.top)) * 2);
+		BlockMove((uint8 *)data + 10, tmp_ptr, GetPtrSize(tmp_ptr));
+		
+		QTNewGWorldFromPtr(&gworld, k16BE555PixelFormat, &bounds, NULL, NULL, 0, (uint8 *)data + 10, (head->bounds.right - head->bounds.left) * 2);
+	}
+	else if (head->depth == 24)
+	{
+		tmp_ptr = NewPtrClear(((bounds.right - bounds.left) * (bounds.bottom - bounds.top)) * 3);
+		BlockMove((uint8 *)data + 10, tmp_ptr, GetPtrSize(tmp_ptr));
+		
+		QTNewGWorldFromPtr(&gworld, k24RGBPixelFormat, &bounds, NULL, NULL, 0, (uint8 *)data + 10, (head->bounds.right - head->bounds.left) * 3);
+	}
+	else if (head->depth == 32)
+	{
+		tmp_ptr = NewPtrClear(((bounds.right - bounds.left) * (bounds.bottom - bounds.top)) * 4);
+		BlockMove((uint8 *)data + 10, tmp_ptr, GetPtrSize(tmp_ptr));
+		
+		QTNewGWorldFromPtr(&gworld, k32ARGBPixelFormat, &bounds, NULL, NULL, 0, (uint8 *)data + 10, (head->bounds.right - head->bounds.left) * 4);
+	}
+	else
+	{
+		return false;
+	}
+	
+	PenNormal();
+	
+	GetGWorld(&saveport, NULL);
+	SetGWorld(gworld, NULL);
+	
+	ForeColor(blackColor);
+	BackColor(whiteColor);
+	
+	pixmap = GetGWorldPixMap(gworld);
+	LockPixels(pixmap);
+	
+	picture = OpenPicture(&bounds);
+	
+	if (picture != NULL)
+    {
+        CopyBits((BitMap *)*pixmap, (BitMap *)*pixmap, &bounds, &bounds, srcCopy, NULL);
+        ClosePicture();
+    }
+    
+    if (picture != NULL)
+    {
+	    UnlockPixels(pixmap);
+	    SetGWorld(saveport, NULL);
+	    DisposeGWorld(gworld);
+		
+		HLock((Handle)picture);
+		pict_data = malloc(GetHandleSize((Handle)picture));
+		memcpy(pict_data, *picture, GetHandleSize((Handle)picture));
+		
+		rsrc.SetData(pict_data, GetHandleSize((Handle)picture));
+		KillPicture(picture);
+	}
+	
+	return true;
+}
+
+#else
+
+// SDL version
 bool image_file_t::make_rsrc_from_pict(void *data, long length, LoadedResource &rsrc, void *clut_data, long clut_length)
 {
 	if (length < 10)
@@ -542,6 +691,8 @@ bool image_file_t::make_rsrc_from_pict(void *data, long length, LoadedResource &
 	rsrc.SetData(pict_rsrc, output_length);
 	return true;
 }
+
+#endif
 
 bool image_file_t::make_rsrc_from_clut(void *data, long length, LoadedResource &rsrc)
 {
