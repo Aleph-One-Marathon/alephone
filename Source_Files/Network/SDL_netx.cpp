@@ -71,7 +71,7 @@ static	int	SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket);
 // EXTERNALLY-VISIBLE FUNCTIONS
 int
 SDLNetx_EnableBroadcast(UDPsocket inSocket) {
-#if !defined(WIN32) && !defined(__BEOS__)
+#if !defined(WIN32) && !defined(__BEOS__) && !defined(__MWERKS__)
     if(!sCollectedBroadcastAddresses)
         SDLNetxint_CollectBroadcastAddresses(inSocket);
 #endif
@@ -87,7 +87,7 @@ SDLNetx_EnableBroadcast(UDPsocket inSocket) {
     if(theSocketFD < 0)
         return 0;
 
-#if defined(__BEOS__) || defined(__MWERKS__)
+#if defined(__BEOS__) || defined(__MWERKS__) || defined(__MWERKS__)
 	// Neither possible nor necessary
 	return 0;
 #else
