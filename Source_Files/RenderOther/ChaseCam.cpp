@@ -126,6 +126,111 @@ static int CC_PosUpdate(float Damping, float Spring, short x0, short x1, short x
 }
 
 
+// Args of function to find where the chase cam hits the walls:
+//   Whether it will go through walls (it it can, it will use the last polygon visited)
+//   Start position
+//   Input: target position -- Output: final position
+//   Input: start-position polygon index -- Output: final-position polygon index
+//
+//  If using the exclusion zones is desired, then here is the code:
+//		world_distance adjusted_floor_height, adjusted_ceiling_height;
+//		short supporting_polygon_index;
+//		keep_line_segment_out_of_walls(Ref_Polygon, &Ref_Position, &CC_Position,
+//			WORLD_ONE, 0, &adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
+//
+static void ShootForTargetPoint(bool ThroughWalls,
+	world_point3d& StartPosition, world_point3d& EndPosition,
+	short& Polygon)
+{
+	// Prevent short-integer wraparound
+	const short HALF_SHORT_MIN = SHRT_MIN >> 1;
+	const short HALF_SHORT_MAX = SHRT_MAX >> 1;
+	if (StartPosition.x >= HALF_SHORT_MAX && EndPosition.x < HALF_SHORT_MIN) EndPosition.x = SHRT_MAX;
+	if (StartPosition.x < HALF_SHORT_MIN && EndPosition.x >= HALF_SHORT_MAX) EndPosition.x = SHRT_MIN;
+	if (StartPosition.y >= HALF_SHORT_MAX && EndPosition.y < HALF_SHORT_MIN) EndPosition.y = SHRT_MAX;
+	if (StartPosition.y < HALF_SHORT_MIN && EndPosition.y >= HALF_SHORT_MAX) EndPosition.y = SHRT_MIN;
+
+	// Cribbed from translate_map_object() and simplified
+	short line_index, Next_Polygon;
+	while(true)
+	{
+		
+		// Check for hitting the floors and ceilings
+		struct world_point3d intersection;
+		struct polygon_data *polygon= get_polygon_data(Polygon);
+		world_distance height;
+		height = polygon->floor_height;
+		if (EndPosition.z <= height)
+		{
+			// Floor check
+			find_floor_or_ceiling_intersection(height, &StartPosition, &EndPosition, &intersection);
+			if (find_line_crossed_leaving_polygon(Polygon, (world_point2d *)&StartPosition, (world_point2d *)&intersection) == NONE)
+			{
+				if (!ThroughWalls) EndPosition = intersection;
+				break;
+			}
+		}
+		height = polygon->ceiling_height;
+		if (EndPosition.z >= height)
+		{
+			// Ceiling check
+			find_floor_or_ceiling_intersection(height, &StartPosition, &EndPosition, &intersection);
+			if (find_line_crossed_leaving_polygon(Polygon, (world_point2d *)&StartPosition, (world_point2d *)&intersection) == NONE)
+			{
+				if (!ThroughWalls) EndPosition = intersection;
+				break;
+			}
+		}
+		
+		// Which line crossed?
+		line_index= find_line_crossed_leaving_polygon(Polygon, (world_point2d *)&StartPosition, (world_point2d *)&EndPosition);
+		if (line_index!=NONE)
+		{
+			// Where did the crossing happen?
+			struct line_data *line= get_line_data(line_index);
+			find_line_intersection(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
+				&get_endpoint_data(line->endpoint_indexes[1])->vertex, &StartPosition, &EndPosition,
+				&intersection);
+			
+			// Check on the next polygon
+			Next_Polygon= find_adjacent_polygon(Polygon, line_index);
+			if (Next_Polygon!=NONE)
+			{
+				// Can the viewpoint enter the next polygon?
+				struct polygon_data *next_polygon= get_polygon_data(Next_Polygon);
+				if (intersection.z <= next_polygon->floor_height)
+				{
+					// Hit the lower boundary wall
+					if (!ThroughWalls) EndPosition = intersection;
+					break;
+				}
+				else if (intersection.z >= next_polygon->ceiling_height)
+				{
+					// Hit the upper boundary wall
+					if (!ThroughWalls) EndPosition = intersection;
+					break;
+				}
+				else
+					// Can continue
+					Polygon = Next_Polygon;
+			}
+			else
+			{
+				// Fallback in case of invalid next polygon
+				if (!ThroughWalls) EndPosition = intersection;
+				// {
+				//	*((world_point2d *)(&EndPosition)) = get_polygon_data(Polygon)->center;
+				//	EndPosition.z = intersection.z;
+				// }
+				break;
+			}
+		}
+		else
+			break;
+	}
+}
+
+
 // This function updates the chase cam's position in one game tick
 bool ChaseCam_Update()
 {
@@ -153,10 +258,22 @@ bool ChaseCam_Update()
 	translate_point3d(&CC_Position,-ChaseCam.Behind,CC_Yaw,CC_Pitch);
 	CC_Position.z += ChaseCam.Upward;
 	translate_point2d((world_point2d *)&CC_Position,ChaseCam.Rightward,NORMALIZE_ANGLE(CC_Yaw+QUARTER_CIRCLE));
+	
+	// Can the camera go through walls?
+	// If it can, then go back as far as possible through polygons,
+	// and use the last one passed through
+	bool ThroughWalls = TEST_FLAG(ChaseCam.Flags,_ChaseCam_ThroughWalls);
 		
 	// Use inertia to update the chase cam's position if it had not been reset.
 	if (!_ChaseCam_IsReset)
 	{
+		// If the chase cam won't go through a wall, then its target position must not also
+		if (!ThroughWalls)
+		{
+			CC_Polygon = Ref_Polygon;
+			ShootForTargetPoint(ThroughWalls, Ref_Position, CC_Position, CC_Polygon);
+		}
+		
 		CC_Position.x = CC_PosUpdate(ChaseCam.Damping,ChaseCam.Spring,
 			CC_Position.x,CC_Position_1.x,CC_Position_2.x);
 		CC_Position.y = CC_PosUpdate(ChaseCam.Damping,ChaseCam.Spring,
@@ -165,109 +282,8 @@ bool ChaseCam_Update()
 			CC_Position.z,CC_Position_1.z,CC_Position_2.z);
 	}
 	
-	// Prevent short-integer wraparound
-	const short HALF_SHORT_MIN = SHRT_MIN >> 1;
-	const short HALF_SHORT_MAX = SHRT_MAX >> 1;
-	if (Ref_Position.x >= HALF_SHORT_MAX && CC_Position.x < HALF_SHORT_MIN) CC_Position.x = SHRT_MAX;
-	if (Ref_Position.x < HALF_SHORT_MIN && CC_Position.x >= HALF_SHORT_MAX) CC_Position.x = SHRT_MIN;
-	if (Ref_Position.y >= HALF_SHORT_MAX && CC_Position.y < HALF_SHORT_MIN) CC_Position.y = SHRT_MAX;
-	if (Ref_Position.y < HALF_SHORT_MIN && CC_Position.y >= HALF_SHORT_MAX) CC_Position.y = SHRT_MIN;
-	
-	// Can the camera go through walls?
-	// If it can, then go back as far as possible through polygons,
-	// and use the last one passed through
-	bool ThroughWalls = TEST_FLAG(ChaseCam.Flags,_ChaseCam_ThroughWalls);
-	
-	// Avoid running into anything along the way if not going through walls;
-	// use the exclusion zones.
-	// Decided to have the camera against the wall if possible
-	// if (!ThroughWalls)
-	// {
-	//	world_distance adjusted_floor_height, adjusted_ceiling_height;
-	//	short supporting_polygon_index;
-	//	keep_line_segment_out_of_walls(Ref_Polygon, &Ref_Position, &CC_Position,
-	//		WORLD_ONE, 0, &adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
-	//}
-	
-	// Cribbed from translate_map_object() and simplified
-	short line_index, Next_Polygon;
 	CC_Polygon = Ref_Polygon;
-	while(true)
-	{
-		
-		// Check for hitting the floors and ceilings
-		struct world_point3d intersection;
-		struct polygon_data *polygon= get_polygon_data(CC_Polygon);
-		world_distance height;
-		height = polygon->floor_height;
-		if (CC_Position.z <= height)
-		{
-			// Floor check
-			find_floor_or_ceiling_intersection(height, &Ref_Position, &CC_Position, &intersection);
-			if (find_line_crossed_leaving_polygon(CC_Polygon, (world_point2d *)&Ref_Position, (world_point2d *)&intersection) == NONE)
-			{
-				if (!ThroughWalls) CC_Position = intersection;
-				break;
-			}
-		}
-		height = polygon->ceiling_height;
-		if (CC_Position.z >= height)
-		{
-			// Ceiling check
-			find_floor_or_ceiling_intersection(height, &Ref_Position, &CC_Position, &intersection);
-			if (find_line_crossed_leaving_polygon(CC_Polygon, (world_point2d *)&Ref_Position, (world_point2d *)&intersection) == NONE)
-			{
-				if (!ThroughWalls) CC_Position = intersection;
-				break;
-			}
-		}
-		
-		// Which line crossed?
-		line_index= find_line_crossed_leaving_polygon(CC_Polygon, (world_point2d *)&Ref_Position, (world_point2d *)&CC_Position);
-		if (line_index!=NONE)
-		{
-			// Where did the crossing happen?
-			struct line_data *line= get_line_data(line_index);
-			find_line_intersection(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
-				&get_endpoint_data(line->endpoint_indexes[1])->vertex, &Ref_Position, &CC_Position,
-				&intersection);
-			
-			// Check on the next polygon
-			Next_Polygon= find_adjacent_polygon(CC_Polygon, line_index);
-			if (Next_Polygon!=NONE)
-			{
-				// Can the viewpoint enter the next polygon?
-				struct polygon_data *next_polygon= get_polygon_data(Next_Polygon);
-				if (intersection.z <= next_polygon->floor_height)
-				{
-					// Hit the lower boundary wall
-					if (!ThroughWalls) CC_Position = intersection;
-					break;
-				}
-				else if (intersection.z >= next_polygon->ceiling_height)
-				{
-					// Hit the upper boundary wall
-					if (!ThroughWalls) CC_Position = intersection;
-					break;
-				}
-				else
-					// Can continue
-					CC_Polygon = Next_Polygon;
-			}
-			else
-			{
-				// Fallback in case of invalid next polygon
-				if (!ThroughWalls) CC_Position = intersection;
-				// {
-				//	*((world_point2d *)(&CC_Position)) = get_polygon_data(CC_Polygon)->center;
-				//	CC_Position.z = intersection.z;
-				// }
-				break;
-			}
-		}
-		else
-			break;
-	}
+	ShootForTargetPoint(ThroughWalls, Ref_Position, CC_Position, CC_Polygon);
 	
 	// If the chase cam had to be reset, then set the previous positions to the current position
 	if (_ChaseCam_IsReset)
