@@ -1832,11 +1832,11 @@ void get_net_color(
 	switch(index)
 	{
 		case _suicide_color:
-			color->red= color->green= SHRT_MAX;
+			color->red= color->green= USHRT_MAX;
 			color->blue= 0;
 			break;
 		case _kill_color:
-			color->red= SHRT_MAX;
+			color->red= USHRT_MAX;
 			color->green= color->blue= 0;
 			break;
 		case _death_color:
