@@ -39,6 +39,16 @@ Mar 1, 2002 (Woody Zenfell):
 
 #include    "player.h"  // for MAXIMUM_NUMBER_OF_PLAYERS
 
+#ifdef USES_NIBS
+
+const CFStringRef Window_Network_Setup = CFSTR("Network_Setup");
+const CFStringRef Window_Network_Gather = CFSTR("Network_Gather");
+const CFStringRef Window_Network_Join = CFSTR("Network_Join");
+const CFStringRef Window_Network_Distribute = CFSTR("Network_Distribute");
+const CFStringRef Window_Network_Outcome = CFSTR("Network_Outcome");
+
+#endif
+
 // ZZZ: Moved here so constants can be shared by Mac and SDL dialog code.
 /* ------------------ enums */
 enum {	
@@ -170,6 +180,20 @@ enum {
 	iTEXT_TIME_LIMIT= 35
 };
 
+#ifdef USES_NIBS
+
+// For the nib version -- it has radio-button groups that work like popup menus
+const int iRADIO_GROUP_DURATION = iRADIO_NO_TIME_LIMIT;
+enum {
+	duration_no_time_limit = 1,
+	duration_time_limit,
+	duration_kill_limit
+};
+
+// Because otherwise it would be interpreted as a regular "OK"
+const int iOK_SPECIAL = 101;
+
+#endif
 
 
 /* ------------------ structures */
@@ -187,6 +211,45 @@ struct net_rank
 struct player_info;
 struct game_info;
 
+
+
+#ifdef USES_NIBS
+
+struct NetgameSetupData
+{
+	// All the controls will be here, for convenience
+	
+	ControlRef PlayerNameCtrl;
+	ControlRef PlayerColorCtrl;
+	ControlRef PlayerTeamCtrl;
+	
+	ControlRef GameTypeCtrl;
+	ControlRef EntryPointCtrl;
+	ControlRef DifficultyCtrl;
+	
+	ControlRef MonstersCtrl;
+	ControlRef NoMotionSensorCtrl;
+	ControlRef BadDyingCtrl;
+	ControlRef BadSuicideCtrl;
+	ControlRef UniqTeamsCtrl;
+	ControlRef BurnItemsCtrl;
+	ControlRef StatsReportingCtrl;
+	
+	ControlRef DurationCtrl;
+	ControlRef TimeLabelCtrl;
+	ControlRef TimeTextCtrl;
+	ControlRef KillsLabelCtrl;
+	ControlRef KillsTextCtrl;
+	
+	ControlRef OK_Ctrl;
+	
+	game_info *game_information;
+	bool allow_all_levels;
+	
+	bool IsOK;	// When quitting
+};
+
+#endif
 
 /* ---------------------- globals */
 extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
@@ -280,5 +343,41 @@ extern void draw_kill_bars(DialogPtr dialog, struct net_rank *ranks, short num_p
 	short suicide_index, bool do_totals, bool friendly_fire);
 
 extern void draw_score_bars(DialogPtr dialog, struct net_rank *ranks, short bar_count);
+
+
+#ifdef USES_NIBS
+
+void EntryPoints_FillIn(
+	ControlRef EntryPointCtrl,
+	long entry_flags,
+	short default_level
+	);
+
+short NetgameSetup_FillIn(
+	NetgameSetupData& Data,
+	player_info *player_information,
+	bool allow_all_levels,
+	bool ResumingGame
+	);
+
+void NetgameSetup_GameType(
+	NetgameSetupData& Data,
+	int game_type
+	);
+
+void NetgameSetup_Untimed(NetgameSetupData& Data);
+void NetgameSetup_Timed(NetgameSetupData& Data);
+void NetgameSetup_ScoreLimit(NetgameSetupData& Data);
+
+void NetgameSetup_Extract(
+	NetgameSetupData& Data,
+	player_info *player_information,
+	game_info *game_information,
+	short game_limit_type,
+	bool allow_all_levels,
+	bool ResumingGame
+	);
+
+#endif
 
 #endif//NETWORK_DIALOGS_H
