@@ -28,16 +28,8 @@
  *  Data types with specific bit width
  */
 
-// LP: moved this into cstypes.h
-/*
-typedef Uint8 uint8;
-typedef Sint8 int8;
-typedef Uint16 uint16;
-typedef Sint16 int16;
-typedef Uint32 uint32;
-typedef Sint32 int32;
-*/
 #include "cstypes.h"
+
 
 /*
  *  Emulation of MacOS data types and definitions
@@ -94,7 +86,6 @@ typedef GDSpec *GDSpecPtr;
 #include "cstypes.h"
 #include "csmacros.h"
 #include "cscluts.h"
-#include "cskeys.h"
 #include "csdialogs.h"
 #include "csstrings.h"
 #include "csfonts.h"

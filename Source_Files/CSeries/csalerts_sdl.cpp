@@ -18,8 +18,7 @@ void alert_user(short severity, short resid, short item, OSErr error)
 	char str[256];
 	fprintf(stderr, "%s: %s (error %d)\n", severity == infoError ? "INFO" : "FATAL", getcstr(str, resid, item), error);
 	if (severity != infoError)
-abort();
-//		exit(1);
+		exit(1);
 }
 
 
@@ -61,8 +60,7 @@ void halt(void)
 void vhalt(char *message)
 {
 	fprintf(stderr, "vhalt %s\n", message);
-abort();
-//!!	exit(1);
+	exit(1);
 }
 
 

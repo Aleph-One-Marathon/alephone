@@ -6,12 +6,21 @@
 
 // LP: moved these types here for convenience
 // Integer types with specific bit size
+#if defined(mac)
 typedef SInt8 int8;
 typedef UInt8 uint8;
 typedef SInt16 int16;
 typedef UInt16 uint16;
 typedef SInt32 int32;
 typedef UInt32 uint32;
+#elif defined(SDL)
+typedef Uint8 uint8;
+typedef Sint8 int8;
+typedef Uint16 uint16;
+typedef Sint16 int16;
+typedef Uint32 uint32;
+typedef Sint32 int32;
+#endif
 
 typedef int32 fixed;
 

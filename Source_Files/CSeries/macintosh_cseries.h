@@ -19,11 +19,9 @@
 #include <TextUtils.h>
 #include <PictUtils.h>
 #include <Lists.h>
-//#include <ControlDefinitions.h>
-
-// LP: removed CB's change and placed his types into cstypes.h
 
 #include "cstypes.h"
+
 #include "csmacros.h"
 #include "cscluts.h"
 #include "cskeys.h"
@@ -38,4 +36,3 @@
 #include "gdspec.h"
 
 #endif
-
