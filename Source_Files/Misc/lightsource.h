@@ -52,6 +52,15 @@ struct lighting_function_specification /* 7*2 == 14 bytes */
 	fixed intensity, delta_intensity;
 };
 
+// Misaligned 4-byte values (intensity, delta_intensity) split in it
+struct saved_lighting_function /* 7*2 == 14 bytes */
+{
+	short function;
+	
+	short period, delta_period;
+	uint16 intensity[2], delta_intensity[2];
+};
+
 enum /* static flags */
 {
 	_light_is_initially_active,
@@ -70,7 +79,6 @@ struct static_light_data /* size platform-specific */
 {
 	int16 type;
 	uint16 flags;
-
 	int16 phase; // initializer, so lights may start out-of-phase with each other
 	
 	struct lighting_function_specification primary_active, secondary_active, becoming_active;
@@ -80,6 +88,23 @@ struct static_light_data /* size platform-specific */
 	
 	int16 unused[4];
 };
+
+// Misaligned 4-byte values (in lighting_function_specification) split in it
+struct saved_static_light /* 8*2 + 6*14 == 100 bytes */
+{
+	short type;
+	uint16 flags;
+
+	short phase; // initializer, so lights may start out-of-phase with each other
+	
+	struct saved_lighting_function primary_active, secondary_active, becoming_active;
+	struct saved_lighting_function primary_inactive, secondary_inactive, becoming_inactive;
+	
+	short tag;
+	
+	short unused[4];
+};
+const int SIZEOF_static_light_data = 100;
 
 /* ---------- dynamic light data */
 
@@ -136,5 +161,9 @@ struct light_data *get_light_data(short light_index);
 #define get_light_data(i) (lights+(i))
 #endif
 */
+
+// Split and join the misaligned 4-byte values
+void pack_light_data(static_light_data& source, saved_static_light& dest);
+void unpack_light_data(saved_static_light& source, static_light_data& dest);
 
 #endif

@@ -468,3 +468,64 @@ static fixed flicker_lighting_proc(
 	
 	return smooth_intensity + (delta ? global_random()%delta : 0);
 }
+
+
+// Split and join the misaligned 4-byte values
+
+#include <string.h>
+
+inline void pack_lighting_function(lighting_function_specification& source, saved_lighting_function& dest)
+{
+	dest.function = source.function;
+	
+	dest.period = source.period;
+	dest.delta_period = source.delta_period;
+	
+	memcpy(dest.intensity,&source.intensity,4);
+	memcpy(dest.delta_intensity,&source.delta_intensity,4);
+}
+
+inline void unpack_lighting_function(saved_lighting_function& source, lighting_function_specification& dest)
+{
+	dest.function = source.function;
+	
+	dest.period = source.period;
+	dest.delta_period = source.delta_period;
+	
+	memcpy(&dest.intensity,source.intensity,4);
+	memcpy(&dest.delta_intensity,source.delta_intensity,4);
+}
+
+void pack_light_data(static_light_data& source, saved_static_light& dest)
+{
+	dest.type = source.type;
+	dest.flags = source.flags;
+	
+	dest.phase = source.phase;
+	
+	pack_lighting_function(source.primary_active,dest.primary_active);
+	pack_lighting_function(source.secondary_active,dest.secondary_active);
+	pack_lighting_function(source.becoming_active,dest.becoming_active);
+	pack_lighting_function(source.primary_inactive,dest.primary_inactive);
+	pack_lighting_function(source.secondary_inactive,dest.secondary_inactive);
+	pack_lighting_function(source.becoming_inactive,dest.becoming_inactive);
+	
+	dest.tag = source.tag;
+}
+
+void unpack_light_data(saved_static_light& source, static_light_data& dest)
+{
+	dest.type = source.type;
+	dest.flags = source.flags;
+	
+	dest.phase = source.phase;
+	
+	unpack_lighting_function(source.primary_active,dest.primary_active);
+	unpack_lighting_function(source.secondary_active,dest.secondary_active);
+	unpack_lighting_function(source.becoming_active,dest.becoming_active);
+	unpack_lighting_function(source.primary_inactive,dest.primary_inactive);
+	unpack_lighting_function(source.secondary_inactive,dest.secondary_inactive);
+	unpack_lighting_function(source.becoming_inactive,dest.becoming_inactive);
+	
+	dest.tag = source.tag;
+}
