@@ -134,6 +134,7 @@ class RenderVisTreeClass
 	GrowableList<short> PolygonQueue;
 	short polygon_queue_size;
 	
+	/* translates from map indexes to clip indexes, only valid if appropriate render flag is set */
 	ResizableList<short> line_clip_indexes;
 	
 	// Turned preprocessor macro into function
@@ -164,7 +165,8 @@ class RenderVisTreeClass
 	
 public:
 
-	ResizableList<short> endpoint_x_coordinates; /* gives screen x-coordinates for a map endpoint (only valid if _endpoint_is_visible) */
+	/* gives screen x-coordinates for a map endpoint (only valid if _endpoint_is_visible) */
+	ResizableList<short> endpoint_x_coordinates;
 	
 	/* every time we find a unique endpoint which clips something, we build one of these for it */
 	// LP addition: growable list
@@ -191,6 +193,7 @@ public:
 	// Resizes all the objects defined inside;
 	// the resizing is lazy
 	void Resize(int NumEndpoints, int NumLines);
+	
 	// Builds the visibility tree
  	void build_render_tree(view_data *view);
  	
