@@ -25,7 +25,12 @@
 
 #include <limits.h>
 
-const int NONE = -1;
+// IR note: consts in hearders are slow and eat TOC space.
+//const int NONE = -1;
+enum {
+	NONE = -1,
+	UNONE = 65535
+};
 
 // Integer types with specific bit size
 #if defined(mac)
