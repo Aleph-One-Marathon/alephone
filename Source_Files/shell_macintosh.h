@@ -496,7 +496,7 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 		short NumStrings = NumPtr[0];
 		HUnlock(PathStrings);
 		ReleaseResource(PathStrings);
-		for (size_t i=0; i<NumStrings; i++)
+		for (int i=0; i<NumStrings; i++)
 		{
 			// Get next path specification; quit when one has found an empty one
 
@@ -539,7 +539,6 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	initialize_marathon_music_handler();
 	initialize_ISp(); /* BT: Added April 16, 2000 ISp: Initialize Input Sprockets */
 	
-	int k = 0;
 	mytm_initialize();
 	initialize_keyboard_controller();
 	initialize_screen(&graphics_preferences->screen_mode, ModifierKeysInitiallyPressed);
@@ -576,8 +575,6 @@ void handle_game_key(
 	short _virtual;
 	bool changed_screen_mode= false;
 	bool changed_prefs= false;
-	bool changed_volume= false;
-	bool update_interface= false;
 	
 	_virtual = (event->message >> 8) & charCodeMask;
 	
@@ -816,7 +813,6 @@ void handle_game_key(
 	{
 		change_screen_mode(&graphics_preferences->screen_mode, true);
 		render_screen(0);
-		// if(update_interface) draw_interface();
 	}
 	if (changed_prefs) write_preferences();
 }
@@ -825,15 +821,15 @@ static void verify_environment(
 	void)
 {
 #if defined(TARGET_API_MAC_CARBON)
-	OSErr result;
-	long response;
-	long getCPUtype;
-	
 	// Carbon systems always have:
 	// >= System 7
 	// Color QuickDraw
 	// PowerPC CPU's
 	/*
+	OSErr result;
+	long response;
+	long getCPUtype;
+	
 	result = Gestalt(gestaltSystemVersion, &response);
 	if (result!=noErr||response<0x1001)
 	{
@@ -946,7 +942,9 @@ static pascal OSErr handle_open_document(
 	OSErr err;
 	AEDescList docList;
 
-	(void) (reply, myRefCon)	;
+	(void)(reply);
+	(void)(myRefCon);
+	
 	err= AEGetParamDesc(event, keyDirectObject, typeAEList, &docList);
 	if(!err)
 	{
@@ -1041,7 +1039,8 @@ static pascal OSErr handle_quit_application(
 {
 	OSErr err;
 	
-	(void)(reply, myRefCon);
+	(void)(reply);
+	(void)(myRefCon);
 	err= required_appleevent_check(event);
 	if(err) return err;
 	
@@ -1054,7 +1053,9 @@ static pascal OSErr handle_print_document(
 	AppleEvent *reply, 
 	long myRefCon)
 {
-	(void)(event, reply, myRefCon);
+	(void)(event);
+	(void)(reply);
+	(void)(myRefCon);
 
 	return (errAEEventNotHandled);
 }
@@ -1066,7 +1067,8 @@ static pascal OSErr handle_open_application(
 {
 	OSErr	err;
 
-	(void)(reply, myRefCon);
+	(void)(reply);
+	(void)(myRefCon);
 	err=required_appleevent_check(event);
 	if(err) return err;
 
@@ -1251,7 +1253,7 @@ static void initialize_marathon_music_handler(
 {
 	FileSpecifier SongFile;
 	// FSSpec music_file_spec;
-	OSErr error;
+	// OSErr error;
 	bool initialized= false;
 	
 	SongFile.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameMUSIC)); // typecode: NONE
@@ -1700,13 +1702,6 @@ static long ParentDir;
 static short VolRefNum;
 static AlphabeticalCompareTypedSpecs CompareTS;
 
-static bool WasRepeated(vector<TypedSpec>& SpecList, TypedSpec& Spec)
-{
-	// Test for a repeat; STL makes it E-Z
-	return (find(SpecList.begin(),SpecList.end(),Spec) != SpecList.end());
-}
-
-
 void ReadRootDirectory()
 {
 	// Set up its name
@@ -1736,7 +1731,7 @@ void ReadRootDirectory()
 		S_InComment
 	};
 	int State = S_LineEnded;
-	for (int k=0; k<FileContents.size(); k++)
+	for (unsigned int k=0; k<FileContents.size(); k++)
 	{
 		char c = FileContents[k];
 		if (c == '\r' || c == '\n')
@@ -1794,7 +1789,7 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 	// Walk the directory, searching for a file with a matching name.
 	// Have separate indices for all file-system objects
 	// and for ones included in the list.
-	short FileIndex = 0, ListedFileIndex = 0;
+	unsigned short FileIndex = 0, ListedFileIndex = 0;
 	while(true)
 	{
 		// Resetting to look for next file in directory
