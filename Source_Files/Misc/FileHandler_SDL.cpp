@@ -31,10 +31,73 @@ extern FileSpecifier global_data_dir, local_data_dir;
 
 
 /*
+ *  Utility functions
+ */
+
+bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length)
+{
+	// Check header
+	SDL_RWseek(f, 0, SEEK_SET);
+	uint32 id = SDL_ReadBE32(f);
+	uint32 version = SDL_ReadBE32(f);
+	if (id != 0x00051600 || version != 0x00020000)
+		return false;
+
+	// Find fork
+	int req_id = rsrc_fork ? 2 : 1;
+	SDL_RWseek(f, 0x18, SEEK_SET);
+	int num_entries = SDL_ReadBE16(f);
+	while (num_entries--) {
+		uint32 id = SDL_ReadBE32(f);
+		int32 ofs = SDL_ReadBE32(f);
+		int32 len = SDL_ReadBE32(f);
+		//printf(" entry id %d, offset %d, length %d\n", id, ofs, len);
+		if (id == req_id) {
+			offset = ofs;
+			length = len;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length)
+{
+	// This only recognizes MacBinary II files
+	SDL_RWseek(f, 0, SEEK_SET);
+	uint8 header[128];
+	SDL_RWread(f, header, 1, 128);
+	if (header[0] || header[1] > 63 || header[74] || header[122] < 0x81 || header[123] < 0x81)
+		return false;
+
+	// Check CRC
+	uint16 crc = 0;
+	for (int i=0; i<124; i++) {
+		uint16 data = header[i] << 8;
+		for (int j=0; j<8; j++) {
+			if ((data ^ crc) & 0x8000)
+				crc = (crc << 1) ^ 0x1021;
+			else
+				crc <<= 1;
+			data <<= 1;
+		}
+	}
+	//printf("crc %02x\n", crc);
+	if (crc != ((header[124] << 8) | header[125]))
+		return false;
+
+	// CRC valid, extract fork sizes
+	data_length = (header[83] << 24) | (header[84] << 16) | (header[85] << 8) | header[86];
+	rsrc_length = (header[87] << 24) | (header[88] << 16) | (header[89] << 8) | header[90];
+	return true;
+}
+
+
+/*
  *  Opened file
  */
 
-OpenedFile::OpenedFile() : f(NULL) {}
+OpenedFile::OpenedFile() : f(NULL), is_forked(false), fork_offset(0), fork_length(0) {}
 
 bool OpenedFile::IsOpen()
 {
@@ -44,7 +107,7 @@ bool OpenedFile::IsOpen()
 bool OpenedFile::Close()
 {
 	if (f) {
-		SDL_FreeRW(f);
+		SDL_RWclose(f);
 		f = NULL;
 	}
 	return true;
@@ -55,7 +118,7 @@ bool OpenedFile::GetPosition(long &Position)
 	if (f == NULL)
 		return false;
 
-	Position = SDL_RWtell(f);
+	Position = SDL_RWtell(f) - fork_offset;
 	return true;
 }
 
@@ -64,7 +127,7 @@ bool OpenedFile::SetPosition(long Position)
 	if (f == NULL)
 		return false;
 
-	return SDL_RWseek(f, Position, SEEK_SET) >= 0;
+	return SDL_RWseek(f, Position + fork_offset, SEEK_SET) >= 0;
 }
 
 bool OpenedFile::GetLength(long &Length)
@@ -72,10 +135,14 @@ bool OpenedFile::GetLength(long &Length)
 	if (f == NULL)
 		return false;
 
-	long pos = SDL_RWtell(f);
-	SDL_RWseek(f, 0, SEEK_END);
-	Length = SDL_RWtell(f);
-	SDL_RWseek(f, pos, SEEK_SET);
+	if (is_forked)
+		Length = fork_length;
+	else {
+		long pos = SDL_RWtell(f);
+		SDL_RWseek(f, 0, SEEK_END);
+		Length = SDL_RWtell(f);
+		SDL_RWseek(f, pos, SEEK_SET);
+	}
 	return true;
 }
 
@@ -240,10 +307,34 @@ bool FileSpecifier::CreateDirectory() const
 bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 {
 	OFile.Close();
-	OFile.f = SDL_RWFromFile(name.c_str(), Writable ? "wb" : "rb");
-	if (!OFile.IsOpen())
+	OFile.is_forked = false;
+	OFile.fork_offset = 0;
+	OFile.fork_length = 0;
+	SDL_RWops *f = OFile.f = SDL_RWFromFile(name.c_str(), Writable ? "wb" : "rb");
+	if (!OFile.IsOpen()) {
 		set_game_error(systemError, OFile.GetError());
-	return OFile.IsOpen();
+		return false;
+	}
+	if (Writable)
+		return true;
+
+	// Transparently handle AppleSingle and MacBinary II files on reading
+	long offset, data_length, rsrc_length;
+	if (is_applesingle(f, false, offset, data_length)) {
+		OFile.is_forked = true;
+		OFile.fork_offset = offset;
+		OFile.fork_length = data_length;
+		SDL_RWseek(f, offset, SEEK_SET);
+		return true;
+	} else if (is_macbinary(f, data_length, rsrc_length)) {
+		OFile.is_forked = true;
+		OFile.fork_offset = 128;
+		OFile.fork_length = data_length;
+		SDL_RWseek(f, 128, SEEK_SET);
+		return true;
+	}
+	SDL_RWseek(f, 0, SEEK_SET);
+	return true;
 }
 
 // Open resource file
@@ -251,9 +342,11 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 {
 	OFile.Close();
 	OFile.f = open_res_file(*this);
-	if (!OFile.IsOpen())
+	if (!OFile.IsOpen()) {
 		set_game_error(systemError, OFile.GetError());
-	return OFile.IsOpen();
+		return false;
+	} else
+		return true;
 }
 
 // Check for existence of file
@@ -297,7 +390,7 @@ int FileSpecifier::GetType()
 
 	// Check for Sounds file
 	{
-		SDL_RWseek(p, 0, SEEK_SET);
+		f.SetPosition(0);
 		uint32 version = SDL_ReadBE32(p);
 		uint32 tag = SDL_ReadBE32(p);
 		if (version == 1 && tag == FOUR_CHARS_TO_INT('s', 'n', 'd', '2'))
@@ -306,7 +399,7 @@ int FileSpecifier::GetType()
 
 	// Check for Map/Physics file
 	{
-		SDL_RWseek(p, 0, SEEK_SET);
+		f.SetPosition(0);
 		int version = SDL_ReadBE16(p);
 		int data_version = SDL_ReadBE16(p);
 		if ((version == 0 || version == 1 || version == 2 || version == 4) && (data_version == 0 || data_version == 1 || data_version == 2)) {
@@ -314,7 +407,7 @@ int FileSpecifier::GetType()
 			int32 directory_offset = SDL_ReadBE32(p);
 			if (directory_offset >= file_length)
 				goto not_map;
-			SDL_RWseek(p, 128, SEEK_SET);
+			f.SetPosition(128);
 			uint32 tag = SDL_ReadBE32(p);
 			if (tag == FOUR_CHARS_TO_INT('L', 'I', 'N', 'S') || tag == FOUR_CHARS_TO_INT('P', 'N', 'T', 'S'))
 				return _typecode_scenario;
@@ -326,7 +419,7 @@ not_map: ;
 
 	// Check for Shapes file
 	{
-		SDL_RWseek(p, 0, SEEK_SET);
+		f.SetPosition(0);
 		for (int i=0; i<32; i++) {
 			uint32 status_flags = SDL_ReadBE32(p);
 			int32 offset = SDL_ReadBE32(p);

@@ -252,7 +252,150 @@ keyboard; all keys are mapped by position):
 
     Backspace - Switch player view in replays
 
-See also the list of missing features and bugs, below.
+
+PLAYING THIRD-PARTY MAPS WITH ALEPH ONE
+---------------------------------------
+
+(If the following instructions are too technical for you, see the "Map
+installation for dummies" section, below)
+
+Aleph One can be extended with custom map, shape and sound files which
+can be selected in the "Environment" section of the preferences menu.
+Aleph One/SDL looks for these files in two places:
+
+Unix:
+  /usr/local/share/AlephOne
+ and
+  ~/.alephone
+
+BeOS:
+  The Aleph One application directory
+ and
+  /boot/home/config/settings/Aleph One
+
+Aleph One looks in both of these directories (and in all subdirectories)
+for map, shape and sound files it recognizes and shows a list of them in
+the "Environment" preferences menu when clicking on one of the "Map",
+"Shapes" or "Sounds" items. So, for example, under Unix you could create
+a directory ~/.alephone/maps and place all map files you downloaded in
+there.
+
+Most 3rd-party maps for Marathon 2 and Marathon Infinity you can find on the
+internet, for example in the Marathon HyperArchive
+
+  http://www.marathon.org/hyperarchive/
+
+do in principle work out-of-the box with Aleph One/SDL. I said "in principle",
+because these maps are usually stored in BinHex (.hqx) and/or StuffIt (.sit)
+format, which is difficult to unpack on non-Mac systems.
+
+Fortunately, for Linux there is a beta version of "StuffIt Expander" which
+can handle such files:
+
+  http://www.aladdinsys.com/expander/expander_linux.html
+
+(when unpacking a ".sit.hqx" archive, you will need to run "unstuff" twice,
+first for de-BinHexing and a second time for unstuffing).
+
+The other problem with Marathon map files is that terminal pictures,
+chapter screens and chapter screen sounds are stored in the resource fork
+on the Mac. If a map doesn't have a resource fork with these things (most
+Net maps don't), it is sufficient to just copy the entire map file over
+to a place where Aleph One can find it (see above).
+
+If the map does have a resource fork (most single-player maps do), you
+have three options:
+ - Extract the data and resource forks into separate files, as I did with
+   the Infinity map in the installation instructions above. If the file
+   containing the data fork has the name "foo", the resource file must be
+   called "foo.rsrc" or "foo.resource" and kept in the same directory as
+   the data file. Splitting files into data and resource forks is easy
+   to do when copying unpacked files from Mac CD-ROMs (see above) or when
+   unpacking downloaded map files under MacOS with my Basilisk II Mac
+   emulator (copy the unpacked map to the external file system where the
+   resource fork will be stored in a ".rsrc" directory).
+ - Convert the dual-forked Mac map file into a single "AppleSingle" encoded
+   file. This is the preferred option because it will combine the data and
+   resource forks into a single file which is easier to move around than
+   two separate files. The "tools" directory of the Aleph One/SDL source
+   archive contains two utilities for handling AppleSingle files.
+ - Convert the dual-forked Mac map file into a single "MacBinary II" encoded
+   file. This will also leave you with a single map file. The Linux "unstuff"
+   program will produce MacBinary files when giving it the "-m=auto" option.
+
+The shape and sound files don't require special treatment to work under
+Aleph One/SDL. Some shape files, however, come in the form of a "patcher"
+application that only runs under MacOS. Such files cannot be used with
+Aleph One/SDL.
+
+
+MAP INSTALLATION FOR DUMMIES UNDER LINUX
+----------------------------------------
+
+First, download and install the "StuffIt Expander" beta for Linux:
+
+  http://www.aladdinsys.com/expander/expander_linux.html
+
+Now, suppose that you downloaded a file "CoolMap.sit.hqx" which contains
+a Marathon 2 or Infinity map.
+
+1. De-BinHex the file:
+
+     $ ls
+     CoolMap.sit.hqx
+     $ unstuff CoolMap.sit.hqx
+     Scanning CoolMap.sit.hqx
+     Expanding CoolMap.sit.hqx
+     /home/cbauer/downloads/CoolMap.sit ............
+     done
+     $ ls
+     CoolMap.sit   CoolMap.sit.hqx
+
+2. Unstuff the file:
+
+     $ unstuff -m=auto CoolMap.sit
+     Scanning CoolMap.sit
+     Expanding CoolMap.sit
+     /home/cbauer/downloads/Cool Map/Cool Map ............
+     /home/cbauer/downloads/Cool Map/Read Me
+     done
+     $ ls
+     'Cool Map'   CoolMap.sit  CoolMap.sit.hqx
+     $ cd "Cool Map"
+     $ ls
+     'Cool Map'  'Read Me'
+
+   The "Read Me" file may be unreadable but you can ignore it.
+
+3. Copy the map file to the right place:
+
+     $ cp "Cool Map" ~/.alephone
+
+4. The map should now show up in the list when clicking on the "Map" item of
+   the Environment preferences section of Aleph One.
+
+
+MARATHON MARKUP LANGUAGE
+------------------------
+
+The Marathon Markup Language (MML) is a subset of the Extensible Markup
+Language (XML). MML scripts can be used to configure some aspects of
+Aleph One. These scripts are stored in
+
+Unix:
+  /usr/local/share/AlephOne/MML
+ and
+  ~/.alephone/MML
+
+BeOS:
+  The "MML" directory in the Aleph One application directory
+ and
+  /boot/home/config/settings/Aleph One/MML
+
+Upon startup, Aleph One reads and parses all scripts found in these
+directories. For a description of their contents and what you can do by
+writing your own MML scripts, please consult the file "docs/MML.html"
+that comes in the Aleph One distribution archive.
 
 
 MISSING FEATURES AND BUGS
@@ -264,8 +407,8 @@ them:
 
  - Text rendering under OpenGL (overhead map doesn't show level name and
    annotations)
- - Physics models in map files are not loaded (needed for playing Marathon
-   Infinity properly)
+ - Physics models (in map files or separate) don't work (needed for playing
+   Marathon Infinity properly)
  - Saving/restoring games (save terminals don't work and the "Continue Saved
    Game" button on the title screen is nonfunctional)
  - Saving/replaying films (the "Replay Saved Film", "Replay Last Film" and
@@ -315,33 +458,10 @@ BeOS:
 and try again.
 
 If the game runs very slowly, try running it in 8 bit mode. Using XFree86
-4.0 instead of 3.x will also greatly increase the speed. If you don't have
+4.0 instead of 3.x may also greatly increase the speed. If you don't have
 hardware accelerated OpenGL, you should specify the "-g" argument to enable
 software rendering (unless you configured Aleph One with the
 "--disable-opengl" option).
-
-
-MARATHON MARKUP LANGUAGE
-------------------------
-
-The Marathon Markup Language (MML) is a subset of the Extensible Markup
-Language (XML). MML scripts can be used to configure some aspects of
-Aleph One. These scripts are stored in
-
-Unix:
-  /usr/local/share/AlephOne/MML
- and
-  ~/.alephone/MML
-
-BeOS:
-  The "MML" directory in the Aleph One application directory
- and
-  /boot/home/config/settings/Aleph One/MML
-
-Upon startup, Aleph One reads and parses all scripts found in these
-directories. For a description of their contents and what you can do by
-writing your own MML scripts, please consult the file "docs/MML.html"
-that comes in the Aleph One distribution archive.
 
 
 SUPPORT

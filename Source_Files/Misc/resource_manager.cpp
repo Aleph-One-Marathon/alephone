@@ -16,6 +16,11 @@
 #include <map>
 
 
+// From FileHandler_SDL.cpp
+extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length);
+extern bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length);
+
+
 // Structure for open resource file
 struct res_file_t {
 	res_file_t() : f(NULL) {}
@@ -89,35 +94,22 @@ bool res_file_t::read_map(void)
 	SDL_RWseek(f, 0, SEEK_END);
 	uint32 file_size = SDL_RWtell(f);
 	SDL_RWseek(f, 0, SEEK_SET);
+	uint32 fork_start = 0;
+
+	// Determine file type (AppleSingle and MacBinary II files are handled transparently)
+	long offset, data_length, rsrc_length;
+	if (is_applesingle(f, true, offset, rsrc_length)) {
+		fork_start = offset;
+		file_size = offset + rsrc_length;
+	} else if (is_macbinary(f, data_length, rsrc_length)) {
+		fork_start = 128 + (data_length | 0x7f) + 1;
+		file_size = fork_start + rsrc_length;
+	}
 
 	// Read resource header
-	uint32 fork_start = 0;
-	uint32 data_offset = SDL_ReadBE32(f);
-	if (data_offset == 0x00051600) {
-
-		// Looks like an AppleSingle file, look for resource fork entry
-		SDL_RWseek(f, 0x18, SEEK_SET);
-		int num_entries = SDL_ReadBE16(f);
-		bool resource_fork_found = false;
-		while (num_entries--) {
-			uint32 id = SDL_ReadBE32(f);
-			int32 ofs = SDL_ReadBE32(f);
-			int32 len = SDL_ReadBE32(f);
-			//printf(" entry id %d, offset %d, length %d\n", id, ofs, len);
-			if (id == 2) {
-				resource_fork_found = true;
-				fork_start = ofs;
-				file_size = ofs + len;
-			}
-		}
-		if (!resource_fork_found) {
-			fprintf(stderr, "No resource fork found in AppleSingle file\n");
-			return false;
-		}
-		SDL_RWseek(f, fork_start, SEEK_SET);
-		data_offset = fork_start + SDL_ReadBE32(f);
-	}
-	uint32 map_offset = fork_start + SDL_ReadBE32(f);
+	SDL_RWseek(f, fork_start, SEEK_SET);
+	uint32 data_offset = SDL_ReadBE32(f) + fork_start;
+	uint32 map_offset = SDL_ReadBE32(f) + fork_start;
 	uint32 data_size = SDL_ReadBE32(f);
 	uint32 map_size = SDL_ReadBE32(f);
 	//printf(" data_offset %d, map_offset %d, data_size %d, map_size %d\n", data_offset, map_offset, data_size, map_size);
@@ -197,10 +189,14 @@ bool res_file_t::read_map(void)
 SDL_RWops *open_res_file(FileSpecifier &file)
 {
 	string rsrc_file_name = file.GetName();
-	rsrc_file_name += ".resources";
+	string resources_file_name = rsrc_file_name;
+	rsrc_file_name += ".rsrc";
+	resources_file_name += ".resources";
 
-	// Open file, try <name>.resources first, then <name>
+	// Open file, try <name>.rsrc first, then <name>.resources, then <name>
 	SDL_RWops *f = SDL_RWFromFile(rsrc_file_name.c_str(), "rb");
+	if (f == NULL)
+		f = SDL_RWFromFile(resources_file_name.c_str(), "rb");
 	if (f == NULL)
 		f = SDL_RWFromFile(file.GetName(), "rb");
 	if (f) {
@@ -217,7 +213,7 @@ SDL_RWops *open_res_file(FileSpecifier &file)
 
 			// Error reading resource map
 			//fprintf(stderr, "Error reading resource map of '%s'\n", file.GetName());
-			SDL_FreeRW(f);
+			SDL_RWclose(f);
 			return NULL;
 		}
 	}
@@ -240,7 +236,7 @@ void close_res_file(SDL_RWops *file)
 
 	// Remove it from the list, close the file and delete the res_file_t
 	res_file_t *r = *i;
-	SDL_FreeRW(r->f);
+	SDL_RWclose(r->f);
 	res_file_list.erase(i);
 	delete r;
 

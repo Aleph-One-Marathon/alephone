@@ -101,7 +101,7 @@ void initialize_screen_drawing(void)
 			interface_fonts.line_spacing[i] = _get_font_line_spacing(interface_fonts.info[i]);
 		}
 
-		SDL_FreeRW(p);
+		SDL_RWclose(p);
 	}
 }
 
@@ -507,7 +507,7 @@ const sdl_font_info *load_font(const TextSpec &spec)
 			if (font.IsLoaded()) {
 
 				// Found, switch stream to font resource
-				SDL_FreeRW(p);
+				SDL_RWclose(p);
 				p = SDL_RWFromMem(font.GetPointer(), font.GetLength());
 				assert(p);
 				void *font_ptr = font.GetPointer(true);
@@ -566,7 +566,7 @@ const sdl_font_info *load_font(const TextSpec &spec)
 	}
 
 	// Free resources
-	SDL_FreeRW(p);
+	SDL_RWclose(p);
 	return info;
 }
 

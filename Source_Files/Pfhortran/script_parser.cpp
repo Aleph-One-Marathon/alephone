@@ -26,10 +26,6 @@
 #define LANGDEFPATH "Pfhortran Language Definition"
 #endif
 
-#ifdef SDL
-extern FileSpecifier global_data_dir;
-#endif
-
 
 enum /* symbol modes */
 {absolute, variable};
@@ -115,25 +111,25 @@ bool init_pfhortran(void)
 	
 	pfhortran_is_on = false;	// In case we have some errors
 	
+	// init the instruction hash
+	instruction_hash = (symbol_def **)malloc(sizeof(symbol_def *) * 256);
+	memset(instruction_hash,0,sizeof(symbol_def *) * 256);
+	if (!instruction_hash)
+		return false;
+
 #ifdef SDL
-	FileSpecifier lang_def_path = global_data_dir;
+	FileSpecifier lang_def_path;
+	lang_def_path.SetToGlobalDataDir();
 	lang_def_path.AddPart(LANGDEFPATH);
 	lang_def = fopen(lang_def_path.GetName(), "r");
 #else
 	lang_def = fopen(LANGDEFPATH,"r");
 #endif
-	if (lang_def == NULL)
+	if (lang_def == NULL) {
+		dispose_pfhortran();
 		return false;
-	
-	// init the instruction hash
+	}
 
-	instruction_hash = (symbol_def **)malloc(sizeof(symbol_def *) * 256);
-	memset(instruction_hash,0,sizeof(symbol_def *) * 256);
-	
-	if (!instruction_hash)
-		return false;
-	
-	
 	while (fscanf(lang_def, "%s %x\n", input_str, &input_val) != EOF)
 	{
 		if (input_str && input_str[0] != '#')
@@ -151,6 +147,7 @@ bool init_pfhortran(void)
 		input_str[0] = 0;
 	
 	}
+	fclose(lang_def);
 	
 	if (err)
 	{
@@ -163,8 +160,6 @@ bool init_pfhortran(void)
 	init_instructions();
 	
 	return true;
-		
-
 }
 
 void dispose_pfhortran(void)

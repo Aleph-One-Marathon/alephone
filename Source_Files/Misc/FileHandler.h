@@ -94,6 +94,8 @@ private:
 
 private:
 	SDL_RWops *f;	// File handle
+	bool is_forked;
+	long fork_offset, fork_length;
 #endif
 };
 

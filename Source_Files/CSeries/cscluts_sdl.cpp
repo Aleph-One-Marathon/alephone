@@ -50,5 +50,5 @@ void build_color_table(color_table *table, LoadedResource &clut)
 	}
 
 	// Close stream
-	SDL_FreeRW(p);
+	SDL_RWclose(p);
 }

@@ -22,8 +22,8 @@ void open_shapes_file(FileSpecifier &File)
 	// Open stream to shapes file
 	if (!File.Open(ShapesFile))
 		return;
+	ShapesFile.SetPosition(0);
 	SDL_RWops *p = ShapesFile.GetRWops();
-	SDL_RWseek(p, 0, SEEK_SET);
 
 	// Read collection headers
 	collection_header *h = collection_headers;
@@ -121,7 +121,7 @@ static bool load_collection(short collection_index, bool strip)
 	}
 
 	// Read collection definition
-	SDL_RWseek(p, src_offset, SEEK_SET);
+	ShapesFile.SetPosition(src_offset);
 	int16 version = SDL_ReadBE16(p);
 	int16 type = SDL_ReadBE16(p);
 	uint16 flags = SDL_ReadBE16(p);
@@ -161,7 +161,7 @@ static bool load_collection(short collection_index, bool strip)
 #define dst_offset (q - (uint8 *)c)
 
 	// Convert CLUTs
-	SDL_RWseek(p, src_offset + color_table_offset, SEEK_SET);
+	ShapesFile.SetPosition(src_offset + color_table_offset);
 	cd->color_table_offset = dst_offset;
 	for (int i=0; i<clut_count*color_count; i++) {
 		rgb_color_value *r = (rgb_color_value *)q;
@@ -173,7 +173,7 @@ static bool load_collection(short collection_index, bool strip)
 	}
 
 	// Convert high-level shape definitions
-	SDL_RWseek(p, src_offset + high_level_shape_offset_table_offset, SEEK_SET);
+	ShapesFile.SetPosition(src_offset + high_level_shape_offset_table_offset);
 	cd->high_level_shape_offset_table_offset = dst_offset;
 
 	t = (uint32 *)q;	// Offset table
@@ -184,7 +184,7 @@ static bool load_collection(short collection_index, bool strip)
 	for (int i=0; i<high_level_shape_count; i++) {
 
 		// Seek to offset in source file, correct destination offset
-		SDL_RWseek(p, src_offset + t[i], SEEK_SET);
+		ShapesFile.SetPosition(src_offset + t[i]);
 		t[i] = dst_offset;
 
 		// Convert high-level shape definition
@@ -238,7 +238,7 @@ static bool load_collection(short collection_index, bool strip)
 	}
 
 	// Convert low-level shape definitions
-	SDL_RWseek(p, src_offset + low_level_shape_offset_table_offset, SEEK_SET);
+	ShapesFile.SetPosition(src_offset + low_level_shape_offset_table_offset);
 	cd->low_level_shape_offset_table_offset = dst_offset;
 
 	t = (uint32 *)q;	// Offset table
@@ -249,7 +249,7 @@ static bool load_collection(short collection_index, bool strip)
 	for (int i=0; i<low_level_shape_count; i++) {
 
 		// Seek to offset in source file, correct destination offset
-		SDL_RWseek(p, src_offset + t[i], SEEK_SET);
+		ShapesFile.SetPosition(src_offset + t[i]);
 		t[i] = dst_offset;
 
 		// Convert low-level shape definition
@@ -272,7 +272,7 @@ static bool load_collection(short collection_index, bool strip)
 	}
 
 	// Convert bitmap definitions
-	SDL_RWseek(p, src_offset + bitmap_offset_table_offset, SEEK_SET);
+	ShapesFile.SetPosition(src_offset + bitmap_offset_table_offset);
 	cd->bitmap_offset_table_offset = dst_offset;
 
 	t = (uint32 *)q;	// Offset table
@@ -283,7 +283,7 @@ static bool load_collection(short collection_index, bool strip)
 	for (int i=0; i<bitmap_count; i++) {
 
 		// Seek to offset in source file, correct destination offset
-		SDL_RWseek(p, src_offset + t[i], SEEK_SET);
+		ShapesFile.SetPosition(src_offset + t[i]);
 		t[i] = dst_offset;
 
 		// Convert bitmap definition

@@ -365,7 +365,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 	}
 
 	// Close stream, return surface
-	SDL_FreeRW(p);
+	SDL_RWclose(p);
 	return s;
 }
 

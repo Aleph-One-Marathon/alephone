@@ -33,8 +33,8 @@ private:
 		OpenedFile f;
 		if (!file.Open(f))
 			return true;
+		f.SetPosition(0x44);
 		SDL_RWops *p = f.GetRWops();
-		SDL_RWseek(p, 68, SEEK_SET);
 		uint32 checksum = SDL_ReadBE32(p);
 		if (checksum == look_for_checksum) {
 			found_it = true;

@@ -577,7 +577,7 @@ void play_sound_resource(LoadedResource &rsrc)
 	uint16 format = SDL_ReadBE16(p);
 	if (format != 1 && format != 2) {
 		fprintf(stderr, "Unknown sound resource format %d\n", format);
-		SDL_FreeRW(p);
+		SDL_RWclose(p);
 		return;
 	}
 
@@ -609,7 +609,7 @@ void play_sound_resource(LoadedResource &rsrc)
 
 	// Unlock sound subsystem
 	SDL_UnlockAudio();
-	SDL_FreeRW(p);
+	SDL_RWclose(p);
 }
 
 
@@ -770,7 +770,7 @@ static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
 	} else {							// Unknown header type
 		fprintf(stderr, "Unknown sound header type %02x\n", header_type);
 		c->active = false;
-		SDL_FreeRW(p);
+		SDL_RWclose(p);
 		return;
 	}
 
@@ -781,7 +781,7 @@ static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
 	// Reset sample counter
 	c->counter = 0;
 
-	SDL_FreeRW(p);
+	SDL_RWclose(p);
 }
 
 
