@@ -135,8 +135,8 @@ void NetgameSetup_Extract(
 	if (*temporary > MAX_NET_PLAYER_NAME_LENGTH) 
 		*temporary = MAX_NET_PLAYER_NAME_LENGTH;
 	pstrcpy(player_information->name, ptemporary);
-	player_information->color= GetControl32BitValue(Data.PlayerColorCtrl) -1;
-	player_information->team= GetControl32BitValue(Data.PlayerTeamCtrl)-1;
+	player_information->color= GetControl32BitValue(Data.PlayerColorCtrl) - 1;
+	player_information->team= GetControl32BitValue(Data.PlayerTeamCtrl) - 1;
 
 	pstrcpy(player_preferences->name, player_information->name);
 	player_preferences->color= player_information->color;

@@ -738,8 +738,8 @@ void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 		if (ptemporary[0] > MAX_NET_PLAYER_NAME_LENGTH) ptemporary[0] = MAX_NET_PLAYER_NAME_LENGTH;
 		pstrcpy(Data.myPlayerInfo.name, ptemporary);
 		
-		Data.myPlayerInfo.team = GetControl32BitValue(Data.PlayerTeamCtrl);
-		Data.myPlayerInfo.color = GetControl32BitValue(Data.PlayerColorCtrl);
+		Data.myPlayerInfo.team = GetControl32BitValue(Data.PlayerTeamCtrl) - 1;
+		Data.myPlayerInfo.color = GetControl32BitValue(Data.PlayerColorCtrl) - 1;
 		Data.myPlayerInfo.desired_color = Data.myPlayerInfo.color;
 		
 		if (GetControl32BitValue(Data.ByHost_Ctrl))
