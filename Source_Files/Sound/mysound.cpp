@@ -1841,7 +1841,7 @@ bool XML_SoundOptionsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"file"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.File.resize(nchars);
 		memcpy(&Data.File[0],Value,nchars);
 		return true;

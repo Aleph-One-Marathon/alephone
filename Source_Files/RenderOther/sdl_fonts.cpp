@@ -107,7 +107,7 @@ sdl_font_info *load_font(const TextSpec &spec)
 		fprintf(stderr, "Font family resource for font ID %d not found\n", spec.font);
 		return NULL;
 	}
-	SDL_RWops *p = SDL_RWFromMem(fond.GetPointer(), fond.GetLength());
+	SDL_RWops *p = SDL_RWFromMem(fond.GetPointer(), (int)fond.GetLength());
 	assert(p);
 
 	// Look for font size in association table
@@ -127,7 +127,7 @@ sdl_font_info *load_font(const TextSpec &spec)
 
 				// Found, switch stream to font resource
 				SDL_RWclose(p);
-				p = SDL_RWFromMem(info->rsrc.GetPointer(), info->rsrc.GetLength());
+				p = SDL_RWFromMem(info->rsrc.GetPointer(), (int)info->rsrc.GetLength());
 				assert(p);
 				void *font_ptr = info->rsrc.GetPointer(true);
 

@@ -186,7 +186,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		glScissor(dest.left, dest.bottom, 640, 160);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
-		glTranslatef((GLfloat)(dest.left), (GLfloat)(dest.top - 320), 0.0);
+		glTranslated(dest.left, dest.top - 320, 0.0);
 		HUD_OGL.update_everything(time_elapsed);
 		glPopMatrix();
 
@@ -261,13 +261,13 @@ void HUD_OGL_Class::DrawShape(shape_descriptor shape, screen_rectangle *dest, sc
 	glDisable(GL_BLEND);
 	TMgr.RenderNormal();
 	glBegin(GL_TRIANGLE_FAN);
-		glTexCoord2f((GLfloat)U_Offset, (GLfloat)V_Offset);
+		glTexCoord2d(U_Offset, V_Offset);
 		glVertex2i(x, y);
-		glTexCoord2f((GLfloat)(U_Offset + U_Scale), (GLfloat)V_Offset);
+		glTexCoord2d(U_Offset + U_Scale, V_Offset);
 		glVertex2i(x + width, y);
-		glTexCoord2f((GLfloat)(U_Offset + U_Scale), (GLfloat)(V_Offset + V_Scale));
+		glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
 		glVertex2i(x + width, y + height);
-		glTexCoord2f((GLfloat)U_Offset, (GLfloat)(V_Offset + V_Scale));
+		glTexCoord2d(U_Offset, V_Offset + V_Scale);
 		glVertex2i(x, y + height);
 	glEnd();
 }
@@ -301,13 +301,13 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 		glDisable(GL_BLEND);
 	TMgr.RenderNormal();
 	glBegin(GL_TRIANGLE_FAN);
-		glTexCoord2f((GLfloat)U_Offset, (GLfloat)V_Offset);
+		glTexCoord2d(U_Offset, V_Offset);
 		glVertex2i(x, y);
-		glTexCoord2f((GLfloat)(U_Offset + U_Scale), (GLfloat)V_Offset);
+		glTexCoord2d(U_Offset + U_Scale, V_Offset);
 		glVertex2i(x + width, y);
-		glTexCoord2f((GLfloat)(U_Offset + U_Scale), (GLfloat)(V_Offset + V_Scale));
+		glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
 		glVertex2i(x + width, y + height);
-		glTexCoord2f((GLfloat)U_Offset, (GLfloat)(V_Offset + V_Scale));
+		glTexCoord2d(U_Offset, V_Offset + V_Scale);
 		glVertex2i(x, y + height);
 	glEnd();
 }

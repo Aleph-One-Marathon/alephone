@@ -55,7 +55,7 @@ static	bool	sLookupInProgress	= false;
 // Helper function: make the "\p%s%d", type, version string C-string compatible and truncate it to fit
 static void
 NetLookup_BuildTypeString(char* outDest, const unsigned char* inType, short inVersion) {
-    unsigned char theLength = inType[0];
+    char theLength = inType[0];
     
     // Make Pstring Cstring-compatible - we truncate to SSLP_MAX_TYPE_LENGTH - 8 string length.
     if(theLength > SSLP_MAX_TYPE_LENGTH - 8)

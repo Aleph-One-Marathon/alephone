@@ -638,7 +638,7 @@ void play_sound_resource(LoadedResource &rsrc)
 	sdl_channel *c = sdl_channels + RESOURCE_CHANNEL;
 
 	// Open stream to resource
-	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), rsrc.GetLength());
+	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), (int)rsrc.GetLength());
 	if (p == NULL)
 		return;
 

@@ -1726,7 +1726,7 @@ static void fire_weapon(
 	{
 		if(trigger_definition->charging_ticks)
 		{
-			rounds_to_fire= (trigger_definition->burst_count*charged_amount)/FIXED_ONE;
+			rounds_to_fire= (short)((trigger_definition->burst_count*charged_amount)/FIXED_ONE);
 		} else {
 			/* Non charging weapon.. */
 			rounds_to_fire= trigger_definition->burst_count;

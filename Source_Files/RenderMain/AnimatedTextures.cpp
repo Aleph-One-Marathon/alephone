@@ -150,7 +150,7 @@ void AnimTxtr::SetTiming(short _NumTicks, short _FramePhase, short _TickPhase)
 	// Correct for possible overshooting of limits:
 	if (NumTicks)
 	{
-		short TickPhaseFrames = TickPhase / NumTicks;
+		size_t TickPhaseFrames = TickPhase / NumTicks;
 		TickPhase -= NumTicks*TickPhaseFrames;
 		if (TickPhase < 0)
 		{

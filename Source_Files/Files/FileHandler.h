@@ -195,7 +195,7 @@ private:
 #elif defined(SDL)
 
 	void *p;		// Pointer to resource data (malloc()ed)
-	uint32 size;	// Size of data
+	size_t size;	// Size of data
 #endif
 };
 

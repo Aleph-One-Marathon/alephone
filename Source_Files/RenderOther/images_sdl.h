@@ -314,7 +314,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 	SDL_Surface *s = NULL;
 
 	// Open stream to picture resource
-	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), rsrc.GetLength());
+	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), (int)rsrc.GetLength());
 	if (p == NULL)
 		return NULL;
 	SDL_RWseek(p, 6, SEEK_CUR);		// picSize/top/left

@@ -115,7 +115,7 @@ static void get_name_from_system(unsigned char *outName)
 	char login[17];
 	DWORD len = 17;
 
-	bool hasName = GetUserName((LPSTR)login, &len);
+	bool hasName = (GetUserName((LPSTR)login, &len) == TRUE);
 	if (hasName && strpbrk(login, "\\/:*?\"<>|") == NULL) // Ignore illegal names
 		strcpy(name, login);
 	else

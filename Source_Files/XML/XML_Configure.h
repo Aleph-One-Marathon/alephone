@@ -61,7 +61,7 @@ protected:
 	// Character data to be parsed:
 	char *Buffer;
 	// Number of bytes to read
-	int BufLen;
+	size_t BufLen;
 	// Whether the current buffer is the last one
 	bool LastOne;
 	

@@ -679,7 +679,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 			// Return found files to dir_entry
 			long fileSize = (findData.nFileSizeHigh * MAXDWORD) + findData.nFileSizeLow;
 			vec.push_back(dir_entry(findData.cFileName, fileSize,
-			              (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY), false));
+			              (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0, false));
 		}
 	} while(::FindNextFile(hFind, &findData));
 

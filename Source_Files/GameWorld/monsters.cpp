@@ -1478,7 +1478,7 @@ void damage_monster(
 		{
 			damage_kick_definition& kick_def = damage_kick_definitions[damage->type];
 			
-			external_velocity = kick_def.base_value + kick_def.delta_vitality_multiplier*delta_vitality;
+			external_velocity = (world_distance)(kick_def.base_value + kick_def.delta_vitality_multiplier*delta_vitality);
 			vertical_component = kick_def.is_also_vertical;
 		}
 		

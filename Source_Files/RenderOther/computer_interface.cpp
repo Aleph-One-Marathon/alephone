@@ -1503,7 +1503,8 @@ static void next_terminal_group(
 		next_terminal_group(player_index, terminal_text);
 	} else {
 		terminal_data->current_group++;
-		if(terminal_data->current_group>=terminal_text->groupings.size())
+		assert(terminal_data->current_group == (size_t) terminal_data->current_group);
+		if((size_t)terminal_data->current_group>=terminal_text->groupings.size())
 		{
 			next_terminal_state(player_index);
 		} else {
@@ -1937,7 +1938,8 @@ static void handle_reading_terminal_keys(
 		
 		if(terminal->current_line>=terminal->maximum_line)
 		{
-			if(terminal->current_group+1>=terminal_text->groupings.size())
+			assert(terminal->current_group == (size_t)terminal->current_group);
+			if((size_t)terminal->current_group+1>=terminal_text->groupings.size())
 			{
 				if(change_state)
 				{

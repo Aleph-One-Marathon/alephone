@@ -1175,7 +1175,7 @@ void dialog::start(bool play_sound)
 	draw();
 
 	// Show cursor
-	cursor_was_visible = SDL_ShowCursor(true);
+	cursor_was_visible = (SDL_ShowCursor(SDL_ENABLE) == SDL_ENABLE);
 
 	// Welcome sound
 	if (play_sound)
