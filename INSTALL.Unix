@@ -9,6 +9,9 @@ As implied by its name, Aleph One/SDL requires the Simple DirectMedia Layer
 If you didn't install SDL from source, you have to install the "SDL-devel"
 package to compile Aleph One.
 
+You also have to install the "SDL_image" library which can be found in the
+"Libraries" section of the SDL site.
+
 
 Installing the program
 ----------------------

@@ -6,6 +6,9 @@ As implied by its name, Aleph One/SDL requires the Simple DirectMedia Layer
 
   http://www.libsdl.org/
 
+You also have to install the "SDL_image" library which can be found in the
+"Libraries" section of the SDL site.
+
 
 Installing the program
 ----------------------

@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+February 5, 2001
+ - added image-loading facilities (requires SDL_image to load anthing other
+   than BMP)
+
 February 2, 2001
  - imported first code for TCP/IP networking based on SDL_net; nothing
    functional yet, however

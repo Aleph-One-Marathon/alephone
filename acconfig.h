@@ -17,6 +17,9 @@
 /* Define if OpenGL support is enabled. */
 #undef HAVE_OPENGL
 
+/* Define if SDL_image support is enabled. */
+#undef HAVE_SDL_IMAGE
+
 /* Define if SDL_net support is enabled. */
 #undef HAVE_SDL_NET
 

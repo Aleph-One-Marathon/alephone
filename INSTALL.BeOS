@@ -64,7 +64,8 @@ Compiling from source
 ---------------------
 
 If you didn't install SDL from source, you have to install the "SDL-devel"
-package to compile Aleph One.
+package to compile Aleph One. You will also need the "SDL_image" library and
+its associated "devel" package.
 
 Under BeOS, you don't run the "configure" script. Instead, there is a
 special Makefile for compiling:

@@ -61,6 +61,12 @@ void display_net_game_stats(void)
 {
 }
 
-void network_speaker_idle_proc(void)
+bool network_gather(void)
 {
+	return false;
+}
+
+bool network_join(void)
+{
+	return false;
 }
