@@ -883,7 +883,7 @@ void TextureManager::FindColorTables()
 	// Interface collection? Then use the CLUT directly
 	if (Collection == 0) {
 		int num_colors;
-		struct rgb_color_value *q = get_collection_colors(Collection, CTable, num_colors);
+		struct rgb_color_value *q = get_collection_colors(0, 0, num_colors);
 		uint8 *p = (uint8 *)NormalColorTable;
 		for (int k=0; k<num_colors; k++) {
 			int idx = q[k].value;
