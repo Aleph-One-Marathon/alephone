@@ -284,6 +284,7 @@ them:
 
  - Preferences menus (the "Preferences" button on the title screen is
    nonfunctional)
+ - Text rendering under OpenGL
  - The game could run faster in 16-bit mode on some machines if an RGB 565
    renderer was implemented
  - Physics models in map files are not loaded (needed for playing Marathon

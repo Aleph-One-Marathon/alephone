@@ -219,7 +219,7 @@ void *level_transition_malloc(size_t size)
 static void initialize_application(void)
 {
 	// Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | (option_nosound ? 0 : SDL_INIT_AUDIO)) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTTHREAD | (option_nosound ? 0 : SDL_INIT_AUDIO)) < 0) {
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
 	}
@@ -277,7 +277,7 @@ static void initialize_application(void)
 #else
 	graphics_preferences->screen_mode.acceleration = _no_acceleration;
 #endif
-	Get_OGL_ConfigureData().Flags = OGL_Flag_ZBuffer | OGL_Flag_LiqSeeThru | OGL_Flag_Fader | OGL_Flag_FlatStatic | OGL_Flag_Map;
+	Get_OGL_ConfigureData().Flags = OGL_Flag_LiqSeeThru | OGL_Flag_Fader | OGL_Flag_FlatStatic | OGL_Flag_Map;
 	write_preferences();
 
 	initialize_sound_manager(sound_preferences);
@@ -457,7 +457,6 @@ static void main_event_loop(void)
 		}
 
 		idle_game_state();
-//		mouse_idle(input_preferences->input_device);
 	}
 }
 

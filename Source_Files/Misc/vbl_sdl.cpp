@@ -4,6 +4,8 @@
  *  Written in 2000 by Christian Bauer
  */
 
+#include <SDL_thread.h>
+
 #include "cseries.h"
 #include "byte_swapping.h"
 #include "FileHandler.h"
@@ -248,18 +250,36 @@ void set_keys_to_match_preferences(void)
 
 typedef bool (*timer_func)(void);
 
-static uint32 timer_callback(uint32 interval, void *param)
+static uint32 tm_period;		// Ticks between two calls of the timer task
+static SDL_Thread *tm_thread;
+static volatile bool tm_quit;
+
+static int timer_thread(void *param)
 {
-	((timer_func)param)();
-	return interval;
+	// On Linux, this is more precise than using an SDL timer
+	uint32 next = SDL_GetTicks();
+	while (!tm_quit) {
+		((timer_func)param)();
+		next += tm_period;
+		int32 delay = next - SDL_GetTicks();
+		if (delay > 0)
+			SDL_Delay(delay);
+		else if (delay < -tm_period)
+			next = SDL_GetTicks();
+	}
+	return 0;
 }
 
 timer_task_proc install_timer_task(short tasks_per_second, bool (*func)(void))
 {
-	return (timer_task_proc)SDL_AddTimer(1000 / tasks_per_second, timer_callback, (void *)func);
+	// We only handle one task, which is enough
+	tm_quit = false;
+	tm_period = 1000 / tasks_per_second;
+	tm_thread = SDL_CreateThread(timer_thread, func);
 }
 
 void remove_timer_task(timer_task_proc proc)
 {
-	SDL_RemoveTimer((SDL_TimerID)proc);
+	tm_quit = true;
+	SDL_WaitThread(tm_thread, NULL);
 }

@@ -13,7 +13,6 @@
 static bool mouse_active = false;
 static int center_x, center_y;		// X/Y center of screen
 static fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
-static bool snapshot_read;
 
 
 /*
@@ -32,7 +31,6 @@ void enter_mouse(short type)
 		SDL_WarpMouse(center_x, center_y);
 
 		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
-		snapshot_read = false;
 
 		mouse_active = true;
 	}
@@ -62,17 +60,11 @@ void mouse_idle(short type)
 {
 	if (mouse_active) {
 		static uint32 last_tick_count = 0;
-
-		if (!snapshot_read)
-			return;
-
 		uint32 tick_count = SDL_GetTicks();
 		int32 ticks_elapsed = tick_count - last_tick_count;
 
 		if (ticks_elapsed < 1)
 			return;
-
-		snapshot_read = false;
 
 		int x, y;
 		SDL_GetMouseState(&x, &y);
@@ -110,18 +102,14 @@ void mouse_idle(short type)
 void test_mouse(short type, long *flags, fixed *delta_yaw, fixed *delta_pitch, fixed *delta_velocity)
 {
 	if (mouse_active) {
-		if (!snapshot_read) {
-			uint8 buttons = SDL_GetMouseState(NULL, NULL);
-			if (buttons & SDL_BUTTON_LMASK)		// Left button: primary weapon trigger
-				*flags |= _left_trigger_state;
-			if (buttons & SDL_BUTTON_RMASK)		// Right button: secondary weapon trigger
-				*flags |= _right_trigger_state;
+		uint8 buttons = SDL_GetMouseState(NULL, NULL);
+		if (buttons & SDL_BUTTON_LMASK)		// Left button: primary weapon trigger
+			*flags |= _left_trigger_state;
+		if (buttons & SDL_BUTTON_RMASK)		// Right button: secondary weapon trigger
+			*flags |= _right_trigger_state;
 
-			*delta_yaw = snapshot_delta_yaw;
-			*delta_pitch = snapshot_delta_pitch;
-			*delta_velocity = snapshot_delta_velocity;
-
-			snapshot_read = true;
-		}
+		*delta_yaw = snapshot_delta_yaw;
+		*delta_pitch = snapshot_delta_pitch;
+		*delta_velocity = snapshot_delta_velocity;
 	}
 }

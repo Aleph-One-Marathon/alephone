@@ -74,8 +74,14 @@ extern AGLContext RenderContext;
 void OverheadMap_OGL_Class::begin_overall()
 {
 	// Blank out the screen
+#ifndef mac
+	glEnable(GL_SCISSOR_TEST);	// Don't erase the HUD
+#endif
 	glClearColor(0,0,0,0);
 	glClear(GL_COLOR_BUFFER_BIT);
+#ifndef mac
+	glDisable(GL_SCISSOR_TEST);
+#endif
 	
 	// Here's for the overhead map
 	glDisable(GL_CULL_FACE);
@@ -99,7 +105,11 @@ void OverheadMap_OGL_Class::begin_polygons()
 	// Polygons are rendered before lines, and use the endpoint array,
 	// so both of them will have it set here. Using the compiled-vertex extension,
 	// however, makes everything the same color :-P
+#ifdef mac
+	// CB: Vertex arrays crash both Mesa and NVidia's GL implementation
+	// (reason still to be determined)
 	glVertexPointer(2,GL_SHORT,GetVertexStride(),GetFirstVertex());
+#endif
 
 	// Reset color defaults
 	SavedColor.red = SavedColor.green = SavedColor.blue = 0;
@@ -127,12 +137,22 @@ void OverheadMap_OGL_Class::draw_polygon(
 	}
 	
 	// Implement the polygons as triangle fans
+#ifdef mac
 	for (int k=2; k<vertex_count; k++)
 	{
 		assert(PolygonCache.Add(vertices[0]));
 		assert(PolygonCache.Add(vertices[k-1]));
 		assert(PolygonCache.Add(vertices[k]));
 	}
+#else
+	glBegin(GL_POLYGON);
+	for (int k=0; k<vertex_count; k++)
+	{
+		world_point2d v = GetVertex(vertices[k]);
+		glVertex2i(v.x, v.y);
+	}
+	glEnd();
+#endif
 	
 	// glDrawElements(GL_POLYGON,vertex_count,GL_UNSIGNED_SHORT,vertices);
 }
@@ -144,8 +164,10 @@ void OverheadMap_OGL_Class::end_polygons()
 
 void OverheadMap_OGL_Class::DrawCachedPolygons()
 {
+#ifdef mac
 	glDrawElements(GL_TRIANGLES, PolygonCache.GetLength(),
 		GL_UNSIGNED_SHORT, PolygonCache.Begin());
+#endif
 	PolygonCache.ResetLength();
 }
 
@@ -188,9 +210,18 @@ void OverheadMap_OGL_Class::draw_line(
 		glLineWidth(SavedPenSize);		
 	}
 	
+#ifdef mac
 	// Add the line's points to the cached line		
 	assert(LineCache.Add(vertices[0]));
 	assert(LineCache.Add(vertices[1]));
+#else
+	glBegin(GL_LINES);
+	world_point2d v = GetVertex(vertices[0]);
+	glVertex2i(v.x, v.y);
+	v = GetVertex(vertices[1]);
+	glVertex2i(v.x, v.y);
+	glEnd();
+#endif
 }
 
 void OverheadMap_OGL_Class::end_lines()
@@ -200,8 +231,10 @@ void OverheadMap_OGL_Class::end_lines()
 
 void OverheadMap_OGL_Class::DrawCachedLines()
 {
+#ifdef mac
 	glDrawElements(GL_LINES,LineCache.GetLength(),
 		GL_UNSIGNED_SHORT,LineCache.Begin());
+#endif
 	LineCache.ResetLength();
 }
 

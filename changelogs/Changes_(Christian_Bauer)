@@ -1,5 +1,12 @@
 Change log of the SDL version of Aleph One
 
+September 1, 2000
+ - turned on SDL_INIT_EVENTTHREAD, which seems to have fixed the random
+   mouse control lockups under XFree 4
+ - on non-Mac platforms, the overhead map drawing doesn't use any vertex
+   arrays because this crashed both Mesa and NVidia's OpenGL (I couldn't
+   figure out why)
+
 August 31, 2000
  - fixes to OpenGL rendering
  - some clean-ups:
