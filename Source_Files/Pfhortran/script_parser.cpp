@@ -142,7 +142,8 @@ bool init_pfhortran(void)
 	bool err = false;
 
 	// LP change: made this code always read the language-definition file
-#ifdef SDL
+// #ifdef SDL
+#if 1
 	// Read tokens from array
 	static const struct {
 		const char *str;
