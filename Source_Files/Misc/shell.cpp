@@ -66,6 +66,12 @@ Jun 15, 2000 (Loren Petrich):
 Jul 4, 2000 (Loren Petrich):
 	Implemented some of the unimplemented cheat codes
 	Also allowed more than the cheat amounts to be kept
+
+Jul 5, 2000 (Loren Petrich):
+	Changed the resolution-change keys to F1 (decrease) and F2 (increase)
+	Also changed F3 to toggle pixel doubling
+	Set F4 to reset OpenGL textures, since some people don't have F14 available
+	Removed the '~' key from that meaning
 */
 
 #include <stdlib.h>
@@ -418,50 +424,57 @@ void handle_game_key(
 					displaying_fps= !displaying_fps;
 				}
 				break;
-
-			// LP addition:
-			case '~':
-				// Reset OpenGL textures
-				OGL_ResetTextures();
-				break;
-			
+						
 			default: // well, let's check the function keys then, using the keycodes.
 				switch(_virtual)
 				{
 					// LP change: disabled these if OpenGL is active;
 					// may want to either consolidate or eliminate these
 					case kcF1:
-						// if (!OGL_IsActive())
 						{
-							graphics_preferences->screen_mode.size = _full_screen;
-							changed_screen_mode = changed_prefs = TRUE;
+							// LP change: turned this into screen-size decrement
+							if (graphics_preferences->screen_mode.size > 0)
+							{
+								graphics_preferences->screen_mode.size--;
+								changed_screen_mode = changed_prefs = TRUE;
+							}
+							// graphics_preferences->screen_mode.size = _full_screen;
+							// changed_screen_mode = changed_prefs = TRUE;
 						}
 						break;
 
 					case kcF2:
-						// if (!OGL_IsActive())
 						{
-							if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
-							graphics_preferences->screen_mode.size = _100_percent;
-							changed_screen_mode = changed_prefs = TRUE;
+							// LP change: turned this into screen-size increment
+							if (graphics_preferences->screen_mode.size < NUMBER_OF_VIEW_SIZES-1)
+							{
+								graphics_preferences->screen_mode.size++;
+								changed_screen_mode = changed_prefs = TRUE;
+							}
+							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
+							// graphics_preferences->screen_mode.size = _100_percent;
+							// changed_screen_mode = changed_prefs = TRUE;
 						}
 						break;
 
 					case kcF3:
-						// if (!OGL_IsActive())
+						if (!OGL_IsActive())
 						{
-							if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
-							graphics_preferences->screen_mode.size = _75_percent;
+							// Changed this to resolution toggle; no sense doing this in OpenGL mode
+							graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
+							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
+							// graphics_preferences->screen_mode.size = _75_percent;
 							changed_screen_mode = changed_prefs = TRUE;
 						}
 						break;
 
 					case kcF4:
-						// if (!OGL_IsActive())
 						{
-							if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
-							graphics_preferences->screen_mode.size = _50_percent;
-							changed_screen_mode = changed_prefs = TRUE;
+							// Reset OpenGL textures
+							OGL_ResetTextures();
+							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
+							// graphics_preferences->screen_mode.size = _50_percent;
+							// changed_screen_mode = changed_prefs = TRUE;
 						}
 						break;
 
@@ -576,12 +589,11 @@ void handle_game_key(
 				break;
 		}
 	}
-
 	if (changed_screen_mode)
 	{
 		change_screen_mode(&graphics_preferences->screen_mode, TRUE);
 		render_screen(0);
-		if(update_interface) draw_interface();
+		// if(update_interface) draw_interface();
 	}
 	if (changed_prefs) write_preferences();
 	

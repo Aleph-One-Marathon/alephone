@@ -85,6 +85,13 @@ Jul 2, 2000 (Loren Petrich):
 
 Jul 3, 2000 (Loren Petrich):
 	OpenGL gets switched off if one tries to start in 256-color mode.
+
+Jul 5, 2000 (Loren Petrich):
+	Partially completed the task of generalizing the view-control setup so that it can be generalized
+	to higher resolutions. This involved putting all the buffer-size and viewport calculation into
+	render_screen(), and of getting as much resizing as possible into render_screen().
+	The unavoidable exceptions are resized to 640*480, because Bungie's original resizers
+	are inadequate for the task ahead.
 */
 
 /*
@@ -179,6 +186,27 @@ Jul 3, 2000 (Loren Petrich):
 
 typedef ReqListRec *ReqListPtr;
 
+// LP addition: view sizes and display data
+
+struct ViewSizeData
+{
+	short OverallWidth, OverallHeight;
+	short MainWidth, MainHeight;
+	bool ShowHUD;
+};
+
+const ViewSizeData ViewSizes[NUMBER_OF_VIEW_SIZES] =
+{
+	{640, 480, 320, 160, true},
+	{640, 480, 480, 240, true},
+	{640, 480, 640, 320, true},
+	{640, 480, 640, 480, false},
+};
+
+
+// Note: the overhead map will always fill all of the screen except for the HUD,
+// and the terminal display will always have a size of 640*320.
+
 /* ---------- structures */
 
 #define _EVERY_OTHER_LINE_BIT 0x8000
@@ -205,8 +233,18 @@ struct color_table *visible_color_table; /* the color environment the player see
 
 struct view_data *world_view; /* should be static */
 
-GWorldPtr world_pixels;
+// LP note: world_pixels is the rendering buffer
+// for the main view, the overhead map, and the terminals.
+// The HUD has a separate buffer.
+// It is initialized to NULL so as to allow its initing to be lazy.
+GWorldPtr world_pixels = NULL;
 struct bitmap_definition *world_pixels_structure;
+
+// LP change: added stuff for keeping track of screen sizes;
+// this is for forcing the clearing of the screen when resizing.
+// These are initialized to improbable values.
+short PrevBufferWidth = SHORT_MIN, PrevBufferHeight = SHORT_MIN,
+	PrevOffsetWidth = SHORT_MIN, PrevOffsetHeight = SHORT_MIN;
 
 static boolean enough_memory_for_16bit, enough_memory_for_32bit, enough_memory_for_full_screen;
 
@@ -240,7 +278,10 @@ short interface_bit_depth= NONE;
 
 /* ---------- private prototypes */
 
-static void update_screen(void);
+// LP change: the source and destination rects will be very variable, in general.
+// Also indicating whether to use high or low resolution (the terminal and the ovhd map are always hi-rez)
+static void update_screen(Rect& source, Rect& destination, bool hi_rez);
+// static void update_screen(void);
 
 void calculate_destination_frame(short size, boolean high_resolution, Rect *frame);
 static void calculate_source_frame(short size, boolean high_resolution, Rect *frame);
@@ -265,6 +306,8 @@ static void update_fps_display(GrafPtr port);
 static void DisplayPosition(GrafPtr port);
 
 static void calculate_screen_options(void);
+
+static void ClearScreen();
 
 /* ---------- code */
 void initialize_screen(
@@ -419,15 +462,21 @@ void initialize_screen(
 	}
 	
 	/* allocate and initialize our GWorld */
+	// LP change: doing a 640*480 allocation as a sensible starting point
+	calculate_destination_frame(_full_screen, TRUE, &bounds);
+	error= world_pixels ? myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0) :
+		myNewGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
+	if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
+	/*
 	calculate_destination_frame(mode->size, mode->high_resolution, &bounds);
 	error= screen_initialized ? myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0) :
 		myNewGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
 	if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
-
+	*/
+	
 	change_screen_mode(mode, FALSE);
 
 	screen_initialized= TRUE;
-		
 	return;
 }
 
@@ -526,22 +575,32 @@ void exit_screen(
 
 	// LP addition: doing OpenGL if present
 	OGL_StopRun();
-
+	
+	// Deallocate the drawing buffer
+	/*
+	if (world_pixels)
+	{
+		myDisposeGWorld(world_pixels);
+		world_pixels = NULL;
+	}
+	*/
+	
+	/*
 	switch (screen_mode.acceleration)
 	{
-		/*
 		case _valkyrie_acceleration:
 			change_screen_mode(&screen_mode, FALSE);
 			valkyrie_end();
 			break;
-		*/
 	}
+	*/
 	
 	return;
 }
 
 
 // LP addition: added stuff to keep the sounds going if desired
+/*
 static bool stop_sounds = true;
 
 void change_screen_mode_keep_sounds(
@@ -552,11 +611,22 @@ void change_screen_mode_keep_sounds(
 	change_screen_mode(mode,redraw);
 	stop_sounds = true;
 }
+*/
 
 void change_screen_mode(
 	struct screen_mode_data *mode,
 	boolean redraw)
 {
+	// LP: stripped it down to a minimum
+	
+	// Get the screen mode here
+	screen_mode = *mode;
+	
+	// "Redraw" means clear the screen
+	if (redraw) ClearScreen();
+
+// LP change: beginning of obsolete part
+#if 0
 	short width, height;
 	Rect bounds;
 	GrafPtr old_port;
@@ -566,19 +636,17 @@ void change_screen_mode(
 //	{
 //		mode->high_resolution= FALSE;
 //	}
-
+	/*
 	switch (mode->acceleration)
 	{
-		/*
 		case _valkyrie_acceleration:
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
 			{
 				mode->high_resolution= FALSE;
 			}
 			break;
-		*/
 	}
-	
+	*/
 	/* This makes sure that the terminal and map use their own resolutions */
 	world_view->overhead_map_active= FALSE;
 	world_view->terminal_mode_active= FALSE;
@@ -592,25 +660,26 @@ void change_screen_mode(
 		SetPort(old_port);
 	}
 	
+	/*
 	switch (mode->acceleration)
 	{
-		/*
 		case _valkyrie_acceleration:
 			calculate_destination_frame(mode->size, mode->high_resolution, &bounds);
 			OffsetRect(&bounds, -screen_window->portRect.left, -screen_window->portRect.top);
 			valkyrie_initialize(world_device, TRUE, &bounds, 0xfe);
 			if (redraw) valkyrie_erase_graphic_key_frame(0xfe);
 			break;
-		*/
 	}
+	*/
 	
 	/* save parameters */
 	screen_mode= *mode;
 	
-	// LP addition: whether one wants to stop sounds...
+	// LP addition: whether one wants to stop sounds... actually, never
+	/*
 	if (stop_sounds)
-		free_and_unlock_memory(); /* do our best to give UpdateGWorld memory */
-
+		free_and_unlock_memory(); *//* do our best to give UpdateGWorld memory */
+	
 	/* adjust the size of our GWorld based on mode->size and mode->resolution */
 	calculate_adjusted_source_frame(mode, &bounds);
 	error= myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
@@ -630,7 +699,9 @@ void change_screen_mode(
 	world_view->standard_screen_width= 2*height;
 #endif
 	initialize_view_data(world_view);
-
+// LP change: end of obsolete part
+#endif
+	
 	frame_count= frame_index= 0;
 
 	return;
@@ -649,8 +720,10 @@ void render_screen(
 	world_view->pitch= current_player->elevation;
 	world_view->maximum_depth_intensity= current_player->weapon_intensity;
 	world_view->shading_mode= current_player->infravision_duration ? _shading_infravision : _shading_normal;
+
 	// LP change: always do this, no matter what
-	initialize_view_data(world_view);
+	// Moved downward after resizing
+	// initialize_view_data(world_view);
 	/*
 	if (current_player->extravision_duration)
 	{
@@ -692,9 +765,116 @@ void render_screen(
 		if (world_view->terminal_mode_active) set_terminal_status(FALSE);
 	}
 
+	// LP change: set rendering-window bounds for the current sort of display to render
+	// A Rect is, in order, top, left, bottom, right
+	screen_mode_data *mode = &screen_mode;
+	Rect ScreenRect = screen_window->portRect;
+	Rect BufferRect, ViewRect;
+	bool HighResolution;
+	
+	short msize = mode->size;
+	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
+	ViewSizeData& VS = ViewSizes[msize];
+	
+	// Rectangle where the view is to go (must not overlap the HUD)
+	short OverallWidth = VS.OverallWidth;
+	short OverallHeight = VS.OverallHeight - (VS.ShowHUD ? 160 : 0);
+	short BufferWidth, BufferHeight;
+	
+	bool ChangedSize = false;
+	
+	// Each kind of display needs its own size
+	if (world_view->terminal_mode_active)
+	{
+		// Standard terminal size
+		BufferWidth = 640;
+		BufferHeight = 320;
+		HighResolution = true;		
+	}
+	else if (world_view->overhead_map_active)
+	{
+		// Fill the available space
+		BufferWidth = OverallWidth;
+		BufferHeight = OverallHeight;
+		HighResolution = true;		
+	}
+	else
+	{
+		BufferWidth = VS.MainWidth;
+		BufferHeight = VS.MainHeight;
+		HighResolution = mode->high_resolution;
+	}
+	
+	if (BufferWidth != PrevBufferWidth)
+	{
+		ChangedSize = true;
+		PrevBufferWidth = BufferWidth;
+	}
+	if (BufferHeight != PrevBufferHeight)
+	{
+		ChangedSize = true;
+		PrevBufferHeight = BufferHeight;
+	}
+	
+	// Do the buffer/viewport rectangle setup:
+	
+	// First, the destination rectangle (viewport to be drawn in)
+	SetRect(&ViewRect,0,0,BufferWidth,BufferHeight);
+	short OffsetWidth = (OverallWidth - BufferWidth) >> 1;
+	short OffsetHeight = (OverallHeight - BufferHeight) >> 1;
+	OffsetRect(&ViewRect,OffsetWidth,OffsetHeight);
+	
+	if (OffsetWidth != PrevOffsetWidth)
+	{
+		ChangedSize = true;
+		PrevOffsetWidth = OffsetWidth;
+	}
+	if (OffsetHeight != PrevOffsetHeight)
+	{
+		ChangedSize = true;
+		PrevOffsetHeight = OffsetHeight;
+	}
+	
+	// Now the buffer rectangle; be sure to shrink it as appropriate
+	if (!HighResolution)
+	{
+		BufferWidth >>= 1;
+		BufferHeight >>= 1;
+	}
+	SetRect(&BufferRect,0,0,BufferWidth,BufferHeight);
+	
+	// Set up view data appropriately (cribbed from change_screen_mode)
+	world_view->screen_width= BufferWidth;
+	world_view->screen_height= BufferHeight;
+	world_view->standard_screen_width= 2*BufferHeight;	
+	initialize_view_data(world_view);
+	
+	if (world_pixels)
+	{
+		// Check on the drawing buffer's size
+		if (RECTANGLE_WIDTH(&world_pixels->portRect) != BufferWidth) ChangedSize = true;
+		if (RECTANGLE_HEIGHT(&world_pixels->portRect) != BufferHeight) ChangedSize = true;
+	}
+	else ChangedSize = true;
+	
+	if (ChangedSize)
+	{
+		ClearScreen();
+		if (VS.ShowHUD) draw_interface();
+		
+		// Reallocate the drawing buffer
+		short error = world_pixels ?
+			myUpdateGWorld(&world_pixels, 0, &BufferRect, (CTabHandle) NULL, (GDHandle) NULL, 0) :
+				myNewGWorld(&world_pixels, 0, &BufferRect, (CTabHandle) NULL, (GDHandle) NULL, 0);
+		if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
+	}
+	
+	OGL_SetWindow(ScreenRect,ViewRect);
+	
+	// LP: Resizing must come *before* locking the GWorld's pixels
 	myLockPixels(world_pixels);
 	pixels= myGetGWorldPixMap(world_pixels);
-
+	
 	switch (screen_mode.acceleration)
 	{
 		/*
@@ -716,13 +896,13 @@ void render_screen(
 			world_pixels_structure->width= world_view->screen_width;
 			world_pixels_structure->height= world_view->screen_height;
 			world_pixels_structure->flags= 0;
-#ifdef DIRECT_SCREEN_TEST
+/* #ifdef DIRECT_SCREEN_TEST
 			pixels= (*world_device)->gdPMap; //((CGrafPtr)screen_window)->portPixMap;
 			world_pixels_structure->bytes_per_row= (*pixels)->rowBytes&0x3fff;
 			world_pixels_structure->row_addresses[0]= ((pixel8 *)(*pixels)->baseAddr) + WORLD_H +
 				WORLD_V*world_pixels_structure->bytes_per_row;
-			/* blanking the screen is not supported in direct-to-screen mode */
-#else /* !DIRECT_SCREEN_TEST */
+			*//* blanking the screen is not supported in direct-to-screen mode */
+// #else /* !DIRECT_SCREEN_TEST */
 			world_pixels_structure->bytes_per_row= (*pixels)->rowBytes&0x3fff;
 			world_pixels_structure->row_addresses[0]= (pixel8 *) myGetPixBaseAddr(world_pixels);
 // #ifdef WHITE_SCREEN_BETWEEN_FRAMES
@@ -746,7 +926,7 @@ void render_screen(
 				}
 			}
 // #endif /* WHITE_SCREEN_BETWEEN_FRAMES */
-#endif /* else DIRECT_SCREEN_TEST */
+// #endif /* else DIRECT_SCREEN_TEST */
 			precalculate_bitmap_row_addresses(world_pixels_structure);
 			break;
 		
@@ -756,7 +936,7 @@ void render_screen(
 			// halt();
 	}
 
-	assert(world_view->screen_height<=MAXIMUM_WORLD_HEIGHT);
+	// assert(world_view->screen_height<=MAXIMUM_WORLD_HEIGHT);
 
 // LP change: Cybermaxx support -- this indicates how to do binocular vision
 	/* render left and right images on alternating scan lines */
@@ -794,17 +974,7 @@ void render_screen(
 		world_view->show_weapons_in_hand =
 			!ChaseCam_GetPosition(world_view->origin,world_view->origin_polygon_index,world_view->yaw,world_view->pitch);
 	}
-	
-	// LP change: set OpenGL rendering-window bounds
-	// A Rect is, in order, top, left, bottom, right
-	// This is set correctly for the overhead map and the terminal display,
-	// though not for the status bar.
-	screen_mode_data *mode = &screen_mode;
-	Rect ScreenBounds = screen_window->portRect;
-	Rect ViewBounds;
-	calculate_destination_frame(mode->size, mode->high_resolution, &ViewBounds);
-	OGL_SetWindow(ScreenBounds,ViewBounds);
-	
+		
 	render_view(world_view, world_pixels_structure);
 	
 	switch (screen_mode.acceleration)
@@ -830,7 +1000,7 @@ void render_screen(
 				if (Crosshairs_IsActive())
 					if (!OGL_RenderCrosshairs())
 						Crosshairs_Render((GrafPtr)world_pixels);
-#ifndef DIRECT_SCREEN_TEST
+// #ifndef DIRECT_SCREEN_TEST
 			// LP change: put in OpenGL buffer swapping when neither the map nor the terminal
 			// is active.
 			// Also, use OpenGL rendering of the terminal display / overhead map if available
@@ -850,12 +1020,12 @@ void render_screen(
 				// This horrid-looking resizing does manage to get the HUD to work properly...
 				HUD_DestRect.top = 160;
 				HUD_DestRect.bottom = 480;
-				OGL_SetWindow(ScreenBounds,HUD_DestRect);
+				OGL_SetWindow(ScreenRect,HUD_DestRect);
 				OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,true);
 				HUD_OGL_RenderRequest = false;
 			}
-			if (!OGL_Active) update_screen();
-#endif
+			if (!OGL_Active) update_screen(BufferRect,ViewRect,HighResolution);
+// #endif
 			break;
 		
 		default:
@@ -915,11 +1085,12 @@ void change_screen_clut(
 		Rect bounds;
 		OSErr error;
 	
-		calculate_adjusted_source_frame(&screen_mode, &bounds);
+		// LP change: doing a 640*480 allocation as a sensible starting point
+		calculate_destination_frame(_full_screen, TRUE, &bounds);
+		// calculate_adjusted_source_frame(&screen_mode, &bounds);
 		error= myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
 		if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
 	}
-		
 	return;
 }
 
@@ -960,6 +1131,15 @@ void render_computer_interface(
 	GetGWorld(&old_gworld, &old_device);
 	SetGWorld(world_pixels, (GDHandle) NULL);
 	
+	// LP change: calculate the view dimensions directly from the GWorld's boundaries
+	Rect& WPRect = ((CGrafPtr)world_pixels)->portRect;
+	data.left = WPRect.left;
+	data.right = WPRect.right;
+	data.top = WPRect.top;
+	data.bottom = WPRect.bottom;
+	data.vertical_offset = 0;
+	
+	/*
 	data.left= 0; data.right= view->screen_width;
 	data.top= 0; data.bottom= view->screen_height;
 	
@@ -978,12 +1158,12 @@ void render_computer_interface(
 			case _100_percent:
 				data.vertical_offset= 0;
 				break;
-			/*
 			case _full_screen:
 				data.vertical_offset= (view->screen_height-DEFAULT_WORLD_HEIGHT)/2;
 				break;
-			*/
 	}
+	*/
+	
 	_render_computer_interface(&data);
 
 	RGBForeColor(&rgb_black);
@@ -1007,16 +1187,25 @@ void render_overhead_map(
 	SetGWorld(world_pixels, (GDHandle) NULL);
 	
 	PaintRect(&world_pixels->portRect);
+	
+	// LP change: calculate the view dimensions directly from the GWorld's boundaries
+	Rect& WPRect = ((CGrafPtr)world_pixels)->portRect;
+	overhead_data.left = WPRect.left;
+	overhead_data.top = WPRect.top;
+	overhead_data.half_width = (overhead_data.width = RECTANGLE_WIDTH(&WPRect)) >> 1;
+	overhead_data.half_height = (overhead_data.height = RECTANGLE_HEIGHT(&WPRect)) >> 1;
 
 	overhead_data.scale= view->overhead_map_scale;
 	overhead_data.mode= _rendering_game_map;
 	overhead_data.origin.x= view->origin.x;
 	overhead_data.origin.y= view->origin.y;
+	/*
 	overhead_data.half_width= view->half_screen_width;
 	overhead_data.half_height= view->half_screen_height;
 	overhead_data.width= view->screen_width;
 	overhead_data.height= view->screen_height;
 	overhead_data.top= overhead_data.left= 0;
+	*/
 	
 	_render_overhead_map(&overhead_data);
 
@@ -1078,10 +1267,15 @@ screen_mode_data *get_screen_mode(
 }
 
 /* These should be replaced with better preferences control functions */
+// LP change: generalizing this
 boolean game_window_is_full_screen(
 	void)
 {
-	return screen_mode.size==_full_screen;
+	short msize = screen_mode.size;
+	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
+	return (!ViewSizes[msize].ShowHUD);
+	
+	// return screen_mode.size==_full_screen;
 }
 
 boolean machine_supports_16bit(
@@ -1439,7 +1633,7 @@ static void set_overhead_map_status( /* it has changed, this is the new status *
 	}
 	world_view->overhead_map_active= status;
 	// LP change: keep the sounds going
-	change_screen_mode_keep_sounds(&screen_mode, TRUE);
+	// change_screen_mode_keep_sounds(&screen_mode, TRUE);
 	// change_screen_mode(&screen_mode, TRUE);
 	world_view->overhead_map_active= status;
 	
@@ -1479,7 +1673,7 @@ static void set_terminal_status( /* It has changed, this is the new state.. */
 	}
 	world_view->terminal_mode_active= status;
 	// LP change: keep the sounds going
-	change_screen_mode_keep_sounds(&screen_mode, TRUE);
+	// change_screen_mode_keep_sounds(&screen_mode, TRUE);
 	// change_screen_mode(&screen_mode, TRUE);
 	world_view->terminal_mode_active= status;
 
@@ -1534,16 +1728,24 @@ static void restore_world_device(
 	return;
 }
 
+// LP changes: moved sizing and resolution outside of this function,
+// because they can be very variable
 /* pixels are already locked, etc. */
+/*
 static void update_screen(
 	void)
+	*/
+static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 {
+	/*
 	Rect source, destination;
 	
 	calculate_source_frame(screen_mode.size, screen_mode.high_resolution, &source);
 	calculate_destination_frame(screen_mode.size, screen_mode.high_resolution, &destination);
-
-	if (screen_mode.high_resolution)
+	*/
+	
+	if (hi_rez)
+	// if (screen_mode.high_resolution)
 	{
 		GrafPtr old_port;
 		RGBColor old_forecolor, old_backcolor;
@@ -1991,6 +2193,17 @@ void DrawBufferedHUD()
 		&SourceRect, &DestRect, srcCopy, (RgnHandle) NULL);	
 	RGBForeColor(&old_forecolor);
 	RGBBackColor(&old_backcolor);
+	SetPort(old_port);
+}
+
+
+// LP: cribbed from change_screen_mode
+void ClearScreen()
+{
+	GrafPtr old_port;
+	GetPort(&old_port);
+	SetPort(screen_window);
+	PaintRect(&screen_window->portRect);
 	SetPort(old_port);
 }
 

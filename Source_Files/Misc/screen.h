@@ -22,6 +22,10 @@ July 2, 2000 (Loren Petrich):
 	screen sizes.
 	
 	The HUD is now always buffered
+
+Jul 5, 2000 (Loren Petrich):
+	Prepared for expanding the number of resolutions available
+	by defining a number of view sizes
 */
 
 /* ---------- constants */
@@ -32,6 +36,7 @@ enum /* screen sizes */
 	_75_percent,
 	_100_percent,
 	_full_screen,
+	NUMBER_OF_VIEW_SIZES
 };
 
 enum /* hardware acceleration codes */
