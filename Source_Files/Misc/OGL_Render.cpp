@@ -74,8 +74,12 @@ Aug 10, 2000:
 
 Sep 21, 2000:
 	Added partial transparency to static mode
+
+Oct 13, 2000 (Loren Petrich)
+	Converted the animated-texture accounting into Standard Template Library vectors
 */
 
+#include <vector.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
@@ -99,7 +103,6 @@ Sep 21, 2000:
 #include "OGL_Textures.h"
 #include "Crosshairs.h"
 #include "VectorOps.h"
-#include "GrowableList.h"
 #include "Random.h"
 #include "ViewControl.h"
 #include "OGL_Faders.h"
@@ -366,18 +369,18 @@ bool OGL_StartRun()
 	
 #ifdef mac
 	// Plain and simple
-	GrowableList<GLint> PixelFormatSetupList(16);
-	PixelFormatSetupList.Add(GLint(AGL_RGBA));
-	PixelFormatSetupList.Add(GLint(AGL_DOUBLEBUFFER));
+	vector<GLint> PixelFormatSetupList;
+	PixelFormatSetupList.push_back(GLint(AGL_RGBA));
+	PixelFormatSetupList.push_back(GLint(AGL_DOUBLEBUFFER));
 	if (Z_Buffering)
 	{
-		PixelFormatSetupList.Add(GLint(AGL_DEPTH_SIZE));
-		PixelFormatSetupList.Add(16);
+		PixelFormatSetupList.push_back(GLint(AGL_DEPTH_SIZE));
+		PixelFormatSetupList.push_back(16);
 	}
-	PixelFormatSetupList.Add(GLint(AGL_NONE));
+	PixelFormatSetupList.push_back(GLint(AGL_NONE));
 	
 	// Request that pixel format
-	AGLPixelFormat PixelFormat = aglChoosePixelFormat(NULL, 0, PixelFormatSetupList.Begin());
+	AGLPixelFormat PixelFormat = aglChoosePixelFormat(NULL, 0, &PixelFormatSetupList.front());
 	
 	// Was it found?
 	if (!PixelFormat) return false;

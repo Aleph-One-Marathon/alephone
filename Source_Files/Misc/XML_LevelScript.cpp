@@ -7,9 +7,9 @@
 	only on certain levels.
 */
 
+#include <vector.h>
 #include "cseries.h"
 #include "game_wad.h"
-#include "GrowableList.h"
 #include "XML_DataBlock.h"
 #include "XML_LevelScript.h"
 #include "XML_ParseTreeRoot.h"
@@ -54,28 +54,16 @@ struct LevelScriptHeader
 	};
 	int Level;
 	
-	GrowableList<LevelScriptCommand> Commands;
+	vector<LevelScriptCommand> Commands;
 	
-	// Copy over:
-	const LevelScriptHeader& operator=(const LevelScriptHeader& LSHdr)
-	{
-		if (this != &LSHdr) {
-			Level = LSHdr.Level;
-		
-			Commands.ResetLength();
-		
-			for (int k=0; k<LSHdr.Commands.GetLength(); k++)
-				Commands.Add(LSHdr.Commands[k]);
-		}
-		return *this;
-	}
+	// Thanx to the Standard Template Library,
+	// the copy constructor and the assignment operator will be automatically implemented
 	
 	LevelScriptHeader(): Level(Default) {}
-	LevelScriptHeader(LevelScriptHeader& LSHdr) {*this = LSHdr;}
 };
 
 // Scripts for current map file
-static GrowableList<LevelScriptHeader> LevelScripts;
+static vector<LevelScriptHeader> LevelScripts;
 
 // Current script for adding commands to
 static LevelScriptHeader *CurrScriptPtr = NULL;
@@ -119,7 +107,7 @@ static void SetupLSParseTree()
 void LoadLevelScripts(FileSpecifier& MapFile)
 {
 	// Get rid of the previous level script
-	LevelScripts.ResetLength();
+	LevelScripts.clear();
 	
 	// Lazy setup of XML parsing definitions
 	SetupLSParseTree();
@@ -158,11 +146,11 @@ void RunRestorationScript()
 void GeneralRunScript(int LevelIndex)
 {
 	CurrScriptPtr = NULL;
-	for (LevelScriptHeader *ScriptIter = LevelScripts.Begin(); ScriptIter < LevelScripts.End(); ScriptIter++)
+	for (vector<LevelScriptHeader>::iterator ScriptIter = LevelScripts.begin(); ScriptIter < LevelScripts.end(); ScriptIter++)
 	{
 		if (ScriptIter->Level == LevelIndex)
 		{
-			CurrScriptPtr = ScriptIter;
+			CurrScriptPtr = &(*ScriptIter);	// Iterator to pointer
 			break;
 		}
 	}
@@ -172,7 +160,7 @@ void GeneralRunScript(int LevelIndex)
 	FileSpecifier& MapFile = get_map_file();
 	if (!MapFile.Open(OFile)) return;
 	
-	for (int k=0; k<CurrScriptPtr->Commands.GetLength(); k++)
+	for (int k=0; k<CurrScriptPtr->Commands.size(); k++)
 	{
 		LevelScriptCommand& Cmd = CurrScriptPtr->Commands[k];
 		
@@ -260,7 +248,7 @@ bool XML_LSCommandParser::AttributesDone()
 	if (!ObjectWasFound) return false;
 	
 	assert(CurrScriptPtr);
-	CurrScriptPtr->Commands.Add(Cmd);
+	CurrScriptPtr->Commands.push_back(Cmd);
 	
 	return true;
 }
@@ -292,11 +280,11 @@ void XML_GeneralLevelScriptParser::SetLevel(short Level)
 {
 	// Scan for current level
 	CurrScriptPtr = NULL;
-	for (LevelScriptHeader *ScriptIter = LevelScripts.Begin(); ScriptIter < LevelScripts.End(); ScriptIter++)
+	for (vector<LevelScriptHeader>::iterator ScriptIter = LevelScripts.begin(); ScriptIter < LevelScripts.end(); ScriptIter++)
 	{
 		if (ScriptIter->Level == Level)
 		{
-			CurrScriptPtr = ScriptIter;
+			CurrScriptPtr = &(*ScriptIter);	// Iterator to pointer
 			break;
 		}
 	}
@@ -306,8 +294,8 @@ void XML_GeneralLevelScriptParser::SetLevel(short Level)
 	{
 		LevelScriptHeader NewHdr;
 		NewHdr.Level = Level;
-		LevelScripts.Add(NewHdr);
-		CurrScriptPtr = LevelScripts.RevBegin();
+		LevelScripts.push_back(NewHdr);
+		CurrScriptPtr = &LevelScripts.back();
 	}
 }
 
