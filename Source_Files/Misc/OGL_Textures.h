@@ -134,7 +134,7 @@ class TextureManager
 	void FindColorTables();
 	
 	// This one allocates an OpenGL texture buffer and uses a color table
-	uint32 *GetOGLTexture(GLuint *ColorTable);
+	uint32 *GetOGLTexture(uint32 *ColorTable);
 	
 	// This one creates a fake landscape
 	uint32 *GetFakeLandscape();

@@ -25,6 +25,10 @@ Jan 14, 2001 (Loren Petrich):
 #include "sdl_fonts.h"
 #endif
 
+#ifdef HAVE_OPENGL
+#include <GL/gl.h>
+#endif
+
 
 struct FontSpecifier
 {
@@ -112,7 +116,7 @@ struct FontSpecifier
 	uint8 *OGL_Texture;
 	short TxtrWidth, TxtrHeight;
 	int GetTxtrSize() {return int(TxtrWidth)*int(TxtrHeight);}
-	uint32 TxtrID;
+	GLuint TxtrID;
 	uint32 DispList;
 #endif
 };

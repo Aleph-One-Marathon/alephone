@@ -421,13 +421,13 @@ bool TextureManager::Setup()
 		if (LoadedWidth != TxtrWidth || LoadedHeight != TxtrHeight)
 		{
 			// Shrink it
-			GLuint *NewNormalBuffer = Shrink(NormalBuffer);
+			uint32 *NewNormalBuffer = Shrink(NormalBuffer);
 			delete []NormalBuffer;
 			NormalBuffer = NewNormalBuffer;
 			
 			if (IsGlowing)
 			{
-				GLuint *NewGlowBuffer = Shrink(GlowBuffer);
+				uint32 *NewGlowBuffer = Shrink(GlowBuffer);
 				delete []GlowBuffer;
 				GlowBuffer = NewGlowBuffer;
 			}
@@ -1020,14 +1020,14 @@ uint32 *TextureManager::GetFakeLandscape()
 }
 
 
-uint32 *TextureManager::Shrink(GLuint *Buffer)
+uint32 *TextureManager::Shrink(uint32 *Buffer)
 {
 	int NumPixels = int(LoadedWidth)*int(LoadedHeight);
-	uint32 *NewBuffer = new GLuint[NumPixels];
+	GLuint *NewBuffer = new GLuint[NumPixels];
 	gluScaleImage(GL_RGBA, TxtrWidth, TxtrHeight, GL_UNSIGNED_BYTE, Buffer,
 		LoadedWidth, LoadedHeight, GL_UNSIGNED_BYTE, NewBuffer);
 	
-	return NewBuffer;
+	return (uint32 *)NewBuffer;
 }
 
 

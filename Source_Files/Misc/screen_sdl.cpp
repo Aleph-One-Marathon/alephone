@@ -517,7 +517,7 @@ void render_screen(short ticks_elapsed)
  */
 
 template <class T>
-static inline void quadruple(const T *src, int src_pitch, T *dst, int dst_pitch, const SDL_Rect &dst_rect)
+static inline void quadruple_surface(const T *src, int src_pitch, T *dst, int dst_pitch, const SDL_Rect &dst_rect)
 {
 	int width = dst_rect.w / 2;
 	int height = dst_rect.h / 2;
@@ -543,13 +543,13 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 	} else {
 		switch (world_pixels->format->BytesPerPixel) {
 			case 1:
-				quadruple((pixel8 *)world_pixels->pixels, world_pixels->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
+				quadruple_surface((pixel8 *)world_pixels->pixels, world_pixels->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
 				break;
 			case 2:
-				quadruple((pixel16 *)world_pixels->pixels, world_pixels->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination);
+				quadruple_surface((pixel16 *)world_pixels->pixels, world_pixels->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination);
 				break;
 			case 4:
-				quadruple((pixel32 *)world_pixels->pixels, world_pixels->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
+				quadruple_surface((pixel32 *)world_pixels->pixels, world_pixels->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
 				break;
 		}
 	}
