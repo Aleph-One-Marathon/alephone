@@ -128,7 +128,7 @@ void do_preferences(
 	{
 		change_screen_mode(&graphics_preferences->screen_mode, false);
 		paint_window_black();
-		initialize_screen(&graphics_preferences->screen_mode);
+		initialize_screen(&graphics_preferences->screen_mode,true);
 
 		/* Re fade in, so that we get the proper colortable loaded.. */
 		display_main_menu();
