@@ -153,6 +153,7 @@ struct preferences_dialog_data prefs_data[]={
 };
 #define NUMBER_OF_PREFS_PANELS (sizeof(prefs_data)/sizeof(struct preferences_dialog_data))
 
+static bool physics_valid= true;
 
 #ifdef USES_NIBS
 
@@ -580,9 +581,12 @@ void handle_preferences(
 			find_checksum_and_file_spec_from_control(ENVR_Map, _typecode_scenario,
 				&environment_preferences->map_file);
 
-		environment_preferences->physics_checksum=
-			find_checksum_and_file_spec_from_control(ENVR_Physics, _typecode_physics,
-				&environment_preferences->physics_file);
+		if(physics_valid)
+		{
+			environment_preferences->physics_checksum=
+				find_checksum_and_file_spec_from_control(ENVR_Physics, _typecode_physics,
+					&environment_preferences->physics_file);
+		}
 		
 		environment_preferences->shapes_mod_date=
 			find_checksum_and_file_spec_from_control(ENVR_Shapes, _typecode_shapes,
@@ -1314,9 +1318,6 @@ typedef map<int, vector<int> > files_by_directory_type;
 typedef map<int, files_by_directory_type> files_by_directory_by_typecode_type;
 files_by_directory_by_typecode_type files_by_directory_by_typecode;
 
-static bool physics_valid= true;
-
-
 static void setup_environment_dialog(
 	DialogPtr dialog,
 	short first_item,
@@ -1371,8 +1372,11 @@ static void hit_environment_item(
 			break;
 			
 		case iPHYSICS:
-			preferences->physics_checksum= find_checksum_and_file_spec_from_dialog(dialog, item_hit, 
-				_typecode_physics,	&preferences->physics_file);
+			if(physics_valid)
+			{
+				preferences->physics_checksum= find_checksum_and_file_spec_from_dialog(dialog, item_hit, 
+					_typecode_physics,	&preferences->physics_file);
+			}
 			break;
 			
 		case iSHAPES:
@@ -1877,6 +1881,13 @@ static void fill_in_popup_with_filetype(
 			physics_valid= false;
 			count++;
                         menu_items[type].push_back(NONE);
+		}
+	}
+	else
+	{
+		if (type == _typecode_physics)
+		{
+			physics_valid= true;
 		}
 	} 
 	
