@@ -243,6 +243,105 @@ void ShaderCallback(void *Data)
 	}
 }
 
+	
+// Needed for external lighting;
+// the first index is the color channel,
+// while the second index is in two parts,
+// the first three (0-2) multipled by the normal vector in dot-product fasion
+// and the fourth (3) added
+
+GLfloat ExternalLight[3][4];
+
+
+void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors)
+{
+	(void)(Data);
+	
+// Attempting to keep CB's code on hand
+#if 0
+
+	// Register usage:
+	// mm0/mm1: ExternalLight[0] (4 components)
+	// mm2/mm3: ExternalLight[1] (4 components)
+	// mm4/mm5: ExternalLight[2] (4 components)
+	// mm6:     Normal[0]/Normal[1]
+	// mm7:     Normal[2]/1.0
+
+	GLfloat tmp[2] = {0.0, 1.0};
+	__asm__ __volatile__("
+			femms\n
+			movq	0x00(%3),%%mm0\n
+			movq	0x08(%3),%%mm1\n
+			movq	0x10(%3),%%mm2\n
+			movq	0x18(%3),%%mm3\n
+			movq	0x20(%3),%%mm4\n
+			movq	0x28(%3),%%mm5\n
+			movl	8(%0),%%eax\n
+			movl	%%eax,(%4)\n
+		0:\n
+			prefetch 192(%0)\n
+			movq	(%0),%%mm6\n
+			movq	(%4),%%mm7\n
+			pfmul	%%mm0,%%mm6\n
+			pfmul	%%mm1,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			movd	%%mm7,(%1)\n
+			movq	(%0),%%mm6\n
+			movq	(%4),%%mm7\n
+			pfmul	%%mm2,%%mm6\n
+			pfmul	%%mm3,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			movd	%%mm7,4(%1)\n
+			movq	(%0),%%mm6\n
+			movq	(%4),%%mm7\n
+			pfmul	%%mm4,%%mm6\n
+			pfmul	%%mm5,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			movd	%%mm7,8(%1)\n
+		\n
+			add		$0x0c,%0\n
+			movl	8(%0),%%eax\n
+			movl	%%eax,(%4)\n
+			add		$0x0c,%1\n
+			dec		%2\n
+			jne		0b\n
+			femms\n"
+		:
+		: "g" (Normals), "g" (ColorPtr), "g" (NumVerts), "g" (ExternalLight), "g" (&tmp)
+		: "eax", "memory"
+	);
+
+#else
+
+	GLfloat *el0 = ExternalLight[0], *el1 = ExternalLight[1], *el2 = ExternalLight[2];
+	for (int k=0; k<NumVerts; k++)
+	{
+		GLfloat N0 = *(Normals++);
+		GLfloat N1 = *(Normals++);
+		GLfloat N2 = *(Normals++);
+		*(Colors++) =
+			el0[0]*N0 + 
+			el0[1]*N1 + 
+			el0[2]*N2 + 
+			el0[3];
+		*(Colors++) =
+			el1[0]*N0 + 
+			el1[1]*N1 + 
+			el1[2]*N2 + 
+			el1[3];
+		*(Colors++) =
+			el2[0]*N0 + 
+			el2[1]*N1 + 
+			el2[2]*N2 + 
+			el2[3];
+	}
+
+#endif
+}
+
 
 // Callback for drawing that window
 void DrawMainWindow()
@@ -313,8 +412,8 @@ void DrawMainWindow()
 		for (int c=0; c<3; c++)
 		{
 			for (int k=0; k<3; k++)
-				Renderer.ExternalLight[c][k] = 0.5*ModelViewMatrix[4*k + c];
-			Renderer.ExternalLight[c][3] = 0;
+				ExternalLight[c][k] = 0.5*ModelViewMatrix[4*k + c];
+			ExternalLight[c][3] = 0;
 		}
 		
 		if (Use_Z_Buffer)
@@ -641,8 +740,10 @@ int main(int argc, char **argv)
 	// Set up shader object
 	Shaders[0].Flags = 0;
 	Shaders[0].TextureCallback = ShaderCallback;
+	Shaders[0].LightingCallback = LightingCallback;
 	Shaders[1].Flags = 0;
 	Shaders[1].TextureCallback = ShaderCallback;
+	Shaders[1].LightingCallback = LightingCallback;
 	
 	// Set up for creating the main window
 	glutInitWindowSize(MainWindowWidth,MainWindowHeight);

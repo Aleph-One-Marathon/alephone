@@ -13,8 +13,19 @@
 struct ModelRenderShader
 {
 	unsigned int Flags;
+	
+	// This callback takes only one argument, whatever data is appropriate
+	// (the pointer after it)
 	void (* TextureCallback)(void *);
 	void *TextureCallbackData;
+	
+	// This callback takes not only whatever data is appropriate
+	// (the pointer after it),
+	// but also the number of vertices, the normals, the vertex positions,
+	// and the vertex-lighting color values, in that order.
+	// The normals and the positions are in model coordinates.
+	void (* LightingCallback)(void *, int, GLfloat *, GLfloat *, GLfloat *);
+	void *LightingCallbackData;
 	
 	ModelRenderShader() {obj_clear(*this);}
 };
@@ -31,17 +42,12 @@ class ModelRenderer
 	
 public:
 	
-	// Needed for depth-sorting the model triangles by centroid
+	// Needed for depth-sorting the model triangles by centroid;
+	// it is in model coordinates.
 	GLfloat ViewDirection[3];
 	
-	// Needed for external colors;
-	// the first index is the color channel,
-	// while the second index is in two parts,
-	// the first three (0-2) multipled by the normal vector in dot-product fasion
-	// and the fourth (3) added
-	
-	GLfloat ExternalLight[3][4];
-	
+	// External lighting now done with a shader callback
+		
 	// Render flags:
 	enum {
 		Textured	= 0x0001,
