@@ -13,7 +13,13 @@
 
  
 
-  
+#ifdef __MVCPP__
+
+#include <windows.h>
+#include "sdl_cseries.h"			// for type 'Rect'
+#include "screen.h"					// for change_screen_mode()
+
+#endif  
   
 #include <math.h>
 #include <stdlib.h>
