@@ -382,10 +382,10 @@ static boolean process_map_wad(struct wad_data *wad, boolean restoring_game, sho
 
 /* Final three calls, must be in this order! */
 static void recalculate_redundant_map(void);
-static void scan_and_add_platforms(struct static_platform_data *platform_static_data, short count);
+static void scan_and_add_platforms(byte *platform_static_data, short count);
 static void complete_loading_level(short *_map_indexes, short map_index_count, 
-	struct static_platform_data *platform_data, short platform_data_count,
-	struct platform_data *actual_platform_data, short actual_platform_data_count, short version);
+	byte *_platform_data, short platform_data_count,
+	byte *actual_platform_data, short actual_platform_data_count, short version);
 
 #endif
 #ifdef CB
@@ -578,19 +578,9 @@ boolean load_level_from_map(
 void complete_loading_level(
 	short *_map_indexes,
 	short map_index_count,
-#ifdef LP
-	struct static_platform_data *platform_data,
-#endif
-#ifdef CB
-	struct saved_static_platform_data *platform_data,
-#endif
+	byte *_platform_data,
 	short platform_data_count,
-#ifdef LP
-	struct platform_data *actual_platform_data,
-#endif
-#ifdef CB
-	struct saved_platform_data *actual_platform_data,
-#endif
+	byte *actual_platform_data,
 	short actual_platform_data_count,
 	short version)
 {
@@ -599,11 +589,14 @@ void complete_loading_level(
 	load_redundant_map_data(_map_indexes, map_index_count);
 
 	/* Add the platforms. */
-	if(platform_data || (platform_data==NULL && actual_platform_data==NULL))
+	if(_platform_data || (_platform_data==NULL && actual_platform_data==NULL))
 	{
-		scan_and_add_platforms(platform_data, platform_data_count);
+		scan_and_add_platforms(_platform_data, platform_data_count);
 	} else {
 		assert(actual_platform_data);
+		
+		unpack_platform_data(actual_platform_data,platforms,actual_platform_data_count);
+/*
 #ifdef SDL
 		// CB: convert saved_platform_data to platform_data
 		for (int i=0; i<actual_platform_data_count; i++) {
@@ -630,6 +623,7 @@ void complete_loading_level(
 #else
 		objlist_copy(platforms, actual_platform_data, actual_platform_data_count);
 #endif
+*/
 		dynamic_world->platform_count= actual_platform_data_count;
 	}
 
@@ -1662,22 +1656,19 @@ boolean save_game_file(FileSpecifier& File)
 
 /* -------- static functions */
 static void scan_and_add_platforms(
-#ifdef LP
-	struct static_platform_data *platform_static_data,
-#endif
-#ifdef CB
-	struct saved_static_platform_data *platform_static_data,
-#endif
+	byte *platform_static_data,
 	short count)
 {
 	struct polygon_data *polygon;
 	short loop;
+	/*
 #ifdef LP
 	struct static_platform_data *static_data;
 #endif
 #ifdef CB
 	struct saved_static_platform_data *static_data;
 #endif
+	*/
 	short platform_static_data_index;
 	
 	polygon= map_polygons;
@@ -1687,6 +1678,20 @@ static void scan_and_add_platforms(
 		{
 			/* Search and find the extra data.  If it is not there, use the permutation for */
 			/* backwards compatibility! */
+
+			byte *_static_data= platform_static_data;
+			for(platform_static_data_index= 0; platform_static_data_index<count; ++platform_static_data_index)
+			{
+				static_platform_data TempPlatform;
+				_static_data = unpack_static_platform_data(_static_data, &TempPlatform);
+				if(TempPlatform.polygon_index==loop)
+				{
+					new_platform(&TempPlatform, loop);
+					break;
+				}
+			}
+			
+#if 0
 			static_data= platform_static_data;
 			for(platform_static_data_index= 0; platform_static_data_index<count; ++platform_static_data_index)
 			{
@@ -1711,6 +1716,7 @@ static void scan_and_add_platforms(
 				}
 				static_data++;
 			}
+#endif
 			
 			/* DIdn't find it- use a standard platform */
 			if(platform_static_data_index==count)
@@ -1993,7 +1999,12 @@ boolean process_map_wad(
 		count= data_length/SIZEOF_projectile_data;
 		assert(count*SIZEOF_projectile_data==data_length);
 		unpack_projectile_data(data,projectiles,count);
-
+		
+		data= (unsigned char *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
+		count= data_length/SIZEOF_platform_data;
+		assert(count*SIZEOF_platform_data==data_length);
+		unpack_platform_data(data,platforms,count);
+		
 		data= (unsigned char *)extract_type_from_wad(wad, WEAPON_STATE_TAG, &data_length);
 		count= data_length/SIZEOF_player_weapon_data;
 		assert(count*SIZEOF_player_weapon_data==data_length);
@@ -2004,7 +2015,7 @@ boolean process_map_wad(
 		byte *map_index_data;
 		short map_index_count;
 #ifdef LP
-		saved_platform *platform_structures;
+		byte *platform_structures;
 #endif
 #ifdef CB
 		struct saved_platform_data *platform_structures;
@@ -2024,6 +2035,20 @@ boolean process_map_wad(
 
 		assert(is_preprocessed_map&&map_index_count || !is_preprocessed_map&&!map_index_count);
 
+		data= (unsigned char *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
+		count= data_length/SIZEOF_static_platform_data;
+		assert(count*SIZEOF_static_platform_data==data_length);
+		
+		platform_structures= (unsigned char *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
+		platform_structure_count= data_length/SIZEOF_platform_data;
+		assert(platform_structure_count*SIZEOF_platform_data==data_length);
+		
+		complete_loading_level((short *) map_index_data, map_index_count,
+			data, count, platform_structures,
+			platform_structure_count, version);
+	
+		// LP: don't need this stuff
+#if 0
 #ifdef SDL
 		data= (unsigned char *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
 		count= data_length/SIZEOF_saved_static_platform_data;
@@ -2075,8 +2100,9 @@ boolean process_map_wad(
 		
 		if (unpacked_static_platform_structures) delete []unpacked_static_platform_structures;
 		if (unpacked_platform_structures) delete []unpacked_platform_structures;
+#endif
 	}
-
+	
 	/* ... and bail */
 	return TRUE;
 }
@@ -2244,7 +2270,7 @@ struct save_game_data save_data[]=
 	{ MONSTERS_STRUCTURE_TAG, SIZEOF_monster_data, TRUE }, // FALSE },
 	{ EFFECTS_STRUCTURE_TAG, SIZEOF_effect_data, TRUE }, // FALSE },
 	{ PROJECTILES_STRUCTURE_TAG, SIZEOF_projectile_data, TRUE }, // FALSE },
-	{ PLATFORM_STRUCTURE_TAG, sizeof(struct platform_data), FALSE },
+	{ PLATFORM_STRUCTURE_TAG, SIZEOF_platform_data, TRUE }, // FALSE },
 	{ WEAPON_STATE_TAG, SIZEOF_player_weapon_data, TRUE }, // FALSE },
 	{ TERMINAL_STATE_TAG, sizeof(byte), FALSE }
 };
