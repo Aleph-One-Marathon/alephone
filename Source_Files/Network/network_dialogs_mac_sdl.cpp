@@ -429,8 +429,8 @@ bool network_join(
 		accepted_into_game = false;
 
 		GetPort(&old_port);
-		SetPort(GetWindowPort(GetDialogWindow(dialog)));
-		ShowWindow(GetDialogWindow(dialog));
+		SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+		ShowWindow((GrafPtr)GetDialogWindow(dialog));
 	
 		do
 		{
@@ -438,7 +438,7 @@ bool network_join(
 			switch(item_hit)
 			{
 				case iJOIN:
-					SetPort(GetWindowPort(GetDialogWindow(dialog)));
+					SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 					GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
 					GetDialogItemText(item_handle, ptemporary);
 					if (*temporary > MAX_NET_PLAYER_NAME_LENGTH) *temporary = MAX_NET_PLAYER_NAME_LENGTH;
@@ -456,7 +456,13 @@ bool network_join(
 						GetDialogItemText(item_handle, ptemporary);
 						if (*temporary > kJoinHintingAddressLength)
 							*temporary = kJoinHintingAddressLength;
+#if defined(TARGET_API_MAC_CARBON)
 						CopyPascalStringToC(ptemporary, sJoinHintingAddress);
+#else
+						int len = ptemporary[0];
+						memcpy(sJoinHintingAddress,ptemporary+1,len);
+						sJoinHintingAddress[len] = 0;
+#endif
 					}
 					else
 						sUserWantsJoinHinting = false;
@@ -469,7 +475,7 @@ bool network_join(
 						sUserWantsJoinHinting ? sJoinHintingAddress : NULL
 						);
 					
-#if !defined(TARGET_API_MAC_CARBON)
+#if !defined(USE_CARBON_ACCESSORS)
 					SetCursor(&qd.arrow);
 #endif
 					if(did_join)
@@ -486,7 +492,11 @@ bool network_join(
 #endif
 						InsetRect(&item_rect, -4, -4);
 						EraseRect(&item_rect);
+#if defined(TARGET_MAC_API_CARBON)
 						InvalWindowRect(GetDialogWindow(dialog), &item_rect); // force it to be updated
+#else
+						InvalRect(&item_rect);	// Assumed to be the dialog-box window
+#endif
 						
 						modify_control(dialog, iJOIN_TEAM, CONTROL_INACTIVE, NONE);
 						modify_control(dialog, iJOIN_COLOR, CONTROL_INACTIVE, NONE);
@@ -595,7 +605,7 @@ bool network_game_setup(
 	game_setup_filter_upp= NewModalFilterUPP(game_setup_filter_proc);
 	assert(game_setup_filter_upp);
 	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 
 	game_information->net_game_type= fill_in_game_setup_dialog(dialog, player_information, allow_all_levels);
 
@@ -607,7 +617,7 @@ bool network_game_setup(
 		{
 			ModalDialog(game_setup_filter_upp, &item_hit);
 			
-			SetPort(GetWindowPort(GetDialogWindow(dialog)));
+			SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 			
 			switch (item_hit)
 			{
@@ -819,7 +829,12 @@ void fill_in_entry_points(
 	while (get_indexed_entry_point(&entry, &map_index, entry_flags))
 	{
 		AppendMenu(menu, "\p ");
+#if defined(TARGET_API_MAC_CARBON)
 		CopyCStringToPascal(entry.level_name, ptemporary);
+#else		
+		strcpy(temporary, entry.level_name); 
+		c2pstr(temporary);
+#endif
 		menu_index++;
 		if(entry.level_name[0])
 		{
@@ -942,7 +957,11 @@ found_player_callback(const SSLP_ServiceInstance* player)
 	
 	found_players.push_back(player);
 	
+#if defined(TARGET_API_MAC_CARBON)
 	GetListDataBounds(network_list_box, &bounds);
+#else
+	(*network_list_box)->dataBounds = bounds;
+#endif
 	theIndex = bounds.bottom + 1;
 	LAddRow(1, theIndex, network_list_box);
 	SetPt(&cell, 0, theIndex - 1);
@@ -989,7 +1008,12 @@ player_name_changed_callback(const SSLP_ServiceInstance* player) {
 		return;	// didn't know about it anyway
 
 	SetPt(&cell, 0, theIndex);
+#if defined(TARGET_API_MAC_CARBON)
 	CopyCStringToPascal(player->sslps_name, ptemporary);
+#else		
+	strcpy(temporary, player->sslps_name); 
+	c2pstr(temporary);
+#endif
 	LSetCell(ptemporary+1, ptemporary[0], cell, network_list_box);
 	
 #if defined(LIST_BOX_AS_CONTROL)
@@ -1024,7 +1048,7 @@ static pascal Boolean gather_dialog_filter_proc(
 	/* preprocess events */	
 	handled= false;
 	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 
 	/* update the names list box; if we donÕt have a selection afterwords, dim the ADD button */
 
@@ -1211,7 +1235,7 @@ static pascal Boolean join_dialog_filter_proc(
 
 	/* preprocess events */	
 	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 
 	/* give the player area time (for animation, etc.) */
 
@@ -1255,7 +1279,12 @@ static pascal Boolean join_dialog_filter_proc(
 
 				GetDialogItem(dialog, iJOIN_MESSAGES, &item_type, &item_handle, &item_rect);
 				get_network_joined_message(joinMessage, info->net_game_type);
+#if defined(TARGET_API_MAC_CARBON)
 				CopyCStringToPascal(joinMessage, ptemporary);
+#else
+				strcpy(temporary, joinMessage); 
+				c2pstr(temporary);
+#endif
 				SetDialogItemText(item_handle, ptemporary);
 			}
 			update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
@@ -1304,7 +1333,7 @@ static pascal Boolean game_setup_filter_proc(
 	(void)(event, item_hit);
 
 	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 	GetDialogItem(dialog, iGATHER_NAME, &item_type, &item_handle, &item_rect);
 	GetDialogItemText(item_handle, ptemporary);
 	if (*temporary)
@@ -1421,18 +1450,27 @@ static pascal void update_player_list_item(
 	FontInfo     finfo;
 	
 	CGrafPtr     port = GetWindowPort(GetDialogWindow(dialog));
+#if defined(USE_CARBON_ACCESSORS)
 	SInt16       pixelDepth = (*GetPortPixMap(port))->pixelSize;
+#else
+	SInt16       pixelDepth = (*port->portPixMap)->pixelSize;
+#endif
 
+// LP: the Classic version I've kept theme-less for simplicity
+#if defined(TARGET_API_MAC_CARBON)
 	ThemeDrawingState savedState;
 	ThemeDrawState curState =
 		IsWindowActive(GetDialogWindow(dialog))?kThemeStateActive:kThemeStateInactive;
+#endif
 
 	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
+#if defined(TARGET_API_MAC_CARBON)
 	GetThemeDrawingState(&savedState);
 	
 	GetDialogItem(dialog, item_num, &item_type, &item_handle, &item_rect);
 	DrawThemePrimaryGroup (&item_rect, curState);
+#endif
 	
 	GetFontInfo(&finfo);
 	height = finfo.ascent + finfo.descent + finfo.leading;
@@ -1452,7 +1490,9 @@ static pascal void update_player_list_item(
 		}
 	}
 	
+#if defined(TARGET_API_MAC_CARBON)
 	SetThemeDrawingState(savedState, true);
+#endif
 	SetPort(old_port);
 }
 
@@ -1513,9 +1553,7 @@ void menu_index_to_level_entry(
 	}
 	
 #if !defined(TARGET_API_MAC_CARBON)
-	Cursor arrow;
-	GetQDGlobalsArrow(&arrow);
-	SetCursor(&arrow);
+	SetCursor(&qd.arrow);
 #endif
 	return;
 }
@@ -1763,7 +1801,7 @@ void display_net_game_stats(
 	ShowWindow(GetDialogWindow(dialog));
 	
 	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 
 	do
 	{
@@ -1790,7 +1828,11 @@ void display_net_game_stats(
 
 					/* Erase! */
 					EraseRect(&item_rect);
+#if defined(TARGET_MAC_API_CARBON)
 					InvalWindowRect(GetDialogWindow(dialog), &item_rect);
+#else
+					InvalRect(&item_rect);	// Assumed to be the dialog-box window
+#endif
 
 					current_graph_selection= value;
 				}
@@ -1850,14 +1892,14 @@ static short create_graph_popup_menu(
 	has_scores= get_network_score_text_for_postgame(temporary, false);
 	if(has_scores)
 	{
-#if defined(USE_CARBON_ACCESSORS)
 		Str255 pscore_temp;
+#if defined(USE_CARBON_ACCESSORS)
 		CopyCStringToPascal(temporary, pscore_temp);
-		AppendMenu(graph_popup, pscore_temp);
-#else
-		c2pstr(temporary);
-		AppendMenu(graph_popup, ptemporary);
+#else		
+		strcpy((char *)pscore_temp, temporary); 
+		c2pstr((char *)pscore_temp);
 #endif
+		AppendMenu(graph_popup, pscore_temp);
 		current_graph_selection= CountMenuItems(graph_popup);
 	}
 	
@@ -1872,14 +1914,14 @@ static short create_graph_popup_menu(
 		if(has_scores)
 		{
 			get_network_score_text_for_postgame(temporary, true);
-#if defined(USE_CARBON_ACCESSORS)
 			Str255 ppostgame;
+#if defined(TARGET_API_MAC_CARBON)
 			CopyCStringToPascal(temporary, ppostgame);
-			AppendMenu(graph_popup, ppostgame);
 #else
-			c2pstr(temporary);
-			AppendMenu(graph_popup, ptemporary);
+			strcpy((char *)ppostgame,temporary);
+			c2pstr((char *)ppostgame);
 #endif
+			AppendMenu(graph_popup, ppostgame);
 		}
 	} 
 
@@ -1905,7 +1947,7 @@ static pascal Boolean display_net_stats_proc(
 
 	/* preprocess events */	
 	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 	
 	switch(event->what)
 	{
@@ -2089,7 +2131,7 @@ static pascal void update_damage_item_proc(
 	TextSpec old_font;
 	
 	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+	SetPort((GrafPtr)GetWindowPort(GetDialogWindow(dialog)));
 
 	GetNewTextSpec(&font_info, fontTOP_LEVEL_FONT, 0);
 	GetFont(&old_font);
