@@ -39,9 +39,6 @@ Sep 23, 2000 (Loren Petrich):
 
 Dec 3, 2000 (Loren Petrich):
 	Added quadrupling of usual buffer size because RAM is now readily available
-
-Mar 5, 2002 (Woody Zenfell):
-    New prototypes for SDL network audio
 */
 
 class FileSpecifier;
@@ -538,14 +535,10 @@ bool open_sound_file(FileSpecifier& File);
 // LP change: get the parser for the sound elements (name "sounds")
 XML_ElementParser *Sounds_GetParser();
 
-#ifdef SDL
 // Play MacOS sound resource
+#ifdef SDL
 extern void play_sound_resource(LoadedResource &rsrc);
 extern void stop_sound_resource(void);
-
-// ZZZ: operate on network audio
-extern void ensure_network_audio_playing();
-extern void stop_network_audio();
 #endif
 
 #endif

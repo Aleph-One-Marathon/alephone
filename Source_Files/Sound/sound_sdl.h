@@ -26,9 +26,6 @@
  *
  *  Feb 22, 2002 (Woody Zenfell)
  *     Added ability to disable DirectShow-based music playback for building on systems without the SDK.
- *
- *  Mar 3-8, 2002 (Woody Zenfell)
- *     Realtime network microphone audio playback support
  */
 
 #include <SDL_endian.h>
@@ -37,7 +34,6 @@
 #include "music.h"
 #include "song_definitions.h"
 #include "XML_LevelScript.h"   // For getting level music. 
-#include "network_speaker_sdl.h"
 
 // ZZZ: define this if you don't want to bring DirectShow into the mix
 // (e.g. if you can't build because you don't have the SDK)
@@ -49,11 +45,9 @@ const int SM_SOUND_CHANNELS = MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHA
 // Private channels
 const int MUSIC_CHANNEL = SM_SOUND_CHANNELS;
 const int RESOURCE_CHANNEL = SM_SOUND_CHANNELS + 1;
-// ZZZ: network audio channel
-const int NETWORK_AUDIO_CHANNEL = SM_SOUND_CHANNELS + 2;
 
 // Total number of sound channels
-const int TOTAL_SOUND_CHANNELS = SM_SOUND_CHANNELS + 3;
+const int TOTAL_SOUND_CHANNELS = SM_SOUND_CHANNELS + 2;
 
 
 // SDL sound channel data
@@ -122,9 +116,6 @@ static IMediaSeeking* gp_media_seeking = NULL;
 static IMediaEventEx* gp_media_event_ex = NULL;
 #endif
 #endif
-
-// ZZZ: network_speaker support
-static NetworkSpeakerSoundBuffer*   sNetworkAudioBufferDesc;
 
 // From FileHandler_SDL.cpp
 extern void get_default_sounds_spec(FileSpecifier &file);
@@ -980,56 +971,6 @@ static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch)
 }
 
 
-// ZZZ: realtime microphone stuff
-// Is the locking necessary?  If checking c->active is the first thing the interrupt proc does,
-// but setting c->active is the last thing we do, there's no way we can get mixed up, right?
-void
-ensure_network_audio_playing() {
-    if(!sdl_channels[NETWORK_AUDIO_CHANNEL].active) {
-        // Get the audio to play
-        sNetworkAudioBufferDesc = dequeue_network_speaker_data();
-
-        if(sNetworkAudioBufferDesc != NULL) {
-            // Lock sound subsystem
-	        SDL_LockAudio();
-
-        	sdl_channel *c = sdl_channels + NETWORK_AUDIO_CHANNEL;
-
-            // Initialize and start channel
-            c->stereo           = kNetworkAudioIsStereo;
-            c->sixteen_bit      = kNetworkAudioIs16Bit;
-            c->signed_8bit      = kNetworkAudioIsSigned8Bit;
-            c->bytes_per_frame  = kNetworkAudioBytesPerFrame;
-	        c->data             = sNetworkAudioBufferDesc->mData;
-	        c->length           = sNetworkAudioBufferDesc->mLength;
-	        c->loop_length      = 0;
-	        c->rate             = (kNetworkAudioSampleRate << 16) / desired.freq;
-	        c->left_volume      = 0x100;
-            c->right_volume     = 0x100;
-	        c->counter          = 0;
-	        c->active           = true;
-
-	        // Unlock sound subsystem
-	        SDL_UnlockAudio();
-        }
-    }
-}
-
-// I can see locking here because we're invalidating some storage, and we want to
-// make sure the play routine does not trail on a little bit using that storage.
-void
-stop_network_audio() {
-	SDL_LockAudio();
-	sdl_channels[NETWORK_AUDIO_CHANNEL].active = false;
-    if(sNetworkAudioBufferDesc != NULL) {
-        if(is_sound_data_disposable(sNetworkAudioBufferDesc))
-            delete [] sNetworkAudioBufferDesc->mData;
-        sNetworkAudioBufferDesc = NULL;
-    }
-	SDL_UnlockAudio();
-}
-
-
 /*
  *  Sound callback function
  */
@@ -1114,25 +1055,6 @@ static inline void calc_buffer(T *p, int len, bool stereo)
 
 							// Resource channel, turn it off
 							c->active = false;
-
-                        }
-                        else if (i == NETWORK_AUDIO_CHANNEL) {
-
-                            // ZZZ: if we're supposed to dispose of the storage, so be it
-                            // (new/delete are thread-safe, right?)
-                            if(is_sound_data_disposable(sNetworkAudioBufferDesc))
-                                delete [] sNetworkAudioBufferDesc->mData;
-
-                            // Get the next buffer of data
-                            sNetworkAudioBufferDesc = dequeue_network_speaker_data();
-
-                            // If we have a buffer to play, set it up; else deactivate the channel.
-                            if(sNetworkAudioBufferDesc != NULL) {
-                                c->data     = sNetworkAudioBufferDesc->mData;
-                                c->length   = sNetworkAudioBufferDesc->mLength;
-                            }
-                            else
-                                c->active   = false;
 
 						} else {
 
