@@ -17,6 +17,9 @@ Feb 10, 2000 (Loren Petrich):
 	
 Jul 1, 2000 (Loren Petrich):
 	Made effects accessor an inline function
+
+Aug 30, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 // LP addition:
@@ -109,7 +112,7 @@ enum /* effect types */
 
 /* uses SLOT_IS_USED(), SLOT_IS_FREE(), MARK_SLOT_AS_FREE(), MARK_SLOT_AS_USED() macros (0x8000 bit) */
 
-struct effect_data /* 16 bytes */
+struct effect_data /* 16 bytes LP: really 32 bytes */
 {
 	short type;
 	short object_index;
@@ -121,6 +124,9 @@ struct effect_data /* 16 bytes */
 	
 	short unused[11];
 };
+const int SIZEOF_effect_data = 32;
+
+const int SIZEOF_effect_definition = 14;
 
 /* ---------- globals */
 
@@ -159,8 +165,13 @@ struct effect_data *get_effect_data(short effect_index);
 #endif
 */
 
-// LP addition: get effectr-definition size
-int get_effect_defintion_size();
+// LP: to pack and unpack this data;
+// these do not make the definitions visible to the outside world
+
+uint8 *unpack_effect_data(uint8 *Stream, effect_data *Objects, int Count = 1);
+uint8 *pack_effect_data(uint8 *Stream, effect_data *Objects, int Count = 1);
+uint8 *unpack_effect_definition(uint8 *Stream, int Count = 1);
+uint8 *pack_effect_definition(uint8 *Stream, int Count = 1);
 
 #endif
 
