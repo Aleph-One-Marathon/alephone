@@ -420,10 +420,10 @@ void initialize_screen(
 		/* get rid of the menu bar */
 		myHideMenuBar(GetMainDevice());
 		
-		uncorrected_color_table= (struct color_table *)malloc(sizeof(struct color_table));
-		world_color_table= (struct color_table *)malloc(sizeof(struct color_table));
-		visible_color_table= (struct color_table *)malloc(sizeof(struct color_table));
-		interface_color_table= (struct color_table *)malloc(sizeof(struct color_table));
+		uncorrected_color_table= new color_table;
+		world_color_table= new color_table;
+		visible_color_table= new color_table;
+		interface_color_table= new color_table;
 		assert(uncorrected_color_table && world_color_table && visible_color_table && interface_color_table);
 
 		backdrop_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
