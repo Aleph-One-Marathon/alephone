@@ -115,10 +115,10 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model)
 	
 	long Len = 0;
 	OFile.GetLength(Len);
-	if (Len <= 0) break;
+	if (Len <= 0) return true;
 	
 	vector<char> FileContents(Len);
-	if (!OFile.Read(Len,&FileContents[0])) break;
+	if (!OFile.Read(Len,&FileContents[0])) return false;
 	
 	char FileName[256];
 	Spec.GetName(FileName);
@@ -189,7 +189,7 @@ void Dim3_SetupParseTree()
 {
 	// Lazy init
 	if (Dim3_ParserInited) return;
-	Dim3_ParserInited = return;
+	Dim3_ParserInited = true;
 }
 
 
