@@ -144,7 +144,7 @@ struct NetPacket
 	long server_net_time;
 	short required_action_flags;                         // handed down from on high (the server)
 	short action_flag_count[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];  // how many each player actually has.
-	long action_flags[1];
+	uint32 action_flags[1];
 };
 typedef struct NetPacket NetPacket, *NetPacketPtr;
 
@@ -1590,7 +1590,7 @@ static void NetProcessIncomingBuffer(
 static void NetAddFlagsToPacket(
 	NetPacketPtr packet)
 {
-	long *action_flags;
+	uint32 *action_flags;
 	short player_index, extra_flags, flags_to_remove, action_flag_index;
 	static bool already_here = false;
 	
@@ -2132,7 +2132,7 @@ static void drop_upring_player(
 	void)
 {
 	short flag_count, index, oldNextPlayerIndex;
-	long *action_flags;
+	uint32 *action_flags;
 	NetPacketPtr packet_data= (NetPacketPtr) (ringFrame->data + sizeof (NetPacketHeader));
 
 	/* Reset the retries for the new packet. */
@@ -2653,7 +2653,7 @@ static void process_packet_buffer_flags(
 static void process_flags(
 	NetPacketPtr packet_data)
 {
-	long *action_flags= packet_data->action_flags;
+	uint32 *action_flags= packet_data->action_flags;
 	short player_index;
 
 	/* Process the action flags (including our old ones) */
@@ -2694,7 +2694,7 @@ static void process_flags(
 //			dprintf("will stuff %d flags", packet_data->required_action_flags);				
 			for (index= 0; index<packet_data->required_action_flags; index++)
 			{
-				long flag= NET_DEAD_ACTION_FLAG;
+				uint32 flag= NET_DEAD_ACTION_FLAG;
 
 				topology->players[player_index].net_dead= true;
 				
@@ -2716,7 +2716,7 @@ static void become_the_gatherer(
 	NetPacketPtr packet_data)
 {
 	short flag_count, index, oldNextPlayerIndex;
-	long *action_flags;
+	uint32 *action_flags;
 	
 	flag_count= 0;
 

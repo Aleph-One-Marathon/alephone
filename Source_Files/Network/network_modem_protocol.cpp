@@ -230,7 +230,7 @@ struct player_packet_data {
 
 struct server_packet_data {
 	unsigned long sequence;
-	long flags[1]; // this is actually number_of_players flags....
+	uint32 flags[1]; // this is actually number_of_players flags....
 };
 
 /*
@@ -1145,7 +1145,7 @@ static void process_server_packet(
 
 	for(player_index= 0; player_index<topology->player_count; ++player_index)
 	{
-		long *flag= &packet_data->flags[player_index];
+		uint32 *flag= &packet_data->flags[player_index];
 
 		process_action_flags(player_index, flag, 1);	
 #ifdef DEBUG_MODEM
