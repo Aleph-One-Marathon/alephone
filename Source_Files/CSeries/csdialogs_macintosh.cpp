@@ -956,8 +956,10 @@ bool RunModalDialog(
 	
 	if (IsSheet)
 #if USE_SHEETS
+	{
 		SetThemeWindowBackground(DlgWindow, kThemeBrushSheetBackgroundTransparent, false);
 		ShowSheetWindow(DlgWindow, ActiveNonFloatingWindow());
+	}
 #else
 		ShowWindow(DlgWindow);
 #endif
