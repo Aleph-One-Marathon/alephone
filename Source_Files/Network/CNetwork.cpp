@@ -20,6 +20,27 @@ CNETWORK.CPP
 
 */
 
+void Network::Network()
+{
+  NetworkVersionMessageHandler = newMessageHandlerMethod(this, &Network::handleNetworkVersionMessage);
+  CapabilitiesMessageHandler = newMessageHandlerMethod(this, &Network::handleCapabilitiesMessage);
+  ServerToClientMessageHandler = newMessageHandlerMethod(this, &Network::handleServerToClientMessage);
+  DisconnectNowMessageHandler = newMessageHandlerMethod(this, &Network::handleDisconnectNowMessage);
+  ChatNamesMessageHandler = newMessageHandlerMethod(this, &Network::handleChatNamesMessage);
+  PlayerInfoMessageHandler = newMessageHandlerMethod(this, &Network::handlePlayerInfoMessage);
+  JoinAcceptedMessageHandler = newMessageHandlerMethod(this, &Network::handleJoinAcceptedMessage);
+  TopologyMessageHandler = newMessageHandlerMethod(this, &Network::handleTopologyMessage);
+  ChangeMapMessageHandler = newMessageHandlerMethod(this, &Network::handleChangeMapMessage);
+  MapMessageHandler = newMessageHandlerMethod(this, &Network::handleMapMessage);
+  PhysicsMessageHandler = newMessageHandlerMethod(this, &Network::handlePhysicsMessage);
+  LuaMessageHandler = newMessageHandlerMethod(this, &Network::handleLuaMessage);
+  NetgameStartMessageHandler = newMessageHandlerMethod(this, &Network::handleNetgameStartMessage);
+  ChatMessageHandler = newMessageHandlerMethod(this, &Network::handleChatMessage);
+  UnknownMessageHandler = newMessageHandlerMethod(this, &Network::handleUnknownMessage);
+}
+
+
+
 bool Network::Enter() 
 {
   
@@ -156,31 +177,15 @@ void Network::InitializeTopology(game_info gameInfo, player_info playerInfo)
 void Network::BecomeGatherer() {
   assert(state_ == stateInitialized);
   // start listening for connections
-  communicationsChannelFactory_ = new CommunicationsChannelFactory(15267);
+  communicationsChannelFactory_ = new CommunicationsChannelFactory(15367);
   if (communicationsChannelFactory_->isFunctional()) {
-    state_ = stateGListening;
+    state_ = stateGGathering;
     listeningChannel = communicationsChannelFactory_->newIncomingConnection();
   } else {
     // can't gather for some reason, error out
   }
 }
     
-
-void Network::BeginGathering(game_info gameInfo, player_info playerInfo,
-			     bool resuming_game)
-{
-  assert(state_ == stateGListening);
-  resuming_saved_game_ = resuming_game;
-  InitializeTopology(gameInfo, playerInfo);
-  state_ = stateGGathering;
-  
-  // send a begin joining message to everyone in the ready to join state
-  NumberMessage message(kBeginJoiningMessage);
-  SendMessageToEveryone(message, stateGJReadyToJoin);
-
-  return true;
-}
-
 void Network::CancelGathering()
 {
   assert(state_ == stateGGathering);
@@ -284,6 +289,185 @@ void Network::DistributeGameData(void) {
   free(mapData_);
   mapData_ = NULL;
 }
+
+bool Network::GathererAndActive() {
+  return (state_ == stateGGathering ||
+	  state_ == stateGSendingGameData ||
+	  state_ == stateGInGame);
+}
+
+void Network::handleNetworkVersionMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+  if (GathererAndActive() &&
+      clientStates[clientIndex] == stateGJAwaitingVersion) { 
+    // reply with our network version
+    NumberMessage message(kVersionMessage, GetNetworkVersion());
+    clientChannels[clientIndex]->enqueueOutgoingMessage(message);
+    clientStates[clientIndex] == stateGJAwaitingCapabilities;
+  } else if (state_ == stateJAwaitingVersion) { 
+    // reply with capabilities
+    BigChunkOfDataMessage capabilitiesMessage(kCapabilitiesMessage, NULL, 0); // hehe
+    serverChannel_.enqueueOutgoingMessage(capabilitiesMessage);
+    state_ == stateJAwaitingCapabilities;
+
+  } else {
+    // ignore the message and log the error
+  }
+}
+
+void Network::handleCapabilitiesMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+  if (GathererAndActive() &&
+      clientStates[clientIndex] == stateGJAwaitingCapabilities) {
+    // act on capabilities
+    
+    // including replying with our own capabilities
+    BigChunkOfDataMessage capabilitiesMessage(kCapabilitiesMessage, NULL, 0);
+    clientChannels[clientIndex]->enqueueOutgoingMessage(message);
+    // wait for player info
+    clientStates[clientIndex] = stateGJAwaitingJoinInfo;
+  } else if (state_ == stateJAwaitingCapabilities) {
+    // reply with join info
+    PlayerInfoMessage playerInfoMessage(topology_->players[local_player_index_]);
+    serverChannel_.enqueueOutgoingMessage(playerInfoMessage);
+    // wait for chat names
+    state_ == stateJAwaitingChatInfo;
+  } else {
+    // ignore the message and log the error
+  }
+}
+					
+void Network::handleServerToClientMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+  // for now, ignore server to client messages
+}
+
+void Network::handleDisconnectNowMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+  // nyi
+}
+
+void Network::handleChatNamesMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+  if (GathererAndActive()) {
+    // ignore the message and log the error
+  } else if (state_ == stateJAwaitingChatInfo) {
+    // copy my chat names stuff into my client array
+    
+    state_ = stateJAwaitingAcceptJoin;
+  } else {
+    // ignore the message and log the error
+  }
+}
+
+void Network::handlePlayerInfoMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+  if (GathererActive()) {
+    if (clientStates[clientIndex] == stateGJAwaitingJoinInfo) {
+      // add this person's info to the list of clients
+      clients[clientIndex] = new player_info;
+      memcpy(clients[clientIndex], message->playerInfo(), sizeof(player_info));
+      
+      // he's waiting for us to gather him, now
+      clientStates[clientIndex] == stateGJAwaitingGather;
+      
+      // send him the chat names
+      ChatNamesMessage chatNamesMessage();
+      clientsChannels_[clientIndex]->enqueueOutgoingMessage(chatNamesMessage);
+      
+      // callback the interface and say this client is available for gathering
+      
+      // update the clients who already have the chat name list with this client's info
+      PlayerInfoMessage playerInfoMessage(message->playerInfo(), clientIndex);
+      for (int i = 0; i < MAX_CONNECTIONS; i++) {
+	if (clientStates[i] == stateGJAwaitingGather ||
+	    clientStates[i] == stateGJAwaitingReadyToPlay ||
+	    clientStates[i] == stateGJInGame) {
+	  clientChannels_[i]->enqueueOutgoingMessage(playerInfoMessage);
+	}
+      }
+    } else if (clientStates[clientIndex] == stateGJAwaitingAcceptJoin ||
+	       clientStates[clientIndex] == stateGJAwaitingLevelInfo) {
+      // implement changing your player info before the game has started
+    }
+  } else if (state_ == stateJAwaitingAcceptJoin ||
+	     state_ == stateJAwaitingLevelInfo || 
+	     state_ == stateJAwaitingNetGameStart ||
+	     state_ == stateJInGame) {
+    // copy this person's new info in
+    if (clients[message->index()]) {
+      memcpy(clients[message->index()], message->playerInfo(), sizeof(player_info));
+    } else {
+      // add this guy
+      clients[message->index()] = new player_info;
+      memcpy(clients[message->index()], message->playerInfo(), sizeof(player_info));
+    }
+  } else {
+    // ignore the message and log the error
+  }
+}
+
+void Network::handleJoinAcceptedMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+
+  if (state_ == stateJAwaitingAcceptJoin) {
+    // we've been gathered; update the interface, and change our state
+    state_ = stateJAwaitingLevelInfo;
+  } else {
+    // ignore the message and log the error
+  }
+}
+
+void Network::handleTopologyMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+  
+  if (state_ == stateJAwaitingLevelInfo) {
+    // update my topology
+    topology_ = *(message->topology());
+    // update the ui
+  } else {
+    // ignore the message and log the error
+  }
+}
+
+
+void Network::handleChangeMapMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+
+  // no changing maps just yet
+}
+
+void Network::handleMapMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+
+}
+
+void Network::handlePhysicsMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+}
+
+void Network::handleLuaMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+}
+
+void Network::handleNetgameStartMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+
+  // start the game
+}
+
+void Network::handleChatMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+
+  // meh
+}
+
+void Network::handleUnknownMessage(Message *message, CommunicationsChannel *channel) {
+  int clientIndex = channel->Memento();
+
+  // meh
+}
+
 
 
     

@@ -1,5 +1,5 @@
-#ifndef __CNETWORK_H
-#define __CNETWORK_H
+#ifndef CNETWORK_H
+#define CNETWORK_H
 
 /*
 CNETWORK.H
@@ -56,18 +56,18 @@ class Network
 
   void ServerIdentifier(short identifier) { 
     serverPlayerIndex_ = identifier; 
-  };
+  }
 
-  short LocalPlayerIndex(void) { return localPlayerIndex_; };
-  bool NumberOfPlayerIsValid(void) { return true; };
-  short NumPlayers(void) { return topology_->player_count; };
+  short LocalPlayerIndex(void) { return localPlayerIndex_; }
+  bool NumberOfPlayerIsValid(void) { return true; }
+  short NumPlayers(void) { return topology_->player_count; }
   player_info *PlayerInfo(short player_index) { 
-    return topology_->players[player_index].player_info; };
-  game_info *GameInfo(void) { return topology_->game_info; };
+    return topology_->players[player_index].player_info; }
+  game_info *GameInfo(void) { return topology_->game_info; }
   void SetupTopologyFromStarts(const player_start_data* inStartArray,
 			       short inStartCount);
   bool IsServer(void) { 
-    return localPlayerIndex_ != 0 && localPlayerIndex_ == serverPlayerIndex_;};
+    return localPlayerIndex_ != 0 && localPlayerIndex_ == serverPlayerIndex_;}
 
 
   // game data
@@ -84,6 +84,41 @@ class Network
   void InitializeTopology(game_info gameInfo, player_info playerInfo);
   NetTopology topology_;
 
+  // message handlers
+  void handleNetworkVersionMessage(Message *message, CommunicationsChannel *channel);
+  void handleCapabilitiesMessage(Message *message, CommunicationsChannel *channel);
+  void handleServerToClientMessage(Message *message, CommunicationsChannel *channel);
+  void handleDisconnectNowMessage(Message *message, CommunicationsChannel *channel);
+  void handleChatNamesMessage(Message *message, CommunicationsChannel *channel);
+  void handlePlayerInfoMessage(Message *message, CommunicationsChannel *channel);
+  void handleJoinAcceptedMessage(Message *message, CommunicationsChannel *channel);
+  void handleTopologyMessage(Message *message, CommunicationsChannel *channel);
+  void handleChangeMapMessage(Message *message, CommunicationsCHannel *channel);
+  void handleMapMessage(Message *message, CommunicationsChannel *channel);
+  void handlePhysicsMessage(Message *message, CommunicationsChannel *channel);
+  void handleLuaMessage(Message *message, CommunicationsChannel *channel);
+  void handleNetgameStartMessage(Message *message, CommunicationsChannel *channel);
+  void handleChatMessage(Message *message, CommunicationsChannel *channel);
+  void handleUnknownMessage(Message *message, CommunicationsChannel *channel);
+
+  // message handler objects
+  MessageHandler *NetworkVersionMessageHandler_;
+  MessageHandler *CapabilitiesMessageHandler_;
+  MessageHandler *ServerToClientMessageHandler_;
+  MessageHandler *DisconnectNowMessageHandler_;
+  MessageHandler *ChatNamesMessageHandler_;
+  MessageHandler *PlayerInfoMessageHandler_;
+  MessageHandler *JoinAcceptedMessageHandler_;
+  MessageHandler *TopologyMessageHandler_;
+  MessageHandler *ChangeMapMessageHandler_;
+  MessageHandler *MapMessageHandler_;
+  MessageHandler *PhysicsMessageHandler_;
+  MessageHandler *LuaMessageHandler_;
+  MessageHandler *NetgameStartMessageHandler_;
+  MessageHandler *ChatMessageHandler_;
+  MessageHandler *UnknownMessageHandler_;
+  
+  
   short udpSocket_; // port number
   short state_ = stateUninitialized;
   short netState_ = netUninitialized; // the game protocols use this
@@ -112,7 +147,8 @@ class Network
 
   // this is valid for servers (join info) and (potential) joiners (for
   //      looking up chat name / color)
-  player_info *potentialPlayers[MAX_CONNECTIONS];
+  player_info *clients[MAX_CONNECTIONS];
+  int clientStates[MAX_CONNECTIONS];
 
   bool resuming_saved_game_;
 
@@ -137,8 +173,8 @@ class Network
     // join states
     stateJConnecting,
     stateJAwaitingVersion,
+    stateJAwaitingCapabilities,
     stateJAwaitingChatInfo,
-    stateJAwaitingStartJoin,
     stateJAwaitingAcceptJoin,
     stateJAwaitingLevelData,
     stateJAwaitingNetGameStart,
@@ -147,17 +183,17 @@ class Network
     // gather states (for individual joiners)
     stateGJAwaitingVersion,
     stateGJAwaitingCapabilities,
-    stateGJAwaitingName,
-    stateGJReadyToJoin,
     stateGJAwaitingJoinInfo,
+    stateGJAwaitingGather,
+    stateGJAwaitingReadyToPlay,
     stateGJReadyToPlay,
     stateGJInGame
-  }
+  };
   
   enum {
     errorConnectionRefused
-  }
+  };
 
-}
+};
 
 #endif

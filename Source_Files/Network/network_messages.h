@@ -36,14 +36,11 @@ NETWORK_MESSAGES.H
 enum { // message types
   kNetworkVersionMessage = 1001,
   kCapabilitiesMessage,
-  kPlayerNameMessage,
   kServerToClientMessage,
   kDisconnectNowMessage,
   kChatNamesMessage,
-  kBeginJoiningMessage,
-  kJoinInfoMessage,
+  kPlayerInfoMessage,
   kJoinAcceptedMessage,
-  kStopJoiningMessage,
   kTopologyMessage,
   kChangeMapMessage,
   kMapMessage,
@@ -86,12 +83,19 @@ private:
 
 class PlayerInfoMessage : public SmallMessageHelper
 {
+  enum { kType = kJoinInfoMessage; }
  public:
-  enum { kType = kJoinInfoMessage };
   PlayerInfoMessage(player_info *playerInfo) {
     if (playerInfo) {
       mPlayerInfo = *playerInfo;
     }
+  }
+  
+  PlayerInfoMessage(player_info *playerInfo, int16 index) {
+    if (playerInfo) {
+      mPlayerInfo = *playerInfo;
+    }
+    mIndex = index;
   }
   
   COVARIANT_RETURN(Message*, PlayerInfoMessage*) clone() const {
@@ -100,6 +104,7 @@ class PlayerInfoMessage : public SmallMessageHelper
   
   MessageTypeID type() const { return kType; }
   const struct player_info* playerInfo() const { return &mPlayerInfo; }
+  const int16 index() const { return mIndex; }
   
  protected:
   void reallyDeflateTo(AOStream& outputStream) const;
@@ -108,6 +113,7 @@ class PlayerInfoMessage : public SmallMessageHelper
  private:
 
   struct player_info mPlayerInfo;
+  int16 mIndex;
 };
 
 class TopologyMessage : public SmallMessageHelper
@@ -125,7 +131,7 @@ class TopologyMessage : public SmallMessageHelper
   }
 
   MessageTypeID type() const { return kType; }
-  const struct NetTopology* NetTopology() const { return &mNetTopology; }
+  const struct NetTopology* topology() const { return &mNetTopology; }
 
  protected:
   void reallyDeflateTo(AOStream& outputStream) const;
