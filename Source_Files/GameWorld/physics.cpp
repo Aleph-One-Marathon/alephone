@@ -558,6 +558,7 @@ static void physics_update(
 		if (action_flags&_moving_forward) action_flags|= _looking_up;
 		if (action_flags&_moving_backward) action_flags|= _looking_down;
 		action_flags&= ~_moving;
+		action_flags&= ~_absolute_pitch_mode;
 	}
 
 	/* handle turning left or right; if we’ve exceeded our maximum velocity lock out user actions
