@@ -109,7 +109,7 @@ void L_Call_Player_Killed(short player_index, short aggressor_player_index, shor
 void L_Call_Monster_Killed(short monster_index, short aggressor_player_index, short projectile_index) {}
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
 
-bool LoadLuaScript(const char *buffer, size_t len) { /* Should never get here! */ }
+bool LoadLuaScript(const char *buffer, size_t len) { /* Should never get here! */ return false; }
 bool RunLuaScript() {
 	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
 		use_lua_compass [i] = false;
