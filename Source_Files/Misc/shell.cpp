@@ -739,42 +739,43 @@ static pascal OSErr handle_open_document(
 						&myFSS, sizeof(FSSpec), &actualSize);
 					if(!err)
 					{
-						FInfo theFInfo;
+						// FInfo theFInfo;
 
-						FSpGetFInfo(&myFSS, &theFInfo);
+						// FSpGetFInfo(&myFSS, &theFInfo);
 						// Create a file object to use instead
 						FileSpecifier InputFile;
 						InputFile.SetSpec(myFSS);
 						
 						// LP change, since the filetypes are no longer constants
-						OSType Typecode = theFInfo.fdType;
-						if (Typecode == SCENARIO_FILE_TYPE)
+						// OSType Typecode = theFInfo.fdType;
+						int Typecode = InputFile.GetType();
+						if (Typecode == _typecode_scenario)
 						{
 							set_map_file(InputFile);
 						}
-						else if (Typecode == SAVE_GAME_TYPE)
+						else if (Typecode == _typecode_savegame)
 						{
 							if(load_and_start_game(InputFile))
 							{
 								done= TRUE;
 							}
 						}
-						else if (Typecode == FILM_FILE_TYPE)
+						else if (Typecode == _typecode_film)
 						{
 							if(handle_open_replay(InputFile))
 							{
 								done= TRUE;
 							}
 						}
-						else if (Typecode == PHYSICS_FILE_TYPE)
+						else if (Typecode == _typecode_physics)
 						{
 							set_physics_file(InputFile);
 						}
-						else if (Typecode == SHAPES_FILE_TYPE)
+						else if (Typecode == _typecode_shapes)
 						{
 							open_shapes_file(InputFile);
 						}
-						else if (Typecode == SOUNDS_FILE_TYPE)
+						else if (Typecode == _typecode_sounds)
 						{
 					 		open_sound_file(InputFile);
 						}
