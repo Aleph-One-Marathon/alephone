@@ -759,6 +759,7 @@
 				F5CC94520240DE0F01A80001,
 				F5CC94530240DE0F01A80001,
 				F5CC94540240DE0F01A80001,
+				F5837193031EEE0201000105,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -802,7 +803,7 @@
 			buildSettings = {
 				COPY_PHASE_STRIP = YES;
 				DEBUGGING_SYMBOLS = NO;
-				WARNING_CFLAGS = "-w";
+				WARNING_CFLAGS = "";
 			};
 			isa = PBXBuildStyle;
 			name = Deployment;
@@ -2074,8 +2075,8 @@
 				F5CC936E0240D85D01A80001,
 				F5CC92E30240D56101A80001,
 				F5CC92D70240D54401A80001,
-				F5CC924E0240D28201A80001,
 				F5CC91FE0240D09B01A80001,
+				F5CC924E0240D28201A80001,
 			);
 			isa = PBXGroup;
 			name = Sources;
@@ -2319,8 +2320,8 @@
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-Os -finline-functions";
-				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -I/usr/include/gcc/darwin/3.1/g++-v3 -I/usr/include/gcc/darwin/3.1/g++-v3/backward -x c++ -DHAS_UNISTD_H";
+				OPTIMIZATION_CFLAGS = "-Os -frename-registers -finline-functions";
+				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAS_UNISTD_H -x c++ ";
 				OTHER_LDFLAGS = "-lobjc";
 				OTHER_REZFLAGS = "";
 				PRECOMPILE_PREFIX_HEADER = YES;
@@ -2878,6 +2879,7 @@
 				F5CC94650240DE0F01A80001,
 				F5CC94660240DE0F01A80001,
 				F5CC94670240DE0F01A80001,
+				F5837192031EEE0201000105,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4036,6 +4038,23 @@
 			settings = {
 			};
 		};
+		F5837191031EEE0201000105 = {
+			isa = PBXFileReference;
+			path = Packing.cpp;
+			refType = 4;
+		};
+		F5837192031EEE0201000105 = {
+			fileRef = F5837191031EEE0201000105;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F5837193031EEE0201000105 = {
+			fileRef = F5837191031EEE0201000105;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F58816A6021B112A01A80001 = {
 			fileRef = F536742A02014FE101A80001;
 			isa = PBXBuildFile;
@@ -4299,11 +4318,12 @@
 				F5CC92110240D09B01A80001,
 				F5CC92150240D09B01A80001,
 				F5CC92170240D09B01A80001,
+				F5837191031EEE0201000105,
 			);
 			isa = PBXGroup;
 			name = Files;
-			path = ../Source_Files/Files;
-			refType = 2;
+			path = "/Volumes/Sprawl/Users/astrange/Desktop/Development/Aleph One/alephcvs/aleph/Source_Files/Files";
+			refType = 0;
 		};
 		F5CC92000240D09B01A80001 = {
 			isa = PBXFileReference;

@@ -154,7 +154,7 @@ bool read_wad_header(
 	bool success= true;
 	
 	uint8 buffer[SIZEOF_wad_header];
-	read_from_file(OFile, 0, buffer, SIZEOF_wad_header);
+	error = !read_from_file(OFile, 0, buffer, SIZEOF_wad_header);
 	unpack_wad_header(buffer,header,1);
 	
 	if(error)

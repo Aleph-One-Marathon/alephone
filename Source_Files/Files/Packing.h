@@ -50,176 +50,73 @@
 	
 	BytesToStream(uint8* &Stream, const void* Bytes, int Count)
 		packs a block of bytes into a stream
+
+Aug 27, 2002 (Alexander Strange):
+	Moved functions to Packing.cpp to get around inlining issues.
 */
 
-#include <string.h>
+//#include <string.h>
 
 // Default: packed-data is big-endian.
 // May be overridden by some previous definition,
 // as is the case for the 3D Studio Max loader code,
 // which uses little-endian order
-#if !(defined(PACKED_DATA_IS_BIG_ENDIAN)) && !(defined(PACKED_DATA_IS_LITTLE_ENDIAN))
+#if !(defined(PACKED_DATA_IS_BIG_ENDIAN)) && !(defined(PACKED_DATA_IS_LITTLE_ENDIAN)) && (!defined(PACKING_INTERNAL))
 #define PACKED_DATA_IS_BIG_ENDIAN
 #undef PACKED_DATA_IS_LITTLE_ENDIAN
 #endif
 
-#if !(defined(PACKED_DATA_IS_BIG_ENDIAN)) && !(defined(PACKED_DATA_IS_LITTLE_ENDIAN))
-#error "At least one of PACKED_DATA_IS_BIG_ENDIAN and PACKED_DATA_IS_LITTLE_ENDIAN must be defined!"
-#elif (defined(PACKED_DATA_IS_BIG_ENDIAN)) && (defined(PACKED_DATA_IS_LITTLE_ENDIAN))
+#if (defined(PACKED_DATA_IS_BIG_ENDIAN)) && (defined(PACKED_DATA_IS_LITTLE_ENDIAN))
 #error "PACKED_DATA_IS_BIG_ENDIAN and PACKED_DATA_IS_LITTLE_ENDIAN cannot both be defined at the same time!"
 #endif
 
 #ifdef PACKED_DATA_IS_BIG_ENDIAN
-#warning "Big Endian"
 #define StreamToValue StreamToValueBE
 #define ValueToStream ValueToStreamBE
+#warning Big Endian
 #endif
 
 #ifdef PACKED_DATA_IS_LITTLE_ENDIAN
-#undef StreamToValue
-#undef ValueToStream
-#warning "Little Endian"
 #define StreamToValue StreamToValueLE
 #define ValueToStream ValueToStreamLE
+#warning Little Endian
 #endif
 
-inline static void StreamToValueBE(uint8* &Stream, uint16 &Value)
-{
-	// Must be unsigned, so they will be zero-extended
-	uint16 Byte0 = uint16(*(Stream++));
-	uint16 Byte1 = uint16(*(Stream++));
+extern void StreamToValue(uint8* &Stream, uint16 &Value);
+extern void StreamToValue(uint8* &Stream, int16 &Value);
+extern void StreamToValue(uint8* &Stream, uint32 &Value);
+extern void StreamToValue(uint8* &Stream, int32 &Value);
+extern void ValueToStream(uint8* &Stream, uint16 Value);
+extern void ValueToStream(uint8* &Stream, int16 Value);
+extern void ValueToStream(uint8* &Stream, uint32 Value);
+extern void ValueToStream(uint8* &Stream, int32 Value);
 
-	Value = (Byte0 << 8) | Byte1;
-}
-
-inline static void StreamToValueBE(uint8* &Stream, int16 &Value)
-{
-	uint16 UValue;
-	StreamToValueBE(Stream,UValue);
-	Value = int16(UValue);
-}
-
-inline static void StreamToValueBE(uint8* &Stream, uint32 &Value)
-{
-	// Must be unsigned, so they will be zero-extended
-	uint32 Byte0 = uint32(*(Stream++));
-	uint32 Byte1 = uint32(*(Stream++));
-	uint32 Byte2 = uint32(*(Stream++));
-	uint32 Byte3 = uint32(*(Stream++));
-
-	Value = (Byte0 << 24) | (Byte1 << 16) | (Byte2 << 8) | Byte3;
-}
-
-inline static void StreamToValueBE(uint8* &Stream, int32 &Value)
-{
-	uint32 UValue;
-	StreamToValueBE(Stream,UValue);
-	Value = int32(UValue);
-}
-
-inline static void ValueToStreamBE(uint8* &Stream, uint16 Value)
-{
-	*(Stream++) = uint8(Value >> 8);
-	*(Stream++) = uint8(Value);
-}
-
-inline static void ValueToStreamBE(uint8* &Stream, int16 Value)
-{
-	ValueToStreamBE(Stream,uint16(Value));
-}
-
-inline static void ValueToStreamBE(uint8* &Stream, uint32 Value)
-{
-	*(Stream++) = uint8(Value >> 24);
-	*(Stream++) = uint8(Value >> 16);
-	*(Stream++) = uint8(Value >> 8);
-	*(Stream++) = uint8(Value);
-}
-
-
-inline static void StreamToValueLE(uint8* &Stream, uint16 &Value)
-{
-    // Must be unsigned, so they will be zero-extended
-    uint16 Byte0 = uint16(*(Stream++));
-    uint16 Byte1 = uint16(*(Stream++));
-
-    Value = (Byte1 << 8) | Byte0;
-}
-
-inline static void StreamToValueLE(uint8* &Stream, int16 &Value)
-{
-    uint16 UValue;
-    StreamToValue(Stream,UValue);
-    Value = int16(UValue);
-}
-
-inline static void StreamToValueLE(uint8* &Stream, uint32 &Value)
-{
-    // Must be unsigned, so they will be zero-extended
-    uint32 Byte0 = uint32(*(Stream++));
-    uint32 Byte1 = uint32(*(Stream++));
-    uint32 Byte2 = uint32(*(Stream++));
-    uint32 Byte3 = uint32(*(Stream++));
-
-    Value = (Byte3 << 24) | (Byte2 << 16) | (Byte1 << 8) | Byte0;
-}
-
-inline static void StreamToValueLE(uint8* &Stream, int32 &Value)
-{
-    uint32 UValue;
-    StreamToValue(Stream,UValue);
-    Value = int32(UValue);
-}
-
-inline static void ValueToStreamLE(uint8* &Stream, uint16 Value)
-{
-    *(Stream++) = uint8(Value);
-    *(Stream++) = uint8(Value >> 8);
-}
-
-inline static void ValueToStreamLE(uint8* &Stream, int16 Value)
-{
-    ValueToStream(Stream,uint16(Value));
-}
-
-inline static void ValueToStreamLE(uint8* &Stream, uint32 Value)
-{
-    *(Stream++) = uint8(Value);
-    *(Stream++) = uint8(Value >> 8);
-    *(Stream++) = uint8(Value >> 16);
-    *(Stream++) = uint8(Value >> 24);
-}
-
-inline static void ValueToStream(uint8* &Stream, int32 Value)
-{
-	ValueToStream(Stream,uint32(Value));
-}
-
+#ifndef PACKING_INTERNAL
 template<class T> inline static void StreamToList(uint8* &Stream, T* List, int Count)
 {
-	T* ValuePtr = List;
-	for (int k=0; k<Count; k++)
-		StreamToValue(Stream,*(ValuePtr++));
+    T* ValuePtr = List;
+    for (int k=0; k<Count; k++)
+        StreamToValue(Stream,*(ValuePtr++));
 }
 
 
 template<class T> inline static void ListToStream(uint8* &Stream, T* List, int Count)
 {
-	T* ValuePtr = List;
-	for (int k=0; k<Count; k++)
-		ValueToStream(Stream,*(ValuePtr++));
+    T* ValuePtr = List;
+    for (int k=0; k<Count; k++)
+        ValueToStream(Stream,*(ValuePtr++));
 }
 
 inline static void StreamToBytes(uint8* &Stream, void* Bytes, int Count)
 {
-	memcpy(Bytes,Stream,Count);
-	Stream += Count;
+    memcpy(Bytes,Stream,Count);
+    Stream += Count;
 }
 
 inline static void BytesToStream(uint8* &Stream, const void* Bytes, int Count)
 {
-	memcpy(Stream,Bytes,Count);
-	Stream += Count;
+    memcpy(Stream,Bytes,Count);
+    Stream += Count;
 }
-
+#endif
 #endif
