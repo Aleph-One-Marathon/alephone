@@ -90,6 +90,10 @@ Sep 2, 2000 (Loren Petrich):
 	generalized the sound-data size from (static ) NUMBER_OF_SOUND_DEFINITIONS
 	to (per-file) number_of_sound_definitions -- also updated _sm_globals when
 	reading in a file, since the definition pointer and count will vary.
+
+Sep 23, 2000 (Loren Petrich):
+	Added XML support for changing the ambient and random sound definitions,
+	in order to support Shebob's Pfh'Joueur
 */
 
 /*
@@ -1465,4 +1469,129 @@ static void add_one_ambient_sound_source(
 	}
 	
 	return;
+}
+
+
+// XML elements for parsing sound specifications;
+// this is currently what ambient and random sounds are to be used
+
+
+class XML_AmbientRandomAssignParser: public XML_ElementParser
+{
+	int Type;
+	bool IsPresent[2];
+	short Index, SoundIndex;
+	
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	enum {
+		Ambient,
+		Random
+	};
+	
+	XML_AmbientRandomAssignParser(char *_Name, int _Type): XML_ElementParser(_Name), Type(_Type) {}
+};
+
+bool XML_AmbientRandomAssignParser::Start()
+{
+	for (int k=0; k<2; k++)
+		IsPresent[k] = false;
+	return true;
+}
+
+bool XML_AmbientRandomAssignParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"index") == 0)
+	{
+		int ArrayLimit = 0;
+		switch(Type)
+		{
+		case Ambient:
+			ArrayLimit = NUMBER_OF_AMBIENT_SOUND_DEFINITIONS;
+			break;
+		case Random:
+			ArrayLimit = NUMBER_OF_RANDOM_SOUND_DEFINITIONS;
+			break;
+		default:
+			vassert(false,csprintf(temporary,"Unrecognized sound-parser class: %d",Type));
+		}
+		if (ReadBoundedNumericalValue(Value,"%hd",Index,short(0),short(ArrayLimit-1)))
+		{
+			IsPresent[0] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"sound") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",SoundIndex,short(NONE),short(SHRT_MAX)))
+		{
+			IsPresent[1] = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_AmbientRandomAssignParser::AttributesDone()
+{
+	// Verify...
+	bool AllPresent = true;
+	for (int k=0; k<2; k++)
+		if (!IsPresent[k]) AllPresent = false;
+	
+	if (!AllPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	// Put into place
+	switch(Type)
+	{
+	case Ambient:
+		ambient_sound_definitions[Index].sound_index = SoundIndex;
+		break;
+	case Random:
+		random_sound_definitions[Index].sound_index = SoundIndex;
+		break;
+	default:
+		vassert(false,csprintf(temporary,"Unrecognized sound-parser class: %d",Type));
+	}
+	return true;
+}
+
+static XML_AmbientRandomAssignParser
+	AmbientSoundAssignParser("ambient",XML_AmbientRandomAssignParser::Ambient),
+	RandomSoundAssignParser("random",XML_AmbientRandomAssignParser::Random);
+
+
+// Subclassed to set the sounds appropriately
+class XML_SoundsParser: public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value)
+	{
+		UnrecognizedTag();
+		return false;
+	}
+	
+	XML_SoundsParser(): XML_ElementParser("sounds") {}
+};
+
+static XML_SoundsParser SoundsParser;
+
+
+// LP change: added infravision-parser export
+XML_ElementParser *Sounds_GetParser()
+{
+	SoundsParser.AddChild(&AmbientSoundAssignParser);
+	SoundsParser.AddChild(&RandomSoundAssignParser);
+	
+	return &SoundsParser;
 }
