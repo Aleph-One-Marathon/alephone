@@ -49,6 +49,9 @@ Aug 14, 2000 (Loren Petrich):
 
 Aug 26, 2000 (Loren Petrich):
 	Moved get_default_shapes_spec() to preprocess_map_mac.c
+
+Sept 2, 2000 (Loren Petrich):
+	Added shapes-file unpacking.
 */
 
 /*
@@ -79,6 +82,7 @@ Aug 26, 2000 (Loren Petrich):
 // LP addition: infravision XML setup needs colors
 #include "ColorParser.h"
 
+#include "Packing.h"
 
 #ifdef env68k
 #pragma segment shell
@@ -117,6 +121,13 @@ enum /* flags */
 };
 
 /* ---------- macros */
+
+// LP: fake portable-files stuff
+#ifdef mac
+inline short memory_error() {return MemError();}
+#else
+inline short memory_error() {return 0;}
+#endif
 
 /* ---------- structures */
 
@@ -171,16 +182,18 @@ static void close_shapes_file(void);
 
 static byte *read_object_from_file(OpenedFile& OFile, long offset, long length);
 
-static byte *make_stripped_collection(byte *collection);
+// static byte *make_stripped_collection(byte *collection);
 
 /* --------- collection accessor prototypes */
 
+// Modified to return NULL for unloaded collections and out-of-range indices for collection contents.
+// This is to allow for more graceful degradation.
+
 static struct collection_header *get_collection_header(short collection_index);
 static struct collection_definition *get_collection_definition(short collection_index);
-static struct collection_definition *_get_collection_definition(short collection_index);
 static void *get_collection_shading_tables(short collection_index, short clut_index);
 static void *get_collection_tint_tables(short collection_index, short tint_index);
-static void *collection_offset(struct collection_definition *definition, long offset);
+// static void *collection_offset(struct collection_definition *definition, long offset);
 static struct rgb_color_value *get_collection_colors(short collection_index, short clut_number);
 static struct high_level_shape_definition *get_high_level_shape_definition(short collection_index, short high_level_shape_index);
 static struct low_level_shape_definition *get_low_level_shape_definition(short collection_index, short low_level_shape_index);
@@ -213,6 +226,47 @@ void initialize_shape_handler()
 	initialize_pixmap_handler();
 }
 
+void open_shapes_file(FileSpecifier& File)
+{
+	if (File.Open(ShapesFile))
+	{
+		// Load the collection headers;
+		// need a buffer for the packed data
+		int Size = MAXIMUM_COLLECTIONS*SIZEOF_collection_header;
+		byte *CollHdrStream = new byte[Size];
+		if (!ShapesFile.Read(Size,CollHdrStream))
+		{
+			ShapesFile.Close();
+			delete []CollHdrStream;
+			return;
+		}
+		
+		// Unpack them
+		uint8 *S = CollHdrStream;
+		int Count = MAXIMUM_COLLECTIONS;
+		collection_header* ObjPtr = collection_headers;
+		
+		for (int k = 0; k < Count; k++, ObjPtr++)
+		{
+			StreamToValue(S,ObjPtr->status);
+			StreamToValue(S,ObjPtr->flags);
+			
+			StreamToValue(S,ObjPtr->offset);
+			StreamToValue(S,ObjPtr->length);
+			StreamToValue(S,ObjPtr->offset16);
+			StreamToValue(S,ObjPtr->length16);
+			
+			S += 6*2;
+			
+			ObjPtr->Definition = NULL;	// so unloading can work properly
+		}
+		
+		assert((S - CollHdrStream) == Count*SIZEOF_collection_header);
+		
+		delete []CollHdrStream;
+	}
+}
+
 static void close_shapes_file(void)
 {
 	ShapesFile.Close();
@@ -223,6 +277,321 @@ static void shutdown_shape_handler(void)
 	close_shapes_file();
 }
 
+
+static boolean load_collection(
+	short collection_index,
+	boolean strip)
+{
+	struct collection_header *header= get_collection_header(collection_index);
+	byte *collection = NULL, *shading_tables = NULL;
+	long length;	// How many bytes in the collection chunk
+	OSErr error= noErr;
+	
+	if (bit_depth==8 || header->offset16==-1)
+	{
+		vassert(header->offset!=-1, csprintf(temporary, "Collection #%d does not exist.", collection_index));
+		collection= read_object_from_file(ShapesFile, header->offset, (length = header->length));
+	}
+	else
+	{
+		collection= read_object_from_file(ShapesFile, header->offset16, (length = header->length16));
+	}
+	error = ShapesFile.GetError();
+	if (!collection && error==noErr) error = memory_error();
+	vwarn(error==noErr, csprintf(temporary, "read_object_from_file() got error #%d", error));
+	
+	// Set all the memory to unused
+	header->Definition = NULL;
+	header->Colors = NULL;
+	header->Sequences = NULL;
+	header->Frames = NULL;
+	header->Bitmaps = NULL;
+	
+	if (collection)
+	{
+		// Unpack the collection header first, of course
+		header->Definition = new collection_definition;
+		assert(header->Definition);
+		collection_definition& Definition = *header->Definition;
+		
+		uint8 *SBase = collection;
+		uint8 *S = collection;
+		
+		StreamToValue(S,Definition.version);
+		
+		StreamToValue(S,Definition.type);
+		StreamToValue(S,Definition.flags);
+		
+		StreamToValue(S,Definition.color_count);
+		StreamToValue(S,Definition.clut_count);
+		StreamToValue(S,Definition.color_table_offset);
+		
+		StreamToValue(S,Definition.high_level_shape_count);
+		StreamToValue(S,Definition.high_level_shape_offset_table_offset);
+		
+		StreamToValue(S,Definition.low_level_shape_count);
+		StreamToValue(S,Definition.low_level_shape_offset_table_offset);
+		
+		StreamToValue(S,Definition.bitmap_count);
+		StreamToValue(S,Definition.bitmap_offset_table_offset);
+		
+		StreamToValue(S,Definition.pixels_to_world);
+		
+		StreamToValue(S,Definition.size);
+		
+		S += 253*2;
+		assert((S - SBase) == SIZEOF_collection_definition);
+		
+		// Get the colors		
+		int TotalColors = Definition.color_count * Definition.clut_count;
+		header->Colors = new rgb_color_value[TotalColors];
+		assert(header->Colors);
+		
+		rgb_color_value *Colors = header->Colors;
+		SBase = S = collection + Definition.color_table_offset;
+		for (int k = 0; k < TotalColors; k++, Colors++)
+		{
+			Colors->flags = *(S++);
+			Colors->value = *(S++);
+			StreamToValue(S,Colors->red);
+			StreamToValue(S,Colors->green);
+			StreamToValue(S,Colors->blue);
+		}
+		assert((S - SBase) == TotalColors*SIZEOF_rgb_color_value);
+		
+		// Pointers will be cleared unless allocated 
+		header->Sequences = new high_level_shape_definition *[Definition.high_level_shape_count];
+		objlist_clear(header->Sequences,Definition.high_level_shape_count);
+		
+		// Need the sequence offsets here;
+		// these will be used to indicate how much to read per sequence,
+		// so put the next-data offset at the end
+		long *SeqOffsets = new long[Definition.high_level_shape_count + 1];
+		S = collection + Definition.high_level_shape_offset_table_offset;
+		StreamToList(S,SeqOffsets,Definition.high_level_shape_count);
+		SeqOffsets[Definition.high_level_shape_count] = Definition.low_level_shape_offset_table_offset;
+		
+		for (int k=0; k<Definition.high_level_shape_count; k++)
+		{
+			SBase = S = collection + SeqOffsets[k];
+			uint8 *SNext = collection + SeqOffsets[k+1];
+			
+			long NewSize = (SNext - S) +
+				(sizeof(high_level_shape_definition) - SIZEOF_high_level_shape_definition);
+			header->Sequences[k] = (high_level_shape_definition *)(new byte[NewSize]);
+			assert(header->Sequences[k]);
+			
+			high_level_shape_definition& Sequence = *header->Sequences[k];
+			
+			StreamToValue(S,Sequence.type);
+			StreamToValue(S,Sequence.flags);
+			
+			StreamToBytes(S,Sequence.name,HIGH_LEVEL_SHAPE_NAME_LENGTH+2);
+			
+			StreamToValue(S,Sequence.number_of_views);
+			
+			StreamToValue(S,Sequence.frames_per_view);
+			StreamToValue(S,Sequence.ticks_per_frame);
+			StreamToValue(S,Sequence.key_frame);
+			
+			StreamToValue(S,Sequence.transfer_mode);
+			StreamToValue(S,Sequence.transfer_mode_period);
+			
+			StreamToValue(S,Sequence.first_frame_sound);
+			StreamToValue(S,Sequence.key_frame_sound);
+			StreamToValue(S,Sequence.last_frame_sound);
+			
+			StreamToValue(S,Sequence.pixels_to_world);
+			
+			StreamToValue(S,Sequence.loop_frame);
+			
+			S += 14*2;
+			
+			StreamToValue(S,Sequence.low_level_shape_indexes[0]);
+			assert((S - SBase) == SIZEOF_high_level_shape_definition);
+			
+			// Do the remaining frame indices
+			long NumFrameIndxs = (SNext - S)/2;
+			StreamToList(S,Sequence.low_level_shape_indexes+1,NumFrameIndxs);
+		}
+		
+		delete []SeqOffsets;
+		
+		if (strip)
+		{
+			Definition.low_level_shape_count = 0;
+			Definition.bitmap_count = 0;
+		}
+		else
+		{
+			// Get the frame offsets
+			long *FrmOffsets = new long[Definition.low_level_shape_count + 1];
+			S = collection + Definition.low_level_shape_offset_table_offset;
+			StreamToList(S,FrmOffsets,Definition.low_level_shape_count);
+			FrmOffsets[Definition.low_level_shape_count] = Definition.bitmap_offset_table_offset;
+			header->Frames = new low_level_shape_definition[Definition.low_level_shape_count];
+		
+			for (int k=0; k<Definition.low_level_shape_count; k++)
+			{
+				SBase = S = collection + FrmOffsets[k];
+				uint8 *SNext = collection + FrmOffsets[k+1];
+						
+				low_level_shape_definition& Frame = header->Frames[k];
+				
+				StreamToValue(S,Frame.flags);
+				
+				StreamToValue(S,Frame.minimum_light_intensity);
+				
+				StreamToValue(S,Frame.bitmap_index);
+				
+				StreamToValue(S,Frame.origin_x);
+				StreamToValue(S,Frame.origin_y);
+				
+				StreamToValue(S,Frame.key_x);
+				StreamToValue(S,Frame.key_y);
+				
+				StreamToValue(S,Frame.world_left);
+				StreamToValue(S,Frame.world_right);
+				StreamToValue(S,Frame.world_top);
+				StreamToValue(S,Frame.world_bottom);
+				StreamToValue(S,Frame.world_x0);
+				StreamToValue(S,Frame.world_y0);
+				
+				S += 4*2;
+				
+				assert((S - SBase) == SIZEOF_low_level_shape_definition);
+			}
+			
+			delete []FrmOffsets;
+			
+			header->Bitmaps = new bitmap_definition *[Definition.bitmap_count];
+			objlist_clear(header->Bitmaps,Definition.bitmap_count);
+			
+			// Need the bitmap offsets here
+			long *BtmpOffsets = new long[Definition.bitmap_count + 1];
+			S = collection + Definition.bitmap_offset_table_offset;
+			StreamToList(S,BtmpOffsets,Definition.bitmap_count);
+			BtmpOffsets[Definition.bitmap_count] = length;
+			
+			for (int k=0; k<Definition.bitmap_count; k++)
+			{
+				SBase = S = collection + BtmpOffsets[k];
+				uint8 *SNext = collection + BtmpOffsets[k+1];
+				
+				long NewSize = (SNext - S) +
+					(sizeof(bitmap_definition) - SIZEOF_bitmap_definition);
+				header->Bitmaps[k] = (bitmap_definition *)(new byte[NewSize]);
+				assert(header->Bitmaps[k]);
+				
+				bitmap_definition& Bitmap = *header->Bitmaps[k];
+				
+				StreamToValue(S,Bitmap.width);
+				StreamToValue(S,Bitmap.height);
+				StreamToValue(S,Bitmap.bytes_per_row);
+				
+				StreamToValue(S,Bitmap.flags);
+				StreamToValue(S,Bitmap.bit_depth);
+				
+				S += 8*2;
+				
+				// Code assumes 32-bit pointers!
+				S += sizeof(pixel8 *);
+				
+				assert((S - SBase) == SIZEOF_bitmap_definition);
+				
+				// Do all the other stuff; don't bother to try to process it
+				long RemainingBytes = (SNext - S);
+				StreamToBytes(S,Bitmap.row_addresses+1,RemainingBytes);
+			}
+			
+			delete []BtmpOffsets;
+			
+			// No longer needed!
+			delete []collection;
+		}
+		
+		// header->collection= (collection_definition *) collection;
+		
+		/* allocate enough space for this collection’s shading tables */
+		if (strip)
+		{
+			shading_tables = NULL;
+		}
+		else
+		{
+			shading_tables = new byte[get_shading_table_size(collection_index)*Definition.clut_count +
+				shading_table_size*NUMBER_OF_TINT_TABLES];
+			if ((error= memory_error())==noErr)
+			{
+				assert(shading_tables);
+			}
+		}
+		
+		header->shading_tables= shading_tables;
+	}
+	else
+	{
+		error= memory_error();
+//		vhalt(csprintf(temporary, "couldn’t load collection #%d (error==#%d)", collection_index, error));
+	}
+
+	/* if any errors ocurred, free whatever memory we used */
+	if (error!=noErr)
+	{
+		unload_collection(header);
+	}
+	
+	return error==noErr ? TRUE : FALSE;
+}
+
+static void unload_collection(
+	struct collection_header *header)
+{
+	// assert(header->collection);
+	
+	/* unload collection */
+	// if (header->collection) delete []header->collection;
+	// header->collection = NULL;
+	if (header->Definition)
+	{
+		collection_definition& Definition = *header->Definition;
+		
+		// Delete the other stuff first, since it needs the header size
+		if (header->Colors)
+		{
+			delete []header->Colors;
+			header->Colors = NULL;
+		}
+		if (header->Sequences)
+		{
+			for (int k=0; k<Definition.high_level_shape_count; k++)
+				if (header->Sequences[k]) delete []header->Sequences[k];
+			delete []header->Sequences;
+			header->Sequences = NULL;
+		}
+		if (header->Frames)
+		{
+			delete []header->Frames;
+			header->Frames = NULL;
+		}
+		if (header->Bitmaps)
+		{
+			for (int k=0; k<Definition.bitmap_count; k++)
+				if (header->Bitmaps[k]) delete []header->Bitmaps[k];
+			delete []header->Bitmaps;
+			header->Bitmaps = NULL;
+		}
+		
+		delete header->Definition;
+		header->Definition = NULL;
+	}
+	if (header->shading_tables) delete []header->shading_tables;
+	header->shading_tables = NULL;
+	
+	return;
+}
+
+/*
 static byte *make_stripped_collection(byte *collection)
 {
 	long StrippedLength =
@@ -234,11 +603,13 @@ static byte *make_stripped_collection(byte *collection)
 	
 	return new_collection;
 }
+*/
 
 static boolean collection_loaded(
 	struct collection_header *header)
 {
-	return header->collection ? TRUE : FALSE;
+	return header->Definition ? TRUE : FALSE;
+	// return header->collection ? TRUE : FALSE;
 }
 
 
@@ -254,7 +625,6 @@ static void unlock_collection(
 	// nothing to do
 }
 
-// static Handle read_handle_from_file(
 static byte *read_object_from_file(
 	OpenedFile& OFile,
 	long offset,
@@ -351,14 +721,18 @@ short get_shape_descriptors(
 	count= 0;
 	for (collection_index=0;collection_index<MAXIMUM_COLLECTIONS;++collection_index)
 	{
-		struct collection_definition *collection= _get_collection_definition(collection_index);
+		struct collection_definition *collection= get_collection_definition(collection_index);
+		// Skip over nonexistent collections, frames, and bitmaps.
+		if (!collection) continue;
 		
 		if (collection&&collection->type==appropriate_type)
 		{
 			for (low_level_shape_index=0;low_level_shape_index<collection->low_level_shape_count;++low_level_shape_index)
 			{
 				struct low_level_shape_definition *low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
+				if (!low_level_shape) continue;
 				struct bitmap_definition *bitmap= get_bitmap_definition(collection_index, low_level_shape->bitmap_index);
+				if (!bitmap) continue;
 				
 				count+= collection->clut_count;
 				if (buffer)
@@ -388,6 +762,13 @@ void extended_get_shape_bitmap_and_shading_table(
 	short collection_index= GET_COLLECTION(collection_code);
 	short clut_index= GET_COLLECTION_CLUT(collection_code);
 	struct low_level_shape_definition *low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
+	// Return NULL pointers for bitmap and shading table if the frame does not exist
+	if (!low_level_shape)
+	{
+		*bitmap = NULL;
+		if (shading_tables) *shading_tables = NULL;
+		return;
+	}
 	
 	if (bitmap) *bitmap= get_bitmap_definition(collection_index, low_level_shape->bitmap_index);
 	if (shading_tables)
@@ -419,7 +800,7 @@ struct shape_information_data *extended_get_shape_information(
 	struct low_level_shape_definition *low_level_shape;
 	struct collection_definition *collection;
 
-	collection= get_collection_definition(collection_index);
+	// collection= get_collection_definition(collection_index);
 	low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
 
 	/* this will be removed when it’s calculated in the extractor */
@@ -445,11 +826,15 @@ void process_collection_sounds(
 {
 	short collection_index= GET_COLLECTION(collection_code);
 	struct collection_definition *collection= get_collection_definition(collection_index);
+	// Skip over processing unloaded collections and sequences
+	if (!collection) return;
+	
 	short high_level_shape_index;
 	
 	for (high_level_shape_index= 0; high_level_shape_index<collection->high_level_shape_count; ++high_level_shape_index)
 	{
 		struct high_level_shape_definition *high_level_shape= get_high_level_shape_definition(collection_index, high_level_shape_index);
+		if (!high_level_shape) return;
 		
 		process_sound(high_level_shape->first_frame_sound);
 		process_sound(high_level_shape->key_frame_sound);
@@ -468,6 +853,7 @@ struct shape_animation_data *get_shape_animation_data(
 	collection_index= GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(shape));
 	high_level_shape_index= GET_DESCRIPTOR_SHAPE(shape);
 	high_level_shape= get_high_level_shape_definition(collection_index, high_level_shape_index);
+	if (!high_level_shape) return NULL;
 	
 	return (struct shape_animation_data *) &high_level_shape->number_of_views;
 }
@@ -486,7 +872,7 @@ void *get_global_shading_table(
 		
 			for (collection_index=MAXIMUM_COLLECTIONS-1;collection_index>=0;--collection_index)
 			{
-				struct collection_definition *collection= _get_collection_definition(collection_index);
+				struct collection_definition *collection= get_collection_definition(collection_index);
 				
 				if (collection)
 				{
@@ -696,13 +1082,14 @@ static void update_color_environment(
 		of the lowest numbered loaded collection to give us this */
 	for (collection_index=0;collection_index<MAXIMUM_COLLECTIONS;++collection_index)
 	{
-		struct collection_definition *collection= _get_collection_definition(collection_index);
+		struct collection_definition *collection= get_collection_definition(collection_index);
 
 //		dprintf("collection #%d", collection_index);
 		
 		if (collection && collection->bitmap_count)
 		{
 			struct rgb_color_value *primary_colors= get_collection_colors(collection_index, 0)+NUMBER_OF_PRIVATE_COLORS;
+			assert(primary_colors);
 			short color_index, clut_index;
 
 //			if (collection_index==15) dprintf("primary clut %p", primary_colors);
@@ -720,6 +1107,7 @@ static void update_color_environment(
 			for (bitmap_index= 0; bitmap_index<collection->bitmap_count; ++bitmap_index)
 			{
 				struct bitmap_definition *bitmap= get_bitmap_definition(collection_index, bitmap_index);
+				assert(bitmap);
 				
 				/* calculate row base addresses ... */
 				bitmap->row_addresses[0]= calculate_bitmap_origin(bitmap);
@@ -738,6 +1126,7 @@ static void update_color_environment(
 				if (clut_index)
 				{
 					struct rgb_color_value *alternate_colors= get_collection_colors(collection_index, clut_index)+NUMBER_OF_PRIVATE_COLORS;
+					assert(alternate_colors);
 					void *alternate_shading_table= get_collection_shading_tables(collection_index, clut_index);
 					pixel8 shading_remapping_table[PIXEL8_MAXIMUM_COLORS];
 					
@@ -1205,6 +1594,8 @@ static void build_collection_tinting_table(
 	short collection_index)
 {
 	struct collection_definition *collection= get_collection_definition(collection_index);
+	if (!collection) return;
+	
 	void *tint_table= get_collection_tint_tables(collection_index, 0);
 	short tint_color;
 
@@ -1350,16 +1741,149 @@ static void build_tinting_table32(
 
 
 /* ---------- collection accessors */
+// Some originally from shapes_macintosh.c
 
-// From shapes_macintosh.c
+static struct collection_header *get_collection_header(
+	short collection_index)
+{
+	// This one is intended to bomb because collection indices can only be from 1 to 31,
+	// short of drastic changes in how collection indices are specified (a bigger structure
+	// than shape_descriptor, for example).
+	collection_header *header = GetMemberWithBounds(collection_headers,collection_index,MAXIMUM_COLLECTIONS);
+	vassert(header,csprintf(temporary,"Collection index out of range: %d",collection_index));
+	
+	return header;
+	
+	/*
+	assert(collection_index>=0 && collection_index<MAXIMUM_COLLECTIONS);
+	
+	return collection_headers + collection_index;
+	*/
+}
+
+/*
+static void *collection_offset(
+	struct collection_definition *definition,
+	long offset)
+{
+	vassert(offset>=0 && offset<definition->size,
+		csprintf(temporary, "asked for offset #%d/#%d", offset, definition->size));
+
+	return ((byte *)definition) + offset;
+}
+*/
+
 static struct collection_definition *get_collection_definition(
 	short collection_index)
 {
-	struct collection_definition *collection= get_collection_header(collection_index)->collection;
-
-	vassert(collection, csprintf(temporary, "collection #%d isn’t loaded", collection_index));
-
+	struct collection_definition *collection= get_collection_header(collection_index)->Definition;
+	
 	return collection;
+}
+
+static struct rgb_color_value *get_collection_colors(
+	short collection_index,
+	short clut_number)
+{
+	collection_header *header = get_collection_header(collection_index);
+	collection_definition *definition = header->Definition;
+	if (!definition) return NULL;
+	
+	return GetMemberWithBounds(header->Colors,
+		clut_number*definition->color_count,
+			definition->clut_count*definition->color_count);
+	
+	/*
+	struct collection_definition *definition= _get_collection_definition(collection_index);
+
+	assert(clut_number>=0&&clut_number<definition->clut_count);
+	
+	return (struct rgb_color_value *) collection_offset(definition, definition->color_table_offset+clut_number*sizeof(struct rgb_color_value)*definition->color_count);
+	*/
+}
+
+static struct high_level_shape_definition *get_high_level_shape_definition(
+	short collection_index,
+	short high_level_shape_index)
+{
+	collection_header *header = get_collection_header(collection_index);
+	collection_definition *definition = header->Definition;
+	if (!definition) return NULL;
+
+	// Watch out for extra indirection!
+	high_level_shape_definition** ShapePP = 
+		GetMemberWithBounds(header->Sequences,
+			high_level_shape_index,
+				definition->high_level_shape_count);
+	
+	if (!ShapePP) return NULL;
+	
+	return *ShapePP;
+
+/*
+	struct collection_definition *definition= get_collection_definition(collection_index);
+	long *offset_table;
+	
+	vassert(high_level_shape_index>=0&&high_level_shape_index<definition->high_level_shape_count,
+		csprintf(temporary, "asked for high-level shape %d/%d, collection %d", high_level_shape_index, definition->high_level_shape_count, collection_index));
+	
+	offset_table= (long *) collection_offset(definition, definition->high_level_shape_offset_table_offset);
+	return (struct high_level_shape_definition *) collection_offset(definition, offset_table[high_level_shape_index]);
+*/
+}
+
+static struct low_level_shape_definition *get_low_level_shape_definition(
+	short collection_index,
+	short low_level_shape_index)
+{
+	collection_header *header = get_collection_header(collection_index);
+	collection_definition *definition = header->Definition;
+	if (!definition) return NULL;
+	
+	return GetMemberWithBounds(header->Frames,
+		low_level_shape_index,
+			definition->low_level_shape_count);
+	
+/*
+	struct collection_definition *definition= get_collection_definition(collection_index);
+	long *offset_table;
+
+	vassert(low_level_shape_index>=0 && low_level_shape_index<definition->low_level_shape_count,
+		csprintf(temporary, "asked for low-level shape %d/%d, collection %d", low_level_shape_index, definition->low_level_shape_count, collection_index));
+	
+	offset_table= (long *) collection_offset(definition, definition->low_level_shape_offset_table_offset);
+	return (struct low_level_shape_definition *) collection_offset(definition, offset_table[low_level_shape_index]);
+*/
+}
+
+static struct bitmap_definition *get_bitmap_definition(
+	short collection_index,
+	short bitmap_index)
+{
+	collection_header *header = get_collection_header(collection_index);
+	collection_definition *definition = header->Definition;
+	if (!definition) return NULL;	
+	
+	// Watch out for extra indirection!
+	bitmap_definition** BitmapPP = 
+		GetMemberWithBounds(header->Bitmaps,
+			bitmap_index,
+				definition->bitmap_count);
+	
+	if (!BitmapPP) return NULL;
+	
+	return *BitmapPP;
+	
+/*
+	struct collection_definition *definition= get_collection_definition(collection_index);
+	long *offset_table;
+
+	vassert(bitmap_index>=0 && bitmap_index<definition->bitmap_count,
+		csprintf(temporary, "asked for collection #%d bitmap #%d/#%d", collection_index, bitmap_index, definition->bitmap_count));
+	
+	offset_table= (long *) collection_offset(definition, definition->bitmap_offset_table_offset);
+	return (struct bitmap_definition *) collection_offset(definition, offset_table[bitmap_index]);
+*/
 }
 
 static void *get_collection_shading_tables(
@@ -1378,6 +1902,8 @@ static void *get_collection_tint_tables(
 	short tint_index)
 {
 	struct collection_definition *definition= get_collection_definition(collection_index);
+	if (!definition) return NULL;
+	
 	void *tint_table= get_collection_header(collection_index)->shading_tables;
 
 	tint_table = (uint8 *)tint_table + get_shading_table_size(collection_index)*definition->clut_count + shading_table_size*tint_index;
@@ -1385,86 +1911,7 @@ static void *get_collection_tint_tables(
 	return tint_table;
 }
 
-static struct collection_definition *_get_collection_definition(
-	short collection_index)
-{
-	struct collection_definition *collection= get_collection_header(collection_index)->collection;
-
-	return collection;
-}
-
-
-static struct collection_header *get_collection_header(
-	short collection_index)
-{
-	assert(collection_index>=0 && collection_index<MAXIMUM_COLLECTIONS);
-	
-	return collection_headers + collection_index;
-}
-
-static void *collection_offset(
-	struct collection_definition *definition,
-	long offset)
-{
-	vassert(offset>=0 && offset<definition->size,
-		csprintf(temporary, "asked for offset #%d/#%d", offset, definition->size));
-
-	return ((byte *)definition) + offset;
-}
-
-static struct rgb_color_value *get_collection_colors(
-	short collection_index,
-	short clut_number)
-{
-	struct collection_definition *definition= get_collection_definition(collection_index);
-
-	assert(clut_number>=0&&clut_number<definition->clut_count);
-	
-	return (struct rgb_color_value *) collection_offset(definition, definition->color_table_offset+clut_number*sizeof(struct rgb_color_value)*definition->color_count);
-}
-
-static struct high_level_shape_definition *get_high_level_shape_definition(
-	short collection_index,
-	short high_level_shape_index)
-{
-	struct collection_definition *definition= get_collection_definition(collection_index);
-	long *offset_table;
-	
-	vassert(high_level_shape_index>=0&&high_level_shape_index<definition->high_level_shape_count,
-		csprintf(temporary, "asked for high-level shape %d/%d, collection %d", high_level_shape_index, definition->high_level_shape_count, collection_index));
-	
-	offset_table= (long *) collection_offset(definition, definition->high_level_shape_offset_table_offset);
-	return (struct high_level_shape_definition *) collection_offset(definition, offset_table[high_level_shape_index]);
-}
-
-static struct low_level_shape_definition *get_low_level_shape_definition(
-	short collection_index,
-	short low_level_shape_index)
-{
-	struct collection_definition *definition= get_collection_definition(collection_index);
-	long *offset_table;
-
-	vassert(low_level_shape_index>=0 && low_level_shape_index<definition->low_level_shape_count,
-		csprintf(temporary, "asked for low-level shape %d/%d, collection %d", low_level_shape_index, definition->low_level_shape_count, collection_index));
-	
-	offset_table= (long *) collection_offset(definition, definition->low_level_shape_offset_table_offset);
-	return (struct low_level_shape_definition *) collection_offset(definition, offset_table[low_level_shape_index]);
-}
-
-static struct bitmap_definition *get_bitmap_definition(
-	short collection_index,
-	short bitmap_index)
-{
-	struct collection_definition *definition= get_collection_definition(collection_index);
-	long *offset_table;
-
-	vassert(bitmap_index>=0 && bitmap_index<definition->bitmap_count,
-		csprintf(temporary, "asked for collection #%d bitmap #%d/#%d", collection_index, bitmap_index, definition->bitmap_count));
-	
-	offset_table= (long *) collection_offset(definition, definition->bitmap_offset_table_offset);
-	return (struct bitmap_definition *) collection_offset(definition, offset_table[bitmap_index]);
-}
-
+/*
 static void debug_shapes_memory(
 	void)
 {
@@ -1488,6 +1935,7 @@ static void debug_shapes_memory(
 	
 	return;
 }
+*/
 
 // LP additions:
 
