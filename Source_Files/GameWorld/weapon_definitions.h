@@ -236,7 +236,7 @@ static int16 weapon_ordering_array[]= {
 	_weapon_ball
 };
 
-#define NUMBER_OF_WEAPONS (sizeof(weapon_definitions)/sizeof(struct weapon_definition))
+#define NUMBER_OF_WEAPONS static_cast<int>(sizeof(weapon_definitions)/sizeof(struct weapon_definition))
 
 static struct weapon_definition weapon_definitions[]=
 {
