@@ -712,14 +712,6 @@ void SwatchDrawer(ControlRef Ctrl, void *Data)
 	Rect Bounds = {0,0,0,0};
 	
 	GetControlBounds(Ctrl, &Bounds);
-
-	// Save previous state		
-	PenState OldPen;
-	RGBColor OldBackColor, OldForeColor;
-	
-	GetPenState(&OldPen);
-	GetBackColor(&OldBackColor);
-	GetForeColor(&OldForeColor);
 	
 	// Get ready to draw the swatch
 	PenNormal();
@@ -729,11 +721,6 @@ void SwatchDrawer(ControlRef Ctrl, void *Data)
 	PaintRect(&Bounds);
 	ForeColor(blackColor);
 	FrameRect(&Bounds);
-	
-	// Restore previous state
-	SetPenState(&OldPen);
-	RGBBackColor(&OldBackColor);
-	RGBForeColor(&OldForeColor);
 }
 
 
