@@ -716,7 +716,7 @@ void instantiate_polygon_transfer_mode(
 	world_distance x0, y0;
 	world_distance vector_magnitude;
 	short alternate_transfer_phase;
-	short transfer_phase;
+	short transfer_phase = view->tick_count;
 
 	polygon->transfer_mode= _textured_transfer;
 	switch (transfer_mode)
@@ -728,7 +728,6 @@ void instantiate_polygon_transfer_mode(
 		case _xfer_wander:
 		case _xfer_fast_wander:
 			x0= y0= 0;
-			transfer_phase= view->tick_count;
 			switch (transfer_mode)
 			{
 				case _xfer_fast_horizontal_slide: transfer_phase<<= 1;
