@@ -39,7 +39,11 @@ Mar 1, 2002 (Woody Zenfell):
 
 #include    "player.h"  // for MAXIMUM_NUMBER_OF_PLAYERS
 
+
 #ifdef USES_NIBS
+
+// For the found players
+#include <map>
 
 const CFStringRef Window_Network_Setup = CFSTR("Network_Setup");
 const CFStringRef Window_Network_Gather = CFSTR("Network_Gather");
@@ -193,6 +197,9 @@ enum {
 // Because otherwise it would be interpreted as a regular "OK"
 const int iOK_SPECIAL = 101;
 
+// For player-display Data Browser control:
+const OSType PlayerDisplay_Name = 'name';
+
 #endif
 
 
@@ -247,6 +254,48 @@ struct NetgameSetupData
 	bool allow_all_levels;
 	
 	bool IsOK;	// When quitting
+};
+
+struct NetgameGatherData
+{
+	ControlRef NetworkDisplayCtrl;
+	ControlRef PlayerDisplayCtrl;
+	
+	DataBrowserItemID ItemID;	// A unique ID number for every player (must be nonzero);
+				// for identifying a player to the Data-Browser control.
+				// Players who leave and re-join will be counted separately each time.
+	
+	// For searchability on both fields; be sure to change both arrays in sync
+	map<DataBrowserItemID, const SSLP_ServiceInstance*> FoundPlayers;
+	map<const SSLP_ServiceInstance*, DataBrowserItemID> ReverseFoundPlayers;
+	
+	ControlRef AddCtrl;
+	ControlRef OK_Ctrl;
+	
+	bool AllPlayersOK;
+};
+
+struct NetgameJoinData
+{
+	ControlRef PlayerNameCtrl;
+	ControlRef PlayerTeamCtrl;
+	ControlRef PlayerColorCtrl;
+	
+	ControlRef MessageCtrl;
+	
+	ControlRef PlayerDisplayCtrl;
+	
+	ControlRef ByHost_Ctrl;
+	ControlRef ByHost_LabelCtrl;
+	ControlRef ByHost_AddressCtrl;
+	
+	ControlRef CancelCtrl;
+	ControlRef JoinCtrl;
+	
+	player_info myPlayerInfo;
+	bool DidJoin;
+	int JoinState;
+	int JoinResult;
 };
 
 #endif
