@@ -260,7 +260,7 @@ uint32 parse_keymap(
 	/* handle the selected input controller */
 	if (input_preferences->input_device!=_keyboard_or_game_pad)
 	{
-		fixed delta_yaw, delta_pitch, delta_velocity;
+		_fixed delta_yaw, delta_pitch, delta_velocity;
 		
 		mouse_idle(input_preferences->input_device);
 		test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);

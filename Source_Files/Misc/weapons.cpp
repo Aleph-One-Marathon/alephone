@@ -192,8 +192,8 @@ struct shell_casing_data
 
 	uint16 flags;
 
-	fixed x, y;
-	fixed vx, vy;
+	_fixed x, y;
+	_fixed vx, vy;
 };
 
 struct player_weapon_data {
@@ -253,7 +253,7 @@ struct trigger_data *get_trigger_data(short player_index, short weapon_index,
 	short which_trigger);
 static struct weapon_data *get_player_current_weapon(short player_index);
 static void fire_weapon(short player_index, short which_trigger,
-	fixed charged_amount, bool flail_wildly);
+	_fixed charged_amount, bool flail_wildly);
 static struct trigger_definition *get_trigger_definition(short player_index, short which_weapon, 
 	short which_trigger);
 static bool should_switch_to_weapon(short player_index, short new_weapon);
@@ -269,11 +269,11 @@ static void put_rounds_into_weapon(short player_index, short which_weapon, short
 static void blow_up_player(short player_index);
 static void select_next_weapon(short player_index, bool forward);
 static void calculate_weapon_position_for_idle(short player_index, short count, short weapon_type,
-	fixed *height, fixed *width);
-static void add_random_flutter(fixed flutter_base, fixed *height, fixed *width);
+	_fixed *height, _fixed *width);
+static void add_random_flutter(_fixed flutter_base, _fixed *height, _fixed *width);
 static void calculate_weapon_origin_and_vector(short player_index, short which_trigger,
 	world_point3d *origin, world_point3d *vector, short *origin_polygon, angle delta_theta);
-static void play_weapon_sound(short player_index, short sound, fixed pitch);
+static void play_weapon_sound(short player_index, short sound, _fixed pitch);
 static bool player_weapon_has_ammo(short player_index, short weapon_index);
 static void lower_weapon(short player_index, short weapon_index);
 static void raise_weapon(short player_index, short weapon_index);
@@ -290,7 +290,7 @@ static void update_player_ammo_count(short player_index);
 static bool player_has_valid_weapon(short player_index);
 static void idle_weapon(short player_index);
 static void test_raise_double_weapon(short player_index, uint32 *action_flags);
-static void modify_position_for_two_weapons(short player_index, short count, fixed *width, fixed *height);
+static void modify_position_for_two_weapons(short player_index, short count, _fixed *width, _fixed *height);
 static void change_to_desired_weapon(short player_index);
 static void destroy_current_weapon(short player_index);
 static void initialize_shell_casings(short player_index);
@@ -1154,7 +1154,7 @@ bool get_weapon_display_information(
 	{
 		struct weapon_data *weapon= get_player_current_weapon(player_index);
 		struct weapon_definition *definition= get_weapon_definition(weapon->weapon_type);
-		fixed width, height;
+		_fixed width, height;
 		short frame, which_trigger, shape_index, type, flags;
 		struct shape_animation_data *high_level_data;
 	
@@ -1200,7 +1200,7 @@ bool get_weapon_display_information(
 					case _weapon_charged:
 						if(definition->flags & _weapon_overloads)
 						{
-							fixed flutter_base;
+							_fixed flutter_base;
 						
 							/* 0-> FIXED ONE as it gets closer to nova.. */
 							flutter_base= (FIXED_ONE*(CHARGED_WEAPON_OVERLOAD-phase))/CHARGED_WEAPON_OVERLOAD;
@@ -1732,7 +1732,7 @@ static struct weapon_data *get_player_current_weapon(
 static void fire_weapon(
 	short player_index,
 	short which_trigger,
-	fixed charged_amount,
+	_fixed charged_amount,
 	bool flail_wildly)
 {
 	struct player_data *player= get_player_data(player_index);
@@ -1742,7 +1742,7 @@ static void fire_weapon(
 	struct trigger_data	*trigger;
 	world_point3d origin, vector;
 	short origin_polygon, flailing_bonus, rounds_to_fire;
-	fixed damage_modifier;
+	_fixed damage_modifier;
 
 	/* if they are under water, and it isn't a melee weapon, they lose */
 	if ((player->variables.flags&_HEAD_BELOW_MEDIA_BIT) && !(definition->flags&_weapon_fires_under_media))
@@ -2488,7 +2488,7 @@ static bool handle_trigger_up(
 	struct trigger_definition *trigger_definition= 
 		get_player_trigger_definition(player_index, which_trigger);
 	bool discharge;
-	fixed charged_amount;
+	_fixed charged_amount;
 
 	/* On charged weapons, when the trigger goes up, we discharge.. */
 	switch(weapon->triggers[which_trigger].state)
@@ -2812,12 +2812,12 @@ static void calculate_weapon_position_for_idle(
 	short player_index,
 	short count,
 	short weapon_type,
-	fixed *height,
-	fixed *width)
+	_fixed *height,
+	_fixed *width)
 {
 	struct weapon_definition *definition= get_weapon_definition(weapon_type);
 	struct player_data *player= get_player_data(player_index);
-	fixed horizontal_phase, vertical_angle, bob_height, bob_width;
+	_fixed horizontal_phase, vertical_angle, bob_height, bob_width;
 	short *table;
 
 	if(count==0)
@@ -2844,8 +2844,8 @@ static void calculate_weapon_position_for_idle(
 static void modify_position_for_two_weapons(
 	short player_index, 
 	short count,
-	fixed *width,
-	fixed *height)
+	_fixed *width,
+	_fixed *height)
 {
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 
@@ -2919,11 +2919,11 @@ static void modify_position_for_two_weapons(
 }
 
 static void add_random_flutter(
-	fixed flutter_base,
-	fixed *height, 
-	fixed *width)
+	_fixed flutter_base,
+	_fixed *height, 
+	_fixed *width)
 {
-	fixed delta_height, delta_width;
+	_fixed delta_height, delta_width;
 
 	delta_height= flutter_base>>4;
 	delta_width= flutter_base>>6;
@@ -2936,12 +2936,12 @@ static void add_random_flutter(
 static void play_weapon_sound(
 	short player_index, 
 	short sound,
-	fixed pitch)
+	_fixed pitch)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct monster_data *monster= get_monster_data(player->monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
-	fixed old_pitch= object->sound_pitch;
+	_fixed old_pitch= object->sound_pitch;
 
 	object->sound_pitch= pitch;
 	play_object_sound(monster->object_index, sound);
@@ -3295,7 +3295,7 @@ static void update_sequence(
 	struct trigger_data *trigger= get_player_trigger_data(player_index, which_trigger);
 	struct shape_animation_data *high_level_data= NULL;
 	bool prevent_wrap= false; /* GROSS! */
-	fixed pitch= FIXED_ONE;
+	_fixed pitch= FIXED_ONE;
 	short sound_id= NONE;
 
 	switch(trigger->state)
@@ -4355,9 +4355,9 @@ bool XML_ShellCasingParser::Start()
 	return true;
 }
 
-inline fixed Float2Fixed(float FValue)
+inline _fixed Float2Fixed(float FValue)
 {
-	return (FValue >= 0) ? fixed(FIXED_ONE*FValue + 0.5) : - fixed(FIXED_ONE*(-FValue) + 0.5);
+	return (FValue >= 0) ? _fixed(FIXED_ONE*FValue + 0.5) : - _fixed(FIXED_ONE*(-FValue) + 0.5);
 }
 
 bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)

@@ -99,9 +99,9 @@ struct shell_casing_definition
 {
 	int16 collection, shape;
 	
-	fixed x0, y0;
-	fixed vx0, vy0;
-	fixed dvx, dvy;
+	_fixed x0, y0;
+	_fixed vx0, vy0;
+	_fixed dvx, dvy;
 };
 
 struct shell_casing_definition shell_casing_definitions[NUMBER_OF_SHELL_CASING_TYPES]=
@@ -176,13 +176,13 @@ struct weapon_definition {
 	int16 weapon_class;
 	int16 flags;
 
-	fixed firing_light_intensity;
+	_fixed firing_light_intensity;
 	int16 firing_intensity_decay_ticks;
 
 	/* weapon will come up to FIXED_ONE when fired; idle_height±bob_amplitude should be in
 		the range [0,FIXED_ONE] */
-	fixed idle_height, bob_amplitude, kick_height, reload_height;
-	fixed idle_width, horizontal_amplitude;
+	_fixed idle_height, bob_amplitude, kick_height, reload_height;
+	_fixed idle_width, horizontal_amplitude;
 
 	/* each weapon has three basic animations: idle, firing and reloading.  sounds and frames
 		are pulled from the shape collection.  for automatic weapons the firing animation loops

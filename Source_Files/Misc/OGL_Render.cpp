@@ -302,7 +302,7 @@ static double LandscapeRescale;
 
 
 // Self-luminosity (the "miner's light" effect and weapons flare)
-static fixed SelfLuminosity;
+static _fixed SelfLuminosity;
 
 
 // Self-explanatory :-)
@@ -885,14 +885,14 @@ bool OGL_SetView(view_data &View)
 
 // This finds the intensity-slope crossover depth for splitting polygon lines;
 // it takes the shading value from the render object
-inline GLdouble FindCrossoverDepth(fixed Shading)
+inline GLdouble FindCrossoverDepth(_fixed Shading)
 {
 	return ((8*GLdouble(WORLD_ONE))/GLdouble(FIXED_ONE))*(SelfLuminosity - Shading);
 }
 
 
 // This finds the color value for lighting from the render object's shading value
-void FindShadingColor(GLdouble Depth, fixed Shading, GLfloat *Color)
+void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color)
 {
 	GLdouble SelfIllumShading =
 		PIN(SelfLuminosity - (GLdouble(FIXED_ONE)/(8*GLdouble(WORLD_ONE)))*Depth,0,FIXED_ONE);

@@ -27,7 +27,7 @@ struct effect_definition
 {
 	int16 collection, shape;
 
-	fixed sound_pitch;
+	_fixed sound_pitch;
 	
 	uint16 flags;
 	int16 delay, delay_sound;

@@ -77,7 +77,7 @@ void RenderPlaceObjsClass::build_render_object_list()
 	// for (sorted_node= next_sorted_node-1;sorted_node>=sorted_nodes;--sorted_node)
 	{
 		polygon_data *polygon= get_polygon_data(sorted_node->polygon_index);
-		fixed ambient_intensity= get_light_intensity(polygon->floor_lightsource_index);
+		_fixed ambient_intensity= get_light_intensity(polygon->floor_lightsource_index);
 		short object_index= polygon->first_object;
 		
 		while (object_index!=NONE)
@@ -104,7 +104,7 @@ void RenderPlaceObjsClass::build_render_object_list()
 // LP change: make it better able to do long-distance views
 render_object_data *RenderPlaceObjsClass::build_render_object(
 	long_point3d *origin, // world_point3d *origin,
-	fixed ambient_intensity,
+	_fixed ambient_intensity,
 	sorted_node_data **base_nodes,
 	short *base_node_count,
 	short object_index)

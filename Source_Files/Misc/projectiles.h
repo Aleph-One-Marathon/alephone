@@ -105,7 +105,7 @@ struct projectile_data /* 32 bytes */
 	
 	world_distance gravity; /* velocity due to gravity for projectiles affected by it */
 	
-	fixed damage_scale;
+	_fixed damage_scale;
 	
 	short permutation; /* item type if we create one */
 	
@@ -125,9 +125,9 @@ bool preflight_projectile(world_point3d *origin, short polygon_index, world_poin
 	angle delta_theta, short type, short owner, short owner_type, short *target_index);
 short new_projectile(world_point3d *origin, short polygon_index, world_point3d *vector,
 	angle delta_theta, short type, short owner_index, short owner_type, short intended_target_index,
-	fixed damage_scale);
+	_fixed damage_scale);
 void detonate_projectile(world_point3d *origin, short polygon_index, short type,
-	short owner_index, short owner_type, fixed damage_scale);
+	short owner_index, short owner_type, _fixed damage_scale);
 
 void move_projectiles(void); /* assumes ¶t==1 tick */
 

@@ -143,7 +143,7 @@ static short kINFRAVISION_DURATION = (3*TICKS_PER_MINUTE);
 #define LAST_LEVEL 100
 
 // LP addition: self-luminosity
-fixed PlayerSelfLuminosity = FIXED_ONE_HALF;
+_fixed PlayerSelfLuminosity = FIXED_ONE_HALF;
 
 // LP additions: oxygen depletion and replenishment rates
 // (number of units per tick);

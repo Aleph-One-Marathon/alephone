@@ -112,7 +112,7 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 #define MAXIMUM_PRECALCULATION_TABLE_ENTRY_SIZE (MAX(sizeof(_vertical_polygon_data), sizeof(_horizontal_polygon_line_data)))
 
 #define SHADE_TO_SHADING_TABLE_INDEX(shade) ((shade)>>(FIXED_FRACTIONAL_BITS-shading_table_fractional_bits))
-#define DEPTH_TO_SHADE(d) (((fixed)(d))<<(FIXED_FRACTIONAL_BITS-WORLD_FRACTIONAL_BITS-3))
+#define DEPTH_TO_SHADE(d) (((_fixed)(d))<<(FIXED_FRACTIONAL_BITS-WORLD_FRACTIONAL_BITS-3))
 
 #define LARGEST_N 24
 
@@ -177,7 +177,7 @@ struct _vertical_polygon_line_data
 #define CALCULATE_SHADING_TABLE(result, view, shading_tables, depth, ambient_shade) \
 { \
 	short table_index; \
-	fixed shade; \
+	_fixed shade; \
 	 \
 	if ((ambient_shade)<0) \
 	{ \
@@ -751,12 +751,12 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 			struct _vertical_polygon_data *header= (struct _vertical_polygon_data *)precalculation_table;
 			struct _vertical_polygon_line_data *data= (struct _vertical_polygon_line_data *) (header+1);
 			
-			fixed texture_dx= INTEGER_TO_FIXED(texture->width)/screen_width;
-			fixed texture_x= texture_dx>>1;
+			_fixed texture_dx= INTEGER_TO_FIXED(texture->width)/screen_width;
+			_fixed texture_x= texture_dx>>1;
 	
-			fixed texture_dy= INTEGER_TO_FIXED(texture->height)/screen_height;
-			fixed texture_y0= 0;
-			fixed texture_y1;
+			_fixed texture_dy= INTEGER_TO_FIXED(texture->height)/screen_height;
+			_fixed texture_y0= 0;
+			_fixed texture_y1;
 			
 			if (texture_dx&&texture_dy)
 			{
@@ -831,7 +831,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 					uint16 last = *read++ << 8;
 					last |= *read++;
 //					short last= *(int16*)read; read = (int16 *)read + 1;
-					fixed texture_y= texture_y0;
+					_fixed texture_y= texture_y0;
 					short y0= rectangle->clip_top, y1= rectangle->clip_bottom;
 					
 					if (FIXED_INTEGERAL_PART(texture_y0)<first)
@@ -1030,7 +1030,7 @@ static void _pretexture_vertical_polygon_lines(
 
 	while (--line_count>=0)
 	{
-		fixed tx;
+		_fixed tx;
 		// LP change: made this quantity more long-distance friendly;
 		// have to avoid doing INTEGER_TO_FIXED on this one, however
 		int32 world_x;
@@ -1038,7 +1038,7 @@ static void _pretexture_vertical_polygon_lines(
 		short x0, y0= *y0_table++, y1= *y1_table++;
 		short screen_y0= view->half_screen_height-y0+view->dtanpitch;
 		int32 ty_numerator, ty_denominator;
-		fixed ty, ty_delta;
+		_fixed ty, ty_delta;
 
 		/* would our precision be greater here if we shifted the numerator up to $7FFFFFFF and
 			then downshifted only the numerator?  too bad we canÕt use BFFFO in 68k */
@@ -1229,17 +1229,17 @@ static void _prelandscape_horizontal_polygon_lines(
 	short landscape_width_bits= NextLowerExponent(polygon->texture->height);
 	// short landscape_width_bits= polygon->texture->height==1024 ? 10 : 9;
 	short texture_height= polygon->texture->width;
-	fixed ambient_shade= FIXED_ONE; // MPW C died if we passed the constant directly to the macro
+	_fixed ambient_shade= FIXED_ONE; // MPW C died if we passed the constant directly to the macro
 
 	// Get the landscape-texturing options
 	LandscapeOptions *LandOpts = View_GetLandscapeOptions(polygon->ShapeDesc);
 	
 	// LP change: separate horizontal and vertical pixel deltas:
 	// LP change: using a "landscape yaw" that's at the left edge of the screen.
-	fixed first_horizontal_pixel= (view->landscape_yaw + LandOpts->Azimuth)<<(landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS);
+	_fixed first_horizontal_pixel= (view->landscape_yaw + LandOpts->Azimuth)<<(landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS);
 	// fixed first_pixel= view->yaw<<(landscape_width_bits+LANDSCAPE_REPEAT_BITS+FIXED_FRACTIONAL_BITS-ANGULAR_BITS);
-	fixed horizontal_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
-	fixed vertical_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->VertExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
+	_fixed horizontal_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->HorizExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
+	_fixed vertical_pixel_delta= (view->half_cone<<(1+landscape_width_bits+(LandOpts->VertExp)+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
 	// fixed pixel_delta= (view->half_cone<<(1+landscape_width_bits+LANDSCAPE_REPEAT_BITS+FIXED_FRACTIONAL_BITS-ANGULAR_BITS))/view->standard_screen_width;
 	short landscape_free_bits= 32-FIXED_FRACTIONAL_BITS-landscape_width_bits;
 	void *shading_table;

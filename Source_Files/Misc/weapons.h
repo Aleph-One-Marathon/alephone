@@ -65,10 +65,10 @@ struct weapon_display_information
 {
 	short collection, low_level_shape_index;
 	
-	fixed vertical_position, horizontal_position;
+	_fixed vertical_position, horizontal_position;
 	short vertical_positioning_mode, horizontal_positioning_mode;
 	short transfer_mode;
-	fixed transfer_phase;
+	_fixed transfer_phase;
 	
 	bool flip_horizontal, flip_vertical;
 };

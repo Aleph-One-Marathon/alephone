@@ -406,12 +406,12 @@ long InputSprocketTestElements(void)
 	
 /* Handle all axis data!!! **********************************************/
 	// LP change: added change-weapon axis handling
-	fixed delta_yaw = 0, delta_pitch = 0, delta_velocity = 0, delta_weapon = 0;
+	_fixed delta_yaw = 0, delta_pitch = 0, delta_velocity = 0, delta_weapon = 0;
 			
-	ISpElement_GetComplexState(gVirtualElements[Axis_LookHorizontal], sizeof(fixed), &delta_yaw);
-	ISpElement_GetComplexState(gVirtualElements[Axis_LookVertical], sizeof(fixed), &delta_pitch);
-	ISpElement_GetComplexState(gVirtualElements[Axis_Move], sizeof(fixed), &delta_velocity);
-	ISpElement_GetComplexState(gVirtualElements[Axis_ChangeWeapon], sizeof(fixed), &delta_weapon);
+	ISpElement_GetComplexState(gVirtualElements[Axis_LookHorizontal], sizeof(_fixed), &delta_yaw);
+	ISpElement_GetComplexState(gVirtualElements[Axis_LookVertical], sizeof(_fixed), &delta_pitch);
+	ISpElement_GetComplexState(gVirtualElements[Axis_Move], sizeof(_fixed), &delta_velocity);
+	ISpElement_GetComplexState(gVirtualElements[Axis_ChangeWeapon], sizeof(_fixed), &delta_weapon);
 	
 	delta_pitch*= 2;
 	

@@ -493,7 +493,7 @@ static void instantiate_sound_variables(
 static void buffer_sound(
 	struct channel_data *channel,
 	short sound_index,
-	fixed pitch)
+	_fixed pitch)
 {
 	struct sound_definition *definition= get_sound_definition(sound_index);
 	// LP change: idiot-proofing
@@ -528,7 +528,7 @@ static void buffer_sound(
 		{
 			if (pitch!=FIXED_ONE)
 			{
-				fixed rate;
+				_fixed rate;
 				
 				command.cmd= getRateCmd;
 				command.param1= 0;

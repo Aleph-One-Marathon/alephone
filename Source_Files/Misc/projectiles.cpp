@@ -149,7 +149,7 @@ static vector<short> IntersectedObjects;
 /* ---------- private prototypes */
 
 static short adjust_projectile_type(world_point3d *origin, short polygon_index, short type,
-	short owner_index, short owner_type, short intended_target_index, fixed damage_scale);
+	short owner_index, short owner_type, short intended_target_index, _fixed damage_scale);
 
 static void update_guided_projectile(short projectile_index);
 
@@ -232,7 +232,7 @@ void detonate_projectile(
 	short type,
 	short owner_index,
 	short owner_type,
-	fixed damage_scale)
+	_fixed damage_scale)
 {
 	struct projectile_definition *definition= get_projectile_definition(type);
 	struct damage_definition *damage= &definition->damage;
@@ -254,7 +254,7 @@ short new_projectile(
 	short owner_index,
 	short owner_type,
 	short intended_target_index, /* can be NONE */
-	fixed damage_scale)
+	_fixed damage_scale)
 {
 	struct projectile_definition *definition;
 	struct projectile_data *projectile;
@@ -680,7 +680,7 @@ static short adjust_projectile_type(
 	short owner_index,
 	short owner_type,
 	short intended_target_index,
-	fixed damage_scale)
+	_fixed damage_scale)
 {
 	struct projectile_definition *definition= get_projectile_definition(type);
 	short media_index= get_polygon_data(polygon_index)->media_index;

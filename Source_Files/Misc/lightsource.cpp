@@ -54,8 +54,8 @@ void change_light_state(short light_index, short new_state);
 static struct lighting_function_specification *get_lighting_function_specification(
 	struct static_light_data *data, short state);
 
-static fixed lighting_function_dispatch(short function_index, fixed initial_intensity,
-	fixed final_intensity, short phase, short period);
+static _fixed lighting_function_dispatch(short function_index, _fixed initial_intensity,
+	_fixed final_intensity, short phase, short period);
 
 /* ---------- structures */
 
@@ -282,7 +282,7 @@ bool set_tagged_light_statuses(
 	return changed;
 }
 
-fixed get_light_intensity(
+_fixed get_light_intensity(
 	short light_index)
 {
 	// LP change: idiot-proofing / fallback
@@ -404,12 +404,12 @@ static void rephase_light(
 				
 /* ---------- lighting functions */
 
-static fixed constant_lighting_proc(fixed initial_intensity, fixed final_intensity, short phase, short period);
-static fixed linear_lighting_proc(fixed initial_intensity, fixed final_intensity, short phase, short period);
-static fixed smooth_lighting_proc(fixed initial_intensity, fixed final_intensity, short phase, short period);
-static fixed flicker_lighting_proc(fixed initial_intensity, fixed final_intensity, short phase, short period);
+static _fixed constant_lighting_proc(_fixed initial_intensity, _fixed final_intensity, short phase, short period);
+static _fixed linear_lighting_proc(_fixed initial_intensity, _fixed final_intensity, short phase, short period);
+static _fixed smooth_lighting_proc(_fixed initial_intensity, _fixed final_intensity, short phase, short period);
+static _fixed flicker_lighting_proc(_fixed initial_intensity, _fixed final_intensity, short phase, short period);
 
-typedef fixed (*lighting_function)(fixed initial_intensity, fixed final_intensity,
+typedef _fixed (*lighting_function)(_fixed initial_intensity, _fixed final_intensity,
 	short phase, short period);
 
 static lighting_function lighting_functions[NUMBER_OF_LIGHTING_FUNCTIONS]=
@@ -420,10 +420,10 @@ static lighting_function lighting_functions[NUMBER_OF_LIGHTING_FUNCTIONS]=
 	flicker_lighting_proc
 };
 
-static fixed lighting_function_dispatch(
+static _fixed lighting_function_dispatch(
 	short function_index,
-	fixed initial_intensity,
-	fixed final_intensity,
+	_fixed initial_intensity,
+	_fixed final_intensity,
 	short phase,
 	short period)
 {
@@ -432,9 +432,9 @@ static fixed lighting_function_dispatch(
 	return lighting_functions[function_index](initial_intensity, final_intensity, phase, period);
 }
 
-static fixed constant_lighting_proc(
-	fixed initial_intensity,
-	fixed final_intensity,
+static _fixed constant_lighting_proc(
+	_fixed initial_intensity,
+	_fixed final_intensity,
 	short phase,
 	short period)
 {
@@ -445,32 +445,32 @@ static fixed constant_lighting_proc(
 	return final_intensity;
 }
 
-static fixed linear_lighting_proc(
-	fixed initial_intensity,
-	fixed final_intensity,
+static _fixed linear_lighting_proc(
+	_fixed initial_intensity,
+	_fixed final_intensity,
 	short phase,
 	short period)
 {
 	return initial_intensity + ((final_intensity-initial_intensity)*phase)/period;
 }
 
-static fixed smooth_lighting_proc(
-	fixed initial_intensity,
-	fixed final_intensity,
+static _fixed smooth_lighting_proc(
+	_fixed initial_intensity,
+	_fixed final_intensity,
 	short phase,
 	short period)
 {
 	return initial_intensity + (((final_intensity-initial_intensity)*(cosine_table[(phase*HALF_CIRCLE)/period+HALF_CIRCLE]+TRIG_MAGNITUDE))>>(TRIG_SHIFT+1));
 }
 
-static fixed flicker_lighting_proc(
-	fixed initial_intensity,
-	fixed final_intensity,
+static _fixed flicker_lighting_proc(
+	_fixed initial_intensity,
+	_fixed final_intensity,
 	short phase,
 	short period)
 {
-	fixed smooth_intensity= smooth_lighting_proc(initial_intensity, final_intensity, phase, period);
-	fixed delta= final_intensity-smooth_intensity;
+	_fixed smooth_intensity= smooth_lighting_proc(initial_intensity, final_intensity, phase, period);
+	_fixed delta= final_intensity-smooth_intensity;
 	
 	return smooth_intensity + (delta ? global_random()%delta : 0);
 }

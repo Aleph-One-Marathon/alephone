@@ -14,7 +14,7 @@
 static bool mouse_active = false;
 static uint8 button_mask = 0;		// Mask of enabled buttons
 static int center_x, center_y;		// X/Y center of screen
-static fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
+static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
 
 
 /*
@@ -86,8 +86,8 @@ void mouse_idle(short type)
 		SDL_WarpMouse(center_x, center_y);
 
 		// Calculate axis deltas
-		fixed vx = ((x - center_x) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
-		fixed vy = -((y - center_y) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
+		_fixed vx = ((x - center_x) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
+		_fixed vy = -((y - center_y) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
 		if (input_preferences->modifiers & _inputmod_invert_mouse)
 			vy = -vy;
 
@@ -116,7 +116,7 @@ void mouse_idle(short type)
  *  Return mouse state
  */
 
-void test_mouse(short type, uint32 *flags, fixed *delta_yaw, fixed *delta_pitch, fixed *delta_velocity)
+void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitch, _fixed *delta_velocity)
 {
 	if (mouse_active) {
 		uint8 buttons = SDL_GetMouseState(NULL, NULL);

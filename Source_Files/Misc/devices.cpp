@@ -96,8 +96,8 @@ struct control_panel_definition
 	int16 collection;
 	int16 active_shape, inactive_shape;
 
-	int16 sounds[NUMBER_OF_CONTROL_PANEL_SOUNDS];	
-	fixed sound_frequency;
+	int16 sounds[NUMBER_OF_CONTROL_PANEL_SOUNDS];
+	_fixed sound_frequency;
 	
 	int16 item;
 };

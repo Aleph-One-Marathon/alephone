@@ -173,7 +173,7 @@ short get_media_sound(
 
 struct damage_definition *get_media_damage(
 	short media_index,
-	fixed scale)
+	_fixed scale)
 {
 	struct media_data *media= get_media_data(media_index);
 	// LP change: idiot-proofing

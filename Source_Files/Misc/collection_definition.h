@@ -106,7 +106,7 @@ struct low_level_shape_definition
 {
 	uint16 flags; /* [x-mirror.1] [y-mirror.1] [keypoint_obscured.1] [unused.13] */
 
-	fixed minimum_light_intensity; /* in [0,FIXED_ONE] */
+	_fixed minimum_light_intensity; /* in [0,FIXED_ONE] */
 
 	int16 bitmap_index;
 	

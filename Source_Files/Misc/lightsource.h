@@ -52,7 +52,7 @@ struct lighting_function_specification /* 7*2 == 14 bytes */
 	int16 function;
 	
 	int16 period, delta_period;
-	fixed intensity, delta_intensity;
+	_fixed intensity, delta_intensity;
 };
 
 // Misaligned 4-byte values (intensity, delta_intensity) split in it
@@ -117,11 +117,11 @@ struct light_data /* 14*2 + 100 == 128 bytes */
 	int16 state;
 	
 	// result of lighting function
-	fixed intensity;
+	_fixed intensity;
 	
 	// data recalculated each function changed; passed to lighting_function each update
 	int16 phase, period;
-	fixed initial_intensity, final_intensity;
+	_fixed initial_intensity, final_intensity;
 
 	int16 unused[4];
 
@@ -151,11 +151,11 @@ struct old_light_data {
 	int16 mode; /* on, off, etc. */
 	int16 phase;
 	
-	fixed minimum_intensity, maximum_intensity;
+	_fixed minimum_intensity, maximum_intensity;
 	int16 period; /* on, in ticks (turning on and off periods are always the same for a given light type,
 		or else are some function of this period) */
 	
-	fixed intensity; /* current intensity */
+	_fixed intensity; /* current intensity */
 	
 	int16 unused[5];	
 };
@@ -176,7 +176,7 @@ bool get_light_status(short light_index);
 bool set_light_status(short light_index, bool active);
 bool set_tagged_light_statuses(short tag, bool new_status);
 
-fixed get_light_intensity(short light_index);
+_fixed get_light_intensity(short light_index);
 
 // LP change: inlined it
 inline struct light_data *get_light_data(

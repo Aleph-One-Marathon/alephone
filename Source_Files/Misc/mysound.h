@@ -413,7 +413,7 @@ struct sound_manager_parameters
 	uint16 flags; /* stereo, dynamic_tracking, etc. */
 
 	int32 unused_long;
-	fixed pitch;
+	_fixed pitch;
 
 	int16 music; /* Music volume: [0,NUMBER_OF_SOUND_VOLUME_LEVELS) */
 	
@@ -461,9 +461,9 @@ void load_sounds(short *sound_indexes, short count);
 bool sound_is_playing(short sound_index);
 
 // direction can be NONE
-void direct_play_sound(short sound_index, angle direction, short volume, fixed pitch);
+void direct_play_sound(short sound_index, angle direction, short volume, _fixed pitch);
 
-void _play_sound(short sound_index, world_location3d *source, short identifier, fixed pitch);
+void _play_sound(short sound_index, world_location3d *source, short identifier, _fixed pitch);
 #define play_sound(sound_index, source, identifier) _play_sound(sound_index, source, identifier, _normal_frequency)
 
 #define _play_local_sound(sound_index, pitch) _play_sound(sound_index, (world_location3d *) NULL, NONE, pitch)

@@ -100,7 +100,7 @@ struct rectangle_definition
 	
 	/* ambient shading table index; many objects will be self-luminescent, so this may have
 		nothing to do with the polygon the object is sitting in */
-	fixed ambient_shade;
+	_fixed ambient_shade;
 	
 	/* here are all the shading tables, crammed together in memory */	
 	void *shading_tables;
@@ -126,7 +126,7 @@ struct polygon_definition
 	struct bitmap_definition *texture; /* ignored for _tinted and _solid polygons */
 
 	/* ambient shading table index */
-	fixed ambient_shade;
+	_fixed ambient_shade;
 
 	/* here are all the shading tables, crammed together in memory (unless this is a tinted
 		polygon in which case it is a single 256-byte tinting table) */

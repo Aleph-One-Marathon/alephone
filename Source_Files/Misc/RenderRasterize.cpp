@@ -856,7 +856,7 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 	int32 numerator= line->j*local_p0->x - line->i*local_p0->y;
 	int32 denominator= line->i*dy - line->j*dx;
 	short shift_count= FIXED_FRACTIONAL_BITS;
-	fixed t;
+	_fixed t;
 
 	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWÕs PPCC
 		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
@@ -1081,7 +1081,7 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 	int32 numerator= line->j*local_p0->x - line->i*height;
 	int32 denominator= - line->j*dx;
 	short shift_count= FIXED_FRACTIONAL_BITS;
-	fixed t;
+	_fixed t;
 
 	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWÕs PPCC
 		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
@@ -1356,7 +1356,7 @@ void RenderRasterizerClass::xz_clip_flagged_world_points(
 	int32 numerator= line->j*local_p0->x - line->i*local_p0->z;
 	int32 denominator= line->i*dz - line->j*dx;
 	short shift_count= FIXED_FRACTIONAL_BITS;
-	fixed t;
+	_fixed t;
 
 	/* give numerator 16 significant bits over denominator and then calculate t==n/d;  MPWÕs PPCC
 		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */

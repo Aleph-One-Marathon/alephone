@@ -103,7 +103,7 @@ struct sound_definition
 	uint16 chance; // play sound if AbsRandom()>=chance
 	
 	/* if low_pitch==0, use FIXED_ONE; if high_pitch==0 use low pitch; else choose in [low_pitch,high_pitch] */
-	fixed low_pitch, high_pitch;
+	_fixed low_pitch, high_pitch;
 	
 	/* filled in later */
 	int16 permutations;

@@ -249,8 +249,8 @@ void accelerate_player(
 }
 
 void get_absolute_pitch_range(
-	fixed *minimum,
-	fixed *maximum)
+	_fixed *minimum,
+	_fixed *maximum)
 {
 	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, 0);
 	
@@ -264,9 +264,9 @@ void get_absolute_pitch_range(
 	to the maximum for that value */
 uint32 mask_in_absolute_positioning_information(
 	uint32 action_flags,
-	fixed delta_yaw,
-	fixed delta_pitch,
-	fixed delta_position)
+	_fixed delta_yaw,
+	_fixed delta_pitch,
+	_fixed delta_position)
 {
 	struct physics_variables *variables= &local_player->variables;
 	short encoded_delta;
@@ -359,8 +359,8 @@ uint32 mask_in_absolute_positioning_information(
 /* will be obsolete when cybermaxx changes to new-style */
 void instantiate_absolute_positioning_information(
 	short player_index,
-	fixed facing,
-	fixed elevation)
+	_fixed facing,
+	_fixed elevation)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct physics_variables *variables= &player->variables;
@@ -424,14 +424,14 @@ void kill_player_physics_variables(
 }
 
 /* return a number in [-FIXED_ONE,FIXED_ONE] (arguably) */
-fixed get_player_forward_velocity_scale(
+_fixed get_player_forward_velocity_scale(
 	short player_index)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct physics_variables *variables= &player->variables;
 	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, _run_dont_walk);
-	fixed dx= variables->position.x - variables->last_position.x;
-	fixed dy= variables->position.y - variables->last_position.y;
+	_fixed dx= variables->position.x - variables->last_position.x;
+	_fixed dy= variables->position.y - variables->last_position.y;
 
 	return INTEGER_TO_FIXED(((dx*cosine_table[FIXED_INTEGERAL_PART(variables->direction)] +
 		dy*sine_table[FIXED_INTEGERAL_PART(variables->direction)])>>TRIG_SHIFT))/constants->maximum_forward_velocity;
@@ -476,9 +476,9 @@ static void instantiate_physics_variables(
 	world_point3d new_location;
 	world_distance adjusted_floor_height, adjusted_ceiling_height, object_floor;
 	bool clipped;
-	fixed step_height;
+	_fixed step_height;
 	angle facing, elevation;
-	fixed fixed_facing;
+	_fixed fixed_facing;
 
 	/* convert to world coordinates before doing collision detection */
 	new_location.x= FIXED_TO_WORLD(variables->position.x);
@@ -593,8 +593,8 @@ static void physics_update(
 {
 	fixed_point3d new_position;
 	short sine, cosine;
-	fixed delta_z;
-	fixed delta; /* used as a scratch ÔchangeÕ variable */
+	_fixed delta_z;
+	_fixed delta; /* used as a scratch ÔchangeÕ variable */
 
 	if (PLAYER_IS_DEAD(player)) /* dead players immediately loose all bodily control */
 	{
@@ -806,8 +806,8 @@ static void physics_update(
 	}
 	if (delta_z>0)
 	{
-		fixed gravity= constants->gravitational_acceleration;
-		fixed terminal_velocity= constants->terminal_velocity;
+		_fixed gravity= constants->gravitational_acceleration;
+		_fixed terminal_velocity= constants->terminal_velocity;
 		
 		if (static_world->environment_flags&_environment_low_gravity) gravity>>= 1;
 		if (variables->flags&_FEET_BELOW_MEDIA_BIT) gravity>>= 1, terminal_velocity>>= 1;
@@ -879,7 +879,7 @@ static void physics_update(
 	
 	{
 		short dx= variables->external_velocity.i, dy= variables->external_velocity.j;
-		fixed delta= (delta_z<=0) ? constants->external_deceleration : (constants->external_deceleration>>2);
+		_fixed delta= (delta_z<=0) ? constants->external_deceleration : (constants->external_deceleration>>2);
 		long magnitude= isqrt(dx*dx + dy*dy);
 
 		if (magnitude && magnitude>ABS(delta))

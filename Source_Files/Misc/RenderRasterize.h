@@ -52,7 +52,7 @@ struct flagged_world_point3d /* for ceilings */
 struct vertical_surface_data
 {
 	short lightsource_index;
-	fixed ambient_delta; /* a delta to the lightsource’s intensity, then pinned to [0,FIXED_ONE] */
+	_fixed ambient_delta; /* a delta to the lightsource’s intensity, then pinned to [0,FIXED_ONE] */
 	
 	world_distance length;
 	world_distance h0, h1, hmax; /* h0<h1; hmax<=h1 and is the height where this wall side meets the ceiling */

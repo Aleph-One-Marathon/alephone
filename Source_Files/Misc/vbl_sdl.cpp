@@ -137,7 +137,7 @@ uint32 parse_keymap(void)
 
 	// Handle the selected input controller
 	if (input_preferences->input_device != _keyboard_or_game_pad) {
-		fixed delta_yaw, delta_pitch, delta_velocity;
+		_fixed delta_yaw, delta_pitch, delta_velocity;
 		test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
 		flags = mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
 	}

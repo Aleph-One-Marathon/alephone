@@ -566,7 +566,7 @@ void TINT_VERTICAL_POLYGON_LINES(
 		short y0= *y0_table++, y1= *y1_table++;
 		register PEL *write= (PEL *) screen->row_addresses[y0] + x;
 		register pixel8 *read= line->texture;
-		register fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
+		register _fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
 		register short count= y1-y0;
 
 		while ((count-=1)>=0)
@@ -637,7 +637,7 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 		short y0= *y0_table++, y1= *y1_table++;
 		register PEL *write= (PEL *) screen->row_addresses[y0] + x;
 		register pixel8 *read= line->texture;
-		register fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
+		register _fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
 		register short count= y1-y0;
 
 		while ((count-=1)>=0)

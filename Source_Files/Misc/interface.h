@@ -148,7 +148,7 @@ struct shape_information_data
 {
 	uint16 flags; /* [x-mirror.1] [y-mirror.1] [keypoint_obscured.1] [unused.13] */
 
-	fixed minimum_light_intensity; /* in [0,FIXED_ONE] */
+	_fixed minimum_light_intensity; /* in [0,FIXED_ONE] */
 
 	short unused[5];
 
@@ -362,7 +362,7 @@ void handle_microphone(bool triggered);
 
 /* ---------- prototypes/PHYSICS.C */
 
-void reset_absolute_positioning_device(fixed yaw, fixed pitch, fixed velocity);
+void reset_absolute_positioning_device(_fixed yaw, _fixed pitch, _fixed velocity);
 
 /* ---------- prototypes/IMPORT_DEFINITIONS.C */
 

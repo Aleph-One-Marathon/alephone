@@ -52,7 +52,7 @@ extern pascal OSErr CrsrDevMoveTo(CursorDevicePtr ourDevice, long absX, long abs
 /* ---------- globals */
 
 static CursorDevicePtr mouse_device = NULL;
-static fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
+static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
 static bool snapshot_button_state;
 
 /* ---------- code */
@@ -77,9 +77,9 @@ void enter_mouse(
 void test_mouse(
 	short type,
 	uint32 *action_flags,
-	fixed *delta_yaw,
-	fixed *delta_pitch,
-	fixed *delta_velocity)
+	_fixed *delta_yaw,
+	_fixed *delta_pitch,
+	_fixed *delta_velocity)
 {
 	(void) (type);
 	
@@ -139,8 +139,8 @@ void mouse_idle(
 	if (ticks_elapsed)
 	{
 		/* calculate axis deltas */
-		fixed vx= INTEGER_TO_FIXED(where.h-center.h)/(ticks_elapsed*MAXIMUM_MOUSE_VELOCITY);
-		fixed vy= - INTEGER_TO_FIXED(where.v-center.v)/(ticks_elapsed*MAXIMUM_MOUSE_VELOCITY);
+		_fixed vx= INTEGER_TO_FIXED(where.h-center.h)/(ticks_elapsed*MAXIMUM_MOUSE_VELOCITY);
+		_fixed vy= - INTEGER_TO_FIXED(where.v-center.v)/(ticks_elapsed*MAXIMUM_MOUSE_VELOCITY);
 
 		/* pin and do nonlinearity */
 		vx= PIN(vx, -FIXED_ONE/2, FIXED_ONE/2), vx>>= 1, vx*= (vx<0) ? -vx : vx, vx>>= 14;

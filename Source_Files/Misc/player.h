@@ -55,7 +55,7 @@ enum
 };
 
 // LP change: turning this into a variable
-extern fixed PlayerSelfLuminosity;
+extern _fixed PlayerSelfLuminosity;
 #define NATURAL_LIGHT_INTENSITY PlayerSelfLuminosity
 // #define NATURAL_LIGHT_INTENSITY FIXED_ONE_HALF
 
@@ -203,26 +203,26 @@ enum /* player flag bits */
 
 struct physics_variables
 {
-	fixed head_direction;
-	fixed last_direction, direction, elevation, angular_velocity, vertical_angular_velocity;
-	fixed velocity, perpendicular_velocity; /* in and perpendicular to direction, respectively */
+	_fixed head_direction;
+	_fixed last_direction, direction, elevation, angular_velocity, vertical_angular_velocity;
+	_fixed velocity, perpendicular_velocity; /* in and perpendicular to direction, respectively */
 	fixed_point3d last_position, position;
-	fixed actual_height;
+	_fixed actual_height;
 
 	/* used by mask_in_absolute_positioning_information (because it is not really absolute) to
 		keep track of where we’re going */
-	fixed adjusted_pitch, adjusted_yaw;
+	_fixed adjusted_pitch, adjusted_yaw;
 	
 	fixed_vector3d external_velocity; /* from impacts; slowly absorbed */
-	fixed external_angular_velocity; /* from impacts; slowly absorbed */
+	_fixed external_angular_velocity; /* from impacts; slowly absorbed */
 	
-	fixed step_phase; /* step_phase is in [0,1) and is some function of the distance travelled
+	_fixed step_phase; /* step_phase is in [0,1) and is some function of the distance travelled
 		(for bobbing the gun and the viewpoint) */
-	fixed step_amplitude; /* step amplitude is in [0,1) and is some function of velocity */
+	_fixed step_amplitude; /* step amplitude is in [0,1) and is some function of velocity */
 	
-	fixed floor_height; /* the height of the floor on the polygon where we ended up last time */
-	fixed ceiling_height; /* same as above, but ceiling height */
-	fixed media_height; /* media height */
+	_fixed floor_height; /* the height of the floor on the polygon where we ended up last time */
+	_fixed ceiling_height; /* same as above, but ceiling height */
+	_fixed media_height; /* media height */
 
 	int16 action; /* what the player’s legs are doing, basically */
 	uint16 old_flags, flags; /* stuff like _RECENTERING */
@@ -299,7 +299,7 @@ struct player_data
 	
 	/* Reset by initialize_player_weapons */
 	int16 weapon_intensity_decay; /* zero is idle intensity */
-	fixed weapon_intensity;
+	_fixed weapon_intensity;
 
 	/* powerups */
 	int16 invisibility_duration;
@@ -418,14 +418,14 @@ void accelerate_player(short monster_index, world_distance vertical_velocity, an
 
 void kill_player_physics_variables(short player_index);
 
-uint32 mask_in_absolute_positioning_information(uint32 action_flags, fixed yaw, fixed pitch, fixed velocity);
-void get_absolute_pitch_range(fixed *minimum, fixed *maximum);
+uint32 mask_in_absolute_positioning_information(uint32 action_flags, _fixed yaw, _fixed pitch, _fixed velocity);
+void get_absolute_pitch_range(_fixed *minimum, _fixed *maximum);
 
-void instantiate_absolute_positioning_information(short player_index, fixed facing, fixed elevation);
+void instantiate_absolute_positioning_information(short player_index, _fixed facing, _fixed elevation);
 void get_binocular_vision_origins(short player_index, world_point3d *left, short *left_polygon_index,
 	angle *left_angle, world_point3d *right, short *right_polygon_index, angle *right_angle);
 
-fixed get_player_forward_velocity_scale(short player_index);
+_fixed get_player_forward_velocity_scale(short player_index);
 
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world

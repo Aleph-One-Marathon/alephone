@@ -172,7 +172,7 @@ struct monster_definition /* <128 bytes */
 	int32 _class; /* our class */
 	int32 friends, enemies; /* bit fields of what classes we consider friendly and what types we donÕt like */
 
-	fixed sound_pitch;
+	_fixed sound_pitch;
 	int16 activation_sound, friendly_activation_sound, clear_sound;
 	int16 kill_sound, apology_sound, friendly_fire_sound;
 	int16 flaming_sound; /* the scream we play when we go down in flames */
@@ -183,7 +183,7 @@ struct monster_definition /* <128 bytes */
 	world_distance radius, height;
 	world_distance preferred_hover_height;
 	world_distance minimum_ledge_delta, maximum_ledge_delta;
-	fixed external_velocity_scale;
+	_fixed external_velocity_scale;
 	int16 impact_effect, melee_impact_effect, contrail_effect;
 
 	int16 half_visual_arc, half_vertical_visual_arc;

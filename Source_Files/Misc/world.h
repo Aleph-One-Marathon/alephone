@@ -55,7 +55,7 @@ typedef int16 world_distance;
 #define WORLD_FRACTIONAL_PART(d) ((d)&((world_distance)(WORLD_ONE-1)))
 #define WORLD_INTEGERAL_PART(d) ((d)>>WORLD_FRACTIONAL_BITS)
 
-#define WORLD_TO_FIXED(w) (((fixed)(w))<<(FIXED_FRACTIONAL_BITS-WORLD_FRACTIONAL_BITS))
+#define WORLD_TO_FIXED(w) (((_fixed)(w))<<(FIXED_FRACTIONAL_BITS-WORLD_FRACTIONAL_BITS))
 #define FIXED_TO_WORLD(f) ((world_distance)((f)>>(FIXED_FRACTIONAL_BITS-WORLD_FRACTIONAL_BITS)))
 
 #define FACING4(a) (NORMALIZE_ANGLE((a)-EIGHTH_CIRCLE)>>(ANGULAR_BITS-2))
@@ -85,7 +85,7 @@ typedef struct world_point3d world_point3d;
 
 struct fixed_point3d
 {
-	fixed x, y, z;
+	_fixed x, y, z;
 };
 typedef struct fixed_point3d fixed_point3d;
 
@@ -105,7 +105,7 @@ typedef struct world_vector3d world_vector3d;
 
 struct fixed_vector3d
 {
-	fixed i, j, k;
+	_fixed i, j, k;
 };
 typedef struct fixed_vector3d fixed_vector3d;
 

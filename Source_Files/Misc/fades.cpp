@@ -69,7 +69,7 @@ Jul 1, 2000 (Loren Petrich):
 
 /* ---------- types */
 
-typedef void (*fade_proc)(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, fixed transparency);
+typedef void (*fade_proc)(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, _fixed transparency);
 
 /* ---------- structures */
 
@@ -77,7 +77,7 @@ typedef void (*fade_proc)(struct color_table *original_color_table, struct color
 struct fade_effect_definition
 {
 	short fade_type;
-	fixed transparency;
+	_fixed transparency;
 };
 
 enum
@@ -90,7 +90,7 @@ struct fade_definition
 {
 	fade_proc proc;
 	struct rgb_color color;
-	fixed initial_transparency, final_transparency; /* in [0,FIXED_ONE] */
+	_fixed initial_transparency, final_transparency; /* in [0,FIXED_ONE] */
 
 	short period;
 	
@@ -126,12 +126,12 @@ static OGL_Fader *CurrentOGLFader = NULL;
 
 /* ---------- fade definitions */
 
-static void tint_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, fixed transparency);
-static void randomize_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, fixed transparency);
-static void negate_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, fixed transparency);
-static void dodge_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, fixed transparency);
-static void burn_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, fixed transparency);
-static void soft_tint_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, fixed transparency);
+static void tint_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, _fixed transparency);
+static void randomize_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, _fixed transparency);
+static void negate_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, _fixed transparency);
+static void dodge_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, _fixed transparency);
+static void burn_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, _fixed transparency);
+static void soft_tint_color_table(struct color_table *original_color_table, struct color_table *animated_color_table, struct rgb_color *color, _fixed transparency);
 
 static struct fade_definition fade_definitions[NUMBER_OF_FADE_TYPES]=
 {
@@ -205,7 +205,7 @@ struct fade_definition *get_fade_definition(short index);
 static struct fade_effect_definition *get_fade_effect_definition(short index);
 */
 
-static void recalculate_and_display_color_table(short type, fixed transparency,
+static void recalculate_and_display_color_table(short type, _fixed transparency,
 	struct color_table *original_color_table, struct color_table *animated_color_table);
 
 // LP additions for OpenGL fader support; both of them use the pointer to the current
@@ -216,7 +216,7 @@ static void recalculate_and_display_color_table(short type, fixed transparency,
 static void SetOGLFader(int Index);
 
 // Translate the color and opacity values
-static void TranslateToOGLFader(rgb_color &Color, fixed Opacity);
+static void TranslateToOGLFader(rgb_color &Color, _fixed Opacity);
 
 /* ---------- code */
 
@@ -255,7 +255,7 @@ bool update_fades(
 		// LP change: idiot-proofing
 		if (!definition) return false;
 		
-		fixed transparency;
+		_fixed transparency;
 		short phase;
 		
 		if ((phase= machine_tick_count()-fade->last_update_tick)>=definition->period)
@@ -450,7 +450,7 @@ static struct fade_effect_definition *get_fade_effect_definition(
 
 static void recalculate_and_display_color_table(
 	short type,
-	fixed transparency,
+	_fixed transparency,
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table)
 {
@@ -500,7 +500,7 @@ static void tint_color_table(
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table,
 	struct rgb_color *color,
-	fixed transparency)
+	_fixed transparency)
 {
 	// LP addition: support for OpenGL faders
 	if (CurrentOGLFader)
@@ -530,7 +530,7 @@ static void randomize_color_table(
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table,
 	struct rgb_color *color,
-	fixed transparency)
+	_fixed transparency)
 {
 	// LP addition: support for OpenGL faders
 	if (CurrentOGLFader)
@@ -572,7 +572,7 @@ static void negate_color_table(
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table,
 	struct rgb_color *color,
-	fixed transparency)
+	_fixed transparency)
 {
 	// LP addition: support for OpenGL faders
 	if (CurrentOGLFader)
@@ -608,7 +608,7 @@ static void dodge_color_table(
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table,
 	struct rgb_color *color,
-	fixed transparency)
+	_fixed transparency)
 {
 	// LP addition: support for OpenGL faders
 	if (CurrentOGLFader)
@@ -639,7 +639,7 @@ static void burn_color_table(
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table,
 	struct rgb_color *color,
-	fixed transparency)
+	_fixed transparency)
 {
 	// LP addition: support for OpenGL faders
 	if (CurrentOGLFader)
@@ -671,7 +671,7 @@ static void soft_tint_color_table(
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table,
 	struct rgb_color *color,
-	fixed transparency)
+	_fixed transparency)
 {
 	// LP addition: support for OpenGL faders
 	if (CurrentOGLFader)
@@ -717,7 +717,7 @@ void SetOGLFader(int Index)
 }
 
 // Translate the color and opacity values
-static void TranslateToOGLFader(rgb_color &Color, fixed Opacity)
+static void TranslateToOGLFader(rgb_color &Color, _fixed Opacity)
 {
 	assert(CurrentOGLFader);
 	CurrentOGLFader->Color[0] = Color.red/float(FIXED_ONE-1);

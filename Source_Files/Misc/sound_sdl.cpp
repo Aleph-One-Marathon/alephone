@@ -35,14 +35,14 @@ struct sdl_channel {
 	uint8 *loop;			// Pointer to loop start
 	int32 loop_length;		// Loop length in bytes (0 = don't loop)
 
-	fixed rate;				// Sample rate (relative to output sample rate)
-	fixed counter;			// Counter for up/downsampling
+	_fixed rate;				// Sample rate (relative to output sample rate)
+	_fixed counter;			// Counter for up/downsampling
 
 	int16 left_volume;		// Volume (0x100 = nominal)
 	int16 right_volume;
 
 	uint8 *next_header;		// Pointer to next queued sound header (NULL = none)
-	fixed next_pitch;		// Pitch of next queued sound header
+	_fixed next_pitch;		// Pitch of next queued sound header
 } sdl_channels[TOTAL_SOUND_CHANNELS];
 
 
@@ -85,7 +85,7 @@ static void close_sound_file(void);
 static void shutdown_sound_manager(void);
 static void shutdown_music_handler(void);
 static void set_sound_manager_status(bool active);
-static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch);
+static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch);
 static void sound_callback(void *userdata, uint8 *stream, int len);
 
 
@@ -481,7 +481,7 @@ static void instantiate_sound_variables(struct sound_variables *variables, struc
  *  Start sound playback (asynchronously)
  */
 
-static void buffer_sound(struct channel_data *channel, short sound_index, fixed pitch)
+static void buffer_sound(struct channel_data *channel, short sound_index, _fixed pitch)
 {
 	struct sound_definition *definition = get_sound_definition(sound_index);
 	if (!definition)
@@ -698,7 +698,7 @@ void PreloadLevelMusic(void)
  *  Load sound header into channel
  */
 
-static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
+static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch)
 {
 	// Open stream to header
 	SDL_RWops *p = SDL_RWFromMem(data, 64);

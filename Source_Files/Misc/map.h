@@ -103,7 +103,7 @@ struct damage_definition
 	int16 type, flags;
 	
 	int16 base, random;
-	fixed scale;
+	_fixed scale;
 };
 const int SIZEOF_damage_definition = 12;
 
@@ -246,7 +246,7 @@ struct random_sound_image_data // 32 bytes
 	int16 volume, delta_volume;
 	int16 period, delta_period;
 	angle direction, delta_direction;
-	fixed pitch, delta_pitch;
+	_fixed pitch, delta_pitch;
 	
 	// only used at run-time; initialize to NONE
 	int16 phase;
@@ -397,7 +397,7 @@ struct object_data /* 32 bytes */
 	int16 parasitic_object; /* or NONE */
 
 	/* used when playing sounds */
-	fixed sound_pitch;
+	_fixed sound_pitch;
 };
 const int SIZEOF_object_data = 32;
 
@@ -979,7 +979,7 @@ struct shape_and_transfer_mode
 	short collection_code, low_level_shape_index;
 	
 	short transfer_mode;
-	fixed transfer_phase; /* [0,FIXED_ONE] */
+	_fixed transfer_phase; /* [0,FIXED_ONE] */
 };
 
 void get_object_shape_and_transfer_mode(world_point3d *camera_location, short object_index, struct shape_and_transfer_mode *data);
@@ -989,7 +989,7 @@ bool randomize_object_sequence(short object_index, shape_descriptor shape);
 
 void play_object_sound(short object_index, short sound_code);
 void play_polygon_sound(short polygon_index, short sound_code);
-void _play_side_sound(short side_index, short sound_code, fixed pitch);
+void _play_side_sound(short side_index, short sound_code, _fixed pitch);
 void play_world_sound(short polygon_index, world_point3d *origin, short sound_code);
 
 #define play_side_sound(side_index, sound_code) _play_side_sound(side_index, sound_code, FIXED_ONE)
@@ -1013,12 +1013,12 @@ void find_center_of_polygon(short polygon_index, world_point2d *center);
 int32 point_to_line_segment_distance_squared(world_point2d *p, world_point2d *a, world_point2d *b);
 int32 point_to_line_distance_squared(world_point2d *p, world_point2d *a, world_point2d *b);
 
-fixed closest_point_on_line(world_point2d *e0, world_point2d *e1, world_point2d *p, world_point2d *closest_point);
+_fixed closest_point_on_line(world_point2d *e0, world_point2d *e1, world_point2d *p, world_point2d *closest_point);
 void closest_point_on_circle(world_point2d *c, world_distance radius, world_point2d *p, world_point2d *closest_point);
 
-fixed find_line_intersection(world_point2d *e0, world_point2d *e1, world_point3d *p0,
+_fixed find_line_intersection(world_point2d *e0, world_point2d *e1, world_point3d *p0,
 	world_point3d *p1, world_point3d *intersection);
-fixed find_floor_or_ceiling_intersection(world_distance h, world_point3d *p0, world_point3d *p1, world_point3d *intersection);
+_fixed find_floor_or_ceiling_intersection(world_distance h, world_point3d *p0, world_point3d *p1, world_point3d *intersection);
 
 void ray_to_line_segment(world_point2d *p0, world_point2d *p1, angle theta, world_distance d);
 
@@ -1027,7 +1027,7 @@ bool keep_line_segment_out_of_walls(short polygon_index, world_point3d *p0,
 	world_point3d *p1, world_distance maximum_delta_height, world_distance height, world_distance *adjusted_floor_height,
 	world_distance *adjusted_ceiling_height, short *supporting_polygon_index);
 
-fixed get_object_light_intensity(short object_index);
+_fixed get_object_light_intensity(short object_index);
 
 bool line_has_variable_height(short line_index);
 

@@ -106,7 +106,7 @@ struct view_data
 	short origin_polygon_index;
 	angle yaw, pitch, roll;
 	world_point3d origin;
-	fixed maximum_depth_intensity; /* in fixed units */
+	_fixed maximum_depth_intensity; /* in fixed units */
 
 	short shading_mode;
 
@@ -185,7 +185,7 @@ void render_computer_interface(struct view_data *view);
 // outside of render.c, where they are defined.
 
 void instantiate_rectangle_transfer_mode(view_data *view,
-	rectangle_definition *rectangle, short transfer_mode, fixed transfer_phase);
+	rectangle_definition *rectangle, short transfer_mode, _fixed transfer_phase);
 
 void instantiate_polygon_transfer_mode(view_data *view,
 	polygon_definition *polygon, short transfer_mode, short transfer_phase, bool horizontal);

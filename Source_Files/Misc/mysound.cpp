@@ -173,7 +173,7 @@ enum /* channel flags */
 struct sound_variables
 {
 	short volume, left_volume, right_volume;
-	fixed original_pitch, pitch;
+	_fixed original_pitch, pitch;
 	
 	short priority;
 };
@@ -285,7 +285,7 @@ static byte *read_sound_from_file(short sound_index, int32 &size);
 static void quiet_channel(struct channel_data *channel);
 static void instantiate_sound_variables(struct sound_variables *variables,
 	struct channel_data *channel, bool first_time);
-static void buffer_sound(struct channel_data *channel, short sound_index, fixed pitch);
+static void buffer_sound(struct channel_data *channel, short sound_index, _fixed pitch);
 
 /* ---------- private prototypes */
 
@@ -301,10 +301,10 @@ static void free_channel(struct channel_data *channel);
 static short get_random_sound_permutation(short sound_index);
 
 static void calculate_initial_sound_variables(short sound_index, world_location3d *source,
-	struct sound_variables *variables, fixed pitch_modifier);
+	struct sound_variables *variables, _fixed pitch_modifier);
 static void calculate_sound_variables(short sound_index, world_location3d *source,
 	struct sound_variables *variables);
-static fixed calculate_pitch_modifier(short sound_index, fixed pitch_modifier);
+static _fixed calculate_pitch_modifier(short sound_index, _fixed pitch_modifier);
 
 static void angle_and_volume_to_stereo_volume(angle delta, short volume, short *right_volume, short *left_volume);
 static short distance_to_volume(struct sound_definition *definition, world_distance distance,
@@ -543,7 +543,7 @@ void direct_play_sound(
 	short sound_index,
 	angle direction, // can be NONE
 	short volume,
-	fixed pitch)
+	_fixed pitch)
 {
 	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
 		or our volume is zero, our we have no sound channels */
@@ -599,7 +599,7 @@ void _play_sound(
 	short sound_index,
 	world_location3d *source,
 	short identifier, /* NONE is no identifier and the sound is immediately orphaned */
-	fixed pitch) /* on top of all existing pitch modifiers */
+	_fixed pitch) /* on top of all existing pitch modifiers */
 {
 	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
 		or our volume is zero, our we have no sound channels */
@@ -1038,7 +1038,7 @@ static void calculate_initial_sound_variables(
 	short sound_index,
 	world_location3d *source,
 	struct sound_variables *variables,
-	fixed pitch_modifier)
+	_fixed pitch_modifier)
 {
 	struct sound_definition *definition= get_sound_definition(sound_index);
 	// LP change: idiot-proofing
@@ -1058,9 +1058,9 @@ static void calculate_initial_sound_variables(
 	return;
 }
 
-static fixed calculate_pitch_modifier(
+static _fixed calculate_pitch_modifier(
 	short sound_index,
-	fixed pitch_modifier)
+	_fixed pitch_modifier)
 {
 	struct sound_definition *definition= get_sound_definition(sound_index);
 	// LP change: idiot-proofing
