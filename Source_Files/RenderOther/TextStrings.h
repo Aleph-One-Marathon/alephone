@@ -55,7 +55,7 @@ char *TS_GetCString(short ID, short Index);
 bool TS_IsPresent(short ID);
 
 // Count the strings (contiguous from index zero)
-unsigned short TS_CountStrings(short ID);
+size_t TS_CountStrings(short ID);
 
 // Deletes a string, should one ever want to do that
 void TS_DeleteString(short ID, short Index);

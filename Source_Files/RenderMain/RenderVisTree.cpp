@@ -371,7 +371,7 @@ void RenderVisTreeClass::cast_render_ray(
 			
 			parent= node;
 			// LP: keep in sync!
-			ParentIndex = parent - &Nodes.front();
+			ParentIndex = static_cast<int>(parent - &Nodes.front());
 		}
 	}
 	while (polygon_index!=NONE);

@@ -650,7 +650,7 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 #if BIT_DEPTH==32
 				if (seed>=drop_less_than) *write= (pixel32)seed^(((pixel32)seed)<<8);
 #else
-				if (seed>=drop_less_than) *write= seed;
+				if (seed>=drop_less_than) *write= static_cast<PEL>(seed);
 #endif
 				if (seed&1) seed= (seed>>1)^0xb400; else seed= seed>>1;
 			}

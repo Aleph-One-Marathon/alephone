@@ -306,7 +306,7 @@ static void initialize_application(void)
 	char login[17];
 	DWORD len = 17;
 
-	bool hasName = GetUserName((LPSTR) login, &len);
+	bool hasName = (GetUserName((LPSTR) login, &len) == TRUE);
 	if (!hasName || strpbrk(login, "\\/:*?\"<>|") != NULL)
 		strcpy(login, "Bob User");
 
@@ -697,7 +697,7 @@ public:
 	{
 		if (selection) {
 			vector<dir_entry>::const_iterator i, end = items.end();
-			int num = 0;
+			size_t num = 0;
 			for (i = items.begin(); i != end; i++, num++) {
 				if (i->name == selection) {
 					set_selection(num);

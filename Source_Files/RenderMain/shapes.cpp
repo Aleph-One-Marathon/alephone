@@ -1191,7 +1191,7 @@ static void update_color_environment(
 					
 					/* build a remapping table for the primary shading table which we can use to
 						calculate this alternate shading table */
-					for (color_index= 0; color_index<PIXEL8_MAXIMUM_COLORS; ++color_index) shading_remapping_table[color_index]= color_index;
+					for (color_index= 0; color_index<PIXEL8_MAXIMUM_COLORS; ++color_index) shading_remapping_table[color_index]= static_cast<pixel8>(color_index);
 					for (color_index= 0; color_index<collection->color_count-NUMBER_OF_PRIVATE_COLORS; ++color_index)
 					{
 						shading_remapping_table[find_or_add_color(&primary_colors[color_index], colors, &color_count)]= 

@@ -445,7 +445,7 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 		short NumStrings = NumPtr[0];
 		HUnlock(PathStrings);
 		ReleaseResource(PathStrings);
-		for (int i=0; i<NumStrings; i++)
+		for (size_t i=0; i<NumStrings; i++)
 		{
 			// Get next path specification; quit when one has found an empty one
 

@@ -684,7 +684,7 @@ uint32 get_dialog_color(int which)
 
 // ZZZ: added this for convenience; taken from w_player_color::draw().
 // Obviously, this color does not come from the theme.
-uint32 get_dialog_player_color(int colorIndex) {
+uint32 get_dialog_player_color(size_t colorIndex) {
         SDL_Color c;
         _get_interface_color(PLAYER_COLOR_BASE_INDEX + colorIndex, &c);
         return SDL_MapRGB(dialog_surface->format, c.r, c.g, c.b);

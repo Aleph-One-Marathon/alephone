@@ -109,7 +109,7 @@ static int uncompress_rle8(const uint8 *src, int row_bytes, uint8 *dst, int dst_
 		src = unpack_bits(src, row_bytes, dst);
 		dst += dst_pitch;
 	}
-	return src - start;
+	return static_cast<int>(src - start);
 }
 
 // 16-bit picture, one scan line at a time, 16-bit chunks
@@ -120,7 +120,7 @@ static int uncompress_rle16(const uint8 *src, int row_bytes, uint8 *dst, int dst
 		src = unpack_bits(src, row_bytes, (uint16 *)dst);
 		dst += dst_pitch;
 	}
-	return src - start;
+	return static_cast<int>(src - start);
 }
 
 static void copy_component_into_surface(const uint8 *src, uint8 *dst, int count, int component)
@@ -161,7 +161,7 @@ static int uncompress_rle32(const uint8 *src, int row_bytes, uint8 *dst, int dst
 
 	free(tmp);
 
-	return src - start;
+	return static_cast<int>(src - start);
 }
 
 static int uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int dst_pitch, int depth, int height, int pack_type)

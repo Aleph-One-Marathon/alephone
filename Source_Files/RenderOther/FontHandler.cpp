@@ -216,7 +216,7 @@ void FontSpecifier::Update()
 }
 
 // Defined in screen_drawing_sdl.cpp
-extern int char_width(uint8 c, const sdl_font_info *font, uint16 style);
+extern int8 char_width(uint8 c, const sdl_font_info *font, uint16 style);
 
 int FontSpecifier::TextWidth(const char *text)
 {

@@ -155,11 +155,11 @@ void _draw_screen_shape_at_x_y(shape_descriptor shape_id, short x, short y)
  */
 
 // Calculate width of single character
-int char_width(uint8 c, const sdl_font_info *font, uint16 style)
+int8 char_width(uint8 c, const sdl_font_info *font, uint16 style)
 {
 	if (font == NULL || c < font->first_character || c > font->last_character)
 		return 0;
-	int width = font->width_table[(c - font->first_character) * 2 + 1] + ((style & styleBold) ? 1 : 0);
+	int8 width = font->width_table[(c - font->first_character) * 2 + 1] + ((style & styleBold) ? 1 : 0);
 	if (width == -1)	// non-existant character
 		width = font->width_table[(font->last_character - font->first_character + 1) * 2 + 1] + ((style & styleBold) ? 1 : 0);
 	return width;
@@ -253,7 +253,7 @@ inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int clip_le
 			if (src[ix])
 				p[ix] = pixel;			
 		}
-		if (oblique && (iy & 1))
+		if (oblique && (iy % 2) == 1)
 			p--;
 		src += font->bytes_per_row;
 		p += pitch / sizeof(T);
@@ -932,7 +932,7 @@ void draw_polygon(SDL_Surface *s, const world_point2d *vertex_array, int vertex_
  *  Interface color management
  */
 
-void _get_interface_color(int color_index, SDL_Color *color)
+void _get_interface_color(size_t color_index, SDL_Color *color)
 {	
 	assert(color_index>=0 && color_index<NumInterfaceColors);
 	
@@ -944,7 +944,7 @@ void _get_interface_color(int color_index, SDL_Color *color)
 
 #define NUMBER_OF_PLAYER_COLORS 8
 
-void _get_player_color(short color_index, RGBColor *color)
+void _get_player_color(size_t color_index, RGBColor *color)
 {
 	assert(color_index>=0 && color_index<NUMBER_OF_PLAYER_COLORS);
 
@@ -954,14 +954,14 @@ void _get_player_color(short color_index, RGBColor *color)
 	color->blue = c.blue;
 }
 
-void _get_player_color(short color_index, SDL_Color *color)
+void _get_player_color(size_t color_index, SDL_Color *color)
 {
     assert(color_index>=0 && color_index<NUMBER_OF_PLAYER_COLORS);
 
     rgb_color &c = InterfaceColors[color_index + PLAYER_COLOR_BASE_INDEX];
-    color->r = c.red;
-    color->g = c.green;
-    color->b = c.blue;
+    color->r = static_cast<Uint8>(c.red);
+    color->g = static_cast<Uint8>(c.green);
+    color->b = static_cast<Uint8>(c.blue);
 }
 
 /*

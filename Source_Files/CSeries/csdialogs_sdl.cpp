@@ -177,7 +177,7 @@ get_selection_control_value(DialogPtr dialog, short which_control)
 
 
 // Just the same, but for w_toggles.
-short
+bool
 get_boolean_control_value(DialogPtr dialog, short which_control)
 {
     assert(dialog != NULL);
@@ -227,7 +227,7 @@ copy_pstring_to_text_field(DialogPtr dialog, short item, const unsigned char* ps
     char* 		string	= a1_p2cstr(source);
     
     theTextField->set_text(string);
-    
+   
     free(source);
 }
 

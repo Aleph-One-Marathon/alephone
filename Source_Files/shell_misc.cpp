@@ -422,9 +422,9 @@ bool XML_CheatKeywordParser::AttributesDone()
 bool XML_CheatKeywordParser::HandleString(const char *String, int Length)
 {
 	char *DestString = keywords[Index].keyword;
-	int DecodedLength = DeUTF8_C(String,Length,DestString,MAXIMUM_KEYWORD_LENGTH);
+	size_t DecodedLength = DeUTF8_C(String,Length,DestString,MAXIMUM_KEYWORD_LENGTH);
 	
-	for (int c=0; c<DecodedLength; c++, DestString++)
+	for (size_t c=0; c<DecodedLength; c++, DestString++)
 		*DestString = toupper(*DestString);
 	
 	return true;

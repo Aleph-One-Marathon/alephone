@@ -160,7 +160,7 @@ void SetColorFontParserToScreenDrawing();
 class sdl_font_info;
 struct world_point2d;
 extern int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style);
-extern int char_width(uint8 c, const sdl_font_info *font, uint16 style);
+extern int8 char_width(uint8 c, const sdl_font_info *font, uint16 style);
 extern int text_width(const char *text, const sdl_font_info *font, uint16 style);
 extern int text_width(const char *text, int length, const sdl_font_info *font, uint16 style);
 extern int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint16 style);

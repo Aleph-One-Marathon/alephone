@@ -34,7 +34,7 @@
 class StringSet
 {
 	short ID;
-	unsigned short NumStrings;
+	size_t NumStrings;
 	// Pointer to string pointers:
 	unsigned char **Strings;
 
@@ -43,7 +43,7 @@ public:
 	short GetID() {return ID;}
 	
 	// How many strings (contiguous from index zero)
-	unsigned short CountStrings();
+	size_t CountStrings();
 	
 	// Create a stringset with some ID
 	StringSet(short _ID);
@@ -51,13 +51,13 @@ public:
 
 	// Assumes a MacOS Pascal string; the resulting string will have
 	// a null byte at the end.
-	void Add(short Index, unsigned char *String);
+	void Add(size_t Index, unsigned char *String);
         
 	// Get a string; return NULL if not found
-	unsigned char *GetString(short Index);
+	unsigned char *GetString(size_t Index);
 	
 	// Delete a string
-	void Delete(short Index);
+	void Delete(size_t Index);
 	
 	// For making a linked list (I'll let Rhys Hill find more efficient data structures)
 	StringSet *Next;
@@ -65,11 +65,11 @@ public:
 
 
 // How many strings (contiguous from index zero)
-unsigned short StringSet::CountStrings()
+size_t StringSet::CountStrings()
 {
-	unsigned short StringCount = 0;
+	size_t StringCount = 0;
 	
-	for (int k=0; k<NumStrings; k++)
+	for (size_t k=0; k<NumStrings; k++)
 	{
 		if (Strings[k])
 			StringCount++;
@@ -98,7 +98,7 @@ StringSet::StringSet(short _ID)
 
 StringSet::~StringSet()
 {
-	for (int k=0; k<NumStrings; k++)
+	for (size_t k=0; k<NumStrings; k++)
 	{
 		unsigned char *StringPtr = Strings[k];
 		if (StringPtr) delete []StringPtr;
@@ -108,12 +108,12 @@ StringSet::~StringSet()
 
 // Assumes a MacOS Pascal string; the resulting string will have
 // a null byte at the end.
-void StringSet::Add(short Index, unsigned char *String)
+void StringSet::Add(size_t Index, unsigned char *String)
 {
 	if (Index < 0) return;
 	
 	// Replace string list with longer one if necessary
-	unsigned short NewNumStrings = NumStrings;
+	size_t NewNumStrings = NumStrings;
 	while (Index >= NewNumStrings) {NewNumStrings <<= 1;}
 	
 	if (NewNumStrings > NumStrings)
@@ -138,7 +138,7 @@ void StringSet::Add(short Index, unsigned char *String)
 }
 
 // Get a string; return NULL if not found
-unsigned char *StringSet::GetString(short Index)
+unsigned char *StringSet::GetString(size_t Index)
 {
 	if (Index < 0 || Index >= NumStrings) return NULL;
 	
@@ -146,7 +146,7 @@ unsigned char *StringSet::GetString(short Index)
 }
 
 // Delete a string
-void StringSet::Delete(short Index)
+void StringSet::Delete(size_t Index)
 {
 	if (Index < 0 || Index >= NumStrings) return;
 	
@@ -406,7 +406,7 @@ bool TS_IsPresent(short ID)
 
 
 // Count the strings (contiguous from index zero)
-unsigned short TS_CountStrings(short ID)
+size_t TS_CountStrings(short ID)
 {
 	// Search for string set:
 	StringSet *PrevStringSet = NULL, *CurrStringSet = StringSetRoot;

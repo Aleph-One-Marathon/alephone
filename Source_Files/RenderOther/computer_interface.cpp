@@ -2492,7 +2492,7 @@ static short calculate_lines_per_page(
  *  (for saving)
  */
 
-static int packed_terminal_length(const terminal_text_t &t)
+static size_t packed_terminal_length(const terminal_text_t &t)
 {
 	return SIZEOF_static_preprocessed_terminal_data
 	     + t.groupings.size() * SIZEOF_terminal_groupings
@@ -2500,9 +2500,9 @@ static int packed_terminal_length(const terminal_text_t &t)
 	     + t.text_length;
 }
 
-int calculate_packed_terminal_data_length(void)
+size_t calculate_packed_terminal_data_length(void)
 {
-	int total = 0;
+	size_t total = 0;
 
 	// Loop for all terminals
 	vector<terminal_text_t>::const_iterator t = map_terminal_text.begin(), tend = map_terminal_text.end();
@@ -2572,7 +2572,7 @@ void unpack_map_terminal_data(uint8 *p, int count)
 		assert((p - p_start) == SIZEOF_text_face_data * font_changes_count);
 
 		// Read text (no conversion)
-		data.text_length = total_length - (p - p_header);
+		data.text_length = total_length - static_cast<int>(p - p_header);
 		assert(data.text_length >= 0);
 		data.text = new uint8[data.text_length];
 		StreamToBytes(p, data.text, data.text_length);
@@ -2595,9 +2595,9 @@ void pack_map_terminal_data(uint8 *p, int count)
 
 		// Write header
 		uint8 *p_start = p;
-		uint16 total_length = packed_terminal_length(*t);
-		uint16 grouping_count = t->groupings.size();
-		uint16 font_changes_count = t->font_changes.size();
+		uint16 total_length = static_cast<uint16>(packed_terminal_length(*t));
+		uint16 grouping_count = static_cast<uint16>(t->groupings.size());
+		uint16 font_changes_count = static_cast<uint16>(t->font_changes.size());
 		ValueToStream(p, total_length);
 		ValueToStream(p, t->flags);
 		ValueToStream(p, t->lines_per_page);

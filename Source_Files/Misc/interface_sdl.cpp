@@ -140,7 +140,7 @@ void show_movie(short index)
 }
 
 
-int should_restore_game_networked()
+size_t should_restore_game_networked()
 {
         dialog d;
         
@@ -158,7 +158,7 @@ int should_restore_game_networked()
         d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
         // We return -1 (NONE) for "cancel", 0 for "not networked", and 1 for "networked".
-        int theResult;
+        size_t theResult;
 
         if(d.run() == 0)
         {
@@ -166,7 +166,7 @@ int should_restore_game_networked()
         }
         else
         {
-                theResult = NONE;
+                theResult = UNONE;
         }
 
         return theResult;

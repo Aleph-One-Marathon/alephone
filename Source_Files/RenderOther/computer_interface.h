@@ -118,7 +118,7 @@ extern void pack_map_terminal_data(uint8 *Stream, int Count);
 uint8 *unpack_player_terminal_data(uint8 *Stream, int Count);
 uint8 *pack_player_terminal_data(uint8 *Stream, int Count);
 
-extern int calculate_packed_terminal_data_length(void);
+extern size_t calculate_packed_terminal_data_length(void);
 
 
 #ifdef PREPROCESSING_CODE

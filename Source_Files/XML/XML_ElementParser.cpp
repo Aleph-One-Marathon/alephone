@@ -245,7 +245,7 @@ bool StringsEqual(const char *String1, const char *String2, int MaxStrLen)
 // Will not null-terminate the string or Pascalify it.
 // Returns how many characters resulted.
 
-int DeUTF8(const char *InString, int InLen, char *OutString, int OutMaxLen)
+size_t DeUTF8(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen)
 {
 	// Character and masked version for bit tests;
 	// unsigned char to avoid problems with interpreting the sign bit
@@ -367,14 +367,14 @@ int DeUTF8(const char *InString, int InLen, char *OutString, int OutMaxLen)
 // Returns how many characters resulted.
 // Needs at least (OutMaxLen + 1) characters allocated.
 
-int DeUTF8_Pas(const char *InString, int InLen, unsigned char *OutString, int OutMaxLen)
+size_t DeUTF8_Pas(const char *InString, size_t InLen, unsigned char *OutString, size_t OutMaxLen)
 {
 	int Len = DeUTF8(InString,InLen,(char *)(OutString+1),OutMaxLen);
 	OutString[0] = Len;
 	return Len;
 }
 
-int DeUTF8_C(const char *InString, int InLen, char *OutString, int OutMaxLen)
+size_t DeUTF8_C(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen)
 {
 	int Len = DeUTF8(InString,InLen,OutString,OutMaxLen);
 	OutString[Len] = 0;

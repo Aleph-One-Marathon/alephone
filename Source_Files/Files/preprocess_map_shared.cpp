@@ -63,7 +63,7 @@ strncpy_filename_friendly(char* outString, const char* inString, int32 inOutputS
 
         memset(theOutputChar, 0, (theOutNull - theOutputChar) + 1);
 
-        return theOutputChar - outString;
+        return static_cast<int>(theOutputChar - outString);
 }
 
 
@@ -74,7 +74,7 @@ strncpy_filename_friendly(char* outString, const char* inString, int32 inOutputS
 // Returns whether it was successful (the current logic either returns true or loops forever; fortunately, the
 // probability of looping forever is really, REALLY tiny; the directory would have to contain every possible variant).
 static bool
-make_nonconflicting_filename_variant(/*const*/ FileSpecifier& inBaseName, FileSpecifier& outNonconflictingName, int32 inMaxNameLength) {
+make_nonconflicting_filename_variant(/*const*/ FileSpecifier& inBaseName, FileSpecifier& outNonconflictingName, size_t inMaxNameLength) {
 	FileSpecifier theNameToTry;
 	DirectorySpecifier theDirectory;
 	inBaseName.ToDirectory(theDirectory);
@@ -82,14 +82,14 @@ make_nonconflicting_filename_variant(/*const*/ FileSpecifier& inBaseName, FileSp
         char	theBaseNameString[256]; // XXX I don't like this, but the SDL code already imposes this maxlen throughout.
 
         inBaseName.GetName(theBaseNameString);
-        int	theBaseNameLength = strlen(theBaseNameString);
+        size_t	theBaseNameLength = strlen(theBaseNameString);
 
         char	theNameToTryString[256];
         char	theVariantSuffix[32]; // way more than enough
 
         unsigned int	theVariant = 0;
-        int	theSuffixLength;
-        int	theBaseNameLengthToUse;
+        size_t	theSuffixLength;
+        size_t	theBaseNameLengthToUse;
         
         bool	theVariantIsAcceptable = false;
         

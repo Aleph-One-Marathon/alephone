@@ -220,8 +220,8 @@ world_point2d *transform_overflow_point2d(world_point2d *point, world_point2d *o
 // Simple copy-overs
 static inline void long_to_short_2d(long_vector2d& LVec, world_vector2d&WVec)
 {
-	WVec.i = LVec.i;
-	WVec.j = LVec.j;
+	WVec.i = static_cast<short>(LVec.i);
+	WVec.j = static_cast<short>(LVec.j);
 }
 static inline void short_to_long_2d(world_vector2d&WVec, long_vector2d& LVec)
 {

@@ -128,7 +128,7 @@ int widget::layout(void)
 }
 
 // ZZZ: more stupid layout tricks(tm)
-void widget::capture_layout_information(int leftmost_x, int available_width) {
+void widget::capture_layout_information(int16 leftmost_x, int16 available_width) {
     switch(widget_alignment) {
     case kAlignNatural:
         // (no changes)
@@ -151,8 +151,10 @@ void widget::capture_layout_information(int leftmost_x, int available_width) {
         break;
     }
 
+	assert(static_cast<uint16>(available_width - (rect.x - leftmost_x) - width_reduction)
+		== available_width - (rect.x - leftmost_x) - width_reduction);
     if(full_width)
-        rect.w = available_width - (rect.x - leftmost_x) - width_reduction;
+        rect.w = static_cast<uint16>(available_width - (rect.x - leftmost_x) - width_reduction);
 }
 
 
@@ -216,8 +218,8 @@ w_pict::w_pict(int id)
 	get_resource(FOUR_CHARS_TO_INT('P', 'I', 'C', 'T'), id, rsrc);
 	picture = picture_to_surface(rsrc);
 	if (picture) {
-		rect.w = picture->w;
-		rect.h = picture->h;
+		rect.w = static_cast<uint16>(picture->w);
+		rect.h = static_cast<uint16>(picture->h);
 		SDL_SetColorKey(picture, SDL_SRCCOLORKEY, SDL_MapRGB(picture->format, 0xff, 0xff, 0xff));
 	} else
 		rect.w = rect.h = 0;
@@ -241,18 +243,14 @@ void w_pict::draw(SDL_Surface *s) const
  */
 
 w_button::w_button(const char *t, action_proc p, void *a) : widget(BUTTON_FONT), text(t),
-#ifdef __MVCPP__
-                    proc(*p),
-#else
                     proc(p),
-#endif
                     arg(a)
 {
 	rect.w = text_width(text, font, style) + get_dialog_space(BUTTON_L_SPACE) + get_dialog_space(BUTTON_R_SPACE);
 	button_l = get_dialog_image(BUTTON_L_IMAGE);
 	button_r = get_dialog_image(BUTTON_R_IMAGE);
 	button_c = get_dialog_image(BUTTON_C_IMAGE, rect.w - button_l->w - button_r->w);
-	rect.h = get_dialog_space(BUTTON_HEIGHT);
+	rect.h = static_cast<uint16>(get_dialog_space(BUTTON_HEIGHT));
 }
 
 w_button::~w_button()
@@ -263,13 +261,17 @@ w_button::~w_button()
 void w_button::draw(SDL_Surface *s) const
 {
 	// Button image
-	SDL_Rect r = {rect.x, rect.y, button_l->w, button_l->h};
+	SDL_Rect r = {rect.x, rect.y, 
+		static_cast<Uint16>(button_l->w), 
+		static_cast<Uint16>(button_l->h)};
 	SDL_BlitSurface(button_l, NULL, s, &r);
-	r.x += button_l->w;
-	r.w = button_c->w; r.h = button_c->h;
+	r.x = r.x + static_cast<Sint16>(button_l->w); // MDA: MSVC throws warnings if we use +=
+	r.w = static_cast<Uint16>(button_c->w);
+	r.h = static_cast<Uint16>(button_c->h);
 	SDL_BlitSurface(button_c, NULL, s, &r);
-	r.x += button_c->w;
-	r.w = button_r->w; r.h = button_r->h;
+	r.x = r.x + static_cast<Sint16>(button_c->w);
+	r.w = static_cast<Uint16>(button_r->w);
+	r.h = static_cast<Uint16>(button_r->h);
 	SDL_BlitSurface(button_r, NULL, s, &r);
 
 	// Label (ZZZ: different color for disabled)
@@ -280,7 +282,7 @@ void w_button::draw(SDL_Surface *s) const
         get_dialog_color(theColorToUse), font, style);
 }
 
-void w_button::click(int x, int y)
+void w_button::click(int /*x*/, int /*y*/)
 {
     if(enabled)
 	    proc(arg);
@@ -316,13 +318,8 @@ const int MAX_TEXT_WIDTH = 200;
 // ZZZ: how come we have to do this?  because of that "&" in the typedef for action_proc?
 // Anyway, this fixes the "crash when clicking in the Environment menu" bug we've seen
 // in the Windows version all this time.
-#ifdef __MVCPP__
-w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a)
-    : widget(LABEL_FONT), name(n), selection(s), proc(*p), arg(a) {}
-#else
 w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a)
     : widget(LABEL_FONT), name(n), selection(s), proc(p), arg(a) {}
-#endif
 
 
 int w_select_button::layout(void)
@@ -349,7 +346,7 @@ void w_select_button::draw(SDL_Surface *s) const
 	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
 
 	// Selection (ZZZ: different color for disabled)
-	set_drawing_clip_rectangle(0, rect.x + selection_x, s->h, rect.x + rect.w);
+	set_drawing_clip_rectangle(0, rect.x + selection_x, static_cast<uint16>(s->h), rect.x + rect.w);
 
     theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
 
@@ -362,7 +359,7 @@ void w_select_button::draw(SDL_Surface *s) const
 	}
 }
 
-void w_select_button::click(int x, int y)
+void w_select_button::click(int /*x*/, int /*y*/)
 {
     if(enabled)
 	    proc(arg);
@@ -386,7 +383,7 @@ void w_select_button::set_selection(const char *s)
 
 static const char* sNoValidOptionsString = "(no valid options)"; // XXX should be moved outside compiled code e.g. to MML
 
-w_select::w_select(const char *n, int s, const char **l) : widget(LABEL_FONT), name(n), labels(l), we_own_labels(false), selection(s), selection_changed_callback(NULL)//, center_entire_widget(false)
+w_select::w_select(const char *n, size_t s, const char **l) : widget(LABEL_FONT), name(n), labels(l), we_own_labels(false), selection(s), selection_changed_callback(NULL)//, center_entire_widget(false)
 {
 	num_labels = 0;
         if(labels) {
@@ -458,7 +455,7 @@ void w_select::draw(SDL_Surface *s) const
 	}
 }
 
-void w_select::click(int x, int y)
+void w_select::click(int /*x*/, int /*y*/)
 {
     if(enabled) {
 	    selection++;
@@ -473,25 +470,30 @@ void w_select::event(SDL_Event &e)
 {
 	if (e.type == SDL_KEYDOWN) {
 		if (e.key.keysym.sym == SDLK_LEFT) {
-			selection--;
-			if (selection < 0)
+			if (num_labels == 0)
+				selection = 0;
+			else if (selection == 0)
 				selection = num_labels - 1;
+			else
+				selection--;
 			selection_changed();
 			e.type = SDL_NOEVENT;	// Swallow event
 		} else if (e.key.keysym.sym == SDLK_RIGHT) {
-			selection++;
-			if (selection >= num_labels)
+			if (selection >= num_labels - 1)
 				selection = 0;
+			else
+				selection++;
 			selection_changed();
 			e.type = SDL_NOEVENT;	// Swallow event
 		}
 	}
 }
 
-void w_select::set_selection(int s, bool simulate_user_input /* default: false */)
+void w_select::set_selection(size_t s, bool simulate_user_input /* default: false */)
 {
-	if (s >= num_labels || s < 0)
-		s = 0;
+	//if (s >= num_labels || s < 0)
+	//	s = 0;
+	assert(s == PIN(s, 0, num_labels - 1));
 
     if(selection != s) {
         selection = s;
@@ -515,7 +517,10 @@ void w_select::set_labels(const char** inLabels) {
             num_labels++;
     }
     we_own_labels = false;
-    set_selection(selection);
+	if (selection >= num_labels)
+		set_selection(0);
+	else
+		set_selection(selection);
 
     // Hope new labels have same max width as old, or that user called set_full_width() on us.
 }
@@ -536,7 +541,7 @@ void w_select::set_labels_stringset(short inStringSetID) {
         labels = (const char**)malloc(sizeof(const char*) * (num_labels + 1));
         labels[num_labels] = NULL;
         
-        for(int i = 0; i < num_labels; i++) {
+		for(short i = 0; i < static_cast<short>(num_labels); i++) {
             // shared references should be OK, stringsets ought to be pretty stable.  No need to copy...
             labels[i] = TS_GetCString(inStringSetID, i);
         }
@@ -550,7 +555,10 @@ void w_select::set_labels_stringset(short inStringSetID) {
         we_own_labels = false;
     }
     
-    set_selection(selection);
+	if (selection >= num_labels)
+		set_selection(0);
+	else
+		set_selection(selection);
     
     // Hope new labels have same max width as old, or that user called set_full_width() on us.
 }
@@ -569,7 +577,7 @@ void w_select::selection_changed(void)
 // ZZZ addition
 int w_select::get_largest_label_width() {
     int max_label_width = 0;
-    for (int i=0; i<num_labels; i++) {
+    for (size_t i=0; i<num_labels; i++) {
             int width = text_width(labels[i], font, style);
             if (width > max_label_width)
                     max_label_width = width;
@@ -631,7 +639,7 @@ void w_player_color::draw(SDL_Surface *s) const
  *  Text entry widget
  */
 
-w_text_entry::w_text_entry(const char *n, int max, const char *initial_text)
+w_text_entry::w_text_entry(const char *n, size_t max, const char *initial_text)
     : widget(LABEL_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), name(n), max_chars(max), new_rect_valid(false)
 {
 	// Initialize buffer
@@ -667,9 +675,9 @@ void w_text_entry::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
 
-    int theRectX = new_rect_valid ? new_rect_x : rect.x;
-    int theRectW = new_rect_valid ? new_rect_w : rect.w;
-    int theTextX = new_rect_valid ? new_text_x : text_x;
+    int16 theRectX = new_rect_valid ? new_rect_x : rect.x;
+    uint16 theRectW = new_rect_valid ? new_rect_w : rect.w;
+    int16 theTextX = new_rect_valid ? new_text_x : text_x;
 
 	// Name (ZZZ: different color for disabled)
     int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
@@ -677,11 +685,11 @@ void w_text_entry::draw(SDL_Surface *s) const
 	draw_text(s, name, theRectX, y, get_dialog_color(theColorToUse), font, style);
 
 	// Text
-    int x = theRectX + theTextX;
+    int16 x = theRectX + theTextX;
 	int width = text_width(buf, text_font, text_style);
 	if (width > max_text_width)
 		x -= width - max_text_width;
-	set_drawing_clip_rectangle(0, theRectX + theTextX, s->h, theRectX + theRectW);
+	set_drawing_clip_rectangle(0, theRectX + theTextX, static_cast<uint16>(s->h), theRectX + theRectW);
 
     theColorToUse = enabled ? (active ? TEXT_ENTRY_ACTIVE_COLOR : TEXT_ENTRY_COLOR) : TEXT_ENTRY_DISABLED_COLOR;
 
@@ -723,7 +731,8 @@ backspace:		if (num_chars) {
 			default: {				// Printable characters are entered into the buffer
 				uint16 uc = e.key.keysym.unicode;
 				if (uc >= ' ' && uc < 0x80 && (num_chars + 1) < max_chars) {
-					buf[num_chars++] = uc;
+					assert(uc == static_cast<char>(uc));
+					buf[num_chars++] = static_cast<char>(uc);
 					buf[num_chars] = 0;
 					modified_text();
 					play_dialog_sound(DIALOG_TYPE_SOUND);
@@ -838,7 +847,7 @@ void w_text_entry::set_name(const char* inName)
 
 
 void
-w_text_entry::capture_layout_information(int leftmost_x, int usable_width) {
+w_text_entry::capture_layout_information(int16 leftmost_x, int16 usable_width) {
     widget::capture_layout_information(leftmost_x, usable_width);
 
     if(full_width) {
@@ -953,7 +962,7 @@ void w_key::draw(SDL_Surface *s) const
 	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
 
 	// Key
-	int x = rect.x + key_x;
+	int16 x = rect.x + key_x;
 	if (binding) {
 		SDL_Rect r = {x, rect.y, text_width(WAITING_TEXT, font, style), rect.h};
 		SDL_FillRect(s, &r, get_dialog_color(KEY_BINDING_COLOR));
@@ -966,7 +975,7 @@ void w_key::draw(SDL_Surface *s) const
 	}
 }
 
-void w_key::click(int x, int y)
+void w_key::click(int /*x*/, int /*y*/)
 {
     if(enabled) {
 	    if (!binding) {
@@ -1050,23 +1059,28 @@ void w_slider::draw(SDL_Surface *s) const
 	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
 
 	// Slider trough
-	SDL_Rect r = {rect.x + slider_x, rect.y, slider_l->w, slider_l->h};
+	SDL_Rect r = {rect.x + slider_x, rect.y,
+		static_cast<Uint16>(slider_l->w),
+		static_cast<Uint16>(slider_l->h)};
 	SDL_BlitSurface(slider_l, NULL, s, &r);
-	r.x += slider_l->w;
-	r.w = slider_c->w; r.h = slider_c->h;
+	r.x = r.x + static_cast<Sint16>(slider_l->w);
+	r.w = static_cast<Uint16>(slider_c->w);
+	r.h = static_cast<Uint16>(slider_c->h);
 	SDL_BlitSurface(slider_c, NULL, s, &r);
-	r.x += slider_c->w;
-	r.w = slider_r->w; r.h = slider_r->h;
+	r.x = r.x + static_cast<Sint16>(slider_c->w);
+	r.w = static_cast<Uint16>(slider_r->w);
+	r.h = static_cast<Uint16>(slider_r->h);
 	SDL_BlitSurface(slider_r, NULL, s, &r);
 
 	// Slider thumb
-	r.x = rect.x + thumb_x;
+	r.x = rect.x + static_cast<Sint16>(thumb_x);
 	r.y = rect.y + get_dialog_space(SLIDER_T_SPACE);
-	r.w = thumb->w; r.h = thumb->h;
+	r.w = static_cast<Uint16>(thumb->w);
+	r.h = static_cast<Uint16>(thumb->h);
 	SDL_BlitSurface(thumb, NULL, s, &r);
 }
 
-void w_slider::mouse_move(int x, int y)
+void w_slider::mouse_move(int x, int /*y*/)
 {
 	if (thumb_dragging) {
 		int delta_x = (x - slider_x - get_dialog_space(SLIDER_L_SPACE)) - thumb_drag_x;
@@ -1074,7 +1088,7 @@ void w_slider::mouse_move(int x, int y)
 	}
 }
 
-void w_slider::click(int x, int y)
+void w_slider::click(int x, int /*y*/)
 {
     if(enabled) {
 	    if (x >= slider_x && x < slider_x + SLIDER_WIDTH) {
@@ -1122,7 +1136,7 @@ void w_slider::set_selection(int s)
  *  List selection
  */
 
-w_list_base::w_list_base(int width, int lines, int sel) : widget(ITEM_FONT), shown_items(lines), thumb_dragging(false)
+w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(ITEM_FONT), shown_items(lines), thumb_dragging(false)
 {
 	font_height = font->get_line_height();
 	rect.w = width;
@@ -1171,7 +1185,7 @@ int w_list_base::layout(void)
 
 void w_list_base::draw_image(SDL_Surface *dst, SDL_Surface *s, int x, int y) const
 {
-	SDL_Rect r = {x, y, s->w, s->h};
+	SDL_Rect r = {x, y, static_cast<Uint16>(s->w), static_cast<Uint16>(s->h)};
 	SDL_BlitSurface(s, NULL, dst, &r);
 }
 
@@ -1211,7 +1225,11 @@ void w_list_base::mouse_move(int x, int y)
 		if (x < get_dialog_space(LIST_L_SPACE) || x >= rect.w - get_dialog_space(LIST_R_SPACE)
 		 || y < get_dialog_space(LIST_T_SPACE) || y >= rect.h - get_dialog_space(LIST_B_SPACE))
 			return;
-		set_selection((y - get_dialog_space(LIST_T_SPACE)) / font_height + top_item);
+
+		if ((y - get_dialog_space(LIST_T_SPACE)) / font_height + top_item < num_items)
+		{	set_selection((y - get_dialog_space(LIST_T_SPACE)) / font_height + top_item); }
+		else
+		{	set_selection(num_items - 1); }
 	}
 }
 
@@ -1230,18 +1248,26 @@ void w_list_base::event(SDL_Event &e)
 	if (e.type == SDL_KEYDOWN) {
 		switch (e.key.keysym.sym) {
 			case SDLK_UP:
-				set_selection(selection - 1);
+				if (selection != 0)
+				{	set_selection(selection - 1); }
 				e.type = SDL_NOEVENT;	// Prevent selection of previous widget
 				break;
 			case SDLK_DOWN:
-				set_selection(selection + 1);
+				if (selection < num_items - 1)
+				{	set_selection(selection + 1); }
 				e.type = SDL_NOEVENT;	// Prevent selection of next widget
 				break;
 			case SDLK_PAGEUP:
-				set_selection(selection - shown_items);
+				if (selection > shown_items)
+				{	set_selection(selection - shown_items); }
+				else
+				{	set_selection(0); }
 				break;
 			case SDLK_PAGEDOWN:
-				set_selection(selection + shown_items);
+				if (selection + shown_items < num_items - 1)
+				{	set_selection(selection + shown_items); }
+				else
+				{	set_selection(num_items - 1); }
 				break;
 			case SDLK_HOME:
 				set_selection(0);
@@ -1260,13 +1286,10 @@ void w_list_base::event(SDL_Event &e)
 	}
 }
 
-void w_list_base::set_selection(int s)
+void w_list_base::set_selection(size_t s)
 {
 	// Set selection, check for bounds
-	if (s < 0)
-		s = 0;
-	else if (s >= num_items)
-		s = num_items - 1;
+	assert(s == PIN(s, 0, num_items - 1));
 	if (s != selection)
 		dirty = true;
 	selection = s;
@@ -1307,17 +1330,17 @@ void w_list_base::new_items(void)
 	thumb_bc = get_dialog_image(THUMB_BC_IMAGE, 0, (rem_height & 1) ? dyn_height + 1 : dyn_height);
 }
 
-void w_list_base::center_item(int i)
+void w_list_base::center_item(size_t i)
 {
 	set_top_item(selection - shown_items / 2);
 }
 
-void w_list_base::set_top_item(int i)
+void w_list_base::set_top_item(size_t i)
 {
 	// Set top item (check for bounds)
-	if (i > num_items - shown_items)
-		i = num_items - shown_items;
-	if (i < 0)
+	if (num_items > shown_items)
+		i = PIN(i, 0, num_items - shown_items);
+	else
 		i = 0;
 	if (i != top_item)
 		dirty = true;
@@ -1348,8 +1371,8 @@ w_levels::w_levels(const vector<entry_point> &items, dialog *d)
 	  : w_list<entry_point>(items, 400, 8, 0), parent(d), show_level_numbers(true) {}
 
 // ZZZ: new constructor gives more control over widget's appearance.
-w_levels::w_levels(const vector<entry_point>& items, dialog* d, int inWidth,
-        int inNumLines, int inSelectedItem, bool in_show_level_numbers)
+w_levels::w_levels(const vector<entry_point>& items, dialog* d, uint16 inWidth,
+        size_t inNumLines, size_t inSelectedItem, bool in_show_level_numbers)
 	  : w_list<entry_point>(items, inWidth, inNumLines, inSelectedItem), parent(d), show_level_numbers(in_show_level_numbers) {}
 
 void

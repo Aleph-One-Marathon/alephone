@@ -283,7 +283,7 @@ if (force_update || !(dynamic_world->tick_count&definition->shape_frequency))
 size_t count_number_of_medias_used()
 {
 	size_t number_used = 0; // Take care of the case of no slots being used
-	for (int media_index=MAXIMUM_MEDIAS_PER_MAP-1; media_index>=0; media_index--)
+	for (int media_index=((int)MAXIMUM_MEDIAS_PER_MAP)-1; media_index>=0; media_index--)
 	{
 		// Look for the last used one rather than the last unused one!
 		if (SLOT_IS_USED(medias + media_index))

@@ -798,14 +798,14 @@ bool load_and_start_game(FileSpecifier& File)
         }
         
         bool userWantsMultiplayer;	
-        int theResult = NONE;
+        size_t theResult = UNONE;
         
         if(success)
         {
                 theResult = should_restore_game_networked();
         }
         
-        if(theResult == NONE)
+        if(theResult == UNONE)
         {
                 // cancelled
                 success = false;

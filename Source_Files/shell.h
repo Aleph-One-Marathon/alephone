@@ -174,11 +174,11 @@ void open_shapes_file(FileSpecifier& File);
 /* ---------- prototypes/SCREEN_DRAWING.C */
 
 #if defined(mac)
-void _get_player_color(short color_index, RGBColor *color);
-void _get_interface_color(short color_index, RGBColor *color);
+void _get_player_color(size_t color_index, RGBColor *color);
+void _get_interface_color(size_t color_index, RGBColor *color);
 #elif defined(SDL)
-void _get_player_color(short color_index, SDL_Color *color);
-void _get_interface_color(int color_index, SDL_Color *color);
+void _get_player_color(size_t color_index, SDL_Color *color);
+void _get_interface_color(size_t color_index, SDL_Color *color);
 #endif
 
 /* ---------- protoypes/INTERFACE_MACINTOSH.C */

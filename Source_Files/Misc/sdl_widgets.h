@@ -81,9 +81,9 @@ public:
     void set_enabled(bool inEnabled);
     
 	// Handle event
-	virtual void mouse_move(int x, int y) {}
-	virtual void click(int x, int y) {}
-	virtual void event(SDL_Event &e) {}
+	virtual void mouse_move(int /*x*/, int /*y*/) {}
+	virtual void click(int /*x*/, int /*y*/) {}
+	virtual void event(SDL_Event & /*e*/) {}
 
 	// Widget selectable?  (ZZZ change to use enabled by default)
 	virtual bool is_selectable(void) const {return enabled; /* was "true" */ }
@@ -98,7 +98,7 @@ public:
         // ZZZ: Callback (from dialog code) provides additional layout information
         // This could probably be hidden from public: since dialog is a friend class, but I'm leaving
         // it exposed since layout() is exposed for some reason.
-        virtual void	capture_layout_information(int x_offset, int available_width);
+        virtual void	capture_layout_information(int16 x_offset, int16 available_width);
 
         // ZZZ: You must do most of these stupid layout tricks(tm) before dialog::run() or dialog::start().
         // They are basically "static" - there is no dynamic adjustment made once the dialog has been displayed.
@@ -149,9 +149,9 @@ protected:
 
 class w_spacer : public widget {
 public:
-	w_spacer(int height = get_dialog_space(SPACER_HEIGHT)) {rect.w = 0; rect.h = height;}
+	w_spacer(uint16 height = get_dialog_space(SPACER_HEIGHT)) {rect.w = 0; rect.h = height;}
 
-	void draw(SDL_Surface *s) const {}
+	void draw(SDL_Surface * /*s*/) const {}
 	bool is_selectable(void) const {return false;}
 };
 
@@ -210,7 +210,7 @@ private:
  *  Button
  */
 
-typedef void (&action_proc)(void *);
+typedef void (*action_proc)(void *);
 
 class w_button : public widget {
 public:
@@ -247,11 +247,7 @@ protected:
 class w_left_button : public w_button {
 public:
 
-#ifdef __MVCPP__
-	w_left_button(const char *text, action_proc proc, void *arg) : w_button(text, *proc, arg) {}
-#else
 	w_left_button(const char *text, action_proc proc, void *arg) : w_button(text, proc, arg) {}
-#endif
 
 	int layout(void);
 };
@@ -259,11 +255,7 @@ public:
 class w_right_button : public w_button {
 public:
 
-#ifdef __MVCPP__
-	w_right_button(const char *text, action_proc proc, void *arg) : w_button(text, *proc, arg) {}
-#else
 	w_right_button(const char *text, action_proc proc, void *arg) : w_button(text, proc, arg) {}
-#endif
 
 	int layout(void);
 };
@@ -302,32 +294,32 @@ typedef	void (*selection_changed_callback_t)(w_select* theWidget);
 
 class w_select : public widget {
 public:
-	w_select(const char *name, int selection, const char **labels);
-        virtual ~w_select();
+	w_select(const char *name, size_t selection, const char **labels);
+	virtual ~w_select();
 
 	int layout(void);
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
 	void event(SDL_Event &e);
 
-	int get_selection(void) const {return (num_labels > 0 ? selection : -1);}
-	void set_selection(int selection, bool simulate_user_input = false);
+	size_t get_selection(void) const {return (num_labels > 0 ? selection : -1);}
+	void set_selection(size_t selection, bool simulate_user_input = false);
 
-        // ZZZ: change labels after creation (used for entry-point selection when game type changes)
-        // this is the "old way" - superseded (I hope) by set_labels_stringset.
-        // both should still be valid, and should not have any evil interactions, so I may as well leave this in.
-        // note that storage for string pointers AND storage for string data must be "kept alive" until
-        // the widget is destroyed or another set_labels[_stringset] call is made.
-        void	set_labels(const char** inLabels);
-        
-        // ZZZ: install stringset to use as labels
-        // stringset is not copied.  altering stringset and not calling this method again -> no guarantees.
-        // between widget and stringset, storage should be taken care of.  relax.
-        void	set_labels_stringset(short inStringSetID);
+	// ZZZ: change labels after creation (used for entry-point selection when game type changes)
+	// this is the "old way" - superseded (I hope) by set_labels_stringset.
+	// both should still be valid, and should not have any evil interactions, so I may as well leave this in.
+	// note that storage for string pointers AND storage for string data must be "kept alive" until
+	// the widget is destroyed or another set_labels[_stringset] call is made.
+	void	set_labels(const char** inLabels);
 
-        // ZZZ: set selection-changed callback - this will be called (if set) at the end of selection_changed (currently, anytime it "beeps")
-        // removes need to subclass this class (or its subclasses!) just to add selection-changed behavior.
-        void	set_selection_changed_callback(selection_changed_callback_t proc) { selection_changed_callback = proc; }
+	// ZZZ: install stringset to use as labels
+	// stringset is not copied.  altering stringset and not calling this method again -> no guarantees.
+	// between widget and stringset, storage should be taken care of.  relax.
+	void	set_labels_stringset(short inStringSetID);
+
+	// ZZZ: set selection-changed callback - this will be called (if set) at the end of selection_changed (currently, anytime it "beeps")
+	// removes need to subclass this class (or its subclasses!) just to add selection-changed behavior.
+	void	set_selection_changed_callback(selection_changed_callback_t proc) { selection_changed_callback = proc; }
 
 protected:
 	virtual void selection_changed(void);
@@ -335,23 +327,23 @@ protected:
 	const char *name;
 
 	const char **labels;
-	int num_labels;
-        bool	we_own_labels;	// true if set up via stringset; false if not
-        // Currently stringset approach allocates memory for pointers to strings, but shares string storage
-        // with the stringset itself.  So we don't really own the *labels* - the strings - but we own the
-        // storage for the data member "labels".
+	size_t num_labels;
+	bool	we_own_labels;	// true if set up via stringset; false if not
+	// Currently stringset approach allocates memory for pointers to strings, but shares string storage
+	// with the stringset itself.  So we don't really own the *labels* - the strings - but we own the
+	// storage for the data member "labels".
 
-	int selection;			// -1 means unknown selection
+	size_t selection;			// UNONE means unknown selection
 	int label_x;			// X offset of label display
         
-        // ZZZ: storage for callback function
-        selection_changed_callback_t	selection_changed_callback;
+	// ZZZ: storage for callback function
+	selection_changed_callback_t	selection_changed_callback;
+
+	// ZZZ: should we center the whole widget?
+//	bool				center_entire_widget;
         
-        // ZZZ: should we center the whole widget?
-//        bool				center_entire_widget;
-        
-        // ZZZ: ripped this out for sharing
-        int				get_largest_label_width();
+	// ZZZ: ripped this out for sharing
+	int				get_largest_label_width();
 };
 
 
@@ -390,7 +382,7 @@ typedef	void (*text_entry_event_callback_t)(w_text_entry* theWidget);
 
 class w_text_entry : public widget {
 public:
-	w_text_entry(const char *name, int max_chars, const char *initial_text = NULL);
+	w_text_entry(const char *name, size_t max_chars, const char *initial_text = NULL);
 	~w_text_entry();
 
 	int layout(void);
@@ -411,7 +403,7 @@ public:
         void	set_value_changed_callback(text_entry_event_callback_t func) { value_changed_callback = func; }
 
         // ZZZ: capture more detailed layout information
-        void	capture_layout_information(int leftmost_x, int usable_width);
+        void	capture_layout_information(int16 leftmost_x, int16 usable_width);
        
 protected:
 	char *buf;		// Text entry buffer
@@ -427,16 +419,16 @@ private:
 	const sdl_font_info *text_font;	// Font for text
 	uint16 text_style;
 
-	int num_chars;		// Length of text in buffer
-	int max_chars;		// Maximum number of chars in buffer
+	size_t num_chars;		// Length of text in buffer
+	size_t max_chars;		// Maximum number of chars in buffer
 	int text_x;			// X offset of text display
 	int max_text_width;	// Maximum width of text display
 
     // ZZZ: these are used in conjunction with set_name to allow late updating of the real widget rect
     // so that moving from a larger rect to a smaller one correctly erases the leftover space.
     bool    new_rect_valid; // should these be used instead of the widget rect for internal drawing/computation?
-    int     new_rect_x;     // corresponds to rect.x
-    int     new_rect_w;     // corresponds to rect.w
+    int16     new_rect_x;     // corresponds to rect.x
+    uint16     new_rect_w;     // corresponds to rect.w
     int     new_text_x;     // corresponds to text_x
 };
 
@@ -552,7 +544,7 @@ protected:
 
 class w_list_base : public widget {
 public:
-	w_list_base(int width, int lines, int sel);
+	w_list_base(uint16 width, size_t lines, size_t sel);
 	~w_list_base();
 
 	int layout(void);
@@ -561,25 +553,25 @@ public:
 	void click(int x, int y);
 	void event(SDL_Event &e);
 
-	int get_selection(void) {return selection;}
+	size_t get_selection(void) {return selection;}
 
-	virtual bool is_item_selectable(int i) {return true;}
+	virtual bool is_item_selectable(size_t /*i*/) {return true;}
 	virtual void item_selected(void) = 0;
 
 protected:
 	virtual void draw_items(SDL_Surface *s) const = 0;
 	void draw_image(SDL_Surface *dst, SDL_Surface *s, int x, int y) const;
-	void set_selection(int s);
+	void set_selection(size_t s);
 	void new_items(void);
-	void center_item(int i);
-	void set_top_item(int i);
+	void center_item(size_t i);
+	void set_top_item(size_t i);
 
-	int selection;			// Currently selected item
+	size_t selection;		// Currently selected item
 	int font_height;		// Height of font
 
-	int num_items;			// Total number of items
-	int shown_items;		// Number of shown items
-	int top_item;			// Number of first visible item
+	size_t num_items;		// Total number of items
+	size_t shown_items;		// Number of shown items
+	size_t top_item;		// Number of first visible item
 
 	bool thumb_dragging;	// Flag: currently dragging scroll bar thumb
 	SDL_Rect trough_rect;	// Dimensions of trough
@@ -596,7 +588,7 @@ protected:
 template <class T>
 class w_list : public w_list_base {
 public:
-	w_list(const vector<T> &it, int width, int lines, int sel) : w_list_base(width, lines, sel), items(it)
+	w_list(const vector<T> &it, uint16 width, size_t lines, size_t sel) : w_list_base(width, lines, sel), items(it)
 	{
 		num_items = items.size();
 		new_items();
@@ -613,7 +605,7 @@ protected:
 		int x = rect.x + get_dialog_space(LIST_L_SPACE);
 		int y = rect.y + get_dialog_space(LIST_T_SPACE);
 		int width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
-		for (int n=top_item; n<top_item + MIN(shown_items, num_items); n++, i++, y+=font_height)
+		for (size_t n=top_item; n<top_item + MIN(shown_items, num_items); n++, i++, y+=font_height)
 			draw_item(i, s, x, y, width, n == selection && active);
 	}
 
@@ -634,8 +626,8 @@ private:
 class w_levels : public w_list<entry_point> {
 public:
 	w_levels(const vector<entry_point> &items, dialog *d);
-	w_levels(const vector<entry_point>& items, dialog* d, int inWidth,
-	int inNumLines, int inSelectedItem, bool in_show_level_numbers);
+	w_levels(const vector<entry_point>& items, dialog* d, uint16 inWidth,
+	size_t inNumLines, size_t inSelectedItem, bool in_show_level_numbers);
 
 	void item_selected(void);
 

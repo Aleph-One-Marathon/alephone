@@ -55,13 +55,13 @@ bool StringsEqual(const char *String1, const char *String2, int MaxStrLen = 32);
 // needs at least (OutMaxLen) characters preallocated.
 // Will not null-terminate the string or Pascalify it.
 // Returns how many characters resulted.
-int DeUTF8(const char *InString, int InLen, char *OutString, int OutMaxLen);
+size_t DeUTF8(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen);
 
 // Write output as a Pascal or C string, as the case may be;
 // Returns how many characters resulted.
 // Needs at least (OutMaxLen + 1) characters allocated.
-int DeUTF8_Pas(const char *InString, int InLen, unsigned char *OutString, int OutMaxLen);
-int DeUTF8_C(const char *InString, int InLen, char *OutString, int OutMaxLen);
+size_t DeUTF8_Pas(const char *InString, size_t InLen, Str255 OutString, size_t OutMaxLen);
+size_t DeUTF8_C(const char *InString, size_t InLen, char *OutString, size_t OutMaxLen);
 
 
 class XML_ElementParser
@@ -154,11 +154,11 @@ public:
 	
 	// Process an attribute tag-value set;
 	// need individual parsing and attribute-finish parsing
-	virtual bool HandleAttribute(const char *Tag, const char *Value) {return true;}
+	virtual bool HandleAttribute(const char * /*Tag*/, const char * /*Value*/) {return true;}
 	virtual bool AttributesDone() {return true;}
 	
 	// Handle embedded string data
-	virtual bool HandleString(const char *String, int Length) {return true;}
+	virtual bool HandleString(const char * /*String*/, int /*Length*/) {return true;}
 	
 	// Error-message string
 	const char *ErrorString;

@@ -205,8 +205,10 @@ void initialize_net_game(
 					}
 				}
 				
-				dynamic_world->game_beacon.x= x/count;
-				dynamic_world->game_beacon.y= y/count;
+				assert(sizeof(x) - sizeof(count) <= sizeof(dynamic_world->game_beacon.x));
+				assert(sizeof(y) - sizeof(count) <= sizeof(dynamic_world->game_beacon.y));
+				dynamic_world->game_beacon.x= static_cast<world_distance>(x/count);
+				dynamic_world->game_beacon.y= static_cast<world_distance>(y/count);
 			}
 			break;
 		// START Benad

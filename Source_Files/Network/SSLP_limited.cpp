@@ -455,7 +455,7 @@ SSLPint_ReceivedPacket() {
 
 // SSLPint_Enter - called by API functions if SSLP is inactive
 // set up shared resources for lookups and allowing discovery
-static int
+static bool
 SSLPint_Enter() {
     logContext("setting up SSLP");
 
@@ -471,7 +471,7 @@ SSLPint_Enter() {
         sSocketDescriptor = SDLNet_UDP_Open(0);
 
         if(!sSocketDescriptor)
-            return (int)sSocketDescriptor;
+            return sSocketDescriptor != NULL;
     }
     
     // Set up broadcast on that socket
@@ -483,13 +483,13 @@ SSLPint_Enter() {
     sReceivingPacket = SDLNet_AllocPacket(SIZEOF_SSLP_Packet);
     if(sReceivingPacket == NULL) {
         SDLNet_UDP_Close(sSocketDescriptor);
-        return 0;
+        return false;
     }
 
     assert(sBehaviorsDesired == SSLPINT_NONE);
     
     // Success
-    return 1;
+    return true;
 }
 
 
@@ -530,7 +530,7 @@ SSLP_Locate_Service_Instances(const char* inServiceType, SSLP_Service_Instance_S
     assert(!(sBehaviorsDesired & SSLPINT_LOCATING));
     
     if(!sBehaviorsDesired)	// SSLP is not active at all yet...
-        if(SSLPint_Enter() <= 0)	// try to activate.  on error, bail
+        if(!SSLPint_Enter())	// try to activate.  on error, bail
             return;
         
     sFoundCallback		= inFoundCallback;
@@ -605,7 +605,7 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
     assert(!(sBehaviorsDesired & (SSLPINT_RESPONDING | SSLPINT_HINTING)));
     
     if(sBehaviorsDesired == SSLPINT_NONE)
-        if(SSLPint_Enter() <= 0)
+        if(!SSLPint_Enter())
             return;
     
     sResponsePacket = SDLNet_AllocPacket(SIZEOF_SSLP_Packet);

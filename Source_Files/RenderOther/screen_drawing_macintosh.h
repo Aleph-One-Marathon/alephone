@@ -151,7 +151,7 @@ void _draw_screen_shape(
 
 #define NUMBER_OF_PLAYER_COLORS 8
 void _get_player_color(
-	short color_index,
+	size_t color_index,
 	RGBColor *color)
 {
 	assert(color_index>=0 && color_index<NUMBER_OF_PLAYER_COLORS);
@@ -159,7 +159,7 @@ void _get_player_color(
 }
 
 void _get_interface_color(
-	short color_index, 
+	size_t color_index, 
 	RGBColor *color)
 {	
 	// LP change: from internal color array

@@ -36,7 +36,7 @@
 extern char temporary[256];
 #define ptemporary (*(Str255 *)temporary)
 
-extern short countstr(
+extern size_t countstr(
 	short resid);
 
 extern unsigned char *getpstr(

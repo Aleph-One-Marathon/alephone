@@ -550,8 +550,7 @@ select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber) {
 static void
 respond_to_net_game_type_change(w_select* inWidget) {
         // Get the newly-selected game type and calculate stringset ID
-        short	theSelectedGameType = inWidget->get_selection();
-        assert(theSelectedGameType >= 0);
+        size_t	theSelectedGameType = inWidget->get_selection();
 
         // Get the level-selection menu
         dialog*	theDialog = inWidget->get_owning_dialog();
@@ -758,7 +757,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 	} // d.run() == 0
         
     else {
-        // Restore the map file path if it was changed - no need to resave prefs.
+       // Restore the map file path if it was changed - no need to resave prefs.
         if(strcmp(theSavedMapFilePath.c_str(), map_w->get_path())) {
             strcpy(environment_preferences->map_file, theSavedMapFilePath.c_str());
 
@@ -767,7 +766,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 		    environment_preferences->map_checksum = read_wad_file_checksum(theFS);
 
             load_environment_from_preferences();
-        }
+       }
 
 		return false;
     }
@@ -943,7 +942,7 @@ bool network_gather(bool inResumingGame)
 		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
 
 		if (NetEnter()) {
-                
+               
                     // ZZZ: gather network game dialog
                     dialog d;
                     
@@ -1011,7 +1010,7 @@ bool network_gather(bool inResumingGame)
                     
                     int theDialogResult;
                     
-                    if (NetGather(&myGameInfo, sizeof(game_info), (void *)&myPlayerInfo, sizeof(player_info), inResumingGame)) {
+                   if (NetGather(&myGameInfo, sizeof(game_info), (void *)&myPlayerInfo, sizeof(player_info), inResumingGame)) {
 						players_w->start_displaying_actual_information();
 						players_w->update_display();
                         theDialogResult = d.run();
@@ -1019,7 +1018,7 @@ bool network_gather(bool inResumingGame)
                     else {
                         theDialogResult = -1;	// simulate "cancel" clicked if NetGather failed.
                     }
-                    
+                  
                     NetLookupClose();
                     sActiveDialog = NULL;
                 
@@ -1028,7 +1027,7 @@ bool network_gather(bool inResumingGame)
                         return true;
                     }
                     
-                    NetCancelGather();
+                   NetCancelGather();
                     NetExit();
 		}
 	}

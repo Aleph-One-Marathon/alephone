@@ -179,7 +179,7 @@ __inline__ short get_selection_control_value(
         DialogPtr dialog,
         short which_control) {return get_dialog_control_value(dialog, which_control); }
         
-__inline__ short get_boolean_control_value(
+__inline__ bool get_boolean_control_value(
         DialogPtr dialog,
         short which_control) {return get_dialog_control_value(dialog, which_control); }
 
@@ -207,7 +207,7 @@ extern short get_selection_control_value(
         DialogPtr dialog,
         short which_control);
         
-extern short get_boolean_control_value(
+extern bool get_boolean_control_value(
         DialogPtr dialog,
         short which_control);
 #endif//!mac

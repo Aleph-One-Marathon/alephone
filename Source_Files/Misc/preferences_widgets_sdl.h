@@ -86,7 +86,7 @@ public:
 	w_env_list(const vector<env_item> &items, const char *selection, dialog *d) : w_list<env_item>(items, 400, 15, 0), parent(d)
 	{
 		vector<env_item>::const_iterator i, end = items.end();
-		int num = 0;
+		size_t num = 0;
 		for (i = items.begin(); i != end; i++, num++) {
 			if (strcmp(i->spec.GetPath(), selection) == 0) {
 				set_selection(num);
@@ -95,7 +95,7 @@ public:
 		}
 	}
 
-	bool is_item_selectable(int i)
+	bool is_item_selectable(size_t i)
 	{
 		return items[i].selectable;
 	}
@@ -132,8 +132,8 @@ typedef void (*selection_made_callback_t)(w_env_select* inWidget);
 class w_env_select : public w_select_button {
 public:
 	w_env_select(const char *name, const char *path, const char *m, int t, dialog *d)
-        : w_select_button(name, item_name, select_item_callback, this), parent(d), menu_title(m), type(t),
-        mCallback(NULL)
+        : parent(d), menu_title(m), type(t), mCallback(NULL),
+		w_select_button(name, item_name, select_item_callback, this)
 	{
 		set_path(path);
 	}

@@ -44,7 +44,7 @@ char temporary[256];
  *  Count number of strings with given resid
  */
 
-short countstr(short resid)
+size_t countstr(short resid)
 {
 	return TS_CountStrings(resid);
 }
