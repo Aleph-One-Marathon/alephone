@@ -74,6 +74,7 @@ struct graphics_preferences_data
         // ZZZ addition: intended to be enabled by user hand-editing file (no UI),
         // for testing things not ready for prime time
         bool experimental_rendering;
+  bool double_corpse_limit;
 };
 
 struct serial_number_data

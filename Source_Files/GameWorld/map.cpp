@@ -104,6 +104,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include "map.h"
 #include "interface.h"
 #include "monsters.h"
+#include "preferences.h"
 #include "projectiles.h"
 #include "effects.h"
 #include "player.h"
@@ -2042,8 +2043,8 @@ bool line_is_obstructed(
 	return obstructed;
 }
 
-#define MAXIMUM_GARBAGE_OBJECTS_PER_MAP 512
-#define MAXIMUM_GARBAGE_OBJECTS_PER_POLYGON 20
+#define MAXIMUM_GARBAGE_OBJECTS_PER_MAP 256
+#define MAXIMUM_GARBAGE_OBJECTS_PER_POLYGON 10
 
 void turn_object_to_shit( /* garbage that is, garbage */
 	short garbage_object_index)
@@ -2068,7 +2069,7 @@ void turn_object_to_shit( /* garbage that is, garbage */
 		object_index= object->next_object;
 	}
 	
-	if (garbage_objects_in_polygon>MAXIMUM_GARBAGE_OBJECTS_PER_POLYGON)
+	if (garbage_objects_in_polygon> (graphics_preferences->double_corpse_limit ? MAXIMUM_GARBAGE_OBJECTS_PER_POLYGON * 2 : MAXIMUM_GARBAGE_OBJECTS_PER_POLYGON))
 	{
 		/* there are too many garbage objects in this polygon, remove the last (oldest?) one in
 			the linked list */
@@ -2079,8 +2080,8 @@ void turn_object_to_shit( /* garbage that is, garbage */
 		/* see if we have overflowed the maximum allowable garbage objects per map; if we have then
 			remove an existing piece of shit to make room for the new one (this sort of removal
 			could be really obvious... but who pays attention to dead bodies anyway?) */
-		if (dynamic_world->garbage_object_count>=MAXIMUM_GARBAGE_OBJECTS_PER_MAP)
-		{
+	  if (dynamic_world->garbage_object_count>= (graphics_preferences->double_corpse_limit? MAXIMUM_GARBAGE_OBJECTS_PER_MAP * 2 : MAXIMUM_GARBAGE_OBJECTS_PER_MAP))
+	    {
 			/* find a garbage object to remove, and do so (we’re certain that many exist) */
 			for (object_index= garbage_object_index, object= garbage_object;
 					SLOT_IS_FREE(object) || GET_OBJECT_OWNER(object)!=_object_is_garbage;
