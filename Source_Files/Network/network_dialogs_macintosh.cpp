@@ -382,7 +382,7 @@ bool network_join(
 				
 					SetCursor(*GetCursor(watchCursor));
 					// did_join= NetGameJoin(myPlayerInfo.name, PLAYER_TYPE, (void *) &myPlayerInfo, sizeof(myPlayerInfo), 
-					//	MARATHON_NETWORK_VERSION);
+					//	get_network_version());
 					did_join = false;
 					
 					SetCursor(&qd.arrow);
@@ -1111,7 +1111,7 @@ static void setup_network_list_box(
 	/* spawn an asynchronous network name lookup */
 	// LP: kludge to get the code to compile
 	#ifndef mac
-	error= NetLookupOpen("\p=", PLAYER_TYPE, zone, MARATHON_NETWORK_VERSION,
+	error= NetLookupOpen("\p=", PLAYER_TYPE, zone, get_network_version(),
 		network_list_box_update_proc, NetEntityNotInGame);
 	if (error!=noErr) dprintf("NetLookupOpen() returned %d", error);
 	#endif

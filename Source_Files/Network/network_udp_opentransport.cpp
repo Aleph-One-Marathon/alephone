@@ -21,7 +21,9 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-    Jan. 10, 2003 (Woody Zenfell): created
+	Jan. 10, 2003 (Woody Zenfell): created
+
+	May 18, 2003 (Woody Zenfell): now uses passed-in port number for local socket
 */
 
 
@@ -29,7 +31,6 @@
 #include "sdl_network.h"	// trust me, you don't even want to ask...
 #include "network_private.h"	// for kPROTOCOL_TYPE
 #include "Logging.h"
-#include "preferences.h"
 
 // ZZZ: guarding with MACH since building this in the Carbon version on Mac OS X
 // doesn't like these #includes
@@ -158,7 +159,7 @@ udpNotifier(void* inContext, OTEventCode inEventCode, OTResult inResult, void* c
 
 // Open the socket ("endpoint provider" in OTspeak)
 OSErr
-NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
+NetDDPOpenSocket(short* ioPortNumber, PacketHandlerProcPtr inPacketHandler) {
     TEndpointInfo	theEndpointInfo;
     OSStatus		theResult;
 
@@ -201,7 +202,7 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
     // Bind the endpoint
     InetAddress theDesiredAddress;
     theDesiredAddress.fAddressType	= AF_INET;
-    theDesiredAddress.fPort		= network_preferences->game_port;
+    theDesiredAddress.fPort		= *ioPortNumber;
     theDesiredAddress.fHost		= kOTAnyInetAddress;
     obj_clear(theDesiredAddress.fUnused);
 
@@ -266,7 +267,7 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
     // XXX how is tearing down the connection complicated by async blocking mode?
     
     // Return our port number to caller
-    *outSocketNumber = sBoundAddress.fPort;
+    *ioPortNumber = sBoundAddress.fPort;
     
     return theResult;
 

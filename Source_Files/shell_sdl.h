@@ -411,6 +411,7 @@ static void initialize_application(void)
 #endif
 
 	// Initialize everything
+	mytm_initialize();
 	initialize_fonts();
 	initialize_sound_manager(sound_preferences);
 	initialize_marathon_music_handler();

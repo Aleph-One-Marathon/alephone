@@ -999,7 +999,7 @@ bool network_gather(bool inResumingGame)
                         
                         d.add(new w_right_button("CANCEL", dialog_cancel, &d));
                         
-                        NetLookupOpen_SSLP(PLAYER_TYPE, MARATHON_NETWORK_VERSION, found_player_callback, lost_player_callback, player_name_changed_callback);
+                        NetLookupOpen_SSLP(PLAYER_TYPE, get_network_version(), found_player_callback, lost_player_callback, player_name_changed_callback);
                         
                         d.set_processing_function(gather_processing_function);
                         
@@ -1239,7 +1239,7 @@ int network_join(void)
                         memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
         
                         bool did_join = NetGameJoin(myPlayerInfo.name, PLAYER_TYPE,
-                                                        (void *)&myPlayerInfo, sizeof(player_info), MARATHON_NETWORK_VERSION,
+                                                        (void *)&myPlayerInfo, sizeof(player_info), get_network_version(),
                                                         hint_w->get_selection() ? hint_address_w->get_text() : NULL);
                         if (did_join) {
                                 // OK, system is now advertising this player so gatherers can find us.

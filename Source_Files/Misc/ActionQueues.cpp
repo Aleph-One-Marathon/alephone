@@ -29,7 +29,11 @@ Jun 9, 2002 (tiennou):
 
 Feb 3, 2003 (Woody Zenfell):
         Made 'ZombiesControllable' a property of a queue-set rather than an argument to the methods.
-	
+
+May 14, 2003 (Woody Zenfell):
+	Can reset a single action queue within a set now, principally for use with
+	LegacyActionQueueToTickBasedQueueAdapter.
+ 
  *  An ActionQueues object encapsulates a set of players' action_queues.
  *
  *  Created by woody on Wed Feb 20 2002.
@@ -86,6 +90,15 @@ ActionQueues::reset()
 	for (unsigned i=0; i < mNumPlayers; ++i) {
 		mQueueHeaders[i].read_index = mQueueHeaders[i].write_index = 0;
 	}
+}
+
+
+
+void
+ActionQueues::resetQueue(int inPlayerIndex)
+{
+	assert(inPlayerIndex >= 0 && inPlayerIndex < mNumPlayers);
+	mQueueHeaders[inPlayerIndex].read_index = mQueueHeaders[inPlayerIndex].write_index = 0;
 }
 
 

@@ -372,8 +372,12 @@ struct player_data
 	int32 ticks_at_last_successful_save;
 
 	int32 netgame_parameters[2];
-	
-	int16 unused[256];
+
+	bool	netdead;	// ZZZ: added this; it should not be serialized/deserialized
+
+	// ZZZ: since we don't put this structure directly into files or network communications,
+	// there ought? to be no reason for the padding
+//	int16 unused[256];
 };
 
 const int SIZEOF_player_data = 930;

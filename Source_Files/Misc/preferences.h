@@ -46,6 +46,9 @@ May 16, 2002 (Woody Zenfell):
 
 Apr 10, 2003 (Woody Zenfell):
     Join hinting and autogathering have Preferences entries now
+
+May 22, 2003 (Woody Zenfell):
+	Support for preferences for multiple network game protocols; configurable local game port.
  */
 
 #include "interface.h"
@@ -81,6 +84,14 @@ struct serial_number_data
 	Str255 tokenized_serial_number;
 };
 
+enum {
+	_network_game_protocol_ring,
+	_network_game_protocol_star,
+	NUMBER_OF_NETWORK_GAME_PROTOCOLS,
+
+	_network_game_protocol_default = _network_game_protocol_star
+};
+
 struct network_preferences_data
 {
 	bool allow_microphone;
@@ -95,10 +106,8 @@ struct network_preferences_data
         bool autogather;
         bool join_by_address;
         char join_address[256];
-        bool adapt_to_latency;
-        int16 latency_hold_ticks;
         uint16 game_port;	// TCP and UDP port number used for game traffic (not player-location traffic)
-        bool accept_packets_from_anyone;
+	uint16 game_protocol; // _network_game_protocol_star, etc.
 };
 
 struct player_preferences_data

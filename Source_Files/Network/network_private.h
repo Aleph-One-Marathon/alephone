@@ -29,6 +29,10 @@
 
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Enabled SDL networking for Carbon without fully using SDL
+
+ May 24, 2003 (Woody Zenfell):
+	Split ring-protocol-specific stuff out into RingGameProtocol.cpp;
+	"Unknown packet type response" streaming packet type; NetGetDistributionInfoForType()
  */
 
 #ifndef	NETWORK_PRIVATE_H
@@ -93,7 +97,7 @@ enum /* error string for user */
 
 #define NUM_DISTRIBUTION_TYPES    3
 
-// Altering constants below should make you increment MARATHON_NETWORK_VERSION.  - Woody
+// Altering constants below should make you alter get_network_version().  - Woody
 #define kPROTOCOL_TYPE           69
 
 enum /* tag */
@@ -140,7 +144,7 @@ struct IPaddress {
 
 // (ZZZ:) Note ye well!!: if you alter these network-related structures, you are probably going to need to modify
 // the corresponding _NET structures in network_data_formats.h AND *both* corresponding netcpy() functions in
-// network_data_formats.cpp.  AND, you'll probably need to increment MARATHON_NETWORK_VERSION while you're at it,
+// network_data_formats.cpp.  AND, you'll probably need to alter get_network_version() while you're at it,
 // since you've made an incompatible change to the network communication protocol.
 
 // (ZZZ:) Information passed in datagrams (note: the _NET version is ALWAYS the one sent/received on the wire.
@@ -211,50 +215,6 @@ struct NetChatMessage {
 #endif
 
 
-// ZZZ: This structure is never placed on the wire, so you can do whatever you want with it
-// without having to worry about updating additional structures.
-struct NetStatus
-{
-	/* we receive packets from downring and send them upring */
-	NetAddrBlock upringAddress, downringAddress;
-	int16 upringPlayerIndex;
-	
-	int32 lastValidRingSequence; /* the sequence number of the last valid ring packet we received */
-	int32 ringPacketCount; /* the number of ring packets we have received */
-	
-	bool receivedAcknowledgement; /* true if we received a valid acknowledgement for the last ring packet we sent */
-	bool canForwardRing; 
-	bool clearToForwardRing; /* true if we are the server and we got a valid ring packet but we didnÕt send it */
-	bool acceptPackets; /* true if we want to get packets */
-	bool acceptRingPackets; /* true if we want to get ring packets */
-	bool oldSelfSendStatus;
-
-	int16 retries;
-	
-	int16 action_flags_per_packet;
-	int16 last_extra_flags;
-	int16 update_latency;
-	
-	bool iAmTheServer;
-	bool single_player; /* Set true if I dropped everyone else. */
-	int16 server_player_index;
-	int16 new_packet_tag; /* Valid _only_ if you are the server, and is only set when you just became the server. */
-
-	uint8 *buffer;
-	
-	int32 localNetTime;
-};
-typedef struct NetStatus NetStatus, *NetStatusPtr;
-
-// ZZZ: I believe this is never placed on the wire either.  If I have not come back and changed
-// this note, that's probably right.  :)
-struct NetQueue
-{
-	int16 read_index, write_index;
-	int32 buffer[NET_QUEUE_SIZE];
-};
-typedef struct NetQueue NetQueue, *NetQueuePtr;
-
 // ZZZ: same here (should be safe to alter)
 struct NetDistributionInfo
 {
@@ -292,18 +252,22 @@ struct accept_gather_data {
 	NetPlayer player;
 };
 
-// Altering these constants requires an increment to MARATHON_NETWORK_VERSION.  - Woody
+// Altering these constants requires changes to get_network_version().  - Woody
 enum {
 	_join_player_packet,
 	_accept_join_packet,
 	_topology_packet,
 	_stream_size_packet,
 	_stream_data_packet,
-        _chat_packet,       // ZZZ addition
+	// ZZZ additions below
+        _chat_packet,
+	// The following should only be sent when get_network_version() >= kMinimumNetworkVersionForGracefulUnknownStreamPackets
+	_unknown_packet_type_response_packet,
 	NUMBER_OF_BUFFERED_STREAM_PACKET_TYPES,
 	NUMBER_OF_STREAM_PACKET_TYPES= 	NUMBER_OF_BUFFERED_STREAM_PACKET_TYPES
 };
 /* ===== end of application specific data structures/enums */
 
+const NetDistributionInfo* NetGetDistributionInfoForType(int16 inType);
 
 #endif//NETWORK_PRIVATE_H

@@ -1,0 +1,215 @@
+/*
+ *  StarGameProtocol.cpp
+
+	Copyright (C) 2003 and beyond by Woody Zenfell, III
+	and the "Aleph One" developers.
+
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	This license is contained in the file "COPYING",
+	which is included with this source code; it is available online at
+	http://www.gnu.org/licenses/gpl.html
+
+ *  Created by Woody Zenfell, III on Sat May 17 2003.
+ *
+ *  Glue to make the star network protocol code interface with the rest of A1.
+ */
+
+#ifdef EXPLICIT_CARBON_HEADER
+#include <Carbon/Carbon.h>
+#endif
+
+#include "StarGameProtocol.h"
+
+#include "network_star.h"
+#include "TickBasedCircularQueue.h"
+
+static WritableTickBasedActionQueue* sStarQueues[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+static bool		sHubIsLocal;
+static NetTopology*	sTopology = NULL;
+static short*		sNetStatePtr = NULL;
+
+
+bool
+StarGameProtocol::Enter(short* inNetStatePtr)
+{
+	sNetStatePtr = inNetStatePtr;
+	return true;
+}
+
+
+
+void
+StarGameProtocol::Exit1()
+{
+//	return true;
+}
+
+
+
+void
+StarGameProtocol::Exit2()
+{
+//	return true;
+}
+
+
+
+void
+StarGameProtocol::DistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self)
+{
+	// not supported yet
+}
+
+
+
+void
+StarGameProtocol::PacketHandler(DDPPacketBufferPtr packet)
+{
+        if(sHubIsLocal)
+                hub_received_network_packet(packet);
+        else
+                spoke_received_network_packet(packet);
+}
+
+
+
+bool
+StarGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t inLocalPlayerIndex, size_t inServerPlayerIndex)
+{
+	assert(inTopology != NULL);
+	
+	sTopology = inTopology;
+	
+        bool theConnectedPlayerStatus[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+
+        for(int i = 0; i < sTopology->player_count; i++)
+        {
+                if(sTopology->players[i].identifier == NONE)
+                        sStarQueues[i] = NULL;
+                else
+                        sStarQueues[i] = new LegacyActionQueueToTickBasedQueueAdapter<action_flags_t>(i);
+
+                theConnectedPlayerStatus[i] = ((sTopology->players[i].identifier != NONE) && !sTopology->players[i].net_dead);
+        }
+
+        if(inLocalPlayerIndex == inServerPlayerIndex)
+        {
+		sHubIsLocal = true;
+		
+                NetAddrBlock* theAddresses[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+
+                for(int i = 0; i < sTopology->player_count; i++)
+                        theAddresses[i] = (theConnectedPlayerStatus[i] ? &(sTopology->players[i].ddpAddress) : NULL);
+
+                hub_initialize(inSmallestGameTick, sTopology->player_count, theAddresses, inLocalPlayerIndex);
+        }
+	else
+		sHubIsLocal = false;
+
+        spoke_initialize(sTopology->players[inServerPlayerIndex].ddpAddress, inSmallestGameTick, sTopology->player_count,
+                         sStarQueues, theConnectedPlayerStatus, inLocalPlayerIndex, sHubIsLocal);
+
+        *sNetStatePtr = netActive;
+
+        return true;
+}
+
+
+
+bool
+StarGameProtocol::UnSync(bool inGraceful, int32 inSmallestPostgameTick)
+{
+        if(*sNetStatePtr == netStartingUp || *sNetStatePtr == netActive)
+        {
+                spoke_cleanup(inGraceful);
+                if(sHubIsLocal)
+                        hub_cleanup(inGraceful, inSmallestPostgameTick);
+
+                for(int i = 0; i < sTopology->player_count; i++)
+                {
+                        if(sStarQueues[i] != NULL)
+                        {
+                                delete sStarQueues[i];
+                                sStarQueues[i] = NULL;
+                        }
+                }
+        }
+
+        *sNetStatePtr = netDown;
+
+        return true;
+}
+
+
+
+int32
+StarGameProtocol::GetNetTime(void)
+{
+        return spoke_get_net_time();
+}
+
+
+
+/* ZZZ addition:
+---------------------------
+	make_player_really_net_dead
+---------------------------
+
+---> player index of newly net-dead player
+
+	sets up our housekeeping here to mark a player as net-dead.
+	*/
+
+void
+make_player_really_net_dead(size_t inPlayerIndex)
+{
+        assert(inPlayerIndex < static_cast<size_t>(sTopology->player_count));
+        sTopology->players[inPlayerIndex].net_dead = true;
+}
+
+
+
+static XML_ElementParser sStarParser("star_protocol");
+
+
+XML_ElementParser*
+StarGameProtocol::GetParser() {
+	static bool sAddedChildren = false;
+	if(!sAddedChildren)
+	{
+		sStarParser.AddChild(Hub_GetParser());
+		sStarParser.AddChild(Spoke_GetParser());
+		sAddedChildren = true;
+	}
+
+	return &sStarParser;
+}
+
+
+
+void
+DefaultStarPreferences()
+{
+	DefaultHubPreferences();
+	DefaultSpokePreferences();
+}
+
+
+
+void
+WriteStarPreferences(FILE* F)
+{
+	fprintf(F,"  <star_protocol>\n");
+	WriteHubPreferences(F);
+	WriteSpokePreferences(F);
+	fprintf(F,"  </star_protocol>\n");
+}

@@ -22,6 +22,9 @@ NETWORK.H
 	http://www.gnu.org/licenses/gpl.html
 
 Tuesday, June 21, 1994 3:26:46 PM
+
+ May 24, 2003 (Woody Zenfell):
+	compile-time constant MARATHON_NETWORK_VERSION replaced with runtime get_network_version()
 */
 
 #include	"cstypes.h"
@@ -49,20 +52,6 @@ Tuesday, June 21, 1994 3:26:46 PM
 #define NETWORK_CHAT
 #endif
 
-// This number needs to be changed whenever a change occurs in the networking code
-// that would make 2 versions incompatible, or a change in the game occurs that
-// would make 2 versions out of sync.
-// ZZZ: I have made efforts to preserve existing "classic" Mac OS protocol and data formats,
-// but IPring introduces new _NET formats and so needs an increment.
-// (OK OK this is a bit pedantic - I mean, I don't think IPring is going to accidentally start
-// sending or receiving AppleTalk traffic ;) - but, you know, it's the principle of the thing.)
-#if HAVE_SDL_NET
-#define	MARATHON_NETWORK_VERSION 10
-#else
-// #warn using marathon network version 9
-#define MARATHON_NETWORK_VERSION 9
-#endif
-
 enum // base network speeds
 {
 	_appletalk_remote, // ARA
@@ -73,6 +62,16 @@ enum // base network speeds
 	_modem,
 #endif
 	NUMBER_OF_NETWORK_TYPES
+};
+
+// as returned by get_network_version()
+enum
+{
+	_appletalk_ring_network_version = 9,
+	_ip_ring_network_version = 10,
+	_ip_star_network_version = 11,
+
+	kMinimumNetworkVersionForGracefulUnknownStreamPackets = _ip_star_network_version
 };
 
 typedef struct game_info
@@ -221,5 +220,7 @@ void display_net_game_stats(void);
 void NetAddDistributionFunction(int16 type, NetDistributionProc proc, bool lossy);
 void NetDistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self);
 void NetRemoveDistributionFunction(short type);
+
+extern short get_network_version();
 
 #endif

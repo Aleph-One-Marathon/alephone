@@ -116,12 +116,12 @@ void mouse_idle(short type)
 		if (input_preferences->modifiers & _inputmod_invert_mouse)
 			vy = -vy;
 
-        // ZZZ: scale input by sensitivity
-        if(input_preferences->sensitivity != FIXED_ONE) {
-            float   theScalingFactor = ((float) input_preferences->sensitivity) / ((float) FIXED_ONE);
-            vx = (_fixed) (theScalingFactor * vx);
-            vy = (_fixed) (theScalingFactor * vy);
-        }
+		// ZZZ: scale input by sensitivity
+		if(input_preferences->sensitivity != FIXED_ONE) {
+			float   theScalingFactor = ((float) input_preferences->sensitivity) / ((float) FIXED_ONE);
+			vx = (_fixed) (theScalingFactor * vx);
+			vy = (_fixed) (theScalingFactor * vy);
+		}
 
 		// Pin and do nonlinearity
 		vx = PIN(vx, -FIXED_ONE/2, FIXED_ONE/2); vx >>= 1; vx *= (vx<0) ? -vx : vx; vx >>= 14;

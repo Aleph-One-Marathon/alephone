@@ -107,8 +107,13 @@ bool NetEntityNotInGame(NetEntityName *entity, NetAddrBlock *address);
 OSErr NetDDPOpen(void);
 OSErr NetDDPClose(void);
 
-OSErr NetDDPOpenSocket(short *socketNumber, PacketHandlerProcPtr packetHandler);
-OSErr NetDDPCloseSocket(short socketNumber);
+// ZZZ: this is a bit confusing; in the original AppleTalk DDP code, the socket routines
+// took and returned a socket number, which is a bit like the file descriptor one gets for
+// a UNIX socket.  Now with NETWORK_IP, that portion of the API is used to pass an IP port number.
+// (The argument to NetDDPCloseSocket() is now ignored, then; we only currently support one open UDP socket.)
+// NETWORK_IP: *ioPortNumber is in network byte order ("big-endian")
+OSErr NetDDPOpenSocket(short *ioPortNumber, PacketHandlerProcPtr packetHandler);
+OSErr NetDDPCloseSocket(short ignored);
 
 DDPFramePtr NetDDPNewFrame(void);
 void NetDDPDisposeFrame(DDPFramePtr frame);
@@ -125,7 +130,7 @@ OSErr NetADSPDisposeConnectionEnd(ConnectionEndPtr connectionEnd);
 
 OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, NetAddrBlock *address);
 OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, bool abort);
-OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd);
+OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd, uint16 inPortNumber);
 bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, NetAddrBlock *address);
 
 OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);

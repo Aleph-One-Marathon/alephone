@@ -55,6 +55,8 @@
 #include "XML_ParseTreeRoot.h"
 #include "FileHandler.h"
 
+#include "mytm.h"	// mytm_initialize(), for platform-specific shell_*.h
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>

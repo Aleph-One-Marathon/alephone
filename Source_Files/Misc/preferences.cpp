@@ -37,6 +37,9 @@ Apr 10-22, 2003 (Woody Zenfell):
         Join hinting and autogathering have Preferences entries now
         Being less obnoxious with unrecognized Prefs stuff
         Macintosh Enviroprefs popup style can be set in Preferences file
+
+May 22, 2003 (Woody Zenfell):
+	Support for preferences for multiple network game protocols; configurable local game port.
  */
 
 /*
@@ -68,6 +71,8 @@ Apr 10-22, 2003 (Woody Zenfell):
 #include "XML_ElementParser.h"
 #include "XML_DataBlock.h"
 #include "ColorParser.h"
+#include "StarGameProtocol.h"
+#include "RingGameProtocol.h"
 
 #include "tags.h"
 #include "Logging.h"
@@ -84,6 +89,14 @@ Apr 10-22, 2003 (Woody Zenfell):
 const short FatalErrorAlert = 128;
 const short NonFatalErrorAlert = 129;
 #endif
+
+static const char* sNetworkGameProtocolNames[] =
+{	// These should match up with _network_game_protocol_ring, etc.
+	"ring",
+	"star"
+};
+
+static const size_t NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES = sizeof(sNetworkGameProtocolNames) / sizeof(sNetworkGameProtocolNames[0]);
 
 
 // MML-like Preferences Stuff; it makes obsolete
@@ -454,7 +467,7 @@ void write_preferences(
 	fprintf(F,"<input\n");
 	fprintf(F,"  device=\"%hd\"\n",input_preferences->input_device);
 	fprintf(F,"  modifiers=\"%hu\"\n",input_preferences->modifiers);
-    fprintf(F,"  sensitivity=\"%d\"\n",input_preferences->sensitivity); // ZZZ
+	fprintf(F,"  sensitivity=\"%d\"\n",input_preferences->sensitivity); // ZZZ
 	fprintf(F,">\n");
 #if defined(mac)
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
@@ -487,11 +500,12 @@ void write_preferences(
         fprintf(F,"  autogather=\"%s\"\n",BoolString(network_preferences->autogather));
         fprintf(F,"  join_by_address=\"%s\"\n",BoolString(network_preferences->join_by_address));
         WriteXML_CString(F, "  join_address=\"",network_preferences->join_address,256,"\"\n");
-        fprintf(F,"  adapt_to_latency=\"%s\"\n",BoolString(network_preferences->adapt_to_latency));
-        fprintf(F,"  latency_hold_ticks=\"%hd\"\n",network_preferences->latency_hold_ticks);
-        fprintf(F,"  game_port=\"%hu\"\n",network_preferences->game_port);
-        fprintf(F,"  accept_packets_from_anyone=\"%s\"\n",BoolString(network_preferences->accept_packets_from_anyone));
-	fprintf(F,"/>\n\n");
+        fprintf(F,"  local_game_port=\"%hu\"\n",network_preferences->game_port);
+	fprintf(F,"  game_protocol=\"%s\"\n",sNetworkGameProtocolNames[network_preferences->game_protocol]);
+	fprintf(F,">\n");
+	WriteStarPreferences(F);
+	WriteRingPreferences(F);
+	fprintf(F,"</network>\n\n");
 	
 	fprintf(F,"<environment\n");
 #ifdef SDL
@@ -675,11 +689,11 @@ static void default_network_preferences(network_preferences_data *preferences)
         preferences->autogather= false;
         preferences->join_by_address= false;
         obj_clear(preferences->join_address);
-        preferences->adapt_to_latency= true;
-        preferences->latency_hold_ticks= 2 * TICKS_PER_SECOND;
         preferences->game_port= 4226;	// Magic number I guess, but this is the only place it's used
                                         // (everyone else uses preferences->game_port)
-        preferences->accept_packets_from_anyone= false;
+	preferences->game_protocol= _network_game_protocol_default;
+	DefaultStarPreferences();
+	DefaultRingPreferences();
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -898,11 +912,11 @@ static bool validate_network_preferences(network_preferences_data *preferences)
 
         // ZZZ: is this relevant anymore now with XML prefs?  if so, should validate autogather, join_by_address, and join_address.
 
-        if(preferences->latency_hold_ticks < 2)
-        {
-                preferences->latency_hold_ticks= 2;
-                changed= true;
-        }
+	if(preferences->game_protocol >= NUMBER_OF_NETWORK_GAME_PROTOCOLS)
+	{
+		preferences->game_protocol= _network_game_protocol_default;
+		changed= true;
+	}
 	
 	return changed;
 }
@@ -1768,22 +1782,26 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
                 DeUTF8_C(Value,strlen(Value),network_preferences->join_address,255);
                 return true;
         }
-        else if (StringsEqual(Tag,"adapt_to_latency"))
-        {
-                return ReadBooleanValue(Value,network_preferences->adapt_to_latency);
-        }
-        else if (StringsEqual(Tag,"latency_hold_ticks"))
-        {
-                return ReadInt16Value(Value,network_preferences->latency_hold_ticks);
-        }
-        else if (StringsEqual(Tag,"game_port"))
+        else if (StringsEqual(Tag,"local_game_port"))
         {
                 return ReadUInt16Value(Value,network_preferences->game_port);
         }
-        else if (StringsEqual(Tag,"accept_packets_from_anyone"))
-        {
-                return ReadBooleanValue(Value,network_preferences->accept_packets_from_anyone);
-        }
+	else if (StringsEqual(Tag,"game_protocol"))
+	{
+		size_t i;
+		for(i = 0; i < NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES; i++)
+		{
+			if(strcasecmp(Value,sNetworkGameProtocolNames[i]) == 0)
+				break;
+		}
+		if(i < NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES)
+		{
+			network_preferences->game_protocol= i;
+			return true;
+		}
+		else
+			return false;
+	}
         
 	UnrecognizedTag();
 	return false;
@@ -2029,7 +2047,9 @@ void SetupPrefsParseTree()
 	MarathonPrefsParser.AddChild(&InputPrefsParser);
 	
 	MarathonPrefsParser.AddChild(&SoundPrefsParser);
-	
+
+	NetworkPrefsParser.AddChild(StarGameProtocol::GetParser());
+	NetworkPrefsParser.AddChild(RingGameProtocol::GetParser());
 	MarathonPrefsParser.AddChild(&NetworkPrefsParser);
 	
 	EnvironmentPrefsParser.AddChild(&MacFSSpecPrefsParser);

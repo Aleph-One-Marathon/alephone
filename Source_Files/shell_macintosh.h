@@ -538,6 +538,7 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	initialize_ISp(); /* BT: Added April 16, 2000 ISp: Initialize Input Sprockets */
 	
 	int k = 0;
+	mytm_initialize();
 	initialize_keyboard_controller();
 	initialize_screen(&graphics_preferences->screen_mode, ModifierKeysInitiallyPressed);
 	initialize_marathon();

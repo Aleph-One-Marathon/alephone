@@ -464,7 +464,7 @@ int network_join(
 #endif
 */
 					did_join= NetGameJoin(myPlayerInfo.name, PLAYER_TYPE, (void *) &myPlayerInfo, sizeof(myPlayerInfo), 
-						MARATHON_NETWORK_VERSION,
+						get_network_version(),
 						network_preferences->join_by_address ? network_preferences->join_address : NULL
 						);
 
@@ -1351,7 +1351,7 @@ static void setup_network_list_box(
 	found_players.clear();
 
 	/* spawn an asynchronous network name lookup */
-	NetLookupOpen_SSLP(PLAYER_TYPE, MARATHON_NETWORK_VERSION, found_player_callback, lost_player_callback, player_name_changed_callback);
+	NetLookupOpen_SSLP(PLAYER_TYPE, get_network_version(), found_player_callback, lost_player_callback, player_name_changed_callback);
 
 	return;
 }

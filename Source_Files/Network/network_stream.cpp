@@ -36,6 +36,10 @@ Sept-Nov 2001 (Woody Zenfell): strategic byte-swapping for cross-platform compat
 Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Enabled SDL networking for Carbon without fully using SDL
 	Replaced many mac checks with checks for HAVE_SDL_NET
+
+ May 24, 2003 (Woody Zenfell):
+	Support for more tolerant streaming communications (safe to send streaming packet
+	receiver doesn't understand now; he'll tell you, and ignore it).
 */
 
 #include "cseries.h"
@@ -71,6 +75,9 @@ static NetAddrBlock adsp_end_address;
 static OSErr stream_write(void *data, uint16 length);
 static OSErr stream_read(void *data, uint16 *length);
 
+// ZZZ change: in newer get_network_versions(), we send the packet length as well as the
+// type, to ease future cases where some folks might not understand some messages: they'll
+// be able to skip unrecognized packets now.
 /* ------ code */
 OSErr NetSendStreamPacket(
 	short packet_type,
@@ -81,47 +88,67 @@ OSErr NetSendStreamPacket(
 
 	packet_length= NetStreamPacketLength(packet_type);
 
-        // ZZZ: byte-swap packet type code if necessary
+        // ZZZ: byte-swap packet type code and packet length if necessary
 	short	packet_type_NET;
+	uint16	packet_length_NET;
     
 #if HAVE_SDL_NET
         packet_type_NET = SDL_SwapBE16(packet_type);
+	packet_length_NET = SDL_SwapBE16(packet_length);
 #else
         packet_type_NET = packet_type;
+	packet_length_NET = packet_length;
 #endif
         
 	error= stream_write(&packet_type_NET, sizeof(short));
 	if(!error)
 	{
-		error= stream_write(packet_data, packet_length);
+		if(get_network_version() >= kMinimumNetworkVersionForGracefulUnknownStreamPackets)
+		{
+			error = stream_write(&packet_length_NET, sizeof(packet_length_NET));
+		}
+		if(!error)
+			error= stream_write(packet_data, packet_length);
 	}
 
 	return error;
 }
 
+// ZZZ change: to pair with above, we now get lengths for received packets from the packets,
+// rather than from our hard-coded values.  This means we can now receive packets of types we
+// don't recognize.  Higher-level code will have to figure out what to do with them though.
 OSErr NetReceiveStreamPacket(
 	short *packet_type,
 	void *buffer) /* Must be large enough for the biggest packet type.. */
 {
-	OSErr error;
+	OSErr error = noErr;
 	uint16 length;
-	
+	uint16	packet_length;
+
 	length= sizeof(short);
 
-        // ZZZ: byte-swap if necessary
-        short	packet_type_NET;
+	// ZZZ: byte-swap if necessary
+	short	packet_type_NET;
+	uint16	packet_length_NET;
 
 	error= stream_read(&packet_type_NET, &length);
-        
-#if HAVE_SDL_NET
-        *packet_type = SDL_SwapBE16(packet_type_NET);
-#else
-        *packet_type = packet_type_NET;
-#endif
+	if(!error && get_network_version() >= kMinimumNetworkVersionForGracefulUnknownStreamPackets)
+	{
+		length= sizeof(packet_length_NET);
+		error= stream_read(&packet_length_NET, &length);
+	}
 
 	if(!error)
 	{
-		length= NetStreamPacketLength(*packet_type);
+#if HAVE_SDL_NET
+		*packet_type= SDL_SwapBE16(packet_type_NET);
+		packet_length= SDL_SwapBE16(packet_length_NET);
+#else
+		*packet_type= packet_type_NET;
+		packet_length= packet_length_NET;
+#endif
+		length= ((get_network_version() >= kMinimumNetworkVersionForGracefulUnknownStreamPackets) ? packet_length : NetStreamPacketLength(*packet_type));
+
 		error= stream_read(buffer, &length);
 	}
 
@@ -281,7 +308,9 @@ OSErr NetStreamWaitForConnection(
 	switch(transport_type)
 	{
 		case kNetworkTransportType:
-			error= NetADSPWaitForConnection(dspConnection);
+			// ZZZ: If SDL_SwapBE16() is not actually available on all current A1 platforms, feel free to
+			// rework this to provide network_preferences->game_port in big-endian order.
+			error= NetADSPWaitForConnection(dspConnection, SDL_SwapBE16(network_preferences->game_port));
 			break;
 			
 		case kModemTransportType:

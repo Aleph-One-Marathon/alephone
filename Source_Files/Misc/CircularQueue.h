@@ -30,7 +30,7 @@
  *
  *  Created by woody in February 2002.
  *
- *  May 8, 2003 (Woody Zenfell): minor modifications.
+ *  May 8, 2003 (Woody Zenfell): minor modifications; can now copy/assign queues.
  */
 
 #ifndef CIRCULAR_QUEUE_H
@@ -42,7 +42,19 @@ public:
         CircularQueue() : mData(NULL) { reset(0); }
 
         explicit CircularQueue(unsigned int inSize) : mData(NULL) { reset(inSize); }
-    
+
+	// The queue being copied had best not change while we're copying...
+        CircularQueue(const CircularQueue<T>& o) : mData(NULL) {
+		*this = o;
+	}
+		
+        CircularQueue<T>& operator =(const CircularQueue<T>& o) {
+		reset(o.getTotalSpace());
+		for(unsigned int i = 0; i < o.getCountOfElements(); i++)
+			enqueue(o.mData[o.getReadIndex(i)]);
+		return *this;
+	}		
+
         void reset() { reset(mQueueSize); }
         
         void reset(unsigned int inSize) {
@@ -54,23 +66,23 @@ public:
 
                 mReadIndex = mWriteIndex = 0;
 
-                if(inSize != mQueueSize || mData == NULL) {
-                        mQueueSize = inSize;
+                if(theStorageCount != mQueueSize || mData == NULL) {
+                        mQueueSize = theStorageCount;
                         if(mData != NULL)
                                 delete [] mData;
                         mData = new T[mQueueSize];
                 }
         }
 
-        unsigned int	getCountOfElements()
+        unsigned int	getCountOfElements() const
                             { return (mQueueSize + mWriteIndex - mReadIndex) % mQueueSize; }
 
-        unsigned int	getSpaceRemaining()
-                            { return mQueueSize - 1 - getCountOfElements(); }
+        unsigned int	getSpaceRemaining() const
+                            { return getTotalSpace() - getCountOfElements(); }
 
-        unsigned int	getTotalSpace() { return mQueueSize; }
+        unsigned int	getTotalSpace() const { return mQueueSize - 1; }
     
-        const T&        peek() { return mData[getReadIndex()]; }
+        const T&        peek() const { return mData[getReadIndex()]; }
 
         void            dequeue() { advanceReadIndex(); }
 
@@ -79,9 +91,9 @@ public:
         ~CircularQueue() { if(mData != NULL) delete [] mData; }
 
 protected:
-        unsigned int	getReadIndex(unsigned int inOffset = 0)
+        unsigned int	getReadIndex(unsigned int inOffset = 0) const
                             { assert(getCountOfElements() > inOffset);  return (mReadIndex + inOffset) % mQueueSize; }
-        unsigned int	getWriteIndex(unsigned int inOffset = 0)
+        unsigned int	getWriteIndex(unsigned int inOffset = 0) const
                             { assert(getSpaceRemaining() > inOffset);  return (mWriteIndex + inOffset) % mQueueSize; }
                             
         unsigned int advanceReadIndex(unsigned int inAmount = 1) {   
@@ -105,11 +117,6 @@ protected:
         unsigned int	mQueueSize;
 
         T*              mData;
-
-private:
-        // disallow copying for now, just to be sure nobody tries it while it does the wrong thing.
-        CircularQueue(CircularQueue<T>&);
-        CircularQueue<T>& operator =(CircularQueue<T>&);
 };
 
 #endif // CIRCULAR_QUEUE_H

@@ -32,6 +32,9 @@
  *
  *  Jan 18, 2003 (Woody Zenfell):
  *     Moving diagnostic messages etc. to new Logging system
+ *
+ *  May 22, 2003 (Woody Zenfell):
+ *	Making TCP retry behavior more tolerant of slow transfers; uses local port number passed in
  */
 
 #ifdef __MWERKS__
@@ -42,7 +45,6 @@
 #include "cseries.h"
 #include "sdl_network.h"
 
-#include "preferences.h"
 #include "Logging.h"
 
 
@@ -146,23 +148,14 @@ OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, bool abort)
 // we leave it alone.  I _think_ we are probably getting a problem with trying to reuse the same port
 // too soon after it was previously used?  Maybe?  The call to SDLNet_TCP_Open() was failing if we
 // had just called NetADSPCloseConnection and called this with the server_socket still in place.
-OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd)
+OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd, uint16 inPort)
 {
 //fdprintf("NetADSPWaitForConnection\n");
-	// Close old sockets
+	// Close old socket
 	if (connectionEnd->socket) {
 		SDLNet_TCP_Close(connectionEnd->socket);
 		connectionEnd->socket = NULL;
 	}
-/*	if (connectionEnd->server_socket) {
-		SDLNet_TCP_Close(connectionEnd->server_socket);
-		connectionEnd->server_socket = NULL;
-	}
-        if(connectionEnd->server_socket_set != NULL) {
-            SDLNet_FreeSocketSet(connectionEnd->server_socket_set);
-            connectionEnd->server_socket_set = NULL;
-        }
-*/
 
         // ZZZ code follows
         if(connectionEnd->server_socket == NULL) {
@@ -172,7 +165,7 @@ OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd)
             // port in SDL_net are network byte order.
             IPaddress addr;
             addr.host = INADDR_NONE;
-            addr.port = SDL_SwapBE16(network_preferences->game_port);
+            addr.port = inPort;
             
             connectionEnd->server_socket = SDLNet_TCP_Open(&addr);
     
@@ -239,23 +232,33 @@ OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 
 	while(actual < *count && num_tries < kNUM_TCP_RETRIES) {
 		int recent = SDLNet_TCP_Send(connectionEnd->socket, &buf[actual], *count - actual);
+
+		num_tries++;
 		
 		if(recent < 0)
 			break;
 
-		actual += recent;
+		if(recent > 0)
+		{
+			actual += recent;
+			num_tries = 0;
+		}
 
 		if(actual < *count) {
                     logTrace1("sent %d bytes; delaying and retrying", recent);
 			SDL_Delay(10);
 		}
-
-		num_tries++;
 	}
 	
-	logTrace1("wrote %d total bytes", actual);
+	bool complete = (actual == *count);
+	*count = actual;
+
+	if(complete)
+		logTrace1("wrote %d total bytes", actual);
+	else
+		logAnomaly1("incomplete write: only %d bytes", actual);
 	
-	return actual == *count ? 0 : -1;
+	return complete ? 0 : -1;
 }
 
 
@@ -275,20 +278,31 @@ OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count)
 	while(actual < *count && num_tries < kNUM_TCP_RETRIES) {
 		int recent = SDLNet_TCP_Recv(connectionEnd->socket, &buf[actual], (*count) - actual);
 
+		num_tries++;
+
 		if(recent > 0)
-                    actual += recent;
+		{
+			actual += recent;
+			num_tries = 0;
+		}
 
 		if(actual < *count) {
 			logTrace1("read %d bytes; delaying and retrying", recent);
 			SDL_Delay(10);
 		}
-
-		num_tries++;
 	}
 
+
+	bool complete = (actual == *count);
 	*count = actual;
 
-	logTrace1("read %d total bytes", actual);
+	if(complete)
+		logTrace1("read %d total bytes", actual);
+	else
+		logAnomaly1("incomplete read: only %d bytes", actual);
 
-	return actual > 0 ? 0 : -1;
+	return complete ? 0 : -1;
+
+	// hmm, used to be:
+	//	return actual > 0 ? 0 : -1;
 }

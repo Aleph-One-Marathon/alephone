@@ -25,6 +25,8 @@
  *  Written in 2000 by Christian Bauer
  *
  *  Sept-Nov 2001 (Woody Zenfell): a few additions to implement socket-listening thread.
+ *
+ *  May 18, 2003 (Woody Zenfell): now uses passed-in port number for local socket.
  */
 
 #ifdef __MWERKS__
@@ -35,7 +37,6 @@
 #include "cseries.h"
 #include "sdl_network.h"
 #include "network_private.h"
-#include "preferences.h"
 
 #include <SDL_thread.h>
 
@@ -125,7 +126,8 @@ OSErr NetDDPClose(void)
  *  Open socket
  */
 // Most of this function by ZZZ.
-OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
+// Incoming port number should be in network byte order.
+OSErr NetDDPOpenSocket(short *ioPortNumber, PacketHandlerProcPtr packetHandler)
 {
 //fdprintf("NetDDPOpenSocket\n");
 	assert(packetHandler);
@@ -140,11 +142,7 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
 	// Open socket (SDLNet_Open seems to like port in host byte order)
         // NOTE: only SDLNet_UDP_Open wants port in host byte order.  All other uses of port in SDL_net
         // are in network byte order.
-        // Note further that if, in the future, this behavior of SDL_net is deemed buggy, and it's altered
-        // to take a network byte order port, this port number will need to be changed to SDL_SwapBE16(port).
-        // Final note: At my suggestion, Sam Lantinga to update the SDL_net documentation to indicate that this is
-        // the only place in SDL_net that the port is used in host byte order.  So it will probably stay this way!
-	sSocket = SDLNet_UDP_Open(network_preferences->game_port);
+	sSocket = SDLNet_UDP_Open(SDL_SwapBE16(*ioPortNumber));
 	if (sSocket == NULL) {
 		SDLNet_FreePacket(sUDPPacketBuffer);
 		sUDPPacketBuffer = NULL;
@@ -166,7 +164,9 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
             fdprintf("warning: BoostThreadPriority() failed; network performance may suffer\n");
         
         //PORTGUESS but we should generally keep port in network order, I think?
-	*portNumber = SDL_SwapBE16(network_preferences->game_port);
+	// We really ought to return the "real" port we bound to in *ioPortNumber...
+	// for now we just hand back whatever they handed us.
+	//*ioPortNumber = *ioPortNumber;
 	return 0;
 }
 

@@ -28,6 +28,9 @@ Jun 9, 2002 (tiennou):
 	 	
 Feb 3, 2003 (Woody Zenfell):
         Made 'ZombiesControllable' a property of a queue-set rather than an argument to the methods.
+
+May 14, 2003 (Woody Zenfell):
+	A few additional minor methods to make interface more like TickBasedCircularQueues'.
 	
  *  Encapsulates a set of action_queues, so we can have multiple sets and explicitly choose one.
  *
@@ -44,10 +47,13 @@ public:
     ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize, bool inZombiesControllable);
     
     void		reset();
+    void		resetQueue(int inPlayerIndex);
 
     void		enqueueActionFlags(int inPlayerIndex, uint32* inFlags, int inFlagsCount);
     uint32		dequeueActionFlags(int inPlayerIndex);
     unsigned int	countActionFlags(int inPlayerIndex);
+    unsigned int	totalCapacity(int inPlayerIndex) { return mQueueSize - 1; }
+    unsigned int	availableCapacity(int inPlayerIndex) { return totalCapacity(inPlayerIndex) - countActionFlags(inPlayerIndex); }
     bool		zombiesControllable();
     void		setZombiesControllable(bool inZombiesControllable);
     
