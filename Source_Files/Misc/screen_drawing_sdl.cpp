@@ -88,7 +88,10 @@ void initialize_screen_drawing(void)
 	FileSpecifier fonts;
 	fonts.SetToGlobalDataDir();
 	fonts.AddPart("Fonts");
-	open_res_file(fonts);
+	if (open_res_file(fonts) == NULL) {
+		fprintf(stderr, "Can't open '%s'.\n", fonts.GetPath());
+		exit(1);
+	}
 
 	// Init fonts
 	for (int i=0; i<NUMBER_OF_INTERFACE_FONTS; i++) {
@@ -557,7 +560,9 @@ const sdl_font_info *load_font(const TextSpec &spec)
 
 				// Add font information to list of known fonts
 				font_list[id_and_size] = info;
-			}
+
+			} else
+				fprintf(stderr, "Bitmap font resource ID %d not found\n", id);
 		}
 	}
 

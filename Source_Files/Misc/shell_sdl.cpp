@@ -9,6 +9,8 @@
 #include "sdl_dialogs.h"
 #include "sdl_widgets.h"
 
+#include "TextStrings.h"
+
 #ifdef HAVE_CONFIG_H
 #include "confpaths.h"
 #endif
@@ -193,6 +195,12 @@ static void initialize_application(void)
 	XML_Loader.CurrentElement = &RootParser;
 	XML_Loader.ParseDirectory(global_mml_dir);
 	XML_Loader.ParseDirectory(local_mml_dir);
+
+	// Check for presence of strings
+	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {
+		fprintf(stderr, "Can't find required text strings (missing MML?).\n");
+		exit(1);
+	}
 
 	// Load preferences
 	initialize_preferences();
