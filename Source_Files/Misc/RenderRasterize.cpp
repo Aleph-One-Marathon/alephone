@@ -615,17 +615,25 @@ void RenderRasterizerClass::render_node_object(
 		object->rectangle.clip_top= window->y0;
 		object->rectangle.clip_bottom= window->y1;
 		
+		// Models will have their own liquid-surface clipping,
+		// so don't edit their clip rects
 		// This is bitwise XOR, but is presumably OK here
 		if (view->under_media_boundary ^ other_side_of_media)
 		// if (view->under_media_boundary)
 		{
 			// Clipping: below a liquid surface
-			object->rectangle.clip_top= MAX(object->rectangle.clip_top, object->ymedia);
+			if (object->rectangle.ModelPtr)
+				object->rectangle.BelowLiquid = true;
+			else
+				object->rectangle.clip_top= MAX(object->rectangle.clip_top, object->ymedia);
 		}
 		else
 		{
 			// Clipping: above a liquid surface
-			object->rectangle.clip_bottom= MIN(object->rectangle.clip_bottom, object->ymedia);
+			if (object->rectangle.ModelPtr)
+				object->rectangle.BelowLiquid = false;
+			else
+				object->rectangle.clip_bottom= MIN(object->rectangle.clip_bottom, object->ymedia);
 		}
 		
 		// LP: added OpenGL support

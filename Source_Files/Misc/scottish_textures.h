@@ -122,9 +122,11 @@ struct rectangle_definition
 	
 	// For the convenience of the OpenGL 3D-model renderer
 	OGL_ModelData *ModelPtr;
-	world_point3d Position;
-	short Azimuth;
-	float Scale;
+	world_point3d Position;		// In overall world coordinates
+	short Azimuth;				// Facing angle
+	float Scale;				// how big
+	short LiquidRelHeight;		// Relative to object location
+	bool BelowLiquid;
 };
 
 struct polygon_definition

@@ -712,7 +712,8 @@ void OGL_ModelData::Load()
 	MatMult(IndivRotMatrix,RotMatrix,NewRotMatrix);
 	MatCopy(NewRotMatrix,RotMatrix);
 	
-	MatScalMult(NewRotMatrix,Scale);
+	MatScalMult(NewRotMatrix,Scale);			// For the position vertices
+	if (Scale < 0) MatScalMult(RotMatrix,-1);	// For the normals
 	
 	int NumVerts = Model.Positions.size()/3;
 	

@@ -156,10 +156,10 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			transform_point2d((world_point2d *) &transformed_origin, (world_point2d *)&view->origin, view->yaw);
 			*/
 		}
-
+		
 		if (transformed_origin.x>MINIMUM_OBJECT_DISTANCE)
 		{
-			short x0, x1, y0, y1;
+			int x0, x1, y0, y1;	// Need the extra precision here
 			shape_and_transfer_mode data;
 			shape_information_data *shape_information;
 			shape_information_data scaled_shape_information; // if necessary
@@ -191,7 +191,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				else if (TEST_FLAG(object->flags,_object_is_tiny)) Scale = 0.5;
 				
 				FindProjectedBoundingBox(ModelPtr->Model.BoundingBox,
-					transformed_origin, Scale, object->facing-view->yaw,
+					transformed_origin, Scale, object->facing - view->yaw,
 					model_shape_information);
 				
 				// Set pointer back
@@ -205,10 +205,11 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					shape_information->world_left, shape_information->world_right, base_nodes);
 			}
 			
-			x0= view->half_screen_width + ((transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/transformed_origin.x;
-			x1= view->half_screen_width + ((transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/transformed_origin.x;
-			y0=	view->half_screen_height - (view->world_to_screen_y*(transformed_origin.z+shape_information->world_top))/transformed_origin.x + view->dtanpitch;
-			y1= view->half_screen_height - (view->world_to_screen_y*(transformed_origin.z+shape_information->world_bottom))/transformed_origin.x + view->dtanpitch;
+			// Doing this with full-integer arithmetic to avoid mis-clipping
+			x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/transformed_origin.x;
+			x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/transformed_origin.x;
+			y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/transformed_origin.x + view->dtanpitch;
+			y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/transformed_origin.x + view->dtanpitch;
 			if (x0<x1 && y0<y1)
 			{
 				// LP Change:
@@ -247,10 +248,11 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				
 				render_object->rectangle.flags= 0;
 				
-				render_object->rectangle.x0= x0;
-				render_object->rectangle.x1= x1;
-				render_object->rectangle.y0= y0;
-				render_object->rectangle.y1= y1;
+				// Clamp to short values
+				render_object->rectangle.x0= PIN(x0,SHRT_MIN,SHRT_MAX);
+				render_object->rectangle.x1= PIN(x1,SHRT_MIN,SHRT_MAX);
+				render_object->rectangle.y0= PIN(y0,SHRT_MIN,SHRT_MAX);
+				render_object->rectangle.y1= PIN(y1,SHRT_MIN,SHRT_MAX);
 
 				{
 					// LP change: doing media handling more correctly here:
@@ -258,14 +260,18 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					media_data *media = (media_index != NONE) ? get_media_data(media_index) : NULL;
 					
 					// LP: the media splashes are clipped as if there was no liquid
+					// And the 3D-model info needs the object-relative liquid height
 					if (media && !OBJECT_IS_MEDIA_EFFECT(object))
 					{
-						render_object->ymedia= view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
+						render_object->rectangle.LiquidRelHeight = PIN(media->height - object->location.z, SHRT_MIN,SHRT_MAX);
+						int ProjLiquidHeight = view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
+						render_object->ymedia= PIN(ProjLiquidHeight,SHRT_MIN,SHRT_MAX);
 					}
 					else
 					{
 						// All the way down
-						render_object->ymedia= INT16_MAX;
+						render_object->rectangle.LiquidRelHeight = SHRT_MIN;
+						render_object->ymedia= SHRT_MAX;
 					}
 					
 					/*
@@ -862,28 +868,20 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	ExpandedBB[7][2] = BB12;
 	
 	// Shift by the object's position
+	GLfloat X0 = TransformedPosition.x;
+	GLfloat Y0 = TransformedPosition.y;
+	GLfloat Z0 = TransformedPosition.z;
 	for (int k=0; k<8; k++)
 	{
-		ExpandedBB[k][0] += TransformedPosition.x;
-		ExpandedBB[k][1] += TransformedPosition.y;
-		ExpandedBB[k][2] += TransformedPosition.z;
+		ExpandedBB[k][0] += X0;
+		ExpandedBB[k][1] += Y0;
+		ExpandedBB[k][2] += Z0;
 	}
 	
 	// Find minimum and maximum projected Y, Z;
 	// scale to the object's position to be compatible
 	// with the rest of the code.
-	//
-	// Three sets of variables to be found:
-	// Y and Z limits at object's position
-	// Y and Z limits after appropriate projection (ones ultimately used)
-	// Whether the Y and Z limits are out of bounds
-	//
-	// The projected Y and Z will be clipped to some multiple of the
-	// object-position-distance values.
-
-	GLfloat YMin, YMax, ZMin, ZMax;
 	GLfloat Proj_YMin, Proj_YMax, Proj_ZMin, Proj_ZMax;
-	bool OOB_YMin = false, OOB_YMax = false, OOB_ZMin = false, OOB_ZMax = false;
 	
 	for (int k=0; k<8; k++)
 	{
@@ -891,53 +889,33 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 		GLfloat Y = ExpandedBB[k][1];
 		GLfloat Z = ExpandedBB[k][2];
 		
-		// Vertex on wrong side; make out-of-bounds
-		if (X <= 0)
+		GLfloat Proj = (X0/MAX(X,MINIMUM_OBJECT_DISTANCE));
+		GLfloat Proj_Y = Proj*Y;
+		GLfloat Proj_Z = Proj*Z;
+		
+		if (k == 0)
 		{
-			if (Y > 0) OOB_YMax = true;
-			else if (Y < 0) OOB_YMin = true;
-			
-			if (Z > 0) OOB_ZMax = true;
-			else if (Z < 0) OOB_ZMin = true;
+			Proj_YMin = Proj_YMax = Proj_Y;
+			Proj_ZMin = Proj_ZMax = Proj_Z;
 		}
 		else
 		{
-			// Vetex on right side; do the projection and compare
-			GLfloat Proj = (TransformedPosition.x/X);
-			GLfloat Proj_Y = Proj*Y;
-			GLfloat Proj_Z = Proj*Z;
-			
-			if (k == 0)
-			{
-				YMin = YMax = Y;
-				ZMin = ZMax = Z;
-				Proj_YMin = Proj_YMax = Proj_Y;
-				Proj_ZMin = Proj_ZMax = Proj_Z;
-			}
-			else
-			{
-				YMin = MIN(YMin,Y);
-				YMax = MAX(YMax,Y);
-				ZMin = MIN(ZMin,Z);
-				ZMax = MAX(ZMax,Z);
-				Proj_YMin = MIN(Proj_YMin,Proj_Y);
-				Proj_YMax = MAX(Proj_YMax,Proj_Y);
-				Proj_ZMin = MIN(Proj_ZMin,Proj_Z);
-				Proj_ZMax = MAX(Proj_ZMax,Proj_Z);
-			}
+			Proj_YMin = MIN(Proj_YMin,Proj_Y);
+			Proj_YMax = MAX(Proj_YMax,Proj_Y);
+			Proj_ZMin = MIN(Proj_ZMin,Proj_Z);
+			Proj_ZMax = MAX(Proj_ZMax,Proj_Z);
 		}
 	}
 	
-	// Limit the projection expansion to avoid awkwardly large fake-sprite sizes
-	const GLfloat MAXMULT = 2;
-	YMin *= MAXMULT;
-	YMax *= MAXMULT;
-	ZMin *= MAXMULT;
-	ZMax *= MAXMULT;
-	if (OOB_YMin || Proj_YMin < YMin) Proj_YMin = YMin;
-	if (OOB_YMax || Proj_YMax > YMax) Proj_YMax = YMax;
-	if (OOB_ZMin || Proj_ZMin < ZMin) Proj_ZMin = ZMin;
-	if (OOB_ZMax || Proj_ZMax > ZMax) Proj_ZMax = ZMax;
-	
+	// Unshift by the object's position
+	Proj_YMin -= Y0;
+	Proj_YMax -= Y0;
+	Proj_ZMin -= Z0;
+	Proj_ZMax -= Z0;
+		
 	// Plug back into the sprite
+	ShapeInfo.world_left = PIN(Proj_YMin,SHRT_MIN,SHRT_MAX);
+	ShapeInfo.world_right = PIN(Proj_YMax,SHRT_MIN,SHRT_MAX);
+	ShapeInfo.world_bottom = PIN(Proj_ZMin,SHRT_MIN,SHRT_MAX);
+	ShapeInfo.world_top = PIN(Proj_ZMax,SHRT_MIN,SHRT_MAX);
 }
