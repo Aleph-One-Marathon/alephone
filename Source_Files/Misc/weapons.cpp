@@ -48,6 +48,10 @@ Jul 1, 2000 (Loren Petrich):
 
 Aug 31, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+
+Sep 3, 2000 (Loren Petrich):
+	Suppressed "assert(weapon_type!=NUMBER_OF_WEAPONS);" in a search-for-which-weapon loop;
+	some physics models get to this without causing other trouble
 */
 
 #include "cseries.h"
@@ -222,35 +226,6 @@ inline struct shell_casing_definition *get_shell_casing_definition(
 	
 	return definition;
 }
-
-/*
-#ifdef DEBUG
-static struct player_weapon_data *get_player_weapon_data(
-	short player_index)
-{
-	assert(player_index>=0 && player_index<get_maximum_number_of_players());
-	return (player_weapons_array+player_index);
-}
-
-static struct weapon_definition *get_weapon_definition(
-	short weapon_type)
-{
-	assert(weapon_type>=0 && weapon_type<NUMBER_OF_WEAPONS);
-	return weapon_definitions+weapon_type;
-}
-
-static struct shell_casing_definition *get_shell_casing_definition(
-	short type)
-{
-	assert(type>=0&&type<NUMBER_OF_SHELL_CASING_TYPES);
-	return shell_casing_definitions+type;
-}
-#else
-#define get_player_weapon_data(index) (player_weapons_array+(index))
-#define get_weapon_definition(index) (weapon_definitions+(index))
-#define get_shell_casing_definition(index) (shell_casing_definitions+(index))
-#endif
-*/
 
 /* ------------- local prototypes */
 static void reset_trigger_data(short player_index, short weapon_type, short which_trigger);
@@ -518,6 +493,7 @@ void process_new_item_for_reloading(
 					/* Load the weapons */
 					if(definition->weapon_class==_twofisted_pistol_class)
 					{
+						// Skip over unrecognized ones
 						assert(definition->item_type>=0 && definition->item_type<NUMBER_OF_ITEMS);
 						if(player->items[definition->item_type]>1)
 						{
@@ -602,7 +578,8 @@ void process_new_item_for_reloading(
 					break; /* Out of the for loop */
 				}
 			}
-			assert(weapon_type!=NUMBER_OF_WEAPONS);
+			// One comes here if a weapon had not been on one of the list 
+			// assert(weapon_type!=NUMBER_OF_WEAPONS);
 			break;
 
 		case _ammunition:
@@ -1380,6 +1357,7 @@ boolean get_weapon_display_information(
 				/* setup the positioning information */
 				high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 					shape_index));
+				assert(high_level_data);
 				vassert(frame>=0 && frame<high_level_data->frames_per_view,
 					csprintf(temporary, "frame: %d max: %d trigger: %d state: %d count: %d phase: %d", 
 					frame, high_level_data->frames_per_view,
@@ -3087,6 +3065,8 @@ static void calculate_ticks_from_shapes(
 		
 			high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection,
 				definition->firing_shape));
+			// Skip over if the sequence is nonexistent
+			if(!high_level_data) continue;
 
 			total_ticks= high_level_data->ticks_per_frame*high_level_data->frames_per_view;
 				
@@ -3129,6 +3109,8 @@ static void calculate_ticks_from_shapes(
 		
 			high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 				definition->reloading_shape));
+			// Skip over if the sequence is nonexistent
+			if(!high_level_data) continue;
 	
 			total_ticks= high_level_data->ticks_per_frame*high_level_data->frames_per_view;
 			definition->await_reload_ticks= 0;
@@ -3979,6 +3961,8 @@ static boolean get_shell_casing_display_data(
 					struct shell_casing_definition *definition= get_shell_casing_definition(shell_casing->type);
 					struct shape_animation_data *high_level_data=
 						get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, definition->shape));
+					// Skip over if the sequence is nonexistent
+					if(!high_level_data) continue;
 					
 					// animate it
 					if ((shell_casing->frame+= 1)>=high_level_data->frames_per_view) shell_casing->frame= 0;
