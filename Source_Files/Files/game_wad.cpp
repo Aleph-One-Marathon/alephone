@@ -542,7 +542,7 @@ bool new_game(
 		setup_revert_game_info(game_information, player_start_information, entry_point);
 		
 		// Reset the player queues (done here and in load_game)
-		reset_player_queues();
+		reset_action_queues();
 		
 		/* Load the collections */
 		/* entering map might fail if NetSync() fails.. */
@@ -2073,7 +2073,7 @@ static void complete_restoring_level(
 	struct wad_data *wad)
 {
 	/* Loading games needs this done. */
-	reset_player_queues();
+	reset_action_queues();
 }
 
 
