@@ -1,0 +1,7 @@
+ *** general stuff
+
+    This is essentially Bo Lindbergh's work ported to the CW5 environment
+    using Mihai Parparita's initial CW5 version as a basis. Enjoy.
+
+	I must admit to having no idea what Bo's cseries.a file does. But
+	things appear to be working still without it.

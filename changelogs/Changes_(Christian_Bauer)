@@ -1,0 +1,20 @@
+August 20, 2000
+ - added definitions and code for the SDL port
+ - added integer types with specific bit size to replace "byte", "word", "long"
+   and "short" in cases where the exact size matters (structures read from disk):
+     int8/uint8
+     int16/uint16
+     int32/uint32
+   These are not yet used in all places, though.
+ - renamed pause() to pause_debug() and random() to global_random() because of
+   name clashes with Unix functions of the same name
+ - put "#ifdef HAVE_OPENGL" around calls to OpenGL-related functions to make
+   it possible to compile A1 without OpenGL
+ - w_open_preferences_file() takes a C string as the file name instead of a
+   Pascal string
+ - implemented resource fork parser for non-Mac platforms
+ - added endianess-correction to Map, Shapes and Sound file reading routines
+ - removed byte_swap_collection() and associated data because the idea was
+   good but the implementation was bogus (as it assumed that structure fields
+   would be aligned in the same way on all machines)
+ - some fixes to errors and warnings reported by gcc
