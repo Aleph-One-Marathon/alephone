@@ -45,35 +45,55 @@ Dec 17, 2000 (Loren Petrich):
 
 extern TextSpec *_get_font_spec(short font_index);
 
-
+/*
 struct interface_font_info 
 {
-	// TextSpec fonts[NUMBER_OF_INTERFACE_FONTS];
-	FontSpecifier Fonts[NUMBER_OF_INTERFACE_FONTS];
+	TextSpec fonts[NUMBER_OF_INTERFACE_FONTS];
 	short heights[NUMBER_OF_INTERFACE_FONTS];
 	short line_spacing[NUMBER_OF_INTERFACE_FONTS];
 };
+*/
 
 /* --------- Globals. */
 // LP change: hardcoding this quantity since we know how many we need
-static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES];
-// static screen_rectangle *interface_rectangles;
-// LP change: now hardcoded and XML-changeable
-// static CTabHandle screen_colors;
-// Copied off of original 'finf' resource
-static struct interface_font_info interface_fonts = 
+// Putting in the Moo definitions
+static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES] = 
 {
-	{
-		{"Monaco", 9, FontSpecifier::Bold},
-		{"Monaco", 9, FontSpecifier::Bold},
-		{"Monaco", 9, FontSpecifier::Bold},
-		{"Monaco", 9, FontSpecifier::Normal},
-		{"Courier", 12, FontSpecifier::Normal},
-		{"Courier", 14, FontSpecifier::Bold},
-		{"Monaco", 9, FontSpecifier::Normal}
-	},
-	{0,0,0,0,0,0,0},
-	{0,0,0,0,0,0,0}
+	{326, 300, 338, 473},
+	{464, 398, 475, 578},
+	{464, 181, 475, 361},
+	{338, 17, 0, 0},
+	{0, 0, 0, 0},
+	{352, 204, 454, 384},
+	{352, 384, 454, 596},
+	{179, 101, 210, 268},
+	{221, 25, 253, 238},
+	{263, 11, 294, 223},
+	{301, 38, 333, 236},
+	{304, 421, 331, 563},
+	{386, 231, 413, 406},
+	{345, 363, 372, 516},
+	{344, 83, 374, 271},
+	{206, 246, 347, 382},
+	{264, 522, 291, 588},
+	{0, 0, 0, 0},
+};
+
+// static screen_rectangle *interface_rectangles;
+// static CTabHandle screen_colors;
+// LP change: now hardcoded and XML-changeable
+
+// Copied off of original 'finf' resource
+// static struct interface_font_info interface_fonts = 
+static FontSpecifier InterfaceFonts[NUMBER_OF_INTERFACE_FONTS] =
+{
+	{"Monaco", 9, FontSpecifier::Bold},
+	{"Monaco", 9, FontSpecifier::Bold},
+	{"Monaco", 9, FontSpecifier::Bold},
+	{"Monaco", 9, FontSpecifier::Normal},
+	{"Courier", 12, FontSpecifier::Normal},
+	{"Courier", 14, FontSpecifier::Bold},
+	{"Monaco", 9, FontSpecifier::Normal}
 };
 
 
@@ -118,8 +138,8 @@ static rgb_color InterfaceColors[NumInterfaceColors] =
 /* ------- Private prototypes */
 static void load_interface_rectangles(void);
 static Rect *_get_interface_rect(short index);
-static short _get_font_height(TextSpec *font);
-static short _get_font_line_spacing(TextSpec *font);
+// static short _get_font_height(TextSpec *font);
+// static short _get_font_line_spacing(TextSpec *font);
 static void	load_screen_interface_colors(void);
 
 /* -------- Code */
@@ -137,9 +157,10 @@ void initialize_screen_drawing(
 	/* load the font stuff. */
 	for(loop=0; loop<NUMBER_OF_INTERFACE_FONTS; ++loop)
 	{
+		InterfaceFonts[loop].Init();
 		// GetNewTextSpec(&interface_fonts.fonts[loop], finfFONTS, loop);
-		interface_fonts.heights[loop]= interface_fonts.Fonts[loop].GetHeight(); // _get_font_height(&interface_fonts.fonts[loop]);
-		interface_fonts.line_spacing[loop]= interface_fonts.Fonts[loop].GetLineSpacing(); // _get_font_line_spacing(&interface_fonts.fonts[loop]);
+		// interface_fonts.heights[loop]= interface_fonts.Fonts[loop].GetHeight(); // _get_font_height(&interface_fonts.fonts[loop]);
+		// interface_fonts.line_spacing[loop]= interface_fonts.Fonts[loop].GetLineSpacing(); // _get_font_line_spacing(&interface_fonts.fonts[loop]);
 	}
 }
 
@@ -260,5 +281,5 @@ XML_ElementParser *InterfaceRectangles_GetParser()
 void SetColorFontParserToScreenDrawing()
 {
 	Color_SetArray(InterfaceColors,NumInterfaceColors);
-	Font_SetArray(interface_fonts.Fonts,NUMBER_OF_INTERFACE_FONTS);
+	Font_SetArray(InterfaceFonts,NUMBER_OF_INTERFACE_FONTS);
 }

@@ -1555,7 +1555,7 @@ static void update_fps_display(
 		FontSpecifier& Font = GetOnScreenFont();
 		Font.Use();
 		// The line spacing is a generalization of "5" for larger fonts
-		short Offset = Font.GetLineSpacing() / 3;
+		short Offset = Font.LineSpacing / 3;
 		// LP: Changed font size from 9 to this more readable value
 		// TextSize(12);
 		// LP: No desire to change this at the moment
@@ -1594,28 +1594,28 @@ static void DisplayPosition(GrafPtr port)
 	// TextSize(12);
 	// TextFont(kFontIDMonaco);
 	
-	short Leading = Font.GetLineSpacing();	// typesetting term: the metal
-	short X = port->portRect.left + Leading/3;
-	short Y = port->portRect.top + Leading;
+	short LineSpacing = Font.LineSpacing;
+	short X = port->portRect.left + LineSpacing/3;
+	short Y = port->portRect.top + LineSpacing;
 	const float FLOAT_WORLD_ONE = float(WORLD_ONE);
 	const float AngleConvert = 360/float(FULL_CIRCLE);
 	psprintf(ptemporary, "X       = %8.3f",world_view->origin.x/FLOAT_WORLD_ONE);
 	DisplayText(X,Y,ptemporary);
-	Y += Leading;
+	Y += LineSpacing;
 	psprintf(ptemporary, "Y       = %8.3f",world_view->origin.y/FLOAT_WORLD_ONE);
 	DisplayText(X,Y,ptemporary);
-	Y += Leading;
+	Y += LineSpacing;
 	psprintf(ptemporary, "Z       = %8.3f",world_view->origin.z/FLOAT_WORLD_ONE);
 	DisplayText(X,Y,ptemporary);
-	Y += Leading;
+	Y += LineSpacing;
 	psprintf(ptemporary, "Polygon = %8d",world_view->origin_polygon_index);
 	DisplayText(X,Y,ptemporary);
-	Y += Leading;
+	Y += LineSpacing;
 	short Angle = world_view->yaw;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	psprintf(ptemporary, "Yaw     = %8.3f",AngleConvert*Angle);
 	DisplayText(X,Y,ptemporary);
-	Y += Leading;
+	Y += LineSpacing;
 	Angle = world_view->pitch;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	psprintf(ptemporary, "Pitch   = %8.3f",AngleConvert*Angle);

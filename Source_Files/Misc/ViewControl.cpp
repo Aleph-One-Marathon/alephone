@@ -44,13 +44,23 @@ static bool DoFoldEffect = true;
 static bool DoStaticEffect = true;
 
 static FontSpecifier OnScreenFont = {"Monaco", 12, FontSpecifier::Normal};
+static bool ScreenFontInited = false;
 
 // Accessors:
 float View_FOV_Normal() {return FOV_Normal;}
 float View_FOV_ExtraVision() {return FOV_ExtraVision;}
 float View_FOV_TunnelVision() {return FOV_TunnelVision;}
 
-FontSpecifier& GetOnScreenFont() {return OnScreenFont;}
+FontSpecifier& GetOnScreenFont()
+{
+	// Init the font the first time through; accessor functions are very convenient :-)
+	if (!ScreenFontInited)
+	{
+		OnScreenFont.Init();
+		ScreenFontInited = true;
+	}
+	return OnScreenFont;
+}
 
 // Move field-of-view value closer to some target value:
 bool View_AdjustFOV(float& FOV, float FOV_Target)

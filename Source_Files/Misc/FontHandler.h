@@ -27,6 +27,9 @@ struct FontSpecifier
 		// How many characters
 		NameSetLen = 64
 	};
+	
+	// Parameters:
+	
 	// Name in HTML-fontname style "font1, font2, font3";
 	// use the first of these fonts that are present,
 	// otherwise use some sensible default
@@ -34,13 +37,23 @@ struct FontSpecifier
 	short Size;
 	short Style;
 	
-	// How tall is the font?
-	short GetHeight();
+	// Derived quantities: sync with parameters by calling Update()
+	short Height;			// How tall is it?
+	short LineSpacing;		// From same positions in each line
 	
-	// How much from line to line?
-	short GetLineSpacing();
+	// MacOS-specific:
+	short ID;
 	
-	// Use this font; has this form because MacOS Quickdraw has a single global font setting
+	// Initialize: call this before calling anything else;
+	// this is from not having a proper constructor for this object.
+	void Init();
+	
+	// Do the updating: must be called before using the font; however, it is called by Init(),
+	// and it will be called by the XML parser if it updates the parameters
+	void Update();
+		
+	// Use this font; has this form because MacOS Quickdraw has a global font value
+	// for each GrafPort (draw context)
 	void Use();
 
 	// Equality and assignment operators
@@ -60,9 +73,10 @@ struct FontSpecifier
 	// just after the end of that name
 	static char *FindNameEnd(char *NamePtr);
 	
-	// Find the MacOS font ID from the font name
-	short GetFontID();
+	// Not sure what kind of explicit constructor would be consistent with the way
+	// that fonts' initial values are specified, as {nameset-string, size, style}
 };
+
 
 // Returns a parser for the fonts;
 // several elements may have colors, so this ought to be callable several times.

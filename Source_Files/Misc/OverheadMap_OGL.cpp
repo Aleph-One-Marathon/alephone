@@ -431,7 +431,7 @@ void FontCacheData::Update()
 	
 	DispList = glGenLists(256);
 #ifdef mac
-	aglUseFont(RenderContext, FontData.GetFontID(), FontData.Style, FontData.Size, 0, 256, DispList);
+	aglUseFont(RenderContext, FontData.ID, FontData.Style, FontData.Size, 0, 256, DispList);
 #endif
 }
 

@@ -266,7 +266,7 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 	// What to show (aliens, items, projectiles, paths)
 	false, false, false, false
 };
-
+static bool MapFontsInited = false;
 
 // Is OpenGL rendering of the map currently active?
 // Set this from outside, because we want to make an OpenGL rendering for the main view,
@@ -297,9 +297,27 @@ static short OverheadMapMode = OverheadMap_Normal;
 /* ---------- code */
 // LP: most of it has been moved into OverheadMapRenderer.c
 
+static void InitMapFonts()
+{
+	// Init the fonts the first time through
+	if (!MapFontsInited)
+	{
+		for (int i=0; i<NUMBER_OF_ANNOTATION_DEFINITIONS; i++)
+		{
+			annotation_definition& NoteDef = OvhdMap_ConfigData.annotation_definitions[i];
+			for (int j=0; j<NUMBER_OF_ANNOTATION_SIZES; j++)
+				NoteDef.Fonts[j].Init();
+		}
+		OvhdMap_ConfigData.map_name_data.Font.Init();
+		MapFontsInited = true;
+	}
+}
+
 void _render_overhead_map(
 	struct overhead_map_data *data)
 {
+	InitMapFonts();
+		
 	// Select which kind of rendering (OpenGL or software)
 	OverheadMapClass *OvhdMapPtr;
 #ifdef HAVE_OPENGL
@@ -319,6 +337,7 @@ void _render_overhead_map(
 void OGL_ResetMapFonts()
 {
 #ifdef HAVE_OPENGL
+	InitMapFonts();
 	OverheadMap_OGL.ResetFonts();
 #endif
 }

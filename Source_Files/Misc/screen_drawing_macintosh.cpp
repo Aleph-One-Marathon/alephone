@@ -282,7 +282,7 @@ short _text_width(
 	assert(font_id>=0 && font_id<NUMBER_OF_INTERFACE_FONTS);
 	
 	GetFont(&old_font);
-	interface_fonts.Fonts[font_id].Use();
+	InterfaceFonts[font_id].Use();
 	// SetFont(&interface_fonts.fonts[font_id]);
 	width= TextWidth(buffer, 0, strlen(buffer));
 	SetFont(&old_font);
@@ -306,7 +306,7 @@ void _draw_screen_text(
 	assert(font_id>=0 && font_id<NUMBER_OF_INTERFACE_FONTS);
 	
 	GetFont(&old_font);
-	interface_fonts.Fonts[font_id].Use();
+	InterfaceFonts[font_id].Use();
 	// SetFont(&interface_fonts.fonts[font_id]);
 
 	GetForeColor(&old_color);
@@ -348,7 +348,8 @@ void _draw_screen_text(
 				strlen(&text_to_draw[last_non_printing_character+1])+1);
 	
 			new_destination= *destination;
-			new_destination.top+= interface_fonts.line_spacing[font_id];
+			new_destination.top+= InterfaceFonts[font_id].LineSpacing;
+			// new_destination.top+= interface_fonts.line_spacing[font_id];
 			_draw_screen_text(remaining_text_to_draw, &new_destination, flags, font_id, text_color);
 	
 			/* now truncate our text to draw...*/
@@ -407,7 +408,8 @@ void _draw_screen_text(
 		short text_height;
 		short offset;
 
-		text_height= interface_fonts.heights[font_id];
+		text_height= InterfaceFonts[font_id].Height;
+		// text_height= interface_fonts.heights[font_id];
 		if(text_height>RECTANGLE_HEIGHT(destination))
 		{
 			/* too tall, we punt. */
@@ -420,7 +422,8 @@ void _draw_screen_text(
 	} else if (flags & _top_justified) {
 		short text_height;
 
-		text_height= interface_fonts.heights[font_id];
+		text_height= InterfaceFonts[font_id].Height;
+		// text_height= interface_fonts.heights[font_id];
 		if(text_height>RECTANGLE_HEIGHT(destination))
 		{
 			/* too tall, we punt. */
@@ -458,7 +461,8 @@ short _get_font_line_height(
 	short font_index)
 {
 	assert(font_index>=0 && font_index<NUMBER_OF_INTERFACE_FONTS);
-	return interface_fonts.line_spacing[font_index];
+	return InterfaceFonts[font_index].LineSpacing;
+	// return interface_fonts.line_spacing[font_index];
 }
 
 void _fill_rect(
@@ -510,7 +514,7 @@ TextSpec *_get_font_spec(
 // used in computer_interface.cpp
 void UseInterfaceFont(short font_index)
 {
-	interface_fonts.Fonts[font_index].Use();
+	InterfaceFonts[font_index].Use();
 }
 
 #ifdef OBSOLETE

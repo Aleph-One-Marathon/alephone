@@ -29,44 +29,67 @@ FontSpecifier& FontSpecifier::operator=(FontSpecifier& F)
 	return *this;
 }
 
+// Initializer: call before using because of difficulties in setting up a proper constructor:
+
+void FontSpecifier::Init()
+{
+	Update();
+}
+
+
 // MacOS-specific:
-// Cribbed from _get_font_line_spacing() in screen_drawing.cpp
+// Cribbed from _get_font_line_spacing() and similar functions in screen_drawing.cpp
 
-short FontSpecifier::GetHeight()
+void FontSpecifier::Update()
 {
 	// csfonts -- push old font
 	TextSpec OldFont;
 	GetFont(&OldFont);
 	
+	// Parse the font spec to find the font ID;
+	// if it is not set, then it is assumed to be the system font
+	ID = 0;
+	
+	Str255 Name;
+	
+	char *NamePtr = FindNextName(NameSet);
+	
+	while(NamePtr)
+	{
+		char *NameEndPtr = FindNameEnd(NamePtr);
+		
+		// Make a Pascal string out of the name
+		int NameLen = MIN(NameEndPtr - NamePtr, 255);
+		Name[0] = NameLen;
+		memcpy(Name+1,NamePtr,NameLen);
+		Name[NameLen+1] = 0;
+		// dprintf("Name, Len: <%s>, %d",Name+1,NameLen);
+		
+		// MacOS ID->name translation
+		GetFNum(Name,&ID);
+		// dprintf("ID = %d",ID);
+		if (ID != 0) break;
+		
+		NamePtr = FindNextName(NameEndPtr);
+	}
+	
+	// Get the other font features
 	Use();
 	FontInfo Info;
 	GetFontInfo(&Info);
 	
-	SetFont(&OldFont);
+	Height = Info.ascent+Info.leading;
+	LineSpacing = Info.ascent+Info.descent+Info.leading;
 	
-	return Info.ascent+Info.leading;
+	// pop old font
+	SetFont(&OldFont);
 }
 
-
-short FontSpecifier::GetLineSpacing()
-{
-	// csfonts -- push old font
-	TextSpec OldFont;
-	GetFont(&OldFont);
-	
-	Use();
-	FontInfo Info;
-	GetFontInfo(&Info);
-	
-	SetFont(&OldFont);
-	
-	return Info.ascent+Info.descent+Info.leading;
-}
 
 void FontSpecifier::Use()
 {
 	// MacOS-specific:
-	TextFont(GetFontID());
+	TextFont(ID);
 	TextFace(Style);
 	TextSize(Size);
 }
@@ -111,39 +134,6 @@ char *FontSpecifier::FindNameEnd(char *NamePtr)
 	}
 	return NameEndPtr;
 }
-
-
-// Find the MacOS font ID from the font name
-short FontSpecifier::GetFontID()
-{
-	Str255 Name;
-	
-	char *NamePtr = FindNextName(NameSet);
-	
-	while(NamePtr)
-	{
-		char *NameEndPtr = FindNameEnd(NamePtr);
-		
-		// Make a Pascal string out of the name
-		int NameLen = MIN(NameEndPtr - NamePtr, 255);
-		Name[0] = NameLen;
-		memcpy(Name+1,NamePtr,NameLen);
-		Name[NameLen+1] = 0;
-		// dprintf("Name, Len: <%s>, %d",Name+1,NameLen);
-		
-		// MacOS ID->name translation
-		short ID;
-		GetFNum(Name,&ID);
-		// dprintf("ID = %d",ID);
-		if (ID != 0) return ID;
-		
-		NamePtr = FindNextName(NameEndPtr);
-	}
-	
-	// The system font
-	return 0;
-}
-
 
 
 // Font-parser object:
@@ -230,14 +220,25 @@ bool XML_FontParser::AttributesDone()
 		return false;
 	}
 	
-	// Put into place
+	// Put into place and update if necessary
 	assert(FontList);
+	bool DoUpdate = false;
 	if (IsPresent[0])
+	{
 		strncpy(FontList[Index].NameSet,TempFont.NameSet,FontSpecifier::NameSetLen);
+		DoUpdate = true;
+	}
 	if (IsPresent[1])
+	{
 		FontList[Index].Size = TempFont.Size;
+		DoUpdate = true;
+	}
 	if (IsPresent[2])
+	{
 		FontList[Index].Style = TempFont.Style;
+		DoUpdate = true;
+	}
+	if (DoUpdate) FontList[Index].Update();
 	return true;
 }
 
