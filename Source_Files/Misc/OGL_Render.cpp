@@ -2248,4 +2248,12 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 }
 #endif // def mac
 
+#else
+
+// No OpenGL present
+bool OGL_IsActive()
+{
+	return false;
+}
+
 #endif // def HAVE_OPENGL
