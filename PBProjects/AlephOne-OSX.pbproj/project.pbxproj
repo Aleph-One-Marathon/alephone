@@ -159,7 +159,6 @@
 				F5CFAD410200FA6B01D80110,
 				F5CFAD420200FA6B01D80110,
 				F5CFAD430200FA6B01D80110,
-				F5E8EA530224886B01B6F8A5,
 			);
 			isa = PBXGroup;
 			name = Resources;
@@ -614,7 +613,6 @@
 				F5CFAD480200FA6B01D80110,
 				F5CFAD490200FA6B01D80110,
 				F5CFAD4A0200FA6B01D80110,
-				F5E8EA540224886B01B6F8A5,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
@@ -4691,7 +4689,7 @@
 		F5281C0501F8C94101E83A66 = {
 			isa = PBXFrameworkReference;
 			name = SDL.framework;
-			path = /Users/astrange/Library/Frameworks/SDL.framework;
+			path = /Library/Frameworks/SDL.framework;
 			refType = 0;
 		};
 		F5281C0601F8C94301E83A66 = {
@@ -4703,13 +4701,13 @@
 		F5281C0701F8CA2101E83A66 = {
 			isa = PBXFrameworkReference;
 			name = SDL_image.framework;
-			path = /Users/astrange/Library/Frameworks/SDL_image.framework;
+			path = /Library/Frameworks/SDL_image.framework;
 			refType = 0;
 		};
 		F5281C0801F8CA2101E83A66 = {
 			isa = PBXFrameworkReference;
 			name = SDL_net.framework;
-			path = /Users/astrange/Library/Frameworks/SDL_net.framework;
+			path = /Library/Frameworks/SDL_net.framework;
 			refType = 0;
 		};
 		F5281C0901F8CA2201E83A66 = {
@@ -7430,18 +7428,6 @@
 		};
 		F5CFAD4A0200FA6B01D80110 = {
 			fileRef = F5CFAD430200FA6B01D80110;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F5E8EA530224886B01B6F8A5 = {
-			isa = PBXFileReference;
-			name = package.icns;
-			path = /package.icns;
-			refType = 0;
-		};
-		F5E8EA540224886B01B6F8A5 = {
-			fileRef = F5E8EA530224886B01B6F8A5;
 			isa = PBXBuildFile;
 			settings = {
 			};
