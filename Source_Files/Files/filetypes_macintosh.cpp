@@ -110,13 +110,17 @@ void initialize_typecodes()
 #ifndef SDL_RFORK_HACK
 //AS: Mac OS X SDL doesn't get custom typecodes for now. Nobody ever used them, anyway. Maybe we can have magic number checking or something?
 	Handle FTypHdl = GetResource('FTyp',128);
-	if (FTypHdl == NULL) return;
-	int FTHSize = GetHandleSize(FTypHdl);
-	if (FTHSize > sizeof(typecodes)) return;
-	HLock(FTypHdl);
-	memcpy(typecodes,*FTypHdl,FTHSize);
-	HUnlock(FTypHdl);
-	ReleaseResource(FTypHdl);
+	if (FTypHdl != NULL)
+	{
+		int FTHSize = GetHandleSize(FTypHdl);
+		if (FTHSize <= sizeof(typecodes))
+		{
+			HLock(FTypHdl);
+			memcpy(typecodes,*FTypHdl,FTHSize);
+			HUnlock(FTypHdl);
+		}
+		ReleaseResource(FTypHdl);
+	}
 #endif
         file_type_to_a1_typecode.clear();
         
