@@ -44,24 +44,24 @@ int current_instruction = 0;
 
 
 float variable_lookup[MAX_VARS];
-int variable_count;
+int variable_count = 0;
 
 int script_stack[MAX_DEPTH];
 int stack_top = 0;
-bool is_startup;
+bool is_startup = false;
 
-short camera_count;
-short current_camera;
-script_camera *cameras;
+short camera_count = 0;
+short current_camera = NONE;
+script_camera *cameras = NULL;
 
-short path_count;
-short current_path;
-path_header *script_paths;
-short current_path_point;
+short path_count = 0;
+short current_path = NONE;
+path_header *script_paths = NULL;
+short current_path_point = NONE;
 path_list camera_point;
 
 
-short current_trap;
+short current_trap = NONE;
 
 
 extern bool s_camera_Control;
@@ -102,6 +102,9 @@ void clean_up_script(void)
 	current_instruction = 0;
 	current_path = 0;
 	current_path_point = 0;
+	
+	path_count = 0;
+	script_paths = NULL;
 
 	clear_bind_table();
 
