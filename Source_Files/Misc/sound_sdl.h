@@ -597,8 +597,8 @@ static void buffer_sound(struct channel_data *channel, short sound_index, _fixed
 	} else {
 
 		// No, load sound header and start channel
-		load_sound_header(c, data, pitch);
 		c->active = true;
+		load_sound_header(c, data, pitch);
 	}
 
 	// Unlock sound subsystem
@@ -651,9 +651,9 @@ void play_sound_resource(LoadedResource &rsrc)
 		if (cmd == 0x8051) {
 
 			// bufferCmd, load sound header and start channel
+			c->active = true;
 			load_sound_header(c, (uint8 *)rsrc.GetPointer() + param2, FIXED_ONE);
 			c->left_volume = c->right_volume = 0x100;
-			c->active = true;
 		}
 	}
 
@@ -901,8 +901,8 @@ static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch)
 		uint32 loop_start = SDL_ReadBE32(p);
 		c->loop = c->data + loop_start;
 		c->loop_length = SDL_ReadBE32(p) - loop_start;
-	} else if (header_type == 0xff) {	// Extended sound header
-		//printf("extended sound header\n");
+	} else if (header_type == 0xff || header_type == 0xfe) {	// Extended/compressed sound header
+		//printf("extended/compressed sound header\n");
 		c->data = data + 64;
 		c->stereo = SDL_ReadBE32(p) == 2;
 		if (c->stereo)
@@ -913,7 +913,21 @@ static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch)
 		c->loop_length = SDL_ReadBE32(p) - loop_start;
 		SDL_RWseek(p, 2, SEEK_CUR);
 		c->length = SDL_ReadBE32(p) * c->bytes_per_frame;
-		SDL_RWseek(p, 22, SEEK_CUR);
+		if (header_type == 0xfe) {
+			SDL_RWseek(p, 14, SEEK_CUR);
+			uint32 format = SDL_ReadBE32(p);
+			SDL_RWseek(p, 12, SEEK_CUR);
+			int16 comp_id = SDL_ReadBE16(p);
+			if (format != FOUR_CHARS_TO_INT('t', 'w', 'o', 's') || comp_id != -1) {
+				fprintf(stderr, "Unsupported compressed sound header format '%c%c%c%c', ID %d\n", data[40], data[41], data[42], data[43], comp_id);
+				c->active = false;
+				SDL_RWclose(p);
+				return;
+			}
+			SDL_RWseek(p, 4, SEEK_CUR);
+		} else {
+			SDL_RWseek(p, 22, SEEK_CUR);
+		}
 		c->sixteen_bit = (SDL_ReadBE16(p) == 16);
 		if (c->sixteen_bit) {
 			c->bytes_per_frame *= 2;
