@@ -488,6 +488,8 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		// Found a unique set
 		WhichUniqueSet[n] = ++NumUnique;
 		
+		// These are all for the model object
+		
 		// Load the positions
 		{
 			GLfloat *PosPtr = &Positions[3*PosIndx];
@@ -498,17 +500,17 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		// Load the texture coordinates
 		if (WhatsPresent & Present_TxtrCoord)
 		{
-			GLfloat *TCPtr = &Positions[2*TCIndx];
+			GLfloat *TCPtr = &TxtrCoords[2*TCIndx];
 			for (int m=0; m<2; m++)
-				TxtrCoords.push_back(*(TCPtr++));
+				Model.TxtrCoords.push_back(*(TCPtr++));
 		}
 		
 		// Load the normals
 		if (WhatsPresent & Present_Normal)
 		{
-			GLfloat *NormPtr = &Positions[3*NormIndx];
+			GLfloat *NormPtr = &Normals[3*NormIndx];
 			for (int m=0; m<3; m++)
-				Normals.push_back(*(NormPtr++));
+				Model.Normals.push_back(*(NormPtr++));
 		}
 		
 		// Save these new unique-set values for comparison to the next ones
@@ -534,7 +536,14 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		IndxBase += PolySize;
 	}
 	
-	if (DBOut) fprintf(DBOut,"Successfully read the file\n");
+	if (DBOut) fprintf(DBOut,"Successfully read the file:");
+	if (DBOut && (WhatsPresent & Present_Position))
+		fprintf(DBOut," Positions");
+	if (DBOut && (WhatsPresent & Present_TxtrCoord))
+		fprintf(DBOut," TxtrCoords");
+	if (DBOut && (WhatsPresent & Present_Normal))
+		fprintf(DBOut," Normals");
+	if (DBOut) fprintf(DBOut,"\n");
 	return true;
 }
 
