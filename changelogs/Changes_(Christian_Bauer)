@@ -1,3 +1,11 @@
+August 26, 2000
+ - added endianess-correction to Map, Shapes and Sound file reading routines
+ - removed byte_swap_collection() and associated data because the idea was
+   good but the implementation was bogus (as it assumed that structure fields
+   would be aligned in the same way on all machines)
+ - Mac-specific code for computer terminals now in computer_interface_macintosh.c
+ - some fixes to errors and warnings reported by gcc
+
 August 20, 2000
  - added definitions and code for the SDL port
  - added integer types with specific bit size to replace "byte", "word", "long"
@@ -13,8 +21,3 @@ August 20, 2000
  - w_open_preferences_file() takes a C string as the file name instead of a
    Pascal string
  - implemented resource fork parser for non-Mac platforms
- - added endianess-correction to Map, Shapes and Sound file reading routines
- - removed byte_swap_collection() and associated data because the idea was
-   good but the implementation was bogus (as it assumed that structure fields
-   would be aligned in the same way on all machines)
- - some fixes to errors and warnings reported by gcc
