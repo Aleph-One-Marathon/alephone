@@ -106,6 +106,10 @@ Jul 8, 2000 (Loren Petrich):
 Jul 17, 2000 (Loren Petrich):
 	Added a view-effect reset to enter_screen() because initialize_view_data() no longer has it,
 	in order to make teleport view-stretching work correctly.
+
+Aug 3, 2000 (Loren Petrich):
+	Removed all OGL_Map routines, because their contents are now handled in OverheadMapRenderer.c
+	and subclass routines
 */
 
 /*
@@ -137,8 +141,8 @@ Jul 17, 2000 (Loren Petrich):
 // LP addition: crosshairs support
 #include "Crosshairs.h"
 // LP addition: OpenGL support
+// OGL_Map.h removed as unnecessary
 #include "OGL_Render.h"
-#include "OGL_Map.h"
 
 // LP addition: view control
 #include "ViewControl.h"
@@ -1028,7 +1032,6 @@ void render_screen(
 		OGL_MapActive = false;
 	
 	// Start the respective kinds of frames (main and map)
-	if (OGL_MapActive) OGL_StartMap();
 	if (!world_view->overhead_map_active && !world_view->terminal_mode_active) OGL_StartMain();
 	
 	render_view(world_view, world_pixels_structure);
@@ -1064,7 +1067,6 @@ void render_screen(
 			if ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 			{
 				// Finish up the frame rendering for each kind
-				if (OGL_MapActive) OGL_EndMap();
 				if (!world_view->overhead_map_active) OGL_EndMain();
 				
 				// Main or map view already rendered
