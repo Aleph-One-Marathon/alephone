@@ -933,23 +933,9 @@
                 </FILE>
                 <FILE>
                     <PATHTYPE>Name</PATHTYPE>
-                    <PATH>Marathon2_SOCK</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                    <FILEKIND>Resource</FILEKIND>
-                    <FILEFLAGS></FILEFLAGS>
-                </FILE>
-                <FILE>
-                    <PATHTYPE>Name</PATHTYPE>
                     <PATH>ExpatLib</PATH>
                     <PATHFORMAT>MacOS</PATHFORMAT>
                     <FILEKIND>Library</FILEKIND>
-                    <FILEFLAGS></FILEFLAGS>
-                </FILE>
-                <FILE>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>Text Strings</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                    <FILEKIND>Resource</FILEKIND>
                     <FILEFLAGS></FILEFLAGS>
                 </FILE>
                 <FILE>
@@ -1836,38 +1822,24 @@
                 </FILE>
                 <FILE>
                     <PATHTYPE>Name</PATHTYPE>
-                    <PATH>M2,oo Semitpt Liquids</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                    <FILEKIND>Resource</FILEKIND>
-                    <FILEFLAGS></FILEFLAGS>
-                </FILE>
-                <FILE>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>M2,oo Semitpt Flames,Bolts</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                    <FILEKIND>Resource</FILEKIND>
-                    <FILEFLAGS></FILEFLAGS>
-                </FILE>
-                <FILE>
-                    <PATHTYPE>Name</PATHTYPE>
                     <PATH>OpenGLUtilityStub</PATH>
                     <PATHFORMAT>MacOS</PATHFORMAT>
                     <FILEKIND>Library</FILEKIND>
-                    <FILEFLAGS></FILEFLAGS>
+                    <FILEFLAGS>WeakImport</FILEFLAGS>
                 </FILE>
                 <FILE>
                     <PATHTYPE>Name</PATHTYPE>
                     <PATH>OpenGLLibraryStub</PATH>
                     <PATHFORMAT>MacOS</PATHFORMAT>
                     <FILEKIND>Library</FILEKIND>
-                    <FILEFLAGS></FILEFLAGS>
+                    <FILEFLAGS>WeakImport</FILEFLAGS>
                 </FILE>
                 <FILE>
                     <PATHTYPE>Name</PATHTYPE>
                     <PATH>OpenGLMemoryStub</PATH>
                     <PATHFORMAT>MacOS</PATHFORMAT>
                     <FILEKIND>Library</FILEKIND>
-                    <FILEFLAGS></FILEFLAGS>
+                    <FILEFLAGS>WeakImport</FILEFLAGS>
                 </FILE>
                 <FILE>
                     <PATHTYPE>Name</PATHTYPE>
@@ -1937,6 +1909,34 @@
                     <PATH>Dim3_Loader.cpp</PATH>
                     <PATHFORMAT>MacOS</PATHFORMAT>
                     <FILEKIND>Text</FILEKIND>
+                    <FILEFLAGS></FILEFLAGS>
+                </FILE>
+                <FILE>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>Moo Display</PATH>
+                    <PATHFORMAT>MacOS</PATHFORMAT>
+                    <FILEKIND>Resource</FILEKIND>
+                    <FILEFLAGS></FILEFLAGS>
+                </FILE>
+                <FILE>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>M2,oo Semitpt Shapes</PATH>
+                    <PATHFORMAT>MacOS</PATHFORMAT>
+                    <FILEKIND>Resource</FILEKIND>
+                    <FILEFLAGS></FILEFLAGS>
+                </FILE>
+                <FILE>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>Marathon2_SOCK</PATH>
+                    <PATHFORMAT>MacOS</PATHFORMAT>
+                    <FILEKIND>Resource</FILEKIND>
+                    <FILEFLAGS></FILEFLAGS>
+                </FILE>
+                <FILE>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>Text Strings</PATH>
+                    <PATHFORMAT>MacOS</PATHFORMAT>
+                    <FILEKIND>Resource</FILEKIND>
                     <FILEFLAGS></FILEFLAGS>
                 </FILE>
             </FILELIST>
@@ -1978,16 +1978,6 @@
                 </FILEREF>
                 <FILEREF>
                     <PATHTYPE>Name</PATHTYPE>
-                    <PATH>Marathon2_SOCK</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>Text Strings</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <PATHTYPE>Name</PATHTYPE>
                     <PATH>byte_swapping.cpp</PATH>
                     <PATHFORMAT>MacOS</PATHFORMAT>
                 </FILEREF>
@@ -2613,16 +2603,6 @@
                 </FILEREF>
                 <FILEREF>
                     <PATHTYPE>Name</PATHTYPE>
-                    <PATH>M2,oo Semitpt Liquids</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>M2,oo Semitpt Flames,Bolts</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <PATHTYPE>Name</PATHTYPE>
                     <PATH>OpenGLUtilityStub</PATH>
                     <PATHFORMAT>MacOS</PATHFORMAT>
                 </FILEREF>
@@ -2686,6 +2666,26 @@
                     <PATH>Dim3_Loader.cpp</PATH>
                     <PATHFORMAT>MacOS</PATHFORMAT>
                 </FILEREF>
+                <FILEREF>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>Moo Display</PATH>
+                    <PATHFORMAT>MacOS</PATHFORMAT>
+                </FILEREF>
+                <FILEREF>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>M2,oo Semitpt Shapes</PATH>
+                    <PATHFORMAT>MacOS</PATHFORMAT>
+                </FILEREF>
+                <FILEREF>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>Marathon2_SOCK</PATH>
+                    <PATHFORMAT>MacOS</PATHFORMAT>
+                </FILEREF>
+                <FILEREF>
+                    <PATHTYPE>Name</PATHTYPE>
+                    <PATH>Text Strings</PATH>
+                    <PATHFORMAT>MacOS</PATHFORMAT>
+                </FILEREF>
             </LINKORDER>
         </TARGET>
     </TARGETLIST>
@@ -2699,67 +2699,93 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>AnimatedTextures.cpp</PATH>
+                <PATH>game_dialogs.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>ChaseCam.cpp</PATH>
+                <PATH>game_errors.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>ColorParser.cpp</PATH>
+                <PATH>interface.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>computer_interface.cpp</PATH>
+                <PATH>interface_macintosh.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>keyboard_dialog.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OGL_Dialog.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>PlayerName.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>PlayerDialogs.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>preferences.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>progress.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>shell.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>shell_misc.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>vbl.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>vbl_macintosh.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+        </GROUP>
+        <GROUP><NAME>Files</NAME>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
                 <PATH>crc.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>Crosshairs.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>DamageParser.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>devices.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>dynamic_limits.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>effects.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>fades.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
@@ -2783,73 +2809,7 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>flood_map.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>FontHandler.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>game_dialogs.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>game_errors.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
                 <PATH>game_wad.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>game_window.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>game_window_macintosh.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>HUDRenderer.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>HUDRenderer_OGL.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>HUDRenderer_SW.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>ImageLoader_Macintosh.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>images.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
@@ -2861,15 +2821,35 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>interface.cpp</PATH>
+                <PATH>preprocess_map_mac.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>interface_macintosh.cpp</PATH>
+                <PATH>wad.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>wad_macintosh.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>wad_prefs.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>wad_prefs_macintosh.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+        </GROUP>
+        <GROUP><NAME>Input</NAME>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
@@ -2879,13 +2859,39 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>items.cpp</PATH>
+                <PATH>mouse.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+        </GROUP>
+        <GROUP><NAME>GameState</NAME>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>devices.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>keyboard_dialog.cpp</PATH>
+                <PATH>dynamic_limits.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>effects.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>flood_map.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>items.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
@@ -2927,84 +2933,6 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>motion_sensor.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>mouse.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>music.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>mysound.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>OGL_Dialog.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>OGL_Faders.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>OGL_Render.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>OGL_Setup.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>OGL_Textures.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>OverheadMapRenderer.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>OverheadMap_OGL.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>OverheadMap_QD.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>overhead_map.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
                 <PATH>pathfinding.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
@@ -3035,37 +2963,69 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>PlayerDialogs.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>PlayerName.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>preferences.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>preprocess_map_mac.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>progress.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
                 <PATH>projectiles.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>scenery.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>weapons.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>world.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+        </GROUP>
+        <GROUP><NAME>RenderMain</NAME>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>AnimatedTextures.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>Crosshairs.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>ImageLoader_Macintosh.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OGL_Faders.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OGL_Render.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OGL_Setup.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OGL_Textures.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
@@ -3107,13 +3067,111 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>scenery.cpp</PATH>
+                <PATH>scottish_textures.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>scottish_textures.cpp</PATH>
+                <PATH>shapes.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>textures.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+        </GROUP>
+        <GROUP><NAME>RenderOther</NAME>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>ChaseCam.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>computer_interface.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>fades.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>FontHandler.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>game_window.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>game_window_macintosh.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>HUDRenderer.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>HUDRenderer_OGL.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>HUDRenderer_SW.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>images.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>motion_sensor.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OverheadMapRenderer.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OverheadMap_OGL.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OverheadMap_QD.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>overhead_map.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
@@ -3131,30 +3189,6 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>shapes.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>ShapesParser.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>shell.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>shell_misc.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
                 <PATH>TextLayoutHelper.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
@@ -3167,61 +3201,41 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>textures.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>vbl.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>vbl_macintosh.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
                 <PATH>ViewControl.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
+        </GROUP>
+        <GROUP><NAME>Sound</NAME>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>wad.cpp</PATH>
+                <PATH>music.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>wad_macintosh.cpp</PATH>
+                <PATH>mysound.cpp</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+        </GROUP>
+        <GROUP><NAME>XML</NAME>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>ColorParser.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>wad_prefs.cpp</PATH>
+                <PATH>DamageParser.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>wad_prefs_macintosh.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>weapons.cpp</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>world.cpp</PATH>
+                <PATH>ShapesParser.cpp</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
@@ -3477,25 +3491,25 @@
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
+                <PATH>marathon2.resource</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
                 <PATH>Text Strings</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>M2,oo Semitpt Liquids</PATH>
+                <PATH>Moo Display</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
                 <TARGETNAME>Marathon 2 PPC</TARGETNAME>
                 <PATHTYPE>Name</PATHTYPE>
-                <PATH>M2,oo Semitpt Flames,Bolts</PATH>
-                <PATHFORMAT>MacOS</PATHFORMAT>
-            </FILEREF>
-            <FILEREF>
-                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                <PATHTYPE>Name</PATHTYPE>
-                <PATH>marathon2.resource</PATH>
+                <PATH>M2,oo Semitpt Shapes</PATH>
                 <PATHFORMAT>MacOS</PATHFORMAT>
             </FILEREF>
             <FILEREF>
@@ -3514,102 +3528,96 @@
             </FILEREF>
         </GROUP>
         <GROUP><NAME>Mac Libraries</NAME>
-            <GROUP><NAME>PPC</NAME>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>MSL_All_PPC.Lib</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>InterfaceLib</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>MathLib</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>OpenGLUtilityStub</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>OpenGLLibraryStub</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>OpenGLMemoryStub</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>QuickDraw3DLib</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>QuickTimeLib</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>NavigationLib</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>InputSprocketLib</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>AppearanceLib</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>DisplayLib</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>TextCommon</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>UnicodeConverter</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-                <FILEREF>
-                    <TARGETNAME>Marathon 2 PPC</TARGETNAME>
-                    <PATHTYPE>Name</PATHTYPE>
-                    <PATH>UTCUtils</PATH>
-                    <PATHFORMAT>MacOS</PATHFORMAT>
-                </FILEREF>
-            </GROUP>
-        </GROUP>
-        <GROUP><NAME>ANSI Libraries</NAME>
-            <GROUP><NAME>PPC</NAME>
-            </GROUP>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>MSL_All_PPC.Lib</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>InterfaceLib</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>MathLib</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OpenGLUtilityStub</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OpenGLLibraryStub</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>OpenGLMemoryStub</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>QuickDraw3DLib</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>QuickTimeLib</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>NavigationLib</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>InputSprocketLib</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>AppearanceLib</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>DisplayLib</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>TextCommon</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>UnicodeConverter</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
+            <FILEREF>
+                <TARGETNAME>Marathon 2 PPC</TARGETNAME>
+                <PATHTYPE>Name</PATHTYPE>
+                <PATH>UTCUtils</PATH>
+                <PATHFORMAT>MacOS</PATHFORMAT>
+            </FILEREF>
         </GROUP>
     </GROUPLIST>
 
