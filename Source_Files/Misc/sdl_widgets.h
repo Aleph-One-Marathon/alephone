@@ -7,7 +7,6 @@
 #ifndef SDL_WIDGETS_H
 #define SDL_WIDGETS_H
 
-union SDL_Event;
 struct SDL_Surface;
 struct sdl_font_info;
 

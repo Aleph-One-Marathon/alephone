@@ -174,28 +174,28 @@ static struct wad_data *build_save_game_wad(struct wad_header *header, long *len
 
 static void allocate_map_for_counts(short polygon_count, short side_count,
 	short endpoint_count, short line_count);
-static void load_points(byte *points, short count);
-static void load_lines(byte *lines, short count);
-static void load_sides(byte *sides, short count, short version);
-static void load_polygons(byte *polys, short count, short version);
-static void load_lights(byte *_lights, short count, short version);
-static void load_annotations(byte *annotations, short count);
-static void load_objects(byte *map_objects, short count);
-static void load_media(byte *_medias, short count);
-static void load_map_info(byte *map_info);
-static void load_ambient_sound_images(byte *data, short count);
-static void load_random_sound_images(byte *data, short count);
-static void load_terminal_data(byte *data, long length);
+static void load_points(uint8 *points, short count);
+static void load_lines(uint8 *lines, short count);
+static void load_sides(uint8 *sides, short count, short version);
+static void load_polygons(uint8 *polys, short count, short version);
+static void load_lights(uint8 *_lights, short count, short version);
+static void load_annotations(uint8 *annotations, short count);
+static void load_objects(uint8 *map_objects, short count);
+static void load_media(uint8 *_medias, short count);
+static void load_map_info(uint8 *map_info);
+static void load_ambient_sound_images(uint8 *data, short count);
+static void load_random_sound_images(uint8 *data, short count);
+static void load_terminal_data(uint8 *data, long length);
 
 /* Used _ONLY_ by game_wad.c internally and precalculate.c. */
 static bool process_map_wad(struct wad_data *wad, bool restoring_game, short version);
 
 /* Final three calls, must be in this order! */
 static void recalculate_redundant_map(void);
-static void scan_and_add_platforms(byte *platform_static_data, short count);
+static void scan_and_add_platforms(uint8 *platform_static_data, short count);
 static void complete_loading_level(short *_map_indexes, short map_index_count, 
-	byte *_platform_data, short platform_data_count,
-	byte *actual_platform_data, short actual_platform_data_count, short version);
+	uint8 *_platform_data, short platform_data_count,
+	uint8 *actual_platform_data, short actual_platform_data_count, short version);
 
 /* ------------------------ Net functions */
 long get_net_map_data_length(
@@ -353,9 +353,9 @@ bool load_level_from_map(
 void complete_loading_level(
 	short *_map_indexes,
 	short map_index_count,
-	byte *_platform_data,
+	uint8 *_platform_data,
 	short platform_data_count,
-	byte *actual_platform_data,
+	uint8 *actual_platform_data,
 	short actual_platform_data_count,
 	short version)
 {
@@ -740,14 +740,14 @@ void allocate_map_for_counts(
 	map_endpoints= (struct endpoint_data *) get_map_structure_chunk(endpoint_count*sizeof(struct endpoint_data));
 	map_lines= (struct line_data *) get_map_structure_chunk(line_count*sizeof(struct line_data));
 	map_indexes= (short *) get_map_structure_chunk(map_index_length);
-	automap_lines= (byte *) get_map_structure_chunk(automap_line_length);
-	automap_polygons= (byte *) get_map_structure_chunk(automap_polygon_length);
+	automap_lines= (uint8 *) get_map_structure_chunk(automap_line_length);
+	automap_polygons= (uint8 *) get_map_structure_chunk(automap_polygon_length);
 
 	return;
 }
 
 void load_points(
-	byte *points,
+	uint8 *points,
 	short count)
 {
 	short loop;
@@ -766,7 +766,7 @@ void load_points(
 }
 
 void load_lines(
-	byte *lines, 
+	uint8 *lines, 
 	short count)
 {
 	assert(count>=0 && count<=MAXIMUM_LINES_PER_MAP);
@@ -775,7 +775,7 @@ void load_lines(
 }
 
 void load_sides(
-	byte *sides, 
+	uint8 *sides, 
 	short count,
 	short version)
 {
@@ -799,7 +799,7 @@ void load_sides(
 }
 
 void load_polygons(
-	byte *polys, 
+	uint8 *polys, 
 	short count,
 	short version)
 {
@@ -837,7 +837,7 @@ void load_polygons(
 
 
 void load_lights(
-	byte *_lights, 
+	uint8 *_lights, 
 	short count,
 	short version)
 {
@@ -889,7 +889,7 @@ void load_lights(
 }
 
 void load_annotations(
-	byte *annotations, 
+	uint8 *annotations, 
 	short count)
 {
 	assert(count>=0 && count<=MAXIMUM_ANNOTATIONS_PER_MAP);
@@ -897,7 +897,7 @@ void load_annotations(
 	dynamic_world->default_annotation_count= count;
 }
 
-void load_objects(byte *map_objects, short count)
+void load_objects(uint8 *map_objects, short count)
 {
 	assert(count>=0 && count<=MAXIMUM_SAVED_OBJECTS);
 	unpack_map_object(map_objects,saved_objects,count);
@@ -905,13 +905,13 @@ void load_objects(byte *map_objects, short count)
 }
 
 void load_map_info(
-	byte *map_info)
+	uint8 *map_info)
 {
 	unpack_static_data(map_info,static_world,1);
 }
 
 void load_media(
-	byte *_medias,
+	uint8 *_medias,
 	short count)
 {
 	// struct media_data *media= _medias;
@@ -932,7 +932,7 @@ void load_media(
 }
 
 void load_ambient_sound_images(
-	byte *data,
+	uint8 *data,
 	short count)
 {
 	assert(count>=0 &&count<=MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
@@ -941,7 +941,7 @@ void load_ambient_sound_images(
 }
 
 void load_random_sound_images(
-	byte *data,
+	uint8 *data,
 	short count)
 {
 	assert(count>=0 &&count<=MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
@@ -1149,7 +1149,7 @@ bool save_game_file(FileSpecifier& File)
 
 /* -------- static functions */
 static void scan_and_add_platforms(
-	byte *platform_static_data,
+	uint8 *platform_static_data,
 	short count)
 {
 	struct polygon_data *polygon;
@@ -1164,7 +1164,7 @@ static void scan_and_add_platforms(
 			/* Search and find the extra data.  If it is not there, use the permutation for */
 			/* backwards compatibility! */
 
-			byte *_static_data= platform_static_data;
+			uint8 *_static_data= platform_static_data;
 			for(platform_static_data_index= 0; platform_static_data_index<count; ++platform_static_data_index)
 			{
 				static_platform_data TempPlatform;
@@ -1195,7 +1195,7 @@ bool process_map_wad(
 	short version)
 {
 	long data_length;
-	byte *data;
+	uint8 *data;
 	long count;
 	bool is_preprocessed_map= false;
 
@@ -1208,7 +1208,7 @@ bool process_map_wad(
 	allocate_map_structure_for_map(wad);
 
 	/* Extract points */
-	data= (byte *)extract_type_from_wad(wad, POINT_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, POINT_TAG, &data_length);
 	count= data_length/SIZEOF_world_point2d;
 	assert(data_length == count*SIZEOF_world_point2d);
 	
@@ -1216,7 +1216,7 @@ bool process_map_wad(
 	{
 		load_points(data, count);
 	} else {
-		data= (byte *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
 		count= data_length/SIZEOF_endpoint_data;
 		assert(data_length == count*SIZEOF_endpoint_data);
 		assert(count>=0 && count<MAXIMUM_ENDPOINTS_PER_MAP);
@@ -1229,19 +1229,19 @@ bool process_map_wad(
 	}
 
 	/* Extract lines */
-	data= (byte *)extract_type_from_wad(wad, LINE_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, LINE_TAG, &data_length);
 	count = data_length/SIZEOF_line_data;
 	assert(data_length == count*SIZEOF_line_data);
 	load_lines(data, count);
 
 	/* Order is important! */
-	data= (byte *)extract_type_from_wad(wad, SIDE_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, SIDE_TAG, &data_length);
 	count = data_length/SIZEOF_side_data;
 	assert(data_length == count*SIZEOF_side_data);
 	load_sides(data, count, version);
 
 	/* Extract polygons */
-	data= (byte *)extract_type_from_wad(wad, POLYGON_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, POLYGON_TAG, &data_length);
 	count = data_length/SIZEOF_polygon_data;
 	assert(data_length == count*SIZEOF_polygon_data);
 	load_polygons(data, count, version);
@@ -1250,7 +1250,7 @@ bool process_map_wad(
 	if(restoring_game)
 	{
 		// Slurp them in
-		data= (byte *)extract_type_from_wad(wad, LIGHTSOURCE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, LIGHTSOURCE_TAG, &data_length);
 		count = data_length/SIZEOF_light_data;
 		assert(data_length == count*SIZEOF_light_data);
 		unpack_light_data(data,lights,count);
@@ -1258,7 +1258,7 @@ bool process_map_wad(
 	else
 	{
 		/* When you are restoring a game, the actual light structure is set. */
-		data= (byte *)extract_type_from_wad(wad, LIGHTSOURCE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, LIGHTSOURCE_TAG, &data_length);
 		if(version==MARATHON_ONE_DATA_VERSION) 
 		{
 			/* We have an old style light */
@@ -1281,58 +1281,58 @@ bool process_map_wad(
 	}
 
 	/* Extract the annotations */
-	data= (byte *)extract_type_from_wad(wad, ANNOTATION_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, ANNOTATION_TAG, &data_length);
 	count = data_length/SIZEOF_map_annotation;
 	assert(data_length == count*SIZEOF_map_annotation);
 	load_annotations(data, count);
 
 	/* Extract the objects */
-	data= (byte *)extract_type_from_wad(wad, OBJECT_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, OBJECT_TAG, &data_length);
 	count = data_length/SIZEOF_map_object;
 	assert(data_length == count*SIZEOF_map_object);
 	load_objects(data, count);
 
 	/* Extract the map info data */
-	data= (byte *)extract_type_from_wad(wad, MAP_INFO_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, MAP_INFO_TAG, &data_length);
 	// LP change: made this more Pfhorte-friendly
 	assert(SIZEOF_static_data==data_length || (SIZEOF_static_data-2)==data_length);
 	load_map_info(data);
 
 	/* Extract the game difficulty info.. */
-	data= (byte *)extract_type_from_wad(wad, ITEM_PLACEMENT_STRUCTURE_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, ITEM_PLACEMENT_STRUCTURE_TAG, &data_length);
 	assert(data_length == 2*MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition);
 	load_placement_data(data + MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition, data);
 
 	/* Extract the terminal data. */
-	data= (byte *)extract_type_from_wad(wad, TERMINAL_DATA_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, TERMINAL_DATA_TAG, &data_length);
 	load_terminal_data(data, data_length);
 
 	/* Extract the media definitions */
 	if(restoring_game)
 	{
 		// Slurp it in
-		data= (byte *)extract_type_from_wad(wad, MEDIA_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, MEDIA_TAG, &data_length);
 		count= data_length/SIZEOF_media_data;
 		assert(count*SIZEOF_media_data==data_length);
 		unpack_media_data(data,medias,count);
 	}
 	else
 	{
-		data= (byte *)extract_type_from_wad(wad, MEDIA_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, MEDIA_TAG, &data_length);
 		count= data_length/SIZEOF_media_data;
 		assert(count*SIZEOF_media_data==data_length);
 		load_media(data, count);
 	}
 
 	/* Extract the ambient sound images */
-	data= (byte *)extract_type_from_wad(wad, AMBIENT_SOUND_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, AMBIENT_SOUND_TAG, &data_length);
 	count = data_length/SIZEOF_ambient_sound_image_data;
 	assert(data_length == count*SIZEOF_ambient_sound_image_data);
 	load_ambient_sound_images(data, count);
 	load_ambient_sound_images(data, data_length/SIZEOF_ambient_sound_image_data);
 
 	/* Extract the random sound images */
-	data= (byte *)extract_type_from_wad(wad, RANDOM_SOUND_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, RANDOM_SOUND_TAG, &data_length);
 	count = data_length/SIZEOF_random_sound_image_data;
 	assert(data_length == count*SIZEOF_random_sound_image_data);
 	load_random_sound_images(data, count);
@@ -1340,7 +1340,7 @@ bool process_map_wad(
 	// LP addition: load the physics-model chunks (all fixed-size)
 	bool PhysicsModelLoaded = false;
 	
-	data= (byte *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
 	count = data_length/SIZEOF_monster_definition;
 	assert(count*SIZEOF_monster_definition == data_length);
 	assert(count <= NUMBER_OF_MONSTER_TYPES);
@@ -1350,7 +1350,7 @@ bool process_map_wad(
 		unpack_monster_definition(data,count);
 	}
 	
-	data= (byte *)extract_type_from_wad(wad, EFFECTS_PHYSICS_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, EFFECTS_PHYSICS_TAG, &data_length);
 	count = data_length/SIZEOF_effect_definition;
 	assert(count*SIZEOF_effect_definition == data_length);
 	assert(count <= NUMBER_OF_EFFECT_TYPES);
@@ -1360,7 +1360,7 @@ bool process_map_wad(
 		unpack_effect_definition(data,count);
 	}
 	
-	data= (byte *)extract_type_from_wad(wad, PROJECTILE_PHYSICS_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, PROJECTILE_PHYSICS_TAG, &data_length);
 	count = data_length/SIZEOF_projectile_definition;
 	assert(count*SIZEOF_projectile_definition == data_length);
 	assert(count <= NUMBER_OF_PROJECTILE_TYPES);
@@ -1370,7 +1370,7 @@ bool process_map_wad(
 		unpack_projectile_definition(data,count);
 	}
 	
-	data= (byte *)extract_type_from_wad(wad, PHYSICS_PHYSICS_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, PHYSICS_PHYSICS_TAG, &data_length);
 	count = data_length/SIZEOF_physics_constants;
 	assert(count*SIZEOF_physics_constants == data_length);
 	assert(count <= get_number_of_physics_models());
@@ -1380,7 +1380,7 @@ bool process_map_wad(
 		unpack_physics_constants(data,count);
 	}
 	
-	data= (byte *)extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
 	count = data_length/SIZEOF_weapon_definition;
 	assert(count*SIZEOF_weapon_definition == data_length);
 	assert(count <= get_number_of_weapon_types());
@@ -1400,66 +1400,66 @@ bool process_map_wad(
 	if(restoring_game)
 	{
 		// Slurp it all in...
-		data= (byte *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
 		count= data_length/sizeof(short);
 		assert(count*sizeof(short)==data_length);
 		StreamToList(data,map_indexes,count);
 		
-		data= (byte *)extract_type_from_wad(wad, PLAYER_STRUCTURE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, PLAYER_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_player_data;
 		assert(count*SIZEOF_player_data==data_length);
 		unpack_player_data(data,players,count);
 		
-		data= (byte *)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
 		assert(data_length == SIZEOF_dynamic_data);
 		unpack_dynamic_data(data,dynamic_world,1);
 		
-		data= (byte *)extract_type_from_wad(wad, OBJECT_STRUCTURE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, OBJECT_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_object_data;
 		assert(count*SIZEOF_object_data==data_length);
 		unpack_object_data(data,objects,count);
 		
 		// Unpacking is E-Z here...
-		data= (byte *)extract_type_from_wad(wad, AUTOMAP_LINES, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, AUTOMAP_LINES, &data_length);
 		memcpy(automap_lines,data,data_length);
-		data= (byte *)extract_type_from_wad(wad, AUTOMAP_POLYGONS, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, AUTOMAP_POLYGONS, &data_length);
 		memcpy(automap_polygons,data,data_length);
 
-		data= (byte *)extract_type_from_wad(wad, MONSTERS_STRUCTURE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, MONSTERS_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_monster_data;
 		assert(count*SIZEOF_monster_data==data_length);
 		unpack_monster_data(data,monsters,count);
 
-		data= (byte *)extract_type_from_wad(wad, EFFECTS_STRUCTURE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, EFFECTS_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_effect_data;
 		assert(count*SIZEOF_effect_data==data_length);
 		unpack_effect_data(data,effects,count);
 
-		data= (byte *)extract_type_from_wad(wad, PROJECTILES_STRUCTURE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, PROJECTILES_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_projectile_data;
 		assert(count*SIZEOF_projectile_data==data_length);
 		unpack_projectile_data(data,projectiles,count);
 		
-		data= (byte *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_platform_data;
 		assert(count*SIZEOF_platform_data==data_length);
 		unpack_platform_data(data,platforms,count);
 		
-		data= (byte *)extract_type_from_wad(wad, WEAPON_STATE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, WEAPON_STATE_TAG, &data_length);
 		count= data_length/SIZEOF_player_weapon_data;
 		assert(count*SIZEOF_player_weapon_data==data_length);
 		unpack_player_weapon_data(data,count);
 		
-		data= (byte *)extract_type_from_wad(wad, TERMINAL_STATE_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, TERMINAL_STATE_TAG, &data_length);
 		count= data_length/SIZEOF_player_terminal_data;
 		assert(count*SIZEOF_player_terminal_data==data_length);
 		unpack_player_terminal_data(data,count);
 		
 		complete_restoring_level(wad);
 	} else {
-		byte *map_index_data;
+		uint8 *map_index_data;
 		short map_index_count;
-		byte *platform_structures;
+		uint8 *platform_structures;
 		short platform_structure_count;
 
 		if(version==MARATHON_ONE_DATA_VERSION)
@@ -1468,18 +1468,18 @@ bool process_map_wad(
 			map_index_data= NULL;
 			map_index_count= 0; 
 		} else {
-			map_index_data= (byte *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
+			map_index_data= (uint8 *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
 			map_index_count= data_length/sizeof(short);
 			assert(map_index_count*sizeof(short)==data_length);
 		}
 
 		assert(is_preprocessed_map&&map_index_count || !is_preprocessed_map&&!map_index_count);
 
-		data= (byte *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
 		count= data_length/SIZEOF_static_platform_data;
 		assert(count*SIZEOF_static_platform_data==data_length);
 		
-		platform_structures= (byte *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
+		platform_structures= (uint8 *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
 		platform_structure_count= data_length/SIZEOF_platform_data;
 		assert(platform_structure_count*SIZEOF_platform_data==data_length);
 		
@@ -1495,34 +1495,34 @@ bool process_map_wad(
 static void allocate_map_structure_for_map(
 	struct wad_data *wad)
 {
-	byte *data;
+	uint8 *data;
 	long data_length;
 	short line_count, polygon_count, side_count, endpoint_count;
 
 	/* Extract points */
-	data= (byte *)extract_type_from_wad(wad, POINT_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, POINT_TAG, &data_length);
 	endpoint_count= data_length/SIZEOF_world_point2d;
 	if(endpoint_count*SIZEOF_world_point2d!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7074); // 'pt'
 	
 	if(!endpoint_count)
 	{
-		data= (byte *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
+		data= (uint8 *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
 		endpoint_count= data_length/SIZEOF_endpoint_data;
 		if(endpoint_count*SIZEOF_endpoint_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x6570); // 'ep'
 	}
 
 	/* Extract lines */
-	data= (byte *)extract_type_from_wad(wad, LINE_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, LINE_TAG, &data_length);
 	line_count= data_length/SIZEOF_line_data;
 	if(line_count*SIZEOF_line_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x6c69); // 'li'
 
 	/* Sides.. */
-	data= (byte *)extract_type_from_wad(wad, SIDE_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, SIDE_TAG, &data_length);
 	side_count= data_length/SIZEOF_side_data;
 	if(side_count*SIZEOF_side_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7369); // 'si'
 
 	/* Extract polygons */
-	data= (byte *)extract_type_from_wad(wad, POLYGON_TAG, &data_length);
+	data= (uint8 *)extract_type_from_wad(wad, POLYGON_TAG, &data_length);
 	polygon_count= data_length/SIZEOF_polygon_data;
 	if(polygon_count*SIZEOF_polygon_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7369); // 'si'
 
@@ -1539,7 +1539,7 @@ static void load_redundant_map_data(
 	if (redundant_data)
 	{
 		assert(redundant_data && map_indexes);
-		byte *Stream = (byte *)redundant_data;
+		uint8 *Stream = (uint8 *)redundant_data;
 		StreamToList(Stream,map_indexes,count);
 		dynamic_world->map_index_count= count;
 	}
@@ -1572,7 +1572,7 @@ static void load_redundant_map_data(
 }
 
 void load_terminal_data(
-	byte *data, 
+	uint8 *data, 
 	long length)
 {
 	/* I would really like it if I could get these into computer_interface.c statically */
@@ -1651,12 +1651,12 @@ struct save_game_data save_data[]=
 };
 
 /* the sizes are the sizes to save in the file, be aware! */
-static byte *tag_to_global_array_and_size(
+static uint8 *tag_to_global_array_and_size(
 	long tag, 
 	long *size
 	)
 {
-	byte *array= NULL;
+	uint8 *array= NULL;
 	short unit_size, index, count;
 	
 	for(index= 0; index<NUMBER_OF_SAVE_ARRAYS; ++index)
@@ -1780,7 +1780,7 @@ static byte *tag_to_global_array_and_size(
 		return NULL;
 	
 	// An OK-to-alter version of that array pointer
-	byte *temp_array = array;
+	uint8 *temp_array = array;
 	
 	switch (tag)
 	{
@@ -1889,7 +1889,7 @@ static struct wad_data *build_save_game_wad(
 {
 	struct wad_data *wad= NULL;
 	short loop;
-	byte *array_to_slam;
+	uint8 *array_to_slam;
 	long size;
 
 	wad= create_empty_wad();
@@ -1920,7 +1920,7 @@ static void complete_restoring_level(
 {
 	short loop;
 	void *array;
-	byte *data;
+	uint8 *data;
 	long size, data_length;
 	short count;
 	
@@ -1933,7 +1933,7 @@ static void complete_restoring_level(
 		{
 			/* Size is invalid at this point.. */
 			array= tag_to_global_array_and_size(save_data[loop].tag, &size);
-			data= (byte *)extract_type_from_wad(wad, save_data[loop].tag, &data_length);	
+			data= (uint8 *)extract_type_from_wad(wad, save_data[loop].tag, &data_length);	
 			count= data_length/save_data[loop].unit_size;
 			assert(count*save_data[loop].unit_size==data_length);
 

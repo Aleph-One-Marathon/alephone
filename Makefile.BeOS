@@ -51,10 +51,10 @@ SRCS=\
   $(MI)/XML_ElementParser.cpp $(MI)/XML_MakeRoot.cpp $(MI)/XML_Loader_SDL.cpp \
   $(MI)/computer_interface.cpp $(MI)/crc.cpp $(MI)/devices.cpp \
   $(MI)/dynamic_limits.cpp $(MI)/effects.cpp $(MI)/fades.cpp \
-  $(MI)/flood_map.cpp $(MI)/game_errors.cpp $(MI)/game_wad.cpp \
-  $(MI)/game_window.cpp $(MI)/game_window_sdl.cpp $(MI)/images.cpp \
-  $(MI)/import_definitions.cpp $(MI)/interface.cpp $(MI)/interface_sdl.cpp \
-  $(MI)/items.cpp $(MI)/lightsource.cpp $(MI)/map.cpp \
+  $(MI)/find_files_sdl.cpp $(MI)/flood_map.cpp $(MI)/game_errors.cpp \
+  $(MI)/game_wad.cpp $(MI)/game_window.cpp $(MI)/game_window_sdl.cpp \
+  $(MI)/images.cpp $(MI)/import_definitions.cpp $(MI)/interface.cpp \
+  $(MI)/interface_sdl.cpp $(MI)/items.cpp $(MI)/lightsource.cpp $(MI)/map.cpp \
   $(MI)/map_constructors.cpp $(MI)/marathon2.cpp $(MI)/media.cpp \
   $(MI)/monsters.cpp $(MI)/motion_sensor.cpp $(MI)/mouse_sdl.cpp \
   $(MI)/mysound.cpp $(MI)/overhead_map.cpp $(MI)/pathfinding.cpp \
@@ -119,7 +119,7 @@ OPTIMIZE=
 #	to use.  For example, setting DEFINES to "DEBUG=1" will cause the
 #	compiler option "-DDEBUG=1" to be used.  Setting DEFINES to "DEBUG"
 #	would pass "-DDEBUG" on the compiler's command line.
-DEFINES= SDL HAVE_UNISTD_H VERSION=\"0.10\"
+DEFINES= SDL HAVE_UNISTD_H VERSION=\"0.10.4\"
 
 #	specify special warning levels
 #	if unspecified default warnings will be used
