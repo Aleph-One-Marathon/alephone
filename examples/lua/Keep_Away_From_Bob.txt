@@ -1,0 +1,79 @@
+
+--[[	Keep Away From Bob v1.0, James Willson, July 11, 2003
+
+	My interpretation of what the legendary game "Keep Away From Rob" might have looked like.
+	One player, "Bob", gets extra health, ammo, and weapons.
+	Killing Bob makes you Bob.  ]]
+
+function init ()
+	suicider = -1;
+	bob = -1;
+	timer = 0;
+end
+
+function idle ()
+	timer = timer + 1;
+	if (timer == 1600) then
+		timer = 0;
+	end
+	if (bob == -1) then
+		random_bob ();
+	elseif (math.mod (timer, 100) == 0) then
+		add_item (bob, _item_magnum_magazine);
+		add_item (bob, _item_shotgun_magazine);
+
+		if (math.mod (timer, 200) == 0) then
+			add_item (bob, assault_rifle_magazine);
+			add_item (bob, smg_ammo);
+			if (math.mod (timer, 400) == 0) then
+				add_item (bob, _item_missile_launcher_magazine);
+				add_item (bob, _item_assault_grenade_magazine);
+				if (math.mod (timer, 800) == 0) then
+					add_item (bob, _item_alien_weapon);
+					if (math.mod (timer, 1600) == 0) then
+						add_item (bob, _item_flamethrower_canister);
+					end
+				end
+			end
+		end
+	end
+end
+
+function player_killed (dead, aggressor, action)
+	if (dead == bob) then
+		if (not player_is_dead (aggressor)) then
+			bob = aggressor;
+			new_bob ();
+		else
+			bob = -1;
+			if (aggressor == dead) then
+				suicider = dead;
+			end
+		end
+	elseif (aggressor == bob) then
+		set_life (bob, get_life (bob) + 50);
+
+	end
+end
+
+function random_bob ()
+	proposed_bob = math.mod (global_random (), number_of_players ());
+	if ((suicider ~= proposed_bob) and (not player_is_dead (proposed_bob))) then
+		bob = proposed_bob;
+		new_bob ();
+		suicider = -1;
+	end
+end
+
+function new_bob ()
+	add_item (bob, _item_magnum);
+	add_item (bob, _item_plasma_pistol);
+	add_item (bob, _item_shotgun);
+	add_item (bob, _item_shotgun);
+	add_item (bob, _item_assault_rifle);
+	add_item (bob, _item_missile_launcher);
+	add_item (bob, _item_flamethrower);
+	add_item (bob, _item_smg);
+	add_item (bob, _item_alien_weapon);
+	set_life (bob, 450);
+end
