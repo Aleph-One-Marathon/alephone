@@ -40,8 +40,8 @@ extern void call_distribution_response_function_if_available(byte* inBuffer, uin
 
 
 enum {
-        kDefaultPregameTicksBeforeNetDeath = 30 * TICKS_PER_SECOND,
-        kDefaultInGameTicksBeforeNetDeath = 3 * TICKS_PER_SECOND,
+        kDefaultPregameTicksBeforeNetDeath = 90 * TICKS_PER_SECOND,
+        kDefaultInGameTicksBeforeNetDeath = 5 * TICKS_PER_SECOND,
         kDefaultOutgoingFlagsQueueSize = TICKS_PER_SECOND / 2,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
 	kDefaultTimingWindowSize = 3 * TICKS_PER_SECOND,
