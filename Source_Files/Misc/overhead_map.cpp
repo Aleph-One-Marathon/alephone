@@ -794,7 +794,7 @@ bool XML_OvhdMapParser::End()
 static XML_OvhdMapParser OvhdMapParser;
 
 
-// LP change: added infravision-parser export
+// LP change: added overhead-map-parser export
 XML_ElementParser *OverheadMap_GetParser()
 {
 	OvhdMapParser.AddChild(&LiveAssignParser);
