@@ -256,7 +256,8 @@ void DrawMainWindow()
 		// glEnable(GL_CULL_FACE);
 		// glCullFace(GL_BACK);
 		// glFrontFace(GL_CW);
-		glAlphaFunc(GL_GREATER,0.5);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		unsigned int Flags = ModelRenderer::Textured;
 		Renderer.Render(Model,Use_Z_Buffer,Shaders,NumRenderPasses);
 	}
