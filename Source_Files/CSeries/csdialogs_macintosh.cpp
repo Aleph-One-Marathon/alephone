@@ -57,6 +57,7 @@ extern void activate_any_window(
 
 static bool cursor_tracking=true;
 static dialog_header_proc_ptr header_proc;
+static OSErr get_handle_for_dialog_item(DialogPtr, short, Handle *);
 
 DialogPtr myGetNewDialog(
 	short id,
@@ -228,11 +229,9 @@ long extract_number_from_text_item(
 {
 	Str255 str;
 	long num;
-	short it;
 	Handle ih;
-	Rect ir;
 
-	GetDialogItem(dlg,item,&it,&ih,&ir);
+	get_handle_for_dialog_item(dlg, item, &ih);
 	GetDialogItemText(ih,str);
 	StringToNum(str,&num);
 	return num;
@@ -244,12 +243,10 @@ void insert_number_into_text_item(
 	long number)
 {
 	Str255 str;
-	short it;
 	Handle ih;
-	Rect ir;
 
 	NumToString(number,str);
-	GetDialogItem(dlg,item,&it,&ih,&ir);
+	get_handle_for_dialog_item(dlg, item, &ih);
 	SetDialogItemText(ih,str);
 }
 
@@ -293,7 +290,7 @@ void modify_control(
 
 	GetDialogItem(dlg,item,&it,&ih,&ir);
 	control=(ControlHandle)ih;
-#if defined(TARGET_API_MAC_CARBON)
+#if TARGET_API_MAC_CARBON
 	if (hilite!=NONE)
 	{
 		// JTP: This works well for non-buttons, such as labels and edit text boxes
@@ -303,9 +300,9 @@ void modify_control(
 			&& (GetDialogItemAsControl( dlg, item, &hierarchyControl ) == noErr))
 		{
 			if(hilite == CONTROL_INACTIVE)
-				DeactivateControl(hierarchyControl);
+				DisableControl(hierarchyControl);
 			else
-				ActivateControl(hierarchyControl);
+				EnableControl(hierarchyControl);
 		}
 		else
 			HiliteControl(control,hilite);
@@ -393,31 +390,25 @@ void get_window_frame(
 // ZZZ: added these to parallel SDL version.  Now we have a common interface.
 void
 copy_pstring_from_text_field(DialogPtr dialog, short item, unsigned char* pstring) {
-	Rect    item_rect;
-	short   item_type;
-	Handle  item_handle;   
+	Handle item_handle;
 
-    GetDialogItem(dialog, item, &item_type, &item_handle, &item_rect);
+	get_handle_for_dialog_item(dialog, item, &item_handle);
 	GetDialogItemText(item_handle, pstring);
 }
 
 void
 copy_pstring_to_text_field(DialogPtr dialog, short item, const unsigned char* pstring) {
-	Rect    item_rect;
-	short   item_type;
-	Handle  item_handle;   
+	Handle item_handle;
 
-    GetDialogItem(dialog, item, &item_type, &item_handle, &item_rect);
+	get_handle_for_dialog_item(dialog, item, &item_handle);
 	SetDialogItemText(item_handle, pstring);
 }
 
 void
 copy_pstring_to_static_text(DialogPtr dialog, short item, const unsigned char* pstring) {
-	Rect    item_rect;
-	short   item_type;
-	Handle  item_handle;   
+	Handle item_handle;
 
-    GetDialogItem(dialog, item, &item_type, &item_handle, &item_rect);
+	get_handle_for_dialog_item(dialog, item, &item_handle);
 	SetDialogItemText(item_handle, pstring);
 }
 // ZZZ: moved here from network_dialogs_macintosh.cpp
@@ -456,7 +447,25 @@ copy_pstring_to_text_field(DialogPtr dialog, short item, const unsigned char* ps
 
 #endif
 
-#if defined(TARGET_API_MAC_CARBON)
+static OSErr get_handle_for_dialog_item(DialogPtr __dialog, short __item, Handle *__handle)
+{
+	ControlRef control_ref;	
+	// If control embedding is turned on, then use appropriate variants
+	if(GetDialogItemAsControl(__dialog, __item, &control_ref) == noErr)
+	{
+		*__handle= reinterpret_cast<Handle>(control_ref);
+	} else {
+		Rect    item_rect;
+		short   item_type;
+		Handle  item_handle;   
+
+		GetDialogItem(__dialog, __item, &item_type, &item_handle, &item_rect);
+		*__handle= item_handle;
+	}
+	return noErr;
+}
+
+#if TARGET_API_MAC_CARBON
 // JTP: Taken from an AppearanceManager code sample
 //ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 //	¥ GetListBoxListHandle

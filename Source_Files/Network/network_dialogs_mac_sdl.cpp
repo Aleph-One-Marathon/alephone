@@ -421,29 +421,28 @@ int network_join(
 		if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
 		memcpy(myPlayerInfo.name, player_preferences->name, name_length+1);
 
-		GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
-		SetDialogItemText(item_handle, myPlayerInfo.name);
+		copy_pstring_to_text_field(dialog, iJOIN_NAME, myPlayerInfo.name);
 		SelectDialogItemText(dialog, iJOIN_NAME, 0, INT16_MAX);
 		modify_control(dialog, iJOIN_TEAM, CONTROL_ACTIVE, player_preferences->team+1);
 		modify_control(dialog, iJOIN_COLOR, CONTROL_ACTIVE, player_preferences->color+1);
 		if (myPlayerInfo.name[0] == 0) modify_control(dialog, iOK, CONTROL_INACTIVE, NONE);
 	
-		GetDialogItem(dialog, iJOIN_MESSAGES, &item_type, &item_handle, &item_rect);
-		SetDialogItemText(item_handle, getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string));
+		copy_pstring_to_static_text(dialog, iJOIN_MESSAGES,
+			getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string));
 
 		GetDialogItem(dialog, iPLAYER_DISPLAY_AREA, &item_type, &item_handle, &item_rect);
 		SetDialogItem(dialog, iPLAYER_DISPLAY_AREA, kUserDialogItem|kItemDisableBit,
 			(Handle)update_player_list_item_upp, &item_rect);
 
 #if TARGET_API_MAC_CARBON
-                CopyCStringToPascal(network_preferences->join_address, ptemporary);
+		CopyCStringToPascal(network_preferences->join_address, ptemporary);
 #else
-                strncpy(temporary, network_preferences->join_address, 256);
-                c2pstr(temporary);
+		strncpy(temporary, network_preferences->join_address, 256);
+		c2pstr(temporary);
 #endif
-                copy_pstring_to_text_field(dialog, iJOIN_BY_HOST_ADDRESS, ptemporary);
+		copy_pstring_to_text_field(dialog, iJOIN_BY_HOST_ADDRESS, ptemporary);
 
-                modify_boolean_control(dialog, iJOIN_BY_HOST, NONE, network_preferences->join_by_address);
+		modify_boolean_control(dialog, iJOIN_BY_HOST, NONE, network_preferences->join_by_address);
 
 		// JTP: Requires control embedding
 		// I would have put these in a pane by themselves if I could have figured out
@@ -509,24 +508,20 @@ int network_join(
 #endif
 					if(did_join)
 					{
+#if TARGET_API_MAC_CARBON
+						modify_control_enabled(dialog, iJOIN_NAME, CONTROL_INACTIVE);
+						modify_control_enabled(dialog, iJOIN_BY_HOST, CONTROL_INACTIVE);
+#else
 						SelectDialogItemText(dialog, iJOIN_NAME, 0, 0);
 						GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
 						SetDialogItem(dialog, iJOIN_NAME, statText, item_handle, &item_rect);
 
 						// Remove the selection
-#if defined(USE_CARBON_ACCESSORS)
-						SelectDialogItemText(dialog, -1, 0, 0);
-#else
 						((DialogPeek)(dialog))->editField = -1;
-#endif
 						InsetRect(&item_rect, -4, -4);
 						EraseRect(&item_rect);
-#ifdef TARGET_API_MAC_CARBON
-						InvalWindowRect(GetDialogWindow(dialog), &item_rect); // force it to be updated
-#else
 						InvalRect(&item_rect);	// Assumed to be the dialog-box window
-#endif
-						
+#endif						
 						modify_control(dialog, iJOIN_TEAM, CONTROL_INACTIVE, NONE);
 						modify_control(dialog, iJOIN_COLOR, CONTROL_INACTIVE, NONE);
 						modify_control(dialog, iJOIN, CONTROL_INACTIVE, NONE);
@@ -542,8 +537,8 @@ int network_join(
 						player_preferences->color = myPlayerInfo.color;
 						write_preferences();
 	
-						GetDialogItem(dialog, iJOIN_MESSAGES, &item_type, &item_handle, &item_rect);
-						SetDialogItemText(item_handle, getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string));
+						copy_pstring_to_static_text(dialog, iJOIN_MESSAGES,
+							getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string));
 					} else {
 						/* If you fail in joining the game, print the error and return */
 						/*  to the main menu (this is primarily for modem) */
@@ -1292,7 +1287,6 @@ static pascal Boolean join_dialog_filter_proc(
 				
 				game_info *info= (game_info *)NetGetGameData();
 
-				GetDialogItem(dialog, iJOIN_MESSAGES, &item_type, &item_handle, &item_rect);
 				get_network_joined_message(joinMessage, info->net_game_type);
 #if defined(TARGET_API_MAC_CARBON)
 				CopyCStringToPascal(joinMessage, ptemporary);
@@ -1300,7 +1294,7 @@ static pascal Boolean join_dialog_filter_proc(
 				strcpy(temporary, joinMessage); 
 				c2pstr(temporary);
 #endif
-				SetDialogItemText(item_handle, ptemporary);
+				copy_pstring_to_static_text(dialog, iJOIN_MESSAGES, ptemporary);
 			}
 			update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
 			break;
