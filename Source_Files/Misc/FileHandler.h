@@ -416,6 +416,7 @@ private:
 	FileSpecifier operator+(const char *part) const {FileSpecifier a(name); a.AddPart(string(part)); return a;}
 
 	void SplitPath(string &base, string &part) const;
+	void SplitPath(FileSpecifier &base, string &part) const {string b; SplitPath(b, part); base = b;}
 
 #if defined(__WIN32__) && defined(CreateDirectory)
 #undef CreateDirectory

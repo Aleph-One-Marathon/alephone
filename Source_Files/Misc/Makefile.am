@@ -4,13 +4,13 @@ bin_PROGRAMS = alephone
 
 alephone_SOURCES = \
   AnimatedTextures.h ChaseCam.h ColorParser.h Crosshairs.h DamageParser.h \
-  GrowableList.h FileHandler.h ISp_Support.h OGL_Faders.h OGL_Render.h \
-  OGL_Setup.h OGL_Textures.h OverheadMap_OGL.h OverheadMap_SDL.h \
-  OverheadMapRenderer.h PlayerName.h Random.h Rasterizer.h \
-  Rasterizer_OGL.h Rasterizer_SW.h RenderPlaceObjs.h RenderRasterize.h \
-  RenderSortPoly.h RenderVisTree.h ResizableList.h ShapesParser.h \
-  TextStrings.h VectorOps.h ViewControl.h XML_Configure.h XML_DataBlock.h \
-  XML_ElementParser.h XML_LevelScript.h XML_ParseTreeRoot.h XML_Loader_SDL.h \
+  FileHandler.h ISp_Support.h OGL_Faders.h OGL_Render.h OGL_Setup.h \
+  OGL_Textures.h OverheadMap_OGL.h OverheadMap_SDL.h OverheadMapRenderer.h \
+  PlayerName.h Random.h Rasterizer.h Rasterizer_OGL.h Rasterizer_SW.h \
+  RenderPlaceObjs.h RenderRasterize.h RenderSortPoly.h RenderVisTree.h \
+  ShapesParser.h TextStrings.h VectorOps.h ViewControl.h XML_Configure.h \
+  XML_DataBlock.h XML_ElementParser.h XML_LevelScript.h XML_ParseTreeRoot.h \
+  XML_Loader_SDL.h \
   collection_definition.h computer_interface.h crc.h dynamic_limits.h editor.h \
   effect_definitions.h effects.h extensions.h fades.h find_files.h flood_map.h \
   game_errors.h game_wad.h game_window.h images.h interface.h interface_menus.h \

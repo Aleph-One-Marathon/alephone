@@ -136,7 +136,12 @@ static void SetupLSParseTree()
 void LoadLevelScripts(FileSpecifier& MapFile)
 {
 	// Because all the files are to live in the map file's parent directory
+#ifdef mac
 	MapFile.ToDirectory(MapParentDir);
+#else
+	string part;
+	MapFile.SplitPath(MapParentDir, part);
+#endif
 	
 	// Get rid of the previous level script
 	LevelScripts.clear();
@@ -179,7 +184,7 @@ void RunLevelScript(int LevelIndex)
 	SongNumber = 0;
 	
 	// Do randomization
-	MusicRandomizer.z ^= TickCount();
+	MusicRandomizer.z ^= machine_tick_count();
 	MusicRandomizer.SetTable();
 	
 	// Dummy Pfhortran loading if no Pfhortran script had been found
@@ -264,8 +269,13 @@ void GeneralRunScript(int LevelIndex)
 		case LevelScriptCommand::Music:
 			{
 				FileSpecifier MusicFile;
+#ifdef mac
 				MusicFile.FromDirectory(MapParentDir);
 				if (MusicFile.SetNameWithPath(&Cmd.FileSpec[0]))
+#else
+				MusicFile = MapParentDir + &Cmd.FileSpec[0];
+				if (MusicFile.Exists())
+#endif
 					Playlist.push_back(MusicFile);
 			}
 			break;

@@ -83,6 +83,7 @@ bool XML_Loader_SDL::ParseFile(FileSpecifier &file_name)
 {
 	// Open file
 	OpenedFile file;
+//printf("XML %s\n", file_name.GetPath());
 	if (file_name.Open(file)) {
 
 		// Get file size and allocate buffer
