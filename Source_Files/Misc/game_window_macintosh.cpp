@@ -7,6 +7,9 @@
 
 Jul 2, 2000 (Loren Petrich):
 	The HUD is now always buffered
+
+Aug 22, 2000 (Loren Petrich):
+	Added object-oriented resource handling
 */
 
 #include "macintosh_cseries.h"
@@ -38,6 +41,7 @@ void draw_panels(
 	// and not to the screen or to world_pixels
 
 	struct screen_mode_data new_mode= graphics_preferences->screen_mode;
+	LoadedResource PictRsrc;
 	PicHandle picture;
 	Rect destination= {320, 0, 480, 640};
 	Rect source= {0, 0, 160, 640};
@@ -51,9 +55,12 @@ void draw_panels(
 	myLockPixels(world_pixels);
 	*/
 	
-	picture= get_picture_resource_from_images(INTERFACE_PANEL_BASE);
-	if(picture)
+	if (get_picture_resource_from_images(INTERFACE_PANEL_BASE,PictRsrc))
+	// picture= get_picture_resource_from_images(INTERFACE_PANEL_BASE);
+	// if(picture)
 	{
+		picture = PicHandle(PictRsrc.GetHandle());
+		
 		// LP addition: use HUD buffer
 		_set_port_to_HUD();
 		// _set_port_to_gworld();
@@ -64,8 +71,9 @@ void draw_panels(
 		HUnlock((Handle) picture);
 
 		update_everything(NONE);
-		ReleaseResource((Handle) picture);
-	
+		// LP: handled inside of the resource wrapper object
+		// ReleaseResource((Handle) picture);	
+		
 		SetOrigin(0, 0);
 		_restore_port();
 	} else {
