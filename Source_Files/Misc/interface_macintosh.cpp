@@ -85,8 +85,7 @@ void do_preferences(
 	handle_preferences();
 	if (!EqualGDSpec(&graphics_preferences->device_spec, &old_spec) ||
 		mode.bit_depth != graphics_preferences->screen_mode.bit_depth ||
-		false)
-		// mode.fullscreen || graphics_preferences->screen_mode.fullscreen)
+		mode.fullscreen || graphics_preferences->screen_mode.fullscreen)
 		// Currently not active because the DrawSprocket is not yet working properly
 		// LP change: no need for reinit because of OpenGL-mode changes;
 		// however, reiniting if ever in fullscreen mode
