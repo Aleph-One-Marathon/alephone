@@ -44,32 +44,32 @@ void complete_loading_level(short *map_indexes, short map_index_count,
 	struct static_platform_data *platform_data, short platform_data_count,
 	struct platform_data *actual_platform_data, short actual_platform_data_count, short version);
 
-boolean save_game_file(FileObject& File);
+boolean save_game_file(FileSpecifier& File);
 // boolean save_game_file(FileDesc *file);
 
 /* -------------- New functions */
 void pause_game(void);
 void resume_game(void);
-void get_current_saved_game_name(FileObject& File);
+void get_current_saved_game_name(FileSpecifier& File);
 // void get_current_saved_game_name(unsigned char *file_name);
 
 boolean match_checksum_with_map(short vRefNum, long dirID, unsigned long checksum, 
-	FileObject& File);
+	FileSpecifier& File);
 // 	FileDesc *file);
-void set_map_file(FileObject& File);
+void set_map_file(FileSpecifier& File);
 // void set_map_file(FileDesc *file);
 
 //CP Addition: get_map_file returns the FileDesc pointer to the current map
-FileObject& get_map_file(void);
+FileSpecifier& get_map_file(void);
 // FileDesc *get_map_file(void);
 
 /* --------- from PREPROCESS_MAP_MAC.C */
-void get_default_map_spec(FileObject& File);
+void get_default_map_spec(FileSpecifier& File);
 // void get_default_map_spec(FileDesc *_new);
-void get_default_physics_spec(FileObject& File);
+void get_default_physics_spec(FileSpecifier& File);
 // void get_default_physics_spec(FileDesc *_new);
 
-void add_finishing_touches_to_save_file(FileObject& File);
+void add_finishing_touches_to_save_file(FileSpecifier& File);
 // void add_finishing_touches_to_save_file(FileDesc *file);
 
 #endif

@@ -35,7 +35,7 @@ Aug 12, 2000 (Loren Petrich):
 #define MAXIMUM_UNION_WADFILES 16
 #define MAXIMUM_OPEN_WADFILES 3
 
-#include "portable_files.h"
+// #include "portable_files.h"
 #include "FileHandler.h"
 
 /* ------------- typedefs */
@@ -105,32 +105,33 @@ struct wad_data {
 };
 
 /* ----- miscellaneous functions */
-boolean wad_file_has_checksum(FileObject& File, unsigned long checksum);
+boolean wad_file_has_checksum(FileSpecifier& File, unsigned long checksum);
 // boolean wad_file_has_checksum(FileDesc *file, unsigned long checksum);
-boolean wad_file_has_parent_checksum(FileObject& File, unsigned long checksum);
+boolean wad_file_has_parent_checksum(FileSpecifier& File, unsigned long checksum);
 // boolean wad_file_has_parent_checksum(FileDesc *file, unsigned long checksum);
 
 /* Find out how many wads there are in the map */
-short number_of_wads_in_file(FileObject& File); /* returns -1 on error */
+short number_of_wads_in_file(FileSpecifier& File); /* returns -1 on error */
 // short number_of_wads_in_file(FileDesc *file); /* returns -1 on error */
 
 /* ----- Open/Close functions */
 /* Should be OSType, or extension for dos. */
 // FileError create_wadfile(FileDesc *file, unsigned long file_type);
-// Use one of the FileObject enum types
-bool create_wadfile(FileObject& File, int Type);
+// Use one of the FileSpecifier enum types
+bool create_wadfile(FileSpecifier& File, int Type);
 
-bool open_wad_file_for_reading(FileObject& File, OpenedFile& OFile);
+bool open_wad_file_for_reading(FileSpecifier& File, OpenedFile& OFile);
 // fileref open_wad_file_for_reading(FileDesc *file);
-bool open_wad_file_for_writing(FileObject& File, OpenedFile& OFile);
+bool open_wad_file_for_writing(FileSpecifier& File, OpenedFile& OFile);
 // fileref open_wad_file_for_writing(FileDesc *file);
 
 void close_wad_file(OpenedFile& OFile);
 // void close_wad_file(fileref file_id);
 
 /* ----- Hardware dependent functions (From macintosh_wad.c) */
-FileError find_other_entries_that_reference_checksum(unsigned long checksum,
-	FileDesc *files_array, short *count);
+// LP: depends on union wads, which are no longer supported
+// FileError find_other_entries_that_reference_checksum(unsigned long checksum,
+// 	FileDesc *files_array, short *count);
 
 /* ----- Read File functions */
 
@@ -164,18 +165,18 @@ void *get_indexed_directory_data(struct wad_header *header, short index,
 void *read_directory_data(OpenedFile& OFile, struct wad_header *header);
 // void *read_directory_data(short file_ref, struct wad_header *header);
 
-unsigned long read_wad_file_checksum(FileObject& File);
+unsigned long read_wad_file_checksum(FileSpecifier& File);
 // unsigned long read_wad_file_checksum(FileDesc *file);
-unsigned long read_wad_file_parent_checksum(FileObject& File);
+unsigned long read_wad_file_parent_checksum(FileSpecifier& File);
 // unsigned long read_wad_file_parent_checksum(FileDesc *file);
 
 // boolean find_wad_file_that_has_checksum(FileDesc *matching_file,
-boolean find_wad_file_that_has_checksum(FileObject& File,
+boolean find_wad_file_that_has_checksum(FileSpecifier& File,
 	unsigned long file_type, short path_resource_id, unsigned long checksum);
 
 /* Added in here for simplicity.  Really should be somewhere else.. */
-boolean find_file_with_modification_date(FileDesc *matching_file,
-// boolean find_file_with_modification_date(FileObject& File,
+// boolean find_file_with_modification_date(FileDesc *matching_file,
+boolean find_file_with_modification_date(FileSpecifier& File,
 	unsigned long file_type, short path_resource_id, unsigned long modification_date);
 
 #ifdef mac
@@ -187,7 +188,7 @@ OSErr get_directories_parID(FSSpec *directory, long *parID);
 /* ------------ Flat wad functions */
 /* These functions are used for transferring data, and it completely encapsulates */
 /*  a given wad from a given file... */
-void *get_flat_data(FileObject& File, boolean use_union, short wad_index);
+void *get_flat_data(FileSpecifier& File, boolean use_union, short wad_index);
 // void *get_flat_data(FileDesc *base_file, boolean use_union, short wad_index);
 long get_flat_data_length(void *data);
 
@@ -204,7 +205,7 @@ struct wad_data *inflate_flat_data(void *data, struct wad_header *header);
 /* ------------  Write File functions */
 struct wad_data *create_empty_wad(void);
 // void fill_default_wad_header(FileDesc *file, short wadfile_version,
-void fill_default_wad_header(FileObject& File, short wadfile_version,
+void fill_default_wad_header(FileSpecifier& File, short wadfile_version,
 	short data_version, short wad_count, short application_directory_data_size,
 	struct wad_header *header);
 // boolean write_wad_header(fileref file_id, struct wad_header *header);

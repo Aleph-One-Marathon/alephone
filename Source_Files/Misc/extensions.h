@@ -56,7 +56,7 @@ static struct definition_data definitions[]=
 /* ------------- prototypes */
 
 /* Set the physics file to read from.. */
-void set_physics_file(FileObject& File);
+void set_physics_file(FileSpecifier& File);
 // void set_physics_file(FileDesc *file);
 
 void set_to_default_physics_file(void);

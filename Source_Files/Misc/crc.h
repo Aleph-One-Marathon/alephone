@@ -13,7 +13,7 @@ Aug 15, 2000 (Loren Petrich):
 
 #include "FileHandler.h"
 
-unsigned long calculate_crc_for_file(FileObject& File);
+unsigned long calculate_crc_for_file(FileSpecifier& File);
 // unsigned long calculate_crc_for_file(FileDesc *file);
 unsigned long calculate_crc_for_opened_file(OpenedFile& OFile);
 // unsigned long calculate_crc_for_opened_file(short refnum);

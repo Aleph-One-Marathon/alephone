@@ -301,7 +301,7 @@ short get_number_of_collection_bitmaps(short collection_index);
 short get_bitmap_index(short collection_index, short low_level_shape_index);
 
 // Clone of similar functions for getting default map and physics specs
-void get_default_shapes_spec(FileObject& File);
+void get_default_shapes_spec(FileSpecifier& File);
 
 /* ---------- prototypes/PREPROCESS_MAP_MAC.C */
 void setup_revert_game_info(struct game_data *game_info, struct player_start_data *start, struct entry_point *entry);

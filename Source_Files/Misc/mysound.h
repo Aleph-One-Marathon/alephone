@@ -472,10 +472,10 @@ void cause_ambient_sound_source_update(void);
 short random_sound_index_to_sound_index(short random_sound_index);
 
 // LP: generalized this: returns whether or not it was successful
-bool open_sound_file(FileObject& File);
+bool open_sound_file(FileSpecifier& File);
 
 // Clone of similar functions for getting default map and physics specs
-void get_default_sounds_spec(FileObject& File);
+void get_default_sounds_spec(FileSpecifier& File);
 
 /*
 #ifdef mac
