@@ -75,6 +75,7 @@ using namespace std;
 #include "world.h"
 #include "computer_interface.h"
 #include "network.h"
+#include "network_games.h"
 
 #include "script_instructions.h"
 #include "lua_script.h"
@@ -3502,6 +3503,7 @@ static int L_Award_Points (lua_State *L)
 	player_data *player = get_player_data (player_index);
 
 	player -> netgame_parameters[0] += points;
+	team_netgame_parameters[player->team][0] += points;
 
 	if(points != 0)
 		mark_player_network_stats_as_dirty(current_player_index);
@@ -3528,8 +3530,10 @@ static int L_Award_Kills (lua_State *L)
 	}
 	player_data *slain_player = get_player_data (slain_player_index);
 
-	if (aggressor_player_index == -1)
+	if (aggressor_player_index == -1) {
 		slain_player -> monster_damage_taken.kills += kills;
+		team_monster_damage_taken[slain_player->team].kills += kills;
+	}
 	else
 	{
 		if (aggressor_player_index < 0 || aggressor_player_index >= dynamic_world->player_count)
@@ -3538,6 +3542,14 @@ static int L_Award_Kills (lua_State *L)
 			lua_error (L);
 		}
 		slain_player -> damage_taken [aggressor_player_index].kills += kills;
+		struct player_data *aggressor_player = get_player_data(aggressor_player_index);
+		team_damage_taken[slain_player->team].kills += kills;
+		if (slain_player_index != aggressor_player_index) {
+			team_damage_given[slain_player->team].kills += kills;
+		}
+		if (slain_player->team == aggressor_player->team) {
+			team_friendly_fire[slain_player->team].kills += kills;
+		}
 	}
 
 	if(kills != 0)
@@ -3566,6 +3578,7 @@ static int L_Set_Points (lua_State *L)
 
 	if(player->netgame_parameters[0] != points)
 	{
+		team_netgame_parameters[player->team][0] += points - player->netgame_parameters[0];
 		player -> netgame_parameters[0] = points;
 		mark_player_network_stats_as_dirty(current_player_index);
 	}
@@ -3598,6 +3611,8 @@ static int L_Set_Kills (lua_State *L)
 	{
 		if(slain_player->monster_damage_taken.kills != kills)
 		{
+			team_monster_damage_taken[slain_player->team].kills += 
+				(kills - slain_player->monster_damage_taken.kills);
 			slain_player -> monster_damage_taken.kills = kills;
 			score_changed = true;
 		}
@@ -3611,6 +3626,14 @@ static int L_Set_Kills (lua_State *L)
 		}
 		if(slain_player->damage_taken[aggressor_player_index].kills != kills)
 		{
+			struct player_data *aggressor_player = get_player_data(aggressor_player_index);
+			team_damage_taken[slain_player->team].kills += kills - slain_player->damage_taken[aggressor_player_index].kills;
+			if (slain_player_index != aggressor_player_index) {
+				team_damage_given[aggressor_player->team].kills += kills - slain_player->damage_taken[aggressor_player_index].kills;
+			}
+			if (slain_player->team == aggressor_player->team) {
+				team_friendly_fire[slain_player->team].kills += kills - slain_player->damage_taken[aggressor_player_index].kills;
+			}
 			slain_player -> damage_taken [aggressor_player_index].kills = kills;
 			score_changed = true;
 		}

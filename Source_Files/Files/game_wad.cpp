@@ -1589,6 +1589,7 @@ bool process_map_wad(
 		count= data_length/SIZEOF_player_data;
 		assert(count*SIZEOF_player_data==data_length);
 		unpack_player_data(data,players,count);
+		team_damage_from_player_data();
 		
 		data= (uint8 *)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
 		assert(data_length == SIZEOF_dynamic_data);

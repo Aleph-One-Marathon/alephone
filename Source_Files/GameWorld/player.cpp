@@ -239,6 +239,11 @@ struct damage_response_definition
 /* ---------- globals */
 
 struct player_data *players;
+struct damage_record team_damage_given[NUMBER_OF_TEAM_COLORS];
+struct damage_record team_damage_taken[NUMBER_OF_TEAM_COLORS];
+struct damage_record team_monster_damage_taken[NUMBER_OF_TEAM_COLORS];
+struct damage_record team_monster_damage_given[NUMBER_OF_TEAM_COLORS];
+struct damage_record team_friendly_fire[NUMBER_OF_TEAM_COLORS];
 
 struct player_data *local_player, *current_player;
 short local_player_index, current_player_index;
@@ -489,6 +494,14 @@ void initialize_players(
 
 	sRealActionQueues->reset();
 	reset_other_queues();
+
+	for (i = 0; i < NUMBER_OF_TEAM_COLORS; i++) {
+	  obj_clear(team_damage_given[i]);
+	  obj_clear(team_damage_taken[i]);
+	  obj_clear(team_monster_damage_taken[i]);
+	  obj_clear(team_monster_damage_given[i]);
+	  obj_clear(team_friendly_fire[i]);
+	}
 }
 
 /* This will be called by entering map for two reasons:
@@ -758,10 +771,16 @@ void damage_player(
 					aggressor_player= get_player_data(aggressor_player_index);
 					player->damage_taken[aggressor_player_index].damage+= damage_amount;
 					aggressor_player->total_damage_given.damage+= damage_amount;
+					team_damage_taken[player->team].damage += damage_amount;
+					team_damage_given[aggressor_player->team].damage += damage_amount;
+					if (player->team == aggressor_player->team) {
+					  team_friendly_fire[aggressor_index].damage += damage_amount;
+					}
 				}
 				else
 				{
 					player->monster_damage_taken.damage+= damage_amount;
+					team_monster_damage_taken[player->team].damage+= damage_amount;
 				}
 			}
 		}
@@ -801,20 +820,26 @@ void damage_player(
 							kill_player(player_index, aggressor_player_index, action);
 							if (aggressor_player_index!=NONE)
 							{
-								struct player_data *agressor_player= get_player_data(aggressor_player_index);
+								struct player_data *aggressor_player= get_player_data(aggressor_player_index);
 								
 								if (player_killed_player(player_index, aggressor_player_index))
 								{
 									player->damage_taken[aggressor_player_index].kills+= 1;
+									team_damage_taken[player->team].kills += 1;
 									if (aggressor_player_index != player_index)
 									{
-										agressor_player->total_damage_given.kills+= 1;
+										aggressor_player->total_damage_given.kills+= 1;
+										team_damage_given[aggressor_player->team].kills += 1;
+									}
+									if (player->team == aggressor_player->team) {
+									  team_friendly_fire[aggressor_player->team].kills += 1;
 									}
 								}
 							}
 							else
 							{
 								player->monster_damage_taken.kills+= 1;
+								team_monster_damage_taken[player->team].kills += 1;
 							}
                                                         L_Call_Player_Killed (player_index, aggressor_player_index, action, projectile_index);
 						}
@@ -907,6 +932,28 @@ void recreate_players_for_new_level(
 		recreate_player(player_index);
 	}
 }
+
+void team_damage_from_player_data(void)
+{
+  for (short player_index = 0; player_index < dynamic_world->player_count; player_index++) {
+    struct player_data *player = get_player_data(player_index);
+    team_damage_given[player->team].damage += player->total_damage_given.damage;
+    team_damage_given[player->team].kills += player->total_damage_given.kills;
+    team_monster_damage_given[player->team].damage += player->monster_damage_given.damage;
+    team_monster_damage_given[player->team].kills += player->monster_damage_given.kills;
+    team_monster_damage_taken[player->team].damage += player->monster_damage_taken.damage;
+    team_monster_damage_taken[player->team].kills += player->monster_damage_taken.kills; 
+    for (short opponent_index = 0; opponent_index < dynamic_world->player_count; opponent_index++) {
+      struct player_data *opponent = get_player_data(player_index);
+      team_damage_taken[player->team].damage += player->damage_taken[opponent_index].damage;
+      team_damage_taken[player->team].kills += player->damage_taken[opponent_index].kills;
+      if (player->team == opponent->team) {
+	team_friendly_fire[player->team].damage += player->damage_taken[opponent_index].damage;
+	team_friendly_fire[player->team].kills += player->damage_taken[opponent_index].kills;
+      }
+    }
+  }
+}   
 
 short monster_index_to_player_index(
 	short monster_index)

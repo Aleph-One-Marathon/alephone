@@ -30,6 +30,8 @@ struct player_ranking_data {
 	long ranking;
 };
 
+extern int32 team_netgame_parameters[NUMBER_OF_TEAM_COLORS][2];
+
 void initialize_net_game(void);
 
 /* returns true if the game is over.. */
@@ -38,6 +40,8 @@ bool update_net_game(void);
 /* Returns the player net ranking, which may mean different things */
 long get_player_net_ranking(short player_index, short *kills, short *deaths,
 	bool game_is_over);
+long get_team_net_ranking(short team, short *kills, short *deaths,
+			  bool game_is_over);
 
 void calculate_player_rankings(struct player_ranking_data *rankings);
 void calculate_ranking_text(char *buffer, long ranking);

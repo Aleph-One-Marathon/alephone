@@ -34,6 +34,8 @@ Jul 1, 2000 (Loren Petrich):
 #include "game_window.h" // for mark_player_network_stats_as_dirty
 #include "mysound.h"
 
+int32 team_netgame_parameters[NUMBER_OF_TEAM_COLORS][2];
+
 // Benad
 void destroy_players_ball(
 	short player_index);
@@ -187,9 +189,78 @@ long get_player_net_ranking(
 	return ranking;
 }
 
+long get_team_net_ranking(short team, short *kills, short *deaths, 
+			  bool game_is_over)
+{
+  long total_monster_damage, monster_damage;
+  long ranking;
+  *kills = team_damage_given[team].kills;
+  *deaths = team_damage_taken[team].kills + team_monster_damage_taken[team].kills;
+  
+  total_monster_damage = 0;
+  for (int i = 0; i < NUMBER_OF_TEAM_COLORS; i++) {
+    total_monster_damage += team_monster_damage_given[i].damage;
+  }
+  monster_damage = team_monster_damage_given[team].damage;
+
+  switch(GET_GAME_TYPE()) 
+    {
+    case _game_of_kill_monsters:
+      ranking = (*kills)-(*deaths);
+      break;
+    case _game_of_cooperative_play:
+      ranking = total_monster_damage ? (100*monster_damage)/total_monster_damage : 0;
+      break;
+    case _game_of_capture_the_flag:
+      ranking = team_netgame_parameters[team][_flag_pulls];
+      break;
+    case _game_of_king_of_the_hill:
+      ranking = team_netgame_parameters[team][_king_of_hill_time];
+      break;
+    case _game_of_kill_man_with_ball:
+      ranking = team_netgame_parameters[team][_ball_carrier_time];
+      break;
+    case _game_of_tag:
+      ranking = -team_netgame_parameters[team][_time_spent_it];
+      break;
+    case _game_of_defense:
+      {
+      short defending_team = 0;
+      if (team != defending_team) {
+	ranking = team_netgame_parameters[team][_offender_time_in_base];
+      } else {
+	long biggest = 0;
+	for (int i = 0; i < NUMBER_OF_TEAM_COLORS; i++) {
+	  if ((i != defending_team) && (team_netgame_parameters[i][_offender_time_in_base] > biggest)) {
+	    biggest = team_netgame_parameters[i][_offender_time_in_base];
+	  }
+	}
+	ranking = (dynamic_world->game_information.kill_limit * TICKS_PER_SECOND) - biggest;
+      }
+      break;
+      }
+    case _game_of_rugby:
+      ranking = team_netgame_parameters[team][_points_scored];
+      break;
+    default:
+      vhalt(csprintf(temporary, "What is game type %d", GET_GAME_TYPE()));
+      break;
+    }
+
+  return ranking;
+}
+
+	
+
+
+
 void initialize_net_game(
 	void)
 {
+  for (int i = 0; i < NUMBER_OF_TEAM_COLORS; i++) {
+    team_netgame_parameters[i][0] = 0;
+    team_netgame_parameters[i][1] = 0;
+  }
 	switch (GET_GAME_TYPE())
 	{
 		case _game_of_king_of_the_hill:
@@ -394,6 +465,7 @@ bool update_net_game(
 							(ball_color != NONE && dynamic_world->game_information.kill_limit == 819))
 						{
 							player->netgame_parameters[_flag_pulls]++;
+							team_netgame_parameters[player->team][_flag_pulls]++;
 							destroy_players_ball(player_index);
 						}
 					}
@@ -413,6 +485,7 @@ bool update_net_game(
 						if(polygon->type==_polygon_is_hill)
 						{
 							player->netgame_parameters[_king_of_hill_time]++;
+							team_netgame_parameters[player->team][_king_of_hill_time]++;
 						}
 					}
 				}
@@ -427,6 +500,7 @@ bool update_net_game(
 						struct player_data *player= get_player_data(player_index);
 						
 						player->netgame_parameters[_ball_carrier_time]++;
+						team_netgame_parameters[player->team][_ball_carrier_time]++;
 						dynamic_world->game_player_index= player_index;
 						
 						break;
@@ -442,6 +516,7 @@ bool update_net_game(
 					if (!PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player))
 					{
 						player->netgame_parameters[_time_spent_it]+= 1;
+						team_netgame_parameters[player->team][_time_spent_it]+= 1;
 					}
 				}
 				break;
@@ -462,6 +537,7 @@ bool update_net_game(
 						if(polygon->type==_polygon_is_hill/* && polygon->permutation==defending_team*/)
 						{
 							player->netgame_parameters[_offender_time_in_base]++;
+							team_netgame_parameters[player->team][_offender_time_in_base]++;
 							/*if(player->netgame_parameters[_offender_time_in_base]>GET_GAME_PARAMETER(_maximum_offender_time_in_base))
 							{
 								dprintf("Game is over. Offender won.");
@@ -493,6 +569,7 @@ bool update_net_game(
 						{
 							/* Goal! */
 							player->netgame_parameters[_points_scored]++;
+							team_netgame_parameters[player->team][_points_scored]++;
 							
 							/* Ditch the ball.. (it will be recreated by the timer..) */
 							destroy_players_ball(player_index);

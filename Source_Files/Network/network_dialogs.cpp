@@ -1989,10 +1989,11 @@ void draw_team_graph(
 // (ZZZ annotation:) Total Carnage graph
 void draw_totals_graph(
 #ifdef USES_NIBS
-	NetgameOutcomeData &Data)
+	NetgameOutcomeData &Data
 #else
-	DialogPtr dialog)
+	DialogPtr dialog
 #endif
+	)
 {
 #ifdef USES_NIBS
 	draw_names(Data, rankings, dynamic_world->player_count, NONE);
@@ -2004,65 +2005,49 @@ void draw_totals_graph(
 }
 
 
-
 // (ZZZ annotation:) Total Team Carnage graph
 void draw_team_totals_graph(
 #ifdef USES_NIBS
-	NetgameOutcomeData &Data)
+	NetgameOutcomeData &Data
 #else
-	DialogPtr dialog)
+	DialogPtr dialog
 #endif
+	)
 {
 	short team_index, player_index, opponent_player_index, num_teams;
 	bool found_team_of_current_color;
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
-	
-	// first of all, set up the rankings array.
+
 	objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
-	for (team_index= 0, num_teams = 0; team_index<NUMBER_OF_TEAM_COLORS; team_index++)
-	{
-		found_team_of_current_color = false;
-
-		for (player_index= 0; player_index<dynamic_world->player_count; player_index++)
-		{
-			struct player_data *player = get_player_data(player_index);
-
-			if (player->team==team_index)
-			{
-				found_team_of_current_color= true;
-				ranks[num_teams].player_index= NONE;
-				ranks[num_teams].color= team_index;
-				
-				// calculate how many kills this player scored for his team.
-				for (opponent_player_index= 0; opponent_player_index<dynamic_world->player_count; opponent_player_index++)
-				{
-					struct player_data *opponent = get_player_data(opponent_player_index);
-					if (player->team != opponent->team)
-					{
-						ranks[num_teams].kills += opponent->damage_taken[player_index].kills;
-					}
-					else
-					{
-						ranks[num_teams].friendly_fire_kills += opponent->damage_taken[player_index].kills;
-					}
-				}
-				
-				// then calculate how many deaths this player had
-				for (opponent_player_index= 0; opponent_player_index<dynamic_world->player_count; opponent_player_index++)
-				{
-					ranks[num_teams].deaths += player->damage_taken[opponent_player_index].kills;
-				}
-			}
-		}
-		
-		if (found_team_of_current_color) num_teams++;
+	for (team_index = 0, num_teams = 0; team_index < NUMBER_OF_TEAM_COLORS; team_index++) {
+	  found_team_of_current_color = false;
+	  if (team_damage_given[team_index].kills ||
+	      (team_damage_taken[team_index].kills + team_monster_damage_taken[team_index].kills)) {
+	    found_team_of_current_color = true;
+	  } else {
+	    for (player_index = 0; player_index < dynamic_world->player_count; player_index++) {
+	      struct player_data *player = get_player_data(player_index);
+	      if (player->team == team_index) {
+		found_team_of_current_color = true;
+		break;
+	      }
+	    }
+	  }
+	  if (found_team_of_current_color) {
+	    ranks[num_teams].player_index = NONE;
+	    ranks[num_teams].color = team_index;
+	    ranks[num_teams].kills = team_damage_given[team_index].kills;
+	    ranks[num_teams].deaths = team_damage_taken[team_index].kills + team_monster_damage_taken[team_index].kills;
+	    ranks[num_teams].friendly_fire_kills = team_friendly_fire[team_index].kills;
+	    num_teams++;
+	  }
 	}
 
 	/* Setup the team rankings.. */
 	for (team_index= 0; team_index<num_teams; team_index++)
-	{
-		ranks[team_index].ranking= ranks[team_index].kills - ranks[team_index].deaths;
-	}
+	  {
+	    ranks[team_index].ranking= ranks[team_index].kills - ranks[team_index].deaths;
+	  }
 	qsort(ranks, num_teams, sizeof(struct net_rank), team_rank_compare);
 	
 #ifdef USES_NIBS
@@ -2112,49 +2097,58 @@ void draw_total_scores_graph(
 // (ZZZ annotation:) Team Time on Hill, etc. graph
 void draw_team_total_scores_graph(
 #ifdef USES_NIBS
-	NetgameOutcomeData &Data)
+	NetgameOutcomeData &Data
 #else
-	DialogPtr dialog)
+	DialogPtr dialog
 #endif
+	)
 {
-	short team_index, team_count;
-	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
-	
-	// first of all, set up the rankings array.
-	objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
-	team_count= 0;
-	
-	for(team_index= 0; team_index<NUMBER_OF_TEAM_COLORS; ++team_index)
-	{
-		short ranking_index;
-		bool team_is_valid= false;
-		
-		for(ranking_index= 0; ranking_index<dynamic_world->player_count; ++ranking_index)
-		{
-			struct player_data *player= get_player_data(rankings[ranking_index].player_index);
-			
-			if(player->team==team_index)
-			{
-				ranks[team_count].player_index= NONE;
-				ranks[team_count].color= team_index;
-				ranks[team_count].game_ranking+= rankings[ranking_index].game_ranking;
-				team_is_valid= true;
-			}
-		}
-		
-		if(team_is_valid) team_count++;
-	}
+  short team_index, team_count;
+  struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 
-	/* Now qsort our team stuff. */
-	qsort(ranks, team_count, sizeof(struct net_rank), score_rank_compare);
-	
-	/* And draw the bars.. */
+
+  objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
+  team_count = 0;
+
+  for (team_index = 0; team_index < NUMBER_OF_TEAM_COLORS; ++team_index) {
+    short ranking_index;
+    bool team_is_valid = false;
+    short kills, deaths;
+    long ranking = get_team_net_ranking(team_index, &kills, &deaths, true);
+
+    if (kills || deaths || ranking) {
+      team_is_valid = true;
+    } else {
+      for (short player_index = 0; player_index < dynamic_world->player_count; ++player_index) {
+	struct player_data *player = get_player_data(player_index);
+	if (player->team == team_index) {
+	  team_is_valid = true;
+	  break;
+	}
+      }
+    }
+    
+    if (team_is_valid) {
+      ranks[team_count].kills = kills;
+      ranks[team_index].deaths = deaths;
+      ranks[team_count].player_index = NONE;
+      ranks[team_count].color = team_index;
+      ranks[team_count].game_ranking = ranking;
+      ranks[team_count].friendly_fire_kills = team_friendly_fire[NUMBER_OF_TEAM_COLORS].kills;
+      team_count++;
+    }
+  }
+
+  /* Now qsort our team stuff. */
+  qsort(ranks, team_count, sizeof(struct net_rank), score_rank_compare);
+  
+  /* And draw the bars.. */
 #ifdef USES_NIBS
-	draw_names(Data, ranks, team_count, NONE);
-	draw_score_bars(Data, ranks, team_count);
+  draw_names(Data, ranks, team_count, NONE);
+  draw_score_bars(Data, ranks, team_count);
 #else
-	draw_names(dialog, ranks, team_count, NONE);
-	draw_score_bars(dialog, ranks, team_count);
+  draw_names(dialog, ranks, team_count, NONE);
+  draw_score_bars(dialog, ranks, team_count);
 #endif
 }
 

@@ -410,6 +410,11 @@ struct player_shape_definitions
 /* ---------- globals */
 
 extern struct player_data *players;
+extern struct damage_record team_damage_given[NUMBER_OF_TEAM_COLORS];
+extern struct damage_record team_damage_taken[NUMBER_OF_TEAM_COLORS];
+extern struct damage_record team_monster_damage_taken[NUMBER_OF_TEAM_COLORS];
+extern struct damage_record team_monster_damage_given[NUMBER_OF_TEAM_COLORS];
+extern struct damage_record team_friendly_fire[NUMBER_OF_TEAM_COLORS];
 
 /* use set_local_player_index() and set_current_player_index() to change these! */
 extern short local_player_index, current_player_index;
@@ -434,6 +439,8 @@ short new_player(short team, short color, short player_identifier);
 void delete_player(short player_number);
 
 void recreate_players_for_new_level(void);
+
+void team_damage_from_player_data(void);
 
 // ZZZ: this now takes a set of ActionQueues as a parameter so the caller can redirect
 // the update routine's input.  Also, now callers can request a 'predictive update',
