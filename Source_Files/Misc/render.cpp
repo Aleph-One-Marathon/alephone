@@ -370,7 +370,7 @@ void render_view(
 	update_view_data(view);
 
 	/* clear the render flags */
-	memset(render_flags, 0, sizeof(word)*RENDER_FLAGS_BUFFER_SIZE);
+	objlist_clear(render_flags, RENDER_FLAGS_BUFFER_SIZE);
 
 #ifdef AUTOMAP_DEBUG
 	memset(automap_lines, 0, (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0)*sizeof(byte)));
