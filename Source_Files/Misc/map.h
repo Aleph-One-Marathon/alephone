@@ -99,6 +99,7 @@ struct damage_definition
 	short base, random;
 	fixed scale;
 };
+const int SIZEOF_damage_definition = 12;
 
 /* ---------- saved objects (initial map locations, etc.) */
 
@@ -1267,6 +1268,9 @@ uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count = 1);
 uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count = 1);
 uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, int Count = 1);
 uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count = 1);
+
+uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count = 1);
+uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count = 1);
 
 /*
 	map_indexes, automap_lines, and automap_polygons do not have any special
