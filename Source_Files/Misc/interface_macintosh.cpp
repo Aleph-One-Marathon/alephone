@@ -19,6 +19,9 @@ Nov 25, 2000 (Loren Petrich):
 Dec 23, 2000 (Loren Petrich):
 	Added some code for reiniting the screen if in full-screen mode or going into or out of it;
 	won't be active until the DrawSprocket works properly
+
+Jan 12, 2001 (Loren Petrich):
+	Added popup-menu level selector
 */
 
 #include "macintosh_cseries.h"
@@ -56,8 +59,12 @@ Dec 23, 2000 (Loren Petrich):
 #endif
 
 enum { /* Cheat level dialog */
+	dlogLEVEL_NUMBER= 200,
+	iLEVEL_SELECTOR= 3
+/*
 	dlogLEVEL_NUMBER= 137,
 	iLEVEL_NUMBER= 3
+*/
 };
 
 #define TICKS_BETWEEN_XNEXTEVENT_CALLS 10
@@ -107,16 +114,47 @@ short get_level_number_from_user(
 	struct entry_point entry;
 	bool done= false;
 	
+	// For popup-menu level selector;
+	// cribbed from wad_prefs_macintosh.cpp and preferences_macintosh.cpp
+	short item_type;
+	Rect bounds;
+	ControlHandle SelectorHdl;
+	struct PopupPrivateData **privateHndl;
+	MenuHandle mHandle;
+	
 	index = 0; maximum_level_number= 0;
-	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point)) maximum_level_number++;
-
+	// while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point)) maximum_level_number++;
+	
 	dialog = myGetNewDialog(dlogLEVEL_NUMBER, NULL, (WindowPtr) -1, 0);
 	assert(dialog);
-
+	
+	/* Setup the popup list.. */
+	GetDialogItem(dialog, iLEVEL_SELECTOR, &item_type, 
+		(Handle *) &SelectorHdl, &bounds);
+	assert(SelectorHdl);
+	privateHndl= (PopupPrivateData **) ((*SelectorHdl)->contrlData);
+	mHandle= (*privateHndl)->mHandle;
+	
+	// Get rid of old contents
+	while(CountMenuItems(mHandle)) DeleteMenuItem(mHandle, 1);
+	
+	// Add level names
+	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point))
+	{
+		psprintf(ptemporary, "%d: %s",entry.level_number+1,entry.level_name);
+		AppendMenu(mHandle, ptemporary);
+		maximum_level_number++;
+	}
+	
+	/* Set our max value.. */
+	SetControlMaximum(SelectorHdl, maximum_level_number);
+	SetControlValue(SelectorHdl, 1);
+	/*
 	psprintf(ptemporary, "%d", maximum_level_number); 
 	ParamText(ptemporary, "\p", "\p", "\p");
 	SelectDialogItemText(dialog, iLEVEL_NUMBER, 0, SHRT_MAX);
-
+	*/
+	
 	while(!done)
 	{
 		do
@@ -124,19 +162,23 @@ short get_level_number_from_user(
 			ModalDialog(get_general_filter_upp(), &item_hit);
 		} while (item_hit>iCANCEL);
 
-		level_number= extract_number_from_text_item(dialog, iLEVEL_NUMBER);
+		// level_number= extract_number_from_text_item(dialog, iLEVEL_NUMBER);
 
 		switch(item_hit)
 		{
 			case iOK:
+				level_number = GetControlValue(SelectorHdl) - 1;
+				done = true;
+				/*
 				if(level_number<=0 || level_number>maximum_level_number)
 				{
 					SelectDialogItemText(dialog, iLEVEL_NUMBER, 0, SHRT_MAX);
 					SysBeep(-1);
 				} else {
-					level_number-= 1; /* Make it zero based */
+					level_number-= 1; *//* Make it zero based *//*
 					done= true;
 				}
+				*/
 				break;
 				
 			case iCANCEL:
