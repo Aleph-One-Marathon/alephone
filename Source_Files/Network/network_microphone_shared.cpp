@@ -152,7 +152,7 @@ int32 copy_and_speex_encode(uint8* outStorage, void* inStorage, int32 inCount, i
     static float storedFrame[160];
     static int storedSamples = 0;
     int bytesWritten = 0;
-    short frame[160];
+    float frame[160];
 	if (inCount + storedSamples < 160) {
 		// not enough to encode a frame; add the data to storedFrame
 	    while (inCount > 0) {

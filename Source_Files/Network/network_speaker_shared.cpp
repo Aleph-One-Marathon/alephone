@@ -64,7 +64,7 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
         else if (theHeader.mReserved == 1) {
 
             // decode the data
-            short frame[160];
+            float frame[160];
             char cbits[200];
             int nbytes;
             int i;
