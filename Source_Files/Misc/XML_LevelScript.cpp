@@ -222,6 +222,9 @@ void RunLevelScript(int LevelIndex)
 	
 	// Dummy Pfhortran loading if no Pfhortran script had been found
 	if (!PfhortranFound) load_script_data(NULL,0);
+	
+	// Best to preload level music here, so as not to load it when the interactivity starts
+	PreloadLevelMusic();
 }
 
 // Intended to be run at the end of a game

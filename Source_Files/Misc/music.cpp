@@ -116,6 +116,7 @@ static FileSpecifier IntroMusicFile;
 static FileSpecifier QTMusicFile;
 static Movie QTMusicMovie = NULL;
 static bool QTMMPlaying = false;
+static bool QTMMPreloaded = false;
 static double MusicVolume = 0;				// 0 to 1
 static double MusicVolumeChange = 0;		// Change per tick [TickCount()]
 static long MostRecentUpdateTicks = 0;
@@ -135,10 +136,26 @@ static short get_sound_volume(void);
 
 static void PlayMusic(FileSpecifier& SongFile);
 static void StartMusic();
+static void PreloadMusic();
 
 /* ----------------- code */
 
 // LP: Quicktime music player...
+
+void PreloadLevelMusic()
+{
+	if (!machine_has_quicktime()) return;
+	
+	stop_music();
+	
+	FileSpecifier *LevelSongFilePtr = GetLevelMusic();
+	if (LevelSongFilePtr)
+	{
+		QTMMPreloaded = true;	// PlayMusic() depends on this being set to do preloading
+		PlayMusic(*LevelSongFilePtr);
+		IsLooped = false;
+	}
+}
 
 void PlayMusic(FileSpecifier& SongFile)
 {
@@ -176,8 +193,11 @@ void PlayMusic(FileSpecifier& SongFile)
 	CloseMovieFile(RefNum);
 	if (Err != noErr) return;
 	
-	// Play!
-	StartMusic();
+	// Start or preload, as appropriate
+	if (QTMMPreloaded)
+		PreloadMusic();
+	else
+		StartMusic();
 }
 
 void StartMusic()
@@ -187,6 +207,15 @@ void StartMusic()
 	SetMovieVolume(QTMusicMovie,GetQTMusicVolume());
 	StartMovie(QTMusicMovie);
 	QTMMPlaying = true;
+	MostRecentUpdateTicks = TickCount();
+}
+
+void PreloadMusic()
+{
+	MusicVolume = 1;				// Full blast
+	MusicVolumeChange = 0;			// Staying full blast
+	SetMovieVolume(QTMusicMovie,GetQTMusicVolume());
+	PrerollMovie(QTMusicMovie,0,FIXED_ONE);	// The actual preloading function...
 	MostRecentUpdateTicks = TickCount();
 }
 
@@ -350,6 +379,14 @@ void music_idle_proc(
 	// Quicktime: what could be easier?
 	if (machine_has_quicktime())
 	{
+		// Start preloaded music
+		if (QTMusicMovie && QTMMPreloaded)
+		{
+			StartMovie(QTMusicMovie);
+			QTMMPlaying = true;
+			QTMMPreloaded = false;
+		}
+		
 		// Keep the music going if it is already going
 		if (QTMusicMovie && QTMMPlaying)
 		{
@@ -507,6 +544,9 @@ void stop_music(
 		{
 			StopMovie(QTMusicMovie);
 			QTMMPlaying = false;
+			
+			DisposeMovie(QTMusicMovie);
+			QTMusicMovie = NULL;
 		}
 		return;
 	}
