@@ -45,6 +45,11 @@ Aug 27, 2000 (Loren Petrich):
 #undef MIN
 #define MIN(a,b) ((a)<(b) ? (a) : (b))
 
+#ifdef INIO
+#define WRAP_LOW(n,max) ((n)?((n)-1):(max))
+#define WRAP_HIGH(n,max) (((n)==(max))?0:((n)+1))
+#endif
+
 #define ABS(x) ((x)<0 ? -(x) : (x))
 #define SGN(x) ((x)<0 ? -1 : (x)>0 ? 1 : 0)
 

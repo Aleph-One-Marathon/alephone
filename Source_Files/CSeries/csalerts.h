@@ -58,15 +58,26 @@ extern void _alephone_warn(
 	long line,
 	char *what);
 
+#ifdef INIO
+// IR added:
+extern void DebugLog(const char* text);
+#endif
+
 #undef assert
 #ifdef DEBUG
 #define assert(what) ((what) ? (void)0 : _alephone_assert(__FILE__,__LINE__,"Assertion failed: " #what))
 #define vassert(what,message) ((what) ? (void)0 : _alephone_assert(__FILE__,__LINE__,(message)))
+#ifdef INIO
+#define dassert(what) ((what) ? (void)0 : Debugger())
+#endif
 #define warn(what) ((what) ? (void)0 : _alephone_warn(__FILE__,__LINE__,"Assertion failed: " #what))
 #define vwarn(what,message) ((what) ? (void)0 : _alephone_warn(__FILE__,__LINE__,(message)))
 #else
 #define assert(what) ((void)(what))
 #define vassert(what,message) ((void)(what))
+#ifdef INIO
+#define dassert(what) ((void)(what))
+#endif
 #define warn(what) ((void)(what))
 #define vwarn(what,message) ((void)(what))
 #endif

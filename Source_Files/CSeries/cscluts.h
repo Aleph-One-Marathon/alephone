@@ -56,6 +56,8 @@ enum {
 
 extern RGBColor rgb_black;
 extern RGBColor rgb_white;
+// IR added: for dithered mode
+extern RGBColor rgb_dithersafe_white;
 extern RGBColor system_colors[NUM_SYSTEM_COLORS];
 
 #endif

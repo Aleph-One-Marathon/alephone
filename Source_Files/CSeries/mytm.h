@@ -1,52 +1,136 @@
-/* mytm.h
-
-	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
-	and the "Aleph One" developers.
- 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at your option) any later version.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	This license is contained in the file "COPYING",
-	which is included with this source code; it is available online at
-	http://www.gnu.org/licenses/gpl.html
-
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
+/*
+	Changes:
 
-    Sept-Nov 2001 (Woody Zenfell): new function myTMCleanup for SDL bookkeeping
+Jan 30, 2000 (Loren Petrich)
+	Did some typecasts
 */
 
-#ifndef MYTM_H_
-#define MYTM_H_
+#include <stdlib.h>
 
-typedef struct myTMTask myTMTask,*myTMTaskPtr;
+#include <Timer.h>
 
-extern myTMTaskPtr myTMSetup(
-	long time,
-	bool (*func)(void));
+#include "cstypes.h"
+#include "csmisc.h"
+#include "mytm.h"
 
-extern myTMTaskPtr myXTMSetup(
-	long time,
-	bool (*func)(void));
 
-extern myTMTaskPtr myTMRemove(
-	myTMTaskPtr task);
+struct myTMTask {
+	TMTask task;
+#ifdef env68k
+	long a5;
+#endif
+	bool (*func)(void);
+	long time;
+	bool insX;
+	bool primed;
+};
 
-extern void myTMReset(
-	myTMTaskPtr task);
-
-#ifdef SDL
-// ZZZ: call this from time to time to collect leftover zombie threads and reclaim a little storage.
-// Pass false for fairly quick operation.  Pass true to make sure that we wait for folks to finish.
-extern void myTMCleanup(bool waitForFinishers);
-#else
-extern void myTMCleanup(bool);
+#ifdef env68k
+#pragma parameter timer_proc(__A1)
 #endif
 
-#endif //def MYTM_H_
+static pascal void timer_proc(
+	TMTaskPtr task)
+{
+	myTMTaskPtr mytask=(myTMTaskPtr)task;
+#ifdef env68k
+	long savea5;
+
+	savea5=set_a5(mytask->a5);
+#endif
+	mytask->primed=false;
+	if ((*mytask->func)()) {
+		mytask->primed=true;
+		PrimeTime((QElemPtr)mytask,mytask->time);
+	} else {
+		mytask->task.tmWakeUp=0;
+	}
+#ifdef env68k
+	set_a5(savea5);
+#endif
+}
+
+#ifdef env68k
+#define timer_upp ((TimerUPP)timer_proc);
+#else
+static RoutineDescriptor timer_desc =
+	BUILD_ROUTINE_DESCRIPTOR(uppTimerProcInfo,timer_proc);
+#define timer_upp (&timer_desc)
+#endif
+
+myTMTaskPtr myTMSetup(
+	long time,
+	bool (*func)(void))
+{
+	myTMTaskPtr result;
+
+	result= new myTMTask;
+	if (!result)
+		return result;
+	result->task.tmAddr=timer_upp;
+	result->task.tmWakeUp=0;
+	result->task.tmReserved=0;
+#ifdef env68k
+	result->a5=get_a5();
+#endif
+	result->func=func;
+	result->time=time;
+	result->insX=false;
+	result->primed=true;
+	InsTime((QElemPtr)result);
+	PrimeTime((QElemPtr)result,time);
+	return result;
+}
+
+myTMTaskPtr myXTMSetup(
+	long time,
+	bool (*func)(void))
+{
+	myTMTaskPtr result;
+
+	result= new myTMTask;
+	if (!result)
+		return result;
+	result->task.tmAddr=timer_upp;
+	result->task.tmWakeUp=0;
+	result->task.tmReserved=0;
+#ifdef env68k
+	result->a5=get_a5();
+#endif
+	result->func=func;
+	result->time=time;
+	result->insX=false;
+	result->primed=true;
+	InsXTime((QElemPtr)result);
+	PrimeTime((QElemPtr)result,time);
+	return result;
+}
+
+myTMTaskPtr myTMRemove(
+	myTMTaskPtr task)
+{
+	if (!task)
+		return NULL;
+	RmvTime((QElemPtr)task);
+	delete task;
+	return NULL;
+}
+
+void myTMReset(
+	myTMTaskPtr task)
+{
+	if (task->primed) {
+		RmvTime((QElemPtr)task);
+		task->task.tmWakeUp=0;
+		task->task.tmReserved=0;
+		if (task->insX) {
+			InsXTime((QElemPtr)task);
+		} else {
+			InsTime((QElemPtr)task);
+		}
+	}
+	task->primed=true;
+	PrimeTime((QElemPtr)task,task->time);
+}
+

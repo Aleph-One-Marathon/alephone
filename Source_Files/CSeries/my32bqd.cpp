@@ -33,6 +33,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include <LowMem.h>
 #include <Video.h>
 #include <Devices.h>
+#ifdef INIO
+// IR added: for showing/hiding control strip:
+#include <ControlStrip.h>
+#endif
 #endif
 
 void initialize_my_32bqd(void)
@@ -108,6 +112,10 @@ Ptr myGetPixBaseAddr(
 #if !defined(TARGET_API_MAC_CARBON)
 static short savedmbh;
 static RgnHandle savedgray;
+#ifdef INIO
+// IR added: for showing/hiding control strip:
+static bool controlStripWasVisible;
+#endif
 
 void myHideMenuBar(
 	GDHandle ignoredDev)
@@ -118,6 +126,15 @@ void myHideMenuBar(
 
 	if (savedgray)
 		return;
+#ifdef INIO
+	// IR added: for showing/hiding control strip:
+	if ((Ptr)SBShowHideControlStrip != (Ptr)kUnresolvedCFragSymbolAddress)
+	{
+		controlStripWasVisible = SBIsControlStripVisible();
+		if (controlStripWasVisible)
+			SBShowHideControlStrip(false);
+	}
+#endif
 	gray=GetGrayRgn();
 	savedgray=NewRgn();
 	rect=NewRgn();
@@ -142,6 +159,14 @@ void myShowMenuBar(void)
 	LMSetMBarHeight(savedmbh);
 	DisposeRgn(savedgray);
 	savedgray=NULL;
+#ifdef INIO
+	// IR added: for showing/hiding control strip:
+	if ((Ptr)SBShowHideControlStrip != (Ptr)kUnresolvedCFragSymbolAddress)
+	{
+		if (controlStripWasVisible)
+			SBShowHideControlStrip(true);
+	}
+#endif
 }
 #else
 enum eMenuBarState

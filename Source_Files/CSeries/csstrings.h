@@ -80,7 +80,21 @@ extern unsigned char *psprintf(
 	const char *format,
 	...) PRINTF_STYLE_ARGS(2,3);
 
+// IR addition: for easier integration with DCON
+#ifdef INIO
+#ifdef _DCON_
+	#define MYDPRINTFSYMBOL debugprintf
+#else
+	#define MYDPRINTFSYMBOL dprintf
+	#define debugprintf dprintf
+	// calls that should always call OUR dprintf should call debugprintf
+	// also available now is DebugLog, see csalerts.h
+#endif
+
+extern void MYDPRINTFSYMBOL(
+#else
 extern void dprintf(
+#endif
 	const char *format,
 	...) PRINTF_STYLE_ARGS(1,2);
 

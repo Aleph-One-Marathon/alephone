@@ -37,6 +37,8 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 extern RGBColor rgb_black={0x0000,0x0000,0x0000};
 extern RGBColor rgb_white={0xFFFF,0xFFFF,0xFFFF};
+// IR added: for dithered mode
+extern RGBColor rgb_dithersafe_white={0xF000,0xF000,0xF000};
 
 extern RGBColor system_colors[NUM_SYSTEM_COLORS] =
 {

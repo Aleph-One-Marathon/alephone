@@ -130,7 +130,12 @@ unsigned char *psprintf(
 	return buffer;
 }
 
+// IR change: tweaked for compatability with DCON, see also matching header
+#ifdef INIO
+void MYDPRINTFSYMBOL(
+#else
 void dprintf(
+#endif
 	const char *format,
 	...)
 {
