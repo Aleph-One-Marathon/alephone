@@ -50,11 +50,11 @@ class AnimTxtr
 	
 	// Phases: which frame, and which tick in a frame
 	// These must be in ranges (0 to NumFrames - 1) and (0 to abs(NumTicks) - 1)
-	size_t FramePhase, TickPhase;
+	int FramePhase, TickPhase;
 
 public:
 	// How many frames
-	size_t GetNumFrames() {return FrameList.size();}
+	int GetNumFrames() {return FrameList.size();}
 		
 	// Frame ID (writable)
 	short& GetFrame(int Index) {return FrameList[Index];}
@@ -112,11 +112,11 @@ void AnimTxtr::Load(vector<short>& _FrameList)
 bool AnimTxtr::Translate(short& Frame)
 {
 	// Sanity check
-	size_t NumFrames = FrameList.size();
+	int NumFrames = FrameList.size();
 	if (NumFrames <= 0) return false;
 
 	// Find the index in the loop; default: first one.
-	size_t FrameIndx = 0;
+	int FrameIndx = 0;
 	if (Select >= 0)
 	{
 		if (Frame != Select) return false;
@@ -124,7 +124,7 @@ bool AnimTxtr::Translate(short& Frame)
 	else
 	{
 		bool FrameFound = false;
-		for (size_t f=0; f<NumFrames; f++)
+		for (int f=0; f<NumFrames; f++)
 			if (FrameList[f] == Frame)
 			{
 				FrameFound = true;
@@ -150,7 +150,7 @@ void AnimTxtr::SetTiming(short _NumTicks, short _FramePhase, short _TickPhase)
 	// Correct for possible overshooting of limits:
 	if (NumTicks)
 	{
-		size_t TickPhaseFrames = TickPhase / NumTicks;
+		int TickPhaseFrames = TickPhase / NumTicks;
 		TickPhase -= NumTicks*TickPhaseFrames;
 		if (TickPhase < 0)
 		{
@@ -167,7 +167,7 @@ void AnimTxtr::SetTiming(short _NumTicks, short _FramePhase, short _TickPhase)
 		FramePhase += TickPhaseFrames;
 	}
 	
-	size_t NumFrames = FrameList.size();
+	int NumFrames = FrameList.size();
 	if (NumFrames > 0)
 	{
 		FramePhase = FramePhase % NumFrames;
@@ -179,13 +179,13 @@ void AnimTxtr::SetTiming(short _NumTicks, short _FramePhase, short _TickPhase)
 void AnimTxtr::Update()
 {
 	// Be careful to wrap around in the appropriate direction
-	size_t NumFrames = FrameList.size();
+	int NumFrames = FrameList.size();
 	if (NumTicks > 0)
 	{
-		if (++TickPhase >= (size_t)NumTicks)
+		if (++TickPhase >= NumTicks)
 		{
 			TickPhase = 0;
-			if (++FramePhase >= (size_t)NumFrames)
+			if (++FramePhase >= NumFrames)
 				FramePhase = 0;
 		}
 	}
