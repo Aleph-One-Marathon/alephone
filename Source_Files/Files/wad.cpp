@@ -185,8 +185,8 @@ struct wad_data *read_indexed_wad_from_file(
 	bool read_only)
 {
 	struct wad_data *read_wad= (struct wad_data *) NULL;
-	uint8 *raw_wad;
-	long length;
+	uint8 *raw_wad = NULL;
+     long length = 0;
 	int error = 0;
 
 	// if(file_id>=0) /* NOT a union wadfile... */
@@ -212,9 +212,8 @@ struct wad_data *read_indexed_wad_from_file(
 						read_wad= convert_wad_from_raw(header, raw_wad, 0, length);
 					} else {
 						read_wad= convert_wad_from_raw_modifiable(header, raw_wad, length);
+                             free(raw_wad); raw_wad=NULL;
 					}
-                        //AS: fixed memory leak
-                        free(raw_wad);
 					if(!read_wad)
 					{
 						/* Error.. */

@@ -322,6 +322,7 @@ bool load_level_from_map(
 			{
 				if(index_to_load>=0 && index_to_load<header.wad_count)
 				{
+                        
 					wad= read_indexed_wad_from_file(MapFile, &header, index_to_load, true);
 					if (wad)
 					{
@@ -1357,6 +1358,7 @@ bool process_map_wad(
 	{
 		load_points(data, count);
 	} else {
+         
 		data= (uint8 *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
 		count= data_length/SIZEOF_endpoint_data;
 		assert(data_length == count*SIZEOF_endpoint_data);

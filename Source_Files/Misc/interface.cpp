@@ -1252,6 +1252,8 @@ static bool begin_game(
 			}
 	
 			entry.level_name[0] = starts[0].identifier = 0;
+              //AS: make things clearer
+              memset(entry.level_name,0,66);
 			// LP change: use player color in Preferences for single-player game
 			starts[0].team = starts[0].color = player_preferences->color;
 			strcpy(starts[0].name, "");

@@ -1068,8 +1068,8 @@ uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 {
 	uint8* S = Stream;
 	endpoint_data* ObjPtr = Objects;
-	
-	for (int k = 0; k < Count; k++, ObjPtr++)
+     
+     for (int k = 0; k < Count; k++, ObjPtr++)
 	{
 		StreamToValue(S,ObjPtr->flags);
 		StreamToValue(S,ObjPtr->highest_adjacent_floor_height);
