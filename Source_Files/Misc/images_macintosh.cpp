@@ -14,13 +14,23 @@ extern WindowPtr screen_window;
 
 struct color_table *build_8bit_system_color_table(void)
 {
+	/*
 	struct color_table *system_colors;
 	CTabHandle clut= GetCTable(8);
 	
-	system_colors = new color_table;
+	system_colors= new color_table;
+	assert(system_colors);
 	
 	build_color_table(system_colors, clut);
 	DisposeCTable(clut);
+	*/
+	
+	LoadedResource Default_CLUT_Rsrc;
+	Default_CLUT_Rsrc.GetSystemColorTable();
+	assert(Default_CLUT_Rsrc.IsLoaded());
+	
+	color_table *system_colors = new color_table;
+	build_color_table(system_colors, Default_CLUT_Rsrc);
 	
 	return system_colors;
 }
