@@ -207,8 +207,9 @@ void activate_any_window(WindowPtr window, EventRecord *event, bool active);
 
 bool is_keypad(short keycode);
 
-// LP addition: post an action from the local event queue in the app's MacOS event queue
-static void PostOSEventFromLocal();
+// LP addition: compose a MacOS event from a local-event-queue event;
+// returns whether one was composed
+bool ComposeOSEventFromLocal(EventRecord& Event);
 
 // Looks for MML files and resources in that directory and parses them
 void FindAndParseFiles(DirectorySpecifier& DirSpec);
@@ -1052,15 +1053,17 @@ static void main_event_loop(
 	{
 		bool use_waitnext;
 		
-		// LP addition: turn a local event into a MacOS event
-		PostOSEventFromLocal();
-		
 		if(try_for_event(&use_waitnext))
 		{
 			EventRecord event;
 			bool got_event= false;
-		
-			if(use_waitnext)
+			
+			// Get a local event directly; don't bother to put it into the MacOS event queue
+			if (ComposeOSEventFromLocal(event))
+			{
+				got_event = true;
+			}
+			else if(use_waitnext)
 			{
 				got_event= WaitNextEvent(everyEvent, &event, 2, (RgnHandle) NULL);
 			}
@@ -1262,7 +1265,7 @@ static void process_key(
 static int LocalEventIndex = 0;
 
 // LP addition: post any events found in the local event queue
-void PostOSEventFromLocal()
+bool ComposeOSEventFromLocal(EventRecord& Event)
 {
 	// Don't quit when in terminal mode!
 	if (player_in_terminal_mode(local_player_index))
@@ -1286,7 +1289,7 @@ void PostOSEventFromLocal()
 		unsigned long LocalEvent = 1 << ((unsigned long)LocalEventIndex);
 		if (GetLocalEvent(LocalEvent))
 		{
-			// Compose an appropriate event message:
+			// Compose the fake event:
 			struct EventFeatures
 			{
 				long Message;
@@ -1331,23 +1334,19 @@ void PostOSEventFromLocal()
 			
 			EventFeatures &Features = EventFeatureList[LocalEventIndex];
 			
-			// Points to the queued event
-			EvQElPtr QueueEntry;
-
-			// Post that event in the app's MacOS event queue
-			PPostEvent(keyDown,Features.Message,&QueueEntry);
-			
-			// Edit the queue entry's modifiers:
-			QueueEntry->evtQModifiers = Features.Modifiers;
+			Event.what = keyDown;
+			Event.message = Features.Message;
+			Event.modifiers = Features.Modifiers;
 			
 			// Set up for next one and quit:
 			LocalEventIndex = (LocalEventIndex + 1) & 0x1f;
-			return;
+			return true;
 		}
 	}
 	
 	// Reset this value
 	LocalEventIndex = SavedLocalEventIndex;
+	return false;
 }
 
 

@@ -69,7 +69,7 @@ inline void ClearLocalEvent(unsigned long Event)
 }
 
 // Check if an event is present, and if so, clear it
-inline bool GetLocalEvent(unsigned long &Event)
+inline bool GetLocalEvent(unsigned long Event)
 {
 	if (TEST_FLAG(LocalEventFlags,Event))
 	{
