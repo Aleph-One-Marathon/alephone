@@ -788,8 +788,6 @@ static short keycode_to_charcode(
 	return charcode;
 }
 
-#ifdef USES_NIBS
-
 static bool is_pressed(
 	short key_code)
 {
@@ -799,4 +797,3 @@ static bool is_pressed(
 	return ((((byte*)key_map)[key_code>>3] >> (key_code & 7)) & 1);
 }
 
-#endif
