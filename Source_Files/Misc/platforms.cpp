@@ -31,6 +31,13 @@ Feb 25, 2000 (Loren Petrich):
 
 May 17, 2000 (Loren Petrich):
 	Added XML support, including a damage parser
+
+Dec 19, 2000 (Loren Petrich):
+	Suppressed assertion that a platform polygon must have at least one moving surface;
+	this is for compatibility with some Pfhorte maps like "Descent". Also, added softer
+	failure mode for get_platform_definition().
+	Also suppressed an assertion that platform[polygon[platform]] = platform;
+	currently handling failure in that by skipping over the platform.
 */
 
 #include <string.h>
@@ -84,11 +91,18 @@ static void play_platform_sound(short platform_index, short sound_code);
 static void adjust_platform_for_media(short platform_index, bool initialize);
 static void adjust_platform_endpoint_and_line_heights(short platform_index);
 
+inline struct platform_definition *get_platform_definition(const short type)
+{
+	return GetMemberWithBounds(platform_definitions,type,NUMBER_OF_PLATFORM_TYPES);
+}
+
+/*
 #ifdef DEBUG
 static struct platform_definition *get_platform_definition(short type);
 #else
 #define get_platform_definition(t) (platform_definitions+(t))
 #endif
+*/
 
 /* ---------- code */
 
@@ -101,7 +115,8 @@ short new_platform(
 
 	assert(NUMBER_OF_DYNAMIC_PLATFORM_FLAGS<=16);
 	assert(NUMBER_OF_STATIC_PLATFORM_FLAGS<=32);
-	assert(data->static_flags&(FLAG(_platform_comes_from_floor)|FLAG(_platform_comes_from_ceiling)));
+	// LP: OK for a platform to be a do-nothing platform
+	// assert(data->static_flags&(FLAG(_platform_comes_from_floor)|FLAG(_platform_comes_from_ceiling)));
 
 	if (dynamic_world->platform_count<MAXIMUM_PLATFORMS_PER_MAP)
 	{
@@ -186,6 +201,8 @@ struct static_platform_data *get_defaults_for_platform_type(
 	short type)
 {
 	struct platform_definition *definition= get_platform_definition(type);
+	// Fallback for out-of-range type
+	if (!definition) definition = get_platform_definition(0);
 	
 	return &definition->defaults;
 }
@@ -204,8 +221,10 @@ void update_platforms(
 		{
 			struct polygon_data *polygon= get_polygon_data(platform->polygon_index);
 			short sound_code= NONE;
-		
-			assert(polygon->permutation==platform_index);
+			
+			// Should there be some warning message about platform-polygon inconsistences?
+			// assert(polygon->permutation==platform_index);
+			if (!(polygon->permutation==platform_index)) continue;
 			
 			if (!PLATFORM_IS_MOVING(platform))
 			{
@@ -220,6 +239,7 @@ void update_platforms(
 			if (PLATFORM_IS_MOVING(platform))
 			{
 				struct platform_definition *definition= get_platform_definition(platform->type);
+				if (!definition) continue;
 				world_distance new_floor_height= platform->floor_height, new_ceiling_height= platform->ceiling_height;
 				world_distance delta_height= PLATFORM_IS_EXTENDING(platform) ? platform->speed :
 					(PLATFORM_CONTRACTS_SLOWER(platform) ? (-(platform->speed>>2)) : -platform->speed);
@@ -453,6 +473,7 @@ void player_touch_platform_state(
 {
 	struct platform_data *platform= get_platform_data(platform_index);
 	struct platform_definition *definition= get_platform_definition(platform->type);
+	if (!definition) return;
 	short sound_code= NONE;
 	
 	/* if we canÕt control this platform, play the uncontrollable sound, if itÕs inactive activate
@@ -550,6 +571,7 @@ bool platform_is_legal_player_target(
 {
 	struct platform_data *platform= get_platform_data(platform_index);
 	struct platform_definition *definition= get_platform_definition(platform->type);
+	if (!definition) return false;
 	bool legal_player_target= false;
 
 	if (PLATFORM_IS_DOOR(platform))
@@ -619,12 +641,13 @@ short get_platform_moving_sound(
 {
 	struct platform_data *platform= get_platform_data(platform_index);
 	struct platform_definition *definition= get_platform_definition(platform->type);
+	if (!definition) return NONE;
 	
 	return definition->moving_sound;
 }
 
 /* ---------- private code */
-
+/*
 #ifdef DEBUG
 static struct platform_definition *get_platform_definition(
 	short type)
@@ -633,6 +656,7 @@ static struct platform_definition *get_platform_definition(
 	return platform_definitions+type;
 }
 #endif
+*/
 
 static short polygon_index_to_platform_index(
 	short polygon_index)
@@ -877,6 +901,7 @@ static void play_platform_sound(
 {
 	struct platform_data *platform= get_platform_data(platform_index);
 	struct platform_definition *definition= get_platform_definition(platform->type);
+	if (!definition) return;
 	short sound_code;
 	
 	switch (type)
@@ -979,9 +1004,8 @@ static void calculate_platform_extrema(
 			platform->maximum_floor_height= highest_level==NONE ? highest_adjacent_floor : highest_level;
 			platform->minimum_ceiling_height= platform->maximum_ceiling_height= polygon->ceiling_height;
 		}
-		else
+		else if (PLATFORM_COMES_FROM_CEILING(platform))
 		{
-			assert(PLATFORM_COMES_FROM_CEILING(platform));
 
 			if (PLATFORM_USES_NATIVE_POLYGON_HEIGHTS(platform))
 			{
