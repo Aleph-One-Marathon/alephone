@@ -1672,6 +1672,10 @@ void ReadRootDirectory()
 				// A comment begins here
 				State = S_InComment;
 			}
+			else if (c == ' ' || c == '\t')
+			{
+				// Initial whitespace -- treat as the end of the previous line
+			}
 			else
 			{
 				// The desired line begins here
@@ -1681,10 +1685,9 @@ void ReadRootDirectory()
 		}
 	}
 	
+	// No filespec found?
 	if (StartIndex == NONE) return;
-	
-	fdprintf(&FileContents[StartIndex]);
-	
+		
 	Files_SetRootDirectory(&FileContents[StartIndex]);
 }
 
