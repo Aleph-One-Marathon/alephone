@@ -1598,13 +1598,14 @@ static void transfer_to_new_level(
 
 	if(success)
 	{
+		stop_fade();
+		set_fade_effect(NONE);
 #ifdef WIN32
 		StopLevelMusic();
 #endif
 #ifdef mac
 		if(OGL_IsActive())
 		{
-			set_fade_effect(NONE);
 			exit_screen();
 			// Enter_screen will be called again in start_game
 		}
@@ -1912,6 +1913,7 @@ static void finish_game(
 	assert(game_state.state==_game_in_progress || game_state.state==_switch_demo || game_state.state==_revert_game || game_state.state==_change_level || game_state.state==_begin_display_of_epilogue);
 	toggle_menus(false);
 
+	stop_fade();
 	set_fade_effect(NONE);
 	exit_screen();
 
