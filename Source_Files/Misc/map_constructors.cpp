@@ -975,3 +975,63 @@ void touch_polygon(
 	return;
 }
 #endif
+
+// Split and join the misaligned 4-byte values
+
+#include <string.h>
+
+void pack_side_data(side_data& source, saved_side& dest)
+{
+	dest.type = source.type;
+	dest.flags = source.flags;
+	
+	dest.primary_texture = source.primary_texture;
+	dest.secondary_texture = source.secondary_texture;
+	dest.transparent_texture = source.transparent_texture;
+	
+	dest.exclusion_zone = source.exclusion_zone;
+	
+	dest.control_panel_type = source.control_panel_type;
+	dest.control_panel_permutation = source.control_panel_permutation;
+	
+	dest.primary_transfer_mode = source.primary_transfer_mode;
+	dest.secondary_transfer_mode = source.secondary_transfer_mode;
+	dest.transparent_transfer_mode = source.transparent_transfer_mode;
+	
+	dest.polygon_index = source.polygon_index;
+	dest.line_index = source.line_index;
+	
+	dest.primary_lightsource_index = source.primary_lightsource_index;
+	dest.secondary_lightsource_index = source.secondary_lightsource_index;
+	dest.transparent_lightsource_index = source.transparent_lightsource_index;
+	
+	memcpy(dest.ambient_delta,&source.ambient_delta,4);
+}
+
+void unpack_side_data(saved_side& source, side_data& dest)
+{
+	dest.type = source.type;
+	dest.flags = source.flags;
+	
+	dest.primary_texture = source.primary_texture;
+	dest.secondary_texture = source.secondary_texture;
+	dest.transparent_texture = source.transparent_texture;
+	
+	dest.exclusion_zone = source.exclusion_zone;
+	
+	dest.control_panel_type = source.control_panel_type;
+	dest.control_panel_permutation = source.control_panel_permutation;
+	
+	dest.primary_transfer_mode = source.primary_transfer_mode;
+	dest.secondary_transfer_mode = source.secondary_transfer_mode;
+	dest.transparent_transfer_mode = source.transparent_transfer_mode;
+	
+	dest.polygon_index = source.polygon_index;
+	dest.line_index = source.line_index;
+	
+	dest.primary_lightsource_index = source.primary_lightsource_index;
+	dest.secondary_lightsource_index = source.secondary_lightsource_index;
+	dest.transparent_lightsource_index = source.transparent_lightsource_index;
+	
+	memcpy(&dest.ambient_delta,source.ambient_delta,4);
+}
