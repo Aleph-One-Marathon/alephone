@@ -20,6 +20,9 @@ Jan 31, 2002 (Loren Petrich):
 #define HAVE_SDL_NET 1
 // #endif
 
+// WIll use QD3D
+#define HAVE_QUESA 1
+
 // check environs
 /*
 #if __POWERPC__
