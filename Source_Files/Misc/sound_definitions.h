@@ -91,6 +91,7 @@ struct sound_file_header
 	
 	// immediately followed by source_count*sound_count sound_definition structures
 };
+const int SIZEOF_sound_file_header = 260;
 
 struct sound_definition
 {
@@ -116,6 +117,7 @@ struct sound_definition
 	uint8 *ptr;
 	int32 size;
 };
+const int SIZEOF_sound_definition = 64;
 
 struct depth_curve_definition
 {
@@ -207,8 +209,14 @@ _bs_field _bs_sound_definition[] = { // 64 bytes
 	2*sizeof(int16)
 };
 
-#ifndef STATIC_DEFINITIONS
-static struct sound_definition *sound_definitions;
+// #ifndef STATIC_DEFINITIONS
+
+// LP: making this dynamically allocatable;
+// need to keep track of how many definitions are in use
+static struct sound_definition *sound_definitions = NULL;
+static long number_of_sound_definitions = 0;
+
+/*
 #else
 static struct sound_definition sound_definitions[NUMBER_OF_SOUND_DEFINITIONS]=
 {
@@ -480,7 +488,7 @@ static struct sound_definition sound_definitions[NUMBER_OF_SOUND_DEFINITIONS]=
 	{14240, _sound_is_normal, _sound_is_ambient}, // _snd_alien_noise1
 	{14250, _sound_is_normal, _sound_is_ambient}, // _snd_alien_noise2
 };
-#endif
+*/
 
 #endif
 
