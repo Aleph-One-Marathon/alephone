@@ -2358,7 +2358,6 @@ bool XML_PlayerDamageParser::AttributesDone()
 static XML_PlayerDamageParser PlayerDamageParser;
 
 
-
 class XML_PowerupParser: public XML_ElementParser
 {
 	
@@ -2391,6 +2390,56 @@ bool XML_PowerupParser::HandleAttribute(const char *Tag, const char *Value)
 }
 
 static XML_PowerupParser PowerupParser;
+
+
+class XML_PowerupAssignParser: public XML_ElementParser
+{
+	
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+	
+	XML_PowerupAssignParser(): XML_ElementParser("powerup_assign") {}
+};
+
+bool XML_PowerupAssignParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"invincibility") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Invincibility,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"invisibility") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Invisibility,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"infravision") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Infravision,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"extravision") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Extravision,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"triple_energy") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_TripleEnergy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"double_energy") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_DoubleEnergy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"energy") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Energy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	else if (strcmp(Tag,"oxygen") == 0)
+	{
+		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Oxygen,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_PowerupAssignParser PowerupAssignParser;
 
 
 
@@ -2440,38 +2489,6 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return (ReadBoundedNumericalValue(Value,"%hd",Vulnerability,short(NONE),short(NUMBER_OF_DAMAGE_TYPES-1)));
 	}
-	else if (strcmp(Tag,"invincibility_powerup") == 0)
-	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Invincibility,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
-	}
-	else if (strcmp(Tag,"invisibility_powerup") == 0)
-	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Invisibility,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
-	}
-	else if (strcmp(Tag,"infravision_powerup") == 0)
-	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Infravision,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
-	}
-	else if (strcmp(Tag,"extravision_powerup") == 0)
-	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Extravision,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
-	}
-	else if (strcmp(Tag,"triple_energy_powerup") == 0)
-	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_TripleEnergy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
-	}
-	else if (strcmp(Tag,"double_energy_powerup") == 0)
-	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_DoubleEnergy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
-	}
-	else if (strcmp(Tag,"energy_powerup") == 0)
-	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Energy,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
-	}
-	else if (strcmp(Tag,"oxygen_powerup") == 0)
-	{
-		return (ReadBoundedNumericalValue(Value,"%hd",Powerup_Oxygen,short(NONE),short(NUMBER_OF_DEFINED_ITEMS-1)));
-	}
 	UnrecognizedTag();
 	return false;
 }
@@ -2485,6 +2502,7 @@ XML_ElementParser *Player_GetParser()
 	PlayerParser.AddChild(&StartItemParser);
 	PlayerParser.AddChild(&PlayerDamageParser);
 	PlayerParser.AddChild(&PowerupParser);
+	PlayerParser.AddChild(&PowerupAssignParser);
 
 	return &PlayerParser;
 }
