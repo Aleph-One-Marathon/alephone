@@ -324,12 +324,14 @@ struct OutFileData
 	OpenedFile Opened;
 	wad_header Header;
 	
-	vector<directory_entry> DirEntries;
+	// Will be stored as plain bytes; the directory entries come in groups of
+	// SIZEOF_directory_entry bytes.
+	vector<uint8> DirEntries;
 	int Offset;
 
 	bool Open(char *Prompt, char *Default);
 	
-	int NumWads() {return DirEntries.size();}
+	int NumWads() {return DirEntries.size()/SIZEOF_directory_entry;}
 	
 	bool AddWad(short TrueIndex, WadContainer& Wad);
 	
@@ -363,8 +365,10 @@ bool OutFileData::AddWad(short TrueIndex, WadContainer& Wad)
 	
 	if (WadLength > 0)
 	{
-		directory_entry NewDirEntry;
-		DirEntries.push_back(NewDirEntry);
+		// Rather inelegant way of adding space for another directory entry
+		uint8 zero = 0;
+		for (int q=0; q<SIZEOF_directory_entry; q++)
+			DirEntries.push_back(zero);
 		
 		set_indexed_directory_offset_and_length(&Header, 
 			&DirEntries[0], NumWads()-1, Offset, WadLength, TrueIndex);
