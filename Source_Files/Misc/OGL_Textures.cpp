@@ -39,6 +39,9 @@ Nov 12, 2000 (Loren Petrich):
 Nov 18, 2000 (Loren Petrich):
 	Added support for landscape vertical repeats;
 	also added support for glow mapping of wall textures
+
+Dec 16, 2000 (Loren Petrich):
+	Fixed substitution of landscape textures
 */
 
 #include <string.h>
@@ -522,6 +525,9 @@ bool TextureManager::LoadSubstituteTexture()
 	int Width = NormalImg.GetWidth();
 	int Height = NormalImg.GetHeight();
 	
+	int HeightOffset;
+	int OrigHeightOffset, OGLHeightOffset, CopyingHeight;
+	
 	switch(TextureType)
 	{
 	case OGL_Txtr_Wall:
@@ -552,14 +558,41 @@ bool TextureManager::LoadSubstituteTexture()
 		// For tiling to be possible, the width must be a power of 2;
 		// the height need not be such a power.
 		// Also, flip the vertical dimension to get the orientation correct.
+		// Some of this code is cribbed from some other code here in order to get
+		// consistent landscape loading
 		TxtrWidth = Width;
-		TxtrHeight = Height;
+		TxtrHeight = (Landscape_AspRatExp >= 0) ?
+			(TxtrWidth >> Landscape_AspRatExp) :
+				(TxtrWidth << (-Landscape_AspRatExp));
 		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
 		
 		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
-		for (int v=0; v<Height; v++)
-			for (int h=0; h<Width; h++)
-				NormalBuffer[((Height-1)-v)*Width+h] = NormalImg.GetPixel(h,v);
+		memset(NormalBuffer,0,TxtrWidth*TxtrHeight*sizeof(uint32));
+		
+		// only valid source and destination pixels
+		// will get worked with (no off-edge ones, that is).
+		HeightOffset = (TxtrHeight - Height) >> 1;
+		if (HeightOffset >= 0)
+		{
+			CopyingHeight = Height;
+			OrigHeightOffset = 0;
+			OGLHeightOffset = HeightOffset;
+		}
+		else
+		{
+			CopyingHeight = TxtrHeight;
+			OrigHeightOffset = - HeightOffset;
+			OGLHeightOffset = 0;
+		}
+		
+		for (int v=0; v<CopyingHeight; v++)
+		{
+			// This optimization is reasonable because both the read-in-image
+			// and the OpenGL-texture arrays have the same width/height arrangement
+			uint32 *Src = &NormalImg.GetPixel(0,OrigHeightOffset+v);
+			uint32 *Dest = NormalBuffer + (OGLHeightOffset + ((CopyingHeight-1)-v))*Width;
+			memcpy(Dest,Src,Width*sizeof(uint32));
+		}
 		
 		// No glow map here
 		break;
