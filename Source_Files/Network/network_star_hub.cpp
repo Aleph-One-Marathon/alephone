@@ -24,6 +24,10 @@
  *  Created by Woody Zenfell, III on Mon Apr 28 2003.
  *
  *  May 27, 2003 (Woody Zenfell): lossy byte-stream distribution.
+ *
+ *  June 14, 2003 (Woody Zenfell):
+ *	+ send_period preference allows hub to reduce upstream requirements (sends fewer packets -> less data)
+ *	+ hub preferences now are only emitted if they differ from the defaults (easier to change defaults in future)
  */
 
 #include "network_star.h"
@@ -106,6 +110,7 @@ enum {
 //        kAverageTickArrivalOffsetMaximumWindowSize = kInGameWindowSize,
         kDefaultPregameTicksBeforeNetDeath = 20 * TICKS_PER_SECOND,
         kDefaultInGameTicksBeforeNetDeath = 3 * TICKS_PER_SECOND,
+	kDefaultSendPeriod = 1,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
 	kLossyStreamingDataBufferSize = 1280,
 };
@@ -119,6 +124,7 @@ struct HubPreferences {
 	int32	mInGameNthElement;
 	int32	mPregameTicksBeforeNetDeath;
 	int32	mInGameTicksBeforeNetDeath;
+	int32	mSendPeriod;
 	int32	mRecoverySendPeriod;
 };
 
@@ -213,6 +219,10 @@ struct NetworkPlayer_hub {
 static MutableElementsTickBasedCircularQueue<uint32>	sPlayerDataDisposition(kFlagsQueueSize);
 static int32 sSmallestIncompleteTick;
 static uint32 sConnectedPlayersBitmask;
+
+// sSmallestUnsentTick is used for reducing the number of packets sent: we won't send a packet unless
+// sSmallestIncompleteTick - sSmallestUnsentTick >= sHubPreferences.mSendPeriod
+static int32 sSmallestUnsentTick;
 
 typedef std::map<NetAddrBlock, int>	AddressToPlayerIndexType;
 static AddressToPlayerIndexType	sAddressToPlayerIndex;
@@ -366,6 +376,7 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
         
         sPlayerDataDisposition.reset(theFirstTick);
         sSmallestIncompleteTick = theFirstTick;
+	sSmallestUnsentTick = theFirstTick;
         sNetworkTicker = 0;
         sLastNetworkTickSent = 0;
 
@@ -601,8 +612,9 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
         // Do any needed post-processing
         if(theEnqueueableFlagsCount > 0)
         {
+		// Actually the shouldSend business is probably unnecessary now with sSmallestUnsentTick
                 bool shouldSend = player_provided_flags_from_tick_to_tick(inSenderIndex, theStartTick + theRedundantActionFlagsCount, theStartTick + theRedundantActionFlagsCount + theEnqueueableFlagsCount);
-                if(shouldSend)
+                if(shouldSend && (sSmallestIncompleteTick - sSmallestUnsentTick >= sHubPreferences.mSendPeriod))
                         send_packets();
         }
 } // hub_received_game_data_packet_v1()
@@ -742,7 +754,7 @@ process_lossy_byte_stream_message(AIStream& ps, int inSenderIndex, uint16 inLeng
 	assert(inSenderIndex >= 0 && inSenderIndex < sNetworkPlayers.size());
 	
 	if(sOutstandingLossyByteStreamLength > 0)
-		logNote4("discarding %uh bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%x", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender, sOutstandingLossyByteStreamDestinations);
+		logNote4("discarding %hu bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%x", sOutstandingLossyByteStreamLength, sOutstandingLossyByteStreamType, sOutstandingLossyByteStreamSender, sOutstandingLossyByteStreamDestinations);
 
 	size_t theHeaderStreamPosition = ps.tellg();
 	ps >> sOutstandingLossyByteStreamType >> sOutstandingLossyByteStreamDestinations;
@@ -960,7 +972,7 @@ send_packets()
         } // iterate over players
 
         sLastNetworkTickSent = sNetworkTicker;
-
+	sSmallestUnsentTick = sSmallestIncompleteTick;
 	sOutstandingLossyByteStreamLength = 0;
 	
 } // send_packets()
@@ -977,6 +989,7 @@ enum {
 	kInGameWindowSizeAttribute,
 	kPregameNthElementAttribute,
 	kInGameNthElementAttribute,
+	kSendPeriodAttribute,
 	kRecoverySendPeriodAttribute,
 	kNumAttributes
 };
@@ -990,6 +1003,7 @@ static const char* sAttributeStrings[kNumAttributes] =
 	"ingame_window_size",
 	"pregame_nth_element",
 	"ingame_nth_element",
+	"send_period",
 	"recovery_send_period",
 };
 
@@ -1002,7 +1016,19 @@ static int32* sAttributeDestinations[kNumAttributes] =
 	&sHubPreferences.mInGameWindowSize,
 	&sHubPreferences.mPregameNthElement,
 	&sHubPreferences.mInGameNthElement,
+	&sHubPreferences.mSendPeriod,
 	&sHubPreferences.mRecoverySendPeriod,
+};
+
+static const int32 sDefaultHubPreferences[kNumAttributes] = {
+	kDefaultPregameTicksBeforeNetDeath,
+	kDefaultInGameTicksBeforeNetDeath,
+	kDefaultPregameWindowSize,
+	kDefaultInGameWindowSize,
+	kDefaultPregameNthElement,
+	kDefaultInGameNthElement,
+	kDefaultSendPeriod,
+	kDefaultRecoverySendPeriod
 };
 
 class XML_HubConfigurationParser: public XML_ElementParser
@@ -1066,6 +1092,7 @@ bool XML_HubConfigurationParser::AttributesDone() {
 				case kPregameTicksBeforeNetDeathAttribute:
 				case kInGameTicksBeforeNetDeathAttribute:
 				case kRecoverySendPeriodAttribute:
+				case kSendPeriodAttribute:
 				case kPregameWindowSizeAttribute:
 				case kInGameWindowSizeAttribute:
 					if(mAttribute[i] < 1)
@@ -1139,8 +1166,17 @@ WriteHubPreferences(FILE* F)
 {
 	fprintf(F, "    <hub\n");
 	for(size_t i = 0; i < kNumAttributes; i++)
-		fprintf(F, "      %s=\"%d\"\n", sAttributeStrings[i], *(sAttributeDestinations[i]));
+	{
+		if(*(sAttributeDestinations[i]) != sDefaultHubPreferences[i])
+			fprintf(F, "      %s=\"%d\"\n", sAttributeStrings[i], *(sAttributeDestinations[i]));
+	}
 	fprintf(F, "    />\n");
+
+	fprintf(F, "    <!-- current hub defaults:\n");
+	fprintf(F, "      DO NOT EDIT THE FOLLOWING - they're FYI only.  Make settings in 'hub' tag above.\n");
+	for(size_t i = 0; i < kNumAttributes; i++)
+		fprintf(F, "      %s=\"%d\"\n", sAttributeStrings[i], sDefaultHubPreferences[i]);
+	fprintf(F, "    -->\n");
 }
 
 
@@ -1148,11 +1184,16 @@ WriteHubPreferences(FILE* F)
 void
 DefaultHubPreferences()
 {
+	for(size_t i = 0; i < kNumAttributes; i++)
+		*(sAttributeDestinations[i]) = sDefaultHubPreferences[i];
+/*
 	sHubPreferences.mPregameWindowSize = kDefaultPregameWindowSize;
 	sHubPreferences.mInGameWindowSize = kDefaultInGameWindowSize;
 	sHubPreferences.mPregameNthElement = kDefaultPregameNthElement;
 	sHubPreferences.mInGameNthElement = kDefaultInGameNthElement;
 	sHubPreferences.mPregameTicksBeforeNetDeath = kDefaultPregameTicksBeforeNetDeath;
 	sHubPreferences.mInGameTicksBeforeNetDeath = kDefaultInGameTicksBeforeNetDeath;
+	sHubPreferences.mSendPeriod = kDefaultSendPeriod;
 	sHubPreferences.mRecoverySendPeriod = kDefaultRecoverySendPeriod;
+*/
 }
