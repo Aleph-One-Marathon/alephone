@@ -10,6 +10,10 @@ Feb 4, 2000 (Loren Petrich):
 
 Jul 8, 2000 (Loren Petrich):
 	Added support for OpenGL rendering, in the form of calls to OpenGL versions
+
+Jul 16, 2000 (Loren Petrich):
+	Added begin/end pairs for polygons and lines,
+	so that caching of them can be more efficient (important for OpenGL)
 */
 
 /* ---------- private code */
@@ -30,6 +34,26 @@ static RGBColor polygon_colors[NUMBER_OF_POLYGON_COLORS]=
 	{32768, 32768, 0}
 };
 
+
+static void begin_overhead_polygons()
+{
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		OGL_begin_overhead_polygons();
+		return;
+	}
+}
+
+static void end_overhead_polygons()
+{
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		OGL_end_overhead_polygons();
+		return;
+	}
+}
 
 static void draw_overhead_polygon(
 	short vertex_count,
@@ -69,6 +93,7 @@ static void draw_overhead_polygon(
 	return;
 }
 
+
 struct line_definition
 {
 	RGBColor color;
@@ -82,6 +107,26 @@ struct line_definition line_definitions[NUMBER_OF_LINE_DEFINITIONS]=
 	{{0, 40000, 0}, {1, 1, 1, 2}},
 	{{65535, 0, 0}, {1, 2, 2, 4}}
 };
+
+static void begin_overhead_lines()
+{
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		OGL_begin_overhead_lines();
+		return;
+	}
+}
+
+static void end_overhead_lines()
+{
+	// LP addition: do OpenGL
+	if (OGL_MapActive)
+	{
+		OGL_end_overhead_lines();
+		return;
+	}
+}
 
 static void draw_overhead_line(
 	short line_index,
@@ -399,6 +444,15 @@ static void DrawPath(short step, world_point2d &location)
 		return;
 	}
 	step ? LineTo(location.x, location.y) : MoveTo(location.x, location.y);
+}
+
+static void FinishPath()
+{
+	if (OGL_MapActive)
+	{
+		OGL_FinishPath();
+		return;
+	}
 }
 
 
