@@ -51,6 +51,9 @@ July 5, 2000 (Loren Petrich):
 
 Aug 10, 2000 (Loren Petrich):
 	Added Chris Pruett's Pfhortran changes
+
+Aug 22, 2000 (Loren Petrich):
+	Added object-oriented resource handling
 */
 
 // add logon/logoff keywords. (& make terminal display them)
@@ -84,7 +87,7 @@ Aug 10, 2000 (Loren Petrich):
 #include "lightsource.h" // for tagged lightsources
 #include "screen.h"
 
-#include "portable_files.h"
+// #include "portable_files.h"
 #include "images.h"
 
 //CP Addition: scripting support
@@ -1129,12 +1132,16 @@ static void display_picture(
 	Rect *frame,
 	short flags)
 {
+	LoadedResource PictRsrc;
 	PicHandle picture;
 	boolean drawn= FALSE;
 
-	picture= get_picture_resource_from_scenario(picture_id);
-	if (picture)
+	if (get_picture_resource_from_scenario(picture_id,PictRsrc))
+	// picture= get_picture_resource_from_scenario(picture_id);
+	// if (picture)
 	{
+		picture = PicHandle(PictRsrc.GetHandle());
+		
 		Rect bounds;
 		Rect screen_bounds;
 
@@ -1176,7 +1183,8 @@ static void display_picture(
 		DrawPicture(picture, &bounds);
 		HUnlock((Handle) picture);
 
-		ReleaseResource((Handle) picture);	
+		// LP: handled inside of the resource wrapper object
+		// ReleaseResource((Handle) picture);	
 		/* And let the caller know where we drew the picture */
 		*frame= bounds;
 	} else {
