@@ -14,6 +14,9 @@ Aug 21, 2000 (Loren Petrich):
 	
 	LoadedResource handles are assumed to always be locked,
 	and HLock() and HUnlock() have been suppressed for that reason.
+
+Jul 6, 2001 (Loren Petrich):
+	Added Thomas Herzog's changes for loading Win32-version image chunks
  */
 
 #include "cseries.h"
@@ -152,7 +155,7 @@ void set_scenario_images_file(FileSpecifier &file)
 bool image_file_t::open_file(FileSpecifier &file)
 {
 	close_file();
-
+	
 	// Try to open as a resource file
 	if (!file.Open(rsrc_file)) {
 
@@ -164,8 +167,16 @@ bool image_file_t::open_file(FileSpecifier &file)
 			wad_file.Close();
 			return false;
 		}
+	} // Try to open wad file, too
+	else if (!wad_file.IsOpen()) {
+		if (open_wad_file_for_reading(file, wad_file)) {
+			if (!read_wad_header(wad_file, &wad_hdr)) {
+				
+				wad_file.Close();
+			}
+		}
 	}
-
+	
 	return true;
 }
 
@@ -187,9 +198,15 @@ bool image_file_t::is_open(void)
 
 bool image_file_t::has_rsrc(uint32 rsrc_type, uint32 wad_type, int id)
 {
+	// Check for resource in resource file
 	if (rsrc_file.IsOpen())
-		return rsrc_file.Check(rsrc_type, id);
-	else if (wad_file.IsOpen()) {
+	{
+		if (rsrc_file.Check(rsrc_type, id))
+			return true;
+	}
+	
+	// Check for resource in wad file
+	if (wad_file.IsOpen()) {
 		wad_data *d = read_indexed_wad_from_file(wad_file, &wad_hdr, id, true);
 		if (d) {
 			bool success = false;
@@ -200,6 +217,7 @@ bool image_file_t::has_rsrc(uint32 rsrc_type, uint32 wad_type, int id)
 			return success;
 		}
 	}
+	
 	return false;
 }
 
@@ -215,9 +233,15 @@ bool image_file_t::has_clut(int id)
 
 bool image_file_t::get_rsrc(uint32 rsrc_type, uint32 wad_type, int id, LoadedResource &rsrc)
 {
+	// Get resource from resource file
 	if (rsrc_file.IsOpen())
-		return rsrc_file.Get(rsrc_type, id, rsrc);
-	else if (wad_file.IsOpen()) {
+	{
+		if (rsrc_file.Get(rsrc_type, id, rsrc))
+			return true;
+	}
+	
+	// Get resource from wad file
+	if (wad_file.IsOpen()) {
 		wad_data *d = read_indexed_wad_from_file(wad_file, &wad_hdr, id, true);
 		if (d) {
 			bool success = false;
@@ -235,6 +259,7 @@ bool image_file_t::get_rsrc(uint32 rsrc_type, uint32 wad_type, int id, LoadedRes
 			return success;
 		}
 	}
+	
 	return false;
 }
 
@@ -461,7 +486,6 @@ bool image_file_t::make_rsrc_from_pict(void *data, long length, LoadedResource &
 	uint8			*p, *q;
 	CTabHandle		clut_handle;
 	CGrafPtr		saveport;
-	Ptr				tmp_ptr;
 	
 	if (length < 10)
 		return false;

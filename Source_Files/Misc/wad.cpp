@@ -17,11 +17,11 @@
 				passed in.
 
 Future Options:
-¥ÊReentrancy
-¥ÊUse malloc to actually make it possible to read the data as changes are made in the future?
+ðÊReentrancy
+ðÊUse malloc to actually make it possible to read the data as changes are made in the future?
 
 	Saturday, October 28, 1995 1:13:38 PM- whoops.  Had a huge memory leak in the inflate wad
-		data.  IÕm fired.
+		data.  Iâm fired.
 	
 Jan 30, 2000 (Loren Petrich):
 	Did some typecasts
@@ -43,6 +43,9 @@ Aug 25, 2000 (Loren Petrich):
 
 Sep 11, 2000 (Loren Petrich):
 	Made get_flat_data() and inflate_flat_data() pack and unpack properly...
+
+July 6, 2001 (Loren Petrich):
+	Added Thomas Herzog's more careful wad-version error checking
 */
 
 // Note that level_transition_malloc is specific to marathon...
@@ -74,12 +77,6 @@ inline short memory_error() {return 0;}
 
 /* ---------------- private structures */
 // LP: no more union wads
-/*
-struct wad_internal_data {
-	short file_count;
-	FileDesc files[MAXIMUM_UNION_WADFILES];
-};
-*/
 
 /* ---------------- private global data */
 struct wad_internal_data *internal_data[MAXIMUM_OPEN_WADFILES]= {NULL, NULL, NULL};
@@ -135,7 +132,8 @@ bool read_wad_header(
 		set_game_error(systemError, error);
 		success= false;
 	} else {
-		if(header->version>CURRENT_WADFILE_VERSION)
+		// Thomas Herzog made this error checking more careful
+		if((header->version>CURRENT_WADFILE_VERSION) || (header->data_version > 2) || (header->wad_count < 1))
 		{
 			set_game_error(gameError, errUnknownWadVersion);
 			success= false;
@@ -764,14 +762,6 @@ long calculate_wad_length(
 */
 const int SIZEOF_encapsulated_wad_data = 2*4 + SIZEOF_wad_header;
 	
-#if 0
-struct encapsulated_wad_data {
-	long magic_cookie;			/* Simple version control */
-	long length;				/* Length, including everything.. */
-	struct wad_header header;	/* The 128 byte header */
-	/* Flat wad.. */
-};
-#endif
 
 void *get_flat_data(
 	FileSpecifier& File, 
@@ -936,15 +926,6 @@ bool open_wad_file_for_writing(FileSpecifier& File, OpenedFile& OFile)
 void close_wad_file(OpenedFile& File)
 {
 	File.Close();
-#if 0
-	if(file_id>=0) /* It is a real file descriptor */
-	{
-		close_file(file_id);
-	} else { /* It is the index of the internal data -1 */
-		// LP: suppressing union-wad stuff
-		// free_internal_data_for_file_id(file_id);
-	}
-#endif
 	
 	return;
 }
@@ -1101,7 +1082,7 @@ static bool read_indexed_directory_data(
 		for(directory_index= 0; directory_index<header->wad_count; ++directory_index)
 		{
 			/* We use a hint, that the index is the real index, to help make this have */
-			/* a ÒhitÓ on the first try */
+			/* a "hit" on the first try */
 			short test_index= (index+directory_index)%header->wad_count;
 		
 			/* Calculate the offset */
@@ -1221,21 +1202,6 @@ static struct wad_data *convert_wad_from_raw(
 
 					raw_wad_entry_header = raw_wad + wad_entry_header.next_offset;
 					unpack_entry_header(raw_wad_entry_header, &wad_entry_header, 1);
-#ifdef OBSOLETE					
-					if(wad->tag_data[index].data)
-					{
-						/* This MUST be a base! */
-						assert(header->version<WADFILE_SUPPORTS_OVERLAYS || wad_entry_header->offset==0l);
-		
-						/* Copy the data.. */
-						memcpy(wad->tag_data[index].data, 
-							(((uint8 *) wad_entry_header)+entry_header_size), 
-							wad_entry_header->length);
-						wad_entry_header= (struct entry_header *) (raw_wad + wad_entry_header->next_offset);
-					} else {
-						alert_user(fatalError, strERRORS, outOfMemory, memory_error());
-					}
-#endif
 				} 
 			} else {
 				alert_user(fatalError, strERRORS, outOfMemory, memory_error());
@@ -1328,56 +1294,6 @@ static short count_raw_tags(
 	return tag_count;
 }
 
-// Unused function...
-#if 0
-/* Patch it! */
-static void patch_wad_from_raw(
-	struct wad_header *header, 
-	uint8 *raw_wad, 
-	struct wad_data *read_wad)
-{
-	short tag_count;
-	struct entry_header *wad_entry_header;
-	short index;
-	short entry_header_size= get_entry_header_length(header);
-
-	/* Count the tags */
-	tag_count= count_raw_tags(raw_wad);
-
-	/* On patch file.. */
-	assert(header->version>= WADFILE_SUPPORTS_OVERLAYS);
-	wad_entry_header= (struct entry_header *) raw_wad;
-	for(index= 0; index<tag_count; ++index)
-	{
-		short actual_index;
-		
-		for(actual_index=0; actual_index<read_wad->tag_count; ++actual_index)
-		{
-			if(read_wad->tag_data[actual_index].tag==wad_entry_header->tag)
-			{
-				/* MATCH! */
-				assert(wad_entry_header->offset+wad_entry_header->length<=
-					read_wad->tag_data[actual_index].length);
-				
-				/* Copy it in.. */
-				memcpy(read_wad->tag_data[actual_index].data+wad_entry_header->offset,
-					(((uint8 *) wad_entry_header)+entry_header_size),
-					wad_entry_header->length);
-				
-				break;
-			}
-		}
-
-		if(actual_index==read_wad->tag_count)
-		{
-			/* This is an overload of a tag that wasn't previously existant for this level... */
-			dprintf("New tags are not supported!");
-		}
-		
-		wad_entry_header= (struct entry_header *) (raw_wad + wad_entry_header->next_offset);
-	} 
-}
-#endif
 
 static long calculate_raw_wad_length(
 	struct wad_header *file_header,
@@ -1422,95 +1338,6 @@ static void dump_raw_wad(
 	dprintf("%d Tag: %x Length: %d Next Offset: %d", tag_count, header->tag, header->length, header->next_offset);
 }
 
-// LP: won't bother to convert the union-wad stuff file handling
-#if 0
-static void dump_union_ref(
-	fileref union_ref)
-{
-	struct wad_internal_data *data= get_internal_data_for_file_id(union_ref);
-	short ii;
-	
-	assert(data);
-
-	if(data->file_count>1)
-	{
-		dprintf("Dump for union ref: %d", union_ref);
-		for(ii= 0; ii<data->file_count; ++ii)
-		{
-			dprintf("File %d VRef: %d parID: %d Name: %.*s", ii, data->files[ii].vRefNum,
-				data->files[ii].parID, data->files[ii].name[0], data->files[ii].name+1);
-		}
-		dprintf("End Dump for union ref: %d", union_ref);
-	}
-}
-
-/* -------- union static functions */
-static struct wad_internal_data *get_internal_data_for_file_id(
-	fileref file_id)
-{
-	short actual_index= (-file_id)-1;
-
-	assert(actual_index>=0 && actual_index<MAXIMUM_OPEN_WADFILES);
-	return internal_data[(-file_id)-1];
-}
-
-static struct wad_internal_data *allocate_internal_data_for_file_id(
-	fileref file_id)
-{
-	short actual_index= (-file_id)-1;
-
-	assert(actual_index>=0 && actual_index<MAXIMUM_OPEN_WADFILES);
-
-	/* Make sure it isn't already allocated */
-	assert(!internal_data[actual_index]);
-
-	internal_data[actual_index]= (struct wad_internal_data *)malloc(sizeof(struct wad_internal_data));
-	if(!internal_data[actual_index]) alert_user(fatalError, strERRORS, outOfMemory, memory_error());
-
-	/* If we got it.. */
-	if(internal_data[actual_index])
-		internal_data[actual_index]->file_count= 0;
-	
-	return internal_data[actual_index];
-}
-
-/* Not static because mac_wad.c needs it. (gross hack) */
-void free_internal_data_for_file_id(
-	fileref file_id)
-{
-	short actual_index= (-file_id)-1;
-
-	assert(actual_index>=0 && actual_index<MAXIMUM_OPEN_WADFILES);
-
-	/* Make sure it is already allocated */
-	assert(internal_data[actual_index]);
-	free(internal_data[actual_index]);
-	internal_data[actual_index]= NULL;
-}
-
-static fileref find_available_union_refnum(
-	void)
-{
-	short i;
-	fileref ref;
-	
-	for(i= 0; i<MAXIMUM_OPEN_WADFILES; ++i) 
-	{
-		if(!internal_data[i]) break;
-	}
-	
-	if(i==MAXIMUM_OPEN_WADFILES) 
-	{
-		/* No more files! */
-		ref = FILEREF_NONE;
-	} else {
-		/* Got one! */
-		ref= -1 - i;
-	}
-	
-	return ref;
-}
-#endif
 
 static bool write_to_file(
 	OpenedFile& OFile, 
