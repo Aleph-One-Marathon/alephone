@@ -145,6 +145,7 @@ extern int text_width(char *text, const sdl_font_info *font, uint16 style);
 extern int text_width(char *text, int length, const sdl_font_info *font, uint16 style);
 extern sdl_font_info *load_font(const TextSpec &spec);
 extern void draw_polygon(SDL_Surface *s, world_point2d *vertex_array, int vertex_count, uint32 pixel);
+extern void draw_line(SDL_Surface *s, world_point2d *v1, world_point2d *v2, uint32 pixel, int pen_size);
 
 static inline int draw_text(SDL_Surface *s, char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {

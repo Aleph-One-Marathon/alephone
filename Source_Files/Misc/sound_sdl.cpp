@@ -18,15 +18,25 @@ const int TOTAL_SOUND_CHANNELS = SM_SOUND_CHANNELS + 2;
 
 // SDL sound channel data
 struct sdl_channel {
-	uint8 *data;		// Current pointer to audio data
-	int32 length;		// Length in bytes remaining to be played
-	uint8 *loop;		// Pointer to loop start
-	int32 loop_length;	// Loop length in bytes (0 = don't loop)
-	fixed rate;			// Sample rate (relative to output sample rate)
-	fixed counter;		// Counter for up/downsampling
-	int16 left_volume;	// Volume (0x100 = nominal)
+	bool active;			// Flag: currently playing sound
+
+	bool sixteen_bit;		// Flag: 16-bit sound data (8-bit otherwise)
+	bool stereo;			// Flag: stereo sound data (mono otherwise)
+	int bytes_per_frame;	// Bytes per sample frame (1, 2 or 4)
+
+	uint8 *data;			// Current pointer to sound data
+	int32 length;			// Length in bytes remaining to be played
+	uint8 *loop;			// Pointer to loop start
+	int32 loop_length;		// Loop length in bytes (0 = don't loop)
+
+	fixed rate;				// Sample rate (relative to output sample rate)
+	fixed counter;			// Counter for up/downsampling
+
+	int16 left_volume;		// Volume (0x100 = nominal)
 	int16 right_volume;
-	bool active;		// Flag: currently playing sound
+
+	uint8 *next_header;		// Pointer to next queued sound header (NULL = none)
+	fixed next_pitch;		// Pitch of next queued sound header
 } sdl_channels[TOTAL_SOUND_CHANNELS];
 
 
@@ -54,6 +64,7 @@ extern bool option_nosound;
 static void close_sound_file(void);
 static void shutdown_sound_manager(void);
 static void set_sound_manager_status(bool active);
+static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch);
 static void sound_callback(void *userdata, uint8 *stream, int len);
 
 
@@ -213,6 +224,7 @@ static void set_sound_manager_status(bool active)
 					_sm_globals->total_channel_count = 0;
 					active = _sm_active = _sm_initialized = false;
 				}
+printf("freq %d, channels %d\n", desired.freq, desired.channels);
 				SDL_PauseAudio(false);
 
 			} else {
@@ -384,9 +396,11 @@ static void quiet_channel(struct channel_data *channel)
 
 static void instantiate_sound_variables(struct sound_variables *variables, struct channel_data *channel, boolean first_time)
 {
-	sdl_channel *c = (sdl_channel *)channel->channel;
-	c->left_volume = variables->left_volume;
-	c->right_volume = variables->right_volume;
+	if (first_time || variables->right_volume != channel->variables.right_volume || variables->left_volume != channel->variables.left_volume) {
+		sdl_channel *c = (sdl_channel *)channel->channel;
+		c->left_volume = variables->left_volume;
+		c->right_volume = variables->right_volume;
+	}
 	channel->variables = *variables;
 }
 
@@ -409,20 +423,24 @@ static void buffer_sound(struct channel_data *channel, short sound_index, fixed 
 	sdl_channel *c = (sdl_channel *)channel->channel;
 	SDL_LockAudio();
 
-	// Read sound header
+	// Get pointer to sound header
 	uint8 *data = (uint8 *)definition->ptr + definition->sound_offsets[permutation];
-	uint32 *sound_header = (uint32*)data;
-	c->rate = (pitch >> 8) * ((SDL_SwapBE32(sound_header[2]) >> 8) / desired.freq);
-	c->data = data + 22;
-	c->length = SDL_SwapBE32(sound_header[1]);
-	c->loop = c->data + SDL_SwapBE32(sound_header[3]);
-	c->loop_length = SDL_SwapBE32(sound_header[4]) - SDL_SwapBE32(sound_header[3]);
-	if (c->loop_length < 4)
-		c->loop_length = 0;
-	c->counter = 0;
 
-	// Start channel
-	c->active = true;
+	// Channel active? Then queue next header
+	if (c->active) {
+
+		// Yes, queue mext header
+		c->next_header = data;
+		c->next_pitch = pitch;
+
+	} else {
+
+		// No, load sound header
+		load_sound_header(c, data, pitch);
+		c->active = true;
+	}
+
+	// Unlock sound subsystem
 	SDL_UnlockAudio();
 }
 
@@ -447,11 +465,66 @@ void stop_sound_resource(void)
  *  Sound callback function
  */
 
+static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
+{
+	SDL_RWops *p = SDL_RWFromMem(data, 64);
+	if (p == NULL) {
+		c->active = false;
+		return;
+	}
+
+	// Get sound header type, skip unused sample pointer
+	uint8 header_type = data[20];
+	SDL_RWseek(p, 4, SEEK_CUR);
+
+	// Parse sound header
+	c->bytes_per_frame = 1;
+	if (header_type == 0x00) {			// Standard sound header
+		c->data = data + 22;
+		c->sixteen_bit = c->stereo = false;
+		c->length = SDL_ReadBE32(p);
+		c->rate = (pitch >> 8) * ((SDL_ReadBE32(p) >> 8) / desired.freq);
+		uint32 loop_start = SDL_ReadBE32(p);
+		c->loop = c->data + loop_start;
+		c->loop_length = SDL_ReadBE32(p) - loop_start;
+	} else if (header_type == 0xff) {	// Extended sound header
+		c->data = data + 64;
+		c->stereo = SDL_ReadBE32(p) == 2;
+		if (c->stereo)
+			c->bytes_per_frame *= 2;
+		c->rate = (pitch >> 8) * ((SDL_ReadBE32(p) >> 8) / desired.freq);
+		uint32 loop_start = SDL_ReadBE32(p);
+		c->loop = c->data + loop_start;
+		c->loop_length = SDL_ReadBE32(p) - loop_start;
+		SDL_RWseek(p, 2, SEEK_CUR);
+		c->length = SDL_ReadBE32(p) * c->bytes_per_frame;
+		SDL_RWseek(p, 22, SEEK_CUR);
+		c->sixteen_bit = SDL_ReadBE16(p) == 16;
+		if (c->sixteen_bit)
+			c->bytes_per_frame *= 2;
+		c->length *= c->bytes_per_frame;
+	} else {							// Unknown header type
+		fprintf(stderr, "Unknown sound header type %02x\n", header_type);
+		c->active = false;
+		SDL_FreeRW(p);
+		return;
+	}
+
+	// Correct loop count
+	if (c->loop_length < 4)
+		c->loop_length = 0;
+
+	// Reset sample counter
+	c->counter = 0;
+
+	SDL_FreeRW(p);
+}
+
 template <class T>
-inline static void calc_buffer(T *p, int len, bool stereo, int min, int max)
+inline static void calc_buffer(T *p, int len, bool stereo)
 {
 	while (len--) {
-		int32 left = 0, right = 0;
+		int32 left = 0, right = 0;	// 16-bit internally
 
 		// Mix all channels
 		sdl_channel *c = sdl_channels;
@@ -461,31 +534,60 @@ inline static void calc_buffer(T *p, int len, bool stereo, int min, int max)
 			if (c->active) {
 
 				// Yes, read sound data
-				T d = *(T *)c->data;
-				if (sizeof(T) == 2)
-					d = SDL_SwapBE16(d);
-				else
-					d ^= 0x80;
+				int32 dleft, dright;
+				if (c->stereo) {
+					if (c->sixteen_bit) {
+						dleft = (int16)SDL_SwapBE16(0[(int16 *)c->data]);
+						dright = (int16)SDL_SwapBE16(1[(int16 *)c->data]);
+					} else {
+						dleft = (int32)(int8)(0[c->data] ^ 0x80) << 8;
+						dright = (int32)(int8)(1[c->data] ^ 0x80) << 8;
+					}
+				} else {
+					if (c->sixteen_bit)
+						dleft = dright = (int16)SDL_SwapBE16(*(int16 *)c->data);
+					else
+						dleft = dright = (int32)(int8)(*(c->data) ^ 0x80) << 8;
+				}
 
 				// Mix into output
-				left += (d * c->left_volume) >> 8;
-				right += (d * c->right_volume) >> 8;
+				left += (dleft * c->left_volume) >> 8;
+				right += (dright * c->right_volume) >> 8;
 
-				// Advance sound pointer
+				// Advance sound data pointer
 				c->counter += c->rate;
 				if (c->counter >= 0x10000) {
 					int count = c->counter >> 16;
 					c->counter &= 0xffff;
-					c->data += sizeof(T) * count;
-					c->length -= sizeof(T) * count;
+					c->data += c->bytes_per_frame * count;
+					c->length -= c->bytes_per_frame * count;
 
-					// Sound finished? Then enter loop or stop channel
+					// Sound finished? Then enter loop or load next sound header
 					if (c->length <= 0) {
+
+						// Yes, loop present?
 						if (c->loop_length) {
+
+							// Yes, enter loop
 							c->data = c->loop;
 							c->length = c->loop_length;
-						} else
-							c->active = false;
+
+						} else {
+
+							// No, another sound header queued?
+							_sm_globals->channels[i].callback_count++;
+							if (c->next_header) {
+
+								// Yes, load sound header and continue
+								load_sound_header(c, c->next_header, c->next_pitch);
+								c->next_header = NULL;
+
+							} else {
+
+								// No, turn off channel
+								c->active = false;
+							}
+						}
 					}
 				}
 			}
@@ -496,15 +598,21 @@ inline static void calc_buffer(T *p, int len, bool stereo, int min, int max)
 		right = (right * main_volume) >> 8;
 
 		// Clip output values
-		if (left > max)
-			left = max;
-		else if (left < min)
-			left = min;
+		if (left > 32767)
+			left = 32767;
+		else if (left < -32768)
+			left = -32768;
 		if (stereo) {
-			if (right > max)
-				right = max;
-			else if (right < min)
-				right = min;
+			if (right > 32767)
+				right = 32767;
+			else if (right < -32768)
+				right = -32768;
+		}
+
+		// Downscale for 8-bit output
+		if (sizeof(T) == 1) {
+			left >>= 8;
+			right >>= 8;
 		}
 
 		// Write to output buffer
@@ -516,16 +624,16 @@ inline static void calc_buffer(T *p, int len, bool stereo, int min, int max)
 
 static void sound_callback(void *usr, uint8 *stream, int len)
 {
-	bool stereo = _sm_parameters->flags & _stereo_flag;
-	if (_sm_parameters->flags & _16bit_sound_flag) {
+	bool stereo = (desired.channels == 2);
+	if ((desired.format & 0xff) == 16) {
 		if (stereo)	// try to inline as much as possible
-			calc_buffer((int16 *)stream, len / 4, true, -16384, 16383);
+			calc_buffer((int16 *)stream, len / 4, true);
 		else
-			calc_buffer((int16 *)stream, len / 2, false, -16384, 16383);
+			calc_buffer((int16 *)stream, len / 2, false);
 	} else {
 		if (stereo)
-			calc_buffer((int8 *)stream, len / 2, true, -128, 127);
+			calc_buffer((int8 *)stream, len / 2, true);
 		else
-			calc_buffer((int8 *)stream, len, false, -128, 127);
+			calc_buffer((int8 *)stream, len, false);
 	}
 }

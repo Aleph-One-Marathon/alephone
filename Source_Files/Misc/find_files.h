@@ -9,6 +9,10 @@ Aug 25, 2000 (Loren Petrich):
 */
 #include "FileHandler.h"
 
+#ifdef SDL
+#define DirectorySpecifier FileSpecifier
+#endif
+
 
 /* Find all files of a given type.. */
 

@@ -112,6 +112,7 @@ static struct screen_mode_data screen_mode;
 extern bool option_fullscreen;
 
 // Prototypes
+static void change_screen_mode(int width, int height, int depth);
 static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
@@ -167,11 +168,9 @@ void initialize_screen(struct screen_mode_data *mode)
 	} else
 		unload_all_collections();
 
-	// Allocate provisionary off-screen buffer
-	reallocate_world_pixels(DEFAULT_WORLD_WIDTH, DEFAULT_WORLD_HEIGHT);
-
-	// Set screen mode
-	change_screen_mode(mode, FALSE);
+	// Set screen to 640x480 for menu
+	change_screen_mode(640, 480, bit_depth);
+	screen_mode = *mode;
 
 	screen_initialized = true;
 }
@@ -209,7 +208,7 @@ static void reallocate_world_pixels(int width, int height)
 	else if (bit_depth == 8) {
 		SDL_Color colors[256];
 		build_sdl_color_table(world_color_table, colors);
-		SDL_SetColors(world_pixels, colors, 0, world_color_table->color_count);
+		SDL_SetColors(world_pixels, colors, 0, 256);
 	}
 }
 
@@ -226,7 +225,7 @@ void reset_screen()
 	world_view->terminal_mode_active = FALSE;
 	world_view->horizontal_scale = 1;
 	world_view->vertical_scale = 1;
-	ResetFieldOfView();	
+	ResetFieldOfView();
 }
 
 
@@ -270,8 +269,6 @@ void ReloadViewContext(void)
 
 void enter_screen(void)
 {
-	ClearScreen();
-
 	if (world_view->overhead_map_active)
 		set_overhead_map_status(FALSE);
 	if (world_view->terminal_mode_active)
@@ -280,7 +277,8 @@ void enter_screen(void)
 	// Adding this view-effect resetting here since initialize_world_view() no longer resets it
 	world_view->effect = NONE;
 	
-	change_screen_mode(&screen_mode, TRUE);
+	// Set screen to selected size
+	change_screen_mode(&screen_mode, true);
 
 	if (screen_mode.acceleration == _opengl_acceleration) {
 #ifdef HAVE_OPENGL
@@ -298,6 +296,9 @@ void enter_screen(void)
 
 void exit_screen(void)
 {
+	// Return to 640x480
+	change_screen_mode(640, 480, bit_depth);
+
 #ifdef HAVE_OPENGL
 	OGL_StopRun();
 #endif
@@ -308,6 +309,25 @@ void exit_screen(void)
  *  Change screen mode
  */
 
+static void change_screen_mode(int width, int height, int depth)
+{
+	uint32 flags = SDL_HWSURFACE | SDL_HWPALETTE | (option_fullscreen ? SDL_FULLSCREEN : 0);
+	main_surface = SDL_SetVideoMode(width, height, depth, flags);
+	if (main_surface == NULL) {
+		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
+		exit(1);
+	}
+	if (depth == 8) {
+		SDL_Color colors[256];
+		build_sdl_color_table(interface_color_table, colors);
+		SDL_SetColors(main_surface, colors, 0, 256);
+	}
+	if (HUD_Buffer) {
+		SDL_FreeSurface(HUD_Buffer);
+		HUD_Buffer = NULL;
+	}
+}
+
 void change_screen_mode(struct screen_mode_data *mode, boolean redraw)
 {
 	// Get the screen mode here
@@ -316,12 +336,7 @@ void change_screen_mode(struct screen_mode_data *mode, boolean redraw)
 	// Open SDL display
 	int msize = mode->size;
 	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
-	uint32 flags = SDL_HWSURFACE | SDL_HWPALETTE | (option_fullscreen ? SDL_FULLSCREEN : 0);
-	main_surface = SDL_SetVideoMode(ViewSizes[msize].OverallWidth, ViewSizes[msize].OverallHeight, mode->bit_depth, flags);
-	if (main_surface == NULL) {
-		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
-		exit(1);
-	}
+	change_screen_mode(ViewSizes[msize].OverallWidth, ViewSizes[msize].OverallHeight, mode->bit_depth);
 	
 	// "Redraw" means clear the screen
 	if (redraw)
@@ -435,7 +450,7 @@ void render_screen(short ticks_elapsed)
 	}
 	SDL_Rect BufferRect = {0, 0, BufferWidth, BufferHeight};
 
-	// Set up view data appropriately (cribbed from change_screen_mode)
+	// Set up view data appropriately
 	world_view->screen_width = BufferWidth;
 	world_view->screen_height = BufferHeight;
 	world_view->standard_screen_width = 2*BufferHeight;	
@@ -570,10 +585,11 @@ void change_interface_clut(struct color_table *color_table)
 
 void change_screen_clut(struct color_table *color_table)
 {
-	if (interface_bit_depth == 8 && bit_depth == 8) {
+	if (bit_depth == 8)
 		memcpy(uncorrected_color_table, color_table, sizeof(struct color_table));
-		memcpy(interface_color_table, color_table, sizeof(struct color_table));
-	}
+	else
+		build_direct_color_table(uncorrected_color_table, bit_depth);
+	memcpy(interface_color_table, uncorrected_color_table, sizeof(struct color_table));
 
 	gamma_correct_color_table(uncorrected_color_table, world_color_table, screen_mode.gamma_level);
 	memcpy(visible_color_table, world_color_table, sizeof(struct color_table));
@@ -583,23 +599,22 @@ void change_screen_clut(struct color_table *color_table)
 
 void animate_screen_clut(struct color_table *color_table, boolean full_screen)
 {
-	if (world_pixels && bit_depth == 8) {
-		SDL_Color colors[256];
-		build_sdl_color_table(color_table, colors);
-		SDL_SetColors(world_pixels, colors, 0, color_table->color_count);
-	}
+	//!!
 }
 
 void assert_world_color_table(struct color_table *interface_color_table, struct color_table *world_color_table)
 {
 	SDL_Color colors[256];
 	build_sdl_color_table(interface_color_table, colors);
-	SDL_SetColors(main_surface, colors, 0, interface_color_table->color_count);
+	SDL_SetColors(main_surface, colors, 0, 256);
 	if (HUD_Buffer)
-		SDL_SetColors(HUD_Buffer, colors, 0, interface_color_table->color_count);
+		SDL_SetColors(HUD_Buffer, colors, 0, 256);
 
-	if (world_color_table)
-		animate_screen_clut(world_color_table, false);
+	if (world_pixels && world_color_table) {
+		SDL_Color colors[256];
+		build_sdl_color_table(world_color_table, colors);
+		SDL_SetColors(world_pixels, colors, 0, 256);
+	}
 }
 
 
@@ -810,18 +825,6 @@ boolean machine_supports_32bit(GDSpecPtr spec)
 short hardware_acceleration_code(GDSpecPtr spec)
 {
 	return _no_acceleration;
-}
-
-
-/*
- *  Update screen
- */
-
-void update_screen_window(WindowPtr window, EventRecord *event)
-{
-	draw_interface();
-	change_screen_mode(&screen_mode, TRUE);
-	assert_world_color_table(interface_color_table, world_color_table);
 }
 
 

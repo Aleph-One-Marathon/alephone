@@ -58,7 +58,7 @@ short get_level_number_from_user(void)
 {
 printf("*** get_level_number_from_user()\n");
 	//!!
-	return 3;
+	return 33;
 }
 
 
@@ -79,45 +79,6 @@ void toggle_menus(boolean game_started)
 short get_difficulty_level(void)
 {
 	return player_preferences->difficulty_level;
-}
-
-
-/*
- *  Update game window, pass event
- */
-
-void update_game_window(WindowPtr window, EventRecord *event)
-{
-	switch(get_game_state()) {
-		case _game_in_progress:
-			assert(event);
-			update_screen_window(window, event);
-			break;
-			
-		case _display_quit_screens:
-		case _display_intro_screens_for_demo:
-		case _display_intro_screens:
-		case _display_chapter_heading:
-		case _display_prologue:
-		case _display_epilogue:
-		case _display_credits:
-		case _display_main_menu:
-			update_interface_display();
-			break;
-			
-		case _quit_game:
-		case _close_game:
-		case _switch_demo:
-		case _change_level:
-		case _revert_game:
-		case _begin_display_of_epilogue:
-		case _displaying_network_game_dialogs:
-			break;
-	
-		default:
-			assert(false);
-			break;
-	}
 }
 
 

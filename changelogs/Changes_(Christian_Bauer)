@@ -1,4 +1,9 @@
 August 26, 2000
+ - improved SDL sound mixing routine: ambient sounds, stereo, 16-bit sound
+   and sample rates other than 22050Hz now work
+ - implemented overhead map rendering
+
+August 25, 2000
  - added endianess-correction to Map, Shapes and Sound file reading routines
  - removed byte_swap_collection() and associated data because the idea was
    good but the implementation was bogus (as it assumed that structure fields

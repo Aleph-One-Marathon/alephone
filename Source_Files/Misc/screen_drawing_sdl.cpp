@@ -259,38 +259,71 @@ static int trunc_text(char *text, int max_width, const sdl_font_info *font, uint
 
 // Draw single glyph at given position in frame buffer, return glyph width
 template <class T>
-inline static int draw_glyph(uint8 c, T *dst, int pitch, uint32 pixel, const sdl_font_info *font, bool oblique)
+inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int xmax, int ymax, uint32 pixel, const sdl_font_info *font, bool oblique)
 {
 	int cpos = c - font->first_character;
 
 	// Calculate source and destination pointers (kerning, ascent etc.)
 	uint8 *src = font->pixmap + font->location_table[cpos];
-	int src_width = font->location_table[cpos + 1] - font->location_table[cpos];
-	int src_height = font->rect_height;
-	dst += font->maximum_kerning + font->width_table[cpos * 2];
-	dst -= font->ascent * pitch / sizeof(T);
+	int width = font->location_table[cpos + 1] - font->location_table[cpos];
+	int height = font->rect_height;
+	int advance = font->width_table[cpos * 2 + 1];
+	y -= font->ascent;
+	x += font->maximum_kerning + font->width_table[cpos * 2];
+	p += y * pitch / sizeof(T) + x;
 	if (oblique)
-		dst += font->ascent / 2 - 1;
+		p += font->ascent / 2 - 1;
+
+	// Clip on top
+	if (y < 0) {
+		height += y;
+		if (height <= 0)
+			return advance;
+		p -= y * pitch / sizeof(T);
+		src -= y * font->bytes_per_row;
+	}
+
+	// Clip on bottom
+	if (y + height - 1 > ymax) {
+		height -= y + height - 1 - ymax;
+		if (height <= 0)
+			return advance;
+	}
+
+	// Clip on left
+	if (x < 0) {
+		width += x;
+		if (width <= 0)
+			return advance;
+		p -= x;
+		src -= x;
+	}
+
+	// Clip on right
+	if (x + width - 1 > xmax) {
+		width -= x + width - 1 - xmax;
+		if (width <= 0)
+			return advance;
+	}
 
 	// Blit glyph to screen
-	T *p = dst;
-	for (int y=0; y<src_height; y++) {
-		for (int x=0; x<src_width; x++) {
-			if (src[x])
-				p[x] = pixel;			
+	for (int iy=0; iy<height; iy++) {
+		for (int ix=0; ix<width; ix++) {
+			if (src[ix])
+				p[ix] = pixel;			
 		}
-		if (oblique && (y & 1))
+		if (oblique && (iy & 1))
 			p--;
 		src += font->bytes_per_row;
 		p += pitch / sizeof(T);
 	}
 
-	return font->width_table[cpos * 2 + 1];
+	return advance;
 }
 
 // Draw text at given position in frame buffer, return width
 template <class T>
-inline static int draw_text(uint8 *text, int length, T *p, int pitch, uint32 pixel, const sdl_font_info *font, uint16 style)
+inline static int draw_text(uint8 *text, int length, int x, int y, T *p, int pitch, int xmax, int ymax, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
 	bool oblique = style & italic;
 	int total_width = 0;
@@ -301,18 +334,18 @@ inline static int draw_text(uint8 *text, int length, T *p, int pitch, uint32 pix
 		if (c < font->first_character || c > font->last_character)
 			continue;
 
-		int width = draw_glyph(c, p, pitch, pixel, font, oblique);
+		int width = draw_glyph(c, x, y, p, pitch, xmax, ymax, pixel, font, oblique);
 		if (style & bold) {
-			draw_glyph(c, p + 1, pitch, pixel, font, oblique);
+			draw_glyph(c, x + 1, y, p, pitch, xmax, ymax, pixel, font, oblique);
 			width++;
 		}
 		if (style & underline) {
 			for (int i=0; i<width; i++)
-				p[i] = pixel;
+				p[y * pitch / sizeof(T) + x + i] = pixel;
 		}
 
 		total_width += width;
-		p += width;
+		x += width;
 	}
 	return total_width;
 }
@@ -323,13 +356,13 @@ int draw_text(SDL_Surface *s, char *text, int length, int x, int y, uint32 pixel
 	int width = 0;
 	switch (s->format->BytesPerPixel) {
 		case 1:
-			width = draw_text((uint8 *)text, length, (uint8 *)s->pixels + y * s->pitch + x, s->pitch, pixel, font, style);
+			width = draw_text((uint8 *)text, length, x, y, (uint8 *)s->pixels, s->pitch, s->w - 1, s->h - 1, pixel, font, style);
 			break;
 		case 2:
-			width = draw_text((uint8 *)text, length, (uint16 *)((uint8 *)s->pixels + y * s->pitch) + x, s->pitch, pixel, font, style);
+			width = draw_text((uint8 *)text, length, x, y, (uint16 *)s->pixels, s->pitch, s->w - 1, s->h - 1, pixel, font, style);
 			break;
-		default:
-			assert(false);
+		case 4:
+			width = draw_text((uint8 *)text, length, x, y, (uint32 *)s->pixels, s->pitch, s->w - 1, s->h - 1, pixel, font, style);
 			break;
 	}
 	if (s == SDL_GetVideoSurface())
@@ -601,10 +634,28 @@ void _fill_screen_rectangle(screen_rectangle *rectangle, short color_index)
 
 void _frame_rect(screen_rectangle *rectangle, short color_index)
 {
+	// Get color
 	SDL_Color color;
 	_get_interface_color(color_index, &color);
-printf("*** frame_rect()\n");
-	//!!
+	uint32 pixel = SDL_MapRGB(draw_surface->format, color.r, color.g, color.b);
+
+	// Draw rectangle
+	SDL_Rect r = {rectangle->left, rectangle->top, rectangle->right - rectangle->left, 1};
+	SDL_FillRect(draw_surface, &r, pixel);
+	r.y = rectangle->bottom - 1;
+	SDL_FillRect(draw_surface, &r, pixel);
+	r.y = rectangle->top;
+	r.w = 1;
+	r.h = rectangle->bottom - rectangle->top;
+	SDL_FillRect(draw_surface, &r, pixel);
+	r.x = rectangle->right - 1;
+	SDL_FillRect(draw_surface, &r, pixel);
+	if (draw_surface == SDL_GetVideoSurface()) {
+		if (rectangle)
+			SDL_UpdateRects(draw_surface, 1, &r);
+		else
+			SDL_UpdateRect(draw_surface, 0, 0, 0, 0);
+	}
 }
 
 void _erase_screen(short color_index)
@@ -627,7 +678,200 @@ void _offset_screen_rect(screen_rectangle *rect, short dx, short dy)
 
 
 /*
- *  Draw clipped, filled polygon
+ *  Draw line
+ */
+
+static inline uint8 cs_code(world_point2d *p, int clip_top, int clip_bottom, int clip_left, int clip_right)
+{
+	uint8 code = 0;
+	if (p->x < clip_left)
+		code |= 1;
+	if (p->x > clip_right)
+		code |= 2;
+	if (p->y < clip_top)
+		code |= 4;
+	if (p->y > clip_bottom)
+		code |= 8;
+	return code;
+}
+
+template <class T>
+static inline void draw_thin_line_noclip(T *p, int pitch, world_point2d *v1, world_point2d *v2, uint32 pixel)
+{
+	int xdelta = v2->x - v1->x;
+	int ydelta = v2->y - v1->y;
+
+	if (abs(xdelta) > ydelta) {	// X axis is major axis
+		int32 y = v1->y << 16;
+		int32 delta = (xdelta == 0 ? 0 : (ydelta << 16) / xdelta);
+		int x = v1->x;
+		p += v1->x;
+		if (xdelta < 0) {		// Line going left
+			while (true) {
+				p[(y >> 16) * pitch / sizeof(T)] = pixel;
+				if (x == v2->x)
+					break;
+				x--;
+				p--;
+				y -= delta;
+			}
+		} else {
+			while (true) {
+				p[(y >> 16) * pitch / sizeof(T)] = pixel;
+				if (x == v2->x)
+					break;
+				x++;
+				p++;
+				y += delta;
+			}
+		}
+	} else {					// Y axis is major axis
+		int32 x = v1->x << 16;
+		int32 delta = (ydelta == 0 ? 0 : (xdelta << 16) / ydelta);
+		p += v1->y * pitch / sizeof(T);
+		int y = v1->y;
+		while (true) {
+			p[x >> 16] = pixel;
+			if (y == v2->y)
+				break;
+			y++;
+			x += delta;
+			p += pitch / sizeof(T);
+		}
+	}
+}
+
+void draw_line(SDL_Surface *s, world_point2d *v1, world_point2d *v2, uint32 pixel, int pen_size)
+{
+	// Make line going downwards
+	if (v1->y > v2->y) {
+		world_point2d *tmp = v1;
+		v1 = v2;
+		v2 = tmp;
+	}
+
+	if (pen_size == 1) {
+
+		// Thin line, clip with Cohen/Sutherland and draw with DDA
+
+		// Get clipping rectangle
+		int clip_top, clip_bottom, clip_left, clip_right;
+		if (draw_clip_rect_active) {
+			clip_top = draw_clip_rect.top;
+			clip_bottom = draw_clip_rect.bottom - 1;
+			clip_left = draw_clip_rect.left;
+			clip_right = draw_clip_rect.right - 1;
+		} else {
+			clip_top = clip_left = 0;
+			clip_right = s->w - 1;
+			clip_bottom = s->h - 1;
+		}
+
+		// Get codes for start/end points
+		uint8 code1 = cs_code(v1, clip_top, clip_bottom, clip_left, clip_right);
+		uint8 code2 = cs_code(v2, clip_top, clip_bottom, clip_left, clip_right);
+
+		world_point2d clip_start, clip_end;
+
+clip_line:
+		if ((code1 | code2) == 0) {
+
+			// Line completely visible, draw it
+			switch (s->format->BytesPerPixel) {
+				case 1:
+					draw_thin_line_noclip((uint8 *)s->pixels, s->pitch, v1, v2, pixel);
+					break;
+				case 2:
+					draw_thin_line_noclip((uint16 *)s->pixels, s->pitch, v1, v2, pixel);
+					break;
+				case 4:
+					draw_thin_line_noclip((uint32 *)s->pixels, s->pitch, v1, v2, pixel);
+					break;
+			}
+
+		} else if ((code1 & code2) == 0) {
+
+			// Line partially visible, clip it
+#define clipx(p, clip, v, code) \
+	p.y = v1->y + (v2->y - v1->y) * (clip - v1->x) / (v2->x - v1->x); \
+	p.x = clip; \
+	v = &p; \
+	if (p.y < clip_top) \
+		code = 4; \
+	else if (p.y > clip_bottom) \
+		code = 8; \
+	else \
+		code = 0;
+
+#define clipy(p, clip, v, code) \
+	p.x = v1->x + (v2->x - v1->x) * (clip - v1->y) / (v2->y - v1->y); \
+	p.y = clip; \
+	v = &p; \
+	if (p.x < clip_left) \
+		code = 1; \
+	else if (p.x > clip_right) \
+		code = 2; \
+	else \
+		code = 0;
+
+			if (code1) {					// Clip start point
+				if (code1 & 1) {			// Left
+					clipx(clip_start, clip_left, v1, code1);
+				} else if (code1 & 2) {		// Right
+					clipx(clip_start, clip_right, v1, code1);
+				} else {					// Top (bottom can't happen because the line goes downwards)
+					clipy(clip_start, clip_top, v1, code1);
+				}
+			} else {			 			// Clip end point
+				if (code2 & 1) {			// Left
+					clipx(clip_end, clip_left, v2, code2);
+				} else if (code2 & 2) {		// Right
+					clipx(clip_end, clip_right, v2, code2);
+				} else {					// Bottom (top can't happen because the line goes downwards)
+					clipy(clip_end, clip_bottom, v2, code2);
+				}
+			}
+
+			goto clip_line;
+		}
+
+	} else {
+
+		// Thick line: to emulate the QuickDraw behaviour of moving a
+		// rectangular pen along a line, we convert the line into a hexagon
+
+		// Calculate hexagon points
+		world_point2d hexagon[6];
+		hexagon[0].x = v1->x - pen_size / 2;
+		hexagon[1].x = hexagon[0].x + pen_size - 1;
+		hexagon[0].y = hexagon[1].y = v1->y - pen_size / 2;
+		hexagon[4].x = v2->x - pen_size / 2;
+		hexagon[3].x = hexagon[4].x + pen_size - 1;
+		hexagon[3].y = hexagon[4].y = v2->y - pen_size / 2 + pen_size - 1;
+		if (v1->x > v2->x) {	// Line going to the left
+			hexagon[2].x = hexagon[1].x;
+			hexagon[2].y = hexagon[1].y + pen_size - 1;
+			hexagon[5].x = hexagon[4].x;
+			hexagon[5].y = hexagon[4].y - pen_size + 1;
+			if (v1->x - v2->y > v2->y - v1->y)	// Pixels missing from polygon filler
+				draw_line(s, hexagon + 0, hexagon + 5, pixel, 1);
+		} else {				// Line going to the right
+			hexagon[2].x = hexagon[3].x;
+			hexagon[2].y = hexagon[3].y - pen_size + 1;
+			hexagon[5].x = hexagon[0].x;
+			hexagon[5].y = hexagon[0].y + pen_size - 1;
+			if (v2->x - v1->y > v2->y - v1->y)	// Pixels missing from polygon filler
+				draw_line(s, hexagon + 1, hexagon + 2, pixel, 1);
+		}
+
+		// Draw hexagon
+		draw_polygon(s, hexagon, 6, pixel);
+	}
+}
+
+
+/*
+ *  Draw clipped, filled, convex polygon
  */
 
 void draw_polygon(SDL_Surface *s, world_point2d *vertex_array, int vertex_count, uint32 pixel)
@@ -748,26 +992,34 @@ void draw_polygon(SDL_Surface *s, world_point2d *vertex_array, int vertex_count,
 	// Scan polygon edges and build span list
 	v1 = vertex_array + vertex_count - 1;
 	v2 = vertex_array;
+	int xmin = SHORT_MAX, xmax = SHORT_MIN;
 	int ymin = SHORT_MAX, ymax = SHORT_MIN;
 	for (int i=0; i<vertex_count; i++, v1 = v2, v2++) {
 
-		if (v1->y < ymin)			// Find minimum and maximum y coordinates
+		if (v1->x < xmin)	// Find minimum and maximum coordinates
+			xmin = v1->x;
+		if (v1->x > xmax)
+			xmax = v1->x;
+		if (v1->y < ymin)
 			ymin = v1->y;
 		if (v1->y > ymax)
 			ymax = v1->y;
 
-		if (v1->y == v2->y)			// Horizontal edge
+		int x1x2 = v1->x - v2->x;
+		int y1y2 = v1->y - v2->y;
+
+		if (y1y2 == 0)				// Horizontal edge
 			continue;
-		else if (v1->y < v2->y) {	// Edge going down -> left span boundary
+		else if (y1y2 < 0) {		// Edge going down -> left span boundary
 			int32 x = v1->x << 16;	// 16.16 fixed point
-			int32 delta = ((v2->x - v1->x) << 16) / (v2->y - v1->y);
+			int32 delta = (x1x2 << 16) / y1y2;
 			for (int y=v1->y; y<=v2->y; y++) {
 				span[y].left = x >> 16;
 				x += delta;			// DDA line drawing
 			}
 		} else {					// Edge going up -> right span boundary
 			int32 x = v2->x << 16;
-			int32 delta = ((v1->x - v2->x) << 16) / (v1->y - v2->y);
+			int32 delta = (x1x2 << 16) / y1y2;
 			for (int y=v2->y; y<=v1->y; y++) {
 				span[y].right = x >> 16;
 				x += delta;			// Draw downwards to ensure that adjacent polygon fits perfectly
@@ -784,14 +1036,17 @@ void draw_polygon(SDL_Surface *s, world_point2d *vertex_array, int vertex_count,
 		else if (left < right) {
 			r.x = left;
 			r.y = y;
-			r.w = right - r.x;
+			r.w = right - r.x + 1;
 		} else {
 			r.x = right;
 			r.y = y;
-			r.w = left - r.x;
+			r.w = left - r.x + 1;
 		}
 		SDL_FillRect(s, &r, pixel);
 	}
+
+	if (draw_surface == SDL_GetVideoSurface())
+		SDL_UpdateRect(draw_surface, xmin, ymin, xmax - xmin + 1, ymax - ymin + 1);
 }
 
 

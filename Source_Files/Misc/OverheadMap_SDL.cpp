@@ -41,6 +41,24 @@ void OverheadMap_SDL_Class::draw_polygon(short vertex_count, short *vertices, rg
 
 
 /*
+ *  Draw line
+ */
+
+void OverheadMap_SDL_Class::draw_line(short *vertices, rgb_color &color, short pen_size)
+{
+	// Get start and end points
+	world_point2d *v1 = &GetVertex(vertices[0]);
+	world_point2d *v2 = &GetVertex(vertices[1]);
+
+	// Get color
+	uint32 pixel = SDL_MapRGB(world_pixels->format, color.red >> 8, color.green >> 8, color.blue >> 8);
+
+	// Draw line
+	::draw_line(world_pixels, v1, v2, pixel, pen_size);
+}
+
+
+/*
  *  Draw "thing" (object)
  */
 
@@ -110,4 +128,21 @@ void OverheadMap_SDL_Class::draw_text(world_point2d &location, rgb_color &color,
 
 	// Draw text
 	::draw_text(world_pixels, text, xpos, location.y, pixel, font, spec.style);
+}
+
+
+/*
+ *  Draw path
+ */
+
+void OverheadMap_SDL_Class::set_path_drawing(rgb_color &color)
+{
+	path_pixel = SDL_MapRGB(world_pixels->format, color.red >> 8, color.green >> 8, color.blue >> 8);
+}
+
+void OverheadMap_SDL_Class::draw_path(short step, world_point2d &location)
+{
+	if (step)
+		::draw_line(world_pixels, &path_point, &location, path_pixel, 1);
+	path_point = location;
 }

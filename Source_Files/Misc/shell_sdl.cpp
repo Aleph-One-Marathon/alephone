@@ -59,7 +59,7 @@
 unsigned long LocalEventFlags = 0;
 
 // LP addition: whether or not the cheats are active
-bool CheatsActive = false;
+bool CheatsActive = true;
 
 // Global variables
 struct system_information_data *system_information;
@@ -219,11 +219,10 @@ static void initialize_application(void)
 	XML_Loader.ParseResourceSet('TEXT');
 
 	initialize_preferences();
-graphics_preferences->screen_mode.bit_depth = 16;	//!! 8 or 16
-#if 0
+//!!
+graphics_preferences->screen_mode.bit_depth = 16;	// 8 or 16
 sound_preferences->flags = _more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag;
-sound_preferences->pitch = 0x00020000;
-#endif
+sound_preferences->pitch = 0x00010000;				// 22050Hz
 	write_preferences();
 
 	initialize_sound_manager(sound_preferences);
@@ -246,7 +245,7 @@ sound_preferences->pitch = 0x00020000;
 
 	initialize_game_state();
 
-#if 1
+#if 0
 //!! sorry, uhm, this will of course be gone once the preferences dialogs are implemented...
 short cebix_keys[] = {
 	SDLK_KP8, SDLK_KP2, SDLK_KP4, SDLK_KP6,		// moving/turning
@@ -343,7 +342,7 @@ static void main_event_loop(void)
 					poll_event = true;
 					last_event_poll = SDL_GetTicks();
 				} else
-					SDL_PumpEvents();
+					SDL_PumpEvents();	// This ensures a responsive keyboard control
 				break;
 
 			case _display_intro_screens:
@@ -433,22 +432,22 @@ static void handle_game_key(const SDL_Event &event)
 	}
 
 	switch (key) {
-		case SDLK_PERIOD: case SDLK_GREATER:	// sound volume up
+		case SDLK_PERIOD:		// sound volume up
 			changed_prefs = adjust_sound_volume_up(sound_preferences, _snd_adjust_volume);
 			break;
-		case SDLK_COMMA: case SDLK_LESS:		// sound volume down
+		case SDLK_COMMA:		// sound volume down
 			changed_prefs = adjust_sound_volume_down(sound_preferences, _snd_adjust_volume);
 			break;
 
-		case SDLK_DELETE:						// switch player view
+		case SDLK_BACKSPACE:	// switch player view
 			walk_player_list();
 			render_screen(0);
 			break;
 
-		case SDLK_PLUS: case SDLK_EQUALS:
+		case SDLK_EQUALS:
 			zoom_overhead_map_in();
 			break;
-		case SDLK_MINUS: case SDLK_UNDERSCORE:
+		case SDLK_MINUS:
 			zoom_overhead_map_out();
 			break;
 
@@ -465,7 +464,7 @@ static void handle_game_key(const SDL_Event &event)
 				increment_replay_speed();
 			break;
 
-		case SDLK_QUESTION: {
+		case SDLK_BACKSLASH: {
 			extern bool displaying_fps;
 			displaying_fps = !displaying_fps;
 			break;
