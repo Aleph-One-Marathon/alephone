@@ -280,17 +280,15 @@ static void shutdown_shape_handler(void)
 }
 
 const int POINTER_SIZE = sizeof(void *);
-const int POINTER_BITS = 2;
 
 static int AdjustToPointerBoundary(int x)
 {
-	return ((((x-1) >> POINTER_BITS) + 1) << POINTER_BITS);
+	return ((((x-1) / POINTER_SIZE) + 1) * POINTER_SIZE);
 }
 
 // Creates an unpacked collection and puts it into a long, flat stream like the original.
 byte *unpack_collection(byte *collection, int32 length, bool strip)
 {
-	assert((1 << POINTER_BITS) == POINTER_SIZE);
 
 	// Set up blank values of these quantities
 	byte *NewCollection = NULL;
