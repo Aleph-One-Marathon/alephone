@@ -10,6 +10,9 @@ Saturday, January 2, 1993 10:22:46 PM
 
 Jul 5, 2000 (Loren Petrich):
 	Added XML support for controlling the cheats
+
+Jul 7, 2000 (Loren Petrich):
+	Added Ben Thompson's change: an Input-Sprocket-only input mode
 */
 
 /* ---------- constants */
@@ -78,7 +81,8 @@ enum // input devices
 	_keyboard_or_game_pad,
 	_mouse_yaw_pitch,
 	_mouse_yaw_velocity,
-	_cybermaxx_input  // only put "_input" here because it was defined elsewhere.
+	_cybermaxx_input,  // only put "_input" here because it was defined elsewhere.
+	_input_sprocket_only
 };
 
 struct system_information_data
