@@ -28,6 +28,10 @@
 #include <GL/gl.h>
 #endif
 
+#ifdef __WIN32__
+#include <windows.h>
+#endif
+
 
 // Data directories
 vector<DirectorySpecifier> data_search_path;	// List of directories in which data files are searched for
@@ -76,7 +80,7 @@ static void usage(const char *prg_name)
 		"\t[-g | --nogl]          Do not use OpenGL\n"
 #endif
 		"\t[-s | --nosound]       Do not access the sound card\n"
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
 		"\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 		"the data directory.\n"
 #endif
@@ -168,26 +172,55 @@ static void initialize_application(void)
 
 	// Find data directories, construct search path
 	DirectorySpecifier default_data_dir;
+
 #if defined(__unix__)
+
 	default_data_dir = PKGDATADIR;
 	const char *home = getenv("HOME");
 	if (home)
 		local_data_dir = home;
 	local_data_dir += ".alephone";
+
 #elif defined(__BEOS__)
+
 	default_data_dir = get_application_directory();
 	local_data_dir = get_preferences_directory();
+
+#elif defined(__WIN32__)
+
+	char file_name[MAX_PATH];
+	GetModuleFileName(NULL, file_name, sizeof(file_name));
+	char *sep = strrchr(file_name, '\\');
+	*sep = '\0';
+	
+	default_data_dir = file_name;
+
+	char login[17];
+	DWORD len = 17;
+	if (!GetUserName((LPSTR)login, &len))
+		strcpy(login, "Bob User");
+
+	local_data_dir = file_name + "Prefs";
+	local_data_dir.CreateDirectory();
+	local_data_dir += login;
+	 
 #else
 #error Data file paths must be set for this platform.
 #endif
 
 #if defined(__unix__) || defined(__BEOS__)
+#define LIST_SEP ':'
+#elif defined(__WIN32__)
+#define LIST_SEP ';'
+#endif
+
+#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
 	const char *data_env = getenv("ALEPHONE_DATA");
 	if (data_env) {
 		// Read colon-separated list of directories
 		string path = data_env;
 		string::size_type pos;
-		while ((pos = path.find(':')) != string::npos) {
+		while ((pos = path.find(LIST_SEP)) != string::npos) {
 			if (pos) {
 				string element = path.substr(0, pos);
 				data_search_path.push_back(element);

@@ -19,6 +19,11 @@
 #include <unistd.h>	// for getlogin()
 #endif
 
+#ifdef __WIN32__
+#include <windows.h> // for GetUserName()
+#endif
+
+
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
 
@@ -42,6 +47,16 @@ static void get_name_from_system(char *name)
 
 	char *login = getlogin();
 	strcpy(name, login ? login : "Bob User");
+
+#elif defined(__WIN32__)
+
+	char login[17];
+	DWORD len = 17;
+
+	if (GetUserName((LPTSTR)login, (LPDWORD)&len))
+		strcpy(name, login);
+	else
+		strcpy(name, "Bob User");
 
 #else
 #error get_name_from_system() not implemented for this platform

@@ -29,6 +29,13 @@
 #endif
 
 
+#if defined(__unix__) || defined(__BEOS__)
+#define PATH_SEP '/'
+#elif defined(__WIN32__)
+#define PATH_SEP '\\'
+#endif
+
+
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
 extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, recordings_dir;
@@ -292,22 +299,6 @@ const FileSpecifier &FileSpecifier::operator=(const FileSpecifier &other)
 	return *this;
 }
 
-// Get last element of path
-void FileSpecifier::GetName(char *part) const
-{
-#if defined(__unix__) || defined(__BEOS__)
-
-	string::size_type pos = name.rfind('/');
-	if (pos == string::npos)
-		strcpy(part, name.c_str());
-	else
-		strcpy(part, name.substr(pos + 1).c_str());
-
-#else
-#error FileSpecifier::GetLastPart() not implemented for this platform
-#endif
-}
-
 // Create file
 bool FileSpecifier::Create(int Type)
 {
@@ -324,6 +315,13 @@ bool FileSpecifier::CreateDirectory()
 
 	err = 0;
 	if (mkdir(name.c_str(), 0777) < 0)
+		err = errno;
+	return err == 0;
+
+#elif defined (__WIN32__)
+
+	err = 0;
+	if (mkdir(name.c_str()) < 0)
 		err = errno;
 	return err == 0;
 
@@ -416,7 +414,7 @@ bool FileSpecifier::OpenRelative(OpenedResourceFile &OFile)
 // Check for existence of file
 bool FileSpecifier::Exists()
 {
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
 
 	// Check whether the file is readable
 	err = 0;
@@ -432,7 +430,7 @@ bool FileSpecifier::Exists()
 // Get modification date
 TimeType FileSpecifier::GetDate()
 {
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
 
 	struct stat st;
 	err = 0;
@@ -553,15 +551,31 @@ void FileSpecifier::SetToRecordingsDir()
 	name = recordings_dir.name;
 }
 
+// Get last element of path
+void FileSpecifier::GetName(char *part) const
+{
+#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
+
+	string::size_type pos = name.rfind(PATH_SEP);
+	if (pos == string::npos)
+		strcpy(part, name.c_str());
+	else
+		strcpy(part, name.substr(pos + 1).c_str());
+
+#else
+#error FileSpecifier::GetLastPart() not implemented for this platform
+#endif
+}
+
 // Add part to path name
 void FileSpecifier::AddPart(const string &part)
 {
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
 
-	if (name.length() && name[name.length() - 1] == '/')
+	if (name.length() && name[name.length() - 1] == PATH_SEP)
 		name += part;
 	else
-		name = name + "/" + part;
+		name = name + PATH_SEP + part;
 
 #else
 #error FileSpecifier::AddPart() not implemented for this platform
@@ -573,14 +587,14 @@ void FileSpecifier::AddPart(const string &part)
 // Split path to base and last part
 void FileSpecifier::SplitPath(string &base, string &part) const
 {
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
 
-	string::size_type pos = name.rfind('/');
+	string::size_type pos = name.rfind(PATH_SEP);
 	if (pos == string::npos) {
 		base = name;
 		part.erase();
 	} else if (pos == 0) {
-		base = "/";
+		base = PATH_SEP;
 		part = name.substr(1);
 	} else {
 		base = name.substr(0, pos);
@@ -605,8 +619,12 @@ void FileSpecifier::canonicalize_path(void)
 		name.erase(pos, 1);
 	}
 
+#endif
+
+#if defined(__unix__) || defined(__BEOS__) || defined(__WIN32__)
+
 	// Remove trailing '/'
-	if (!name.empty() && name[name.size()-1] == '/')
+	if (!name.empty() && name[name.size()-1] == PATH_SEP)
 		name.erase(name.size()-1, 1);
 
 #else
@@ -617,7 +635,7 @@ void FileSpecifier::canonicalize_path(void)
 // Read directory contents
 bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 {
-#if defined(__unix__) || defined(__BEOS__)
+#if defined(__unix__) || defined(__BEOS__) || defined (__WIN32__)
 
 	vec.clear();
 

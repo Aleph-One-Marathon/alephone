@@ -410,6 +410,10 @@ private:
 
 	void SplitPath(string &base, string &part) const;
 
+#if defined(__WIN32__) && defined(CreateDirectory)
+#undef CreateDirectory
+#endif
+
 	bool CreateDirectory();
 	bool ReadDirectory(vector<dir_entry> &vec);
 
