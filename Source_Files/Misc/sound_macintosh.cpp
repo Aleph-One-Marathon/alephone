@@ -47,6 +47,7 @@ static pascal void sound_callback_proc(SndChannelPtr channel, SndCommand command
 
 static long sound_level_to_sound_volume(short level);
 
+static void set_sound_manager_status(bool active);
 static void close_sound_file(void);
 static void shutdown_sound_manager(void);
 
@@ -79,7 +80,7 @@ void set_sound_manager_parameters(
 
 /* passing false disposes of all existing sound channels and sets _sm_active to false,
 	true reallocates everything and sets _sm_active to true */
-void set_sound_manager_status(
+static void set_sound_manager_status(
 	bool active)
 {
 	if (_sm_initialized)
