@@ -100,6 +100,7 @@ typedef float GLfloat;
 #include "item_definitions.h" // EE add for Remove_Item
 #include "ActionQueues.h"
 #include "fades.h"
+#include "vbl.h"
 
 #define sign(a) (a) < 0 ? -1 : 1
 
@@ -254,6 +255,7 @@ void s_Monster_Get_Item(script_instruction inst);
 void s_Monster_Set_Item(script_instruction inst);
 void s_Monster_Get_Nuke(script_instruction inst);
 void s_Monster_Set_Nuke(script_instruction inst);
+void s_Get_Monster_Poly(script_instruction inst);
 void s_Get_Random(script_instruction inst);
 void s_Set_Platform_State(script_instruction inst);
 void s_Get_Platform_State(script_instruction inst);
@@ -267,7 +269,7 @@ void s_Set_UnderFog_Presence(script_instruction inst);
 void s_Remove_Item(script_instruction inst);
 void s_Player_Control(script_instruction inst);
 void s_Play_Sound(script_instruction inst);
-void s_Display_Message(script_instruction inst);
+void s_Debug_Message(script_instruction inst);
 void s_Monster_Get_Action(script_instruction inst);
 void s_Monster_Get_Mode(script_instruction inst);
 void s_Monster_Get_Vitality(script_instruction inst);
@@ -414,7 +416,7 @@ void init_instructions(void)
 	instruction_lookup[Remove_Item] = s_Remove_Item;
 	instruction_lookup[Player_Control] = s_Player_Control;
 	instruction_lookup[Play_Sound] = s_Play_Sound;
-	instruction_lookup[Display_Message] = s_Display_Message;
+	instruction_lookup[Debug_Message] = s_Debug_Message;
 	instruction_lookup[Monster_Get_Action] = s_Monster_Get_Action;
 	instruction_lookup[Monster_Get_Mode] = s_Monster_Get_Mode;
 	instruction_lookup[Monster_Get_Vitality] = s_Monster_Get_Vitality;
@@ -427,7 +429,8 @@ void init_instructions(void)
 	instruction_lookup[Set_Platform_Monster_Control] = s_Set_Platform_Monster_Control;
 	instruction_lookup[Get_Platform_Speed] = s_Get_Platform_Speed;
 	instruction_lookup[Set_Platform_Speed] = s_Set_Platform_Speed;
-}
+ 	instruction_lookup[Get_Monster_Poly] = s_Get_Monster_Poly;
+ }
 
 // Suppressed for MSVC compatibility
 #if 0
@@ -3410,10 +3413,11 @@ void s_Player_Control(script_instruction inst)
 	{
 		GetPfhortranActionQueues()->enqueueActionFlags(local_player_index,
 			&action_flags, value, true);
+		increment_heartbeat_count(value); // ba-doom
 	}
 }
 
-void s_Display_Message(script_instruction inst)
+void s_Debug_Message(script_instruction inst)
 {
 	float op1, op2, op3;
 
@@ -3493,9 +3497,8 @@ void s_Monster_Get_Action(script_instruction inst)
 			return;
 	}
 	
-	
 	struct monster_data *theMonster = get_monster_data(monster_index);
-	if (theMonster && SLOT_IS_USED(theMonster))
+	if (theMonster)
 		set_variable(int(inst.op2), theMonster->action);
 }
 

@@ -274,7 +274,7 @@ enum /* instruction defs */
 	
 	Play_Sound = 0x5C,
 	
-	Display_Message = 0x5D,
+	Debug_Message = 0x5D,
 	
 	Monster_Get_Action = 0x5E,
 	
@@ -299,7 +299,9 @@ enum /* instruction defs */
 	Get_Platform_Speed = 0x68,
 	
 	Set_Platform_Speed = 0x69,
-		
+
+	Get_Monster_Poly = 0x70,
+	
 	NUMBER_OF_INSTRUCTIONS
 };
 
