@@ -399,7 +399,7 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 			textured_polygon.ShapeDesc = Texture;
 			textured_polygon.ambient_shade= get_light_intensity(surface->lightsource_index);
 			textured_polygon.vertex_count= vertex_count;
-			instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, view->tick_count + 16*(polygon-map_polygons), true);
+			instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, true);
 			if (view->shading_mode==_shading_infravision) textured_polygon.flags|= _SHADELESS_BIT;
 			
 			/* and, finally, map it */
@@ -526,7 +526,7 @@ void RenderRasterizerClass::render_node_side(
 				textured_polygon.ambient_shade= get_light_intensity(surface->lightsource_index) + surface->ambient_delta;
 				textured_polygon.ambient_shade= PIN(textured_polygon.ambient_shade, 0, FIXED_ONE);
 				textured_polygon.vertex_count= vertex_count;
-				instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, view->tick_count + (int32)window, false);
+				instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, false);
 				if (view->shading_mode==_shading_infravision) textured_polygon.flags|= _SHADELESS_BIT;
 				
 				/* and, finally, map it */

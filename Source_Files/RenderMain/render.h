@@ -204,7 +204,7 @@ void instantiate_rectangle_transfer_mode(view_data *view,
 	rectangle_definition *rectangle, short transfer_mode, _fixed transfer_phase);
 
 void instantiate_polygon_transfer_mode(view_data *view,
-	polygon_definition *polygon, short transfer_mode, short transfer_phase, bool horizontal);
+	polygon_definition *polygon, short transfer_mode, bool horizontal);
 
 
 // In overhead_map.cpp:

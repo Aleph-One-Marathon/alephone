@@ -29,6 +29,7 @@
 #define MESSAGEHANDLER_H
 
 //#include <unistd.h>
+#include <cstdlib>
 
 class Message;
 class CommunicationsChannel;

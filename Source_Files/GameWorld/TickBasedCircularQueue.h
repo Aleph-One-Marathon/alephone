@@ -166,7 +166,7 @@ template <typename tValueType>
 class MutableElementsTickBasedCircularQueue : public ConcreteTickBasedCircularQueue<tValueType> {
 public:
         MutableElementsTickBasedCircularQueue(int inBufferCapacity) : ConcreteTickBasedCircularQueue<tValueType>(inBufferCapacity) {}
-        tValueType& at(int32 inTick) { return elementForTick(inTick); }
+        tValueType& at(int32 inTick) { return ConcreteTickBasedCircularQueue<tValueType>::elementForTick(inTick); }
         tValueType& operator [](int32 inTick) { return at(inTick); }
 };
 

@@ -32,6 +32,7 @@
 #include "MessageHandler.h"
 
 #include <iostream> // debugging
+#include <cerrno>
 #include "cseries.h"
 #if defined(WIN32)
 #include <winsock2.h> // hacky non-cross-platform setting of nonblocking

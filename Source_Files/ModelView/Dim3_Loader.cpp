@@ -225,7 +225,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	{
 		size_t NumBones = Model.Bones.size();
 		BoneIndices.resize(NumBones);
-		fill(BoneIndices.begin(),BoneIndices.end(),UNONE);	// No bones listed -- yet
+		fill(BoneIndices.begin(),BoneIndices.end(),(size_t)UNONE);	// No bones listed -- yet
 		vector<Model3D_Bone> SortedBones(NumBones);
 		vector<size_t> BoneStack(NumBones);
 		vector<bool> BonesUsed(NumBones);

@@ -711,12 +711,12 @@ void instantiate_polygon_transfer_mode(
 	struct view_data *view,
 	struct polygon_definition *polygon,
 	short transfer_mode,
-	short transfer_phase,
 	bool horizontal)
 {
 	world_distance x0, y0;
 	world_distance vector_magnitude;
 	short alternate_transfer_phase;
+	short transfer_phase;
 
 	polygon->transfer_mode= _textured_transfer;
 	switch (transfer_mode)
