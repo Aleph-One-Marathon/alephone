@@ -128,6 +128,10 @@ Jan 29, 2002 (Br'fin (Jeremy Parsons)):
 
 Feb 4, 2002 (Br'fin (Jeremy Parsons)):
 	Moved OGL_Initialize to shell_macintosh.cpp from marathon2.cpp
+
+Feb 13, 2002 (Br'fin (Jeremy Parsons)):
+	Revised Carbon's use of RunCurrentEventLoop to dispatch Carbon MouseMoved events
+	(Which should be caught and handled by an event handler installed by mouse.cpp)
 */
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -1150,6 +1154,15 @@ static void initialize_marathon_music_handler(
 static void main_event_loop(
 	void)
 {
+#if defined(TARGET_API_MAC_CARBON)
+	static EventTypeSpec mouseMovedEvents[] = {
+		{kEventClassMouse, kEventMouseMoved},
+		{kEventClassMouse, kEventMouseDragged}};
+	EventRef theEvent;
+	EventTargetRef theTarget;
+	
+	theTarget = GetEventDispatcherTarget();
+#endif
 	wait_for_highlevel_event();
 	
 	while(get_game_state()!=_quit_game)
@@ -1157,9 +1170,15 @@ static void main_event_loop(
 		bool use_waitnext;
 
 #if defined(TARGET_API_MAC_CARBON)
-		// JTP: Give room for our input timer to fire
-		// (kEventDurationNoWait was too short!)
-		RunCurrentEventLoop(kEventDurationNanosecond);
+		// JTP: Give room for catching mouse Events
+		RunCurrentEventLoop(kEventDurationNoWait);
+		
+		// Pass off our mouse events
+		while(ReceiveNextEvent(2, mouseMovedEvents, kEventDurationNoWait, true, &theEvent) == noErr)
+		{
+			SendEventToEventTarget (theEvent, theTarget);
+			ReleaseEvent(theEvent);
+		}
 #endif
 
 		if(try_for_event(&use_waitnext))

@@ -34,6 +34,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 Jan 29, 2002 (Br'fin (Jeremy Parsons)):
 	Rewrote Carbon mouse to report mouse movement based on receiving MouseMoved events
+
+Feb 13, 2002 (Br'fin (Jeremy Parsons)):
+	Rewrote Carbon mouse again, to catch mouse movement in the main thread and pass those
+	values to the input thread
 */
 
 /* marathon includes */
@@ -64,6 +68,9 @@ Jan 29, 2002 (Br'fin (Jeremy Parsons)):
 
 static void get_mouse_location(Point *where);
 static void set_mouse_location(Point where);
+#if defined(TARGET_API_MAC_CARBON)
+static pascal OSStatus CEvtHandleApplicationMouseMoved (EventHandlerCallRef nextHandler, EventRef theEvent, void* userData);
+#endif
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 static CursorDevicePtr find_mouse_device(void);
 static bool trap_available(short trap_num);
@@ -88,7 +95,12 @@ static CursorDevicePtr mouse_device = NULL;
 #endif
 static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
 static bool snapshot_button_state;
-
+#if defined(TARGET_API_MAC_CARBON)
+static MPCriticalRegionID CE_MouseLock;
+static int _CE_delta_x, _CE_delta_y;
+static EventHandlerUPP _CEMouseTrackerUPP;
+static EventHandlerRef _CEMouseTracker;
+#endif
 /* ---------- code */
 
 void enter_mouse(
@@ -106,7 +118,17 @@ void enter_mouse(
 	
 	snapshot_delta_yaw= snapshot_delta_pitch= snapshot_delta_velocity= false;
 	snapshot_button_state= false;
-	
+
+#if defined(TARGET_API_MAC_CARBON)
+	// JTP: Install our Carbon Event mouse handler and create the critical region for safe value sharing
+	static EventTypeSpec mouseMovedEvents[] = {
+		{kEventClassMouse, kEventMouseMoved},
+		{kEventClassMouse, kEventMouseDragged}};
+	_CEMouseTrackerUPP = NewEventHandlerUPP(CEvtHandleApplicationMouseMoved);
+	InstallApplicationEventHandler (_CEMouseTrackerUPP,
+		2, mouseMovedEvents, NULL, &_CEMouseTracker);
+	MPCreateCriticalRegion(&CE_MouseLock);
+#endif
 	return;
 }
 
@@ -151,7 +173,13 @@ void exit_mouse(
 	short type)
 {
 	(void) (type);
-	
+
+#if defined(TARGET_API_MAC_CARBON)
+	RemoveEventHandler(_CEMouseTracker);
+	DisposeEventHandlerUPP(_CEMouseTrackerUPP);
+	_CEMouseTrackerUPP = NULL;
+	MPDeleteCriticalRegion(CE_MouseLock);
+#endif
 	return;
 }
 
@@ -228,19 +256,15 @@ void mouse_idle(
 static void get_mouse_location(
 	Point *where)
 {
+
 #if defined(TARGET_API_MAC_CARBON)
-	static EventTypeSpec mouseMovedEvents[] = {
-		{kEventClassMouse, kEventMouseMoved},
-		{kEventClassMouse, kEventMouseDragged}};
-	
-	EventRef theEvent;
-	if(ReceiveNextEvent(2, mouseMovedEvents, kEventDurationNoWait, true, &theEvent) == noErr)
+	if(MPEnterCriticalRegion(CE_MouseLock, kDurationImmediate) == noErr)
 	{
-		int CGx, CGy;
-		CGGetLastMouseDelta(&CGx, &CGy);
-		where->h = CENTER_MOUSE_X + CGx;
-		where->v = CENTER_MOUSE_Y + CGy;
-		ReleaseEvent(theEvent);
+		where->h = CENTER_MOUSE_X + _CE_delta_x;
+		where->v = CENTER_MOUSE_Y + _CE_delta_y;
+		_CE_delta_x = 0;
+		_CE_delta_y = 0;
+		MPExitCriticalRegion(CE_MouseLock);
 	}
 	else
 	{
@@ -286,6 +310,25 @@ static void set_mouse_location(
 	
 	return;
 }
+
+#if defined(TARGET_API_MAC_CARBON)
+// Catch mouse events in the main thread, store the deltas for the input thread
+pascal OSStatus CEvtHandleApplicationMouseMoved (EventHandlerCallRef nextHandler,
+    EventRef theEvent,
+    void* userData)
+{
+	int CGx, CGy;
+	CGGetLastMouseDelta(&CGx, &CGy);
+	OSStatus err;
+	if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationMillisecond)) == noErr)
+	{
+		_CE_delta_x += CGx;
+		_CE_delta_y += CGy;
+		MPExitCriticalRegion(CE_MouseLock);
+	}
+        return noErr;
+}
+#endif
 
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 static CursorDevicePtr find_mouse_device(

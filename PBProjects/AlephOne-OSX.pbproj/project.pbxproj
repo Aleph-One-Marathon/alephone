@@ -1,4 +1,4 @@
-// $*UTF8*$!
+// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -5010,7 +5010,7 @@
 				F53675210201528F01A80001,
 				F53675220201639001A80001,
 				F5367523020163DB01A80001,
-				F5C8AFE60207387401A80001,
+				F58816A6021B112A01A80001,
 			);
 			isa = PBXSourcesBuildPhase;
 			name = Sources;
@@ -7140,6 +7140,12 @@
 			settings = {
 			};
 		};
+		F58816A6021B112A01A80001 = {
+			fileRef = F536742A02014FE101A80001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F58BD22E01F7D34501F58C2F = {
 			isa = PBXFileReference;
 			path = config.h;
@@ -7177,12 +7183,6 @@
 			name = mytm_mac_carbon.cpp;
 			path = ../Source_Files/CSeries/mytm_mac_carbon.cpp;
 			refType = 2;
-		};
-		F5C8AFE60207387401A80001 = {
-			fileRef = F5C8AFE50207387301A80001;
-			isa = PBXBuildFile;
-			settings = {
-			};
 		};
 		F5CADB5B0136D95E01000001 = {
 			isa = PBXFileReference;
