@@ -138,8 +138,12 @@ struct map_object /* 16 bytes */
 };
 const int SIZEOF_map_object = 16;
 
+// Due to misalignments, these have different sizes
 typedef world_point2d saved_map_pt;
 typedef struct line_data saved_line;
+#ifdef LP
+// typedef struct side_data saved_side;
+#endif
 typedef struct polygon_data saved_poly;
 typedef struct map_annotation saved_annotation;
 typedef struct map_object saved_object;
@@ -523,6 +527,41 @@ struct side_exclusion_zone
 	world_point2d e0, e1, e2, e3;
 };
 
+#ifdef LP
+struct saved_side /* 64 bytes */
+{
+	short type;
+	word flags;
+	
+	struct side_texture_definition primary_texture;
+	struct side_texture_definition secondary_texture;
+	struct side_texture_definition transparent_texture; /* not drawn if .texture==NONE */
+
+	/* all sides have the potential of being impassable; the exclusion zone is the area near
+		the side which cannot be walked through */
+	struct side_exclusion_zone exclusion_zone;
+
+	short control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
+	short control_panel_permutation; /* platform index, light source index, etc... */
+	
+	short primary_transfer_mode; /* These should be in the side_texture_definition.. */
+	short secondary_transfer_mode;
+	short transparent_transfer_mode;
+
+	short polygon_index, line_index;
+
+	short primary_lightsource_index;	
+	short secondary_lightsource_index;
+	short transparent_lightsource_index;
+
+	uint16 ambient_delta[2];
+
+	short unused[1];
+};
+#endif
+#ifdef CB
+
+// Misaligned 4-byte value (ambient_delta) split in it
 struct saved_side /* 64 bytes */
 {
 	int16 type;
@@ -553,7 +592,9 @@ struct saved_side /* 64 bytes */
 
 	int16 unused[1];
 };
+#endif
 const int SIZEOF_saved_side = 64;
+const int SIZEOF_side_data = 64;
 
 struct side_data /* size platform-dependant */
 {
@@ -581,7 +622,7 @@ struct side_data /* size platform-dependant */
 	short secondary_lightsource_index;
 	short transparent_lightsource_index;
 
-	fixed ambient_delta;
+	short ambient_delta;
 
 	short unused[1];
 };
@@ -1188,6 +1229,10 @@ void guess_side_lightsource_indexes(short side_index);
 
 void set_map_index_buffer_size(long length);
 
+// Split and join the misaligned 4-byte values
+void pack_side_data(side_data& source, saved_side& dest);
+void unpack_side_data(saved_side& source, side_data& dest);
+
 /* ---------- prototypes/PLACEMENT.C */
 
 void load_placement_data(struct object_frequency_definition *monsters, struct object_frequency_definition *items);
@@ -1262,4 +1307,5 @@ boolean new_game(short number_of_players, boolean network,
 	struct player_start_data *player_start_information, 
 	struct entry_point *entry_point);
 boolean goto_level(struct entry_point *entry, boolean new_game);
+
 #endif
