@@ -32,6 +32,11 @@ May 2, 2000 (Loren Petrich):
 
 Jul 4, 2000 (Loren Petrich):
 	Made XML map-display settings compatible with the map cheat.
+
+Jul 8, 2000 (Loren Petrich):
+	Added support for OpenGL rendering;
+	in these routines, it's the global flag OGL_MapActive,
+	which indicates whether to do so in the overhead map
 */
 
 #include "macintosh_cseries.h"
@@ -240,6 +245,10 @@ static bool ShowItems = false;
 static bool ShowProjectiles = false;
 static bool ShowPaths = false;
 
+// Is OpenGL rendering of the map currently active?
+// Set this from outside, because we want to make an OpenGL rendering for the main view,
+// yet a software rendering for an in-terminal checkpoint view
+bool OGL_MapActive = false;
 
 /* ---------- macros */
 
