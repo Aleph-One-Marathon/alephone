@@ -1472,7 +1472,22 @@ for clockwise-side or counterclockwise-side normals;
 if the normals' variance is greater than this value,
 then a vertex's normal is split into one for each of its polygons.
 (default: 0.5)
-<li>light_type: what sort of lighting to use
+<li>light_type: what sort of lighting to use (default: fast)
+<ol type=1 start=1000>
+<li>Fast lighting; only one calculation of the player light
+<li>Like above, but the player light won't fade off on the sides
+<li>Individual-vertex calculation of the player light (more accurate, but slower)
+<li>Like above, but the player light won't fade off on the sides
+</ol>
+<li>depth_type: what sort of depth to use in the depth sorting
+<ul>
+<li>+: Farthest bounding-box point (good for all-or-nothing-opacity objects)
+<li>0: Center of bounding box
+<li>-: Nearest bounding-box point (good for semitransparent objects)
+</ul>
+Ideally, objects with all-or-nothing opacity ought to be rendered
+before semitransparent ones;
+these different depth options offer a way to approximate that effect.
 </ul>
 <p>
 The scaling and rotations will be applied before the shifts;
