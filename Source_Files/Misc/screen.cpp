@@ -190,7 +190,6 @@ June 20, 2001 (Loren Petrich):
 // LP addition: view control
 #include "ViewControl.h"
 #include <Displays.h>
-// #include <DrawSprocket.h>
 
 //CP addition: scripting support
 #include "scripting.h"
@@ -245,6 +244,17 @@ June 20, 2001 (Loren Petrich):
 #define FREE_MEMORY_FOR_FULL_SCREEN (3*MEG+EXTRA_MEMORY)
 
 #define clutMARATHON8_CLUT_ID 5002
+
+
+// Stuff for monitor-frequency dialog box
+enum {
+	MonitorFreq_Dialog = 300,
+	MonitorFreq_Revert = 1,
+	MonitorFreq_Def,
+	MonitorFreq_Set,
+	MonitorFreq_Popup
+};
+
 
 typedef ReqListRec *ReqListPtr;
 
@@ -2219,20 +2229,51 @@ struct DM_ModeList
 };
 
 
-// Dimensions of a mode; use this for searching for biggest and best modes
-struct ModeDims
+// Mode data:
+struct DM_ModeData
 {
-	int Index;				// What index in the list of modes?
-	short Width, Height;	// What dimensions?
-	
-	void Set(int _Index, short _Width, short _Height)
-	{
-		Index = _Index; Width = _Width; Height = _Height;
-	}
-	
-	// Initialize to blank; the initial index value indicates a nonexistent index
-	ModeDims() {Index = NONE; Width = Height = 0;}
+	Str255 Name;
+	int Index;
+	unsigned long csData;
 };
+
+
+// List of modes with some dimension
+class DM_ModeDimList
+{
+	vector<DM_ModeData> MDList;	// What indices share these dimensions
+	short Width, Height;	// What dimensions?
+
+public:
+	bool AddMD(short _Width, short _Height, DM_ModeData& ModeData);
+	void SetDims(short _Width, short _Height);
+	
+	short GetWidth() {return Width;}
+	short GetHeight() {return Height;}
+	
+	int NumMDs() {return MDList.size();}
+	DM_ModeData &WhichMD(int I) {return MDList[I];}
+	
+	DM_ModeDimList() : Width(0), Height(0) {MDList.reserve(16);}
+};
+
+bool DM_ModeDimList::AddMD(short _Width, short _Height, DM_ModeData& ModeData)
+{
+	if (Width != _Width) return false;
+	if (Height != _Height) return false;
+	
+	MDList.push_back(ModeData);
+	return true;
+}
+
+void DM_ModeDimList::SetDims(short _Width, short _Height)
+{
+	Width = _Width;
+	Height = _Height;
+	
+	MDList.clear();
+}
+
 
 // Changes the monitor's resolution and creates a DSp context for the new resolution
 // and deletes the old one if necessary; returns the success of doing so
@@ -2253,7 +2294,8 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	if (!DM_HandleError("CR: Creating mode-info list",ModeList.Err)) return false;
 	
 	// Search: find biggest mode and best mode with desired bit depth
-	ModeDims Biggest, Best;
+	DM_ModeDimList Biggest, Best;
+	bool PassedBest = false;
 	
 	for (DMListIndexType Index=0; Index<ModeList.Count; Index++)
 	{
@@ -2277,48 +2319,124 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 			short ModeWidth = Bounds.right-Bounds.left;
 			short ModeHeight = Bounds.bottom-Bounds.top;
 			
-			Biggest.Set(Index,MAX(Biggest.Width,ModeWidth),MAX(Biggest.Height,ModeHeight));
+			DM_ModeData ModeData;
+			memcpy(ModeData.Name,ModeList.ModeInfoPtr->displayModeName,256);
+			ModeData.Index = Index;
+			ModeData.csData = IndivDepthPtr->depthSwitchInfo->csData;
 			
-			if (Best.Index < 0)
+			if (ModeWidth > Biggest.GetWidth() || ModeHeight > Biggest.GetHeight())
+				Biggest.SetDims(ModeWidth,ModeHeight);
+			
+			Biggest.AddMD(ModeWidth,ModeHeight,ModeData);
+			
+			if (ModeWidth >= Width && ModeHeight >= Height && !PassedBest)
 			{
-				if (ModeWidth >= Width && ModeHeight >= Height)
-					Best.Set(Index,ModeWidth,ModeHeight);
+				Best.SetDims(ModeWidth,ModeHeight);
+				PassedBest = true;
 			}
+			
+			Best.AddMD(ModeWidth,ModeHeight,ModeData);
 			break;
 		}
 	}
 	
-	// What mode to switch to; check to see if the appropriate indices had been set
-	int Index = (Best.Index >= 0) ? Best.Index :
-		((Biggest.Index >= 0) ? Biggest.Index :
-			NONE);
-	if (Index < 0) return false;
+	// Find which list of indices to use
+	DM_ModeDimList *MDPtr = (Best.NumMDs() > 0) ? &Best :
+		((Biggest.NumMDs() > 0) ? &Biggest : NULL);
+	if (!MDPtr) return false;
 	
-	// Need to re-grab mode info
-	ModeList.GetMode(Index);
-			
-	VDResolutionInfoPtr ResInfoPtr = ModeList.ModeInfoPtr->displayModeResolutionInfo;
-		
-	// The mode name is a Pascal string pointed to by ModeList.ModeInfoPtr->displayModeName
-	// Need the depth info to find which
-	DMDepthInfoBlockPtr DepthInfoPtr = ModeList.ModeInfoPtr->displayModeDepthBlockInfo;
+	// Build MacOS Classic dialog box
+	DialogPtr Dialog = GetNewDialog(MonitorFreq_Dialog, nil, WindowPtr(-1));
+	assert(Dialog);
 	
-	// Is there a submode with a bit depth that matches the desired bit depth?
-	for (int id=0; id<DepthInfoPtr->depthBlockCount; id++)
+	// Get its popup-menu handle
+	ControlHandle PopupHandle;
+	short ItemType;
+	Rect Bounds;
+	GetDialogItem(Dialog, MonitorFreq_Popup, &ItemType, 
+		(Handle *) &PopupHandle, &Bounds);
+	assert(PopupHandle);
+	PopupPrivateData **PopupDataHandle = (PopupPrivateData **) ((*PopupHandle)->contrlData);
+	MenuHandle PopupMenuHandle = (*PopupDataHandle)->mHandle;
+	
+	// Add the mode names
+	int NumMenuItems = CountMItems(PopupMenuHandle);
+	for (int im=0; im<NumMenuItems; im++)
+		DeleteMenuItem(PopupMenuHandle,1);
+	
+	for (int im=0; im<MDPtr->NumMDs(); im++)
 	{
-		DMDepthInfoPtr IndivDepthPtr = DepthInfoPtr->depthVPBlock + id;
-		VPBlockPtr IDBlockPtr = IndivDepthPtr->depthVPBlock;
-		if (IDBlockPtr->vpPixelSize != BitDepth) continue;
-		
-		// How does one get from a VPBlockPtr to the screen size?
-		
-		// Switch!
-		unsigned long TempBitDepth = BitDepth;
-		Err = DMSetDisplayMode(Device,IndivDepthPtr->depthSwitchInfo->csData,&TempBitDepth,NULL,Session.State);
-		return (Err != noErr);
+		InsertMenuItem(PopupMenuHandle,"\pBlam",im);
+		SetMenuItemText(PopupMenuHandle, (im+1), MDPtr->WhichMD(im).Name);
 	}
 	
-	return false;
+	// Default: first one
+	int DefSelected = 0;
+	int Selected = DefSelected;
+	int PrevSelected = Selected;
+	SetControlValue(PopupHandle, Selected+1);
+	
+	// Need to make the change the first time around
+	bool ChangeRequested = true;
+	bool QuitRequested = false;
+	bool ChangeSuccess = false;
+	
+	// Read that dialog box and set the mode as appropriate
+	SelectWindow(Dialog);
+	ShowWindow(Dialog);
+	while(true)
+	{
+		// Putting monitor-resolution changing up here so it only has to be present once
+		if (ChangeRequested)
+		{
+			// Switch!
+			unsigned long TempBitDepth = BitDepth;
+			Err = DMSetDisplayMode(Device,MDPtr->WhichMD(Selected).csData,&TempBitDepth,NULL,Session.State);
+			ChangeSuccess = (Err == noErr);
+			
+			// No more changes to be done unless explicitly requested
+			ChangeRequested = false;
+		}
+		
+		// Quit only after making some requested change, like reversion
+		if (QuitRequested) break;
+		
+		short ItemHit;
+		ModalDialog(nil, &ItemHit);
+		
+		// Here, ChangeRequested and QuitRequested are false unless explicitly made true
+		switch(ItemHit)
+		{
+		case MonitorFreq_Revert:
+			Selected = PrevSelected;
+			SetControlValue(PopupHandle, Selected+1);
+			ChangeRequested = true;
+			break;
+			
+		case MonitorFreq_Def:
+			Selected = DefSelected;
+			SetControlValue(PopupHandle, Selected+1);
+			ChangeRequested = true;
+			QuitRequested = true;
+			break;
+			
+		case MonitorFreq_Set:
+			QuitRequested = true;
+			break;
+			
+		case MonitorFreq_Popup:
+			PrevSelected = Selected;
+			Selected = GetControlValue(PopupHandle) - 1;
+			ChangeRequested = true;
+			break;
+		}
+	}
+	
+	// Clean up
+	HideWindow(Dialog);
+	DisposeDialog(Dialog);
+	
+	return ChangeSuccess;
 }
 
 
