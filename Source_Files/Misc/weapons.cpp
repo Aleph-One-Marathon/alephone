@@ -324,7 +324,7 @@ void initialize_weapon_manager(
 	player_weapons_array= (struct player_weapon_data *) malloc(MAXIMUM_NUMBER_OF_PLAYERS*sizeof(struct player_weapon_data));
 	assert(player_weapons_array);
 
-	memset(player_weapons_array, 0, MAXIMUM_NUMBER_OF_PLAYERS*sizeof(struct player_weapon_data));
+	objlist_clear(player_weapons_array, MAXIMUM_NUMBER_OF_PLAYERS);
 
 #if 0
 {
@@ -347,7 +347,7 @@ void initialize_player_weapons_for_new_game(
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 
 	/* Clear the shots fired and all that jazz */
-	memset(player_weapons, 0, sizeof(struct player_weapon_data));
+	obj_clear(*player_weapons);
 	
 	/* initialize the weapons to known states. */
 	initialize_player_weapons(player_index);
