@@ -635,8 +635,8 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->device_spec.slot= NONE;
 	preferences->device_spec.flags= deviceIsColor;
 	preferences->device_spec.bit_depth= 32;
-	preferences->device_spec.width= 640;
-	preferences->device_spec.height= 480;
+	preferences->device_spec.width= 800;
+	preferences->device_spec.height= 600;
 	
 	preferences->screen_mode.size = _100_percent;
 	preferences->screen_mode.fullscreen = false;
@@ -652,7 +652,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	else
 	{
 		preferences->screen_mode.acceleration = _no_acceleration;
-		preferences->screen_mode.bit_depth = 16;
+		preferences->screen_mode.bit_depth = 32;
 	}
 	
 #else
@@ -850,7 +850,7 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 	}
 
 #ifdef mac
-
+#ifndef __MACH__
 	if (preferences->screen_mode.bit_depth==32 && !machine_supports_32bit(&preferences->device_spec))
 	{
 		preferences->screen_mode.bit_depth= 16;
@@ -864,6 +864,7 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 		preferences->screen_mode.bit_depth= 8;
 		changed= true;
 	}
+#endif
 #else
 	// OpenGL requires at least 16 bit color depth
 	if (preferences->screen_mode.acceleration == _opengl_acceleration && preferences->screen_mode.bit_depth == 8)
