@@ -8,6 +8,10 @@
 
 Dec 25, 2000 (Loren Petrich):
 	Added OpenGL-rendering support
+
+Dec 31, 2000 (Loren Petrich):
+	Switched to a 32-bit intermediate GWorld, so that text antialiasing
+	will work properly.
 */
 
 #include <GL/gl.h>
@@ -17,7 +21,7 @@ Dec 25, 2000 (Loren Petrich):
 
 
 // MacOS-specific: stuff that gets reused
-static CTabHandle Grays = NULL;
+// static CTabHandle Grays = NULL;
 
 // Font-specifier equality and assignment:
 
@@ -208,6 +212,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	TxtrHeight = MAX(128, NextPowerOfTwo(GlyphHeight*(LastLine+1)));
 	
 	// MacOS-specific: create a grayscale color table if necessary
+	/*
 	if (!Grays)
 	{
 		CTabHandle SystemColors = GetCTable(8);
@@ -228,13 +233,15 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 		HUnlock(Handle(SystemColors));
 		DisposeCTable(SystemColors);
 	}
+	*/
 	
 	// MacOS-specific: render the font glyphs onto a GWorld,
 	// and use it as the source of the font texture.
 	Rect ImgRect;
 	SetRect(&ImgRect,0,0,TxtrWidth,TxtrHeight);
 	GWorldPtr FTGW;
-	OSErr Err = NewGWorld(&FTGW,8,&ImgRect,Grays,0,0);
+	OSErr Err = NewGWorld(&FTGW,32,&ImgRect,0,0,0);
+	// OSErr Err = NewGWorld(&FTGW,8,&ImgRect,Grays,0,0);
 	if (Err != noErr) return;
 	PixMapHandle Pxls = GetGWorldPixMap(FTGW);
 	LockPixels(Pxls);
@@ -279,7 +286,9 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  		for (int m=0; m<TxtrWidth; m++)
  		{
  			*(DstPxl++) = 0xff;	// Base color: white (will be modified with glColorxxx())
- 			*(DstPxl++) = *(SrcPxl++);
+ 			*(DstPxl++) = *SrcPxl;
+ 			SrcPxl += 4;
+ 			// *(DstPxl++) = *(SrcPxl++);
  		}
  	}
  	
