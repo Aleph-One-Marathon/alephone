@@ -100,7 +100,8 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 
 #if defined(mac)
 			// Render picture to GWorld, convert to GL textures
-#warning This needs to be implemented!
+// IR change: commented this out because I really don't care, and its annoying.
+//#warning This needs to be implemented!
 #elif defined(SDL)
 			// Render picture into SDL surface, convert to GL textures
 			SDL_Surface *hud_pict = picture_to_surface(PictRsrc);

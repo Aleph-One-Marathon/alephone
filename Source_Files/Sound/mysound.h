@@ -1,6 +1,6 @@
 #ifndef __MYSOUND_H
 #define __MYSOUND_H
-
+ 
 /*
 mySOUND.H
 
@@ -39,9 +39,18 @@ Sep 23, 2000 (Loren Petrich):
 
 Dec 3, 2000 (Loren Petrich):
 	Added quadrupling of usual buffer size because RAM is now readily available
+	
+Aug 01, 2001 (Ian RIckard):
+	Added _relative_sound_volume_flag for better sound support on my mac.  Even at
+	volume level 1 sounds are loud, and above 2 are exceedingly load.  Instead of
+	changing the system volume sounds are scaled down by the sound engine.
+	Added _system_sound_volume_dirty_flag to record weather the system sound volume
+	has been changed and not restored yet.
+	Added _always_available_flags to make adding/removing flags easier.  These flags
+	are alwas set (in theory) in _sm_globals->available_flags.
 
-Mar 5, 2002 (Woody Zenfell):
-    New prototypes for SDL network audio
+Aug 19, 2001 (Ian RIckard):
+	Added prototypes for new feedback sounds.
 */
 
 class FileSpecifier;
@@ -67,17 +76,20 @@ enum // sound sources
 	NUMBER_OF_SOUND_SOURCES
 };
 
-enum // initialization flags (some of these are used by the prefs, which fixes them)
+enum // initialization flags
 {
-	_stereo_flag= 0x0001, /* play sounds in stereo [prefs] */
-	_dynamic_tracking_flag= 0x0002, /* tracks sound sources during idle_proc [prefs] */
+	_stereo_flag= 0x0001, /* play sounds in stereo */
+	_dynamic_tracking_flag= 0x0002, /* tracks sound sources during idle_proc */
 	_doppler_shift_flag= 0x0004, /* adjusts sound pitch during idle_proc */
-	_ambient_sound_flag= 0x0008, /* plays and tracks ambient sounds (valid iff _dynamic_tracking_flag) [prefs] */
-	_16bit_sound_flag= 0x0010, /* loads 16bit audio instead of 8bit [prefs] */
-	_more_sounds_flag= 0x0020, /* loads all permutations; only loads #0 if false [prefs] */
-	_relative_volume_flag = 0x0040, /* LP: Ian Rickard's relative-volume flag [prefs] */
-	_extra_memory_flag= 0x0100, /* double usual memory */
-	_extra_extra_memory_flag= 0x0200 /* LP: quadruple usual memory, because RAM is more available */
+	_ambient_sound_flag= 0x0008, /* plays and tracks ambient sounds (valid iff _dynamic_tracking_flag) */
+	_16bit_sound_flag= 0x0010, /* loads 16bit audio instead of 8bit */
+	_more_sounds_flag= 0x0020, /* loads all permutations; only loads #0 if false */
+	_extra_memory_flag= 0x0040, /* double usual memory */
+	_extra_extra_memory_flag= 0x0080, /* quadruple usual memory */ // Because RAM is more available
+	// IR addition: relative volumes:
+	_relative_sound_volume_flag= 0x0100, /* don't change system volume, amplify sounds internally */
+	_system_sound_volume_dirty_flag= 0x8000, /* system sound volume has been changed */
+	_always_available_flags= _stereo_flag|_dynamic_tracking_flag|_relative_sound_volume_flag|_system_sound_volume_dirty_flag
 };
 
 enum // _sound_obstructed_proc() flags
@@ -538,14 +550,10 @@ bool open_sound_file(FileSpecifier& File);
 // LP change: get the parser for the sound elements (name "sounds")
 XML_ElementParser *Sounds_GetParser();
 
-#ifdef SDL
 // Play MacOS sound resource
+#ifdef SDL
 extern void play_sound_resource(LoadedResource &rsrc);
 extern void stop_sound_resource(void);
-
-// ZZZ: operate on network audio
-extern void ensure_network_audio_playing();
-extern void stop_network_audio();
 #endif
 
 #endif

@@ -30,6 +30,9 @@ Nov 18, 2000 (Loren Petrich):
 #ifndef _OGL_TEXTURES
 #define _OGL_TEXTURES
 
+// IR addition:
+#include "texturers.h" // for MAXIMUM_SHADING_TABLE_INDEXES
+
 // Initialize the texture accounting
 void OGL_StartTextures();
 
@@ -314,5 +317,6 @@ struct OGL_TexturesStats {
 };
 
 extern OGL_TexturesStats gGLTxStats;
+
 
 #endif

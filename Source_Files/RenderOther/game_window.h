@@ -34,6 +34,7 @@ void update_interface(short time_elapsed);
 void scroll_inventory(short dy);
 
 void OGL_DrawHUD(Rect &dest, short time_elapsed);
+void OGL_ResetHUDFonts(bool IsStarting);
 
 void mark_ammo_display_as_dirty(void);
 void mark_shield_display_as_dirty(void);

@@ -195,6 +195,12 @@ Nov 29, 2000 (Loren Petrich):
 
 Jan 17, 2001 (Loren Petrich):
 	Added vertical flipping
+
+Aug 12, 2001 (Ian Rickard):
+	One tiny B&B prep change
+
+Sept 13, 2001 (Ian Rickard):
+	Complete overhaul of VisTree/SortPoly pu in place.  Objects are not drawn at the moment.
 */
 
 
@@ -216,6 +222,8 @@ Jan 17, 2001 (Loren Petrich):
 #include "AnimatedTextures.h"
 #include "OGL_Render.h"
 
+#include "readout_data.h"
+
 #ifdef QUICKDRAW_DEBUG
 #include "shell.h"
 extern WindowPtr screen_window;
@@ -226,10 +234,12 @@ extern WindowPtr screen_window;
 #include <stdlib.h>
 
 // LP additions for decomposition of this code:
-#include "RenderVisTree.h"
-#include "RenderSortPoly.h"
+//#include "RenderVisTree.h"
+//#include "RenderSortPoly.h"
+#include "NewRenderVisTree.h"
 #include "RenderPlaceObjs.h"
-#include "RenderRasterize.h"
+//#include "RenderRasterize.h"
+#include "NewRenderRasterize.h"
 #include "Rasterizer_SW.h"
 #include "Rasterizer_OGL.h"
 
@@ -279,10 +289,11 @@ vector<uint16> RenderFlagList;
 
 // LP additions: decomposition of the rendering code into various objects
 
-static RenderVisTreeClass RenderVisTree;			// Visibility-tree object
-static RenderSortPolyClass RenderSortPoly;			// Polygon-sorting object
+//static RenderVisTreeClass RenderVisTree;			// Visibility-tree object
+//static RenderSortPolyClass RenderSortPoly;			// Polygon-sorting object
+static NewVisTree RenderVisTree;			// Visibility-tree object
 static RenderPlaceObjsClass RenderPlaceObjs;		// Object-placement object
-static RenderRasterizerClass RenderRasterize;		// Clipping and rasterization class
+static NewRenderRasterizer RenderRasterize;		// Clipping and rasterization class
 
 static Rasterizer_SW_Class Rasterizer_SW;			// Software rasterizer
 #ifdef HAVE_OPENGL
@@ -317,17 +328,26 @@ void allocate_render_memory(
 	RenderFlagList.resize(RENDER_FLAGS_BUFFER_SIZE);
 	
 	// LP addition: check out pointer-arithmetic hack
-	assert(sizeof(void *) == sizeof(POINTER_DATA));
+	//assert(sizeof(void *) == sizeof(POINTER_DATA));
 	
 	// LP change: do max allocation
-	RenderVisTree.Resize(MAXIMUM_ENDPOINTS_PER_MAP,MAXIMUM_LINES_PER_MAP);
-	RenderSortPoly.Resize(MAXIMUM_POLYGONS_PER_MAP);
+	//RenderVisTree.Resize(MAXIMUM_ENDPOINTS_PER_MAP,MAXIMUM_LINES_PER_MAP);
+	//RenderSortPoly.Resize(MAXIMUM_POLYGONS_PER_MAP);
 	
 	// LP change: set up pointers
+<<<<<<< render.cpp
+	//RenderSortPoly.RVPtr = &RenderVisTree;
+	//RenderPlaceObjs.RVPtr = &RenderVisTree;
+	//RenderPlaceObjs.RSPtr = &RenderSortPoly;
+	//RenderRasterize.RSPtr = &RenderSortPoly;
+		
+	return;
+=======
 	RenderSortPoly.RVPtr = &RenderVisTree;
 	RenderPlaceObjs.RVPtr = &RenderVisTree;
 	RenderPlaceObjs.RSPtr = &RenderSortPoly;
 	RenderRasterize.RSPtr = &RenderSortPoly;
+>>>>>>> 1.23
 }
 
 /* just in case anyone was wondering, standard_screen_width will usually be the same as
@@ -413,10 +433,17 @@ void render_view(
 		// LP: now from the visibility-tree class
 		/* build the render tree, regardless of map mode, so the automap updates while active */
 		RenderVisTree.view = view;
+		gUsageTimers.vis.Start();
 		RenderVisTree.build_render_tree();
+		gUsageTimers.vis.Stop();
 		
+		gUsageTimers.render.Start();
 		if (view->overhead_map_active)
 		{
+			RenderRasterize.SetView(view);
+			RenderRasterize.fake_render_tree(&RenderVisTree);
+			// update the auto-map to show surfaces that are actually visible.
+			
 			/* if the overhead map is active, render it */
 			render_overhead_map(view);
 		}
@@ -425,13 +452,15 @@ void render_view(
 			// LP: now from the polygon-sorter class
 			/* sort the render tree (so we have a depth-ordering of polygons) and accumulate
 				clipping information for each polygon */
-			RenderSortPoly.view = view;
-			RenderSortPoly.sort_render_tree();
+			//RenderSortPoly.view = view;
+			//RenderSortPoly.sort_render_tree();
 			
 			// LP: now from the object-placement class
 			/* build the render object list by looking at the sorted render tree */
-			RenderPlaceObjs.view = view;
-			RenderPlaceObjs.build_render_object_list();
+			//RenderPlaceObjs.view = view;
+			gUsageTimers.renderObj.Start();
+			RenderPlaceObjs.build_render_object_list(&RenderVisTree);
+			gUsageTimers.renderObj.Stop();
 			
 			// LP addition: set the current rasterizer to whichever is appropriate here
 			RasterizerClass *RasPtr;
@@ -457,9 +486,9 @@ void render_view(
 			// LP: now from the clipping/rasterizer class
 			/* render the object list, back to front, doing clipping on each surface before passing
 				it to the texture-mapping code */
-			RenderRasterize.view = view;
-			RenderRasterize.RasPtr = RasPtr;
-			RenderRasterize.render_tree();
+			RenderRasterize.SetView(view);
+			RenderRasterize.SetRasterizer(RasPtr);
+			RenderRasterize.render_tree(&RenderVisTree, &RenderPlaceObjs);
 			
 			// LP: won't put this into a separate class
 			/* render the playerÕs weapons, etc. */		
@@ -468,6 +497,7 @@ void render_view(
 			// Finish rendering main view
 			RasPtr->End();
 		}
+		gUsageTimers.render.Stop();
 	}
 }
 
@@ -877,7 +907,8 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 		
 		/* lighting: depth of zero in the cameraÕs polygon index */
 		textured_rectangle.depth= 0;
-		textured_rectangle.ambient_shade= get_light_intensity(get_polygon_data(view->origin_polygon_index)->floor_lightsource_index);
+		// IR change: B&B prep side effect
+		textured_rectangle.ambient_shade= get_light_intensity(get_polygon_data(view->origin_polygon_index)->floor_surface.lightsource_index);
 		textured_rectangle.ambient_shade= MAX(shape_information->minimum_light_intensity, textured_rectangle.ambient_shade);
 		if (view->shading_mode==_shading_infravision) textured_rectangle.flags|= _SHADELESS_BIT;
 
@@ -890,7 +921,15 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 		
 		/* and draw it */
 		// LP: added OpenGL support
+<<<<<<< render.cpp
+//		RasPtr->texture_rectangle(textured_rectangle, rasterize_area_spec(NULL, 0)); // no area means no clip.
+		/*
+		if (!OGL_RenderSprite(textured_rectangle))
+			texture_rectangle(&textured_rectangle, destination, view);
+		*/
+=======
 		RasPtr->texture_rectangle(textured_rectangle);
+>>>>>>> 1.23
 	}
 }
 

@@ -314,8 +314,6 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 }
 
 
-#ifdef HAVE_OPENGL
-
 // Model-data stuff;
 // defaults for whatever might need them
 // Including skin stuff for convenience here
@@ -411,7 +409,6 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence)
 	return NULL;
 }
 
-#endif // def HAVE_OPENGL
 
 
 // Does this for a set of several pixel values or color-table values;
@@ -581,9 +578,6 @@ void OGL_TextureOptionsBase::Unload()
 	NormalImg.Clear();
 	GlowImg.Clear();
 }
-
-
-#ifdef HAVE_OPENGL
 
 // Any easy STL ways of doing this mapping of functions onto members of arrays?
 
@@ -891,18 +885,6 @@ void OGL_ResetModelSkins(bool Clear_OGL_Txtrs)
 	}
 }
 
-#else
-
-void OGL_LoadModelsImages(int Collection)
-{
-}
-
-void OGL_UnloadModelsImages(int Collection)
-{
-}
-
-#endif // def HAVE_OPENGL
-
 
 OGL_FogData *OGL_GetFogData(int Type)
 {
@@ -1108,8 +1090,6 @@ bool XML_TextureOptionsParser::AttributesDone()
 
 static XML_TextureOptionsParser TextureOptionsParser;
 
-
-#ifdef HAVE_OPENGL
 
 class XML_SkinDataParser: public XML_ElementParser
 {
@@ -1414,8 +1394,13 @@ bool XML_ModelDataParser::End()
 
 static XML_ModelDataParser ModelDataParser;
 
+<<<<<<< OGL_Setup.cpp
+
+
+=======
 #endif // def HAVE_OPENGL
 
+>>>>>>> 1.53
 class XML_FogParser: public XML_ElementParser
 {
 	bool IsPresent[2];
@@ -1486,11 +1471,9 @@ XML_ElementParser *OpenGL_GetParser()
 	OpenGL_Parser.AddChild(&TextureOptionsParser);
 	OpenGL_Parser.AddChild(&TO_ClearParser);
 	
-#ifdef HAVE_OPENGL
 	ModelDataParser.AddChild(&SkinDataParser);
 	OpenGL_Parser.AddChild(&ModelDataParser);
 	OpenGL_Parser.AddChild(&Mdl_ClearParser);
-#endif
 	
 	FogParser.AddChild(Color_GetParser());
 	OpenGL_Parser.AddChild(&FogParser);

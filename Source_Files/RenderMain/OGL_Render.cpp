@@ -103,6 +103,12 @@ Dec 17, 2000 (Loren Petrich):
 	changed "fog is on" in preferences to "fog is allowed"
 	Added "current fog color" so that landscapes will be correctly colored
 	in infravision mode.
+<<<<<<< OGL_Render.cpp
+
+Aug 19, 2001 (Ian Rickard):
+	Changed some stuff for the new/changed globals from dithered mode
+	Changed the static code around for non-logic op rather than flat static.
+=======
 
 Jan 31, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for AGL.h
@@ -112,6 +118,7 @@ Jan 31, 2002 (Br'fin (Jeremy Parsons)):
 Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
 	Centered OpenGL displays under Carbon OS X
 	Fixed AGL_SWAP_RECT spamming of OS X console
+>>>>>>> 1.58
 */
 
 #include <vector>
@@ -123,17 +130,8 @@ Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
 
 #ifdef HAVE_OPENGL
 
-#ifdef __MVCPP__
-#include <windows.h>
-#endif
-
-#if defined (__APPLE__) && defined (__MACH__)
-# include <OpenGL/gl.h>
-# include <OpenGL/glu.h>
-#else
-# include <GL/gl.h>
-# include <GL/glu.h>
-#endif
+#include <GL/gl.h>
+#include <GL/glu.h>
 
 #ifdef mac
 #if defined(TARGET_API_MAC_CARBON)
@@ -151,7 +149,7 @@ Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
 #include "Crosshairs.h"
-#include "VecOps.h"
+#include "VectorOps.h"
 #include "Random.h"
 #include "ViewControl.h"
 #include "OGL_Faders.h"
@@ -274,7 +272,8 @@ static void SetProjectionType(int NewProjectionType)
 
 
 // Rendering depth extent: minimum and maximum z
-const GLdouble Z_Near = 50;
+// IR change:
+const GLdouble Z_Near = MINIMUM_OBJECT_DISTANCE; // 50;
 const GLdouble Z_Far = 1.5*64*WORLD_ONE;
 
 // Projection coefficients for depth
@@ -368,7 +367,8 @@ const int StatPatLen = 32;
 static GLuint StaticPatterns[4][StatPatLen];
 
 // Alternative: partially-transparent flat static
-static bool UseFlatStatic;
+// IR change: instead, still use stipple but not logic_p[
+static bool NoLogicOp;
 static uint16 FlatStaticColor[4];
 
 // The randomizer for the static-effect pixels
@@ -520,7 +520,8 @@ bool OGL_StartRun()
 	
 #ifdef mac
 	// If bit depth is too small, then don't start
-	if (bit_depth <= 8) return false;
+	// IR change: dithering
+	if (g_render_depth != g_screen_depth || g_render_depth <= 8) return false;
 #endif
 	
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
@@ -823,8 +824,9 @@ bool OGL_StartMain()
 	// are to ensure that all the bits overlap.
 	// Also do flat static if requested;
 	// done once per frame to avoid visual inconsistencies
-	UseFlatStatic = TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatStatic);
-	if (UseFlatStatic)
+	// IR change: replaced flat static with no logic op
+	NoLogicOp = TEST_FLAG(ConfigureData.Flags,OGL_Flag_NoLogicOp);
+	if (NoLogicOp)
 	{
 		// Made this per-sprite
 		/*
@@ -850,6 +852,8 @@ bool OGL_EndMain()
 	
 	// Proper projection
 	SetProjectionType(Projection_Screen);
+	
+	OGL_FrameTickTextures();
 	
 	// No texture mapping now
 	glDisable(GL_TEXTURE_2D);
@@ -1060,7 +1064,7 @@ inline GLdouble FindCrossoverDepth(_fixed Shading)
 
 
 // This finds the color value for lighting from the render object's shading value
-void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color)
+inline void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color)
 {
 	GLdouble SelfIllumShading =
 		PIN(SelfLuminosity - (GLdouble(FIXED_ONE)/(8*GLdouble(WORLD_ONE)))*Depth,0,FIXED_ONE);
@@ -1986,17 +1990,18 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	if (RenderRectangle.transfer_mode == _static_transfer)
 	{
 		SetupStaticMode(RenderRectangle);
-		if (UseFlatStatic)
-		{
-			glDrawArrays(GL_POLYGON,0,4);
-		} else {
+		// IR change: NoLogicOp is still stippled and needs multi-pass
+	//	if (UseFlatStatic)
+	//	{
+	//		glDrawArrays(GL_POLYGON,0,4);
+	//	} else {
 			// Do multitextured stippling to create the static effect
 			for (int k=0; k<4; k++)
 			{
 				StaticModeIndivSetup(k);
 				glDrawArrays(GL_POLYGON,0,4);
 			}
-		}
+	//	}
 		TeardownStaticMode();
 	}
 	else
@@ -2207,14 +2212,15 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	if (RenderRectangle.transfer_mode == _static_transfer)
 	{
 		SetupStaticMode(RenderRectangle);
-		if (UseFlatStatic)
-		{
+		// IR change: NoLogicOp is still stippled and needs multi-pass
+//		if (NoLogicOp)
+//		{
 			// Do explicit depth sort because these textures are semitransparent
-			ModelRenderObject.Render(ModelPtr->Model, false, StandardShaders, 1);
-		} else {
+//			ModelRenderObject.Render(ModelPtr->Model, false, StandardShaders, 1);
+//		} else {
 			// Do multitextured stippling to create the static effect
 			ModelRenderObject.Render(ModelPtr->Model, Z_Buffering, StaticModeShaders, 4);
-		}
+//		}
 		TeardownStaticMode();
 	}
 	else
@@ -2353,7 +2359,9 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool IsBlended
 
 void SetupStaticMode(rectangle_definition& RenderRectangle)
 {
-	if (UseFlatStatic)
+	// IR change: NoLogicOp is still stippled and needs multi-pass
+/*
+	if (NoLogicOp)
 	{
 		// Per-sprite coloring; be sure to add the transparency in appropriate fashion
 		for (int c=0; c<3; c++)
@@ -2365,6 +2373,7 @@ void SetupStaticMode(rectangle_definition& RenderRectangle)
 		glEnable(GL_BLEND);
 		glColor4usv(FlatStaticColor);
 	} else {
+*/
 		// Do multitextured stippling to create the static effect
 		
 		// The colors:
@@ -2400,14 +2409,18 @@ void SetupStaticMode(rectangle_definition& RenderRectangle)
 		
 		// Get read to use those static patterns
 		glEnable(GL_POLYGON_STIPPLE);
+/*	IR removed: no-logic-op needs multi-pass.
 	}
+*/
 }
 
 void TeardownStaticMode()
 {
-	if (UseFlatStatic)
+	// IR change: different global and have to do cleanup.
+	if (NoLogicOp)
 	{
-		// Nothing
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_POLYGON_STIPPLE);
 	}
 	else
 	{
@@ -2456,10 +2469,18 @@ void StaticModeIndivSetup(int SeqNo)
 		break;
 		
 	case 1:	// No need to do this for cases 2 and 3, since they will follow
-		glEnable(GL_COLOR_LOGIC_OP);
-		glLogicOp(GL_OR);
+		// IR change: moved the equivelant of the if dropped above down here
+		if (NoLogicOp)
+		{
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
+		}
+		else
+		{
+			glEnable(GL_COLOR_LOGIC_OP);
+			glLogicOp(GL_OR);
+		}
 	}
-	
 	glColor3fv(StaticBaseColors[SeqNo]);			
 	glPolygonStipple((byte *)StaticPatterns[SeqNo]);
 }
@@ -2833,7 +2854,8 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 #endif
 	
 	// Number of source bytes (destination bytes = 4)
-	short NumSrcBytes = bit_depth/8;
+	// IR change: dithering
+	short NumSrcBytes = g_render_depth/8;
 	
 	// Set up conversion table
 	// MakeConversion_16to32(bit_depth);

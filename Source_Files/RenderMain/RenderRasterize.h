@@ -32,31 +32,55 @@
 	
 Oct 13, 2000
 	LP: replaced ResizableList with STL vector class
+
+Aug 12, 2001 (Ian Rickard):
+	Tweak for some structure rearranging
 */
 
 #include <vector>
 #include "world.h"
 #include "render.h"
-#include "RenderSortPoly.h"
-#include "RenderPlaceObjs.h"
+//#include "RenderSortPoly.h"
+//#include "RenderPlaceObjs.h"
 #include "Rasterizer.h"
 
 
 /* ---------- flagged world points */
 
-struct flagged_world_point2d /* for floors */
+// IR change: why not inherit long_point2d?
+struct flagged_world_point2d : public long_point2d /* for floors */
 {
 	// LP change: made this more long-distance friendly
+<<<<<<< RenderRasterize.h
+	// IR change: made it inherit long_point2d, so don't need these.
+	//int32 x, y;
+	// world_distance x, y;
+=======
 	int32 x, y;
+>>>>>>> 1.11
 	uint16 flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
+	// IR addition:
+	flagged_world_point2d() {}
+	flagged_world_point2d(const long_point2d& it) : long_point2d(it) {}
 };
 
-struct flagged_world_point3d /* for ceilings */
+// IR change: why not inherit flagged_world_point2d?
+struct flagged_world_point3d : public flagged_world_point2d /* for ceilings */
 {
 	// LP change: made this more long-distance friendly
-	int32 x, y;
+	// IR change: made it inherit flagged_world_point2d, so don't need these.
+	//int32 x, y;
 	world_distance z;
+<<<<<<< RenderRasterize.h
+	// world_distance x, y, z;
+	// IR removed: don't need this either, its inherited
+	//uint16 flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
+	flagged_world_point3d() {}
+	flagged_world_point3d(const long_point2d& it) : flagged_world_point2d(it) {}
+	flagged_world_point3d(const flagged_world_point2d& it) : flagged_world_point2d(it) {}
+=======
 	uint16 flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
+>>>>>>> 1.11
 };
 
 
@@ -66,7 +90,8 @@ struct flagged_world_point3d /* for ceilings */
 	be in the side_texture_definition structure */
 struct vertical_surface_data
 {
-	short lightsource_index;
+// IR removed: noew in side_texture_definition
+//	short lightsource_index;
 	_fixed ambient_delta; /* a delta to the lightsource’s intensity, then pinned to [0,FIXED_ONE] */
 	
 	world_distance length;
@@ -75,7 +100,8 @@ struct vertical_surface_data
 	long_vector2d p0, p1; /* will transform into left, right points on the screen (respectively) */
 	
 	struct side_texture_definition *texture_definition;
-	short transfer_mode;
+// IR removed: noew in side_texture_definition
+//	short transfer_mode;
 };
 
 
@@ -91,6 +117,7 @@ class RenderRasterizerClass
 	void render_node_side(
 		clipping_window_data *window, vertical_surface_data *surface,
 		bool void_present);
+	void render_clip_debug_lines(clipping_window_data *window);
 
 	// LP change: add "other side of media" flag, to indicate that the sprite will be rendered
 	// on the opposite side of the liquid surface from the viewpoint, instead of the same side.

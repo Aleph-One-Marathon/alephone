@@ -1160,13 +1160,9 @@ static void main_event_loop(
 	void)
 {
 #if defined(TARGET_API_MAC_CARBON)
-	static EventTypeSpec mouseEvents[] = {
-		{kEventClassMouse, kEventMouseDown},
-		{kEventClassMouse, kEventMouseUp},
-		{kEventClassMouse, kEventMouseWheelMoved},
-  		{kEventClassMouse, kEventMouseMoved},
-		{kEventClassMouse, kEventMouseDragged}
-	};
+	static EventTypeSpec mouseMovedEvents[] = {
+		{kEventClassMouse, kEventMouseMoved},
+		{kEventClassMouse, kEventMouseDragged}};
 	EventRef theEvent;
 	EventTargetRef theTarget;
 	
@@ -1183,7 +1179,7 @@ static void main_event_loop(
 		RunCurrentEventLoop(kEventDurationNoWait);
 		
 		// Pass off our mouse events
-		while(ReceiveNextEvent(5, mouseEvents, kEventDurationNoWait, true, &theEvent) == noErr)
+		while(ReceiveNextEvent(2, mouseMovedEvents, kEventDurationNoWait, true, &theEvent) == noErr)
 		{
 			SendEventToEventTarget (theEvent, theTarget);
 			ReleaseEvent(theEvent);

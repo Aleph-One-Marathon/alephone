@@ -32,6 +32,10 @@ Sep 2, 2000 (Loren Petrich):
 	
 	If a polygon has a "full_side" texture, and there is another polgyon on the other side,
 	then suppress the void for the boundary's texture.
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating to B&B mostly.  I didn't do substantial change commenting becase
+	This Gets completely re-vamped for B&B.
 */
 
 #include "cseries.h"
@@ -59,6 +63,8 @@ RenderRasterizerClass::RenderRasterizerClass():
 
 /* ---------- rendering the tree */
 
+bool gDebugRenderingThisSide
+
 void RenderRasterizerClass::render_tree()
 {
 	assert(view);	// Idiot-proofing
@@ -80,22 +86,26 @@ void RenderRasterizerClass::render_tree()
 
 		// LP change: moved this stuff out here because it only has to be calculated
 		// once per polygon.
-		horizontal_surface_data floor_surface, ceiling_surface;
+		// IR change: made 'em pointers
+		horizontal_surface_data *floor_surface, *ceiling_surface;
 		short i;
 		
-		ceiling_surface.origin= polygon->ceiling_origin;
-		ceiling_surface.height= polygon->ceiling_height;
-		ceiling_surface.texture= polygon->ceiling_texture;
-		ceiling_surface.lightsource_index= polygon->ceiling_lightsource_index;
-		ceiling_surface.transfer_mode= polygon->ceiling_transfer_mode;
-		ceiling_surface.transfer_mode_data= 0;
+		// IR change: copy obsoleted by inclusion of horizontal_surface_data in polygon_data, now just copy pointer
+		ceiling_surface = &polygon->ceiling_surface;
+		floor_surface = &polygon->floor_surface;
+//		ceiling_surface.origin= polygon->ceiling_origin;
+//		ceiling_surface.height= polygon->ceiling_height;
+//		ceiling_surface.texture= polygon->ceiling_texture;
+//		ceiling_surface.lightsource_index= polygon->ceiling_lightsource_index;
+//		ceiling_surface.transfer_mode= polygon->ceiling_transfer_mode;
+//		ceiling_surface.transfer_mode_data= 0;
 		
-		floor_surface.origin= polygon->floor_origin;
-		floor_surface.height= polygon->floor_height;
-		floor_surface.texture= polygon->floor_texture;
-		floor_surface.lightsource_index= polygon->floor_lightsource_index;
-		floor_surface.transfer_mode= polygon->floor_transfer_mode;
-		floor_surface.transfer_mode_data= 0;
+//		floor_surface.origin= polygon->floor_origin;
+//		floor_surface.height= polygon->floor_height;
+//		floor_surface.texture= polygon->floor_texture;
+//		floor_surface.lightsource_index= polygon->floor_lightsource_index;
+//		floor_surface.transfer_mode= polygon->floor_transfer_mode;
+//		floor_surface.transfer_mode_data= 0;
 		
 		// The "continue" conditions are OK to move out here, because a non-drawn polygon's
 		// inhabitants will be clipped away.
@@ -105,6 +115,9 @@ void RenderRasterizerClass::render_tree()
 		media_data *media = NULL;
 		if (polygon->media_index!=NONE)
 			media = get_media_data(polygon->media_index);
+		// IR addition: so we can access it indirectly after the if.
+		horizontal_surface_data media_surface;
+		// IR change start: made lots of changes relating to B&B prep from here...		
 		
 		/* if necessary, replace the ceiling or floor surfaces with the media surface */
 		// LP change: don't do this step if liquids are semitransparent
@@ -112,35 +125,49 @@ void RenderRasterizerClass::render_tree()
 		{
 			// LP change: moved this get upwards
 			// struct media_data *media= get_media_data(polygon->media_index);
-			horizontal_surface_data *media_surface= NULL;
-					
+			// IR change: changed the workings of this a bit to work with changes made above
+			// moved this doc upwards too
+			//horizontal_surface_data media_surface= NULL;
+			bool mediaVisible = false;
+			
 			if (view->under_media_boundary)
 			{
 				// LP change: skip if high and dry
-				if (media->height <= polygon->floor_height)
+				if (media->height <= floor_surface->height)
 					continue;
 				
-				if (media->height<polygon->ceiling_height) media_surface= &ceiling_surface;
+				// IR change: new logic in this part
+				if (media->height < polygon->ceiling_surface.height)
+				{
+					ceiling_surface = &media_surface;
+					mediaVisible = true;
+				}
 			}
 			else
 			{
 				// LP change: skip if submerged
-				if (media->height >= polygon->ceiling_height)
+				if (media->height >= ceiling_surface->height)
 					continue;
 				
-				if (media->height>polygon->floor_height) media_surface= &floor_surface;
+				if (media->height>polygon->floor_surface.height)
+				{
+					floor_surface = &media_surface;
+					mediaVisible = true;
+				}
 			}
 			
-			if (media_surface)
+			if (mediaVisible)
 			{
-				media_surface->origin= media->origin;
-				media_surface->height= media->height;
-				media_surface->texture= media->texture;
-				media_surface->lightsource_index= polygon->media_lightsource_index;
-				media_surface->transfer_mode= media->transfer_mode;
-				media_surface->transfer_mode_data= 0;
+				media_surface.origin= media->origin;
+				media_surface.height= media->height;
+				media_surface.texture= media->texture;
+				media_surface.lightsource_index= polygon->media_lightsource_index;
+				media_surface.transfer_mode= media->transfer_mode;
+				media_surface.transfer_mode_data= 0;
 			}
 		}
+		// IR change end: ... down to here.
+		
 		// LP change: always render liquids that are semitransparent
 		else if (!SeeThruLiquids)
 		{
@@ -149,15 +176,22 @@ void RenderRasterizerClass::render_tree()
 		}
 		
 		// LP: this loop renders the walls
+		// IR note: this loop renders everything - celing, walls and floor, in that order - clipping to each
+		// clipping window that this polygon is visible through.  the inner for loop renders walls.
 		for (window= node->clipping_windows; window; window= window->next_window)
 		{
-			if (ceiling_surface.height>floor_surface.height)
+			if (ceiling_surface->height > floor_surface->height)
 			{
 				/* render ceiling if above viewer */
-				if (ceiling_surface.height>view->origin.z)
+				if (ceiling_surface->height > view->origin.z)
 				{
 					// LP change: indicated that the void is on other side
+<<<<<<< RenderRasterize.cpp
+					render_node_floor_or_ceiling(window, polygon, ceiling_surface, true);
+					// render_node_floor_or_ceiling(view, destination, window, polygon, &ceiling_surface);
+=======
 					render_node_floor_or_ceiling(window, polygon, &ceiling_surface, true);
+>>>>>>> 1.15
 				}
 				
 				/* render visible sides */
@@ -171,12 +205,26 @@ void RenderRasterizerClass::render_tree()
 						side_data *side= get_side_data(side_index);
 						vertical_surface_data surface;
 						
+						gDebugRenderingThisSide = gDebugKeyDown&&(polygon->line_indexes[i]==101);
+						
 						surface.length= line->length;
 						// LP change: expanded the transformed-endpoint access
 						endpoint_data *endpoint0 = get_endpoint_data(polygon->endpoint_indexes[i]);
-						overflow_short_to_long_2d(endpoint0->transformed,endpoint0->flags,surface.p0);
+						// IR change: OOzing:
+						surface.p0 = long_vector2d(endpoint0->transformedL);
+						//overflow_short_to_long_2d(endpoint0->transformed,endpoint0->flags,surface.p0);
 						endpoint_data *endpoint1 = get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)]);
+<<<<<<< RenderRasterize.cpp
+						// IR change: OOzing:
+						surface.p1 = long_vector2d(endpoint1->transformedL);
+						//overflow_short_to_long_2d(endpoint1->transformed,endpoint1->flags,surface.p1);
+						/*
+						surface.p0= get_endpoint_data(polygon->endpoint_indexes[i])->transformed;
+						surface.p1= get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)])->transformed;
+						*/
+=======
 						overflow_short_to_long_2d(endpoint1->transformed,endpoint1->flags,surface.p1);
+>>>>>>> 1.15
 						surface.ambient_delta= side->ambient_delta;
 						
 						// LP change: indicate in all cases whether the void is on the other side;
@@ -190,42 +238,56 @@ void RenderRasterizerClass::render_tree()
 								// Suppress the void if there is a polygon on the other side.
 								if (polygon->adjacent_polygon_indexes[i] != NONE) void_present = false;
 								
-								surface.lightsource_index= side->primary_lightsource_index;
-								surface.h0= floor_surface.height - view->origin.z;
-								surface.hmax= ceiling_surface.height - view->origin.z;
-								surface.h1= polygon->ceiling_height - view->origin.z;
+								// IR removed: now part of side_texture_definition and implicitly copied with the pointer
+								//surface.lightsource_index= side->primary_texture.lightsource_index;
+								surface.h0= floor_surface->height - view->origin.z;
+								surface.hmax= ceiling_surface->height - view->origin.z;
+								surface.h1= polygon->ceiling_surface.height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
-								surface.transfer_mode= side->primary_transfer_mode;
+								// IR removed: see above
+								//surface.transfer_mode= side->primary_transfer_mode;
 								render_node_side(window, &surface, void_present);
 								break;
 							case _split_side: /* render _low_side first */
-								surface.lightsource_index= side->secondary_lightsource_index;
-								surface.h0= floor_surface.height - view->origin.z;
-								surface.h1= MAX(line->highest_adjacent_floor, floor_surface.height) - view->origin.z;
-								surface.hmax= ceiling_surface.height - view->origin.z;
+								// IR removed: see above
+								//surface.lightsource_index= side->secondary_lightsource_index;
+								surface.h0= floor_surface->height - view->origin.z;
+								// IR change: B&B prep side effect
+								surface.h1= MAX(line->highest_floor(), floor_surface->height) - view->origin.z;
+								surface.hmax= ceiling_surface->height - view->origin.z;
 								surface.texture_definition= &side->secondary_texture;
-								surface.transfer_mode= side->secondary_transfer_mode;
+								// IR removed: see above
+								//surface.transfer_mode= side->secondary_transfer_mode;
 								render_node_side(window, &surface, true);
 								/* fall through and render high side */
 							case _high_side:
-								surface.lightsource_index= side->primary_lightsource_index;
-								surface.h0= MIN(line->lowest_adjacent_ceiling, ceiling_surface.height) - view->origin.z;
-								surface.hmax= ceiling_surface.height - view->origin.z;
-								surface.h1= polygon->ceiling_height - view->origin.z;
+								// IR removed: see above
+								//surface.lightsource_index= side->primary_lightsource_index;
+								// IR change: B&B prep side effect
+								surface.h0= MIN(line->lowest_ceiling(), ceiling_surface->height) - view->origin.z;
+								surface.hmax= ceiling_surface->height - view->origin.z;
+								surface.h1= polygon->ceiling_surface.height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
-								surface.transfer_mode= side->primary_transfer_mode;
+								// IR removed: see above
+								//surface.transfer_mode= side->primary_transfer_mode;
 								render_node_side(window, &surface, true);
 								// render_node_side(view, destination, window, &surface);
 								break;
 							case _low_side:
-								surface.lightsource_index= side->primary_lightsource_index;
-								surface.h0= floor_surface.height - view->origin.z;
-								surface.h1= MAX(line->highest_adjacent_floor, floor_surface.height) - view->origin.z;
-								surface.hmax= ceiling_surface.height - view->origin.z;
+								// IR removed: see above
+								//surface.lightsource_index= side->primary_lightsource_index;
+								surface.h0= floor_surface->height - view->origin.z;
+								// IR change: B&B prep side effect
+								surface.h1= MAX(line->highest_floor(), floor_surface->height) - view->origin.z;
+								surface.hmax= ceiling_surface->height - view->origin.z;
 								surface.texture_definition= &side->primary_texture;
-								surface.transfer_mode= side->primary_transfer_mode;
+								// IR removed: see above
+								//surface.transfer_mode= side->primary_transfer_mode;
 								render_node_side(window, &surface, true);
 								// render_node_side(view, destination, window, &surface);
+								break;
+							case _empty_side:
+								// no nothing, just here for clipping.
 								break;
 							
 							default:
@@ -235,24 +297,34 @@ void RenderRasterizerClass::render_tree()
 						
 						if (side->transparent_texture.texture!=NONE)
 						{
-							surface.lightsource_index= side->transparent_lightsource_index;
-							surface.h0= MAX(line->highest_adjacent_floor, floor_surface.height) - view->origin.z;
-							surface.h1= line->lowest_adjacent_ceiling - view->origin.z;
-							surface.hmax= ceiling_surface.height - view->origin.z;
+							// IR removed: see above
+							//surface.lightsource_index= side->transparent_lightsource_index;
+							// IR change: B&B prep side effect
+							surface.h0= MAX(line->highest_floor(), floor_surface->height) - view->origin.z;
+							surface.h1= line->lowest_ceiling() - view->origin.z;
+							surface.hmax= ceiling_surface->height - view->origin.z;
 							surface.texture_definition= &side->transparent_texture;
-							surface.transfer_mode= side->transparent_transfer_mode;
+							// IR removed: see above
+							//surface.transfer_mode= side->transparent_transfer_mode;
 							render_node_side(window, &surface, false);
 						}
 					}
 				}
 				
 				/* render floor if below viewer */
-				if (floor_surface.height<view->origin.z)
+				if (floor_surface->height<view->origin.z)
 				{
 					// LP change: indicated that the void is on other side
+<<<<<<< RenderRasterize.cpp
+					render_node_floor_or_ceiling(window, polygon, floor_surface, true);
+					// render_node_floor_or_ceiling(view, destination, window, polygon, &floor_surface);
+=======
 					render_node_floor_or_ceiling(window, polygon, &floor_surface, true);
+>>>>>>> 1.15
 				}
 			}
+			
+		//	render_clip_debug_lines(window);
 		}
 
 		// LP: this is for objects on the other side of the liquids;
@@ -272,7 +344,7 @@ void RenderRasterizerClass::render_tree()
 		{
 			
 			// Render only if between the floor and the ceiling:
-			if (media->height > polygon->floor_height && media->height < polygon->ceiling_height)
+			if (media->height > polygon->floor_surface.height && media->height < polygon->ceiling_surface.height)
 			{
 			
 				// Render the liquids
@@ -327,11 +399,21 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 		for (i=0;i<vertex_count;++i)
 		{
 			// LP change: expanded the transformed-endpoint access
-			long_vector2d temp_vertex;
+			// IR removed: don't need it
+			//long_vector2d temp_vertex;
 			endpoint_data *endpoint = get_endpoint_data(polygon->endpoint_indexes[i]);
+<<<<<<< RenderRasterize.cpp
+			// IR change: OOzing cleanup.
+			vertices[i] = endpoint->transformedL;
+			//overflow_short_to_long_2d(endpoint->transformed,endpoint->flags,temp_vertex);
+			//vertices[i].x = temp_vertex.i;
+			//vertices[i].y = temp_vertex.j;
+			// *((world_point2d *)(vertices+i))= get_endpoint_data(polygon->endpoint_indexes[i])->transformed;
+=======
 			overflow_short_to_long_2d(endpoint->transformed,endpoint->flags,temp_vertex);
 			vertices[i].x = temp_vertex.i;
 			vertices[i].y = temp_vertex.j;
+>>>>>>> 1.15
 			vertices[i].flags= 0;
 		}
 		
@@ -424,8 +506,88 @@ void RenderRasterizerClass::render_node_side(
 	// LP addition: animated-texture support
 	// Extra variable defined so as not to edit the original texture
 	shape_descriptor Texture = AnimTxtr_Translate(surface->texture_definition->texture);
+<<<<<<< RenderRasterize.cpp
+	if (h<=surface->h0 || Texture==NONE) return;
+
+	struct polygon_definition textured_polygon;
+	flagged_world_point2d posts[2];
+	flagged_world_point3d vertices[MAXIMUM_VERTICES_PER_WORLD_POLYGON];
+	short vertex_count;
+	short i;
+
+	/* initialize the two posts of our trapezoid */
+	vertex_count= 2;
+	// LP change:
+	posts[0].x= surface->p0.i, posts[0].y= surface->p0.j, posts[0].flags= 0;
+	posts[1].x= surface->p1.i, posts[1].y= surface->p1.j, posts[1].flags= 0;
+	/*
+	posts[0].x= surface->p0.x, posts[0].y= surface->p0.y, posts[0].flags= 0;
+	posts[1].x= surface->p1.x, posts[1].y= surface->p1.y, posts[1].flags= 0;
+	*/
+
+	/* clip to left and right sides of the cone (must happen in the same order as horizontal polygons) */
+	vertex_count= xy_clip_line(posts, vertex_count, &window->left, _clip_left);
+	vertex_count= xy_clip_line(posts, vertex_count, &window->right, _clip_right);
+	
+	if (gDebugRenderingThisSide) Debugger();
+	
+	if (vertex_count<=0) return;
+	
+	/* build a polygon out of the two posts */
+	vertex_count= 4;
+	vertices[0].z= vertices[1].z= h;
+	vertices[2].z= vertices[3].z= surface->h0;
+	vertices[0].x= vertices[3].x= posts[0].x, vertices[0].y= vertices[3].y= posts[0].y;
+	vertices[1].x= vertices[2].x= posts[1].x, vertices[1].y= vertices[2].y= posts[1].y;
+	vertices[0].flags= vertices[3].flags= posts[0].flags;
+	vertices[1].flags= vertices[2].flags= posts[1].flags;
+
+	/* clip to top and bottom sides of the window; because xz_clip_vertical_polygon accepts
+		vertices in clockwise or counterclockwise order, we can set our vertex list up to be
+		clockwise on the screen and never worry about it after that */
+	vertex_count= xz_clip_vertical_polygon(vertices, vertex_count, &window->top, _clip_up);
+	vertex_count= xz_clip_vertical_polygon(vertices, vertex_count, &window->bottom, _clip_down);
+	
+	if (vertex_count<=0) return;
+	
+	// LP change:
+	world_distance dx= surface->p1.i - surface->p0.i;
+	world_distance dy= surface->p1.j - surface->p0.j;
+	/*
+	world_distance dx= surface->p1.x - surface->p0.x;
+	world_distance dy= surface->p1.y - surface->p0.y;
+	*/
+	// IR change: side effect of B&B prep
+	world_distance x0= WORLD_FRACTIONAL_PART(surface->texture_definition->origin.x);
+	world_distance y0= WORLD_FRACTIONAL_PART(surface->texture_definition->origin.y);
+	
+	/* calculate texture origin and direction */	
+	world_distance divisor = surface->length;
+	if (divisor == 0)
+		divisor = 1;
+	textured_polygon.vector.i= (WORLD_ONE*dx)/divisor;
+	textured_polygon.vector.j= (WORLD_ONE*dy)/divisor;
+	textured_polygon.vector.k= -WORLD_ONE;
+	// LP change:
+	textured_polygon.origin.x= surface->p0.i - (x0*dx)/divisor;
+	textured_polygon.origin.y= surface->p0.j - (x0*dy)/divisor;
+	/*
+	textured_polygon.origin.x= surface->p0.x - (x0*dx)/divisor;
+	textured_polygon.origin.y= surface->p0.y - (x0*dy)/divisor;
+	*/
+	textured_polygon.origin.z= surface->h1 + y0;
+
+	/* transform the points we have into screen-space */
+	for (i=0;i<vertex_count;++i)
+=======
 	if (h>surface->h0 && Texture!=NONE)
+>>>>>>> 1.15
 	{
+<<<<<<< RenderRasterize.cpp
+		flagged_world_point3d *world= vertices + i;
+		// LP change:
+		point2d *screen= textured_polygon.vertices + i;
+=======
 		struct polygon_definition textured_polygon;
 		flagged_world_point2d posts[2];
 		flagged_world_point3d vertices[MAXIMUM_VERTICES_PER_WORLD_POLYGON];
@@ -440,9 +602,36 @@ void RenderRasterizerClass::render_node_side(
 		/* clip to left and right sides of the cone (must happen in the same order as horizontal polygons) */
 		vertex_count= xy_clip_line(posts, vertex_count, &window->left, _clip_left);
 		vertex_count= xy_clip_line(posts, vertex_count, &window->right, _clip_right);
+>>>>>>> 1.15
 		
-		if (vertex_count)
+		switch (world->flags&(_clip_left|_clip_right))
 		{
+<<<<<<< RenderRasterize.cpp
+			case 0:
+				// LP change: making it long-distance friendly
+				{
+				int32 screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
+				screen->x= PIN(screen_x, 0, view->screen_width);
+				}
+				/*
+				screen->x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
+				screen->x= PIN(screen->x, 0, view->screen_width);
+				*/
+				break;
+			case _clip_left: screen->x= window->x0; break;
+			case _clip_right: screen->x= window->x1; break;
+			default:
+				// LP change: suppressing
+				// if (window->x1-window->x0>1) dprintf("ambiguous clip flags for window [%d,%d];g;", window->x0, window->x1);
+				screen->x= window->x0;
+				break;
+		}
+		
+		switch (world->flags&(_clip_up|_clip_down))
+		{
+			case 0:
+				// LP change: making it long-distance friendly
+=======
 			/* build a polygon out of the two posts */
 			vertex_count= 4;
 			vertices[0].z= vertices[1].z= h;
@@ -478,7 +667,12 @@ void RenderRasterizerClass::render_node_side(
 	
 				/* transform the points we have into screen-space */
 				for (i=0;i<vertex_count;++i)
+>>>>>>> 1.15
 				{
+<<<<<<< RenderRasterize.cpp
+				int32 screen_y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
+				screen->y= PIN(screen_y, 0, view->screen_height);
+=======
 					flagged_world_point3d *world= vertices + i;
 					point2d *screen= textured_polygon.vertices + i;
 					
@@ -514,7 +708,22 @@ void RenderRasterizerClass::render_node_side(
 							break;
 					}
 					// vassert(screen->y>=0&&screen->y<=view->screen_height, csprintf(temporary, "#%d!in[#0,#%d]: flags==%x, wind@%p #%d w@%p s@%p", screen->y, view->screen_height, world->flags, window, vertex_count, world, screen));
+>>>>>>> 1.15
 				}
+<<<<<<< RenderRasterize.cpp
+				/*
+				screen->y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
+				screen->y= PIN(screen->y, 0, view->screen_height);
+				*/
+				break;
+			case _clip_up: screen->y= window->y0; break;
+			case _clip_down: screen->y= window->y1; break;
+			default:
+				// LP change: suppressing
+				// if (window->y1-window->y0>1) dprintf("ambiguous clip flags for window [%d,%d];g;", window->y0, window->y1);
+				screen->y= window->y0;
+				break;
+=======
 				
 				/* setup the other parameters of the textured polygon */
 				textured_polygon.flags= 0;
@@ -535,8 +744,49 @@ void RenderRasterizerClass::render_node_side(
 				// LP: using rasterizer object
 				RasPtr->texture_vertical_polygon(textured_polygon);
 			}
+>>>>>>> 1.15
 		}
+		// vassert(screen->y>=0&&screen->y<=view->screen_height, csprintf(temporary, "#%d!in[#0,#%d]: flags==%x, wind@%p #%d w@%p s@%p", screen->y, view->screen_height, world->flags, window, vertex_count, world, screen));
 	}
+<<<<<<< RenderRasterize.cpp
+	
+	/* setup the other parameters of the textured polygon */
+	textured_polygon.flags= 0;
+	// LP change:
+	get_shape_bitmap_and_shading_table(Texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
+	// Bug out if bitmap is nonexistent
+	if (!textured_polygon.texture) return;
+
+	textured_polygon.ShapeDesc = Texture;
+	// get_shape_bitmap_and_shading_table(surface->texture_definition->texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
+	// IR change: side effect of B&B prep
+	textured_polygon.ambient_shade= get_light_intensity(surface->texture_definition->lightsource_index) + surface->ambient_delta;
+	textured_polygon.ambient_shade= PIN(textured_polygon.ambient_shade, 0, FIXED_ONE);
+	textured_polygon.vertex_count= vertex_count;
+	 // IR change: side effect of B&B prep
+	instantiate_polygon_transfer_mode(view, &textured_polygon, surface->texture_definition->transfer_mode, view->tick_count + (int32)window, false);
+	if (view->shading_mode==_shading_infravision) textured_polygon.flags|= _SHADELESS_BIT;
+	
+	/* and, finally, map it */
+	// LP: added OpenGL support; also presence of void on other side
+	textured_polygon.VoidPresent = void_present;
+	// LP: using rasterizer object
+	RasPtr->texture_vertical_polygon(textured_polygon);
+	/*
+	if (!OGL_RenderWall(textured_polygon,true))
+		texture_vertical_polygon(&textured_polygon, destination, view);
+	*/
+	
+	return;
+}
+
+void RenderRasterizerClass::render_clip_debug_lines(clipping_window_data *window) {
+	RasPtr->debug_line_v(window->x0, window->y0, window->y1-1);
+	RasPtr->debug_line_h(window->y0, window->x0, window->x1-1);
+	RasPtr->debug_line_v(window->x1-1, window->y0, window->y1-1);
+	RasPtr->debug_line_h(window->y1-1, window->x0, window->x1-1);
+=======
+>>>>>>> 1.15
 }
 
 /* ---------- rendering objects */

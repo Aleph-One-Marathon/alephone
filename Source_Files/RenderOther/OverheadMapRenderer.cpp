@@ -23,6 +23,9 @@
 	
 	The code had been moved out of overhead_map.c and overhead_map_macintosh.c;
 	all of it is cross-platform except for the font-handling code.
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating to B&B prep or OOzing
 */
 
 
@@ -55,8 +58,9 @@ enum /* render flags */
 
 // Externals:
 // Changed to link properly with code in pathfinding.c
-extern world_point2d *path_peek(short path_index, short *step_count);
-extern short GetNumberOfPaths();
+// IR change: protos now in floor_map.h
+//extern world_point2d *path_peek(short path_index, short *step_count);
+//extern short GetNumberOfPaths();
 
 
 // Main rendering routine
@@ -90,7 +94,8 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 	{
 		struct polygon_data *polygon= get_polygon_data(i);
 		if (POLYGON_IS_IN_AUTOMAP(i) && TEST_STATE_FLAG(i, _polygon_on_automap)
-			&&(polygon->floor_transfer_mode!=_xfer_landscape||polygon->ceiling_transfer_mode!=_xfer_landscape))
+			// IR change: B&B prep side effect
+			&&(polygon->floor_surface.transfer_mode!=_xfer_landscape||polygon->ceiling_surface.transfer_mode!=_xfer_landscape))
 		{
 			
 			if (!POLYGON_IS_DETACHED(polygon))
@@ -124,7 +129,8 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 					// LP change: idiot-proofing
 					if (media)
 					{
-						if (media->height>=polygon->floor_height)
+						// IR change: B&B prep side effect						
+						if (media->height>=polygon->lowest_floor())
 						{
 							switch (media->type)
 							{
@@ -161,15 +167,16 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 			if ((line->clockwise_polygon_owner!=NONE && TEST_STATE_FLAG(line->clockwise_polygon_owner, _polygon_on_automap)) ||
 				(line->counterclockwise_polygon_owner!=NONE && TEST_STATE_FLAG(line->counterclockwise_polygon_owner, _polygon_on_automap)))
 			{
-				struct polygon_data *clockwise_polygon= line->clockwise_polygon_owner==NONE ? NULL : get_polygon_data(line->clockwise_polygon_owner);
-				struct polygon_data *counterclockwise_polygon= line->counterclockwise_polygon_owner==NONE ? NULL : get_polygon_data(line->counterclockwise_polygon_owner);
+				// IR changes: OOzing
+				struct polygon_data *clockwise_polygon= line->get_clockwise_polygon();
+				struct polygon_data *counterclockwise_polygon= line->get_counterclockwise_polygon();
 
-				if (LINE_IS_SOLID(line) || LINE_IS_VARIABLE_ELEVATION(line))
+				if (line->is_solid() || line->is_variable_elevation())
 				{
-					if (LINE_IS_LANDSCAPED(line))
+					if (line->is_landscaped())
 					{
-						if ((!clockwise_polygon||clockwise_polygon->floor_transfer_mode!=_xfer_landscape) &&
-							(!counterclockwise_polygon||counterclockwise_polygon->floor_transfer_mode!=_xfer_landscape))
+						if ((!clockwise_polygon||clockwise_polygon->floor_surface.transfer_mode!=_xfer_landscape) &&
+							(!counterclockwise_polygon||counterclockwise_polygon->floor_surface.transfer_mode!=_xfer_landscape))
 						{
 							line_color= _elevation_line_color;
 						}
@@ -181,14 +188,16 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 				}
 				else
 				{
-					if (clockwise_polygon->floor_height!=counterclockwise_polygon->floor_height)
+					// IR change: BB prep
+					if (clockwise_polygon->lowest_floor()!=counterclockwise_polygon->lowest_floor())
 					{
-						line_color= LINE_IS_LANDSCAPED(line) ? NONE : _elevation_line_color;
+						line_color= line->is_landscaped() ? NONE : _elevation_line_color;
 					}
 				}
 			}
 			
-			if (line_color!=NONE) draw_line(i, line_color, scale);
+			// IR change: OOzing
+			if (line_color!=NONE) draw_line(line_reference(i), line_color, scale);
 		}
 	}
 
@@ -247,7 +256,7 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 	{
 		struct object_data *object;
 		
-		for (i=0, object= objects; i<MAXIMUM_OBJECTS_PER_MAP; ++i, ++object)
+		for (i=0, object= map_objects; i<MAXIMUM_OBJECTS_PER_MAP; ++i, ++object)
 		{
 			if (SLOT_IS_USED(object))
 			{
@@ -380,10 +389,13 @@ void OverheadMapClass::transform_endpoints_for_overhead_map(
 	{
 		struct endpoint_data *endpoint= get_endpoint_data(i);
 		
-		endpoint->transformed.x= Control.half_width + WORLD_TO_SCREEN(endpoint->vertex.x, x0, scale);
-		endpoint->transformed.y= Control.half_height + WORLD_TO_SCREEN(endpoint->vertex.y, y0, scale);
+		endpoint->transformedL.x= Control.half_width + WORLD_TO_SCREEN(endpoint->vertex.x, x0, scale);
+		endpoint->transformedL.y= Control.half_height + WORLD_TO_SCREEN(endpoint->vertex.y, y0, scale);
 
-		if (endpoint->transformed.x>=0&&endpoint->transformed.y>=0&&endpoint->transformed.y<=screen_height&&endpoint->transformed.x<=screen_width)
+		if (  endpoint->transformedL.x>=0
+		   && endpoint->transformedL.y>=0
+		   && endpoint->transformedL.y<=screen_height
+		   && endpoint->transformedL.x<=screen_width)
 		{
 			SET_STATE_FLAG(i, _endpoint_on_automap, true);
 		}

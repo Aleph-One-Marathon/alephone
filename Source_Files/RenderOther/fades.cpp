@@ -159,9 +159,9 @@ static void soft_tint_color_table(struct color_table *original_color_table, stru
 static struct fade_definition fade_definitions[NUMBER_OF_FADE_TYPES]=
 {
 	{tint_color_table, {0, 0, 0}, FIXED_ONE, FIXED_ONE, 0, _full_screen_flag, 0}, /* _start_cinematic_fade_in */
-	{tint_color_table, {0, 0, 0}, FIXED_ONE, 0, MACHINE_TICKS_PER_SECOND/2, _full_screen_flag, 0}, /* _cinematic_fade_in */
-	{tint_color_table, {0, 0, 0}, FIXED_ONE, 0, 3*MACHINE_TICKS_PER_SECOND/2, _full_screen_flag, 0}, /* _long_cinematic_fade_in */
-	{tint_color_table, {0, 0, 0}, 0, FIXED_ONE, MACHINE_TICKS_PER_SECOND/2, _full_screen_flag, 0}, /* _cinematic_fade_out */
+	{tint_color_table, {0, 0, 0}, FIXED_ONE, 0, 5/*MACHINE_TICKS_PER_SECOND/2*/, _full_screen_flag, 0}, /* _cinematic_fade_in */
+	{tint_color_table, {0, 0, 0}, FIXED_ONE, 0, 5/*3*MACHINE_TICKS_PER_SECOND/2*/, _full_screen_flag, 0}, /* _long_cinematic_fade_in */
+	{tint_color_table, {0, 0, 0}, 0, FIXED_ONE, 5/*MACHINE_TICKS_PER_SECOND/2*/, _full_screen_flag, 0}, /* _cinematic_fade_out */
 	{tint_color_table, {0, 0, 0}, 0, 0, 0, _full_screen_flag, 0}, /* _end_cinematic_fade_out */
 	
 	{tint_color_table, {65535, 0, 0}, (3*FIXED_ONE)/4, 0, MACHINE_TICKS_PER_SECOND/4, 0, 0}, /* _fade_red */
@@ -180,7 +180,9 @@ static struct fade_definition fade_definitions[NUMBER_OF_FADE_TYPES]=
 	{tint_color_table, {0, 65535, 0}, 3*FIXED_ONE/4, 0, MACHINE_TICKS_PER_SECOND/2, 0, 0}, /* _fade_green */
 	{tint_color_table, {65535, 0, 65535}, FIXED_ONE/4, 0, 3*MACHINE_TICKS_PER_SECOND, 0, 0}, /* _fade_long_green */
 
-	{randomize_color_table, {0, 0, 0}, FIXED_ONE, 0, (3*MACHINE_TICKS_PER_SECOND)/8, 0, 0}, /* _fade_static */
+// IR change: show off new randomize fader.
+	{randomize_color_table, {0, 0, 0}, FIXED_ONE, 0, (3*MACHINE_TICKS_PER_SECOND)/2, 0, 0}, /* _fade_static */
+//	{randomize_color_table, {0, 0, 0}, FIXED_ONE, 0, (3*MACHINE_TICKS_PER_SECOND)/8, 0, 0}, /* _fade_static */
 	{negate_color_table, {65535, 65535, 65535}, FIXED_ONE, 0, MACHINE_TICKS_PER_SECOND/2, 0, 0}, /* _fade_negative */
 	{negate_color_table, {65535, 65535, 65535}, FIXED_ONE, 0, (3*MACHINE_TICKS_PER_SECOND)/2, 0, 0}, /* _fade_big_negative */
 	{negate_color_table, {0, 65535, 0}, FIXED_ONE, 0, MACHINE_TICKS_PER_SECOND/2, _random_transparency_flag, 0}, /* _fade_flicker_negative */
@@ -291,6 +293,11 @@ bool update_fades(
 		}
 		
 		recalculate_and_display_color_table(fade->type, transparency, fade->original_color_table, fade->animated_color_table);
+	}
+	// IR addition:
+	else
+	{
+		CurrentOGLFader->Type = NONE;
 	}
 	
 	return FADE_IS_ACTIVE(fade) ? true : false;

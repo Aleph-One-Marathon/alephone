@@ -53,9 +53,6 @@ Jul 16, 2001 (Loren Petrich):
 	Using "temporary" as storage space for count_text and weapon_name;
 	it is 256 bytes long, which should be more than enough for most text.
 	This fixes the long-weapon-name bug.
-
-Mar 08, 2002 (Woody Zenfell):
-    SDL network microphone support
 */
 
 #include "cseries.h"
@@ -80,9 +77,6 @@ Mar 08, 2002 (Woody Zenfell):
 #include "FontHandler.h"
 #include "screen.h"
 
-#ifdef SDL
-#include    "network_microphone_sdl.h"
-#endif
 
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
@@ -382,11 +376,7 @@ void mark_player_network_stats_as_dirty(short player_index)
 
 void set_interface_microphone_recording_state(bool state)
 {
-#ifdef SDL
-    set_network_microphone_state(state);
-#else
-    (void)(state);
-#endif
+	(void)(state);
 }
 
 void scroll_inventory(short dy)

@@ -22,6 +22,9 @@
 	Chase-Cam implementation; this makes Marathon something like Halo.
 	
 	Moved out of player.c
+	
+Aug 12, 2001 (Ian Rickard)
+	Various changes relating to B&B prep or OOzing
 */
 
 #include "cseries.h"
@@ -179,7 +182,8 @@ bool ChaseCam_Update()
 		struct world_point3d intersection;
 		struct polygon_data *polygon= get_polygon_data(CC_Polygon);
 		world_distance height;
-		height = polygon->floor_height;
+		// IR change: preparation for B&B
+		height = polygon->floor_below(Ref_Position);
 		if (CC_Position.z <= height)
 		{
 			// Floor check
@@ -190,7 +194,8 @@ bool ChaseCam_Update()
 				break;
 			}
 		}
-		height = polygon->ceiling_height;
+		// IR change: preparation for B&B
+		height = polygon->ceiling_above(Ref_Position);
 		if (CC_Position.z >= height)
 		{
 			// Ceiling check
@@ -208,8 +213,9 @@ bool ChaseCam_Update()
 		{
 			// Where did the crossing happen?
 			struct line_data *line= get_line_data(line_index);
-			find_line_intersection(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
-				&get_endpoint_data(line->endpoint_indexes[1])->vertex, &Ref_Position, &CC_Position,
+			// IR change: OOzing
+			find_line_intersection(&line->endpoint_0()->vertex,
+				&line->endpoint_1()->vertex, &Ref_Position, &CC_Position,
 				&intersection);
 			
 			// Check on the next polygon
@@ -218,13 +224,15 @@ bool ChaseCam_Update()
 			{
 				// Can the viewpoint enter the next polygon?
 				struct polygon_data *next_polygon= get_polygon_data(Next_Polygon);
-				if (intersection.z <= next_polygon->floor_height)
+				// IR change: preparation for B&B
+				if (intersection.z <= next_polygon->floor_below(Ref_Position))
 				{
 					// Hit the lower boundary wall
 					if (!ThroughWalls) CC_Position = intersection;
 					break;
 				}
-				else if (intersection.z >= next_polygon->ceiling_height)
+				// IR change: preparation for B&B
+				else if (intersection.z >= next_polygon->ceiling_above(Ref_Position))
 				{
 					// Hit the upper boundary wall
 					if (!ThroughWalls) CC_Position = intersection;

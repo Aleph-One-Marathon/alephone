@@ -26,6 +26,9 @@ Aug 14, 2000 (Loren Petrich):
 	Turned collection and shading-table handles into pointers,
 	because handles are needlessly MacOS-specific,
 	and because these are variable-format objects.
+
+Aug 22, 2001 (Ian Rickard):
+	Added alpha_tables element for software seethruliquids.
 */
 
 /* ---------- structures */
@@ -41,8 +44,18 @@ struct collection_header /* 32 bytes on disk */
 	// LP: handles to pointers
 	collection_definition *collection;
 	byte *shading_tables;
+<<<<<<< shape_definitions.h
+	// IR addition: seethruliquids
+	uint8 *alpha_tables;
+	
+	// int16 unused[2];
+=======
+>>>>>>> 1.7
 };
 const int SIZEOF_collection_header = 32;
+
+// IR addition: seethruliquids
+#define ALPHA_TABLE_SIZE 256
 
 /* ---------- globals */
 

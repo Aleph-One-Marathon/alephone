@@ -36,17 +36,17 @@ Oct 13, 2000
 #include "world.h"
 #include "interface.h"
 #include "render.h"
-#include "RenderSortPoly.h"
+#include "NewRenderVisTree.h"
 
 
 /* ---------- render objects */
 
 struct render_object_data
 {
-	struct sorted_node_data *node; /* node we are being drawn inside */
-	struct clipping_window_data *clipping_windows; /* our privately calculated clipping window */
+	struct sorted_node_data *node; // node we are being drawn inside.  We generate these after tree is finalized so pointers are safe
+	struct clipping_window_data clipping_window; // our privately calculated clipping window
 	
-	struct render_object_data *next_object; /* the next object in this chain */
+	uint16 next_object; // the next object in this chain
 	
 	struct rectangle_definition rectangle;
 	
@@ -60,24 +60,34 @@ class RenderPlaceObjsClass
 
 	void initialize_render_object_list();
 	
-	render_object_data *build_render_object(long_point3d *origin,
+	uint16 build_render_object(long_point3d *origin,
 		_fixed floor_intensity, _fixed ceiling_intensity,
 		sorted_node_data **base_nodes, short *base_node_count,
-		short object_index);
+		short object_index, portal_view_data *view);
 	
-	void sort_render_object_into_tree(render_object_data *new_render_object,
+	void sort_render_object_into_tree(uint16 new_object_index,
 		sorted_node_data **base_nodes, short base_node_count);
 
 	short build_base_node_list(short origin_polygon_index,
 		world_point3d *origin, world_distance left_distance, world_distance right_distance,
-		sorted_node_data **base_nodes);
+		sorted_node_data **base_nodes, portal_view_data *view);
 	
-	void build_aggregate_render_object_clipping_window(render_object_data *render_object,
+	void build_aggregate_render_object_clipping_window(uint16 new_object_index,
 		sorted_node_data **base_nodes, short base_node_count);
 		
 	shape_information_data *rescale_shape_information(shape_information_data *unscaled,
 		shape_information_data *scaled, uint16 flags);
-
+	
+	// Pointers to view and calculated visibility tree and sorted polygons
+	view_data *GlobalView;
+	
+	render_node_data *Nodes;
+	int NodeCount;
+	sorted_node_data *SortedNodes;
+	int SortedNodeCount;
+	
+	render_object_data *Object(uint16 i) {return (i<RenderObjects.size() && i>=0)?&RenderObjects[i]:NULL;}
+	
 public:
 
 	// LP additions: growable list of render objects; these are all the inhabitants
@@ -85,12 +95,9 @@ public:
 	// keep SortedNodes in sync
 	vector<render_object_data> RenderObjects;
 	
-	// Pointers to view and calculated visibility tree and sorted polygons
-	view_data *view;
-	RenderVisTreeClass *RVPtr;
-	RenderSortPolyClass *RSPtr;
+	void SetView(view_data *view) {GlobalView = view;}
 	
-	void build_render_object_list();
+	void build_render_object_list(NewVisTree *visTree);
 	
   	// Inits everything
  	RenderPlaceObjsClass();

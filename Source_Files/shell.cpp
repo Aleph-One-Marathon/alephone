@@ -68,7 +68,8 @@ static void main_event_loop(void);
 extern int process_keyword_key(char key);
 extern void handle_keyword(int type_of_cheat);
 
-static void PlayInterfaceButtonSound(short SoundID);
+// IR change: moved to shell_misc
+//static void PlayInterfaceButtonSound(short SoundID);
 
 // Include platform-specific files
 #if defined(mac)
@@ -77,10 +78,14 @@ static void PlayInterfaceButtonSound(short SoundID);
 #include "shell_sdl.h"
 #endif
 
-// LP: the rest of the code has been moved to Jeremy's shell_misc.file.
+#error "this file is silly, use the platform-specific version instead."
 
+// LP: the rest of the code has been moved to Jeremy's shell_misc.file.
+// IR change: <yoda> MMMM, should not this be in shell_misc? yeeees? </yoda>
+/*
 void PlayInterfaceButtonSound(short SoundID)
 {
 	if (TEST_FLAG(input_preferences->modifiers,_inputmod_use_button_sounds))
 		play_sound(SoundID, (world_location3d *) NULL, NONE);
 }
+*/

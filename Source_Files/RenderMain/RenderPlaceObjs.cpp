@@ -37,8 +37,8 @@ Oct 19, 2000 (Loren Petrich):
 Jan 17, 2001 (Loren Petrich):
 	Added vertical flipping
 
-Sept 11, 2001 (Loren Petrich):
-	Added 3D-model support, including calculation of a projected bounding box and the miner's-light distance and direction
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating to B&B prep or OOzing
 */
 
 #include "cseries.h"
@@ -57,27 +57,28 @@ Sept 11, 2001 (Loren Petrich):
 #define MAXIMUM_RENDER_OBJECTS 72
 #define MAXIMUM_OBJECT_BASE_NODES 6
 
-// For finding the 2D projection of the bounding box;
-// also finds other useful info
+// Function defined at the end
 static void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	long_point3d& TransformedPosition,
 	GLfloat Scale,
 	short RelativeAngle,
 	shape_information_data& ShapeInfo,
+<<<<<<< RenderPlaceObjs.cpp
+	int& Depth,
+=======
 	short DepthType,
 	int& Farthest,
 	int& ProjDistance,
 	int& DistanceRef,
 	int& LightDepth,
+>>>>>>> 1.24
 	GLfloat *Direction
 );
 
 
 // Inits everything
 RenderPlaceObjsClass::RenderPlaceObjsClass():
-	view(NULL),	// Idiot-proofing
-	RVPtr(NULL),
-	RSPtr(NULL)
+	GlobalView(NULL)	// Idiot-proofing
 {RenderObjects.reserve(MAXIMUM_RENDER_OBJECTS);}
 
 
@@ -87,39 +88,66 @@ void RenderPlaceObjsClass::initialize_render_object_list()
 {
 	// LP change: using growable list
 	RenderObjects.clear();
+<<<<<<< RenderPlaceObjs.cpp
+	/*
+	render_object_count= 0;
+	next_render_object= render_objects;
+	*/
+	
+	return;
+=======
+>>>>>>> 1.24
 }
 
 
 /* walk our sorted polygon lists, adding every object in every polygon to the render_object list,
 	in depth order */
-void RenderPlaceObjsClass::build_render_object_list()
+void RenderPlaceObjsClass::build_render_object_list(NewVisTree *visTree)
 {
-	assert(view);	// Idiot-proofing
-	assert(RVPtr);
-	assert(RSPtr);
+	assert(GlobalView);	// Idiot-proofing
+	assert(visTree);
+	
+	SortedNodes = &visTree->SortedNodes[0];
+	SortedNodeCount = visTree->SortedNodes.size();
+	Nodes = &visTree->Nodes[0];
+	NodeCount = visTree->Nodes.size();
+	
 	sorted_node_data *sorted_node;
-	// LP: reference to simplify the code
-	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
+	render_node_data *render_node;
 
 	initialize_render_object_list();
 	
+<<<<<<< RenderPlaceObjs.cpp
+	for (sorted_node = SortedNodes+(SortedNodeCount-1); sorted_node >= SortedNodes; --sorted_node)
+=======
 	for (sorted_node = &SortedNodes.back(); sorted_node >= &SortedNodes.front(); --sorted_node)
+>>>>>>> 1.24
 	{
-		polygon_data *polygon= get_polygon_data(sorted_node->polygon_index);
-		_fixed floor_intensity= get_light_intensity(polygon->floor_lightsource_index);
-		_fixed ceiling_intensity = get_light_intensity(polygon->ceiling_lightsource_index);
+		render_node = sorted_node->node;
+		polygon_data *polygon= render_node->polygon;
+		_fixed floor_intensity= get_light_intensity(polygon->floor_surface.lightsource_index);
+		_fixed ceiling_intensity = get_light_intensity(polygon->ceiling_surface.lightsource_index);
 		short object_index= polygon->first_object;
 		
 		while (object_index!=NONE)
 		{
 			short base_node_count;
 			sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
-			render_object_data *render_object= build_render_object(NULL, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, object_index);
+<<<<<<< RenderPlaceObjs.cpp
 			
-			if (render_object)
+			portal_view_data *view = visTree->get_portal_view(render_node->portal_view);
+			
+			// LP change:
+			uint16 new_object_index = build_render_object(
+					NULL, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, object_index, view);
+=======
+			render_object_data *render_object= build_render_object(NULL, floor_intensity, ceiling_intensity, base_nodes, &base_node_count, object_index);
+>>>>>>> 1.24
+			
+			if (new_object_index != UNONE)
 			{
-				build_aggregate_render_object_clipping_window(render_object, base_nodes, base_node_count);
-				sort_render_object_into_tree(render_object, base_nodes, base_node_count);
+				build_aggregate_render_object_clipping_window(new_object_index, base_nodes, base_node_count);
+				sort_render_object_into_tree(new_object_index, base_nodes, base_node_count);
 			}
 			
 			object_index= get_object_data(object_index)->next_object;
@@ -127,35 +155,265 @@ void RenderPlaceObjsClass::build_render_object_list()
 	}
 }
 
-
 // LP change: make it better able to do long-distance views
-render_object_data *RenderPlaceObjsClass::build_render_object(
+uint16 RenderPlaceObjsClass::build_render_object(
 	long_point3d *origin, // world_point3d *origin,
 	_fixed floor_intensity,
 	_fixed ceiling_intensity,
 	sorted_node_data **base_nodes,
 	short *base_node_count,
-	short object_index)
+	short object_index,
+	portal_view_data *view)
 {
+	uint16 render_object_index = UNONE;
 	render_object_data *render_object= NULL;
 	object_data *object= get_object_data(object_index);
-	// LP: reference to simplify the code
-	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
+<<<<<<< RenderPlaceObjs.cpp
+// LP change: removed upper limit on number (restored it later)
+// if (!OBJECT_IS_INVISIBLE(object))
+	if (OBJECT_IS_INVISIBLE(object) || RenderObjects.size()>=get_dynamic_limit(_dynamic_limit_rendered))
+		return UNONE;
+	
+	// LP change: made this more long-distance-friendly
+	long_point3d transformed_origin;
+	// world_point3d transformed_origin;
+	
+	if (origin)
+	{
+		// LP change:
+		transformed_origin.x = origin->x;
+		transformed_origin.y = origin->y;
+		transformed_origin.z = origin->z;
+		// transformed_origin= *origin;
+	}
+	else
+	{
+		// LP change:
+		world_point2d temp_tfm_origin;
+		temp_tfm_origin.x = object->location.x;
+		temp_tfm_origin.y = object->location.y;
+		transformed_origin.z = object->location.z - view->origin.z;
+		uint16 tfm_origin_flags;
+		transform_overflow_point2d(&temp_tfm_origin, (world_point2d *)&view->origin, view->yaw, &tfm_origin_flags);
+		long_vector2d *tfm_origin_ptr = (long_vector2d *)(&transformed_origin);
+		overflow_short_to_long_2d(temp_tfm_origin,tfm_origin_flags,*tfm_origin_ptr);
+		/*
+		transformed_origin= object->location;
+		transformed_origin.z-= view->origin.z;
+		transform_point2d((world_point2d *) &transformed_origin, (world_point2d *)&view->origin, view->yaw);
+		*/
+	}
+	
+	if (transformed_origin.x <= MINIMUM_OBJECT_DISTANCE)
+		return UNONE;
+	int x0, x1, y0, y1;	// Need the extra precision here
+	shape_and_transfer_mode data;
+	shape_information_data *shape_information;
+	shape_information_data scaled_shape_information; // if necessary
+	shape_information_data model_shape_information;	// also if necessary
+	
+	// For the convenience of the 3D-model renderer
+	int LightDepth;
+	GLfloat LightDirection[3];
+	
+	get_object_shape_and_transfer_mode(&view->origin, object_index, &data);
+	// Nonexistent shape: skip
+	if (data.collection_code == NONE) return NULL;
+	
+	// Find which 3D model will take the place of this sprite, if any
+	OGL_ModelData *ModelPtr =
+		OGL_GetModelData(GET_COLLECTION(data.collection_code),GET_DESCRIPTOR_SHAPE(object->shape));
+	
+	shape_information= rescale_shape_information(
+		extended_get_shape_information(data.collection_code, data.low_level_shape_index),
+		&scaled_shape_information, GET_OBJECT_SCALE_FLAGS(object));
+	// Nonexistent frame: skip
+	if (!shape_information) return NULL;
+	
+	// Create a fake sprite rectangle using the model's bounding box
+	float Scale = 1;
+	if (ModelPtr)
+	{
+		// Copy over
+		model_shape_information = *shape_information;
+		
+		// Set up scaling and return pointer
+		if (TEST_FLAG(object->flags,_object_is_enlarged)) Scale = 1.25;
+		else if (TEST_FLAG(object->flags,_object_is_tiny)) Scale = 0.5;
+		
+		FindProjectedBoundingBox(ModelPtr->Model.BoundingBox,
+			transformed_origin, Scale, object->facing - view->yaw,
+			model_shape_information, LightDepth, LightDirection);
+		
+		// Set pointer back
+		shape_information = &model_shape_information;
+	}
+	
+	/* if the caller wants it, give him the left and right extents of this shape */
+	if (base_nodes)
+	{
+		*base_node_count= build_base_node_list(object->polygon, &object->location,
+			shape_information->world_left, shape_information->world_right, base_nodes, view);
+	}
+	
+	// Doing this with full-integer arithmetic to avoid mis-clipping
+	x0= GlobalView->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*GlobalView->world_to_screen_x)/transformed_origin.x;
+	x1= GlobalView->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*GlobalView->world_to_screen_x)/transformed_origin.x;
+	y0=	GlobalView->half_screen_height - (GlobalView->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/transformed_origin.x + view->dtanpitch;
+	y1= GlobalView->half_screen_height - (GlobalView->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/transformed_origin.x + view->dtanpitch;
+	
+	if (x0>=x1 || y0>=y1)
+		return UNONE; // shrunken out of existance, bail out.
+
+	// LP Change:
+	int Length = RenderObjects.size();
+//				POINTER_DATA OldROPointer = POINTER_CAST(&RenderObjects.front());
+	
+	// Add a dummy object and check if the pointer got changed
+//				render_object_data Dummy;
+//				Dummy.node = NULL;				// Fake initialization to shut up CW
+	RenderObjects.push_back(render_object_data());
+/*				POINTER_DATA NewROPointer = POINTER_CAST(&RenderObjects.front());
+	
+	if (NewROPointer != OldROPointer)
+	{
+		// Get the render objects and sorted nodes into sync
+		for (int k=0; k<Length; k++)
+		{
+			render_object_data &RenderObject = RenderObjects[k];
+			if (RenderObject.next_object != NULL)
+				RenderObject.next_object = (render_object_data *)(NewROPointer + (POINTER_CAST(RenderObject.next_object) - OldROPointer));
+		}
+		for (int k=0; k<SortedNodes.size(); k++)
+		{
+			sorted_node_data &SortedNode = SortedNodes[k];
+			if (SortedNode.interior_objects != NULL)
+				SortedNode.interior_objects = (render_object_data *)(NewROPointer + (POINTER_CAST(SortedNode.interior_objects) - OldROPointer));
+			if (SortedNode.exterior_objects != NULL)
+				SortedNode.exterior_objects = (render_object_data *)(NewROPointer + (POINTER_CAST(SortedNode.exterior_objects) - OldROPointer));
+		}
+	}*/
+	render_object_index = Length;
+	render_object= &RenderObjects[Length];
+	/*
+	render_object= next_render_object++;
+	render_object_count+= 1;
+	*/
+	
+	render_object->rectangle.flags= 0;
+	
+	// Clamp to short values
+	render_object->rectangle.x0= PIN(x0,SHRT_MIN,SHRT_MAX);
+	render_object->rectangle.x1= PIN(x1,SHRT_MIN,SHRT_MAX);
+	render_object->rectangle.y0= PIN(y0,SHRT_MIN,SHRT_MAX);
+	render_object->rectangle.y1= PIN(y1,SHRT_MIN,SHRT_MAX);
+
+	{
+		// LP change: doing media handling more correctly here:
+		short media_index = get_polygon_data(object->polygon)->media_index;
+		media_data *media = (media_index != NONE) ? get_media_data(media_index) : NULL;
+		
+		// LP: the media splashes are clipped as if there was no liquid
+		// And the 3D-model info needs the object-relative liquid height
+		if (media && !OBJECT_IS_MEDIA_EFFECT(object))
+		{
+			render_object->rectangle.LiquidRelHeight = PIN(media->height - object->location.z, SHRT_MIN,SHRT_MAX);
+			int ProjLiquidHeight = GlobalView->half_screen_height - (GlobalView->world_to_screen_y*(media->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
+			render_object->ymedia= PIN(ProjLiquidHeight,SHRT_MIN,SHRT_MAX);
+		}
+		else
+		{
+			// All the way down
+			render_object->rectangle.LiquidRelHeight = SHRT_MIN;
+			render_object->ymedia= SHRT_MAX;
+		}
+		
+		/*
+		short media_index= view->under_media_boundary ? view->under_media_index : get_polygon_data(object->polygon)->media_index;
+=======
 	// LP change: removed upper limit on number (restored it later)
 	if (!OBJECT_IS_INVISIBLE(object) && int(RenderObjects.size())<get_dynamic_limit(_dynamic_limit_rendered))
 	{
 		// LP change: made this more long-distance-friendly
 		long_point3d transformed_origin;
+>>>>>>> 1.24
 		
-		if (origin)
+		if (media_index!=NONE && !OBJECT_IS_MEDIA_EFFECT(object))
 		{
+<<<<<<< RenderPlaceObjs.cpp
+			render_object->ymedia= view->half_screen_height - (view->world_to_screen_y*(media->height-view->origin.z))/transformed_origin.x + view->dtanpitch;
+=======
 			transformed_origin.x = origin->x;
 			transformed_origin.y = origin->y;
 			transformed_origin.z = origin->z;
+>>>>>>> 1.24
 		}
 		else
 		{
+<<<<<<< RenderPlaceObjs.cpp
+			render_object->ymedia= INT16_MAX;
+		}
+		*/
+	}
+	
+	extended_get_shape_bitmap_and_shading_table(data.collection_code, data.low_level_shape_index,
+		&render_object->rectangle.texture, &render_object->rectangle.shading_tables, GlobalView->shading_mode);
+	
+	// LP: not sure how to handle nonexistent sprites here
+	assert(render_object->rectangle.texture);
+	
+	// LP change: for the convenience of the OpenGL renderer
+	render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,data.low_level_shape_index);
+	render_object->rectangle.ModelPtr = ModelPtr;
+	if (ModelPtr)
+	{
+		render_object->rectangle.Position = object->location;
+		render_object->rectangle.Azimuth = object->facing;
+		render_object->rectangle.Scale = Scale;
+		render_object->rectangle.LightDepth = LightDepth;
+		objlist_copy(render_object->rectangle.LightDirection,LightDirection,3);
+	}
+		
+	render_object->rectangle.flip_vertical= (shape_information->flags&_Y_MIRRORED_BIT) ? true : false;
+	render_object->rectangle.flip_horizontal= (shape_information->flags&_X_MIRRORED_BIT) ? true : false;
+	
+	// Calculate the object's horizontal position
+	// for the convenience of doing teleport-in/teleport-out
+	switch(data.transfer_mode)
+	{
+	case _xfer_fold_in:
+	case _xfer_fold_out:
+		render_object->rectangle.xc =
+			GlobalView->half_screen_width + (int(transformed_origin.y)*GlobalView->world_to_screen_x)/transformed_origin.x;
+	}
+	
+	render_object->rectangle.depth= transformed_origin.x;
+	instantiate_rectangle_transfer_mode(GlobalView, &render_object->rectangle, data.transfer_mode, data.transfer_phase);
+	
+	render_object->rectangle.ambient_shade= MAX(shape_information->minimum_light_intensity, floor_intensity);
+	render_object->rectangle.ceiling_light= MAX(shape_information->minimum_light_intensity, ceiling_intensity);
+
+	if (GlobalView->shading_mode==_shading_infravision) render_object->rectangle.flags|= _SHADELESS_BIT;
+	
+	render_object->next_object= UNONE;
+	
+	if (object->parasitic_object!=NONE)
+	{
+		uint16 parasitic_object_index;
+		// LP change:
+		long_point3d parasitic_origin= transformed_origin;
+		// world_point3d parasitic_origin= transformed_origin;
+		
+		parasitic_origin.z+= shape_information->world_y0;
+		parasitic_origin.y+= shape_information->world_x0;
+		parasitic_object_index = build_render_object(&parasitic_origin, floor_intensity, ceiling_intensity,
+			NULL, NULL, object->parasitic_object, view);
+		
+		if (parasitic_object_index != UNONE)
+		{
+			render_object_data *parasitic_render_object=&RenderObjects[parasitic_object_index];
+=======
 			world_point2d temp_tfm_origin;
 			temp_tfm_origin.x = object->location.x;
 			temp_tfm_origin.y = object->location.y;
@@ -227,24 +485,27 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				shape_information = &model_shape_information;
 			}
 #endif
+>>>>>>> 1.24
 			
-			// Too close?
-			if (Farthest < MINIMUM_OBJECT_DISTANCE) return NULL;
+			assert(!parasitic_render_object->next_object); /* one parasite only, please */
+
+			/* take the maximum intensity of the host and parasite as the intensity of the
+				aggregate (does not handle multiple parasites correctly) */
+			parasitic_render_object->rectangle.ambient_shade= render_object->rectangle.ambient_shade=
+				MAX(parasitic_render_object->rectangle.ambient_shade, render_object->rectangle.ambient_shade);
+			parasitic_render_object->rectangle.ceiling_light= render_object->rectangle.ceiling_light=
+				MAX(parasitic_render_object->rectangle.ceiling_light, render_object->rectangle.ceiling_light);
 			
-			/* if the caller wants it, give him the left and right extents of this shape */
-			if (base_nodes)
+			if (shape_information->flags&_KEYPOINT_OBSCURED_BIT) /* host obscures parasite */
 			{
-				*base_node_count= build_base_node_list(object->polygon, &object->location,
-					shape_information->world_left, shape_information->world_right, base_nodes);
+				render_object->next_object= parasitic_object_index;
 			}
-			
-			// Doing this with full-integer arithmetic to avoid mis-clipping;
-			x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/DistanceRef;
-			x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/DistanceRef;
-			y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/DistanceRef + view->dtanpitch;
-			y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/DistanceRef + view->dtanpitch;
-			if (x0<x1 && y0<y1)
+			else /* parasite obscures host; does not properly handle multiple parasites */
 			{
+<<<<<<< RenderPlaceObjs.cpp
+				parasitic_render_object->next_object= render_object_index;
+				render_object= parasitic_render_object;
+=======
 				// LP Change:
 				int Length = RenderObjects.size();
 				POINTER_DATA OldROPointer = POINTER_CAST(&RenderObjects.front());
@@ -383,35 +644,45 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 						}
 					}
 				}
+>>>>>>> 1.24
 			}
 		}
 	}
 	
-	return render_object;
+	return render_object_index;
 }
 
 void RenderPlaceObjsClass::sort_render_object_into_tree(
-	render_object_data *new_render_object, /* null-terminated linked list */
+	uint16 new_object_index, /* null-terminated linked list */
 	sorted_node_data **base_nodes,
 	short base_node_count)
 {
-	render_object_data *render_object, *last_new_render_object;
+	render_object_data *new_render_object, *render_object, *last_new_render_object;
 	render_object_data *deep_render_object= NULL;
 	render_object_data *shallow_render_object= NULL;
 	sorted_node_data *desired_node;
 	short i;
-	// LP: reference to simplify the code
-	vector<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
-
+	uint16 object_index, shallow_object_index, deep_object_index, desired_node_index;
+	
+	new_render_object = Object(new_object_index);
+	
 	/* find the last render_object in the given list of new objects */
 	for (last_new_render_object= new_render_object;
-			last_new_render_object->next_object;
-			last_new_render_object= last_new_render_object->next_object)
+			last_new_render_object->next_object != UNONE;
+			last_new_render_object= &RenderObjects[last_new_render_object->next_object])
 		;
 
 	/* find the two objects we must be lie between */
+<<<<<<< RenderPlaceObjs.cpp
+	// LP change:
+	for (object_index = 0 ; object_index < RenderObjects.size() ; object_index++)
+	// for (&RenderObjects.front(); render_object <= &RenderObjects.back(); ++render_object)
+	// for (render_object= render_objects; render_object<new_render_object; ++render_object)
+=======
 	for (render_object = &RenderObjects.front(); render_object <= &RenderObjects.back(); ++render_object)
+>>>>>>> 1.24
 	{
+		render_object = Object(object_index);
 		/* if these two objects intersect... */
 		if (render_object->rectangle.x1>new_render_object->rectangle.x0 && render_object->rectangle.x0<new_render_object->rectangle.x1 &&
 			render_object->rectangle.y1>new_render_object->rectangle.y0 && render_object->rectangle.y0<new_render_object->rectangle.y1)
@@ -422,16 +693,15 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 				if (!deep_render_object || deep_render_object->rectangle.depth>render_object->rectangle.depth)
 				{
 					deep_render_object= render_object;
+					deep_object_index= object_index;
 				}
 			}
-			else
+			else if (render_object->rectangle.depth<new_render_object->rectangle.depth) /* found shallower intersecting object */
 			{
-				if (render_object->rectangle.depth<new_render_object->rectangle.depth) /* found shallower intersecting object */
+				if (!shallow_render_object || shallow_render_object->rectangle.depth<=render_object->rectangle.depth)
 				{
-					if (!shallow_render_object || shallow_render_object->rectangle.depth<=render_object->rectangle.depth)
-					{
-						shallow_render_object= render_object;
-					}
+					shallow_render_object= render_object;
+					shallow_object_index= object_index;
 				}
 			}
 		}
@@ -440,8 +710,18 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	/* find the node we’d like to be in (that is, the node closest to the viewer of all the nodes
 		we cross and therefore the latest one in the sorted node list) */
 	desired_node= base_nodes[0];
+<<<<<<< RenderPlaceObjs.cpp
+	
+	for (i= 1; i<base_node_count; ++i)
+		if (base_nodes[i]>desired_node)
+			desired_node= base_nodes[i];
+	
+	assert((desired_node >= SortedNodes) && (desired_node < SortedNodes+SortedNodeCount));
+	// assert(desired_node>=sorted_nodes && desired_node<next_sorted_node);
+=======
 	for (i= 1; i<base_node_count; ++i) if (base_nodes[i]>desired_node) desired_node= base_nodes[i];
 	assert((desired_node >= &SortedNodes.front()) && (desired_node <= &SortedNodes.back()));
+>>>>>>> 1.24
 	
 	/* adjust desired node based on the nodes of the deep and shallow render object; only
 		one of deep_render_object and shallow_render_object will be non-null after this if
@@ -469,7 +749,7 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	
 	/* update the .node fields of all the objects we’re about to add to reflect their new
 		location in the sorted node list */
-	for (render_object= new_render_object; render_object; render_object= render_object->next_object)
+	for (render_object= new_render_object; render_object; render_object= Object(render_object->next_object))
 	{
 		render_object->node= desired_node;
 	}
@@ -478,31 +758,31 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	{
 		/* if it turns out that the object after deep_render_object (which we think we should be
 			drawn in front of) is also deeper than us, make it the new deep_render_object */
-		while ((render_object= deep_render_object->next_object)!=NULL
+		while ((render_object= Object(deep_render_object->next_object))!=NULL
 				&& render_object->rectangle.depth>new_render_object->rectangle.depth)
 			deep_render_object= render_object;
 
 		/* sort after deep_render_object object in the given node (so we are drawn in front of it) */
 		last_new_render_object->next_object= deep_render_object->next_object;
-		deep_render_object->next_object= new_render_object;
+		deep_render_object->next_object= new_object_index;
 	}
 	else
 	{
 //		if (shallow_render_object)
 		{
-			render_object_data **reference;
+			unsigned short *reference;
 			
 			/* find the reference to the shallow_render_object in the node list first (or the
 				first object which is closer than new_render_object) */
 			for (reference= &desired_node->exterior_objects;
-					*reference!=shallow_render_object && *reference && (*reference)->rectangle.depth>new_render_object->rectangle.depth;
-					reference= &(*reference)->next_object)
+					(*reference!=shallow_object_index) && (*reference!=NONE) && Object(*reference)->rectangle.depth>new_render_object->rectangle.depth;
+					reference= &Object(*reference)->next_object)
 				;
 			assert(!shallow_render_object || *reference);
 			
 			/* sort before this object in the given node (so we are drawn behind it) */
 			last_new_render_object->next_object= *reference;
-			*reference= new_render_object;
+			*reference= new_object_index;
 		}
 //		else
 //		{
@@ -527,11 +807,13 @@ short RenderPlaceObjsClass::build_base_node_list(
 	world_point3d *origin,
 	world_distance left_distance,
 	world_distance right_distance,
-	sorted_node_data **base_nodes)
+	sorted_node_data **base_nodes,
+	portal_view_data *view)
 {
 	short cast_state;
 	short base_node_count;
-	world_distance origin_polygon_floor_height= get_polygon_data(origin_polygon_index)->floor_height;
+	// IR change: B&B prep side effect/OOzing
+	world_distance origin_polygon_floor_height= polygon_reference(origin_polygon_index)->lowest_floor();
 	// LP: reference to simplify the code
 	vector<sorted_node_data *>& polygon_index_to_sorted_node = RSPtr->polygon_index_to_sorted_node;
 	
@@ -627,8 +909,9 @@ short RenderPlaceObjsClass::build_base_node_list(
 				polygon= get_polygon_data(polygon_index);
 				
 				/* can’t do above clipping (see note in change history) */
-				if ((view->origin.z<origin->z && polygon->floor_height<origin_polygon_floor_height) ||
-					(view->origin.z>origin->z && origin->z+WORLD_ONE_HALF<polygon->floor_height && polygon->floor_height>origin_polygon_floor_height))
+				// IR change: B&B prep tweak
+				if ((view->origin.z<origin->z && polygon->lowest_floor()<origin_polygon_floor_height) ||
+					(view->origin.z>origin->z && origin->z+WORLD_ONE_HALF<polygon->lowest_floor() && polygon->lowest_floor()>origin_polygon_floor_height))
 				{
 					/* if we’re above the viewer and going into a lower polygon or below the viewer and going
 						into a higher polygon, don’t */
@@ -838,24 +1121,21 @@ shape_information_data *RenderPlaceObjsClass::rescale_shape_information(
 
 
 // Creates a fake sprite rectangle from a model's bounding box;
-// also finds:
-//
-// Distance of farthest part of the bounding box
-// Reference distance for calculating bounding-box projection
-// 
-// For player-illumination "Miner's Light" effect:
-// Light-position depth (halfway between closest point and bbox centroid)
-// Light-position direction
+// also finds the depth and direction to use in the model's "Miner's Light" effect
 void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	long_point3d& TransformedPosition,
 	GLfloat Scale,
 	short RelativeAngle,
 	shape_information_data& ShapeInfo,
+<<<<<<< RenderPlaceObjs.cpp
+	int& Depth,
+=======
 	short DepthType,
 	int& Farthest,
 	int& ProjDistance,
 	int& DistanceRef,
 	int& LightDepth,
+>>>>>>> 1.24
 	GLfloat *Direction
 )
 {
@@ -921,7 +1201,7 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	// Find minimum and maximum projected Y, Z;
 	// scale to the object's position to be compatible
 	// with the rest of the code.
-	GLfloat XMin, XMax;
+	GLfloat XMin;
 	GLfloat Proj_YMin, Proj_YMax, Proj_ZMin, Proj_ZMax;
 	
 	for (int k=0; k<8; k++)
@@ -932,27 +1212,32 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 		
 		GLfloat XClip = MAX(X,MINIMUM_OBJECT_DISTANCE);
 		
+<<<<<<< RenderPlaceObjs.cpp
+		GLfloat Proj = (X0/XClip);
+=======
 		GLfloat Proj = 1/XClip;
+>>>>>>> 1.24
 		GLfloat Proj_Y = Proj*Y;
 		GLfloat Proj_Z = Proj*Z;
 		
 		if (k == 0)
 		{
-			XMin = X;
-			XMax = X;
+			XMin = XClip;
 			Proj_YMin = Proj_YMax = Proj_Y;
 			Proj_ZMin = Proj_ZMax = Proj_Z;
 		}
 		else
 		{
-			XMin = MIN(XMin, X);
-			XMax = MAX(XMax, X);
+			XMin = MIN(XMin, XClip);
 			Proj_YMin = MIN(Proj_YMin,Proj_Y);
 			Proj_YMax = MAX(Proj_YMax,Proj_Y);
 			Proj_ZMin = MIN(Proj_ZMin,Proj_Z);
 			Proj_ZMax = MAX(Proj_ZMax,Proj_Z);
 		}
 	}
+<<<<<<< RenderPlaceObjs.cpp
+	
+=======
 	
 	// Projected distance of the center point
 	ProjDistance = (X0 >= 0) ? int(X0 + 0.5) : - int(-X0 + 0.5);
@@ -968,6 +1253,7 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	Proj_ZMin *= XRef;
 	Proj_ZMax *= XRef;
 	
+>>>>>>> 1.24
 	// Unshift by the object's position
 	Proj_YMin -= Y0;
 	Proj_YMax -= Y0;
@@ -985,11 +1271,8 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	Y0 += (ExpandedBB[0][1] + ExpandedBB[7][1])/2;
 	Z0 += (ExpandedBB[0][2] + ExpandedBB[7][2])/2;
 	
-	// For checking if any of the bounding box will be visible
-	Farthest = int(XMax + 0.5);
-	
 	// Find the depth to use in the miner's light for the object
-	LightDepth = MAX(int((XMin + X0)/2 + 0.5),0);
+	Depth = int((XMin + MAX(X0,MINIMUM_OBJECT_DISTANCE))/2);
 	
 	// Find the direction to the object;
 	// use the engine's fast square root

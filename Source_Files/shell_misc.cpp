@@ -22,9 +22,6 @@
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Disabled network_speaker_idle_proc under Carbon
-
-Mar 08, 2002 (Woody Zenfell):
-    Enabled network_microphone_idle_proc (in global_idle_proc()) under SDL
 */
 
 bool CheatsActive = false;
@@ -43,10 +40,7 @@ bool CheatsActive = false;
 #include "player.h"
 #include "music.h"
 #include "items.h"
-
-#ifdef  SDL
-#include    "network_microphone_sdl.h"
-#endif
+#include "readout_data.h"
 
 #include <ctype.h>
 
@@ -55,6 +49,7 @@ bool CheatsActive = false;
 unsigned short CheatCodeModMask = controlKey;
 #endif
 
+time_usage_stats		gUsageTimers;
 
 extern void process_new_item_for_reloading(short player_index, short item_type);
 extern bool try_and_add_player_item(short player_index,	short type);
@@ -65,6 +60,10 @@ extern void accelerate_monster(short monster_index,	world_distance vertical_velo
 extern void network_speaker_idle_proc(void);
 extern void update_interface(short time_elapsed);
 
+void PlayInterfaceButtonSound(short SoundID);
+void handle_keyword(int tag);
+void *level_transition_malloc(size_t size);
+int process_keyword_key(char key);
 
 // Cheat-keyword definition: tag and associated text string
 
@@ -335,9 +334,6 @@ void global_idle_proc(void)
 #if !defined(TARGET_API_MAC_CARBON)
 	network_speaker_idle_proc();
 #endif
-#ifdef  SDL
-    network_microphone_idle_proc();
-#endif
 	sound_manager_idle_proc();
 }
 
@@ -491,4 +487,10 @@ int process_keyword_key(
 	}
 	
 	return tag;
+}
+
+void PlayInterfaceButtonSound(short SoundID)
+{
+	if (TEST_FLAG(input_preferences->modifiers,_inputmod_use_button_sounds))
+		play_sound(SoundID, (world_location3d *) NULL, NONE);
 }

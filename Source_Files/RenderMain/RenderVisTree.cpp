@@ -31,6 +31,9 @@ Sep. 15, 2000 (Loren Petrich):
 	
 Oct 13, 2000
 	LP: replaced GrowableLists and ResizableLists with STL vectors
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating to B&B prep or OOzing
 */
 
 #include "cseries.h"
@@ -159,8 +162,16 @@ void RenderVisTreeClass::build_render_tree()
 				long_vector2d _vector;
 				
 				/* transform all visited endpoints */
+<<<<<<< RenderVisTree.cpp
+				endpoint->transformedL = long_point2d(endpoint->vertex);
+				// LP change
+				// IR change
+				transform_long_point2d(&endpoint->transformedL, (world_point2d *) &view->origin, view->yaw);
+				// transform_point2d(&endpoint->transformed, (world_point2d *) &view->origin, view->yaw);
+=======
 				endpoint->transformed= endpoint->vertex;
 				transform_overflow_point2d(&endpoint->transformed, (world_point2d *) &view->origin, view->yaw, &endpoint->flags);
+>>>>>>> 1.13
 
 				/* calculate an outbound vector to this endpoint */
 				// LP: changed to do long distance correctly.	
@@ -170,7 +181,9 @@ void RenderVisTreeClass::build_render_tree()
 				// LP change: compose a true transformed point to replace endpoint->transformed,
 				// and use it in the upcoming code
 				long_vector2d transformed_endpoint;
-				overflow_short_to_long_2d(endpoint->transformed,endpoint->flags,transformed_endpoint);
+				// IR change: OOzing
+				transformed_endpoint = long_vector2d(endpoint->transformedL);
+				//overflow_short_to_long_2d(endpoint->transformed,endpoint->flags,transformed_endpoint);
 				
 				if (transformed_endpoint.i>0)
 				{
@@ -527,14 +540,21 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		/* if this line is transparent we need to check for a change in elevation for clipping,
 			if it’s not transparent then we can’t pass through it */
 		// LP change: added test for there being a polygon on the other side
+<<<<<<< RenderVisTree.cpp
+		// IR change: OOzing
+		if (line->is_transparent() && next_polygon_index != NONE)
+		// if (LINE_IS_TRANSPARENT(line))
+=======
 		if (LINE_IS_TRANSPARENT(line) && next_polygon_index != NONE)
+>>>>>>> 1.13
 		{
 			polygon_data *next_polygon= get_polygon_data(next_polygon_index);
 			
-			if (line->highest_adjacent_floor>next_polygon->floor_height ||
-				line->highest_adjacent_floor>polygon->floor_height) clip_flags|= _clip_down; /* next polygon floor is lower */
-			if (line->lowest_adjacent_ceiling<next_polygon->ceiling_height ||
-				line->lowest_adjacent_ceiling<polygon->ceiling_height) clip_flags|= _clip_up; /* next polygon ceiling is higher */
+			// IR changes: OOzing/B&B prep hack.
+			if (line->highest_floor()>next_polygon->lowest_floor() ||
+				line->highest_floor()>polygon->lowest_floor()) clip_flags|= _clip_down; /* next polygon floor is lower */
+			if (line->lowest_ceiling()<next_polygon->highest_ceiling() ||
+				line->lowest_ceiling()<polygon->highest_ceiling()) clip_flags|= _clip_up; /* next polygon ceiling is higher */
 			if (clip_flags&(_clip_up|_clip_down)) *clipping_line_index= crossed_line_index;
 		}
 		else
@@ -598,7 +618,8 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 		*polygon_index= polygon->adjacent_polygon_indexes[index];
 		
 		line= get_line_data(*line_index);
-		if (*polygon_index!=NONE && LINE_IS_TRANSPARENT(line))
+		// IR change: OOzing
+		if (*polygon_index!=NONE && line->is_transparent())
 		{
 			polygon= get_polygon_data(*polygon_index);
 			
@@ -697,8 +718,9 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	
 	line_data *line= get_line_data(line_index);
 	// LP change: relabeling p0 and p1 so as not to conflict with later use
-	world_point2d p0_orig= get_endpoint_data(line->endpoint_indexes[0])->vertex;
-	world_point2d p1_orig= get_endpoint_data(line->endpoint_indexes[1])->vertex;
+	// IR change: OOzing
+	world_point2d p0_orig= line->endpoint_0()->vertex;
+	world_point2d p1_orig= line->endpoint_1()->vertex;
 	// LP addition: place for new line data
 	line_clip_data *data= &LineClips[LastIndex];
 
@@ -742,7 +764,8 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 			if (clip_flags&_clip_up)
 			{
 				/* precalculate z and transformed_z */
-				z= line->lowest_adjacent_ceiling-view->origin.z;
+				// IR change: B&B prep side effect
+				z= line->lowest_ceiling()-view->origin.z;
 				transformed_z= z*view->world_to_screen_y;
 				
 				/* calculate and clip y0 and y1 (screen y-coordinates of each side of the line) */
@@ -767,7 +790,8 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 			
 			if (clip_flags&_clip_down)
 			{
-				z= line->highest_adjacent_floor - view->origin.z;
+				// IR change: B&B prep side effect
+				z= line->highest_floor() - view->origin.z;
 				transformed_z= z*view->world_to_screen_y;
 				
 				/* calculate and clip y0 and y1 (screen y-coordinates of each side of the line) */
@@ -821,7 +845,9 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	// LP change: compose a true transformed point to replace endpoint->transformed,
 	// and use it in the upcoming code
 	long_vector2d transformed_endpoint;
-	overflow_short_to_long_2d(endpoint->transformed,endpoint->flags,transformed_endpoint);
+	// IR change: OOzing side effect
+	transformed_endpoint = long_vector2d(endpoint->transformedL);
+	//overflow_short_to_long_2d(endpoint->transformed,endpoint->flags,transformed_endpoint);
 	
 	data->flags= clip_flags&(_clip_left|_clip_right);
 	switch (data->flags)

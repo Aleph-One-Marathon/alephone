@@ -24,6 +24,9 @@
 	August 3, 2000
 	
 	Subclass of OverheadMapClass for doing rendering with Classic MacOS Quickdraw
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating mostly to OOzing
 */
 
 #include "OverheadMapRenderer.h"
@@ -36,7 +39,9 @@ class OverheadMap_QD_Class: public OverheadMapClass
 		rgb_color& color);
 
 	void draw_line(
-		short *vertices,
+		// IR change: OOzing
+//		short *vertices,
+		const endpoint_reference &vert1, const endpoint_reference &vert2,
 		rgb_color& color,
 		short pen_size);
 

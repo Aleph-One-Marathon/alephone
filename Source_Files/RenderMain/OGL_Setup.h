@@ -138,12 +138,12 @@ enum
 	OGL_Flag_Fog		= 0x0008,	// Whether to make fog
 	OGL_Flag_3D_Models	= 0x0010,	// Whether to use 3D models
 	OGL_Flag_2DGraphics	= 0x0020,	// Whether to pipe 2D graphics through OpenGL
-	OGL_Flag_FlatStatic	= 0x0040,	// Whether to make the "static" effect look flat
+	OGL_Flag_NoLogicOp	= 0x0040,	// Whether to make the "static" effect look flat
 	OGL_Flag_Fader		= 0x0080,	// Whether to do the fader effects in OpenGL
 	OGL_Flag_LiqSeeThru	= 0x0100,	// Whether the liquids can be seen through
 	OGL_Flag_Map		= 0x0200,	// Whether to do the overhead map with OpenGL
 	OGL_Flag_TextureFix	= 0x0400,	// Whether to apply a texture fix for old Apple OpenGL
-	OGL_Flag_HUD		= 0x0800,	// Whether to do the HUD with OpenGL
+	OGL_Flag_HUD		= 0x0800	// Whether to do the HUD with OpenGL
 };
 
 struct OGL_ConfigureData
@@ -282,8 +282,6 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 void OGL_ResetTextures();
 
 
-#ifdef HAVE_OPENGL
-
 // 3D-Model and Skin Support
 
 // Model-skin options
@@ -381,8 +379,6 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence);
 
 // Resets all model skins; arg is whether to clear OpenGL textures
 void OGL_ResetModelSkins(bool Clear_OGL_Txtrs);
-
-#endif // def HAVE_OPENGL
 
 
 // Fog data record

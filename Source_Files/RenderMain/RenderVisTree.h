@@ -68,13 +68,15 @@ enum /* next_polygon_along_line() states */
 
 /* ---------- clipping data */
 
-enum /* É_clip_data flags */
+/* now in NewRenderVisTree.h
+
+enum // _clip_data flags
 {
 	_clip_left= 0x0001,
 	_clip_right= 0x0002,
 	_clip_up= 0x0004,
 	_clip_down= 0x0008
-};
+};*/
 
 enum /* left and right sides of screen */
 {
@@ -108,15 +110,21 @@ struct endpoint_clip_data
 	long_vector2d vector;
 };
 
+/* now in NewRenderVisTree.h
+
 struct clipping_window_data
 {
 	// LP change: split into two sets of vectors: left-right and top-bottom
 	long_vector2d left, right;
 	long_vector2d top, bottom;
+<<<<<<< RenderVisTree.h
+	// world_vector2d left, right, top, bottom; // j is really k for top and bottom
+=======
+>>>>>>> 1.14
 	short x0, x1, y0, y1;
 	
 	struct clipping_window_data *next_window;
-};
+};*/
 
 
 /* ---------- nodes */

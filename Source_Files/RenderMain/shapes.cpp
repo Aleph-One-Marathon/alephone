@@ -73,6 +73,12 @@ Sept 2, 2000 (Loren Petrich):
 
 Jan 17, 2001 (Loren Petrich):
 	Added support for offsets for OpenGL-rendered substitute textures
+
+Aug 19, 2001 (Ian Rickard):
+	added various stuff for dithering, including build_shading_tables_dithered32
+
+Aug 22, 2001 (Ian Rickard):
+	various changes for software SeeThruLiquids.
 */
 
 /*
@@ -100,6 +106,8 @@ Jan 17, 2001 (Loren Petrich):
 
 // LP addition: OpenGL support
 #include "OGL_Render.h"
+// IR addition: software SeeThruLiquids support
+#include "OGL_Setup.h"
 
 // LP addition: infravision XML setup needs colors
 #include "ColorParser.h"
@@ -174,8 +182,15 @@ static void _change_clut(void (*change_clut_proc)(struct color_table *color_tabl
 static void build_shading_tables8(struct rgb_color_value *colors, short color_count, pixel8 *shading_tables);
 static void build_shading_tables16(struct rgb_color_value *colors, short color_count, pixel16 *shading_tables, byte *remapping_table);
 static void build_shading_tables32(struct rgb_color_value *colors, short color_count, pixel32 *shading_tables, byte *remapping_table);
+// IR added: for dithering
+static void build_shading_tables_dithered32(struct rgb_color_value *colors, short color_count, pixel32 *shading_tables, byte *remapping_table);
 static void build_global_shading_table16(void);
 static void build_global_shading_table32(void);
+
+// IR added: SeeThruLuqids in software mode.
+static void build_collection_alpha_tables(short collection_index);
+static void build_alpha_table16(struct rgb_color_value *colors, short color_count, uint8 *alpha_tables, OGL_TextureOptions *Options);
+static void build_alpha_table32(struct rgb_color_value *colors, short color_count, uint8 *alpha_tables, OGL_TextureOptions *Options);
 
 static bool get_next_color_run(struct rgb_color_value *colors, short color_count, short *start, short *count);
 static bool new_color_run(struct rgb_color_value *_new, struct rgb_color_value *last);
@@ -639,7 +654,13 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 				long RemainingBytes = (SNext - S);
 				byte *RemainingDataPlacement = (byte *)(Bitmap.row_addresses+1) + NumExtraPointerBytes;
 				StreamToBytes(S,RemainingDataPlacement,RemainingBytes);
-			
+				
+				// IR addition: for hi-res replacement textures in software mode:
+				if (Definition.type == _interface_collection // used to indicate hi-res replacements
+					&& (  (Bitmap.width==128 && Bitmap.height==128)
+					    ||(Bitmap.width==256 && Bitmap.height==256) ) )
+					Bitmap.flags |= _MAYBE_TRANSPARENT_BIT;
+				
 				// Set the offset pointer appropriately:
 				*(NewOffsetPtr++) = NewCollLocation;
 				NewCollLocation +=
@@ -919,7 +940,8 @@ void *get_global_shading_table(
 {
 	void *shading_table= (void *) NULL;
 
-	switch (bit_depth)
+	// IR change: global name changed for dithering
+	switch (g_render_depth)
 	{
 		case 8:
 		{
@@ -1030,7 +1052,8 @@ void load_collections(
 static void precalculate_bit_depth_constants(
 	void)
 {
-	switch (bit_depth)
+	// IR change: global name changed for dithering
+	switch (g_render_depth)
 	{
 		case 8:
 			number_of_shading_tables= 32;
@@ -1157,8 +1180,13 @@ static void update_color_environment(
 			/* then remap the collection and recalculate the base addresses of each bitmap */
 			for (bitmap_index= 0; bitmap_index<collection->bitmap_count; ++bitmap_index)
 			{
+				ASSERTLOGINT(collection, bitmap_index);
+				ASSERTLOGINT(bitmap, bitmap_index);
 				struct bitmap_definition *bitmap= get_bitmap_definition(collection_index, bitmap_index);
 				assert(bitmap);
+				assert(false);
+				ENDASSERTLOG(bitmap);
+				ENDASSERTLOG(collection);
 				
 				/* calculate row base addresses ... */
 				bitmap->row_addresses[0]= calculate_bitmap_origin(bitmap);
@@ -1172,8 +1200,8 @@ static void update_color_environment(
 			for (clut_index= 0; clut_index<collection->clut_count; ++clut_index)
 			{
 				void *primary_shading_table= get_collection_shading_tables(collection_index, 0);
-				short collection_bit_depth= collection->type==_interface_collection ? 8 : bit_depth;
-
+				// IR change: global name changed for dithering, and renamed to be more acurate
+				short shading_table_depth= (collection->type==_interface_collection && collection_index<15) ? 8 : g_render_depth;
 				if (clut_index)
 				{
 					struct rgb_color_value *alternate_colors= get_collection_colors(collection_index, clut_index)+NUMBER_OF_PRIVATE_COLORS;
@@ -1195,7 +1223,7 @@ static void update_color_environment(
 					}
 //					shading_remapping_table[iBLACK]= iBLACK; /* make iBLACK==>iBLACK remapping explicit */
 
-					switch (collection_bit_depth)
+					switch (shading_table_depth)
 					{
 						case 8:
 							/* duplicate the primary shading table and remap it */
@@ -1208,7 +1236,11 @@ static void update_color_environment(
 							break;
 						
 						case 32:
-							build_shading_tables32(colors, color_count, (pixel32 *)alternate_shading_table, shading_remapping_table); break;
+							// IR change: for dithering.
+							if (g_screen_depth == 16)
+								build_shading_tables_dithered32(colors, color_count, (pixel32 *)alternate_shading_table, shading_remapping_table);
+							else
+								build_shading_tables32(colors, color_count, (pixel32 *)alternate_shading_table, shading_remapping_table);
 							break;
 						
 						default:
@@ -1219,11 +1251,17 @@ static void update_color_environment(
 				else
 				{
 					/* build the primary shading table */
-					switch (collection_bit_depth)
+					switch (shading_table_depth)
 					{
 						case 8: build_shading_tables8(colors, color_count, (unsigned char *)primary_shading_table); break;
 						case 16: build_shading_tables16(colors, color_count, (pixel16 *)primary_shading_table, (byte *) NULL); break;
-						case 32: build_shading_tables32(colors, color_count,  (pixel32 *)primary_shading_table, (byte *) NULL); break;
+						case 32: 
+							// IR change: for dithering.
+							if (g_screen_depth == 16)
+								build_shading_tables_dithered32(colors, color_count,  (pixel32 *)primary_shading_table, (byte *) NULL);
+							else
+								build_shading_tables32(colors, color_count,  (pixel32 *)primary_shading_table, (byte *) NULL);
+							break;
 						default:
 							assert(false);
 							break;
@@ -1233,11 +1271,13 @@ static void update_color_environment(
 			
 			build_collection_tinting_table(colors, color_count, collection_index);
 			
+			// IR changes: global name changed for dithering
 			/* 8-bit interface, non-8-bit main window; remember interface CLUT separately */
-			if (collection_index==_collection_interface && interface_bit_depth==8 && bit_depth!=interface_bit_depth) _change_clut(change_interface_clut, colors, color_count);
+			if (collection_index==_collection_interface && interface_bit_depth==8 && g_render_depth!=interface_bit_depth)
+				_change_clut(change_interface_clut, colors, color_count);
 			
 			/* if we’re not in 8-bit, we don’t have to carry our colors over into the next collection */
-			if (bit_depth!=8) color_count= 1;
+			if (g_render_depth!=8) color_count= 1;
 		}
 	}
 
@@ -1334,6 +1374,8 @@ static void build_shading_tables8(
 	
 	objlist_set(shading_tables, iBLACK, PIXEL8_MAXIMUM_COLORS);
 	
+	// IR change: silly old code
+/*
 	start= 0, count= 0;
 	while (get_next_color_run(colors, color_count, &start, &count))
 	{
@@ -1352,6 +1394,26 @@ static void build_shading_tables8(
 			}
 		}
 	}
+<<<<<<< shapes.cpp
+*/
+	for (level= 0; level<number_of_shading_tables; ++level)
+	{
+		for (i=0 ; i<color_count ; i++)
+		{
+			struct rgb_color *color= colors + i;
+			RGBColor result;
+			
+			result.red= (color->red*level)/(number_of_shading_tables-1);
+			result.green= (color->green*level)/(number_of_shading_tables-1);
+			result.blue= (color->blue*level)/(number_of_shading_tables-1);
+			shading_tables[PIXEL8_MAXIMUM_COLORS*level+i]=
+				find_closest_color(&result, colors, color_count);
+		}
+	}
+
+	return;
+=======
+>>>>>>> 1.30
 }
 #endif
 
@@ -1371,6 +1433,8 @@ static void build_shading_tables16(
 	bool is_opengl = SDL_GetVideoSurface()->flags & SDL_OPENGL;
 #endif
 	
+	// IR change: silly old code
+/*
 	start= 0, count= 0;
 	while (get_next_color_run(colors, color_count, &start, &count))
 	{
@@ -1398,6 +1462,35 @@ static void build_shading_tables16(
 			}
 		}
 	}
+<<<<<<< shapes.cpp
+*/
+	for (level= 0; level<number_of_shading_tables; ++level)
+	{
+		for (i=0;i<color_count;++i)
+		{
+			struct rgb_color_value *color= colors + (remapping_table ? remapping_table[i] : i);
+			short multiplier= (color->flags&SELF_LUMINESCENT_COLOR_FLAG) ? ((number_of_shading_tables>>1)+(level>>1)) : level;
+#ifdef SDL
+			if (!is_opengl)
+				// Find optimal pixel value for video display
+				shading_tables[PIXEL8_MAXIMUM_COLORS*level+i]= 
+					SDL_MapRGB(fmt,
+					           ((color->red * multiplier) / (number_of_shading_tables-1)) >> 8,
+					           ((color->green * multiplier) / (number_of_shading_tables-1)) >> 8,
+					           ((color->blue * multiplier) / (number_of_shading_tables-1)) >> 8);
+			else
+#endif
+			// Mac xRGB 1555 pixel format
+			shading_tables[PIXEL8_MAXIMUM_COLORS*level+i]= 
+				RGBCOLOR_TO_PIXEL16((color->red*multiplier)/(number_of_shading_tables-1),
+					(color->green*multiplier)/(number_of_shading_tables-1),
+					(color->blue*multiplier)/(number_of_shading_tables-1));
+		}
+	}
+
+	return;
+=======
+>>>>>>> 1.30
 }
 
 static void build_shading_tables32(
@@ -1416,6 +1509,8 @@ static void build_shading_tables32(
 	bool is_opengl = SDL_GetVideoSurface()->flags & SDL_OPENGL;
 #endif
 
+	// IR change: silly old code
+/*
 	start= 0, count= 0;
 	while (get_next_color_run(colors, color_count, &start, &count))
 	{
@@ -1444,6 +1539,65 @@ static void build_shading_tables32(
 			}
 		}
 	}
+<<<<<<< shapes.cpp
+*/
+	for (level= 0; level<number_of_shading_tables; ++level)
+	{
+		for (i= 0; i<color_count; ++i)
+		{
+			struct rgb_color_value *color= colors + (remapping_table ? remapping_table[i] : i);
+			short multiplier= (color->flags&SELF_LUMINESCENT_COLOR_FLAG) ? ((number_of_shading_tables>>1)+(level>>1)) : level;
+			
+#ifdef SDL
+			if (!is_opengl)
+				// Find optimal pixel value for video display
+				shading_tables[PIXEL8_MAXIMUM_COLORS*level+i]= 
+					SDL_MapRGB(fmt,
+					           ((color->red * multiplier) / (number_of_shading_tables-1)) >> 8,
+					           ((color->green * multiplier) / (number_of_shading_tables-1)) >> 8,
+					           ((color->blue * multiplier) / (number_of_shading_tables-1)) >> 8);
+			else
+#endif
+			// Mac xRGB 8888 pixel format
+			shading_tables[PIXEL8_MAXIMUM_COLORS*level+i]= 
+				RGBCOLOR_TO_PIXEL32((color->red*multiplier)/(number_of_shading_tables-1),
+					(color->green*multiplier)/(number_of_shading_tables-1),
+					(color->blue*multiplier)/(number_of_shading_tables-1));
+		}
+	}
+
+	return;
+}
+
+// IR added: dithering.  Only difference is this will only spit out values in 0-240.
+static void build_shading_tables_dithered32(
+	struct rgb_color_value *colors,
+	short color_count,
+	pixel32 *shading_tables,
+	byte *remapping_table)
+{
+	short i, level;
+	
+	objlist_set(shading_tables, 0, PIXEL8_MAXIMUM_COLORS);
+	
+	for (level= 0; level<number_of_shading_tables; ++level)
+	{
+		for (i= 0; i<color_count; ++i)
+		{
+			struct rgb_color_value *color= colors + (remapping_table ? remapping_table[i] : i);
+			short multiplier= (color->flags&SELF_LUMINESCENT_COLOR_FLAG) ? ((number_of_shading_tables>>1)+(level>>1)) : level;
+			
+			// Mac xRGB 8888 pixel format, maxing out with values of 240, not 255
+			shading_tables[PIXEL8_MAXIMUM_COLORS*level+i]= 
+				RGBCOLOR_TO_PIXEL32(((color->red  /255)*240*multiplier)/(number_of_shading_tables-1),
+				                    ((color->green/255)*240*multiplier)/(number_of_shading_tables-1),
+				                    ((color->blue /255)*240*multiplier)/(number_of_shading_tables-1));
+		}
+	}
+
+	return;
+=======
+>>>>>>> 1.30
 }
 
 static void build_global_shading_table16(
@@ -1536,6 +1690,108 @@ static void build_global_shading_table32(
 	}
 }
 
+// IR addition: Software mode SeeThruLiquids
+static void build_collection_alpha_tables(short collection_index) {
+	struct rgb_color_value *colors = get_collection_colors(collection_index, 0)+NUMBER_OF_PRIVATE_COLORS;
+	struct collection_definition *definition = get_collection_definition(collection_index);
+	short color_count = definition->color_count-NUMBER_OF_PRIVATE_COLORS;
+	int bitmapCount = definition->bitmap_count;
+	int clutCount = definition->clut_count;
+	OGL_TextureOptions *Options;
+	
+	for (int i=0 ; i<bitmapCount ; i++) {
+		Options = OGL_GetTextureOptions(collection_index, 0, i);
+		uint8 *alpha_table= (uint8*)get_collection_header(collection_index)->alpha_tables;
+		alpha_table += ALPHA_TABLE_SIZE*i;
+		switch (g_render_depth)
+		{
+			case 8:
+				// STPO EMAILEING ME YUO FAGORT!
+				break;
+			case 16:
+				build_alpha_table16(colors, color_count, alpha_table, Options);
+				break;
+			case 32:
+				build_alpha_table32(colors, color_count, alpha_table, Options);
+				break;
+		}
+	}
+}
+
+// IR addition: Software mode SeeThruLiquids
+static void build_alpha_table16(
+	struct rgb_color_value *colors,
+	short color_count,
+	uint8 *alpha_table,
+	OGL_TextureOptions *Options)
+{
+	if (Options->OpacityType == 0) {
+		alpha_table[0] = 0;
+		return;
+	} else {
+		alpha_table[0] = 32;
+	}
+	for (int i= 1; i<color_count; ++i)
+	{
+		struct rgb_color_value *color= colors + i;
+		float Opacity;
+		int realOpacity;
+		
+		switch(Options->OpacityType) {
+		case 1:
+			Opacity = 1;
+			break;
+			
+		case 2:
+			Opacity = (color->red + color->green + color->blue)/(3.0*65535.0);
+			break;
+			
+		case 3:
+			Opacity = MAX(MAX(color->red,color->green),color->blue)/65535.0;
+			break;
+		}
+		realOpacity = 31*(Options->OpacityScale*Opacity + Options->OpacityShift) + 0.5;
+		alpha_table[colors[i].value] = PIN(realOpacity, 0, 32);
+	}
+}
+
+// IR addition: Software mode SeeThruLiquids
+static void build_alpha_table32(
+	struct rgb_color_value *colors,
+	short color_count,
+	uint8 *alpha_table,
+	OGL_TextureOptions *Options)
+{
+	if (Options->OpacityType == 0) {
+		alpha_table[0] = 0;
+		return;
+	} else {
+		alpha_table[0] = 255;
+	}
+	for (int i= 0; i<color_count; ++i)
+	{
+		struct rgb_color_value *color= colors + i;
+		float Opacity;
+		int realOpacity;
+		
+		switch(Options->OpacityType) {
+		case 1:
+			Opacity = 1;
+			break;
+			
+		case 2:
+			Opacity = (color->red + color->green + color->blue)/(3.0*65535.0);
+			break;
+			
+		case 3:
+			Opacity = MAX(MAX(color->red,color->green),color->blue)/65535.0;
+			break;
+		}
+		realOpacity = 255*(Options->OpacityScale*Opacity + Options->OpacityShift) + 0.499;
+		alpha_table[colors[i].value] = PIN(realOpacity, 0, 255);
+	}
+}
+
 static bool get_next_color_run(
 	struct rgb_color_value *colors,
 	short color_count,
@@ -1585,11 +1841,13 @@ static long get_shading_table_size(
 {
 	long size;
 	
-	switch (bit_depth)
+	// IR change: global name changed for dithering
+	switch (g_render_depth)
 	{
-		case 8: size= number_of_shading_tables*shading_table_size; break;
-		case 16: size= number_of_shading_tables*shading_table_size; break;
-		case 32: size= number_of_shading_tables*shading_table_size; break;
+		// IR change: three cases, all the same...
+		case 8: case 16: case 32:
+			size= number_of_shading_tables*shading_table_size;
+			break;
 		default:
 			assert(false);
 			break;
@@ -1714,7 +1972,8 @@ static void build_collection_tinting_table(
 #ifdef HAVE_OPENGL
 		OGL_SetInfravisionTint(collection_index,true,Color.red/65535.0,Color.green/65535.0,Color.blue/65535.0);
 #endif
-		switch (bit_depth)
+		// IR change: global name changed for dithering
+		switch (g_render_depth)
 		{
 			case 8:
 				build_tinting_table8(colors, color_count, (unsigned char *)tint_table, tint_colors8[tint_color].start, tint_colors8[tint_color].count);
@@ -1931,6 +2190,27 @@ static struct bitmap_definition *get_bitmap_definition(
 	if (!offset_table) return NULL;
 	
 	return (struct bitmap_definition *) collection_offset(definition, offset_table[bitmap_index]);
+}
+
+// IR addition: Software mode SeeThruLiquids
+uint8* get_bitmap_alpha_table(
+	short collection_index,
+	short bitmap_index)
+{
+	uint8 *alpha_table= get_collection_header(collection_index)->alpha_tables;
+	
+	collection_definition *definition= get_collection_definition(collection_index);
+	if (bitmap_index >= definition->bitmap_count) return NULL;
+	
+	if (!alpha_table) {
+		alpha_table = get_collection_header(collection_index)->alpha_tables = (uint8*)NewPtr(ALPHA_TABLE_SIZE*definition->bitmap_count);
+		if (!alpha_table) return NULL;
+		build_collection_alpha_tables(collection_index);
+	}
+	alpha_table += bitmap_index*ALPHA_TABLE_SIZE;
+	
+	if (*alpha_table) return alpha_table;
+	return NULL;
 }
 
 static void *get_collection_shading_tables(

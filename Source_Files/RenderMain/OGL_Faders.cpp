@@ -37,7 +37,7 @@
 static GM_Random FlatStaticRandom;
 
 // Alternative: partially-transparent instead of the logic-op effect
-static bool UseFlatStatic;
+static bool NoLogicOp;
 static uint16 FlatStaticColor[4];
 
 
@@ -126,16 +126,18 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			break;
 		
 		case _randomize_fader_type:
-			UseFlatStatic = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic);
-			if (UseFlatStatic)
+		//	if (FlatStaticColor[3] == 0) break;
+			NoLogicOp = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_NoLogicOp);
+			if (NoLogicOp)
 			{
-				for (int c=0; c<3; c++)
-					FlatStaticColor[c] = FlatStaticRandom.KISS() + FlatStaticRandom.LFIB4();
-				FlatStaticColor[3] = PIN(int(65535*Fader.Color[3]+0.5),0,65535);
-				glDisable(GL_ALPHA_TEST);
+				// IR change:
+				MultAlpha(Fader.Color,BlendColor);
+				glColor3fv(BlendColor);
 				glEnable(GL_BLEND);
-				glColor4usv(FlatStaticColor);
+				glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
+				// this is kinda like XOR.
 				glDrawArrays(GL_POLYGON,0,4);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
 			else
 			{

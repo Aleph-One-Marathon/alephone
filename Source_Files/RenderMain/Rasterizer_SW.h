@@ -44,11 +44,14 @@ public:
 	// Rendering calls
 	// These are defined in scottish_textures.c (too great a name to change)
 	
-	void texture_horizontal_polygon(polygon_definition& textured_polygon);
+	void texture_horizontal_polygon(polygon_definition& textured_polygon, const rasterize_area_spec& windows);
 	
-	void texture_vertical_polygon(polygon_definition& textured_polygon);
+	void texture_vertical_polygon(polygon_definition& textured_polygon, const rasterize_area_spec& windows);
 	
-	void texture_rectangle(rectangle_definition& textured_rectangle);
+	void texture_rectangle(rectangle_definition& textured_rectangle, const rasterize_area_spec& windows);
+	
+	virtual void debug_line_v(int x, int y0, int y1);
+	virtual void debug_line_h(int y, int x0, int x1);
 };
 
 

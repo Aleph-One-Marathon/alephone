@@ -153,6 +153,15 @@ June 20, 2001 (Loren Petrich):
 	Removing the DrawSprocket and replacing it with the Display Manager,
 	so as to have less buggy resolution-switching. Something like Moo itself.
 	Some of the code was inspired by Dietrich Epp's successful resolution-switching code.
+<<<<<<< screen.cpp
+	
+Aug 20, 2001 (Ian Rickard):
+	Many changes for dithering.
+	Added three 32->16 blitters at the bottom.
+	A few changes for upscaled textures.
+	R.I.P. Valkyrie
+	Added some logic to fix up graphics options for OGL mode.
+=======
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added accessors for datafields now opaque in Carbon
@@ -165,6 +174,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 Feb 24, 2002 (Loren Petrich):
 	Modified to use the new refresh_frequency field in the graphics prefs,
 	so that a selection will be persistent.
+>>>>>>> 1.63
 */
 
 /*
@@ -197,6 +207,7 @@ Feb 24, 2002 (Loren Petrich):
 #include "Crosshairs.h"
 // LP addition: OpenGL support
 #include "OGL_Render.h"
+#include "OGL_Textures.h"
 
 // LP addition: view control
 #include "ViewControl.h"
@@ -206,6 +217,10 @@ Feb 24, 2002 (Loren Petrich):
 
 //CP addition: scripting support
 #include "scripting.h"
+
+// IR addition:
+#include "upscaled_textures.h"
+#include "readout_data.h"
 
 #ifdef env68k
 #pragma segment screen
@@ -326,6 +341,9 @@ static bool ScreenFix_OGL32 = false;
 static bool DM_Present = false;
 static bool DM_Inited = false;
 
+// IR addition: upscaled textures
+extern UpscaledTextureManager upscaledTextures;
+
 // Moved after the globals because the shared stuff might use those values
 #include "screen_shared.h"
 
@@ -334,7 +352,19 @@ static bool DM_Inited = false;
 
 // LP change: the source and destination rects will be very variable, in general.
 // Also indicating whether to use high or low resolution (the terminal and the ovhd map are always hi-rez)
+<<<<<<< screen.cpp
+// IR change: added color_safe param to indicate if scalar dithering is ok/
+static void update_screen(Rect& source, Rect& destination, bool hi_rez, bool color_safe);
+// static void update_screen(void);
+// IR added:
+static void do_dithered_copy(Rect& source, Rect& destination, bool color_safe);
+static void do_dithered_copy_scalar(char *src, char *dest, int widthDiv4, int height, int srcRB, int destRB);
+static void do_dithered_copy_vector(char *src, char *dest, int widthDiv4, int height, int srcRB, int destRB);
+// IR note: this is used for terminals and overhead map on non-alti-vec machines.
+static void do_banded_copy_scalar(char *src, char *dest, int widthDiv4, int height, int srcRB, int destRB);
+=======
 static void update_screen(Rect& source, Rect& destination, bool hi_rez);
+>>>>>>> 1.63
 
 void calculate_destination_frame(short size, bool high_resolution, Rect *frame);
 static void calculate_source_frame(short size, bool high_resolution, Rect *frame);
@@ -351,7 +381,7 @@ void quadruple_screen(struct copy_screen_data *data);
 static void update_fps_display(GrafPtr port);
 
 // LP addition: display the current position
-static void DisplayPosition(GrafPtr port);
+static void DisplayReadout(GrafPtr port);
 
 // Also display the current messages
 static void DisplayMessages(GrafPtr port);
@@ -413,9 +443,33 @@ void initialize_screen(
 		calculate_screen_options();
 	}
 	
-	if (mode->bit_depth==32 && !enough_memory_for_32bit) mode->bit_depth= 16;
-	if (mode->bit_depth==16 && !enough_memory_for_16bit) mode->bit_depth= 8;
-	interface_bit_depth= bit_depth= mode->bit_depth;
+	// IR change: dithering
+	if (mode->render_depth()==32 && !enough_memory_for_32bit) mode->display_mode= kScreenDepth16;
+	if (mode->render_depth()==16 && !enough_memory_for_16bit) mode->display_mode= kScreenDepth8;
+	interface_bit_depth= g_screen_depth= mode->screen_depth();
+	g_render_depth = mode->render_depth();
+	switch (mode->acceleration)
+	{
+// IR change: R.I.P. valkyrie
+#if OBSOLETE
+		case _valkyrie_acceleration:
+			// IR change: dithering
+			mode->display_mode= kScreenDepth16;
+			g_screen_depth = g_render_depth = 16;
+			mode->high_resolution= false;
+			interface_bit_depth= 8;
+			break;
+#endif
+// IR addition: fix up options if we're in GL mode.
+		case _opengl_acceleration:
+			if (mode->display_mode==kScreenDepth8 ||
+			    mode->display_mode==kScreenDepthDithered32) {
+				mode->display_mode=kScreenDepth16;
+				g_screen_depth = g_render_depth = 16;
+			}
+			mode->high_resolution= true;
+			break;
+	}
 
 	/* beg, borrow or steal an n-bit device */
 	graphics_preferences->device_spec.bit_depth= interface_bit_depth;
@@ -424,7 +478,11 @@ void initialize_screen(
 	{
 		graphics_preferences->device_spec.bit_depth= 8;
 		world_device= BestDevice(&graphics_preferences->device_spec);
-		if (world_device) mode->bit_depth= bit_depth= interface_bit_depth= 8;
+		// IR change: dithering
+		if (world_device) {
+			mode->display_mode= kScreenDepth8;
+			g_screen_depth = g_render_depth = interface_bit_depth= 8;
+		}
 	}
 	if (!world_device) alert_user(fatalError, strERRORS, badMonitor, -1);
 
@@ -569,8 +627,15 @@ void initialize_screen(
 	/* allocate and initialize our GWorld */
 	// LP change: doing a 640*480 allocation as a sensible starting point
 	calculate_destination_frame(_full_screen, true, &bounds);
-	error= world_pixels ? myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0) :
-		myNewGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
+	// IR change: dithereing.
+	if (g_render_depth == g_screen_depth)
+		error= world_pixels ?
+				myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0) :
+				myNewGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
+	else
+		error= world_pixels ?
+				myUpdateGWorld(&world_pixels, g_render_depth, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0) :
+				myNewGWorld(&world_pixels, g_render_depth, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
 	if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
 	
 	change_screen_mode(mode, false);
@@ -588,10 +653,15 @@ void ReloadViewContext()
 		// LP addition: doing OpenGL if present;
 		// otherwise, switching OpenGL off (kludge for having it not appear)
 		case _opengl_acceleration:
+<<<<<<< screen.cpp
+			// IR change: dithering
+			if (screen_mode.display_mode == kScreenDepth16 || screen_mode.display_mode == kScreenDepth32)
+=======
 			if (screen_mode.bit_depth > 8)
 #if defined(USE_CARBON_ACCESSORS)
 				OGL_StartRun(GetWindowPort(screen_window));
 #else
+>>>>>>> 1.63
 				OGL_StartRun((CGrafPtr)screen_window);
 #endif
 			else screen_mode.acceleration = _no_acceleration;
@@ -625,7 +695,8 @@ void enter_screen(
 	world_view->effect = NONE;
 	
 	// Kludge to stop annoying 32-bit-mode flickering -- set to 16-bit, then to 32-bit again
-	if ((screen_mode.acceleration == _opengl_acceleration) && screen_mode.bit_depth == 32)
+	// IR change: dithering
+	if ((screen_mode.acceleration == _opengl_acceleration) && screen_mode.display_mode == kScreenDepth32)
 	{
 		// Be sure to do this only once, and only if one isn't doing 2D through OpenGL...
 		if (!ScreenFix_OGL32 && !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_2DGraphics) != 0))
@@ -647,10 +718,15 @@ void enter_screen(
 		// LP addition: doing OpenGL if present
 		// otherwise, switching OpenGL off (kludge for having it not appear)
 		case _opengl_acceleration:
+<<<<<<< screen.cpp
+		// IR change: dithering
+		if (screen_mode.display_mode == kScreenDepth16 || screen_mode.display_mode == kScreenDepth32)
+=======
 			if (screen_mode.bit_depth > 8)
 #if defined(USE_CARBON_ACCESSORS)
 				OGL_StartRun(GetWindowPort(screen_window));
 #else
+>>>>>>> 1.63
 				OGL_StartRun((CGrafPtr)screen_window);
 #endif
 			else screen_mode.acceleration = _no_acceleration;
@@ -708,6 +784,9 @@ void render_screen(
 	world_view->pitch= current_player->elevation;
 	world_view->maximum_depth_intensity= current_player->weapon_intensity;
 	world_view->shading_mode= current_player->infravision_duration ? _shading_infravision : _shading_normal;
+	
+	// IR addition: reset all upscaled texture's touched bits so unused ones can be paged out.
+	upscaledTextures.NextFrame();
 
 	// LP change: suppress the overhead map if desired
 	if (PLAYER_HAS_MAP_OPEN(current_player) && View_MapActive())
@@ -737,6 +816,8 @@ void render_screen(
 #endif
 	Rect BufferRect, ViewRect;
 	bool HighResolution;
+	// IR addition: dithering
+	bool ColorSafe;
 	
 	short msize = mode->size;
 	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
@@ -765,20 +846,24 @@ void render_screen(
 		// Standard terminal size
 		BufferWidth = 640;
 		BufferHeight = 320;
-		HighResolution = true;		
+		// IR addition: dithering
+		ColorSafe = HighResolution = true;
 	}
 	else if (world_view->overhead_map_active)
 	{
 		// Fill the available space
 		BufferWidth = OverallWidth;
 		BufferHeight = OverallHeight;
-		HighResolution = true;		
+		// IR addition: dithering
+		ColorSafe = HighResolution = true;		
 	}
 	else
 	{
 		BufferWidth = VS.MainWidth;
 		BufferHeight = VS.MainHeight;
 		HighResolution = mode->high_resolution;
+		// IR addition: dithering
+		ColorSafe = false;
 	}
 	
 	if (BufferWidth != PrevBufferWidth)
@@ -846,9 +931,17 @@ void render_screen(
 		if (VS.ShowHUD) draw_interface();
 		
 		// Reallocate the drawing buffer
-		short error = world_pixels ?
-			myUpdateGWorld(&world_pixels, 0, &BufferRect, (CTabHandle) NULL, (GDHandle) NULL, 0) :
-				myNewGWorld(&world_pixels, 0, &BufferRect, (CTabHandle) NULL, (GDHandle) NULL, 0);
+		// IR change: dithereing.
+		short error;
+		if (g_render_depth == g_screen_depth)
+			error = world_pixels ?
+					myUpdateGWorld(&world_pixels, 0, &BufferRect, (CTabHandle) NULL, (GDHandle) NULL, 0) :
+					myNewGWorld(&world_pixels, 0, &BufferRect, (CTabHandle) NULL, (GDHandle) NULL, 0);
+		else
+			error = world_pixels ?
+					myUpdateGWorld(&world_pixels, g_render_depth, &BufferRect, (CTabHandle) NULL, (GDHandle) NULL, 0) :
+					myNewGWorld(&world_pixels, g_render_depth, &BufferRect, (CTabHandle) NULL, (GDHandle) NULL, 0);
+		
 		if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
 	}
 	
@@ -972,7 +1065,7 @@ void render_screen(
 			update_fps_display((GrafPtr)world_pixels);
 			// LP additions: display position and messages and show crosshairs
 			if (!world_view->terminal_mode_active)
-				DisplayPosition((GrafPtr)world_pixels);
+				DisplayReadout((GrafPtr)world_pixels);
 			DisplayMessages((GrafPtr)world_pixels);
 			
 			// Don't show the crosshairs when either the overhead map or the terminal is active
@@ -984,10 +1077,16 @@ void render_screen(
 			// LP change: put in OpenGL buffer swapping when the main view or the overhead map
 			// are being rendered in OpenGL.
 			// Otherwise, if OpenGL is active, then blit the software rendering to the screen.
+<<<<<<< screen.cpp
+			
+			gUsageTimers.blit.Start();
+			bool OGL_WasUsed = false;
+=======
 			bool OGL_WasUsed;
 			bool Use_OGL_2D;
 			OGL_WasUsed = false;
 			Use_OGL_2D = OGL_Get2D();
+>>>>>>> 1.63
 			if ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 			{
 				// Main or map view already rendered
@@ -1005,7 +1104,9 @@ void render_screen(
 				OGL_WasUsed = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,true,true);
 #endif
 			}
-			if (!OGL_WasUsed) update_screen(BufferRect,ViewRect,HighResolution);
+			// IR addition: dithering (added ColorSafe)
+			if (!OGL_WasUsed) update_screen(BufferRect,ViewRect,HighResolution,ColorSafe);
+			gUsageTimers.blit.Stop();
 			if (HUD_RenderRequest)
 			{
 				if (Use_OGL_2D)
@@ -1064,15 +1165,17 @@ void change_interface_clut(
 void change_screen_clut(
 	struct color_table *color_table)
 {
-	if (interface_bit_depth==8 && bit_depth==8)
+	// IR addition: new glboals for dithering
+	if (interface_bit_depth==8 && g_screen_depth==8)
 	{
 		obj_copy(*uncorrected_color_table, *color_table);
 		obj_copy(*interface_color_table, *color_table);
 	}
 	
-	if (bit_depth==16 || bit_depth==32)
+	// IR change: new glboals for dithering
+	if (g_screen_depth==16 || g_screen_depth==32)
 	{
-		build_direct_color_table(uncorrected_color_table, bit_depth);
+		build_direct_color_table(uncorrected_color_table, g_screen_depth);
 		if (interface_bit_depth!=8)
 		{
 			obj_copy(*interface_color_table, *uncorrected_color_table);
@@ -1273,6 +1376,30 @@ bool machine_supports_32bit(
 	}
 	
 	return found_32bit_device && enough_memory_for_32bit;
+}
+
+// IR added: dithering
+bool machine_supports_dithered_32bit(
+	GDSpecPtr spec)
+{
+#if (defined(__MWERKS__) && defined(envppc))
+	GDSpec test_spec;
+	bool found_16bit_device= true;
+
+	/* Make sure that enough_memory_for_16bit is valid */
+	calculate_screen_options();
+	
+	test_spec= *spec;
+	test_spec.bit_depth= 16;
+	if (!HasDepthGDSpec(&test_spec)) /* automatically searches for appropriate devices */
+	{
+		found_16bit_device= false;
+	}
+	
+	return found_16bit_device && enough_memory_for_32bit;
+#else
+	return false;
+#endif
 }
 
 short hardware_acceleration_code(
@@ -1491,9 +1618,10 @@ static void update_fps_display(
 }
 
 
-static void DisplayPosition(GrafPtr port)
+static void DisplayReadout(GrafPtr port)
 {
-	if (!ShowPosition) return;
+	if (gCurrentReadoutScreen != kNoReadout && gCurrentReadoutScreen < kNumberOfReadouts) return;
+	
 	
 	// Push
 	GrafPtr old_port;
@@ -1508,6 +1636,16 @@ static void DisplayPosition(GrafPtr port)
 	short LineSpacing = Font.LineSpacing;
 	short X = port->portRect.left + LineSpacing/3;
 	short Y = port->portRect.top + LineSpacing;
+	
+	readouts[gCurrentReadoutScreen].draw(X, Y, LineSpacing);
+	
+	RGBForeColor(&rgb_black);
+	
+	// Pop
+	SetPort(old_port);
+}
+
+static void DisplayPosition(short &X, short &Y, short LineSpacing) {
 	const float FLOAT_WORLD_ONE = float(WORLD_ONE);
 	const float AngleConvert = 360/float(FULL_CIRCLE);
 	sprintf(temporary, "X       = %8.3f",world_view->origin.x/FLOAT_WORLD_ONE);
@@ -1531,11 +1669,26 @@ static void DisplayPosition(GrafPtr port)
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Pitch   = %8.3f",AngleConvert*Angle);
 	DisplayText(X,Y,temporary);
+}
+
+static void DisplayOGLTextureStats(short &X, short &Y, short LineSpacing) {
+	sprintf(temporary, "txInUse = %8d",gGLTxStats.inUse);
+	DisplayText(X,Y,temporary);
+	Y += LineSpacing;
+	sprintf(temporary, "aveBind = %8d",gGLTxStats.totalBind/gGLTxStats.binds);
+	DisplayText(X,Y,temporary);
+	Y += LineSpacing;
+	sprintf(temporary, "minBind = %8d",gGLTxStats.minBind);
+	DisplayText(X,Y,temporary);
+	Y += LineSpacing;
+	sprintf(temporary, "maxBind = %8d",gGLTxStats.maxBind);
+	DisplayText(X,Y,temporary);
+	Y += LineSpacing;
+	sprintf(temporary, "lngBnds = %8d",gGLTxStats.longBinds);
+	DisplayText(X,Y,temporary);
 	
-	RGBForeColor(&rgb_black);
-	
-	// Pop
-	SetPort(old_port);
+	gGLTxStats.binds = 0;
+	gGLTxStats.totalBind = 0;
 }
 
 static void DisplayMessages(GrafPtr port)
@@ -1553,7 +1706,7 @@ static void DisplayMessages(GrafPtr port)
 	short LineSpacing = Font.LineSpacing;
 	short X = port->portRect.left + LineSpacing/3;
 	short Y = port->portRect.top + LineSpacing;
-	if (ShowPosition) Y += 6*LineSpacing;	// Make room for the position data
+	if (gCurrentReadoutScreen != kNoReadout) Y += 6*LineSpacing;	// Make room for the readout data
 	for (int k=0; k<NumScreenMessages; k++)
 	{
 		int Which = (MostRecentMessage+NumScreenMessages-k) % NumScreenMessages;
@@ -1673,8 +1826,51 @@ void FlushGrafPortRect(const CGrafPtr port, const Rect &destination)
 // LP changes: moved sizing and resolution outside of this function,
 // because they can be very variable
 /* pixels are already locked, etc. */
-static void update_screen(Rect& source, Rect& destination, bool hi_rez)
+// IR changed: added
+
+char debugHud[DEBUG_HUD_SIZE];
+static const long colorlookup[8] =
+ {blackColor, whiteColor, redColor, greenColor, blueColor, cyanColor, magentaColor, yellowColor};
+
+static void update_screen(Rect& source, Rect& destination, bool hi_rez, bool color_safe)
 {
+<<<<<<< screen.cpp
+	/*
+	Rect source, destination;
+	
+	calculate_source_frame(screen_mode.size, screen_mode.high_resolution, &source);
+	calculate_destination_frame(screen_mode.size, screen_mode.high_resolution, &destination);
+	*/
+	#if SHOW_DEBUG_HUD
+		GWorldPtr old_gworld;
+		GDHandle old_device;
+		RGBColor old_forecolor;
+		
+		GetGWorld(&old_gworld, &old_device);
+		SetGWorld(world_pixels, (GDHandle) NULL);
+		GetForeColor(&old_forecolor);
+		
+		for (int i=0 ; i<DEBUG_HUD_SIZE ; i++) {
+			ForeColor(colorlookup[debugHud[i]]);
+			
+			Rect fillRect = {0, 8*i, 8, 8*(i+1)};
+			PaintRect(&fillRect);
+			
+			debugHud[i] = 0;
+		}
+		
+			
+		RGBForeColor(&old_forecolor);
+		SetGWorld(old_gworld, old_device);
+	#endif
+	
+	// IR added: dithering
+	if (g_screen_depth == 16 && g_render_depth == 32) // dither
+	{
+		do_dithered_copy(source, destination, color_safe);
+	} else
+=======
+>>>>>>> 1.63
 	if (hi_rez)
 	{
 		GrafPtr old_port;
@@ -1692,12 +1888,16 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 		RGBForeColor(&rgb_black);
 		RGBBackColor(&rgb_white);
 		
+<<<<<<< screen.cpp
+		// IR note: was truely stunned when i found this...
+=======
 #if defined(USE_CARBON_ACCESSORS)
 		CopyBits(GetPortBitMapForCopyBits(world_pixels), GetPortBitMapForCopyBits(GetWindowPort(screen_window)),
 			&source, &destination, srcCopy, (RgnHandle) NULL);
 		/* flush part of the port */
 		FlushGrafPortRect(GetWindowPort(screen_window), destination);
 #else
+>>>>>>> 1.63
 		CopyBits((BitMapPtr)*world_pixels->portPixMap, &screen_window->portBits,
 			&source, &destination, srcCopy, (RgnHandle) NULL);
 #endif
@@ -1709,7 +1909,8 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 	else
 	{
 		int8 mode;
-		short pelsize= bit_depth>>3;
+		// IR tweak: global name changed for dithering
+		short pelsize= g_screen_depth>>3;
 		struct copy_screen_data data;
 		short source_rowBytes, destination_rowBytes, source_width, destination_width;
 		PixMapHandle screen_pixmap= (*world_device)->gdPMap;
@@ -1747,7 +1948,8 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 #ifdef env68k
 		if (screen_mode.draw_every_other_line) data.flags|= _EVERY_OTHER_LINE_BIT;
 #endif
-		switch (bit_depth)
+		// IR tweak: global changed
+		switch (g_screen_depth)
 		{
 			case 8:
 				data.width= source_width>>2;
@@ -1771,6 +1973,11 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 		quadruple_screen(&data);
 		SwapMMUMode(&mode);
 	}
+<<<<<<< screen.cpp
+	
+	return;
+=======
+>>>>>>> 1.63
 }
 
 /* This function is NOT void because both the computer interface editor and vulcan use it */
@@ -2605,6 +2812,307 @@ pascal void DM_ModeInfoCallback(void *UserData,
 	DM_ModeList *ModeListPtr = (DM_ModeList *)UserData;
 	ModeListPtr->ModeInfoPtr = ModeInfoPtr;
 }
+<<<<<<< screen.cpp
+
+// IR added: all of this stuff is for the vector version.
+typedef union VectorConverter{
+	vector unsigned long vul;
+	vector unsigned short vus;
+	vector pixel vp;
+	vector unsigned char vuc;
+	vector signed long vsl;
+	vector signed short vss;
+	vector signed char vsc;
+	vector float vf;
+	unsigned long ul[4];
+	unsigned short us[8];
+	unsigned char uc[16];
+	signed long l[4];
+	signed short s[8];
+	signed char c[16];
+	float f[4];
+} VectorConverter;
+static char IRCR[]="Includes componants"
+" of BlitLib ©2000,2001 Ian Rickard.";
+typedef unsigned long ulong;
+typedef unsigned short ushort;
+typedef unsigned char uchar;
+typedef vector unsigned long vecul;
+typedef vector unsigned short vecus;
+typedef vector unsigned char vecuc;
+typedef vector signed long vecsl;
+typedef vector signed short vecss;
+typedef vector signed char vecsc;
+typedef vector pixel vecp;
+typedef vector float vecf;
+
+// Only offer dithering if we're compiling under codewariior for the PPC
+#if (defined(__MWERKS__) && defined(envppc))
+static void do_dithered_copy(Rect& source, Rect& destination, bool color_safe) {
+	char *src, *dest;
+	int widthDiv4, height, srcRB, destRB;
+	PixMapHandle screen_pixmap= (*world_device)->gdPMap;
+	
+	srcRB = (*myGetGWorldPixMap(world_pixels))->rowBytes&0x3fff;
+	destRB = (*screen_pixmap)->rowBytes&0x3fff;
+	
+	src = (char *)myGetPixBaseAddr(world_pixels);
+	dest = (char *)(*screen_pixmap)->baseAddr + (destination.top-screen_window->portRect.top)*destRB +
+		(destination.left-screen_window->portRect.left)*(g_screen_depth>>3);
+	
+	widthDiv4 = RECTANGLE_WIDTH(&source)/4;
+	height = RECTANGLE_HEIGHT(&source);
+	
+	if (system_information->machine_has_vector_instructions) {
+		do_dithered_copy_vector(src, dest, widthDiv4, height, srcRB, destRB);
+		// this handles saturation properly so we don't have to switch over to a banded version.
+	} else {
+		if (color_safe)
+			do_banded_copy_scalar(src, dest, widthDiv4, height, srcRB, destRB);
+		else
+			do_dithered_copy_scalar(src, dest, widthDiv4, height, srcRB, destRB);
+	}
+}
+
+
+static void do_dithered_copy_scalar(char *src, char *dest, int widthDiv4, int height, int srcRB, int destRB) {
+/*  Copyright (C) 2001 Ian Rickard (inio@inio.org)
+    
+    This function is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) the most recent version.  By choosing to use this
+    software under the most recent version of the GNU General Public
+    License you automatically accept any future revisions to the license.
+
+    This function is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    If you are interested in using this code in a non-GPL environment,
+    please contact me so we can work something out.
+*/
+    
+	double* destAddr=(double*)dest, tempDbl;
+	UInt32 *srcAddr=(UInt32*)src, a, b, c, d, tempLng;
+	int x;
+	
+	static unsigned int randSeed=1;
+	unsigned int rand;
+	register unsigned int rowrand, /*rowrand1, rowrand2,*/ dithMask = 0x00070707;
+	
+	rand = randSeed;
+	rand = rand * 1103515245 + 12345;
+	rand = rand * 1103515245 + 12345;
+	rand = rand * 1103515245 + 12345;
+	randSeed++;
+	
+	while (height>0) {
+		height--;
+		x = widthDiv4;
+		rowrand = 0;
+//		do {
+/*		rowrand = rand = rand * 1103515245 + 12345;
+		rowrand ^= rand = rand * 1103515245 + 12345;
+		rowrand ^= rand = rand * 1103515245 + 12345;
+		rowrand ^= rand = rand * 1103515245 + 12345;*/
+		
+		for (int i=16 ; i>0 ; i--) {
+			rand = rand * 1103515245 + 12345;
+			int bit = 1<<((rand>>10)&31);
+			if (rowrand & bit) i++;
+			else rowrand |= bit;
+		}
+/*		for (int i=16 ; i>0 ; i--) {
+			int bit = 1<<((rand = rand * 1103515245 + 12345)&31);
+			if (rowrand2 & bit) i++;
+			else rowrand2 |= bit;
+		}*/
+		
+//		x--;
+		
+		__dcbt(srcAddr, 8*4);
+		  rowrand = __rlwinm(rowrand, 7, 0, 31);
+		  a = srcAddr[0];
+		  a += rowrand&dithMask;
+		  rowrand = __rlwinm(rowrand, 7, 0, 31);
+		  b = srcAddr[1];
+		  b += rowrand&dithMask;
+		
+		while (x>0) {
+			
+			  tempLng = __rlwinm(         a, 8 - 1, 16-15, 16-9);
+			rowrand = __rlwinm(rowrand, 7, 0, 31);
+			  tempLng = __rlwimi(tempLng, a, 16- 6, 16-10, 16-6);
+			c = srcAddr[2];
+			  tempLng = __rlwimi(tempLng, a, 24-11, 16- 5, 16-1);
+			c += rowrand&dithMask;
+			  tempLng = __rlwimi(tempLng, b, 8+16-1, 32-15, 32-9);
+			rowrand = __rlwinm(rowrand, 7, 0, 31);
+			  tempLng = __rlwimi(tempLng, b, 16+16-6, 32-10, 32-6);
+			d = srcAddr[3];
+			  tempLng = __rlwimi(tempLng, b, 24+16-11, 32- 5, 32-1);
+			d += rowrand&dithMask;
+			  ((UInt32*)&tempDbl)[0] = tempLng;
+			
+			srcAddr+=4;
+			x--;
+			__dcbt(srcAddr, 8*4);
+			
+			tempLng = __rlwinm(         c, 8 - 1, 16-15, 16-9);
+			  rowrand = __rlwinm(rowrand, 7, 0, 31);
+			tempLng = __rlwimi(tempLng, c, 16- 6, 16-10, 16-6);
+			  a = srcAddr[0];
+			tempLng = __rlwimi(tempLng, c, 24-11, 16- 5, 16-1);
+			  a += rowrand&dithMask;
+			tempLng = __rlwimi(tempLng, d, 40-17, 32-15, 32-9);
+			  rowrand = __rlwinm(rowrand, 7, 0, 31);
+			tempLng = __rlwimi(tempLng, d, 48-22, 32-10, 32-6);
+			  b = srcAddr[1];
+			tempLng = __rlwimi(tempLng, d, 56-27, 32- 5, 32-1);
+			  b += rowrand&dithMask;
+			((UInt32*)&tempDbl)[1] = tempLng;
+			
+			*destAddr = tempDbl;
+			destAddr++;
+		}
+		destAddr = (double*)(dest+=destRB);
+		srcAddr = (UInt32*)(src+=srcRB);
+	}
+
+}
+
+
+static void do_dithered_copy_vector(char *src, char *dest, int widthDiv4, int height, int srcRB, int destRB) {
+/*  Copyright (C) 2001 Ian Rickard (inio@inio.org)
+    
+    This function is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) the most recent version.  By choosing to use this
+    software under the most recent version of the GNU General Public
+    License you automatically accept any future revisions to the license.
+
+    This function is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    If you are interested in using this code in a non-GPL environment,
+    please contact me so we can work something out.
+*/
+    
+	vecul *destAddr=(vecul*)dest;
+	vecul *srcAddr=(vecul*)src;
+	vecul temp1, temp2, temp3, temp4, noise, noiseMask, rotator;
+	vecuc shiftleft, shiftright;
+	int x;
+	VectorConverter converter;
+	widthDiv4 >>= 1; // becomes widthDiv8
+	
+	noise = (vecul)((vecf)(1.0));
+	noiseMask = (vecul)(0x00070707);
+	rotator = (vecul)(32-7, 32-3, 3, 7);
+	shiftleft = (vecuc)(47);
+	shiftright = (vecuc)(128-47);
+	
+//	long srcmode = (4<<24)|(((widthDiv4)<<16)&0x00FF0000)|64;
+	long srcmode = (2<<24)|(widthDiv4<<16)|32;
+	
+	static unsigned int randSeed=1;
+	unsigned int rand;
+	
+	IRCR[0]='I';
+	rand = randSeed;
+	rand = rand * 1103515245 + 12345;
+	rand = rand * 1103515245 + 12345;
+	rand = rand * 1103515245 + 12345;
+	randSeed++;
+	
+	while (height>0) {
+		height--;
+		x = widthDiv4;
+		vec_dst((int*)srcAddr, srcmode, 0);
+		
+		converter.ul[0] = rand = rand * 1103515245 + 12345;
+		converter.ul[1] = rand = rand * 1103515245 + 12345;
+		converter.ul[2] = rand = rand * 1103515245 + 12345;
+		converter.ul[3] = rand = rand * 1103515245 + 12345;
+		noise = converter.vul;
+		noise = vec_xor(noise, vec_rl(noise, vec_splat_u32(13)));
+		
+		while (x>0) {
+			temp1 = vec_ld(0, srcAddr);
+			temp2 = vec_ld(16, srcAddr);
+			temp1=(vecul)vec_adds((vecuc)temp1, (vecuc)vec_and(noise, noiseMask));
+			noise = vec_rl(noise, rotator);
+			temp2=(vecul)vec_adds((vecuc)temp2, (vecuc)vec_and(noise, noiseMask));
+			temp3 = vec_ld(32, srcAddr);
+			temp4 = vec_ld(48, srcAddr);
+			noise = vec_rl(noise, rotator);
+			temp3=(vecul)vec_adds((vecuc)temp3, (vecuc)vec_and(noise, noiseMask));
+			noise = vec_rl(noise, rotator);
+			temp4=(vecul)vec_adds((vecuc)temp4, (vecuc)vec_and(noise, noiseMask));
+			temp1 = (vecul)vec_packpx(temp1, temp2);
+			vec_stl(temp1, 0, destAddr);
+			temp3 = (vecul)vec_packpx(temp3, temp4);
+			vec_stl(temp3, 16, destAddr);
+			noise = vec_rl(noise, rotator);
+			noise = vec_or(vec_sll(vec_slo(noise, shiftleft), shiftleft)
+						, vec_srl(vec_sro(noise, shiftright), shiftright));
+			x-=2;
+			destAddr+=2;
+			srcAddr+=4;
+		}
+		destAddr = (vecul*)(dest+=destRB);
+		srcAddr = (vecul*)(src+=srcRB);
+	}
+
+}
+
+static void do_banded_copy_scalar(char *src, char *dest, int widthDiv4, int height, int srcRB, int destRB) {
+	double* destAddr=(double*)dest, tempDbl;
+	UInt32 *srcAddr=(UInt32*)src, a, b, c, d, tempLng1, tempLng2;
+	int x;
+	while (height>0) {
+		height--;
+		x = widthDiv4;
+		while (x>0) {
+			__dcbt(srcAddr, 8*4);
+			x--;
+			a = srcAddr[0];
+			  c = srcAddr[2];
+			tempLng1 = __rlwinm(         a, 8 - 1, 16-15, 16-9);
+			  tempLng2 = __rlwinm(         c, 8 - 1, 16-15, 16-9);
+			tempLng1 = __rlwimi(tempLng1, a, 16- 6, 16-10, 16-6);
+			  tempLng2 = __rlwimi(tempLng2, c, 16- 6, 16-10, 16-6);
+			tempLng1 = __rlwimi(tempLng1, a, 24-11, 16- 5, 16-1);
+			  tempLng2 = __rlwimi(tempLng2, c, 24-11, 16- 5, 16-1);
+			b = srcAddr[1];
+			  d = srcAddr[3];
+			tempLng1 = __rlwimi(tempLng1, b, 40-17, 32-15, 32-9);
+			  tempLng2 = __rlwimi(tempLng2, d, 40-17, 32-15, 32-9);
+			tempLng1 = __rlwimi(tempLng1, b, 48-22, 32-10, 32-6);
+			  tempLng2 = __rlwimi(tempLng2, d, 48-22, 32-10, 32-6);
+			tempLng1 = __rlwimi(tempLng1, b, 56-27, 32- 5, 32-1);
+			  tempLng2 = __rlwimi(tempLng2, d, 56-27, 32- 5, 32-1);
+			((UInt32*)&tempDbl)[0] = tempLng1;
+			  ((UInt32*)&tempDbl)[1] = tempLng2;
+			*destAddr = tempDbl;
+			destAddr++;
+			srcAddr+=4;
+		}
+		destAddr = (double*)(dest+=destRB);
+		srcAddr = (UInt32*)(src+=srcRB);
+	}
+}
+
+#else
+static void do_dithered_copy(Rect& source, Rect& destination, bool color_safe) {
+	vhalt("Dithered display mode is not available on this platform/compiler combination.  You should never have gotten here.");
+}
+#endif=======
 
 
 // Callback for monitor-frequency-selection dialog-box event handling;
@@ -2811,4 +3319,4 @@ void direct_animate_screen_clut(
 		
 		CGSetDisplayTransferByTable( 0, color_table->color_count, redTable, greenTable, blueTable);
 	}
-#endif
+#endif>>>>>>> 1.63

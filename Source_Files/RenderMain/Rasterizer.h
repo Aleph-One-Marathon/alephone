@@ -26,11 +26,19 @@
 	To be subclassed for specific rasterizers (software, OpenGL, etc.)
 */
 
+
 #include "render.h"
 #ifdef HAVE_OPENGL
 #include "OGL_Render.h"
 #endif
 
+struct rasterize_area_spec{
+	rasterize_window *windows;
+	int window_count;
+	
+	rasterize_area_spec(){}
+	rasterize_area_spec(rasterize_window *winds, int c) { windows = winds; window_count = c; }
+};
 
 class RasterizerClass
 {
@@ -44,11 +52,16 @@ public:
 	virtual void Begin() {}
 	virtual void End() {}
 	
-	virtual void texture_horizontal_polygon(polygon_definition& textured_polygon) {}
+	virtual void texture_horizontal_polygon(polygon_definition& textured_polygon, const rasterize_area_spec& windows)=0;
 
-	virtual void texture_vertical_polygon(polygon_definition& textured_polygon) {}
+	virtual void texture_vertical_polygon(polygon_definition& textured_polygon, const rasterize_area_spec& windows)=0;
 
-	virtual void texture_rectangle(rectangle_definition& textured_rectangle) {}
+	virtual void texture_rectangle(rectangle_definition& textured_rectangle, const rasterize_area_spec& windows)=0;
+
+	virtual void draw_stats() {};
+
+	virtual void debug_line_v(int x, int y0, int y1) {};
+	virtual void debug_line_h(int y, int x0, int x1) {};
 };
 
 

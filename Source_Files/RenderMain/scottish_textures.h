@@ -36,6 +36,12 @@ Mar 12, 2000 (Loren Petrich):
 Aug 9, 2000 (Loren Petrich):
 	A few obsolete constants deleted;
 	rendering functions moved to Rasterizer_SW.h
+
+Aug 18, 2001 (Ian Rickard):
+	split bit_depth in two, g_render_depth and g_screen_depth for dithering.
+
+Aug 22, 2001 (Ian Rickard):
+	Moved the shading tables stuff out to texturers.h
 */
 
 #include "shape_descriptors.h"
@@ -59,6 +65,9 @@ enum /* transfer modes */
 //	_big_landscaped_transfer
 };
 
+<<<<<<< scottish_textures.h
+// IR change: Shading tables stuff moved into texturers.h
+=======
 /* ---------- shading tables */
 
 #define MAXIMUM_SHADING_TABLE_INDEXES PIXEL8_MAXIMUM_COLORS
@@ -83,6 +92,7 @@ struct tint_table32
 	pixel32 green[PIXEL32_MAXIMUM_COMPONENT+1];
 	pixel32 blue[PIXEL32_MAXIMUM_COMPONENT+1];
 };
+>>>>>>> 1.17
 
 /* ---------- structures */
 
@@ -181,7 +191,10 @@ struct polygon_definition
 
 /* ---------- globals */
 
-extern short bit_depth;
+// IR change: expanded this into two globals for dithered mode.
+extern short g_render_depth;
+extern short g_screen_depth;
+//extern short bit_depth;
 extern short interface_bit_depth;
 
 extern short number_of_shading_tables, shading_table_fractional_bits, shading_table_size;

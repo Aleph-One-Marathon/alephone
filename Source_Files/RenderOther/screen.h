@@ -51,15 +51,25 @@ Dec 2, 2000 (Loren Petrich):
 Mar 19, 2001 (Loren Petrich):
 	Added some even bigger screen resolutions
 
+<<<<<<< screen.h
+Aug 20, 2001 (Ian Rickard):
+	Added prototype for machine_supports_dithered_32bit
+	R.I.P. Valkyrie.
+=======
 Sept 9, 2001 (Loren Petrich):
 	Eliminated the Valkyrie-acceleration option once and for all;
 	will take care of any side effects elsewhere in the code
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Included Steve Bytnar's OSX QDPort flushing code
+>>>>>>> 1.24
 */
 
 /* ---------- constants */
+
+#define SHOW_DEBUG_HUD 0
+#define DEBUG_HUD_SIZE 8
+extern char debugHud[DEBUG_HUD_SIZE];
 
 // New screen-size definitions
 enum /* screen sizes */
@@ -84,13 +94,20 @@ enum /* screen sizes */
 	_50_percent,
 	_75_percent,
 	_100_percent,
-	_full_screen,
+	_full_screen
 };
 
 enum /* hardware acceleration codes */
 {
 	_no_acceleration,
 	_opengl_acceleration	// LP addition: OpenGL support
+<<<<<<< screen.h
+// IR change: R.I.P. Valkyrie
+#if OBSOLETE
+	_valkyrie_acceleration,
+#endif
+=======
+>>>>>>> 1.24
 };
 
 /* ---------- missing from QUICKDRAW.H */
@@ -118,6 +135,8 @@ CGrafPtr GetScreenGrafPort();
 //CP Addition: make screen_mode_data usable here too
 struct screen_mode_data;
 
+typedef void(*ReadoutDisplayProc)(short &X, short &Y, short LineSpacing);
+
 /* ---------- prototypes/SCREEN.C */
 
 void change_screen_clut(struct color_table *color_table);
@@ -128,6 +147,7 @@ void build_direct_color_table(struct color_table *color_table, short bit_depth);
 
 void start_teleporting_effect(bool out);
 void start_extravision_effect(bool out);
+void start_tunnel_vision_effect(bool out);
 
 void render_screen(short ticks_elapsed);
 
@@ -166,6 +186,8 @@ void process_screen_click(EventRecord *event);
 
 bool machine_supports_16bit(GDSpecPtr spec);
 bool machine_supports_32bit(GDSpecPtr spec);
+// IR added: for dithering
+bool machine_supports_dithered_32bit(GDSpecPtr spec);
 short hardware_acceleration_code(GDSpecPtr spec);
 
 void activate_screen_window(WindowPtr window, EventRecord *event, bool active);

@@ -37,6 +37,9 @@ May 22, 2000 (Loren Petrich):
 
 Nov 12, 2000 (Loren Petrich):
 	Added automap reset function
+
+Aug 16, 2000 (Ian Rickard):
+	changed MINIMUM_OBJECT_DISTANCE from 51 to 10, values much lower generate asserts in extreme conditions.
 */
 
 #include "world.h"	
@@ -47,7 +50,9 @@ Nov 12, 2000 (Loren Petrich):
 /* ---------- constants */
 
 /* the distance behind which we are not required to draw objects */
-#define MINIMUM_OBJECT_DISTANCE ((short)(WORLD_ONE/20))
+// IR change: this was much too large or the code that uses it has changed - fix0rated
+#define MINIMUM_OBJECT_DISTANCE ((short)10)
+//#define MINIMUM_OBJECT_DISTANCE ((short)(WORLD_ONE/20))
 
 #define MINIMUM_VERTICES_PER_SCREEN_POLYGON ((short)3)
 #define MAXIMUM_VERTICES_PER_SCREEN_POLYGON ((short)16)
@@ -60,7 +65,7 @@ enum /* render effects */
 	_render_effect_fold_out,
 	// _render_effect_going_fisheye,
 	// _render_effect_leaving_fisheye,
-	_render_effect_explosion,
+	_render_effect_explosion
 	// LP additions:
 	// _render_effect_going_tunnel,
 	// _render_effect_leaving_tunnel
@@ -92,6 +97,10 @@ struct definition_header
 	short clip_left, clip_right;
 };
 
+struct rasterize_window {
+	short x0, x1, y0, y1;
+};
+
 struct view_data
 {
 	// LP change: specifying current and target field-of-view as floats;
@@ -110,7 +119,9 @@ struct view_data
 	angle half_vertical_cone;
 
 	world_vector2d untransformed_left_edge, untransformed_right_edge;
-	world_vector2d left_edge, right_edge, top_edge, bottom_edge;
+//	IR change: obsoleted by portals/newclip 
+	world_vector2d left_edge, right_edge;
+	world_vector2d top_edge, bottom_edge;
 
 	short ticks_elapsed;
 	uint32 tick_count; /* for effects and transfer modes */
@@ -163,6 +174,7 @@ enum /* render flags */
 	_line_has_clip_data_bit, /* this line has a valid clip entry */
 	_endpoint_has_clip_data_bit, /* this endpoint has a valid clip entry */
 	_endpoint_has_been_transformed_bit, /* this endpoint has been transformed into screen-space */
+	_endpoint_is_in_view_frustrum_bit,
 	NUMBER_OF_RENDER_FLAGS, /* should be <=16 */
 
 	_polygon_is_visible= 1<<_polygon_is_visible_bit,
@@ -171,7 +183,8 @@ enum /* render flags */
 	_side_is_visible= 1<<_side_is_visible_bit,
 	_line_has_clip_data= 1<<_line_has_clip_data_bit,
 	_endpoint_has_clip_data= 1<<_endpoint_has_clip_data_bit,
-	_endpoint_has_been_transformed= 1<<_endpoint_has_been_transformed_bit
+	_endpoint_has_been_transformed= 1<<_endpoint_has_been_transformed_bit,
+	_endpoint_is_in_view_frustrum= 1<<_endpoint_is_in_view_frustrum_bit
 };
 
 /* ---------- globals */
@@ -209,6 +222,7 @@ void instantiate_polygon_transfer_mode(view_data *view,
 
 // In overhead_map.cpp:
 
+void OGL_ResetMapFonts(bool IsStarting);
 void ResetOverheadMap();
 
 #endif

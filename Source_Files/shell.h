@@ -37,6 +37,9 @@ Aug 12, 2000 (Loren Petrich):
 
 Dec 29, 2000 (Loren Petrich):
 	Added function for showing text messages on the screen
+
+Aug 18, 2001 (Ian Rickard):
+	Changed/added stuff for dithering.
 */
 
 class FileSpecifier;
@@ -79,6 +82,18 @@ enum {
 
 /* ---------- structures */
 
+// IR addition for dithered 32 bit:
+typedef enum {
+	kScreenDepth8 = 0,
+	kScreenDepth16,
+	kScreenDepth32,
+	kScreenDepthDithered32,
+	kLastScreenDepth = kScreenDepthDithered32
+} eScreenMode;
+
+const int g_screen_depths[4] = {8, 16, 32, 16};
+const int g_offscreen_depth[4] = {8, 16, 32, 32};
+
 struct screen_mode_data
 {
 	short size;
@@ -88,8 +103,13 @@ struct screen_mode_data
 	bool fullscreen, unused1;	// CB: formerly texture_floor/texture_ceiling, which are no longer supported by the renderer
 	bool draw_every_other_line;
 	
-	short bit_depth;  // currently 8 or 16
+	//IR change: rename to be more acurate
+	eScreenMode display_mode;
 	short gamma_level;
+	
+	// IR addition: part of dithering.
+	short screen_depth() {return g_screen_depths[display_mode];}
+	short render_depth() {return g_offscreen_depth[display_mode];}
 	
 	short unused[8];
 };
@@ -120,7 +140,12 @@ struct system_information_data
 	bool machine_is_68040;
 	bool machine_is_ppc;
 	bool machine_has_network_memory;
+<<<<<<< shell.h
+	bool machine_has_vector_instructions;
+	bool machine_has_data_streams;
+=======
 	bool machine_is_bluebox;
+>>>>>>> 1.20
 };
 
 /* ---------- globals */
@@ -130,6 +155,7 @@ extern struct system_information_data *system_information;
 /* ---------- prototypes/SHELL.C [now shell_misc.cpp, shell_macintosh.cpp, shell_sdl.cpp] */
 
 void global_idle_proc(void);
+void PlayInterfaceButtonSound(short SoundID);
 
 #ifdef mac
 // LP: added Navigation-Services detection
@@ -198,5 +224,83 @@ void load_environment_from_preferences(void);
 // Implemented in the "screen" routines
 void screen_printf(char *format, ...);
 
+//IR addition: advanced remote debugging:
+
+
+
+class WatchObject {
+	static WatchObject * gCurrentWatch, *topOfStack;
+	WatchObject *up, *stack;
+	
+	virtual void Log() = 0;
+	
+	WatchObject* LogActiveObjects() {Log(); return up;}
+	WatchObject* CheckForStraglers() {Log(); return stack;}
+public:
+	WatchObject() {up = NULL; stack = topOfStack; topOfStack = this;}
+	void Watch() {if (up) Forget(); up = gCurrentWatch; gCurrentWatch = this;}
+	void Forget();
+	~WatchObject() {Forget();}
+	
+	static void MakeLogEntry();
+};
+
+class DebugLogger {
+public:
+	virtual void DebugLog()=0;
+	virtual ~DebugLogger(){}
+};
+
+class StdWatch : private WatchObject {
+	DebugLogger* watchee;
+	virtual void Log() {if (watchee) watchee->DebugLog(); watchee = NULL;}
+public:
+	StdWatch() {watchee = NULL;}
+	void Watch(DebugLogger* it) {if (watchee) WatchObject::Forget(); watchee = it; WatchObject::Watch();}
+	void Forget() {watchee = NULL; WatchObject::Forget();}
+	StdWatch(DebugLogger* it) {watchee = NULL; Watch(it);}
+};
+
+class IntLogger : public DebugLogger {
+	const char *name;
+	int value;
+public:
+	IntLogger(const char *nam) {name = nam;}
+	void Value(int newVal) {value = newVal;}
+	virtual void DebugLog() {
+		::DebugLog(csprintf(temporary, "%s: %d", name, value));
+	}
+};
+
+class FloatLogger : public DebugLogger {
+	const char *name;
+	float value;
+public:
+	FloatLogger(const char *nam) {name = nam;}
+	void Value(float newVal) {value = newVal;}
+	virtual void DebugLog() {
+		::DebugLog(csprintf(temporary, "%s: %f", name, value));
+	}
+};
+
+#define PREPTRACK(type) static StdWatch<type> myWatcher
+#define TRACK(thing) myWatcher.Watch(thing);
+#define STOPTRACK() myWatcher.Forget();
+#define PREPTRACKN(type, name) StdWatch<type> name
+#define TRACKN(thing, name) name.Watch(thing);
+#define STOPTRACKN(name) name.Forget();
+#define ASSERTLOGINT(name, value) \
+	static StdWatch name##LogWatch; static IntLogger name##Logger(#name); \
+	name##Logger.Value(value); name##LogWatch.Watch(&name##Logger)
+#define ENDASSERTLOG(name) name##LogWatch.Forget();
 
 #endif
+
+
+
+
+
+
+
+
+

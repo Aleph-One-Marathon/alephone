@@ -23,12 +23,9 @@
  *  shell_sdl.cpp - Main game loop and input handling, SDL implementation
  *
  *  Written in 2000 by Christian Bauer
- *
- *  LP: Sept 6, 2001: Added Ian-Rickard-style button sounds
- *
- *  Mar 1, 2002 (Woody Zenfell):
- *      ripped w_levels out of here into sdl_widgets.*
  */
+
+ // LP: Sept 6, 2001: Added Ian-Rickard-style button sounds
 
 #ifdef __MVCPP__
 
@@ -513,7 +510,33 @@ bool quit_without_saving(void)
 }
 
 
-// ZZZ: moved level-numbers widget into sdl_widgets for a wider audience.
+/*
+ *  Level number dialog
+ */
+
+class w_levels : public w_list<entry_point> {
+public:
+	w_levels(const vector<entry_point> &items, dialog *d)
+	  : w_list<entry_point>(items, 400, 8, 0), parent(d) {}
+
+	void item_selected(void)
+	{
+		parent->quit(0);
+	}
+
+	void draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
+	{
+		y += font->get_ascent();
+		char str[256];
+		sprintf(str, "%d - %s", i->level_number + 1, i->level_name);
+		set_drawing_clip_rectangle(0, x, s->h, x + width);
+		draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+	}
+
+private:
+	dialog *parent;
+};
 
 short get_level_number_from_user(void)
 {

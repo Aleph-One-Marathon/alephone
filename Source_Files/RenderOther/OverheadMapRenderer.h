@@ -27,6 +27,9 @@
 
 Dec 17, 2000 (Loren Petrich):
 	Added font abstraction
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating mostly to OOzing
 */
 
 #include "cseries.h"
@@ -189,9 +192,11 @@ protected:
 	
 	virtual void begin_lines() {}
 	virtual void draw_line(
-		short *vertices,
+		// IR change: OOzing
+//		short *vertices,
+		const endpoint_reference &vert1, const endpoint_reference &vert2,
 		rgb_color& color,
-		short pen_size) {}
+		short pen_size) = 0;
 	virtual void end_lines() {}
 	
 	virtual void begin_things() {}
@@ -225,10 +230,12 @@ protected:
 	virtual void finish_path() {}
 	
 	// Get vertex with the appropriate transformation:
-	static world_point2d& GetVertex(short index) {return get_endpoint_data(index)->transformed;}
+	// IR change: OOzing and making stupid-compiler-friendly (IE CW)
+	static long_point2d* GetVertex(endpoint_reference ep) {return &ep->transformedL;}
 	
 	// Get pointer to first vertex
-	static world_point2d *GetFirstVertex() {return &GetVertex(0);}
+	// IR change: tweak for StupidCompilerFriendlyation of GetVertex
+	static long_point2d *GetFirstVertex() {return GetVertex(0);}
 	
 	// Get the vertex stride, for the convenience of OpenGL
 	static int GetVertexStride() {return sizeof(endpoint_data);}
@@ -248,13 +255,16 @@ private:
 			draw_polygon(vertex_count, vertices, ConfigPtr->polygon_colors[color]);
 		}
 	void draw_line(
-		short line_index,
+		// IR change: OOzing
+		line_reference line_index,
 		short color,
 		short scale)
 		{
 			if (!(color>=0&&color<NUMBER_OF_LINE_DEFINITIONS)) return;
 			line_definition& LineDef = ConfigPtr->line_definitions[color];
-			draw_line(get_line_data(line_index)->endpoint_indexes,
+			// IR change: side effect of OOzing
+			struct line_data *line = line_reference(line_index);
+			draw_line(line->endpoint_0(), line->endpoint_1(),
 				LineDef.color, LineDef.pen_sizes[scale-OVERHEAD_MAP_MINIMUM_SCALE]);
 		}
 	void draw_thing(

@@ -41,17 +41,17 @@ public:
 	void Begin() {OGL_StartMain();}
 	void End() {OGL_EndMain();}
 	
-	void texture_horizontal_polygon(polygon_definition& textured_polygon)
+	void texture_horizontal_polygon(polygon_definition& textured_polygon, const rasterize_area_spec& windows)
 	{
 		OGL_RenderWall(textured_polygon,false);
 	}
 	
-	void texture_vertical_polygon(polygon_definition& textured_polygon)
+	void texture_vertical_polygon(polygon_definition& textured_polygon, const rasterize_area_spec& windows)
 	{
 		OGL_RenderWall(textured_polygon,true);
 	}
 	
-	void texture_rectangle(rectangle_definition& textured_rectangle)
+	void texture_rectangle(rectangle_definition& textured_rectangle, const rasterize_area_spec& windows)
 	{
 		OGL_RenderSprite(textured_rectangle);
 	}

@@ -63,6 +63,11 @@ Dec 16, 2000 (Loren Petrich):
 June 14, 2001 (Loren Petrich):
 	Changed Width*Height to TxtrWidth*TxtrHeight in some places to ensure that some operations
 	are done over complete textures
+<<<<<<< OGL_Textures.cpp
+
+Aug 19, 2001 (Ian Rickard):
+	Minor change for dithering.
+=======
 
 Nov 30, 2001 (Alexander Strange):
 	Added Ian Rickard's texture purging to save VRAM.
@@ -70,6 +75,7 @@ Nov 30, 2001 (Alexander Strange):
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for AGL.h
 
+>>>>>>> 1.33
 */
 
 #include <string.h>
@@ -109,8 +115,14 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
+#include "timer.h"
+#include "readout_data.h"
 
+<<<<<<< OGL_Textures.cpp
+OGL_TexturesStats gGLTxStats;
+=======
 OGL_TexturesStats gGLTxStats = {0,0,0,500000,0,0, 0};
+>>>>>>> 1.33
 
 // Texture mapping
 struct TxtrTypeInfoData
@@ -586,7 +598,7 @@ inline int MakeEightBit(GLfloat Chan)
 	return int(PIN(int(255*Chan+0.5),0,255));
 }
 
-uint32 MakeIntColor(GLfloat *FloatColor)
+inline uint32 MakeIntColor(GLfloat *FloatColor)
 {
 	uint32 IntColor;
 	uint8 *ColorPtr = (uint8 *)(&IntColor);
@@ -595,7 +607,7 @@ uint32 MakeIntColor(GLfloat *FloatColor)
 	return IntColor;
 }
 
-void MakeFloatColor(uint32 IntColor, GLfloat *FloatColor)
+inline void MakeFloatColor(uint32 IntColor, GLfloat *FloatColor)
 {
 	uint8 *ColorPtr = (uint8 *)(&IntColor);
 	for (int k=0; k<4; k++)
@@ -909,8 +921,13 @@ void TextureManager::FindColorTables()
 	}
 	
 	// Number of source bytes, for reading off of the shading table
+<<<<<<< OGL_Textures.cpp
+	// IR change: dithering
+	short NumSrcBytes = g_render_depth / 8;
+=======
 	// IR change: dithering
 	short NumSrcBytes = bit_depth / 8;
+>>>>>>> 1.33
 	
 	// Shadeless polygons use the first, instead of the last, shading table
 	byte *OrigColorTable = (byte *)ShadingTables;
@@ -1209,15 +1226,32 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 // Always call this one and call it first; safe to allocate texture ID's in it
 void TextureManager::RenderNormal()
 {
+<<<<<<< OGL_Textures.cpp
+		Timer timer;
+		timer.Start();
+
+	TxtrStatePtr->Allocate(TextureType);
+=======
 
 
 	TxtrStatePtr->Allocate(TextureType);
+>>>>>>> 1.33
 	
 	if (TxtrStatePtr->UseNormal())
 	{
 		assert(NormalBuffer);
 		PlaceTexture(NormalBuffer);
 	}
+<<<<<<< OGL_Textures.cpp
+
+		timer.Stop();
+		gGLTxStats.binds++;
+		int time = timer.Clicks();
+		gGLTxStats.totalBind += time;
+		if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
+		if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
+		if (time>2) gGLTxStats.longNormalSetups++;
+=======
 
 		gGLTxStats.binds++;
 		int time = 0;
@@ -1225,18 +1259,35 @@ void TextureManager::RenderNormal()
 		if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
 		if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
 		if (time>2) gGLTxStats.longNormalSetups++;
+>>>>>>> 1.33
 }
 
 // Call this one after RenderNormal()
 void TextureManager::RenderGlowing()
 {
+<<<<<<< OGL_Textures.cpp
+		Timer timer;
+		timer.Start();
+
+=======
 
 
+>>>>>>> 1.33
 	if (TxtrStatePtr->UseGlowing())
 	{
 		assert(GlowBuffer);
 		PlaceTexture(GlowBuffer);
 	}
+<<<<<<< OGL_Textures.cpp
+
+		timer.Stop();
+		gGLTxStats.binds++;
+		int time = timer.Clicks();
+		gGLTxStats.totalBind += time;
+		if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
+		if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
+		if (time>2) gGLTxStats.longGlowSetups++;
+=======
 
 		gGLTxStats.binds++;
 		int time = 0;
@@ -1244,6 +1295,7 @@ void TextureManager::RenderGlowing()
 		if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
 		if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
 		if (time>2) gGLTxStats.longGlowSetups++;
+>>>>>>> 1.33
 }
 
 

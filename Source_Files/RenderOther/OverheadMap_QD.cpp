@@ -27,9 +27,15 @@
 Aug 6, 2000 (Loren Petrich):
 	Added perimeter drawing to drawing commands for the player object;
 	this guarantees that this object will always be drawn reasonably correctly
+<<<<<<< OverheadMap_QD.cpp
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating mostly to OOzing
+=======
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added accessors for datafields now opaque in Carbon
+>>>>>>> 1.9
 */
 
 #include <string.h>
@@ -43,11 +49,13 @@ void OverheadMap_QD_Class::draw_polygon(
 	rgb_color& color)
 {
 	PolyHandle polygon= OpenPoly();
-	world_point2d *vertex= &GetVertex(vertices[vertex_count-1]);
+	// IR change: made GetVertex stupid-compiler-friendly
+	long_point2d *vertex= GetVertex(vertices[vertex_count-1]);
 	MoveTo(vertex->x, vertex->y);
 	for (int i=0;i<vertex_count;++i)
 	{
-		vertex= &GetVertex(vertices[i]);
+		// IR change: made GetVertex stupid-compiler-friendly
+		vertex= GetVertex(vertices[i]);
 		LineTo(vertex->x, vertex->y);
 	}
 	ClosePoly();
@@ -64,12 +72,15 @@ void OverheadMap_QD_Class::draw_polygon(
 }
 
 void OverheadMap_QD_Class::draw_line(
-	short *vertices,
+	// IR change: side effect of OOzing, changed to int32 while I was at it.
+//	short *vertices,
+	const endpoint_reference &vert1, const endpoint_reference &vert2,
 	rgb_color& color,
 	short pen_size)
 {
-	world_point2d *vertex1= &GetVertex(vertices[0]);
-	world_point2d *vertex2= &GetVertex(vertices[1]);
+	// IR change: made GetVertex stupid-compiler-friendly
+	long_point2d *vertex1= GetVertex(vert1);
+	long_point2d *vertex2= GetVertex(vert2);
 	struct line_definition *definition;
 	
 	SetColor(color);

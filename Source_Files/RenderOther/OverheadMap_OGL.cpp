@@ -55,9 +55,15 @@ Aug 6, 2000 (Loren Petrich):
 	
 Oct 13, 2000 (Loren Petrich)
 	Converted the various lists into Standard Template Library vectors
+<<<<<<< OverheadMap_OGL.cpp
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating mostly to OOzing
+=======
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for AGL.h
+>>>>>>> 1.14
 */
 
 #include <math.h>
@@ -157,7 +163,7 @@ void OverheadMap_OGL_Class::begin_polygons()
 #ifdef mac
 	// CB: Vertex arrays crash both Mesa and NVidia's GL implementation
 	// (reason still to be determined)
-	glVertexPointer(2,GL_SHORT,GetVertexStride(),GetFirstVertex());
+	glVertexPointer(2,GL_INT,GetVertexStride(),GetFirstVertex());
 #endif
 
 	// Reset color defaults
@@ -197,8 +203,8 @@ void OverheadMap_OGL_Class::draw_polygon(
 	glBegin(GL_POLYGON);
 	for (int k=0; k<vertex_count; k++)
 	{
-		world_point2d v = GetVertex(vertices[k]);
-		glVertex2i(v.x, v.y);
+		long_point2d *v = GetVertex(vertices[k]);
+		glVertex2i(v->x, v->y);
 	}
 	glEnd();
 #endif
@@ -235,7 +241,9 @@ void OverheadMap_OGL_Class::begin_lines()
 
 
 void OverheadMap_OGL_Class::draw_line(
-	short *vertices,
+	// IR change: OOzing
+//	short *vertices,
+		const endpoint_reference &vert1, const endpoint_reference &vert2,
 	rgb_color& color,
 	short pen_size)
 {
@@ -259,10 +267,11 @@ void OverheadMap_OGL_Class::draw_line(
 		glLineWidth(SavedPenSize);		
 	}
 	
+	// IR changes: OOzing
 #ifdef mac
 	// Add the line's points to the cached line		
-	LineCache.push_back(vertices[0]);
-	LineCache.push_back(vertices[1]);
+	LineCache.push_back(vert1.index());
+	LineCache.push_back(vert2.index());
 #else
 	glBegin(GL_LINES);
 	world_point2d v = GetVertex(vertices[0]);

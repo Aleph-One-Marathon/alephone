@@ -121,10 +121,16 @@ Apr 8, 2001 (Loren Petrich):
 
 Apr 26, 2001 (Loren Petrich):
 	Got that support working
+<<<<<<< mysound.cpp
+
+Aug 19, 2001 (Ian RIckard):
+	Added new feedback sounds.
+=======
 
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 */
+>>>>>>> 1.33
 
 /*
 sound pitches do not work
@@ -443,6 +449,11 @@ static short distance_to_volume(struct sound_definition *definition, world_dista
 	uint16 flags);
 
 static void update_ambient_sound_sources(void);
+
+struct sound_definition *get_sound_definition(const short sound_index);
+struct ambient_sound_definition *get_ambient_sound_definition(const short ambient_sound_index);
+struct random_sound_definition *get_random_sound_definition(const short random_sound_index);
+struct sound_behavior_definition *get_sound_behavior_definition(const short sound_behavior_index);
 
 /* ---------- private code */
 
