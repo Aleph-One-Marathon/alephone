@@ -633,6 +633,12 @@ uint8 *pack_light_data(uint8 *Stream, light_data* Objects, int Count)
 	return S;
 }
 
+static void FixLightState(lighting_function_specification& LightState, old_light_data& OldLight)
+{
+	LightState.period = ((LightState.period*OldLight.period)/TICKS_PER_SECOND);
+	LightState.intensity = OldLight.minimum_intensity + 
+		float(LightState.intensity)*float(OldLight.maximum_intensity - OldLight.minimum_intensity)/FIXED_ONE;
+}
 
 void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data* OldLights, int Count)
 {
@@ -664,9 +670,18 @@ void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data*
 			break;
 		
 		default:
-			assert(false);
 			break;
 		}
+		
+		// Edit the light intensities, etc.
+		SET_FLAG(NewLtPtr->flags,FLAG(_light_is_initially_active),OldLtPtr->mode);
+		NewLtPtr->phase = OldLtPtr->phase;
+		FixLightState(NewLtPtr->primary_active,*OldLtPtr);
+		FixLightState(NewLtPtr->secondary_active,*OldLtPtr);
+		FixLightState(NewLtPtr->becoming_active,*OldLtPtr);
+		FixLightState(NewLtPtr->primary_inactive,*OldLtPtr);
+		FixLightState(NewLtPtr->secondary_inactive,*OldLtPtr);
+		FixLightState(NewLtPtr->becoming_inactive,*OldLtPtr);
 	}
 }
 
