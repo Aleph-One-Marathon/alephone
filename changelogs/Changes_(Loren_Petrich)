@@ -1296,3 +1296,29 @@ Evil: Nukedome
 which have two-fisted weapons.
 However, was unable to find railgun-shot absence bug for Evil in OpenGL mode
 
+September 5, 2000
+
+Completed implementing packing/unpacking for the films, and fixed the railgun-shot-absence bug.
+
+September 9, 2000
+
+Restored old AppleGL texture kludge as an option; the kludge is to paint the textures
+into 128*128 tiles instead of the best-fit power-of-2 ones, which may be smaller than that.
+
+Fixed 32-bit flickering bug by forcing a reset of the screen resolution to 16-bit and then
+back to 32-bit when starting a game for the first time (no need to do that after that,
+it seems).
+
+September 10, 2000
+
+Received CB's new changes; there were some adjustments I had to make, such as changing
+"Boolean" and "boolean" to "bool" everywhere except for places where Boolean is really necessary, such as
+MacOS callback returns and MacOS routines like ResolveAlias().
+
+Also, turned push_back() in computer_interface.cpp to push_back(<something>), because CW4
+does not have empty push_back() defined.
+
+September 11, 2000
+
+Made pointer-data and pointer-size definitions RenderVisTree.h and shapes.cp
+completely general.
