@@ -1255,7 +1255,16 @@ static void _prelandscape_horizontal_polygon_lines(
 	{
 		CALCULATE_SHADING_TABLE(shading_table, view, polygon->shading_tables, 0, ambient_shade);
 	}
-
+	
+	// Find the height to repeat over; use value used for OpenGL texture setup
+	short texture_width= polygon->texture->height;
+	short repeat_texture_height = texture_width >> LandOpts->OGL_AspRatExp;
+	
+	short height_reduced = texture_height - 1;
+	short height_shift = texture_height >> 1;
+	short height_repeat_mask = repeat_texture_height - 1;
+	short height_repeat_shift = repeat_texture_height >> 1;
+	
 	y0-= view->half_screen_height + view->dtanpitch; /* back to virtual screen coordinates */
 	while ((line_count-= 1)>=0)
 	{
@@ -1263,8 +1272,13 @@ static void _prelandscape_horizontal_polygon_lines(
 		
 		data->shading_table= shading_table;
 		// LP change: using vertical pixel delta
-		data->source_y= FIXED_INTEGERAL_PART(y0*vertical_pixel_delta) + (texture_height>>1);
-		data->source_y= texture_height - PIN(data->source_y, 0, texture_height-1) - 1;
+		// Also using vertical repeat if selected;
+		// fold the height into the range (-repeat_height/2, repeat_height)
+		short y_txtr_offset= FIXED_INTEGERAL_PART(y0*vertical_pixel_delta);
+		if (LandOpts->VertRepeat)
+			y_txtr_offset = ((y_txtr_offset + height_repeat_shift) & height_repeat_mask) -
+				height_repeat_shift;
+		data->source_y= texture_height - PIN(y_txtr_offset + height_shift, 0, height_reduced) - 1;
 		// data->source_y= FIXED_INTEGERAL_PART(y0*pixel_delta) + (texture_height>>1);
 		// data->source_y= texture_height - PIN(data->source_y, 0, texture_height-1) - 1;
 		// LP change: using horizontal pixel delta
