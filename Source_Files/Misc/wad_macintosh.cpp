@@ -55,15 +55,6 @@ static bool find_wad_file_with_checksum_in_directory(
 static bool find_file_with_modification_date_in_directory(
 	FileSpecifier& MatchingFile, DirectorySpecifier& BaseDir,
 	int file_type, uint32 checksum);
-/*
-static Boolean match_wad_checksum_callback(FSSpec *file, void *data);
-static Boolean checksum_and_not_base_callback(FSSpec *file, void *data);
-static Boolean match_modification_date_callback(FSSpec *file, void *data);
-static bool find_wad_file_with_checksum_in_directory(FSSpec *matching_file, short vRefNum,
-	long parID, unsigned long file_type, uint32 checksum);
-static bool find_file_with_modification_date_in_directory(FSSpec *matching_file, short vRefNum,
-	long parID, unsigned long file_type, TimeType modification_date);
-*/
 
 /* ------------- code! */
 /* Search all the directories in the path.. */
@@ -85,99 +76,10 @@ bool find_wad_file_that_has_checksum(
 	if (BaseDir.SetToAppParent())
 		file_matched= find_wad_file_with_checksum_in_directory(MatchingFile, BaseDir,file_type, checksum);
 	
-	#if 0
-	err= get_my_fsspec(&app_spec);
-	if(!err)
-	{
-		file_matched= find_wad_file_with_checksum_in_directory((FSSpec *) matching_file,
-			app_spec.vRefNum, app_spec.parID, file_type, checksum);
-		
-		if(!file_matched)
-		{
-			short path_count= countstr(path_resource_id);
-			short index;
-			
-			for(index= 0; !file_matched && index<path_count; ++index)
-			{
-				FSSpec test_directory_spec;
-			
-				getpstr(ptemporary, path_resource_id, index);
-				err= FSMakeFSSpec(app_spec.vRefNum, app_spec.parID, ptemporary, &test_directory_spec);
-
-				if(!err)
-				{
-					long parID;
-					OSErr error;
-					
-					/* The referenced thing is a directory, and we want to search inside it. */
-					/*  therefore we want to get it's parent id.. */
-					error= get_directories_parID(&test_directory_spec, &parID);
-					if(!error)
-					{
-						file_matched= find_wad_file_with_checksum_in_directory((FSSpec *)matching_file,
-							test_directory_spec.vRefNum, parID, file_type, checksum);
-					}
-				}
-			}
-		}
-	}
-	#endif
 
 	return file_matched;
 }
 
-// LP: begin no-compile
-#if 0
-
-/* Find other entries that reference the base wad.  Search is by type, and when one is found, the */
-/*  checksums are checked, to make sure that it is modifying the correct file. */
-FileError find_other_entries_that_reference_checksum(
-	uint32 checksum,
-	FileDesc *files_array,
-	short *count)
-{
-	struct find_file_pb pb;
-	OSType file_type;
-	struct find_files_private_data private_data;
-	FInfo file_info;
-	FileError error;
-
-	/* What type of file are we? */
-	FSpGetFInfo((FSSpec *) &files_array[0], &file_info);
-	file_type= file_info.fdType;
-
-	/* Setup the private data for the callback */
-	private_data.base_file= &files_array[0];
-	private_data.base_checksum= checksum;
-	
-	/* Clear out the find_file pb */
-	objlist_clear(pb);
-	
-	/* Set the information */
-	pb.version= 0;
-	pb.flags= _ff_recurse;
-	pb.vRefNum= files_array[0].vRefNum;
-	pb.directory_id= files_array[0].parID;
-	pb.type_to_find= file_type;
-	pb.buffer= (FSSpec *) &files_array[1]; /* First one is already set.. */
-	pb.max= MAXIMUM_UNION_WADFILES-1;
-	pb.callback= checksum_and_not_base_callback;
-	pb.user_data= &private_data;
-
-	/* Find them! */
-	error= find_files(&pb);
-	
-	if(!error) 
-	{
-		*count= pb.count+1; /* +1 because base is already added. */
-	} else {
-		*count= 1;
-	}
-
-	return error;
-}
-// LP: end no-compile
-#endif
 
 bool find_file_with_modification_date(
 	FileSpecifier& MatchingFile,
@@ -196,71 +98,9 @@ bool find_file_with_modification_date(
 	if (BaseDir.SetToAppParent())
 		file_matched= find_file_with_modification_date_in_directory(MatchingFile, BaseDir,file_type, modification_date);
 
-	#if 0	
-	err= get_my_fsspec(&app_spec);
-	if(!err)
-	{
-		file_matched= find_file_with_modification_date_in_directory((FSSpec *) matching_file,
-			app_spec.vRefNum, app_spec.parID, file_type, modification_date);
-		
-		if(!file_matched)
-		{
-			short path_count= countstr(path_resource_id);
-			short index;
-			
-			for(index= 0; !file_matched && index<path_count; ++index)
-			{
-				FSSpec test_directory_spec;
-			
-				getpstr(ptemporary, path_resource_id, index);
-				err= FSMakeFSSpec(app_spec.vRefNum, app_spec.parID, ptemporary, &test_directory_spec);
-
-				if(!err)
-				{
-					long parID;
-					OSErr error;
-					
-					/* The referenced thing is a directory, and we want to search inside it. */
-					/*  therefore we want to get it's parent id.. */
-					error= get_directories_parID(&test_directory_spec, &parID);
-					if(!error)
-					{
-						file_matched= find_file_with_modification_date_in_directory((FSSpec *)matching_file,
-							test_directory_spec.vRefNum, parID, file_type, modification_date);
-					}
-				}
-			}
-		}
-	}
-	#endif
-
 	return file_matched;
 }
 
-// LP: don't need this anymore
-#if 0
-/* Return this directorie's parent id.. (the parID field of things inside it..) */
-OSErr get_directories_parID(
-	FSSpec *directory, 
-	long *parID)
-{
-	CInfoPBRec pb;
-	OSErr error;
-
-	/* Clear it.  Always a good thing */
-	obj_clear(pb);
-	pb.dirInfo.ioNamePtr= directory->name;
-	pb.dirInfo.ioVRefNum= directory->vRefNum;
-	pb.dirInfo.ioDrDirID= directory->parID;
-	pb.dirInfo.ioFDirIndex= 0; /* use ioNamePtr and ioDirID */
-	error= PBGetCatInfoSync(&pb);
-	
-	*parID = pb.dirInfo.ioDrDirID;
-	assert(!error && (pb.hFileInfo.ioFlAttrib & 0x10));
-
-	return error;
-}
-#endif
 
 /* -------------- local code */
 static bool checksum_and_not_base_callback(
@@ -333,13 +173,6 @@ static bool find_wad_file_with_checksum_in_directory(
 	pb.version= 0;
 	// LP change: always recurse
 	pb.flags= _ff_recurse; /* DANGER WILL ROBINSON!!! */
-#if 0
-#ifdef FINAL
-	pb.flags= _ff_recurse; /* DANGER WILL ROBINSON!!! */
-#else
-	pb.flags= 0; /* DANGER WILL ROBINSON!!! */
-#endif
-#endif
 	pb.BaseDir = BaseDir;
 	// pb.vRefNum= vRefNum;
 	// pb.directory_id= parID;
@@ -395,13 +228,6 @@ static bool find_file_with_modification_date_in_directory(
 	pb.version= 0;
 	// LP change: always recurse
 	pb.flags= _ff_recurse | _ff_callback_with_catinfo; /* DANGER WILL ROBINSON!!! */
-#if 0
-#ifdef FINAL
-	pb.flags= _ff_recurse | _ff_callback_with_catinfo; /* DANGER WILL ROBINSON!!! */
-#else
-	pb.flags= _ff_callback_with_catinfo; /* DANGER WILL ROBINSON!!! */
-#endif
-#endif
 	pb.BaseDir = BaseDir;
 	// pb.vRefNum= vRefNum;
 	// pb.directory_id= parID;

@@ -162,38 +162,7 @@ void move_replay(
 	/* Alert them on problems */
 	OSErr Err = MovedFilmFile.GetError();
 	if (Err != noErr) alert_user(infoError, strERRORS, fileError, Err);
-
-// Begin no-compile
-#if 0
-	Str255 suggested_name;
-	StandardFileReply reply;
 	
-	getpstr(ptemporary, strPROMPTS, _save_replay_prompt);
-	getpstr(suggested_name, strFILENAMES, filenameMARATHON_RECORDING);
-	StandardPutFile(ptemporary, suggested_name, &reply);
-	if(reply.sfGood)
-	{
-		FSSpec source_spec;
-				
-		if(get_recording_filedesc((FileDesc *) &source_spec))
-		{
-			OSErr err;
-		
-			/* If we are replacing.. */
-			if(reply.sfReplacing)
-			{
-				FSpDelete(&reply.sfFile);
-			}
-
-			err= copy_file(&source_spec, &reply.sfFile);
-
-			/* Alert them on problems */			
-			if (err) alert_user(infoError, strERRORS, fileError, err);
-		}
-	}
-// End no-compile
-#endif
-
 	return;
 }
 
