@@ -1200,6 +1200,15 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 		// Walls are tiled in both direction
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                // enable anisotropic filtering
+                {
+                    float anisoLevel = Get_OGL_ConfigureData().AnisotropyLevel;
+                    if (anisoLevel > 0.0) {
+                        GLfloat max_aniso;
+                        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
+                        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f + ((anisoLevel-1.0)/15.0f)*(max_aniso-1.0));
+                    }
+                }
 		break;
 		
 	case OGL_Txtr_Landscape:

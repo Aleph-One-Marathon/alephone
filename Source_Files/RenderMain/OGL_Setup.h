@@ -162,6 +162,9 @@ struct OGL_ConfigureData
 	// (day, night, moon, outer space)
 	// Second index: ground, sky
 	RGBColor LscpColors[4][2];
+        
+        // Anisotropy setting
+        float AnisotropyLevel;
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();

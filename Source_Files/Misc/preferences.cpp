@@ -408,6 +408,7 @@ void write_preferences(
 #endif
 	fprintf(F,"  ogl_flags=\"%hu\"\n",graphics_preferences->OGL_Configure.Flags);
         fprintf(F,"  experimental_rendering=\"%s\"\n",BoolString(graphics_preferences->experimental_rendering));
+        fprintf(F,"  anisotropy_level=\"%f\"\n", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	fprintf(F,">\n");
 	fprintf(F,"  <void>\n");
 	WriteColor(F,"    ",graphics_preferences->OGL_Configure.VoidColor,"\n");
@@ -1417,6 +1418,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
         else if (StringsEqual(Tag,"experimental_rendering"))
         {
                 return ReadBooleanValue(Value,graphics_preferences->experimental_rendering);
+        }
+        else if (StringsEqual(Tag,"anisotropy_level"))
+        {
+                return ReadFloatValue(Value, graphics_preferences->OGL_Configure.AnisotropyLevel);
         }
 	UnrecognizedTag();
 	return false;

@@ -194,6 +194,8 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	Data.Flags = OGL_Flag_Map | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models |
 		OGL_Flag_2DGraphics;
 #endif
+
+        Data.AnisotropyLevel = 0.0; // off
 	
 	Data.VoidColor = rgb_black;			// Self-explanatory
 	for (int il=0; il<4; il++)
