@@ -71,6 +71,8 @@ Next sequence: ] }
 Previous frame: - _
 Next frame: = +
 
+Interpolate to next frame; increase interpolation fraction by 1/4 = M
+
 Code notes: Pfhormz uses some A1 engine code; it also uses the mini-framework GLUT for coding simplicity and portability.
 
 The current version is designed to work in Classic MacOS, but it should easily be portable to other platforms, where one links to SDL or other appropriate libraries.
