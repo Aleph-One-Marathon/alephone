@@ -62,6 +62,10 @@ May 31, 2000 (Loren Petrich):
 
 Jun 15, 2000 (Loren Petrich):
 	Re-enabled screen-resolution changing with OpenGL
+
+Jul 4, 2000 (Loren Petrich):
+	Implemented some of the unimplemented cheat codes
+	Also allowed more than the cheat amounts to be kept
 */
 
 #include <stdlib.h>
@@ -154,6 +158,9 @@ TP2PerfGlobals perf_globals;
 #endif
 
 extern long first_frame_tick, frame_count; /* for determining frame rate */
+
+// LP addition: whether or not the cheats are active
+bool CheatsActive = false;
 
 /* ---------- externs that I couldn't fit into the #include heirarchy nicely */
 extern boolean load_and_start_game(FileDesc *file);
@@ -341,8 +348,12 @@ void handle_game_key(
 	{
 		short type_of_cheat;
 		
-		type_of_cheat = process_keyword_key(key);
-		if (type_of_cheat != NONE) handle_keyword(type_of_cheat);
+		// LP change: this is now conditional
+		if (CheatsActive)
+		{
+			type_of_cheat = process_keyword_key(key);
+			if (type_of_cheat != NONE) handle_keyword(type_of_cheat);
+		}
 	}
 // #endif
 
@@ -955,9 +966,11 @@ enum // cheat tags
 	_tag_infravision,
 	_tag_pistol,
 	_tag_rifle,
-	_tag_missle,
+	_tag_missile,	// LP change: corrected spelling
 	_tag_toaster,  // flame-thrower
 	_tag_pzbxay,
+	_tag_shotgun,	// LP addition
+	_tag_smg,		// LP addition
 	_tag_ammo,
 	_tag_pathways,
 	_tag_view,
@@ -985,12 +998,14 @@ static struct keyword_data keywords[]=
 	{_tag_invincible, "NUKE"},
 	{_tag_infravision, "SEE"},
 	{_tag_extravision, "WOW"},
-	{_tag_invisible, "BYE"},
+	// {_tag_invisible, "BYE"}, Redundant
 	{_tag_pistol, "MAG"},
 	{_tag_rifle, "RIF"},
-	{_tag_missle, "POW"},
+	{_tag_missile, "POW"},
 	{_tag_toaster, "TOAST"},
 	{_tag_fusion, "MELT"},
+	{_tag_shotgun, "PUFF"},
+	{_tag_smg, "ZIP"},
 	{_tag_pzbxay, "PZBXAY"}, // the alien shotgon, in the phfor's language
 	{_tag_ammo, "AMMO"},
 	{_tag_jump, "QWE"},
@@ -1029,6 +1044,23 @@ static short process_keyword_key(
 	return tag;
 }
 
+// LP additions:
+// Macros for code below:
+// Here, MaxNumber is the maximum number of items that will be added;
+// the final number is at least MaxNumber
+inline void AddItemsToPlayer(short ItemType, short MaxNumber)
+{
+	for (int i=0; i<MaxNumber; i++)
+		try_and_add_player_item(local_player_index,ItemType);
+}
+// Here, only one is added, unless the number of items is at least as great as MaxNumber
+inline void AddOneItemToPlayer(short ItemType, short MaxNumber)
+{
+	local_player->items[ItemType] = MAX(local_player->items[ItemType],0);
+	if (local_player->items[ItemType] < MaxNumber)
+		try_and_add_player_item(local_player_index,ItemType);
+}
+
 static void handle_keyword(
 	short tag)
 {
@@ -1049,13 +1081,13 @@ static void handle_keyword(
 				}
 				else
 				{
-					local_player->suit_energy= 3*PLAYER_MAXIMUM_SUIT_ENERGY;
+					local_player->suit_energy= MAX(local_player->suit_energy, 3*PLAYER_MAXIMUM_SUIT_ENERGY);
 				}
 			}
 			mark_shield_display_as_dirty();
 			break;
 		case _tag_oxygen:
-			local_player->suit_oxygen= PLAYER_MAXIMUM_SUIT_OXYGEN;
+			local_player->suit_oxygen= MAX(local_player->suit_oxygen,PLAYER_MAXIMUM_SUIT_OXYGEN);
 			mark_oxygen_display_as_dirty();
 			break;
 		case _tag_map:
@@ -1076,28 +1108,77 @@ static void handle_keyword(
 		case _tag_jump:
 			accelerate_monster(local_player->monster_index, WORLD_ONE/10, 0, 0);
 			break;
+		// LP: changed these cheats and added new ones:
 		case _tag_pistol:
-			local_player->items[_i_magnum_magazine]= 10;
+			AddOneItemToPlayer(_i_magnum,2);
+			AddItemsToPlayer(_i_magnum_magazine,10);
+			// local_player->items[_i_magnum_magazine]= 10;
 			break;
 		case _tag_rifle:
-			local_player->items[_i_assault_rifle]= 1;
-			local_player->items[_i_assault_rifle_magazine]= 10;
-			local_player->items[_i_assault_grenade_magazine]= 8;
+			AddItemsToPlayer(_i_assault_rifle,10);
+			AddItemsToPlayer(_i_assault_rifle_magazine,10);
+			AddItemsToPlayer(_i_assault_grenade_magazine,10);
+			// local_player->items[_i_assault_rifle]= 1;
+			// local_player->items[_i_assault_rifle_magazine]= 10;
+			// local_player->items[_i_assault_grenade_magazine]= 8;
+			break;
+		case _tag_missile:
+			AddItemsToPlayer(_i_missile_launcher,1);
+			AddItemsToPlayer(_i_missile_launcher_magazine,10);
+			break;
+		case _tag_toaster:
+			AddItemsToPlayer(_i_flamethrower,1);
+			AddItemsToPlayer(_i_flamethrower_canister,10);
 			break;
 		case _tag_fusion:
-			local_player->items[_i_plasma_pistol]= 1;
-			local_player->items[_i_plasma_magazine]= 10;
+			AddItemsToPlayer(_i_plasma_pistol,1);
+			AddItemsToPlayer(_i_plasma_magazine,10);
+			// local_player->items[_i_plasma_pistol]= 1;
+			// local_player->items[_i_plasma_magazine]= 10;
+			break;
+		case _tag_pzbxay:
+			AddItemsToPlayer(_i_alien_shotgun,1);
+			break;
+		case _tag_shotgun:
+			AddOneItemToPlayer(_i_shotgun,2);
+			AddItemsToPlayer(_i_shotgun_magazine,10);
+			break;
+		case _tag_smg:
+			AddOneItemToPlayer(_i_smg,2);
+			AddItemsToPlayer(_i_smg_ammo,10);
 			break;
 		case _tag_save:
 			save_game();
 			break;
-		case _tag_aslag:
+		// LP guess as to what might be good: ammo-only version of "aslag"
+		case _tag_ammo:
 			{
 				short items[]= { _i_assault_rifle, _i_magnum, _i_missile_launcher, _i_flamethrower,
 					_i_plasma_pistol, _i_alien_shotgun, _i_shotgun,
 					_i_assault_rifle_magazine, _i_assault_grenade_magazine, 
 					_i_magnum_magazine, _i_missile_launcher_magazine, _i_flamethrower_canister,
-					_i_plasma_magazine, _i_shotgun_magazine, _i_shotgun };
+					_i_plasma_magazine, _i_shotgun_magazine, _i_shotgun, _i_smg, _i_smg_ammo};
+				short index;
+				
+				for(index= 0; index<sizeof(items)/sizeof(short); ++index)
+				{
+					switch(get_item_kind(items[index]))
+					{	
+						case _ammunition:
+							AddItemsToPlayer(items[index],10);
+							break;
+					} 
+				}
+			}
+			break;
+		case _tag_aslag:
+			{
+				// LP change: added the SMG and its ammo
+				short items[]= { _i_assault_rifle, _i_magnum, _i_missile_launcher, _i_flamethrower,
+					_i_plasma_pistol, _i_alien_shotgun, _i_shotgun,
+					_i_assault_rifle_magazine, _i_assault_grenade_magazine, 
+					_i_magnum_magazine, _i_missile_launcher_magazine, _i_flamethrower_canister,
+					_i_plasma_magazine, _i_shotgun_magazine, _i_shotgun, _i_smg, _i_smg_ammo};
 				short index;
 				
 				for(index= 0; index<sizeof(items)/sizeof(short); ++index)
@@ -1107,6 +1188,8 @@ static void handle_keyword(
 						case _weapon:
 							if(items[index]==_i_shotgun || items[index]==_i_magnum)
 							{
+								AddOneItemToPlayer(items[index],2);
+								/*
 								assert(items[index]>=0 && items[index]<NUMBER_OF_ITEMS);
 								if(local_player->items[items[index]]==NONE)
 								{
@@ -1114,13 +1197,16 @@ static void handle_keyword(
 								} else {
 									local_player->items[items[index]]++;
 								}
+								*/
 							} else {	
-								local_player->items[items[index]]= 1;
+								AddItemsToPlayer(items[index],1);
+								// local_player->items[items[index]]= 1;
 							}
 							break;
 							
 						case _ammunition:
-							local_player->items[items[index]]= 10;
+							AddItemsToPlayer(items[index],10);
+							// local_player->items[items[index]]= 10;
 							break;
 							
 						case _powerup:
@@ -1128,15 +1214,12 @@ static void handle_keyword(
 							break;
 							
 						default:
-							// LP change:
-							assert(false);
-							// halt();
 							break;
 					} 
 					process_new_item_for_reloading(local_player_index, items[index]);
 				}
 			}
-			local_player->suit_energy = 3*PLAYER_MAXIMUM_SUIT_ENERGY;
+			local_player->suit_energy = MAX(local_player->suit_energy, 3*PLAYER_MAXIMUM_SUIT_ENERGY);
 			update_interface(NONE);
 			break;
 			
@@ -1356,4 +1439,34 @@ static void process_key(
 {
 	process_game_key(event, key);
 	return;
+}
+
+
+// LP addition: XML support for controlling whether cheats are active
+
+class XML_CheatsParser: public XML_ElementParser
+{
+	
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+	
+	XML_CheatsParser(): XML_ElementParser("cheats") {}
+};
+
+bool XML_CheatsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"on") == 0)
+	{
+		return ReadBooleanValue(Value,CheatsActive);
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+static XML_CheatsParser CheatsParser;
+
+
+XML_ElementParser *Cheats_GetParser()
+{
+	return &CheatsParser;
 }
