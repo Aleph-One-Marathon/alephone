@@ -24,7 +24,7 @@
 
 ROOT_DIR=../
 SINGLE2FORKS="perl ${ROOT_DIR}tools/single2forks.pl"
-APPLESINGLE_FILES='Cheats/Activate%20Cheats Extras/Marathon2_SOCK Extras/MarathonInf_1.2_SOCK Extras/MarathonInf_1.5_SOCK Extras/demo.resource Extras/demos/demos.resource MML%20Scripts/M2%20Map%20Script%20(test) MML%20Scripts/Marathon%202%20Display MML%20Scripts/Marathon%20oo%20Display MML%20Scripts/Text%20Strings Pfhortran_Release/Quartz%20copy Pfhortran_Release/Ten%20Forty%20Two Resources/MV%20Resources Resources/Old%20Stuff Resources/Pfhormz%20rsrc Resources/marathon2.resource tools/MapChunker.rsrc PBProjects/AlephOne.icns PBProjects/FilmIcon.icns PBProjects/ImagesIcon.icns PBProjects/MMLIcon.icns PBProjects/MapIcon.icns PBProjects/MusakIcon.icns PBProjects/PFIcon.icns PBProjects/PhysIcon.icns PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns PBProjects/SoundsIcon.icns'
+APPLESINGLE_FILES='Cheats/Activate%20Cheats Extras/Marathon2_SOCK Extras/MarathonInf_1.2_SOCK Extras/MarathonInf_1.5_SOCK Extras/demo.resource Extras/demos/demos.resource MML%20Scripts/M2%20Map%20Script%20(test) MML%20Scripts/Marathon%202%20Display MML%20Scripts/Marathon%20oo%20Display MML%20Scripts/Text%20Strings Pfhortran_Release/Quartz%20copy Pfhortran_Release/Ten%20Forty%20Two Resources/MV%20Resources Resources/Old%20Stuff Resources/Pfhormz%20rsrc Resources/marathon2.resource tools/MapChunker.rsrc'
 
 for i in $APPLESINGLE_FILES;
 do
