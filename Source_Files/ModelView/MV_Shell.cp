@@ -84,8 +84,9 @@ int MainWindowID;
 void ResizeMainWindow(int _Width, int _Height);
 
 
-// Model and skin objects:
-Model3D Model;
+// Model and skin objects;
+// a model is saved in case it is edited, as when vertices are split
+Model3D Model, SavedModel;
 ImageDescriptor Image;
 ModelRenderer Renderer;
 ModelRenderShader Shaders[2];
@@ -146,6 +147,8 @@ void LoadModelAction(int ModelType)
 	printf("Bounding Box\n");
 	for (int c=0; c<3; c++)
 		printf("%9f %9f\n",Model.BoundingBox[0][c],Model.BoundingBox[1][c]);
+	
+	SavedModel = Model;
 }
 
 // Z-Buffering
@@ -196,6 +199,17 @@ void LoadSkinAction(int SkinType)
 		TxtrIsPresent = false;
 	}
 	
+	glutPostRedisplay();
+}
+
+
+float VertexSplitThreshold = 0;
+
+
+void NormalTypeAction(int NormAction)
+{
+	Model = SavedModel;
+	Model.AdjustNormals(NormAction,VertexSplitThreshold);
 	glutPostRedisplay();
 }
 
@@ -474,6 +488,60 @@ void DoMenuItemChecking(int MenuItem, char *ItemText, int Selector, int Value) {
 	glutChangeToMenuEntry(MenuItem,TextBuffer,Value);
 }
 
+// Separate from NormalTypeAction to be below the checking/unchecking mechanism
+
+enum
+{
+	VS_00,
+	VS_01,
+	VS_03,
+	VS_10,
+	VS_30
+};
+
+int VertexSplitThresholdIndex = VS_00;
+
+int VertexSplitMenu;
+
+void UpdateVertexSplitMenu()
+{
+	glutSetMenu(VertexSplitMenu);
+	int Indx = 1;
+	DoMenuItemChecking(Indx++,"0",VertexSplitThresholdIndex,VS_00);
+	DoMenuItemChecking(Indx++,"0.1",VertexSplitThresholdIndex,VS_01);
+	DoMenuItemChecking(Indx++,"0.3",VertexSplitThresholdIndex,VS_03);
+	DoMenuItemChecking(Indx++,"1.0",VertexSplitThresholdIndex,VS_10);
+	DoMenuItemChecking(Indx++,"3.0",VertexSplitThresholdIndex,VS_30);
+	
+	switch(VertexSplitThresholdIndex)
+	{
+	case VS_00:
+		VertexSplitThreshold = 0.0;
+		break;
+	case VS_01:
+		VertexSplitThreshold = 0.1;
+		break;
+	case VS_03:
+		VertexSplitThreshold = 0.3;
+		break;
+	case VS_10:
+		VertexSplitThreshold = 1.0;
+		break;
+	case VS_30:
+		VertexSplitThreshold = 3.0;
+		break;
+	}
+}
+
+
+void VertexSplitAction(int c)
+{
+	VertexSplitThresholdIndex = c;
+	UpdateVertexSplitMenu();
+}
+
+
+
 // Background-color stuff: designed for use with GLUT color picker
 int RedIndx = 0, GreenIndx = 0, BlueIndx = 0;
 const int CIndxRange = 5;
@@ -594,6 +662,23 @@ int main(int argc, char **argv)
 	glutAddMenuEntry("Colors...",ImageLoader_Colors);
 	glutAddMenuEntry("Opacity...",ImageLoader_Opacity);
 	
+	// Create normal-modification menu items
+	int NormalTypeMenu = glutCreateMenu(NormalTypeAction);
+	glutAddMenuEntry("None",Model3D::None);
+	glutAddMenuEntry("Originals",Model3D::Original);
+	glutAddMenuEntry("Reversed Originals",Model3D::Reversed);
+	glutAddMenuEntry("Clockwise Sides",Model3D::ClockwiseSide);
+	glutAddMenuEntry("Counterclockwise Sides",Model3D::CounterclockwiseSide);
+	
+	// Create a vertex-splitting-threshold menu item
+	VertexSplitMenu = glutCreateMenu(VertexSplitAction);
+	glutAddMenuEntry("0.0",VS_00);
+	glutAddMenuEntry("0.1",VS_01);
+	glutAddMenuEntry("0.3",VS_03);
+	glutAddMenuEntry("1.0",VS_10);
+	glutAddMenuEntry("3.0",VS_30);
+	UpdateVertexSplitMenu();
+	
 	// Create a GLUT Color Picker
 	
 	// Create color-component submenus
@@ -631,6 +716,8 @@ int main(int argc, char **argv)
 	int RightButtonMenu = glutCreateMenu(RightButtonAction);
 	glutAddSubMenu("Load Model...", ModelMenu);
 	glutAddSubMenu("Load Skin...", SkinMenu);
+	glutAddSubMenu("Normal Type", NormalTypeMenu);
+	glutAddSubMenu("Vertex-Split Threshold", VertexSplitMenu);
 	glutAddSubMenu("Background Color", ColorMenu);
   	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	
