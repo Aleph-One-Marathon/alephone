@@ -443,7 +443,7 @@ short RenderPlaceObjsClass::build_base_node_list(
 	short base_node_count;
 	world_distance origin_polygon_floor_height= get_polygon_data(origin_polygon_index)->floor_height;
 	// LP: reference to simplify the code
-	ResizableList<sorted_node_data *>& polygon_index_to_sorted_node = RSPtr->polygon_index_to_sorted_node;
+	vector<sorted_node_data *>& polygon_index_to_sorted_node = RSPtr->polygon_index_to_sorted_node;
 	
 	base_node_count= 1;
 	base_nodes[0]= polygon_index_to_sorted_node[origin_polygon_index];

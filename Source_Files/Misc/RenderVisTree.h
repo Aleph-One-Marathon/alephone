@@ -18,7 +18,7 @@ Sep. 15, 2000 (Loren Petrich):
 */
 
 #include "GrowableList.h"
-#include "ResizableList.h"
+#include <vector.h>
 #include "world.h"
 #include "render.h"
 
@@ -142,7 +142,7 @@ class RenderVisTreeClass
 	short polygon_queue_size;
 	
 	/* translates from map indexes to clip indexes, only valid if appropriate render flag is set */
-	ResizableList<short> line_clip_indexes;
+	vector<short> line_clip_indexes;
 	
 	// Turned preprocessor macro into function
 	void PUSH_POLYGON_INDEX(short polygon_index);
@@ -176,7 +176,7 @@ class RenderVisTreeClass
 public:
 
 	/* gives screen x-coordinates for a map endpoint (only valid if _endpoint_is_visible) */
-	ResizableList<short> endpoint_x_coordinates;
+	vector<short> endpoint_x_coordinates;
 	
 	/* every time we find a unique endpoint which clips something, we build one of these for it */
 	// LP addition: growable list

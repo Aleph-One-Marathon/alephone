@@ -10,10 +10,13 @@
 	Works from RenderVisTree stuff.
 	
 	Made [view_data *view] a member and removed it as an argument
+	
+Oct 13, 2000
+	LP: replaced ResizableList with STL vector class
 */
 
 #include "GrowableList.h"
-#include "ResizableList.h"
+#include <vector.h>
 #include "world.h"
 #include "render.h"
 #include "RenderVisTree.h"
@@ -46,7 +49,7 @@ class RenderSortPolyClass
 public:
 	
 	 /* converts map polygon indexes to sorted nodes (only valid if _polygon_is_visible) */
-	ResizableList<sorted_node_data *> polygon_index_to_sorted_node;
+	vector<sorted_node_data *> polygon_index_to_sorted_node;
 	
 	// LP additions: growable list of sorted nodes
 	// Length changed in initialize_sorted_render_tree() and sort_render_tree()

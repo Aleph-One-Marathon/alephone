@@ -10,10 +10,13 @@
 	Works from RenderSortPoly stuff.
 	
 	Made [view_data *view] a member and removed it as an argument
+	
+Oct 13, 2000
+	LP: replaced ResizableList with STL vector class
 */
 
 #include "GrowableList.h"
-#include "ResizableList.h"
+#include <vector.h>
 #include "world.h"
 #include "interface.h"
 #include "render.h"

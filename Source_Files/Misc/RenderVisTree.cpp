@@ -75,8 +75,8 @@ RenderVisTreeClass::RenderVisTreeClass():
 // Resizes all the objects defined inside
 void RenderVisTreeClass::Resize(int NumEndpoints, int NumLines)
 {
-	assert(endpoint_x_coordinates.SetLength(NumEndpoints));
-	assert(line_clip_indexes.SetLength(NumLines));
+	endpoint_x_coordinates.resize(NumEndpoints);
+	line_clip_indexes.resize(NumLines);
 }
 
 // Add a polygon to the polygon queue

@@ -12,10 +12,13 @@
 	Doing the setup and rasterization of each object through a RasterizerClass object
 	Also removed [bitmap_definition *destination] as superfluous,
 		now that there is a special rasterizer object that can contain it.
+	
+Oct 13, 2000
+	LP: replaced ResizableList with STL vector class
 */
 
 #include "GrowableList.h"
-#include "ResizableList.h"
+#include <vector.h>
 #include "world.h"
 #include "render.h"
 #include "RenderSortPoly.h"

@@ -45,7 +45,7 @@ RenderSortPolyClass::RenderSortPolyClass():
 // Resizes all the objects defined inside
 void RenderSortPolyClass::Resize(int NumPolygons)
 {
-	assert(polygon_index_to_sorted_node.SetLength(NumPolygons));
+	polygon_index_to_sorted_node.resize(NumPolygons);
 }
 
 
@@ -308,7 +308,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	GrowableList<endpoint_clip_data>& EndpointClips = RVPtr->EndpointClips;
 	GrowableList<line_clip_data>& LineClips = RVPtr->LineClips;
 	GrowableList<clipping_window_data>& ClippingWindows = RVPtr->ClippingWindows;
-	ResizableList<short>& endpoint_x_coordinates = RVPtr->endpoint_x_coordinates;
+	vector<short>& endpoint_x_coordinates = RVPtr->endpoint_x_coordinates;
 	
 	/* calculate x0,x1 (real left and right borders of this node) in case the left and right borders
 		of the window are sloppy */
