@@ -13,6 +13,9 @@ July 29, 2000 (Loren Petrich):
 Jul 30, 2000 (Loren Petrich):
 	Added refractory period for all local-event buttons;
 	this keeps them from having awkward repeats.
+
+Jul 31, 2000 (Loren Petrich):
+	Added an axis for changing weapons, for use in mouse wheels and the like.
 */
 
 
@@ -93,6 +96,7 @@ enum
 	Icon_LookHorizontal	 = 1200,
 	Icon_LookVertical	 = 1201,
 	Icon_Move			 = 1202,
+	Icon_ChangeWeapon	 = 1203,
 };
 
 // LP change: renamed
@@ -104,10 +108,11 @@ enum {
 	// All local events, those that have only local effects
 	Button_FirstLocal = 21,
 	Button_LastLocal = 43,
-	kAxisHoriz,
-	kAxisVert,
-	kAxisMove,
-	kNeedCount	// LP: calculated automatically
+	Axis_LookHorizontal,
+	Axis_LookVertical,
+	Axis_Move,
+	Axis_ChangeWeapon,
+	HowManyNeeds	// LP: calculated automatically
 };
 
 
@@ -119,7 +124,7 @@ static int LocalButtonTimes[Button_LastLocal-Button_FirstLocal+1] =
 
 static Boolean	canDoISp = true;
 static Boolean	active = false;
-static long		gElementActions[kNeedCount] =
+static long		gElementActions[HowManyNeeds] =
 					{
 					// Global actions
 					_left_trigger_state, _right_trigger_state, 
@@ -146,10 +151,10 @@ static long		gElementActions[kNeedCount] =
 					LocalEvent_ShowPosition, LocalEvent_Screenshot,
 					LocalEvent_ResetTxtrs,
 					// Axis stuff
-					0, 0, 0};
+					0, 0, 0, 0};
 
 ISpElementListReference		gVirtualList = NULL;
-ISpElementReference			gVirtualElements[kNeedCount] =
+ISpElementReference			gVirtualElements[HowManyNeeds] =
 	{	// LP: prettyprinted to make them easier to match with gElementActions members
 		// Global actions
 		nil, nil, nil, nil,
@@ -172,21 +177,24 @@ ISpElementReference			gVirtualElements[kNeedCount] =
 #define kISpNeedFlag_Delta_AlreadyButton kISpNeedFlag_Axis_AlreadyButton
 
 // LP change: removed the second "0," so that it fits with my version of the ISp SDK
-static ISpNeed gNeeds[kNeedCount] =
+// LP change: removed the "kISpNeedFlag_Button_ActiveWhenDown" from the flags (4th entry from right),
+// because that does not seem to do anything. It presumably means "send out event only when pressing starts" or something
+// LP note: kISpNeedFlag_Utility is useful for making something keyboard-only
+static ISpNeed gNeeds[HowManyNeeds] =
 {
 	// Global actions
-	{ "\pFire Primary", 	Icon_FirePrimary,		0, kISpElementKind_Button,		kISpElementLabel_Btn_Fire,			kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pFire Secondary", 	Icon_FireSecondary,		0, kISpElementKind_Button,		kISpElementLabel_Btn_SecondaryFire,	kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pMove Forward",		Icon_MoveForward, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_MoveForward,	kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pMove Backward",	Icon_MoveBackward, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_MoveBackward,	kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pLook Left", 		Icon_TurnLeft,			0, kISpElementKind_Button,		kISpElementLabel_Btn_TurnLeft,		kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pLook Right", 		Icon_TurnRight, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_TurnRight,		kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pSidestep Left", 	Icon_MoveLeft, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_SlideLeft,		kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pSidestep Right", 	Icon_MoveRight,		 	0, kISpElementKind_Button,		kISpElementLabel_Btn_SlideRight,	kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pGlance Left",	 	Icon_LookLeft, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_LookLeft,		kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pGlance Right", 	Icon_LookRight, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_LookRight,		kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pLook Up",		 	Icon_LookUp, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_LookUp,		kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
-	{ "\pLook Down",	 	Icon_LookDown, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_LookDown,		kISpNeedFlag_Button_AlreadyAxis | kISpNeedFlag_Button_ActiveWhenDown, 0, 0, 0},
+	{ "\pFire Primary", 	Icon_FirePrimary,		0, kISpElementKind_Button,		kISpElementLabel_Btn_Fire,			kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pFire Secondary", 	Icon_FireSecondary,		0, kISpElementKind_Button,		kISpElementLabel_Btn_SecondaryFire,	kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pMove Forward",		Icon_MoveForward, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_MoveForward,	kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pMove Backward",	Icon_MoveBackward, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_MoveBackward,	kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pLook Left", 		Icon_TurnLeft,			0, kISpElementKind_Button,		kISpElementLabel_Btn_TurnLeft,		kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pLook Right", 		Icon_TurnRight, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_TurnRight,		kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pSidestep Left", 	Icon_MoveLeft, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_SlideLeft,		kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pSidestep Right", 	Icon_MoveRight,		 	0, kISpElementKind_Button,		kISpElementLabel_Btn_SlideRight,	kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pGlance Left",	 	Icon_LookLeft, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_LookLeft,		kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pGlance Right", 	Icon_LookRight, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_LookRight,		kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pLook Up",		 	Icon_LookUp, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_LookUp,		kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
+	{ "\pLook Down",	 	Icon_LookDown, 			0, kISpElementKind_Button,		kISpElementLabel_Btn_LookDown,		kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
 	{ "\pLook Ahead",	 	Icon_LookForward,	 	0, kISpElementKind_Button,		kISpElementLabel_None,				kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
 	{ "\pPrevious Weapon", 	Icon_PrevWeapon, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_Previous,		kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
 	{ "\pNext Weapon",	 	Icon_NextWeapon, 		0, kISpElementKind_Button,		kISpElementLabel_Btn_Next,			kISpNeedFlag_Button_AlreadyAxis , 0, 0, 0},
@@ -226,6 +234,7 @@ static ISpNeed gNeeds[kNeedCount] =
 	{ "\pLook Horizontal",	Icon_LookHorizontal,	0, kISpElementKind_Delta,		kISpElementLabel_Delta_Yaw,			kISpNeedFlag_Delta_AlreadyButton , 0, 0, 0},
 	{ "\pLook Vertical",	Icon_LookVertical,		0, kISpElementKind_Delta,		kISpElementLabel_Delta_Pitch,		kISpNeedFlag_Delta_AlreadyButton , 0, 0, 0},
 	{ "\pMove",				Icon_Move, 				0, kISpElementKind_Delta,		kISpElementLabel_Delta_Z,			kISpNeedFlag_Delta_AlreadyButton , 0, 0, 0},
+	{ "\pChange Weapon",	Icon_ChangeWeapon, 		0, kISpElementKind_Delta,		kISpElementLabel_Delta_Z,			kISpNeedFlag_Delta_AlreadyButton , 0, 0, 0},
 };
 
 
@@ -247,7 +256,7 @@ void initialize_ISp(void)
 
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
 	
-	err = ISpElement_NewVirtualFromNeeds(kNeedCount, gNeeds, gVirtualElements, 0);
+	err = ISpElement_NewVirtualFromNeeds(HowManyNeeds, gNeeds, gVirtualElements, 0);
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
 	
 	err = ISpElementList_New(
@@ -257,14 +266,14 @@ void initialize_ISp(void)
 			0);
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
 	
-	for(int a = 0; a < kNeedCount; a++)
+	for(int a = 0; a < HowManyNeeds; a++)
 	{
 		err  = ISpElementList_AddElements (gVirtualList, 
 					a, 		1, &gVirtualElements[a]);
 		vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
 	}
 	
-	err = ISpInit(kNeedCount,	// count
+	err = ISpInit(HowManyNeeds,	// count
 		gNeeds,				// needs
 		gVirtualElements,	// virtual elements
 		kCreatorCode,		// app
@@ -285,7 +294,7 @@ void ShutDown_ISp(void)
 	err = ISpStop();
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
 	
-	err = ISpElement_DisposeVirtual(kNeedCount, gVirtualElements);
+	err = ISpElement_DisposeVirtual(HowManyNeeds, gVirtualElements);
 	vassert(err == noErr, csprintf(temporary, "MacOS error code: %d", err));
 	
 	ISpDevices_DeactivateClass(kISpDeviceClass_Keyboard);
@@ -366,16 +375,25 @@ long InputSprocketTestElements(void)
 	}
 	
 /* Handle all axis data!!! **********************************************/
-	fixed delta_yaw = 0, delta_pitch = 0, delta_velocity = 0;
+	// LP change: added change-weapon axis handling
+	fixed delta_yaw = 0, delta_pitch = 0, delta_velocity = 0, delta_weapon = 0;
 			
-	ISpElement_GetComplexState(gVirtualElements[kAxisHoriz], sizeof(fixed), &delta_yaw);
-	ISpElement_GetComplexState(gVirtualElements[kAxisVert], sizeof(fixed), &delta_pitch);
-	ISpElement_GetComplexState(gVirtualElements[kAxisMove], sizeof(fixed), &delta_velocity);
+	ISpElement_GetComplexState(gVirtualElements[Axis_LookHorizontal], sizeof(fixed), &delta_yaw);
+	ISpElement_GetComplexState(gVirtualElements[Axis_LookVertical], sizeof(fixed), &delta_pitch);
+	ISpElement_GetComplexState(gVirtualElements[Axis_Move], sizeof(fixed), &delta_velocity);
+	ISpElement_GetComplexState(gVirtualElements[Axis_ChangeWeapon], sizeof(fixed), &delta_weapon);
 	
 	delta_pitch*= 2;
 	
 	if(delta_yaw != 0 || delta_pitch != 0 || delta_velocity != 0)
 		flags= mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
+	
+	// Should the sensitivity of delta_weapon be reduced before doing further processing?
+	// Typical values from the mouse are 500 to 5000 at normal mouse sensitivity.
+	if (delta_weapon > 0)
+		flags |= _cycle_weapons_forward;
+	else if (delta_weapon < 0)
+		flags |= _cycle_weapons_backward;
 	
 /* Done Handling all axis data!!! ****************************************/		
 	return flags;
