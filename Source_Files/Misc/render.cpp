@@ -136,6 +136,11 @@ Jun 11, 2000 (Loren Petrich):
 	Next, the inhabitant objects had to be done in two passes, one other side, and one view side.
 	Also, whether there is void on the other side had to be indicated, so that
 	waterfalls and the like may look right.
+
+Jun 28, 2000 (Loren Petrich):
+	Fixed Aaron Davies bug; if a polygon is completely below a liquid, it will not be rendered
+	if the viewpoint is above the liquid; the bug was that it was not rendered if the viewpoint
+	was below the liquid. This only happened if semitransparent liquid surfaces was turned off.
 */
 
 // For casting pointers to integer values -- use appropriate data type
@@ -3165,8 +3170,9 @@ static void render_tree(
 				media_surface->transfer_mode= media->transfer_mode;
 				media_surface->transfer_mode_data= 0;
 			} else {
-				// if weÕre trying to draw a polygon without media from under a polygon with media, donÕt
-				if (view->under_media_boundary) continue;
+				// LP: don't draw this polygon if the viewpoint is above a liquid surface
+				// (imitates original engine)
+				if (!view->under_media_boundary) continue;
 			}
 		}
 		// LP change: always render liquids are semitransparent
