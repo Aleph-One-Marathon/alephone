@@ -69,7 +69,6 @@ bool set_preferences(
 	short index, item_type, item_hit;
 	Rect bounds;
 	ControlHandle preferences_control;
-	struct PopupPrivateData **privateHndl;
 	MenuHandle mHandle;
 	void *preferences;
 	short new_value;
@@ -88,6 +87,7 @@ bool set_preferences(
 	mHandle= GetControlPopupMenuHandle(preferences_control);
 /*
 #else
+	struct PopupPrivateData **privateHndl;
 	privateHndl= (PopupPrivateData **) ((*preferences_control)->contrlData);
 	mHandle= (*privateHndl)->mHandle;
 #endif
