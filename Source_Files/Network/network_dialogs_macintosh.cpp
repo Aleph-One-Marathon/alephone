@@ -58,7 +58,12 @@ Oct 15, 2001 (Woody Zenfell):
 #include <stdio.h>
 
 #include "macintosh_cseries.h"
+#if HAVE_SDL_NET
+#include "sdl_network.h"
+#include "network_lookup_sdl.h"
+#else
 #include "macintosh_network.h" // solely for ADSP.h, AppleTalk.h, and network_lookup functions.
+#endif
 
 #include "shell.h"  // for preferences
 #include "map.h"    // so i can include player.h
@@ -213,7 +218,8 @@ bool network_gather(
 				InsertMenu(zones_menu, -1);
 			}
 			
-			error= NetGetZonePopupMenu(zones_menu, &current_zone_index);
+			// error= NetGetZonePopupMenu(zones_menu, &current_zone_index);
+			error = noErr;
 			if (error==noErr) internet= true;
 			
 			dialog= myGetNewDialog(dlogGATHER, NULL, (WindowPtr) -1, refNETWORK_GATHER_DIALOG);
@@ -251,10 +257,12 @@ bool network_gather(
 							SetPt(&cell, 0, 0);
 							if (LGetSelect(true, &cell, network_list_box)) /* if no selection, we goofed */
 							{
+								/*
 								if (NetGatherPlayer(cell.v, reassign_player_colors))
 								{
 									update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
 								}
+								*/
 							}
 							break;
 							
@@ -373,8 +381,9 @@ bool network_join(
 					memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
 				
 					SetCursor(*GetCursor(watchCursor));
-					did_join= NetGameJoin(myPlayerInfo.name, PLAYER_TYPE, (void *) &myPlayerInfo, sizeof(myPlayerInfo), 
-						MARATHON_NETWORK_VERSION);
+					// did_join= NetGameJoin(myPlayerInfo.name, PLAYER_TYPE, (void *) &myPlayerInfo, sizeof(myPlayerInfo), 
+					//	MARATHON_NETWORK_VERSION);
+					did_join = false;
 					
 					SetCursor(&qd.arrow);
 					if(did_join)
@@ -816,7 +825,7 @@ static pascal Boolean gather_dialog_filter_proc(
 	SetPort(dialog);
 
 	/* update the names list box; if we don’t have a selection afterwords, dim the ADD button */
-	NetLookupUpdate();
+	// NetLookupUpdate();
 	SetPt(&selected_cell, 0, 0);
 	if (!LGetSelect(true, &selected_cell, network_list_box)) modify_control(dialog, iADD, CONTROL_INACTIVE, 0);
 
@@ -1124,7 +1133,7 @@ static void network_list_box_update_proc(
 	short message,
 	short index)
 {
-	EntityName entity;
+	NetEntityName entity;
 	Cell cell;
 
 	switch (message)
@@ -1136,8 +1145,9 @@ static void network_list_box_update_proc(
 		case insertEntity:
 			SetPt(&cell, 0, index);
 			LAddRow(1, index, network_list_box);
-			NetLookupInformation(index, (AddrBlock *) NULL, &entity);
-			LSetCell(entity.objStr+1, entity.objStr[0], cell, network_list_box);
+			// NetLookupInformation(index, (NetAddrBlock *) NULL, &entity);
+			// LSetCell(entity.objStr+1, entity.objStr[0], cell, network_list_box);
+			LSetCell(entity+1, entity[0], cell, network_list_box);
 			break;
 		
 		default:

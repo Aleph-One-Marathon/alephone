@@ -28,6 +28,11 @@
  *
  */
 
+#ifdef __MWERKS__
+#include 	<stdlib.h>
+#include 	<extras.h>
+#endif
+
 #include 	"cseries.h"
 #include 	"sdl_network.h"
 
@@ -128,7 +133,7 @@ void NetLookupRemove(short index)
  *  Get information for entity
  */
 
-void NetLookupInformation(short index, AddrBlock *address, EntityName *entity)
+void NetLookupInformation(short index, NetAddrBlock *address, NetEntityName *entity)
 {
 //    printf("NetLookupInformation %d\n", index);
 }

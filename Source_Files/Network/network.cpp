@@ -146,7 +146,7 @@ clearly this is all broken until we have packet types
 #undef	NETWORK_FAUX_QUEUE		// honest intentions, but perhaps ultimately useless.
 #undef	NETWORK_ADAPTIVE_LATENCY	// should be better - oops, heh, or not.
 #define	NETWORK_ADAPTIVE_LATENCY_2	// use this one instead; it should be good.
-#define	NETWORK_IP			// needed if using IPaddress { host, port }; (as in SDL_net) rather than AddrBlock for addressing.
+#define	NETWORK_IP			// needed if using IPaddress { host, port }; (as in SDL_net) rather than NetAddrBlock for addressing.
 #undef	NETWORK_USE_RECENT_FLAGS	// if the game stalls, use flags at the end of the stall, not the more stale ones at the beginning
 #define	NETWORK_SMARTER_FLAG_DITCHING	// this mechanism won't be quite as hasty to toss flags as Bungie's
 #endif
@@ -526,7 +526,7 @@ void NetPrintInfo(void);
 // reason to try to keep that... and I suspect Jason abandoned this separation long ago anyway.
 // For now, the only effect I see is a reduction in type-safety.  :)
 static void NetInitializeTopology(void *game_data, short game_data_size, void *player_data, short player_data_size);
-static void NetLocalAddrBlock(AddrBlock *address, short socketNumber);
+static void NetLocalAddrBlock(NetAddrBlock *address, short socketNumber);
 
 // ZZZ: again, buffer is always going to be NetDistributionPacket_NET*
 static void NetProcessLossyDistribution(void *buffer);
@@ -1401,8 +1401,8 @@ used to filter entities which have been added to a game out of the lookup list
 
 /* if the given address is already added to our game, filter it out of the gather dialog */
 bool NetEntityNotInGame(
-	EntityName *entity,
-	AddrBlock *address)
+	NetEntityName *entity,
+	NetAddrBlock *address)
 {
 	short player_index;
 	bool valid= true;
@@ -1411,7 +1411,7 @@ bool NetEntityNotInGame(
 	
 	for (player_index=0;player_index<topology->player_count;++player_index)
 	{
-		AddrBlock *player_address= &topology->players[player_index].dspAddress;
+		NetAddrBlock *player_address= &topology->players[player_index].dspAddress;
 		
 #ifndef NETWORK_IP
 #ifdef CLASSIC_MAC_NETWORKING
@@ -1736,7 +1736,7 @@ static void NetProcessLossyDistribution(
                         buffer,
                         sizeof(NetDistributionPacket_NET) + packet_data->data_size);
                 //BlockMove(buffer, distributionFrame->data+sizeof(NetPacketHeader), sizeof(NetDistributionPacket) + packet_data->data_size);
-                // LP: AddrBlock is the trouble here
+                // LP: NetAddrBlock is the trouble here
                 #ifdef NETWORK_IP
                 NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
                 #endif
@@ -2110,7 +2110,7 @@ static void NetInitializeTopology(
 }
 
 static void NetLocalAddrBlock(
-	AddrBlock *address,
+	NetAddrBlock *address,
 	short socketNumber)
 {
 	
@@ -2313,7 +2313,7 @@ static void NetSendRingPacket(
 
 	status->canForwardRing= false; /* will not be set unless this task fires without a packet to forward */
 	status->clearToForwardRing= false; /* will not be set until we receive the next valid ring packet but will be irrelevant if serverCanForwardRing is true */
-	// LP: AddrBlock is the trouble here
+	// LP: NetAddrBlock is the trouble here
 	#if HAVE_SDL_NET
 	NetDDPSendFrame(frame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 	#endif
@@ -2397,7 +2397,7 @@ dprintf("Never got confirmation on NetUnsync packet.  They don't love us.");
 			}
 #endif
 			/* Resend it.. */
-			// LP: AddrBlock is the trouble here
+			// LP: NetAddrBlock is the trouble here
 			#ifdef NETWORK_IP
 			NetDDPSendFrame(ringFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
 			#endif
@@ -2619,7 +2619,7 @@ static short NetAdjustUpringAddressUpwards(
 	void)
 {
 	short nextPlayerIndex, newNextPlayerIndex;
-	AddrBlock *address;
+	NetAddrBlock *address;
 	
 	// figure out where the current upring address is.
 	for (nextPlayerIndex= 0; nextPlayerIndex<topology->player_count; nextPlayerIndex++)
@@ -3612,9 +3612,9 @@ short NetUpdateJoinState(
 
 					if(NetGetTransportType()==kNetworkTransportType)
 					{
-						AddrBlock address;
+						NetAddrBlock address;
 						
-						// LP: AddrBlock is the trouble here
+						// LP: NetAddrBlock is the trouble here
 						#ifdef NETWORK_IP
 						NetGetStreamAddress(&address);
 						#endif
@@ -3743,7 +3743,7 @@ bool NetGatherPlayer(
 	CheckPlayerProcPtr check_player)
 {
 	OSErr error;
-	AddrBlock address;
+	NetAddrBlock address;
 	short packet_type;
 	short stream_transport_type= NetGetTransportType();
 	bool success= true;
@@ -3756,7 +3756,7 @@ bool NetGatherPlayer(
 	
 	/* Get the address from the dialog */
 #if !HAVE_SDL_NET
-	// LP: AddrBlock is the trouble here
+	// LP: NetAddrBlock is the trouble here
 	#ifndef mac
 	NetLookupInformation(player_index, &address, NULL);
 	#endif
@@ -3998,9 +3998,9 @@ uint16 NetStreamPacketLength(
 	return length;
 }
 
-// LP: AddrBlock is the trouble here
+// LP: NetAddrBlock is the trouble here
 #ifdef NETWORK_IP
-AddrBlock *NetGetPlayerADSPAddress(
+NetAddrBlock *NetGetPlayerADSPAddress(
 	short player_index)
 {
 	return &topology->players[player_index].dspAddress;

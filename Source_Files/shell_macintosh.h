@@ -151,7 +151,7 @@ Apr 29, 2002 (Loren Petrich):
 
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprockets Support */
 
-#if !defined(TARGET_API_MAC_CARBON)
+#if !defined(TARGET_API_MAC_CARBON) && !HAVE_SDL_NET
 #include "macintosh_network.h" /* For NetDDPOpen() */
 #endif
 
@@ -1027,7 +1027,7 @@ static void initialize_system_information(
 	}
 
 	/* Is appletalk available? */
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(TARGET_API_MAC_CARBON) || HAVE_SDL_NET
 	// Networking will not be appletalk
 	system_information->appletalk_is_available= false;
 #else

@@ -27,6 +27,11 @@
  *  Sept-Nov 2001 (Woody Zenfell): a few additions to implement socket-listening thread.
  */
 
+#ifdef __MWERKS__
+#include 	<stdlib.h>
+#include 	<extras.h>
+#endif
+
 #include "cseries.h"
 #include "sdl_network.h"
 #include	"network_private.h"
@@ -218,7 +223,7 @@ void NetDDPDisposeFrame(DDPFramePtr frame)
  *  Send frame to remote machine
  */
 
-OSErr NetDDPSendFrame(DDPFramePtr frame, AddrBlock *address, short protocolType, short port)
+OSErr NetDDPSendFrame(DDPFramePtr frame, NetAddrBlock *address, short protocolType, short port)
 {
 //printf("NetDDPSendFrame\n");
 	assert(frame->data_size <= ddpMaxData);

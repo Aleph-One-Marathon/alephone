@@ -48,12 +48,12 @@ void NetSetTransportType(short type);
 bool NetStreamCheckConnectionStatus(void);
 OSErr NetStreamWaitForConnection(void);
 
-void NetGetStreamAddress(AddrBlock *address);
+void NetGetStreamAddress(NetAddrBlock *address);
 short NetGetStreamSocketNumber(void);
 
 /* ------ application must supply these */
 uint16 MaxStreamPacketLength(void);
 uint16 NetStreamPacketLength(short packet_type);
-AddrBlock *NetGetPlayerADSPAddress(short player_index);
+NetAddrBlock *NetGetPlayerADSPAddress(short player_index);
 
 #endif

@@ -221,7 +221,7 @@ struct stream_acknowledge_packet {
 };
 
 struct lookup_packet_data {
-	EntityName entity;
+	NetEntityName entity;
 };
 
 struct lookup_query_data {
@@ -992,7 +992,7 @@ dprintf("Got unexpected packet: %d;g", packet_type);
 
 //					if(NetGetTransportType()==kNetworkTransportType)
 //					{
-//						AddrBlock address;
+//						NetAddrBlock address;
 //
 //						NetGetStreamAddress(&address);
 //						
@@ -1967,8 +1967,8 @@ void ModemUnRegisterName(
 
 /* -------- lookup functions */
 bool ModemEntityNotInGame(
-	EntityName *entity,
-	AddrBlock *address)
+	NetEntityName *entity,
+	NetAddrBlock *address)
 {
 	static bool first_time= true;
 	bool valid= false;
@@ -1985,8 +1985,8 @@ bool ModemEntityNotInGame(
 }
 
 struct lookup_entity {
-	EntityName entity;
-	AddrBlock address;
+	NetEntityName entity;
+	NetAddrBlock address;
 };
 
 struct lookup_data {
@@ -2033,8 +2033,8 @@ void ModemLookupClose(
 
 void ModemLookupInformation(
 	short index, 
-	AddrBlock *address, 
-	EntityName *entity)
+	NetAddrBlock *address, 
+	NetEntityName *entity)
 {
 	/* Note that the index is 1 based from the lookup.. */
 	assert(lookup_data);
@@ -2078,7 +2078,7 @@ void ModemLookupUpdate(
 		if(got_packet && packet_type==_lookup_response_packet)
 		{
 			struct lookup_packet_data *response_packet= (struct lookup_packet_data *) packet_buffers[_incoming_packet];
-			AddrBlock address; /* Unused, so doesn't ever get initialized.. */
+			NetAddrBlock address; /* Unused, so doesn't ever get initialized.. */
 	
 	// dprintf("Got lookup response!");
 			obj_clear(address);

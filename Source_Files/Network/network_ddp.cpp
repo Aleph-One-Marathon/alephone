@@ -265,7 +265,7 @@ asynchronously sends the given frame to the given address
 
 OSErr NetDDPSendFrame(
 	DDPFramePtr frame,
-	AddrBlock *address,
+	NetAddrBlock *address,
 	short protocolType,
 	short socket)
 {

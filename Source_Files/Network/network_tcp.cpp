@@ -31,6 +31,11 @@
  *       read/write may only get partial data; need to loop since caller expects complete).
  */
 
+#ifdef __MWERKS__
+#include 	<stdlib.h>
+#include 	<extras.h>
+#endif
+
 #include "cseries.h"
 #include "sdl_network.h"
 
@@ -101,7 +106,7 @@ OSErr NetADSPDisposeConnectionEnd(ConnectionEndPtr connectionEnd)
  *  Open connection to remote machine
  */
 
-OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, AddrBlock *address)
+OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, NetAddrBlock *address)
 {
 //printf("NetADSPOpenConnection\n");
 	// Open socket
@@ -179,7 +184,7 @@ OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd)
  *  Check status of connection, return peer address
  */
 
-bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *address)
+bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, NetAddrBlock *address)
 {
         if(connectionEnd->socket == NULL) {
             // (ZZZ) Check for new connection
@@ -197,7 +202,7 @@ bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *add
         
 	if (connectionEnd->socket) {
 		if (address) {
-			AddrBlock *remote = SDLNet_TCP_GetPeerAddress(connectionEnd->socket);
+			NetAddrBlock *remote = SDLNet_TCP_GetPeerAddress(connectionEnd->socket);
 			if (remote)
 				*address = *remote;
 		}

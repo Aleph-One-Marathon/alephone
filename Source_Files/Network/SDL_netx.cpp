@@ -23,6 +23,8 @@
  *  Created by Woody Zenfell, III on Mon Sep 24 2001.
  */
 
+#ifndef __MWERKS__
+
 #include	<sys/types.h>
 
 #if defined(WIN32)
@@ -35,6 +37,8 @@
 # include	<netinet/in.h>
 # include	<net/if.h>
 # include	<sys/ioctl.h>
+#endif
+
 #endif
 
 #include	"SDL_netx.h"
@@ -83,7 +87,7 @@ SDLNetx_EnableBroadcast(UDPsocket inSocket) {
     if(theSocketFD < 0)
         return 0;
 
-#ifdef __BEOS__
+#if defined(__BEOS__) || defined(__MWERKS__)
 	// Neither possible nor necessary
 	return 0;
 #else
@@ -113,7 +117,7 @@ SDLNetx_DisableBroadcast(UDPsocket inSocket) {
     if(theSocketFD < 0)
         return 0;
     
-#ifdef __BEOS__
+#if defined(__BEOS__) || defined(__MWERKS__)
 	// Neither possible nor necessary
 	return 0;
 #else
@@ -166,7 +170,7 @@ SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
 
 
 // INTERNAL (static) FUNCTIONS
-#if !defined(WIN32) && !defined(__BEOS__)
+#if !defined(WIN32) && !defined(__BEOS__) && !defined(__MWERKS__)
 int
 SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket) {
     // Win or lose, we played the game.

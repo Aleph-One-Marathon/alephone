@@ -220,7 +220,7 @@ NetADSPWaitForConnection
 ------------------------
 
 	---> ConnectionEndPtr
-	---> address to connect with (AddrBlock *)
+	---> address to connect with (NetAddrBlock *)
 	
 	<--- error
 
@@ -236,7 +236,7 @@ NetADSPCheckConnectionStatus
 
 OSErr NetADSPOpenConnection(
 	ConnectionEndPtr connectionEnd,
-	AddrBlock *address)
+	NetAddrBlock *address)
 {
 	OSErr error;
 	
@@ -279,7 +279,7 @@ OSErr NetADSPWaitForConnection(
 	ConnectionEndPtr connectionEnd)
 {
 	DSPPBPtr myDSPPBPtr= &connectionEnd->pb; /* use private DSPPBPtr (this will be asynchronous) */
-	AddrBlock filter_address;
+	NetAddrBlock filter_address;
 	OSErr error;
 	
 	myDSPPBPtr->csCode= dspOpen; /* open a connection */
@@ -305,7 +305,7 @@ OSErr NetADSPWaitForConnection(
 
 bool NetADSPCheckConnectionStatus(
 	ConnectionEndPtr connectionEnd,
-	AddrBlock *address)
+	NetAddrBlock *address)
 {
 	DSPPBPtr myDSPPBPtr= &connectionEnd->pb; /* use private DSPPBPtr (ocPassive call was asynchronous) */
 	bool connectionEstablished= false;

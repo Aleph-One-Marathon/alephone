@@ -33,6 +33,9 @@
  *	I'm sure there's something better already out there that's designed for heavyweight application.
  *
  *  Created by Woody Zenfell, III on Tue Sep 11 2001.
+ 
+ June 15, 2002 (Loren Petrich):
+ 	Added a packed size, so as to avoid compiler dependency
  */
 
 #ifndef SSLP_PROTOCOL_H
@@ -40,12 +43,14 @@
 
 #include	<SDL_net.h>
 
+#ifdef OBSOLETE
 #ifdef __GNUC__
 #define PACKED_ATTRIBUTE __attribute__ ((packed))
 #else
 #define PACKED_ATTRIBUTE
 #ifndef _MSC_VER
 #error You must arrange for struct SSLP_Packet to be close-packed.
+#endif
 #endif
 #endif
 
@@ -118,8 +123,10 @@
 #define	SSLP_MAX_NAME_LENGTH	32
 #endif
 
+#ifdef OBSOLETE
 #ifdef _MSC_VER
 #pragma pack(push,1)
+#endif
 #endif
 
 // ASSUMPTION: if we tell the compiler this should be "packed", it will have the same alignment/padding
@@ -132,15 +139,20 @@ struct SSLP_Packet {
     Uint16	sslpp_reserved;		// should always be 0
     char	sslpp_service_type[SSLP_MAX_TYPE_LENGTH];	// type desired, for FIND; type provided or no longer provided on HAVE or LOST
     char	sslpp_service_name[SSLP_MAX_NAME_LENGTH];	// name of the service instance.  meaningless in FIND.
-} PACKED_ATTRIBUTE;
+}; // PACKED_ATTRIBUTE ;
+
+// The packed size and packed-packet type
+const int SIZEOF_SSLP_Packet = 3*4 + 2*2 + SSLP_MAX_TYPE_LENGTH + SSLP_MAX_NAME_LENGTH;
 
 // service_type and service_name are treated as C-strings in comparisons - i.e. it's a match if all the bytes up to the first '\0'
 // are equal.  also, whenever a name or type is copied, only the bytes up to and including the first '\0' are copied.
 // Note that it's not an error for all SSLP_MAX_*_LENGTH bytes of name or type storage to be filled with data - a terminating
 // NULL is _not_ required if all SSLP_MAX_*_LENGTH bytes are used.
 
+#ifdef OBSOLETE
 #ifdef _MSC_VER
 #pragma pack(pop)
+#endif
 #endif
 
 // sizeof(struct SSLP_Packet) == 80

@@ -53,8 +53,8 @@ Wednesday, October 19, 1994 3:50:46 PM  (Jason')
 
 struct NetLookupEntity
 {
-	EntityName entity;
-	AddrBlock address;
+	NetEntityName entity;
+	NetAddrBlock address;
 
 	short persistence;
 };
@@ -63,7 +63,7 @@ typedef struct NetLookupEntity NetLookupEntity, *NetLookupEntityPtr;
 /* ---------- globals */
 
 static MPPPBPtr lookupMPPPBPtr= (MPPPBPtr) NULL; /* the MPPPBPtr PNBPLookup() is using */
-static EntityNamePtr lookupEntity; /* the entity PNBPLookup() is matching against */
+static NetEntityNamePtr lookupEntity; /* the entity PNBPLookup() is matching against */
 static Ptr lookupBuffer; /* the buffer PNBPLookup() is filling up */
 
 static short lookupCount; /* number of entities in our list */
@@ -117,7 +117,7 @@ OSErr NetLookupOpen(
 
 	/* Type is pstring */
 	lookupMPPPBPtr= (MPPPBPtr) NewPtrClear(sizeof(MPPParamBlock));
-	lookupEntity= (EntityNamePtr) NewPtrClear(sizeof(EntityName));
+	lookupEntity= (NetEntityNamePtr) NewPtrClear(sizeof(NetEntityName));
 	lookupBuffer= NewPtrClear(NAMES_LIST_BUFFER_SIZE);
 	lookupEntities= (NetLookupEntityPtr) NewPtr(MAXIMUM_LOOKUP_NAME_COUNT*sizeof(NetLookupEntity));
 	
@@ -216,16 +216,16 @@ NetLookupInformation
 --------------------
 
 	---> index
-	---> pointer to an EntityName structure to be filled in, can be NULL
-	---> pointer to an AddrBlock structure to be filled in, can be NULL
+	---> pointer to an NetEntityName structure to be filled in, can be NULL
+	---> pointer to an NetAddrBlock structure to be filled in, can be NULL
 
-given an index, return an EntityName and AddrBlock
+given an index, return an NetEntityName and NetAddrBlock
 */
 
 void NetLookupInformation(
 	short index,
-	AddrBlock *address,
-	EntityName *entity)
+	NetAddrBlock *address,
+	NetEntityName *entity)
 {
 #ifdef TEST_MODEM
 	ModemLookupInformation(index, address, entity);
@@ -252,8 +252,8 @@ void NetLookupUpdate(
 	void)
 {
 	short entity_index, entity_count, insertion_point;
-	EntityName entity;
-	AddrBlock address;
+	NetEntityName entity;
+	NetAddrBlock address;
 	OSErr error;
 
 #ifdef TEST_MODEM

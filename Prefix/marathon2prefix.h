@@ -16,6 +16,7 @@ Jan 31, 2002 (Loren Petrich):
 #ifdef macintosh
 #define mac
 #undef TARGET_API_MAC_CARBON
+#define HAVE_SDL_NET 1
 #endif
 
 // check environs

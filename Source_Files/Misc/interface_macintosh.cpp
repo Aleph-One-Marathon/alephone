@@ -67,7 +67,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #include "interface.h"
 #include "player.h"
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(TARGET_API_MAC_CARBON) || HAVE_SDL_NET
 #include "network.h"
 #else
 #include "macintosh_network.h"

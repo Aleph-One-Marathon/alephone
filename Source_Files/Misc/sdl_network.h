@@ -30,7 +30,9 @@
 
 #include <SDL_net.h>
 
+#ifndef mac
 #include	"sdl_cseries.h"
+#endif
 
 #include "network.h"
 
@@ -62,8 +64,8 @@ enum /* error string for user */
 /* default IP port number for Marathon */
 const uint16 DEFAULT_PORT = 4226;
 
-typedef char EntityName[32];
-typedef IPaddress AddrBlock;
+typedef char NetEntityName[32];
+typedef IPaddress NetAddrBlock;
 
 /* ---------- DDPFrame and PacketBuffer (DDP) */
 
@@ -78,7 +80,7 @@ typedef struct DDPFrame DDPFrame, *DDPFramePtr;
 struct DDPPacketBuffer
 {
 	byte protocolType;
-	AddrBlock sourceAddress;
+	NetAddrBlock sourceAddress;
 	
 	uint16 datagramSize;
 	byte datagramData[ddpMaxData];
@@ -97,10 +99,10 @@ typedef struct ConnectionEnd ConnectionEnd, *ConnectionEndPtr;
 
 /* ---------- types */
 
-typedef EntityName *EntityNamePtr;
+typedef NetEntityName *NetEntityNamePtr;
 
 typedef void (*lookupUpdateProcPtr)(short message, short index);
-typedef bool (*lookupFilterProcPtr)(EntityName *entity, AddrBlock *address);
+typedef bool (*lookupFilterProcPtr)(NetEntityName *entity, NetAddrBlock *address);
 typedef void (*PacketHandlerProcPtr)(DDPPacketBufferPtr packet);
 
 /* ---------- prototypes/NETWORK.C */
@@ -110,7 +112,7 @@ short NetState(void);
 void NetSetServerIdentifier(short identifier);
 
 /* for giving to NetLookupOpen() as a filter procedure */
-bool NetEntityNotInGame(EntityName *entity, AddrBlock *address);
+bool NetEntityNotInGame(NetEntityName *entity, NetAddrBlock *address);
 
 /* ---------- prototypes/NETWORK_NAMES.C */
 
@@ -131,7 +133,7 @@ OSErr NetDDPCloseSocket(short socketNumber);
 DDPFramePtr NetDDPNewFrame(void);
 void NetDDPDisposeFrame(DDPFramePtr frame);
 
-OSErr NetDDPSendFrame(DDPFramePtr frame, AddrBlock *address, short protocolType, short socket);
+OSErr NetDDPSendFrame(DDPFramePtr frame, NetAddrBlock *address, short protocolType, short socket);
 
 /* ---------- prototypes/NETWORK_ADSP.C */
 
@@ -141,10 +143,10 @@ OSErr NetADSPClose(void);
 OSErr NetADSPEstablishConnectionEnd(ConnectionEndPtr *connection);
 OSErr NetADSPDisposeConnectionEnd(ConnectionEndPtr connectionEnd);
 
-OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, AddrBlock *address);
+OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, NetAddrBlock *address);
 OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, bool abort);
 OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd);
-bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *address);
+bool NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, NetAddrBlock *address);
 
 OSErr NetADSPWrite(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);
 OSErr NetADSPRead(ConnectionEndPtr connectionEnd, void *buffer, uint16 *count);

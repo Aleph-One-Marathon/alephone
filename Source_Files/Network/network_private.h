@@ -103,7 +103,7 @@ enum
 
 // LP: This is a dummy definition until Classic MacOS support can be completed
 #if defined(mac) && !HAVE_SDL_NET && !HAVE_SDL_NET_H
-#define AddrBlock IPaddress
+#define NetAddrBlock IPaddress
 struct IPaddress {
     uint32 host;
     uint16 port;
@@ -150,7 +150,7 @@ typedef struct NetDistributionPacket NetDistributionPacket, *NetDistributionPack
 // Information passed in streams
 struct NetPlayer
 {
-	AddrBlock dspAddress, ddpAddress;
+	NetAddrBlock dspAddress, ddpAddress;
 	
 	int16 identifier;
 
@@ -189,7 +189,7 @@ struct NetChatMessage {
 struct NetStatus
 {
 	/* we receive packets from downring and send them upring */
-	AddrBlock upringAddress, downringAddress;
+	NetAddrBlock upringAddress, downringAddress;
 	int16 upringPlayerIndex;
 	
 	int32 lastValidRingSequence; /* the sequence number of the last valid ring packet we received */

@@ -30,7 +30,16 @@
  *      discovery-allowance is in effect.
  *
  *  Created by Woody Zenfell, III on Mon Oct 1 2001, from SSLP_limited_threaded.cpp.
+
+ June 15, 2002 (Loren Petrich):
+ 	Added packing and unpacking, so as to avoid compiler dependency
+
  */
+
+// This stuff (or equivalent) should be widely available...
+#include	<assert.h>
+#include	<string.h>
+#include	<stdlib.h>
 
 // We depend on SDL, SDL_net, and SDL_netx (my broadcast stuff that works with SDL_net)
 #include	<SDL.h>
@@ -39,11 +48,6 @@
 #include	"SSLP_API.h"
 #include	"SSLP_Protocol.h"
 #include	"SDL_netx.h"
-
-// This stuff (or equivalent) should be widely available...
-#include	<assert.h>
-#include	<string.h>
-#include	<stdlib.h>
 
 // DEBUGGING DEFINES
 // There's surely a better way to do this, but shrug.  If I spent all my time looking around for
@@ -108,6 +112,38 @@ static UDPpacket*					sHintPacket;			// sHintPacket->data does not change
 static UDPpacket*					sResponsePacket;		// sResponsePacket->data does not change
 
 
+// Packing and unpacking:
+static void PackPacket(unsigned char *Packed, SSLP_Packet *Unpacked);
+static void UnpackPacket(unsigned char *Packed, SSLP_Packet *Unpacked);
+
+
+template<class T> void PacketCopyIn(unsigned char* &Ptr, const T& Value)
+{
+	int Size = sizeof(T);
+	memcpy(Ptr,&Value,Size);
+	Ptr += Size;
+}
+
+template<class T> void PacketCopyOut(unsigned char* &Ptr, T& Value)
+{
+	int Size = sizeof(T);
+	memcpy(&Value,Ptr,Size);
+	Ptr += Size;
+}
+
+template<class T> void PacketCopyInList(unsigned char* &Ptr, const T *List, int Count)
+{
+	int Size = Count*sizeof(T);
+	memcpy(Ptr,List,Size);
+	Ptr += Size;
+}
+
+template<class T> void PacketCopyOutList(unsigned char* &Ptr, T *List, int Count)
+{
+	int Size = Count*sizeof(T);
+	memcpy(List,Ptr,Size);
+	Ptr += Size;
+}
 
 
 // FILE-LOCAL (STATIC) FUNCTIONS
@@ -267,7 +303,10 @@ SSLPint_ReceivedPacket() {
         return;
     }
     
-    struct SSLP_Packet*	thePacket = (SSLP_Packet*) sReceivingPacket->data;
+    struct SSLP_Packet UnpackedPacket;
+    struct SSLP_Packet*	thePacket = &UnpackedPacket;
+    UnpackPacket(sReceivingPacket->data,thePacket);
+    // struct SSLP_Packet*	thePacket = (SSLP_Packet*) sReceivingPacket->data;
     
     if(thePacket->sslpp_magic != SDL_SwapBE32(SSLPP_MAGIC)) {
         SSLP_DE(BUG("wrong magic (%x)\n", thePacket->sslpp_magic));
@@ -396,10 +435,10 @@ SSLPint_Enter() {
     // change SSLP_PORT to SDL_SwapBE16(SSLP_PORT).
     sSocketDescriptor = SDLNet_UDP_Open(SSLP_PORT);
 
-    if(sSocketDescriptor <= 0) {
+    if(!sSocketDescriptor) {
         sSocketDescriptor = SDLNet_UDP_Open(0);
 
-        if(sSocketDescriptor <= 0)
+        if(!sSocketDescriptor)
             return (int)sSocketDescriptor;
     }
     
@@ -475,7 +514,9 @@ SSLP_Locate_Service_Instances(const char* inServiceType, SSLP_Service_Instance_S
     sNameChangedCallback	= inNameChangedCallback;
 
     sFindPacket = SDLNet_AllocPacket(sizeof(struct SSLP_Packet));
-    struct SSLP_Packet*	theFindPacket	= (struct SSLP_Packet*) sFindPacket->data;
+    SSLP_Packet UnpackedPacket;
+    SSLP_Packet *theFindPacket = &UnpackedPacket;
+    // struct SSLP_Packet*	theFindPacket	= (struct SSLP_Packet*) sFindPacket->data;
     
     // set up the "FIND" packet
     sFindPacket->len		= sizeof(struct SSLP_Packet);
@@ -497,6 +538,9 @@ SSLP_Locate_Service_Instances(const char* inServiceType, SSLP_Service_Instance_S
 	
     // Allow receiving code to process incoming HAVE messages, and allow "find" broadcaster to broadcast.
     sBehaviorsDesired		|= SSLPINT_LOCATING;
+    
+    // Load into the "real" packet
+    PackPacket(sFindPacket->data,theFindPacket);
 }
 
 
@@ -540,7 +584,9 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
     sResponsePacket = SDLNet_AllocPacket(sizeof(struct SSLP_Packet));
     assert(sResponsePacket != NULL);
     
-    struct SSLP_Packet* theResponsePacket = (struct SSLP_Packet*) sResponsePacket->data;
+    SSLP_Packet UnpackedPacket;
+    SSLP_Packet* theResponsePacket = &UnpackedPacket;
+    // struct SSLP_Packet* theResponsePacket = (struct SSLP_Packet*) sResponsePacket->data;
     
     // set up the "HAVE" packet
     sResponsePacket->len		= sizeof(struct SSLP_Packet);
@@ -562,6 +608,9 @@ SSLP_Allow_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstanc
     
     // Allow receiving code to respond to incoming FIND messages
     sBehaviorsDesired		|= SSLPINT_RESPONDING;
+    
+    // Load into the "real" packet
+    PackPacket(sResponsePacket->data,theResponsePacket);
 }
 
 
@@ -592,7 +641,9 @@ SSLP_Hint_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstance
     if(sHintPacket->address.port == 0)
         sHintPacket->address.port = SDL_SwapBE16(SSLP_PORT);
 
-    struct SSLP_Packet* theHintPacket = (struct SSLP_Packet*) sHintPacket->data;
+    SSLP_Packet UnpackedPacket;
+    SSLP_Packet *theHintPacket = &UnpackedPacket;
+    // struct SSLP_Packet* theHintPacket = (struct SSLP_Packet*) sHintPacket->data;
     
     theHintPacket->sslpp_magic		= SDL_SwapBE32(SSLPP_MAGIC);
     theHintPacket->sslpp_version	= SDL_SwapBE32(SSLPP_VERSION);
@@ -605,6 +656,9 @@ SSLP_Hint_Service_Discovery(const struct SSLP_ServiceInstance* inServiceInstance
     
     // Start up the hinting behavior, in case we weren't already.
     sBehaviorsDesired	|= SSLPINT_HINTING;
+    
+    // Load into the "real" packet
+    PackPacket(sHintPacket->data,theHintPacket);
 }
 
 
@@ -693,3 +747,28 @@ SSLP_Pump() {
         }
     }
 }
+
+
+// Packing and unpacking
+void PackPacket(unsigned char *Packed, SSLP_Packet *Unpacked)
+{
+	PacketCopyIn(Packed,Unpacked->sslpp_magic);
+	PacketCopyIn(Packed,Unpacked->sslpp_version);
+	PacketCopyIn(Packed,Unpacked->sslpp_message);
+	PacketCopyIn(Packed,Unpacked->sslpp_service_port);
+	PacketCopyIn(Packed,Unpacked->sslpp_reserved);
+	PacketCopyInList(Packed,Unpacked->sslpp_service_type,SSLP_MAX_TYPE_LENGTH);
+	PacketCopyInList(Packed,Unpacked->sslpp_service_name,SSLP_MAX_NAME_LENGTH);
+}
+
+void UnpackPacket(unsigned char *Packed, SSLP_Packet *Unpacked)
+{
+	PacketCopyOut(Packed,Unpacked->sslpp_magic);
+	PacketCopyOut(Packed,Unpacked->sslpp_version);
+	PacketCopyOut(Packed,Unpacked->sslpp_message);
+	PacketCopyOut(Packed,Unpacked->sslpp_service_port);
+	PacketCopyOut(Packed,Unpacked->sslpp_reserved);
+	PacketCopyOutList(Packed,Unpacked->sslpp_service_type,SSLP_MAX_TYPE_LENGTH);
+	PacketCopyOutList(Packed,Unpacked->sslpp_service_name,SSLP_MAX_NAME_LENGTH);
+}
+

@@ -61,7 +61,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 static short transport_type= kNetworkTransportType;
 static ConnectionEndPtr dspConnection; /* our adsp connection */
-static AddrBlock adsp_end_address;
+static NetAddrBlock adsp_end_address;
 
 /* ----- local prototypes */
 static OSErr stream_write(void *data, uint16 length);
@@ -295,7 +295,7 @@ OSErr NetStreamWaitForConnection(
 }
 
 void NetGetStreamAddress(
-	AddrBlock *address)
+	NetAddrBlock *address)
 {
 	assert(transport_type==kNetworkTransportType);
 	

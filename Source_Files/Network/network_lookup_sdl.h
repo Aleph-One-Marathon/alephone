@@ -56,6 +56,6 @@ OSErr NetLookupOpen_SSLP(const unsigned char *type, short version,
 
 // Now unused - functionality handled in w_found_players widget type
 //void NetLookupRemove(short index);
-//void NetLookupInformation(short index, AddrBlock *address, EntityName *entity);
+//void NetLookupInformation(short index, NetAddrBlock *address, NetEntityName *entity);
 
 #endif//NETWORK_LOOKUP_SDL_H
