@@ -904,6 +904,20 @@ screen_mode_data *get_screen_mode(void)
 }
 
 
+// LP: gets a size ID's related size ID's that show or hide the HUD, respectively
+short GetSizeWithHUD(short Size)
+{
+	assert(Size >= 0 && Size < NUMBER_OF_VIEW_SIZES);
+	return ViewSizes[Size].WithHUD;
+}
+
+short GetSizeWithoutHUD(short Size)
+{
+	assert(Size >= 0 && Size < NUMBER_OF_VIEW_SIZES);
+	return ViewSizes[Size].WithoutHUD;
+}
+
+
 /*
  *  Show HUD?
  */
