@@ -428,10 +428,6 @@ bool FileSpecifier::Open(OpenedFile& OFile, bool Writable)
 	
 	if (!ResolveFile(Spec)) return false;
 	
-	Boolean IsFolder = false, WasAliased = false;
-	ResolveAliasFile(&Spec, true, &IsFolder, &WasAliased);
-	if (IsFolder) return false;
-
 	short RefNum;
 	Err = FSpOpenDF(&Spec, WhatPermission(Writable), &RefNum);
 	if (Err != noErr) 
