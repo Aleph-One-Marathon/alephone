@@ -54,7 +54,7 @@ Jul 1, 2000 (Loren Petrich):
 
 #ifndef DEBUG_FAST_CODE
 #undef DEBUG
-#undef assert(x)
+// #undef assert(x)
 #undef assert
 #define assert(x) 
 #endif

@@ -112,7 +112,7 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 
 #ifndef DEBUG_FAST_CODE
 #undef DEBUG
-#undef assert(x)
+// #undef assert(x)
 #undef assert
 #define assert(x) 
 #endif
