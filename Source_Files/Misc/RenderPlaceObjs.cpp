@@ -189,9 +189,11 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			// Nonexistent shape: skip
 			if (data.collection_code == NONE) return NULL;
 			
+#ifdef HAVE_OPENGL
 			// Find which 3D model will take the place of this sprite, if any
 			OGL_ModelData *ModelPtr =
 				OGL_GetModelData(GET_COLLECTION(data.collection_code),GET_DESCRIPTOR_SHAPE(object->shape));
+#endif
 			
 			shape_information= rescale_shape_information(
 				extended_get_shape_information(data.collection_code, data.low_level_shape_index),
@@ -201,6 +203,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			
 			// Create a fake sprite rectangle using the model's bounding box
 			float Scale = 1;
+#ifdef HAVE_OPENGL
 			if (ModelPtr)
 			{
 				// Copy over
@@ -217,6 +220,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				// Set pointer back
 				shape_information = &model_shape_information;
 			}
+#endif
 			
 			// Too close?
 			if (Farthest < MINIMUM_OBJECT_DISTANCE) return NULL;
@@ -302,6 +306,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				
 				// LP change: for the convenience of the OpenGL renderer
 				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,data.low_level_shape_index);
+#ifdef HAVE_OPENGL
 				render_object->rectangle.ModelPtr = ModelPtr;
 				if (ModelPtr)
 				{
@@ -311,6 +316,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					render_object->rectangle.LightDepth = LightDepth;
 					objlist_copy(render_object->rectangle.LightDirection,LightDirection,3);
 				}
+#endif
 					
 				render_object->rectangle.flip_vertical= (shape_information->flags&_Y_MIRRORED_BIT) ? true : false;
 				render_object->rectangle.flip_horizontal= (shape_information->flags&_X_MIRRORED_BIT) ? true : false;

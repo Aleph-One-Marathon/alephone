@@ -16,6 +16,9 @@
 */
 
 #include "cseries.h"
+
+#ifdef HAVE_OPENGL
+
 #include "StudioLoader.h"
 
 // Use pack/unpack, but with little-endian data
@@ -469,3 +472,5 @@ void LoadFloats(int NVals, uint8 *Stream, GLfloat *Floats)
 			DestPtr[c] = SrcPtr[c];
 	}
 }
+
+#endif // def HAVE_OPENGL

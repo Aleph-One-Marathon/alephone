@@ -254,6 +254,8 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 void OGL_ResetTextures();
 
 
+#ifdef HAVE_OPENGL
+
 // 3D-Model and Skin Support
 
 // Model-skin options
@@ -334,6 +336,8 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence);
 
 // Resets all model skins; arg is whether to clear OpenGL textures
 void OGL_ResetModelSkins(bool Clear_OGL_Txtrs);
+
+#endif // def HAVE_OPENGL
 
 
 // Fog data record

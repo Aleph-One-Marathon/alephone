@@ -6,8 +6,12 @@
 
 #include <string.h>
 #include <math.h>
-#include <GL/gl.h>
+
 #include "cseries.h"
+
+#ifdef HAVE_OPENGL
+
+#include <GL/gl.h>
 #include "Model3D.h"
 
 
@@ -140,3 +144,5 @@ void Model3D::RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *Diagona
 		glDrawElements(GL_LINES,NumDiagVerts,GL_UNSIGNED_SHORT,DiagVerts);
 	}
 }
+
+#endif // def HAVE_OPENGL

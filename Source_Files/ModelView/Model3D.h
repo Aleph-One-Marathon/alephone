@@ -9,6 +9,8 @@
 
 using namespace std;
 
+#ifdef HAVE_OPENGL
+
 #include <GL/gl.h>
 #include <vector>
 
@@ -63,6 +65,10 @@ struct Model3D
 	Model3D() {FindBoundingBox();}
 };
 
+#else
 
+struct Model3D;
+
+#endif // def HAVE_OPENGL
 
 #endif

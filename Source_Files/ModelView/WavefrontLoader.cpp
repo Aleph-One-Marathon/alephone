@@ -8,7 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
+
 #include "cseries.h"
+
+#ifdef HAVE_OPENGL
+
 #include "WavefrontLoader.h"
 
 
@@ -637,3 +641,5 @@ char *GetVertIndx(char *Buffer, bool& WasFound, short& Val, bool& HitEnd)
 	
 	return Buffer;
 }
+
+#endif // def HAVE_OPENGL

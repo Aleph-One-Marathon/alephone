@@ -6,7 +6,11 @@
 
 #include <string.h>
 #include <alloca.h>
+
 #include "cseries.h"
+
+#ifdef HAVE_OPENGL
+
 #include "ModelRenderer.h"
 
 
@@ -455,6 +459,88 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 	return;
 }
 
+static void calc_lights(GLfloat *ColorPtr, GLfloat *Normal, GLfloat ExternalLight[3][4], int NumVerts)
+{
+#if 0
+
+	// Register usage:
+	// mm0/mm1: ExternalLight[0] (4 components)
+	// mm2/mm3: ExternalLight[1] (4 components)
+	// mm4/mm5: ExternalLight[2] (4 components)
+	// mm6:     Normal[0]/Normal[1]
+	// mm7:     Normal[2]/1.0
+
+	GLfloat tmp[2] = {0.0, 1.0};
+	__asm__ __volatile__("
+			femms\n
+			movq	0x00(%3),%%mm0\n
+			movq	0x08(%3),%%mm1\n
+			movq	0x10(%3),%%mm2\n
+			movq	0x18(%3),%%mm3\n
+			movq	0x20(%3),%%mm4\n
+			movq	0x28(%3),%%mm5\n
+			movl	8(%0),%%eax\n
+			movl	%%eax,(%4)\n
+		0:\n
+			prefetch 192(%0)\n
+			movq	(%0),%%mm6\n
+			movq	(%4),%%mm7\n
+			pfmul	%%mm0,%%mm6\n
+			pfmul	%%mm1,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			movd	%%mm7,(%1)\n
+			movq	(%0),%%mm6\n
+			movq	(%4),%%mm7\n
+			pfmul	%%mm2,%%mm6\n
+			pfmul	%%mm3,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			movd	%%mm7,4(%1)\n
+			movq	(%0),%%mm6\n
+			movq	(%4),%%mm7\n
+			pfmul	%%mm4,%%mm6\n
+			pfmul	%%mm5,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			pfacc	%%mm6,%%mm7\n
+			movd	%%mm7,8(%1)\n
+		\n
+			add		$0x0c,%0\n
+			movl	8(%0),%%eax\n
+			movl	%%eax,(%4)\n
+			add		$0x0c,%1\n
+			dec		%2\n
+			jne		0b\n
+			femms\n"
+		:
+		: "g" (Normal), "g" (ColorPtr), "g" (NumVerts), "g" (ExternalLight), "g" (&tmp)
+		: "eax", "memory"
+	);
+
+#else
+
+	GLfloat *el0 = ExternalLight[0], *el1 = ExternalLight[1], *el2 = ExternalLight[2];
+	for (int k=0; k<NumVerts; k++, ColorPtr+=3, Normal+=3)
+	{
+		ColorPtr[0] =
+			el0[0]*Normal[0] + 
+			el0[1]*Normal[1] + 
+			el0[2]*Normal[2] + 
+			el0[3];
+		ColorPtr[1] =
+			el1[0]*Normal[0] + 
+			el1[1]*Normal[1] + 
+			el1[2]*Normal[2] + 
+			el1[3];
+		ColorPtr[2] =
+			el2[0]*Normal[0] + 
+			el2[1]*Normal[1] + 
+			el2[2]*Normal[2] + 
+			el2[3];
+	}
+
+#endif
+}
 
 void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 {
@@ -480,29 +566,7 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 		int NumCC = 3*NumVerts;
 		ExtLightColors.resize(NumCC);
 		
-		GLfloat *ColorPtr = &ExtLightColors[0];
-		for (int k=0; k<NumVerts; k++, ColorPtr+=3)
-		{
-			GLfloat *Normal = Model.NormBase() + 3*k;
-			GLfloat *ELChannel = ExternalLight[0];
-			ColorPtr[0] =
-				ELChannel[0]*Normal[0] + 
-				ELChannel[1]*Normal[1] + 
-				ELChannel[2]*Normal[2] + 
-				ELChannel[3];
-			ELChannel = ExternalLight[1];
-			ColorPtr[1] =
-				ELChannel[0]*Normal[0] + 
-				ELChannel[1]*Normal[1] + 
-				ELChannel[2]*Normal[2] + 
-				ELChannel[3];
-			ELChannel = ExternalLight[2];
-			ColorPtr[2] =
-				ELChannel[0]*Normal[0] + 
-				ELChannel[1]*Normal[1] + 
-				ELChannel[2]*Normal[2] + 
-				ELChannel[3];
-		}
+		calc_lights(&ExtLightColors[0], Model.NormBase(), ExternalLight, NumVerts);
 		
 		if (!Model.Colors.empty() && TEST_FLAG(Shader.Flags,Colored))
 		{
@@ -541,3 +605,5 @@ void ModelRenderer::Clear()
 	SortedVertIndices.clear();
 	ExtLightColors.clear();
 }
+
+#endif // def HAVE_OPENGL
