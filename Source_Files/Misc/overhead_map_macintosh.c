@@ -14,14 +14,18 @@ Jul 8, 2000 (Loren Petrich):
 Jul 16, 2000 (Loren Petrich):
 	Added begin/end pairs for polygons and lines,
 	so that caching of them can be more efficient (important for OpenGL)
+
+Aug 3, 2000 (Loren Petrich):
+	All the code here has been transferred to either OverheadMapRenderer.c/h or OverheadMap_QuickDraw.c/h
 */
 
 /* ---------- private code */
 
 #include "OGL_Map.h"
 
-// #define NUMBER_OF_POLYGON_COLORS (sizeof(polygon_colors)/sizeof(RGBColor))
 
+// #define NUMBER_OF_POLYGON_COLORS (sizeof(polygon_colors)/sizeof(RGBColor))
+#if 0
 static RGBColor polygon_colors[NUMBER_OF_POLYGON_COLORS]=
 {
 	{0, 12000, 0},
@@ -33,7 +37,6 @@ static RGBColor polygon_colors[NUMBER_OF_POLYGON_COLORS]=
 	{137*256, 0, 137*256},	// LP: PfhorSlime moved down here
 	{32768, 32768, 0}
 };
-
 
 static void begin_overhead_polygons()
 {
@@ -64,7 +67,7 @@ static void draw_overhead_polygon(
 	// LP addition: do OpenGL
 	if (OGL_MapActive)
 	{
-		OGL_draw_overhead_polygon(vertex_count,vertices,polygon_colors[color]);
+		OGL_draw_overhead_polygon(vertex_count,vertices,OvhdMap_ConfigData.polygon_colors[color]);
 		return;
 	}
 
@@ -92,7 +95,6 @@ static void draw_overhead_polygon(
 
 	return;
 }
-
 
 struct line_definition
 {
@@ -150,7 +152,7 @@ static void draw_overhead_line(
 	assert(color>=0&&color<NUMBER_OF_LINE_DEFINITIONS);
 	definition= line_definitions+color;
 	
-	RGBForeColor(&definition->color);
+	RGBForeColor((RGBColor *)&definition->color);
 	PenSize(definition->pen_sizes[scale-OVERHEAD_MAP_MINIMUM_SCALE], definition->pen_sizes[scale-OVERHEAD_MAP_MINIMUM_SCALE]);
 	MoveTo(vertex1->x, vertex1->y);
 	LineTo(vertex2->x, vertex2->y);
@@ -228,7 +230,7 @@ static void draw_overhead_thing(
 	definition= thing_definitions+color;
 	radius= definition->radii[scale-OVERHEAD_MAP_MINIMUM_SCALE];
 
-	RGBForeColor(&definition->color);
+	RGBForeColor((RGBColor *)&definition->color);
 	// LP change: adjusted object display so that objects get properly centered;
 	// they were inadvertently made 50% too large
 	short raddown = short(0.75*radius);
@@ -280,11 +282,12 @@ static void draw_overhead_player(
 	// LP addition: do OpenGL
 	if (OGL_MapActive)
 	{
-		assert(color>=0&&color<NUMBER_OF_ENTITY_DEFINITIONS);
+		// assert(color>=0&&color<NUMBER_OF_ENTITY_DEFINITIONS);
 		RGBColor PlayerColor;
 		_get_player_color(color, &PlayerColor);
-		entity_definition& EntityDef = entity_definitions[color];
-		OGL_draw_overhead_player(*center,facing,PlayerColor,OVERHEAD_MAP_MAXIMUM_SCALE-scale,EntityDef.front,EntityDef.rear,EntityDef.rear_theta);
+		// Changed to use only one entity shape
+		entity_definition& EntityDef = entity_definitions[0];
+		OGL_draw_overhead_player(*center,facing,*(rgb_color *)(&PlayerColor),OVERHEAD_MAP_MAXIMUM_SCALE-scale,EntityDef.front,EntityDef.rear,EntityDef.rear_theta);
 		return;
 	}
 	
@@ -363,7 +366,7 @@ static void draw_overhead_annotation(
 	if (OGL_MapActive)
 	{
 		annotation_definition& NoteDef = *definition;
-		OGL_draw_map_text(*location,NoteDef.color,pascal_text,NoteDef.font,NoteDef.face,NoteDef.sizes[scale-OVERHEAD_MAP_MINIMUM_SCALE]);
+		OGL_draw_map_text(*location,*(rgb_color *)(&NoteDef.color),pascal_text,NoteDef.font,NoteDef.face,NoteDef.sizes[scale-OVERHEAD_MAP_MINIMUM_SCALE]);
 		return;
 	}
 	
@@ -371,13 +374,13 @@ static void draw_overhead_annotation(
 	TextFont(definition->font);
 	TextFace(definition->face);
 	TextSize(definition->sizes[scale-OVERHEAD_MAP_MINIMUM_SCALE]);
-	RGBForeColor(&definition->color);
+	RGBForeColor((RGBColor *)&definition->color);
 	DrawString(pascal_text);
 	
 	return;
 }
 
-static RGBColor map_name_color= {0, 0xffff, 0};
+// static RGBColor map_name_color= {0, 0xffff, 0};
 
 static void draw_map_name(
 	struct overhead_map_data *data,
@@ -389,9 +392,10 @@ static void draw_map_name(
 	c2pstr((char *)pascal_name);
 	
 	// LP change: allowed for easier generalization
-	const short font = kFontIDMonaco;
-	const short face = normal;
-	const short size = 18;
+	rgb_color& map_name_color = map_name_data.color;
+	const short font = map_name_data.font;
+	const short face = map_name_data.face;
+	const short size = map_name_data.size;
 	// Need this stuff here so as to calculate the width of the title string
 	TextFont(font);
 	TextFace(face);
@@ -405,7 +409,7 @@ static void draw_map_name(
 		OGL_draw_map_text(location,map_name_color,pascal_name,font,face,size);
 		return;
 	}
-	RGBForeColor(&map_name_color);
+	RGBForeColor((RGBColor *)&map_name_color);
 	MoveTo(location.x,location.y);
 	/*
 	TextFont(kFontIDMonaco);
@@ -422,18 +426,18 @@ static void draw_map_name(
 
 // LP change: MacOS-specific drawing routines moved here
 
-static RGBColor PathColor = {0xffff, 0xffff, 0xffff};
+// static RGBColor PathColor = {0xffff, 0xffff, 0xffff};
 
 static void SetPathDrawing()
 {
 	// LP addition: do OpenGL
 	if (OGL_MapActive)
 	{
-		OGL_SetPathDrawing(PathColor);
+		OGL_SetPathDrawing(*(rgb_color *)(&PathColor));
 		return;
 	}
 	PenSize(1, 1);
-	RGBForeColor(&PathColor);
+	RGBForeColor((RGBColor *)&PathColor);
 }
 
 static void DrawPath(short step, world_point2d &location)
@@ -471,3 +475,4 @@ static void PutParserColor(rgb_color& InColor, RGBColor &OutColor)
 	OutColor.green = InColor.green;
 	OutColor.blue = InColor.blue;
 }
+#endif
