@@ -117,6 +117,9 @@ Jan 12, 2003 (Woody Zenfell):
 May 22, 2003 (Woody Zenfell):
 	Fixing damaging polygon types; giving player netgame penalty feedback; announcing player
 	net disconnects.
+
+ May 27, 2003 (Woody Zenfell):
+	I hear dead people.  (netmic, star protocol or newer only)
 */
 
 #define DONT_REPEAT_DEFINITIONS
@@ -162,6 +165,10 @@ May 22, 2003 (Woody Zenfell):
 #endif
 
 /* ---------- constants */
+
+enum {
+	kMinimumNetworkVersionForTalkingCorpses = _ip_star_network_version
+};
 
 // These are variables, because they can be set with an XML parser
 static short kINVISIBILITY_DURATION = (70*TICKS_PER_SECOND);
@@ -611,7 +618,7 @@ void update_players(ActionQueues* inActionQueuesToUse)
 		// if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) handle_player_in_vacuum(player_index, action_flags);
 
 		/* handle arbitration of the communications channel (i.e., dynamic_world->speaking_player_index) */
-		if ((action_flags&_microphone_button) && !PLAYER_IS_DEAD(player))
+		if ((action_flags&_microphone_button) && (!PLAYER_IS_DEAD(player) || get_network_version() >= kMinimumNetworkVersionForTalkingCorpses))
 		{
 			if (dynamic_world->speaking_player_index==NONE)
 			{
