@@ -14,13 +14,13 @@ enum {
 	NUMBER_OF_TRANSPORT_TYPES
 };
 
-boolean NetTransportAvailable(short type);
+bool NetTransportAvailable(short type);
 
 OSErr NetStreamEstablishConnectionEnd(void);
 OSErr NetStreamDisposeConnectionEnd(void);
 
 OSErr NetOpenStreamToPlayer(short player_index);
-OSErr NetCloseStreamConnection(boolean abort);
+OSErr NetCloseStreamConnection(bool abort);
 
 OSErr NetSendStreamPacket(short packet_type, void *packet_data);
 OSErr NetReceiveStreamPacket(short *packet_type, void *buffer);
@@ -28,15 +28,15 @@ OSErr NetReceiveStreamPacket(short *packet_type, void *buffer);
 short NetGetTransportType(void);
 void NetSetTransportType(short type);
 
-boolean NetStreamCheckConnectionStatus(void);
+bool NetStreamCheckConnectionStatus(void);
 OSErr NetStreamWaitForConnection(void);
 
 void NetGetStreamAddress(AddrBlock *address);
 short NetGetStreamSocketNumber(void);
 
 /* ------ application must supply these */
-word MaxStreamPacketLength(void);
-word NetStreamPacketLength(short packet_type);
+uint16 MaxStreamPacketLength(void);
+uint16 NetStreamPacketLength(short packet_type);
 AddrBlock *NetGetPlayerADSPAddress(short player_index);
 
 #endif

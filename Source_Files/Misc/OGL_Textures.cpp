@@ -293,7 +293,7 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, GLuint *Col
 			GLuint &Color = ColorTable[k];
 			
 			// Convert from ARGB 5551 to RGBA 8888; make opaque
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 			GLushort Intmd = GLushort(OrigPtr[0]);
 			Intmd = Intmd | (GLushort(OrigPtr[1]) << 8);
 #else
@@ -312,7 +312,7 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, GLuint *Col
 			
 			// Convert from ARGB 8888 to RGBA 8888; make opaque
 			GLuint Chan;
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 			// Red
 			Chan = OrigPtr[1];
 			Color = Chan;
@@ -643,7 +643,7 @@ void TextureManager::FindColorTables()
 		for (int k=1; k<MAXIMUM_SHADING_TABLE_INDEXES; k++)
 		{
 			// Check for illumination-independent colors
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 			if (GlowColorTable[k] & 0x00f0f0f0)
 #else
 			if (GlowColorTable[k] & 0xf0f0f000)
@@ -652,7 +652,7 @@ void TextureManager::FindColorTables()
 				IsGlowing = true;
 				// Make half-opaque, and the original color;
 				// this is to get more like the software rendering
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 				GlowColorTable[k] = NormalColorTable[k] & 0x80ffffff;
 #else
 				GlowColorTable[k] = NormalColorTable[k] & 0xffffff80;
@@ -661,7 +661,7 @@ void TextureManager::FindColorTables()
 			else
 				// Make transparent but the original color,
 				// so as to get appropriate continuity
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 				GlowColorTable[k] = NormalColorTable[k] & 0x00ffffff;
 #else
 				GlowColorTable[k] = NormalColorTable[k] & 0xffffff00;
@@ -678,14 +678,14 @@ void TextureManager::FindColorTables()
 			// Get the normal color; the glow color is calculated from it,
 			// so this is OK.
 			unsigned long CTabEntry = NormalColorTable[k];
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 			if (!(CTabEntry & 0xff000000)) continue;
 #else
 			if (!(CTabEntry & 0x000000ff)) continue;
 #endif
 			
 			// Suppress the opacity, since we'll be replacing it
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 			CTabEntry &= 0x00ffffff;
 #else
 			CTabEntry &= 0xffffff00;
@@ -695,7 +695,7 @@ void TextureManager::FindColorTables()
 			float Opacity = 1;
 			if (OpacityType == OGL_OpacType_Avg)
 			{
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 				unsigned long Red = CTabEntry & 0x000000ff;
 				unsigned long Green = (CTabEntry >> 8) & 0x000000ff;
 				unsigned long Blue = (CTabEntry >> 16) & 0x000000ff;
@@ -708,7 +708,7 @@ void TextureManager::FindColorTables()
 			}
 			else if (OpacityType == OGL_OpacType_Max)
 			{
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 				unsigned long Red = CTabEntry & 0x000000ff;
 				unsigned long Green = (CTabEntry >> 8) & 0x000000ff;
 				unsigned long Blue = (CTabEntry >> 16) & 0x000000ff;
@@ -725,14 +725,14 @@ void TextureManager::FindColorTables()
 			
 			// Replace only the really-glowing colors' opacities
 			unsigned long GlowCTabEntry = GlowColorTable[k];
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 			if (IsGlowing && (GlowCTabEntry & 0xff000000))
 #else
 			if (IsGlowing && (GlowCTabEntry & 0x000000ff))
 #endif
 			{
 				// Suppress the opacity, since we'll be replacing it
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 				GlowCTabEntry &= 0x00ffffff;
 #else
 				GlowCTabEntry &= 0xffffff00;
@@ -740,7 +740,7 @@ void TextureManager::FindColorTables()
 				
 				// The opacity values for each layer are selected to get
 				// the appropriate overall effect (1/2 normal + 1/2 glowing)		
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 				GlowColorTable[k] = GlowCTabEntry | (MakeUnsignedLong(Opacity/2) << 24);
 				NormalColorTable[k] = CTabEntry | (MakeUnsignedLong(Opacity/(2-Opacity)) << 24);
 #else
@@ -749,7 +749,7 @@ void TextureManager::FindColorTables()
 #endif
 			} else {
 				// Non-glowing colors are done here
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 				NormalColorTable[k] = CTabEntry | (MakeUnsignedLong(Opacity) << 24);
 #else
 				NormalColorTable[k] = CTabEntry | MakeUnsignedLong(Opacity);
@@ -894,7 +894,7 @@ inline GLuint MakeEightBit(GLfloat Chan)
 
 GLuint MakeTxtrColor(GLfloat *Color)
 {
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 	GLuint Red = MakeEightBit(Color[0]);
 	GLuint Green = MakeEightBit(Color[1]) << 8;
 	GLuint Blue = MakeEightBit(Color[2]) << 16;

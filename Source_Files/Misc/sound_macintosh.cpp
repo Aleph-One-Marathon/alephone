@@ -57,12 +57,12 @@ void set_sound_manager_parameters(
 {
 	if (_sm_initialized)
 	{
-		boolean initial_state= _sm_active;
+		bool initial_state= _sm_active;
 
 		verify_sound_manager_parameters(parameters);
 		
 		/* if it was initially on, turn off the sound manager */
-		if (initial_state) set_sound_manager_status(FALSE);		
+		if (initial_state) set_sound_manager_status(false);		
 		
 		/* we need to get rid of the sounds we have in memory */
 		unload_all_sounds();
@@ -71,16 +71,16 @@ void set_sound_manager_parameters(
 		*_sm_parameters= *parameters;
 		
 		/* if it was initially on, turn the sound manager back on */
-		if (initial_state) set_sound_manager_status(TRUE);
+		if (initial_state) set_sound_manager_status(true);
 	}
 	
 	return;
 }
 
-/* passing FALSE disposes of all existing sound channels and sets _sm_active to FALSE,
-	TRUE reallocates everything and sets _sm_active to TRUE */
+/* passing false disposes of all existing sound channels and sets _sm_active to false,
+	true reallocates everything and sets _sm_active to true */
 void set_sound_manager_status(
-	boolean active)
+	bool active)
 {
 	if (_sm_initialized)
 	{
@@ -111,7 +111,7 @@ void set_sound_manager_status(
 				{
 					/* initialize the channel */
 					channel->flags= 0;
-					channel->callback_count= FALSE;
+					channel->callback_count= false;
 					channel->sound_index= NONE;
 					obj_clear(*(channel->channel));
 					channel->channel->qLength= stdQLength;
@@ -123,13 +123,13 @@ void set_sound_manager_status(
 					{
 						for (channel= _sm_globals->channels; i; --i, ++channel)
 						{
-							error= SndDisposeChannel(channel->channel, TRUE);
+							error= SndDisposeChannel(channel->channel, true);
 							assert(error==noErr);
 						}
 						
  						alert_user(infoError, strERRORS, badSoundChannels, error);
 						_sm_globals->total_channel_count= 0;
-						active= _sm_active= _sm_initialized= FALSE;
+						active= _sm_active= _sm_initialized= false;
 						
 						break;
 					}
@@ -140,7 +140,7 @@ void set_sound_manager_status(
 				stop_all_sounds();
 				for (i= 0, channel= _sm_globals->channels; i<_sm_globals->total_channel_count; ++i, ++channel)
 				{
-					error= SndDisposeChannel(channel->channel, TRUE);
+					error= SndDisposeChannel(channel->channel, true);
 					assert(error==noErr);
 				}
 
@@ -213,7 +213,7 @@ bool open_sound_file(FileSpecifier& File)
 		if (SoundFile.Open(FileSpecifier::C_Sound))
 		// LP addition: resolving sounds file if it was an alias
 		Boolean is_folder, was_aliased;
-		ResolveAliasFile((FSSpec *)spec, TRUE, &is_folder, &was_aliased);
+		ResolveAliasFile((FSSpec *)spec, true, &is_folder, &was_aliased);
 		
 		error= FSpOpenDF(spec, fsRdPerm, &refNum);
 		if (error==noErr)
@@ -269,11 +269,11 @@ bool open_sound_file(FileSpecifier& File)
 	*/
 }
 
-boolean adjust_sound_volume_up(
+bool adjust_sound_volume_up(
 	struct sound_manager_parameters *parameters,
 	short sound_index)
 {
-	boolean changed= FALSE;
+	bool changed= false;
 
 	if (_sm_active)
 	{
@@ -282,18 +282,18 @@ boolean adjust_sound_volume_up(
 			_sm_parameters->volume= (parameters->volume+= 1);
 			SetDefaultOutputVolume(sound_level_to_sound_volume(parameters->volume));
 			play_sound(sound_index, (world_location3d *) NULL, NONE);
-			changed= TRUE;
+			changed= true;
 		}
 	}
 	
 	return changed;
 }
 
-boolean adjust_sound_volume_down(
+bool adjust_sound_volume_down(
 	struct sound_manager_parameters *parameters,
 	short sound_index)
 {
-	boolean changed= FALSE;
+	bool changed= false;
 
 	if (_sm_active)
 	{
@@ -302,7 +302,7 @@ boolean adjust_sound_volume_down(
 			_sm_parameters->volume= (parameters->volume-= 1);
 			SetDefaultOutputVolume(sound_level_to_sound_volume(parameters->volume));
 			play_sound(sound_index, (world_location3d *) NULL, NONE);
-			changed= TRUE;
+			changed= true;
 		}
 	}
 	
@@ -384,7 +384,7 @@ static void initialize_machine_sound_manager(
 					
 					/* fake a set_sound_manager_parameters() call */
 					_sm_parameters->flags= 0;
-					_sm_initialized= _sm_active= TRUE;
+					_sm_initialized= _sm_active= true;
 					GetDefaultOutputVolume(&_sm_globals->old_sound_volume);
 					
 					set_sound_manager_parameters(parameters);
@@ -400,12 +400,12 @@ static void initialize_machine_sound_manager(
 	return;
 }
 
-static boolean channel_busy(
+static bool channel_busy(
 	struct channel_data *channel)
 {
 	assert(SLOT_IS_USED(channel));
 	
-	return (channel->callback_count) ? FALSE : TRUE;
+	return (channel->callback_count) ? false : true;
 }
 
 static void unlock_sound(
@@ -462,7 +462,7 @@ static byte *read_sound_from_file(
 	size = 0;
 	if (!definition) return NULL;
 	
-	boolean success= FALSE;
+	bool success= false;
 	byte *data= NULL;
 	// Handle data= NULL;
 	OSErr error= noErr;
@@ -563,7 +563,7 @@ static void quiet_channel(
 static void instantiate_sound_variables(
 	struct sound_variables *variables,
 	struct channel_data *channel,
-	boolean first_time)
+	bool first_time)
 {
 	OSErr error= noErr;
 	SndCommand command;
@@ -610,14 +610,14 @@ static void buffer_sound(
 	command.cmd= bufferCmd; /* high bit not set: weÕre sending a real pointer */
 	command.param1= 0;
 	command.param2= (long) sound_header;
-	error= SndDoCommand(channel->channel, &command, FALSE);
+	error= SndDoCommand(channel->channel, &command, false);
 	if (error==noErr)
 	{
 		/* queue the callback */
 		command.cmd= callBackCmd;
 		command.param1= 0;
 		command.param2= 0;
-		error= SndDoCommand(channel->channel, &command, FALSE);
+		error= SndDoCommand(channel->channel, &command, false);
 		if (error==noErr)
 		{
 			if (pitch!=FIXED_ONE)
@@ -649,7 +649,7 @@ static void buffer_sound(
 static void shutdown_sound_manager(
 	void)
 {
-	set_sound_manager_status(FALSE);
+	set_sound_manager_status(false);
 
 	close_sound_file();	
 	
@@ -711,7 +711,7 @@ static synchronous_global_fade_to_silence(
 	void)
 {
 	short i;
-	boolean fade_out= FALSE;
+	bool fade_out= false;
 	struct channel_data *channel;
 	struct sound_variables old_variables[MAXIMUM_SOUND_CHANNELS+MAXIMUM_AMBIENT_SOUND_CHANNELS];
 	
@@ -721,7 +721,7 @@ static synchronous_global_fade_to_silence(
 		{
 			old_variables[i]= channel->variables;
 			
-			fade_out= TRUE;
+			fade_out= true;
 		}
 	}
 	
@@ -746,7 +746,7 @@ static synchronous_global_fade_to_silence(
 					new->left_volume= (old->left_volume*(FADE_OUT_STEPS-step-1))/FADE_OUT_STEPS;
 					new->right_volume= (old->right_volume*(FADE_OUT_STEPS-step-1))/FADE_OUT_STEPS;
 			
-					instantiate_sound_variables(&channel->variables, channel, TRUE);
+					instantiate_sound_variables(&channel->variables, channel, true);
 				}
 			}
 		}

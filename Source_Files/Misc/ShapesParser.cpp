@@ -20,7 +20,7 @@ class XML_ShapesParser: public XML_ElementParser
 	bool CollPresent, SeqPresent;
 	
 	// Values to read
-	word Coll, CLUT, Seq;
+	uint16 Coll, CLUT, Seq;
 	
 public:
 	shape_descriptor *DescPtr;
@@ -45,7 +45,7 @@ bool XML_ShapesParser::HandleAttribute(const char *Tag, const char *Value)
 	
 	if (strcmp(Tag,"coll") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hu",Coll,word(0),word(MAXIMUM_COLLECTIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hu",Coll,uint16(0),uint16(MAXIMUM_COLLECTIONS-1)))
 		{
 			CollPresent = true;
 			return true;
@@ -54,7 +54,7 @@ bool XML_ShapesParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"clut") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hu",CLUT,word(0),word(MAXIMUM_CLUTS_PER_COLLECTION-1)))
+		if (ReadBoundedNumericalValue(Value,"%hu",CLUT,uint16(0),uint16(MAXIMUM_CLUTS_PER_COLLECTION-1)))
 		{
 			return true;
 		}
@@ -62,7 +62,7 @@ bool XML_ShapesParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"seq") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hu",Seq,word(0),word(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedNumericalValue(Value,"%hu",Seq,uint16(0),uint16(MAXIMUM_SHAPES_PER_COLLECTION-1)))
 		{
 			SeqPresent = true;
 			return true;
@@ -71,7 +71,7 @@ bool XML_ShapesParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"frame") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hu",Seq,word(0),word(MAXIMUM_SHAPES_PER_COLLECTION-1)))
+		if (ReadBoundedNumericalValue(Value,"%hu",Seq,uint16(0),uint16(MAXIMUM_SHAPES_PER_COLLECTION-1)))
 		{
 			SeqPresent = true;
 			return true;

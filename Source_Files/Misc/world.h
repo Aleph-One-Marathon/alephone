@@ -46,8 +46,8 @@ Jul 1, 2000 (Loren Petrich):
 
 /* ---------- types */
 
-typedef short angle;
-typedef short world_distance;
+typedef int16 angle;
+typedef int16 world_distance;
 
 /* ---------- macros */
 

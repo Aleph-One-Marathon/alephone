@@ -14,12 +14,11 @@ Aug 15, 2000 (Loren Petrich):
 #define MAX_DEPTH 256	//The max levels deep function calls are allowed to get
 
 
+#include "cseries.h"
 
 #include "script_instructions.h"
 #include "script_parser.h"
 
-
-#include "cseries.h"
 #include "tags.h"
 #include "map.h"
 #include "interface.h"
@@ -120,9 +119,6 @@ initalizes lineCount to point to the beginning of every line, and initalizes
 all script variables to zero*/
 int load_script(int text_id)
 {
-	OSErr error;
-	int app;
-	int linecount;
 	char *src;
 	int x;
 
@@ -140,7 +136,7 @@ int load_script(int text_id)
 	}
 	
 	LoadedResource TextRsrc;
-	OFile.Get('TEXT', text_id, TextRsrc);
+	OFile.Get('T', 'E', 'X', 'T', text_id, TextRsrc);
 
 	clean_up_script();
 	
@@ -176,16 +172,14 @@ int load_script(int text_id)
 
 void script_init(void)
 {
-	int init_start, old_start;
-
 	if (!script_in_use())
 		return;
 
 	s_camera_Control = false;
 	
-	/*old_start = current_instruction;
+	/*int old_start = current_instruction;
 	
-	init_start = get_next_instruction();
+	int init_start = get_next_instruction();
 
 	current_instruction = old_start;
 	
@@ -314,15 +308,15 @@ void free_script(void)
 	
 }
 
-/*script_in_use returns TRUE of there 
-is currently a script loaded, FALSE if there is not.*/
+/*script_in_use returns true of there 
+is currently a script loaded, false if there is not.*/
 bool script_in_use(void)
 {
 	return (current_script);
 }
 
 
-/*instruction_finished returns TRUE of the last instuction is done, FALSE if it's not.*/
+/*instruction_finished returns true of the last instuction is done, false if it's not.*/
 
 bool instruction_finished(void)
 {

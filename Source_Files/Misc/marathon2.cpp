@@ -63,6 +63,8 @@ Aug 10, 2000 (Loren Petrich):
 #include "scripting.h"
 #include "script_parser.h"
 
+#include <limits.h>
+
 #ifdef env68k
 #pragma segment marathon
 #endif
@@ -110,13 +112,13 @@ short update_world(
 	short lowest_time, highest_time;
 	short i, time_elapsed;
 	short player_index;
-	boolean game_over= FALSE;
+	bool game_over= false;
 
 	/* find who has the most and the least queued action flags (we can only advance the world
 		as far as we have action flags for every player).  the difference between the most and
 		least queued action flags should be bounded in some way by the maximum number of action
 		flags we can generate locally at interrupt time. */
-	highest_time= SHORT_MIN, lowest_time= SHORT_MAX;
+	highest_time= SHRT_MIN, lowest_time= SHRT_MAX;
 	for (player_index= 0;player_index<dynamic_world->player_count; ++player_index)
 	{
 		short queue_size;
@@ -204,16 +206,16 @@ void leaving_map(
 	remove_all_nonpersistent_effects();
 	
 	/* mark our shape collections for unloading */
-	mark_environment_collections(static_world->environment_code, FALSE);
-	mark_all_monster_collections(FALSE);
-	mark_player_collections(FALSE);
+	mark_environment_collections(static_world->environment_code, false);
+	mark_all_monster_collections(false);
+	mark_player_collections(false);
 
 	/* all we do is mark them for unloading, we don't explicitly dispose of them; whenever the
 		next level is loaded someone (probably entering_map, below) will call load_collections()
 		and the stuff we marked as needed to be ditched will be */
 	
 	/* stop counting world ticks */
-//	set_keyboard_controller_status(FALSE);
+//	set_keyboard_controller_status(false);
 
 	stop_all_sounds();
 
@@ -223,10 +225,10 @@ void leaving_map(
 /* call this function after the new level has been completely read into memory, after
 	player->location and player->facing have been updated, and as close to the end of
 	the loading process in general as possible. */
-boolean entering_map(
+bool entering_map(
 	void)
 {
-	boolean success= TRUE;
+	bool success= true;
 
 	set_fade_effect(NONE);
 
@@ -237,9 +239,9 @@ boolean entering_map(
 	reset_paths();
 	
 	/* mark our shape collections for loading and load them */
-	mark_environment_collections(static_world->environment_code, TRUE);
-	mark_all_monster_collections(TRUE);
-	mark_player_collections(TRUE);
+	mark_environment_collections(static_world->environment_code, true);
+	mark_all_monster_collections(true);
+	mark_player_collections(true);
 	load_collections();
 
 	load_all_monster_sounds();
@@ -258,7 +260,7 @@ boolean entering_map(
 	//CP Addition: Run startup script (if available)
 	script_init();
 //	sync_heartbeat_count();
-//	set_keyboard_controller_status(TRUE);
+//	set_keyboard_controller_status(true);
 
 	if (!success) leaving_map();
 
@@ -307,18 +309,18 @@ void changed_polygon(
 		case _polygon_is_light_on_trigger:
 		case _polygon_is_light_off_trigger:
 			set_light_status(new_polygon->permutation,
-				new_polygon->type==_polygon_is_light_off_trigger ? FALSE : TRUE);
+				new_polygon->type==_polygon_is_light_off_trigger ? false : true);
 			break;
 			
 		case _polygon_is_platform:
-			platform_was_entered(new_polygon->permutation, player ? TRUE : FALSE);
+			platform_was_entered(new_polygon->permutation, player ? true : false);
 			break;
 		case _polygon_is_platform_on_trigger:
 		case _polygon_is_platform_off_trigger:
 			if (player)
 			{
 				try_and_change_platform_state(get_polygon_data(new_polygon->permutation)->permutation,
-					new_polygon->type==_polygon_is_platform_off_trigger ? FALSE : TRUE);
+					new_polygon->type==_polygon_is_platform_off_trigger ? false : true);
 			}
 			break;
 			

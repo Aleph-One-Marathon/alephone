@@ -120,7 +120,7 @@ void OverheadMap_SDL_Class::draw_text(world_point2d &location, rgb_color &color,
 
 	// Find left-side location
 	int xpos = location.x;
-	if (justify = _justify_center)
+	if (justify == _justify_center)
 		xpos -= text_width(text, font, spec.style) / 2;
 
 	// Get color

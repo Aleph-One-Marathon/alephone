@@ -266,7 +266,7 @@ static void initialize_application(void)
 	SetupParseTree();
 	XML_Resources_SDL XML_Loader;
 	XML_Loader.CurrentElement = &RootParser;
-	XML_Loader.ParseResourceSet('TEXT');
+	XML_Loader.ParseResourceSet(FOUR_CHARS_TO_INT('T', 'E', 'X', 'T'));
 
 	initialize_preferences();
 	graphics_preferences->screen_mode.bit_depth = option_8bit ? 8 : 16;
@@ -341,7 +341,7 @@ static void shutdown_application(void)
  *  Networking available?
  */
 
-boolean networking_available(void)
+bool networking_available(void)
 {
 	return false;
 }
@@ -363,7 +363,7 @@ static void initialize_marathon_music_handler(void)
  *  Put up "Quit without saving" dialog
  */
 
-boolean quit_without_saving(void)
+bool quit_without_saving(void)
 {
 printf("*** quit_without_saving()\n");
 	//!!
@@ -835,7 +835,7 @@ inline void AddOneItemToPlayer(short ItemType, short MaxNumber)
 
 static void handle_keyword(int tag)
 {
-	boolean cheated= TRUE;
+	bool cheated= true;
 
 	switch (tag)
 	{
@@ -986,7 +986,7 @@ static void handle_keyword(int tag)
 			break;
 			
 		default:
-			cheated= FALSE;
+			cheated= false;
 			break;
 	}
 }

@@ -42,16 +42,16 @@ enum {
 #define kCloseTimeout (600) // 10 seconds
 
 static ConnHandle connection_handle= NULL;
-static boolean listen_completed;
+static bool listen_completed;
 static CMErr listen_error;
 static Str255 stored_tool_name;
 static byte *asynchronous_buffers[NUMBER_OF_ASYNCHRONOUS_BUFFERS];
 
 /* -------- local prototypes */
-static boolean communications_toolbox_present(void);
+static bool communications_toolbox_present(void);
 static ConnHandle instantiate_connection_record(void);
 static pascal void listen_completion_routine(ConnHandle connection);
-static boolean establish_connection(boolean calling);
+static bool establish_connection(bool calling);
 static void save_connection_preferences(void);
 static void load_connection_tool_name_from_preferences(unsigned char *name);
 static void load_connection_preferences(void);
@@ -61,7 +61,7 @@ OSErr initialize_modem_endpoint(
 	void)
 {
 	OSErr error;
-	static boolean first_time= TRUE;
+	static bool first_time= true;
 	
 	assert(communications_toolbox_present());
 	if(first_time)
@@ -101,7 +101,7 @@ OSErr teardown_modem_endpoint(
 		{
 			error= CMAbort(connection_handle);
 			vwarn(!error, csprintf(temporary, "CMAbort error: %d", error));
-			error= CMClose(connection_handle, FALSE, NULL, kCloseTimeout, TRUE);
+			error= CMClose(connection_handle, false, NULL, kCloseTimeout, true);
 			vwarn(!error, csprintf(temporary, "Bullshit CMClose error: %d Flags: %x;g", error, flags));
 			if(error==4) error= noErr;
 		}
@@ -117,15 +117,15 @@ OSErr teardown_modem_endpoint(
 	return error;
 }
 
-boolean call_modem_player(
+bool call_modem_player(
 	void)
 {
-	boolean success= FALSE;
+	bool success= false;
 
 	connection_handle= instantiate_connection_record();
 	if(connection_handle)
 	{
-		success= establish_connection(TRUE);
+		success= establish_connection(true);
 	} else {
 		// outOfMemory
 		alert_user(fatalError, strNETWORK_ERRORS, netErrCantContinue, MemError());
@@ -134,15 +134,15 @@ boolean call_modem_player(
 	return success;
 }
 
-boolean answer_modem_player(
+bool answer_modem_player(
 	void)
 {
-	boolean success= FALSE;
+	bool success= false;
 
 	connection_handle= instantiate_connection_record();
 	if(connection_handle)
 	{
-		success= establish_connection(FALSE);
+		success= establish_connection(false);
 	} else {
 		// outOfMemory
 		alert_user(fatalError, strNETWORK_ERRORS, netErrCantContinue, MemError());
@@ -155,18 +155,18 @@ boolean answer_modem_player(
 /*  that the data be resent. */
 OSErr write_modem_endpoint(
 	void *data,
-	word length,
+	uint16 length,
 	long timeout)
 {
 	long data_written;
 	CMErr err;
-	word data_size= length;
+	uint16 data_size= length;
 
 	assert(connection_handle);
 	
 	data_written= length;
 	err= CMWrite(connection_handle, data, &data_written,
-		cmData, FALSE, NULL, timeout, 0);
+		cmData, false, NULL, timeout, 0);
 	vassert(!err && data_written==length,
 		csprintf(temporary, "Err: %d Data: %d length: %d", err, data_written, length));
 
@@ -175,7 +175,7 @@ OSErr write_modem_endpoint(
 
 OSErr read_modem_endpoint(
 	void *data,
-	word length,
+	uint16 length,
 	long timeout)
 {
 	long data_read;
@@ -185,7 +185,7 @@ OSErr read_modem_endpoint(
 	
 	data_read= length;
 	err= CMRead(connection_handle, data, &data_read,
-		cmData, FALSE, NULL, timeout, 0);
+		cmData, false, NULL, timeout, 0);
 	vassert(!err && data_read==length,
 		csprintf(temporary, "Err: %d Data read: %d requested: %d", 
 			err, data_read, length));
@@ -195,12 +195,12 @@ OSErr read_modem_endpoint(
 
 void write_modem_endpoint_asynchronous(
 	void *data,
-	word length,
+	uint16 length,
 	long timeout)
 {
 	long data_written;
 	CMErr err;
-	word data_size= length;
+	uint16 data_size= length;
 
 	assert(connection_handle);
 
@@ -208,26 +208,26 @@ void write_modem_endpoint_asynchronous(
 	memcpy(asynchronous_buffers[_write_buffer], data, length);
 	data_written= length;
 	err= CMWrite(connection_handle, asynchronous_buffers[_write_buffer], 
-		&data_written, cmData, TRUE, NULL, timeout, 0);
+		&data_written, cmData, true, NULL, timeout, 0);
 	assert(!err);
 
 	return;
 }
 
-boolean asynchronous_write_completed(
+bool asynchronous_write_completed(
 	void)
 {
 	CMBufferSizes sizes;
 	CMStatFlags flags;
 	CMErr error;
-	boolean complete= TRUE;
+	bool complete= true;
 
 	error= CMStatus(connection_handle, sizes, &flags);
 	assert(!error);
 	
 	if(flags & cmStatusDWPend)
 	{
-		complete= FALSE;
+		complete= false;
 	}
 	
 	return complete;
@@ -244,7 +244,7 @@ void idle_modem_endpoint(
 	return;
 }
 
-boolean modem_available(
+bool modem_available(
 	void)
 {
 	return communications_toolbox_present();
@@ -265,14 +265,14 @@ long modem_read_bytes_available(
 }
 	
 /* ------------ local code */
-static boolean communications_toolbox_present(
+static bool communications_toolbox_present(
 	void)
 {
-	boolean installed= TRUE;
+	bool installed= true;
 
 	if(NGetTrapAddress(_Unimplemented, OSTrap)==NGetTrapAddress(_CommToolboxDispatch, OSTrap))
 	{
-		installed= FALSE;
+		installed= false;
 	}
 	
 	return installed;
@@ -333,7 +333,7 @@ static pascal void listen_completion_routine(
 	ConnHandle connection)
 {
 	listen_error= (*connection)->errCode;
-	listen_completed= TRUE;
+	listen_completed= true;
 	
 	return;
 }
@@ -341,17 +341,17 @@ static pascal void listen_completion_routine(
 #define MODEM_OPEN_TIMEOUT (40*60)
 #define MODEM_LISTEN_TIMEOUT (120*60)
 
-static boolean establish_connection(
-	boolean calling)
+static bool establish_connection(
+	bool calling)
 {
 	Point where={40, 50};
 	short item_hit;
-	boolean success= FALSE;
+	bool success= false;
 
 	item_hit= CMChoose(&connection_handle, where, NULL);
 	if(item_hit==chooseOKMinor || item_hit==chooseOKMajor)
 	{
-		boolean cancelled= FALSE;
+		bool cancelled= false;
 		ConnectionCompletionUPP completion_proc;
 		DialogPtr dialog;
 		short item_hit;
@@ -370,7 +370,7 @@ static boolean establish_connection(
 		assert(completion_proc);
 				
 		/* Open the listening dialog. */
-		listen_completed= FALSE;
+		listen_completed= false;
 				
 		dialog= GetNewDialog(dlogAWAITING_ANSWER, NULL, (WindowPtr) -1l);
 		assert(dialog);
@@ -378,13 +378,13 @@ static boolean establish_connection(
 		/* Start listening.. */
 		if(calling)
 		{
-			listen_error= CMOpen(connection_handle, TRUE, completion_proc, MODEM_OPEN_TIMEOUT);
+			listen_error= CMOpen(connection_handle, true, completion_proc, MODEM_OPEN_TIMEOUT);
 		} else {
-			listen_error= CMListen(connection_handle, TRUE, completion_proc, MODEM_LISTEN_TIMEOUT);
+			listen_error= CMListen(connection_handle, true, completion_proc, MODEM_LISTEN_TIMEOUT);
 			if(listen_error==cmNotSupported)
 			{
 				/* Serial connections can't listen, so we have to CMOpen it.. */
-				listen_error= CMOpen(connection_handle, TRUE, completion_proc, MODEM_OPEN_TIMEOUT);
+				listen_error= CMOpen(connection_handle, true, completion_proc, MODEM_OPEN_TIMEOUT);
 			}
 		}
 		
@@ -394,7 +394,7 @@ static boolean establish_connection(
 		
 			/* This needs to go into the general idle proc.. */
 			idle_modem_endpoint();
-			if(item_hit==iCANCEL) cancelled= TRUE;
+			if(item_hit==iCANCEL) cancelled= true;
 			
 			if(!calling)
 			{
@@ -406,14 +406,14 @@ static boolean establish_connection(
 dprintf("CMStatus returned: %d", listen_error);
 				if(flags & cmStatusIncomingCallPresent)
 				{	
-					boolean accept_call= FALSE;
+					bool accept_call= false;
 				
 					/* Should we accept this call */
-					accept_call= TRUE;
+					accept_call= true;
 dprintf("Incoming call present!");
 					listen_error= CMAccept(connection_handle, accept_call);
 dprintf("CMAccept returned: %d", listen_error);
-					listen_completed= TRUE;
+					listen_completed= true;
 				}
 			}
 		}
@@ -424,7 +424,7 @@ dprintf("CMAccept returned: %d", listen_error);
 		/* Check for errors... */
 		if(listen_error==cmNoErr && !cancelled)
 		{
-			success= TRUE;
+			success= true;
 			
 			/* And save the preferences... */
 		} else {

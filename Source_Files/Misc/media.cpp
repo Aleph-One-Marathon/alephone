@@ -44,7 +44,7 @@ struct media_data *medias;
 
 /* ---------- private prototypes */
 
-static void update_one_media(short media_index, boolean force_update);
+static void update_one_media(short media_index, bool force_update);
 
 /*
 #ifdef DEBUG
@@ -84,7 +84,7 @@ short new_media(
 			MARK_SLOT_AS_USED(media);
 			
 			media->origin.x= media->origin.y= 0;
-			update_one_media(media_index, TRUE);
+			update_one_media(media_index, true);
 			
 			break;
 		}
@@ -94,7 +94,7 @@ short new_media(
 	return media_index;
 }
 
-boolean media_in_environment(
+bool media_in_environment(
 	short media_type,
 	short environment_code)
 {
@@ -116,7 +116,7 @@ void update_medias(
 	{
 		if (SLOT_IS_USED(media))
 		{
-			update_one_media(media_index, FALSE);
+			update_one_media(media_index, false);
 			
 			media->origin.x= WORLD_FRACTIONAL_PART(media->origin.x + ((cosine_table[media->current_direction]*media->current_magnitude)>>TRIG_SHIFT));
 			media->origin.y= WORLD_FRACTIONAL_PART(media->origin.y + ((sine_table[media->current_direction]*media->current_magnitude)>>TRIG_SHIFT));
@@ -246,7 +246,7 @@ static struct media_definition *get_media_definition(
 
 static void update_one_media(
 	short media_index,
-	boolean force_update)
+	bool force_update)
 {
 	struct media_data *media= get_media_data(media_index);
 	// LP change: idiot-proofing
@@ -510,7 +510,6 @@ bool XML_LiquidParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"damage_freq") == 0)
 	{
-		float Pitch;
 		if (ReadNumericalValue(Value,"%hd",Data.damage_frequency))
 		{
 			IsPresent[3] = true;

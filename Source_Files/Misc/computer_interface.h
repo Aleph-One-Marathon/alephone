@@ -82,12 +82,12 @@ void initialize_player_terminal_info(short player_index);
 void enter_computer_interface(short player_index, short text_number, short completion_flag);
 void _render_computer_interface(struct view_terminal_data *data);
 void update_player_for_terminal_mode(short player_index);
-void update_player_keys_for_terminal(short player_index, long action_flags);
-long build_terminal_action_flags(char *keymap);
+void update_player_keys_for_terminal(short player_index, uint32 action_flags);
+uint32 build_terminal_action_flags(char *keymap);
 void dirty_terminal_view(short player_index);
 void abort_terminal_mode(short player_index);
 
-boolean player_in_terminal_mode(short player_index);
+bool player_in_terminal_mode(short player_index);
 
 void *get_terminal_data_for_save_game(void);
 long calculate_terminal_data_length(void);
@@ -107,7 +107,7 @@ void find_all_picts_references_by_terminals(byte *compiled_text, short terminal_
 	short *picts, short *picture_count);
 void find_all_checkpoints_references_by_terminals(byte *compiled_text, 
 	short terminal_count, short *checkpoints, short *checkpoint_count);
-boolean terminal_has_finished_text_type(short terminal_id, short finished_type);
+bool terminal_has_finished_text_type(short terminal_id, short finished_type);
 #endif
 
 #endif

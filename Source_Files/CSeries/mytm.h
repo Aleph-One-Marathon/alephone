@@ -6,7 +6,7 @@ extern myTMTaskPtr myTMSetup(
 	boolean (*func)(void));
 extern myTMTaskPtr myXTMSetup(
 	long time,
-	boolean (*func)(void));
+	bool (*func)(void));
 extern myTMTaskPtr myTMRemove(
 	myTMTaskPtr task);
 extern void myTMReset(

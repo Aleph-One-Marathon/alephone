@@ -33,13 +33,13 @@ enum {
 };
 
 /* ----------- code */
-boolean quit_without_saving(
+bool quit_without_saving(
 	void)
 {
 	DialogPtr dialog;
 	GrafPtr old_port;
 	short item_hit;
-	boolean quit= FALSE;
+	bool quit= false;
 	Point origin= {78, 134};
 	
 	dialog= myGetNewDialog(dlogQUIT_WITHOUT_SAVING, NULL, (WindowPtr) -1, 0);
@@ -49,11 +49,11 @@ boolean quit_without_saving(
 	SetPort(screen_window);
 	LocalToGlobal(&origin);
 	SetPort(old_port);
-	MoveWindow(dialog, origin.h, origin.v, FALSE);
+	MoveWindow(dialog, origin.h, origin.v, false);
 	ShowWindow(dialog);
 	
 	ModalDialog(get_general_filter_upp(), &item_hit);
 	DisposeDialog(dialog);
 	
-	return item_hit!=iOK ? FALSE : TRUE; /* note default button is the safe, don’t quit, one */
+	return item_hit!=iOK ? false : true; /* note default button is the safe, don’t quit, one */
 }

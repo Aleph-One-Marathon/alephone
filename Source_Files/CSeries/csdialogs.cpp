@@ -12,7 +12,7 @@ extern void update_any_window(
 extern void activate_any_window(
 	WindowPtr window,
 	EventRecord *event,
-	boolean active);
+	bool active);
 
 static Boolean cursor_tracking=true;
 static dialog_header_proc_ptr header_proc;

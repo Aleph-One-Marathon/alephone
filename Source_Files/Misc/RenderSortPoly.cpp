@@ -15,6 +15,7 @@
 #include "RenderSortPoly.h"
 
 #include <string.h>
+#include <limits.h>
 
 
 // LP: "recommended" sizes of stuff in growable lists
@@ -96,7 +97,7 @@ void RenderSortPolyClass::sort_render_tree()
 		short alias_count= 0;
 		struct node_data *aliases[MAXIMUM_NODE_ALIASES];
 		*/
-		boolean leaf_has_children= FALSE; /* i.e., it’s not a leaf */
+		bool leaf_has_children= false; /* i.e., it’s not a leaf */
 		node_data *node;
 
 		/* if we don’t have a leaf, find one */
@@ -155,7 +156,7 @@ void RenderSortPolyClass::sort_render_tree()
 				assert(node->polygon_index == PolygonToFind);
 				if (node->children)
 				{
-					leaf_has_children= TRUE;
+					leaf_has_children= true;
 					break;
 				}
 			}
@@ -174,7 +175,7 @@ void RenderSortPolyClass::sort_render_tree()
 				
 				if (node->children)
 				{
-					leaf_has_children= TRUE;
+					leaf_has_children= true;
 					break;
 				}
 				if (alias_count<MAXIMUM_NODE_ALIASES)
@@ -183,7 +184,7 @@ void RenderSortPolyClass::sort_render_tree()
 					
 					if (node->children)
 					{
-						leaf_has_children= TRUE;
+						leaf_has_children= true;
 						break;
 					}
 				}
@@ -213,7 +214,6 @@ void RenderSortPolyClass::sort_render_tree()
 		else /* this is a leaf, and we can remove it from the tree */
 		{
 			sorted_node_data *sorted_node;
-			short alias;
 			
 //			dprintf("removed polygon #%d (#%d aliases)", leaf->polygon_index, alias_count);
 			
@@ -300,7 +300,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	endpoint_clip_data *endpoint;
 	line_clip_data *line;
 	short x0, x1; /* ignoring what clipping parameters we’ve gotten, this is the left and right borders of this node on the screen */
-	short i, j, k;
+	short i, j;
 	// LP: references to simplify the code
 	GrowableList<endpoint_clip_data>& EndpointClips = RVPtr->EndpointClips;
 	GrowableList<line_clip_data>& LineClips = RVPtr->LineClips;
@@ -314,7 +314,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 		polygon_data *polygon= get_polygon_data(ChainBegin->polygon_index); /* all these nodes should be the same */
 		// struct polygon_data *polygon= get_polygon_data((*node_list)->polygon_index); /* all these nodes should be the same */
 		
-		x0= SHORT_MAX, x1= SHORT_MIN;
+		x0= SHRT_MAX, x1= SHRT_MIN;
 		for (i= 0;i<polygon->vertex_count;++i)
 		{
 			short endpoint_index= polygon->endpoint_indexes[i];
@@ -328,7 +328,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 			}
 			else
 			{
-				x0= SHORT_MIN, x1= SHORT_MAX;
+				x0= SHRT_MIN, x1= SHRT_MAX;
 				break;
 			}
 		}

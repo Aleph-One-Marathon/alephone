@@ -367,7 +367,7 @@ short get_action_queue_size(short player_index);
 void damage_player(short monster_index, short aggressor_index, short aggressor_type,
 	struct damage_definition *damage);
 
-void mark_player_collections(boolean loading);
+void mark_player_collections(bool loading);
 
 short player_identifier_to_player_index(short player_identifier);
 
@@ -393,12 +393,12 @@ short monster_index_to_player_index(short monster_index);
 
 short get_polygon_index_supporting_player(short player_index);
 
-boolean legal_player_powerup(short player_index, short item_index);
+bool legal_player_powerup(short player_index, short item_index);
 void process_player_powerup(short player_index, short item_index);
 
 world_distance dead_player_minimum_polygon_height(short polygon_index);
 
-boolean try_and_subtract_player_item(short player_index, short item_type);
+bool try_and_subtract_player_item(short player_index, short item_type);
 
 /* ---------- prototypes/PHYSICS.C */
 

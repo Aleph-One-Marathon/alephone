@@ -61,7 +61,7 @@ public:
 	short max;				/* Maximum matches to return		<-  */
 	short count;			/* Count of matches found 			->  */
 
-	/* Callback	functions, if returns TRUE, you add it.  If */
+	/* Callback	functions, if returns true, you add it.  If */
 	/*  callback==NULL, adds all found.							<-  */
 	bool (*callback)(FileSpecifier& File, void *data);
 	void *user_data;		/* Passed to callback above.		<-  */

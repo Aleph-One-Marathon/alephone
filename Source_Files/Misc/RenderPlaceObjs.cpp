@@ -17,6 +17,7 @@
 #include "RenderPlaceObjs.h"
 
 #include <string.h>
+#include <limits.h>
 
 
 // LP: "recommended" sizes of stuff in growable lists
@@ -125,7 +126,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			temp_tfm_origin.x = object->location.x;
 			temp_tfm_origin.y = object->location.y;
 			transformed_origin.z = object->location.z - view->origin.z;
-			word tfm_origin_flags;
+			uint16 tfm_origin_flags;
 			transform_overflow_point2d(&temp_tfm_origin, (world_point2d *)&view->origin, view->yaw, &tfm_origin_flags);
 			long_vector2d *tfm_origin_ptr = (long_vector2d *)(&transformed_origin);
 			overflow_short_to_long_2d(temp_tfm_origin,tfm_origin_flags,*tfm_origin_ptr);
@@ -213,7 +214,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					else
 					{
 						// All the way down
-						render_object->ymedia= SHORT_MAX;
+						render_object->ymedia= INT16_MAX;
 					}
 					
 					/*
@@ -225,7 +226,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					}
 					else
 					{
-						render_object->ymedia= SHORT_MAX;
+						render_object->ymedia= INT16_MAX;
 					}
 					*/
 				}
@@ -236,8 +237,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				// LP change: for the convenience of the OpenGL renderer
 				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,data.low_level_shape_index);
 				
-				render_object->rectangle.flip_vertical= FALSE;
-				render_object->rectangle.flip_horizontal= (shape_information->flags&_X_MIRRORED_BIT) ? TRUE : FALSE;
+				render_object->rectangle.flip_vertical= false;
+				render_object->rectangle.flip_horizontal= (shape_information->flags&_X_MIRRORED_BIT) ? true : false;
 				
 				render_object->rectangle.depth= transformed_origin.x;
 				instantiate_rectangle_transfer_mode(view, &render_object->rectangle, data.transfer_mode, data.transfer_phase);
@@ -588,7 +589,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 			doing the same thing we do when the windows are originally built (i.e., calculating a
 			new top/bottom for every window.  but screw that.  */
 		left_count= right_count= 0;
-		y0= SHORT_MAX, y1= SHORT_MIN;
+		y0= SHRT_MAX, y1= SHRT_MIN;
 		for (i= 0; i<base_node_count; ++i)
 		{
 			short j, k;
@@ -703,7 +704,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 shape_information_data *RenderPlaceObjsClass::rescale_shape_information(
 	shape_information_data *unscaled,
 	shape_information_data *scaled,
-	word flags)
+	uint16 flags)
 {
 	if (flags)
 	{

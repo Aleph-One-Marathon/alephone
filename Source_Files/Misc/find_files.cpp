@@ -123,7 +123,7 @@ bool FileFinder::Enumerate(DirectorySpecifier& Dir)
 				if(Type==WILDCARD_TYPE || 
 					pb.hFileInfo.ioFlFndrInfo.fdType==type_to_find)
 				{
-					/* Only add if there isn't a callback or it returns TRUE */
+					/* Only add if there isn't a callback or it returns true */
 					switch(search_type)
 					{
 						case _fill_buffer:

@@ -43,14 +43,14 @@ static void	set_text_face(
 	RGBForeColor(&color);
 }
 
-static boolean calculate_line(
+static bool calculate_line(
 	char *base_text, 
 	short width,
 	short start_index,
 	short text_end_index,
 	short *end_index)
 {
-	boolean done= FALSE;
+	bool done= false;
 
 	if(start_index!=text_end_index)
 	{
@@ -68,12 +68,12 @@ static boolean calculate_line(
 		/* We assume the last line is empty, always.. */
 		if(code==smBreakOverflow)
 		{
-			done= TRUE;
+			done= true;
 		}
 //dprintf("Code: %d Length: %d Start: %d TextEnd: %d End: %d Star Text: %x", code, 
 //	text_end_index, start_index, text_end_index, *end_index, &base_text[start_index]);
 	} else {
-		done= TRUE;
+		done= true;
 	}
 	
 	return done;

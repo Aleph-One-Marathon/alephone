@@ -46,6 +46,7 @@ Jul 1, 2000 (Loren Petrich):
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
 
 // LP additions:
 #include <string.h>
@@ -93,16 +94,16 @@ struct fade_definition
 
 	short period;
 	
-	word flags;
+	uint16 flags;
 	short priority; // higher is higher
 };
 
-#define FADE_IS_ACTIVE(f) ((f)->flags&(word)0x8000)
-#define SET_FADE_ACTIVE_STATUS(f,s) ((void)((s)?((f)->flags|=(word)0x8000):((f)->flags&=(word)~0x8000)))
+#define FADE_IS_ACTIVE(f) ((f)->flags&(uint16)0x8000)
+#define SET_FADE_ACTIVE_STATUS(f,s) ((void)((s)?((f)->flags|=(uint16)0x8000):((f)->flags&=(uint16)~0x8000)))
 
 struct fade_data
 {
-	word flags; /* [active.1] [unused.15] */
+	uint16 flags; /* [active.1] [unused.15] */
 	
 	short type;
 	short fade_effect_type;
@@ -117,7 +118,7 @@ struct fade_data
 
 static struct fade_data *fade;
 
-static word fades_random_seed= 0x1;
+static uint16 fades_random_seed= 0x1;
 
 // LP addition: pointer to OpenGL fader to be used in the color-table functions below
 // It is NULL if OpenGL is inactive
@@ -239,13 +240,13 @@ void initialize_fades(
 	fade= new fade_data;
 	assert(fade);
 	
-	SET_FADE_ACTIVE_STATUS(fade, FALSE);
+	SET_FADE_ACTIVE_STATUS(fade, false);
 	fade->fade_effect_type= NONE;
 	
 	return;
 }
 
-boolean update_fades(
+bool update_fades(
 	void)
 {
 	if (FADE_IS_ACTIVE(fade))
@@ -260,7 +261,7 @@ boolean update_fades(
 		if ((phase= machine_tick_count()-fade->last_update_tick)>=definition->period)
 		{
 			transparency= definition->final_transparency;
-			SET_FADE_ACTIVE_STATUS(fade, FALSE);
+			SET_FADE_ACTIVE_STATUS(fade, false);
 		}
 		else
 		{
@@ -271,7 +272,7 @@ boolean update_fades(
 		recalculate_and_display_color_table(fade->type, transparency, fade->original_color_table, fade->animated_color_table);
 	}
 	
-	return FADE_IS_ACTIVE(fade) ? TRUE : FALSE;
+	return FADE_IS_ACTIVE(fade) ? true : false;
 }
 
 void set_fade_effect(
@@ -293,7 +294,7 @@ void set_fade_effect(
 #ifdef HAVE_OPENGL
 				if (!OGL_FaderActive())
 #endif
-					animate_screen_clut(world_color_table, FALSE);
+					animate_screen_clut(world_color_table, false);
 			}
 			else
 			{
@@ -323,7 +324,7 @@ void explicit_start_fade(
 	if (!definition) return;
 		
 	long machine_ticks= machine_tick_count();
-	boolean do_fade= TRUE;
+	bool do_fade= true;
 
 	if (FADE_IS_ACTIVE(fade))
 	{
@@ -331,14 +332,14 @@ void explicit_start_fade(
 		// LP change: idiot-proofing
 		if (old_definition)
 		{
-			if (old_definition->priority>definition->priority) do_fade= FALSE;
-			if (fade->type==type && machine_ticks-fade->last_update_tick<MINIMUM_FADE_RESTART) do_fade= FALSE;
+			if (old_definition->priority>definition->priority) do_fade= false;
+			if (fade->type==type && machine_ticks-fade->last_update_tick<MINIMUM_FADE_RESTART) do_fade= false;
 		}
 	}
 
 	if (do_fade)
 	{
-		SET_FADE_ACTIVE_STATUS(fade, FALSE);
+		SET_FADE_ACTIVE_STATUS(fade, false);
 	
 		recalculate_and_display_color_table(type, definition->initial_transparency, original_color_table, animated_color_table);
 		if (definition->period)
@@ -347,7 +348,7 @@ void explicit_start_fade(
 			fade->last_update_tick= machine_ticks;
 			fade->original_color_table= original_color_table;
 			fade->animated_color_table= animated_color_table;
-			SET_FADE_ACTIVE_STATUS(fade, TRUE);
+			SET_FADE_ACTIVE_STATUS(fade, true);
 		}
 	}
 	
@@ -366,16 +367,16 @@ void stop_fade(
 		recalculate_and_display_color_table(fade->type, definition->final_transparency,
 			fade->original_color_table, fade->animated_color_table);
 		
-		SET_FADE_ACTIVE_STATUS(fade, FALSE);
+		SET_FADE_ACTIVE_STATUS(fade, false);
 	}
 	
 	return;
 }
 
-boolean fade_finished(
+bool fade_finished(
 	void)
 {
-	return FADE_IS_ACTIVE(fade) ? FALSE : TRUE;
+	return FADE_IS_ACTIVE(fade) ? false : true;
 }
 
 void full_fade(
@@ -453,7 +454,7 @@ static void recalculate_and_display_color_table(
 	struct color_table *original_color_table,
 	struct color_table *animated_color_table)
 {
-	boolean full_screen= FALSE;
+	bool full_screen= false;
 	
 	// LP addition: set up the OGL queue entry for the liquid effects
 	SetOGLFader(FaderQueue_Liquid);
@@ -481,7 +482,7 @@ static void recalculate_and_display_color_table(
 		struct fade_definition *definition= get_fade_definition(type);
 
 		definition->proc(original_color_table, animated_color_table, &definition->color, transparency);	
-		full_screen= (definition->flags&_full_screen_flag) ? TRUE : FALSE;
+		full_screen= (definition->flags&_full_screen_flag) ? true : false;
 	}
 	
 	// Only do the video-card fader if the OpenGL fader is inactive
@@ -536,9 +537,9 @@ static void randomize_color_table(
 	{
 		CurrentOGLFader->Type = _randomize_fader_type;
 		// Create random colors, but transmit the opacity
-		CurrentOGLFader->Color[0] = FADES_RANDOM()/float(SHORT_MAX);
-		CurrentOGLFader->Color[1] = FADES_RANDOM()/float(SHORT_MAX);
-		CurrentOGLFader->Color[2] = FADES_RANDOM()/float(SHORT_MAX);
+		CurrentOGLFader->Color[0] = FADES_RANDOM()/float(SHRT_MAX);
+		CurrentOGLFader->Color[1] = FADES_RANDOM()/float(SHRT_MAX);
+		CurrentOGLFader->Color[2] = FADES_RANDOM()/float(SHRT_MAX);
 		CurrentOGLFader->Color[3] = transparency/float(FIXED_ONE);
 		return;
 	}
@@ -546,7 +547,7 @@ static void randomize_color_table(
 	short i;
 	struct rgb_color *unadjusted= original_color_table->colors;
 	struct rgb_color *adjusted= animated_color_table->colors;
-	word mask, adjusted_transparency= PIN(transparency, 0, 0xffff);
+	uint16 mask, adjusted_transparency= PIN(transparency, 0, 0xffff);
 
 	(void) (color);
 
@@ -683,12 +684,12 @@ static void soft_tint_color_table(
 	short i;
 	struct rgb_color *unadjusted= original_color_table->colors;
 	struct rgb_color *adjusted= animated_color_table->colors;
-	word adjusted_transparency= transparency>>ADJUSTED_TRANSPARENCY_DOWNSHIFT;
+	uint16 adjusted_transparency= transparency>>ADJUSTED_TRANSPARENCY_DOWNSHIFT;
 	
 	animated_color_table->color_count= original_color_table->color_count;
 	for (i= 0; i<original_color_table->color_count; ++i, ++adjusted, ++unadjusted)
 	{
-		word intensity;
+		uint16 intensity;
 		
 		intensity= MAX(unadjusted->red, unadjusted->green);
 		intensity= MAX(intensity, unadjusted->blue)>>ADJUSTED_TRANSPARENCY_DOWNSHIFT;
@@ -777,7 +778,7 @@ bool XML_FaderParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"initial_opacity") == 0)
 	{
 		float Opacity;
-		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHORT_MAX),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
 			Data.initial_transparency = long(FIXED_ONE*Opacity + 0.5);
 			IsPresent[1] = true;
@@ -788,7 +789,7 @@ bool XML_FaderParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"final_opacity") == 0)
 	{
 		float Opacity;
-		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHORT_MAX),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
 			Data.final_transparency = long(FIXED_ONE*Opacity + 0.5);
 			IsPresent[2] = true;
@@ -807,7 +808,6 @@ bool XML_FaderParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"flags") == 0)
 	{
-		float Pitch;
 		if (ReadNumericalValue(Value,"%hu",Data.flags))
 		{
 			IsPresent[4] = true;
@@ -934,7 +934,7 @@ bool XML_LiquidFaderParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"opacity") == 0)
 	{
 		float Opacity;
-		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHORT_MAX),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",Opacity,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
 			Data.transparency = long(FIXED_ONE*Opacity + 0.5);
 			IsPresent[1] = true;

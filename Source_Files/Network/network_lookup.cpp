@@ -114,7 +114,7 @@ OSErr NetLookupOpen(
 		lookupMPPPBPtr->NBP.parm.Lookup.retBuffPtr= lookupBuffer;
 		lookupMPPPBPtr->NBP.parm.Lookup.retBuffSize= NAMES_LIST_BUFFER_SIZE;
 		lookupMPPPBPtr->NBP.parm.Lookup.maxToGet= MAXIMUM_LOOKUP_NAME_COUNT;
-		error= PLookupName(lookupMPPPBPtr, TRUE);	
+		error= PLookupName(lookupMPPPBPtr, true);	
 	
 		lookupCount= 0; /* no names, initially */
 		lookupUpdateProc= updateProc; /* remember the callerÕs update procedure */
@@ -148,7 +148,7 @@ void NetLookupClose(
 		MPPPBPtr myMPPPBPtr= (MPPPBPtr) NewPtrClear(sizeof(MPPParamBlock));
 		
 		myMPPPBPtr->NBPKILL.nKillQEl= (Ptr) lookupMPPPBPtr;
-		error= PKillNBP(myMPPPBPtr, FALSE);
+		error= PKillNBP(myMPPPBPtr, false);
 		/* presumably cbNotFound means the PNBPLookup has already terminated */
 		if (error!=reqAborted&&error!=noErr&&error!=cbNotFound) dprintf("PKillNBP() returned %d", error);
 	
@@ -255,7 +255,7 @@ void NetLookupUpdate(
 		entity_count= lookupMPPPBPtr->NBP.parm.Lookup.numGotten;
 		for (entity_index=0;entity_index<entity_count;++entity_index)
 		{
-			boolean insert;
+			bool insert;
 			
 			/* get this entityÕs address and entity structure */
 			NBPExtract(lookupBuffer, entity_count, entity_index+1, &entity, &address);
@@ -264,7 +264,7 @@ void NetLookupUpdate(
 			{
 				/* see if we can find an old entry in our entity list with the same node, socket and
 					network numbers.  if we can, reset his persistence and continue.  */
-				insert= TRUE; /* default to inserting this entity */
+				insert= true; /* default to inserting this entity */
 				for (insertion_point=0;insertion_point<lookupCount;++insertion_point)
 				{
 					if (address.aNode==lookupEntities[insertion_point].address.aNode &&
@@ -273,7 +273,7 @@ void NetLookupUpdate(
 					{
 						/* this entity is already in the list; reset his persistence and continue */
 						lookupEntities[insertion_point].persistence= ENTITY_PERSISTENCE;
-						insert= FALSE;
+						insert= false;
 						break;
 					}
 					if (IUCompString(entity.objStr, lookupEntities[insertion_point].entity.objStr)<0)
@@ -323,7 +323,7 @@ void NetLookupUpdate(
 		lookupMPPPBPtr->NBP.parm.Lookup.retBuffSize= NAMES_LIST_BUFFER_SIZE;
 		lookupMPPPBPtr->NBP.parm.Lookup.maxToGet= MAXIMUM_LOOKUP_NAME_COUNT;
 		
-		error= PLookupName(lookupMPPPBPtr, TRUE);
+		error= PLookupName(lookupMPPPBPtr, true);
 		if (error!=noErr) dprintf("Subsequent PLookupName() returned %d", error);
 	}
 #endif
@@ -361,7 +361,7 @@ OSErr NetGetZonePopupMenu(
 				SetMenuItemText(menu, i+1, zone_names[i]);
 			}
 
-			CheckItem(menu, *local_zone, TRUE);
+			CheckItem(menu, *local_zone, true);
 		}
 		
 		DisposePtr((Ptr)zone_names);
@@ -402,7 +402,7 @@ OSErr NetGetZoneList(
 		*zone_count= 0;
 		do
 		{
-			error= PBControl((ParmBlkPtr) xpb, FALSE);
+			error= PBControl((ParmBlkPtr) xpb, false);
 			if (error==noErr)
 			{
 				byte *read;
@@ -470,7 +470,7 @@ OSErr NetGetLocalZoneName(
 		xpb->XCALL.zipInfoField[0]= 0;
 		xpb->XCALL.zipInfoField[1]= 0;
 		
-		error= PBControl((ParmBlkPtr) xpb, FALSE);
+		error= PBControl((ParmBlkPtr) xpb, false);
 
 		DisposePtr((Ptr)xpb);
 	}

@@ -67,7 +67,7 @@ struct weapon_display_information
 	short transfer_mode;
 	fixed transfer_phase;
 	
-	boolean flip_horizontal, flip_vertical;
+	bool flip_horizontal, flip_vertical;
 };
 
 /* ----------------- prototypes */
@@ -84,7 +84,7 @@ void *get_weapon_array(void);
 long calculate_weapon_array_length(void);
 
 /* while this returns true, keep calling.. */
-boolean get_weapon_display_information(short *count, 
+bool get_weapon_display_information(short *count, 
 	struct weapon_display_information *data);
 
 /* When the player runs over an item, check for reloads, etc. */
@@ -94,7 +94,7 @@ void process_new_item_for_reloading(short player_index, short item_type);
 void update_player_weapons(short player_index, long action_flags);
 
 /* Mark the weapon collections for loading or unloading.. */
-void mark_weapon_collections(boolean loading);
+void mark_weapon_collections(bool loading);
 
 /* Called when a player dies to discharge the weapons that they have charged up. */
 void discharge_charged_weapons(short player_index);

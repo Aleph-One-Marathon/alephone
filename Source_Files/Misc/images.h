@@ -39,7 +39,7 @@ extern void set_scenario_images_file(FileSpecifier& File);
 extern void draw_full_screen_pict_resource_from_images(int pict_resource_number);
 extern void draw_full_screen_pict_resource_from_scenario(int pict_resource_number);
 
-extern void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, boolean text_block);
+extern void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bool text_block);
 
 // Places a MacOS resource handle into an appropriate wrapper object;
 // a resource-fork emulator may put a pointer instead.

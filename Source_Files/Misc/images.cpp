@@ -106,9 +106,9 @@ bool get_picture_resource_from_images(int base_resource, LoadedResource &PictRsr
 
 	int RsrcID = determine_pict_resource_id(
 		ImagesResources,
-		'PICT', base_resource,
+		FOUR_CHARS_TO_INT('P', 'I', 'C', 'T'), base_resource,
 		_images_file_delta16, _images_file_delta32);
-	return ImagesResources.Get('PICT', RsrcID, PictRsrc);
+	return ImagesResources.Get('P', 'I', 'C', 'T', RsrcID, PictRsrc);
 }
 
 bool images_picture_exists(int base_resource)
@@ -117,9 +117,9 @@ bool images_picture_exists(int base_resource)
 
 	int RsrcID = determine_pict_resource_id(
 		ImagesResources,
-		'PICT', base_resource,
+		FOUR_CHARS_TO_INT('P', 'I', 'C', 'T'), base_resource,
 		_images_file_delta16, _images_file_delta32);
-	return ImagesResources.Check('PICT', RsrcID);
+	return ImagesResources.Check('P', 'I', 'C', 'T', RsrcID);
 }
 
 void draw_full_screen_pict_resource_from_images(int pict_resource_number)
@@ -141,9 +141,9 @@ bool get_picture_resource_from_scenario(int base_resource, LoadedResource &PictR
 
 	int RsrcID = determine_pict_resource_id(
 		ScenarioResources,
-		'PICT', base_resource,
+		FOUR_CHARS_TO_INT('P', 'I', 'C', 'T'), base_resource,
 		_scenario_file_delta16, _scenario_file_delta32);
-	bool success = ScenarioResources.Get('PICT', RsrcID, PictRsrc);
+	bool success = ScenarioResources.Get('P', 'I', 'C', 'T', RsrcID, PictRsrc);
 #ifdef mac
 	if (success) {
 		Handle PictHdl = PictRsrc.GetHandle();
@@ -160,9 +160,9 @@ bool scenario_picture_exists(int base_resource)
 
 	int RsrcID = determine_pict_resource_id(
 		ScenarioResources,
-		'PICT', base_resource,
+		FOUR_CHARS_TO_INT('P', 'I', 'C', 'T'), base_resource,
 		_scenario_file_delta16, _scenario_file_delta32);
-	return ScenarioResources.Check('PICT', RsrcID);
+	return ScenarioResources.Check('P', 'I', 'C', 'T', RsrcID);
 }
 
 void draw_full_screen_pict_resource_from_scenario(int pict_resource_number)
@@ -182,7 +182,7 @@ bool get_sound_resource_from_scenario(int resource_number, LoadedResource &Sound
 	if (!ScenarioResources.IsOpen())
 		return false;
 
-	bool success = ScenarioResources.Get('snd ', resource_number, SoundRsrc);
+	bool success = ScenarioResources.Get('s', 'n', 'd', ' ', resource_number, SoundRsrc);
 #ifdef mac
 	if (success) {
 		Handle SndHdl = SoundRsrc.GetHandle();
@@ -219,7 +219,7 @@ struct color_table *calculate_picture_clut(int CLUTSource, int pict_resource_num
 	
 	// Load CLUT resource
 	LoadedResource CLUT_Rsrc;
-	if (OFilePtr->Get('clut', pict_resource_number, CLUT_Rsrc)) {
+	if (OFilePtr->Get('c', 'l', 'u', 't', pict_resource_number, CLUT_Rsrc)) {
 
 #ifdef mac
 		Handle resource = CLUT_Rsrc.GetHandle();

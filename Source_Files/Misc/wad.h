@@ -110,8 +110,8 @@ struct wad_data {
 };
 
 /* ----- miscellaneous functions */
-boolean wad_file_has_checksum(FileSpecifier& File, unsigned long checksum);
-boolean wad_file_has_parent_checksum(FileSpecifier& File, unsigned long checksum);
+bool wad_file_has_checksum(FileSpecifier& File, uint32 checksum);
+bool wad_file_has_parent_checksum(FileSpecifier& File, uint32 checksum);
 
 /* Find out how many wads there are in the map */
 short number_of_wads_in_file(FileSpecifier& File); /* returns -1 on error */
@@ -133,11 +133,11 @@ void close_wad_file(OpenedFile& OFile);
 /* ----- Read File functions */
 
 /* Read the header from the wad file */
-boolean read_wad_header(OpenedFile& OFile, struct wad_header *header);
+bool read_wad_header(OpenedFile& OFile, struct wad_header *header);
 
 /* Read the indexed wad from the file */
 struct wad_data *read_indexed_wad_from_file(OpenedFile& OFile, 
-	struct wad_header *header, short index, boolean read_only);
+	struct wad_header *header, short index, bool read_only);
 
 /* Properly deal with the memory.. */
 void free_wad(struct wad_data *wad);
@@ -159,22 +159,22 @@ void *get_indexed_directory_data(struct wad_header *header, short index,
 
 void *read_directory_data(OpenedFile& OFile, struct wad_header *header);
 
-unsigned long read_wad_file_checksum(FileSpecifier& File);
-unsigned long read_wad_file_parent_checksum(FileSpecifier& File);
+uint32 read_wad_file_checksum(FileSpecifier& File);
+uint32 read_wad_file_parent_checksum(FileSpecifier& File);
 
 // Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
 
-boolean find_wad_file_that_has_checksum(FileSpecifier& File,
-	int file_type, short path_resource_id, unsigned long checksum);
+bool find_wad_file_that_has_checksum(FileSpecifier& File,
+	int file_type, short path_resource_id, uint32 checksum);
 
 /* Added in here for simplicity.  Really should be somewhere else.. */
-boolean find_file_with_modification_date(FileSpecifier& File,
+bool find_file_with_modification_date(FileSpecifier& File,
 	int file_type, short path_resource_id, unsigned long modification_date);
 
 /* ------------ Flat wad functions */
 /* These functions are used for transferring data, and it completely encapsulates */
 /*  a given wad from a given file... */
-void *get_flat_data(FileSpecifier& File, boolean use_union, short wad_index);
+void *get_flat_data(FileSpecifier& File, bool use_union, short wad_index);
 long get_flat_data_length(void *data);
 
 /* This is how you dispose of it-> you inflate it, then use free_wad() */
@@ -192,11 +192,11 @@ struct wad_data *create_empty_wad(void);
 void fill_default_wad_header(FileSpecifier& File, short wadfile_version,
 	short data_version, short wad_count, short application_directory_data_size,
 	struct wad_header *header);
-boolean write_wad_header(OpenedFile& OFile, struct wad_header *header);
-boolean write_directorys(OpenedFile& OFile,  struct wad_header *header,
+bool write_wad_header(OpenedFile& OFile, struct wad_header *header);
+bool write_directorys(OpenedFile& OFile,  struct wad_header *header,
 	void *entries);
 void calculate_and_store_wadfile_checksum(OpenedFile& OFile);
-boolean write_wad(OpenedFile& OFile, struct wad_header *file_header, 
+bool write_wad(OpenedFile& OFile, struct wad_header *file_header, 
 	struct wad_data *wad, long offset);
 
 void set_indexed_directory_offset_and_length(struct wad_header *header, 

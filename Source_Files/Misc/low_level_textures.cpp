@@ -152,7 +152,7 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 	int bytes_per_row= screen->bytes_per_row;
 	int downshift= data->downshift;
 	int line_count= data->width;
-	boolean aborted= FALSE;
+	bool aborted= false;
 	int x= data->x0;
 	int count;
 	
@@ -182,7 +182,7 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 			line+= 1;
 			line_count-= 1;
 
-			aborted= FALSE;
+			aborted= false;
 		}
 		else
 		{
@@ -222,7 +222,7 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 					
 					if (ymin<=ymax)
 					{
-						aborted= TRUE;
+						aborted= true;
 						continue;
 					}
 				}
@@ -333,7 +333,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 	int bytes_per_row= screen->bytes_per_row;
 	int downshift= data->downshift;
 	int line_count= data->width;
-	boolean aborted= FALSE;
+	bool aborted= false;
 	int x= data->x0;
 	pixel8 pixel;
 	int count;
@@ -366,7 +366,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 			line+= 1;
 			line_count-= 1;
 			
-			aborted= FALSE;
+			aborted= false;
 		}
 		else
 		{
@@ -406,7 +406,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 					
 					if (ymin<=ymax)
 					{
-						aborted= TRUE;
+						aborted= true;
 						continue;
 					}
 				}
@@ -531,7 +531,7 @@ void TINT_VERTICAL_POLYGON_LINES(
 	struct _vertical_polygon_data *data,
 	short *y0_table,
 	short *y1_table,
-	word transfer_data)
+	uint16 transfer_data)
 {
 	short tint_table_index= transfer_data&0xff;
 	struct _vertical_polygon_line_data *line= (struct _vertical_polygon_line_data *) (data+1);
@@ -603,15 +603,15 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 	struct _vertical_polygon_data *data,
 	short *y0_table,
 	short *y1_table,
-	word transfer_data)
+	uint16 transfer_data)
 {
 	struct _vertical_polygon_line_data *line= (struct _vertical_polygon_line_data *) (data+1);
 	register short bytes_per_row= screen->bytes_per_row;
 	register int downshift= data->downshift;
 	int line_count= data->width;
 	int x= data->x0;
-	register word seed= texture_random_seed;
-	register word drop_less_than= transfer_data;
+	register uint16 seed= texture_random_seed;
+	register uint16 drop_less_than= transfer_data;
 
 	(void) (view);
 

@@ -49,7 +49,7 @@ struct net_microphone_data
 	SICompletionUPP completion_proc;
 	Ptr buffer;
 	struct SPB param_block;
-	boolean recording;
+	bool recording;
 	short network_distribution_type;
 };
 
@@ -64,7 +64,7 @@ struct sound_device_settings game_mic_settings=
 };
 
 /* -------- Globals.. */
-static boolean net_microphone_installed= FALSE;
+static bool net_microphone_installed= false;
 struct net_microphone_data net_microphone;
 
 /* ------------- local prototypes */
@@ -78,11 +78,11 @@ static OSErr closest_supported_sample_rate(long refNum, Fixed *sampleRate);
 
 /* ------------- Code */
 
-boolean has_sound_input_capability(
+bool has_sound_input_capability(
 	void)
 {
 	long gestalt_flags;
-	boolean is_capable= FALSE;
+	bool is_capable= false;
 	OSErr err;
 
 	err= Gestalt(gestaltSoundAttr, &gestalt_flags);
@@ -90,7 +90,7 @@ boolean has_sound_input_capability(
 	{
 		if(gestalt_flags & gestaltHasSoundInputDevice)
 		{
-			is_capable= TRUE;
+			is_capable= true;
 		}
 	}
 
@@ -104,13 +104,13 @@ OSErr open_network_microphone(
 
 	/* do things we only do once */
 	{
-		static boolean initialization= FALSE;
+		static bool initialization= false;
 		
 		if (!initialization)
 		{
 			atexit(close_network_microphone);
 			
-			initialization= TRUE;
+			initialization= true;
 		}
 	}
 
@@ -118,7 +118,7 @@ OSErr open_network_microphone(
 	{
 		if (has_sound_input_capability())
 		{
-			net_microphone.recording= FALSE;
+			net_microphone.recording= false;
 			net_microphone.network_distribution_type= network_distribution_type;
 			net_microphone.buffer= NewPtr(NETWORK_SOUND_CHUNK_BUFFER_SIZE);
 			net_microphone.completion_proc= NewSICompletionProc(sound_recording_completed);
@@ -141,7 +141,7 @@ OSErr open_network_microphone(
 							err= set_device_settings(net_microphone.refnum, (struct sound_device_settings *) &game_mic_settings);
 							if(!err)
 							{
-								net_microphone_installed= TRUE;
+								net_microphone_installed= true;
 							}
 						}
 					}
@@ -182,14 +182,14 @@ void close_network_microphone(void)
 		/* Get rid of the routine descriptor */
 		DisposeRoutineDescriptor(net_microphone.completion_proc);
 
-		net_microphone_installed= FALSE;
+		net_microphone_installed= false;
 	}
 }
 
-void handle_microphone(boolean triggered)
+void handle_microphone(bool triggered)
 {
 	OSErr err= noErr;
-	boolean success= FALSE;
+	bool success= false;
 	
 	if(net_microphone_installed)
 	{
@@ -202,7 +202,7 @@ void handle_microphone(boolean triggered)
 				if(!err)
 				{
 					/* Tell us we are starting to record.. */
-					net_microphone.recording= TRUE;
+					net_microphone.recording= true;
 				}
 			} else {
 				/* We are recording.... restart the recording if we are done. */
@@ -216,7 +216,7 @@ void handle_microphone(boolean triggered)
 						
 					default:
 						dprintf("Error in completion: %d", net_microphone.param_block.error);
-						net_microphone.recording= FALSE;
+						net_microphone.recording= false;
 						break;
 				}
 			}
@@ -225,7 +225,7 @@ void handle_microphone(boolean triggered)
 			{
 				/* They just stopped.  Finish up.. */
 				err= SPBStopRecording(net_microphone.refnum);
-				net_microphone.recording= FALSE;
+				net_microphone.recording= false;
 			}
 		}
 	}
@@ -348,7 +348,7 @@ static OSErr start_sound_recording(
 	net_microphone.param_block.userLong= (long) get_a5();;
 #endif
 
-	return SPBRecord(&net_microphone.param_block, TRUE);
+	return SPBRecord(&net_microphone.param_block, true);
 }
 
 /* -------- Completion callback function.. */
@@ -364,7 +364,7 @@ static pascal void sound_recording_completed(
 #ifdef TESTING
 	queue_network_speaker_data(net_microphone.buffer, pb->count);
 #else
-	NetDistributeInformation(net_microphone.network_distribution_type, net_microphone.buffer, pb->count, FALSE);
+	NetDistributeInformation(net_microphone.network_distribution_type, net_microphone.buffer, pb->count, false);
 #endif
 
 	switch (pb->error)
@@ -378,7 +378,7 @@ static pascal void sound_recording_completed(
 			pb->completionRoutine= net_microphone.completion_proc;
 
 			/* Respawn the recording! */
-			pb->error= SPBRecord(pb, TRUE);
+			pb->error= SPBRecord(pb, true);
 			break;
 			
 		case abortErr:

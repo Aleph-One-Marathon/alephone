@@ -7,6 +7,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "cseries.h"
+
 #include "script_parser.h"
 #include "script_instructions.h"
 #include "FileHandler.h"
@@ -170,9 +172,9 @@ void dispose_pfhortran(void)
 	int x;
 	symbol_def *temp, *old;	
 	for (x = 0;x < 256;x++)
-		if (temp = get_hash(x,instruction_hash))
+		if ((temp = get_hash(x,instruction_hash)) != NULL)
 		{
-			while (old = temp)
+			while ((old = temp) != NULL)
 			{	
 				temp = temp->next;
 				free(old);
@@ -269,12 +271,12 @@ void activate_trap(short trap)
 		procedure_bindings[trap].active = true;
 }
 
-long get_trap_instruction_decay(short trap)
+uint32 get_trap_instruction_decay(short trap)
 {
 	return procedure_bindings[trap].instruction_decay;
 }
 
-void set_trap_instruction_decay(short trap, long decay)
+void set_trap_instruction_decay(short trap, uint32 decay)
 {
 	procedure_bindings[trap].instruction_decay = decay;
 }
@@ -318,9 +320,9 @@ void clear_hash()
 	int x;
 	symbol_def *temp, *old;	
 	for (x = 0;x < 256;x++)
-		if (temp = get_hash(x,hash))
+		if ((temp = get_hash(x,hash)) != NULL)
 		{
-			while (old = temp)
+			while ((old = temp) != NULL)
 			{	
 				temp = temp->next;
 				free(old);
@@ -339,9 +341,9 @@ void dispose_hash()
 	int x;
 	symbol_def *temp, *old;	
 	for (x = 0;x < 256;x++)
-		if (temp = get_hash(x,hash))
+		if ((temp = get_hash(x,hash)) != NULL)
 		{
-			while (old = temp)
+			while ((old = temp) != NULL)
 			{	
 				temp = temp->next;
 				free(old);
@@ -387,7 +389,7 @@ unsigned char calculate_hash_key(char *symbol)
 
 void lowercase_string(char *string)
 {
-	int x;
+	unsigned int x;
 
 	for (x = 0; x < strlen(string); x++)
 		if (string[x] >= 65 && string[x] <= 90) 
@@ -521,7 +523,7 @@ void get_blats(char *input, short max_blats, char blats[MAXBLATS][64])	/* return
 	
 	strcpy(temp, input);
 	
-	if (temp_char = strchr(temp, '#'))
+	if ((temp_char = strchr(temp, '#')) != NULL)
 		*temp_char = 0;
 	
 	if (temp[0] == 0)
@@ -724,7 +726,7 @@ script_instruction *parse_script(char *input)
 	int line_count = 0;
 	int total_lines;
 	script_instruction *instruction_list;
-	int x, mode;
+	int mode;
 	short op1mode,op2mode,op3mode;
 	int var_count = 0;
 	float val;
@@ -921,12 +923,13 @@ script_instruction *parse_script(char *input)
 		}
 	}
 	
-	/* if (procedure_bindings[idle].available == false)
+#if 0
+	if (procedure_bindings[idle].available == false)
 		add_trap(idle,0);	/* always have an idle event, even if not specifically defined */
 	
-	/* if (procedure_bindings[init].available == true)
+	if (procedure_bindings[init].available == true)
 		procedure_bindings[init].active == true;	/* set up any init events */
-	
+#endif
 	
 	dispose_hash();
 	

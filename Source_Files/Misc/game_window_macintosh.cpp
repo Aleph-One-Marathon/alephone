@@ -49,8 +49,8 @@ void draw_panels(
 	/*
 	new_mode.acceleration= _no_acceleration;
 	new_mode.size= _100_percent;
-	new_mode.high_resolution= TRUE;
-	change_screen_mode(&new_mode, FALSE);
+	new_mode.high_resolution= true;
+	change_screen_mode(&new_mode, false);
 
 	myLockPixels(world_pixels);
 	*/
@@ -107,6 +107,6 @@ void draw_panels(
 	}
 	myUnlockPixels(world_pixels);
 
-	change_screen_mode(&graphics_preferences->screen_mode, FALSE);
+	change_screen_mode(&graphics_preferences->screen_mode, false);
 	*/
 }

@@ -146,8 +146,8 @@ static void build_shading_tables32(struct rgb_color_value *colors, short color_c
 static void build_global_shading_table16(void);
 static void build_global_shading_table32(void);
 
-static boolean get_next_color_run(struct rgb_color_value *colors, short color_count, short *start, short *count);
-static boolean new_color_run(struct rgb_color_value *_new, struct rgb_color_value *last);
+static bool get_next_color_run(struct rgb_color_value *colors, short color_count, short *start, short *count);
+static bool new_color_run(struct rgb_color_value *_new, struct rgb_color_value *last);
 
 static long get_shading_table_size(short collection_code);
 
@@ -158,11 +158,11 @@ static void build_tinting_table32(struct rgb_color_value *colors, short color_co
 
 static void precalculate_bit_depth_constants(void);
 
-static boolean collection_loaded(struct collection_header *header);
+static bool collection_loaded(struct collection_header *header);
 static void unload_collection(struct collection_header *header);
 static void unlock_collection(struct collection_header *header);
 static void lock_collection(struct collection_header *header);
-static boolean load_collection(short collection_index, boolean strip);
+static bool load_collection(short collection_index, bool strip);
 
 static void debug_shapes_memory(void);
 
@@ -235,10 +235,10 @@ static byte *make_stripped_collection(byte *collection)
 	return new_collection;
 }
 
-static boolean collection_loaded(
+static bool collection_loaded(
 	struct collection_header *header)
 {
-	return header->collection ? TRUE : FALSE;
+	return header->collection ? true : false;
 }
 
 
@@ -301,7 +301,7 @@ void unload_all_collections(
 
 void mark_collection(
 	short collection_code,
-	boolean loading)
+	bool loading)
 {
 	if (collection_code!=NONE)
 	{
@@ -563,7 +563,7 @@ void load_collections(
 			if (header->status&markLOAD)
 			{
 				/* load and decompress collection */
-				if (!load_collection(collection_index, (header->status&markSTRIP) ? TRUE : FALSE))
+				if (!load_collection(collection_index, (header->status&markSTRIP) ? true : false))
 				{
 					alert_user(fatalError, strERRORS, outOfMemory, -1);
 				}
@@ -1047,13 +1047,13 @@ static void build_global_shading_table32(
 	return;
 }
 
-static boolean get_next_color_run(
+static bool get_next_color_run(
 	struct rgb_color_value *colors,
 	short color_count,
 	short *start,
 	short *count)
 {
-	boolean not_done= FALSE;
+	bool not_done= false;
 	struct rgb_color_value last_color;
 	
 	if (*start+*count<color_count)
@@ -1071,23 +1071,23 @@ static boolean get_next_color_run(
 			last_color= colors[*start+*count];
 		}
 		
-		not_done= TRUE;
+		not_done= true;
 	}
 	
 	return not_done;
 }
 
-static boolean new_color_run(
+static bool new_color_run(
 	struct rgb_color_value *_new,
 	struct rgb_color_value *last)
 {
 	if ((long)last->red+(long)last->green+(long)last->blue<(long)_new->red+(long)_new->green+(long)_new->blue)
 	{
-		return TRUE;
+		return true;
 	}
 	else
 	{
-		return FALSE;
+		return false;
 	}
 }
 

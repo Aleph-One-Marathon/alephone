@@ -118,13 +118,13 @@ static bool write_to_file(OpenedFile& OFile, long offset, void *data, long lengt
 static bool read_from_file(OpenedFile& OFile, long offset, void *data, long length);
 
 /* ------------------ Code Begins */
-boolean read_wad_header(
+bool read_wad_header(
 	OpenedFile& OFile, 
 	struct wad_header *header)
 {
-	boolean union_file= FALSE;
+	bool union_file= false;
 	int error = 0;
-	boolean success= TRUE;
+	bool success= true;
 
 	// LP: verify sizes of on-disk structures
 	assert(sizeof(wad_header) == SIZEOF_wad_header);
@@ -138,12 +138,12 @@ boolean read_wad_header(
 	if(error)
 	{
 		set_game_error(systemError, error);
-		success= FALSE;
+		success= false;
 	} else {
 		if(header->version>CURRENT_WADFILE_VERSION)
 		{
 			set_game_error(gameError, errUnknownWadVersion);
-			success= FALSE;
+			success= false;
 		}
 	}
 	
@@ -159,7 +159,7 @@ struct wad_data *read_indexed_wad_from_file(
 	OpenedFile& OFile, 
 	struct wad_header *header, 
 	short index,
-	boolean read_only)
+	bool read_only)
 {
 	struct wad_data *read_wad= (struct wad_data *) NULL;
 	byte *raw_wad;
@@ -235,73 +235,65 @@ void *extract_type_from_wad(
 	return return_value;
 }
 
-boolean wad_file_has_checksum(
+bool wad_file_has_checksum(
 	FileSpecifier& File, 
 	unsigned long checksum)
 {
-	boolean has_checksum= FALSE;
+	bool has_checksum= false;
 
 	if(checksum==read_wad_file_checksum(File))
 	{
-		has_checksum= TRUE;
+		has_checksum= true;
 	}
 	
 	return has_checksum;
 }
 
-unsigned long read_wad_file_checksum(FileSpecifier& File)
+uint32 read_wad_file_checksum(FileSpecifier& File)
 {
 	struct wad_header header;
-	unsigned long checksum= 0l;
+	uint32 checksum= 0;
 	
 	OpenedFile OFile;
 	if (open_wad_file_for_reading(File,OFile))
-	// file_id= open_wad_file_for_reading(file);
-	// if(file_id>=0)
 	{
-		// if(read_wad_header(file_id, &header))
 		if(read_wad_header(OFile, &header))
 		{
 			checksum= header.checksum;
 		}
 		
 		close_wad_file(OFile);
-		// close_wad_file(file_id);
 	}
 	
 	return checksum;
 }
 
-unsigned long read_wad_file_parent_checksum(FileSpecifier& File)
+uint32 read_wad_file_parent_checksum(FileSpecifier& File)
 {
 	// fileref file_id;
 	struct wad_header header;
-	unsigned long checksum= 0l;
+	uint32 checksum= 0;
 
 	OpenedFile OFile;
 	if (open_wad_file_for_reading(File,OFile))
-	// file_id= open_wad_file_for_reading(file);
-	// if(file_id>=0)
 	{
 		if(read_wad_header(OFile, &header))
-		// if(read_wad_header(file_id, &header))
 		{
 			checksum= header.parent_checksum;
 		}
 		
 		close_wad_file(OFile);
-		// close_wad_file(file_id);
 	}
 	
 	return checksum;
 }
 
-boolean wad_file_has_parent_checksum(
+bool wad_file_has_parent_checksum(
 	FileSpecifier& File, 
 	unsigned long parent_checksum)
 {
 	// fileref file_id;
-	boolean has_checksum= FALSE;
+	bool has_checksum= false;
 	struct wad_header header;
 
 	OpenedFile OFile;
@@ -315,7 +307,7 @@ boolean wad_file_has_parent_checksum(
 			if(header.parent_checksum==parent_checksum)
 			{
 				/* Found a match!  */
-				has_checksum= TRUE;
+				has_checksum= true;
 			}
 		}
 		
@@ -381,11 +373,11 @@ void fill_default_wad_header(
 	/* unsigned long checksum, long directory_offset, unsigned long parent_checksum */
 }
 
-boolean write_wad_header(
+bool write_wad_header(
 	OpenedFile& OFile, 
 	struct wad_header *header)
 {
-	boolean success= TRUE;
+	bool success= true;
 
 	// LP: verify sizes:
 	assert(sizeof(wad_header) == SIZEOF_wad_header);
@@ -401,13 +393,13 @@ boolean write_wad_header(
 }
 
 // Takes raw, unswapped directory data
-boolean write_directorys(
+bool write_directorys(
 	OpenedFile& OFile, 
 	struct wad_header *header,
 	void *entries)
 {
 	long size_to_write= get_size_of_directory_data(header);
-	boolean success= TRUE;
+	bool success= true;
 	
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
 	write_to_file(OFile, header->directory_offset, entries, 
@@ -627,14 +619,14 @@ void calculate_and_store_wadfile_checksum(OpenedFile& OFile)
 	write_wad_header(OFile, &header);
 }
 
-boolean write_wad(
+bool write_wad(
 	OpenedFile& OFile, 
 	struct wad_header *file_header,
 	struct wad_data *wad, 
 	long offset)
 {
 	int error = 0;
-	boolean success;
+	bool success;
 	short entry_header_length= get_entry_header_length(file_header);
 	short index;
 	struct entry_header header;
@@ -676,10 +668,10 @@ boolean write_wad(
 	
 	if(error)
 	{
-		success= FALSE;
+		success= false;
 		set_game_error(systemError, error);
 	} else {
-		success= TRUE;
+		success= true;
 	}
 	
 	return success;
@@ -759,11 +751,11 @@ struct encapsulated_wad_data {
 
 void *get_flat_data(
 	FileSpecifier& File, 
-	boolean use_union, 
+	bool use_union, 
 	short wad_index)
 {
 	struct wad_header header;
-	boolean success= FALSE;
+	bool success= false;
 	struct encapsulated_wad_data *data= NULL;
 	
 	assert(!use_union);

@@ -103,7 +103,7 @@ SDL_Surface *get_shape_surface(int shape)
  *  Load collection
  */
 
-static boolean load_collection(short collection_index, boolean strip)
+static bool load_collection(short collection_index, bool strip)
 {
 	SDL_RWops *p = ShapesFile.GetRWops();	// Source stream
 	uint32 *t;								// Offset table pointer
@@ -307,7 +307,7 @@ static boolean load_collection(short collection_index, boolean strip)
 			for (int j=0; j<rows; j++) {
 				int16 first = SDL_ReadBE16(p);
 				int16 last = SDL_ReadBE16(p);
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 				*q++ = first; *q++ = first >> 8;
 				*q++ = last; *q++ = last >> 8;
 #else

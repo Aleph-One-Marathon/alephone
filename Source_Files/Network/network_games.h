@@ -15,25 +15,25 @@ struct player_ranking_data {
 
 void initialize_net_game(void);
 
-/* returns TRUE if the game is over.. */
-boolean update_net_game(void);
+/* returns true if the game is over.. */
+bool update_net_game(void);
 
 /* Returns the player net ranking, which may mean different things */
 long get_player_net_ranking(short player_index, short *kills, short *deaths,
-	boolean game_is_over);
+	bool game_is_over);
 
 void calculate_player_rankings(struct player_ranking_data *rankings);
 void calculate_ranking_text(char *buffer, long ranking);
-boolean current_net_game_has_scores(void);
+bool current_net_game_has_scores(void);
 void calculate_ranking_text_for_post_game(char *buffer, long ranking);
-boolean get_network_score_text_for_postgame(char *buffer, boolean team_mode);
-boolean current_game_has_balls(void);
+bool get_network_score_text_for_postgame(char *buffer, bool team_mode);
+bool current_game_has_balls(void);
 void get_network_joined_message(char *buffer, short game_type);
 long get_entry_point_flags_for_game_type(short game_type);
 
-boolean player_killed_player(short dead_player_index, short aggressor_player_index);
+bool player_killed_player(short dead_player_index, short aggressor_player_index);
 
-boolean game_is_over(void);
+bool game_is_over(void);
 
 enum
 {

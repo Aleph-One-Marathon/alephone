@@ -110,20 +110,20 @@ struct view_data
 	short effect, effect_phase;
 	short real_world_to_screen_x, real_world_to_screen_y;
 	
-	boolean overhead_map_active;
+	bool overhead_map_active;
 	short overhead_map_scale;
 
-	boolean under_media_boundary;
+	bool under_media_boundary;
 	short under_media_index;
 	
-	boolean terminal_mode_active;
+	bool terminal_mode_active;
 	
 	// LP addition: this indicates whether to show weapons-in-hand display;
 	// this is on in first-person, off in third-person
-	boolean show_weapons_in_hand;
+	bool show_weapons_in_hand;
 	
 	// LP: Indicates whether or not tunnel vision is active
-	boolean tunnel_vision_active;
+	bool tunnel_vision_active;
 	
 	// LP addition: value of yaw used by landscapes; this is so that the center
 	// can stay stationary
@@ -185,6 +185,6 @@ void instantiate_rectangle_transfer_mode(view_data *view,
 	rectangle_definition *rectangle, short transfer_mode, fixed transfer_phase);
 
 void instantiate_polygon_transfer_mode(view_data *view,
-	polygon_definition *polygon, short transfer_mode, short transfer_phase, boolean horizontal);
+	polygon_definition *polygon, short transfer_mode, short transfer_phase, bool horizontal);
 
 #endif

@@ -14,16 +14,16 @@ Aug 21, 2000 (Loren Petrich):
 
 /* Open the file, and allocate whatever internal structures are necessary in the */
 /*  preferences pointer.. */
-boolean w_open_preferences_file(char *PrefName, int Type);
+bool w_open_preferences_file(char *PrefName, int Type);
 
 typedef void (*prefs_initializer)(void *prefs);
-typedef boolean (*prefs_validater)(void *prefs);
+typedef bool (*prefs_validater)(void *prefs);
 
 void *w_get_data_from_preferences(
 	WadDataType tag,					/* Tag to read */
 	short expected_size,				/* Data size */
 	prefs_initializer initialize,	/* Call if I have to allocate it.. */
-	prefs_validater validate);	/* Verify function-> fixes if bad and returns TRUE */
+	prefs_validater validate);	/* Verify function-> fixes if bad and returns true */
 	
 void w_write_preferences_file(void);
 
@@ -59,11 +59,11 @@ struct preferences_dialog_data {
 	void (*item_hit_func)(DialogPtr dialog, short first_item, void *prefs, 
 		short item_hit);
 
-	/* Use this to read in the edittext fields, etc. (return FALSE to abort teardown) */
-	boolean (*teardown_dialog_func)(DialogPtr dialog, short first_item, void *prefs);
+	/* Use this to read in the edittext fields, etc. (return false to abort teardown) */
+	bool (*teardown_dialog_func)(DialogPtr dialog, short first_item, void *prefs);
 };
 
-boolean set_preferences(struct preferences_dialog_data *funcs, short count,
+bool set_preferences(struct preferences_dialog_data *funcs, short count,
 	void (*reload_function)(void));
 #endif
 

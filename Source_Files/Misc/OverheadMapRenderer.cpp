@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 
 enum /* render flags */
@@ -364,7 +365,7 @@ void OverheadMapClass::transform_endpoints_for_overhead_map(
 
 		if (endpoint->transformed.x>=0&&endpoint->transformed.y>=0&&endpoint->transformed.y<=screen_height&&endpoint->transformed.x<=screen_width)
 		{
-			SET_STATE_FLAG(i, _endpoint_on_automap, TRUE);
+			SET_STATE_FLAG(i, _endpoint_on_automap, true);
 		}
 	}
 
@@ -379,7 +380,7 @@ void OverheadMapClass::transform_endpoints_for_overhead_map(
 		{
 			if (TEST_STATE_FLAG(polygon->endpoint_indexes[j], _endpoint_on_automap))
 			{
-				SET_STATE_FLAG(i, _polygon_on_automap, TRUE);
+				SET_STATE_FLAG(i, _polygon_on_automap, true);
 				break;
 			}
 		}
@@ -456,7 +457,8 @@ long OverheadMapClass::false_automap_cost_proc(
 	long cost= 1;
 	short i;
 
-	(void) (line_index, caller_data);
+	(void) (line_index);
+	(void) (caller_data);
 	
 	/* canÕt leave secret platforms */
 	if (source_polygon->type==_polygon_is_platform &&

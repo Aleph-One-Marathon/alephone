@@ -21,6 +21,7 @@ void destroy_players_ball(
 	short player_index);
 
 #include <stdio.h>
+#include <limits.h>
 
 /* ----------- #defines */
 #define SINGLE_BALL_COLOR (1)
@@ -57,7 +58,7 @@ enum { // for capture the flag.
 
 
 /* ----------------- private prototypes */
-static boolean player_has_ball(short player_index, short color);
+static bool player_has_ball(short player_index, short color);
 // LP change: this is to be consistent with Benad's moving it out
 extern void destroy_players_ball(short player_index);
 // static void destroy_players_ball(short player_index);
@@ -67,12 +68,12 @@ long get_player_net_ranking(
 	short player_index,
 	short *kills,
 	short *deaths,
-	boolean game_is_over)
+	bool game_is_over)
 {
 	short index;
 	long total_monster_damage, monster_damage;
 	struct player_data *player= get_player_data(player_index);
-	long ranking;
+	long ranking = 0;
 
 	*kills= 0;
 	*deaths = player->monster_damage_taken.kills;
@@ -293,12 +294,12 @@ short get_network_compass_state(
 	return state;
 }
 
-// if FALSE is returned, donÕt attribute kill
-boolean player_killed_player(
+// if false is returned, donÕt attribute kill
+bool player_killed_player(
 	short dead_player_index,
 	short aggressor_player_index)
 {
-	boolean attribute_kill= TRUE;
+	bool attribute_kill= true;
 	
 	if (dynamic_world->player_count>1)
 	{
@@ -332,10 +333,10 @@ boolean player_killed_player(
 	return attribute_kill;
 }
 
-boolean update_net_game(
+bool update_net_game(
 	void)
 {
-	boolean net_game_over= FALSE;
+	bool net_game_over= false;
 	short player_index;
 
 	if (dynamic_world->player_count>1)
@@ -436,7 +437,7 @@ boolean update_net_game(
 								dprintf("Game is over. Offender won.");
 								//¥¥
 								dynamic_world->game_information.parameters[_winning_team]= player->team;
-								net_game_over= TRUE;
+								net_game_over= true;
 							}*/
 						}
 						break;
@@ -498,7 +499,7 @@ void calculate_player_rankings(
 
 		temporary_copy[player_index].player_index= player_index;
 		temporary_copy[player_index].ranking= get_player_net_ranking(player_index, &kills, &deaths,
-			FALSE);
+			false);
 	}
 
 	/* Now sort them.. */
@@ -535,11 +536,11 @@ void calculate_ranking_text(
 		case _game_of_kill_monsters:
 		case _game_of_capture_the_flag:
 		case _game_of_rugby:
-			sprintf(buffer, "%d", ranking);
+			sprintf(buffer, "%ld", ranking);
 			break;
 			
 		case _game_of_cooperative_play:
-			sprintf(buffer, "%d%%", ranking);
+			sprintf(buffer, "%ld%%", ranking);
 			break;
 		// START Benad
 		case _game_of_king_of_the_hill:
@@ -547,7 +548,7 @@ void calculate_ranking_text(
 		case _game_of_tag:
 		case _game_of_defense:
 			seconds= ABS(ranking)/TICKS_PER_SECOND;
-			sprintf(buffer, "%d:%02d", seconds/60, seconds%60);
+			sprintf(buffer, "%ld:%02ld", seconds/60, seconds%60);
 			break;
 		// END Benad
 		default:
@@ -609,9 +610,9 @@ void calculate_ranking_text_for_post_game(
 	}
 }
 
-boolean get_network_score_text_for_postgame(
+bool get_network_score_text_for_postgame(
 	char *buffer, 
-	boolean team_mode)
+	bool team_mode)
 {
 	short string_id= NONE;
 
@@ -672,16 +673,16 @@ boolean get_network_score_text_for_postgame(
 	return (string_id!=NONE);
 }
 
-boolean current_net_game_has_scores(
+bool current_net_game_has_scores(
 	void)
 {
-	boolean has_scores;
+	bool has_scores;
 	
 	switch(GET_GAME_TYPE())
 	{
 		case _game_of_kill_monsters:
 		case _game_of_cooperative_play:
-			has_scores= FALSE;
+			has_scores= false;
 			break;
 			
 		case _game_of_capture_the_flag:
@@ -690,11 +691,11 @@ boolean current_net_game_has_scores(
 		case _game_of_kill_man_with_ball:
 		case _game_of_defense:
 		case _game_of_tag:
-			has_scores= TRUE;
+			has_scores= true;
 			break;
 			
 		default:
-			has_scores= FALSE;
+			has_scores= false;
 			vhalt(csprintf(temporary, "What is game type %d?", GET_GAME_TYPE()));
 			break;
 	}
@@ -702,10 +703,10 @@ boolean current_net_game_has_scores(
 	return has_scores;
 }
 
-boolean current_game_has_balls(
+bool current_game_has_balls(
 	void)
 {
-	boolean has_ball;
+	bool has_ball;
 	
 	switch(GET_GAME_TYPE())
 	{
@@ -714,17 +715,17 @@ boolean current_game_has_balls(
 		case _game_of_king_of_the_hill:
 		case _game_of_defense:
 		case _game_of_tag:
-			has_ball= FALSE;
+			has_ball= false;
 			break;
 			
 		case _game_of_capture_the_flag:
 		case _game_of_rugby:
 		case _game_of_kill_man_with_ball:
-			has_ball= TRUE;
+			has_ball= true;
 			break;
 			
 		default:
-			has_ball= FALSE;
+			has_ball= false;
 			vhalt(csprintf(temporary, "What is game type %d?", GET_GAME_TYPE()));
 			break;
 	}
@@ -734,14 +735,14 @@ boolean current_game_has_balls(
 
 /* Note that kill limit means different things.. */
 /* if capture the flag- the number of flag pulls */
-boolean game_is_over(
+bool game_is_over(
 	void)
 {
-	boolean game_over= FALSE;
+	bool game_over= false;
 
 	if (dynamic_world->game_information.game_time_remaining<=0)
 	{
-		game_over= TRUE;
+		game_over= true;
 	} 
 	else if(GET_GAME_OPTIONS() & _game_has_kill_limit) 
 	{
@@ -784,7 +785,7 @@ boolean game_is_over(
 				
 				if(count>=dynamic_world->game_information.kill_limit)
 				{
-					game_over= TRUE;
+					game_over= true;
 				}
 				break;
 				
@@ -800,7 +801,7 @@ boolean game_is_over(
 				
 				if(count>=dynamic_world->game_information.kill_limit)
 				{
-					game_over= TRUE;
+					game_over= true;
 				}
 				break;
 			// START Benad
@@ -813,7 +814,7 @@ boolean game_is_over(
 					{
 						//dprintf("Game is over. Offender won.");
 						//dynamic_world->game_information.parameters[_winning_team]= player->team;
-						game_over= TRUE;
+						game_over= true;
 					}
 				}
 				break;
@@ -879,7 +880,7 @@ void get_network_joined_message(
 long get_entry_point_flags_for_game_type(
 	short game_type)
 {
-	long entry_flags;
+	long entry_flags = 0;
 	
 	switch(game_type)
 	{
@@ -919,16 +920,16 @@ long get_entry_point_flags_for_game_type(
 }
 
 /* ------------------ local code */
-static boolean player_has_ball(
+static bool player_has_ball(
 	short player_index,
 	short color)
 {
 	struct player_data *player= get_player_data(player_index);
-	boolean has_ball= FALSE;
+	bool has_ball= false;
 	
 	if(player->items[BALL_ITEM_BASE+color]>0)
 	{
-		has_ball= TRUE;
+		has_ball= true;
 	}
 	
 	return has_ball;

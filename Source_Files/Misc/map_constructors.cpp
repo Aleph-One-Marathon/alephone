@@ -26,6 +26,8 @@ const bool DoIncorrectCountVWarn = false;
 #include "map.h"
 #include "flood_map.h"
 
+#include <limits.h>
+
 /*
 maps of one polygon don’t have their impassability information computed
 
@@ -110,14 +112,14 @@ void recalculate_redundant_endpoint_data(
 	short endpoint_index)
 {
 	struct endpoint_data *endpoint= get_endpoint_data(endpoint_index);
-	world_distance highest_adjacent_floor_height= SHORT_MIN;
-	world_distance lowest_adjacent_ceiling_height= SHORT_MAX;
+	world_distance highest_adjacent_floor_height= INT16_MIN;
+	world_distance lowest_adjacent_ceiling_height= INT16_MAX;
 	short supporting_polygon_index= NONE;
 	struct line_data *line;
 	short line_index;
-	boolean solid= FALSE;
-	boolean elevation= FALSE;
-	boolean transparent= TRUE;
+	bool solid= false;
+	bool elevation= false;
+	bool transparent= true;
 	
 	for (line_index= 0, line= map_lines; line_index<dynamic_world->line_count; ++line_index, ++line)
 	{
@@ -128,9 +130,9 @@ void recalculate_redundant_endpoint_data(
 			struct polygon_data *polygon;
 
 			/* if this line is solid, so is the endpoint */			
-			if (LINE_IS_SOLID(line)) solid= TRUE;
-			if (!LINE_IS_TRANSPARENT(line)) transparent= FALSE;
-			if (LINE_IS_ELEVATION(line)) elevation= TRUE;
+			if (LINE_IS_SOLID(line)) solid= true;
+			if (!LINE_IS_TRANSPARENT(line)) transparent= false;
+			if (LINE_IS_ELEVATION(line)) elevation= true;
 			
 			/* look at adjacent polygons to determine highest floor and lowest ceiling */
 			polygon_index= line->clockwise_polygon_owner;
@@ -167,10 +169,10 @@ void recalculate_redundant_line_data(
 {
 	struct line_data *line= get_line_data(line_index);
 	struct side_data *clockwise_side= NULL, *counterclockwise_side= NULL;
-	boolean elevation= FALSE;
-	boolean landscaped= FALSE;
-	boolean variable_elevation= FALSE;
-	boolean transparent_texture= FALSE;
+	bool elevation= false;
+	bool landscaped= false;
+	bool variable_elevation= false;
+	bool transparent_texture= false;
 	
 	/* recalculate line length */
 	line->length= distance2d(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
@@ -183,17 +185,17 @@ void recalculate_redundant_line_data(
 		polygon1= line->clockwise_polygon_owner==NONE ? (struct polygon_data *) NULL : get_polygon_data(line->clockwise_polygon_owner);
 		polygon2= line->counterclockwise_polygon_owner==NONE ? (struct polygon_data *) NULL : get_polygon_data(line->counterclockwise_polygon_owner);
 		
-		if ((polygon1&&polygon1->type==_polygon_is_platform) || (polygon2&&polygon2->type==_polygon_is_platform)) variable_elevation= TRUE;
+		if ((polygon1&&polygon1->type==_polygon_is_platform) || (polygon2&&polygon2->type==_polygon_is_platform)) variable_elevation= true;
 		
 		if (polygon1&&polygon2)
 		{
 			line->highest_adjacent_floor= MAX(polygon1->floor_height, polygon2->floor_height);
 			line->lowest_adjacent_ceiling= MIN(polygon1->ceiling_height, polygon2->ceiling_height);
-			if (polygon1->floor_height!=polygon2->floor_height) elevation= TRUE;
+			if (polygon1->floor_height!=polygon2->floor_height) elevation= true;
 		}
 		else
 		{
-			elevation= TRUE;
+			elevation= true;
 			
 			if (polygon1)
 			{
@@ -229,13 +231,13 @@ void recalculate_redundant_line_data(
 	if ((clockwise_side&&clockwise_side->primary_transfer_mode==_xfer_landscape) ||
 		(counterclockwise_side&&counterclockwise_side->primary_transfer_mode==_xfer_landscape))
 	{
-		landscaped= TRUE;
+		landscaped= true;
 	}
 	
 	if ((clockwise_side && clockwise_side->transparent_texture.texture!=NONE) ||
 		(counterclockwise_side && counterclockwise_side->transparent_texture.texture!=NONE))
 	{
-		transparent_texture= TRUE;
+		transparent_texture= true;
 	}
 
 	SET_LINE_ELEVATION(line, elevation);
@@ -609,7 +611,7 @@ static long intersecting_flood_proc(
 	struct intersecting_flood_data *data=vdata;
 	struct polygon_data *polygon= get_polygon_data(source_polygon_index);
 	struct polygon_data *original_polygon= get_polygon_data(data->original_polygon_index);
-	boolean keep_searching= FALSE; /* don’t flood any deeper unless we find something close enough */
+	bool keep_searching= false; /* don’t flood any deeper unless we find something close enough */
 	short i, j;
 
 	(void) (line_index,destination_polygon_index);
@@ -678,7 +680,7 @@ void try_and_add_line(
 {
 	struct polygon_data *original_polygon= get_polygon_data(data->original_polygon_index);
 	struct line_data *line= get_line_data(line_index);
-	boolean keep_searching= FALSE;
+	bool keep_searching= false;
 	short i;
 	
 	if (LINE_IS_SOLID(line) ||
@@ -691,19 +693,19 @@ void try_and_add_line(
 		{
 			if (data->line_indexes[i]==line_index)
 			{
-				keep_searching= TRUE;
+				keep_searching= true;
 				break; /* found duplicate, ignore (but keep looking for others) */
 			}
 		}
 		if (i==data->line_count && data->line_count<MAXIMUM_INTERSECTING_INDEXES)
 		{
-			boolean clockwise= ((b->x-a->x)*(data->center.y-b->y) - (b->y-a->y)*(data->center.x-b->x)>0) ? TRUE : FALSE;
+			bool clockwise= ((b->x-a->x)*(data->center.y-b->y) - (b->y-a->y)*(data->center.x-b->x)>0) ? true : false;
 
 			if (DoIncorrectCountVWarn)
 				vwarn(data->line_count!=MAXIMUM_INTERSECTING_INDEXES-1, csprintf(temporary, "incomplete line list for polygon#%d", data->original_polygon_index));
 			data->line_indexes[data->line_count++]= clockwise ? polygon->line_indexes[i] : (-polygon->line_indexes[i]-1);
 //			if (data->original_polygon_index==23) dprintf("found line %d (%s)", polygon->line_indexes[i], clockwise ? "clockwise" : "counterclockwise");
-			keep_searching= TRUE;
+			keep_searching= true;
 			break;
 		}
 	}
@@ -716,7 +718,7 @@ void try_and_add_line(
 			{
 				if (data->endpoint_indexes[j]==polygon->endpoint_indexes[i])
 				{
-					keep_searching= TRUE;
+					keep_searching= true;
 					break; /* found duplicate, ignore (but keep looking for others) */
 				}
 			}
@@ -761,10 +763,11 @@ static long intersecting_flood_proc(
 	struct intersecting_flood_data *data=(struct intersecting_flood_data *)vdata;
 	struct polygon_data *polygon= get_polygon_data(source_polygon_index);
 	struct polygon_data *original_polygon= get_polygon_data(data->original_polygon_index);
-	boolean keep_searching= FALSE; /* don’t flood any deeper unless we find something close enough */
+	bool keep_searching= false; /* don’t flood any deeper unless we find something close enough */
 	short i, j;
 
-	(void) (line_index,destination_polygon_index);
+	(void) (line_index);
+	(void) (destination_polygon_index);
 
 	/* we only care about this polygon if it intersects us in z */
 	if (polygon->floor_height<=original_polygon->ceiling_height&&polygon->ceiling_height>=original_polygon->floor_height)
@@ -778,7 +781,7 @@ static long intersecting_flood_proc(
 				if (data->line_indexes[j]==polygon->line_indexes[i] ||
 					-data->line_indexes[j]-1==polygon->line_indexes[i])
 				{
-					keep_searching= TRUE;
+					keep_searching= true;
 					break; /* found duplicate, stop */
 				}
 			}
@@ -805,13 +808,13 @@ static long intersecting_flood_proc(
 			
 						if (point_to_line_segment_distance_squared(p, a, b)<data->minimum_separation_squared)
 						{
-							boolean clockwise= ((b->x-a->x)*(data->center.y-b->y) - (b->y-a->y)*(data->center.x-b->x)>0) ? TRUE : FALSE;
+							bool clockwise= ((b->x-a->x)*(data->center.y-b->y) - (b->y-a->y)*(data->center.x-b->x)>0) ? true : false;
 							
 							if (DoIncorrectCountVWarn)
 								vwarn(data->line_count!=MAXIMUM_INTERSECTING_INDEXES-1, csprintf(temporary, "incomplete line list for polygon#%d", data->original_polygon_index));
 							data->line_indexes[data->line_count++]= clockwise ? polygon->line_indexes[i] : (-polygon->line_indexes[i]-1);
 //							if (data->original_polygon_index==23) dprintf("found line %d (%s)", polygon->line_indexes[i], clockwise ? "clockwise" : "counterclockwise");
-							keep_searching= TRUE;
+							keep_searching= true;
 							break;
 						}
 					}
@@ -823,7 +826,7 @@ static long intersecting_flood_proc(
 			{
 				if (data->endpoint_indexes[j]==polygon->endpoint_indexes[i])
 				{
-					keep_searching= TRUE;
+					keep_searching= true;
 					break; /* found duplicate, ignore (but keep looking for others) */
 				}
 			}
@@ -926,7 +929,7 @@ static void precalculate_polygon_sound_sources(
 			if (object->type==_saved_sound_source)
 			{
 				short i;
-				boolean close= FALSE;
+				bool close= false;
 				
 				for (i= 0; i<polygon->vertex_count; ++i)
 				{
@@ -938,7 +941,7 @@ static void precalculate_polygon_sound_sources(
 							&get_endpoint_data(line->endpoint_indexes[0])->vertex,
 							&get_endpoint_data(line->endpoint_indexes[1])->vertex)<ZERO_VOLUME_DISTANCE)
 					{
-						close= TRUE;
+						close= true;
 						break;
 					}
 				}

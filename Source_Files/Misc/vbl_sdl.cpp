@@ -24,9 +24,10 @@
 #include "vbl_definitions.h"
 
 
+// Constants
 #define MAXIMUM_FLAG_PERSISTENCE    15
 #define DOUBLE_CLICK_PERSISTENCE    10
-#define FILM_RESOURCE_TYPE          'film'
+#define FILM_RESOURCE_TYPE          FOUR_CHARS_TO_INT('f', 'i', 'l', 'm')
 
 #define NUMBER_OF_SPECIAL_FLAGS (sizeof(special_flags)/sizeof(struct special_flag_data))
 static struct special_flag_data special_flags[]=
@@ -38,9 +39,6 @@ static struct special_flag_data special_flags[]=
 	{_latched_flag, _cycle_weapons_backward},
 	{_latched_flag, _toggle_map}
 };
-
-// Constants
-#define FILM_RESOURCE_TYPE 'film'
 
 // Byte-swap definitions
 static _bs_field _bs_recording_header[] = {
@@ -63,7 +61,7 @@ static _bs_field _bs_game_data[] = {
  *  Get FileDesc for replay, ask user if desired
  */
 
-boolean find_replay_to_use(boolean ask_user, FileSpecifier &file)
+bool find_replay_to_use(bool ask_user, FileSpecifier &file)
 {
 	if (ask_user) {
 		//!!
@@ -77,7 +75,7 @@ boolean find_replay_to_use(boolean ask_user, FileSpecifier &file)
  *  Get FileDesc for default recording file
  */
 
-boolean get_recording_filedesc(FileSpecifier &File)
+bool get_recording_filedesc(FileSpecifier &File)
 {
 	File.SetToLocalDataDir();
 	File.AddPart(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING));
@@ -167,7 +165,7 @@ long parse_keymap(void)
  *  Get random demo replay from map
  */
 
-boolean setup_replay_from_random_resource(unsigned long map_checksum)
+bool setup_replay_from_random_resource(unsigned long map_checksum)
 {
 	printf("setup_replay_from_random_resource(), checksum %08x\n", map_checksum);
 
@@ -204,24 +202,24 @@ boolean setup_replay_from_random_resource(unsigned long map_checksum)
 		memcpy(replay.resource_data, rsrc.GetPointer(), rsrc.GetLength());
 
 		if (replay.header.map_checksum == map_checksum) {
-			replay.have_read_last_chunk = FALSE;
-			replay.game_is_being_replayed = TRUE;
+			replay.have_read_last_chunk = false;
+			replay.game_is_being_replayed = true;
 
 			replay.film_resource_offset = sizeof(struct recording_header);
 			replay.resource_data_size = rsrc.GetLength();
 
-			replay.valid = TRUE;
+			replay.valid = true;
 			
 			success = true;
 		} else {
-			replay.game_is_being_replayed = FALSE;
+			replay.game_is_being_replayed = false;
 
 			replay.film_resource_offset = NONE;
 			replay.resource_data_size = 0;
 			free(replay.resource_data);
 			replay.resource_data = NULL;
 
-			replay.valid = FALSE;
+			replay.valid = false;
 			
 			success = false;
 		}
@@ -247,7 +245,7 @@ void set_keys_to_match_preferences(void)
  *  Periodic task management
  */
 
-typedef boolean (*timer_func)(void);
+typedef bool (*timer_func)(void);
 
 static Uint32 timer_callback(Uint32 interval, void *param)
 {
@@ -255,9 +253,9 @@ static Uint32 timer_callback(Uint32 interval, void *param)
 	return interval;
 }
 
-timer_task_proc install_timer_task(short tasks_per_second, boolean (*func)(void))
+timer_task_proc install_timer_task(short tasks_per_second, bool (*func)(void))
 {
-	return (timer_task_proc)SDL_AddTimer(1000 / tasks_per_second, timer_callback, func);
+	return (timer_task_proc)SDL_AddTimer(1000 / tasks_per_second, timer_callback, (void *)func);
 }
 
 void remove_timer_task(timer_task_proc proc)

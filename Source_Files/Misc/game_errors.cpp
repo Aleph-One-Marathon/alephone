@@ -38,7 +38,7 @@ short get_game_error(
 	return last_error;
 }
 
-boolean error_pending(
+bool error_pending(
 	void)
 {
 	return (last_error!=0);

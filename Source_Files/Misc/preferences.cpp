@@ -159,44 +159,44 @@ struct environment_preferences_data *environment_preferences;
 
 /* ----------- private prototypes */
 static void default_graphics_preferences(void *preferences);
-static boolean validate_graphics_preferences(void *preferences);
+static bool validate_graphics_preferences(void *preferences);
 static void default_serial_number_preferences(void *prefs);
-static boolean validate_serial_number_preferences(void *prefs);
+static bool validate_serial_number_preferences(void *prefs);
 static void default_network_preferences(void *preferences);
-static boolean validate_network_preferences(void *prefs);
+static bool validate_network_preferences(void *prefs);
 static void default_player_preferences(void *prefs);
-static boolean validate_player_preferences(void *prefs);
+static bool validate_player_preferences(void *prefs);
 static void default_input_preferences(void *preferences);
-static boolean validate_input_preferences(void *prefs);
+static bool validate_input_preferences(void *prefs);
 static void *get_graphics_pref_data(void);
 static void setup_graphics_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void hit_graphics_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
-static boolean teardown_graphics_dialog(DialogPtr dialog, short first_item, void *prefs);
+static bool teardown_graphics_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void *get_player_pref_data(void);
 static void setup_player_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void hit_player_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
-static boolean teardown_player_dialog(DialogPtr dialog, short first_item, void *prefs);
+static bool teardown_player_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void *get_sound_pref_data(void);
 static void setup_sound_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void hit_sound_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
-static boolean teardown_sound_dialog(DialogPtr dialog, short first_item, void *prefs);
+static bool teardown_sound_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void *get_input_pref_data(void);
 static void setup_input_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void hit_input_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
-static boolean teardown_input_dialog(DialogPtr dialog, short first_item, void *prefs);
+static bool teardown_input_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void set_popup_enabled_state(DialogPtr dialog, short item_number, short item_to_affect,
-	boolean enabled);
+	bool enabled);
 static void default_environment_preferences(void *prefs);
-static boolean validate_environment_preferences(void *prefs);
+static bool validate_environment_preferences(void *prefs);
 static void *get_environment_pref_data(void);
 static void setup_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void hit_environment_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
-static boolean teardown_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
+static bool teardown_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void fill_in_popup_with_filetype(DialogPtr dialog, short item, int type, unsigned long checksum);
 #ifdef mac
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
 #endif
-static boolean allocate_extensions_memory(void);
+static bool allocate_extensions_memory(void);
 static void free_extensions_memory(void);
 static void build_extensions_list(void);
 static void search_from_directory(DirectorySpecifier& BaseDir);
@@ -318,41 +318,41 @@ static void default_graphics_preferences(
 	{
 		preferences->screen_mode.size= _100_percent;
 		preferences->screen_mode.bit_depth = 16;
-		preferences->screen_mode.high_resolution = FALSE;
+		preferences->screen_mode.high_resolution = false;
 		preferences->screen_mode.acceleration = _valkyrie_acceleration;
 	}
 	else if (system_information->machine_is_68k)
 	{
 		preferences->screen_mode.size= _100_percent;
-		preferences->screen_mode.high_resolution= FALSE;
+		preferences->screen_mode.high_resolution= false;
 		preferences->screen_mode.acceleration = _no_acceleration;
 		preferences->screen_mode.bit_depth = 8;
 	}
 	else // we got a good machine
 	{
 		preferences->screen_mode.size= _100_percent;
-		preferences->screen_mode.high_resolution= TRUE;
+		preferences->screen_mode.high_resolution= true;
 		preferences->screen_mode.acceleration = _no_acceleration;
 		preferences->screen_mode.bit_depth = 8;
 	}
 	
-	preferences->screen_mode.draw_every_other_line= FALSE;
+	preferences->screen_mode.draw_every_other_line= false;
 	
 #ifdef HAVE_OPENGL
 	OGL_SetDefaults(preferences->OGL_Configure);
 #endif
 }
 
-static boolean validate_graphics_preferences(
+static bool validate_graphics_preferences(
 	void *prefs)
 {
 	struct graphics_preferences_data *preferences=(struct graphics_preferences_data *)prefs;
-	boolean changed= FALSE;
+	bool changed= false;
 
 	if(preferences->screen_mode.gamma_level<0 || preferences->screen_mode.gamma_level>=NUMBER_OF_GAMMA_LEVELS)
 	{
 		preferences->screen_mode.gamma_level= DEFAULT_GAMMA_LEVEL;
-		changed= TRUE;
+		changed= true;
 	}
 
 	if (preferences->screen_mode.acceleration==_valkyrie_acceleration)
@@ -361,26 +361,26 @@ static boolean validate_graphics_preferences(
 		{
 			preferences->screen_mode.size= _100_percent;
 			preferences->screen_mode.bit_depth = 8;
-			preferences->screen_mode.high_resolution = FALSE;
+			preferences->screen_mode.high_resolution = false;
 			preferences->screen_mode.acceleration = _no_acceleration;
-			changed= TRUE;
+			changed= true;
 		} else {
 			if(preferences->screen_mode.high_resolution)
 			{
-				preferences->screen_mode.high_resolution= FALSE;
-				changed= TRUE;
+				preferences->screen_mode.high_resolution= false;
+				changed= true;
 			}
 			
 			if(preferences->screen_mode.bit_depth != 16)
 			{
 				preferences->screen_mode.bit_depth= 16;
-				changed= TRUE;
+				changed= true;
 			}
 			
 			if(preferences->screen_mode.draw_every_other_line)
 			{
-				preferences->screen_mode.draw_every_other_line= FALSE;
-				changed= TRUE;
+				preferences->screen_mode.draw_every_other_line= false;
+				changed= true;
 			}
 		}
 	}
@@ -388,7 +388,7 @@ static boolean validate_graphics_preferences(
 	if (preferences->screen_mode.bit_depth==32 && !machine_supports_32bit(&preferences->device_spec)) 
 	{
 		preferences->screen_mode.bit_depth= 16;
-		changed= TRUE;
+		changed= true;
 	}
 
 	/* Don't change out of 16 bit if we are in valkyrie mode. */	
@@ -396,7 +396,7 @@ static boolean validate_graphics_preferences(
 		&& preferences->screen_mode.bit_depth==16 && !machine_supports_16bit(&preferences->device_spec)) 
 	{
 		preferences->screen_mode.bit_depth= 8;
-		changed= TRUE;
+		changed= true;
 	}
 
 	return changed;
@@ -408,15 +408,15 @@ static void default_serial_number_preferences(
 	memset(prefs, 0, sizeof(struct serial_number_data));
 }
 
-static boolean validate_serial_number_preferences(
+static bool validate_serial_number_preferences(
 	void *prefs)
 {
 	(void) (prefs);
-	return FALSE;
+	return false;
 }
 
 /* -------------- network preferences */
-static boolean ethernet_active(void);
+static bool ethernet_active(void);
 
 static void default_network_preferences(
 	void *prefs)
@@ -425,8 +425,8 @@ static void default_network_preferences(
 
 	preferences->type= _ethernet;
 
-	preferences->allow_microphone = TRUE;
-	preferences->game_is_untimed = FALSE;
+	preferences->allow_microphone = true;
+	preferences->game_is_untimed = false;
 	preferences->difficulty_level = 2;
 	preferences->game_options =	_multiplayer_game | _ammo_replenishes | _weapons_replenish
 		| _specials_replenish |	_monsters_replenish | _burn_items_on_death | _suicide_is_penalized 
@@ -439,11 +439,11 @@ static void default_network_preferences(
 	return;
 }
 
-static boolean validate_network_preferences(
+static bool validate_network_preferences(
 	void *preferences)
 {
 	struct network_preferences_data *prefs=(struct network_preferences_data *)preferences;
-	boolean changed= FALSE;
+	bool changed= false;
 
 	if(prefs->type<0||prefs->type>_ethernet)
 	{
@@ -453,25 +453,25 @@ static boolean validate_network_preferences(
 		} else {
 			prefs->type= _localtalk;
 		}
-		changed= TRUE;
+		changed= true;
 	}
 	
-	if(prefs->game_is_untimed != TRUE && prefs->game_is_untimed != FALSE)
+	if(prefs->game_is_untimed != true && prefs->game_is_untimed != false)
 	{
-		prefs->game_is_untimed= FALSE;
-		changed= TRUE;
+		prefs->game_is_untimed= false;
+		changed= true;
 	}
 
-	if(prefs->allow_microphone != TRUE && prefs->allow_microphone != FALSE)
+	if(prefs->allow_microphone != true && prefs->allow_microphone != false)
 	{
-		prefs->allow_microphone= TRUE;
-		changed= TRUE;
+		prefs->allow_microphone= true;
+		changed= true;
 	}
 
 	if(prefs->game_type<0 || prefs->game_type >= NUMBER_OF_GAME_TYPES)
 	{
 		prefs->game_type= _game_of_kill_monsters;
-		changed= TRUE;
+		changed= true;
 	}
 	
 	return changed;
@@ -508,11 +508,11 @@ static void default_player_preferences(
 	return;
 }
 
-static boolean validate_player_preferences(
+static bool validate_player_preferences(
 	void *prefs)
 {
 	(void) (prefs);
-	return FALSE;
+	return false;
 }
 
 #define strUSER_NAME -16096
@@ -554,14 +554,14 @@ static void default_input_preferences(
 	preferences->modifiers = _inputmod_interchange_run_walk;
 }
 
-static boolean validate_input_preferences(
+static bool validate_input_preferences(
 	void *prefs)
 {
 	(void) (prefs);
-	return FALSE;
+	return false;
 }
 
-static boolean ethernet_active(
+static bool ethernet_active(
 	void)
 {
 #ifdef mac
@@ -570,9 +570,9 @@ static boolean ethernet_active(
 
 	error= OpenDriver("\p.ENET", &refnum);
 	
-	return error==noErr ? TRUE : FALSE;
+	return error==noErr ? true : false;
 #else
-	return TRUE;
+	return true;
 #endif
 }
 
@@ -606,29 +606,29 @@ static void setup_graphics_dialog(
 
 	if(machine_supports_32bit(&preferences->device_spec))
 	{
-		active= TRUE;
+		active= true;
 	} else {
 		if(preferences->screen_mode.bit_depth==32) preferences->screen_mode.bit_depth= 16;
-		active= FALSE;
+		active= false;
 	}
 	set_popup_enabled_state(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), _millions_colors_menu_item, active);
 
 	if(machine_supports_16bit(&preferences->device_spec))
 	{
-		active= TRUE;
+		active= true;
 	} else {
 		if(preferences->screen_mode.bit_depth==16) preferences->screen_mode.bit_depth= 8;
-		active= FALSE;
+		active= false;
 	}
 	set_popup_enabled_state(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), _thousands_colors_menu_item, active);
-	set_popup_enabled_state(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), _billions_colors_menu_item, FALSE);
+	set_popup_enabled_state(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), _billions_colors_menu_item, false);
 
 	/* Force the stuff for the valkyrie board.. */
 	if(preferences->screen_mode.acceleration==_valkyrie_acceleration)
 	{
-		preferences->screen_mode.high_resolution= FALSE;
+		preferences->screen_mode.high_resolution= false;
 		preferences->screen_mode.bit_depth= 16;
-		preferences->screen_mode.draw_every_other_line= FALSE;
+		preferences->screen_mode.draw_every_other_line= false;
 		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iNUMBER_OF_COLORS, first_item), 
 			CONTROL_INACTIVE, _thousands_colors_menu_item);
 		modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDETAIL, first_item), 
@@ -662,13 +662,13 @@ static void setup_graphics_dialog(
 #ifdef env68k
 	if(preferences->screen_mode.bit_depth != 8 || preferences->screen_mode.high_resolution)
 	{
-		preferences->screen_mode.draw_every_other_line= FALSE;
+		preferences->screen_mode.draw_every_other_line= false;
 		active= CONTROL_INACTIVE;
 	} else {
 		active= CONTROL_ACTIVE;
 	}
 #else
-	preferences->screen_mode.draw_every_other_line= FALSE;
+	preferences->screen_mode.draw_every_other_line= false;
 	active= CONTROL_INACTIVE;
 #endif
 /*
@@ -709,7 +709,7 @@ static void hit_graphics_item(
 	ControlHandle control;
 	short item_type;
 	Rect bounds;
-	boolean resetup= TRUE;
+	bool resetup= true;
 
 	switch(GLOBAL_TO_LOCAL_DITL(item_hit, first_item))
 	{
@@ -789,13 +789,13 @@ static void hit_graphics_item(
 #endif
 }
 	
-static boolean teardown_graphics_dialog(
+static bool teardown_graphics_dialog(
 	DialogPtr dialog,
 	short first_item,
 	void *prefs)
 {
 	(void) (dialog, first_item, prefs);
-	return TRUE;
+	return true;
 }
 
 /* --------- player */
@@ -879,7 +879,7 @@ static void hit_player_item(
 #endif
 }
 	
-static boolean teardown_player_dialog(
+static bool teardown_player_dialog(
 	DialogPtr dialog,
 	short first_item,
 	void *prefs)
@@ -898,7 +898,7 @@ static boolean teardown_player_dialog(
 	memcpy(preferences->name, buffer, buffer[0]+1);
 #endif
 
-	return TRUE;
+	return true;
 }
 
 /* --------- sound */
@@ -931,7 +931,7 @@ static void setup_sound_dialog(
 
 	active= (available_flags & _stereo_flag) ? CONTROL_ACTIVE : CONTROL_INACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iSTEREO, first_item), active, 
-		(preferences->flags & _stereo_flag) ? TRUE : FALSE);
+		(preferences->flags & _stereo_flag) ? true : false);
 
 	/* Don't do dynamic tracking if you aren't in stereo. */
 	if(!(preferences->flags & _stereo_flag))
@@ -941,19 +941,19 @@ static void setup_sound_dialog(
 
 	active= (available_flags & _dynamic_tracking_flag) ? CONTROL_ACTIVE : CONTROL_INACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iACTIVE_PANNING, first_item), active, 
-		(preferences->flags & _dynamic_tracking_flag) ? TRUE : FALSE);
+		(preferences->flags & _dynamic_tracking_flag) ? true : false);
 
 	active= (available_flags & _16bit_sound_flag) ? CONTROL_ACTIVE : CONTROL_INACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iHIGH_QUALITY, first_item), active, 
-		(preferences->flags & _16bit_sound_flag) ? TRUE : FALSE);
+		(preferences->flags & _16bit_sound_flag) ? true : false);
 
 	active= (available_flags & _ambient_sound_flag) ? CONTROL_ACTIVE : CONTROL_INACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iAMBIENT_SOUND, first_item), active, 
-		(preferences->flags & _ambient_sound_flag) ? TRUE : FALSE);
+		(preferences->flags & _ambient_sound_flag) ? true : false);
 
 	active= (available_flags & _more_sounds_flag) ? CONTROL_ACTIVE : CONTROL_INACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iMORE_SOUNDS, first_item), active, 
-		(preferences->flags & _more_sounds_flag) ? TRUE : FALSE);
+		(preferences->flags & _more_sounds_flag) ? true : false);
 
 	return;
 #endif
@@ -1047,13 +1047,13 @@ static void hit_sound_item(
 #endif
 }
 	
-static boolean teardown_sound_dialog(
+static bool teardown_sound_dialog(
 	DialogPtr dialog,
 	short first_item,
 	void *prefs)
 {
 	(void) (dialog, first_item, prefs);
-	return TRUE;
+	return true;
 }
 
 /* --------- input */
@@ -1092,16 +1092,16 @@ static void setup_input_dialog(
 		
 	active= CONTROL_ACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iINTERCHANGE_RUN_WALK, first_item), active, 
-		(preferences->modifiers & _inputmod_interchange_run_walk) ? TRUE : FALSE);
+		(preferences->modifiers & _inputmod_interchange_run_walk) ? true : false);
 	
 	active= CONTROL_ACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iINTERCHANGE_SWIM_SINK, first_item), active, 
-		(preferences->modifiers & _inputmod_interchange_swim_sink) ? TRUE : FALSE);
+		(preferences->modifiers & _inputmod_interchange_swim_sink) ? true : false);
 	
 	// LP addition: Josh Elsasser's dont-switch-weapons patch
 	active= CONTROL_ACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDONT_SWITCH_TO_NEW_WEAPON, first_item), active, 
-		(preferences->modifiers & _inputmod_dont_switch_to_new_weapon) ? TRUE : FALSE);
+		(preferences->modifiers & _inputmod_dont_switch_to_new_weapon) ? true : false);
 #endif
 }
 
@@ -1191,13 +1191,13 @@ static void hit_input_item(
 #endif
 }
 	
-static boolean teardown_input_dialog(
+static bool teardown_input_dialog(
 	DialogPtr dialog,
 	short first_item,
 	void *prefs)
 {
 	(void)(dialog, first_item, prefs);
-	return TRUE;
+	return true;
 }
 
 /* ------------------ environment preferences */
@@ -1216,7 +1216,7 @@ static FileSpecifier *accessory_files= NULL;
 // static FSSpec *accessory_files= NULL;
 static struct file_description *file_descriptions= NULL;
 static short accessory_file_count= 0;
-static boolean physics_valid= TRUE;
+static bool physics_valid= true;
 
 static void default_environment_preferences(
 	void *preferences)
@@ -1262,11 +1262,11 @@ static void default_environment_preferences(
 #endif
 }
 
-static boolean validate_environment_preferences(
+static bool validate_environment_preferences(
 	void *prefs)
 {
 	(void) (prefs);
-	return FALSE;
+	return false;
 }
 
 static void *get_environment_pref_data(
@@ -1440,7 +1440,7 @@ void load_environment_from_preferences(
 	}
 }
 
-static boolean teardown_environment_dialog(
+static bool teardown_environment_dialog(
 	DialogPtr dialog,
 	short first_item,
 	void *prefs)
@@ -1453,7 +1453,7 @@ static boolean teardown_environment_dialog(
 	free_extensions_memory();
 #endif
 	
-	return TRUE;
+	return true;
 }
 
 /*
@@ -1489,7 +1489,7 @@ static void set_popup_enabled_state(
 	DialogPtr dialog,
 	short item_number,
 	short item_to_affect,
-	boolean enabled)
+	bool enabled)
 {
 	MenuHandle menu;
 	struct PopupPrivateData **privateHndl;
@@ -1516,10 +1516,10 @@ static void set_popup_enabled_state(
 	}
 }
 
-static boolean allocate_extensions_memory(
+static bool allocate_extensions_memory(
 	void)
 {
-	boolean success;
+	bool success;
 
 	assert(!accessory_files);
 	assert(!file_descriptions);
@@ -1530,13 +1530,13 @@ static boolean allocate_extensions_memory(
 	file_descriptions= new file_description[MAXIMUM_FIND_FILES];
 	if(file_descriptions && accessory_files)
 	{
-		success= TRUE;
+		success= true;
 	} else {
 		if(file_descriptions) delete []file_descriptions;
 		if(accessory_files) delete []accessory_files;
 		accessory_files= NULL;
 		file_descriptions= NULL;
-		success= FALSE;
+		success= false;
 	}
 	
 	return success;
@@ -1612,7 +1612,7 @@ static bool file_is_extension_and_add_callback(
 		}
 	}
 	
-	return FALSE;
+	return false;
 }
 
 static void build_extensions_list(
@@ -1750,7 +1750,7 @@ static void fill_in_popup_with_filetype(
 			set_to_default_physics_file();
 			AppendMenu(menu, getpstr(ptemporary, strPROMPTS, _default_prompt));
 			value= 1;
-			physics_valid= FALSE;
+			physics_valid= false;
 			count++;
 		}
 	} 
@@ -1825,17 +1825,17 @@ static MenuHandle get_popup_menu_handle(
 #endif
 
 #if 0
-static boolean control_strip_installed(
+static bool control_strip_installed(
 	void)
 {
-	boolean installed= FALSE;
+	bool installed= false;
 	long control_strip_version;
 	OSErr error;
 	
 	error= Gestalt(gestaltControlStripVersion, &control_strip_version);
 	if(!error)
 	{
-		installed= TRUE;
+		installed= true;
 	}
 	
 	return installed;
@@ -1847,7 +1847,7 @@ static void hide_control_strip(
 	assert(control_strip_installed());
 	if(SBIsControlStripVisible())
 	{
-		SBShowHideControlStrip(FALSE);
+		SBShowHideControlStrip(false);
 	}
 }
 
@@ -1857,7 +1857,7 @@ static void show_control_strip(
 	assert(control_strip_installed());
 	if(!SBIsControlStripVisible())
 	{
-		SBShowHideControlStrip(TRUE);
+		SBShowHideControlStrip(true);
 	}
 }
 #endif

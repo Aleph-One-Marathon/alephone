@@ -100,8 +100,8 @@ struct ModemNetStatus
 
 	short time_between_retries;
 	
-	boolean iAmTheServer;
-	boolean single_player;
+	bool iAmTheServer;
+	bool single_player;
 	short localPlayerIndex;
 	short localPlayerIdentifier;
 	short server_player_index;
@@ -112,8 +112,8 @@ struct ModemNetStatus
 	long localNetTime;
 	unsigned long sequence;
 
-	boolean outgoing_packet_type;
-	boolean outgoing_packet_valid;
+	bool outgoing_packet_type;
+	bool outgoing_packet_valid;
 
 };
 typedef struct ModemNetStatus ModemNetStatus, *ModemNetStatusPtr;
@@ -169,7 +169,7 @@ struct join_player_data {
 };
 
 struct accept_join_data {
-	boolean accepted;
+	bool accepted;
 	ModemPlayer player;
 };
 
@@ -177,7 +177,7 @@ struct accept_join_data {
 struct stream_header {
 	byte unique_byte;
 	byte packet_type;
-	word checksum; /* Should be 16bit crc? */
+	uint16 checksum; /* Should be 16bit crc? */
 };
 
 struct stream_read_queue {
@@ -196,7 +196,7 @@ struct stream_packet_data {
 };
 
 struct acknowledge_packet {
-	boolean unused;
+	bool unused;
 };
 
 struct stream_acknowledge_packet {
@@ -273,9 +273,9 @@ static struct modem_stats_data modem_stats;
 static long max_packet_length(void);
 static void client_send_action_flag(long action_flag, unsigned long sequence);
 
-boolean packet_tickler(void);
+bool packet_tickler(void);
 static void build_and_post_async_server_packet(void);
-static boolean network_queueing_task(void);
+static bool network_queueing_task(void);
 
 static void build_server_packet(struct server_packet_data *packet);
 static short size_of_players_queue(short player_index);
@@ -302,9 +302,9 @@ void ModemUnRegisterName(void);
 void ModemLookupRemove(short index);
 
 /* ------------ actual modem writing functions */
-static boolean modem_read_packet(byte *packet_type, void *buffer);
+static bool modem_read_packet(byte *packet_type, void *buffer);
 static OSErr modem_send_packet(byte packet_type, void *buffer);
-static word packet_type_size(short packet_type);
+static uint16 packet_type_size(short packet_type);
 
 /* ------------ my version of ADSP */
 static long receive_stream_size(long timeout);
@@ -342,10 +342,10 @@ static myTMTaskPtr serverQueueingTMTask = (myTMTaskPtr) NULL;
 static myTMTaskPtr clientQueueingTMTask= (myTMTaskPtr) NULL;
 
 /* ------------ code */
-boolean ModemEnter(
+bool ModemEnter(
 	void)
 {
-	boolean success= TRUE;
+	bool success= true;
 	OSErr error= noErr;
 	
 	assert(modemState==netUninitialized);
@@ -354,13 +354,13 @@ boolean ModemEnter(
 	error= initialize_modem_endpoint();
 	if (!error)
 	{
-		static boolean added_exit_procedure= FALSE;
+		static bool added_exit_procedure= false;
 
 		/* Make sure we have an exit procedure.. */
 		if(!added_exit_procedure)
 		{
 			atexit(ModemExit);
-			added_exit_procedure= TRUE;
+			added_exit_procedure= true;
 		}
 
 		topology= (ModemTopologyPtr) NewPtrClear(sizeof(ModemTopology));
@@ -402,7 +402,7 @@ boolean ModemEnter(
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
 		NetExit();
-		success= FALSE;
+		success= false;
 	}
 	
 	return success;
@@ -450,16 +450,16 @@ void ModemExit(
 	return;
 }
 
-boolean ModemSync(
+bool ModemSync(
 	void)
 {
-	boolean success= TRUE;
+	bool success= true;
 	OSErr error= noErr;
 	long initial_ticks;
 
 	status->lastValidRingSequence= 0;
 	status->ringPacketCount= 0;
-	status->outgoing_packet_valid= FALSE;
+	status->outgoing_packet_valid= false;
 
 	local_queue.read_index= local_queue.write_index= 0;
 
@@ -499,10 +499,10 @@ boolean ModemSync(
 	return success;
 }
 
-boolean ModemUnsync(
+bool ModemUnsync(
 	void)
 {
-	boolean success= TRUE;
+	bool success= true;
 	long ticks;
 	
 	if (modemState==netStartingUp || modemState==netActive)
@@ -522,7 +522,7 @@ boolean ModemUnsync(
 
 	if(TickCount()-ticks>=NET_UNSYNC_TIME_OUT) 
 	{
-		success= FALSE;
+		success= false;
 	}
 	modemState= netDown;
 
@@ -536,7 +536,7 @@ boolean ModemUnsync(
 
 short ModemAddDistributionFunction(
 	NetDistributionProc proc, 
-	boolean lossy)
+	bool lossy)
 {
 	(void)(proc, lossy);
 	return NONE;
@@ -546,7 +546,7 @@ void ModemDistributeInformation(
 	short type, 
 	void *buffer, 
 	short buffer_size, 
-	boolean send_to_self)
+	bool send_to_self)
 {
 	(void)(type, buffer, buffer_size, send_to_self);
 	return;
@@ -559,13 +559,13 @@ void ModemRemoveDistributionFunction(
 	return;
 }
 
-boolean ModemGather(
+bool ModemGather(
 	void *game_data, 
 	short game_data_size, 
 	void *player_data, 
 	short player_data_size)
 {
-	boolean success= FALSE;
+	bool success= false;
 
 	modem_initialize_topology(game_data, game_data_size, player_data, player_data_size);
 	modemState= netGathering;
@@ -573,18 +573,18 @@ boolean ModemGather(
 	/* Call the person! */	
 	if(call_modem_player())
 	{
-		success= TRUE;
+		success= true;
 	}
 
 	return success;
 }
 
-boolean ModemGatherPlayer(
+bool ModemGatherPlayer(
 	short player_index, 
 	CheckPlayerProcPtr check_player)
 {
 	OSErr error= noErr;
-	boolean success= FALSE;
+	bool success= false;
 	long initial_tick_count= machine_tick_count();
 
 	(void) (player_index)	;
@@ -595,7 +595,7 @@ boolean ModemGatherPlayer(
 	while(!error && !success)
 	{
 		byte packet_type;
-		boolean got_packet;
+		bool got_packet;
 		struct accept_join_data	*accept_packet= (struct accept_join_data *)packet_buffers[_incoming_packet];
 		struct join_player_data packet;
 
@@ -630,7 +630,7 @@ boolean ModemGatherPlayer(
 					/* And remove them from the listbox.. */
 					ModemLookupRemove(player_index);
 				
-					success= TRUE;
+					success= true;
 				}
 			} else {
 				/* Joined player refused.... */
@@ -653,14 +653,14 @@ boolean ModemGatherPlayer(
 	return success;
 }
 
-boolean ModemGameJoin(
+bool ModemGameJoin(
 	unsigned char *player_name, 
 	unsigned char *player_type, 
 	void *player_data, 
 	short player_data_size, 
 	short version_number)
 {
-	boolean success= FALSE;
+	bool success= false;
 
 	/* initialize default topology (no game data) */
 	modem_initialize_topology((void *) NULL, 0, player_data, player_data_size);
@@ -681,7 +681,7 @@ boolean ModemGameJoin(
 			{
 				/* we’re registered and awaiting a connection request */
 				modemState= netJoining;
-				success= TRUE;
+				success= true;
 			}
 		} 
 		
@@ -704,7 +704,7 @@ void ModemCancelJoin(
 #if 0
 	OSErr error;
 	
-	error= NetCloseStreamConnection(TRUE); /* this should stop the ocPassive OpenConnection */
+	error= NetCloseStreamConnection(true); /* this should stop the ocPassive OpenConnection */
 	if (error==noErr)
 	{
 		/* our name has been unregistered and our connection end has been closed */
@@ -731,19 +731,19 @@ short ModemGetPlayerIdentifier(
 	return topology->players[player_index].identifier;
 }
 
-boolean ModemNumberOfPlayerIsValid(
+bool ModemNumberOfPlayerIsValid(
 	void)
 {
-	boolean valid;
+	bool valid;
 	
 	switch(modemState)
 	{
 		case netUninitialized:
 		case netJoining:
-			valid= FALSE;
+			valid= false;
 			break;
 		default:
-			valid= TRUE;
+			valid= true;
 			break;
 	}
 
@@ -775,11 +775,11 @@ void *ModemGetGameData(
 	return topology->game_data;
 }
 
-boolean ModemStart(	
+bool ModemStart(	
 	void)
 {
 	OSErr error;
-	boolean success;
+	bool success;
 	
 	assert(modemState==netGathering);
 
@@ -799,14 +799,14 @@ boolean ModemStart(
 	update_topology();
 	error= distribute_topology(tagSTART_GAME);
 
-	status->single_player= FALSE;
+	status->single_player= false;
 
 	if(error)
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
-		success= FALSE;
+		success= false;
 	} else {
-		success= TRUE;
+		success= true;
 	}
 
 	return success;
@@ -828,13 +828,13 @@ long ModemGetNetTime(
 	return status->localNetTime;
 }
 
-boolean ModemChangeMap(	
+bool ModemChangeMap(	
 	struct entry_point *entry)
 {
 	byte *wad= NULL;
 	long length;
 	OSErr error= noErr;
-	boolean success= TRUE;
+	bool success= true;
 
 	/* If the guy that was the server died, and we are trying to change levels, we lose */
 	if(status->localPlayerIndex==status->server_player_index && status->localPlayerIndex != 0)
@@ -842,7 +842,7 @@ boolean ModemChangeMap(
 #ifdef DEBUG_NET
 		dprintf("Server died, and trying to get another level. You lose;g");
 #endif
-		success= FALSE;
+		success= false;
 		set_game_error(gameError, errServerDied);
 	}
 	else
@@ -855,7 +855,7 @@ boolean ModemChangeMap(
 			{
 				length= get_net_map_data_length(wad);
 				error= distribute_map_to_all_players(wad, length);
-				if(error) success= FALSE;
+				if(error) success= false;
 				set_game_error(systemError, error);
 			} else {
 //				if (!wad) alert_user(fatalError, strERRORS, badReadMap, -1);
@@ -865,7 +865,7 @@ boolean ModemChangeMap(
 		else // wait for de damn map.
 		{
 			wad= receive_map();
-			if(!wad) success= FALSE;
+			if(!wad) success= false;
 			// Note that NetReceiveMap handles display of its own errors, therefore we don't
 			//  assert that an error is pending.....
 		}
@@ -895,7 +895,7 @@ short ModemUpdateJoinState(
 			/* 2) Request for info. (ie NBPLookup...) */
 //			if (NetStreamCheckConnectionStatus())
 			{
-				boolean got_packet;
+				bool got_packet;
 				byte packet_type;
 	
 				/* Setup the gather data. */
@@ -908,7 +908,7 @@ short ModemUpdateJoinState(
 					switch(packet_type)
 					{
 						case _join_player_packet:
-							/* Note that we could set accepted to FALSE if we wanted to for some */
+							/* Note that we could set accepted to false if we wanted to for some */
 							/*  reason- such as bad serial numbers.... */
 							{
 								/* Unregister ourselves */
@@ -919,7 +919,7 @@ short ModemUpdateJoinState(
 								topology->players[status->localPlayerIndex].identifier= status->localPlayerIdentifier;
 								
 								/* Confirm. */
-								accept_packet->accepted= TRUE;
+								accept_packet->accepted= true;
 								obj_copy(accept_packet->player, 
 									topology->players[status->localPlayerIndex]);
 							}
@@ -929,7 +929,7 @@ short ModemUpdateJoinState(
 							if(!error)
 							{
 								/* Close and reset the connection */
-//								error= NetCloseStreamConnection(FALSE);
+//								error= NetCloseStreamConnection(false);
 								if (!error)
 								{
 //									error= NetStreamWaitForConnection();
@@ -957,7 +957,7 @@ dprintf("Got unexpected packet: %d;g", packet_type);
 				if(error)
 				{
 					newState= netJoinErrorOccurred;
-//					NetCloseStreamConnection(FALSE);
+//					NetCloseStreamConnection(false);
 					alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
 				}
 			}
@@ -966,7 +966,7 @@ dprintf("Got unexpected packet: %d;g", packet_type);
 		case netWaiting:
 //			if (NetStreamCheckConnectionStatus())
 			{
-				boolean got_packet;
+				bool got_packet;
 				byte packet_type;
 			
 				/* and now, the packet you’ve all been waiting for ... (the server is trying to
@@ -1016,7 +1016,7 @@ dprintf("Got unexpected packet: %d;g", packet_type);
 							break;
 					}
 				
-//					error= NetCloseStreamConnection(FALSE);
+//					error= NetCloseStreamConnection(false);
 					if (!error)
 					{
 //						error= NetStreamWaitForConnection();
@@ -1112,7 +1112,7 @@ static long max_packet_length(
 	
 	for(packet_type= 0; packet_type<NUMBER_OF_PACKET_TYPES; ++packet_type)
 	{
-		word size= packet_type_size(packet_type);
+		uint16 size= packet_type_size(packet_type);
 		if(size>max_size) max_size= size;
 	}
 	
@@ -1271,10 +1271,10 @@ static short server_packet_size(
 /* We treat the modem like a stream, to avoid lousy transmission lines. */
 
 /* Application specific */
-static word packet_type_size(
+static uint16 packet_type_size(
 	short packet_type)
 {
-	word size;
+	uint16 size;
 
 	switch(packet_type)
 	{
@@ -1361,14 +1361,14 @@ static OSErr send_acknowledged_packet(
 	assert(modemState==netGathering || modemState==netStartingUp);
 	for (playerIndex=1; !error && playerIndex<topology->player_count; ++playerIndex)
 	{
-		boolean done= FALSE;
+		bool done= false;
 	
 		while(!error && !done)
 		{
 			error= modem_send_packet(packet_type, data);
 			if (!error)
 			{
-				boolean got_packet;
+				bool got_packet;
 				byte packet_type;
 				
 				got_packet= modem_read_packet(&packet_type, packet_buffers[_incoming_packet]);
@@ -1377,7 +1377,7 @@ static OSErr send_acknowledged_packet(
 					struct acknowledge_packet *packet= (struct acknowledge_packet *)packet_buffers[_incoming_packet];
 					
 //					if(packet->sequence==ACKNOWLEDGE_ACTION_FLAG)
-					done= TRUE;
+					done= true;
 				}
 			}
 
@@ -1398,7 +1398,7 @@ static OSErr modem_send_packet(
 	struct stream_header header;
 	short index;
 	byte *data;
-	word size= packet_type_size(packet_type);
+	uint16 size= packet_type_size(packet_type);
 	
 	header.unique_byte= HEADER_START_BYTE;
 	header.packet_type= packet_type;
@@ -1438,13 +1438,13 @@ static void reset_modem_buffer(
 static void modem_interrupt_idle(
 	void)
 {
-	word read_bytes_available;
+	uint16 read_bytes_available;
 	OSErr err;
 	
 	read_bytes_available= modem_read_bytes_available();
 	if(read_bytes_available)
 	{
-		word bytes_to_read= MIN(read_bytes_available, MODEM_QUEUE_SIZE-stream_read_queue.write_index);
+		uint16 bytes_to_read= MIN(read_bytes_available, MODEM_QUEUE_SIZE-stream_read_queue.write_index);
 
 //		err= read_modem_endpoint(&stream_read_queue.data[stream_read_queue.write_index], 
 //			bytes_to_read, kNoTimeout);
@@ -1459,12 +1459,12 @@ static void modem_interrupt_idle(
 	return;
 }
 
-static boolean modem_read_packet(
+static bool modem_read_packet(
 	byte *packet_type,
 	void *buffer)
 {
-	boolean read_packet= FALSE;
-	boolean done= FALSE;
+	bool read_packet= false;
+	bool done= false;
 	byte *source, *dest;
 	short size;
 
@@ -1494,16 +1494,16 @@ static boolean modem_read_packet(
 //}
 				if((stream_read_queue.write_index-stream_read_queue.read_index)>=size+sizeof(struct stream_header)-sizeof(byte))
 				{
-					word checksum;
-					word actual_checksum;
+					uint16 checksum;
+					uint16 actual_checksum;
 					short new_read_index= stream_read_queue.read_index;
 
 					/* Increment past the packet type */
 					new_read_index++;
 			
 					/* This was the correct packet type-> read the checksum... */
-					checksum= *((word *) &stream_read_queue.data[new_read_index]);
-					new_read_index+= sizeof(word);
+					checksum= *((uint16 *) &stream_read_queue.data[new_read_index]);
+					new_read_index+= sizeof(uint16);
 
 					/* Copy it in.. */
 					/* Now read the bytes in, based on the packet length */
@@ -1524,8 +1524,8 @@ static boolean modem_read_packet(
 					if(actual_checksum==checksum)
 					{
 						/* We were successful in reading the packet! */
-						read_packet= TRUE;
-						done= TRUE;
+						read_packet= true;
+						done= true;
 
 // if(actual_packet_type==_topology_packet) dprintf("Read topology!;g");					
 						/* Update the read_index */
@@ -1544,7 +1544,7 @@ static boolean modem_read_packet(
 					/* Decrement the read index so that we will look at it next time (again) */
 					stream_read_queue.read_index--;
 					assert(stream_read_queue.read_index>=0);
-					done= TRUE; /* Not enough data-> get out of here until next time.. */
+					done= true; /* Not enough data-> get out of here until next time.. */
 				}
 			} /* Ends the if(valid_packet_id..) */
 		} /* Else read index is incremented... */
@@ -1710,7 +1710,7 @@ static OSErr send_stream_data_with_progress(
 	short block_count, sequence;
 	OSErr error;
 	long initial_ticks;
-	boolean timed_out;	
+	bool timed_out;	
 	long offset;
 	struct stream_size_packet first_packet;
 
@@ -1728,11 +1728,11 @@ static OSErr send_stream_data_with_progress(
 #ifdef DEBUG_MODEM
 		modem_stats.stream_packets_necessary+= block_count;
 #endif
-		for(sequence= 0, error= noErr, timed_out= FALSE; sequence<block_count && !error && !timed_out; ++sequence)
+		for(sequence= 0, error= noErr, timed_out= false; sequence<block_count && !error && !timed_out; ++sequence)
 		{
 			struct stream_packet_data *data_packet= (struct stream_packet_data *)packet_buffers[_outgoing_packet];
 			long block_size;
-			boolean acknowledged;
+			bool acknowledged;
 			
 			/* Write the packet.. */
 			block_size= MIN(DATA_TRANSFER_CHUNK_SIZE, data_length-offset);
@@ -1742,7 +1742,7 @@ static OSErr send_stream_data_with_progress(
 			memcpy(data_packet->data, data+offset, block_size);
 	
 			/* Send the packet.. */
-			acknowledged= FALSE;
+			acknowledged= false;
 
 			/* Timeout is based on each chunk.. */
 			initial_ticks= machine_tick_count();
@@ -1755,7 +1755,7 @@ static OSErr send_stream_data_with_progress(
 #endif
 				if(!error)
 				{
-					boolean got_packet;
+					bool got_packet;
 					byte packet_type;
 				
 					got_packet= modem_read_packet(&packet_type, packet_buffers[_incoming_packet]);
@@ -1765,7 +1765,7 @@ static OSErr send_stream_data_with_progress(
 						
 						if(packet->sequence==sequence) 
 						{
-							acknowledged= TRUE;
+							acknowledged= true;
 #ifdef DEBUG_MODEM
 						} else {
 							assert(packet->sequence<sequence);
@@ -1775,7 +1775,7 @@ static OSErr send_stream_data_with_progress(
 					}
 				}
 
-				if(machine_tick_count()-initial_ticks>timeout) timed_out= TRUE;
+				if(machine_tick_count()-initial_ticks>timeout) timed_out= true;
 			} while(!acknowledged && !timed_out && !error);
 			
 			/* Get the next one.. */
@@ -1806,15 +1806,15 @@ static OSErr send_stream_data_with_progress(
 static long receive_stream_size(
 	long timeout)
 {
-	boolean done= FALSE;
-	boolean timed_out= FALSE;
+	bool done= false;
+	bool timed_out= false;
 	long size= -1l;
 	long initial_ticks= machine_tick_count();
 
 	while(!done && !timed_out)
 	{
 		byte packet_type;	
-		boolean got_packet;
+		bool got_packet;
 
 		// first we'll get the map length
 		got_packet= modem_read_packet(&packet_type, packet_buffers[_incoming_packet]);
@@ -1826,10 +1826,10 @@ static long receive_stream_size(
 			send_acknowledge(0l);
 			
 			size= packet->size;
-			done= TRUE;
+			done= true;
 		}
 		
-		if(machine_tick_count()-initial_ticks>timeout) timed_out= TRUE;
+		if(machine_tick_count()-initial_ticks>timeout) timed_out= true;
 	}
 	
 	return size;
@@ -1845,7 +1845,7 @@ static OSErr receive_stream_data_with_progress(
 	short block_count, sequence;
 	OSErr error;
 	long initial_ticks, offset;
-	boolean timed_out= FALSE;
+	bool timed_out= false;
 	
 	block_count= (data_length/DATA_TRANSFER_CHUNK_SIZE)+((data_length%DATA_TRANSFER_CHUNK_SIZE) ? (1) : (0));
 
@@ -1855,7 +1855,7 @@ static OSErr receive_stream_data_with_progress(
 	sequence= 0;
 	while(sequence<block_count && !timed_out)
 	{
-		boolean got_packet;
+		bool got_packet;
 		byte packet_type;
 		
 		got_packet= modem_read_packet(&packet_type, packet_buffers[_incoming_packet]);
@@ -1892,7 +1892,7 @@ static OSErr receive_stream_data_with_progress(
 			}
 		}
 				
-		if((machine_tick_count()-initial_ticks)>timeout) timed_out= TRUE;
+		if((machine_tick_count()-initial_ticks)>timeout) timed_out= true;
 	}
 
 	/* We win.. */
@@ -1928,7 +1928,7 @@ static void progress_function(
 /* ------ NBP Replacement, <sigh>... */
 
 #ifdef DEBUG
-static boolean lookup_data_valid= FALSE;
+static bool lookup_data_valid= false;
 #endif
 static struct lookup_packet_data lookup_packet;
 
@@ -1961,7 +1961,7 @@ OSErr ModemRegisterName(
 	pstrcpy(lookup_packet.entity.zoneStr, "\p");
 	
 #ifdef DEBUG
-	lookup_data_valid= TRUE;
+	lookup_data_valid= true;
 #endif
 
 	return noErr;
@@ -1971,7 +1971,7 @@ void ModemUnRegisterName(
 	void)
 {
 #ifdef DEBUG
-	lookup_data_valid= FALSE;
+	lookup_data_valid= false;
 #endif
 
 	return;
@@ -1979,19 +1979,19 @@ void ModemUnRegisterName(
 
 
 /* -------- lookup functions */
-boolean ModemEntityNotInGame(
+bool ModemEntityNotInGame(
 	EntityName *entity,
 	AddrBlock *address)
 {
-	static boolean first_time= TRUE;
-	boolean valid= FALSE;
+	static bool first_time= true;
+	bool valid= false;
 
 	(void)(entity,address);
 	
 	if(first_time) 
 	{
-		valid= TRUE;
-		first_time= FALSE;
+		valid= true;
+		first_time= false;
 	}
 	
 	return valid;
@@ -2073,7 +2073,7 @@ void ModemLookupInformation(
 void ModemLookupUpdate(
 	void)
 {
-	boolean got_packet;
+	bool got_packet;
 	struct lookup_query_data *query_packet= (struct lookup_query_data *)packet_buffers[_outgoing_packet];
 	byte packet_type;
 
@@ -2151,7 +2151,7 @@ static void send_acknowledge(
 	return;
 }
 
-static boolean modem_read_fake_packet(
+static bool modem_read_fake_packet(
 	byte *packet_type, 
 	void *data)
 {
@@ -2176,7 +2176,7 @@ static boolean modem_read_fake_packet(
 		*packet_type= _server_packet;
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -2185,10 +2185,10 @@ static void build_and_post_async_server_packet(void);
 
 
 /* This should be fired off very frequently */
-boolean packet_tickler(
+bool packet_tickler(
 	void)
 {
-	boolean got_packet;
+	bool got_packet;
 	byte packet_type;
 	
 	/* Try to send the outgoing packet if there is one.. */
@@ -2196,7 +2196,7 @@ boolean packet_tickler(
 	{
 		if(asynchronous_write_completed())
 		{
-			word size= packet_type_size(status->outgoing_packet_type)+sizeof(struct stream_header);
+			uint16 size= packet_type_size(status->outgoing_packet_type)+sizeof(struct stream_header);
 
 			/* Write it.. */		
 			write_modem_endpoint_asynchronous(packet_buffers[_outgoing_packet], 
@@ -2205,7 +2205,7 @@ boolean packet_tickler(
 			/* Only send one client packet.  If they don't get it, they will request it again.. */
 			if(status->outgoing_packet_type==_client_packet)
 			{
-				status->outgoing_packet_valid= FALSE;
+				status->outgoing_packet_valid= false;
 			}
 #ifdef DEBUG_MODEM
 			switch(status->outgoing_packet_type)
@@ -2246,7 +2246,7 @@ boolean packet_tickler(
 						process_server_packet((struct server_packet_data *)((byte *) packet_buffers[_outgoing_packet]+sizeof(struct stream_header)));
 
 						/* Stop sending the outgoing server packet.. */
-						status->outgoing_packet_valid= FALSE;
+						status->outgoing_packet_valid= false;
 
 						/* Change the modem state... */					
 						switch(modemState)
@@ -2374,14 +2374,14 @@ boolean packet_tickler(
 		}
 	} 
 
-	return TRUE;
+	return true;
 }
 
 
-static boolean network_queueing_task(
+static bool network_queueing_task(
 	void)
 {
-	boolean reinstall= (modemState != netDown);
+	bool reinstall= (modemState != netDown);
 
 	if(reinstall)
 	{
@@ -2409,7 +2409,7 @@ static boolean network_queueing_task(
 				if(--status->aborted_read_timer<=0)
 				{
 					dprintf("Error! Player dissappeared!");
-					status->single_player= TRUE;
+					status->single_player= true;
 				}
 #ifdef DEBUG_MODEM
 				modem_stats.max_consecutive_aborted_reads= MAX(
@@ -2449,7 +2449,7 @@ static void build_and_post_async_client_packet(
 
 	/* let her go.. */
 	status->outgoing_packet_type= _client_packet;
-	status->outgoing_packet_valid= TRUE;
+	status->outgoing_packet_valid= true;
 	
 	return;
 }
@@ -2481,7 +2481,7 @@ static void build_and_post_async_server_packet(
 	status->outgoing_packet_type= _server_packet;
 
 	/* Start our interrupt routine on it's merry way.. */
-	status->outgoing_packet_valid= TRUE;
+	status->outgoing_packet_valid= true;
 	
 	return;
 }

@@ -61,12 +61,12 @@ static OSErr copy_file(FSSpec *source, FSSpec *destination);
 static void remove_input_controller(void);
 
 /* ------------ code */
-boolean find_replay_to_use(
-	boolean ask_user,
+bool find_replay_to_use(
+	bool ask_user,
 	FileSpecifier& File)
 //	FileDesc *file)
 {
-	boolean successful = FALSE;
+	bool successful = false;
 	
 	if(ask_user)
 	{
@@ -82,7 +82,7 @@ boolean find_replay_to_use(
 		if (reply.sfGood)
 		{
 			memcpy(file, &reply.sfFile, sizeof(FSSpec));
-			successful= TRUE;
+			successful= true;
 		}
 		*/
 	}
@@ -97,7 +97,7 @@ boolean find_replay_to_use(
 
 // Now a member of FileSpecifier
 /*
-boolean get_freespace_on_disk(
+bool get_freespace_on_disk(
 	FileDesc *file,
 	unsigned long *free_space)
 {
@@ -110,7 +110,7 @@ boolean get_freespace_on_disk(
 	parms.volumeParam.ioNamePtr = ptemporary;
 	parms.volumeParam.ioVRefNum = file->vRefNum;
 	
-	error = PBHGetVInfo(&parms, FALSE);
+	error = PBHGetVInfo(&parms, false);
 	if (error == noErr)
 		*free_space = (unsigned long) parms.volumeParam.ioVAlBlkSiz * (unsigned long) parms.volumeParam.ioVFrBlk;
 	return (error==noErr);
@@ -118,7 +118,7 @@ boolean get_freespace_on_disk(
 */
 
 /* true if it found it, false otherwise. always fills in vrefnum and dirid*/
-boolean get_recording_filedesc(FileSpecifier& File)
+bool get_recording_filedesc(FileSpecifier& File)
 //	FileDesc *file)
 {
 	File.SetParentToPreferences();
@@ -350,12 +350,12 @@ static OSErr copy_file(
 	return err;
 }
 
-boolean setup_replay_from_random_resource(
+bool setup_replay_from_random_resource(
 	unsigned long map_checksum)
 {
 	short number_of_films;
 	static short index_of_last_film_played= 0;
-	boolean success= FALSE;
+	bool success= false;
 	
 	number_of_films= CountResources(FILM_RESOURCE_TYPE);
 	if(number_of_films > 0)
@@ -393,26 +393,26 @@ boolean setup_replay_from_random_resource(
 
 		if(replay.header.map_checksum==map_checksum)
 		{
-			replay.have_read_last_chunk= FALSE;
-			replay.game_is_being_replayed= TRUE;
+			replay.have_read_last_chunk= false;
+			replay.game_is_being_replayed= true;
 
 			replay.film_resource_offset= sizeof(struct recording_header);
 			replay.resource_data_size= size;
 
-			replay.valid= TRUE;
+			replay.valid= true;
 			
-			success= TRUE;
+			success= true;
 		} else {
-			replay.game_is_being_replayed= FALSE;
+			replay.game_is_being_replayed= false;
 
 			replay.film_resource_offset= NONE;
 			replay.resource_data_size= 0;
 			delete []replay.resource_data;
 			replay.resource_data= NULL;
 
-			replay.valid= FALSE;
+			replay.valid= false;
 			
-			success= FALSE;
+			success= false;
 		}
 		
 		replay.replay_speed= 1;
@@ -431,7 +431,7 @@ void set_keys_to_match_preferences(
 
 timer_task_proc install_timer_task(
 	short tasks_per_second, 
-	boolean (*func)(void))
+	bool (*func)(void))
 {
 	myTMTaskPtr task;
 	
@@ -479,7 +479,7 @@ static void write_flags(
 	long count)
 {
 	long index, size;
-	boolean sorted= TRUE;
+	bool sorted= true;
 	OSErr error;
 
 	sprintf(temporary, "%d Total Flags\n", count);

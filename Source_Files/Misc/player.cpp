@@ -103,6 +103,7 @@ Jul 10, 2000 (Loren Petrich):
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #ifdef env68k
 #pragma segment player
@@ -259,7 +260,7 @@ static struct damage_response_definition damage_response_definitions[]=
 #define EPILOGUE_LEVEL_NUMBER 256
 // LP change: made this much bigger than the number of M2/Moo polygons
 // #define NO_TELEPORTATION_DESTINATION 512
-#define NO_TELEPORTATION_DESTINATION SHORT_MAX
+#define NO_TELEPORTATION_DESTINATION INT16_MAX
 
 // LP additions: variables for initial energy, initial oxygen, and stripped energy:
 static short InitialEnergy = PLAYER_MAXIMUM_SUIT_ENERGY;
@@ -268,13 +269,13 @@ static short StrippedEnergy = PLAYER_MAXIMUM_SUIT_ENERGY/4;
 
 /* ---------- private prototypes */
 
-static void set_player_shapes(short player_index, boolean animate);
+static void set_player_shapes(short player_index, bool animate);
 static void revive_player(short player_index);
 static void recreate_player(short player_index);
 static void kill_player(short player_index, short aggressor_player_index, short action);
 static void give_player_initial_items(short player_index);
 static void get_player_transfer_mode(short player_index, short *transfer_mode, short *transfer_period);
-static void set_player_dead_shape(short player_index, boolean dying);
+static void set_player_dead_shape(short player_index, bool dying);
 static void remove_dead_player_items(short player_index);
 static void update_player_teleport(short player_index);
 static void handle_player_in_vacuum(short player_index, long action_flags);
@@ -550,7 +551,7 @@ void update_players(
 		{
 			if (!(player->extravision_duration-= 1))
 			{
-				if (player_index==current_player_index) start_extravision_effect(FALSE);
+				if (player_index==current_player_index) start_extravision_effect(false);
 			}
 		}
 		// LP change: made this code more general;
@@ -574,7 +575,7 @@ void update_players(
 			if (dynamic_world->speaking_player_index==NONE)
 			{
 				dynamic_world->speaking_player_index= player_index;
-				if (player_index==local_player_index) set_interface_microphone_recording_state(TRUE);
+				if (player_index==local_player_index) set_interface_microphone_recording_state(true);
 			}
 		}
 		else
@@ -582,7 +583,7 @@ void update_players(
 			if (dynamic_world->speaking_player_index==player_index)
 			{
 				dynamic_world->speaking_player_index= NONE;
-				if (player_index==local_player_index) set_interface_microphone_recording_state(FALSE);
+				if (player_index==local_player_index) set_interface_microphone_recording_state(false);
 			}
 		}
 
@@ -590,28 +591,28 @@ void update_players(
 		{
 			/* do things dead players do (sit around and check for self-reincarnation) */
 			if (PLAYER_HAS_MAP_OPEN(player))
-				SET_PLAYER_MAP_STATUS(player, FALSE);
+				SET_PLAYER_MAP_STATUS(player, false);
 			if (PLAYER_IS_TOTALLY_DEAD(player) && (action_flags&_action_trigger_state) && !player->reincarnation_delay && (player->variables.action==_player_stationary||dynamic_world->player_count==1))
 			{
 				if (dynamic_world->player_count==1) set_game_state(_revert_game);
 				else revive_player(player_index);
 			}
 			update_player_weapons(player_index, 0);
-			update_action_key(player_index, FALSE);
+			update_action_key(player_index, false);
 		}
 		else
 		{
 			/* do things live players do (get items, update weapons, check action key, breathe) */
 			swipe_nearby_items(player_index);
 			update_player_weapons(player_index, action_flags);
-			update_action_key(player_index, (action_flags&_action_trigger_state) ? TRUE : FALSE);
+			update_action_key(player_index, (action_flags&_action_trigger_state) ? true : false);
 			if (action_flags&_toggle_map)
 				SET_PLAYER_MAP_STATUS(player, !PLAYER_HAS_MAP_OPEN(player));
 		}
 
 		update_player_teleport(player_index);
 		update_player_media(player_index);
-		set_player_shapes(player_index, TRUE);
+		set_player_shapes(player_index, true);
 	}
 	
 	return;
@@ -679,7 +680,7 @@ void damage_player(
 		{
 			case _damage_oxygen_drain:
 				// LP change: pegging to maximum value
-				if ((player->suit_oxygen= MIN(long(player->suit_oxygen)-long(damage_amount),long(SHORT_MAX)))<0) player->suit_oxygen= 0;
+				if ((player->suit_oxygen= MIN(long(player->suit_oxygen)-long(damage_amount),long(INT16_MAX)))<0) player->suit_oxygen= 0;
 				// if ((player->suit_oxygen-= damage_amount)<0) player->suit_oxygen= 0;
 				if (player_index==current_player_index) mark_oxygen_display_as_dirty();
 				break;
@@ -687,7 +688,7 @@ void damage_player(
 			default:
 				/* damage the player, recording the kill if the aggressor was another player and we died */
 				// LP change: pegging to maximum value
-				if ((player->suit_energy= MIN(long(player->suit_energy)-long(damage_amount),long(SHORT_MAX)))<0)
+				if ((player->suit_energy= MIN(long(player->suit_energy)-long(damage_amount),long(INT16_MAX)))<0)
 				// if ((player->suit_energy-= damage_amount)<0)
 				{
 					if (damage->type!=_damage_energy_drain)
@@ -768,7 +769,7 @@ short player_identifier_to_player_index(
 }
 
 void mark_player_collections(
-	boolean loading)
+	bool loading)
 {
 	mark_collection(player_shapes.collection, loading);
 	// LP change: unload player shapes for single-player game only if
@@ -854,43 +855,43 @@ short get_polygon_index_supporting_player(
 	return player->supporting_polygon_index;
 }
 
-boolean legal_player_powerup(
+bool legal_player_powerup(
 	short player_index,
 	short item_index)
 {
 	struct player_data *player= get_player_data(player_index);
-	boolean legal= TRUE;
+	bool legal= true;
 	
 	switch (item_index)
 	{
 		case _i_invisibility_powerup:
-			if (player->invisibility_duration>kINVISIBILITY_DURATION) legal= FALSE;
+			if (player->invisibility_duration>kINVISIBILITY_DURATION) legal= false;
 			break;
 
 		case _i_invincibility_powerup:
-			if (player->invincibility_duration) legal= FALSE;
+			if (player->invincibility_duration) legal= false;
 			break;
 		
 		case _i_infravision_powerup:
-			if (player->infravision_duration) legal= FALSE;
+			if (player->infravision_duration) legal= false;
 			break;
 		
 		case _i_extravision_powerup:
-			if (player->extravision_duration) legal= FALSE;
+			if (player->extravision_duration) legal= false;
 			break;
 		
 		case _i_oxygen_powerup:
-			if (player->suit_oxygen>5*PLAYER_MAXIMUM_SUIT_OXYGEN/6) legal= FALSE;
+			if (player->suit_oxygen>5*PLAYER_MAXIMUM_SUIT_OXYGEN/6) legal= false;
 			break;
 		
 		case _i_energy_powerup:
-			if (player->suit_energy>=1*PLAYER_MAXIMUM_SUIT_ENERGY) legal= FALSE;
+			if (player->suit_energy>=1*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
 			break;
 		case _i_double_energy_powerup:
-			if (player->suit_energy>=2*PLAYER_MAXIMUM_SUIT_ENERGY) legal= FALSE;
+			if (player->suit_energy>=2*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
 			break;
 		case _i_triple_energy_powerup:
-			if (player->suit_energy>=3*PLAYER_MAXIMUM_SUIT_ENERGY) legal= FALSE;
+			if (player->suit_energy>=3*PLAYER_MAXIMUM_SUIT_ENERGY) legal= false;
 			break;
 	}
 
@@ -918,7 +919,7 @@ void process_player_powerup(
 			break;
 		
 		case _i_extravision_powerup:
-			if (player_index==current_player_index) start_extravision_effect(TRUE);
+			if (player_index==current_player_index) start_extravision_effect(true);
 			player->extravision_duration+= kEXTRAVISION_DURATION;
 			break;
 		
@@ -972,19 +973,19 @@ world_distance dead_player_minimum_polygon_height(
 	return minimum_height;
 }
 
-boolean try_and_subtract_player_item(
+bool try_and_subtract_player_item(
 	short player_index,
 	short item_type)
 {
 	struct player_data *player= get_player_data(player_index);
-	boolean found_one= FALSE;
+	bool found_one= false;
 
 	assert(item_type>=0 && item_type<NUMBER_OF_ITEMS);
 	if (player->items[item_type]>=0)
 	{
 		if (!(player->items[item_type]-= 1)) player->items[item_type]= NONE;
 		mark_player_inventory_as_dirty(player_index, item_type);
-		found_one= TRUE;
+		found_one= true;
 	}
 	
 	return found_one;
@@ -1080,20 +1081,20 @@ static void update_player_teleport(
 	struct monster_data *monster= get_monster_data(player->monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
 	struct polygon_data *polygon= get_polygon_data(object->polygon);
-	boolean player_was_interlevel_teleporting= FALSE;
+	bool player_was_interlevel_teleporting= false;
 	
 	/* This is the players that are carried across the teleport unwillingly.. */
 	if(PLAYER_IS_INTERLEVEL_TELEPORTING(player))
 	{
-		player_was_interlevel_teleporting= TRUE;
+		player_was_interlevel_teleporting= true;
 		
 		player->interlevel_teleport_phase+= 1;
 		switch(player->interlevel_teleport_phase)
 		{
 			case PLAYER_TELEPORTING_DURATION:
 				monster->action= _monster_is_moving;
-				SET_PLAYER_TELEPORTING_STATUS(player, FALSE);
-				SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(player, FALSE);
+				SET_PLAYER_TELEPORTING_STATUS(player, false);
+				SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(player, false);
 				break;
 
 			/* +1 because they are teleporting to a new level, and we want the squeeze in to happen */
@@ -1102,7 +1103,7 @@ static void update_player_teleport(
 				/* Either the player is teleporting, or everyone is. (level change) */
 				if(player_index==current_player_index)
 				{
-					start_teleporting_effect(FALSE);
+					start_teleporting_effect(false);
 					play_object_sound(player->object_index, _snd_teleport_in); 
 				}
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
@@ -1160,7 +1161,7 @@ static void update_player_teleport(
 				 /* Interlevel or my intralevel.. */
 				if(player_index==current_player_index)
 				{
-					start_teleporting_effect(FALSE);
+					start_teleporting_effect(false);
 					play_object_sound(player->object_index, _snd_teleport_in); 
 				} 
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
@@ -1168,7 +1169,7 @@ static void update_player_teleport(
 			
 			case PLAYER_TELEPORTING_DURATION:
 				monster->action= _monster_is_moving;
-				SET_PLAYER_TELEPORTING_STATUS(player, FALSE);
+				SET_PLAYER_TELEPORTING_STATUS(player, false);
 				break;
 		}
 	}
@@ -1185,7 +1186,7 @@ static void update_player_teleport(
 		{
 			if(--player->delay_before_teleport<0)
 			{
-				SET_PLAYER_TELEPORTING_STATUS(player, TRUE);
+				SET_PLAYER_TELEPORTING_STATUS(player, true);
 				monster->action= _monster_is_teleporting;
 				player->teleporting_phase= 0;
 				player->delay_before_teleport= 0; /* The only function that changes this are */
@@ -1211,7 +1212,7 @@ static void update_player_teleport(
 				{
 					if (player_index==current_player_index) 
 					{
-						start_teleporting_effect(TRUE);
+						start_teleporting_effect(true);
 					}
 					play_object_sound(player->object_index, _snd_teleport_out);
 				}
@@ -1220,7 +1221,7 @@ static void update_player_teleport(
 					short other_player_index;
 				
 					/* Everyone plays the teleporting effect out. */
-					start_teleporting_effect(TRUE);
+					start_teleporting_effect(true);
 					play_object_sound(current_player->object_index, _snd_teleport_out);
 					
 					/* Every players object plays the sound, and everyones monster responds. */
@@ -1235,7 +1236,7 @@ static void update_player_teleport(
 							monster= get_monster_data(player->monster_index);
 					
 							/* Tell everyone else to use the teleporting junk... */
-							SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(player, TRUE);
+							SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(player, true);
 							player->interlevel_teleport_phase= 0;
 						
 							monster->action= _monster_is_teleporting;
@@ -1321,7 +1322,7 @@ static void update_player_media(
 
 static void set_player_shapes(
 	short player_index,
-	boolean animate)
+	bool animate)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct monster_data *monster= get_monster_data(player->monster_index);
@@ -1374,8 +1375,8 @@ static void set_player_shapes(
 		if (PLAYER_IS_DEAD(player) && !PLAYER_IS_TELEPORTING(player) && (GET_OBJECT_ANIMATION_FLAGS(legs)&_obj_last_frame_animated) && !PLAYER_IS_TOTALLY_DEAD(player))
 		{
 			/* weÕve finished the animation; let the player reincarnate if he wants to */
-			SET_PLAYER_TOTALLY_DEAD_STATUS(player, TRUE);
-			set_player_dead_shape(player_index, FALSE);
+			SET_PLAYER_TOTALLY_DEAD_STATUS(player, true);
+			set_player_dead_shape(player_index, false);
 
 			/* If you had something cool, you don't anymore.. */
 			remove_dead_player_items(player_index);
@@ -1410,7 +1411,7 @@ static void revive_player(
 		itÕs monster (shape will be set by set_player_shapes, below) */
 	player->object_index= monster->object_index= new_map_object(&location, 0);
 	object= get_object_data(monster->object_index);
-	SET_OBJECT_SOLIDITY(object, TRUE);
+	SET_OBJECT_SOLIDITY(object, true);
 	SET_OBJECT_OWNER(object, _object_is_monster);
 	object->permutation= player->monster_index;
 	
@@ -1422,10 +1423,10 @@ static void revive_player(
 	player->weapon_intensity_decay= 0;
 	player->suit_energy= PLAYER_MAXIMUM_SUIT_ENERGY;
 	player->suit_oxygen= PLAYER_MAXIMUM_SUIT_OXYGEN;
-	SET_PLAYER_DEAD_STATUS(player, FALSE);
-	SET_PLAYER_TOTALLY_DEAD_STATUS(player, FALSE);
-	SET_PLAYER_TELEPORTING_STATUS(player, FALSE);
-	SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(player, FALSE);
+	SET_PLAYER_DEAD_STATUS(player, false);
+	SET_PLAYER_TOTALLY_DEAD_STATUS(player, false);
+	SET_PLAYER_TELEPORTING_STATUS(player, false);
+	SET_PLAYER_INTERLEVEL_TELEPORTING_STATUS(player, false);
 	player->invincibility_duration= 0;
 	player->invisibility_duration= 0;
 	player->infravision_duration= 0;
@@ -1435,7 +1436,7 @@ static void revive_player(
 	give_player_initial_items(player_index);
 
 	/* set the correct shapes and transfer mode */
-	set_player_shapes(player_index, FALSE);
+	set_player_shapes(player_index, false);
 
 	try_and_strip_player_items(player_index);
 
@@ -1462,7 +1463,7 @@ static void recreate_player(
 	struct player_data *player= get_player_data(player_index);
 	short placement_team;
 	struct object_location location;
-	boolean  player_teleported_dead= FALSE;
+	bool  player_teleported_dead= false;
 	
 	/* Determine the location */
 	placement_team= calculate_player_team(player->team);
@@ -1478,7 +1479,7 @@ static void recreate_player(
 	/* and initialize it */
 	if(PLAYER_IS_TOTALLY_DEAD(player) || PLAYER_IS_DEAD(player))
 	{
-		player_teleported_dead= TRUE;
+		player_teleported_dead= true;
 	}
 
 //	player->flags= 0;
@@ -1503,7 +1504,7 @@ static void recreate_player(
 
 	/* Reset the player weapon data and the physics variable.. (after updating player_count) */
 	initialize_player_physics_variables(player_index);
-	set_player_shapes(player_index, FALSE);
+	set_player_shapes(player_index, false);
 
 	player->control_panel_side_index = NONE; // not using a control panel.
 	initialize_player_terminal_info(player_index);
@@ -1551,13 +1552,13 @@ static void kill_player(
 	SET_OBJECT_OWNER(legs, _object_is_normal);
 	monster->action= action;
 	monster_died(player->monster_index);
-	set_player_dead_shape(player_index, TRUE);
+	set_player_dead_shape(player_index, true);
 	
 	/* make our torso invisible */
-	SET_OBJECT_INVISIBILITY(torso, TRUE);
+	SET_OBJECT_INVISIBILITY(torso, true);
 
 	/* make our player dead */
-	SET_PLAYER_DEAD_STATUS(player, TRUE);
+	SET_PLAYER_DEAD_STATUS(player, true);
 
 	player->reincarnation_delay= MINIMUM_REINCARNATION_DELAY;
 	if (GET_GAME_OPTIONS()&_dying_is_penalized) player->reincarnation_delay+= NORMAL_REINCARNATION_DELAY;
@@ -1634,7 +1635,7 @@ static void remove_dead_player_items(
 		while ((item_count-= 1)>=0)
 		{
 			short item_kind= get_item_kind(item_type);
-			boolean dropped= FALSE;
+			bool dropped= false;
 			
 			// if weÕre not set to burn items or this is an important item (i.e., repair chip) drop it
 			if (!(GET_GAME_OPTIONS()&_burn_items_on_death) ||
@@ -1662,7 +1663,7 @@ static void remove_dead_player_items(
 						location.flags= 0;
 						new_item(&location, item_type);
 						
-						dropped= TRUE;
+						dropped= true;
 					}
 				}
 			}
@@ -1731,7 +1732,7 @@ static void get_player_transfer_mode(
 
 static void set_player_dead_shape(
 	short player_index,
-	boolean dying)
+	bool dying)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct monster_data *monster= get_monster_data(player->monster_index);
@@ -2025,19 +2026,19 @@ bool XML_PowerupParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (strcmp(Tag,"invisibility") == 0)
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",kINVISIBILITY_DURATION,short(0),short(SHORT_MAX)));
+		return (ReadBoundedNumericalValue(Value,"%hd",kINVISIBILITY_DURATION,short(0),short(SHRT_MAX)));
 	}
 	else if (strcmp(Tag,"invincibility") == 0)
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",kINVINCIBILITY_DURATION,short(0),short(SHORT_MAX)));
+		return (ReadBoundedNumericalValue(Value,"%hd",kINVINCIBILITY_DURATION,short(0),short(SHRT_MAX)));
 	}
 	else if (strcmp(Tag,"extravision") == 0)
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",kEXTRAVISION_DURATION,short(0),short(SHORT_MAX)));
+		return (ReadBoundedNumericalValue(Value,"%hd",kEXTRAVISION_DURATION,short(0),short(SHRT_MAX)));
 	}
 	else if (strcmp(Tag,"infravision") == 0)
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",kINFRAVISION_DURATION,short(0),short(SHORT_MAX)));
+		return (ReadBoundedNumericalValue(Value,"%hd",kINFRAVISION_DURATION,short(0),short(SHRT_MAX)));
 	}
 	UnrecognizedTag();
 	return false;
@@ -2060,20 +2061,20 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (strcmp(Tag,"energy") == 0)
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",InitialEnergy,short(0),short(SHORT_MAX)));
+		return (ReadBoundedNumericalValue(Value,"%hd",InitialEnergy,short(0),short(SHRT_MAX)));
 	}
 	else if (strcmp(Tag,"oxygen") == 0)
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",InitialOxygen,short(0),short(SHORT_MAX)));
+		return (ReadBoundedNumericalValue(Value,"%hd",InitialOxygen,short(0),short(SHRT_MAX)));
 	}
 	else if (strcmp(Tag,"stripped") == 0)
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",StrippedEnergy,short(0),short(SHORT_MAX)));
+		return (ReadBoundedNumericalValue(Value,"%hd",StrippedEnergy,short(0),short(SHRT_MAX)));
 	}
 	else if (strcmp(Tag,"light") == 0)
 	{
 		float Luminosity;
-		if (ReadBoundedNumericalValue(Value,"%f",Luminosity,float(0),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",Luminosity,float(0),float(SHRT_MAX)))
 		{
 			PlayerSelfLuminosity = long(FIXED_ONE*Luminosity + 0.5);
 			return true;

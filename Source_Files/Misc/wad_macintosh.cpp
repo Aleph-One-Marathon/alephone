@@ -34,13 +34,13 @@ Aug 25, 2000 (Loren Petrich):
 #endif
 
 struct find_checksum_private_data {
-	unsigned long checksum_to_match;
+	uint32 checksum_to_match;
 };
 
 struct find_files_private_data { /* used for enumerating wadfiles */
 	FileSpecifier BaseFile;
 	// FileDesc *base_file;
-	long base_checksum;
+	uint32 base_checksum;
 };
 
 /* ------------ local prototypes */
@@ -49,34 +49,34 @@ static Boolean match_wad_checksum_callback(FileSpecifier& File, void *data);
 static Boolean checksum_and_not_base_callback(FileSpecifier& File, void *data);
 static Boolean match_modification_date_callback(FileSpecifier& File, void *data);
 // Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
-static boolean find_wad_file_with_checksum_in_directory(
+static bool find_wad_file_with_checksum_in_directory(
 	FileSpecifier& MatchingFile, DirectorySpecifier& BaseDir,
-	int file_type, unsigned long checksum);
-static boolean find_file_with_modification_date_in_directory(
+	int file_type, uint32 checksum);
+static bool find_file_with_modification_date_in_directory(
 	FileSpecifier& MatchingFile, DirectorySpecifier& BaseDir,
-	int file_type, unsigned long checksum);
+	int file_type, uint32 checksum);
 /*
 static Boolean match_wad_checksum_callback(FSSpec *file, void *data);
 static Boolean checksum_and_not_base_callback(FSSpec *file, void *data);
 static Boolean match_modification_date_callback(FSSpec *file, void *data);
-static boolean find_wad_file_with_checksum_in_directory(FSSpec *matching_file, short vRefNum,
+static bool find_wad_file_with_checksum_in_directory(FSSpec *matching_file, short vRefNum,
 	long parID, unsigned long file_type, unsigned long checksum);
-static boolean find_file_with_modification_date_in_directory(FSSpec *matching_file, short vRefNum,
+static bool find_file_with_modification_date_in_directory(FSSpec *matching_file, short vRefNum,
 	long parID, unsigned long file_type, unsigned long modification_date);
 */
 
 /* ------------- code! */
 /* Search all the directories in the path.. */
-boolean find_wad_file_that_has_checksum(
+bool find_wad_file_that_has_checksum(
 	FileSpecifier& MatchingFile,
 	// FileDesc *matching_file,
 	int file_type,
 	short path_resource_id,
-	unsigned long checksum)
+	uint32 checksum)
 {
 	OSErr err;
 	FSSpec app_spec;
-	boolean file_matched= FALSE;
+	bool file_matched= false;
 	
 	/* Look for the files in the same directory that we are in.. */	
 	
@@ -132,7 +132,7 @@ boolean find_wad_file_that_has_checksum(
 /* Find other entries that reference the base wad.  Search is by type, and when one is found, the */
 /*  checksums are checked, to make sure that it is modifying the correct file. */
 FileError find_other_entries_that_reference_checksum(
-	unsigned long checksum,
+	uint32 checksum,
 	FileDesc *files_array,
 	short *count)
 {
@@ -179,7 +179,7 @@ FileError find_other_entries_that_reference_checksum(
 // LP: end no-compile
 #endif
 
-boolean find_file_with_modification_date(
+bool find_file_with_modification_date(
 	FileSpecifier& MatchingFile,
 	// FileDesc *matching_file,
 	int file_type,
@@ -188,7 +188,7 @@ boolean find_file_with_modification_date(
 {
 	OSErr err;
 	FSSpec app_spec;
-	boolean file_matched= FALSE;
+	bool file_matched= false;
 
 	/* Look for the files in the same directory that we are in.. */	
 	// LP: for now, will only care about looking in the Marathon app's directory
@@ -268,7 +268,7 @@ static Boolean checksum_and_not_base_callback(
 	// FSSpec *file, 
 	void *data)
 {
-	Boolean add_this_file= FALSE;
+	Boolean add_this_file= false;
 	struct find_files_private_data *_private= (struct find_files_private_data *) data;
 	
 	/* Don't readd the base file.. */
@@ -279,7 +279,7 @@ static Boolean checksum_and_not_base_callback(
 		if(wad_file_has_parent_checksum(File, _private->base_checksum))
 		// if(wad_file_has_parent_checksum((FileDesc *) file, _private->base_checksum))
 		{
-			add_this_file= TRUE;
+			add_this_file= true;
 		}
 	}
 	
@@ -291,20 +291,20 @@ static Boolean match_wad_checksum_callback(
 	// FSSpec *file, 
 	void *data)
 {
-	Boolean add_this_file= FALSE;
+	Boolean add_this_file= false;
 	struct find_checksum_private_data *_private= (struct find_checksum_private_data *) data;
 	
 	/* Do the checksums match? */
 	if(wad_file_has_checksum(File, _private->checksum_to_match))
 	// if(wad_file_has_checksum((FileDesc *) file, _private->checksum_to_match))
 	{
-		add_this_file= TRUE;
+		add_this_file= true;
 	}
 	
 	return add_this_file;
 }
 	
-static boolean find_wad_file_with_checksum_in_directory(
+static bool find_wad_file_with_checksum_in_directory(
 	FileSpecifier& MatchingFile,
 	DirectorySpecifier& BaseDir,
 	/*
@@ -313,9 +313,9 @@ static boolean find_wad_file_with_checksum_in_directory(
 	long parID,
 	*/
 	int file_type,
-	unsigned long checksum)
+	uint32 checksum)
 {
-	boolean success= FALSE;
+	bool success= false;
 	FileFinder pb;
 	// struct find_file_pb pb;
 	struct find_checksum_private_data private_data;
@@ -356,7 +356,7 @@ static boolean find_wad_file_with_checksum_in_directory(
 	// if(!error) 
 	if (pb.Find())
 	{
-		if(pb.count) success= TRUE;
+		if(pb.count) success= true;
 	} else {
 		dprintf("Trying to find file, error: %d", pb.GetError());
 	}
@@ -367,7 +367,7 @@ static boolean find_wad_file_with_checksum_in_directory(
 static TimeType target_modification_date;
 // static unsigned long target_modification_date;
 
-static boolean find_file_with_modification_date_in_directory(
+static bool find_file_with_modification_date_in_directory(
 	FileSpecifier& MatchingFile,
 	DirectorySpecifier& BaseDir,
 	/*
@@ -378,7 +378,7 @@ static boolean find_file_with_modification_date_in_directory(
 	int file_type,
 	unsigned long modification_date)
 {
-	boolean success= FALSE;
+	bool success= false;
 	FileFinder pb;
 	// struct find_file_pb pb;
 	short error;
@@ -419,7 +419,7 @@ static boolean find_file_with_modification_date_in_directory(
 	// if(!error) 
 	if (pb.Find())
 	{
-		if(pb.count) success= TRUE;
+		if(pb.count) success= true;
 	} else {
 		dprintf("Trying to find file, error: %d", pb.GetError());
 	}
@@ -433,17 +433,17 @@ static Boolean match_modification_date_callback(
 	void *data)
 {
 	// More general code; does not use the passed data
-	Boolean add_this_file= FALSE;
+	Boolean add_this_file= false;
 	if (File.GetDate() == target_modification_date)
-		add_this_file = TRUE;
+		add_this_file = true;
 	
 	/*
-	Boolean add_this_file= FALSE;
+	Boolean add_this_file= false;
 	CInfoPBRec *pb= (CInfoPBRec *) data;
 	(void) (File);
 	if(pb->hFileInfo.ioFlMdDat==target_modification_date)
 	{
-		add_this_file= TRUE;
+		add_this_file= true;
 	}
 	*/
 	return add_this_file;

@@ -39,6 +39,7 @@ Jul 1, 2000 (Loren Petrich):
 
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
 
 #ifdef env68k
 #pragma segment render
@@ -53,8 +54,8 @@ short *cosine_table;
 short *sine_table;
 static long *tangent_table;
 
-static word random_seed= 0x1;
-static word local_random_seed= 0x1;
+static uint16 random_seed= 0x1;
+static uint16 local_random_seed= 0x1;
 
 /* ---------- code */
 
@@ -412,23 +413,23 @@ angle arctangent(
 }
 
 void set_random_seed(
-	word seed)
+	uint16 seed)
 {
 	random_seed= seed ? seed : DEFAULT_RANDOM_SEED;
 	
 	return;
 }
 
-word get_random_seed(
+uint16 get_random_seed(
 	void)
 {
 	return random_seed;
 }
 
-word global_random(
+uint16 global_random(
 	void)
 {
-	word seed= random_seed;
+	uint16 seed= random_seed;
 	
 	if (seed&1)
 	{
@@ -442,10 +443,10 @@ word global_random(
 	return (random_seed= seed);
 }
 
-word local_random(
+uint16 local_random(
 	void)
 {
-	word seed= local_random_seed;
+	uint16 seed= local_random_seed;
 	
 	if (seed&1)
 	{
@@ -471,7 +472,7 @@ world_distance guess_distance2d(
 	if (dy<0) dy= -dy;
 	distance= GUESS_HYPOTENUSE(dx, dy);
 	
-	return distance>SHORT_MAX ? SHORT_MAX : distance;
+	return distance>INT16_MAX ? INT16_MAX : distance;
 }
 
 world_distance distance3d(
@@ -483,7 +484,7 @@ world_distance distance3d(
 	long dz= (long)p0->z - p1->z;
 	long distance= isqrt(dx*dx + dy*dy + dz*dz);
 	
-	return distance>SHORT_MAX ? SHORT_MAX : distance;
+	return distance>INT16_MAX ? INT16_MAX : distance;
 }
 
 world_distance distance2d(
@@ -496,7 +497,7 @@ world_distance distance2d(
 	long dy= (long)p0->y - p1->y;
 	long distance= isqrt(dx*dx + dy*dy);
 	
-	return distance>SHORT_MAX ? SHORT_MAX : distance;
+	return distance>INT16_MAX ? INT16_MAX : distance;
 	// return isqrt((p0->x-p1->x)*(p0->x-p1->x)+(p0->y-p1->y)*(p0->y-p1->y));
 }
 
@@ -635,14 +636,14 @@ world_distance guess_distance3d(
 
 // LP additions: stuff for handling long-distance views
 
-void long_to_overflow_short_2d(long_vector2d& LVec, world_point2d& WVec, word& flags)
+void long_to_overflow_short_2d(long_vector2d& LVec, world_point2d& WVec, uint16& flags)
 {
 	// Clear upper byte of flags
 	flags &= 0x00ff;
 
 	// Extract upper digits and put them into place
-	word xupper = word(LVec.i >> 16) & 0x000f;
-	word yupper = word(LVec.j >> 16) & 0x000f;
+	uint16 xupper = uint16(LVec.i >> 16) & 0x000f;
+	uint16 yupper = uint16(LVec.j >> 16) & 0x000f;
 	
 	// Put them into place
 	flags |= xupper << 12;
@@ -653,15 +654,15 @@ void long_to_overflow_short_2d(long_vector2d& LVec, world_point2d& WVec, word& f
 	WVec.y = LVec.j;
 }
 
-void overflow_short_to_long_2d(world_point2d& WVec, word& flags, long_vector2d& LVec)
+void overflow_short_to_long_2d(world_point2d& WVec, uint16& flags, long_vector2d& LVec)
 {
 	// Move lower values
 	LVec.i = long(WVec.x) & 0x0000ffff;
 	LVec.j = long(WVec.y) & 0x0000ffff;
 	
 	// Extract upper digits
-	word xupper = (flags >> 12) & 0x000f;
-	word yupper = (flags >> 8) & 0x000f;
+	uint16 xupper = (flags >> 12) & 0x000f;
+	uint16 yupper = (flags >> 8) & 0x000f;
 	
 	// Sign-extend them
 	if (xupper & 0x0008) xupper |= 0xfff0;
@@ -677,7 +678,7 @@ world_point2d *transform_overflow_point2d(
 	world_point2d *point,
 	world_point2d *origin,
 	angle theta,
-	word *flags)
+	uint16 *flags)
 {
 	// LP change: lengthening the values for more precise calculations
 	long_vector2d temp, tempr;

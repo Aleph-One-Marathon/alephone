@@ -22,7 +22,7 @@ extern void byte_swap_memory(
 	_bs_field type,
 	size_t fieldcount);
 
-#ifndef LITTLE_ENDIAN
+#ifndef ALEPHONE_LITTLE_ENDIAN
 #define byte_swap_data(data,elsize,elcount,fields) ((void)0)
 #define byte_swap_memory(memory,type,elcount) ((void)0)
 #endif

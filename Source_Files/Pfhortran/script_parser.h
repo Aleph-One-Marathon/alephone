@@ -4,6 +4,8 @@
 #ifndef _SCRIPT_PARSER_DEF
 #define _SCRIPT_PARSER_DEF
 
+#include "cstypes.h"
+
 enum /* procedure traps */
 {
 	idle = 1,
@@ -27,7 +29,7 @@ struct bind_table
 	bool active;
 	int which;
 	bool available;
-	long instruction_decay;
+	uint32 instruction_decay;
 };
 
 struct script_instruction
@@ -57,7 +59,7 @@ int get_trap_start(short trap);
 void set_trap_instruction(short trap, int offset);
 void reset_trap(short trap);
 void activate_trap(short trap);
-long get_trap_instruction_decay(short trap);
-void set_trap_instruction_decay(short trap, long decay);
+uint32 get_trap_instruction_decay(short trap);
+void set_trap_instruction_decay(short trap, uint32 decay);
 
 #endif

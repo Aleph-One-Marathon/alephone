@@ -171,7 +171,7 @@ void _draw_screen_shape(
 	RGBBackColor(&rgb_white);
 	
 	/* Draw the panels... */
-	pixmap= get_shape_pixmap(shape_id, FALSE);
+	pixmap= get_shape_pixmap(shape_id, false);
 	if(!source)
 	{
 		actual_source= (*pixmap)->bounds;
@@ -286,7 +286,7 @@ void _draw_screen_shape_at_x_y(
 	RGBBackColor(&rgb_white);
 	
 	/* Draw the panels... */
-	pixmap= get_shape_pixmap(shape, FALSE);
+	pixmap= get_shape_pixmap(shape, false);
 	
 	/* Offset to zero base, and add in x, y */
 	destination= (*pixmap)->bounds;
@@ -319,7 +319,7 @@ return;
 	RGBBackColor(&rgb_white);
 	
 	/* Draw the panels... */
-	pixmap= get_shape_pixmap(shape, FALSE);
+	pixmap= get_shape_pixmap(shape, false);
 	
 	/* Offset to zero base, and add in x, y */
 	destination= source= (*pixmap)->bounds;
@@ -587,14 +587,14 @@ TextSpec *_get_font_spec(
 extern short interface_bit_depth;
 extern short bit_depth;
 
-boolean display_full_screen_pict_resource(
+bool display_full_screen_pict_resource(
 	WindowPtr window,
 	OSType pict_resource_type,
 	short pict_resource_number,
 	long delay)
 {
 	PicHandle picture;
-	boolean picture_drawn= FALSE;
+	bool picture_drawn= false;
 	
 	picture= (PicHandle) GetResource(pict_resource_type, 
 		determine_pict_resource_id(pict_resource_type, pict_resource_number));
@@ -638,7 +638,7 @@ boolean display_full_screen_pict_resource(
 			full_fade(_start_cinematic_fade_in, clut);
 
 			draw_full_screen_pict_resource(window, pict_resource_type, pict_resource_number);
-			picture_drawn= TRUE;
+			picture_drawn= true;
 	
 			full_fade(_long_cinematic_fade_in, clut);
 

@@ -30,13 +30,13 @@ static unsigned long *crc_table= NULL;
 static unsigned long calculate_file_crc(unsigned char *buffer, 
 	short buffer_size, OpenedFile& OFile);
 static unsigned long calculate_buffer_crc(long count, unsigned long crc, void *buffer);
-static boolean build_crc_table(void);
+static bool build_crc_table(void);
 static void free_crc_table(void);
 
 /* -------------- Entry Point ----------- */
 unsigned long calculate_crc_for_file(FileSpecifier& File)
 {
-	unsigned long crc;
+	unsigned long crc = 0;
 	
 	OpenedFile OFile;
 	if (File.Open(OFile))
@@ -50,7 +50,7 @@ unsigned long calculate_crc_for_file(FileSpecifier& File)
 
 unsigned long calculate_crc_for_opened_file(OpenedFile& OFile)
 {
-	unsigned long crc;
+	unsigned long crc = 0;
 	unsigned char *buffer;
 
 	/* Build the crc table */
@@ -95,10 +95,10 @@ unsigned long calculate_data_crc(
 }
 
 /* ---------------- Private Code --------------- */
-static boolean build_crc_table(
+static bool build_crc_table(
 	void)
 {
-	boolean success= FALSE;
+	bool success= false;
 
 	assert(!crc_table);
 	crc_table= new unsigned long[TABLE_SIZE];
@@ -119,7 +119,7 @@ static boolean build_crc_table(
 			crc_table[index] = crc;
 		}
 		
-		success= TRUE;
+		success= true;
 	}
 	
 	return success;

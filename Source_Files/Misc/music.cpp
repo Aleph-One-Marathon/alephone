@@ -59,7 +59,7 @@ enum {
 
 /* ----------------- structures */
 struct music_data {
-	boolean initialized;
+	bool initialized;
 	short flags;
 	short state;
 	short phase;
@@ -107,7 +107,7 @@ static short get_sound_volume(void);
 /* ----------------- code */
 
 /* If channel is null, we don't initialize */
-boolean initialize_music_handler(FileSpecifier& SongFile)
+bool initialize_music_handler(FileSpecifier& SongFile)
 //	FileDesc *song_file)
 {
 	short song_file_refnum;
@@ -118,7 +118,7 @@ boolean initialize_music_handler(FileSpecifier& SongFile)
 		
 	// LP addition: resolving music file if it was an alias
 	// Boolean is_folder, was_aliased;
-	// ResolveAliasFile((FSSpec *)song_file, TRUE, &is_folder, &was_aliased);
+	// ResolveAliasFile((FSSpec *)song_file, true, &is_folder, &was_aliased);
 		
 	/* Does the file exist? */
 	// LP change: using a file object
@@ -133,16 +133,16 @@ boolean initialize_music_handler(FileSpecifier& SongFile)
 		if (!music_state.OFile.ReadObject(MusicHeader)) return false;
 		// long NumBytes = 4;
 		// error = FSRead(song_file_refnum, &NumBytes, &MusicHeader);
-		// if (error != noErr) return FALSE;
-		if (MusicHeader != AIFF_Header) return FALSE;
+		// if (error != noErr) return false;
+		if (MusicHeader != AIFF_Header) return false;
 		
 		// Reposition the file
 		if (!music_state.OFile.SetPosition(0)) return false;
 		// error = SetFPos(song_file_refnum, fsFromStart, 0);
-		// if (error != noErr) return FALSE;
+		// if (error != noErr) return false;
 		
 		// LP: removed allocation of music-state object
-		music_state.initialized= TRUE;
+		music_state.initialized= true;
 		music_state.flags= 0;
 		music_state.state= _no_song_playing;
 		music_state.phase= 0;
@@ -176,7 +176,7 @@ void free_music_channel(
 	{
 		OSErr error;
 		
-		error= SndDisposeChannel(music_state.channel, TRUE);
+		error= SndDisposeChannel(music_state.channel, true);
 		vwarn(error==noErr, csprintf(temporary, "SndDisposeChannel returned %d;g", error));
 		music_state.channel= NULL;
 	}
@@ -262,7 +262,7 @@ void music_idle_proc(
 							music_state.sound_buffer, // Let it allocate a buffer for us.
 							NULL, // Audio selection ptr.
 							music_state.completion_proc, // Completion proc
-							TRUE); // Async.
+							true); // Async.
 						vwarn(error==noErr, csprintf(temporary, "SndStartFilePlay returned %d;g", error));
 						if (!error) 
 						{
@@ -343,7 +343,7 @@ void stop_music(
 	{
 		OSErr error;
 		
-		error= SndStopFilePlay(music_state.channel, TRUE);
+		error= SndStopFilePlay(music_state.channel, true);
 		vwarn(error==noErr, csprintf(temporary, "StopFilePlay returned %d;g", error));
 		music_state.state= _no_song_playing;
 		
@@ -353,11 +353,11 @@ void stop_music(
 }
 
 void pause_music(
-	boolean pause)
+	bool pause)
 {
 	if(music_playing())
 	{
-		boolean pause_it= FALSE;
+		bool pause_it= false;
 
 		/* If they want us to pause, and it is not already paused. */
 		if(pause)
@@ -365,13 +365,13 @@ void pause_music(
 			if(!(music_state.flags & _song_paused))
 			{
 				music_state.flags |= _song_paused;
-				pause_it= TRUE;
+				pause_it= true;
 			}
 		} else {
 			if(music_state.flags & _song_paused)
 			{
 				music_state.flags &= ~_song_paused;
-				pause_it= TRUE;
+				pause_it= true;
 			}
 		}
 
@@ -386,15 +386,15 @@ void pause_music(
 	}
 }
 
-boolean music_playing(
+bool music_playing(
 	void)
 {
-	boolean playing= FALSE;
+	bool playing= false;
 	
 	if(music_state.initialized && music_state.state != _no_song_playing)
 	{
 		assert(music_state.channel);
-		playing= TRUE;
+		playing= true;
 	}
 
 	return playing;

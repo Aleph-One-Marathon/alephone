@@ -71,6 +71,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #ifdef env68k
 #pragma segment map
@@ -133,7 +134,7 @@ struct map_annotation *map_annotations;
 struct map_object *saved_objects;
 struct item_placement_data *placement_information;
 
-boolean game_is_networked;
+bool game_is_networked;
 
 // This could be a handle
 struct map_memory_data {
@@ -151,7 +152,7 @@ static GrowableList<short> IntersectedObjects(64);
 
 static short _new_map_object(shape_descriptor shape, angle facing);
 
-short _find_line_crossed_leaving_polygon(short polygon_index, world_point2d *p0, world_point2d *p1, boolean *last_line);
+short _find_line_crossed_leaving_polygon(short polygon_index, world_point2d *p0, world_point2d *p1, bool *last_line);
 
 /* ---------- code */
 
@@ -207,7 +208,7 @@ void initialize_map_for_new_level(
 {
 	short total_civilians, total_causalties;
 	long tick_count;
-	word random_seed;
+	uint16 random_seed;
 	short player_count;
 	struct game_data game_information;
 
@@ -266,8 +267,8 @@ void *get_map_structure_chunk(
 void reallocate_map_structure_memory(
 	long size)
 {
-	boolean success= FALSE;
-	boolean reallocate= FALSE;
+	bool success= false;
+	bool reallocate= false;
 
 	if(map_structure_memory.memory)
 	{
@@ -275,13 +276,13 @@ void reallocate_map_structure_memory(
 		{
 			/* Must reallocate.. */
 			delete []map_structure_memory.memory;
-			reallocate= TRUE;		
+			reallocate= true;		
 		} else {
 			/* Already allocated, new size is less than old.. */
-			success= TRUE;
+			success= true;
 		}
 	} else {
-		reallocate= TRUE;
+		reallocate= true;
 	}
 	
 	if(reallocate)
@@ -289,7 +290,7 @@ void reallocate_map_structure_memory(
 		/* Must allocate initially.. */
 		map_structure_memory.memory= new byte[size];
 		map_structure_memory.size= size;
-		if(map_structure_memory.memory) success= TRUE;
+		if(map_structure_memory.memory) success= true;
 	}
 
 	/* This tells us where to take the next block from. */
@@ -309,12 +310,12 @@ void reallocate_map_structure_memory(
 	return;
 }
 
-boolean collection_in_environment(
+bool collection_in_environment(
 	short collection_code,
 	short environment_code)
 {
 	short collection_index= GET_COLLECTION(collection_code);
-	boolean found= FALSE;
+	bool found= false;
 	short test_index;
 	short i;
 	
@@ -323,7 +324,7 @@ boolean collection_in_environment(
 
 	for (i= 0; (test_index= environment_definitions[environment_code].shape_collections[i])!=NONE; ++i)
 	{
-		if (test_index==collection_index) found= TRUE;
+		if (test_index==collection_index) found= true;
 	}
 	
 	return found;
@@ -333,7 +334,7 @@ boolean collection_in_environment(
 	unloading */
 void mark_environment_collections(
 	short environment_code,
-	boolean loading)
+	bool loading)
 {
 	short i;
 	short collection;
@@ -380,17 +381,17 @@ void reconnect_map_object_list(
 	return;
 }
 
-boolean valid_point2d(
+bool valid_point2d(
 	world_point2d *p)
 {
-	return world_point_to_polygon_index(p)==NONE ? FALSE : TRUE;
+	return world_point_to_polygon_index(p)==NONE ? false : true;
 }
 
-boolean valid_point3d(
+bool valid_point3d(
 	world_point3d *p)
 {
 	short polygon_index= world_point_to_polygon_index((world_point2d *)p);
-	boolean valid= FALSE;
+	bool valid= false;
 	
 	if (polygon_index!=NONE)
 	{
@@ -398,7 +399,7 @@ boolean valid_point3d(
 		
 		if (p->z>polygon->floor_height&&p->z<polygon->ceiling_height)
 		{
-			valid= TRUE;
+			valid= true;
 		}
 	}
 	
@@ -421,7 +422,7 @@ short new_map_object(
 		struct object_data *object= get_object_data(object_index);
 		
 		if (location->flags&_map_object_is_invisible)
-			SET_OBJECT_INVISIBILITY(object, TRUE);
+			SET_OBJECT_INVISIBILITY(object, true);
 	}
 	
 	return object_index;
@@ -557,7 +558,7 @@ void remove_map_object(
 
 /* if a new polygon index is supplied, it will be used, otherwise weÕll try to find the new
 	polygon index ourselves */
-boolean translate_map_object(
+bool translate_map_object(
 	short object_index,
 	world_point3d *new_location,
 	short new_polygon_index)
@@ -565,7 +566,7 @@ boolean translate_map_object(
 	short line_index;
 	struct object_data *object= get_object_data(object_index);
 	short old_polygon_index= object->polygon;
-	boolean changed_polygons= FALSE;
+	bool changed_polygons= false;
 	
 	/* if new_polygon is NONE, find out what polygon the new_location is in */
 	if (new_polygon_index==NONE)
@@ -584,7 +585,7 @@ boolean translate_map_object(
 			{
 				*(world_point2d *)new_location= get_polygon_data(old_polygon_index)->center;
 				new_polygon_index= old_polygon_index;
-				changed_polygons= TRUE; /* tell the caller we switched polygons, even though we didnÕt */
+				changed_polygons= true; /* tell the caller we switched polygons, even though we didnÕt */
 				break;
 			}
 		}
@@ -609,7 +610,7 @@ boolean translate_map_object(
 		polygon->first_object= object_index;
 		object->polygon= new_polygon_index;
 		
-		changed_polygons= TRUE;
+		changed_polygons= true;
 	}
 	object->location= *new_location;
 
@@ -725,13 +726,13 @@ void get_object_shape_and_transfer_mode(
 	return;
 }
 
-boolean randomize_object_sequence(
+bool randomize_object_sequence(
 	short object_index,
 	shape_descriptor shape)
 {
 	struct object_data *object= get_object_data(object_index);
 	register struct shape_animation_data *animation;
-	boolean randomized= FALSE;
+	bool randomized= false;
 	
 	animation= get_shape_animation_data(shape);
 	switch (animation->number_of_views)
@@ -739,7 +740,7 @@ boolean randomize_object_sequence(
 		case _unanimated:
 			object->shape= shape;
 			object->sequence= BUILD_SEQUENCE(global_random()%animation->frames_per_view, 0);
-			randomized= TRUE;
+			randomized= true;
 			break;
 	}
 	
@@ -875,26 +876,25 @@ void calculate_line_midpoint(
 	return;
 }
 
-boolean point_in_polygon(
+bool point_in_polygon(
 	short polygon_index,
 	world_point2d *p)
 {
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
-	short intersected_line_index= NONE;
-	boolean point_inside= TRUE;
+	bool point_inside= true;
 	short i;
 	
 	for (i=0;i<polygon->vertex_count;++i)
 	{
 		struct line_data *line= get_line_data(polygon->line_indexes[i]);
-		boolean clockwise= line->endpoint_indexes[0]==polygon->endpoint_indexes[i];
+		bool clockwise= line->endpoint_indexes[0]==polygon->endpoint_indexes[i];
 		world_point2d *e0= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
 		world_point2d *e1= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
 		long cross_product= (p->x-e0->x)*(e1->y-e0->y) - (p->y-e0->y)*(e1->x-e0->x);
 		
 		if ((clockwise && cross_product>0) || (!clockwise && cross_product<0))
 		{
-			point_inside= FALSE;
+			point_inside= false;
 			break;
 		}
 	}
@@ -907,15 +907,14 @@ short clockwise_endpoint_in_line(
 	short line_index,
 	short index)
 {
-	struct polygon_data *polygon= get_polygon_data(polygon_index);
 	struct line_data *line= get_line_data(line_index);
-	boolean line_is_clockwise= TRUE;
+	bool line_is_clockwise= true;
 
 	if (line->clockwise_polygon_owner!=polygon_index)
 	{
 		// LP change: suppressing this test to get around some Pfhorte bugs
 		// assert(line->counterclockwise_polygon_owner==polygon_index);
-		line_is_clockwise= FALSE;
+		line_is_clockwise= false;
 	}
 	
 	switch (index)
@@ -999,12 +998,12 @@ short find_adjacent_side(
 	return side_index;
 }
 
-boolean line_is_landscaped(
+bool line_is_landscaped(
 	short polygon_index,
 	short line_index,
 	world_distance z)
 {
-	boolean landscaped= FALSE;
+	bool landscaped= false;
 	short side_index= find_adjacent_side(polygon_index, line_index);
 	
 	if (side_index!=NONE)
@@ -1276,7 +1275,7 @@ enum /* keep out states */
 };
 
 /* returns height at clipped p1 */
-boolean keep_line_segment_out_of_walls(
+bool keep_line_segment_out_of_walls(
 	short polygon_index, /* where we started */
 	world_point3d *p0,
 	world_point3d *p1,
@@ -1289,7 +1288,7 @@ boolean keep_line_segment_out_of_walls(
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 	short *indexes= get_map_indexes(polygon->first_exclusion_zone_index, polygon->line_exclusion_zone_count+polygon->point_exclusion_zone_count);
 	long line_collision_bitmap;
-	boolean clipped= FALSE;
+	bool clipped= false;
 	short state;
 	short i;
 
@@ -1348,7 +1347,7 @@ line_is_solid:
 								/* first pass: set the flag and do the clip */
 								line_collision_bitmap|= 1<<i;
 								closest_point_on_line(&zone->e0, &zone->e1, (world_point2d*)p1, (world_point2d*)p1);
-								clipped= TRUE;
+								clipped= true;
 								break;
 							
 							case _second_line_pass:
@@ -1420,7 +1419,7 @@ line_is_solid:
 					ENDPOINT_IS_SOLID(endpoint))
 				{
 					closest_point_on_circle(&endpoint->vertex, MINIMUM_SEPARATION_FROM_WALL, (world_point2d*)p1, (world_point2d*)p1);
-					clipped= TRUE;
+					clipped= true;
 				}
 				else
 				{
@@ -1472,10 +1471,10 @@ void ray_to_line_segment(
 	long x= (long)p0->x + (long)((d*dx)>>TRIG_SHIFT);
 	long y= (long)p0->y + (long)((d*dy)>>TRIG_SHIFT);
 	
-	if (x<SHORT_MIN) x= SHORT_MIN, y= (long)p0->y + (dy*(SHORT_MIN-p0->x))/dx;
-	if (x>SHORT_MAX) x= SHORT_MAX, y= (long)p0->y + (dy*(SHORT_MAX-p0->x))/dx;
-	if (y<SHORT_MIN) y= SHORT_MIN, x= (long)p0->x + (dx*(SHORT_MIN-p0->y))/dy;
-	if (y>SHORT_MAX) y= SHORT_MAX, x= (long)p0->x + (dx*(SHORT_MAX-p0->y))/dy;
+	if (x<INT16_MIN) x= INT16_MIN, y= (long)p0->y + (dy*(INT16_MIN-p0->x))/dx;
+	if (x>INT16_MAX) x= INT16_MAX, y= (long)p0->y + (dy*(INT16_MAX-p0->x))/dx;
+	if (y<INT16_MIN) y= INT16_MIN, x= (long)p0->x + (dx*(INT16_MIN-p0->y))/dy;
+	if (y>INT16_MAX) y= INT16_MAX, x= (long)p0->x + (dx*(INT16_MAX-p0->y))/dy;
 
 	p1->x= x;
 	p1->y= y;
@@ -1610,18 +1609,18 @@ void recalculate_map_counts(
 	return;
 }
 
-boolean change_polygon_height(
+bool change_polygon_height(
 	short polygon_index,
 	world_distance new_floor_height,
 	world_distance new_ceiling_height,
 	struct damage_definition *damage)
 {
-	boolean legal_change;
+	bool legal_change;
 	
 	// LP change: no need to check on this
 	// assert(new_ceiling_height>=new_floor_height);
 
-	/* returns FALSE if a monster prevented the given change from ocurring (and probably did damage
+	/* returns false if a monster prevented the given change from ocurring (and probably did damage
 		to him or maybe even caused him to pop) */
 	legal_change= legal_polygon_height_change(polygon_index, new_floor_height, new_ceiling_height, damage);
 
@@ -1674,14 +1673,14 @@ boolean change_polygon_height(
 	Added max_players, because this could be called during initial player creation,
 	when dynamic_world->player_count was not valid.
 */
-boolean point_is_player_visible(
+bool point_is_player_visible(
 	short max_players,
 	short polygon_index,
 	world_point2d *p,
 	long *distance)
 {
 	short player_index;
-	boolean visible= FALSE;
+	bool visible= false;
 	
 	*distance= LONG_MAX; /* infinite */
 	for (player_index=0;player_index<max_players;++player_index)
@@ -1695,14 +1694,14 @@ boolean point_is_player_visible(
 			long this_distance= guess_distance2d((world_point2d*)&object->location, p);
 			
 			if (*distance>this_distance) *distance= this_distance;
-			visible= TRUE;
+			visible= true;
 		}
 	}
 	
 	return visible;
 }
 
-boolean point_is_monster_visible(
+bool point_is_monster_visible(
 	short polygon_index,
 	world_point2d *p,
 	long *distance)
@@ -1717,8 +1716,8 @@ boolean point_is_monster_visible(
 	// LP change:
 	IntersectedObjects.ResetLength();
 	// object_count= 0;
-	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, polygon_index, FALSE);
-	// possible_intersecting_monsters(object_indexes, &object_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, polygon_index, FALSE);
+	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, polygon_index, false);
+	// possible_intersecting_monsters(object_indexes, &object_count, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, polygon_index, false);
 	object_count = IntersectedObjects.GetLength();
 	
 	for (i=0;i<object_count;++i)
@@ -1735,7 +1734,7 @@ boolean point_is_monster_visible(
 	return *distance!=LONG_MAX;
 }
 
-boolean line_is_obstructed(
+bool line_is_obstructed(
 	short polygon_index1,
 	world_point2d *p1,
 	short polygon_index2,
@@ -1743,12 +1742,12 @@ boolean line_is_obstructed(
 {
 	short polygon_index= polygon_index1;
 	short last_polygon_index= NONE;
-	boolean obstructed= FALSE;
+	bool obstructed= false;
 	short line_index;
 	
 	do
 	{
-		boolean last_line;
+		bool last_line;
 		
 		line_index= _find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)p1, (world_point2d *)p2, &last_line);
 		if (line_index!=NONE)
@@ -1762,12 +1761,12 @@ boolean line_is_obstructed(
 			}
 			else
 			{
-				obstructed= TRUE; /* non-transparent line */
+				obstructed= true; /* non-transparent line */
 			}
 			if (last_line)
 			{
 				if (polygon_index==polygon_index2) break;
-				obstructed= TRUE;
+				obstructed= true;
 				break;
 			}
 		}
@@ -1777,7 +1776,7 @@ boolean line_is_obstructed(
 				destination point is in; this probably means that the source is on a different
 				level than the caller, but it could also easily mean that weÕre dealing with
 				weird boundary conditions of find_line_crossed_leaving_polygon() */
-			if (polygon_index!=polygon_index2) obstructed= TRUE;
+			if (polygon_index!=polygon_index2) obstructed= true;
 		}
 		
 		last_polygon_index= polygon_index;
@@ -1880,7 +1879,7 @@ short _find_line_crossed_leaving_polygon(
 	short polygon_index,
 	world_point2d *p0, /* origin (not necessairly in polygon_index) */
 	world_point2d *p1, /* destination (not necessairly in polygon_index) */
-	boolean *last_line) /* set if p1 is on the line leaving the last polygon */
+	bool *last_line) /* set if p1 is on the line leaving the last polygon */
 {
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 	short intersected_line_index= NONE;
@@ -1944,7 +1943,7 @@ static short _new_map_object(
 			/* Objects with a shape of NONE are invisible. */
 			if(shape==NONE)
 			{
-				SET_OBJECT_INVISIBILITY(object, TRUE);
+				SET_OBJECT_INVISIBILITY(object, true);
 			}
 	
 			break;
@@ -1955,11 +1954,10 @@ static short _new_map_object(
 	return object_index;
 }
 
-boolean line_has_variable_height(
+bool line_has_variable_height(
 	short line_index)
 {
 	struct line_data *line= get_line_data(line_index);
-	boolean has_variable_height= FALSE;
 	struct polygon_data *polygon;
 
 	if(line->clockwise_polygon_owner != NONE)
@@ -1969,18 +1967,18 @@ boolean line_has_variable_height(
 			polygon= get_polygon_data(line->counterclockwise_polygon_owner);
 			if (polygon->type==_polygon_is_platform)
 			{
-				return TRUE;
+				return true;
 			}
 		}
 		
 		polygon= get_polygon_data(line->clockwise_polygon_owner);
 		if (polygon->type==_polygon_is_platform)
 		{
-			return TRUE;
+			return true;
 		}		
 	}
 	
-	return FALSE;
+	return false;
 }
 
 /* ---------- sound code */
@@ -2021,7 +2019,6 @@ void _play_side_sound(
 	fixed pitch)
 {
 	struct side_data *side= get_side_data(side_index);
-	struct line_data *line= get_line_data(side->line_index);
 	world_location3d source;
 
 	calculate_line_midpoint(side->line_index, &source.point);
@@ -2056,11 +2053,11 @@ world_location3d *_sound_listener_proc(
 }
 
 // stuff floating on top of media is above it
-word _sound_obstructed_proc(
+uint16 _sound_obstructed_proc(
 	world_location3d *source)
 {
 	world_location3d *listener= _sound_listener_proc();
-	word flags= 0;
+	uint16 flags= 0;
 	
 	if (listener)
 	{
@@ -2073,7 +2070,7 @@ word _sound_obstructed_proc(
 		{
 			struct polygon_data *source_polygon= get_polygon_data(source->polygon_index);
 			struct polygon_data *listener_polygon= get_polygon_data(listener->polygon_index);
-			boolean source_under_media= FALSE, listener_under_media= FALSE;
+			bool source_under_media= false, listener_under_media= false;
 			
 			// LP change: idiot-proofed the media handling
 			if (source_polygon->media_index!=NONE)
@@ -2084,7 +2081,7 @@ word _sound_obstructed_proc(
 					if (source->point.z<media->height)
 					// if (source->point.z<get_media_data(source_polygon->media_index)->height)
 					{
-						source_under_media= TRUE;
+						source_under_media= true;
 					}
 				}
 			}
@@ -2097,7 +2094,7 @@ word _sound_obstructed_proc(
 					if (listener->point.z<media->height)
 					//if (listener->point.z<get_media_data(listener_polygon->media_index)->height)
 					{
-						listener_under_media= TRUE;
+						listener_under_media= true;
 					}
 				}
 			}
@@ -2139,7 +2136,7 @@ void _sound_add_ambient_sources_proc(
 		struct media_data *media= listener_polygon->media_index!=NONE ? get_media_data(listener_polygon->media_index) : (struct media_data *) NULL;
 		short *indexes= get_map_indexes(listener_polygon->sound_source_indexes, 0);
 		world_location3d source;
-		boolean under_media= FALSE;
+		bool under_media= false;
 		short index;
 	
 		// add ambient sound image
@@ -2148,7 +2145,7 @@ void _sound_add_ambient_sources_proc(
 			// if weÕre under media donÕt play the ambient sound image
 			add_one_ambient_sound_source((struct ambient_sound_data *)data, (world_location3d *) NULL, listener,
 				get_media_sound(listener_polygon->media_index, _media_snd_ambient_under), MAXIMUM_SOUND_VOLUME);
-			under_media= TRUE;
+			under_media= true;
 		}
 		else
 		{
@@ -2194,7 +2191,7 @@ void _sound_add_ambient_sources_proc(
 			struct media_data *media= polygon->media_index!=NONE ? get_media_data(polygon->media_index) : (struct media_data *) NULL;
 			short sound_type= object->index;
 			short sound_volume= object->facing;
-			boolean active= TRUE;
+			bool active= true;
 
 			if (sound_volume<0)
 			{
@@ -2230,7 +2227,7 @@ void _sound_add_ambient_sources_proc(
 				}
 				else
 				{
-					active= FALSE;
+					active= false;
 				}
 			}
 
@@ -2358,13 +2355,13 @@ fixed find_line_deflection(
 #endif
 	
 #ifdef OBSOLETE
-boolean point_in_polygon(
+bool point_in_polygon(
 	short polygon_index,
 	world_point2d *p)
 {
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 	short intersected_line_index= NONE;
-	boolean point_inside= TRUE;
+	bool point_inside= true;
 	short i;
 	
 	for (i=0;i<polygon->vertex_count;++i)
@@ -2375,7 +2372,7 @@ boolean point_in_polygon(
 		
 		if ((p->x-e0->x)*(e1->y-e0->y) - (p->y-e0->y)*(e1->x-e0->x) > 0)
 		{
-			point_inside= FALSE;
+			point_inside= false;
 			break;
 		}
 	}

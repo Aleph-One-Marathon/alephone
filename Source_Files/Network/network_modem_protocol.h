@@ -8,22 +8,22 @@
 
 */
 
-boolean ModemEnter(void);
+bool ModemEnter(void);
 void ModemExit(void);
 
-boolean ModemSync(void);
-boolean ModemUnsync(void);
+bool ModemSync(void);
+bool ModemUnsync(void);
 
-short ModemAddDistributionFunction(NetDistributionProc proc, boolean lossy);
+short ModemAddDistributionFunction(NetDistributionProc proc, bool lossy);
 void ModemDistributeInformation(short type, void *buffer, short buffer_size, 
-	boolean send_to_self);
+	bool send_to_self);
 void ModemRemoveDistributionFunction(short type);
 
-boolean ModemGather(void *game_data, short game_data_size, void *player_data, 
+bool ModemGather(void *game_data, short game_data_size, void *player_data, 
 	short player_data_size);
 
-boolean ModemGatherPlayer(short player_index, CheckPlayerProcPtr check_player);
-boolean ModemGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data, 
+bool ModemGatherPlayer(short player_index, CheckPlayerProcPtr check_player);
+bool ModemGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data, 
 	short player_data_size, short version_number);
 
 void ModemCancelJoin(void);
@@ -38,10 +38,10 @@ short ModemGetNumberOfPlayers(void);
 void *ModemGetPlayerData(short player_index);
 void *ModemGetGameData(void);
 
-boolean ModemNumberOfPlayerIsValid(void);
+bool ModemNumberOfPlayerIsValid(void);
 
-boolean ModemStart(void);
-boolean ModemChangeMap(struct entry_point *entry);
+bool ModemStart(void);
+bool ModemChangeMap(struct entry_point *entry);
 
 long ModemGetNetTime(void);
 

@@ -63,9 +63,9 @@ struct screen_mode_data
 	short size;
 	short acceleration;
 	
-	boolean high_resolution;
-	boolean texture_floor, texture_ceiling;
-	boolean draw_every_other_line;
+	bool high_resolution;
+	bool texture_floor, texture_ceiling;
+	bool draw_every_other_line;
 	
 	short bit_depth;  // currently 8 or 16
 	short gamma_level;
@@ -92,13 +92,13 @@ enum // input devices
 
 struct system_information_data
 {
-	boolean has_seven;
-	boolean has_apple_events;
-	boolean appletalk_is_available;
-	boolean machine_is_68k;
-	boolean machine_is_68040;
-	boolean machine_is_ppc;
-	boolean machine_has_network_memory;
+	bool has_seven;
+	bool has_apple_events;
+	bool appletalk_is_available;
+	bool machine_is_68k;
+	bool machine_is_68040;
+	bool machine_is_ppc;
+	bool machine_has_network_memory;
 };
 
 /* ---------- globals */
@@ -121,7 +121,7 @@ XML_ElementParser *Cheats_GetParser();
 void initialize_shape_handler(void);
 
 #if defined(mac)
-PixMapHandle get_shape_pixmap(short shape, boolean force_copy);
+PixMapHandle get_shape_pixmap(short shape, bool force_copy);
 #elif defined(SDL)
 SDL_Surface *get_shape_surface(int shape);
 #endif
@@ -139,10 +139,10 @@ void _get_interface_color(int color_index, SDL_Color *color);
 
 /* ---------- protoypes/INTERFACE_MACINTOSH.C */
 #ifdef mac
-boolean try_for_event(boolean *use_waitnext);
+bool try_for_event(bool *use_waitnext);
 void process_game_key(EventRecord *event, short key);
 void update_game_window(WindowPtr window, EventRecord *event);
-boolean has_cheat_modifiers(EventRecord *event);
+bool has_cheat_modifiers(EventRecord *event);
 #endif
 
 /* ---------- prototypes/PREFERENCES.C */

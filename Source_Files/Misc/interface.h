@@ -213,42 +213,42 @@ enum { /* states. */
 	NUMBER_OF_GAME_STATES
 };
 
-boolean game_window_is_full_screen(void);
+bool game_window_is_full_screen(void);
 void set_change_level_destination(short level_number);
-boolean networking_available(void);
+bool networking_available(void);
 void free_and_unlock_memory(void);
 
 /* ---------- prototypes/INTERFACE.C */
 
 void initialize_game_state(void);
 void force_game_state_change(void);
-boolean player_controlling_game(void);
+bool player_controlling_game(void);
 
 void toggle_suppression_of_background_tasks(void);
-boolean suppress_background_events(void);
+bool suppress_background_events(void);
 
 void set_game_state(short new_state);
 short get_game_state(void);
 short get_game_controller(void);
 void set_change_level_destination(short level_number);
-boolean check_level_change(void);
+bool check_level_change(void);
 void pause_game(void);
 void resume_game(void);
-void portable_process_screen_click(short x, short y, boolean cheatkeys_down);
+void portable_process_screen_click(short x, short y, bool cheatkeys_down);
 void draw_menu_button_for_command(short index);
 void update_interface_display(void);
 void idle_game_state(void);
 void display_main_menu(void);
-void do_menu_item_command(short menu_id, short menu_item, boolean cheat);
-boolean interface_fade_finished(void);
+void do_menu_item_command(short menu_id, short menu_item, bool cheat);
+bool interface_fade_finished(void);
 void stop_interface_fade(void);
-boolean enabled_item(short item);
+bool enabled_item(short item);
 void paint_window_black(void);
 
 /* ---------- prototypes/INTERFACE_MACINTOSH.C */
 void do_preferences(void);
 short get_level_number_from_user(void);
-void toggle_menus(boolean game_started);
+void toggle_menus(bool game_started);
 void install_network_microphone(void);
 void remove_network_microphone(void);
 
@@ -257,16 +257,16 @@ void show_movie(short index);
 void exit_networking(void);
 
 void load_main_menu_buffers(short base_id);
-boolean main_menu_buffers_loaded(void);
+bool main_menu_buffers_loaded(void);
 void main_menu_bit_depth_changed(short base_id);
 void free_main_menu_buffers(void);
 void draw_main_menu(void);
-void draw_menu_button(short index, boolean pressed);
+void draw_menu_button(short index, bool pressed);
 
 /* ---------- prototypes/INTERFACE_MACINTOSH.C- couldn't think of a better place... */
 void hide_cursor(void);
 void show_cursor(void);
-boolean mouse_still_down(void);
+bool mouse_still_down(void);
 void get_mouse_position(short *x, short *y);
 void set_drawing_clip_rectangle(short top, short left, short bottom, short right);
 
@@ -287,9 +287,9 @@ void get_shape_hotpoint(shape_descriptor texture, short *x0, short *y0);
 struct shape_animation_data *get_shape_animation_data(shape_descriptor texture);
 void process_collection_sounds(short colleciton_code, void (*process_sound)(short sound_index));
 
-#define mark_collection_for_loading(c) mark_collection((c), TRUE)
-#define mark_collection_for_unloading(c) mark_collection((c), FALSE)
-void mark_collection(short collection_code, boolean loading);
+#define mark_collection_for_loading(c) mark_collection((c), true)
+#define mark_collection_for_unloading(c) mark_collection((c), false)
+void mark_collection(short collection_code, bool loading);
 void strip_collection(short collection_code);
 void load_collections(void);
 void unload_all_collections(void);
@@ -306,22 +306,22 @@ short get_bitmap_index(short collection_index, short low_level_shape_index);
 
 /* ---------- prototypes/PREPROCESS_MAP_MAC.C */
 void setup_revert_game_info(struct game_data *game_info, struct player_start_data *start, struct entry_point *entry);
-boolean revert_game(void);
-boolean load_game(boolean use_last_load);
-boolean save_game(void);
+bool revert_game(void);
+bool load_game(bool use_last_load);
+bool save_game(void);
 void restart_game(void);
 
 /* ---------- prototypes/GAME_WAD.C */
 /* Map transferring fuctions */
 long get_net_map_data_length(void *data);
-boolean process_net_map_data(void *data); /* Note that this frees it as well */
+bool process_net_map_data(void *data); /* Note that this frees it as well */
 void *get_map_for_net_transfer(struct entry_point *entry);
 
 /* ---------- prototypes/VBL.C */
 
-void set_keyboard_controller_status(boolean active);
-boolean get_keyboard_controller_status(void);
-void pause_keyboard_controller(boolean active);
+void set_keyboard_controller_status(bool active);
+bool get_keyboard_controller_status(void);
+void pause_keyboard_controller(bool active);
 long get_heartbeat_count(void);
 void sync_heartbeat_count(void);
 void process_action_flags(short player_identifier, long *action_flags, short count);
@@ -333,7 +333,7 @@ void check_recording_replaying(void);
 short find_key_setup(short *keycodes);
 void set_default_keys(short *keycodes, short which_default);
 void set_keys(short *keycodes);
-boolean has_recording_file(void);
+bool has_recording_file(void);
 void increment_replay_speed(void);
 void decrement_replay_speed(void);
 void reset_recording_and_playback_queues(void);
@@ -344,23 +344,23 @@ short dequeue_keymaps(short count, long *buffer);
 
 /* ---------- prototypes/GAME_DIALOGS.C */
 
-boolean handle_preferences_dialog(void);
+bool handle_preferences_dialog(void);
 void handle_load_game(void);
 void handle_save_game(void);
-boolean handle_start_game(void);
-boolean quit_without_saving(void);
+bool handle_start_game(void);
+bool quit_without_saving(void);
 
 /* ---------- prototypes/GAME_WINDOW.C */
 void scroll_inventory(short dy);
 
 /* ---------- prototypes/NETWORK.C */
 
-boolean network_gather(void);
-boolean network_join(void);
+bool network_gather(void);
+bool network_join(void);
 
 /* ---------- prototypes/NETWORK_MICROPHONE.C */
 
-void handle_microphone(boolean triggered);
+void handle_microphone(bool triggered);
 
 /* ---------- prototypes/PHYSICS.C */
 
@@ -371,7 +371,7 @@ void reset_absolute_positioning_device(fixed yaw, fixed pitch, fixed velocity);
 void import_definition_structures(void);
 
 /* ---------- prototypes/KEYBOARD_DIALOG.C */
-boolean configure_key_setup(short *keycodes);
+bool configure_key_setup(short *keycodes);
 
 /* --------- from PREPROCESS_MAP_MAC.C */
 void get_default_map_spec(FileSpecifier& File);

@@ -47,7 +47,7 @@ struct speaker_definition
 	short connection_status; /* the number of times we have doublebacked without data (reset to zero if we get data) */
 	short state;
 	
-	word random_seed;
+	uint16 random_seed;
 };
 
 /* ---------- globals */
@@ -77,7 +77,7 @@ OSErr open_network_speaker(
 
 	/* install our atexit cleanup procedure and build a routine descriptor */	
 	{
-		static boolean initialization= TRUE;
+		static bool initialization= true;
 		
 		if (initialization)
 		{
@@ -141,7 +141,7 @@ void close_network_speaker(
 	{
 		OSErr error;
 		
-		error= SndDisposeChannel(speaker->channel, TRUE);
+		error= SndDisposeChannel(speaker->channel, true);
 		warn(error==noErr);
 		
 		DisposePtr((Ptr)speaker->header->dbhBufferPtr[0]);
@@ -290,7 +290,7 @@ static void fill_buffer_with_static(
 	byte *buffer,
 	short count)
 {
-	word seed= speaker->random_seed;
+	uint16 seed= speaker->random_seed;
 	
 	while ((count-=1)>=0)
 	{

@@ -38,7 +38,7 @@ struct graphics_preferences_data
 
 struct serial_number_data
 {
-	boolean network_only;
+	bool network_only;
 	byte long_serial_number[10];
 	Str255 user_name;
 	Str255 tokenized_serial_number;
@@ -46,8 +46,8 @@ struct serial_number_data
 
 struct network_preferences_data
 {
-	boolean allow_microphone;
-	boolean  game_is_untimed;
+	bool allow_microphone;
+	bool  game_is_untimed;
 	short type; // look in network_dialogs.c for _ethernet, etc...
 	short game_type;
 	short difficulty_level;
@@ -64,7 +64,7 @@ struct player_preferences_data
 	short team;
 	unsigned long last_time_ran;
 	short difficulty_level;
-	boolean background_music_on;
+	bool background_music_on;
 	struct ChaseCamData ChaseCam;
 	struct CrosshairData Crosshairs;
 };

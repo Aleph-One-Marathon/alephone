@@ -66,7 +66,7 @@ void open_shapes_file(FileSpecifier& File)
 
 PixMapHandle get_shape_pixmap(
 	short shape,
-	boolean force_copy)
+	bool force_copy)
 {
 	OSErr error;
 	struct collection_definition *collection;
@@ -178,9 +178,9 @@ PixMapHandle get_shape_pixmap(
 	return hollow_pixmap;
 }
 
-static boolean load_collection(
+static bool load_collection(
 	short collection_index,
-	boolean strip)
+	bool strip)
 {
 	struct collection_header *header= get_collection_header(collection_index);
 	byte *collection = NULL, *shading_tables = NULL;
@@ -240,7 +240,7 @@ static boolean load_collection(
 		if (shading_tables) delete []shading_tables;
 	}
 	
-	return error==noErr ? TRUE : FALSE;
+	return error==noErr ? true : false;
 }
 
 static void unload_collection(

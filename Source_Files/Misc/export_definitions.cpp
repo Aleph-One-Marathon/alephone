@@ -30,7 +30,7 @@ Tuesday, October 31, 1995 11:02:24 AM (Ryan)
 #include "extensions.h"
 
 /* ---------- private code */
-static boolean create_physics_file(FileDesc *file);
+static bool create_physics_file(FileDesc *file);
 
 /* ---------- code */
 
@@ -48,7 +48,7 @@ void main(
 		FSSpec physics_spec;
 		OSErr error;
 
-		initialize_debugger(TRUE);
+		initialize_debugger(true);
 
 		/* Get the Marathon FSSpec */
 		error= get_my_fsspec(&physics_spec);
@@ -73,10 +73,10 @@ void main(
 }
 
 /* ---------- private code */
-static boolean create_physics_file(
+static bool create_physics_file(
 	FileDesc *file)
 {
-	boolean success= FALSE;
+	bool success= false;
 	FileError error= 0;
 
 	error= create_wadfile(file, PHYSICS_FILE_TYPE);
@@ -125,7 +125,7 @@ static boolean create_physics_file(
 						write_directorys(file_ref, &header, entries);
 					
 						/* We win.. */
-						success= TRUE;
+						success= true;
 					}
 				} else {
 					error= memory_error();

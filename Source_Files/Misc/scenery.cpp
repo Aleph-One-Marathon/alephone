@@ -105,7 +105,7 @@ short new_scenery(
 			struct object_data *object= get_object_data(object_index);
 			
 			SET_OBJECT_OWNER(object, _object_is_scenery);
-			SET_OBJECT_SOLIDITY(object, (definition->flags&_scenery_is_solid) ? TRUE : FALSE);
+			SET_OBJECT_SOLIDITY(object, (definition->flags&_scenery_is_solid) ? true : false);
 			object->permutation= scenery_type;
 		}
 	}

@@ -49,7 +49,7 @@ void do_preferences(void)
 		display_main_menu();
 
 	} else if (memcmp(&mode, &graphics_preferences->screen_mode, sizeof(struct screen_mode_data))) {
-		change_screen_mode(&graphics_preferences->screen_mode, FALSE);
+		change_screen_mode(&graphics_preferences->screen_mode, false);
 	}
 }
 
@@ -70,7 +70,7 @@ printf("*** get_level_number_from_user()\n");
  *  Toggle system hotkeys
  */
 
-void toggle_menus(boolean game_started)
+void toggle_menus(bool game_started)
 {
 	// nothing to do
 }
@@ -92,7 +92,7 @@ void install_network_microphone(void)
 #if 0
 	//!!
 	open_network_speaker(NETWORK_SOUND_CHUNK_BUFFER_SIZE, 2);
-	short id = NetAddDistributionFunction(network_speaker_proc, TRUE);
+	short id = NetAddDistributionFunction(network_speaker_proc, true);
 	open_network_microphone(id);
 #endif
 }
@@ -136,7 +136,7 @@ void show_cursor(void)
  *  Mouse button still down?
  */
 
-boolean mouse_still_down(void)
+bool mouse_still_down(void)
 {
 	SDL_PumpEvents();
 	Uint8 buttons = SDL_GetMouseState(NULL, NULL);

@@ -67,7 +67,7 @@ enum {
 static Str255 save_level_name;
 static SFReply load_file_reply;
 static PicHandle overhead_pict;
-static boolean overhead_pict_valid= FALSE;
+static bool overhead_pict_valid= false;
 static FSSpec previous_selection; /* FSSpec for convenience-> never used as such */
 
 /* ---- local prototypes */
@@ -77,7 +77,7 @@ pascal short custom_get_hook(short item, DialogPtr theDialog);
 static pascal Boolean custom_get_filter_proc(DialogPtr theDialog, 
 	EventRecord *theEvent, short *itemHit);
 pascal short custom_put_hook(short item, DialogPtr theDialog, void *user_data);
-static boolean confirm_save_choice(FSSpec *file);
+static bool confirm_save_choice(FSSpec *file);
 
 
 /* --------- code begins */
@@ -112,12 +112,12 @@ void get_default_sounds_spec(FileSpecifier& File)
 
 
 // extern "C" {
-extern boolean choose_saved_game_to_load(FileSpecifier& File);
-// extern boolean choose_saved_game_to_load(FSSpec *saved_game);
+extern bool choose_saved_game_to_load(FileSpecifier& File);
+// extern bool choose_saved_game_to_load(FSSpec *saved_game);
 // }
 
 /* Note this should show the map of where you are... */
-boolean choose_saved_game_to_load(FileSpecifier& File)
+bool choose_saved_game_to_load(FileSpecifier& File)
 	// FSSpec *saved_game)
 {
 	return File.ReadDialog(_typecode_savegame);
@@ -139,7 +139,7 @@ boolean choose_saved_game_to_load(FileSpecifier& File)
 	*/
 }
 
-boolean save_game(
+bool save_game(
 	void)
 {
 	pause_game();
@@ -153,7 +153,7 @@ boolean save_game(
 	
 	char Prompt[256];
 	// Must allow the sound to play in the background
-	boolean success = SaveFile.WriteDialogAsync(
+	bool success = SaveFile.WriteDialogAsync(
 			_typecode_savegame,
 			getcstr(Prompt, strPROMPTS, _save_game_prompt),
 			GameName);
@@ -175,7 +175,7 @@ boolean save_game(
 	DlgHookYDUPP dlgHook;
 	StandardFileReply reply;
 	Point top_left= {-1, -1}; /* auto center */
-	boolean success= FALSE;
+	bool success= false;
 
 	pause_game();
 	show_cursor();
@@ -200,7 +200,7 @@ boolean save_game(
 		/* And save it. */
 		if (save_game_file((FileDesc *) &reply.sfFile))
 		{
-			success= TRUE;
+			success= true;
 		}
 	}
 
@@ -346,13 +346,13 @@ pascal short custom_put_hook(
 #define REPLACE_V_OFFSET 52
 
 /* Doesn't actually use it as an FSSpec, just easier */
-/* Return TRUE if we want to pass it through, otherwise return FALSE. */
-static boolean confirm_save_choice(
+/* Return true if we want to pass it through, otherwise return false. */
+static bool confirm_save_choice(
 	FSSpec *file)
 {
 	OSErr err;
 	HFileParam pb;
-	boolean pass_through= TRUE;
+	bool pass_through= true;
 	DialogPtr dialog;
 	short item_hit;
 	Rect frame;
@@ -362,7 +362,7 @@ static boolean confirm_save_choice(
 	pb.ioNamePtr= file->name;
 	pb.ioVRefNum= file->vRefNum;
 	pb.ioDirID= file->parID;
-	err= PBHGetFInfo((HParmBlkPtr) &pb, FALSE); 
+	err= PBHGetFInfo((HParmBlkPtr) &pb, false); 
 
 	if(!err)
 	{
@@ -383,7 +383,7 @@ static boolean confirm_save_choice(
 				
 				/* Move the window to the proper location.. */
 				MoveWindow((WindowPtr) dialog, frame.left+REPLACE_H_OFFSET, 
-					frame.top+REPLACE_V_OFFSET, FALSE);
+					frame.top+REPLACE_V_OFFSET, false);
 
 				/* Show the window. */
 				ShowWindow((WindowPtr) dialog);			
@@ -402,7 +402,7 @@ static boolean confirm_save_choice(
 					/* Pass it on through.. they won't bring up the replace now. */
 				} else {
 					/* They cancelled.. */
-					pass_through= FALSE;
+					pass_through= false;
 				}
 			}
 		}
@@ -443,7 +443,7 @@ static pascal short custom_get_hook(
 		BlockMove(load_file_reply.fName, previous_selection.name, load_file_reply.fName[0]+1);
 
 		/* Pessimism.. */
-		overhead_pict_valid= FALSE;
+		overhead_pict_valid= false;
 		save_level_name[0]= 0;
 		
 		/* ... check the file type.. */	
@@ -472,7 +472,7 @@ static pascal short custom_get_hook(
 					/* Release it. */
 					ReleaseResource(resource);
 
-					overhead_pict_valid= TRUE;
+					overhead_pict_valid= true;
 				} 
 				
 				resource= Get1Resource('STR ', strSAVE_LEVEL_NAME);
@@ -563,6 +563,6 @@ static pascal Boolean custom_get_filter_proc(
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 #endif

@@ -191,10 +191,10 @@ unsigned long LocalEventFlags = 0;
 bool CheatsActive = false;
 
 /* ---------- externs that I couldn't fit into the #include heirarchy nicely */
-extern boolean load_and_start_game(FileSpecifier& File);
-// extern boolean load_and_start_game(FileDesc *file);
-extern boolean handle_open_replay(FileSpecifier& File);
-// extern boolean handle_open_replay(FileDesc *replay_file);
+extern bool load_and_start_game(FileSpecifier& File);
+// extern bool load_and_start_game(FileDesc *file);
+extern bool handle_open_replay(FileSpecifier& File);
+// extern bool handle_open_replay(FileDesc *replay_file);
 
 /* ---------- private code */
 
@@ -221,7 +221,7 @@ static void main_event_loop(void);
 static void handle_high_level_event(EventRecord *event);
 
 void update_any_window(WindowPtr window, EventRecord *event);
-void activate_any_window(WindowPtr window, EventRecord *event, boolean active);
+void activate_any_window(WindowPtr window, EventRecord *event, bool active);
 
 // LP change: implementing Benad's "cheats always on"
 // #ifndef FINAL
@@ -229,7 +229,7 @@ static short process_keyword_key(char key);
 static void handle_keyword(short type_of_cheat);
 // #endif
 
-boolean is_keypad(short keycode);
+bool is_keypad(short keycode);
 
 // LP addition: post an action from the local event queue in the app's MacOS event queue
 static void PostOSEventFromLocal();
@@ -295,7 +295,7 @@ static void initialize_application_heap(
 	InitCursor();
 
 #ifdef DEBUG
-	initialize_debugger(TRUE);
+	initialize_debugger(true);
 #endif
 
 	SetCursor(*GetCursor(watchCursor));
@@ -306,7 +306,7 @@ static void initialize_application_heap(
 	{
 		Boolean succeeded;
 		
-		succeeded = InitPerf(&perf_globals, 4, 8, TRUE, TRUE, "\pCODE", 0, "\p", 0, 0, 0, 0);
+		succeeded = InitPerf(&perf_globals, 4, 8, true, true, "\pCODE", 0, "\p", 0, 0, 0, 0);
 		assert(succeeded);
 	}
 #endif
@@ -374,10 +374,10 @@ void handle_game_key(
 	short key)
 {
 	short _virtual;
-	boolean changed_screen_mode= FALSE;
-	boolean changed_prefs= FALSE;
-	boolean changed_volume= FALSE;
-	boolean update_interface= FALSE;
+	bool changed_screen_mode= false;
+	bool changed_prefs= false;
+	bool changed_volume= false;
+	bool update_interface= false;
 
 	_virtual = (event->message >> 8) & charCodeMask;
 	
@@ -452,7 +452,7 @@ void handle_game_key(
 
 			case '?':
 				{
-					extern boolean displaying_fps;
+					extern bool displaying_fps;
 					
 					displaying_fps= !displaying_fps;
 				}
@@ -469,10 +469,10 @@ void handle_game_key(
 							if (graphics_preferences->screen_mode.size > 0)
 							{
 								graphics_preferences->screen_mode.size--;
-								changed_screen_mode = changed_prefs = TRUE;
+								changed_screen_mode = changed_prefs = true;
 							}
 							// graphics_preferences->screen_mode.size = _full_screen;
-							// changed_screen_mode = changed_prefs = TRUE;
+							// changed_screen_mode = changed_prefs = true;
 						}
 						break;
 
@@ -482,11 +482,11 @@ void handle_game_key(
 							if (graphics_preferences->screen_mode.size < NUMBER_OF_VIEW_SIZES-1)
 							{
 								graphics_preferences->screen_mode.size++;
-								changed_screen_mode = changed_prefs = TRUE;
+								changed_screen_mode = changed_prefs = true;
 							}
-							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
+							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= true;
 							// graphics_preferences->screen_mode.size = _100_percent;
-							// changed_screen_mode = changed_prefs = TRUE;
+							// changed_screen_mode = changed_prefs = true;
 						}
 						break;
 
@@ -495,9 +495,9 @@ void handle_game_key(
 						{
 							// Changed this to resolution toggle; no sense doing this in OpenGL mode
 							graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
-							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
+							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= true;
 							// graphics_preferences->screen_mode.size = _75_percent;
-							changed_screen_mode = changed_prefs = TRUE;
+							changed_screen_mode = changed_prefs = true;
 						}
 						break;
 
@@ -505,9 +505,9 @@ void handle_game_key(
 						{
 							// Reset OpenGL textures
 							OGL_ResetTextures();
-							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
+							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= true;
 							// graphics_preferences->screen_mode.size = _50_percent;
-							// changed_screen_mode = changed_prefs = TRUE;
+							// changed_screen_mode = changed_prefs = true;
 						}
 						break;
 
@@ -516,8 +516,8 @@ void handle_game_key(
 						if (graphics_preferences->screen_mode.acceleration != _valkyrie_acceleration)
 						{
 							graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
-							if (graphics_preferences->screen_mode.high_resolution) graphics_preferences->screen_mode.draw_every_other_line= FALSE;
-							changed_screen_mode = changed_prefs = TRUE;
+							if (graphics_preferences->screen_mode.high_resolution) graphics_preferences->screen_mode.draw_every_other_line= false;
+							changed_screen_mode = changed_prefs = true;
 						}
 						break;
 #ifdef env68k
@@ -525,18 +525,18 @@ void handle_game_key(
 						if (!graphics_preferences->screen_mode.high_resolution && graphics_preferences->screen_mode.acceleration != _valkyrie_acceleration)
 						{
 							graphics_preferences->screen_mode.draw_every_other_line = !graphics_preferences->screen_mode.draw_every_other_line;
-							changed_screen_mode = changed_prefs = TRUE;
+							changed_screen_mode = changed_prefs = true;
 						}
 						break;
 
 					case kcF7:
 						graphics_preferences->screen_mode.texture_floor = !graphics_preferences->screen_mode.texture_floor;
-						changed_screen_mode = changed_prefs = TRUE;
+						changed_screen_mode = changed_prefs = true;
 						break;
 
 					case kcF8:
 						graphics_preferences->screen_mode.texture_ceiling = !graphics_preferences->screen_mode.texture_ceiling;
-						changed_screen_mode = changed_prefs = TRUE;
+						changed_screen_mode = changed_prefs = true;
 						break;
 #endif
 					case kcF9:
@@ -558,7 +558,7 @@ void handle_game_key(
 						{
 							graphics_preferences->screen_mode.gamma_level-= 1;
 							change_gamma_level(graphics_preferences->screen_mode.gamma_level);
-							changed_prefs= TRUE;
+							changed_prefs= true;
 						}
 						break;
 						
@@ -567,7 +567,7 @@ void handle_game_key(
 						{
 							graphics_preferences->screen_mode.gamma_level+= 1;
 							change_gamma_level(graphics_preferences->screen_mode.gamma_level);
-							changed_prefs= TRUE;
+							changed_prefs= true;
 						}
 						break;
 					
@@ -624,7 +624,7 @@ void handle_game_key(
 	}
 	if (changed_screen_mode)
 	{
-		change_screen_mode(&graphics_preferences->screen_mode, TRUE);
+		change_screen_mode(&graphics_preferences->screen_mode, true);
 		render_screen(0);
 		// if(update_interface) draw_interface();
 	}
@@ -691,19 +691,19 @@ static void initialize_core_events(
 			&& print_document_proc && open_application_proc);
 	
 		err= AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, open_document_proc, 0,
-			FALSE);
+			false);
 		assert(!err);
 		
 		err= AEInstallEventHandler(kCoreEventClass, kAEQuitApplication, quit_application_proc, 0,
-			FALSE);
+			false);
 		assert(!err);
 	
 		err= AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments, print_document_proc, 0,
-			FALSE);
+			false);
 		assert(!err);
 	
 		err= AEInstallEventHandler(kCoreEventClass, kAEOpenApplication, open_application_proc, 0,
-			FALSE);
+			false);
 		assert(!err);
 	}
 }
@@ -729,7 +729,7 @@ static pascal OSErr handle_open_document(
 
 			if(!err)
 			{
-				boolean done= FALSE;
+				bool done= false;
 				long index;
 				FSSpec myFSS;
 				Size actualSize;
@@ -761,14 +761,14 @@ static pascal OSErr handle_open_document(
 						{
 							if(load_and_start_game(InputFile))
 							{
-								done= TRUE;
+								done= true;
 							}
 						}
 						else if (Typecode == _typecode_film)
 						{
 							if(handle_open_replay(InputFile))
 							{
-								done= TRUE;
+								done= true;
 							}
 						}
 						else if (Typecode == _typecode_physics)
@@ -859,30 +859,30 @@ static void initialize_system_information(
 	assert(system_information);
 
 	/* System Version */
-	system_information->has_seven= FALSE;
+	system_information->has_seven= false;
 	err= Gestalt(gestaltSystemVersion, &system_version);
 	if (!err)
 	{
-		if(system_version>=0x0700) system_information->has_seven= TRUE;;
+		if(system_version>=0x0700) system_information->has_seven= true;;
 	}
 
-	system_information->machine_has_network_memory= (FreeMem()>5000000) ? TRUE : FALSE;
+	system_information->machine_has_network_memory= (FreeMem()>5000000) ? true : false;
 
 	/* Appleevents? */
 	err= Gestalt(gestaltAppleEventsAttr, &apple_events_present);
 	if(!err && (apple_events_present & 1<<gestaltAppleEventsPresent))
 	{
-		system_information->has_apple_events= TRUE;
+		system_information->has_apple_events= true;
 	} else {
-		system_information->has_apple_events= FALSE;
+		system_information->has_apple_events= false;
 	}
 
 	/* Is appletalk available? */
 	if(system_information->has_seven && NetDDPOpen()==noErr && FreeMem()>kMINIMUM_NETWORK_HEAP)
 	{
-		system_information->appletalk_is_available= TRUE;
+		system_information->appletalk_is_available= true;
 	} else {
-		system_information->appletalk_is_available= FALSE;
+		system_information->appletalk_is_available= false;
 	}
 
 	/* Type of machine? */
@@ -895,40 +895,40 @@ static void initialize_system_information(
 			case gestaltCPU68010: // highly unlikely, wouldn't you say?
 			case gestaltCPU68020:
 			case gestaltCPU68030:
-				system_information->machine_is_68k= TRUE; 
-				system_information->machine_is_68040= FALSE; 
-				system_information->machine_is_ppc= FALSE;
+				system_information->machine_is_68k= true; 
+				system_information->machine_is_68040= false; 
+				system_information->machine_is_ppc= false;
 				break;
 				
 			case gestaltCPU68040:
-				system_information->machine_is_68k= TRUE; 
-				system_information->machine_is_68040= TRUE; 
-				system_information->machine_is_ppc= FALSE;
+				system_information->machine_is_68k= true; 
+				system_information->machine_is_68040= true; 
+				system_information->machine_is_ppc= false;
 				break;
 				
 			case gestaltCPU601:
 			case gestaltCPU603:
 			case gestaltCPU604:
 			default: // assume the best
-				system_information->machine_is_68k= FALSE; 
-				system_information->machine_is_68040= FALSE; 
-				system_information->machine_is_ppc= TRUE;
+				system_information->machine_is_68k= false; 
+				system_information->machine_is_68040= false; 
+				system_information->machine_is_ppc= true;
 				break;
 		}
 	}
 	else // handle sys 6 machines, which are certainly not ppcs. (can they even be '040s?)
 	{
-		system_information->machine_is_68k= TRUE; 
-		system_information->machine_is_ppc= FALSE;
+		system_information->machine_is_68k= true; 
+		system_information->machine_is_ppc= false;
 
 		err= Gestalt(gestaltProcessorType, &processor_type);
 		if(!err)
 		{
 			if(processor_type==gestalt68040)
 			{
-				system_information->machine_is_68040= TRUE; 
+				system_information->machine_is_68040= true; 
 			} else {
-				system_information->machine_is_68040= FALSE; 
+				system_information->machine_is_68040= false; 
 			}
 		}
 	}
@@ -936,13 +936,13 @@ static void initialize_system_information(
 	return;
 }
 
-boolean is_keypad(
+bool is_keypad(
 	short keycode)
 {
 	return keycode >= 0x41 && keycode <= 0x5c;
 }
 
-boolean networking_available(
+bool networking_available(
 	void)
 {
 	return system_information->appletalk_is_available;
@@ -984,7 +984,7 @@ static void initialize_marathon_music_handler(
 	FileSpecifier SongFile;
 	// FSSpec music_file_spec;
 	OSErr error;
-	boolean initialized= FALSE;
+	bool initialized= false;
 	
 	SongFile.SetToApp();
 	SongFile.SetName(getcstr(temporary, strFILENAMES, filenameMUSIC),NONE);
@@ -992,9 +992,9 @@ static void initialize_marathon_music_handler(
 	// error= get_file_spec(&music_file_spec, strFILENAMES, filenameMUSIC, strPATHS);
 	// if (!error)
 	{
-		// boolean is_folder, was_aliased;
+		// bool is_folder, was_aliased;
 	
-		// ResolveAliasFile(&music_file_spec, TRUE, &is_folder, &was_aliased);
+		// ResolveAliasFile(&music_file_spec, true, &is_folder, &was_aliased);
 		// initialized= initialize_music_handler((FileDesc *) &music_file_spec);
 		initialized= initialize_music_handler(SongFile);
 	}
@@ -1119,7 +1119,7 @@ inline void AddOneItemToPlayer(short ItemType, short MaxNumber)
 static void handle_keyword(
 	short tag)
 {
-	boolean cheated= TRUE;
+	bool cheated= true;
 
 	switch (tag)
 	{
@@ -1279,7 +1279,7 @@ static void handle_keyword(
 			break;
 			
 		default:
-			cheated= FALSE;
+			cheated= false;
 			break;
 	}
 
@@ -1311,7 +1311,7 @@ static void main_event_loop(
 	
 	while(get_game_state()!=_quit_game)
 	{
-		boolean use_waitnext;
+		bool use_waitnext;
 		
 		// LP addition: turn a local event into a MacOS event
 		PostOSEventFromLocal();
@@ -1319,7 +1319,7 @@ static void main_event_loop(
 		if(try_for_event(&use_waitnext))
 		{
 			EventRecord event;
-			boolean got_event= FALSE;
+			bool got_event= false;
 		
 			if(use_waitnext)
 			{
@@ -1350,14 +1350,14 @@ static void wait_for_highlevel_event(
 	void)
 {
 	EventRecord event;
-	boolean done= FALSE;
+	bool done= false;
 	
 	while(!done)
 	{
 		if(WaitNextEvent(highLevelEventMask, &event, 0, NULL))
 		{
 			process_event(&event);
-			done= TRUE;
+			done= true;
 		}
 	}
 
@@ -1389,7 +1389,7 @@ void update_any_window(
 void activate_any_window(
 	WindowPtr window,
 	EventRecord *event,
-	boolean active)
+	bool active)
 {
 	if(window==screen_window)
 	{
@@ -1477,7 +1477,7 @@ void process_screen_click(
 {
 	GrafPtr old_port;
 	Point where= event->where;
-	boolean cheatkeys_down;
+	bool cheatkeys_down;
 	
 	GetPort(&old_port);
 	SetPort(screen_window);

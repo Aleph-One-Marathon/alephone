@@ -110,7 +110,7 @@ public:
 	// Constructor and destructor;
 	// needs the element's name.
 	XML_ElementParser(const char *_Name);
-	~XML_ElementParser();
+	virtual ~XML_ElementParser();
 	
 	// Add a child element
 	void AddChild(XML_ElementParser *Child);

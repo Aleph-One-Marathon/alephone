@@ -76,7 +76,7 @@ struct random_sound_definition
 enum
 {
 	SOUND_FILE_VERSION= 1,
-	SOUND_FILE_TAG= 'snd2'
+	SOUND_FILE_TAG= FOUR_CHARS_TO_INT('s', 'n', 'd', '2')
 };
 
 struct sound_file_header

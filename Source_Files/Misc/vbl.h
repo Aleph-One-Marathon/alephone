@@ -16,29 +16,29 @@ Aug 12, 2000 (Loren Petrich):
 // class FileSpecifier;
 
 /* ------------ prototypes/VBL.C */
-boolean setup_for_replay_from_file(FileSpecifier& File, unsigned long map_checksum);
-boolean setup_replay_from_random_resource(unsigned long map_checksum);
+bool setup_for_replay_from_file(FileSpecifier& File, unsigned long map_checksum);
+bool setup_replay_from_random_resource(unsigned long map_checksum);
 
 void start_recording(void);
 
-boolean find_replay_to_use(boolean ask_user, FileSpecifier& File);
+bool find_replay_to_use(bool ask_user, FileSpecifier& File);
 
 void set_recording_header_data(short number_of_players, short level_number, unsigned long map_checksum,
 	short version, struct player_start_data *starts, struct game_data *game_information);
 void get_recording_header_data(short *number_of_players, short *level_number, unsigned long *map_checksum,
 	short *version, struct player_start_data *starts, struct game_data *game_information);
 
-boolean input_controller(void);
+bool input_controller(void);
 
 /* ------------ prototypes/VBL_MACINTOSH.C */
 void initialize_keyboard_controller(void);
 
 /* true if it found it, false otherwise. always fills in vrefnum and dirid*/
-boolean get_recording_filedesc(FileSpecifier& File);
+bool get_recording_filedesc(FileSpecifier& File);
 void move_replay(void);
 long parse_keymap(void);
 
-boolean setup_replay_from_random_resource(unsigned long map_checksum);
+bool setup_replay_from_random_resource(unsigned long map_checksum);
 
 #ifdef DEBUG_REPLAY
 struct recorded_flag {

@@ -23,9 +23,9 @@ void network_speaker_idle_proc(void);
 OSErr open_network_microphone(short network_distribution_type);
 void close_network_microphone(void);
 
-boolean has_sound_input_capability(void);
+bool has_sound_input_capability(void);
 
 /* This function is defined in interface.h */
-// void handle_microphone_key(boolean triggered);
+// void handle_microphone_key(bool triggered);
 
 #endif

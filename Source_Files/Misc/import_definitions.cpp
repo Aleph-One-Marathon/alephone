@@ -34,7 +34,7 @@ extern byte physics_models[];
 static FileSpecifier PhysicsFileSpec;
 
 /* ---------- local prototype */
-static struct wad_data *get_physics_wad_data(boolean *bungie_physics);
+static struct wad_data *get_physics_wad_data(bool *bungie_physics);
 static void import_physics_wad_data(struct wad_data *wad);
 
 /* ---------- code */
@@ -60,8 +60,8 @@ void import_definition_structures(
 	void)
 {
 	struct wad_data *wad;
-	boolean bungie_physics;
-	static boolean warned_about_physics= FALSE;
+	bool bungie_physics;
+	static bool warned_about_physics= false;
 
 	wad= get_physics_wad_data(&bungie_physics);
 	if(wad)
@@ -70,7 +70,7 @@ void import_definition_structures(
 		{
 			/* warn the user that external physics models are Bad Thingª */
 			alert_user(infoError, strERRORS, warningExternalPhysicsModel, 0);
-			warned_about_physics= TRUE;
+			warned_about_physics= true;
 		}
 		
 		/* Actually load it in.. */		
@@ -85,7 +85,7 @@ void import_definition_structures(
 void *get_network_physics_buffer(
 	long *physics_length)
 {
-	void *data= get_flat_data(PhysicsFileSpec, FALSE, 0);
+	void *data= get_flat_data(PhysicsFileSpec, false, 0);
 	
 	if(data)
 	{
@@ -104,7 +104,6 @@ void process_network_physics_model(
 	{
 		struct wad_header header;
 		struct wad_data *wad;
-		boolean success= FALSE;
 	
 		wad= inflate_flat_data(data, &header);
 		if(wad)
@@ -119,7 +118,7 @@ void process_network_physics_model(
 
 /* --------- local code */
 static struct wad_data *get_physics_wad_data(
-	boolean *bungie_physics)
+	bool *bungie_physics)
 {
 	struct wad_data *wad= NULL;
 	
@@ -134,12 +133,12 @@ static struct wad_data *get_physics_wad_data(
 		{
 			if(header.data_version==BUNGIE_PHYSICS_DATA_VERSION || header.data_version==PHYSICS_DATA_VERSION)
 			{
-				wad= read_indexed_wad_from_file(PhysicsFile, &header, 0, TRUE);
+				wad= read_indexed_wad_from_file(PhysicsFile, &header, 0, true);
 				if(header.data_version==BUNGIE_PHYSICS_DATA_VERSION)
 				{
-					*bungie_physics= TRUE;
+					*bungie_physics= true;
 				} else {
-					*bungie_physics= FALSE;
+					*bungie_physics= false;
 				}
 			}
 		}

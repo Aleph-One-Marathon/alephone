@@ -275,17 +275,17 @@ struct bitmap_definition *world_pixels_structure;
 short PrevBufferWidth = SHORT_MIN, PrevBufferHeight = SHORT_MIN,
 	PrevOffsetWidth = SHORT_MIN, PrevOffsetHeight = SHORT_MIN;
 
-static boolean enough_memory_for_16bit, enough_memory_for_32bit, enough_memory_for_full_screen;
+static bool enough_memory_for_16bit, enough_memory_for_32bit, enough_memory_for_full_screen;
 
 static struct screen_mode_data screen_mode;
-static boolean overhead_map_status= FALSE;
+static bool overhead_map_status= false;
 
-//static boolean restore_depth_on_exit; /* otherwise restore CLUT */
+//static bool restore_depth_on_exit; /* otherwise restore CLUT */
 //static short restore_depth, restore_flags; /* for SetDepth on exit */
 static GDSpec restore_spec, resolution_restore_spec;
 
 #define FRAME_SAMPLE_SIZE 20
-boolean displaying_fps= FALSE;
+bool displaying_fps= false;
 short frame_count, frame_index;
 long frame_ticks[64];
 
@@ -301,7 +301,7 @@ static Rect HUD_SourceRect = {0, 0, 160, 640};
 static Rect HUD_DestRect;
 static bool HUD_RenderRequest = false;
 
-static boolean screen_initialized= FALSE;
+static bool screen_initialized= false;
 
 short bit_depth= NONE;
 short interface_bit_depth= NONE;
@@ -317,18 +317,18 @@ extern bool OGL_MapActive;
 static void update_screen(Rect& source, Rect& destination, bool hi_rez);
 // static void update_screen(void);
 
-void calculate_destination_frame(short size, boolean high_resolution, Rect *frame);
-static void calculate_source_frame(short size, boolean high_resolution, Rect *frame);
+void calculate_destination_frame(short size, bool high_resolution, Rect *frame);
+static void calculate_source_frame(short size, bool high_resolution, Rect *frame);
 static void calculate_adjusted_source_frame(struct screen_mode_data *mode, Rect *frame);
 
 static GDHandle find_and_initialize_world_device(long area, short depth);
 static void restore_world_device(void);
-static boolean parse_device(GDHandle device, short depth, boolean *color, boolean *needs_to_change);
+static bool parse_device(GDHandle device, short depth, bool *color, bool *needs_to_change);
 
 static void restore_world_device(void);
 
-static void set_overhead_map_status(boolean status);
-static void set_terminal_status(boolean status);
+static void set_overhead_map_status(bool status);
+static void set_terminal_status(bool status);
 
 extern "C" {
 void quadruple_screen(struct copy_screen_data *data);
@@ -361,9 +361,9 @@ void initialize_screen(
 		/* Calculate the screen options-> 16, 32, full? */
 		calculate_screen_options();
 #ifdef OBSOLETE
-		enough_memory_for_16bit= (FreeMem()>FREE_MEMORY_FOR_16BIT) ? TRUE : FALSE;
-		enough_memory_for_32bit= (FreeMem()>FREE_MEMORY_FOR_32BIT) ? TRUE : FALSE;
-		enough_memory_for_full_screen= (FreeMem()>FREE_MEMORY_FOR_FULL_SCREEN) ? TRUE : FALSE;
+		enough_memory_for_16bit= (FreeMem()>FREE_MEMORY_FOR_16BIT) ? true : false;
+		enough_memory_for_32bit= (FreeMem()>FREE_MEMORY_FOR_32BIT) ? true : false;
+		enough_memory_for_full_screen= (FreeMem()>FREE_MEMORY_FOR_FULL_SCREEN) ? true : false;
 #endif
 	}
 	
@@ -374,7 +374,7 @@ void initialize_screen(
 	{
 		case _valkyrie_acceleration:
 			mode->bit_depth= bit_depth= 16;
-			mode->high_resolution= FALSE;
+			mode->high_resolution= false;
 			interface_bit_depth= 8;
 			break;
 	}
@@ -430,8 +430,8 @@ void initialize_screen(
 		assert(backdrop_window);
 		backdrop_window= GetNewCWindow(windBACKDROP_WINDOW, backdrop_window, (WindowPtr) -1);
 		assert(backdrop_window);
-		MoveWindow(backdrop_window, (**gray_region).rgnBBox.left, (**gray_region).rgnBBox.top, FALSE);
-		SizeWindow(backdrop_window, RECTANGLE_WIDTH(&(**gray_region).rgnBBox), RECTANGLE_HEIGHT(&(**gray_region).rgnBBox), TRUE);
+		MoveWindow(backdrop_window, (**gray_region).rgnBBox.left, (**gray_region).rgnBBox.top, false);
+		SizeWindow(backdrop_window, RECTANGLE_WIDTH(&(**gray_region).rgnBBox), RECTANGLE_HEIGHT(&(**gray_region).rgnBBox), true);
 		ShowWindow(backdrop_window);
 
 		screen_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
@@ -452,8 +452,8 @@ void initialize_screen(
 		world_view->field_of_view= NORMAL_FIELD_OF_VIEW; /* degrees (was 74 for a long, long time) */
 		world_view->target_field_of_view= NORMAL_FIELD_OF_VIEW; // LP addition: for no change in FOV
 		world_view->overhead_map_scale= DEFAULT_OVERHEAD_MAP_SCALE;
-		world_view->overhead_map_active= FALSE;
-		world_view->terminal_mode_active= FALSE;
+		world_view->overhead_map_active= false;
+		world_view->terminal_mode_active= false;
 		world_view->horizontal_scale= 1, world_view->vertical_scale= 1;
 		// LP addition:
 		world_view->tunnel_vision_active = false;
@@ -483,8 +483,8 @@ void initialize_screen(
 	}
 	SetDepthGDSpec(&graphics_preferences->device_spec);
 
-	MoveWindow(screen_window, (*world_device)->gdRect.left, (*world_device)->gdRect.top, FALSE);
-	SizeWindow(screen_window, RECTANGLE_WIDTH(&(*world_device)->gdRect), RECTANGLE_HEIGHT(&(*world_device)->gdRect), TRUE);
+	MoveWindow(screen_window, (*world_device)->gdRect.left, (*world_device)->gdRect.top, false);
+	SizeWindow(screen_window, RECTANGLE_WIDTH(&(*world_device)->gdRect), RECTANGLE_HEIGHT(&(*world_device)->gdRect), true);
 
 	{
 		Point origin;
@@ -501,7 +501,7 @@ void initialize_screen(
 	
 	/* allocate and initialize our GWorld */
 	// LP change: doing a 640*480 allocation as a sensible starting point
-	calculate_destination_frame(_full_screen, TRUE, &bounds);
+	calculate_destination_frame(_full_screen, true, &bounds);
 	error= world_pixels ? myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0) :
 		myNewGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
 	if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
@@ -512,9 +512,9 @@ void initialize_screen(
 	if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
 	*/
 	
-	change_screen_mode(mode, FALSE);
+	change_screen_mode(mode, false);
 
-	screen_initialized= TRUE;
+	screen_initialized= true;
 	return;
 }
 
@@ -523,8 +523,8 @@ void reset_screen()
 {
 	// Resetting cribbed from initialize_screen()
 	world_view->overhead_map_scale= DEFAULT_OVERHEAD_MAP_SCALE;
-	world_view->overhead_map_active= FALSE;
-	world_view->terminal_mode_active= FALSE;
+	world_view->overhead_map_active= false;
+	world_view->terminal_mode_active= false;
 	world_view->horizontal_scale= 1, world_view->vertical_scale= 1;
 	
 	// LP change:
@@ -582,14 +582,14 @@ void enter_screen(
 	PaintRect(&screen_window->portRect);
 	SetPort(old_port);
 
-	if (world_view->overhead_map_active) set_overhead_map_status(FALSE);
-	if (world_view->terminal_mode_active) set_terminal_status(FALSE);
+	if (world_view->overhead_map_active) set_overhead_map_status(false);
+	if (world_view->terminal_mode_active) set_terminal_status(false);
 	
 	// LP change: adding this view-effect resetting here
 	// since initialize_world_view() no longer resets it.
 	world_view->effect = NONE;
 	
-	change_screen_mode(&screen_mode, TRUE);
+	change_screen_mode(&screen_mode, true);
 	
 	switch (screen_mode.acceleration)
 	{
@@ -631,7 +631,7 @@ void exit_screen(
 	switch (screen_mode.acceleration)
 	{
 		case _valkyrie_acceleration:
-			change_screen_mode(&screen_mode, FALSE);
+			change_screen_mode(&screen_mode, false);
 			valkyrie_end();
 			break;
 	}
@@ -647,7 +647,7 @@ static bool stop_sounds = true;
 
 void change_screen_mode_keep_sounds(
 	struct screen_mode_data *mode,
-	boolean redraw)
+	bool redraw)
 {
 	stop_sounds = false;
 	change_screen_mode(mode,redraw);
@@ -657,7 +657,7 @@ void change_screen_mode_keep_sounds(
 
 void change_screen_mode(
 	struct screen_mode_data *mode,
-	boolean redraw)
+	bool redraw)
 {
 	// LP: stripped it down to a minimum
 	
@@ -676,7 +676,7 @@ void change_screen_mode(
 
 //	if (mode->high_resolution && mode->size==_full_screen && !enough_memory_for_full_screen)
 //	{
-//		mode->high_resolution= FALSE;
+//		mode->high_resolution= false;
 //	}
 	/*
 	switch (mode->acceleration)
@@ -684,20 +684,20 @@ void change_screen_mode(
 		case _valkyrie_acceleration:
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
 			{
-				mode->high_resolution= FALSE;
+				mode->high_resolution= false;
 			}
 			break;
 	}
 	*/
 	/* This makes sure that the terminal and map use their own resolutions */
-	world_view->overhead_map_active= FALSE;
-	world_view->terminal_mode_active= FALSE;
+	world_view->overhead_map_active= false;
+	world_view->terminal_mode_active= false;
 
 	if (redraw)
 	{
 		GetPort(&old_port);
 		SetPort(screen_window);
-		calculate_destination_frame(mode->size==_full_screen ? _full_screen : _100_percent, TRUE, &bounds);
+		calculate_destination_frame(mode->size==_full_screen ? _full_screen : _100_percent, true, &bounds);
 		PaintRect(&bounds);
 		SetPort(old_port);
 	}
@@ -708,7 +708,7 @@ void change_screen_mode(
 		case _valkyrie_acceleration:
 			calculate_destination_frame(mode->size, mode->high_resolution, &bounds);
 			OffsetRect(&bounds, -screen_window->portRect.left, -screen_window->portRect.top);
-			valkyrie_initialize(world_device, TRUE, &bounds, 0xfe);
+			valkyrie_initialize(world_device, true, &bounds, 0xfe);
 			if (redraw) valkyrie_erase_graphic_key_frame(0xfe);
 			break;
 	}
@@ -793,18 +793,18 @@ void render_screen(
 	// LP change: suppress the overhead map if desired
 	if (PLAYER_HAS_MAP_OPEN(current_player) && View_MapActive())
 	{
-		if (!world_view->overhead_map_active) set_overhead_map_status(TRUE);
+		if (!world_view->overhead_map_active) set_overhead_map_status(true);
 	}
 	else
 	{
-		if (world_view->overhead_map_active) set_overhead_map_status(FALSE);
+		if (world_view->overhead_map_active) set_overhead_map_status(false);
 	}
 
 	if(player_in_terminal_mode(current_player_index))
 	{
-		if (!world_view->terminal_mode_active) set_terminal_status(TRUE);
+		if (!world_view->terminal_mode_active) set_terminal_status(true);
 	} else {
-		if (world_view->terminal_mode_active) set_terminal_status(FALSE);
+		if (world_view->terminal_mode_active) set_terminal_status(false);
 	}
 
 	// LP change: set rendering-window bounds for the current sort of display to render
@@ -1168,7 +1168,7 @@ void change_screen_clut(
 		OSErr error;
 	
 		// LP change: doing a 640*480 allocation as a sensible starting point
-		calculate_destination_frame(_full_screen, TRUE, &bounds);
+		calculate_destination_frame(_full_screen, true, &bounds);
 		// calculate_adjusted_source_frame(&screen_mode, &bounds);
 		error= myUpdateGWorld(&world_pixels, 0, &bounds, (CTabHandle) NULL, (GDHandle) NULL, 0);
 		if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
@@ -1318,13 +1318,13 @@ void zoom_overhead_map_in(
 }
 
 void start_teleporting_effect(
-	boolean out)
+	bool out)
 {
 	start_render_effect(world_view, out ? _render_effect_fold_out : _render_effect_fold_in);
 }
 
 void start_extravision_effect(
-	boolean out)
+	bool out)
 {
 	// LP change: doing this by setting targets
 	world_view->target_field_of_view = out ? EXTRAVISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW;
@@ -1333,7 +1333,7 @@ void start_extravision_effect(
 
 // LP addition:
 void start_tunnel_vision_effect(
-	boolean out)
+	bool out)
 {
 	// LP change: doing this by setting targets
 	world_view->target_field_of_view = out ? TUNNEL_VISION_FIELD_OF_VIEW : 
@@ -1350,7 +1350,7 @@ screen_mode_data *get_screen_mode(
 
 /* These should be replaced with better preferences control functions */
 // LP change: generalizing this
-boolean game_window_is_full_screen(
+bool game_window_is_full_screen(
 	void)
 {
 	short msize = screen_mode.size;
@@ -1360,11 +1360,11 @@ boolean game_window_is_full_screen(
 	// return screen_mode.size==_full_screen;
 }
 
-boolean machine_supports_16bit(
+bool machine_supports_16bit(
 	GDSpecPtr spec)
 {
 	GDSpec test_spec;
-	boolean found_16bit_device= TRUE;
+	bool found_16bit_device= true;
 
 	/* Make sure that enough_memory_for_16bit is valid */
 	calculate_screen_options();
@@ -1373,17 +1373,17 @@ boolean machine_supports_16bit(
 	test_spec.bit_depth= 16;
 	if (!HasDepthGDSpec(&test_spec)) /* automatically searches for grayscale devices */
 	{
-		found_16bit_device= FALSE;
+		found_16bit_device= false;
 	}
 	
 	return found_16bit_device && enough_memory_for_16bit;
 }
 
-boolean machine_supports_32bit(
+bool machine_supports_32bit(
 	GDSpecPtr spec)
 {
 	GDSpec test_spec;
-	boolean found_32bit_device= TRUE;
+	bool found_32bit_device= true;
 
 	/* Make sure that enough_memory_for_16bit is valid */
 	calculate_screen_options();
@@ -1392,7 +1392,7 @@ boolean machine_supports_32bit(
 	test_spec.bit_depth= 32;
 	if (!HasDepthGDSpec(&test_spec)) /* automatically searches for grayscale devices */
 	{
-		found_32bit_device= FALSE;
+		found_32bit_device= false;
 	}
 	
 	return found_32bit_device && enough_memory_for_32bit;
@@ -1422,7 +1422,7 @@ void update_screen_window(
 	(void) (window,event);
 		
 	draw_interface();
-	change_screen_mode(&screen_mode, TRUE);
+	change_screen_mode(&screen_mode, true);
 	assert_world_color_table(interface_color_table, world_color_table);
 	
 	return;
@@ -1431,7 +1431,7 @@ void update_screen_window(
 void activate_screen_window(
 	WindowPtr window,
 	EventRecord *event,
-	boolean active)
+	bool active)
 {
 	(void) (window,event,active);
 	
@@ -1442,7 +1442,7 @@ void activate_screen_window(
 	QuickDraw doesnÕt fuck up during RGBForeColor and RGBBackColor. */
 void animate_screen_clut(
 	struct color_table *color_table,
-	boolean full_screen)
+	bool full_screen)
 {
 	CTabHandle macintosh_color_table= build_macintosh_color_table(color_table);
 	
@@ -1501,7 +1501,7 @@ void assert_world_color_table(
 		}
 	}
 	
-	if (world_color_table) animate_screen_clut(world_color_table, FALSE);
+	if (world_color_table) animate_screen_clut(world_color_table, false);
 	
 	return;
 }
@@ -1557,7 +1557,7 @@ void change_gamma_level(
 	stop_fade();
 	obj_copy(*visible_color_table, *world_color_table);
 	assert_world_color_table(interface_color_table, world_color_table);
-	change_screen_mode(&screen_mode, FALSE);
+	change_screen_mode(&screen_mode, false);
 	set_fade_effect(NONE);
 	
 	return;
@@ -1693,7 +1693,7 @@ static void DisplayPosition(GrafPtr port)
 }
 
 static void set_overhead_map_status( /* it has changed, this is the new status */
-	boolean status)
+	bool status)
 {
 	static struct screen_mode_data previous_screen_mode;
 	
@@ -1707,7 +1707,7 @@ static void set_overhead_map_status( /* it has changed, this is the new status *
 	{
 	
 		previous_screen_mode= screen_mode;
-		screen_mode.high_resolution= TRUE;
+		screen_mode.high_resolution= true;
 		switch (screen_mode.size)
 		{
 			case _50_percent:
@@ -1719,18 +1719,18 @@ static void set_overhead_map_status( /* it has changed, this is the new status *
 	*/
 	world_view->overhead_map_active= status;
 	// LP change: keep the sounds going
-	// change_screen_mode_keep_sounds(&screen_mode, TRUE);
-	// change_screen_mode(&screen_mode, TRUE);
+	// change_screen_mode_keep_sounds(&screen_mode, true);
+	// change_screen_mode(&screen_mode, true);
 	world_view->overhead_map_active= status;
 	
 	return;
 }
 
 static void set_terminal_status( /* It has changed, this is the new state.. */
-	boolean status)
+	bool status)
 {
 	static struct screen_mode_data previous_screen_mode;
-	boolean restore_effect= FALSE;
+	bool restore_effect= false;
 	short effect, phase;
 	
 	if(!status)
@@ -1741,7 +1741,7 @@ static void set_terminal_status( /* It has changed, this is the new state.. */
 		{
 			effect= world_view->effect;
 			phase= world_view->effect_phase;
-			restore_effect= TRUE;
+			restore_effect= true;
 		}
 	}
 	else
@@ -1749,7 +1749,7 @@ static void set_terminal_status( /* It has changed, this is the new state.. */
 		// LP: this stuff is now superfluous
 		/*
 		previous_screen_mode= screen_mode;
-		screen_mode.high_resolution= TRUE;
+		screen_mode.high_resolution= true;
 		switch(screen_mode.size)
 		{
 			case _50_percent:
@@ -1763,8 +1763,8 @@ static void set_terminal_status( /* It has changed, this is the new state.. */
 	}
 	world_view->terminal_mode_active= status;
 	// LP change: keep the sounds going
-	// change_screen_mode_keep_sounds(&screen_mode, TRUE);
-	// change_screen_mode(&screen_mode, TRUE);
+	// change_screen_mode_keep_sounds(&screen_mode, true);
+	// change_screen_mode(&screen_mode, true);
 	world_view->terminal_mode_active= status;
 
 	if(restore_effect)
@@ -1921,7 +1921,7 @@ static void update_screen(Rect& source, Rect& destination, bool hi_rez)
 /*  to determine the size of their gworlds.. */
 void calculate_destination_frame(
 	short size,
-	boolean high_resolution,
+	bool high_resolution,
 	Rect *frame)
 {
 	(void) (high_resolution);
@@ -2009,7 +2009,7 @@ static void calculate_adjusted_source_frame(
 
 static void calculate_source_frame(
 	short size,
-	boolean high_resolution,
+	bool high_resolution,
 	Rect *frame)
 {
 	calculate_destination_frame(size, high_resolution, frame);
@@ -2027,14 +2027,14 @@ static void calculate_source_frame(
 static void calculate_screen_options(
 	void)
 {
-	static boolean screen_options_initialized= FALSE;
+	static bool screen_options_initialized= false;
 	
 	if(!screen_options_initialized)
 	{
-		enough_memory_for_16bit= (FreeMem()>FREE_MEMORY_FOR_16BIT) ? TRUE : FALSE;
-		enough_memory_for_32bit= (FreeMem()>FREE_MEMORY_FOR_32BIT) ? TRUE : FALSE;
-		enough_memory_for_full_screen= (FreeMem()>FREE_MEMORY_FOR_FULL_SCREEN) ? TRUE : FALSE;
-		screen_options_initialized= TRUE;
+		enough_memory_for_16bit= (FreeMem()>FREE_MEMORY_FOR_16BIT) ? true : false;
+		enough_memory_for_32bit= (FreeMem()>FREE_MEMORY_FOR_32BIT) ? true : false;
+		enough_memory_for_full_screen= (FreeMem()>FREE_MEMORY_FOR_FULL_SCREEN) ? true : false;
+		screen_options_initialized= true;
 	}
 }
 

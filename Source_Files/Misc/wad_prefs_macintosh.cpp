@@ -23,7 +23,7 @@ extern struct preferences_info *prefInfo;
 static short current_pref_section = 0;
 
 /* ------------------ non portable code! */
-static boolean handle_switch(DialogPtr dialog, struct preferences_dialog_data *funcs,
+static bool handle_switch(DialogPtr dialog, struct preferences_dialog_data *funcs,
 	void **prefs, short new_section, short old_section);
 static pascal Boolean preferences_filter_proc(DialogPtr dialog, EventRecord *event, short *item_hit);
 
@@ -36,7 +36,7 @@ enum {
 };	
 /* -------------- Preferences Dialog --------- */
 /* Kick ass, take names */
-boolean set_preferences(
+bool set_preferences(
 	struct preferences_dialog_data *funcs, 
 	short count,
 	void (*reload_function)(void))
@@ -146,14 +146,14 @@ boolean set_preferences(
 }
 
 /* ------------------ local code */
-static boolean handle_switch(
+static bool handle_switch(
 	DialogPtr dialog, 
 	struct preferences_dialog_data *funcs,
 	void **prefs,
 	short new_section,
 	short old_section)
 {
-	boolean able_to_switch= TRUE;
+	bool able_to_switch= true;
 
 	/* Call the cleanup routines.. */
 	if(old_section != NONE)
@@ -201,7 +201,7 @@ static pascal Boolean preferences_filter_proc(
 	short item_type, value, new_value;
 	ControlHandle preferences_control;
 	Rect bounds;
-	boolean handled= FALSE;
+	bool handled= false;
 
 	GetDialogItem(dialog, iPREF_SECTION_POPUP, &item_type, 
 		(Handle *) &preferences_control, &bounds);
@@ -236,7 +236,7 @@ static pascal Boolean preferences_filter_proc(
 				SetControlValue(preferences_control, new_value);
 				*item_hit= iPREF_SECTION_POPUP;
 				event->what= nullEvent;
-				handled= TRUE;
+				handled= true;
 			}
 			break;
 	}

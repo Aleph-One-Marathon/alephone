@@ -90,9 +90,9 @@ enum /* damage flags */
 
 struct damage_definition
 {
-	short type, flags;
+	int16 type, flags;
 	
-	short base, random;
+	int16 base, random;
 	fixed scale;
 };
 
@@ -128,13 +128,13 @@ enum /* map object flags */
 
 struct map_object /* 16 bytes */
 {
-	short type; /* _saved_monster, _saved_object, _saved_item, ... */
-	short index;
-	short facing;
-	short polygon_index;
+	int16 type; /* _saved_monster, _saved_object, _saved_item, ... */
+	int16 index;
+	int16 facing;
+	int16 polygon_index;
 	world_point3d location; // .z is a delta
 	
-	word flags;
+	uint16 flags;
 };
 const int SIZEOF_map_object = 16;
 
@@ -151,7 +151,7 @@ typedef struct static_data saved_map_data;
 
 /* ---------- map loading/new game structures */
 
-enum { /* entry point types- this is per map level (long). */
+enum { /* entry point types- this is per map level (int32). */
 	_single_player_entry_point= 0x01,
 	_multiplayer_cooperative_entry_point= 0x02,
 	_multiplayer_carnage_entry_point= 0x04,
@@ -163,7 +163,7 @@ enum { /* entry point types- this is per map level (long). */
 
 struct entry_point 
 {
-	short level_number;
+	int16 level_number;
 	char level_name[64+1];
 };
 
@@ -171,16 +171,16 @@ struct entry_point
 
 struct player_start_data 
 {
-	short team;
-	short identifier;
-	short color;
+	int16 team;
+	int16 identifier;
+	int16 color;
 	char name[MAXIMUM_PLAYER_START_NAME_LENGTH+1]; /* PLAYER_NAME_LENGTH+1 */
 };
 
 struct directory_data {
-	short mission_flags;
-	short environment_flags;
-	long entry_point_flags;
+	int16 mission_flags;
+	int16 environment_flags;
+	int32 entry_point_flags;
 	char level_name[LEVEL_NAME_LENGTH];
 };
 const int SIZEOF_directory_data = 74;
@@ -192,16 +192,16 @@ const int SIZEOF_directory_data = 74;
 
 struct map_annotation
 {
-	short type; /* turns into color, font, size, style, etc... */
+	int16 type; /* turns into color, font, size, style, etc... */
 	
 	world_point2d location; /* where to draw this (lower left) */
-	short polygon_index; /* only displayed if this polygon is in the automap */
+	int16 polygon_index; /* only displayed if this polygon is in the automap */
 	
 	char text[MAXIMUM_ANNOTATION_TEXT_LENGTH];
 };
 const int SIZEOF_map_annotation = 72;
 
-struct map_annotation *get_next_map_annotation(short *count);
+struct map_annotation *get_next_map_annotation(int16 *count);
 
 /* ---------- ambient sound images */
 
@@ -210,12 +210,12 @@ struct map_annotation *get_next_map_annotation(short *count);
 // non-directional ambient component
 struct ambient_sound_image_data // 16 bytes
 {
-	word flags;
+	uint16 flags;
 	
-	short sound_index;
-	short volume;
+	int16 sound_index;
+	int16 volume;
 
-	short unused[5];
+	int16 unused[5];
 };
 const int SIZEOF_ambient_sound_image_data = 16;
 
@@ -231,19 +231,19 @@ enum // sound image flags
 // possibly directional random sound effects
 struct random_sound_image_data // 32 bytes
 {
-	word flags;
+	uint16 flags;
 	
-	short sound_index;
+	int16 sound_index;
 	
-	short volume, delta_volume;
-	short period, delta_period;
+	int16 volume, delta_volume;
+	int16 period, delta_period;
 	angle direction, delta_direction;
 	fixed pitch, delta_pitch;
 	
 	// only used at run-time; initialize to NONE
-	short phase;
+	int16 phase;
 	
-	short unused[3];
+	int16 unused[3];
 };
 const int SIZEOF_random_sound_image_data = 32;
 
@@ -254,14 +254,14 @@ const int SIZEOF_random_sound_image_data = 32;
 
 /* SLOT_IS_USED(), SLOT_IS_FREE(), MARK_SLOT_AS_FREE(), MARK_SLOT_AS_USED() macros are also used
 	for monsters, effects and projectiles */
-#define SLOT_IS_USED(o) ((o)->flags&(word)0x8000)
+#define SLOT_IS_USED(o) ((o)->flags&(uint16)0x8000)
 #define SLOT_IS_FREE(o) (!SLOT_IS_USED(o))
-#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(word)~0x8000)
-#define MARK_SLOT_AS_USED(o) ((o)->flags|=(word)0x8000)
+#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0x8000)
+#define MARK_SLOT_AS_USED(o) ((o)->flags|=(uint16)0x8000)
 
-#define OBJECT_WAS_RENDERED(o) ((o)->flags&(word)0x4000)
-#define SET_OBJECT_RENDERED_FLAG(o) ((o)->flags|=(word)0x4000)
-#define CLEAR_OBJECT_RENDERED_FLAG(o) ((o)->flags&=(word)~0x4000)
+#define OBJECT_WAS_RENDERED(o) ((o)->flags&(uint16)0x4000)
+#define SET_OBJECT_RENDERED_FLAG(o) ((o)->flags|=(uint16)0x4000)
+#define CLEAR_OBJECT_RENDERED_FLAG(o) ((o)->flags&=(uint16)~0x4000)
 
 /* this field is only valid after transmogrify_object_shape is called; in terms of our pipeline, that
 	means that itÕs only valid if OBJECT_WAS_RENDERED returns true *and* was cleared before
@@ -271,9 +271,9 @@ const int SIZEOF_random_sound_image_data = 32;
 	also, when any of the flags below are set, the phase of the .sequence field can be examined
 	to determine exactly how many ticks the last frame took to animate (that is, .sequence.phase
 	is not reset until the next loop). */
-#define OBJECT_WAS_ANIMATED(o) ((o)->flags&(word)_obj_animated)
-#define GET_OBJECT_ANIMATION_FLAGS(o) ((o)->flags&(word)0x3c00)
-#define SET_OBJECT_ANIMATION_FLAGS(o,n) { (o)->flags&= (word)~0x3c00; (o)->flags|= (n); }
+#define OBJECT_WAS_ANIMATED(o) ((o)->flags&(uint16)_obj_animated)
+#define GET_OBJECT_ANIMATION_FLAGS(o) ((o)->flags&(uint16)0x3c00)
+#define SET_OBJECT_ANIMATION_FLAGS(o,n) { (o)->flags&= (uint16)~0x3c00; (o)->flags|= (n); }
 enum /* object was animated flags */
 {
 	_obj_not_animated= 0x0000, /* nothing happened */
@@ -296,20 +296,20 @@ enum /* object scale flags */
 #define SET_OBJECT_IS_MEDIA_EFFECT(o) ((o)->flags|= 128)
 
 /* ignored by renderer if INVISIBLE */
-#define OBJECT_IS_INVISIBLE(o) ((o)->flags&(word)32)
+#define OBJECT_IS_INVISIBLE(o) ((o)->flags&(uint16)32)
 #define OBJECT_IS_VISIBLE(o) (!OBJECT_IS_INVISIBLE(o))
-#define SET_OBJECT_INVISIBILITY(o,v) ((void)((v)?((o)->flags|=(word)32):((o)->flags&=(word)~32)))
+#define SET_OBJECT_INVISIBILITY(o,v) ((void)((v)?((o)->flags|=(uint16)32):((o)->flags&=(uint16)~32)))
 
 /* call get_object_dimensions(object_index, &radius, &height) for SOLID objects to get their dimensions */
-#define OBJECT_IS_SOLID(o) ((o)->flags&(word)16)
-#define SET_OBJECT_SOLIDITY(o,v) ((void)((v)?((o)->flags|=(word)16):((o)->flags&=(word)~16)))
+#define OBJECT_IS_SOLID(o) ((o)->flags&(uint16)16)
+#define SET_OBJECT_SOLIDITY(o,v) ((void)((v)?((o)->flags|=(uint16)16):((o)->flags&=(uint16)~16)))
 
-#define GET_OBJECT_STATUS(o) ((o)->flags&(word)8)
-#define SET_OBJECT_STATUS(o,v) ((v)?((o)->flags|=(word)8):((o)->flags&=(word)~8))
-#define TOGGLE_OBJECT_STATUS(o) ((o)->flags^=(word)8)
+#define GET_OBJECT_STATUS(o) ((o)->flags&(uint16)8)
+#define SET_OBJECT_STATUS(o,v) ((v)?((o)->flags|=(uint16)8):((o)->flags&=(uint16)~8))
+#define TOGGLE_OBJECT_STATUS(o) ((o)->flags^=(uint16)8)
 
-#define GET_OBJECT_OWNER(o) ((o)->flags&(word)7)
-#define SET_OBJECT_OWNER(o,n) { assert((n)>=0&&(n)<=7); (o)->flags&= (word)~7; (o)->flags|= (n); }
+#define GET_OBJECT_OWNER(o) ((o)->flags&(uint16)7)
+#define SET_OBJECT_OWNER(o,n) { assert((n)>=0&&(n)<=7); (o)->flags&= (uint16)~7; (o)->flags|= (n); }
 enum /* object owners (8) */
 {
 	_object_is_normal, /* normal */
@@ -358,11 +358,11 @@ enum /* object transfer modes (high-level) */
 struct object_location
 {
 	struct world_point3d p;
-	short polygon_index;
+	int16 polygon_index;
 	
 	angle yaw, pitch;
 	
-	word flags;
+	uint16 flags;
 };
 
 struct object_data /* 32 bytes */
@@ -370,7 +370,7 @@ struct object_data /* 32 bytes */
 	/* these fields are in the order of a world_location3d structure, but are missing the pitch
 		and velocity fields */
 	world_point3d location;
-	short polygon;
+	int16 polygon;
 	
 	angle facing;
 	
@@ -379,14 +379,14 @@ struct object_data /* 32 bytes */
 		shape index is an index into the animated shape array for that collection. */
 	shape_descriptor shape;
 
-	word sequence; /* for shape animation */
-	word flags; /* [used_slot.1] [rendered.1] [animated.4] [unused.4] [invisible.1] [solid.1] [status.1] [owner.3] */
-	short transfer_mode, transfer_period; /* if NONE take from shape data */
-	short transfer_phase; /* for transfer mode animations */
-	short permutation; /* usually index into owner array */
+	uint16 sequence; /* for shape animation */
+	uint16 flags; /* [used_slot.1] [rendered.1] [animated.4] [unused.4] [invisible.1] [solid.1] [status.1] [owner.3] */
+	int16 transfer_mode, transfer_period; /* if NONE take from shape data */
+	int16 transfer_phase; /* for transfer mode animations */
+	int16 permutation; /* usually index into owner array */
 	
-	short next_object; /* or NONE */
-	short parasitic_object; /* or NONE */
+	int16 next_object; /* or NONE */
+	int16 parasitic_object; /* or NONE */
 
 	/* used when playing sounds */
 	fixed sound_pitch;
@@ -395,24 +395,24 @@ struct object_data /* 32 bytes */
 /* ------------ endpoint definition */
 
 #define ENDPOINT_IS_SOLID(e) ((e)->flags&1)
-#define SET_ENDPOINT_SOLIDITY(e,s) ((s)?((e)->flags|=1):((e)->flags&=~(word)1))
+#define SET_ENDPOINT_SOLIDITY(e,s) ((s)?((e)->flags|=1):((e)->flags&=~(uint16)1))
 
 #define ENDPOINT_IS_TRANSPARENT(e) ((e)->flags&4)
-#define SET_ENDPOINT_TRANSPARENCY(e,s) ((s)?((e)->flags|=4):((e)->flags&=~(word)4))
+#define SET_ENDPOINT_TRANSPARENCY(e,s) ((s)?((e)->flags|=4):((e)->flags&=~(uint16)4))
 
-/* FALSE if all polygons sharing this endpoint have the same height */
+/* false if all polygons sharing this endpoint have the same height */
 #define ENDPOINT_IS_ELEVATION(e) ((e)->flags&2)
-#define SET_ENDPOINT_ELEVATION(e,s) ((s)?((e)->flags|=2):((e)->flags&=~(word)2))
+#define SET_ENDPOINT_ELEVATION(e,s) ((s)?((e)->flags|=2):((e)->flags&=~(uint16)2))
 
 struct endpoint_data /* 16 bytes */
 {
-	word flags;
+	uint16 flags;
 	world_distance highest_adjacent_floor_height, lowest_adjacent_ceiling_height;
 	
 	world_point2d vertex;
 	world_point2d transformed;
 	
-	short supporting_polygon_index;
+	int16 supporting_polygon_index;
 };
 const int SIZEOF_endpoint_data = 16;
 
@@ -425,41 +425,41 @@ const int SIZEOF_endpoint_data = 16;
 #define VARIABLE_ELEVATION_LINE_BIT 0x400
 #define LINE_HAS_TRANSPARENT_SIDE_BIT 0x200
 
-#define SET_LINE_SOLIDITY(l,v) ((v)?((l)->flags|=(word)SOLID_LINE_BIT):((l)->flags&=(word)~SOLID_LINE_BIT))
+#define SET_LINE_SOLIDITY(l,v) ((v)?((l)->flags|=(uint16)SOLID_LINE_BIT):((l)->flags&=(uint16)~SOLID_LINE_BIT))
 #define LINE_IS_SOLID(l) ((l)->flags&SOLID_LINE_BIT)
 
-#define SET_LINE_TRANSPARENCY(l,v) ((v)?((l)->flags|=(word)TRANSPARENT_LINE_BIT):((l)->flags&=(word)~TRANSPARENT_LINE_BIT))
+#define SET_LINE_TRANSPARENCY(l,v) ((v)?((l)->flags|=(uint16)TRANSPARENT_LINE_BIT):((l)->flags&=(uint16)~TRANSPARENT_LINE_BIT))
 #define LINE_IS_TRANSPARENT(l) ((l)->flags&TRANSPARENT_LINE_BIT)
 
-#define SET_LINE_LANDSCAPE_STATUS(l,v) ((v)?((l)->flags|=(word)LANDSCAPE_LINE_BIT):((l)->flags&=(word)~LANDSCAPE_LINE_BIT))
+#define SET_LINE_LANDSCAPE_STATUS(l,v) ((v)?((l)->flags|=(uint16)LANDSCAPE_LINE_BIT):((l)->flags&=(uint16)~LANDSCAPE_LINE_BIT))
 #define LINE_IS_LANDSCAPED(l) ((l)->flags&LANDSCAPE_LINE_BIT)
 
-#define SET_LINE_ELEVATION(l,v) ((v)?((l)->flags|=(word)ELEVATION_LINE_BIT):((l)->flags&=(word)~ELEVATION_LINE_BIT))
+#define SET_LINE_ELEVATION(l,v) ((v)?((l)->flags|=(uint16)ELEVATION_LINE_BIT):((l)->flags&=(uint16)~ELEVATION_LINE_BIT))
 #define LINE_IS_ELEVATION(l) ((l)->flags&ELEVATION_LINE_BIT)
 
-#define SET_LINE_VARIABLE_ELEVATION(l,v) ((v)?((l)->flags|=(word)VARIABLE_ELEVATION_LINE_BIT):((l)->flags&=(word)~VARIABLE_ELEVATION_LINE_BIT))
+#define SET_LINE_VARIABLE_ELEVATION(l,v) ((v)?((l)->flags|=(uint16)VARIABLE_ELEVATION_LINE_BIT):((l)->flags&=(uint16)~VARIABLE_ELEVATION_LINE_BIT))
 #define LINE_IS_VARIABLE_ELEVATION(l) ((l)->flags&VARIABLE_ELEVATION_LINE_BIT)
 
-#define SET_LINE_HAS_TRANSPARENT_SIDE(l,v) ((v)?((l)->flags|=(word)LINE_HAS_TRANSPARENT_SIDE_BIT):((l)->flags&=(word)~LINE_HAS_TRANSPARENT_SIDE_BIT))
+#define SET_LINE_HAS_TRANSPARENT_SIDE(l,v) ((v)?((l)->flags|=(uint16)LINE_HAS_TRANSPARENT_SIDE_BIT):((l)->flags&=(uint16)~LINE_HAS_TRANSPARENT_SIDE_BIT))
 #define LINE_HAS_TRANSPARENT_SIDE(l) ((l)->flags&LINE_HAS_TRANSPARENT_SIDE_BIT)
 
 struct line_data /* 32 bytes */
 {
-	short endpoint_indexes[2];
-	word flags; /* no permutation field */
+	int16 endpoint_indexes[2];
+	uint16 flags; /* no permutation field */
 
 	world_distance length;
 	world_distance highest_adjacent_floor, lowest_adjacent_ceiling;
 	
 	/* the side definition facing the clockwise polygon which references this side, and the side
 		definition facing the counterclockwise polygon (can be NONE) */
-	short clockwise_polygon_side_index, counterclockwise_polygon_side_index;
+	int16 clockwise_polygon_side_index, counterclockwise_polygon_side_index;
 	
 	/* a line can be owned by a clockwise polygon, a counterclockwise polygon, or both (but never
 		two of the same) (can be NONE) */
-	short clockwise_polygon_owner, counterclockwise_polygon_owner;
+	int16 clockwise_polygon_owner, counterclockwise_polygon_owner;
 	
-	short unused[6];
+	int16 unused[6];
 };
 const int SIZEOF_line_data = 32;
 
@@ -493,18 +493,18 @@ enum /* control panel side types */
 };
 
 #define SIDE_IS_CONTROL_PANEL(s) ((s)->flags & _side_is_control_panel)
-#define SET_SIDE_CONTROL_PANEL(s, t) ((void)((t) ? (s->flags |= (word) _side_is_control_panel) : (s->flags &= (word)~_side_is_control_panel)))
+#define SET_SIDE_CONTROL_PANEL(s, t) ((void)((t) ? (s->flags |= (uint16) _side_is_control_panel) : (s->flags &= (uint16)~_side_is_control_panel)))
 
 #define GET_CONTROL_PANEL_STATUS(s) ((s)->flags & _control_panel_status)
-#define SET_CONTROL_PANEL_STATUS(s, t) ((t) ? (s->flags |= (word) _control_panel_status) : (s->flags &= (word)~_control_panel_status))
+#define SET_CONTROL_PANEL_STATUS(s, t) ((t) ? (s->flags |= (uint16) _control_panel_status) : (s->flags &= (uint16)~_control_panel_status))
 #define TOGGLE_CONTROL_PANEL_STATUS(s) ((s)->flags ^= _control_panel_status)
 
 #define SIDE_IS_REPAIR_SWITCH(s) ((s)->flags & _side_is_repair_switch)
-#define SET_SIDE_IS_REPAIR_SWITCH(s, t) ((t) ? (s->flags |= (word) _side_is_repair_switch) : (s->flags &= (word)~_side_is_repair_switch))
+#define SET_SIDE_IS_REPAIR_SWITCH(s, t) ((t) ? (s->flags |= (uint16) _side_is_repair_switch) : (s->flags &= (uint16)~_side_is_repair_switch))
 
 /* Flags used by Vulcan */
 #define SIDE_IS_DIRTY(s) ((s)->flags&_editor_dirty_bit)
-#define SET_SIDE_IS_DIRTY(s, t) ((t)?(s->flags|=(word)_editor_dirty_bit):(s->flags&=(word)~_editor_dirty_bit))
+#define SET_SIDE_IS_DIRTY(s, t) ((t)?(s->flags|=(uint16)_editor_dirty_bit):(s->flags&=(uint16)~_editor_dirty_bit))
 
 enum /* side types (largely redundant; most of this could be guessed for examining adjacent polygons) */
 {
@@ -530,8 +530,8 @@ struct side_exclusion_zone
 #ifdef LP
 struct saved_side /* 64 bytes */
 {
-	short type;
-	word flags;
+	int16 type;
+	uint16 flags;
 	
 	struct side_texture_definition primary_texture;
 	struct side_texture_definition secondary_texture;
@@ -541,22 +541,22 @@ struct saved_side /* 64 bytes */
 		the side which cannot be walked through */
 	struct side_exclusion_zone exclusion_zone;
 
-	short control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
-	short control_panel_permutation; /* platform index, light source index, etc... */
+	int16 control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
+	int16 control_panel_permutation; /* platform index, light source index, etc... */
 	
-	short primary_transfer_mode; /* These should be in the side_texture_definition.. */
-	short secondary_transfer_mode;
-	short transparent_transfer_mode;
+	int16 primary_transfer_mode; /* These should be in the side_texture_definition.. */
+	int16 secondary_transfer_mode;
+	int16 transparent_transfer_mode;
 
-	short polygon_index, line_index;
+	int16 polygon_index, line_index;
 
-	short primary_lightsource_index;	
-	short secondary_lightsource_index;
-	short transparent_lightsource_index;
+	int16 primary_lightsource_index;	
+	int16 secondary_lightsource_index;
+	int16 transparent_lightsource_index;
 
 	uint16 ambient_delta[2];
 
-	short unused[1];
+	int16 unused[1];
 };
 #endif
 #ifdef CB
@@ -598,8 +598,8 @@ const int SIZEOF_side_data = 64;
 
 struct side_data /* size platform-dependant */
 {
-	short type;
-	word flags;
+	int16 type;
+	uint16 flags;
 	
 	struct side_texture_definition primary_texture;
 	struct side_texture_definition secondary_texture;
@@ -609,22 +609,22 @@ struct side_data /* size platform-dependant */
 		the side which cannot be walked through */
 	struct side_exclusion_zone exclusion_zone;
 
-	short control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
-	short control_panel_permutation; /* platform index, light source index, etc... */
+	int16 control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
+	int16 control_panel_permutation; /* platform index, light source index, etc... */
 	
-	short primary_transfer_mode; /* These should be in the side_texture_definition.. */
-	short secondary_transfer_mode;
-	short transparent_transfer_mode;
+	int16 primary_transfer_mode; /* These should be in the side_texture_definition.. */
+	int16 secondary_transfer_mode;
+	int16 transparent_transfer_mode;
 
-	short polygon_index, line_index;
+	int16 polygon_index, line_index;
 
-	short primary_lightsource_index;	
-	short secondary_lightsource_index;
-	short transparent_lightsource_index;
+	int16 primary_lightsource_index;	
+	int16 secondary_lightsource_index;
+	int16 transparent_lightsource_index;
 
-	short ambient_delta;
+	int16 ambient_delta;
 
-	short unused[1];
+	int16 unused[1];
 };
 
 /* ----------- polygon definition */
@@ -661,65 +661,65 @@ enum /* polygon types */
 struct horizontal_surface_data /* should be in polygon structure */
 {
 	world_distance height;
-	short lightsource_index;
+	int16 lightsource_index;
 	shape_descriptor texture;
-	short transfer_mode, transfer_mode_data;
+	int16 transfer_mode, transfer_mode_data;
 	
 	world_point2d origin;
 };
 
 struct polygon_data /* 128 bytes */
 {
-	short type;
-	word flags;
-	short permutation;
+	int16 type;
+	uint16 flags;
+	int16 permutation;
 
-	short vertex_count;
-	short endpoint_indexes[MAXIMUM_VERTICES_PER_POLYGON]; /* clockwise */
-	short line_indexes[MAXIMUM_VERTICES_PER_POLYGON];
+	int16 vertex_count;
+	int16 endpoint_indexes[MAXIMUM_VERTICES_PER_POLYGON]; /* clockwise */
+	int16 line_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	
 	shape_descriptor floor_texture, ceiling_texture;
 	world_distance floor_height, ceiling_height;
-	short floor_lightsource_index, ceiling_lightsource_index;
+	int16 floor_lightsource_index, ceiling_lightsource_index;
 	
-	long area; /* in world_distance^2 units */
+	int32 area; /* in world_distance^2 units */
 	
-	short first_object;
+	int16 first_object;
 	
 	/* precalculated impassability information; each polygon has a list of lines and points
 		that anything big (i.e., monsters but not projectiles) inside it must check against when
 		ending a move inside it. */
-	short first_exclusion_zone_index;
-	short line_exclusion_zone_count;
-	short point_exclusion_zone_count;
+	int16 first_exclusion_zone_index;
+	int16 line_exclusion_zone_count;
+	int16 point_exclusion_zone_count;
 
-	short floor_transfer_mode;
-	short ceiling_transfer_mode;
+	int16 floor_transfer_mode;
+	int16 ceiling_transfer_mode;
 	
-	short adjacent_polygon_indexes[MAXIMUM_VERTICES_PER_POLYGON];
+	int16 adjacent_polygon_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	
 	/* a list of polygons within WORLD_ONE of us */
-	short first_neighbor_index;
-	short neighbor_count;
+	int16 first_neighbor_index;
+	int16 neighbor_count;
 	
 	world_point2d center;
 	
-	short side_indexes[MAXIMUM_VERTICES_PER_POLYGON];
+	int16 side_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	
 	world_point2d floor_origin, ceiling_origin;
 	
-	short media_index;
-	short media_lightsource_index;
+	int16 media_index;
+	int16 media_lightsource_index;
 	
 	/* NONE terminated list of _saved_sound_source indexes which must be checked while a
 		listener is inside this polygon (can be none) */
-	short sound_source_indexes;
+	int16 sound_source_indexes;
 	
 	// either can be NONE
-	short ambient_sound_image_index;
-	short random_sound_image_index;
+	int16 ambient_sound_image_index;
+	int16 random_sound_image_index;
 	
-	short unused[1];
+	int16 unused[1];
 };
 const int SIZEOF_polygon_data = 128;
 
@@ -772,14 +772,14 @@ enum // flags for object_frequency_definition
 
 struct object_frequency_definition
 {
-	word flags;
+	uint16 flags;
 	
-	short initial_count;   // number that initially appear. can be greater than maximum_count
-	short minimum_count;   // this number of objects will be maintained.
-	short maximum_count;   // canÕt exceed this, except at the beginning of the level.
+	int16 initial_count;   // number that initially appear. can be greater than maximum_count
+	int16 minimum_count;   // this number of objects will be maintained.
+	int16 maximum_count;   // canÕt exceed this, except at the beginning of the level.
 	
-	short random_count;    // maximum random occurences of the object
-	word random_chance;    // in (0, 65535]
+	int16 random_count;    // maximum random occurences of the object
+	uint16 random_chance;    // in (0, 65535]
 };
 const int SIZEOF_object_frequency_definition = 12;
 
@@ -878,76 +878,76 @@ struct game_data
 	/* Used for the net game, decrement each tick.  Used for the */
 	/*  single player game-> set to LONG_MAX, and decremented over time, so */
 	/*  that you know how long it took you to solve the game. */
-	long game_time_remaining;  
-	short game_type; /* One of previous enum's */
-	short game_options;
-	short kill_limit;
-	short initial_random_seed;
-	short difficulty_level;
-	short parameters[2]; /* Use these later. for now memset to 0 */
+	int32 game_time_remaining;  
+	int16 game_type; /* One of previous enum's */
+	int16 game_options;
+	int16 kill_limit;
+	int16 initial_random_seed;
+	int16 difficulty_level;
+	int16 parameters[2]; /* Use these later. for now memset to 0 */
 };
 
 struct dynamic_data
 {
 	/* ticks since the beginning of the game */
-	long tick_count;
+	int32 tick_count;
 	
 	/* the real seed is static in WORLD.C; must call set_random_seed() */
-	word random_seed;
+	uint16 random_seed;
 	
 	/* This is stored in the dynamic_data so that it is valid across */
 	/* saves. */
 	struct game_data game_information;
 	
-	short player_count;
-	short speaking_player_index;
+	int16 player_count;
+	int16 speaking_player_index;
 	
-	short unused;
-	short platform_count;
-	short endpoint_count;
-	short line_count;
-	short side_count;
-	short polygon_count;
-	short lightsource_count;
-	short map_index_count;
-	short ambient_sound_image_count, random_sound_image_count;
+	int16 unused;
+	int16 platform_count;
+	int16 endpoint_count;
+	int16 line_count;
+	int16 side_count;
+	int16 polygon_count;
+	int16 lightsource_count;
+	int16 map_index_count;
+	int16 ambient_sound_image_count, random_sound_image_count;
 	
 	/* statistically unlikely to be valid */
-	short object_count;
-	short monster_count;
-	short projectile_count;
-	short effect_count;
-	short light_count;
+	int16 object_count;
+	int16 monster_count;
+	int16 projectile_count;
+	int16 effect_count;
+	int16 light_count;
 	
-	short default_annotation_count;
-	short personal_annotation_count;
+	int16 default_annotation_count;
+	int16 personal_annotation_count;
 	
-	short initial_objects_count;
+	int16 initial_objects_count;
 	
-	short garbage_object_count;
+	int16 garbage_object_count;
 
 	/* used by move_monsters() to decide who gets to generate paths, etc. */	
-	short last_monster_index_to_get_time, last_monster_index_to_build_path;
+	int16 last_monster_index_to_get_time, last_monster_index_to_build_path;
 
 	/* variables used by new_monster() to adjust for different difficulty levels */
-	short new_monster_mangler_cookie, new_monster_vanishing_cookie;
+	int16 new_monster_mangler_cookie, new_monster_vanishing_cookie;
 	
 	/* number of civilians killed by players; periodically decremented */
-	short civilians_killed_by_players;
+	int16 civilians_killed_by_players;
 
 	/* used by the item placement stuff */
-	short random_monsters_left[MAXIMUM_OBJECT_TYPES];
-	short current_monster_count[MAXIMUM_OBJECT_TYPES];
-	short random_items_left[MAXIMUM_OBJECT_TYPES];
-	short current_item_count[MAXIMUM_OBJECT_TYPES];
+	int16 random_monsters_left[MAXIMUM_OBJECT_TYPES];
+	int16 current_monster_count[MAXIMUM_OBJECT_TYPES];
+	int16 random_items_left[MAXIMUM_OBJECT_TYPES];
+	int16 current_item_count[MAXIMUM_OBJECT_TYPES];
 
-	short current_level_number;   // what level the user is currently exploring.
+	int16 current_level_number;   // what level the user is currently exploring.
 	
-	short current_civilian_causalties, current_civilian_count;
-	short total_civilian_causalties, total_civilian_count;
+	int16 current_civilian_causalties, current_civilian_count;
+	int16 total_civilian_causalties, total_civilian_count;
 	
 	world_point2d game_beacon;
-	short game_player_index;
+	int16 game_player_index;
 };
 
 /* ---------- map globals */
@@ -965,7 +965,7 @@ extern struct endpoint_data *map_endpoints;
 extern struct ambient_sound_image_data *ambient_sound_images;
 extern struct random_sound_image_data *random_sound_images;
 
-extern short *map_indexes;
+extern int16 *map_indexes;
 
 extern byte *automap_lines;
 extern byte *automap_polygons;
@@ -973,22 +973,22 @@ extern byte *automap_polygons;
 extern struct map_annotation *map_annotations;
 extern struct map_object *saved_objects;
 
-extern boolean game_is_networked; /* TRUE if this is a network game */
+extern bool game_is_networked; /* true if this is a network game */
 
 #define ADD_LINE_TO_AUTOMAP(i) (automap_lines[(i)>>3] |= (byte) 1<<((i)&0x07))
-#define LINE_IS_IN_AUTOMAP(i) ((automap_lines[(i)>>3]&((byte)1<<((i)&0x07)))?(TRUE):(FALSE))
+#define LINE_IS_IN_AUTOMAP(i) ((automap_lines[(i)>>3]&((byte)1<<((i)&0x07)))?(true):(false))
 
 #define ADD_POLYGON_TO_AUTOMAP(i) (automap_polygons[(i)>>3] |= (byte) 1<<((i)&0x07))
-#define POLYGON_IS_IN_AUTOMAP(i) ((automap_polygons[(i)>>3]&((byte)1<<((i)&0x07)))?(TRUE):(FALSE))
+#define POLYGON_IS_IN_AUTOMAP(i) ((automap_polygons[(i)>>3]&((byte)1<<((i)&0x07)))?(true):(false))
 
 /* ---------- prototypes/MARATHON.C */
 
 void initialize_marathon(void);
 
 void leaving_map(void);
-boolean entering_map(void);
+bool entering_map(void);
 
-short update_world(void);
+int16 update_world(void);
 
 /* Called to activate lights, platforms, etc. (original polygon may be NONE) */
 void changed_polygon(short original_polygon_index, short new_polygon_index, short player_index);
@@ -1004,11 +1004,11 @@ void allocate_map_memory(void);
 void initialize_map_for_new_game(void);
 void initialize_map_for_new_level(void);
 
-void mark_environment_collections(short environment_code, boolean loading);
-boolean collection_in_environment(short collection_code, short environment_code);
+void mark_environment_collections(short environment_code, bool loading);
+bool collection_in_environment(short collection_code, short environment_code);
 
-boolean valid_point2d(world_point2d *p);
-boolean valid_point3d(world_point3d *p);
+bool valid_point2d(world_point2d *p);
+bool valid_point3d(world_point3d *p);
 
 void reconnect_map_object_list(void);
 short new_map_object2d(world_point2d *location, short polygon_index, shape_descriptor shape, angle facing);
@@ -1016,7 +1016,7 @@ short new_map_object3d(world_point3d *location, short polygon_index, shape_descr
 short new_map_object(struct object_location *location, shape_descriptor shape);
 short attach_parasitic_object(short host_index, shape_descriptor shape, angle facing);
 void remove_parasitic_object(short host_index);
-boolean translate_map_object(short object_index, world_point3d *new_location, short new_polygon_index);
+bool translate_map_object(short object_index, world_point3d *new_location, short new_polygon_index);
 short find_new_object_polygon(world_point2d *parent_location, world_point2d *child_location, short parent_polygon_index);
 
 void remove_map_object(short index);
@@ -1033,7 +1033,7 @@ struct shape_and_transfer_mode
 void get_object_shape_and_transfer_mode(world_point3d *camera_location, short object_index, struct shape_and_transfer_mode *data);
 void set_object_shape_and_transfer_mode(short object_index, shape_descriptor shape, short transfer_mode);
 void animate_object(short object_index); /* assumes ¶t==1 tick */
-boolean randomize_object_sequence(short object_index, shape_descriptor shape);
+bool randomize_object_sequence(short object_index, shape_descriptor shape);
 
 void play_object_sound(short object_index, short sound_code);
 void play_polygon_sound(short polygon_index, short sound_code);
@@ -1053,9 +1053,9 @@ short clockwise_endpoint_in_line(short polygon_index, short line_index, short in
 short find_adjacent_polygon(short polygon_index, short line_index);
 short find_adjacent_side(short polygon_index, short line_index);
 short find_shared_line(short polygon_index1, short polygon_index2);
-boolean line_is_landscaped(short polygon_index, short line_index, world_distance z);
+bool line_is_landscaped(short polygon_index, short line_index, world_distance z);
 short find_line_crossed_leaving_polygon(short polygon_index, world_point2d *p0, world_point2d *p1);
-boolean point_in_polygon(short polygon_index, world_point2d *p);
+bool point_in_polygon(short polygon_index, world_point2d *p);
 void find_center_of_polygon(short polygon_index, world_point2d *center);
 
 long point_to_line_segment_distance_squared(world_point2d *p, world_point2d *a, world_point2d *b);
@@ -1071,22 +1071,22 @@ fixed find_floor_or_ceiling_intersection(world_distance h, world_point3d *p0, wo
 void ray_to_line_segment(world_point2d *p0, world_point2d *p1, angle theta, world_distance d);
 
 void push_out_line(world_point2d *e0, world_point2d *e1, world_distance d, world_distance line_length);
-boolean keep_line_segment_out_of_walls(short polygon_index, world_point3d *p0,
+bool keep_line_segment_out_of_walls(short polygon_index, world_point3d *p0,
 	world_point3d *p1, world_distance maximum_delta_height, world_distance height, world_distance *adjusted_floor_height,
 	world_distance *adjusted_ceiling_height, short *supporting_polygon_index);
 
 fixed get_object_light_intensity(short object_index);
 
-boolean line_has_variable_height(short line_index);
+bool line_has_variable_height(short line_index);
 
 void recalculate_map_counts(void);
 
-boolean change_polygon_height(short polygon_index, world_distance new_floor_height,
+bool change_polygon_height(short polygon_index, world_distance new_floor_height,
 	world_distance new_ceiling_height, struct damage_definition *damage);
 
-boolean line_is_obstructed(short polygon_index1, world_point2d *p1, short polygon_index2, world_point2d *p2);
-boolean point_is_player_visible(short max_players, short polygon_index, world_point2d *p, long *distance);
-boolean point_is_monster_visible(short polygon_index, world_point2d *p, long *distance);
+bool line_is_obstructed(short polygon_index1, world_point2d *p1, short polygon_index2, world_point2d *p2);
+bool point_is_player_visible(short max_players, short polygon_index, world_point2d *p, long *distance);
+bool point_is_monster_visible(short polygon_index, world_point2d *p, long *distance);
 
 void turn_object_to_shit(short garbage_object_index);
 
@@ -1243,7 +1243,7 @@ void object_was_just_added(short object_class, short object_type);
 void object_was_just_destroyed(short object_class, short object_type);
 short get_random_player_starting_location_and_facing(short max_player_index, short team, struct object_location *location);
 
-void mark_all_monster_collections(boolean loading);
+void mark_all_monster_collections(bool loading);
 void load_all_monster_sounds(void);
 
 /* ---------- prototypes/GAME_DIALOGS.C */
@@ -1259,38 +1259,38 @@ void change_light_state(short lightsource_index, short state);
 
 /* ---------- prototypes/DEVICES.C */
 
-void mark_control_panel_shapes(boolean load);
+void mark_control_panel_shapes(bool load);
 void initialize_control_panels_for_level(void); 
 void update_control_panels(void);
 
-boolean control_panel_in_environment(short control_panel_type, short environment_code);
+bool control_panel_in_environment(short control_panel_type, short environment_code);
 
-void change_device_state(short device_index, boolean active);
+void change_device_state(short device_index, bool active);
 short new_device(world_point2d *location, short initial_polygon_index, 
-	short type, short extra_data, boolean active);
-void update_action_key(short player_index, boolean triggered);
+	short type, short extra_data, bool active);
+void update_action_key(short player_index, bool triggered);
 
-boolean untoggled_repair_switches_on_level(void);
+bool untoggled_repair_switches_on_level(void);
 
-void assume_correct_switch_position(short switch_type, short permutation, boolean new_state);
+void assume_correct_switch_position(short switch_type, short permutation, bool new_state);
 
 void try_and_toggle_control_panel(short polygon_index, short line_index);
 
 /* ---------- prototypes/GAME_WAD.C */
 
 struct map_identifier {
-	long scenario_checksum;
+	int32 scenario_checksum;
 	short level_index;
 };
 
 void set_to_default_map(void);
 
-/* Return TRUE if it finds the file, and it sets the mapfile to that file. */
-/* Otherwise it returns FALSE, meaning that we need have the file sent to us. */
-boolean use_map_file(long checksum);
-boolean load_level_from_map(short level_index);
-unsigned long get_current_map_checksum(void);
-boolean select_map_to_use(void);
+/* Return true if it finds the file, and it sets the mapfile to that file. */
+/* Otherwise it returns false, meaning that we need have the file sent to us. */
+bool use_map_file(uint32 checksum);
+bool load_level_from_map(short level_index);
+uint32 get_current_map_checksum(void);
+bool select_map_to_use(void);
 
 /* Call with location of NULL to get the number of start locations for a */
 /* given team or player */
@@ -1300,12 +1300,12 @@ short get_player_starting_location_and_facing(short team, short index,
 void pause_game(void);
 void resume_game(void);
 
-boolean get_indexed_entry_point(struct entry_point *entry_point, 
-	short *index, long type);
-boolean new_game(short number_of_players, boolean network, 
+bool get_indexed_entry_point(struct entry_point *entry_point, 
+	short *index, int32 type);
+bool new_game(short number_of_players, bool network, 
 	struct game_data *game_information,
 	struct player_start_data *player_start_information, 
 	struct entry_point *entry_point);
-boolean goto_level(struct entry_point *entry, boolean new_game);
+bool goto_level(struct entry_point *entry, bool new_game);
 
 #endif

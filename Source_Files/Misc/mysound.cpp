@@ -41,7 +41,7 @@ Friday, August 19, 1994 8:26:31 PM
 Friday, September 2, 1994 1:29:03 PM
 	moving to slot-base collection model fixed a gnarly reentrancy bug while releasing sounds.
 Tuesday, September 6, 1994 2:53:35 PM
-	added _depth_fading_flag and _high_quality_flag (resamples 22k to 11k if FALSE).
+	added _depth_fading_flag and _high_quality_flag (resamples 22k to 11k if false).
 Sunday, November 6, 1994 9:17:24 PM  (Jason)
 	if the sound manager is never initialized, calling any of itÕs procedures doesnÕt crash.
 Friday, December 2, 1994 5:26:10 PM  (Jason)
@@ -145,10 +145,10 @@ enum /* channel flags */
 /* ---------- macros */
 
 /* from marathon map.h */
-#define SLOT_IS_USED(o) ((o)->flags&(word)0x8000)
+#define SLOT_IS_USED(o) ((o)->flags&(uint16)0x8000)
 #define SLOT_IS_FREE(o) (!SLOT_IS_USED(o))
-#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(word)~0x8000)
-#define MARK_SLOT_AS_USED(o) ((o)->flags|=(word)0x8000)
+#define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0x8000)
+#define MARK_SLOT_AS_USED(o) ((o)->flags|=(uint16)0x8000)
 
 #define AMBIENT_SOUND_CHANNELS (_sm_globals->channels + _sm_parameters->channel_count)
 
@@ -164,7 +164,7 @@ struct sound_variables
 
 struct channel_data
 {
-	word flags;
+	uint16 flags;
 
 	short sound_index; /* sound_index being played in this channel */
 
@@ -191,7 +191,7 @@ struct sound_manager_globals
 	short sound_source; // 8-bit, 16-bit
 	struct sound_definition *base_sound_definitions;
 	
-	word available_flags;
+	uint16 available_flags;
 	
 	long loaded_sounds_size;
 	
@@ -205,7 +205,7 @@ struct sound_manager_globals
 
 /* ---------- globals */
 
-static boolean _sm_initialized, _sm_active;
+static bool _sm_initialized, _sm_active;
 static struct sound_manager_globals *_sm_globals;
 static struct sound_manager_parameters *_sm_parameters;
 
@@ -220,7 +220,7 @@ static OpenedFile SoundFile;
 
 static void initialize_machine_sound_manager(struct sound_manager_parameters *parameters);
 
-static boolean channel_busy(struct channel_data *channel);
+static bool channel_busy(struct channel_data *channel);
 static void unlock_sound(short sound_index);
 static void dispose_sound(short sound_index);
 // Returns not the handle, but the pointer and size
@@ -228,7 +228,7 @@ static byte *read_sound_from_file(short sound_index, int32 &size);
 
 static void quiet_channel(struct channel_data *channel);
 static void instantiate_sound_variables(struct sound_variables *variables,
-	struct channel_data *channel, boolean first_time);
+	struct channel_data *channel, bool first_time);
 static void buffer_sound(struct channel_data *channel, short sound_index, fixed pitch);
 
 /* ---------- private prototypes */
@@ -236,7 +236,7 @@ static void buffer_sound(struct channel_data *channel, short sound_index, fixed 
 static void track_stereo_sounds(void);
 static void unlock_locked_sounds(void);
 
-static boolean _load_sound(short sound);
+static bool _load_sound(short sound);
 static short _release_least_useful_sound(void);
 
 static struct channel_data *best_channel(short sound_index, struct sound_variables *variables);
@@ -252,7 +252,7 @@ static fixed calculate_pitch_modifier(short sound_index, fixed pitch_modifier);
 
 static void angle_and_volume_to_stereo_volume(angle delta, short volume, short *right_volume, short *left_volume);
 static short distance_to_volume(struct sound_definition *definition, world_distance distance,
-	word flags);
+	uint16 flags);
 
 static void update_ambient_sound_sources(void);
 
@@ -416,7 +416,7 @@ void direct_play_sound(
 				}
 		
 				/* set the volume and pitch in this channel */
-				instantiate_sound_variables(&variables, channel, TRUE);
+				instantiate_sound_variables(&variables, channel, true);
 
 				/* initialize the channel */
 				channel->flags= _sound_is_local; // but possibly being played in stereo
@@ -459,7 +459,7 @@ void _play_sound(
 			if ((channel= best_channel(sound_index, &variables))!=NULL)
 			{
 				/* set the volume and pitch in this channel */
-				instantiate_sound_variables(&variables, channel, TRUE);
+				instantiate_sound_variables(&variables, channel, true);
 				
 				/* initialize the channel */
 				channel->flags= 0;
@@ -541,10 +541,10 @@ void stop_sound(
  }
 
 // doesnÕt check ambient sounds
-boolean sound_is_playing(
+bool sound_is_playing(
 	short sound_index)
 {
-	boolean sound_playing= FALSE;
+	bool sound_playing= false;
 	
 	if (_sm_active && _sm_globals->total_channel_count>0)
 	{
@@ -555,7 +555,7 @@ boolean sound_is_playing(
 		{
 			if (SLOT_IS_USED(channel) && channel->sound_index==sound_index)
 			{
-				sound_playing= TRUE;
+				sound_playing= true;
 			}
 		}
 		
@@ -586,12 +586,12 @@ void orphan_sound(
 	return;
 }
 
-word available_sound_manager_flags(
-	word flags)
+uint16 available_sound_manager_flags(
+	uint16 flags)
 {
-	word available_flags= _sm_active ? _sm_globals->available_flags : 0;
+	uint16 available_flags= _sm_active ? _sm_globals->available_flags : 0;
 	
-	if (!(flags&_stereo_flag)) available_flags&= ~(word)_dynamic_tracking_flag;
+	if (!(flags&_stereo_flag)) available_flags&= ~(uint16)_dynamic_tracking_flag;
 	
 	return available_flags;
 }
@@ -611,7 +611,7 @@ void default_sound_manager_parameters(
 	return;
 }
 
-boolean verify_sound_manager_parameters(
+bool verify_sound_manager_parameters(
 	struct sound_manager_parameters *parameters)
 {
 	// pin parameters
@@ -622,7 +622,7 @@ boolean verify_sound_manager_parameters(
 	// adjust flags	
 	parameters->flags&= _sm_globals->available_flags;
 	
-	return TRUE;
+	return true;
 }
 
 short random_sound_index_to_sound_index(
@@ -730,7 +730,7 @@ static void track_stereo_sounds(
 				
 				if (channel->dynamic_source) channel->source= *channel->dynamic_source;
 				calculate_sound_variables(channel->sound_index, &channel->source, &variables);
-				instantiate_sound_variables(&variables, channel, FALSE);
+				instantiate_sound_variables(&variables, channel, false);
 			}
 		}
 	}
@@ -892,13 +892,13 @@ static void free_channel(
 	return;
 }
 
-boolean _load_sound(
+bool _load_sound(
 	short sound_index)
 {
 	struct sound_definition *definition= get_sound_definition(sound_index);
 	// LP change: idiot-proofing
-	if (!definition) return FALSE;
-	boolean successful= FALSE;
+	if (!definition) return false;
+	bool successful= false;
 		
 	if (definition->sound_code!=NONE &&
 		((_sm_parameters->flags&_ambient_sound_flag) || !(definition->flags&_sound_is_ambient)))
@@ -917,7 +917,7 @@ boolean _load_sound(
 		}
 	}
 	
-	return definition->ptr ? TRUE : FALSE;
+	return definition->ptr ? true : false;
 }
 
 static void calculate_initial_sound_variables(
@@ -1059,7 +1059,7 @@ static void angle_and_volume_to_stereo_volume(
 static short distance_to_volume(
 	struct sound_definition *definition,
 	world_distance distance,
-	word flags)
+	uint16 flags)
 {
 	struct sound_behavior_definition *behavior= get_sound_behavior_definition(definition->behavior_index);
 	// LP change: idiot-proofing
@@ -1112,7 +1112,7 @@ enum
 
 struct ambient_sound_data
 {
-	word flags;
+	uint16 flags;
 	short sound_index;
 
 	struct sound_variables variables;
@@ -1130,7 +1130,7 @@ static void update_ambient_sound_sources(
 	struct ambient_sound_data ambient_sounds[MAXIMUM_PROCESSED_AMBIENT_SOUNDS];
 	struct ambient_sound_data *ambient;
 	struct channel_data *channel;
-	boolean channel_used[MAXIMUM_AMBIENT_SOUND_CHANNELS], sound_handled[MAXIMUM_PROCESSED_AMBIENT_SOUNDS];
+	bool channel_used[MAXIMUM_AMBIENT_SOUND_CHANNELS], sound_handled[MAXIMUM_PROCESSED_AMBIENT_SOUNDS];
 	short i, j;
 
 	// reset all local copies	
@@ -1139,12 +1139,12 @@ static void update_ambient_sound_sources(
 		ambient->flags= 0;
 		ambient->sound_index= NONE;
 		
-		sound_handled[i]= FALSE;
+		sound_handled[i]= false;
 	}
 
 	for (i= 0; i<MAXIMUM_AMBIENT_SOUND_CHANNELS; ++i)
 	{
-		channel_used[i]= FALSE;
+		channel_used[i]= false;
 	}
 	
 	// accumulate up to MAXIMUM_PROCESSED_AMBIENT_SOUNDS worth of sounds
@@ -1199,9 +1199,9 @@ static void update_ambient_sound_sources(
 			{
 				if (SLOT_IS_USED(channel) && channel->sound_index==ambient->sound_index)
 				{
-					instantiate_sound_variables(&ambient->variables, channel, FALSE);
+					instantiate_sound_variables(&ambient->variables, channel, false);
 					
-					sound_handled[i]= channel_used[j]= TRUE;
+					sound_handled[i]= channel_used[j]= true;
 					
 					break;
 				}
@@ -1229,9 +1229,9 @@ static void update_ambient_sound_sources(
 					// channel->source
 					MARK_SLOT_AS_USED(channel);
 					
-					channel_used[j]= TRUE;
+					channel_used[j]= true;
 					
-					instantiate_sound_variables(&ambient->variables, channel, TRUE);
+					instantiate_sound_variables(&ambient->variables, channel, true);
 
 					break;
 				}

@@ -73,7 +73,7 @@ static void	set_text_face(struct text_face_data *text_face)
 }
 
 
-static boolean calculate_line(char *base_text, short width, short start_index, short text_end_index, short *end_index)
+static bool calculate_line(char *base_text, short width, short start_index, short text_end_index, short *end_index)
 {
 	bool done = false;
 

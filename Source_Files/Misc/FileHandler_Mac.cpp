@@ -171,9 +171,9 @@ bool FileObject_Mac::Open(bool Writable)
 {
 	if (IsOpen()) return false;
 	
-	Boolean IsFolder = FALSE, WasAliased = FALSE;
+	Boolean IsFolder = false, WasAliased = false;
 
-	ResolveAliasFile(&Spec, TRUE, &IsFolder, &WasAliased);
+	ResolveAliasFile(&Spec, true, &IsFolder, &WasAliased);
 	if (IsFolder) return false;
 
 	int Permission = Writable ? fsRdWrPerm : fsRdPerm;
@@ -206,8 +206,8 @@ bool FileObject_Mac::Open(OpenedFile& OFile, bool Writable)
 
 bool FileObject_Mac::Open_MacData(short& RefNum, bool Writable)
 {
-	Boolean IsFolder = FALSE, WasAliased = FALSE;
-	ResolveAliasFile(&Spec, TRUE, &IsFolder, &WasAliased);
+	Boolean IsFolder = false, WasAliased = false;
+	ResolveAliasFile(&Spec, true, &IsFolder, &WasAliased);
 	if (IsFolder) return false;
 
 	int Permission = Writable ? fsRdWrPerm : fsRdPerm;
@@ -224,8 +224,8 @@ bool FileObject_Mac::Open_MacData(short& RefNum, bool Writable)
 
 bool FileObject_Mac::Open_MacRsrc(short& RefNum, bool Writable)
 {
-	Boolean IsFolder = FALSE, WasAliased = FALSE;
-	ResolveAliasFile(&Spec, TRUE, &IsFolder, &WasAliased);
+	Boolean IsFolder = false, WasAliased = false;
+	ResolveAliasFile(&Spec, true, &IsFolder, &WasAliased);
 	if (IsFolder) return false;
 
 	int Permission = Writable ? fsRdWrPerm : fsRdPerm;
@@ -378,7 +378,7 @@ bool FileObject_Mac::GetFreeSpace(unsigned long& FreeSpace)
 	parms.volumeParam.ioNamePtr = ptemporary;
 	parms.volumeParam.ioVRefNum = Spec.vRefNum;
 	
-	Err = PBHGetVInfo(&parms, FALSE);
+	Err = PBHGetVInfo(&parms, false);
 	if (Err == noErr)
 		FreeSpace = 
 			((unsigned long) parms.volumeParam.ioVAlBlkSiz) *

@@ -17,7 +17,7 @@
  *  Choose saved game for loading
  */
 
-boolean choose_saved_game_to_load(FileSpecifier &saved_game)
+bool choose_saved_game_to_load(FileSpecifier &saved_game)
 {
 printf("*** choose_saved_game_to_load()\n");
 	//!!
@@ -29,7 +29,7 @@ printf("*** choose_saved_game_to_load()\n");
  *  Save game
  */
 
-boolean save_game(void)
+bool save_game(void)
 {
 	pause_game();
 	show_cursor();

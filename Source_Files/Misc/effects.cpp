@@ -102,7 +102,7 @@ short new_effect(
 						
 						SET_OBJECT_OWNER(object, _object_is_effect);
 						object->sound_pitch= definition->sound_pitch;
-						if (effect->delay) SET_OBJECT_INVISIBILITY(object, TRUE);
+						if (effect->delay) SET_OBJECT_INVISIBILITY(object, true);
 						if (definition->flags&_media_effect) SET_OBJECT_IS_MEDIA_EFFECT(object);
 					}
 					else
@@ -141,7 +141,7 @@ void update_effects(
 				/* handle invisible, delayed effects */
 				if (!(effect->delay-= 1))
 				{
-					SET_OBJECT_INVISIBILITY(object, FALSE);
+					SET_OBJECT_INVISIBILITY(object, false);
 					play_object_sound(effect->object_index, definition->delay_sound);
 				}
 			}
@@ -161,7 +161,7 @@ void update_effects(
 					{
 						struct object_data *object= get_object_data(effect->data);
 						
-						SET_OBJECT_INVISIBILITY(object, FALSE);
+						SET_OBJECT_INVISIBILITY(object, false);
 					}
 				}
 			}
@@ -209,7 +209,7 @@ void remove_all_nonpersistent_effects(
 
 void mark_effect_collections(
 	short effect_type,
-	boolean loading)
+	bool loading)
 {
 	if (effect_type!=NONE)
 	{
@@ -247,7 +247,7 @@ void teleport_object_out(
 			effect_object->flags|= object->flags&(_object_is_enlarged|_object_is_tiny);
 			
 			// make the object invisible
-			SET_OBJECT_INVISIBILITY(object, TRUE);
+			SET_OBJECT_INVISIBILITY(object, true);
 
 			play_object_sound(effect->object_index, _snd_teleport_out); /* teleport in sound, at destination */
 		}

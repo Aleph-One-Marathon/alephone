@@ -79,7 +79,7 @@ running backwards shouldnÕt mean doom in a fistfight
 /* ---------- private prototypes */
 
 static struct physics_constants *get_physics_constants_for_model(short physics_model, long action_flags);
-static void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, boolean first_time);
+static void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time);
 static void physics_update(struct physics_constants *constants, struct physics_variables *variables, struct player_data *player, long action_flags);
 
 /* ---------- globals */
@@ -94,7 +94,7 @@ static void physics_update(struct physics_constants *constants, struct physics_v
 static world_point3d *saved_points;
 static angle *saved_thetas;
 static short saved_point_count, saved_point_iterations= 0;
-static boolean saved_divergence_warning;
+static bool saved_divergence_warning;
 #endif
 
 /* every other field in the player structure should be valid when this call is made */
@@ -135,7 +135,7 @@ void initialize_player_physics_variables(
 
 	/* setup shadow variables in player_data structure */
 	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0),
-		&player->variables, player_index, TRUE);
+		&player->variables, player_index, true);
 
 #ifdef OBSOLETE
 	/* tell our absolute positioning device that our attitude was just reset, and that it should
@@ -151,7 +151,7 @@ void initialize_player_physics_variables(
 	}
 	saved_point_count= 0;
 	saved_point_iterations+= 1;
-	saved_divergence_warning= FALSE;
+	saved_divergence_warning= false;
 #endif
 
 	return;
@@ -166,7 +166,7 @@ void update_player_physics_variables(
 	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, action_flags);
 	
 	physics_update(constants, variables, player, action_flags);
-	instantiate_physics_variables(constants, variables, player_index, FALSE);
+	instantiate_physics_variables(constants, variables, player_index, false);
 
 #ifdef DIVERGENCE_CHECK
 	if (saved_point_count<SAVED_POINT_COUNT)
@@ -187,7 +187,7 @@ void update_player_physics_variables(
 			{
 				dprintf("divergence @ tick %d: (%d,%d,%d,%d)!=(%d,%d,%d,%d)", saved_point_count,
 					q->x, q->y, q->z, *facing, p.x, p.y, p.z, object->facing);
-				saved_divergence_warning= TRUE;
+				saved_divergence_warning= true;
 			}
 		}
 		
@@ -234,7 +234,6 @@ void accelerate_player(
 	struct player_data *player= get_player_data(player_index);
 	struct physics_variables *variables= &player->variables;
 	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, 0);
-	fixed new_external_velocity= WORLD_TO_FIXED(velocity);
 
 	variables->external_velocity.k+= WORLD_TO_FIXED(vertical_velocity);
 	variables->external_velocity.k= PIN(variables->external_velocity.k, -constants->terminal_velocity, constants->terminal_velocity);
@@ -266,7 +265,6 @@ long mask_in_absolute_positioning_information(
 	fixed delta_position)
 {
 	struct physics_variables *variables= &local_player->variables;
-	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, action_flags);
 	short encoded_delta;
 
 	if ((delta_yaw||variables->angular_velocity) && !(action_flags&_override_absolute_yaw))
@@ -372,7 +370,7 @@ void instantiate_absolute_positioning_information(
 
 	variables->direction= facing;
 
-	instantiate_physics_variables(constants, variables, player_index, FALSE);
+	instantiate_physics_variables(constants, variables, player_index, false);
 	
 	return;
 }
@@ -464,7 +462,7 @@ static void instantiate_physics_variables(
 	struct physics_constants *constants,
 	struct physics_variables *variables,
 	short player_index,
-	boolean first_time)
+	bool first_time)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct monster_data *monster= get_monster_data(player->monster_index);
@@ -473,7 +471,7 @@ static void instantiate_physics_variables(
 	short old_polygon_index= legs->polygon;
 	world_point3d new_location;
 	world_distance adjusted_floor_height, adjusted_ceiling_height, object_floor;
-	boolean clipped;
+	bool clipped;
 	fixed step_height;
 	angle facing, elevation;
 	fixed fixed_facing;
@@ -496,7 +494,7 @@ static void instantiate_physics_variables(
 
 	/* check for 2d collisions with solid objects and knock the player back out of the object.
 		ONLY MODIFY THE PLAYERÕS FIXED_POINT3D POSITION IF WE HAD A COLLISION. */
-	object_floor= SHORT_MIN;
+	object_floor= INT16_MIN;
 	{
 		short obstruction_index= legal_player_move(player->monster_index, &new_location, &object_floor);
 		
@@ -510,7 +508,7 @@ static void instantiate_physics_variables(
 					bump_monster(player->monster_index, object->permutation);
 				case _object_is_scenery:
 					new_location.x= legs->location.x, new_location.y= legs->location.y;
-					clipped= TRUE;
+					clipped= true;
 					break;
 				
 				default:
@@ -524,7 +522,7 @@ static void instantiate_physics_variables(
 	/* translate_map_object will handle crossing polygon boundaries */
 	if (translate_map_object(monster->object_index, &new_location, NONE))
 	{
-		if (old_polygon_index==legs->polygon) clipped= TRUE; /* oops; trans_map_obj destructively changed our position */
+		if (old_polygon_index==legs->polygon) clipped= true; /* oops; trans_map_obj destructively changed our position */
 		monster_moved(player->monster_index, old_polygon_index);
 	}
 
@@ -568,11 +566,11 @@ static void instantiate_physics_variables(
 		short media_index= get_polygon_data(legs->polygon)->media_index;
 		// LP change: idiot-proofing
 		media_data *media = get_media_data(media_index);
-		world_distance media_height= (media_index==NONE || !media) ? SHORT_MIN : media->height;
-		// world_distance media_height= media_index==NONE ? SHORT_MIN : get_media_data(media_index)->height;
+		world_distance media_height= (media_index==NONE || !media) ? INT16_MIN : media->height;
+		// world_distance media_height= media_index==NONE ? INT16_MIN : get_media_data(media_index)->height;
 
-		if (player->location.z<media_height) variables->flags|= _FEET_BELOW_MEDIA_BIT; else variables->flags&= (word)~_FEET_BELOW_MEDIA_BIT;
-		if (player->camera_location.z<media_height) variables->flags|= _HEAD_BELOW_MEDIA_BIT; else variables->flags&= (word)~_HEAD_BELOW_MEDIA_BIT;
+		if (player->location.z<media_height) variables->flags|= _FEET_BELOW_MEDIA_BIT; else variables->flags&= (uint16)~_FEET_BELOW_MEDIA_BIT;
+		if (player->camera_location.z<media_height) variables->flags|= _HEAD_BELOW_MEDIA_BIT; else variables->flags&= (uint16)~_HEAD_BELOW_MEDIA_BIT;
 	}
 
 	// so our sounds come from the right place
@@ -827,7 +825,7 @@ static void physics_update(
 		if ((variables->elevation<=0&&(action_flags&_looking_down))||(variables->elevation>=0&&(action_flags&_looking_up)))
 		{
 			variables->elevation= variables->vertical_angular_velocity= 0;
-			variables->flags&= (word)~_RECENTERING_BIT;
+			variables->flags&= (uint16)~_RECENTERING_BIT;
 		}
 	}
 
@@ -845,8 +843,8 @@ static void physics_update(
 	
 	/* set above/below floor flags, remember old flags */
 	variables->old_flags= variables->flags;
-	if (new_position.z<variables->floor_height) variables->flags|= _BELOW_GROUND_BIT; else variables->flags&= (word)~_BELOW_GROUND_BIT;
-	if (new_position.z>variables->floor_height) variables->flags|= _ABOVE_GROUND_BIT; else variables->flags&= (word)~_ABOVE_GROUND_BIT;
+	if (new_position.z<variables->floor_height) variables->flags|= _BELOW_GROUND_BIT; else variables->flags&= (uint16)~_BELOW_GROUND_BIT;
+	if (new_position.z>variables->floor_height) variables->flags|= _ABOVE_GROUND_BIT; else variables->flags&= (uint16)~_ABOVE_GROUND_BIT;
 
 	/* if we just landed on the ground, or we just came up through the ground, absorb some of
 		the playerÕs external_velocity.k (and in the case of hitting the ground, reflect it) */
@@ -903,7 +901,7 @@ static void physics_update(
 	/* if the player is moving, adjust step_phase by step_delta (if the player isnÕt moving
 		continue to adjust step_phase until it is zero)  if the player is in the air, donÕt
 		update phase until he lands. */
-	variables->flags&= (word)~_STEP_PERIOD_BIT;
+	variables->flags&= (uint16)~_STEP_PERIOD_BIT;
 	variables->step_amplitude= (MAX(ABS(variables->velocity), ABS(variables->perpendicular_velocity))*FIXED_ONE)/constants->maximum_forward_velocity;
 	if (delta_z>=0)
 	{

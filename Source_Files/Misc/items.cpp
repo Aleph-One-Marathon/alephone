@@ -55,6 +55,7 @@ Aug 10, 2000 (Loren Petrich):
 
 // LP addition: for the XML stuff
 #include <string.h>
+#include <limits.h>
 #include "ShapesParser.h"
 
 //CP addition: Scripting Hooks
@@ -94,9 +95,9 @@ struct item_definition *get_item_definition(short type);
 #endif
 */
 
-static boolean get_item(short player_index, short object_index);
+static bool get_item(short player_index, short object_index);
 
-static boolean test_item_retrieval(short polygon_index1, world_point3d *location1, world_point3d *location2);
+static bool test_item_retrieval(short polygon_index1, world_point3d *location1, world_point3d *location2);
 
 static long item_trigger_cost_function(short source_polygon_index, short line_index,
 	short destination_polygon_index, void *unused);
@@ -110,21 +111,21 @@ short new_item(
 	short object_index;
 	struct item_definition *definition= get_item_definition(type);
 	// LP change: added idiot-proofing
-	if (!definition) return FALSE;
+	if (!definition) return false;
 	
-	boolean add_item= TRUE;
+	bool add_item= true;
 
 	assert(sizeof(item_definitions)/sizeof(struct item_definition)==NUMBER_OF_DEFINED_ITEMS);
 
 	/* Do NOT add items that are network-only in a single player game, and vice-versa */
 	if (dynamic_world->player_count>1)
 	{
-		if (definition->invalid_environments & _environment_network) add_item= FALSE;
-		if (get_item_kind(type)==_ball && !current_game_has_balls()) add_item= FALSE;
+		if (definition->invalid_environments & _environment_network) add_item= false;
+		if (get_item_kind(type)==_ball && !current_game_has_balls()) add_item= false;
 	} 
 	else
 	{
-		if (definition->invalid_environments & _environment_single_player) add_item= FALSE;
+		if (definition->invalid_environments & _environment_single_player) add_item= false;
 	}
 
 	if (add_item)
@@ -146,7 +147,7 @@ short new_item(
 			if ((location->flags&_map_object_is_network_only) && dynamic_world->player_count<=1)
 			{
 //				dprintf("killed #%d;g;", type);
-				SET_OBJECT_INVISIBILITY(object, TRUE);
+				SET_OBJECT_INVISIBILITY(object, true);
 				object->permutation= NONE;
 			}
 			
@@ -168,7 +169,6 @@ void trigger_nearby_items(
 	polygon_index= flood_map(polygon_index, LONG_MAX, item_trigger_cost_function, _breadth_first, (void *) NULL);
 	while (polygon_index!=NONE)
 	{
-		struct polygon_data *polygon= get_polygon_data(polygon_index);
 		struct object_data *object;
 		short object_index;
 
@@ -214,7 +214,7 @@ short find_player_ball_color(
 void get_item_name(
 	char *buffer,
 	short item_id,
-	boolean plural)
+	bool plural)
 {
 	struct item_definition *definition= get_item_definition(item_id);
 	// LP change: added idiot-proofing
@@ -277,14 +277,14 @@ short count_inventory_lines(
 	short player_index)
 {
 	struct player_data *player= get_player_data(player_index);
-	boolean types[NUMBER_OF_ITEM_TYPES];
+	bool types[NUMBER_OF_ITEM_TYPES];
 	short count= 0;
 	short loop;
 	
 	/* Clean out the header array, so we can count properly */
 	for(loop=0; loop<NUMBER_OF_ITEM_TYPES; ++loop)
 	{
-		types[loop]= FALSE;
+		types[loop]= false;
 	}
 	
 	for(loop=0; loop<NUMBER_OF_DEFINED_ITEMS; ++loop)
@@ -293,7 +293,7 @@ short count_inventory_lines(
 		if (player->items[loop] != NONE)
 		{
 			count++;
-			types[get_item_kind(loop)]= TRUE;
+			types[get_item_kind(loop)]= true;
 		}
 	}
 	
@@ -387,17 +387,17 @@ void swipe_nearby_items(
 }
 
 void mark_item_collections(
-	boolean loading)
+	bool loading)
 {
 	mark_collection(_collection_items, loading);
 	
 	return;
 }
 
-boolean unretrieved_items_on_map(
+bool unretrieved_items_on_map(
 	void)
 {
-	boolean found_item= FALSE;
+	bool found_item= false;
 	struct object_data *object;
 	short object_index;
 	
@@ -407,7 +407,7 @@ boolean unretrieved_items_on_map(
 		{
 			if (get_item_kind(object->permutation)==_item)
 			{
-				found_item= TRUE;
+				found_item= true;
 				break;
 			}
 		}
@@ -416,17 +416,17 @@ boolean unretrieved_items_on_map(
 	return found_item;
 }
 
-boolean item_valid_in_current_environment(
+bool item_valid_in_current_environment(
 	short item_type)
 {
-	boolean valid= TRUE;
+	bool valid= true;
 	struct item_definition *definition= get_item_definition(item_type);
 	// LP change: added idiot-proofing
-	if (!definition) return FALSE;
+	if (!definition) return false;
 	
 	if (definition->invalid_environments & static_world->environment_flags)
 	{
-		valid= FALSE;
+		valid= false;
 	}
 	
 	return valid;
@@ -452,7 +452,7 @@ short get_item_shape(
 	return definition->base_shape;
 }
 
-boolean try_and_add_player_item(
+bool try_and_add_player_item(
 	short player_index,
 	short type) 
 {
@@ -462,7 +462,7 @@ boolean try_and_add_player_item(
 	
 	struct player_data *player= get_player_data(player_index);
 	short grabbed_sound_index= NONE;
-	boolean success= FALSE;
+	bool success= false;
 
 	switch (definition->item_kind)
 	{
@@ -472,7 +472,7 @@ boolean try_and_add_player_item(
 				process_player_powerup(player_index, type);
 				object_was_just_destroyed(_object_is_item, type);
 				grabbed_sound_index= _snd_got_powerup;
-				success= TRUE;
+				success= true;
 			}
 			break;
 		
@@ -493,7 +493,7 @@ boolean try_and_add_player_item(
 					{
 						object_was_just_destroyed(_object_is_item, type);
 						grabbed_sound_index= _snd_got_item;
-						success= TRUE;
+						success= true;
 						goto DONE;
 					}
 				}
@@ -508,7 +508,7 @@ boolean try_and_add_player_item(
 				/* Tell the interface to redraw next time it has to */
 				mark_player_inventory_as_dirty(player_index, type);
 				
-				success= TRUE;
+				success= true;
 			}
 			grabbed_sound_index= NONE;
 			break;
@@ -523,14 +523,14 @@ boolean try_and_add_player_item(
 			{
 				/* just got the first one.. */
 				player->items[type]= 1;
-				success= TRUE;
+				success= true;
 			} 
 			else if(player->items[type]+1<=definition->maximum_count_per_player ||
 				(dynamic_world->game_information.difficulty_level==_total_carnage_level && definition->item_kind==_ammunition))
 			{
 				/* Increment your count.. */
 				player->items[type]++;
-				success= TRUE;
+				success= true;
 			} else {
 				/* You have exceeded the count of these items */
 			}
@@ -595,20 +595,21 @@ static long item_trigger_cost_function(
 //	struct line_data *line= get_line_data(line_index);
 	long cost= 1;
 	
-	(void) (unused,source_polygon_index,line_index);
+	(void) (unused);
+	(void) (source_polygon_index);
+	(void) (line_index);
 
 	if (destination_polygon->type==_polygon_is_zone_border) cost= -1;
 	
 	return cost;
 }
 
-static boolean get_item(
+static bool get_item(
 	short player_index,
 	short object_index) 
 {
-	struct player_data *player= get_player_data(player_index);
 	struct object_data *object= get_object_data(object_index);	
-	boolean success;
+	bool success;
 
 	assert(GET_OBJECT_OWNER(object)==_object_is_item);
 	
@@ -622,12 +623,12 @@ static boolean get_item(
 	return success;
 }
 
-static boolean test_item_retrieval(
+static bool test_item_retrieval(
 	short polygon_index1,
 	world_point3d *location1,
 	world_point3d *location2)
 {
-	boolean valid_retrieval= TRUE;
+	bool valid_retrieval= true;
 	short polygon_index= polygon_index1;
 
 	do
@@ -638,7 +639,7 @@ static boolean test_item_retrieval(
 		if (line_index!=NONE)
 		{
 			polygon_index= find_adjacent_polygon(polygon_index, line_index);
-			if (LINE_IS_SOLID(get_line_data(line_index))) valid_retrieval= FALSE;
+			if (LINE_IS_SOLID(get_line_data(line_index))) valid_retrieval= false;
 			if (polygon_index!=NONE)
 			{
 				struct polygon_data *polygon= get_polygon_data(polygon_index);
@@ -647,7 +648,7 @@ static boolean test_item_retrieval(
 				{
 					struct platform_data *platform= get_platform_data(polygon->permutation);
 					
-					if (PLATFORM_IS_MOVING(platform)) valid_retrieval= FALSE;
+					if (PLATFORM_IS_MOVING(platform)) valid_retrieval= false;
 				}
 			}
 		}
@@ -759,7 +760,7 @@ bool XML_ItemParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"maximum") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Data.maximum_count_per_player,short(0),short(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Data.maximum_count_per_player,short(0),short(SHRT_MAX)))
 		{
 			IsPresent[2] = true;
 			return true;

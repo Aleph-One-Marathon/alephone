@@ -175,7 +175,7 @@ bool OpenedResourceFile::Check(uint32 Type, int16 ID)
 {
 	Push();
 	
-	SetResLoad(FALSE);
+	SetResLoad(false);
 	Handle RsrcHandle = Get1Resource(Type,ID);
 	Err = ResError();
 	
@@ -187,7 +187,7 @@ bool OpenedResourceFile::Check(uint32 Type, int16 ID)
 		RsrcPresent = (Err == noErr);
 	}
 	
-	SetResLoad(TRUE);
+	SetResLoad(true);
 	
 	Pop();
 	return RsrcPresent;
@@ -199,7 +199,7 @@ bool OpenedResourceFile::Get(uint32 Type, int16 ID, LoadedResource& Rsrc)
 	
 	Push();
 	
-	SetResLoad(TRUE);
+	SetResLoad(true);
 	Handle RsrcHandle = Get1Resource(Type,ID);
 	Err = ResError();
 	
@@ -367,8 +367,8 @@ bool FileSpecifier::Create(int Type)
 // For resolving MacOS aliases:
 inline bool ResolveFile(FSSpec &Spec)
 {
-	Boolean IsFolder = FALSE, WasAliased = FALSE;
-	ResolveAliasFile(&Spec, TRUE, &IsFolder, &WasAliased);
+	Boolean IsFolder = false, WasAliased = false;
+	ResolveAliasFile(&Spec, true, &IsFolder, &WasAliased);
 	return (!IsFolder);
 }
 
@@ -384,8 +384,8 @@ bool FileSpecifier::Open(OpenedFile& OFile, bool Writable)
 	
 	if (!ResolveFile(Spec)) return false;
 	
-	Boolean IsFolder = FALSE, WasAliased = FALSE;
-	ResolveAliasFile(&Spec, TRUE, &IsFolder, &WasAliased);
+	Boolean IsFolder = false, WasAliased = false;
+	ResolveAliasFile(&Spec, true, &IsFolder, &WasAliased);
 	if (IsFolder) return false;
 
 	short RefNum;
@@ -483,13 +483,13 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 #define REPLACE_V_OFFSET 52
 
 /* Doesn't actually use it as an FSSpec, just easier */
-/* Return TRUE if we want to pass it through, otherwise return FALSE. */
-static boolean confirm_save_choice(
+/* Return true if we want to pass it through, otherwise return false. */
+static bool confirm_save_choice(
 	FSSpec *file)
 {
 	OSErr err;
 	HFileParam pb;
-	boolean pass_through= TRUE;
+	bool pass_through= true;
 	DialogPtr dialog;
 	short item_hit;
 	Rect frame;
@@ -499,7 +499,7 @@ static boolean confirm_save_choice(
 	pb.ioNamePtr= file->name;
 	pb.ioVRefNum= file->vRefNum;
 	pb.ioDirID= file->parID;
-	err= PBHGetFInfo((HParmBlkPtr) &pb, FALSE); 
+	err= PBHGetFInfo((HParmBlkPtr) &pb, false); 
 
 	if(!err)
 	{
@@ -520,7 +520,7 @@ static boolean confirm_save_choice(
 				
 				/* Move the window to the proper location.. */
 				MoveWindow((WindowPtr) dialog, frame.left+REPLACE_H_OFFSET, 
-					frame.top+REPLACE_V_OFFSET, FALSE);
+					frame.top+REPLACE_V_OFFSET, false);
 
 				/* Show the window. */
 				ShowWindow((WindowPtr) dialog);			
@@ -539,7 +539,7 @@ static boolean confirm_save_choice(
 					/* Pass it on through.. they won't bring up the replace now. */
 				} else {
 					/* They cancelled.. */
-					pass_through= FALSE;
+					pass_through= false;
 				}
 			}
 		}
@@ -667,7 +667,7 @@ bool FileSpecifier::GetFreeSpace(unsigned long& FreeSpace)
 	parms.volumeParam.ioNamePtr = ptemporary;
 	parms.volumeParam.ioVRefNum = Spec.vRefNum;
 	
-	Err = PBHGetVInfo(&parms, FALSE);
+	Err = PBHGetVInfo(&parms, false);
 	if (Err == noErr)
 		FreeSpace = 
 			((unsigned long) parms.volumeParam.ioVAlBlkSiz) *

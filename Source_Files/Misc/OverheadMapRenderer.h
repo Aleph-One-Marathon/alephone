@@ -314,6 +314,9 @@ public:
 	
 	// Constructor (idiot-proofer)
 	OverheadMapClass(): ConfigPtr(NULL) {}
+
+	// Destructor
+	virtual ~OverheadMapClass() {}
 };
 
 

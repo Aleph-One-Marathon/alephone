@@ -12,6 +12,8 @@
 #include "player.h"
 #include "ChaseCam.h"
 
+#include <limits.h>
+
 // Chase-cam state globals
 static bool _ChaseCam_IsActive = false;
 static bool _ChaseCam_IsReset = true;
@@ -126,12 +128,12 @@ bool ChaseCam_Update()
 	translate_point2d((world_point2d *)&CC_Position,ChaseCam.Rightward,NORMALIZE_ANGLE(CC_Yaw+QUARTER_CIRCLE));
 	
 	// Prevent short-integer wraparound
-	const short HALF_SHORT_MIN = SHORT_MIN >> 1;
-	const short HALF_SHORT_MAX = SHORT_MAX >> 1;
-	if (Ref_Position.x >= HALF_SHORT_MAX && CC_Position.x < HALF_SHORT_MIN) CC_Position.x = SHORT_MAX;
-	if (Ref_Position.x < HALF_SHORT_MIN && CC_Position.x >= HALF_SHORT_MAX) CC_Position.x = SHORT_MIN;
-	if (Ref_Position.y >= HALF_SHORT_MAX && CC_Position.y < HALF_SHORT_MIN) CC_Position.y = SHORT_MAX;
-	if (Ref_Position.y < HALF_SHORT_MIN && CC_Position.y >= HALF_SHORT_MAX) CC_Position.y = SHORT_MIN;
+	const short HALF_SHORT_MIN = SHRT_MIN >> 1;
+	const short HALF_SHORT_MAX = SHRT_MAX >> 1;
+	if (Ref_Position.x >= HALF_SHORT_MAX && CC_Position.x < HALF_SHORT_MIN) CC_Position.x = SHRT_MAX;
+	if (Ref_Position.x < HALF_SHORT_MIN && CC_Position.x >= HALF_SHORT_MAX) CC_Position.x = SHRT_MIN;
+	if (Ref_Position.y >= HALF_SHORT_MAX && CC_Position.y < HALF_SHORT_MIN) CC_Position.y = SHRT_MAX;
+	if (Ref_Position.y < HALF_SHORT_MIN && CC_Position.y >= HALF_SHORT_MAX) CC_Position.y = SHRT_MIN;
 	
 	// Can the camera go through walls?
 	// If it can, then go back as far as possible through polygons,

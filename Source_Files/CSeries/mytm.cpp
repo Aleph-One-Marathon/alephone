@@ -20,7 +20,7 @@ struct myTMTask {
 #ifdef env68k
 	long a5;
 #endif
-	boolean (*func)(void);
+	bool (*func)(void);
 	long time;
 	Boolean insX;
 	Boolean primed;
@@ -61,7 +61,7 @@ static RoutineDescriptor timer_desc =
 
 myTMTaskPtr myTMSetup(
 	long time,
-	boolean (*func)(void))
+	bool (*func)(void))
 {
 	myTMTaskPtr result;
 
@@ -85,7 +85,7 @@ myTMTaskPtr myTMSetup(
 
 myTMTaskPtr myXTMSetup(
 	long time,
-	boolean (*func)(void))
+	bool (*func)(void))
 {
 	myTMTaskPtr result;
 

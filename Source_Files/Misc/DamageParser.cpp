@@ -12,6 +12,7 @@
 #include "DamageParser.h"
 
 #include <string.h>
+#include <limits.h>
 
 
 // Damage-parser object:
@@ -62,7 +63,7 @@ bool XML_DamageParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"scale") == 0)
 	{
 		float Scale;
-		if (ReadBoundedNumericalValue(Value,"%f",Scale,float(SHORT_MIN),float(SHORT_MAX+1)))
+		if (ReadBoundedNumericalValue(Value,"%f",Scale,float(SHRT_MIN),float(SHRT_MAX+1)))
 		{
 			if (Scale >= 0)
 				DamagePtr->scale = long(FIXED_ONE*Scale + 0.5);

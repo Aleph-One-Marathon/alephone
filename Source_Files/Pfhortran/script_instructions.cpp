@@ -48,7 +48,7 @@ typedef float GLfloat;
 /*extern'd references to the rest of the mara code */
  
 extern struct view_data *world_view;
-extern boolean ready_weapon(short player_index, short weapon_index);
+extern bool ready_weapon(short player_index, short weapon_index);
 extern void draw_panels(void);
 extern struct monster_data *get_monster_data(short monster_index);
 
@@ -734,7 +734,7 @@ void s_Get_Tag_State(script_instruction inst)
 	struct platform_data *platform;
 	short platform_index;
 	
-	boolean changed= FALSE;
+	bool changed= false;
 	float temp,temp2;
 	int tag;
 	
@@ -766,7 +766,7 @@ void s_Get_Tag_State(script_instruction inst)
 		{
 			if (get_light_status(light_index))
 			{
-				changed= TRUE;
+				changed= true;
 			}
 		}
 	}
@@ -780,7 +780,7 @@ void s_Get_Tag_State(script_instruction inst)
 			{
 				if (PLATFORM_IS_ACTIVE(platform))
 				{
-					changed= TRUE;
+					changed= true;
 				}
 			}
 		}
@@ -1838,13 +1838,13 @@ void s_Teleport_Player(script_instruction inst)
 	
 	
 	
-	SET_PLAYER_TELEPORTING_STATUS(current_player, TRUE);
+	SET_PLAYER_TELEPORTING_STATUS(current_player, true);
 	monster->action= _monster_is_teleporting;
 	current_player->teleporting_phase= 0;
 	current_player->delay_before_teleport= 0;
 	
 	current_player->teleporting_destination= dest;
-	start_teleporting_effect(TRUE);
+	start_teleporting_effect(true);
 	play_object_sound(current_player->object_index, _snd_teleport_out);
 }
 

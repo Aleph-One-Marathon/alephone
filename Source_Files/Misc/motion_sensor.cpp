@@ -128,7 +128,7 @@ static short MonsterDisplays[NUMBER_OF_MONSTER_TYPES] =
 
 #define MOTION_SENSOR_RANGE (8*WORLD_ONE)
 
-#define OBJECT_IS_VISIBLE_TO_MOTION_SENSOR(o) TRUE
+#define OBJECT_IS_VISIBLE_TO_MOTION_SENSOR(o) true
 
 #define MOTION_SENSOR_SCALE 7
 
@@ -140,12 +140,12 @@ static short MonsterDisplays[NUMBER_OF_MONSTER_TYPES] =
 	mark him as Ôbeing removedÕ and wait until his last signal fades away to actually remove
 	him */
 #define SLOT_IS_BEING_REMOVED_BIT 0x4000
-#define SLOT_IS_BEING_REMOVED(e) ((e)->flags&(word)SLOT_IS_BEING_REMOVED_BIT)
-#define MARK_SLOT_AS_BEING_REMOVED(e) ((e)->flags|=(word)SLOT_IS_BEING_REMOVED_BIT)
+#define SLOT_IS_BEING_REMOVED(e) ((e)->flags&(uint16)SLOT_IS_BEING_REMOVED_BIT)
+#define MARK_SLOT_AS_BEING_REMOVED(e) ((e)->flags|=(uint16)SLOT_IS_BEING_REMOVED_BIT)
 
 struct entity_data
 {
-	word flags; /* [slot_used.1] [slot_being_removed.1] [unused.14] */
+	uint16 flags; /* [slot_used.1] [slot_being_removed.1] [unused.14] */
 	
 	short monster_index;
 	shape_descriptor shape;
@@ -153,7 +153,7 @@ struct entity_data
 	short remove_delay; /* only valid if this entity is being removed [0,NUMBER_OF_PREVIOUS_LOCATIONS) */
 	
 	point2d previous_points[NUMBER_OF_PREVIOUS_LOCATIONS];
-	boolean visible_flags[NUMBER_OF_PREVIOUS_LOCATIONS];
+	bool visible_flags[NUMBER_OF_PREVIOUS_LOCATIONS];
 	
 	world_point3d last_location;
 	angle last_facing;
@@ -177,7 +177,7 @@ static short network_compass_state;
 static shape_descriptor mount_shape, virgin_mount_shapes, compass_shapes;
 static shape_descriptor alien_shapes, friendly_shapes, enemy_shapes;
 
-static boolean motion_sensor_changed;
+static bool motion_sensor_changed;
 static long ticks_since_last_update, ticks_since_last_rescan;
 
 /* ---------- private code */
@@ -192,7 +192,7 @@ static void draw_all_entity_blips(void);
 
 static void erase_entity_blip(point2d *location, shape_descriptor shape);
 static void draw_entity_blip(point2d *location, shape_descriptor shape);
-static void draw_or_erase_unclipped_shape(short x, short y, shape_descriptor shape, boolean draw);
+static void draw_or_erase_unclipped_shape(short x, short y, shape_descriptor shape, bool draw);
 
 static shape_descriptor get_motion_sensor_entity_shape(short monster_index);
 
@@ -300,19 +300,19 @@ void motion_sensor_scan(
 		draw_all_entity_blips();
 		
 		ticks_since_last_update= MOTION_SENSOR_UPDATE_FREQUENCY;
-		motion_sensor_changed= TRUE;
+		motion_sensor_changed= true;
 	}
 	
 	return;
 }
 
-/* the interface code will call this function and only draw the motion sensor if we return TRUE */
-boolean motion_sensor_has_changed(
+/* the interface code will call this function and only draw the motion sensor if we return true */
+bool motion_sensor_has_changed(
 	void)
 {
-	boolean changed= motion_sensor_changed;
+	bool changed= motion_sensor_changed;
 	
-	if (changed) motion_sensor_changed= FALSE;
+	if (changed) motion_sensor_changed= false;
 	
 	return changed;
 }
@@ -382,9 +382,9 @@ static void erase_all_entity_blips(
 			if (entity->visible_flags[NUMBER_OF_PREVIOUS_LOCATIONS-1]) erase_entity_blip(&entity->previous_points[NUMBER_OF_PREVIOUS_LOCATIONS-1], entity->shape);
 
 			/* adjust the arrays to make room for new entries */			
-			memmove(entity->visible_flags+1, entity->visible_flags, (NUMBER_OF_PREVIOUS_LOCATIONS-1)*sizeof(boolean));
+			memmove(entity->visible_flags+1, entity->visible_flags, (NUMBER_OF_PREVIOUS_LOCATIONS-1)*sizeof(bool));
 			memmove(entity->previous_points+1, entity->previous_points, (NUMBER_OF_PREVIOUS_LOCATIONS-1)*sizeof(point2d));
-			entity->visible_flags[0]= FALSE;
+			entity->visible_flags[0]= false;
 				
 			/* if weÕre not being removed, make room for a new location and calculate it */
 			if (!SLOT_IS_BEING_REMOVED(entity))
@@ -399,7 +399,7 @@ static void erase_all_entity_blips(
 					if (object->location.x!=entity->last_location.x || object->location.y!=entity->last_location.y ||
 						object->location.z!=entity->last_location.z || object->facing!=entity->last_facing)
 					{
-						entity->visible_flags[0]= TRUE;
+						entity->visible_flags[0]= true;
 	
 						entity->last_location= object->location;
 						entity->last_facing= object->facing;
@@ -456,7 +456,7 @@ static void draw_or_erase_unclipped_shape(
 	short x,
 	short y,
 	shape_descriptor shape,
-	boolean draw)
+	bool draw)
 {
 	struct bitmap_definition *mount, *virgin_mount, *blip;
 
@@ -543,7 +543,7 @@ static short find_or_add_motion_sensor_entity(
 			entity->flags= 0;
 			entity->monster_index= monster_index;
 			entity->shape= get_motion_sensor_entity_shape(monster_index);
-			for (i=0;i<NUMBER_OF_PREVIOUS_LOCATIONS;++i) entity->visible_flags[i]= FALSE;
+			for (i=0;i<NUMBER_OF_PREVIOUS_LOCATIONS;++i) entity->visible_flags[i]= false;
 			entity->last_location= object->location;
 			entity->last_facing= object->facing;
 			entity->remove_delay= 0;

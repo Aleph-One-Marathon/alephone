@@ -39,7 +39,7 @@ enum /* cast_render_ray(), next_polygon_along_line() biases */
 
 
 // Turned a preprocessor macro into an inline function
-inline void INITIALIZE_NODE(node_data *node, short node_polygon_index, word node_flags,
+inline void INITIALIZE_NODE(node_data *node, short node_polygon_index, uint16 node_flags,
 	node_data *node_parent, node_data **node_reference)
 {
 	node->flags= node_flags;
@@ -60,8 +60,8 @@ inline void INITIALIZE_NODE(node_data *node, short node_polygon_index, word node
 // Inits everything
 RenderVisTreeClass::RenderVisTreeClass():
 	PolygonQueue(POLYGON_QUEUE_SIZE),
-	LineClips(MAXIMUM_LINE_CLIPS),
 	EndpointClips(MAXIMUM_ENDPOINT_CLIPS),
+	LineClips(MAXIMUM_LINE_CLIPS),
 	ClippingWindows(MAXIMUM_CLIPPING_WINDOWS),
 	Nodes(MAXIMUM_NODES),
 	view(NULL)	// Idiot-proofing
@@ -161,7 +161,7 @@ void RenderVisTreeClass::build_render_tree()
 					long x= view->half_screen_width + (transformed_endpoint.j*view->world_to_screen_x)/transformed_endpoint.i;
 					// long x= view->half_screen_width + (endpoint->transformed.y*view->world_to_screen_x)/endpoint->transformed.x;
 					
-					endpoint_x_coordinates[endpoint_index]= PIN(x, SHORT_MIN, SHORT_MAX);
+					endpoint_x_coordinates[endpoint_index]= PIN(x, INT16_MIN, INT16_MAX);
 					SET_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed);
 				}
 				
@@ -199,7 +199,7 @@ void RenderVisTreeClass::cast_render_ray(
 	{
 		short clipping_endpoint_index= endpoint_index;
 		short clipping_line_index;
-		word clip_flags= next_polygon_along_line(&polygon_index, (world_point2d *) &view->origin, vector, &clipping_endpoint_index, &clipping_line_index, bias);
+		uint16 clip_flags= next_polygon_along_line(&polygon_index, (world_point2d *) &view->origin, vector, &clipping_endpoint_index, &clipping_line_index, bias);
 		
 		if (polygon_index==NONE)
 		{
@@ -373,7 +373,7 @@ void RenderVisTreeClass::initialize_polygon_queue()
 
 
 // LP change: make it better able to do long-distance views
-word RenderVisTreeClass::next_polygon_along_line(
+uint16 RenderVisTreeClass::next_polygon_along_line(
 	short *polygon_index,
 	world_point2d *origin, /* not necessairly in polygon_index */
 	long_vector2d *vector, // world_vector2d *vector,
@@ -383,9 +383,9 @@ word RenderVisTreeClass::next_polygon_along_line(
 {
 	polygon_data *polygon= get_polygon_data(*polygon_index);
 	short next_polygon_index, crossed_line_index, crossed_side_index;
-	boolean passed_through_solid_vertex= FALSE;
+	bool passed_through_solid_vertex= false;
 	short vertex_index, vertex_delta;
-	word clip_flags= 0;
+	uint16 clip_flags= 0;
 	short state;
 
 	ADD_POLYGON_TO_AUTOMAP(*polygon_index);
@@ -446,7 +446,7 @@ word RenderVisTreeClass::next_polygon_along_line(
 			case 0: /* endpoint lies directly on our vector */
 				if (state!=_looking_for_first_nonzero_vertex)
 				{
-					if (endpoint_index==*clipping_endpoint_index) passed_through_solid_vertex= TRUE;
+					if (endpoint_index==*clipping_endpoint_index) passed_through_solid_vertex= true;
 					
 					/* if we think we know what’s on the other side of this zero (these zeros)
 						change the state: if we don’t find what we’re looking for then the polygon
@@ -548,14 +548,14 @@ word RenderVisTreeClass::next_polygon_along_line(
 }
 
 // LP change: make it better able to do long-distance views
-word RenderVisTreeClass::decide_where_vertex_leads(
+uint16 RenderVisTreeClass::decide_where_vertex_leads(
 	short *polygon_index,
 	short *line_index,
 	short *side_index,
 	short endpoint_index_in_polygon_list,
 	world_point2d *origin,
 	long_vector2d *vector, // world_vector2d *vector,
-	word clip_flags,
+	uint16 clip_flags,
 	short bias)
 {
 	polygon_data *polygon= get_polygon_data(*polygon_index);
@@ -723,7 +723,7 @@ void RenderVisTreeClass::initialize_clip_data()
 
 void RenderVisTreeClass::calculate_line_clipping_information(
 	short line_index,
-	word clip_flags)
+	uint16 clip_flags)
 {
 	// LP addition: extend the line-clip list
 	assert(LineClips.Add());
@@ -742,7 +742,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	/* it’s possible (in fact, likely) that this line’s endpoints have not been transformed yet,
 		so we have to do it ourselves */
 	// LP change: making the operation long-distance friendly
-	word p0_flags = 0, p1_flags = 0;
+	uint16 p0_flags = 0, p1_flags = 0;
 	transform_overflow_point2d(&p0_orig, (world_point2d *) &view->origin, view->yaw, &p0_flags);
 	transform_overflow_point2d(&p1_orig, (world_point2d *) &view->origin, view->yaw, &p1_flags);
 	/*
@@ -848,7 +848,7 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	information for endpoints we’re aiming at, and we transform endpoints before firing at them */
 short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	short endpoint_index,
-	word clip_flags)
+	uint16 clip_flags)
 {
 	// LP addition: extend the endpoint-clip list
 	assert(EndpointClips.Add());

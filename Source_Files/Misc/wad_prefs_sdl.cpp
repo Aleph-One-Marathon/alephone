@@ -15,7 +15,7 @@
  *  Show preferences dialog
  */
 
-boolean set_preferences(struct preferences_dialog_data *funcs, short count, void (*reload_function)(void))
+bool set_preferences(struct preferences_dialog_data *funcs, short count, void (*reload_function)(void))
 {
 	printf("*** set_preferences(), count %d\n", count);
 	//!!

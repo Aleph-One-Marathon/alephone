@@ -434,20 +434,19 @@ void _sound_add_ambient_sources_proc(void *data, add_ambient_sound_source_proc_p
 
 void initialize_sound_manager(struct sound_manager_parameters *parameters);
 void default_sound_manager_parameters(void *prefs);
-boolean verify_sound_manager_parameters(struct sound_manager_parameters *parameters);
+bool verify_sound_manager_parameters(struct sound_manager_parameters *parameters);
 void set_sound_manager_parameters(struct sound_manager_parameters *parameters);
-void set_sound_manager_status(boolean status);
 
 uint16 available_sound_manager_flags(uint16 flags);
 
-boolean adjust_sound_volume_up(struct sound_manager_parameters *parameters, short sound_index);
-boolean adjust_sound_volume_down(struct sound_manager_parameters *parameters, short sound_index);
+bool adjust_sound_volume_up(struct sound_manager_parameters *parameters, short sound_index);
+bool adjust_sound_volume_down(struct sound_manager_parameters *parameters, short sound_index);
 void test_sound_volume(short volume, short sound_index);
 
 void load_sound(short sound_index);
 void load_sounds(short *sound_indexes, short count);
 
-boolean sound_is_playing(short sound_index);
+bool sound_is_playing(short sound_index);
 
 // direction can be NONE
 void direct_play_sound(short sound_index, angle direction, short volume, fixed pitch);

@@ -85,22 +85,22 @@ short new_item(struct object_location *location, short item_type);
 
 void calculate_player_item_array(short player_index, short type, short *items, short *counts, short *array_count);
 void get_header_name(char *buffer, short type);
-void get_item_name(char *buffer, short item_id, boolean plural);
-boolean new_item_in_random_location(short item_type);
+void get_item_name(char *buffer, short item_id, bool plural);
+bool new_item_in_random_location(short item_type);
 short count_inventory_lines(short player_index);
 void swipe_nearby_items(short player_index);
 
-void mark_item_collections(boolean loading);
+void mark_item_collections(bool loading);
 short get_item_kind(short item_id);
 
-boolean unretrieved_items_on_map(void);
-boolean item_valid_in_current_environment(short item_type);
+bool unretrieved_items_on_map(void);
+bool item_valid_in_current_environment(short item_type);
 
 void trigger_nearby_items(short polygon_index);
 short find_player_ball_color(short player_index); /* returns the color of the ball or NONE if they don't have one */
 
 short get_item_shape(short item_id);
-boolean try_and_add_player_item(short player_index, short type);
+bool try_and_add_player_item(short player_index, short type);
 
 /* Returns NONE if this player is not carrying a ball */
 short find_player_ball_color(short player_index);

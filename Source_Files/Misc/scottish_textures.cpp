@@ -94,6 +94,7 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 #include "Rasterizer_SW.h"
 
 #include <stdlib.h>
+#include <limits.h>
 
 
 #ifdef env68k
@@ -215,7 +216,7 @@ struct _vertical_polygon_line_data
 static short *scratch_table0, *scratch_table1;
 static void *precalculation_table;
 
-static word texture_random_seed= 1;
+static uint16 texture_random_seed= 1;
 
 /* ---------- private prototypes */
 
@@ -247,27 +248,27 @@ void _texture_vertical_polygon_lines8(struct bitmap_definition *screen, struct v
 void _transparent_texture_vertical_polygon_lines8(struct bitmap_definition *screen, struct view_data *view,
 	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
 void _tint_vertical_polygon_lines8(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, word transfer_data);
+	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
 void _randomize_vertical_polygon_lines8(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, word transfer_data);
+	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
 
 void _texture_vertical_polygon_lines16(struct bitmap_definition *screen, struct view_data *view,
 	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
 void _transparent_texture_vertical_polygon_lines16(struct bitmap_definition *screen, struct view_data *view,
 	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
 void _tint_vertical_polygon_lines16(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, word transfer_data);
+	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
 void _randomize_vertical_polygon_lines16(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, word transfer_data);
+	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
 
 void _texture_vertical_polygon_lines32(struct bitmap_definition *screen, struct view_data *view,
 	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
 void _transparent_texture_vertical_polygon_lines32(struct bitmap_definition *screen, struct view_data *view,
 	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
 void _tint_vertical_polygon_lines32(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, word transfer_data);
+	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
 void _randomize_vertical_polygon_lines32(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, word transfer_data);
+	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
 
 static short *build_x_table(short *table, short x0, short y0, short x1, short y1);
 static short *build_y_table(short *table, short x0, short y0, short x1, short y1);
@@ -807,7 +808,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 						{
 							// LP change:
 							// Made this more long-distance friendly
-							CALCULATE_SHADING_TABLE(shading_table, view, rectangle->shading_tables, (short)MIN(rectangle->depth, SHORT_MAX), rectangle->ambient_shade);
+							CALCULATE_SHADING_TABLE(shading_table, view, rectangle->shading_tables, (short)MIN(rectangle->depth, SHRT_MAX), rectangle->ambient_shade);
 							// CALCULATE_SHADING_TABLE(shading_table, view, rectangle->shading_tables, rectangle->depth, rectangle->ambient_shade);
 							break;
 						}
@@ -1049,7 +1050,7 @@ static void _pretexture_vertical_polygon_lines(
 			if (!adjusted_tx_denominator) adjusted_tx_denominator= 1; /* -1 will still be -1 */
 			x0= ((adjusted_tx_numerator<<VERTICAL_TEXTURE_WIDTH_BITS)/adjusted_tx_denominator)&(VERTICAL_TEXTURE_WIDTH-1);
 
-			while (adjusted_tx_numerator>SHORT_MAX||adjusted_tx_numerator<SHORT_MIN)
+			while (adjusted_tx_numerator>INT16_MAX||adjusted_tx_numerator<INT16_MIN)
 			{
 				adjusted_tx_numerator>>= 1, adjusted_tx_denominator>>= 1;
 			}
@@ -1063,7 +1064,7 @@ static void _pretexture_vertical_polygon_lines(
 		/* calculate and rescale ty_numerator, ty_denominator and calculate ty */
 		ty_numerator= world_x*screen_y0 - dz0;
 		ty_denominator= unadjusted_ty_denominator;
-		while (ty_numerator>SHORT_MAX||ty_numerator<SHORT_MIN)
+		while (ty_numerator>INT16_MAX||ty_numerator<INT16_MIN)
 		{
 			ty_numerator>>= 1, ty_denominator>>= 1;
 		}
@@ -1077,7 +1078,7 @@ static void _pretexture_vertical_polygon_lines(
 		long adjusted_ty_denominator = unadjusted_ty_denominator>>8;
 		
 		// LP: remember that world_x is always >= 0
-		while(adjusted_world_x > SHORT_MAX)
+		while(adjusted_world_x > INT16_MAX)
 		{
 			adjusted_world_x >>= 1; adjusted_ty_denominator >>= 1;
 		}
@@ -1094,7 +1095,7 @@ static void _pretexture_vertical_polygon_lines(
 		else
 		{
 			// LP change: made this more long-distance friendly
-			CALCULATE_SHADING_TABLE(line->shading_table, view, polygon->shading_tables, (short)MIN(world_x, SHORT_MAX), polygon->ambient_shade);
+			CALCULATE_SHADING_TABLE(line->shading_table, view, polygon->shading_tables, (short)MIN(world_x, SHRT_MAX), polygon->ambient_shade);
 			// CALCULATE_SHADING_TABLE(line->shading_table, view, polygon->shading_tables, world_x, polygon->ambient_shade);
 		}
 
@@ -1131,7 +1132,7 @@ static void _pretexture_horizontal_polygon_lines(
 	long hcosine, dhcosine;
 	long hsine, dhsine;
 	long hworld_to_screen;
-	boolean higher_precision= polygon->origin.z>-WORLD_ONE && polygon->origin.z<WORLD_ONE;
+	bool higher_precision= polygon->origin.z>-WORLD_ONE && polygon->origin.z<WORLD_ONE;
 
 	(void) (screen);
 	
@@ -1197,7 +1198,7 @@ static void _pretexture_horizontal_polygon_lines(
 		}
 		else
 		{
-			CALCULATE_SHADING_TABLE(data->shading_table, view, polygon->shading_tables, (short)MIN(depth, SHORT_MAX), polygon->ambient_shade);
+			CALCULATE_SHADING_TABLE(data->shading_table, view, polygon->shading_tables, (short)MIN(depth, SHRT_MAX), polygon->ambient_shade);
 		}
 		
 		data+= 1;
@@ -1411,7 +1412,7 @@ static short *build_distortion_table(
 	short destination,
 	short clip_low,
 	short clip_high,
-	boolean mirror)
+	bool mirror)
 {
 	register short i;
 	short count, source_coordinate;

@@ -51,7 +51,7 @@ enum { /* Cheat level dialog */
 
 /* -------- local prototypes */
 static void network_speaker_proc(void *buffer, short size, short player_index);
-static boolean machine_has_quicktime(void);
+static bool machine_has_quicktime(void);
 static void draw_picture_into_gworld(GWorldPtr gworld, PicHandle picture);
 
 /* -------- code */
@@ -76,7 +76,7 @@ void do_preferences(
 	}
 	else if (memcmp(&mode, &graphics_preferences->screen_mode, sizeof(struct screen_mode_data)))
 	{
-		change_screen_mode(&graphics_preferences->screen_mode, FALSE);
+		change_screen_mode(&graphics_preferences->screen_mode, false);
 	}
 	
 	return;
@@ -88,7 +88,7 @@ short get_level_number_from_user(
 	short index, item_hit, level_number, maximum_level_number;
 	DialogPtr dialog;
 	struct entry_point entry;
-	boolean done= FALSE;
+	bool done= false;
 	
 	index = 0; maximum_level_number= 0;
 	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point)) maximum_level_number++;
@@ -118,12 +118,12 @@ short get_level_number_from_user(
 					SysBeep(-1);
 				} else {
 					level_number-= 1; /* Make it zero based */
-					done= TRUE;
+					done= true;
 				}
 				break;
 				
 			case iCANCEL:
-				done= TRUE;
+				done= true;
 				level_number= NONE;
 				break;
 				
@@ -140,11 +140,11 @@ short get_level_number_from_user(
 }
 
 void toggle_menus(
-	boolean game_started)
+	bool game_started)
 {
 	MenuHandle menu_interface, menu_game;
 	short item;
-	static boolean first_time= TRUE;
+	static bool first_time= true;
 
 	/* First time, we insert the menus... */	
 	if(first_time)
@@ -164,7 +164,7 @@ void toggle_menus(
 		assert(menu);
 		InsertMenu(menu, -1);
 
-		first_time= FALSE;
+		first_time= false;
 	}
 	
 	menu_interface= GetMenuHandle(mInterface);
@@ -339,10 +339,10 @@ void process_game_key(
 	return;
 }	
 
-boolean try_for_event(
-	boolean *use_waitnext)
+bool try_for_event(
+	bool *use_waitnext)
 {
-	boolean try_for_event= FALSE;
+	bool try_for_event= false;
 	static long last_xnextevent_call= 0;
 	static short consecutive_getosevent_calls= 0;
 	
@@ -352,16 +352,16 @@ boolean try_for_event(
 		case _change_level:
 			if (TickCount()-last_xnextevent_call>=TICKS_BETWEEN_XNEXTEVENT_CALLS)
 			{
-				try_for_event= TRUE;
+				try_for_event= true;
 
 				if (suppress_background_events() && 
 					EmptyRgn(((WindowPeek)screen_window)->updateRgn)) 
 					// && consecutive_getosevent_calls<MAXIMUM_CONSECUTIVE_GETOSEVENT_CALLS)
 				{
-					*use_waitnext= FALSE;
+					*use_waitnext= false;
 					consecutive_getosevent_calls+= 1;
 				} else {
-					*use_waitnext= TRUE;
+					*use_waitnext= true;
 					consecutive_getosevent_calls= 0;
 				}
 		
@@ -380,15 +380,15 @@ boolean try_for_event(
 		case _display_quit_screens:
 		case _displaying_network_game_dialogs:
 			*use_waitnext= interface_fade_finished();
-			try_for_event= TRUE;
+			try_for_event= true;
 			break;
 			
 		case _quit_game:
 		case _close_game:
 		case _switch_demo:
 		case _revert_game:
-			*use_waitnext= TRUE;
-			try_for_event= TRUE;
+			*use_waitnext= true;
+			try_for_event= true;
 			break;
 			
 		default:
@@ -410,7 +410,7 @@ void install_network_microphone(
 	short id;
 
 	open_network_speaker(NETWORK_SOUND_CHUNK_BUFFER_SIZE, 2);
-	id = NetAddDistributionFunction(network_speaker_proc, TRUE);
+	id = NetAddDistributionFunction(network_speaker_proc, true);
 	open_network_microphone(id);
 }
 
@@ -436,15 +436,15 @@ void exit_networking(
 	NetExit();
 }
 
-boolean has_cheat_modifiers(
+bool has_cheat_modifiers(
 	EventRecord *event)
 {
-	boolean cheat= FALSE;
+	bool cheat= false;
 
 	if ((event->modifiers&cmdKey) && (event->modifiers&optionKey)
 		&& !(event->modifiers&shiftKey) && !(event->modifiers&controlKey))
 	{
-		cheat= TRUE;
+		cheat= true;
 	}
 	
 	return cheat;
@@ -491,7 +491,7 @@ void load_main_menu_buffers(
 	return;
 }
 
-boolean main_menu_buffers_loaded(
+bool main_menu_buffers_loaded(
 	void)
 {
 	return (main_menu_unpressed!=NULL);
@@ -522,7 +522,7 @@ void draw_main_menu(
 	void)
 {
 	PixMapHandle pixmap;
-	boolean locked;
+	bool locked;
 	GrafPtr old_port;
 	Rect source_bounds, dest_bounds;
 	
@@ -550,11 +550,11 @@ void draw_main_menu(
 
 void draw_menu_button(
 	short index, 
-	boolean pressed)
+	bool pressed)
 {
 	screen_rectangle *screen_rect= get_interface_rectangle(index);
 	PixMapHandle pixmap;
-	boolean locked;
+	bool locked;
 	GrafPtr old_port;
 	GWorldPtr source_world;
 
@@ -597,7 +597,7 @@ static void draw_picture_into_gworld(
 		GWorldPtr old_world;
 		GDHandle old_device;
 		PixMapHandle pixmap;
-		boolean locked;
+		bool locked;
 	
 		GetGWorld(&old_world, &old_device);
 		SetGWorld(gworld, NULL);
@@ -642,7 +642,7 @@ void show_cursor(
 	return;
 }
 
-boolean mouse_still_down(
+bool mouse_still_down(
 	void)
 {
 	return StillDown();
@@ -698,7 +698,7 @@ void show_movie(
 						if(!NewMovieFromFile(&movie, resRefNum, nil, nil, newMovieActive, nil )) 
 						{
 							Rect dispBounds;
-							boolean aborted= FALSE;
+							bool aborted= false;
 				
 							/* Find movie bounds and zero base it.... */
 							GetMovieBox(movie, &dispBounds);
@@ -740,7 +740,7 @@ void show_movie(
 										case mouseDown:
 										case keyDown:
 										case autoKey:
-											aborted= TRUE;
+											aborted= true;
 											StopMovie(movie);
 											break;
 									}
@@ -773,11 +773,11 @@ void show_movie(
 
 /* ----------- PRIVATE CODE */
 /* Should be in shell.h and shell.c */
-static boolean machine_has_quicktime(
+static bool machine_has_quicktime(
 	void) 
 {
 	long response;
-	boolean has_quicktime= FALSE;
+	bool has_quicktime= false;
 	OSErr error;
 
 	error= Gestalt(gestaltQuickTime, &response);
@@ -787,7 +787,7 @@ static boolean machine_has_quicktime(
 		error= Gestalt(gestaltCompressionMgr, &response);
 		if(!error) 
 		{
-			has_quicktime= TRUE;
+			has_quicktime= true;
 		}
 	}
 	

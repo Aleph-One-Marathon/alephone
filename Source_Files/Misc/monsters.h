@@ -239,9 +239,9 @@ void remove_monster(short monster_index);
 
 void activate_monster(short monster_index);
 void deactivate_monster(short monster_index);
-short find_closest_appropriate_target(short aggressor_index, boolean full_circle);
+short find_closest_appropriate_target(short aggressor_index, bool full_circle);
 
-void mark_monster_collections(short type, boolean loading);
+void mark_monster_collections(short type, bool loading);
 void load_monster_sounds(short monster_type);
 
 void monster_moved(short target_index, short old_polygon_index);
@@ -252,13 +252,13 @@ short legal_player_move(short monster_index, world_point3d *new_location, world_
 // and used a growable list for the indices
 #define LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE (get_dynamic_limit(_dynamic_limit_local_collision))
 #define GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE (get_dynamic_limit(_dynamic_limit_global_collision))
-boolean possible_intersecting_monsters(GrowableList<short> *IntersectedObjectsPtr, short maximum_object_count, short polygon_index, boolean include_scenery);
-#define monsters_nearby(polygon_index) possible_intersecting_monsters(0, 0, (polygon_index), FALSE)
+bool possible_intersecting_monsters(GrowableList<short> *IntersectedObjectsPtr, short maximum_object_count, short polygon_index, bool include_scenery);
+#define monsters_nearby(polygon_index) possible_intersecting_monsters(0, 0, (polygon_index), false)
 /*
 #define LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE 16
 #define GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE 64
-boolean possible_intersecting_monsters(short *object_indexes, short *object_count, short maximum_object_count, short polygon_index, boolean include_scenery);
-#define monsters_nearby(polygon_index) possible_intersecting_monsters(0, 0, 0, (polygon_index), FALSE)
+bool possible_intersecting_monsters(short *object_indexes, short *object_count, short maximum_object_count, short polygon_index, bool include_scenery);
+#define monsters_nearby(polygon_index) possible_intersecting_monsters(0, 0, 0, (polygon_index), false)
 */
 
 void get_monster_dimensions(short monster_index, world_distance *radius, world_distance *height);
@@ -289,9 +289,9 @@ struct monster_data *get_monster_data(short monster_index);
 #endif
 */
 
-boolean bump_monster(short aggressor_index, short monster_index);
+bool bump_monster(short aggressor_index, short monster_index);
 
-boolean legal_polygon_height_change(short polygon_index, world_distance new_floor_height, world_distance new_ceiling_height, struct damage_definition *damage);
+bool legal_polygon_height_change(short polygon_index, world_distance new_floor_height, world_distance new_ceiling_height, struct damage_definition *damage);
 void adjust_monster_for_polygon_height_change(short monster_index, short polygon_index, world_distance new_floor_height, world_distance new_ceiling_height);
 void accelerate_monster(short monster_index, angle direction, angle elevation, world_distance velocity);
 
@@ -303,12 +303,12 @@ void monster_died(short target_index);
 
 short monster_placement_index(short monster_type);
 short placement_index_to_monster_type(short placement_index);
-void try_to_add_random_monster(short monster_type, boolean activate);
+void try_to_add_random_monster(short monster_type, bool activate);
 
 short get_monster_impact_effect(short monster_index);
 short get_monster_melee_impact_effect(short monster_index);
 
-boolean live_aliens_on_map(void);
+bool live_aliens_on_map(void);
 
 // LP addition: get monster-definition size
 int get_monster_defintion_size();

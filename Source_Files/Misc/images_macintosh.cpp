@@ -45,7 +45,7 @@ struct color_table *build_8bit_system_color_table(void)
 
 void scroll_full_screen_pict_resource_from_scenario(
 	int pict_resource_number,
-	boolean text_block)
+	bool text_block)
 {
 	LoadedResource PictRsrc;
 	get_picture_resource_from_scenario(pict_resource_number, PictRsrc);
@@ -58,8 +58,8 @@ void scroll_full_screen_pict_resource_from_scenario(
 		short picture_height= RECTANGLE_HEIGHT(&(*picture)->picFrame);
 		short screen_width= 640; //RECTANGLE_WIDTH(&screen_window->portRect);
 		short screen_height= 480; //RECTANGLE_HEIGHT(&screen_window->portRect);
-		boolean scroll_horizontal= picture_width>screen_width;
-		boolean scroll_vertical= picture_height>screen_height;
+		bool scroll_horizontal= picture_width>screen_width;
+		bool scroll_vertical= picture_height>screen_height;
 		Rect picture_frame= (*picture)->picFrame;
 		
 		HNoPurge((Handle)picture);
@@ -80,7 +80,7 @@ void scroll_full_screen_pict_resource_from_scenario(
 				CGrafPtr old_port;
 				GDHandle old_device;
 				PixMapHandle pixmap;
-				boolean locked;
+				bool locked;
 				
 				GetGWorld(&old_port, &old_device);
 				SetGWorld(pixels, (GDHandle) NULL);
@@ -97,8 +97,8 @@ void scroll_full_screen_pict_resource_from_scenario(
 				
 				{
 					long start_tick= TickCount();
-					boolean done= FALSE;
-					boolean aborted= FALSE;
+					bool done= false;
+					bool aborted= false;
 					GrafPtr old_port;
 					RGBColor old_forecolor, old_backcolor;
 					EventRecord event;
@@ -117,8 +117,8 @@ void scroll_full_screen_pict_resource_from_scenario(
 						short delta;
 						
 						delta= (TickCount()-start_tick)/(text_block ? (2*SCROLLING_SPEED) : SCROLLING_SPEED);
-						if (scroll_horizontal && delta>picture_width-screen_width) delta= picture_width-screen_width, done= TRUE;
-						if (scroll_vertical && delta>picture_height-screen_height) delta= picture_height-screen_height, done= TRUE;
+						if (scroll_horizontal && delta>picture_width-screen_width) delta= picture_width-screen_width, done= true;
+						if (scroll_vertical && delta>picture_height-screen_height) delta= picture_height-screen_height, done= true;
 						
 						SetRect(&destination, 0, 0, 640, 480);
 						
@@ -129,7 +129,7 @@ void scroll_full_screen_pict_resource_from_scenario(
 							&source, &destination, srcCopy, (RgnHandle) NULL);
 						
 						/* You can't do this, because it calls flushevents every time.. */
-//						if(wait_for_click_or_keypress(0)!=NONE) done= TRUE;
+//						if(wait_for_click_or_keypress(0)!=NONE) done= true;
 
 						/* Give system time.. */
 						global_idle_proc();
@@ -145,7 +145,7 @@ void scroll_full_screen_pict_resource_from_scenario(
 								case mouseDown:
 								case keyDown:
 								case autoKey:
-									aborted= TRUE;
+									aborted= true;
 									break;
 								
 								default:

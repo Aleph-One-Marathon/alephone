@@ -148,8 +148,6 @@ static void close_sound_file(void)
 
 static void initialize_machine_sound_manager(struct sound_manager_parameters *parameters)
 {
-	OSErr error;
-
 	// Assign channels
 	for (int i=0; i<SM_SOUND_CHANNELS; i++)
 		_sm_globals->channels[i].channel = sdl_channels + i;
@@ -193,7 +191,7 @@ static void shutdown_sound_manager(void)
  *  Initialize music handling
  */
 
-boolean initialize_music_handler(FileSpecifier &song_file)
+bool initialize_music_handler(FileSpecifier &song_file)
 {
 	assert(NUMBER_OF_SONGS == sizeof(songs) / sizeof(struct song_definition));
 	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
@@ -206,10 +204,10 @@ boolean initialize_music_handler(FileSpecifier &song_file)
 		SDL_RWops *p = music_file.GetRWops();
 
 		// Check to see if the file is an AIFF file
-		if (SDL_ReadBE32(p) != 'FORM')
+		if (SDL_ReadBE32(p) != FOUR_CHARS_TO_INT('F', 'O', 'R', 'M'))
 			return false;
 		uint32 total_size = SDL_ReadBE32(p);
-		if (SDL_ReadBE32(p) != 'AIFF')
+		if (SDL_ReadBE32(p) != FOUR_CHARS_TO_INT('A', 'I', 'F', 'F'))
 			return false;
 
 		// Seems so, look for COMM and SSND chunks
@@ -223,7 +221,7 @@ boolean initialize_music_handler(FileSpecifier &song_file)
 			int pos = SDL_RWtell(p);
 
 			switch (id) {
-				case 'COMM': {
+				case FOUR_CHARS_TO_INT('C', 'O', 'M', 'M'): {
 					comm_found = true;
 
 					c->stereo = (SDL_ReadBE16(p) == 2);
@@ -250,7 +248,7 @@ boolean initialize_music_handler(FileSpecifier &song_file)
 					break;
 				}
 
-				case 'SSND':
+				case FOUR_CHARS_TO_INT('S', 'S', 'N', 'D'):
 					ssnd_found = true;
 
 					music_data_length = size;
@@ -386,7 +384,7 @@ void set_sound_manager_parameters(struct sound_manager_parameters *parameters)
  *  Adjust sound volume
  */
 
-boolean adjust_sound_volume_up(struct sound_manager_parameters *parameters, short sound_index)
+bool adjust_sound_volume_up(struct sound_manager_parameters *parameters, short sound_index)
 {
 	if (_sm_active && parameters->volume < NUMBER_OF_SOUND_VOLUME_LEVELS) {
 		_sm_parameters->volume = (parameters->volume += 1);
@@ -397,7 +395,7 @@ boolean adjust_sound_volume_up(struct sound_manager_parameters *parameters, shor
 	return false;
 }
 
-boolean adjust_sound_volume_down(struct sound_manager_parameters *parameters, short sound_index)
+bool adjust_sound_volume_down(struct sound_manager_parameters *parameters, short sound_index)
 {
 	if (_sm_active && parameters->volume > 0) {
 		_sm_parameters->volume = (parameters->volume -= 1);
@@ -413,7 +411,7 @@ boolean adjust_sound_volume_down(struct sound_manager_parameters *parameters, sh
  *  Is channel busy?
  */
 
-static boolean channel_busy(struct channel_data *channel)
+static bool channel_busy(struct channel_data *channel)
 {
 	assert(SLOT_IS_USED(channel));
 	sdl_channel *c = (sdl_channel *)channel->channel;
@@ -508,7 +506,7 @@ static void quiet_channel(struct channel_data *channel)
  *  Set variables for sound channel
  */
 
-static void instantiate_sound_variables(struct sound_variables *variables, struct channel_data *channel, boolean first_time)
+static void instantiate_sound_variables(struct sound_variables *variables, struct channel_data *channel, bool first_time)
 {
 	if (first_time || variables->right_volume != channel->variables.right_volume || variables->left_volume != channel->variables.left_volume) {
 		sdl_channel *c = (sdl_channel *)channel->channel;
@@ -683,7 +681,7 @@ void free_music_channel(void)
  *  Is music playing?
  */
 
-boolean music_playing(void)
+bool music_playing(void)
 {
 	return sdl_channels[MUSIC_CHANNEL].active;
 }

@@ -49,12 +49,12 @@ inline short memory_error() {return 0;}
 /* ------------ Entry point */
 /* Open the file, and allocate whatever internal structures are necessary in the */
 /*  preferences pointer.. */
-boolean w_open_preferences_file(
+bool w_open_preferences_file(
 	char *PrefName,
 	int Type)
 {
 	int error = 0;
-	boolean success= TRUE;
+	bool success= true;
 
 	/* allocate space for our global structure to keep track of the prefs file */
 	prefInfo = NULL;
@@ -112,7 +112,7 @@ boolean w_open_preferences_file(
 	/* Gotta bail... */
 	if(!prefInfo || !prefInfo->wad)
 	{
-		success= FALSE;
+		success= false;
 	}
 	
 // dump_wad(prefInfo->wad);
@@ -125,7 +125,7 @@ void *w_get_data_from_preferences(
 	WadDataType tag,					/* Tag to read */
 	short expected_size,				/* Data size */
 	prefs_initializer initialize,	/* Call if I have to allocate it.. */
-	prefs_validater validate)	/* Verify function-> fixes if bad and returns TRUE */
+	prefs_validater validate)	/* Verify function-> fixes if bad and returns true */
 {
 	void *data;
 	long length;
@@ -275,7 +275,7 @@ static void load_preferences(
 		if(read_wad_header(PrefsFile, &header))
 		{
 			/* Read the indexed wad from the file */
-			prefInfo->wad= read_indexed_wad_from_file(PrefsFile, &header, 0, FALSE);
+			prefInfo->wad= read_indexed_wad_from_file(PrefsFile, &header, 0, false);
 			// LP change: more graceful degradation
 			if (!prefInfo->wad) set_game_error(gameError, errUnknownWadVersion);
 		}

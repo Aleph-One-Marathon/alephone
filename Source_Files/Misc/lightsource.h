@@ -136,9 +136,9 @@ struct static_light_data *get_defaults_for_light_type(short type);
 
 void update_lights(void);
 
-boolean get_light_status(short light_index);
-boolean set_light_status(short light_index, boolean active);
-boolean set_tagged_light_statuses(short tag, boolean new_status);
+bool get_light_status(short light_index);
+bool set_light_status(short light_index, bool active);
+bool set_tagged_light_statuses(short tag, bool new_status);
 
 fixed get_light_intensity(short light_index);
 

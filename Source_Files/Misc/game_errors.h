@@ -28,7 +28,7 @@ enum { /* Game Errors */
 
 void set_game_error(short type, short error_code);
 short get_game_error(short *type);
-boolean error_pending(void);
+bool error_pending(void);
 void clear_game_error(void);
 
 #endif

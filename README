@@ -75,10 +75,12 @@ To play Aleph One, you will also need Marathon graphics, sound and map
 files. Unfortunately, Bungie has not released these files to the public, so
 you must own a copy of Marathon Infinity or the Marathon Infinity Demo
 (although Aleph One was originally based on Marathon 2, it was extended to
-use the Marathon Infinity data files). The Demo is freely available, but in
-Mac format, so I've created an archive containing the necessary data files
-from the Marathon Infinity Demo, converted to the formats needed by the SDL
-version of Aleph One. Download this archive from my Aleph One/SDL page:
+use the Marathon Infinity data files; you can play the Marathon 2 scenario,
+but you will still need Infinity data files, see below). The Demo is freely
+available, but in Mac format, so I've created an archive containing the
+necessary data files from the Marathon Infinity Demo, converted to the
+formats needed by the SDL version of Aleph One. Download this archive from
+my Aleph One/SDL page:
 
   http://www.uni-mainz.de/~bauec002/A1Main.html
 
@@ -137,6 +139,12 @@ Infinity/Trilogy CD under Linux:
      $ cp Sounds /usr/local/share/AlephOne/Sounds
 
     That's it.
+
+Playing Marathon 2:
+It is possible to play the Marathon 2 scenario by copying the data files from
+a Marathon 2 CD in the same way as described above, but you need to replace
+the "Shapes" and "Sounds" files with their Infinity versions or the game will
+not work.
 
 
 PLAYING ALEPH ONE

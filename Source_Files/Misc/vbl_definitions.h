@@ -32,12 +32,12 @@ struct recording_header
 };
 
 struct replay_private_data {
-	boolean valid;
+	bool valid;
 	struct recording_header header;
 	short replay_speed;
-	boolean game_is_being_replayed;
-	boolean game_is_being_recorded;
-	boolean have_read_last_chunk;
+	bool game_is_being_replayed;
+	bool game_is_being_recorded;
+	bool have_read_last_chunk;
 	ActionQueue *recording_queues;
 	
 	// fileref recording_file_refnum;
@@ -62,7 +62,7 @@ ActionQueue *get_player_recording_queue(short player_index);
 
 typedef void *timer_task_proc;
 
-timer_task_proc install_timer_task(short tasks_per_second, boolean (*func)(void));
+timer_task_proc install_timer_task(short tasks_per_second, bool (*func)(void));
 void remove_timer_task(timer_task_proc proc);
 
 void set_keys_to_match_preferences(void);

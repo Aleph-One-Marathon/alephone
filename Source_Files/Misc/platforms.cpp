@@ -70,8 +70,8 @@ May 17, 2000 (Loren Petrich):
 
 static short polygon_index_to_platform_index(short polygon_index);
 
-static boolean set_platform_state(short platform_index, boolean state, short parent_platform_index);
-static void set_adjacent_platform_states(short platform_index, boolean state);
+static bool set_platform_state(short platform_index, bool state, short parent_platform_index);
+static void set_adjacent_platform_states(short platform_index, bool state);
 
 static void take_out_the_garbage(short platform_index);
 static void adjust_platform_sides(short platform_index, world_distance old_ceiling_height, world_distance new_ceiling_height);
@@ -80,7 +80,7 @@ static void calculate_platform_extrema(short platform_index, world_distance lowe
 
 static void play_platform_sound(short platform_index, short sound_code);
 
-static void adjust_platform_for_media(short platform_index, boolean initialize);
+static void adjust_platform_for_media(short platform_index, bool initialize);
 static void adjust_platform_endpoint_and_line_heights(short platform_index);
 
 #ifdef DEBUG
@@ -131,7 +131,7 @@ short new_platform(
 			case _platform_is_spht_split_door:
 			case _platform_is_locked_spht_door:
 			case _platform_is_pfhor_door:
-				SET_PLATFORM_IS_DOOR(platform, TRUE);
+				SET_PLATFORM_IS_DOOR(platform, true);
 				break;
 		}
 #endif
@@ -143,9 +143,9 @@ short new_platform(
 		platform->ceiling_height= polygon->ceiling_height;
 		if (PLATFORM_IS_INITIALLY_ACTIVE(platform))
 		{
-			SET_PLATFORM_IS_ACTIVE(platform, TRUE);
+			SET_PLATFORM_IS_ACTIVE(platform, true);
 			SET_PLATFORM_HAS_BEEN_ACTIVATED(platform);
-			SET_PLATFORM_IS_MOVING(platform, TRUE);
+			SET_PLATFORM_IS_MOVING(platform, true);
 		}
 		if (PLATFORM_IS_INITIALLY_EXTENDED(platform))
 		{
@@ -175,7 +175,7 @@ short new_platform(
 		polygon->floor_height= platform->floor_height;
 		polygon->ceiling_height= platform->ceiling_height;
 		adjust_platform_endpoint_and_line_heights(platform_index);
-		adjust_platform_for_media(platform_index, TRUE);
+		adjust_platform_for_media(platform_index, true);
 	}
 	
 	return platform_index;
@@ -211,7 +211,7 @@ void update_platforms(
 				/* waiting to move */
 				if ((platform->ticks_until_restart-= 1)<=0)
 				{
-					SET_PLATFORM_IS_MOVING(platform, TRUE);
+					SET_PLATFORM_IS_MOVING(platform, true);
 					sound_code= _starting_sound;
 				}
 			}
@@ -268,7 +268,7 @@ void update_platforms(
 					platform->ceiling_height= new_ceiling_height, platform->floor_height= new_floor_height;
 					SET_PLATFORM_WAS_MOVING(platform);
 					adjust_platform_endpoint_and_line_heights(platform_index);
-					adjust_platform_for_media(platform_index, FALSE);
+					adjust_platform_for_media(platform_index, false);
 				}
 				else
 				{
@@ -289,9 +289,9 @@ void update_platforms(
 
 				if (PLATFORM_IS_FULLY_EXTENDED(platform) || PLATFORM_IS_FULLY_CONTRACTED(platform))
 				{
-					boolean deactivate= FALSE;
+					bool deactivate= false;
 					
-					SET_PLATFORM_IS_MOVING(platform, FALSE);
+					SET_PLATFORM_IS_MOVING(platform, false);
 					platform->ticks_until_restart= platform->delay;
 					sound_code= _stopping_sound;
 					
@@ -299,7 +299,7 @@ void update_platforms(
 					if (PLATFORM_IS_FULLY_CONTRACTED(platform))
 					{
 						if (PLATFORM_IS_INITIALLY_CONTRACTED(platform) && PLATFORM_DEACTIVATES_AT_INITIAL_LEVEL(platform))
-							deactivate= TRUE;
+							deactivate= true;
 						SET_PLATFORM_IS_EXTENDING(platform);
 					}
 					else
@@ -310,7 +310,7 @@ void update_platforms(
 								take_out_the_garbage(platform_index);
 							if (PLATFORM_IS_INITIALLY_EXTENDED(platform)
 									&& PLATFORM_DEACTIVATES_AT_INITIAL_LEVEL(platform))
-								deactivate= TRUE;
+								deactivate= true;
 							SET_PLATFORM_IS_CONTRACTING(platform);
 						}
 						else
@@ -320,10 +320,10 @@ void update_platforms(
 							// halt();
 						}
 					}
-					if (PLATFORM_DEACTIVATES_AT_EACH_LEVEL(platform)) deactivate= TRUE;
+					if (PLATFORM_DEACTIVATES_AT_EACH_LEVEL(platform)) deactivate= true;
 					
-					if (PLATFORM_ACTIVATES_ADJACENT_PLATFORMS_AT_EACH_LEVEL(platform)) set_adjacent_platform_states(platform_index, TRUE);
-					if (deactivate) set_platform_state(platform_index, FALSE, NONE);
+					if (PLATFORM_ACTIVATES_ADJACENT_PLATFORMS_AT_EACH_LEVEL(platform)) set_adjacent_platform_states(platform_index, true);
+					if (deactivate) set_platform_state(platform_index, false, NONE);
 				}
 			}
 
@@ -334,14 +334,14 @@ void update_platforms(
 	return;
 }
 
-boolean platform_is_on(
+bool platform_is_on(
 	short platform_index)
 {
 	struct platform_data *platform;
 
 	platform= get_platform_data(platform_index);	
 	
-	return PLATFORM_IS_ACTIVE(platform) ? TRUE : FALSE;
+	return PLATFORM_IS_ACTIVE(platform) ? true : false;
 }
 
 short monster_can_enter_platform(
@@ -491,7 +491,7 @@ void player_touch_platform_state(
 		{
 			if (definition->key_item_index==NONE || try_and_subtract_player_item(player_index, definition->key_item_index))
 			{
-				set_platform_state(platform_index, TRUE, NONE);
+				set_platform_state(platform_index, true, NONE);
 			}
 			else
 			{
@@ -528,7 +528,7 @@ struct platform_data *get_platform_data(
 
 void platform_was_entered(
 	short platform_index,
-	boolean player)
+	bool player)
 {
 	struct platform_data *platform= get_platform_data(platform_index);
 
@@ -537,50 +537,50 @@ void platform_was_entered(
 		if ((player && PLATFORM_IS_PLAYER_CONTROLLABLE(platform)) ||
 			(!player && PLATFORM_IS_MONSTER_CONTROLLABLE(platform)))
 		{
-			try_and_change_platform_state(platform_index, TRUE);
+			try_and_change_platform_state(platform_index, true);
 		}
 	}
 	
 	return;
 }
 
-boolean platform_is_legal_player_target(
+bool platform_is_legal_player_target(
 	short platform_index)
 {
 	struct platform_data *platform= get_platform_data(platform_index);
 	struct platform_definition *definition= get_platform_definition(platform->type);
-	boolean legal_player_target= FALSE;
+	bool legal_player_target= false;
 
 	if (PLATFORM_IS_DOOR(platform))
 	{
 		if ((PLATFORM_IS_PLAYER_CONTROLLABLE(platform) || definition->uncontrollable_sound!=NONE) &&
 			(!PLATFORM_ACTIVATES_ONLY_ONCE(platform) || !PLATFORM_HAS_BEEN_ACTIVATED(platform)))
 		{
-			legal_player_target= TRUE;
+			legal_player_target= true;
 		}
 	}
 	
 	return legal_player_target;
 }
 
-boolean platform_is_at_initial_state(
+bool platform_is_at_initial_state(
 	short platform_index)
 {
 	struct platform_data *platform= get_platform_data(platform_index);
 	
-	return (PLATFORM_HAS_BEEN_ACTIVATED(platform) && (!PLATFORM_IS_ACTIVE(platform) || PLATFORM_CANNOT_BE_EXTERNALLY_DEACTIVATED(platform))) ? FALSE : TRUE;
+	return (PLATFORM_HAS_BEEN_ACTIVATED(platform) && (!PLATFORM_IS_ACTIVE(platform) || PLATFORM_CANNOT_BE_EXTERNALLY_DEACTIVATED(platform))) ? false : true;
 }
 
-boolean try_and_change_platform_state(
+bool try_and_change_platform_state(
 	short platform_index,
-	boolean state)
+	bool state)
 {
 	struct platform_data *platform= get_platform_data(platform_index);
-	boolean changed= FALSE;
+	bool changed= false;
 	
 	if (state || !PLATFORM_IS_ACTIVE(platform) || !PLATFORM_CANNOT_BE_EXTERNALLY_DEACTIVATED(platform))
 	{
-		boolean new_state= set_platform_state(platform_index, state, NONE);
+		bool new_state= set_platform_state(platform_index, state, NONE);
 		
 		changed= (new_state && state) || (!new_state && !state);
 	}
@@ -588,12 +588,12 @@ boolean try_and_change_platform_state(
 	return changed;
 }
 
-boolean try_and_change_tagged_platform_states(
+bool try_and_change_tagged_platform_states(
 	short tag,
-	boolean state)
+	bool state)
 {
 	struct platform_data *platform;
-	boolean changed= FALSE;
+	bool changed= false;
 	short platform_index;
 	
 	if (tag)
@@ -604,7 +604,7 @@ boolean try_and_change_tagged_platform_states(
 			{
 				if (try_and_change_platform_state(platform_index, state))
 				{
-					changed= TRUE;
+					changed= true;
 				}
 			}
 		}
@@ -648,13 +648,13 @@ static short polygon_index_to_platform_index(
 	return platform_index;
 }
 
-static boolean set_platform_state(
+static bool set_platform_state(
 	short platform_index,
-	boolean state,
+	bool state,
 	short parent_platform_index)
 {
 	struct platform_data *platform= get_platform_data(platform_index);
-	boolean new_state= PLATFORM_IS_ACTIVE(platform) ? TRUE : FALSE;
+	bool new_state= PLATFORM_IS_ACTIVE(platform) ? true : false;
 	short sound_code= NONE;
 	
 	if (!PLATFORM_WAS_JUST_ACTIVATED_OR_DEACTIVATED(platform))
@@ -671,31 +671,31 @@ static boolean set_platform_state(
 				if (state)
 				{
 					SET_PLATFORM_HAS_BEEN_ACTIVATED(platform);
-					SET_PLATFORM_IS_MOVING(platform, FALSE);
+					SET_PLATFORM_IS_MOVING(platform, false);
 					platform->ticks_until_restart= PLATFORM_DELAYS_BEFORE_ACTIVATION(platform) ?
 						platform->delay : 0;
 
 					if (PLATFORM_ACTIVATES_LIGHT(platform))
 					{
-						set_light_status(polygon->floor_lightsource_index, TRUE);
-						set_light_status(polygon->ceiling_lightsource_index, TRUE);
+						set_light_status(polygon->floor_lightsource_index, true);
+						set_light_status(polygon->ceiling_lightsource_index, true);
 					}
 	
 					platform->parent_platform_index= parent_platform_index;
 	
-					if (PLATFORM_ACTIVATES_ADJACENT_PLATFORMS_WHEN_ACTIVATING(platform)) set_adjacent_platform_states(platform_index, TRUE);
-					if (PLATFORM_DEACTIVATES_ADJACENT_PLATFORMS_WHEN_ACTIVATING(platform)) set_adjacent_platform_states(platform_index, FALSE);
+					if (PLATFORM_ACTIVATES_ADJACENT_PLATFORMS_WHEN_ACTIVATING(platform)) set_adjacent_platform_states(platform_index, true);
+					if (PLATFORM_DEACTIVATES_ADJACENT_PLATFORMS_WHEN_ACTIVATING(platform)) set_adjacent_platform_states(platform_index, false);
 				}
 				else
 				{
 					if (PLATFORM_DEACTIVATES_LIGHT(platform))
 					{
-						set_light_status(polygon->floor_lightsource_index, FALSE);
-						set_light_status(polygon->ceiling_lightsource_index, FALSE);
+						set_light_status(polygon->floor_lightsource_index, false);
+						set_light_status(polygon->ceiling_lightsource_index, false);
 					}
 					
-					if (PLATFORM_ACTIVATES_ADJACENT_PLATFORMS_WHEN_DEACTIVATING(platform)) set_adjacent_platform_states(platform_index, TRUE);
-					if (PLATFORM_DEACTIVATES_ADJACENT_PLATFORMS_WHEN_DEACTIVATING(platform)) set_adjacent_platform_states(platform_index, FALSE);
+					if (PLATFORM_ACTIVATES_ADJACENT_PLATFORMS_WHEN_DEACTIVATING(platform)) set_adjacent_platform_states(platform_index, true);
+					if (PLATFORM_DEACTIVATES_ADJACENT_PLATFORMS_WHEN_DEACTIVATING(platform)) set_adjacent_platform_states(platform_index, false);
 					
 					if (PLATFORM_IS_MOVING(platform)) sound_code= _obstructed_sound;
 				}
@@ -716,7 +716,7 @@ static boolean set_platform_state(
 
 static void set_adjacent_platform_states(
 	short platform_index,
-	boolean state)
+	bool state)
 {
 	struct platform_data *platform= get_platform_data(platform_index);
 	struct polygon_data *polygon= get_polygon_data(platform->polygon_index);
@@ -764,7 +764,7 @@ static void take_out_the_garbage(
 
 static void adjust_platform_for_media(
 	short platform_index,
-	boolean initialize)
+	bool initialize)
 {
 	struct platform_data *platform= get_platform_data(platform_index);
 	struct polygon_data *polygon= get_polygon_data(platform->polygon_index);
@@ -775,8 +775,8 @@ static void adjust_platform_for_media(
 		struct media_data *media= get_media_data(polygon->media_index);
 		if (media)
 		{
-		boolean floor_below_media= platform->floor_height<media->height;
-		boolean ceiling_below_media= platform->ceiling_height<media->height;
+		bool floor_below_media= platform->floor_height<media->height;
+		bool ceiling_below_media= platform->ceiling_height<media->height;
 		
 		if (!initialize)
 		{

@@ -2,7 +2,7 @@
 #include "cseries.h"
 #include "byte_swapping.h"
 
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 
 void byte_swap_data(
 	void *data,

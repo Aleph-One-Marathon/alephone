@@ -197,27 +197,27 @@ void update_lights(
 	return;
 }
 
-boolean get_light_status(
+bool get_light_status(
 	short light_index)
 {
 	struct light_data *light= get_light_data(light_index);
 	// LP change: idiot-proofing
 	if (!light) return false;
 	
-	boolean status;
+	bool status;
 	
 	switch (light->state)
 	{
 		case _light_becoming_active:
 		case _light_primary_active:
 		case _light_secondary_active:
-			status= TRUE;
+			status= true;
 			break;
 		
 		case _light_becoming_inactive:
 		case _light_primary_inactive:
 		case _light_secondary_inactive:
-			status= FALSE;
+			status= false;
 			break;
 
 		default:
@@ -228,16 +228,16 @@ boolean get_light_status(
 	return status;
 }
 
-boolean set_light_status(
+bool set_light_status(
 	short light_index,
-	boolean new_status)
+	bool new_status)
 {
 	struct light_data *light= get_light_data(light_index);
 	// LP change: idiot-proofing
 	if (!light) return false;
 	
-	boolean old_status= get_light_status(light_index);
-	boolean changed= FALSE;
+	bool old_status= get_light_status(light_index);
+	bool changed= false;
 	
 	if ((new_status&&!old_status) || (!new_status&&old_status))
 	{
@@ -245,18 +245,18 @@ boolean set_light_status(
 		{
 			change_light_state(light_index, new_status ? _light_becoming_active : _light_becoming_inactive);
 			assume_correct_switch_position(_panel_is_light_switch, light_index, new_status);
-			changed= TRUE;
+			changed= true;
 		}
 	}
 	
 	return changed;
 }
 
-boolean set_tagged_light_statuses(
+bool set_tagged_light_statuses(
 	short tag,
-	boolean new_status)
+	bool new_status)
 {
-	boolean changed= FALSE;
+	bool changed= false;
 
 	if (tag)
 	{
@@ -269,7 +269,7 @@ boolean set_tagged_light_statuses(
 			{
 				if (set_light_status(light_index, new_status))
 				{
-					changed= TRUE;
+					changed= true;
 				}
 			}
 		}
@@ -434,7 +434,9 @@ static fixed constant_lighting_proc(
 	short phase,
 	short period)
 {
-	(void) (initial_intensity, phase, period);
+	(void) (initial_intensity);
+	(void) (phase);
+	(void) (period);
 	
 	return final_intensity;
 }

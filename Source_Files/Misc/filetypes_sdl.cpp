@@ -30,7 +30,7 @@ static uint32 typecodes[NUMBER_OF_TYPECODES] = {
 void initialize_typecodes(void)
 {
 	LoadedResource rsrc;
-	if (!get_resource('FTyp', 128, rsrc))
+	if (!get_resource(FOUR_CHARS_TO_INT('F', 'T', 'y', 'p'), 128, rsrc))
 		return;
 	if (rsrc.GetLength() > sizeof(typecodes))
 		return;

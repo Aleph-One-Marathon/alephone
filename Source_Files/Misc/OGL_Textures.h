@@ -199,7 +199,7 @@ inline byte FiveToEight(byte x) {return (x << 3) | ((x >> 2) & 0x07);}
 // ARGB 1555 to RGBA 8888
 inline GLuint Convert_16to32(uint16 InPxl)
 {
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 	// Alpha preset
 	GLuint OutPxl = 0xff000000;
 	GLuint Chan;

@@ -31,7 +31,7 @@ struct overhead_map_data
 	short width, height;
 	short top, left;
 	
-	boolean draw_everything;
+	bool draw_everything;
 };
 
 void _render_overhead_map(struct overhead_map_data *data);

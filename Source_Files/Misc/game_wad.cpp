@@ -104,7 +104,7 @@ extern byte physics_models[];
 
 /* -------- local globals */
 FileSpecifier MapFileSpec;
-static boolean file_is_set= FALSE;
+static bool file_is_set= false;
 
 // LP addition: was a physics model loaded from the previous level loaded?
 static bool PhysicsModelLoadedEarlier = false;
@@ -112,7 +112,7 @@ static bool PhysicsModelLoadedEarlier = false;
 // The following local globals are for handling games that need to be restored.
 struct revert_game_info
 {
-	boolean game_is_from_disk;
+	bool game_is_from_disk;
 	struct game_data game_information;
 	struct player_start_data player_start;
 	struct entry_point entry_point;
@@ -122,19 +122,19 @@ static struct revert_game_info revert_game_data;
 
 /* Borrowed from the old lightsource.h, to allow Marathon II to open/use Marathon I maps */
 struct old_light_data {
-	word flags;
+	uint16 flags;
 	
-	short type;
-	short mode; /* on, off, etc. */
-	short phase;
+	int16 type;
+	int16 mode; /* on, off, etc. */
+	int16 phase;
 	
 	fixed minimum_intensity, maximum_intensity;
-	short period; /* on, in ticks (turning on and off periods are always the same for a given light type,
+	int16 period; /* on, in ticks (turning on and off periods are always the same for a given light type,
 		or else are some function of this period) */
 	
 	fixed intensity; /* current intensity */
 	
-	short unused[5];	
+	int16 unused[5];	
 };
 
 enum /* old light types */
@@ -356,7 +356,7 @@ static void load_random_sound_images(struct random_sound_image_data *data, short
 static void load_terminal_data(byte *data, long length);
 
 /* Used _ONLY_ by game_wad.c internally and precalculate.c. */
-static boolean process_map_wad(struct wad_data *wad, boolean restoring_game, short version);
+static bool process_map_wad(struct wad_data *wad, bool restoring_game, short version);
 
 /* Final three calls, must be in this order! */
 static void recalculate_redundant_map(void);
@@ -384,12 +384,12 @@ static void load_terminal_data(byte *data, long length);
 static void scan_and_add_scenery(void);
 static void complete_restoring_level(struct wad_data *wad);
 static void load_redundant_map_data(short *redundant_data, short count);
-static boolean process_map_wad(struct wad_data *wad, boolean restoring_game, short version);
+static bool process_map_wad(struct wad_data *wad, bool restoring_game, short version);
 static void allocate_map_structure_for_map(struct wad_data *wad);
 static struct wad_data *build_save_game_wad(struct wad_header *header, long *length);
 
 /* Used _ONLY_ by game_wad.c internally and precalculate.c. */
-boolean process_map_wad(struct wad_data *wad, boolean restoring_game, short version);
+bool process_map_wad(struct wad_data *wad, bool restoring_game, short version);
 
 // Final three calls, must be in this order!
 static void recalculate_redundant_map(void);
@@ -408,17 +408,17 @@ long get_net_map_data_length(
 }
 
 /* Note that this frees it as well */
-boolean process_net_map_data(
+bool process_net_map_data(
 	void *data) 
 {
 	struct wad_header header;
 	struct wad_data *wad;
-	boolean success= FALSE;
+	bool success= false;
 	
 	wad= inflate_flat_data(data, &header);
 	if(wad)
 	{
-		success= process_map_wad(wad, FALSE, header.data_version);
+		success= process_map_wad(wad, false, header.data_version);
 		free_wad(wad); /* Note that the flat data points into the wad. */
 	}
 	
@@ -431,9 +431,9 @@ void *get_map_for_net_transfer(
 {
 	assert(file_is_set);
 	
-	/* FALSE means don't use union maps.. */
-	return get_flat_data(MapFileSpec, FALSE, entry->level_number);
-	// return get_flat_data(&current_map_file, FALSE, entry->level_number);
+	/* false means don't use union maps.. */
+	return get_flat_data(MapFileSpec, false, entry->level_number);
+	// return get_flat_data(&current_map_file, false, entry->level_number);
 }
 
 /* ---------------------- End Net Functions ----------- */
@@ -447,7 +447,7 @@ void set_map_file(FileSpecifier& File)
 	// Don't care whether there was an error when checking on the file's scenario images
 	clear_game_error();
 
-	file_is_set= TRUE;
+	file_is_set= true;
 }
 
 /* Set to the default map.. (Only if no map doubleclicked upon on startup.. */
@@ -460,41 +460,41 @@ void set_to_default_map(
 	set_map_file(NewMapFile);
 }
 
-/* Return TRUE if it finds the file, and it sets the mapfile to that file. */
-/* Otherwise it returns FALSE, meaning that we need have the file sent to us. */
-boolean use_map_file(
-	long checksum) /* Should be unsigned long */
+/* Return true if it finds the file, and it sets the mapfile to that file. */
+/* Otherwise it returns false, meaning that we need have the file sent to us. */
+bool use_map_file(
+	uint32 checksum)
 {
 	FileSpecifier File;
 	// FileDesc file;
-	boolean success= FALSE;
+	bool success= false;
 
 	if(find_wad_file_that_has_checksum(File, _typecode_scenario, strPATHS, checksum))
 	// if(find_wad_file_that_has_checksum(&file, SCENARIO_FILE_TYPE, strPATHS, checksum))
 	{
 		set_map_file(File);
 		// set_map_file(&file);
-		success= TRUE;
+		success= true;
 	}
 
 	return success;
 }
 
-boolean load_level_from_map(
+bool load_level_from_map(
 	short level_index)
 {
 	OpenedFile OFile;
 	struct wad_header header;
 	struct wad_data *wad;
 	short index_to_load;
-	boolean restoring_game= FALSE;
-	short error= 0;
+	bool restoring_game= false;
+
 	if(file_is_set)
 	{
 		/* Determine what we are trying to do.. */
 		if(level_index==NONE)
 		{
-			restoring_game= TRUE;
+			restoring_game= true;
 			index_to_load= 0; /* Saved games are always index 0 */
 		} else {
 			index_to_load= level_index;
@@ -508,7 +508,7 @@ boolean load_level_from_map(
 			{
 				if(index_to_load>=0 && index_to_load<header.wad_count)
 				{
-					wad= read_indexed_wad_from_file(MapFile, &header, index_to_load, TRUE);
+					wad= read_indexed_wad_from_file(MapFile, &header, index_to_load, true);
 					if (wad)
 					{
 						/* Process everything... */
@@ -637,7 +637,7 @@ short get_player_starting_location_and_facing(
 	short ii;
 	struct map_object *saved_object;
 	short count= 0;
-	boolean done= FALSE;
+	bool done= false;
 	
 	saved_object= saved_objects;
 	for(ii=0; !done && ii<dynamic_world->initial_objects_count; ++ii)
@@ -654,7 +654,7 @@ short get_player_starting_location_and_facing(
 					location->yaw= saved_object->facing;
 					location->pitch= 0;
 					location->flags= saved_object->flags;
-					done= TRUE;
+					done= true;
 				}
 				count++;
 			}
@@ -676,7 +676,7 @@ short get_player_starting_location_and_facing(
 #endif
 }
 
-unsigned long get_current_map_checksum(
+uint32 get_current_map_checksum(
 	void)
 {
 	// fileref file_handle;
@@ -695,15 +695,15 @@ unsigned long get_current_map_checksum(
 	return header.checksum;
 }
 
-boolean new_game(
+bool new_game(
 	short number_of_players, 
-	boolean network,
+	bool network,
 	struct game_data *game_information,
 	struct player_start_data *player_start_information,
 	struct entry_point *entry_point)
 {
 	short player_index, i;
-	boolean success= TRUE;
+	bool success= true;
 
 	/* Make sure our code is synchronized.. */
 	assert(MAXIMUM_PLAYER_START_NAME_LENGTH==MAXIMUM_PLAYER_NAME_LENGTH);
@@ -736,7 +736,7 @@ boolean new_game(
 
 	/* Load the level */	
 	assert(file_is_set);
-	success= goto_level(entry_point, TRUE);
+	success= goto_level(entry_point, true);
 
 	/* If we were able to load the map... */
 	if(success)
@@ -787,7 +787,7 @@ boolean new_game(
 	return success;
 }
 
-boolean get_indexed_entry_point(
+bool get_indexed_entry_point(
 	struct entry_point *entry_point, 
 	short *index, 
 	long type)
@@ -795,7 +795,7 @@ boolean get_indexed_entry_point(
 	// short file_handle;
 	struct wad_header header;
 	short actual_index;
-	boolean success= FALSE;
+	bool success= false;
 	
 	assert(file_is_set);
 
@@ -826,7 +826,7 @@ boolean get_indexed_entry_point(
 						strcpy(entry_point->level_name, directory->level_name);
 			
 						*index= actual_index+1;
-						success= TRUE;
+						success= true;
 						break; /* Out of the for loop */
 					}
 				}
@@ -839,8 +839,8 @@ boolean get_indexed_entry_point(
 					struct wad_data *wad;
 
 					/* Read the file */
-					// wad= read_indexed_wad_from_file(file_handle, &header, actual_index, TRUE);
-					wad= read_indexed_wad_from_file(MapFile, &header, actual_index, TRUE);
+					// wad= read_indexed_wad_from_file(file_handle, &header, actual_index, true);
+					wad= read_indexed_wad_from_file(MapFile, &header, actual_index, true);
 					if (wad)
 					{
 						struct static_data *map_info;
@@ -857,7 +857,7 @@ boolean get_indexed_entry_point(
 							strcpy(entry_point->level_name, map_info->level_name);
 				
 							*index= actual_index+1;
-							success= TRUE;
+							success= true;
 						}
 				
 						free_wad(wad);
@@ -877,11 +877,11 @@ boolean get_indexed_entry_point(
 /* The only thing that has to be valid in the entry point is the level_index */
 
 /* Returns a short that is an OSErr... */
-boolean goto_level(
+bool goto_level(
 	struct entry_point *entry, 
-	boolean new_game)
+	bool new_game)
 {
-	boolean success= TRUE;
+	bool success= true;
 
 	if(!new_game)
 	{
@@ -902,7 +902,7 @@ boolean goto_level(
 	{
 		/* Load it and then rock.. */
 		load_level_from_map(entry->level_number);
-		if(error_pending()) success= FALSE;
+		if(error_pending()) success= false;
 	}
 
 	if (success)
@@ -1152,9 +1152,7 @@ void load_lights(
 							break;
 							
 						default:
-							// LP change:
 							assert(false);
-							// halt();
 							break;
 					}
 					assert(new_index==loop);
@@ -1325,11 +1323,11 @@ void recalculate_redundant_map(
 	for(loop=0;loop<dynamic_world->endpoint_count;++loop) recalculate_redundant_endpoint_data(loop);
 }
 
-extern boolean load_game_from_file(FileSpecifier& File);
+extern bool load_game_from_file(FileSpecifier& File);
 
-boolean load_game_from_file(FileSpecifier& File)
+bool load_game_from_file(FileSpecifier& File)
 {
-	boolean success= FALSE;
+	bool success= false;
 	
 	// LP: verify sizes: (of on-disk structures only!)
 	assert(sizeof(map_object) == SIZEOF_map_object);
@@ -1365,10 +1363,10 @@ boolean load_game_from_file(FileSpecifier& File)
 #endif
 
 	/* Must reset this, in case they played a net game before this one. */
-	game_is_networked= FALSE;
+	game_is_networked= false;
 
 	/* Setup for a revert.. */
-	revert_game_data.game_is_from_disk = TRUE;
+	revert_game_data.game_is_from_disk = true;
 	revert_game_data.SavedGame = File;
 
 	/* Use the save game file.. */
@@ -1413,7 +1411,7 @@ void setup_revert_game_info(
 	struct player_start_data *start, 
 	struct entry_point *entry)
 {
-	revert_game_data.game_is_from_disk = FALSE;
+	revert_game_data.game_is_from_disk = false;
 	obj_copy(revert_game_data.game_information, *game_info);
 	obj_copy(revert_game_data.player_start, *start);
 	obj_copy(revert_game_data.entry_point, *entry);
@@ -1421,10 +1419,10 @@ void setup_revert_game_info(
 	return;
 }
 
-boolean revert_game(
+bool revert_game(
 	void)
 {
-	boolean successful;
+	bool successful;
 	
 	assert(dynamic_world->player_count==1);
 
@@ -1442,7 +1440,7 @@ boolean revert_game(
 	else
 	{
 		/* This was the totally evil line discussed above. */
-		successful= new_game(1, FALSE, &revert_game_data.game_information, &revert_game_data.player_start, 
+		successful= new_game(1, false, &revert_game_data.game_information, &revert_game_data.player_start, 
 			&revert_game_data.entry_point);
 			
 		/* And rewind so that the last player is used. */
@@ -1466,11 +1464,11 @@ void get_current_saved_game_name(FileSpecifier& File)
 }
 
 /* The current mapfile should be set to the save game file... */
-boolean save_game_file(FileSpecifier& File)
+bool save_game_file(FileSpecifier& File)
 {
 	struct wad_header header;
-	short err;
-	boolean success= FALSE;
+	short err = 0;
+	bool success= false;
 	long offset, wad_length;
 	struct directory_entry entry;
 	struct wad_data *wad;
@@ -1479,7 +1477,7 @@ boolean save_game_file(FileSpecifier& File)
 	dynamic_world->random_seed= get_random_seed();
 
 	/* Setup to revert the game properly */
-	revert_game_data.game_is_from_disk= TRUE;
+	revert_game_data.game_is_from_disk= true;
 	revert_game_data.SavedGame = File;
 	
 	// LP: add a file here
@@ -1521,7 +1519,7 @@ boolean save_game_file(FileSpecifier& File)
 							add_finishing_touches_to_save_file(File);
 
 							/* We win. */
-							success= TRUE;
+							success= true;
 						} 
 					}
 
@@ -1539,7 +1537,7 @@ boolean save_game_file(FileSpecifier& File)
 		if(!err) err= get_game_error(NULL);
 		alert_user(infoError, strERRORS, fileError, err);
 		clear_game_error();
-		success= FALSE;
+		success= false;
 	}
 	
 	return success;
@@ -1611,15 +1609,15 @@ static void scan_and_add_platforms(
 
 
 /* Load a level from a wad-> mainly used by the net stuff. */
-boolean process_map_wad(
+bool process_map_wad(
 	struct wad_data *wad, 
-	boolean restoring_game,
+	bool restoring_game,
 	short version)
 {
 	long data_length;
 	byte *data;
 	short count;
-	boolean is_preprocessed_map= FALSE;
+	bool is_preprocessed_map= false;
 	
 	assert(version==MARATHON_INFINITY_DATA_VERSION || version==MARATHON_TWO_DATA_VERSION || version==MARATHON_ONE_DATA_VERSION);
 
@@ -1645,7 +1643,7 @@ boolean process_map_wad(
 		byte_swap_object_list(map_endpoints, count, _bs_endpoint_data);
 		dynamic_world->endpoint_count= count;
 
-		is_preprocessed_map= TRUE;
+		is_preprocessed_map= true;
 	}
 
 	/* Extract lines */
@@ -1899,7 +1897,7 @@ boolean process_map_wad(
 	}
 
 	/* ... and bail */
-	return TRUE;
+	return true;
 }
 
 static void allocate_map_structure_for_map(
@@ -1913,29 +1911,29 @@ static void allocate_map_structure_for_map(
 	/* Extract points */
 	data= (unsigned char *)extract_type_from_wad(wad, POINT_TAG, &data_length);
 	endpoint_count= data_length/sizeof(saved_map_pt);
-	if(endpoint_count*sizeof(saved_map_pt)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'pt');
+	if(endpoint_count*sizeof(saved_map_pt)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7074); // 'pt'
 	
 	if(!endpoint_count)
 	{
 		data= (unsigned char *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
 		endpoint_count= data_length/sizeof(struct endpoint_data);
-		if(endpoint_count*sizeof(struct endpoint_data)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'ep');
+		if(endpoint_count*sizeof(struct endpoint_data)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x6570); // 'ep'
 	}
 
 	/* Extract lines */
 	data= (unsigned char *)extract_type_from_wad(wad, LINE_TAG, &data_length);
 	line_count= data_length/sizeof(saved_line);
-	if(line_count*sizeof(saved_line)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'li');
+	if(line_count*sizeof(saved_line)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x6c69); // 'li'
 
 	/* Sides.. */
 	data= (unsigned char *)extract_type_from_wad(wad, SIDE_TAG, &data_length);
 	side_count= data_length/sizeof(saved_side);
-	if(side_count*sizeof(saved_side)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'si');
+	if(side_count*sizeof(saved_side)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7369); // 'si'
 
 	/* Extract polygons */
 	data= (unsigned char *)extract_type_from_wad(wad, POLYGON_TAG, &data_length);
 	polygon_count= data_length/sizeof(saved_poly);
-	if(polygon_count*sizeof(saved_poly)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'si');
+	if(polygon_count*sizeof(saved_poly)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x706f); // 'po'
 
 	/* Extract the terminal junk */
 	data= (unsigned char *)extract_type_from_wad(wad, TERMINAL_DATA_TAG, &terminal_data_length);
@@ -1959,7 +1957,7 @@ static void load_redundant_map_data(
 	}
 	else
 	{
-		boolean have_been_warned= FALSE;
+		bool have_been_warned= false;
 
 #if !defined(ALPHA) && !defined(BETA)
 		if(!have_been_warned)
@@ -1971,7 +1969,7 @@ static void load_redundant_map_data(
 				// LP addition: makes the game look normal
 				hide_cursor();
 			}
-			have_been_warned= TRUE;
+			have_been_warned= true;
 		}
 #endif
 
@@ -2025,45 +2023,45 @@ struct save_game_data
 {
 	long tag;
 	short unit_size;
-	boolean loaded_by_level;
+	bool loaded_by_level;
 };
 
 #define NUMBER_OF_SAVE_ARRAYS (sizeof(save_data)/sizeof(struct save_game_data))
 struct save_game_data save_data[]=
 {
-	{ ENDPOINT_DATA_TAG, sizeof(struct endpoint_data), TRUE },
-	{ LINE_TAG, sizeof(saved_line), TRUE },
-	{ SIDE_TAG, sizeof(saved_side), TRUE },
-	{ POLYGON_TAG, sizeof(saved_poly), TRUE },
-	{ LIGHTSOURCE_TAG, sizeof(struct light_data), FALSE },
-	{ ANNOTATION_TAG, sizeof(saved_annotation), TRUE },
-	{ OBJECT_TAG, sizeof(saved_object), TRUE },
-	{ MAP_INFO_TAG, sizeof(struct static_data), TRUE },
-	{ ITEM_PLACEMENT_STRUCTURE_TAG, MAXIMUM_OBJECT_TYPES*sizeof(struct object_frequency_definition)*2, TRUE },
-	{ MEDIA_TAG, sizeof(struct media_data), FALSE },
-	{ AMBIENT_SOUND_TAG, sizeof(struct ambient_sound_image_data), TRUE },
-	{ RANDOM_SOUND_TAG, sizeof(struct random_sound_image_data), TRUE },
-	{ TERMINAL_DATA_TAG, sizeof(byte), TRUE },
+	{ ENDPOINT_DATA_TAG, sizeof(struct endpoint_data), true },
+	{ LINE_TAG, sizeof(saved_line), true },
+	{ SIDE_TAG, sizeof(saved_side), true },
+	{ POLYGON_TAG, sizeof(saved_poly), true },
+	{ LIGHTSOURCE_TAG, sizeof(struct light_data), false },
+	{ ANNOTATION_TAG, sizeof(saved_annotation), true },
+	{ OBJECT_TAG, sizeof(saved_object), true },
+	{ MAP_INFO_TAG, sizeof(struct static_data), true },
+	{ ITEM_PLACEMENT_STRUCTURE_TAG, MAXIMUM_OBJECT_TYPES*sizeof(struct object_frequency_definition)*2, true },
+	{ MEDIA_TAG, sizeof(struct media_data), false },
+	{ AMBIENT_SOUND_TAG, sizeof(struct ambient_sound_image_data), true },
+	{ RANDOM_SOUND_TAG, sizeof(struct random_sound_image_data), true },
+	{ TERMINAL_DATA_TAG, sizeof(byte), true },
 	
 	// LP addition: handling of physics models
-	{ MONSTER_PHYSICS_TAG, sizeof(byte), TRUE},
-	{ EFFECTS_PHYSICS_TAG, sizeof(byte), TRUE},
-	{ PROJECTILE_PHYSICS_TAG, sizeof(byte), TRUE},
-	{ PHYSICS_PHYSICS_TAG, sizeof(byte), TRUE},
-	{ WEAPONS_PHYSICS_TAG, sizeof(byte), TRUE},
+	{ MONSTER_PHYSICS_TAG, sizeof(byte), true},
+	{ EFFECTS_PHYSICS_TAG, sizeof(byte), true},
+	{ PROJECTILE_PHYSICS_TAG, sizeof(byte), true},
+	{ PHYSICS_PHYSICS_TAG, sizeof(byte), true},
+	{ WEAPONS_PHYSICS_TAG, sizeof(byte), true},
 
-	{ MAP_INDEXES_TAG, sizeof(short), FALSE },
-	{ PLAYER_STRUCTURE_TAG, sizeof(struct player_data), FALSE },
-	{ DYNAMIC_STRUCTURE_TAG, sizeof(struct dynamic_data), FALSE },
-	{ OBJECT_STRUCTURE_TAG, sizeof(struct object_data), FALSE },
-	{ AUTOMAP_LINES, sizeof(byte), FALSE },
-	{ AUTOMAP_POLYGONS, sizeof(byte), FALSE },
-	{ MONSTERS_STRUCTURE_TAG, sizeof(struct monster_data), FALSE },
-	{ EFFECTS_STRUCTURE_TAG, sizeof(struct effect_data), FALSE },
-	{ PROJECTILES_STRUCTURE_TAG, sizeof(struct projectile_data), FALSE },
-	{ PLATFORM_STRUCTURE_TAG, sizeof(struct platform_data), FALSE },
-	{ WEAPON_STATE_TAG, sizeof(byte), FALSE },
-	{ TERMINAL_STATE_TAG, sizeof(byte), FALSE }
+	{ MAP_INDEXES_TAG, sizeof(short), false },
+	{ PLAYER_STRUCTURE_TAG, sizeof(struct player_data), false },
+	{ DYNAMIC_STRUCTURE_TAG, sizeof(struct dynamic_data), false },
+	{ OBJECT_STRUCTURE_TAG, sizeof(struct object_data), false },
+	{ AUTOMAP_LINES, sizeof(byte), false },
+	{ AUTOMAP_POLYGONS, sizeof(byte), false },
+	{ MONSTERS_STRUCTURE_TAG, sizeof(struct monster_data), false },
+	{ EFFECTS_STRUCTURE_TAG, sizeof(struct effect_data), false },
+	{ PROJECTILES_STRUCTURE_TAG, sizeof(struct projectile_data), false },
+	{ PLATFORM_STRUCTURE_TAG, sizeof(struct platform_data), false },
+	{ WEAPON_STATE_TAG, sizeof(byte), false },
+	{ TERMINAL_STATE_TAG, sizeof(byte), false }
 };
 
 /* the sizes are the sizes to save in the file, be aware! */

@@ -88,7 +88,7 @@ typedef struct ConnectionEnd ConnectionEnd, *ConnectionEndPtr;
 typedef EntityName *EntityNamePtr;
 
 typedef void (*lookupUpdateProcPtr)(short message, short index);
-typedef boolean (*lookupFilterProcPtr)(EntityName *entity, AddrBlock *address);
+typedef bool (*lookupFilterProcPtr)(EntityName *entity, AddrBlock *address);
 typedef void (*PacketHandlerProcPtr)(DDPPacketBufferPtr packet);
 #ifdef env68k
 typedef PacketHandlerProcPtr PacketHandlerUPP;
@@ -111,7 +111,7 @@ short NetState(void);
 void NetSetServerIdentifier(short identifier);
 
 /* for giving to NetLookupOpen() as a filter procedure */
-boolean NetEntityNotInGame(EntityName *entity, AddrBlock *address);
+bool NetEntityNotInGame(EntityName *entity, AddrBlock *address);
 
 /* ---------- prototypes/NETWORK_NAMES.C */
 
@@ -153,7 +153,7 @@ OSErr NetADSPEstablishConnectionEnd(ConnectionEndPtr *connection);
 OSErr NetADSPDisposeConnectionEnd(ConnectionEndPtr connectionEnd);
 
 OSErr NetADSPOpenConnection(ConnectionEndPtr connectionEnd, AddrBlock *address);
-OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, boolean abort);
+OSErr NetADSPCloseConnection(ConnectionEndPtr connectionEnd, bool abort);
 OSErr NetADSPWaitForConnection(ConnectionEndPtr connectionEnd);
 Boolean NetADSPCheckConnectionStatus(ConnectionEndPtr connectionEnd, AddrBlock *address);
 

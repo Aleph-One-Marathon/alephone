@@ -31,7 +31,7 @@ Feb. 4, 2000 (Loren Petrich):
 static void get_mouse_location(Point *where);
 static void set_mouse_location(Point where);
 static CursorDevicePtr find_mouse_device(void);
-static boolean trap_available(short trap_num);
+static bool trap_available(short trap_num);
 static TrapType get_trap_type(short trap_num);
 static short num_toolbox_traps(void);
 
@@ -49,7 +49,7 @@ extern pascal OSErr CrsrDevMoveTo(CursorDevicePtr ourDevice, long absX, long abs
 
 static CursorDevicePtr mouse_device;
 static fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
-static boolean snapshot_button_state;
+static bool snapshot_button_state;
 
 /* ---------- code */
 
@@ -64,8 +64,8 @@ void enter_mouse(
 	vwarn(mouse_device, "no valid mouse/trackball device;g;"); /* must use cursor device manager on non-68k */
 #endif
 	
-	snapshot_delta_yaw= snapshot_delta_pitch= snapshot_delta_velocity= FALSE;
-	snapshot_button_state= FALSE;
+	snapshot_delta_yaw= snapshot_delta_pitch= snapshot_delta_velocity= false;
+	snapshot_button_state= false;
 	
 	return;
 }
@@ -88,12 +88,12 @@ void test_mouse(
 	return;
 }
 
-static boolean mouse_available(
+static bool mouse_available(
 	short type)
 {
 	(void) (type);
 	
-	return TRUE;
+	return true;
 }
 
 void exit_mouse(
@@ -220,7 +220,7 @@ static CursorDevicePtr find_mouse_device(
 
 /* ---------- from IM */
 
-static boolean trap_available(short trap_num)
+static bool trap_available(short trap_num)
 {
 	TrapType type;
 	

@@ -78,11 +78,11 @@ OSErr NetRegisterName(
 		NBPSetNTE((Ptr)myNTEName, adjusted_name, adjusted_type, "\p*", socketNumber); /* build names table entry */
 
 		myMPPPBPtr->NBP.nbpPtrs.ntQElPtr= (Ptr) myNTEName;
-		myMPPPBPtr->NBP.parm.verifyFlag= TRUE; /* verify this name doesn’t already exist */
+		myMPPPBPtr->NBP.parm.verifyFlag= true; /* verify this name doesn’t already exist */
 		myMPPPBPtr->NBP.interval= 2; /* retry every 2*8 == 16 ticks */
 		myMPPPBPtr->NBP.count= 4; /* retry 4 times ( == 64 ticks) */
 	
-		error= PRegisterName(myMPPPBPtr, FALSE);
+		error= PRegisterName(myMPPPBPtr, false);
 		
 		DisposePtr((Ptr)myMPPPBPtr);
 	}
@@ -120,7 +120,7 @@ OSErr NetUnRegisterName(
 		{
 			myMPPPBPtr->NBP.nbpPtrs.entityPtr= (Ptr) &myNTEName->nt.entityData; /* can’t just give back names table entry */
 			
-			error= PRemoveName(myMPPPBPtr, FALSE);
+			error= PRemoveName(myMPPPBPtr, false);
 		
 			DisposePtr((Ptr)myMPPPBPtr);
 	

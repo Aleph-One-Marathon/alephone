@@ -153,7 +153,7 @@ static void get_projectile_media_detonation_effect(short polygon_index, short me
 // LP change: added a location of hitting something;
 // it may be different from the new location,
 // as may happen for a "penetrates media boundary" projectile.
-static word translate_projectile(short type, world_point3d *old_location, short old_polygon_index,
+static uint16 translate_projectile(short type, world_point3d *old_location, short old_polygon_index,
 	world_point3d *new_location, short *new_polygon_index, short owner_index,
 	short *obstruction_index);
 
@@ -169,9 +169,9 @@ inline struct projectile_definition *get_projectile_definition(
 	return definition;
 }
 
-/* FALSE means donÕt fire this (itÕs in a floor or ceiling or outside of the map), otherwise
+/* false means donÕt fire this (itÕs in a floor or ceiling or outside of the map), otherwise
 	the monster that was intersected first (or NONE) is returned in target_index */
-boolean preflight_projectile(
+bool preflight_projectile(
 	world_point3d *origin,
 	short origin_polygon_index,
 	world_point3d *destination,
@@ -181,7 +181,7 @@ boolean preflight_projectile(
 	short owner_type,
 	short *obstruction_index)
 {
-	boolean legal_projectile= FALSE;
+	bool legal_projectile= false;
 	struct projectile_definition *definition= get_projectile_definition(type);
 	
 	(void) (delta_theta);
@@ -208,10 +208,10 @@ boolean preflight_projectile(
 			//	(origin_polygon->media_index==NONE || definition->flags&(_penetrates_media) || origin->z>get_media_data(origin_polygon->media_index)->height))
 			{
 				/* make sure it hits something */
-				word flags= translate_projectile(type, origin, origin_polygon_index, destination, (short *) NULL, owner, obstruction_index);
+				uint16 flags= translate_projectile(type, origin, origin_polygon_index, destination, (short *) NULL, owner, obstruction_index);
 				
 				*obstruction_index= (flags&_projectile_hit_monster) ? get_object_data(*obstruction_index)->permutation : NONE;
-				legal_projectile= TRUE;
+				legal_projectile= true;
 			}
 		}
 	}
@@ -344,7 +344,7 @@ void move_projectiles(
 				else
 				{
 					world_distance speed= definition->speed;
-					word flags;
+					uint16 flags;
 					
 					/* base alien projectile speed on difficulty level */
 					if (definition->flags&_alien_projectile)
@@ -386,7 +386,7 @@ void move_projectiles(
 						else
 						{
  							short monster_obstruction_index= (flags&_projectile_hit_monster) ? get_object_data(obstruction_index)->permutation : NONE;
-							boolean destroy_persistent_projectile= FALSE;
+							bool destroy_persistent_projectile= false;
 							
 							if (flags&_projectile_hit_scenery) damage_scenery(obstruction_index);
 							
@@ -414,7 +414,7 @@ void move_projectiles(
 										// END Benad
 										new_item(&location, projectile->permutation);
 										
-										destroy_persistent_projectile= TRUE;
+										destroy_persistent_projectile= true;
 									}
 									else
 									{
@@ -436,7 +436,7 @@ void move_projectiles(
 								
 							if ((definition->flags&_persistent) && !destroy_persistent_projectile)
 							{
-								SET_PROJECTILE_DAMAGE_STATUS(projectile, TRUE);
+								SET_PROJECTILE_DAMAGE_STATUS(projectile, true);
 							}
 							else
 							{
@@ -509,7 +509,7 @@ void move_projectiles(
 		
 						if ((flags&_flyby_of_current_player) && !PROJECTILE_HAS_MADE_A_FLYBY(projectile))
 						{
-							SET_PROJECTILE_FLYBY_STATUS(projectile, TRUE);
+							SET_PROJECTILE_FLYBY_STATUS(projectile, true);
 							play_object_sound(projectile->object_index, definition->flyby_sound);
 						}
 		
@@ -589,7 +589,7 @@ void load_projectile_sounds(
 
 void mark_projectile_collections(
 	short projectile_type,
-	boolean loading)
+	bool loading)
 {
 	if (projectile_type!=NONE)
 	{
@@ -714,7 +714,7 @@ void guided_projectile_target(
 	// if we're pointing at anything, lock on
 	if (translate_projectile(projectile->type, &object->location, object->polygon,
 		&new_location, new_polygon_index, projectile->owner_index, &obstruction_index,
-		(boolean *) NULL))
+		(bool *) NULL))
 	{
 		if (obstruction_index!=NONE)
 		{
@@ -783,7 +783,7 @@ static void update_guided_projectile(
 			angle delta_pitch= HALF_CIRCLE - NORMALIZE_ANGLE(arctangent(guess_distance2d((world_point2d *)&target_location, (world_point2d *)&projectile_object->location), dz) - projectile->elevation);
 			angle delta_yaw= HALF_CIRCLE - NORMALIZE_ANGLE(arctangent(dx, dy) - projectile_object->facing);
 			short obstruction_index;
-			word flags;
+			uint16 flags;
 
 			switch (dynamic_world->game_information.difficulty_level)
 			{
@@ -814,7 +814,7 @@ static void update_guided_projectile(
 }
 
 /* new_polygon_index==NULL means weÕre preflighting */
-word translate_projectile(
+uint16 translate_projectile(
 	short type,
 	world_point3d *old_location,
 	short old_polygon_index,
@@ -832,7 +832,7 @@ word translate_projectile(
 	short line_index;
 	short intersected_object_count;
 	short contact;
-	word flags= 0;
+	uint16 flags= 0;
 
 	*obstruction_index= NONE;
 
@@ -848,16 +848,16 @@ word translate_projectile(
 		// create a hack for enabling a projectile with this flag to continue
 		// Idiot-proofing of media handling
 		media_data *media = get_media_data(old_polygon->media_index);
-		media_height= (old_polygon->media_index==NONE || definition->flags&_penetrates_media || !media) ? SHORT_MIN : media->height;
-		// media_height= (old_polygon->media_index==NONE || definition->flags&_penetrates_media) ? SHORT_MIN : get_media_data(old_polygon->media_index)->height;
+		media_height= (old_polygon->media_index==NONE || definition->flags&_penetrates_media || !media) ? INT16_MIN : media->height;
+		// media_height= (old_polygon->media_index==NONE || definition->flags&_penetrates_media) ? INT16_MIN : get_media_data(old_polygon->media_index)->height;
 		
 		// This flag says it can
 		bool traveled_underneath = (definition->flags&_penetrates_media_boundary) && (old_location->z <= media_height);
 		
 		/* add this polygonÕs monsters to our non-redundant list of possible intersections */
-		possible_intersecting_monsters(&IntersectedObjects, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, TRUE);
+		possible_intersecting_monsters(&IntersectedObjects, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
 		intersected_object_count = IntersectedObjects.GetLength();
-		// possible_intersecting_monsters(intersected_object_indexes, &intersected_object_count, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, TRUE);
+		// possible_intersecting_monsters(intersected_object_indexes, &intersected_object_count, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);
 		
  		line_index= find_line_crossed_leaving_polygon(old_polygon_index, (world_point2d *)old_location, (world_point2d *)new_location);
 		if (line_index!=NONE)
@@ -1124,7 +1124,7 @@ word translate_projectile(
 		default: flags|= _projectile_hit; break;
 	}
 
-	/* returns TRUE if we hit something, FALSE otherwise */
+	/* returns true if we hit something, false otherwise */
 	return flags;
 }
 

@@ -163,7 +163,7 @@ OSErr NetDDPOpenSocket(
 		myMPPPBPtr->DDP.socket= 0;
 		myMPPPBPtr->DDP.u.listener= listenerUPP;
 		
-		error= POpenSkt(myMPPPBPtr, FALSE);
+		error= POpenSkt(myMPPPBPtr, false);
 		if (error==noErr)
 		{
 			*socketNumber= myMPPPBPtr->DDP.socket;
@@ -189,7 +189,7 @@ OSErr NetDDPCloseSocket(
 		{
 			myMPPPBPtr->DDP.socket= socketNumber;
 			
-			error= PCloseSkt(myMPPPBPtr, FALSE);
+			error= PCloseSkt(myMPPPBPtr, false);
 			
 			DisposePtr((Ptr)ddpPacketBuffer);
 			ddpPacketBuffer= (DDPPacketBufferPtr) NULL;
@@ -271,10 +271,10 @@ OSErr NetDDPSendFrame(
 			protocolType, frame->data_size);
 	
 		myMPPPBPtr->DDP.socket= socket;
-		myMPPPBPtr->DDP.checksumFlag= FALSE;
+		myMPPPBPtr->DDP.checksumFlag= false;
 		myMPPPBPtr->DDP.ioCompletion= (XPPCompletionUPP) NULL;
 		myMPPPBPtr->DDP.u.wdsPointer= (Ptr) &frame->wds;
-		error= PWriteDDP(myMPPPBPtr, TRUE);
+		error= PWriteDDP(myMPPPBPtr, true);
 		count = 0;
 	}
 	else
@@ -326,7 +326,7 @@ static ParmBlkPtr killioPBPtr;
 				
 				killioPBPtr->ioParam.ioRefNum= mppRefNum;
 				
-				error= PBKillIO(killioPBPtr, TRUE);
+				error= PBKillIO(killioPBPtr, true);
 				dprintf("PBKillIO(%d) returned %d;g", mppRefNum, error);
 			}
 			else

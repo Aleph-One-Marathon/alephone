@@ -78,7 +78,7 @@ bool OpenedFile::GetLength(long &Length)
 bool OpenedFile::SetLength(long Length)
 {
 	// impossible to do in a platform-independant way
-	printf("*** OpenedFile::SetLength(%d)\n", Length);
+	printf("*** OpenedFile::SetLength(%ld)\n", Length);
 	return false;
 }
 

@@ -84,7 +84,7 @@ void initialize_screen_drawing(void)
 
 	// Init fonts
 	LoadedResource rsrc;
-	if (get_resource('finf', 128, rsrc)) {
+	if (get_resource(FOUR_CHARS_TO_INT('f', 'i', 'n', 'f'), 128, rsrc)) {
 		SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), rsrc.GetLength());
 		assert(p);
 		int count = SDL_ReadBE16(p);
@@ -471,7 +471,7 @@ sdl_font_info *load_font(const TextSpec &spec)
 
 	// Load font family resource
 	LoadedResource fond;
-	if (!get_resource('FOND', spec.font, fond)) {
+	if (!get_resource(FOUR_CHARS_TO_INT('F', 'O', 'N', 'D'), spec.font, fond)) {
 		fprintf(stderr, "Font family resource for font ID %d not found\n", spec.font);
 		return NULL;
 	}
@@ -489,8 +489,8 @@ sdl_font_info *load_font(const TextSpec &spec)
 
 			// Size found, load bitmap font resource
 			LoadedResource font;
-			if (!get_resource('NFNT', id, font))
-				get_resource('FONT', id, font);
+			if (!get_resource(FOUR_CHARS_TO_INT('N', 'F', 'N', 'T'), id, font))
+				get_resource(FOUR_CHARS_TO_INT('F', 'O', 'N', 'T'), id, font);
 			if (font.IsLoaded()) {
 
 				// Found, switch stream to font resource
@@ -986,8 +986,8 @@ void draw_polygon(SDL_Surface *s, world_point2d *vertex_array, int vertex_count,
 	// Scan polygon edges and build span list
 	v1 = vertex_array + vertex_count - 1;
 	v2 = vertex_array;
-	int xmin = SHORT_MAX, xmax = SHORT_MIN;
-	int ymin = SHORT_MAX, ymax = SHORT_MIN;
+	int xmin = INT16_MAX, xmax = INT16_MIN;
+	int ymin = INT16_MAX, ymax = INT16_MIN;
 	for (int i=0; i<vertex_count; i++, v1 = v2, v2++) {
 
 		if (v1->x < xmin)	// Find minimum and maximum coordinates

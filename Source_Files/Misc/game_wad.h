@@ -37,7 +37,7 @@ void load_random_sound_images(struct random_sound_image_data *data, short count)
 void load_terminal_data(byte *data, long length);
 
 /* Used _ONLY_ by game_wad.c internally and precalculate.c. */
-boolean process_map_wad(struct wad_data *wad, boolean restoring_game, short version);
+bool process_map_wad(struct wad_data *wad, bool restoring_game, short version);
 
 /* Final three calls, must be in this order! */
 void recalculate_redundant_map(void);
@@ -47,14 +47,14 @@ void complete_loading_level(short *map_indexes, short map_index_count,
 	struct platform_data *actual_platform_data, short actual_platform_data_count, short version);
 #endif
 #endif
-boolean save_game_file(FileSpecifier& File);
+bool save_game_file(FileSpecifier& File);
 
 /* -------------- New functions */
 void pause_game(void);
 void resume_game(void);
 void get_current_saved_game_name(FileSpecifier& File);
 
-boolean match_checksum_with_map(short vRefNum, long dirID, unsigned long checksum, 
+bool match_checksum_with_map(short vRefNum, long dirID, uint32 checksum, 
 	FileSpecifier& File);
 void set_map_file(FileSpecifier& File);
 

@@ -20,16 +20,16 @@ enum { // All of our songs.
 	NUMBER_OF_SONGS
 };
 
-boolean initialize_music_handler(FileSpecifier& SongFile);
+bool initialize_music_handler(FileSpecifier& SongFile);
 
 void queue_song(short song_index);
 
 void music_idle_proc(void);
 
 void stop_music(void);
-void pause_music(boolean pause);
+void pause_music(bool pause);
 
-boolean music_playing(void);
+bool music_playing(void);
 
 void free_music_channel(void);
 void fade_out_music(short duration);

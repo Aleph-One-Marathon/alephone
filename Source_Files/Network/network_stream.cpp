@@ -34,8 +34,8 @@ static ConnectionEndPtr dspConnection; /* our adsp connection */
 static AddrBlock adsp_end_address;
 
 /* ----- local prototypes */
-static OSErr stream_write(void *data, word length);
-static OSErr stream_read(void *data, word *length);
+static OSErr stream_write(void *data, uint16 length);
+static OSErr stream_read(void *data, uint16 *length);
 
 /* ------ code */
 OSErr NetSendStreamPacket(
@@ -43,7 +43,7 @@ OSErr NetSendStreamPacket(
 	void *packet_data)
 {
 	OSErr error;
-	word packet_length;
+	uint16 packet_length;
 	
 	packet_length= NetStreamPacketLength(packet_type);
 	error= stream_write(&packet_type, sizeof(short));
@@ -60,7 +60,7 @@ OSErr NetReceiveStreamPacket(
 	void *buffer) /* Must be large enough for the biggest packet type.. */
 {
 	OSErr error;
-	word length;
+	uint16 length;
 	
 	length= sizeof(short);
 	error= stream_read(packet_type, &length);
@@ -102,7 +102,7 @@ OSErr NetOpenStreamToPlayer(
 }
 
 OSErr NetCloseStreamConnection(
-	boolean abort)
+	bool abort)
 {
 	OSErr error;
 
@@ -196,10 +196,10 @@ void NetSetTransportType(
 	transport_type= type;
 }
 
-boolean NetStreamCheckConnectionStatus(
+bool NetStreamCheckConnectionStatus(
 	void)
 {
-	boolean connection_made;
+	bool connection_made;
 
 	switch(transport_type)
 	{
@@ -210,7 +210,7 @@ boolean NetStreamCheckConnectionStatus(
 			
 		case kModemTransportType:
 #ifdef USE_MODEM
-			connection_made= FALSE;
+			connection_made= false;
 			break;
 #endif			
 		default:
@@ -268,10 +268,10 @@ short NetGetStreamSocketNumber(
 	return dspConnection->socketNum;
 }
 
-boolean NetTransportAvailable(
+bool NetTransportAvailable(
 	short type)
 {
-	boolean available;
+	bool available;
 	
 	switch(type)
 	{
@@ -283,7 +283,7 @@ boolean NetTransportAvailable(
 			available= modem_available();
 			break;
 #else
-			available= FALSE;
+			available= false;
 #endif
 			break;
 
@@ -300,7 +300,7 @@ boolean NetTransportAvailable(
 /* ------------ code for stream implementations */
 static OSErr stream_write(
 	void *data,
-	word length)
+	uint16 length)
 {
 	OSErr error;
 
@@ -327,7 +327,7 @@ static OSErr stream_write(
 
 static OSErr stream_read(
 	void *data,
-	word *length)
+	uint16 *length)
 {
 	OSErr error;
 

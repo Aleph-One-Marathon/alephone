@@ -2,7 +2,7 @@
 NETWORK_ADSP.C
 Sunday, June 26, 1994 5:33:43 PM
 Monday, July 18, 1994 11:47:15 AM
-	NetADSPWrite and NetADSPRead now take a "word" for length because ADSP can only write
+	NetADSPWrite and NetADSPRead now take a "uint16" for length because ADSP can only write
 	64K chunks
 */
 
@@ -131,7 +131,7 @@ OSErr NetADSPEstablishConnectionEnd(
 			myDSPPBPtr->u.initParams.recvQueue= connectionEnd->dspRecvQPtr;
 			myDSPPBPtr->u.initParams.attnPtr= connectionEnd->dspAttnBufPtr;
 			
-			error= PBControl((ParmBlkPtr)myDSPPBPtr, FALSE);
+			error= PBControl((ParmBlkPtr)myDSPPBPtr, false);
 			if (error==noErr)
 			{
 				connectionEnd->ccbRefNum= myDSPPBPtr->ccbRefNum; /* save CCB reference number */
@@ -146,9 +146,9 @@ OSErr NetADSPEstablishConnectionEnd(
 				
 				myDSPPBPtr->u.optionParams.sendBlocking= kSendBlocking;
 				myDSPPBPtr->u.optionParams.badSeqMax= kBadSeqMax;
-				myDSPPBPtr->u.optionParams.useCheckSum= FALSE;
+				myDSPPBPtr->u.optionParams.useCheckSum= false;
 				
-				error= PBControl((ParmBlkPtr)myDSPPBPtr, FALSE);
+				error= PBControl((ParmBlkPtr)myDSPPBPtr, false);
 				if (error==noErr)
 				{
 					/* connection end established and initialized with our options */
@@ -169,9 +169,9 @@ OSErr NetADSPDisposeConnectionEnd(
 	myDSPPBPtr->csCode= dspRemove; /* remove a connection end */
 	myDSPPBPtr->ioCRefNum= dspRefNum; /* from OpenDriver('.DSP', ...) */
 	myDSPPBPtr->ccbRefNum= connectionEnd->ccbRefNum; /* from PBControl csCode==dspInit */
-	myDSPPBPtr->u.closeParams.abort= TRUE; /* tear down the connection immediately */
+	myDSPPBPtr->u.closeParams.abort= true; /* tear down the connection immediately */
 	
-	error= PBControl((ParmBlkPtr)myDSPPBPtr, FALSE);
+	error= PBControl((ParmBlkPtr)myDSPPBPtr, false);
 	if (error==noErr)
 	{
 		/* free all memory allocated by the connection end */
@@ -217,7 +217,7 @@ NetADSPCheckConnectionStatus
 
 	---> ConnectionEndPtr
 	
-	<--- connection established (boolean)
+	<--- connection established (bool)
 	<--- address block of remote machine (can be NULL)
 */
 
@@ -237,7 +237,7 @@ OSErr NetADSPOpenConnection(
 	myDSPPBPtr->u.openParams.ocInterval= 0; /* default retry interval */
 	myDSPPBPtr->u.openParams.ocMaximum= 0; /* default retry maximum */
 	
-	error= PBControl((ParmBlkPtr)myDSPPBPtr, FALSE);
+	error= PBControl((ParmBlkPtr)myDSPPBPtr, false);
 	if (error==noErr)
 	{
 		/* successfully opened connection */
@@ -248,16 +248,16 @@ OSErr NetADSPOpenConnection(
 
 OSErr NetADSPCloseConnection(
 	ConnectionEndPtr connectionEnd,
-	boolean abort)
+	bool abort)
 {
 	OSErr error;
 
 	myDSPPBPtr->csCode= dspClose; /* remove a connection end */
 	myDSPPBPtr->ioCRefNum= dspRefNum; /* from OpenDriver('.DSP', ...) */
 	myDSPPBPtr->ccbRefNum= connectionEnd->ccbRefNum; /* from PBControl csCode==dspInit */
-	myDSPPBPtr->u.closeParams.abort= abort; /* tear down the connection immediately if TRUE */
+	myDSPPBPtr->u.closeParams.abort= abort; /* tear down the connection immediately if true */
 	
-	error= PBControl((ParmBlkPtr)myDSPPBPtr, FALSE);
+	error= PBControl((ParmBlkPtr)myDSPPBPtr, false);
 	
 	return error;
 }
@@ -280,7 +280,7 @@ OSErr NetADSPWaitForConnection(
 	myDSPPBPtr->u.openParams.ocInterval= 0; /* default retry interval */
 	myDSPPBPtr->u.openParams.ocMaximum= 0; /* default retry maximum */
 	
-	error= PBControl((ParmBlkPtr)myDSPPBPtr, TRUE);
+	error= PBControl((ParmBlkPtr)myDSPPBPtr, true);
 	if (error==noErr)
 	{
 		/* we’re asynchronously waiting for a connection now; nobody had better use this
@@ -295,7 +295,7 @@ Boolean NetADSPCheckConnectionStatus(
 	AddrBlock *address)
 {
 	DSPPBPtr myDSPPBPtr= &connectionEnd->pb; /* use private DSPPBPtr (ocPassive call was asynchronous) */
-	Boolean connectionEstablished= FALSE;
+	Boolean connectionEstablished= false;
 	OSErr error;
 	
 	/* check to make sure we’re waiting for a connection like we expect */
@@ -306,7 +306,7 @@ Boolean NetADSPCheckConnectionStatus(
 		if (error==noErr)
 		{
 			if (address) *address= myDSPPBPtr->u.openParams.remoteAddress; /* get remote address */
-			connectionEstablished= TRUE; /* got one! */
+			connectionEstablished= true; /* got one! */
 		}
 		else
 		{
@@ -337,7 +337,7 @@ executed synchronously (not safe at interrupt time)
 OSErr NetADSPWrite(
 	ConnectionEndPtr connectionEnd,
 	void *buffer,
-	word *count)
+	uint16 *count)
 {
 	DSPPBPtr myDSPPBPtr= &connectionEnd->pb; /* use private DSPPBPtr */
 	OSErr error;
@@ -358,10 +358,10 @@ OSErr NetADSPWrite(
 			
 			myDSPPBPtr->u.ioParams.reqCount= *count;
 			myDSPPBPtr->u.ioParams.dataPtr= buffer;
-			myDSPPBPtr->u.ioParams.eom= TRUE; /* logical end-of-message */
-			myDSPPBPtr->u.ioParams.flush= TRUE; /* flush immediately */
+			myDSPPBPtr->u.ioParams.eom= true; /* logical end-of-message */
+			myDSPPBPtr->u.ioParams.flush= true; /* flush immediately */
 		
-			error= PBControl((ParmBlkPtr)myDSPPBPtr, FALSE);
+			error= PBControl((ParmBlkPtr)myDSPPBPtr, false);
 		}
 		else
 		{
@@ -391,7 +391,7 @@ available.
 OSErr NetADSPRead(
 	ConnectionEndPtr connectionEnd,
 	void *buffer,
-	word *count)
+	uint16 *count)
 {
 	DSPPBPtr myDSPPBPtr= &connectionEnd->pb; /* use private DSPPBPtr (this will be asynchronous) */
 	OSErr error;
@@ -411,7 +411,7 @@ OSErr NetADSPRead(
 	myDSPPBPtr->u.ioParams.reqCount= *count;
 	myDSPPBPtr->u.ioParams.dataPtr= buffer;
 	
-	error= PBControl((ParmBlkPtr)myDSPPBPtr, FALSE);
+	error= PBControl((ParmBlkPtr)myDSPPBPtr, false);
 	if (error==noErr)
 	{
 		/* return the actual amount of data read */
@@ -457,7 +457,7 @@ OSErr NetDeferredRead(
 	myDSPPBPtr->u.ioParams.reqCount= buffer_size;
 	myDSPPBPtr->u.ioParams.dataPtr= buffer;
 	
-	error= PBControl((ParmBlkPtr)myDSPPBPtr, TRUE);
+	error= PBControl((ParmBlkPtr)myDSPPBPtr, true);
 	if (error==noErr)
 	{
 		/* the request is queued and we’ll be notified, with luck, when our data arrives */

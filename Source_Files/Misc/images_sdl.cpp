@@ -96,7 +96,7 @@ static void uncompress_rle16(const uint8 *src, int row_bytes, uint8 *dst, int ds
 
 static void copy_component_into_surface(const uint8 *src, uint8 *dst, int count, int component)
 {
-#ifdef LITTLE_ENDIAN
+#ifdef ALEPHONE_LITTLE_ENDIAN
 	dst += 2 - component;
 #else
 	dst += component + 1;
@@ -247,9 +247,6 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 				// Allocate surface for picture
 				uint32 Rmask, Gmask, Bmask;
 				switch (pixel_size) {
-					case 8:
-						Rmask = Gmask = Bmask = 0xff;
-						break;
 					case 16:
 						Rmask = 0x7c00;
 						Gmask = 0x03e0;
@@ -259,6 +256,9 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 						Rmask = 0x00ff0000;
 						Gmask = 0x0000ff00;
 						Bmask = 0x000000ff;
+						break;
+					default:
+						Rmask = Gmask = Bmask = 0xff;
 						break;
 				}
 				s = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, pixel_size, Rmask, Gmask, Bmask, 0);
@@ -375,7 +375,7 @@ struct color_table *build_8bit_system_color_table(void)
 
 #define SCROLLING_SPEED (MACHINE_TICKS_PER_SECOND / 20)
 
-void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, boolean text_block)
+void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bool text_block)
 {
 	// Convert picture resource to surface, free resource
 	LoadedResource rsrc;

@@ -112,7 +112,7 @@ extern struct projectile_data *projectiles;
 
 /* ---------- prototypes/PROJECTILES.C */
 
-boolean preflight_projectile(world_point3d *origin, short polygon_index, world_point3d *vector,
+bool preflight_projectile(world_point3d *origin, short polygon_index, world_point3d *vector,
 	angle delta_theta, short type, short owner, short owner_type, short *target_index);
 short new_projectile(world_point3d *origin, short polygon_index, world_point3d *vector,
 	angle delta_theta, short type, short owner_index, short owner_type, short intended_target_index,
@@ -127,7 +127,7 @@ void remove_all_projectiles(void);
 
 void orphan_projectiles(short monster_index);
 
-void mark_projectile_collections(short type, boolean loading);
+void mark_projectile_collections(short type, bool loading);
 void load_projectile_sounds(short type);
 
 void drop_the_ball(world_point3d *origin, short polygon_index, short owner_index,

@@ -91,8 +91,8 @@ struct bitmap_definition *world_pixels_structure;
 
 // Stuff for keeping track of screen sizes; this is for forcing the clearing of the screen when resizing.
 // These are initialized to improbable values.
-int PrevBufferWidth = SHORT_MIN, PrevBufferHeight = SHORT_MIN,
-    PrevOffsetWidth = SHORT_MIN, PrevOffsetHeight = SHORT_MIN;
+int PrevBufferWidth = INT16_MIN, PrevBufferHeight = INT16_MIN,
+    PrevOffsetWidth = INT16_MIN, PrevOffsetHeight = INT16_MIN;
 
 #define FRAME_SAMPLE_SIZE 20
 bool displaying_fps = false;
@@ -128,8 +128,8 @@ static void reallocate_world_pixels(int width, int height);
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
 static void update_fps_display(SDL_Surface *s);
 static void DisplayPosition(SDL_Surface *s);
-static void set_overhead_map_status(boolean status);
-static void set_terminal_status(boolean status);
+static void set_overhead_map_status(bool status);
+static void set_terminal_status(bool status);
 static void DrawHUD(SDL_Rect &dest_rect);
 static void ClearScreen(void);
 
@@ -167,8 +167,8 @@ void initialize_screen(struct screen_mode_data *mode)
 		world_view->field_of_view = NORMAL_FIELD_OF_VIEW; // degrees (was 74 for a long, long time)
 		world_view->target_field_of_view = NORMAL_FIELD_OF_VIEW; // for no change in FOV
 		world_view->overhead_map_scale = DEFAULT_OVERHEAD_MAP_SCALE;
-		world_view->overhead_map_active = FALSE;
-		world_view->terminal_mode_active = FALSE;
+		world_view->overhead_map_active = false;
+		world_view->terminal_mode_active = false;
 		world_view->horizontal_scale = 1;
 		world_view->vertical_scale = 1;
 		world_view->tunnel_vision_active = false;
@@ -231,8 +231,8 @@ void reset_screen()
 {
 	// Resetting cribbed from initialize_screen()
 	world_view->overhead_map_scale = DEFAULT_OVERHEAD_MAP_SCALE;
-	world_view->overhead_map_active = FALSE;
-	world_view->terminal_mode_active = FALSE;
+	world_view->overhead_map_active = false;
+	world_view->terminal_mode_active = false;
 	world_view->horizontal_scale = 1;
 	world_view->vertical_scale = 1;
 	ResetFieldOfView();
@@ -277,9 +277,9 @@ void ReloadViewContext(void)
 void enter_screen(void)
 {
 	if (world_view->overhead_map_active)
-		set_overhead_map_status(FALSE);
+		set_overhead_map_status(false);
 	if (world_view->terminal_mode_active)
-		set_terminal_status(FALSE);
+		set_terminal_status(false);
 
 	// Adding this view-effect resetting here since initialize_world_view() no longer resets it
 	world_view->effect = NONE;
@@ -356,7 +356,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #endif
 }
 
-void change_screen_mode(struct screen_mode_data *mode, boolean redraw)
+void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 {
 	// Get the screen mode here
 	screen_mode = *mode;
@@ -391,18 +391,18 @@ void render_screen(short ticks_elapsed)
 	// Suppress the overhead map if desired
 	if (PLAYER_HAS_MAP_OPEN(current_player) && View_MapActive()) {
 		if (!world_view->overhead_map_active)
-			set_overhead_map_status(TRUE);
+			set_overhead_map_status(true);
 	} else {
 		if (world_view->overhead_map_active)
-			set_overhead_map_status(FALSE);
+			set_overhead_map_status(false);
 	}
 
 	if(player_in_terminal_mode(current_player_index)) {
 		if (!world_view->terminal_mode_active)
-			set_terminal_status(TRUE);
+			set_terminal_status(true);
 	} else {
 		if (world_view->terminal_mode_active)
-			set_terminal_status(FALSE);
+			set_terminal_status(false);
 	}
 
 	// Set rendering-window bounds for the current sort of display to render
@@ -639,7 +639,7 @@ void change_screen_clut(struct color_table *color_table)
 	assert_world_color_table(interface_color_table, world_color_table);
 }
 
-void animate_screen_clut(struct color_table *color_table, boolean full_screen)
+void animate_screen_clut(struct color_table *color_table, bool full_screen)
 {
 	//!!
 }
@@ -808,17 +808,17 @@ void zoom_overhead_map_in(void)
  *  Special effects
  */
 
-void start_teleporting_effect(boolean out)
+void start_teleporting_effect(bool out)
 {
 	start_render_effect(world_view, out ? _render_effect_fold_out : _render_effect_fold_in);
 }
 
-void start_extravision_effect(boolean out)
+void start_extravision_effect(bool out)
 {
 	world_view->target_field_of_view = out ? EXTRAVISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW;
 }
 
-void start_tunnel_vision_effect(boolean out)
+void start_tunnel_vision_effect(bool out)
 {
 	world_view->target_field_of_view = out ? TUNNEL_VISION_FIELD_OF_VIEW : 
 		((current_player->extravision_duration) ? EXTRAVISION_FIELD_OF_VIEW : NORMAL_FIELD_OF_VIEW);
@@ -839,7 +839,7 @@ screen_mode_data *get_screen_mode(void)
  *  Show HUD?
  */
 
-boolean game_window_is_full_screen(void)
+bool game_window_is_full_screen(void)
 {
 	short msize = screen_mode.size;
 	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
@@ -851,12 +851,12 @@ boolean game_window_is_full_screen(void)
  *  16/32 bit supported?
  */
 
-boolean machine_supports_16bit(GDSpecPtr spec)
+bool machine_supports_16bit(GDSpecPtr spec)
 {
 	return true;
 }
 
-boolean machine_supports_32bit(GDSpecPtr spec)
+bool machine_supports_32bit(GDSpecPtr spec)
 {
 	return true;
 }
@@ -876,7 +876,7 @@ short hardware_acceleration_code(GDSpecPtr spec)
  *  Get world view destination frame for given screen size
  */
 
-void calculate_destination_frame(short size, boolean high_resolution, Rect *frame)
+void calculate_destination_frame(short size, bool high_resolution, Rect *frame)
 {
 	frame->left = frame->top = 0;
 
@@ -986,12 +986,12 @@ void change_gamma_level(short gamma_level)
  *  Set map/terminal display status
  */
 
-static void set_overhead_map_status(boolean status)
+static void set_overhead_map_status(bool status)
 {
 	world_view->overhead_map_active = status;
 }
 
-static void set_terminal_status(boolean status)
+static void set_terminal_status(bool status)
 {
 	world_view->terminal_mode_active = status;
 	dirty_terminal_view(current_player_index);

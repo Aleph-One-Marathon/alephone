@@ -17,20 +17,20 @@ enum {
 OSErr initialize_modem_endpoint(void);
 OSErr teardown_modem_endpoint(void);
 
-boolean call_modem_player(void);
-boolean answer_modem_player(void);
+bool call_modem_player(void);
+bool answer_modem_player(void);
 
 /* Ideally, packet data has only a checksum, and stream data knows how to ask */
 /*  that the data be resent. */
-OSErr write_modem_endpoint(void *data, word length, long timeout);
-OSErr read_modem_endpoint(void *data, word length, long timeout);
+OSErr write_modem_endpoint(void *data, uint16 length, long timeout);
+OSErr read_modem_endpoint(void *data, uint16 length, long timeout);
 
-void write_modem_endpoint_asynchronous(void *data, word length, long timeout);
-boolean asynchronous_write_completed(void);
+void write_modem_endpoint_asynchronous(void *data, uint16 length, long timeout);
+bool asynchronous_write_completed(void);
 
 void idle_modem_endpoint(void);
 
-boolean modem_available(void);
+bool modem_available(void);
 long modem_read_bytes_available(void);
 
 #endif

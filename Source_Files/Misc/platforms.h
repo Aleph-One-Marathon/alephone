@@ -169,17 +169,17 @@ enum /* dynamic platform flags */
 #define PLATFORM_CEILING_BELOW_MEDIA(p) TEST_FLAG16((p)->dynamic_flags, _platform_ceiling_below_media)
 
 #define SET_PLATFORM_IS_ACTIVE(p, v) SET_FLAG16((p)->dynamic_flags, _platform_is_active, (v))
-#define SET_PLATFORM_IS_EXTENDING(p) SET_FLAG16((p)->dynamic_flags, _platform_is_extending, TRUE)
-#define SET_PLATFORM_IS_CONTRACTING(p) SET_FLAG16((p)->dynamic_flags, _platform_is_extending, FALSE)
+#define SET_PLATFORM_IS_EXTENDING(p) SET_FLAG16((p)->dynamic_flags, _platform_is_extending, true)
+#define SET_PLATFORM_IS_CONTRACTING(p) SET_FLAG16((p)->dynamic_flags, _platform_is_extending, false)
 #define SET_PLATFORM_IS_MOVING(p, v) SET_FLAG16((p)->dynamic_flags, _platform_is_moving, (v))
-#define SET_PLATFORM_HAS_BEEN_ACTIVATED(p) SET_FLAG16((p)->dynamic_flags, _platform_has_been_activated, TRUE)
-#define SET_PLATFORM_WAS_MOVING(p) SET_FLAG16((p)->dynamic_flags, _platform_was_moving, TRUE)
-#define SET_PLATFORM_WAS_BLOCKED(p) SET_FLAG16((p)->dynamic_flags, _platform_was_moving, FALSE)
-#define SET_PLATFORM_IS_FULLY_EXTENDED(p) SET_FLAG16((p)->dynamic_flags, _platform_is_fully_extended, TRUE)
-#define SET_PLATFORM_IS_FULLY_CONTRACTED(p) SET_FLAG16((p)->dynamic_flags, _platform_is_fully_contracted, TRUE)
-#define CLEAR_PLATFORM_POSITIONING_FLAGS(p) SET_FLAG16((p)->dynamic_flags, _platform_is_fully_contracted, FALSE), SET_FLAG16((p)->dynamic_flags, _platform_is_fully_extended, FALSE)
-#define SET_PLATFORM_WAS_JUST_ACTIVATED_OR_DEACTIVATED(p) SET_FLAG16((p)->dynamic_flags, _platform_was_just_activated_or_deactivated, TRUE)
-#define CLEAR_PLATFORM_WAS_JUST_ACTIVATED_OR_DEACTIVATED(p) SET_FLAG16((p)->dynamic_flags, _platform_was_just_activated_or_deactivated, FALSE)
+#define SET_PLATFORM_HAS_BEEN_ACTIVATED(p) SET_FLAG16((p)->dynamic_flags, _platform_has_been_activated, true)
+#define SET_PLATFORM_WAS_MOVING(p) SET_FLAG16((p)->dynamic_flags, _platform_was_moving, true)
+#define SET_PLATFORM_WAS_BLOCKED(p) SET_FLAG16((p)->dynamic_flags, _platform_was_moving, false)
+#define SET_PLATFORM_IS_FULLY_EXTENDED(p) SET_FLAG16((p)->dynamic_flags, _platform_is_fully_extended, true)
+#define SET_PLATFORM_IS_FULLY_CONTRACTED(p) SET_FLAG16((p)->dynamic_flags, _platform_is_fully_contracted, true)
+#define CLEAR_PLATFORM_POSITIONING_FLAGS(p) SET_FLAG16((p)->dynamic_flags, _platform_is_fully_contracted, false), SET_FLAG16((p)->dynamic_flags, _platform_is_fully_extended, false)
+#define SET_PLATFORM_WAS_JUST_ACTIVATED_OR_DEACTIVATED(p) SET_FLAG16((p)->dynamic_flags, _platform_was_just_activated_or_deactivated, true)
+#define CLEAR_PLATFORM_WAS_JUST_ACTIVATED_OR_DEACTIVATED(p) SET_FLAG16((p)->dynamic_flags, _platform_was_just_activated_or_deactivated, false)
 #define SET_PLATFORM_FLOOR_BELOW_MEDIA(p, v) SET_FLAG16((p)->dynamic_flags, _platform_floor_below_media, v)
 #define SET_PLATFORM_CEILING_BELOW_MEDIA(p, v) SET_FLAG16((p)->dynamic_flags, _platform_ceiling_below_media, v)
 
@@ -325,10 +325,10 @@ struct static_platform_data *get_defaults_for_platform_type(short type);
 
 void update_platforms(void);
 
-void platform_was_entered(short platform_index, boolean player);
+void platform_was_entered(short platform_index, bool player);
 
-boolean try_and_change_platform_state(short platform_index, boolean state);
-boolean try_and_change_tagged_platform_states(short tag, boolean state);
+bool try_and_change_platform_state(short platform_index, bool state);
+bool try_and_change_tagged_platform_states(short tag, bool state);
 
 enum /* return values from monster_can_enter_platform() and monster_can_leave_platform() */
 {
@@ -345,12 +345,12 @@ enum /* return values from monster_can_enter_platform() and monster_can_leave_pl
 short monster_can_enter_platform(short platform_index, short source_polygon_index, world_distance height, world_distance minimum_ledge_delta, world_distance maximum_ledge_delta);
 short monster_can_leave_platform(short platform_index, short destination_polygon_index, world_distance height, world_distance minimum_ledge_delta, world_distance maximum_ledge_delta);
 
-boolean platform_is_on(short platform_index);
+bool platform_is_on(short platform_index);
 
 void player_touch_platform_state(short player_index, short platform_index);
-boolean platform_is_legal_player_target(short platform_index);
+bool platform_is_legal_player_target(short platform_index);
 
-boolean platform_is_at_initial_state(short platform_index);
+bool platform_is_at_initial_state(short platform_index);
 
 short get_platform_moving_sound(short platform_index);
 

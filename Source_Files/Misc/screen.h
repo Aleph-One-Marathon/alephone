@@ -84,12 +84,12 @@ struct screen_mode_data;
 
 void change_screen_clut(struct color_table *color_table);
 void change_interface_clut(struct color_table *color_table);
-void animate_screen_clut(struct color_table *color_table, boolean full_screen);
+void animate_screen_clut(struct color_table *color_table, bool full_screen);
 
 void build_direct_color_table(struct color_table *color_table, short bit_depth);
 
-void start_teleporting_effect(boolean out);
-void start_extravision_effect(boolean out);
+void start_teleporting_effect(bool out);
+void start_extravision_effect(bool out);
 
 void render_screen(short ticks_elapsed);
 
@@ -114,23 +114,23 @@ void reset_screen();
 screen_mode_data *get_screen_mode(void);
 
 void initialize_screen(struct screen_mode_data *mode);
-void change_screen_mode(struct screen_mode_data *mode, boolean redraw);
+void change_screen_mode(struct screen_mode_data *mode, bool redraw);
 
 #ifdef mac
 void process_screen_key(EventRecord *event, short key);
 void process_screen_click(EventRecord *event);
 #endif
 
-boolean machine_supports_16bit(GDSpecPtr spec);
-boolean machine_supports_32bit(GDSpecPtr spec);
+bool machine_supports_16bit(GDSpecPtr spec);
+bool machine_supports_32bit(GDSpecPtr spec);
 short hardware_acceleration_code(GDSpecPtr spec);
 
 #ifdef mac
-void activate_screen_window(WindowPtr window, EventRecord *event, boolean active);
+void activate_screen_window(WindowPtr window, EventRecord *event, bool active);
 void update_screen_window(WindowPtr window, EventRecord *event);
 #endif
 
-void calculate_destination_frame(short size, boolean high_resolution, Rect *frame);
+void calculate_destination_frame(short size, bool high_resolution, Rect *frame);
 
 // LP addition: a routine for dumping the screen contents into a file.
 // May need to be modified for pass-through video cards like the older 3dfx ones.

@@ -92,11 +92,11 @@ enum
 /* ---------- prototypes/FADES.C */
 
 void initialize_fades(void);
-boolean update_fades(void);
+bool update_fades(void);
 
 void start_fade(short type);
 void stop_fade(void);
-boolean fade_finished(void);
+bool fade_finished(void);
 
 void set_fade_effect(short type);
 

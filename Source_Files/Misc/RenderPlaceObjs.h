@@ -31,7 +31,7 @@ struct render_object_data
 	
 	struct rectangle_definition rectangle;
 	
-	short ymedia;
+	int16 ymedia;
 };
 
 

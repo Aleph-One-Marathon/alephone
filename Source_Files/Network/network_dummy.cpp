@@ -12,12 +12,12 @@ void NetExit(void)
 {
 }
 
-boolean NetSync(void)
+bool NetSync(void)
 {
 	return true;
 }
 
-boolean NetUnSync(void)
+bool NetUnSync(void)
 {
 	return true;
 }
@@ -47,7 +47,7 @@ void *NetGetGameData(void)
 	return NULL;
 }
 
-boolean NetChangeMap(struct entry_point *entry)
+bool NetChangeMap(struct entry_point *entry)
 {
 	return false;
 }

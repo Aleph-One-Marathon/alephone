@@ -60,6 +60,7 @@ Jul 1, 2000 (Loren Petrich):
 
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "weapon_definitions.h"
 
@@ -150,13 +151,13 @@ struct trigger_data {
 	short shots_fired, shots_hit;
 	short ticks_since_last_shot; /* used to play shell casing sound, and to calculate arc for shell casing drawing... */
 	short ticks_firing; /* How long have we been firing? (only valid for automatics) */
-	word sequence; /* what step of the animation are we in? (NOT guaranteed to be in sync!) */
+	uint16 sequence; /* what step of the animation are we in? (NOT guaranteed to be in sync!) */
 };
 
 struct weapon_data {
 	short weapon_type; /* stored here to make life easier.. */
-	word flags;
-	word unused; /* non zero-> weapon is powered up */
+	uint16 flags;
+	uint16 unused; /* non zero-> weapon is powered up */
 	struct trigger_data triggers[NUMBER_OF_TRIGGERS];
 };
 
@@ -165,7 +166,7 @@ struct shell_casing_data
 	short type;
 	short frame;
 
-	word flags;
+	uint16 flags;
 
 	fixed x, y;
 	fixed vx, vy;
@@ -249,7 +250,7 @@ static struct shell_casing_definition *get_shell_casing_definition(
 
 /* ------------- local prototypes */
 static void reset_trigger_data(short player_index, short weapon_type, short which_trigger);
-static boolean weapon_works_in_current_environment(short weapon_index);
+static bool weapon_works_in_current_environment(short weapon_index);
 static void select_next_best_weapon(short player_index);
 static struct trigger_data *get_player_trigger_data(short player_index, 
 	short which_trigger);
@@ -257,51 +258,51 @@ struct trigger_data *get_trigger_data(short player_index, short weapon_index,
 	short which_trigger);
 static struct weapon_data *get_player_current_weapon(short player_index);
 static void fire_weapon(short player_index, short which_trigger,
-	fixed charged_amount, boolean flail_wildly);
+	fixed charged_amount, bool flail_wildly);
 static struct trigger_definition *get_trigger_definition(short player_index, short which_weapon, 
 	short which_trigger);
-static boolean should_switch_to_weapon(short player_index, short new_weapon);
+static bool should_switch_to_weapon(short player_index, short new_weapon);
 /* CP Addition: 'static' removed from decleration of ready_weapon() */
-/*static*/ boolean ready_weapon(short player_index, short weapon_index);
+/*static*/ bool ready_weapon(short player_index, short weapon_index);
 struct weapon_definition *get_current_weapon_definition(short player_index);
-static boolean reload_weapon(short player_index, short which_trigger);
+static bool reload_weapon(short player_index, short which_trigger);
 static struct trigger_definition *get_player_trigger_definition(short player_index,
 	short which_trigger);
-static boolean handle_trigger_down(short player_index, short which_trigger);
-static boolean handle_trigger_up(short player_index, short which_trigger);
+static bool handle_trigger_down(short player_index, short which_trigger);
+static bool handle_trigger_up(short player_index, short which_trigger);
 static void put_rounds_into_weapon(short player_index, short which_weapon, short which_trigger);
 static void blow_up_player(short player_index);
-static void select_next_weapon(short player_index, boolean forward);
+static void select_next_weapon(short player_index, bool forward);
 static void calculate_weapon_position_for_idle(short player_index, short count, short weapon_type,
 	fixed *height, fixed *width);
 static void add_random_flutter(fixed flutter_base, fixed *height, fixed *width);
 static void calculate_weapon_origin_and_vector(short player_index, short which_trigger,
 	world_point3d *origin, world_point3d *vector, short *origin_polygon, angle delta_theta);
 static void play_weapon_sound(short player_index, short sound, fixed pitch);
-static boolean player_weapon_has_ammo(short player_index, short weapon_index);
+static bool player_weapon_has_ammo(short player_index, short weapon_index);
 static void lower_weapon(short player_index, short weapon_index);
 static void raise_weapon(short player_index, short weapon_index);
-static boolean check_reload(short player_index, short which_trigger);
+static bool check_reload(short player_index, short which_trigger);
 static short get_active_trigger_count_and_states(short player_index,
-	short weapon_index, long action_flags, short *first_trigger, boolean *triggers_down);
-static boolean dual_function_secondary_has_control(short player_index);
+	short weapon_index, long action_flags, short *first_trigger, bool *triggers_down);
+static bool dual_function_secondary_has_control(short player_index);
 static void calculate_ticks_from_shapes(void);
 static void update_sequence(short player_index, short which_trigger);
 static void update_automatic_sequence(short player_index, short which_trigger);
-static boolean get_weapon_data_type_for_count(short player_index, short count, short *type, 
+static bool get_weapon_data_type_for_count(short player_index, short count, short *type, 
 	short *index, short *flags);
 static void update_player_ammo_count(short player_index);
-static boolean player_has_valid_weapon(short player_index);
+static bool player_has_valid_weapon(short player_index);
 static void idle_weapon(short player_index);
 static void test_raise_double_weapon(short player_index, long *action_flags);
 static void modify_position_for_two_weapons(short player_index, short count, fixed *width, fixed *height);
 static void change_to_desired_weapon(short player_index);
 static void destroy_current_weapon(short player_index);
 static void initialize_shell_casings(short player_index);
-static short new_shell_casing(short player_index, short type, word flags);
+static short new_shell_casing(short player_index, short type, uint16 flags);
 static void update_shell_casings(short player_index);
-static boolean get_shell_casing_display_data(struct weapon_display_information *display, short index);
-static boolean automatic_still_firing(short player_index, short which_trigger);
+static bool get_shell_casing_display_data(struct weapon_display_information *display, short index);
+static bool automatic_still_firing(short player_index, short which_trigger);
 static void	play_shell_casing_sound(short player_index, short sound_index);
 static short find_weapon_power_index(short weapon_type);
 
@@ -388,7 +389,7 @@ void initialize_player_weapons(
 
 /* Mark the weapon collections for loading or unloading.. */
 void mark_weapon_collections(
-	boolean loading)
+	bool loading)
 {
 	short index;
 	
@@ -482,7 +483,7 @@ void discharge_charged_weapons(
 			if(weapon->state==_weapon_charged)
 			{
 				/* Fire the weapon! (give it to them fully charged..) */
-				fire_weapon(player_index, which_trigger, FIXED_ONE, TRUE);
+				fire_weapon(player_index, which_trigger, FIXED_ONE, true);
 			}
 		}
 	}
@@ -662,7 +663,7 @@ void update_player_weapons(
 		struct weapon_data *weapon= get_player_current_weapon(player_index);
 		struct weapon_definition *definition= get_current_weapon_definition(player_index);
 		short which_trigger, trigger_count, first_trigger;
-		boolean triggers_down[NUMBER_OF_TRIGGERS];
+		bool triggers_down[NUMBER_OF_TRIGGERS];
 
 		/* Did they want to raise a second weapon? */
 		test_raise_double_weapon(player_index, &action_flags);
@@ -834,7 +835,7 @@ void update_player_weapons(
 							}
 							
 							/* Reset for the next time.. */
-							SET_PRIMARY_WEAPON_IS_VALID(weapon, FALSE);
+							SET_PRIMARY_WEAPON_IS_VALID(weapon, false);
 							// dprintf("prim down;g");
 						} else {
 							struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
@@ -846,7 +847,7 @@ void update_player_weapons(
 
 							/* Lowering the second weapon for a twofisted weapon */
 							/* Reset for the next time.. */
-							SET_SECONDARY_WEAPON_IS_VALID(weapon, FALSE);
+							SET_SECONDARY_WEAPON_IS_VALID(weapon, false);
 							// dprintf("second down;g");
 						}
 
@@ -949,13 +950,13 @@ void update_player_weapons(
 	/* If they didn't just finish switching weapons.. */
 	if(action_flags & _cycle_weapons_forward)
 	{
-		select_next_weapon(player_index, TRUE);
+		select_next_weapon(player_index, true);
 	} 
 		
 	/* Cycle the weapon backward */
 	if(action_flags & _cycle_weapons_backward)
 	{
-		select_next_weapon(player_index, FALSE);
+		select_next_weapon(player_index, false);
 	}
 
 	/* And switch the weapon.. */
@@ -1140,11 +1141,11 @@ long calculate_weapon_array_length(
 /* -------------------------- functions related to rendering */
 /* Functions related to rendering! */
 /* while this returns true, keep calling.. */
-boolean get_weapon_display_information(
+bool get_weapon_display_information(
 	short *count, 
 	struct weapon_display_information *data)
 {
-	boolean valid= FALSE;
+	bool valid= false;
 	short player_index= current_player_index;
 
 	/* If the player's current weapon is not NONE.. */	
@@ -1167,7 +1168,7 @@ boolean get_weapon_display_information(
 			struct shape_and_transfer_mode owner_transfer_data;
 	
 			/* Assume the best.. */
-			valid= TRUE;
+			valid= true;
 	
 			if(type==_weapon_type)
 			{
@@ -1332,7 +1333,7 @@ boolean get_weapon_display_information(
 						if(definition->reloading_shape==NONE)
 						{
 							/* Consider it offscreen */
-							valid= FALSE;
+							valid= false;
 							shape_index= definition->idle_shape;
 						} else {
 							height= definition->reload_height;
@@ -1389,16 +1390,16 @@ boolean get_weapon_display_information(
 				data->horizontal_position= width;
 				if(flags & _flip_shape_vertical)
 				{
-					data->flip_vertical= TRUE;
+					data->flip_vertical= true;
 				} else {
-					data->flip_vertical= FALSE;
+					data->flip_vertical= false;
 				}
 				
 				if(flags & _flip_shape_horizontal)
 				{
-					data->flip_horizontal= TRUE;
+					data->flip_horizontal= true;
 				} else {
-					data->flip_horizontal= FALSE;
+					data->flip_horizontal= false;
 				}
 			
 				/* Fill in the transfer mode and phase */
@@ -1541,10 +1542,10 @@ static void reset_trigger_data(
 	trigger->sequence= 0;
 }
 
-static boolean weapon_works_in_current_environment(
+static bool weapon_works_in_current_environment(
 	short weapon_index)
 {
-	boolean weapon_works= TRUE;
+	bool weapon_works= true;
 
 	if(weapon_index!=NONE)
 	{
@@ -1586,7 +1587,7 @@ static void select_next_best_weapon(
 
 static void select_next_weapon(
 	short player_index,
-	boolean forward)
+	bool forward)
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 
@@ -1719,7 +1720,7 @@ static void fire_weapon(
 	short player_index,
 	short which_trigger,
 	fixed charged_amount,
-	boolean flail_wildly)
+	bool flail_wildly)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
@@ -1875,7 +1876,7 @@ static void fire_weapon(
 		if (trigger_definition->shell_casing_type!=NONE)
 		{
 			short type= trigger_definition->shell_casing_type;
-			word flags= 0;
+			uint16 flags= 0;
 			
 			if (type==_shell_casing_pistol)
 			{
@@ -2029,7 +2030,7 @@ static void calculate_weapon_origin_and_vector(
 	return;
 }
 
-static boolean reload_weapon(
+static bool reload_weapon(
 	short player_index,
 	short which_trigger)
 {
@@ -2038,7 +2039,7 @@ static boolean reload_weapon(
 		get_player_trigger_definition(player_index, which_trigger);
 	struct player_data *player= get_player_data(player_index);
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
-	boolean can_reload;
+	bool can_reload;
 
 	assert(trigger->state==_weapon_idle && trigger->rounds_loaded==0);
 	assert(trigger_definition->ammunition_type==NONE || (trigger_definition->ammunition_type>=0 && trigger_definition->ammunition_type<NUMBER_OF_ITEMS));
@@ -2080,14 +2081,14 @@ static boolean reload_weapon(
 			}
 		}
 		trigger->sequence= 0; // Reset this here, because it won't get reset otherwise.
-		can_reload= TRUE;
+		can_reload= true;
 	} else {
 		/* If this weapon needs to dissappear */
 		if(definition->flags & _weapon_disappears_after_use)
 		{
 			destroy_current_weapon(player_index);
 		}
-		can_reload= FALSE;
+		can_reload= false;
 	}
 	
 	return can_reload;
@@ -2126,14 +2127,14 @@ static void destroy_current_weapon(
 	mark_player_inventory_as_dirty(player_index, _i_magnum_magazine);
 }
 
-static boolean check_reload(
+static bool check_reload(
 	short player_index,
 	short which_trigger)
 {
 	struct trigger_data *trigger= get_player_trigger_data(player_index, which_trigger);
 	struct weapon_definition *definition= 
 		get_current_weapon_definition(player_index);
-	boolean reloaded_weapon= FALSE;
+	bool reloaded_weapon= false;
 
 	/* Check to see if the weapon is empty.. */
 	if(!trigger->rounds_loaded)
@@ -2158,7 +2159,7 @@ static boolean check_reload(
 					/* Switch to the next weapon.. */
 					select_next_best_weapon(player_index);
 				} else {
-					reloaded_weapon= TRUE;
+					reloaded_weapon= true;
 				}
 				break;
 
@@ -2208,7 +2209,7 @@ static boolean check_reload(
 								}
 							}
 						} else {
-							reloaded_weapon= TRUE;
+							reloaded_weapon= true;
 						}
 					} else {
 						/* Hmmm.. we are out of ammunition */
@@ -2217,7 +2218,7 @@ static boolean check_reload(
 							/* Switch to the next weapon.. */
 							select_next_best_weapon(player_index);
 						} else {
-							reloaded_weapon= TRUE;
+							reloaded_weapon= true;
 						}
 					} 
 				}
@@ -2253,7 +2254,7 @@ static boolean check_reload(
 						}
 					}
 				} else {
-					reloaded_weapon= TRUE;
+					reloaded_weapon= true;
 				}
 				break;
 			
@@ -2319,12 +2320,12 @@ static void put_rounds_into_weapon(
 }
 
 /* This, my friend, is the trickiest of the functions */
-static boolean handle_trigger_down(
+static bool handle_trigger_down(
 	short player_index, 
 	short which_trigger)
 {
 	struct weapon_data *weapon= get_player_current_weapon(player_index);
-	boolean fired= FALSE;
+	bool fired= false;
 
 	/* IF this weapon is idle.. */
 	if(weapon->triggers[which_trigger].state==_weapon_idle)
@@ -2379,7 +2380,7 @@ static boolean handle_trigger_down(
 							/* Only able to fire exactly out of sync. */				
 							if(delay>total_delay/2)
 							{
-								fired= TRUE;
+								fired= true;
 							}
 						} 
 						else 
@@ -2391,7 +2392,7 @@ static boolean handle_trigger_down(
 									break;
 							
 								default:
-									fired= TRUE;
+									fired= true;
 									break;
 							}
 						}
@@ -2399,13 +2400,13 @@ static boolean handle_trigger_down(
 					else 
 					{
 						/* Both aren't up.  They can fire.. */
-						fired= TRUE;
+						fired= true;
 					}
 					break;
 					
 				case _normal_class:
 					/* Always able to fire.. */
-					fired= TRUE;
+					fired= true;
 					break;
 					
 				case _multipurpose_class:
@@ -2416,7 +2417,7 @@ static boolean handle_trigger_down(
 							case _weapon_idle:
 							case _weapon_recovering:
 							case _weapon_firing:
-								fired= TRUE;
+								fired= true;
 								break;
 						
 							default:
@@ -2425,12 +2426,12 @@ static boolean handle_trigger_down(
 						}
 					} else {
 						/* Can always fire an idle multifunction class */
-						fired= TRUE;
+						fired= true;
 					}
 					break;
 					
 				case _dual_function_class:
-					fired= TRUE;
+					fired= true;
 					break;
 				
 				// LP change: no weapon -- do nothing
@@ -2444,45 +2445,45 @@ static boolean handle_trigger_down(
 			
 			if(fired)
 			{
-				fire_weapon(player_index, which_trigger, FIXED_ONE, FALSE);
+				fire_weapon(player_index, which_trigger, FIXED_ONE, false);
 			}
 		}
 	}
 	
 	/* Set the trigger down state */
 	if(which_trigger==_primary_weapon)
-		SET_TRIGGER_DOWN(weapon, TRUE);
+		SET_TRIGGER_DOWN(weapon, true);
 
 	return fired;
 }
 
 /* we only care about the trigger going up on charged weapons.. */
-static boolean handle_trigger_up(
+static bool handle_trigger_up(
 	short player_index, 
 	short which_trigger)
 {
 	struct weapon_data *weapon= get_player_current_weapon(player_index);
 	struct trigger_definition *trigger_definition= 
 		get_player_trigger_definition(player_index, which_trigger);
-	boolean discharge;
+	bool discharge;
 	fixed charged_amount;
 
 	/* On charged weapons, when the trigger goes up, we discharge.. */
 	switch(weapon->triggers[which_trigger].state)
 	{
 		case _weapon_charging:
-			discharge= TRUE;
+			discharge= true;
 			charged_amount= ((trigger_definition->charging_ticks-weapon->triggers[which_trigger].phase)*FIXED_ONE)/FIXED_ONE;
 			break;
 			
 		case _weapon_charged:
 			/* These are the only states that we really care about. */
-			discharge= TRUE;
+			discharge= true;
 			charged_amount= FIXED_ONE;
 			break;
 		
 		default:
-			discharge= FALSE;
+			discharge= false;
 			break;
 	}
 
@@ -2496,7 +2497,7 @@ static boolean handle_trigger_up(
 		{
 			if(charged_amount>(9*FIXED_ONE)/10)
 			{
-				fire_weapon(player_index, which_trigger, charged_amount, FALSE);
+				fire_weapon(player_index, which_trigger, charged_amount, false);
 			} else {
 				struct player_data *player= get_player_data(player_index);
 			
@@ -2512,7 +2513,7 @@ static boolean handle_trigger_up(
 	/* Trigger down is only maintained to avoid switching a weapon */
 	if(which_trigger==_primary_weapon) 
 	{
-		SET_TRIGGER_DOWN(weapon, FALSE);
+		SET_TRIGGER_DOWN(weapon, false);
 											
 		if(weapon->triggers[which_trigger].ticks_firing>FIRING_BEFORE_SHELL_CASING_SOUND_IS_PLAYED)
 		{
@@ -2530,16 +2531,16 @@ static boolean handle_trigger_up(
 /* Need to put a reload weapon in here, if that is what we want to do.. */
 	/* Need to put a reload weapon in here, if that is what we want to do.. */
 	/* CP Addition: removed 'static' to provide extern access
-static boolean ready_weapon(
+static bool ready_weapon(
 	short player_index,
 	short weapon_index)
 	
 */
-boolean ready_weapon(
+bool ready_weapon(
 	short player_index,
 	short weapon_index)
 {
-	boolean able_to_ready= FALSE;
+	bool able_to_ready= false;
 	struct weapon_definition *definition= get_weapon_definition(weapon_index);
 	struct player_data *player= get_player_data(player_index);
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
@@ -2556,7 +2557,7 @@ boolean ready_weapon(
 	
 					/* update the weapon display */
 					if(player_index==current_player_index) mark_weapon_display_as_dirty();
-					able_to_ready= TRUE;
+					able_to_ready= true;
 				}
 			}
 		}
@@ -2565,17 +2566,17 @@ boolean ready_weapon(
 	return able_to_ready;
 }
 
-static boolean player_weapon_has_ammo(
+static bool player_weapon_has_ammo(
 	short player_index,
 	short weapon_index)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct weapon_definition *definition= get_weapon_definition(weapon_index);
-	boolean has_ammo= FALSE;
+	bool has_ammo= false;
 
 	if(definition->weapon_class==_melee_class)
 	{
-		has_ammo= TRUE;
+		has_ammo= true;
 	} else {
 		short which_trigger, max_triggers;
 		
@@ -2610,7 +2611,7 @@ static boolean player_weapon_has_ammo(
 
 			if(trigger->rounds_loaded>0)
 			{
-				has_ammo= TRUE;
+				has_ammo= true;
 			} else {
 				struct trigger_definition *trigger_definition=
 					get_trigger_definition(player_index, weapon_index, which_trigger);
@@ -2619,7 +2620,7 @@ static boolean player_weapon_has_ammo(
 				if(	trigger_definition->ammunition_type != NONE &&
 					player->items[trigger_definition->ammunition_type] > 0)
 				{
-					has_ammo=  TRUE;
+					has_ammo=  true;
 				}
 			}
 		}
@@ -2709,12 +2710,12 @@ static void raise_weapon(
 			{
 				struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 	
-				SET_PRIMARY_WEAPON_IS_VALID(&player_weapons->weapons[weapon_index], TRUE);
+				SET_PRIMARY_WEAPON_IS_VALID(&player_weapons->weapons[weapon_index], true);
 			} else {
 				struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 
 // dprintf("Second valid;g");
-				SET_SECONDARY_WEAPON_IS_VALID(&player_weapons->weapons[weapon_index], TRUE);
+				SET_SECONDARY_WEAPON_IS_VALID(&player_weapons->weapons[weapon_index], true);
 			}
 		}
 	}
@@ -2723,12 +2724,12 @@ static void raise_weapon(
 }
 
 /* Note that we are guaranteed that the current weapon has ammo.. */
-static boolean should_switch_to_weapon(
+static bool should_switch_to_weapon(
 	short player_index,
 	short new_weapon)
 {
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
-	boolean should_change= FALSE;
+	bool should_change= false;
 	
 	// LP change: suppressing this message because it does not work properly
 	// in Missed Island.
@@ -2756,13 +2757,13 @@ static boolean should_switch_to_weapon(
 				if(player_weapons->current_weapon==NONE)
 				{
 					/* Always change if they didn't have a weapon.. */
-					should_change= TRUE;
+					should_change= true;
 				} else {
 					struct weapon_data *weapon= get_player_current_weapon(player_index);
 		
 					if(new_weapon==_weapon_ball)
 					{
-						should_change= TRUE;
+						should_change= true;
 					} else {
 						/* If this weapon is not charging or charged.. */
 						if(weapon->triggers[_primary_weapon].state!=_weapon_charging &&
@@ -2775,9 +2776,9 @@ static boolean should_switch_to_weapon(
 							if(!TRIGGER_IS_DOWN(weapon))
 							{
 								if (!dont_switch_to_new_weapon())
-									should_change= TRUE;
+									should_change= true;
 							}
-							// if(!TRIGGER_IS_DOWN(weapon)) should_change= TRUE;
+							// if(!TRIGGER_IS_DOWN(weapon)) should_change= true;
 						}
 					}
 				}
@@ -2785,7 +2786,7 @@ static boolean should_switch_to_weapon(
 			/* or the current weapon doesn't have ammo */
 			else if(!player_weapon_has_ammo(player_index, player_weapons->current_weapon))
 			{
-				should_change= TRUE;
+				should_change= true;
 			}
 		}
 	}
@@ -2940,7 +2941,7 @@ static short get_active_trigger_count_and_states(
 	short weapon_index,
 	long action_flags,
 	short *first_trigger,
-	boolean *triggers_down)
+	bool *triggers_down)
 {
 	struct weapon_definition *definition= get_weapon_definition(weapon_index);
 	short active_count;
@@ -2949,7 +2950,7 @@ static short get_active_trigger_count_and_states(
 
 	if(triggers_down) 
 	{
-		triggers_down[0]= triggers_down[1]= FALSE;
+		triggers_down[0]= triggers_down[1]= false;
 	}
 
 	(*first_trigger)= _primary_weapon;
@@ -2960,7 +2961,7 @@ static short get_active_trigger_count_and_states(
 			active_count= 1;
 			if(triggers_down)
 			{
-				if(action_flags & _left_trigger_state || action_flags & _right_trigger_state) triggers_down[0]= TRUE;
+				if(action_flags & _left_trigger_state || action_flags & _right_trigger_state) triggers_down[0]= true;
 			}
 			break;
 		
@@ -2975,8 +2976,8 @@ static short get_active_trigger_count_and_states(
 				{
 					if(triggers_down)
 					{
-						if(action_flags & _left_trigger_state) triggers_down[0]= TRUE;
-						if(action_flags & _right_trigger_state) triggers_down[1]= TRUE;
+						if(action_flags & _left_trigger_state) triggers_down[0]= true;
+						if(action_flags & _right_trigger_state) triggers_down[1]= true;
 					}
 					active_count= 2;
 				} else {
@@ -2984,8 +2985,8 @@ static short get_active_trigger_count_and_states(
 					{
 						if(triggers_down)
 						{
-							if(action_flags & _left_trigger_state) triggers_down[1]= TRUE;
-							if(action_flags & _right_trigger_state) triggers_down[1]= TRUE;
+							if(action_flags & _left_trigger_state) triggers_down[1]= true;
+							if(action_flags & _right_trigger_state) triggers_down[1]= true;
 						}
 
 						(*first_trigger)= _secondary_weapon;
@@ -2993,8 +2994,8 @@ static short get_active_trigger_count_and_states(
 					} else {
 						if(triggers_down)
 						{
-							if(action_flags & _left_trigger_state) triggers_down[0]= TRUE;
-							if(action_flags & _right_trigger_state) triggers_down[0]= TRUE;
+							if(action_flags & _left_trigger_state) triggers_down[0]= true;
+							if(action_flags & _right_trigger_state) triggers_down[0]= true;
 						}
 						active_count= 1;
 					}
@@ -3007,13 +3008,13 @@ static short get_active_trigger_count_and_states(
 			{
 				if(dual_function_secondary_has_control(player_index))
 				{
-					triggers_down[_primary_weapon]= FALSE;
+					triggers_down[_primary_weapon]= false;
 				} else {
-					if(action_flags & _left_trigger_state) triggers_down[0]= TRUE;
+					if(action_flags & _left_trigger_state) triggers_down[0]= true;
 				}
 
 				/* check the right trigger */
-				if(action_flags & _right_trigger_state) triggers_down[1]= TRUE;
+				if(action_flags & _right_trigger_state) triggers_down[1]= true;
 			}
 			active_count= 2;
 			break;
@@ -3021,8 +3022,8 @@ static short get_active_trigger_count_and_states(
 		case _multipurpose_class: 
 			if(triggers_down)
 			{
-				if(action_flags & _left_trigger_state) triggers_down[0]= TRUE;
-				if(action_flags & _right_trigger_state) triggers_down[1]= TRUE;
+				if(action_flags & _left_trigger_state) triggers_down[0]= true;
+				if(action_flags & _right_trigger_state) triggers_down[1]= true;
 			}
 			active_count= 2;
 			break;
@@ -3040,11 +3041,11 @@ static short get_active_trigger_count_and_states(
 	return active_count;
 }
 
-static boolean dual_function_secondary_has_control(
+static bool dual_function_secondary_has_control(
 	short player_index)
 {
 	struct trigger_data *trigger= get_player_trigger_data(player_index, _secondary_weapon);
-	boolean secondary_has_control;
+	bool secondary_has_control;
 		
 	switch(trigger->state)
 	{
@@ -3053,11 +3054,11 @@ static boolean dual_function_secondary_has_control(
 		case _weapon_charging:
 		case _weapon_charged:
 			/* You can't fire your primary until secondary is idle */
-			secondary_has_control= TRUE;
+			secondary_has_control= true;
 			break;
 		
 		default:
-			secondary_has_control= FALSE;
+			secondary_has_control= false;
 			break;
 	}
 	
@@ -3210,7 +3211,7 @@ static void update_sequence(
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 	struct trigger_data *trigger= get_player_trigger_data(player_index, which_trigger);
 	struct shape_animation_data *high_level_data= NULL;
-	boolean prevent_wrap= FALSE; /* GROSS! */
+	bool prevent_wrap= false; /* GROSS! */
 	fixed pitch= FIXED_ONE;
 	short sound_id= NONE;
 
@@ -3261,7 +3262,7 @@ static void update_sequence(
 			{
 				high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 					definition->reloading_shape));
-				prevent_wrap= TRUE;
+				prevent_wrap= true;
 			} else {
 				trigger->sequence= 0;
 			}
@@ -3321,7 +3322,7 @@ static void blow_up_player(
 	return;
 }
 
-static boolean get_weapon_data_type_for_count(
+static bool get_weapon_data_type_for_count(
 	short player_index,
 	short count, 
 	short *type,
@@ -3330,7 +3331,7 @@ static boolean get_weapon_data_type_for_count(
 {
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 	struct weapon_data *weapon= get_player_current_weapon(player_index);
-	boolean valid= TRUE;
+	bool valid= true;
 		
 	*flags= 0;
 	
@@ -3478,7 +3479,7 @@ static void update_player_ammo_count(
 	return;
 }
 
-static boolean player_has_valid_weapon(
+static bool player_has_valid_weapon(
 	short player_index)
 {
 	// LP change:
@@ -3502,7 +3503,7 @@ static void idle_weapon(
 		} else {
 			struct weapon_data *weapon= get_player_current_weapon(player_index);
 			short active_triggers, which_trigger, first_trigger;
-			boolean should_change= TRUE;
+			bool should_change= true;
 
 			active_triggers= get_active_trigger_count_and_states(player_index, 
 				player_weapons->current_weapon, 0l, &first_trigger, NULL);
@@ -3530,13 +3531,13 @@ static void idle_weapon(
 								weapon->triggers[_secondary_weapon].phase= 1; 
 								weapon->triggers[_secondary_weapon].sequence= 0;
 							} else {
-								should_change= FALSE;
+								should_change= false;
 							}
 						}
 						break;
 					
 					default:
-						should_change= FALSE;
+						should_change= false;
 						break;
 				}
 			}
@@ -3553,7 +3554,7 @@ static void idle_weapon(
 		{
 			struct weapon_data *weapon= get_player_current_weapon(player_index);
 			short active_triggers, which_trigger, first_trigger;
-			boolean should_change= TRUE;
+			bool should_change= true;
 			
 			active_triggers= get_active_trigger_count_and_states(player_index, 
 				player_weapons->current_weapon, 0l, &first_trigger, NULL);
@@ -3566,7 +3567,7 @@ static void idle_weapon(
 						break;
 					
 					default:
-						should_change= FALSE;
+						should_change= false;
 						break;
 				}
 			}
@@ -3584,7 +3585,7 @@ static void idle_weapon(
 				{
 					if(WEAPON_WANTS_TWOFIST(weapon))
 					{
-						should_change= TRUE;
+						should_change= true;
 					
 						/* Start raising the other one.. */
 						for(which_trigger= first_trigger; which_trigger<active_triggers; ++which_trigger)
@@ -3595,7 +3596,7 @@ static void idle_weapon(
 									break;
 								
 								default:
-									should_change= FALSE;
+									should_change= false;
 									break;
 							}
 						}
@@ -3609,13 +3610,13 @@ static void idle_weapon(
 								/* Raise the primary.. */
 								moving_weapon= _secondary_weapon;
 								raising_weapon= _primary_weapon;
-								SET_PRIMARY_WEAPON_IS_VALID(weapon, TRUE);
+								SET_PRIMARY_WEAPON_IS_VALID(weapon, true);
 								// dprintf("Prim up TF;g");
 							} else {
 								assert(!SECONDARY_WEAPON_IS_VALID(weapon));
 								moving_weapon= _primary_weapon;
 								raising_weapon= _secondary_weapon;
-								SET_SECONDARY_WEAPON_IS_VALID(weapon, TRUE);
+								SET_SECONDARY_WEAPON_IS_VALID(weapon, true);
 								// dprintf("Second up TF;g");
 							}
 							
@@ -3624,7 +3625,7 @@ static void idle_weapon(
 							weapon->triggers[raising_weapon].state= _weapon_raising;
 							weapon->triggers[moving_weapon].phase= definition->ready_ticks;
 							weapon->triggers[raising_weapon].phase= definition->ready_ticks;
-							SET_WEAPON_WANTS_TWOFIST(weapon, FALSE);
+							SET_WEAPON_WANTS_TWOFIST(weapon, false);
 						}
 					}
 				}
@@ -3642,7 +3643,7 @@ static void test_raise_double_weapon(
 {
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 	struct player_data *player= get_player_data(player_index);
-	boolean raising= FALSE;
+	bool raising= false;
 	
 	if(definition->weapon_class==_twofisted_pistol_class || definition->weapon_class==_melee_class)
 	{
@@ -3670,7 +3671,7 @@ static void test_raise_double_weapon(
 						player->items[trigger_definition->ammunition_type]>0)
 					{
 						//dprintf("1 twofist;g");
-						SET_WEAPON_WANTS_TWOFIST(weapon, TRUE);
+						SET_WEAPON_WANTS_TWOFIST(weapon, true);
 						(*action_flags) &= ~_left_trigger_state;
 					}
 				} 
@@ -3688,7 +3689,7 @@ static void test_raise_double_weapon(
 						player->items[trigger_definition->ammunition_type]>0)
 					{
 						//dprintf("2 twofist;g");
-						SET_WEAPON_WANTS_TWOFIST(weapon, TRUE);
+						SET_WEAPON_WANTS_TWOFIST(weapon, true);
 						(*action_flags) &= ~_right_trigger_state;
 					}
 				}
@@ -3790,9 +3791,9 @@ static void change_to_desired_weapon(
 
 		if(which_trigger==_primary_weapon)
 		{
-			SET_PRIMARY_WEAPON_IS_VALID(&player_weapons->weapons[player_weapons->desired_weapon], TRUE);
+			SET_PRIMARY_WEAPON_IS_VALID(&player_weapons->weapons[player_weapons->desired_weapon], true);
 		} else {
-			SET_SECONDARY_WEAPON_IS_VALID(&player_weapons->weapons[player_weapons->desired_weapon], TRUE);
+			SET_SECONDARY_WEAPON_IS_VALID(&player_weapons->weapons[player_weapons->desired_weapon], true);
 		}
 
 		/* if it has no ammunition, load it- only if it has an offscreen reload. */
@@ -3812,11 +3813,11 @@ static void change_to_desired_weapon(
 	return;
 }
 
-static boolean automatic_still_firing(
+static bool automatic_still_firing(
 	short player_index,
 	short which_trigger)
 {
-	boolean still_firing= FALSE;
+	bool still_firing= false;
 	struct weapon_data *weapon= get_player_current_weapon(player_index);
 	struct weapon_definition *definition= get_weapon_definition(weapon->weapon_type);
 
@@ -3828,7 +3829,7 @@ static boolean automatic_still_firing(
 		{
 			if(TRIGGER_IS_DOWN(weapon) && weapon->triggers[which_trigger].ticks_since_last_shot<AUTOMATIC_STILL_FIRING_DURATION)
 			{
-				still_firing= TRUE;
+				still_firing= true;
 			}
 		}
 	}
@@ -3895,7 +3896,7 @@ static void initialize_shell_casings(
 static short new_shell_casing(
 	short player_index,
 	short type,
-	word flags)
+	uint16 flags)
 {
 	short shell_casing_index;
 	struct shell_casing_data *shell_casing;
@@ -3955,11 +3956,11 @@ static void update_shell_casings(
 	return;
 }
 
-static boolean get_shell_casing_display_data(
+static bool get_shell_casing_display_data(
 	struct weapon_display_information *display,
 	short index)
 {
-	boolean valid= FALSE;
+	bool valid= false;
 	short shell_casing_index;
 	struct shell_casing_data *shell_casing;
 	
@@ -3980,13 +3981,13 @@ static boolean get_shell_casing_display_data(
 					
 					display->collection= definition->collection;
 					display->low_level_shape_index= high_level_data->low_level_shape_indexes[shell_casing->frame];
-					display->flip_horizontal= display->flip_vertical= FALSE;
+					display->flip_horizontal= display->flip_vertical= false;
 					display->vertical_positioning_mode= display->horizontal_positioning_mode= _position_center;
 					display->vertical_position= FIXED_ONE-shell_casing->y, display->horizontal_position= shell_casing->x;
 					display->transfer_mode= _xfer_normal, display->transfer_phase= 0;
 				}
 				
-				valid= TRUE;
+				valid= true;
 				break;
 			}
 		}
@@ -4065,7 +4066,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"x0") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHORT_MAX),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
 			Data.x0 = Float2Fixed(FValue);
 			IsPresent[2] = true;
@@ -4075,7 +4076,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"y0") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHORT_MAX),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
 			Data.y0 = Float2Fixed(FValue);
 			IsPresent[3] = true;
@@ -4085,7 +4086,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"vx0") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHORT_MAX),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
 			Data.vx0 = Float2Fixed(FValue);
 			IsPresent[4] = true;
@@ -4095,7 +4096,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"vy0") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHORT_MAX),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
 			Data.vy0 = Float2Fixed(FValue);
 			IsPresent[5] = true;
@@ -4105,7 +4106,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"dvx") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHORT_MAX),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
 			Data.dvx = Float2Fixed(FValue);
 			IsPresent[6] = true;
@@ -4115,7 +4116,7 @@ bool XML_ShellCasingParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"dvy") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHORT_MAX),float(SHORT_MAX)))
+		if (ReadBoundedNumericalValue(Value,"%f",FValue,float(-SHRT_MAX),float(SHRT_MAX)))
 		{
 			Data.dvy = Float2Fixed(FValue);
 			IsPresent[7] = true;

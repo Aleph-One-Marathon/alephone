@@ -35,11 +35,11 @@ static _bs_field _bs_object_frequency_definition[] = { // 12 bytes
 
 /* private functions */
 static void _recreate_objects(short object_type, short max_object_types, struct object_frequency_definition *placement_info, short *object_counts, short *random_counts);
-static void add_objects(short object_class, short object_type, short count, boolean is_initial_drop);
-static boolean pick_random_initial_location_of_type(short saved_type, short type, struct object_location *location);
+static void add_objects(short object_class, short object_type, short count, bool is_initial_drop);
+static bool pick_random_initial_location_of_type(short saved_type, short type, struct object_location *location);
 static short pick_random_facing(short polygon_index, world_point2d *location);
-static boolean choose_invisible_random_point(short *polygon_index, world_point2d *p, short object_type, boolean initial_drop);
-static boolean polygon_is_valid_for_object_drop(world_point2d *location, short polygon_index, short object_type, boolean initial_drop, boolean is_random_location);
+static bool choose_invisible_random_point(short *polygon_index, world_point2d *p, short object_type, bool initial_drop);
+static bool polygon_is_valid_for_object_drop(world_point2d *location, short polygon_index, short object_type, bool initial_drop, bool is_random_location);
 
 /*************************************************************************************************
  *
@@ -185,7 +185,7 @@ void place_initial_objects(
 	{
 		if (monster_placement_info[index].initial_count)
 		{
-			add_objects(_object_is_monster, index, monster_placement_info[index].initial_count, TRUE);
+			add_objects(_object_is_monster, index, monster_placement_info[index].initial_count, true);
 		}
 		dynamic_world->random_monsters_left[index] = monster_placement_info[index].random_count;
 	}
@@ -194,7 +194,7 @@ void place_initial_objects(
 	{
 		if (item_placement_info[index].initial_count)
 		{
-			add_objects(_object_is_item, index, item_placement_info[index].initial_count, TRUE);
+			add_objects(_object_is_item, index, item_placement_info[index].initial_count, true);
 		}
 		dynamic_world->random_items_left[index] = item_placement_info[index].random_count;
 	}
@@ -210,7 +210,7 @@ void place_initial_objects(
  *
  *************************************************************************************************/
 void mark_all_monster_collections(
-	boolean loading)
+	bool loading)
 {
 	short index;
 	struct object_frequency_definition *placement_info= monster_placement_info+1;
@@ -353,7 +353,7 @@ void object_was_just_destroyed(
 	
 	if (diff>0)
 	{
-		add_objects(object_class, object_type, 1, FALSE);
+		add_objects(object_class, object_type, 1, false);
 	}
 	
 	return;
@@ -433,7 +433,7 @@ static void _recreate_objects(
 {
 	short index;
 	short objects_to_add;
-	boolean add_random;
+	bool add_random;
 	struct object_frequency_definition *indexed_placement_info= placement_info;
 	
 	assert(max_object_types<=MAXIMUM_OBJECT_TYPES);
@@ -450,16 +450,16 @@ static void _recreate_objects(
 			&& object_counts[index] + objects_to_add < indexed_placement_info->maximum_count
 			&& global_random() < indexed_placement_info->random_chance)
 		{
-			add_random = TRUE;
+			add_random = true;
 			objects_to_add++;
 		} else {
-			add_random= FALSE;
+			add_random= false;
 		}
 
 		/* If we need to add any.. */		
 		if (objects_to_add)
 		{
-			add_objects(object_type, index, objects_to_add, FALSE);
+			add_objects(object_type, index, objects_to_add, false);
 			
 			/* If we added a random, and the random_count is not NONE (which means infinite.) */
 			if (add_random && indexed_placement_info->random_count != NONE) 
@@ -482,12 +482,12 @@ static void add_objects(
 	short object_class, 
 	short object_type, 
 	short count, 
-	boolean is_initial_drop)
+	bool is_initial_drop)
 {
 	short i;
 	short saved_type;
 	short flags;
-	boolean need_random_location;
+	bool need_random_location;
 	struct object_location location;
 	
 	assert(object_class==_object_is_item || object_class==_object_is_monster);
@@ -499,18 +499,18 @@ static void add_objects(
 		obj_clear(location);
 		location.polygon_index= NONE; /* This is unnecessary, but for psychological benefits.. */
 		
-		need_random_location= FALSE;
+		need_random_location= false;
 		if (is_initial_drop || !(flags & _reappears_in_random_location))
 		{
 			if (!pick_random_initial_location_of_type(saved_type, object_type, &location))
 			{
-				if (is_initial_drop && (flags & _reappears_in_random_location)) need_random_location = TRUE;
+				if (is_initial_drop && (flags & _reappears_in_random_location)) need_random_location = true;
 				else continue;
 			}
 		}
 		else 
 		{
-			need_random_location= TRUE;
+			need_random_location= true;
 		}
 		
 		if (need_random_location)
@@ -539,7 +539,7 @@ static void add_objects(
 			if (monster_index!=NONE && !is_initial_drop) 
 			{
 				activate_monster(monster_index);
-				find_closest_appropriate_target(monster_index, TRUE);
+				find_closest_appropriate_target(monster_index, true);
 			}
 		}
 	}
@@ -556,14 +556,14 @@ static void add_objects(
  *           _object_is_item or _object_is_monster
  *
  *************************************************************************************************/
-static boolean pick_random_initial_location_of_type(
+static bool pick_random_initial_location_of_type(
 	short saved_type,
 	short type,
 	struct object_location *location)
 {
 	short              i, index, max;
 	short              actual_type;
-	boolean            found_location = FALSE;
+	bool            found_location = false;
 	struct map_object  *saved_object;
 	
 	actual_type = (saved_type == _saved_item) ? _object_is_item : _object_is_monster;
@@ -581,9 +581,9 @@ static boolean pick_random_initial_location_of_type(
 			location->yaw= saved_object->facing;
 			location->flags= saved_object->flags;
 
-			if (polygon_is_valid_for_object_drop((world_point2d *)&location->p, location->polygon_index, actual_type, TRUE, FALSE))
+			if (polygon_is_valid_for_object_drop((world_point2d *)&location->p, location->polygon_index, actual_type, true, false))
 			{
-				found_location = TRUE;
+				found_location = true;
 				break;
 			}
 		}
@@ -629,24 +629,24 @@ static short pick_random_facing(
  * Purpose:  Find a place that's a good place to drop an object.
  *
  *************************************************************************************************/
-static boolean choose_invisible_random_point(
+static bool choose_invisible_random_point(
 	short *polygon_index, 
 	world_point2d *p, 
 	short object_type, 
-	boolean initial_drop)
+	bool initial_drop)
 {
 	short retries;
-	boolean found_legal_point= FALSE;
+	bool found_legal_point= false;
 	
 	for (retries = 0; retries < INVISIBLE_RANDOM_POINT_RETRIES && !found_legal_point; ++retries)
 	{
 		short random_polygon_index = global_random() % dynamic_world->polygon_count;
 
 		find_center_of_polygon(random_polygon_index, p);
-		if(polygon_is_valid_for_object_drop(p, random_polygon_index, object_type, initial_drop, TRUE))
+		if(polygon_is_valid_for_object_drop(p, random_polygon_index, object_type, initial_drop, true))
 		{
 			*polygon_index = random_polygon_index;
-			found_legal_point = TRUE;
+			found_legal_point = true;
 		}
 	}
 
@@ -659,15 +659,15 @@ static boolean choose_invisible_random_point(
  * Purpose:  decide if we can drop an object in this polygon.
  *
  *************************************************************************************************/
-static boolean polygon_is_valid_for_object_drop(
+static bool polygon_is_valid_for_object_drop(
 	world_point2d *location,
 	short polygon_index,
 	short object_type,
-	boolean initial_drop,
-	boolean is_random_location)
+	bool initial_drop,
+	bool is_random_location)
 {
 	struct polygon_data *polygon = get_polygon_data(polygon_index);
-	boolean valid = FALSE;
+	bool valid = false;
 	long distance; // only used to call point_is_player_visible()
 
 	(void) (initial_drop);
@@ -677,7 +677,7 @@ static boolean polygon_is_valid_for_object_drop(
 		case _polygon_is_item_impassable:
 			if (object_type==_object_is_item && !is_random_location)
 			{
-				valid= FALSE;
+				valid= false;
 				break;
 			}
 		case _polygon_is_monster_impassable:
@@ -685,7 +685,7 @@ static boolean polygon_is_valid_for_object_drop(
 		case _polygon_is_teleporter:
 			if (is_random_location)
 			{
-				valid= FALSE;
+				valid= false;
 				break;
 			}
 			
@@ -696,7 +696,7 @@ static boolean polygon_is_valid_for_object_drop(
 				{
 					short object_index= polygon->first_object;
 					
-					valid= TRUE;
+					valid= true;
 					while (object_index!=NONE && valid)
 					{
 						struct object_data *object = get_object_data(object_index);
@@ -709,7 +709,7 @@ static boolean polygon_is_valid_for_object_drop(
 									switch (GET_OBJECT_OWNER(object))
 									{
 										case _object_is_item:
-											valid= FALSE;
+											valid= false;
 									}
 									break;
 									
@@ -719,7 +719,7 @@ static boolean polygon_is_valid_for_object_drop(
 										case _object_is_projectile:
 										case _object_is_monster:
 										case _object_is_effect:
-											valid= FALSE;
+											valid= false;
 									}
 									break;
 									
@@ -733,7 +733,7 @@ static boolean polygon_is_valid_for_object_drop(
 						{
 							if (object->location.x==location->x && object->location.y==location->y)
 							{
-								valid= FALSE;
+								valid= false;
 							}
 						}
 						

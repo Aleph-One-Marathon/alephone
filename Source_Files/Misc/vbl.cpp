@@ -102,7 +102,7 @@ inline short memory_error() {return 0;}
 /* ---------- globals */
 
 static long heartbeat_count;
-static boolean input_task_active;
+static bool input_task_active;
 static timer_task_proc input_task;
 
 // LP: defined this here so it will work properly
@@ -130,7 +130,7 @@ static void remove_input_controller(void);
 static void precalculate_key_information(void);
 static void save_recording_queue_chunk(short player_index);
 static void read_recording_queue_chunks(void);
-static boolean pull_flags_from_recording(short count);
+static bool pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
 static bool vblFSRead(OpenedFile& File, long *count, void *dest, bool& HitEOF);
 static void record_action_flags(short player_identifier, long *action_flags, short count);
@@ -158,7 +158,7 @@ void initialize_keyboard_controller(
 	
 	// get globals initialized
 	heartbeat_count= 0;
-	input_task_active= FALSE;
+	input_task_active= false;
 	obj_clear(replay);
 
 	input_task= install_timer_task(TICKS_PER_SECOND, input_controller);
@@ -186,7 +186,7 @@ void initialize_keyboard_controller(
 }
 
 void set_keyboard_controller_status(
-	boolean active)
+	bool active)
 {
 	input_task_active= active;
 
@@ -211,7 +211,7 @@ void set_keyboard_controller_status(
 	return;
 }
 
-boolean get_keyboard_controller_status(
+bool get_keyboard_controller_status(
 	void)
 {
 	return input_task_active;
@@ -313,14 +313,14 @@ void set_keys(
 	return;
 }
 
-boolean has_recording_file(void)
+bool has_recording_file(void)
 {
 	FileSpecifier File;
 	return get_recording_filedesc(File);
 }
 
 /* Called by the time manager task in vbl_macintosh.c */
-boolean input_controller(
+bool input_controller(
 	void)
 {
 	if (input_task_active)
@@ -374,7 +374,7 @@ boolean input_controller(
 		}
 	}
 	
-	return TRUE; // tells the time manager library to reschedule this task
+	return true; // tells the time manager library to reschedule this task
 }
 
 void process_action_flags(
@@ -491,21 +491,21 @@ void save_recording_queue_chunk(
  *
  * Function: pull_flags_from_recording
  * Purpose:  remove one flag from each queue from the recording buffer.
- * Returns:  TRUE if it pulled the flags, FALSE if it didn't
+ * Returns:  true if it pulled the flags, false if it didn't
  *
  *********************************************************************************************/
-static boolean pull_flags_from_recording(
+static bool pull_flags_from_recording(
 	short count)
 {
 	short player_index;
-	boolean success= TRUE;
+	bool success= true;
 	
 	// first check that we can pull something from each player’s queue
 	// (at the beginning of the game, we won’t be able to)
 	// i'm not sure that i really need to do this check. oh well.
 	for (player_index = 0; success && player_index<dynamic_world->player_count; player_index++)
 	{
-		if(get_recording_queue_size(player_index)==0) success= FALSE;
+		if(get_recording_queue_size(player_index)==0) success= false;
 	}
 
 	if(success)
@@ -605,11 +605,11 @@ void get_recording_header_data(
 	return;
 }
 
-boolean setup_for_replay_from_file(
+bool setup_for_replay_from_file(
 	FileSpecifier& File,
 	unsigned long map_checksum)
 {
-	boolean successful= FALSE;
+	bool successful= false;
 
 	(void)(map_checksum);
 	
@@ -618,9 +618,9 @@ boolean setup_for_replay_from_file(
 	// replay.recording_file_refnum= open_file_for_reading(file);
 	// if(replay.recording_file_refnum > 0)
 	{
-		replay.valid= TRUE;
-		replay.have_read_last_chunk = FALSE;
-		replay.game_is_being_replayed = TRUE;
+		replay.valid= true;
+		replay.have_read_last_chunk = false;
+		replay.game_is_being_replayed = true;
 		assert(!replay.resource_data);
 		replay.resource_data= NULL;
 		replay.resource_data_size= 0l;
@@ -642,7 +642,7 @@ boolean setup_for_replay_from_file(
 #ifdef DEBUG_REPLAY
 			open_stream_file();
 #endif
-			successful= TRUE;
+			successful= true;
 		} else {
 			/* Tell them that this map wasn't found.  They lose. */
 			alert_user(infoError, strERRORS, cantFindReplayMap, 0);
@@ -661,7 +661,7 @@ void start_recording(
 	// FileError error;
 	
 	assert(!replay.valid);
-	replay.valid= TRUE;
+	replay.valid= true;
 	
 	if(get_recording_filedesc(FilmFileSpec))
 		FilmFileSpec.Delete();
@@ -673,7 +673,7 @@ void start_recording(
 		/* I debate the validity of fsCurPerm here, but Alain had it, and it has been working */
 		if (FilmFileSpec.Open(FilmFile,true))
 		{
-			replay.game_is_being_recorded= TRUE;
+			replay.game_is_being_recorded= true;
 	
 			// save a header containing information about the game.
 			FilmFile.WriteObject(replay.header);
@@ -696,7 +696,7 @@ void stop_recording(
 			save_recording_queue_chunk(player_index);
 		}
 
-		replay.game_is_being_recorded = FALSE;
+		replay.game_is_being_recorded = false;
 		
 		/* Rewrite the header, since it has the new length */
 		FilmFile.SetPosition(0);
@@ -715,7 +715,7 @@ void stop_recording(
 		FilmFile.Close();
 	}
 
-	replay.valid= FALSE;
+	replay.valid= false;
 	
 	return;
 }
@@ -754,18 +754,18 @@ void check_recording_replaying(
 
 	if (replay.game_is_being_recorded)
 	{
-		boolean enough_data_to_save= TRUE;
+		bool enough_data_to_save= true;
 	
 		// it's time to save the queues if all of them have >= RECORD_CHUNK_SIZE flags in them.
 		for (player_index= 0; enough_data_to_save && player_index<dynamic_world->player_count; player_index++)
 		{
 			queue_size= get_recording_queue_size(player_index);
-			if (queue_size < RECORD_CHUNK_SIZE)	enough_data_to_save= FALSE;
+			if (queue_size < RECORD_CHUNK_SIZE)	enough_data_to_save= false;
 		}
 		
 		if(enough_data_to_save)
 		{
-			boolean success;
+			bool success;
 			unsigned long freespace = 0;
 			FileSpecifier FilmFile_Check;
 			
@@ -783,13 +783,13 @@ void check_recording_replaying(
 	}
 	else if (replay.game_is_being_replayed)
 	{
-		boolean load_new_data= TRUE;
+		bool load_new_data= true;
 	
 		// it's time to refill the requeues if they all have < RECORD_CHUNK_SIZE flags in them.
 		for (player_index= 0; load_new_data && player_index<dynamic_world->player_count; player_index++)
 		{
 			queue_size= get_recording_queue_size(player_index);
-			if(queue_size>= RECORD_CHUNK_SIZE) load_new_data= FALSE;
+			if(queue_size>= RECORD_CHUNK_SIZE) load_new_data= false;
 		}
 		
 		if(load_new_data)
@@ -820,7 +820,7 @@ void stop_replay(
 	assert(replay.valid);
 	if (replay.game_is_being_replayed)
 	{
-		replay.game_is_being_replayed= FALSE;
+		replay.game_is_being_replayed= false;
 		if (replay.resource_data)
 		{
 			delete []replay.resource_data;
@@ -838,7 +838,7 @@ void stop_replay(
 	}
 
 	/* Unecessary, because reset_player_queues calls this. */
-	replay.valid= FALSE;
+	replay.valid= false;
 	
 	return;
 }
@@ -858,11 +858,11 @@ static void read_recording_queue_chunks(
 		{
 			if (replay.resource_data)
 			{
-				boolean hit_end= FALSE;
+				bool hit_end= false;
 				
 				if (replay.film_resource_offset >= replay.resource_data_size)
 				{
-					hit_end = TRUE;
+					hit_end = true;
 				}
 				else
 				{
@@ -874,7 +874,7 @@ static void read_recording_queue_chunks(
 				
 				if (hit_end || num_flags == END_OF_RECORDING_INDICATOR)
 				{
-					replay.have_read_last_chunk= TRUE;
+					replay.have_read_last_chunk= true;
 					break;
 				}
 			}
@@ -891,7 +891,7 @@ static void read_recording_queue_chunks(
 				
 				if ((HitEOF && sizeof_read != sizeof(action_flags)) || num_flags == END_OF_RECORDING_INDICATOR)
 				{
-					replay.have_read_last_chunk = TRUE;
+					replay.have_read_last_chunk = true;
 					break;
 				}
 			}
@@ -993,7 +993,7 @@ static void remove_input_controller(
 		}
 	}
 
-	replay.valid= FALSE;
+	replay.valid= false;
 
 	return;
 }

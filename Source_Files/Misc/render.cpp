@@ -244,7 +244,7 @@ whitespace results when two adjacent polygons are clipped to different vertical 
 // Not used for anything
 #define CLIP_INDEX_BUFFER_SIZE 4096
 
-word *render_flags;
+uint16 *render_flags;
 
 
 // LP additions: decomposition of the rendering code into various objects
@@ -270,7 +270,7 @@ static void shake_view_origin(struct view_data *view, world_distance delta);
 static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr);
 // static void render_viewer_sprite_layer(struct view_data *view, struct bitmap_definition *destination);
 static void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width,
-	short positioning_mode, fixed position, boolean flip, world_distance world_left, world_distance world_right);
+	short positioning_mode, fixed position, bool flip, world_distance world_left, world_distance world_right);
 
 
 #ifdef QUICKDRAW_DEBUG
@@ -290,7 +290,7 @@ void allocate_render_memory(
 	assert(MAXIMUM_SIDES_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
 	assert(MAXIMUM_ENDPOINTS_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
 	assert(MAXIMUM_POLYGONS_PER_MAP<=RENDER_FLAGS_BUFFER_SIZE);
-	render_flags= new word[RENDER_FLAGS_BUFFER_SIZE];
+	render_flags= new uint16[RENDER_FLAGS_BUFFER_SIZE];
 	assert(render_flags);
 	
 	// LP addition: check out pointer-arithmetic hack
@@ -533,7 +533,7 @@ static void update_view_data(
 			other media boundaries from this orientation (above or below) or fail to draw them. */
 		if (polygon->media_index==NONE)
 		{
-			view->under_media_boundary= FALSE;
+			view->under_media_boundary= false;
 		}
 		else
 		{
@@ -545,7 +545,7 @@ static void update_view_data(
 				view->under_media_boundary= UNDER_MEDIA(media, view->origin.z);
 				view->under_media_index= polygon->media_index;
 			} else {
-				view->under_media_boundary= FALSE;
+				view->under_media_boundary= false;
 			}
 		}
 	}
@@ -723,7 +723,7 @@ void instantiate_polygon_transfer_mode(
 	struct polygon_definition *polygon,
 	short transfer_mode,
 	short transfer_phase,
-	boolean horizontal)
+	bool horizontal)
 {
 	world_distance x0, y0;
 	world_distance vector_magnitude;
@@ -845,7 +845,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 	// LP change: bug out if weapons-in-hand are not to be displayed
 	if (!view->show_weapons_in_hand) return;
 
-	/* get_weapon_display_information() returns TRUE if there is a weapon to be drawn.  it
+	/* get_weapon_display_information() returns true if there is a weapon to be drawn.  it
 		should initially be passed a count of zero.  it returns the weapon’s texture and
 		enough information to draw it correctly. */
 	count= 0;
@@ -908,7 +908,7 @@ static void position_sprite_axis(
 	short screen_width,
 	short positioning_mode,
 	fixed position,
-	boolean flip,
+	bool flip,
 	world_distance world_left,
 	world_distance world_right)
 {

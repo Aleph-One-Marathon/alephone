@@ -84,7 +84,7 @@ extern void draw_panels(void);
 static void set_current_inventory_screen(short player_index, short screen);
 
 #define INVENTORY_IS_DIRTY(p) ((p)->interface_flags & INVENTORY_DIRTY_BIT)
-#define SET_INVENTORY_DIRTY_STATE(p, v) ((void)((v)?((p)->interface_flags|=(word)INVENTORY_DIRTY_BIT):((p)->interface_flags&=(word)~INVENTORY_DIRTY_BIT)))
+#define SET_INVENTORY_DIRTY_STATE(p, v) ((void)((v)?((p)->interface_flags|=(uint16)INVENTORY_DIRTY_BIT):((p)->interface_flags&=(uint16)~INVENTORY_DIRTY_BIT)))
 
 #define INTERFACE_IS_DIRTY(p) ((p)->interface_flags & INTERFACE_DIRTY_BIT)
 #define SET_INTERFACE_DIRTY_STATE(p, v) ((v)?((p)->interface_flags |= INTERFACE_DIRTY_BIT):(p)->interface_flags &= ~INTERFACE_DIRTY_BIT)
@@ -172,7 +172,7 @@ struct weapon_interface_ammo_data
 	short delta_y; /* Or height if uses energy */
 	shape_descriptor bullet;	 /* or fill color index */
 	shape_descriptor empty_bullet; /* or empty color index */
-	boolean right_to_left; /* Which way do the bullets go as they are used? */
+	bool right_to_left; /* Which way do the bullets go as they are used? */
 };
 
 struct weapon_interface_data 
@@ -185,16 +185,16 @@ struct weapon_interface_data
 	short weapon_name_end_x;	/* NONE means center in the weapon rectangle */
 	short standard_weapon_panel_top;
 	short standard_weapon_panel_left;
-	boolean multi_weapon;
+	bool multi_weapon;
 	struct weapon_interface_ammo_data ammo_data[NUMBER_OF_WEAPON_INTERFACE_ITEMS];
 };
 
 struct interface_state_data
 {
-	boolean ammo_is_dirty;
-	boolean weapon_is_dirty;
-	boolean shield_is_dirty;
-	boolean oxygen_is_dirty;
+	bool ammo_is_dirty;
+	bool weapon_is_dirty;
+	bool shield_is_dirty;
+	bool oxygen_is_dirty;
 };
 
 extern void validate_world_window(void);
@@ -221,10 +221,10 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		433, 432,
 		NONE, NONE,
 		0, 0,
-		FALSE,
+		false,
 		{
-			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, NONE, NONE, TRUE},
-			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, NONE, NONE, TRUE}
+			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, NONE, NONE, true},
+			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, NONE, NONE, true}
 		}
 	},
 	
@@ -235,10 +235,10 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		432, 444,
 		420, NONE,
 		366, 517, 
-		TRUE,
+		true,
 		{
-			{ _uses_bullets, 517, 412, 8, 1, 5, 14, BUILD_DESCRIPTOR(_collection_interface, _magnum_bullet), BUILD_DESCRIPTOR(_collection_interface, _magnum_casing), FALSE},
-			{ _uses_bullets, 452, 412, 8, 1, 5, 14, BUILD_DESCRIPTOR(_collection_interface, _magnum_bullet), BUILD_DESCRIPTOR(_collection_interface, _magnum_casing), TRUE}
+			{ _uses_bullets, 517, 412, 8, 1, 5, 14, BUILD_DESCRIPTOR(_collection_interface, _magnum_bullet), BUILD_DESCRIPTOR(_collection_interface, _magnum_casing), false},
+			{ _uses_bullets, 452, 412, 8, 1, 5, 14, BUILD_DESCRIPTOR(_collection_interface, _magnum_bullet), BUILD_DESCRIPTOR(_collection_interface, _magnum_casing), true}
 		}
 	},
 
@@ -249,10 +249,10 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		431, 443,
 		401, NONE,
 		366, 475, 
-		FALSE,
+		false,
 		{
-			{ _uses_energy, 414, 366, 20, 0, 38, 57, _energy_weapon_full_color, _energy_weapon_empty_color, TRUE},
-			{ _unused_interface_data, 450, 410, 50, 0, 62, 7, _energy_weapon_full_color, _energy_weapon_empty_color, TRUE}
+			{ _uses_energy, 414, 366, 20, 0, 38, 57, _energy_weapon_full_color, _energy_weapon_empty_color, true},
+			{ _unused_interface_data, 450, 410, 50, 0, 62, 7, _energy_weapon_full_color, _energy_weapon_empty_color, true}
 		}
 	},
 	
@@ -263,10 +263,10 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		430, 452,
 		439, NONE, //ее
 		366, 460, 
-		FALSE,
+		false,
 		{
-			{ _uses_bullets, 391, 368, 13, 4, 4, 10, BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_bullet), BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_casing), TRUE},
-			{ _uses_bullets, 390, 413, 7, 1, 8, 12, BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade), BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade_casing), TRUE},
+			{ _uses_bullets, 391, 368, 13, 4, 4, 10, BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_bullet), BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_casing), true},
+			{ _uses_bullets, 390, 413, 7, 1, 8, 12, BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade), BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade_casing), true},
 		}
 	},
 		
@@ -277,10 +277,10 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		433, 445,
 		426, NONE,
 		365, 419, 
-		FALSE,
+		false,
 		{
-			{ _uses_bullets, 385, 376, 2, 1, 16, 49, BUILD_DESCRIPTOR(_collection_interface, _missile), BUILD_DESCRIPTOR(_collection_interface, _missile_casing), TRUE},
-			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, NONE, NONE, TRUE }
+			{ _uses_bullets, 385, 376, 2, 1, 16, 49, BUILD_DESCRIPTOR(_collection_interface, _missile), BUILD_DESCRIPTOR(_collection_interface, _missile_casing), true},
+			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, NONE, NONE, true }
 		}
 	},
 
@@ -291,11 +291,11 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		433, 445,
 		398, NONE,
 		363, 475, 
-		FALSE,
+		false,
 		{
 			/* This weapon has 7 seconds of flamethrower carnage.. */
-			{ _uses_energy, 427, 369, 7*TICKS_PER_SECOND, 0, 38, 57, _energy_weapon_full_color, _energy_weapon_empty_color, TRUE},
-			{ _unused_interface_data, 450, 410, 50, 0, 62, 7, _energy_weapon_full_color, _energy_weapon_empty_color, TRUE}
+			{ _uses_energy, 427, 369, 7*TICKS_PER_SECOND, 0, 38, 57, _energy_weapon_full_color, _energy_weapon_empty_color, true},
+			{ _unused_interface_data, 450, 410, 50, 0, 62, 7, _energy_weapon_full_color, _energy_weapon_empty_color, true}
 		}
 	},
 
@@ -306,10 +306,10 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		418, 445,
 		395, 575,
 		359, 400, 
-		FALSE,
+		false,
 		{
-			{ _unused_interface_data, 425, 411, 50, 0, 96, 7, _energy_weapon_full_color, _energy_weapon_empty_color, TRUE},
-			{ _unused_interface_data, 450, 410, 50, 0, 62, 7, _energy_weapon_full_color, _energy_weapon_empty_color, TRUE}
+			{ _unused_interface_data, 425, 411, 50, 0, 96, 7, _energy_weapon_full_color, _energy_weapon_empty_color, true},
+			{ _unused_interface_data, 450, 410, 50, 0, 62, 7, _energy_weapon_full_color, _energy_weapon_empty_color, true}
 		}
 	},
 
@@ -320,10 +320,10 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		432, 444,
 		420, NONE,
 		373, 451, 
-		TRUE,
+		true,
 		{
-			{ _uses_bullets, 483, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), TRUE},
-			{ _uses_bullets, 451, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), TRUE}
+			{ _uses_bullets, 483, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), true},
+			{ _uses_bullets, 451, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), true}
 		}
 	},
 
@@ -334,10 +334,10 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		432, 444,
 		402, NONE,
 		366, 465, 
-		FALSE,
+		false,
 		{
-			{ _unused_interface_data, 451, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), TRUE},
-			{ _unused_interface_data, 483, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), TRUE}
+			{ _unused_interface_data, 451, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), true},
+			{ _unused_interface_data, 483, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), true}
 		}
 	},
 	
@@ -348,20 +348,20 @@ struct weapon_interface_data weapon_interface_definitions[]=
 		430, 452,
 		439, NONE, //ее
 		366, 460, 
-		FALSE,
+		false,
 		{
-			{ _uses_bullets, 405, 382, 8, 4, 5, 10, BUILD_DESCRIPTOR(_collection_interface, _smg_bullet), BUILD_DESCRIPTOR(_collection_interface, _smg_casing), TRUE},
-			{ _unused_interface_data, 390, 413, 7, 1, 8, 12, BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade), BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade_casing), TRUE},
+			{ _uses_bullets, 405, 382, 8, 4, 5, 10, BUILD_DESCRIPTOR(_collection_interface, _smg_bullet), BUILD_DESCRIPTOR(_collection_interface, _smg_casing), true},
+			{ _unused_interface_data, 390, 413, 7, 1, 8, 12, BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade), BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade_casing), true},
 		}
 	},
 };
 
 
 /* --------- private prototypes */
-static void update_inventory_panel(boolean force_redraw);
+static void update_inventory_panel(bool force_redraw);
 static void update_motion_sensor(short time_elapsed);
-static void update_weapon_panel(boolean force_redraw);
-static void update_ammo_display(boolean force_redraw);
+static void update_weapon_panel(bool force_redraw);
+static void update_ammo_display(bool force_redraw);
 static void	draw_inventory_header(char *text, short offset);
 static void	draw_bar(screen_rectangle *rectangle, short actual_height,
 	shape_descriptor top_piece, shape_descriptor full_bar,
@@ -373,7 +373,7 @@ static void draw_ammo_display_in_panel(short trigger_id);
 static void update_suit_energy(short time_elapsed);
 static void update_suit_oxygen(short time_elapsed);
 static void draw_inventory_item(char *text, short count, short offset, 
-	boolean erase_first, boolean valid_in_this_environment);
+	bool erase_first, bool valid_in_this_environment);
 static void draw_player_name(void);
 static void draw_message_area(short time_elapsed);
 
@@ -446,7 +446,7 @@ void update_interface(
 }
 
 void mark_interface_collections(
-	boolean loading)
+	bool loading)
 {
 	loading ? mark_collection_for_loading(_collection_interface) : 
 		mark_collection_for_unloading(_collection_interface);
@@ -457,25 +457,25 @@ void mark_interface_collections(
 void mark_weapon_display_as_dirty(
 	void)
 {
-	interface_state.weapon_is_dirty= TRUE;
+	interface_state.weapon_is_dirty= true;
 }
 
 void mark_ammo_display_as_dirty(
 	void)
 {
-	interface_state.ammo_is_dirty= TRUE;
+	interface_state.ammo_is_dirty= true;
 }
 
 void mark_shield_display_as_dirty(
 	void)
 {
-	interface_state.shield_is_dirty= TRUE;
+	interface_state.shield_is_dirty= true;
 }
 
 void mark_oxygen_display_as_dirty(
 	void)
 {
-	interface_state.oxygen_is_dirty= TRUE;
+	interface_state.oxygen_is_dirty= true;
 }
 
 void mark_player_inventory_screen_as_dirty(
@@ -485,7 +485,7 @@ void mark_player_inventory_screen_as_dirty(
 	struct player_data *player= get_player_data(player_index);
 
 	set_current_inventory_screen(player_index, screen);
-	SET_INVENTORY_DIRTY_STATE(player, TRUE);
+	SET_INVENTORY_DIRTY_STATE(player, true);
 	
 	return;
 }
@@ -509,7 +509,7 @@ void mark_player_inventory_as_dirty(
 			set_current_inventory_screen(player_index, item_kind);
 		}
 	}
-	SET_INVENTORY_DIRTY_STATE(player, TRUE);
+	SET_INVENTORY_DIRTY_STATE(player, true);
 }
 
 void mark_player_network_stats_as_dirty(
@@ -520,14 +520,14 @@ void mark_player_network_stats_as_dirty(
 		struct player_data *player= get_player_data(player_index);
 	
 		set_current_inventory_screen(player_index, _network_statistics);
-		SET_INVENTORY_DIRTY_STATE(player, TRUE);
+		SET_INVENTORY_DIRTY_STATE(player, true);
 	}
 	
 	return;
 }
 
 void set_interface_microphone_recording_state(
-	boolean state)
+	bool state)
 {
 	(void) (state);
 #ifdef OBSOLETE
@@ -601,7 +601,7 @@ void scroll_inventory(
 	}
 	set_current_inventory_screen(current_player_index, current_inventory_screen);
 
-	SET_INVENTORY_DIRTY_STATE(current_player, TRUE);	
+	SET_INVENTORY_DIRTY_STATE(current_player, true);	
 }
 
 /* This function is only called from macintosh_game_window.c */
@@ -609,9 +609,9 @@ void update_everything(
 	short time_elapsed)
 {
 	update_motion_sensor(time_elapsed);
-	update_inventory_panel((time_elapsed==NONE) ? TRUE : FALSE);
-	update_weapon_panel((time_elapsed==NONE) ? TRUE : FALSE);
-	update_ammo_display((time_elapsed==NONE) ? TRUE : FALSE);
+	update_inventory_panel((time_elapsed==NONE) ? true : false);
+	update_weapon_panel((time_elapsed==NONE) ? true : false);
+	update_ammo_display((time_elapsed==NONE) ? true : false);
 	update_suit_energy(time_elapsed);
 	update_suit_oxygen(time_elapsed);
 
@@ -680,7 +680,7 @@ static void update_suit_energy(
 			BUILD_DESCRIPTOR(_collection_interface, bar_shape_id),
 			BUILD_DESCRIPTOR(_collection_interface, background_shape_id));
 
-		interface_state.shield_is_dirty= FALSE;
+		interface_state.shield_is_dirty= false;
 	}
 	
 	return;
@@ -711,7 +711,7 @@ static void update_suit_oxygen(
 			BUILD_DESCRIPTOR(_collection_interface, _empty_oxygen_bar));
 	
 		delay_time= DELAY_TICKS_BETWEEN_OXYGEN_REDRAW;
-		interface_state.oxygen_is_dirty= FALSE;
+		interface_state.oxygen_is_dirty= false;
 	}
 
 	return;
@@ -762,7 +762,7 @@ static void update_motion_sensor(
 
 /* A change of weapon has occurred, change the weapon display panel */
 static void update_weapon_panel(
-	boolean force_redraw)
+	bool force_redraw)
 {
 	if(force_redraw || interface_state.weapon_is_dirty)
 	{
@@ -849,7 +849,7 @@ static void update_weapon_panel(
 					if(current_player->items[item_index]>0) break;
 				}
 				assert(item_index != BALL_ITEM_BASE+MAXIMUM_NUMBER_OF_PLAYERS);
-				get_item_name(weapon_name, item_index, FALSE);
+				get_item_name(weapon_name, item_index, false);
 			}
 
 			/* Draw the weapon name.. */
@@ -870,14 +870,14 @@ static void update_weapon_panel(
 				_weapon_name_font, _inventory_text_color);
 				
 			/* And make sure that the ammo knows it needs to update */
-			interface_state.ammo_is_dirty= TRUE;
+			interface_state.ammo_is_dirty= true;
 		} 
-		interface_state.weapon_is_dirty= FALSE;
+		interface_state.weapon_is_dirty= false;
 	}
 }
 
 static void update_ammo_display(
-	boolean force_redraw)
+	bool force_redraw)
 {
 	if(force_redraw || interface_state.ammo_is_dirty)
 	{
@@ -886,14 +886,14 @@ static void update_ammo_display(
 		
 		draw_ammo_display_in_panel(_primary_interface_ammo);
 		draw_ammo_display_in_panel(_secondary_interface_ammo);
-		interface_state.ammo_is_dirty= FALSE;
+		interface_state.ammo_is_dirty= false;
 	}
 }
 
 /* changed_item gets erased first.. */
 /* This should probably go to a gworld first, or something */
 static void update_inventory_panel(
-	boolean force_redraw)
+	bool force_redraw)
 {
 	short section_items[NUMBER_OF_ITEMS];
 	short section_counts[NUMBER_OF_ITEMS];
@@ -907,7 +907,6 @@ static void update_inventory_panel(
 		
 		screen_rectangle *destination= get_interface_rectangle(_inventory_rect);
 		screen_rectangle text_rectangle;
-		short total_inventory_line_count= count_inventory_lines(current_player_index);
 		short max_lines= max_displayable_inventory_lines();
 	
 		/* Recalculate and redraw.. */
@@ -964,16 +963,16 @@ static void update_inventory_panel(
 			/* Draw the items. */
 			for(loop= 0; loop<section_count && current_row<max_lines; ++loop)
 			{
-				boolean valid_in_this_environment;
+				bool valid_in_this_environment;
 			
 				/* Draw the item */
 				get_item_name(temporary, section_items[loop], (section_counts[loop]!=1));
 				valid_in_this_environment= item_valid_in_current_environment(section_items[loop]);
-				draw_inventory_item(temporary, section_counts[loop], current_row++, FALSE, valid_in_this_environment);
+				draw_inventory_item(temporary, section_counts[loop], current_row++, false, valid_in_this_environment);
 			}
 		}
 		
-		SET_INVENTORY_DIRTY_STATE(current_player, FALSE);
+		SET_INVENTORY_DIRTY_STATE(current_player, false);
 	}
 }
 
@@ -1069,7 +1068,6 @@ static void draw_ammo_display_in_panel(
 {
 	struct weapon_interface_data *current_weapon_data;
 	struct weapon_interface_ammo_data *current_ammo_data;
-	struct player_data *player= get_player_data(current_player_index);
 	short ammunition_count;
 	short desired_weapon= get_player_desired_weapon(current_player_index);
 
@@ -1204,8 +1202,8 @@ static void draw_inventory_item(
 	char *text, 
 	short count, 
 	short offset, 
-	boolean erase_first,
-	boolean valid_in_this_environment)
+	bool erase_first,
+	bool valid_in_this_environment)
 {
 	screen_rectangle destination, text_destination;
 	char count_text[10];

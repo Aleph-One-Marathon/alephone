@@ -400,7 +400,7 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 			// get_shape_bitmap_and_shading_table(surface->texture, &textured_polygon.texture, &textured_polygon.shading_tables, view->shading_mode);
 			textured_polygon.ambient_shade= get_light_intensity(surface->lightsource_index);
 			textured_polygon.vertex_count= vertex_count;
-			instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, view->tick_count + 16*(polygon-map_polygons), TRUE);
+			instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, view->tick_count + 16*(polygon-map_polygons), true);
 			if (view->shading_mode==_shading_infravision) textured_polygon.flags|= _SHADELESS_BIT;
 			
 			/* and, finally, map it */
@@ -559,7 +559,7 @@ void RenderRasterizerClass::render_node_side(
 				textured_polygon.ambient_shade= get_light_intensity(surface->lightsource_index) + surface->ambient_delta;
 				textured_polygon.ambient_shade= PIN(textured_polygon.ambient_shade, 0, FIXED_ONE);
 				textured_polygon.vertex_count= vertex_count;
-				instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, view->tick_count + (long)window, FALSE);
+				instantiate_polygon_transfer_mode(view, &textured_polygon, surface->transfer_mode, view->tick_count + (long)window, false);
 				if (view->shading_mode==_shading_infravision) textured_polygon.flags|= _SHADELESS_BIT;
 				
 				/* and, finally, map it */
@@ -635,7 +635,7 @@ short RenderRasterizerClass::xy_clip_horizontal_polygon(
 	flagged_world_point2d *vertices,
 	short vertex_count,
 	long_vector2d *line, // world_vector2d *line,
-	word flag)
+	uint16 flag)
 {
 #ifdef QUICKDRAW_DEBUG
 	debug_flagged_points(vertices, vertex_count);
@@ -648,7 +648,7 @@ short RenderRasterizerClass::xy_clip_horizontal_polygon(
 		short state= _testing_first_vertex;
 		short vertex_index= 0, vertex_delta= 1, first_vertex= 0;
 		short entrance_vertex= NONE, exit_vertex= NONE; /* exiting the clipped area and entering the clipped area */
-		boolean clipped_exit_vertex= TRUE, clipped_entrance_vertex= TRUE; /* will be FALSE if these points lie directly on a vertex */
+		bool clipped_exit_vertex= true, clipped_entrance_vertex= true; /* will be false if these points lie directly on a vertex */
 		
 		do
 		{
@@ -689,16 +689,16 @@ short RenderRasterizerClass::xy_clip_horizontal_polygon(
 						
 						case _searching_cw_for_out_in_transition:
 							entrance_vertex= vertex_index;
-							clipped_entrance_vertex= FALSE; /* remember if this passes through vertex */
+							clipped_entrance_vertex= false; /* remember if this passes through vertex */
 							break;
 						
 						case _searching_cw_for_in_out_transition:
 							exit_vertex= WRAP_HIGH(vertex_index, vertex_count-1);
-							clipped_exit_vertex= FALSE;
+							clipped_exit_vertex= false;
 							break;
 						case _searching_ccw_for_out_in_transition:
 							exit_vertex= WRAP_HIGH(vertex_index, vertex_count-1);
-							clipped_exit_vertex= FALSE; /* remember if this passes through vertex */
+							clipped_exit_vertex= false; /* remember if this passes through vertex */
 							break;
 					}
 					break;
@@ -827,7 +827,7 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 	flagged_world_point2d *clipped,
 	long_vector2d *line) // world_vector2d *line)
 {
-	boolean swap= (p1->y>p0->y) ? FALSE : ((p0->y==p1->y) ? (p1->x<p0->x) : TRUE);
+	bool swap= (p1->y>p0->y) ? false : ((p0->y==p1->y) ? (p1->x<p0->x) : true);
 	flagged_world_point2d *local_p0= swap ? p1 : p0;
 	flagged_world_point2d *local_p1= swap ? p0 : p1;
 	world_distance dx= local_p1->x - local_p0->x;
@@ -859,7 +859,7 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 	short vertex_count,
 	long_vector2d *line, // world_vector2d *line,/* i==x, j==z */
 	world_distance height,
-	word flag)
+	uint16 flag)
 {
 	// LP change:
 	CROSSPROD_TYPE heighti= CROSSPROD_TYPE(line->i)*height;
@@ -876,7 +876,7 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 		short state= _testing_first_vertex;
 		short vertex_index= 0, vertex_delta= 1, first_vertex= 0;
 		short entrance_vertex= NONE, exit_vertex= NONE; /* exiting the clipped area and entering the clipped area */
-		boolean clipped_exit_vertex= TRUE, clipped_entrance_vertex= TRUE; /* will be FALSE if these points lie directly on a vertex */
+		bool clipped_exit_vertex= true, clipped_entrance_vertex= true; /* will be false if these points lie directly on a vertex */
 		
 		do
 		{
@@ -932,16 +932,16 @@ short RenderRasterizerClass::z_clip_horizontal_polygon(
 						
 						case _searching_cw_for_out_in_transition:
 							entrance_vertex= vertex_index;
-							clipped_entrance_vertex= FALSE; /* remember if this passes through vertex */
+							clipped_entrance_vertex= false; /* remember if this passes through vertex */
 							break;
 						
 						case _searching_cw_for_in_out_transition:
 							exit_vertex= WRAP_HIGH(vertex_index, vertex_count-1);
-							clipped_exit_vertex= FALSE;
+							clipped_exit_vertex= false;
 							break;
 						case _searching_ccw_for_out_in_transition:
 							exit_vertex= WRAP_HIGH(vertex_index, vertex_count-1);
-							clipped_exit_vertex= FALSE; /* remember if this passes through vertex */
+							clipped_exit_vertex= false; /* remember if this passes through vertex */
 							break;
 					}
 				}
@@ -1052,7 +1052,7 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 	flagged_world_point2d *clipped,
 	long_vector2d *line) // world_vector2d *line)
 {
-	boolean swap= (p1->y>p0->y) ? FALSE : ((p0->y==p1->y) ? (p1->x<p0->x) : TRUE);
+	bool swap= (p1->y>p0->y) ? false : ((p0->y==p1->y) ? (p1->x<p0->x) : true);
 	flagged_world_point2d *local_p0= swap ? p1 : p0;
 	flagged_world_point2d *local_p1= swap ? p0 : p1;
 	world_distance dx= local_p1->x - local_p0->x;
@@ -1083,7 +1083,7 @@ short RenderRasterizerClass::xy_clip_line(
 	flagged_world_point2d *posts,
 	short vertex_count,
 	long_vector2d *line, // world_vector2d *line,
-	word flag)
+	uint16 flag)
 {
 #ifdef QUICKDRAW_DEBUG
 //	debug_flagged_points(posts, vertex_count);
@@ -1137,7 +1137,7 @@ short RenderRasterizerClass::xz_clip_vertical_polygon(
 	flagged_world_point3d *vertices,
 	short vertex_count,
 	long_vector2d *line, // world_vector2d *line, /* i==x, j==z */
-	word flag)
+	uint16 flag)
 {
 #ifdef QUICKDRAW_DEBUG
 //	debug_flagged_points3d(vertices, vertex_count);
@@ -1150,7 +1150,7 @@ short RenderRasterizerClass::xz_clip_vertical_polygon(
 		short state= _testing_first_vertex;
 		short vertex_index= 0, vertex_delta= 1, first_vertex= 0;
 		short entrance_vertex= NONE, exit_vertex= NONE; /* exiting the clipped area and entering the clipped area */
-		boolean clipped_exit_vertex= TRUE, clipped_entrance_vertex= TRUE; /* will be FALSE if these points lie directly on a vertex */
+		bool clipped_exit_vertex= true, clipped_entrance_vertex= true; /* will be false if these points lie directly on a vertex */
 		
 		do
 		{	
@@ -1191,16 +1191,16 @@ short RenderRasterizerClass::xz_clip_vertical_polygon(
 						
 						case _searching_cw_for_out_in_transition:
 							entrance_vertex= vertex_index;
-							clipped_entrance_vertex= FALSE; /* remember if this passes through vertex */
+							clipped_entrance_vertex= false; /* remember if this passes through vertex */
 							break;
 						
 						case _searching_cw_for_in_out_transition:
 							exit_vertex= WRAP_HIGH(vertex_index, vertex_count-1);
-							clipped_exit_vertex= FALSE;
+							clipped_exit_vertex= false;
 							break;
 						case _searching_ccw_for_out_in_transition:
 							exit_vertex= WRAP_HIGH(vertex_index, vertex_count-1);
-							clipped_exit_vertex= FALSE; /* remember if this passes through vertex */
+							clipped_exit_vertex= false; /* remember if this passes through vertex */
 							break;
 					}
 					break;
@@ -1326,7 +1326,7 @@ void RenderRasterizerClass::xz_clip_flagged_world_points(
 	flagged_world_point3d *clipped,
 	long_vector2d *line) // world_vector2d *line)
 {
-	boolean swap= (p1->y>p0->y) ? FALSE : ((p0->y==p1->y) ? (p1->x<p0->x) : TRUE);
+	bool swap= (p1->y>p0->y) ? false : ((p0->y==p1->y) ? (p1->x<p0->x) : true);
 	flagged_world_point3d *local_p0= swap ? p1 : p0;
 	flagged_world_point3d *local_p1= swap ? p0 : p1;
 	world_distance dx= local_p1->x - local_p0->x;

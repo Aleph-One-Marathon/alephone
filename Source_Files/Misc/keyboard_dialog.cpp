@@ -63,7 +63,7 @@ struct keyboard_setup_struct {
 static struct keyboard_setup_struct keyboard_setup_globals;
 
 /* -------- private prototypes */
-boolean configure_key_setup(short *keycodes);
+bool configure_key_setup(short *keycodes);
 static pascal Boolean key_setup_filter_proc(DialogPtr dialog, EventRecord *event, short *item_hit);
 static short setup_key_dialog(DialogPtr dialog, short *keycodes);
 static short set_current_keyboard_layout(DialogPtr dialog, short *keycodes);
@@ -71,15 +71,15 @@ static void fill_in_key_name(DialogPtr dialog, short *keycodes, short which);
 static short find_key_hit(byte *key_map, byte *old_key_map);
 static short find_duplicate_keycode(short *keycodes);
 static short keycode_to_charcode(short keycode);
-static boolean is_pressed(short key_code);
+static bool is_pressed(short key_code);
 
 /* ----------- entry point */
-boolean configure_key_setup(
+bool configure_key_setup(
 	short *keycodes)
 {
 	short item_hit, location_of_duplicate, menu_selection;
 	DialogPtr dialog;
-	boolean data_is_bad;
+	bool data_is_bad;
 	ModalFilterUPP key_setup_filter_upp;
 	short current_key_set;
 	
@@ -100,7 +100,7 @@ boolean configure_key_setup(
 	/* Select the text.. */
 	SelectDialogItemText(dialog, iFORWARD, 0, SHORT_MAX);
 
-	set_dialog_cursor_tracking(FALSE);
+	set_dialog_cursor_tracking(false);
 	ShowWindow(dialog);
 
 	/* Setup the globals.. */
@@ -144,26 +144,26 @@ boolean configure_key_setup(
 			location_of_duplicate= find_duplicate_keycode(keycodes);
 			if (item_hit == iMOVED_OK && location_of_duplicate != NONE)
 			{
-				data_is_bad = TRUE;
+				data_is_bad = true;
 				SelectDialogItemText(dialog, location_of_duplicate + FIRST_KEY_ITEM, 0, SHORT_MAX);
 				ParamText(getpstr(ptemporary, strKEYCODES_TO_ASCII, keycodes[location_of_duplicate]), "\p", "\p", "\p");
 				Alert(alrtDUPLICATE_KEY, NULL);
 			}
 			else
 			{
-				data_is_bad = FALSE;
+				data_is_bad = false;
 			}
 		}
 		else
 		{
-			data_is_bad = FALSE;
+			data_is_bad = false;
 		}
 	} while (data_is_bad);
 
 	DisposeRoutineDescriptor(key_setup_filter_upp);
 	DisposeDialog(dialog);
 
-	set_dialog_cursor_tracking(TRUE);
+	set_dialog_cursor_tracking(true);
 			
 	return item_hit==iMOVED_OK;
 }
@@ -178,7 +178,7 @@ static pascal Boolean key_setup_filter_proc(
 	KeyMap key_map;
 	Point where;
 	GrafPtr old_port;
-	boolean handled= FALSE;
+	bool handled= false;
 	
 	GetPort(&old_port);
 	SetPort(dialog);
@@ -214,7 +214,7 @@ static pascal Boolean key_setup_filter_proc(
 			/* Change the keysetup if necessary */
 			keyboard_setup_globals.current_key_setup= 
 				set_current_keyboard_layout(dialog, keyboard_setup_globals.keycodes);
-			if (event->what != nullEvent)	handled = TRUE;
+			if (event->what != nullEvent)	handled = true;
 			break;
 			
 		case mouseDown:
@@ -225,7 +225,7 @@ static pascal Boolean key_setup_filter_proc(
 			{
 				SelectDialogItemText(dialog, which_item, 0, SHORT_MAX);
 				*item_hit = which_item;
-				handled = TRUE;
+				handled = true;
 			}
 			break;
 			
@@ -235,7 +235,7 @@ static pascal Boolean key_setup_filter_proc(
 
 	SetPort(old_port);
 
-	return handled ? TRUE : general_filter_proc(dialog, event, item_hit);
+	return handled ? true : general_filter_proc(dialog, event, item_hit);
 }
 
 static short setup_key_dialog(
@@ -426,7 +426,7 @@ static short keycode_to_charcode(
 	return charcode;
 }
 
-static boolean is_pressed(
+static bool is_pressed(
 	short key_code)
 {
 	KeyMap key_map;

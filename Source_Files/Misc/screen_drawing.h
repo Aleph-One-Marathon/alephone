@@ -149,7 +149,7 @@ extern void draw_line(SDL_Surface *s, world_point2d *v1, world_point2d *v2, uint
 
 static inline int draw_text(SDL_Surface *s, char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
-	draw_text(s, text, strlen(text), x, y, pixel, font, style);
+	return draw_text(s, text, strlen(text), x, y, pixel, font, style);
 }
 #endif
 

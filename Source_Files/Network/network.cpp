@@ -163,7 +163,7 @@ struct NetPlayer
 	
 	short identifier;
 
-	boolean net_dead; // only valid if you are the server.
+	bool net_dead; // only valid if you are the server.
 
 	byte player_data[MAXIMUM_PLAYER_DATA_SIZE];
 };
@@ -191,12 +191,12 @@ struct NetStatus
 	long lastValidRingSequence; /* the sequence number of the last valid ring packet we received */
 	long ringPacketCount; /* the number of ring packets we have received */
 	
-	boolean receivedAcknowledgement; /* TRUE if we received a valid acknowledgement for the last ring packet we sent */
-	boolean canForwardRing; 
-	boolean clearToForwardRing; /* TRUE if we are the server and we got a valid ring packet but we didn’t send it */
-	boolean acceptPackets; /* TRUE if we want to get packets */
-	boolean acceptRingPackets; /* TRUE if we want to get ring packets */
-	boolean oldSelfSendStatus;
+	bool receivedAcknowledgement; /* true if we received a valid acknowledgement for the last ring packet we sent */
+	bool canForwardRing; 
+	bool clearToForwardRing; /* true if we are the server and we got a valid ring packet but we didn’t send it */
+	bool acceptPackets; /* true if we want to get packets */
+	bool acceptRingPackets; /* true if we want to get ring packets */
+	bool oldSelfSendStatus;
 
 	short retries;
 	
@@ -204,8 +204,8 @@ struct NetStatus
 	short last_extra_flags;
 	short update_latency;
 	
-	boolean iAmTheServer;
-	boolean single_player; /* Set true if I dropped everyone else. */
+	bool iAmTheServer;
+	bool single_player; /* Set true if I dropped everyone else. */
 	short server_player_index;
 	short new_packet_tag; /* Valid _only_ if you are the server, and is only set when you just became the server. */
 
@@ -224,8 +224,8 @@ typedef struct NetQueue NetQueue, *NetQueuePtr;
 
 struct NetDistributionInfo
 {
-	boolean              type_in_use;
-	boolean              lossy;
+	bool              type_in_use;
+	bool              lossy;
 	NetDistributionProc  distribution_proc;
 };
 
@@ -239,7 +239,7 @@ struct gather_player_data {
 };
 
 struct accept_gather_data {
-	boolean accepted;
+	bool accepted;
 	NetPlayer player;
 };
 
@@ -297,12 +297,12 @@ static void NetAddFlagsToPacket(NetPacketPtr packet);
 	
 static void NetSendRingPacket(DDPFramePtr frame);
 static void NetSendAcknowledgement(DDPFramePtr frame, long sequence);
-static boolean NetDelayedSendRingFrame(void);
+static bool NetDelayedSendRingFrame(void);
 
-static boolean NetCheckResendRingPacket(void);
-static boolean NetServerTask(void);
-static boolean NetQueueingTask(void);
-static boolean NetCheckForwardRingPacket(void);
+static bool NetCheckResendRingPacket(void);
+static bool NetServerTask(void);
+static bool NetQueueingTask(void);
+static bool NetCheckForwardRingPacket(void);
 
 static int net_compare(void const *p1, void const *p2);
 
@@ -310,7 +310,7 @@ static void NetUpdateTopology(void);
 static short NetAdjustUpringAddressUpwards(void);
 static OSErr NetDistributeTopology(short tag);
 
-static boolean NetSetSelfSend(boolean on);
+static bool NetSetSelfSend(bool on);
 
 static short NetSizeofLocalQueue(void);
 
@@ -410,12 +410,12 @@ NetState
 	<--- state of the network
 */
 
-boolean NetEnter(
+bool NetEnter(
 	void)
 {
 	OSErr error;
 	short i;
-	boolean success= TRUE; /* optimism */
+	bool success= true; /* optimism */
 
 #ifdef TEST_MODEM
 	success= ModemEnter();
@@ -425,15 +425,15 @@ boolean NetEnter(
 
 	/* if this is the first time we’ve been called, add NetExit to the list of cleanup procedures */
 	{
-		static boolean added_exit_procedure= FALSE;
+		static bool added_exit_procedure= false;
 		
 		if (!added_exit_procedure) atexit(NetExit);
-		added_exit_procedure= TRUE;
+		added_exit_procedure= true;
 	}
 
 	for (i = 0; i < NUM_DISTRIBUTION_TYPES; i++)
 	{
-		distribution_info[i].type_in_use = FALSE;
+		distribution_info[i].type_in_use = false;
 	}
 	
 	error= NetDDPOpen();	
@@ -473,9 +473,9 @@ boolean NetEnter(
 									error= NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
 									if (error==noErr)
 									{
-										status->oldSelfSendStatus= NetSetSelfSend(TRUE);
+										status->oldSelfSendStatus= NetSetSelfSend(true);
 										status->server_player_index= 0;
-										status->single_player= FALSE;
+										status->single_player= false;
 										netState= netDown;
 #ifdef DEBUG_NET
 										obj_clear(net_stats);
@@ -498,7 +498,7 @@ boolean NetEnter(
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
 		NetExit();
-		success= FALSE;
+		success= false;
 	}
 #endif
 	
@@ -521,7 +521,7 @@ void NetExit(
 
 	if (netState!=netUninitialized)
 	{
-		error= NetCloseStreamConnection(FALSE);
+		error= NetCloseStreamConnection(false);
 		vwarn(!error, csprintf(temporary, "NetADSPCloseConnection returned %d", error));
 		error= NetStreamDisposeConnectionEnd();
 		vwarn(!error, csprintf(temporary, "NetADSPDisposeConnectionEnd returned %d", error));
@@ -567,16 +567,16 @@ void NetExit(
  * installed. It's safe to call this function multiple times for the same proc. */
 short NetAddDistributionFunction(
 	NetDistributionProc proc, 
-	boolean lossy)
+	bool lossy)
 {
 	short    i;
-	boolean  found_slot = FALSE;
+	bool  found_slot = false;
 
 #ifdef TEST_MODEM
 	return ModemAddDistributionFunction(proc, lossy);
 #else
 
-	assert(lossy == TRUE); // until we decide to support it.
+	assert(lossy == true); // until we decide to support it.
 	
 	// see if it's already installed.
 	for (i = 0; i < NUM_DISTRIBUTION_TYPES; i++)
@@ -584,7 +584,7 @@ short NetAddDistributionFunction(
 		if (distribution_info[i].type_in_use && distribution_info[i].distribution_proc == proc)
 		{
 			distribution_info[i].lossy = lossy; // maybe they want to change it. who am i to argue?
-			found_slot = TRUE;
+			found_slot = true;
 			break;
 		}
 	}
@@ -595,10 +595,10 @@ short NetAddDistributionFunction(
 		{
 			if (!distribution_info[i].type_in_use)
 			{
-				distribution_info[i].type_in_use = TRUE;
+				distribution_info[i].type_in_use = true;
 				distribution_info[i].lossy = lossy;
 				distribution_info[i].distribution_proc = proc;
-				found_slot = TRUE;
+				found_slot = true;
 				break;
 			}
 		}
@@ -615,7 +615,7 @@ void NetRemoveDistributionFunction(
 #ifdef TEST_MODEM
 	ModemRemoveDistributionFunction(type);
 #else
-	distribution_info[type].type_in_use = FALSE;
+	distribution_info[type].type_in_use = false;
 #endif
 	return;
 }
@@ -625,7 +625,7 @@ void NetDistributeInformation(
 	short type, 
 	void *buffer, 
 	short buffer_size, 
-	boolean send_to_self)
+	bool send_to_self)
 {
 	NetDistributionPacket distribution_header;
 
@@ -713,7 +713,7 @@ NetStart
 start the game with the existing topology (which all players should have)
 */
 
-boolean NetGather(
+bool NetGather(
 	void *game_data,
 	short game_data_size,
 	void *player_data,
@@ -727,7 +727,7 @@ boolean NetGather(
 	netState= netGathering;
 #endif
 	
-	return TRUE;
+	return true;
 }
 
 void NetCancelGather(
@@ -744,11 +744,11 @@ void NetCancelGather(
 	return;
 }
 
-boolean NetStart(
+bool NetStart(
 	void)
 {
 	OSErr error;
-	boolean success;
+	bool success;
 
 #ifdef TEST_MODEM
 	success= ModemStart();
@@ -773,9 +773,9 @@ boolean NetStart(
 	if(error)
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
-		success= FALSE;
+		success= false;
 	} else {
-		success= TRUE;
+		success= true;
 	}
 #endif
 
@@ -786,8 +786,8 @@ static int net_compare(
 	void const *p1, 
 	void const *p2)
 {
-	word base_network_number;
-	word p1_network_number, p2_network_number;
+	uint16 base_network_number;
+	uint16 p1_network_number, p2_network_number;
 	
 	base_network_number = topology->players[0].ddpAddress.aNet; // get server's addres.
 	p1_network_number = ((struct NetPlayer const *)p1)->ddpAddress.aNet;
@@ -831,7 +831,7 @@ NetCancelJoin
 can’t be called after the player has been gathered
 */
 
-boolean NetGameJoin(
+bool NetGameJoin(
 	unsigned char *player_name,
 	unsigned char *player_type,
 	void *player_data,
@@ -839,7 +839,7 @@ boolean NetGameJoin(
 	short version_number)
 {
 	OSErr error;
-	boolean success= FALSE;
+	bool success= false;
 
 #ifdef TEST_MODEM
 	success= ModemGameJoin(player_name, player_type, player_data, player_data_size, version_number);
@@ -858,7 +858,7 @@ boolean NetGameJoin(
 		{
 			/* we’re registered and awaiting a connection request */
 			netState= netJoining;
-			success= TRUE;
+			success= true;
 		}
 	}
 	
@@ -885,7 +885,7 @@ void NetCancelJoin(
 	error= NetUnRegisterName();
 	if (error==noErr)
 	{
-		error= NetCloseStreamConnection(TRUE); /* this should stop the ocPassive OpenConnection */
+		error= NetCloseStreamConnection(true); /* this should stop the ocPassive OpenConnection */
 		if (error==noErr)
 		{
 			/* our name has been unregistered and our connection end has been closed */
@@ -905,7 +905,7 @@ NetSync
 make sure all players are present (by waiting for the ring to come around twice).  this is what
 actually jump-starts the ring.
 
-returns TRUE if we synched successfully. FALSE otherwise.
+returns true if we synched successfully. false otherwise.
 
 -------
 NetUnSync
@@ -930,11 +930,11 @@ void NetSetServerIdentifier(
 	status->server_player_index= identifier;
 }
 
-boolean NetSync(
+bool NetSync(
 	void)
 {
 	long ticks;
-	boolean success= TRUE;
+	bool success= true;
 #ifdef TEST_MODEM
 	return ModemSync();
 #else
@@ -945,8 +945,8 @@ boolean NetSync(
 	status->ringPacketCount= 0;
 //	status->server_player_index= 0;
 	status->last_extra_flags= 0;
-	status->acceptPackets= TRUE; /* let the PacketHandler see incoming packets */
-	status->acceptRingPackets= TRUE;
+	status->acceptPackets= true; /* let the PacketHandler see incoming packets */
+	status->acceptRingPackets= true;
 	local_queue.read_index= local_queue.write_index= 0;
 
 	netState= netStartingUp;
@@ -954,7 +954,7 @@ boolean NetSync(
 	/* if we are the server (player index zero), start the ring */
 	if (localPlayerIndex==status->server_player_index)
 	{
-		status->iAmTheServer= TRUE;
+		status->iAmTheServer= true;
 
 		/* act like somebody just sent us this packet */
 		status->ringPacketCount= 1;
@@ -964,7 +964,7 @@ boolean NetSync(
 	}
 	else
 	{
-		status->iAmTheServer = FALSE;
+		status->iAmTheServer = false;
 	}
 
 	/* once we get a normal packet, netState will be set, and we can cruise. */
@@ -976,10 +976,10 @@ boolean NetSync(
 			alert_user(infoError, strNETWORK_ERRORS, netErrSyncFailed, 0);
 
 			/* How did Alain do this? */
-			status->acceptPackets= FALSE;
-			status->acceptRingPackets= FALSE;
+			status->acceptPackets= false;
+			status->acceptRingPackets= false;
 			netState= netDown;
-			success= FALSE;
+			success= false;
 		}
 	}
 #endif
@@ -992,10 +992,10 @@ boolean NetSync(
 	1) Server tells everyone to give him 0 action flags.
 	2) Server then waits for the packet to go all the way around the loop.
 */
-boolean NetUnSync(
+bool NetUnSync(
 	void)
 {
-	boolean success= TRUE;
+	bool success= true;
 	long ticks;
 
 #ifdef TEST_MODEM
@@ -1021,9 +1021,9 @@ boolean NetUnSync(
 	}
 	if(status->acceptRingPackets) 
 	{
-		status->acceptRingPackets= success= FALSE;
+		status->acceptRingPackets= success= false;
 	}
-	status->acceptPackets= FALSE; // in case we just timed out.
+	status->acceptPackets= false; // in case we just timed out.
 	netState= netDown;
 
 #ifdef DEBUG_NET
@@ -1064,10 +1064,10 @@ short NetGetPlayerIdentifier(
 #endif
 }
 
-boolean NetNumberOfPlayerIsValid(
+bool NetNumberOfPlayerIsValid(
 	void)
 {
-	boolean valid;
+	bool valid;
 
 #ifdef TEST_MODEM
 	valid= ModemNumberOfPlayerIsValid();
@@ -1076,10 +1076,10 @@ boolean NetNumberOfPlayerIsValid(
 	{
 		case netUninitialized:
 		case netJoining:
-			valid= FALSE;
+			valid= false;
 			break;
 		default:
-			valid= TRUE;
+			valid= true;
 			break;
 	}
 #endif
@@ -1143,18 +1143,18 @@ NetEntityNotInGame
 	---> entity
 	---> address
 	
-	<--- TRUE if the entity is not in the game, FALSE otherwise
+	<--- true if the entity is not in the game, false otherwise
 
 used to filter entities which have been added to a game out of the lookup list
 */
 
 /* if the given address is already added to our game, filter it out of the gather dialog */
-boolean NetEntityNotInGame(
+bool NetEntityNotInGame(
 	EntityName *entity,
 	AddrBlock *address)
 {
 	short player_index;
-	boolean valid= TRUE;
+	bool valid= true;
 	
 	(void) (entity);
 	
@@ -1165,7 +1165,7 @@ boolean NetEntityNotInGame(
 		if (address->aNode==player_address->aNode && address->aSocket==player_address->aSocket &&
 			address->aNet==player_address->aNet)
 		{
-			valid= FALSE;
+			valid= false;
 			break;
 		}
 	}
@@ -1191,11 +1191,11 @@ be acknowledged) at a time.
 void NetDDPPacketHandler(
 	DDPPacketBufferPtr packet)
 {
-	static already_here= FALSE;
+	static already_here= false;
 	NetPacketHeaderPtr header= (NetPacketHeaderPtr) packet->datagramData;
 	
 	assert(!already_here);
-	already_here = TRUE;
+	already_here = true;
 	
 	if (status->acceptPackets)
 	{
@@ -1252,7 +1252,7 @@ void NetDDPPacketHandler(
 								}
 							}
 #endif
-							status->receivedAcknowledgement= TRUE;
+							status->receivedAcknowledgement= true;
 						}
 						else
 						{
@@ -1373,7 +1373,7 @@ void NetDDPPacketHandler(
 		}
 	}
 	
-	already_here= FALSE;
+	already_here= false;
 	
 	return;
 }
@@ -1517,7 +1517,7 @@ static void NetProcessIncomingBuffer(
 //				dprintf("Got an unsync packet.. (%d);g", net_stats.action_flags_processed);
 				net_stats.unsync_while_coming_down++;
 #endif
-				status->acceptRingPackets= FALSE;
+				status->acceptRingPackets= false;
 				if(status->iAmTheServer)
 				{
 #ifdef DEBUG_NET
@@ -1592,10 +1592,10 @@ static void NetAddFlagsToPacket(
 {
 	long *action_flags;
 	short player_index, extra_flags, flags_to_remove, action_flag_index;
-	static boolean already_here = FALSE;
+	static bool already_here = false;
 	
-	assert(already_here == FALSE);
-	already_here= TRUE;
+	assert(already_here == false);
+	already_here= true;
 
 	vwarn(packet->required_action_flags >= 0 && packet->required_action_flags <= MAXIMUM_UPDATES_PER_PACKET,
 		csprintf(temporary, "the server asked for %d flags.  bastard.  fucking ram doubler.", packet->required_action_flags));
@@ -1684,7 +1684,7 @@ static void NetAddFlagsToPacket(
 //	dprintf("NETPACKET:;dm %x %x;g;", packet, sizeof(NetPacket)+sizeof(long)*2*8);
 	
 	/* Allow for reentrance into this function */
-	already_here= FALSE;
+	already_here= false;
 }
 
 /*
@@ -1706,7 +1706,7 @@ static void NetInitializeTopology(
 	localPlayerIndex= localPlayerIdentifier= 0;
 	local_player= topology->players + localPlayerIndex;
 	local_player->identifier= localPlayerIdentifier;
-	local_player->net_dead= FALSE;
+	local_player->net_dead= false;
 
 	if(NetGetTransportType()!=kModemTransportType)
 	{
@@ -1861,7 +1861,7 @@ static void NetSendRingPacket(
 //	dprintf("sent frame;g");
 	
 	status->retries= 0; // needs to be here, in case retry task was canceled (’cuz it likes to set retries)
-	status->receivedAcknowledgement= FALSE; /* will not be set until we receive an acknowledgement for this packet */
+	status->receivedAcknowledgement= false; /* will not be set until we receive an acknowledgement for this packet */
 
 	if (!resendTMTask) 
 	{
@@ -1870,8 +1870,8 @@ static void NetSendRingPacket(
 		myTMReset(resendTMTask);
 	}
 
-	status->canForwardRing= FALSE; /* will not be set unless this task fires without a packet to forward */
-	status->clearToForwardRing= FALSE; /* will not be set until we receive the next valid ring packet but will be irrelevant if serverCanForwardRing is TRUE */
+	status->canForwardRing= false; /* will not be set unless this task fires without a packet to forward */
+	status->clearToForwardRing= false; /* will not be set until we receive the next valid ring packet but will be irrelevant if serverCanForwardRing is true */
 	NetDDPSendFrame(frame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);	
 	
 	return;
@@ -1890,10 +1890,10 @@ task and the task will be requeued to check again in kACK_TIMEOUT.
 
 */
 /* Possibly this should check for status->receivedAcknowledgement before !reinstalling.. */
-static boolean NetCheckResendRingPacket(
+static bool NetCheckResendRingPacket(
 	void)
 {
-	boolean reinstall= (netState != netDown);
+	bool reinstall= (netState != netDown);
 
 	if(reinstall)
 	{
@@ -1911,8 +1911,8 @@ static boolean NetCheckResendRingPacket(
 #ifdef DEBUG_NET
 dprintf("Never got confirmation on NetUnsync packet.  They don't love us.");
 #endif
-						reinstall= FALSE;
-						status->acceptRingPackets= FALSE;
+						reinstall= false;
+						status->acceptRingPackets= false;
 						break;
 						
 					default:
@@ -1967,11 +1967,11 @@ dprintf("Never got confirmation on NetUnsync packet.  They don't love us.");
 	return reinstall;
 }
 
-static boolean NetServerTask(
+static bool NetServerTask(
 	void)
 {
 	short local_queue_size = NetSizeofLocalQueue();
-	boolean reinstall= (netState != netDown);
+	bool reinstall= (netState != netDown);
 
 	if(reinstall)
 	{
@@ -1988,12 +1988,12 @@ static boolean NetServerTask(
 		if (local_queue_size >= status->action_flags_per_packet)
 		{
 			// This weird voodoo with canForwardRing prevents a problem if a packet arrives at the wrong time.
-			status->canForwardRing = TRUE; /* tell the socket listener it can forward the ring if it receives it */
+			status->canForwardRing = true; /* tell the socket listener it can forward the ring if it receives it */
 			if (status->clearToForwardRing) /* has the socket listener already received the ring?  and not forwarded it? */
 			{
 				NetPacketPtr packet_data= (NetPacketPtr) status->buffer;
 				
-//				status->canForwardRing = FALSE;
+//				status->canForwardRing = false;
 				packet_data->server_net_time= status->localNetTime;
 				if(netState==netComingDown)
 				{
@@ -2041,10 +2041,10 @@ static boolean NetServerTask(
 	return reinstall;
 }
 
-static boolean NetQueueingTask(
+static bool NetQueueingTask(
 	void)
 {
-	boolean reinstall= (netState != netDown);
+	bool reinstall= (netState != netDown);
 	
 	if(reinstall)
 	{
@@ -2116,14 +2116,14 @@ static short NetAdjustUpringAddressUpwards(
 	
 }
 
-static boolean NetSetSelfSend(
-	boolean on)
+static bool NetSetSelfSend(
+	bool on)
 {
 	OSErr          err;
 	MPPParamBlock  pb;
 	
 	pb.SETSELF.newSelfFlag = on;
-	err = PSetSelfSend(&pb, FALSE);
+	err = PSetSelfSend(&pb, false);
 	assert(err == noErr);
 	return pb.SETSELF.oldSelfFlag;
 }
@@ -2155,7 +2155,7 @@ static void drop_upring_player(
 	{				
 		// let us crown ourselves!
 		status->server_player_index= localPlayerIndex;
-		status->iAmTheServer= TRUE;
+		status->iAmTheServer= true;
 #ifdef DEBUG_NET
 //		dprintf("Trying to become the server (drop_upring);g");				
 		net_stats.assuming_control_on_retry++;
@@ -2205,7 +2205,7 @@ static void drop_upring_player(
 			break;
 		}
 	}
-	if(index==topology->player_count) status->single_player= TRUE;
+	if(index==topology->player_count) status->single_player= true;
 
 	// we have to increment the ring sequence counter in case we’re sending to ourselves
 	// to prevent "late ring packets"
@@ -2215,13 +2215,13 @@ static void drop_upring_player(
 /* ------ this needs to let the gatherer keep going if there was an error.. */
 /* ••• Marathon Specific Code ••• */
 /* Returns error code.. */
-boolean NetChangeMap(
+bool NetChangeMap(
 	struct entry_point *entry)
 {
 	byte   *wad= NULL;
 	long   length;
 	OSErr  error= noErr;
-	boolean success= TRUE;
+	bool success= true;
 
 #ifdef TEST_MODEM
 	success= ModemChangeMap(entry);
@@ -2233,7 +2233,7 @@ boolean NetChangeMap(
 #ifdef DEBUG_NET
 		dprintf("Server died, and trying to get another level. You lose;g");
 #endif
-		success= FALSE;
+		success= false;
 		set_game_error(gameError, errServerDied);
 	}
 	else
@@ -2246,7 +2246,7 @@ boolean NetChangeMap(
 			{
 				length= get_net_map_data_length(wad);
 				error= NetDistributeGameDataToAllPlayers(wad, length);
-				if(error) success= FALSE;
+				if(error) success= false;
 				set_game_error(systemError, error);
 			} else {
 //				if (!wad) alert_user(fatalError, strERRORS, badReadMap, -1);
@@ -2256,7 +2256,7 @@ boolean NetChangeMap(
 		else // wait for de damn map.
 		{
 			wad= NetReceiveGameData();
-			if(!wad) success= FALSE;
+			if(!wad) success= false;
 			// Note that NetReceiveMap handles display of its own errors, therefore we don't
 			//  assert that an error is pending.....
 		}
@@ -2322,7 +2322,7 @@ static OSErr NetDistributeGameDataToAllPlayers(
 			}
 
 			/* Note that we try to close regardless of error. */
-			NetCloseStreamConnection(FALSE);
+			NetCloseStreamConnection(false);
 		}
 		
 		if (error)
@@ -2355,7 +2355,7 @@ static byte *NetReceiveGameData(
 	byte *map_buffer= NULL;
 	long map_length, ticks;
 	OSErr error;
-	boolean timed_out= FALSE;
+	bool timed_out= false;
 
 	open_progress_dialog(_awaiting_map);
 
@@ -2363,7 +2363,7 @@ static byte *NetReceiveGameData(
 	ticks= TickCount();
 	while (!NetStreamCheckConnectionStatus() && !timed_out)
 	{
-		if((TickCount()-ticks)>MAP_TRANSFER_TIME_OUT)  timed_out= TRUE;
+		if((TickCount()-ticks)>MAP_TRANSFER_TIME_OUT)  timed_out= true;
 	}
 	
 	if (timed_out)
@@ -2396,7 +2396,7 @@ static byte *NetReceiveGameData(
 		}
 
 		// close everything up.
-		NetCloseStreamConnection(FALSE);
+		NetCloseStreamConnection(false);
 
 		/* And close our dialog.. */
 		draw_progress_bar(10, 10);
@@ -2476,7 +2476,7 @@ static void *receive_stream_data(
 				// we transfer the map in chunks, since ADSP can only transfer 64K at a time.
 				for (offset = 0; !error && offset < *length; offset += STREAM_TRANSFER_CHUNK_SIZE)
 				{
-					word expected_count;
+					uint16 expected_count;
 										
 					expected_count = MIN(STREAM_TRANSFER_CHUNK_SIZE, *length - offset);
 					
@@ -2516,7 +2516,7 @@ static OSErr send_stream_data(
 		// ready or not, here it comes, in smaller chunks
 		for (offset = 0; !error && offset < length; offset += STREAM_TRANSFER_CHUNK_SIZE)
 		{
-			word adsp_count;
+			uint16 adsp_count;
 			
 			adsp_count = MIN(STREAM_TRANSFER_CHUNK_SIZE, length - offset);
 
@@ -2586,7 +2586,7 @@ static void process_packet_buffer_flags(
 	// can we send on the packet?
 	if (!status->iAmTheServer || status->canForwardRing)
 	{
-		status->canForwardRing = FALSE;
+		status->canForwardRing = false;
 		if (status->iAmTheServer)
 		{
 			packet_data->server_player_index= localPlayerIndex;
@@ -2633,7 +2633,7 @@ static void process_packet_buffer_flags(
 	else
 	{
 		BlockMove(buffer, status->buffer, buffer_size);
-		status->clearToForwardRing = TRUE;
+		status->clearToForwardRing = true;
 		status->new_packet_tag= packet_tag;
 	}
 }
@@ -2696,7 +2696,7 @@ static void process_flags(
 			{
 				long flag= NET_DEAD_ACTION_FLAG;
 
-				topology->players[player_index].net_dead= TRUE;
+				topology->players[player_index].net_dead= true;
 				
 				process_action_flags(player_index, &flag, 1);	
 #ifdef DEBUG_NET
@@ -2735,7 +2735,7 @@ static void become_the_gatherer(
 	{				
 		// let us crown ourselves!
 		status->server_player_index= localPlayerIndex;
-		status->iAmTheServer= TRUE;
+		status->iAmTheServer= true;
 #ifdef DEBUG_NET
 //		dprintf("Trying to become the server...;g");				
 		net_stats.assuming_control++;
@@ -2785,7 +2785,7 @@ static void become_the_gatherer(
 			break;
 		}
 	}
-	if(index==topology->player_count) status->single_player= TRUE;
+	if(index==topology->player_count) status->single_player= true;
 }
 
 #ifdef DEBUG_NET
@@ -2914,7 +2914,7 @@ short NetUpdateJoinState(
 					struct gather_player_data *gathering_data= (struct gather_player_data *) network_adsp_packet;
 					struct accept_gather_data new_player_data;
 
-					/* Note that we could set accepted to FALSE if we wanted to for some */
+					/* Note that we could set accepted to false if we wanted to for some */
 					/*  reason- such as bad serial numbers.... */
 					{
 						/* Unregister ourselves */
@@ -2924,10 +2924,10 @@ short NetUpdateJoinState(
 						/* Note that we share the buffers.. */
 						localPlayerIdentifier= gathering_data->new_local_player_identifier;
 						topology->players[localPlayerIndex].identifier= localPlayerIdentifier;
-						topology->players[localPlayerIndex].net_dead= FALSE;
+						topology->players[localPlayerIndex].net_dead= false;
 						
 						/* Confirm. */
-						new_player_data.accepted= TRUE;
+						new_player_data.accepted= true;
 						obj_copy(new_player_data.player, topology->players[localPlayerIndex]);
 					}
 
@@ -2935,7 +2935,7 @@ short NetUpdateJoinState(
 					if(!error)
 					{
 						/* Close and reset the connection */
-						error= NetCloseStreamConnection(FALSE);
+						error= NetCloseStreamConnection(false);
 						if (!error)
 						{
 							error= NetStreamWaitForConnection();
@@ -2952,7 +2952,7 @@ short NetUpdateJoinState(
 				if (error != noErr)
 				{
 					newState= netJoinErrorOccurred;
-					NetCloseStreamConnection(FALSE);
+					NetCloseStreamConnection(false);
 					alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
 				}
 			}
@@ -3005,7 +3005,7 @@ short NetUpdateJoinState(
 							break;
 					}
 				
-					error= NetCloseStreamConnection(FALSE);
+					error= NetCloseStreamConnection(false);
 					if (!error)
 					{
 						error= NetStreamWaitForConnection();
@@ -3046,7 +3046,7 @@ short NetUpdateJoinState(
 }
 
 /* player_index in our lookup list */
-boolean NetGatherPlayer(
+bool NetGatherPlayer(
 	short player_index,
 	CheckPlayerProcPtr check_player)
 {
@@ -3054,7 +3054,7 @@ boolean NetGatherPlayer(
 	AddrBlock address;
 	short packet_type;
 	short stream_transport_type= NetGetTransportType();
-	boolean success= TRUE;
+	bool success= true;
 
 #ifdef TEST_MODEM
 	success= ModemGatherPlayer(player_index, check_player);
@@ -3103,7 +3103,7 @@ boolean NetGatherPlayer(
 //						dprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[topology->player_count].ddpAddress),
 //							*((long*)&topology->players[topology->player_count].dspAddress));
 							
-						error= NetCloseStreamConnection(FALSE);
+						error= NetCloseStreamConnection(false);
 						if (!error)
 						{
 							/* closed connection successfully, remove this player from the list of players so
@@ -3129,22 +3129,22 @@ boolean NetGatherPlayer(
 					}
 					else 
 					{
-						NetCloseStreamConnection(FALSE);
+						NetCloseStreamConnection(false);
 					}
 				} 
 				else
 				{
-					NetCloseStreamConnection(FALSE);
+					NetCloseStreamConnection(false);
 				}
 			}
 			else
 			{
-				NetCloseStreamConnection(FALSE);
+				NetCloseStreamConnection(false);
 			}
 		}  
 		else 
 		{
-			NetCloseStreamConnection(FALSE);
+			NetCloseStreamConnection(false);
 		}
 	}
 
@@ -3152,7 +3152,7 @@ boolean NetGatherPlayer(
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrCantAddPlayer, error);
 		NetLookupRemove(player_index); /* get this guy out of here, he didn’t respond */
-		success= FALSE;
+		success= false;
 	}
 #endif
 	
@@ -3186,7 +3186,7 @@ static OSErr NetDistributeTopology(
 			error= NetSendStreamPacket(_topology_packet, topology);
 			if (!error)
 			{
-				error= NetCloseStreamConnection(FALSE);
+				error= NetCloseStreamConnection(false);
 				if (!error)
 				{
 					/* successfully distributed topology to this player */
@@ -3194,7 +3194,7 @@ static OSErr NetDistributeTopology(
 			}
 			else
 			{
-				NetCloseStreamConnection(TRUE);
+				NetCloseStreamConnection(true);
 			}
 		}
 	}
@@ -3203,25 +3203,25 @@ static OSErr NetDistributeTopology(
 }
 
 /* -------------------- application specific code */
-word MaxStreamPacketLength(
+uint16 MaxStreamPacketLength(
 	void)
 {
 	short packet_type;
-	word max_length= 0;
+	uint16 max_length= 0;
 
 	for(packet_type= 0; packet_type<NUMBER_OF_BUFFERED_STREAM_PACKET_TYPES; ++packet_type)
 	{	
-		word length= NetStreamPacketLength(packet_type);
+		uint16 length= NetStreamPacketLength(packet_type);
 		if(length>max_length) max_length= length;
 	}
 	
 	return max_length;
 }
 
-word NetStreamPacketLength(
+uint16 NetStreamPacketLength(
 	short packet_type)
 {
-	word length;
+	uint16 length;
 
 	switch(packet_type)
 	{

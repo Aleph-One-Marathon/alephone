@@ -20,6 +20,7 @@ Feb 10, 2000 (Loren Petrich):
 
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "cseries.h"
 #include "map.h"
@@ -153,7 +154,7 @@ short new_path(
 	
 	if (path_index!=NONE)
 	{
-		boolean reached_destination;
+		bool reached_destination;
 		short polygon_index;
 		short step_count;
 		short depth;
@@ -171,7 +172,7 @@ short new_path(
 
 			/* if we reached destination_polygon_index, extract the path by calling
 				reverse_flood_map().  remember to add the destination to the end of the path */
-			reached_destination= polygon_index==destination_polygon_index ? TRUE : FALSE;
+			reached_destination= polygon_index==destination_polygon_index ? true : false;
 		}
 		else
 		{
@@ -187,7 +188,7 @@ short new_path(
 			}
 			
 			choose_random_flood_node((world_vector2d *)destination_point); /* choose a random destination */
-			reached_destination= FALSE; /* we didnÕt even have one */
+			reached_destination= false; /* we didnÕt even have one */
 		}
 
 		depth= flood_depth();
@@ -273,12 +274,12 @@ short new_path(
 	return path_index;
 }
 
-boolean move_along_path(
+bool move_along_path(
 	short path_index,
 	world_point2d *p)
 {
 	struct path_definition *path;
-	boolean end_of_path= FALSE;
+	bool end_of_path= false;
 	
 	assert(path_index>=0&&path_index<MAXIMUM_PATHS);
 	path= paths+path_index;
@@ -289,7 +290,7 @@ boolean move_along_path(
 	if (path->current_step==path->step_count)
 	{
 		path->step_count= NONE;
-		end_of_path= TRUE;
+		end_of_path= true;
 	}
 	else
 	{

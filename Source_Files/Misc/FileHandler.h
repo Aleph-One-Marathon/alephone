@@ -167,15 +167,18 @@ public:
 	// since resource forks are globally open with one of them the current top one.
 	// Push() saves the earlier top one makes the current one the top one,
 	// while Pop() restores the earlier top one.
-	// Will leave SetResLoad in the state of TRUE.
+	// Will leave SetResLoad in the state of true.
 	bool Push();
 	bool Pop();
 
 	// Pushing and popping are unnecessary for the MacOS versions of Get() and Check()
 	// Check simply checks if a resource is present; returns whether it is or not
 	// Get loads a resource; returns whether or not one had been successfully loaded
+	// CB: added functions that take 4 characters instead of uint32, which is more portable
 	bool Check(uint32 Type, int16 ID);
+	bool Check(uint8 t1, uint8 t2, uint8 t3, uint8 t4, int16 ID) {return Check(FOUR_CHARS_TO_INT(t1, t2, t3, t4), ID);}
 	bool Get(uint32 Type, int16 ID, LoadedResource& Rsrc);
+	bool Get(uint8 t1, uint8 t2, uint8 t3, uint8 t4, int16 ID, LoadedResource& Rsrc) {return Get(FOUR_CHARS_TO_INT(t1, t2, t3, t4), ID, Rsrc);}
 
 	bool IsOpen();
 	bool Close();

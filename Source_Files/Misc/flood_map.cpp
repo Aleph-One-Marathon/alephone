@@ -27,6 +27,7 @@ on very small maps, choose_random_flood_node() may not terminate
 
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #ifdef env68k
 #pragma segment map
@@ -39,21 +40,21 @@ on very small maps, choose_random_flood_node() may not terminate
 
 /* ---------- structures */
 
-#define NODE_IS_EXPANDED(n) ((n)->flags&(word)0x8000)
+#define NODE_IS_EXPANDED(n) ((n)->flags&(uint16)0x8000)
 #define NODE_IS_UNEXPANDED(n) (!NODE_IS_EXPANDED(n))
-#define MARK_NODE_AS_EXPANDED(n) ((n)->flags|=(word)0x8000)
+#define MARK_NODE_AS_EXPANDED(n) ((n)->flags|=(uint16)0x8000)
 
 struct node_data /* 16 bytes */
 {
-	word flags;
+	uint16 flags;
 	
-	short parent_node_index; /* node index of the node we came from to get here; only used for backtracking */
-	short polygon_index; /* index of this polygon */
-	long cost; /* the cost to evaluate this entry */
+	int16 parent_node_index; /* node index of the node we came from to get here; only used for backtracking */
+	int16 polygon_index; /* index of this polygon */
+	int32 cost; /* the cost to evaluate this entry */
 
-	short depth;
+	int16 depth;
 
-	long user_flags;
+	int32 user_flags;
 };
 
 /* ---------- globals */
@@ -240,7 +241,7 @@ void choose_random_flood_node(
 	
 	if (node_count>1)
 	{
-		boolean suitable;
+		bool suitable;
 		short retries= MAXIMUM_BIASED_RETRIES;
 		
 		do
@@ -254,14 +255,14 @@ void choose_random_flood_node(
 			/* if we have no bias, this node is automatically suitable if it has been expanded;
 				if we have a bias, this node is only suitable if it is in the same general
 				direction (by sign of dot product) as the bias */
-			suitable= TRUE;
+			suitable= true;
 			if (bias && (retries-= 1)>=0)
 			{
 				struct node_data *node= nodes+last_node_index_expanded;
 				world_point2d destination;
 				
 				find_center_of_polygon(node->polygon_index, &destination);
-				if (bias->i*(destination.x-origin.x) + bias->j*(destination.y-origin.y)<0) suitable= FALSE;
+				if (bias->i*(destination.x-origin.x) + bias->j*(destination.y-origin.y)<0) suitable= false;
 			}
 		}
 		while (!suitable);

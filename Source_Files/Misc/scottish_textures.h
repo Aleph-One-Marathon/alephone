@@ -110,8 +110,8 @@ struct rectangle_definition
 		would be hard (but might be cool) */
 	short transfer_mode, transfer_data;
 	
-	/* mirrored horizontally and vertically if TRUE */
-	boolean flip_vertical, flip_horizontal;
+	/* mirrored horizontally and vertically if true */
+	bool flip_vertical, flip_horizontal;
 	
 	// LP addition: shape-descriptor value for the convenience of OpenGL;
 	// the lower byte is the frame
@@ -150,7 +150,7 @@ struct polygon_definition
 	shape_descriptor ShapeDesc;
 	
 	// Whether the void is present on one side; useful for suppressing semitransparency
-	boolean VoidPresent;
+	bool VoidPresent;
 };
 
 /* ---------- globals */

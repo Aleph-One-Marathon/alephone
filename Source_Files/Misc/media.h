@@ -125,7 +125,7 @@ struct damage_definition *get_media_damage(short media_index, fixed scale);
 // LP addition: media dangerous?
 bool IsMediaDangerous(short media_type);
 
-boolean media_in_environment(short media_type, short environment_code);
+bool media_in_environment(short media_type, short environment_code);
 
 // LP change: made this inline
 inline struct media_data *get_media_data(

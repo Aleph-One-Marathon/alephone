@@ -101,4 +101,5 @@ bool XML_Resources_SDL::ParseResourceSet(uint32 Type)
 			rsrc.Unload();
 		}
 	}
+	return true;
 }

@@ -305,7 +305,7 @@ static GLuint StaticPatterns[3][StatPatLen];
 
 // Alternative: flat static
 static bool UseFlatStatic;
-static word FlatStaticColor[3];
+static uint16 FlatStaticColor[3];
 
 // The randomizer for the static-effect pixels
 static GM_Random StaticRandom;
@@ -2102,9 +2102,9 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 			for (int w=0; w<SourceWidth; w++)
 			{	
 				// Big-endian here
-				word Intmd = *(InPtr++);
+				uint16 Intmd = *(InPtr++);
 				Intmd <<= 8;
-				Intmd |= word(*(InPtr++));
+				Intmd |= uint16(*(InPtr++));
 				// Convert from ARGB 5551 to RGBA 8888; make opaque
 				*(OutPtr++) = Convert_16to32(Intmd);
 				// *(OutPtr++) = ConversionTable_16to32[Intmd & 0x7fff];

@@ -31,22 +31,22 @@ enum // base network speeds
 
 typedef struct game_info
 {
-	word     initial_random_seed;
-	short    net_game_type;
-	long     time_limit;
-	short    kill_limit;
-	short    game_options;
-	short    difficulty_level;
-	boolean  server_is_playing; // if FALSE, then observing
-	boolean  allow_mic;
+	uint16 initial_random_seed;
+	int16  net_game_type;
+	int32  time_limit;
+	int16  kill_limit;
+	int16  game_options;
+	int16  difficulty_level;
+	bool   server_is_playing; // if false, then observing
+	bool   allow_mic;
 	
 	// where the game takes place
-	short    level_number;
-	char     level_name[MAX_LEVEL_NAME_LENGTH+1];
+	int16  level_number;
+	char   level_name[MAX_LEVEL_NAME_LENGTH+1];
 	
 	// network parameters
-	short    initial_updates_per_packet;
-	short    initial_update_latency;
+	int16  initial_updates_per_packet;
+	int16  initial_update_latency;
 } game_info;
 
 #define MAX_NET_PLAYER_NAME_LENGTH  32
@@ -54,9 +54,9 @@ typedef struct game_info
 typedef struct player_info
 {
 	unsigned char name[MAX_NET_PLAYER_NAME_LENGTH+1];
-	short desired_color;
-	short team;   // from player.h
-	short color;
+	int16 desired_color;
+	int16 team;   // from player.h
+	int16 color;
 	byte long_serial_number[10];
 } player_info;
 
@@ -88,21 +88,21 @@ typedef void (*NetDistributionProc)(void *buffer, short buffer_size, short playe
 typedef void (*CheckPlayerProcPtr)(short player_index, short num_players);
 
 /* --------- prototypes/NETWORK.C */
-boolean NetEnter(void);
+bool NetEnter(void);
 void NetExit(void);
 
-boolean NetGather(void *game_data, short game_data_size, void *player_data, 
+bool NetGather(void *game_data, short game_data_size, void *player_data, 
 	short player_data_size);
-boolean NetGatherPlayer(short player_index, CheckPlayerProcPtr check_player);
+bool NetGatherPlayer(short player_index, CheckPlayerProcPtr check_player);
 
-boolean NetGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data, short player_data_size, short version_number);
+bool NetGameJoin(unsigned char *player_name, unsigned char *player_type, void *player_data, short player_data_size, short version_number);
 short NetUpdateJoinState(void);
 void NetCancelJoin(void);
 
 short NetGetLocalPlayerIndex(void);
 short NetGetPlayerIdentifier(short player_index);
 
-boolean NetNumberOfPlayerIsValid(void);
+bool NetNumberOfPlayerIsValid(void);
 short NetGetNumberOfPlayers(void);
 
 void *NetGetPlayerData(short player_index);
@@ -110,20 +110,20 @@ void *NetGetGameData(void);
 
 void NetSetInitialParameters(short updates_per_packet, short update_latency);
 
-boolean NetSync(void);
-boolean NetUnSync(void);
+bool NetSync(void);
+bool NetUnSync(void);
 
-boolean NetStart(void);
+bool NetStart(void);
 void NetCancelGather(void);
 
 long NetGetNetTime(void);
 
-boolean NetChangeMap(struct entry_point *entry);
+bool NetChangeMap(struct entry_point *entry);
 
 void display_net_game_stats(void);
 
-short NetAddDistributionFunction(NetDistributionProc proc, boolean lossy);
-void NetDistributeInformation(short type, void *buffer, short buffer_size, boolean send_to_self);
+short NetAddDistributionFunction(NetDistributionProc proc, bool lossy);
+void NetDistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self);
 void NetRemoveDistributionFunction(short type);
 
 #endif
