@@ -61,6 +61,7 @@ This element has no attributes and contains these child elements:
 <li><a href="#controlpanels">Control-Panels Element: &lt;control_panels&gt;</a>
 <li><a href="#platforms">Platforms Element: &lt;platforms&gt;</a>
 <li><a href="#liquids">Liquids (Medias) Element: &lt;liquids&gt;</a>
+<li><a href="#sounds">Sounds Element: &lt;sounds&gt;</a>
 <li><a href="#faders">Fader Element: &lt;faders&gt;</a>
 <li><a href="#player">Player Element: &lt;player&gt;</a>
 <li><a href="#view">View Element: &lt;view&gt;</a>
@@ -72,6 +73,7 @@ This element has no attributes and contains these child elements:
 <li><a href="#dynlims">Dynamic-Limits Element: &lt;dynamic_limits&gt;</a>
 <li><a href="#playername">Player-Name Element: &lt;player_name&gt;</a>
 <li><a href="#cheats">Cheating Element: &lt;cheats&gt;</a>
+<li><a href="#levelscripts">Level Scripting</a>
 <li><a href="#appendix1">Appendix 1: Additional Elements</a>
 <li><a href="#appendix2">Appendix 2: Lists of Entity Types</a>
 </ul>
@@ -656,6 +658,60 @@ The sounds:
 
 <hr>
 
+<h3><a name="sounds">Sounds Element: &lt;sounds&gt;</a></h3>
+
+This kind of element specifies various sound features,
+in particular, what ambient and random sound assignments to use.
+These are assignments from their indices to the list of (general) sound definitions,
+and are specified with child elements &lt;ambient&gt; and &lt;random&gt;.
+Each of them has these attributes, both mandatory:
+<ul>
+<li>index: which one of the ambient or random sound types
+<li>sound: which index in the list of sounds (-1 for none)
+</ul>
+The ambient sounds are:
+<ol type=1 start=1000>
+<li>Water
+<li>Sewage
+<li>Lava
+<li>Goo
+<li>Under Liquids
+<li>Wind
+<li>Waterfall
+<li>Siren
+<li>Fan
+<li>S'pht Door
+<li>S'pht Platform
+<li>Heavy S'pht Door
+<li>Heavy S'pht Platform
+<li>Light Machinery
+<li>Heavy Machinery
+<li>Transformer
+<li>Sparking Transformer
+<li>Machine Binder
+<li>Machine Bookpress
+<li>Machine Puncher
+<li>Electric
+<li>Alarm
+<li>Night Wind
+<li>Pfhor Door
+<li>Pfhor Platform
+<li>Alien Noise 1
+<li>Alien Noise 2
+<li>Alien Harmonics
+</ol>
+The random sounds are:
+<ol type=1 start=1000>
+<li>Water Drip
+<li>Surface Explosion
+<li>Underground Explosion
+<li>Loon
+<li>Creak
+</ol>
+<p>
+
+<hr>
+
 <h3><a name="faders">Fader Elements: &lt;faders&gt;</a></h3>
 
 This kind of element is for specifying various fader features,
@@ -1144,6 +1200,37 @@ This is the default player name in netgames, which takes the form:
 This element controls whether or not the engine will respond to the cheat codes;
 it has one attribute, "on", which is <a name="#boolean">boolean</a>.
 Cheating is off by default.
+<p>
+
+<hr>
+
+<h3><a name="levelscripts">Level Scripting</a></h3>
+
+Unlike most MML elements, a level-script element can only live in a map file,
+and it must be TEXT resource 128 or some equivalent, in order for its parser
+to know where to find it.
+Its root element is &lt;marathon_levels&gt; and not
+&lt;marathon&gt;, to distinguish it from the usual sort of MML.
+<p>
+
+It has child elements &lt;level&gt;, &lt;default&gt;, and &lt;restore&gt;,
+these specify what individual level scripts to execute. The element  &lt;level&gt;
+has a mandatory attribute, "index", which specifies which level the script is for;
+the first one is index 0.
+The element &lt;default&gt; specifies a script that is for the entire map file;
+it is executed before a level's script is executed, for rather obvious reasons.
+The element &lt;restore&gt is intended to restore parameters to their A1 defaults
+when switching to another map file; this is done because the parameters that the MML parser sets
+are set in a "sticky" fashion,
+and because saving and restoring default values inside the code
+would require a whole lot of extra coding.
+<p>
+
+These elements have child elements that specify the script entries.
+The only one currently implemented is &lt;mml&gt;,
+which specifies what MML file/resource to execute.
+Currently, it specifies only resources,
+with attribute "resource" having the resource ID as its value.
 <p>
 
 <hr>
