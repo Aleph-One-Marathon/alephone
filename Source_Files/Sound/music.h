@@ -38,10 +38,12 @@ enum { // All of our songs.
 };
 
 #ifdef WIN32
+#ifndef WIN32_DISABLE_MUSIC
 // We need to process window events to find out about media events. 
 #   define WM_DSHOW_GRAPH_NOTIFY (WM_APP+1)
 
 void process_music_event_win32(const SDL_Event& event); // in sound_sdl.cpp
+#endif
 #endif
 
 // All this is for the introduction/ending song file

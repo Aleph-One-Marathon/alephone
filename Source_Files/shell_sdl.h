@@ -1423,11 +1423,13 @@ static void process_system_event(const SDL_Event &event)
 	// system events. DirectShow notifies about events through
 	// window messages. 
 #ifdef WIN32
+#ifndef WIN32_DISABLE_MUSIC
 	switch (event.syswm.msg->msg) {
 		case WM_DSHOW_GRAPH_NOTIFY:
 			process_music_event_win32(event);
 			break;
 	}
+#endif
 #endif
 }
 
