@@ -949,6 +949,12 @@ bool FileSpecifier::CopyContents(FileSpecifier& File)
 		}
 	}
 	
+	// Create a placeholder file if the ultimate-destination file does not exist
+	if (Err == noErr)
+	{
+		if (!Exists()) Err = FSpCreate(ult_dest, info.fdCreator, info.fdType, smSystemScript);
+	}
+	
 	if (Err == noErr)
 	{
 		Exchange(TempFile);
