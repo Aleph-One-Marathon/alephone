@@ -118,7 +118,7 @@ XML_ElementParser *Cheats_GetParser();
 void initialize_shape_handler(void);
 PixMapHandle get_shape_pixmap(short shape, boolean force_copy);
 
-void open_shapes_file(FileObject& File);
+void open_shapes_file(FileSpecifier& File);
 // void open_shapes_file(FSSpec *spec);
 
 /* ---------- prototypes/SCREEN_DRAWING.C */
