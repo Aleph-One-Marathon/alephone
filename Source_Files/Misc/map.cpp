@@ -636,6 +636,7 @@ void get_object_shape_and_transfer_mode(
 	short view;
 	
 	animation= get_shape_animation_data(object->shape);
+	assert(animation);
 	assert(animation->frames_per_view>=1);
 	
 	/* get correct base shape */
@@ -735,6 +736,8 @@ bool randomize_object_sequence(
 	bool randomized= false;
 	
 	animation= get_shape_animation_data(shape);
+	if (!animation) return false;
+	
 	switch (animation->number_of_views)
 	{
 		case _unanimated:
@@ -757,6 +760,7 @@ void set_object_shape_and_transfer_mode(
 	if (object->shape!=shape)
 	{
 		struct shape_animation_data *animation= get_shape_animation_data(shape);
+		assert(animation);
 
 		object->shape= shape;
 		if (animation->transfer_mode!=_xfer_normal || object->transfer_mode==NONE) object->transfer_phase= 0;
@@ -790,6 +794,7 @@ void animate_object(
 	if (!OBJECT_IS_INVISIBLE(object)) /* invisible objects donÕt have valid .shape fields */
 	{
 		animation= get_shape_animation_data(object->shape);
+		if (!animation) return;
 	
 		/* if this animation has frames, animate it */		
 		if (animation->frames_per_view>=1 && animation->number_of_views!=_unanimated)
@@ -1301,6 +1306,9 @@ bool keep_line_segment_out_of_walls(
 	*adjusted_ceiling_height= polygon->ceiling_height;
 	do
 	{
+		// Skip if exclusion-zone indexes were not found
+		if (indexes)
+		{
 		for (i=0;i<polygon->line_exclusion_zone_count&&state!=_aborted;++i)
 		{
 			short signed_line_index= indexes[i];
@@ -1338,8 +1346,8 @@ bool keep_line_segment_out_of_walls(
 						adjacent_polygon->ceiling_height-p1->z<height ||
 						lowest_ceiling-highest_floor<height)
 					{
-line_is_solid:
-//						if (unsigned_line_index==104) dprintf("inside solid line #%d (%p) in polygon #%d", unsigned_line_index, line, polygon_index);
+					line_is_solid:
+					//	if (unsigned_line_index==104) dprintf("inside solid line #%d (%p) in polygon #%d", unsigned_line_index, line, polygon_index);
 						
 						switch (state)
 						{
@@ -1382,6 +1390,7 @@ line_is_solid:
 					}
 				}
 			}
+		}
 		}
 		
 		switch (state)
@@ -2184,6 +2193,9 @@ void _sound_add_ambient_sources_proc(
 		}
 
 		// add ambient sound sources
+		// do only if indexes were found
+		if (indexes)
+		{
 		while ((index= *indexes++)!=NONE)
 		{
 			struct map_object *object= saved_objects + index; // gross, sorry
@@ -2237,6 +2249,7 @@ void _sound_add_ambient_sources_proc(
 			{
 				add_one_ambient_sound_source((struct ambient_sound_data *)data, &source, listener, sound_type, sound_volume);
 			}
+		}
 		}
 	}
 	

@@ -55,6 +55,9 @@ Feb 19, 2000 (Loren Petrich):
 
 Jul 1, 2000 (Loren Petrich):
 	Added Benad's changes
+
+Aug 30, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 #include "cseries.h"
@@ -72,6 +75,7 @@ Jul 1, 2000 (Loren Petrich):
 // LP additions
 #include "GrowableList.h"
 #include "dynamic_limits.h"
+#include "Packing.h"
 
 /*
 //translate_projectile() must set _projectile_hit_landscape bit
@@ -1128,5 +1132,146 @@ uint16 translate_projectile(
 	return flags;
 }
 
-// LP addition: Get projectile-definition size
-int get_projectile_definition_size() {return sizeof(struct projectile_definition);}
+
+uint8 *unpack_projectile_data(uint8 *Stream, projectile_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	projectile_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		
+		StreamToValue(S,ObjPtr->object_index);
+		
+		StreamToValue(S,ObjPtr->target_index);
+		
+		StreamToValue(S,ObjPtr->elevation);
+		
+		StreamToValue(S,ObjPtr->owner_index);
+		StreamToValue(S,ObjPtr->owner_type);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->ticks_since_last_contrail);
+		StreamToValue(S,ObjPtr->contrail_count);
+		
+		StreamToValue(S,ObjPtr->distance_travelled);
+		
+		StreamToValue(S,ObjPtr->gravity);
+		
+		StreamToValue(S,ObjPtr->damage_scale);
+		
+		StreamToValue(S,ObjPtr->permutation);
+		
+		S += 2*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_projectile_data);
+	return S;
+}
+
+uint8 *pack_projectile_data(uint8 *Stream, projectile_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	projectile_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		
+		ValueToStream(S,ObjPtr->object_index);
+		
+		ValueToStream(S,ObjPtr->target_index);
+		
+		ValueToStream(S,ObjPtr->elevation);
+		
+		ValueToStream(S,ObjPtr->owner_index);
+		ValueToStream(S,ObjPtr->owner_type);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->ticks_since_last_contrail);
+		ValueToStream(S,ObjPtr->contrail_count);
+		
+		ValueToStream(S,ObjPtr->distance_travelled);
+		
+		ValueToStream(S,ObjPtr->gravity);
+		
+		ValueToStream(S,ObjPtr->damage_scale);
+		
+		ValueToStream(S,ObjPtr->permutation);
+		
+		S += 2*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_projectile_data);
+	return S;
+}
+
+
+uint8 *unpack_projectile_definition(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	projectile_definition* ObjPtr = projectile_definitions;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->collection);
+		StreamToValue(S,ObjPtr->shape);
+		StreamToValue(S,ObjPtr->detonation_effect);
+		StreamToValue(S,ObjPtr->media_detonation_effect);
+		StreamToValue(S,ObjPtr->contrail_effect);
+		StreamToValue(S,ObjPtr->ticks_between_contrails);
+		StreamToValue(S,ObjPtr->maximum_contrails);
+		StreamToValue(S,ObjPtr->media_projectile_promotion);
+		
+		StreamToValue(S,ObjPtr->radius);
+		StreamToValue(S,ObjPtr->area_of_effect);
+		S = unpack_damage_definition(S,&ObjPtr->damage,1);
+		
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->speed);
+		StreamToValue(S,ObjPtr->maximum_range);
+		
+		StreamToValue(S,ObjPtr->sound_pitch);
+		StreamToValue(S,ObjPtr->flyby_sound);
+		StreamToValue(S,ObjPtr->rebound_sound);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_projectile_definition);
+	return S;
+}
+
+uint8 *pack_projectile_definition(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	projectile_definition* ObjPtr = projectile_definitions;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->collection);
+		ValueToStream(S,ObjPtr->shape);
+		ValueToStream(S,ObjPtr->detonation_effect);
+		ValueToStream(S,ObjPtr->media_detonation_effect);
+		ValueToStream(S,ObjPtr->contrail_effect);
+		ValueToStream(S,ObjPtr->ticks_between_contrails);
+		ValueToStream(S,ObjPtr->maximum_contrails);
+		ValueToStream(S,ObjPtr->media_projectile_promotion);
+		
+		ValueToStream(S,ObjPtr->radius);
+		ValueToStream(S,ObjPtr->area_of_effect);
+		S = pack_damage_definition(S,&ObjPtr->damage,1);
+		
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->speed);
+		ValueToStream(S,ObjPtr->maximum_range);
+		
+		ValueToStream(S,ObjPtr->sound_pitch);
+		ValueToStream(S,ObjPtr->flyby_sound);
+		ValueToStream(S,ObjPtr->rebound_sound);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_projectile_definition);
+	return S;
+}

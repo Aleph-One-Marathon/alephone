@@ -38,9 +38,8 @@
 #include <string.h>
 #include <ctype.h>
 
-
 // LP addition: whether or not the cheats are active
-bool CheatsActive = false;
+static bool CheatsActive = false;
 
 #ifndef HAVE_OPENGL
 // No OpenGL, so define these here

@@ -74,6 +74,8 @@ Aug 22, 2000 (Loren Petrich):
 #include <time.h>
 #include <limits.h>
 
+#include <vector>
+
 #include "cseries.h"
 #include "byte_swapping.h"
 #include "FileHandler.h"
@@ -92,6 +94,7 @@ Aug 22, 2000 (Loren Petrich):
 #include "screen.h"
 
 #include "images.h"
+#include "Packing.h"
 
 //CP Addition: scripting support
 #include "scripting.h"
@@ -200,34 +203,67 @@ struct text_face_data {
 };
 const int SIZEOF_text_face_data = 6;
 
+// This is externally visible, so its external size is defined in the header file
 struct player_terminal_data
 {
-	short flags;
-	short phase;
-	short state;
-	short current_group;
-	short level_completion_state;
-	short current_line;
-	short maximum_line;
-	short terminal_id;
-	long last_action_flag;
+	int16 flags;
+	int16 phase;
+	int16 state;
+	int16 current_group;
+	int16 level_completion_state;
+	int16 current_line;
+	int16 maximum_line;
+	int16 terminal_id;
+	int32 last_action_flag;
 };
 
 struct terminal_key {
-	short keycode;
-	short offset;
-	short mask;
-	long action_flag;
+	int16 keycode;
+	int16 offset;
+	int16 mask;
+	int32 action_flag;
 };
 
 struct font_dimensions {
-	short lines_per_screen;
-	short character_width;
+	int16 lines_per_screen;
+	int16 character_width;
 };
 
-/* globals - I would really like to make these static to computer_interface.c, but game_wad.c needs them */
-byte *map_terminal_data;
-long map_terminal_data_length;
+/* Terminal data loaded from map (maintained by computer_interface.cpp) */
+struct terminal_text_t {	// Object describing one terminal
+	terminal_text_t() : text(NULL), text_length(0) {}
+	terminal_text_t(const terminal_text_t &other) {copy(other);}
+	~terminal_text_t() {delete[] text;}
+
+	const terminal_text_t &operator=(const terminal_text_t &other)
+	{
+		if (this != &other)
+			copy(other);
+		return *this;
+	}
+
+	void copy(const terminal_text_t &other)
+	{
+		flags = other.flags;
+		lines_per_page = other.lines_per_page;
+		groupings = other.groupings;
+		font_changes = other.font_changes;
+		text_length = other.text_length;
+		text = new uint8[text_length];
+		memcpy(text, other.text, text_length);
+	}
+
+	uint16 flags;
+	int16 lines_per_page;
+
+	vector<terminal_groupings> groupings;
+	vector<text_face_data> font_changes;
+
+	int text_length;
+	uint8 *text;
+};
+
+static vector<terminal_text_t> map_terminal_text;
 
 /* internal global structure */
 static struct player_terminal_data *player_terminals;
@@ -249,50 +285,33 @@ inline player_terminal_data *get_player_terminal_data(
 // LP addition: overall terminal boundary rect (needed for resetting the clipping rectangle)
 static Rect OverallBounds;
 
-/* ------------ byte-swapping definitions */
-static _bs_field _bs_static_preprocessed_terminal_data[] = {
-	_2byte, _2byte, _2byte, _2byte, _2byte
-};
-
-static _bs_field _bs_terminal_groupings[] = {
-	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte
-};
-
-static _bs_field _bs_text_face_data[] = {
-	_2byte, _2byte, _2byte
-};
-
 /* ------------ private prototypes */
-static void draw_logon_text(Rect *bounds, struct static_preprocessed_terminal_data *terminal_text,
+static void draw_logon_text(Rect *bounds, terminal_text_t *terminal_text,
 	short current_group_index, short logon_shape_id);
 static void draw_computer_text(Rect *bounds, 
-	struct static_preprocessed_terminal_data *terminal_text, short current_group_index, short current_line);
+	terminal_text_t *terminal_text, short current_group_index, short current_line);
 static void _draw_computer_text(char *base_text, short start_index, Rect *bounds,
-	struct static_preprocessed_terminal_data *terminal_text, short current_line);
-static short find_group_type(struct static_preprocessed_terminal_data *data, 
+	terminal_text_t *terminal_text, short current_line);
+static short find_group_type(terminal_text_t *data, 
 	short group_type);
 static void teleport_to_level(short level_number);
 static void teleport_to_polygon(short player_index, short polygon_index);
 static struct terminal_groupings *get_indexed_grouping(
-	struct static_preprocessed_terminal_data *data, short index);
+	terminal_text_t *data, short index);
 static struct text_face_data *get_indexed_font_changes(
-	struct static_preprocessed_terminal_data *data, short index);
-static char *get_text_base(struct static_preprocessed_terminal_data *data);
+	terminal_text_t *data, short index);
+static char *get_text_base(terminal_text_t *data);
 // LP change: added a flag to indicate whether stuff after the other
 // terminal stuff is to be drawn; if not, then draw the stuff before the
 // other terminal stuff.
 static void draw_terminal_borders(struct view_terminal_data *data, 
 	struct player_terminal_data *terminal_data, Rect *terminal_frame,
 	bool after_other_terminal_stuff);
-/*
-static void draw_terminal_borders(struct view_terminal_data *data, 
-	struct player_terminal_data *terminal_data, Rect *terminal_frame);
-*/
 static void next_terminal_state(short player_index);
-static void next_terminal_group(short player_index, struct static_preprocessed_terminal_data *terminal_text);
+static void next_terminal_group(short player_index, terminal_text_t *terminal_text);
 static void get_date_string(char *date_string);
 static void present_checkpoint_text(Rect *frame,
-	struct static_preprocessed_terminal_data *terminal_text, short current_group_index,
+	terminal_text_t *terminal_text, short current_group_index,
 	short current_line);
 static bool find_checkpoint_location(short checkpoint_index, world_point2d *location, 
 	short *polygon_index);
@@ -304,7 +323,7 @@ static short matches_group(char *base_text, short length, short index, short pos
 	short *permutation);
 static void	set_text_face(struct text_face_data *text_face);
 static void draw_line(char *base_text, short start_index, short end_index, Rect *bounds,
-	struct static_preprocessed_terminal_data *terminal_text, short *text_face_start_index,
+	terminal_text_t *terminal_text, short *text_face_start_index,
 	short line_number);
 static bool calculate_line(char *base_text, short width, short start_index, 
 	short text_end_index, short *end_index);
@@ -312,25 +331,25 @@ static void handle_reading_terminal_keys(short player_index, long action_flags);
 static void calculate_bounds_for_object(Rect *frame, short flags, Rect *bounds, Rect *source);
 static void display_picture(short picture_id, Rect *frame, short flags);
 static void display_picture_with_text(struct player_terminal_data *terminal_data, 
-	Rect *bounds, struct static_preprocessed_terminal_data *terminal_text, short current_lien);
+	Rect *bounds, terminal_text_t *terminal_text, short current_lien);
 static short count_total_lines(char *base_text, short width, short start_index, short end_index);
 static void calculate_bounds_for_text_box(Rect *frame, short flags, Rect *bounds);
-static void goto_terminal_group(short player_index, struct static_preprocessed_terminal_data *terminal_text, 
+static void goto_terminal_group(short player_index, terminal_text_t *terminal_text, 
 	short new_group_index);
-static bool previous_terminal_group(short player_index, struct static_preprocessed_terminal_data *terminal_text);
+static bool previous_terminal_group(short player_index, terminal_text_t *terminal_text);
 static void fill_terminal_with_static(Rect *bounds);
 static short calculate_lines_per_page(void);
 
 #ifndef PREPROCESSING_CODE
-static struct static_preprocessed_terminal_data *get_indexed_terminal_data(short id);
-static void encode_text(struct static_preprocessed_terminal_data *terminal_text);
-static void decode_text(struct static_preprocessed_terminal_data *terminal_text);
+static terminal_text_t *get_indexed_terminal_data(short id);
+static void encode_text(terminal_text_t *terminal_text);
+static void decode_text(terminal_text_t *terminal_text);
 #endif
 
 /* ------------ machine-specific code */
 
 #if defined(mac)
-#include "computer_interface_macintosh.c"
+#include "computer_interface_mac.cpp"
 #elif defined(SDL)
 #include "computer_interface_sdl.cpp"
 #endif
@@ -381,21 +400,17 @@ void enter_computer_interface(
 	short text_number, 
 	short completion_flag)
 {
-	// LP: verify object sizes:
-	assert(sizeof(static_preprocessed_terminal_data) == SIZEOF_static_preprocessed_terminal_data);
-	assert(sizeof(terminal_groupings) == SIZEOF_terminal_groupings);
-	assert(sizeof(text_face_data) == SIZEOF_text_face_data);
-	
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
 	struct player_data *player= get_player_data(player_index);
+
 	// LP addition: if there is no terminal-data chunk, then just make the logon sound and quit
-	if (map_terminal_data_length <= 0)
+	if (map_terminal_text.size() == 0)
 	{
 		play_object_sound(player->object_index, _snd_computer_interface_logon);
 		return;
 	}
-	struct static_preprocessed_terminal_data *terminal_text= get_indexed_terminal_data(text_number);
-	if (!terminal_text)
+	struct terminal_text_t *terminal_text = get_indexed_terminal_data(text_number);
+	if (terminal_text == NULL)
 	{
 		play_object_sound(player->object_index, _snd_computer_interface_logon);
 		return;
@@ -444,10 +459,9 @@ void update_player_for_terminal_mode(
 				{
 					if(--terminal->phase<=0)
 					{
-						struct static_preprocessed_terminal_data *terminal_text= get_indexed_terminal_data(terminal->terminal_id);
-						// LP addition: quit if none
-						if (!terminal_text) break;
-						
+						terminal_text_t *terminal_text = get_indexed_terminal_data(terminal->terminal_id);
+						if (terminal_text == NULL)
+							break;
 						next_terminal_group(player_index, terminal_text);
 					}
 				}
@@ -496,32 +510,6 @@ bool player_in_terminal_mode(
 	return in_terminal_mode;
 }
 
-void *get_terminal_data_for_save_game(
-	void)
-{
-	return player_terminals;
-}
-
-long calculate_terminal_data_length(
-	void)
-{
-	long length= dynamic_world->player_count*sizeof(struct player_terminal_data);
-	
-	return length;
-}
-
-void *get_terminal_information_array(
-	void)
-{
-	return map_terminal_data;
-}
-
-long calculate_terminal_information_length(
-	void)
-{
-	return map_terminal_data_length;
-}
-
 void _render_computer_interface(
 	struct view_terminal_data *data)
 {
@@ -530,14 +518,14 @@ void _render_computer_interface(
 	assert(terminal_data->state != _no_terminal_state);
 	if(TERMINAL_IS_DIRTY(terminal_data))
 	{
-		struct static_preprocessed_terminal_data *terminal_text;
+		terminal_text_t *terminal_text;
 		struct terminal_groupings *current_group;
 		Rect bounds;
 
 		/* Get the terminal text.. */
-		terminal_text= get_indexed_terminal_data(terminal_data->terminal_id);
+		terminal_text = get_indexed_terminal_data(terminal_data->terminal_id);
 		// LP addition: quit if none
-		if (!terminal_text) return;
+		if (terminal_text == NULL) return;
 		
 		// LP addition:
 		// Create overall frame for use in the checkpoint display;
@@ -698,7 +686,7 @@ void abort_terminal_mode(
 /* --------- local code */
 static void draw_logon_text(
 	Rect *bounds, 
-	struct static_preprocessed_terminal_data *terminal_text,
+	terminal_text_t *terminal_text,
 	short current_group_index,
 	short logon_shape_id)
 {
@@ -746,7 +734,7 @@ static void draw_logon_text(
 /* returns true for phase chagne */
 static void draw_computer_text(
 	Rect *bounds, 
-	struct static_preprocessed_terminal_data *terminal_text, 
+	terminal_text_t *terminal_text, 
 	short current_group_index,
 	short current_line)
 {
@@ -761,7 +749,7 @@ static void _draw_computer_text(
 	char *base_text,
 	short group_index,
 	Rect *bounds,
-	struct static_preprocessed_terminal_data *terminal_text,
+	terminal_text_t *terminal_text,
 	short current_line)
 {
 	bool done= false;
@@ -810,7 +798,7 @@ static void _draw_computer_text(
 		/* Go backwards, and see if there were any other face changes... */
 		last_index= current_group->start_index;
 		last_text_index= NONE;
-		for(text_index= 0; text_index<terminal_text->font_changes_count; ++text_index)
+		for(text_index= 0; text_index<terminal_text->font_changes.size(); ++text_index)
 		{
 			struct text_face_data *font_face= get_indexed_font_changes(terminal_text, text_index);
 			// LP change: just in case...
@@ -909,7 +897,7 @@ static void draw_line(
 	short start_index, 
 	short end_index, 
 	Rect *bounds,
-	struct static_preprocessed_terminal_data *terminal_text,
+	terminal_text_t *terminal_text,
 	short *text_face_start_index,
 	short line_number)
 {
@@ -927,14 +915,14 @@ static void draw_line(
 	}
 	
 	/* Get to the first one that concerns us.. */
-	if(text_index<terminal_text->font_changes_count)
+	if(text_index<terminal_text->font_changes.size())
 	{
 		do {
 			face_data= get_indexed_font_changes(terminal_text, text_index);
 			// LP change: just in case...
 			if (!face_data) return;
 			if(face_data->index<start_index) text_index++;
-		} while(face_data->index<start_index && text_index<terminal_text->font_changes_count);
+		} while(face_data->index<start_index && text_index<terminal_text->font_changes.size());
 	}
 	
 	current_start= start_index;
@@ -946,7 +934,7 @@ static void draw_line(
 
 	while(!done)
 	{
-		if(text_index<terminal_text->font_changes_count)
+		if(text_index<terminal_text->font_changes.size())
 		{
 			face_data= get_indexed_font_changes(terminal_text, text_index);
 			// LP change: just in case...
@@ -980,12 +968,12 @@ static void draw_line(
 }
 
 static short find_group_type(
-	struct static_preprocessed_terminal_data *data, 
+	terminal_text_t *data, 
 	short group_type)
 {
 	short index;
 	
-	for(index= 0; index<data->grouping_count; index++)
+	for(index= 0; index<data->groupings.size(); index++)
 	{
 		struct terminal_groupings *group= get_indexed_grouping(data, index);
 		// LP change: just in case...
@@ -1043,7 +1031,7 @@ static void calculate_bounds_for_text_box(
 static void display_picture_with_text(
 	struct player_terminal_data *terminal_data, 
 	Rect *bounds, 
-	struct static_preprocessed_terminal_data *terminal_text,
+	terminal_text_t *terminal_text,
 	short current_line)
 {
 	struct terminal_groupings *current_group= get_indexed_grouping(terminal_text, terminal_data->current_group);
@@ -1210,60 +1198,46 @@ static void fill_terminal_with_static(
 
 #ifndef PREPROCESSING_CODE
 // LP addition: will return NULL if no terminal data was found for this terminal number
-static struct static_preprocessed_terminal_data *get_indexed_terminal_data(
+static terminal_text_t *get_indexed_terminal_data(
 	short id)
 {
-	struct static_preprocessed_terminal_data *data;
-	long offset= 0l;
-	short index= id;
+	if (id < 0 || id >= map_terminal_text.size())
+		return NULL;
 
-	data= (struct static_preprocessed_terminal_data *) (map_terminal_data);
-	while(index>0) {
-		// LP change: be sure to handle this in this routine's caller
-		if (offset >= map_terminal_data_length) return NULL;
-		// vassert(offset<map_terminal_data_length, csprintf(temporary, "Unable to get data for terminal: %d", id));
-		offset+= data->total_length;
-		data= (struct static_preprocessed_terminal_data *) (map_terminal_data+offset);
-		index--;
-	}
+	terminal_text_t *t = &map_terminal_text[id];
 
-	/* Note that this will only decode the text once. */	
-	decode_text(data);
-
-	return data;
+	// Note that this will only decode the text once
+	decode_text(t);
+	return t;
 }
 #endif
 
 #ifdef PREPROCESSING_CODE
 void decode_text(
-	struct static_preprocessed_terminal_data *terminal_text)
+	terminal_text_t *terminal_text)
 #else
 static void decode_text(
-	struct static_preprocessed_terminal_data *terminal_text)
+	terminal_text_t *terminal_text)
 #endif
 {
 	if(terminal_text->flags & _text_is_encoded_flag)
 	{
 		encode_text(terminal_text);
-		
 		terminal_text->flags &= ~_text_is_encoded_flag;
 	}
 }
 
 #ifdef PREPROCESSING_CODE
 void encode_text(
-	struct static_preprocessed_terminal_data *terminal_text)
+	terminal_text_t *terminal_text)
 #else
 static void encode_text(
-	struct static_preprocessed_terminal_data *terminal_text)
+	terminal_text_t *terminal_text)
 #endif
 {
-	int length = terminal_text->total_length -
-		(sizeof(static_preprocessed_terminal_data) + 
-		terminal_text->grouping_count * sizeof(terminal_groupings) +
-		terminal_text->font_changes_count * sizeof(text_face_data));
+	int length = terminal_text->text_length;
+	uint8 *p = terminal_text->text;
 
-	uint8 *p = (uint8 *)get_text_base(terminal_text);
 	for (int i=0; i<length/4; i++) {
 		p += 2;
 		*p++ ^= 0xfe;
@@ -1283,16 +1257,17 @@ static void draw_terminal_borders(
 	struct player_terminal_data *terminal_data,
 	Rect *terminal_frame,
 	bool after_other_terminal_stuff)
-	// Rect *terminal_frame)
 {
 	Rect frame, border;
 	short top_message, bottom_left_message, bottom_right_message;
-	struct static_preprocessed_terminal_data *terminal_text= get_indexed_terminal_data(terminal_data->terminal_id);
+	terminal_text_t *terminal_text= get_indexed_terminal_data(terminal_data->terminal_id);
+
 	// LP addition: quit if none
-	if (!terminal_text) return;
-	struct terminal_groupings *current_group= get_indexed_grouping(terminal_text, terminal_data->current_group);
+	if (terminal_text == NULL) return;
+
 	// LP change: just in case...
-	if (!current_group) return;
+	struct terminal_groupings *current_group= get_indexed_grouping(terminal_text, terminal_data->current_group);
+	if (current_group == NULL) return;
 	
 	switch(current_group->type)
 	{
@@ -1376,7 +1351,7 @@ static void next_terminal_state(
 	switch(terminal->state)
 	{
 #ifdef OBSOLETE
-	struct static_preprocessed_terminal_data *terminal_text;
+	terminal_text_t *terminal_text;
 	
 		case _logging_in_terminal:
 			terminal->state= _reading_terminal;
@@ -1424,7 +1399,7 @@ static void next_terminal_state(
 
 static bool previous_terminal_group(
 	short player_index,
-	struct static_preprocessed_terminal_data *terminal_text)
+	terminal_text_t *terminal_text)
 {
 	struct player_terminal_data *terminal_data= get_player_terminal_data(player_index);
 	bool success= false;
@@ -1502,7 +1477,7 @@ static bool previous_terminal_group(
 
 static void next_terminal_group(
 	short player_index,
-	struct static_preprocessed_terminal_data *terminal_text)
+	terminal_text_t *terminal_text)
 {
 	struct player_terminal_data *terminal_data= get_player_terminal_data(player_index);
 	bool update_line_count= false;
@@ -1519,21 +1494,21 @@ static void next_terminal_group(
 				
 			case _level_finished:
 				terminal_data->current_group= find_group_type(terminal_text, _success_group);
-				if(terminal_data->current_group==terminal_text->grouping_count) 
+				if(terminal_data->current_group==terminal_text->groupings.size()) 
 				{
 					/* Fallback. */
 					terminal_data->current_group= find_group_type(terminal_text, _unfinished_group);
-					assert(terminal_data->current_group != terminal_text->grouping_count);
+					assert(terminal_data->current_group != terminal_text->groupings.size());
 				}
 				break;
 				
 			case _level_failed:
 				terminal_data->current_group= find_group_type(terminal_text, _failure_group);
-				if(terminal_data->current_group==terminal_text->grouping_count) 
+				if(terminal_data->current_group==terminal_text->groupings.size()) 
 				{
 					/* Fallback. */
 					terminal_data->current_group= find_group_type(terminal_text, _unfinished_group);
-					assert(terminal_data->current_group != terminal_text->grouping_count);
+					assert(terminal_data->current_group != terminal_text->groupings.size());
 				}
 				break;
 			
@@ -1548,7 +1523,7 @@ static void next_terminal_group(
 		next_terminal_group(player_index, terminal_text);
 	} else {
 		terminal_data->current_group++;
-		if(terminal_data->current_group>=terminal_text->grouping_count)
+		if(terminal_data->current_group>=terminal_text->groupings.size())
 		{
 			next_terminal_state(player_index);
 		} else {
@@ -1568,7 +1543,7 @@ static void next_terminal_group(
 
 static void goto_terminal_group(
 	short player_index, 
-	struct static_preprocessed_terminal_data *terminal_text, 
+	terminal_text_t *terminal_text, 
 	short new_group_index)
 {
 	struct player_terminal_data *terminal_data= get_player_terminal_data(player_index);
@@ -1723,7 +1698,7 @@ static void get_date_string(
 
 static void present_checkpoint_text(
 	Rect *frame,
-	struct static_preprocessed_terminal_data *terminal_text,
+	terminal_text_t *terminal_text,
 	short current_group_index,
 	short current_line)
 {
@@ -1843,7 +1818,7 @@ static void handle_reading_terminal_keys(
 	long action_flags)
 {
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
-	struct static_preprocessed_terminal_data *terminal_text= get_indexed_terminal_data(terminal->terminal_id);
+	terminal_text_t *terminal_text= get_indexed_terminal_data(terminal->terminal_id);
 	// LP addition: quit if none
 	if (!terminal_text) return;
 	struct terminal_groupings *current_group;
@@ -1989,7 +1964,7 @@ static void handle_reading_terminal_keys(
 		
 		if(terminal->current_line>=terminal->maximum_line)
 		{
-			if(terminal->current_group+1>=terminal_text->grouping_count)
+			if(terminal->current_group+1>=terminal_text->groupings.size())
 			{
 				if(change_state)
 				{
@@ -2419,7 +2394,7 @@ bool terminal_has_finished_text_type(
 	short finished_type)
 {
 	bool has_type= false;
-	struct static_preprocessed_terminal_data *terminal_text= get_indexed_terminal_data(terminal_id);
+	terminal_text_t *terminal_text= get_indexed_terminal_data(terminal_id);
 	// LP addition: quit if none
 	if (!terminal_text) return false;
 	short index;
@@ -2503,52 +2478,32 @@ static void calculate_maximum_lines_for_groups(
 
 	return;
 }
-#endif
+#endif // End of preprocessing code
 
 static struct terminal_groupings *get_indexed_grouping(
-	struct static_preprocessed_terminal_data *data,
+	terminal_text_t *data,
 	short index)
 {
-	byte *start;
-	
-	// LP change: put in more graceful degradation
-	if (!(index>=0 && index<data->grouping_count)) return NULL;
-	// assert(index>=0 && index<data->grouping_count);
-	start= (byte *) data;
-	start += sizeof(static_preprocessed_terminal_data) + 
-		index * sizeof(terminal_groupings);
+	if (index < 0 || index >= data->groupings.size())
+		return NULL;
 
-	return (struct terminal_groupings *) start;
+	return &data->groupings[index];
 }
 
 static struct text_face_data *get_indexed_font_changes(
-	struct static_preprocessed_terminal_data *data,
+	terminal_text_t *data,
 	short index)
 {
-	byte *start;
-	
-	// LP change: put in more graceful degradation
-	if (!(index>=0 && index<data->font_changes_count)) return NULL;
-	// assert(index>=0 && index<data->font_changes_count);
-	start= (byte *) data;
-	start += sizeof(static_preprocessed_terminal_data) + 
-		data->grouping_count * sizeof(terminal_groupings) +
-		index * sizeof(text_face_data);
+	if (index < 0 || index >= data->font_changes.size())
+		return NULL;
 
-	return (struct text_face_data *) start;
+	return &data->font_changes[index];
 }
 
 static char *get_text_base(
-	struct static_preprocessed_terminal_data *data)
+	terminal_text_t *data)
 {
-	byte *start;
-
-	start= (byte *) data;
-	start += sizeof(static_preprocessed_terminal_data) + 
-		data->grouping_count * sizeof(terminal_groupings) +
-		data->font_changes_count * sizeof(text_face_data);
-
-	return (char *) start;
+	return (char *)data->text;
 }
 
 static short calculate_lines_per_page(
@@ -2566,35 +2521,196 @@ static short calculate_lines_per_page(
 
 
 /*
- *  Byte-swap terminal data
+ *  Calculate the length the loaded terminal data would take up on disk
+ *  (for saving)
  */
 
-void byte_swap_terminal_data(uint8 *data, int length)
+static int packed_terminal_length(const terminal_text_t &t)
 {
-	// LP: verify object sizes:
-	assert(sizeof(static_preprocessed_terminal_data) == SIZEOF_static_preprocessed_terminal_data);
-	assert(sizeof(terminal_groupings) == SIZEOF_terminal_groupings);
-	assert(sizeof(text_face_data) == SIZEOF_text_face_data);
-	
-	while (length > 0) {
-		uint8 *p = data;
+	return SIZEOF_static_preprocessed_terminal_data
+	     + t.groupings.size() * SIZEOF_terminal_groupings
+	     + t.font_changes.size() * SIZEOF_text_face_data
+	     + t.text_length;
+}
 
-		// Swap static_preprocessed_terminal_data
-		static_preprocessed_terminal_data *d = (static_preprocessed_terminal_data *)p;
-		byte_swap_object(*d, _bs_static_preprocessed_terminal_data);
-		p += sizeof(static_preprocessed_terminal_data);
+int calculate_packed_terminal_data_length(void)
+{
+	int total = 0;
 
-		// Swap groupings
-		terminal_groupings *g = (terminal_groupings *)p;
-		byte_swap_object_list(g, d->grouping_count, _bs_terminal_groupings);
-		p += sizeof(terminal_groupings) * d->grouping_count;
-
-		// Swap font changes
-		text_face_data *f = (text_face_data *)p;
-		byte_swap_object_list(f, d->font_changes_count, _bs_text_face_data);
-		p += sizeof(text_face_data) * d->font_changes_count;
-
-		data += d->total_length;
-		length -= d->total_length;
+	// Loop for all terminals
+	vector<terminal_text_t>::const_iterator t = map_terminal_text.begin(), tend = map_terminal_text.end();
+	while (t != tend) {
+		total += packed_terminal_length(*t);
+		t++;
 	}
+
+	return total;
+}
+
+
+/*
+ *  Unpack terminal data from stream
+ */
+
+void unpack_map_terminal_data(uint8 *p, int count)
+{
+	// Clear existing terminals
+	map_terminal_text.clear();
+
+	// Unpack all terminals
+	while (count > 0) {
+
+		// Create new terminal_text_t
+		map_terminal_text.push_back();
+		terminal_text_t &data = map_terminal_text.back();
+
+		// Read header
+		uint8 *p_start = p, *p_header = p;
+		uint16 total_length, grouping_count, font_changes_count;
+		StreamToValue(p, total_length);
+		StreamToValue(p, data.flags);
+		StreamToValue(p, data.lines_per_page);
+		StreamToValue(p, grouping_count);
+		StreamToValue(p, font_changes_count);
+		assert((p - p_start) == SIZEOF_static_preprocessed_terminal_data);
+
+		// Reserve memory for groupings and font changes
+		data.groupings.reserve(grouping_count);
+		data.font_changes.reserve(font_changes_count);
+
+		// Read groupings
+		p_start = p;
+		for (int i=0; i<grouping_count; i++) {
+			terminal_groupings g;
+			StreamToValue(p, g.flags);
+			StreamToValue(p, g.type);
+			StreamToValue(p, g.permutation);
+			StreamToValue(p, g.start_index);
+			StreamToValue(p, g.length);
+			StreamToValue(p, g.maximum_line_count);
+			data.groupings.push_back(g);
+		}
+		assert((p - p_start) == SIZEOF_terminal_groupings * grouping_count);
+
+		// Read font changes
+		p_start = p;
+		for (int i=0; i<font_changes_count; i++) {
+			text_face_data f;
+			StreamToValue(p, f.index);
+			StreamToValue(p, f.face);
+			StreamToValue(p, f.color);
+			data.font_changes.push_back(f);
+		}
+		assert((p - p_start) == SIZEOF_text_face_data * font_changes_count);
+
+		// Read text (no conversion)
+		data.text_length = total_length - (p - p_header);
+		assert(data.text_length >= 0);
+		data.text = new uint8[data.text_length];
+		StreamToBytes(p, data.text, data.text_length);
+
+		// Continue with next terminal
+		count -= total_length;
+	}
+}
+
+
+/*
+ *  Pack terminal data to stream
+ */
+
+void pack_map_terminal_data(uint8 *p, int count)
+{
+	// Pack all terminals
+	vector<terminal_text_t>::const_iterator t = map_terminal_text.begin(), tend = map_terminal_text.end();
+	while (t != tend) {
+
+		// Write header
+		uint8 *p_start = p;
+		uint16 total_length = packed_terminal_length(*t);
+		uint16 grouping_count = t->groupings.size();
+		uint16 font_changes_count = t->font_changes.size();
+		ValueToStream(p, total_length);
+		ValueToStream(p, t->flags);
+		ValueToStream(p, t->lines_per_page);
+		ValueToStream(p, grouping_count);
+		ValueToStream(p, font_changes_count);
+		assert((p - p_start) == SIZEOF_static_preprocessed_terminal_data);
+
+		// Write groupings
+		p_start = p;
+		vector<terminal_groupings>::const_iterator g = t->groupings.begin(), gend = t->groupings.end();
+		while (g != gend) {
+			ValueToStream(p, g->flags);
+			ValueToStream(p, g->type);
+			ValueToStream(p, g->permutation);
+			ValueToStream(p, g->start_index);
+			ValueToStream(p, g->length);
+			ValueToStream(p, g->maximum_line_count);
+			g++;
+		}
+		assert((p - p_start) == SIZEOF_terminal_groupings * grouping_count);
+
+		// Write font changes
+		p_start = p;
+		vector<text_face_data>::const_iterator f = t->font_changes.begin(), fend = t->font_changes.end();
+		while (f != fend) {
+			ValueToStream(p, f->index);
+			ValueToStream(p, f->face);
+			ValueToStream(p, f->color);
+			f++;
+		}
+		assert((p - p_start) == SIZEOF_text_face_data * font_changes_count);
+
+		// Write text (no conversion)
+		BytesToStream(p, t->text, t->text_length);
+
+		// Continue with next terminal
+		t++;
+	}
+}
+
+
+uint8 *unpack_player_terminal_data(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	player_terminal_data* ObjPtr = player_terminals;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->phase);
+		StreamToValue(S,ObjPtr->state);
+		StreamToValue(S,ObjPtr->current_group);
+		StreamToValue(S,ObjPtr->level_completion_state);
+		StreamToValue(S,ObjPtr->current_line);
+		StreamToValue(S,ObjPtr->maximum_line);
+		StreamToValue(S,ObjPtr->terminal_id);
+		StreamToValue(S,ObjPtr->last_action_flag);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_player_terminal_data);
+	return S;
+}
+
+uint8 *pack_player_terminal_data(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	player_terminal_data* ObjPtr = player_terminals;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->phase);
+		ValueToStream(S,ObjPtr->state);
+		ValueToStream(S,ObjPtr->current_group);
+		ValueToStream(S,ObjPtr->level_completion_state);
+		ValueToStream(S,ObjPtr->current_line);
+		ValueToStream(S,ObjPtr->maximum_line);
+		ValueToStream(S,ObjPtr->terminal_id);
+		ValueToStream(S,ObjPtr->last_action_flag);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_player_terminal_data);
+	return S;
 }

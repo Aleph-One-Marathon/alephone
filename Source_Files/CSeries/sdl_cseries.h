@@ -18,9 +18,6 @@
 
 #define DEBUG
 
-#define CB 1
-#undef LP
-
 
 /*
  *  Endianess definitions

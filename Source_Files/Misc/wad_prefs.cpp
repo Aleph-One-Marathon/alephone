@@ -198,6 +198,9 @@ void w_write_preferences_file(
 	// LP: need to re-create that file to avoid
 	// nonexistence-induced errors in the MacOS version
 	int Type = prefInfo->PrefsFile.GetType();
+	
+	// Setting to default if NONE
+	if (Type == NONE) Type = _typecode_preferences;
 
 	// CB: delete old prefs file, we're overwriting it
 	// (writing can go wrong when the old file is still in place)

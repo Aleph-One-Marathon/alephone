@@ -321,6 +321,8 @@ void swipe_nearby_items(
 
 	polygon= get_polygon_data(player_object->polygon);
 	neighbor_indexes= get_map_indexes(polygon->first_neighbor_index, polygon->neighbor_count);
+	// Skip this step if neighbor indexes were not found
+	if (!neighbor_indexes) return;
 
 	for (i=0;i<polygon->neighbor_count;++i)
 	{	
@@ -687,6 +689,8 @@ void animate_items(void) {
 				
 				shape_descriptor shape = ItemDef->base_shape;
 				struct shape_animation_data *animation= get_shape_animation_data(shape);
+				if (!animation) continue;
+				
 				// Randomize if non-animated
 				if (object->facing) {
 					if (animation->number_of_views == _unanimated)

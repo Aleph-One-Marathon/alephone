@@ -22,12 +22,12 @@ struct platform_definition
 {
 	/* sounds; specific sounds are played if they can be (i.e., ...at_bottom) otherwise the
 		general sound is played */
-	short starting_extension, starting_contraction;
-	short stopping_extension, stopping_contraction;
-	short obstructed_sound, uncontrollable_sound;
-	short moving_sound;
+	int16 starting_extension, starting_contraction;
+	int16 stopping_extension, stopping_contraction;
+	int16 obstructed_sound, uncontrollable_sound;
+	int16 moving_sound;
 	
-	short key_item_index;
+	int16 key_item_index;
 	
 	struct static_platform_data defaults;
 	

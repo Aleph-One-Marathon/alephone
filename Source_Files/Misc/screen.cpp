@@ -113,6 +113,10 @@ Aug 3, 2000 (Loren Petrich):
 
 Aug 9, 2000 (Loren Petrich):
 	Removed OGL_StartMain() and OGL_EndMain() as redundant
+
+Sept 9, 2000 (Loren Petrich):
+	Added a kludge to make OpenGL mode well-behaved in 32-bit (millions of colors) screen depth
+	-- reset the screen depth to 16-bit and then back to 32-bit.
 */
 
 /*
@@ -309,6 +313,9 @@ short interface_bit_depth= NONE;
 // LP addition: this is defined in overhead_map.c
 // It indicates whether to render the overhead map in OpenGL
 extern bool OGL_MapActive;
+
+// Flag for making 32-bit-OGL screen resetting done only once.
+bool ScreenFix_OGL32 = false;
 
 /* ---------- private prototypes */
 
@@ -589,6 +596,22 @@ void enter_screen(
 	// since initialize_world_view() no longer resets it.
 	world_view->effect = NONE;
 	
+	// Kludge to stop annoying 32-bit-mode flickering -- set to 16-bit, then to 32-bit again
+	if ((screen_mode.acceleration == _opengl_acceleration) && screen_mode.bit_depth == 32)
+	{
+		// Be sure to do this only once...
+		if (!ScreenFix_OGL32)
+		{
+			GDSpec& DevSpec = graphics_preferences->device_spec;
+			DevSpec.bit_depth = 16;
+			SetDepthGDSpec(&DevSpec);
+			DevSpec.bit_depth = 32;
+			SetDepthGDSpec(&DevSpec);
+			ScreenFix_OGL32 = true;
+		}
+	}
+
+	// Of course, do this...
 	change_screen_mode(&screen_mode, true);
 	
 	switch (screen_mode.acceleration)

@@ -98,7 +98,7 @@ bool configure_key_setup(
 	current_key_set= setup_key_dialog(dialog, keycodes);
 	
 	/* Select the text.. */
-	SelectDialogItemText(dialog, iFORWARD, 0, SHORT_MAX);
+	SelectDialogItemText(dialog, iFORWARD, 0, SHRT_MAX);
 
 	set_dialog_cursor_tracking(false);
 	ShowWindow(dialog);
@@ -130,7 +130,7 @@ bool configure_key_setup(
 						// looks slightly nicer to deselect text before changing and reselecting it.
 						SelectDialogItemText(dialog, ((DialogRecord *) dialog)->editField + 1, 0, 0);
 						keyboard_setup_globals.current_key_setup= setup_key_dialog(dialog, keycodes);
-						SelectDialogItemText(dialog, ((DialogRecord *) dialog)->editField + 1, 0, SHORT_MAX);
+						SelectDialogItemText(dialog, ((DialogRecord *) dialog)->editField + 1, 0, SHRT_MAX);
 					}
 					break;
 					
@@ -145,7 +145,7 @@ bool configure_key_setup(
 			if (item_hit == iMOVED_OK && location_of_duplicate != NONE)
 			{
 				data_is_bad = true;
-				SelectDialogItemText(dialog, location_of_duplicate + FIRST_KEY_ITEM, 0, SHORT_MAX);
+				SelectDialogItemText(dialog, location_of_duplicate + FIRST_KEY_ITEM, 0, SHRT_MAX);
 				ParamText(getpstr(ptemporary, strKEYCODES_TO_ASCII, keycodes[location_of_duplicate]), "\p", "\p", "\p");
 				Alert(alrtDUPLICATE_KEY, NULL);
 			}
@@ -206,7 +206,7 @@ static pascal Boolean key_setup_filter_proc(
 				{
 					// select the next item.
 					*item_hit = current_edit_field < LAST_KEY_ITEM ? current_edit_field + 1 : FIRST_KEY_ITEM;
-					SelectDialogItemText(dialog, *item_hit, 0, SHORT_MAX);
+					SelectDialogItemText(dialog, *item_hit, 0, SHRT_MAX);
 				}
 				BlockMove(key_map, keyboard_setup_globals.old_key_map, sizeof(KeyMap));
 			}
@@ -223,7 +223,7 @@ static pascal Boolean key_setup_filter_proc(
 			which_item= FindDialogItem(dialog, where) + 1;
 			if (which_item >= FIRST_KEY_ITEM && which_item <= LAST_KEY_ITEM)
 			{
-				SelectDialogItemText(dialog, which_item, 0, SHORT_MAX);
+				SelectDialogItemText(dialog, which_item, 0, SHRT_MAX);
 				*item_hit = which_item;
 				handled = true;
 			}

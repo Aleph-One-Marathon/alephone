@@ -9,39 +9,6 @@
 #include "byte_swapping.h"
 
 
-// From FileHandler_SDL.cpp
-extern void get_default_shapes_spec(FileSpecifier &File);
-
-
-/*
- *  Open shapes file, read collection headers
- */
-
-void open_shapes_file(FileSpecifier &File)
-{
-	// Open stream to shapes file
-	if (!File.Open(ShapesFile))
-		return;
-	ShapesFile.SetPosition(0);
-	SDL_RWops *p = ShapesFile.GetRWops();
-
-	// Read collection headers
-	collection_header *h = collection_headers;
-	for (int i=0; i<MAXIMUM_COLLECTIONS; i++, h++) {
-		h->status = SDL_ReadBE16(p);
-		h->flags = SDL_ReadBE16(p);
-		h->offset = SDL_ReadBE32(p);
-		h->length = SDL_ReadBE32(p);
-		h->offset16 = SDL_ReadBE32(p);
-		h->length16 = SDL_ReadBE32(p);
-		SDL_RWseek(p, 12, SEEK_CUR);
-		//printf(" collection %d, status %d, flags %04x, offset %d, length %d, offset16 %d, length16 %d\n", i, h->status, h->flags, h->offset, h->length, h->offset16, h->length16);
-		h->collection = NULL;
-		h->shading_tables = NULL;
-	}
-}
-
-
 /*
  *  Initialize shapes handling
  */
@@ -335,10 +302,10 @@ static bool load_collection(short collection_index, bool strip)
 
 	// Allocate enough space for this collection's shading tables
 	if (strip)
-		header->shading_tables = malloc(8);
+		header->shading_tables = NULL;
 	else {
 		collection_definition *definition = get_collection_definition(collection_index);
-		header->shading_tables = malloc(get_shading_table_size(collection_index) * definition->clut_count + shading_table_size * NUMBER_OF_TINT_TABLES);
+		header->shading_tables = (byte *)malloc(get_shading_table_size(collection_index) * definition->clut_count + shading_table_size * NUMBER_OF_TINT_TABLES);
 	}
 	if (header->shading_tables == NULL) {
 		free(header->collection);

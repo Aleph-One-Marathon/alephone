@@ -185,8 +185,8 @@ enum /* dynamic platform flags */
 
 struct endpoint_owner_data
 {
-	short first_polygon_index, polygon_index_count;
-	short first_line_index, line_index_count;
+	int16 first_polygon_index, polygon_index_count;
+	int16 first_line_index, line_index_count;
 };
 
 struct static_platform_data /* size platform-dependant */
@@ -205,114 +205,29 @@ struct static_platform_data /* size platform-dependant */
 };
 const int SIZEOF_static_platform_data = 32;
 
-#ifdef CB
-struct saved_static_platform_data /* 32 bytes */
-{
-	int16 type;
-	int16 speed, delay;
-	world_distance maximum_height, minimum_height; /* if NONE then calculated in some reasonable way */
-
-	uint16 static_flags_hi, static_flags_lo;
-	
-	int16 polygon_index;
-	
-	int16 tag;
-	
-	int16 unused[7];
-};
-#endif
-const int SIZEOF_saved_static_platform_data = 32;
-
-#ifdef LP
-// Misaligned 4-byte value (static_flags) split in it
-struct saved_static_platform /* 32 bytes */
-{
-	int16 type;
-	int16 speed, delay;
-	world_distance maximum_height, minimum_height; /* if NONE then calculated in some reasonable way */
-
-	uint16 static_flags[2];
-	
-	int16 polygon_index;
-	
-	int16 tag;
-	
-	int16 unused[7];
-};
-#endif
-
 struct platform_data /* 140 bytes */
 {
-	short type;
-	unsigned long static_flags;
-	short speed, delay;
+	int16 type;
+	uint32 static_flags;
+	int16 speed, delay;
 	world_distance minimum_floor_height, maximum_floor_height;
 	world_distance minimum_ceiling_height, maximum_ceiling_height;
 
-	short polygon_index;
+	int16 polygon_index;
+
 	uint16 dynamic_flags;
 	world_distance floor_height, ceiling_height;
-	short ticks_until_restart; /* if we’re not moving but are active, this is our delay until we move again */
+	int16 ticks_until_restart; /* if we’re not moving but are active, this is our delay until we move again */
 
 	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
 
-	short parent_platform_index; /* the platform_index which activated us, if any */
+	int16 parent_platform_index; /* the platform_index which activated us, if any */
 	
-	short tag;
+	int16 tag;
 	
-	short unused[22];
+	int16 unused[22];
 };
 const int SIZEOF_platform_data = 140;
-
-#ifdef LP
-// Misaligned 4-byte values (static_flags) split in it
-struct saved_platform/* 140 bytes */
-{
-	int16 type;
-	uint16 static_flags[2];
-	int16 speed, delay;
-	world_distance minimum_floor_height, maximum_floor_height;
-	world_distance minimum_ceiling_height, maximum_ceiling_height;
-	
-	int16 polygon_index;
-	uint16 dynamic_flags;
-	world_distance floor_height, ceiling_height;
-	int16 ticks_until_restart; /* if we’re not moving but are active, this is our delay until we move again */
-
-	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
-
-	int16 parent_platform_index; /* the platform_index which activated us, if any */
-	
-	int16 tag;
-	
-	int16 unused[22];
-};
-#endif
-
-#ifdef CB
-struct saved_platform_data /* 140 bytes */
-{
-	int16 type;
-	uint16 static_flags_hi, static_flags_lo;
-	int16 speed, delay;
-	world_distance minimum_floor_height, maximum_floor_height;
-	world_distance minimum_ceiling_height, maximum_ceiling_height;
-	
-	int16 polygon_index;
-	uint16 dynamic_flags;
-	world_distance floor_height, ceiling_height;
-	int16 ticks_until_restart; /* if we’re not moving but are active, this is our delay until we move again */
-
-	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
-
-	int16 parent_platform_index; /* the platform_index which activated us, if any */
-	
-	int16 tag;
-	
-	int16 unused[22];
-};
-#endif
-const int SIZEOF_saved_platform_data = 140;
 
 /* --------- globals */
 
@@ -364,21 +279,13 @@ inline struct platform_data *get_platform_data(
 	return platform;
 }
 
-/*
-#ifdef DEBUG
-struct platform_data *get_platform_data(short platform_index);
-#else
-#define get_platform_data(i) (platforms+(i))
-#endif
-*/
+// LP: to pack and unpack this data;
+// these do not make the definitions visible to the outside world
 
-#ifdef LP
-// Split and join the misaligned 4-byte values
-void pack_platform_data(platform_data& source, saved_platform& dest);
-void unpack_platform_data(saved_platform& source, platform_data& dest);
-void pack_static_platform_data(static_platform_data& source, saved_static_platform& dest);
-void unpack_static_platform_data(saved_static_platform& source, static_platform_data& dest);
-#endif
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects, int Count);
+uint8 *pack_static_platform_data(uint8 *Stream, static_platform_data *Objects, int Count);
+uint8 *unpack_platform_data(uint8 *Stream, platform_data *Objects, int Count);
+uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, int Count);
 
 // LP change: added platform-parser export
 XML_ElementParser *Platforms_GetParser();

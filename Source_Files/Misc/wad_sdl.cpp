@@ -14,7 +14,6 @@
 // From shell_sdl.cpp
 extern FileSpecifier global_data_dir, local_data_dir;
 
-
 /*
  *  Find map file with specified checksum in path
  */

@@ -31,6 +31,9 @@ Aug 21, 2000 (Loren Petrich):
 
 Aug 22, 2000 (Loren Petrich):
 	Added an images filetype
+
+Aug 28, 2000 (Loren Petrich):
+	get_typecode() now defaults to '????' for unrecognized typecodes
 */
 
 #define MAXIMUM_LEVEL_NAME_SIZE 64

@@ -165,6 +165,9 @@ Aug 9, 2000 (Loren Petrich):
 	
 	Added a rasterizer class; currently, it does everything from the base class,
 	though what it does will be moved into subclasses.
+
+Sep 2, 2000 (Loren Petrich):
+	Added some idiot-proofing, since the shapes accessor now returns NULL for nonexistent bitmaps
 */
 
 
@@ -853,6 +856,8 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 	{
 		/* fetch relevant shape data */
 		shape_information= extended_get_shape_information(display_data.collection, display_data.low_level_shape_index);
+		// Nonexistent frame: skip
+		if (!shape_information) continue;
 		
 		if (shape_information->flags&_X_MIRRORED_BIT) display_data.flip_horizontal= !display_data.flip_horizontal;
 
@@ -864,6 +869,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 
 		/* set rectangle bitmap and shading table */
 		extended_get_shape_bitmap_and_shading_table(display_data.collection, display_data.low_level_shape_index, &textured_rectangle.texture, &textured_rectangle.shading_tables, view->shading_mode);
+		if (!textured_rectangle.texture) continue;
 		
 		// LP change: for the convenience of the OpenGL renderer
 		textured_rectangle.ShapeDesc = BUILD_DESCRIPTOR(display_data.collection,display_data.low_level_shape_index);

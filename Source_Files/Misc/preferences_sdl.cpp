@@ -677,8 +677,8 @@ static void environment_dialog(void *arg)
 	d.add(new w_spacer());
 	w_env_select *map_w = new w_env_select("Map", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
 	d.add(map_w);
-//	w_env_select *physics_w = new w_env_select("Physics", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
-//	d.add(physics_w);
+	w_env_select *physics_w = new w_env_select("Physics", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
+	d.add(physics_w);
 	w_env_select *shapes_w = new w_env_select("Shapes", environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
 	d.add(shapes_w);
 	w_env_select *sounds_w = new w_env_select("Sounds", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
@@ -701,12 +701,12 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 
-//		path = physics_w->get_path();
-//		if (strcmp(path, environment_preferences->physics_file)) {
-//			strcpy(environment_preferences->physics_file, path);
-//			environment_preferences->physics_checksum = read_wad_file_checksum(physics_w->get_file_specifier());
-//			changed = true;
-//		}
+		path = physics_w->get_path();
+		if (strcmp(path, environment_preferences->physics_file)) {
+			strcpy(environment_preferences->physics_file, path);
+			environment_preferences->physics_checksum = read_wad_file_checksum(physics_w->get_file_specifier());
+			changed = true;
+		}
 
 		path = shapes_w->get_path();
 		if (strcmp(path, environment_preferences->shapes_file)) {

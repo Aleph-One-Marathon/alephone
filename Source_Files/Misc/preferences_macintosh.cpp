@@ -447,7 +447,7 @@ static void setup_player_dialog(
 	/* Setup the name. */
 	GetDialogItem(dialog, LOCAL_TO_GLOBAL_DITL(iNAME, first_item), &item_type, &item, &bounds);
 	SetDialogItemText(item, preferences->name);
-	SelectDialogItemText(dialog, LOCAL_TO_GLOBAL_DITL(iNAME, first_item), 0, SHORT_MAX);
+	SelectDialogItemText(dialog, LOCAL_TO_GLOBAL_DITL(iNAME, first_item), 0, SHRT_MAX);
 
 	/* Setup the color */
 	GetDialogItem(dialog, LOCAL_TO_GLOBAL_DITL(iCOLOR, first_item), &item_type, &item, &bounds);

@@ -407,8 +407,6 @@ them:
 
  - Text rendering under OpenGL (overhead map doesn't show level name and
    annotations)
- - Physics models (in map files or separate) don't work (needed for playing
-   Marathon Infinity properly)
  - Saving/restoring games (save terminals don't work and the "Continue Saved
    Game" button on the title screen is nonfunctional)
  - Saving/replaying films (the "Replay Saved Film", "Replay Last Film" and
@@ -419,7 +417,7 @@ them:
 And a list of known bugs:
 
  - Palette tricks (fading, underwater, red flash when being hit etc.) don't
-   work
+   work (SDL 1.1.5 will support gamma tables)
  - Mouse control under BeOS doesn't work (SDL problem)
  - Lo-res mode (F3) doesn't work
  - Snapshots (F9) don't work with OpenGL

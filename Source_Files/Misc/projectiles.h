@@ -13,6 +13,9 @@ Feb 6, 2000 (Loren Petrich):
 	
 Feb 10, 2000 (Loren Petrich):
 	Added dynamic-limits setting of MAXIMUM_PROJECTILES_PER_MAP
+
+Aug 30, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 /* ---------- projectile structure */
@@ -105,6 +108,9 @@ struct projectile_data /* 32 bytes */
 	
 	short unused[2];
 };
+const int SIZEOF_projectile_data = 32;
+
+const int SIZEOF_projectile_definition = 48;
 
 /* ---------- globals */
 
@@ -153,8 +159,13 @@ struct projectile_data *get_projectile_data(short projectile_index);
 #endif
 */
 
-// LP addition: get projectile-definition size
-int get_projectile_definition_size();
+// LP: to pack and unpack this data;
+// these do not make the definitions visible to the outside world
+
+uint8 *unpack_projectile_data(uint8 *Stream, projectile_data *Objects, int Count);
+uint8 *pack_projectile_data(uint8 *Stream, projectile_data *Objects, int Count);
+uint8 *unpack_projectile_definition(uint8 *Stream, int Count);
+uint8 *pack_projectile_definition(uint8 *Stream, int Count);
 
 #endif
 

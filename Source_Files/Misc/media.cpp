@@ -14,6 +14,9 @@ June 3, 2000 (Loren Petrich):
 
 July 1, 2000 (Loren Petrich):
 	Inlined the media accessors
+
+Aug 29, 2000 (Loren Petrich):
+	Added packing and unpacking routines
 */
 
 #include "cseries.h"
@@ -24,6 +27,8 @@ July 1, 2000 (Loren Petrich):
 #include "fades.h"
 #include "lightsource.h"
 #include "mysound.h"
+
+#include "Packing.h"
 
 // LP addition: XML parser for damage
 #include "DamageParser.h"
@@ -299,6 +304,73 @@ short count_number_of_medias_used()
 }
 
 
+uint8 *unpack_media_data(uint8 *Stream, media_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	media_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->light_index);
+		
+		StreamToValue(S,ObjPtr->current_direction);
+		StreamToValue(S,ObjPtr->current_magnitude);
+		
+		StreamToValue(S,ObjPtr->low);
+		StreamToValue(S,ObjPtr->high);
+		
+		StreamToValue(S,ObjPtr->origin.x);
+		StreamToValue(S,ObjPtr->origin.y);
+		StreamToValue(S,ObjPtr->height);
+		
+		StreamToValue(S,ObjPtr->minimum_light_intensity);
+		StreamToValue(S,ObjPtr->texture);
+		StreamToValue(S,ObjPtr->transfer_mode);
+		
+		S += 2*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_media_data);
+	return S;
+}
+
+uint8 *pack_media_data(uint8 *Stream, media_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	media_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->light_index);
+		
+		ValueToStream(S,ObjPtr->current_direction);
+		ValueToStream(S,ObjPtr->current_magnitude);
+		
+		ValueToStream(S,ObjPtr->low);
+		ValueToStream(S,ObjPtr->high);
+		
+		ValueToStream(S,ObjPtr->origin.x);
+		ValueToStream(S,ObjPtr->origin.y);
+		ValueToStream(S,ObjPtr->height);
+		
+		ValueToStream(S,ObjPtr->minimum_light_intensity);
+		ValueToStream(S,ObjPtr->texture);
+		ValueToStream(S,ObjPtr->transfer_mode);
+		
+		S += 2*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_media_data);
+	return S;
+}
+
+
 // Parses effect indices
 class XML_LqEffectParser: public XML_ElementParser
 {
@@ -412,7 +484,7 @@ bool XML_LqSoundParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"which") == 0)
 	{
-		if (ReadBoundedNumericalValue(Value,"%hd",Which,short(NONE),short(NUMBER_OF_SOUND_DEFINITIONS-1)))
+		if (ReadBoundedNumericalValue(Value,"%hd",Which,short(NONE),short(SHRT_MAX)))
 		{
 			IsPresent[1] = true;
 			return true;

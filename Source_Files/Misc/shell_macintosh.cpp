@@ -87,6 +87,8 @@ Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
 */
 
+#include <exception.h>
+
 #include "macintosh_cseries.h"
 #include "my32bqd.h"
 
@@ -139,6 +141,10 @@ extern long first_frame_tick, frame_count; /* for determining frame rate */
 // LP addition: the local event flags
 unsigned long LocalEventFlags = 0;
 
+// Where the MacOS Toolbox (or some equivalent) has been inited
+// Necessary to to indicate whether or not to create a dialog box.
+static bool AppServicesInited = false;
+
 /* ---------- externs that I couldn't fit into the #include heirarchy nicely */
 extern bool load_and_start_game(FileSpecifier& File);
 extern bool handle_open_replay(FileSpecifier& File);
@@ -180,8 +186,34 @@ static void PostOSEventFromLocal();
 void main(
 	void)
 {	
-	initialize_application_heap();
-	main_event_loop();
+	// LP: on Christian Bauer's suggestion, I've enclosed the code in a try-catch block
+	try
+	{
+		initialize_application_heap();
+		main_event_loop();
+	}
+	catch(exception& e)
+	{
+		if (AppServicesInited)
+		{
+			psprintf(ptemporary,"Unhandled exception: %s",e.what());
+			ParamText(ptemporary,"\p0",NULL,NULL);
+			InitCursor();
+			Alert(128,NULL);
+			exit(0);
+		}
+	}
+	catch(...)
+	{
+		if (AppServicesInited)
+		{
+			psprintf(ptemporary,"Unknown exception");
+			ParamText(ptemporary,"\p0",NULL,NULL);
+			InitCursor();
+			Alert(128,NULL);
+			exit(0);
+		}
+	}
 	exit(0);
 }
 
@@ -204,6 +236,9 @@ static void initialize_application_heap(
 	InitDialogs(0); /* resume procedure ignored for multifinder and >=system 7.0 */
 	InitCursor();
 
+	// The MacOS Toolbox has now been started up!
+	AppServicesInited = true;
+	
 #ifdef DEBUG
 	initialize_debugger(true);
 #endif

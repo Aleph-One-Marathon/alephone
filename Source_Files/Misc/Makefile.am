@@ -27,7 +27,7 @@ alephone_SOURCES = \
   AnimatedTextures.cpp ChaseCam.cpp ColorParser.cpp Crosshairs_SDL.cpp \
   DamageParser.cpp FileHandler_SDL.cpp OGL_Faders.cpp OGL_Render.cpp \
   OGL_Setup.cpp OGL_Textures.cpp OverheadMap_OGL.cpp OverheadMap_SDL.cpp \
-  OverheadMapRenderer.cpp PlayerName.cpp RenderPlaceObjs.cpp \
+  OverheadMapRenderer.cpp Packing.h PlayerName.cpp RenderPlaceObjs.cpp \
   RenderRasterize.cpp RenderSortPoly.cpp RenderVisTree.cpp ShapesParser.cpp \
   TextStrings.cpp ViewControl.cpp XML_Configure.cpp XML_ElementParser.cpp \
   XML_MakeRoot.cpp XML_Loader_SDL.cpp computer_interface.cpp crc.cpp \

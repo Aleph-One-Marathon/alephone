@@ -21,6 +21,10 @@ Thursday, June 16, 1994 7:32:13 PM
 Jul 1, 2000 (Loren Petrich):
 	moved all its contens out to map.h
 [End moved notes]
+
+Aug 29, 2000 (Loren Petrich):
+	Created packing and unpacking functions for all the
+		externally-accessible data types defined here
 */
 
 #include "world.h"
@@ -95,6 +99,7 @@ struct damage_definition
 	int16 base, random;
 	fixed scale;
 };
+const int SIZEOF_damage_definition = 12;
 
 /* ---------- saved objects (initial map locations, etc.) */
 
@@ -141,9 +146,6 @@ const int SIZEOF_map_object = 16;
 // Due to misalignments, these have different sizes
 typedef world_point2d saved_map_pt;
 typedef struct line_data saved_line;
-#ifdef LP
-// typedef struct side_data saved_side;
-#endif
 typedef struct polygon_data saved_poly;
 typedef struct map_annotation saved_annotation;
 typedef struct map_object saved_object;
@@ -391,6 +393,7 @@ struct object_data /* 32 bytes */
 	/* used when playing sounds */
 	fixed sound_pitch;
 };
+const int SIZEOF_object_data = 32;
 
 /* ------------ endpoint definition */
 
@@ -415,6 +418,9 @@ struct endpoint_data /* 16 bytes */
 	int16 supporting_polygon_index;
 };
 const int SIZEOF_endpoint_data = 16;
+
+// For loading plain points:
+const int SIZEOF_world_point2d = 4;
 
 /* ------------ line definition */
 
@@ -527,75 +533,6 @@ struct side_exclusion_zone
 	world_point2d e0, e1, e2, e3;
 };
 
-#ifdef LP
-struct saved_side /* 64 bytes */
-{
-	int16 type;
-	uint16 flags;
-	
-	struct side_texture_definition primary_texture;
-	struct side_texture_definition secondary_texture;
-	struct side_texture_definition transparent_texture; /* not drawn if .texture==NONE */
-
-	/* all sides have the potential of being impassable; the exclusion zone is the area near
-		the side which cannot be walked through */
-	struct side_exclusion_zone exclusion_zone;
-
-	int16 control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
-	int16 control_panel_permutation; /* platform index, light source index, etc... */
-	
-	int16 primary_transfer_mode; /* These should be in the side_texture_definition.. */
-	int16 secondary_transfer_mode;
-	int16 transparent_transfer_mode;
-
-	int16 polygon_index, line_index;
-
-	int16 primary_lightsource_index;	
-	int16 secondary_lightsource_index;
-	int16 transparent_lightsource_index;
-
-	uint16 ambient_delta[2];
-
-	int16 unused[1];
-};
-#endif
-#ifdef CB
-
-// Misaligned 4-byte value (ambient_delta) split in it
-struct saved_side /* 64 bytes */
-{
-	int16 type;
-	uint16 flags;
-	
-	struct side_texture_definition primary_texture;
-	struct side_texture_definition secondary_texture;
-	struct side_texture_definition transparent_texture; /* not drawn if .texture==NONE */
-
-	/* all sides have the potential of being impassable; the exclusion zone is the area near
-		the side which cannot be walked through */
-	struct side_exclusion_zone exclusion_zone;
-
-	int16 control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
-	int16 control_panel_permutation; /* platform index, light source index, etc... */
-	
-	int16 primary_transfer_mode; /* These should be in the side_texture_definition.. */
-	int16 secondary_transfer_mode;
-	int16 transparent_transfer_mode;
-
-	int16 polygon_index, line_index;
-
-	int16 primary_lightsource_index;	
-	int16 secondary_lightsource_index;
-	int16 transparent_lightsource_index;
-
-	uint16 ambient_delta_hi, ambient_delta_lo;
-
-	int16 unused[1];
-};
-#endif
-const int SIZEOF_saved_side = 64;
-const int SIZEOF_side_data = 64;
-
 struct side_data /* size platform-dependant */
 {
 	int16 type;
@@ -626,6 +563,7 @@ struct side_data /* size platform-dependant */
 
 	int16 unused[1];
 };
+const int SIZEOF_side_data = 64;
 
 /* ----------- polygon definition */
 
@@ -949,6 +887,7 @@ struct dynamic_data
 	world_point2d game_beacon;
 	int16 game_player_index;
 };
+const int SIZEOF_dynamic_data = 604;
 
 /* ---------- map globals */
 
@@ -1166,7 +1105,7 @@ inline short *get_map_indexes(
 	assert(map_indexes);
 	short *map_index = GetMemberWithBounds(map_indexes,index,dynamic_world->map_index_count-count+1);
 	
-	vassert(map_index, csprintf(temporary, "map_indexes(#%d,#%d) are out of range", index, count));
+	// vassert(map_index, csprintf(temporary, "map_indexes(#%d,#%d) are out of range", index, count));
 	
 	return map_index;
 }
@@ -1182,28 +1121,6 @@ inline struct random_sound_image_data *get_random_sound_image_data(
 {
 	return GetMemberWithBounds(random_sound_images,random_sound_image_index,dynamic_world->random_sound_image_count);
 }
-
-/*
-#ifdef DEBUG
-struct object_data *get_object_data(short object_index);
-struct polygon_data *get_polygon_data(short polygon_index);
-struct line_data *get_line_data(short line_index);
-struct side_data *get_side_data(short side_index);
-struct endpoint_data *get_endpoint_data(short endpoint_index);
-struct ambient_sound_image_data *get_ambient_sound_image_data(short ambient_sound_image_index);
-struct random_sound_image_data *get_random_sound_image_data(short random_sound_image_index);
-short *get_map_indexes(short index, short count);
-#else
-#define get_object_data(i) (objects+(i))
-#define get_polygon_data(i) (map_polygons+(i))
-#define get_line_data(i) (map_lines+(i))
-#define get_side_data(i) (map_sides+(i))
-#define get_endpoint_data(i) (map_endpoints+(i))
-#define get_map_indexes(i, c) (map_indexes+(i))
-#define get_ambient_sound_image_data(i) (ambient_sound_images+(i))
-#define get_random_sound_image_data(i) (random_sound_images+(i))
-#endif
-*/
 
 /* ---------- prototypes/MAP_CONSTRUCTORS.C */
 
@@ -1229,13 +1146,49 @@ void guess_side_lightsource_indexes(short side_index);
 
 void set_map_index_buffer_size(long length);
 
-// Split and join the misaligned 4-byte values
-void pack_side_data(side_data& source, saved_side& dest);
-void unpack_side_data(saved_side& source, side_data& dest);
+// LP: routines for packing and unpacking the data from streams of bytes
+
+uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count);
+uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count);
+uint8 *unpack_line_data(uint8 *Stream, line_data* Objects, int Count);
+uint8 *pack_line_data(uint8 *Stream, line_data* Objects, int Count);
+uint8 *unpack_side_data(uint8 *Stream, side_data* Objects, int Count);
+uint8 *pack_side_data(uint8 *Stream, side_data* Objects, int Count);
+uint8 *unpack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count);
+uint8 *pack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count);
+
+uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count);
+uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count);
+uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, int Count);
+uint8 *pack_map_object(uint8 *Stream, map_object* Objects, int Count);
+uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count);
+uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count);
+uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, int Count);
+uint8 *pack_static_data(uint8 *Stream, static_data* Objects, int Count);
+
+uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count);
+uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count);
+uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count);
+uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count);
+
+uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count);
+uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count);
+uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, int Count);
+uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count);
+
+uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count);
+uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count);
+
+/*
+	map_indexes, automap_lines, and automap_polygons do not have any special
+	packing and unpacking routines, because the packing/unpacking of map_indexes is
+	relatively simple, and because the automap lines and polygons need no such processing.
+*/
 
 /* ---------- prototypes/PLACEMENT.C */
 
-void load_placement_data(struct object_frequency_definition *monsters, struct object_frequency_definition *items);
+// LP: this one does unpacking also
+void load_placement_data(uint8 *_monsters, uint8 *_items);
 struct object_frequency_definition *get_placement_info(void);
 void place_initial_objects(void);
 void recreate_objects(void);

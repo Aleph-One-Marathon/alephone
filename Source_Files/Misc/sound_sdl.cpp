@@ -95,52 +95,6 @@ static _bs_field _bs_sound_file_header[] = { // 260 bytes
 	_4byte, _4byte, _2byte, _2byte, 124*sizeof(int16)
 };
 
-bool open_sound_file(FileSpecifier &File)
-{
-	if (!(sound_definitions && _sm_globals))
-		return false;
-
-	// Open file
-	if (!File.Open(SoundFile))
-		return false;
-
-	// Read and check header
-	struct sound_file_header header;
-	if (!SoundFile.ReadObject(header)) {
-		SoundFile.Close();
-		return false;
-	}
-
-	byte_swap_data(&header, 260, 1, _bs_sound_file_header);
-
-	if (header.version != SOUND_FILE_VERSION ||
-		header.tag != SOUND_FILE_TAG ||
-		header.sound_count != NUMBER_OF_SOUND_DEFINITIONS ||
-		header.source_count != NUMBER_OF_SOUND_SOURCES) {
-		SoundFile.Close();
-		return false;
-	}
-
-	// Read sound definitions
-	if (!SoundFile.ReadObjectList(NUMBER_OF_SOUND_SOURCES * NUMBER_OF_SOUND_DEFINITIONS, sound_definitions)) {
-		SoundFile.Close();
-		return false;
-	}
-
-	byte_swap_data(sound_definitions, 64, NUMBER_OF_SOUND_SOURCES * NUMBER_OF_SOUND_DEFINITIONS, _bs_sound_definition);
-	return true;
-}
-
-
-/*
- *  Close sounds file
- */
-
-static void close_sound_file(void)
-{
-	SoundFile.Close();
-}
-
 
 /*
  *  Initialize sound manager
@@ -308,7 +262,7 @@ static void set_sound_manager_status(bool active)
 					_sm_globals->total_buffer_size *= 2;
 
 				_sm_globals->sound_source = (_sm_parameters->flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
-				_sm_globals->base_sound_definitions = sound_definitions + _sm_globals->sound_source * NUMBER_OF_SOUND_DEFINITIONS;
+				_sm_globals->base_sound_definitions = sound_definitions + _sm_globals->sound_source * number_of_sound_definitions;
 
 				// Initialize channels
 				struct channel_data *channel = _sm_globals->channels;

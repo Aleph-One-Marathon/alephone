@@ -55,14 +55,6 @@ static void initialize_pixmap_handler()
 	return;
 }
 
-void open_shapes_file(FileSpecifier& File)
-{
-	if (File.Open(ShapesFile))
-	{
-		if (!ShapesFile.ReadObjectList(MAXIMUM_COLLECTIONS,collection_headers))
-			ShapesFile.Close();
-	}
-}
 
 PixMapHandle get_shape_pixmap(
 	short shape,
@@ -178,6 +170,7 @@ PixMapHandle get_shape_pixmap(
 	return hollow_pixmap;
 }
 
+#if 0
 static bool load_collection(
 	short collection_index,
 	bool strip)
@@ -242,18 +235,83 @@ static bool load_collection(
 	
 	return error==noErr ? true : false;
 }
+#endif
+
+static bool load_collection(
+	short collection_index,
+	bool strip)
+{
+	struct collection_header *header= get_collection_header(collection_index);
+	byte *collection = NULL, *shading_tables = NULL;
+	long length;	// How many bytes in the collection chunk
+	OSErr error= noErr;
+	
+	if (bit_depth==8 || header->offset16==-1)
+	{
+		vassert(header->offset!=-1, csprintf(temporary, "Collection #%d does not exist.", collection_index));
+		collection= read_object_from_file(ShapesFile, header->offset, (length = header->length));
+	}
+	else
+	{
+		collection= read_object_from_file(ShapesFile, header->offset16, (length = header->length16));
+	}
+	error = ShapesFile.GetError();
+	if (!collection && error==noErr) error = memory_error();
+	vwarn(error==noErr, csprintf(temporary, "read_object_from_file() got error #%d", error));
+	
+	if (collection)
+	{
+		header->collection = (collection_definition *)unpack_collection(collection,length,strip);
+		
+		// No longer needed!
+		delete []collection;
+		
+		// header->collection= (collection_definition *) collection;
+		
+		/* allocate enough space for this collectionÕs shading tables */
+		if (strip)
+		{
+			shading_tables = NULL;
+		}
+		else
+		{
+			collection_definition *definition = header->collection;
+			shading_tables = new byte[get_shading_table_size(collection_index)*definition->clut_count +
+				shading_table_size*NUMBER_OF_TINT_TABLES];
+			if ((error= memory_error())==noErr)
+			{
+				assert(shading_tables);
+			}
+		}
+		
+		header->shading_tables= shading_tables;
+	}
+	else
+	{
+		error= memory_error();
+//		vhalt(csprintf(temporary, "couldnÕt load collection #%d (error==#%d)", collection_index, error));
+	}
+
+	/* if any errors ocurred, free whatever memory we used */
+	if (error!=noErr)
+	{
+		unload_collection(header);
+	}
+	
+	return error==noErr ? TRUE : FALSE;
+}
 
 static void unload_collection(
 	struct collection_header *header)
 {
-	assert(header->collection);
+	// assert(header->collection);
 	
 	/* unload collection */
-	delete []header->collection;
-	delete []header->shading_tables;
-	// DisposeHandle((Handle)header->collection);
-	// DisposeHandle((Handle)header->shading_tables);
-	header->collection= NULL;
+	if (header->collection) delete []header->collection;
+	header->collection = NULL;
+	
+	if (header->shading_tables) delete []header->shading_tables;
+	header->shading_tables = NULL;
 	
 	return;
 }

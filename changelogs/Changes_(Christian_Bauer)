@@ -5,6 +5,11 @@ September 9, 2000
  - fixed possible reference to freed memory in RenderVisTree::cast_render_ray()
    which caused Desla 2 to crash
  - fixed reference to unallocated memory in possible_intersecting_monsters()
+ - merged with LP_fileio branch -> physics models in maps work
+ - physics environment preferences can now be selected
+ - terminal memory handling rewritten: terminal text is now stored internally
+   in C++ structures/vectors, managed by computer_interface.cpp; allocation
+   is done by calling unpack_map_terminal_data()
 
 September 7, 2000
  - improved PICT compatibility (implemented opcodes 0x0099 and 0x009b,

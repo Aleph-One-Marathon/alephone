@@ -8,7 +8,6 @@ Feb. 4, 2000 (Loren Petrich):
 */
 
 #include "cseries.h"
-#include "byte_swapping.h"
 
 #include "map.h"
 #include "monsters.h"
@@ -26,13 +25,6 @@ static struct object_frequency_definition object_placement_info[2*MAXIMUM_OBJECT
 static struct object_frequency_definition *monster_placement_info;
 static struct object_frequency_definition *item_placement_info;
 
-/* definitions for byte-swapping */
-static _bs_field _bs_object_frequency_definition[] = { // 12 bytes
-	_2byte,
-	_2byte, _2byte, _2byte,
-	_2byte, _2byte
-};
-
 /* private functions */
 static void _recreate_objects(short object_type, short max_object_types, struct object_frequency_definition *placement_info, short *object_counts, short *random_counts);
 static void add_objects(short object_class, short object_type, short count, bool is_initial_drop);
@@ -46,12 +38,14 @@ static bool polygon_is_valid_for_object_drop(world_point2d *location, short poly
  * Function: load_placement_data
  * Purpose:  called by game_wad.c to get the placement information for the map.
  *
+ * LP: changed to unpack the placement data from a stream of bytes
+ *
  *************************************************************************************************/
 void load_placement_data(
-	struct object_frequency_definition *monsters, 
-	struct object_frequency_definition *items)
+	uint8 *_monsters, 
+	uint8 *_items)
 {
-	assert(monsters != NULL && items != NULL);
+	assert(_monsters != NULL && _items != NULL);
 	assert(NUMBER_OF_MONSTER_TYPES<=MAXIMUM_OBJECT_TYPES);
 	assert(NUMBER_OF_DEFINED_ITEMS<=MAXIMUM_OBJECT_TYPES);
 
@@ -62,10 +56,8 @@ void load_placement_data(
 	objlist_clear(object_placement_info, 2*MAXIMUM_OBJECT_TYPES);
 
 	/* Copy them in */
-	objlist_copy(monster_placement_info, monsters, MAXIMUM_OBJECT_TYPES);
-	byte_swap_object_list(monster_placement_info, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
-	objlist_copy(item_placement_info, items, MAXIMUM_OBJECT_TYPES);
-	byte_swap_object_list(item_placement_info, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
+	unpack_object_frequency_definition(_monsters, monster_placement_info, MAXIMUM_OBJECT_TYPES);
+	unpack_object_frequency_definition(_items, item_placement_info, MAXIMUM_OBJECT_TYPES);
 	
 	// Clears the data for monster #0, the Marine
 	obj_clear(*monster_placement_info);

@@ -22,12 +22,11 @@ struct collection_header /* 32 bytes on disk */
 
 	// LP: handles to pointers
 	collection_definition *collection;
-	void *shading_tables;
+	byte *shading_tables;
 	
-#ifdef mac
-	int16 unused[2];
-#endif
+	// int16 unused[2];
 };
+const int SIZEOF_collection_header = 32;
 
 /* ---------- globals */
 

@@ -956,9 +956,10 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	TMgr.TransferMode = RenderPolygon.transfer_mode;
 	TMgr.TransferData = RenderPolygon.transfer_data;
 	TMgr.IsShadeless = (RenderPolygon.flags&_SHADELESS_BIT) != 0;
+	TMgr.TextureType = OGL_Txtr_Wall;
 	
 	// Use that texture
-	if (!TMgr.Setup(OGL_Txtr_Wall)) return false;
+	if (!TMgr.Setup()) return false;
 			
 	// The currently-used surface-coordinate object
 	SurfaceCoords* SCPtr;
@@ -1591,9 +1592,10 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	TMgr.TransferData = RenderPolygon.transfer_data;
 	TMgr.IsShadeless = (RenderPolygon.flags&_SHADELESS_BIT) != 0;
 	TMgr.Landscape_AspRatExp = LandOpts->OGL_AspRatExp;
+	TMgr.TextureType = OGL_Txtr_Landscape;
 	
 	// Use that texture
-	if (!TMgr.Setup(OGL_Txtr_Landscape)) return false;
+	if (!TMgr.Setup()) return false;
 	
 	// Storage of intermediate results for mass render
 	ExtendedVertexData ExtendedVertexList[MAXIMUM_VERTICES_PER_SCREEN_POLYGON];
@@ -1687,11 +1689,27 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	TMgr.TransferData = RenderRectangle.transfer_data;
 	TMgr.IsShadeless = (RenderRectangle.flags&_SHADELESS_BIT) != 0;
 	
-	// Use that texture
-	if (!TMgr.Setup(OGL_Txtr_Inhabitant,OGL_Txtr_WeaponsInHand)) return true;
+	// Is this an inhabitant or a weapons-in-hand texture?
+	// Test by using the distance away from the viewpoint
+	bool IsInhabitant;
+	bool IsWeaponsInHand;
+	double RayDistance = double(RenderRectangle.depth);
+	if (RayDistance > 0)
+	{
+		IsInhabitant = true;
+		IsWeaponsInHand = false;
+		TMgr.TextureType = OGL_Txtr_Inhabitant;
+	}
+	else if (RayDistance == 0)
+	{
+		IsInhabitant = false;
+		IsWeaponsInHand = true;
+		TMgr.TextureType = OGL_Txtr_WeaponsInHand;
+	}
+	else return true;
 	
-	bool IsInhabitant = TMgr.GetTextureType() == OGL_Txtr_Inhabitant;
-	bool IsWeaponsInHand = TMgr.GetTextureType() == OGL_Txtr_WeaponsInHand;
+	// Use that texture
+	if (!TMgr.Setup()) return true;
 	
 	// Find texture coordinates
 	ExtendedVertexData ExtendedVertexList[4];
@@ -1703,9 +1721,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	BottomRight.x = MIN(RenderRectangle.x1,RenderRectangle.clip_right);
 	BottomRight.y = MIN(RenderRectangle.y1,RenderRectangle.clip_bottom);
 	
-	double RayDistance = double(RenderRectangle.depth);
-	
-	if (IsInhabitant && RayDistance > 0)
+	if (IsInhabitant)
 	{
 		// OpenGL eye coordinates
 		GLdouble VertexRay[3];
@@ -1714,7 +1730,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		Screen2Ray(BottomRight,VertexRay);
 		VecScalarMult(VertexRay,RayDistance,ExtendedVertexList[2].Vertex);
 	}
-	else if (IsWeaponsInHand && RayDistance == 0)
+	else if (IsWeaponsInHand)
 	{
 		// Simple adjustment
 		AdjustPoint(TopLeft);

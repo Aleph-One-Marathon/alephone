@@ -84,6 +84,12 @@ Aug 12, 2000 (Loren Petrich):
 
 Aug 26, 2000 (Loren Petrich):
 	Moved get_default_sounds_spec() to preprocess_map_mac.c
+
+Sep 2, 2000 (Loren Petrich):
+	Added unpacking of the sound header and also
+	generalized the sound-data size from (static ) NUMBER_OF_SOUND_DEFINITIONS
+	to (per-file) number_of_sound_definitions -- also updated _sm_globals when
+	reading in a file, since the definition pointer and count will vary.
 */
 
 /*
@@ -108,6 +114,7 @@ shortening radii on low-volume ambient sound sorces would be a good idea
 #include "mysound.h"
 #include "byte_swapping.h"
 #include "FileHandler.h"
+#include "Packing.h"
 
 #include <string.h>
 
@@ -263,7 +270,7 @@ static void update_ambient_sound_sources(void);
 struct sound_definition *get_sound_definition(
 	const short sound_index)
 {
-	return GetMemberWithBounds(_sm_globals->base_sound_definitions,sound_index,NUMBER_OF_SOUND_DEFINITIONS);
+	return GetMemberWithBounds(_sm_globals->base_sound_definitions,sound_index,number_of_sound_definitions);
 }
 
 struct ambient_sound_definition *get_ambient_sound_definition(
@@ -284,24 +291,11 @@ struct sound_behavior_definition *get_sound_behavior_definition(
 	return GetMemberWithBounds(sound_behavior_definitions,sound_behavior_index,NUMBER_OF_SOUND_BEHAVIOR_DEFINITIONS);
 }
 
-/*
-#ifdef DEBUG
-struct sound_definition *get_sound_definition(short sound_index);
-struct ambient_sound_definition *get_ambient_sound_definition(short ambient_sound_index);
-struct random_sound_definition *get_random_sound_definition(short random_sound_index);
-struct sound_behavior_definition *get_sound_behavior_definition(short sound_behavior_index);
-#else
-#define get_sound_definition(i) (_sm_globals->base_sound_definitions+(i))
-#define get_ambient_sound_definition(i) (ambient_sound_definitions+(i))
-#define get_random_sound_definition(i) (random_sound_definitions+(i))
-#define get_sound_behavior_definition(i) (sound_behavior_definitions+(i))
-#endif
-*/
 
 /* ---------- machine-specific code */
 
 #if defined(mac)
-#include "sound_macintosh.c"
+#include "sound_macintosh.cpp"
 #elif defined(SDL)
 #include "sound_sdl.cpp"
 #endif
@@ -313,16 +307,150 @@ void initialize_sound_manager(
 {
 	_sm_globals= new sound_manager_globals;
 	_sm_parameters= new sound_manager_parameters;
-	sound_definitions= new sound_definition[NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS];
-	assert(_sm_globals && _sm_parameters && sound_definitions);
+	// sound_definitions= new sound_definition[NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS];
+	assert(_sm_globals && _sm_parameters);
+	// assert(_sm_globals && _sm_parameters && sound_definitions);
 
 	obj_clear(*_sm_globals);
 	obj_clear(*_sm_parameters);
-	objlist_clear(sound_definitions, NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS);
+	// objlist_clear(sound_definitions, NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS);
 	
 	initialize_machine_sound_manager(parameters);
 	
 	return;
+}
+
+bool open_sound_file(FileSpecifier& File)
+{
+	// LP: rewrote the whole g*dd*mn thing
+	if (!_sm_globals) return false;
+	// if (!(sound_definitions && _sm_globals)) return false;
+	
+	if (!File.Open(SoundFile)) return false;
+	
+	// Read the header:
+	
+	uint8 HeaderBuffer[SIZEOF_sound_file_header];
+	struct sound_file_header header;
+	if (!SoundFile.Read(SIZEOF_sound_file_header,HeaderBuffer))
+	{
+		SoundFile.Close();
+		return false;
+	}
+	
+	// Unpack it
+	uint8 *S = HeaderBuffer;
+	
+	StreamToValue(S,header.version);
+	StreamToValue(S,header.tag);
+	StreamToValue(S,header.source_count);
+	StreamToValue(S,header.sound_count);
+	
+	S += 124*2;
+
+	assert((S - HeaderBuffer) == SIZEOF_sound_file_header);
+	
+	if (header.version!=SOUND_FILE_VERSION ||
+		header.tag!=SOUND_FILE_TAG ||
+		header.sound_count < 0 ||
+		header.source_count < 0)
+	{
+		SoundFile.Close();
+		return false;
+	}
+	
+	/*
+	struct sound_file_header header;
+	if (!SoundFile.ReadObject(header))
+	{
+		SoundFile.Close();
+		return false;
+	}
+
+	if (header.version!=SOUND_FILE_VERSION ||
+		header.tag!=SOUND_FILE_TAG ||
+		header.sound_count!=NUMBER_OF_SOUND_DEFINITIONS ||
+		header.source_count!=NUMBER_OF_SOUND_SOURCES)
+	{
+		SoundFile.Close();
+		return false;
+	}
+	*/
+	
+	long DefsBufferSize = header.source_count*header.sound_count*SIZEOF_sound_definition;
+	uint8 *DefsBuffer = new uint8[DefsBufferSize];
+	assert(DefsBuffer);
+	if (!SoundFile.Read(DefsBufferSize,DefsBuffer))
+	{
+		SoundFile.Close();
+		return false;
+	}
+	
+	// Unlike the buffer, all sound sources must be present here
+	if (sound_definitions) delete []sound_definitions;
+	number_of_sound_definitions = header.sound_count;
+	int TotalSoundDefs = NUMBER_OF_SOUND_SOURCES*number_of_sound_definitions;
+	sound_definitions = new sound_definition[TotalSoundDefs];
+	assert(sound_definitions);
+	
+	// Set the sounds to silence (which unloaded ones will be)
+	objlist_clear(sound_definitions,TotalSoundDefs);
+	for (int k=0; k<TotalSoundDefs; k++)
+		sound_definitions[k].sound_code = NONE;
+	
+	// Unpack them!
+	S = DefsBuffer;
+	int Count = PIN(header.source_count,0,NUMBER_OF_SOUND_SOURCES)*number_of_sound_definitions;
+	
+	sound_definition* ObjPtr = sound_definitions;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->sound_code);
+		
+		StreamToValue(S,ObjPtr->behavior_index);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->chance);
+		
+		StreamToValue(S,ObjPtr->low_pitch);
+		StreamToValue(S,ObjPtr->high_pitch);
+		
+		StreamToValue(S,ObjPtr->permutations);
+		StreamToValue(S,ObjPtr->permutations_played);
+		StreamToValue(S,ObjPtr->group_offset);
+		StreamToValue(S,ObjPtr->single_length);
+		StreamToValue(S,ObjPtr->total_length);
+		StreamToList(S,ObjPtr->sound_offsets,MAXIMUM_PERMUTATIONS_PER_SOUND);
+		
+		StreamToValue(S,ObjPtr->last_played);
+		
+		S += 4*2;
+	}
+	
+	assert((S - DefsBuffer) == Count*SIZEOF_sound_definition);
+	
+	delete []DefsBuffer;
+	
+	/*
+	if (!SoundFile.ReadObjectList(NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS,sound_definitions))
+	{
+		SoundFile.Close();
+		return false;
+	}
+	*/
+	
+	// LP: code copied from sound_macintosh.cpp;
+	// keeps the _sm_globals values in sync with what had been most recently read.
+	_sm_globals->sound_source= (_sm_parameters->flags&_16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
+	_sm_globals->base_sound_definitions= sound_definitions + _sm_globals->sound_source*number_of_sound_definitions;
+	
+	return true;
+}
+
+static void close_sound_file(void)
+{
+	SoundFile.Close();
 }
 
 void load_sound(
@@ -388,7 +516,7 @@ void direct_play_sound(
 {
 	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
 		or our volume is zero, our we have no sound channels */
-	if (sound_index!=NONE && _sm_active && sound_index<NUMBER_OF_SOUND_DEFINITIONS &&
+	if (sound_index!=NONE && _sm_active && sound_index<number_of_sound_definitions &&
 		_sm_parameters->volume>0 && _sm_globals->total_channel_count>0)
 	{
 		struct sound_variables variables;
@@ -444,7 +572,7 @@ void _play_sound(
 {
 	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
 		or our volume is zero, our we have no sound channels */
-	if (sound_index!=NONE && _sm_active && sound_index<NUMBER_OF_SOUND_DEFINITIONS &&
+	if (sound_index!=NONE && _sm_active && sound_index<number_of_sound_definitions &&
 		_sm_parameters->volume>0 && _sm_globals->total_channel_count>0)
 	{
 		struct sound_variables variables;
@@ -643,59 +771,7 @@ short random_sound_index_to_sound_index(
 }
 
 /* ---------- private code */
-/*
-#ifdef DEBUG
-// LP: "static" removed
-struct sound_definition *get_sound_definition(
-	short sound_index)
-{
-	struct sound_definition *definition= _sm_globals->base_sound_definitions + sound_index;
-	
-	// LP change: idiot-proofing
-	if (!(sound_index>=0 && sound_index<NUMBER_OF_SOUND_DEFINITIONS)) return NULL;
-	 vassert(sound_index>=0 && sound_index<NUMBER_OF_SOUND_DEFINITIONS,
-		csprintf(temporary, "sound #%d is out of range [0,#%d)", sound_index, NUMBER_OF_SOUND_DEFINITIONS));
-	return definition;
-}
 
-// LP: "static" removed
-// LP change: if invalid, return NULL
-struct ambient_sound_definition *get_ambient_sound_definition(
-	short ambient_sound_index)
-{
-	// LP change: idiot-proofing
-	if (!(ambient_sound_index>=0 && ambient_sound_index<NUMBER_OF_AMBIENT_SOUND_DEFINITIONS)) return NULL;
-	vassert(ambient_sound_index>=0 && ambient_sound_index<NUMBER_OF_AMBIENT_SOUND_DEFINITIONS,
-		csprintf(temporary, "ambient sound #%d is out of range [0,#%d)", ambient_sound_index, NUMBER_OF_AMBIENT_SOUND_DEFINITIONS));
-	
-	return ambient_sound_definitions + ambient_sound_index;
-}
-
-// LP: "static" removed
-// LP change: if invalid, return NULL
-struct random_sound_definition *get_random_sound_definition(
-	short random_sound_index)
-{
-	// LP change: idiot-proofing
-	if (!(random_sound_index>=0 && random_sound_index<NUMBER_OF_RANDOM_SOUND_DEFINITIONS)) return NULL;
-	vassert(random_sound_index>=0 && random_sound_index<NUMBER_OF_RANDOM_SOUND_DEFINITIONS,
-		csprintf(temporary, "random sound #%d is out of range [0,#%d)", random_sound_index, NUMBER_OF_RANDOM_SOUND_DEFINITIONS));
-	
-	return random_sound_definitions + random_sound_index;
-}
-
-// LP: "static" removed
-struct sound_behavior_definition *get_sound_behavior_definition(
-	short sound_behavior_index)
-{
-	// LP change: idiot-proofing
-	if (!(sound_behavior_index>=0 && sound_behavior_index<NUMBER_OF_SOUND_BEHAVIOR_DEFINITIONS)) return NULL;
-	vassert(sound_behavior_index>=0 && sound_behavior_index<NUMBER_OF_SOUND_BEHAVIOR_DEFINITIONS,
-		csprintf(temporary, "sound behavior #%d is out of range [0,#%d)", sound_behavior_index, NUMBER_OF_SOUND_BEHAVIOR_DEFINITIONS));
-	return sound_behavior_definitions + sound_behavior_index;
-}
-#endif
-*/
 
 static void unlock_locked_sounds(
 	void)
@@ -856,7 +932,7 @@ static short _release_least_useful_sound(
 	struct sound_definition *least_used_definition= (struct sound_definition *) NULL;
 	struct sound_definition *definition;
 
-	for (sound_index= 0, definition= _sm_globals->base_sound_definitions; sound_index<NUMBER_OF_SOUND_DEFINITIONS; ++sound_index, ++definition)
+	for (sound_index= 0, definition= _sm_globals->base_sound_definitions; sound_index<number_of_sound_definitions; ++sound_index, ++definition)
 	{
 		// if (definition->handle && (!least_used_definition || least_used_definition->last_played>definition->last_played))
 		if (definition->ptr && (!least_used_definition || least_used_definition->last_played>definition->last_played))

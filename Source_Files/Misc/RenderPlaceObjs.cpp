@@ -7,6 +7,9 @@
 	Contains the placement of inhabitant objects into the sorted polygons; from render.c
 	
 	Made [view_data *view] a member and removed it as an argument
+
+Sep 2, 2000 (Loren Petrich):
+	Added some idiot-proofing, since the shapes accessor now returns NULL for nonexistent bitmaps
 */
 
 #include "cseries.h"
@@ -148,7 +151,9 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			shape_information= rescale_shape_information(
 				extended_get_shape_information(data.collection_code, data.low_level_shape_index),
 				&scaled_shape_information, GET_OBJECT_SCALE_FLAGS(object));
-
+			// Nonexistent frame: skip
+			if (!shape_information) return NULL;
+			
 			/* if the caller wants it, give him the left and right extents of this shape */
 			if (base_nodes)
 			{
@@ -233,7 +238,10 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				
 				extended_get_shape_bitmap_and_shading_table(data.collection_code, data.low_level_shape_index,
 					&render_object->rectangle.texture, &render_object->rectangle.shading_tables, view->shading_mode);
-		
+				
+				// LP: not sure how to handle nonexistent sprites here
+				assert(render_object->rectangle.texture);
+				
 				// LP change: for the convenience of the OpenGL renderer
 				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,data.low_level_shape_index);
 				
@@ -706,6 +714,9 @@ shape_information_data *RenderPlaceObjsClass::rescale_shape_information(
 	shape_information_data *scaled,
 	uint16 flags)
 {
+	// Idiot-proofing
+	if (!unscaled) return NULL;
+
 	if (flags)
 	{
 		world_distance *scaled_values= &scaled->world_left;

@@ -13,6 +13,8 @@
 #include "confpaths.h"
 #endif
 
+#include <exception>
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -102,11 +104,26 @@ int main(int argc, char **argv)
 		argc--; argv++;	
 	}
 
-	// Initialize everything
-	initialize_application();
+	try {
 
-	// Run the main loop
-	main_event_loop();
+		// Initialize everything
+		initialize_application();
+
+		// Run the main loop
+		main_event_loop();
+
+	} catch (exception &e) {
+
+		fprintf(stderr, "Unhandled exception: %s\n", e.what());
+		exit(1);
+
+	} catch (...) {
+
+		fprintf(stderr, "Unknown exception\n");
+		exit(1);
+
+	}
+
 	return 0;
 }
 

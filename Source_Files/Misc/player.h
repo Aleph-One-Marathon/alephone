@@ -30,6 +30,9 @@ May 23, 2000 (Loren Petrich):
 
 July 1, 2000 (Loren Petrich):
 	Made player-data accessor inline; added map.h to define some stuff for it
+
+Aug 31, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 // LP additions: stuff that this file needs
@@ -221,7 +224,7 @@ struct physics_variables
 	fixed ceiling_height; /* same as above, but ceiling height */
 	fixed media_height; /* media height */
 
-	short action; /* what the playerÕs legs are doing, basically */
+	int16 action; /* what the playerÕs legs are doing, basically */
 	uint16 old_flags, flags; /* stuff like _RECENTERING */
 };
 
@@ -267,55 +270,55 @@ enum { /* Player flags */
 
 struct damage_record
 {
-	long damage;
-	short kills;
+	int32 damage;
+	int16 kills;
 };
 
 struct player_data
 {
-	short identifier;
-	short flags; /* [unused.1] [dead.1] [zombie.1] [totally_dead.1] [map.1] [teleporting.1] [unused.10] */
+	int16 identifier;
+	int16 flags; /* [unused.1] [dead.1] [zombie.1] [totally_dead.1] [map.1] [teleporting.1] [unused.10] */
 
-	short color;
-	short team;
+	int16 color;
+	int16 team;
 	char name[MAXIMUM_PLAYER_NAME_LENGTH+1];
 	
 	/* shadowed from physics_variables structure below and the playerÕs object (read-only) */
 	world_point3d location;
 	world_point3d camera_location; // beginning of fake world_location3d structure
-	short camera_polygon_index;
+	int16 camera_polygon_index;
 	angle facing, elevation;
-	short supporting_polygon_index; /* what polygon is actually supporting our weight */
-	short last_supporting_polygon_index;
+	int16 supporting_polygon_index; /* what polygon is actually supporting our weight */
+	int16 last_supporting_polygon_index;
 
 	/* suit energy shadows vitality in the playerÕs monster slot */
-	short suit_energy, suit_oxygen;
+	int16 suit_energy, suit_oxygen;
 	
-	short monster_index; /* this playerÕs entry in the monster list */
-	short object_index; /* monster->object_index */
+	int16 monster_index; /* this playerÕs entry in the monster list */
+	int16 object_index; /* monster->object_index */
 	
 	/* Reset by initialize_player_weapons */
-	short weapon_intensity_decay; /* zero is idle intensity */
+	int16 weapon_intensity_decay; /* zero is idle intensity */
 	fixed weapon_intensity;
 
 	/* powerups */
-	short invisibility_duration;
-	short invincibility_duration;
-	short infravision_duration;
-	short extravision_duration;
+	int16 invisibility_duration;
+	int16 invincibility_duration;
+	int16 infravision_duration;
+	int16 extravision_duration;
 
 	/* teleporting */
-	short delay_before_teleport; /* This is only valid for interlevel teleports (teleporting_destination is a negative number) */
-	short teleporting_phase; /* NONE means no teleporting, otherwise [0,TELEPORTING_PHASE) */
-	short teleporting_destination; /* level number or NONE if intralevel transporter */
-	short interlevel_teleport_phase; /* This is for the other players when someone else initiates the teleport */
+	int16 delay_before_teleport; /* This is only valid for interlevel teleports (teleporting_destination is a negative number) */
+	int16 teleporting_phase; /* NONE means no teleporting, otherwise [0,TELEPORTING_PHASE) */
+	int16 teleporting_destination; /* level number or NONE if intralevel transporter */
+	int16 interlevel_teleport_phase; /* This is for the other players when someone else initiates the teleport */
 
 	/* there is no state information associated with items; each item slot is only a count */
-	short items[NUMBER_OF_ITEMS];
+	int16 items[NUMBER_OF_ITEMS];
 
 	/* Used by the game window code to keep track of the interface state. */
-	short interface_flags;
-	short interface_decay;
+	int16 interface_flags;
+	int16 interface_decay;
 
 	struct physics_variables variables;
 
@@ -323,16 +326,20 @@ struct player_data
 	struct damage_record damage_taken[MAXIMUM_NUMBER_OF_PLAYERS];
 	struct damage_record monster_damage_taken, monster_damage_given;
 
-	short reincarnation_delay;
+	int16 reincarnation_delay;
 
-	short control_panel_side_index; // NONE, or the side index of a control panel the user is using that requires passage of time
+	int16 control_panel_side_index; // NONE, or the side index of a control panel the user is using that requires passage of time
 	
-	long ticks_at_last_successful_save;
+	int32 ticks_at_last_successful_save;
 
-	long netgame_parameters[2];
+	int32 netgame_parameters[2];
 	
-	short unused[256];
+	int16 unused[256];
 };
+
+const int SIZEOF_player_data = 930;
+
+const int SIZEOF_physics_constants = 104;
 
 /* ---------- globals */
 
@@ -360,7 +367,7 @@ void update_players(void); /* assumes ¶t==1 tick */
 
 void walk_player_list(void);
 
-void queue_action_flags(short player_index, long *action_flags, short count);
+void queue_action_flags(short player_index, int32 *action_flags, short count);
 long dequeue_action_flags(short player_index);
 short get_action_queue_size(short player_index);
 
@@ -420,8 +427,15 @@ void get_binocular_vision_origins(short player_index, world_point3d *left, short
 
 fixed get_player_forward_velocity_scale(short player_index);
 
-// LP addition: get physics-definition size and number of physics models (restricted sense)
-int get_physics_definition_size();
+// LP: to pack and unpack this data;
+// these do not make the definitions visible to the outside world
+
+uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, int Count);
+uint8 *pack_player_data(uint8 *Stream, player_data *Objects, int Count);
+uint8 *unpack_physics_constants(uint8 *Stream, int Count);
+uint8 *pack_physics_constants(uint8 *Stream, int Count);
+
+// LP addition: get number of physics models (restricted sense)
 int get_number_of_physics_models();
 
 // XML-parser support

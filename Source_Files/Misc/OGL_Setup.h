@@ -25,6 +25,10 @@
 	
 	Added support for see-through liquids as an OpenGL parameter.
 	Also added an opacity-value shift for making dark areas more visible
+
+Sep 9, 2000:
+
+	Added flag for AppleGL texturing fix
 */
 
 #include "shape_descriptors.h"
@@ -42,7 +46,9 @@ bool OGL_IsPresent();
 // (they are in the preferences data)
 
 // There are separate texturing options for each kind of texture,
-// as listed below
+// as listed below; this is so that one can degrade texture quality independently,
+// and have (say) high-quality walls and weapons in hand, medium-quality inhabitant sprites,
+// and low-quality landscapes.
 enum
 {
 	OGL_Txtr_Wall,
@@ -101,6 +107,7 @@ enum
 	OGL_Flag_Fader		= 0x0080,	// Whether to do the fader effects in OpenGL
 	OGL_Flag_LiqSeeThru	= 0x0100,	// Whether the liquids can be seen through
 	OGL_Flag_Map		= 0x0200,	// Whether to do the overhead map with OpenGL
+	OGL_Flag_TextureFix	= 0x0400,	// Whether to apply a texture fix for old Apple OpenGL
 };
 
 struct OGL_ConfigureData

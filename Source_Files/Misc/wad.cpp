@@ -45,7 +45,6 @@ Aug 25, 2000 (Loren Petrich):
 // Note that level_transition_malloc is specific to marathon...
 
 #include "cseries.h"
-#include "byte_swapping.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -57,6 +56,13 @@ Aug 25, 2000 (Loren Petrich):
 #include "interface.h" // for strERRORS
 
 #include "FileHandler.h"
+#include "Packing.h"
+
+#ifdef SDL
+#include <SDL_endian.h>
+#else
+#define SDL_SwapBE32(x) (x)
+#endif
 
 // Formerly in portable_files.h
 #ifdef mac
@@ -77,20 +83,6 @@ struct wad_internal_data {
 	FileDesc files[MAXIMUM_UNION_WADFILES];
 };
 */
-
-/* ---------------- definitions for byte-swapping */
-static _bs_field _bs_wad_header[] = { // 128 bytes
-	_2byte, _2byte, MAXIMUM_WADFILE_NAME_LENGTH, _4byte, _4byte,
-	_2byte, _2byte, _2byte, _2byte, _4byte, 20*sizeof(int16)
-};
-
-static _bs_field _bs_directory_entry[] = { // 10 bytes
-	_4byte, _4byte, _2byte
-};
-
-static _bs_field _bs_entry_header[] = { // 16 bytes
-	_4byte, _4byte, _4byte, _4byte
-};
 
 /* ---------------- private global data */
 struct wad_internal_data *internal_data[MAXIMUM_OPEN_WADFILES]= {NULL, NULL, NULL};
@@ -117,7 +109,20 @@ static bool size_of_indexed_wad(OpenedFile& OFile, struct wad_header *header, sh
 static bool write_to_file(OpenedFile& OFile, long offset, void *data, long length);
 static bool read_from_file(OpenedFile& OFile, long offset, void *data, long length);
 
+// LP: routines for packing and unpacking the data from streams of bytes
+static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count);
+static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, int Count);
+static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count);
+static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count);
+static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count);
+static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count);
+static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count);
+static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count);
+static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count);
+static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, int Count);
+
 /* ------------------ Code Begins */
+
 bool read_wad_header(
 	OpenedFile& OFile, 
 	struct wad_header *header)
@@ -125,16 +130,11 @@ bool read_wad_header(
 	bool union_file= false;
 	int error = 0;
 	bool success= true;
-
-	// LP: verify sizes of on-disk structures
-	assert(sizeof(wad_header) == SIZEOF_wad_header);
-	assert(sizeof(old_directory_entry) == SIZEOF_old_directory_entry);
-	assert(sizeof(old_entry_header) == SIZEOF_old_entry_header);
-	assert(sizeof(entry_header) == SIZEOF_entry_header);
 	
-	read_from_file(OFile, 0, header, sizeof(wad_header));
-	byte_swap_object(*header, _bs_wad_header);
-
+	uint8 buffer[SIZEOF_wad_header];
+	read_from_file(OFile, 0, buffer, SIZEOF_wad_header);
+	unpack_wad_header(buffer,header,1);
+	
 	if(error)
 	{
 		set_game_error(systemError, error);
@@ -379,15 +379,9 @@ bool write_wad_header(
 {
 	bool success= true;
 
-	// LP: verify sizes:
-	assert(sizeof(wad_header) == SIZEOF_wad_header);
-	assert(sizeof(old_directory_entry) == SIZEOF_old_directory_entry);
-	assert(sizeof(old_entry_header) == SIZEOF_old_entry_header);
-	assert(sizeof(entry_header) == SIZEOF_entry_header);
-	
-	wad_header tmp = *header;
-	byte_swap_object(tmp, _bs_wad_header);
-	write_to_file(OFile, 0, &tmp, sizeof(wad_header));
+	uint8 buffer[SIZEOF_wad_header];
+	pack_wad_header(buffer,header,1);
+	write_to_file(OFile, 0, buffer, SIZEOF_wad_header);
 
 	return success;
 }
@@ -467,7 +461,19 @@ void set_indexed_directory_offset_and_length(
 		entry->index= wad_index;
 	}
 	
-	byte_swap_data(data_ptr, header->version>=WADFILE_SUPPORTS_OVERLAYS ? SIZEOF_old_directory_entry : SIZEOF_directory_entry, 1, _bs_directory_entry);
+	// LP: should be correct for packing also
+	if (header->version>=WADFILE_SUPPORTS_OVERLAYS)
+	{
+		uint8 buffer[SIZEOF_old_directory_entry];
+		memcpy(buffer,data_ptr,SIZEOF_old_directory_entry);
+		unpack_old_directory_entry(buffer,(old_directory_entry *)data_ptr,1);
+	}
+	else
+	{
+		uint8 buffer[SIZEOF_directory_entry];
+		memcpy(buffer,data_ptr,SIZEOF_directory_entry);
+		unpack_directory_entry(buffer,(directory_entry *)data_ptr,1);
+	}
 }
 
 // Returns raw, unswapped directory data
@@ -653,8 +659,19 @@ bool write_wad(
 		}
 
 		/* Write this to the file... */
-		byte_swap_data(&header, entry_header_length, 1, _bs_entry_header);
-		if (write_to_file(OFile, offset, &header, entry_header_length))
+		uint8 buffer[MAX(SIZEOF_old_entry_header,SIZEOF_entry_header)];
+		switch (entry_header_length)
+		{
+		case SIZEOF_old_entry_header:
+			pack_old_entry_header(buffer,(old_entry_header *)&header,1);
+			break;
+		case SIZEOF_entry_header:
+			pack_entry_header(buffer,&header,1);
+			break;
+		default:
+			vassert(false,csprintf(temporary,"Unrecognized entry-header length: %d",entry_header_length));
+		}
+		if (write_to_file(OFile, offset, buffer, entry_header_length));
 		{
 			offset+= entry_header_length;
 		
@@ -1014,17 +1031,28 @@ static bool read_indexed_directory_data(
 		offset= calculate_directory_offset(header, index);
 
 		/* Read it! */
-		assert(base_entry_size<=sizeof(struct directory_entry));
-		error= read_from_file(OFile, offset, entry, base_entry_size);
-		byte_swap_data(entry, base_entry_size, 1, _bs_directory_entry);
-
+		assert(base_entry_size<=SIZEOF_directory_entry);
+		
+		uint8 buffer[MAX(SIZEOF_old_directory_entry,SIZEOF_directory_entry)];
+		error= read_from_file(OFile, offset, buffer, base_entry_size);
+		switch (base_entry_size)
+		{
+		case SIZEOF_old_directory_entry:
+			unpack_old_directory_entry(buffer,(old_directory_entry *)entry,1);
+			break;
+		case SIZEOF_directory_entry:
+			unpack_directory_entry(buffer,entry,1);
+			break;
+		default:
+			vassert(false,csprintf(temporary,"Unrecognized base-entry length: %d",base_entry_size));
+		}
 	} else {
 		short directory_index;
 
 		/* Pin it, so we can try to read future file formats */
-		if(base_entry_size>sizeof(struct directory_entry)) 
+		if(base_entry_size>SIZEOF_directory_entry) 
 		{
-			base_entry_size= sizeof(struct directory_entry);
+			base_entry_size= SIZEOF_directory_entry;
 		}
 	
 		/* We have to loop.. */
@@ -1038,8 +1066,19 @@ static bool read_indexed_directory_data(
 			offset= calculate_directory_offset(header, test_index);
 
 			/* Read it.. */
-			error= read_from_file(OFile, offset, entry, base_entry_size);
-			byte_swap_data(entry, base_entry_size, 1, _bs_directory_entry);
+			uint8 buffer[MAX(SIZEOF_old_directory_entry,SIZEOF_directory_entry)];
+			error= read_from_file(OFile, offset, buffer, base_entry_size);
+			switch (base_entry_size)
+			{
+			case SIZEOF_old_directory_entry:
+				unpack_old_directory_entry(buffer,(old_directory_entry *)entry,1);
+				break;
+			case SIZEOF_directory_entry:
+				unpack_directory_entry(buffer,entry,1);
+				break;
+			default:
+				vassert(false,csprintf(temporary,"Unrecognized base-entry length: %d",base_entry_size));
+			}
 			if(entry->index==index) 
 			{
 				break; /* Got it! */
@@ -1474,4 +1513,184 @@ static bool read_from_file(
 	
 	return err;
 	*/
+}
+
+static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
+{
+	uint8* S = Stream;
+	wad_header* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->version);
+		StreamToValue(S,ObjPtr->data_version);
+		StreamToBytes(S,ObjPtr->file_name,MAXIMUM_WADFILE_NAME_LENGTH);
+		StreamToValue(S,ObjPtr->checksum);
+		StreamToValue(S,ObjPtr->directory_offset);
+		StreamToValue(S,ObjPtr->wad_count);
+		StreamToValue(S,ObjPtr->application_specific_directory_data_size);
+		StreamToValue(S,ObjPtr->entry_header_size);
+		StreamToValue(S,ObjPtr->directory_entry_base_size);
+		StreamToValue(S,ObjPtr->parent_checksum);
+		S += 2*20;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_wad_header);
+	return S;
+}
+
+static uint8 *pack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
+{
+	uint8* S = Stream;
+	wad_header* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->version);
+		ValueToStream(S,ObjPtr->data_version);
+		BytesToStream(S,ObjPtr->file_name,MAXIMUM_WADFILE_NAME_LENGTH);
+		ValueToStream(S,ObjPtr->checksum);
+		ValueToStream(S,ObjPtr->directory_offset);
+		ValueToStream(S,ObjPtr->wad_count);
+		ValueToStream(S,ObjPtr->application_specific_directory_data_size);
+		ValueToStream(S,ObjPtr->entry_header_size);
+		ValueToStream(S,ObjPtr->directory_entry_base_size);
+		ValueToStream(S,ObjPtr->parent_checksum);
+		S += 2*20;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_wad_header);
+	return S;
+}
+
+
+static uint8 *unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count)
+{
+	uint8* S = Stream;
+	old_directory_entry* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->offset_to_start);
+		StreamToValue(S,ObjPtr->length);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_old_directory_entry);
+	return S;
+}
+
+static uint8 *pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count)
+{
+	uint8* S = Stream;
+	old_directory_entry* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->offset_to_start);
+		ValueToStream(S,ObjPtr->length);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_old_directory_entry);
+	return S;
+}
+
+
+static uint8 *unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count)
+{
+	uint8* S = Stream;
+	directory_entry* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->offset_to_start);
+		StreamToValue(S,ObjPtr->length);
+		StreamToValue(S,ObjPtr->index);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_directory_entry);
+	return S;
+}
+
+static uint8 *pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count)
+{
+	uint8* S = Stream;
+	directory_entry* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->offset_to_start);
+		ValueToStream(S,ObjPtr->length);
+		ValueToStream(S,ObjPtr->index);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_directory_entry);
+	return S;
+}
+
+
+static uint8 *unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count)
+{
+	uint8* S = Stream;
+	old_entry_header* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->tag);
+		StreamToValue(S,ObjPtr->next_offset);
+		StreamToValue(S,ObjPtr->length);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_old_entry_header);
+	return S;
+}
+
+static uint8 *pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count)
+{
+	uint8* S = Stream;
+	old_entry_header* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->tag);
+		ValueToStream(S,ObjPtr->next_offset);
+		ValueToStream(S,ObjPtr->length);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_old_entry_header);
+	return S;
+}
+
+
+static uint8 *unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
+{
+	uint8* S = Stream;
+	entry_header* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->tag);
+		StreamToValue(S,ObjPtr->next_offset);
+		StreamToValue(S,ObjPtr->length);
+		StreamToValue(S,ObjPtr->offset);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_entry_header);
+	return S;
+}
+
+static uint8 *pack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
+{
+	uint8* S = Stream;
+	entry_header* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->tag);
+		ValueToStream(S,ObjPtr->next_offset);
+		ValueToStream(S,ObjPtr->length);
+		ValueToStream(S,ObjPtr->offset);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_entry_header);
+	return S;
 }

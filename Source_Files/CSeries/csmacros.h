@@ -9,6 +9,8 @@ Aug 27, 2000 (Loren Petrich):
 #ifndef _CSERIES_MACROS_
 #define _CSERIES_MACROS_
 
+#include <string.h>
+
 #define FLOOR(value,floor) ((value)<(floor) ? (floor) : (value))
 #define CEILING(value,ceiling) ((value)>(ceiling) ? (ceiling) : (value))
 
@@ -34,7 +36,7 @@ Aug 27, 2000 (Loren Petrich):
 #define SET_FLAG16(flags,bit,value) ((void)((value) ? ((flags)|=FLAG16(bit)) : ((flags)&=~FLAG16(bit))))
 
 // LP addition (Mar 2, 2000): some more generic routines for flags
-#define TEST_FLAG(obj,flag) (obj&flag)
+#define TEST_FLAG(obj,flag) ((obj)&(flag))
 #define SET_FLAG(obj,flag,value) ((void)((value)?((obj)|=(flag)):((obj)&=~(flag))))
 
 /*
@@ -81,6 +83,4 @@ template<class T> void obj_clear(T& object)
 template<class T> void objlist_clear(T* object_list, int num_objects)
 	{objlist_set(object_list, 0, num_objects);}
 
-
 #endif
-

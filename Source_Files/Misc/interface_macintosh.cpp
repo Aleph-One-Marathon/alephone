@@ -98,7 +98,7 @@ short get_level_number_from_user(
 
 	psprintf(ptemporary, "%d", maximum_level_number); 
 	ParamText(ptemporary, "\p", "\p", "\p");
-	SelectDialogItemText(dialog, iLEVEL_NUMBER, 0, SHORT_MAX);
+	SelectDialogItemText(dialog, iLEVEL_NUMBER, 0, SHRT_MAX);
 
 	while(!done)
 	{
@@ -114,7 +114,7 @@ short get_level_number_from_user(
 			case iOK:
 				if(level_number<=0 || level_number>maximum_level_number)
 				{
-					SelectDialogItemText(dialog, iLEVEL_NUMBER, 0, SHORT_MAX);
+					SelectDialogItemText(dialog, iLEVEL_NUMBER, 0, SHRT_MAX);
 					SysBeep(-1);
 				} else {
 					level_number-= 1; /* Make it zero based */

@@ -4,12 +4,9 @@
 
 #define mac
 #define HAVE_OPENGL
+#define BIG_ENDIAN
 #define DEBUG
 #undef ALEPHONE_LITTLE_ENDIAN
-
-// This is better done here than in cstypes.h
-#define LP 1
-#undef CB
 
 #include <Events.h>
 #include <AppleEvents.h>
