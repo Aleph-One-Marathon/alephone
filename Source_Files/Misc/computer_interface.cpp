@@ -1164,6 +1164,7 @@ static void display_picture(
 	short flags)
 {
 #ifdef mac
+	PicHandle picture;
 	LoadedResource PictRsrc;
 #else
 	uint32 picture_size;
