@@ -29,6 +29,7 @@
 #include "sdl_network.h"	// trust me, you don't even want to ask...
 #include "network_private.h"	// for kPROTOCOL_TYPE
 #include "Logging.h"
+#include "preferences.h"
 
 // ZZZ: guarding with MACH since building this in the Carbon version on Mac OS X
 // doesn't like these #includes
@@ -200,7 +201,7 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
     // Bind the endpoint
     InetAddress theDesiredAddress;
     theDesiredAddress.fAddressType	= AF_INET;
-    theDesiredAddress.fPort		= DEFAULT_PORT;
+    theDesiredAddress.fPort		= network_preferences->game_port;
     theDesiredAddress.fHost		= kOTAnyInetAddress;
     obj_clear(theDesiredAddress.fUnused);
 
