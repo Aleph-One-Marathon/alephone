@@ -1,0 +1,70 @@
+RUGBY:
+
+Rules:
+	Take the ball (the red one) to the base of your team.
+
+What still need to be done:
+	Map Editor:
+		Allow choice of team color for a player starting point object, using the index
+		value (map_object in map.h) for the player team color (for
+		get_player_starting_location_and_facing). Team colors defined in player.h.
+		Put the team color into the polygon's permutation, for the polygon type "base"
+		(_polygon_is_base defined in map.h).
+		THERE MUST BE 8 PLAYERS STARTING POINTS ***PER TEAM***!!!
+		Allow the choice (checkbox) for rugby game type for the "entry point types"
+		(defined in map.h) of a map.
+
+To Test:
+	Hold the option key when clicking on "Gather...".
+	Type 819 in the "Point limit" text field.
+	Assuming the ball is not on the hill, take the ball to the hill.
+
+
+
+CAPTURE THE FLAG:
+
+Rules:
+	Take the ball of any other team to the base of your team.
+	If you try to take the ball of your own team, it will come
+	back to your base (unless it's already on the base).
+
+What still need to be done:
+	Map Editor:
+		Implement rugby first.
+		Allow all the ball colors.
+		Allow the choice (checkbox) for Capture the flag game type for the
+		"entry point types" (defined in map.h) of a map.
+	Shapes:
+		Redraw ball so that it changes color based on the color table choosen
+		(the ball color).
+
+To Test:
+	Hold the option key when clicking on "Gather...".
+	Type 819 in the "Flag pulls limit" text field.
+	Assuming the ball is not on the hill, take the ball to the hill.
+	Please note that the default ball color is red, so you should
+	have at least one player in the red team.
+
+
+DEFENSE:
+
+Rules:
+	The slate team (the first possible team color) the the defending team.
+	The goal of all players not in the defending team is to stay on the hill
+	for a specified amount of time.
+
+What still need to be done:
+	Map Editor:
+		Implement rugby and capture the flag first.
+		Allow the choice (checkbox) for rugby game type for the "entry point types"
+		(defined in map.h) of a map.
+
+To Test:
+	Hold the option key when clicking on "Gather...".
+	Type 18 in the "Time On Hill" text field.
+
+Note:
+	In the "Gather..." dialog, choosing either "Time Limit" or "Time On Hill" has
+	exactly the same effect: the game will be *both* limited by the time elapsed
+	since the beginning of the game ("Time Limit") and the time to stay for an
+	attacker on the hill ("Time On Hill").
