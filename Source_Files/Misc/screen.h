@@ -108,8 +108,10 @@ void start_extravision_effect(bool out);
 void render_screen(short ticks_elapsed);
 
 void toggle_overhead_map_display_status(void);
-void zoom_overhead_map_out(void);
-void zoom_overhead_map_in(void);
+
+// Returns whether the size scale had been changed
+bool zoom_overhead_map_out(void);
+bool zoom_overhead_map_in(void);
 
 void enter_screen(void);
 void exit_screen(void);

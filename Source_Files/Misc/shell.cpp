@@ -47,6 +47,8 @@ static void main_event_loop(void);
 extern int process_keyword_key(char key);
 extern void handle_keyword(int type_of_cheat);
 
+static void PlayInterfaceButtonSound(short SoundID);
+
 // Include platform-specific files
 #if defined(mac)
 #include "shell_macintosh.cpp"
@@ -55,3 +57,9 @@ extern void handle_keyword(int type_of_cheat);
 #endif
 
 // LP: the rest of the code has been moved to Jeremy's shell_misc.file.
+
+void PlayInterfaceButtonSound(short SoundID)
+{
+	if (TEST_FLAG(input_preferences->modifiers,_inputmod_use_button_sounds))
+		play_sound(SoundID, (world_location3d *) NULL, NONE);
+}

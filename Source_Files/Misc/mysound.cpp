@@ -329,6 +329,7 @@ inline uint8 SOHashFunc(short Index, short Slot)
 // List of sounds
 
 // Extra formerly-hardcoded sounds and their accessors; this is done for M1 compatibility:
+// Added Ian-Rickard-style interface commands for button actions (map resizing, resolution changes, ...)
 
 static short _Sound_TerminalLogon = _snd_computer_interface_logon;
 static short _Sound_TerminalLogoff = _snd_computer_interface_logout;
@@ -348,6 +349,12 @@ static short _Sound_OxygenWarning = _snd_oxygen_warning;
 
 static short _Sound_AdjustVolume = _snd_adjust_volume;
 
+static short _Sound_ButtonSuccess = _snd_computer_interface_page;
+static short _Sound_ButtonFailure = _snd_absorbed;
+static short _Sound_ButtonInoperative = _snd_cant_toggle_switch;
+static short _Sound_OGL_Reset = _snd_juggernaut_exploding;
+
+
 short Sound_TerminalLogon() {return _Sound_TerminalLogon;}
 short Sound_TerminalLogoff() {return _Sound_TerminalLogoff;}
 short Sound_TerminalPage() {return _Sound_TerminalPage;}
@@ -366,6 +373,10 @@ short Sound_OxygenWarning() {return _Sound_OxygenWarning;}
 
 short Sound_AdjustVolume() {return _Sound_AdjustVolume;}
 
+short Sound_ButtonSuccess() {return _Sound_ButtonSuccess;}
+short Sound_ButtonFailure() {return _Sound_ButtonFailure;}
+short Sound_ButtonInoperative() {return _Sound_ButtonInoperative;}
+short Sound_OGL_Reset() {return _Sound_OGL_Reset;}
 
 /* ---------- machine-specific prototypes */
 
@@ -1948,6 +1959,22 @@ bool XML_SoundsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (strcmp(Tag,"adjust_volume") == 0)
 	{
 		return (ReadNumericalValue(Value,"%hd",_Sound_AdjustVolume));
+	}
+	else if (strcmp(Tag,"button_success") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_ButtonSuccess));
+	}
+	else if (strcmp(Tag,"button_failure") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_ButtonFailure));
+	}
+	else if (strcmp(Tag,"button_inoperative") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_ButtonInoperative));
+	}
+	else if (strcmp(Tag,"ogl_reset") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",_Sound_ButtonInoperative));
 	}
 	UnrecognizedTag();
 	return false;

@@ -503,6 +503,13 @@ short Sound_OxygenWarning();
 
 short Sound_AdjustVolume();
 
+// LP: Ian-Rickard-style commands for interface buttons
+
+short Sound_ButtonSuccess();
+short Sound_ButtonFailure();
+short Sound_ButtonInoperative();
+short Sound_OGL_Reset();
+
 // LP: generalized this: returns whether or not it was successful
 bool open_sound_file(FileSpecifier& File);
 

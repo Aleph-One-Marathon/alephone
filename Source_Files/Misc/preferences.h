@@ -82,7 +82,8 @@ enum {
 	_inputmod_interchange_run_walk = 0x0001,
 	_inputmod_interchange_swim_sink = 0x0002,
 	_inputmod_dont_switch_to_new_weapon = 0x0004,
-	_inputmod_invert_mouse = 0x0008
+	_inputmod_invert_mouse = 0x0008,
+	_inputmod_use_button_sounds = 0x0010
 };
 
 struct input_preferences_data

@@ -443,14 +443,21 @@ void handle_game_key(
 				render_screen(0);
 				break;
 			case '+': case '=':
-				zoom_overhead_map_in();
+				if (zoom_overhead_map_in())
+					PlayInterfaceButtonSound(Sound_ButtonSuccess());
+				else
+					PlayInterfaceButtonSound(Sound_ButtonFailure());
 				break;
 			case '-': case '_':
-				zoom_overhead_map_out();
+				if (zoom_overhead_map_out())
+					PlayInterfaceButtonSound(Sound_ButtonSuccess());
+				else
+					PlayInterfaceButtonSound(Sound_ButtonFailure());
 				break;
 			case '[': case '{':
 				if(player_controlling_game())
 				{
+					PlayInterfaceButtonSound(Sound_ButtonSuccess());
 					scroll_inventory(-1);
 				}
 				else
@@ -461,6 +468,7 @@ void handle_game_key(
 			case ']': case '}':
 				if(player_controlling_game())
 				{
+					PlayInterfaceButtonSound(Sound_ButtonSuccess());
 					scroll_inventory(1);
 				}
 				else
@@ -470,6 +478,7 @@ void handle_game_key(
 				break;
 
 			case '%':
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				toggle_suppression_of_background_tasks();
 				break;
 /*
@@ -484,8 +493,8 @@ void handle_game_key(
 
 			case '?':
 				{
+					PlayInterfaceButtonSound(Sound_ButtonSuccess());
 					extern bool displaying_fps;
-					
 					displaying_fps= !displaying_fps;
 				}
 				break;
@@ -501,111 +510,81 @@ void handle_game_key(
 					// LP change: disabled these if OpenGL is active;
 					// may want to either consolidate or eliminate these
 					case kcF1:
+						// LP change: turned this into screen-size decrement
+						if (graphics_preferences->screen_mode.size > 0)
 						{
-							// LP change: turned this into screen-size decrement
-							if (graphics_preferences->screen_mode.size > 0)
-							{
-								graphics_preferences->screen_mode.size--;
-								changed_screen_mode = changed_prefs = true;
-							}
-							// graphics_preferences->screen_mode.size = _full_screen;
-							// changed_screen_mode = changed_prefs = true;
+							PlayInterfaceButtonSound(Sound_ButtonSuccess());
+							graphics_preferences->screen_mode.size--;
+							changed_screen_mode = changed_prefs = true;
 						}
+						else
+							PlayInterfaceButtonSound(Sound_ButtonFailure());
 						break;
 
 					case kcF2:
+						// LP change: turned this into screen-size increment
+						if (graphics_preferences->screen_mode.size < NUMBER_OF_VIEW_SIZES-1)
 						{
-							// LP change: turned this into screen-size increment
-							if (graphics_preferences->screen_mode.size < NUMBER_OF_VIEW_SIZES-1)
-							{
-								graphics_preferences->screen_mode.size++;
-								changed_screen_mode = changed_prefs = true;
-							}
-							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= true;
-							// graphics_preferences->screen_mode.size = _100_percent;
-							// changed_screen_mode = changed_prefs = true;
+							PlayInterfaceButtonSound(Sound_ButtonSuccess());
+							graphics_preferences->screen_mode.size++;
+							changed_screen_mode = changed_prefs = true;
 						}
+						else
+							PlayInterfaceButtonSound(Sound_ButtonFailure());
 						break;
 
 					case kcF3:
 						if (!OGL_IsActive())
 						{
 							// Changed this to resolution toggle; no sense doing this in OpenGL mode
+							PlayInterfaceButtonSound(Sound_ButtonSuccess());
 							graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
-							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= true;
-							// graphics_preferences->screen_mode.size = _75_percent;
 							changed_screen_mode = changed_prefs = true;
 						}
+						else
+							PlayInterfaceButtonSound(Sound_ButtonInoperative());
 						break;
 
 					case kcF4:
+					case kcF14:
+						if (OGL_IsActive())
 						{
-							// Reset OpenGL textures
+							// Reset OpenGL textures;
+							// play the button sound in advance to get the full effect of the sound
+							PlayInterfaceButtonSound(Sound_OGL_Reset());
 							OGL_ResetTextures();
-							// if(graphics_preferences->screen_mode.size==_full_screen) update_interface= true;
-							// graphics_preferences->screen_mode.size = _50_percent;
-							// changed_screen_mode = changed_prefs = true;
 						}
+						else
+							PlayInterfaceButtonSound(Sound_ButtonInoperative());
 						break;
 
-/*
-					case kcF5:
-						if (graphics_preferences->screen_mode.acceleration != _valkyrie_acceleration)
-						{
-							graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
-							if (graphics_preferences->screen_mode.high_resolution) graphics_preferences->screen_mode.draw_every_other_line= false;
-							changed_screen_mode = changed_prefs = true;
-						}
-						break;
-#ifdef env68k
-					case kcF6:
-						if (!graphics_preferences->screen_mode.high_resolution && graphics_preferences->screen_mode.acceleration != _valkyrie_acceleration)
-						{
-							graphics_preferences->screen_mode.draw_every_other_line = !graphics_preferences->screen_mode.draw_every_other_line;
-							changed_screen_mode = changed_prefs = true;
-						}
-						break;
-
-					case kcF7:
-						graphics_preferences->screen_mode.texture_floor = !graphics_preferences->screen_mode.texture_floor;
-						changed_screen_mode = changed_prefs = true;
-						break;
-
-					case kcF8:
-						graphics_preferences->screen_mode.texture_ceiling = !graphics_preferences->screen_mode.texture_ceiling;
-						changed_screen_mode = changed_prefs = true;
-						break;
-#endif
-					case kcF9:
-						if(event->modifiers & shiftKey)
-						{
-							short keys[NUMBER_OF_KEYS];
-				
-							set_default_keys(keys, 0);
-							set_keys(keys);
-						}
-						break;
-						
-					case kcF10:
-						break;
-*/
+						// One can check on the shift key with event->modifiers & shiftKey
+						// and likewise for the option and control keys
+						// Deleted old code contains setting of "draw_every_other_line" option,
+						// which is now gone
 						
 					case kcF11:
 						if (graphics_preferences->screen_mode.gamma_level)
 						{
-							graphics_preferences->screen_mode.gamma_level-= 1;
+							PlayInterfaceButtonSound(Sound_ButtonSuccess());
+							graphics_preferences->screen_mode.gamma_level--;
 							change_gamma_level(graphics_preferences->screen_mode.gamma_level);
 							changed_prefs= true;
 						}
+						else
+							PlayInterfaceButtonSound(Sound_ButtonFailure());
 						break;
 						
 					case kcF12:
 						if (graphics_preferences->screen_mode.gamma_level<NUMBER_OF_GAMMA_LEVELS-1)
 						{
-							graphics_preferences->screen_mode.gamma_level+= 1;
+							PlayInterfaceButtonSound(Sound_ButtonSuccess());
+							graphics_preferences->screen_mode.gamma_level++;
 							change_gamma_level(graphics_preferences->screen_mode.gamma_level);
 							changed_prefs= true;
 						}
+						else
+							PlayInterfaceButtonSound(Sound_ButtonFailure());
 						break;
 					
 					// LP addition: screendump facility
@@ -618,35 +597,38 @@ void handle_game_key(
 			
 					case kcF5:
 						// Make the chase cam switch sides
+						if (ChaseCam_IsActive())
+							PlayInterfaceButtonSound(Sound_ButtonSuccess());
+						else
+							PlayInterfaceButtonSound(Sound_ButtonInoperative());
 						ChaseCam_SwitchSides();
 						break;
 					
 					case kcF6:
 						// Toggle the chase cam
+						PlayInterfaceButtonSound(Sound_ButtonSuccess());
 						ChaseCam_SetActive(!ChaseCam_IsActive());
 						break;
 					
 					case kcF7:
 						// Toggle tunnel vision
+						PlayInterfaceButtonSound(Sound_ButtonSuccess());
 						SetTunnelVision(!GetTunnelVision());
 						break;
 					
 					case kcF8:
 						// Toggle the crosshairs
+						PlayInterfaceButtonSound(Sound_ButtonSuccess());
 						Crosshairs_SetActive(!Crosshairs_IsActive());
 						break;
 					
 					case kcF10:
 						// Toggle the position display
+						PlayInterfaceButtonSound(Sound_ButtonSuccess());
 						{
 							extern bool ShowPosition;
 							ShowPosition = !ShowPosition;
 						}
-						break;
-					
-					case kcF14:
-						// Reset OpenGL textures
-						OGL_ResetTextures();
 						break;
 					
 					default:

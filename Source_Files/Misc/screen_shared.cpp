@@ -156,20 +156,30 @@ void ResetFieldOfView()
 }
 
 
-void zoom_overhead_map_out(
+bool zoom_overhead_map_out(
 	void)
 {
-	world_view->overhead_map_scale= FLOOR(world_view->overhead_map_scale-1, OVERHEAD_MAP_MINIMUM_SCALE);
+	bool Success = false;
+	if (world_view->overhead_map_scale > OVERHEAD_MAP_MINIMUM_SCALE)
+	{
+		world_view->overhead_map_scale--;
+		Success = true;
+	}
 	
-	return;
+	return Success;
 }
 
-void zoom_overhead_map_in(
+bool zoom_overhead_map_in(
 	void)
 {
-	world_view->overhead_map_scale= CEILING(world_view->overhead_map_scale+1, OVERHEAD_MAP_MAXIMUM_SCALE);
+	bool Success = false;
+	if (world_view->overhead_map_scale < OVERHEAD_MAP_MAXIMUM_SCALE)
+	{
+		world_view->overhead_map_scale++;
+		Success = true;
+	}
 	
-	return;
+	return Success;
 }
 
 void start_teleporting_effect(

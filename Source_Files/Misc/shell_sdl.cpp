@@ -3,6 +3,8 @@
  *
  *  Written in 2000 by Christian Bauer
  */
+ 
+ // LP: Sept 6, 2001: Added Ian-Rickard-style button sounds
 
 #ifdef __MVCPP__
 
@@ -904,26 +906,40 @@ static void handle_game_key(const SDL_Event &event)
 			break;
 
 		case SDLK_EQUALS:
-			zoom_overhead_map_in();
+			if (zoom_overhead_map_in())
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
+			else
+				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			break;
 		case SDLK_MINUS:
-			zoom_overhead_map_out();
+			if (zoom_overhead_map_out())
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
+			else
+				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			break;
 
 		case SDLK_LEFTBRACKET:
 			if (player_controlling_game())
+			{
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				scroll_inventory(-1);
+			}
 			else
 				decrement_replay_speed();
 			break;
 		case SDLK_RIGHTBRACKET:
 			if (player_controlling_game())
+			{
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				scroll_inventory(1);
+			}
 			else
 				increment_replay_speed();
 			break;
 
-		case SDLK_BACKSLASH: {
+		case SDLK_BACKSLASH:
+		{
+			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			extern bool displaying_fps;
 			displaying_fps = !displaying_fps;
 			break;
@@ -931,44 +947,68 @@ static void handle_game_key(const SDL_Event &event)
 
 		case SDLK_F1:	// Decrease screen size
 			if (graphics_preferences->screen_mode.size > 0) {
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.size--;
 				changed_screen_mode = changed_prefs = true;
 			}
+			else
+				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			break;
 
 		case SDLK_F2:	// Increase screen size
 			if (graphics_preferences->screen_mode.size < NUMBER_OF_VIEW_SIZES - 1) {
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.size++;
 				changed_screen_mode = changed_prefs = true;
 			}
+			else
+				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			break;
 
 		case SDLK_F3:	// Resolution toggle
 			if (!OGL_IsActive()) {
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
 				changed_screen_mode = changed_prefs = true;
 			}
+			else
+				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			break;
 
 		case SDLK_F4:	// Reset OpenGL textures
 #ifdef HAVE_OPENGL
-			OGL_ResetTextures();
+			if (OGL_IsActive())
+			{
+				// Reset OpenGL textures;
+				// play the button sound in advance to get the full effect of the sound
+				PlayInterfaceButtonSound(Sound_OGL_Reset());
+				OGL_ResetTextures();
+			}
+			else
 #endif
+				PlayInterfaceButtonSound(Sound_ButtonInoperative());
 			break;
 
 		case SDLK_F5:	// Make the chase cam switch sides
+			if (ChaseCam_IsActive())
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
+			else
+				PlayInterfaceButtonSound(Sound_ButtonInoperative());
 			ChaseCam_SwitchSides();
 			break;
 					
 		case SDLK_F6:	// Toggle the chase cam
+			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			ChaseCam_SetActive(!ChaseCam_IsActive());
 			break;
 					
 		case SDLK_F7:	// Toggle tunnel vision
+			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			SetTunnelVision(!GetTunnelVision());
 			break;
 					
 		case SDLK_F8:	// Toggle the crosshairs
+			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			Crosshairs_SetActive(!Crosshairs_IsActive());
 			break;
 
@@ -977,6 +1017,7 @@ static void handle_game_key(const SDL_Event &event)
 			break;
 
 		case SDLK_F10:	// Toggle the position display
+			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			{
 				extern bool ShowPosition;
 				ShowPosition = !ShowPosition;
@@ -985,18 +1026,24 @@ static void handle_game_key(const SDL_Event &event)
 
 		case SDLK_F11:	// Decrease gamma level
 			if (graphics_preferences->screen_mode.gamma_level) {
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.gamma_level--;
 				change_gamma_level(graphics_preferences->screen_mode.gamma_level);
 				changed_prefs = true;
 			}
+			else
+				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			break;
 
 		case SDLK_F12:	// Increase gamma level
 			if (graphics_preferences->screen_mode.gamma_level < NUMBER_OF_GAMMA_LEVELS - 1) {
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.gamma_level++;
 				change_gamma_level(graphics_preferences->screen_mode.gamma_level);
 				changed_prefs = true;
 			}
+			else
+				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			break;
 
 		default:

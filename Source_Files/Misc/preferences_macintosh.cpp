@@ -102,10 +102,11 @@ enum {
 	iKEYBOARD_CONTROL,
 	iINPUT_SPROCKET_CONTROL,
 	iSET_KEYS,
+	iSET_INPUT_SPROCKET,
 	iINTERCHANGE_RUN_WALK,
 	iINTERCHANGE_SWIM_SINK,
 	iDONT_SWITCH_TO_NEW_WEAPON,
-	iSET_INPUT_SPROCKET
+	iUSE_INTERFACE_BUTTON_SOUNDS
 };
 
 enum {
@@ -730,6 +731,11 @@ static void setup_input_dialog(
 	active= CONTROL_ACTIVE;
 	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iDONT_SWITCH_TO_NEW_WEAPON, first_item), active, 
 		(preferences->modifiers & _inputmod_dont_switch_to_new_weapon) ? true : false);
+	
+	// LP addition: whether interface-button sounds are on (Ian Rickard)
+	active= CONTROL_ACTIVE;
+	modify_control(dialog, LOCAL_TO_GLOBAL_DITL(iUSE_INTERFACE_BUTTON_SOUNDS, first_item), active, 
+		(preferences->modifiers & _inputmod_use_button_sounds) ? true : false);
 }
 
 static void hit_input_item(
@@ -791,6 +797,16 @@ static void hit_input_item(
 			}
 			break;
 			
+		// LP addition: whether interface-button sounds are on (Ian Rickard)
+		case iUSE_INTERFACE_BUTTON_SOUNDS:
+			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
+			if(!GetControlValue(control))
+			{
+				preferences->modifiers |= _inputmod_use_button_sounds;
+			} else {
+				preferences->modifiers &= ~_inputmod_use_button_sounds;
+			}
+			break;
 		case iSET_KEYS:
 			{
 				short key_codes[NUMBER_OF_KEYS];
