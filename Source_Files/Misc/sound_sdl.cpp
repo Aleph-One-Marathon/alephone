@@ -1,11 +1,15 @@
 /*
- *  sound_sdl.cpp - Sound management, SDL specific stuff (included by mysound.cpp)
+ *  sound_sdl.cpp - Sound/music management, SDL specific stuff (included by mysound.cpp)
  *
  *  Written in 2000 by Christian Bauer
  */
 
+// Unlike the Mac version, we also do the music handling here
+#include "music.h"
+#include "song_definitions.h"
 
-// Number of sound channels used by sound manager
+
+// Number of sound channels used by Aleph One sound manager
 const int SM_SOUND_CHANNELS = MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHANNELS;
 
 // Private channels
@@ -53,6 +57,20 @@ static SDL_AudioSpec desired;
 // Global sound volume (0x100 = nominal)
 static int16 main_volume = 0x100;
 
+// Data for music replay
+static OpenedFile music_file;			// Music file object
+static uint32 music_data_length;		// Total length of sample data in file
+static uint32 music_data_remaining;		// Remaining unread sample data in file
+static uint32 music_data_offset;		// Start offset of sample data
+static uint32 music_sample_rate;		// Music sample rate in Hz
+static bool music_initialized = false;	// Flag: music ready to play
+static bool music_fading = false;		// Flag: music fading out
+static uint32 music_fade_start;			// Music fade start tick
+static uint32 music_fade_duration;		// Music fade duration in ticks
+
+const int MUSIC_BUFFER_SIZE = 0x40000;
+static uint8 music_buffer[MUSIC_BUFFER_SIZE];
+
 
 // From FileHandler_SDL.cpp
 extern void get_default_sounds_spec(FileSpecifier &file);
@@ -63,6 +81,7 @@ extern bool option_nosound;
 // Prototypes
 static void close_sound_file(void);
 static void shutdown_sound_manager(void);
+static void shutdown_music_handler(void);
 static void set_sound_manager_status(bool active);
 static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch);
 static void sound_callback(void *userdata, uint8 *stream, int len);
@@ -171,6 +190,102 @@ static void shutdown_sound_manager(void)
 
 
 /*
+ *  Initialize music handling
+ */
+
+boolean initialize_music_handler(FileSpecifier &song_file)
+{
+	assert(NUMBER_OF_SONGS == sizeof(songs) / sizeof(struct song_definition));
+	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
+
+	atexit(shutdown_music_handler);
+
+	// Open music file
+	if (song_file.Open(music_file)) {
+
+		SDL_RWops *p = music_file.GetRWops();
+
+		// Check to see if the file is an AIFF file
+		if (SDL_ReadBE32(p) != 'FORM')
+			return false;
+		uint32 total_size = SDL_ReadBE32(p);
+		if (SDL_ReadBE32(p) != 'AIFF')
+			return false;
+
+		// Seems so, look for COMM and SSND chunks
+		bool comm_found = false;
+		bool ssnd_found = false;
+		do {
+
+			// Read chunk ID and size
+			uint32 id = SDL_ReadBE32(p);
+			uint32 size = SDL_ReadBE32(p);
+			int pos = SDL_RWtell(p);
+
+			switch (id) {
+				case 'COMM': {
+					comm_found = true;
+
+					c->stereo = (SDL_ReadBE16(p) == 2);
+					SDL_RWseek(p, 4, SEEK_CUR);
+					c->sixteen_bit = (SDL_ReadBE16(p) == 16);
+
+					c->bytes_per_frame = 1;
+					if (c->stereo)
+						c->bytes_per_frame *= 2;
+					if (c->sixteen_bit)
+						c->bytes_per_frame *= 2;
+					music_data_length *= c->bytes_per_frame;
+
+					uint32 srate = SDL_ReadBE32(p);	// This is a 6888x 80-bit floating point number, but we only read the first 4 bytes and try to guess the sample rate
+					switch (srate) {
+						case 0x400eac44:
+							music_sample_rate = 44100;
+							break;
+						case 0x400dac44:
+						default:
+							music_sample_rate = 22050;
+							break;
+					}
+					break;
+				}
+
+				case 'SSND':
+					ssnd_found = true;
+
+					music_data_length = size;
+					SDL_RWseek(p, 8, SEEK_CUR);
+					music_data_offset = SDL_RWtell(p);
+					break;
+			}
+
+			// Skip to next chunk
+			if (size & 1)
+				size++;
+			SDL_RWseek(p, pos + size, SEEK_SET);
+
+		} while (SDL_RWtell(p) < total_size);
+
+		if (comm_found && ssnd_found)
+			music_initialized = true;
+	}
+
+	return music_initialized;
+}
+
+
+/*
+ *  Shutdown music handling
+ */
+
+static void shutdown_music_handler(void)
+{
+	free_music_channel();
+	music_file.Close();
+}
+
+
+/*
  *  Enable/disable sound manager
  */
 
@@ -199,7 +314,7 @@ static void set_sound_manager_status(bool active)
 
 				// Initialize channels
 				struct channel_data *channel = _sm_globals->channels;
-				for (int i=0; i<_sm_globals->total_channel_count; i++, channel++) {
+				for (int i=0; i<SM_SOUND_CHANNELS; i++, channel++) {
 					channel->flags = 0;
 					channel->callback_count = 0;
 					channel->sound_index = NONE;
@@ -434,7 +549,7 @@ static void buffer_sound(struct channel_data *channel, short sound_index, fixed 
 
 	} else {
 
-		// No, load sound header
+		// No, load sound header and start channel
 		load_sound_header(c, data, pitch);
 		c->active = true;
 	}
@@ -450,22 +565,167 @@ static void buffer_sound(struct channel_data *channel, short sound_index, fixed 
 
 void play_sound_resource(LoadedResource &rsrc)
 {
-printf("*** play_sound_resource\n");
-	//!!
-}
+	sdl_channel *c = sdl_channels + RESOURCE_CHANNEL;
 
-void stop_sound_resource(void)
-{
-	sdl_channels[RESOURCE_CHANNEL].active = false;
+	// Open stream to resource
+	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), rsrc.GetLength());
+	if (p == NULL)
+		return;
+
+	// Get resource format
+	uint16 format = SDL_ReadBE16(p);
+	if (format != 1) {
+		fprintf(stderr, "Unknown sound resource format %d\n", format);
+		SDL_FreeRW(p);
+		return;
+	}
+
+	// Skip sound data types
+	uint16 num_data_formats = SDL_ReadBE16(p);
+	SDL_RWseek(p, num_data_formats * 6, SEEK_CUR);
+
+	// Lock sound subsystem
+	SDL_LockAudio();
+
+	// Scan sound commands for bufferCmd
+	uint16 num_cmds = SDL_ReadBE16(p);
+	for (int i=0; i<num_cmds; i++) {
+		uint16 cmd = SDL_ReadBE16(p);
+		uint16 param1 = SDL_ReadBE16(p);
+		uint32 param2 = SDL_ReadBE32(p);
+
+		if (cmd == 0x8051) {
+
+			// bufferCmd, load sound header and start channel
+			load_sound_header(c, (uint8 *)rsrc.GetPointer() + param2, FIXED_ONE);
+			c->left_volume = c->right_volume = 0x100;
+			c->active = true;
+		}
+	}
+
+	// Unlock sound subsystem
+	SDL_UnlockAudio();
+	SDL_FreeRW(p);
 }
 
 
 /*
- *  Sound callback function
+ *  Stop playback of sound resource
+ */
+
+void stop_sound_resource(void)
+{
+	SDL_LockAudio();
+	sdl_channels[RESOURCE_CHANNEL].active = false;
+	SDL_UnlockAudio();
+}
+
+
+/*
+ *  Start playback of music
+ */
+
+void queue_song(short song_index)
+{
+	if (!music_initialized)
+		return;
+	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
+	SDL_RWops *p = music_file.GetRWops();
+
+	// Read first buffer of music data
+	SDL_RWseek(p, music_data_offset, SEEK_SET);
+	music_data_remaining = music_data_length;
+	uint32 to_read = music_data_remaining > MUSIC_BUFFER_SIZE ? MUSIC_BUFFER_SIZE : music_data_remaining;
+	SDL_RWread(p, music_buffer, 1, to_read);
+	if (!c->sixteen_bit) {
+		// AIFF data is always signed
+		for (int i=0; i<MUSIC_BUFFER_SIZE; i++)
+			music_buffer[i] ^= 0x80;
+	}
+	music_data_remaining -= to_read;
+
+	// Lock sound subsystem
+	SDL_LockAudio();
+
+	// Initialize and start channel
+	c->data = music_buffer;
+	c->length = to_read;
+	c->loop_length = 0;
+	c->rate = (music_sample_rate << 16) / desired.freq;
+	c->left_volume = c->right_volume = 0x100;
+	music_fading = false;
+	c->counter = 0;
+	c->active = true;
+
+	// Unlock sound subsystem
+	SDL_UnlockAudio();
+}
+
+
+/*
+ *  Stop playback of music
+ */
+
+void free_music_channel(void)
+{
+	music_fading = false;
+	SDL_LockAudio();
+	sdl_channels[MUSIC_CHANNEL].active = false;
+	SDL_UnlockAudio();
+}
+
+
+/*
+ *  Is music playing?
+ */
+
+boolean music_playing(void)
+{
+	return sdl_channels[MUSIC_CHANNEL].active;
+}
+
+
+/*
+ *  Fade out music
+ */
+
+void fade_out_music(short duration)
+{
+	music_fading = true;
+	music_fade_start = SDL_GetTicks();
+	music_fade_duration = duration;
+}
+
+void music_idle_proc(void)
+{
+	if (music_fading) {
+
+		// Calculate volume level
+		uint32 elapsed = SDL_GetTicks() - music_fade_start;
+		int vol = 0x100 - (elapsed * 0x100) / music_fade_duration;
+		if (vol <= 0) {
+
+			// Fading done, stop music
+			free_music_channel();
+
+		} else {
+
+			// Set new volume level
+			if (vol > 0x100)
+				vol = 0x100;
+			sdl_channels[MUSIC_CHANNEL].left_volume = sdl_channels[MUSIC_CHANNEL].right_volume = vol;
+		}
+	}
+}
+
+
+/*
+ *  Load sound header into channel
  */
 
 static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
 {
+	// Open stream to header
 	SDL_RWops *p = SDL_RWFromMem(data, 64);
 	if (p == NULL) {
 		c->active = false;
@@ -519,6 +779,11 @@ static void load_sound_header(sdl_channel *c, uint8 *data, fixed pitch)
 	SDL_FreeRW(p);
 }
 
+
+/*
+ *  Sound callback function
+ */
+
 template <class T>
 inline static void calc_buffer(T *p, int len, bool stereo)
 {
@@ -527,7 +792,7 @@ inline static void calc_buffer(T *p, int len, bool stereo)
 
 		// Mix all channels
 		sdl_channel *c = sdl_channels;
-		for (int i=0; i<_sm_globals->total_channel_count; i++, c++) {
+		for (int i=0; i<TOTAL_SOUND_CHANNELS; i++, c++) {
 
 			// Channel active?
 			if (c->active) {
@@ -539,8 +804,8 @@ inline static void calc_buffer(T *p, int len, bool stereo)
 						dleft = (int16)SDL_SwapBE16(0[(int16 *)c->data]);
 						dright = (int16)SDL_SwapBE16(1[(int16 *)c->data]);
 					} else {
-						dleft = (int32)(int8)(0[c->data] ^ 0x80) << 8;
-						dright = (int32)(int8)(1[c->data] ^ 0x80) << 8;
+						dleft = (int32)(int8)(0[c->data] ^ 0x80) * 256;
+						dright = (int32)(int8)(1[c->data] ^ 0x80) * 256;
 					}
 				} else {
 					if (c->sixteen_bit)
@@ -571,9 +836,37 @@ inline static void calc_buffer(T *p, int len, bool stereo)
 							c->data = c->loop;
 							c->length = c->loop_length;
 
+						} else if (i == MUSIC_CHANNEL) {
+
+							// Music channel, more data to play?
+							uint32 to_read = music_data_remaining > MUSIC_BUFFER_SIZE ? MUSIC_BUFFER_SIZE : music_data_remaining;
+							if (to_read) {
+
+								// Read next buffer of music data
+								SDL_RWread(music_file.GetRWops(), music_buffer, 1, to_read);
+								if (!c->sixteen_bit) {
+									// AIFF data is always signed
+									for (int i=0; i<MUSIC_BUFFER_SIZE; i++)
+										music_buffer[i] ^= 0x80;
+								}
+								music_data_remaining -= to_read;
+								c->data = music_buffer;
+								c->length = to_read;
+
+							} else {
+
+								// Music replay finished, turn off channel
+								c->active = false;
+							}
+
+						} else if (i == RESOURCE_CHANNEL) {
+
+							// Resource channel, turn it off
+							c->active = false;
+
 						} else {
 
-							// No, another sound header queued?
+							// No loop, another sound header queued?
 							_sm_globals->channels[i].callback_count++;
 							if (c->next_header) {
 
@@ -592,32 +885,27 @@ inline static void calc_buffer(T *p, int len, bool stereo)
 			}
 		}
 
-		// Apply main volume setting
-		left = (left * main_volume) >> 8;
-		right = (right * main_volume) >> 8;
-
-		// Clip output values
-		if (left > 32767)
+		// Finalize left channel
+		left = (left * main_volume) >> 8;		// Apply main volume setting
+		if (left > 32767)						// Clip output value
 			left = 32767;
 		else if (left < -32768)
 			left = -32768;
+		if (sizeof(T) == 1)						// Downscale for 8-bit output
+			left >>= 8;
+		*p++ = left;							// Write to output buffer
+
+		// Finalize right channel
 		if (stereo) {
-			if (right > 32767)
+			right = (right * main_volume) >> 8;	// Apply main volume setting
+			if (right > 32767)					// Clip output value
 				right = 32767;
 			else if (right < -32768)
 				right = -32768;
+			if (sizeof(T) == 1)					// Downscale for 8-bit output
+				right >>= 8;
+			*p++ = right;						// Write to output buffer
 		}
-
-		// Downscale for 8-bit output
-		if (sizeof(T) == 1) {
-			left >>= 8;
-			right >>= 8;
-		}
-
-		// Write to output buffer
-		*p++ = left;
-		if (stereo)
-			*p++ = right;
 	}
 }
 
