@@ -14,10 +14,16 @@ Aug 12, 2000 (Loren Petrich):
 	Generalized open_sound_file()
 
 	Using object-oriented file handler
+
+Sep 23, 2000 (Loren Petrich):
+	Added XML support for changing the ambient and random sound definitions,
+	in order to support Shebob's Pfh'Joueur
 */
 
 class FileSpecifier;
 class LoadedResource;
+
+#include "XML_ElementParser.h"
 
 /* ---------- constants */
 
@@ -473,6 +479,9 @@ short random_sound_index_to_sound_index(short random_sound_index);
 
 // LP: generalized this: returns whether or not it was successful
 bool open_sound_file(FileSpecifier& File);
+
+// LP change: get the parser for the sound elements (name "sounds")
+XML_ElementParser *Sounds_GetParser();
 
 // Play MacOS sound resource
 #ifdef SDL
