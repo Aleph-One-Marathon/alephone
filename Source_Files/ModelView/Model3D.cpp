@@ -15,6 +15,7 @@ void Model3D::Clear()
 	Positions.clear();
 	TxtrCoords.clear();
 	Normals.clear();
+	Colors.clear();
 	VertIndices.clear();
 	SetBoundingBox();
 }

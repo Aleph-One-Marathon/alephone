@@ -33,6 +33,10 @@ struct Model3D
 	vector<GLfloat> Normals;
 	GLfloat *NormBase() {return &Normals[0];}
 	
+	// Vertex colors (useful for by-hand vertex lighting)
+	vector<GLfloat> Colors;
+	GLfloat *ColBase() {return &Colors[0];}
+	
 	// List of indices into the aforementioned values;
 	// the list is a list of triangles.
 	vector<GLushort> VertIndices;
