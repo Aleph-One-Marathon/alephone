@@ -144,6 +144,8 @@ Aug 12, 2000 (Loren Petrich):
 
 #include "FileHandler.h"
 
+#include <exception.h>
+
 // #ifndef FINAL
 #include "weapons.h" /* To remove process_new_item_for_reloading warning and debug_print_weapon_status warning */
 // #endif
@@ -188,7 +190,11 @@ extern long first_frame_tick, frame_count; /* for determining frame rate */
 unsigned long LocalEventFlags = 0;
 
 // LP addition: whether or not the cheats are active
-bool CheatsActive = false;
+static bool CheatsActive = false;
+
+// Where the MacOS Toolbox (or some equivalent) has been inited
+// Necessary to to indicate whether or not to create a dialog box.
+static bool AppServicesInited = false;
 
 /* ---------- externs that I couldn't fit into the #include heirarchy nicely */
 extern boolean load_and_start_game(FileSpecifier& File);
@@ -239,9 +245,35 @@ static void PostOSEventFromLocal();
 
 void main(
 	void)
-{	
-	initialize_application_heap();
-	main_event_loop();
+{
+	// LP: on Christian Bauer's suggestion, I've enclosed the code in a try-catch block
+	try
+	{
+		initialize_application_heap();
+		main_event_loop();
+	}
+	catch(exception& e)
+	{
+		if (AppServicesInited)
+		{
+			psprintf(ptemporary,"Unhandled exception: %s",e.what());
+			ParamText(ptemporary,"\p0",NULL,NULL);
+			InitCursor();
+			Alert(128,NULL);
+			exit(0);
+		}
+	}
+	catch(...)
+	{
+		if (AppServicesInited)
+		{
+			psprintf(ptemporary,"Unknown exception");
+			ParamText(ptemporary,"\p0",NULL,NULL);
+			InitCursor();
+			Alert(128,NULL);
+			exit(0);
+		}
+	}
 	exit(0);
 }
 
@@ -293,7 +325,10 @@ static void initialize_application_heap(
 	TEInit();
 	InitDialogs(0); /* resume procedure ignored for multifinder and >=system 7.0 */
 	InitCursor();
-
+	
+	// The MacOS Toolbox has now been started up!
+	AppServicesInited = true;
+	
 #ifdef DEBUG
 	initialize_debugger(TRUE);
 #endif
