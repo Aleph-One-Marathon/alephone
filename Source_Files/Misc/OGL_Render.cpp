@@ -1880,14 +1880,22 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			// The alpha channel:
 			for (int n=0; n<StatPatLen; n++)
 			{
-				int32 Val = 0;
-				for (int k=0; k<32; k++)
+				uint32 Val = 0;
+				// Avoid doing extra random-number evaluations
+				// for the case of complete opacity
+				if (RenderRectangle.transfer_data > 0)
 				{
-					// Have to do this for every bit to get the proper probability distribution
-					Val <<= 1;
-					uint16 RandSamp = uint16(StaticRandom.KISS());
-					Val |= (RandSamp >= RenderRectangle.transfer_data) ? 1 : 0;
+					for (int k=0; k<32; k++)
+					{
+						// Have to do this for every bit to get the proper probability distribution
+						Val <<= 1;
+						uint16 RandSamp = uint16(StaticRandom.KISS());
+						Val |= (RandSamp >= RenderRectangle.transfer_data) ? 1 : 0;
+					}
 				}
+				else
+					Val = 0xffffffff;
+				
 				// Premultiply the stipple-color values by the alpha
 				for (int c=0; c<3; c++)
 					StaticPatterns[c][n] &= Val;
