@@ -618,23 +618,12 @@ void animate_screen_clut(struct color_table *color_table, bool full_screen)
 		build_sdl_color_table(color_table, colors);
 		SDL_SetPalette(main_surface, SDL_PHYSPAL, colors, 0, 256);
 	} else {
-#if SDL_PATCHLEVEL > 6
-		// SDL 1.1.7 defines these as 16-bit arrays...
 		uint16 red[256], green[256], blue[256];
 		for (int i=0; i<color_table->color_count; i++) {
 			red[i] = color_table->colors[i].red;
 			green[i] = color_table->colors[i].green;
 			blue[i] = color_table->colors[i].blue;
 		}
-#else
-		// ...while SDL 1.1.6 uses 8-bits per channel
-		uint8 red[256], green[256], blue[256];
-		for (int i=0; i<color_table->color_count; i++) {
-			red[i] = color_table->colors[i].red >> 8;
-			green[i] = color_table->colors[i].green >> 8;
-			blue[i] = color_table->colors[i].blue >> 8;
-		}
-#endif
 		SDL_SetGammaRamp(red, green, blue);
 	}
 }
