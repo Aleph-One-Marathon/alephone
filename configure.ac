@@ -130,6 +130,20 @@ fi
 dnl Set target system name.
 AC_DEFINE_UNQUOTED(TARGET_PLATFORM, "$target_os $target_cpu", [Target platform name])
 
+dnl add some windows goodies
+case $target in
+*-*-mingw32*)
+	make_windows=true
+	AC_DEFINE(WIN32_DISABLE_MUSIC, 1, [Win32 music is disabled])
+	LIBS="$LIBS -ldsound -lwsock32"
+	LDFLAGS="$LDFLAGS -s"
+	;;
+*)
+	make_windows=false ;;
+esac
+AM_CONDITIONAL(MAKE_WINDOWS, test x$make_windows = xtrue)
+
+
 dnl Generate Makefiles.
 AC_CONFIG_FILES([
 Makefile

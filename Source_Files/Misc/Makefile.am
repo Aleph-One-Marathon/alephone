@@ -2,6 +2,12 @@
 
 noinst_LIBRARIES = libmisc.a
 
+if MAKE_WINDOWS
+THREAD_PRIORITY = thread_priority_sdl_dummy.cpp
+else
+THREAD_PRIORITY = thread_priority_sdl_posix.cpp
+endif
+
 libmisc_a_SOURCES = ActionQueues.h alephversion.h CircularByteBuffer.h \
   CircularQueue.h game_errors.h \
   interface.h interface_menus.h key_definitions.h Logging.h Logging_gruntwork.h \
@@ -14,10 +20,10 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h CircularByteBuffer.h \
   ActionQueues.cpp CircularByteBuffer.cpp game_errors.cpp \
   interface.cpp interface_sdl.cpp \
   Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp \
-  preferences_widgets_sdl.cpp sdl_dialogs.cpp sdl_widgets.cpp \
-  thread_priority_sdl_posix.cpp vbl.cpp vbl_sdl.cpp
+  preferences_widgets_sdl.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
+  sdl_widgets.cpp vbl.cpp vbl_sdl.cpp
 
-EXTRA_libmisc_a_SOURCES = thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp
+EXTRA_libmisc_a_SOURCES = thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
