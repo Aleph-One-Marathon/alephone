@@ -1263,4 +1263,36 @@ by editing its template in TMPL.
 Started putting in packing and unpacking routines, beginning in wad.cpp. Which is now complete.
 Moving on to game_wad.c, with the map and the physics stuff.
 
+August 29, 2000
+
+Added convention to packing and unpacking routines -- that they return a pointer
+to the stream position just after the end of the packed data.
+
+September 1, 2000
+
+Continued to write packing and unpacking routines; decided to abolish the default count of 1
+as being potentially dangerous and sometimes pointless.
+
+September 2, 2000
+
+Completed the unpacking code for the shapes and the sounds; generalized the soundfile loading
+to be able to load a soundfile with any number of sound entries.
+
+Completed adding fail-softness for the shapes; had always been present for the sounds.
+However, M2 16-bit sounds are mysteriously offset forward by (# Moo sounds) - (# M2 sounds)
+
+September 3, 2000
+
+Fixed M2-sound support; every time a soundfile gets read in, _sm_globals gets updated;
+it keeps a pointer to the definitions of the sounds to be used. Bungie's programmers
+may have assumed that the overall pointer would be unchanging; however, it can now change.
+
+In weapons.c, suppressed an assert for some weapon-type test that is reached if a weapon
+is not detected in some loop. This ought to make A1 work better for some maps
+
+Evil: Rancid Orange Juice
+Evil: Nukedome
+
+which have two-fisted weapons.
+However, was unable to find railgun-shot absence bug for Evil in OpenGL mode
 
