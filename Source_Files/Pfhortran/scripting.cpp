@@ -126,18 +126,30 @@ int load_script(int text_id)
 	char *src;
 	int x;
 
+/*
 #if defined(mac)
 	short file_id;
 #elif defined(SDL)
 	SDL_RWops *f;
 #endif
+*/
 
 	if (!is_pfhortran_on())	/* we can't do too much if the pfhortran isn't running */
-		return false;
+		return script_FALSE;
 	
 	// LP changes:
-	FileSpecifier& cur_map = get_map_file();
-
+	FileSpecifier& CurrentMap = get_map_file();
+	
+	OpenedResourceFile OFile;
+	if (!CurrentMap.Open(OFile))
+	{
+		set_game_error(systemError, CurrentMap.GetError());
+		return script_ERROR;
+	}
+	
+	LoadedResource TextRsrc;
+	OFile.Get('TEXT',text_id,TextRsrc);
+/*
 #if defined(mac)
 	error= FSpOpenRF(&cur_map.Spec, fsRdPerm, &file_id);
 
@@ -163,13 +175,20 @@ int load_script(int text_id)
 	uint32 textSize;
 	void *textHand = Get1Resource('TEXT', text_id, &textSize);
 #endif
+*/
 
 	clean_up_script();
-
-	if (textHand == NULL)
+	
+	if (!TextRsrc.IsLoaded())
+	// if (textHand == NULL)
 		current_script=0;
 	else
-	{	
+	{
+		src = (char *)TextRsrc.GetPointer();
+		
+		// Buffer-overflow problem possible here...
+		src[TextRsrc.GetLength()] = 0;
+/*
 #if defined(mac)
 		src=(char *)(*textHand);
 		src[GetHandleSize(textHand)] = 0;
@@ -177,34 +196,34 @@ int load_script(int text_id)
 		src = (char *)textHand;
 		src[textSize] = 0;
 #endif
-		
+*/
 		current_script = parse_script(src);
-		
+
+/* TextRsrc automatically deallocates
 #if defined(mac)
 		ReleaseResource(textHand);
 #elif defined(SDL)
 		free(textHand);
 #endif
-		
+*/
 		src = NULL; 
 		
 		current_instruction = 0;
 		/*instruction_decay = 0;*/
 		
-		
 		for (x=0;x < MAX_VARS;x++)
 			variable_lookup[x] = 0;
 		variable_count = 0;
 	}
-
+/* OFile automatically closes
 #if defined(mac)
 	if (file_id != app)
 		CloseResFile(file_id);
 #endif
-
+*/
 	is_startup = false;
 
-	return true;
+	return script_TRUE;
 }
 
 void script_init(void)
