@@ -10,6 +10,18 @@
 #include "ModelRenderer.h"
 
 
+// For doing
+static GLfloat *Centroids;
+static int SortCompare(const void *P1, const void *P2)
+{
+	unsigned short *IP1 = (unsigned short *)P1;
+	unsigned short *IP2 = (unsigned short *)P2;
+	GLfloat C1 = Centroids[*IP1];
+	GLfloat C2 = Centroids[*IP2];
+	return ((C1 > C2) ? 1 : ((C1 < C2) ? -1 : 0));
+}
+
+
 void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader *Shaders, int NumShaders)
 {
 	if (NumShaders <= 0) return;
@@ -52,7 +64,9 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 	}
 	
 	// Sort!
-	sort(Indices.begin(),Indices.end(),*this);
+	// sort(Indices.begin(),Indices.end(),*this);
+	Centroids = &CentroidDepths[0];
+	qsort(&Indices[0],NumTriangles,sizeof(unsigned short),SortCompare);
 	
 	if (NumShaders > 1)
 	{
@@ -71,6 +85,7 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 	{
 		// Single-shader optimization: render in one swell foop
 		SetupRenderPass(Model,Shaders[0]);
+		
 		SortedVertIndices.resize(Model.NumVI());
 		for (int k=0; k<NumTriangles; k++)
 		{
