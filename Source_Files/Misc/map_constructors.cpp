@@ -35,7 +35,7 @@ const bool DoIncorrectCountVWarn = true;
 #include "Packing.h"
 
 #include <limits.h>
-#include <vector.h>
+#include <vector>
 
 /*
 maps of one polygon don’t have their impassability information computed

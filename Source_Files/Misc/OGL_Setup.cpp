@@ -35,7 +35,7 @@ Dec 17, 2000 (Loren Petrich):
 	whether fog will not be suppressed.
 */
 
-#include <vector.h>
+#include <vector>
 #include <string.h>
 #include "cseries.h"
 

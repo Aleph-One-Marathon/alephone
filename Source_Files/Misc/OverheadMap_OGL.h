@@ -12,7 +12,7 @@ Oct 13, 2000 (Loren Petrich)
 	Converted the various lists into Standard Template Library vectors
 */
 
-#include <vector.h>
+#include <vector>
 #include "OverheadMapRenderer.h"
 
 

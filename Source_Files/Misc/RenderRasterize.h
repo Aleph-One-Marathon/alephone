@@ -17,7 +17,7 @@ Oct 13, 2000
 	LP: replaced ResizableList with STL vector class
 */
 
-#include <vector.h>
+#include <vector>
 #include "world.h"
 #include "render.h"
 #include "RenderSortPoly.h"

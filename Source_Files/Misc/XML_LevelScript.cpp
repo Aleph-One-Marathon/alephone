@@ -14,7 +14,7 @@ Nov 25, 2000 (Loren Petrich)
 	Also added end-of-game support.
 */
 
-#include <vector.h>
+#include <vector>
 #include "cseries.h"
 #include "game_wad.h"
 #include "music.h"

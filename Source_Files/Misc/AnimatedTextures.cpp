@@ -13,7 +13,7 @@ Oct 13, 2000 (Loren Petrich)
 	Converted the animated-texture accounting into Standard Template Library vectors
 */
 
-#include <vector.h>
+#include <vector>
 #include <string.h>
 #include "cseries.h"
 #include "AnimatedTextures.h"

@@ -30,7 +30,7 @@ Oct 13, 2000 (Loren Petrich):
 
 #include <string.h>
 #include <stdlib.h>
-#include <vector.h>
+#include <vector>
 #include "ShapesParser.h"
 
 #include "cseries.h"

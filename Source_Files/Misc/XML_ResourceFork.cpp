@@ -8,7 +8,7 @@ Nov 29, 2000 (Loren Petrich):
 */
 
 
-#include <algorithm.h>
+#include <algorithm>
 #include <string.h>
 #include "cseries.h"
 #include "XML_ResourceFork.h"

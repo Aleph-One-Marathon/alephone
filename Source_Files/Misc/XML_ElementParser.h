@@ -15,8 +15,9 @@ Oct 13, 2000 (Loren Petrich)
 */
 
 
-#include <vector.h>
+#include <vector>
 #include <stdio.h>
+using namespace std;
 
 
 extern bool XML_GetBooleanValue(const char *String, bool &Value);

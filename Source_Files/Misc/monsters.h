@@ -29,7 +29,7 @@ Oct 24, 2000 (Mark Levin)
 
 // LP additions:
 #include "dynamic_limits.h"
-#include <vector.h>
+#include <vector>
 
 /* ---------- constants */
 

@@ -88,7 +88,7 @@ Dec 17, 2000 (Loren Petrich):
 	in infravision mode.
 */
 
-#include <vector.h>
+#include <vector>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>

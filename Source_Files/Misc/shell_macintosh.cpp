@@ -118,8 +118,8 @@ Dec 31, 2000 (Mike Benonis):
 #include "XML_DataBlock.h"
 
 // For doing STL sorting
-#include <algorithm.h>
-#include <functional.h>
+#include <algorithm>
+#include <functional>
 
 
 #define kMINIMUM_NETWORK_HEAP (3*MEG)

@@ -14,7 +14,7 @@ Dec 17, 2000 (Loren Petrich:
 	Added teleport-sound control for Marathon 1 compatibility
 */
 
-#include <vector.h>
+#include <vector>
 #include <string.h>
 #include "cseries.h"
 #include "world.h"

@@ -20,7 +20,7 @@ Oct 13, 2000
 	LP: replaced GrowableLists and ResizableLists with STL vectors
 */
 
-#include <vector.h>
+#include <vector>
 #include "world.h"
 #include "render.h"
 

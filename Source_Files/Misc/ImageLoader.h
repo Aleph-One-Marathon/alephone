@@ -11,9 +11,10 @@
 	
 */
 
-#include <vector.h>
+#include <vector>
 #include "cseries.h"
 #include "FileHandler.h"
+using namespace std;
 
 
 // Need an object to hold the read-in image.
