@@ -35,8 +35,18 @@
 #endif
 
 #include "Dim3_Loader.h"
+#include "world.h"
 #include "XML_Configure.h"
 #include "XML_ElementParser.h"
+
+
+// Convert angle from degrees to the Marathon engine's internal units
+static int16 GetAngle(float InAngle)
+{
+	float A = (FULL_CIRCLE/360)*InAngle;
+	int16 IA = (A >= 0) ? int16(A + 0.5) : - int16(-A + 0.5);
+	return NORMALIZE_ANGLE(IA);
+}
 
 
 // Debug-message destination
@@ -89,7 +99,7 @@ static void Dim3_SetupParseTree();
 
 // Local globals; these are to be persistent across calls when loading several files.
 
-// Bone-tag intermediate arrays:
+// Bone-tag and name-tag intermediate arrays:
 
 const int BoneTagSize = 8;
 
@@ -104,6 +114,21 @@ static vector<BoneTagWrapper> VertexBoneTags, BoneOwnTags;
 
 // Translation from read-in bone order to "true" order
 static vector<short> BoneIndices;
+
+// Names of frames and seqeunces:
+
+const int NameTagSize = 32;
+
+struct NameTagWrapper
+{
+	char Tag[NameTagSize];
+};
+
+static vector<NameTagWrapper> FrameTags;
+
+// Where the data for each frame goes before it's loaded into the model array;
+// the bones may be only partially listed or not listed at all.
+static vector<Model3D_Frame> ReadFrame;
 
 
 // For feeding into the read-in routines
@@ -120,6 +145,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		VertexBoneTags.clear();
 		BoneOwnTags.clear();
 		BoneIndices.clear();
+		FrameTags.clear();
 	}
 	
 	if (DBOut)
@@ -159,38 +185,13 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		if (DBOut) fprintf(DBOut, "There were parsing errors in Dim3 model file %s\n",FileName);
 	}
 	
-	// Fill in the blanks
+	// Set these up now
+	if (Model.InverseVSIndices.empty()) Model.BuildInverseVSIndices();
 	
 	// First, find the neutral-position vertices
+	Model.FindPositions();
 	
-	int NumVertices = Model.VtxSrcIndices.size();
-	Model.Positions.resize(3*NumVertices);
-	
-	GLfloat *PP = Model.PosBase();
-	GLushort *IP = Model.VtxSIBase();
-	
-	int NumVtxSources = Model.VtxSources.size();
-	
-	for (int k=0; k<NumVertices; k++)
-	{
-		int VSIndex = *(IP++);
-		if (VSIndex >= 0 && VSIndex < NumVtxSources)
-		{
-			Model3D_VertexSource& VS = Model.VtxSources[VSIndex];
-			GLfloat *VP = VS.Position;
-			*(PP++) = *(VP++);
-			*(PP++) = *(VP++);
-			*(PP++) = *(VP++);
-		}
-		else
-		{
-			*(PP++) = 0;
-			*(PP++) = 0;
-			*(PP++) = 0;
-		}
-	}
-	
-	// Work out the sorted order for the bones
+	// Work out the sorted order for the bones; be sure not to repeat this if already done.
 	if (BoneIndices.empty() && !Model.Bones.empty())
 	{
 		int NumBones = Model.Bones.size();
@@ -200,9 +201,6 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		vector<short> BoneStack(NumBones);
 		vector<bool> BonesUsed(NumBones);
 		fill(BonesUsed.begin(),BonesUsed.end(),false);
-		
-		for (int q=0; q<NumBones; q++)
-			printf("%3d:  %8s %8s\n",q,BoneOwnTags[q].Tag0,BoneOwnTags[q].Tag1);
 		
 		// Add the bones, one by one;
 		// the bone stack's height is originally zero
@@ -278,11 +276,6 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 			
 			// Index for remapping
 			BoneIndices[ibsrch] = ib;
-
-			// DEBUG
-			printf("%3d: %3d\n",ib,StackTop);
-			for (int q=0; q<=StackTop; q++)
-				printf("   %3d: %3d\n",q,BoneStack[q]);
 		}
 		
 		// Reorder the bones
@@ -291,6 +284,30 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		
 		// Put them back into the model in one step
 		Model.Bones.swap(SortedBones);
+		
+		// Find the vertex bone indices; this assumes that the vertices have already been read in.
+		for (int iv=0; iv<Model.VtxSources.size(); iv++)
+		{
+			Model3D_VertexSource& VS = Model.VtxSources[iv];
+			int ibsx;
+			char *Tag;
+			
+			Tag = VertexBoneTags[iv].Tag0;
+			for (ibsx=0; ibsx<NumBones; ibsx++)
+			{
+				if (strncmp(Tag,BoneOwnTags[ibsx].Tag0,BoneTagSize)==0)
+				break;
+			}
+			VS.Bone0 = ibsx < NumBones ? BoneIndices[ibsx] : NONE;
+			
+			Tag = VertexBoneTags[iv].Tag1;
+			for (ibsx=0; ibsx<NumBones; ibsx++)
+			{
+				if (strncmp(Tag,BoneOwnTags[ibsx].Tag0,BoneTagSize)==0)
+				break;
+			}
+			VS.Bone1 = ibsx < NumBones ? BoneIndices[ibsx] : NONE;
+		}
 		
 		// DEBUG
 		vector<short> BoneRanks(NumBones);
@@ -303,6 +320,12 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 			printf("%3d:  %8s %8s  %2d\n",q,BoneOwnTags[r].Tag0,BoneOwnTags[r].Tag1,Model.Bones[q].Flags);
 		}
 	}
+	
+	
+	int NumFrames = Model.Frames.size();
+	int NumBones = Model.Bones.size();
+	if (NumBones > 0 && NumFrames > 0)
+		printf("Number of Frames = %d\n",NumFrames/NumBones);
 	
 	return (!Model.Positions.empty() && !Model.VertIndices.empty());
 }
@@ -370,7 +393,9 @@ static XML_ElementParser
 	D3ColorParser("Color"),
 	D3ImagesParser("Images"),
 	D3ImageParser("Image"),
-	TrianglesParser("Triangles");
+	TrianglesParser("Triangles"),
+	FramesParser("Poses"),
+	FrameBonesParser("Bones");
 
 
 // "Real" elements:
@@ -657,6 +682,172 @@ bool XML_TriVertexParser::AttributesDone()
 static XML_TriVertexParser TriVertexParser;
 
 
+
+class XML_FrameParser: public XML_ElementParser
+{
+	// For adding to the frame-name array as frames are added
+	NameTagWrapper NT;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool End();
+	
+	XML_FrameParser(): XML_ElementParser("Pose") {}
+};
+
+
+bool XML_FrameParser::Start()
+{
+	// Be sure to have the right number of frame members --
+	// and blank them out
+	int NumBones = ModelPtr->Bones.size();
+	ReadFrame.resize(NumBones);
+	objlist_clear(&ReadFrame[0],NumBones);
+	
+	// No name: zero-length name
+	NT.Tag[0] = 0;
+	
+	return true;
+}
+
+bool XML_FrameParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"name"))
+	{
+		strncpy(NT.Tag,Value,NameTagSize);
+		return true;
+	}
+	
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_FrameParser::End()
+{
+	// Some of the data was set up by child elements, so all the processing
+	// can be back here.
+	for (int b=0; b<ReadFrame.size(); b++)
+		ModelPtr->Frames.push_back(ReadFrame[b]);
+	
+	FrameTags.push_back(NT);
+	
+	return true;
+}
+
+static XML_FrameParser FrameParser;
+
+
+
+class XML_FrameBoneParser: public XML_ElementParser
+{
+	Model3D_Frame Data;
+	
+	// The bone tag to look for
+	char BoneTag[BoneTagSize];
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	XML_FrameBoneParser(): XML_ElementParser("Bone") {}
+};
+
+
+bool XML_FrameBoneParser::Start()
+{
+	// Clear everything out:
+	obj_clear(Data);
+	
+	// Empty string
+	BoneTag[0] = 0;
+	
+	return true;
+}
+
+
+// Some of angles have their signs reversed to translate BB's sign conventions
+// into more my more geometrically-elegant ones.
+
+bool XML_FrameBoneParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"xmove"))
+	{
+		return ReadFloatValue(Value,Data.Offset[0]);
+	}
+	else if (StringsEqual(Tag,"ymove"))
+	{
+		return ReadFloatValue(Value,Data.Offset[1]);
+	}
+	else if (StringsEqual(Tag,"zmove"))
+	{
+		return ReadFloatValue(Value,Data.Offset[2]);
+	}
+	else if (StringsEqual(Tag,"xrot"))
+	{
+		float InAngle;
+		if (ReadFloatValue(Value,InAngle))
+		{
+			Data.Angles[0] = GetAngle(InAngle);
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"yrot"))
+	{
+		float InAngle;
+		if (ReadFloatValue(Value,InAngle))
+		{
+			Data.Angles[1] = GetAngle(-InAngle);
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"zrot"))
+	{
+		float InAngle;
+		if (ReadFloatValue(Value,InAngle))
+		{
+			Data.Angles[2] = GetAngle(-InAngle);
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"tag"))
+	{
+		strncpy(BoneTag,Value,BoneTagSize);
+		return true;
+	}
+	
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_FrameBoneParser::AttributesDone()
+{
+	// Place the bone info into the appropriate temporary-array location
+	int NumBones = BoneOwnTags.size();
+	int ib;
+	for (ib=0; ib<NumBones; ib++)
+	{
+		// Compare tag to bone's self tag
+		if (strncmp(BoneTag,BoneOwnTags[ib].Tag0,BoneTagSize) == 0)
+			break;
+	}
+	if (ib < NumBones)
+		obj_copy(ReadFrame[BoneIndices[ib]],Data);
+	
+	return true;
+}
+
+static XML_FrameBoneParser FrameBoneParser;
+
+
+
 void Dim3_SetupParseTree()
 {
 	// Lazy init
@@ -688,6 +879,11 @@ void Dim3_SetupParseTree()
 	
 	FillsParser.AddChild(&FillParser);
 	Dim3_Parser.AddChild(&FillsParser);
+	
+	FrameBonesParser.AddChild(&FrameBoneParser);
+	FrameParser.AddChild(&FrameBonesParser);
+	FramesParser.AddChild(&FrameParser);
+	Dim3_Parser.AddChild(&FramesParser);
 	
 	Dim3_ParserInited = true;
 }

@@ -56,6 +56,15 @@ static vector<short> BoneStack;
 // Res = A * B, in that order
 static void TMatMultiply(TransformMatrix &Res, TransformMatrix &A, TransformMatrix &B);
 
+
+// Fast vector copy
+inline void Vec3_Copy(GLfloat *Dest, GLfloat *Src)
+{
+	Dest[0] = Src[0];
+	Dest[1] = Src[1];
+	Dest[2] = Src[2];
+}
+
 	
 // Trig-function conversion:
 const GLfloat TrigNorm = GLfloat(1)/GLfloat(TRIG_MAGNITUDE);
@@ -70,8 +79,8 @@ void Model3D::Clear()
 	Colors.clear();
 	VtxSrcIndices.clear();
 	VtxSources.clear();
-	InverseVtxIndices.clear();
-	InvVIPointers.clear();
+	InverseVSIndices.clear();
+	InvVSIPointers.clear();
 	Bones.clear();
 	VertIndices.clear();
 	Frames.clear();
@@ -418,8 +427,8 @@ void Model3D::FindBoundingBox()
 	if (NumVertices > 0)
 	{
 		// Find the min and max of the positions:
-		objlist_copy(BoundingBox[0],&Positions[0],3);
-		objlist_copy(BoundingBox[1],&Positions[0],3);
+		Vec3_Copy(BoundingBox[0],&Positions[0]);
+		Vec3_Copy(BoundingBox[1],&Positions[0]);
 		for (int i=1; i<NumVertices; i++)
 		{
 			GLfloat *Pos = &Positions[3*i];
@@ -520,20 +529,20 @@ void Model3D::BuildInverseVSIndices()
 {
 	if (VtxSrcIndices.empty()) return;
 	
-	InverseVtxIndices.resize(VtxSrcIndices.size());
-	InvVIPointers.resize(VtxSources.size()+1);		// One extra member
+	InverseVSIndices.resize(VtxSrcIndices.size());
+	InvVSIPointers.resize(VtxSources.size()+1);		// One extra member
 	
 	// Use the pointers as temporary storage for the count
-	objlist_clear(InvVIPtrBase(),InvVIPointers.size());	
+	objlist_clear(InvVSIPtrBase(),InvVSIPointers.size());	
 	for (vector<GLushort>::iterator VSI_Iter = VtxSrcIndices.begin();
 		VSI_Iter < VtxSrcIndices.end();
 		VSI_Iter++)
-			InvVIPointers[*VSI_Iter]++;
+			InvVSIPointers[*VSI_Iter]++;
 	
 	// Find the positions from the counts
 	GLushort PtrSum = 0;
-	for (vector<GLushort>::iterator IVP_Iter = InvVIPointers.begin();
-		IVP_Iter < InvVIPointers.end();
+	for (vector<GLushort>::iterator IVP_Iter = InvVSIPointers.begin();
+		IVP_Iter < InvVSIPointers.end();
 		IVP_Iter++)
 		{
 			GLushort NewPtrSum = PtrSum + *IVP_Iter;
@@ -543,18 +552,18 @@ void Model3D::BuildInverseVSIndices()
 	
 	// Place the inverse indices
 	for (int k = 0; k<VtxSrcIndices.size(); k++)
-		InverseVtxIndices[InvVIPointers[VtxSrcIndices[k]]++] = k;
+		InverseVSIndices[InvVSIPointers[VtxSrcIndices[k]]++] = k;
 	
 	// Push the pointer values forward in the list
 	// since they'd become their next values in it.
 	// The reverse iteration is necessary to avoid overwriting
-	for (vector<GLushort>::iterator IVP_Iter = InvVIPointers.end()-1;
-		IVP_Iter > InvVIPointers.begin();
+	for (vector<GLushort>::iterator IVP_Iter = InvVSIPointers.end()-1;
+		IVP_Iter > InvVSIPointers.begin();
 		IVP_Iter--)
 		{
 			*IVP_Iter = *(IVP_Iter - 1);
 		}
-	InvVIPointers[0] = 0;
+	InvVSIPointers[0] = 0;
 }
 
 
@@ -610,6 +619,8 @@ void Model3D::FindPositions(GLshort FrameIndex)
 		return;
 	}
 	
+	if (InverseVSIndices.empty()) BuildInverseVSIndices();
+	
 	int NumVertices = VtxSrcIndices.size();
 	Positions.resize(3*NumVertices);
 	
@@ -648,8 +659,8 @@ void Model3D::FindPositions(GLshort FrameIndex)
 			{
 				GLfloat X = T.M[0][ic];
 				GLfloat Y = T.M[1][ic];
-				GLfloat XR = X*C + Y*S;
-				GLfloat YR = - X*S + Y*C;
+				GLfloat XR = X*C - Y*S;
+				GLfloat YR = X*S + Y*C;
 				T.M[0][ic] = XR;
 				T.M[1][ic] = YR;
 			}
@@ -667,8 +678,8 @@ void Model3D::FindPositions(GLshort FrameIndex)
 			{
 				GLfloat X = T.M[1][ic];
 				GLfloat Y = T.M[2][ic];
-				GLfloat XR = X*C + Y*S;
-				GLfloat YR = - X*S + Y*C;
+				GLfloat XR = X*C - Y*S;
+				GLfloat YR = X*S + Y*C;
 				T.M[1][ic] = XR;
 				T.M[2][ic] = YR;
 			}
@@ -686,8 +697,8 @@ void Model3D::FindPositions(GLshort FrameIndex)
 			{
 				GLfloat X = T.M[2][ic];
 				GLfloat Y = T.M[0][ic];
-				GLfloat XR = X*C + Y*S;
-				GLfloat YR = - X*S + Y*C;
+				GLfloat XR = X*C - Y*S;
+				GLfloat YR = X*S + Y*C;
 				T.M[2][ic] = XR;
 				T.M[0][ic] = YR;
 			}
@@ -703,6 +714,18 @@ void Model3D::FindPositions(GLshort FrameIndex)
 				Sum += T.M[ic][k]*BonePos[k];
 			
 			T.M[ic][3] = FrameOfst[ic] + BonePos[ic] - Sum;
+		}
+	}
+	
+	// DEBUG
+	for (int ib=0; ib<NumBones; ib++)
+	{
+		printf("Bone: %d\n",ib);
+		for (int h1=0; h1<3; h1++)
+		{
+			for (int h2=0; h2<4; h2++)
+				printf(" %8f",BoneMatrices[ib].M[h1][h2]);
+			printf("\n");
 		}
 	}
 	
@@ -740,8 +763,17 @@ void Model3D::FindPositions(GLshort FrameIndex)
 		Parent = ib;
 	}
 	
-	// Transform the points; use inverse index for convenience
-	if (InverseVtxIndices.empty()) BuildInverseVSIndices();
+	// DEBUG
+	for (int ib=0; ib<NumBones; ib++)
+	{
+		printf("Bone: %d\n",ib);
+		for (int h1=0; h1<3; h1++)
+		{
+			for (int h2=0; h2<4; h2++)
+				printf(" %8f",BoneMatrices[ib].M[h1][h2]);
+			printf("\n");
+		}
+	}
 	
 	for (int ivs=0; ivs<VtxSources.size(); ivs++)
 	{
@@ -753,28 +785,33 @@ void Model3D::FindPositions(GLshort FrameIndex)
 			TransformMatrix& T0 = BoneMatrices[VS.Bone0];
 			for (int ic=0; ic<3; ic++)
 			{
+				GLfloat *M = T0.M[ic];
+				GLfloat *P = VS.Position;
 				GLfloat Sum = 0;
 				for (int k=0; k<3; k++)
-					Sum += T0.M[ic][k]*VS.Position[k];
-				Position[ic] = Sum + T0.M[ic][3];
+					Sum += M[k]*P[k];
+				Position[ic] = Sum + M[3];
 			}
-			if (VS.Bone1 >= 0 && VS.Blend != 0)
+			GLfloat Blend = VS.Blend;
+			if (VS.Bone1 >= 0 && Blend != 0)
 			{
 				TransformMatrix& T1 = BoneMatrices[VS.Bone1];
 				for (int ic=0; ic<3; ic++)
 				{
+					GLfloat *M = T1.M[ic];
+					GLfloat *P = VS.Position;
 					GLfloat Sum = 0;
 					for (int k=0; k<3; k++)
-						Sum += T1.M[ic][k]*VS.Position[k];
-					Position[ic] += VS.Blend*((Sum + T1.M[ic][3]) - Position[ic]);
+						Sum += M[k]*P[k];
+					Position[ic] += Blend*((Sum + M[3]) - Position[ic]);
 				}
 			}
 		}
 		else	// The assumed root bone (identity transformation)
-			objlist_copy(Position,VS.Position,3);
+			Vec3_Copy(Position,VS.Position);
 		
-		for (int iv=InvVIPointers[ivs]; iv<InvVIPointers[ivs+1]; iv++)
-			objlist_copy(PosBase() + 3*iv,Position,3);
+		for (int iv=InvVSIPointers[ivs]; iv<InvVSIPointers[ivs+1]; iv++)
+			Vec3_Copy(PosBase() + 3*InverseVSIndices[iv],Position);
 	}
 }
 

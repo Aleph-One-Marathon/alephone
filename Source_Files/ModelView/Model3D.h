@@ -46,7 +46,7 @@ using namespace std;
 struct Model3D_VertexSource
 {
 	GLfloat Position[3];	// Use this directly for the neutral positions
-	GLushort Bone0, Bone1;	// Indices of the two bones (NONE is no bone)
+	GLshort Bone0, Bone1;	// Indices of the two bones (NONE is no bone)
 	GLfloat Blend;			// Blend factor: limits are 0 = first bone, 1 = second bone.
 };
 
@@ -123,10 +123,10 @@ struct Model3D
 	// list of all the vertex indices associated with each vertex source,
 	// with a list of pointer indices into that list. Which has an extra pointer
 	// for just off the end of the last, to simplify the readoff
-	vector<GLushort> InverseVtxIndices;
-	GLushort *InverseVIBase() {return &InverseVtxIndices[0];}
-	vector<GLushort> InvVIPointers;
-	GLushort *InvVIPtrBase() {return &InvVIPointers[0];}
+	vector<GLushort> InverseVSIndices;
+	GLushort *InverseVIBase() {return &InverseVSIndices[0];}
+	vector<GLushort> InvVSIPointers;
+	GLushort *InvVSIPtrBase() {return &InvVSIPointers[0];}
 	
 	// Bone array: the bones are in traversal order
 	vector<Model3D_Bone> Bones;
@@ -142,6 +142,18 @@ struct Model3D
 	// each frame has [number of bones] of these.
 	vector<Model3D_Frame> Frames;
 	Model3D_Frame *FrameBase() {return &Frames[0];}
+	
+	// True number of frames: the above number divided by the number of bones;
+	// return zero if no bones
+	int TrueNumFrames() {return Bones.empty() ? 0 : (Frames.size()/Bones.size());}
+	
+	// Sequence frames:
+	vector<GLushort> SeqFrames;
+	GLushort *SeqFrmBase() {return &SeqFrames[0];}
+	
+	// Sequence-frame pointer indices:
+	vector<GLushort> SeqFrmPointers;
+	GLushort *SFPtrBase() {return &SeqFrmPointers[0];}
 	
 	// Bounding box (first index: 0 = min, 1 = max)
 	GLfloat BoundingBox[2][3];

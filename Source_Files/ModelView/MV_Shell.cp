@@ -169,6 +169,7 @@ void LoadModelAction(int ModelType)
 	File.GetName(Name);
 	glutSetWindowTitle(Name);
 	
+	// Neutral positions will always be initially present.
 	// Assume that a boned model already has a bounding box;
 	// most boneless (static) models do not have such bounding boxes.
 	if (Model.Bones.empty())
@@ -207,6 +208,17 @@ bool Use_Light = false;
 
 // How many rendering passes
 int NumRenderPasses = 1;
+
+// What to render: neutral, frames, or sequences? And which of each?
+enum {
+	ShowAnim_Neutral,
+	ShowAnim_Frames,
+	ShowAnim_Sequences
+} ShowAnim = ShowAnim_Neutral;
+
+int ThisFrame = 0;
+int ThisSeq = 0;
+
 
 void LoadSkinAction(int SkinType)
 {
@@ -460,6 +472,17 @@ void DrawMainWindow()
 		// glCullFace(GL_BACK);
 		// glFrontFace(GL_CW);
 		
+		switch(ShowAnim)
+		{
+		case ShowAnim_Neutral:
+			Model.FindPositions();
+			break;
+		
+		case ShowAnim_Frames:
+			Model.FindPositions(ThisFrame);
+			break;
+		}
+		
 		// Draw the bounding box
 		const GLfloat EdgeColor[3] = {1,1,0};
 		const GLfloat DiagColor[3] = {0,1,1};
@@ -603,6 +626,95 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 				printf("Light On\n");
 			else
 				printf("Light Off\n");
+			glutPostRedisplay();
+			break;
+		
+		case 'P':
+			switch(ShowAnim)
+			{
+			case ShowAnim_Neutral:
+				ShowAnim = ShowAnim_Frames;
+				if (Model.Frames.empty())
+					ShowAnim = ShowAnim_Neutral;
+				break;
+				
+			case ShowAnim_Frames:
+				ShowAnim = ShowAnim_Sequences;
+				if (Model.Frames.empty())
+					ShowAnim = ShowAnim_Neutral;
+				else if (Model.SeqFrames.empty())
+					ShowAnim = ShowAnim_Neutral;
+				break;
+				
+			case ShowAnim_Sequences:
+				ShowAnim = ShowAnim_Neutral;
+				break;
+			}
+			
+			switch(ShowAnim)
+			{
+			case ShowAnim_Neutral:
+				printf("Neutral\n");
+				break;
+			case ShowAnim_Frames:
+				ThisFrame = 0;
+				printf("Frame %d\n",ThisFrame);
+				break;
+			case ShowAnim_Sequences:
+				ThisSeq = 0;
+				ThisFrame = 0;
+				printf("Sequence %d %d\n",ThisSeq,ThisFrame);
+				break;
+			}
+			
+			glutPostRedisplay();
+			break;
+		
+		case '[':
+		case '{':
+			// Must figure out how to do sequences
+			glutPostRedisplay();
+			break;
+		
+		case ']':
+		case '}':
+			// Must figure out how to do sequences
+			glutPostRedisplay();
+			break;
+		
+		case '-':
+		case '_':
+			switch(ShowAnim)
+			{
+			case ShowAnim_Frames:
+				if (--ThisFrame < 0)
+					ThisFrame = Model.TrueNumFrames()-1;
+				printf("Frame %d\n",ThisFrame);
+				break;
+			
+			case ShowAnim_Sequences:
+			// Must figure out how to do sequences
+				break;
+			}
+			
+			glutPostRedisplay();
+			break;
+		
+		case '=':
+		case '+':
+			switch(ShowAnim)
+			{
+			case ShowAnim_Frames:
+				if (++ThisFrame >= Model.TrueNumFrames())
+					ThisFrame = 0;
+				printf("Frame %d\n",ThisFrame);
+				break;
+			
+			case ShowAnim_Sequences:
+			// Must figure out how to do sequences
+				break;
+			}
+			
 			glutPostRedisplay();
 			break;
 	}
@@ -783,6 +895,9 @@ const int MainWindowWidth = 512, MainWindowHeight = 512;
 
 int main(int argc, char **argv)
 {
+	// Setting up for using frames and sequences
+	Model3D::BuildTrigTables();
+	
 	// Must be up here
 	glutInit(&argc, argv);
 	
@@ -822,8 +937,8 @@ int main(int argc, char **argv)
 	glutAddMenuEntry("Alias-Wavefront...",ModelWavefront);
 	glutAddMenuEntry("3D Studio Max...",ModelStudio);
 	glutAddMenuEntry("QuickDraw 3D...",Model_QD3D);
-	glutAddMenuEntry("Dim3 (First)...",Model_Dim3_First);
-	glutAddMenuEntry("Dim3 (Rest)...",Model_Dim3_Rest);
+	glutAddMenuEntry("Dim3 [First]...",Model_Dim3_First);
+	glutAddMenuEntry("Dim3 [Rest]...",Model_Dim3_Rest);
 
 	int SkinMenu = glutCreateMenu(LoadSkinAction);
 	glutAddMenuEntry("Colors...",ImageLoader_Colors);
