@@ -3,17 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>IBDocumentLocation</key>
-	<string>201 124 518 382 0 0 800 578 </string>
+	<string>72 170 518 382 0 0 800 578 </string>
 	<key>IBEditorPositions</key>
 	<dict>
-		<key>1111</key>
-		<string>401 534 325 44 0 0 800 578 </string>
+		<key>1324</key>
+		<string>249 377 120 120 0 0 800 578 </string>
+		<key>1341</key>
+		<string>63 328 218 228 0 0 800 578 </string>
+		<key>1350</key>
+		<string>101 458 120 120 0 0 800 578 </string>
 	</dict>
 	<key>IBFramework Version</key>
 	<string>291.0</string>
 	<key>IBGroupedObjects</key>
 	<dict>
-		<key>0</key>
+		<key>3</key>
 		<array>
 			<string>1077</string>
 			<string>1078</string>
@@ -22,25 +26,17 @@
 			<string>1081</string>
 			<string>1082</string>
 		</array>
-		<key>1</key>
+		<key>6</key>
 		<array>
-			<string>1091</string>
-			<string>1089</string>
-			<string>1092</string>
-		</array>
-		<key>2</key>
-		<array>
-			<string>1093</string>
-			<string>1094</string>
-			<string>1096</string>
+			<string>510</string>
+			<string>528</string>
+			<string>573</string>
+			<string>578</string>
+			<string>579</string>
 		</array>
 	</dict>
 	<key>IBLastGroupID</key>
-	<string>3</string>
-	<key>IBOpenObjects</key>
-	<array>
-		<integer>754</integer>
-	</array>
+	<string>8</string>
 	<key>IBSystem Version</key>
 	<string>6L60</string>
 	<key>targetFramework</key>
