@@ -157,7 +157,6 @@ struct Configure_ChaseCam_HandlerData
 
 bool Configure_ChaseCam_HandlerData::VerifyAndAdjust()
 {
-	vpause("In VerifyAndAdjust()");
 	float Temp;
 	float Damping, Spring;
 	bool IsOK = true;
