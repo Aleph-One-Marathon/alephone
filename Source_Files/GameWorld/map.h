@@ -229,32 +229,22 @@ inline int16 player_start_identifier_value(const player_start_data * const p)
 { return (p)->identifier & player_start_identifier_mask; }
 
 inline bool player_identifier_doesnt_auto_recenter(int16 identifier)
-{ return identifier & _player_start_doesnt_auto_recenter_flag; }
+{ return TEST_FLAG(identifier, _player_start_doesnt_auto_recenter_flag); }
 
 inline bool player_start_doesnt_auto_recenter(const player_start_data * const p)
-{ return (p)->identifier & _player_start_doesnt_auto_recenter_flag; }
+{ return TEST_FLAG(p->identifier, _player_start_doesnt_auto_recenter_flag); }
 
 inline void set_player_start_doesnt_auto_recenter_status(player_start_data * const p, bool v)
-{
-	if(v)
-		(p)->identifier|=(uint16)_player_start_doesnt_auto_recenter_flag;
-	else
-		(p)->identifier&=(uint16)~_player_start_doesnt_auto_recenter_flag;
-}
+{	SET_FLAG(p->identifier, _player_start_doesnt_auto_recenter_flag, v); }
 
 inline bool player_identifier_doesnt_auto_switch_weapons(int16 identifier)
-{ return identifier & _player_start_doesnt_auto_switch_weapons_flag; }
+{ return TEST_FLAG(identifier, _player_start_doesnt_auto_switch_weapons_flag); }
 
 inline bool player_start_doesnt_auto_switch_Weapons(const player_start_data * const p)
-{ return (p)->identifier & _player_start_doesnt_auto_switch_weapons_flag; }
+{ return TEST_FLAG(p->identifier, _player_start_doesnt_auto_switch_weapons_flag); }
 
 inline void set_player_start_doesnt_auto_switch_weapons_status(player_start_data * const p, bool v)
-{
-	if(v)
-		(p)->identifier|=(uint16)_player_start_doesnt_auto_switch_weapons_flag;
-	else
-		(p)->identifier&=(uint16)~_player_start_doesnt_auto_switch_weapons_flag;
-}
+{	SET_FLAG(p->identifier, _player_start_doesnt_auto_switch_weapons_flag, v); }
 /* end - inline definitions for relevant player_start_data flags */
 
 struct directory_data {
