@@ -28,11 +28,13 @@
 #if defined (__APPLE__) && defined (__MACH__)
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
-# include <OpenGL/glut.h>
+# include <GLUT/glut.h>
+#include <QuickTime/QuickTime.h>
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
 # include <GL/glut.h>
+#include <QuickTime.h>
 #endif
 #include "cseries.h"
 #include "FileHandler.h"
@@ -144,11 +146,13 @@ void LoadModelAction(int ModelType)
 		if (File.ReadDialog(-1,"Model Type: 3D Studio Max"))
 			Success = LoadModel_Studio(File, Model);
 		break;
+#if !(defined(__APPLE__) && defined(__MACH__))
 	case Model_QD3D:
 		TypeCode = '3DMF';
 		if (File.ReadDialog(1,"Model Type: QuickDraw 3D"))
 			Success = LoadModel_QD3D(File, Model);
 		break;
+#endif
 	case Model_Dim3:
 		TypeCode = 'TEXT';
 		if (File.ReadDialog(1,"Model Type: Dim3"))
