@@ -19,6 +19,10 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 	
+May 9, 2002 (Loren Petrich):
+	Changed enqueueActionFlags() so that it can make zombie players controllable by Pfhortran;
+	did this by adding the argument "ZombiesControllable" (default: false)
+ 	
  *  Encapsulates a set of action_queues, so we can have multiple sets and explicitly choose one.
  *
  *  Created by woody on Wed Feb 20 2002.
@@ -35,7 +39,8 @@ public:
     
     void		reset();
 
-    void		enqueueActionFlags(int inPlayerIndex, uint32* inFlags, int inFlagsCount);
+    void		enqueueActionFlags(int inPlayerIndex, uint32* inFlags, int inFlagsCount,
+    				bool ZombiesControllable = false);
     uint32		dequeueActionFlags(int inPlayerIndex);
     
     unsigned int	countActionFlags(int inPlayerIndex);

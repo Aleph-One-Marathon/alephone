@@ -19,6 +19,11 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 	
+	
+May 9, 2002 (Loren Petrich):
+	Changed enqueueActionFlags() so that it can make zombie players controllable by Pfhortran;
+	did this by adding the argument "ZombiesControllable" (default: false)
+	
  *  An ActionQueues object encapsulates a set of players' action_queues.
  *
  *  Created by woody on Wed Feb 20 2002.
@@ -82,13 +87,14 @@ void
 ActionQueues::enqueueActionFlags(
 	int player_index,
 	uint32 *action_flags,
-	int count)
+	int count,
+	bool ZombiesControllable)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct action_queue *queue= mQueueHeaders+player_index;
 
 	//assert(!PLAYER_IS_ZOMBIE(player)); // CP: Changed for scripting
-	if (PLAYER_IS_ZOMBIE(player))
+	if (!ZombiesControllable && PLAYER_IS_ZOMBIE(player))
 		return;
                 
 	while ((count-= 1)>=0)
@@ -100,7 +106,6 @@ ActionQueues::enqueueActionFlags(
 
 	return;
 }
-
 
 
 // Lifted from player.cpp::dequeue_action_flags()
