@@ -1360,7 +1360,21 @@ struct TypedSpec
 	
 	FSSpec Spec;
 	short Type;
+	
+	// For comparison
+	bool operator==(const TypedSpec& Spec);
 };
+
+
+bool TypedSpec::operator==(const TypedSpec& TSpec)
+{
+	if (Type != TSpec.Type) return false;
+	if (Spec.vRefNum != TSpec.Spec.vRefNum) return false;
+	if (Spec.parID != TSpec.Spec.parID) return false;
+	if (IUCompString(Spec.name,TSpec.Spec.name) != 0) return false;
+		
+	return true;
+}
 
 
 // Needed for an STL index sort
@@ -1377,19 +1391,22 @@ struct AlphabeticalCompareTypedSpecs: public binary_function<int, int, bool> {
 static CInfoPBRec PB;
 static TypedSpec DummySpec;	// push_back() food
 static long ParentDir;
+static short VolRefNum;
 static AlphabeticalCompareTypedSpecs CompareTS;
 
+static bool WasRepeated(vector<TypedSpec>& SpecList, TypedSpec& Spec)
+{
+	// Test for a repeat; STL makes it E-Z
+	return (find(SpecList.begin(),SpecList.end(),Spec) != SpecList.end());
+}
+
+
 void FindAndParseFiles(DirectorySpecifier& DirSpec)
-{	
+{
 	// Maintained separately, since updating this ought not to affect the FSSpec,
 	// which will be left unchanged in case of failure.
 	ParentDir = DirSpec.Get_parID();
-	
-	// Resetting for each directory walk
-	obj_clear(PB);
-	PB.hFileInfo.ioVRefNum = DirSpec.Get_vRefNum();
-	DummySpec.Spec.vRefNum = DirSpec.Get_vRefNum();
-	PB.hFileInfo.ioNamePtr = DummySpec.Spec.name;
+	VolRefNum = DirSpec.Get_vRefNum();
 	
 	// Specific for each level of recursion;
 	// prepare for an index sort
@@ -1401,6 +1418,10 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 	while(true)
 	{
 		// Resetting to look for next file in directory
+		obj_clear(PB);
+		DummySpec.Spec.vRefNum = VolRefNum;
+		PB.hFileInfo.ioVRefNum = VolRefNum;
+		PB.hFileInfo.ioNamePtr = DummySpec.Spec.name;
 		PB.hFileInfo.ioDirID = ParentDir;
 		PB.hFileInfo.ioFDirIndex = FileIndex + 1;	// Zero-based to one-based indexing
 		
@@ -1416,6 +1437,15 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 			DummySpec.Spec.parID = PB.dirInfo.ioDrDirID;
 			DummySpec.Type = TypedSpec::Directory;
 			
+			if (WasRepeated(SpecList,DummySpec))
+			{
+				int len = DummySpec.Spec.name[0];
+				memcpy(temporary,DummySpec.Spec.name+1,len);
+				temporary[len] = 0;
+				fdprintf("FindAndParseFile() Error: Repeated Directory: %s",temporary);
+				break;
+			}
+			
 			// Add!
 			SpecList.push_back(DummySpec);
 			SpecIndices.push_back(FileIndex);
@@ -1428,6 +1458,15 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 			{
 				DummySpec.Type = TypedSpec::TextFile;
 			
+				if (WasRepeated(SpecList,DummySpec))
+				{
+					int len = DummySpec.Spec.name[0];
+					memcpy(temporary,DummySpec.Spec.name+1,len);
+					temporary[len] = 0;
+					fdprintf("FindAndParseFile() Error: Repeated Text File: %s",temporary);
+					break;
+				}
+				
 				// Add!
 				SpecList.push_back(DummySpec);
 				SpecIndices.push_back(FileIndex);
@@ -1435,6 +1474,15 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 			else if (Type == 'rsrc')
 			{
 				DummySpec.Type = TypedSpec::ResourceFile;
+			
+				if (WasRepeated(SpecList,DummySpec))
+				{
+					int len = DummySpec.Spec.name[0];
+					memcpy(temporary,DummySpec.Spec.name+1,len);
+					temporary[len] = 0;
+					fdprintf("FindAndParseFile() Error: Repeated Resource File: %s",temporary);
+					break;
+				}
 			
 				// Add!
 				SpecList.push_back(DummySpec);
