@@ -283,47 +283,6 @@ bool NetEnter(
 		added_exit_procedure= true;
 	}
 
-#ifdef mac
-	// Initialize SDL for Classic Mac here
-	// Use a more elegant kind of fall-through than what's in the rest of the code.
-	// The 900 means System 9 (Classic's version number)
-	//
-	// 900 = SDL not present
-	// 901 = SDL not inited
-	// 902 = SDL networking not inited
-	//
-	if (SDL_Init == NULL)
-	{
-		success = false;
-		error = 900;
-	}
-	
-	if (success)
-	{
-		if (SDL_Init(0) != 0)
-		{
-			success = false;
-			error = 901;
-		}
-	}
-	
-	if (success)
-	{
-		if (SDLNet_Init() != 0)
-		{
-			success = false;
-			error = 902;
-			SDL_Quit();
-		}
-	}
-	
-	if (!success)
-	{
-		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
-		return false;
-	}
-#endif
-
 	// ZZZ: choose a game protocol
 	sCurrentGameProtocol = (network_preferences->game_protocol == _network_game_protocol_star) ?
 		static_cast<NetworkGameProtocol*>(&sStarGameProtocol) :
@@ -420,18 +379,6 @@ void NetExit(
 	NetLookupClose();
 	NetDDPClose();
 	NetADSPClose();
-#endif
-
-#ifdef mac
-	// Undo SDL setup in NetEnter;
-	// watch out for whether SDL was weak-linked
-	{
-		if (SDL_Init != NULL)
-		{
-			SDLNet_Quit();
-			SDL_Quit();
-		}
-	}
 #endif
 }
 

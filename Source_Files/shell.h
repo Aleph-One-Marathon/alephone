@@ -122,6 +122,7 @@ struct system_information_data
 	bool machine_is_ppc;
 	bool machine_has_network_memory;
 	bool machine_is_bluebox;
+	bool sdl_networking_is_available;
 };
 
 /* ---------- globals */

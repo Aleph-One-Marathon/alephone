@@ -160,6 +160,11 @@ Apr 29, 2002 (Loren Petrich):
 #include "macintosh_network.h" /* For NetDDPOpen() */
 #endif
 
+#if HAVE_SDL_NET
+#include "sdl_network.h"
+#undef main // Prevents SDL from hijacking main()
+#endif
+
 // LP addition: local-event management:
 #include "LocalEvents.h"
 
@@ -1136,6 +1141,19 @@ static void initialize_system_information(
 	}
 #endif
 
+	system_information->sdl_networking_is_available= false;
+#if HAVE_SDL_NET
+	if(SDL_Init != NULL && SDL_Init(0) == 0)
+	{
+		atexit(SDL_Quit);
+		if (SDLNet_Init() == 0)
+		{
+			system_information->sdl_networking_is_available= true;
+			atexit(SDLNet_Quit);
+		}
+	}
+#endif
+
 	/* Type of machine? */
 	err= Gestalt(gestaltNativeCPUtype, &processor_type);
 	if(!err)
@@ -1204,7 +1222,7 @@ bool networking_available(
 	void)
 {
 #if HAVE_SDL_NET
-	return true;
+	return system_information->sdl_networking_is_available;
 #else
 	return system_information->appletalk_is_available;
 #endif
