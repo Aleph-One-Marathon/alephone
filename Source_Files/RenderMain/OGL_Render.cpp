@@ -463,9 +463,10 @@ struct LightingDataStruct
 {
 	short Type;
 	short ProjDistance;
-	GLfloat *Dir;
-	GLfloat AvgLight;
-	GLfloat LightDiff;
+	GLfloat *Dir;		// Direction to the "light point"
+	GLfloat AvgLight;	// Average from all directions
+	GLfloat LightDiff;	// Top-to-bottom difference
+	GLfloat Opacity;	// For overall-semitransparent models
 	
 	// This is in 3 sets of 4 values:
 	// R0, R1, R2, R3, G0, G1, G2, G3, B0, B1, B2, B3;
@@ -2159,7 +2160,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		{
 			// Do blending here to get the necessary semitransparency;
 			// push the cutoff down so 0.5*0.5 (half of half-transparency)
-			glColor3f(1,1,1);
+			glColor4f(1,1,1,Color[3]);
 			glEnable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
 			
@@ -2374,6 +2375,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		if (UseFlatStatic)
 		{
 			// Do explicit depth sort because these textures are semitransparent
+			StandardShaders[0].Flags = ModelRenderer::Textured;
 			ModelRenderObject.Render(ModelPtr->Model, StandardShaders, 1, 0, Z_Buffering);
 		} else {
 			// Do multitextured stippling to create the static effect
@@ -2388,6 +2390,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		int NumSeparableShaders = IsBlended ? 0 : 1;
 		
 		SET_FLAG(StandardShaders[0].Flags,ModelRenderer::ExtLight,ExternallyLit);
+		SET_FLAG(StandardShaders[0].Flags,ModelRenderer::EL_SemiTpt,false);
 		
 		if (ExternallyLit)
 		{
@@ -2405,6 +2408,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			LightingData.Dir = Dir;
 			LightingData.AvgLight = AvgLight;
 			LightingData.LightDiff = LightDiff;
+			
+			GLfloat Opacity = ShaderData.Color[3];
+			LightingData.Opacity = Opacity;
+			if (Opacity < 1)
+				SET_FLAG(StandardShaders[0].Flags,ModelRenderer::EL_SemiTpt,true);
 			
 			// Whether to fade miner's light toward model sides
 			bool NoFade = false;
@@ -2483,25 +2491,27 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 	else if (RenderRectangle.flags&_SHADELESS_BIT)
 	{
 		// Only set when infravision is active
-		Color[0] = Color[1] = Color[2] = Color[3] = 1;
+		Color[0] = Color[1] = Color[2] = 1;
+		Color[3] = RenderRectangle.Opacity;
 		IsGlowmappable = false;
 	}
 	else if (RenderRectangle.ambient_shade < 0)
 	{
 		GLfloat Light = (- RenderRectangle.ambient_shade)/GLfloat(FIXED_ONE);
 		Color[0] = Color[1] = Color[2] = Light;
-		Color[3] = 1;
+		Color[3] = RenderRectangle.Opacity;
 	}
 	else
 	{
 		// External lighting includes the player's "miner's light"
 		ExternallyLit = true;
 		FindShadingColor(RenderRectangle.depth,RenderRectangle.ambient_shade,Color);
-		Color[3] = 1;
+		Color[3] = RenderRectangle.Opacity;
 	}
 	
 	// Make the sprites crisp-edged, except if they are in invisibility mode
-	if (IsInvisible || IsBlended)
+	// or are otherwise semitransparent
+	if (IsInvisible || IsBlended || (RenderRectangle.Opacity < 1))
 	{
 		glDisable(GL_ALPHA_TEST);
 		glEnable(GL_BLEND);
@@ -2598,7 +2608,7 @@ void NormalShader(void *Data)
 void GlowingShader(void *Data)
 {
 	// Glowmapped setup
-	glColor3f(1,1,1);
+	glColor4f(1,1,1,ShaderData.Color[3]);
 	glEnable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
 	
@@ -2711,6 +2721,11 @@ void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Posit
 */
 #endif
 	
+	// In case of a semitransparent object
+	GLfloat Opacity = LPtr->Opacity;
+	bool Semitransparent = (Opacity < 1);
+	int NumCPlanes = Semitransparent ? 4 : 3;
+	
 	// Whether to fade miner's light toward model sides
 	bool NoFade = false;
 	
@@ -2726,21 +2741,11 @@ void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Posit
 			GLfloat N0 = *(Normals++);
 			GLfloat N1 = *(Normals++);
 			GLfloat N2 = *(Normals++);
-			*(Colors++) =
-				el0[0]*N0 + 
-				el0[1]*N1 + 
-				el0[2]*N2 + 
-				el0[3];
-			*(Colors++) =
-				el1[0]*N0 + 
-				el1[1]*N1 + 
-				el1[2]*N2 + 
-				el1[3];
-			*(Colors++) =
-				el2[0]*N0 + 
-				el2[1]*N1 + 
-				el2[2]*N2 + 
-				el2[3];
+			*(Colors++) = el0[0]*N0 + el0[1]*N1 + el0[2]*N2 + el0[3];
+			*(Colors++) = el1[0]*N0 + el1[1]*N1 + el1[2]*N2 + el1[3];
+			*(Colors++) = el2[0]*N0 + el2[1]*N1 + el2[2]*N2 + el2[3];
+			if (Semitransparent)
+				*(Colors++) = Opacity;
 		}
 	}
 	break;
@@ -2749,7 +2754,7 @@ void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Posit
 	NoFade = true;
 	case OGL_MLight_Indiv:
 	{
-		for (int k=0; k<NumVerts; k++, Normals += 3, Positions +=3, Colors +=3)
+		for (int k=0; k<NumVerts; k++, Normals += 3, Positions +=3, Colors +=NumCPlanes)
 		{
 			GLfloat *Dir = LPtr->Dir;
 			GLfloat Depth = LPtr->ProjDistance + (Dir[0]*Positions[0] + Dir[1]*Positions[1]);
@@ -2766,6 +2771,8 @@ void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Posit
 				GLfloat FrontMult = (1+NProd)/2;
 				for (int c=0; c<3; c++)
 					Colors[c] = BackMult*BackColor[c] + FrontMult*FrontColor[c];
+				if (Semitransparent)
+					Colors[3] = Opacity;
 			}
 		}
 	}
