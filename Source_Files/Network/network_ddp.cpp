@@ -14,7 +14,7 @@ NETWORK_DDP.C
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -23,6 +23,7 @@ Monday, June 27, 1994 1:10:35 PM
 Feb. 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
 */
+
 
 #include "macintosh_cseries.h"
 #include "macintosh_network.h"

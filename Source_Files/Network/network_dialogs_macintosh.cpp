@@ -14,7 +14,7 @@ NETWORK_DIALOGS.C  (now network_dialogs_macintosh.cpp)
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -133,8 +133,8 @@ extern TextSpec *_get_font_spec(short font_index);
 
 /* ---------- private code */
 static bool network_game_setup(player_info *player_information, game_info *game_information);
-static short fill_in_game_setup_dialog(DialogPtr dialog, player_info *player_information, bool allow_all_levels);
-static void extract_setup_dialog_information(DialogPtr dialog, player_info *player_information, 
+/* static */ short fill_in_game_setup_dialog(DialogPtr dialog, player_info *player_information, bool allow_all_levels);
+/* static */ void extract_setup_dialog_information(DialogPtr dialog, player_info *player_information, 
 	game_info *game_information, short game_limit_type, bool allow_all_levels);
 bool check_setup_information(DialogPtr dialog, short game_limit_type);
 
@@ -159,13 +159,13 @@ static void draw_beveled_text_box(bool inset, Rect *box, short bevel_size, RGBCo
 // ZZZ: moved a few static functions to network_dialogs.h so we can share
 
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
-static void setup_dialog_for_game_type(DialogPtr dialog, short game_type);
+/* static */ void setup_dialog_for_game_type(DialogPtr dialog, short game_type);
 static void draw_player_box_with_team(Rect *rectangle, short player_index);
 
 static void setup_network_speed_for_join(DialogPtr dialog);
 static void setup_network_speed_for_gather(DialogPtr dialog);
-static void setup_for_untimed_game(DialogPtr dialog);
-static void setup_for_timed_game(DialogPtr dialog);
+/* static */ void setup_for_untimed_game(DialogPtr dialog);
+/* static */ void setup_for_timed_game(DialogPtr dialog);
 static short get_game_duration_radio(DialogPtr dialog);
 
 static bool key_is_down(short key_code);
@@ -1099,9 +1099,12 @@ static void setup_network_list_box(
 	}
 
 	/* spawn an asynchronous network name lookup */
+	// LP: kludge to get the code to compile
+	#ifndef mac
 	error= NetLookupOpen("\p=", PLAYER_TYPE, zone, MARATHON_NETWORK_VERSION,
 		network_list_box_update_proc, NetEntityNotInGame);
 	if (error!=noErr) dprintf("NetLookupOpen() returned %d", error);
+	#endif
 
 	return;
 }

@@ -14,7 +14,7 @@
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -35,6 +35,8 @@ Sept-Nov 2001 (Woody Zenfell): strategic byte-swapping for cross-platform compat
 */
 
 #include "cseries.h"
+
+
 
 #if defined(mac)
 #include "macintosh_network.h"
@@ -74,7 +76,7 @@ OSErr NetSendStreamPacket(
         // ZZZ: byte-swap packet type code if necessary
 	short	packet_type_NET;
     
-#ifndef MAC
+#ifndef mac
         packet_type_NET = SDL_SwapBE16(packet_type);
 #else
         packet_type_NET = packet_type;
@@ -103,7 +105,7 @@ OSErr NetReceiveStreamPacket(
 
 	error= stream_read(&packet_type_NET, &length);
         
-#ifndef MAC
+#ifndef mac
         *packet_type = SDL_SwapBE16(packet_type_NET);
 #else
         *packet_type = packet_type_NET;
@@ -126,8 +128,13 @@ OSErr NetOpenStreamToPlayer(
 	switch(transport_type)
 	{
 		case kNetworkTransportType:
+			// LP: kludge to get the code to compile
+			#ifndef mac
 			error= NetADSPOpenConnection(dspConnection, 
 				NetGetPlayerADSPAddress(player_index));
+			#else
+			error = noErr;
+			#endif
 			break;
 			
 		case kModemTransportType:

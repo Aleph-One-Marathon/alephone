@@ -14,7 +14,7 @@
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -96,6 +96,17 @@ enum
 };
 
 /* ---------- structures */
+
+
+// LP: This is a dummy definition until Classic MacOS support can be completed
+#ifdef mac
+#define AddrBlock IPaddress
+struct IPaddress {
+    uint32	host;
+    uint16	port;
+};
+#endif
+
 
 // (ZZZ:) Note ye well!!: if you alter these network-related structures, you are probably going to need to modify
 // the corresponding _NET structures in network_data_formats.h AND *both* corresponding netcpy() functions in

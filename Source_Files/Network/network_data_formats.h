@@ -14,7 +14,7 @@
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -24,6 +24,8 @@
  *  requires only minimal changes to the original code.
  *
  *  Created by Woody Zenfell, III on Thu Oct 11 2001; structures copied from network_private.h.
+ 
+ 	Jan 16, 2002 (Loren Petrich) Made 
  */
 
 #ifndef	NETWORK_DATA_FORMATS_H
@@ -32,6 +34,168 @@
 #include	"cseries.h"		// Need ALEPHONE_LITTLE_ENDIAN, if appropriate.
 #include	"network.h"
 #include	"network_private.h"
+
+
+
+// LP: All the packed net-packet structs have been turned into wrappers for plain bytes
+
+const int SIZEOF_game_info = MAX_LEVEL_NAME_LENGTH + 23;
+
+struct game_info_NET
+{
+	uint8 data[SIZEOF_game_info];
+};
+
+extern void netcpy(game_info_NET* dest, const game_info* src);
+extern void netcpy(game_info* dest, const game_info_NET* src);
+
+
+
+const int SIZEOF_player_info = MAX_NET_PLAYER_NAME_LENGTH + LONG_SERIAL_NUMBER_LENGTH + 7;
+
+struct player_info_NET {
+	uint8 data[SIZEOF_player_info];
+};
+
+extern void netcpy(player_info_NET* dest, const player_info* src);
+extern void netcpy(player_info* dest, const player_info_NET* src);
+
+
+
+// Note: no further interpretation/manipulation of a packet is attempted here.  That's up
+// to whomever actually deals with receiving and interpreting the packet (though they will
+// probably make use of the netcpy's for the next couple structures below).
+
+const int SIZEOF_NetPacketHeader = 6;
+
+struct NetPacketHeader_NET
+{
+	uint8 data[SIZEOF_NetPacketHeader];
+};
+
+extern void netcpy(NetPacketHeader_NET* dest, const NetPacketHeader* src);
+extern void netcpy(NetPacketHeader* dest, const NetPacketHeader_NET* src);
+
+
+
+// Note: we do not attempt any manipulations on the actual action_flags, as we do not claim
+// to compute the number that would be there.  (I suppose, knowing that the only stuff in the
+// buffer will be action flags, that we could just walk through and swap all of it, but...)
+// We'll leave it to whomever interprets or writes to the action_flags data segment to do the
+// necessary manipulations.
+
+const int SIZEOF_NetPacket = 2*MAXIMUM_NUMBER_OF_NETWORK_PLAYERS + 8;
+
+struct NetPacket_NET
+{
+	uint8 data[SIZEOF_NetPacket];
+};
+
+extern void netcpy(NetPacket_NET* dest, const NetPacket* src);
+extern void netcpy(NetPacket* dest, const NetPacket_NET* src);
+
+
+
+// For action flags - note length is in bytes, not number of flags.  This is 'bidirectional',
+// i.e. same function is used to copy from _NET to unpacked as the other way around.
+// Note, since there is no packing to do - only byte swapping - we can pass along to memcpy if we're
+// on a big-endian architecture.
+#ifdef ALEPHONE_LITTLE_ENDIAN
+extern void netcpy(uint32* dest, const uint32* src, size_t length);
+#else
+__inline__ void netcpy(uint32* dest, const uint32* src, size_t length) { memcpy(dest, src, length); }
+#endif
+
+
+
+// Note: we do not attempt any sort of processing on the "data" segment here,
+// since we may not understand its format.  Whoever interprets it will have to
+// do the necessary packing/unpacking, byte-swapping, etc.
+
+const int SIZEOF_NetDistributionPacket = 6;
+
+struct NetDistributionPacket_NET
+{
+	uint8 data[SIZEOF_NetDistributionPacket];
+};
+
+extern void netcpy(NetDistributionPacket_NET* dest, const NetDistributionPacket* src);
+extern void netcpy(NetDistributionPacket* dest, const NetDistributionPacket_NET* src);
+
+
+// Note: unlike other _NET structures, neither 'host' nor 'port' here is byte-swapped
+// in conversion to/from the non-_NET structures.
+// It is believed that both should ALWAYS be dealt with in network byte order.
+
+const int SIZEOF_IPaddress = 6;
+
+struct IPaddress_NET {
+   uint8 data[SIZEOF_IPaddress];
+};
+
+extern void netcpy(IPaddress_NET* dest, const IPaddress* src);
+extern void netcpy(IPaddress* dest, const IPaddress_NET* src);
+
+
+
+const int SIZEOF_NetPlayer = 2*SIZEOF_IPaddress + MAXIMUM_PLAYER_DATA_SIZE + 3;
+
+struct NetPlayer_NET {
+	uint8 data[SIZEOF_NetPlayer];
+};
+
+extern void netcpy(NetPlayer_NET* dest, const NetPlayer* src);
+extern void netcpy(NetPlayer* dest, const NetPlayer_NET* src);
+
+
+
+const int SIZEOF_NetTopology = MAXIMUM_GAME_DATA_SIZE +
+	MAXIMUM_NUMBER_OF_NETWORK_PLAYERS*SIZEOF_NetPlayer + 6;
+
+struct NetTopology_NET
+{
+	uint8 data[SIZEOF_NetTopology];
+};
+
+extern void netcpy(NetTopology_NET* dest, const NetTopology* src);
+extern void netcpy(NetTopology* dest, const NetTopology_NET* src);
+
+
+
+const int SIZEOF_gather_player_data = 2;
+
+struct gather_player_data_NET {
+	uint8 data[SIZEOF_gather_player_data];
+};
+
+extern void netcpy(gather_player_data_NET* dest, const gather_player_data* src);
+extern void netcpy(gather_player_data* dest, const gather_player_data_NET* src);
+
+
+
+const int SIZEOF_accept_gather_data = SIZEOF_NetPlayer + 1;
+
+struct accept_gather_data_NET {
+	uint8 data[SIZEOF_accept_gather_data];
+};
+
+extern void netcpy(accept_gather_data_NET* dest, const accept_gather_data* src);
+extern void netcpy(accept_gather_data* dest, const accept_gather_data_NET* src);
+
+
+#ifdef NETWORK_CHAT
+const int SIZEOF_NetChatMessage = CHAT_MESSAGE_TEXT_BUFFER_SIZE + 2;
+
+struct NetChatMessage_NET {
+    uint8 data[SIZEOF_NetChatMessage];
+};
+
+extern void netcpy(NetChatMessage_NET* dest, const NetChatMessage* src);
+extern void netcpy(NetChatMessage* dest, const NetChatMessage_NET* src);
+#endif
+
+
+#if OBSOLETE
 
 // We will fake the Mac version for now, to maintain total compatibility with old formats...
 // We do an actual copy rather than pointer reassignment so semantics are the same as "real" netcpy.
@@ -193,7 +357,7 @@ extern void netcpy(IPaddress* dest, const IPaddress_NET* src);
 
 struct NetPlayer_NET {
 	IPaddress_NET dspAddress;
-        IPaddress_NET ddpAddress;
+    IPaddress_NET ddpAddress;
 	
 	int16 identifier;
 
@@ -243,6 +407,7 @@ extern void netcpy(accept_gather_data* dest, const accept_gather_data_NET* src);
 
 
 
+#ifdef NETWORK_CHAT
 struct NetChatMessage_NET {
     uint16  sender_identifier;
     char    text[CHAT_MESSAGE_TEXT_BUFFER_SIZE];
@@ -250,6 +415,7 @@ struct NetChatMessage_NET {
 
 extern void netcpy(NetChatMessage_NET* dest, const NetChatMessage* src);
 extern void netcpy(NetChatMessage* dest, const NetChatMessage_NET* src);
+#endif
 
 
 
@@ -259,5 +425,6 @@ extern void netcpy(NetChatMessage* dest, const NetChatMessage_NET* src);
 
 #endif// ndef MAC
 
-#endif//NETWORK_DATA_FORMATS_H
+#endif // OBSOLETE
 
+#endif//NETWORK_DATA_FORMATS_H

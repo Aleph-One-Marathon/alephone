@@ -14,7 +14,7 @@ NETWORK_DIALOGS.C  (network_dialogs.cpp)
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -161,10 +161,12 @@ extract_setup_dialog_information(
 
 
 #ifdef mac
+#ifdef OBSOLETE
 	// get network information
 	network_speed = get_selection_control_value(dialog, iNETWORK_SPEED)-1;
 	updates_per_packet = net_speeds[network_speed].updates_per_packet;
 	update_latency = net_speeds[network_speed].update_latency;
+#endif
 #else
         updates_per_packet = 1;
         update_latency = 0;
@@ -306,7 +308,9 @@ fill_in_game_setup_dialog(
 
 #ifdef mac
 	// set up network options
+#ifdef OBSOLETE
 	setup_network_speed_for_gather(dialog);
+#endif
 	modify_selection_control(dialog, iNETWORK_SPEED, CONTROL_ACTIVE, network_preferences->type+1);
 #endif
 

@@ -17,7 +17,7 @@ NETWORK.H
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -94,6 +94,7 @@ typedef struct game_info
 } game_info;
 
 #define MAX_NET_PLAYER_NAME_LENGTH  32
+#define LONG_SERIAL_NUMBER_LENGTH 10
 
 typedef struct player_info
 {
@@ -101,7 +102,7 @@ typedef struct player_info
 	int16 desired_color;
 	int16 team;   // from player.h
 	int16 color;
-	byte long_serial_number[10];
+	byte long_serial_number[LONG_SERIAL_NUMBER_LENGTH];
 } player_info;
 
 /* ---------------- functions from network.c */

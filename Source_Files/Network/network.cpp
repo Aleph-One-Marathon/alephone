@@ -14,7 +14,7 @@ NETWORK.C
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 	GNU General Public License for more details.
 
-	This license is contained in the file "GNU_GeneralPublicLicense.txt",
+	This license is contained in the file "COPYING",
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
@@ -81,6 +81,7 @@ NetADSPRead() should time out by calling PBControl(dspStatus, ...) to see if the
 clearly this is all broken until we have packet types
 */
 
+
 #include "cseries.h"
 #include "map.h"       // for TICKS_PER_SECOND and "struct entry_point"
 #include "interface.h" // for transfering map
@@ -135,6 +136,12 @@ clearly this is all broken until we have packet types
 #define	NETWORK_IP			// needed if using IPaddress { host, port }; (as in SDL_net) rather than AddrBlock for addressing.
 #undef	NETWORK_USE_RECENT_FLAGS	// if the game stalls, use flags at the end of the stall, not the more stale ones at the beginning
 #define	NETWORK_SMARTER_FLAG_DITCHING	// this mechanism won't be quite as hasty to toss flags as Bungie's
+#endif
+
+// LP: kludge so I can get the code to compile
+#ifdef mac
+#define NETWORK_IP
+#undef DEBUG_NET
 #endif
 
 #ifdef DEBUG_NET_RECORD_PROFILE
@@ -620,6 +627,7 @@ static void close_stream_file(void);
 
 /* ---------- code */
 
+
 /*
 --------
 NetEnter
@@ -924,7 +932,10 @@ void NetDistributeInformation(
 	//	distributionFrame->data + (sizeof(NetPacketHeader) + sizeof(NetDistributionPacket) - (2*sizeof(byte))), 
 	//	buffer_size);
 	
+	// LP: kludge to get it to compile
+#ifndef mac
 	NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
+#endif
 #endif
 	
 	return;
@@ -1052,6 +1063,8 @@ static int net_compare(
 	void const *p2)
 {
 #if defined(mac)
+	return 0;
+#ifdef OBSOLETE
 	uint16 base_network_number;
 	uint16 p1_network_number, p2_network_number;
 	
@@ -1068,6 +1081,7 @@ static int net_compare(
 		return -1;
 	else // p2_network_number >= base_network_number
 		return 1;
+#endif
 #else
 	uint32 p1_host = ((const NetPlayer *)p1)->ddpAddress.host;
 	uint32 p2_host = ((const NetPlayer *)p2)->ddpAddress.host;
@@ -1522,8 +1536,11 @@ void NetDDPPacketHandler(
 						packet->sourceAddress.aNode == status->upringAddress.aNode &&
 						packet->sourceAddress.aSocket == status->upringAddress.aSocket)
 #else
+// LP: kludge to get it to compile
+#ifndef mac
 					if (packet->sourceAddress.host == status->upringAddress.host &&
 					    packet->sourceAddress.port == status->upringAddress.port)
+#endif
 #endif
 					{
 						if (header->sequence==status->lastValidRingSequence+1)
@@ -1603,7 +1620,10 @@ void NetDDPPacketHandler(
 					status->downringAddress.aNode= packet->sourceAddress.aNode;
 					status->downringAddress.aSocket= packet->sourceAddress.aSocket;
 #else
+// LP: kludge to get it to compile
+#ifndef mac
 					status->downringAddress = packet->sourceAddress;
+#endif
 #endif
 
 #ifdef DEBUG_NET
@@ -1621,8 +1641,13 @@ void NetDDPPacketHandler(
 							packet->sourceAddress.aNode == status->downringAddress.aNode &&
 							packet->sourceAddress.aSocket == status->downringAddress.aSocket)
 #else
+// LP: kludge to get it to compile
+#ifndef mac
 						if (packet->sourceAddress.host == status->downringAddress.host &&
 						    packet->sourceAddress.port == status->downringAddress.port)
+#else
+	if (0)
+#endif
 #endif
 						{
 							if (header->sequence <= status->lastValidRingSequence)
@@ -1771,7 +1796,10 @@ static void NetProcessLossyDistribution(
                         buffer,
                         sizeof(NetDistributionPacket_NET) + packet_data->data_size);
                 //BlockMove(buffer, distributionFrame->data+sizeof(NetPacketHeader), sizeof(NetDistributionPacket) + packet_data->data_size);
+                // LP: AddrBlock is the trouble here
+                #ifndef mac
                 NetDDPSendFrame(distributionFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
+                #endif
         }
 
 	return;
@@ -2265,7 +2293,9 @@ static void NetSendAcknowledgement(
         netcpy(header_NET, header);
         
 	/* send the acknowledgement */
+	#ifndef mac
 	NetDDPSendFrame(frame, &status->downringAddress, kPROTOCOL_TYPE, ddpSocket);
+	#endif
 	
 	return;
 }
@@ -2386,7 +2416,10 @@ static void NetSendRingPacket(
 
 	status->canForwardRing= false; /* will not be set unless this task fires without a packet to forward */
 	status->clearToForwardRing= false; /* will not be set until we receive the next valid ring packet but will be irrelevant if serverCanForwardRing is true */
-	NetDDPSendFrame(frame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);	
+	// LP: AddrBlock is the trouble here
+	#ifndef mac
+	NetDDPSendFrame(frame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
+	#endif
 	
 	return;
 }
@@ -2471,7 +2504,10 @@ dprintf("Never got confirmation on NetUnsync packet.  They don't love us.");
 			}
 #endif
 			/* Resend it.. */
+			// LP: AddrBlock is the trouble here
+			#ifndef mac
 			NetDDPSendFrame(ringFrame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
+			#endif
 		}
 		else
 		{
@@ -3771,8 +3807,11 @@ short NetUpdateJoinState(
 					if(NetGetTransportType()==kNetworkTransportType)
 					{
 						AddrBlock address;
-
+						
+						// LP: AddrBlock is the trouble here
+						#ifndef mac
 						NetGetStreamAddress(&address);
+						#endif
 						
 						/* for ARA, make stuff in an address we know is correct (donÕt believe the server) */
 						topology->players[0].dspAddress= address;
@@ -3909,7 +3948,10 @@ bool NetGatherPlayer(
 	
 	/* Get the address from the dialog */
 #ifndef SDL
+	// LP: AddrBlock is the trouble here
+	#ifndef mac
 	NetLookupInformation(player_index, &address, NULL);
+	#endif
 #else
         // ZZZ: in my formulation, this info is passed along directly from the dialog
         // There's no "inquiry" function to go back and get it later.
@@ -4146,11 +4188,14 @@ uint16 NetStreamPacketLength(
 	return length;
 }
 
+// LP: AddrBlock is the trouble here
+#ifndef mac
 AddrBlock *NetGetPlayerADSPAddress(
 	short player_index)
 {
 	return &topology->players[player_index].dspAddress;
 }
+#endif
 
 
 #ifdef DEBUG_NET_RECORD_PROFILE
