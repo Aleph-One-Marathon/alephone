@@ -662,12 +662,14 @@ w_list_base::w_list_base(int width, int lines, int sel) : widget(ITEM_FONT), sho
 	frame_b = get_dialog_image(LIST_B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
 
 	thumb_t = get_dialog_image(THUMB_T_IMAGE);
-	SDL_Surface *thumb_tc = get_dialog_image(THUMB_TC_IMAGE);
+	thumb_tc = NULL;
+	SDL_Surface *thumb_tc_unscaled = get_dialog_image(THUMB_TC_IMAGE);
 	thumb_c = get_dialog_image(THUMB_C_IMAGE);
-	SDL_Surface *thumb_bc = get_dialog_image(THUMB_BC_IMAGE);
+	SDL_Surface *thumb_bc_unscaled = get_dialog_image(THUMB_BC_IMAGE);
+	thumb_bc = NULL;
 	thumb_b = get_dialog_image(THUMB_B_IMAGE);
 
-	min_thumb_height = thumb_t->h + thumb_tc->h + thumb_c->h + thumb_bc->h + thumb_b->h;
+	min_thumb_height = thumb_t->h + thumb_tc_unscaled->h + thumb_c->h + thumb_bc_unscaled->h + thumb_b->h;
 
 	trough_rect.x = rect.w - get_dialog_space(TROUGH_R_SPACE);
 	trough_rect.y = get_dialog_space(TROUGH_T_SPACE);
@@ -681,6 +683,8 @@ w_list_base::~w_list_base()
 	if (frame_l) SDL_FreeSurface(frame_l);
 	if (frame_r) SDL_FreeSurface(frame_r);
 	if (frame_b) SDL_FreeSurface(frame_b);
+	if (thumb_tc) SDL_FreeSurface(thumb_tc);
+	if (thumb_bc) SDL_FreeSurface(thumb_bc);
 }
 
 int w_list_base::layout(void)
@@ -710,10 +714,6 @@ void w_list_base::draw(SDL_Surface *s) const
 	draw_image(s, frame_br, x + frame_bl->w + frame_b->w, y + frame_tr->h + frame_r->h);
 
 	// Draw thumb
-	int rem_height = thumb_height - thumb_t->h - thumb_c->h - thumb_b->h;
-	int dyn_height = rem_height / 2;
-	SDL_Surface *thumb_tc = get_dialog_image(THUMB_TC_IMAGE, 0, dyn_height);
-	SDL_Surface *thumb_bc = get_dialog_image(THUMB_BC_IMAGE, 0, (rem_height & 1) ? dyn_height + 1 : dyn_height);
 	x = rect.x + trough_rect.x;
 	y = rect.y + thumb_y;
 	draw_image(s, thumb_t, x, y);
@@ -721,8 +721,6 @@ void w_list_base::draw(SDL_Surface *s) const
 	draw_image(s, thumb_c, x, y += thumb_tc->h);
 	draw_image(s, thumb_bc, x, y += thumb_c->h);
 	draw_image(s, thumb_b, x, y += thumb_bc->h);
-	SDL_FreeSurface(thumb_tc);
-	SDL_FreeSurface(thumb_bc);
 
 	// Draw items
 	draw_items(s);
@@ -788,6 +786,7 @@ void w_list_base::event(SDL_Event &e)
 
 void w_list_base::set_selection(int s)
 {
+	// Set selection, check for bounds
 	if (s < 0)
 		s = 0;
 	else if (s >= num_items)
@@ -795,6 +794,8 @@ void w_list_base::set_selection(int s)
 	if (s != selection)
 		dirty = true;
 	selection = s;
+
+	// Make selection visible
 	if (s < top_item)
 		set_top_item(s);
 	else if (s >= top_item + shown_items)
@@ -803,8 +804,11 @@ void w_list_base::set_selection(int s)
 
 void w_list_base::new_items(void)
 {
+	// Reset top item and selection
 	top_item = selection = 0;
 	dirty = true;
+
+	// Calculate thumb height
 	if (num_items <= shown_items)
 		thumb_height = trough_rect.h;
 	else if (num_items == 0)
@@ -815,6 +819,16 @@ void w_list_base::new_items(void)
 		thumb_height = min_thumb_height;
 	else if (thumb_height > trough_rect.h)
 		thumb_height = trough_rect.h;
+
+	// Create dynamic thumb images
+	if (thumb_tc)
+		SDL_FreeSurface(thumb_tc);
+	if (thumb_bc)
+		SDL_FreeSurface(thumb_bc);
+	int rem_height = thumb_height - thumb_t->h - thumb_c->h - thumb_b->h;
+	int dyn_height = rem_height / 2;
+	thumb_tc = get_dialog_image(THUMB_TC_IMAGE, 0, dyn_height);
+	thumb_bc = get_dialog_image(THUMB_BC_IMAGE, 0, (rem_height & 1) ? dyn_height + 1 : dyn_height);
 }
 
 void w_list_base::center_item(int i)
@@ -824,6 +838,7 @@ void w_list_base::center_item(int i)
 
 void w_list_base::set_top_item(int i)
 {
+	// Set top item (check for bounds)
 	if (i > num_items - shown_items)
 		i = num_items - shown_items;
 	if (i < 0)
@@ -831,6 +846,8 @@ void w_list_base::set_top_item(int i)
 	if (i != top_item)
 		dirty = true;
 	top_item = i;
+
+	// Calculate thumb y position
 	if (num_items == 0)
 		thumb_y = 0;
 	else

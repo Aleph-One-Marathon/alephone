@@ -373,7 +373,7 @@ protected:
 	int thumb_drag_y;		// Y start position when dragging
 
 	SDL_Surface *frame_tl, *frame_t, *frame_tr, *frame_l, *frame_r, *frame_bl, *frame_b, *frame_br;
-	SDL_Surface *thumb_t, *thumb_c, *thumb_b;
+	SDL_Surface *thumb_t, *thumb_tc, *thumb_c, *thumb_bc, *thumb_b;
 };
 
 template <class T>
