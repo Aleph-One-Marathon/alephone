@@ -1307,6 +1307,9 @@ boolean keep_line_segment_out_of_walls(
 	*adjusted_ceiling_height= polygon->ceiling_height;
 	do
 	{
+		// Skip if exclusion-zone indexes were not found
+		if (indexes)
+		{
 		for (i=0;i<polygon->line_exclusion_zone_count&&state!=_aborted;++i)
 		{
 			short signed_line_index= indexes[i];
@@ -1344,8 +1347,8 @@ boolean keep_line_segment_out_of_walls(
 						adjacent_polygon->ceiling_height-p1->z<height ||
 						lowest_ceiling-highest_floor<height)
 					{
-line_is_solid:
-//						if (unsigned_line_index==104) dprintf("inside solid line #%d (%p) in polygon #%d", unsigned_line_index, line, polygon_index);
+					line_is_solid:
+					//	if (unsigned_line_index==104) dprintf("inside solid line #%d (%p) in polygon #%d", unsigned_line_index, line, polygon_index);
 						
 						switch (state)
 						{
@@ -1388,6 +1391,7 @@ line_is_solid:
 					}
 				}
 			}
+		}
 		}
 		
 		switch (state)
@@ -2192,6 +2196,9 @@ void _sound_add_ambient_sources_proc(
 		}
 
 		// add ambient sound sources
+		// do only if indexes were found
+		if (indexes)
+		{
 		while ((index= *indexes++)!=NONE)
 		{
 			struct map_object *object= saved_objects + index; // gross, sorry
@@ -2244,6 +2251,7 @@ void _sound_add_ambient_sources_proc(
 			{
 				add_one_ambient_sound_source((struct ambient_sound_data *)data, &source, listener, sound_type, sound_volume);
 			}
+		}
 		}
 	}
 	
