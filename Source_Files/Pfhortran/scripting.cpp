@@ -27,13 +27,11 @@ Aug 15, 2000 (Loren Petrich):
 #include "game_errors.h"
 
 // LP addition:
-#include "FileHandler_Mac.h"
+#include "FileHandler.h"
 
-#include <Dialogs.h>
-#include <TextUtils.h>
-#include <Strings.h>
-#include <Resources.h>
-#include <Sound.h>
+#ifdef SDL
+#include "resource_manager.h"
+#endif
 
 #include <string.h>
 #include <stdlib.h>
@@ -122,26 +120,26 @@ initalizes lineCount to point to the beginning of every line, and initalizes
 all script variables to zero*/
 int load_script(int text_id)
 {
-	// FileDesc *cur_map;
-	// FileError error;
-	// fileref file_id;
 	OSErr error;
-	short file_id;
-	Handle textHand;
 	int app;
 	int linecount;
 	char *src;
 	int x;
+
+#if defined(mac)
+	short file_id;
+#elif defined(SDL)
+	SDL_RWops *f;
+#endif
 
 	if (!is_pfhortran_on())	/* we can't do too much if the pfhortran isn't running */
 		return false;
 	
 	// LP changes:
 	FileObject& cur_map = get_map_file();
-	// cur_map = get_map_file();
 
+#if defined(mac)
 	error= FSpOpenRF(&GetSpec(cur_map), fsRdPerm, &file_id);
-	// error= FSpOpenRF((FSSpec *)cur_map, fsRdPerm, &file_id);
 
 	if (error)
 	{
@@ -155,27 +153,38 @@ int load_script(int text_id)
 
 	UseResFile(file_id);
 
-	textHand = Get1Resource('TEXT', text_id);
-
+	Handle textHand = Get1Resource('TEXT', text_id);
 	if ((textHand) && (!*textHand))
 		LoadResource(textHand);
-		
+
 	UseResFile(app);
 
-	clean_up_script();
-		
+#elif defined(SDL)
+	uint32 textSize;
+	void *textHand = Get1Resource('TEXT', text_id, &textSize);
+#endif
 
+	clean_up_script();
 
 	if (textHand == NULL)
 		current_script=0;
 	else
 	{	
+#if defined(mac)
 		src=(char *)(*textHand);
 		src[GetHandleSize(textHand)] = 0;
+#elif defined(SDL)
+		src = (char *)textHand;
+		src[textSize] = 0;
+#endif
 		
 		current_script = parse_script(src);
 		
+#if defined(mac)
 		ReleaseResource(textHand);
+#elif defined(SDL)
+		free(textHand);
+#endif
 		
 		src = NULL; 
 		
@@ -186,16 +195,15 @@ int load_script(int text_id)
 		for (x=0;x < MAX_VARS;x++)
 			variable_lookup[x] = 0;
 		variable_count = 0;
-		
 	}
 
+#if defined(mac)
 	if (file_id != app)
 		CloseResFile(file_id);
-		
+#endif
 
 	is_startup = false;
-		 	
-	 	
+
 	return true;
 }
 
