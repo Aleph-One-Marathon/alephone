@@ -262,6 +262,8 @@ enum /* instruction defs */
 	
 	Player_Control = 0x5B,
 	
+	Play_Sound = 0x5C,
+	
 	NUMBER_OF_INSTRUCTIONS
 };
 
