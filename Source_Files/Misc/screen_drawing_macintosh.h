@@ -501,6 +501,9 @@ void _erase_screen(
 		RectRgn(rgn, &rect);
 		QDFlushPortBuffer(curPort, rgn);
 		DisposeRgn(rgn);
+		
+		// Try and wait for the screen to redraw
+		RunCurrentEventLoop(kEventDurationSecond/4);
 	}
 #endif
 }

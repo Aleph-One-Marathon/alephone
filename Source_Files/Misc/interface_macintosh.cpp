@@ -573,29 +573,27 @@ bool has_cheat_modifiers(
 }
 
 #if defined(TARGET_API_MAC_CARBON)
-static volatile int cursor_showing = -1;
+static int cursor_showing = -1;
 #endif
 
 // Bytnar: Under Carbon, we can't Hide twice and Show once and expect the cursor to show.
-// JTP: Disable Bytnar for now... csalerts call InitCursor directly
-
 /* ------------ these are all functions that are simple to write for various */
 /* --- machines */
 void hide_cursor(
 	void)
 {
-#if 0 && defined(TARGET_API_MAC_CARBON)
-	if (cursor_showing == -1)
+#if defined(TARGET_API_MAC_CARBON)
+	if (cursor_showing != false)
 	{
-		InitCursor();
-		cursor_showing = true;
-	}
-	if (cursor_showing == true)
-	{
+		// JTP: This covers a glitch whereby the cursor would remain visible if you
+		// suspended AlephOne, then resumed it by clicking on the icon in the dock.
+		Rect screen_rect;
+		GetPortBounds(GetScreenGrafPort(), &screen_rect);
+		ShieldCursor(&screen_rect, (Point){screen_rect.top,screen_rect.left});
+		
 		HideCursor();
 		cursor_showing = false;
 	}
-//	CGAssociateMouseAndMouseCursorPosition(false);
 #else
 	HideCursor();
 #endif
@@ -604,18 +602,12 @@ void hide_cursor(
 void show_cursor(
 	void)
 {
-#if 0 && defined(TARGET_API_MAC_CARBON)
-	if (cursor_showing == -1)
-	{
-		InitCursor();
-		cursor_showing = true;
-	}
-	if (cursor_showing == false)
+#if defined(TARGET_API_MAC_CARBON)
+	if (cursor_showing != true)
 	{
 		ShowCursor();
 		cursor_showing = true;
 	}
-//	CGAssociateMouseAndMouseCursorPosition(true);
 #else
 	InitCursor(); // why worry about balancing?
 #endif

@@ -2105,7 +2105,11 @@ void dump_screen()
 			continue;
 		}
 		// Now try to create it
+#if defined(TARGET_API_MAC_CARBON)
+		err = FSpCreate(&Spec,0l,'PICT',smSystemScript);
+#else
 		err = FSpCreate(&Spec,'ttxt','PICT',smSystemScript);
+#endif
 		if (err != noErr)
 		{
 			KillPicture(PicObject);
