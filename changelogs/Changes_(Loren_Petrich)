@@ -1415,3 +1415,8 @@ Feb 11, 2001
 
 Added changing of player shapes with MML, modified the flagging of unanimated item randomizaton,
 and ensured that the map data gets cleared when a level starts.
+
+Apr 27, 2001
+
+Added lots of things, including external-sound loading, making HUD-less view wider,
+and cheat-code modification
