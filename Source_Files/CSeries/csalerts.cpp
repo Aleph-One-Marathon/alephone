@@ -44,7 +44,9 @@ April 22, 2003 (Woody Zenfell):
 #include "TextStrings.h"
 
 // Update the compiler to know that ExitToShell doesn't return either
+#ifndef __MWERKS__
 extern void ExitToShell(void) NORETURN;
+#endif
 
 /* ---------- globals */
 #ifndef TARGET_API_MAC_CARBON
