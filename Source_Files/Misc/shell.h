@@ -16,6 +16,9 @@ Jul 7, 2000 (Loren Petrich):
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Dec 29, 2000 (Loren Petrich):
+	Added function for showing text messages on the screen
 */
 
 class FileSpecifier;
@@ -150,5 +153,10 @@ void update_game_window(void);
 
 /* ---------- prototypes/PREFERENCES.C */
 void load_environment_from_preferences(void);
+
+// LP: displays a text message on the screen in "printf" fashion
+// Implemented in the "screen" routines
+void screen_printf(char *format, ...);
+
 
 #endif
