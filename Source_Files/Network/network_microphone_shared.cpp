@@ -37,6 +37,8 @@
 
 #include	<algorithm>	// for STL pair<> type
 
+using namespace std;
+
 #ifdef DEBUG
 // For testing: don't send audio on the network - pass it directly to network_speaker.
 //#define MICROPHONE_LOCAL_LOOPBACK
