@@ -310,8 +310,9 @@ static boolean load_collection(
 	if (collection)
 	{
 		// Unpack the collection header first, of course
+		assert(SIZEOF_collection_definition <= length);
+		
 		header->Definition = new collection_definition;
-		assert(header->Definition);
 		collection_definition& Definition = *header->Definition;
 		
 		uint8 *SBase = collection;
@@ -343,10 +344,13 @@ static boolean load_collection(
 		assert((S - SBase) == SIZEOF_collection_definition);
 		
 		// Get the colors		
+		assert(Definition.color_count >= 0);
+		assert(Definition.clut_count >= 0);
 		int TotalColors = Definition.color_count * Definition.clut_count;
 		header->Colors = new rgb_color_value[TotalColors];
-		assert(header->Colors);
 		
+		assert(Definition.color_table_offset >= 0);
+		assert(Definition.color_table_offset + TotalColors*SIZEOF_rgb_color_value <= length);
 		rgb_color_value *Colors = header->Colors;
 		SBase = S = collection + Definition.color_table_offset;
 		for (int k = 0; k < TotalColors; k++, Colors++)
@@ -360,16 +364,25 @@ static boolean load_collection(
 		assert((S - SBase) == TotalColors*SIZEOF_rgb_color_value);
 		
 		// Pointers will be cleared unless allocated 
+		assert(Definition.high_level_shape_count >= 0);
 		header->Sequences = new high_level_shape_definition *[Definition.high_level_shape_count];
 		objlist_clear(header->Sequences,Definition.high_level_shape_count);
 		
 		// Need the sequence offsets here;
 		// these will be used to indicate how much to read per sequence,
 		// so put the next-data offset at the end
-		long *SeqOffsets = new long[Definition.high_level_shape_count + 1];
+		assert(Definition.high_level_shape_offset_table_offset >= 0);
+		assert(Definition.high_level_shape_offset_table_offset +
+			Definition.high_level_shape_count*sizeof(int32) <= length);
+		int32 *SeqOffsets = new int32[Definition.high_level_shape_count + 1];
 		S = collection + Definition.high_level_shape_offset_table_offset;
 		StreamToList(S,SeqOffsets,Definition.high_level_shape_count);
 		SeqOffsets[Definition.high_level_shape_count] = Definition.low_level_shape_offset_table_offset;
+		
+		assert(SeqOffsets[0] >= 0);
+		for (int k=0; k<Definition.high_level_shape_count; k++)
+			assert(SeqOffsets[k+1] - SeqOffsets[k] >= SIZEOF_high_level_shape_definition);
+		assert(SeqOffsets[Definition.high_level_shape_count] <= length);
 		
 		for (int k=0; k<Definition.high_level_shape_count; k++)
 		{
@@ -379,7 +392,6 @@ static boolean load_collection(
 			long NewSize = (SNext - S) +
 				(sizeof(high_level_shape_definition) - SIZEOF_high_level_shape_definition);
 			header->Sequences[k] = (high_level_shape_definition *)(new byte[NewSize]);
-			assert(header->Sequences[k]);
 			
 			high_level_shape_definition& Sequence = *header->Sequences[k];
 			
@@ -413,6 +425,50 @@ static boolean load_collection(
 			// Do the remaining frame indices
 			long NumFrameIndxs = (SNext - S)/2;
 			StreamToList(S,Sequence.low_level_shape_indexes+1,NumFrameIndxs);
+			
+			// Check if it is necessary to allocate some extra space;
+			// number_of_views type 2 (_animated2to8) is rather screwy.
+			// In some shapes files, it has two views associated with it,
+			// while the code says it ought to have 8 views
+			int TrueNumViews;
+			switch (Sequence.number_of_views)
+			{
+				case _unanimated:
+				case _animated1:
+					TrueNumViews = 1;
+					break;
+				
+				case _animated3to4: /* front, quarter and side views only */
+				case _animated4:
+					TrueNumViews = 4;
+					break;
+					
+				case _animated3to5:
+				case _animated5:
+					TrueNumViews = 5;
+					break;
+				
+				case _animated2to8:
+				case _animated5to8:
+				case _animated8:
+					TrueNumViews = 8;
+					break;
+					
+				default:
+					vassert(false,csprintf(temporary,"Unrecognized view-count type: %d",Sequence.number_of_views));
+			}
+			
+			int TrueNumFrameIndxs = TrueNumViews*Sequence.frames_per_view;
+			if (NumFrameIndxs < TrueNumFrameIndxs)
+			{
+				int OldSize = (S - SBase);
+				int NewSize = OldSize + sizeof(short)*(TrueNumFrameIndxs - NumFrameIndxs);
+				byte *NewSequence = new byte[NewSize];
+				memcpy(NewSequence,header->Sequences[k],OldSize);
+				memset(NewSequence+OldSize,0,NewSize-OldSize);
+				delete []header->Sequences[k];
+				header->Sequences[k] = (high_level_shape_definition *)NewSequence;
+			}
 		}
 		
 		delete []SeqOffsets;
@@ -425,12 +481,21 @@ static boolean load_collection(
 		else
 		{
 			// Get the frame offsets
-			long *FrmOffsets = new long[Definition.low_level_shape_count + 1];
+			assert(Definition.low_level_shape_count >= 0);
+			assert(Definition.low_level_shape_offset_table_offset >= 0);
+			assert(Definition.low_level_shape_offset_table_offset +
+				Definition.low_level_shape_count*sizeof(int32) <= length);
+			int32 *FrmOffsets = new int32[Definition.low_level_shape_count + 1];
 			S = collection + Definition.low_level_shape_offset_table_offset;
 			StreamToList(S,FrmOffsets,Definition.low_level_shape_count);
 			FrmOffsets[Definition.low_level_shape_count] = Definition.bitmap_offset_table_offset;
 			header->Frames = new low_level_shape_definition[Definition.low_level_shape_count];
-		
+			
+			assert(FrmOffsets[0] >= 0);
+			for (int k=0; k<Definition.low_level_shape_count; k++)
+				assert(FrmOffsets[k+1] - FrmOffsets[k] >= SIZEOF_low_level_shape_definition);
+			assert(FrmOffsets[Definition.low_level_shape_count] <= length);
+			
 			for (int k=0; k<Definition.low_level_shape_count; k++)
 			{
 				SBase = S = collection + FrmOffsets[k];
@@ -464,14 +529,23 @@ static boolean load_collection(
 			
 			delete []FrmOffsets;
 			
+			// Need the bitmap offsets here
+			assert(Definition.bitmap_count >= 0);
 			header->Bitmaps = new bitmap_definition *[Definition.bitmap_count];
 			objlist_clear(header->Bitmaps,Definition.bitmap_count);
 			
-			// Need the bitmap offsets here
+			assert(Definition.bitmap_offset_table_offset >= 0);
+			assert(Definition.bitmap_offset_table_offset +
+				Definition.bitmap_count*sizeof(int32) <= length);
 			long *BtmpOffsets = new long[Definition.bitmap_count + 1];
 			S = collection + Definition.bitmap_offset_table_offset;
 			StreamToList(S,BtmpOffsets,Definition.bitmap_count);
 			BtmpOffsets[Definition.bitmap_count] = length;
+			
+			assert(BtmpOffsets[0] >= 0);
+			for (int k=0; k<Definition.bitmap_count; k++)
+				assert(BtmpOffsets[k+1] - BtmpOffsets[k] >= SIZEOF_bitmap_definition);
+			assert(BtmpOffsets[Definition.bitmap_count] <= length);
 			
 			for (int k=0; k<Definition.bitmap_count; k++)
 			{
