@@ -49,22 +49,22 @@
             <string name="bounds">71 302 91 360 </string>
             <int name="controlID">1</int>
             <string name="title">OK</string>
+            <int name="buttonType">1</int>
           </object>
           <object class="IBCarbonButton" id="175">
             <string name="bounds">71 222 91 290 </string>
             <int name="controlID">2</int>
             <string name="title">Cancel</string>
+            <int name="buttonType">2</int>
           </object>
           <object class="IBCarbonStaticText" id="176">
             <string name="bounds">11 71 45 360 </string>
             <int name="controlID">3</int>
-            <boolean name="enabled">FALSE</boolean>
             <string name="title">Are you sure you wish to cancel the game in progress?</string>
           </object>
           <object class="IBCarbonIcon" id="177">
             <string name="bounds">12 16 44 48 </string>
             <int name="controlID">4</int>
-            <boolean name="enabled">FALSE</boolean>
             <int name="contentResID">0</int>
             <int name="creator">0</int>
           </object>
@@ -75,6 +75,9 @@
       <boolean name="hasHorizontalZoom">FALSE</boolean>
       <boolean name="isResizable">FALSE</boolean>
       <boolean name="hasVerticalZoom">FALSE</boolean>
+      <int name="carbonWindowClass">4</int>
+      <int name="themeBrush">1</int>
+      <int name="windowPosition">1</int>
     </object>
     <reference idRef="173"/>
     <reference idRef="174"/>
@@ -370,13 +373,11 @@
           <object class="IBCarbonStaticText" id="235">
             <string name="bounds">55 12 121 393 </string>
             <int name="controlID">4</int>
-            <boolean name="enabled">FALSE</boolean>
             <string name="title">“I pledge to punch all switches, to never shoot where I could use grenades, to admit the existence of no level except Total Carnage, to never use Caps Lock as my ‘run’ key, and to never, ever, leave a single Bob alive.”</string>
           </object>
           <object class="IBCarbonStaticText" id="236">
             <string name="bounds">13 12 48 384 </string>
             <int name="controlID">5</int>
-            <boolean name="enabled">FALSE</boolean>
             <string name="title">Before proceeding any further, you must take the oath of the vidmaster:</string>
           </object>
         </array>
@@ -386,7 +387,9 @@
       <boolean name="hasHorizontalZoom">FALSE</boolean>
       <boolean name="isResizable">FALSE</boolean>
       <boolean name="hasVerticalZoom">FALSE</boolean>
+      <int name="carbonWindowClass">4</int>
       <int name="themeBrush">1</int>
+      <int name="windowPosition">1</int>
     </object>
     <reference idRef="226"/>
     <reference idRef="227"/>
@@ -2417,7 +2420,7 @@
     <reference idRef="580"/>
     <reference idRef="581"/>
     <object class="IBCarbonWindow" id="582">
-      <string name="windowRect">108 246 399 570 </string>
+      <string name="windowRect">139 63 430 387 </string>
       <string name="title">Preferences</string>
       <object name="rootControl" class="IBCarbonRootControl" id="583">
         <string name="bounds">0 0 291 324 </string>
