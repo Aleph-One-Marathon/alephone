@@ -217,7 +217,7 @@
 			buildSettings = {
 				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks";
-				HEADER_SEARCH_PATHS = "\"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex\" \"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Hea\nders\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Linbrary/Frameworks/OpenGL.framework/Headersnary/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework\n/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
+				HEADER_SEARCH_PATHS = "\"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex\" \"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
@@ -950,6 +950,114 @@
 			isa = PBXBuildFile;
 			settings = {
 			};
+		};
+		3D87957B07D11E120078D26B = {
+			children = (
+				3D87958C07D11E1D0078D26B,
+				3D87957D07D11E120078D26B,
+				3D87957F07D11E120078D26B,
+				3D87958107D11E120078D26B,
+			);
+			isa = PBXGroup;
+			name = Metaserver;
+			path = /Users/astrange/Projects/aleph/Source_Files/Network/Metaserver;
+			refType = 0;
+			sourceTree = "<absolute>";
+		};
+		3D87957D07D11E120078D26B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			path = metaserver_dialogs.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		3D87957E07D11E120078D26B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = metaserver_dialogs.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		3D87957F07D11E120078D26B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			path = metaserver_messages.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		3D87958007D11E120078D26B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = metaserver_messages.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		3D87958107D11E120078D26B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			path = network_metaserver.cpp;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		3D87958207D11E120078D26B = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = network_metaserver.h;
+			refType = 4;
+			sourceTree = "<group>";
+		};
+		3D87958407D11E120078D26B = {
+			fileRef = 3D87957D07D11E120078D26B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3D87958507D11E120078D26B = {
+			fileRef = 3D87957E07D11E120078D26B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3D87958607D11E120078D26B = {
+			fileRef = 3D87957F07D11E120078D26B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3D87958707D11E120078D26B = {
+			fileRef = 3D87958007D11E120078D26B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3D87958807D11E120078D26B = {
+			fileRef = 3D87958107D11E120078D26B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3D87958907D11E120078D26B = {
+			fileRef = 3D87958207D11E120078D26B;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3D87958C07D11E1D0078D26B = {
+			children = (
+				3D87958207D11E120078D26B,
+				3D87957E07D11E120078D26B,
+				3D87958007D11E120078D26B,
+			);
+			isa = PBXGroup;
+			name = Headers;
+			refType = 4;
+			sourceTree = "<group>";
 		};
 		3DAC27A503DC9D1C00000104 = {
 			fileEncoding = 30;
@@ -3861,6 +3969,7 @@
 		};
 		F52214510136C0C401000001 = {
 			children = (
+				3D87957B07D11E120078D26B,
 				F52214520136C0C401000001,
 				3DF2716B03EDBAA800000104,
 				EF2EF5CB04819BD700A8000D,
@@ -3985,7 +4094,7 @@
 			buildSettings = {
 				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
-				HEADER_SEARCH_PATHS = "/usr/local/include \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include\" \"$(LOCAL_LIBRARY\n_DIR)/Application Support/Speex/speex-1.0/libspeex/\" . \"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
+				HEADER_SEARCH_PATHS = "/usr/local/include \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/\" . \"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
@@ -4425,6 +4534,9 @@
 				3DC152510711123200836977,
 				3DC152530711123200836977,
 				3DC152550711123200836977,
+				3D87958507D11E120078D26B,
+				3D87958707D11E120078D26B,
+				3D87958907D11E120078D26B,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4604,6 +4716,9 @@
 				3DC152500711123200836977,
 				3DC152520711123200836977,
 				3DC152540711123200836977,
+				3D87958407D11E120078D26B,
+				3D87958607D11E120078D26B,
+				3D87958807D11E120078D26B,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
