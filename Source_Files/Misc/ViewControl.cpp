@@ -43,7 +43,7 @@ static float FOV_ChangeRate = 1.66666667;	// this is 50 degrees/s
 static bool DoFoldEffect = true;
 static bool DoStaticEffect = true;
 
-static FontSpecifier OnScreenFont = {"Monaco", 12, FontSpecifier::Normal, "#4"};
+static FontSpecifier OnScreenFont = {"Monaco", 12, styleNormal, "#4"};
 static bool ScreenFontInited = false;
 
 // Accessors:
