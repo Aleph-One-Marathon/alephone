@@ -35,7 +35,7 @@ case "$target" in
     AC_PATH_X
     AC_PATH_XTRA
     if test x$have_x = xyes; then
-      CFLAGS="$CFLAGS $X_CFLAGS"
+      CPPFLAGS="$CPPFLAGS $X_CFLAGS"
       SYS_GL_LIBS="$X_LIBS -lGL"
     else
       SYS_GL_LIBS="-lGL"
@@ -45,8 +45,7 @@ esac
 
 dnl Check for SDL.
 AM_PATH_SDL(1.1.4, , AC_MSG_ERROR([You need SDL to run Aleph One.]))
-CFLAGS="$CFLAGS $SDL_CFLAGS -DSDL"
-CXXFLAGS="$CXXFLAGS $SDL_CFLAGS -DSDL"
+CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
 LIBS="$LIBS $SDL_LIBS"
 
 dnl Checks for headers.
@@ -64,9 +63,9 @@ if [[ "x$enable_opengl" = "xyes" ]]; then
   ])
   AC_MSG_RESULT($have_opengl)
   if test x$have_opengl = xyes; then
-    LIBS="$LIBS $SYS_GL_LIBS"
     AC_DEFINE(HAVE_OPENGL)
-    AC_CHECK_LIB(GLU, gluScaleImage)
+    AC_CHECK_LIB(GLU, gluScaleImage, [SYS_GL_LIBS="$SYS_GL_LIBS -lGLU"], , $SYS_GL_LIBS)
+    AC_SUBST(SYS_GL_LIBS)
   else
     AC_MSG_WARN([Could not find OpenGL, ignoring --enable-opengl.])
   fi
