@@ -129,6 +129,7 @@ DirectorySpecifier recordings_dir;    // Directory for recordings (except film b
 bool option_nogl = false;             // Disable OpenGL
 bool option_nosound = false;          // Disable sound output
 bool option_nogamma = false;	      // Disable gamma table effects (menu fades)
+bool option_noparachute = false;
 static bool force_fullscreen = false; // Force fullscreen mode
 static bool force_windowed = false;   // Force windowed mode
 
@@ -165,6 +166,8 @@ static void usage(const char *prg_name)
 #endif
 	  "\t[-h | --help]          Display this help message\n"
 	  "\t[-v | --version]       Display the game version\n"
+	  "\t[-d | --debug]         Allow saving of core files\n"
+	  "\t                       (by disabling SDL parachute)\n"
 	  "\t[-f | --fullscreen]    Run the game fullscreen\n"
 	  "\t[-w | --windowed]      Run the game in a window\n"
 #ifdef HAVE_OPENGL
@@ -235,6 +238,8 @@ int main(int argc, char **argv)
 			option_nosound = true;
 		} else if (strcmp(*argv, "-m") == 0 || strcmp(*argv, "--nogamma") == 0) {
 			option_nogamma = true;
+		} else if (strcmp(*argv, "-d") == 0 || strcmp(*argv, "--debug") == 0) {
+		  option_noparachute = true;
 		} else {
 			printf("Unrecognized argument '%s'.\n", *argv);
 			usage(prg_name);
@@ -270,7 +275,10 @@ int main(int argc, char **argv)
 static void initialize_application(void)
 {
 	// Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO | (option_nosound ? 0 : SDL_INIT_AUDIO)) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO | 
+		     (option_nosound ? 0 : SDL_INIT_AUDIO) |
+		     (option_noparachute ? SDL_INIT_NOPARACHUTE : 0)
+		     ) < 0) {
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
 	}
