@@ -1080,6 +1080,7 @@ join_processing_function(dialog* inDialog) {
 		case NONE: // haven't Joined yet.
 			break;
 
+	case netConnecting:
 		case netJoining:
 			break;
 

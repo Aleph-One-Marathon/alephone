@@ -33,7 +33,11 @@
 
 #include <iostream> // debugging
 #include "cseries.h"
+#if defined(WIN32)
+#include <winsock2.h> // hacky non-cross-platform setting of nonblocking
+#else
 #include <fcntl.h> // hacky non-cross-platform setting of nonblocking
+#endif
 
 enum
 {
@@ -47,7 +51,8 @@ enum
 	kFlushPumpInterval = kSSRPumpInterval,
 };
 
-
+// if you really want to read what this does, scroll down
+static void MakeTCPsocketNonBlocking(TCPsocket *socket); 
 
 CommunicationsChannel::CommunicationsChannel()
 	: mConnected(false),
@@ -95,7 +100,7 @@ CommunicationsChannel::~CommunicationsChannel()
 CommunicationsChannel::CommunicationResult
 CommunicationsChannel::receive_some(TCPsocket inSocket, byte* inBuffer, size_t& ioBufferPosition, size_t inBufferLength)
 {
-//	std::cout << "Want to receive " << inBufferLength << " bytes; buffer position " << ioBufferPosition << std::endl;
+  //	std::cout << "Want to receive " << inBufferLength << " bytes; buffer position " << ioBufferPosition << std::endl;
 
 	size_t theBytesLeft = inBufferLength - ioBufferPosition;
 
@@ -103,7 +108,7 @@ CommunicationsChannel::receive_some(TCPsocket inSocket, byte* inBuffer, size_t& 
 	{
 		int theResult = SDLNet_TCP_Recv(inSocket, inBuffer + ioBufferPosition, theBytesLeft);
 
-//		std::cout << "  theResult is " << theResult << std::endl;
+		std::cout << "  theResult is " << theResult << std::endl;
 
 // Unfortunately, SDLNet_TCP_Recv() often returns -1 even when there's no error, and I
 // don't think I have any legitimate way to distinguish this case from a true error condition.
@@ -139,6 +144,18 @@ CommunicationsChannel::receive_some(TCPsocket inSocket, byte* inBuffer, size_t& 
 			// Perhaps we should treat 0 and < 0 the same here, and change what it
 			// means to be connected.  Maybe we could use the Get Peer function to
 			// detect connected/disconnected.
+
+		  // grsmith: we could do that, or we could add another 
+		  // platform-specific hack
+#ifdef WIN32
+		  if (WSAGetLastError() == WSAEWOULDBLOCK) {
+		    theResult = 0;
+		  } else {
+		    std::cout << "theResult == " << theResult << std::endl;
+		    disconnect();
+		    return kError;
+		  }
+#else
 			if(errno == EAGAIN)
 			{
 				theResult = 0;
@@ -150,8 +167,8 @@ CommunicationsChannel::receive_some(TCPsocket inSocket, byte* inBuffer, size_t& 
 				disconnect();
 				return kError;
 			}
+#endif
 		}
-	
 		if(theResult > 0)
 		{
 			mTicksAtLastReceive = SDL_GetTicks();
@@ -432,15 +449,10 @@ CommunicationsChannel::connect(const IPaddress& inAddress)
 	{
 		mConnected = true;
 
-        mTicksAtLastReceive = SDL_GetTicks();
-        mTicksAtLastSend = SDL_GetTicks();
-
-        // SET NONBLOCKING MODE
-		// XXX: this depends on intimate carnal knowledge of the SDL_net struct _UDPsocket
-		// if it changes that structure, we are hosed.
-		int	theSocketFD = ((int*)mSocket)[1];
-
-		fcntl(theSocketFD, F_SETFL, O_NONBLOCK);
+		mTicksAtLastReceive = SDL_GetTicks();
+		mTicksAtLastSend = SDL_GetTicks();
+		
+		MakeTCPsocketNonBlocking(&mSocket);
 	}
 }
 
@@ -627,6 +639,8 @@ CommunicationsChannelFactory::newIncomingConnection()
 			// Yee-haw!  There's an incoming connection request.
 			TCPsocket theNewSocket = SDLNet_TCP_Accept(mSocket);
 			theNewChannel = new CommunicationsChannel(theNewSocket);
+			MakeTCPsocketNonBlocking(&theNewSocket);
+
 		}
 		SDLNet_FreeSocketSet(theSocketSet);
 	}
@@ -639,4 +653,18 @@ CommunicationsChannelFactory::newIncomingConnection()
 CommunicationsChannelFactory::~CommunicationsChannelFactory()
 {
 	SDLNet_TCP_Close(mSocket);
+}
+
+void MakeTCPsocketNonBlocking(TCPsocket *socket) {
+  // SET NONBLOCKING MODE
+  // XXX: this depends on intimate carnal knowledge of the SDL_net struct _UDPsocket
+  // if it changes that structure, we are hosed.
+  
+  int fd = ((int *) (*socket))[1];
+#if defined(WIN32)
+  u_long val = 1;
+  ioctlsocket(fd, FIONBIO, &val);
+#else
+  fcntl(fd, F_SETFL, O_NONBLOCK);
+#endif
 }
