@@ -117,6 +117,9 @@ enum /* team colors */
 	NUMBER_OF_TEAM_COLORS
 };
 
+// Is here for script_instructions.cpp
+#define ACTION_QUEUE_BUFFER_DIAMETER 0x100
+
 /* ---------- action flags */
 
 #define ABSOLUTE_YAW_BITS 7

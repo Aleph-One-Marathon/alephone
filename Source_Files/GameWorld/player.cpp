@@ -152,10 +152,6 @@ May 20, 2002 (Woody Zenfell):
 
 /* ---------- constants */
 
-#define ACTION_QUEUE_BUFFER_DIAMETER 0x100
-// ZZZ: no longer relevant
-//#define ACTION_QUEUE_BUFFER_INDEX_MASK 0xff
-
 // These are variables, because they can be set with an XML parser
 static short kINVISIBILITY_DURATION = (70*TICKS_PER_SECOND);
 static short kINVINCIBILITY_DURATION = (50*TICKS_PER_SECOND);
