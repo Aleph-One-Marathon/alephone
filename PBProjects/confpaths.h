@@ -1,0 +1,1 @@
+#define PKGDATADIR "/Users/Shared/AlephOne"
