@@ -526,7 +526,7 @@ void update_player_keys_for_terminal(
 		
 		case _no_terminal_state:
 		default:
-			// LP change:
+			// LP change: do nothing
 			// assert(false);
 			// halt();
 			break;
@@ -643,8 +643,9 @@ void _render_computer_interface(
 						break;
 
 					default:
+						// LP change: do nothing
 						// vhalt(csprintf(temporary, "What is this group: %d", current_group->type));
-						vwarn(false,csprintf(temporary, "What is this group: %d", current_group->type));
+						// vwarn(false,csprintf(temporary, "What is this group: %d", current_group->type));
 						break;
 				}
 				// Moved down here, so they'd overdraw the other stuff
@@ -652,7 +653,7 @@ void _render_computer_interface(
 				break;
 				
 			default:
-				// LP change:
+				// LP change: do nothing
 				// assert(false);
 				// halt();
 				break;
@@ -1449,8 +1450,9 @@ static void next_terminal_state(
 			
 		case _no_terminal_state:
 		default:
+			// LP change: do nothing
 			// vhalt(csprintf(temporary, "What is %d?", terminal->state));
-			vwarn(false,csprintf(temporary, "What is %d?", terminal->state));
+			// vwarn(false,csprintf(temporary, "What is %d?", terminal->state));
 			break;
 	}
 
@@ -1513,7 +1515,7 @@ static bool previous_terminal_group(
 						break;
 					
 					default:
-						// LP change:
+						// LP change: do nothing
 						// assert(false);
 						// halt();
 						break;
@@ -1573,9 +1575,10 @@ static void next_terminal_group(
 				break;
 			
 			default:
+				// LP change: do nothing
 				// vhalt(csprintf(temporary, "What is type %d?", 
-				vwarn(false,csprintf(temporary, "What is type %d?", 
-				 	terminal_data->level_completion_state));
+				// vwarn(false,csprintf(temporary, "What is type %d?", 
+				// 	terminal_data->level_completion_state));
 				break;
 		}
 
@@ -1709,7 +1712,7 @@ static void goto_terminal_group(
 			break;
 			
 		default:
-			// LP change:
+			// LP change: do nothing
 			// assert(false);
 			// halt();
 			break;
@@ -2005,8 +2008,9 @@ static void handle_reading_terminal_keys(
 			break;
 
 		default:
+			// LP change: do nothing
 			// vhalt(csprintf(temporary, "What is group: %d", current_group->type));
-			vwarn(false,csprintf(temporary, "What is group: %d", current_group->type));
+			// vwarn(false,csprintf(temporary, "What is group: %d", current_group->type));
 			break;
 	}
 
@@ -2529,8 +2533,8 @@ static void calculate_maximum_lines_for_groups(
 				break;
 				
 			default:
-				// LP change:
-				assert(false);
+				// LP change: do nothing
+				// assert(false);
 				// halt();
 				break;
 
