@@ -198,7 +198,7 @@
 				DEBUGGING_SYMBOLS = NO;
 				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\" /System/Library/Frameworks /Library/Frameworks";
 				HEADER_SEARCH_PATHS = "\"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" /System/Library/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
-				LIBRARY_SEARCH_PATHS = "/Users/brefin/Source/AlephOne/aleph/Source_Files/RenderMain /Users/brefin/Source/AlephOne/aleph/Source_Files/RenderOther";
+				LIBRARY_SEARCH_PATHS = "";
 				OPTIMIZATION_CFLAGS = "-O0";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H";
 				OTHER_LDFLAGS = "-noprebind -multiply_defined suppress -F$(HOME)/Library/Frameworks -framework SDL -framework SDL_image -framework SDL_net";
@@ -1212,8 +1212,8 @@
 			indentWidth = 8;
 			isa = PBXFileReference;
 			name = interface_macintosh.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/interface_macintosh.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/interface_macintosh.cpp;
+			refType = 2;
 			tabWidth = 8;
 			usesTabs = 1;
 		};
@@ -1226,8 +1226,8 @@
 		F52211C30136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = interface_sdl.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/interface_sdl.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/interface_sdl.cpp;
+			refType = 2;
 		};
 		F52211C40136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -1262,14 +1262,14 @@
 		F52211D10136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = MacCheckbox.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/MacCheckbox.h;
-			refType = 0;
+			path = ../Source_Files/Misc/MacCheckbox.h;
+			refType = 2;
 		};
 		F52211D20136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = macintosh_network.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/macintosh_network.h;
-			refType = 0;
+			path = ../Source_Files/Misc/macintosh_network.h;
+			refType = 2;
 		};
 		F52211EB0136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -1298,14 +1298,14 @@
 		F522120D0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = preferences_macintosh.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/preferences_macintosh.h;
-			refType = 0;
+			path = ../Source_Files/Misc/preferences_macintosh.h;
+			refType = 2;
 		};
 		F522120E0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = preferences_sdl.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/preferences_sdl.h;
-			refType = 0;
+			path = ../Source_Files/Misc/preferences_sdl.h;
+			refType = 2;
 		};
 		F522120F0136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -1340,14 +1340,14 @@
 		F522123A0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = sdl_dialogs.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/sdl_dialogs.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/sdl_dialogs.cpp;
+			refType = 2;
 		};
 		F522123B0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = sdl_dialogs.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/sdl_dialogs.h;
-			refType = 0;
+			path = ../Source_Files/Misc/sdl_dialogs.h;
+			refType = 2;
 		};
 		F522123E0136A6FD01000001 = {
 			comments = "JTP: No, this isn't a typo or misplacement. Both Carbon and SDL versions use this.";
@@ -1359,20 +1359,20 @@
 		F522123F0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = sdl_widgets.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/sdl_widgets.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/sdl_widgets.cpp;
+			refType = 2;
 		};
 		F52212400136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = sdl_widgets.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/sdl_widgets.h;
-			refType = 0;
+			path = ../Source_Files/Misc/sdl_widgets.h;
+			refType = 2;
 		};
 		F52212480136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shell_macintosh.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/shell_macintosh.h;
-			refType = 0;
+			path = ../Source_Files/shell_macintosh.h;
+			refType = 2;
 		};
 		F52212490136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -1383,8 +1383,8 @@
 		F522124A0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shell_sdl.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/shell_sdl.h;
-			refType = 0;
+			path = ../Source_Files/shell_sdl.h;
+			refType = 2;
 		};
 		F522124B0136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -1407,14 +1407,14 @@
 		F52212570136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = vbl_macintosh.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/vbl_macintosh.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/vbl_macintosh.cpp;
+			refType = 2;
 		};
 		F52212580136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = vbl_sdl.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/vbl_sdl.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/vbl_sdl.cpp;
+			refType = 2;
 		};
 		F52212590136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2291,7 +2291,7 @@
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
 				HEADER_SEARCH_PATHS = "\"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
-				LIBRARY_SEARCH_PATHS = "/Users/brefin/Source/AlephOne/aleph/Source_Files/RenderMain /Users/brefin/Source/AlephOne/aleph/Source_Files/RenderOther";
+				LIBRARY_SEARCH_PATHS = "";
 				OPTIMIZATION_CFLAGS = "-O0";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1";
 				OTHER_LDFLAGS = "-lobjc";
@@ -2507,7 +2507,7 @@
 	<key>CFBundleExecutable</key>
 	<string>AlephOne</string>
 	<key>CFBundleGetInfoString</key>
-	<string>Aleph One Carbon for OS X (0.13.20020310 Carbon/SDL Network)</string>
+	<string>Aleph One Carbon for OS X (0.13.20020326 Carbon/SDL Network)</string>
 	<key>CFBundleIconFile</key>
 	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -2519,11 +2519,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.13.20020310 Carbon</string>
+	<string>0.13.20020326 Carbon</string>
 	<key>CFBundleSignature</key>
 	<string>26.A</string>
 	<key>CFBundleVersion</key>
-	<string>0.13.20020310</string>
+	<string>0.13.20020326</string>
 </dict>
 </plist>
 ";
@@ -3695,8 +3695,8 @@
 		F5574EF201F4EBD401FEABBD = {
 			isa = PBXFileReference;
 			name = PlayerImage_sdl.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/PlayerImage_sdl.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/PlayerImage_sdl.cpp;
+			refType = 2;
 		};
 		F5574EF301F4EBD401FEABBD = {
 			fileRef = F5574EF201F4EBD401FEABBD;
@@ -4052,8 +4052,8 @@
 		F5A00023023FDA1601A80001 = {
 			isa = PBXFileReference;
 			name = preferences_widgets_sdl.cpp;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/preferences_widgets_sdl.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/preferences_widgets_sdl.cpp;
+			refType = 2;
 		};
 		F5A00024023FDA1701A80001 = {
 			fileRef = F5A00023023FDA1601A80001;
@@ -4094,8 +4094,8 @@
 		F5A0002B023FDAD101A80001 = {
 			isa = PBXFileReference;
 			name = preferences_widgets_sdl.h;
-			path = /Users/brefin/Source/AlephOne/aleph/Source_Files/Misc/preferences_widgets_sdl.h;
-			refType = 0;
+			path = ../Source_Files/Misc/preferences_widgets_sdl.h;
+			refType = 2;
 		};
 		F5A0002C023FDAD101A80001 = {
 			fileRef = F5A0002B023FDAD101A80001;
@@ -7333,7 +7333,8 @@
 			);
 			isa = PBXGroup;
 			name = Macintosh;
-			refType = 4;
+			path = "";
+			refType = 2;
 		};
 		F5CC94290240DB8801A80001 = {
 			children = (
@@ -7350,7 +7351,8 @@
 			);
 			isa = PBXGroup;
 			name = SDL;
-			refType = 4;
+			path = "";
+			refType = 2;
 		};
 		F5CC942A0240DE0E01A80001 = {
 			children = (
@@ -7916,7 +7918,7 @@
 			neededFileNames = (
 			);
 			shellPath = /bin/sh;
-			shellScript = "(cd $SRCROOT/../Source_Files/Pfhortran; awk >language_definition.h '!/^#/ {print \"{\\\"\" $1 \"\\\", 0x\" $2 \"},\";}' Pfhortran_Language_Definition )";
+			shellScript = "# Disable script, this is no longer necessary or desired\n#(cd $SRCROOT/../Source_Files/Pfhortran; awk >language_definition.h '!/^#/ {print \"{\\\"\" $1 \"\\\", 0x\" $2 \"},\";}' Pfhortran_Language_Definition )";
 		};
 		F5F50D6C0215DACD01144D54 = {
 			children = (
