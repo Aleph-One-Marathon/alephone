@@ -126,6 +126,7 @@ static void setup_environment_dialog(DialogPtr dialog, short first_item, void *p
 static void hit_environment_item(DialogPtr dialog, short first_item, void *prefs, short item_hit);
 static bool teardown_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void fill_in_popup_with_filetype(DialogPtr dialog, short item, int type, unsigned long checksum, const FSSpec& file);
+static void fill_in_popup_with_filetype(ControlHandle control, int type, unsigned long checksum, const FSSpec& file);
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
 static bool allocate_extensions_memory(void);
 static void free_extensions_memory(void);
@@ -133,6 +134,8 @@ static void build_extensions_list(void);
 static void search_from_directory(DirectorySpecifier& BaseDir);
 static unsigned long find_checksum_and_file_spec_from_dialog(DialogPtr dialog, 
 	short item_hit, uint32 type, FSSpec *file);
+static unsigned long find_checksum_and_file_spec_from_control(ControlHandle control,
+	uint32 type, FSSpec *file);
 static void SetToLoneFile(uint32 Type, FSSpec& File, unsigned long& Checksum);
 static void	rebuild_patchlist(DialogPtr dialog, short item, unsigned long parent_checksum,
 	struct environment_preferences_data *preferences);
@@ -150,12 +153,469 @@ struct preferences_dialog_data prefs_data[]={
 };
 #define NUMBER_OF_PREFS_PANELS (sizeof(prefs_data)/sizeof(struct preferences_dialog_data))
 
+
+#ifdef USES_NIBS
+
+
+enum {
+	_hundreds_colors_menu_item= 1,
+	_thousands_colors_menu_item,
+	_millions_colors_menu_item,
+	_billions_colors_menu_item
+};
+
+
+// Global variable since this will be persistent
+// Everything else is local, because they get re-created
+static int CurrentPrefsPane = graphicsGroup;
+
+
+struct PreferencesHandlerData
+{
+	WindowPtr Window;
+	ControlRef TabCtrl;
+	ControlRef PaneCtrls[NUMBER_OF_PREFS_GROUPS];
+};
+
+
+static void UpdatePanes(PreferencesHandlerData *HDPtr)
+{
+	// Go from 1-based to 0-based (in the preferences_private defs)
+	int WhichPane = GetControl32BitValue(HDPtr->TabCtrl) - 1;
+	
+	// If no need to change the pane, then quit
+	if (WhichPane == CurrentPrefsPane) return;
+	
+	// Otherwise, update the current pane
+	CurrentPrefsPane = WhichPane;
+	
+	// Hide every pane but the current one
+	for (int k=0; k<NUMBER_OF_PREFS_GROUPS; k++)
+	{
+		if (k != WhichPane)
+			SetControlVisibility(HDPtr->PaneCtrls[k],false,true);
+	}
+	SetControlVisibility(HDPtr->PaneCtrls[WhichPane],true,true);
+	
+	ClearKeyboardFocus(HDPtr->Window);
+	Draw1Control(HDPtr->TabCtrl);
+}
+
+
+static void PreferencesHandler(ParsedControl &Ctrl, void *UserData)
+{
+	PreferencesHandlerData *HDPtr = (PreferencesHandlerData *)(UserData);
+	
+	switch(Ctrl.ID.signature)
+	{
+	case 0:
+		
+		if (Ctrl.ID.id == iTABS)
+		{
+			UpdatePanes(HDPtr);
+		}
+		break;
+		
+	case Sig_Graphics:
+	
+		switch(Ctrl.ID.id)
+		{
+		case iCHOOSE_MONITOR:
+#ifndef USE_SHEETS
+			HideWindow(HDPtr->Window);
+#endif
+			display_device_dialog(&graphics_preferences->device_spec);
+#ifndef USE_SHEETS
+			ShowWindow(HDPtr->Window);
+#endif
+			break;
+			
+		case iOPENGL_OPTIONS:
+#ifndef USE_SHEETS
+			HideWindow(HDPtr->Window);
+#endif
+			OGL_ConfigureDialog(graphics_preferences->OGL_Configure);
+#ifndef USE_SHEETS
+			ShowWindow(HDPtr->Window);
+#endif
+			break; 
+		}
+		break;
+	
+	case Sig_Sound:
+	
+		switch(Ctrl.ID.id)
+		{
+		case iVOLUME:
+			sound_preferences->volume = GetControl32BitValue(Ctrl.Ctrl) - 1;
+			test_sound_volume(sound_preferences->volume, Sound_AdjustVolume());
+			set_sound_manager_parameters(sound_preferences);
+			break;
+			
+		case iMUSIC:
+			sound_preferences->music = GetControl32BitValue(Ctrl.Ctrl) - 1;
+			set_sound_manager_parameters(sound_preferences);
+			music_idle_proc();
+			break;
+			
+		case iRELATIVE_VOLUME:
+			SET_FLAG(sound_preferences->flags, _relative_volume_flag, GetControl32BitValue(Ctrl.Ctrl));
+			test_sound_volume(sound_preferences->volume, Sound_AdjustVolume());
+			set_sound_manager_parameters(sound_preferences);
+			break;
+		}
+		break;
+	
+	case Sig_Player:
+	
+		switch(Ctrl.ID.id)
+		{
+		case iCHASE_CAM:
+#ifndef USE_SHEETS
+			HideWindow(HDPtr->Window);
+#endif
+			Configure_ChaseCam(player_preferences->ChaseCam);
+#ifndef USE_SHEETS
+			ShowWindow(HDPtr->Window);
+#endif
+			break;
+			
+		case iCROSSHAIRS:
+#ifndef USE_SHEETS
+			HideWindow(HDPtr->Window);
+#endif
+			Configure_Crosshairs(player_preferences->Crosshairs);
+#ifndef USE_SHEETS
+			ShowWindow(HDPtr->Window);
+#endif
+			break;
+		}
+		break;
+	
+	case Sig_Input:
+	
+		switch(Ctrl.ID.id)
+		{
+		case iSET_KEYS:
+#ifndef USE_SHEETS
+			HideWindow(HDPtr->Window);
+#endif
+			{
+				short key_codes[NUMBER_OF_KEYS];
+				
+				objlist_copy(key_codes, input_preferences->keycodes, NUMBER_OF_KEYS);
+				if(configure_key_setup(key_codes))
+				{
+					objlist_copy(input_preferences->keycodes, key_codes, NUMBER_OF_KEYS);
+					set_keys(key_codes);
+				}
+			}
+#ifndef USE_SHEETS
+			ShowWindow(HDPtr->Window);
+#endif
+		}
+	}
+}
+
+
 void handle_preferences(
 	void)
 {
 	/* Save the existing preferences, in case we have to reload them. */
 	write_preferences();
 	
+	// Get the window
+	AutoNibWindow Window(GUI_Nib,Window_Preferences);
+	
+	// Get the desired controls
+	PreferencesHandlerData HandlerData;
+	
+	// Get all the control objects
+	HandlerData.Window = Window();
+	HandlerData.TabCtrl = GetCtrlFromWindow(Window(),0,iTABS);
+	for (int k=0; k<NUMBER_OF_PREFS_GROUPS; k++)
+		HandlerData.PaneCtrls[k] = GetCtrlFromWindow(Window(),Sig_Pane,k);
+
+	// Value of control:
+	// Checkbox: 0 or 1
+	// Popup: 1, 2, 3, ...
+	int value;
+		
+	// Graphics:
+	
+	// IR-inspired: force to some reasonable value:
+	if (graphics_preferences->screen_mode.bit_depth >= 32)
+	{
+		graphics_preferences->screen_mode.bit_depth = 32;
+		value = _millions_colors_menu_item;
+	}
+	else if (graphics_preferences->screen_mode.bit_depth >= 16)
+	{
+		graphics_preferences->screen_mode.bit_depth = 16;
+		value = _thousands_colors_menu_item;
+	}
+	else
+	{
+		graphics_preferences->screen_mode.bit_depth = 8;
+		value = _hundreds_colors_menu_item;
+		// IR-inspired change; no OpenGL mode in 8-bit color depth
+		graphics_preferences->screen_mode.acceleration= _no_acceleration;
+	}
+	
+	ControlRef GRFX_Number_of_Colors = GetCtrlFromWindow(Window(),Sig_Graphics,iNUMBER_OF_COLORS);
+	SetControl32BitValue(GRFX_Number_of_Colors,value);
+
+	// No more special 68K support either
+	graphics_preferences->screen_mode.draw_every_other_line= false;
+
+	ControlRef GRFX_Window_Size = GetCtrlFromWindow(Window(),Sig_Graphics,iWINDOW_SIZE);
+	SetControl32BitValue(GRFX_Window_Size,graphics_preferences->screen_mode.size+1);
+
+	ControlRef GRFX_Detail = GetCtrlFromWindow(Window(),Sig_Graphics,iDETAIL);
+	SetControl32BitValue(GRFX_Detail,graphics_preferences->screen_mode.high_resolution ? 1 : 2);
+
+	ControlRef GRFX_Brightness = GetCtrlFromWindow(Window(),Sig_Graphics,iBRIGHTNESS);
+	SetControl32BitValue(GRFX_Brightness,graphics_preferences->screen_mode.gamma_level+1);
+	
+	ControlRef GRFX_Acceleration = GetCtrlFromWindow(Window(),Sig_Graphics,iHARDWARE_ACCELERATION);
+	SetControl32BitValue(GRFX_Acceleration,graphics_preferences->screen_mode.acceleration == _opengl_acceleration ? 1 : 0);
+	SetControlActivity(GRFX_Acceleration, OGL_IsPresent());
+	
+	// Sound:
+	
+	ControlRef SNDS_Volume = GetCtrlFromWindow(Window(),Sig_Sound,iVOLUME);
+	SetControl32BitValue(SNDS_Volume,sound_preferences->volume+1);
+
+	ControlRef SNDS_Channels = GetCtrlFromWindow(Window(),Sig_Sound,iCHANNELS);
+	SetControl32BitValue(SNDS_Channels,sound_preferences->channel_count);
+
+	ControlRef SNDS_Music = GetCtrlFromWindow(Window(),Sig_Sound,iMUSIC);
+	SetControl32BitValue(SNDS_Music,sound_preferences->music+1);
+	
+	ControlRef SNDS_Stereo = GetCtrlFromWindow(Window(),Sig_Sound,iSTEREO);
+	SetControl32BitValue(SNDS_Stereo,TEST_FLAG(sound_preferences->flags,_stereo_flag));
+	
+	if (!TEST_FLAG(sound_preferences->flags,_stereo_flag))
+		SET_FLAG(sound_preferences->flags,_dynamic_tracking_flag,false);
+
+	ControlRef SNDS_Panning = GetCtrlFromWindow(Window(),Sig_Sound,iACTIVE_PANNING);
+	SetControl32BitValue(SNDS_Panning,TEST_FLAG(sound_preferences->flags,_dynamic_tracking_flag));
+
+	ControlRef SNDS_16Bit = GetCtrlFromWindow(Window(),Sig_Sound,iHIGH_QUALITY);
+	SetControl32BitValue(SNDS_16Bit,TEST_FLAG(sound_preferences->flags,_16bit_sound_flag));
+
+	ControlRef SNDS_Ambient = GetCtrlFromWindow(Window(),Sig_Sound,iAMBIENT_SOUND);
+	SetControl32BitValue(SNDS_Ambient,TEST_FLAG(sound_preferences->flags,_ambient_sound_flag));
+
+	ControlRef SNDS_More = GetCtrlFromWindow(Window(),Sig_Sound,iMORE_SOUNDS);
+	SetControl32BitValue(SNDS_More,TEST_FLAG(sound_preferences->flags,_more_sounds_flag));
+
+	ControlRef SNDS_Relative_Volume = GetCtrlFromWindow(Window(),Sig_Sound,iRELATIVE_VOLUME);
+	SetControl32BitValue(SNDS_Relative_Volume,TEST_FLAG(sound_preferences->flags,_relative_volume_flag));
+	
+	// Player:
+	
+	ControlRef PLYR_Difficulty = GetCtrlFromWindow(Window(),Sig_Player,iDIFFICULTY_LEVEL);
+	SetControl32BitValue(PLYR_Difficulty,player_preferences->difficulty_level+1);
+	
+	ControlRef PLYR_Name = GetCtrlFromWindow(Window(),Sig_Player,iNAME);
+	SetEditPascalText(PLYR_Name, player_preferences->name);
+
+	ControlRef PLYR_Color = GetCtrlFromWindow(Window(),Sig_Player,iCOLOR);
+	SetControl32BitValue(PLYR_Color,player_preferences->color+1);
+
+	ControlRef PLYR_Team = GetCtrlFromWindow(Window(),Sig_Player,iTEAM);
+	SetControl32BitValue(PLYR_Team,player_preferences->team+1);
+	
+	// Input
+	
+	// Always keyboard and regular mouse, because Carbon does not support the InputSprocket
+	input_preferences->input_device = _mouse_yaw_pitch;
+	
+	ControlRef INPT_Run_Walk = GetCtrlFromWindow(Window(),Sig_Input,iINTERCHANGE_RUN_WALK);
+	SetControl32BitValue(INPT_Run_Walk,TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_run_walk));
+
+	ControlRef INPT_Swim_Sink = GetCtrlFromWindow(Window(),Sig_Input,iINTERCHANGE_SWIM_SINK);
+	SetControl32BitValue(INPT_Swim_Sink,TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
+
+	ControlRef INPT_No_Auto_Rctr = GetCtrlFromWindow(Window(),Sig_Input,iDONT_AUTO_RECENTER);
+	SetControl32BitValue(INPT_No_Auto_Rctr,TEST_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter));
+
+	ControlRef INPT_No_Switch_New = GetCtrlFromWindow(Window(),Sig_Input,iDONT_SWITCH_TO_NEW_WEAPON);
+	SetControl32BitValue(INPT_No_Switch_New,TEST_FLAG(input_preferences->modifiers, _inputmod_dont_switch_to_new_weapon));
+
+	ControlRef INPT_Button_Snds = GetCtrlFromWindow(Window(),Sig_Input,iUSE_INTERFACE_BUTTON_SOUNDS);
+	SetControl32BitValue(INPT_Button_Snds,TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
+	
+	// Environment:
+	
+	if(allocate_extensions_memory())
+		build_extensions_list();
+	
+	ControlRef ENVR_Map = GetCtrlFromWindow(Window(),Sig_Environment,iMAP);
+	fill_in_popup_with_filetype(ENVR_Map, _typecode_scenario,
+		environment_preferences->map_checksum, environment_preferences->map_file);
+	
+	ControlRef ENVR_Physics = GetCtrlFromWindow(Window(),Sig_Environment,iPHYSICS);
+	fill_in_popup_with_filetype(ENVR_Physics, _typecode_physics,
+		environment_preferences->physics_checksum, environment_preferences->physics_file);
+	
+	ControlRef ENVR_Shapes = GetCtrlFromWindow(Window(),Sig_Environment,iSHAPES);
+	fill_in_popup_with_filetype(ENVR_Shapes, _typecode_shapes,
+		environment_preferences->shapes_mod_date, environment_preferences->shapes_file);
+	
+	ControlRef ENVR_Sounds = GetCtrlFromWindow(Window(),Sig_Environment,iSOUNDS);
+	fill_in_popup_with_filetype(ENVR_Sounds, _typecode_sounds,
+		environment_preferences->sounds_mod_date, environment_preferences->sounds_file);
+	
+	// Set to the current prefs pane
+	// Go from 0-based to 1-based
+	SetControl32BitValue(HandlerData.TabCtrl,CurrentPrefsPane+1);
+	CurrentPrefsPane = NONE; // Force-update hack ("previous" pane is none of them)
+	UpdatePanes(&HandlerData);
+	
+	// Preserve the old sound preferences, so that music volume can be previewed,
+	// while being able to revert to the original values
+	sound_manager_parameters OriginalSoundParameters;
+	obj_copy(OriginalSoundParameters,*sound_preferences);
+	
+	// Remember the old monitor resolution, in case we change it.
+	// When we change it, we'll set the monitor frequency to its default value.
+	short OldSize = graphics_preferences->screen_mode.size;
+	
+	// Run!
+	if (RunModalDialog(Window(),PreferencesHandler,&HandlerData))
+	{
+		// OK
+		
+		// Extract the control objects' values
+		
+		// Graphics:
+		
+		switch(GetControl32BitValue(GRFX_Number_of_Colors))
+		{
+			case _hundreds_colors_menu_item:
+				graphics_preferences->screen_mode.bit_depth= 8; break;
+			case _thousands_colors_menu_item:
+				graphics_preferences->screen_mode.bit_depth= 16; break;
+			case _millions_colors_menu_item:
+			case _billions_colors_menu_item:
+			default:
+				graphics_preferences->screen_mode.bit_depth= 32;
+		}
+		
+		graphics_preferences->screen_mode.size = GetControl32BitValue(GRFX_Window_Size) - 1;
+		
+		graphics_preferences->screen_mode.high_resolution = !(GetControl32BitValue(GRFX_Detail) - 1);
+		
+		graphics_preferences->screen_mode.gamma_level = GetControl32BitValue(GRFX_Brightness) - 1;
+		
+		graphics_preferences->screen_mode.acceleration =
+			GetControl32BitValue(GRFX_Acceleration) ?
+				_opengl_acceleration :
+				_no_acceleration;
+		
+		// IR-inspired change; no OpenGL mode in 8-bit color depth
+		if (graphics_preferences->screen_mode.bit_depth == 8)
+			graphics_preferences->screen_mode.acceleration= _no_acceleration;
+		
+		// Sound:
+	
+		sound_preferences->volume = GetControl32BitValue(SNDS_Volume) - 1;
+	
+		sound_preferences->channel_count = GetControl32BitValue(SNDS_Channels);
+	
+		sound_preferences->music = GetControl32BitValue(SNDS_Music) - 1;
+		
+		SET_FLAG(sound_preferences->flags,_stereo_flag,GetControl32BitValue(SNDS_Stereo));
+		
+		SET_FLAG(sound_preferences->flags,_dynamic_tracking_flag,GetControl32BitValue(SNDS_Panning));
+
+		if (!TEST_FLAG(sound_preferences->flags,_stereo_flag))
+			SET_FLAG(sound_preferences->flags,_dynamic_tracking_flag,false);
+		
+		SET_FLAG(sound_preferences->flags,_16bit_sound_flag,GetControl32BitValue(SNDS_16Bit));
+		
+		SET_FLAG(sound_preferences->flags,_ambient_sound_flag,GetControl32BitValue(SNDS_Ambient));
+		
+		SET_FLAG(sound_preferences->flags,_more_sounds_flag,GetControl32BitValue(SNDS_More));
+		
+		SET_FLAG(sound_preferences->flags,_relative_volume_flag,GetControl32BitValue(SNDS_Relative_Volume));
+		
+		// Player:
+		
+		player_preferences->difficulty_level = GetControl32BitValue(PLYR_Difficulty) - 1;
+		
+		GetEditPascalText(PLYR_Name, player_preferences->name, PREFERENCES_NAME_LENGTH);
+
+		player_preferences->color = GetControl32BitValue(PLYR_Color) - 1;
+
+		player_preferences->team = GetControl32BitValue(PLYR_Team) - 1;
+		
+		// Input:
+	
+		SET_FLAG(input_preferences->modifiers, _inputmod_interchange_run_walk, GetControl32BitValue(INPT_Run_Walk));
+
+		SET_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink, GetControl32BitValue(INPT_Swim_Sink));
+
+		SET_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter, GetControl32BitValue(INPT_No_Auto_Rctr));
+
+		SET_FLAG(input_preferences->modifiers, _inputmod_dont_switch_to_new_weapon, GetControl32BitValue(INPT_No_Switch_New));
+
+		SET_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds, GetControl32BitValue(INPT_Button_Snds));
+		
+		// Environment:
+		
+		environment_preferences->map_checksum=
+			find_checksum_and_file_spec_from_control(ENVR_Map, _typecode_scenario,
+				&environment_preferences->map_file);
+
+		environment_preferences->physics_checksum=
+			find_checksum_and_file_spec_from_control(ENVR_Physics, _typecode_physics,
+				&environment_preferences->physics_file);
+		
+		environment_preferences->shapes_mod_date=
+			find_checksum_and_file_spec_from_control(ENVR_Shapes, _typecode_shapes,
+				&environment_preferences->shapes_file);
+		
+		environment_preferences->sounds_mod_date=
+			find_checksum_and_file_spec_from_control(ENVR_Sounds, _typecode_sounds,
+				&environment_preferences->sounds_file);
+		
+		// Clean up after dialogs; lone files may not be selected properly by them
+		SetToLoneFile(_typecode_scenario,
+			environment_preferences->map_file, environment_preferences->map_checksum);
+		SetToLoneFile(_typecode_physics,
+			environment_preferences->physics_file, environment_preferences->physics_checksum);
+		SetToLoneFile(_typecode_shapes,
+			environment_preferences->shapes_file, environment_preferences->shapes_mod_date);
+		SetToLoneFile(_typecode_sounds,
+			environment_preferences->sounds_file, environment_preferences->sounds_mod_date);
+		
+		/* Save the new ones. */
+		if (graphics_preferences->screen_mode.size != OldSize)
+			graphics_preferences->refresh_frequency = DEFAULT_MONITOR_REFRESH_FREQUENCY;
+		write_preferences();
+		set_sound_manager_parameters(sound_preferences);
+		load_environment_from_preferences();
+	}
+	else
+	{
+		// Cancel
+		
+		set_sound_manager_parameters(&OriginalSoundParameters);
+	}
+		
+	/* Proceses the entire physics file.. */
+	free_extensions_memory();
+}
+#else
+void handle_preferences(
+	void)
+{
+	/* Save the existing preferences, in case we have to reload them. */
+	write_preferences();
+		
 	// Preserve the old sound preferences, so that music volume can be previewed,
 	// while being able to revert to the original values
 	sound_manager_parameters OriginalSoundParameters;
@@ -177,6 +637,7 @@ void handle_preferences(
 	else
 		set_sound_manager_parameters(&OriginalSoundParameters);
 }
+#endif
 
 
 /*
@@ -242,12 +703,14 @@ static bool ethernet_active(
 /* ------------- dialog functions */
 
 /* --------- graphics */
+#ifndef USES_NIBS
 enum {
 	_hundreds_colors_menu_item= 1,
 	_thousands_colors_menu_item,
 	_millions_colors_menu_item,
 	_billions_colors_menu_item
 };
+#endif
 
 static void setup_graphics_dialog(
 	DialogPtr dialog,
@@ -1245,6 +1708,23 @@ public:
         }
 };
 
+
+// Wrapper that extracts the control
+static void fill_in_popup_with_filetype(
+	DialogPtr dialog, 
+	short item,
+	int type,
+	unsigned long checksum,
+	const FSSpec& file)
+{
+	ControlHandle control;
+	short item_type;
+	Rect bounds;
+	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
+	
+	fill_in_popup_with_filetype(control, type, checksum, file); 
+}
+
 /* Note that we are going to assume that things don't change while they are in this */
 /*  dialog- ie no one is copying files to their machine, etc. */
 // Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
@@ -1259,19 +1739,17 @@ public:
 // Hmm, since there ought to be only one possible file_match, it's probably a bit
 // much to have both file_match and good_match.  Oh well.
 static void fill_in_popup_with_filetype(
-	DialogPtr dialog, 
-	short item,
+	ControlHandle control,
 	int type,
 	unsigned long checksum,
-        const FSSpec& file)
+	const FSSpec& file)
 {
 	MenuHandle menu;
         short index;
         short value= NONE;
         short file_match_value= NONE;
         bool good_match= false;
-	ControlHandle control;
-	short item_type, count;
+	short count;
 	Rect bounds;
 
         // if our housekeeping vector for some reason isn't empty, empty it
@@ -1281,7 +1759,22 @@ static void fill_in_popup_with_filetype(
         menu_items[type].push_back(NONE);
 
 	/* Get the menu */
-	menu= get_popup_menu_handle(dialog, item);
+	// menu= get_popup_menu_handle(dialog, item);
+	
+	//#if defined(USE_CARBON_ACCESSORS)
+	menu= GetControlPopupMenuHandle(control);
+/*
+#else
+	*/
+	/* I don't know how to assert that it is a popup control... <sigh> */
+	/*
+	PopupPrivateData **privateHndl= (PopupPrivateData **) ((*control)->contrlData);
+	assert(privateHndl);
+
+	menu= (*privateHndl)->mHandle;
+#endif
+*/
+
 	
 	/* Remove whatever it had */
 #if defined(TARGET_API_MAC_CARBON)
@@ -1380,7 +1873,7 @@ static void fill_in_popup_with_filetype(
 	} 
 
 	/* Set the max value */
-	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
+	// GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
 
 	if(count==0)
 	{
@@ -1417,6 +1910,7 @@ static void fill_in_popup_with_filetype(
 	}
 }
 
+
 static unsigned long find_checksum_and_file_spec_from_dialog(
 	DialogPtr dialog, 
 	short item_hit, 
@@ -1424,12 +1918,22 @@ static unsigned long find_checksum_and_file_spec_from_dialog(
 	FSSpec *file)
 {
 	ControlHandle control;
-	short item_type, value;
+	short item_type;
 	Rect bounds;
+
+	GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
+	
+	return find_checksum_and_file_spec_from_control(control, type, file);
+}
+
+static unsigned long find_checksum_and_file_spec_from_control(
+	ControlHandle control,
+	uint32 type,
+	FSSpec *file)
+{
+	short value;
 	unsigned long checksum;
 	
-	/* Get the dialog item hit */
-	GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
 	value= GetControlValue(control);
 
         int index= menu_items[type][value];

@@ -8,6 +8,22 @@
 #ifndef PREFERENCES_PRIVATE_H
 #define PREFERENCES_PRIVATE_H
 
+#ifdef USES_NIBS
+const CFStringRef Window_Preferences = CFSTR("Preferences");
+const int iTABS = 3;
+
+// For marking out the panes themselves
+const OSType Sig_Pane = 'pane';
+
+// For marking out the inhabitants of each pane
+const OSType Sig_Graphics = 'grfx';
+const OSType Sig_Sound = 'snds';
+const OSType Sig_Player = 'plyr';
+const OSType Sig_Input = 'inpt';
+const OSType Sig_Environment = 'envr';
+ 
+#endif
+
 enum {
 	ditlGRAPHICS= 4001,
 	iCHOOSE_MONITOR=1,
@@ -78,7 +94,8 @@ enum {
 	playerGroup,
 	soundGroup,
 	inputGroup,
-	environmentGroup
+	environmentGroup,
+	NUMBER_OF_PREFS_GROUPS
 };
 
 
