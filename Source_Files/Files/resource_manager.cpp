@@ -41,6 +41,7 @@
 #include <map>
 
 #ifndef NO_STD_NAMESPACE
+using std::iostream;
 using std::vector;
 using std::list;
 using std::map;
@@ -301,9 +302,10 @@ SDL_RWops *open_res_file(FileSpecifier &file)
     if (f == NULL)
             f = open_res_file_from_path(resources_file_name.c_str());
     if (f == NULL)
-            f = open_res_file_from_path(darwin_rsrc_file_name.c_str());
+	   f = open_res_file_from_path(darwin_rsrc_file_name.c_str());
     if (f == NULL)
-            f = open_res_file_from_path(file.GetPath());
+	   f = open_res_file_from_path(file.GetPath());
+
 
     return f;
 }

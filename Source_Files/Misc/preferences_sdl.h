@@ -936,7 +936,7 @@ static void environment_dialog(void *arg)
 			environment_preferences->sounds_mod_date = sounds_w->get_file_specifier().GetDate();
 			changed = true;
 		}
-
+		
 		path = theme_w->get_path();
 		if (strcmp(path, environment_preferences->theme_dir)) {
 			strcpy(environment_preferences->theme_dir, path);

@@ -84,7 +84,7 @@
 //174
 		17587328FF379C6511CA2CBB = {
 			isa = PBXApplicationReference;
-			path = AlephOne.app;
+			path = AlephOneSDL.app;
 			refType = 3;
 		};
 //170
@@ -190,7 +190,6 @@
 		};
 		29B97326FDCFA39411CA2CEA = {
 			buildPhases = (
-				F5F50D6B0215CE8301144D54,
 				29B97327FDCFA39411CA2CEA,
 				29B97328FDCFA39411CA2CEA,
 				29B9732BFDCFA39411CA2CEA,
@@ -210,7 +209,7 @@
 				OPTIMIZATION_CFLAGS = "-O2 -frename-registers -fprefetch-loop-arrays -fschedule-insns -fschedule-insns2 -finline-functions -finline-limit=600 -fregmove -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fgcse -fgcse-lm -fgcse-sm -fdelete-null-pointer-checks   -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -x objective-c++";
 				OTHER_LDFLAGS = "-flat_namespace -multiply_defined suppress -framework SDL -framework SDL_image -framework SDL_net -framework AppKit";
-				PRODUCT_NAME = AlephOne;
+				PRODUCT_NAME = AlephOneSDL;
 				SECTORDER_FLAGS = "";
 				USE_GCC3_PFE_SUPPORT = YES;
 				WARNING_CFLAGS = "-Wmost -Wpointer-arith -Wformat";
@@ -419,7 +418,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>AlephOne</string>
+	<string>AlephOneSDL</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Aleph One SDL Test for OS X</string>
 	<key>CFBundleIconFile</key>
@@ -8610,19 +8609,6 @@
 			settings = {
 			};
 		};
-		F5F50D6B0215CE8301144D54 = {
-			buildActionMask = 2147483647;
-			files = (
-			);
-			generatedFileNames = (
-			);
-			isa = PBXShellScriptBuildPhase;
-			neededFileNames = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Disable script, this is no longer necessary or desired\n#(cd $SRCROOT/../Source_Files/Pfhortran; awk >language_definition.h '!/^#/ {print \"{\\\"\" $1 \"\\\", 0x\" $2 \"},\";}' Pfhortran_Language_Definition )";
-		};
 		F5F50D6C0215DACD01144D54 = {
 			children = (
 				F5F50D6D0215DACD01144D54,
@@ -8684,7 +8670,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML\ncp $SRCROOT/../data/*.mml $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML/\ncp $SRCROOT/../data/Fonts $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/";
+			shellScript = "mkdir -p $SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/MML\ncp $SRCROOT/../data/*.mml $SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/MML/\ncp $SRCROOT/../data/Fonts $SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/\nmkdir -p $SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/Themes\ncp -R $SRCROOT/../data/default_theme $SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default\nrm -rf $SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}";
 		};
 		F5FA5D2A0248632901A80001 = {
 			fileRef = F522139E0136AC1601000001;

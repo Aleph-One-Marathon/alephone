@@ -272,13 +272,22 @@ static void initialize_application(void)
 	// Find data directories, construct search path
 	DirectorySpecifier default_data_dir;
 
-#if defined(unix) || (defined (__APPLE__) && defined (__MACH__))
+#if defined(unix)
 
 	default_data_dir = PKGDATADIR;
 	const char *home = getenv("HOME");
 	if (home)
 		local_data_dir = home;
 	local_data_dir += ".alephone";
+
+#elif defined(__APPLE__) && defined(__MACH__)
+	default_data_dir = PKGDATADIR;
+	const char *home = getenv("HOME");
+	if (home)
+	    local_data_dir = home;
+	local_data_dir += "Library";
+	local_data_dir += "Application Support";
+	local_data_dir += "AlephOne";
 
 #elif defined(__BEOS__)
 
@@ -332,10 +341,9 @@ static void initialize_application(void)
 			data_search_path.push_back(path);
 	} else
 #if defined(__APPLE__) && defined(__MACH__)
-		data_search_path.push_back("AlephOne.app/Contents/Resources/DataFiles");
 	data_search_path.push_back(".");
 #endif
-		data_search_path.push_back(default_data_dir);
+     data_search_path.push_back(default_data_dir);
 	data_search_path.push_back(local_data_dir);
 
 	// Subdirectories
@@ -347,11 +355,18 @@ static void initialize_application(void)
 	local_data_dir.CreateDirectory();
 	saved_games_dir.CreateDirectory();
 	recordings_dir.CreateDirectory();
+#if defined(__APPLE__) && defined(__MACH__)
+	DirectorySpecifier local_mml_dir = "AlephOneSDL.app/Contents/Resources/DataFiles/MML";
+#else
 	DirectorySpecifier local_mml_dir = local_data_dir + "MML";
+#endif
 	local_mml_dir.CreateDirectory();
+#if defined(__APPLE__) && defined(__MACH__)
+	DirectorySpecifier local_themes_dir = "AlephOneSDL.app/Contents/Resources/DataFiles/Themes";
+#else
 	DirectorySpecifier local_themes_dir = local_data_dir + "Themes";
+#endif
 	local_themes_dir.CreateDirectory();
-
 	// Setup resource manager
 	initialize_resources();
 

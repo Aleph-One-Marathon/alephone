@@ -1,1 +1,1 @@
-#define PKGDATADIR "/Library/Application Support/AlephOne/"
+#define PKGDATADIR "AlephOneSDL.app/Contents/Resources/DataFiles/"
