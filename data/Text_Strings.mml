@@ -51,6 +51,7 @@
 <string index="10">Music</string>
 <string index="11">Images</string>
 <string index="12">Movie</string>
+<string index="13">Default</string>
 </stringset>
 
 <!-- STR# Resource: "Top-Level Interface Items" -->

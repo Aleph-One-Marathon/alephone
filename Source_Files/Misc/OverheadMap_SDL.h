@@ -9,6 +9,7 @@
 
 
 class OverheadMap_SDL_Class : public OverheadMapClass {
+protected:
 	void draw_polygon(
 		short vertex_count,
 		short *vertices,

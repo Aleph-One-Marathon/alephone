@@ -30,6 +30,10 @@
 #include "OGL_Setup.h"
 #include "shell.h"
 
+#ifdef SDL
+#include "sdl_dialogs.h"
+#endif
+
 
 // The absolute root element is a global, of course
 XML_ElementParser RootParser("");
@@ -64,4 +68,7 @@ void SetupParseTree()
 	MarathonParser.AddChild(Weapons_GetParser());
 	MarathonParser.AddChild(OpenGL_GetParser());
 	MarathonParser.AddChild(Cheats_GetParser());
+#ifdef SDL
+	MarathonParser.AddChild(Theme_GetParser());
+#endif
 }

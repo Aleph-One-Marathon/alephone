@@ -354,6 +354,12 @@ static void default_environment_preferences(
 	strncpy(prefs->sounds_file, DefaultFile.GetPath(), 256);
 	prefs->sounds_file[255] = 0;
 #endif
+
+#ifdef SDL
+	get_default_theme_spec(DefaultFile);
+	strncpy(prefs->theme_dir, DefaultFile.GetPath(), 256);
+	prefs->theme_dir[255] = 0;
+#endif
 }
 
 
@@ -513,14 +519,12 @@ void load_environment_from_preferences(
 #else
 	File = prefs->map_file;
 #endif
-	if (File.Exists())
-	{
+	if (File.Exists()) {
 		set_map_file(File);
 	} else {
 		/* Try to find the checksum */
 		if(find_wad_file_that_has_checksum(File,
-			_typecode_scenario, strPATHS, prefs->map_checksum))
-		{
+			_typecode_scenario, strPATHS, prefs->map_checksum))	{
 			set_map_file(File);
 		} else {
 			set_to_default_map();
@@ -532,14 +536,12 @@ void load_environment_from_preferences(
 #else
 	File = prefs->physics_file;
 #endif
-	if (File.Exists())
-	{
+	if (File.Exists()) {
 		set_physics_file(File);
 		import_definition_structures();
 	} else {
 		if(find_wad_file_that_has_checksum(File,
-			_typecode_physics, strPATHS, prefs->physics_checksum))
-		{
+			_typecode_physics, strPATHS, prefs->physics_checksum)) {
 			set_physics_file(File);
 			import_definition_structures();
 		} else {
@@ -552,8 +554,7 @@ void load_environment_from_preferences(
 #else
 	File = prefs->shapes_file;
 #endif
-	if (File.Exists())
-	{
+	if (File.Exists()) {
 		open_shapes_file(File);
 	} else {
 		if(find_file_with_modification_date(File,
@@ -570,13 +571,11 @@ void load_environment_from_preferences(
 #else
 	File = prefs->sounds_file;
 #endif
-	if (File.Exists())
-	{
+	if (File.Exists()) {
 		open_sound_file(File);
 	} else {
 		if(find_file_with_modification_date(File,
-			_typecode_sounds, strPATHS, prefs->sounds_mod_date))
-		{
+			_typecode_sounds, strPATHS, prefs->sounds_mod_date)) {
 			open_sound_file(File);
 		} else {
 			/* What should I do? */

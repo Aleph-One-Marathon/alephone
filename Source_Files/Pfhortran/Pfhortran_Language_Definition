@@ -1,3 +1,6 @@
+#
+# Keywords
+#
 Camera_Move 01
 Camera_Look 02
 Wait_Ticks 03
@@ -43,35 +46,37 @@ Set_Camera_Pos 24
 Set_Camera_YP 25
 Activate_Camera 26
 Use_Camera 27
-#--Variable_Data--
+#
+# Variable data
+#
 TRUE 1
 FALSE 0
-knife 0
-magnum 1
-magnum_magazine 2
-plasma_pistol 3
-plasma_magazine 4
-assault_rifle 5
-assault_rifle_magazine 6
-assault_grenade_magazine 7
-missile_launcher 8
-missile_launcher_magazine 9
-invisibility_powerup 10
-invincibility_powerup 11
-infravision_powerup 12
-alien_shotgun 13
-alien_shotgun_magazine 14
-flamethrower 15
-flamethrower_canister 16
-extravision_powerup 17
-oxygen_powerup 18
-energy_powerup 19
-double_energy_powerup 20
-triple_energy_powerup 21
-shotgun 22
-shotgun_magazine 23
-spht_door_key 24
-uplink_chip 25
-smg 35
-smg_ammo 36
+knife 00
+magnum 01
+magnum_magazine 02
+plasma_pistol 03
+plasma_magazine 04
+assault_rifle 05
+assault_rifle_magazine 06
+assault_grenade_magazine 07
+missile_launcher 08
+missile_launcher_magazine 09
+invisibility_powerup 0A
+invincibility_powerup 0B
+infravision_powerup 0C
+alien_shotgun 0D
+alien_shotgun_magazine 0E
+flamethrower 0F
+flamethrower_canister 10
+extravision_powerup 11
+oxygen_powerup 12
+energy_powerup 13
+double_energy_powerup 14
+triple_energy_powerup 15
+shotgun 16
+shotgun_magazine 17
+spht_door_key 18
+uplink_chip 19
+smg 23
+smg_ammo 24
 default_camera 0

@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+September 16, 2000
+ - SDL dialog GUI supports loadable themes
+ - added sound volume slider
+
 September 14, 2000
  - Pfhortran language definition is now compiled into the application; the
    "Pfhortran_Language_Definition" file is not needed any more at runtime

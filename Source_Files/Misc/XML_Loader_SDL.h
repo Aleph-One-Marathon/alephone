@@ -17,6 +17,7 @@ public:
 	XML_Loader_SDL() : data(NULL) {}
 	~XML_Loader_SDL() {delete[] data; data = NULL;}
 
+	bool ParseFile(FileSpecifier &file);
 	bool ParseDirectory(FileSpecifier &dir);
 
 protected:

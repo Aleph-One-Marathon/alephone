@@ -53,6 +53,7 @@ enum {
 	_typecode_patch,
 	_typecode_images,
 	_typecode_preferences,
+	_typecode_theme,	// pseudo type code
 	NUMBER_OF_TYPECODES
 };
 

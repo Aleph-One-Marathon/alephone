@@ -55,7 +55,7 @@ protected:
 
 class w_spacer : public widget {
 public:
-	w_spacer(int height = 8) {rect.w = 0; rect.h = height;}
+	w_spacer(int height = get_dialog_space(SPACER_HEIGHT)) {rect.w = 0; rect.h = height;}
 
 	void draw(SDL_Surface *s) const {}
 	bool is_selectable(void) const {return false;}
@@ -105,6 +105,7 @@ typedef void (*action_proc)(void *);
 class w_button : public widget {
 public:
 	w_button(const char *text, action_proc proc, void *arg);
+	~w_button();
 
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
@@ -113,6 +114,8 @@ protected:
 	const char *text;
 	action_proc proc;
 	void *arg;
+
+	SDL_Surface *button_l, *button_c, *button_r;
 };
 
 
@@ -289,180 +292,117 @@ private:
 
 
 /*
+ *  Slider
+ */
+
+class w_slider : public widget {
+public:
+	w_slider(const char *name, int num_items, int sel);
+	~w_slider();
+
+	int layout(void);
+	void draw(SDL_Surface *s) const;
+	void mouse_move(int x, int y);
+	void click(int x, int y);
+	void event(SDL_Event &e);
+
+	int get_selection(void) {return selection;}
+	void set_selection(int selection);
+
+	virtual void item_selected(void) {}
+
+protected:
+	const char *name;
+
+	int slider_x;			// X offset of slider image
+
+	int selection;			// Currently selected item
+	int num_items;			// Total number of items
+
+	bool thumb_dragging;	// Flag: currently dragging thumb
+	int thumb_x;			// X position of thumb
+	int trough_width;		// Width of trough
+
+	int thumb_drag_x;		// X start position when dragging
+
+	SDL_Surface *slider_l, *slider_c, *slider_r, *thumb;
+};
+
+
+/*
  *  Template for list selection widgets
  */
 
-template <class T>
-class w_list : public widget {
-protected:
-	static const int BORDER_SIZE = 2;
-	static const int SCROLL_BAR_WIDTH = 16;
-
+class w_list_base : public widget {
 public:
-	w_list(const vector<T> &it, int width, int lines, int sel) : widget(NORMAL_FONT), items(it), shown_items(lines), thumb_dragging(false)
-	{
-		font_height = font_line_height(font);
-		rect.w = width;
-		rect.h = font_height * shown_items + BORDER_SIZE * 2;
-		new_items();
-		set_selection(sel);
-		center_item(selection);
-	}
-	~w_list() {}
+	w_list_base(int width, int lines, int sel);
+	~w_list_base();
 
-	int layout(void)
-	{
-		rect.x = -rect.w / 2;
-		return rect.h;
-	}
-
-	void draw(SDL_Surface *s) const
-	{
-		// Border
-		draw_rectangle(s, &rect, get_dialog_color(s, BORDER_COLOR));
-
-		// Scroll bar
-		uint32 white = get_dialog_color(s, WHITE_COLOR);
-		SDL_Rect r = {rect.x + rect.w - SCROLL_BAR_WIDTH, rect.y, SCROLL_BAR_WIDTH, rect.h};
-		draw_rectangle(s, &r, white);
-		r.y += thumb_y; r.h = thumb_height;
-		SDL_FillRect(s, &r, get_dialog_color(s, thumb_dragging ? THUMB_ACTIVE_COLOR : THUMB_COLOR));
-		draw_rectangle(s, &r, white);
-
-		// Items
-		vector<T>::const_iterator i = items.begin() + top_item;
-		int y = rect.y + BORDER_SIZE;
-		for (int n=top_item; n<top_item + min(shown_items, num_items); n++, i++, y+=font_height)
-			draw_item(i, s, rect.x + BORDER_SIZE, y, rect.w - BORDER_SIZE * 2, n == selection && active);
-	}
-
-	void mouse_move(int x, int y)
-	{
-		if (thumb_dragging) {
-			int delta_y = y - thumb_drag_y;
-			set_top_item(delta_y * num_items / rect.h);
-		} else {
-			if (x < BORDER_SIZE || x >= rect.w - SCROLL_BAR_WIDTH)
-				return;
-			if (y < BORDER_SIZE || y >= rect.h - BORDER_SIZE)
-				return;
-			set_selection((y - BORDER_SIZE) / font_height + top_item);
-		}
-	}
-
-	void click(int x, int y)
-	{
-		if (x >= rect.w - SCROLL_BAR_WIDTH) {
-			thumb_dragging = dirty = true;
-			thumb_drag_y = y - thumb_y;
-		} else if (num_items > 0)
-			item_selected();
-	}
-
-	void event(SDL_Event &e)
-	{
-		if (e.type == SDL_KEYDOWN) {
-			switch (e.key.keysym.sym) {
-				case SDLK_UP:
-					set_selection(selection - 1);
-					e.type = SDL_NOEVENT;	// Prevent selection of previous widget
-					break;
-				case SDLK_DOWN:
-					set_selection(selection + 1);
-					e.type = SDL_NOEVENT;	// Prevent selection of next widget
-					break;
-				case SDLK_PAGEUP:
-					set_selection(selection - shown_items);
-					break;
-				case SDLK_PAGEDOWN:
-					set_selection(selection + shown_items);
-					break;
-				case SDLK_HOME:
-					set_selection(0);
-					break;
-				case SDLK_END:
-					set_selection(num_items - 1);
-					break;
-				default:
-					break;
-			}
-		} else if (e.type == SDL_MOUSEBUTTONUP) {
-			if (thumb_dragging) {
-				thumb_dragging = false;
-				dirty = true;
-			}
-		}
-	}
+	int layout(void);
+	void draw(SDL_Surface *s) const;
+	void mouse_move(int x, int y);
+	void click(int x, int y);
+	void event(SDL_Event &e);
 
 	int get_selection(void) {return selection;}
 
 	virtual void item_selected(void) = 0;
 
 protected:
-	void set_selection(int s)
-	{
-		if (s < 0)
-			s = 0;
-		else if (s >= num_items)
-			s = num_items - 1;
-		if (s != selection)
-			dirty = true;
-		selection = s;
-		if (s < top_item)
-			set_top_item(s);
-		else if (s >= top_item + shown_items)
-			set_top_item(s - shown_items + 1);
-	}
-
-	void new_items(void)
-	{
-		num_items = items.size();
-		top_item = selection = 0;
-		dirty = true;
-		if (num_items <= shown_items)
-			thumb_height = rect.h;
-		else if (num_items == 0)
-			thumb_height = shown_items * rect.h;
-		else
-			thumb_height = shown_items * rect.h / num_items;
-	}
-
-	void center_item(int i)
-	{
-		set_top_item(selection - shown_items / 2);
-	}
-
-	const vector<T> &items;	// List items
-	int num_items;			// Total number of items
+	virtual void draw_items(SDL_Surface *s) const = 0;
+	void draw_image(SDL_Surface *dst, SDL_Surface *s, int x, int y) const;
+	void set_selection(int s);
+	void new_items(void);
+	void center_item(int i);
+	void set_top_item(int i);
 
 	int selection;			// Currently selected item
 	int font_height;		// Height of font
 
-private:
-	void set_top_item(int i)
-	{
-		if (i > num_items - shown_items)
-			i = num_items - shown_items;
-		if (i < 0)
-			i = 0;
-		if (i != top_item)
-			dirty = true;
-		top_item = i;
-		if (num_items == 0)
-			thumb_y = 0;
-		else
-			thumb_y = top_item * rect.h / num_items;
-	}
-
-	virtual void draw_item(vector<T>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const = 0;
-
-	int top_item;			// Number of first visible item
+	int num_items;			// Total number of items
 	int shown_items;		// Number of shown items
+	int top_item;			// Number of first visible item
 
 	bool thumb_dragging;	// Flag: currently dragging scroll bar thumb
-	int thumb_height;		// Height of scroll bar
-	int thumb_y;			// Y position of scroll bar
+	SDL_Rect trough_rect;	// Dimensions of trough
+	int thumb_height;		// Height of thumb
+	int min_thumb_height;	// Minimal height of thumb
+	int thumb_y;			// Y position of thumb
+
 	int thumb_drag_y;		// Y start position when dragging
+
+	SDL_Surface *frame_tl, *frame_t, *frame_tr, *frame_l, *frame_r, *frame_bl, *frame_b, *frame_br;
+	SDL_Surface *thumb_t, *thumb_c, *thumb_b;
+};
+
+template <class T>
+class w_list : public w_list_base {
+public:
+	w_list(const vector<T> &it, int width, int lines, int sel) : w_list_base(width, lines, sel), items(it)
+	{
+		num_items = items.size();
+		new_items();
+		set_selection(sel);
+		center_item(selection);
+	}
+
+	~w_list() {}
+
+protected:
+	void draw_items(SDL_Surface *s) const
+	{
+		vector<T>::const_iterator i = items.begin() + top_item;
+		int x = rect.x + get_dialog_space(LIST_L_SPACE);
+		int y = rect.y + get_dialog_space(LIST_T_SPACE);
+		int width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+		for (int n=top_item; n<top_item + min(shown_items, num_items); n++, i++, y+=font_height)
+			draw_item(i, s, x, y, width, n == selection && active);
+	}
+
+	const vector<T> &items;	// List of items
+
+private:
+	virtual void draw_item(vector<T>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const = 0;
 };
 
 #endif

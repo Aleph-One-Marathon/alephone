@@ -7,6 +7,7 @@
 #include "OverheadMap_SDL.h"
 #include "map.h"
 #include "screen_drawing.h"
+#include "sdl_fonts.h"
 
 
 // From screen_sdl.cpp

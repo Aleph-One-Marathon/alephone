@@ -56,6 +56,13 @@ bool get_default_music_spec(FileSpecifier &file)
 	return file.Exists();
 }
 
+bool get_default_theme_spec(FileSpecifier &file)
+{
+	file.SetToGlobalThemesDir();
+	file.AddPart(getcstr(temporary, strFILENAMES, filenameDEFAULT_THEME));
+	return file.Exists();
+}
+
 
 /*
  *  Choose saved game for loading

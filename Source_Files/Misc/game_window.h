@@ -10,8 +10,6 @@ Apr 30, 2000 (Loren Petrich): Added XML parser object for all the interface stuf
 
 */
 
-#include "XML_ElementParser.h"
-
 void initialize_game_window(void);
 
 void draw_interface(void);
@@ -30,6 +28,7 @@ void mark_player_network_stats_as_dirty(short player_index);
 void set_interface_microphone_recording_state(bool state);
 
 // LP addition: get the parser for the interface elements (name "interface")
+class XML_ElementParser;
 XML_ElementParser *Interface_GetParser();
 
 #endif

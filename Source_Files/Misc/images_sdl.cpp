@@ -371,7 +371,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 
 
 /*
- *  Rescale surface
+ *  Rescale surface to given dimensions
  */
 
 template <class T>
@@ -412,6 +412,64 @@ SDL_Surface *rescale_surface(SDL_Surface *s, int width, int height)
 			break;
 		case 4:
 			rescale((pixel32 *)s->pixels, s->pitch, (pixel32 *)s2->pixels, s2->pitch, width, height, dx, dy);
+			break;
+	}
+
+	if (s->format->palette)
+		SDL_SetColors(s2, s->format->palette->colors, 0, s->format->palette->ncolors);
+
+	return s2;
+}
+
+
+/*
+ *  Tile surface to fill given dimensions
+ */
+
+template <class T>
+static void tile(T *src_pixels, int src_pitch, T *dst_pixels, int dst_pitch, int src_width, int src_height, int dst_width, int dst_height)
+{
+	T *p = src_pixels;
+	int sy = 0;
+	for (int y=0; y<dst_height; y++) {
+		int sx = 0;
+		for (int x=0; x<dst_width; x++) {
+			dst_pixels[x] = p[sx];
+			sx++;
+			if (sx == src_width)
+				sx = 0;
+		}
+		dst_pixels += dst_pitch / sizeof(T);
+		sy++;
+		if (sy == src_height) {
+			sy = 0;
+			p = src_pixels;
+		} else
+			p += src_pitch / sizeof(T);
+	}
+}
+
+SDL_Surface *tile_surface(SDL_Surface *s, int width, int height)
+{
+	if (s == NULL)
+		return NULL;
+
+	SDL_Surface *s2 = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, s->format->BitsPerPixel, s->format->Rmask, s->format->Gmask, s->format->Bmask, s->format->Amask);
+	if (s2 == NULL)
+		return NULL;
+
+	switch (s->format->BytesPerPixel) {
+		case 1:
+			tile((pixel8 *)s->pixels, s->pitch, (pixel8 *)s2->pixels, s2->pitch, s->w, s->h, width, height);
+			break;
+		case 2:
+			tile((pixel16 *)s->pixels, s->pitch, (pixel16 *)s2->pixels, s2->pitch, s->w, s->h, width, height);
+			break;
+		case 3:
+			tile((pixel8 *)s->pixels, s->pitch, (pixel8 *)s2->pixels, s2->pitch, s->w * 3, s->h, width * 3, height);
+			break;
+		case 4:
+			tile((pixel32 *)s->pixels, s->pitch, (pixel32 *)s2->pixels, s2->pitch, s->w, s->h, width, height);
 			break;
 	}
 

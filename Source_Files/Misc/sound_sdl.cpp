@@ -353,6 +353,19 @@ bool adjust_sound_volume_down(struct sound_manager_parameters *parameters, short
 	return false;
 }
 
+void test_sound_volume(short volume, short sound_index)
+{
+	if (_sm_active) {
+		if ((volume = PIN(volume, 0, NUMBER_OF_SOUND_VOLUME_LEVELS)) != 0) {
+			play_sound(sound_index, NULL, NONE);
+			main_volume = volume * SOUND_VOLUME_DELTA;
+			while (sound_is_playing(sound_index))
+				SDL_Delay(10);
+			main_volume = _sm_parameters->volume * SOUND_VOLUME_DELTA;
+		}
+	}
+}
+
 
 /*
  *  Is channel busy?

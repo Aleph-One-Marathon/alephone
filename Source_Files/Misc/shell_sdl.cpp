@@ -7,6 +7,7 @@
 #include "XML_Loader_SDL.h"
 #include "resource_manager.h"
 #include "sdl_dialogs.h"
+#include "sdl_fonts.h"
 #include "sdl_widgets.h"
 
 #include "TextStrings.h"
@@ -25,12 +26,14 @@
 
 
 // Data directories
-FileSpecifier global_data_dir;	// Global data file directory
-FileSpecifier local_data_dir;	// Local (per-user) data file directory
-FileSpecifier global_mml_dir;	// Global MML directory
-FileSpecifier local_mml_dir;	// Local MML directory
-FileSpecifier saved_games_dir;	// Directory for saved games
-FileSpecifier recordings_dir;	// Directory for recordings (except film buffer, which is stored in local_data_dir)
+FileSpecifier global_data_dir;		// Global data file directory
+FileSpecifier local_data_dir;		// Local (per-user) data file directory
+FileSpecifier global_mml_dir;		// Global MML directory
+FileSpecifier local_mml_dir;		// Local MML directory
+FileSpecifier global_themes_dir;	// Global directory for GUI themes
+FileSpecifier local_themes_dir;		// Local directory for GUI themes
+FileSpecifier saved_games_dir;		// Directory for saved games
+FileSpecifier recordings_dir;		// Directory for recordings (except film buffer, which is stored in local_data_dir)
 
 // Command-line options
 bool option_fullscreen = false;		// Run fullscreen
@@ -191,6 +194,10 @@ static void initialize_application(void)
 	global_mml_dir.AddPart("MML");
 	local_mml_dir = local_data_dir;
 	local_mml_dir.AddPart("MML");
+	global_themes_dir = global_data_dir;
+	global_themes_dir.AddPart("Themes");
+	local_themes_dir = local_data_dir;
+	local_themes_dir.AddPart("Themes");
 	saved_games_dir = local_data_dir;
 	saved_games_dir.AddPart("Saved Games");
 	recordings_dir = local_data_dir;
@@ -199,6 +206,7 @@ static void initialize_application(void)
 	// Create local directories
 	local_data_dir.CreateDirectory();
 	local_mml_dir.CreateDirectory();
+	local_themes_dir.CreateDirectory();
 	saved_games_dir.CreateDirectory();
 	recordings_dir.CreateDirectory();
 
@@ -207,10 +215,10 @@ static void initialize_application(void)
 
 	// Parse MML files
 	SetupParseTree();
-	XML_Loader_SDL XML_Loader;
-	XML_Loader.CurrentElement = &RootParser;
-	XML_Loader.ParseDirectory(global_mml_dir);
-	XML_Loader.ParseDirectory(local_mml_dir);
+	XML_Loader_SDL loader;
+	loader.CurrentElement = &RootParser;
+	loader.ParseDirectory(global_mml_dir);
+	loader.ParseDirectory(local_mml_dir);
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {
@@ -229,13 +237,15 @@ static void initialize_application(void)
 	write_preferences();
 
 	// Initialize everything
+	initialize_fonts();
 	initialize_sound_manager(sound_preferences);
 	initialize_marathon_music_handler();
 	initialize_keyboard_controller();
 	initialize_screen(&graphics_preferences->screen_mode);
 	initialize_marathon();
 	initialize_screen_drawing();
-	initialize_dialogs();
+	FileSpecifier theme = environment_preferences->theme_dir;
+	initialize_dialogs(theme);
 	initialize_terminal_manager();
 	initialize_shape_handler();
 	initialize_fades();
@@ -359,11 +369,11 @@ public:
 
 	void draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
 	{
-		y += font_ascent(font);
+		y += font->get_ascent();
 		char str[256];
 		sprintf(str, "%d - %s", i->level_number + 1, i->level_name);
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, str, x, y, selected ? get_dialog_color(s, ITEM_ACTIVE_COLOR) : get_dialog_color(s, ITEM_COLOR), font, style);
+		draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 
@@ -423,9 +433,9 @@ public:
 
 	void draw_item(vector<dir_entry>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
 	{
-		y += font_ascent(font);
+		y += font->get_ascent();
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, i->name.c_str(), x, y, selected ? get_dialog_color(s, ITEM_ACTIVE_COLOR) : get_dialog_color(s, ITEM_COLOR), font, style);
+		draw_text(s, i->name.c_str(), x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 };
@@ -601,7 +611,7 @@ again:
 	bool result = false;
 	if (d.run() == 0) { // OK
 		if (strlen(name_w->get_text()) == 0) {
-			play_sound(DIALOG_ERROR_SOUND, NULL, NONE);
+			play_dialog_sound(DIALOG_ERROR_SOUND);
 			name_w->set_text(default_name);
 			goto again;
 		}

@@ -20,9 +20,10 @@ alephone_SOURCES = \
   platforms.h player.h preferences.h progress.h projectile_definitions.h \
   projectiles.h render.h resource_manager.h scenery.h scenery_definitions.h \
   scottish_textures.h screen.h screen_definitions.h screen_drawing.h \
-  sdl_dialogs.h sdl_widgets.h shape_definitions.h shape_descriptors.h shell.h \
-  song_definitions.h sound_definitions.h tags.h textures.h vbl.h \
-  vbl_definitions.h wad.h wad_prefs.h weapon_definitions.h weapons.h world.h \
+  sdl_dialogs.h sdl_fonts.h sdl_widgets.h shape_definitions.h \
+  shape_descriptors.h shell.h song_definitions.h sound_definitions.h tags.h \
+  textures.h vbl.h vbl_definitions.h wad.h wad_prefs.h weapon_definitions.h \
+  weapons.h world.h \
   \
   AnimatedTextures.cpp ChaseCam.cpp ColorParser.cpp Crosshairs_SDL.cpp \
   DamageParser.cpp FileHandler_SDL.cpp OGL_Faders.cpp OGL_Render.cpp \
@@ -39,8 +40,8 @@ alephone_SOURCES = \
   pathfinding.cpp physics.cpp placement.cpp platforms.cpp player.cpp \
   preferences.cpp preprocess_map_sdl.cpp projectiles.cpp render.cpp \
   resource_manager.cpp scenery.cpp scottish_textures.cpp screen_drawing_sdl.cpp \
-  screen_sdl.cpp sdl_dialogs.cpp sdl_widgets.cpp shapes.cpp shell.cpp \
-  textures.cpp vbl.cpp vbl_sdl.cpp wad.cpp wad_sdl.cpp wad_prefs.cpp \
+  screen_sdl.cpp sdl_dialogs.cpp sdl_fonts.cpp sdl_widgets.cpp shapes.cpp \
+  shell.cpp textures.cpp vbl.cpp vbl_sdl.cpp wad.cpp wad_sdl.cpp wad_prefs.cpp \
   weapons.cpp world.cpp
 
 alephone_LDADD = ../CSeries/libcseries.a ../Expat/libexpat.a \

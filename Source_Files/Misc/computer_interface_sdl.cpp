@@ -4,6 +4,8 @@
  *  Written in 2000 by Christian Bauer
  */
 
+#include "sdl_fonts.h"
+
 
 // Global variables
 static const sdl_font_info *terminal_font = NULL;

@@ -83,6 +83,8 @@ Source_Files/Network/Makefile
 Source_Files/Pfhortran/Makefile
 tools/Makefile
 data/Makefile
+data/default_theme/Makefile
+data/macos_theme/Makefile
 ])
 
 dnl Print summary.

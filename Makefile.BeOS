@@ -64,10 +64,10 @@ SRCS=\
   $(MI)/preferences.cpp $(MI)/preprocess_map_sdl.cpp $(MI)/projectiles.cpp \
   $(MI)/render.cpp $(MI)/resource_manager.cpp $(MI)/scenery.cpp \
   $(MI)/scottish_textures.cpp $(MI)/screen_drawing_sdl.cpp \
-  $(MI)/screen_sdl.cpp $(MI)/sdl_dialogs.cpp $(MI)/sdl_widgets.cpp \
-  $(MI)/shapes.cpp $(MI)/shell.cpp $(MI)/textures.cpp $(MI)/vbl.cpp \
-  $(MI)/vbl_sdl.cpp $(MI)/wad.cpp $(MI)/wad_sdl.cpp $(MI)/wad_prefs.cpp \
-  $(MI)/weapons.cpp $(MI)/world.cpp \
+  $(MI)/screen_sdl.cpp $(MI)/sdl_dialogs.cpp $(MI)/sdl_fonts.cpp \
+  $(MI)/sdl_widgets.cpp $(MI)/shapes.cpp $(MI)/shell.cpp $(MI)/textures.cpp \
+  $(MI)/vbl.cpp $(MI)/vbl_sdl.cpp $(MI)/wad.cpp $(MI)/wad_sdl.cpp \
+  $(MI)/wad_prefs.cpp $(MI)/weapons.cpp $(MI)/world.cpp \
   \
   $(NW)/network_dummy.cpp $(NW)/network_games.cpp \
   \

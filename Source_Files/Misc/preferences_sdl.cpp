@@ -5,6 +5,7 @@
  */
 
 #include "sdl_dialogs.h"
+#include "sdl_fonts.h"
 #include "sdl_widgets.h"
 #include "screen.h"
 #include "images.h"
@@ -19,7 +20,7 @@
 #endif
 
 // From shell_sdl.cpp
-extern FileSpecifier global_data_dir, local_data_dir;
+extern FileSpecifier global_data_dir, local_data_dir, global_themes_dir, local_themes_dir;
 
 // Prototypes
 static void player_dialog(void *arg);
@@ -356,6 +357,17 @@ public:
 
 static const char *channel_labels[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", NULL};
 
+class w_volume_slider : public w_slider {
+public:
+	w_volume_slider(const char *name, int vol) : w_slider(name, NUMBER_OF_SOUND_VOLUME_LEVELS, vol) {}
+	~w_volume_slider() {}
+
+	void item_selected(void)
+	{
+		test_sound_volume(selection, _snd_adjust_volume);
+	}
+};
+
 static void sound_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
@@ -377,6 +389,8 @@ static void sound_dialog(void *arg)
 	d.add(more_w);
 	w_select *channels_w = new w_select("Channels", sound_preferences->channel_count, channel_labels);
 	d.add(channels_w);
+	w_volume_slider *volume_w = new w_volume_slider("Volume", sound_preferences->volume);
+	d.add(volume_w);
 	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
@@ -403,6 +417,12 @@ static void sound_dialog(void *arg)
 		int channel_count = channels_w->get_selection();
 		if (channel_count != sound_preferences->channel_count) {
 			sound_preferences->channel_count = channel_count;
+			changed = true;
+		}
+
+		int volume = volume_w->get_selection();
+		if (volume != sound_preferences->volume) {
+			sound_preferences->volume = volume;
 			changed = true;
 		}
 
@@ -577,6 +597,24 @@ static void keyboard_dialog(void *arg)
  *  Environment dialog
  */
 
+class FindThemes : public FileFinder {
+public:
+	FindThemes(vector<FileSpecifier> &v) : dest_vector(v) {dest_vector.clear();}
+
+private:
+	bool found(FileSpecifier &file)
+	{
+		// Look for "theme.mml" files
+		string base, part;
+		file.SplitPath(base, part);
+		if (part == "theme.mml")
+			dest_vector.push_back(base);
+		return false;
+	}
+
+	vector<FileSpecifier> &dest_vector;
+};
+
 class w_env_list : public w_list<FileSpecifier> {
 public:
 	w_env_list(const vector<FileSpecifier> &items, const char *selection, dialog *d) : w_list<FileSpecifier>(items, 400, 15, 0), parent(d)
@@ -598,11 +636,11 @@ public:
 
 	void draw_item(vector<FileSpecifier>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const
 	{
-		y += font_ascent(font);
+		y += font->get_ascent();
 		char str[256];
 		i->GetName(str);
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, str, x, y, selected ? get_dialog_color(s, ITEM_ACTIVE_COLOR) : get_dialog_color(s, ITEM_COLOR), font, style);
+		draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 
@@ -655,9 +693,17 @@ void w_env_select::select_item(dialog *parent)
 {
 	// Find available files
 	vector<FileSpecifier> files;
-	FindAllFiles finder(files);
-	finder.Find(global_data_dir, type);
-	finder.Find(local_data_dir, type);
+	if (type == _typecode_theme) {
+		// Theme, find by theme script
+		FindThemes finder(files);
+		finder.Find(global_themes_dir, WILDCARD_TYPE);
+		finder.Find(local_themes_dir, WILDCARD_TYPE);
+	} else {
+		// Map/phyics/shapes/sounds, find by type
+		FindAllFiles finder(files);
+		finder.Find(global_data_dir, type);
+		finder.Find(local_data_dir, type);
+	}
 
 	// Create dialog
 	dialog d;
@@ -698,6 +744,8 @@ static void environment_dialog(void *arg)
 	d.add(shapes_w);
 	w_env_select *sounds_w = new w_env_select("Sounds", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
 	d.add(sounds_w);
+	w_env_select *theme_w = new w_env_select("Theme", environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
+	d.add(theme_w);
 	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
@@ -706,6 +754,7 @@ static void environment_dialog(void *arg)
 	clear_screen();
 
 	// Run dialog
+	bool theme_changed = false;
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
@@ -737,13 +786,28 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 
-		if (changed) {
-			load_environment_from_preferences();
-			write_preferences();
+		path = theme_w->get_path();
+		if (strcmp(path, environment_preferences->theme_dir)) {
+			strcpy(environment_preferences->theme_dir, path);
+			changed = theme_changed = true;
 		}
+
+		if (changed)
+			load_environment_from_preferences();
+
+		if (theme_changed) {
+			FileSpecifier theme = environment_preferences->theme_dir;
+			load_theme(theme);
+		}
+
+		if (changed || theme_changed)
+			write_preferences();
 	}
 
 	// Redraw parent dialog
 	clear_screen();
-	parent->draw();
+	if (theme_changed)
+		parent->quit(0);	// Quit the parent dialog so it won't draw in the old theme
+	else
+		parent->draw();
 }

@@ -34,6 +34,8 @@
 #include "screen_drawing.h"
 #include "mouse.h"
 
+#include "sdl_fonts.h"
+
 
 // Constants
 #define DESIRED_SCREEN_WIDTH 640
@@ -70,9 +72,6 @@ const ViewSizeData ViewSizes[NUMBER_OF_VIEW_SIZES] =
 // Note: the overhead map will always fill all of the screen except for the HUD,
 // and the terminal display will always have a size of 640*320.
 
-// Font for FPS/position display
-static const TextSpec monaco_spec = {kFontIDMonaco, styleNormal, 12};
-
 
 // Global variables
 static SDL_Surface *main_surface;	// Main (display) surface
@@ -83,6 +82,8 @@ struct color_table *interface_color_table; /* always 8bit, for mixed-mode (i.e.,
 struct color_table *visible_color_table; /* the color environment the player sees (can be 16bit) */
 
 struct view_data *world_view; /* should be static */
+
+static const sdl_font_info *info_display_font = NULL;
 
 // Rendering buffer for the main view, the overhead map, and the terminals.
 // The HUD has a separate buffer.
@@ -169,6 +170,10 @@ void initialize_screen(struct screen_mode_data *mode)
 		world_view->horizontal_scale = 1;
 		world_view->vertical_scale = 1;
 		world_view->tunnel_vision_active = false;
+
+		// Load font for FPS/position display
+		static const TextSpec monaco_spec = {kFontIDMonaco, styleNormal, 12};
+		info_display_font = load_font(monaco_spec);
 
 	} else {
 
@@ -778,7 +783,7 @@ static void update_fps_display(SDL_Surface *s)
 			sprintf(fps, "%3.2ffps", (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks - frame_ticks[frame_index]));
 
 		// Print to screen
-		draw_text(world_pixels, fps, 5, world_pixels->h - 5, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), load_font(monaco_spec), styleNormal);
+		draw_text(world_pixels, fps, 5, world_pixels->h - 5, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), info_display_font, styleNormal);
 		//!! OpenGL
 	} else
 		frame_count = frame_index = 0;
@@ -794,8 +799,7 @@ static void DisplayPosition(SDL_Surface *s)
 	if (!ShowPosition)
 		return;
 
-	// Get font and color
-	const sdl_font_info *font = load_font(monaco_spec);
+	// Get color
 	uint32 pixel = SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff);
 
 	// Print position to screen
@@ -803,26 +807,26 @@ static void DisplayPosition(SDL_Surface *s)
 	const float FLOAT_WORLD_ONE = float(WORLD_ONE);
 	const float AngleConvert = 360.0 / float(FULL_CIRCLE);
 	sprintf(temporary, "X       = %8.3f", world_view->origin.x / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
 	Y += Leading;
 	sprintf(temporary, "Y       = %8.3f", world_view->origin.y / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
 	Y += Leading;
 	sprintf(temporary, "Z       = %8.3f", world_view->origin.z / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
 	Y += Leading;
 	sprintf(temporary, "Polygon = %8d", world_view->origin_polygon_index);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
 	Y += Leading;
 	int Angle = world_view->yaw;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Yaw     = %8.3f", AngleConvert * Angle);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
 	Y += Leading;
 	Angle = world_view->pitch;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Pitch   = %8.3f", AngleConvert * Angle);
-	draw_text(world_pixels, temporary, 5, Y, pixel, font, styleNormal);
+	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
 	//!! OpenGL
 }
 

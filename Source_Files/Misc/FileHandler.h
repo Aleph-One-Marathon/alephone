@@ -388,13 +388,16 @@ private:
 	bool operator==(const FileSpecifier &other) const {return name == other.name;}
 	bool operator!=(const FileSpecifier &other) const {return name != other.name;}
 
-	void SetToLocalDataDir();	// Per-user directory, where preferences go
-	void SetToSavedGamesDir();	// Directory for saved games (per-user)
-	void SetToRecordingsDir();	// Directory for recordings (per-user)
-	void SetToGlobalDataDir();	// Data file directory, where "Images", "Shapes" etc. are stored
+	void SetToLocalDataDir();		// Per-user directory, where preferences go
+	void SetToSavedGamesDir();		// Directory for saved games (per-user)
+	void SetToRecordingsDir();		// Directory for recordings (per-user)
+	void SetToGlobalDataDir();		// Data file directory, where "Images", "Shapes" etc. are stored
+	void SetToLocalThemesDir();		// Per-user themes directory
+	void SetToGlobalThemesDir();	// Global themes directory
 
 	void AddPart(const string &part);
 	const char *GetPath(void) const {return name.c_str();}
+	void SplitPath(string &base, string &part);
 
 	bool CreateDirectory();
 	bool ReadDirectory(vector<dir_entry> &vec);

@@ -12,6 +12,7 @@
 class widget;
 struct SDL_Surface;
 struct sdl_font_info;
+class FileSpecifier;
 
 
 /*
@@ -58,13 +59,17 @@ private:
 
 	int result;					// Dialog result code
 	bool done;					// Flag: dialog done
+
+	// Frame images (frame_t, frame_l, frame_r and frame_b must be freed)
+	SDL_Surface *frame_tl, *frame_t, *frame_tr, *frame_l, *frame_r, *frame_bl, *frame_b, *frame_br;
 };
 
 // Fonts
 enum {
 	TITLE_FONT,
 	BUTTON_FONT,
-	NORMAL_FONT,
+	LABEL_FONT,
+	ITEM_FONT,
 	MESSAGE_FONT,
 	TEXT_ENTRY_FONT,
 	NUM_DIALOG_FONTS
@@ -72,8 +77,7 @@ enum {
 
 // Colors
 enum {
-	BLACK_COLOR,
-	WHITE_COLOR,
+	BACKGROUND_COLOR,
 	TITLE_COLOR,
 	BUTTON_COLOR,
 	BUTTON_ACTIVE_COLOR,
@@ -81,12 +85,71 @@ enum {
 	LABEL_ACTIVE_COLOR,
 	ITEM_COLOR,
 	ITEM_ACTIVE_COLOR,
-	DISABLED_COLOR,
 	MESSAGE_COLOR,
-	BORDER_COLOR,
-	THUMB_COLOR,
-	THUMB_ACTIVE_COLOR,
+	TEXT_ENTRY_COLOR,
+	TEXT_ENTRY_ACTIVE_COLOR,
+	TEXT_ENTRY_CURSOR_COLOR,
+	KEY_BINDING_COLOR,
 	NUM_DIALOG_COLORS
+};
+
+// Images
+enum {
+	FRAME_TL_IMAGE,
+	FRAME_T_IMAGE,
+	FRAME_TR_IMAGE,
+	FRAME_L_IMAGE,
+	FRAME_R_IMAGE,
+	FRAME_BL_IMAGE,
+	FRAME_B_IMAGE,
+	FRAME_BR_IMAGE,
+	LIST_TL_IMAGE,
+	LIST_T_IMAGE,
+	LIST_TR_IMAGE,
+	LIST_L_IMAGE,
+	LIST_R_IMAGE,
+	LIST_BL_IMAGE,
+	LIST_B_IMAGE,
+	LIST_BR_IMAGE,
+	THUMB_T_IMAGE,
+	THUMB_TC_IMAGE,
+	THUMB_C_IMAGE,
+	THUMB_BC_IMAGE,
+	THUMB_B_IMAGE,
+	SLIDER_L_IMAGE,
+	SLIDER_C_IMAGE,
+	SLIDER_R_IMAGE,
+	SLIDER_IMAGE,
+	BUTTON_L_IMAGE,
+	BUTTON_C_IMAGE,
+	BUTTON_R_IMAGE,
+	NUM_DIALOG_IMAGES
+};
+
+// Spaces
+enum {
+	FRAME_T_SPACE,
+	FRAME_L_SPACE,
+	FRAME_R_SPACE,
+	FRAME_B_SPACE,
+	SPACER_HEIGHT,
+	LABEL_ITEM_SPACE,
+	LIST_T_SPACE,
+	LIST_L_SPACE,
+	LIST_R_SPACE,
+	LIST_B_SPACE,
+	TROUGH_T_SPACE,
+	TROUGH_R_SPACE,
+	TROUGH_B_SPACE,
+	TROUGH_WIDTH,
+	SLIDER_T_SPACE,
+	SLIDER_L_SPACE,
+	SLIDER_R_SPACE,
+	BUTTON_T_SPACE,
+	BUTTON_L_SPACE,
+	BUTTON_R_SPACE,
+	BUTTON_HEIGHT,
+	NUM_DIALOG_SPACES
 };
 
 // Sounds
@@ -105,11 +168,21 @@ enum {
  *  Functions
  */
 
-extern void initialize_dialogs(void);
+extern void initialize_dialogs(FileSpecifier &theme);
+
+extern void load_theme(FileSpecifier &theme);
+
 extern const sdl_font_info *get_dialog_font(int which, uint16 &style);
-extern uint32 get_dialog_color(SDL_Surface *s, int which);
+extern uint32 get_dialog_color(int which);
+extern SDL_Surface *get_dialog_image(int which, int width = 0, int height = 0);
+extern int get_dialog_space(int which);
+extern void play_dialog_sound(int which);
 
 extern void dialog_ok(void *arg);
 extern void dialog_cancel(void *arg);
+
+// Get the parser for themes (name "theme")
+class XML_ElementParser;
+XML_ElementParser *Theme_GetParser();
 
 #endif

@@ -1,0 +1,100 @@
+<!-- MacOS 7 lookalike Aleph One/SDL GUI theme -->
+<!-- Written in 2000 by Christian Bauer -->
+
+<marathon>
+<theme>
+
+<!-- Dialog frame -->
+<frame top="10" bottom="10" left="10" right="10">
+  <image index="0" file="frame_tl.bmp" scale="false"/>
+  <image index="1" file="frame_t.bmp" scale="false"/>
+  <image index="2" file="frame_tr.bmp" scale="false"/>
+  <image index="3" file="frame_l.bmp" scale="false"/>
+  <image index="4" file="frame_r.bmp" scale="false"/>
+  <image index="5" file="frame_bl.bmp" scale="false"/>
+  <image index="6" file="frame_b.bmp" scale="false"/>
+  <image index="7" file="frame_br.bmp" scale="false"/>
+</frame>
+
+<!-- Dialog background -->
+<background>
+  <color red="1" green="1" blue="1"/>
+</background>
+
+<!-- Dialog title -->
+<title>
+  <font id="16383" size="12" style="1"/>
+  <color red="0" green="0" blue="0"/>
+</title>
+
+<!-- Spacer -->
+<spacer height="8"/>
+
+<!-- Button -->
+<button top="2" left="6" right="6" height="24">
+  <font id="16383" size="12" style="0"/>
+  <color index="0" red="0" green="0" blue="0"/>
+  <color index="1" red="1" green="0" blue="0"/>
+  <image index="0" file="button_l.bmp" scale="false"/>
+  <image index="1" file="button_c.bmp" scale="false"/>
+  <image index="2" file="button_r.bmp" scale="false"/>
+</button>
+
+<!-- Label -->
+<label>
+  <font id="16383" size="12" style="0"/>
+  <color index="0" red="0" green="0" blue="0"/>
+  <color index="1" red="1" green="0" blue="0"/>
+</label>
+
+<!-- Item -->
+<item space="16">
+  <font id="16383" size="12" style="0"/>
+  <color index="0" red="0" green="0" blue="0"/>
+  <color index="1" red="1" green="0" blue="0"/>
+</item>
+
+<!-- Text message -->
+<message>
+  <font id="16383" size="12" style="0"/>
+  <color red="0" green="0" blue="0"/>
+</message>
+
+<!-- Text entry widget -->
+<text_entry>
+  <font id="16383" size="12" style="0"/>
+  <color index="0" red="0" green="0" blue="0"/>
+  <color index="1" red="1" green="0" blue="0"/>
+  <color index="2" red="0" green="0" blue="0"/>
+</text_entry>
+
+<!-- List selection widget -->
+<list top="2" bottom="2" left="2" right="18">
+  <image index="0" file="list_tl.bmp" scale="false"/>
+  <image index="1" file="list_t.bmp" scale="false"/>
+  <image index="2" file="list_tr.bmp" scale="false"/>
+  <image index="3" file="list_l.bmp" scale="false"/>
+  <image index="4" file="list_r.bmp" scale="false"/>
+  <image index="5" file="list_bl.bmp" scale="false"/>
+  <image index="6" file="list_b.bmp" scale="false"/>
+  <image index="7" file="list_br.bmp" scale="false"/>
+  <trough top="1" right="15" bottom="1" width="14"/>
+  <thumb>
+    <image index="0" file="thumb_t.bmp" scale="false"/>
+    <image index="1" file="thumb_tc.bmp" scale="false"/>
+    <image index="2" file="thumb_c.bmp" scale="false"/>
+    <image index="3" file="thumb_bc.bmp" scale="false"/>
+    <image index="4" file="thumb_b.bmp" scale="false"/>
+  </thumb>
+</list>
+
+<!-- Slider -->
+<slider top="0" left="4" right="4">
+  <image index="0" file="slider_l.bmp" scale="false"/>
+  <image index="1" file="slider_c.bmp" scale="false"/>
+  <image index="2" file="slider_r.bmp" scale="false"/>
+  <image index="3" file="slider.bmp" scale="false"/>
+</slider>
+
+</theme>
+</marathon>

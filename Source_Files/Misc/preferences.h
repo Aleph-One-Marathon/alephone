@@ -112,6 +112,9 @@ struct environment_preferences_data
 	TimeType shapes_mod_date;
 	TimeType sounds_mod_date;
 	uint32 patches[MAXIMUM_PATCHES_PER_ENVIRONMENT];
+#ifdef SDL
+	char theme_dir[256];
+#endif
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

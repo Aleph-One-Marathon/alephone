@@ -61,7 +61,7 @@ const int MaxErrorsToShow = 7;
 void XML_Loader_SDL::ReportInterpretError(const char *ErrorString)
 {
 	if (GetNumInterpretErrors() < MaxErrorsToShow)
-		fprintf(stderr, ErrorString);
+		fprintf(stderr, "%s\n", ErrorString);
 }
 
 
@@ -72,6 +72,37 @@ void XML_Loader_SDL::ReportInterpretError(const char *ErrorString)
 bool XML_Loader_SDL::RequestAbort()
 {
 	return (GetNumInterpretErrors() >= MaxErrorsToShow);
+}
+
+
+/*
+ *  Parse XML file
+ */
+
+bool XML_Loader_SDL::ParseFile(FileSpecifier &file_name)
+{
+	// Open file
+	OpenedFile file;
+	if (file_name.Open(file)) {
+
+		// Get file size and allocate buffer
+		file.GetLength(data_size);
+		data = new char[data_size];
+
+		// Read and parse file
+		if (file.Read(data_size, data)) {
+			if (!DoParse()) {
+				fprintf(stderr, "There were configuration file parsing errors\n");
+				exit(1);
+			}
+		}
+
+		// Delete buffer
+		delete[] data;
+		data = NULL;
+		return true;
+	}
+	return false;
 }
 
 
@@ -94,21 +125,11 @@ bool XML_Loader_SDL::ParseDirectory(FileSpecifier &dir)
 			continue;
 
 		// Construct full path name
-		data = new char[data_size = i->size];
 		FileSpecifier file_name = dir;
 		file_name.AddPart(i->name);
 
-		// Open and parse file
-		OpenedFile file;
-		if (file_name.Open(file) && file.Read(data_size, data)) {
-			if (!DoParse()) {
-				fprintf(stderr, "There were configuration file parsing errors\n");
-				exit(1);
-			}
-		}
-
-		delete[] data;
-		data = NULL;
+		// Parse file
+		ParseFile(file_name);
 	}
 
 	return true;

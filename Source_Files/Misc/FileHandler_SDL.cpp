@@ -27,7 +27,7 @@
 
 
 // From shell_sdl.cpp
-extern FileSpecifier global_data_dir, local_data_dir, saved_games_dir, recordings_dir;
+extern FileSpecifier global_data_dir, local_data_dir, saved_games_dir, recordings_dir, global_themes_dir, local_themes_dir;
 
 
 /*
@@ -513,6 +513,18 @@ void FileSpecifier::SetToGlobalDataDir()
 	name = global_data_dir.name;
 }
 
+// Set to local (per-user) themes directory
+void FileSpecifier::SetToLocalThemesDir()
+{
+	name = local_themes_dir.name;
+}
+
+// Set to global themes directory
+void FileSpecifier::SetToGlobalThemesDir()
+{
+	name = global_themes_dir.name;
+}
+
 // Add part to path name
 void FileSpecifier::AddPart(const string &part)
 {
@@ -525,6 +537,28 @@ void FileSpecifier::AddPart(const string &part)
 
 #else
 #error FileSpecifier::AddPart() not implemented for this platform
+#endif
+}
+
+// Split path to base and last part
+void FileSpecifier::SplitPath(string &base, string &part)
+{
+#if defined(__unix__) || defined(__BEOS__)
+
+	string::size_type pos = name.rfind('/');
+	if (pos == string::npos) {
+		base = name;
+		part.erase();
+	} else if (pos == 0) {
+		base = "/";
+		part = name.substr(1);
+	} else {
+		base = name.substr(0, pos);
+		part = name.substr(pos + 1);
+	}
+
+#else
+#error FileSpecifier::SplitPath() not implemented for this platform
 #endif
 }
 

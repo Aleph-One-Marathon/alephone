@@ -51,7 +51,8 @@ enum /* filenames in strFILENAMES */
 	filenamePHYSICS_MODEL,
 	filenameMUSIC,
 	filenameIMAGES,
-	filenameMOVIE
+	filenameMOVIE,
+	filenameDEFAULT_THEME
 };
 
 #define strPATHS 138
@@ -375,6 +376,7 @@ void get_default_map_spec(FileSpecifier& File);
 void get_default_physics_spec(FileSpecifier& File);
 void get_default_sounds_spec(FileSpecifier& File);
 void get_default_shapes_spec(FileSpecifier& File);
+bool get_default_theme_spec(FileSpecifier& File);
 
 // LP change: resets field of view to whatever the player had had when reviving
 void ResetFieldOfView();
