@@ -333,7 +333,7 @@ extern void OGL_ResetMapFonts();
 
 #ifdef mac
 // This is a strip buffer for piping 2D graphics through OpenGL.
-static GLuint *Buffer2D = NULL;
+vector<uint32> Buffer2D;
 static int Buffer2D_Width = 0;
 // Making the buffer several lines makes it more efficient
 const int Buffer2D_Height = 16;
@@ -589,7 +589,7 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 bool OGL_StartMain()
 {
 	if (!OGL_IsActive()) return false;
-
+	
 	// One-sidedness necessary for correct rendering
 	glEnable(GL_CULL_FACE);	
 	
@@ -2129,13 +2129,12 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	short Width = ViewBounds.right - ViewBounds.left;
 	if (Width != Buffer2D_Width)
 	{
-		if (Buffer2D) delete []Buffer2D;
 		if (Width > 0)
 		{
+			Buffer2D.resize(Buffer2D_Width*Buffer2D_Height);
 			Buffer2D_Width = Width;
-			Buffer2D = new GLuint[Buffer2D_Width*Buffer2D_Height];
 		} else {
-			Buffer2D = NULL;
+			Buffer2D.empty();
 			Buffer2D_Width = 0;
 		}
 	}
@@ -2167,7 +2166,7 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 		// goes top to bottom while OpenGL goes bottom to top.
 		// The buffer will be used in a packed manner; in OpenGL, this is not necessary,
 		// thanks to glPixelStorei().
-		GLuint *OutPtr = Buffer2D + ((Buffer2D_Height - 1) - hstrip)*SourceWidth;
+		GLuint *OutPtr = &Buffer2D[0] + ((Buffer2D_Height - 1) - hstrip)*SourceWidth;
 		
 		// Fill the buffer
 		if (NumSrcBytes == 2)
@@ -2204,7 +2203,7 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 		{
 			glRasterPos2s(DestBounds.left,h+(DestBounds.top-SourceBounds.top));
 			glDrawPixels(SourceWidth,hstrip,GL_RGBA,GL_UNSIGNED_BYTE,
-				Buffer2D + (Buffer2D_Height - hstrip)*SourceWidth);
+				&Buffer2D[0] + (Buffer2D_Height - hstrip)*SourceWidth);
 			hstrip = 0;
 		}
 	}
