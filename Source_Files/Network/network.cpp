@@ -135,7 +135,7 @@ clearly this is all broken until we have packet types
 //	#define DEBUG_NET
 //#define DEBUG_NET_RECORD_PROFILE
 #endif
-#define DEBUG_NET
+// #define DEBUG_NET
 
 // ZZZ: moved many struct definitions, constant #defines, etc. to header for (limited) sharing
 #include "network_private.h"
