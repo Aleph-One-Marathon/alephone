@@ -13,8 +13,8 @@ Load Model... > menu with these items for model-file formats:
 Alias-Wavefront
 3D Studio Max
 QuickDraw 3D
-Dim3 (Brian Barnes's format)
-
+Dim3 [First] (Brian Barnes's format: load the geometry [mesh] first)
+Dim3 [Rest] (BB's format: load the frames [poses], and then the sequences [animations])
 
 Load Skin...
 
@@ -61,6 +61,19 @@ Toggle number of render passes (multitexture debugging): S
 
 Toggle lighting (red: right, green: top, blue: front) : L
 
+Change type of animation data viewed (neutral, frame, sequence): P
 
-Code notes: Pfhormz uses some A1 engine code; it also uses the mini-framework GLUT for coding simplicity and (possible) portability.
+Toggle whether to use model transform (in Pfhormz, reflection over all three axes): T
+
+Previous sequence: [ {
+Next sequence: ] }
+
+Previous frame: - _
+Next frame: = +
+
+Code notes: Pfhormz uses some A1 engine code; it also uses the mini-framework GLUT for coding simplicity and portability.
+
+The current version is designed to work in Classic MacOS, but it should easily be portable to other platforms, where one links to SDL or other appropriate libraries.
+
+
 
