@@ -1,4 +1,4 @@
-/*
+ /*
 SCREEN.C
 
 	Copyright (C) 1991-2001 and beyond by Bungie Studios, Inc.
@@ -335,7 +335,7 @@ static void ClearScreen();
 // Draws HUD in software mode
 void DrawHUD(Rect& SourceRect, Rect& DestRect);
 
-// DrawSprocket handlers:
+// Display Manager handlers:
 
 // Checks on the Display Manager's presence
 static bool DM_Check();
@@ -350,6 +350,12 @@ static bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, sh
 // Callback for getting display-mode info
 static pascal void DM_ModeInfoCallback(void *UserData,
 	DMListIndexType Index, DMDisplayModeListEntryPtr ModeInfoPtr);
+
+// Directly manipulate the video-driver color table.
+// Written so that the faders will work in MacOS X Classic.
+static void direct_animate_screen_clut(
+	struct color_table *color_table,
+	GDHandle DevHdl);
 
 
 /* ---------- code */
@@ -1270,44 +1276,31 @@ void animate_screen_clut(
 	struct color_table *color_table,
 	bool full_screen)
 {
+	// Use special direct animation if the bit depth > 8;
+	// this is for the benefit of MacOS X Classic
+	if (bit_depth > 8)
+	{
+		direct_animate_screen_clut(color_table, world_device);
+		return;
+	}
+	
 	CTabHandle macintosh_color_table= build_macintosh_color_table(color_table);
 	
 	if (macintosh_color_table)
 	{
 		GDHandle old_device;
-
 		HLock((Handle)macintosh_color_table);
 		old_device= GetGDevice();
 		SetGDevice(world_device);
 		
-		/*
-		// Setup for Control() call
-		short DevRefNum = (**world_device).gdRefNum;
-		
-		// Defined in MacOS header Video.h; parallels LowLevelSetEntries
-		VDSetEntryRecord CTabRec;
-		CTabRec.csStart = 0;
-		CTabRec.csCount = (**macintosh_color_table).ctSize;
-		CTabRec.csTable = (**macintosh_color_table).ctTable;
-		void *CTRecPtr = (void *)(&CTabRec);
-		short CommandCode = ((**world_device).gdType == directType) ?
-			cscDirectSetEntries :
-				cscSetEntries;
-		*/
 		switch (screen_mode.acceleration)
 		{
 			// LP change: added OpenGL behavior
 			case _opengl_acceleration:
 			case _no_acceleration:
-				// Defined in MacOS header Devices.h
-				// Control(DevRefNum, CommandCode, &CTRecPtr);
-				// SetEntries(0, (*macintosh_color_table)->ctSize, (*macintosh_color_table)->ctTable);
 				LowLevelSetEntries(0, (*macintosh_color_table)->ctSize, (*macintosh_color_table)->ctTable);
 				break;
 		}
-		
-		// For checking on what had been set:
-		// Status(DevRefNum, cscGetEntries, &CTRecPtr);
 		
 		DisposeHandle((Handle)macintosh_color_table);
 		SetGDevice(old_device);
@@ -1376,7 +1369,6 @@ void validate_world_window(
 
 	return;
 }
-
 
 
 /* ---------- private code */
@@ -2338,4 +2330,82 @@ pascal void DM_ModeInfoCallback(void *UserData,
 	assert(UserData);
 	DM_ModeList *ModeListPtr = (DM_ModeList *)UserData;
 	ModeListPtr->ModeInfoPtr = ModeInfoPtr;
+}
+
+
+// Directly manipulate the video-driver color table.
+// Written so that the faders will work in MacOS X Classic.
+void direct_animate_screen_clut(
+	struct color_table *color_table,
+	GDHandle DevHdl)
+{
+	// Much of this code is taken from Apple's sample app "MacGamma";
+	// the MacOS headers to look in for the MacOS data structures are
+	// Devices.h, Quickdraw.h, and Video.h
+	
+	CntrlParam CParam;					// Set up the control parameters
+	CParam.ioCompletion = NULL;
+	CParam.ioNamePtr = NULL;
+	CParam.ioVRefNum = 0;
+	CParam.ioCRefNum = (**DevHdl).gdRefNum;
+	CParam.csCode = cscGetGamma;
+	
+	VDGammaRecord DeviceGammaRec;		// Destination for gamma data; manipulate in place
+	*(Ptr *)CParam.csParam = (Ptr) &DeviceGammaRec;
+	OSErr Err = PBStatus((ParmBlkPtr)&CParam, 0);
+	if (Err != noErr) return;
+	
+	GammaTblPtr GTable = GammaTblPtr(DeviceGammaRec.csGTable);
+	if (!GTable) return;
+	
+	if (GTable->gChanCnt < 3) return;						// Won't do anything if grayscale
+	short GTBits = GTable->gDataWidth;						// How many bits per table entry?
+	short NumEntries = MIN(GTable->gDataCnt,color_table->color_count);	// How many entries to handle
+	
+	// Copy over the color data; from chunky 16-bit to planar GTBits-bit
+	short Shift = 16 - GTBits;
+	if (GTBits > 8)
+	{
+		unsigned short *EntryPtr, *EntryBase =
+			(unsigned short *)(&GTable->gFormulaData + GTable->gFormulaSize); // base of table
+		
+		// Red
+		EntryPtr = EntryBase;
+		for (int k=0; k<NumEntries; k++, EntryPtr++)
+			*EntryPtr = color_table->colors[k].red >> Shift;
+		
+		// Green
+		EntryPtr = EntryBase + GTable->gDataCnt;
+		for (int k=0; k<NumEntries; k++, EntryPtr++)
+			*EntryPtr = color_table->colors[k].green >> Shift;
+		
+		// Blue
+		EntryPtr = EntryBase + 2*GTable->gDataCnt;
+		for (int k=0; k<NumEntries; k++, EntryPtr++)
+			*EntryPtr = color_table->colors[k].blue >> Shift;
+	}
+	else
+	{
+		unsigned char *EntryPtr, *EntryBase =
+			(unsigned char *)(&GTable->gFormulaData + GTable->gFormulaSize); // base of table
+		
+		// Red
+		EntryPtr = EntryBase;
+		for (int k=0; k<NumEntries; k++, EntryPtr++)
+			*EntryPtr = color_table->colors[k].red >> Shift;
+		
+		// Green
+		EntryPtr = EntryBase + GTable->gDataCnt;
+		for (int k=0; k<NumEntries; k++, EntryPtr++)
+			*EntryPtr = color_table->colors[k].green >> Shift;
+		
+		// Blue
+		EntryPtr = EntryBase + 2*GTable->gDataCnt;
+		for (int k=0; k<NumEntries; k++, EntryPtr++)
+			*EntryPtr = color_table->colors[k].blue >> Shift;
+	}
+	
+	short DevRefNum = (**DevHdl).gdRefNum;
+	Ptr DGRPtr = (Ptr) &DeviceGammaRec;
+	Err = Control(DevRefNum, cscSetGamma, &DGRPtr);
 }
