@@ -72,7 +72,9 @@ Aug 25, 2000 (Loren Petrich):
 #include "weapons.h"
 #include "FileHandler.h"
 
+// LP change: moved this into main directory:
 #include "editor.h"
+// #include ":editor code:editor.h"
 #include "tags.h"
 #include "wad.h"
 #include "game_wad.h"
@@ -104,6 +106,7 @@ extern byte physics_models[];
 
 /* -------- local globals */
 FileSpecifier MapFileSpec;
+// static FileDesc current_map_file;
 static boolean file_is_set= FALSE;
 
 // LP addition: was a physics model loaded from the previous level loaded?
@@ -117,6 +120,7 @@ struct revert_game_info
 	struct player_start_data player_start;
 	struct entry_point entry_point;
 	FileSpecifier SavedGame;
+	// FileDesc saved_game;
 };
 static struct revert_game_info revert_game_data;
 
@@ -165,11 +169,13 @@ static _bs_field _bs_endpoint_data[] = { // 16 bytes
 };
 
 static _bs_field _bs_line_data[] = { // 32 bytes
-	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte,
-	_2byte, _2byte, _2byte, _2byte, 6*sizeof(int16)
+	_2byte, _2byte, _2byte,
+	_2byte, _2byte, _2byte,
+	_2byte, _2byte, _2byte, _2byte,
+	6*sizeof(int16)
 };
 
-static _bs_field _bs_saved_side[] = { // 64 bytes
+static _bs_field _bs_side_data[] = { // 64 bytes
 	_2byte, _2byte,
 	_2byte, _2byte, _2byte,
 	_2byte, _2byte, _2byte,
@@ -179,7 +185,7 @@ static _bs_field _bs_saved_side[] = { // 64 bytes
 	_2byte, _2byte, _2byte,
 	_2byte, _2byte,
 	_2byte, _2byte, _2byte,
-	_2byte, _2byte,
+	_4byte,
 	_2byte
 };
 
@@ -203,30 +209,31 @@ static _bs_field _bs_polygon_data[] = { // 128 bytes
 	_2byte
 };
 
-static _bs_field _bs_saved_static_light_data[] = { // 100 bytes
+static _bs_field _bs_static_light_data[] = { // 100 bytes
 	_2byte, _2byte, _2byte,
-	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte,
-	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte,
-	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte,
-	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte,
-	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte,
-	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte,
+	_2byte, _2byte, _2byte, _4byte, _4byte,
+	_2byte, _2byte, _2byte, _4byte, _4byte,
+	_2byte, _2byte, _2byte, _4byte, _4byte,
+	_2byte, _2byte, _2byte, _4byte, _4byte,
+	_2byte, _2byte, _2byte, _4byte, _4byte,
+	_2byte, _2byte, _2byte, _4byte, _4byte,
 	_2byte,
 	4*sizeof(int16)
 };
 
-static _bs_field _bs_saved_static_platform_data[] = { // 32 bytes
+static _bs_field _bs_static_platform_data[] = { // 32 bytes
 	_2byte, _2byte, _2byte, _2byte, _2byte,
-	_2byte, _2byte,
+	_4byte,
 	_2byte,
 	_2byte,
 	7*sizeof(int16)
 };
 
-static _bs_field _bs_saved_platform_data[] = { // 140 bytes
-	_2byte, _2byte, _2byte, _2byte, _2byte,
+static _bs_field _bs_platform_data[] = { // 140 bytes
+	_2byte, _4byte, _2byte, _2byte,
 	_2byte, _2byte, _2byte, _2byte,
-	_2byte, _2byte, _2byte, _2byte, _2byte,
+	_2byte, _2byte, _2byte, _2byte,
+	_2byte,
 	_2byte, _2byte, _2byte, _2byte,
 	_2byte, _2byte, _2byte, _2byte,
 	_2byte, _2byte, _2byte, _2byte,
@@ -247,13 +254,14 @@ static _bs_field _bs_map_annotation[] = { // 72 bytes
 };
 
 static _bs_field _bs_map_object[] = { // 16 bytes
-	_2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte, _2byte
+	_2byte, _2byte, _2byte, _2byte,
+	_2byte, _2byte, _2byte, _2byte
 };
 
 static _bs_field _bs_static_data[] = { // 88 bytes
 	_2byte,
 	_2byte, _2byte, _2byte, _2byte,
-	4*sizeof(int16), LEVEL_NAME_LENGTH + 1,
+	4*sizeof(int16), LEVEL_NAME_LENGTH + 2,
 	_4byte
 };
 
@@ -282,7 +290,7 @@ static _bs_field _bs_random_sound_image_data[] = { // 32 bytes
 static void scan_and_add_scenery(void);
 static void complete_restoring_level(struct wad_data *wad);
 static void load_redundant_map_data(short *redundant_data, short count);
-void scan_and_add_platforms(struct saved_static_platform_data *platform_static_data,
+void scan_and_add_platforms(struct static_platform_data *platform_static_data,
 	short count);
 static void allocate_map_structure_for_map(struct wad_data *wad);
 static struct wad_data *build_save_game_wad(struct wad_header *header, long *length);
@@ -320,16 +328,17 @@ void *get_map_for_net_transfer(
 	
 	/* FALSE means don't use union maps.. */
 	return get_flat_data(MapFileSpec, FALSE, entry->level_number);
+	// return get_flat_data(&current_map_file, FALSE, entry->level_number);
 }
 
 /* ---------------------- End Net Functions ----------- */
 
 /* This takes a cstring */
 void set_map_file(FileSpecifier& File)
+	// FileDesc *file)
 {
 	MapFileSpec = File;
 	// memcpy(&current_map_file, file, sizeof(FileDesc));
-	
 	set_scenario_images_file(File);
 	// set_scenario_images_file(file);
 
@@ -337,15 +346,23 @@ void set_map_file(FileSpecifier& File)
 	clear_game_error();
 
 	file_is_set= TRUE;
+	
+	return;
 }
 
 /* Set to the default map.. (Only if no map doubleclicked upon on startup.. */
-void set_to_default_map(void)
+void set_to_default_map(
+	void)
 {
 	FileSpecifier NewMapFile;
+	// FileDesc new_map;
 	
 	get_default_map_spec(NewMapFile);
+	// get_default_map_spec(&new_map);
 	set_map_file(NewMapFile);
+	// set_map_file(&new_map);
+	
+	return;
 }
 
 /* Return TRUE if it finds the file, and it sets the mapfile to that file. */
@@ -354,12 +371,14 @@ boolean use_map_file(
 	long checksum) /* Should be unsigned long */
 {
 	FileSpecifier File;
+	// FileDesc file;
 	boolean success= FALSE;
 
 	if(find_wad_file_that_has_checksum(File, _typecode_scenario, strPATHS, checksum))
 	// if(find_wad_file_that_has_checksum(&file, SCENARIO_FILE_TYPE, strPATHS, checksum))
 	{
 		set_map_file(File);
+		// set_map_file(&file);
 		success= TRUE;
 	}
 
@@ -370,6 +389,7 @@ boolean load_level_from_map(
 	short level_index)
 {
 	OpenedFile OFile;
+	// fileref file_handle;
 	struct wad_header header;
 	struct wad_data *wad;
 	short index_to_load;
@@ -388,16 +408,19 @@ boolean load_level_from_map(
 		
 //		file_handle= open_union_wad_file_for_reading(&current_map_file);
 //		if(file_handle!=0)
-
 		OpenedFile MapFile;
 		if (open_wad_file_for_reading(MapFileSpec,MapFile))
+		// file_handle= open_wad_file_for_reading(&current_map_file);
+		// if(file_handle!=NONE)
 		{
 			/* Read the file */
 			if(read_wad_header(MapFile, &header))
+			// if(read_wad_header(file_handle, &header))
 			{
 				if(index_to_load>=0 && index_to_load<header.wad_count)
 				{
 					wad= read_indexed_wad_from_file(MapFile, &header, index_to_load, TRUE);
+					// wad= read_indexed_wad_from_file(file_handle, &header, index_to_load, TRUE);
 					if (wad)
 					{
 						/* Process everything... */
@@ -416,6 +439,7 @@ boolean load_level_from_map(
 			}
 		
 			/* Close the file.. */
+			// close_wad_file(file_handle);
 			close_wad_file(MapFile);
 			
 			// LP: carry over errors
@@ -445,9 +469,9 @@ boolean load_level_from_map(
 void complete_loading_level(
 	short *map_indexes,
 	short map_index_count,
-	struct saved_static_platform_data *platform_data,
+	struct static_platform_data *platform_data,
 	short platform_data_count,
-	struct saved_platform_data *actual_platform_data,
+	struct platform_data *actual_platform_data,
 	short actual_platform_data_count,
 	short version)
 {
@@ -461,29 +485,7 @@ void complete_loading_level(
 		scan_and_add_platforms(platform_data, platform_data_count);
 	} else {
 		assert(actual_platform_data);
-
-		// CB: convert saved_platform_data to platform_data
-		for (int i=0; i<actual_platform_data_count; i++) {
-			struct platform_data *p = platforms + i;
-			struct saved_platform_data *q = actual_platform_data + i;
-			p->type = q->type;
-			p->static_flags = (q->static_flags_hi << 16) | q->static_flags_lo;
-			p->speed = q->speed;
-			p->delay = q->delay;
-			p->minimum_floor_height = q->minimum_floor_height;
-			p->maximum_floor_height = q->maximum_floor_height;
-			p->minimum_ceiling_height = q->minimum_ceiling_height;
-			p->maximum_ceiling_height = q->maximum_ceiling_height;
-			p->polygon_index = q->polygon_index;
-			p->dynamic_flags = q->dynamic_flags;
-			p->floor_height = q->floor_height;
-			p->ceiling_height = q->ceiling_height;
-			p->ticks_until_restart = q->ticks_until_restart;
-			for (int j=0; j<MAXIMUM_VERTICES_PER_POLYGON; j++)
-				p->endpoint_owners[j] = q->endpoint_owners[j];
-			p->parent_platform_index = q->parent_platform_index;
-			p->tag = q->tag;
-		}
+		memcpy(platforms, actual_platform_data, actual_platform_data_count*sizeof(struct platform_data));
 		dynamic_world->platform_count= actual_platform_data_count;
 	}
 
@@ -554,16 +556,21 @@ short get_player_starting_location_and_facing(
 unsigned long get_current_map_checksum(
 	void)
 {
+	// fileref file_handle;
 	struct wad_header header;
 
 	assert(file_is_set);
 	OpenedFile MapFile;
 	assert(open_wad_file_for_reading(MapFileSpec,MapFile));
+	// file_handle= open_wad_file_for_reading(&current_map_file);
+	// assert(file_handle != -1);	
 
 	/* Read the file */
+	// read_wad_header(file_handle, &header);
 	read_wad_header(MapFile, &header);
 	
 	/* Close the file.. */
+	// close_wad_file(file_handle);
 	close_wad_file(MapFile);	
 	
 	return header.checksum;
@@ -586,12 +593,10 @@ boolean new_game(
 	game_is_networked= network;
 	
 	/* If we want to save it, this is an untitled map.. */
-#ifdef SDL
-	get_savegame_filedesc(revert_game_data.SavedGame);
-#else
 	revert_game_data.SavedGame.SetToApp();
+	// get_application_filedesc(&revert_game_data.saved_game);
 	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),_typecode_savegame);
-#endif
+	// getpstr(revert_game_data.saved_game.name, strFILENAMES, filenameDEFAULT_SAVE_GAME);
 
 	/* Set the random seed. */
 	set_random_seed(game_information->initial_random_seed);
@@ -665,20 +670,24 @@ boolean get_indexed_entry_point(
 	short *index, 
 	long type)
 {
+	// short file_handle;
 	struct wad_header header;
 	short actual_index;
 	boolean success= FALSE;
 	
 	assert(file_is_set);
-
 	OpenedFile MapFile;
 	if (!open_wad_file_for_reading(MapFileSpec,MapFile)) return false;
+	// file_handle= open_wad_file_for_reading(&current_map_file);
+	// if (file_handle != -1)
 	{
+		// if (read_wad_header(file_handle, &header))
 		if (read_wad_header(MapFile, &header))
 		{
 			/* If this is a new style */
-			if(header.application_specific_directory_data_size==SIZEOF_directory_data)
+			if(header.application_specific_directory_data_size==sizeof(struct directory_data))
 			{
+				// void *total_directory_data= read_directory_data(file_handle, &header);
 				void *total_directory_data= read_directory_data(MapFile, &header);
 
 				assert(total_directory_data);
@@ -711,6 +720,7 @@ boolean get_indexed_entry_point(
 					struct wad_data *wad;
 
 					/* Read the file */
+					// wad= read_indexed_wad_from_file(file_handle, &header, actual_index, TRUE);
 					wad= read_indexed_wad_from_file(MapFile, &header, actual_index, TRUE);
 					if (wad)
 					{
@@ -720,7 +730,7 @@ boolean get_indexed_entry_point(
 						/* IF this has the proper type.. */
 						map_info= (struct static_data *)extract_type_from_wad(wad, MAP_INFO_TAG, &length);
 						assert(length==sizeof(struct static_data));
-						if(SDL_SwapBE32(map_info->entry_point_flags) & type)
+						if(map_info->entry_point_flags & type)
 						{
 							/* This one is valid! */
 							entry_point->level_number= actual_index;
@@ -824,7 +834,7 @@ void allocate_map_for_counts(
 	long automap_line_length, automap_polygon_length, map_index_length;
 
 	/* Give the map indexes a whole bunch of memory (cause we can't calculate it) */
-	map_index_length= (polygon_count*32+1024)*sizeof(int16);
+	map_index_length= (polygon_count*32+1024)*sizeof(short);
 	
 	/* Automap lines. */
 	automap_line_length= (line_count/8+((line_count%8)?1:0))*sizeof(byte);
@@ -908,12 +918,8 @@ void load_sides(
 	// assert(count>=0 && count<MAXIMUM_SIDES_PER_MAP);
 	for(loop=0; loop<count; ++loop)
 	{
-		map_sides[loop]= *(side_data *)sides;
-		byte_swap_data(map_sides + loop, SIZEOF_saved_side, 1, _bs_saved_side);
-
-		// CB: ambient_delta is not aligned naturally in the structure
-		// and may be at different offsets in saved_side and side_data
-		map_sides[loop].ambient_delta = (sides->ambient_delta_hi << 16) | sides->ambient_delta_lo;
+		map_sides[loop]= *sides;
+		byte_swap_data(map_sides + loop, SIZEOF_side_data, 1, _bs_side_data);
 
 		if(version==MARATHON_ONE_DATA_VERSION)
 		{
@@ -969,17 +975,8 @@ void load_polygons(
 	}
 }
 
-static void convert_lighting_function_spec(lighting_function_specification &dst, const saved_lighting_function_specification &src)
-{
-	dst.function = src.function;
-	dst.period = src.period;
-	dst.delta_period = src.delta_period;
-	dst.intensity = (src.intensity_hi << 16) | src.intensity_lo;
-	dst.delta_intensity = (src.delta_intensity_hi << 16) | src.delta_intensity_lo;
-}
-
 void load_lights(
-	struct saved_static_light_data *lights, 
+	struct static_light_data *lights, 
 	short count,
 	short version)
 {
@@ -1036,28 +1033,15 @@ void load_lights(
 		// LP addition:
 		case MARATHON_INFINITY_DATA_VERSION:
 			{
-				struct saved_static_light_data *light= lights;
+				struct static_light_data *light= lights;
 				
 				for(loop= 0; loop<count; ++loop)
 				{
 					short new_index;
 
-					// cebix: convert saved_static_light_data to static_light_data
-					saved_static_light_data tmp = *light;
-					byte_swap_data(&tmp, SIZEOF_saved_static_light_data, 1, _bs_saved_static_light_data);
-					static_light_data tmp2;
-					tmp2.type = tmp.type;
-					tmp2.flags = tmp.flags;
-					tmp2.phase = tmp.phase;
-					convert_lighting_function_spec(tmp2.primary_active, tmp.primary_active);
-					convert_lighting_function_spec(tmp2.secondary_active, tmp.secondary_active);
-					convert_lighting_function_spec(tmp2.becoming_active, tmp.becoming_active);
-					convert_lighting_function_spec(tmp2.primary_inactive, tmp.primary_inactive);
-					convert_lighting_function_spec(tmp2.secondary_inactive, tmp.secondary_inactive);
-					convert_lighting_function_spec(tmp2.becoming_inactive, tmp.becoming_inactive);
-					tmp2.tag = tmp.tag;
-
-					new_index= new_light(&tmp2);
+					byte_swap_data(light, SIZEOF_static_light_data, 1, _bs_saved_static_light_data);
+					
+					new_index= new_light(light);
 					assert(new_index==loop);
 					light++;
 				}
@@ -1100,7 +1084,7 @@ void load_objects(saved_object *map_objects, short count)
 	// LP change: fixed off-by-one error
 	assert(count>=0 && count<=MAXIMUM_SAVED_OBJECTS);
 	// assert(count>=0 && count<MAXIMUM_SAVED_OBJECTS);
-
+	
 	for(ii=0; ii<count; ++ii)
 	{
 		saved_objects[ii]= map_objects[ii];	
@@ -1113,7 +1097,6 @@ void load_map_info(
 	saved_map_data *map_info)
 {
 	memcpy(static_world, map_info, sizeof(struct static_data));
-	byte_swap_data(static_world, SIZEOF_static_data, 1, _bs_static_data);
 }
 
 void load_media(
@@ -1128,9 +1111,8 @@ void load_media(
 	// assert(count>=0 && count<MAXIMUM_MEDIAS_PER_MAP);
 	for(ii= 0; ii<count; ++ii)
 	{
-		media_data tmp = *media;
-		byte_swap_data(&tmp, SIZEOF_media_data, 1, _bs_media_data);
-		short new_index= new_media(&tmp);
+		byte_swap_data(media, SIZEOF_media_data, 1, _bs_media_data);
+		short new_index= new_media(media);
 		
 		assert(new_index==ii);
 		media++;
@@ -1145,6 +1127,7 @@ void load_ambient_sound_images(
 {
 	// LP change: fixed off-by-one error
 	assert(count>=0 &&count<=MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
+	// assert(count>=0 &&count<MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP);
 	memcpy(ambient_sound_images, data, count*sizeof(struct ambient_sound_image_data));
 	byte_swap_data(ambient_sound_images, SIZEOF_ambient_sound_image_data, count, _bs_ambient_sound_image_data);
 	dynamic_world->ambient_sound_image_count= count;
@@ -1156,6 +1139,7 @@ void load_random_sound_images(
 {
 	// LP change: fixed off-by-one error
 	assert(count>=0 &&count<=MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
+	// assert(count>=0 &&count<MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP);
 	memcpy(random_sound_images, data, count*sizeof(struct random_sound_image_data));
 	byte_swap_data(random_sound_images, SIZEOF_random_sound_image_data, count, _bs_random_sound_image_data);
 	dynamic_world->random_sound_image_count= count;
@@ -1173,8 +1157,10 @@ void recalculate_redundant_map(
 }
 
 extern boolean load_game_from_file(FileSpecifier& File);
+// extern boolean load_game_from_file(FileDesc *file);
 
 boolean load_game_from_file(FileSpecifier& File)
+	// FileDesc *file)
 {
 	boolean success= FALSE;
 
@@ -1183,12 +1169,12 @@ boolean load_game_from_file(FileSpecifier& File)
 
 	/* Setup for a revert.. */
 	revert_game_data.game_is_from_disk = TRUE;
-	
 	revert_game_data.SavedGame = File;
 	// memcpy(&revert_game_data.saved_game, file, sizeof(FileDesc));
-	
+
 	/* Use the save game file.. */
 	set_map_file(File);
+	// set_map_file(file);
 	
 	/* Load the level from the map */
 	success= load_level_from_map(NONE); /* Save games are ALWAYS index NONE */
@@ -1202,6 +1188,7 @@ boolean load_game_from_file(FileSpecifier& File)
 
 		/* Find the original scenario this saved game was a part of.. */
 		parent_checksum= read_wad_file_parent_checksum(File);
+		// parent_checksum= read_wad_file_parent_checksum(file);
 		if(!use_map_file(parent_checksum))
 		{
 			/* Tell the user they’re screwed when they try to leave this level. */
@@ -1249,6 +1236,7 @@ boolean revert_game(
 	{
 		/* Reload their last saved game.. */
 		successful= load_game_from_file(revert_game_data.SavedGame);
+		// successful= load_game_from_file(&revert_game_data.saved_game);
 
 		/* And they don't get to continue. */
 		stop_recording();
@@ -1275,6 +1263,7 @@ boolean revert_game(
 }
 
 void get_current_saved_game_name(FileSpecifier& File)
+	// unsigned char *file_name)
 {
 	File = revert_game_data.SavedGame;
 	// memcpy(file_name, revert_game_data.saved_game.name, revert_game_data.saved_game.name[0]+1);
@@ -1282,20 +1271,22 @@ void get_current_saved_game_name(FileSpecifier& File)
 
 /* The current mapfile should be set to the save game file... */
 boolean save_game_file(FileSpecifier& File)
+	// FileDesc *file)
 {
 	struct wad_header header;
+	short err;
+	// FileError err;
 	boolean success= FALSE;
+	// short file_ref;
 	long offset, wad_length;
 	struct directory_entry entry;
 	struct wad_data *wad;
-	int err = 0;
 
 	/* Save off the random seed. */
 	dynamic_world->random_seed= get_random_seed();
 
 	/* Setup to revert the game properly */
 	revert_game_data.game_is_from_disk= TRUE;
-
 	revert_game_data.SavedGame = File;
 	// memcpy(&revert_game_data.saved_game, file, sizeof(FileDesc));
 	
@@ -1311,8 +1302,11 @@ boolean save_game_file(FileSpecifier& File)
 	{
 		OpenedFile SaveFile;
 		if(open_wad_file_for_writing(File,SaveFile))
+		// file_ref= open_wad_file_for_writing(file); /* returns -1 on error */
+		// if (file_ref>=0)
 		{
 			/* Write out the new header */
+			// if (write_wad_header(file_ref, &header))
 			if (write_wad_header(SaveFile, &header))
 			{
 				offset= sizeof(struct wad_header);
@@ -1325,12 +1319,15 @@ boolean save_game_file(FileSpecifier& File)
 						&entry, 0, offset, wad_length, 0);
 					
 					/* Save it.. */
+					// if (write_wad(file_ref, &header, wad, offset))
 					if (write_wad(SaveFile, &header, wad, offset))
 					{
 						/* Update the new header */
 						offset+= wad_length;
 						header.directory_offset= offset;
 						header.parent_checksum= read_wad_file_checksum(MapFileSpec);
+						// header.parent_checksum= read_wad_file_checksum(&current_map_file);
+						// if (write_wad_header(file_ref, &header) && write_directorys(file_ref, &header, &entry))
 						if (write_wad_header(SaveFile, &header) && write_directorys(SaveFile, &header, &entry))
 						{
 							/* This function saves the overhead map as a thumbnail, as well */
@@ -1350,6 +1347,7 @@ boolean save_game_file(FileSpecifier& File)
 
 			err = SaveFile.GetError();
 			close_wad_file(SaveFile);
+			// close_wad_file(file_ref);
 		}
 	}
 	
@@ -1366,12 +1364,12 @@ boolean save_game_file(FileSpecifier& File)
 
 /* -------- static functions */
 void scan_and_add_platforms(
-	struct saved_static_platform_data *platform_static_data,
+	struct static_platform_data *platform_static_data,
 	short count)
 {
 	struct polygon_data *polygon;
 	short loop;
-	struct saved_static_platform_data *static_data;
+	struct static_platform_data *static_data;
 	short platform_static_data_index;
 	
 	polygon= map_polygons;
@@ -1386,18 +1384,7 @@ void scan_and_add_platforms(
 			{
 				if(static_data->polygon_index==loop)
 				{
-					// CB: convert saved_static_platform_data to static_platform_data
-					static_platform_data tmp;
-					tmp.type = static_data->type;
-					tmp.speed = static_data->speed;
-					tmp.delay = static_data->delay;
-					tmp.maximum_height = static_data->maximum_height;
-					tmp.minimum_height = static_data->minimum_height;
-					tmp.static_flags = (static_data->static_flags_hi << 16) | static_data->static_flags_lo;
-					tmp.polygon_index = static_data->polygon_index;
-					tmp.tag = static_data->tag;
-
-					new_platform(&tmp, loop);
+					new_platform(static_data, loop);
 					break;
 				}
 				static_data++;
@@ -1475,11 +1462,11 @@ boolean process_map_wad(
 			/* We have an old style light */
 			count= data_length/sizeof(struct old_light_data);
 			assert(count*sizeof(struct old_light_data)==data_length);
-			load_lights((struct saved_static_light_data *) data, count, version);
+			load_lights((struct static_light_data *) data, count, version);
 		} else {
-			count= data_length/sizeof(struct saved_static_light_data);
-			assert(count*sizeof(struct saved_static_light_data)==data_length);
-			load_lights((struct saved_static_light_data *) data, count, version);
+			count= data_length/sizeof(struct static_light_data);
+			assert(count*sizeof(struct static_light_data)==data_length);
+			load_lights((struct static_light_data *) data, count, version);
 		}
 
 		//	HACK!!!!!!!!!!!!!!! vulcan doesn’t NONE .first_object field after adding scenery
@@ -1546,7 +1533,6 @@ boolean process_map_wad(
 	int NumChunks;
 	bool PhysicsModelLoaded = false;
 	
-#ifdef mac	//!! most of these structures have non-portable alignment requirements; to be fixed later
 	data= (unsigned char *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
 	// dprintf("Monsters: %d %d: %d",NUMBER_OF_MONSTER_TYPES,get_monster_defintion_size(),data_length);
 	NumChunks = data_length/get_monster_defintion_size();
@@ -1601,7 +1587,6 @@ boolean process_map_wad(
 		PhysicsModelLoaded = true;
 		memcpy(weapon_definitions,data,data_length);
 	}
-#endif
 	
 	// LP addition: Reload the physics model if it had been loaded in the previous level,
 	// but not in the current level. This avoids the persistent-physics bug.
@@ -1616,7 +1601,7 @@ boolean process_map_wad(
 	} else {
 		byte *map_index_data;
 		short map_index_count;
-		struct saved_platform_data *platform_structures;
+		struct platform_data *platform_structures;
 		short platform_structure_count;
 
 		if(version==MARATHON_ONE_DATA_VERSION)
@@ -1626,24 +1611,24 @@ boolean process_map_wad(
 			map_index_count= 0; 
 		} else {
 			map_index_data= (unsigned char *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
-			map_index_count= data_length/sizeof(int16);
-			assert(map_index_count*sizeof(int16)==data_length);
+			map_index_count= data_length/sizeof(short);
+			assert(map_index_count*sizeof(short)==data_length);
 		}
 
 		assert(is_preprocessed_map&&map_index_count || !is_preprocessed_map&&!map_index_count);
 
 		data= (unsigned char *)extract_type_from_wad(wad, PLATFORM_STATIC_DATA_TAG, &data_length);
-		count= data_length/SIZEOF_saved_static_platform_data;
-		assert(count*SIZEOF_saved_static_platform_data==data_length);
-		byte_swap_data(data, SIZEOF_saved_static_platform_data, count, _bs_saved_static_platform_data);
+		count= data_length/sizeof(struct static_platform_data);
+		assert(count*sizeof(struct static_platform_data)==data_length);
+		byte_swap_data(data, SIZEOF_static_platform_data, count, _bs_saved_static_platform_data);
 
-		platform_structures= (struct saved_platform_data *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
-		platform_structure_count= data_length/SIZEOF_saved_platform_data;
-		assert(platform_structure_count*SIZEOF_saved_platform_data==data_length);
-		byte_swap_data(platform_structures, SIZEOF_saved_platform_data, platform_structure_count, _bs_saved_platform_data);
+		platform_structures= (struct platform_data *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
+		platform_structure_count= data_length/sizeof(struct platform_data);
+		assert(platform_structure_count*sizeof(struct platform_data)==data_length);
+		byte_swap_data(platform_structures, SIZEOF_platform_data, platform_structure_count, _bs_saved_platform_data);
 
 		complete_loading_level((short *) map_index_data, map_index_count,
-			(struct saved_static_platform_data *) data, count, platform_structures, 
+			(struct static_platform_data *) data, count, platform_structures, 
 			platform_structure_count, version);
 	}
 
@@ -1740,8 +1725,8 @@ void load_terminal_data(
 {
 	/* I would really like it if I could get these into computer_interface.c statically */
 	memcpy(map_terminal_data, data, length);
-	map_terminal_data_length= length;
 	byte_swap_terminal_data(map_terminal_data, length);
+	map_terminal_data_length= length;
 }
 
 static void scan_and_add_scenery(
