@@ -896,7 +896,8 @@ void render_screen(
 		if (error!=noErr) alert_user(fatalError, strERRORS, outOfMemory, error);
 	}
 	
-	OGL_SetWindow(ScreenRect,ViewRect);
+	// Be sure that the main view is buffered...
+	OGL_SetWindow(ScreenRect,ViewRect, true);
 	
 	// LP: Resizing must come *before* locking the GWorld's pixels
 	myLockPixels(world_pixels);
@@ -1040,16 +1041,35 @@ void render_screen(
 			else
 			{
 				// Copy 2D rendering to screen
-				OGL_Active = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,true);
+				// Paint on top without any buffering
+				OGL_Active = OGL_Copy2D(world_pixels,world_pixels->portRect,world_pixels->portRect,false,false);
 			}
 			if (HUD_RenderRequest)
 			{
 				if (OGL_Get2D())
 				{
 					// This horrid-looking resizing does manage to get the HUD to work properly...
-					HUD_DestRect.top -= (HUD_DestRect.bottom - HUD_DestRect.top);
-					OGL_SetWindow(ScreenRect,HUD_DestRect);
-					OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,true);
+					struct DownwardOffsetSet
+					{
+						short Top, Bottom;
+					};
+					const DownwardOffsetSet OGL_DownwardOffsets[NUMBER_OF_VIEW_SIZES] =
+					{
+						{160, 480},		//  _320_160_HUD
+						{160, 480},		//  _480_240_HUD
+						{160, 480},		//  _640_320_HUD
+						{160, 480},		//  _640_480
+						{190, 600},		//  _800_400_HUD
+						{190, 600},		//  _800_600
+						{232, 768},		// _1024_512_HUD
+						{232, 768},		// _1024_768
+					};
+					DownwardOffsetSet& Set = OGL_DownwardOffsets[msize];
+					HUD_DestRect.top = Set.Top;
+					HUD_DestRect.bottom = Set.Bottom;
+					// Paint on top without any buffering
+					OGL_SetWindow(ScreenRect,HUD_DestRect,false);
+					OGL_Copy2D(HUD_Buffer,HUD_SourceRect,HUD_DestRect,false,false);
 				}
 				else
 					DrawHUD(HUD_SourceRect,HUD_DestRect);
