@@ -2,8 +2,12 @@
 	Created by Loren Petrich,
 	Dec. 23, 2000
 	Contains everything shared between screen.cpp and screen_sdl.cpp
+	
+Dec 29, 2000 (Loren Petrich):
+	Added stuff for doing screen messages
 */
 
+#include <stdarg.h>
 
 #define DESIRED_SCREEN_WIDTH 640
 #define DESIRED_SCREEN_HEIGHT 480
@@ -82,6 +86,25 @@ short interface_bit_depth= NONE;
 // LP addition: this is defined in overhead_map.c
 // It indicates whether to render the overhead map in OpenGL
 extern bool OGL_MapActive;
+
+
+// Current screen messages:
+const int NumScreenMessages = 7;
+struct ScreenMessage
+{
+	enum {
+		Len = 256
+	};
+
+	int TimeRemaining;	// How many more engine ticks until the message expires?
+	char Text[Len];		// Text to display
+	
+	ScreenMessage(): TimeRemaining(0) {Text[0] = 0;}
+};
+
+static int MostRecentMessage = NumScreenMessages-1;
+static ScreenMessage Messages[NumScreenMessages];
+
 
 /* ---------- private prototypes */
 
@@ -268,4 +291,24 @@ bool SetTunnelVision(bool TunnelVisionOn)
 void RequestDrawingHUD()
 {
 	HUD_RenderRequest = true;
+}
+
+
+// LP addition: display message on the screen;
+// this really puts the current message into a buffer
+// Code cribbed from csstrings
+void screen_printf(char *format, ...)
+{
+	MostRecentMessage = (MostRecentMessage + 1) % NumScreenMessages;
+	while (MostRecentMessage < 0)
+		MostRecentMessage += NumScreenMessages;
+	ScreenMessage& Message = Messages[MostRecentMessage];
+	
+	Message.TimeRemaining = 3*MACHINE_TICKS_PER_SECOND;
+
+	va_list list;
+
+	va_start(list,format);
+	vsprintf(Message.Text,format,list);
+	va_end(list);
 }
