@@ -1620,21 +1620,36 @@ static void remove_dead_player_items(
 	}
 
 	// drop any balls
+	// START Benad: oct. 30
 	{
 		short ball_color= find_player_ball_color(player_index);
 		
 		if (ball_color!=NONE)
 		{
-			short item_type= BALL_ITEM_BASE + ball_color;
-			
-			// Benad: using location and supporting_polygon_index instead of
-			// camera_location and camera_polygon_index... D'uh...
-			drop_the_ball(&player->location, player->supporting_polygon_index, 
-				player->monster_index, _monster_marine, item_type);
-			player->items[item_type]= NONE;
+			struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
+			if ((GET_GAME_TYPE()==_game_of_rugby) || (GET_GAME_TYPE()==_game_of_capture_the_flag))
+			{
+				if( ( (dynamic_world->game_information.kill_limit == 819) && (polygon->type==_polygon_is_hill) ) ||
+					( polygon->type==_polygon_is_base && polygon->permutation != player->team ) )
+				{
+					player->items[BALL_ITEM_BASE + ball_color]= NONE;
+					dynamic_world->current_item_count[BALL_ITEM_BASE + ball_color]--;
+				}
+			}
+			else
+			{
+				short item_type= BALL_ITEM_BASE + ball_color;
+				
+				// Benad: using location and supporting_polygon_index instead of
+				// camera_location and camera_polygon_index... D'uh...
+				drop_the_ball(&player->location, player->supporting_polygon_index, 
+					player->monster_index, _monster_marine, item_type);
+				player->items[item_type]= NONE;
+			}
 		}
 	}
-
+	// END Benad: oct. 30
+	
 	for (item_type= 0; item_type<NUMBER_OF_ITEMS; ++item_type)
 	{
 		short item_count= player->items[item_type];
