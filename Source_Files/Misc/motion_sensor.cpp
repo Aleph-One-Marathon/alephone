@@ -29,6 +29,9 @@ Sep 2, 2000 (Loren Petrich):
 #include "player.h"
 #include "network_games.h"
 
+#include "HUDRenderer_SW.h"
+#include "HUDRenderer_OGL.h"
+
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -190,14 +193,6 @@ static void precalculate_sensor_region(short side_length);
 
 static short find_or_add_motion_sensor_entity(short monster_index);
 
-static void erase_all_entity_blips(void);
-static void draw_network_compass(void);
-static void draw_all_entity_blips(void);
-
-static void erase_entity_blip(point2d *location, shape_descriptor shape);
-static void draw_entity_blip(point2d *location, shape_descriptor shape);
-static void draw_or_erase_unclipped_shape(short x, short y, shape_descriptor shape, bool draw);
-
 static shape_descriptor get_motion_sensor_entity_shape(short monster_index);
 
 static void clipped_transparent_sprite_copy(struct bitmap_definition *source, struct bitmap_definition *destination,
@@ -262,10 +257,9 @@ void reset_motion_sensor(
 }
 
 /* every ten ticks, regardless of frame rate, this will update the positions of the objects we
-	are tracking (render_motion_sensor() will only be called at frame time) */
+	are tracking (motion_sensor_scan() will only be called at frame time) */
 /* ticks_elapsed==NONE means force rescan now.. */
-void motion_sensor_scan(
-	short ticks_elapsed)
+void HUD_Class::motion_sensor_scan(short ticks_elapsed)
 {
 	struct object_data *owner_object= get_object_data(get_player_data(motion_sensor_player_index)->object_index);
 
@@ -294,39 +288,56 @@ void motion_sensor_scan(
 		ticks_since_last_rescan= MOTION_SENSOR_RESCAN_FREQUENCY;
 	}
 
-	/* if we need to update the motion sensor, draw all active entities */
-	if ((ticks_since_last_update-= ticks_elapsed)<0 || ticks_elapsed==NONE)
-	{
+	render_motion_sensor(ticks_elapsed);
+}
+
+void HUD_SW_Class::render_motion_sensor(short ticks_elapsed)
+{
+	// If we need to update the motion sensor, draw all active entities
+	if ((ticks_since_last_update -= ticks_elapsed) < 0 || ticks_elapsed == NONE) {
 		erase_all_entity_blips();
-		if (dynamic_world->player_count>1) draw_network_compass();
+		if (dynamic_world->player_count > 1)
+			draw_network_compass();
 		draw_all_entity_blips();
 		
-		ticks_since_last_update= MOTION_SENSOR_UPDATE_FREQUENCY;
-		motion_sensor_changed= true;
+		ticks_since_last_update = MOTION_SENSOR_UPDATE_FREQUENCY;
+		motion_sensor_changed = true;
 	}
 }
 
-/* the interface code will call this function and only draw the motion sensor if we return true */
-bool motion_sensor_has_changed(
-	void)
+void HUD_OGL_Class::render_motion_sensor(short ticks_elapsed)
 {
-	bool changed= motion_sensor_changed;
-	
-	if (changed) motion_sensor_changed= false;
-	
+	// Draw background
+	screen_rectangle *r = get_interface_rectangle(_motion_sensor_rect);
+	DrawShapeAtXY(BUILD_DESCRIPTOR(_collection_interface, _motion_sensor_mount), r->left, r->top);
+
+	// We allways draw all active entities because we have to update the
+	// display on every frame
+	if ((ticks_since_last_update -= ticks_elapsed) < 0 || ticks_elapsed == NONE) {
+		erase_all_entity_blips();
+		ticks_since_last_update = MOTION_SENSOR_UPDATE_FREQUENCY;
+	}
+	if (dynamic_world->player_count > 1)
+		draw_network_compass();
+	draw_all_entity_blips();
+}
+
+/* the interface code will call this function and only draw the motion sensor if we return true */
+bool motion_sensor_has_changed(void)
+{
+	bool changed = motion_sensor_changed;
+	motion_sensor_changed = false;
 	return changed;
 }
 
 /* toggle through the ranges */
-void adjust_motion_sensor_range(
-	void)
+void adjust_motion_sensor_range(void)
 {
 }
 
 /* ---------- private code */
 
-static void draw_network_compass(
-	void)
+void HUD_Class::draw_network_compass(void)
 {
 	short new_state= get_network_compass_state(motion_sensor_player_index);
 	short difference= (new_state^network_compass_state)|new_state;
@@ -339,8 +350,7 @@ static void draw_network_compass(
 	network_compass_state= new_state;
 }
 
-static void erase_all_entity_blips(
-	void)
+void HUD_Class::erase_all_entity_blips(void)
 {
 	struct object_data *owner_object= get_object_data(get_player_data(motion_sensor_player_index)->object_index);
 	struct entity_data *entity;
@@ -424,8 +434,7 @@ static void erase_all_entity_blips(
 	}
 }
 
-static void draw_all_entity_blips(
-	void)
+void HUD_Class::draw_all_entity_blips(void)
 {
 	struct entity_data *entity;
 	short entity_index, intensity;
@@ -445,11 +454,7 @@ static void draw_all_entity_blips(
 	}
 }
 
-static void draw_or_erase_unclipped_shape(
-	short x,
-	short y,
-	shape_descriptor shape,
-	bool draw)
+void HUD_SW_Class::draw_or_erase_unclipped_shape(short x, short y, shape_descriptor shape, bool draw)
 {
 	struct bitmap_definition *mount, *virgin_mount, *blip;
 
@@ -465,9 +470,15 @@ static void draw_or_erase_unclipped_shape(
 		bitmap_window_copy(virgin_mount, mount, x, y, x+blip->width, y+blip->height);
 }
 
-static void erase_entity_blip(
-	point2d *location,
-	shape_descriptor shape)
+void HUD_OGL_Class::draw_or_erase_unclipped_shape(short x, short y, shape_descriptor shape, bool draw)
+{
+	if (draw) {
+		screen_rectangle *r = get_interface_rectangle(_motion_sensor_rect);
+		DrawShapeAtXY(shape, x + r->left, y + r->top);
+	}
+}
+
+void HUD_SW_Class::erase_entity_blip(point2d *location, shape_descriptor shape)
 {
 	struct bitmap_definition *mount, *virgin_mount, *blip;
 	short x, y;
@@ -485,11 +496,9 @@ static void erase_entity_blip(
 	bitmap_window_copy(virgin_mount, mount, x, y, x+blip->width, y+blip->height);
 }
 
-static void draw_entity_blip(
-	point2d *location,
-	shape_descriptor shape)
+void HUD_SW_Class::draw_entity_blip(point2d *location, shape_descriptor shape)
 {
-	struct bitmap_definition *mount, *blip;
+	bitmap_definition *mount, *blip;
 	
 	get_shape_bitmap_and_shading_table(mount_shape, &mount, (void **) NULL, NONE);
 	if (!mount) return;
@@ -499,6 +508,20 @@ static void draw_entity_blip(
 	clipped_transparent_sprite_copy(blip, mount, sensor_region,
 		location->x + (motion_sensor_side_length>>1) - (blip->width>>1),
 		location->y + (motion_sensor_side_length>>1) - (blip->height>>1));
+}
+
+void HUD_OGL_Class::draw_entity_blip(point2d *location, shape_descriptor shape)
+{
+	bitmap_definition *blip;
+	get_shape_bitmap_and_shading_table(shape, &blip, (void **) NULL, NONE);
+	if (!blip)
+		return;
+
+	screen_rectangle *r = get_interface_rectangle(_motion_sensor_rect);
+	DrawShapeAtXY(shape,
+		location->x + r->left + (motion_sensor_side_length>>1) - (blip->width>>1),
+		location->y + r->top  + (motion_sensor_side_length>>1) - (blip->height>>1),
+		true);
 }
 
 /* if we find an entity that is being removed, we continue with the removal process and ignore

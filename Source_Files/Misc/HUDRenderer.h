@@ -162,6 +162,8 @@ struct interface_state_data
 extern interface_state_data interface_state;
 extern weapon_interface_data weapon_interface_definitions[10];
 
+struct point2d;
+
 // Base class for HUD renderer
 class HUD_Class
 {
@@ -174,7 +176,6 @@ public:
 protected:
 	void update_suit_energy(short time_elapsed);
 	void update_suit_oxygen(short time_elapsed);
-	void update_motion_sensor(short time_elapsed);
 	void update_weapon_panel(bool force_redraw);
 	void update_ammo_display(bool force_redraw);
 	void update_inventory_panel(bool force_redraw);
@@ -190,13 +191,24 @@ protected:
 	void draw_player_name(void);
 	void draw_message_area(short time_elapsed);
 
+	void motion_sensor_scan(short ticks_elapsed);
+	void draw_network_compass(void);
+	void erase_all_entity_blips(void);
+	void draw_all_entity_blips(void);
+
+	virtual void update_motion_sensor(short time_elapsed) = 0;
+	virtual void render_motion_sensor(short time_elapsed) = 0;
+	virtual void draw_or_erase_unclipped_shape(short x, short y, shape_descriptor shape, bool draw) = 0;
+	virtual void erase_entity_blip(point2d *location, shape_descriptor shape) = 0;
+	virtual void draw_entity_blip(point2d *location, shape_descriptor shape) = 0;
+
 	virtual void DrawShape(shape_descriptor shape, screen_rectangle *dest, screen_rectangle *src) = 0;
-	virtual void DrawShapeAtXY(shape_descriptor shape, short x, short y) = 0;
+	virtual void DrawShapeAtXY(shape_descriptor shape, short x, short y, bool transparency = false) = 0;
 	virtual void DrawText(const char *text, screen_rectangle *dest, short flags, short font_id, short text_color) = 0;
 	virtual void FillRect(screen_rectangle *r, short color_index) = 0;
 	virtual void FrameRect(screen_rectangle *r, short color_index) = 0;
 
-private:
+protected:
 	bool ForceUpdate;
 };
 

@@ -501,7 +501,7 @@ void render_screen(short ticks_elapsed)
 		if (VS.ShowHUD) {
 			if (OGL_HUDActive) {
 				Rect dr = {HUD_DestRect.y, HUD_DestRect.x, HUD_DestRect.y + HUD_DestRect.h, HUD_DestRect.x + HUD_DestRect.w};
-				OGL_DrawHUD(dr);
+				OGL_DrawHUD(dr, ticks_elapsed);
 			} else {
 				if (HUD_RenderRequest) {
 					DrawHUD(HUD_DestRect);

@@ -17,6 +17,25 @@
 
 #include <GL/gl.h>
 
+extern bool MotionSensorActive;
+
+
+/*
+ *  Update motion sensor
+ */
+
+void HUD_OGL_Class::update_motion_sensor(short time_elapsed)
+{
+	if (!MotionSensorActive)
+		GET_GAME_OPTIONS() |= _motion_sensor_does_not_work;
+	
+	if (!(GET_GAME_OPTIONS() & _motion_sensor_does_not_work)) {
+		if (time_elapsed == NONE)
+			reset_motion_sensor(current_player_index);
+		motion_sensor_scan(time_elapsed);
+	}
+}
+
 
 /*
  *  Draw shapes
@@ -60,7 +79,7 @@ void HUD_OGL_Class::DrawShape(shape_descriptor shape, screen_rectangle *dest, sc
 	glEnd();
 }
 
-void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y)
+void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool transparency)
 {
 	// Set up texture
 	TextureManager TMgr;
@@ -82,7 +101,11 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y)
 	// Draw shape
 	glColor3f(1.0, 1.0, 1.0);
 	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_BLEND);
+	if (transparency) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	} else
+		glDisable(GL_BLEND);
 	TMgr.RenderNormal();
 	glBegin(GL_TRIANGLE_FAN);
 		glTexCoord2f(U_Offset, V_Offset);

@@ -6,8 +6,6 @@
 
 #include "HUDRenderer.h"
 
-extern bool MotionSensorActive;
-
 
 /*
  *  Move rectangle
@@ -134,40 +132,6 @@ void HUD_Class::update_suit_oxygen(short time_elapsed)
 	
 		delay_time= DELAY_TICKS_BETWEEN_OXYGEN_REDRAW;
 		interface_state.oxygen_is_dirty= false;
-	}
-}
-
-
-/*
- *  Update motion sensor
- */
-
-void HUD_Class::update_motion_sensor(short time_elapsed)
-{
-	if (!MotionSensorActive) GET_GAME_OPTIONS() |= _motion_sensor_does_not_work;
-	
-	if(!(GET_GAME_OPTIONS() & _motion_sensor_does_not_work))
-	{
-		if (time_elapsed==NONE)
-		{
-			// LP addition: display needs to be updated
-			ForceUpdate = true;
-		
-			reset_motion_sensor(current_player_index);
-		}
-
-		motion_sensor_scan(time_elapsed);
-		
-		if (motion_sensor_has_changed())
-		{
-			// LP addition: display needs to be updated
-			ForceUpdate = true;
-				
-			screen_rectangle *destination= get_interface_rectangle(_motion_sensor_rect);
-
-			DrawShapeAtXY(BUILD_DESCRIPTOR(_collection_interface, 
-				_motion_sensor_mount), destination->left, destination->top);
-		}
 	}
 }
 

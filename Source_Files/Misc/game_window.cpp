@@ -256,7 +256,7 @@ void draw_interface(void)
 
 #ifdef HAVE_OPENGL
 /* draws the entire interface using OpenGL */
-void OGL_DrawHUD(Rect &dest)
+void OGL_DrawHUD(Rect &dest, short time_elapsed)
 {
 	// We are using 6 textures to render the 640x160 pixel HUD:
 	//
@@ -364,12 +364,16 @@ void OGL_DrawHUD(Rect &dest)
 			glEnd();
 		}
 
-		// Add dynamic elements
-		glScissor(dest.left, dest.bottom, 640, 160);
+		// Add dynamic elements (redraw everything)
+		mark_weapon_display_as_dirty();
+		mark_ammo_display_as_dirty();
+		mark_shield_display_as_dirty();
+		mark_oxygen_display_as_dirty();
+		mark_player_inventory_as_dirty(current_player_index, NONE);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
 		glTranslatef(dest.left, dest.top - 320, 0.0);
-		HUD_OGL.update_everything(NONE);
+		HUD_OGL.update_everything(time_elapsed);
 		glPopMatrix();
 
 		glPopAttrib();
@@ -392,8 +396,11 @@ void OGL_ResetHUDFonts(bool IsStarting)
 	but skip the interface frame) */
 void update_interface(short time_elapsed)
 {
-	if (OGL_HUDActive)
+	if (OGL_HUDActive) {
+		if (time_elapsed == NONE)
+			reset_motion_sensor(current_player_index);
 		return;
+	}
 
 	if (!game_window_is_full_screen())
 	{
