@@ -364,6 +364,7 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 	SInt32			scroll_wheel_delta;
 	OSStatus 		err = eventNotHandledErr;
 	CGMouseDelta 		CGx, CGy;
+	short			game_state;
 //	extern qboolean		background;
 
 	event_kind = GetEventKind(theEvent);
@@ -377,7 +378,10 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 		if (event_class == kEventClassMouse)
 		{
 			// If we're not in the game, let something else handle mouse clicks
-			if(get_game_state() != _game_in_progress)
+			game_state = get_game_state();
+			if(game_state == _display_chapter_heading)
+				return eventNotHandledErr;
+			if(game_state != _game_in_progress)
 			{
 				extern void process_screen_click(EventRecord *event);
 			

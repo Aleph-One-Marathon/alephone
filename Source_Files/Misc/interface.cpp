@@ -1839,6 +1839,7 @@ static void try_and_display_chapter_screen(
 	/* If the picture exists... */
 	if (scenario_picture_exists(pict_resource_number))
 	{
+		game_state.state= _display_chapter_heading;
 		free_and_unlock_memory();
 		
 		/* This will NOT work if the initial level entered has a chapter screen, which is why */
