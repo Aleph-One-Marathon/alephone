@@ -84,11 +84,11 @@ static void calculate_midpoint_of_shared_line(short polygon1, short polygon2,
 void allocate_pathfinding_memory(
 	void)
 {
-	paths= (struct path_definition *) malloc(sizeof(struct path_definition)*MAXIMUM_PATHS);
+	paths= new path_definition[MAXIMUM_PATHS];
 	assert(paths);
 
 #ifdef VERIFY_PATH_SYNC
-	path_validation_area= malloc(PATH_VALIDATION_AREA_SIZE);
+	path_validation_area= new byte[PATH_VALIDATION_AREA_SIZE];
 	assert(path_validation_area);
 	path_run_count= 0;
 #endif

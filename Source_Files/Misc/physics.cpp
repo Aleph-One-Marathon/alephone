@@ -146,8 +146,8 @@ void initialize_player_physics_variables(
 #ifdef DIVERGENCE_CHECK
 	if (!saved_point_iterations)
 	{
-		saved_points= malloc(sizeof(world_point3d)*SAVED_POINT_COUNT);
-		saved_thetas= malloc(sizeof(angle)*SAVED_POINT_COUNT);
+		saved_points= new world_point3d[SAVED_POINT_COUNT];
+		saved_thetas= new angle[SAVED_POINT_COUNT];
 	}
 	saved_point_count= 0;
 	saved_point_iterations+= 1;
