@@ -1163,15 +1163,17 @@ static bool read_indexed_wad_from_file_into_buffer(
 		assert(*length<=entry.length);
 		assert(buffer);
 		
-		/* Read into it. */
-		success = read_from_file(OFile, entry.offset_to_start, buffer, entry.length);
-
 		/* Set the length */
 		*length= entry.length;
 
-		/* Veracity Check */
-		/* ! an error, it has a length non-zero and calculated != actual */
-		assert(entry.length==calculate_raw_wad_length(header, (uint8 *)buffer));
+		/* Read into it. */
+		if (entry.length > 0) {
+			success = read_from_file(OFile, entry.offset_to_start, buffer, entry.length);
+
+			/* Veracity Check */
+			/* ! an error, it has a length non-zero and calculated != actual */
+			assert(entry.length==calculate_raw_wad_length(header, (uint8 *)buffer));
+		}
 	}
 	
 	return success;

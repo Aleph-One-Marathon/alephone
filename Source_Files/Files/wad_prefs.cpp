@@ -227,7 +227,7 @@ void w_write_preferences_file(
 	// CB: is Create() supposed to truncate the file to zero length
 	// if it already exists? Then the Delete() call above can go away.
 	prefInfo->PrefsFile.Create(Type);
-	
+
 	OpenedFile PrefsFile;
 	if (open_wad_file_for_writing(prefInfo->PrefsFile,PrefsFile))
 	{
@@ -236,7 +236,7 @@ void w_write_preferences_file(
 		fill_default_wad_header(prefInfo->PrefsFile, 
 			CURRENT_WADFILE_VERSION, CURRENT_PREF_WADFILE_VERSION, 
 			1, 0l, &header);
-			
+
 		if (write_wad_header(PrefsFile, &header))
 		{
 			long wad_length;
