@@ -1192,6 +1192,8 @@ static void calculate_initial_sound_variables(
 	if (!source)
 	{
 		variables->volume= variables->left_volume= variables->right_volume= MAXIMUM_SOUND_VOLUME;
+		//ghs: is this what the priority should be if there's no source?
+		variables->priority = definition->behavior_index;
 	}
 
 	/* and finally, do all the stuff we regularly do ... */
@@ -1229,6 +1231,7 @@ static void calculate_sound_variables(
 	struct sound_definition *definition= get_sound_definition(sound_index);
 	// LP change: idiot-proofing
 	if (!definition) return;
+
 	world_location3d *listener= _sound_listener_proc();
 
 	if (source && listener)
@@ -1254,7 +1257,7 @@ static void calculate_sound_variables(
 		{
 			variables->left_volume= variables->right_volume= variables->volume;
 		}
-	}
+	} 
 }
 
 static void angle_and_volume_to_stereo_volume(

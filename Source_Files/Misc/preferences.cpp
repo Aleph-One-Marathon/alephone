@@ -667,6 +667,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 {
 	// struct graphics_preferences_data *preferences=(struct graphics_preferences_data *)prefs;
 
+  memset(&preferences->screen_mode, '\0', sizeof(screen_mode_data));
 	preferences->screen_mode.gamma_level= DEFAULT_GAMMA_LEVEL;
 
 #ifdef mac
@@ -675,7 +676,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->device_spec.bit_depth= 32;
 	preferences->device_spec.width= 800;
 	preferences->device_spec.height= 600;
-	
+
 	preferences->screen_mode.size = _100_percent;
 	preferences->screen_mode.fullscreen = false;
 	preferences->screen_mode.high_resolution = true;

@@ -1194,6 +1194,7 @@ w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(IT
 	trough_rect.y = get_dialog_space(TROUGH_T_SPACE);
 	trough_rect.w = get_dialog_space(TROUGH_WIDTH);
 	trough_rect.h = rect.h - get_dialog_space(TROUGH_T_SPACE) - get_dialog_space(TROUGH_B_SPACE);
+
 }
 
 w_list_base::~w_list_base()

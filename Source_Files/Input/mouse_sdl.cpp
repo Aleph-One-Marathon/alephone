@@ -158,6 +158,10 @@ void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitc
 		*delta_velocity = snapshot_delta_velocity;
 
 		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
+	} else {
+	  delta_yaw = 0;
+	  delta_pitch = 0;
+	  delta_velocity = 0;
 	}
 }
 

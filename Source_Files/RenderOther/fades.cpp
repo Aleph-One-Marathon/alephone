@@ -262,6 +262,7 @@ void initialize_fades(
 	/* allocate and initialize space for our fade_data structure */
 	fade= new fade_data;
 	assert(fade);
+	fade->flags = 0;
 	
 	SET_FADE_ACTIVE_STATUS(fade, false);
 	fade->fade_effect_type= NONE;
@@ -270,9 +271,9 @@ void initialize_fades(
 bool update_fades(
 	void)
 {
-	if (FADE_IS_ACTIVE(fade))
-	{
-		struct fade_definition *definition= get_fade_definition(fade->type);
+  if (FADE_IS_ACTIVE(fade))
+    {
+      struct fade_definition *definition= get_fade_definition(fade->type);
 		// LP change: idiot-proofing
 		if (!definition) return false;
 		

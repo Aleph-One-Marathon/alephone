@@ -263,9 +263,9 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	const int Pad = 1;
 	int ascent_p = Ascent + Pad, descent_p = Descent + Pad;
 	int widths_p[256];
-	for (int i=0; i<256; i++)
-		widths_p[i] = Widths[i] + 2*Pad;
-	
+	for (int i=0; i<256; i++) {
+	  widths_p[i] = Widths[i] + 2*Pad;
+	}
 	// Now for the totals and dimensions
 	int TotalWidth = 0;
 	for (int k=0; k<256; k++)
@@ -334,7 +334,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  		{
  			MoveTo(HPos,VPos);
  			DrawChar(Which);
- 			HPos += widths_p[static_cast<int>(Which++)];
+ 			HPos += widths_p[(unsigned char) (Which++)];
  		}
  	}
 
@@ -356,8 +356,9 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 		int HPos = Pad;
 		for (int m = 0; m < CharCounts[k]; m++)
 		{
-			::draw_text(FontSurface, &Which, 1, HPos, VPos, White, Info, Style);
-			HPos += widths_p[Which++];
+		  
+		  ::draw_text(FontSurface, &Which, 1, HPos, VPos, White, Info, Style);
+		  HPos += widths_p[(unsigned char) (Which++)];
 		}
 	}
 #endif
