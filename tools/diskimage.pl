@@ -29,9 +29,9 @@ $fullfolderPath =~ m{([^/]+)$};
 
 local $folderName   = $1;
 local $folderSize   = undef;
-local $imageName    = "$folderName.dmg";
+local $imageName    = "'$folderName.dmg'";
 local $imageSectors = undef;
-local $imageTemp    = "$folderName-tmp.dmg";
+local $imageTemp    = "'$folderName-tmp.dmg'";
 
 die "err: $folderName is not a directory\n" if(!-d $folderName);
 
