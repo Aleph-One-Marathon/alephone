@@ -83,6 +83,22 @@ struct Model3D_Frame
 	GLshort Angles[3];
 };
 
+// In Brian Barnes's code, a sequence has some overall transformations in it
+struct Model3D_SeqFrame: public Model3D_Frame
+{
+	GLshort Frame;
+};
+
+
+// For including a transformation from read-in model space to rendered model space;
+// also used to implement the skeletal animation.
+struct Model3D_Transform
+{
+	GLfloat M[3][4];
+	
+	void Identity(); // Sets to the identity matrix
+};
+
 
 struct Model3D
 {
@@ -148,12 +164,17 @@ struct Model3D
 	int TrueNumFrames() {return Bones.empty() ? 0 : (Frames.size()/Bones.size());}
 	
 	// Sequence frames:
-	vector<GLushort> SeqFrames;
-	GLushort *SeqFrmBase() {return &SeqFrames[0];}
+	vector<Model3D_SeqFrame> SeqFrames;
+	Model3D_SeqFrame *SeqFrmBase() {return &SeqFrames[0];}
 	
-	// Sequence-frame pointer indices:
+	// Sequence-frame pointer indices: actually one more than there are sequences,
+	// to simplify finding which frames are members -- much like the vertex-source
+	// inverse indices.
 	vector<GLushort> SeqFrmPointers;
 	GLushort *SFPtrBase() {return &SeqFrmPointers[0];}
+	
+	// The overall transform:
+	Model3D_Transform Transform;
 	
 	// Bounding box (first index: 0 = min, 1 = max)
 	GLfloat BoundingBox[2][3];
@@ -195,13 +216,22 @@ struct Model3D
 	void BuildInverseVSIndices();
 	
 	// Find positions of vertices
-	// when a vertex-source array, bones, frames, and sequences are pres
-	// No arguments is for the model's neutral position (uses only source array)
+	// when a vertex-source array, bones, frames, and sequences are present.
+	// No arguments is for the model's neutral position (uses only source array);
+	// this is also the case for bad frame and sequence indices.
 	void FindPositions();
-	void FindPositions(GLshort FrameIndex);
+	
+	// Returns whether or not the index was within range.
+	bool FindPositions(GLshort FrameIndex);
+	
+	// returns 0 for out-of-range sequence
+	GLshort NumSeqFrames(GLshort SeqIndex);
+	
+	// Returns whether or not the indices were in range.
+	bool FindPositions(GLshort SeqIndex, GLshort FrameIndex);
 	
 	// Constructor
-	Model3D() {FindBoundingBox();}
+	Model3D() {FindBoundingBox(); Transform.Identity();}
 };
 
 #endif

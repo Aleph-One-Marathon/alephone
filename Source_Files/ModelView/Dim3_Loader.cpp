@@ -40,10 +40,12 @@
 #include "XML_ElementParser.h"
 
 
+const float DegreesToInternal = float(FULL_CIRCLE)/float(360);
+
 // Convert angle from degrees to the Marathon engine's internal units
 static int16 GetAngle(float InAngle)
 {
-	float A = (FULL_CIRCLE/360)*InAngle;
+	float A = DegreesToInternal*InAngle;
 	int16 IA = (A >= 0) ? int16(A + 0.5) : - int16(-A + 0.5);
 	return NORMALIZE_ANGLE(IA);
 }
@@ -308,17 +310,6 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 			}
 			VS.Bone1 = ibsx < NumBones ? BoneIndices[ibsx] : NONE;
 		}
-		
-		// DEBUG
-		vector<short> BoneRanks(NumBones);
-		for (int q=0; q<NumBones; q++)
-			BoneRanks[BoneIndices[q]] = q;
-		
-		for (int q=0; q<NumBones; q++)
-		{
-			short r = BoneRanks[q];
-			printf("%3d:  %8s %8s  %2d\n",q,BoneOwnTags[r].Tag0,BoneOwnTags[r].Tag1,Model.Bones[q].Flags);
-		}
 	}
 	
 	
@@ -395,7 +386,10 @@ static XML_ElementParser
 	D3ImageParser("Image"),
 	TrianglesParser("Triangles"),
 	FramesParser("Poses"),
-	FrameBonesParser("Bones");
+	FrameBonesParser("Bones"),
+	SequencesParser("Animations"),
+	SeqLoopParser("Loop"),
+	SeqFramesParser("Poses");
 
 
 // "Real" elements:
@@ -847,6 +841,137 @@ bool XML_FrameBoneParser::AttributesDone()
 static XML_FrameBoneParser FrameBoneParser;
 
 
+class XML_SequenceParser: public XML_ElementParser
+{
+
+public:
+	bool End();
+	
+	XML_SequenceParser(): XML_ElementParser("Animation") {}
+};
+
+bool XML_SequenceParser::End()
+{
+	// Add pointer index to end of sequences list;
+	// create that list if it had been absent.
+	if (ModelPtr->SeqFrmPointers.empty())
+	{
+		ModelPtr->SeqFrmPointers.push_back(0);
+	}
+	ModelPtr->SeqFrmPointers.push_back(ModelPtr->SeqFrames.size());
+	return true;
+}
+
+static XML_SequenceParser SequenceParser;
+
+
+class XML_SeqFrameParser: public XML_ElementParser
+{
+	Model3D_SeqFrame Data;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	XML_SeqFrameParser(): XML_ElementParser("Pose") {}
+};
+
+
+bool XML_SeqFrameParser::Start()
+{
+	// Clear everything out:
+	obj_clear(Data);
+	
+	// No frame
+	Data.Frame = NONE;
+	
+	return true;
+}
+
+// Some of angles have their signs reversed to translate BB's sign conventions
+// into more my more geometrically-elegant ones.
+
+bool XML_SeqFrameParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"xmove"))
+	{
+		return ReadFloatValue(Value,Data.Offset[0]);
+	}
+	else if (StringsEqual(Tag,"ymove"))
+	{
+		return ReadFloatValue(Value,Data.Offset[1]);
+	}
+	else if (StringsEqual(Tag,"zmove"))
+	{
+		return ReadFloatValue(Value,Data.Offset[2]);
+	}
+	else if (StringsEqual(Tag,"xsway"))
+	{
+		float InAngle;
+		if (ReadFloatValue(Value,InAngle))
+		{
+			Data.Angles[0] = GetAngle(InAngle);
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"ysway"))
+	{
+		float InAngle;
+		if (ReadFloatValue(Value,InAngle))
+		{
+			Data.Angles[1] = GetAngle(-InAngle);
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"zsway"))
+	{
+		float InAngle;
+		if (ReadFloatValue(Value,InAngle))
+		{
+			Data.Angles[2] = GetAngle(-InAngle);
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"name"))
+	{
+		// Find which frame
+		int ifr;
+		int NumFrames = FrameTags.size();
+		for (ifr=0; ifr<NumFrames; ifr++)
+		{
+			if (strncmp(Value,FrameTags[ifr].Tag,BoneTagSize) == 0) break;
+		}
+		if (ifr >= NumFrames) ifr = NONE;
+		Data.Frame = ifr;
+		return true;
+	}
+	else if (StringsEqual(Tag,"time"))
+	{
+		// Ignore; all timing info will come from the shapes file
+		return true;
+	}
+	
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_SeqFrameParser::AttributesDone()
+{
+	// Add the frame
+	ModelPtr->SeqFrames.push_back(Data);
+	
+	return true;
+}
+
+static XML_SeqFrameParser SeqFrameParser;
+
 
 void Dim3_SetupParseTree()
 {
@@ -884,6 +1009,10 @@ void Dim3_SetupParseTree()
 	FrameParser.AddChild(&FrameBonesParser);
 	FramesParser.AddChild(&FrameParser);
 	Dim3_Parser.AddChild(&FramesParser);
+	
+	SequenceParser.AddChild(&SeqLoopParser);
+	SequencesParser.AddChild(&SequenceParser);
+	Dim3_Parser.AddChild(&SequencesParser);
 	
 	Dim3_ParserInited = true;
 }
