@@ -44,13 +44,14 @@ Dec 17, 2000 (Loren Petrich):
 #include "XML_ElementParser.h"
 
 
-// These functions return whether OpenGL can be present
-
-// Initializer
+// Initializer; returns whether or not OpenGL is present
 bool OGL_Initialize();
 
-// Test for presence
+// Test for presence of OpenGL
 bool OGL_IsPresent();
+
+// Test for whether OpenGL is currently active
+bool OGL_IsActive();
 
 // Here are some OpenGL configuration options and how to access them
 // (they are in the preferences data)
@@ -188,9 +189,25 @@ struct OGL_TextureOptions
 	// Normal and glow-mapped images
 	ImageDescriptor NormalImg, GlowImg;
 	
+	// Parameters for mapping substitute sprites (inhabitants, weapons in hand)
+	// How many internal units (world unit = 1024) per pixel
+	float ImageScale;
+	
+	// Positioning of sprite's corners relative to top left corner of original bitmap,
+	// in internal units. Left and Top are specified as X_Offset and Y_Offset in MML;
+	// Right and Bottom are calculated from these.
+	short Left;
+	short Top;
+	short Right;
+	short Bottom;
+	
+	// Find Right and Bottom from Left and Top and the image size and scaling
+	void FindImagePosition();
+	
 	OGL_TextureOptions():
 		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
-		VoidVisible(false) {}
+		VoidVisible(false), ImageScale(0),
+		Left(0), Top(0), Right(0), Bottom(0) {}
 };
 
 
