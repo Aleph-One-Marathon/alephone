@@ -127,6 +127,9 @@ Dec 2, 2000 (Loren Petrich):
 Dec 23, 2000
 	Had a lot of trouble trying to get DrawSprocket to work properly.
 	Also, moved stuff shared with screen_sdl.cpp into screen_shared.cpp
+	
+Dec 29, 2000 (Loren Petrich):
+	Added stuff for doing screen messages
 */
 
 /*
@@ -301,6 +304,9 @@ static void update_fps_display(GrafPtr port);
 
 // LP addition: display the current position
 static void DisplayPosition(GrafPtr port);
+
+// Also display the current messages
+static void DisplayMessages(GrafPtr port);
 
 static void calculate_screen_options(void);
 
@@ -1025,9 +1031,11 @@ void render_screen(
 		case _opengl_acceleration:
 		case _no_acceleration:
 			update_fps_display((GrafPtr)world_pixels);
-			// LP additions: display position and show crosshairs
+			// LP additions: display position and messages and show crosshairs
 			if (!world_view->terminal_mode_active)
 				DisplayPosition((GrafPtr)world_pixels);
+			DisplayMessages((GrafPtr)world_pixels);
+			
 			// Don't show the crosshairs when either the overhead map or the terminal is active
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
 				if (Crosshairs_IsActive())
@@ -1491,6 +1499,7 @@ void validate_world_window(
 }
 
 
+
 /* ---------- private code */
 
 // LP addition: routine for displaying text
@@ -1514,6 +1523,8 @@ static void DisplayText(short BaseX, short BaseY, char *Text)
 	RGBForeColor(&rgb_black);
 	MoveTo(BaseX+1,BaseY+1);
 	DrawString(PasText);
+	// Changed back to drop shadow only for performance reasons
+	/*
 	MoveTo(BaseX+1,BaseY);
 	DrawString(PasText);
 	MoveTo(BaseX+1,BaseY-1);
@@ -1528,6 +1539,7 @@ static void DisplayText(short BaseX, short BaseY, char *Text)
 	DrawString(PasText);
 	MoveTo(BaseX-1,BaseY-1);
 	DrawString(PasText);
+	*/
 	
 	RGBForeColor(&rgb_white);
 	MoveTo(BaseX,BaseY);
@@ -1627,6 +1639,41 @@ static void DisplayPosition(GrafPtr port)
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Pitch   = %8.3f",AngleConvert*Angle);
 	DisplayText(X,Y,temporary);
+	
+	RGBForeColor(&rgb_black);
+	
+	// Pop
+	SetPort(old_port);
+}
+
+static void DisplayMessages(GrafPtr port)
+{	
+	// Push
+	GrafPtr old_port;
+	GetPort(&old_port);
+	SetPort(port);
+	
+	FontSpecifier& Font = GetOnScreenFont();
+	Font.Use();
+	// TextSize(12);
+	// TextFont(kFontIDMonaco);
+	
+	short LineSpacing = Font.LineSpacing;
+	short X = port->portRect.left + LineSpacing/3;
+	short Y = port->portRect.top + LineSpacing;
+	if (ShowPosition) Y += 6*LineSpacing;	// Make room for the position data
+	for (int k=0; k<NumScreenMessages; k++)
+	{
+		int Which = (MostRecentMessage+NumScreenMessages-k) % NumScreenMessages;
+		while (Which < 0)
+			Which += NumScreenMessages;
+		ScreenMessage& Message = Messages[Which];
+		if (Message.TimeRemaining <= 0) continue;
+		Message.TimeRemaining--;
+		
+		DisplayText(X,Y,Message.Text);
+		Y += LineSpacing;
+	}
 	
 	RGBForeColor(&rgb_black);
 	
