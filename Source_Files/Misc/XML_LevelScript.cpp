@@ -30,7 +30,7 @@ struct LevelScriptCommand
 	int Type;
 	
 	enum {
-		UnsetResource = 0
+		UnsetResource = -32768
 	};
 	
 	// Where to read the command data from:
