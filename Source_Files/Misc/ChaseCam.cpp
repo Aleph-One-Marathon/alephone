@@ -142,13 +142,14 @@ bool ChaseCam_Update()
 	
 	// Avoid running into anything along the way if not going through walls;
 	// use the exclusion zones.
-	if (!ThroughWalls)
-	{
-		world_distance adjusted_floor_height, adjusted_ceiling_height;
-		short supporting_polygon_index;
-		keep_line_segment_out_of_walls(Ref_Polygon, &Ref_Position, &CC_Position,
-			WORLD_ONE, 0, &adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
-	}
+	// Decided to have the camera against the wall if possible
+	// if (!ThroughWalls)
+	// {
+	//	world_distance adjusted_floor_height, adjusted_ceiling_height;
+	//	short supporting_polygon_index;
+	//	keep_line_segment_out_of_walls(Ref_Polygon, &Ref_Position, &CC_Position,
+	//		WORLD_ONE, 0, &adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
+	//}
 	
 	// Cribbed from translate_map_object() and simplified
 	short line_index, Next_Polygon;
@@ -218,11 +219,11 @@ bool ChaseCam_Update()
 			else
 			{
 				// Fallback in case of invalid next polygon
-				if (!ThroughWalls)
-				{
-					*((world_point2d *)(&CC_Position)) = get_polygon_data(CC_Polygon)->center;
-					CC_Position.z = intersection.z;
-				}
+				if (!ThroughWalls) CC_Position = intersection;
+				// {
+				//	*((world_point2d *)(&CC_Position)) = get_polygon_data(CC_Polygon)->center;
+				//	CC_Position.z = intersection.z;
+				// }
 				break;
 			}
 		}
