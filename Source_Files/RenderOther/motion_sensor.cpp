@@ -148,14 +148,14 @@ static short MonsterDisplays[NUMBER_OF_MONSTER_TYPES] =
 
 #define NUMBER_OF_PREVIOUS_LOCATIONS 6
 
-#define MOTION_SENSOR_UPDATE_FREQUENCY 5
-#define MOTION_SENSOR_RESCAN_FREQUENCY 15
+static uint16 MOTION_SENSOR_UPDATE_FREQUENCY = 5;
+static uint16 MOTION_SENSOR_RESCAN_FREQUENCY = 15;
 
-#define MOTION_SENSOR_RANGE (8*WORLD_ONE)
+static uint16 MOTION_SENSOR_RANGE = (8 * WORLD_ONE);
 
 #define OBJECT_IS_VISIBLE_TO_MOTION_SENSOR(o) true
 
-#define MOTION_SENSOR_SCALE 7
+static int16 MOTION_SENSOR_SCALE = 64;
 
 #define FLICKER_FREQUENCY 0xf
 
@@ -437,8 +437,10 @@ void HUD_Class::erase_all_entity_blips(void)
 				/* calculate the 2d position on the motion sensor */
 				entity->previous_points[0]= *(point2d *)&object->location;
 				transform_point2d((world_point2d *)&entity->previous_points[0], (world_point2d *)&owner_object->location, NORMALIZE_ANGLE(owner_object->facing+QUARTER_CIRCLE));
-				entity->previous_points[0].x>>= MOTION_SENSOR_SCALE;
-				entity->previous_points[0].y>>= MOTION_SENSOR_SCALE;
+				//entity->previous_points[0].x>>= MOTION_SENSOR_SCALE;
+				entity->previous_points[0].x /= MOTION_SENSOR_SCALE;
+			//	entity->previous_points[0].y>>= MOTION_SENSOR_SCALE;
+				entity->previous_points[0].y /= MOTION_SENSOR_SCALE;
 			}
 			else
 			{
@@ -791,7 +793,6 @@ static shape_descriptor get_motion_sensor_entity_shape(
 	return shape;
 }
 
-
 // XML elements for parsing motion-sensor specification;
 // this is a specification of what monster type gets what
 // motion-sensor blip
@@ -868,6 +869,28 @@ class XML_MotSensParser: public XML_ElementParser
 public:
 	bool HandleAttribute(const char *Tag, const char *Value)
 	{
+		if (StringsEqual(Tag, "scale"))
+		{
+			return (ReadInt16Value(Value, MOTION_SENSOR_SCALE));
+		} 
+		else if (StringsEqual(Tag, "range")) 
+		{
+			float range;
+			if (ReadFloatValue(Value, range)) {
+				MOTION_SENSOR_RANGE = range * WORLD_ONE;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		else if (StringsEqual(Tag, "update_frequency")) 
+		{
+			return (ReadUInt16Value(Value, MOTION_SENSOR_UPDATE_FREQUENCY));
+		}
+		else if (StringsEqual(Tag, "rescan_frequency"))
+		{
+			return (ReadUInt16Value(Value, MOTION_SENSOR_RESCAN_FREQUENCY));
+		}
 		UnrecognizedTag();
 		return false;
 	}
