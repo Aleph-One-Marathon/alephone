@@ -541,16 +541,15 @@ bool FileSpecifier::ReadDialog(int Type, char *Prompt)
 	{
 	
 	// LP: AlexJLS's Nav Services code, somewhat modified
-	NavTypeListHandle list= (NavTypeListHandle)NewHandleClear(sizeof(NavTypeList));
-	HLock((Handle)list);
-	(**list).componentSignature = get_typecode(_typecode_creator);
+	NavTypeListHandle list= NULL;
 	if (InRange(Type))
 	{
+		list= (NavTypeListHandle)NewHandleClear(sizeof(NavTypeList));
+		HLock((Handle)list);
+		(**list).componentSignature = get_typecode(_typecode_creator);
 		(**list).osTypeCount = 1;
 		(**list).osType[0] = get_typecode(Type);
 	}
-	else
-		(**list).osTypeCount = 0;
 	
 	NavDialogOptions opts;
 	NavGetDefaultDialogOptions(&opts);
@@ -562,7 +561,7 @@ bool FileSpecifier::ReadDialog(int Type, char *Prompt)
 	NavEventUPP evUPP= NewNavEventUPP(NavIdler);
 	NavGetFile(NULL,&reply,&opts,evUPP,NULL,NULL,list,NULL);
 	DisposeNavEventUPP(evUPP);
-	DisposeHandle((Handle)list);
+	if (list) DisposeHandle((Handle)list);
 		
 	if (!reply.validRecord) return false;
 	
