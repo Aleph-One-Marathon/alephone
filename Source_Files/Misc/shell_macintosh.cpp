@@ -1167,7 +1167,7 @@ static void process_event(
 					if (event->message&resumeFlag)
 					{
 						/* resume */
-						ResumeDisplay();
+						ResumeDisplay(event);
 						if (get_game_state()==_game_in_progress)
 						{
 							hide_cursor();
@@ -1184,7 +1184,7 @@ static void process_event(
 						{
 							set_keyboard_controller_status(false);
 						}
-						SuspendDisplay();
+						SuspendDisplay(event);
 					}
 					break;
 			}

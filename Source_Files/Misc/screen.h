@@ -131,8 +131,8 @@ void activate_screen_window(WindowPtr window, EventRecord *event, bool active);
 void update_screen_window(WindowPtr window, EventRecord *event);
 
 // LP: for switching to another process and returning (suspend/resume events)
-void SuspendDisplay();
-void ResumeDisplay();
+void SuspendDisplay(EventRecord *EvPtr);
+void ResumeDisplay(EventRecord *EvPtr);
 
 #elif defined(SDL)
 void toggle_fullscreen(bool fs);
