@@ -1390,3 +1390,13 @@ Dec 17, 2000
 
 Added MML support for OpenGL fog and abstracted font. Also added MML support for changing
 overhead-map line thickness. Fixed buffer-overflow bug for precalculate_line_indexes().
+
+Jan 5, 2001
+
+Added *lots* of changes: overhead-map linewidth control in MML, use of named fonts in MML,
+addition of Benonis's dialog-box updating, attempted support of the DrawSprocket, etc.
+
+Jan 6, 2001
+
+Added AlexJS's guided-projectile patch; however, it does not seem to acquire targets correctly,
+even at point-blank range.
