@@ -507,7 +507,7 @@ void save_recording_queue_chunk(
 	replay.header.length+= count;
 		
 	vwarn(num_flags_saved == RECORD_CHUNK_SIZE,
-		csprintf(temporary, "bad recording: %d flags, max=%d, count = %u;dm #%p #%u", num_flags_saved, max_flags, 
+		csprintf(temporary, "bad recording: %d flags, max=%d, count = %lu;dm #%p #%lu", num_flags_saved, max_flags, 
 			count, buffer, count));
 }
 
@@ -1193,7 +1193,7 @@ uint8 *unpack_recording_header(uint8 *Stream, recording_header *Objects, size_t 
 		StreamToGameData(S,ObjPtr->game_information);
 	}
 	
-	assert((S - Stream) == static_cast<size_t>(Count*SIZEOF_recording_header));
+	assert(static_cast<size_t>(S - Stream) == (Count*SIZEOF_recording_header));
 	return S;
 }
 
@@ -1214,6 +1214,6 @@ uint8 *pack_recording_header(uint8 *Stream, recording_header *Objects, size_t Co
 		GameDataToStream(S,ObjPtr->game_information);
 	}
 	
-	assert((S - Stream) == static_cast<size_t>(Count*SIZEOF_recording_header));
+	assert(static_cast<size_t>(S - Stream) == (Count*SIZEOF_recording_header));
 	return S;
 }

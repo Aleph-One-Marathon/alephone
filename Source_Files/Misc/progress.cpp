@@ -132,7 +132,9 @@ struct progress_data {
 };
 
 /* ------ private prototypes */
+#if !defined(TARGET_API_MAC_CARBON)
 static pascal void draw_distribute_progress(DialogPtr dialog, short item_num);
+#endif
 
 /* ------ globals */
 struct progress_data progress_data;
@@ -267,6 +269,7 @@ void reset_progress_bar(
 }
 
 /* --------- private code */
+#if !defined(TARGET_API_MAC_CARBON)
 static pascal void draw_distribute_progress(
 	DialogPtr dialog, 
 	short item_num)
@@ -295,4 +298,5 @@ static pascal void draw_distribute_progress(
 
 	SetPort(old_port);
 }
+#endif
 #endif

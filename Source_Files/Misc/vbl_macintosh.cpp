@@ -80,7 +80,6 @@ static struct special_flag_data special_flags[]=
 
 /* ------------ globals */
 /* ------------ prototypes */
-static OSErr copy_file(FSSpec *source, FSSpec *destination);
 #if !defined(TARGET_API_MAC_CARBON)
 static void remove_input_controller(void);
 #endif
@@ -182,7 +181,6 @@ void move_replay(
 		))
 		return;
 	
-	// OSErr err= copy_file(&OrigFilmFile.Spec, &MovedFilmFile.Spec);
 	MovedFilmFile.CopyContents(OrigFilmFile);
 	
 	/* Alert them on problems */
@@ -199,7 +197,7 @@ uint32 parse_keymap(
 	// (makes for sort of instant zombification on switching out during netgames)
 	if(get_keyboard_controller_status())
 	{
-		short i;
+		unsigned short i;
 		KeyMap key_map;
 		struct key_definition *key= current_key_definitions;
 		struct special_flag_data *special= special_flags;
@@ -283,73 +281,6 @@ uint32 parse_keymap(
 	} // if(get_keyboard_controller_status())
 
 	return flags;
-}
-
-#define COPY_BUFFER_SIZE (3*1024)
-
-static OSErr copy_file(
-	FSSpec *source,
-	FSSpec *destination)
-{
-	OSErr err;
-	FInfo info;
-	
-	err= FSpGetFInfo(source, &info);
-	if(!err)
-	{
-		err= FSpCreate(destination, info.fdCreator, info.fdType, smSystemScript);
-		if(!err)
-		{
-			short dest_refnum, source_refnum;
-		
-			err= FSpOpenDF(destination, fsWrPerm, &dest_refnum);
-			if(!err)
-			{
-				err= FSpOpenDF(source, fsRdPerm, &source_refnum);
-				if(!err)
-				{
-					/* Everything is opened. Do the deed.. */
-					Ptr data;
-					long total_length;
-					
-					SetFPos(source_refnum, fsFromLEOF, 0l);
-					GetFPos(source_refnum, &total_length);
-					SetFPos(source_refnum, fsFromStart, 0l);
-					
-					data= new char[COPY_BUFFER_SIZE];
-					if(data)
-					{
-						long running_length= total_length;
-						
-						while(running_length && !err)
-						{
-							long count= MIN(COPY_BUFFER_SIZE, running_length);
-						
-							err= FSRead(source_refnum, &count, data);
-							if(!err)
-							{
-								err= FSWrite(dest_refnum, &count, data);
-							}
-							running_length -= count;
-						}
-					
-						free(data);
-					} else {
-						err= MemError();
-					}
-					
-					FSClose(source_refnum);
-				}
-
-				FSClose(dest_refnum);
-			}
-
-			/* Delete it on an error */
-			if(err) FSpDelete(destination);
-		}
-	}
-	
-	return err;
 }
 
 bool setup_replay_from_random_resource(
