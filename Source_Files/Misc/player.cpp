@@ -1620,21 +1620,20 @@ static void remove_dead_player_items(
 	}
 
 	// drop any balls
-	// START Benad: oct. 30
+	// START Benad: dec. 3
 	{
 		short ball_color= find_player_ball_color(player_index);
 		
 		if (ball_color!=NONE)
 		{
 			struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
-			if ((GET_GAME_TYPE()==_game_of_rugby) || (GET_GAME_TYPE()==_game_of_capture_the_flag))
+			
+			if ( ((GET_GAME_TYPE()==_game_of_rugby) || (GET_GAME_TYPE()==_game_of_capture_the_flag))
+				&& (( (dynamic_world->game_information.kill_limit == 819) && (polygon->type==_polygon_is_hill) ) ||
+					( polygon->type==_polygon_is_base && polygon->permutation != player->team ) ) )
 			{
-				if( ( (dynamic_world->game_information.kill_limit == 819) && (polygon->type==_polygon_is_hill) ) ||
-					( polygon->type==_polygon_is_base && polygon->permutation != player->team ) )
-				{
-					player->items[BALL_ITEM_BASE + ball_color]= NONE;
-					dynamic_world->current_item_count[BALL_ITEM_BASE + ball_color]--;
-				}
+				player->items[BALL_ITEM_BASE + ball_color]= NONE;
+				dynamic_world->current_item_count[BALL_ITEM_BASE + ball_color]--;
 			}
 			else
 			{
@@ -1648,7 +1647,7 @@ static void remove_dead_player_items(
 			}
 		}
 	}
-	// END Benad: oct. 30
+	// END Benad: dec. 3
 	
 	for (item_type= 0; item_type<NUMBER_OF_ITEMS; ++item_type)
 	{
