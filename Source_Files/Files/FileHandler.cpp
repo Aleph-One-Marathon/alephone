@@ -417,9 +417,7 @@ bool Files_SetRootDirectory(const char *NameWithPath)
 		// and we want to tell it to refer to the app parent.
 		RootDirectorySet = false;
 		
-		RootDirectory.SetToSubdirectory(NameWithPath);
-		
-		RootDirectorySet = true;
+		RootDirectorySet = RootDirectory.SetToSubdirectory(NameWithPath);
 	}
 	else
 	{
