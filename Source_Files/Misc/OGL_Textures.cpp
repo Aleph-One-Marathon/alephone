@@ -694,7 +694,7 @@ GLuint *TextureManager::GetOGLTexture(GLuint *ColorTable)
 	// Allocate and set to black and transparent
 	int NumPixels = int(TxtrWidth)*int(TxtrHeight);
 	GLuint *Buffer = new GLuint[NumPixels];
-	memset(Buffer,0,NumPixels*sizeof(GLuint));
+	objlist_clear(Buffer,NumPixels);
 	
 	// The dimension, the offset in the original texture, and the offset in the OpenGL texture
 	short Width, OrigWidthOffset, OGLWidthOffset;
@@ -825,7 +825,7 @@ GLuint *TextureManager::GetFakeLandscape()
 	// Allocate and set to black and transparent
 	int NumPixels = int(TxtrWidth)*int(TxtrHeight);
 	GLuint *Buffer = new GLuint[NumPixels];
-	memset(Buffer,0,NumPixels*sizeof(GLuint));
+	objlist_clear(Buffer,NumPixels);
 	
 	// Set up land and sky colors:
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
