@@ -341,7 +341,7 @@ void write_preferences(
         char str[257] = "";
         strcat(str,getenv("HOME"));
         strcat(str,"/Library/Preferences/");
-        chdir(str);
+	strcat(str,getcstr(temporary, strFILENAMES, filenamePREFERENCES));
 #endif
 	HGetVol(nil,&OldVRefNum,&OldParID);
 	
@@ -351,7 +351,11 @@ void write_preferences(
 	if (HSetVol(nil, FileSpec.GetSpec().vRefNum, FileSpec.GetSpec().parID) != noErr) return;
     
 	// Open the file
+#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
+	FILE *F = fopen(str,"w");
+#else
         FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
+#endif
 
 #elif defined(SDL)
 	// Fix courtesy of mdadams@ku.edu
