@@ -395,6 +395,7 @@ struct object_data /* 32 bytes */
 	/* used when playing sounds */
 	fixed sound_pitch;
 };
+const int SIZEOF_object_data = 32;
 
 /* ------------ endpoint definition */
 
@@ -956,6 +957,7 @@ struct dynamic_data
 	world_point2d game_beacon;
 	short game_player_index;
 };
+const int SIZEOF_dynamic_data = 604;
 
 /* ---------- map globals */
 
@@ -1237,30 +1239,45 @@ void guess_side_lightsource_indexes(short side_index);
 void set_map_index_buffer_size(long length);
 
 // LP: routines for packing and unpacking the data from streams of bytes
-void unpack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count = 1);
-void pack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count = 1);
-void unpack_line_data(uint8 *Stream, line_data* Objects, int Count = 1);
-void pack_line_data(uint8 *Stream, line_data* Objects, int Count = 1);
-void unpack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
-void pack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
-void unpack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
-void pack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
 
-void unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count = 1);
-void pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count = 1);
-void unpack_map_object(uint8 *Stream, map_object* Objects, int Count = 1);
-void pack_map_object(uint8 *Stream, map_object* Objects, int Count = 1);
-void unpack_static_data(uint8 *Stream, static_data* Objects, int Count = 1);
-void pack_static_data(uint8 *Stream, static_data* Objects, int Count = 1);
+uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count = 1);
+uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data* Objects, int Count = 1);
+uint8 *unpack_line_data(uint8 *Stream, line_data* Objects, int Count = 1);
+uint8 *pack_line_data(uint8 *Stream, line_data* Objects, int Count = 1);
+uint8 *unpack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
+uint8 *pack_side_data(uint8 *Stream, side_data* Objects, int Count = 1);
+uint8 *unpack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
+uint8 *pack_polygon_data(uint8 *Stream, polygon_data* Objects, int Count = 1);
 
-void unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count = 1);
-void pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count = 1);
-void unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count = 1);
-void pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count = 1);
+uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count = 1);
+uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count = 1);
+uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, int Count = 1);
+uint8 *pack_map_object(uint8 *Stream, map_object* Objects, int Count = 1);
+uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count = 1);
+uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count = 1);
+uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, int Count = 1);
+uint8 *pack_static_data(uint8 *Stream, static_data* Objects, int Count = 1);
+
+uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count = 1);
+uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count = 1);
+uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count = 1);
+uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count = 1);
+
+uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count = 1);
+uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count = 1);
+uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, int Count = 1);
+uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count = 1);
+
+/*
+	map_indexes, automap_lines, and automap_polygons do not have any special
+	packing and unpacking routines, because the packing/unpacking of map_indexes is
+	relatively simple, and because the automap lines and polygons need no such processing.
+*/
 
 /* ---------- prototypes/PLACEMENT.C */
 
-void load_placement_data(struct object_frequency_definition *monsters, struct object_frequency_definition *items);
+// LP: this one does unpacking also
+void load_placement_data(uint8 *_monsters, uint8 *_items);
 struct object_frequency_definition *get_placement_info(void);
 void place_initial_objects(void);
 void recreate_objects(void);
