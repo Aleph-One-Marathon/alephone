@@ -25,10 +25,14 @@ Jul 1, 2000 (Loren Petrich):
 Aug 29, 2000 (Loren Petrich):
 	Created packing and unpacking functions for all the
 		externally-accessible data types defined here
+
+Nov 19, 2000 (Loren Petrich):
+	Added XML support for texture-loading control
 */
 
 #include "world.h"
 #include "dynamic_limits.h"
+#include "XML_ElementParser.h"
 
 #include <vector>
 
@@ -922,6 +926,13 @@ extern bool game_is_networked; /* true if this is a network game */
 #define ADD_POLYGON_TO_AUTOMAP(i) (automap_polygons[(i)>>3] |= (byte) 1<<((i)&0x07))
 #define POLYGON_IS_IN_AUTOMAP(i) ((automap_polygons[(i)>>3]&((byte)1<<((i)&0x07)))?(true):(false))
 
+// Whether or not Marathon 2/oo landscapes had been loaded (switch off for Marathon 1 compatibility)
+extern bool LandscapesLoaded;
+
+// The index number of the first texture loaded (should be the main wall texture);
+// needed for infravision fog when landscapes are switched off
+extern short LoadedWallTexture;
+
 /* ---------- prototypes/MARATHON.C */
 
 void initialize_marathon(void);
@@ -1263,5 +1274,8 @@ bool new_game(short number_of_players, bool network,
 	struct player_start_data *player_start_information, 
 	struct entry_point *entry_point);
 bool goto_level(struct entry_point *entry, bool new_game);
+
+// LP addition: get the parser for the texture-loading control (name "texture_loading")
+XML_ElementParser *TextureLoading_GetParser();
 
 #endif

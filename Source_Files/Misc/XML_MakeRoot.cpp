@@ -70,6 +70,7 @@ void SetupParseTree()
 	MarathonParser.AddChild(Weapons_GetParser());
 	MarathonParser.AddChild(OpenGL_GetParser());
 	MarathonParser.AddChild(Cheats_GetParser());
+	MarathonParser.AddChild(TextureLoading_GetParser());
 #ifdef SDL
 	MarathonParser.AddChild(Theme_GetParser());
 #endif

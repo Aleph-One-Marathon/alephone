@@ -55,6 +55,12 @@ Oct 13, 2000 (Loren Petrich):
 Oct 19, 2000 (Loren Petrich):
 	Changed get_object_shape_and_transfer_mode() so that it makes data->collection_code equal to NONE
 	if it does not find a valid sequence or view.
+	
+Nov 19, 2000 (Loren Petrich):
+	Added XML support for texture-loading control. This contains a switch to indicate whether to load
+	the landscape textures, and also stuff for loading the various texture environments.
+	Each one of these has slots for several collection ID's to load; one can use a converted M1 map
+	directly with this approach.
 */
 
 /*
@@ -86,10 +92,12 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 
 /* ---------- structures */
 
+/*
 struct environment_definition
 {
-	short *shape_collections; /* NONE terminated */
+	short *shape_collections; *//* NONE terminated *//*
 };
+*/
 
 /* ---------- constants */
 
@@ -97,6 +105,21 @@ struct environment_definition
 
 /* ---------- globals */
 
+// LP: modified texture-environment management so as to be easier to handle with XML
+
+const int NUMBER_OF_ENVIRONMENTS = 5;
+const int NUMBER_OF_ENV_COLLECTIONS = 7;
+
+static short Environments[NUMBER_OF_ENVIRONMENTS][NUMBER_OF_ENV_COLLECTIONS] = 
+{
+	{_collection_walls1, _collection_scenery1, NONE, NONE, NONE, NONE, NONE},	// Lh'owon Water
+	{_collection_walls2, _collection_scenery2, NONE, NONE, NONE, NONE, NONE},	// Lh'owon Lava
+	{_collection_walls3, _collection_scenery3, NONE, NONE, NONE, NONE, NONE},	// Lh'owon Sewage
+	{_collection_walls4, _collection_scenery4, NONE, NONE, NONE, NONE, NONE},	// Jjaro (originally to be Pathways or Marathon)
+	{_collection_walls5, _collection_scenery5, NONE, NONE, NONE, NONE, NONE}	// Pfhor
+};
+
+/*
 static short e1[]= {_collection_walls1, _collection_scenery1, NONE}; // lh’owon
 static short e2[]= {_collection_walls2, _collection_scenery2, NONE}; // lh’owon
 static short e3[]= {_collection_walls3, _collection_scenery3, NONE}; // lh’owon
@@ -112,6 +135,7 @@ static struct environment_definition environment_definitions[]=
 	{e4},
 	{e5}
 };
+*/
 
 /* ---------- map globals */
 
@@ -154,6 +178,13 @@ static struct map_memory_data map_structure_memory;
 
 // LP addition: growable list of intersected objects
 static vector<short> IntersectedObjects;
+
+// Whether or not Marathon 2/oo landscapes had been loaded (switch off for Marathon 1 compatibility)
+bool LandscapesLoaded = true;
+
+// The index number of the first texture loaded (should be the main wall texture);
+// needed for infravision fog when landscapes are switched off
+short LoadedWallTexture = NONE;
 
 /* ---------- private prototypes */
 
@@ -326,12 +357,16 @@ bool collection_in_environment(
 	short test_index;
 	short i;
 	
-	assert(environment_code>=0 && environment_code<NUMBER_OF_ENVIRONMENTS);
+	if (!(environment_code>=0 && environment_code<NUMBER_OF_ENVIRONMENTS)) return false;
+	// assert(environment_code>=0 && environment_code<NUMBER_OF_ENVIRONMENTS);
 	assert(collection_index>=0 && collection_index<NUMBER_OF_COLLECTIONS);
-
-	for (i= 0; (test_index= environment_definitions[environment_code].shape_collections[i])!=NONE; ++i)
+	
+	// LP change: modified to use new collection-environment management
+	// for (i= 0; (test_index= environment_definitions[environment_code].shape_collections[i])!=NONE; ++i)
+	for (i= 0; i<NUMBER_OF_ENV_COLLECTIONS; ++i)
 	{
-		if (test_index==collection_index) found= true;
+		if (Environments[environment_code][i]==collection_index) found= true;
+		// if (test_index==collection_index) found= true;
 	}
 	
 	return found;
@@ -346,16 +381,30 @@ void mark_environment_collections(
 	short i;
 	short collection;
 	
-	assert(environment_code>=0&&environment_code<NUMBER_OF_ENVIRONMENTS);
+	if (!(environment_code>=0&&environment_code<NUMBER_OF_ENVIRONMENTS)) return;
+	// assert(environment_code>=0&&environment_code<NUMBER_OF_ENVIRONMENTS);
 
-	for (i= 0; (collection= environment_definitions[environment_code].shape_collections[i])!=NONE; ++i)
-	{
-		loading ? mark_collection_for_loading(collection) : mark_collection_for_unloading(collection);
-	}
+	// LP change: modified to use new collection-environment management;
+	// be sure to set "loaded wall texture" to the first one loaded
+	LoadedWallTexture = NONE;
 	
-	loading ? mark_collection_for_loading(_collection_landscape1+static_world->song_index) :
-		mark_collection_for_unloading(_collection_landscape1+static_world->song_index);
-
+	// for (i= 0; (collection= environment_definitions[environment_code].shape_collections[i])!=NONE; ++i)
+	for (i= 0; i<NUMBER_OF_ENV_COLLECTIONS; ++i)
+	{
+		collection = Environments[environment_code][i];
+		if (collection != NONE)
+		{
+			if (LoadedWallTexture == NONE) LoadedWallTexture = collection;
+			loading ? mark_collection_for_loading(collection) : mark_collection_for_unloading(collection);
+		}
+	}
+	if (LoadedWallTexture == NONE) LoadedWallTexture = 0;
+	
+	// Don't load/unload if M1 compatible...
+	if (LandscapesLoaded)
+		loading ? mark_collection_for_loading(_collection_landscape1+static_world->song_index) :
+			mark_collection_for_unloading(_collection_landscape1+static_world->song_index);
+	
 	return;
 }
 
@@ -2424,3 +2473,114 @@ bool point_in_polygon(
 	return point_inside;
 }
 #endif
+
+
+// XML elements for parsing the texture-loading specification
+// Uses an attribute for loading the landscapes
+// and a subelement for specifying which texture in an environment
+
+// Parser for the texture environment
+class XML_TextureEnvironmentParser: public XML_ElementParser
+{
+	bool IsPresent[3];
+	short Index, Which, Coll;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+		
+	XML_TextureEnvironmentParser(): XML_ElementParser("texture_env") {}
+};
+
+bool XML_TextureEnvironmentParser::Start()
+{
+	for (int k=0; k<3; k++)
+		IsPresent[k] = false;
+	return true;
+}
+
+bool XML_TextureEnvironmentParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"index") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Index,short(0),short(NUMBER_OF_ENVIRONMENTS-1)))
+		{
+			IsPresent[0] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"which") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Which,short(0),short(NUMBER_OF_ENV_COLLECTIONS-1)))
+		{
+			IsPresent[1] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (strcmp(Tag,"coll") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%hd",Coll,short(NONE),short(MAXIMUM_COLLECTIONS-1)))
+		{
+			IsPresent[2] = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_TextureEnvironmentParser::AttributesDone()
+{
+	// Verify...
+	bool AllPresent = IsPresent[0] && IsPresent[1] && IsPresent[2];
+	
+	if (!AllPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	// Put into place
+	Environments[Index][Which] = Coll;
+	
+	return true;
+}
+
+static XML_TextureEnvironmentParser TextureEnvironmentParser;
+
+
+class XML_TextureLoadingParser: public XML_ElementParser
+{	
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+	
+	XML_TextureLoadingParser(): XML_ElementParser("texture_loading") {}
+};
+
+
+bool XML_TextureLoadingParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"landscapes") == 0)
+	{
+		return (ReadBooleanValue(Value,LandscapesLoaded));
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+
+static XML_TextureLoadingParser TextureLoadingParser;
+
+
+// LP change: added infravision-parser export
+XML_ElementParser *TextureLoading_GetParser()
+{
+	TextureLoadingParser.AddChild(&TextureEnvironmentParser);
+	
+	return &TextureLoadingParser;
+}
+

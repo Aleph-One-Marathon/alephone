@@ -613,7 +613,12 @@ bool OGL_StartMain()
 		for (int k=0; k<4; k++)
 			TempColor[k] = FogColor[k];
 		if (IsInfravisionActive())
-			FindInfravisionVersion(_collection_landscape1+static_world->song_index,TempColor);
+		{
+			if (LandscapesLoaded)
+				FindInfravisionVersion(_collection_landscape1+static_world->song_index,TempColor);
+			else
+				FindInfravisionVersion(LoadedWallTexture,TempColor);
+		}
 		glFogfv(GL_FOG_COLOR,TempColor);
 		glFogf(GL_FOG_DENSITY,1.0/MAX(1,FogDepth));
 	}
