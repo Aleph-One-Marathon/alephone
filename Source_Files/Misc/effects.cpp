@@ -83,6 +83,7 @@ short new_effect(
 		if (definition->flags&_sound_only)
 		{
 			struct shape_animation_data *animation= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, definition->shape));
+			if (!animation) return NONE;
 			
 			play_world_sound(polygon_index, origin, animation->first_frame_sound);
 		}
