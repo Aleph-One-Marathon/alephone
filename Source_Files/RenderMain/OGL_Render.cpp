@@ -1206,7 +1206,7 @@ void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color)
 	
 	GLdouble CombinedShading = (Shading>SelfIllumShading) ? (Shading + 0.5*SelfIllumShading) : (SelfIllumShading + 0.5*Shading);
 	
-	Color[0] = Color[1] = Color[2] = PIN((1/GLdouble(FIXED_ONE))*CombinedShading,0,1);
+	Color[0] = Color[1] = Color[2] = PIN(static_cast<GLfloat>(CombinedShading/FIXED_ONE),0,1);
 }
 
 
