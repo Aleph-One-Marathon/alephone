@@ -5,7 +5,7 @@
 ## Intel and PowerPC builds of the BeOS.
 
 # Get version number from configure.in
-A1_VERSION := $(shell grep <configure.in INIT_AUTOMAKE | sed -e 's/.*\[//' -e 's/\].*//')
+version := $(shell grep <configure.in INIT_AUTOMAKE | sed -e 's/.*\[//' -e 's/\].*//')
 
 ## Application Specific Settings ---------------------------------------------
 
@@ -120,14 +120,14 @@ LOCAL_INCLUDE_PATHS=
 
 #	specify the level of optimization that you desire
 #	NONE, SOME, FULL
-OPTIMIZE= 
+OPTIMIZE= FULL
 
 #	specify any preprocessor symbols to be defined.  The symbols will not
 #	have their values set automatically; you must supply the value (if any)
 #	to use.  For example, setting DEFINES to "DEBUG=1" will cause the
 #	compiler option "-DDEBUG=1" to be used.  Setting DEFINES to "DEBUG"
 #	would pass "-DDEBUG" on the compiler's command line.
-DEFINES= SDL HAVE_UNISTD_H VERSION=\"$(A1_VERSION)\"
+DEFINES= SDL HAVE_UNISTD_H VERSION=\"$(version)\"
 
 #	specify special warning levels
 #	if unspecified default warnings will be used
@@ -181,22 +181,21 @@ install: $(TARGET)
 	mimeset -f $(INSTALLDIR)
 
 # Make BeOS binary distribution
-DISTDIR = AlephOne-$(A1_VERSION)
-ARCHIVE = AlephOne-$(A1_VERSION)-BeOS-$(CPU).zip
+distdir = AlephOne-$(version)
 dist: $(TARGET)
-	-rm -rf $(DISTDIR)
-	mkdir $(DISTDIR)
-	mkdir $(DISTDIR)/MML
-	mkdir $(DISTDIR)/docs
-	mkdir -p $(DISTDIR)/Themes/Default
-	cp $(TARGET) $(DISTDIR)/AlephOne
-	cp README INSTALL.BeOS COPYING COPYING.SDL $(DISTDIR)
-	cp data/Fonts $(DISTDIR)
-	cp data/*.mml $(DISTDIR)/MML
-	cp docs/MML.html docs/Cheat_Codes $(DISTDIR)/docs
-	cp data/default_theme/*.bmp $(DISTDIR)/Themes/Default
-	cp data/default_theme/resources $(DISTDIR)/Themes/Default
-	cp data/default_theme/theme.mml $(DISTDIR)/Themes/Default
-	mimeset -f $(DISTDIR)
-	zip -ry $(ARCHIVE) $(DISTDIR)
-	rm -rf $(DISTDIR)
+	-rm -rf $(distdir)
+	mkdir $(distdir)
+	mkdir $(distdir)/MML
+	mkdir $(distdir)/docs
+	mkdir -p $(distdir)/Themes/Default
+	cp $(TARGET) $(distdir)/AlephOne
+	cp README INSTALL.BeOS COPYING COPYING.SDL $(distdir)
+	cp data/Fonts $(distdir)
+	cp data/*.mml $(distdir)/MML
+	cp docs/MML.html docs/Cheat_Codes $(distdir)/docs
+	cp data/default_theme/*.bmp $(distdir)/Themes/Default
+	cp data/default_theme/resources $(distdir)/Themes/Default
+	cp data/default_theme/theme.mml $(distdir)/Themes/Default
+	mimeset -f $(distdir)
+	zip -ry AlephOne-$(version)-BeOS-$(CPU).zip $(distdir)
+	rm -rf $(distdir)
