@@ -13,6 +13,9 @@ Aug 21, 2000 (Loren Petrich):
 	
 Aug 21, 2000 (Loren Petrich):
 	Added images typecode
+
+Nov 29, 2000 (Loren Petrich):
+	Made copying of FTyp resources more reasonable; partial ones are now copied correctly
 */
 
 #include <string.h>
@@ -40,9 +43,10 @@ void initialize_typecodes()
 {
 	Handle FTypHdl = GetResource('FTyp',128);
 	if (FTypHdl == NULL) return;
-	if (GetHandleSize(FTypHdl) > sizeof(typecodes)) return;
+	int FTHSize = GetHandleSize(FTypHdl);
+	if (FTHSize > sizeof(typecodes)) return;
 	HLock(FTypHdl);
-	memcpy(typecodes,*FTypHdl,sizeof(typecodes));
+	memcpy(typecodes,*FTypHdl,FTHSize);
 	HUnlock(FTypHdl);
 	ReleaseResource(FTypHdl);
 }
