@@ -590,8 +590,6 @@ void hide_cursor(
 		Rect screen_rect;
 		GetPortBounds(GetScreenGrafPort(), &screen_rect);
 		ShieldCursor(&screen_rect, (Point){screen_rect.top,screen_rect.left});
-		
-		HideCursor();
 		cursor_showing = false;
 	}
 #else
