@@ -611,3 +611,26 @@ world_point2d *transform_overflow_point2d(
 	
 	return point;
 }
+
+// IR addition:
+long_point2d *transform_long_point2d(
+	long_point2d *point,
+	world_point2d *origin,
+	angle theta)
+{
+	long_vector2d temp, tempr;
+	
+	theta = normalize_angle(theta);
+	assert(cosine_table[0]==TRIG_MAGNITUDE);
+	
+	temp.i= point->x - int32(origin->x);
+	temp.j= point->y - int32(origin->y);
+		
+	tempr.i= ((temp.i*cosine_table[theta])>>TRIG_SHIFT) + ((temp.j*sine_table[theta])>>TRIG_SHIFT);
+	tempr.j= ((temp.j*cosine_table[theta])>>TRIG_SHIFT) - ((temp.i*sine_table[theta])>>TRIG_SHIFT);
+	
+	point->x = tempr.i;
+	point->y = tempr.j;
+	
+	return point;
+}

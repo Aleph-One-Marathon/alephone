@@ -87,6 +87,12 @@ Jan 6, 2001 (Loren Petrich):
 
 Feb 1, 2001 (Loren Petrich):
 	Added fix for firing-animation wraparound; prevent_wrap is true for those animations also.
+
+Aug 12, 2001 (Ian Rickard):
+	Tiny OOzing tweak
+
+Aug 12, 2001 (Ian Rickard):
+	#if UNUSED out player_hit_target, get_weapon_array, calculate_weapon_array_length.
 */
 
 #include "cseries.h"
@@ -435,6 +441,7 @@ void mark_weapon_collections(
 	}
 }
 
+#if UNUSED
 void player_hit_target(
 	short player_index,
 	short weapon_identifier)
@@ -448,6 +455,7 @@ void player_hit_target(
 	assert(weapon_id>=0 && weapon_id<short(NUMBER_OF_WEAPONS));
 	player_weapons->weapons[weapon_id].triggers[trigger].shots_hit++;
 }
+#endif
 
 /* Called on entry to a level, and will change weapons if this one doesn't work */
 /*  in the given environment. */
@@ -700,7 +708,11 @@ void update_player_weapons(
 				player->weapon_intensity_decay= 0;
 			}
 		}
-	
+		// IR addition: that leaves the screen bright after you fire a gun w/ bright flash and short delay!
+		// this has been broken for ever.
+		else if (player->weapon_intensity != NATURAL_LIGHT_INTENSITY) {
+			player->weapon_intensity = NATURAL_LIGHT_INTENSITY;
+		}
 		// wheee!!!
 		for(which_trigger= first_trigger; which_trigger<trigger_count; ++which_trigger)
 		{
@@ -1142,6 +1154,7 @@ static void debug_trigger_data(
 }
 #endif
 
+#if UNUSED
 void *get_weapon_array(
 	void)
 {
@@ -1153,6 +1166,7 @@ long calculate_weapon_array_length(
 {
 	return dynamic_world->player_count*sizeof(struct player_weapon_data);
 }
+#endif
 
 /* -------------------------- functions related to rendering */
 /* Functions related to rendering! */
@@ -1973,8 +1987,8 @@ static void calculate_weapon_origin_and_vector(
 		}
 
 		line= get_line_data(line_crossed);
-		find_line_intersection(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
-			&get_endpoint_data(line->endpoint_indexes[1])->vertex, 
+		// IR change: OOzing
+		find_line_intersection(&line->endpoint_0()->vertex, &line->endpoint_1()->vertex, 
 			&player->location, origin, origin);
 		
 		/* Now guess the distance.. */

@@ -138,6 +138,9 @@ void player_hit_target(short player_index, short weapon_identifier);
 void get_player_weapon_mode_and_type(short player_index, short *shape_weapon_type,
 	short *shape_mode);
 
+/* For having a prototype for this */
+void destroy_players_ball(short player_index);
+
 /* For the game window to update properly */
 short get_player_desired_weapon(short player_index);
 

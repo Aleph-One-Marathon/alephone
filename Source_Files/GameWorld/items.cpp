@@ -58,6 +58,10 @@ Feb 11, 2001 (Loren Petrich):
 	Reversed the "polarity" of the "facing" member of "object",
 	which is used as a flag in the case of randomized unanimated objects.
 	It will become NONE when these objects are inited.
+
+Aug 12, 2001 (Ian Rickard):
+	Small OOzing change.
+	known bugs: This log entry is larger than the change.
 */
 
 #include "cseries.h"
@@ -121,13 +125,6 @@ item_definition *get_item_definition(
 	const short type)
 {
 	return GetMemberWithBounds(item_definitions,type,NUMBER_OF_DEFINED_ITEMS);
-}
-
-//a non-inlined version for external use
-item_definition *get_item_definition_external(
-	const short type)
-{
-	return get_item_definition(type);
 }
 
 short new_item(
@@ -417,7 +414,7 @@ bool unretrieved_items_on_map(
 	struct object_data *object;
 	short object_index;
 	
-	for (object_index= 0, object= objects; object_index<MAXIMUM_OBJECTS_PER_MAP; ++object_index, ++object)
+	for (object_index= 0, object= map_objects; object_index<MAXIMUM_OBJECTS_PER_MAP; ++object_index, ++object)
 	{
 		if (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object)==_object_is_item)
 		{
@@ -652,7 +649,8 @@ static bool test_item_retrieval(
 		if (line_index!=NONE)
 		{
 			polygon_index= find_adjacent_polygon(polygon_index, line_index);
-			if (LINE_IS_SOLID(get_line_data(line_index))) valid_retrieval= false;
+			// IR change: OOzing
+			if (line_reference(line_index)->is_solid()) valid_retrieval= false;
 			if (polygon_index!=NONE)
 			{
 				struct polygon_data *polygon= get_polygon_data(polygon_index);
@@ -685,7 +683,7 @@ void animate_items(void) {
 
 	short object_index;
 	object_data *object;
-	for (object_index= 0, object= objects; object_index<MAXIMUM_OBJECTS_PER_MAP; ++object_index, ++object)
+	for (object_index= 0, object= map_objects; object_index<MAXIMUM_OBJECTS_PER_MAP; ++object_index, ++object)
 	{
 		if (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object)==_object_is_item && !OBJECT_IS_INVISIBLE(object))
 		{

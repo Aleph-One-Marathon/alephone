@@ -86,6 +86,9 @@ Oct 13, 2000 (Loren Petrich)
 
 Oct 26, 2000 (Mark Levin)
 	Revealed a few functions needed by Pfhortran
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating to B&B prep or OOzing
 */
 
 #include <string.h>
@@ -386,6 +389,7 @@ short new_monster(
 void move_monsters(
 	void)
 {
+	return;
 	struct monster_data *monster;
 	bool monster_got_time= false;
 	bool monster_built_path= (dynamic_world->tick_count&3) ? true : false;
@@ -854,7 +858,8 @@ static long monster_activation_flood_proc(
 		}
 	}
 	
-	if (!((*flags)&_pass_solid_lines) && LINE_IS_SOLID(line)) cost= -1;
+	// IR change: Oozing
+	if (!((*flags)&_pass_solid_lines) && line->is_solid()) cost= -1;
 	
 	return cost;
 }
@@ -1504,16 +1509,16 @@ bool bump_monster(
 }
 
 
-bool legal_polygon_height_change(
-	short polygon_index,
+// IR change: made this a method
+bool polygon_data::legal_height_change(
 	world_distance new_floor_height,
 	world_distance new_ceiling_height,
 	struct damage_definition *damage)
 {
 	world_distance new_polygon_height= new_ceiling_height-new_floor_height;
-	struct polygon_data *polygon= get_polygon_data(polygon_index);
-	short object_index= polygon->first_object;
-	world_distance minimum_height= dead_player_minimum_polygon_height(polygon_index);
+//	struct polygon_data *polygon= get_polygon_data(polygon_index);
+	short object_index= first_object;
+	world_distance minimum_height= dead_player_minimum_polygon_height(MY_INDEX);
 	bool legal_change= true;
 	
 	while (object_index!=NONE)
@@ -1563,7 +1568,8 @@ void adjust_monster_for_polygon_height_change(
 	{
 		struct object_data *object= get_object_data(monster->object_index);
 		
-		if (object->location.z==polygon->floor_height) object->location.z= new_floor_height;
+		// IR change: B&B prep workaround
+		if (object->location.z==polygon->lowest_floor()) object->location.z= new_floor_height;
 	}
 }
 
@@ -1668,7 +1674,8 @@ static void update_monster_vertical_physics_model(
 	struct media_data *media= polygon->media_index==NONE ? (struct media_data *) NULL : get_media_data(polygon->media_index);
 	uint32 moving_flags= MONSTER_IS_DYING(monster) ? 0 : (definition->flags&(_monster_flys|_monster_floats));
 	world_distance gravity= (static_world->environment_flags&_environment_low_gravity) ? (definition->gravity>>1) : definition->gravity;
-	world_distance floor_height= polygon->floor_height;
+	// IR change: B&B prep (though this func will get heavily modified)
+	world_distance floor_height= polygon->floor_below(object), ceiling_height= polygon->ceiling_above(object);
 	world_distance desired_height;
 	world_distance old_height= object->location.z;
 	bool above_ground, below_ground;
@@ -1686,7 +1693,8 @@ static void update_monster_vertical_physics_model(
 			if (damage) damage_monster(monster_index, NONE, NONE, (world_point3d *) NULL, damage);
 		}
 	}
-	desired_height= (monster->desired_height==NONE||MONSTER_IS_DYING(monster)) ? polygon->floor_height : monster->desired_height;
+	// IR tweak:
+	desired_height= (monster->desired_height==NONE||MONSTER_IS_DYING(monster)) ? floor_height : monster->desired_height;
 	above_ground= object->location.z>desired_height;
 	below_ground= object->location.z<desired_height;
 
@@ -1717,7 +1725,8 @@ static void update_monster_vertical_physics_model(
 	}
 	
 	/* add our vertical velocity to z */
-	object->location.z= PIN(object->location.z+monster->vertical_velocity, polygon->floor_height, polygon->ceiling_height-definition->height);
+	// IR tweak:
+	object->location.z= PIN(object->location.z+monster->vertical_velocity, floor_height, ceiling_height-definition->height);
 
 	/* if weÕre under the floor moving down, put us on the floor and clear our velocity;
 		if weÕre above the floor moving up, put us on the floor and clear our velocity if we were previously below ground */
@@ -1746,19 +1755,21 @@ static void update_monster_vertical_physics_model(
 			struct monster_data *target= get_monster_data(monster->target_index);
 			struct monster_definition *target_definition= get_monster_definition(target->type);
 			
-			monster->desired_height= get_object_data(target->object_index)->location.z + ((target_definition->height-definition->height)>>1) + definition->preferred_hover_height;
-			monster->desired_height= PIN(monster->desired_height, floor_height+(definition->height>>2), polygon->ceiling_height-definition->height);
+			// IR tweaks:
+			monster->desired_height= get_object_data(target->object_index)->location.z + ((target_definition->height-definition->height)/2) + definition->preferred_hover_height;
+			monster->desired_height= PIN(monster->desired_height, floor_height+(definition->height/4), ceiling_height-definition->height);
 		}
 		else
 		{
-			if (monster->random_desired_height<floor_height || monster->random_desired_height>polygon->ceiling_height)
+			// IR tweaks:
+			if (monster->random_desired_height < floor_height || monster->random_desired_height > ceiling_height)
 			{
-				world_distance delta= polygon->ceiling_height-floor_height-definition->height;
+				world_distance delta= ceiling_height-floor_height-definition->height;
 				
 				monster->random_desired_height= floor_height + ((delta>0) ? (global_random()%delta) : 0);
 			}
 			
-			monster->desired_height= MONSTER_IS_DYING(monster) ? polygon->floor_height : monster->random_desired_height;
+			monster->desired_height= MONSTER_IS_DYING(monster) ? floor_height : monster->random_desired_height;
 		}
 	}
 	else
@@ -1805,15 +1816,15 @@ static void update_monster_physics_model(
 	if (monster->external_velocity)
 	{
 		world_point3d new_location= object->location;
-		world_distance adjusted_floor_height, adjusted_ceiling_height;
+	//	world_distance adjusted_floor_height, adjusted_ceiling_height;
 		angle negative_facing= NORMALIZE_ANGLE(HALF_CIRCLE+object->facing);
 		struct polygon_data *polygon;
 		short supporting_polygon_index;
 
 		/* move the monster */		
 		translate_point2d((world_point2d*)&new_location, monster->external_velocity, negative_facing);
-		keep_line_segment_out_of_walls(object->polygon, &object->location, &new_location,
-			0, definition->height, &adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
+		keep_line_segment_out_of_walls(object->polygon, &object->location, &new_location, definition->radius,
+			0, definition->height, /*&adjusted_floor_height, &adjusted_ceiling_height,*/ &supporting_polygon_index);
 		if (legal_monster_move(monster_index, negative_facing, &new_location)==NONE)
 		{
 			short old_polygon_index= object->polygon;
@@ -1823,7 +1834,8 @@ static void update_monster_physics_model(
 		
 		/* slow him down if heÕs touching the ground or flying */
 		polygon= get_polygon_data(object->polygon);
-		if (object->location.z<=polygon->floor_height || (definition->flags&(_monster_flys|_monster_floats)))
+		// IR change: B&B prep
+		if (object->location.z<=polygon->floor_below(object) || (definition->flags&(_monster_flys|_monster_floats)))
 		{
 			if ((monster->external_velocity-= MONSTER_EXTERNAL_DECELERATION)<MONSTER_MINIMUM_EXTERNAL_VELOCITY)
 			{
@@ -2230,7 +2242,8 @@ static bool clear_line_of_sight(
 				line_index= find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)origin, (world_point2d *)destination);
 				if (line_index!=NONE)
 				{
-					if (LINE_IS_TRANSPARENT(get_line_data(line_index)))
+					// IR change:  OOzing
+					if (line_reference(line_index)->is_transparent())
 					{
 						/* transparent line, find adjacent polygon */
 						polygon_index= find_adjacent_polygon(polygon_index, line_index);
@@ -2701,7 +2714,8 @@ static bool attempt_evasive_manouvers(
 	struct object_data *object= get_object_data(monster->object_index);
 	world_point2d destination= *((world_point2d*)&object->location);
 	angle new_facing= NORMALIZE_ANGLE(object->facing + ((global_random()&1) ? QUARTER_CIRCLE : -QUARTER_CIRCLE));
-	world_distance original_floor_height= get_polygon_data(object->polygon)->floor_height;
+	// IR change: OOzing/B&B prep
+	world_distance original_floor_height= polygon_reference(object->polygon)->floor_below(object);
 	short polygon_index= object->polygon;
 	bool successful= true;
 	
@@ -2717,7 +2731,8 @@ static bool attempt_evasive_manouvers(
 		else
 		{
 			/* if we ran off the map, we failed */
-			if (LINE_IS_SOLID(get_line_data(line_index)) || (polygon_index= find_adjacent_polygon(polygon_index, line_index))==NONE)
+			// IR change: OOzing
+			if (line_reference(line_index)->is_solid() || (polygon_index= find_adjacent_polygon(polygon_index, line_index))==NONE)
 			{
 				polygon_index= NONE;
 				successful= false;
@@ -2725,7 +2740,8 @@ static bool attempt_evasive_manouvers(
 			else
 			{
 				struct polygon_data *polygon= get_polygon_data(polygon_index);
-				if (polygon->floor_height!=original_floor_height || polygon->type==_polygon_is_monster_impassable)
+				// IR change: B&B prep
+				if (polygon->floor_below(object)!=original_floor_height || polygon->type==_polygon_is_monster_impassable)
 				{
 					polygon_index= NONE;
 					successful= false;
@@ -2975,7 +2991,8 @@ long monster_pathfinding_cost_function(
 	cost= source_polygon->area;
 
 	/* no solid lines (baby) */
-	if (LINE_IS_SOLID(line) && !LINE_IS_VARIABLE_ELEVATION(line)) cost= -1;
+	// IR change: OOzing
+	if (line->is_solid() && !line->is_variable_elevation()) cost= -1;
 
 	/* count up the monsters in destination_polygon and add a constant cost, MONSTER_PATHFINDING_OBSTRUCTION_PENALTY,
 		for each of them to discourage overcrowding */
@@ -3014,10 +3031,13 @@ long monster_pathfinding_cost_function(
 		platforms or doors) */
 	if (respect_polygon_heights)
 	{
-		world_distance delta_height= destination_polygon->floor_height-source_polygon->floor_height;
+		// IR change: this mechanism has to be completely re-written to run on a second linkage map for inserts
+		// to work, so dropping in a quick hack fix for the privatized memvers.
+		world_distance exit_center = source_polygon->lowest_floor() + definition->height/2;
+		world_distance delta_height= destination_polygon->floor_below(exit_center)-source_polygon->floor_below(exit_center);
 		
 		if (delta_height<definition->minimum_ledge_delta||delta_height>definition->maximum_ledge_delta) cost= -1;
-		if (line->lowest_adjacent_ceiling-line->highest_adjacent_floor<definition->height) cost= -1;
+		if (line->ceiling_above(exit_center)-line->floor_below(exit_center)<definition->height) cost= -1;
 		
 		if (cost>0) cost+= delta_height*delta_height; /* prefer not to change heights */
 	}
@@ -3051,7 +3071,8 @@ long monster_pathfinding_cost_function(
 			// LP change: idiot-proofed this
 			if (media)
 			{
-				if (media->height>destination_polygon->floor_height)
+				// IR change: B&B prep workaround, this whole thing gets rewritten.
+				if (media->height > destination_polygon->lowest_floor())
 				{
 					cost+= 2*destination_polygon->area;
 				}
@@ -3084,6 +3105,8 @@ static short find_obstructing_terrain_feature(
 	{
 		struct polygon_data *polygon= get_polygon_data(polygon_index);
 		short line_index= find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)&object->location, &p1);
+		// IR addition: cache these since the accessors will incur overhead once B&B is in place.
+		world_distance floor_height=polygon->floor_below(object), ceiling_height=polygon->ceiling_above(object);
 		
 		switch (polygon->type)
 		{
@@ -3111,25 +3134,26 @@ static short find_obstructing_terrain_feature(
 				break;
 			
 			default:
-				if (((definition->flags&_monster_floats) && polygon->floor_height>monster->desired_height) ||
-					object->location.z+definition->height>polygon->ceiling_height)
+				// IR changes: adjusted for height caching
+				if (((definition->flags&_monster_floats) && floor_height > monster->desired_height) ||
+					object->location.z+definition->height > ceiling_height)
 				{
-					monster->desired_height= polygon->floor_height;
+					monster->desired_height= floor_height;
 					feature_type= _flying_or_floating_transition;
 					*feature_index= 0;
 				}
 				if (definition->flags&_monster_flys)
 				{
-					if ((polygon->floor_height>monster->desired_height) ||
-						(polygon->ceiling_height<monster->desired_height+definition->height))
+					// IR changes: adjusted for height caching
+					if ((floor_height > monster->desired_height) ||
+						(ceiling_height < monster->desired_height+definition->height))
 					{
-						monster->desired_height= (polygon->floor_height>monster->desired_height) ?
-							polygon->floor_height : (polygon->ceiling_height - definition->height);
+						monster->desired_height= (floor_height > monster->desired_height) ? floor_height : (ceiling_height - definition->height);
 						feature_type= _flying_or_floating_transition;
 						*feature_index= 0;
 					}
 					
-					if (object->location.z<polygon->floor_height || object->location.z+definition->height>polygon->ceiling_height)
+					if (object->location.z < floor_height || object->location.z+definition->height > ceiling_height)
 					{
 						feature_type= _flying_or_floating_transition;
 						*feature_index= 0;
@@ -3137,7 +3161,8 @@ static short find_obstructing_terrain_feature(
 				}
 				if (definition->flags&_monster_uses_sniper_ledges)
 				{
-					if ((polygon->floor_height+MINIMUM_SNIPER_ELEVATION<monster->desired_height) &&
+					// IR changes: adjusted for height caching
+					if ((floor_height + MINIMUM_SNIPER_ELEVATION < monster->desired_height) &&
 						monster->mode==_monster_locked)
 					{
 						feature_type= _standing_on_sniper_ledge;
@@ -3163,9 +3188,10 @@ static short find_obstructing_terrain_feature(
 							case _media_goo: /* height= 0; */ if (definition->flags&_monster_is_not_afraid_of_goo) media= (struct media_data *) NULL; break;
 						}
 					}
-					if (media && media->height-polygon->floor_height>height)
+					// IR changes: adjusted for height caching
+					if (media && media->height - floor_height > height)
 					{
-						if (get_polygon_data(object->polygon)->floor_height>polygon->floor_height)
+						if (get_polygon_data(object->polygon)->floor_below(object) > floor_height)
 						{
 							feature_type= _standing_on_sniper_ledge;
 							if (monster->mode!=_monster_locked) monster_needs_path(monster_index, false);
@@ -3291,15 +3317,14 @@ void SetPlayerViewAttribs(int16 half_visual_arc, int16 half_vertical_visual_arc,
 	world_distance visual_range, world_distance dark_visual_range)
 {
 	// Added a modified version of AlexJS's changes: change only if necessary
-	// Restoring AlexJLS's changes
 	monster_definition& PlayerAsMonster = monster_definitions[_monster_marine];
-	if (half_visual_arc > 0 || PlayerAsMonster.half_visual_arc > 0)
+	if (half_visual_arc > 0)
 		PlayerAsMonster.half_visual_arc = half_visual_arc;
-	if (half_vertical_visual_arc > 0 || PlayerAsMonster.half_vertical_visual_arc > 0)
+	if (half_vertical_visual_arc > 0)
 		PlayerAsMonster.half_vertical_visual_arc = half_vertical_visual_arc;
-	if (visual_range > 0 || PlayerAsMonster.visual_range > 0)
+	if (visual_range > 0)
 		PlayerAsMonster.visual_range = visual_range;
-	if (dark_visual_range > 0 || PlayerAsMonster.dark_visual_range > 0)
+	if (dark_visual_range > 0)
 		PlayerAsMonster.dark_visual_range = dark_visual_range;
 }
 

@@ -130,7 +130,7 @@ bool XML_DynLimParser::End()
 	objlist_clear(effects, EffectList.size());
 	objlist_clear(projectiles,  ProjectileList.size());
 	objlist_clear(monsters,  MonsterList.size());
-	objlist_clear(objects,  ObjectList.size());
+	objlist_clear(map_objects,  ObjectList.size());
 	
 	// Resize the array of paths also
 	allocate_pathfinding_memory();

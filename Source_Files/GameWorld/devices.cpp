@@ -51,6 +51,9 @@ June 3, 2000 (Loren Petrich):
 
 Aug 10, 2000 (Loren Petrich):
 	Added Chris Pruett's Pfhortran changes
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating to B&B prep or OOzing
 */
 
 #include "cseries.h"
@@ -223,7 +226,7 @@ void initialize_control_panels_for_level(
 		if (SIDE_IS_CONTROL_PANEL(side))
 		{
 			// LP change: modified previous fix so that it edits the side definition
-			struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
+			struct control_panel_definition *definition= get_control_panel_definition(side->data.control_panel.type);
 			if (!definition)
 			{
 				SET_SIDE_CONTROL_PANEL(side,false);
@@ -239,11 +242,11 @@ void initialize_control_panels_for_level(
 					break;
 				
 				case _panel_is_light_switch:
-					status= get_light_status(side->control_panel_permutation);
+					status= get_light_status(side->data.control_panel.permutation);
 					break;
 				
 				case _panel_is_platform_switch:
-					if (platform_is_on(get_polygon_data(side->control_panel_permutation)->permutation)) status= true;
+					if (platform_is_on(get_polygon_data(side->data.control_panel.permutation)->permutation)) status= true;
 					break;
 			}
 			
@@ -267,7 +270,7 @@ void update_control_panels(
 		{
 			struct side_data *side= get_side_data(player->control_panel_side_index);
 			// LP change: idiot-proofing
-			struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
+			struct control_panel_definition *definition= get_control_panel_definition(side->data.control_panel.type);
 			if (!definition) continue;
 			bool still_in_use= false;
 			
@@ -376,13 +379,13 @@ bool untoggled_repair_switches_on_level(
 		if (SIDE_IS_CONTROL_PANEL(side) && SIDE_IS_REPAIR_SWITCH(side))
 		{
 			// LP change: idiot-proofing
-			struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
+			struct control_panel_definition *definition= get_control_panel_definition(side->data.control_panel.type);
 			if (!definition) continue;
 			
 			switch (definition->_class)
 			{
 				case _panel_is_platform_switch:
-					untoggled_switch= platform_is_at_initial_state(get_polygon_data(side->control_panel_permutation)->permutation) ? true : false;
+					untoggled_switch= platform_is_at_initial_state(get_polygon_data(side->data.control_panel.permutation)->permutation) ? true : false;
 					break;
 				
 				default:
@@ -405,9 +408,9 @@ void assume_correct_switch_position(
 	
 	for (side_index= 0, side= map_sides; side_index<dynamic_world->side_count; ++side_index, ++side)
 	{
-		if (SIDE_IS_CONTROL_PANEL(side) && side->control_panel_permutation==permutation)
+		if (SIDE_IS_CONTROL_PANEL(side) && side->data.control_panel.permutation==permutation)
 		{
-			struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
+			struct control_panel_definition *definition= get_control_panel_definition(side->data.control_panel.type);
 			// LP change: idiot-proofing
 			if (!definition) continue;
 			
@@ -436,7 +439,7 @@ void try_and_toggle_control_panel(
 			if (switch_can_be_toggled(side_index, false))
 			{
 				bool make_sound = false, state= GET_CONTROL_PANEL_STATUS(side);
-				struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
+				struct control_panel_definition *definition= get_control_panel_definition(side->data.control_panel.type);
 				// LP change: idiot-proofing
 				if (!definition) return;
 				
@@ -444,9 +447,9 @@ void try_and_toggle_control_panel(
 				{
 					case _panel_is_tag_switch:
 						state= !state;
-						make_sound= set_tagged_light_statuses(side->control_panel_permutation, state);
-						if (try_and_change_tagged_platform_states(side->control_panel_permutation, state)) make_sound= true;
-						if (!side->control_panel_permutation) make_sound= true;
+						make_sound= set_tagged_light_statuses(side->data.control_panel.permutation, state);
+						if (try_and_change_tagged_platform_states(side->data.control_panel.permutation, state)) make_sound= true;
+						if (!side->data.control_panel.permutation) make_sound= true;
 						if (make_sound)
 						{
 							SET_CONTROL_PANEL_STATUS(side, state);
@@ -458,19 +461,27 @@ void try_and_toggle_control_panel(
 						break;
 					case _panel_is_light_switch:
 						state= !state;
+<<<<<<< devices.cpp
+						make_sound= set_light_status(side->data.control_panel.permutation, state);
+=======
 						make_sound= set_light_status(side->control_panel_permutation, state);
 						
 						//CP Addition: Script Hook
 						activate_light_switch_trap(side->control_panel_permutation);
 						
+>>>>>>> 1.13
 						break;
 					case _panel_is_platform_switch:
 						state= !state;
+<<<<<<< devices.cpp
+						make_sound= try_and_change_platform_state(get_polygon_data(side->data.control_panel.permutation)->permutation, state);
+=======
 						make_sound= try_and_change_platform_state(get_polygon_data(side->control_panel_permutation)->permutation, state);
 						
 						//CP Addition: Script Hook
 						activate_platform_switch_trap(side->control_panel_permutation);
 						
+>>>>>>> 1.13
 						break;
 				}
 				
@@ -631,7 +642,8 @@ static bool line_is_within_range(
 	world_distance radius, height;
 	world_distance dx, dy, dz;
 	
-	calculate_line_midpoint(line_index, &line_origin);
+	// IR change: OOzing
+	line_reference(line_index)->calculate_midpoint(&line_origin);
 	get_monster_dimensions(monster_index, &radius, &height);
 	monster_origin.z+= height>>1;
 	
@@ -686,7 +698,7 @@ static void	change_panel_state(
 	short state, make_sound= false;
 	struct side_data *side= get_side_data(panel_side_index);
 	struct player_data *player= get_player_data(player_index);
-	struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
+	struct control_panel_definition *definition= get_control_panel_definition(side->data.control_panel.type);
 	
 	// LP change: idiot-proofing
 	if (!definition) return;
@@ -709,10 +721,10 @@ static void	change_panel_state(
 			if (get_game_state()==_game_in_progress && !PLAYER_HAS_CHEATED(player) && !PLAYER_HAS_MAP_OPEN(player))
 			{
 				//CP Addition: Script Hook
-				activate_terminal_enter_trap(side->control_panel_permutation);
+				activate_terminal_enter_trap(side->data.control_panel.permutation);
 				
 				/* this will handle changing levels, if necessary (i.e., if weÕre finished) */
-				enter_computer_interface(player_index, side->control_panel_permutation, calculate_level_completion_state());
+				enter_computer_interface(player_index, side->data.control_panel.permutation, calculate_level_completion_state());
 			}
 			break;
 		case _panel_is_tag_switch:
@@ -720,33 +732,33 @@ static void	change_panel_state(
 			{
 				state= !state;
 				
-				make_sound= set_tagged_light_statuses(side->control_panel_permutation, state);
-				if (try_and_change_tagged_platform_states(side->control_panel_permutation, state)) make_sound= true;
-				if (!side->control_panel_permutation) make_sound= true;
+				make_sound= set_tagged_light_statuses(side->data.control_panel.permutation, state);
+				if (try_and_change_tagged_platform_states(side->data.control_panel.permutation, state)) make_sound= true;
+				if (!side->data.control_panel.permutation) make_sound= true;
 				if (make_sound)
 				{
 					SET_CONTROL_PANEL_STATUS(side, state);
 					set_control_panel_texture(side);
 				}
 				//CP Addition: Script Hook
-				activate_tag_switch_trap(side->control_panel_permutation);
+				activate_tag_switch_trap(side->data.control_panel.permutation);
 			
 			}
 			break;
 		case _panel_is_light_switch:
 			state= !state;
-			make_sound= set_light_status(side->control_panel_permutation, state);
+			make_sound= set_light_status(side->data.control_panel.permutation, state);
 			
 			//CP Addition: Script Hook
-			activate_light_switch_trap(side->control_panel_permutation);
+			activate_light_switch_trap(side->data.control_panel.permutation);
 
 			break;
 		case _panel_is_platform_switch:
 			state= !state;
-			make_sound= try_and_change_platform_state(get_polygon_data(side->control_panel_permutation)->permutation, state);
+			make_sound= try_and_change_platform_state(get_polygon_data(side->data.control_panel.permutation)->permutation, state);
 			
 			//CP Addition: Script Hook
-			activate_platform_switch_trap(side->control_panel_permutation);
+			activate_platform_switch_trap(side->data.control_panel.permutation);
 			
 			break;
 		case _panel_is_pattern_buffer:
@@ -756,7 +768,7 @@ static void	change_panel_state(
 				play_control_panel_sound(panel_side_index, _activating_sound);
 				
 				//CP Addition: Script Hook
-				activate_pattern_buffer_trap(side->control_panel_permutation);
+				activate_pattern_buffer_trap(side->data.control_panel.permutation);
 			
 //				fade_out_background_music(30);
 
@@ -782,7 +794,7 @@ static void	change_panel_state(
 static void set_control_panel_texture(
 	struct side_data *side)
 {
-	struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
+	struct control_panel_definition *definition= get_control_panel_definition(side->data.control_panel.type);
 	// LP change: idiot-proofing
 	if (!definition) return;
 	
@@ -797,13 +809,14 @@ static bool switch_can_be_toggled(
 {
 	bool valid_toggle= true;
 	struct side_data *side= get_side_data(side_index);
-	struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
+	struct control_panel_definition *definition= get_control_panel_definition(side->data.control_panel.type);
 	// LP change: idiot-proofing
 	if (!definition) return false;
 	
 	if (side->flags&_side_is_lighted_switch)
 	{
-		valid_toggle= get_light_intensity(side->primary_lightsource_index)>(3*FIXED_ONE/4) ? true : false;
+		// IR change: now using side_texture_definition in side_data
+		valid_toggle= get_light_intensity(side->primary_texture.lightsource_index)>(3*FIXED_ONE/4) ? true : false;
 	}
 
 	if (definition->item!=NONE && !player_hit) valid_toggle= false;
@@ -825,7 +838,7 @@ static void play_control_panel_sound(
 	short sound_index)
 {
 	struct side_data *side= get_side_data(side_index);
-	struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
+	struct control_panel_definition *definition= get_control_panel_definition(side->data.control_panel.type);
 	
 	// LP change: idiot-proofing
 	if (!definition) return;

@@ -34,6 +34,9 @@ Wednesday, June 14, 1995 8:35:28 AM  (Jason)
 
 Feb 10, 2000 (Loren Petrich):
 	Added dynamic-limits setting of MAXIMUM_PATHS
+
+Aug 12, 2001 (Ian Rickard):
+	Small two-line change for OOzing.
 */
 
 #include <string.h>
@@ -345,8 +348,9 @@ static void calculate_midpoint_of_shared_line(
 	assert(shared_line_index!=NONE);
 	shared_line= get_line_data(shared_line_index);
 
-	endpoint0= get_endpoint_data(shared_line->endpoint_indexes[0]);
-	endpoint1= get_endpoint_data(shared_line->endpoint_indexes[1]);
+	// IR change: OOzing
+	endpoint0= shared_line->endpoint_0();
+	endpoint1= shared_line->endpoint_1();
 
 	origin= 0;
 	range= shared_line->length;

@@ -48,15 +48,18 @@ June 15, 2000 (Loren Petrich):
 
 Aug 10, 2000 (Loren Petrich):
 	Added Chris Pruett's Pfhortran changes
+<<<<<<< marathon2.cpp
+
+Aug 12, 2001 (Ian Rickard):
+	Little B&B prep tweak
+
+Aug 20, 2001 (Ian Rickard):
+	Some more small changes for upscaled textures.
+=======
 
 Feb 4, 2002 (Br'fin (Jeremy Parsons)):
 	Moved Macintosh call to OGL_Initialize to shell_macintosh.cpp
-
-Feb 20, 2002 (Woody Zenfell):
-    Changed action queues operations to ActionQueues operations on GetRealActionQueues()
-
-Mar 13, 2002 (Br'fin (Jeremy Parsons)):
-	Altered enter_game to stop and reset fades after script_init
+>>>>>>> 1.16
 */
 
 #include "cseries.h"
@@ -80,6 +83,7 @@ Mar 13, 2002 (Br'fin (Jeremy Parsons)):
 #include "game_window.h"
 #include "mysound.h"
 #include "network_games.h"
+#include "readout_data.h"
 // LP additions:
 #include "tags.h"
 #include "AnimatedTextures.h"
@@ -90,14 +94,17 @@ Mar 13, 2002 (Br'fin (Jeremy Parsons)):
 #include "scripting.h"
 #include "script_parser.h"
 
-// ZZZ additions:
-#include "ActionQueues.h"
+// IR addition:
+#include "upscaled_textures.h"
 
 #include <limits.h>
 
 #ifdef env68k
 #pragma segment marathon
 #endif
+
+// IR addition: upscaling.
+extern UpscaledTextureManager upscaledTextures;
 
 /* ---------- constants */
 
@@ -144,6 +151,8 @@ short update_world(
 	short player_index;
 	bool game_over= false;
 
+	gUsageTimers.world.Start();
+	
 	/* find who has the most and the least queued action flags (we can only advance the world
 		as far as we have action flags for every player).  the difference between the most and
 		least queued action flags should be bounded in some way by the maximum number of action
@@ -155,13 +164,21 @@ short update_world(
 
 		if (game_is_networked)
 		{
+<<<<<<< marathon2.cpp
+			queue_size= MIN(get_action_queue_size(player_index), NetGetNetTime() - dynamic_world->tick_count);
+=======
 			queue_size= MIN(int(GetRealActionQueues()->countActionFlags(player_index)),
                 NetGetNetTime() - dynamic_world->tick_count);
+>>>>>>> 1.3
 		}
 		else
 		{
+<<<<<<< marathon2.cpp
+			queue_size= MIN(get_action_queue_size(player_index), get_heartbeat_count() - dynamic_world->tick_count);
+=======
 			queue_size= MIN(int(GetRealActionQueues()->countActionFlags(player_index)),
                 get_heartbeat_count() - dynamic_world->tick_count);
+>>>>>>> 1.3
 		}
 		if (queue_size<0) queue_size= 0; // thumb in dike to prevent update_interface from getting -1
 		
@@ -184,9 +201,13 @@ short update_world(
 		update_platforms();
 		
 		update_control_panels(); // don't put after update_players
-		update_players(GetRealActionQueues());
+		gUsageTimers.worldCollision.Start();
+		update_players();
+		gUsageTimers.worldCollision.Stop();
 		move_projectiles();
+		gUsageTimers.worldAI.Start();
 		move_monsters();
+		gUsageTimers.worldAI.Stop();
 		update_effects();
 		recreate_objects();
 		
@@ -226,6 +247,8 @@ short update_world(
 	
 	check_recording_replaying();
 
+	gUsageTimers.world.Stop();
+	
 	return time_elapsed;
 }
 
@@ -237,6 +260,9 @@ void leaving_map(
 	
 	remove_all_projectiles();
 	remove_all_nonpersistent_effects();
+	
+	// IR addition: flush out the upscaled textures.
+	upscaledTextures.Flush();
 	
 	/* mark our shape collections for unloading */
 	mark_environment_collections(static_world->environment_code, false);
@@ -265,6 +291,8 @@ void leaving_map(
 bool entering_map(bool restoring_saved)
 {
 	bool success= true;
+
+	set_fade_effect(NONE);
 
 	/* if any active monsters think they have paths, we'll make them reconsider */
 	initialize_monsters_for_new_level();
@@ -296,10 +324,6 @@ bool entering_map(bool restoring_saved)
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
 
-	// Zero out fades *AND* any inadvertant fades from script start...
-	stop_fade();
-	set_fade_effect(NONE);
-	
 	if (!success) leaving_map();
 
 	return success;
@@ -470,7 +494,8 @@ void cause_polygon_damage(
 	struct object_data *object= get_object_data(monster->object_index);
 
 // #if 0
-	if ((polygon->type==_polygon_is_minor_ouch && !(dynamic_world->tick_count&MINOR_OUCH_FREQUENCY) && object->location.z==polygon->floor_height) ||
+	// IR change: B&B prep side effect
+	if ((polygon->type==_polygon_is_minor_ouch && !(dynamic_world->tick_count&MINOR_OUCH_FREQUENCY) && object->location.z==polygon->floor_below(object)) ||
 		(polygon->type==_polygon_is_major_ouch && !(dynamic_world->tick_count&MAJOR_OUCH_FREQUENCY)))
 	{
 		struct damage_definition damage;

@@ -35,10 +35,16 @@ Feb 17, 2000 (Loren Petrich):
 
 Jul 1, 2000 (Loren Petrich):
 	Inlined the angle normalization; using tricky code for that
+
+Aug 12, 2001 (Ian Rickard):
+	Changed this file for my sanity.  if this is still here bug me about it.
 */
 
 #ifndef _WORLD_H
 #define _WORLD_H
+
+// IR addition: so I can check syntax on just this file
+#include "cstypes.h"
 
 /* ---------- constants */
 
@@ -95,9 +101,13 @@ struct world_point2d
 };
 typedef struct world_point2d world_point2d;
 
-struct world_point3d
+struct world_point3d : public world_point2d
 {
-	world_distance x, y, z;
+	world_distance z;
+// IR addition: for the temporary sake of my sanity, someone remind me to take this out
+	operator const world_point3d* () const {return this;}
+	operator const world_point2d* () const {return this;}
+	operator world_point2d* () {return this;}
 };
 typedef struct world_point3d world_point3d;
 
@@ -132,6 +142,11 @@ typedef struct fixed_vector3d fixed_vector3d;
 struct long_point2d
 {
 	int32 x, y;
+	// IR addition: OOzing, really as a side effect of poor design in other areas.
+	long_point2d(){}
+	long_point2d(const long_point2d& it) {*this = it;}
+	// IR note: explicit so we don't accidentally convert one to anohter.
+	explicit long_point2d(const world_point2d &src) {x=src.x; y=src.y;}
 };
 typedef struct long_point2d long_point2d;
 
@@ -144,6 +159,13 @@ typedef struct long_point3d long_point3d;
 struct long_vector2d
 {
 	int32 i, j;
+	// IR addition: OOzing, really as a side effect of poor design in other areas.
+	long_vector2d(){}
+	long_vector2d(const long_vector2d& it) {*this = it;}
+	// IR note: explicit so we don't accidentally convert one to anohter.
+	explicit long_vector2d(const long_point2d &src) {i=src.x; j=src.y;}
+	explicit long_vector2d(const world_point2d &src) {i=src.x; j=src.y;}
+	explicit long_vector2d(const world_vector2d &src) {i=src.i; j=src.j;}
 };
 typedef struct long_vector2d long_vector2d;
 
@@ -216,6 +238,8 @@ void overflow_short_to_long_2d(world_point2d& WVec, uint16& flags, long_vector2d
 
 // Transform that produces a result with this kludge
 world_point2d *transform_overflow_point2d(world_point2d *point, world_point2d *origin, angle theta, uint16 *flags);
+// IR addition:
+long_point2d *transform_long_point2d(long_point2d *point, world_point2d *origin, angle theta);
 
 // Simple copy-overs
 inline void long_to_short_2d(long_vector2d& LVec, world_vector2d&WVec)

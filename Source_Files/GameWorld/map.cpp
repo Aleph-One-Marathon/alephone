@@ -85,6 +85,12 @@ Feb 8, 2001 (Loren Petrich):
 	limits on the numbers of points, lines, polygons, etc.
 	Fixed a *serious* bug in the calculation of the "dynamic world" quantities in recalculate_map_counts() --
 	there are some count-down loops, but they ought to count down to the last used entity, not the last unused one.
+
+Aug 12, 2001 (Ian Rickard):
+	Many changes and additions relating to B&B prep or OOzing
+
+Aug 19, 2001 (Ian Rickard):
+	aded #if UNUSED around some unused stuff.
 */
 
 /*
@@ -105,6 +111,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include "lightsource.h"
 #include "media.h"
 #include "mysound.h"
+#include "screen.h" // for debug hud.
 
 #include <string.h>
 #include <stdlib.h>
@@ -128,6 +135,16 @@ struct environment_definition
 #define DEFAULT_MAP_MEMORY_SIZE (128*KILO)
 
 /* ---------- globals */
+
+// IR addition: (string constants) OOzing.  Was either this or RTTI (blech!)
+const char map_annotation::objectname[] = "annotation";
+const char ambient_sound_image_data::objectname[] = "ambient sound";
+const char random_sound_image_data::objectname[] = "random sound";
+const char object_data::objectname[] = "object_data";
+const char endpoint_data::objectname[] = "endpoint";
+const char line_data::objectname[] = "line";
+const char side_data::objectname[] = "side";
+const char polygon_data::objectname[] = "polygon";
 
 // LP: modified texture-environment management so as to be easier to handle with XML
 
@@ -207,7 +224,10 @@ vector<map_annotation> MapAnnotationList;
 
 vector<map_object> SavedObjectList;
 // struct map_object *saved_objects = NULL;
+// IR changed: this isn't used, so why bother generating it?
+#if UNUSED
 struct item_placement_data *placement_information = NULL;
+#endif
 
 bool game_is_networked = false;
 
@@ -397,7 +417,7 @@ void initialize_map_for_new_level(
 	objlist_clear(effects, EffectList.size());
 	objlist_clear(projectiles,  ProjectileList.size());
 	objlist_clear(monsters,  MonsterList.size());
-	objlist_clear(objects,  ObjectList.size());
+	objlist_clear(map_objects,  ObjectList.size());
 
 	/* Note that these pointers just point into a larger structure, so this is not a bad thing */
 	// map_polygons= NULL;
@@ -406,6 +426,72 @@ void initialize_map_for_new_level(
 	// map_endpoints= NULL;
 	// automap_lines= NULL;
 	// automap_polygons= NULL;
+<<<<<<< map.cpp
+		
+	return;
+}
+
+#ifdef OBSOLETE
+void *get_map_structure_chunk(
+	long chunk_size)
+{
+	byte *buffer;
+
+	assert(map_structure_memory.memory);
+	assert(chunk_size>=0 && chunk_size+map_structure_memory.index<=map_structure_memory.size);
+	buffer= map_structure_memory.memory+map_structure_memory.index;
+//dprintf("base: %x mem: %x index: %d chunk: %d;g", map_structure_memory.memory, buffer, map_structure_memory.index, chunk_size);
+	map_structure_memory.index+= chunk_size;
+
+	return buffer;
+}
+
+void reallocate_map_structure_memory(
+	long size)
+{
+	bool success= false;
+	bool reallocate= false;
+
+	if(map_structure_memory.memory)
+	{
+		if(map_structure_memory.size<size)
+		{
+			/* Must reallocate.. */
+			delete []map_structure_memory.memory;
+			reallocate= true;		
+		} else {
+			/* Already allocated, new size is less than old.. */
+			success= true;
+		}
+	} else {
+		reallocate= true;
+	}
+	
+	if(reallocate)
+	{
+		/* Must allocate initially.. */
+		map_structure_memory.memory= new byte[size];
+		map_structure_memory.size= size;
+		if(map_structure_memory.memory) success= true;
+	}
+
+	/* This tells us where to take the next block from. */
+	map_structure_memory.index= 0;
+
+	/* If we failed, warn the user.. */
+	if(!success)
+	{
+		alert_user(fatalError, strERRORS, outOfMemory, size);
+	} else {
+		/* Clear the array to a known state */
+		assert(map_structure_memory.size>=size);
+		memset(map_structure_memory.memory, 0, size);
+	}
+//	dprintf("Conglomerate Map: 0x%x bytes at 0x%x;g", size, map_structure_memory.memory);
+	
+	return;
+=======
+>>>>>>> 1.28
 }
 
 bool collection_in_environment(
@@ -478,7 +564,7 @@ void reconnect_map_object_list(
 	}
 	
 	/* connect objects to their polygons */
-	for (object=objects,i=0;i<MAXIMUM_OBJECTS_PER_MAP;++i,++object)
+	for (object=map_objects,i=0;i<MAXIMUM_OBJECTS_PER_MAP;++i,++object)
 	{
 		if (SLOT_IS_USED(object))
 		{
@@ -506,7 +592,8 @@ bool valid_point3d(
 	{
 		struct polygon_data *polygon= get_polygon_data(polygon_index);
 		
-		if (p->z>polygon->floor_height&&p->z<polygon->ceiling_height)
+		// IR change: preparation for B&B
+		if (p->z > polygon->floor_below(p) && p->z < polygon->ceiling_above(p))
 		{
 			valid= true;
 		}
@@ -523,7 +610,8 @@ short new_map_object(
 	world_point3d p= location->p;
 	short object_index;
 	
-	p.z= ((location->flags&_map_object_hanging_from_ceiling) ? polygon->ceiling_height : polygon->floor_height) + p.z;
+	// IR change: tweaked to work with new accessors.  Gets rewritten/obsoleted for B&B.
+	p.z= ((location->flags&_map_object_hanging_from_ceiling) ? polygon->highest_ceiling() : polygon->lowest_floor()) + p.z;
 	
 	object_index= new_map_object3d(&p, location->polygon_index, shape, location->yaw);
 	if (object_index!=NONE)
@@ -547,7 +635,8 @@ short new_map_object2d(
 	struct polygon_data *polygon;
 
 	polygon= get_polygon_data(polygon_index);
-	location3d.x= location->x, location3d.y= location->y, location3d.z= polygon->floor_height;
+	// IR change: tweaked to work with new accessors.  Gets rewritten/obsoleted for B&B.
+	location3d.x= location->x, location3d.y= location->y, location3d.z= polygon->lowest_floor();
 	
 	return new_map_object3d(&location3d, polygon_index, shape, facing);
 }
@@ -686,6 +775,8 @@ bool translate_map_object(
 				object->polygon, object->location.x, object->location.y, new_polygon_index, new_location->x,
 				new_location->y, line_index));
 #endif
+			
+					
 			if (new_polygon_index==NONE)
 			{
 				*(world_point2d *)new_location= get_polygon_data(old_polygon_index)->center;
@@ -696,6 +787,7 @@ bool translate_map_object(
 		}
 		while (line_index!=NONE);
 	}
+					
 	
 	/* if we changed polygons, update the old and new polygon’s linked lists of objects */
 	if (old_polygon_index!=new_polygon_index)
@@ -969,6 +1061,15 @@ void animate_object(
 	if (object->parasitic_object!=NONE) animate_object(object->parasitic_object);
 }
 
+// IR addition: (function) OOzing
+world_distance object_data::get_real_height() const {
+// this is called to find out how tall a object is if we allready know that it has a height.
+// FIXME! should return real height of monster, scenery, etc.
+	return 0;
+}
+
+// IR removed:  replaced by method.
+/*
 void calculate_line_midpoint(
 	short line_index,
 	world_point3d *midpoint)
@@ -981,6 +1082,77 @@ void calculate_line_midpoint(
 	midpoint->y= (e0->y+e1->y)>>1;
 	midpoint->z= (line->lowest_adjacent_ceiling+line->highest_adjacent_floor)>>1;
 }
+*/
+
+// IR addition: (all line_data methods) OOzing
+world_distance endpoint_data::floor_below(world_distance height)
+{
+	return highest_adjacent_floor_height;
+}
+
+world_distance endpoint_data::ceiling_above(world_distance height)
+{
+	return lowest_adjacent_ceiling_height;
+}
+
+// IR addition: (all line_data methods) OOzing
+world_distance line_data::floor_below(world_distance height)
+{
+	return highest_adjacent_floor;
+}
+
+world_distance line_data::ceiling_above(world_distance height)
+{
+	return lowest_adjacent_ceiling;
+}
+
+void line_data::calculate_midpoint(world_point3d *midpoint) const
+{
+	world_point2d &e0= endpoint_0()->vertex;
+	world_point2d &e1= endpoint_1()->vertex;
+	
+	midpoint->x= (e0.x + e1.x)/2;
+	midpoint->y= (e0.y + e1.y)/2;
+	midpoint->z= (lowest_adjacent_ceiling + highest_adjacent_floor)/2;
+}
+
+void line_data::recalculate_heights()
+{
+	struct polygon_data *poly1= get_clockwise_polygon(), *poly2= get_counterclockwise_polygon();
+	
+	if (poly1 && poly2) {
+		highest_adjacent_floor  = MAX(poly1->lowest_floor(), poly2->lowest_floor());
+		lowest_adjacent_ceiling = MIN(poly1->highest_ceiling(), poly2->highest_ceiling());
+	} else if (poly1) {
+		highest_adjacent_floor  = poly1->lowest_floor();
+		lowest_adjacent_ceiling = poly1->highest_ceiling();
+	} else if (poly2) {
+		highest_adjacent_floor  = poly2->lowest_floor();
+		lowest_adjacent_ceiling = poly2->highest_ceiling();
+	} else {
+		highest_adjacent_floor = lowest_adjacent_ceiling= 0;
+	}
+
+	/* only worry about transparency and solidity if there’s a polygon on the other side */
+	if (i_am(kVariableElevation))
+	{
+		set_flag(kTransparent, highest_adjacent_floor <  lowest_adjacent_ceiling);
+		set_flag(kSolid,       highest_adjacent_floor >= lowest_adjacent_ceiling);
+	}
+}
+
+
+// IR addition: in preparation for inserts
+world_distance polygon_data::floor_below(world_distance height)
+{
+	return floor_surface.height;
+}
+
+world_distance polygon_data::ceiling_above(world_distance height)
+{
+	return ceiling_surface.height;
+}
+
 
 bool point_in_polygon(
 	short polygon_index,
@@ -993,9 +1165,9 @@ bool point_in_polygon(
 	for (i=0;i<polygon->vertex_count;++i)
 	{
 		struct line_data *line= get_line_data(polygon->line_indexes[i]);
-		bool clockwise= line->endpoint_indexes[0]==polygon->endpoint_indexes[i];
-		world_point2d *e0= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
-		world_point2d *e1= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
+		bool clockwise= line->endpoint_0().index()==polygon->endpoint_indexes[i];
+		world_point2d *e0= &line->endpoint_0()->vertex;
+		world_point2d *e1= &line->endpoint_1()->vertex;
 		int32 cross_product= (p->x-e0->x)*(e1->y-e0->y) - (p->y-e0->y)*(e1->x-e0->x);
 		
 		if ((clockwise && cross_product>0) || (!clockwise && cross_product<0))
@@ -1006,6 +1178,48 @@ bool point_in_polygon(
 	}
 	
 	return point_inside;
+}
+
+void polygon_data::create_side(line_reference against_line) {
+	int edgeIndex;
+	
+	for (edgeIndex=0 ; edgeIndex<vertex_count ; edgeIndex++)
+		if (against_line.index() == line_indexes[edgeIndex]) break;
+	
+	if (edgeIndex>=vertex_count)
+		throw line_not_in_poly_exception();
+	
+	if (side_indexes[edgeIndex] != NONE) return; // it allready has a side!
+	
+	side_data newSideRec;
+	
+	newSideRec.type = _empty_side;
+	newSideRec.transparent_texture.texture = NONE;
+	newSideRec.flags = 0;
+	newSideRec.polygon_index = MY_INDEX;
+	newSideRec.line_index = against_line.index();
+	newSideRec.ambient_delta = 0;
+	
+	short newSide = SideList.size();
+	
+	if (against_line->counterclockwise_polygon_owner == MY_INDEX)
+	{
+		against_line->counterclockwise_polygon_side_index = newSide;
+	}
+	else if (against_line->clockwise_polygon_owner == MY_INDEX)
+	{
+		against_line->clockwise_polygon_side_index = newSide;
+	}
+	
+	side_indexes[edgeIndex] = newSide;
+	
+	SideList.push_back(newSideRec);
+	dynamic_world->side_count++;
+
+	recalculate_redundant_side_data(newSide, against_line.index());
+//	yes, the following is inefficient if we have many new sides, but this is a load-time op.
+	against_line->endpoint_0()->recalculate_redundant_data();
+	against_line->endpoint_1()->recalculate_redundant_data();
 }
 
 short clockwise_endpoint_in_line(
@@ -1035,7 +1249,8 @@ short clockwise_endpoint_in_line(
 			break;
 	}
 
-	return line->endpoint_indexes[index];
+	// IR change: OOzing	
+	return line->endpoint(index).index();
 }
 
 short world_point_to_polygon_index(
@@ -1115,24 +1330,25 @@ bool line_is_landscaped(
 		
 		switch (side->type)
 		{
+			// IR change: (all cases) nested structure tweak.  Gets rewritten/obsoleted for B&B.
 			case _full_side:
-				landscaped= side->primary_transfer_mode==_xfer_landscape;
+				landscaped= side->primary_texture.transfer_mode==_xfer_landscape;
 				break;
 			case _split_side: /* render _low_side first */
-				if (z<line->highest_adjacent_floor)
+				if (z<line->highest_floor())
 				{
-					landscaped= side->secondary_transfer_mode==_xfer_landscape;
+					landscaped= side->secondary_texture.transfer_mode==_xfer_landscape;
 					break;
 				}
 			case _high_side:
-				landscaped= z>line->lowest_adjacent_ceiling ?
-					side->primary_transfer_mode==_xfer_landscape :
-					side->transparent_transfer_mode==_xfer_landscape;
+				landscaped= z>line->lowest_ceiling() ?
+					side->primary_texture.transfer_mode==_xfer_landscape :
+					side->transparent_texture.transfer_mode==_xfer_landscape;
 				break;
 			case _low_side:
-				landscaped= z<line->highest_adjacent_floor ?
-					side->primary_transfer_mode==_xfer_landscape :
-					side->transparent_transfer_mode==_xfer_landscape;
+				landscaped= z<line->highest_floor() ?
+					side->primary_texture.transfer_mode==_xfer_landscape :
+					side->transparent_texture.transfer_mode==_xfer_landscape;
 				break;
 			
 			default:
@@ -1172,7 +1388,8 @@ _fixed get_object_light_intensity(
 	struct object_data *object= get_object_data(object_index);
 	struct polygon_data *polygon= get_polygon_data(object->polygon);
 
-	return get_light_intensity(polygon->floor_lightsource_index);
+	// IR change: nested structure tweak
+	return get_light_intensity(polygon->floor_surface.lightsource_index);
 }
 
 /* returns the line_index of the line we intersected to leave this polygon, or NONE if destination
@@ -1182,6 +1399,7 @@ short find_line_crossed_leaving_polygon(
 	world_point2d *p0, /* origin (not necessairly in polygon_index) */
 	world_point2d *p1) /* destination (not necessairly in polygon_index) */
 {
+	
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 	short intersected_line_index= NONE;
 	short i;
@@ -1190,7 +1408,7 @@ short find_line_crossed_leaving_polygon(
 	{
 		/* e1 is clockwise from e0 */
 		world_point2d *e0= &get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-		world_point2d *e1= &get_endpoint_data(polygon->endpoint_indexes[i==polygon->vertex_count-1?0:i+1])->vertex;
+		world_point2d *e1= &get_endpoint_data(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)])->vertex;
 		
 		/* if e0p1 cross e0e1 is negative, p1 is on the outside of edge e0e1 (a result of zero
 			means p1 is on the line e0e1) */
@@ -1214,13 +1432,14 @@ short find_line_crossed_leaving_polygon(
 
 /* calculate the 3d intersection of the line segment p0p1 with the line e0e1 */
 _fixed find_line_intersection(
-	world_point2d *e0,
-	world_point2d *e1,
-	world_point3d *p0,
-	world_point3d *p1,
+// IR change: made most params cost as side effect of OOzing:
+	const world_point2d *e0,
+	const world_point2d *e1,
+	const world_point3d *p0,
+	const world_point3d *p1,
 	world_point3d *intersection)
 {
-	world_distance dx, dy, dz, line_dx, line_dy;
+	int32 dx, dy, dz, line_dx, line_dy; // IR change: these should be longs.
 	int32 numerator, denominator;
 	_fixed t;
 	
@@ -1250,6 +1469,165 @@ _fixed find_line_intersection(
 	intersection->z= p0->z + FIXED_INTEGERAL_PART(t*dz);
 	
 	return t;
+}
+
+/* calculate the 3d intersection of the line segment p0p1 with the line e0e1 */
+_fixed find_line_intersection(
+// IR change: made most params cost as side effect of OOzing:
+	const world_point2d *e0,
+	const world_point2d *e1,
+	const world_point2d *p0,
+	const world_point2d *p1,
+	world_point2d *intersection)
+{
+	int32 dx, dy, line_dx, line_dy; // IR change: these should be longs.
+	int32 numerator, denominator;
+	_fixed t;
+	
+	/* calculate line deltas */
+	dx= p1->x-p0->x, dy= p1->y-p0->y;
+	line_dx= e1->x-e0->x, line_dy= e1->y-e0->y;
+	
+	/* calculate the numerator and denominator to compute t; our basic strategy here is to
+		shift the numerator up by eight bits and the denominator down by eight bits, yeilding
+		a fixed number in [0,FIXED_ONE] for t.  this won’t work if the numerator is greater
+		than or equal to 2^24, or the numerator is less than 2^8.  the first case can’t be
+		fixed in any decent way and shouldn’t happen if we have small deltas.  the second case
+		is approximated with a denominator of 1 or -1 (depending on the sign of the old
+		denominator, although notice here that numbers in [1,2^8) will get downshifted to
+		zero and then set to one, while numbers in (-2^8,-1] will get downshifted to -1 and
+		left there) */
+	numerator= line_dx*(e0->y-p0->y) + line_dy*(p0->x-e0->x);
+	denominator= line_dx*dy - line_dy*dx;
+	while (numerator>=(1<<24)||numerator<=((-1)<<24)) numerator>>= 1, denominator>>= 1;
+	assert(numerator<(1<<24));
+	numerator<<= 8;
+	if (!(denominator>>= 8)) denominator= 1;
+	t= numerator/denominator;
+	
+	if (intersection) {
+		intersection->x= p0->x + FIXED_INTEGERAL_PART(t*dx);
+		intersection->y= p0->y + FIXED_INTEGERAL_PART(t*dy);
+	}
+	
+	return t;
+}
+
+float find_float_line_intersection(
+	const world_point2d *e0,
+	const world_point2d *e1,
+	const world_point2d *p0,
+	const world_point2d *p1,
+	world_point2d *intersection)
+{
+	float dx, dy, line_dx, line_dy; // IR change: these should be longs.
+	float numerator, denominator;
+	float t;
+	
+	/* calculate line deltas */
+	dx= p1->x-p0->x, dy= p1->y-p0->y;
+	line_dx= e1->x-e0->x, line_dy= e1->y-e0->y;
+	
+	numerator= line_dx*(e0->y-p0->y) + line_dy*(p0->x-e0->x);
+	denominator= line_dx*dy - line_dy*dx;
+	if (fabs(denominator) == 0.0) return 0;
+	t= numerator/denominator;
+	
+	if (intersection) {
+		intersection->x= p0->x + (int)(t*dx);
+		intersection->y= p0->y + (int)(t*dy);
+	}
+	
+	return t;
+}
+
+// IR addition: used by NewVis.
+float find_long_line_intersection(
+	const long_point2d *e0,
+	const long_point2d *e1,
+	const long_point2d *p0,
+	const long_point2d *p1,
+	long_point2d *intersection)
+{
+	float dx, dy, line_dx, line_dy;
+	int32 numerator, denominator;
+	float t;
+	
+	dx= p1->x-p0->x, dy= p1->y-p0->y;
+	line_dx= e1->x-e0->x, line_dy= e1->y-e0->y;
+	
+	numerator= line_dx*(e0->y-p0->y) - line_dy*(e0->x-p0->x);
+	denominator= line_dx*dy - line_dy*dx;
+	if (fabs(denominator) == 0.0) return 0;
+	
+	t= (float)numerator/(float)denominator;
+	
+	if (intersection) {
+		intersection->x= p0->x + (int)(t*dx);
+		intersection->y= p0->y + (int)(t*dy);
+	}
+	
+	return t;
+}
+
+// IR addition: used by NewVis.
+float find_line_vector_intersection(
+	const long_vector2d *e0,
+	const long_vector2d *e1,
+	const long_vector2d *vector,
+	long_vector2d *intersection)
+{
+	float dx, dy, line_dx, line_dy;
+	float numerator, denominator;
+	float t;
+	
+	dx= vector->i, dy= vector->j;
+	line_dx= e1->i-e0->i, line_dy= e1->j-e0->j;
+	
+	numerator= line_dx*(e0->j) - line_dy*(e0->i);
+	denominator= line_dx*dy - line_dy*dx;
+	
+	t= (float)numerator/(float)denominator;
+	
+	intersection->i= t*dx;
+	intersection->j= t*dy;
+	
+	return t;
+}
+
+bool find_line_circle_intersection(
+	const world_point2d *center,
+	world_distance radius,
+	const world_point2d *p0,
+	const world_point2d *p1,
+	world_point2d *intersection,
+	float *outt)
+{
+	float x0, y0, dx, dy, numerator, denominator, radicand, t;
+	dx= p1->x-p0->x; dy= p1->y-p0->y;
+	
+	x0= p0->x - center->x; y0= p0->y - center->y;
+	
+	numerator = dx*x0+dy*y0;
+	radicand = numerator*numerator-(dx*dx+dy*dy)*(x0*x0+y0*y0-radius*(float)radius);
+	if (radicand < 0) return false; // didn't hit.
+	numerator += sqrt(radicand);
+	
+	
+	denominator = -(dx*dx+dy*dy);
+	
+	if (fabs(denominator) == 0.0) return false;
+	
+	t = numerator/denominator;
+	
+	if (intersection) {
+		intersection->x = p0->x+(int)(dx*t);
+		intersection->y = p0->y+(int)(dy*t);
+	}
+	
+	if (outt) *outt = t;
+	
+	return true;
 }
 
 /* closest_point may be the same as p; if we’re within 1 of our source point in either
@@ -1295,8 +1673,9 @@ _fixed closest_point_on_line(
 					break;
 			}
 	}
-	*closest_point= calculated_closest_point;
-
+	if (closest_point)
+		*closest_point= calculated_closest_point;
+	
 	return t;
 }
 
@@ -1371,10 +1750,15 @@ enum /* keep out states */
 	_point_pass /* checking against all points (and hit as many as we can) */
 };
 
+
+#if OBSOLETE
 /* returns height at clipped p1 */
+// IR note: this function gets heavily modifed for B&B, most of the changes inside are simply
+// to work with the other modifications.
 bool keep_line_segment_out_of_walls(
 	short polygon_index, /* where we started */
-	world_point3d *p0,
+	// IR change: made const for correctness.
+	const world_point3d *p0,
 	world_point3d *p1,
 	world_distance maximum_delta_height, /* the maximum positive change in height we can tolerate */
 	world_distance height, /* the height of the object being moved */
@@ -1396,14 +1780,18 @@ bool keep_line_segment_out_of_walls(
 		polygon->point_exclusion_zone_count = 0;
 		return clipped;
 	}
-
+	
+	if (polygon_index == 205 && p1->x > 3840) Debugger();
+	
 //	if (polygon_index==23) dprintf("#%d lines, #%d endpoints at %p", polygon->line_exclusion_zone_count, polygon->point_exclusion_zone_count, indexes);
 
 	state= _first_line_pass;
 	line_collision_bitmap= 0;
 	*supporting_polygon_index= polygon_index;
-	*adjusted_floor_height= polygon->floor_height;
-	*adjusted_ceiling_height= polygon->ceiling_height;
+	// IR change: OOzing 
+	polygon->get_space_around(*p0, adjusted_floor_height, adjusted_ceiling_height);
+//	*adjusted_floor_height= polygon->floor_surface.height;
+//	*adjusted_ceiling_height= polygon->ceiling_surface.height;
 	do
 	{
 		for (i=0;i<polygon->line_exclusion_zone_count&&state!=_aborted;++i)
@@ -1430,22 +1818,29 @@ bool keep_line_segment_out_of_walls(
 				{
 					short adjacent_polygon_index= signed_line_index<0 ? line->clockwise_polygon_owner : line->counterclockwise_polygon_owner;
 					struct polygon_data *adjacent_polygon= adjacent_polygon_index==NONE ? NULL : get_polygon_data(adjacent_polygon_index);
-					world_distance lowest_ceiling;
-					world_distance highest_floor;
+					// IR change: changes below are temporary fix for other OOzing/B&B preparation 
+					world_distance lowest_ceiling, highest_floor;
+					// IR addition: so we don't have to call the accessors a bunch
+					world_distance adjacent_ceiling, adjacent_floor;
 
 					if (adjacent_polygon) {
-						lowest_ceiling= adjacent_polygon->ceiling_height<polygon->ceiling_height ? adjacent_polygon->ceiling_height : polygon->ceiling_height;
-						highest_floor= adjacent_polygon->floor_height>polygon->floor_height ? adjacent_polygon->floor_height : polygon->floor_height;
+						// IR addition: so we don't have to call the accessors a bunch
+						adjacent_polygon->get_space_around(*p1, &adjacent_floor, &adjacent_ceiling);
+						// IR change: it seemed more logical to pull this info out of the line being crossed.
+						line->get_space_around(*p1, &highest_floor, &lowest_ceiling);
 					} else {
+						// IR addition: so we don't have to call the accessors a bunch
+						adjacent_ceiling = adjacent_floor = 0;
 						lowest_ceiling = highest_floor = 0;
 					}
 
 					/* if a) this line is solid, b) the new polygon is farther than maximum_delta height
 						above our feet, or c) the new polygon is lower than the top of our head then
 						we can’t move into the new polygon */
-					if (LINE_IS_SOLID(line) || adjacent_polygon == NULL ||
-						adjacent_polygon->floor_height-p1->z>maximum_delta_height ||
-						adjacent_polygon->ceiling_height-p1->z<height ||
+					if (line->is_solid() || adjacent_polygon == NULL ||
+						// IR change: (2 lines) using new locals
+						adjacent_floor - p1->z > maximum_delta_height ||
+						adjacent_ceiling - p1->z < height ||
 						lowest_ceiling-highest_floor<height)
 					{
 					//	if (unsigned_line_index==104) dprintf("inside solid line #%d (%p) in polygon #%d", unsigned_line_index, line, polygon_index);
@@ -1484,12 +1879,14 @@ bool keep_line_segment_out_of_walls(
 					}
 					else
 					{
-						if (adjacent_polygon->floor_height>*adjusted_floor_height) {
-							*adjusted_floor_height= adjacent_polygon->floor_height;
+						// IR change: (2 lines) using new locals
+						if (adjacent_floor > *adjusted_floor_height) {
+							*adjusted_floor_height = adjacent_floor;
 							*supporting_polygon_index= adjacent_polygon_index;
 						}
-						if (adjacent_polygon->ceiling_height>*adjusted_ceiling_height) {
-							*adjusted_ceiling_height= adjacent_polygon->ceiling_height;
+						// IR change: (2 lines) using new locals
+						if (adjacent_ceiling > *adjusted_ceiling_height) {
+							*adjusted_ceiling_height = adjacent_ceiling;
 						}
 					}
 				}
@@ -1521,6 +1918,7 @@ bool keep_line_segment_out_of_walls(
 			struct endpoint_data *endpoint= get_endpoint_data(endpoint_index);
 			world_distance dx= endpoint->vertex.x-p1->x;
 			world_distance dy= endpoint->vertex.y-p1->y;
+			world_distance center_height = p1->z + height/2;
 			int32 distance_squared= dx*dx+dy*dy;
 			
 //			switch (indexes[polygon->line_exclusion_zone_count+i])
@@ -1532,17 +1930,28 @@ bool keep_line_segment_out_of_walls(
 			
 			if (distance_squared<MINIMUM_SEPARATION_FROM_WALL*MINIMUM_SEPARATION_FROM_WALL)
 			{
-				if (endpoint->highest_adjacent_floor_height-p1->z>maximum_delta_height ||
-					endpoint->lowest_adjacent_ceiling_height-p1->z<height ||
+				if (endpoint->floor_below(center_height) - p1->z > maximum_delta_height ||
+					endpoint->ceiling_above(center_height) - p1->z < height ||
+					endpoint->space_around(center_height) < height ||
 					ENDPOINT_IS_SOLID(endpoint))
 				{
 					closest_point_on_circle(&endpoint->vertex, MINIMUM_SEPARATION_FROM_WALL, (world_point2d*)p1, (world_point2d*)p1);
+					
+					long_point2d fake0(e0->vertex), fake1(e0->vertex);
+					push_out_line(fake0, fake1, radius, line->length);
+					closest_point_on_line(&zone->e0, &zone->e1, &p1.vertex, &p1.vertex);
+					
 					clipped= true;
 				}
 				else
 				{
-					if (endpoint->highest_adjacent_floor_height>*adjusted_floor_height) *adjusted_floor_height= endpoint->highest_adjacent_floor_height, *supporting_polygon_index= endpoint->supporting_polygon_index;
-					if (endpoint->lowest_adjacent_ceiling_height>*adjusted_ceiling_height) *adjusted_ceiling_height= endpoint->lowest_adjacent_ceiling_height;
+					if (endpoint->floor_below(center_height) > *adjusted_floor_height)
+					{
+						*adjusted_floor_height= endpoint->floor_below(center_height);
+						*supporting_polygon_index= endpoint->supporting_polygon_index;
+					}
+					if (endpoint->ceiling_above(center_height) > *adjusted_ceiling_height)
+						*adjusted_ceiling_height= endpoint->ceiling_above(center_height);
 				}
 			}
 		}
@@ -1550,6 +1959,509 @@ bool keep_line_segment_out_of_walls(
 
 	if (state==_aborted) p1->x= p0->x, p1->y= p0->y;
 	return clipped;
+}
+#endif
+
+#define NUMBER_OF_BLOCKING_WALLS 3
+#define NUMBER_OF_BLOCKING_ENDPOINTS 3
+#define ENDPOINT_ROUNDOFF_PROTECTION .01 // when checking if we hit a line or an endpoint first, add this to the endpoint's distance.
+// this is because we would really much rather hit line than endpoint as endpoints can produce weird bouncing effects when we hit
+// them before leaving the line they're attached to.
+#define MULTIHIT_DISTANCE_ROUNDOFF_PROTECTION 5 // when concidering multiple surfaces, inset them all by this much before doing anything.
+#define SIMULHIT_ROUNDOFF_PROTECTION .02 // distances within twice this much will be concidered simultaneous and up for normal vector comparison.
+
+struct _blocking_wall{
+	short line_index, ep0, ep1;
+	world_point2d e0, e1;
+} blocking_walls[NUMBER_OF_BLOCKING_WALLS];
+
+struct _blocking_endpoint {
+	short endpoint_index;
+	world_point2d e0;
+} blocking_endpoints[NUMBER_OF_BLOCKING_ENDPOINTS];
+
+int blocking_walls_found, blocking_endpoints_found;
+
+bool search_for_collisions(short polygon_index, const world_point3d *p0, world_point3d *p1, 
+	world_distance radius, world_distance maximum_delta_height, world_distance height, 
+	short *supporting_polygon_index);
+
+
+bool keep_line_segment_out_of_walls( // returns true if we changed the coords
+	short polygon_index, // polygon it started in
+	const world_point3d *p0, // location of the object last time it had eough mass to measure
+	world_point3d *p1, // assumed location of the object now
+	world_distance radius, // size of the object
+	world_distance maximum_delta_height, // maximum positive change in height we can tolerate
+	world_distance height, // height of the object being moved
+	short *supporting_polygon_index) // on return, the polygon index of the polygon holding the object up.
+{
+	blocking_walls_found = 0;
+	blocking_endpoints_found = 0;
+	
+	world_point3d adjusted_p1 = *p1;
+	world_point2d *e0; // used in several places.
+	world_distance dx, dy;
+	long nx, ny; // normal vector of the surface we hit (used for choosing most blocking when we hit multiple)
+	long newnx, newny; float nlength;
+	*supporting_polygon_index = polygon_index;
+	
+	if (search_for_collisions(polygon_index, p0, &adjusted_p1, radius, maximum_delta_height, height,
+		supporting_polygon_index))
+	{
+		// we hit something, call it again to make sure to catch any secondary collision that might have
+		// happened in a polygon we covered before the first collision.
+		search_for_collisions(polygon_index, p0, &adjusted_p1, radius, maximum_delta_height, height,
+			supporting_polygon_index);
+
+		dprintf("(%d,%d)", p1->x, p1->y);	
+
+		float closest_line_distance = 1000; // decent distance away. (1000 times as far as we just moved)
+		int closest_line_index = -1;
+		float closest_point_distance = 1000; // decent distance away. (1000 times as far as we just moved)
+		int closest_point_index = -1;
+		int i;
+		float thisDist;
+		
+		dx = nx = p1->x - p0->x;
+		dy = ny = p1->y - p0->y;
+		
+		// normalize the normal
+		nlength = 1/sqrt(nx*nx + ny*ny);
+		nx *= nlength;
+		ny *= nlength;
+		
+		dprintf("=(");
+		for (i=0 ; i<blocking_walls_found ; i++) {
+			thisDist = find_float_line_intersection(&blocking_walls[i].e0, &blocking_walls[i].e1, p0, p1, NULL);
+			dprintf("l%d:%5.3f;", blocking_walls[i].line_index, thisDist);
+			if (thisDist+SIMULHIT_ROUNDOFF_PROTECTION < closest_line_distance ) {
+				closest_line_distance = thisDist;
+				closest_line_index = i;
+			} else if (thisDist-SIMULHIT_ROUNDOFF_PROTECTION < closest_line_distance) {
+				// calculate the normal of the surface we just hit
+				newnx = -blocking_walls[i].e0.y - blocking_walls[i].e1.y;
+				newny = -blocking_walls[i].e1.x - blocking_walls[i].e0.x;
+				
+				// normalize the normal
+				nlength = 1/sqrt(newnx*newnx + newny*newny);
+				newnx *= nlength;
+				newny *= nlength;
+				
+				// and if its more directly impeeding the path, replace the closest line with it.
+				if (newnx*dx + newny*dy < nx*dx+dy*dy) { // normalizing makes this nice :).
+					dprintf("<-flatter ;");
+					nx = newnx; ny = newny;
+					closest_line_distance = thisDist;
+					closest_line_index = i;
+				}
+			}
+		}
+		
+		for (i=0 ; i<blocking_endpoints_found ; i++) {
+			if (!find_line_circle_intersection(&blocking_endpoints[i].e0, radius, p0, p1, &adjusted_p1, &thisDist))
+				continue; // if the if fails this is a secondary hit.
+			dprintf("p%d:%5.3f;", blocking_endpoints[i].endpoint_index, thisDist);
+			if (thisDist+SIMULHIT_ROUNDOFF_PROTECTION < closest_point_distance) {
+				closest_point_distance = thisDist;
+				closest_point_index = i;
+			} else if (thisDist-SIMULHIT_ROUNDOFF_PROTECTION < closest_line_distance) {
+				// calculate the normal of the surface we just hit
+				newnx = adjusted_p1.x-blocking_endpoints[i].e0.x;
+				newny = adjusted_p1.x-blocking_endpoints[i].e0.x;
+				
+				// normalize the normal
+				nlength = 1/sqrt(newnx*newnx + newny*newny);
+				newnx *= nlength;
+				newny *= nlength;
+				
+				// and if its more directly impeeding the path, replace the closest line with it.
+				if (newnx*dx + newny*dy < nx*dx+dy*dy) { // normalizing makes this nice :).
+					dprintf("<-flatter ;");
+					nx = newnx; ny = newny;
+					closest_point_distance = thisDist;
+					closest_point_index = i;
+				}
+			}
+		}
+		dprintf(")");
+		
+		if (closest_line_index == -1 && closest_point_index == -1) return false; // this is hopeless, we didn't hit anything.  Should really assert I guess.
+		
+		bool haveLine = false, haveCircle = false, haveMultiple = false;
+		
+		// now find which one we hit first, and push away from it.
+		adjusted_p1 = *p1;
+		if (closest_line_distance <= closest_point_distance + ENDPOINT_ROUNDOFF_PROTECTION) {
+			haveLine = true;
+			dprintf("=(l%d)", blocking_walls[closest_line_index].line_index);
+			closest_point_on_line(&blocking_walls[closest_line_index].e0, &blocking_walls[closest_line_index].e1, (world_point2d*)adjusted_p1, (world_point2d*)adjusted_p1);
+			closest_point_index = -1;
+		} else {
+			haveCircle = true;
+			dprintf("=(p%d)", blocking_endpoints[closest_point_index].endpoint_index);
+			closest_point_on_circle(&blocking_endpoints[closest_point_index].e0, radius, (world_point2d*)adjusted_p1, (world_point2d*)adjusted_p1);
+			closest_line_index = -1;
+		}
+		
+		// first, line->line interaction has priority over line->endpoint, so check for a extra line.
+		
+		int second_element;
+		
+		for (i=0 ; i<blocking_walls_found ; i++) {
+			if (i == closest_line_index) continue; // skip the line we allready hit (roundoff errors might make us hit it twice).
+			dprintf("?(l%d)", blocking_walls[i].line_index);
+			 e0 = &blocking_walls[i].e0;
+			if( (adjusted_p1.x-e0->x)*(long)(blocking_walls[i].e1.y - e0->y) - (adjusted_p1.y-e0->y)*(long)(blocking_walls[i].e1.x - e0->x) >= 0) {
+				dprintf("+(l%d)", blocking_walls[i].line_index);
+				if (haveCircle) {
+					// we should never hit the endpoint on a line before we hit the line
+					if(haveCircle
+					   && (   blocking_endpoints[closest_point_index].endpoint_index == blocking_walls[i].ep0
+					       || blocking_endpoints[closest_point_index].endpoint_index == blocking_walls[i].ep1)) continue;
+					
+					second_element = closest_point_index; // point must be secondary for line->endpoint combos.
+					closest_line_index = i;
+				} else {
+					second_element = i;
+				}
+				haveLine = haveMultiple = true;
+				break;
+			}
+		}
+		
+		//if we didn't find a extra line, check for an extra endpoint
+		
+		if (!haveMultiple) {
+			for (i=0 ; i<blocking_endpoints_found ; i++) {
+				if (i == closest_point_index) continue; // skip the line we allready hit (roundoff errors might make us hit it twice).
+				e0 = &blocking_endpoints[i].e0;
+				if (haveLine && blocking_endpoints[i].endpoint_index == blocking_walls[closest_line_index].ep0) continue;
+				if (haveLine && blocking_endpoints[i].endpoint_index == blocking_walls[closest_line_index].ep1) continue;
+				dx = adjusted_p1.x-e0->x;
+				dy = adjusted_p1.y-e0->y;
+				if ( dx*(long)dx + dy*(long)dy < radius*(long)radius) {
+					dprintf("+(p%d)", blocking_endpoints[i].endpoint_index);
+					second_element = i; // endpoint always secondary for mixed collisions.
+					haveCircle = haveMultiple = true;
+					break;
+				}
+			}
+		}
+		
+		// now calculate were we ended up
+		if (haveMultiple) {
+			dprintf("\n    ");
+			world_point2d *e1; // we allready have e0 from above.
+			if (haveLine && haveCircle) {
+				dprintf("=(l%d/p%d)", blocking_walls[closest_line_index].line_index, blocking_endpoints[second_element].endpoint_index);
+				// we need to find the intersection of the line closest_line_index and circle at closest_point_index.
+				world_point2d *ep;
+				e0 = &blocking_walls[closest_line_index].e0;
+				e1 = &blocking_walls[closest_line_index].e1;
+				ep = &blocking_endpoints[second_element].e0;
+				world_distance dx = e0->x - e1->x, dy = e0->y - e1->y;
+				
+				closest_point_on_line(e0, e1, p1, &adjusted_p1); // push the point out to the line.
+				
+				// only intersect with the point if after doing this we're inside the point.
+				if ((adjusted_p1.x-ep->x)*(long)(adjusted_p1.x-ep->x)+(adjusted_p1.y-ep->y)*(long)(adjusted_p1.y-ep->y) < radius*(long)radius) {
+				
+					// now we need to figure out which side of the endpoint to collide with.
+					// this is a cross product with a vector perpendciular to the line.  as always it's magnitude doesn't matter
+					// just the sign of the result.
+					if ((p0->x - ep->x)*(e0->x - e1->x) + (p0->y - ep->y)*(e0->y - e1->y) < 0) {
+						e0 = &blocking_walls[closest_line_index].e1;
+						e1 = &blocking_walls[closest_line_index].e0;
+					}
+					
+					if (!find_line_circle_intersection(ep, radius, e0, e1, p1))
+						closest_point_on_line(e0, e1, p1, p1); // fallback to just a simple line collision if the line-> fails
+				} else {
+					*p1 = adjusted_p1;
+				}
+			} else if (haveLine) {
+				dprintf("=(l%d/l%d)", blocking_walls[closest_line_index].line_index, blocking_walls[second_element].line_index);
+				// we need the acuracy of a float calculation becayse these could both be quite long.
+				find_float_line_intersection(&blocking_walls[closest_line_index].e0, &blocking_walls[closest_line_index].e1,
+				                             &blocking_walls[second_element].e0, &blocking_walls[second_element].e1,
+				                             p1);
+			} else if (haveCircle) {
+				dprintf("=(p%d/p%d)", blocking_endpoints[closest_point_index].endpoint_index, blocking_endpoints[second_element].endpoint_index);
+				e0 = &blocking_endpoints[closest_point_index].e0;
+				e1 = &blocking_endpoints[second_element].e0;
+				
+				dx = e1->x - e0->x;
+				dy = e1->y - e0->y;
+				assert (dx*dx+dy*dy < 4*radius*radius);
+				
+				// we may have to flip the endpoints because we need the first one to be on the left;
+				// note that p1 is BEHIND this line, so this is backwards.
+				if (dx*(p1->y-e0->y)-dy*(p1->x-e0->x) > 0) {
+					e0 = &blocking_endpoints[second_element].e0;
+					e1 = &blocking_endpoints[closest_point_index].e0;
+					dx = -dx; dy = -dy;
+				}
+				
+				if((dx*(long)dx+dy*(long)dy) < 4*radius*(long)radius) {
+					// if the two endpoints actually hit each other (will produce wacky results if they don't
+					// which might be caused by roundoff errors.
+					float t = sqrt((radius*(long)radius)/(float)(dx*dx+dy*dy) - .25);
+					p1->x = e0->x + dx/2 + (int)(dy * t);
+					p1->y = e0->y + dy/2 - (int)(dx * t);
+					// basically we calculate the middle of the line and move off to the correct side by a small ammount.
+				} else {
+					// produces an approximate result when roundoff errors cause sillyness.
+					closest_point_on_circle(&blocking_endpoints[0].e0, radius, p1, p1);
+					closest_point_on_circle(&blocking_endpoints[1].e0, radius, p1, p1);
+				}
+			} else {
+				assert(false);
+			}
+		} else {
+			*p1 = adjusted_p1;
+			if (haveLine) {
+				dprintf("=(hit line %d)", blocking_walls[closest_line_index].line_index);
+			} else if (haveCircle) {
+				dprintf("=(hit endpoint %d)", blocking_endpoints[closest_point_index].endpoint_index);
+			} else {
+				assert(false);
+			}
+		}
+		dprintf("=>(%d,%d)\n", p1->x, p1->y);	
+			
+/*		if (blocking_walls_found || blocking_endpoints_found) {
+			// we hit something, call it again to make sure to catch any secondary collision that might have
+			// happened in a polygon we covered before the first collision.
+			search_for_collisions(polygon_index, p0, &adjusted_p1, radius, maximum_delta_height, height,
+				supporting_polygon_index);
+		}
+			dprintf("(%d,%d)", p1->x, p1->y);
+		
+		int dx, dy;
+		
+		if (blocking_walls_found > 1) {
+			// we only concider the first two lines for now.
+			dprintf("=(hit lines %d and %d)", blocking_walls[0].line_index, blocking_walls[1].line_index);
+			long_point2d epa0(blocking_walls[0].e0), epa1(blocking_walls[0].e1);
+			long_point2d epb0(blocking_walls[1].e0), epb1(blocking_walls[1].e1);
+			long_point2d intersect;
+			
+			find_long_line_intersection(&epa0, &epa1, &epb0, &epb1, &intersect);
+			p1->x = intersect.x;
+			p1->y = intersect.y;
+		} else if (blocking_walls_found == 1) {
+			dprintf("=(hit line %d)", blocking_walls[0].line_index);
+			closest_point_on_line(&blocking_walls[0].e0, &blocking_walls[0].e1, p1, p1);
+		} else if (blocking_endpoints_found > 1) {
+			dprintf("=(hit endpoints %d and %d)", blocking_endpoints[0].endpoint_index, blocking_endpoints[1].endpoint_index);
+			// we only concider the first two endpoints for now.
+			dx = blocking_endpoints[1].e0.x - blocking_endpoints[0].e0.x;
+			dy = blocking_endpoints[1].e0.y - blocking_endpoints[0].e0.y;
+			// push the line out to the nearer intersection of the two circles.
+			float length = dx*dx+dy*dy;
+			if(length < 4*radius*radius) {
+				length = sqrt((radius*radius)/length - 1/4);
+				p1->x = blocking_endpoints[0].e0.x + dx/2 + (int)(dy * length);
+				p1->y = blocking_endpoints[0].e0.y + dy/2 - (int)(dx * length);
+			} else {
+				closest_point_on_circle(&blocking_endpoints[0].e0, radius, p1, p1);
+				closest_point_on_circle(&blocking_endpoints[1].e0, radius, p1, p1);
+			}
+		} else if (blocking_endpoints_found == 1) {
+			dprintf("=(hit endpoint %d)", blocking_endpoints[0].endpoint_index);
+			dx = p1->x-blocking_endpoints[0].e0.x;
+			dy = p1->y-blocking_endpoints[0].e0.y;
+			assert (dx*dx+dy*dy < radius*radius);
+			closest_point_on_circle(&blocking_endpoints[0].e0, radius, p1, p1);
+		}
+			dprintf("=>(%d,%d)\n", p1->x, p1->y);*/
+		
+		return true;
+	} else {
+		return false;
+	}
+}
+
+#define MAXIMUM_POLYS_UNDER_OBJECT 100
+// maximum polygons an object can move over in a single game frame or maximum degrees of seperation from an
+// object's home polygon and any polygon it occupies.  Both of these numbers should be completely reasonable for the foreseeable future.
+
+// this thing is now recursive and no longer uses those horrid exclusion zones!  Also handles conditions which used to cause jitter properly.
+
+bool search_for_collisions( // returns true if we changed the coords
+	short polygon_index, // polygon it started in
+	const world_point3d *p0, // location of the object last time it had eough mass to measure
+	world_point3d *p1, // assumed location of the object now
+	world_distance radius, // size of the object
+	world_distance maximum_delta_height, // maximum positive change in height we can tolerate
+	world_distance height, // height of the object being moved
+	short *supporting_polygon_index) // on return, the polygon index of the polygon holding the object up.
+{
+	short collision_search_polys[MAXIMUM_POLYS_UNDER_OBJECT];
+	int searched_collision_search_polys=0;
+	int discovered_collision_search_polys=1;
+	
+	collision_search_polys[0] = polygon_index;
+	
+	bool moved = false;
+	
+	while (discovered_collision_search_polys > searched_collision_search_polys) {
+		polygon_index = collision_search_polys[searched_collision_search_polys];
+		#ifdef DEBUG
+		for (int debugI=0 ; debugI<searched_collision_search_polys ; debugI++) {
+			assert(collision_search_polys[debugI] != polygon_index);
+		}
+		#endif
+		searched_collision_search_polys++;
+		
+		polygon_data *polygon= get_polygon_data(polygon_index);
+		world_distance support_floor = polygon_reference(*supporting_polygon_index)->floor_below(p0->z+height);
+		
+		endpoint_data *e0, *e1;
+		e1 = endpoint_reference(polygon->endpoint_indexes[0]); // load up the first endpoint
+		
+		short polys_to_search[8];
+		int polys_to_search_count;
+		
+		bool prevPointInQueuesion = false;
+		
+		for (int i=0 ; i<polygon->vertex_count ; i++) {
+			e0 = e1; // advance the endpoints
+			// first, check if we hit the endpoint.
+			
+			world_distance dx, dy;
+			dx = e0->vertex.x - p1->x; dy = e0->vertex.y - p1->y;
+			
+			bool overlapsPoint = dx*dx+dy*dy < radius*radius;
+			
+			e1 = endpoint_reference(polygon->endpoint_indexes[WRAP_HIGH(i, polygon->vertex_count-1)]);
+			
+			line_data *line = line_reference(polygon->line_indexes[i]);
+			
+			// first we clip against lines because clipping against endpoints first could cause weird endpoint shifting.
+			
+			world_distance floor;
+			world_distance ceiling;
+			
+			// check if the deination point is less than radius from the infinite line through the points.
+			if ( (dx*(e1->vertex.y - e0->vertex.y) - dy*(e1->vertex.x - e0->vertex.x) < line->length * radius) ) {
+				
+				// true if the deination point falls between the two endpoints.  doesn't matter on which side of the line it is.
+				bool inLine =    (e0->vertex.x-p1->x)*(long)(e1->vertex.x-e0->vertex.x)+(e0->vertex.y-p1->y)*(long)(e1->vertex.y-e0->vertex.y) < 0
+				              && (e1->vertex.x-p1->x)*(long)(e1->vertex.x-e0->vertex.x)+(e1->vertex.y-p1->y)*(long)(e1->vertex.y-e0->vertex.y) > 0;
+				// true if the desination point is inside either endpoint.
+				bool inPoint =    overlapsPoint
+				               || (e1->vertex.x-p1->x)*(long)(e1->vertex.x-p1->x) + (e1->vertex.y-p1->y)*(long)(e1->vertex.y-p1->y) < radius*(long)radius;
+				
+				// we hit the line!
+				floor = line->floor_below(p1->z + height);
+				ceiling = line->ceiling_above(p1->z + height);
+				
+				// we only want to HIT the line if we're actually hitting it proper, not hitting the endoint
+				// however we want to CROSS the line if weither hitting it OR it's endpoints
+				
+				if (   line->is_solid() // we don't go there ...
+					|| floor > p1->z+maximum_delta_height // or we can't get there ...
+					|| ceiling < p1->z+height // or we hit our head ...
+					|| (ceiling-floor) < height) // or we won't fit ...
+				{
+					if (inLine) {
+						// the line blocked our movement, so clip to the line and be done with it.
+						
+						world_point2d fake0(e0->vertex), fake1(e1->vertex);
+						push_out_line(&fake0, &fake1, radius, line->length);
+						
+						dx = p1->x-p0->x; dy = p1->y-p0->y;
+						
+//						if (    dx*(fake0.y-p0->y)-dy*(fake0.x-p0->x) < 0 // line passes to the right of the left end
+//						     && dx*(fake1.y-p0->y)-dy*(fake1.x-p0->x) > 0) // and to the left of the right end
+						if ((p1->x-fake0.x)*(fake1.y-fake0.y) - (p1->y-fake0.y)*(fake1.x-fake0.x) >= 0) // we are on the wrong side of the line.
+						{
+							bool here_already = false;
+							int this_line = polygon->line_indexes[i];
+							for (int i=0 ; i<blocking_walls_found ; i++) {
+								if (blocking_walls[i].line_index == this_line) {
+									here_already = true;
+									break;
+								}
+							}
+							if (!here_already) {
+								if (blocking_walls_found < NUMBER_OF_BLOCKING_WALLS) {
+									blocking_walls[blocking_walls_found].line_index = this_line;
+									blocking_walls[blocking_walls_found].ep0 = line->endpoint_0().index();
+									blocking_walls[blocking_walls_found].ep1 = line->endpoint_1().index();
+									blocking_walls[blocking_walls_found].e0 = fake0;
+									blocking_walls[blocking_walls_found].e1 = fake1;
+									blocking_walls_found ++;
+									closest_point_on_line(&fake0, &fake1, p1, p1);
+									//return true;
+									moved = true;
+								}
+							}
+							
+						}
+					}
+				} else if (   (inLine || inPoint)
+				           && polygon->adjacent_polygon_indexes[i] != NONE) {
+					short opposite_poly = polygon->adjacent_polygon_indexes[i];
+					
+					// the line didn't block our movment, but theres still places to go and things to do so search
+					// the polygon on the other side of the line.
+					if (floor > support_floor) {
+						*supporting_polygon_index = opposite_poly;
+						support_floor = floor;
+					}
+					
+					
+					bool beenthere = false;
+					
+					for (int j=0 ; j<discovered_collision_search_polys ; j++)
+						if (collision_search_polys[j] == opposite_poly)
+							beenthere = true;
+					
+					if (!beenthere && discovered_collision_search_polys < MAXIMUM_POLYS_UNDER_OBJECT) {
+						collision_search_polys[discovered_collision_search_polys] = opposite_poly;
+						discovered_collision_search_polys++;
+					}
+				}
+				
+			}
+			
+			// exact same dance as above for the line, just testing point distance
+			floor = e0->floor_below(p1->z + height);
+			ceiling = e0->ceiling_above(p1->z + height);
+			if (   overlapsPoint
+			    && (   e0->is_solid()
+				    || floor > p1->z+maximum_delta_height
+				    || ceiling < p1->z+height
+				    || (ceiling - floor) < height))
+			{
+				int this_endpoint = polygon->endpoint_indexes[i];
+				if (this_endpoint == 37 || this_endpoint == 38) DebugStr("\p;cwp");
+				bool here_already = false;
+				for (int i=0 ; i<blocking_endpoints_found ; i++) {
+					if (blocking_endpoints[i].endpoint_index == this_endpoint) {
+						here_already = true;
+						break;
+					}
+				}
+				if (!here_already) {
+					if (blocking_endpoints_found < NUMBER_OF_BLOCKING_ENDPOINTS) {
+						blocking_endpoints[blocking_endpoints_found].endpoint_index = this_endpoint;
+						blocking_endpoints[blocking_endpoints_found].e0.x = e0->vertex.x;
+						blocking_endpoints[blocking_endpoints_found].e0.y = e0->vertex.y;
+						blocking_endpoints_found++;
+						closest_point_on_circle(&e0->vertex, radius, p1, p1);
+						//return true;
+						moved = true;
+					}
+				}
+			}
+		}
+	}
+	
+	return moved;
 }
 
 /* take the line e0e1 and destructively move it perpendicular to itself ("to the left" when looking
@@ -1696,7 +2608,7 @@ void recalculate_map_counts(
 	
 	// LP: fixed serious bug in the counting logic
 	
-	for (count=MAXIMUM_OBJECTS_PER_MAP,object=objects+MAXIMUM_OBJECTS_PER_MAP-1;
+	for (count=MAXIMUM_OBJECTS_PER_MAP,object=map_objects+MAXIMUM_OBJECTS_PER_MAP-1;
 			count>0&&(!SLOT_IS_USED(object));
 			--count,--object)
 		;
@@ -1727,58 +2639,66 @@ void recalculate_map_counts(
 	dynamic_world->light_count= count;
 }
 
-bool change_polygon_height(
-	short polygon_index,
+// IR change: OOzing
+//bool change_polygon_height(
+//	short polygon_index,
+bool polygon_data::change_height(
 	world_distance new_floor_height,
 	world_distance new_ceiling_height,
 	struct damage_definition *damage)
 {
-	bool legal_change;
+	// IR removed: tweaked code here for cleanliness
+//	bool legal_change;
 	
 	/* returns false if a monster prevented the given change from ocurring (and probably did damage
 		to him or maybe even caused him to pop) */
-	legal_change= legal_polygon_height_change(polygon_index, new_floor_height, new_ceiling_height, damage);
+	// IR change: tweaked for cleanliness while I was here.
+//	legal_change= legal_height_change(new_floor_height, new_ceiling_height, damage);
+	if (!legal_height_change(new_floor_height, new_ceiling_height, damage))
+		return false;
 
-	/* if this was a legal change, adjust all objects (handle monsters separately) */	
-	if (legal_change)
+	// IR change: tweaked comment to be correct in context
+	/* this was a legal change, so adjust all objects (handle monsters separately) */	
+
+	// IR change: following lines aren't changed, just shifted left a tab.
+	short object_index= first_object;
+
+	/* Change the objects heights... */		
+	while (object_index!=NONE)
 	{
-		struct polygon_data *polygon= get_polygon_data(polygon_index);
-		short object_index= polygon->first_object;
-
-		/* Change the objects heights... */		
-		while (object_index!=NONE)
-		{
-			struct object_data *object= get_object_data(object_index);
-			
-			if (OBJECT_IS_VISIBLE(object))
-			{
-				switch (GET_OBJECT_OWNER(object))
-				{
-					case _object_is_monster:
-						adjust_monster_for_polygon_height_change(object->permutation, polygon_index, new_floor_height, new_ceiling_height);
-						break;
-					
-					default:
-						if (object->location.z==polygon->floor_height) object->location.z= new_floor_height;
-						break;
-				}
-			}
-			
-			object_index= object->next_object;
-		}
-
-		/* slam the polygon heights, directly */
-		polygon->floor_height= new_floor_height;
-		polygon->ceiling_height= new_ceiling_height;
+		struct object_data *object= get_object_data(object_index);
 		
-		/* the highest_adjacent_floor, lowest_adjacent_ceiling and supporting_polygon_index fields
-			of all of this polygon’s endpoints and lines are potentially invalid now.  to assure
-			that they are correct, recalculate them using the appropriate redundant functions.
-			to do things quickly, slam them yourself.  only these three fields of are invalid,
-			nothing else is effected by the height change. */
+		if (OBJECT_IS_VISIBLE(object))
+		{
+			switch (GET_OBJECT_OWNER(object))
+			{
+				case _object_is_monster:
+					adjust_monster_for_polygon_height_change(object->permutation, MY_INDEX, new_floor_height, new_ceiling_height);
+					break;
+				
+				default:
+					if (object->location.z==lowest_floor()) object->location.z= new_floor_height;
+					break;
+			}
+		}
+		
+		object_index= object->next_object;
 	}
+
+	/* slam the polygon heights, directly */
+	// IR change: The polygon heights are set directly ignoring objects on the polygon from other
+	// cide, so this functionality was put in it's own method.
+	//floor_surface.heightt= new_floor_height;
+	//ceiling_surface.heightt= new_ceiling_height;
+	set_height(new_floor_height, new_ceiling_height);
 	
-	return legal_change;
+	/* the highest_adjacent_floor, lowest_adjacent_ceiling and supporting_polygon_index fields
+		of all of this polygon’s endpoints and lines are potentially invalid now.  to assure
+		that they are correct, recalculate them using the appropriate redundant functions.
+		to do things quickly, slam them yourself.  only these three fields of are invalid,
+		nothing else is effected by the height change. */
+	
+	return true;
 }
 
 /* we used to check to see that the point in question was within the player’s view
@@ -1863,7 +2783,8 @@ bool line_is_obstructed(
 		if (line_index!=NONE)
 		{
 			if (last_line && polygon_index==polygon_index2) break;
-			if (!LINE_IS_SOLID(get_line_data(line_index)))
+			// IR change: OOzing
+			if (!line_reference(line_index)->is_solid())
 			{
 				/* transparent line, find adjacent polygon */
 				polygon_index= find_adjacent_polygon(polygon_index, line_index);
@@ -1938,7 +2859,7 @@ void turn_object_to_shit( /* garbage that is, garbage */
 			/* find a garbage object to remove, and do so (we’re certain that many exist) */
 			for (object_index= garbage_object_index, object= garbage_object;
 					SLOT_IS_FREE(object) || GET_OBJECT_OWNER(object)!=_object_is_garbage;
-					object_index= (object_index==MAXIMUM_OBJECTS_PER_MAP-1) ? 0 : (object_index+1), object= objects+object_index)
+					object_index= (object_index==MAXIMUM_OBJECTS_PER_MAP-1) ? 0 : (object_index+1), object= map_objects+object_index)
 				;
 			remove_map_object(object_index);
 		}
@@ -1954,18 +2875,19 @@ void turn_object_to_shit( /* garbage that is, garbage */
 /* find an (x,y) and polygon_index for a random point on the given circle, at the same height
 	as the center point */
 void random_point_on_circle(
-	world_point3d *center,
+	// IR change: made const for correctness.
+	const world_point3d *center,
 	short center_polygon_index,
 	world_distance radius,
 	world_point3d *random_point,
 	short *random_polygon_index)
 {
-	world_distance adjusted_floor_height, adjusted_ceiling_height, supporting_polygon_index; /* not used */
+	world_distance /*adjusted_floor_height, adjusted_ceiling_height,*/ supporting_polygon_index; /* not used */
 	
 	*random_point= *center;
 	translate_point2d((world_point2d *)random_point, radius, global_random()&(NUMBER_OF_ANGLES-1));
-	keep_line_segment_out_of_walls(center_polygon_index, center, random_point, 0, WORLD_ONE/12,
-		&adjusted_floor_height, &adjusted_ceiling_height, &supporting_polygon_index);
+	keep_line_segment_out_of_walls(center_polygon_index, center, random_point, MINIMUM_SEPARATION_FROM_WALL, 0, WORLD_ONE/12,
+		/*&adjusted_floor_height, &adjusted_ceiling_height,*/ &supporting_polygon_index);
 	*random_polygon_index= find_new_object_polygon((world_point2d *)center,
 		(world_point2d *)random_point, center_polygon_index);
 	if (*random_polygon_index!=NONE)
@@ -1973,7 +2895,8 @@ void random_point_on_circle(
 		struct polygon_data *center_polygon= get_polygon_data(center_polygon_index);
 		struct polygon_data *random_polygon= get_polygon_data(*random_polygon_index);
 		
-		if (center_polygon->floor_height!=random_polygon->floor_height) *random_polygon_index= NONE;
+		// IR change: preparation for B&B
+		if (center_polygon->floor_below(center->z) != random_polygon->floor_below(center->z)) *random_polygon_index= NONE;
 	}
 }
 
@@ -2026,7 +2949,7 @@ static short _new_map_object(
 	struct object_data *object;
 	short object_index;
 	
-	for (object_index=0,object=objects;object_index<MAXIMUM_OBJECTS_PER_MAP;++object_index,++object)
+	for (object_index=0,object=map_objects;object_index<MAXIMUM_OBJECTS_PER_MAP;++object_index,++object)
 	{
 		if (SLOT_IS_FREE(object))
 		{
@@ -2109,7 +3032,8 @@ void play_polygon_sound(
 	world_location3d source;
 	
 	find_center_of_polygon(polygon_index, (world_point2d *)&source.point);
-	source.point.z= polygon->floor_height;
+	// IR change: tweaked to work with accessors.  Gets rewritten/obsoleted for B&B.
+	source.point.z= polygon->lowest_floor();
 	source.polygon_index= polygon_index;
 	
 	play_sound(sound_code, &source, NONE);
@@ -2123,7 +3047,8 @@ void _play_side_sound(
 	struct side_data *side= get_side_data(side_index);
 	world_location3d source;
 
-	calculate_line_midpoint(side->line_index, &source.point);
+	// IR change: OOzing
+	line_reference(side->line_index)->calculate_midpoint(&source.point);
 	source.polygon_index= side->polygon_index;
 
 	_play_sound(sound_code, &source, NONE, pitch);
@@ -2258,7 +3183,8 @@ void _sound_add_ambient_sources_proc(
 			}
 
 			// if we’re over media, play that ambient sound image
-			if (media && (media->height>=listener_polygon->floor_height || !MEDIA_SOUND_OBSTRUCTED_BY_FLOOR(media)))
+			// IR change: tweaked to work with accessors.  Gets rewritten/obsoleted for B&B.
+			if (media && (media->height>=listener_polygon->lowest_floor() || !MEDIA_SOUND_OBSTRUCTED_BY_FLOOR(media)))
 			{
 				source= *listener, source.point.z= media->height;
 				add_one_ambient_sound_source((struct ambient_sound_data *)data, &source, listener,
@@ -2273,7 +3199,8 @@ void _sound_add_ambient_sources_proc(
 			
 			if (PLATFORM_IS_ACTIVE(platform) && PLATFORM_IS_MOVING(platform))
 			{
-				source= *listener, source.point.z= listener_polygon->floor_height;
+				// IR change: preparation for B&B (B&B does not affect platforms)
+				source= *listener, source.point.z= listener_polygon->lowest_floor();
 				add_one_ambient_sound_source((struct ambient_sound_data *)data, &source, listener,
 					get_platform_moving_sound(listener_polygon->permutation), MAXIMUM_SOUND_VOLUME);
 			}
@@ -2302,7 +3229,8 @@ void _sound_add_ambient_sources_proc(
 			source.polygon_index= object->polygon_index;
 			if (object->flags&_map_object_hanging_from_ceiling)
 			{
-				source.point.z+= polygon->ceiling_height;
+				// IR change: tweaked to work with accessors.  Gets rewritten/obsoleted for B&B.
+				source.point.z+= polygon->highest_ceiling();
 			}
 			else
 			{
@@ -2312,7 +3240,8 @@ void _sound_add_ambient_sources_proc(
 				}
 				else
 				{
-					source.point.z+= polygon->floor_height;
+					// IR change: tweaked to work with accessors.  Gets rewritten/obsoleted for B&B.
+					source.point.z+= polygon->lowest_floor();
 				}
 			}
 			

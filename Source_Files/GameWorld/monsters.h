@@ -43,6 +43,14 @@ Oct 13, 2000 (Loren Petrich)
 
 Oct 24, 2000 (Mark Levin)
 	Revealed some functions for P-tran
+
+Aug 12, 2001 (Ian Rickard):
+	Removed legal_polygon_height_change (now a method) as part of the OOzing
+
+Aug 17, 2001 (Ian Rickard):
+	moved monster_placement_index, placement_index_to_monster_type, and
+	try_to_add_random_monster inside the #if OBSOLETE before them.  They aren't used.
+
 */
 
 // LP additions:
@@ -307,16 +315,29 @@ monster_data *get_monster_data(
 
 bool bump_monster(short aggressor_index, short monster_index);
 
-bool legal_polygon_height_change(short polygon_index, world_distance new_floor_height, world_distance new_ceiling_height, struct damage_definition *damage);
+// IR removed: now a method of polygon_data
+//bool legal_polygon_height_change(short polygon_index, world_distance new_floor_height, world_distance new_ceiling_height, struct damage_definition *damage);
 void adjust_monster_for_polygon_height_change(short monster_index, short polygon_index, world_distance new_floor_height, world_distance new_ceiling_height);
 void accelerate_monster(short monster_index, angle direction, angle elevation, world_distance velocity);
 
 void monster_died(short target_index);
 
+<<<<<<< monsters.h
+#ifdef OBSOLETE
+	void try_and_drop_random_monsters(void);
+
+// IR change: extended the endif out, these three are obsolete too.
+	short monster_placement_index(short monster_type);
+	short placement_index_to_monster_type(short placement_index);
+	void try_to_add_random_monster(short monster_type, bool activate);
+#endif
+
+=======
 short monster_placement_index(short monster_type);
 short placement_index_to_monster_type(short placement_index);
 void try_to_add_random_monster(short monster_type, bool activate);
 
+>>>>>>> 1.14
 short get_monster_impact_effect(short monster_index);
 short get_monster_melee_impact_effect(short monster_index);
 

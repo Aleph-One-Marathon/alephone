@@ -46,6 +46,12 @@ Feb 20, 2000 (Loren Petrich):
 
 Aug 31, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+
+Aug 12, 2001 (Ian Rickard):
+	Small one-line B&B prep change
+
+Aug 19, 2001 (Ian Rickard):
+	put #if UNUSED around get_binocular_vision_origins.  Its not called from anywhere.
 */
 
 /*
@@ -219,7 +225,8 @@ void adjust_player_for_polygon_height_change(
 	struct player_data *player= get_player_data(player_index);
 	struct physics_variables *variables= &player->variables;
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
-	world_distance old_floor_height= polygon->floor_height;
+	// IR change: hack/final depending on how attached inserts end up working.
+	world_distance old_floor_height= polygon->lowest_floor();
 
 	(void) (new_ceiling_height);
 
@@ -321,6 +328,7 @@ void instantiate_absolute_positioning_information(
 	instantiate_physics_variables(constants, variables, player_index, false);
 }
 
+#if UNUSED
 void get_binocular_vision_origins(
 	short player_index,
 	world_point3d *left,
@@ -349,6 +357,7 @@ void get_binocular_vision_origins(
 	*left_polygon_index= find_new_object_polygon((world_point2d *)&player->camera_location, (world_point2d *)left, player->camera_polygon_index);
 	*left_angle= NORMALIZE_ANGLE(player->facing+1);
 }
+#endif
 
 void kill_player_physics_variables(
 	short player_index)
@@ -421,9 +430,14 @@ static void instantiate_physics_variables(
 	if (PLAYER_IS_DEAD(player)) new_location.z+= FIXED_TO_WORLD(DROP_DEAD_HEIGHT);
 	if (!first_time && player->last_supporting_polygon_index!=player->supporting_polygon_index) changed_polygon(player->last_supporting_polygon_index, player->supporting_polygon_index, player_index);
 	player->last_supporting_polygon_index= first_time ? NONE : player->supporting_polygon_index;
-	clipped= keep_line_segment_out_of_walls(legs->polygon, &legs->location, &new_location,
-		WORLD_ONE/3, FIXED_TO_WORLD(variables->actual_height), &adjusted_floor_height, &adjusted_ceiling_height,
+	clipped= keep_line_segment_out_of_walls(legs->polygon, &legs->location, &new_location, MINIMUM_SEPARATION_FROM_WALL, 
+		WORLD_ONE/3, FIXED_TO_WORLD(variables->actual_height), /*&adjusted_floor_height, &adjusted_ceiling_height,*/
 		&player->supporting_polygon_index);
+	
+	polygon_reference(player->supporting_polygon_index)->get_space_around(
+		legs->location.z+variables->actual_height,
+		&adjusted_floor_height, &adjusted_ceiling_height);
+	
 	if (PLAYER_IS_DEAD(player)) new_location.z-= FIXED_TO_WORLD(DROP_DEAD_HEIGHT);
 
 	/* check for 2d collisions with solid objects and knock the player back out of the object.

@@ -46,6 +46,9 @@ Aug 29, 2000 (Loren Petrich):
 
 Nov 19, 2000 (Loren Petrich):
 	Added XML support for texture-loading control
+
+Aug 12, 2001 (Ian Rickard):
+	All sorts of changes and additions relating to B&B prep and OOzing
 */
 
 #include "world.h"
@@ -76,7 +79,108 @@ Nov 19, 2000 (Loren Petrich):
 
 #include "shape_descriptors.h"
 
+// IR addition: (this whole section) OOzing
+/* ---------- global utility classes */
+#if 0
+#pragma mark utility classes
+#endif
+
+template <class T> uint32 get_object_index(T* t);
+template <class T> uint32 get_object_index(T* t) {
+	return (((int)t)-((int)&T::global_list[0]))/sizeof(T);
+}
+
+#define MY_INDEX get_object_index(this)
+
+template <class T>
+class indexed_object_reference {
+	mutable int32 mIndex;
+	void check_index(register int32 i) {
+		int32 size = T::global_list.size();
+		vassert(((i >= -1) && (i < size)),
+			csprintf(temporary, "%s index #%d is out of range", T::objectname, i));
+	}
+	class SafeIndex{ // this prevents us from trying to cram too big of a value into old code.
+		int32 index;
+	public:
+		SafeIndex(int32 value) {index=value;}
+		operator int32() const {return index;}
+		operator int16()         const {vassert(index<32768, csprintf(temporary, "Attempted to convert 32-bit %s reference to 16-bit", T::objectname));
+									return index;}
+		operator uint32()         const {vassert(index>=0, csprintf(temporary, "Attempted to convert NONE %s reference to unsigned 32-bit", T::objectname));
+									return index;}
+		operator uint16()         const {vassert(index>=0, csprintf(temporary, "Attempted to convert NONE %s reference to unsigned 16-bit", T::objectname));
+									vassert(index<32768, csprintf(temporary, "Attempted to convert 32-bit %s reference to unsigned 16-bit", T::objectname));
+									return index;}
+		bool operator == (int32 to) const {return index==to;}
+		bool operator == (SafeIndex to) const {return index==to.index;}
+		bool operator != (SafeIndex to) const {return index!=to.index;}
+		operator int() const {return index;} // assumes sizeof(int)>=32
+	};
+// this is to prevent accidentally converting one kind of reference to another:
+	template <class foo>
+	indexed_object_reference(indexed_object_reference<foo>);
+public:
+//	indexed_object_reference() {mIndex=0;}
+// this guy is dangerous and not that usefull, best left commented out.
+	explicit indexed_object_reference() {mIndex=NONE;}
+	indexed_object_reference(register int32 i) {mIndex=i; check_index(i);}
+	indexed_object_reference(register T* t) {register int32 i=get_object_index(t); mIndex=i; check_index(i);}
+	SafeIndex index() const {return SafeIndex(mIndex);}
+	int32 set_index(register int32 i) const {mIndex = i; check_index(i);}
+	indexed_object_reference<T>& operator++() const {check_index(i); mIndex++; return *this;}
+	indexed_object_reference<T>& operator--() const {check_index(i); mIndex--; return *this;}
+	bool operator==(const indexed_object_reference<T>& it) const {return mIndex == it.mIndex;}
+	bool operator!=(const indexed_object_reference<T>& it) const {return mIndex != it.mIndex;}
+//	operator bool()         const {return mIndex!=-1;}
+	bool is_none()			const {return mIndex==-1;}
+	bool not_none()			const {return mIndex!=-1;}
+//	operator int32()         const {return mIndex;}
+//	operator int16()         const {vassert(mIndex>1, csprintf(temporary, "Attempted to convert 32-bit %s reference to 16-bit", T::objectname));
+//									return mIndex;}
+	T* ptr()                      {return (mIndex>=0)?&T::global_list[mIndex]:NULL;}
+	const T* const_ptr()    const {return (mIndex>=0)?&T::global_list[mIndex]:NULL;}
+	operator T* ()                {return (mIndex>=0)?&T::global_list[mIndex]:NULL;}
+	operator T& ()                {if (mIndex>=0) return (T::global_list[mIndex]);
+									vassert(1,csprintf(temporary, "attempted to reference a %s that was NONE", T::objectname)); return *(T*)NULL;}
+	operator const T* ()    const {return (mIndex>=0)?&T::global_list[mIndex]:(T*)NULL;}
+	operator const T& ()    const {if (mIndex>=0) return (T::global_list[mIndex]);
+									vassert(1,csprintf(temporary, "attempted to reference a const %s that was NONE", T::objectname)); return *(T*)NULL;}
+	T& operator * ()              {if (mIndex>=0) return (T::global_list[mIndex]);
+									vassert(1,csprintf(temporary, "attempted to dereference a %s that was NONE", T::objectname)); return *(T*)NULL;}
+	const T& operator * ()  const {if (mIndex>=0) return (T::global_list[mIndex]);
+									vassert(1,csprintf(temporary, "attempted to dereference a const %s that was NONE", T::objectname)); return *(T*)NULL;}
+	T* operator -> ()             {if (mIndex>=0) return &(T::global_list[mIndex]);
+									vassert(1,csprintf(temporary, "attempted to -> a %s that was NONE", T::objectname)); return (T*)NULL;}
+	const T* operator -> () const {if (mIndex>=0) return &(T::global_list[mIndex]);
+									vassert(1,csprintf(temporary, "attempted to -> a const %s that was NONE", T::objectname)); return (T*)NULL;}
+};
+
+// these are defed up here so we can return and reference them before they're instantiated
+class line_data;
+typedef indexed_object_reference<line_data> line_reference;
+class side_data;
+typedef indexed_object_reference<side_data> side_reference;
+class polygon_data;
+typedef indexed_object_reference<polygon_data> polygon_reference;
+class portal_data;
+typedef indexed_object_reference<portal_data> portal_reference;
+
+// IR addition: (this whole section) OOzing I guess
+/* ---------- global utility classes */
+#if 0
+#pragma mark utility classes
+#endif
+
+class line_not_in_poly_exception : public exception {
+	virtual const char* what() const {return "line_not_in_poly_exception";}
+};
+
 /* ---------- damage */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark damage
+#endif
 
 enum /* damage types */
 {
@@ -122,6 +226,10 @@ struct damage_definition
 const int SIZEOF_damage_definition = 12;
 
 /* ---------- saved objects (initial map locations, etc.) */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark saved objects
+#endif
 
 // #define MAXIMUM_SAVED_OBJECTS 384
 
@@ -151,8 +259,13 @@ enum /* map object flags */
 #define DECODE_ACTIVATION_BIAS(f) ((f)>>12)
 #define ENCODE_ACTIVATION_BIAS(b) ((b)<<12)
 
-struct map_object /* 16 bytes */
+// IR change: (up to typedef) OOzing
+class map_object /* 16 bytes */
 {
+public:
+	static vector<map_object> global_list;
+	typedef indexed_object_reference<map_object> reference;
+	
 	int16 type; /* _saved_monster, _saved_object, _saved_item, ... */
 	int16 index;
 	int16 facing;
@@ -161,6 +274,9 @@ struct map_object /* 16 bytes */
 	
 	uint16 flags;
 };
+// IR addition: OOzing
+typedef map_object::reference map_object_reference;
+
 const int SIZEOF_map_object = 16;
 
 // Due to misalignments, these have different sizes
@@ -172,6 +288,10 @@ typedef struct map_object saved_object;
 typedef struct static_data saved_map_data;
 
 /* ---------- map loading/new game structures */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark map loading/new game structures
+#endif
 
 enum { /* entry point types- this is per map level (int32). */
 	_single_player_entry_point= 0x01,
@@ -208,12 +328,22 @@ struct directory_data {
 const int SIZEOF_directory_data = 74;
 
 /* ---------- map annotations */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark map annotations
+#endif
 
 // #define MAXIMUM_ANNOTATIONS_PER_MAP 20
 #define MAXIMUM_ANNOTATION_TEXT_LENGTH 64
 
-struct map_annotation
+// IR change: (up to typedef) OOzing
+class map_annotation
 {
+public:
+	static vector<map_annotation> global_list;
+	static const char objectname[];
+	typedef indexed_object_reference<map_annotation> reference;
+	
 	int16 type; /* turns into color, font, size, style, etc... */
 	
 	world_point2d location; /* where to draw this (lower left) */
@@ -221,27 +351,46 @@ struct map_annotation
 	
 	char text[MAXIMUM_ANNOTATION_TEXT_LENGTH];
 };
+// IR addition: OOzing
+typedef map_annotation::reference map_annotation_reference;
 const int SIZEOF_map_annotation = 72;
 
 struct map_annotation *get_next_map_annotation(int16 *count);
 
 /* ---------- ambient sound images */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark ambient sound images
+#endif
 
 // #define MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP 64
 
 // non-directional ambient component
-struct ambient_sound_image_data // 16 bytes
+// IR change: (up to typedef) OOzing
+class ambient_sound_image_data // 16 bytes
 {
+public:
+	static vector<ambient_sound_image_data> global_list;
+	static const char objectname[];
+	typedef indexed_object_reference<ambient_sound_image_data> reference;
+
 	uint16 flags;
 	
 	int16 sound_index;
 	int16 volume;
 
-	int16 unused[5];
+//	IR these are never touched and just eat memory.  All hopes of alignment to take advantage of shifting went out the window ages ago
+//	int16 unused[5];
 };
+// IR addition: OOzing
+typedef ambient_sound_image_data::reference ambient_sound_image_reference;
 const int SIZEOF_ambient_sound_image_data = 16;
 
 /* ---------- random sound images */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark random sound images
+#endif
 
 // #define MAXIMUM_RANDOM_SOUND_IMAGES_PER_MAP 64
 
@@ -251,8 +400,14 @@ enum // sound image flags
 };
 
 // possibly directional random sound effects
-struct random_sound_image_data // 32 bytes
+// IR change: (up to typedef) OOzing
+class random_sound_image_data // 32 bytes
 {
+public:
+	static vector<random_sound_image_data> global_list;
+	static const char objectname[];
+	typedef indexed_object_reference<random_sound_image_data> reference;
+
 	uint16 flags;
 	
 	int16 sound_index;
@@ -265,11 +420,18 @@ struct random_sound_image_data // 32 bytes
 	// only used at run-time; initialize to NONE
 	int16 phase;
 	
-	int16 unused[3];
+//	IR these are never touched and just eat memory.  All hopes of alignment to take advantage of shifting went out the window ages ago
+//	int16 unused[3];
 };
+// IR addition: OOzing
+typedef random_sound_image_data::reference random_sound_image_reference;
 const int SIZEOF_random_sound_image_data = 32;
 
 /* ---------- object structure */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark object structure
+#endif
 // LP change: made this settable from the resource fork
 #define MAXIMUM_OBJECTS_PER_MAP (get_dynamic_limit(_dynamic_limit_objects))
 
@@ -386,8 +548,15 @@ struct object_location
 	uint16 flags;
 };
 
-struct object_data /* 32 bytes */
+// IR change: (up to typedef) OOzing
+class object_data /* 32 bytes */
 {
+	world_distance get_real_height() const;
+public:
+	static vector<object_data> global_list;
+	typedef indexed_object_reference<object_data> reference;
+	static const char objectname[];
+
 	/* these fields are in the order of a world_location3d structure, but are missing the pitch
 		and velocity fields */
 	world_point3d location;
@@ -411,38 +580,109 @@ struct object_data /* 32 bytes */
 
 	/* used when playing sounds */
 	_fixed sound_pitch;
+	
+	// IR addition: (all methods) OOzing
+	world_distance height() const {return (permutation == _object_is_scenery || permutation == _object_is_monster)?get_real_height():0;}
+	world_distance top() const {return location.z+height();}
+	
+	void DebugLog() {::DebugLog(csprintf(temporary, "object_data: loc:%d,%d,%d; poly:%d; fac:%d; seq:%d perm:%d;", 
+			location.x, location.y, location.z, polygon, facing, sequence, permutation));}
 };
+// IR addition: OOzing
+typedef object_data::reference object_data_reference; // object_reference is a bit generic
 const int SIZEOF_object_data = 32;
 
 /* ------------ endpoint definition */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark endpoint definition
+#endif
 
-#define ENDPOINT_IS_SOLID(e) ((e)->flags&1)
-#define SET_ENDPOINT_SOLIDITY(e,s) ((s)?((e)->flags|=1):((e)->flags&=~(uint16)1))
+#define ENDPOINT_IS_SOLID(e) ((e)->is_solid())
+//#define SET_ENDPOINT_SOLIDITY(e,s) ((s)?((e)->flags|=1):((e)->flags&=~(uint16)1))
 
-#define ENDPOINT_IS_TRANSPARENT(e) ((e)->flags&4)
-#define SET_ENDPOINT_TRANSPARENCY(e,s) ((s)?((e)->flags|=4):((e)->flags&=~(uint16)4))
+#define ENDPOINT_IS_TRANSPARENT(e) ((e)->is_transparent())
+//#define SET_ENDPOINT_TRANSPARENCY(e,s) ((s)?((e)->flags|=4):((e)->flags&=~(uint16)4))
 
 /* false if all polygons sharing this endpoint have the same height */
-#define ENDPOINT_IS_ELEVATION(e) ((e)->flags&2)
-#define SET_ENDPOINT_ELEVATION(e,s) ((s)?((e)->flags|=2):((e)->flags&=~(uint16)2))
+#define ENDPOINT_IS_ELEVATION(e) ((e)->is_elevation())
+//#define SET_ENDPOINT_ELEVATION(e,s) ((s)?((e)->flags|=2):((e)->flags&=~(uint16)2))
 
-struct endpoint_data /* 16 bytes */
+// IR change: (up to typedef) OOzing
+class endpoint_data /* 16 bytes */
 {
-	uint16 flags;
-	world_distance highest_adjacent_floor_height, lowest_adjacent_ceiling_height;
+	enum flags {
+		kSolid = 0x0001,
+		kTransparent = 0x0004,
+		kElevation = 0x0002,
+	};
 	
+	bool i_am(uint32 mask)   const {return flags&mask;}
+	void set_flag(uint32 mask, bool state=true) {if(state) flags|=mask; else flags&=~mask;}
+	void clear_flag(uint32 mask) {flags&=~mask;}
+
+	uint16 flags;
+
+	world_distance highest_adjacent_floor_height, lowest_adjacent_ceiling_height;
+public:
+	static vector<endpoint_data> global_list;
+	static const char objectname[];
+	typedef indexed_object_reference<endpoint_data> reference;
+
 	world_point2d vertex;
-	world_point2d transformed;
+	long_point2d transformedL;
 	
 	int16 supporting_polygon_index;
+	
+	void recalculate_redundant_data();
+	
+	world_distance highest_floor() {return highest_adjacent_floor_height;}
+	world_distance lowest_ceiling() {return lowest_adjacent_ceiling_height;}
+	
+	world_distance floor_below(world_distance height); // implemented in map.cpp
+	world_distance ceiling_above(world_distance height); // implemented in map.cpp
+	void get_space_around(world_distance center, world_distance *bottom, world_distance *top)
+					{*bottom = floor_below(center); *top = ceiling_above(center);}
+	world_distance space_around(const world_distance center) {return ceiling_above(center)-floor_below(center);}
+	
+	world_distance floor_below(const world_point3d *loc) {return floor_below(loc->z);}
+	world_distance ceiling_above(const world_point3d *loc) {return ceiling_above(loc->z);}
+	void get_space_around(const world_point3d *loc, world_distance *bottom, world_distance *top)
+					{*bottom = floor_below(loc->z); *top = ceiling_above(loc->z);}
+	world_distance space_around(const world_point3d *loc) {return ceiling_above(loc->z)-floor_below(loc->z);}
+	
+	world_distance floor_below(const object_data* obj) {return floor_below(obj->location.z);}
+	world_distance ceiling_above(const object_data* obj) {return ceiling_above(obj->top());}
+	void get_space_around(const object_data* obj, world_distance *bottom, world_distance *top)
+					{*bottom = floor_below(obj->location.z); *top = ceiling_above(obj->top());}
+	world_distance space_around(const object_data* obj) {return ceiling_above(obj->top())-floor_below(obj->location.z);}
+	bool can_contain(const object_data* obj) {return (floor_below(obj->location.z) + obj->height())<(ceiling_above(obj->top()));}
+
+	bool is_solid()				const {return i_am(            kSolid);}
+	bool is_transparent()		const {return i_am(      kTransparent);}
+	bool is_elevation()			const {return i_am(        kElevation);}
+	
+	uint8* unpack(uint8 *S);
+	uint8* pack(uint8 *S);
+	
+	// hack fix:
+	friend void adjust_platform_endpoint_and_line_heights(short platform_index);
 };
+// IR addition: OOzing
+typedef endpoint_data::reference endpoint_reference;
 const int SIZEOF_endpoint_data = 16;
 
 // For loading plain points:
 const int SIZEOF_world_point2d = 4;
 
 /* ------------ line definition */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark line definition
+#endif
 
+// IR removed: took out all these macros of favor of inline methods.
+/*
 #define SOLID_LINE_BIT 0x4000
 #define TRANSPARENT_LINE_BIT 0x2000
 #define LANDSCAPE_LINE_BIT 0x1000
@@ -467,14 +707,53 @@ const int SIZEOF_world_point2d = 4;
 
 #define SET_LINE_HAS_TRANSPARENT_SIDE(l,v) ((v)?((l)->flags|=(uint16)LINE_HAS_TRANSPARENT_SIDE_BIT):((l)->flags&=(uint16)~LINE_HAS_TRANSPARENT_SIDE_BIT))
 #define LINE_HAS_TRANSPARENT_SIDE(l) ((l)->flags&LINE_HAS_TRANSPARENT_SIDE_BIT)
+*/
 
-struct line_data /* 32 bytes */
+// IR addition: to make code transition easier:
+#define LINE_IS_SOLID(l)				((l)->is_solid())
+#define LINE_IS_TRANSPARENT(l)			((l)->is_transparent())
+#define LINE_IS_LANDSCAPED(l)			((l)->is_landscaped())
+#define LINE_IS_ELEVATION(l)			((l)->is_elevation())
+#define LINE_IS_VARIABLE_ELEVATION(l)	((l)->is_variable_elevation())
+#define LINE_HAS_TRANSPARENT_SIDE(l)	((l)->has_transparent_side())
+
+// IR change: class makes more sense than struct at this point
+class line_data /* 32 bytes */
 {
-	int16 endpoint_indexes[2];
-	uint16 flags; /* no permutation field */
+	// IR move: privatized for B&B prep
+	world_distance highest_adjacent_floor, lowest_adjacent_ceiling; // use floor_below, ceiling_above and space_around
+	
+	enum flags {
+		kSolid = 0x4000,
+		kTransparent = 0x2000,
+		kLandscape = 0x1000,
+		kElevation = 0x800,
+		kVariableElevation = 0x400,
+		kTransparentSide = 0x200
+	};
+	
+	// for methods these make gramatical sense
+	bool i_am(uint32 mask)   const {return flags&mask;}
+	bool i_have(uint32 mask) const {return flags&mask;}
+	void set_flag(uint32 mask, bool state=true) {if(state) flags|=mask; else flags&=~mask;}
+	void clear_flag(uint32 mask) {flags&=~mask;}
+
+	// IR move: (next two lines) privitized for the hell of it.
+	int16 endpoint_indexes[2]; // use endpoint_0(), endpoint_1() or endpoint(bool)
+	uint16 flags; // use appropriate is_ or has_ method
+public:
+	// IR addition: (3 lines) OOzing
+	static vector<line_data> global_list;
+	static const char objectname[];
+	typedef indexed_object_reference<line_data> reference;
+
+//	IR move: made these private
+//	int16 endpoint_indexes[2];
+//	uint16 flags; /* no permutation field */
 
 	world_distance length;
-	world_distance highest_adjacent_floor, lowest_adjacent_ceiling;
+//	IR move: made these private
+//	world_distance highest_adjacent_floor, lowest_adjacent_ceiling;
 	
 	/* the side definition facing the clockwise polygon which references this side, and the side
 		definition facing the counterclockwise polygon (can be NONE) */
@@ -484,11 +763,83 @@ struct line_data /* 32 bytes */
 		two of the same) (can be NONE) */
 	int16 clockwise_polygon_owner, counterclockwise_polygon_owner;
 	
-	int16 unused[6];
+//	IR these are never touched and just eat memory.  All hopes of alignment to take advantage of shifting went out the window ages ago
+//	int16 unused[6];
+	
+// IR addition: (all methods) OOzing
+	bool is_solid()				const {return i_am(            kSolid);}
+	bool is_transparent()		const {return i_am(      kTransparent);}
+	bool is_landscaped()		const {return i_am(        kLandscape);}
+	bool is_elevation()			const {return i_am(        kElevation);}
+	bool is_variable_elevation()const {return i_am(kVariableElevation);}
+	bool has_transparent_side()	const {return i_have(kTransparentSide);}
+	
+	world_distance highest_floor() {return highest_adjacent_floor;}
+	world_distance lowest_ceiling() {return lowest_adjacent_ceiling;}
+	
+	world_distance floor_below(world_distance height); // implemented in map.cpp
+	world_distance ceiling_above(world_distance height); // implemented in map.cpp
+	void get_space_around(world_distance center, world_distance *bottom, world_distance *top)
+					{*bottom = floor_below(center); *top = ceiling_above(center);}
+	
+	world_distance floor_below(const world_point3d *loc) {return floor_below(loc->z);}
+	world_distance ceiling_above(const world_point3d *loc) {return ceiling_above(loc->z);}
+	void get_space_around(const world_point3d *loc, world_distance *bottom, world_distance *top)
+					{*bottom = floor_below(loc->z); *top = ceiling_above(loc->z);}
+	world_distance space_around(const world_point3d *loc) {return ceiling_above(loc->z)-floor_below(loc->z);}
+	
+	world_distance floor_below(const object_data* obj) {return floor_below(obj->location.z);}
+	world_distance ceiling_above(const object_data* obj) {return ceiling_above(obj->top());}
+	void get_space_around(const object_data* obj, world_distance *bottom, world_distance *top)
+					{*bottom = floor_below(obj->location.z); *top = ceiling_above(obj->top());}
+	world_distance space_around(const object_data* obj) {return ceiling_above(obj->top())-floor_below(obj->location.z);}
+	bool can_contain(const object_data* obj) {return (floor_below(obj->location.z) + obj->height())<(ceiling_above(obj->top()));}
+	
+	// IR note: concidered making these methods return const *_references, but I'm undecided on that.  left them as non-const.
+	endpoint_reference endpoint_0() const {return endpoint_reference(this->endpoint_indexes[0]);}
+	endpoint_reference endpoint_1() const {return endpoint_reference(this->endpoint_indexes[1]);}
+	endpoint_reference endpoint(bool e1) const {return endpoint_reference(this->endpoint_indexes[e1?1:0]);}
+	
+	side_reference get_clockwise_side() const;
+	side_reference get_counterclockwise_side() const;
+	
+	polygon_reference get_clockwise_polygon() const;
+	polygon_reference get_counterclockwise_polygon() const;
+	
+	void calculate_midpoint(world_point3d *midpoint) const;
+	
+	void recalculate_redundant_data();
+	void recalculate_heights();
+	
+	uint8* unpack(uint8 *S);
+	uint8* pack(uint8 *S);
 };
+// IR addition: OOzing
+typedef line_data::reference line_reference;
 const int SIZEOF_line_data = 32;
 
+// IR addition: (all methods are wrapping #ifs) I'm not sure why exactly, but CW refuses to allow these inside the class.
+#if 0
+{ // hide these from CW's func popup
+#endif
+inline polygon_reference line_data::get_clockwise_polygon() const
+	{return polygon_reference(this->clockwise_polygon_owner);}
+inline polygon_reference line_data::get_counterclockwise_polygon() const
+	{return polygon_reference(this->counterclockwise_polygon_owner);}
+inline side_reference line_data::get_clockwise_side() const
+	{return side_reference(this->clockwise_polygon_side_index);}
+inline side_reference line_data::get_counterclockwise_side() const
+	{return side_reference(this->counterclockwise_polygon_side_index);}
+#if 0
+} // end hide
+#endif
+
+
 /* --------------- side definition */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark side definition
+#endif
 
 enum /* side flags */
 {
@@ -499,9 +850,19 @@ enum /* side flags */
 	_side_is_lighted_switch= 0x0010, // switch must be lighted to use
 	_side_switch_can_be_destroyed= 0x0020, // projectile hits toggle and destroy this switch
 	_side_switch_can_only_be_hit_by_projectiles= 0x0040,
-
+	// IR addition: both of these are calculated at map load time.
+	_side_is_portal= 0x0080,
+	
+	// IR addition: precalculated clipping info, generated at map load time.
+	//              This is temporary until B&B's new world linkage structures.
+	_side_is_transparent= 0x2000, // so you don't have to look up the line
+	_side_clips_top    = 0x4000,
+	_side_clips_bottom = 0x8000,
+	
+	// IR note: this is only used to mask out this bit during load.
 	_editor_dirty_bit= 0x4000 // used by the editor...
 };
+
 
 enum /* control panel side types */
 {
@@ -528,8 +889,8 @@ enum /* control panel side types */
 #define SET_SIDE_IS_REPAIR_SWITCH(s, t) ((t) ? (s->flags |= (uint16) _side_is_repair_switch) : (s->flags &= (uint16)~_side_is_repair_switch))
 
 /* Flags used by Vulcan */
-#define SIDE_IS_DIRTY(s) ((s)->flags&_editor_dirty_bit)
-#define SET_SIDE_IS_DIRTY(s, t) ((t)?(s->flags|=(uint16)_editor_dirty_bit):(s->flags&=(uint16)~_editor_dirty_bit))
+#define SIDE_IS_DIRTY(s) ((s)->flags&_side_is_portal)
+#define SET_SIDE_IS_DIRTY(s, t) ((t)?(s->flags|=(uint16)_side_is_portal):(s->flags&=(uint16)_side_is_portal))
 
 enum /* side types (largely redundant; most of this could be guessed for examining adjacent polygons) */
 {
@@ -537,14 +898,21 @@ enum /* side types (largely redundant; most of this could be guessed for examini
 	_high_side, /* primary texture is mapped on a panel coming down from the ceiling (implies 2 adjacent polygons) */
 	_low_side, /* primary texture is mapped on a panel coming up from the floor (implies 2 adjacent polygons) */
 	_composite_side, /* primary texture is mapped floor-to-ceiling, secondary texture is mapped into it (i.e., control panel) */
-	_split_side /* primary texture is mapped onto a panel coming down from the ceiling, secondary
+	_split_side, /* primary texture is mapped onto a panel coming down from the ceiling, secondary
 		texture is mapped on a panel coming up from the floor */
+	_empty_side /* no appearance, just there to have a side record/ */
 };
 
 struct side_texture_definition
 {
-	world_distance x0, y0;
+// IR change: for consistency
+	world_point2d origin; // called origin for consistency with horizontal_surface_data
+//	world_distance x0, y0;
 	shape_descriptor texture;
+	
+// IR moved: in from side_data:
+	int16 transfer_mode;
+	int16 lightsource_index;
 };
 
 struct side_exclusion_zone
@@ -552,8 +920,14 @@ struct side_exclusion_zone
 	world_point2d e0, e1, e2, e3;
 };
 
-struct side_data /* size platform-dependant */
+// IR change: (up to typedef) OOzing
+class side_data /* size platform-dependant */
 {
+public:
+	static vector<side_data> global_list;
+	static const char objectname[];
+	typedef indexed_object_reference<side_data> reference;
+
 	int16 type;
 	uint16 flags;
 	
@@ -564,27 +938,47 @@ struct side_data /* size platform-dependant */
 	/* all sides have the potential of being impassable; the exclusion zone is the area near
 		the side which cannot be walked through */
 	struct side_exclusion_zone exclusion_zone;
-
-	int16 control_panel_type; /* Only valid if side->flags & _side_is_control_panel */
-	int16 control_panel_permutation; /* platform index, light source index, etc... */
 	
-	int16 primary_transfer_mode; /* These should be in the side_texture_definition.. */
-	int16 secondary_transfer_mode;
-	int16 transparent_transfer_mode;
+	union {
+		struct {
+			int16 type; /* Only valid if side->flags & _side_is_control_panel */
+			int16 permutation; /* platform index, light source index, etc... */
+		} control_panel;
+		struct {
+			portal_reference portal; // portal ID that
+			polygon_reference destination_polygon;
+		} portal;
+	} data;
+// IR moved: these are now in side_texture_definition
+//	int16 primary_transfer_mode; /* These should be in the side_texture_definition.. */ /* they are! */
+//	int16 secondary_transfer_mode;
+//	int16 transparent_transfer_mode;
 
 	int16 polygon_index, line_index;
 
-	int16 primary_lightsource_index;	
-	int16 secondary_lightsource_index;
-	int16 transparent_lightsource_index;
+// IR moved: these are now in side_texture_definition
+//	int16 primary_lightsource_index;	
+//	int16 secondary_lightsource_index;
+//	int16 transparent_lightsource_index;
 
 	int32 ambient_delta;
-
-	int16 unused[1];
+	
+	bool is_transparent() {return flags & _side_is_transparent;}
+	bool is_portal() {return flags & _side_is_portal;}
+	void set_portal(portal_reference portal, polygon_reference destination_polygon);
+	
+//	IR these are never touched and just eat memory.  All hopes of alignment to take advantage of shifting went out the window ages ago
+//	int16 unused[1];
 };
+// IR addition: OOzing
+typedef side_data::reference side_reference;
 const int SIZEOF_side_data = 64;
 
 /* ----------- polygon definition */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark polygon definition
+#endif
 
 #define MAXIMUM_VERTICES_PER_POLYGON 8
 
@@ -621,7 +1015,8 @@ enum /* polygon types */
 #define POLYGON_IS_DETACHED(p) ((p)->flags&POLYGON_IS_DETACHED_BIT)
 #define SET_POLYGON_DETACHED_STATE(p, v) ((v)?((p)->flags|=POLYGON_IS_DETACHED_BIT):((p)->flags&=~POLYGON_IS_DETACHED_BIT))
 
-struct horizontal_surface_data /* should be in polygon structure */
+// IR removed: comment about "should be in polygon structure", it is now!
+struct horizontal_surface_data
 {
 	world_distance height;
 	int16 lightsource_index;
@@ -631,8 +1026,14 @@ struct horizontal_surface_data /* should be in polygon structure */
 	world_point2d origin;
 };
 
-struct polygon_data /* 128 bytes */
+// IR change: (up to typedef) OOzing
+class polygon_data /* 128 bytes */
 {
+public:
+	static vector<polygon_data> global_list;
+	static const char objectname[];
+	typedef indexed_object_reference<polygon_data> reference;
+
 	int16 type;
 	uint16 flags;
 	int16 permutation;
@@ -641,9 +1042,13 @@ struct polygon_data /* 128 bytes */
 	int16 endpoint_indexes[MAXIMUM_VERTICES_PER_POLYGON]; /* clockwise */
 	int16 line_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	
-	shape_descriptor floor_texture, ceiling_texture;
-	world_distance floor_height, ceiling_height;
-	int16 floor_lightsource_index, ceiling_lightsource_index;
+// IR addition: using the struct!
+	horizontal_surface_data floor_surface, ceiling_surface;
+	
+// IR removed: now in horizontal_surface_data struct
+//	shape_descriptor floor_texture, ceiling_texture;
+//	world_distance floor_height, ceiling_height;
+//	int16 floor_lightsource_index, ceiling_lightsource_index;
 	
 	int32 area; /* in world_distance^2 units */
 	
@@ -656,8 +1061,9 @@ struct polygon_data /* 128 bytes */
 	int16 line_exclusion_zone_count;
 	int16 point_exclusion_zone_count;
 
-	int16 floor_transfer_mode;
-	int16 ceiling_transfer_mode;
+// IR removed: now in horizontal_surface_data struct
+//	int16 floor_transfer_mode;
+//	int16 ceiling_transfer_mode;
 	
 	int16 adjacent_polygon_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	
@@ -669,7 +1075,8 @@ struct polygon_data /* 128 bytes */
 	
 	int16 side_indexes[MAXIMUM_VERTICES_PER_POLYGON];
 	
-	world_point2d floor_origin, ceiling_origin;
+// IR removed: now in horizontal_surface_data struct
+//	world_point2d floor_origin, ceiling_origin;
 	
 	int16 media_index;
 	int16 media_lightsource_index;
@@ -682,11 +1089,82 @@ struct polygon_data /* 128 bytes */
 	int16 ambient_sound_image_index;
 	int16 random_sound_image_index;
 	
-	int16 unused[1];
+	// IR addition: (all methods) OOzing
+	world_distance lowest_floor() {return floor_surface.height;}
+	world_distance highest_ceiling() {return ceiling_surface.height;}
+	
+	world_distance floor_below(world_distance height); // implemented in map.cpp
+	world_distance ceiling_above(world_distance height); // implemented in map.cpp
+	void get_space_around(world_distance center, world_distance *bottom, world_distance *top)
+					{*bottom = floor_below(center); *top = ceiling_above(center);}
+	
+	world_distance floor_below(const world_point3d *loc) {return floor_below(loc->z);}
+	world_distance ceiling_above(const world_point3d *loc) {return ceiling_above(loc->z);}
+	void get_space_around(const world_point3d *loc, world_distance *bottom, world_distance *top)
+					{*bottom = floor_below(loc->z); *top = ceiling_above(loc->z);}
+	world_distance space_around(const world_point3d *loc) {return ceiling_above(loc->z)-floor_below(loc->z);}
+	
+	world_distance floor_below(const object_data* obj) {return floor_below(obj->location.z);}
+	world_distance ceiling_above(const object_data* obj) {return ceiling_above(obj->top());}
+	void get_space_around(const object_data* obj, world_distance *bottom, world_distance *top)
+					{*bottom = floor_below(obj->location.z); *top = ceiling_above(obj->top());}
+	world_distance space_around(const object_data* obj) {return ceiling_above(obj->top())-floor_below(obj->location.z);}
+	bool can_contain(const object_data* obj) {return (floor_below(obj->location.z) + obj->height())<(ceiling_above(obj->top()));}
+	
+	bool change_height(world_distance new_floor_height, world_distance new_ceiling_height, struct damage_definition *damage);
+	bool legal_height_change(world_distance new_floor_height, world_distance new_ceiling_height, struct damage_definition *damage);
+	void set_height(world_distance floor, world_distance ceiling) {floor_surface.height = floor; ceiling_surface.height = ceiling;}
+
+	uint8* unpack(uint8 *S);
+	uint8* pack(uint8 *S);
+	
+	void create_side(line_reference against_line) throw (line_not_in_poly_exception); // that throw means it CAN throw that, not will.
+	
+//	IR these are never touched and just eat memory.  All hopes of alignment to take advantage of shifting went out the window ages ago
+//	int16 unused[1];
 };
+// IR addition: OOzing
+typedef polygon_data::reference polygon_reference;
 const int SIZEOF_polygon_data = 128;
 
+/* ----------- portal definition */
+#if 0
+#pragma mark portal definition
+#endif
+
+enum {
+	kRootPortal = 0
+};
+
+class portal_data
+{
+	enum {
+		kMirrorZ = 0x0001
+	};
+public:
+	static vector<portal_data> global_list;
+	static const char objectname[];
+	typedef indexed_object_reference<portal_data> reference;
+	
+	short flags;
+	long_point3d translate;
+	angle yaw;
+	// rotate first, then translate.
+	// this is the translation from world-space to portal-space.  Alternately this transform
+	// puts the world into the portal.  An object viwed through the portal would appear to
+	// the viewer to be put through this transformation.  (in reality the viewer is put through
+	// ths inverse transform but the difference is trivial).
+	
+	bool is_z_mirror() {return flags&kMirrorZ;}
+};
+typedef portal_data::reference portal_reference;
+const int SIZEOF_portal_data = 16; // staying with a power-of-two for historical reasons
+
 /* ----------- static light definition */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark static light definition
+#endif
 
 struct saved_lighting_function_specification /* 7*2 == 14 bytes */
 {
@@ -708,11 +1186,16 @@ struct saved_static_light_data /* 8*2 + 6*14 == 100 bytes */
 	
 	int16 tag;
 	
-	int16 unused[4];
+//	IR these are never touched and just eat memory.  All hopes of alignment to take advantage of shifting went out the window ages ago
+//	int16 unused[4];
 };
 const int SIZEOF_saved_static_light_data = 100;
 
 /* ---------- random placement data structures.. */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark random placement data structures
+#endif
 
 enum /* game difficulty levels */
 {
@@ -725,6 +1208,10 @@ enum /* game difficulty levels */
 };
 
 /* ---------- new object frequency structures. */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark new object frequency structures
+#endif
 
 #define MAXIMUM_OBJECT_TYPES 64
 
@@ -747,6 +1234,9 @@ struct object_frequency_definition
 const int SIZEOF_object_frequency_definition = 12;
 
 /* ---------- map */
+#if 0
+#pragma mark map
+#endif
 
 enum /* mission flags */
 {
@@ -780,7 +1270,8 @@ struct static_data
 	int16 mission_flags;
 	int16 environment_flags;
 	
-	int16 unused[4];
+//	IR these are never touched and just eat memory.  All hopes of alignment to take advantage of shifting went out the window ages ago
+//	int16 unused[4];
 
 	char level_name[LEVEL_NAME_LENGTH];
 	uint32 entry_point_flags;
@@ -865,7 +1356,8 @@ struct dynamic_data
 	int16 player_count;
 	int16 speaking_player_index;
 	
-	int16 unused;
+//	IR these are never touched and just eat memory.  All hopes of alignment to take advantage of shifting went out the window ages ago
+//	int16 unused;
 	int16 platform_count;
 	int16 endpoint_count;
 	int16 line_count;
@@ -915,6 +1407,10 @@ struct dynamic_data
 const int SIZEOF_dynamic_data = 604;
 
 /* ---------- map globals */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark map globals
+#endif
 
 // Turned some of these lists into variable arrays;
 // took over their maximum numbers as how many of them
@@ -922,24 +1418,34 @@ const int SIZEOF_dynamic_data = 604;
 extern struct static_data *static_world;
 extern struct dynamic_data *dynamic_world;
 
-extern vector<object_data> ObjectList;
-#define objects (&ObjectList[0])
+// IR change: now inside object_data class
+//extern vector<object_data> ObjectList;
+#define ObjectList (object_data::global_list)
+#define map_objects (&ObjectList[0]) // IR change: over-generic name caused problems.
 
 // extern struct object_data *objects;
 
-extern vector<endpoint_data> EndpointList;
+// IR change: now inside endpoint_data class
+//extern vector<endpoint_data> EndpointList;
+#define EndpointList (endpoint_data::global_list)
 #define map_endpoints (&EndpointList[0])
 #define MAXIMUM_ENDPOINTS_PER_MAP (EndpointList.size())
 
-extern vector<line_data> LineList;
+// IR change: now inside line_data class
+//extern vector<line_data> LineList;
+#define LineList (line_data::global_list)
 #define map_lines (&LineList[0])
 #define MAXIMUM_LINES_PER_MAP (LineList.size())
 
-extern vector<side_data> SideList;
+// IR change: now inside side_data class
+//extern vector<side_data> SideList;
+#define SideList (side_data::global_list)
 #define map_sides (&SideList[0])
 #define MAXIMUM_SIDES_PER_MAP (SideList.size())
 
-extern vector<polygon_data> PolygonList;
+// IR change: now inside polygon_data class
+//extern vector<polygon_data> PolygonList;
+#define PolygonList (polygon_data::global_list)
 #define map_polygons (&PolygonList[0])
 #define MAXIMUM_POLYGONS_PER_MAP (PolygonList.size())
 
@@ -1000,6 +1506,10 @@ extern bool LandscapesLoaded;
 extern short LoadedWallTexture;
 
 /* ---------- prototypes/MARATHON.C */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark prototypes/MARATHON.C
+#endif
 
 void initialize_marathon(void);
 
@@ -1018,6 +1528,10 @@ void cause_polygon_damage(short polygon_index, short monster_index);
 short calculate_level_completion_state(void);
 
 /* ---------- prototypes/MAP.C */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark prototypes/MAP.C
+#endif
 
 void allocate_map_memory(void);
 void initialize_map_for_new_game(void);
@@ -1083,16 +1597,36 @@ int32 point_to_line_distance_squared(world_point2d *p, world_point2d *a, world_p
 _fixed closest_point_on_line(world_point2d *e0, world_point2d *e1, world_point2d *p, world_point2d *closest_point);
 void closest_point_on_circle(world_point2d *c, world_distance radius, world_point2d *p, world_point2d *closest_point);
 
-_fixed find_line_intersection(world_point2d *e0, world_point2d *e1, world_point3d *p0,
-	world_point3d *p1, world_point3d *intersection);
+// IR change: made most params cost as side effect of OOzing:
+_fixed find_line_intersection(const world_point2d *e0, const world_point2d *e1, const world_point3d *p0,
+	const world_point3d *p1, world_point3d *intersection);
+_fixed find_line_intersection(const world_point2d *e0, const world_point2d *e1, const world_point2d *p0,
+	const world_point2d *p1, world_point2d *intersection);
+float find_float_line_intersection(const world_point2d *e0, const world_point2d *e1, const world_point2d *p0,
+	const world_point2d *p1, world_point2d *intersection);
+float find_long_line_intersection(const long_point2d *e0, const long_point2d *e1, const long_point2d *p0,
+	const long_point2d *p1, long_point2d *intersection);
+// IR addition: used by NewVis.
+float find_line_vector_intersection(const long_vector2d *e0, const long_vector2d *e1,
+						const long_vector2d *vector, long_vector2d *intersection);
+bool find_line_circle_intersection(const world_point2d *center, world_distance radius,
+	const world_point2d *p0, const world_point2d *p1, world_point2d *intersection, float *t = NULL);
+
+
 _fixed find_floor_or_ceiling_intersection(world_distance h, world_point3d *p0, world_point3d *p1, world_point3d *intersection);
 
 void ray_to_line_segment(world_point2d *p0, world_point2d *p1, angle theta, world_distance d);
 
 void push_out_line(world_point2d *e0, world_point2d *e1, world_distance d, world_distance line_length);
-bool keep_line_segment_out_of_walls(short polygon_index, world_point3d *p0,
+// IR change: made p0 const
+/*bool keep_line_segment_out_of_walls(short polygon_index, const world_point3d *p0,
 	world_point3d *p1, world_distance maximum_delta_height, world_distance height, world_distance *adjusted_floor_height,
-	world_distance *adjusted_ceiling_height, short *supporting_polygon_index);
+	world_distance *adjusted_ceiling_height, short *supporting_polygon_index);*/
+bool keep_line_segment_out_of_walls(short polygon_index, const world_point3d *p0, world_point3d *p1, 
+	world_distance radius, world_distance maximum_delta_height, world_distance height, 
+	short *supporting_polygon_index);
+
+
 
 _fixed get_object_light_intensity(short object_index);
 
@@ -1100,8 +1634,9 @@ bool line_has_variable_height(short line_index);
 
 void recalculate_map_counts(void);
 
-bool change_polygon_height(short polygon_index, world_distance new_floor_height,
-	world_distance new_ceiling_height, struct damage_definition *damage);
+// IR removed: now a method of polygon_data
+//bool change_polygon_height(short polygon_index, world_distance new_floor_height,
+//	world_distance new_ceiling_height, struct damage_definition *damage);
 
 bool line_is_obstructed(short polygon_index1, world_point2d *p1, short polygon_index2, world_point2d *p2);
 bool point_is_player_visible(short max_players, short polygon_index, world_point2d *p, int32 *distance);
@@ -1109,7 +1644,8 @@ bool point_is_monster_visible(short polygon_index, world_point2d *p, int32 *dist
 
 void turn_object_to_shit(short garbage_object_index);
 
-void random_point_on_circle(world_point3d *center, short center_polygon_index,
+// IR change: made center const
+void random_point_on_circle(const world_point3d *center, short center_polygon_index,
 	world_distance radius, world_point3d *random_point, short *random_polygon_index);
 
 void calculate_line_midpoint(short line_index, world_point3d *midpoint);
@@ -1118,14 +1654,33 @@ void *get_map_structure_chunk(long chunk_size);
 void reallocate_map_structure_memory(long size);
 
 /* ---------- prototypes/MAP_ACCESSORS.C */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark prototypes/MAP_ACCESSORS.C
+#pragma mark -
+#pragma mark *inline functions*
+#endif
 
 // LP changed: previously inline; now de-inlined for less code bulk
 // When the index is out of range,
 // the geometry ones make failed asserts,
 // while the sound ones return null pointers.
 
+<<<<<<< map.h
+inline struct object_data *get_object_data(
+	const short object_index)
+{
+	struct object_data *object = GetMemberWithBounds(map_objects,object_index,MAXIMUM_OBJECTS_PER_MAP);
+	
+	vassert(object, csprintf(temporary, "object index #%d is out of range", object_index));
+	vassert(SLOT_IS_USED(object), csprintf(temporary, "object index #%d is unused", object_index));
+	
+	return object;
+}
+=======
 object_data *get_object_data(
 	const short object_index);
+>>>>>>> 1.27
 
 polygon_data *get_polygon_data(
 	const short polygon_index);
@@ -1149,7 +1704,15 @@ ambient_sound_image_data *get_ambient_sound_image_data(
 random_sound_image_data *get_random_sound_image_data(
 	const short random_sound_image_index);
 
+// IR addition: for CW's func popup
+#if 0
+#pragma mark -
+#endif
 /* ---------- prototypes/MAP_CONSTRUCTORS.C */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark prototypes/MAP_CONSTRUCTORS.C
+#endif
 
 short new_map_endpoint(world_point2d *where);
 short duplicate_map_endpoint(short old_endpoint_index);
@@ -1163,8 +1726,10 @@ void precalculate_map_indexes(void);
 void touch_polygon(short polygon_index);
 void recalculate_redundant_polygon_data(short polygon_index);
 void recalculate_redundant_endpoint_data(short endpoint_index);
-void recalculate_redundant_line_data(short line_index);
+// IR removed: now a method.
+//void recalculate_redundant_line_data(short line_index);
 void recalculate_redundant_side_data(short side_index, short line_index);
+void calculate_side_clip_data(); // fixes whole map.
 
 void calculate_endpoint_polygon_owners(short endpoint_index, short *first_index, short *index_count);
 void calculate_endpoint_line_owners(short endpoint_index, short *first_index, short *index_count);
@@ -1213,6 +1778,10 @@ uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, int Cou
 */
 
 /* ---------- prototypes/PLACEMENT.C */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark prototypes/PLACEMENT.C
+#endif
 
 // LP: this one does unpacking also
 void load_placement_data(uint8 *_monsters, uint8 *_items);
@@ -1227,8 +1796,16 @@ void mark_all_monster_collections(bool loading);
 void load_all_monster_sounds(void);
 
 /* ---------- prototypes/GAME_DIALOGS.C */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark prototypes/GAME_DIALOGS.C (none)
+#endif
 
 /* --------- prototypes/LIGHTSOURCE.C */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark prototypes/LIGHTSOURCE.C
+#endif
 
 void update_lightsources(void);
 short new_lightsource_from_old(short old_source);
@@ -1238,6 +1815,10 @@ void left_polygon(short index);
 void change_light_state(short lightsource_index, short state);
 
 /* ---------- prototypes/DEVICES.C */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark prototypes/DEVICES.C
+#endif
 
 void mark_control_panel_shapes(bool load);
 void initialize_control_panels_for_level(void); 
@@ -1257,6 +1838,10 @@ void assume_correct_switch_position(short switch_type, short permutation, bool n
 void try_and_toggle_control_panel(short polygon_index, short line_index);
 
 /* ---------- prototypes/GAME_WAD.C */
+// IR addition: for CW's func popup
+#if 0
+#pragma mark prototypes/GAME_WAD.C
+#endif
 
 struct map_identifier {
 	uint32 scenario_checksum;

@@ -38,6 +38,9 @@ July 1, 2000 (Loren Petrich):
 
 Aug 29, 2000 (Loren Petrich):
 	Added packing routines for the light data; also moved old light stuff (M1) here
+
+Aug 19, 2001 (Ian Rickard):
+	Added #if UNUSED around pack_old_light_data as its never called (and probably shouldn't be)
 */
 
 #include "cseries.h"
@@ -490,6 +493,7 @@ uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count)
 	return S;
 }
 
+#if UNUSED
 uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count)
 {
 	uint8* S = Stream;
@@ -515,6 +519,7 @@ uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count)
 	assert((S - Stream) == Count*SIZEOF_old_light_data);
 	return S;
 }
+#endif
 
 static void StreamToLightSpec(uint8* &S, lighting_function_specification& Object)
 {
@@ -649,9 +654,6 @@ static void FixLightState(lighting_function_specification& LightState, old_light
 	LightState.period = ((LightState.period*OldLight.period)/TICKS_PER_SECOND);
 	LightState.intensity = OldLight.minimum_intensity + 
 		_fixed(float(LightState.intensity)*float(OldLight.maximum_intensity - OldLight.minimum_intensity) / FIXED_ONE);
-    // ZZZ: avoid setting period to 0 (kills the rephase function or whatnot)
-    if(LightState.period == 0)
-        LightState.period++;
 }
 
 void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data* OldLights, int Count)

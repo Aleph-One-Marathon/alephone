@@ -42,6 +42,9 @@ Aug 29, 2000 (Loren Petrich):
 
 Dec 14, 2000 (Loren Petrich):
 	Added growable lists for lists of intersecting endpoints, lines, and polygons
+
+Aug 12, 2001 (Ian Rickard):
+	All sorts of changes for OOzing mostly, some B&B prep
 */
 
 const bool DoIncorrectCountVWarn = true;
@@ -141,13 +144,11 @@ void recalculate_redundant_polygon_data(
 
 /* calculates solidity, highest adjacent floor and lowest adjacent ceiling; not to be called
 	at runtime. */
-void recalculate_redundant_endpoint_data(
-	short endpoint_index)
+// IR change: OOzing
+void endpoint_data::recalculate_redundant_data()
 {
-	struct endpoint_data *endpoint= get_endpoint_data(endpoint_index);
-	world_distance highest_adjacent_floor_height= INT16_MIN;
-	world_distance lowest_adjacent_ceiling_height= INT16_MAX;
-	short supporting_polygon_index= NONE;
+	short endpoint_index = MY_INDEX;
+//	struct endpoint_data *endpoint= get_endpoint_data(endpoint_index);
 	struct line_data *line;
 	short line_index;
 	bool solid= false;
@@ -157,110 +158,145 @@ void recalculate_redundant_endpoint_data(
 	for (line_index= 0, line= map_lines; line_index<dynamic_world->line_count; ++line_index, ++line)
 	{
 		/* does this line contain our endpoint? */
-		if (line->endpoint_indexes[0]==endpoint_index||line->endpoint_indexes[1]==endpoint_index)
+		// IR change: OOzing
+		if (line->endpoint_0().index()==endpoint_index || line->endpoint_1().index()==endpoint_index)
 		{
 			short polygon_index;
 			struct polygon_data *polygon;
 
 			/* if this line is solid, so is the endpoint */			
-			if (LINE_IS_SOLID(line)) solid= true;
-			if (!LINE_IS_TRANSPARENT(line)) transparent= false;
-			if (LINE_IS_ELEVATION(line)) elevation= true;
+			// IR changes: OOzing			
+			if (line->is_solid()) solid= true;
+			if (!line->is_transparent()) transparent= false;
+			if (line->is_elevation()) elevation= true;
 			
 			/* look at adjacent polygons to determine highest floor and lowest ceiling */
 			polygon_index= line->clockwise_polygon_owner;
 			if (polygon_index!=NONE)
 			{
 				polygon= get_polygon_data(polygon_index);
-				if (highest_adjacent_floor_height<polygon->floor_height) highest_adjacent_floor_height= polygon->floor_height, supporting_polygon_index= polygon_index;
-				if (lowest_adjacent_ceiling_height>polygon->ceiling_height) lowest_adjacent_ceiling_height= polygon->ceiling_height;
+				// IR changes: OOzing
+				if (highest_adjacent_floor_height<polygon->lowest_floor())
+				{
+					highest_adjacent_floor_height= polygon->lowest_floor();
+					supporting_polygon_index= polygon_index;
+				}
+				if (lowest_adjacent_ceiling_height>polygon->highest_ceiling())
+					lowest_adjacent_ceiling_height= polygon->highest_ceiling();
 			}
 			polygon_index= line->counterclockwise_polygon_owner;
 			if (polygon_index!=NONE)
 			{
 				polygon= get_polygon_data(polygon_index);
-				if (highest_adjacent_floor_height<polygon->floor_height) highest_adjacent_floor_height= polygon->floor_height, supporting_polygon_index= polygon_index;
-				if (lowest_adjacent_ceiling_height>polygon->ceiling_height) lowest_adjacent_ceiling_height= polygon->ceiling_height;
+				// IR changse: OOzing
+				if (highest_adjacent_floor_height<polygon->lowest_floor())
+				{
+					highest_adjacent_floor_height= polygon->lowest_floor();
+					supporting_polygon_index= polygon_index;
+				}
+				if (lowest_adjacent_ceiling_height>polygon->highest_ceiling())
+					lowest_adjacent_ceiling_height= polygon->highest_ceiling();
 			}
 		}
 	}
 
+<<<<<<< map_constructors.cpp
+	set_flag(kSolid, solid);
+	set_flag(kTransparent, transparent);
+	set_flag(kElevation, elevation);
+	highest_adjacent_floor_height= highest_adjacent_floor_height;
+	lowest_adjacent_ceiling_height= lowest_adjacent_ceiling_height;
+	supporting_polygon_index= supporting_polygon_index;
+	
+	return;
+=======
 	SET_ENDPOINT_SOLIDITY(endpoint, solid);
 	SET_ENDPOINT_TRANSPARENCY(endpoint, transparent);
 	SET_ENDPOINT_ELEVATION(endpoint, elevation);
 	endpoint->highest_adjacent_floor_height= highest_adjacent_floor_height;
 	endpoint->lowest_adjacent_ceiling_height= lowest_adjacent_ceiling_height;
 	endpoint->supporting_polygon_index= supporting_polygon_index;
+>>>>>>> 1.11
 }
 
 /* calculates line length, highest adjacent floor and lowest adjacent ceiling and calls
 	recalculate_redundant_side_data() on the line’s sides */
-void recalculate_redundant_line_data(
-	short line_index)
+// IR change: OOzing
+void line_data::recalculate_redundant_data()
 {
-	struct line_data *line= get_line_data(line_index);
-	struct side_data *clockwise_side= NULL, *counterclockwise_side= NULL;
+//	struct line_data *line= get_line_data(line_index);
+	struct side_data *clockwise_side=NULL, *counterclockwise_side=NULL;
 	bool elevation= false;
 	bool landscaped= false;
 	bool variable_elevation= false;
 	bool transparent_texture= false;
 	
 	/* recalculate line length */
-	line->length= distance2d(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
-		&get_endpoint_data(line->endpoint_indexes[1])->vertex);
+	// IR change: OOzing
+	length= distance2d(&endpoint_0()->vertex, &endpoint_1()->vertex);
 
 	/* find highest adjacent floor and lowest adjacent ceiling */
 	{
 		struct polygon_data *polygon1, *polygon2;
 		
-		polygon1= line->clockwise_polygon_owner==NONE ? (struct polygon_data *) NULL : get_polygon_data(line->clockwise_polygon_owner);
-		polygon2= line->counterclockwise_polygon_owner==NONE ? (struct polygon_data *) NULL : get_polygon_data(line->counterclockwise_polygon_owner);
+		// IR change: OOzing
+		polygon1 = get_clockwise_polygon();
+		polygon2 = get_counterclockwise_polygon();
 		
 		if ((polygon1&&polygon1->type==_polygon_is_platform) || (polygon2&&polygon2->type==_polygon_is_platform)) variable_elevation= true;
 		
 		if (polygon1&&polygon2)
 		{
-			line->highest_adjacent_floor= MAX(polygon1->floor_height, polygon2->floor_height);
-			line->lowest_adjacent_ceiling= MIN(polygon1->ceiling_height, polygon2->ceiling_height);
-			if (polygon1->floor_height!=polygon2->floor_height) elevation= true;
+			// IR change: OOzing
+			highest_adjacent_floor = MAX(polygon1->lowest_floor(), polygon2->lowest_floor());
+			lowest_adjacent_ceiling = MIN(polygon1->highest_ceiling(), polygon2->highest_ceiling());
+			if (polygon1->lowest_floor() != polygon2->lowest_floor()) elevation= true;
 		}
 		else
 		{
 			elevation= true;
 			
+			// IR change: swizzled this if around for more linear logic.
 			if (polygon1)
 			{
-				line->highest_adjacent_floor= polygon1->floor_height;
-				line->lowest_adjacent_ceiling= polygon1->ceiling_height;
+				// IR change: OOzing
+				highest_adjacent_floor = polygon1->lowest_floor();
+				lowest_adjacent_ceiling = polygon1->highest_ceiling();
+			}
+			else if (polygon2)
+			{
+				// IR change: OOzing
+				highest_adjacent_floor = polygon2->lowest_floor();
+				lowest_adjacent_ceiling = polygon2->highest_ceiling();
 			}
 			else
 			{
-				if (polygon2)
-				{
-					line->highest_adjacent_floor= polygon2->floor_height;
-					line->lowest_adjacent_ceiling= polygon2->ceiling_height;
-				}
-				else
-				{
-					line->highest_adjacent_floor= line->lowest_adjacent_ceiling= 0;
-				}
+				highest_adjacent_floor = lowest_adjacent_ceiling = 0;
 			}
 		}
 	}
 	
-	if (line->clockwise_polygon_side_index!=NONE)
+	
+	// IR addition: cache this since calculating it requires a divide.
+ 	short line_index = MY_INDEX;
+	
+	// IR change: lots of OOzing changes for the next several lines	
+	clockwise_side = get_clockwise_side();
+	if (clockwise_side)
 	{
-		recalculate_redundant_side_data(line->clockwise_polygon_side_index, line_index);
-		clockwise_side= get_side_data(line->clockwise_polygon_side_index);
+		recalculate_redundant_side_data(clockwise_polygon_side_index, line_index);
+		clockwise_side = get_clockwise_side();
 	}
-	if (line->counterclockwise_polygon_side_index!=NONE)
+	
+	counterclockwise_side = get_counterclockwise_side();
+	if (counterclockwise_side)
 	{
-		recalculate_redundant_side_data(line->counterclockwise_polygon_side_index, line_index);
-		counterclockwise_side= get_side_data(line->counterclockwise_polygon_side_index);
+		recalculate_redundant_side_data(counterclockwise_polygon_side_index, line_index);
+		counterclockwise_side = get_counterclockwise_side();
 	}
 
-	if ((clockwise_side&&clockwise_side->primary_transfer_mode==_xfer_landscape) ||
-		(counterclockwise_side&&counterclockwise_side->primary_transfer_mode==_xfer_landscape))
+	if ((clockwise_side && clockwise_side->primary_texture.transfer_mode==_xfer_landscape) ||
+		(counterclockwise_side && counterclockwise_side->primary_texture.transfer_mode==_xfer_landscape))
 	{
 		landscaped= true;
 	}
@@ -271,10 +307,20 @@ void recalculate_redundant_line_data(
 		transparent_texture= true;
 	}
 
+<<<<<<< map_constructors.cpp
+	// IR change: OOzing
+	set_flag(kElevation, elevation);
+	set_flag(kVariableElevation, variable_elevation && !i_am(kSolid));
+	set_flag(kLandscape, landscaped);
+	set_flag(kTransparentSide, transparent_texture);
+
+	return;
+=======
 	SET_LINE_ELEVATION(line, elevation);
 	SET_LINE_VARIABLE_ELEVATION(line, variable_elevation && !LINE_IS_SOLID(line));
 	SET_LINE_LANDSCAPE_STATUS(line, landscaped);
 	SET_LINE_HAS_TRANSPARENT_SIDE(line, transparent_texture);
+>>>>>>> 1.11
 }
 
 void recalculate_redundant_side_data(
@@ -291,16 +337,18 @@ void recalculate_redundant_side_data(
 
 	if (line->clockwise_polygon_side_index==side_index)
 	{
-		e0= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
-		e1= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
+		// IR change: OOzing
+		e0= &line->endpoint_0()->vertex;
+		e1= &line->endpoint_1()->vertex;
 		side->polygon_index= line->clockwise_polygon_owner;
 	}
 	else
 	{
 		assert(side_index==line->counterclockwise_polygon_side_index);
 
-		e0= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
-		e1= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
+		// IR change: OOzing
+		e0= &line->endpoint_1()->vertex;
+		e1= &line->endpoint_0()->vertex;
 		side->polygon_index= line->counterclockwise_polygon_owner;
 	}
 
@@ -320,6 +368,113 @@ void recalculate_redundant_side_data(
 	
 	// TEMPORARY UNTIL THE EDITOR SETS THESE FIELDS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //	guess_side_lightsource_indexes(side_index);
+}
+
+void calculate_side_clip_data() {
+	for (int i=0 ; i<LineList.size() ; i++) {
+		line_data *line = get_line_data(i);
+		assert(line);
+		
+		polygon_data *clock_poly = polygon_reference(line->clockwise_polygon_owner);
+		polygon_data *counter_poly = polygon_reference(line->counterclockwise_polygon_owner);
+		
+		// fix invalid data forge leaves.
+		if (!clock_poly) line->clockwise_polygon_side_index = NONE;
+		if (!counter_poly) line->counterclockwise_polygon_side_index = NONE;
+		
+		side_data *clock_side = side_reference(line->clockwise_polygon_side_index);
+		side_data *counter_side = side_reference(line->counterclockwise_polygon_side_index);
+		
+		if (!clock_poly) {
+			// solid sides should never get to the point where they want to clip, but still...
+			if (counter_side)
+				counter_side->flags &= ~(_side_clips_top|_side_clips_bottom);
+		} else if (!counter_poly) {
+			if (clock_side)
+				clock_side->flags &= ~(_side_clips_top|_side_clips_bottom);
+		} else {
+			// only silhouette edges clip.
+			if (clock_poly->lowest_floor() < counter_poly->lowest_floor()) {
+				if (!counter_side) {
+					// clip here so we need a side to tell the view tree to generate a clip window
+					counter_poly->create_side(i);
+					counter_side = side_reference(line->counterclockwise_polygon_side_index);
+					// and reload this guy incase it changed.
+					if (clock_side)
+						clock_side = side_reference(line->clockwise_polygon_side_index);
+					assert(counter_side);
+				}
+				counter_side->flags |= _side_clips_bottom;
+				if (clock_side)
+					clock_side->flags &= ~_side_clips_bottom;
+			} else if (clock_poly->lowest_floor() > counter_poly->lowest_floor()) {
+				if (!clock_side) {
+					// clip here so we need a side to tell the view tree to generate a clip window
+					clock_poly->create_side(i);
+					clock_side = side_reference(line->clockwise_polygon_side_index);
+					// and reload this guy incase it changed.
+					if (counter_side)
+						counter_side = side_reference(line->counterclockwise_polygon_side_index);
+					assert(clock_side);
+				}
+				clock_side->flags |= _side_clips_bottom;
+				if (counter_side)
+					counter_side->flags &= ~_side_clips_bottom;
+			}
+			
+			if (clock_poly->highest_ceiling() > counter_poly->highest_ceiling()) {
+				if (!counter_side) {
+					// clip here so we need a side to tell the view tree to generate a clip window
+					counter_poly->create_side(i);
+					counter_side = side_reference(line->counterclockwise_polygon_side_index);
+					// and reload this guy incase it changed.
+					if (clock_side)
+						clock_side = side_reference(line->clockwise_polygon_side_index);
+					assert(counter_side);
+				}
+				counter_side->flags |= _side_clips_top;
+				if (clock_side)
+					clock_side->flags &= ~_side_clips_top;
+			} else if (clock_poly->highest_ceiling() < counter_poly->highest_ceiling()) {
+				if (!clock_side) {
+					// clip here so we need a side to tell the view tree to generate a clip window
+					clock_poly->create_side(i);
+					clock_side = side_reference(line->clockwise_polygon_side_index);
+					// and reload this guy incase it changed.
+					if (counter_side)
+						counter_side = side_reference(line->counterclockwise_polygon_side_index);
+					assert(clock_side);
+				}
+				clock_side->flags |= _side_clips_top;
+				if (counter_side)
+					counter_side->flags &= ~_side_clips_top;
+			}			
+		}
+		
+		if (line->is_transparent()/* && line->highest_floor() < line->lowest_ceiling()*/)
+		{
+			if (clock_side)
+				clock_side->flags |= _side_is_transparent;
+			if (counter_side)
+				counter_side->flags |= _side_is_transparent;
+		} else if (clock_poly && counter_poly) {
+			if (!counter_side) {
+				// clip here so we need a side to tell the view tree to generate a clip window
+				counter_poly->create_side(i);
+				counter_side = side_reference(line->counterclockwise_polygon_side_index);
+				assert(counter_side);
+			}
+			if (!clock_side) {
+				// clip here so we need a side to tell the view tree to generate a clip window
+				clock_poly->create_side(i);
+				clock_side = side_reference(line->clockwise_polygon_side_index);
+				assert(clock_side);
+			}
+			
+			clock_side->flags &= ~(_side_is_transparent|_side_clips_top|_side_clips_bottom);
+			counter_side->flags &= ~(_side_is_transparent|_side_clips_top|_side_clips_bottom);
+		}	
+	}
 }
 
 void calculate_endpoint_polygon_owners(
@@ -360,7 +515,8 @@ void calculate_endpoint_line_owners(
 	
 	for (line_index= 0, line= map_lines; line_index<dynamic_world->line_count; ++line_index, ++line)
 	{
-		if (line->endpoint_indexes[0]==endpoint_index||line->endpoint_indexes[1]==endpoint_index)
+		// IR change: OOzing
+		if (line->endpoint_0().index()==endpoint_index || line->endpoint_1().index()==endpoint_index)
 		{
 			add_map_index(line_index, index_count);
 		}
@@ -378,18 +534,19 @@ void guess_side_lightsource_indexes(
 	
 	switch (side->type)
 	{
+		// IR changes: B&B prep side effect
 		case _full_side:
-			side->primary_lightsource_index= polygon->ceiling_lightsource_index;
+			side->primary_texture.lightsource_index= polygon->ceiling_surface.lightsource_index;
 			break;
 		case _split_side:
-			side->secondary_lightsource_index= (line->lowest_adjacent_ceiling-line->highest_adjacent_floor>CONTINUOUS_SPLIT_SIDE_HEIGHT) ?
-				polygon->floor_lightsource_index : polygon->ceiling_lightsource_index;
+			side->secondary_texture.lightsource_index= (line->lowest_ceiling()-line->highest_floor()>CONTINUOUS_SPLIT_SIDE_HEIGHT) ?
+				polygon->floor_surface.lightsource_index : polygon->ceiling_surface.lightsource_index;
 			/* fall through to high side */
 		case _high_side:
-			side->primary_lightsource_index= polygon->ceiling_lightsource_index;
+			side->primary_texture.lightsource_index= polygon->ceiling_surface.lightsource_index;
 			break;
 		case _low_side:
-			side->primary_lightsource_index= polygon->floor_lightsource_index;
+			side->primary_texture.lightsource_index= polygon->floor_surface.lightsource_index;
 			break;
 		
 		default:
@@ -397,7 +554,14 @@ void guess_side_lightsource_indexes(
 			break;
 	}
 	
+<<<<<<< map_constructors.cpp
+	// IR change: B&B prep side effect
+	side->transparent_texture.lightsource_index= polygon->ceiling_surface.lightsource_index;
+
+	return;
+=======
 	side->transparent_lightsource_index= polygon->ceiling_lightsource_index;
+>>>>>>> 1.11
 }
 
 /* Since the map_index buffer is no longer statically sized. */
@@ -669,7 +833,8 @@ void try_and_add_line(
 	bool keep_searching= false;
 	short i;
 	
-	if (LINE_IS_SOLID(line) ||
+		// IR change: OOzing	
+	if (line->is_solid() ||
 		line_has_variable_height(line_index) ||
 		line->lowest_adjacent_ceiling<original_polygon->ceiling_height ||
 		line->highest_adjacent_floor>original_polygon->floor_height)
@@ -698,6 +863,10 @@ void try_and_add_line(
 	
 	return keep_searching;
 }
+
+#if 0
+	{
+#endif
 			
 			/* add this endpoint if it isn’t already in the intersecting endpoint list */
 			for (j=0;j<data->endpoint_count;++j)
@@ -756,7 +925,9 @@ static long intersecting_flood_proc(
 	(void) (destination_polygon_index);
 
 	/* we only care about this polygon if it intersects us in z */
-	if (polygon->floor_height<=original_polygon->ceiling_height&&polygon->ceiling_height>=original_polygon->floor_height)
+	// IR change: B&B prep side effect
+	if ( polygon->lowest_floor() <= original_polygon->highest_ceiling() && 
+	     polygon->highest_ceiling() >= original_polygon->lowest_floor())
 	{
 		/* update our running line and endpoint lists */	
 		for (i=0;i<polygon->vertex_count;++i)
@@ -776,13 +947,14 @@ static long intersecting_flood_proc(
 				short line_index= polygon->line_indexes[i];
 				struct line_data *line= get_line_data(line_index);
 				
-				if (LINE_IS_SOLID(line) ||
+				// IR changes: BYB prep side effects & OOzing				
+				if (line->is_solid() ||
 					line_has_variable_height(line_index) ||
-					line->lowest_adjacent_ceiling<original_polygon->ceiling_height ||
-					line->highest_adjacent_floor>original_polygon->floor_height)
+					line->lowest_ceiling() < original_polygon->highest_ceiling() ||
+					line->highest_floor() > original_polygon->lowest_floor())
 				{
-					world_point2d *a= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
-					world_point2d *b= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
+					world_point2d *a= &line->endpoint_0()->vertex;
+					world_point2d *b= &line->endpoint_1()->vertex;
 		
 					/* check and see if this line is close enough to any point in our original polygon
 						to care about; if it is, add it to our list */
@@ -820,8 +992,9 @@ static long intersecting_flood_proc(
 				for (j=0;j<original_polygon->vertex_count;++j)
 				{
 					struct line_data *line= get_line_data(original_polygon->line_indexes[j]);
-					world_point2d *a= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
-					world_point2d *b= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
+					// IR change: OOzing
+					world_point2d *a= &line->endpoint_0()->vertex;
+					world_point2d *b= &line->endpoint_1()->vertex;
 		
 					if (point_to_line_segment_distance_squared(p, a, b)<data->minimum_separation_squared)
 					{
@@ -901,10 +1074,11 @@ static long intersecting_flood_proc(
 				
 //				if (data->original_polygon_index==23&&line_index==104) dprintf("line#%d @ %p", line_index, line);
 				
-				if (LINE_IS_SOLID(line) ||
+				// IR change: OOzing & B&B prep side effect
+				if (line->is_solid() ||
 					line_has_variable_height(line_index) ||
-					line->lowest_adjacent_ceiling<original_polygon->ceiling_height ||
-					line->highest_adjacent_floor>original_polygon->floor_height)
+					line->lowest_ceiling()<original_polygon->ceiling_height ||
+					line->highest_floor()>original_polygon->floor_height)
 				{
 					world_point2d *a= &get_endpoint_data(line->endpoint_indexes[0])->vertex;
 					world_point2d *b= &get_endpoint_data(line->endpoint_indexes[1])->vertex;
@@ -1042,8 +1216,9 @@ static void precalculate_polygon_sound_sources(
 					
 					if (guess_distance2d((world_point2d *)&object->location, &endpoint->vertex)<ZERO_VOLUME_DISTANCE ||
 						point_to_line_segment_distance_squared((world_point2d *)&object->location,
-							&get_endpoint_data(line->endpoint_indexes[0])->vertex,
-							&get_endpoint_data(line->endpoint_indexes[1])->vertex)<ZERO_VOLUME_DISTANCE)
+							// IR change: OOzing
+							&line->endpoint_0()->vertex,
+							&line->endpoint_1()->vertex)<ZERO_VOLUME_DISTANCE)
 					{
 						close= true;
 						break;
@@ -1056,6 +1231,34 @@ static void precalculate_polygon_sound_sources(
 		
 		add_map_index(NONE, &sound_sources);
 	}
+<<<<<<< map_constructors.cpp
+	
+	return;
+}
+
+#ifdef OBSOLETE
+void touch_polygon(
+	short polygon_index)
+{
+	struct polygon_data *polygon= get_polygon_data(polygon_index);
+
+	if (!POLYGON_IS_DETACHED(polygon))
+	{
+		short i;
+		
+		recalculate_redundant_polygon_data(polygon_index);
+		
+		for (i=0;i<polygon->vertex_count;++i)
+		{
+			recalculate_redundant_line_data(polygon->line_indexes[i]); /* does sides */
+			// IR change: OOzing
+			endpoint_reference(polygon->endpoint_indexes[i])->recalculate_redundant_data();
+		}
+	}
+	
+	return;
+=======
+>>>>>>> 1.11
 }
 
 uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
@@ -1065,19 +1268,32 @@ uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		StreamToValue(S,ObjPtr->flags);
-		StreamToValue(S,ObjPtr->highest_adjacent_floor_height);
-		StreamToValue(S,ObjPtr->lowest_adjacent_ceiling_height);
-		
-		StreamToValue(S,ObjPtr->vertex.x);
-		StreamToValue(S,ObjPtr->vertex.y);
-		StreamToValue(S,ObjPtr->transformed.x);
-		StreamToValue(S,ObjPtr->transformed.y);
-		
-		StreamToValue(S,ObjPtr->supporting_polygon_index);
+		// IR change: moved this into a method.
+		S = ObjPtr->unpack(S);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_endpoint_data);
+	return S;
+}
+
+// IR addition: OOzing
+uint8* endpoint_data::unpack(uint8 *S)
+{
+	StreamToValue(S,flags);
+	StreamToValue(S,highest_adjacent_floor_height);
+	StreamToValue(S,lowest_adjacent_ceiling_height);
+	
+	StreamToValue(S,vertex.x);
+	StreamToValue(S,vertex.y);
+	short tempload;
+	StreamToValue(S,tempload);
+	transformedL.x = (int32(tempload)&0x0000FFFF) | (((flags&0xF000)<<16)>>12);
+	StreamToValue(S,tempload);
+	transformedL.y = (int32(tempload)&0x0000FFFF) | (((flags&0x0F00)<<20)>>12);
+	flags &= 0x00FF;
+	
+	StreamToValue(S,supporting_polygon_index);
+	
 	return S;
 }
 
@@ -1088,22 +1304,34 @@ uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		ValueToStream(S,ObjPtr->flags);
-		ValueToStream(S,ObjPtr->highest_adjacent_floor_height);
-		ValueToStream(S,ObjPtr->lowest_adjacent_ceiling_height);
-		
-		ValueToStream(S,ObjPtr->vertex.x);
-		ValueToStream(S,ObjPtr->vertex.y);
-		ValueToStream(S,ObjPtr->transformed.x);
-		ValueToStream(S,ObjPtr->transformed.y);
-		
-		ValueToStream(S,ObjPtr->supporting_polygon_index);
+		// IR change: moved this into a method.
+		S = ObjPtr->pack(S);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_endpoint_data);
 	return S;
 }
 
+// IR addition: OOzing
+uint8* endpoint_data::pack(uint8 *S)
+{
+	uint16 extFlags = flags&0x00FF;
+	extFlags |= (transformedL.x>4)&0xF000;
+	extFlags |= (transformedL.y>8)&0x0F00;
+	
+	ValueToStream(S,extFlags);
+	ValueToStream(S,highest_adjacent_floor_height);
+	ValueToStream(S,lowest_adjacent_ceiling_height);
+	
+	ValueToStream(S,vertex.x);
+	ValueToStream(S,vertex.y);
+	ValueToStream(S,int16(transformedL.x));
+	ValueToStream(S,int16(transformedL.y));
+	
+	ValueToStream(S,supporting_polygon_index);
+	
+	return S;
+}
 
 uint8 *unpack_line_data(uint8 *Stream, line_data *Objects, int Count)
 {
@@ -1112,23 +1340,31 @@ uint8 *unpack_line_data(uint8 *Stream, line_data *Objects, int Count)
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		StreamToList(S,ObjPtr->endpoint_indexes,2);
-		StreamToValue(S,ObjPtr->flags);
-		
-		StreamToValue(S,ObjPtr->length);
-		StreamToValue(S,ObjPtr->highest_adjacent_floor);
-		StreamToValue(S,ObjPtr->lowest_adjacent_ceiling);
-		
-		StreamToValue(S,ObjPtr->clockwise_polygon_side_index);
-		StreamToValue(S,ObjPtr->counterclockwise_polygon_side_index);
-		
-		StreamToValue(S,ObjPtr->clockwise_polygon_owner);
-		StreamToValue(S,ObjPtr->counterclockwise_polygon_owner);
-		
-		S += 6*2;
+		// IR change: moved this into a method.
+		S = ObjPtr->unpack(S);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_line_data);
+	return S;
+}
+
+// IR addition: OOzing
+uint8* line_data::unpack(uint8 *S)
+{
+	StreamToList(S,endpoint_indexes,2);
+	StreamToValue(S,flags);
+	
+	StreamToValue(S,length);
+	StreamToValue(S,highest_adjacent_floor);
+	StreamToValue(S,lowest_adjacent_ceiling);
+	
+	StreamToValue(S,clockwise_polygon_side_index);
+	StreamToValue(S,counterclockwise_polygon_side_index);
+	
+	StreamToValue(S,clockwise_polygon_owner);
+	StreamToValue(S,counterclockwise_polygon_owner);
+	
+	S += 6*2; // unused data
 	return S;
 }
 
@@ -1139,42 +1375,62 @@ uint8 *pack_line_data(uint8 *Stream, line_data *Objects, int Count)
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		ListToStream(S,ObjPtr->endpoint_indexes,2);
-		ValueToStream(S,ObjPtr->flags);
-		
-		ValueToStream(S,ObjPtr->length);
-		ValueToStream(S,ObjPtr->highest_adjacent_floor);
-		ValueToStream(S,ObjPtr->lowest_adjacent_ceiling);
-		
-		ValueToStream(S,ObjPtr->clockwise_polygon_side_index);
-		ValueToStream(S,ObjPtr->counterclockwise_polygon_side_index);
-		
-		ValueToStream(S,ObjPtr->clockwise_polygon_owner);
-		ValueToStream(S,ObjPtr->counterclockwise_polygon_owner);
-		
-		S += 6*2;
+		// IR change: moved this into a method.
+		S = ObjPtr->pack(S);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_line_data);
 	return S;
 }
 
+// IR addition: OOzing
+uint8* line_data::pack(uint8 *S)
+{
+	ListToStream(S,endpoint_indexes,2);
+	ValueToStream(S,flags);
+	
+	ValueToStream(S,length);
+	ValueToStream(S,highest_adjacent_floor);
+	ValueToStream(S,lowest_adjacent_ceiling);
+	
+	ValueToStream(S,clockwise_polygon_side_index);
+	ValueToStream(S,counterclockwise_polygon_side_index);
+	
+	ValueToStream(S,clockwise_polygon_owner);
+	ValueToStream(S,counterclockwise_polygon_owner);
+	
+	S += 6*2;
+	return S;
+}
 
 inline void StreamToSideTxtr(uint8* &S, side_texture_definition& Object)
 {
-	StreamToValue(S,Object.x0);
-	StreamToValue(S,Object.y0);
+	// IR change: B&B prep
+	StreamToValue(S,Object.origin.x);
+	StreamToValue(S,Object.origin.y);
 	StreamToValue(S,Object.texture);
+	/* if (map_version.has_new_side_texture_struct) {
+		StreamToValue(S,Object.transfer_mode);
+		StreamToValue(S,Object.transfer_mode);
+		StreamToValue(S,Object.transfer_mode);
+	}*/
 }
 
 inline void SideTxtrToStream(uint8* &S, side_texture_definition& Object)
 {
-	ValueToStream(S,Object.x0);
-	ValueToStream(S,Object.y0);
+	// IR change: B&B prep
+	ValueToStream(S,Object.origin.x);
+	ValueToStream(S,Object.origin.y);
 	ValueToStream(S,Object.texture);	
+	/* if (map_version.has_new_side_texture_struct) {
+		ValueToStream(S,Object.transfer_mode);
+		ValueToStream(S,Object.transfer_mode);
+		ValueToStream(S,Object.transfer_mode);
+	}*/
 }
 
 
+void StreamToSideExclZone(uint8* &S, side_exclusion_zone& Object);
 void StreamToSideExclZone(uint8* &S, side_exclusion_zone& Object)
 {
 	StreamToValue(S,Object.e0.x);
@@ -1187,6 +1443,7 @@ void StreamToSideExclZone(uint8* &S, side_exclusion_zone& Object)
 	StreamToValue(S,Object.e3.y);
 }
 
+void SideExclZoneToStream(uint8* &S, side_exclusion_zone& Object);
 void SideExclZoneToStream(uint8* &S, side_exclusion_zone& Object)
 {
 	ValueToStream(S,Object.e0.x);
@@ -1209,33 +1466,45 @@ uint8 *unpack_side_data(uint8 *Stream, side_data *Objects, int Count)
 	{
 		StreamToValue(S,ObjPtr->type);
 		StreamToValue(S,ObjPtr->flags);
+		// if (!map_version.has_side_clip_data)
+		ObjPtr->flags &= ~_editor_dirty_bit; // this bit is never accessed.  Now used as part of the clip data.
 		
 		StreamToSideTxtr(S,ObjPtr->primary_texture);
 		StreamToSideTxtr(S,ObjPtr->secondary_texture);
 		StreamToSideTxtr(S,ObjPtr->transparent_texture);
 		
+		// if (map_version.has_exclusion_zones)
 		StreamToSideExclZone(S,ObjPtr->exclusion_zone);
 		
-		StreamToValue(S,ObjPtr->control_panel_type);
-		StreamToValue(S,ObjPtr->control_panel_permutation);
+		/*if ( map_version.has_portals && (flags & _side_is_portal)) {
+			StreamToValue(S,ObjPtr->data.portal.portal);
+			StreamToValue(S,ObjPtr->data.portal.destination_polygon);
+		} else {*/
+			StreamToValue(S,ObjPtr->data.control_panel.type);
+			StreamToValue(S,ObjPtr->data.control_panel.permutation);
+		//}
 		
-		StreamToValue(S,ObjPtr->primary_transfer_mode);
-		StreamToValue(S,ObjPtr->secondary_transfer_mode);
-		StreamToValue(S,ObjPtr->transparent_transfer_mode);
+		// if (!map_version.has_new_side_texture_struct) {
+			StreamToValue(S,ObjPtr->primary_texture.transfer_mode);
+			StreamToValue(S,ObjPtr->secondary_texture.transfer_mode);
+			StreamToValue(S,ObjPtr->transparent_texture.transfer_mode);
+		// }
 		
 		StreamToValue(S,ObjPtr->polygon_index);
 		StreamToValue(S,ObjPtr->line_index);
 		
-		StreamToValue(S,ObjPtr->primary_lightsource_index);
-		StreamToValue(S,ObjPtr->secondary_lightsource_index);
-		StreamToValue(S,ObjPtr->transparent_lightsource_index);
+		// if (!map_version.has_new_side_texture_struct) {
+			StreamToValue(S,ObjPtr->primary_texture.lightsource_index);
+			StreamToValue(S,ObjPtr->secondary_texture.lightsource_index);
+			StreamToValue(S,ObjPtr->transparent_texture.lightsource_index);
+		// }
 		
 		StreamToValue(S,ObjPtr->ambient_delta);
 		
-		S += 1*2;
+		S += 1*2/*map_version.unused_side_bytes*/;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_side_data);
+	assert((S - Stream) == Count*SIZEOF_side_data/*map_version.sizeof_side*/);
 	return S;
 }
 
@@ -1247,6 +1516,8 @@ uint8 *pack_side_data(uint8 *Stream, side_data *Objects, int Count)
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
 		ValueToStream(S,ObjPtr->type);
+		// if (!map_version.has_side_clip_data)
+		ObjPtr->flags &= ~(_side_clips_top|_side_clips_bottom);
 		ValueToStream(S,ObjPtr->flags);
 		
 		SideTxtrToStream(S,ObjPtr->primary_texture);
@@ -1255,26 +1526,35 @@ uint8 *pack_side_data(uint8 *Stream, side_data *Objects, int Count)
 		
 		SideExclZoneToStream(S,ObjPtr->exclusion_zone);
 		
-		ValueToStream(S,ObjPtr->control_panel_type);
-		ValueToStream(S,ObjPtr->control_panel_permutation);
+		/*if ( map_version.has_portals && (flags & _side_is_portal)) {
+			ValueToStream(S,ObjPtr->data.portal.portal);
+			ValueToStream(S,ObjPtr->data.portal.destination_polygon);
+		} else {*/
+			ValueToStream(S,ObjPtr->data.control_panel.type);
+			ValueToStream(S,ObjPtr->data.control_panel.permutation);
+		//}
 		
-		ValueToStream(S,ObjPtr->primary_transfer_mode);
-		ValueToStream(S,ObjPtr->secondary_transfer_mode);
-		ValueToStream(S,ObjPtr->transparent_transfer_mode);
+		// if (!map_version.has_new_side_texture_struct) {
+			ValueToStream(S,ObjPtr->primary_texture.transfer_mode);
+			ValueToStream(S,ObjPtr->secondary_texture.transfer_mode);
+			ValueToStream(S,ObjPtr->transparent_texture.transfer_mode);
+		//}
 		
 		ValueToStream(S,ObjPtr->polygon_index);
 		ValueToStream(S,ObjPtr->line_index);
 		
-		ValueToStream(S,ObjPtr->primary_lightsource_index);
-		ValueToStream(S,ObjPtr->secondary_lightsource_index);
-		ValueToStream(S,ObjPtr->transparent_lightsource_index);
+		// if (!map_version.has_new_side_texture_struct) {
+			ValueToStream(S,ObjPtr->primary_texture.lightsource_index);
+			ValueToStream(S,ObjPtr->secondary_texture.lightsource_index);
+			ValueToStream(S,ObjPtr->transparent_texture.lightsource_index);
+		//}
 		
 		ValueToStream(S,ObjPtr->ambient_delta);
 		
-		S += 1*2;
+		S += 1*2/*map_version.unused_side_bytes*/;
 	}
 	
-	assert((S - Stream) == Count*SIZEOF_side_data);
+	assert((S - Stream) == Count*SIZEOF_side_data/*map_version.sizeof_side*/);
 	return S;
 }
 
@@ -1286,59 +1566,68 @@ uint8 *unpack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		StreamToValue(S,ObjPtr->type);
-		StreamToValue(S,ObjPtr->flags);
-		StreamToValue(S,ObjPtr->permutation);
-		
-		StreamToValue(S,ObjPtr->vertex_count);
-		StreamToList(S,ObjPtr->endpoint_indexes,MAXIMUM_VERTICES_PER_POLYGON);
-		StreamToList(S,ObjPtr->line_indexes,MAXIMUM_VERTICES_PER_POLYGON);
-		
-		StreamToValue(S,ObjPtr->floor_texture);
-		StreamToValue(S,ObjPtr->ceiling_texture);
-		StreamToValue(S,ObjPtr->floor_height);
-		StreamToValue(S,ObjPtr->ceiling_height);
-		StreamToValue(S,ObjPtr->floor_lightsource_index);
-		StreamToValue(S,ObjPtr->ceiling_lightsource_index);
-		
-		StreamToValue(S,ObjPtr->area);
-		
-		StreamToValue(S,ObjPtr->first_object);
-		
-		StreamToValue(S,ObjPtr->first_exclusion_zone_index);
-		StreamToValue(S,ObjPtr->line_exclusion_zone_count);
-		StreamToValue(S,ObjPtr->point_exclusion_zone_count);
-		
-		StreamToValue(S,ObjPtr->floor_transfer_mode);
-		StreamToValue(S,ObjPtr->ceiling_transfer_mode);
-		
-		StreamToList(S,ObjPtr->adjacent_polygon_indexes,MAXIMUM_VERTICES_PER_POLYGON);
-		
-		StreamToValue(S,ObjPtr->first_neighbor_index);
-		StreamToValue(S,ObjPtr->neighbor_count);
-		
-		StreamToValue(S,ObjPtr->center.x);
-		StreamToValue(S,ObjPtr->center.y);
-		
-		StreamToList(S,ObjPtr->side_indexes,MAXIMUM_VERTICES_PER_POLYGON);
-		
-		StreamToValue(S,ObjPtr->floor_origin.x);
-		StreamToValue(S,ObjPtr->floor_origin.y);
-		StreamToValue(S,ObjPtr->ceiling_origin.x);
-		StreamToValue(S,ObjPtr->ceiling_origin.y);
-		
-		StreamToValue(S,ObjPtr->media_index);
-		StreamToValue(S,ObjPtr->media_lightsource_index);
-		
-		StreamToValue(S,ObjPtr->sound_source_indexes);
-		
-		StreamToValue(S,ObjPtr->ambient_sound_image_index);
-		StreamToValue(S,ObjPtr->random_sound_image_index);
-		
-		S += 1*2;
+		// IR change: moved this into a method.
+		S = ObjPtr->unpack(S);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_polygon_data);
+	return S;
+}
+
+// IR addition: OOzing
+uint8* polygon_data::unpack(uint8* S)
+{
+	StreamToValue(S,type);
+	StreamToValue(S,flags);
+	StreamToValue(S,permutation);
+	
+	StreamToValue(S,vertex_count);
+	StreamToList(S,endpoint_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+	StreamToList(S,line_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+	
+	StreamToValue(S,floor_surface.texture);
+	StreamToValue(S,ceiling_surface.texture);
+	StreamToValue(S,floor_surface.height);
+	StreamToValue(S,ceiling_surface.height);
+	StreamToValue(S,floor_surface.lightsource_index);
+	StreamToValue(S,ceiling_surface.lightsource_index);
+	
+	StreamToValue(S,area);
+	
+	StreamToValue(S,first_object);
+	
+	StreamToValue(S,first_exclusion_zone_index);
+	StreamToValue(S,line_exclusion_zone_count);
+	StreamToValue(S,point_exclusion_zone_count);
+	
+	StreamToValue(S,floor_surface.transfer_mode);
+	StreamToValue(S,ceiling_surface.transfer_mode);
+	
+	StreamToList(S,adjacent_polygon_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+	
+	StreamToValue(S,first_neighbor_index);
+	StreamToValue(S,neighbor_count);
+	
+	StreamToValue(S,center.x);
+	StreamToValue(S,center.y);
+	
+	StreamToList(S,side_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+	
+	StreamToValue(S,floor_surface.origin.x);
+	StreamToValue(S,floor_surface.origin.y);
+	StreamToValue(S,ceiling_surface.origin.x);
+	StreamToValue(S,ceiling_surface.origin.y);
+	
+	StreamToValue(S,media_index);
+	StreamToValue(S,media_lightsource_index);
+	
+	StreamToValue(S,sound_source_indexes);
+	
+	StreamToValue(S,ambient_sound_image_index);
+	StreamToValue(S,random_sound_image_index);
+	
+	// unused	
+	S += 1*2;
 	return S;
 }
 
@@ -1349,62 +1638,68 @@ uint8 *pack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
 	
 	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		ValueToStream(S,ObjPtr->type);
-		ValueToStream(S,ObjPtr->flags);
-		ValueToStream(S,ObjPtr->permutation);
-		
-		ValueToStream(S,ObjPtr->vertex_count);
-		ListToStream(S,ObjPtr->endpoint_indexes,MAXIMUM_VERTICES_PER_POLYGON);
-		ListToStream(S,ObjPtr->line_indexes,MAXIMUM_VERTICES_PER_POLYGON);
-		
-		ValueToStream(S,ObjPtr->floor_texture);
-		ValueToStream(S,ObjPtr->ceiling_texture);
-		ValueToStream(S,ObjPtr->floor_height);
-		ValueToStream(S,ObjPtr->ceiling_height);
-		ValueToStream(S,ObjPtr->floor_lightsource_index);
-		ValueToStream(S,ObjPtr->ceiling_lightsource_index);
-		
-		ValueToStream(S,ObjPtr->area);
-		
-		ValueToStream(S,ObjPtr->first_object);
-		
-		ValueToStream(S,ObjPtr->first_exclusion_zone_index);
-		ValueToStream(S,ObjPtr->line_exclusion_zone_count);
-		ValueToStream(S,ObjPtr->point_exclusion_zone_count);
-		
-		ValueToStream(S,ObjPtr->floor_transfer_mode);
-		ValueToStream(S,ObjPtr->ceiling_transfer_mode);
-		
-		ListToStream(S,ObjPtr->adjacent_polygon_indexes,MAXIMUM_VERTICES_PER_POLYGON);
-		
-		ValueToStream(S,ObjPtr->first_neighbor_index);
-		ValueToStream(S,ObjPtr->neighbor_count);
-		
-		ValueToStream(S,ObjPtr->center.x);
-		ValueToStream(S,ObjPtr->center.y);
-		
-		ListToStream(S,ObjPtr->side_indexes,MAXIMUM_VERTICES_PER_POLYGON);
-		
-		ValueToStream(S,ObjPtr->floor_origin.x);
-		ValueToStream(S,ObjPtr->floor_origin.y);
-		ValueToStream(S,ObjPtr->ceiling_origin.x);
-		ValueToStream(S,ObjPtr->ceiling_origin.y);
-		
-		ValueToStream(S,ObjPtr->media_index);
-		ValueToStream(S,ObjPtr->media_lightsource_index);
-		
-		ValueToStream(S,ObjPtr->sound_source_indexes);
-		
-		ValueToStream(S,ObjPtr->ambient_sound_image_index);
-		ValueToStream(S,ObjPtr->random_sound_image_index);
-		
-		S += 1*2;
+		// IR change: moved this into a method.
+		S = ObjPtr->pack(S);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_polygon_data);
 	return S;
 }
 
+// IR addition: OOzing
+uint8* polygon_data::pack(uint8* S) {
+	ValueToStream(S,type);
+	ValueToStream(S,flags);
+	ValueToStream(S,permutation);
+	
+	ValueToStream(S,vertex_count);
+	ListToStream(S,endpoint_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+	ListToStream(S,line_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+	
+	ValueToStream(S,floor_surface.texture);
+	ValueToStream(S,ceiling_surface.texture);
+	ValueToStream(S,floor_surface.height);
+	ValueToStream(S,ceiling_surface.height);
+	ValueToStream(S,floor_surface.lightsource_index);
+	ValueToStream(S,ceiling_surface.lightsource_index);
+	
+	ValueToStream(S,area);
+	
+	ValueToStream(S,first_object);
+	
+	ValueToStream(S,first_exclusion_zone_index);
+	ValueToStream(S,line_exclusion_zone_count);
+	ValueToStream(S,point_exclusion_zone_count);
+	
+	ValueToStream(S,floor_surface.transfer_mode);
+	ValueToStream(S,ceiling_surface.transfer_mode);
+	
+	ListToStream(S,adjacent_polygon_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+	
+	ValueToStream(S,first_neighbor_index);
+	ValueToStream(S,neighbor_count);
+	
+	ValueToStream(S,center.x);
+	ValueToStream(S,center.y);
+	
+	ListToStream(S,side_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+	
+	ValueToStream(S,floor_surface.origin.x);
+	ValueToStream(S,floor_surface.origin.y);
+	ValueToStream(S,ceiling_surface.origin.x);
+	ValueToStream(S,ceiling_surface.origin.y);
+	
+	ValueToStream(S,media_index);
+	ValueToStream(S,media_lightsource_index);
+	
+	ValueToStream(S,sound_source_indexes);
+	
+	ValueToStream(S,ambient_sound_image_index);
+	ValueToStream(S,random_sound_image_index);
+	
+	S += 1*2;
+	return S;
+}
 
 uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count)
 {

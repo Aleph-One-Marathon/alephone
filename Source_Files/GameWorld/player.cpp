@@ -97,16 +97,17 @@ Aug 31, 2000 (Loren Petrich):
 
 Apr 27, 2001 (Loren Petrich):
 	Made player guided missiles optional
+<<<<<<< player.cpp
+
+Aug 12, 2001 (Ian Rickard):
+	Two small changes for B&B prep.
+=======
         
 Oct 21, 2001 (Woody Zenfell):
         Made player_shape_definitions available to the rest of the system -
         in particular, so that SDL network dialog widgets can use it to render
         player icons.
-
-Feb 20, 2002 (Woody Zenfell):
-    Ripped action_queue support out into new ActionQueues class (see ActionQueues.h)
-    Providing pointer gRealActionQueues to help others find the set of queues they are
-    accustomed to using.
+>>>>>>> 1.32
 */
 
 #include "cseries.h"
@@ -135,9 +136,6 @@ Feb 20, 2002 (Woody Zenfell):
 #include "ChaseCam.h"
 #include "Packing.h"
 
-// ZZZ additions:
-#include "ActionQueues.h"
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -150,8 +148,7 @@ Feb 20, 2002 (Woody Zenfell):
 /* ---------- constants */
 
 #define ACTION_QUEUE_BUFFER_DIAMETER 0x100
-// ZZZ: no longer relevant
-//#define ACTION_QUEUE_BUFFER_INDEX_MASK 0xff
+#define ACTION_QUEUE_BUFFER_INDEX_MASK 0xff
 
 // These are variables, because they can be set with an XML parser
 static short kINVISIBILITY_DURATION = (70*TICKS_PER_SECOND);
@@ -195,7 +192,13 @@ static short Powerup_Oxygen = _i_oxygen_powerup;
 				
 /* ---------- structures */
 
-// ZZZ: moved struct action_queue inside ActionQueues (see ActionQueues.cpp).
+struct action_queue /* 8 bytes */
+{
+	short read_index, write_index;
+	
+	uint32 *buffer;
+};
+
 // ZZZ: moved struct player_shape_information to player.h for sharing
 
 struct damage_response_definition
@@ -214,9 +217,7 @@ struct player_data *players;
 struct player_data *local_player, *current_player;
 short local_player_index, current_player_index;
 
-// ZZZ: Let folks ask for a pointer to the main set of ActionQueues.
-static ActionQueues*   sRealActionQueues = NULL;
-ActionQueues* GetRealActionQueues() { return sRealActionQueues; }
+static struct action_queue *action_queues;
 
 static struct player_shape_definitions player_shapes=
 {
@@ -319,13 +320,8 @@ static short calculate_player_team(short base_team);
 
 static void try_and_strip_player_items(short player_index);
 
-// LP additions:
+// LP addition:
 static void ReplenishPlayerOxygen(short player_index, uint32 action_flags);
-
-// From AlexJLS patch; monster data necessary so that player as monster can be activated
-// to make guided missiles work
-static void adjust_player_physics(monster_data *me);
-
 
 /* ---------- code */
 
@@ -342,6 +338,9 @@ player_data *get_player_data(
 void allocate_player_memory(
 	void)
 {
+	uint32 *action_queue_buffer;
+	short i;
+
 	/* allocate space for all our players */
 	players= new player_data[MAXIMUM_NUMBER_OF_PLAYERS];
 	assert(players);
@@ -350,7 +349,16 @@ void allocate_player_memory(
 	dprintf("#%d players at %p (%x bytes each) ---------------------------------------;g;", MAXIMUM_NUMBER_OF_PLAYERS, players, sizeof(struct player_data));
 #endif
 
-    sRealActionQueues = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER);
+	/* allocate space for our action queue headers and the queues themselves */
+	action_queues= new action_queue[MAXIMUM_NUMBER_OF_PLAYERS];
+	action_queue_buffer= new uint32[MAXIMUM_NUMBER_OF_PLAYERS*ACTION_QUEUE_BUFFER_DIAMETER];
+	assert(action_queues&&action_queue_buffer);
+	
+	/* tell the queues where their buffers are */
+	for (i=0;i<MAXIMUM_NUMBER_OF_PLAYERS;++i)
+	{
+		action_queues[i].buffer= action_queue_buffer + i*ACTION_QUEUE_BUFFER_DIAMETER;
+	}
 }
 
 /* returns player index */
@@ -399,6 +407,15 @@ short new_player(
 	give_player_initial_items(player_index);
 	try_and_strip_player_items(player_index);
 	
+	// AlexJLS patch: make the player active, so guided weapons can work
+	monster_data *me = get_monster_data(player->monster_index);
+	SET_MONSTER_ACTIVE_STATUS(me,true);
+	
+	// LP: Fix the player physics so that guided missiles will work correctly
+	SetPlayerViewAttribs(PlayerHalfVisualArc, PlayerHalfVertVisualArc,
+		short(WORLD_ONE*PlayerVisualRange+0.5),
+		short(WORLD_ONE*PlayerDarkVisualRange+0.5));
+	
 	return player_index;
 }
 
@@ -436,9 +453,8 @@ void initialize_players(
 	for (i=0;i<MAXIMUM_NUMBER_OF_PLAYERS;++i)
 	{
 		obj_clear(players[i]);
+		action_queues[i].read_index= action_queues[i].write_index= 0;
 	}
-
-    sRealActionQueues->reset();
 }
 
 /* This will be called by entering map for two reasons:
@@ -450,26 +466,96 @@ void initialize_players(
 void reset_player_queues(
 	void)
 {
-    sRealActionQueues->reset();
+	short i;
+
+	for (i=0;i<MAXIMUM_NUMBER_OF_PLAYERS;++i)
+	{
+		action_queues[i].read_index= action_queues[i].write_index= 0;
+	}
+
 	reset_recording_and_playback_queues();
 	sync_heartbeat_count(); //¥¥ÊMY ADDITION...
 }
 
+/* queue an action flag on the given playerÕs queue (no zombies allowed) */
+void queue_action_flags(
+	short player_index,
+	uint32 *action_flags,
+	short count)
+{
+	struct player_data *player= get_player_data(player_index);
+	struct action_queue *queue= action_queues+player_index;
 
-// ZZZ: queue_action_flags() replaced by ActionQueues::enqueueActionFlags()
-// ZZZ: dequeue_action_flags() replaced by ActionQueues::dequeueActionFlags()
-// ZZZ: get_action_queue_size() replaced by ActionQueues::countActionFlags()
+	//assert(!PLAYER_IS_ZOMBIE(player)); // CP: Changed for scripting
+	if (PLAYER_IS_ZOMBIE(player))
+		return;
+	while ((count-= 1)>=0)
+	{
+		queue->buffer[queue->write_index]= *action_flags++;
+		queue->write_index= (queue->write_index+1)&ACTION_QUEUE_BUFFER_INDEX_MASK;
+		if (queue->write_index==queue->read_index) dprintf("blew player %dÕs queue at %p;g;", player_index, queue);
+	}
+}
 
+/* dequeueÕs a single action flag from the given queue (zombies always return zero) */
+uint32 dequeue_action_flags(
+	short player_index)
+{
+	struct player_data *player= get_player_data(player_index);
+	struct action_queue *queue= action_queues+player_index;
+	uint32 action_flags;
+
+	if (PLAYER_IS_ZOMBIE(player))
+	{
+		//dprintf("Player is zombie!", player_index);	// CP: Disabled for scripting
+		action_flags= 0;
+	}
+	else
+	{
+		assert(queue->read_index!=queue->write_index);
+		action_flags= queue->buffer[queue->read_index];
+		queue->read_index= (queue->read_index+1)&ACTION_QUEUE_BUFFER_INDEX_MASK;
+	}
+
+	return action_flags;
+}
+
+/* returns the number of elements sitting in the given queue (zombies always return queue diameter) */
+short get_action_queue_size(
+	short player_index)
+{
+	struct player_data *player= get_player_data(player_index);
+	struct action_queue *queue= action_queues+player_index;
+	short size;
+
+	if (PLAYER_IS_ZOMBIE(player))
+	{
+		//dprintf("PLayer %d is a zombie", player_index);  // CP: Disabled for scripting
+		size= ACTION_QUEUE_BUFFER_DIAMETER;
+	} 
+	else
+	{
+		if ((size= queue->write_index-queue->read_index)<0) size+= ACTION_QUEUE_BUFFER_DIAMETER;
+	}
+	
+	return size;
+}
 
 /* assumes ¶t==1 tick */
-void update_players(ActionQueues* inActionQueuesToUse)
+void update_players(
+	void)
 {
 	struct player_data *player;
 	short player_index;
 	
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{
+<<<<<<< player.cpp
+		struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
+		uint32 action_flags= dequeue_action_flags(player_index);
+=======
 		uint32 action_flags = inActionQueuesToUse->dequeueActionFlags(player_index);
+>>>>>>> 1.2
 		
 		if (action_flags == 0xffffffff)
 		{
@@ -1073,7 +1159,8 @@ static void update_player_teleport(
 					
 					/* Determine where we are going. */
 					*((world_point2d *)&destination)= destination_polygon->center;
-					destination.z= destination_polygon->floor_height;
+					// IR change: B&B prep					
+					destination.z= destination_polygon->lowest_floor();
 
 					damage.type= _damage_teleporter;
 					damage.base= damage.random= damage.flags= damage.scale= 0;
@@ -1127,7 +1214,8 @@ static void update_player_teleport(
 				player->variables.position.y==player->variables.last_position.y &&
 				player->variables.position.z==player->variables.last_position.z &&
 				player->variables.last_direction==player->variables.direction &&
-				object->location.z==polygon->floor_height)
+				// IR change: B&B prep					
+				object->location.z==polygon->floor_below(object))
 		{
 			if(--player->delay_before_teleport<0)
 			{
@@ -1456,9 +1544,13 @@ static void recreate_player(
 	// in screen.c, we find that it's the current player whose view gets rendered
 	if (player_index == current_player_index) ChaseCam_Reset();
 	
+<<<<<<< player.cpp
+	return;
+=======
 	// Done here so that players' missiles will always be guided
 	// if they are intended to be guided
 	adjust_player_physics(get_monster_data(player->monster_index));
+>>>>>>> 1.32
 }
 
 static void kill_player(
@@ -1758,23 +1850,6 @@ static void try_and_strip_player_items(
 		
 		// LP change: using variable for this
 		if (player->suit_energy>StrippedEnergy) player->suit_energy= StrippedEnergy;
-	}
-}
-
-
-void adjust_player_physics(monster_data *me)
-{	
-	// LP: Fix the player physics so that guided missiles will work correctly
-	if (PlayerShotsGuided)
-	{
-		// AlexJLS patch: make this player active, so guided weapons can work
-		SET_MONSTER_ACTIVE_STATUS(me,true);
-		
-		// Gets called once for every player character created or re-created;
-		// that seems to be OK
-		SetPlayerViewAttribs(PlayerHalfVisualArc, PlayerHalfVertVisualArc,
-			short(WORLD_ONE*PlayerVisualRange+0.5),
-			short(WORLD_ONE*PlayerDarkVisualRange+0.5));
 	}
 }
 
@@ -2479,7 +2554,11 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"half_visual_arc"))
 	{
+<<<<<<< player.cpp
+		if (ReadNumericalValue(Value,"%hd",PlayerHalfVisualArc));
+=======
 		return ReadInt16Value(Value,PlayerHalfVisualArc);
+>>>>>>> 1.32
 	}
 	else if (StringsEqual(Tag,"half_vertical_visual_arc"))
 	{

@@ -79,6 +79,9 @@ Aug 30, 2000 (Loren Petrich):
 	
 Oct 13, 2000 (Loren Petrich)
 	Converted the intersected-objects list into a Standard Template Library vector
+
+Aug 12, 2001 (Ian Rickard):
+	Lots of little tweaks relating to B&B prep or OOzing
 */
 
 #include "cseries.h"
@@ -229,7 +232,8 @@ bool preflight_projectile(
 			// it will act like "penetrates_media" here
 			// Added idiot-proofing to media data
 			media_data *media = get_media_data(origin_polygon->media_index);
-			if (origin->z>origin_polygon->floor_height && origin->z<origin_polygon->ceiling_height &&
+			// IR change: B&B prep.  Will probably get rewritten tho.
+			if (origin->z > origin_polygon->floor_below(origin) && origin->z < origin_polygon->ceiling_above(origin) &&
 				(origin_polygon->media_index==NONE || definition->flags&(_penetrates_media) || (media ? origin->z>media->height : true)))
 			{
 				/* make sure it hits something */
@@ -812,14 +816,20 @@ uint16 translate_projectile(
 
 			struct line_data *line= get_line_data(line_index);
 
-			find_line_intersection(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
-				&get_endpoint_data(line->endpoint_indexes[1])->vertex, old_location, new_location,
-				&intersection);
+			// IR change: OOzing
+			find_line_intersection(&line->endpoint_0()->vertex, &line->endpoint_1()->vertex,
+				old_location, new_location,	&intersection);
 				
 			// LP change: workaround for Pfhorte map bug: check to see if there is a polygon
 			// on the other side
 			short adjacent_polygon_index= find_adjacent_polygon(old_polygon_index, line_index);
+<<<<<<< projectiles.cpp
+			// IR change: OOzing
+			if ((!line->is_solid() || line->has_transparent_side()) && (adjacent_polygon_index != NONE))
+			// if (!LINE_IS_SOLID(line) || LINE_HAS_TRANSPARENT_SIDE(line))
+=======
 			if ((!LINE_IS_SOLID(line) || LINE_HAS_TRANSPARENT_SIDE(line)) && (adjacent_polygon_index != NONE))
+>>>>>>> 1.16
 			{
 				// short adjacent_polygon_index= find_adjacent_polygon(old_polygon_index, line_index);
 				
@@ -829,14 +839,28 @@ uint16 translate_projectile(
 				// but it will be able to run into a media surface.
 				// Here, test for whether the projectile is above the floor or the media surface;
 				// ignore the latter test if PMB is set.
+<<<<<<< projectiles.cpp
+				// IR change: OOzing
+				if ((traveled_underneath || intersection.z > media_height) && intersection.z > old_polygon->floor_below(old_location))
+				// if (intersection.z>media_height && intersection.z>old_polygon->floor_height)
+=======
 				if ((traveled_underneath || intersection.z>media_height) && intersection.z>old_polygon->floor_height)
+>>>>>>> 1.16
 				{
 					// If PMB was set, check to see if the projectile hit the media surface.
+<<<<<<< projectiles.cpp
+					// IR change: OOzing
+					if ((!traveled_underneath || intersection.z < media_height) && intersection.z < old_polygon->ceiling_above(old_location))
+					// if (intersection.z<old_polygon->ceiling_height)
+=======
 					if ((!traveled_underneath || intersection.z<media_height) && intersection.z<old_polygon->ceiling_height)
+>>>>>>> 1.16
 					{
-						if (intersection.z>adjacent_polygon->floor_height&&intersection.z<adjacent_polygon->ceiling_height)
+						// IR change: OOzing
+						if (intersection.z > adjacent_polygon->floor_below(new_location) && intersection.z < adjacent_polygon->ceiling_above(new_location))
 						{
-							if (!LINE_HAS_TRANSPARENT_SIDE(line) || (!new_polygon_index && (definition->flags&(_usually_pass_transparent_side|_sometimes_pass_transparent_side))) ||
+							// IR change: OOzing
+							if (!line->has_transparent_side() || (!new_polygon_index && (definition->flags&(_usually_pass_transparent_side|_sometimes_pass_transparent_side))) ||
 								((definition->flags&_usually_pass_transparent_side) && (global_random()&3)) ||
 								((definition->flags&_sometimes_pass_transparent_side) && !(global_random()&3)))
 							{
@@ -863,18 +887,32 @@ uint16 translate_projectile(
 					{
 						/* hit ceiling of old polygon */
 						*obstruction_index= old_polygon_index;
-						if (adjacent_polygon->ceiling_transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
+						// IR change: structure rearranging
+						if (adjacent_polygon->ceiling_surface.transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
 						// LP change: if PMB was set, check to see if hit media
+<<<<<<< projectiles.cpp
+						// IR change: OOzing
+						contact= (!traveled_underneath || old_polygon->ceiling_above(old_location) < media_height) ? _hit_ceiling : _hit_media;
+						// contact= _hit_ceiling;
+=======
 						contact= (!traveled_underneath || old_polygon->ceiling_height<media_height) ? _hit_ceiling : _hit_media;
+>>>>>>> 1.16
 					}
 				}
 				else
 				{
 					/* hit floor or media of old polygon */
 					*obstruction_index= old_polygon_index;
-					if (adjacent_polygon->floor_transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
+					// IR change: structure rearranging
+					if (adjacent_polygon->floor_surface.transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
 					// LP change: suppress media-hit test only if PMB was set and the projectile was underneath the media
+<<<<<<< projectiles.cpp
+					// IR change: OOzing
+					contact= (traveled_underneath || old_polygon->floor_below(old_location) > media_height) ? _hit_floor : _hit_media;
+					// contact= (old_polygon->floor_height>media_height) ? _hit_floor : _hit_media;
+=======
 					contact= (traveled_underneath || old_polygon->floor_height>media_height) ? _hit_floor : _hit_media;
+>>>>>>> 1.16
 				}
 			}
 			else
@@ -892,10 +930,22 @@ uint16 translate_projectile(
 			// but it will be able to run into a media surface.
 			// Here, test for whether the projectile is above the floor or the media surface;
 			// ignore the latter test if PMB is set.
+<<<<<<< projectiles.cpp
+			// IR change: OOzing
+			if ((traveled_underneath || new_location->z > media_height) && new_location->z > old_polygon->floor_below(old_location))
+			// if (new_location->z>media_height && new_location->z>old_polygon->floor_height)
+=======
 			if ((traveled_underneath || new_location->z>media_height) && new_location->z>old_polygon->floor_height)
+>>>>>>> 1.16
 			{
 				// If PMB was set, check to see if the projectile hit the media surface.
+<<<<<<< projectiles.cpp
+				// IR change: OOzing
+				if ((!traveled_underneath || new_location->z < media_height) && new_location->z < old_polygon->ceiling_above(old_location))
+				// if (new_location->z<old_polygon->ceiling_height)
+=======
 				if ((!traveled_underneath || new_location->z<media_height) && new_location->z<old_polygon->ceiling_height)
+>>>>>>> 1.16
 				{
 					/* weÕre staying in this polygon and weÕre finally done screwing around;
 						the caller can look in *new_polygon_index to find out where we ended up */
@@ -904,18 +954,32 @@ uint16 translate_projectile(
 				{
 					/* hit ceiling of current polygon */
 					*obstruction_index= old_polygon_index;
-					if (old_polygon->ceiling_transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
+					// IR change: structure rearranging
+					if (old_polygon->ceiling_surface.transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
 					// LP change: if PMB was set, check to see if hit media
+<<<<<<< projectiles.cpp
+					// IR change: OOzing
+					contact= (!traveled_underneath || old_polygon->ceiling_above(old_location) < media_height) ? _hit_ceiling : _hit_media;
+					// contact= _hit_ceiling;
+=======
 					contact= (!traveled_underneath || old_polygon->ceiling_height<media_height) ? _hit_ceiling : _hit_media;
+>>>>>>> 1.16
 				}
 			}
 			else
 			{
 				/* hit floor of current polygon */
 				*obstruction_index= old_polygon_index;
-				if (old_polygon->floor_transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
+				// IR change: structure rearranging
+				if (old_polygon->floor_surface.transfer_mode==_xfer_landscape) flags|= _projectile_hit_landscape;
 				// LP change: suppress media-hit test only if PMB was set and the projectile was underneath the media
+<<<<<<< projectiles.cpp
+				// IR change: OOzing
+				contact= (traveled_underneath || old_polygon->floor_below(old_location) > media_height) ? _hit_floor : _hit_media;
+				// contact= (old_polygon->floor_height>media_height) ? _hit_floor : _hit_media;
+=======
 				contact= (traveled_underneath || old_polygon->floor_height>media_height) ? _hit_floor : _hit_media;
+>>>>>>> 1.16
 			}
 		}
 	}
@@ -931,10 +995,12 @@ uint16 translate_projectile(
 				find_floor_or_ceiling_intersection(media_height, old_location, new_location, &intersection);
 				break;
 			case _hit_floor:
-				find_floor_or_ceiling_intersection(old_polygon->floor_height, old_location, new_location, &intersection);
+				// IR change: OOzing
+				find_floor_or_ceiling_intersection(old_polygon->floor_below(old_location), old_location, new_location, &intersection);
 				break;
 			case _hit_ceiling:
-				find_floor_or_ceiling_intersection(old_polygon->ceiling_height, old_location, new_location, &intersection);
+				// IR change: OOzing
+				find_floor_or_ceiling_intersection(old_polygon->ceiling_above(old_location), old_location, new_location, &intersection);
 				break;
 		}
 		

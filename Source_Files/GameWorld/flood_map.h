@@ -49,6 +49,9 @@ short new_path(world_point2d *source_point, short source_polygon_index,
 bool move_along_path(short path_index, world_point2d *p);
 void delete_path(short path_index);
 
+world_point2d *path_peek(short path_index, short *step_count);
+short GetNumberOfPaths();
+
 /* ---------- prototypes/FLOOD_MAP.C */
 
 void allocate_flood_map_memory(void);

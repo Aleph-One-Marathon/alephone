@@ -56,6 +56,12 @@ Dec 19, 2000 (Loren Petrich):
 	failure mode for get_platform_definition().
 	Also suppressed an assertion that platform[polygon[platform]] = platform;
 	currently handling failure in that by skipping over the platform.
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating to B&B prep or OOzing
+
+Aug 19, 2001 (Ian Rickard):
+	put #if UNUSED around pack_static_platform_data.  Its never called.
 */
 
 #include <string.h>
@@ -101,13 +107,15 @@ static void set_adjacent_platform_states(short platform_index, bool state);
 
 static void take_out_the_garbage(short platform_index);
 static void adjust_platform_sides(short platform_index, world_distance old_ceiling_height, world_distance new_ceiling_height);
+static void adjust_platform_clip(short platform_index);
 static void calculate_platform_extrema(short platform_index, world_distance lowest_level,
 	world_distance highest_level);
 
 static void play_platform_sound(short platform_index, short sound_code);
 
 static void adjust_platform_for_media(short platform_index, bool initialize);
-static void adjust_platform_endpoint_and_line_heights(short platform_index);
+// IR change: dropped "static" so I can make it a friend.
+void adjust_platform_endpoint_and_line_heights(short platform_index);
 
 static platform_definition *get_platform_definition(const short type);
 
@@ -178,8 +186,9 @@ short new_platform(
 		/* stuff in the correct defaults; if the platform is initially active it begins moving
 			immediately */
 		platform->dynamic_flags= 0;
-		platform->floor_height= polygon->floor_height;
-		platform->ceiling_height= polygon->ceiling_height;
+		// IR change: B&B prep.  Platforms don't change so this is likely final.
+		platform->floor_height= polygon->lowest_floor();
+		platform->ceiling_height= polygon->highest_ceiling();
 		if (PLATFORM_IS_INITIALLY_ACTIVE(platform))
 		{
 			SET_PLATFORM_IS_ACTIVE(platform, true);
@@ -211,8 +220,8 @@ short new_platform(
 				&platform->endpoint_owners[i].line_index_count);
 		}
 		
-		polygon->floor_height= platform->floor_height;
-		polygon->ceiling_height= platform->ceiling_height;
+		// IR change: B&B prep.  Platforms don't change so this is likely final.
+		polygon->set_height(platform->floor_height, platform->ceiling_height);
 		adjust_platform_endpoint_and_line_heights(platform_index);
 		adjust_platform_for_media(platform_index, true);
 	}
@@ -300,7 +309,8 @@ void update_platforms(
 				
 				/* calculate new ceiling and floor heights for the platform polygon and see if
 					the change is obstructed */
-				if (change_polygon_height(platform->polygon_index, new_floor_height, new_ceiling_height,
+				// IR change: B&B prep.  Platforms don't change so this is likely final.
+				if (polygon_reference(platform->polygon_index)->change_height(new_floor_height, new_ceiling_height,
 					PLATFORM_CAUSES_DAMAGE(platform) ? &definition->damage : (struct damage_definition *) NULL))
 				{
 					/* if we werenÕt blocked, remember that we moved last time, change our current
@@ -313,6 +323,7 @@ void update_platforms(
 					SET_PLATFORM_WAS_MOVING(platform);
 					adjust_platform_endpoint_and_line_heights(platform_index);
 					adjust_platform_for_media(platform_index, false);
+					adjust_platform_clip(platform_index);
 				}
 				else
 				{
@@ -391,11 +402,15 @@ short monster_can_enter_platform(
 	world_distance minimum_ledge_delta,
 	world_distance maximum_ledge_delta)
 {
+	// IR note: the method gets replaced by a more robiust polygon_data method at some point.
 	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
 	struct platform_data *platform= get_platform_data(platform_index);
 	struct polygon_data *destination_polygon= get_polygon_data(platform->polygon_index);
-	world_distance destination_floor_height= destination_polygon->floor_height;
-	world_distance destination_ceiling_height= destination_polygon->ceiling_height;
+	// IR change: B&B prep.
+	// I'm caching more stuff since calling methods repeatedly is ugly
+	world_distance destination_floor_height= destination_polygon->lowest_floor();
+	world_distance destination_ceiling_height= destination_polygon->highest_ceiling();
+	world_distance source_floor_height= source_polygon->lowest_floor();
 	world_distance delta_height;
 	short result_code= _platform_is_accessable;
 	
@@ -414,11 +429,12 @@ short monster_can_enter_platform(
 		if (PLATFORM_IS_ACTIVE(platform) && PLATFORM_COMES_FROM_FLOOR(platform) && !PLATFORM_COMES_FROM_CEILING(platform))
 		{
 			/* if this platform doesnÕt go floor to ceiling and it stops at the source polygon, it might be ok */
-			if (platform->maximum_floor_height!=platform->minimum_ceiling_height &&
-				(platform->minimum_floor_height==source_polygon->floor_height ||
-				platform->maximum_floor_height==source_polygon->floor_height))
+			// IR change: using cached values
+			if (platform->maximum_floor_height!=platform->minimum_ceiling_height     &&
+				 (platform->minimum_floor_height==source_floor_height ||
+				  platform->maximum_floor_height==source_floor_height   ) )
 			{
-				if (platform->minimum_floor_height==source_polygon->floor_height)
+				if (platform->minimum_floor_height==source_floor_height)
 				{
 					destination_floor_height= platform->minimum_floor_height;
 					destination_ceiling_height= platform->maximum_ceiling_height;
@@ -428,14 +444,16 @@ short monster_can_enter_platform(
 					destination_floor_height= platform->maximum_floor_height;
 					destination_ceiling_height= platform->minimum_ceiling_height;
 				}
-				result_code= (platform->floor_height==source_polygon->floor_height) ? _platform_is_accessable : _platform_will_be_accessable;
+				// IR change: using cached values
+				result_code= (platform->floor_height==source_floor_height) ? _platform_is_accessable : _platform_will_be_accessable;
 			}
 		}
 	}
 
-	delta_height= destination_floor_height-source_polygon->floor_height;
+	// IR change: using cached values
+	delta_height= destination_floor_height - source_floor_height;
 	if (delta_height<minimum_ledge_delta || delta_height>maximum_ledge_delta ||
-		MIN(destination_ceiling_height, source_polygon->ceiling_height) - MAX(destination_floor_height, source_polygon->floor_height)<height)
+		MIN(destination_ceiling_height, source_polygon->highest_ceiling()) - MAX(destination_floor_height, source_floor_height) < height)
 	{
 		result_code= _platform_will_never_be_accessable;
 	}
@@ -453,8 +471,11 @@ short monster_can_leave_platform(
 	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
 	struct platform_data *platform= get_platform_data(platform_index);
 	struct polygon_data *source_polygon= get_polygon_data(platform->polygon_index);
-	world_distance source_floor_height= source_polygon->floor_height;
-	world_distance source_ceiling_height= source_polygon->ceiling_height;
+	// IR change: B&B prep.
+	// I'm caching more stuff since calling methods repeatedly is ugly
+	world_distance source_floor_height= source_polygon->lowest_floor();
+	world_distance source_ceiling_height= source_polygon->highest_ceiling();
+	world_distance distination_floor_height= destination_polygon->lowest_floor();
 	world_distance delta_height;
 	short result_code= _exit_is_accessable;
 
@@ -467,18 +488,20 @@ short monster_can_leave_platform(
 	{
 		if (PLATFORM_IS_ACTIVE(platform) && PLATFORM_COMES_FROM_FLOOR(platform) && !PLATFORM_COMES_FROM_CEILING(platform))
 		{
-			if (platform->minimum_floor_height==destination_polygon->floor_height ||
-				platform->maximum_floor_height==destination_polygon->floor_height)
+			// IR change: using cached values
+			if (platform->minimum_floor_height==distination_floor_height ||
+				platform->maximum_floor_height==distination_floor_height)
 			{
-				source_floor_height= destination_polygon->floor_height;
-				result_code= (platform->floor_height==destination_polygon->floor_height) ? _exit_is_accessable : _exit_will_be_accessable;
+				source_floor_height= distination_floor_height;
+				result_code= (platform->floor_height==distination_floor_height) ? _exit_is_accessable : _exit_will_be_accessable;
 			}
 		}
 	}
 	
-	delta_height= destination_polygon->floor_height-source_floor_height;
+	// IR change: using cached values
+	delta_height= distination_floor_height - source_floor_height;
 	if (delta_height<minimum_ledge_delta || delta_height>maximum_ledge_delta ||
-		MIN(destination_polygon->ceiling_height, source_ceiling_height) - MAX(destination_polygon->floor_height, source_floor_height)<height)
+		MIN(destination_polygon->highest_ceiling(), source_ceiling_height) - MAX(distination_floor_height, source_floor_height)<height)
 	{
 		result_code= _exit_will_never_be_accessable;
 	}
@@ -693,8 +716,9 @@ static bool set_platform_state(
 
 					if (PLATFORM_ACTIVATES_LIGHT(platform))
 					{
-						set_light_status(polygon->floor_lightsource_index, true);
-						set_light_status(polygon->ceiling_lightsource_index, true);
+						// IR change: B&B prep side effect
+						set_light_status(polygon->floor_surface.lightsource_index, true);
+						set_light_status(polygon->ceiling_surface.lightsource_index, true);
 					}
 	
 					platform->parent_platform_index= parent_platform_index;
@@ -706,8 +730,9 @@ static bool set_platform_state(
 				{
 					if (PLATFORM_DEACTIVATES_LIGHT(platform))
 					{
-						set_light_status(polygon->floor_lightsource_index, false);
-						set_light_status(polygon->ceiling_lightsource_index, false);
+						// IR change: B&B prep side effect
+						set_light_status(polygon->floor_surface.lightsource_index, false);
+						set_light_status(polygon->ceiling_surface.lightsource_index, false);
 					}
 					
 					if (PLATFORM_ACTIVATES_ADJACENT_PLATFORMS_WHEN_DEACTIVATING(platform)) set_adjacent_platform_states(platform_index, true);
@@ -815,7 +840,8 @@ static void adjust_platform_for_media(
 	}
 }
 
-static void adjust_platform_endpoint_and_line_heights(
+// IR change: dropped "static" so I can make it a friend.
+void adjust_platform_endpoint_and_line_heights(
 	short platform_index)
 {
 	struct platform_data *platform= get_platform_data(platform_index);
@@ -836,43 +862,54 @@ static void adjust_platform_endpoint_and_line_heights(
 		
 		/* adjust line heights and set proper line transparency and solidity */
 		// Skip this step if line indexes were not found
-		if (polygon->adjacent_polygon_indexes[i]!=NONE && line_indexes)
+		
+		// IR addition: moved most of this into a line method.
+		line->recalculate_heights();
+		
+		if (polygon->adjacent_polygon_indexes[i]!=NONE && polygon_indexes && line_indexes)
 		{
-			adjacent_polygon= get_polygon_data(polygon->adjacent_polygon_indexes[i]);
-			line->highest_adjacent_floor= MAX(polygon->floor_height, adjacent_polygon->floor_height);
-			line->lowest_adjacent_ceiling= MIN(polygon->ceiling_height, adjacent_polygon->ceiling_height);
+			// IR change: moved all this into the method called above.
+			//adjacent_polygon= get_polygon_data(polygon->adjacent_polygon_indexes[i]);
+			//line->highest_adjacent_floor= MAX(polygon->floor_surface.height, adjacent_polygon->floor_surface.height);
+			//line->lowest_adjacent_ceiling= MIN(polygon->ceiling_surface.height, adjacent_polygon->ceiling_surface.height);
 
 			/* only worry about transparency and solidity if thereÕs a polygon on the other side */
-			if (LINE_IS_VARIABLE_ELEVATION(line))
-			{
-				SET_LINE_TRANSPARENCY(line, line->highest_adjacent_floor<line->lowest_adjacent_ceiling);
-				SET_LINE_SOLIDITY(line, line->highest_adjacent_floor>=line->lowest_adjacent_ceiling);
-			}
+			//if (LINE_IS_VARIABLE_ELEVATION(line))
+			//{
+			//	SET_LINE_TRANSPARENCY(line, line->highest_adjacent_floor<line->lowest_adjacent_ceiling);
+			//	SET_LINE_SOLIDITY(line, line->highest_adjacent_floor>=line->lowest_adjacent_ceiling);
+			//}
 			
+			// IR note: someone bug me if I forget to move this into an endpoint method.
 			/* and only if there is another polygon does this endpoint have a chance of being transparent */
-			for (j= 0; j<line_count; ++j) if (LINE_IS_SOLID(get_line_data(line_indexes[j]))) break;
-			SET_ENDPOINT_SOLIDITY(endpoint, (j!=line_count));
+			// IR change: OOzing
+			for (j= 0; j<line_count; ++j) if (line_reference(line_indexes[j])->is_solid()) break;
+			endpoint->set_flag(endpoint_data::kSolid, (j!=line_count));
 
 			/* and only if there is another polygon does this endpoint have a chance of being transparent */
-			for (j= 0; j<line_count; ++j) if (!LINE_IS_TRANSPARENT(get_line_data(line_indexes[j]))) break;
-			SET_ENDPOINT_TRANSPARENCY(endpoint, (j==line_count));
+			// IR change: OOzing
+			for (j= 0; j<line_count; ++j) if (!line_reference(line_indexes[j])->is_transparent()) break;
+			endpoint->set_flag(endpoint_data::kTransparent, (j==line_count));
 		}
-		else
-		{
-			line->highest_adjacent_floor= polygon->floor_height;
-			line->lowest_adjacent_ceiling= polygon->ceiling_height;
-		}
+		// IR removed: this else no longer needed, its handled all inside line->recalculate_heights()
+		//else
+		//{
+		//	line->highest_adjacent_floor= polygon->floor_surface.height;
+		//	line->lowest_adjacent_ceiling= polygon->ceiling_surface.height;
+		//}
 
 		/* adjust endpoint heights */
-		// Skip this step if no polygon indexes were found
-		if (polygon_indexes)
+		// IR change: B&B prep side effect.  shorted these lines as they were quite long.		
+		for (j= 0; j<polygon_count; ++j)
 		{
-			for (j= 0; j<polygon_count; ++j)
+			adjacent_polygon= get_polygon_data(polygon_indexes[j]);
+			if (!j || highest_adjacent_floor<adjacent_polygon->lowest_floor())
 			{
-				adjacent_polygon= get_polygon_data(polygon_indexes[j]);
-				if (!j || highest_adjacent_floor<adjacent_polygon->floor_height) highest_adjacent_floor= adjacent_polygon->floor_height, supporting_polygon_index= polygon_indexes[j];
-				if (!j || lowest_adjacent_ceiling>adjacent_polygon->ceiling_height) lowest_adjacent_ceiling= adjacent_polygon->ceiling_height;
+				highest_adjacent_floor= adjacent_polygon->lowest_floor();
+				supporting_polygon_index= polygon_indexes[j];
 			}
+			if (!j || lowest_adjacent_ceiling>adjacent_polygon->highest_ceiling())
+				lowest_adjacent_ceiling= adjacent_polygon->highest_ceiling();
 		}
 		endpoint->highest_adjacent_floor_height= highest_adjacent_floor;
 		endpoint->lowest_adjacent_ceiling_height= lowest_adjacent_ceiling;
@@ -935,26 +972,41 @@ static void calculate_platform_extrema(
 	// assert(lowest_level==NONE||highest_level==NONE||lowest_level<highest_level);
 	
 	/* calculate lowest and highest adjacent floors and ceilings */
-	lowest_adjacent_floor= highest_adjacent_floor= polygon->floor_height;
-	lowest_adjacent_ceiling= highest_adjacent_ceiling= polygon->ceiling_height;
+	// IR change: B&B prep side effect
+	lowest_adjacent_floor= highest_adjacent_floor= polygon->lowest_floor();
+	lowest_adjacent_ceiling= highest_adjacent_ceiling= polygon->highest_ceiling();
 	for (i= 0; i<polygon->vertex_count; ++i)
 	{
 		if (polygon->adjacent_polygon_indexes[i]!=NONE)
 		{
 			struct polygon_data *adjacent_polygon= get_polygon_data(polygon->adjacent_polygon_indexes[i]);
 			
+			// IR change: rewrote while bringing in accessors for the sake of legibility.
+			// overhead is trivial the same because x=x is a noop in any decent compiler.
+			lowest_adjacent_floor = MIN(lowest_adjacent_floor, adjacent_polygon->lowest_floor());
+			highest_adjacent_floor = MAX(highest_adjacent_floor, adjacent_polygon->lowest_floor());
+			lowest_adjacent_ceiling = MIN(lowest_adjacent_ceiling, adjacent_polygon->highest_ceiling());
+			highest_adjacent_ceiling = MAX(highest_adjacent_ceiling, adjacent_polygon->highest_ceiling());
+/*
 			if (adjacent_polygon->floor_height<lowest_adjacent_floor) lowest_adjacent_floor= adjacent_polygon->floor_height;
 			if (adjacent_polygon->floor_height>highest_adjacent_floor) highest_adjacent_floor= adjacent_polygon->floor_height;
 			if (adjacent_polygon->ceiling_height<lowest_adjacent_ceiling) lowest_adjacent_ceiling= adjacent_polygon->ceiling_height;
 			if (adjacent_polygon->ceiling_height>highest_adjacent_ceiling) highest_adjacent_ceiling= adjacent_polygon->ceiling_height;
+*/
 		}
 	}
 
 	/* take into account the EXTENDS_FLOOR_TO_CEILING flag */
 	if (PLATFORM_EXTENDS_FLOOR_TO_CEILING(platform))
 	{
+		// IR change: rewrote for legebility.  (I never understood what floor to ceiling means
+		// and I still don't. :)
+		highest_adjacent_floor = MAX(highest_adjacent_floor, polygon->highest_ceiling());
+		lowest_adjacent_ceiling = MIN(lowest_adjacent_ceiling, polygon->lowest_floor());
+/*
 		if (polygon->ceiling_height>highest_adjacent_floor) highest_adjacent_floor= polygon->ceiling_height;
 		if (polygon->floor_height<lowest_adjacent_ceiling) lowest_adjacent_ceiling= polygon->floor_height;
+*/
 	}
 	
 	/* calculate floor and ceiling min, max values as appropriate for the platform direction */
@@ -972,38 +1024,42 @@ static void calculate_platform_extrema(
 		{
 			if (PLATFORM_USES_NATIVE_POLYGON_HEIGHTS(platform))
 			{
-				if (polygon->floor_height<lowest_adjacent_floor || PLATFORM_EXTENDS_FLOOR_TO_CEILING(platform))
+				// IR change: B&B prep side effect
+				if (polygon->lowest_floor()<lowest_adjacent_floor || PLATFORM_EXTENDS_FLOOR_TO_CEILING(platform))
 				{
-					lowest_adjacent_floor= polygon->floor_height;
+					lowest_adjacent_floor= polygon->lowest_floor();
 				}
 				else
 				{
-					highest_adjacent_floor= polygon->floor_height;
+					highest_adjacent_floor= polygon->lowest_floor();
 				}
 			}
 			
 			platform->minimum_floor_height= lowest_level==NONE ? lowest_adjacent_floor : lowest_level;
 			platform->maximum_floor_height= highest_level==NONE ? highest_adjacent_floor : highest_level;
-			platform->minimum_ceiling_height= platform->maximum_ceiling_height= polygon->ceiling_height;
+			// IR change: B&B prep side effect
+			platform->minimum_ceiling_height= platform->maximum_ceiling_height= polygon->highest_ceiling();
 		}
 		else if (PLATFORM_COMES_FROM_CEILING(platform))
 		{
 
 			if (PLATFORM_USES_NATIVE_POLYGON_HEIGHTS(platform))
 			{
-				if (polygon->ceiling_height>highest_adjacent_ceiling || PLATFORM_EXTENDS_FLOOR_TO_CEILING(platform))
+				// IR change: B&B prep side effect
+				if (polygon->highest_ceiling()>highest_adjacent_ceiling || PLATFORM_EXTENDS_FLOOR_TO_CEILING(platform))
 				{
-					highest_adjacent_ceiling= polygon->ceiling_height;
+					highest_adjacent_ceiling= polygon->highest_ceiling();
 				}
 				else
 				{
-					lowest_adjacent_ceiling= polygon->ceiling_height;
+					lowest_adjacent_ceiling= polygon->highest_ceiling();
 				}
 			}
 			
 			platform->minimum_ceiling_height= lowest_level==NONE ? lowest_adjacent_ceiling : lowest_level;
 			platform->maximum_ceiling_height= highest_level==NONE ? highest_adjacent_ceiling : highest_level;
-			platform->minimum_floor_height= platform->maximum_floor_height= polygon->floor_height;
+			// IR change: B&B prep side effect
+			platform->minimum_floor_height= platform->maximum_floor_height= polygon->lowest_floor();
 		}
 	}
 }
@@ -1037,7 +1093,8 @@ static void adjust_platform_sides(
 					case _full_side:
 					case _high_side:
 					case _split_side:
-						side->primary_texture.y0+= delta_height;
+						// IR change: B&B prep side effect
+						side->primary_texture.origin.y+= delta_height;
 						break;
 				}
 			}
@@ -1052,31 +1109,160 @@ static void adjust_platform_sides(
 			side= get_side_data(side_index);
 			switch (side->type)
 			{
+				// IR changes: B&B prep side effect
 				case _split_side: /* secondary */
-					top_of_side_height= MIN(line->highest_adjacent_floor,  polygon->ceiling_height);
-					side->primary_texture.y0-= (old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
+					top_of_side_height= MIN(line->highest_floor(),  polygon->highest_ceiling());
+					side->primary_texture.origin.y-= (old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
 						delta_height : new_ceiling_height-top_of_side_height;
 					break;
 				case _high_side: /* primary */
 //					top_of_side_height= polygon->ceiling_height;
-					side->primary_texture.y0-= delta_height; //(old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
+					side->primary_texture.origin.y-= delta_height; //(old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
 //						delta_height : new_ceiling_height-top_of_side_height;
 					break;
 				case _full_side: /* primary */
-					side->primary_texture.y0-= delta_height;
+					side->primary_texture.origin.y-= delta_height;
 					break;
 				case _low_side: /* primary */
-					top_of_side_height= MIN(line->highest_adjacent_floor, polygon->ceiling_height);
-					side->primary_texture.y0-= (old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
+					top_of_side_height= MIN(line->highest_floor(), polygon->highest_ceiling());
+					side->primary_texture.origin.y-= (old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
 						delta_height : new_ceiling_height-top_of_side_height;
 					break;
-			
+				case _empty_side:
+					break; // do nothing.
 				default:
 					vhalt(csprintf(temporary, "wasnÕt expecting side #%d to have type #%d", side_index, side->type));
 					break;
 			}
 		}
 	}
+<<<<<<< platforms.cpp
+	
+	return;
+}
+
+static void adjust_platform_clip(short platform_index) {
+	struct platform_data *platform= get_platform_data(platform_index);
+	struct polygon_data *polygon= get_polygon_data(platform->polygon_index);
+	short i;
+	
+	for (i= 0; i<polygon->vertex_count; ++i)
+	{
+		short side_index;
+		struct side_data *side;
+		struct line_data *line= get_line_data(polygon->line_indexes[i]);
+		short adjacent_polygon_index= polygon->adjacent_polygon_indexes[i];
+		
+		bool transparent = line->highest_floor() < line->lowest_ceiling();
+		
+		/* adjust the platform side (i.e., the texture on the side of the platform) */
+		if (adjacent_polygon_index!=NONE)
+		{
+			side_index= adjacent_polygon_index==line->clockwise_polygon_owner ? line->clockwise_polygon_side_index : line->counterclockwise_polygon_side_index;
+			if (side_index!=NONE)
+			{
+				side= get_side_data(side_index);
+				if (transparent) {
+					if (line->is_transparent())
+						side->flags |= _side_is_transparent;
+					if (line->highest_floor() > polygon->floor_surface.height)
+						side->flags |= _side_clips_bottom;
+					if (line->lowest_ceiling() <  polygon->ceiling_surface.height)
+						side->flags |= _side_clips_top;
+					
+				} else {
+					side->flags &= ~(_side_is_transparent|_side_clips_top|_side_clips_bottom);
+				}
+			}
+		}
+
+		/* adjust the shaft side (i.e., the texture the platform slides against) */		
+		side_index= polygon->side_indexes[i];
+		if (side_index!=NONE)
+		{
+			world_distance top_of_side_height;
+			
+			side= get_side_data(side_index);
+			if (transparent) {
+				if (line->is_transparent())
+					side->flags |= _side_is_transparent;
+				if (line->highest_floor() ==  polygon->floor_surface.height)
+					side->flags |= _side_clips_bottom;
+				if (line->lowest_ceiling() ==  polygon->ceiling_surface.height)
+					side->flags |= _side_clips_top;
+			} else {
+				side->flags &= ~(_side_is_transparent|_side_clips_top|_side_clips_bottom);
+			}
+		}
+	}
+	
+	return;
+}
+
+#ifdef OBSOLETE
+/*
+	¥ if this is a monster-controllable door, give them the open heights and return
+	_platform_is_accessable if the door is in fact open and _platform_will_be_accessable
+	if the monster should trigger it.
+	
+	¥ if this is a monster uncontrollable door, give them the current heights and tell them
+	to try their luck (_platform_might_be_accessable).
+	
+	¥ if this is an inactive platform, give them the current heights and tell them to try
+	their luck (_platform_might_be_accessable).
+	
+	¥ if this is an active platform and we stop for some non-zero (if not, return
+	_platform_will_never_be_accessable) time at the given level then
+	return _platform_will_be_accessable unless weÕre already there in which case return
+	_platform_is_accessable
+*/
+	
+short monster_can_enter_platform(
+	short platform_index,
+	short source_polygon_index,
+	world_distance *floor,
+	world_distance *height)
+{
+	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
+	struct platform_data *platform= get_platform_data(platform_index);
+	short result_code= _platform_will_never_be_accessable;
+
+	if (PLATFORM_IS_DOOR(platform))
+	{
+		if (PLATFORM_IS_MONSTER_CONTROLLABLE(platform))
+		{
+			if (platform->maximum_ceiling_height-platform->minimum_floor_height>=height &&
+				platform->delay>=_short_delay_platform)
+			{
+				result_code= PLATFORM_IS_FULLY_CONTRACTED(platform) ? _platform_is_accessable : _platform_will_be_accessable;
+			}
+		}
+		else
+		{
+			result_code= _platform_might_be_accessable; /* try your luck (i.e., look at polygon heights) */
+		}
+	}
+	else
+	{
+		if (PLATFORM_IS_ACTIVE(platform) && PLATFORM_COMES_FROM_FLOOR(platform) && !PLATFORM_COMES_FROM_CEILING(platform))
+		{
+			/* if this platform doesnÕt go floor to ceiling and it stops at the source polygon, it might be ok */
+			if (platform->maximum_floor_height!=platform->minimum_ceiling_height &&
+				(platform->minimum_floor_height==source_polygon->floor_height ||
+				platform->maximum_floor_height==source_polygon->floor_height))
+			{
+				result_code= (platform->floor_height==source_polygon->floor_height) ? _platform_is_accessable : _platform_will_be_accessable;
+			}
+		}
+		else
+		{
+			result_code= _platform_might_be_accessable; /* try your luck (i.e., look at polygon heights) */
+		}
+	}
+	
+	return result_code;
+=======
+>>>>>>> 1.11
 }
 
 uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects, int Count)
@@ -1105,6 +1291,7 @@ uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data* Objects,
 	return S;
 }
 
+#if UNUSED
 uint8 * pack_static_platform_data(uint8 *Stream, static_platform_data* Objects, int Count)
 {
 	uint8* S = Stream;
@@ -1130,6 +1317,7 @@ uint8 * pack_static_platform_data(uint8 *Stream, static_platform_data* Objects, 
 	assert((S - Stream) == Count*SIZEOF_static_platform_data);
 	return S;
 }
+#endif
 
 
 inline void StreamToEndpointOwner(uint8* &S, endpoint_owner_data& Object)

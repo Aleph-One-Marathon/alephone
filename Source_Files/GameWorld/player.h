@@ -51,12 +51,15 @@ July 1, 2000 (Loren Petrich):
 
 Aug 31, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+<<<<<<< player.h
+
+Aug 20, 2001 (Ian Rickard):
+	Added a method to player_data for the new debugging system.
+=======
         
 Oct 21, 2001 (Woody Zenfell):
         Moved some info from player.cpp to here, so can be shared (in particular, with SDL net dialog widgets)
-
-Feb 20, 2002 (Woody Zenfell):
-    Support for multiple sets of action queues (including gRealActionQueues)
+>>>>>>> 1.12
 */
 
 // LP additions: stuff that this file needs
@@ -360,6 +363,12 @@ struct player_data
 	int32 netgame_parameters[2];
 	
 	int16 unused[256];
+	
+	// IR added: prep for advanced debugging
+	void DebugLog(){::DebugLog(csprintf(temporary, "player_data: loc:%d,%d,%d; fac:%d; elv:%d; sup:%d; last sup:%d;", 
+			location.x, location.y, location.z, facing, elevation, supporting_polygon_index, last_supporting_polygon_index));
+					::DebugLog(csprintf(temporary, "             cam loc:%d,%d,%d; cam poly:%d", 
+			camera_location.x, camera_location.y, camera_location.z, camera_polygon_index));}
 };
 
 const int SIZEOF_player_data = 930;
@@ -387,12 +396,6 @@ extern struct player_data *players;
 extern short local_player_index, current_player_index;
 extern struct player_data *local_player, *current_player;
 
-// ZZZ: The set of "real" action queues; existing calls like queue_action_flags
-// will be operations on the returned value.  Returned from a function to avoid
-// accidental assignment to the pointer.
-class ActionQueues;
-extern ActionQueues*    GetRealActionQueues();
-
 /* ---------- prototypes/PLAYER.C */
 
 void initialize_players(void);
@@ -407,19 +410,13 @@ void delete_player(short player_number);
 
 void recreate_players_for_new_level(void);
 
-// ZZZ: this now takes a set of ActionQueues as a parameter so the caller can redirect
-// the update routine's input.
-void update_players(ActionQueues* inActionQueuesToUse);
-//void update_players(void); /* assumes ¶t==1 tick */
+void update_players(void); /* assumes ¶t==1 tick */
 
 void walk_player_list(void);
 
-// ZZZ: these have been superseded by operations on GetRealActionQueues().
-/*
 void queue_action_flags(short player_index, uint32 *action_flags, short count);
 uint32 dequeue_action_flags(short player_index);
 short get_action_queue_size(short player_index);
-*/
 
 void damage_player(short monster_index, short aggressor_index, short aggressor_type,
 	struct damage_definition *damage);

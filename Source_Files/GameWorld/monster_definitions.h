@@ -226,12 +226,9 @@ struct monster_definition /* <128 bytes */
 	struct attack_definition ranged_attack;
 };
 
-// So as not to repeat in script_instructions.cpp (Pfhortran)
-#ifndef DONT_REPEAT_DEFINITIONS
-
 /* ---------- monster definitions */
 
-struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
+static struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 {
 	{ /* _monster_marine (canÕt be used as a regular monster) */
 		_collection_player, /* shape collection */
@@ -2880,8 +2877,6 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 // Added for the convenience of the 1-2-3 Converter
 uint8 *unpack_monster_definition(uint8 *Stream, monster_definition *Objects, int Count);
 uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, int Count);
-
-#endif
 
 #endif
 
