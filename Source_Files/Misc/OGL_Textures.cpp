@@ -28,14 +28,22 @@ Jul 10, 2000:
 	Fixed crashing bug when OpenGL is inactive with ResetTextures()
 */
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <agl.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <math.h>
+
 #include "cseries.h"
+
+#ifdef HAVE_OPENGL
+
+#include <GL/gl.h>
+#include <GL/glu.h>
+
+#ifdef mac
+#include <agl.h>
+#endif
+
 #include "interface.h"
 #include "render.h"
 #include "map.h"
@@ -285,8 +293,13 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, GLuint *Col
 			GLuint &Color = ColorTable[k];
 			
 			// Convert from ARGB 5551 to RGBA 8888; make opaque
+#ifdef LITTLE_ENDIAN
+			GLushort Intmd = GLushort(OrigPtr[0]);
+			Intmd = Intmd | (GLushort(OrigPtr[1]) << 8);
+#else
 			GLushort Intmd = GLushort(OrigPtr[0]);
 			Intmd = (Intmd << 8) | GLushort(OrigPtr[1]);
+#endif
 			Color = Convert_16to32(Intmd);
 		}
 		break;
@@ -299,6 +312,19 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, GLuint *Col
 			
 			// Convert from ARGB 8888 to RGBA 8888; make opaque
 			GLuint Chan;
+#ifdef LITTLE_ENDIAN
+			// Red
+			Chan = OrigPtr[1];
+			Color = Chan;
+			// Green
+			Chan = OrigPtr[2];
+			Color |= Chan << 8;
+			// Blue
+			Chan = OrigPtr[3];
+			Color |= Chan << 16;
+			// Alpha
+			Color |= 0xff000000;
+#else
 			// Red
 			Chan = OrigPtr[1];
 			Color = Chan << 24;
@@ -310,6 +336,7 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, GLuint *Col
 			Color |= Chan << 8;
 			// Alpha
 			Color |= 0x000000ff;
+#endif
 		}
 		break;
 	}
@@ -616,17 +643,29 @@ void TextureManager::FindColorTables()
 		for (int k=1; k<MAXIMUM_SHADING_TABLE_INDEXES; k++)
 		{
 			// Check for illumination-independent colors
+#ifdef LITTLE_ENDIAN
+			if (GlowColorTable[k] & 0x00f0f0f0)
+#else
 			if (GlowColorTable[k] & 0xf0f0f000)
+#endif
 			{
 				IsGlowing = true;
 				// Make half-opaque, and the original color;
 				// this is to get more like the software rendering
+#ifdef LITTLE_ENDIAN
+				GlowColorTable[k] = NormalColorTable[k] & 0x80ffffff;
+#else
 				GlowColorTable[k] = NormalColorTable[k] & 0xffffff80;
+#endif
 			}
 			else
 				// Make transparent but the original color,
 				// so as to get appropriate continuity
+#ifdef LITTLE_ENDIAN
+				GlowColorTable[k] = NormalColorTable[k] & 0x00ffffff;
+#else
 				GlowColorTable[k] = NormalColorTable[k] & 0xffffff00;
+#endif
 		}
 	}
 	
@@ -639,25 +678,45 @@ void TextureManager::FindColorTables()
 			// Get the normal color; the glow color is calculated from it,
 			// so this is OK.
 			unsigned long CTabEntry = NormalColorTable[k];
+#ifdef LITTLE_ENDIAN
+			if (!(CTabEntry & 0xff000000)) continue;
+#else
 			if (!(CTabEntry & 0x000000ff)) continue;
+#endif
 			
 			// Suppress the opacity, since we'll be replacing it
+#ifdef LITTLE_ENDIAN
+			CTabEntry &= 0x00ffffff;
+#else
 			CTabEntry &= 0xffffff00;
+#endif
 			
 			// Find the overall opacity
 			float Opacity = 1;
 			if (OpacityType == OGL_OpacType_Avg)
 			{
+#ifdef LITTLE_ENDIAN
+				unsigned long Red = CTabEntry & 0x000000ff;
+				unsigned long Green = (CTabEntry >> 8) & 0x000000ff;
+				unsigned long Blue = (CTabEntry >> 16) & 0x000000ff;
+#else
 				unsigned long Red = (CTabEntry >> 24) & 0x000000ff;
 				unsigned long Green = (CTabEntry >> 16) & 0x000000ff;
 				unsigned long Blue = (CTabEntry >> 8) & 0x000000ff;
+#endif
 				Opacity = (Red + Green + Blue)/3.0/float(0xff);
 			}
 			else if (OpacityType == OGL_OpacType_Max)
 			{
+#ifdef LITTLE_ENDIAN
+				unsigned long Red = CTabEntry & 0x000000ff;
+				unsigned long Green = (CTabEntry >> 8) & 0x000000ff;
+				unsigned long Blue = (CTabEntry >> 16) & 0x000000ff;
+#else
 				unsigned long Red = (CTabEntry >> 24) & 0x000000ff;
 				unsigned long Green = (CTabEntry >> 16) & 0x000000ff;
 				unsigned long Blue = (CTabEntry >> 8) & 0x000000ff;
+#endif
 				Opacity = MAX(MAX(Red,Green),Blue)/float(0xff);
 			}
 			Opacity *= TxtrOptsPtr->OpacityScale;
@@ -666,18 +725,35 @@ void TextureManager::FindColorTables()
 			
 			// Replace only the really-glowing colors' opacities
 			unsigned long GlowCTabEntry = GlowColorTable[k];
+#ifdef LITTLE_ENDIAN
+			if (IsGlowing && (GlowCTabEntry & 0xff000000))
+#else
 			if (IsGlowing && (GlowCTabEntry & 0x000000ff))
+#endif
 			{
 				// Suppress the opacity, since we'll be replacing it
+#ifdef LITTLE_ENDIAN
+				GlowCTabEntry &= 0x00ffffff;
+#else
 				GlowCTabEntry &= 0xffffff00;
+#endif
 				
 				// The opacity values for each layer are selected to get
 				// the appropriate overall effect (1/2 normal + 1/2 glowing)		
+#ifdef LITTLE_ENDIAN
+				GlowColorTable[k] = GlowCTabEntry | (MakeUnsignedLong(Opacity/2) << 24);
+				NormalColorTable[k] = CTabEntry | (MakeUnsignedLong(Opacity/(2-Opacity)) << 24);
+#else
 				GlowColorTable[k] = GlowCTabEntry | MakeUnsignedLong(Opacity/2);
 				NormalColorTable[k] = CTabEntry | MakeUnsignedLong(Opacity/(2-Opacity));
+#endif
 			} else {
 				// Non-glowing colors are done here
+#ifdef LITTLE_ENDIAN
+				NormalColorTable[k] = CTabEntry | (MakeUnsignedLong(Opacity) << 24);
+#else
 				NormalColorTable[k] = CTabEntry | MakeUnsignedLong(Opacity);
+#endif
 			}
 		}
 	}
@@ -732,6 +808,7 @@ GLuint *TextureManager::GetOGLTexture(GLuint *ColorTable)
 			// assumes big-endian data
 				
 			// First destination location
+#if defined(mac)
 			word First = word(*(OrigStrip++));
 			First <<= 8;
 			First |= word(*(OrigStrip++));
@@ -739,6 +816,12 @@ GLuint *TextureManager::GetOGLTexture(GLuint *ColorTable)
 			word Last = word(*(OrigStrip++));
 			Last <<= 8;
 			Last |= word(*(OrigStrip++));
+#elif defined(SDL)
+			// Under SDL, the start/end locations are native-endian (this may change in the future)
+			uint16 First = 0[(uint16 *)OrigStrip];
+			uint16 Last = 1[(uint16 *)OrigStrip];
+			OrigStrip += 4;
+#endif
 			
 			// Calculate original-texture and OpenGL-texture offsets
 			// and how many pixels to do
@@ -811,11 +894,17 @@ inline GLuint MakeEightBit(GLfloat Chan)
 
 GLuint MakeTxtrColor(GLfloat *Color)
 {
+#ifdef LITTLE_ENDIAN
+	GLuint Red = MakeEightBit(Color[0]);
+	GLuint Green = MakeEightBit(Color[1]) << 8;
+	GLuint Blue = MakeEightBit(Color[2]) << 16;
+	GLuint Alpha = MakeEightBit(Color[3]) << 24;
+#else
 	GLuint Red = MakeEightBit(Color[0]) << 24;
 	GLuint Green = MakeEightBit(Color[1]) << 16;
 	GLuint Blue = MakeEightBit(Color[2]) << 8;
 	GLuint Alpha = MakeEightBit(Color[3]);
-
+#endif
 	return (Red | Green | Blue | Alpha); 
 }
 
@@ -1064,3 +1153,5 @@ void MakeConversion_16to32(int BitDepth)
 	}
 }
 */
+
+#endif // def HAVE_OPENGL

@@ -56,6 +56,9 @@ Unix:
   is /usr/local). The Aleph One executable will be installed in PREFIX/bin, and
   the data files in PREFIX/share/AlephOne.
 
+  If you don't have hardware accelerated OpenGL, you may want to specify the
+  "--disable-opengl" option to the configure script.
+
 BeOS:
   There is a special Makefile for compiling under BeOS. Install Aleph One as
   follows:
@@ -156,6 +159,7 @@ list:
   [-v | --version]       Display the game version
   [-f | --fullscreen]    Run the game fullscreen
   [-8 | --8bit]          Run the game in 8 bit color depth
+  [-g | --nogl]          Do not use OpenGL
   [-m | --nomouse]       Disable mouse control
   [-s | --nosound]       Do not access the sound card
   [-l | --level] number  Holding Ctrl and Shift while clicking
@@ -272,7 +276,6 @@ them:
 
  - Preferences menus (the "Preferences" button on the title screen is
    nonfunctional)
- - OpenGL rendering
  - The game could run faster in 16-bit mode on some machines if an RGB 565
    renderer was implemented
  - Physics models in map files are not loaded (needed for playing Marathon
@@ -314,7 +317,9 @@ and try again.
 If the game runs very slowly, setting your screen to 15 bit color depth
 (RGB 555) instead of 16 bit (RGB 565) will make it run much faster. If you
 can't do this, you may want to run Aleph One in 8 bit mode by specifying
-the "-8" argument.
+the "-8" argument. If you don't have hardware accelerated OpenGL, you should
+specify the "-g" argument to enable software rendering (unless you configured
+Aleph One with the "--disable-opengl" option).
 
 
 SUPPORT

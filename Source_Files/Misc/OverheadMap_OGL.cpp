@@ -37,13 +37,22 @@ Aug 6, 2000 (Loren Petrich):
 	this guarantees that this object will always be drawn reasonably correctly
 */
 
-#include "OverheadMap_OGL.h"
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <agl.h>
 #include <math.h>
 #include <string.h>
+
+#include "cseries.h"
+#include "OverheadMap_OGL.h"
 #include "map.h"
+
+#ifdef HAVE_OPENGL
+
+#include <GL/gl.h>
+#include <GL/glu.h>
+
+#ifdef mac
+#include <agl.h>
+#endif
+
 
 // rgb_color straight to OpenGL
 inline void SetColor(rgb_color& Color) {glColor3usv((unsigned short *)(&Color));}
@@ -57,8 +66,10 @@ inline bool ColorsEqual(rgb_color& Color1, rgb_color& Color2)
 				(Color1.blue == Color2.blue));
 }
 
+#ifdef mac
 // Render context for aglUseFont(); defined in OGL_Render.c
 extern AGLContext RenderContext;
+#endif
 
 void OverheadMap_OGL_Class::begin_overall()
 {
@@ -296,6 +307,7 @@ void OverheadMap_OGL_Class::draw_text(
 	short which,
 	short justify)
 {
+#ifdef mac
 	// Pascalify the name; watch out for buffer overflows
 	Str255 pascal_text;
 	strncpy((char *)pascal_text, text, 255);
@@ -344,6 +356,7 @@ void OverheadMap_OGL_Class::draw_text(
 		GLuint ByteDisplayList = CacheMember.DispList + pascal_text[b];
 		glCallLists(1,GL_UNSIGNED_INT,&ByteDisplayList);
 	}
+#endif
 }
 	
 void OverheadMap_OGL_Class::set_path_drawing(rgb_color& color)
@@ -383,7 +396,9 @@ void FontCacheData::Update()
 	}
 	
 	DispList = glGenLists(256);
+#ifdef mac
 	aglUseFont(RenderContext, FontData.font, FontData.face, FontData.size, 0, 256, DispList);
+#endif
 }
 
 // This is for clearing the font display list
@@ -402,3 +417,5 @@ void OverheadMap_OGL_Class::ResetFonts()
 	for (int ic=0; ic<FONT_CACHE_SIZE; ic++)
 		FontCache[ic].Clear();
 }
+
+#endif // def HAVE_OPENGL

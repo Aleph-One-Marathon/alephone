@@ -15,12 +15,12 @@
 	Made semitransparency optional if the void is on one side of the texture
 */
 
+#include "cseries.h"
 
 #ifdef mac
 #include <agl.h>
 #endif
 
-#include "cseries.h"
 #include "shape_descriptors.h"
 #include "OGL_Setup.h"
 
@@ -42,7 +42,7 @@ bool OGL_Initialize()
 	// return (_OGL_IsPresent = ((Ptr)glBegin != (Ptr)kUnresolvedCFragSymbolAddress));
 #elif defined(SDL)
 	// nothing to do
-	return true;
+	return _OGL_IsPresent = true;
 #else
 #error OGL_Initialize() not implemented for this platform
 #endif

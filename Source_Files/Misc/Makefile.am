@@ -26,7 +26,8 @@ alephone_SOURCES = \
   weapons.h world.h \
   \
   AnimatedTextures.cpp ChaseCam.cpp ColorParser.cpp Crosshairs_SDL.cpp \
-  DamageParser.cpp FileHandler_SDL.cpp OGL_Setup.cpp OverheadMap_SDL.cpp \
+  DamageParser.cpp FileHandler_SDL.cpp OGL_Faders.cpp OGL_Render.cpp \
+  OGL_Setup.cpp OGL_Textures.cpp OverheadMap_OGL.cpp OverheadMap_SDL.cpp \
   OverheadMapRenderer.cpp PlayerName.cpp RenderPlaceObjs.cpp \
   RenderRasterize.cpp RenderSortPoly.cpp RenderVisTree.cpp ShapesParser.cpp \
   TextStrings.cpp ViewControl.cpp XML_Configure.cpp XML_ElementParser.cpp \

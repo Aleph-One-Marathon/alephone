@@ -73,13 +73,22 @@ Aug 10, 2000:
 	were made nonstatic so that Pfhortran can see them.
 */
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <agl.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+
 #include "cseries.h"
+
+#ifdef HAVE_OPENGL
+
+#include <GL/gl.h>
+#include <GL/glu.h>
+
+#ifdef mac
+#include <agl.h>
+#include "my32bqd.h"
+#endif
+
 #include "interface.h"
 #include "render.h"
 #include "map.h"
@@ -88,7 +97,6 @@ Aug 10, 2000:
 #include "Crosshairs.h"
 #include "VectorOps.h"
 #include "GrowableList.h"
-#include "my32bqd.h"
 #include "Random.h"
 #include "ViewControl.h"
 #include "OGL_Faders.h"
@@ -97,8 +105,10 @@ Aug 10, 2000:
 // Whether or not OpenGL is active for rendering
 static bool _OGL_IsActive = false;
 
+#ifdef mac
 // Render context; expose for OGL_Map.c
 AGLContext RenderContext;
+#endif
 
 // Was OpenGL just inited? If so, then some state may need changing
 static bool JustInited = false;
@@ -330,19 +340,26 @@ bool OGL_IsActive() {if (OGL_IsPresent()) return _OGL_IsActive; else return fals
 
 
 // Start an OpenGL run (creates a rendering context)
+#ifdef mac
 bool OGL_StartRun(CGrafPtr WindowPtr)
+#else
+bool OGL_StartRun()
+#endif
 {
 	if (!OGL_IsPresent()) return false;
 	
 	// Will stop previous run if it had been active
 	if (OGL_IsActive()) OGL_StopRun();
 	
+#ifdef mac
 	// If bit depth is too small, then don't start
 	if (bit_depth <= 8) return false;
+#endif
 	
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer) != 0;
 	
+#ifdef mac
 	// Plain and simple
 	GrowableList<GLint> PixelFormatSetupList(16);
 	PixelFormatSetupList.Add(GLint(AGL_RGBA));
@@ -382,6 +399,7 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 		aglDestroyContext(RenderContext);
 		return false;
 	}
+#endif
 	
 	// Set up some OpenGL stuff: these will be the defaults for this rendering context
 	
@@ -435,10 +453,12 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 	// Fog status:
 	FogPresent = TEST_FLAG(ConfigureData.Flags,OGL_Flag_Fog);
 		
+#ifdef mac
 	// Convenient function for setting up fonts;
 	// set aside some display lists for them
 	FontDisplayList = glGenLists(256);
 	aglUseFont(RenderContext, kFontIDMonaco, normal, 12, 0, 256, FontDisplayList);
+#endif
 	
 	// Reset the font into for overhead-map fonts done in OpenGL fashion
 	OGL_ResetMapFonts();
@@ -459,7 +479,9 @@ bool OGL_StopRun()
 	
 	OGL_StopTextures();
 	
+#ifdef mac
 	aglDestroyContext(RenderContext);
+#endif
 	
 	_OGL_IsActive = false;
 	return true;
@@ -520,6 +542,7 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 	RectBounds[0] -= ScreenBounds.left;
 	RectBounds[1] += ScreenBounds.top;
 	
+#ifdef mac
 	if (UseBackBuffer)
 	{
 		// This could not be gotten to work quite right, so a more roundabout way is being done;
@@ -533,6 +556,7 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 		aglEnable(RenderContext,AGL_SWAP_RECT);
 		aglSetInteger(RenderContext,AGL_SWAP_RECT,RectBounds);
 	}
+#endif
 	
 	// Do OpenGL bounding
 	glScissor(RectBounds[0], RectBounds[1], RectBounds[2], RectBounds[3]);
@@ -661,7 +685,13 @@ bool OGL_SwapBuffers()
 {
 	if (!OGL_IsActive()) return false;
 	
+#if defined(mac)
 	aglSwapBuffers(RenderContext);
+#elif defined(SDL)
+	SDL_GL_SwapBuffers();
+#else
+#error OGL_SwapBuffers() not implemented for this platform
+#endif
 	
 	return true;
 }
@@ -1999,6 +2029,7 @@ bool OGL_SetInfravisionTint(short Collection, bool IsTinted, float Red, float Gr
 }
 
 
+#ifdef mac
 // Returns whether or not 2D stuff is to be piped through OpenGL
 bool OGL_Get2D()
 {
@@ -2112,3 +2143,6 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	
 	return true;
 }
+#endif // def mac
+
+#endif // def HAVE_OPENGL

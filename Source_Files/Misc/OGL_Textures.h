@@ -199,6 +199,20 @@ inline byte FiveToEight(byte x) {return (x << 3) | ((x >> 2) & 0x07);}
 // ARGB 1555 to RGBA 8888
 inline GLuint Convert_16to32(uint16 InPxl)
 {
+#ifdef LITTLE_ENDIAN
+	// Alpha preset
+	GLuint OutPxl = 0xff000000;
+	GLuint Chan;
+	// Red
+	Chan = FiveToEight(InPxl >> 10);
+	OutPxl |= Chan;
+	// Green
+	Chan = FiveToEight(InPxl >> 5);
+	OutPxl |= Chan << 8;
+	// Blue
+	Chan = FiveToEight(InPxl);
+	OutPxl |= Chan << 16;
+#else
 	// Alpha preset
 	GLuint OutPxl = 0x000000ff;
 	GLuint Chan;
@@ -211,6 +225,7 @@ inline GLuint Convert_16to32(uint16 InPxl)
 	// Blue
 	Chan = FiveToEight(InPxl);
 	OutPxl |= Chan << 8;
+#endif
 	
 	return OutPxl;
 }

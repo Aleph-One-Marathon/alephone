@@ -334,6 +334,10 @@ static void draw_picture(LoadedResource &rsrc)
 
 	// Update display and free picture surface
 	SDL_UpdateRects(SDL_GetVideoSurface(), 1, &dest_rect);
+#ifdef HAVE_OPENGL
+	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+		SDL_GL_SwapBuffers();
+#endif
 	SDL_FreeSurface(s);
 }
 
@@ -418,6 +422,10 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 			src_rect.y = scroll_vertical ? delta : 0;
 			SDL_BlitSurface(s, &src_rect, SDL_GetVideoSurface(), &dst_rect);
 			SDL_UpdateRects(SDL_GetVideoSurface(), 1, &dst_rect);
+#ifdef HAVE_OPENGL
+			if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+				SDL_GL_SwapBuffers();
+#endif
 
 			// Give system time
 			global_idle_proc();

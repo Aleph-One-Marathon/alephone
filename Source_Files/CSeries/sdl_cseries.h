@@ -22,11 +22,15 @@
 
 
 /*
- *  General definitions
+ *  Endianess definitions
  */
 
-#if !defined(LITTLE_ENDIAN) && (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+#undef LITTLE_ENDIAN
+#undef BIG_ENDIAN
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define LITTLE_ENDIAN 1
+#else
+#define BIG_ENDIAN 1
 #endif
 
 

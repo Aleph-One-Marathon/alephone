@@ -7,12 +7,15 @@
 	This contains code for doing fader stuff.	
 */
 
-#include <GL/gl.h>
 #include "cseries.h"
 #include "fades.h"
 #include "render.h"
 #include "OGL_Render.h"
 #include "OGL_Faders.h"
+
+#ifdef HAVE_OPENGL
+
+#include <GL/gl.h>
 
 // Fader stuff
 bool OGL_FaderActive()
@@ -162,3 +165,5 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 	
 	return true;
 }
+
+#endif // def HAVE_OPENGL

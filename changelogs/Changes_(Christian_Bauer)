@@ -1,5 +1,8 @@
 Change log of the SDL version of Aleph One
 
+August 30, 2000
+ - implemented OpenGL rendering
+
 August 29, 2000
  - intro music and chapter screen sounds now work
  - implemented darken_world_window()

@@ -105,6 +105,12 @@ static bool screen_initialized = false;
 short bit_depth = NONE;
 short interface_bit_depth = NONE;
 
+#ifdef HAVE_OPENGL
+// This is defined in overhead_map.c
+// It indicates whether to render the overhead map in OpenGL
+extern bool OGL_MapActive;
+#endif
+
 static struct screen_mode_data screen_mode;
 
 
@@ -112,7 +118,7 @@ static struct screen_mode_data screen_mode;
 extern bool option_fullscreen;
 
 // Prototypes
-static void change_screen_mode(int width, int height, int depth);
+static void change_screen_mode(int width, int height, int depth, bool nogl);
 static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
@@ -168,9 +174,9 @@ void initialize_screen(struct screen_mode_data *mode)
 	} else
 		unload_all_collections();
 
-	// Set screen to 640x480 for menu
-	change_screen_mode(640, 480, bit_depth);
+	// Set screen to 640x480 without OpenGL for menu
 	screen_mode = *mode;
+	change_screen_mode(640, 480, bit_depth, true);
 
 	screen_initialized = true;
 }
@@ -253,13 +259,10 @@ void ResetFieldOfView()
 
 void ReloadViewContext(void)
 {
-	if (screen_mode.acceleration == _opengl_acceleration) {
 #ifdef HAVE_OPENGL
+	if (screen_mode.acceleration == _opengl_acceleration)
 		OGL_StartRun();
-#else
-		screen_mode.acceleration = _no_acceleration;
 #endif
-	}
 }
 
 
@@ -280,13 +283,10 @@ void enter_screen(void)
 	// Set screen to selected size
 	change_screen_mode(&screen_mode, true);
 
-	if (screen_mode.acceleration == _opengl_acceleration) {
 #ifdef HAVE_OPENGL
-		OGL_StartRun(screen)window);
-#else
-		screen_mode.acceleration = _no_acceleration;
+	if (screen_mode.acceleration == _opengl_acceleration)
+		OGL_StartRun();
 #endif
-	}
 }
 
 
@@ -296,8 +296,8 @@ void enter_screen(void)
 
 void exit_screen(void)
 {
-	// Return to 640x480
-	change_screen_mode(640, 480, bit_depth);
+	// Return to 640x480 without OpenGL
+	change_screen_mode(640, 480, bit_depth, true);
 
 #ifdef HAVE_OPENGL
 	OGL_StopRun();
@@ -309,9 +309,24 @@ void exit_screen(void)
  *  Change screen mode
  */
 
-static void change_screen_mode(int width, int height, int depth)
+static void change_screen_mode(int width, int height, int depth, bool nogl)
 {
-	uint32 flags = SDL_HWSURFACE | SDL_HWPALETTE | (option_fullscreen ? SDL_FULLSCREEN : 0);
+	uint32 flags = (option_fullscreen ? SDL_FULLSCREEN : 0);
+#ifdef HAVE_OPENGL
+	// The original idea was to only enable OpenGL for the in-game display, but
+	// SDL crashes if OpenGL is turned on later
+	if (/*!nogl && */ screen_mode.acceleration == _opengl_acceleration) {
+		flags |= SDL_OPENGLBLIT;
+		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	} else
+		flags |= SDL_HWSURFACE | SDL_HWPALETTE;
+#else
+	flags |= SDL_HWSURFACE | SDL_HWPALETTE;
+#endif
 	main_surface = SDL_SetVideoMode(width, height, depth, flags);
 	if (main_surface == NULL) {
 		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
@@ -336,7 +351,7 @@ void change_screen_mode(struct screen_mode_data *mode, boolean redraw)
 	// Open SDL display
 	int msize = mode->size;
 	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
-	change_screen_mode(ViewSizes[msize].OverallWidth, ViewSizes[msize].OverallHeight, mode->bit_depth);
+	change_screen_mode(ViewSizes[msize].OverallWidth, ViewSizes[msize].OverallHeight, mode->bit_depth, false);
 	
 	// "Redraw" means clear the screen
 	if (redraw)
@@ -472,11 +487,6 @@ void render_screen(short ticks_elapsed)
 		reallocate_world_pixels(BufferRect.w, BufferRect.h);
 	}
 
-#ifdef HAVE_OPENGL
-	// Be sure that the main view is buffered...
-	OGL_SetWindow(ScreenRect, ViewRect, true);
-#endif
-
 	switch (screen_mode.acceleration) {
 		case _opengl_acceleration:
 			// If we're using the overhead map, fall through to no acceleration
@@ -513,13 +523,17 @@ void render_screen(short ticks_elapsed)
 		OGL_MapActive = false;
 #endif
 
+#ifdef HAVE_OPENGL
+	// Set OpenGL viewport to world view
+	Rect sr = {ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
+	Rect vr = {ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
+	OGL_SetWindow(sr, vr, true);
+#endif
+
+	// Render world view
 	render_view(world_view, world_pixels_structure);
 
-	update_fps_display(world_pixels);
-
-	// Display position and show crosshairs
-	if (!world_view->terminal_mode_active)
-		DisplayPosition(world_pixels);
+	// Render crosshairs
 	if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
 		if (Crosshairs_IsActive())
 #ifdef HAVE_OPENGL
@@ -527,16 +541,42 @@ void render_screen(short ticks_elapsed)
 #endif
 				Crosshairs_Render(world_pixels);
 
-	// Update world window
-	update_screen(BufferRect, ViewRect, HighResolution);
-	//!! OpenGL
+	// Display FPS and position
+	if (!world_view->terminal_mode_active) {
+		update_fps_display(world_pixels);
+		DisplayPosition(world_pixels);
+	}
+
+#ifdef HAVE_OPENGL
+	// Set OpenGL viewport to whole window (so HUD will be in the right position)
+	OGL_SetWindow(sr, sr, true);
+#endif
+
+	// If the main view is not being rendered in software but OpenGL is active,
+	// then blit the software rendering to the screen
+	if (screen_mode.acceleration == _opengl_acceleration) {
+#ifdef HAVE_OPENGL
+		if (world_view->terminal_mode_active || (world_view->overhead_map_active && !OGL_MapActive)) {
+
+			// Copy 2D rendering to screen
+			update_screen(BufferRect, ViewRect, HighResolution);
+		}
+#endif
+	} else {
+
+		// Update world window
+		update_screen(BufferRect, ViewRect, HighResolution);
+	}
 
 	// Update HUD
 	if (HUD_RenderRequest) {
-		//!! OpenGL
 		DrawHUD(HUD_DestRect);
 		HUD_RenderRequest = false;
 	}
+
+	// Swap OpenGL double-buffers
+	if (screen_mode.acceleration == _opengl_acceleration)
+		OGL_SwapBuffers();
 }
 
 
@@ -546,18 +586,7 @@ void render_screen(short ticks_elapsed)
 
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 {
-#if 1
 	SDL_BlitSurface(world_pixels, NULL, main_surface, &destination);
-#else
-	uint32 *p = (uint32 *)main_surface->pixels;
-	uint32 *q = (uint32 *)world_pixels->pixels;
-	for (int y=0; y<destination.h; y++) {
-		for (int x=0; x<destination.w/4; x++)
-			p[x] = q[x];
-		p += main_surface->pitch >> 2;
-		q += world_pixels->pitch >> 2;
-	}
-#endif
 	SDL_UpdateRects(main_surface, 1, &destination);
 }
 
@@ -699,6 +728,7 @@ static void update_fps_display(SDL_Surface *s)
 
 		// Print to screen
 		draw_text(world_pixels, fps, 5, world_pixels->h - 5, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), load_font(monaco_spec), normal);
+		//!! OpenGL
 	} else
 		frame_count = frame_index = 0;
 }
@@ -742,6 +772,7 @@ static void DisplayPosition(SDL_Surface *s)
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Pitch   = %8.3f", AngleConvert * Angle);
 	draw_text(world_pixels, temporary, 5, Y, pixel, font, normal);
+	//!! OpenGL
 }
 
 
@@ -884,6 +915,9 @@ static inline void draw_pattern_rect(T *p, int pitch, uint32 pixel, const SDL_Re
 
 void darken_world_window(void)
 {
+	if (main_surface->flags & SDL_OPENGL)
+		return;	//!!
+
 	// Get black pixel value
 	uint32 pixel = SDL_MapRGB(main_surface->format, 0, 0, 0);
 

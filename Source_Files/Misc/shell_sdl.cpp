@@ -71,9 +71,10 @@ FileSpecifier global_data_dir;	// Global data file directory
 FileSpecifier local_data_dir;	// Local (per-user) data file directory
 
 bool option_fullscreen = false;		// Run fullscreen
-bool option_nosound = false;		// Disable sound output
 bool option_8bit = false;			// Run in 8 bit color depth
+bool option_nogl = false;			// Disable OpenGL
 bool option_nomouse = false;		// Disable mouse control
+bool option_nosound = false;		// Disable sound output
 int option_level = 1;				// Start level for Ctrl-Shift-New Game
 
 #ifndef HAVE_OPENGL
@@ -111,7 +112,7 @@ static void usage(const char *prg_name)
 	printf(
 		"Aleph One " VERSION "\n"
 		"http://source.bungie.org/\n\n"
-		"Original code by Bungie Software <http://www.bungie.com/\n"
+		"Original code by Bungie Software <http://www.bungie.com/>\n"
 		"Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
 	    "Expat XML library by James Clark\n"
 		"SDL port by Christian Bauer <Christian.Bauer@uni-mainz.de>\n"
@@ -120,6 +121,9 @@ static void usage(const char *prg_name)
 		"\t[-v | --version]       Display the game version\n"
 		"\t[-f | --fullscreen]    Run the game fullscreen\n"
 		"\t[-8 | --8bit]          Run the game in 8 bit color depth\n"
+#ifdef HAVE_OPENGL
+		"\t[-g | --nogl]          Do not use OpenGL\n"
+#endif
 		"\t[-m | --nomouse]       Disable mouse control\n"
 		"\t[-s | --nosound]       Do not access the sound card\n"
 		"\t[-l | --level] number  Holding Ctrl and Shift while clicking\n"
@@ -149,6 +153,8 @@ int main(int argc, char **argv)
 			option_fullscreen = true;
 		} else if (strcmp(*argv, "-8") == 0 || strcmp(*argv, "--8bit") == 0) {
 			option_8bit = true;
+		} else if (strcmp(*argv, "-g") == 0 || strcmp(*argv, "--nogl") == 0) {
+			option_nogl = true;
 		} else if (strcmp(*argv, "-m") == 0 || strcmp(*argv, "--nomouse") == 0) {
 			option_nomouse = true;
 		} else if (strcmp(*argv, "-s") == 0 || strcmp(*argv, "--nosound") == 0) {
@@ -267,6 +273,11 @@ static void initialize_application(void)
 	input_preferences->input_device = option_nomouse ? _keyboard_or_game_pad :  _mouse_yaw_pitch;
 	sound_preferences->flags = _more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag;
 	sound_preferences->pitch = 0x00010000;				// 22050Hz
+#ifdef HAVE_OPENGL
+	graphics_preferences->screen_mode.acceleration = option_nogl ? _no_acceleration : _opengl_acceleration;
+#else
+	graphics_preferences->screen_mode.acceleration = _no_acceleration;
+#endif
 	write_preferences();
 
 	initialize_sound_manager(sound_preferences);
