@@ -361,8 +361,12 @@ void RenderVisTreeClass::cast_render_ray(
 			{
 				clipping_endpoint_index= calculate_endpoint_clipping_information(clipping_endpoint_index, clip_flags);
 				
-				if (node->clipping_endpoint_count<MAXIMUM_CLIPPING_ENDPOINTS_PER_NODE)
-					node->clipping_endpoints[node->clipping_endpoint_count++]= clipping_endpoint_index;
+				// Be sure it's valid
+				if (clipping_endpoint_index != NONE)
+				{
+					if (node->clipping_endpoint_count<MAXIMUM_CLIPPING_ENDPOINTS_PER_NODE)
+						node->clipping_endpoints[node->clipping_endpoint_count++]= clipping_endpoint_index;
+				}
 			}
 			
 			parent= node;
@@ -798,10 +802,16 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 
 /* we can actually rely on the given endpoint being transformed because we only set clipping
 	information for endpoints weÕre aiming at, and we transform endpoints before firing at them */
+// Returns NONE of it does not have valid clip info
 short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	short endpoint_index,
 	uint16 clip_flags)
 {
+	// If this endpoint was not transformed, then don't do anything with it,
+	// and indicate that it's not a valid endpoint
+	if (!TEST_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed))
+		return NONE;
+	
 	// LP addition: extend the endpoint-clip list
 	endpoint_clip_data Dummy;
 	Dummy.flags = 0;			// Fake initialization to shut up CW
@@ -835,9 +845,9 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 			data->vector.j= -transformed_endpoint.j;
 			break;
 	}
-	warn(data->vector.i);
+	// warn(data->vector.i);
 	
-	assert(TEST_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed));
+	// assert(TEST_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed));
 	x= endpoint_x_coordinates[endpoint_index];
 
 	data->x= PIN(x, 0, view->screen_width);
