@@ -330,7 +330,7 @@ static bool DM_HandleError(char *Description, OSErr ErrorCode);
 static bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height);
 
 // Callback for getting display-mode info
-static void DM_ModeInfoCallback(void *UserData,
+static pascal void DM_ModeInfoCallback(void *UserData,
 	DMListIndexType Index, DMDisplayModeListEntryPtr ModeInfoPtr);
 
 
@@ -2249,7 +2249,7 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 
 
 // Puts record into global
-void DM_ModeInfoCallback(void *UserData,
+pascal void DM_ModeInfoCallback(void *UserData,
 	DMListIndexType Index, DMDisplayModeListEntryPtr ModeInfoPtr)
 {
 	// Ensures that my mode-list object will get the mode-info pointer
