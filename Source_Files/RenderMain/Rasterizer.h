@@ -40,6 +40,14 @@ public:
 	// be sure to call it before doing any rendering
 	virtual void SetView(view_data& View) {}
 	
+	// Sets the rasterizer so that it will start rendering foreground objects
+	// like weapons in hand
+	virtual void SetForeground() {}
+	
+	// Sets the view of a foreground object;
+	// parameter is whether it is horizontally reflected
+	virtual void SetForegroundView(bool HorizReflect) {}
+	
 	// Rendering calls
 	virtual void Begin() {}
 	virtual void End() {}

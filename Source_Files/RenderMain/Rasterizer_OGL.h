@@ -37,6 +37,14 @@ public:
 	// be sure to call it before doing any rendering
 	void SetView(view_data& View) {OGL_SetView(View);}
 	
+	// Sets the rasterizer so that it will start rendering foreground objects
+	// like weapons in hand
+	virtual void SetForeground() {OGL_SetForeground();}
+	
+	// Sets the view of a foreground object;
+	// parameter is whether it is horizontally reflected
+	virtual void SetForegroundView(bool HorizReflect) {OGL_SetForegroundView(HorizReflect);}
+	
 	// Rendering calls
 	void Begin() {OGL_StartMain();}
 	void End() {OGL_EndMain();}

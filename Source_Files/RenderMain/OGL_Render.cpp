@@ -373,6 +373,19 @@ const double TWO_PI = 8*atan(1.0);
 const double Radian2Circle = 1/TWO_PI;			// A circle is 2*pi radians
 const double FullCircleReciprocal = 1/double(FULL_CIRCLE);
 
+
+// Number of static-effect rendering passes
+#define USE_STIPPLE_STATIC_EFFECT
+#ifdef USE_STIPPLE_STATIC_EFFECT
+// For stippling
+const int StaticEffectPasses = 4;
+const int SeparableStaticEffectPasses = 4;	// Because of all-or-nothing for all passes
+#else
+// for stenciling
+const int StaticEffectPasses = 3;
+const int SeparableStaticEffectPasses = 0;	// Do every model triangle separately for safety 
+#endif
+
 // Yaw angle (full circle = 1)
 static double Yaw;
 
@@ -396,6 +409,9 @@ inline bool FogActive()
 // Current fog color; may be different from the fog color above because of infravision being on
 static GLfloat CurrFogColor[4] = {0,0,0,0};
 
+
+// For doing static effects with stenciling
+static float StencilTxtrOpacity;
 
 // Stipple patterns for that static look
 // (3 color channels + 1 alpha channel) * 32*32 array of bits
@@ -580,6 +596,8 @@ bool OGL_StartRun()
 		PixelFormatSetupList.push_back(GLint(AGL_DEPTH_SIZE));
 		PixelFormatSetupList.push_back(16);
 	}
+	PixelFormatSetupList.push_back(GLint(AGL_STENCIL_SIZE));
+	PixelFormatSetupList.push_back(GLint(1));
 	PixelFormatSetupList.push_back(GLint(AGL_NONE));
 	
 	// Request that pixel format
@@ -998,22 +1016,7 @@ bool OGL_StartMain()
 	// Also do flat static if requested;
 	// done once per frame to avoid visual inconsistencies
 	UseFlatStatic = TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatStatic);
-	if (UseFlatStatic)
-	{
-		// Made this per-sprite
-		/*
-		for (int c=0; c<3; c++)
-			FlatStaticColor[c] = StaticRandom.KISS() + StaticRandom.LFIB4();
-		*/
-	} else {
-		// Moved this down to where it is actually used
-		/*
-		for (int c=0; c<3; c++)
-			for (int n=0; n<StatPatLen; n++)
-				StaticPatterns[c][n] = StaticRandom.KISS() + StaticRandom.LFIB4();
-		*/
-	}
-		
+	
 	return true;
 }
 
@@ -1218,6 +1221,45 @@ bool OGL_SetView(view_data &View)
 		
 	// Finally...
 	SelfLuminosity = View.maximum_depth_intensity;
+	
+	return true;
+}
+
+
+// Sets the view to what's suitable for rendering foreground objects
+// like weapons in hand
+bool OGL_SetForeground()
+{
+	// Foreground objects are to be in front of all the other ones
+	glClear(GL_DEPTH_BUFFER_BIT);
+	
+	return true;
+}
+
+
+// Sets whether a foreground object is horizontally reflected
+bool OGL_SetForegroundView(bool HorizReflect)
+{
+	// x is rightward (OpenGL: x is rightward)
+	// y is forward (OpenGL: y is upward)
+	// z is upward (OpenGL: z is backward)
+	const GLdouble Foreground_2_OGLEye[16] =
+	{	// Correct OpenGL arrangement: transpose to get usual arrangement
+		1,	0,	0,	0,
+		0,	0,	1,	0,
+		0,	-1,	0,	0,
+		0,	0,	0,	1
+	};
+
+	// Find the appropriate modelview matrix for 3D-model inhabitant rendering
+	glLoadMatrixd(Foreground_2_OGLEye);
+	glGetDoublev(GL_MODELVIEW_MATRIX,World_2_OGLEye);
+	
+	// Perform the reflection if desired; refer to above definition of Foreground_2_OGLEye
+	if (HorizReflect) World_2_OGLEye[0] = -1;
+	
+	// Restore the default modelview matrix
+	glLoadIdentity();
 	
 	return true;
 }
@@ -1978,10 +2020,28 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	
 	// Set up lighting:
 	glColor3f(1,1,1);
-		
-	// Set up blending mode: opaque
-	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_BLEND);
+	
+	// Cribbed from RenderAsRealWall()
+	// Set up blending mode: either sharp edges or opaque
+	// Added support for partial-opacity blending of wall textures
+	// Added support for suppressing semitransparency when the void is on one side;
+	// this suppression is optional for those who like weird smearing effects
+	bool IsBlended = TMgr.IsBlended();
+	if (!RenderPolygon.VoidPresent || TMgr.VoidVisible())
+	{
+		if (IsBlended)
+		{
+			glEnable(GL_BLEND);
+			glDisable(GL_ALPHA_TEST);
+		} else {
+			glDisable(GL_BLEND);
+			glEnable(GL_ALPHA_TEST);
+		}
+	} else {
+		// Completely opaque if can't see through void
+		glDisable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+	}
 	
 	// Proper projection
 	SetProjectionType(Projection_Screen);
@@ -1996,6 +2056,28 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	
 	// Go!
 	glDrawArrays(GL_POLYGON,0,NumVertices);
+	
+	// Cribbed from RenderAsRealWall()
+	// Do textured rendering
+	if (TMgr.IsGlowMapped())
+	{
+		// Do blending here to get the necessary semitransparency;
+		// push the cutoff down so 0.5*0.5 (half of half-transparency)
+		// The cutoff is irrelevant if the texture is set to one of the blended modes
+		// instead of the crisp mode.
+		// Added "IsBlended" test, so that alpha-channel selection would work properly
+		// on a glowmap texture that is atop a texture that is opaque to the void.
+		glColor3f(1,1,1);
+		glEnable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+		
+		TMgr.RenderGlowing();
+		SetBlend(TMgr.GlowBlend());
+		glDrawArrays(GL_POLYGON,0,NumVertices);
+	}
+	
+	// Revert to default blend
+	SetBlend(OGL_BlendType_Crossfade);
 	
 	if (IsActive) glEnable(GL_FOG);
 	return true;
@@ -2178,7 +2260,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			glDrawArrays(GL_POLYGON,0,4);
 		} else {
 			// Do multitextured stippling to create the static effect
-			for (int k=0; k<4; k++)
+			for (int k=0; k<StaticEffectPasses; k++)
 			{
 				StaticModeIndivSetup(k);
 				glDrawArrays(GL_POLYGON,0,4);
@@ -2414,10 +2496,12 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		{
 			// Do explicit depth sort because these textures are semitransparent
 			StandardShaders[0].Flags = ModelRenderer::Textured;
-			ModelRenderObject.Render(ModelPtr->Model, StandardShaders, 1, 0, Z_Buffering);
+			ModelRenderObject.Render(ModelPtr->Model, StandardShaders,
+				1, 0, Z_Buffering);
 		} else {
 			// Do multitextured stippling to create the static effect
-			ModelRenderObject.Render(ModelPtr->Model, StaticModeShaders, 4, 4, Z_Buffering);
+			ModelRenderObject.Render(ModelPtr->Model, StaticModeShaders,
+				StaticEffectPasses, SeparableStaticEffectPasses, Z_Buffering);
 		}
 		TeardownStaticMode();
 	}
@@ -2582,6 +2666,7 @@ void SetupStaticMode(rectangle_definition& RenderRectangle)
 		glEnable(GL_BLEND);
 		glColor4usv(FlatStaticColor);
 	} else {
+#ifdef USE_STIPPLE_STATIC_EFFECT
 		// Do multitextured stippling to create the static effect
 		
 		// The colors:
@@ -2615,8 +2700,14 @@ void SetupStaticMode(rectangle_definition& RenderRectangle)
 				StaticPatterns[c][n] &= Val;
 		}
 		
-		// Get read to use those static patterns
+		// Get ready to use those static patterns
 		glEnable(GL_POLYGON_STIPPLE);
+#else
+		// Use the stencil buffer to create the static effect
+		glEnable(GL_STENCIL_TEST);
+		
+		StencilTxtrOpacity = 1 - RenderRectangle.transfer_data/65535.0;
+#endif
 	}
 }
 
@@ -2628,10 +2719,15 @@ void TeardownStaticMode()
 	}
 	else
 	{
+#ifdef USE_STIPPLE_STATIC_EFFECT
 		// Restore the default blending
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		// glDisable(GL_COLOR_LOGIC_OP);
 		glDisable(GL_POLYGON_STIPPLE);
+#else
+		// Done with the stencil buffer
+		glDisable(GL_STENCIL_TEST);
+#endif
 	}
 }
 
@@ -2665,6 +2761,7 @@ void GlowingShader(void *Data)
 
 void StaticModeIndivSetup(int SeqNo)
 {
+#ifdef USE_STIPPLE_STATIC_EFFECT
 	// Black [backing], red, green, blue
 	const GLfloat StaticBaseColors[4][3] = {{0,0,0},{1,0,0},{0,1,0},{0,0,1}};
 	
@@ -2686,6 +2783,37 @@ void StaticModeIndivSetup(int SeqNo)
 	
 	glColor3fv(StaticBaseColors[SeqNo]);			
 	glPolygonStipple((byte *)StaticPatterns[SeqNo]);
+#else
+	// Stencil buffering
+	switch(SeqNo)
+	{
+	case 0:
+		// The stencil buffer will become 0 across the whole rendered object
+		glStencilFunc(GL_ALWAYS,1,1);
+		glStencilOp(GL_KEEP, GL_ZERO, GL_ZERO);
+		glStencilMask(1);
+		glDisable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+		glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+		break;
+		
+	case 1:
+		// The stencil buffer will become 1 everywhere a pixel is to be rendered
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		glEnable(GL_ALPHA_TEST);
+		break;
+		
+	case 2:
+		// Use the stencil buffer -- don't write into it, of course
+		glStencilFunc(GL_EQUAL,1,1);
+		glStencilMask(0);
+		glEnable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+		glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+		glColor4f(1,1,1,StencilTxtrOpacity);	// Static is fully bright and partially transparent
+		break;
+	}
+#endif
 }
 
 void StaticModeShader(void *Data)
@@ -2693,9 +2821,46 @@ void StaticModeShader(void *Data)
 	int *Which = (int *)Data;
 	StaticModeIndivSetup(*Which);
 	
+#ifndef USE_STIPPLE_STATIC_EFFECT
+	if (*Which < 2)
+	{
+#endif
 	// The silhouette texture is a "normal" one
 	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Normal))
 		LoadModelSkin(ShaderData.SkinPtr->NormalImg, ShaderData.Collection, ShaderData.CLUT);
+#ifndef USE_STIPPLE_STATIC_EFFECT
+	}
+	else
+	{
+		// For the static effect
+		glBindTexture(GL_TEXTURE_2D,0);
+		
+		const int TxSize = 64;
+		const int TxPxls = TxSize*TxSize;
+		static uint32 Buffer[TxPxls];
+		for (int k=0; k<TxPxls; k++)
+		{
+			uint32 Pxl = 0;
+			for (int m=0; m<3; m++)
+			{
+				Pxl += (StaticRandom.KISS() + StaticRandom.LFIB4()) & 0x000000ff;
+				Pxl <<= 8;
+			}
+			Pxl += 0xff;
+			Buffer[k] = Pxl;
+		}
+		
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, TxSize, TxSize,
+			0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+		
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+#endif
 }
 
 

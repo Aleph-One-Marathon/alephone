@@ -831,6 +831,9 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 	// LP change: bug out if weapons-in-hand are not to be displayed
 	if (!view->show_weapons_in_hand) return;
 	
+	// Need to set this...
+	RasPtr->SetForeground();
+	
 	// No models here, and completely opaque
 	textured_rectangle.ModelPtr = NULL;
 	textured_rectangle.Opacity = 1;
@@ -842,9 +845,41 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 	while (get_weapon_display_information(&count, &display_data))
 	{
 		/* fetch relevant shape data */
+		// LP: model-setup code is cribbed from 
+		// RenderPlaceObjsClass::build_render_object() in RenderPlaceObjs.cpp
+#ifdef HAVE_OPENGL
+		// Find which 3D model will take the place of this sprite, if any
+		short ModelSequence;
+		OGL_ModelData *ModelPtr =
+			OGL_GetModelData(GET_COLLECTION(display_data.collection),display_data.shape_index,ModelSequence);
+#endif
 		shape_information= extended_get_shape_information(display_data.collection, display_data.low_level_shape_index);
 		// Nonexistent frame: skip
 		if (!shape_information) continue;
+		// No need for a fake sprite rectangle, since models are foreground objects
+		
+		// LP change: for the convenience of the OpenGL renderer
+		textured_rectangle.ShapeDesc = BUILD_DESCRIPTOR(display_data.collection,0);
+		textured_rectangle.LowLevelShape = display_data.low_level_shape_index;
+#ifdef HAVE_OPENGL
+		textured_rectangle.ModelPtr = ModelPtr;
+		if (ModelPtr)
+		{
+			textured_rectangle.ModelSequence = ModelSequence;
+			textured_rectangle.ModelFrame = display_data.Frame;
+			textured_rectangle.NextModelFrame = display_data.NextFrame;
+			textured_rectangle.MixFrac = display_data.Ticks > 0 ?
+				float(display_data.Phase)/float(display_data.Ticks) : 0;
+			const world_point3d Zero = {0, 0, 0};
+			textured_rectangle.Position = Zero;
+			textured_rectangle.Azimuth = 0;
+			textured_rectangle.Scale = 1;
+			textured_rectangle.LightDepth = 0;
+			const GLfloat LightDirection[3] = {0, 1, 0};	// y is forward
+			objlist_copy(textured_rectangle.LightDirection,LightDirection,3);
+			RasPtr->SetForegroundView(display_data.flip_horizontal);
+		}
+#endif
 		
 		if (shape_information->flags&_X_MIRRORED_BIT) display_data.flip_horizontal= !display_data.flip_horizontal;
 		if (shape_information->flags&_Y_MIRRORED_BIT) display_data.flip_vertical= !display_data.flip_vertical;
@@ -854,14 +889,11 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 			display_data.horizontal_position, display_data.flip_horizontal, shape_information->world_left, shape_information->world_right);
 		position_sprite_axis(&textured_rectangle.y0, &textured_rectangle.y1, view->screen_height, view->screen_height, display_data.vertical_positioning_mode,
 			display_data.vertical_position, display_data.flip_vertical, -shape_information->world_top, -shape_information->world_bottom);
-
+		
 		/* set rectangle bitmap and shading table */
 		extended_get_shape_bitmap_and_shading_table(display_data.collection, display_data.low_level_shape_index, &textured_rectangle.texture, &textured_rectangle.shading_tables, view->shading_mode);
 		if (!textured_rectangle.texture) continue;
 		
-		// LP change: for the convenience of the OpenGL renderer
-		textured_rectangle.ShapeDesc = BUILD_DESCRIPTOR(display_data.collection,display_data.low_level_shape_index);
-
 		textured_rectangle.flags= 0;
 
 		/* initialize clipping window to full screen */

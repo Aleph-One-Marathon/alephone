@@ -76,6 +76,13 @@ bool OGL_SwapBuffers();
 // Set view parameters; this is for proper perspective rendering
 bool OGL_SetView(view_data &View);
 
+// Sets the view to what's suitable for rendering foreground objects
+// like weapons in hand
+bool OGL_SetForeground();
+
+// Sets whether a foreground object is horizontally reflected
+bool OGL_SetForegroundView(bool HorizReflect);
+
 // Start and end rendering of main view 
 bool OGL_StartMain();
 bool OGL_EndMain();
