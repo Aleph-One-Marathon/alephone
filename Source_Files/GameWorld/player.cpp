@@ -112,9 +112,12 @@ May 20, 2002 (Woody Zenfell):
     get_ticks_since_local_player_in_terminal() mechanism
 */
 
+#define DONT_REPEAT_DEFINITIONS
+
 #include "cseries.h"
 #include "map.h"
 #include "player.h"
+#include "monster_definitions.h"
 #include "monsters.h"
 #include "interface.h"
 #include "mysound.h"
@@ -241,6 +244,7 @@ static short player_initial_items[]=
 	_i_magnum_magazine,
 	
 	// LP additions, in case one wants to start very loaded
+     // AS: if we want to start loaded, shouldn't it be '_i_bong'?
 	_i_knife,
 	_i_knife,
 	_i_knife,
@@ -1785,14 +1789,15 @@ void adjust_player_physics(monster_data *me)
 	// LP: Fix the player physics so that guided missiles will work correctly
 	if (PlayerShotsGuided)
 	{
+	    struct monster_definition *vacbob = get_monster_definition_external(_civilian_fusion_security);
 		// AlexJLS patch: make this player active, so guided weapons can work
 		SET_MONSTER_ACTIVE_STATUS(me,true);
 		
 		// Gets called once for every player character created or re-created;
 		// that seems to be OK
-		SetPlayerViewAttribs(PlayerHalfVisualArc, PlayerHalfVertVisualArc,
-			short(WORLD_ONE*PlayerVisualRange+0.5),
-			short(WORLD_ONE*PlayerDarkVisualRange+0.5));
+		SetPlayerViewAttribs(vacbob->half_visual_arc,vacbob->half_vertical_visual_arc,
+			vacbob->visual_range,
+			vacbob->dark_visual_range);
 	}
 }
 
