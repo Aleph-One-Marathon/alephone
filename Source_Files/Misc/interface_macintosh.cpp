@@ -142,8 +142,9 @@ short get_level_number_from_user(
 	while (get_indexed_entry_point(&entry, &index, _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point))
 	{
 		psprintf(ptemporary, "%d: %s",entry.level_number+1,entry.level_name);
-		AppendMenu(mHandle, ptemporary);
+		AppendMenu(mHandle, "\pSome Level");
 		maximum_level_number++;
+		SetMenuItemText(mHandle, maximum_level_number, ptemporary);
 	}
 	
 	/* Set our max value.. */
