@@ -73,10 +73,16 @@ Aug 28, 2000 (Loren Petrich):
 Nov 26, 2000 (Loren Petrich):
 	Movied a RunLevelScript() before some other stuff, such as entering_map(),
 	so that textures to be loaded can be specified before they actually get loaded.
+<<<<<<< game_wad.cpp
+
+Aug 12, 2001 (Ian Rickard):
+	Various changes relating to B&B prep or OOzing
+=======
 
 Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 	Additional save data is now applied to the Temporary file instead of the original
 	(Old level preview info is now saved under Macintosh again)
+>>>>>>> 1.37
 */
 
 // This needs to do the right thing on save game, which is storing the precalculated crap.
@@ -182,14 +188,14 @@ static void allocate_map_structure_for_map(struct wad_data *wad);
 static struct wad_data *build_save_game_wad(struct wad_header *header, long *length);
 
 static void allocate_map_for_counts(short polygon_count, short side_count,
-	short endpoint_count, short line_count);
+	short endpoint_count, short line_count, short portal_count);
 static void load_points(uint8 *points, short count);
 static void load_lines(uint8 *lines, short count);
 static void load_sides(uint8 *sides, short count, short version);
 static void load_polygons(uint8 *polys, short count, short version);
 static void load_lights(uint8 *_lights, short count, short version);
 static void load_annotations(uint8 *annotations, short count);
-static void load_objects(uint8 *map_objects, short count);
+static void load_objects(uint8 *objects, short count);
 static void load_media(uint8 *_medias, short count);
 static void load_map_info(uint8 *map_info);
 static void load_ambient_sound_images(uint8 *data, short count);
@@ -264,7 +270,9 @@ void set_map_file(FileSpecifier& File)
 	file_is_set= true;
 }
 
-/* Set to the default map.. (Only if no map doubleclicked upon on startup.. */
+// IR change: added right parenthesis in following comment
+// yea, its exceedingly unimportant, but messes up CW a bit for me
+/* Set to the default map.. (Only if no map doubleclicked upon on startup..) */
 void set_to_default_map(
 	void)
 {
@@ -796,9 +804,18 @@ void allocate_map_for_counts(
 	short polygon_count, 
 	short side_count,
 	short endpoint_count,
-	short line_count)
+	short line_count,
+	short portal_count)
 {
+<<<<<<< game_wad.cpp
+	// IR added:
+	DebugLog(csprintf(temporary, "allocating map: polys:%d; sides:%d; endpoints:%d; lines:%d;", 
+									polygon_count, side_count, endpoint_count, line_count));
+	
+	long cumulative_length= 0;
+=======
 	//long cumulative_length= 0;
+>>>>>>> 1.37
 	long automap_line_count, automap_polygon_count, map_index_count;
 	// long automap_line_length, automap_polygon_length, map_index_length;
 
@@ -850,6 +867,18 @@ void allocate_map_for_counts(
 	MapIndexList.clear();
 	MapIndexList.reserve(map_index_count);
 	dynamic_world->map_index_count= 0;
+	
+	// IR addition: set up the identity portal.
+	portal_data root_portal;
+	root_portal.flags = 0;
+	root_portal.translate.x = 0;
+	root_portal.translate.y = 0;
+	root_portal.translate.z = 0;
+	root_portal.yaw = 0;
+	
+	portal_data::global_list.clear(); // root portal is never saved in file.
+	portal_data::global_list.reserve(portal_count+1); // root portal is never saved in file.
+	portal_data::global_list.push_back(root_portal);
 	
 	// Stuff that needs the max number of polygons
 	allocate_render_memory();
@@ -924,8 +953,9 @@ void load_polygons(
 			for(loop= 0; loop<count; ++loop)
 			{
 				map_polygons[loop].media_index= NONE;
-				map_polygons[loop].floor_origin.x= map_polygons[loop].floor_origin.y= 0;
-				map_polygons[loop].ceiling_origin.x= map_polygons[loop].ceiling_origin.y= 0;
+				// IR change: now using horizontal_surface_data in polygon_data
+				map_polygons[loop].floor_surface.origin.x= map_polygons[loop].floor_surface.origin.y= 0;
+				map_polygons[loop].ceiling_surface.origin.x= map_polygons[loop].ceiling_surface.origin.y= 0;
 			}
 			break;
 			
@@ -1005,11 +1035,11 @@ void load_annotations(
 	dynamic_world->default_annotation_count= count;
 }
 
-void load_objects(uint8 *map_objects, short count)
+void load_objects(uint8 *objects, short count)
 {
 	// assert(count>=0 && count<=MAXIMUM_SAVED_OBJECTS);
 	SavedObjectList.resize(count);
-	unpack_map_object(map_objects,saved_objects,count);
+	unpack_map_object(objects,saved_objects,count);
 	dynamic_world->initial_objects_count= count;
 }
 
@@ -1067,8 +1097,9 @@ void recalculate_redundant_map(
 	short loop;
 
 	for(loop=0;loop<dynamic_world->polygon_count;++loop) recalculate_redundant_polygon_data(loop);
-	for(loop=0;loop<dynamic_world->line_count;++loop) recalculate_redundant_line_data(loop);
-	for(loop=0;loop<dynamic_world->endpoint_count;++loop) recalculate_redundant_endpoint_data(loop);
+	// IR changes: OOzing
+	for(loop=0;loop<dynamic_world->line_count;++loop) line_reference(loop)->recalculate_redundant_data();
+	for(loop=0;loop<dynamic_world->endpoint_count;++loop) endpoint_reference(loop)->recalculate_redundant_data();
 }
 
 extern bool load_game_from_file(FileSpecifier& File);
@@ -1386,7 +1417,7 @@ bool process_map_wad(
 	count = data_length/SIZEOF_polygon_data;
 	assert(data_length == count*SIZEOF_polygon_data);
 	load_polygons(data, count, version);
-
+	
 	/* Extract the lightsources */
 	if(restoring_game)
 	{
@@ -1414,6 +1445,7 @@ bool process_map_wad(
 		}
 
 		//	HACK!!!!!!!!!!!!!!! vulcan doesn’t NONE .first_object field after adding scenery
+		// if (map_version.has_vulcan_bugs)
 		{
 			for (count= 0; count<dynamic_world->polygon_count; ++count)
 			{
@@ -1571,8 +1603,13 @@ bool process_map_wad(
 		count= data_length/SIZEOF_object_data;
 		assert(count*SIZEOF_object_data==data_length);
 		vassert(count <= MAXIMUM_OBJECTS_PER_MAP,
+<<<<<<< game_wad.cpp
+			csprintf(temporary,"Number of map objects %d > limit %d",count,MAXIMUM_OBJECTS_PER_MAP));
+		unpack_object_data(data,map_objects,count);
+=======
 			csprintf(temporary,"Number of map objects %ld > limit %d",count,MAXIMUM_OBJECTS_PER_MAP));
 		unpack_object_data(data,objects,count);
+>>>>>>> 1.2
 		
 		// Unpacking is E-Z here...
 		data= (uint8 *)extract_type_from_wad(wad, AUTOMAP_LINES, &data_length);
@@ -1688,7 +1725,13 @@ static void allocate_map_structure_for_map(
 	polygon_count= data_length/SIZEOF_polygon_data;
 	if(polygon_count*SIZEOF_polygon_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 0x7369); // 'si'
 
+<<<<<<< game_wad.cpp
+	allocate_map_for_counts(polygon_count, side_count, endpoint_count, line_count, 0);
+
+	return;
+=======
 	allocate_map_for_counts(polygon_count, side_count, endpoint_count, line_count);
+>>>>>>> 1.37
 }
 
 /* Note that we assume the redundant data has already been recalculated... */
@@ -1724,7 +1767,19 @@ static void load_redundant_map_data(
 		
 		recalculate_redundant_map();
 		precalculate_map_indexes();
+		// if (!map_version.has_side_clip_data)
 	}
+<<<<<<< game_wad.cpp
+	
+	calculate_side_clip_data();
+	
+// dynamic_world->map_index_count= 0;
+// recalculate_redundant_map();
+// precalculate_map_indexes();
+
+	return;
+=======
+>>>>>>> 1.37
 }
 
 void load_terminal_data(
@@ -1968,7 +2023,7 @@ static uint8 *tag_to_global_array_and_size(
 			pack_dynamic_data(array,dynamic_world,count);
 			break;
 		case OBJECT_STRUCTURE_TAG:
-			pack_object_data(array,objects,count);
+			pack_object_data(array,map_objects,count);
 			break;
 		case MAP_INDEXES_TAG:
 			ListToStream(temp_array,map_indexes,count); // E-Z packing here...
