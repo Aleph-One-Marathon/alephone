@@ -410,7 +410,7 @@ static pascal void NetgameGather_Poller(EventLoopTimerRef Timer, void *UserData)
 
 #ifndef NETWORK_TEST_POSTGAME_DIALOG
 
-bool run_network_gather_dialog()
+bool run_network_gather_dialog(MetaserverClient*)
 {
 	bool successful= false;
 
