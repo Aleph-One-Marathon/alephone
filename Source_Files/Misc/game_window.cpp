@@ -40,7 +40,11 @@ Jul 16, 2001 (Loren Petrich):
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
-#include <GL/gl.h>
+# if defined (__APPLE__) && defined (__MACH__)
+#  include <OpenGL/gl.h>
+# else
+#  include <GL/gl.h>
+# endif
 #endif
 
 #include "HUDRenderer_SW.h"

@@ -57,8 +57,13 @@ June 14, 2001 (Loren Petrich):
 
 #ifdef HAVE_OPENGL
 
-#include <GL/gl.h>
-#include <GL/glu.h>
+#if defined (__APPLE__) && defined (__MACH__)
+# include <OpenGL/gl.h>
+# include <OpenGL/glu.h>
+#else
+# include <GL/gl.h>
+# include <GL/glu.h>
+#endif
 
 #ifdef mac
 #include <agl.h>

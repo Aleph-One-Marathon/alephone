@@ -412,16 +412,17 @@ Aleph One. These scripts are stored in
 
 Unix:
   /usr/local/share/AlephOne/MML
+  /usr/local/share/AlephOne/Scripts
  and
   ~/.alephone/MML
 
 BeOS:
-  The "MML" directory in the Aleph One application directory
+  The "MML" and "Scripts" directories in the Aleph One application directory
  and
   /boot/home/config/settings/Aleph One/MML
 
 Windows:
-  The "MML" directory in the Aleph One application directory
+  The "MML" and "Scripts" directories in the Aleph One application directory
  and
   The directory "Prefs\<user name>\MML" in the Aleph One application
   directory

@@ -61,7 +61,7 @@ static void keyboard_dialog(void *arg);
 
 static void get_name_from_system(char *name)
 {
-#if defined(unix) || defined(__BEOS__)
+#if defined(unix) || defined(__BEOS__) || (defined (__APPLE__) && defined (__MACH__))
 
 	char *login = getlogin();
 	strcpy(name, login ? login : "Bob User");

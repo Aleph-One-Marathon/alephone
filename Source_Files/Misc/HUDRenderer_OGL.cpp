@@ -19,7 +19,11 @@
 #include "OGL_Setup.h"
 #include "OGL_Textures.h"
 
-#include <GL/gl.h>
+#if defined (__APPLE__) && defined (__MACH__)
+# include <OpenGL/gl.h>
+#else
+# include <GL/gl.h>
+#endif
 
 #include <math.h>
 

@@ -60,7 +60,11 @@ void free_and_unlock_memory(void);
 #endif
 
 #ifdef HAVE_OPENGL
-#include <GL/gl.h>
+# if defined (__APPLE__) && defined (__MACH__)
+#  include <OpenGL/gl.h>
+# else
+#  include <GL/gl.h>
+# endif
 #endif
 
 #ifdef HAVE_SDL_NET_H
@@ -154,7 +158,7 @@ int main(int argc, char **argv)
 		"You are welcome to redistribute it under certain conditions.\n"
 		"For details, see the file COPYING.\n"
 #ifdef __BEOS__
-		// BeOS versions is statically linked against SDL, so we have to include this:
+		// BeOS version is statically linked against SDL, so we have to include this:
 		"\nSimple DirectMedia Layer (SDL) Library included under the terms of the\n"
 		"GNU Library General Public License.\n"
 		"For details, see the file COPYING.SDL.\n"
@@ -236,7 +240,7 @@ static void initialize_application(void)
 	// Find data directories, construct search path
 	DirectorySpecifier default_data_dir;
 
-#if defined(unix)
+#if defined(unix) || (defined (__APPLE__) && defined (__MACH__))
 
 	default_data_dir = PKGDATADIR;
 	const char *home = getenv("HOME");
@@ -274,13 +278,12 @@ static void initialize_application(void)
 #error Data file paths must be set for this platform.
 #endif
 
-#if defined(unix) || defined(__BEOS__)
-#define LIST_SEP ':'
-#elif defined(__WIN32__)
+#if defined(__WIN32__)
 #define LIST_SEP ';'
+#else
+#define LIST_SEP ':'
 #endif
 
-#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
 	const char *data_env = getenv("ALEPHONE_DATA");
 	if (data_env) {
 		// Read colon-separated list of directories
@@ -296,7 +299,6 @@ static void initialize_application(void)
 		if (!path.empty())
 			data_search_path.push_back(path);
 	} else
-#endif
 		data_search_path.push_back(default_data_dir);
 	data_search_path.push_back(local_data_dir);
 
@@ -325,6 +327,8 @@ static void initialize_application(void)
 		vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
 		while (i != end) {
 			DirectorySpecifier path = *i + "MML";
+			loader.ParseDirectory(path);
+			path = *i + "Scripts";
 			loader.ParseDirectory(path);
 			i++;
 		}

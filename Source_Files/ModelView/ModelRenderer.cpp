@@ -484,15 +484,24 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 		for (int k=0; k<NumVerts; k++, ColorPtr+=3)
 		{
 			GLfloat *Normal = Model.NormBase() + 3*k;
-			for (int c=0; c<3; c++)
-			{
-				GLfloat *ELChannel = ExternalLight[c];
-				ColorPtr[c] =
-					ELChannel[0]*Normal[0] + 
-					ELChannel[1]*Normal[1] + 
-					ELChannel[2]*Normal[2] + 
-					ELChannel[3];
-			}
+			GLfloat *ELChannel = ExternalLight[0];
+			ColorPtr[0] =
+				ELChannel[0]*Normal[0] + 
+				ELChannel[1]*Normal[1] + 
+				ELChannel[2]*Normal[2] + 
+				ELChannel[3];
+			ELChannel = ExternalLight[1];
+			ColorPtr[1] =
+				ELChannel[0]*Normal[0] + 
+				ELChannel[1]*Normal[1] + 
+				ELChannel[2]*Normal[2] + 
+				ELChannel[3];
+			ELChannel = ExternalLight[2];
+			ColorPtr[2] =
+				ELChannel[0]*Normal[0] + 
+				ELChannel[1]*Normal[1] + 
+				ELChannel[2]*Normal[2] + 
+				ELChannel[3];
 		}
 		
 		if (!Model.Colors.empty() && TEST_FLAG(Shader.Flags,Colored))

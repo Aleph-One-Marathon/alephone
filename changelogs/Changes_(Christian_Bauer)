@@ -1,5 +1,8 @@
 Change log of the SDL version of Aleph One
 
+September 2, 2001
+ - integrated patches for MaxOS X by Chris Lovell
+
 September 1, 2001
  - added command-line option "-m" for disabling gamma table effects
  - added option to enable 3D models in OpenGL preferences menu

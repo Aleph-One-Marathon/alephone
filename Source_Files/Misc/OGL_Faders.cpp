@@ -24,7 +24,11 @@ static bool UseFlatStatic;
 static uint16 FlatStaticColor[4];
 
 
-#include <GL/gl.h>
+#if defined (__APPLE__) && defined (__MACH__)
+# include <OpenGL/gl.h>
+#else
+# include <GL/gl.h>
+#endif
 
 // Fader stuff
 bool OGL_FaderActive()

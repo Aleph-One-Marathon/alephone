@@ -29,10 +29,10 @@
 #endif
 
 
-#if defined(unix) || defined(__BEOS__)
-#define PATH_SEP '/'
-#elif defined(__WIN32__)
+#if defined(__WIN32__)
 #define PATH_SEP '\\'
+#else
+#define PATH_SEP '/'
 #endif
 
 #ifdef __MVCPP__
@@ -327,23 +327,14 @@ bool FileSpecifier::Create(int Type)
 // Create directory
 bool FileSpecifier::CreateDirectory()
 {
-#if defined(unix) || defined(__BEOS__)
-
 	err = 0;
-	if (mkdir(GetPath(), 0777) < 0)
-		err = errno;
-	return err == 0;
-
-#elif defined (__WIN32__)
-
-	err = 0;
+#if defined(__WIN32__)
 	if (mkdir(GetPath()) < 0)
+#else
+	if (mkdir(GetPath(), 0777) < 0)
+#endif
 		err = errno;
 	return err == 0;
-
-#else
-#error FileSpecifier::CreateDirectory() not implemented for this platform
-#endif
 }
 
 // Open data file
@@ -396,24 +387,16 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 // Check for existence of file
 bool FileSpecifier::Exists()
 {
-#if defined(unix) || defined(__BEOS__) || defined (__WIN32__)
-
 	// Check whether the file is readable
 	err = 0;
 	if (access(GetPath(), R_OK) < 0)
 		err = errno;
 	return err == 0;
-
-#else
-#error FileSpecifier::Exists() not implemented for this platform
-#endif
 }
 
 // Get modification date
 TimeType FileSpecifier::GetDate()
 {
-#if defined(unix) || defined(__BEOS__) || defined (__WIN32__)
-
 	struct stat st;
 	err = 0;
 	if (stat(GetPath(), &st) < 0) {
@@ -421,10 +404,6 @@ TimeType FileSpecifier::GetDate()
 		return 0;
 	}
 	return st.st_mtime;
-
-#else
-#error FileSpecifier::GetDate() not implemented for this platform
-#endif
 }
 
 // Determine file type
@@ -583,32 +562,20 @@ bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
 // Get last element of path
 void FileSpecifier::GetName(char *part) const
 {
-#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
-
 	string::size_type pos = name.rfind(PATH_SEP);
 	if (pos == string::npos)
 		strcpy(part, name.c_str());
 	else
 		strcpy(part, name.substr(pos + 1).c_str());
-
-#else
-#error FileSpecifier::GetLastPart() not implemented for this platform
-#endif
 }
 
 // Add part to path name
 void FileSpecifier::AddPart(const string &part)
 {
-#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
-
 	if (name.length() && name[name.length() - 1] == PATH_SEP)
 		name += part;
 	else
 		name = name + PATH_SEP + part;
-
-#else
-#error FileSpecifier::AddPart() not implemented for this platform
-#endif
 
 	canonicalize_path();
 }
@@ -616,8 +583,6 @@ void FileSpecifier::AddPart(const string &part)
 // Split path to base and last part
 void FileSpecifier::SplitPath(string &base, string &part) const
 {
-#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
-
 	string::size_type pos = name.rfind(PATH_SEP);
 	if (pos == string::npos) {
 		base = name;
@@ -629,10 +594,6 @@ void FileSpecifier::SplitPath(string &base, string &part) const
 		base = name.substr(0, pos);
 		part = name.substr(pos + 1);
 	}
-
-#else
-#error FileSpecifier::SplitPath() not implemented for this platform
-#endif
 }
 
 // Fill file specifier with base name
@@ -651,7 +612,7 @@ void FileSpecifier::FromDirectory(DirectorySpecifier &dir)
 // Canonicalize path
 void FileSpecifier::canonicalize_path(void)
 {
-#if defined(unix) || defined(__BEOS__)
+#if !defined(__WIN32__)
 
 	// Replace multiple consecutive '/'s by a single '/'
 	while (true) {
@@ -663,15 +624,9 @@ void FileSpecifier::canonicalize_path(void)
 
 #endif
 
-#if defined(unix) || defined(__BEOS__) || defined(__WIN32__)
-
 	// Remove trailing '/'
 	if (!name.empty() && name[name.size()-1] == PATH_SEP)
 		name.erase(name.size()-1, 1);
-
-#else
-#error FileSpecifier::canonicalize_path() not implemented for this platform
-#endif
 }
 
 // Read directory contents
@@ -679,31 +634,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 {
 	vec.clear();
 
-#if defined(unix) || defined(__BEOS__) || defined (__WIN32__)
-
-#ifndef __MVCPP__
-
-	DIR *d = opendir(GetPath());
-	if (d == NULL) {
-		err = errno;
-		return false;
-	}
-	struct dirent *de = readdir(d);
-	while (de) {
-		if (de->d_name[0] != '.' || (de->d_name[1] && de->d_name[1] != '.')) {
-			FileSpecifier full_path = name;
-			full_path += de->d_name;
-			struct stat st;
-			if (stat(full_path.GetPath(), &st) == 0)
-				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false));
-		}
-		de = readdir(d);
-	}
-	closedir(d);
-	err = 0;
-	return true;
-
-#else // __MVCPP__
+#if defined(__MVCPP__)
 
 	WIN32_FIND_DATA findData;
 
@@ -736,10 +667,28 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 		err = 0;
 	return true;
 
-#endif	// __MVCPP__
-
 #else
-#error FileSpecifier::ReadDirectory() not implemented for this platform
+
+	DIR *d = opendir(GetPath());
+	if (d == NULL) {
+		err = errno;
+		return false;
+	}
+	struct dirent *de = readdir(d);
+	while (de) {
+		if (de->d_name[0] != '.' || (de->d_name[1] && de->d_name[1] != '.')) {
+			FileSpecifier full_path = name;
+			full_path += de->d_name;
+			struct stat st;
+			if (stat(full_path.GetPath(), &st) == 0)
+				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false));
+		}
+		de = readdir(d);
+	}
+	closedir(d);
+	err = 0;
+	return true;
+
 #endif
 }
 
