@@ -498,6 +498,8 @@ static void controls_dialog(void *arg)
 	d.add(always_swim_w);
 	w_toggle *weapon_w = new w_toggle("Auto-Switch Weapons", !(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
 	d.add(weapon_w);
+	w_toggle *button_sound_w = new w_toggle("Button Sounds", !(input_preferences->modifiers & _inputmod_use_button_sounds));
+	d.add(button_sound_w);
 	d.add(new w_spacer());
 	d.add(new w_button("CONFIGURE KEYBOARD", keyboard_dialog, &d));
 	d.add(new w_spacer());
@@ -522,6 +524,7 @@ static void controls_dialog(void *arg)
 		if (always_swim_w->get_selection()) flags |= _inputmod_interchange_swim_sink;
 		if (!(weapon_w->get_selection())) flags |= _inputmod_dont_switch_to_new_weapon;
 		if (invert_mouse_w->get_selection()) flags |= _inputmod_invert_mouse;
+		if (button_sound_w->get_selection()) flags |= _inputmod_use_button_sounds;
 
 		if (flags != input_preferences->modifiers) {
 			input_preferences->modifiers = flags;
