@@ -1366,3 +1366,10 @@ Added vertical-texture repeat option for both software and OpenGL rendering.
 Added texture-loading control; one can control which wall and scenery collections to load,
 and also whether to load the landscape ones.
 
+Nov 25, 2000
+
+Added support of movies that can begin at any level.
+
+Nov 26, 2000
+
+Added support of end-screen control
