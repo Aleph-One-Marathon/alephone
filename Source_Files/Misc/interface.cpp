@@ -1128,7 +1128,7 @@ static boolean begin_game(
 	boolean clean_up_on_failure= TRUE;
 	boolean record_game;
 
-	memset(starts, 0, sizeof(struct player_start_data)*MAXIMUM_NUMBER_OF_PLAYERS);
+	objlist_clear(starts, MAXIMUM_NUMBER_OF_PLAYERS);
 	
 	switch(user)
 	{
@@ -1809,7 +1809,7 @@ static void start_interface_fade(
 	hide_cursor();
 	assert(!interface_fade_in_progress);
 	animated_color_table= (struct color_table *) malloc(sizeof(struct color_table));
-	memcpy(animated_color_table, original_color_table, sizeof(struct color_table));
+	obj_copy(*animated_color_table, *original_color_table);
 
 	if(animated_color_table)
 	{
@@ -1883,7 +1883,7 @@ void interface_fade_out(
 		hide_cursor();
 			
 		fadeout_animated_color_table= (struct color_table *) malloc(sizeof(struct color_table));
-		memcpy(fadeout_animated_color_table, current_picture_clut, sizeof(struct color_table));
+		obj_copy(*fadeout_animated_color_table, *current_picture_clut);
 
 		if(fade_music) fade_out_music(MACHINE_TICKS_PER_SECOND/2);
 		if (fadeout_animated_color_table)
