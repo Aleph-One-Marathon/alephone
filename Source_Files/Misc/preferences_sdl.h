@@ -650,7 +650,7 @@ static void controls_dialog(void *arg)
     const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
 
 	// LP: split this into horizontal and vertical sensitivities
-	float theSensitivity, theSensitivityLog
+	float theSensitivity, theSensitivityLog;
 	
 	theSensitivity = ((float) input_preferences->sens_vertical) / FIXED_ONE;
 	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
