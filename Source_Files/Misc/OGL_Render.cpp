@@ -724,7 +724,7 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 	RectBounds[0] -= ScreenBounds.left;
 	RectBounds[1] += ScreenBounds.top;
 	
-#ifdef mac
+#if defined(mac) && !defined(TARGET_API_MAC_CARBON)
 	if (UseBackBuffer)
 	{
 		// This could not be gotten to work quite right, so a more roundabout way is being done;
