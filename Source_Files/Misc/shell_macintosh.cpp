@@ -362,6 +362,7 @@ static void initialize_application_heap(
 	Handle PathStrings = Get1Resource('STR#',PathID);
 	if (PathStrings)
 	{
+		// fdprintf("Parsing external files");
 		// Count how many there are
 		HLock(PathStrings);
 		short *NumPtr = (short *)(*PathStrings);
@@ -376,6 +377,7 @@ static void initialize_application_heap(
 			
 			// Make a C string from this Pascal string
 			p2cstr(PathSpec);
+			// fdprintf("Dir Path = %s",PathSpec);
 			
 			DirectorySpecifier DirSpec;
 			if (!DirSpec.SetToAppParent()) break;
@@ -1445,6 +1447,7 @@ static bool WasRepeated(vector<TypedSpec>& SpecList, TypedSpec& Spec)
 
 void FindAndParseFiles(DirectorySpecifier& DirSpec)
 {
+	// fdprintf("Entering FAPF; parID = %d",DirSpec.Get_parID());
 	// Maintained separately, since updating this ought not to affect the FSSpec,
 	// which will be left unchanged in case of failure.
 	ParentDir = DirSpec.Get_parID();
@@ -1455,8 +1458,10 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 	vector<TypedSpec> SpecList;
 	vector<int> SpecIndices;
 	
-	// Walk the directory, searching for a file with a matching name
-	short FileIndex = 0;
+	// Walk the directory, searching for a file with a matching name.
+	// Have separate indices for all file-system objects
+	// and for ones included in the list.
+	short FileIndex = 0, ListedFileIndex = 0;
 	while(true)
 	{
 		// Resetting to look for next file in directory
@@ -1479,18 +1484,9 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 			DummySpec.Spec.parID = PB.dirInfo.ioDrDirID;
 			DummySpec.Type = TypedSpec::Directory;
 			
-			if (WasRepeated(SpecList,DummySpec))
-			{
-				int len = DummySpec.Spec.name[0];
-				memcpy(temporary,DummySpec.Spec.name+1,len);
-				temporary[len] = 0;
-				fdprintf("FindAndParseFile() Error: Repeated Directory: %s",temporary);
-				break;
-			}
-			
 			// Add!
 			SpecList.push_back(DummySpec);
-			SpecIndices.push_back(FileIndex);
+			SpecIndices.push_back(ListedFileIndex++);
 		}
 		else
 		{
@@ -1499,36 +1495,18 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 			if (Type == 'TEXT' || Type=='MML ')
 			{
 				DummySpec.Type = TypedSpec::TextFile;
-			
-				if (WasRepeated(SpecList,DummySpec))
-				{
-					int len = DummySpec.Spec.name[0];
-					memcpy(temporary,DummySpec.Spec.name+1,len);
-					temporary[len] = 0;
-					fdprintf("FindAndParseFile() Error: Repeated Text File: %s",temporary);
-					break;
-				}
 				
 				// Add!
 				SpecList.push_back(DummySpec);
-				SpecIndices.push_back(FileIndex);
+				SpecIndices.push_back(ListedFileIndex++);
 			}
 			else if (Type == 'rsrc')
 			{
 				DummySpec.Type = TypedSpec::ResourceFile;
-			
-				if (WasRepeated(SpecList,DummySpec))
-				{
-					int len = DummySpec.Spec.name[0];
-					memcpy(temporary,DummySpec.Spec.name+1,len);
-					temporary[len] = 0;
-					fdprintf("FindAndParseFile() Error: Repeated Resource File: %s",temporary);
-					break;
-				}
-			
+				
 				// Add!
 				SpecList.push_back(DummySpec);
-				SpecIndices.push_back(FileIndex);
+				SpecIndices.push_back(ListedFileIndex++);
 			}
 		}
 		
@@ -1536,12 +1514,23 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 		FileIndex++;
 	}
 	
+	// DEBUG
+	// for (int q=0; q<SpecList.size(); q++)
+	// {
+	//	TypedSpec& Spec = SpecList[q];
+	//	int len = Spec.Spec.name[0];
+	//	memcpy(temporary,Spec.Spec.name+1,len);
+	//	temporary[len] = 0;
+	//	fdprintf("Type = %hd  parID = %d  Name = %s",Spec.Type,Spec.Spec.parID,temporary);
+	//}
+	
 	// Do STL index sort
 	CompareTS.SpecListIter = SpecList.begin();
 	sort(SpecIndices.begin(),SpecIndices.end(),CompareTS);
 	
 	for (FileIndex=0; FileIndex<SpecIndices.size(); FileIndex++)
 	{
+		// fdprintf("%d - %d",FileIndex,SpecIndices[FileIndex]);
 		TypedSpec& SLMember = SpecList[SpecIndices[FileIndex]];
 		switch(SLMember.Type)
 		{
@@ -1571,6 +1560,7 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 					char FileName[256];
 					FileSpec.GetName(FileName);
 					FileName[31] = 0;	// Use only first 31 characters of filename (MacOS Classic)
+					// fdprintf("Loading from text file %s",FileName);
 					
 					XML_DataBlockLoader.SourceName = FileName;
 					if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
@@ -1591,8 +1581,9 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 				char FileName[256];
 				FileSpec.GetName(FileName);
 				FileName[31] = 0;	// Use only first 31 characters of filename (MacOS Classic)
-				XML_ResourceForkLoader.SourceName = FileName;
+				// fdprintf("Loading from resource file %s",FileName);
 				
+				XML_ResourceForkLoader.SourceName = FileName;
 				XML_LoadFromResourceFork(FileSpec);
 			}
 			break;
@@ -1604,6 +1595,7 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 			break;
 		}
 	}
+	// fdprintf("Exiting FAPF");
 }
 
 
