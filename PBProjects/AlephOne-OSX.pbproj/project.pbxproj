@@ -612,6 +612,9 @@
 				F5D11AE60326A93E01000105,
 				3DAC27AD03DC9D1C00000104,
 				3DF2717603EDBBF100000104,
+				3DF290EC046F5C1000000104,
+				3DF290ED046F5C1100000104,
+				3DF290EE046F5C1200000104,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -773,6 +776,8 @@
 				3DF2717703EDBBF100000104,
 				3D22699203F6BB2C00000104,
 				3D5F21440403230F00000104,
+				3DF290F3046F5C5B00000104,
+				3DF290F4046F5C5B00000104,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1004,6 +1009,96 @@
 		};
 		3DF2717903EDBC3200000104 = {
 			fileRef = F52213830136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290E6046F5BA900000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = OGL_Model_Def.h;
+			refType = 4;
+		};
+		3DF290E7046F5BA900000104 = {
+			fileRef = 3DF290E6046F5BA900000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290E8046F5BED00000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = OGL_Subst_Texture_Def.h;
+			refType = 4;
+		};
+		3DF290E9046F5BED00000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = OGL_Texture_Def.h;
+			refType = 4;
+		};
+		3DF290EA046F5BED00000104 = {
+			fileRef = 3DF290E8046F5BED00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290EB046F5BED00000104 = {
+			fileRef = 3DF290E9046F5BED00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290EC046F5C1000000104 = {
+			fileRef = 3DF290E6046F5BA900000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290ED046F5C1100000104 = {
+			fileRef = 3DF290E8046F5BED00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290EE046F5C1200000104 = {
+			fileRef = 3DF290E9046F5BED00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290EF046F5C5B00000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = OGL_Model_Def.cpp;
+			refType = 4;
+		};
+		3DF290F0046F5C5B00000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = OGL_Subst_Texture_Def.cpp;
+			refType = 4;
+		};
+		3DF290F1046F5C5B00000104 = {
+			fileRef = 3DF290EF046F5C5B00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290F2046F5C5B00000104 = {
+			fileRef = 3DF290F0046F5C5B00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290F3046F5C5B00000104 = {
+			fileRef = 3DF290EF046F5C5B00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DF290F4046F5C5B00000104 = {
+			fileRef = 3DF290F0046F5C5B00000104;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -3131,6 +3226,9 @@
 				3DAC27AA03DC9D1C00000104,
 				3DF2716E03EDBAA800000104,
 				3DF2717303EDBBF100000104,
+				3DF290E7046F5BA900000104,
+				3DF290EA046F5BED00000104,
+				3DF290EB046F5BED00000104,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3295,6 +3393,8 @@
 				3DF2717803EDBC2D00000104,
 				3DF2717903EDBC3200000104,
 				3D5F21450403230F00000104,
+				3DF290F1046F5C5B00000104,
+				3DF290F2046F5C5B00000104,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6149,8 +6249,10 @@
 				F5CC936D0240D75B01A80001,
 				F5CC92E40240D56101A80001,
 				F5CC92EE0240D56101A80001,
+				3DF290EF046F5C5B00000104,
 				F5CC92F00240D56101A80001,
 				F5CC92F20240D56101A80001,
+				3DF290F0046F5C5B00000104,
 				F5CC92F40240D56101A80001,
 				F5CC92FC0240D56101A80001,
 				F5CC92FE0240D56101A80001,
@@ -6858,6 +6960,9 @@
 				F5CC92EA0240D56101A80001,
 				F5CC92ED0240D56101A80001,
 				F5CC92EF0240D56101A80001,
+				3DF290E6046F5BA900000104,
+				3DF290E8046F5BED00000104,
+				3DF290E9046F5BED00000104,
 				F5CC92F10240D56101A80001,
 				F5CC92F30240D56101A80001,
 				F5CC92F50240D56101A80001,
