@@ -12,6 +12,7 @@ tiennou, 06/23/03
 tiennou, 06/25/03
     Removed the last useless logError around. They prevented some functions to behave properly.
     Added L_Get_Player_Angle, returns player->facing & player->elevation.
+    Got rid of all the cast-related warnings in there (Thanks Br'fin !).
 */
 
 // cseries defines HAVE_LUA on A1/SDL
@@ -2059,7 +2060,11 @@ static int L_Add_Path_Point(lua_State *L)
         lua_error(L);
     }
     int polygon = static_cast<int>(lua_tonumber(L,2));
-    world_point3d point = {static_cast<int>(lua_tonumber(L,3))*WORLD_ONE, static_cast<int>(lua_tonumber(L,4))*WORLD_ONE, static_cast<int>(lua_tonumber(L,5))*WORLD_ONE};
+    world_point3d point = {
+    static_cast<world_distance>(lua_tonumber(L,3)*WORLD_ONE),
+    static_cast<world_distance>(lua_tonumber(L,4)*WORLD_ONE),
+    static_cast<world_distance>(lua_tonumber(L,5)*WORLD_ONE)
+    };
     long time = static_cast<long>(lua_tonumber(L,6));
     int point_index = lua_cameras[camera_index].path.path_points.size();
     lua_cameras[camera_index].path.path_points.resize(point_index+1);
@@ -2087,9 +2092,9 @@ static int L_Add_Path_Angle(lua_State *L)
         lua_pushstring(L, "add_path_angle: bad camera index");
         lua_error(L);
     }
-    int yaw = static_cast<int>(lua_tonumber(L,2));
-    int pitch = static_cast<int>(lua_tonumber(L,3));
-    long time = static_cast<int>(lua_tonumber(L,4));
+    short yaw = static_cast<short>(lua_tonumber(L,2));
+    short pitch = static_cast<short>(lua_tonumber(L,3));
+    long time = static_cast<long>(lua_tonumber(L,4));
     int angle_index = lua_cameras[camera_index].path.path_angles.size();
     
     lua_cameras[camera_index].path.path_angles.resize(angle_index+1);
@@ -2553,7 +2558,7 @@ static int L_Set_Platform_Floor_Height(lua_State *L)
 	struct platform_data *platform = get_platform_data(polygon->permutation);
 	if (platform)
 	{
-	    platform->floor_height = (double)lua_tonumber(L,2)*WORLD_ONE;
+	    platform->floor_height = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
 	    adjust_platform_endpoint_and_line_heights(polygon->permutation);
 	    adjust_platform_for_media(polygon->permutation, false);
 	}
@@ -2576,7 +2581,7 @@ static int L_Set_Platform_Ceiling_Height(lua_State *L)
 	struct platform_data *platform = get_platform_data(polygon->permutation);
 	if (platform)
 	{
-	    platform->ceiling_height = (double)lua_tonumber(L,2)*WORLD_ONE;
+	    platform->ceiling_height = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
 	    adjust_platform_endpoint_and_line_heights(polygon->permutation);
 	    adjust_platform_for_media(polygon->permutation, false);
 	}
@@ -2721,7 +2726,7 @@ static int L_Set_Polygon_Floor_Height(lua_State *L)
     struct polygon_data *polygon = get_polygon_data(short(polygon_index));
     if (polygon)
     {
-	polygon->floor_height = (double)lua_tonumber(L,2)*WORLD_ONE;
+	polygon->floor_height = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
 	for(short i = 0; i<polygon->vertex_count;++i)
 	{
 	    recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
@@ -2763,7 +2768,7 @@ static int L_Set_Polygon_Ceiling_Height(lua_State *L)
     struct polygon_data *polygon = get_polygon_data(short(polygon_index));
     if (polygon)
     {
-	polygon->ceiling_height = (double)lua_tonumber(L,2)*WORLD_ONE;
+	polygon->ceiling_height = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
 	for(short i = 0; i<polygon->vertex_count;++i)
 	{
 	    recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
@@ -2886,7 +2891,8 @@ void DeclareLuaConstants()
         #include "language_definition.h"
         #undef LUA_ACCESSING
     };
-    for (int i=0; i<190; i++)
+    int constant_list_size = sizeof(constant_list)/sizeof(lang_def);
+    for (int i=0; i<constant_list_size; i++)
     {
         lua_pushnumber(state, constant_list[i].value);
         lua_setglobal(state, constant_list[i].name);
@@ -2952,18 +2958,18 @@ bool UseLuaCameras()
                 world_view->show_weapons_in_hand = false;
                 using_lua_cameras = true;
                 short point_index = lua_cameras[i].path.current_point_index;
-                short angle_index = lua_cameras[i].path.current_angle_index;
-                if (angle_index != -1 && angle_index != lua_cameras[i].path.path_angles.size()-1)
+		short angle_index = lua_cameras[i].path.current_angle_index;
+                if (angle_index != -1 && static_cast<size_t>(angle_index) != lua_cameras[i].path.path_angles.size()-1)
                 {
                     world_view->yaw = normalize_angle(static_cast<short>(FindLinearValue(lua_cameras[i].path.path_angles[angle_index].yaw, lua_cameras[i].path.path_angles[angle_index+1].yaw, lua_cameras[i].path.path_angles[angle_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time)));
                     world_view->pitch = normalize_angle(static_cast<short>(FindLinearValue(lua_cameras[i].path.path_angles[angle_index].pitch, lua_cameras[i].path.path_angles[angle_index+1].pitch, lua_cameras[i].path.path_angles[angle_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time)));
                 }
-                else if (angle_index == lua_cameras[i].path.path_angles.size()-1)
+                else if (static_cast<size_t>(angle_index) == lua_cameras[i].path.path_angles.size()-1)
                 {
                     world_view->yaw = normalize_angle(lua_cameras[i].path.path_angles[angle_index].yaw);
                     world_view->pitch = normalize_angle(lua_cameras[i].path.path_angles[angle_index].pitch);
                 }
-                if (point_index != -1 && point_index != lua_cameras[i].path.path_points.size()-1)
+                if (point_index != -1 && static_cast<size_t>(point_index) != lua_cameras[i].path.path_points.size()-1)
                 {
                     world_point3d oldPoint = lua_cameras[i].path.path_points[point_index].point;
                     world_view->origin = FindLinearValue(lua_cameras[i].path.path_points[point_index].point, lua_cameras[i].path.path_points[point_index+1].point, lua_cameras[i].path.path_points[point_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_point_time);
@@ -2972,7 +2978,7 @@ bool UseLuaCameras()
                     ShootForTargetPoint(true, oldPoint, newPoint, polygon);
                     world_view->origin_polygon_index = polygon;
                 }
-                else if (point_index == lua_cameras[i].path.path_points.size()-1)
+                else if (static_cast<size_t>(point_index) == lua_cameras[i].path.path_points.size()-1)
                 {
                     world_view->origin = lua_cameras[i].path.path_points[point_index].point;
                     world_view->origin_polygon_index = lua_cameras[i].path.path_points[point_index].polygon;
@@ -2984,14 +2990,14 @@ bool UseLuaCameras()
                 {
                     lua_cameras[i].path.current_point_index++;
                     lua_cameras[i].path.last_point_time = lua_cameras[i].time_elapsed;
-                    if (lua_cameras[i].path.current_point_index >= lua_cameras[i].path.path_points.size())
+                    if (static_cast<size_t>(lua_cameras[i].path.current_point_index) >= lua_cameras[i].path.path_points.size())
                         lua_cameras[i].path.current_point_index = -1;
                 }
                 if (lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time >= lua_cameras[i].path.path_angles[angle_index].delta_time)
                 {
                     lua_cameras[i].path.current_angle_index++;
                     lua_cameras[i].path.last_angle_time = lua_cameras[i].time_elapsed;
-                    if (lua_cameras[i].path.current_angle_index >= lua_cameras[i].path.path_angles.size())
+                    if (static_cast<size_t>(lua_cameras[i].path.current_angle_index) >= lua_cameras[i].path.path_angles.size())
                         lua_cameras[i].path.current_angle_index = -1;
                 }
             }
