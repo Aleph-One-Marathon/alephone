@@ -46,15 +46,14 @@ enum
 	// The first of 8 items, in order:
 	// Day Ground, Day Sky, Night Ground, Night Sky, ...
 	LandscapeSwatch_ItemBase = 17,
-		
-	SinglePass_Item = 25,
-	TwoDimGraphics_Item = 26,
-	FlatStaticEffect_Item = 27,
-	Fader_Item = 28,
-	LiquidSeeThru_Item = 29,
-	Map_Item = 30,
-	TextureFix_Item = 31,
-	AllowFog_Item = 32,
+	
+	TwoDimGraphics_Item = 25,
+	FlatStaticEffect_Item = 26,
+	Fader_Item = 27,
+	LiquidSeeThru_Item = 28,
+	Map_Item = 29,
+	TextureFix_Item = 30,
+	AllowFog_Item = 31,
 	
 	ColorPicker_PromptStrings = 200,
 	ColorVoid_String = 0,
@@ -318,7 +317,6 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	
 	MacCheckbox Fog_CB(Dialog, AllowFog_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fog) != 0);
 		
-	MacCheckbox SinglePass_CB(Dialog, SinglePass_Item, TEST_FLAG(Data.Flags,OGL_Flag_SnglPass) != 0);
 	MacCheckbox TwoDimGraphics_CB(Dialog, TwoDimGraphics_Item, TEST_FLAG(Data.Flags,OGL_Flag_2DGraphics) != 0);
 	MacCheckbox FlatStaticEffect_CB(Dialog, FlatStaticEffect_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatStatic) != 0);
 	MacCheckbox FaderEffect_CB(Dialog, Fader_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fader) != 0);
@@ -389,7 +387,6 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			if (ColorVoid_CB.ToggleIfHit(ItemHit)) break;
 			if (FlatColorLandscapes_CB.ToggleIfHit(ItemHit)) break;
 			if (Fog_CB.ToggleIfHit(ItemHit)) break;
-			if (SinglePass_CB.ToggleIfHit(ItemHit)) break;
 			if (TwoDimGraphics_CB.ToggleIfHit(ItemHit)) break;
 			if (FlatStaticEffect_CB.ToggleIfHit(ItemHit)) break;
 			if (FaderEffect_CB.ToggleIfHit(ItemHit)) break;
@@ -433,7 +430,6 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		SET_FLAG(Data.Flags,OGL_Flag_VoidColor,ColorVoid_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_FlatLand,FlatColorLandscapes_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_Fog,Fog_CB.GetState());
-		SET_FLAG(Data.Flags,OGL_Flag_SnglPass,SinglePass_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_2DGraphics,TwoDimGraphics_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_FlatStatic,FlatStaticEffect_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_Fader,FaderEffect_CB.GetState());
