@@ -174,7 +174,7 @@ public:
 	
 	// The "reserve" is necessary for avoiding weird behavior in MacOS Classic;
 	// something happening when the level starts up?
-	P_HashTable() {Table.reserve(2*StdStringLen); Strings.reserve(16*StdStringLen); Reset();}
+	P_HashTable() {Reset();}
 };
 
 
