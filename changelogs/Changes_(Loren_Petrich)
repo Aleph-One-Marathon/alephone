@@ -1334,3 +1334,9 @@ Added Quicktime music playback -- the introductory music can now be anything tha
 October 13, 2000
 
 Replaced ResizableList with the STL class "vector"
+
+October 14, 2000
+
+Replaced most GrowableLists with STL's "vector"; also added per-level music support
+and dir/file parsing to FileSpecifier.
+
