@@ -24,7 +24,7 @@ void load_points(saved_map_pt *points, short count);
 void load_lines(saved_line *lines, short count);
 void load_sides(saved_side *sides, short count, short version);
 void load_polygons(saved_poly *polys, short count, short version);
-void load_lights(struct saved_static_light_data *lights, short count, short version);
+void load_lights(struct static_light_data *lights, short count, short version);
 void load_annotations(saved_annotation *annotations, short count);
 void load_objects(saved_object *map_objects, short count);
 void load_media(struct media_data *media, short count);
