@@ -382,7 +382,7 @@ void initialize_screen(
 	
 	// When this is working, uncomment it and also change appropriately
 	// do_preferences() in interface_macintosh.cpp
-	/*
+	
 	// Use the DrawSprocket to change the display resolution
 	if (graphics_preferences->screen_mode.fullscreen)
 	{
@@ -392,12 +392,12 @@ void initialize_screen(
 		DSp_ChangeResolution(world_device, graphics_preferences->device_spec.bit_depth,
 			VS.OverallWidth, VS.OverallHeight);
 	}
+	// If a context is present, get rid of it
 	else if (DSp_Ctxt)
 	{
 		DSp_HandleError("Init: Release",DSpContext_Release(DSp_Ctxt));
 		DSp_Ctxt = NULL;
 	}
-	*/
 	
 	if (!screen_initialized)
 	{
@@ -2265,6 +2265,15 @@ bool DSp_ChangeResolution(GDHandle Device, short BitDepth, short Width, short He
 	DisplayIDType DisplayID;
 	if (!DSp_HandleError("CR: Find Display ID",DMGetDisplayIDByGDevice(Device, &DisplayID, true))) return false;
 	
+	// Deleting old context in advance
+	if (DSp_Ctxt)
+	{
+		DSpContext_Release(DSp_Ctxt);
+		DSp_Ctxt = NULL;
+	}
+	
+	// This code does not appear to work; will have to iterate through the 
+	/*
 	DSpContextAttributes TargetAttribs;
 	
 	// Cribbed from some of Apple's and Mark Szymczyk's sample code
@@ -2282,7 +2291,39 @@ bool DSp_ChangeResolution(GDHandle Device, short BitDepth, short Width, short He
 	
 	if (!DSp_HandleError("CR: Find Context",DSpFindBestContextOnDisplayID(&TargetAttribs,&NewContext,DisplayID))) return false;
 	if (NewContext == NULL) return false;
+	*/
+	
+	// Iterate through possible contexts to find the best-matching dimensions:
+	short BestMatchWidth = 0;
+	short BestMatchHeight = 0;
+	bool BestMatchFound = false;
+	
+	DSpContextReference NewContext;
+	DSpContextAttributes TargetAttribs;
+	DSpGetFirstContext(DisplayID,&NewContext);
+	do {
+		DSpContext_GetAttributes(NewContext,&TargetAttribs);
+		if (TargetAttribs.displayBestDepth == BitDepth)
+		{
+			// The "best matching" size is the smallest size that contains the target size
+			if (TargetAttribs.displayWidth >= Width && TargetAttribs.displayHeight >= Height)
+			{
+				if (!BestMatchFound)
+				{
+					BestMatchWidth = TargetAttribs.displayWidth;
+					BestMatchHeight = TargetAttribs.displayHeight;
+					BestMatchFound = true;
+					break;
+				}
+			}
+		}
+	} while(DSpGetNextContext(NewContext,&NewContext) == noErr);
+	
+	// Don't switch if the size is too big
+	if (!BestMatchFound) return false;
+	
 	if (!DSp_HandleError("CR: Reserve",DSpContext_Reserve(NewContext, &TargetAttribs))) return false;
+	/*
 	if (DSp_Ctxt)
 	{
 		// Switch and delete old context if there is one
@@ -2290,6 +2331,7 @@ bool DSp_ChangeResolution(GDHandle Device, short BitDepth, short Width, short He
 		if (!DSp_HandleError("CR: Switch",DSpContext_Switch(DSp_Ctxt, NewContext))) return false;
 		if (!DSp_HandleError("CR: Release",DSpContext_Release(DSp_Ctxt))) return false;
 	}
+	*/
 	if (!DSp_HandleError("CR: Activate",DSpContext_SetState(NewContext, kDSpContextState_Active))) return false;
 	if (!DSp_HandleError("CR: Pause",DSpContext_SetState(NewContext, kDSpContextState_Paused))) return false;
 	DSp_Ctxt = NewContext;
