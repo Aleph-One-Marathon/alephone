@@ -2415,7 +2415,7 @@ static byte *NetReceiveGameData(
 	
 			if(map_buffer)
 			{
-				free(map_buffer);
+				delete []map_buffer;
 				map_buffer= NULL;
 			}
 		}
@@ -2467,7 +2467,7 @@ static void *receive_stream_data(
 		*length= *((long *) network_adsp_packet);
 		if(*length)
 		{
-			buffer = (byte *) malloc(*length); // because my caller expects it to be portable.
+			buffer = new byte[*length]; // because my caller expects it to be portable.
 			
 			if (buffer)
 			{
@@ -2817,7 +2817,7 @@ static void open_stream_file(
 	error= FSpOpenDF(&file, fsWrPerm, &stream_refnum);
 	if(error || stream_refnum==NONE) dprintf("Open Err:%d", error);
 	
-	action_flag_buffer= (struct recorded_flag *) malloc(MAXIMUM_STREAM_FLAGS*sizeof(struct recorded_flag));
+	action_flag_buffer= new recorded_flag[MAXIMUM_STREAM_FLAGS];
 	assert(action_flag_buffer);
 	action_flag_index= 0;
 }
@@ -2884,7 +2884,7 @@ static void close_stream_file(
 		write_flags();
 		FSClose(stream_refnum);
 		
-		free(action_flag_buffer);
+		delete []action_flag_buffer;
 		action_flag_buffer= NULL;
 	}
 }
