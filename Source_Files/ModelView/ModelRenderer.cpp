@@ -68,7 +68,7 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 	Centroids = &CentroidDepths[0];
 	qsort(&Indices[0],NumTriangles,sizeof(unsigned short),SortCompare);
 	
-	if (NumShaders > 1)
+	if (NumShaders > 0)
 	{
 		// Multishader case: each triangle separately
 		for (int k=0; k<NumTriangles; k++)
@@ -76,7 +76,7 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 			GLushort *Triangle = &Model.VertIndices[3*Indices[k]];
 			for (int q=0; q<NumShaders; q++)
 			{
-				SetupRenderPass(Model,Shaders[0]);
+				SetupRenderPass(Model,Shaders[q]);
 				glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_SHORT,Triangle);
 			}
 		}
