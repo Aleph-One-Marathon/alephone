@@ -162,9 +162,9 @@ struct OGL_ConfigureData
 	// (day, night, moon, outer space)
 	// Second index: ground, sky
 	RGBColor LscpColors[4][2];
-        
-        // Anisotropy setting
-        float AnisotropyLevel;
+	
+	// Anisotropy setting
+	float AnisotropyLevel;
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();
@@ -179,8 +179,6 @@ void OGL_SetDefaults(OGL_ConfigureData& Data);
 // for managing the model and image loading and unloading;
 void OGL_LoadModelsImages(short Collection);
 void OGL_UnloadModelsImages(short Collection);
-
-
 
 
 // Does this for a set of several pixel values or color-table values;
