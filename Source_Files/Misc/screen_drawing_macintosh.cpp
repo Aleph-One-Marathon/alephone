@@ -516,6 +516,8 @@ TextSpec *_get_font_spec(
 // used in computer_interface.cpp
 void UseInterfaceFont(short font_index)
 {
+	assert(font_index>=0 && font_index<NUMBER_OF_INTERFACE_FONTS);
+	
 	InterfaceFonts[font_index].Use();
 }
 

@@ -24,6 +24,13 @@ static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES];
 static SDL_Surface *draw_surface = NULL;	// Target surface for drawing commands
 static SDL_Surface *old_draw_surface = NULL;
 
+
+// Gets interface font and style;
+// used in computer_interface.cpp
+extern sdl_font_info *GetInterfaceFont(short font_index);
+extern uint16 GetInterfaceStyle(short font_index);
+
+/*
 static struct interface_font_info {
 	TextSpec spec;
 	const sdl_font_info *font;
@@ -38,6 +45,7 @@ static struct interface_font_info {
 	{{kFontIDCourier, styleBold, 14}},
 	{{kFontIDMonaco, styleNormal, 9}}
 };
+*/
 
 bool draw_clip_rect_active = false;			// Flag: clipping rect active
 screen_rectangle draw_clip_rect;			// Current clipping rectangle
@@ -52,7 +60,7 @@ extern TextSpec *_get_font_spec(short font_index);
 /*
  *  Initialize drawing module
  */
-
+/*
 void initialize_screen_drawing(void)
 {
 	// Init drawing surface
@@ -68,7 +76,7 @@ void initialize_screen_drawing(void)
 		}
 	}
 }
-
+*/
 
 /*
  *  Redirect drawing to screen or offscreen buffer
@@ -358,8 +366,10 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 
 	// Find font information
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
-	uint16 style = interface_fonts[font_id].spec.style;
-	const sdl_font_info *font = interface_fonts[font_id].font;
+	uint16 style = InterfaceFonts[font_id].Style;
+	const sdl_font_info *font = InterfaceFonts[font_id].Info;
+	// uint16 style = interface_fonts[font_id].spec.style;
+	// const sdl_font_info *font = interface_fonts[font_id].font;
 	if (font == NULL)
 		return;
 
@@ -393,7 +403,8 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 			memcpy(remaining_text_to_draw, text_to_draw + last_non_printing_character + 1, strlen(text_to_draw + last_non_printing_character + 1) + 1);
 	
 			new_destination = *destination;
-			new_destination.top += interface_fonts[font_id].line_spacing;
+			new_destination.top += InterfaceFonts[font_id].LineSpacing;
+			// new_destination.top += interface_fonts[font_id].line_spacing;
 			_draw_screen_text(remaining_text_to_draw, &new_destination, flags, font_id, text_color);
 	
 			// Now truncate our text to draw
@@ -417,7 +428,8 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 		x = destination->left;
 
 	// Vertical positioning
-	int t_height = interface_fonts[font_id].height;
+	int t_height = InterfaceFonts[font_id].Height;
+	// int t_height = interface_fonts[font_id].height;
 	if (flags & _center_vertical) {
 		if (t_height > RECTANGLE_HEIGHT(destination))
 			y = destination->top;
@@ -438,23 +450,57 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 	draw_text(text_to_draw, x, y, SDL_MapRGB(draw_surface->format, color.r, color.g, color.b), font, style);
 }
 
+static TextSpec NullSpec = {0, 0, 0};
+
+TextSpec *_get_font_spec(
+	short font_index)
+{
+	// return &(interface_fonts.fonts[font_index]);
+	return &NullSpec;
+}
+
+// Sets current font to this index of interface font;
+// used in computer_interface.cpp
+sdl_font_info *GetInterfaceFont(short font_index)
+{
+	assert(font_index>=0 && font_index<NUMBER_OF_INTERFACE_FONTS);
+	
+	return InterfaceFonts[font_index].Info;
+}
+
+// Gets the current font style;
+// used in computer_interface.cpp
+uint16 GetInterfaceStyle(short font_index)
+{
+	assert(font_index>=0 && font_index<NUMBER_OF_INTERFACE_FONTS);
+	
+	return InterfaceFonts[font_index].Style;
+}
+
+/*
 TextSpec *_get_font_spec(short font_id)
 {
 	return &interface_fonts[font_id].spec;
 }
+*/
 
 short _get_font_line_height(short font_id)
 {
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
-	return interface_fonts[font_id].line_spacing;
+	return InterfaceFonts[font_id].LineSpacing;
+	// return interface_fonts[font_id].line_spacing;
 }
 
 short _text_width(const char *text, short font_id)
 {
 	// Find font information
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
+	uint16 style = InterfaceFonts[font_id].Style;
+	const sdl_font_info *font = InterfaceFonts[font_id].Info;
+	/*
 	uint16 style = interface_fonts[font_id].spec.style;
 	const sdl_font_info *font = interface_fonts[font_id].font;
+	*/
 	if (font == NULL)
 		return 0;
 

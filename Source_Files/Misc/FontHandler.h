@@ -17,6 +17,9 @@ Jan 5, 2001 (Loren Petrich):
 
 #include "cseries.h"
 #include "XML_ElementParser.h"
+#if defined(SDL)
+#include "sdl_fonts.h"
+#endif
 
 
 struct FontSpecifier
@@ -47,8 +50,12 @@ struct FontSpecifier
 	short Height;			// How tall is it?
 	short LineSpacing;		// From same positions in each line
 	
-	// MacOS-specific:
+	// MacOS- and SDL-specific stuff
+#if defined(mac)
 	short ID;
+#elif defined(SDL)
+	sdl_font_info *Info;
+#endif
 	
 	// Initialize: call this before calling anything else;
 	// this is from not having a proper constructor for this object.
@@ -60,7 +67,9 @@ struct FontSpecifier
 	
 	// Use this font (MacOS-specific); has this form because MacOS Quickdraw has a global font value
 	// for each GrafPort (draw context)
+#ifdef mac
 	void Use();
+#endif
 	
 	// Get text width for text that must be centered (map title)
 	int TextWidth(char *Text);

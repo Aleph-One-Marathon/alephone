@@ -50,10 +50,16 @@ void FontSpecifier::Init()
 	Update();
 	
 	OGL_Texture = NULL;
+
+#ifdef SDL
+	FontInfo = NULL;
+#endif
 }
 
 
-// MacOS-specific:
+// MacOS- and SDL-specific stuff
+#if defined(mac)
+
 // Cribbed from _get_font_line_spacing() and similar functions in screen_drawing.cpp
 
 void FontSpecifier::Update()
@@ -118,6 +124,36 @@ int FontSpecifier::TextWidth(char *Text)
 	return int(::TextWidth(Text,0,Len));
 }
 
+#elif defined(SDL)
+
+void FontSpecifier::Update()
+{
+	// Clear away
+	if (Info) unload_font(Info);
+	
+	// Simply implements format "#<value>"; may want to generalize this
+	sscanf(File+1,"%hd",&ID);
+	
+	// Actual loading
+	TextSpec Spec;
+	Spec.font = ID;
+	Spec.size = Size;
+	Spec.style = Style;
+	Info = load_font(&Spec);
+	
+	Height = Info->ascent+Info->leading;
+	LineSpacing = Info->ascent+Info->descent+Info->leading;
+}
+
+// Defined in screen_drawing_sdl.cpp
+extern int text_width(const char *text, const sdl_font_info *font, uint16 style);
+
+int FontSpecifier::TextWidth(char *Text)
+{
+	return text_width(Char,Info,Style);
+}
+
+#endif
 
 // Next power of 2; since OpenGL prefers powers of 2, it is necessary to work out
 // the next one up for each texture dimension.
@@ -154,7 +190,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	short Ascent = 0, Descent = 0;
 	short Widths[256];
 	
-	// Some MacOS-specific stuff
+#if defined(mac)
 	TextSpec OldFont;
 	GetFont(&OldFont);
 	
@@ -168,8 +204,12 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 		Widths[k] = CharWidth(k);
 	
 	SetFont(&OldFont);
-	// End some MacOS-specific stuff
-	
+
+#elif defined(SDL)
+	// Get the font widths with SDL
+	return;
+#endif
+		
 	// Put some padding around each glyph so as to avoid clipping it
 	const short Pad = 1;
 	Ascent += Pad;
@@ -213,37 +253,14 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	}
 	TxtrHeight = MAX(128, NextPowerOfTwo(GlyphHeight*(LastLine+1)));
 	
-	// MacOS-specific: create a grayscale color table if necessary
-	/*
-	if (!Grays)
-	{
-		CTabHandle SystemColors = GetCTable(8);
-		int SCSize = GetHandleSize(Handle(SystemColors));
-		Grays = (CTabHandle)NewHandle(SCSize);
-		assert(Grays);
-		HLock(Handle(Grays));
-		HLock(Handle(SystemColors));
-		CTabPtr GrayPtr = *Grays;
-		CTabPtr SCPtr = *SystemColors;
-		memcpy(GrayPtr,SCPtr,SCSize);
-		for (int k=0; k<256; k++)
-		{
-			ColorSpec& Spec = GrayPtr->ctTable[k];
-			Spec.rgb.red = Spec.rgb.green = Spec.rgb.blue = (k << 8) + k;
-		}
-		HUnlock(Handle(Grays));
-		HUnlock(Handle(SystemColors));
-		DisposeCTable(SystemColors);
-	}
-	*/
-	
+#if defined(mac)
+		
 	// MacOS-specific: render the font glyphs onto a GWorld,
 	// and use it as the source of the font texture.
 	Rect ImgRect;
 	SetRect(&ImgRect,0,0,TxtrWidth,TxtrHeight);
 	GWorldPtr FTGW;
 	OSErr Err = NewGWorld(&FTGW,32,&ImgRect,0,0,0);
-	// OSErr Err = NewGWorld(&FTGW,8,&ImgRect,Grays,0,0);
 	if (Err != noErr) return;
 	PixMapHandle Pxls = GetGWorldPixMap(FTGW);
 	LockPixels(Pxls);
@@ -271,12 +288,17 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  			HPos += Widths[Which++];
  		}
  	}
+
+#elif defined(SDL)
+	// Render the font glyphs into the SDL surface
+#endif
  	
  	// Non-MacOS-specific: allocate the texture buffer
- 	// Its format is LA, where L is the luminosity and A is the alpha channel
+ 	// Its format is LA 88, where L is the luminosity and A is the alpha channel
  	// The font value will go into A.
  	OGL_Texture = new uint8[2*GetTxtrSize()];
 	
+#if defined(mac)
 	// Now copy from the GWorld into the OpenGL texture	
 	uint8 *PixBase = (byte *)GetPixBaseAddr(Pxls);
  	int Stride = int((**Pxls).rowBytes & 0x7fff);
@@ -297,8 +319,12 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  	UnlockPixels(Pxls);
  	SetGWorld(OrigPort,OrigDevice);
  	DisposeGWorld(FTGW);
- 	// Absolute end of MacOS-specific stuff; OpenGL stuff starts here
- 	
+
+#elif defined(SDL)
+	// Copy the SDL surface into the OpenGL texture
+#endif
+	
+	// OpenGL stuff starts here 	
  	// Load texture
  	glGenTextures(1,&TxtrID);
  	glBindTexture(GL_TEXTURE_2D,TxtrID);

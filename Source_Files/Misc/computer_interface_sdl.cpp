@@ -8,7 +8,7 @@
 
 
 // Global variables
-static const sdl_font_info *terminal_font = NULL;
+// static const sdl_font_info *terminal_font = NULL;
 static uint32 current_pixel;				// Current color pixel value
 static uint16 current_style = styleNormal;	// Current style flags
 
@@ -81,6 +81,9 @@ static bool calculate_line(char *base_text, short width, short start_index, shor
 
 	if (base_text[start_index]) {
 		int index = start_index, running_width = 0;
+		
+		// terminal_font no longer a global, since it may change
+		sdl_font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
 
 		while (running_width < width && base_text[index] && base_text[index] != MAC_LINE_END) {
 			running_width += char_width(base_text[index], terminal_font, current_style);

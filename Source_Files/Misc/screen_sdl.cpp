@@ -91,7 +91,7 @@ struct color_table *visible_color_table; /* the color environment the player see
 struct view_data *world_view; /* should be static */
 #endif
 
-static const sdl_font_info *info_display_font = NULL;
+// static const sdl_font_info *info_display_font = NULL;
 
 // Rendering buffer for the main view, the overhead map, and the terminals.
 // The HUD has a separate buffer.
@@ -193,8 +193,9 @@ void initialize_screen(struct screen_mode_data *mode)
 		world_view->tunnel_vision_active = false;
 
 		// Load font for FPS/position display
-		static const TextSpec monaco_spec = {kFontIDMonaco, styleNormal, 12};
-		info_display_font = load_font(monaco_spec);
+		// Now handled in ViewControl.h
+		// static const TextSpec monaco_spec = {kFontIDMonaco, styleNormal, 12};
+		// info_display_font = load_font(monaco_spec);
 
 	} else {
 
@@ -835,7 +836,10 @@ static void update_fps_display(SDL_Surface *s)
 			sprintf(fps, "%3.2ffps", (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks - frame_ticks[frame_index]));
 
 		// Print to screen
-		draw_text(world_pixels, fps, 5, world_pixels->h - 5, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), info_display_font, styleNormal);
+		FontSpecifier& Font = GetOnScreenFont();
+		short Offset = Font.LineSpacing / 3;
+		draw_text(world_pixels, fps, Offset, world_pixels->h - Offset, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), Font.Info, Font.Style);
+		// draw_text(world_pixels, fps, 5, world_pixels->h - 5, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), info_display_font, styleNormal);
 		//!! OpenGL
 	} else
 		frame_count = frame_index = 0;
@@ -855,30 +859,32 @@ static void DisplayPosition(SDL_Surface *s)
 	uint32 pixel = SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff);
 
 	// Print position to screen
-	int Y = 15, Leading = 16;
+	FontSpecifier& Font = GetOnScreenFont();
+	int X = Font.LineSpacing / 3;
+	int Y = Font.LineSpacing, LineSpacing = Font.LineSpacing;
 	const float FLOAT_WORLD_ONE = float(WORLD_ONE);
 	const float AngleConvert = 360.0 / float(FULL_CIRCLE);
 	sprintf(temporary, "X       = %8.3f", world_view->origin.x / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
-	Y += Leading;
+	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	Y += LineSpacing;
 	sprintf(temporary, "Y       = %8.3f", world_view->origin.y / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
-	Y += Leading;
+	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	Y += LineSpacing;
 	sprintf(temporary, "Z       = %8.3f", world_view->origin.z / FLOAT_WORLD_ONE);
-	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
-	Y += Leading;
+	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	Y += LineSpacing;
 	sprintf(temporary, "Polygon = %8d", world_view->origin_polygon_index);
-	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
-	Y += Leading;
+	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	Y += LineSpacing;
 	int Angle = world_view->yaw;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Yaw     = %8.3f", AngleConvert * Angle);
-	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
-	Y += Leading;
+	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
+	Y += LineSpacing;
 	Angle = world_view->pitch;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
 	sprintf(temporary, "Pitch   = %8.3f", AngleConvert * Angle);
-	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
+	draw_text(world_pixels, temporary, X, Y, pixel, Font.Info, Font.Style);
 	//!! OpenGL
 }
 
@@ -889,7 +895,9 @@ static void DisplayMessages(SDL_Surface *s)
 	uint32 pixel = SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff);
 
 	// Print position to screen
-	int Y = 15, LineSpacing = 16;
+	FontSpecifier& Font = GetOnScreenFont();
+	int X = Font.LineSpacing / 3;
+	int Y = Font.LineSpacing, LineSpacing = Font.LineSpacing;
 	if (ShowPosition) Y += 6*LineSpacing;	// Make room for the position data
 	
 	for (int k=0; k<NumScreenMessages; k++)
@@ -901,7 +909,7 @@ static void DisplayMessages(SDL_Surface *s)
 		if (Message.TimeRemaining <= 0) continue;
 		Message.TimeRemaining--;
 		
-		draw_text(world_pixels, Message.Text, 5, Y, pixel, info_display_font, styleNormal);
+		draw_text(world_pixels, Message.Text, X, Y, pixel, Font.Info, Font.Style);
 		Y += LineSpacing;
 	}
 }

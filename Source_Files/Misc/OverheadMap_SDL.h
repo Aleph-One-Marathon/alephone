@@ -39,7 +39,8 @@ protected:
 		world_point2d &location,
 		rgb_color &color,
 		char *text,
-		FontDataStruct &FontData,
+		FontSpecifier& FontData,
+		// FontDataStruct &FontData,
 		short justify);
 
 	void set_path_drawing(rgb_color &color);

@@ -272,8 +272,14 @@ static struct player_terminal_data *player_terminals;
 
 #define NUMBER_OF_TERMINAL_KEYS (sizeof(terminal_keys)/sizeof(struct terminal_key))
 
+// Get the interface font to use from screen_drawing_<platform>.cpp
 extern TextSpec *_get_font_spec(short font_index);
+#if defined(mac)
 extern void UseInterfaceFont(short font_index);
+#elif defined(SDL)
+extern sdl_font_info *GetInterfaceFont(short font_index);
+extern uint16 GetInterfaceStyle(short font_index);
+#endif
 
 inline player_terminal_data *get_player_terminal_data(
 	short player_index)
@@ -375,10 +381,11 @@ void initialize_terminal_manager(
 		terminal_keys[index].offset= terminal_keys[index].keycode>>3;
 	}
 #endif
-
+/*
 #ifdef SDL
 	terminal_font = load_font(*_get_font_spec(_computer_interface_font));
 #endif
+*/
 }
 
 void initialize_player_terminal_info(
@@ -715,8 +722,8 @@ static void draw_logon_text(
 	picture_bounds.left= bounds->left;
 	picture_bounds.right= bounds->right;
 
-#ifdef mac
 	/* This is always just a line, so we can do this here.. */
+#ifdef mac
 	{
 		TextSpec old_font;
 
@@ -729,7 +736,10 @@ static void draw_logon_text(
 		SetFont(&old_font);
 	}
 #else
-	width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, _get_font_spec(_computer_interface_font)->style);
+	sdl_font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
+	uint16 terminal_style = GetInterfaceStyle(_computer_interface_font);
+	width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, terminal_style);
+	// width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, _get_font_spec(_computer_interface_font)->style);
 	picture_bounds.left += (RECTANGLE_WIDTH(&picture_bounds) - width) / 2;
 #endif
 	
@@ -774,7 +784,8 @@ static void _draw_computer_text(
 	// SetFont(_get_font_spec(_computer_interface_font));
 #else
 	uint16 old_style = current_style;
-	current_style = _get_font_spec(_computer_interface_font)->style;
+	current_style = GetInterfaceStyle(_computer_interface_font);
+	// current_style = _get_font_spec(_computer_interface_font)->style;
 #endif
 
 	line_count= 0;
@@ -892,7 +903,8 @@ static short count_total_lines(
 	// SetFont(_get_font_spec(_computer_interface_font));
 #else
 	uint16 old_style = current_style;
-	current_style = _get_font_spec(_computer_interface_font)->style;
+	current_style = GetInterfaceStyle(_computer_interface_font);
+	// current_style = _get_font_spec(_computer_interface_font)->style;
 #endif
 
 	while(!calculate_line(base_text, width, start_index, text_end_index, &end_index))
@@ -947,6 +959,7 @@ static void draw_line(
 #ifdef mac
 	MoveTo(bounds->left, bounds->top+line_height*(line_number+FUDGE_FACTOR));
 #else
+	sdl_font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
 	int xpos = bounds->left;
 #endif
 
@@ -1178,7 +1191,8 @@ static void display_picture(
 			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
 		DrawText(temporary, 0, strlen(temporary));
 #elif defined(SDL)
-		const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
+		const sdl_font_info *font = GetInterfaceFont(_computer_interface_title_font);
+		// const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
 		int width = text_width(temporary, font, styleNormal);
 		draw_text(world_pixels, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
@@ -1773,7 +1787,8 @@ static void present_checkpoint_text(
 			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
 		DrawText(temporary, 0, strlen(temporary));
 #elif defined(SDL)
-		const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
+		const sdl_font_info *font = GetInterfaceFont(_computer_interface_title_font);
+		// const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
 		int width = text_width(temporary, font, styleNormal);
 		draw_text(world_pixels, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
