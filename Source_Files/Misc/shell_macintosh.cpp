@@ -88,6 +88,10 @@ Aug 12, 2000 (Loren Petrich):
 
 Oct 12, 2000 (Loren Petrich):
 	Quicktime initialization now here
+
+Dec 1, 2000 (Loren Petrich):
+	Added scheme for reading STR# resource 128 to find directories to read MML script files from;
+	both 'TEXT' files and 'rsrc' archives can be read.
 */
 
 #include <exception.h>
@@ -102,8 +106,13 @@ Oct 12, 2000 (Loren Petrich):
 // LP addition: local-event management:
 #include "LocalEvents.h"
 
-// LP addition: loading of XML files from resource fork
+// LP addition: loading of XML files from resource fork and from loaded text file
 #include "XML_ResourceFork.h"
+#include "XML_DataBlock.h"
+
+// For doing STL sorting
+#include <algorithm.h>
+#include <functional.h>
 
 
 #define kMINIMUM_NETWORK_HEAP (3*MEG)
@@ -123,6 +132,11 @@ extern void *level_transition_malloc(size_t size);
 
 #define kMINIMUM_MUSIC_HEAP (4*MEG)
 #define kMINIMUM_SOUND_HEAP (3*MEG)
+
+// Marathon-engine dialog boxes:
+const short FatalErrorAlert = 128;
+const short NonFatalErrorAlert = 129;
+
 
 #ifndef __MWERKS__
 #ifdef envppc
@@ -185,6 +199,9 @@ bool is_keypad(short keycode);
 // LP addition: post an action from the local event queue in the app's MacOS event queue
 static void PostOSEventFromLocal();
 
+// Looks for MML files and resources in that directory and parses them
+void FindAndParseFiles(DirectorySpecifier& DirSpec);
+
 
 /* ---------- code */
 
@@ -223,6 +240,11 @@ void main(
 }
 
 /* ---------- private code */
+
+// MML parsers
+static XML_DataBlock XML_DataBlockLoader;
+static XML_ResourceFork XML_ResourceForkLoader;
+
 
 static void initialize_application_heap(
 	void)
@@ -290,9 +312,36 @@ static void initialize_application_heap(
 	
 	// Safest place to load the configuration files
 	SetupParseTree();
-	XML_ResourceFork XML_Loader;
-	XML_Loader.CurrentElement = &RootParser;
-	XML_Loader.ParseResourceSet('TEXT');
+	XML_DataBlockLoader.CurrentElement = &RootParser;
+	XML_ResourceForkLoader.CurrentElement = &RootParser;
+	XML_ResourceForkLoader.ParseResourceSet('TEXT');
+	
+	// Look for such files in subdirectories specified in a STR# resource:
+	const int PathID = 128;
+	Handle PathStrings = Get1Resource('STR#',PathID);
+	if (PathStrings)
+	{
+		// Count how many there are
+		HLock(PathStrings);
+		short *NumPtr = (short *)(*PathStrings);
+		short NumStrings = NumPtr[0];
+		HUnlock(PathStrings);
+		ReleaseResource(PathStrings);
+		for (int i=0; i<NumStrings; i++)
+		{
+			// Get next path specification; quit when one has found an empty one
+			unsigned char PathSpec[256];
+			GetIndString(PathSpec,PathID,i+1);	// Zero-based to one-based indexing
+			
+			// Make a C string from this Pascal string
+			p2cstr(PathSpec);
+			
+			DirectorySpecifier DirSpec;
+			if (!DirSpec.SetToAppParent()) break;
+			if (!DirSpec.SetToSubdirectory((char *)PathSpec)) continue;
+			FindAndParseFiles(DirSpec);
+		}
+	}
 	
 	initialize_preferences();
 	GetDateTime(&player_preferences->last_time_ran);
@@ -1247,3 +1296,162 @@ bool machine_has_quicktime(void)
 	return HasQuicktime;
 }
 
+
+// For adding is-directory and perhaps other flags to a FSSpec
+struct TypedSpec
+{
+	enum {
+		Directory,
+		TextFile,
+		ResourceFile
+	};
+	
+	FSSpec Spec;
+	short Type;
+};
+
+
+// Needed for an STL index sort
+struct AlphabeticalCompareTypedSpecs: public binary_function<int, int, bool> {
+
+	vector<TypedSpec>::iterator SpecListIter;
+	
+	bool operator()(int i1, int i2)
+		{return (IUCompString(SpecListIter[i1].Spec.name,SpecListIter[i2].Spec.name) < 0);}
+};
+
+
+// Put this stuff out here, to avoid eating up stack space
+static CInfoPBRec PB;
+static TypedSpec DummySpec;	// push_back() food
+static long ParentDir;
+static AlphabeticalCompareTypedSpecs CompareTS;
+
+void FindAndParseFiles(DirectorySpecifier& DirSpec)
+{	
+	// Maintained separately, since updating this ought not to affect the FSSpec,
+	// which will be left unchanged in case of failure.
+	ParentDir = DirSpec.Get_parID();
+	
+	// Resetting for each directory walk
+	obj_clear(PB);
+	PB.hFileInfo.ioVRefNum = DirSpec.Get_vRefNum();
+	DummySpec.Spec.vRefNum = DirSpec.Get_vRefNum();
+	PB.hFileInfo.ioNamePtr = DummySpec.Spec.name;
+	
+	// Specific for each level of recursion;
+	// prepare for an index sort
+	vector<TypedSpec> SpecList;
+	vector<int> SpecIndices;
+	
+	// Walk the directory, searching for a file with a matching name
+	short FileIndex = 0;
+	while(true)
+	{
+		// Resetting to look for next file in directory
+		PB.hFileInfo.ioDirID = ParentDir;
+		PB.hFileInfo.ioFDirIndex = FileIndex + 1;	// Zero-based to one-based indexing
+		
+		// Quit if ran out of files
+		OSErr Err = PBGetCatInfo(&PB, false);
+		if (Err != noErr) break;
+		
+		bool IsDir = (PB.hFileInfo.ioFlAttrib & 0x10) != 0;
+		
+		// First order of business: set the directory or parent-directory ID appropriately
+		if (IsDir)
+		{
+			DummySpec.Spec.parID = PB.dirInfo.ioDrDirID;
+			DummySpec.Type = TypedSpec::Directory;
+			
+			// Add!
+			SpecList.push_back(DummySpec);
+			SpecIndices.push_back(FileIndex);
+		}
+		else
+		{
+			DummySpec.Spec.parID = ParentDir;
+			OSType Type = PB.hFileInfo.ioFlFndrInfo.fdType;
+			if (Type == 'TEXT')
+			{
+				DummySpec.Type = TypedSpec::TextFile;
+			
+				// Add!
+				SpecList.push_back(DummySpec);
+				SpecIndices.push_back(FileIndex);
+			}
+			else if (Type == 'rsrc')
+			{
+				DummySpec.Type = TypedSpec::ResourceFile;
+			
+				// Add!
+				SpecList.push_back(DummySpec);
+				SpecIndices.push_back(FileIndex);
+			}
+		}
+		
+		// Next one
+		FileIndex++;
+	}
+	
+	// Do STL index sort
+	CompareTS.SpecListIter = SpecList.begin();
+	sort(SpecIndices.begin(),SpecIndices.end(),CompareTS);
+	
+	for (FileIndex=0; FileIndex<SpecIndices.size(); FileIndex++)
+	{
+		TypedSpec& SLMember = SpecList[SpecIndices[FileIndex]];
+		switch(SLMember.Type)
+		{
+		case TypedSpec::Directory:
+			{
+				DirectorySpecifier ChildDirSpec;
+				ChildDirSpec.Set_vRefNum(SLMember.Spec.vRefNum);
+				ChildDirSpec.Set_parID(SLMember.Spec.parID);
+				FindAndParseFiles(ChildDirSpec);
+			}
+			break;
+		
+		case TypedSpec::TextFile:
+			{
+				FileSpecifier FileSpec;
+				FileSpec.SetSpec(SLMember.Spec);
+				OpenedFile OFile;
+				if (FileSpec.Open(OFile))
+				{
+					long Len = 0;
+					OFile.GetLength(Len);
+					if (Len <= 0) break;
+					
+					vector<char> FileContents(Len);
+					if (!OFile.Read(Len,&FileContents[0])) break;
+					
+					if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
+					{
+						ParamText("\pThere were configuration-file parsing errors",0,0,0);
+						Alert(FatalErrorAlert,NULL);
+						ExitToShell();
+					}
+				}
+			}
+			break;
+		
+		case TypedSpec::ResourceFile:
+			{
+				FileSpecifier FileSpec;
+				FileSpec.SetSpec(SLMember.Spec);
+				OpenedResourceFile OFile;
+				if (FileSpec.Open(OFile))
+				{
+					OFile.Push();
+					XML_ResourceForkLoader.ParseResourceSet('TEXT');
+					OFile.Pop();
+				}
+			}
+			break;
+		
+		default:
+			vassert(false,csprintf(temporary,"Bad type: %d",SLMember.Type));
+		}
+	}
+}
