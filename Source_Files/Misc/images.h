@@ -8,16 +8,28 @@
 	
 
 Aug 21, 2000 (Loren Petrich)
-	Added file-object support
+	Added CLUT-source selector
 
+Aug 26, 2000 (Loren Petrich)
+	Added object-oriented file handling
 */
+
+#include "FileHandler.h"
 
 void initialize_images_manager(void);
 
 boolean images_picture_exists(short base_resource);
 boolean scenario_picture_exists(short base_resource);
 
-struct color_table *calculate_picture_clut(short pict_resource_number);
+// Modified to select what resource file is to be the source of the color table;
+// this is for the benefit of resource-file 
+enum
+{
+	CLUTSource_Images,
+	CLUTSource_Scenario
+};
+struct color_table *calculate_picture_clut(int CLUTSource, short pict_resource_number);
+// struct color_table *calculate_picture_clut(short pict_resource_number);
 struct color_table *build_8bit_system_color_table(void);
 
 void set_scenario_images_file(FileSpecifier& File);
