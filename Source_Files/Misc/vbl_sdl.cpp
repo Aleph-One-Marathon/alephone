@@ -275,7 +275,8 @@ timer_task_proc install_timer_task(short tasks_per_second, bool (*func)(void))
 	// We only handle one task, which is enough
 	tm_quit = false;
 	tm_period = 1000 / tasks_per_second;
-	tm_thread = SDL_CreateThread(timer_thread, func);
+	tm_thread = SDL_CreateThread(timer_thread, (void *)func);
+	return (timer_task_proc)tm_thread;
 }
 
 void remove_timer_task(timer_task_proc proc)
