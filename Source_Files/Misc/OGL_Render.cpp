@@ -116,6 +116,9 @@ Dec 17, 2000 (Loren Petrich):
 #include "ViewControl.h"
 #include "OGL_Faders.h"
 
+#ifdef __WIN32__
+#include "OGL_Win32.h"
+#endif
 
 // Whether or not OpenGL is active for rendering
 static bool _OGL_IsActive = false;

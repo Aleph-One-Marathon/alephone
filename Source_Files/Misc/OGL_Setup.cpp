@@ -53,6 +53,9 @@ Dec 17, 2000 (Loren Petrich):
 #include "OGL_Setup.h"
 #include "ColorParser.h"
 
+#ifdef __WIN32__
+#include "OGL_Win32.cpp"
+#endif
 
 // Whether or not OpenGL is present and usable
 static bool _OGL_IsPresent = false;
@@ -69,6 +72,9 @@ bool OGL_Initialize()
 	// return (_OGL_IsPresent = ((Ptr)glBegin != (Ptr)kUnresolvedCFragSymbolAddress));
 #elif defined(SDL)
 	// nothing to do
+#if defined(__WIN32__)
+	setup_gl_extensions();
+#endif	
 	return _OGL_IsPresent = true;
 #else
 #error OGL_Initialize() not implemented for this platform
