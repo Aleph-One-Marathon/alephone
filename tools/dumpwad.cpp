@@ -83,15 +83,33 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	int base_entry_size = get_directory_base_length(&h);
+	if (base_entry_size > SIZEOF_directory_entry)
+		base_entry_size = SIZEOF_directory_entry;
+
 	// Dump directory
 	for (int i=0; i<h.wad_count; i++) {
 		printf("\nDirectory entry %d:\n", i);
 
 		// Read and dump directory entry
-		directory_entry e;
-		if (!read_indexed_directory_data(f, &h, i, &e)) {
+		long offset = calculate_directory_offset(&h, i);
+		uint8 buffer[MAX(SIZEOF_old_directory_entry, SIZEOF_directory_entry)];
+		if (!read_from_file(f, offset, buffer, base_entry_size)) {
 			fprintf(stderr, "Error reading directory entry %d\n", i);
 			exit(1);
+		}
+		directory_entry e;
+		switch (base_entry_size) {
+			case SIZEOF_old_directory_entry:
+				unpack_old_directory_entry(buffer, (old_directory_entry *)&e, 1);
+				e.index = i;
+				break;
+			case SIZEOF_directory_entry:
+				unpack_directory_entry(buffer, &e, 1);
+				break;
+			default:
+				fprintf(stderr, "Unrecognized base entry length\n");
+				exit(1);
 		}
 		printf("  data size %d, index %d\n", e.length, e.index);
 
@@ -152,7 +170,7 @@ int main(int argc, char **argv)
 		}
 
 		// Read tags
-		wad_data *w = read_indexed_wad_from_file(f, &h, i, true);
+		wad_data *w = read_indexed_wad_from_file(f, &h, e.index, true);
 		if (w == NULL) {
 			fprintf(stderr, "Error reading wad %d\n", i);
 			exit(1);
