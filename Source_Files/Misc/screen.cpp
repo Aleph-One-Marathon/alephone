@@ -1691,12 +1691,17 @@ static void update_fps_display(
 
 		GetPort(&old_port);
 		SetPort(port);
+		// Now using font-definition abstraction
+		FontSpecifier& Font = GetOnScreenFont();
+		Font.Use();
+		// The line spacing is a generalization of "5" for larger fonts
+		short Offset = Font.GetLineSpacing() / 3;
 		// LP: Changed font size from 9 to this more readable value
-		TextSize(12);
+		// TextSize(12);
 		// LP: No desire to change this at the moment
-		TextFont(kFontIDMonaco);
+		// TextFont(kFontIDMonaco);
 		// LP change: moved the rendering out
-		DisplayText(port->portRect.left+5,port->portRect.bottom-5,fps);
+		DisplayText(port->portRect.left+Offset,port->portRect.bottom-Offset,fps);
 		RGBForeColor(&rgb_black);
 		/*
 		MoveTo(5, port->portRect.bottom-5);
@@ -1724,12 +1729,14 @@ static void DisplayPosition(GrafPtr port)
 	GetPort(&old_port);
 	SetPort(port);
 	
-	TextSize(12);
-	TextFont(kFontIDMonaco);
+	FontSpecifier& Font = GetOnScreenFont();
+	Font.Use();
+	// TextSize(12);
+	// TextFont(kFontIDMonaco);
 	
-	short X = port->portRect.left+5;
-	short Y = port->portRect.top+15;
-	short Leading = 16;	// typesetting term: the metal
+	short Leading = Font.GetLineSpacing();	// typesetting term: the metal
+	short X = port->portRect.left + Leading/3;
+	short Y = port->portRect.top + Leading;
 	const float FLOAT_WORLD_ONE = float(WORLD_ONE);
 	const float AngleConvert = 360/float(FULL_CIRCLE);
 	psprintf(ptemporary, "X       = %8.3f",world_view->origin.x/FLOAT_WORLD_ONE);

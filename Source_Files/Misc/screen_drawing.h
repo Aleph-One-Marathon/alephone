@@ -133,8 +133,8 @@ void _set_port_to_HUD();
 // LP addition: get the parser for the interface rectangles
 XML_ElementParser *InterfaceRectangles_GetParser();
 
-// Makes the color parser use screen-drawing stuff
-void SetColorParserToScreenDrawing();
+// Makes the color and font parsers use screen-drawing stuff
+void SetColorFontParserToScreenDrawing();
 
 #ifdef SDL
 struct sdl_font_info;

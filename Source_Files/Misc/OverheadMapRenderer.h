@@ -7,6 +7,9 @@
 	August 3, 2000
 	
 	The definitions had been moved out of overhead_map.c and overhead_map_macintosh.c
+
+Dec 17, 2000 (Loren Petrich):
+	Added font abstraction
 */
 
 #include "cseries.h"
@@ -16,6 +19,7 @@
 #include "overhead_map.h"
 #include "shape_descriptors.h"
 #include "shell.h"
+#include "FontHandler.h"
 
 
 /* ---------- constants */
@@ -63,21 +67,6 @@ enum
 
 // Data constituents
 
-// Preliminary font object:
-struct FontDataStruct
-{
-	// This is suitable for MacOS fonts; how do other OSes and GUI's handle fonts?
-	short font, face, size;
-	
-	// Equality test
-	bool operator==(FontDataStruct& F)
-		{return ((F.font == font) && (F.face == face) && (F.size == size));}
-	bool operator!=(FontDataStruct& F)
-		{return (!((*this) == F));}
-	// May also need an assignment operator (operator=)
-};
-
-
 // Note: all the colors were changed from RGBColor to rgb_color,
 // which has the same members (3 unsigned shorts), but which is intended to be more portable.
 
@@ -103,7 +92,7 @@ const int NUMBER_OF_ANNOTATION_SIZES = OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_M
 struct annotation_definition
 {
 	rgb_color color;
-	FontDataStruct FontDataList[NUMBER_OF_ANNOTATION_SIZES];
+	FontSpecifier Fonts[NUMBER_OF_ANNOTATION_SIZES];
 };
 
 // For some reason, only one annotation color was ever implemented
@@ -113,7 +102,7 @@ const int NUMBER_OF_ANNOTATION_DEFINITIONS = 1;
 struct map_name_definition
 {
 	rgb_color color;
-	FontDataStruct FontData;
+	FontSpecifier Font;
 	short offset_down;	// from top of screen
 };
 
@@ -205,7 +194,7 @@ protected:
 		world_point2d& location,
 		rgb_color& color,
 		char *text,
-		FontDataStruct& FontData,
+		FontSpecifier& FontData,
 		short which,		// Index to cached font
 		short justify) {}
 	
@@ -283,7 +272,7 @@ private:
 		if (!(scale>=OVERHEAD_MAP_MINIMUM_SCALE&&scale<=OVERHEAD_MAP_MAXIMUM_SCALE)) return;
 		annotation_definition& NoteDef = ConfigPtr->annotation_definitions[color];
 		draw_text(*location,NoteDef.color, text,
-			NoteDef.FontDataList[scale-OVERHEAD_MAP_MINIMUM_SCALE],
+			NoteDef.Fonts[scale-OVERHEAD_MAP_MINIMUM_SCALE],
 				scale-OVERHEAD_MAP_MINIMUM_SCALE,_justify_left);
 		
 	}
@@ -296,7 +285,7 @@ private:
 		location.x = Control.half_width;
 		location.y = map_name_data.offset_down;
 		draw_text(location, map_name_data.color, name,
-			map_name_data.FontData,
+			map_name_data.Font,
 			NUMBER_OF_ANNOTATION_SIZES, _justify_center);
 	}
 

@@ -273,6 +273,7 @@ static struct player_terminal_data *player_terminals;
 #define NUMBER_OF_TERMINAL_KEYS (sizeof(terminal_keys)/sizeof(struct terminal_key))
 
 extern TextSpec *_get_font_spec(short font_index);
+extern void UseInterfaceFont(short font_index);
 
 inline player_terminal_data *get_player_terminal_data(
 	short player_index)
@@ -720,7 +721,8 @@ static void draw_logon_text(
 		TextSpec old_font;
 
 		GetFont(&old_font);
-		SetFont(_get_font_spec(_computer_interface_font));
+		UseInterfaceFont(_computer_interface_font);
+		// SetFont(_get_font_spec(_computer_interface_font));
 	
 		width= TextWidth(base_text, current_group->start_index, current_group->length);
 		picture_bounds.left += (RECTANGLE_WIDTH(&picture_bounds)-width)/2;
@@ -768,7 +770,8 @@ static void _draw_computer_text(
 	/* Set the font.. */
 	TextSpec old_font;
 	GetFont(&old_font);
-	SetFont(_get_font_spec(_computer_interface_font));
+	UseInterfaceFont(_computer_interface_font);
+	// SetFont(_get_font_spec(_computer_interface_font));
 #else
 	uint16 old_style = current_style;
 	current_style = _get_font_spec(_computer_interface_font)->style;
@@ -885,7 +888,8 @@ static short count_total_lines(
 	/* Set the font.. */
 	TextSpec old_font;
 	GetFont(&old_font);
-	SetFont(_get_font_spec(_computer_interface_font));
+	UseInterfaceFont(_computer_interface_font);
+	// SetFont(_get_font_spec(_computer_interface_font));
 #else
 	uint16 old_style = current_style;
 	current_style = _get_font_spec(_computer_interface_font)->style;

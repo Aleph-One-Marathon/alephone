@@ -134,7 +134,7 @@ void OverheadMap_QD_Class::draw_text(
 	world_point2d& location,
 	rgb_color& color,
 	char *text,
-	FontDataStruct& FontData,
+	FontSpecifier& FontData,
 	short which,
 	short justify)
 {
@@ -144,9 +144,7 @@ void OverheadMap_QD_Class::draw_text(
 	c2pstr((char *)pascal_text);
 	
 	// Needed up here for finding the width of the text string
-	TextFont(FontData.font);
-	TextFace(FontData.face);
-	TextSize(FontData.size);
+	FontData.Use();
 
 	// Find the left-side location
 	world_point2d left_location = location;

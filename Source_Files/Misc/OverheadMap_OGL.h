@@ -19,7 +19,7 @@ Oct 13, 2000 (Loren Petrich)
 // Font-cache data, so fonts don't have to be repeatedly re-uploaded
 struct FontCacheData
 {
-	FontDataStruct FontData;	// Font details
+	FontSpecifier FontData;	// Font details
 	unsigned long DispList;		// OpenGL display list for fonts
 	bool WasInited;				// Was this dataset inited?
 	
@@ -80,7 +80,7 @@ class OverheadMap_OGL_Class: public OverheadMapClass
 		world_point2d& location,
 		rgb_color& colorr,
 		char *text,
-		FontDataStruct& FontData,
+		FontSpecifier& FontData,
 		short which,
 		short justify);
 	

@@ -484,7 +484,8 @@ bool OGL_StartRun()
 	// Convenient function for setting up fonts;
 	// set aside some display lists for them
 	FontDisplayList = glGenLists(256);
-	aglUseFont(RenderContext, kFontIDMonaco, normal, 12, 0, 256, FontDisplayList);
+	FontSpecifier& Font = GetOnScreenFont();
+	aglUseFont(RenderContext, Font.GetFontID(), Font.Style, Font.Size, 0, 256, FontDisplayList);
 #endif
 	
 	// Reset the font into for overhead-map fonts done in OpenGL fashion

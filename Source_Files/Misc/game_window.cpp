@@ -47,8 +47,9 @@ Jul 2, 2000 (Loren Petrich):
 #include "game_window.h"
 #include "network_games.h"
 
-// LP addition: color parser
+// LP addition: color and font parsers
 #include "ColorParser.h"
+#include "FontHandler.h"
 #include "screen.h"
 
 #ifdef env68k
@@ -1589,7 +1590,7 @@ class XML_InterfaceParser: public XML_ElementParser
 public:
 	bool Start()
 	{
-		SetColorParserToScreenDrawing();
+		SetColorFontParserToScreenDrawing();
 		return true;
 	}
 	bool HandleAttribute(const char *Tag, const char *Value)
@@ -1618,6 +1619,7 @@ XML_ElementParser *Interface_GetParser()
 	InterfaceParser.AddChild(&WeaponDisplayParser);
 	InterfaceParser.AddChild(InterfaceRectangles_GetParser());
 	InterfaceParser.AddChild(Color_GetParser());
+	InterfaceParser.AddChild(Font_GetParser());
 	
 	return &InterfaceParser;
 }

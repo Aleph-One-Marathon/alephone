@@ -17,6 +17,9 @@ Jul 2, 2000 (Loren Petrich):
 Oct 19, 2000 (Loren Petrich):
 	Added graceful degradation if get_shape_pixmap() returns NULL; CB had already done that
 	with the SDL version.
+	
+Dec 17, 2000 (Loren Petrich):
+	Added font-abstraction support (FontHandler.*)
 */
 
 #pragma segment drawing
@@ -31,8 +34,9 @@ Oct 19, 2000 (Loren Petrich):
 #include "screen.h"
 #include "my32bqd.h"
 
-// LP addition: color parser
+// LP addition: color and font parsers
 #include "ColorParser.h"
+#include "FontHandler.h"
 
 #include <string.h>
 
@@ -41,9 +45,15 @@ Oct 19, 2000 (Loren Petrich):
 
 extern TextSpec *_get_font_spec(short font_index);
 
+// Sets current font to this index of interface font;
+// used in computer_interface.cpp
+extern void UseInterfaceFont(short font_index);
+
+
 struct interface_font_info 
 {
-	TextSpec fonts[NUMBER_OF_INTERFACE_FONTS];
+	// TextSpec fonts[NUMBER_OF_INTERFACE_FONTS];
+	FontSpecifier Fonts[NUMBER_OF_INTERFACE_FONTS];
 	short heights[NUMBER_OF_INTERFACE_FONTS];
 	short line_spacing[NUMBER_OF_INTERFACE_FONTS];
 };
@@ -59,7 +69,22 @@ static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES];
 // static screen_rectangle *interface_rectangles;
 // LP change: now hardcoded and XML-changeable
 // static CTabHandle screen_colors;
-static struct interface_font_info interface_fonts;
+// Copied off of original 'finf' resource
+static struct interface_font_info interface_fonts = 
+{
+	{
+		{"Monaco", 9, FontSpecifier::Bold},
+		{"Monaco", 9, FontSpecifier::Bold},
+		{"Monaco", 9, FontSpecifier::Bold},
+		{"Monaco", 9, FontSpecifier::Normal},
+		{"Courier", 12, FontSpecifier::Normal},
+		{"Courier", 14, FontSpecifier::Bold},
+		{"Monaco", 9, FontSpecifier::Normal}
+	},
+	{0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0}
+};
+
 static GWorldPtr old_graphics_port= NULL;
 static GDHandle old_graphics_device= NULL;
 static GrafPtr destination_graphics_port= NULL;
@@ -124,9 +149,9 @@ void initialize_screen_drawing(
 	/* load the font stuff. */
 	for(loop=0; loop<NUMBER_OF_INTERFACE_FONTS; ++loop)
 	{
-		GetNewTextSpec(&interface_fonts.fonts[loop], finfFONTS, loop);
-		interface_fonts.heights[loop]= _get_font_height(&interface_fonts.fonts[loop]);
-		interface_fonts.line_spacing[loop]= _get_font_line_spacing(&interface_fonts.fonts[loop]);
+		// GetNewTextSpec(&interface_fonts.fonts[loop], finfFONTS, loop);
+		interface_fonts.heights[loop]= interface_fonts.Fonts[loop].GetHeight(); // _get_font_height(&interface_fonts.fonts[loop]);
+		interface_fonts.line_spacing[loop]= interface_fonts.Fonts[loop].GetLineSpacing(); // _get_font_line_spacing(&interface_fonts.fonts[loop]);
 	}
 }
 
@@ -389,7 +414,8 @@ short _text_width(
 	assert(font_id>=0 && font_id<NUMBER_OF_INTERFACE_FONTS);
 	
 	GetFont(&old_font);
-	SetFont(&interface_fonts.fonts[font_id]);
+	interface_fonts.Fonts[font_id].Use();
+	// SetFont(&interface_fonts.fonts[font_id]);
 	width= TextWidth(buffer, 0, strlen(buffer));
 	SetFont(&old_font);
 
@@ -412,7 +438,8 @@ void _draw_screen_text(
 	assert(font_id>=0 && font_id<NUMBER_OF_INTERFACE_FONTS);
 	
 	GetFont(&old_font);
-	SetFont(&interface_fonts.fonts[font_id]);
+	interface_fonts.Fonts[font_id].Use();
+	// SetFont(&interface_fonts.fonts[font_id]);
 
 	GetForeColor(&old_color);
 	_get_interface_color(text_color, &new_color);
@@ -602,12 +629,21 @@ void _offset_screen_rect(
 	OffsetRect((Rect *) rect, dx, dy);
 }
 
+static TextSpec NullSpec = {0, 0, 0};
+
 TextSpec *_get_font_spec(
 	short font_index)
 {
-	return &(interface_fonts.fonts[font_index]);
+	// return &(interface_fonts.fonts[font_index]);
+	return &NullSpec;
 }
 
+// Sets current font to this index of interface font;
+// used in computer_interface.cpp
+void UseInterfaceFont(short font_index)
+{
+	interface_fonts.Fonts[font_index].Use();
+}
 
 #ifdef OBSOLETE
 extern short interface_bit_depth;
@@ -887,9 +923,8 @@ XML_ElementParser *InterfaceRectangles_GetParser()
 }
 
 
-void SetColorParserToScreenDrawing()
+void SetColorFontParserToScreenDrawing()
 {
 	Color_SetArray(InterfaceColors,NumInterfaceColors);
+	Font_SetArray(interface_fonts.Fonts,NUMBER_OF_INTERFACE_FONTS);
 }
-
-

@@ -339,7 +339,7 @@ void OverheadMap_OGL_Class::draw_text(
 	world_point2d& location,
 	rgb_color& color,
 	char *text,
-	FontDataStruct& FontData,
+	FontSpecifier& FontData,
 	short which,
 	short justify)
 {
@@ -350,10 +350,8 @@ void OverheadMap_OGL_Class::draw_text(
 	c2pstr((char *)pascal_text);
 	
 	// Needed up here for finding the width of the text string
-	TextFont(FontData.font);
-	TextFace(FontData.face);
-	TextSize(FontData.size);
-
+	FontData.Use();
+	
 	// Find the left-side location
 	world_point2d left_location = location;
 	switch(justify)
@@ -433,7 +431,7 @@ void FontCacheData::Update()
 	
 	DispList = glGenLists(256);
 #ifdef mac
-	aglUseFont(RenderContext, FontData.font, FontData.face, FontData.size, 0, 256, DispList);
+	aglUseFont(RenderContext, FontData.GetFontID(), FontData.Style, FontData.Size, 0, 256, DispList);
 #endif
 }
 
