@@ -166,7 +166,7 @@ void initialize_keyboard_controller(
 	set_keys_to_match_preferences();
 	
 	/* Allocate the recording queues */	
-	replay.recording_queues = (ActionQueue *) malloc(MAXIMUM_NUMBER_OF_PLAYERS * sizeof(ActionQueue));
+	replay.recording_queues = new ActionQueue[MAXIMUM_NUMBER_OF_PLAYERS];
 	assert(replay.recording_queues);
 	if(!replay.recording_queues) alert_user(fatalError, strERRORS, outOfMemory, memory_error());
 	
@@ -175,7 +175,7 @@ void initialize_keyboard_controller(
 	{
 		queue= get_player_recording_queue(player_index);
 		queue->read_index= queue->write_index = 0;
-		queue->buffer= (long *) malloc(MAXIMUM_QUEUE_SIZE*sizeof(long));
+		queue->buffer= new long[MAXIMUM_QUEUE_SIZE];
 		if(!queue->buffer) alert_user(fatalError, strERRORS, outOfMemory, memory_error());
 	}
 	enter_mouse(0);
@@ -621,7 +621,7 @@ boolean setup_for_replay_from_file(
 		/* Set to the mapfile this replay came from.. */
 		if(use_map_file(replay.header.map_checksum))
 		{
-			replay.fsread_buffer= (char *)malloc(DISK_CACHE_SIZE); 
+			replay.fsread_buffer= new char[DISK_CACHE_SIZE]; 
 			assert(replay.fsread_buffer);
 			if(!replay.fsread_buffer) alert_user(fatalError, strERRORS, outOfMemory, memory_error());
 			
@@ -813,14 +813,14 @@ void stop_replay(
 		replay.game_is_being_replayed= FALSE;
 		if (replay.resource_data)
 		{
-			free(replay.resource_data);
+			delete []replay.resource_data;
 			replay.resource_data= NULL;
 		}
 		else
 		{
 			FilmFile.Close();
 			assert(replay.fsread_buffer);
-			free(replay.fsread_buffer);
+			delete []replay.fsread_buffer;
 		}
 #ifdef DEBUG_REPLAY
 		close_stream_file();
@@ -972,7 +972,7 @@ static void remove_input_controller(
 	{
 		if (replay.resource_data)
 		{
-			free(replay.resource_data);
+			delete []replay.resource_data;
 			replay.resource_data= NULL;
 			replay.resource_data_size= 0l;
 			replay.film_resource_offset= NONE;
