@@ -82,11 +82,18 @@ void initialize_typecodes()
 }
 
 
-// Accessor
+// Accessors
 OSType get_typecode(int which)
 {
 	if (which < 0) return '????';
 	else if (which >= NUMBER_OF_TYPECODES) return '????';
 	return typecodes[which];
+}
+
+void set_typecode(int which, OSType _type)
+{
+	if (which < 0) return;
+	else if (which > NUMBER_OF_TYPECODES) return;
+	else typecodes[which] = _type;
 }
 #endif

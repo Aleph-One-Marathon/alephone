@@ -57,6 +57,9 @@ Aug 28, 2000 (Loren Petrich):
 
 Mar 14, 2001 (Loren Petrich):
 	Added a music filetype
+
+Jul 4, 2002 (Loren Petrich):
+	Added a "set" function for the typecode
 */
 
 #define MAXIMUM_LEVEL_NAME_SIZE 64
@@ -82,8 +85,10 @@ enum {
 // LP addition: typecode handling
 // Initializer: loads from resource fork
 void initialize_typecodes();
-// Accessor
+
+// Accessors
 uint32 get_typecode(int which);
+void set_typecode(int which, uint32 _type);
 
 // These are no longer constants, which will cause trouble for switch/case constructions
 // These have been eliminated in favor of using the above enum of abstracted filetypes
