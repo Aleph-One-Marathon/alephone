@@ -538,8 +538,14 @@ void update_players(
 		// if we’ve got the ball we can’t run (that sucks)
 		// Benad: also works with _game_of_rugby and _game_of_capture_the_flag
 		// LP change: made it possible to swim under a liquid if one has the ball
-		if (((GET_GAME_TYPE()==_game_of_kill_man_with_ball) || (GET_GAME_TYPE()==_game_of_rugby) || (GET_GAME_TYPE()==_game_of_capture_the_flag)) 
+		// START Benad changed oct. 1st (works with ANY ball color, d'uh...)
+		if ((GET_GAME_TYPE()==_game_of_kill_man_with_ball) 
 		 && dynamic_world->game_player_index==player_index && !(player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) action_flags&= ~_run_dont_walk;
+		
+		if ((((GET_GAME_TYPE()==_game_of_rugby) || (GET_GAME_TYPE()==_game_of_capture_the_flag)) && (find_player_ball_color(player_index) != NONE))
+			&& !(player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) action_flags&= ~_run_dont_walk;
+		// END Benad changed oct. 1st
+		
 		// if (GET_GAME_TYPE()==_game_of_kill_man_with_ball && dynamic_world->game_player_index==player_index) action_flags&= ~_run_dont_walk;
 		
 		// if our head is under media, we can’t run (that sucks, too)

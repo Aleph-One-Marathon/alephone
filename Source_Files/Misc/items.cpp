@@ -490,14 +490,23 @@ bool try_and_add_player_item(
 				if ( (GET_GAME_TYPE() == _game_of_capture_the_flag) &&
 					 (type - BALL_ITEM_BASE == player->team)  )
 				{
+					// START Benad modified oct. 1st
 					struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
-					if (polygon->type==_polygon_is_base && polygon->permutation!=player->team)
+					if (polygon->type!=_polygon_is_base)
 					{
 						object_was_just_destroyed(_object_is_item, type);
 						grabbed_sound_index= _snd_got_item;
-						success= true;
+						success= TRUE;
 						goto DONE;
 					}
+					else // _polygon_is_base and base == player->team
+						 // base != player->team taken care of in update_net_game
+						 // (your ball should NEVER get there)
+					{
+						success= FALSE;
+						goto DONE;
+					}
+					// END Benad modified oct. 1st
 				}
 				
 				player->items[type]= 1;

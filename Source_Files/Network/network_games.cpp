@@ -454,6 +454,7 @@ bool update_net_game(
 					
 					if (player_has_ball(player_index, SINGLE_BALL_COLOR))
 					{
+						// START Benad changed oct. 1st
 						dynamic_world->game_player_index= player_index;
 						//if(polygon->type==_polygon_is_base && polygon->permutation != player->team)
 						if( ( (dynamic_world->game_information.kill_limit == 819) && (polygon->type==_polygon_is_hill)
@@ -468,6 +469,16 @@ bool update_net_game(
 							dynamic_world->game_player_index= NONE;
 							break; // Break out of loop; assuming there's only one ball.
 						}
+						// Can't take the ball back to you own goal, otherwise weird bugs could happen
+						// if an opponent touches the ball in your goal. Like real Rugby.
+						else if ( polygon->type==_polygon_is_base && polygon->permutation == player->team && (!PLAYER_IS_DEAD(player)))
+						{
+							/* Ditch the ball.. (it will be recreated by the timer..) */
+							destroy_players_ball(player_index);
+							dynamic_world->game_player_index= NONE;
+							break; // Break out of loop; assuming there's only one ball.
+						}
+						// END Benad changed oct. 1st
 					}
 				}
 				break;
