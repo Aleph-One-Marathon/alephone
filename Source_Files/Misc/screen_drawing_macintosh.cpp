@@ -45,9 +45,11 @@ void _set_port_to_gworld(
 void _restore_port(
 	void)
 {
+	// LP: kludge for recognizing when one had been drawing into the HUD
+	if (destination_graphics_port == (GrafPort *)HUD_Buffer)
+		SetOrigin(0,0);
 	assert(old_graphics_port && old_graphics_device && destination_graphics_port);
 	SetGWorld(old_graphics_port, old_graphics_device);
-	SetOrigin(0, 0);
 	old_graphics_port= NULL;
 	old_graphics_device= NULL;
 	destination_graphics_port= NULL;
@@ -591,25 +593,7 @@ bool display_full_screen_pict_resource(
 static void load_interface_rectangles(
 	void) 
 {
-	// All this is now in XML hands
-	/*
-	Handle rect_handle;
-	short number;
-	
-	rect_handle= GetResource('nrct', 128); // load the rectangles 
-	assert(rect_handle);
-	number=(*((short *) *rect_handle)); // The number of rects is the first thing 
-	interface_rectangles= (screen_rectangle *) NewPtr(number*sizeof(Rect));
-
-	assert(interface_rectangles);
-	assert(number==NUMBER_OF_INTERFACE_RECTANGLES);	
-	assert(GetHandleSize(rect_handle)==(number*sizeof(screen_rectangle))+sizeof(short));
-
-	BlockMove(((*rect_handle)+sizeof(short)), interface_rectangles, number*sizeof(screen_rectangle));
-	ReleaseResource(rect_handle);
-	
-	// Now center all rectangles in your screen...
-	*/
+	// All this is now in XML hands (a whole lot of unnecessary crap deleted)
 }
 
 static Rect *_get_interface_rect(
@@ -650,14 +634,6 @@ static void	load_screen_interface_colors(
 	void)
 {
 	// All this is now in XML hands
-	/*
-	screen_colors= (CTabHandle) GetResource('clut', clutSCREEN_COLORS);
-	assert(screen_colors);
-	
-	HNoPurge((Handle)screen_colors);
-	
-	return;
-	*/
 }
 
 
