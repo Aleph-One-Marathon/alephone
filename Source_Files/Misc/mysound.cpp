@@ -78,6 +78,9 @@ May 27, 2000 (Loren Petrich):
 Jun 3, 2000 (Loren Petrich):
 	Idiot-proofed the sound accessors; when a sound index is out of range,
 	an accessor returns NULL.
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
 /*
@@ -101,6 +104,7 @@ shortening radii on low-volume ambient sound sorces would be a good idea
 #include "interface.h"
 #include "mysound.h"
 #include "byte_swapping.h"
+#include "FileHandler_Mac.h"
 
 #include <string.h>
 
@@ -189,7 +193,7 @@ struct sound_manager_globals
 	struct channel_data channels[MAXIMUM_SOUND_CHANNELS+MAXIMUM_AMBIENT_SOUND_CHANNELS];
 
 #ifdef mac
-	short sound_file_refnum;
+//	short sound_file_refnum;
 	long old_sound_volume;
 	SndCallBackUPP sound_callback_upp;
 #endif
@@ -201,6 +205,10 @@ static boolean _sm_initialized, _sm_active;
 static struct sound_manager_globals *_sm_globals;
 static struct sound_manager_parameters *_sm_parameters;
 
+// Moved out of _sm_globals so it could work correctly;
+// there is apparently some sort of buffer overrun somwhere.
+static OpenedFile_Mac SoundFile;
+
 /* include globals */
 #include "sound_definitions.h"
 
@@ -211,7 +219,9 @@ static void initialize_machine_sound_manager(struct sound_manager_parameters *pa
 static boolean channel_busy(struct channel_data *channel);
 static void unlock_sound(short sound_index);
 static void dispose_sound(short sound_index);
-static long read_sound_from_file(short sound_index);
+// Returns not the handle, but the pointer and size
+static byte *read_sound_from_file(short sound_index, long& size);
+// static long read_sound_from_file(short sound_index);
 
 static void quiet_channel(struct channel_data *channel);
 static void instantiate_sound_variables(struct sound_variables *variables,
@@ -834,7 +844,8 @@ static short _release_least_useful_sound(
 
 	for (sound_index= 0, definition= _sm_globals->base_sound_definitions; sound_index<NUMBER_OF_SOUND_DEFINITIONS; ++sound_index, ++definition)
 	{
-		if (definition->handle && (!least_used_definition || least_used_definition->last_played>definition->last_played))
+		// if (definition->handle && (!least_used_definition || least_used_definition->last_played>definition->last_played))
+		if (definition->ptr && (!least_used_definition || least_used_definition->last_played>definition->last_played))
 		{
 			least_used_sound_index= sound_index;
 			least_used_definition= definition;
@@ -883,21 +894,25 @@ boolean _load_sound(
 	if (definition->sound_code!=NONE &&
 		((_sm_parameters->flags&_ambient_sound_flag) || !(definition->flags&_sound_is_ambient)))
 	{
-		if (!definition->handle)
+		// if (!definition->handle)
+		if (!definition->ptr)
 		{
-			definition->handle= read_sound_from_file(sound_index);
+			// definition->handle= read_sound_from_file(sound_index);
+			definition->ptr= read_sound_from_file(sound_index,definition->size);
 			definition->last_played= machine_tick_count();
 			
 			while (_sm_globals->loaded_sounds_size>_sm_globals->total_buffer_size) _release_least_useful_sound();
 		}
 		
-		if (definition->handle)
+		// if (definition->handle)
+		if (definition->ptr)
 		{
 			definition->permutations_played= 0;
 		}
 	}
 	
-	return definition->handle ? TRUE : FALSE;
+	return definition->ptr ? TRUE : FALSE;
+	// return definition->handle ? TRUE : FALSE;
 }
 
 static void calculate_initial_sound_variables(
@@ -1365,4 +1380,12 @@ static void add_one_ambient_sound_source(
 	}
 	
 	return;
+}
+
+// Clone of similar functions for getting default map and physics specs
+void get_default_sounds_spec(FileObject& File)
+{
+	File.SetFileToApp();
+	File.SetName(getcstr(temporary, strFILENAMES, filenameSOUNDS8),FileObject::C_Sound);
+	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 }

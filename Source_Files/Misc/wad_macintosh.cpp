@@ -11,6 +11,9 @@ Jan 30, 2000 (Loren Petrich)
 Feb 19, 2000 (Loren Petrich):
 	Made more searching recurvive;
 	in particular, searches for parent files of saved games
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
 #include <string.h>
@@ -21,6 +24,7 @@ Feb 19, 2000 (Loren Petrich):
 #include "game_errors.h"
 
 #include "find_files.h"
+#include "FileHandler_Mac.h"
 
 #ifdef env68k
 #pragma segment file_io
@@ -48,7 +52,8 @@ static boolean find_file_with_modification_date_in_directory(FSSpec *matching_fi
 /* ------------- code! */
 /* Search all the directories in the path.. */
 boolean find_wad_file_that_has_checksum(
-	FileDesc *matching_file,
+	FileObject& File,
+	// FileDesc *matching_file,
 	unsigned long file_type,
 	short path_resource_id,
 	unsigned long checksum)
@@ -56,6 +61,9 @@ boolean find_wad_file_that_has_checksum(
 	OSErr err;
 	FSSpec app_spec;
 	boolean file_matched= FALSE;
+	
+	FileObject_Mac *FPtr = (FileObject_Mac *)&File;
+	FileDesc *matching_file = (FileDesc *)&(FPtr->Spec);
 
 	/* Look for the files in the same directory that we are in.. */	
 	err= get_my_fsspec(&app_spec);
@@ -229,7 +237,10 @@ static Boolean checksum_and_not_base_callback(
 	if(!equal_fsspecs(file, (FSSpec *) _private->base_file))
 	{
 		/* Do the checksums match? */
-		if(wad_file_has_parent_checksum((FileDesc *) file, _private->base_checksum))
+		FileObject_Mac File;
+		File.SetSpec(*file);
+		if(wad_file_has_parent_checksum(File, _private->base_checksum))
+		// if(wad_file_has_parent_checksum((FileDesc *) file, _private->base_checksum))
 		{
 			add_this_file= TRUE;
 		}
@@ -246,7 +257,10 @@ static Boolean match_wad_checksum_callback(
 	struct find_checksum_private_data *_private= (struct find_checksum_private_data *) data;
 	
 	/* Do the checksums match? */
-	if(wad_file_has_checksum((FileDesc *) file, _private->checksum_to_match))
+	FileObject_Mac File;
+	File.SetSpec(*file);
+	if(wad_file_has_checksum(File, _private->checksum_to_match))
+	// if(wad_file_has_checksum((FileDesc *) file, _private->checksum_to_match))
 	{
 		add_this_file= TRUE;
 	}

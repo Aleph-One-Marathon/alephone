@@ -7,7 +7,12 @@
 	Friday, September 29, 1995 4:20:17 PM- rdm created.
 
 	This is only used by vbl.c and vbl_macintosh.c
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler; removing refnum from here
 */
+
+#include "FileHandler_Mac.h"
 
 #define MAXIMUM_QUEUE_SIZE           512
 
@@ -37,7 +42,7 @@ struct replay_private_data {
 	boolean have_read_last_chunk;
 	ActionQueue *recording_queues;
 	
-	fileref recording_file_refnum;
+	// fileref recording_file_refnum;
 	char *fsread_buffer;
 	char *location_in_cache;
 	long bytes_in_cache;

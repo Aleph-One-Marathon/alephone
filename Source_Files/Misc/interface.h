@@ -30,6 +30,7 @@ May 1, 2000 (Loren Petrich): Added XML parser object for the infravision stuff.
 May 16, 2000 (Loren Petrich): Added XML parser for the control panels
 */
 
+#include "FileHandler.h"
 #include "XML_ElementParser.h"
 
 /* ---------- constants */
@@ -299,6 +300,8 @@ short get_number_of_collection_bitmaps(short collection_index);
 // Which bitmap index for a frame (good for OpenGL texture rendering)
 short get_bitmap_index(short collection_index, short low_level_shape_index);
 
+// Clone of similar functions for getting default map and physics specs
+void get_default_shapes_spec(FileObject& File);
 
 /* ---------- prototypes/PREPROCESS_MAP_MAC.C */
 void setup_revert_game_info(struct game_data *game_info, struct player_start_data *start, struct entry_point *entry);

@@ -29,6 +29,13 @@ Jan 30, 2000 (Loren Petrich):
 Feb 3, 2000 (Loren Petrich):
 	Added WADFILE_HAS_INFINITY_STUFF to list of recognized wad types,
 		for Marathon Infinity compatibility.
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
+
+Aug 15, 2000 (Loren Petrich):
+	Suppressed union-wad stuff; that was probably some abortive attempt at creating some sort of
+	fancy archive format.
 */
 
 // Note that level_transition_malloc is specific to marathon...
@@ -42,6 +49,8 @@ Feb 3, 2000 (Loren Petrich):
 #include "crc.h"
 #include "game_errors.h"
 #include "interface.h" // for strERRORS
+
+#include "FileHandler_Mac.h"
 
 #ifdef env68k
 #pragma segment file_io
@@ -61,52 +70,70 @@ static long calculate_directory_offset(struct wad_header *header, short index);
 static void dump_raw_wad(byte *wad);
 static short get_directory_base_length(struct wad_header *header);
 static short get_entry_header_length(struct wad_header *header);
-static FileError read_indexed_directory_data(fileref ref, struct wad_header *header,
+// static FileError read_indexed_directory_data(fileref ref, struct wad_header *header,
+static bool read_indexed_directory_data(OpenedFile& OFile, struct wad_header *header,
 	short index, struct directory_entry *entry);
-static struct wad_internal_data *get_internal_data_for_file_id(short file_id);
-static struct wad_internal_data *allocate_internal_data_for_file_id(short file_id);
-void free_internal_data_for_file_id(short file_id);
-static fileref find_available_union_refnum(void);
-static void dump_union_ref(fileref union_ref);
+// static struct wad_internal_data *get_internal_data_for_file_id(short file_id);
+// static struct wad_internal_data *allocate_internal_data_for_file_id(short file_id);
+// void free_internal_data_for_file_id(short file_id);
+// static fileref find_available_union_refnum(void);
+// static void dump_union_ref(fileref union_ref);
 static long calculate_raw_wad_length(struct wad_header *file_header, byte *wad);
-static FileError read_indexed_wad_from_file_into_buffer(fileref file_id, 
+// static FileError read_indexed_wad_from_file_into_buffer(fileref file_id, 
+static bool read_indexed_wad_from_file_into_buffer(OpenedFile& OFile, 
 	struct wad_header *header, short index, void *buffer, long *length);
 static short count_raw_tags(byte *raw_wad);
 static struct wad_data *convert_wad_from_raw(struct wad_header *header, byte *data,	long wad_start_offset,
 	long raw_length);
 static struct wad_data *convert_wad_from_raw_modifiable(struct wad_header *header, byte *raw_wad, long raw_length);
 static void patch_wad_from_raw(struct wad_header *header, byte *raw_wad, struct wad_data *read_wad);
-static FileError size_of_indexed_wad(fileref file_id, struct wad_header *header, short index, 
+static void patch_wad_from_raw(struct wad_header *header, byte *raw_wad, struct wad_data *read_wad);
+// static FileError size_of_indexed_wad(fileref file_id, struct wad_header *header, short index, 
+static bool size_of_indexed_wad(OpenedFile& OFile, struct wad_header *header, short index, 
 	long *length);
 
-static FileError write_to_file(fileref file_id, long offset, void *data, long length);
-static FileError read_from_file(fileref file_id, long offset, void *data, long length);
+static bool write_to_file(OpenedFile& OFile, long offset, void *data, long length);
+// static FileError write_to_file(fileref file_id, long offset, void *data, long length);
+static bool read_from_file(OpenedFile& OFile, long offset, void *data, long length);
+// static FileError read_from_file(fileref file_id, long offset, void *data, long length);
 	
 /* ------------------ Code Begins */
 boolean read_wad_header(
-	fileref file_id, 
+	OpenedFile& OFile, 
+	// fileref file_id, 
 	struct wad_header *header)
 {
 	boolean union_file= FALSE;
-	FileError error;
+	FileError error = noErr;
 	boolean success= TRUE;
 
+// LP: suppressing union-wad stuff
+#if 0
 	if(file_id<0) 
 	{
 		/* This is a union refnum.. */
 		struct wad_internal_data *data= get_internal_data_for_file_id(file_id);
 
 		assert(data);
-		file_id= open_wad_file_for_reading(&data->files[0]);
+		FileObject_Mac File;
+		File.SetSpec(*((FSSpec *)(&data->files[0])));
+		file_id= open_wad_file_for_reading(File);
+		// file_id= open_wad_file_for_reading(&data->files[0]);
 		union_file= TRUE;
 	}
-	assert(file_id>=0);
-	error= read_from_file(file_id, 0, header, sizeof(struct wad_header));
+#endif
+
+	// assert(file_id>=0);
+	read_from_file(OFile, 0, header, sizeof(struct wad_header));
+	// error= read_from_file(file_id, 0, header, sizeof(struct wad_header));
 	
+	// LP: suppressing union-wad stuff
+	/*
 	if(union_file)
 	{
 		close_wad_file(file_id);
 	}
+	*/
 	
 	if(error)
 	{
@@ -129,7 +156,8 @@ extern void *level_transition_malloc(size_t size);
 /*  of memory to load... (This makes writing wads easier, but isn't really useful for loading */
 /* Note that this does the correct thing for union wadfiles... */
 struct wad_data *read_indexed_wad_from_file(
-	fileref file_id, 
+	OpenedFile& OFile, 
+	// fileref file_id, 
 	struct wad_header *header, 
 	short index,
 	boolean read_only)
@@ -139,10 +167,11 @@ struct wad_data *read_indexed_wad_from_file(
 	long length;
 	FileError error= 0;
 
-	if(file_id>=0) /* NOT a union wadfile... */
+	// if(file_id>=0) /* NOT a union wadfile... */
 	{
-		error= size_of_indexed_wad(file_id, header, index, &length);
-		if(!error)
+		if (size_of_indexed_wad(OFile, header, index, &length))
+		// error= size_of_indexed_wad(file_id, header, index, &length);
+		// if(!error)
 		{
 #if 0
 			raw_wad= (byte *) malloc(length);
@@ -152,8 +181,9 @@ struct wad_data *read_indexed_wad_from_file(
 			if(raw_wad)
 			{
 				/* Read into the buffer */
-				error= read_indexed_wad_from_file_into_buffer(file_id, header, index, raw_wad, &length);
-				if(!error)
+				if (read_indexed_wad_from_file_into_buffer(OFile, header, index, raw_wad, &length))
+				// error= read_indexed_wad_from_file_into_buffer(file_id, header, index, raw_wad, &length);
+				// if(!error)
 				{
 					/* Got the raw wad. Convert it into our internal representation... */
 					if(read_only)
@@ -176,6 +206,8 @@ struct wad_data *read_indexed_wad_from_file(
 				error= memory_error();
 			}
 		}
+// LP: suppressing union-wad stuff
+#if 0
 	} else {
 		/* This is a union wadfile! Danger! */
 		struct wad_internal_data *union_wad_data;
@@ -187,7 +219,10 @@ struct wad_data *read_indexed_wad_from_file(
 		assert(union_wad_data->file_count);
 		
 		/* Call myself, to load in the base file... */
-		base_ref= open_wad_file_for_reading(&union_wad_data->files[0]);
+		FileObject_Mac File;
+		File.SetSpec(*((FSSpec *)&union_wad_data->files[0]));
+		base_ref= open_wad_file_for_reading(File);
+		// base_ref= open_wad_file_for_reading(&union_wad_data->files[0]);
 		if(base_ref>=0)
 		{
 			read_wad= read_indexed_wad_from_file(base_ref, header, index, read_only);
@@ -204,8 +239,10 @@ struct wad_data *read_indexed_wad_from_file(
 			for(index= 1; index<union_wad_data->file_count; ++index)
 			{
 				short file_ref;
-
-				file_ref= open_wad_file_for_reading(&union_wad_data->files[index]);
+				
+				File.SetSpec(*((FSSpec *)&union_wad_data->files[index]));
+				file_ref= open_wad_file_for_reading(File);
+				// file_ref= open_wad_file_for_reading(&union_wad_data->files[index]);
 				if(file_ref>=0) 
 				{
 					error= size_of_indexed_wad(file_ref, header, index, &length);
@@ -234,6 +271,7 @@ struct wad_data *read_indexed_wad_from_file(
 				}
 			}
 		}
+#endif
 	}
 
 	if(error)
@@ -269,12 +307,14 @@ void *extract_type_from_wad(
 }
 
 boolean wad_file_has_checksum(
-	FileDesc *file, 
+	FileObject& File, 
+	// FileDesc *file, 
 	unsigned long checksum)
 {
 	boolean has_checksum= FALSE;
 
-	if(checksum==read_wad_file_checksum(file))
+	// if(checksum==read_wad_file_checksum(file))
+	if(checksum==read_wad_file_checksum(File))
 	{
 		has_checksum= TRUE;
 	}
@@ -282,60 +322,72 @@ boolean wad_file_has_checksum(
 	return has_checksum;
 }
 
-unsigned long read_wad_file_checksum(
-	FileDesc *file)
+unsigned long read_wad_file_checksum(FileObject& File)
+	// FileDesc *file)
 {
-	fileref file_id;
+	// fileref file_id;
 	struct wad_header header;
 	unsigned long checksum= 0l;
-
-	file_id= open_wad_file_for_reading(file);
-	if(file_id>=0)
+	
+	OpenedFile_Mac OFile;
+	if (!open_wad_file_for_reading(File,OFile))
+	// file_id= open_wad_file_for_reading(file);
+	// if(file_id>=0)
 	{
-		if(read_wad_header(file_id, &header))
+		// if(read_wad_header(file_id, &header))
+		if(read_wad_header(OFile, &header))
 		{
 			checksum= header.checksum;
 		}
 		
-		close_wad_file(file_id);
+		close_wad_file(OFile);
+		// close_wad_file(file_id);
 	}
 	
 	return checksum;
 }
 
-unsigned long read_wad_file_parent_checksum(
-	FileDesc *file)
+unsigned long read_wad_file_parent_checksum(FileObject& File)
+	// FileDesc *file)
 {
-	fileref file_id;
+	// fileref file_id;
 	struct wad_header header;
 	unsigned long checksum= 0l;
 
-	file_id= open_wad_file_for_reading(file);
-	if(file_id>=0)
+	OpenedFile_Mac OFile;
+	if (!open_wad_file_for_reading(File,OFile))
+	// file_id= open_wad_file_for_reading(file);
+	// if(file_id>=0)
 	{
-		if(read_wad_header(file_id, &header))
+		if(read_wad_header(OFile, &header))
+		// if(read_wad_header(file_id, &header))
 		{
 			checksum= header.parent_checksum;
 		}
 		
-		close_wad_file(file_id);
+		close_wad_file(OFile);
+		// close_wad_file(file_id);
 	}
 	
 	return checksum;
 }
 
 boolean wad_file_has_parent_checksum(
-	FileDesc *file, 
+	FileObject& File, 
+	// FileDesc *file, 
 	unsigned long parent_checksum)
 {
-	fileref file_id;
+	// fileref file_id;
 	boolean has_checksum= FALSE;
 	struct wad_header header;
 
-	file_id= open_wad_file_for_reading(file);
-	if(file_id>=0)
+	OpenedFile_Mac OFile;
+	if (!open_wad_file_for_reading(File,OFile))
+	// file_id= open_wad_file_for_reading(file);
+	// if(file_id>=0)
 	{
-		if(read_wad_header(file_id, &header))
+		if(read_wad_header(OFile, &header))
+		// if(read_wad_header(file_id, &header))
 		{
 			if(header.parent_checksum==parent_checksum)
 			{
@@ -344,12 +396,15 @@ boolean wad_file_has_parent_checksum(
 			}
 		}
 		
-		close_wad_file(file_id);
+		close_wad_file(OFile);
+		// close_wad_file(file_id);
 	}
 	
 	return has_checksum;
 }
 
+// LP: won't bother to convert the union-wad stuff file handling
+#if 0
 /* ------------------- Union Wadfile Functions! ---------------- */
 /* 0 is returned on an error. */
 fileref open_union_wad_file_for_reading(
@@ -359,7 +414,10 @@ fileref open_union_wad_file_for_reading(
 	fileref parent_file_id;
 	
 	/* Initially just open the base file, to make sure that it exists */
-	parent_file_id= open_wad_file_for_reading(base_file);
+	FileObject_Mac BaseFile;
+	BaseFile.SetSpec(*((FSSpec *)base_file));
+	parent_file_id= open_wad_file_for_reading(BaseFile);
+	// parent_file_id= open_wad_file_for_reading(base_file);
 	if(parent_file_id>=0) 
 	{
 		struct wad_header header;
@@ -417,7 +475,10 @@ fileref open_union_wad_file_for_reading_by_list(
 	assert(count>=1);
 	
 	/* Initially just open the base file, to make sure that it exists */
-	parent_file_id= open_wad_file_for_reading(&files[0]);
+	FileObject_Mac BaseFile;
+	BaseFile.SetSpec(*((FSSpec *)&files[0]));
+	parent_file_id= open_wad_file_for_reading(BaseFile);
+	// parent_file_id= open_wad_file_for_reading(&files[0]);
 	if(parent_file_id>=0) 
 	{
 		struct wad_header header;
@@ -449,7 +510,11 @@ fileref open_union_wad_file_for_reading_by_list(
 				for(index= 1; index<count; ++index)
 				{
 					/* Only add it if the checksum is valid.. */
-					if(wad_file_has_parent_checksum(&files[index], checksum))
+					
+					FileObject_Mac File;
+					File.SetSpec(*((FSSpec *)&files[index]));
+					if(wad_file_has_parent_checksum(File, checksum))
+					// if(wad_file_has_parent_checksum(&files[index], checksum))
 					{
 						data->files[actual_count++]= files[index];
 					}
@@ -468,6 +533,7 @@ if(file_id<0) dump_union_ref(file_id);
 	
 	return file_id;
 }
+#endif
 
 /* ------------ Writing functions */
 struct wad_data *create_empty_wad(void)
@@ -484,7 +550,8 @@ struct wad_data *create_empty_wad(void)
 } 
 
 void fill_default_wad_header(
-	FileDesc *file, 
+	FileObject& File, 
+	// FileDesc *file, 
 	short wadfile_version,
 	short data_version, 
 	short wad_count,
@@ -494,7 +561,12 @@ void fill_default_wad_header(
 	memset(header, 0, sizeof(struct wad_header));
 	header->version= wadfile_version;
 	header->data_version= data_version;
-	memcpy(header->file_name, file->name, file->name[0]+1);
+	// LP: being sure to create a Pascal-format filename
+	char Name[256];
+	File.GetName(Name);
+	header->file_name[0] = strlen(Name);
+	strncpy(header->file_name+1,Name,MAXIMUM_WADFILE_NAME_LENGTH-1);
+//	memcpy(header->file_name, file->name, file->name[0]+1);
 	p2cstr((unsigned char *)header->file_name);
 	header->wad_count= wad_count;
 	header->application_specific_directory_data_size= application_directory_data_size;					
@@ -517,24 +589,29 @@ void fill_default_wad_header(
 }
 
 boolean write_wad_header(
-	fileref file_id, 
+	OpenedFile& OFile, 
+	// fileref file_id, 
 	struct wad_header *header)
 {
 	FileError error;
 	boolean success= TRUE;
 	
+	write_to_file(OFile, 0, header, sizeof(struct wad_header));
+	/*
 	error= write_to_file(file_id, 0, header, sizeof(struct wad_header));
 	if(error)
 	{
 		set_game_error(systemError, error);
 		success= FALSE;
 	}
+	*/
 	
 	return success;
 }
 
 boolean write_directorys(
-	fileref file_id, 
+	OpenedFile& OFile, 
+	// fileref file_id, 
 	struct wad_header *header,
 	void *entries)
 {
@@ -543,6 +620,9 @@ boolean write_directorys(
 	boolean success= TRUE;
 	
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
+	write_to_file(OFile, header->directory_offset, entries, 
+		size_to_write);
+	/*
 	error= write_to_file(file_id, header->directory_offset, entries, 
 		size_to_write);
 	if(error)
@@ -550,6 +630,7 @@ boolean write_directorys(
 		set_game_error(systemError, error);
 		success= FALSE;
 	}
+	*/
 	
 	return success;
 }
@@ -616,7 +697,8 @@ void set_indexed_directory_offset_and_length(
 }
 
 void *read_directory_data(
-	short file_ref,
+	OpenedFile& OFile,
+	// short file_ref,
 	struct wad_header *header)
 {
 	long size;
@@ -628,10 +710,11 @@ void *read_directory_data(
 	data= (byte *)malloc(size);
 	if(data)
 	{
-		FileError error;
+		// FileError error;
 		
-		error= read_from_file(file_ref, header->directory_offset, data, size);
-		assert(!error);
+		read_from_file(OFile, header->directory_offset, data, size);
+		// error= read_from_file(file_ref, header->directory_offset, data, size);
+		// assert(!error);
 	}
 
 	return data;
@@ -748,27 +831,32 @@ void remove_tag_from_wad(
 }
 
 /* Now uses CRC to checksum.. */
-void calculate_and_store_wadfile_checksum(
-	fileref file_id)
+void calculate_and_store_wadfile_checksum(OpenedFile& OFile)
+	// fileref file_id)
 {
 	struct wad_header header;
 	
 	/* read the header */
-	read_wad_header(file_id, &header);
+	read_wad_header(OFile, &header);
+	// read_wad_header(file_id, &header);
 
 	/* Make sure we don't checksum the checksum value.. */
 	header.checksum= 0l;
-	write_wad_header(file_id, &header);
+	write_wad_header(OFile, &header);
+	// write_wad_header(file_id, &header);
 	
 	/* Unused bytes better ALWAYS be initialized to zero.. */
-	header.checksum= calculate_crc_for_opened_file(file_id);
+	header.checksum= calculate_crc_for_opened_file(OFile);
+	// header.checksum= calculate_crc_for_opened_file(file_id);
 
 	/* Save it.. */
-	write_wad_header(file_id, &header);
+	write_wad_header(OFile, &header);
+	// write_wad_header(file_id, &header);
 }
 
 boolean write_wad(
-	fileref file_id, 
+	OpenedFile& OFile, 
+	// fileref file_id, 
 	struct wad_header *file_header,
 	struct wad_data *wad, 
 	long offset)
@@ -801,14 +889,16 @@ boolean write_wad(
 		}
 
 		/* Write this to the file... */
-		error= write_to_file(file_id, offset, &header, entry_header_length);
-		if(!error)
+		if (write_to_file(OFile, offset, &header, entry_header_length))
+		// error= write_to_file(file_id, offset, &header, entry_header_length)
+		// if(!error)
 		{
 			offset+= entry_header_length;
 		
 			/* Write the data.. */
-			error= write_to_file(file_id, offset, wad->tag_data[index].data, wad->tag_data[index].length);
-			if(!error)
+			write_to_file(OFile, offset, wad->tag_data[index].data, wad->tag_data[index].length);
+			// error= write_to_file(file_id, offset, wad->tag_data[index].data, wad->tag_data[index].length);
+			// if(!error)
 			{
 				offset+= wad->tag_data[index].length;
 			}
@@ -826,23 +916,27 @@ boolean write_wad(
 	return success;
 }
 
-short number_of_wads_in_file(
-	FileDesc *file)
+short number_of_wads_in_file(FileObject& File)
+	// FileDesc *file)
 {
 	fileref file_ref;
 	short count= NONE;
 	
-	file_ref= open_wad_file_for_reading(file);
-	if(file_ref>=0)
+	OpenedFile_Mac OFile;
+	if (open_wad_file_for_reading(File,OFile))
+	// file_ref= open_wad_file_for_reading(file);
+	// if(file_ref>=0)
 	{
 		struct wad_header header;
 		
 		/* read the header */
-		read_wad_header(file_ref, &header);
+		read_wad_header(OFile, &header);
+		// read_wad_header(file_ref, &header);
 		
 		count= header.wad_count;
 		
-		close_wad_file(file_ref);
+		close_wad_file(OFile);
+		// close_wad_file(file_ref);
 	}
 	
 	return count;
@@ -901,22 +995,26 @@ struct encapsulated_wad_data {
 };
 
 void *get_flat_data(
-	FileDesc *base_file, 
+	FileObject& File, 
+	// FileDesc *base_file, 
 	boolean use_union, 
 	short wad_index)
 {
-	fileref file_handle;
+	// fileref file_handle;
 	struct wad_header header;
 	boolean success= FALSE;
 	struct encapsulated_wad_data *data= NULL;
 	
 	assert(!use_union);
-
-	file_handle= open_wad_file_for_reading(base_file);
-	if(file_handle>=0)
+	
+	OpenedFile_Mac OFile;
+	if (open_wad_file_for_reading(File,OFile))
+	// file_handle= open_wad_file_for_reading(base_file);
+	// if(file_handle>=0)
 	{
 		/* Read the file */
-		success= read_wad_header(file_handle, &header);
+		success= read_wad_header(OFile, &header);
+		// success= read_wad_header(file_handle, &header);
 
 		if (success)
 		{
@@ -924,8 +1022,9 @@ void *get_flat_data(
 			FileError error= 0;
 		
 			/* Allocate the conglomerate data.. */
-			error= size_of_indexed_wad(file_handle, &header, wad_index, &length);
-			if(!error)
+			if (size_of_indexed_wad(OFile, &header, wad_index, &length))
+			// error= size_of_indexed_wad(file_handle, &header, wad_index, &length);
+			// if(!error)
 			{
 				data= (struct encapsulated_wad_data *) malloc(length+sizeof(struct encapsulated_wad_data));
 				if(data)
@@ -937,7 +1036,8 @@ void *get_flat_data(
 					memcpy(&data->header, &header, sizeof(struct wad_header));
 
 					/* Read into our buffer... */
-					error= read_indexed_wad_from_file_into_buffer(file_handle, &header, wad_index, 
+					// error= read_indexed_wad_from_file_into_buffer(file_handle, &header, wad_index, 
+					error= read_indexed_wad_from_file_into_buffer(OFile, &header, wad_index, 
 						buffer, &length);
 
 					if(error)
@@ -957,7 +1057,8 @@ void *get_flat_data(
 		}
 		
 		/* Close the file.. */
-		close_wad_file(file_handle);
+		close_wad_file(OFile);
+		// close_wad_file(file_handle);
 	}
 
 	return data;
@@ -1015,57 +1116,70 @@ void dump_wad(
 }
 
 /* ---------- file management routines */
-FileError create_wadfile(
-	FileDesc *file,
-	unsigned long file_type) /* Should be OSType, or extension for dos. */
+bool create_wadfile(FileObject& File, int Type)
+	// FileDesc *file,
+	// unsigned long file_type) /* Should be OSType, or extension for dos. */
 {
-	return create_file(file, file_type);
+	return File.Create(Type);
+	// return create_file(file, file_type);
 }
 
-fileref open_wad_file_for_reading(
-	FileDesc *file)
+bool open_wad_file_for_reading(FileObject& File, OpenedFile& OFile)
+	// FileDesc *file)
 {
-	return open_file_for_reading(file);
+	return File.Open(OFile);
+	// return open_file_for_reading((FileDesc *)&GetSpec(File));
 }
 
-fileref open_wad_file_for_writing(
-	FileDesc *file)
+bool open_wad_file_for_writing(FileObject& File, OpenedFile& OFile)
+	// FileDesc *file)
 {
-	return open_file_for_writing(file);
+	return File.Open(OFile,true);
+	// return open_file_for_writing((FileDesc *)&GetSpec(File));
 }
 
-void close_wad_file(
-	fileref file_id)
+void close_wad_file(OpenedFile& File)
+	// fileref file_id)
 {
+
+	File.Close();
+#if 0
 	if(file_id>=0) /* It is a real file descriptor */
 	{
 		close_file(file_id);
 	} else { /* It is the index of the internal data -1 */
-		free_internal_data_for_file_id(file_id);
+		// LP: suppressing union-wad stuff
+		// free_internal_data_for_file_id(file_id);
 	}
+#endif
 	
 	return;
 }
 
 /* ------------------------------ Private Code --------------- */
-static FileError size_of_indexed_wad(
-	fileref file_id, 
+static bool size_of_indexed_wad(
+	OpenedFile& OFile, 
+	// fileref file_id, 
 	struct wad_header *header, 
 	short index, 
 	long *length)
 {
 	struct directory_entry entry;
-	FileError error;
+	// FileError error;
 	
-	assert(file_id>=0); /* No union wads! */
+	// assert(file_id>=0); /* No union wads! */
 	
-	error= read_indexed_directory_data(file_id, header, index, &entry);
-	if(!error)
+	if (read_indexed_directory_data(OFile, header, index, &entry))
+	// error= read_indexed_directory_data(file_id, header, index, &entry);
+	// if(!error)
 	{
 		*length= entry.length;
 	}
+	else return false;
 	
-	return error;
+	return true;
+	
+	// return error;
 }
 
 static long calculate_directory_offset(
@@ -1148,8 +1262,9 @@ static short get_directory_base_length(
 }
 
 /* This searches the directories for the given index, to allow for special replacements. */
-static FileError read_indexed_directory_data(
-	fileref ref,
+static bool read_indexed_directory_data(
+	OpenedFile& OFile,
+	// fileref ref,
 	struct wad_header *header,
 	short index,
 	struct directory_entry *entry)
@@ -1169,7 +1284,8 @@ static FileError read_indexed_directory_data(
 
 		/* Read it! */
 		assert(base_entry_size<=sizeof(struct directory_entry));
-		error= read_from_file(ref, offset, entry, base_entry_size);
+		error= read_from_file(OFile, offset, entry, base_entry_size);
+		// error= read_from_file(ref, offset, entry, base_entry_size);
 	} else {
 		short directory_index;
 
@@ -1190,7 +1306,8 @@ static FileError read_indexed_directory_data(
 			offset= calculate_directory_offset(header, test_index);
 
 			/* Read it.. */
-			error= read_from_file(ref, offset, entry, base_entry_size);
+			error= read_from_file(OFile, offset, entry, base_entry_size);
+			// error= read_from_file(ref, offset, entry, base_entry_size);
 			if(entry->index==index) 
 			{
 				break; /* Got it! */
@@ -1203,8 +1320,9 @@ static FileError read_indexed_directory_data(
 }
 
 /* Internal function.. */
-static FileError read_indexed_wad_from_file_into_buffer(
-	fileref file_id, 
+static bool read_indexed_wad_from_file_into_buffer(
+	OpenedFile& OFile, 
+	// fileref file_id, 
 	struct wad_header *header, 
 	short index,
 	void *buffer,
@@ -1214,11 +1332,12 @@ static FileError read_indexed_wad_from_file_into_buffer(
 	FileError error= 0;
 
 	/* No union files for this one.. */
-	assert(file_id>=0);
+	// assert(file_id>=0);
 
 	/* Read the directory entry first */
-	error= read_indexed_directory_data(file_id, header, index, &entry);
-	if(!error)
+	if (read_indexed_directory_data(OFile, header, index, &entry))
+	// error= read_indexed_directory_data(file_id, header, index, &entry);
+	// if(!error)
 	{
 		/* Check the index stored in the entry, and assert if they don't match! */
 		assert((get_directory_base_length(header)==sizeof(struct old_directory_entry)) || entry.index==index);
@@ -1226,7 +1345,8 @@ static FileError read_indexed_wad_from_file_into_buffer(
 		assert(buffer);
 
 		/* Read into it. */
-		error= read_from_file(file_id, entry.offset_to_start, buffer, entry.length);
+		// error= read_from_file(file_id, entry.offset_to_start, buffer, entry.length);
+		error= read_from_file(OFile, entry.offset_to_start, buffer, entry.length);
 			
 		/* Set the length */
 		*length= entry.length;
@@ -1491,6 +1611,8 @@ static void dump_raw_wad(
 	dprintf("%d Tag: %x Length: %d Next Offset: %d", tag_count, header->tag, header->length, header->next_offset);
 }
 
+// LP: won't bother to convert the union-wad stuff file handling
+#if 0
 static void dump_union_ref(
 	fileref union_ref)
 {
@@ -1577,13 +1699,19 @@ static fileref find_available_union_refnum(
 	
 	return ref;
 }
+#endif
 
-static FileError write_to_file(
-	fileref file_id, 
+static bool write_to_file(
+	OpenedFile& OFile, 
+	// fileref file_id, 
 	long offset, 
 	void *data, 
 	long length)
 {
+	if (!OFile.SetPosition(offset)) return false;
+	return OFile.Write(length, data);
+
+	/*
 	FileError err;
 
 	assert(file_id != -1);
@@ -1595,14 +1723,20 @@ static FileError write_to_file(
 	}
 	
 	return err;
+	*/
 }
 
-static FileError read_from_file(
-	fileref file_id, 
+static bool read_from_file(
+	OpenedFile& OFile, 
+	// fileref file_id, 
 	long offset, 
 	void *data, 
 	long length)
 {
+	if (!OFile.SetPosition(offset)) return false;
+	return OFile.Read(length, data);
+
+	/*
 	FileError err;
 
 	assert(file_id != -1);
@@ -1613,5 +1747,6 @@ static FileError read_from_file(
 	}
 	
 	return err;
+	*/
 }
 

@@ -37,6 +37,9 @@ Mar 5, 2000 (Loren Petrich):
 
 May 13, 2000 (Loren Petrich):
 	Added Rhys Hill's fix for problems with quitting OpenGL
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -67,6 +70,7 @@ extern TP2PerfGlobals perf_globals;
 #include "vbl.h"
 #include "shell.h"
 #include "preferences.h"
+#include "FileHandler_Mac.h"
 
 /* Change this when marathon changes & replays are no longer valid */
 #define RECORDING_VERSION 0
@@ -184,7 +188,8 @@ struct chapter_screen_sound_data chapter_screen_sounds[]=
 
 /* -------------- local globals */
 static struct game_state game_state;
-static FileDesc dragged_replay_file;
+static FileObject_Mac DraggedReplayFile;
+// static FileDesc dragged_replay_file;
 static boolean interface_fade_in_progress= FALSE;
 static short interface_fade_type;
 static short current_picture_clut_depth;
@@ -196,10 +201,12 @@ extern short interface_bit_depth;
 extern short bit_depth;
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
-extern boolean load_game_from_file(FileDesc *file);
-extern "C" {
-extern boolean choose_saved_game_to_load(FileDesc *saved_game);
-}
+extern boolean load_game_from_file(FileObject& File);
+// extern boolean load_game_from_file(FileDesc *file);
+// extern "C" {
+extern boolean choose_saved_game_to_load(FileObject& File);
+// extern boolean choose_saved_game_to_load(FileDesc *saved_game);
+// }
 
 /* ---------------------- prototypes */
 static void display_credits(void);
@@ -373,10 +380,11 @@ void set_change_level_destination(
 	return;
 }
 
-extern boolean load_and_start_game(FileDesc *file);
+extern boolean load_and_start_game(FileObject& File);
+// extern boolean load_and_start_game(FileDesc *file);
 
-boolean load_and_start_game(
-	FileDesc *file)
+boolean load_and_start_game(FileObject& File)
+	// FileDesc *file)
 {
 	boolean success;
 	
@@ -385,7 +393,8 @@ boolean load_and_start_game(
 	{
 		interface_fade_out(MAIN_MENU_BASE, TRUE);
 	}
-	success= load_game_from_file(file);
+	success= load_game_from_file(File);
+	// success= load_game_from_file(file);
 	if (success)
 	{
 		dynamic_world->game_information.difficulty_level= get_difficulty_level();
@@ -399,12 +408,14 @@ boolean load_and_start_game(
 	return success;
 }
 
-extern boolean handle_open_replay(FileDesc *replay_file);
+extern boolean handle_open_replay(FileObject& File);
+// extern boolean handle_open_replay(FileDesc *replay_file);
 
-boolean handle_open_replay(
-	FileDesc *replay_file)
+boolean handle_open_replay(FileObject& File)
+	// FileDesc *replay_file)
 {
-	dragged_replay_file= *replay_file;
+	DraggedReplayFile.CopySpec(File);
+	// dragged_replay_file= *replay_file;
 	return begin_game(_replay_from_file, FALSE);
 }
 
@@ -985,9 +996,9 @@ static void display_epilogue(
 	game_state.current_screen= 0;
 	game_state.last_ticks_on_idle= machine_tick_count();
 	
-	HideCursor();	
+	hide_cursor();	
 	try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+99, TRUE, TRUE);
-	ShowCursor();
+	show_cursor();
 	
 	return;
 }
@@ -1166,12 +1177,15 @@ static boolean begin_game(
 			{
 				case _replay:
 					{
-						FileDesc replay_file;
+						FileObject_Mac ReplayFile;
+						// FileDesc replay_file;
 
-						success= find_replay_to_use(cheat, &replay_file);
+						success= find_replay_to_use(cheat, ReplayFile);
+						// success= find_replay_to_use(cheat, &replay_file);
 						if(success)
 						{
-							success= setup_for_replay_from_file(&replay_file, get_current_map_checksum());
+							success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
+							// success= setup_for_replay_from_file(&replay_file, get_current_map_checksum());
 						}
 					} 
 					break;
@@ -1181,7 +1195,8 @@ static boolean begin_game(
 					break;
 
 				case _replay_from_file:
-					success= setup_for_replay_from_file(&dragged_replay_file, get_current_map_checksum());
+					success= setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum());
+					// success= setup_for_replay_from_file(&dragged_replay_file, get_current_map_checksum());
 					user= _replay;
 					break;
 					
@@ -1348,13 +1363,16 @@ static void start_game(
 void handle_load_game(
 	void)
 {
-	FileDesc file_to_load;
+	FileObject_Mac FileToLoad;
+	// FileDesc file_to_load;
 	boolean success= FALSE;
 
 	force_system_colors();
-	if(choose_saved_game_to_load(&file_to_load))
+	if(choose_saved_game_to_load(FileToLoad))
+	// if(choose_saved_game_to_load(&file_to_load))
 	{
-		if(!load_and_start_game(&file_to_load))
+		if(!load_and_start_game(FileToLoad))
+		// if(!load_and_start_game(&file_to_load))
 		{
 			/* Reset the system colors, since the screen clut is all black.. */
 			force_system_colors();

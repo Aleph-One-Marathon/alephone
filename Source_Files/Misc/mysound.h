@@ -9,7 +9,14 @@ Feb 2, 2000 (Loren Petrich):
 	Added Marathon Infinity sound definitions;
 	nomenclature is being kept consistent with Anvil's sound-selection popup menu;
 	this menu will provide the order of the sounds.
+
+Aug 12, 2000 (Loren Petrich):
+	Generalized open_sound_file()
+
+	Using object-oriented file handler
 */
+
+#include "FileHandler.h"
 
 /* ---------- constants */
 
@@ -464,8 +471,16 @@ void cause_ambient_sound_source_update(void);
 
 short random_sound_index_to_sound_index(short random_sound_index);
 
+// LP: generalized this: returns whether or not it was successful
+bool open_sound_file(FileObject& File);
+
+// Clone of similar functions for getting default map and physics specs
+void get_default_sounds_spec(FileObject& File);
+
+/*
 #ifdef mac
 OSErr open_sound_file(FSSpec *spec);
 #endif
+*/
 
 #endif

@@ -3,12 +3,16 @@
 	Sunday, March 5, 1995 6:21:30 PM
 
 	CRC Checksum generation for a file.
+
+Aug 15, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
 #include <stdlib.h>
 
 #include "cseries.h"
-#include "portable_files.h"
+#include "FileHandler_Mac.h"
+// #include "portable_files.h"
 #include "crc.h"
 
 #ifdef env68k
@@ -25,30 +29,40 @@ static unsigned long *crc_table= NULL;
 
 /* ---------- local prototypes ------- */
 static unsigned long calculate_file_crc(unsigned char *buffer, 
-	short buffer_size, short refnum);
+	short buffer_size, OpenedFile& OFile);
+//	short buffer_size, short refnum);
 static unsigned long calculate_buffer_crc(long count, unsigned long crc, void *buffer);
 static boolean build_crc_table(void);
 static void free_crc_table(void);
 
 /* -------------- Entry Point ----------- */
-unsigned long calculate_crc_for_file(
-	FileDesc *file) 
+unsigned long calculate_crc_for_file(FileObject& File)
+	// FileDesc *file) 
 {
 	short refnum;
 	unsigned long crc;
 	
+	OpenedFile_Mac OFile;
+	if (File.Open(OFile))
+	{
+		crc= calculate_crc_for_opened_file(OFile);
+		OFile.Close();
+	}
+	
+	/*
 	refnum= open_file_for_reading(file);
 	if(refnum!=NONE)
 	{
 		crc= calculate_crc_for_opened_file(refnum);
 		close_file(refnum);
 	}
+	*/
 	
 	return crc;
 }
 
-unsigned long calculate_crc_for_opened_file(
-	short refnum) 
+unsigned long calculate_crc_for_opened_file(OpenedFile& OFile)
+	// short refnum) 
 {
 	unsigned long crc;
 	unsigned char *buffer;
@@ -56,12 +70,14 @@ unsigned long calculate_crc_for_opened_file(
 	/* Build the crc table */
 	if(build_crc_table())
 	{
-		buffer= (unsigned char *) malloc(BUFFER_SIZE*sizeof(unsigned char));
+		buffer = new byte[BUFFER_SIZE];
+		// buffer= (unsigned char *) malloc(BUFFER_SIZE*sizeof(unsigned char));
 		if(buffer) 
 		{
-			crc= calculate_file_crc(buffer, BUFFER_SIZE, refnum);
-			
-			free(buffer);
+			// crc= calculate_file_crc(buffer, BUFFER_SIZE, refnum);
+			crc= calculate_file_crc(buffer, BUFFER_SIZE, OFile);
+			delete []buffer;
+			// free(buffer);
 		}
 		
 		/* free the crc table! */
@@ -158,21 +174,25 @@ static unsigned long calculate_buffer_crc(
 static unsigned long calculate_file_crc(
 	unsigned char *buffer, 
 	short buffer_size,
-	short refnum)
+	OpenedFile& OFile)
+	// short refnum)
 {
 	unsigned long crc;
 	long count;
-	FileError err;
+	// FileError err;
 	long file_length, initial_position;
 	
 	/* Save and restore the initial file position */
-	initial_position= get_fpos(refnum);
+	assert(OFile.GetPosition(initial_position));
+	// initial_position= get_fpos(refnum);
 
 	/* Get the file_length */
-	file_length= get_file_length(refnum);
+	assert(OFile.GetLength(file_length));
+	// file_length= get_file_length(refnum);
 	
 	/* Set to the start of the file */
-	set_fpos(refnum, 0l);
+	assert(OFile.SetPosition(0));
+	// set_fpos(refnum, 0l);
 
 	crc = 0xFFFFFFFFL;
 	while(file_length) 
@@ -184,15 +204,17 @@ static unsigned long calculate_file_crc(
 			count= file_length;
 		}
 
-		err= read_file(refnum, count, buffer);
-		vassert(!err, csprintf(temporary, "Error: %d", err));
+		assert(OFile.ReadObjectList(count,buffer));
+		// err= read_file(refnum, count, buffer);
+		// vassert(!err, csprintf(temporary, "Error: %d", err));
 		
 		crc = calculate_buffer_crc(count, crc, buffer);
 		file_length -= count;
 	}
 	
 	/* Restore the file position */
-	set_fpos(refnum, initial_position);
+	assert(OFile.SetPosition(initial_position));
+	// set_fpos(refnum, initial_position);
 
 	return (crc ^= 0xFFFFFFFFL);
 }

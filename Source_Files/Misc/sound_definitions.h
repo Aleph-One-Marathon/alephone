@@ -16,6 +16,9 @@ Feb 2, 2000 (Loren Petrich):
 	this menu will provide the order of the sounds.
 	
 	Discovered that SOUND_FILE_TAG should not be changed from 'snd2' to be Infinity-compatible
+
+Aug 17, 2000 (Loren Petrich):
+	Turned handle for loaded sound into a pointer; added length of that sound object.
 */
 
 /* ---------- constants */
@@ -109,9 +112,13 @@ struct sound_definition /* 64 bytes */
 	
 	unsigned long last_played; // machine ticks
 	
-	long handle; // (machine-specific pointer type) zero if not loaded
+	// Pointer to loaded sound and size of sound object pointed to
+	byte *ptr;
+	long size;
 	
-	short unused[2];
+	// long handle; // (machine-specific pointer type) zero if not loaded
+	
+	// short unused[2];
 };
 
 struct depth_curve_definition

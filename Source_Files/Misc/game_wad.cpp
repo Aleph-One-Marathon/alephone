@@ -41,6 +41,9 @@ Feb 26, 2000 (Loren Petrich):
 
 June 15, 2000 (Loren Petrich):
 	Added supprt for Chris Pruett's Pfhortran
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
 // This needs to do the right thing on save game, which is storing the precalculated crap.
@@ -62,6 +65,7 @@ June 15, 2000 (Loren Petrich):
 #include "lightsource.h"
 #include "media.h"
 #include "weapons.h"
+#include "FileHandler_Mac.h"
 
 // LP change: moved this into main directory:
 #include "editor.h"
@@ -96,7 +100,8 @@ extern byte physics_models[];
 // unify the save game code into one structure.
 
 /* -------- local globals */
-static FileDesc current_map_file;
+FileObject_Mac MapFileSpec;
+// static FileDesc current_map_file;
 static boolean file_is_set= FALSE;
 
 // LP addition: was a physics model loaded from the previous level loaded?
@@ -109,7 +114,8 @@ struct revert_game_info
 	struct game_data game_information;
 	struct player_start_data player_start;
 	struct entry_point entry_point;
-	FileDesc saved_game;
+	FileObject_Mac SavedGame;
+	// FileDesc saved_game;
 };
 static struct revert_game_info revert_game_data;
 
@@ -183,17 +189,20 @@ void *get_map_for_net_transfer(
 	assert(file_is_set);
 	
 	/* FALSE means don't use union maps.. */
-	return get_flat_data(&current_map_file, FALSE, entry->level_number);
+	return get_flat_data(MapFileSpec, FALSE, entry->level_number);
+	// return get_flat_data(&current_map_file, FALSE, entry->level_number);
 }
 
 /* ---------------------- End Net Functions ----------- */
 
 /* This takes a cstring */
-void set_map_file(
-	FileDesc *file)
+void set_map_file(FileObject& File)
+	// FileDesc *file)
 {
-	memcpy(&current_map_file, file, sizeof(FileDesc));
-	set_scenario_images_file(file);
+	MapFileSpec.CopySpec(File);
+	// memcpy(&current_map_file, file, sizeof(FileDesc));
+	set_scenario_images_file((FileDesc *)&MapFileSpec.Spec);
+	// set_scenario_images_file(file);
 	file_is_set= TRUE;
 	
 	return;
@@ -203,10 +212,13 @@ void set_map_file(
 void set_to_default_map(
 	void)
 {
-	FileDesc new_map;
+	FileObject_Mac NewMapFile;
+	// FileDesc new_map;
 	
-	get_default_map_spec(&new_map);
-	set_map_file(&new_map);
+	get_default_map_spec(NewMapFile);
+	// get_default_map_spec(&new_map);
+	set_map_file(NewMapFile);
+	// set_map_file(&new_map);
 	
 	return;
 }
@@ -216,12 +228,15 @@ void set_to_default_map(
 boolean use_map_file(
 	long checksum) /* Should be unsigned long */
 {
-	FileDesc file;
+	FileObject_Mac File;
+	// FileDesc file;
 	boolean success= FALSE;
 
-	if(find_wad_file_that_has_checksum(&file, SCENARIO_FILE_TYPE, strPATHS, checksum))
+	if(find_wad_file_that_has_checksum(File, SCENARIO_FILE_TYPE, strPATHS, checksum))
+	// if(find_wad_file_that_has_checksum(&file, SCENARIO_FILE_TYPE, strPATHS, checksum))
 	{
-		set_map_file(&file);
+		set_map_file(File);
+		// set_map_file(&file);
 		success= TRUE;
 	}
 
@@ -251,15 +266,19 @@ boolean load_level_from_map(
 	
 //		file_handle= open_union_wad_file_for_reading(&current_map_file);
 //		if(file_handle!=0)
-		file_handle= open_wad_file_for_reading(&current_map_file);
-		if(file_handle!=NONE)
+		OpenedFile_Mac MapFile;
+		if (open_wad_file_for_reading(MapFileSpec,MapFile))
+		// file_handle= open_wad_file_for_reading(&current_map_file);
+		// if(file_handle!=NONE)
 		{
 			/* Read the file */
-			if(read_wad_header(file_handle, &header))
+			if(read_wad_header(MapFile, &header))
+			// if(read_wad_header(file_handle, &header))
 			{
 				if(index_to_load>=0 && index_to_load<header.wad_count)
 				{
-					wad= read_indexed_wad_from_file(file_handle, &header, index_to_load, TRUE);
+					wad= read_indexed_wad_from_file(MapFile, &header, index_to_load, TRUE);
+					// wad= read_indexed_wad_from_file(file_handle, &header, index_to_load, TRUE);
 					if (wad)
 					{
 						/* Process everything... */
@@ -278,7 +297,8 @@ boolean load_level_from_map(
 			}
 		
 			/* Close the file.. */
-			close_wad_file(file_handle);
+			// close_wad_file(file_handle);
+			close_wad_file(MapFile);
 			//CP Addition: load any scripts available
 			if (load_script(1000+level_index) < 0)
 				;  //this sucks.
@@ -385,18 +405,22 @@ short get_player_starting_location_and_facing(
 unsigned long get_current_map_checksum(
 	void)
 {
-	fileref file_handle;
+	// fileref file_handle;
 	struct wad_header header;
 
 	assert(file_is_set);
-	file_handle= open_wad_file_for_reading(&current_map_file);
-	assert(file_handle != -1);	
+	OpenedFile_Mac MapFile;
+	assert(open_wad_file_for_reading(MapFileSpec,MapFile));
+	// file_handle= open_wad_file_for_reading(&current_map_file);
+	// assert(file_handle != -1);	
 
 	/* Read the file */
-	read_wad_header(file_handle, &header);
+	// read_wad_header(file_handle, &header);
+	read_wad_header(MapFile, &header);
 	
 	/* Close the file.. */
-	close_wad_file(file_handle);	
+	// close_wad_file(file_handle);
+	close_wad_file(MapFile);	
 	
 	return header.checksum;
 }
@@ -418,8 +442,10 @@ boolean new_game(
 	game_is_networked= network;
 	
 	/* If we want to save it, this is an untitled map.. */
-	get_application_filedesc(&revert_game_data.saved_game);
-	getpstr(revert_game_data.saved_game.name, strFILENAMES, filenameDEFAULT_SAVE_GAME);
+	revert_game_data.SavedGame.SetFileToApp();
+	// get_application_filedesc(&revert_game_data.saved_game);
+	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),FileObject::C_Save);
+	// getpstr(revert_game_data.saved_game.name, strFILENAMES, filenameDEFAULT_SAVE_GAME);
 
 	/* Set the random seed. */
 	set_random_seed(game_information->initial_random_seed);
@@ -493,22 +519,25 @@ boolean get_indexed_entry_point(
 	short *index, 
 	long type)
 {
-	short file_handle;
+	// short file_handle;
 	struct wad_header header;
 	short actual_index;
 	boolean success= FALSE;
 	
 	assert(file_is_set);
-
-	file_handle= open_wad_file_for_reading(&current_map_file);
-	if (file_handle != -1)
+	OpenedFile_Mac MapFile;
+	if (!open_wad_file_for_reading(MapFileSpec,MapFile)) return false;
+	// file_handle= open_wad_file_for_reading(&current_map_file);
+	// if (file_handle != -1)
 	{
-		if (read_wad_header(file_handle, &header))
+		// if (read_wad_header(file_handle, &header))
+		if (read_wad_header(MapFile, &header))
 		{
 			/* If this is a new style */
 			if(header.application_specific_directory_data_size==sizeof(struct directory_data))
 			{
-				void *total_directory_data= read_directory_data(file_handle, &header);
+				// void *total_directory_data= read_directory_data(file_handle, &header);
+				void *total_directory_data= read_directory_data(MapFile, &header);
 
 				assert(total_directory_data);
 				for(actual_index= *index; actual_index<header.wad_count; ++actual_index)
@@ -539,7 +568,8 @@ boolean get_indexed_entry_point(
 					struct wad_data *wad;
 
 					/* Read the file */
-					wad= read_indexed_wad_from_file(file_handle, &header, actual_index, TRUE);
+					// wad= read_indexed_wad_from_file(file_handle, &header, actual_index, TRUE);
+					wad= read_indexed_wad_from_file(MapFile, &header, actual_index, TRUE);
 					if (wad)
 					{
 						struct static_data *map_info;
@@ -566,7 +596,8 @@ boolean get_indexed_entry_point(
 		}
 
 		/* Close the file.. */
-		close_wad_file(file_handle);
+		// close_wad_file(file_handle);
+		close_wad_file(MapFile);
 	}
 
 	return success;
@@ -962,10 +993,11 @@ void recalculate_redundant_map(
 	for(loop=0;loop<dynamic_world->endpoint_count;++loop) recalculate_redundant_endpoint_data(loop);
 }
 
-extern boolean load_game_from_file(FileDesc *file);
+extern boolean load_game_from_file(FileObject& File);
+// extern boolean load_game_from_file(FileDesc *file);
 
-boolean load_game_from_file(
-	FileDesc *file)
+boolean load_game_from_file(FileObject& File)
+	// FileDesc *file)
 {
 	boolean success= FALSE;
 
@@ -974,10 +1006,12 @@ boolean load_game_from_file(
 
 	/* Setup for a revert.. */
 	revert_game_data.game_is_from_disk = TRUE;
-	memcpy(&revert_game_data.saved_game, file, sizeof(FileDesc));
+	revert_game_data.SavedGame.CopySpec(File);
+	// memcpy(&revert_game_data.saved_game, file, sizeof(FileDesc));
 
 	/* Use the save game file.. */
-	set_map_file(file);
+	set_map_file(File);
+	// set_map_file(file);
 	
 	/* Load the level from the map */
 	success= load_level_from_map(NONE); /* Save games are ALWAYS index NONE */
@@ -991,7 +1025,8 @@ boolean load_game_from_file(
 		set_local_player_index(0);
 
 		/* Find the original scenario this saved game was a part of.. */
-		parent_checksum= read_wad_file_parent_checksum(file);
+		parent_checksum= read_wad_file_parent_checksum(File);
+		// parent_checksum= read_wad_file_parent_checksum(file);
 		if(!use_map_file(parent_checksum))
 		{
 			/* Tell the user theyÕre screwed when they try to leave this level. */
@@ -1038,7 +1073,8 @@ boolean revert_game(
 	if (revert_game_data.game_is_from_disk)
 	{
 		/* Reload their last saved game.. */
-		successful= load_game_from_file(&revert_game_data.saved_game);
+		successful= load_game_from_file(revert_game_data.SavedGame);
+		// successful= load_game_from_file(&revert_game_data.saved_game);
 
 		/* And they don't get to continue. */
 		stop_recording();
@@ -1064,20 +1100,21 @@ boolean revert_game(
 	return successful;
 }
 
-void get_current_saved_game_name(
-	unsigned char *file_name)
+void get_current_saved_game_name(FileObject& File)
+	// unsigned char *file_name)
 {
-	memcpy(file_name, revert_game_data.saved_game.name, revert_game_data.saved_game.name[0]+1);
+	File.CopySpec(revert_game_data.SavedGame);
+	// memcpy(file_name, revert_game_data.saved_game.name, revert_game_data.saved_game.name[0]+1);
 }
 
 /* The current mapfile should be set to the save game file... */
-boolean save_game_file(
-	FileDesc *file)
+boolean save_game_file(FileObject& File)
+	// FileDesc *file)
 {
 	struct wad_header header;
 	FileError err;
 	boolean success= FALSE;
-	short file_ref;
+	// short file_ref;
 	long offset, wad_length;
 	struct directory_entry entry;
 	struct wad_data *wad;
@@ -1086,22 +1123,28 @@ boolean save_game_file(
 	dynamic_world->random_seed= get_random_seed();
 
 	/* Setup to revert the game properly */
-	revert_game_data.game_is_from_disk= TRUE; 
-	memcpy(&revert_game_data.saved_game, file, sizeof(FileDesc));
-
+	revert_game_data.game_is_from_disk= TRUE;
+	revert_game_data.SavedGame.CopySpec(File);
+	// memcpy(&revert_game_data.saved_game, file, sizeof(FileDesc));
+	
+	// LP: add a file here
+	
 	/* Fill in the default wad header */
-	fill_default_wad_header(file, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
+	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
 		
 	/* Assume that we confirmed on save as... */
-	err= create_wadfile(file, SAVE_GAME_TYPE);
-	
-	if(!err)
+	// err= create_wadfile(file, SAVE_GAME_TYPE);
+	if (create_wadfile(File,FileObject::C_Save))
+	// if(!err)
 	{
-		file_ref= open_wad_file_for_writing(file); /* returns -1 on error */
-		if (file_ref>=0)
+		OpenedFile_Mac SaveFile;
+		if(open_wad_file_for_writing(File,SaveFile))
+		// file_ref= open_wad_file_for_writing(file); /* returns -1 on error */
+		// if (file_ref>=0)
 		{
 			/* Write out the new header */
-			if (write_wad_header(file_ref, &header))
+			// if (write_wad_header(file_ref, &header))
+			if (write_wad_header(SaveFile, &header))
 			{
 				offset= sizeof(struct wad_header);
 		
@@ -1113,19 +1156,22 @@ boolean save_game_file(
 						&entry, 0, offset, wad_length, 0);
 					
 					/* Save it.. */
-					if (write_wad(file_ref, &header, wad, offset))
+					// if (write_wad(file_ref, &header, wad, offset))
+					if (write_wad(SaveFile, &header, wad, offset))
 					{
 						/* Update the new header */
 						offset+= wad_length;
 						header.directory_offset= offset;
-						header.parent_checksum= read_wad_file_checksum(&current_map_file);
-						if (write_wad_header(file_ref, &header) && write_directorys(file_ref, &header, &entry))
+						header.parent_checksum= read_wad_file_checksum(MapFileSpec);
+						// header.parent_checksum= read_wad_file_checksum(&current_map_file);
+						// if (write_wad_header(file_ref, &header) && write_directorys(file_ref, &header, &entry))
+						if (write_wad_header(SaveFile, &header) && write_directorys(SaveFile, &header, &entry))
 						{
 							/* This function saves the overhead map as a thumbnail, as well */
 							/*  as adding the string resource that tells you what it is when */
 							/*  it is clicked on & Marathon2 isn't installed.  Obviously, both */
 							/*  of these are superfluous for a dos environment. */
-							add_finishing_touches_to_save_file(file);
+							add_finishing_touches_to_save_file(File);
 
 							/* We win. */
 							success= TRUE;
@@ -1136,10 +1182,12 @@ boolean save_game_file(
 				}
 			}
 
-			close_wad_file(file_ref);
+			err = SaveFile.GetError();
+			close_wad_file(SaveFile);
+			// close_wad_file(file_ref);
 		}
 	}
-
+	
 	if(err || error_pending())
 	{
 		if(!err) err= get_game_error(NULL);
@@ -1806,8 +1854,9 @@ static void complete_restoring_level(
 
 
 /* CP Addition: get_map_file returns a pointer to the current map file */
-FileDesc *get_map_file(
-	void)
+//FileDesc *get_map_file(
+//	void)
+FileObject& get_map_file()
 {
-	return &current_map_file;
+	return MapFileSpec; // (FileDesc *)&MapFile.Spec;
 }

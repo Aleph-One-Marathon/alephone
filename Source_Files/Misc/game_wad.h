@@ -10,9 +10,13 @@ Jan 30, 2000 (Loren Petrich)
 
 June 15, 2000 (Loren Petrich):
 	Added supprt for Chris Pruett's Pfhortran
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
-#include "portable_files.h"
+#include "FileHandler.h"
+// #include "portable_files.h"
 
 /* -------------------- Private or map editor functions */
 void allocate_map_for_counts(short polygon_count, short side_count,
@@ -40,24 +44,32 @@ void complete_loading_level(short *map_indexes, short map_index_count,
 	struct static_platform_data *platform_data, short platform_data_count,
 	struct platform_data *actual_platform_data, short actual_platform_data_count, short version);
 
-boolean save_game_file(FileDesc *file);
+boolean save_game_file(FileObject& File);
+// boolean save_game_file(FileDesc *file);
 
 /* -------------- New functions */
 void pause_game(void);
 void resume_game(void);
-void get_current_saved_game_name(unsigned char *file_name);
+void get_current_saved_game_name(FileObject& File);
+// void get_current_saved_game_name(unsigned char *file_name);
 
 boolean match_checksum_with_map(short vRefNum, long dirID, unsigned long checksum, 
-	FileDesc *file);
-void set_map_file(FileDesc *file);
+	FileObject& File);
+// 	FileDesc *file);
+void set_map_file(FileObject& File);
+// void set_map_file(FileDesc *file);
 
 //CP Addition: get_map_file returns the FileDesc pointer to the current map
-FileDesc *get_map_file(void);
+FileObject& get_map_file(void);
+// FileDesc *get_map_file(void);
 
 /* --------- from PREPROCESS_MAP_MAC.C */
-void get_default_map_spec(FileDesc *_new);
-void get_default_physics_spec(FileDesc *_new);
+void get_default_map_spec(FileObject& File);
+// void get_default_map_spec(FileDesc *_new);
+void get_default_physics_spec(FileObject& File);
+// void get_default_physics_spec(FileDesc *_new);
 
-void add_finishing_touches_to_save_file(FileDesc *file);
+void add_finishing_touches_to_save_file(FileObject& File);
+// void add_finishing_touches_to_save_file(FileDesc *file);
 
 #endif

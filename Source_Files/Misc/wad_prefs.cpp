@@ -8,6 +8,9 @@ Jan 30, 2000 (Loren Petrich)
 
 Mar 5, 2000 (Loren Petrich)
 	Added more graceful degradation on prefs-wad read-in in load_preferences()
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
 #include "cseries.h"
@@ -20,6 +23,8 @@ Mar 5, 2000 (Loren Petrich)
 
 // #include "shell.h" // for refPREFERENCES_DIALOG only
 #include "wad_prefs.h"
+
+#include "FileHandler_Mac.h"
 
 #ifdef env68k
 	#pragma segment file_io
@@ -194,18 +199,24 @@ void w_write_preferences_file(
 	}
 	
 	assert(!error_pending());
-	refNum= open_wad_file_for_writing(&prefInfo->pref_file);
-	if(!error_pending())
+	FileObject_Mac PrefsFileSpec;
+	PrefsFileSpec.SetSpec(*((FSSpec *)&prefInfo->pref_file));
+	OpenedFile_Mac PrefsFile;
+	if (open_wad_file_for_writing(PrefsFileSpec,PrefsFile))
+	// refNum= open_wad_file_for_writing(&prefInfo->pref_file);
+	// if(!error_pending())
 	{
 		struct directory_entry entry;
 
-		assert(refNum!=NONE);
+		// assert(refNum!=NONE);
 
-		fill_default_wad_header(&prefInfo->pref_file, 
+		// fill_default_wad_header(&prefInfo->pref_file, 
+		fill_default_wad_header(PrefsFileSpec, 
 			CURRENT_WADFILE_VERSION, CURRENT_PREF_WADFILE_VERSION, 
 			1, 0l, &header);
 			
-		if (write_wad_header(refNum, &header))
+		// if (write_wad_header(refNum, &header))
+		if (write_wad_header(PrefsFile, &header))
 		{
 			long wad_length;
 			long offset= sizeof(struct wad_header);
@@ -218,12 +229,15 @@ void w_write_preferences_file(
 				&entry, 0, offset, wad_length, 0);
 			
 			/* Now write it.. */
-			if (write_wad(refNum, &header, prefInfo->wad, offset))
+			// if (write_wad(refNum, &header, prefInfo->wad, offset))
+			if (write_wad(PrefsFile, &header, prefInfo->wad, offset))
 			{
 				offset+= wad_length;
 				header.directory_offset= offset;
-				if (write_wad_header(refNum, &header) &&
-					write_directorys(refNum, &header, &entry))
+				if (write_wad_header(PrefsFile, &header) &&
+					write_directorys(PrefsFile, &header, &entry))
+				// if (write_wad_header(refNum, &header) &&
+				//	write_directorys(refNum, &header, &entry))
 				{
 					/* Success! */
 				} else {
@@ -238,7 +252,8 @@ void w_write_preferences_file(
 		} else {
 			assert(error_pending());
 		}
-		close_wad_file(refNum);
+		close_wad_file(PrefsFile);
+		// close_wad_file(refNum);
 	} 
 	
 	return;
@@ -256,25 +271,32 @@ static void load_preferences(
 		prefInfo->wad= NULL;
 	}
 	
-	refNum= open_wad_file_for_reading(&prefInfo->pref_file);
-	if(!error_pending())
+	FileObject_Mac PrefsFileSpec;
+	PrefsFileSpec.SetSpec(*((FSSpec *)&prefInfo->pref_file));
+	OpenedFile_Mac PrefsFile;
+	if (open_wad_file_for_reading(PrefsFileSpec,PrefsFile))
+	// refNum= open_wad_file_for_reading(&prefInfo->pref_file);
+	// if(!error_pending())
 	{
 		struct wad_header header;
 	
-		assert(refNum != NONE);
+		// assert(refNum != NONE);
 	
 		/* Read the header from the wad file */
-		if(read_wad_header(refNum, &header))
+		// if(read_wad_header(refNum, &header))
+		if(read_wad_header(PrefsFile, &header))
 		{
 			/* Read the indexed wad from the file */
-			prefInfo->wad= read_indexed_wad_from_file(refNum, &header, 0, FALSE);
+			// prefInfo->wad= read_indexed_wad_from_file(refNum, &header, 0, FALSE);
+			prefInfo->wad= read_indexed_wad_from_file(PrefsFile, &header, 0, FALSE);
 			// LP change: more graceful degradation
 			if (!prefInfo->wad) set_game_error(gameError, errUnknownWadVersion);
 			// assert(prefInfo->wad);
 		}
 				
 		/* Close the file.. */
-		close_wad_file(refNum);
+		close_wad_file(PrefsFile);
+		// close_wad_file(refNum);
 	}
 	
 	return;

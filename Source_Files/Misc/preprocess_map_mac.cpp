@@ -13,6 +13,9 @@
 Jan 30, 2000 (Loren Petrich):
 	Changed "new" to "_new" to make data structures more C++-friendly
 	Surrounded choose_saved_game_to_load with "extern "C""
+
+Aug 12, 2000 (Loren Petrich):
+	Using object-oriented file handler
 */
 
 #include "macintosh_cseries.h"
@@ -28,6 +31,7 @@ Jan 30, 2000 (Loren Petrich):
 #include "player.h"
 #include "game_window.h"
 #include "game_errors.h"
+#include "FileHandler_Mac.h"
 
 #include "tags.h"
 #include "wad.h"
@@ -74,9 +78,16 @@ static boolean confirm_save_choice(FSSpec *file);
 
 
 /* --------- code begins */
-void get_default_map_spec(
-	FileDesc *_new)
+void get_default_map_spec(FileObject& File)
+	// FileDesc *_new)
 {
+
+	File.SetFileToApp();
+	File.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP),FileObject::C_Map);
+	if (!File.Exists()) alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+	
+// LP: begin no-compile
+#if 0
 	static boolean first_try= TRUE;
 	static FSSpec default_map_spec;
 
@@ -95,11 +106,20 @@ void get_default_map_spec(
 	memcpy(_new, &default_map_spec, sizeof(FileDesc));
 	
 	return;
+// LP: end no-compile
+#endif
 }
 
-void get_default_physics_spec(
-	FileDesc *_new)
+void get_default_physics_spec(FileObject& File)
+//	FileDesc *_new)
 {
+
+	File.SetFileToApp();
+	File.SetName(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL),FileObject::C_Phys);
+	// Don't care if it does not exist
+
+// LP: begin no-compile
+#if 0
 	static boolean first_try= TRUE;
 	static FSSpec default_physics_spec;
 
@@ -122,16 +142,22 @@ void get_default_physics_spec(
 	memcpy(_new, &default_physics_spec, sizeof(FileDesc));
 	
 	return;
+
+// LP: end no-compile
+#endif
 }
 
-extern "C" {
-extern boolean choose_saved_game_to_load(FSSpec *saved_game);
-}
+// extern "C" {
+extern boolean choose_saved_game_to_load(FileObject& File);
+// extern boolean choose_saved_game_to_load(FSSpec *saved_game);
+// }
 
 /* Note this should show the map of where you are... */
-boolean choose_saved_game_to_load(
-	FSSpec *saved_game)
+boolean choose_saved_game_to_load(FileObject& File)
+	// FSSpec *saved_game)
 {
+	return File.ReadDialog(FileObject::C_Save);
+	/*
 	SFTypeList type_list;
 	short type_count= 0;
 	StandardFileReply reply;
@@ -146,11 +172,39 @@ boolean choose_saved_game_to_load(
 	}
 
 	return reply.sfGood;
+	*/
 }
 
 boolean save_game(
 	void)
 {
+	pause_game();
+	show_cursor();
+
+	/* Translate the name, and display the dialog */
+	FileObject_Mac SaveFile;
+	get_current_saved_game_name(SaveFile);
+	char GameName[256];
+	SaveFile.GetName(GameName);
+	
+	char Prompt[256];
+	boolean success = SaveFile.WriteDialog(
+			FileObject::C_Save,
+			getcstr(Prompt, strPROMPTS, _save_game_prompt),
+			GameName);
+
+	if (success)
+		success = save_game_file(SaveFile);
+	
+	hide_cursor();
+	resume_game();
+
+	return success;
+
+// Keep this stuff around; it will be necessary for implementing "replace" as the default
+// instead of "cancel"
+// LP: begin no-compile
+#if 0
 	Str255 prompt;
 	Str63 file_name;	
 	DlgHookYDUPP dlgHook;
@@ -159,7 +213,7 @@ boolean save_game(
 	boolean success= FALSE;
 
 	pause_game();
-	ShowCursor();
+	show_cursor();
 	
 	/* Translate the name, and display the dialog */
 	get_current_saved_game_name(file_name);
@@ -185,20 +239,23 @@ boolean save_game(
 		}
 	}
 
-	HideCursor();
+	hide_cursor();
 	resume_game();
 	
 	return success;
+// LP: end no-compile
+#endif
 }
 
-void add_finishing_touches_to_save_file(
-	FileDesc *file)
+void add_finishing_touches_to_save_file(FileObject &File)
+// 	FileDesc *file)
 {
 	short resource_file_ref;
 	unsigned char name[64+1];
 	
 	/* Save the STR resource that tells us what our application name is. */
-	resource_file_ref= FSpOpenResFile((FSSpec *) file, fsWrPerm);
+	resource_file_ref= FSpOpenResFile(&GetSpec(File), fsWrPerm);
+	// resource_file_ref= FSpOpenResFile((FSSpec *) file, fsWrPerm);
 	if(resource_file_ref>= 0)
 	{
 		Handle resource;
@@ -221,7 +278,8 @@ void add_finishing_touches_to_save_file(
 
 	/* Add the application name resource.. */
 	getpstr(name, strFILENAMES, filenameMARATHON_NAME);
-	add_application_name_to_fsspec((FileDesc *) file, name);
+	add_application_name_to_fsspec((FileDesc *)&GetSpec(File), name);
+	// add_application_name_to_fsspec((FileDesc *) file, name);
 }
 
 /* ------------ Local code */
