@@ -247,13 +247,23 @@ bool image_file_t::get_rsrc(uint32 rsrc_type, uint32 wad_type, int id, LoadedRes
 			bool success = false;
 			long raw_length;
 			void *raw = extract_type_from_wad(d, wad_type, &raw_length);
-			if (raw) {
-				if (rsrc_type == FOUR_CHARS_TO_INT('P','I','C','T')) {
+			if (raw)
+			{
+				if (rsrc_type == FOUR_CHARS_TO_INT('P','I','C','T'))
+				{
 					long clut_length;
 					void *clut_data = extract_type_from_wad(d, FOUR_CHARS_TO_INT('c','l','u','t'), &clut_length);
 					success = make_rsrc_from_pict(raw, raw_length, rsrc, clut_data, clut_length);
-				} else if (rsrc_type == FOUR_CHARS_TO_INT('c','l','u','t'))
+				}
+				else if (rsrc_type == FOUR_CHARS_TO_INT('c','l','u','t'))
 					success = make_rsrc_from_clut(raw, raw_length, rsrc);
+				else if (rsrc_type == FOUR_CHARS_TO_INT('s','n','d',' '))
+				{
+					void *snd_data = malloc(raw_length);
+					memcpy(snd_data, raw, raw_length);
+					rsrc.SetData(snd_data, raw_length);
+					success = true;
+				}
 			}
 			free_wad(d);
 			return success;
