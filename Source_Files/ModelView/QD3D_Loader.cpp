@@ -112,9 +112,9 @@ static TQ3Status TriangulatorGeometry_Triangle(TQ3ViewObject View, void *Private
 	TQ3GeometryObject Triangle, const TQ3TriangleData *TriangleData);
 
 // Accumulated triangle vertices:
-bool TxtrCoordsPresent = false;
-bool NormalsPresent = false;
-bool ColorsPresent = false;
+static bool TxtrCoordsPresent = false;
+static bool NormalsPresent = false;
+static bool ColorsPresent = false;
 
 struct FullVertexData
 {
