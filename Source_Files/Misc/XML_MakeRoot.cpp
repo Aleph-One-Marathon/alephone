@@ -28,6 +28,7 @@
 #include "ViewControl.h"
 #include "weapons.h"
 #include "OGL_Setup.h"
+#include "shell.h"
 
 
 // The absolute root element is a global, of course
@@ -62,4 +63,5 @@ void SetupParseTree()
 	MarathonParser.AddChild(Landscapes_GetParser());
 	MarathonParser.AddChild(Weapons_GetParser());
 	MarathonParser.AddChild(OpenGL_GetParser());
+	MarathonParser.AddChild(Cheats_GetParser());
 }
