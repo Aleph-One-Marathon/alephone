@@ -295,7 +295,10 @@ void initialize_map_for_new_level(
 	dynamic_world->garbage_object_count= 0;
 
 	obj_clear(*static_world);
-
+	
+	// Clear all these out -- supposed to be none of the contents of these when starting a level.
+	objlist_clear(automap_lines, AutomapLineList.size());
+	objlist_clear(automap_polygons, AutomapPolygonList.size());
 	objlist_clear(effects, EffectList.size());
 	objlist_clear(projectiles,  ProjectileList.size());
 	objlist_clear(monsters,  MonsterList.size());
