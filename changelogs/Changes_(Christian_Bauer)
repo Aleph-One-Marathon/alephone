@@ -8,6 +8,10 @@ September 16, 2000
  - SDL dialog GUI supports loadable themes
  - added sound volume slider
 
+September 15, 2000
+ - SDL_SetClipping() no longer used
+ - put input_controller task into main event loop
+
 September 14, 2000
  - Pfhortran language definition is now compiled into the application; the
    "Pfhortran_Language_Definition" file is not needed any more at runtime
