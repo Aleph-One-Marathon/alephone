@@ -120,6 +120,7 @@
 		29B97313FDCFA39411CA2CEA = {
 			buildStyles = (
 				4A9504CCFFE6A4B311CA0CBA,
+				EF2EF5F50483C7D900A8000D,
 				4A9504CDFFE6A4B311CA0CBA,
 			);
 			hasScannedForEncodings = 1;
@@ -138,6 +139,7 @@
 				29B97317FDCFA39411CA2CEA,
 				EF2EF5AF0481982A00A8000D,
 				EF2EF5B004819A5C00A8000D,
+				EFBAF0090485B3A300A8000D,
 				29B97323FDCFA39411CA2CEA,
 				19C28FACFE9D520D11CA2CBB,
 			);
@@ -204,7 +206,7 @@
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "\"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\"";
 				OPTIMIZATION_CFLAGS = "-O2 -frename-registers -fprefetch-loop-arrays -fschedule-insns -fschedule-insns2 -finline-functions -finline-limit=600 -fregmove -frerun-cse-after-loop -fconserve-space -fcoalesce-templates -fstrength-reduce -fgcse -fgcse-lm -fgcse-sm -fdelete-null-pointer-checks   -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -x objective-c++";
 				OTHER_LDFLAGS = "-flat_namespace -multiply_defined suppress -framework SDL -framework SDL_image -framework SDL_net -framework AppKit";
@@ -623,6 +625,14 @@
 				EF2EF5EE04819F8400A8000D,
 				EF2EF5F30481A07000A8000D,
 				EF2EF5F40481A07000A8000D,
+				EFBAF00E0485B41E00A8000D,
+				EFBAF00F0485B41E00A8000D,
+				EFBAF0210485BEA500A8000D,
+				EFBAF0220485BEA500A8000D,
+				EFBAF0240485BEA500A8000D,
+				EFBAF0250485BEA500A8000D,
+				EFBAF0260485BEA500A8000D,
+				EFBAF0270485BEA500A8000D,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -792,6 +802,7 @@
 				EF2EF5DF04819BD700A8000D,
 				EF2EF5E104819BD700A8000D,
 				EF2EF5E704819EBF00A8000D,
+				EFBAF0230485BEA500A8000D,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -804,6 +815,7 @@
 				F5281C0601F8C94301E83A66,
 				F5281C0901F8CA2201E83A66,
 				F5281C0A01F8CA2201E83A66,
+				EFBAF0120485B69900A8000D,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1187,7 +1199,7 @@
 			);
 			isa = PBXGroup;
 			name = "lua-5.0";
-			path = "/Users/woody/lua-5.0";
+			path = "/Library/Application Support/Lua/lua-5.0";
 			refType = 0;
 		};
 		EF2EF5B004819A5C00A8000D = {
@@ -1198,7 +1210,7 @@
 			);
 			isa = PBXGroup;
 			name = Frameworks;
-			path = /Users/woody/Library/Frameworks;
+			path = /Library/Frameworks;
 			refType = 0;
 		};
 		EF2EF5C704819B6200A8000D = {
@@ -1485,6 +1497,219 @@
 		};
 		EF2EF5F40481A07000A8000D = {
 			fileRef = EF2EF5F00481A07000A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EF2EF5F50483C7D900A8000D = {
+			buildRules = (
+			);
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DEBUGGING_SYMBOLS = YES;
+				OPTIMIZATION_CFLAGS = "-O0";
+				PRECOMPILE_PREFIX_HEADER = NO;
+				PREFIX_HEADER = "";
+			};
+			isa = PBXBuildStyle;
+			name = "Development no precomps";
+		};
+		EFBAF0090485B3A300A8000D = {
+			children = (
+				EFBAF00A0485B41E00A8000D,
+				EFBAF00B0485B41E00A8000D,
+				EFBAF0100485B69900A8000D,
+			);
+			isa = PBXGroup;
+			name = "speex-1.0";
+			path = "/Library/Application Support/Speex/speex-1.0";
+			refType = 0;
+		};
+		EFBAF00A0485B41E00A8000D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = speex_bits.h;
+			path = libspeex/speex_bits.h;
+			refType = 4;
+		};
+		EFBAF00B0485B41E00A8000D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = speex.h;
+			path = libspeex/speex.h;
+			refType = 4;
+		};
+		EFBAF00C0485B41E00A8000D = {
+			fileRef = EFBAF00A0485B41E00A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF00D0485B41E00A8000D = {
+			fileRef = EFBAF00B0485B41E00A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF00E0485B41E00A8000D = {
+			fileRef = EFBAF00A0485B41E00A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF00F0485B41E00A8000D = {
+			fileRef = EFBAF00B0485B41E00A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0100485B69900A8000D = {
+			isa = PBXFileReference;
+			name = libspeex.a;
+			path = libspeex/.libs/libspeex.a;
+			refType = 4;
+		};
+		EFBAF0110485B69900A8000D = {
+			fileRef = EFBAF0100485B69900A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0120485B69900A8000D = {
+			fileRef = EFBAF0100485B69900A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0130485BEA500A8000D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_audio_shared.h;
+			path = ../Source_Files/Network/network_audio_shared.h;
+			refType = 4;
+		};
+		EFBAF0140485BEA500A8000D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_data_formats.h;
+			path = ../Source_Files/Network/network_data_formats.h;
+			refType = 4;
+		};
+		EFBAF0150485BEA500A8000D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_speex.cpp;
+			path = ../Source_Files/Network/network_speex.cpp;
+			refType = 4;
+		};
+		EFBAF0160485BEA500A8000D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_speex.h;
+			path = ../Source_Files/Network/network_speex.h;
+			refType = 4;
+		};
+		EFBAF0170485BEA500A8000D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = SDL_netx.h;
+			path = ../Source_Files/Network/SDL_netx.h;
+			refType = 4;
+		};
+		EFBAF0180485BEA500A8000D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = SSLP_API.h;
+			path = ../Source_Files/Network/SSLP_API.h;
+			refType = 4;
+		};
+		EFBAF0190485BEA500A8000D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = SSLP_Protocol.h;
+			path = ../Source_Files/Network/SSLP_Protocol.h;
+			refType = 4;
+		};
+		EFBAF01A0485BEA500A8000D = {
+			fileRef = EFBAF0130485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF01B0485BEA500A8000D = {
+			fileRef = EFBAF0140485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF01C0485BEA500A8000D = {
+			fileRef = EFBAF0150485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF01D0485BEA500A8000D = {
+			fileRef = EFBAF0160485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF01E0485BEA500A8000D = {
+			fileRef = EFBAF0170485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF01F0485BEA500A8000D = {
+			fileRef = EFBAF0180485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0200485BEA500A8000D = {
+			fileRef = EFBAF0190485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0210485BEA500A8000D = {
+			fileRef = EFBAF0130485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0220485BEA500A8000D = {
+			fileRef = EFBAF0140485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0230485BEA500A8000D = {
+			fileRef = EFBAF0150485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0240485BEA500A8000D = {
+			fileRef = EFBAF0160485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0250485BEA500A8000D = {
+			fileRef = EFBAF0170485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0260485BEA500A8000D = {
+			fileRef = EFBAF0180485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFBAF0270485BEA500A8000D = {
+			fileRef = EFBAF0190485BEA500A8000D;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -3120,39 +3345,40 @@
 			children = (
 				F52214520136C0C401000001,
 				3DF2716B03EDBAA800000104,
-				F522138F0136ABAE01000001,
-				F522137A0136ABAE01000001,
-				F522137B0136ABAE01000001,
-				F56A463D021F7E2301A80001,
-				F573B28F021FAF7801A80001,
-				F522137C0136ABAE01000001,
-				F522137D0136ABAE01000001,
-				F522137E0136ABAE01000001,
-				F522137F0136ABAE01000001,
-				F52213810136ABAE01000001,
-				F52213820136ABAE01000001,
-				F52213830136ABAE01000001,
-				F5A00031023FDB8001A80001,
-				3DF2716F03EDBBF100000104,
-				F52213840136ABAE01000001,
-				F52213860136ABAE01000001,
-				F52213880136ABAE01000001,
-				F522138A0136ABAE01000001,
-				3DF2717103EDBBF100000104,
-				F5A0002F023FDB5C01A80001,
-				EF2EF5C804819BD700A8000D,
-				EF2EF5C904819BD700A8000D,
-				F522138B0136ABAE01000001,
-				F522138D0136ABAE01000001,
-				F522138E0136ABAE01000001,
-				F5574EF801F4ECD701FEABBD,
-				F5574EFA01F4ED0A01FEABBD,
 				EF2EF5CB04819BD700A8000D,
 				EF2EF5CD04819BD700A8000D,
 				F5574EFC01F4ED4801FEABBD,
 				F5574EFE01F4ED6501FEABBD,
 				EF2EF5CF04819BD700A8000D,
+				F522138F0136ABAE01000001,
+				F522137A0136ABAE01000001,
+				F5574EF801F4ECD701FEABBD,
+				F522137B0136ABAE01000001,
+				F5574EFA01F4ED0A01FEABBD,
+				F522137D0136ABAE01000001,
+				F573B28F021FAF7801A80001,
+				F56A463D021F7E2301A80001,
+				F522137C0136ABAE01000001,
+				F522137E0136ABAE01000001,
+				F522137F0136ABAE01000001,
+				F52213820136ABAE01000001,
+				F52213810136ABAE01000001,
+				F52213830136ABAE01000001,
+				F5A00031023FDB8001A80001,
 				3D22699003F6BB0200000104,
+				3DF2716F03EDBBF100000104,
+				F52213860136ABAE01000001,
+				F52213840136ABAE01000001,
+				F52213880136ABAE01000001,
+				F522138A0136ABAE01000001,
+				F5A0002F023FDB5C01A80001,
+				3DF2717103EDBBF100000104,
+				EFBAF0150485BEA500A8000D,
+				EF2EF5C804819BD700A8000D,
+				EF2EF5C904819BD700A8000D,
+				F522138B0136ABAE01000001,
+				F522138D0136ABAE01000001,
+				F522138E0136ABAE01000001,
 			);
 			isa = PBXGroup;
 			name = Network;
@@ -3161,22 +3387,28 @@
 		F52214520136C0C401000001 = {
 			children = (
 				3DF2716C03EDBAA800000104,
+				EF2EF5CC04819BD700A8000D,
+				EF2EF5CE04819BD700A8000D,
+				EFBAF0170485BEA500A8000D,
+				EFBAF0180485BEA500A8000D,
+				EFBAF0190485BEA500A8000D,
+				EF2EF5D004819BD700A8000D,
 				F52213900136ABAE01000001,
+				EFBAF0130485BEA500A8000D,
+				EFBAF0140485BEA500A8000D,
 				F53DC61D022179A801A80001,
 				F5A00033023FDBBD01A80001,
 				F52213800136ABAE01000001,
 				F53DC62002219A3D01A80001,
 				3DF2717003EDBBF100000104,
-				F52213850136ABAE01000001,
 				F52213870136ABAE01000001,
+				F52213850136ABAE01000001,
 				F5D37B6D022D1C2C01A80001,
 				F52213890136ABAE01000001,
 				F5A00037023FDC0301A80001,
+				EFBAF0160485BEA500A8000D,
 				EF2EF5CA04819BD700A8000D,
 				F522138C0136ABAE01000001,
-				EF2EF5CC04819BD700A8000D,
-				EF2EF5CE04819BD700A8000D,
-				EF2EF5D004819BD700A8000D,
 			);
 			isa = PBXGroup;
 			name = Headers;
@@ -3237,9 +3469,9 @@
 				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
-				LIBRARY_SEARCH_PATHS = "/usr/local/lib /Users/woody/lua-5.0/lib \"/Users/restorer/aleph/aleph lua/Source_Files/Lua/lib\"";
+				LIBRARY_SEARCH_PATHS = "/usr/local/lib \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\"";
 				OPTIMIZATION_CFLAGS = "-O2 -fprefetch-loop-arrays -finline-limit=1000 -frerun-cse-after-loop -fstrength-reduce -fdelete-null-pointer-checks -mcpu=750 -mtune=750 -mmultiple -mstring -mupdate -mpowerpc-gfxopt";
-				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA\n";
+				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -Wno-deprecated -DHAVE_UNISTD_H -x c++  -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA -DSPEEX\n";
 				OTHER_LDFLAGS = "-flat_namespace";
 				OTHER_REZFLAGS = "";
 				PRECOMPILE_PREFIX_HEADER = YES;
@@ -3657,6 +3889,14 @@
 				EF2EF5ED04819F8400A8000D,
 				EF2EF5F10481A07000A8000D,
 				EF2EF5F20481A07000A8000D,
+				EFBAF00C0485B41E00A8000D,
+				EFBAF00D0485B41E00A8000D,
+				EFBAF01A0485BEA500A8000D,
+				EFBAF01B0485BEA500A8000D,
+				EFBAF01D0485BEA500A8000D,
+				EFBAF01E0485BEA500A8000D,
+				EFBAF01F0485BEA500A8000D,
+				EFBAF0200485BEA500A8000D,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3830,6 +4070,7 @@
 				EF2EF5D604819BD700A8000D,
 				EF2EF5D804819BD700A8000D,
 				EF2EF5E504819EBF00A8000D,
+				EFBAF01C0485BEA500A8000D,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3848,6 +4089,7 @@
 				3D5F21470403247500000104,
 				EF2EF5A4048194F100A8000D,
 				EF2EF5A5048194F200A8000D,
+				EFBAF0110485B69900A8000D,
 			);
 			isa = PBXFrameworksBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
