@@ -5,15 +5,8 @@
 	Created by Loren Petrich on July 1, 2001
 */
 
-#include <Dialogs.h>
-#include <Fonts.h>
-#include <MacWindows.h>
-#include <Menus.h>
-#include <QuickDraw.h>
-#include <TextEdit.h>
+#include <Carbon.h>
 #include <Movies.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "cseries.h"
 #include "crc.h"
@@ -141,11 +134,13 @@ void HandleAppleMenu(int WhichItem)
 
 	if (WhichItem == 1)
 		Alert(MainMenuBarID,NULL);
+	/*
 	else
 	{
 		GetMenuItemText(GetMenuHandle(AppleMenuID), WhichItem, ItemName);
 		short DA_RefNum = OpenDeskAcc(ItemName);
 	}
+	*/
 }
 
 
@@ -179,10 +174,12 @@ void HandleMouseDown(EventRecord& Event)
 		HandleMenuEvent(MenuSelect(Event.where));
 		break;
 	
+	/*
 	case inSysWindow:
 		// Inside of Apple Menu
 		SystemClick(&Event, WhichWindow);
 		break;
+	*/
 	}
 }
 
@@ -213,12 +210,6 @@ void HandleEvent(EventRecord& Event)
 
 void main(void)
 {
-	InitGraf(&qd.thePort);
-	InitFonts();
-	InitWindows();
-	InitMenus();
-	TEInit();
-	InitDialogs(nil);
 	InitCursor();
 	
 	InitMacServices();
