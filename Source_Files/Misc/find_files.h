@@ -1,7 +1,17 @@
 #ifndef __FIND_FILES_H
 #define __FIND_FILES_H
 
+/*
+
+Aug 25, 2000 (Loren Petrich):
+	Abstracting the file handling
+
+*/
+#include "FileHandler.h"
+
+
 /* Find all files of a given type.. */
+
 
 #define WILDCARD_TYPE '****'
 
@@ -22,8 +32,9 @@ struct find_file_pb {
 	short flags;			/* Search flags 					<-  */
 	short search_type;		/* Search type						<-  */
 	
-	short vRefNum;			/* Search start 					<-  */
-	long directory_id;		/* directory start 					<-  */
+	DirectorySpecifier BaseDir;
+	// short vRefNum;			/* Search start 					<-  */
+	// long directory_id;		/* directory start 					<-  */
 	OSType type_to_find;	/* OSType to find					<-  */
 	
 	FSSpec *buffer; 		/* Destination						<-> */
@@ -32,7 +43,8 @@ struct find_file_pb {
 
 	/* Callback	functions, if returns TRUE, you add it.  If */
 	/*  callback==NULL, adds all found.							<-  */
-	Boolean (*callback)(FSSpec *file, void *data);
+	Boolean (*callback)(FileSpecifier& File, void *data);
+	// Boolean (*callback)(FSSpec *file, void *data);
 	void *user_data;		/* Passed to callback above.		<-  */
 };
 

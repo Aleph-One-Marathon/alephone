@@ -4,6 +4,10 @@
 
 Feb. 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
+
+Aug 25, 2000 (Loren Petrich):
+	Abstracting the file handling
+
 */
 
 #include "macintosh_cseries.h"
@@ -40,7 +44,8 @@ OSErr find_files(
 	/* Set the variables */
 	param_block->count= 0;
 
-	err= enumerate_files(param_block, param_block->directory_id);
+	err= enumerate_files(param_block, param_block->BaseDir.Get_parID());
+	// err= enumerate_files(param_block, param_block->directory_id);
 
 	/* Alphabetical */
 	if(param_block->flags & _ff_alphabetical)
@@ -81,13 +86,16 @@ static OSErr enumerate_files(
 	long directory_id) /* Because it is recursive.. */
 {
 	static CInfoPBRec pb; /* static to prevent stack overflow.. */
-	static FSSpec temp_file;
+	// Kludge to make the FSSpec always available
+	static FileSpecifier TempFile;
+	static FSSpec& temp_file = TempFile.GetSpec();
 	static OSErr err;
 	short index;
 
 	memset(&pb, 0, sizeof(CInfoPBRec));
 	
-	temp_file.vRefNum= param_block->vRefNum;
+	temp_file.vRefNum= param_block->BaseDir.Get_vRefNum();
+	// temp_file.vRefNum= param_block->vRefNum;
 	pb.hFileInfo.ioVRefNum= temp_file.vRefNum;
 	pb.hFileInfo.ioNamePtr= temp_file.name;
 			
@@ -115,7 +123,8 @@ static OSErr enumerate_files(
 					switch(param_block->search_type)
 					{
 						case _fill_buffer:
-							if(!param_block->callback || param_block->callback(&temp_file, param_block->user_data))
+							if(!param_block->callback || param_block->callback(TempFile, param_block->user_data))
+							// if(!param_block->callback || param_block->callback(&temp_file, param_block->user_data))
 							{
 								/* Copy it in.. */
 								BlockMove(&temp_file, &param_block->buffer[param_block->count++], 
@@ -127,9 +136,11 @@ static OSErr enumerate_files(
 							assert(param_block->callback);
 							if(param_block->flags & _ff_callback_with_catinfo)
 							{
-								param_block->callback(&temp_file, &pb);
+								param_block->callback(TempFile, &pb);
+								// param_block->callback(&temp_file, &pb);
 							} else {
-								param_block->callback(&temp_file, param_block->user_data);
+								param_block->callback(TempFile, param_block->user_data);
+								// param_block->callback(&temp_file, param_block->user_data);
 							}
 							break;
 							
