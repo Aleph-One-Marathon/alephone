@@ -741,6 +741,11 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->speex_encoder_quality = 2;
 	preferences->speex_encoder_complexity = 1;
 	preferences->use_netscript = false;
+#ifdef mac
+	obj_clear(preferences->netscript_file);
+#else
+	preferences->netscript_file[0] = '\0';
+#endif
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
