@@ -12,7 +12,8 @@
 
 
 // From shell_sdl.cpp
-extern FileSpecifier global_data_dir, local_data_dir;
+extern vector<DirectorySpecifier> data_search_path;
+
 
 /*
  *  Find map file with specified checksum in path
@@ -47,14 +48,16 @@ private:
 bool find_wad_file_that_has_checksum(FileSpecifier &matching_file, int file_type, short path_resource_id, uint32 checksum)
 {
 	FindByChecksum finder(checksum);
-	bool found_it = finder.Find(global_data_dir, file_type);
-	if (!found_it)
-		found_it = finder.Find(local_data_dir, file_type);
-	if (found_it) {
-		matching_file = finder.found_what;
-		return true;
-	} else
-		return false;
+	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+	while (i != end) {
+		FileSpecifier dir = *i;
+		if (finder.Find(dir, file_type)) {
+			matching_file = finder.found_what;
+			return true;
+		}
+		i++;
+	}
+	return false;
 }
 
 
@@ -85,12 +88,14 @@ private:
 bool find_file_with_modification_date(FileSpecifier &matching_file, int file_type, short path_resource_id, TimeType modification_date)
 {
 	FindByDate finder(modification_date);
-	bool found_it = finder.Find(global_data_dir, file_type);
-	if (!found_it)
-		found_it = finder.Find(local_data_dir, file_type);
-	if (found_it) {
-		matching_file = finder.found_what;
-		return true;
-	} else
-		return false;
+	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+	while (i != end) {
+		FileSpecifier dir = *i;
+		if (finder.Find(dir, file_type)) {
+			matching_file = finder.found_what;
+			return true;
+		}
+		i++;
+	}
+	return false;
 }

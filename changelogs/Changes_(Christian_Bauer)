@@ -1,5 +1,10 @@
 Change log of the SDL version of Aleph One
 
+October 4, 2000
+ - the ALEPHONE_DATA environment variable can specify a colon-separated list
+   of data directories
+ - bumped version number to 0.10.6
+
 September 23, 2000
  - screenshots (F9) work with OpenGL
  - darken_world_window() works with OpenGL

@@ -30,14 +30,11 @@
 
 
 // Data directories
-FileSpecifier global_data_dir;		// Global data file directory
-FileSpecifier local_data_dir;		// Local (per-user) data file directory
-FileSpecifier global_mml_dir;		// Global MML directory
-FileSpecifier local_mml_dir;		// Local MML directory
-FileSpecifier global_themes_dir;	// Global directory for GUI themes
-FileSpecifier local_themes_dir;		// Local directory for GUI themes
-FileSpecifier saved_games_dir;		// Directory for saved games
-FileSpecifier recordings_dir;		// Directory for recordings (except film buffer, which is stored in local_data_dir)
+vector<DirectorySpecifier> data_search_path;	// List of directories in which data files are searched for
+DirectorySpecifier local_data_dir;		// Local (per-user) data file directory
+DirectorySpecifier preferences_dir;		// Directory for preferences
+DirectorySpecifier saved_games_dir;		// Directory for saved games
+DirectorySpecifier recordings_dir;		// Directory for recordings (except film buffer, which is stored in local_data_dir)
 
 // Command-line options
 bool option_fullscreen = false;		// Run fullscreen
@@ -169,50 +166,54 @@ static void initialize_application(void)
 	SDL_WM_SetCaption("Aleph One", "Aleph One");
 	atexit(shutdown_application);
 
-	// Get paths of local and global data directories
+	// Find data directories, construct search path
+	DirectorySpecifier default_data_dir;
 #if defined(__unix__)
-	global_data_dir = PKGDATADIR;
-
-	const char *data_dir = getenv("ALEPHONE_DATA");
-	if (data_dir)
-		global_data_dir = data_dir;
-
+	default_data_dir = PKGDATADIR;
 	const char *home = getenv("HOME");
 	if (home)
 		local_data_dir = home;
-	local_data_dir.AddPart(".alephone");
+	local_data_dir += ".alephone";
 #elif defined(__BEOS__)
-	global_data_dir = get_application_directory();
-
-	const char *data_dir = getenv("ALEPHONE_DATA");
-	if (data_dir)
-		global_data_dir = data_dir;
-
+	default_data_dir = get_application_directory();
 	local_data_dir = get_preferences_directory();
 #else
 #error Data file paths must be set for this platform.
 #endif
 
+#if defined(__unix__) || defined(__BEOS__)
+	const char *data_env = getenv("ALEPHONE_DATA");
+	if (data_env) {
+		// Read colon-separated list of directories
+		string path = data_env;
+		string::size_type pos;
+		while ((pos = path.find(':')) != string::npos) {
+			if (pos) {
+				string element = path.substr(0, pos);
+				data_search_path.push_back(element);
+			}
+			path.erase(0, pos + 1);
+		}
+		if (!path.empty())
+			data_search_path.push_back(path);
+	} else
+#endif
+		data_search_path.push_back(default_data_dir);
+	data_search_path.push_back(local_data_dir);
+
 	// Subdirectories
-	global_mml_dir = global_data_dir;
-	global_mml_dir.AddPart("MML");
-	local_mml_dir = local_data_dir;
-	local_mml_dir.AddPart("MML");
-	global_themes_dir = global_data_dir;
-	global_themes_dir.AddPart("Themes");
-	local_themes_dir = local_data_dir;
-	local_themes_dir.AddPart("Themes");
-	saved_games_dir = local_data_dir;
-	saved_games_dir.AddPart("Saved Games");
-	recordings_dir = local_data_dir;
-	recordings_dir.AddPart("Recordings");
+	preferences_dir = local_data_dir;
+	saved_games_dir = local_data_dir + "Saved Games";
+	recordings_dir = local_data_dir + "Recordings";
 
 	// Create local directories
 	local_data_dir.CreateDirectory();
-	local_mml_dir.CreateDirectory();
-	local_themes_dir.CreateDirectory();
 	saved_games_dir.CreateDirectory();
 	recordings_dir.CreateDirectory();
+	DirectorySpecifier local_mml_dir = local_data_dir + "MML";
+	local_mml_dir.CreateDirectory();
+	DirectorySpecifier local_themes_dir = local_data_dir + "Themes";
+	local_themes_dir.CreateDirectory();
 
 	// Setup resource manager
 	initialize_resources();
@@ -221,8 +222,14 @@ static void initialize_application(void)
 	SetupParseTree();
 	XML_Loader_SDL loader;
 	loader.CurrentElement = &RootParser;
-	loader.ParseDirectory(global_mml_dir);
-	loader.ParseDirectory(local_mml_dir);
+	{
+		vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+		while (i != end) {
+			DirectorySpecifier path = *i + "MML";
+			loader.ParseDirectory(path);
+			i++;
+		}
+	}
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {
@@ -999,8 +1006,7 @@ void dump_screen(void)
 	do {
 		char name[256];
 		sprintf(name, "Screenshot_%04d.bmp", i);
-		file = local_data_dir;
-		file.AddPart(name);
+		file = local_data_dir + name;
 		i++;
 	} while (file.Exists());
 

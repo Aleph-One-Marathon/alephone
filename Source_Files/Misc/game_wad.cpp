@@ -481,8 +481,8 @@ bool new_game(
 	revert_game_data.SavedGame.SetToApp();
 	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),_typecode_savegame);
 #elif defined(SDL)
-	revert_game_data.SavedGame.SetToLocalDataDir();
-	revert_game_data.SavedGame.AddPart(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME));
+	revert_game_data.SavedGame.SetToSavedGamesDir();
+	revert_game_data.SavedGame += getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME);
 #endif
 
 	/* Set the random seed. */

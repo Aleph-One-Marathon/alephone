@@ -42,9 +42,6 @@ static struct {
 
 static SDL_Surface *dialog_image[NUM_DIALOG_IMAGES];
 
-// From shell_sdl.cpp
-extern FileSpecifier global_themes_dir, local_themes_dir;
-
 // Prototypes
 static void unload_theme(void);
 static void set_theme_defaults(void);
@@ -503,15 +500,13 @@ void load_theme(FileSpecifier &theme)
 	set_theme_defaults();
 
 	// Parse theme MML script
-	FileSpecifier theme_mml = theme;
-	theme_mml.AddPart("theme.mml");
+	FileSpecifier theme_mml = theme + "theme.mml";
 	XML_Loader_SDL loader;
 	loader.CurrentElement = &RootParser;
 	loader.ParseFile(theme_mml);
 
 	// Open resource file
-	FileSpecifier theme_rsrc = theme;
-	theme_rsrc.AddPart("resources");
+	FileSpecifier theme_rsrc = theme + "resources";
 	theme_rsrc.Open(theme_resources);
 	clear_game_error();
 
@@ -521,8 +516,7 @@ void load_theme(FileSpecifier &theme)
 
 	// Load images
 	for (int i=0; i<NUM_DIALOG_IMAGES; i++) {
-		FileSpecifier file = theme;
-		file.AddPart(dialog_image_spec[i].name);
+		FileSpecifier file = theme + dialog_image_spec[i].name;
 		SDL_Surface *s =SDL_LoadBMP(file.GetPath());
 		if (s)
 			SDL_SetColorKey(s, SDL_SRCCOLORKEY, SDL_MapRGB(s->format, 0x00, 0xff, 0xff));

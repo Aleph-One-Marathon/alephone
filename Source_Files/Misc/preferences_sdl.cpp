@@ -20,7 +20,7 @@
 #endif
 
 // From shell_sdl.cpp
-extern FileSpecifier global_data_dir, local_data_dir, global_themes_dir, local_themes_dir;
+extern vector<DirectorySpecifier> data_search_path;
 
 // Prototypes
 static void player_dialog(void *arg);
@@ -719,25 +719,28 @@ private:
 void w_env_select::select_item(dialog *parent)
 {
 	// Find available files
-	FileSpecifier global_dir, local_dir;
 	vector<FileSpecifier> files;
 	if (type == _typecode_theme) {
 
 		// Theme, find by theme script
 		FindThemes finder(files);
-		global_dir = global_themes_dir;
-		local_dir = local_themes_dir;
-		finder.Find(global_dir, WILDCARD_TYPE);
-		finder.Find(local_dir, WILDCARD_TYPE);
+		vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+		while (i != end) {
+			FileSpecifier dir = *i + "Themes";
+			finder.Find(dir, WILDCARD_TYPE);
+			i++;
+		}
 
 	} else {
 
 		// Map/phyics/shapes/sounds, find by type
 		FindAllFiles finder(files);
-		global_dir = global_data_dir;
-		local_dir = local_data_dir;
-		finder.Find(global_dir, type);
-		finder.Find(local_dir, type);
+		vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+		while (i != end) {
+			FileSpecifier dir = *i;
+			finder.Find(dir, type);
+			i++;
+		}
 	}
 
 	// Create structured list of files
@@ -752,17 +755,17 @@ void w_env_select::select_item(dialog *parent)
 
 			// New directory
 			FileSpecifier base_spec = base;
-			if (base_spec != global_dir && base_spec != local_dir) {
+//			if (base_spec != global_dir && base_spec != local_dir) {
 
 				// Subdirectory, insert name as unselectable item, put items on indentation level 1
 				items.push_back(env_item(base_spec, 0, false));
 				indent_level = 1;
 
-			} else {
-
-				// Top-level directory, put items on indentation level 0
-				indent_level = 0;
-			}
+//			} else {
+//
+//				// Top-level directory, put items on indentation level 0
+//				indent_level = 0;
+//			}
 			last_base = base;
 		}
 		items.push_back(env_item(*i, indent_level, true));

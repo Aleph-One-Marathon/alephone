@@ -60,7 +60,7 @@ bool find_replay_to_use(bool ask_user, FileSpecifier &file)
 bool get_recording_filedesc(FileSpecifier &File)
 {
 	File.SetToLocalDataDir();
-	File.AddPart(getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING));
+	File += getcstr(temporary, strFILENAMES, filenameMARATHON_RECORDING);
 	return File.Exists();
 }
 

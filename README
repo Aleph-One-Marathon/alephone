@@ -69,9 +69,9 @@ list:
 
 If Aleph One complains about missing data files, and you are sure that you
 have installed them, try setting the ALEPHONE_DATA environment variable to
-the path of the data file directory. You can also use this to switch between
-different scenarios, but you will have to reselect the Map, Shapes and Sound
-files in the "Environment" preferences menu every time you do so.
+the path of the data file directory. This variable can also specify a colon-
+separated list of directories which are searched for data files in the given
+order.
 
 The background story of the game and the keyboard controls are explained in
 the manual or README file on your Marathon CD or in the Demo archive.
@@ -295,6 +295,28 @@ they won't show up when clicking on "Continue Saved Game" or "Replay Saved
 Film" on the main menu.
 
 
+THEMES
+------
+
+Aleph One/SDL supports selectable user interface themes which determine the
+look of the game's dialog boxes (but not the title menu which is a fixed
+picture). The themes are stored in
+
+Unix:
+  /usr/local/share/AlephOne/Themes
+ and
+  ~/.alephone/Themes
+
+BeOS:
+  The "Themes" directory in the Aleph One application directory
+ and
+  /boot/home/config/settings/Aleph One/Themes
+
+There is one subdirectory for each theme and you can install new themes by
+unpacking them into the "Themes" directory. Additional themes can be found
+on the Aleph One/SDL home page (see below).
+
+
 FILE COMPATIBILITY
 ------------------
 
@@ -327,6 +349,8 @@ various data files used by Aleph One and the original Marathon games:
   "Aleph One Preferences" - platform-specific, not compatible with the MacOS
     versions of Aleph One/Marathon nor across the platforms supported by
     Aleph One/SDL
+  Themes - fully compatible across all versions of Aleph One/SDL; the MacOS
+    versions of Aleph One and Marathon don't support themes
 
 
 MARATHON MARKUP LANGUAGE

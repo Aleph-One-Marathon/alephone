@@ -496,14 +496,14 @@ bool try_and_add_player_item(
 					{
 						object_was_just_destroyed(_object_is_item, type);
 						grabbed_sound_index= _snd_got_item;
-						success= TRUE;
+						success= true;
 						goto DONE;
 					}
 					else // _polygon_is_base and base == player->team
 						 // base != player->team taken care of in update_net_game
 						 // (your ball should NEVER get there)
 					{
-						success= FALSE;
+						success= false;
 						goto DONE;
 					}
 					// END Benad modified oct. 1st

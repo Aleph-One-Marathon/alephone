@@ -388,15 +388,26 @@ private:
 	bool operator==(const FileSpecifier &other) const {return name == other.name;}
 	bool operator!=(const FileSpecifier &other) const {return name != other.name;}
 
-	void SetToLocalDataDir();		// Per-user directory, where preferences go
+	void SetToLocalDataDir();		// Per-user directory (for temporary files)
+	void SetToPreferencesDir();		// Directory for preferences (per-user)
 	void SetToSavedGamesDir();		// Directory for saved games (per-user)
 	void SetToRecordingsDir();		// Directory for recordings (per-user)
-	void SetToGlobalDataDir();		// Data file directory, where "Images", "Shapes" etc. are stored
-	void SetToLocalThemesDir();		// Per-user themes directory
-	void SetToGlobalThemesDir();	// Global themes directory
+
+	// Opens a file, looking in all directories in the current search path;
+	// the FileSpecifier must contain a relative path to the file
+	bool OpenRelative(OpenedFile& OFile);
+	bool OpenRelative(OpenedResourceFile& OFile);
+
+	const char *GetPath(void) const {return name.c_str();}
 
 	void AddPart(const string &part);
-	const char *GetPath(void) const {return name.c_str();}
+	FileSpecifier &operator+=(const FileSpecifier &other) {AddPart(other.name); return *this;}
+	FileSpecifier &operator+=(const string &part) {AddPart(part); return *this;}
+	FileSpecifier &operator+=(const char *part) {AddPart(string(part)); return *this;}
+	FileSpecifier operator+(const FileSpecifier &other) const {FileSpecifier a(name); a.AddPart(other.name); return a;}
+	FileSpecifier operator+(const string &part) const {FileSpecifier a(name); a.AddPart(part); return a;}
+	FileSpecifier operator+(const char *part) const {FileSpecifier a(name); a.AddPart(string(part)); return a;}
+
 	void SplitPath(string &base, string &part) const;
 
 	bool CreateDirectory();

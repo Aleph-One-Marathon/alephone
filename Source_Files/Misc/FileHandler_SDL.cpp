@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <string>
+#include <vector>
 
 #include <SDL_endian.h>
 
@@ -29,7 +30,8 @@
 
 
 // From shell_sdl.cpp
-extern FileSpecifier global_data_dir, local_data_dir, saved_games_dir, recordings_dir, global_themes_dir, local_themes_dir;
+extern vector<DirectorySpecifier> data_search_path;
+extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, recordings_dir;
 
 
 /*
@@ -113,6 +115,9 @@ bool OpenedFile::Close()
 		f = NULL;
 		err = 0;
 	}
+	is_forked = false;
+	fork_offset = 0;
+	fork_length = 0;
 	return true;
 }
 
@@ -331,9 +336,7 @@ bool FileSpecifier::CreateDirectory()
 bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 {
 	OFile.Close();
-	OFile.is_forked = false;
-	OFile.fork_offset = 0;
-	OFile.fork_length = 0;
+
 	SDL_RWops *f = OFile.f = SDL_RWFromFile(name.c_str(), Writable ? "wb" : "rb");
 	err = f ? 0 : errno;
 	if (f == NULL) {
@@ -366,6 +369,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 {
 	OFile.Close();
+
 	OFile.f = open_res_file(*this);
 	err = OFile.f ? 0 : errno;
 	if (OFile.f == NULL) {
@@ -373,6 +377,40 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 		return false;
 	} else
 		return true;
+}
+
+// Open data file given relative path name, traverse search path
+bool FileSpecifier::OpenRelative(OpenedFile &OFile)
+{
+	OFile.Close();
+
+	FileSpecifier full_path;
+	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+	while (i != end) {
+		full_path = *i + name;
+		if (full_path.Open(OFile))
+			return true;
+		clear_game_error();
+		i++;
+	}
+	return false;
+}
+
+// Open data file given relative path name, traverse search path
+bool FileSpecifier::OpenRelative(OpenedResourceFile &OFile)
+{
+	OFile.Close();
+
+	FileSpecifier full_path;
+	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+	while (i != end) {
+		full_path = *i + name;
+		if (full_path.Open(OFile))
+			return true;
+		clear_game_error();
+		i++;
+	}
+	return false;
 }
 
 // Check for existence of file
@@ -497,6 +535,12 @@ void FileSpecifier::SetToLocalDataDir()
 	name = local_data_dir.name;
 }
 
+// Set to preferences directory
+void FileSpecifier::SetToPreferencesDir()
+{
+	name = preferences_dir.name;
+}
+
 // Set to saved games directory
 void FileSpecifier::SetToSavedGamesDir()
 {
@@ -507,24 +551,6 @@ void FileSpecifier::SetToSavedGamesDir()
 void FileSpecifier::SetToRecordingsDir()
 {
 	name = recordings_dir.name;
-}
-
-// Set to global data directory
-void FileSpecifier::SetToGlobalDataDir()
-{
-	name = global_data_dir.name;
-}
-
-// Set to local (per-user) themes directory
-void FileSpecifier::SetToLocalThemesDir()
-{
-	name = local_themes_dir.name;
-}
-
-// Set to global themes directory
-void FileSpecifier::SetToGlobalThemesDir()
-{
-	name = global_themes_dir.name;
 }
 
 // Add part to path name
@@ -571,20 +597,17 @@ void FileSpecifier::canonicalize_path(void)
 {
 #if defined(__unix__) || defined(__BEOS__)
 
-	int path_max;
-#ifdef PATH_MAX
-	path_max = PATH_MAX;
-#else
-	path_max = pathconf(path, _PC_PATH_MAX);
-	if (path_max <= 0)
-		path_max = 4096;
-#endif
-	char *resolved_path = (char *)malloc(path_max);
-	if (resolved_path) {
-		if (realpath(name.c_str(), resolved_path))
-			name = resolved_path;
-		free(resolved_path);
+	// Replace multiple consecutive '/'s by a single '/'
+	while (true) {
+		string::size_type pos = name.find("//");
+		if (pos == string::npos)
+			break;
+		name.erase(pos, 1);
 	}
+
+	// Remove trailing '/'
+	if (!name.empty() && name[name.size()-1] == '/')
+		name.erase(name.size()-1, 1);
 
 #else
 #error FileSpecifier::canonicalize_path() not implemented for this platform
@@ -607,7 +630,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 	while (de) {
 		if (de->d_name[0] != '.' || (de->d_name[1] && de->d_name[1] != '.')) {
 			FileSpecifier full_path = name;
-			full_path.AddPart(de->d_name);
+			full_path += de->d_name;
 			struct stat st;
 			if (stat(full_path.name.c_str(), &st) == 0)
 				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false));

@@ -11,6 +11,7 @@
 #include "FileHandler.h"
 
 #include <SDL_endian.h>
+#include <vector>
 #include <map>
 
 
@@ -19,6 +20,9 @@ typedef pair<int, int> id_and_size_t;
 typedef map<id_and_size_t, sdl_font_info *> font_list_t;
 static font_list_t font_list;				// List of all loaded fonts
 
+// From shell_sdl.cpp
+extern vector<DirectorySpecifier> data_search_path;
+
 
 /*
  *  Initialize font management
@@ -26,12 +30,17 @@ static font_list_t font_list;				// List of all loaded fonts
 
 void initialize_fonts(void)
 {
-	// Open font resources
-	FileSpecifier fonts;
-	fonts.SetToGlobalDataDir();
-	fonts.AddPart("Fonts");
-	if (open_res_file(fonts) == NULL) {
-		fprintf(stderr, "Can't open '%s'.\n", fonts.GetPath());
+	// Open font resource files
+	bool found = false;
+	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+	while (i != end) {
+		FileSpecifier fonts = *i + "Fonts";
+		if (open_res_file(fonts))
+			found = true;
+		i++;
+	}
+	if (!found) {
+		fprintf(stderr, "Can't open font resource file.\n");
 		exit(1);
 	}
 }

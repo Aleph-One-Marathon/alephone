@@ -63,14 +63,15 @@ void initialize_images_manager(void)
 #ifdef mac
 	file.SetToApp();
 	file.SetName(getcstr(temporary, strFILENAMES, filenameIMAGES),_typecode_images);
-#else
-	file.SetToGlobalDataDir();
-	file.AddPart(getcstr(temporary, strFILENAMES, filenameIMAGES));
-#endif
 	if (!file.Exists())
 		alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
 	if (!file.Open(ImagesResources))
 		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
+#else
+	file = getcstr(temporary, strFILENAMES, filenameIMAGES);
+	if (!file.OpenRelative(ImagesResources))
+		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
+#endif
 	atexit(shutdown_images_handler);
 }
 

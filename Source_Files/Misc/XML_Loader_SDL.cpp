@@ -125,8 +125,7 @@ bool XML_Loader_SDL::ParseDirectory(FileSpecifier &dir)
 			continue;
 
 		// Construct full path name
-		FileSpecifier file_name = dir;
-		file_name.AddPart(i->name);
+		FileSpecifier file_name = dir + i->name;
 
 		// Parse file
 		ParseFile(file_name);

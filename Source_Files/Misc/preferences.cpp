@@ -97,7 +97,8 @@ void initialize_preferences(
 		memcpy(Name,temporary,256);
 		
 		err= get_game_error(&type);
-		dprintf("Preferences Init Error: %d type: %d prefs name: %s", err, type, Name);
+		if (type != noErr)
+			dprintf("Preferences Init Error: %d type: %d prefs name: %s", err, type, Name);
 		set_game_error(systemError, noErr);
 	}
 	

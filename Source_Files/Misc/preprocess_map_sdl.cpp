@@ -7,6 +7,8 @@
 #include "cseries.h"
 #include "FileHandler.h"
 
+#include <vector>
+
 #include "world.h"
 #include "map.h"
 #include "shell.h"
@@ -14,53 +16,67 @@
 #include "game_wad.h"
 #include "game_errors.h"
 
+// From shell_sdl.cpp
+extern vector<DirectorySpecifier> data_search_path;
+
 
 /*
  *  Get FileSpecifiers for default data files
  */
 
+static bool get_default_spec(FileSpecifier &file, const string &name)
+{
+	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+	while (i != end) {
+		file = *i + name;
+		if (file.Exists())
+			return true;
+		i++;
+	}
+	return false;
+}
+
+static bool get_default_spec(FileSpecifier &file, int type)
+{
+	char name[256];
+	getcstr(name, strFILENAMES, type);
+	return get_default_spec(file, name);
+}
+
 void get_default_map_spec(FileSpecifier &file)
 {
-	file.SetToGlobalDataDir();
-	file.AddPart(getcstr(temporary, strFILENAMES, filenameDEFAULT_MAP));
-	if (!file.Exists())
+	if (!get_default_spec(file, filenameDEFAULT_MAP))
 		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
 }
 
 void get_default_physics_spec(FileSpecifier &file)
 {
-	file.SetToGlobalDataDir();
-	file.AddPart(getcstr(temporary, strFILENAMES, filenamePHYSICS_MODEL));
-	// Don't care if it does not exist
+	get_default_spec(file, filenamePHYSICS_MODEL);
+	// don't care if it does not exist
 }
 
 void get_default_shapes_spec(FileSpecifier &file)
 {
-	file.SetToGlobalDataDir();
-	file.AddPart(getcstr(temporary, strFILENAMES, filenameSHAPES8));
-	if (!file.Exists())
+	if (!get_default_spec(file, filenameSHAPES8))
 		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
 }
 
 void get_default_sounds_spec(FileSpecifier &file)
 {
-	file.SetToGlobalDataDir();
-	file.AddPart(getcstr(temporary, strFILENAMES, filenameSOUNDS8));
-	// Don't care if it does not exist
+	get_default_spec(file, filenameSOUNDS8);
+	// don't care if it does not exist
 }
 
 bool get_default_music_spec(FileSpecifier &file)
 {
-	file.SetToGlobalDataDir();
-	file.AddPart(getcstr(temporary, strFILENAMES, filenameMUSIC));
-	return file.Exists();
+	return get_default_spec(file, filenameMUSIC);
 }
 
 bool get_default_theme_spec(FileSpecifier &file)
 {
-	file.SetToGlobalThemesDir();
-	file.AddPart(getcstr(temporary, strFILENAMES, filenameDEFAULT_THEME));
-	return file.Exists();
+	FileSpecifier theme = "Themes";
+	theme += getcstr(temporary, strFILENAMES, filenameDEFAULT_THEME);
+	return get_default_spec(file, theme.GetPath());
 }
 
 

@@ -29,8 +29,7 @@ bool FileFinder::Find(DirectorySpecifier &dir, int type, bool recursive)
 	for (i = entries.begin(); i != end; i++) {
 
 		// Construct full specifier of file/dir
-		FileSpecifier file = dir;
-		file.AddPart(i->name);
+		FileSpecifier file = dir + i->name;
 
 		if (i->is_directory) {
 

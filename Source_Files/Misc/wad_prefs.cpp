@@ -66,8 +66,8 @@ bool w_open_preferences_file(
 		prefInfo->PrefsFile.SetName(PrefName,Type);
 		/* check for the preferences folder using FindFolder, creating it if necessary */
 #elif defined(SDL)
-		prefInfo->PrefsFile.SetToLocalDataDir();
-		prefInfo->PrefsFile.AddPart(PrefName);
+		prefInfo->PrefsFile.SetToPreferencesDir();
+		prefInfo->PrefsFile += PrefName;
 #endif
 
 		/* does the preferences file exist? */
