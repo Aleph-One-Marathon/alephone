@@ -71,7 +71,7 @@ public:
 	
 	CommunicationsChannel();
 	CommunicationsChannel(TCPsocket inSocket);
-	~CommunicationsChannel();
+	virtual ~CommunicationsChannel();  // allow subclassing (for extension purposes only - no overriding)
 
 	// Each of these is an association - no ownership (for disposal purposes) is implied
 	void		setMessageInflater(MessageInflater* inInflater) { mMessageInflater = inInflater; }
@@ -104,6 +104,25 @@ public:
 	Message*	receiveSpecificMessage(MessageTypeID inType,
 				 Uint32 inOverallTimeout = kSSRSpecificMessageTimeout,
 				 Uint32 inInactivityTimeout = kSSRAnyDataTimeout);
+
+	template <typename tMessage>
+	tMessage*	receiveSpecificMessage(MessageTypeID inType,
+				  Uint32 inOverallTimeout = kSSRSpecificMessageTimeout,
+				  Uint32 inInactivityTimeout = kSSRAnyDataTimeout)
+	{
+		std::auto_ptr<Message> receivedMessage(receiveSpecificMessage(inType, inOverallTimeout, inInactivityTimeout));
+		tMessage* result = dynamic_cast<tMessage*>(receivedMessage.get());
+		if(result != NULL)
+			receivedMessage.release();
+		return result;
+	}
+
+	template <typename tMessage>
+	tMessage*	receiveSpecificMessage(Uint32 inOverallTimeout = kSSRSpecificMessageTimeout,
+				  Uint32 inInactivityTimeout = kSSRAnyDataTimeout)
+	{
+		return receiveSpecificMessage<tMessage>(tMessage::kType, inOverallTimeout, inInactivityTimeout);
+	}
 
 	// This doesn't return until timeout, disconnection, or all queued outgoing messages have
 	// been delivered to TCP.  Incoming messages are dispatched iff dispatchIncomingMessages == true.
