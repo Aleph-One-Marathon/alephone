@@ -33,6 +33,8 @@ SDL-style builds still search for files with those exact names in the directory 
 
 Mac-style builds are willing to start up as long as there's an Images file (found by name in A1's directory) and a Map file, a Shapes file, and a Sounds file *somewhere* in A1's directory structure.  Mac-style A1's don't care what the names of these latter files are, but they do require that they have the correct Mac OS "type code" to be found.  Consider using something like the Macintosh file typing tools (found at http://source.bungie.org/) to make sure your files are properly typed.
 
+Special note: we have received reports that unStuffing Marathon-related files with StuffIt Expander v7.x may cause you to receive this error.  Using version 8.0 should help.
+
 
 
 I'm having trouble getting a major 3rd-party scenario (EVIL, Red, M1A1, etc.) to work right.
