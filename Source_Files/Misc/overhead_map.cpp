@@ -41,6 +41,27 @@ Jul 8, 2000 (Loren Petrich):
 Jul 16, 2000 (Loren Petrich):
 	Added begin/end pairs for polygons and lines,
 	so that caching of them can be more efficient (important for OpenGL)
+
+[Loren Petrich: notes for this file moved here]
+OVERHEAD_MAP_MAC.C
+Monday, August 28, 1995 1:41:36 PM  (Jason)
+
+Feb 3, 2000 (Loren Petrich):
+	Jjaro-goo color is the same as the sewage color
+
+Feb 4, 2000 (Loren Petrich):
+	Changed halt() to assert(false) for better debugging
+
+Jul 8, 2000 (Loren Petrich):
+	Added support for OpenGL rendering, in the form of calls to OpenGL versions
+
+Jul 16, 2000 (Loren Petrich):
+	Added begin/end pairs for polygons and lines,
+	so that caching of them can be more efficient (important for OpenGL)
+
+Aug 3, 2000 (Loren Petrich):
+	All the code here has been transferred to either OverheadMapRenderer.c/h or OverheadMap_QuickDraw.c/h
+[End notes for overhead_map_macintosh.c]
 */
 
 #include "macintosh_cseries.h"
@@ -59,6 +80,10 @@ Jul 16, 2000 (Loren Petrich):
 // LP addition: to parse the colors:
 #include "ColorParser.h"
 
+// Object-oriented setup of overhead-map rendering
+#include "OverheadMap_QD.h"
+#include "OverheadMap_OGL.h"
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -75,742 +100,202 @@ Jul 16, 2000 (Loren Petrich):
 extern struct view_data *world_view;
 #endif
 
-/* ---------- constants */
+// Constants moved out to OverheadMapRender.h
+// Render flags now in OverheadMapRender.c
 
-enum /* polygon colors */
+
+// The configuration data
+static OvhdMap_CfgDataStruct OvhdMap_ConfigData = 
 {
-	_polygon_color,
-	_polygon_platform_color,
-	_polygon_water_color,
-	_polygon_lava_color,
-	_polygon_sewage_color,
-	_polygon_jjaro_color, 	// LP addition
-	_polygon_goo_color,		// LP: PfhorSlime moved down here
-	_polygon_hill_color,
-	NUMBER_OF_POLYGON_COLORS
-};
-
-enum /* line colors */
-{
-	_solid_line_color,
-	_elevation_line_color,
-	_control_panel_line_color,
-	NUMBER_OF_LINE_DEFINITIONS
-};
-
-
-// LP change: Items and monsters were interchanged to get the aliens
-// closer to the civilians
-
-
-enum /* thing colors */
-{
-	_civilian_thing,
-	_monster_thing,
-	_item_thing,
-	_projectile_thing,
-	_checkpoint_thing,
-	NUMBER_OF_THINGS
-};
-
-enum
-{
-	_rectangle_thing,
-	_circle_thing
-};
-
-enum /* render flags */
-{
-	_endpoint_on_automap= 0x2000,
-	_line_on_automap= 0x4000,
-	_polygon_on_automap= 0x8000
-};
-
-
-// LP change: creating an array describing the type assignments
-// of the various monsters, so as to allow better customization
-
-static short MonsterDisplays[NUMBER_OF_MONSTER_TYPES] =
-{
-	// Marine
-	_civilian_thing,
-	// Ticks
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	// S'pht
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	// Pfhor
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	// Bob
-	_civilian_thing,
-	_civilian_thing,
-	_civilian_thing,
-	_civilian_thing,
-	// Drone
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	// Cyborg
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	// Enforcer
-	_monster_thing,
-	_monster_thing,
-	// Hunter
-	_monster_thing,
-	_monster_thing,
-	// Trooper
-	_monster_thing,
-	_monster_thing,
-	// Big Cyborg, Hunter
-	_monster_thing,
-	_monster_thing,
-	// F'lickta
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	// S'pht'Kr
-	_monster_thing,
-	_monster_thing,
-	// Juggernauts
-	_monster_thing,
-	_monster_thing,
-	// Tiny ones
-	_monster_thing,
-	_monster_thing,
-	_monster_thing,
-	// VacBobs
-	_civilian_thing,
-	_civilian_thing,
-	_civilian_thing,
-	_civilian_thing,
-};
-
-// LP change: This is for objects that have been turned into garbage
-// and that are waiting for the garbage collector 
-
-static short DeadMonsterDisplays[NUMBER_OF_COLLECTIONS] =
-{
-	NONE,				// Interface (what one sees in the HUD)
-	NONE,				// Weapons in Hand
+	// Polygon colors
+	{
+		{0, 12000, 0},				// Plain polygon
+		{30000, 0, 0},				// Platform
+		{14*256, 37*256, 63*256},	// Water
+		{76*256, 27*256, 0},		// Lava
+		{70*256, 90*256, 0},		// Sewage
+		{70*256, 90*256, 0},		// JjaroGoo
+		{137*256, 0, 137*256},		// PfhorSlime
+		{32768, 32768, 0}			// Hill
+	},
+	// Line definitions (color, 4 widths)
+	{
+		{{0, 65535, 0}, {1, 2, 2, 4}},	// Solid
+		{{0, 40000, 0}, {1, 1, 1, 2}},	// Elevation
+		{{65535, 0, 0}, {1, 2, 2, 4}}	// Control-Panel
+	},
+	// Thing definitions (color, shape, 4 radii)
+	{
+		{{0, 0, 65535}, _rectangle_thing, {1, 2, 4, 8}}, /* civilian */
+		{{65535, 0, 0}, _rectangle_thing, {1, 2, 4, 8}}, /* non-player monster */
+		{{65535, 65535, 65535}, _rectangle_thing, {1, 2, 3, 4}}, /* item */
+		{{65535, 65535, 0}, _rectangle_thing, {1, 1, 2, 3}}, /* projectiles */
+		{{65535, 0, 0}, _circle_thing, {8, 16, 16, 16}}	// LP note: this is for checkpoint locations
+	},
+	// Live-monster type assignments
+	{
+		// Marine
+		_civilian_thing,
+		// Ticks
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		// S'pht
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		// Pfhor
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		// Bob
+		_civilian_thing,
+		_civilian_thing,
+		_civilian_thing,
+		_civilian_thing,
+		// Drone
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		// Cyborg
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		// Enforcer
+		_monster_thing,
+		_monster_thing,
+		// Hunter
+		_monster_thing,
+		_monster_thing,
+		// Trooper
+		_monster_thing,
+		_monster_thing,
+		// Big Cyborg, Hunter
+		_monster_thing,
+		_monster_thing,
+		// F'lickta
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		// S'pht'Kr
+		_monster_thing,
+		_monster_thing,
+		// Juggernauts
+		_monster_thing,
+		_monster_thing,
+		// Tiny ones
+		_monster_thing,
+		_monster_thing,
+		_monster_thing,
+		// VacBobs
+		_civilian_thing,
+		_civilian_thing,
+		_civilian_thing,
+		_civilian_thing,
+	},
+	// Dead-monster type assignments
+	{
+		NONE,				// Interface (what one sees in the HUD)
+		NONE,				// Weapons in Hand
+		
+		_monster_thing,		// Juggernaut
+		_monster_thing,		// Tick
+		_monster_thing,		// Explosion effects
+		_monster_thing,		// Hunter
+		NONE,				// Player
 	
-	_monster_thing,		// Juggernaut
-	_monster_thing,		// Tick
-	_monster_thing,		// Explosion effects
-	_monster_thing,		// Hunter
-	NONE,				// Player
+		_monster_thing,		// Items
+		_monster_thing,		// Trooper
+		_monster_thing,		// Fighter
+		_monster_thing,		// S'pht'Kr
+		_monster_thing,		// F'lickta
+		
+		_civilian_thing,	// Bob
+		_civilian_thing,	// VacBob
+		_monster_thing,		// Enforcer
+		_monster_thing,		// Drone
+		_monster_thing,		// S'pht
+		
+		NONE,				// Water
+		NONE,				// Lava
+		NONE,				// Sewage
+		NONE,				// Jjaro
+		NONE,				// Pfhor
 	
-	_monster_thing,		// Items
-	_monster_thing,		// Trooper
-	_monster_thing,		// Fighter
-	_monster_thing,		// S'pht'Kr
-	_monster_thing,		// F'lickta
-	
-	_civilian_thing,	// Bob
-	_civilian_thing,	// VacBob
-	_monster_thing,		// Enforcer
-	_monster_thing,		// Drone
-	_monster_thing,		// S'pht
-	
-	NONE,				// Water
-	NONE,				// Lava
-	NONE,				// Sewage
-	NONE,				// Jjaro
-	NONE,				// Pfhor
-
-	NONE,				// Water Scenery
-	NONE,				// Lava Scenery
-	NONE,				// Sewage Scenery
-	NONE,				// Jjaro Scenery
-	NONE,				// Pfhor Scenery
-	
-	NONE,				// Day
-	NONE,				// Night
-	NONE,				// Moon
-	NONE,				// Outer Space
-	
-	_monster_thing		// Cyborg
+		NONE,				// Water Scenery
+		NONE,				// Lava Scenery
+		NONE,				// Sewage Scenery
+		NONE,				// Jjaro Scenery
+		NONE,				// Pfhor Scenery
+		
+		NONE,				// Day
+		NONE,				// Night
+		NONE,				// Moon
+		NONE,				// Outer Space
+		
+		_monster_thing		// Cyborg
+	},
+	// Player-entity definition
+	{16, 10, (7*NUMBER_OF_ANGLES)/20},
+	// Annotations (color, 4 fonts)
+	{
+		{{0, 65535, 0},
+		{
+			{kFontIDMonaco, bold, 5},
+			{kFontIDMonaco, bold, 9},
+			{kFontIDMonaco, bold, 12},
+			{kFontIDMonaco, bold, 18}
+		}}
+	},
+	// Map name (color, font)
+	{{0, 65535, 0}, {kFontIDMonaco, normal, 18}, 25},
+	// Path color
+	{65535, 65535, 65535},
+	// What to show (aliens, items, projectiles, paths)
+	false, false, false, false
 };
 
-// LP addition: what extra to show in the map
-static bool ShowAliens = false;
-static bool ShowItems = false;
-static bool ShowProjectiles = false;
-static bool ShowPaths = false;
 
 // Is OpenGL rendering of the map currently active?
 // Set this from outside, because we want to make an OpenGL rendering for the main view,
 // yet a software rendering for an in-terminal checkpoint view
 bool OGL_MapActive = false;
 
-/* ---------- macros */
+// Software rendering
+static OverheadMap_QD_Class OverheadMap_SW;
+// OpenGL rendering
+static OverheadMap_OGL_Class OverheadMap_OGL;
 
-#define WORLD_TO_SCREEN_SCALE_ONE 8
-#define WORLD_TO_SCREEN(x, x0, scale) (((x)-(x0))>>(WORLD_TO_SCREEN_SCALE_ONE-(scale)))
-
-/* ---------- private code */
-
-// Changed to link properly with code in pathfinding.c
-extern world_point2d *path_peek(short path_index, short *step_count);
-extern short GetNumberOfPaths();
-
-static void transform_endpoints_for_overhead_map(struct overhead_map_data *data);
-
-static void generate_false_automap(short polygon_index);
-static long false_automap_cost_proc(short source_polygon_index, short line_index, short destination_polygon_index, void *caller_data);
-static void replace_real_automap(void);
-
-// Begins and ends are LP additions
-
-static void begin_overhead_polygons();
-static void end_overhead_polygons();
-static void draw_overhead_polygon(short vertex_count, short *vertices, short color, short scale);
-
-static void begin_overhead_lines();
-static void end_overhead_lines();
-static void draw_overhead_line(short line_index, short color, short scale);
-
-static void draw_overhead_player(world_point2d *center, angle facing, short color, short scale);
-static void draw_overhead_thing(world_point2d *center, angle facing, short color, short scale);
-static void draw_overhead_annotation(world_point2d *location, short color, char *text, short scale);
-static void draw_map_name(struct overhead_map_data *data, char *name);
-
-// LP addition: for drawing monster paths:
-// Draws to next point; starts if "step" is zero / Finishes drawing a path
-static void DrawPath(short step, world_point2d &location);
-static void FinishPath();
-
-/* ---------- machine-specific code */
-
-#ifdef mac
-#include "overhead_map_macintosh.c"
-#endif
 
 /* ---------- code */
+// LP: most of it has been moved into OverheadMapRenderer.c
 
 void _render_overhead_map(
 	struct overhead_map_data *data)
 {
-	world_distance x0= data->origin.x, y0= data->origin.y;
-	short scale= data->scale;
-	world_point2d location;
-	short i;
-	
-	// LP addition: stuff for setting the game options, since they get defaulted to 0
-	// Made compatible with map cheat
-	if (ShowAliens) GET_GAME_OPTIONS() |= _overhead_map_shows_monsters;
-	if (ShowItems) GET_GAME_OPTIONS() |= _overhead_map_shows_items;
-	if (ShowProjectiles) GET_GAME_OPTIONS() |= _overhead_map_shows_projectiles;
-	
-	if (data->mode==_rendering_checkpoint_map) generate_false_automap(data->origin_polygon_index);
-	
-	transform_endpoints_for_overhead_map(data);
-	
-#if 0	
-	RgnHandle old_clip, new_clip;
-	Rect bounds;
-
-	old_clip= NewRgn();
-	new_clip= NewRgn();
-	assert(old_clip && new_clip);
-	
-	GetClip(old_clip);
-	SetRect(&bounds, data->left, data->top, data->left+data->width, data->top+data->height);
-	RectRgn(new_clip, &bounds);
-	SetClip(new_clip);
-#endif
-
-	// LP addition
-	begin_overhead_polygons();
-	
-	/* shade all visible polygons */
-	for (i=0;i<dynamic_world->polygon_count;++i)
-	{
-		struct polygon_data *polygon= get_polygon_data(i);
-		if (POLYGON_IS_IN_AUTOMAP(i) && TEST_STATE_FLAG(i, _polygon_on_automap)
-			&&(polygon->floor_transfer_mode!=_xfer_landscape||polygon->ceiling_transfer_mode!=_xfer_landscape))
-		{
-			
-			if (!POLYGON_IS_DETACHED(polygon))
-			{
-				short color;
-				
-				switch (polygon->type)
-				{
-					case _polygon_is_platform: color= PLATFORM_IS_SECRET(get_platform_data(polygon->permutation)) ? _polygon_color : _polygon_platform_color; break;
-					
-					default:
-						color= _polygon_color;
-						break;
-				}
-
-				if (polygon->media_index!=NONE)
-				{
-					struct media_data *media= get_media_data(polygon->media_index);
-					
-					// LP change: idiot-proofing
-					if (media)
-					{
-						if (media->height>=polygon->floor_height)
-						{
-							switch (media->type)
-							{
-								case _media_water: color= _polygon_water_color; break;
-								case _media_lava: color= _polygon_lava_color; break;
-								case _media_goo: color= _polygon_goo_color; break;
-								// LP change: separated sewage and JjaroGoo
-								case _media_sewage: color= _polygon_sewage_color; break;
-								case _media_jjaro: color = _polygon_jjaro_color; break;
-								// default:
-								// LP change:
-								// Do nothing
-								// assert(false);
-								// halt();
-							}
-						}
-					}
-				}
-				
-				draw_overhead_polygon(polygon->vertex_count, polygon->endpoint_indexes, color, scale);
-
-#ifdef RENDER_DEBUG
-				find_center_of_polygon(i, &polygon->center);
-				location.x= data->half_width + WORLD_TO_SCREEN(polygon->center.x, x0, scale);
-				location.y= data->half_height + WORLD_TO_SCREEN(polygon->center.y, y0, scale);
-				TextFont(kFontIDMonaco);
-				TextFace(normal);
-				TextSize(9);
-				RGBForeColor(&rgb_white);
-				psprintf(ptemporary, "%d", i);
-				MoveTo(location.x, location.y);
-				DrawString(temporary);
-#endif
-			}
-		}
-	}
-
-	// LP addition
-	end_overhead_polygons();
-
-	// LP addition
-	begin_overhead_lines();
-	
-	/* draw all visible lines */
-	for (i=0;i<dynamic_world->line_count;++i)
-	{
-		short line_color= NONE;
-		struct line_data *line= get_line_data(i);
-		
-		if (LINE_IS_IN_AUTOMAP(i))
-		{
-			if ((line->clockwise_polygon_owner!=NONE && TEST_STATE_FLAG(line->clockwise_polygon_owner, _polygon_on_automap)) ||
-				(line->counterclockwise_polygon_owner!=NONE && TEST_STATE_FLAG(line->counterclockwise_polygon_owner, _polygon_on_automap)))
-			{
-				struct polygon_data *clockwise_polygon= line->clockwise_polygon_owner==NONE ? NULL : get_polygon_data(line->clockwise_polygon_owner);
-				struct polygon_data *counterclockwise_polygon= line->counterclockwise_polygon_owner==NONE ? NULL : get_polygon_data(line->counterclockwise_polygon_owner);
-
-				if (LINE_IS_SOLID(line) || LINE_IS_VARIABLE_ELEVATION(line))
-				{
-					if (LINE_IS_LANDSCAPED(line))
-					{
-						if ((!clockwise_polygon||clockwise_polygon->floor_transfer_mode!=_xfer_landscape) &&
-							(!counterclockwise_polygon||counterclockwise_polygon->floor_transfer_mode!=_xfer_landscape))
-						{
-							line_color= _elevation_line_color;
-						}
-					}
-					else
-					{
-						line_color= _solid_line_color;
-					}
-				}
-				else
-				{
-					if (clockwise_polygon->floor_height!=counterclockwise_polygon->floor_height)
-					{
-						line_color= LINE_IS_LANDSCAPED(line) ? NONE : _elevation_line_color;
-					}
-				}
-			}
-			
-			if (line_color!=NONE) draw_overhead_line(i, line_color, scale);
-		}
-	}
-
-	// LP addition
-	end_overhead_lines();
-	
-	/* print all visible tags */
-	if (scale!=OVERHEAD_MAP_MINIMUM_SCALE)
-	{
-		struct map_annotation *annotation;
-		
-		i= 0;
-		while ((annotation= get_next_map_annotation(&i))!=NULL)
-		{
-			if (POLYGON_IS_IN_AUTOMAP(annotation->polygon_index) &&
-				TEST_STATE_FLAG(annotation->polygon_index, _polygon_on_automap))
-			{
-				location.x= data->half_width + WORLD_TO_SCREEN(annotation->location.x, x0, scale);
-				location.y= data->half_height + WORLD_TO_SCREEN(annotation->location.y, y0, scale);
-				
-				draw_overhead_annotation(&location, annotation->type, annotation->text, scale);
-			}
-		}
-	}
-
-	if (ShowPaths)
-	{
-		short path_index;
-		
-		// LP change: made this more general
-		SetPathDrawing();
-		// PenSize(1, 1);
-		// RGBForeColor(&rgb_white);
-		
-		// LP change: there may be more than 20 paths
-		for (path_index=0;path_index<GetNumberOfPaths();path_index++)
-		{
-			world_point2d *points;
-			short step, count;
-			
-			points= path_peek(path_index, &count);
-			if (points)
-			{
-				for (step= 0; step<count; ++step)
-				{
-					location.x= data->half_width + WORLD_TO_SCREEN(points[step].x, x0, scale);
-					location.y= data->half_height + WORLD_TO_SCREEN(points[step].y, y0, scale);
-					// LP change: made this more general
-					DrawPath(step,location);
-					// step ? LineTo(location.x, location.y) : MoveTo(location.x, location.y);
-				}
-			}
-			// LP addition: indicate when a path is complete
-			FinishPath();
-		}
-	}
-
-#ifdef RENDER_DEBUG
-	RGBForeColor(&rgb_white);
-	PenSize(1, 1);
-	
-	MoveTo(data->half_width, data->half_height);
-	LineTo(data->half_width+world_view->left_edge.i, data->half_height+world_view->left_edge.j);
-	
-	MoveTo(data->half_width, data->half_height);
-	LineTo(data->half_width+world_view->right_edge.i, data->half_height+world_view->right_edge.j);
-#endif
-
-	if (data->mode!=_rendering_checkpoint_map)	
-	{
-		struct object_data *object;
-		
-		for (i=0, object= objects; i<MAXIMUM_OBJECTS_PER_MAP; ++i, ++object)
-		{
-			if (SLOT_IS_USED(object))
-			{
-				if (!OBJECT_IS_INVISIBLE(object))
-				{
-					short thing_type= NONE;
-					
-					switch (GET_OBJECT_OWNER(object))
-					{
-						case _object_is_monster:
-						{
-							struct monster_data *monster= get_monster_data(object->permutation);
-							
-							if (MONSTER_IS_PLAYER(monster))
-							{
-								struct player_data *player= get_player_data(monster_index_to_player_index(object->permutation));
-	
-								if ((GET_GAME_OPTIONS()&_overhead_map_is_omniscient) || local_player->team==player->team)
-								{
-									location.x= data->half_width + WORLD_TO_SCREEN(object->location.x, x0, scale);
-									location.y= data->half_height + WORLD_TO_SCREEN(object->location.y, y0, scale);
-									
-									draw_overhead_player(&location, object->facing, player->team, scale);
-								}
-							}
-							else
-							{
-								// LP: use the lookup system
-								switch (MonsterDisplays[monster->type])
-								{
-									case _civilian_thing:
-										thing_type= _civilian_thing;
-										break;
-									
-									case _monster_thing:
-										if (GET_GAME_OPTIONS()&_overhead_map_shows_monsters)
-											thing_type= _monster_thing;
-										break;
-								}
-								/*
-								switch (monster->type)
-								{
-									case _civilian_crew:
-									case _civilian_science:
-									case _civilian_security:
-									case _civilian_assimilated:
-									// LP additions: the VacBobs
-									case _civilian_fusion_crew:
-									case _civilian_fusion_science:
-									case _civilian_fusion_security:
-									case _civilian_fusion_assimilated:
-										thing_type= _civilian_thing;
-										break;
-									
-									default:
-										if (GET_GAME_OPTIONS()&_overhead_map_shows_monsters)
-										{
-											thing_type= _monster_thing;
-										}
-										break;
-								}
-								*/
-							}
-							break;
-						}
-	
-						case _object_is_projectile:
-							if ((GET_GAME_OPTIONS()&_overhead_map_shows_projectiles) && object->shape!=NONE)
-							{
-								thing_type= _projectile_thing;
-							}
-							break;
-						
-						case _object_is_item:
-							if (GET_GAME_OPTIONS()&_overhead_map_shows_items)
-							{
-								thing_type= _item_thing;
-							}
-							break;
-							
-						case _object_is_garbage:
-							// LP change: making this more general
-							switch (DeadMonsterDisplays[GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(object->shape))])
-							{
-							case _civilian_thing:
-								thing_type= _civilian_thing;
-								break;
-							
-							case _monster_thing:
-								if (GET_GAME_OPTIONS()&_overhead_map_shows_monsters)
-									thing_type= _monster_thing;
-								break;
-							}
-							/*
-							if (GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(object->shape))==_collection_civilian)
-							{
-								thing_type= _civilian_thing;
-							}
-							*/
-							break;
-					}
-					
-					if (thing_type!=NONE)
-					{
-						// Making this more general, in case we want to see monsters and stuff
-						if (thing_type==_projectile_thing || ((dynamic_world->tick_count+i)&8))
-						// if (thing_type!=_civilian_thing || ((dynamic_world->tick_count+i)&8))
-						{
-							location.x= data->half_width + WORLD_TO_SCREEN(object->location.x, x0, scale);
-							location.y= data->half_height + WORLD_TO_SCREEN(object->location.y, y0, scale);
-							
-							draw_overhead_thing(&location, object->facing, thing_type, scale);
-						}
-					}
-				}
-			}
-		}
-	}
+	// Select which kind of rendering (OpenGL or software)
+	OverheadMapClass *OvhdMapPtr;
+	if (OGL_MapActive)
+		OvhdMapPtr = &OverheadMap_OGL;
 	else
-	{
-		for (i= 0; i<dynamic_world->initial_objects_count; ++i)
-		{
-			struct map_object *saved_object= saved_objects + i;
-			
-			if (saved_object->type==_saved_goal &&
-				saved_object->location.x==data->origin.x && saved_object->location.y==data->origin.y)
-			{
-				location.x= data->half_width + WORLD_TO_SCREEN(saved_object->location.x, x0, scale);
-				location.y= data->half_height + WORLD_TO_SCREEN(saved_object->location.y, y0, scale);
-				draw_overhead_thing(&location, 0, _checkpoint_thing, scale);
-			}
-		}
-	}
-
-	if (data->mode==_rendering_game_map) draw_map_name(data, static_world->level_name);
-	if (data->mode==_rendering_checkpoint_map) replace_real_automap();
-
-#if 0
-	SetClip(old_clip);
-	DisposeRgn(old_clip);
-	DisposeRgn(new_clip);
-#endif
-
-	return;
+		OvhdMapPtr = &OverheadMap_SW;
+	
+	// Do the rendering
+	OvhdMapPtr->ConfigPtr = &OvhdMap_ConfigData;
+	OvhdMapPtr->Render(*data);
 }
 
-/* ---------- private code */
 
-static void transform_endpoints_for_overhead_map(
-	struct overhead_map_data *data)
+// Call this from outside
+void OGL_ResetMapFonts()
 {
-	world_distance x0= data->origin.x, y0= data->origin.y;
-	short screen_width= data->width, screen_height= data->height;
-	short scale= data->scale;
-	short i;
-
-#ifdef OBSOLETE
-	/* find the bounds of our screen in world space */
-	left= ((-data->half_width)<<(WORLD_TO_SCREEN_SCALE_ONE-scale)) + x0;
-	right= ((data->half_width)<<(WORLD_TO_SCREEN_SCALE_ONE-scale)) + x0;
-	top= ((-data->half_height)<<(WORLD_TO_SCREEN_SCALE_ONE-scale)) + y0;
-	bottom= ((data->half_height)<<(WORLD_TO_SCREEN_SCALE_ONE-scale)) + y0;
-#endif
-	
-	/* transform all our endpoints into screen space, remembering which ones are visible */
-	for (i=0;i<dynamic_world->endpoint_count;++i)
-	{
-		struct endpoint_data *endpoint= get_endpoint_data(i);
-		
-		endpoint->transformed.x= data->half_width + WORLD_TO_SCREEN(endpoint->vertex.x, x0, scale);
-		endpoint->transformed.y= data->half_height + WORLD_TO_SCREEN(endpoint->vertex.y, y0, scale);
-
-		if (endpoint->transformed.x>=0&&endpoint->transformed.y>=0&&endpoint->transformed.y<=screen_height&&endpoint->transformed.x<=screen_width)
-		{
-			SET_STATE_FLAG(i, _endpoint_on_automap, TRUE);
-		}
-	}
-
-	/* sweep the polygon array, determining which polygons are visible based on their
-		endpoints */
-	for (i=0;i<dynamic_world->polygon_count;++i)
-	{
-		struct polygon_data *polygon= get_polygon_data(i);
-		short j;
-		
-		for (j=0;j<polygon->vertex_count;++j)
-		{
-			if (TEST_STATE_FLAG(polygon->endpoint_indexes[j], _endpoint_on_automap))
-			{
-				SET_STATE_FLAG(i, _polygon_on_automap, TRUE);
-				break;
-			}
-		}
-	}
-
-	return;
+	OverheadMap_OGL.ResetFonts();
 }
-
-/* --------- the false automap */
-
-static byte *saved_automap_lines, *saved_automap_polygons;
-
-static void generate_false_automap(
-	short polygon_index)
-{
-	long automap_line_buffer_size, automap_polygon_buffer_size;
-
-	automap_line_buffer_size= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0))*sizeof(byte);
-	automap_polygon_buffer_size= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0))*sizeof(byte);
-
-	/* allocate memory for the old automap memory */
-	saved_automap_lines= (byte *) malloc(automap_line_buffer_size);
-	saved_automap_polygons= (byte *) malloc(automap_polygon_buffer_size);
-
-	if (saved_automap_lines && saved_automap_polygons)
-	{
-		memcpy(saved_automap_lines, automap_lines, automap_line_buffer_size);
-		memcpy(saved_automap_polygons, automap_polygons, automap_polygon_buffer_size);
-		memset(automap_lines, 0, automap_line_buffer_size);
-		memset(automap_polygons, 0, automap_polygon_buffer_size);
-		
-		polygon_index= flood_map(polygon_index, LONG_MAX, false_automap_cost_proc, _breadth_first, (void *) NULL);
-		do
-		{
-			polygon_index= flood_map(NONE, LONG_MAX, false_automap_cost_proc, _breadth_first, (void *) NULL);
-		}
-		while (polygon_index!=NONE);
-	}
-	
-	return;
-}
-
-static void replace_real_automap(
-	void)
-{
-	if (saved_automap_lines)
-	{
-		long automap_line_buffer_size= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0))*sizeof(byte);
-		memcpy(automap_lines, saved_automap_lines, automap_line_buffer_size);
-		free(saved_automap_lines);
-		saved_automap_lines= (byte *) NULL;
-	}
-	
-	if (saved_automap_polygons)
-	{
-		long automap_polygon_buffer_size= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0))*sizeof(byte);
-	
-		memcpy(automap_polygons, saved_automap_polygons, automap_polygon_buffer_size);
-		free(saved_automap_polygons);
-		saved_automap_polygons= (byte *) NULL;
-	}
-	
-	return;
-}
-
-static long false_automap_cost_proc(
-	short source_polygon_index,
-	short line_index,
-	short destination_polygon_index,
-	void *caller_data)
-{
-	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
-	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
-	long cost= 1;
-	short i;
-
-	(void) (line_index, caller_data);
-	
-	/* canÕt leave secret platforms */
-	if (source_polygon->type==_polygon_is_platform &&
-		PLATFORM_IS_SECRET(get_platform_data(source_polygon->permutation)))
-	{
-		cost= -1;
-	}
-	
-	/* canÕt enter secret platforms which are also doors */
-	if (destination_polygon->type==_polygon_is_platform)
-	{
-		struct platform_data *platform= get_platform_data(destination_polygon->permutation);
-		
-		if (PLATFORM_IS_DOOR(platform))
-		{
-			if (PLATFORM_IS_SECRET(platform)) cost= -1;
-		}
-	}
-
-	/* add the source polygon and all its lines to the automap */	
-	for (i= 0; i<source_polygon->vertex_count; ++i) ADD_LINE_TO_AUTOMAP(source_polygon->line_indexes[i]);
-	ADD_POLYGON_TO_AUTOMAP(source_polygon_index);
-	
-	return cost;
-}
-
 
 
 // XML elements for parsing motion-sensor specification;
@@ -879,7 +364,7 @@ bool XML_LiveAssignParser::AttributesDone()
 	}
 	
 	// Put into place
-	MonsterDisplays[Monster] = Type;
+	OvhdMap_ConfigData.monster_displays[Monster] = Type;
 		
 	return true;
 }
@@ -947,7 +432,7 @@ bool XML_DeadAssignParser::AttributesDone()
 		return false;
 	}
 		
-	DeadMonsterDisplays[Coll] = Type;
+	OvhdMap_ConfigData.dead_monster_displays[Coll] = Type;
 	
 	return true;
 }
@@ -1014,7 +499,10 @@ static XML_OvhdMapBooleanParser
 	
 
 // Subclassed to set the color objects appropriately
-const int TOTAL_NUMBER_OF_COLORS = NUMBER_OF_POLYGON_COLORS + NUMBER_OF_LINE_DEFINITIONS + NUMBER_OF_THINGS + 3;
+const int TOTAL_NUMBER_OF_COLORS =
+	NUMBER_OF_POLYGON_COLORS + NUMBER_OF_LINE_DEFINITIONS +
+	NUMBER_OF_THINGS + + NUMBER_OF_ANNOTATION_DEFINITIONS + 2;
+
 class XML_OvhdMapParser: public XML_ElementParser
 {
 	// Extras are:
@@ -1041,21 +529,25 @@ bool XML_OvhdMapParser::Start()
 	// Copy in the colors
 	rgb_color *ColorPtr = Colors;
 	
-	RGBColor *PolyColorPtr = polygon_colors;
+	rgb_color *PolyColorPtr = OvhdMap_ConfigData.polygon_colors;
 	for (int k=0; k<NUMBER_OF_POLYGON_COLORS; k++)
-		GetParserColor(*(PolyColorPtr++),*(ColorPtr++));
+		*(ColorPtr++) = *(PolyColorPtr++);
 
-	line_definition *LineDefPtr = line_definitions;
+	line_definition *LineDefPtr = OvhdMap_ConfigData.line_definitions;
 	for (int k=0; k<NUMBER_OF_LINE_DEFINITIONS; k++)
-		GetParserColor((LineDefPtr++)->color,*(ColorPtr++));
-
-	thing_definition *ThingDefPtr = thing_definitions;
+		*(ColorPtr++) = (LineDefPtr++)->color;
+	
+	thing_definition *ThingDefPtr = OvhdMap_ConfigData.thing_definitions;
 	for (int k=0; k<NUMBER_OF_THINGS; k++)
-		GetParserColor((ThingDefPtr++)->color,*(ColorPtr++));
+		*(ColorPtr++) = (ThingDefPtr++)->color;
+	
 
-	GetParserColor(annotation_definitions[0].color,*(ColorPtr++));
-	GetParserColor(map_name_color,*(ColorPtr++));
-	GetParserColor(PathColor,*(ColorPtr++));
+	annotation_definition *NoteDefPtr = OvhdMap_ConfigData.annotation_definitions;
+	for (int k=0; k<NUMBER_OF_ANNOTATION_DEFINITIONS; k++)
+		*(ColorPtr++) = (NoteDefPtr++)->color;
+	
+	*(ColorPtr++) = OvhdMap_ConfigData.map_name_data.color;
+	*(ColorPtr++) = OvhdMap_ConfigData.path_color;
 	
 	Color_SetArray(Colors,TOTAL_NUMBER_OF_COLORS);
 	
@@ -1071,32 +563,35 @@ bool XML_OvhdMapParser::HandleAttribute(const char *Tag, const char *Value)
 bool XML_OvhdMapParser::End()
 {
 	if (ShowAliensParser.GotUsed)
-		ShowAliens = (ShowAliensParser.IsOn != 0);
+		OvhdMap_ConfigData.ShowAliens = (ShowAliensParser.IsOn != 0);
 	if (ShowItemsParser.GotUsed)
-		ShowItems = (ShowItemsParser.IsOn != 0);
+		OvhdMap_ConfigData.ShowItems = (ShowItemsParser.IsOn != 0);
 	if (ShowProjectilesParser.GotUsed)
-		ShowProjectiles = (ShowProjectilesParser.IsOn != 0);
+		OvhdMap_ConfigData.ShowProjectiles = (ShowProjectilesParser.IsOn != 0);
 	if (ShowPathsParser.GotUsed)
-		ShowPaths = (ShowPathsParser.IsOn != 0);
+		OvhdMap_ConfigData.ShowPaths = (ShowPathsParser.IsOn != 0);
 		
 	// Copy out the colors
 	rgb_color *ColorPtr = Colors;
 	
-	RGBColor *PolyColorPtr = polygon_colors;
+	rgb_color *PolyColorPtr = OvhdMap_ConfigData.polygon_colors;
 	for (int k=0; k<NUMBER_OF_POLYGON_COLORS; k++)
-		PutParserColor(*(ColorPtr++),*(PolyColorPtr++));
+		*(PolyColorPtr++) = *(ColorPtr++);
 
-	line_definition *LineDefPtr = line_definitions;
+	line_definition *LineDefPtr = OvhdMap_ConfigData.line_definitions;
 	for (int k=0; k<NUMBER_OF_LINE_DEFINITIONS; k++)
-		PutParserColor(*(ColorPtr++),(LineDefPtr++)->color);
+		(LineDefPtr++)->color = *(ColorPtr++);
 
-	thing_definition *ThingDefPtr = thing_definitions;
+	thing_definition *ThingDefPtr = OvhdMap_ConfigData.thing_definitions;
 	for (int k=0; k<NUMBER_OF_THINGS; k++)
-		PutParserColor(*(ColorPtr++),(ThingDefPtr++)->color);
+		(ThingDefPtr++)->color = *(ColorPtr++);
 
-	PutParserColor(*(ColorPtr++),annotation_definitions[0].color);
-	PutParserColor(*(ColorPtr++),map_name_color);
-	PutParserColor(*(ColorPtr++),PathColor);
+	annotation_definition *NoteDefPtr = OvhdMap_ConfigData.annotation_definitions;
+	for (int k=0; k<NUMBER_OF_ANNOTATION_DEFINITIONS; k++)
+		(NoteDefPtr++)->color = *(ColorPtr++);
+	
+	OvhdMap_ConfigData.map_name_data.color = *(ColorPtr++);
+	OvhdMap_ConfigData.path_color = *(ColorPtr++);
 		
 	return true;
 }
