@@ -61,7 +61,9 @@ public:
 	
 	// Smart macros for more easy reading of structured objects
 	// CB: reading/writing C structures from/to files is evil...
+	// LP: decided to suppress them
 	
+	/*
 	template<class T> bool ReadObject(T& Object)
 		{return Read(sizeof(T),&Object);}
 	
@@ -73,6 +75,7 @@ public:
 	
 	template<class T> bool WriteObjectList(int NumObjects, T* ObjectList)
 		{return Write(NumObjects*sizeof(T),ObjectList);}
+	*/
 	
 	OpenedFile();
 	~OpenedFile() {Close();}	// Auto-close when destroying
@@ -244,7 +247,7 @@ public:
 		
 	OSErr GetError() {return Err;}
 	
-	DirectorySpecifier(): vRefNum(0), parID(0) {}
+	DirectorySpecifier(): vRefNum(0), parID(0), Err(noErr) {}
 	DirectorySpecifier(DirectorySpecifier& D) {*this = D;}
 };
 #else
@@ -356,7 +359,7 @@ public:
 	// Platform-specific members
 #ifdef mac
 
-	FileSpecifier(): Err(noErr) {}
+	FileSpecifier();
 	FileSpecifier(const FileSpecifier& F) {*this = F;}
 	bool operator==(const FileSpecifier& F);
 	bool operator!=(const FileSpecifier& F) {return !(*this == F);}

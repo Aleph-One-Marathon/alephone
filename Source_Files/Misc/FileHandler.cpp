@@ -11,6 +11,9 @@ Feb 3, 2000 (Loren Petrich):
 	Suppressed "dprintf" in open_file_for_reading() and open_file_for_writing(),
 		since file-opening errors are handled without any need for
 		debug interrupts.
+
+Nov 5, 2000 (Loren Petrich):
+	Added initializer of RsrcHandle to LoadedResource constructor.
 */
 
 #include <string.h>
@@ -94,7 +97,7 @@ bool OpenedFile::Write(long Count, void *Buffer)
 	MacOS resource handles will be assumed to be locked.
 */
 
-LoadedResource::LoadedResource()
+LoadedResource::LoadedResource(): RsrcHandle(NULL)
 {
 }
 
@@ -288,6 +291,9 @@ inline void MacFilename_To_CString(const unsigned char *Source, char *Destinatio
 // Typecode in range
 inline bool InRange(int Type) {return (Type >= 0 && Type < NUMBER_OF_TYPECODES);}
 
+
+// FileSpecifier constructor moved here so as to blank out the FSSpec
+FileSpecifier::FileSpecifier(): Err(noErr) {obj_clear(Spec);}
 
 void FileSpecifier::GetName(char *Name) const
 {
