@@ -18,6 +18,9 @@ Aug 12, 2000 (Loren Petrich):
 Sep 23, 2000 (Loren Petrich):
 	Added XML support for changing the ambient and random sound definitions,
 	in order to support Shebob's Pfh'Joueur
+
+Dec 3, 2000 (Loren Petrich):
+	Added quadrupling of usual buffer size because RAM is now readily available
 */
 
 class FileSpecifier;
@@ -51,7 +54,8 @@ enum // initialization flags
 	_ambient_sound_flag= 0x0008, /* plays and tracks ambient sounds (valid iff _dynamic_tracking_flag) */
 	_16bit_sound_flag= 0x0010, /* loads 16bit audio instead of 8bit */
 	_more_sounds_flag= 0x0020, /* loads all permutations; only loads #0 if false */
-	_extra_memory_flag= 0x0040 /* double usual memory */
+	_extra_memory_flag= 0x0040, /* double usual memory */
+	_extra_extra_memory_flag= 0x0080 /* quadruple usual memory */ // Because RAM is more available
 };
 
 enum // _sound_obstructed_proc() flags

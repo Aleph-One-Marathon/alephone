@@ -16,6 +16,9 @@ Mar 2, 2000 (Loren Petrich):
 Jul 1, 2000 (Loren Petrich):
 	Suppressed dprintf statements; all the remaining ones are vwarn's, which ought to be
 	better-behaved.
+
+Dec 3, 2000 (Loren Petrich):
+	Added quadrupling of usual buffer size because RAM is now readily available
 */
 
 #include <FixMath.h>
@@ -32,7 +35,9 @@ enum
 	kAMBIENT_SOUNDS_HEAP= 6*MEG,
 	kMORE_SOUNDS_HEAP= 4*MEG,
 	k16BIT_SOUNDS_HEAP= 8*MEG,
-	kEXTRA_MEMORY_HEAP= 12*MEG
+	kEXTRA_MEMORY_HEAP= 12*MEG,
+	 // Because RAM is more available
+	kEXTRA_EXTRA_MEMORY_HEAP= 20*MEG
 };
 
 /* --------- macros */
@@ -101,7 +106,9 @@ static void set_sound_manager_status(
 				if (_sm_parameters->flags&_ambient_sound_flag) _sm_globals->total_buffer_size+= AMBIENT_SOUND_BUFFER_SIZE;
 				if (_sm_parameters->flags&_16bit_sound_flag) _sm_globals->total_buffer_size*= 2;
 				if (_sm_globals->available_flags&_extra_memory_flag) _sm_globals->total_buffer_size*= 2;
-
+				 // Because RAM is more available
+				if (_sm_globals->available_flags&_extra_extra_memory_flag) _sm_globals->total_buffer_size*= 2;
+				
 				_sm_globals->sound_source= (_sm_parameters->flags&_16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
 				_sm_globals->base_sound_definitions= sound_definitions + _sm_globals->sound_source*number_of_sound_definitions;
 
@@ -277,6 +284,8 @@ static void initialize_machine_sound_manager(
 						if (heap_size>kMORE_SOUNDS_HEAP) _sm_globals->available_flags|= _more_sounds_flag;
 						if (heap_size>k16BIT_SOUNDS_HEAP) _sm_globals->available_flags|= _16bit_sound_flag;
 						if (heap_size>kEXTRA_MEMORY_HEAP) _sm_globals->available_flags|= _extra_memory_flag;
+						 // Because RAM is more available
+						if (heap_size>kEXTRA_EXTRA_MEMORY_HEAP) _sm_globals->available_flags|= _extra_extra_memory_flag;
 					}
 					
 					/* fake a set_sound_manager_parameters() call */
