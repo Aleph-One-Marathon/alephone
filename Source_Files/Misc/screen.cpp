@@ -110,6 +110,9 @@ Jul 17, 2000 (Loren Petrich):
 Aug 3, 2000 (Loren Petrich):
 	Removed all OGL_Map routines, because their contents are now handled in OverheadMapRenderer.c
 	and subclass routines
+
+Aug 9, 2000 (Loren Petrich):
+	Removed OGL_StartMain() and OGL_EndMain() as redundant
 */
 
 /*
@@ -1031,9 +1034,6 @@ void render_screen(
 	else
 		OGL_MapActive = false;
 	
-	// Start the respective kinds of frames (main and map)
-	if (!world_view->overhead_map_active && !world_view->terminal_mode_active) OGL_StartMain();
-	
 	render_view(world_view, world_pixels_structure);
 	
 	switch (screen_mode.acceleration)
@@ -1066,9 +1066,6 @@ void render_screen(
 			bool OGL_WasUsed = false;
 			if ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 			{
-				// Finish up the frame rendering for each kind
-				if (!world_view->overhead_map_active) OGL_EndMain();
-				
 				// Main or map view already rendered
 				OGL_WasUsed = OGL_SwapBuffers();
 			}
