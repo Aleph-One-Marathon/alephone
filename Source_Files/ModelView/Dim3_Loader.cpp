@@ -329,7 +329,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 				if (strncmp(Tag,BoneOwnTags[ibsx].Tag0,BoneTagSize)==0)
 				break;
 			}
-			VS.Bone0 = ibsx < NumBones ? BoneIndices[ibsx] : NONE;
+			VS.Bone0 = ibsx < NumBones ? BoneIndices[ibsx] : static_cast<GLshort>(NONE);
 			
 			Tag = VertexBoneTags[iv].Tag1;
 			for (ibsx=0; ibsx<NumBones; ibsx++)
@@ -337,7 +337,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 				if (strncmp(Tag,BoneOwnTags[ibsx].Tag0,BoneTagSize)==0)
 				break;
 			}
-			VS.Bone1 = ibsx < NumBones ? BoneIndices[ibsx] : NONE;
+			VS.Bone1 = ibsx < NumBones ? BoneIndices[ibsx] : static_cast<GLshort>(NONE);
 		}
 	}
 		
@@ -996,7 +996,7 @@ bool XML_SeqFrameParser::HandleAttribute(const char *Tag, const char *Value)
 		{
 			if (strncmp(Value,FrameTags[ifr].Tag,BoneTagSize) == 0) break;
 		}
-		if (ifr >= NumFrames) ifr = NONE;
+		if (ifr >= NumFrames) ifr = static_cast<size_t>(NONE);
 		Data.Frame = (GLshort)ifr;
 		return true;
 	}
