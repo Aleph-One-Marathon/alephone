@@ -164,9 +164,11 @@ install: $(TARGET)
 	else \
 	  dest=$(prefix)/AlephOne; \
 	fi; \
-	mkinstalldirs $$dest; \
+	./mkinstalldirs $$dest; \
+	./mkinstalldirs $$dest/MML; \
 	cp $(TARGET) $$dest/AlephOne; \
 	cp data/Resources $$dest; \
 	cp data/Fonts $$dest; \
 	cp data/Pfhortran_Language_Definition $$dest; \
+	cp data/*.mml $$dest/MML; \
 	mimeset -f $$dest
