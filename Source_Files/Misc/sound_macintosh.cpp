@@ -599,7 +599,8 @@ static void buffer_sound(
 		}
 	}
 
-	vassert(error==noErr, csprintf(temporary, "SndDoCommand() == #%d in buffer_sound()", error));
+	// LP: will ignore errors
+	// vassert(error==noErr, csprintf(temporary, "SndDoCommand() == #%d in buffer_sound()", error));
 	
 	return;
 }
