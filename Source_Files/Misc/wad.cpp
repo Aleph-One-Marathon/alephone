@@ -119,16 +119,16 @@ static bool write_to_file(OpenedFile& OFile, long offset, void *data, long lengt
 static bool read_from_file(OpenedFile& OFile, long offset, void *data, long length);
 
 // LP: routines for packing and unpacking the data from streams of bytes
-static void unpack_wad_header(uint8 *Stream, wad_header* Objects, int Count = 1);
-static void pack_wad_header(uint8 *Stream, wad_header* Objects, int Count = 1);
-static void unpack_old_directory_entry(uint8 *Stream, old_directory_entry* Objects, int Count = 1);
-static void pack_old_directory_entry(uint8 *Stream, old_directory_entry* Objects, int Count = 1);
-static void unpack_directory_entry(uint8 *Stream, directory_entry* Objects, int Count = 1);
-static void pack_directory_entry(uint8 *Stream, directory_entry* Objects, int Count = 1);
-static void unpack_old_entry_header(uint8 *Stream, old_entry_header* Objects, int Count = 1);
-static void pack_old_entry_header(uint8 *Stream, old_entry_header* Objects, int Count = 1);
-static void unpack_entry_header(uint8 *Stream, entry_header* Objects, int Count = 1);
-static void pack_entry_header(uint8 *Stream, entry_header* Objects, int Count = 1);
+static void unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count = 1);
+static void pack_wad_header(uint8 *Stream, wad_header *Objects, int Count = 1);
+static void unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count = 1);
+static void pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count = 1);
+static void unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count = 1);
+static void pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count = 1);
+static void unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count = 1);
+static void pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count = 1);
+static void unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count = 1);
+static void pack_entry_header(uint8 *Stream, entry_header *Objects, int Count = 1);
 
 /* ------------------ Code Begins */
 
@@ -1556,7 +1556,7 @@ static bool read_from_file(
 	*/
 }
 
-static void unpack_wad_header(uint8 *Stream, wad_header* Objects, int Count)
+static void unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
 {
 	uint8* S = Stream;
 	wad_header* OPtr = Objects;
@@ -1580,7 +1580,7 @@ static void unpack_wad_header(uint8 *Stream, wad_header* Objects, int Count)
 	assert((S - Stream) == Count*SIZEOF_wad_header);
 }
 
-static void pack_wad_header(uint8 *Stream, wad_header* Objects, int Count)
+static void pack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
 {
 	uint8* S = Stream;
 	wad_header* OPtr = Objects;
@@ -1605,7 +1605,7 @@ static void pack_wad_header(uint8 *Stream, wad_header* Objects, int Count)
 }
 
 
-static void unpack_old_directory_entry(uint8 *Stream, old_directory_entry* Objects, int Count)
+static void unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count)
 {
 	uint8* S = Stream;
 	old_directory_entry* OPtr = Objects;
@@ -1620,7 +1620,7 @@ static void unpack_old_directory_entry(uint8 *Stream, old_directory_entry* Objec
 	assert((S - Stream) == Count*SIZEOF_old_directory_entry);
 }
 
-static void pack_old_directory_entry(uint8 *Stream, old_directory_entry* Objects, int Count)
+static void pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count)
 {
 	uint8* S = Stream;
 	old_directory_entry* OPtr = Objects;
@@ -1636,7 +1636,7 @@ static void pack_old_directory_entry(uint8 *Stream, old_directory_entry* Objects
 }
 
 
-static void unpack_directory_entry(uint8 *Stream, directory_entry* Objects, int Count)
+static void unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count)
 {
 	uint8* S = Stream;
 	directory_entry* OPtr = Objects;
@@ -1652,7 +1652,7 @@ static void unpack_directory_entry(uint8 *Stream, directory_entry* Objects, int 
 	assert((S - Stream) == Count*SIZEOF_directory_entry);
 }
 
-static void pack_directory_entry(uint8 *Stream, directory_entry* Objects, int Count)
+static void pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count)
 {
 	uint8* S = Stream;
 	directory_entry* OPtr = Objects;
@@ -1669,7 +1669,7 @@ static void pack_directory_entry(uint8 *Stream, directory_entry* Objects, int Co
 }
 
 
-static void unpack_old_entry_header(uint8 *Stream, old_entry_header* Objects, int Count)
+static void unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count)
 {
 	uint8* S = Stream;
 	old_entry_header* OPtr = Objects;
@@ -1685,7 +1685,7 @@ static void unpack_old_entry_header(uint8 *Stream, old_entry_header* Objects, in
 	assert((S - Stream) == Count*SIZEOF_old_entry_header);
 }
 
-static void pack_old_entry_header(uint8 *Stream, old_entry_header* Objects, int Count)
+static void pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count)
 {
 	uint8* S = Stream;
 	old_entry_header* OPtr = Objects;
@@ -1702,7 +1702,7 @@ static void pack_old_entry_header(uint8 *Stream, old_entry_header* Objects, int 
 }
 
 
-static void unpack_entry_header(uint8 *Stream, entry_header* Objects, int Count)
+static void unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
 {
 	uint8* S = Stream;
 	entry_header* OPtr = Objects;
@@ -1719,7 +1719,7 @@ static void unpack_entry_header(uint8 *Stream, entry_header* Objects, int Count)
 	assert((S - Stream) == Count*SIZEOF_entry_header);
 }
 
-static void pack_entry_header(uint8 *Stream, entry_header* Objects, int Count)
+static void pack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
 {
 	uint8* S = Stream;
 	entry_header* OPtr = Objects;
