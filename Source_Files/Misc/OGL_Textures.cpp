@@ -35,6 +35,10 @@ Sep 9, 2000:
 Nov 12, 2000 (Loren Petrich):
 	Cleaned up some of the code to avoid explicit endianness usage;
 	also implemented texture substitution.
+
+Nov 18, 2000 (Loren Petrich):
+	Added support for landscape vertical repeats;
+	also added support for glow mapping of wall textures
 */
 
 #include <string.h>
@@ -500,6 +504,9 @@ bool TextureManager::LoadSubstituteTexture()
 	ImageDescriptor& NormalImg = TxtrOptsPtr->NormalImg;
 	if (!NormalImg.IsPresent()) return false;
 	
+	// Be sure to take care of the glowing version, where supported
+	ImageDescriptor& GlowImg = TxtrOptsPtr->GlowImg;
+	
 	// Idiot-proofing
 	if (NormalBuffer)
 	{
@@ -529,6 +536,16 @@ bool TextureManager::LoadSubstituteTexture()
 		for (int v=0; v<Height; v++)
 			for (int h=0; h<Width; h++)
 				NormalBuffer[h*Height+v] = NormalImg.GetPixel(h,v);
+		
+		// Walls can glow...
+		if (GlowImg.IsPresent())
+		{
+			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
+			for (int v=0; v<Height; v++)
+				for (int h=0; h<Width; h++)
+					GlowBuffer[h*Height+v] = GlowImg.GetPixel(h,v);
+		}
+		
 		break;
 	
 	case OGL_Txtr_Landscape:
@@ -543,6 +560,8 @@ bool TextureManager::LoadSubstituteTexture()
 		for (int v=0; v<Height; v++)
 			for (int h=0; h<Width; h++)
 				NormalBuffer[((Height-1)-v)*Width+h] = NormalImg.GetPixel(h,v);
+		
+		// No glow map here
 		break;
 		
 	// Not supported yet
@@ -981,9 +1000,12 @@ void TextureManager::PlaceTexture(bool IsOverlaid, uint32 *Buffer)
 		break;
 		
 	case OGL_Txtr_Landscape:
-		// Landscapes repeat horizontally, have vertical limits
+		// Landscapes repeat horizontally, have vertical limits or repeats vertically
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		if (LandscapeVertRepeat)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		else
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		break;
 		
 	case OGL_Txtr_Inhabitant:
@@ -1026,6 +1048,13 @@ TextureManager::TextureManager()
 {
 	NormalBuffer = 0;
 	GlowBuffer = 0;
+	
+	ShadingTables = NULL;
+	TransferMode = 0;
+	TransferData = 0;
+	IsShadeless = false;
+	TextureType = 0;
+	LandscapeVertRepeat = false;
 	
 	TxtrStatePtr = 0;
 	TxtrOptsPtr = 0;
