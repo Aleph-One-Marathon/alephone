@@ -104,12 +104,10 @@ void set_sound_manager_parameters(
 {
 	if (_sm_initialized)
 	{
-		bool initial_state= _sm_active;
-
 		verify_sound_manager_parameters(parameters);
 		
 		/* if it was initially on, turn off the sound manager */
-		if (initial_state) set_sound_manager_status(false);		
+		if (_sm_active) set_sound_manager_status(false);
 		
 		/* we need to get rid of the sounds we have in memory */
 		unload_all_sounds();
@@ -117,8 +115,8 @@ void set_sound_manager_parameters(
 		/* stuff in our new parameters */
 		*_sm_parameters= *parameters;
 		
-		/* if it was initially on, turn the sound manager back on */
-		if (initial_state && parameters->volume)
+		/* enable sound if volume is set */
+		if (parameters->volume)
 			set_sound_manager_status(true);
 	}
 }
