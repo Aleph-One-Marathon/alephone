@@ -124,8 +124,8 @@
 			mainGroup = 29B97314FDCFA39411CA2CEA;
 			projectDirPath = "";
 			targets = (
-				29B97326FDCFA39411CA2CEA,
 				F53673EE02014B3F01A80001,
+				29B97326FDCFA39411CA2CEA,
 				F5A25344023B713601A80001,
 			);
 		};
@@ -211,7 +211,7 @@
 			dependencies = (
 			);
 			isa = PBXApplicationTarget;
-			name = AlephOne;
+			name = "AlephOne-SDL";
 			productName = "SDL Application";
 			productReference = 17587328FF379C6511CA2CBB;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -2293,7 +2293,7 @@
 				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
 				HEADER_SEARCH_PATHS = "\"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
 				LIBRARY_SEARCH_PATHS = "";
-				OPTIMIZATION_CFLAGS = "-O2 -ffast-math -fno-unroll-loops";
+				OPTIMIZATION_CFLAGS = "-O1 -ffast-math -fno-unroll-loops";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1";
 				OTHER_LDFLAGS = "-lobjc";
 				OTHER_REZFLAGS = "";
