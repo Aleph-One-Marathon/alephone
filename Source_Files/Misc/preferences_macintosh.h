@@ -127,7 +127,9 @@ static void hit_environment_item(DialogPtr dialog, short first_item, void *prefs
 static bool teardown_environment_dialog(DialogPtr dialog, short first_item, void *prefs);
 static void fill_in_popup_with_filetype(DialogPtr dialog, short item, int type, unsigned long checksum, const FSSpec& file);
 static void fill_in_popup_with_filetype(ControlHandle control, int type, unsigned long checksum, const FSSpec& file);
+#ifndef TARGET_API_MAC_CARBON
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
+#endif
 static bool allocate_extensions_memory(void);
 static void free_extensions_memory(void);
 static void build_extensions_list(void);
@@ -137,8 +139,6 @@ static unsigned long find_checksum_and_file_spec_from_dialog(DialogPtr dialog,
 static unsigned long find_checksum_and_file_spec_from_control(ControlHandle control,
 	uint32 type, FSSpec *file);
 static void SetToLoneFile(Typecode Type, FSSpec& File, unsigned long& Checksum);
-static void	rebuild_patchlist(DialogPtr dialog, short item, unsigned long parent_checksum,
-	struct environment_preferences_data *preferences);
 
 /* ---------------- code */
 
@@ -889,7 +889,9 @@ static bool teardown_graphics_dialog(
 	short first_item,
 	void *prefs)
 {
-	(void) (dialog, first_item, prefs);
+	(void)(dialog);
+	(void)(first_item);
+	(void)(prefs);
 	return true;
 }
 
@@ -1121,7 +1123,9 @@ static bool teardown_sound_dialog(
 	short first_item,
 	void *prefs)
 {
-	(void) (dialog, first_item, prefs);
+	(void)(dialog);
+	(void)(first_item);
+	(void)(prefs);
 	return true;
 }
 
@@ -1271,7 +1275,9 @@ static bool teardown_input_dialog(
 	short first_item,
 	void *prefs)
 {
-	(void)(dialog, first_item, prefs);
+	(void)(dialog);
+	(void)(first_item);
+	(void)(prefs);
 	return true;
 }
 
@@ -1409,7 +1415,8 @@ static bool teardown_environment_dialog(
 	SetToLoneFile(_typecode_shapes, preferences->shapes_file, preferences->shapes_mod_date);
 	SetToLoneFile(_typecode_sounds, preferences->sounds_file, preferences->sounds_mod_date);
 
-	(void) (dialog, first_item);
+	(void)(dialog);
+	(void)(first_item);
 	/* Proceses the entire physics file.. */
 	free_extensions_memory();
 	
@@ -1447,7 +1454,6 @@ static void set_popup_enabled_state(
 	bool enabled)
 {
 	MenuHandle menu;
-	struct PopupPrivateData **privateHndl;
 	ControlHandle control;
 	short item_type;
 	Rect bounds;
@@ -1463,6 +1469,7 @@ static void set_popup_enabled_state(
 	*/
 	/* I don't know how to assert that it is a popup control... <sigh> */
 	/*
+	struct PopupPrivateData **privateHndl;
 	privateHndl= (PopupPrivateData **) ((*control)->contrlData);
 	assert(privateHndl);
 	
@@ -1582,7 +1589,7 @@ static bool file_is_extension_and_add_callback(
 		{
 			checksum= read_wad_file_checksum(File);
 			// checksum= read_wad_file_checksum((FileDesc *) file);
-			if(checksum != NONE) /* error. */
+			if(checksum != 0) /* error. */
 			{
                                 element_to_insert.file= File;
                                 element_to_insert.file_type= Filetype;
@@ -1594,7 +1601,7 @@ static bool file_is_extension_and_add_callback(
 		else if (Filetype == _typecode_patch)
 		{
 			checksum= read_wad_file_checksum(File);
-			if(checksum != NONE) /* error. */
+			if(checksum != 0) /* error. */
 			{
 				unsigned long parent_checksum= read_wad_file_parent_checksum(File);
                                 element_to_insert.file= File;
@@ -1686,7 +1693,7 @@ pstrcmp(const unsigned char* s1, const unsigned char* s2)
 
 class indexed_file_description_less : public binary_function<int, int, bool> {
 public:
-        operator()(int d1, int d2)
+        bool operator()(int d1, int d2)
         {
                 return pstrcmp(file_descriptions[d1].file.GetSpec().name, file_descriptions[d2].file.GetSpec().name) < 0;
         }
@@ -1694,7 +1701,7 @@ public:
 
 class indexed_directory_less : public binary_function<int, int, bool> {
 public:
-        operator()(int d1, int d2)
+        bool operator()(int d1, int d2)
         {
                 return pstrcmp(directories[d1].GetSpec().name, directories[d2].GetSpec().name) < 0;
         }
@@ -1737,12 +1744,11 @@ static void fill_in_popup_with_filetype(
 	const FSSpec& file)
 {
 	MenuHandle menu;
-        short index;
         short value= NONE;
         short file_match_value= NONE;
         bool good_match= false;
 	short count;
-	Rect bounds;
+	//Rect bounds;
 
         // if our housekeeping vector for some reason isn't empty, empty it
         menu_items[type].clear();
@@ -1810,7 +1816,7 @@ static void fill_in_popup_with_filetype(
         sort(sorted_directory_indices.begin() + 1, sorted_directory_indices.end(), indexed_directory_less());
         
         // Loop over groups
-        for(int i = 0; i < sorted_directory_indices.size(); i++)
+        for(unsigned int i = 0; i < sorted_directory_indices.size(); i++)
         {
                 int index = sorted_directory_indices[i];
                 if(index != NONE)
@@ -1835,7 +1841,7 @@ static void fill_in_popup_with_filetype(
                 sort(file_indices.begin(), file_indices.end(), indexed_file_description_less());
                 
                 // Loop over items within group
-                for(int j = 0; j < file_indices.size(); j++)
+                for(unsigned int j = 0; j < file_indices.size(); j++)
                 {
                         file_description& description = file_descriptions[file_indices[j]];
 
@@ -1953,7 +1959,7 @@ static void SetToLoneFile(Typecode Type, FSSpec& File, unsigned long& Checksum)
 {
 	int LoneFileIndex = NONE;	// Null value (-1)
 	
-	for (int index=0; index<file_descriptions.size(); index++)
+	for (unsigned int index=0; index<file_descriptions.size(); index++)
 	{
 		if (file_descriptions[index].file_type == Type)
 		{
@@ -1975,6 +1981,7 @@ static void SetToLoneFile(Typecode Type, FSSpec& File, unsigned long& Checksum)
 }
 
 
+#ifndef TARGET_API_MAC_CARBON
 static MenuHandle get_popup_menu_handle(
 	DialogPtr dialog,
 	short item)
@@ -2009,6 +2016,7 @@ static MenuHandle get_popup_menu_handle(
 
 	return menu;
 }
+#endif
 
 #if 0
 static bool control_strip_installed(
