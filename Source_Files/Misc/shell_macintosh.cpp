@@ -1348,6 +1348,29 @@ bool machine_has_nav_services()
 	return HasNavServices;
 }
 
+// returns -1 (first string greater), 0 (strings equal), or +1 (second string greater)
+static int PascalCompare(const Str255 Str1, const Str255 Str2)
+{
+	int Len1 = int(Str1[0]);
+	int Len2 = int(Str2[0]);
+	int MinLen = MIN(Len1,Len2);
+	
+	// Do the shared-extent subsets match?
+	for (int k=1; k<=MinLen; k++)
+	{
+		unsigned char c1 = Str1[k];
+		unsigned char c2 = Str2[k];
+		if (c1 > c2) return -1;
+		else if (c1 < c2) return 1;
+	}
+	
+	// If matching contents are equal, then the longer string is the greater one
+	if (Len1 > Len2) return -1;
+	else if (Len1 < Len2) return 1;
+	
+	return 0;
+}
+
 
 // For adding is-directory and perhaps other flags to a FSSpec
 struct TypedSpec
@@ -1371,7 +1394,7 @@ bool TypedSpec::operator==(const TypedSpec& TSpec)
 	if (Type != TSpec.Type) return false;
 	if (Spec.vRefNum != TSpec.Spec.vRefNum) return false;
 	if (Spec.parID != TSpec.Spec.parID) return false;
-	if (IUCompString(Spec.name,TSpec.Spec.name) != 0) return false;
+	if (PascalCompare(Spec.name,TSpec.Spec.name) != 0) return false;
 		
 	return true;
 }
@@ -1383,7 +1406,7 @@ struct AlphabeticalCompareTypedSpecs: public binary_function<int, int, bool> {
 	vector<TypedSpec>::iterator SpecListIter;
 	
 	bool operator()(int i1, int i2)
-		{return (IUCompString(SpecListIter[i1].Spec.name,SpecListIter[i2].Spec.name) < 0);}
+		{return (PascalCompare(SpecListIter[i1].Spec.name,SpecListIter[i2].Spec.name) < 0);}
 };
 
 
