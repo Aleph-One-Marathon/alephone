@@ -136,10 +136,10 @@ int load_script(int text_id)
 		return false;
 	
 	// LP changes:
-	FileObject& cur_map = get_map_file();
+	FileSpecifier& cur_map = get_map_file();
 
 #if defined(mac)
-	error= FSpOpenRF(&GetSpec(cur_map), fsRdPerm, &file_id);
+	error= FSpOpenRF(&cur_map.Spec, fsRdPerm, &file_id);
 
 	if (error)
 	{
