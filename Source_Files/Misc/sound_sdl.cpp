@@ -686,6 +686,15 @@ void music_idle_proc(void)
 
 
 /*
+ *  Preload per-level music
+ */
+
+void PreloadLevelMusic(void)
+{
+}
+
+
+/*
  *  Load sound header into channel
  */
 
