@@ -72,6 +72,9 @@ Jul 5, 2000 (Loren Petrich):
 	Also changed F3 to toggle pixel doubling
 	Set F4 to reset OpenGL textures, since some people don't have F14 available
 	Removed the '~' key from that meaning
+
+Jul 7, 2000 (Loren Petrich):
+	Added Ben Thompson's InputSprocket support
 */
 
 #include <stdlib.h>
@@ -91,6 +94,7 @@ Jul 5, 2000 (Loren Petrich):
 #include "mysound.h"
 #include "fades.h"
 #include "screen.h"
+#include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprockets Support */
 
 #include "portable_files.h"
 #include "music.h"
@@ -303,6 +307,7 @@ static void initialize_application_heap(
 	if (FreeMem()>kMINIMUM_SOUND_HEAP) initialize_sound_manager(sound_preferences);
 
 	initialize_marathon_music_handler();
+	initialize_ISp(); /* BT: Added April 16, 2000 ISp: Initialize Input Sprockets */
 
 	initialize_keyboard_controller();
 	initialize_screen(&graphics_preferences->screen_mode);
