@@ -326,7 +326,37 @@ void initialize_preferences(
                     }
                 }
 
-            }
+            } else {
+	      FileSpec.SetNameWithPath(getcstr(temporary, strFILENAMES, filenamePREFERENCES));
+	      
+	      if (FileSpec.Open(OFile)){ 
+		
+		long Len = 0;
+		OFile.GetLength(Len);
+		if (Len > 0) {
+		  vector<char> FileContents(Len);
+		  
+		  if (OFile.Read(Len, &FileContents[0])) {
+		    
+		    OFile.Close();
+
+		    if (!XML_DataBlockLoader.ParseData(&FileContents[0], Len)) {
+#if defined(mac)
+#ifdef TARGET_API_MAC_CARBON
+		      SimpleAlert(kAlertNoteAlert, "There were default preferences-file parsing errors (see Aleph One Log.txt for details)");
+#else
+		      ParamText("\pThere were default preferences-file parsing errors (see Aleph One Log.txt for details)", 0, 0, 0);
+		      Alert(NonFatalErrorAlert, NULL);
+#endif
+#elif defined(SDL)
+		      fprintf(stderr, "There were default preferences-file parsing errors (see Aleph One Log.txt for details)\n");
+#endif
+		    }
+		  }
+		}
+	      }
+	    }
+	      
 
         }
         
