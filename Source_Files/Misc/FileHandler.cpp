@@ -260,7 +260,7 @@ bool DirectorySpecifier::SetToPreferencesParent()
 // The name as a C string:
 // assumes enough space to hold it if getting (max. 256 bytes)
 
-inline void CString_ToFilename(char *Source, unsigned char *Destination)
+inline void CString_ToFilename(const char *Source, unsigned char *Destination)
 {
 	// Null pointer -> zero-length string
 	if (!Source)
@@ -272,7 +272,7 @@ inline void CString_ToFilename(char *Source, unsigned char *Destination)
 	Destination[0] = Len;
 	memcpy(Destination+1,Source,Len);
 }
-inline void MacFilename_To_CString(unsigned char *Source, char *Destination)
+inline void MacFilename_To_CString(const unsigned char *Source, char *Destination)
 {
 	// Null pointer -> zero-length string
 	if (!Source)
