@@ -1560,6 +1560,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	}
 	else
 #endif
+#endif
 
 	// Do textured rendering
 	if (TMgr.IsGlowMapped())

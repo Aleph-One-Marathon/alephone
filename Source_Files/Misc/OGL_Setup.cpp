@@ -617,6 +617,8 @@ void OGL_ModelData::Load()
 			return;
 		}
 	}
+
+#warning Be sure to do transformations and bounding-box calculations here
 	
 	// Don't forget the skins
 	OGL_SkinManager::Load();
