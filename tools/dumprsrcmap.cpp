@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 	FileSpecifier file = argv[1];
 	SDL_RWops *rw = open_res_file(file);
 	if (rw == NULL) {
-		fprintf(stderr, "Can't open resource file");
+		fprintf(stderr, "Can't open resource file\n");
 		exit(1);
 	}
 
