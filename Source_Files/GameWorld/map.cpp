@@ -88,7 +88,10 @@ Feb 8, 2001 (Loren Petrich):
 
 Feb 3, 2003 (Loren Petrich):
 	In attach_parasitic_object(), will transmit the sizing of the host object to the parasite.
-*/
+
+ June 14, 2003 (Woody Zenfell):
+	New functions for manipulating polygons' object lists (in support of prediction).
+ */
 
 /*
 find_line_crossed leaving polygon could be sped up considerable by reversing the search direction in some circumstances
@@ -112,6 +115,8 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
+
+#include <list>
 
 #ifdef env68k
 #pragma segment map
@@ -236,6 +241,13 @@ short LoadedWallTexture = NONE;
 /* ---------- private prototypes */
 
 static short _new_map_object(shape_descriptor shape, angle facing);
+
+// ZZZ: factored out some functionality for prediction, but ended up not using this stuff,
+// so am not "publishing" it via map.h yet.
+// The first infers the polygon_index from the object's "polygon" member field.
+static void add_object_to_polygon_object_list(short object_index);
+static void remove_object_from_polygon_object_list(short object_index, short polygon_index);
+static void add_object_to_polygon_object_list(short object_index, short polygon_index);
 
 short _find_line_crossed_leaving_polygon(short polygon_index, world_point2d *p0, world_point2d *p1, bool *last_line);
 
@@ -668,6 +680,131 @@ void remove_map_object(
 	MARK_SLOT_AS_FREE(object);
 }
 
+
+
+/* remove the object from the old_polygonÕs object list*/
+void
+remove_object_from_polygon_object_list(short object_index, short polygon_index)
+{
+	struct object_data* object = get_object_data(object_index);
+
+	polygon_data* polygon= get_polygon_data(polygon_index);
+	short* next_object= &polygon->first_object;
+
+	assert(*next_object != NONE);
+
+	while (*next_object!=object_index)
+	{
+		next_object= &get_object_data(*next_object)->next_object;
+		assert(*next_object != NONE);
+	}
+
+	*next_object= object->next_object;
+
+	object->polygon= NONE;
+}
+
+void
+remove_object_from_polygon_object_list(short object_index)
+{
+	remove_object_from_polygon_object_list(object_index, get_object_data(object_index)->polygon);
+}
+
+
+
+/* add the object to the new_polygonÕs object list */
+void
+add_object_to_polygon_object_list(short object_index, short polygon_index)
+{
+	struct object_data* object = get_object_data(object_index);
+	struct polygon_data* polygon= get_polygon_data(polygon_index);
+
+	object->next_object= polygon->first_object;
+	polygon->first_object= object_index;
+
+	object->polygon= polygon_index;
+}
+
+void
+add_object_to_polygon_object_list(short object_index)
+{
+	add_object_to_polygon_object_list(object_index, get_object_data(object_index)->polygon);
+}
+
+typedef std::pair<short, short>	DeferredObjectListInsertion;
+typedef std::list<DeferredObjectListInsertion> DeferredObjectListInsertionList;
+static DeferredObjectListInsertionList sDeferredObjectListInsertions;
+
+void
+deferred_add_object_to_polygon_object_list(short object_index, short index_to_precede)
+{
+	sDeferredObjectListInsertions.push_back(DeferredObjectListInsertion(object_index, index_to_precede));
+}
+
+
+
+void
+perform_deferred_polygon_object_list_manipulations()
+{
+	// Loop while the list of insertions is non-empty (we may need to make multiple passes)
+	while(!sDeferredObjectListInsertions.empty())
+	{
+		// Pass over the list of insertions, inserting whatever we can.
+		bool something_changed = false;
+
+		for(DeferredObjectListInsertionList::iterator i = sDeferredObjectListInsertions.begin(); i != sDeferredObjectListInsertions.end(); )
+		{
+			short object_to_insert_index = (*i).first;
+			short object_index_to_precede = (*i).second;
+			object_data* object = get_object_data(object_to_insert_index);
+			polygon_data* polygon = get_polygon_data(object->polygon);
+
+			// Find object index we're supposed to predece... and insert the object before it
+			short* next_object_index_p = &(polygon->first_object);
+			bool inserted = false;
+
+			while(!inserted)
+			{
+				if(*next_object_index_p == object_index_to_precede)
+				{
+					object->next_object = *next_object_index_p;
+					*next_object_index_p = object_to_insert_index;
+					inserted = true;
+				}
+
+				if(*next_object_index_p == NONE)
+					break;
+
+				next_object_index_p = &(get_object_data(*next_object_index_p)->next_object);
+
+			} // Insert object before object it's supposed to precede
+
+			// Each branch of this if() will increment i
+			if(inserted)
+			{
+				// Most concise way to correctly remove-and-increment
+				sDeferredObjectListInsertions.erase(i++);
+				something_changed = true;
+			}
+			else
+				// Perhaps we were trying to insert before another object that's scheduled for insertion.
+				// In that case, maybe by the time we come around again, the other object will be inserted.
+				// For now, we leave the insertion pending.
+				++i;
+
+		} // Pass over the list of insertions, inserting whatever we can.
+
+		// We must make progress, otherwise my algorithm is flawed (we'd loop forever).  Progress here
+		// is performing insertions into the polygon object lists and removing the corresponding deferred
+		// insertions from the insertion list.
+		assert(something_changed);
+
+	} // Loop while the list of insertions is non-empty
+
+} // perform_deferred_polygon_object_list_manipulations
+
+
+
 /* if a new polygon index is supplied, it will be used, otherwise weÕll try to find the new
 	polygon index ourselves */
 bool translate_map_object(
@@ -707,21 +844,8 @@ bool translate_map_object(
 	/* if we changed polygons, update the old and new polygonÕs linked lists of objects */
 	if (old_polygon_index!=new_polygon_index)
 	{
-		struct polygon_data *polygon;
-		short *next_object;
-
-		/* remove the object from the old_polygonÕs object list*/
-		polygon= get_polygon_data(old_polygon_index);
-		next_object= &polygon->first_object;
-		while (*next_object!=object_index) next_object= &get_object_data(*next_object)->next_object;
-		*next_object= object->next_object;
-		
-		/* add the object to the new_polygonÕs object list */
-		polygon= get_polygon_data(new_polygon_index);
-		object->next_object= polygon->first_object;
-		polygon->first_object= object_index;
-		object->polygon= new_polygon_index;
-		
+		remove_object_from_polygon_object_list(object_index, old_polygon_index);
+		add_object_to_polygon_object_list(object_index, new_polygon_index);		
 		changed_polygons= true;
 	}
 	object->location= *new_location;
@@ -736,6 +860,8 @@ bool translate_map_object(
 
 	return changed_polygons;
 }
+
+
 
 void get_object_shape_and_transfer_mode(
 	world_point3d *camera_location,

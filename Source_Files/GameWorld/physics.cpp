@@ -49,6 +49,11 @@ Aug 31, 2000 (Loren Petrich):
 
 May 16, 2002 (Woody Zenfell):
     Letting user decide whether to auto-recenter when running
+
+ June 14, 2003 (Woody Zenfell):
+	update_player_physics_variables() can now operate in a reduced-impact mode
+		that changes less of the game state.  Useful for partial-game-state
+		save-and-restore code (as used by prediction mechanism).
 */
 
 /*
@@ -103,7 +108,7 @@ running backwards shouldnÕt mean doom in a fistfight
 /* ---------- private prototypes */
 
 static struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
-static void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time);
+static void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 static void physics_update(struct physics_constants *constants, struct physics_variables *variables, struct player_data *player, uint32 action_flags);
 
 /* ---------- globals */
@@ -159,7 +164,7 @@ void initialize_player_physics_variables(
 
 	/* setup shadow variables in player_data structure */
 	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0),
-		&player->variables, player_index, true);
+		&player->variables, player_index, true, true);
 
 #ifdef DIVERGENCE_CHECK
 	if (!saved_point_iterations)
@@ -175,14 +180,15 @@ void initialize_player_physics_variables(
 
 void update_player_physics_variables(
 	short player_index,
-	uint32 action_flags)
+	uint32 action_flags,
+	bool predictive)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct physics_variables *variables= &player->variables;
 	struct physics_constants *constants= get_physics_constants_for_model(static_world->physics_model, action_flags);
-	
+
 	physics_update(constants, variables, player, action_flags);
-	instantiate_physics_variables(constants, variables, player_index, false);
+	instantiate_physics_variables(constants, variables, player_index, false, !predictive);
 
 #ifdef DIVERGENCE_CHECK
 	if (saved_point_count<SAVED_POINT_COUNT)
@@ -321,7 +327,7 @@ void instantiate_absolute_positioning_information(
 
 	variables->direction= facing;
 
-	instantiate_physics_variables(constants, variables, player_index, false);
+	instantiate_physics_variables(constants, variables, player_index, false, true);
 }
 
 void get_binocular_vision_origins(
@@ -372,6 +378,8 @@ _fixed get_player_forward_velocity_scale(
 		dy*sine_table[FIXED_INTEGERAL_PART(variables->direction)])>>TRIG_SHIFT))/constants->maximum_forward_velocity;
 }
 
+
+
 /* ---------- private code */
 
 static struct physics_constants *get_physics_constants_for_model(
@@ -399,7 +407,8 @@ static void instantiate_physics_variables(
 	struct physics_constants *constants,
 	struct physics_variables *variables,
 	short player_index,
-	bool first_time)
+	bool first_time,
+	bool take_action)
 {
 	struct player_data *player= get_player_data(player_index);
 	struct monster_data *monster= get_monster_data(player->monster_index);
@@ -422,7 +431,7 @@ static void instantiate_physics_variables(
 		the way the physics updates work, we donÕt worry about collisions with the floor or
 		ceiling).  ONLY MODIFY THE PLAYERÕS FIXED_POINT3D POSITION IF WE HAD A COLLISION */
 	if (PLAYER_IS_DEAD(player)) new_location.z+= FIXED_TO_WORLD(DROP_DEAD_HEIGHT);
-	if (!first_time && player->last_supporting_polygon_index!=player->supporting_polygon_index) changed_polygon(player->last_supporting_polygon_index, player->supporting_polygon_index, player_index);
+	if (take_action && !first_time && player->last_supporting_polygon_index!=player->supporting_polygon_index) changed_polygon(player->last_supporting_polygon_index, player->supporting_polygon_index, player_index);
 	player->last_supporting_polygon_index= first_time ? NONE : player->supporting_polygon_index;
 	clipped= keep_line_segment_out_of_walls(legs->polygon, &legs->location, &new_location,
 		WORLD_ONE/3, FIXED_TO_WORLD(variables->actual_height), &adjusted_floor_height, &adjusted_ceiling_height,
@@ -442,7 +451,8 @@ static void instantiate_physics_variables(
 			switch (GET_OBJECT_OWNER(object))
 			{
 				case _object_is_monster:
-					bump_monster(player->monster_index, object->permutation);
+					if(take_action)
+						bump_monster(player->monster_index, object->permutation);
 				case _object_is_scenery:
 					new_location.x= legs->location.x, new_location.y= legs->location.y;
 					clipped= true;
@@ -459,7 +469,8 @@ static void instantiate_physics_variables(
 	if (translate_map_object(monster->object_index, &new_location, NONE))
 	{
 		if (old_polygon_index==legs->polygon) clipped= true; /* oops; trans_map_obj destructively changed our position */
-		monster_moved(player->monster_index, old_polygon_index);
+		if(take_action)
+			monster_moved(player->monster_index, old_polygon_index);
 	}
 
 	/* if our move got clipped, copy the new coordinate back into the physics variables */
@@ -512,6 +523,8 @@ static void instantiate_physics_variables(
 }
 
 /* separate physics_constant structures are passed in for running/walking modes */
+// ZZZ note: 'player' is only used in this routine for PLAYER_IS_DEAD(player) - as such,
+// perhaps this should take an "is_dead" flag as a parameter instead of the player structure.
 static void physics_update(
 	struct physics_constants *constants,
 	struct physics_variables *variables,

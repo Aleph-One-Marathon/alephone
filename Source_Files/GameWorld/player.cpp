@@ -120,6 +120,10 @@ May 22, 2003 (Woody Zenfell):
 
  May 27, 2003 (Woody Zenfell):
 	I hear dead people.  (netmic, star protocol or newer only)
+
+ June 14, 2003 (Woody Zenfell):
+	update_players() now has a predictive mode of execution which takes many fewer actions
+	(i.e. tries to alter only state like the player's location and facing etc.)
 */
 
 #define DONT_REPEAT_DEFINITIONS
@@ -519,24 +523,27 @@ get_ticks_since_local_player_in_terminal() {
 }
 
 /* assumes ¶t==1 tick */
-void update_players(ActionQueues* inActionQueuesToUse)
+void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 {
 	struct player_data *player;
 	short player_index;
 
-        // ZZZ: update ticks-since-terminal stuff
-        sLocalPlayerTicksSinceTerminal++;
-        if(player_in_terminal_mode(local_player_index))
-                sLocalPlayerTicksSinceTerminal = 0;
+	if(!inPredictive)
+	{
+		// ZZZ: update ticks-since-terminal stuff
+		sLocalPlayerTicksSinceTerminal++;
+		if(player_in_terminal_mode(local_player_index))
+			sLocalPlayerTicksSinceTerminal = 0;
+	}
 	
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{
 		uint32 action_flags = inActionQueuesToUse->dequeueActionFlags(player_index);
-		
+
 		if (action_flags == 0xffffffff)
 		{
 			// net dead
-			if(!player->netdead)
+			if(!player->netdead && !inPredictive)
 			{
 				if (!PLAYER_IS_DEAD(player))
 				{
@@ -557,9 +564,12 @@ void update_players(ActionQueues* inActionQueuesToUse)
 		/* Deal with the terminal mode crap. */
 		if (player_in_terminal_mode(player_index))
 		{
-			update_player_keys_for_terminal(player_index, action_flags);
+			if(!inPredictive)
+			{
+				update_player_keys_for_terminal(player_index, action_flags);
+				update_player_for_terminal_mode(player_index);
+			}
 			action_flags= 0;
-			update_player_for_terminal_mode(player_index);
 		}
 		
 		bool IsSwimming = TEST_FLAG(player->variables.flags,_HEAD_BELOW_MEDIA_BIT) && CanSwim;
@@ -580,109 +590,117 @@ void update_players(ActionQueues* inActionQueuesToUse)
 		// if our head is under media, we canÕt run (that sucks, too)
 		if (IsSwimming && (action_flags&_run_dont_walk)) action_flags&= ~_run_dont_walk, action_flags|= _swim;
 		
-		update_player_physics_variables(player_index, action_flags);
+		update_player_physics_variables(player_index, action_flags, inPredictive);
 
-		player->invisibility_duration= FLOOR(player->invisibility_duration-1, 0);
-		player->invincibility_duration= FLOOR(player->invincibility_duration-1, 0);
-		player->infravision_duration= FLOOR(player->infravision_duration-1, 0);
-                // ZZZ: alert the player when he can respawn, if he was being penalized
-                if(player->reincarnation_delay > 0)
-                {
-                        --player->reincarnation_delay;
-                        if(((GET_GAME_OPTIONS()&_suicide_is_penalized) || (GET_GAME_OPTIONS()&_dying_is_penalized)) && (player_index == local_player_index))
-                        {
-                                if(player->reincarnation_delay == 0)
-                                        screen_printf("You may rise to fight again");
-                                else if(player->reincarnation_delay < 4 * TICKS_PER_SECOND && (player->reincarnation_delay % TICKS_PER_SECOND) == 0)
-                                        screen_printf("%d...", player->reincarnation_delay / TICKS_PER_SECOND);
-                        }
-                }
-		if (player->extravision_duration)
+		if(!inPredictive)
 		{
-			if (!(player->extravision_duration-= 1))
+			player->invisibility_duration= FLOOR(player->invisibility_duration-1, 0);
+			player->invincibility_duration= FLOOR(player->invincibility_duration-1, 0);
+			player->infravision_duration= FLOOR(player->infravision_duration-1, 0);
+			// ZZZ: alert the player when he can respawn, if he was being penalized
+			if(player->reincarnation_delay > 0)
 			{
-				if (player_index==current_player_index) start_extravision_effect(false);
+				--player->reincarnation_delay;
+				if(((GET_GAME_OPTIONS()&_suicide_is_penalized) || (GET_GAME_OPTIONS()&_dying_is_penalized)) && (player_index == local_player_index))
+				{
+					if(player->reincarnation_delay == 0)
+						screen_printf("You may rise to fight again");
+					else if(player->reincarnation_delay < 4 * TICKS_PER_SECOND && (player->reincarnation_delay % TICKS_PER_SECOND) == 0)
+						screen_printf("%d...", player->reincarnation_delay / TICKS_PER_SECOND);
+				}
 			}
-		}
-		// LP change: made this code more general;
-		// find the oxygen-change rate appropriate to each environment,
-		// then handle the rate appropriately.
-		if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT))
-			OxygenChange = - OxygenDepletion;
-		else
-			OxygenChange = OxygenReplenishment;
+			if (player->extravision_duration)
+			{
+				if (!(player->extravision_duration-= 1))
+				{
+					if (player_index==current_player_index) start_extravision_effect(false);
+				}
+			}
+			// LP change: made this code more general;
+			// find the oxygen-change rate appropriate to each environment,
+			// then handle the rate appropriately.
+			if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT))
+				OxygenChange = - OxygenDepletion;
+			else
+				OxygenChange = OxygenReplenishment;
+
+			if (OxygenChange < 0)
+				handle_player_in_vacuum(player_index, action_flags);
+			else if (OxygenChange > 0)
+				ReplenishPlayerOxygen(player_index, action_flags);
+
+			// if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) handle_player_in_vacuum(player_index, action_flags);
+
+			/* handle arbitration of the communications channel (i.e., dynamic_world->speaking_player_index) */
+			if ((action_flags&_microphone_button) && (!PLAYER_IS_DEAD(player) || get_network_version() >= kMinimumNetworkVersionForTalkingCorpses))
+			{
+				if (dynamic_world->speaking_player_index==NONE)
+				{
+					dynamic_world->speaking_player_index= player_index;
+					if (player_index==local_player_index) set_interface_microphone_recording_state(true);
+				}
+			}
+			else
+			{
+				if (dynamic_world->speaking_player_index==player_index)
+				{
+					dynamic_world->speaking_player_index= NONE;
+					if (player_index==local_player_index) set_interface_microphone_recording_state(false);
+				}
+			}
+
+			if (PLAYER_IS_DEAD(player))
+			{
+				/* do things dead players do (sit around and check for self-reincarnation) */
+				if (PLAYER_HAS_MAP_OPEN(player))
+					SET_PLAYER_MAP_STATUS(player, false);
+				if (PLAYER_IS_TOTALLY_DEAD(player) && (action_flags&_action_trigger_state) && (player->variables.action==_player_stationary||dynamic_world->player_count==1))
+				{
+					// ZZZ: let the player know why he's not respawning
+					if(player->reincarnation_delay)
+					{
+						if(player_index == local_player_index)
+						{
+							int theSeconds = player->reincarnation_delay / TICKS_PER_SECOND;
+							// If 3 or less, he'll be getting a countdown anyway, and may start spamming the action key.
+							if(theSeconds > 3)
+								screen_printf("%d penalty seconds remain", theSeconds);
+						}
+					}
+					else
+					{
+						if (dynamic_world->player_count==1) set_game_state(_revert_game);
+						else revive_player(player_index);
+					}
+				}
+				update_player_weapons(player_index, 0);
+				update_action_key(player_index, false);
+			}
+			else
+			{
+				/* do things live players do (get items, update weapons, check action key, breathe) */
+				swipe_nearby_items(player_index);
+				update_player_weapons(player_index, action_flags);
+				update_action_key(player_index, (action_flags&_action_trigger_state) ? true : false);
+				if (action_flags&_toggle_map)
+					SET_PLAYER_MAP_STATUS(player, !PLAYER_HAS_MAP_OPEN(player));
+
+				// ZZZ: moved this here out of "player becoming netdead" area above; that looked wrong
+				// AlexJLS patch: effect of dangerous polygons
+				cause_polygon_damage(player->supporting_polygon_index,player->monster_index);
+			}
+
+			update_player_teleport(player_index);
+			update_player_media(player_index);
+			set_player_shapes(player_index, true);
+			
+		} // !inPredictive
 		
-		if (OxygenChange < 0)
-			handle_player_in_vacuum(player_index, action_flags);
-		else if (OxygenChange > 0)
-			ReplenishPlayerOxygen(player_index, action_flags);
-		
-		// if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) handle_player_in_vacuum(player_index, action_flags);
+	} // loop over players
 
-		/* handle arbitration of the communications channel (i.e., dynamic_world->speaking_player_index) */
-		if ((action_flags&_microphone_button) && (!PLAYER_IS_DEAD(player) || get_network_version() >= kMinimumNetworkVersionForTalkingCorpses))
-		{
-			if (dynamic_world->speaking_player_index==NONE)
-			{
-				dynamic_world->speaking_player_index= player_index;
-				if (player_index==local_player_index) set_interface_microphone_recording_state(true);
-			}
-		}
-		else
-		{
-			if (dynamic_world->speaking_player_index==player_index)
-			{
-				dynamic_world->speaking_player_index= NONE;
-				if (player_index==local_player_index) set_interface_microphone_recording_state(false);
-			}
-		}
+} // update_players()
 
-		if (PLAYER_IS_DEAD(player))
-		{
-			/* do things dead players do (sit around and check for self-reincarnation) */
-			if (PLAYER_HAS_MAP_OPEN(player))
-				SET_PLAYER_MAP_STATUS(player, false);
-			if (PLAYER_IS_TOTALLY_DEAD(player) && (action_flags&_action_trigger_state) && (player->variables.action==_player_stationary||dynamic_world->player_count==1))
-			{
-                                // ZZZ: let the player know why he's not respawning
-                                if(player->reincarnation_delay)
-                                {
-                                        if(player_index == local_player_index)
-                                        {
-                                                int theSeconds = player->reincarnation_delay / TICKS_PER_SECOND;
-                                                // If 3 or less, he'll be getting a countdown anyway, and may start spamming the action key.
-                                                if(theSeconds > 3)
-                                                        screen_printf("%d penalty seconds remain", theSeconds);
-                                        }
-                                }
-                                else
-                                {
-                                        if (dynamic_world->player_count==1) set_game_state(_revert_game);
-                                        else revive_player(player_index);
-                                }
-			}
-			update_player_weapons(player_index, 0);
-			update_action_key(player_index, false);
-		}
-		else
-		{
-			/* do things live players do (get items, update weapons, check action key, breathe) */
-                        swipe_nearby_items(player_index);
-			update_player_weapons(player_index, action_flags);
-			update_action_key(player_index, (action_flags&_action_trigger_state) ? true : false);
-			if (action_flags&_toggle_map)
-				SET_PLAYER_MAP_STATUS(player, !PLAYER_HAS_MAP_OPEN(player));
 
-                        // ZZZ: moved this here out of "player becoming netdead" area above; that looked wrong
-                        // AlexJLS patch: effect of dangerous polygons
-                        cause_polygon_damage(player->supporting_polygon_index,player->monster_index);
-                }
-
-		update_player_teleport(player_index);
-		update_player_media(player_index);
-		set_player_shapes(player_index, true);
-	}
-}
 
 void damage_player(
 	short monster_index,

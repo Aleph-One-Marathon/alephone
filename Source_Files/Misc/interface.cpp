@@ -1074,9 +1074,16 @@ void idle_game_state(
 		last time), render a frame */
 	if(game_state.state==_game_in_progress)
 	{
-		if (get_keyboard_controller_status() && (ticks_elapsed= update_world())!=0)
+		if (get_keyboard_controller_status())
 		{
-			render_screen(ticks_elapsed);
+			std::pair<bool, int16> theUpdateResult= update_world();
+			ticks_elapsed= theUpdateResult.second;
+
+			// ZZZ: I don't know for sure that render_screen works best with the number of _real_
+			// ticks elapsed rather than the number of (potentially predictive) ticks elapsed.
+			// This is a guess.
+			if (theUpdateResult.first)
+				render_screen(ticks_elapsed);
 		}
 	} else {
 		/* Update the fade ins, etc.. */
@@ -1875,6 +1882,9 @@ static void start_game(
 #ifdef PERFORMANCE	
 	PerfControl(perf_globals, true);
 #endif
+
+	// ZZZ: If it's a netgame, we want prediction; else no.
+	set_prediction_wanted(user == _network_player);
 
 	game_state.state= _game_in_progress;
 	game_state.current_screen= 0;

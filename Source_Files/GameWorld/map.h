@@ -46,6 +46,11 @@ Aug 29, 2000 (Loren Petrich):
 
 Nov 19, 2000 (Loren Petrich):
 	Added XML support for texture-loading control
+
+ June 14, 2003 (Woody Zenfell):
+	New functions for manipulating polygons' object lists (in support of prediction).
+	New return type for update_world(), since now we might need rerendering even if
+		no real ticks have elapsed (we may have predicted ahead further).
 */
 
 #include "world.h"
@@ -1007,9 +1012,13 @@ void leaving_map(void);
 // LP: added whether a savegame is being restored (skip Pfhortran init if that's the case)
 bool entering_map(bool restoring_saved);
 
-int16 update_world(void);
-// ZZZ: this really doesn't go here, but it lives in marathon2.cpp where update_world() lives.....
+// ZZZ: now returns <whether anything changed, real-mode elapsed time>
+// (used to return only the latter)
+std::pair<bool, int16> update_world(void);
+
+// ZZZ: these really don't go here, but they live in marathon2.cpp where update_world() lives.....
 void reset_intermediate_action_queues();
+void set_prediction_wanted(bool inPrediction);
 
 /* Called to activate lights, platforms, etc. (original polygon may be NONE) */
 void changed_polygon(short original_polygon_index, short new_polygon_index, short player_index);
@@ -1039,8 +1048,24 @@ short attach_parasitic_object(short host_index, shape_descriptor shape, angle fa
 void remove_parasitic_object(short host_index);
 bool translate_map_object(short object_index, world_point3d *new_location, short new_polygon_index);
 short find_new_object_polygon(world_point2d *parent_location, world_point2d *child_location, short parent_polygon_index);
-
 void remove_map_object(short index);
+
+
+// ZZZ additions in support of prediction:
+// removes the object at object_index from the polygon with index in object's 'polygon' field
+extern void remove_object_from_polygon_object_list(short object_index);
+
+// schedules object at object_index for later insertion into a polygon object list.  it'll be inserted
+// before the object with index index_to_precede (which had better be in the list or be scheduled for insertion
+// by the time perform_deferred_polygon_object_list_manipulations() is called, else A1 will assert).
+extern void deferred_add_object_to_polygon_object_list(short object_index, short index_to_precede);
+
+// actually does the insertions scheduled by deferred_add_object_to_polygon_object_list().  uses the polygon
+// index each scheduled object has _when this function is called_, not whatever polygon index it had when
+// deferred_add_object_to_polygon_object_list() was called!
+extern void perform_deferred_polygon_object_list_manipulations();
+
+
 
 struct shape_and_transfer_mode
 {

@@ -33,6 +33,9 @@ Feb 3, 2003 (Woody Zenfell):
 May 14, 2003 (Woody Zenfell):
 	Can reset a single action queue within a set now, principally for use with
 	LegacyActionQueueToTickBasedQueueAdapter.
+
+ June 14, 2003 (Woody Zenfell):
+	Added "peekActionFlags()" method to examine action_flags without removing them
  
  *  An ActionQueues object encapsulates a set of players' action_queues.
  *
@@ -162,6 +165,36 @@ ActionQueues::dequeueActionFlags(
 	return action_flags;
 }
 
+
+
+uint32
+ActionQueues::peekActionFlags(int inPlayerIndex, size_t inElementsFromHead)
+{
+	// ZZZ: much of this body copied from dequeueActionFlags.  Sorry about that...
+	struct player_data *player= get_player_data(inPlayerIndex);
+	struct action_queue *queue= mQueueHeaders+inPlayerIndex;
+
+	uint32 action_flags;
+
+        // Non-controllable zombies always just return 0 for their action_flags.
+	if (!mZombiesControllable && PLAYER_IS_ZOMBIE(player))
+	{
+		action_flags= 0;
+	}
+	else if (inElementsFromHead >= countActionFlags(inPlayerIndex))
+	{
+		// None to be read
+		action_flags= 0;
+		logError3("peeking too far ahead (%d/%d) in ActionQueue for player %d", inElementsFromHead, countActionFlags(inPlayerIndex), inPlayerIndex);
+	}
+	else
+	{
+		size_t theQueueIndex = (queue->read_index + inElementsFromHead) % mQueueSize;
+		action_flags= queue->buffer[theQueueIndex];
+	}
+
+	return action_flags;
+}
 
 
 // Lifted from player.cpp::get_action_queue_size()

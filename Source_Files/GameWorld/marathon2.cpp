@@ -67,6 +67,11 @@ Feb 8, 2003 (Woody Zenfell):
         PLAYER_IS_PFHORTRAN_CONTROLLED is now no longer used - if a player has
         entries in the PfhortranActionQueues, they'll be used; if not, his
         entries from the RealActionQueues will be.
+
+ June 14, 2003 (Woody Zenfell):
+	Player movement prediction support:
+	+ Support for retaining a partial game-state (this could be moved out to another file)
+	+ Changes to update_world() to take advantage of partial game-state saving/restoring.
 */
 
 #include "cseries.h"
@@ -109,6 +114,7 @@ Feb 8, 2003 (Woody Zenfell):
 #endif /* HAVE_LUA */
 // ZZZ additions:
 #include "ActionQueues.h"
+#include "Logging.h"
 
 #include <limits.h>
 
@@ -123,6 +129,9 @@ Feb 8, 2003 (Woody Zenfell):
 // This is an intermediate action-flags queue for transferring action flags
 // from whichever source to the engine's event handling
 static ActionQueues* GameQueue = NULL;
+
+// ZZZ: We keep this around for use in prediction (we assume a player keeps on doin' what he's been doin')
+static uint32	sMostRecentFlagsForPlayer[MAXIMUM_NUMBER_OF_PLAYERS];
 
 /* ---------- private prototypes */
 
@@ -160,10 +169,158 @@ void initialize_marathon(
 	GameQueue = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, true);
 }
 
+static size_t sPredictedTicks = 0;
+
 void
 reset_intermediate_action_queues() {
 	GameQueue->reset();
+
+	// ZZZ: I don't know that this is strictly the best place (or the best function name)
+	// to do this stuff, but it works, anyway.
+	for(size_t i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; i++)
+		sMostRecentFlagsForPlayer[i] = 0;
+
+	sPredictedTicks = 0;
 }
+
+
+// ZZZ: For prediction...
+static bool sPredictionWanted= false;
+
+void
+set_prediction_wanted(bool inPrediction)
+{
+	sPredictionWanted= inPrediction;
+}
+
+static player_data sSavedPlayerData[MAXIMUM_NUMBER_OF_PLAYERS];
+static monster_data sSavedPlayerMonsterData[MAXIMUM_NUMBER_OF_PLAYERS];
+static object_data sSavedPlayerObjectData[MAXIMUM_NUMBER_OF_PLAYERS];
+static object_data sSavedPlayerParasiticObjectData[MAXIMUM_NUMBER_OF_PLAYERS];
+static short sSavedPlayerObjectNextObject[MAXIMUM_NUMBER_OF_PLAYERS];
+
+// For sanity-checking...
+static int32 sSavedTickCount;
+static uint16 sSavedRandomSeed;
+
+
+// ZZZ: If not already in predictive mode, save off partial game-state for later restoration.
+static void
+enter_predictive_mode()
+{
+	if(sPredictedTicks == 0)
+	{
+		for(size_t i = 0; i < dynamic_world->player_count; i++)
+		{
+			sSavedPlayerData[i] = *get_player_data(i);
+			if(sSavedPlayerData[i].monster_index != NONE)
+			{
+				sSavedPlayerMonsterData[i] = *get_monster_data(sSavedPlayerData[i].monster_index);
+				if(sSavedPlayerMonsterData[i].object_index != NONE)
+				{
+					sSavedPlayerObjectData[i] = *get_object_data(sSavedPlayerMonsterData[i].object_index);
+					sSavedPlayerObjectNextObject[i] = sSavedPlayerObjectData[i].next_object;
+					if(sSavedPlayerObjectData[i].parasitic_object != NONE)
+						sSavedPlayerParasiticObjectData[i] = *get_object_data(sSavedPlayerObjectData[i].parasitic_object);
+				}
+			}
+		}
+		
+		// Sanity checking
+		sSavedTickCount = dynamic_world->tick_count;
+		sSavedRandomSeed = get_random_seed();
+	}
+}
+
+
+// ZZZ: I wrote this function to help catch incomplete state save/restore operations on entering and exiting predictive mode
+// It's not currently in use anywhere, but may prove useful sometime?  so I'm including it in my submission.
+static void
+compare_memory(const char* inChunk1, const char* inChunk2, size_t inSize, size_t inIgnoreStart, size_t inIgnoreEnd, const char* inDescription, int inDescriptionNumber)
+{
+	bool trackingDifferences = false;
+	size_t theDifferenceStart;
+	
+	for(size_t i = 0; i < inSize; i++)
+	{
+		if(inChunk1[i] != inChunk2[i])
+		{
+			if(!trackingDifferences)
+			{
+				theDifferenceStart = i;
+				trackingDifferences = true;
+			}
+		}
+		else
+		{
+			if(trackingDifferences)
+			{
+				if(theDifferenceStart < inIgnoreStart || i >= inIgnoreEnd)
+					logWarning4("%s %d: differences in bytes [%d,%d)", inDescription, inDescriptionNumber, theDifferenceStart, i);
+				trackingDifferences = false;
+			}
+		}
+	}
+
+	if(trackingDifferences)
+	{
+		if(theDifferenceStart < inIgnoreStart || inSize >= inIgnoreEnd)
+			logWarning4("%s %d: differences in bytes [%d,%d)", inDescription, inDescriptionNumber, theDifferenceStart, inSize);
+	}
+}
+
+
+// ZZZ: if in predictive mode, restore the saved partial game-state (it'd better take us back
+// to _exactly_ the same full game-state we saved earlier, else problems.)
+static void
+exit_predictive_mode()
+{
+	if(sPredictedTicks > 0)
+	{
+		for(size_t i = 0; i < dynamic_world->player_count; i++)
+		{
+			assert(get_player_data(i)->monster_index == sSavedPlayerData[i].monster_index);
+
+			*get_player_data(i) = sSavedPlayerData[i];
+
+			if(sSavedPlayerData[i].monster_index != NONE)
+			{
+				assert(get_monster_data(sSavedPlayerData[i].monster_index)->object_index == sSavedPlayerMonsterData[i].object_index);
+
+				*get_monster_data(sSavedPlayerData[i].monster_index) = sSavedPlayerMonsterData[i];
+				
+				if(sSavedPlayerMonsterData[i].object_index != NONE)
+				{
+					assert(get_object_data(sSavedPlayerMonsterData[i].object_index)->parasitic_object == sSavedPlayerObjectData[i].parasitic_object);
+
+					remove_object_from_polygon_object_list(sSavedPlayerMonsterData[i].object_index);
+					
+					*get_object_data(sSavedPlayerMonsterData[i].object_index) = sSavedPlayerObjectData[i];
+
+					// We have to defer this insertion since the object lists could still have other players
+					// in their predictive locations etc. - we need to reconstruct everything exactly as it
+					// was when we entered predictive mode.
+					deferred_add_object_to_polygon_object_list(sSavedPlayerMonsterData[i].object_index, sSavedPlayerObjectNextObject[i]);
+					
+					if(sSavedPlayerObjectData[i].parasitic_object != NONE)
+						*get_object_data(sSavedPlayerObjectData[i].parasitic_object) = sSavedPlayerParasiticObjectData[i];
+				}
+			}
+		}
+
+		perform_deferred_polygon_object_list_manipulations();
+		
+		sPredictedTicks = 0;
+
+		// Sanity checking
+		if(sSavedTickCount != dynamic_world->tick_count)
+			logWarning2("saved tick count %d != dynamic_world->tick_count %d", sSavedTickCount, dynamic_world->tick_count);
+
+		if(sSavedRandomSeed != get_random_seed())
+			logWarning2("saved random seed %d != get_random_seed() %d", sSavedRandomSeed, get_random_seed());
+	}
+}
+
 
 // ZZZ: move a single tick's flags (if there's one present for each player in the Base Queues)
 // from the Base Queues into the Output Queues, overriding each with the corresponding player's
@@ -202,6 +359,7 @@ overlay_queue_with_queue_into_queue(ActionQueues* inBaseQueues, ActionQueues* in
         return true;
 }
 
+
 // Return values for update_world_elements_one_tick()
 enum {
         kUpdateNormalCompletion,
@@ -214,7 +372,7 @@ static int
 update_world_elements_one_tick()
 {
         //CP Addition: Scripting handling stuff
-//AS: removed "success"; it's pointless
+	//AS: removed "success"; it's pointless
         if (script_in_use())
                 do_next_instruction();
 #ifdef HAVE_LUA
@@ -226,7 +384,7 @@ update_world_elements_one_tick()
         update_platforms();
         
         update_control_panels(); // don't put after update_players
-        update_players(GameQueue);
+        update_players(GameQueue, false);
         move_projectiles();
         move_monsters();
         update_effects();
@@ -258,7 +416,10 @@ update_world_elements_one_tick()
 }
 
 // ZZZ: new formulation of update_world(), should be simpler and clearer I hope.
-short update_world()
+// Now returns (whether something changed, number of real ticks elapsed) since, with
+// prediction, something can change even if no real ticks have elapsed.
+std::pair<bool, int16>
+update_world()
 {
         short theElapsedTime = 0;
         bool canUpdate = true;
@@ -272,22 +433,32 @@ short update_world()
                 {
                         canUpdate = overlay_queue_with_queue_into_queue(GetRealActionQueues(), GetPfhortranActionQueues(), GameQueue);
                 }
-                
-                // See if the speed-limiter (net time or heartbeat count) will let us advance a tick
-                int theMostRecentAllowedTick = game_is_networked ? NetGetNetTime() : get_heartbeat_count();
-                
-                if(dynamic_world->tick_count >= theMostRecentAllowedTick)
-                {
-                        canUpdate = false;
-                }
+
+		if(!sPredictionWanted)
+		{
+			// See if the speed-limiter (net time or heartbeat count) will let us advance a tick
+			int theMostRecentAllowedTick = game_is_networked ? NetGetNetTime() : get_heartbeat_count();
+			
+			if(dynamic_world->tick_count >= theMostRecentAllowedTick)
+			{
+				canUpdate = false;
+			}
+		}
                 
                 // If we can't update, we can't update.  We're done for now.
                 if(!canUpdate)
                 {
                         break;
                 }
-                
-                theUpdateResult = update_world_elements_one_tick();
+
+		// Transition from predictive -> real update mode, if necessary.
+		exit_predictive_mode();
+
+		// Capture the flags for each player for use in prediction
+		for(size_t i = 0; i < dynamic_world->player_count; i++)
+			sMostRecentFlagsForPlayer[i] = GameQueue->peekActionFlags(i, 0);
+
+		theUpdateResult = update_world_elements_one_tick();
 
                 theElapsedTime++;
 
@@ -296,7 +467,7 @@ short update_world()
                         canUpdate = false;
                 }
 	}
-        
+
         // This and the following voodoo comes, effectively, from Bungie's code.
         if(theUpdateResult == kUpdateChangeLevel)
         {
@@ -314,106 +485,46 @@ short update_world()
 		update_interface(theElapsedTime);
 		update_fades();
 	}
-	
-	check_recording_replaying();
-        
-        return theElapsedTime;
-}
 
-#ifdef OBSOLETE
-short update_world(
-	void)
-{
-	short lowest_time, highest_time;
-	short i, time_elapsed;
-	short player_index;
-	bool game_over= false;
-        int theUpdateResult;
-	uint32 action_flag;
-	short queue_index;
+	check_recording_replaying();
+
+	// ZZZ: Prediction!
+	bool didPredict = false;
 	
-	/* See if player is_pfhortran_controlled; if this is the case, put the corresponding
-		sPfhortranActionQueues into GameQueue; else put the corresponding sRealActionQueues
-		into GameQueue.	*/
-	for (player_index= 0; player_index<dynamic_world->player_count; ++player_index)
+	if(theUpdateResult == kUpdateNormalCompletion && sPredictionWanted)
 	{
-		if PLAYER_IS_PFHORTRAN_CONTROLLED(get_player_data(player_index))
+		// We use "2" to make sure there's always room for our one set of elements.
+		// (thePredictiveQueues should always hold only 0 or 1 element for each player.)
+		ActionQueues	thePredictiveQueues(dynamic_world->player_count, 2, true);
+
+		// Observe, since we don't use a speed-limiter in predictive mode, that there cannot be flags
+		// stranded in the GameQueue.  Unfortunately this approach will mispredict if a script is
+		// controlling the local player.  We could be smarter about it if that eventually becomes an issue.
+		for( ; sPredictedTicks < GetRealActionQueues()->countActionFlags(local_player_index); sPredictedTicks++)
 		{
-			for (queue_index= 0; GetPfhortranActionQueues()->countActionFlags(player_index); ++queue_index)
+			// Real -> predictive transition, if necessary
+			enter_predictive_mode();
+
+			// Enqueue stuff into thePredictiveQueues
+			for(size_t thePlayerIndex = 0; thePlayerIndex < dynamic_world->player_count; thePlayerIndex++)
 			{
-				action_flag = GetPfhortranActionQueues()->dequeueActionFlags(player_index);
-				GameQueue->enqueueActionFlags(player_index, &action_flag, 1);
+				uint32 theFlags = (thePlayerIndex == local_player_index) ? GetRealActionQueues()->peekActionFlags(local_player_index, sPredictedTicks) : sMostRecentFlagsForPlayer[thePlayerIndex];
+				thePredictiveQueues.enqueueActionFlags(thePlayerIndex, &theFlags, 1);
 			}
-		}
-		else
-		{
-			for (queue_index= 0; GetRealActionQueues()->countActionFlags(player_index); ++queue_index)
-			{
-				action_flag = GetRealActionQueues()->dequeueActionFlags(player_index);
-				GameQueue->enqueueActionFlags(player_index, &action_flag, 1);
-			}		
-		}
-	}
 
-	/* find who has the most and the least queued action flags (we can only advance the world
-		as far as we have action flags for every player).  the difference between the most and
-		least queued action flags should be bounded in some way by the maximum number of action
-		flags we can generate locally at interrupt time. */
-	highest_time= SHRT_MIN, lowest_time= SHRT_MAX;
-	for (player_index= 0;player_index<dynamic_world->player_count; ++player_index)
-	{
-		// Note: the arguments of MIN() are evaluated outside of that function,
-		// to avoid multiple evaluations inside of it, since it is a preprocessor macro.
-		
-		int queue_size, TimeDifference;
-		
-		int32 NumActionFlags = GameQueue->countActionFlags(player_index);
-		
-		if (game_is_networked)
-		{
-			TimeDifference = NetGetNetTime() - dynamic_world->tick_count;
-		}
-		else
-		{
-			TimeDifference = get_heartbeat_count() - dynamic_world->tick_count;
-		}
-		
-		queue_size= MIN(NumActionFlags,TimeDifference);
-		
-		if (queue_size<0) queue_size= 0; // thumb in dike to prevent update_interface from getting -1
-		
-		if (queue_size>highest_time) highest_time= queue_size;
-		if (queue_size<lowest_time) lowest_time= queue_size;
-	}
+			// update_players() will dequeue the elements we just put in there
+			update_players(&thePredictiveQueues, true);
 
-	time_elapsed= lowest_time;
-	for (i=0;i<time_elapsed;++i)
-	{
-                theUpdateResult = update_world_elements_one_tick();
-                if(theUpdateResult != kUpdateNormalCompletion)
-                        break;
-	}
-        
-        if(theUpdateResult == kUpdateChangeLevel)
-                time_elapsed = 0;
+			didPredict = true;
+			
+		} // loop while local player has flags we haven't used for prediction
 
-	/* Game is over. */
-	if(theUpdateResult == kUpdateGameOver) 
-	{
-		game_timed_out();
-		time_elapsed= 0;
-	} 
-	else if (time_elapsed)
-	{
-		update_interface(time_elapsed);
-		update_fades();
-	}
-	
-	check_recording_replaying();
+	} // if we should predict
 
-	return time_elapsed;
+	// we return separately 1. "whether to redraw" and 2. "how many game-ticks elapsed"
+        return std::pair<bool, int16>(didPredict || theElapsedTime != 0, theElapsedTime);
 }
-#endif // OBSOLETE
+
 
 /* call this function before leaving the old level, but DO NOT call it when saving the player.
 	it should be called when you're leaving the game (i.e., quitting or reverting, etc.) */

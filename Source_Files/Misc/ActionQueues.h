@@ -31,7 +31,10 @@ Feb 3, 2003 (Woody Zenfell):
 
 May 14, 2003 (Woody Zenfell):
 	A few additional minor methods to make interface more like TickBasedCircularQueues'.
-	
+
+ June 14, 2003 (Woody Zenfell):
+	Added "peekActionFlags()" method to examine action_flags without removing them
+
  *  Encapsulates a set of action_queues, so we can have multiple sets and explicitly choose one.
  *
  *  Created by woody on Wed Feb 20 2002.
@@ -51,6 +54,7 @@ public:
 
     void		enqueueActionFlags(int inPlayerIndex, const uint32* inFlags, int inFlagsCount);
     uint32		dequeueActionFlags(int inPlayerIndex);
+    uint32		peekActionFlags(int inPlayerIndex, size_t inElementsFromHead);
     unsigned int	countActionFlags(int inPlayerIndex);
     unsigned int	totalCapacity(int inPlayerIndex) { return mQueueSize - 1; }
     unsigned int	availableCapacity(int inPlayerIndex) { return totalCapacity(inPlayerIndex) - countActionFlags(inPlayerIndex); }

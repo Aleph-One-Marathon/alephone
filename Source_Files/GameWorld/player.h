@@ -426,18 +426,11 @@ void delete_player(short player_number);
 void recreate_players_for_new_level(void);
 
 // ZZZ: this now takes a set of ActionQueues as a parameter so the caller can redirect
-// the update routine's input.
-void update_players(ActionQueues* inActionQueuesToUse);
-//void update_players(void); /* assumes ¶t==1 tick */
+// the update routine's input.  Also, now callers can request a 'predictive update',
+// which changes less state, in an effort to make partial state saving/restoration successful.
+void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive); /* assumes ¶t==1 tick */
 
 void walk_player_list(void);
-
-// ZZZ: these have been superseded by operations on GetRealActionQueues().
-/*
-void queue_action_flags(short player_index, uint32 *action_flags, short count);
-uint32 dequeue_action_flags(short player_index);
-short get_action_queue_size(short player_index);
-*/
 
 void damage_player(short monster_index, short aggressor_index, short aggressor_type,
 	struct damage_definition *damage);
@@ -466,7 +459,7 @@ bool try_and_subtract_player_item(short player_index, short item_type);
 /* ---------- prototypes/PHYSICS.C */
 
 void initialize_player_physics_variables(short player_index);
-void update_player_physics_variables(short player_index, uint32 action_flags);
+void update_player_physics_variables(short player_index, uint32 action_flags, bool predictive);
 
 void adjust_player_for_polygon_height_change(short monster_index, short polygon_index, world_distance new_floor_height,
 	world_distance new_ceiling_height);
@@ -482,6 +475,7 @@ void get_binocular_vision_origins(short player_index, world_point3d *left, short
 	angle *left_angle, world_point3d *right, short *right_polygon_index, angle *right_angle);
 
 _fixed get_player_forward_velocity_scale(short player_index);
+
 
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
