@@ -25,6 +25,10 @@
 
 Nov 18, 2000 (Loren Petrich):
 	Added support for landscape vertical repeats
+
+May 3, 2003 (Br'fin (Jeremy Parsons))
+	Added LowLevelShape workaround for passing LowLevelShape info of sprites
+	instead of abusing/overflowing shape_descriptors
 */
 
 #ifndef _OGL_TEXTURES
@@ -177,6 +181,7 @@ public:
 
 	// Inputs: get off of texture object passed to scottish_textures.
 	shape_descriptor ShapeDesc;
+	uint16 LowLevelShape;
 	bitmap_definition *Texture;
 	void *ShadingTables;
 	short TransferMode;

@@ -40,12 +40,14 @@ enum {
 
 struct CrosshairData
 {
+     RGBColor Color;
 	short Thickness;
 	short FromCenter;
 	short Length;
 	short Shape;
-	RGBColor Color;
 	float Opacity;
+	float GLColorsPreCalc[4];
+	bool PreCalced;
 };
 
 // True for OK, false for cancel

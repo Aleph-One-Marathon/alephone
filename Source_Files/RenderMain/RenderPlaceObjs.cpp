@@ -42,6 +42,10 @@ Sept 11, 2001 (Loren Petrich):
 
 Feb 3, 2003 (Loren Petrich):
 	Added chase-cam semitransparency
+
+May 3, 2003 (Br'fin (Jeremy Parsons))
+	Added LowLevelShape workaround for passing LowLevelShape info of sprites
+	instead of abusing/overflowing shape_descriptors
 */
 
 #include "cseries.h"
@@ -325,7 +329,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				
 				// LP change: for the convenience of the OpenGL renderer
 				render_object->rectangle.Opacity = Opacity;
-				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,data.low_level_shape_index);
+				render_object->rectangle.ShapeDesc = BUILD_DESCRIPTOR(data.collection_code,0);
+				render_object->rectangle.LowLevelShape = data.low_level_shape_index;
 #ifdef HAVE_OPENGL
 				render_object->rectangle.ModelPtr = ModelPtr;
 				if (ModelPtr)

@@ -122,6 +122,10 @@ Feb 1, 2003 (Woody Zenfell):
 
 April 22, 2003 (Woody Zenfell):
         Macs can try using aglSetFullScreen() rather than aglSetDrawable() (experimental_rendering)
+
+May 3, 2003 (Br'fin (Jeremy Parsons))
+	Added LowLevelShape workaround for passing LowLevelShape info of sprites
+	instead of abusing/overflowing shape_descriptors
 */
 
 #include <vector>
@@ -2022,6 +2026,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	// Set up the texture manager with the input manager
 	TextureManager TMgr;
 	TMgr.ShapeDesc = RenderRectangle.ShapeDesc;
+	TMgr.LowLevelShape = RenderRectangle.LowLevelShape;
 	TMgr.ShadingTables = RenderRectangle.shading_tables;
 	TMgr.Texture = RenderRectangle.texture;
 	TMgr.TransferMode = RenderRectangle.transfer_mode;
@@ -2859,12 +2864,15 @@ bool OGL_RenderCrosshairs()
 	
 	// What color; make 50% transparent (Alexander Strange's idea)
 	// Changed it to use the crosshairs data
-	GLfloat Color[4];
-	Color[0] = Crosshairs.Color.red/65535.0F;
-	Color[1] = Crosshairs.Color.green/65535.0F;
-	Color[2] = Crosshairs.Color.blue/65535.0F;
-	Color[3] = Crosshairs.Opacity;
-	glColor4fv(Color);
+	if (!Crosshairs.PreCalced)
+	{
+	    Crosshairs.PreCalced = true;
+	    Crosshairs.GLColorsPreCalc[0] = Crosshairs.Color.red/65535.0F;
+	    Crosshairs.GLColorsPreCalc[1] = Crosshairs.Color.green/65535.0F;
+	    Crosshairs.GLColorsPreCalc[2] = Crosshairs.Color.blue/65535.0F;
+	    Crosshairs.GLColorsPreCalc[3] = Crosshairs.Opacity;
+	}
+	glColor4fv(Crosshairs.GLColorsPreCalc);
 	
 	// The center:
 	short XCen = ViewWidth >> 1;
@@ -3069,7 +3077,7 @@ bool OGL_Get2D()
 void
 FillBuffer2(byte* InPtr, GLuint* OutPtr, short SourceWidth)
 {
-        for (int w=0; w<SourceWidth; w++)
+        while (SourceWidth--)
         {
                 // Big-endian here
                 uint16 Intmd = *(InPtr++);
@@ -3084,7 +3092,7 @@ FillBuffer2(byte* InPtr, GLuint* OutPtr, short SourceWidth)
 void
 FillBuffer4(byte* InPtr, GLuint* OutPtr, short SourceWidth)
 {
-        for (int w=0; w<SourceWidth; w++)
+        while (SourceWidth--)
         {
                 // Convert from ARGB 8888 to RGBA 8888; make opaque
                 // This makes the (reasonable) assumption of correct alignment of buffer data

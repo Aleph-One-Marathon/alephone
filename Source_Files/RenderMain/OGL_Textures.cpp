@@ -70,6 +70,9 @@ Nov 30, 2001 (Alexander Strange):
 Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for AGL.h
 
+May 3, 2003 (Br'fin (Jeremy Parsons))
+	Added LowLevelShape workaround for passing LowLevelShape info of sprites
+	instead of abusing/overflowing shape_descriptors
 */
 
 #include <string.h>
@@ -459,7 +462,7 @@ bool TextureManager::Setup()
 	short CollColor = GET_DESCRIPTOR_COLLECTION(ShapeDesc);
 	Collection = GET_COLLECTION(CollColor);
 	CTable = ModifyCLUT(TransferMode,GET_COLLECTION_CLUT(CollColor));
-	Frame = GET_DESCRIPTOR_SHAPE(ShapeDesc);
+	Frame = (LowLevelShape)? LowLevelShape : GET_DESCRIPTOR_SHAPE(ShapeDesc);
 	Bitmap = get_bitmap_index(Collection,Frame);
 	if (Bitmap == NONE) return false;
 	
@@ -1276,6 +1279,8 @@ TextureManager::TextureManager()
 	
 	TxtrStatePtr = 0;
 	TxtrOptsPtr = 0;
+	
+	LowLevelShape = 0;
 	
 	// Marathon default
 	Landscape_AspRatExp = 1;

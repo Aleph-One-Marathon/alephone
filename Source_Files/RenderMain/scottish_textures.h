@@ -36,6 +36,10 @@ Mar 12, 2000 (Loren Petrich):
 Aug 9, 2000 (Loren Petrich):
 	A few obsolete constants deleted;
 	rendering functions moved to Rasterizer_SW.h
+
+May 3, 2003 (Br'fin (Jeremy Parsons))
+	Added LowLevelShape workaround for passing LowLevelShape info of sprites
+	instead of abusing/overflowing shape_descriptors
 */
 
 #include "shape_descriptors.h"
@@ -128,6 +132,7 @@ struct rectangle_definition
 	// Note that for the convenience of 3D-model rendering, more shape information may
 	// eventually have to be transmitted.
 	shape_descriptor ShapeDesc;
+	uint16 LowLevelShape;
 	
 	// For the convenience of the teleporter: shrink to the median axis,
 	// with this position on the screen
@@ -150,6 +155,10 @@ struct rectangle_definition
 	bool BelowLiquid;			// Where the rendering is relative to the liquid
 	int LightDepth;				// For finding the amount of "miner's light"
 	GLfloat LightDirection[3];		// To the "light point"
+
+	// Constructor required defaults
+	rectangle_definition() :
+		LowLevelShape(0) {}
 };
 
 struct polygon_definition
