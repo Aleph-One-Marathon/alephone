@@ -409,12 +409,17 @@ initialize_application (void)
 
   // Load preferences
   initialize_preferences ();
+// ZZZ: made some changes here
+#ifndef HAVE_OPENGL
   graphics_preferences->screen_mode.acceleration = _no_acceleration;
+#endif
+/*
 #ifdef HAVE_OPENGL
   // Can't be switched later because of an SDL bug
   if (!option_nogl && graphics_preferences->screen_mode.bit_depth == 16)
     graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
 #endif
+*/
   if (force_fullscreen)
     graphics_preferences->screen_mode.fullscreen = true;
   if (force_windowed)		// takes precedence over fullscreen because windowed is safer

@@ -38,8 +38,13 @@
 #include "mytm.h"
 
 #include <vector>
+#if defined(__MACH__) && defined(__APPLE__)
 #include <SDL/SDL_thread.h>
 #include <SDL/SDL_timer.h>
+#else
+#include    <SDL_thread.h>
+#include    <SDL_timer.h>
+#endif
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;

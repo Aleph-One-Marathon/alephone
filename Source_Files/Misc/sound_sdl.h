@@ -23,6 +23,9 @@
  *  sound_sdl.cpp - Sound/music management, SDL specific stuff (included by mysound.cpp)
  *
  *  Written in 2000 by Christian Bauer
+ *
+ *  Feb 22, 2002 (Woody Zenfell)
+ *     Added ability to disable DirectShow-based music playback for building on systems without the SDK.
  */
 
 #include <SDL_endian.h>
@@ -31,6 +34,10 @@
 #include "music.h"
 #include "song_definitions.h"
 #include "XML_LevelScript.h"   // For getting level music. 
+
+// ZZZ: define this if you don't want to bring DirectShow into the mix
+// (e.g. if you can't build because you don't have the SDK)
+#define WIN32_DISABLE_MUSIC
 
 // Number of sound channels used by Aleph One sound manager
 const int SM_SOUND_CHANNELS = MAXIMUM_SOUND_CHANNELS + MAXIMUM_AMBIENT_SOUND_CHANNELS;
@@ -95,8 +102,10 @@ static uint32 music_fade_duration;		// Music fade duration in ticks
 const uint32 MUSIC_BUFFER_SIZE = 0x40000;
 static uint8 music_buffer[MUSIC_BUFFER_SIZE];
 
-// Win32 music support. 
+// Win32 music support.
+// ZZZ: could not build with this in, so added preprocessor symbol to disable it.
 #ifdef WIN32
+#ifndef WIN32_DISABLE_MUSIC
 #include <dshow.h>
 #include "SDL_syswm.h"
 
@@ -105,6 +114,7 @@ static IGraphBuilder* gp_graph_builder = NULL;
 static IMediaControl* gp_media_control = NULL;
 static IMediaSeeking* gp_media_seeking = NULL;
 static IMediaEventEx* gp_media_event_ex = NULL;
+#endif
 #endif
 
 // From FileHandler_SDL.cpp
@@ -777,6 +787,7 @@ void music_idle_proc(void)
 void PreloadLevelMusic(void)
 {
 #ifdef WIN32
+#ifndef WIN32_DISABLE_MUSIC
 
     CoInitialize(NULL);
     SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
@@ -820,11 +831,13 @@ void PreloadLevelMusic(void)
         gp_media_control->Run();
     }
 #endif
+#endif
 }
 
 #ifdef WIN32
 void StopLevelMusic(void)
 {
+#ifndef WIN32_DISABLE_MUSIC
     // Release everything.        
     if (gp_media_control) {
         gp_media_control->Stop();        
@@ -844,10 +857,14 @@ void StopLevelMusic(void)
     }
 
     CoUninitialize();
+#endif
 }
+#endif
 
+#ifdef WIN32
 void process_music_event_win32(const SDL_Event& event)
 {
+#ifndef WIN32_DISABLE_MUSIC
     long evCode, param1, param2;
     HRESULT hr;
 
@@ -866,9 +883,10 @@ void process_music_event_win32(const SDL_Event& event)
 
             gp_media_control->Run(); 
             break;
-        } 
-    }
- }
+		} 
+	}
+#endif
+}
 #endif
 
 

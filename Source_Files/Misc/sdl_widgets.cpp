@@ -302,7 +302,18 @@ int w_right_button::layout(void)
 
 const int MAX_TEXT_WIDTH = 200;
 
-w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a) : widget(LABEL_FONT), name(n), selection(s), proc(p), arg(a) {}
+// ZZZ: how come we have to do this?  because Christian put that "&" in the typedef
+// for action_proc?
+// Anyway, it fixes the "crash when clicking in the Environment menu" bug we've seen
+// in the Windows version all this time.
+#ifdef __MVCPP__
+w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a)
+    : widget(LABEL_FONT), name(n), selection(s), proc(*p), arg(a) {}
+#else
+w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a)
+    : widget(LABEL_FONT), name(n), selection(s), proc(p), arg(a) {}
+#endif
+
 
 int w_select_button::layout(void)
 {

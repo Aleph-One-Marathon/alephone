@@ -3001,7 +3001,7 @@ void s_Get_Platform_State(script_instruction inst)
 				break;
 		}
 		
-		platform = get_platform_data(temp);
+		platform = get_platform_data(int(temp));
 		
 		if (PLATFORM_IS_ACTIVE(platform))
 			set_variable(int(inst.op2), 1);
@@ -3061,21 +3061,19 @@ void s_Get_Light_State(script_instruction inst)
 				temp2 = get_variable(int(inst.op2));
 				break;
 		}
-                set_variable(int(inst.op2), get_light_status(temp));
+                set_variable(int(inst.op2), get_light_status(int(temp)));
 	}
 }
 
 void s_Get_Player_Poly(script_instruction inst)
 {
-
 	if (inst.mode == 0)
 		return;
 		
-		switch(inst.mode)
-		{
-			case 1:
-				set_variable(int(inst.op1), get_polygon_index_supporting_player(current_player_index));
-				break;
-		}
-return;
+	switch(inst.mode)
+	{
+		case 1:
+			set_variable(int(inst.op1), get_polygon_index_supporting_player(current_player_index));
+			break;
+	}
 }

@@ -98,7 +98,7 @@ struct tint_table32
 /* ignore multiple shading tables if set */
 #define _SHADELESS_BIT 0x8000
 
-struct OGL_ModelData;
+class OGL_ModelData;
 
 struct rectangle_definition
 {

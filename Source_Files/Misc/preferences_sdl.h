@@ -285,6 +285,86 @@ static const char *gamma_labels[9] = {
 	"Darkest", "Darker", "Dark", "Normal", "Light", "Really Light", "Even Lighter", "Lightest", NULL
 };
 
+// ZZZ: reworked dialog slightly to allow selection of OpenGL and to configure renderers.
+// Note that w_select should handle correctly the case when an index is out-of-range.  Note
+// also that shell_sdl forces the renderer to software ifndef HAVE_OPENGL.
+static const char* renderer_labels[] = {
+        "Software",
+#ifdef HAVE_OPENGL
+        "OpenGL",
+#endif
+        NULL
+};
+
+// ZZZ
+enum {
+    iRENDERING_SYSTEM = 1000
+};
+
+// ZZZ addition: set software rendering options (analogous to opengl_dialog()).
+static void
+software_rendering_options_dialog(void* arg) {
+	dialog *parent = (dialog *)arg;
+
+	// Create dialog
+	dialog d;
+	d.add(new w_static_text("SOFTWARE RENDERING OPTIONS", TITLE_FONT, TITLE_COLOR));
+	d.add(new w_spacer());
+
+    w_toggle *depth_w = new w_toggle("Color Depth", graphics_preferences->screen_mode.bit_depth == 16, depth_labels);
+	d.add(depth_w);
+	w_toggle *resolution_w = new w_toggle("Resolution", graphics_preferences->screen_mode.high_resolution, resolution_labels);
+	d.add(resolution_w);
+
+	d.add(new w_spacer());
+	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
+	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+	// Clear screen
+	clear_screen();
+
+	// Run dialog
+	if (d.run() == 0) {	// Accepted
+		bool changed = false;
+
+		int depth = (depth_w->get_selection() ? 16 : 8);
+		if (depth != graphics_preferences->screen_mode.bit_depth) {
+			graphics_preferences->screen_mode.bit_depth = depth;
+			changed = true;
+			// don't change mode now; it will be changed when the game starts
+		}
+
+		bool hi_res = resolution_w->get_selection();
+		if (hi_res != graphics_preferences->screen_mode.high_resolution) {
+			graphics_preferences->screen_mode.high_resolution = hi_res;
+			changed = true;
+		}
+
+		if (changed)
+			write_preferences();
+	}
+}
+
+// ZZZ addition: bounce to correct renderer-config box based on selected rendering system.
+static void
+rendering_options_dialog_demux(void* arg) {
+    int theSelectedRenderer = get_selection_control_value((dialog*) arg, iRENDERING_SYSTEM) - 1;
+
+    switch(theSelectedRenderer) {
+        case _no_acceleration:
+            software_rendering_options_dialog(arg);
+        break;
+
+        case _opengl_acceleration:
+            opengl_dialog(arg);
+        break;
+
+        default:
+            assert(false);
+        break;
+    }
+}
+
 static void graphics_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
@@ -293,23 +373,26 @@ static void graphics_dialog(void *arg)
 	dialog d;
 	d.add(new w_static_text("GRAPHICS SETUP", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
-	w_toggle *depth_w = new w_toggle("Color Depth", graphics_preferences->screen_mode.bit_depth == 16, depth_labels);
-	w_toggle *resolution_w = new w_toggle("Resolution", graphics_preferences->screen_mode.high_resolution, resolution_labels);
-	if (graphics_preferences->screen_mode.acceleration == _no_acceleration) {
-		d.add(depth_w);
-		d.add(resolution_w);
-	}
+
+    w_select* renderer_w = new w_select("Rendering System", graphics_preferences->screen_mode.acceleration, renderer_labels);
+    renderer_w->set_identifier(iRENDERING_SYSTEM);
+    d.add(renderer_w);
+
 	w_select *size_w = new w_select("Screen Size", graphics_preferences->screen_mode.size, size_labels);
 	d.add(size_w);
 	w_toggle *fullscreen_w = new w_toggle("Fullscreen", graphics_preferences->screen_mode.fullscreen);
 	d.add(fullscreen_w);
 	w_select *gamma_w = new w_select("Brightness", graphics_preferences->screen_mode.gamma_level, gamma_labels);
 	d.add(gamma_w);
-#ifdef HAVE_OPENGL
-	d.add(new w_spacer());
-	d.add(new w_button("OPENGL OPTIONS", opengl_dialog, &d));
-#endif
-	d.add(new w_spacer());
+
+    d.add(new w_spacer());
+    d.add(new w_button("RENDERING OPTIONS", rendering_options_dialog_demux, &d));
+    d.add(new w_spacer());
+
+    d.add(new w_static_text("Warning: switching renderers is currently a bit buggy."));
+    d.add(new w_static_text("If you switch, consider quitting and restarting Aleph One."));
+
+    d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
@@ -329,18 +412,11 @@ static void graphics_dialog(void *arg)
 			changed = true;
 		}
 
-		int depth = (depth_w->get_selection() ? 16 : 8);
-		if (depth != graphics_preferences->screen_mode.bit_depth) {
-			graphics_preferences->screen_mode.bit_depth = depth;
-			changed = true;
-			// don't change mode now; it will be changed when the game starts
-		}
-
-		bool hi_res = resolution_w->get_selection();
-		if (hi_res != graphics_preferences->screen_mode.high_resolution) {
-			graphics_preferences->screen_mode.high_resolution = hi_res;
-			changed = true;
-		}
+        int renderer = renderer_w->get_selection();
+        if(renderer != graphics_preferences->screen_mode.acceleration) {
+            graphics_preferences->screen_mode.acceleration = renderer;
+            changed = true;
+        }
 
 		int size = size_w->get_selection();
 		if (size != graphics_preferences->screen_mode.size) {
@@ -880,19 +956,20 @@ public:
 
 private:
 	void select_item(dialog *parent);
-	static void select_item_callback(void *arg)
-	{
-		w_env_select *obj = (w_env_select *)arg;
-		obj->select_item(obj->parent);
-	}
+	static void select_item_callback(void *arg);
 
-	dialog *parent;
+    dialog *parent;
 	const char *menu_title;	// Selection menu title
 
 	FileSpecifier item;		// File specification
 	int type;				// File type
 	char item_name[256];	// File name (excluding directory part)
 };
+
+void w_env_select::select_item_callback(void* arg) {
+    w_env_select* obj = (w_env_select*) arg;
+    obj->select_item(obj->parent);
+}
 
 void w_env_select::select_item(dialog *parent)
 {

@@ -49,7 +49,7 @@ namespace std {};
 using namespace std;	// Visual C++ doesn't like that other way of using the namespace.
 #define for if(false) {} else for // solves a bug in MSVC for the "redeclared" initializers used in for loops.
 
-#define		VERSION		"1.0"
+//#define		VERSION		"1.0"
 
 #endif
 
