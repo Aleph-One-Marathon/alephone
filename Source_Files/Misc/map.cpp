@@ -1482,7 +1482,11 @@ void push_out_line(
 	world_distance dx, dy;
 	
 	/* if line_length is zero, calculate it */
-	if (!line_length) line_length= distance2d(e1, e1);
+	if (!line_length) {
+		line_length= distance2d(e0, e1);
+		if (!line_length)
+			return;
+	}
 	
 	/* calculate dx, dy (a vector of length d perpendicular (outwards) to the line e0e1 */
 	line_dx= e1->x-e0->x, line_dy= e1->y-e0->y;
