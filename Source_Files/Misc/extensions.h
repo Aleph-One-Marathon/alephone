@@ -15,6 +15,9 @@ class FileSpecifier;
 #define BUNGIE_PHYSICS_DATA_VERSION 0
 #define PHYSICS_DATA_VERSION 1
 
+// LP: don't need this stuff anymore
+#if 0
+
 #ifdef EXPORT_STRUCTURE
 struct definition_data
 {
@@ -51,6 +54,8 @@ static struct definition_data definitions[]=
 };
 #define NUMBER_OF_DEFINITIONS (sizeof(definitions)/sizeof(definitions[0]))
 #endif
+#endif
+
 #endif
 
 /* ------------- prototypes */
