@@ -126,19 +126,19 @@ static bool TextureConfigureDialog(short WhichTexture)
 	
 	ControlHandle Near_CHdl;
 	GetDialogItem(Dialog, Near_Item, &ItemType, (Handle *)&Near_CHdl, &Bounds);
-	SetControlValue(Near_CHdl, short(TxtrConfig.NearFilter)+1);
+	SetControlValue(Near_CHdl, TxtrConfig.NearFilter+1);
 	
 	ControlHandle Far_CHdl;
 	GetDialogItem(Dialog, Far_Item, &ItemType, (Handle *)&Far_CHdl, &Bounds);
-	SetControlValue(Far_CHdl, short(TxtrConfig.FarFilter)+1);
+	SetControlValue(Far_CHdl, TxtrConfig.FarFilter+1);
 
 	ControlHandle Res_CHdl;
 	GetDialogItem(Dialog, Resolution_Item, &ItemType, (Handle *)&Res_CHdl, &Bounds);
-	SetControlValue(Res_CHdl, short(TxtrConfig.Resolution)+1);
+	SetControlValue(Res_CHdl, TxtrConfig.Resolution+1);
 	
 	ControlHandle Color_CHdl;
 	GetDialogItem(Dialog, ColorDepth_Item, &ItemType, (Handle *)&Color_CHdl, &Bounds);
-	SetControlValue(Color_CHdl, short(TxtrConfig.ColorFormat)+1);
+	SetControlValue(Color_CHdl, TxtrConfig.ColorFormat+1);
 	
 	ControlHandle BasedOn_CHdl;
 	GetDialogItem(Dialog, BasedOn_Item, &ItemType, (Handle *)&BasedOn_CHdl, &Bounds);
@@ -214,10 +214,10 @@ static bool TextureConfigureDialog(short WhichTexture)
 			if (WhichAltTxtr != WhichTexture)
 			{
 				TxtrConfig = TxtrConfigList[WhichAltTxtr];
-				SetControlValue(Near_CHdl, short(TxtrConfig.NearFilter)+1);
-				SetControlValue(Far_CHdl, short(TxtrConfig.FarFilter)+1);
-				SetControlValue(Res_CHdl, short(TxtrConfig.Resolution)+1);
-				SetControlValue(Color_CHdl, short(TxtrConfig.ColorFormat)+1);
+				SetControlValue(Near_CHdl, TxtrConfig.NearFilter+1);
+				SetControlValue(Far_CHdl, TxtrConfig.FarFilter+1);
+				SetControlValue(Res_CHdl, TxtrConfig.Resolution+1);
+				SetControlValue(Color_CHdl, TxtrConfig.ColorFormat+1);
 			}
 			break;
 		}

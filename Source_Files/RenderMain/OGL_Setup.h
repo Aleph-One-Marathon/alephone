@@ -123,10 +123,10 @@ enum
 
 struct OGL_Texture_Configure
 {
-	byte NearFilter;
-	byte FarFilter;
-	byte Resolution;
-	byte ColorFormat;
+	short NearFilter;
+	short FarFilter;
+	short Resolution;
+	short ColorFormat;
 };
 
 // Here are some control flags
