@@ -384,7 +384,7 @@ void full_fade(
 {
 	struct color_table animated_color_table;
 	
-	memcpy(&animated_color_table, original_color_table, sizeof(struct color_table));
+	obj_copy(animated_color_table, *original_color_table);
 	
 	explicit_start_fade(type, original_color_table, &animated_color_table);
 	while (update_fades())
