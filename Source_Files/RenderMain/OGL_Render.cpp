@@ -3145,9 +3145,6 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 #endif
 */
 	
-	// Number of source bytes (destination bytes = 4)
-	short NumSrcBytes = bit_depth/8;
-	
 	// Set up conversion table
 	// MakeConversion_16to32(bit_depth);
 	
@@ -3155,9 +3152,12 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	PixMapHandle Pxls = GetGWorldPixMap(BufferPtr);
 	LockPixels(Pxls);
 	
+	// Number of source bytes (destination bytes = 4)
+	short NumSrcBytes = (**Pxls).pixelSize/8;
+	
 	// Row-start address and row length
 	byte *SourceStart = (byte *)GetPixBaseAddr(Pxls);
-	long StrideBytes = (**Pxls).rowBytes & 0x7fff;
+	long StrideBytes = (**Pxls).rowBytes & 0x3fff;
 	
 	// How many pixels to draw per line
 	short SourceWidth = SourceBounds.right - SourceBounds.left;
