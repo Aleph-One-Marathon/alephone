@@ -15,28 +15,34 @@
 	The syntax was chosen to make it easy to create an unpacking version of a packing routine,
 	by simply changing the routine names.
 	
-	Stream2Value(uint8* &Stream, T& Number)
+	StreamToValue(uint8* &Stream, T& Number)
 		unpacks a stream into a numerical value (T is int16, uint16, int32, uint32)
 	
-	Value2Stream(uint8* &Stream, T Number)
+	ValueToStream(uint8* &Stream, T Number)
 		packs a numerical value (T is int16, uint16, int32, uint32) into a stream
 	
-	Stream2List(uint8* &Stream, T* List, int Count)
+	StreamToList(uint8* &Stream, T* List, int Count)
 		unpacks a stream into a list of numerical values (T is int16, uint16, int32, uint32)
 	
-	List2Stream(uint8* &Stream, const T* List, int Count)
+	ListToStream(uint8* &Stream, const T* List, int Count)
 		packs a list of numerical values (T is int16, uint16, int32, uint32) into a stream
 	
-	Stream2Bytes(uint8* &Stream, void* Bytes, int Count)
+	StreamToBytes(uint8* &Stream, void* Bytes, int Count)
 		unpacks a stream into a block of bytes
 	
-	Bytes2Stream(uint8* &Stream, const void* Bytes, int Count)
+	BytesToStream(uint8* &Stream, const void* Bytes, int Count)
 		packs a block of bytes into a stream
 */
 
 #include <string.h>
 
-inline void Stream2Value(uint8* &Stream, uint16 &Value)
+#if !(defined(BIG_ENDIAN)) && !(defined(LITTLE_ENDIAN))
+#error "At least one of BIG_ENDIAN and LITTLE_ENDIAN must be defined!"
+#elif (defined(BIG_ENDIAN)) && (defined(LITTLE_ENDIAN))
+#error "BIG_ENDIAN and LITTLE_ENDIAN cannot both be defined at the same time!"
+#endif
+
+inline void StreamToValue(uint8* &Stream, uint16 &Value)
 {
 	// Must be unsigned, so they will be zero-extended
 	uint16 Byte0 = uint16(*(Stream++));
@@ -46,19 +52,17 @@ inline void Stream2Value(uint8* &Stream, uint16 &Value)
 	Value = (Byte0 << 8) | Byte1;
 #elif defined(LITTLE_ENDIAN)
 	Value = (Byte1 << 8) | Byte0;
-#else
-#error "The packing/unpacking routines need some endianness defined"
 #endif
 }
 
-inline void Stream2Value(uint8* &Stream, int16 &Value)
+inline void StreamToValue(uint8* &Stream, int16 &Value)
 {
 	uint16 UValue;
-	Stream2Value(Stream,UValue);
+	StreamToValue(Stream,UValue);
 	Value = int16(UValue);
 }
 
-inline void Stream2Value(uint8* &Stream, uint32 &Value)
+inline void StreamToValue(uint8* &Stream, uint32 &Value)
 {
 	// Must be unsigned, so they will be zero-extended
 	uint32 Byte0 = uint32(*(Stream++));
@@ -70,19 +74,17 @@ inline void Stream2Value(uint8* &Stream, uint32 &Value)
 	Value = (Byte0 << 24) | (Byte1 << 16) | (Byte2 << 8) | Byte3;
 #elif defined(LITTLE_ENDIAN)
 	Value = (Byte3 << 24) | (Byte2 << 16) | (Byte1 << 8) | Byte0;
-#else
-#error "The packing/unpacking routines need some endianness defined"
 #endif
 }
 
-inline void Stream2Value(uint8* &Stream, int32 &Value)
+inline void StreamToValue(uint8* &Stream, int32 &Value)
 {
 	uint32 UValue;
-	Stream2Value(Stream,UValue);
+	StreamToValue(Stream,UValue);
 	Value = int32(UValue);
 }
 
-inline void Value2Stream(uint8* &Stream, uint16 Value)
+inline void ValueToStream(uint8* &Stream, uint16 Value)
 {
 #if defined(BIG_ENDIAN)
 	*(Stream++) = uint8(Value >> 8);
@@ -90,17 +92,15 @@ inline void Value2Stream(uint8* &Stream, uint16 Value)
 #elif defined(LITTLE_ENDIAN)
 	*(Stream++) = uint8(Value);
 	*(Stream++) = uint8(Value >> 8);
-#else
-#error "The packing/unpacking routines need some endianness defined"
 #endif
 }
 
-inline void Value2Stream(uint8* &Stream, int16 Value)
+inline void ValueToStream(uint8* &Stream, int16 Value)
 {
-	Value2Stream(Stream,uint16(Value));
+	ValueToStream(Stream,uint16(Value));
 }
 
-inline void Value2Stream(uint8* &Stream, uint32 Value)
+inline void ValueToStream(uint8* &Stream, uint32 Value)
 {
 #if defined(BIG_ENDIAN)
 	*(Stream++) = uint8(Value >> 24);
@@ -112,38 +112,36 @@ inline void Value2Stream(uint8* &Stream, uint32 Value)
 	*(Stream++) = uint8(Value >> 8);
 	*(Stream++) = uint8(Value >> 16);
 	*(Stream++) = uint8(Value >> 24);
-#else
-#error "The packing/unpacking routines need some endianness defined"
 #endif
 }
 
-inline void Value2Stream(uint8* &Stream, int32 Value)
+inline void ValueToStream(uint8* &Stream, int32 Value)
 {
-	Value2Stream(Stream,uint32(Value));
+	ValueToStream(Stream,uint32(Value));
 }
 
-template<class T> void Stream2List(uint8* &Stream, T* List, int Count)
-{
-	T* ValuePtr = List;
-	for (int k=0; k<Count; k++)
-		Stream2Value(Stream,*(ValuePtr++));
-}
-
-
-template<class T> void List2Stream(uint8* &Stream, T* List, int Count)
+template<class T> void StreamToList(uint8* &Stream, T* List, int Count)
 {
 	T* ValuePtr = List;
 	for (int k=0; k<Count; k++)
-		Value2Stream(Stream,*(ValuePtr++));
+		StreamToValue(Stream,*(ValuePtr++));
 }
 
-inline void Stream2Bytes(uint8* &Stream, void* Bytes, int Count)
+
+template<class T> void ListToStream(uint8* &Stream, T* List, int Count)
+{
+	T* ValuePtr = List;
+	for (int k=0; k<Count; k++)
+		ValueToStream(Stream,*(ValuePtr++));
+}
+
+inline void StreamToBytes(uint8* &Stream, void* Bytes, int Count)
 {
 	memcpy(Bytes,Stream,Count);
 	Stream += Count;
 }
 
-inline void Bytes2Stream(uint8* &Stream, const void* Bytes, int Count)
+inline void BytesToStream(uint8* &Stream, const void* Bytes, int Count)
 {
 	memcpy(Stream,Bytes,Count);
 	Stream += Count;
