@@ -184,10 +184,14 @@ int load_script(int text_id)
 		current_script=0;
 	else
 	{
-		src = (char *)TextRsrc.GetPointer();
+		char *origsrc = (char *)TextRsrc.GetPointer();
+		int origlen = TextRsrc.GetLength();
 		
-		// Buffer-overflow problem possible here...
-		src[TextRsrc.GetLength()] = 0;
+		// Create a new copy to avoid buffer overflows,
+		// and tack a C-string terminator on the end
+		src = new char[origlen+1];
+		memcpy(src,origsrc,origlen);
+		src[origlen] = 0;
 /*
 #if defined(mac)
 		src=(char *)(*textHand);
@@ -205,8 +209,9 @@ int load_script(int text_id)
 #elif defined(SDL)
 		free(textHand);
 #endif
-*/
 		src = NULL; 
+*/
+		delete []src;
 		
 		current_instruction = 0;
 		/*instruction_decay = 0;*/
