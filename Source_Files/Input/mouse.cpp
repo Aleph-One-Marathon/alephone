@@ -242,14 +242,6 @@ void test_mouse(
 	*delta_velocity= snapshot_delta_velocity;
 }
 
-static bool mouse_available(
-	short type)
-{
-	(void) (type);
-	
-	return true;
-}
-
 void exit_mouse(
 	short type)
 {
