@@ -189,7 +189,7 @@ static struct bitmap_definition *get_bitmap_definition(short collection_index, s
 /* ---------- machine-specific code */
 
 #ifdef mac
-#include "shapes_macintosh.c"
+#include "shapes_macintosh.cpp"
 #elif defined(SDL)
 #include "shapes_sdl.cpp"
 #endif

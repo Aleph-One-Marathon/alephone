@@ -25,6 +25,7 @@ const bool DoIncorrectCountVWarn = false;
 #include "cseries.h"
 #include "map.h"
 #include "flood_map.h"
+#include "Packing.h"
 
 /*
 maps of one polygon don’t have their impassability information computed

@@ -301,7 +301,7 @@ struct sound_behavior_definition *get_sound_behavior_definition(short sound_beha
 /* ---------- machine-specific code */
 
 #if defined(mac)
-#include "sound_macintosh.c"
+#include "sound_macintosh.cpp"
 #elif defined(SDL)
 #include "sound_sdl.cpp"
 #endif
