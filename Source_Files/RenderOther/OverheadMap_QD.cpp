@@ -70,7 +70,6 @@ void OverheadMap_QD_Class::draw_line(
 {
 	world_point2d *vertex1= &GetVertex(vertices[0]);
 	world_point2d *vertex2= &GetVertex(vertices[1]);
-	struct line_definition *definition;
 	
 	SetColor(color);
 	PenSize(pen_size,pen_size);
@@ -116,7 +115,6 @@ void OverheadMap_QD_Class::draw_player(
 	short i;
 	PolyHandle polygon;
 	world_point2d triangle[3];
-	struct entity_definition *definition;
 
 	/* Use our universal clut */
 	// changed to transmitted color

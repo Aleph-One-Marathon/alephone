@@ -414,7 +414,6 @@ static byte *read_sound_from_file(
 		}
 	}
 	
-	bool success= false;
 	byte *data= NULL;
 	OSErr error= noErr;
 	
@@ -789,7 +788,7 @@ bool LoadedSound::SetVolume(_fixed Left, _fixed Right)
 	_fixed Vol = MAX(Left,Right);
 	if (Vol <= 0) return true;
 	
-	short Balance = (1 << 8) * (Right - Left)/float(Vol);
+	short Balance = short((1 << 8) * (Right - Left)/float(Vol));
 	
 	SetMovieVolume(QTSnd,Vol);
 	

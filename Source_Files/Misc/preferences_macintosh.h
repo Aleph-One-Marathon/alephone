@@ -213,13 +213,13 @@ static void get_name_from_system(
 static bool ethernet_active(
 	void)
 {
-	short  refnum;
-	OSErr  error;
-
 #if defined(TARGET_API_MAC_CARBON)
 	// JTP: I'm lame, not doing anything for network foo
 	return false;
 #else
+	short  refnum;
+	OSErr  error;
+
 	error= OpenDriver("\p.ENET", &refnum);
 	
 	return error==noErr ? true : false;
@@ -1101,8 +1101,6 @@ static void search_from_directory(DirectorySpecifier& BaseDir)
 //	FSSpec *file)
 {
 	FileFinder pb;
-	// struct find_file_pb pb;
-	OSErr error;
 
 	pb.Clear();	
 	pb.version= 0;
@@ -1269,7 +1267,9 @@ static MenuHandle get_popup_menu_handle(
 	DialogPtr dialog,
 	short item)
 {
+#if !defined(USE_CARBON_ACCESSORS)
 	struct PopupPrivateData **privateHndl;
+#endif
 	MenuHandle menu;
 	short item_type;
 	ControlHandle control;
