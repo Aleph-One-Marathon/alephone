@@ -161,9 +161,9 @@ void DrawMainWindow()
 		
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glFrontFace(GL_CW);
+		// glEnable(GL_CULL_FACE);
+		// glCullFace(GL_BACK);
+		// glFrontFace(GL_CW);
 		glAlphaFunc(GL_GREATER,0.5);
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
@@ -187,13 +187,15 @@ void ResizeMainWindow(int _Width, int _Height)
 		GLfloat BBRadius = 0;
 		for (int m=0; m<3; m++)
 		{
-			BBRadius = MAX(BBRadius,-Model.BoundingBox[0][m]);
-			BBRadius = MAX(BBRadius,Model.BoundingBox[1][m]);
+
+			GLfloat Dist = MAX(-Model.BoundingBox[0][m],Model.BoundingBox[1][m]);
+			BBRadius += Dist*Dist;
 		}
+		BBRadius = sqrt(BBRadius);
 		
 		GLfloat XDim = BBRadius*_Width/MinDim;
 		GLfloat YDim = BBRadius*_Height/MinDim;
-		GLfloat ZDim = BBRadius;
+		GLfloat ZDim = 2*BBRadius;
 		
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -202,6 +204,19 @@ void ResizeMainWindow(int _Width, int _Height)
 		// glTranslatef(0.6*BBRadius,0.3*BBRadius,0);
 	}
 }
+
+// Perform a "view side" rotate of the modelview matrix;
+// rotations are normally applied to the matrix's "model side"
+static void ViewSideRotate(GLfloat Angle, GLfloat X, GLfloat Y, GLfloat Z)
+{
+	GLfloat Matrix[16];
+	glMatrixMode(GL_MODELVIEW);
+	glGetFloatv(GL_MODELVIEW_MATRIX,Matrix);
+	glLoadIdentity();
+	glRotatef(Angle,X,Y,Z);
+	glMultMatrixf(Matrix);
+}
+
 
 const char ESCAPE = 0x1b;
 
@@ -212,41 +227,40 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 	switch(key)
 	{
 		case '6':
-			glMatrixMode(GL_MODELVIEW);
-			glRotatef(RotationAngle,0,1,0);
+			ViewSideRotate(RotationAngle,0,1,0);
 			glutPostRedisplay();
 			break;
 		
 		case '4':
-			glMatrixMode(GL_MODELVIEW);
-			glRotatef(-RotationAngle,0,1,0);
+			ViewSideRotate(-RotationAngle,0,1,0);
 			glutPostRedisplay();
 			break;
 		
 		case '8':
-			glMatrixMode(GL_MODELVIEW);
-			glRotatef(RotationAngle,1,0,0);
+			ViewSideRotate(RotationAngle,1,0,0);
 			glutPostRedisplay();
 			break;
 		
 		case '2':
-			glMatrixMode(GL_MODELVIEW);
-			glRotatef(-RotationAngle,1,0,0);
+			ViewSideRotate(-RotationAngle,1,0,0);
 			glutPostRedisplay();
 			break;
 		
 		case '9':
-			glMatrixMode(GL_MODELVIEW);
-			glRotatef(RotationAngle,0,0,1);
+			ViewSideRotate(RotationAngle,0,0,-1);
 			glutPostRedisplay();
 			break;
 		
 		case '7':
-			glMatrixMode(GL_MODELVIEW);
-			glRotatef(-RotationAngle,0,0,1);
+			ViewSideRotate(-RotationAngle,0,0,-1);
 			glutPostRedisplay();
 			break;
 		
+		case '0':
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+			glutPostRedisplay();
+			break;
 	}
 }
 

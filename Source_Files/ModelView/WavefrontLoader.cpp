@@ -178,13 +178,13 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		char *RestOfLine = NULL;
 		if (RestOfLine = CompareToKeyword("v")) // Vertex position
 		{
-			GLfloat Vertex[3];
-			objlist_clear(Vertex,3);
+			GLfloat Position[3];
+			objlist_clear(Position,3);
 			
-			sscanf(RestOfLine," %f %f %f",Vertex,Vertex+1,Vertex+2);
+			sscanf(RestOfLine," %f %f %f",Position,Position+1,Position+2);
 			
 			for (int k=0; k<3; k++)
-				Positions.push_back(Vertex[k]);
+				Positions.push_back(Position[k]);
 		}
 		else if (RestOfLine = CompareToKeyword("vt")) // Vertex texture coordinate
 		{
@@ -252,17 +252,17 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 				// Negative is from end of current list
 				
 				if (PosIndx < 0)
-					PosIndx += Positions.size();
+					PosIndx += Positions.size()/3;
 				else
 					PosIndx--;
 				
 				if (TCIndx < 0)
-					TCIndx += TxtrCoords.size();
+					TCIndx += TxtrCoords.size()/2;
 				else
 					TCIndx--;
 				
 				if (NormIndx < 0)
-					NormIndx += Normals.size();
+					NormIndx += Normals.size()/3;
 				else
 					NormIndx--;
 				
