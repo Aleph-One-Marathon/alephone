@@ -3,6 +3,8 @@
 	network_games.c
 	Wednesday, July 19, 1995 10:16:51 AM- rdm created.
 
+Jul 1, 2000 (Loren Petrich):
+	Added Benad's changes
 */
 
 #include "cseries.h"
@@ -13,6 +15,10 @@
 #include "network_games.h"
 #include "game_window.h" // for mark_player_network_stats_as_dirty
 #include "mysound.h"
+
+// Benad
+void destroy_players_ball(
+	short player_index);
 
 #include <stdio.h>
 
@@ -52,7 +58,9 @@ enum { // for capture the flag.
 
 /* ----------------- private prototypes */
 static boolean player_has_ball(short player_index, short color);
-static void destroy_players_ball(short player_index);
+// LP change: this is to be consistent with Benad's moving it out
+extern void destroy_players_ball(short player_index);
+// static void destroy_players_ball(short player_index);
 
 /* ------------------ code */
 long get_player_net_ranking(
@@ -110,18 +118,42 @@ long get_player_net_ranking(
 			ranking= -player->netgame_parameters[_time_spent_it];
 			break;
 
+		// START Benad
 		case _game_of_defense:
-			ranking= (*kills)-(*deaths);
+			//ranking= (*kills)-(*deaths);
 
 			/* Bogus for now.. */
-			if(game_is_over && GET_GAME_PARAMETER(_winning_team)==player->team)
+			/*if(game_is_over && GET_GAME_PARAMETER(_winning_team)==player->team)
 			{
 				ranking += 50;
 			}
-			break;
+			break;*/
 			
+			//short defending_team= GET_GAME_PARAMETER(_defending_team);
+			short defending_team= 0;
+			if(player->team != defending_team)
+			{
+				ranking= player->netgame_parameters[_offender_time_in_base];
+			}
+			else
+			{
+				long biggest = 0;
+				for(player_index= 0; player_index<dynamic_world->player_count; ++player_index)
+				{
+					struct player_data *index_player= get_player_data(player_index);
+					if ((index_player->team != defending_team) &&
+						(index_player->netgame_parameters[_offender_time_in_base] > biggest))
+					{
+						biggest = index_player->netgame_parameters[_offender_time_in_base];
+					}
+				}
+				ranking= (dynamic_world->game_information.kill_limit * TICKS_PER_SECOND) - biggest; // in ticks
+			}
+			break;
+		// END Benad
 		case _game_of_rugby:
-			ranking= (*kills)-(*deaths);
+			// Benad
+			ranking= player->netgame_parameters[_points_scored];
 			break;
 			
 		default:
@@ -138,6 +170,8 @@ void initialize_net_game(
 	switch (GET_GAME_TYPE())
 	{
 		case _game_of_king_of_the_hill:
+		// Benad
+		case _game_of_defense:
 			// calculate the center of the hill
 			{
 				long x, y;
@@ -159,7 +193,11 @@ void initialize_net_game(
 				dynamic_world->game_beacon.y= y/count;
 			}
 			break;
-
+		// START Benad
+		case _game_of_rugby:
+			dynamic_world->game_player_index= NONE;
+			break;
+		// END Benad
 		case _game_of_kill_man_with_ball:
 			dynamic_world->game_player_index= NONE;
 //			play_local_sound(_snd_got_ball);
@@ -184,6 +222,8 @@ short get_network_compass_state(
 	switch (GET_GAME_TYPE())
 	{
 		case _game_of_king_of_the_hill: // where’s the hill
+		// Benad
+		case _game_of_defense:
 			if (get_polygon_data(get_player_data(player_index)->supporting_polygon_index)->type==_polygon_is_hill)
 			{
 				state= _network_compass_all_on;
@@ -207,7 +247,21 @@ short get_network_compass_state(
 				}
 			}
 			break;
-		
+		// START Benad
+		case _game_of_rugby:
+			if (player_has_ball(player_index, SINGLE_BALL_COLOR))
+			{
+				state= _network_compass_all_on;
+			}
+			else
+			{
+				if (dynamic_world->game_player_index!=NONE)
+				{
+					beacon= (world_point2d *) &get_player_data(dynamic_world->game_player_index)->location;
+				}
+			}
+			break;
+		//END Benad
 		case _game_of_kill_man_with_ball: // where’s the ball
 			if (player_has_ball(player_index, SINGLE_BALL_COLOR))
 			{
@@ -293,16 +347,19 @@ boolean update_net_game(
 				break;
 				
 			case _game_of_capture_the_flag:
+			// START Benad
 				for(player_index= 0; player_index<dynamic_world->player_count; ++player_index)
 				{
 					struct player_data *player= get_player_data(player_index);
-					struct polygon_data *polygon= get_polygon_data(player->camera_polygon_index);
+					struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
 					
-					if(polygon->type==_polygon_is_base && polygon->permutation==player->team)
+					if ( (polygon->type==_polygon_is_base && polygon->permutation==player->team) ||
+						((dynamic_world->game_information.kill_limit == 819) && (polygon->type==_polygon_is_hill)) )
 					{
 						short ball_color= find_player_ball_color(player_index);
 						
-						if(ball_color != NONE && ball_color != player->team)
+						if ((ball_color != NONE && ball_color != player->team) ||
+							(ball_color != NONE && dynamic_world->game_information.kill_limit == 819))
 						{
 							player->netgame_parameters[_flag_pulls]++;
 							destroy_players_ball(player_index);
@@ -310,6 +367,7 @@ boolean update_net_game(
 					}
 				}
 				break;
+			// END Benad
 				
 			case _game_of_king_of_the_hill:
 				for(player_index= 0; player_index<dynamic_world->player_count; ++player_index)
@@ -356,53 +414,62 @@ boolean update_net_game(
 				}
 				break;
 
+			// START Benad
 			case _game_of_defense:
 				for(player_index= 0; player_index<dynamic_world->player_count; ++player_index)
 				{
 					struct player_data *player= get_player_data(player_index);
-					short defending_team= GET_GAME_PARAMETER(_defending_team);
+					//short defending_team= GET_GAME_PARAMETER(_defending_team);
+					short defending_team= 0;
 					
-					if(player->team != defending_team)
+					if((player->team != defending_team) && (!PLAYER_IS_DEAD(player)))
 					{
 						struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
 
 						/* They are in our base! */
-						if(polygon->type==_polygon_is_base && polygon->permutation==defending_team)
+						if(polygon->type==_polygon_is_hill/* && polygon->permutation==defending_team*/)
 						{
 							player->netgame_parameters[_offender_time_in_base]++;
-							if(player->netgame_parameters[_offender_time_in_base]>GET_GAME_PARAMETER(_maximum_offender_time_in_base))
+							/*if(player->netgame_parameters[_offender_time_in_base]>GET_GAME_PARAMETER(_maximum_offender_time_in_base))
 							{
-dprintf("Game is over. Offender won.");
-//••
+								dprintf("Game is over. Offender won.");
+								//••
 								dynamic_world->game_information.parameters[_winning_team]= player->team;
 								net_game_over= TRUE;
-							}
+							}*/
 						}
-						break; /* there is only one ball */
+						break;
 					}
 				}
 				break;
-				
+			
 			case _game_of_rugby:
+				dynamic_world->game_player_index= NONE;
 				for(player_index= 0; player_index<dynamic_world->player_count; ++player_index)
 				{
 					struct player_data *player= get_player_data(player_index);
 					struct polygon_data *polygon= get_polygon_data(player->supporting_polygon_index);
-
-					if(polygon->type==_polygon_is_base && polygon->permutation != player->team)
+					
+					if (player_has_ball(player_index, SINGLE_BALL_COLOR))
 					{
-						if(player_has_ball(player_index, SINGLE_BALL_COLOR))
+						dynamic_world->game_player_index= player_index;
+						//if(polygon->type==_polygon_is_base && polygon->permutation != player->team)
+						if( ( (dynamic_world->game_information.kill_limit == 819) && (polygon->type==_polygon_is_hill)
+							&& (!PLAYER_IS_DEAD(player)) ) ||
+							( polygon->type==_polygon_is_base && polygon->permutation != player->team && (!PLAYER_IS_DEAD(player)) ) )
 						{
 							/* Goal! */
 							player->netgame_parameters[_points_scored]++;
 							
 							/* Ditch the ball.. (it will be recreated by the timer..) */
 							destroy_players_ball(player_index);
+							dynamic_world->game_player_index= NONE;
+							break; // Break out of loop; assuming there's only one ball.
 						}
 					}
 				}
 				break;
-				
+			// END Benad
 			default:
 				vhalt(csprintf(temporary, "What is game type: %d?", GET_GAME_TYPE()));
 				break;
@@ -413,7 +480,7 @@ dprintf("Game is over. Offender won.");
 			mark_player_network_stats_as_dirty(current_player_index);
 		}
 	}
-	
+	// Benad: Warning! This is actually ignored! Instead, change game_is_over().
 	return net_game_over;
 }
 
@@ -473,17 +540,15 @@ void calculate_ranking_text(
 		case _game_of_cooperative_play:
 			sprintf(buffer, "%d%%", ranking);
 			break;
-
+		// START Benad
 		case _game_of_king_of_the_hill:
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
+		case _game_of_defense:
 			seconds= ABS(ranking)/TICKS_PER_SECOND;
 			sprintf(buffer, "%d:%02d", seconds/60, seconds%60);
 			break;
-			
-		case _game_of_defense:
-			break;
-			
+		// END Benad
 		default:
 			vhalt(csprintf(temporary, "What is game type %d?", GET_GAME_TYPE()));
 			break;
@@ -500,7 +565,9 @@ enum {
 	flagsCapturedString,
 	timeItString,
 	goalsString,
-	reignString
+	reignString,
+	// Benad
+	timeOnBaseString
 };
 
 void calculate_ranking_text_for_post_game(
@@ -525,18 +592,16 @@ void calculate_ranking_text_for_post_game(
 			getcstr(format, strNETWORK_GAME_STRINGS, pointsFormatString);
 			sprintf(buffer, format, ranking);
 			break;
-			
+		// START Benad
 		case _game_of_king_of_the_hill:
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
+		case _game_of_defense:
 			seconds= ABS(ranking)/TICKS_PER_SECOND;
 			getcstr(format, strNETWORK_GAME_STRINGS, minutesPossessedFormatString);
 			sprintf(buffer, format, seconds/60, seconds%60);
 			break;
-			
-		case _game_of_defense:
-			break;
-			
+		// END Benad
 		default:
 			vhalt(csprintf(temporary, "What is game type %d?", GET_GAME_TYPE()));
 			break;
@@ -571,12 +636,13 @@ boolean get_network_score_text_for_postgame(
 		case _game_of_kill_man_with_ball:
 			string_id= timeWithBallString;
 			break;
-			
+		//START Benad
 		case _game_of_defense:
-dprintf("Not supported!");
-			string_id= timeWithBallString;
+			//dprintf("Not supported!");
+			//string_id= timeWithBallString;
+			string_id= timeOnBaseString;
 			break;
-
+		// END Benad
 		case _game_of_tag:
 			string_id= timeItString;
 			break;
@@ -736,11 +802,21 @@ boolean game_is_over(
 					game_over= TRUE;
 				}
 				break;
-
+			// START Benad
 			case _game_of_defense:
-//••
+				for(player_index= 0; player_index<dynamic_world->player_count; ++player_index)
+				{
+					struct player_data *player= get_player_data(player_index);
+					if(player->netgame_parameters[_offender_time_in_base] >
+						(dynamic_world->game_information.kill_limit * TICKS_PER_SECOND)) // kill_limit is in seconds
+					{
+						//dprintf("Game is over. Offender won.");
+						//dynamic_world->game_information.parameters[_winning_team]= player->team;
+						game_over= TRUE;
+					}
+				}
 				break;
-				
+			// END Benad
 			default:
 				vhalt(csprintf(temporary, "What is game type %d?", GET_GAME_TYPE()));
 				break;
@@ -822,7 +898,17 @@ long get_entry_point_flags_for_game_type(
 		case _game_of_king_of_the_hill:
 			entry_flags= _king_of_hill_entry_point;
 			break;
-
+		// START Benad
+		case _game_of_rugby:
+			entry_flags= _rugby_entry_point;
+			break;
+		case _game_of_capture_the_flag:
+			entry_flags= _capture_the_flag_entry_point;
+			break;
+		case _game_of_defense:
+			entry_flags= _defense_entry_point;
+			break;
+		// END Benad
 		default:
 			vhalt(csprintf(temporary, "What is game type %d?", game_type));
 			break;
@@ -847,6 +933,9 @@ static boolean player_has_ball(
 	return has_ball;
 }
 
+// START Benad
+// This function moved to weapons.c
+/*
 static void destroy_players_ball(
 	short player_index)
 {
@@ -856,13 +945,15 @@ static void destroy_players_ball(
 	color= find_player_ball_color(player_index);
 	assert(color != NONE);
 
-	/* Get rid of it. */
+	*//* Get rid of it. *//*
 	item_type= BALL_ITEM_BASE+color;
 	player->items[item_type]= NONE;
 	
-	/* Destroy the object (placement will recreate it..) */
+	*//* Destroy the object (placement will recreate it..) *//*
 	object_was_just_destroyed(_object_is_item, item_type);
 	
-	/* Mark the player inventory as dirty.. */
+	*//* Mark the player inventory as dirty.. *//*
 	mark_player_inventory_as_dirty(player_index, _i_knife);
 }
+*/
+// END Benad

@@ -17,6 +17,9 @@ Feb. 4, 2000 (Loren Petrich):
 
 Apr 30, 2000 (Loren Petrich):
 	Did change for getting default player name from outside
+
+Jul 1, 2000 (Loren Petrich):
+	Added Benad's netgame stuff
 */
 
 // add a taunt window for postgame.
@@ -92,7 +95,11 @@ enum {
 	flagPullsString,
 	flagsString,
 	pointLimitString,
-	pointsString
+	pointsString,
+	// START Benad
+	timeOnBaseString,
+	minutesString
+	// END Benad
 };
 
 enum {
@@ -536,8 +543,19 @@ boolean network_game_setup(
 					break;
 					
 				case iRADIO_KILL_LIMIT:
-					HideDialogItem(dialog, iTIME_LIMIT); HideDialogItem(dialog, iTEXT_TIME_LIMIT);
-					ShowDialogItem(dialog, iTEXT_KILL_LIMIT); ShowDialogItem(dialog, iKILL_LIMIT);
+					// START Benad
+					if (get_dialog_control_value(dialog, iGAME_TYPE)-1 != _game_of_defense)
+					{
+						HideDialogItem(dialog, iTIME_LIMIT); HideDialogItem(dialog, iTEXT_TIME_LIMIT);
+						ShowDialogItem(dialog, iTEXT_KILL_LIMIT); ShowDialogItem(dialog, iKILL_LIMIT);
+					}
+					else
+					{
+						ShowDialogItem(dialog, iTIME_LIMIT); ShowDialogItem(dialog, iTEXT_TIME_LIMIT);
+						ShowDialogItem(dialog, iTEXT_KILL_LIMIT); ShowDialogItem(dialog, iKILL_LIMIT);
+					}
+					// END Benad
+					
 					modify_radio_button_family(dialog, iRADIO_NO_TIME_LIMIT, iRADIO_KILL_LIMIT, iRADIO_KILL_LIMIT);
 					break;
 
@@ -602,9 +620,19 @@ boolean network_game_setup(
 		}
 		else
 		{
-			short game_limit_type= get_game_duration_radio(dialog);
+			// START Benad
+			if (get_dialog_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
+			{
+				information_is_acceptable = (check_setup_information(dialog, iRADIO_TIME_LIMIT) &&
+					check_setup_information(dialog, iRADIO_KILL_LIMIT));
+			}
+			else
+			{
+				short game_limit_type= get_game_duration_radio(dialog);
 			
-			information_is_acceptable= check_setup_information(dialog, game_limit_type);
+				information_is_acceptable= check_setup_information(dialog, game_limit_type);
+			}
+			// END Benad
 		}
 	} while (!information_is_acceptable);	
 
@@ -668,14 +696,35 @@ static short fill_in_game_setup_dialog(
 	modify_control(dialog, iDIFFICULTY_MENU, CONTROL_ACTIVE, network_preferences->difficulty_level+1);
 	modify_control(dialog, iENTRY_MENU, CONTROL_ACTIVE, network_preferences->entry_point+1);
 
-	insert_number_into_text_item(dialog, iKILL_LIMIT, network_preferences->kill_limit);
+	// START Benad
+	if (network_preferences->game_type == _game_of_defense)
+		insert_number_into_text_item(dialog, iKILL_LIMIT, network_preferences->kill_limit/60);
+	else
+		insert_number_into_text_item(dialog, iKILL_LIMIT, network_preferences->kill_limit);
+	// END Benad
 	insert_number_into_text_item(dialog, iTIME_LIMIT, network_preferences->time_limit/TICKS_PER_SECOND/60);
 
 	if (network_preferences->game_options & _game_has_kill_limit)
 	{
 		modify_radio_button_family(dialog, iRADIO_NO_TIME_LIMIT, iRADIO_KILL_LIMIT, iRADIO_KILL_LIMIT);
-		HideDialogItem(dialog, iTIME_LIMIT); 
-		HideDialogItem(dialog, iTEXT_TIME_LIMIT);
+		// START Benad
+		if (network_preferences->game_type == _game_of_defense)
+		{
+			ShowDialogItem(dialog, iTIME_LIMIT); 
+			ShowDialogItem(dialog, iTEXT_TIME_LIMIT);
+			
+			ShowDialogItem(dialog, iKILL_LIMIT);
+			ShowDialogItem(dialog, iTEXT_KILL_LIMIT);
+		}
+		else
+		{
+			HideDialogItem(dialog, iTIME_LIMIT); 
+			HideDialogItem(dialog, iTEXT_TIME_LIMIT);
+			
+			ShowDialogItem(dialog, iKILL_LIMIT);
+			ShowDialogItem(dialog, iTEXT_KILL_LIMIT);
+		}
+		// END Benad
 	}
 	else if (network_preferences->game_is_untimed)
 	{
@@ -717,8 +766,18 @@ static void setup_for_untimed_game(
 static void setup_for_timed_game(
 	DialogPtr dialog)
 {
-	HideDialogItem(dialog, iTEXT_KILL_LIMIT); HideDialogItem(dialog, iKILL_LIMIT);
-	ShowDialogItem(dialog, iTIME_LIMIT); ShowDialogItem(dialog, iTEXT_TIME_LIMIT);
+	// START Benad
+	if (get_dialog_control_value(dialog, iGAME_TYPE)-1 != _game_of_defense)
+	{
+		HideDialogItem(dialog, iTEXT_KILL_LIMIT); HideDialogItem(dialog, iKILL_LIMIT);
+		ShowDialogItem(dialog, iTIME_LIMIT); ShowDialogItem(dialog, iTEXT_TIME_LIMIT);
+	}
+	else
+	{
+		ShowDialogItem(dialog, iTEXT_KILL_LIMIT); ShowDialogItem(dialog, iKILL_LIMIT);
+		ShowDialogItem(dialog, iTIME_LIMIT); ShowDialogItem(dialog, iTEXT_TIME_LIMIT);
+	}
+	// END Benad
 	modify_radio_button_family(dialog, iRADIO_NO_TIME_LIMIT, iRADIO_KILL_LIMIT, iRADIO_TIME_LIMIT);
 
 	return;
@@ -794,15 +853,41 @@ static void extract_setup_dialog_information(
 	}
 	else if (game_limit_type == iRADIO_KILL_LIMIT)
 	{
-		game_information->game_options |= _game_has_kill_limit;
-		game_information->time_limit = LONG_MAX;
+		// START Benad
+		if (get_dialog_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
+		{
+			game_information->game_options |= _game_has_kill_limit;
+			game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
+			game_information->time_limit *= TICKS_PER_SECOND * 60;
+		}
+		else
+		{
+			game_information->game_options |= _game_has_kill_limit;
+			game_information->time_limit = LONG_MAX;
+		}
+		// END Benad
 	}
 	else
 	{
-		game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
-		game_information->time_limit *= TICKS_PER_SECOND * 60;
+		// START Benad
+		if (get_dialog_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
+		{
+			game_information->game_options |= _game_has_kill_limit;
+			game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
+			game_information->time_limit *= TICKS_PER_SECOND * 60;
+		}
+		else
+		{
+			game_information->time_limit = extract_number_from_text_item(dialog, iTIME_LIMIT);
+			game_information->time_limit *= TICKS_PER_SECOND * 60;
+		}
+		// END Benad
 	}
 	game_information->kill_limit = extract_number_from_text_item(dialog, iKILL_LIMIT);
+	// START Benad
+	if (get_dialog_control_value(dialog, iGAME_TYPE)-1 == _game_of_defense)
+		game_information->kill_limit *= 60; // It's "Time On Hill" limit, in seconds.
+	// END Benad
 
 	/* Determine the entry point flags by the game type. */
 	if(allow_all_levels)
@@ -1662,6 +1747,9 @@ static void setup_dialog_for_game_type(
 	{
 		case _game_of_cooperative_play:
 			/* set & disable the drop items checkbox */
+			// Benad
+			modify_control(dialog, iFORCE_UNIQUE_TEAMS, CONTROL_ACTIVE, NONE);
+			
 			modify_control(dialog, iBURN_ITEMS_ON_DEATH, CONTROL_INACTIVE, TRUE);
 			modify_control(dialog, iUNLIMITED_MONSTERS, CONTROL_INACTIVE, TRUE);
 		
@@ -1681,6 +1769,9 @@ static void setup_dialog_for_game_type(
 		case _game_of_king_of_the_hill:
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
+			// Benad
+			modify_control(dialog, iFORCE_UNIQUE_TEAMS, CONTROL_ACTIVE, NONE);
+			
 			modify_control(dialog, iBURN_ITEMS_ON_DEATH, CONTROL_ACTIVE, FALSE);
 			modify_control(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE, NONE);
 
@@ -1696,6 +1787,10 @@ static void setup_dialog_for_game_type(
 			break;
 
 		case _game_of_capture_the_flag:
+			// START Benad
+			modify_control(dialog, iFORCE_UNIQUE_TEAMS, CONTROL_INACTIVE, TRUE);
+			modify_control(dialog, iGATHER_TEAM, CONTROL_ACTIVE, NONE);
+			// END Benad
 			/* Allow them to decide on the burn items on death */
 			modify_control(dialog, iBURN_ITEMS_ON_DEATH, CONTROL_ACTIVE, FALSE);
 			modify_control(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE, NONE);
@@ -1724,11 +1819,32 @@ static void setup_dialog_for_game_type(
 			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, pointsString);
 			SetDialogItemText(item, ptemporary);
 
+			// START Benad
+			// Disable "Allow teams", and force it to be checked.
+			modify_control(dialog, iFORCE_UNIQUE_TEAMS, CONTROL_INACTIVE, TRUE);
+			modify_control(dialog, iGATHER_TEAM, CONTROL_ACTIVE, NONE);
+			// END Benad
 			setup_for_timed_game(dialog);
 			break;
 
 		case _game_of_defense:
 			/* Allow them to decide on the burn items on death */
+			// START Benad
+			modify_control(dialog, iFORCE_UNIQUE_TEAMS, CONTROL_INACTIVE, TRUE);
+			modify_control(dialog, iGATHER_TEAM, CONTROL_ACTIVE, NONE);
+			
+			GetDialogItem(dialog, iRADIO_KILL_LIMIT, &item_type, &item, &bounds);
+			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, timeOnBaseString);
+			SetControlTitle((ControlHandle) item, ptemporary);
+			
+			GetDialogItem(dialog, iTEXT_KILL_LIMIT, &item_type, &item, &bounds);
+			getpstr(ptemporary, strSETUP_NET_GAME_MESSAGES, minutesString);
+			SetDialogItemText(item, ptemporary);
+			
+			ShowDialogItem(dialog, iTEXT_KILL_LIMIT); ShowDialogItem(dialog, iKILL_LIMIT);
+			ShowDialogItem(dialog, iTIME_LIMIT); ShowDialogItem(dialog, iTEXT_TIME_LIMIT);
+			
+			// END Benad
 			modify_control(dialog, iBURN_ITEMS_ON_DEATH, CONTROL_ACTIVE, FALSE);
 			modify_control(dialog, iUNLIMITED_MONSTERS, CONTROL_ACTIVE, NONE);
 			setup_for_timed_game(dialog);
