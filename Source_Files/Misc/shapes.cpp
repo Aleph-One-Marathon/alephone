@@ -937,7 +937,7 @@ static void build_shading_tables8(
 	short i;
 	short start, count, level, value;
 	
-	memset(shading_tables, iBLACK, PIXEL8_MAXIMUM_COLORS*sizeof(pixel8));
+	objlist_set(shading_tables, iBLACK, PIXEL8_MAXIMUM_COLORS);
 	
 	start= 0, count= 0;
 	while (get_next_color_run(colors, color_count, &start, &count))
@@ -991,7 +991,7 @@ static void build_shading_tables8(
 	short i;
 	short start, count, level;
 	
-	memset(shading_tables, iBLACK, PIXEL8_MAXIMUM_COLORS*sizeof(pixel8));
+	objlist_set(shading_tables, iBLACK, PIXEL8_MAXIMUM_COLORS);
 	
 	start= 0, count= 0;
 	while (get_next_color_run(colors, color_count, &start, &count))
@@ -1025,7 +1025,7 @@ static void build_shading_tables16(
 	short i;
 	short start, count, level;
 	
-	memset(shading_tables, 0, PIXEL8_MAXIMUM_COLORS*sizeof(pixel16));
+	objlist_set(shading_tables, 0, PIXEL8_MAXIMUM_COLORS);
 	
 	start= 0, count= 0;
 	while (get_next_color_run(colors, color_count, &start, &count))
@@ -1057,7 +1057,7 @@ static void build_shading_tables32(
 	short i;
 	short start, count, level;
 	
-	memset(shading_tables, 0, PIXEL8_MAXIMUM_COLORS*sizeof(pixel32));
+	objlist_set(shading_tables, 0, PIXEL8_MAXIMUM_COLORS);
 	
 	start= 0, count= 0;
 	while (get_next_color_run(colors, color_count, &start, &count))
