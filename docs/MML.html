@@ -1102,7 +1102,7 @@ The second one, &lt;landscape&gt;, specifies the landscape options themselves.
 It takes these attributes:
 <ul>
 <li>coll: which collection (mandatory)
-<li>frame: which frame to apply the options to (default: 0, the frame that is always present)
+<li>frame: which frame to apply the options to (default: -1, all frames)
 <li>horiz_exp: exponent for power of 2 that is the number of wraparound repeats in the horizontal direction.
 (default: 1 - two repeats)
 <li>vert_exp: exponent for power of 2 that makes a vertical scaling equal to the scaling
@@ -1111,6 +1111,8 @@ produced by the same value of horiz_exp in the horizontal direction. (default: 1
 of the part of the texture that OpenGL will use (width is fixed; height can be variable).
 This part will always be centered in height, and will either include some untextured area
 or will not include the top and bottom parts. (default: 1 -- height is 1/2 width)
+<li>vert_repeat: whether texture repeats in the vertical direction
+(default: false -- clamped in the vertical direction; last pixels stretched out)
 <li>azimuth: angle in degrees to rotate the texture leftward relative to the map.
 This could be useful for aligning landscape features with map ones. (default: 0)
 </ul>
