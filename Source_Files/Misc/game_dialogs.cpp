@@ -46,7 +46,7 @@ bool quit_without_saving(
 	assert(dialog);
 
 	GetPort(&old_port);
-	SetPort(screen_window);
+	SetPort((GrafPtr)GetScreenGrafPort());
 	LocalToGlobal(&origin);
 	SetPort(old_port);
 	MoveWindow(dialog, origin.h, origin.v, false);

@@ -1410,6 +1410,11 @@ short GetSizeWithoutHUD(short Size)
 	return ViewSizes[Size].WithoutHUD;
 }
 
+// Accessors for the screen's GDevice and GrafPort;
+// this abstraction is used for DrawSprocket support
+GDHandle GetWorldDevice() {return world_device;}
+CGrafPtr GetScreenGrafPort() {return (CGrafPtr)screen_window;}
+
 
 /* These should be replaced with better preferences control functions */
 // LP change: generalizing this

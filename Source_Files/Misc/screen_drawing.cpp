@@ -135,8 +135,8 @@ void _set_port_to_screen_window(
 {
 	assert(!old_graphics_port && !old_graphics_device && !destination_graphics_port);
 	GetGWorld(&old_graphics_port, &old_graphics_device);
-	SetGWorld((GWorldPtr) screen_window, NULL);
-	destination_graphics_port= (GrafPtr) screen_window;
+	SetGWorld((GWorldPtr) GetScreenGrafPort(), NULL);
+	destination_graphics_port= (GrafPtr) GetScreenGrafPort();
 }
 
 void _set_port_to_gworld(
@@ -556,7 +556,7 @@ screen_rectangle *get_interface_rectangle(
 void _erase_screen(
 	short color_index)
 {
-	_fill_rect((screen_rectangle *) &screen_window->portRect, color_index);
+	_fill_rect((screen_rectangle *) &GetScreenGrafPort()->portRect, color_index);
 }
 
 short _get_font_line_height(

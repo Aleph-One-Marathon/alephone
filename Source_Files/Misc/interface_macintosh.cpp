@@ -323,7 +323,7 @@ void process_game_key(
 
 					/* Change to this port... */
 					GetPort(&old_port);
-					SetPort(screen_window);
+					SetPort((GrafPtr)GetScreenGrafPort());
 					draw_menu_button_for_command(menuItem);
 					SetPort(old_port);
 					
@@ -365,7 +365,7 @@ bool try_for_event(
 				try_for_event= true;
 
 				if (suppress_background_events() && 
-					EmptyRgn(((WindowPeek)screen_window)->updateRgn)) 
+					EmptyRgn(((WindowPeek)GetScreenGrafPort())->updateRgn)) 
 					// && consecutive_getosevent_calls<MAXIMUM_CONSECUTIVE_GETOSEVENT_CALLS)
 				{
 					*use_waitnext= false;
@@ -749,12 +749,12 @@ void show_movie(
 							dispBounds.bottom= short(PlaybackSize*RECTANGLE_HEIGHT(&dispBounds) + 0.5);
 							
 							/* ‚enter... */
-							AdjustRect(&screen_window->portRect, &dispBounds, &dispBounds, centerRect);
+							AdjustRect(&GetScreenGrafPort()->portRect, &dispBounds, &dispBounds, centerRect);
 							OffsetRect(&dispBounds, dispBounds.left<0 ? -dispBounds.left : 0, dispBounds.top<0 ? -dispBounds.top : 0);
 							SetMovieBox(movie, &dispBounds);
 							
 							/* Set to the screen_window.. */	
-							SetMovieGWorld(movie, (CGrafPtr)  screen_window, nil);
+							SetMovieGWorld(movie, (CGrafPtr)  GetScreenGrafPort(), nil);
 							
 							// After setup, play the movie
 							GoToBeginningOfMovie(movie); // Rewind

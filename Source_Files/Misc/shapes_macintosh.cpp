@@ -81,11 +81,11 @@ PixMapHandle get_shape_pixmap(
 			/* if the ctSeed of our offscreen pixmap is different from the ctSeed of the world
 				device then the color environment has changed since the last call to our routine,
 				and we just HandToHand the deviceÕs ctTable and throw away our old one. */
-			if ((*(*(*world_device)->gdPMap)->pmTable)->ctSeed!=(*(*hollow_pixmap)->pmTable)->ctSeed)
+			if ((*(*(*GetWorldDevice())->gdPMap)->pmTable)->ctSeed!=(*(*hollow_pixmap)->pmTable)->ctSeed)
 			{
 				DisposeHandle((Handle)(*hollow_pixmap)->pmTable);
 				
-				(*hollow_pixmap)->pmTable= (*(*world_device)->gdPMap)->pmTable;	
+				(*hollow_pixmap)->pmTable= (*(*GetWorldDevice())->gdPMap)->pmTable;	
 				HLock((Handle)hollow_pixmap);
 				error= HandToHand((Handle *)&(*hollow_pixmap)->pmTable);
 				HUnlock((Handle)hollow_pixmap);

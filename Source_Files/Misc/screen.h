@@ -75,9 +75,13 @@ enum /* hardware acceleration codes */
 
 extern struct color_table *world_color_table, *visible_color_table, *interface_color_table;
 
+// Accessors for the screen's GDevice and GrafPort;
+// this abstraction is used for DrawSprocket support
 #ifdef mac
-extern GDHandle world_device;
-extern WindowPtr screen_window;
+GDHandle GetWorldDevice();
+CGrafPtr GetScreenGrafPort();
+// extern GDHandle world_device;
+// extern WindowPtr screen_window;
 #endif
 
 //CP Addition: make screen_mode_data usable here too

@@ -83,7 +83,7 @@ bool configure_key_setup(
 	ModalFilterUPP key_setup_filter_upp;
 	short current_key_set;
 	
-	if (RECTANGLE_WIDTH(&(*world_device)->gdRect)<640 || RECTANGLE_HEIGHT(&(*world_device)->gdRect)<480)
+	if (RECTANGLE_WIDTH(&(*GetWorldDevice())->gdRect)<640 || RECTANGLE_HEIGHT(&(*GetWorldDevice())->gdRect)<480)
 	{
 		dialog = myGetNewDialog(dlogCONFIGURE_KEYS12, NULL, (WindowPtr) -1, 0);
 	}

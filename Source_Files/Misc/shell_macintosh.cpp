@@ -1075,6 +1075,9 @@ static void wait_for_highlevel_event(
 	return;
 }
 
+// LP: GetScreenGrafPort() cast to WindowPtr is OK, since it is either screen_window in screen.cpp
+// or a DrawSprocket context's GrafPort (no window)
+
 /* Can't be static because the general_filter_proc calls this */
 void update_any_window(
 	WindowPtr window,
@@ -1086,7 +1089,7 @@ void update_any_window(
 	SetPort(window);
 	BeginUpdate(window);
 
-	if(window==screen_window)
+	if(window==(WindowPtr)GetScreenGrafPort())
 	{
 		update_game_window(window, event);
 	}
@@ -1102,7 +1105,7 @@ void activate_any_window(
 	EventRecord *event,
 	bool active)
 {
-	if(window==screen_window)
+	if(window==(WindowPtr)GetScreenGrafPort())
 	{
 		activate_screen_window(window, event, active);
 	}
@@ -1175,7 +1178,7 @@ static void process_event(
 						}
 						else
 							// whatever is necessary to update it
-							InvalRect(&screen_window->portRect);
+							InvalRect(&GetScreenGrafPort()->portRect);
 					}
 					else
 					{
@@ -1206,7 +1209,7 @@ void process_screen_click(
 	bool cheatkeys_down;
 	
 	GetPort(&old_port);
-	SetPort(screen_window);
+	SetPort((GrafPtr)GetScreenGrafPort());
 	
 	GlobalToLocal(&where);
 	cheatkeys_down= has_cheat_modifiers(event);

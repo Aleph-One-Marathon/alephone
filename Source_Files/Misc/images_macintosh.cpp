@@ -70,7 +70,7 @@ void scroll_full_screen_pict_resource_from_scenario(
 		{
 			GWorldPtr pixels= (GWorldPtr) NULL;
 			OSErr error= NewGWorld(&pixels, interface_bit_depth, &picture_frame,
-				(CTabHandle) NULL, world_device, noNewDevice);
+				(CTabHandle) NULL, GetWorldDevice(), noNewDevice);
 
 			/* Flush the events.. */
 			FlushEvents(keyDownMask|keyUpMask|autoKeyMask|mDownMask|mUpMask, 0);
