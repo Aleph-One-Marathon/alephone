@@ -75,6 +75,13 @@ Jul 5, 2000 (Loren Petrich):
 
 Jul 7, 2000 (Loren Petrich):
 	Added Ben Thompson's InputSprocket support
+
+Jul 29, 2000 (Loren Petrich):
+	Added local-event flag set, for handling quitting, resolution changes, etc.
+	with the InputSprocket.
+
+Jul 30, 2000 (Loren Petrich):
+	Added posting of MacOS events from the local event queue
 */
 
 #include <stdlib.h>
@@ -124,6 +131,9 @@ Jul 7, 2000 (Loren Petrich):
 // then disable screen resizing
 #include "OGL_Render.h"
 
+// LP addition: local-event management:
+#include "LocalEvents.h"
+
 // LP addition: loading of XML files from resource fork
 // and root of XML-parsing tree
 #include "XML_ResourceFork.h"
@@ -169,6 +179,9 @@ TP2PerfGlobals perf_globals;
 
 extern long first_frame_tick, frame_count; /* for determining frame rate */
 
+// LP addition: the local event flags
+unsigned long LocalEventFlags = 0;
+
 // LP addition: whether or not the cheats are active
 bool CheatsActive = false;
 
@@ -210,6 +223,10 @@ static void handle_keyword(short type_of_cheat);
 // #endif
 
 boolean is_keypad(short keycode);
+
+// LP addition: post an action from the local event queue in the app's MacOS event queue
+static void PostOSEventFromLocal();
+
 
 /* ---------- code */
 
@@ -1275,6 +1292,9 @@ static void main_event_loop(
 	{
 		boolean use_waitnext;
 		
+		// LP addition: turn a local event into a MacOS event
+		PostOSEventFromLocal();
+		
 		if(try_for_event(&use_waitnext))
 		{
 			EventRecord event;
@@ -1456,6 +1476,87 @@ static void process_key(
 {
 	process_game_key(event, key);
 	return;
+}
+
+
+// Index of which local event to look at; the event poster will cycle through
+// the possible events, looking for one that is present.
+static int LocalEventIndex = 0;
+
+// LP addition: post any events found in the local event queue
+void PostOSEventFromLocal()
+{
+	int SavedLocalEventIndex = LocalEventIndex;
+	for (int i=0; i<32; i++)
+	{
+		// Quick remainder after division by 32 (2^5 or 0x20)
+		LocalEventIndex = (SavedLocalEventIndex + i) & 0x1f;
+		
+		unsigned long LocalEvent = 1 << ((unsigned long)LocalEventIndex);
+		if (GetLocalEvent(LocalEvent))
+		{
+			// Compose an appropriate event message:
+			struct EventFeatures
+			{
+				long Message;
+				short Modifiers;
+			};
+			
+			const int NumLocalEventTypes = 23;
+			EventFeatures EventFeatureList[NumLocalEventTypes] =
+			{
+				{'q',cmdKey},
+				{'p',cmdKey},
+				{'<',0},
+				{'>',0},
+	
+				{'-',0},
+				{'+',0},
+				{'[',0},
+				{']',0},
+	
+				{kDELETE,0},
+				{'%',0},
+				{'?',0},
+				// These F keys are all virtual, and therefore 1 byte to the left
+				{kcF3 << 8,0},
+	
+				{kcF1 << 8,0},
+				{kcF2 << 8,0},
+				{kcF11 << 8,0},
+				{kcF12 << 8,0},
+	
+				{kcF5 << 8,0},
+				{kcF6 << 8,0},
+				{kcF7 << 8,0},
+				{kcF8 << 8,0},
+	
+				{kcF10 << 8,0},
+				{kcF13 << 8,0},
+				{kcF14 << 8,0}
+			};
+			
+			vassert(LocalEventIndex < NumLocalEventTypes, csprintf(temporary, "Out-of-range local event index: %d", LocalEventIndex));
+			
+			EventFeatures &Features = EventFeatureList[LocalEventIndex];
+			
+			// Points to the queued event
+			EvQElPtr QueueEntry;
+
+			// Post that event in the app's MacOS event queue
+			PPostEvent(keyDown,Features.Message,&QueueEntry);
+			
+			// Edit the queue entry's modifiers:
+			QueueEntry->evtQModifiers = Features.Modifiers;
+			
+			// Set up for next one and quit:
+			LocalEventIndex = (LocalEventIndex + 1) & 0x1f;
+			return;
+		}
+	}
+	
+	// Reset this value
+	LocalEventIndex = SavedLocalEventIndex;
 }
 
 
