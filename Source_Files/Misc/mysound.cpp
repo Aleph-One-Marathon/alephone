@@ -316,9 +316,9 @@ void initialize_sound_manager(
 	sound_definitions= (struct sound_definition *) malloc(NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS*sizeof(struct sound_definition));
 	assert(_sm_globals && _sm_parameters && sound_definitions);
 
-	memset(_sm_globals, 0, sizeof(struct sound_manager_globals));
-	memset(_sm_parameters, 0, sizeof(struct sound_manager_parameters));
-	memset(sound_definitions, 0, NUMBER_OF_SOUND_SOURCES * NUMBER_OF_SOUND_DEFINITIONS * sizeof(struct sound_definition));
+	obj_clear(*_sm_globals);
+	obj_clear(*_sm_parameters);
+	objlist_clear(sound_definitions, NUMBER_OF_SOUND_SOURCES * NUMBER_OF_SOUND_DEFINITIONS);
 	
 	initialize_machine_sound_manager(parameters);
 	
@@ -601,7 +601,7 @@ void default_sound_manager_parameters(
 {
 	struct sound_manager_parameters *parameters=(struct sound_manager_parameters *)prefs;
 
-	memset(parameters, 0, sizeof(struct sound_manager_parameters));
+	obj_clear(*parameters);
 	
 	parameters->channel_count= MAXIMUM_SOUND_CHANNELS;
 	parameters->volume= DEFAULT_SOUND_LEVEL;

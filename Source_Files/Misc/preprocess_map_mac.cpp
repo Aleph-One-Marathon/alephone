@@ -358,7 +358,7 @@ static boolean confirm_save_choice(
 	Rect frame;
 
 	/* Clear! */
-	memset(&pb, 0, sizeof(HFileParam));
+	obj_set(pb);
 	pb.ioNamePtr= file->name;
 	pb.ioVRefNum= file->vRefNum;
 	pb.ioDirID= file->parID;
