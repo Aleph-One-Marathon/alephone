@@ -1181,11 +1181,7 @@ OSErr NetDistributeGameDataToAllPlayers(
 
 #ifdef HAVE_LUA
                 if (do_netscript)
-                {
                         LoadLuaScript ((char*)deferred_script_data, deferred_script_length);
-                        delete [] deferred_script_data;
-                        deferred_script_data = NULL;
-                }
 #endif
 	}
 
