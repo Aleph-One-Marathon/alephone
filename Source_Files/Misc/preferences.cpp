@@ -157,6 +157,9 @@ const char *BoolString(bool B) {return (B ? "true" : "false");}
 // For writing out color values
 const float CNorm = 1/float(65535);	// Maximum uint16
 
+// These are template classes so as to be able to handle both
+// "rgb_color" and "RGBColor" declarations (both are uint16 red, green, blue)
+
 template<class CType> void WriteColor(FILE *F,
 	const char *Prefix, CType& Color, const char *Suffix)
 {
@@ -171,6 +174,15 @@ template<class CType> void WriteColorWithIndex(FILE *F,
 		Prefix,Index,CNorm*Color.red,CNorm*Color.green,CNorm*Color.blue,Suffix);
 }
 
+// For writing out text strings: have both Pascal and C versions
+// These special routines are necessary in order to make the writing-out XML-friendly,
+// converting XML's reserved characters into appropriate strings.
+void WriteXML_PasString(FILE *F, const char *Prefix, const unsigned char *String, const char *Suffix);
+void WriteXML_CString(FILE *F, const char *Prefix, const char *String, int MaxLen, const char *Suffix);
+void WriteXML_Char(FILE *F, unsigned char c);
+#ifdef mac
+void WriteXML_FSSpec(FILE *F, const char *Indent, int Index, FSSpec& Spec);
+#endif
 
 /*
  *  Initialize preferences (load from file or setup defaults)
@@ -309,6 +321,8 @@ void initialize_preferences(
 void write_preferences(
 	void)
 {
+	// LP: I've used plain stdio here because it's simple to do formatted writing with it.
+	
 #if defined(mac)
 	// Mac stuff: save old default directory
 	short OldVRefNum;
@@ -324,8 +338,13 @@ void write_preferences(
 	FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
 
 #elif defined(SDL)
-	// Needs to be set to the preferences directory
-	FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
+	// Fix courtesy of mdadams@ku.edu
+	FileSpecifier FileSpec;
+	FileSpec.SetToPreferencesDir();
+	FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+	
+	// Open the file
+	FILE *F = fopen(FileSpec.GetPath(),"w");
 #endif
 	
 	if (!F)
@@ -376,6 +395,7 @@ void write_preferences(
 	fprintf(F,"</graphics>\n\n");
 	
 	fprintf(F,"<player\n");
+	WriteXML_PasString(F, "  name=\"",player_preferences->name,"\"\n");
 	fprintf(F,"  color=\"%hd\"\n",player_preferences->color);
 	fprintf(F,"  team=\"%hd\"\n",player_preferences->team);
 	fprintf(F,"  last_time_ran=\"%u\"\n",player_preferences->last_time_ran);
@@ -427,12 +447,26 @@ void write_preferences(
 	fprintf(F,"/>\n\n");
 	
 	fprintf(F,"<environment\n");
+#ifdef SDL
+	WriteXML_CString(F,"  map_file=\"",environment_preferences->map_file,256,"\"\n");
+	WriteXML_CString(F,"  physics_file=\"",environment_preferences->physics_file,256,"\"\n");
+	WriteXML_CString(F,"  shapes_file=\"",environment_preferences->shapes_file,256,"\"\n");
+	WriteXML_CString(F,"  sounds_file=\"",environment_preferences->sounds_file,256,"\"\n");
+	WriteXML_CString(F,"  theme_dir=\"",environment_preferences->theme_dir,256,"\"\n");
+#endif
 	fprintf(F,"  map_checksum=\"%u\"\n",environment_preferences->map_checksum);
 	fprintf(F,"  physics_checksum=\"%u\"\n",environment_preferences->physics_checksum);
 	fprintf(F,"  shapes_mod_date=\"%u\"\n",uint32(environment_preferences->shapes_mod_date));
 	fprintf(F,"  sounds_mod_date=\"%u\"\n",uint32(environment_preferences->sounds_mod_date));
-	fprintf(F,"/>\n\n");
-		
+	fprintf(F,">\n");
+#ifdef mac
+	WriteXML_FSSpec(F,"  ",0,environment_preferences->map_file);
+	WriteXML_FSSpec(F,"  ",1,environment_preferences->physics_file);
+	WriteXML_FSSpec(F,"  ",2,environment_preferences->shapes_file);
+	WriteXML_FSSpec(F,"  ",3,environment_preferences->sounds_file);
+#endif
+	fprintf(F,"</environment>\n\n");
+			
 	fprintf(F,"</mara_prefs>\n\n");
 	
 	fclose(F);
@@ -903,6 +937,82 @@ bool dont_switch_to_new_weapon() {
 }
 
 
+// For writing out text strings: have both Pascal and C versions
+// These special routines are necessary in order to make the writing-out XML-friendly,
+// converting XML's reserved characters into appropriate strings.
+
+void WriteXML_PasString(FILE *F, const char *Prefix, const unsigned char *String, const char *Suffix)
+{
+	fprintf(F,"%s",Prefix);
+	for (int k=1; k<=String[0]; k++)
+		WriteXML_Char(F,String[k]);
+	fprintf(F,"%s",Suffix);
+}
+
+void WriteXML_CString(FILE *F, const char *Prefix, const char *String, int MaxLen, const char *Suffix)
+{
+	fprintf(F,"%s",Prefix);
+	int Len = strlen(String);
+	for (int k=0; k<Len; k++)
+		WriteXML_Char(F,String[k]);
+	fprintf(F,"%s",Suffix);
+}
+
+void WriteXML_Char(FILE *F, unsigned char c)
+{
+	// Make XML-friendly
+	// Are the characters normal ASCII printable characters?
+	if (c >= 0x20 && c < 0x7f)
+	{
+		switch(c)
+		{
+		// XML reserved characters
+		case '&':
+			fprintf(F,"&amp;");
+			break;
+		
+		case '<':
+			fprintf(F,"&lt;");
+			break;
+		
+		case '>':
+			fprintf(F,"&gt;");
+			break;
+		
+		case '"':
+			fprintf(F,"&quot;");
+			break;
+		
+		case '\'':
+			fprintf(F,"&apos;");
+			break;
+		
+		// OK character
+		default:
+			fputc(int(c),F);
+			break;
+		}
+	}
+	else
+		// If not, then dump it as hex
+		fprintf(F,"&#x%0.2x;",int(c));
+}
+
+#ifdef mac
+void WriteXML_FSSpec(FILE *F, const char *Indent, int Index, FSSpec& Spec)
+{
+	fprintf(F,"%s<mac_fsspec\n",Indent);
+	fprintf(F,"%s  index=\"%d\"\n",Indent,Index);
+	fprintf(F,"%s  v_ref_num=\"%hd\"\n",Indent,Spec.vRefNum);
+	fprintf(F,"%s  par_id=\"%d\"\n",Indent,Spec.parID);
+	fprintf(F,"%s",Indent);
+	WriteXML_PasString(F,"  name=\"",Spec.name,"\"\n");
+	fprintf(F,"%s/>\n",Indent);
+}
+#endif
+
+
+
 // LP additions: MML-like prefs stuff
 // These parsers are intended to work correctly on both Mac and SDL prefs files;
 // including one crossing over to the other platform (uninterpreted fields become defaults)
@@ -1272,7 +1382,15 @@ public:
 
 bool XML_PlayerPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (StringsEqual(Tag,"color"))
+	if (StringsEqual(Tag,"name"))
+	{
+		// Copy in as Pascal string
+		int Len = min(int(strlen(Value)),PREFERENCES_NAME_LENGTH);
+		player_preferences->name[0] = Len;
+		memcpy(player_preferences->name+1,Value,Len);
+		return true;
+	}
+	else if (StringsEqual(Tag,"color"))
 	{
 		return ReadInt16Value(Value,player_preferences->color);
 	}
@@ -1480,6 +1598,126 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 static XML_NetworkPrefsParser NetworkPrefsParser;
 
 
+// Make this child-entity class a dummy class for SDL
+#ifdef mac
+
+const int NUMBER_OF_FSSPECS = 4;
+
+class XML_MacFSSpecPrefsParser: public XML_ElementParser
+{
+	FSSpec Spec;
+	int32 Index;
+	// Four attributes: index, vRefNum, parID, name, which must be present
+	bool IsPresent[4];
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+
+	XML_MacFSSpecPrefsParser(): XML_ElementParser("mac_fsspec") {}
+};
+
+bool XML_MacFSSpecPrefsParser::Start()
+{
+	// Initially, no attributes are seen
+	for (int k=0; k<4; k++)
+		IsPresent[k] = false;
+	
+	return true;
+}
+
+
+bool XML_MacFSSpecPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"index"))
+	{
+		if (ReadBoundedInt32Value(Value,Index,0,NUMBER_OF_FSSPECS-1))
+		{
+			IsPresent[0] = true;
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"v_ref_num"))
+	{
+		if (ReadInt16Value(Value,Spec.vRefNum))
+		{
+			IsPresent[1] = true;
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"par_id"))
+	{
+		if (ReadInt32Value(Value,Spec.parID))
+		{
+			IsPresent[2] = true;
+			return true;
+		}
+		else
+			return false;
+	}
+	else if (StringsEqual(Tag,"name"))
+	{
+		// Copy in as Pascal string (Classic: length 31; Carbon: length ?)
+		int Len = min(int(strlen(Value)),31);
+		Spec.name[0] = Len;
+		memcpy(Spec.name+1,Value,Len);
+		
+		IsPresent[3] = true;
+		return true;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_MacFSSpecPrefsParser::AttributesDone()
+{
+	// Verify ...
+	// All four attributes (index, vRefNum, parID, and name) must be present
+	for (int k=0; k<4; k++)
+	{
+		if (!IsPresent[k])
+		{
+			AttribsMissing();
+			return false;
+		}
+	}
+	
+	switch(Index)
+	{
+	case 0:
+		environment_preferences->map_file = Spec;
+		break;
+		
+	case 1:
+		environment_preferences->physics_file = Spec;
+		break;
+		
+	case 2:
+		environment_preferences->shapes_file = Spec;
+		break;
+		
+	case 3:
+		environment_preferences->sounds_file = Spec;
+		break;
+	}
+	
+	return true;
+}
+
+static XML_MacFSSpecPrefsParser MacFSSpecPrefsParser;
+
+#else
+
+static XML_ElementParser MacFSSpecPrefsParser;
+
+#endif
+
+
 class XML_EnvironmentPrefsParser: public XML_ElementParser
 {
 public:
@@ -1490,7 +1728,42 @@ public:
 
 bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 {
-	if (StringsEqual(Tag,"map_checksum"))
+	if (StringsEqual(Tag,"map_file"))
+	{
+#ifdef SDL
+		strncpy(environment_preferences->map_file,Value,256);
+#endif
+		return true;
+	}
+	else if (StringsEqual(Tag,"physics_file"))
+	{
+#ifdef SDL
+		strncpy(environment_preferences->physics_file,Value,256);
+#endif
+		return true;
+	}
+	else if (StringsEqual(Tag,"shapes_file"))
+	{
+#ifdef SDL
+		strncpy(environment_preferences->shapes_file,Value,256);
+#endif
+		return true;
+	}
+	else if (StringsEqual(Tag,"sounds_file"))
+	{
+#ifdef SDL
+		strncpy(environment_preferences->sounds_file,Value,256);
+#endif
+		return true;
+	}
+	else if (StringsEqual(Tag,"theme_dir"))
+	{
+#ifdef SDL
+		strncpy(environment_preferences->theme_dir,Value,256);
+#endif
+		return true;
+	}
+	else if (StringsEqual(Tag,"map_checksum"))
 	{
 		return ReadUInt32Value(Value,environment_preferences->map_checksum);
 	}
@@ -1555,5 +1828,6 @@ void SetupPrefsParseTree()
 	
 	MarathonPrefsParser.AddChild(&NetworkPrefsParser);
 	
+	EnvironmentPrefsParser.AddChild(&MacFSSpecPrefsParser);
 	MarathonPrefsParser.AddChild(&EnvironmentPrefsParser);
 }
