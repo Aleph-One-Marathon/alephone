@@ -77,7 +77,7 @@ struct NetStatus
 
 	bool iAmTheServer;
 	bool single_player; /* Set true if I dropped everyone else. */
-	size_t server_player_index;
+	short server_player_index;
 	int16 new_packet_tag; /* Valid _only_ if you are the server, and is only set when you just became the server. */
 
 	uint8 *buffer;
@@ -450,7 +450,7 @@ static int sSecondGreatestRecentLatencyMeasurement;
 
 
 static NetTopology* topology;
-static size_t localPlayerIndex;
+static short localPlayerIndex;
 static short* sNetStatePtr;
 
 // XXX (ZZZ): this is a nasty kludge.  Originally, I think, NetDDP* interfaces
@@ -691,7 +691,7 @@ RingGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t
 #endif
 
 	// Calculate up- and downring neighbors
-	size_t previousPlayerIndex, nextPlayerIndex;
+	short previousPlayerIndex, nextPlayerIndex;
 	
         // ZZZ: changes to these to skip players with identifier NONE, in support of generalized resume-game
         // (They Might Be Zombies)
@@ -1350,7 +1350,7 @@ static void NetAddFlagsToPacket(
 				NetPacketPtr packet)
 {
 	uint32 *action_flags;
-	size_t player_index;
+	short player_index;
 	short action_flag_index;
 	static bool already_here = false;
 #ifdef NETWORK_USE_RECENT_FLAGS
@@ -2020,7 +2020,7 @@ update_adaptive_latency(int measurement, int tick) {
 static short NetAdjustUpringAddressUpwards(
 					   void)
 {
-	size_t nextPlayerIndex, newNextPlayerIndex;
+	short nextPlayerIndex, newNextPlayerIndex;
 	NetAddrBlock *address;
 
 	// figure out where the current upring address is.
