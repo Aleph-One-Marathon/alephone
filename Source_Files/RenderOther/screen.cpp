@@ -2811,6 +2811,13 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 		}
 	}
 	
+	{       // if we're already at the requested resolution, we can exit right away
+	  VDSwitchInfoRec current_state;
+	  Err= DMGetDisplayMode(Device, &current_state);
+	  if (Err == noErr && current_state.csData == MDPtr->WhichMD(BestFitIndex).csData)
+	    return TRUE;
+	}
+	
 	// Set monitor resolution and frequency automatically if requested;
 	// don't use the dialog box for that.
 	if (!ShowFreqDialog)
