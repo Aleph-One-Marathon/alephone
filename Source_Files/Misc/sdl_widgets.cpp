@@ -83,7 +83,11 @@ void w_pict::draw(SDL_Surface *s) const
  *  Button
  */
 
+#ifdef __MVCPP__
+w_button::w_button(const char *t, action_proc p, void *a) : widget(BUTTON_FONT), text(t), proc(*p), arg(a)
+#else
 w_button::w_button(const char *t, action_proc p, void *a) : widget(BUTTON_FONT), text(t), proc(p), arg(a)
+#endif
 {
 	rect.w = text_width(text, font, style) + get_dialog_space(BUTTON_L_SPACE) + get_dialog_space(BUTTON_R_SPACE);
 	button_l = get_dialog_image(BUTTON_L_IMAGE);

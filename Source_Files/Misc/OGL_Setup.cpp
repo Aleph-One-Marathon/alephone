@@ -36,6 +36,10 @@ Dec 17, 2000 (Loren Petrich):
 
 Apr 27, 2001 (Loren Petrich):
 	Modified the OpenGL fog support so as to enable below-liquid fogs
+
+Jul 8, 2001 (Loren Petrich):
+	Made it possible to read in silhouette bitmaps; one can now use the silhouette index
+	as a MML color-table index
 */
 
 #include <vector>
@@ -57,7 +61,7 @@ Apr 27, 2001 (Loren Petrich):
 #include "ColorParser.h"
 
 #ifdef __WIN32__
-#include "OGL_Win32.cpp"
+#include "OGL_Win32.h"
 #endif
 
 // Whether or not OpenGL is present and usable
@@ -214,9 +218,6 @@ static void TODeleteAll()
 
 OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bitmap)
 {
-	// Silhouette textures always have the default
-	if (CLUT == SILHOUETTE_BITMAP_SET) return &DefaultTextureOptions;
-	
 	// Initialize the hash table if necessary
 	if (TOHash[Collection].empty())
 	{
@@ -559,7 +560,7 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	}
 	else if (strcmp(Tag,"clut") == 0)
 	{
-		return (ReadBoundedNumericalValue(Value,"%hd",CLUT,short(ALL_CLUTS),short(INFRAVISION_BITMAP_SET)));
+		return (ReadBoundedNumericalValue(Value,"%hd",CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET)));
 	}
 	else if (strcmp(Tag,"bitmap") == 0)
 	{

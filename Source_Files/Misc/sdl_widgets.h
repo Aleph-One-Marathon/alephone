@@ -125,14 +125,24 @@ protected:
 
 class w_left_button : public w_button {
 public:
+
+#ifdef __MVCPP__
+	w_left_button(const char *text, action_proc proc, void *arg) : w_button(text, *proc, arg) {}
+#else
 	w_left_button(const char *text, action_proc proc, void *arg) : w_button(text, proc, arg) {}
+#endif
 
 	int layout(void);
 };
 
 class w_right_button : public w_button {
 public:
+
+#ifdef __MVCPP__
+	w_right_button(const char *text, action_proc proc, void *arg) : w_button(text, *proc, arg) {}
+#else
 	w_right_button(const char *text, action_proc proc, void *arg) : w_button(text, proc, arg) {}
+#endif
 
 	int layout(void);
 };
