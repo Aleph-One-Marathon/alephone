@@ -2287,7 +2287,6 @@
 				F53673F102014B3F01A80001,
 				F53673F202014B3F01A80001,
 				F53673F302014B3F01A80001,
-				F5B9EAC30246595D01A80001,
 			);
 			buildSettings = {
 				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
@@ -2692,6 +2691,7 @@
 				F5CC945C0240DE0F01A80001,
 				F5CC945D0240DE0F01A80001,
 				F5CC945E0240DE0F01A80001,
+				F5FA5D2A0248632901A80001,
 			);
 			isa = PBXHeadersBuildPhase;
 			name = Headers;
@@ -4235,19 +4235,6 @@
 			isa = PBXBuildFile;
 			settings = {
 			};
-		};
-		F5B9EAC30246595D01A80001 = {
-			buildActionMask = 2147483647;
-			files = (
-			);
-			generatedFileNames = (
-			);
-			isa = PBXShellScriptBuildPhase;
-			name = "Shell Script";
-			neededFileNames = (
-			);
-			shellPath = /bin/sh;
-			shellScript = "cp $SRCROOT/../Source_Files/Pfhortran/Pfhortran_Language_Definition \"$SYMROOT/AlephOne.app/Contents/Resources/Pfhortran Language Definition\"";
 		};
 		F5C8AFE50207387301A80001 = {
 			isa = PBXFileReference;
@@ -7993,6 +7980,12 @@
 			);
 			shellPath = /bin/sh;
 			shellScript = "mkdir -p $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML\ncp $SRCROOT/../data/*.mml $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/MML/\ncp $SRCROOT/../data/Fonts $SYMROOT/AlephOne.app/Contents/Resources/DataFiles/";
+		};
+		F5FA5D2A0248632901A80001 = {
+			fileRef = F522139E0136AC1601000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
 		};
 		F5FDA0880200C577013D663B = {
 			fileRef = F5830B4401E77D5701BA387C;

@@ -29,14 +29,14 @@ $fullfolderPath =~ m{([^/]+)$};
 
 local $folderName   = $1;
 local $folderSize   = undef;
-local $imageName    = "'$folderName.dmg'";
+local $imageName    = "'$fullfolderPath.dmg'";
 local $imageSectors = undef;
-local $imageTemp    = "'$folderName-tmp.dmg'";
+local $imageTemp    = "'$fullfolderPath-tmp.dmg'";
 
-die "err: $folderName is not a directory\n" if(!-d $folderName);
+die "err: $folderName is not a directory\n" if(!-d $fullfolderPath);
 
 # Know a better way to get the first value from du? 
-($folderSize) = split(m/ /, `du -s "$folderName"`);
+($folderSize) = split(m/ /, `du -s "$fullfolderPath"`);
 die "err: du failed with $?\n" if($?);
 
 # Inflate $folderSize for disk image overhead. Minimum 5 MB disk
@@ -87,7 +87,7 @@ $hdid_info =~ s/( |\t|\n)+/~!/g;
 $disk_dev = $hdid_info[0];
 $disk_dev =~ s{/dev/}{};
 
-`ditto -rsrcFork "$folderName" "/Volumes/$folderName"`;
+`ditto -rsrcFork "$fullfolderPath" "/Volumes/$folderName"`;
 if($?)
 {
 	local $err = $?;
