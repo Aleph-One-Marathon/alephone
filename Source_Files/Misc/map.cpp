@@ -635,6 +635,7 @@ void get_object_shape_and_transfer_mode(
 	short view;
 	
 	animation= get_shape_animation_data(object->shape);
+	assert(animation);
 	assert(animation->frames_per_view>=1);
 	
 	/* get correct base shape */
@@ -734,6 +735,8 @@ boolean randomize_object_sequence(
 	boolean randomized= FALSE;
 	
 	animation= get_shape_animation_data(shape);
+	if (!animation) return FALSE;
+	
 	switch (animation->number_of_views)
 	{
 		case _unanimated:
@@ -756,6 +759,7 @@ void set_object_shape_and_transfer_mode(
 	if (object->shape!=shape)
 	{
 		struct shape_animation_data *animation= get_shape_animation_data(shape);
+		assert(animation);
 
 		object->shape= shape;
 		if (animation->transfer_mode!=_xfer_normal || object->transfer_mode==NONE) object->transfer_phase= 0;
@@ -789,6 +793,7 @@ void animate_object(
 	if (!OBJECT_IS_INVISIBLE(object)) /* invisible objects donÕt have valid .shape fields */
 	{
 		animation= get_shape_animation_data(object->shape);
+		if (!animation) return;
 	
 		/* if this animation has frames, animate it */		
 		if (animation->frames_per_view>=1 && animation->number_of_views!=_unanimated)

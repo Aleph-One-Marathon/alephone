@@ -686,6 +686,8 @@ void animate_items(void) {
 				
 				shape_descriptor shape = ItemDef->base_shape;
 				struct shape_animation_data *animation= get_shape_animation_data(shape);
+				if (!animation) continue;
+				
 				// Randomize if non-animated
 				if (object->facing) {
 					if (animation->number_of_views == _unanimated)

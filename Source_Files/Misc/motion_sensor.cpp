@@ -14,6 +14,10 @@ Mar 23, 2000 (Loren Petrich):
 	Made motion-sensor monster typing more generic;
 	since it's now read off of a table, it can easily be changed
 	without rebuilding the app.
+
+Sep 2, 2000 (Loren Petrich):
+	Idiot-proofed the shapes display, since the shape accessor
+	now returns NULL pointers for nonexistent bitmaps.
 */
 
 #include "cseries.h"
@@ -246,7 +250,9 @@ void reset_motion_sensor(
 	ticks_since_last_update= ticks_since_last_rescan= 0;
 
 	get_shape_bitmap_and_shading_table(mount_shape, &mount, (void **) NULL, NONE);
+	if (!mount) return;
 	get_shape_bitmap_and_shading_table(virgin_mount_shapes, &virgin_mount, (void **) NULL, NONE);
+	if (!virgin_mount) return;
 	
 	assert(mount->width==virgin_mount->width);
 	assert(mount->height==virgin_mount->height);
@@ -461,8 +467,11 @@ static void draw_or_erase_unclipped_shape(
 	struct bitmap_definition *mount, *virgin_mount, *blip;
 
 	get_shape_bitmap_and_shading_table(mount_shape, &mount, (void **) NULL, NONE);
+	if (!mount) return;
 	get_shape_bitmap_and_shading_table(virgin_mount_shapes, &virgin_mount, (void **) NULL, NONE);
+	if (!virgin_mount) return;
 	get_shape_bitmap_and_shading_table(shape, &blip, (void **) NULL, NONE);
+	if (!blip) return;
 	
 	draw ?
 		unclipped_solid_sprite_copy(blip, mount, x, y) :
@@ -479,8 +488,11 @@ static void erase_entity_blip(
 	short x, y;
 	
 	get_shape_bitmap_and_shading_table(mount_shape, &mount, (void **) NULL, NONE);
+	if (!mount) return;
 	get_shape_bitmap_and_shading_table(virgin_mount_shapes, &virgin_mount, (void **) NULL, NONE);
+	if (!virgin_mount) return;
 	get_shape_bitmap_and_shading_table(shape, &blip, (void **) NULL, NONE);
+	if (!blip) return;
 
 	x= location->x + (motion_sensor_side_length>>1) - (blip->width>>1);
 	y= location->y + (motion_sensor_side_length>>1) - (blip->height>>1);
@@ -497,7 +509,9 @@ static void draw_entity_blip(
 	struct bitmap_definition *mount, *blip;
 	
 	get_shape_bitmap_and_shading_table(mount_shape, &mount, (void **) NULL, NONE);
+	if (!mount) return;
 	get_shape_bitmap_and_shading_table(shape, &blip, (void **) NULL, NONE);
+	if (!blip) return;
 
 	clipped_transparent_sprite_copy(blip, mount, sensor_region,
 		location->x + (motion_sensor_side_length>>1) - (blip->width>>1),
