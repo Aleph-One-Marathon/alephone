@@ -312,6 +312,26 @@ public:
 	EventLoopTimerRef operator() () {return Timer;}
 };
 
+
+// Adds a keyboard watcher to a control; useful for catching keystrokes
+// It cleans up when it goes out of scope
+class AutoKeyboardWatcher
+{
+	EventHandlerUPP KeyboardHandlerUPP;
+	
+public:
+
+	AutoKeyboardWatcher(
+		EventHandlerProcPtr Handler	// Called for every keystroke
+		);
+	~AutoKeyboardWatcher();
+	
+	void Watch(
+		ControlRef Ctrl,			// Control to watch keystrokes at
+		void *HandlerData = NULL
+		);
+};
+
 #endif
 
 #endif//mac

@@ -1054,4 +1054,39 @@ AutoTimer::~AutoTimer()
 	DisposeEventLoopTimerUPP(HandlerUPP);
 }
 
+
+AutoKeyboardWatcher::AutoKeyboardWatcher(
+	EventHandlerProcPtr Handler		// Called for every keystroke
+	)
+{
+	KeyboardHandlerUPP = NewEventHandlerUPP(Handler);
+}
+
+AutoKeyboardWatcher::~AutoKeyboardWatcher()
+{
+	DisposeEventHandlerUPP(KeyboardHandlerUPP);
+}
+
+void AutoKeyboardWatcher::Watch(
+	ControlRef Ctrl,				// Control to watch keystrokes fat
+	void *HandlerData
+	)
+{
+	OSStatus err;
+	
+	// From Br'fin's keyboard event handler
+	const int NumKeyboardEvents = 3;
+	const EventTypeSpec KeyboardEvents[NumKeyboardEvents] = {
+		{kEventClassKeyboard, kEventRawKeyDown},
+		{kEventClassKeyboard, kEventRawKeyModifiersChanged},
+		{kEventClassKeyboard, kEventRawKeyRepeat}
+	};
+	
+	err = InstallControlEventHandler(Ctrl, KeyboardHandlerUPP,
+			NumKeyboardEvents, KeyboardEvents,
+			HandlerData, NULL);
+	
+	vassert(err == noErr, csprintf(temporary, "Error in InstallControlEventHandler: %d",err));
+}
+
 #endif
