@@ -284,6 +284,20 @@ const CFStringRef Window_Main_Backdrop = CFSTR("Main_Backdrop");
 #define clutMARATHON8_CLUT_ID 5002
 
 
+#ifdef USES_NIBS
+
+const CFStringRef Window_Prefs_MonitorFreq = CFSTR("Prefs_MonitorFreq");
+
+// Stuff for monitor-frequency dialog box, revised for the nib version
+enum {
+	MonitorFreq_Set = 1,	// Accept the current setting and quit
+	MonitorFreq_Def,		// Revert to the original setting and cancel (iCANCEL)
+	MonitorFreq_Accept,		// Accept the current setting without quitting
+	MonitorFreq_Popup
+};
+
+#else
+
 // Stuff for monitor-frequency dialog box
 enum {
 	MonitorFreq_Dialog = 300,
@@ -293,6 +307,7 @@ enum {
 	MonitorFreq_Popup
 };
 
+#endif
 
 typedef ReqListRec *ReqListPtr;
 
@@ -1419,6 +1434,7 @@ void animate_screen_clut(
 	struct color_table *color_table,
 	bool full_screen)
 {
+/*
 #if !defined(TARGET_API_MAC_CARBON)
 	// Use special direct animation if the bit depth > 8;
 	// this is for the benefit of MacOS X Classic
@@ -1451,9 +1467,10 @@ void animate_screen_clut(
 		SetGDevice(old_device);
 	}
 #else
+*/
 	// Uses Carbon enabled version
 	direct_animate_screen_clut(color_table, world_device);	
-#endif
+//#endif
 }
 
 void assert_world_color_table(
@@ -2529,6 +2546,73 @@ void DM_ModeDimList::SetDims(short _Width, short _Height)
 }
 
 
+static bool BuildFreqMenuItem(int Indx, Str255 ItemName, bool &IsInitial, void *Data)
+{
+	DM_ModeDimList *MDPtr = (DM_ModeDimList *)(Data);
+
+	if (Indx >= MDPtr->NumMDs()) return false;
+	
+	pstrcpy(ItemName, MDPtr->WhichMD(Indx).Name);
+	
+	return true;
+}
+
+
+struct FreqDialogHandlerData
+{
+	GDHandle Device;
+	short BitDepth;
+	DM_ModeDimList *MDPtr;
+	DM_Session *SessPtr;
+	
+	EventLoopTimerRef Timer;
+	ControlRef FreqPopup;
+	bool FreqChanged;
+	int PreviousSelection;
+};
+
+
+static pascal void FreqDialogTimer(EventLoopTimerRef Timer, void *Data)
+{
+	FreqDialogHandlerData *HDPtr = (FreqDialogHandlerData *)(Data);
+	
+	if (HDPtr->FreqChanged)
+	{
+		unsigned long TempBitDepth = HDPtr->BitDepth;
+		int Selection = HDPtr->PreviousSelection;
+		SetControl32BitValue(HDPtr->FreqPopup, Selection+1);
+		DMSetDisplayMode(HDPtr->Device,HDPtr->MDPtr->WhichMD(Selection).csData,&TempBitDepth,NULL,HDPtr->SessPtr->State);
+		HDPtr->FreqChanged = false;
+	}
+}
+
+
+const EventTimerInterval TimeoutTime = 7;
+
+static void FreqDialogHandler(ParsedControl &Ctrl, void *Data)
+{
+	FreqDialogHandlerData *HDPtr = (FreqDialogHandlerData *)(Data);
+	int Selection;
+	
+	switch(Ctrl.ID.id)
+	{
+	case MonitorFreq_Accept:
+		HDPtr->FreqChanged = false;
+		Selection = GetControl32BitValue(HDPtr->FreqPopup) - 1;
+		HDPtr->PreviousSelection = Selection;
+		break;
+		
+	case MonitorFreq_Popup:
+		unsigned long TempBitDepth = HDPtr->BitDepth;
+		Selection = GetControl32BitValue(HDPtr->FreqPopup) - 1;
+		DMSetDisplayMode(HDPtr->Device,HDPtr->MDPtr->WhichMD(Selection).csData,&TempBitDepth,NULL,HDPtr->SessPtr->State);
+		HDPtr->FreqChanged = true;
+		SetEventLoopTimerNextFireTime(HDPtr->Timer, TimeoutTime);
+	}
+}
+
+
+
 // Changes the monitor's resolution and creates a DSp context for the new resolution
 // and deletes the old one if necessary; returns the success of doing so
 bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Height,
@@ -2629,6 +2713,69 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 				GetFreqFromName(MDPtr->WhichMD(BestFitIndex).Name);
 		return ChangeSuccess;
 	}
+	
+#ifdef USES_NIBS
+	OSStatus err;
+	
+	// Get the window
+	AutoNibWindow Window(GUI_Nib,Window_Prefs_MonitorFreq);
+
+	ControlRef FreqPopup = GetCtrlFromWindow(Window(), 0, MonitorFreq_Popup);
+
+	BuildMenu(FreqPopup, BuildFreqMenuItem, MDPtr);
+	
+	int Selection = BestFitIndex;
+	int OriginalSelection = Selection;
+	SetControl32BitValue(FreqPopup, Selection+1);
+	
+	EventLoopRef EventLoop = GetCurrentEventLoop();
+	EventLoopTimerRef Timer;
+	
+	FreqDialogHandlerData HandlerData;
+	HandlerData.FreqChanged = false;
+		
+	EventLoopTimerUPP DialogTimerUPP = NewEventLoopTimerUPP(FreqDialogTimer);
+	err = InstallEventLoopTimer(
+			EventLoop,
+			0, 0,	// Originally off
+			DialogTimerUPP, &HandlerData,
+			&Timer
+			);
+	
+	HandlerData.Device = Device;
+	HandlerData.BitDepth = BitDepth;
+	HandlerData.MDPtr = MDPtr;
+	HandlerData.SessPtr = &Session;
+
+	HandlerData.Timer = Timer;
+	HandlerData.FreqPopup = FreqPopup;
+	HandlerData.FreqChanged = false;
+	HandlerData.PreviousSelection = Selection;
+	
+	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",err));
+	
+	bool ChangeSuccess = RunModalDialog(Window(), false, FreqDialogHandler, &HandlerData);
+	
+	if (ChangeSuccess)
+	{
+		// Remember the frequency setting for next time
+		Selection = GetControl32BitValue(FreqPopup) - 1;
+		graphics_preferences->refresh_frequency = 
+			GetFreqFromName(MDPtr->WhichMD(Selection).Name);
+	}
+	else
+	{
+		// Revert!
+		unsigned long TempBitDepth = BitDepth;
+		Selection = OriginalSelection;
+		DMSetDisplayMode(Device,MDPtr->WhichMD(Selection).csData,&TempBitDepth,NULL,Session.State);
+	}
+	
+	// Clean up
+	DisposeEventLoopTimerUPP(DialogTimerUPP);
+	RemoveEventLoopTimer(Timer);
+	
+#else
 	
 	// Build MacOS Classic dialog box
 	// and its keyboard-event catcher
@@ -2758,6 +2905,7 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	if (ChangeSuccess)
 		graphics_preferences->refresh_frequency = 
 			GetFreqFromName(MDPtr->WhichMD(Selected).Name);
+#endif
 	
 	return ChangeSuccess;
 }
@@ -2773,6 +2921,8 @@ pascal void DM_ModeInfoCallback(void *UserData,
 	ModeListPtr->ModeInfoPtr = ModeInfoPtr;
 }
 
+
+#ifndef USES_NIBS
 
 // Callback for monitor-frequency-selection dialog-box event handling;
 // it is for catching keyboard events
@@ -2807,6 +2957,8 @@ pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
 	// Ignore all other kinds of events
 	return false;
 }
+
+#endif
 
 
 // Parsing of mode name to get frequency:
