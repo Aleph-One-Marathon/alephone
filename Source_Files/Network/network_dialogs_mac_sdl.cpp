@@ -448,7 +448,8 @@ static FileSpecifier sNetscriptFile;
 bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
-        bool inResumingGame)
+        bool inResumingGame,
+	bool& outAdvertiseGameOnMetaserver)
 {
 	short item_hit;
 	GrafPtr old_port;
@@ -463,6 +464,8 @@ bool network_game_setup(
 	assert(game_setup_filter_upp);
 	GetPort(&old_port);
 	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+
+	outAdvertiseGameOnMetaserver = false;
 
 	game_information->net_game_type= fill_in_game_setup_dialog(dialog, player_information, allow_all_levels, inResumingGame);
 

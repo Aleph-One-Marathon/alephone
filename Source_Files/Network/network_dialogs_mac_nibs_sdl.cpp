@@ -844,8 +844,11 @@ static void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
 bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
-        bool ResumingGame)
+        bool ResumingGame,
+	bool& outAdvertiseGameOnMetaserver)
 {
+	outAdvertiseGameOnMetaserver = false;
+
 	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
 	
 	AutoNibWindow Window(GUI_Nib, Window_Network_Setup);

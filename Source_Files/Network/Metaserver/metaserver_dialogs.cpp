@@ -36,6 +36,11 @@
 #include "preferences.h"
 
 
+// jkvw: shared code uses GameAvailableMetaserverAnnouncer,
+//       which is implemented in this unsharable file.
+#ifdef SDL
+
+
 static IPaddress sJoinAddress;
 
 
@@ -270,6 +275,10 @@ run_network_metaserver_ui()
 	return sJoinAddress;
 }
 
+#else
+static void
+setupAndConnectClient(MetaserverClient& client) {}
+#endif // ifdef SDL
 
 set<GameAvailableMetaserverAnnouncer*> GameAvailableMetaserverAnnouncer::s_instances;
 
