@@ -341,11 +341,6 @@ static GM_Random StaticRandom;
 static bool OnePassMultitexturing = false;
 
 
-// Display-list ID used for text fonts;
-// this is actually the display list ID for ASCII '\0' (0);
-// the others are in appropriate numerical order.
-static GLuint FontDisplayList;
-
 // Function for resetting map fonts when starting up an OpenGL rendering context;
 // defined in OGL_Map.c
 extern void OGL_ResetMapFonts();
@@ -480,13 +475,8 @@ bool OGL_StartRun()
 	// Initialize the texture accounting
 	OGL_StartTextures();
 	
-#ifdef mac
-	// Convenient function for setting up fonts;
-	// set aside some display lists for them
-	FontDisplayList = glGenLists(256);
-	FontSpecifier& Font = GetOnScreenFont();
-	aglUseFont(RenderContext, Font.ID, Font.Style, Font.Size, 0, 256, FontDisplayList);
-#endif
+	// Initialize the on-screen font for OpenGL rendering
+	GetOnScreenFont().OGL_Reset(true);
 	
 	// Reset the font into for overhead-map fonts done in OpenGL fashion
 	OGL_ResetMapFonts();
@@ -495,6 +485,14 @@ bool OGL_StartRun()
 	JustInited = true;
 	return (_OGL_IsActive = true);
 }
+
+
+// Called from OGL_ResetTextures() in OGL_Textures.cpp
+void ResetScreenFont()
+{
+	GetOnScreenFont().OGL_Reset(false);
+}
+
 
 // Stop an OpenGL run (destroys a rendering context)
 bool OGL_StopRun()
@@ -2041,7 +2039,6 @@ bool OGL_RenderCrosshairs()
 	glEnd();
 	
 	// Done with that modelview matrix
-	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 	
 	// Reset to default
@@ -2051,7 +2048,7 @@ bool OGL_RenderCrosshairs()
 }
 
 // Rendering text; this takes it as a Pascal string (byte 0 = number of text bytes)
-bool OGL_RenderText(short BaseX, short BaseY, unsigned char *Text)
+bool OGL_RenderText(short BaseX, short BaseY, char *Text)
 {
 	if (!OGL_IsActive()) return false;
 	
@@ -2060,50 +2057,62 @@ bool OGL_RenderText(short BaseX, short BaseY, unsigned char *Text)
 	GLuint TextDisplayList;
 	TextDisplayList = glGenLists(1);
 	glNewList(TextDisplayList,GL_COMPILE);
-	for (int b=1; b<=Text[0]; b++)
-	{
-		GLuint ByteDisplayList = FontDisplayList + Text[b];
-		glCallLists(1,GL_UNSIGNED_INT,&ByteDisplayList);
-	}
+	GetOnScreenFont().OGL_Render(Text);
 	glEndList();
 	
 	// Place the text in the foreground of the display
 	SetProjectionType(Projection_Screen);
-	short Depth = 1;
+	GLfloat Depth = 0;
+	
+	// Using a modelview matrix, of course
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
 	
 	// Background
 	glColor3f(0,0,0);
 	
-	glRasterPos3s(BaseX-1,BaseY-1,Depth);
+	glLoadIdentity();
+	glTranslatef(BaseX-1,BaseY-1,Depth);
 	glCallList(TextDisplayList);
 	
-	glRasterPos3s(BaseX,BaseY-1,Depth);
+	glLoadIdentity();
+	glTranslatef(BaseX,BaseY-1,Depth);
 	glCallList(TextDisplayList);
 	
-	glRasterPos3s(BaseX+1,BaseY-1,Depth);
+	glLoadIdentity();
+	glTranslatef(BaseX+1,BaseY-1,Depth);
 	glCallList(TextDisplayList);
 	
-	glRasterPos3s(BaseX-1,BaseY,Depth);
+	glLoadIdentity();
+	glTranslatef(BaseX-1,BaseY,Depth);
 	glCallList(TextDisplayList);
 	
-	glRasterPos3s(BaseX+1,BaseY,Depth);
+	glLoadIdentity();
+	glTranslatef(BaseX+1,BaseY,Depth);
 	glCallList(TextDisplayList);
 	
-	glRasterPos3s(BaseX-1,BaseY+1,Depth);
+	glLoadIdentity();
+	glTranslatef(BaseX-1,BaseY+1,Depth);
 	glCallList(TextDisplayList);
 	
-	glRasterPos3s(BaseX,BaseY+1,Depth);
+	glLoadIdentity();
+	glTranslatef(BaseX,BaseY+1,Depth);
 	glCallList(TextDisplayList);
 	
-	glRasterPos3s(BaseX+1,BaseY+1,Depth);
+	glLoadIdentity();
+	glTranslatef(BaseX+1,BaseY+1,Depth);
 	glCallList(TextDisplayList);
 	
 	// Foreground
 	glColor3f(1,1,1);
-	glRasterPos3s(BaseX,BaseY,Depth);
-	glCallList(TextDisplayList);
 
+	glLoadIdentity();
+	glTranslatef(BaseX,BaseY,Depth);
+	glCallList(TextDisplayList);
+		
+	// Clean up
 	glDeleteLists(TextDisplayList,1);
+	glPopMatrix();
 	
 	return true;
 }

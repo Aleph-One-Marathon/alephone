@@ -1494,37 +1494,44 @@ void validate_world_window(
 /* ---------- private code */
 
 // LP addition: routine for displaying text
-static void DisplayText(short BaseX, short BaseY, unsigned char *Text)
+static void DisplayText(short BaseX, short BaseY, char *Text)
 {
 	// OpenGL version:
 	// activate only in the main view, and also if OpenGL is being used for the overhead map
 	if((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
 		if (OGL_RenderText(BaseX, BaseY, Text)) return;
-
+	
+	// C to Pascal
+	Str255 PasText;
+	
+	int Len = MIN(strlen(Text),255);
+	PasText[0] = Len;
+	memcpy(PasText+1,Text,Len);
+	
 	// LP change: added drop-shadow rendering
 	// Changed it to a black halo
 	
 	RGBForeColor(&rgb_black);
 	MoveTo(BaseX+1,BaseY+1);
-	DrawString(Text);
+	DrawString(PasText);
 	MoveTo(BaseX+1,BaseY);
-	DrawString(Text);
+	DrawString(PasText);
 	MoveTo(BaseX+1,BaseY-1);
-	DrawString(Text);
+	DrawString(PasText);
 	MoveTo(BaseX,BaseY+1);
-	DrawString(Text);
+	DrawString(PasText);
 	MoveTo(BaseX,BaseY-1);
-	DrawString(Text);
+	DrawString(PasText);
 	MoveTo(BaseX-1,BaseY+1);
-	DrawString(Text);
+	DrawString(PasText);
 	MoveTo(BaseX-1,BaseY);
-	DrawString(Text);
+	DrawString(PasText);
 	MoveTo(BaseX-1,BaseY-1);
-	DrawString(Text);
+	DrawString(PasText);
 	
 	RGBForeColor(&rgb_white);
 	MoveTo(BaseX,BaseY);
-	DrawString(Text);
+	DrawString(PasText);
 }
 
 
@@ -1535,18 +1542,18 @@ static void update_fps_display(
 	{
 		long ticks= TickCount();
 		GrafPtr old_port;
-		unsigned char fps[100];
+		char fps[256];
 		
 		frame_ticks[frame_index]= ticks;
 		frame_index= (frame_index+1)%FRAME_SAMPLE_SIZE;
 		if (frame_count<FRAME_SAMPLE_SIZE)
 		{
 			frame_count+= 1;
-			pstrcpy(fps, "\p--");
+			strcpy(fps, "--");
 		}
 		else
 		{
-			psprintf(fps, "%3.2ffps", (FRAME_SAMPLE_SIZE*60)/(float)(ticks-frame_ticks[frame_index]));
+			sprintf(fps, "%3.2ffps", (FRAME_SAMPLE_SIZE*60)/(float)(ticks-frame_ticks[frame_index]));
 		}
 
 		GetPort(&old_port);
@@ -1599,27 +1606,27 @@ static void DisplayPosition(GrafPtr port)
 	short Y = port->portRect.top + LineSpacing;
 	const float FLOAT_WORLD_ONE = float(WORLD_ONE);
 	const float AngleConvert = 360/float(FULL_CIRCLE);
-	psprintf(ptemporary, "X       = %8.3f",world_view->origin.x/FLOAT_WORLD_ONE);
-	DisplayText(X,Y,ptemporary);
+	sprintf(temporary, "X       = %8.3f",world_view->origin.x/FLOAT_WORLD_ONE);
+	DisplayText(X,Y,temporary);
 	Y += LineSpacing;
-	psprintf(ptemporary, "Y       = %8.3f",world_view->origin.y/FLOAT_WORLD_ONE);
-	DisplayText(X,Y,ptemporary);
+	sprintf(temporary, "Y       = %8.3f",world_view->origin.y/FLOAT_WORLD_ONE);
+	DisplayText(X,Y,temporary);
 	Y += LineSpacing;
-	psprintf(ptemporary, "Z       = %8.3f",world_view->origin.z/FLOAT_WORLD_ONE);
-	DisplayText(X,Y,ptemporary);
+	sprintf(temporary, "Z       = %8.3f",world_view->origin.z/FLOAT_WORLD_ONE);
+	DisplayText(X,Y,temporary);
 	Y += LineSpacing;
-	psprintf(ptemporary, "Polygon = %8d",world_view->origin_polygon_index);
-	DisplayText(X,Y,ptemporary);
+	sprintf(temporary, "Polygon = %8d",world_view->origin_polygon_index);
+	DisplayText(X,Y,temporary);
 	Y += LineSpacing;
 	short Angle = world_view->yaw;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
-	psprintf(ptemporary, "Yaw     = %8.3f",AngleConvert*Angle);
-	DisplayText(X,Y,ptemporary);
+	sprintf(temporary, "Yaw     = %8.3f",AngleConvert*Angle);
+	DisplayText(X,Y,temporary);
 	Y += LineSpacing;
 	Angle = world_view->pitch;
 	if (Angle > HALF_CIRCLE) Angle -= FULL_CIRCLE;
-	psprintf(ptemporary, "Pitch   = %8.3f",AngleConvert*Angle);
-	DisplayText(X,Y,ptemporary);
+	sprintf(temporary, "Pitch   = %8.3f",AngleConvert*Angle);
+	DisplayText(X,Y,temporary);
 	
 	RGBForeColor(&rgb_black);
 	

@@ -1103,6 +1103,8 @@ TextureManager::~TextureManager()
 	if (GlowBuffer != 0) delete []GlowBuffer;
 }
 
+extern void ResetScreenFont();
+
 void OGL_ResetTextures()
 {
 	// Fix for crashing bug when OpenGL is inactive
@@ -1124,6 +1126,9 @@ void OGL_ResetTextures()
 					TSSet[ist].Reset();
 			}
 		}
+	
+	// Reset the font textures
+	ResetScreenFont();
 }
 
 

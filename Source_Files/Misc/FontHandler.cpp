@@ -5,11 +5,19 @@
 	December 17, 2000
 	
 	This is for specifying and working with text fonts
+
+Dec 25, 2000 (Loren Petrich):
+	Added OpenGL-rendering support
 */
 
+#include <GL/gl.h>
+#include <math.h>
 #include <string.h>
 #include "FontHandler.h"
 
+
+// MacOS-specific: stuff that gets reused
+static CTabHandle Grays = NULL;
 
 // Font-specifier equality and assignment:
 
@@ -34,6 +42,8 @@ FontSpecifier& FontSpecifier::operator=(FontSpecifier& F)
 void FontSpecifier::Init()
 {
 	Update();
+	
+	OGL_Texture = NULL;
 }
 
 
@@ -93,6 +103,269 @@ void FontSpecifier::Use()
 	TextFace(Style);
 	TextSize(Size);
 }
+
+
+// Next power of 2; since OpenGL prefers powers of 2, it is necessary to work out
+// the next one up for each texture dimension.
+inline int NextPowerOfTwo(int n)
+{
+	int p = 1;
+	while(p < n) {p <<= 1;}
+	return p;
+}
+
+
+#ifdef HAVE_OPENGL		
+// Reset the OpenGL fonts; its arg indicates whether this is for starting an OpenGL session
+// (this is to avoid texture and display-list memory leaks and other such things)
+void FontSpecifier::OGL_Reset(bool IsStarting)
+{
+	// Don't delete these if there is no valid texture;
+	// that indicates that there are no valid texture and display-list ID's.
+	if (!IsStarting && !OGL_Texture)
+	{
+		glDeleteTextures(1,&TxtrID);
+		glDeleteLists(DispList,256);
+	}
+
+	// Invalidates whatever texture had been present
+	if (OGL_Texture)
+	{
+		delete[]OGL_Texture;
+		OGL_Texture = NULL;
+	}
+	
+	// Get horizontal and vertical extents of the glyphs;
+	// will assume only 1-byte fonts.
+	short Ascent = 0, Descent = 0;
+	short Widths[256];
+	
+	// Some MacOS-specific stuff
+	TextSpec OldFont;
+	GetFont(&OldFont);
+	
+	Use();
+	FontInfo Info;
+	GetFontInfo(&Info);
+	
+	Ascent = Info.ascent;
+	Descent = Info.descent;
+	for (int k=0; k<256; k++)
+		Widths[k] = CharWidth(k);
+	
+	SetFont(&OldFont);
+	// End some MacOS-specific stuff
+	
+	// Put some padding around each glyph so as to avoid clipping it
+	const short Pad = 1;
+	Ascent += Pad;
+	Descent += Pad;
+	for (int k=0; k<256; k++)
+		Widths[k] += 2*Pad;
+	
+	// Now for the totals and dimensions
+	int TotalWidth = 0;
+	for (int k=0; k<256; k++)
+		TotalWidth += Widths[k];
+	
+	// For an empty font, clear out
+	if (TotalWidth <= 0) return;
+	
+	int GlyphHeight = Ascent + Descent;
+	
+	int EstDim = int(sqrt(TotalWidth*GlyphHeight) + 0.5);
+	TxtrWidth = MAX(128, NextPowerOfTwo(EstDim));
+	
+	// Find the character starting points and counts
+	short CharStarts[256], CharCounts[256];
+	int LastLine = 0;
+	CharStarts[LastLine] = 0;
+	CharCounts[LastLine] = 0;
+	short Pos = 0;
+	for (int k=0; k<256; k++)
+	{
+		// Over the edge? If so, then start a new line
+		short NewPos = Pos + Widths[k];
+		if (NewPos > TxtrWidth)
+		{
+			LastLine++;
+			CharStarts[LastLine] = k;
+			Pos = Widths[k];
+			CharCounts[LastLine] = 1;
+		} else {
+			Pos = NewPos;
+			CharCounts[LastLine]++;
+		}
+	}
+	TxtrHeight = MAX(128, NextPowerOfTwo(GlyphHeight*(LastLine+1)));
+	
+	// MacOS-specific: create a grayscale color table if necessary
+	if (!Grays)
+	{
+		CTabHandle SystemColors = GetCTable(8);
+		int SCSize = GetHandleSize(Handle(SystemColors));
+		Grays = (CTabHandle)NewHandle(SCSize);
+		assert(Grays);
+		HLock(Handle(Grays));
+		HLock(Handle(SystemColors));
+		CTabPtr GrayPtr = *Grays;
+		CTabPtr SCPtr = *SystemColors;
+		memcpy(GrayPtr,SCPtr,SCSize);
+		for (int k=0; k<256; k++)
+		{
+			ColorSpec& Spec = GrayPtr->ctTable[k];
+			Spec.rgb.red = Spec.rgb.green = Spec.rgb.blue = (k << 8) + k;
+		}
+		HUnlock(Handle(Grays));
+		HUnlock(Handle(SystemColors));
+		DisposeCTable(SystemColors);
+	}
+	
+	// MacOS-specific: render the font glyphs onto a GWorld,
+	// and use it as the source of the font texture.
+	Rect ImgRect;
+	SetRect(&ImgRect,0,0,TxtrWidth,TxtrHeight);
+	GWorldPtr FTGW;
+	OSErr Err = NewGWorld(&FTGW,8,&ImgRect,Grays,0,0);
+	if (Err != noErr) return;
+	PixMapHandle Pxls = GetGWorldPixMap(FTGW);
+	LockPixels(Pxls);
+	
+	CGrafPtr OrigPort;
+	GDHandle OrigDevice;
+	GetGWorld(&OrigPort,&OrigDevice);
+ 	SetGWorld(FTGW,0);
+	
+	BackColor(blackColor);
+	ForeColor(whiteColor);
+ 	EraseRect(&ImgRect);
+ 	
+ 	Use();	// The GWorld needs its font set for it
+ 	
+ 	for (int k=0; k<=LastLine; k++)
+ 	{
+ 		int Which = CharStarts[k];
+ 		int VPos = k*GlyphHeight + Ascent;
+ 		int HPos = Pad;
+ 		for (int m=0; m<CharCounts[k]; m++)
+ 		{
+ 			MoveTo(HPos,VPos);
+ 			DrawChar(Which);
+ 			HPos += Widths[Which++];
+ 		}
+ 	}
+ 	
+ 	// Non-MacOS-specific: allocate the texture buffer
+ 	// Its format is LA, where L is the luminosity and A is the alpha channel
+ 	// The font value will go into A.
+ 	OGL_Texture = new uint8[2*GetTxtrSize()];
+	
+	// Now copy from the GWorld into the OpenGL texture	
+	uint8 *PixBase = (byte *)GetPixBaseAddr(Pxls);
+ 	int Stride = int((**Pxls).rowBytes & 0x7fff);
+ 	
+ 	for (int k=0; k<TxtrHeight; k++)
+ 	{
+ 		uint8 *SrcPxl = PixBase + k*Stride + 1;	// Use red channel
+ 		uint8 *DstPxl = OGL_Texture + 2*k*TxtrWidth;
+ 		for (int m=0; m<TxtrWidth; m++)
+ 		{
+ 			*(DstPxl++) = 0xff;	// Base color: white (will be modified with glColorxxx())
+ 			*(DstPxl++) = *(SrcPxl++);
+ 		}
+ 	}
+ 	
+ 	UnlockPixels(Pxls);
+ 	SetGWorld(OrigPort,OrigDevice);
+ 	DisposeGWorld(FTGW);
+ 	// Absolute end of MacOS-specific stuff; OpenGL stuff starts here
+ 	
+ 	// Load texture
+ 	glGenTextures(1,&TxtrID);
+ 	glBindTexture(GL_TEXTURE_2D,TxtrID);
+ 	
+ 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, TxtrWidth, TxtrHeight,
+		0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, OGL_Texture);
+ 	
+ 	// Allocate and create display lists of rendering commands
+ 	DispList = glGenLists(256);
+ 	GLfloat TWidNorm = GLfloat(1)/TxtrWidth;
+ 	GLfloat THtNorm = GLfloat(1)/TxtrHeight;
+ 	for (int k=0; k<=LastLine; k++)
+ 	{
+ 		int Which = CharStarts[k];
+ 		GLfloat Top = k*(THtNorm*GlyphHeight);
+ 		GLfloat Bottom = (k+1)*(THtNorm*GlyphHeight);
+ 		int Pos = 0;
+ 		for (int m=0; m<CharCounts[k]; m++)
+ 		{
+ 			short Width = Widths[Which];
+ 			int NewPos = Pos + Width;
+ 			GLfloat Left = TWidNorm*Pos;
+ 			GLfloat Right = TWidNorm*NewPos;
+ 			
+ 			glNewList(DispList + Which, GL_COMPILE);
+ 			
+ 			// Draw the glyph rectangle
+ 			glBegin(GL_POLYGON);
+ 			
+ 			glTexCoord2f(Left,Top);
+  			glVertex2s(0,-Ascent);
+  			
+ 			glTexCoord2f(Right,Top);
+  			glVertex2s(Width,-Ascent);
+  			
+ 			glTexCoord2f(Right,Bottom);
+ 			glVertex2s(Width,Descent);
+ 			
+ 			glTexCoord2f(Left,Bottom);
+			glVertex2s(0,Descent);
+			
+			glEnd();
+			
+			// Move to the next glyph's position
+			glTranslatef(Width-2*Pad,0,0);
+			
+ 			glEndList();
+ 			
+ 			// For next one
+ 			Pos = NewPos;
+ 			Which++;
+ 		}
+ 	}
+}
+
+
+// Renders a C-style string in OpenGL.
+// assumes screen coordinates and that the left baseline point is at (0,0).
+// Alters the modelview matrix so that the next characters will be drawn at the proper place.
+// One can surround it with glPushMatrix() and glPopMatrix() to remember the original.
+void FontSpecifier::OGL_Render(char *Text)
+{
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	
+	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glDisable(GL_ALPHA_TEST);
+
+	glBindTexture(GL_TEXTURE_2D,TxtrID);
+	
+	int Len = MIN(strlen(Text),255);
+	for (int k=0; k<Len; k++)
+	{
+		unsigned char c = Text[k];
+		glCallList(DispList+c);
+	}
+	
+	glPopAttrib();
+}
+#endif
 
 	
 // Given a pointer to somewhere in a name set, returns the pointer

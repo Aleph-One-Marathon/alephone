@@ -51,11 +51,23 @@ struct FontSpecifier
 	// Do the updating: must be called before using the font; however, it is called by Init(),
 	// and it will be called by the XML parser if it updates the parameters
 	void Update();
-		
-	// Use this font; has this form because MacOS Quickdraw has a global font value
+	
+	// Use this font (MacOS-specific); has this form because MacOS Quickdraw has a global font value
 	// for each GrafPort (draw context)
 	void Use();
 
+#ifdef HAVE_OPENGL	
+	// Reset the OpenGL fonts; its arg indicates whether this is for starting an OpenGL session
+	// (this is to avoid texture and display-list memory leaks and other such things)
+	void OGL_Reset(bool IsStarting);
+	
+	// Renders a C-style string in OpenGL.
+	// assumes screen coordinates and that the left baseline point is at (0,0).
+	// Alters the modelview matrix so that the next characters will be drawn at the proper place.
+	// One can surround it with glPushMatrix() and glPopMatrix() to remember the original.
+	void OGL_Render(char *Text);
+#endif
+	
 	// Equality and assignment operators
 	bool operator==(FontSpecifier& F);
 	bool operator!=(FontSpecifier& F)
@@ -74,7 +86,18 @@ struct FontSpecifier
 	static char *FindNameEnd(char *NamePtr);
 	
 	// Not sure what kind of explicit constructor would be consistent with the way
-	// that fonts' initial values are specified, as {nameset-string, size, style}
+	// that fonts' initial values are specified, as {nameset-string, size, style}.
+	// Also, private members are inconsistent with that sort of initialization.
+
+#ifdef HAVE_OPENGL
+	// Stuff for OpenGL font rendering: the font texture and a display list for font rendering;
+	// if OGL_Texture is NULL, then there is no OpenGL font texture to render.
+	uint8 *OGL_Texture;
+	short TxtrWidth, TxtrHeight;
+	int GetTxtrSize() {return int(TxtrWidth)*int(TxtrHeight);}
+	uint32 TxtrID;
+	uint32 DispList;
+#endif
 };
 
 

@@ -214,6 +214,7 @@ void _draw_screen_shape_at_x_y(
 	RGBBackColor(&old_back);
 }
 
+#ifdef UNUSED
 void _draw_screen_shape_centered(
 	shape_descriptor shape,
 	screen_rectangle *rectangle,
@@ -223,7 +224,7 @@ void _draw_screen_shape_centered(
 	RGBColor old_fore, old_back;
 	Rect destination, source;
 	short left_offset, top_offset;
-return;
+	
 	/* Avoid unwanted coloring.. */
 	GetForeColor(&old_fore);
 	GetBackColor(&old_back);
@@ -271,6 +272,7 @@ return;
 	RGBForeColor(&old_fore);
 	RGBBackColor(&old_back);
 }
+#endif
 
 short _text_width(
 	const char *buffer, 
