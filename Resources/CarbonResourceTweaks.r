@@ -69,6 +69,17 @@ resource 'DLOG' (3000, "Net Game Setup") {
 	centerParentWindowScreen
 };
 
+resource 'DLOG' (2100, "OpenGL Texture Options") {
+	{100, 100, 287, 400},
+	movableDBoxProc,
+	invisible,
+	noGoAway,
+	0x0,
+	2100,
+	"OpenGL Texture Rendering Preferences",
+	centerParentWindowScreen
+};
+
 resource 'DITL' (3000, "Net Game Setup") {
 	{	/* array DITLarray: 37 elements */
 		/* [1] */

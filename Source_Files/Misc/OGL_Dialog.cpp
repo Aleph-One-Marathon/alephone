@@ -429,21 +429,10 @@ static bool TextureConfigureDialog(short WhichTexture)
 	short WhichAltTxtr;	// Which alternative one selected
 	
 	// Reveal it
-//#if defined(USE_CARBON_ACCESSORS)
-#if USE_SHEETS
-	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
+	BringToFront(GetDialogWindow(Dialog));
 	WindowRef frontWindow = ActiveNonFloatingWindow();
-	ShowSheetWindow(GetDialogWindow(Dialog), frontWindow);
-#else
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
-#endif
-/*
-#else
-	SelectWindow(Dialog);
-	ShowWindow(Dialog);
-#endif
-*/	
 	bool WillQuit = false;
 	bool IsOK = false;
 
@@ -492,17 +481,7 @@ static bool TextureConfigureDialog(short WhichTexture)
 	}
 	
 	// Clean up
-//#if defined(USE_CARBON_ACCESSORS)
-# if USE_SHEETS
-	HideSheetWindow(GetDialogWindow(Dialog));
-# else
 	HideWindow(GetDialogWindow(Dialog));
-# endif
-/*
-#else
-	HideWindow(Dialog);
-#endif
-*/
 	DisposeDialog(Dialog);
 
 #if /*defined(USE_CARBON_ACCESSORS) &&*/ USE_SHEETS
