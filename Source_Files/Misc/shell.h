@@ -7,9 +7,14 @@ Saturday, August 22, 1992 2:18:48 PM
 
 Saturday, January 2, 1993 10:22:46 PM
 	thank god c doesn’t choke on incomplete structure references.
+
+Jul 5, 2000 (Loren Petrich):
+	Added XML support for controlling the cheats
 */
 
 /* ---------- constants */
+
+#include "XML_ElementParser.h"
 
 #define MAXIMUM_COLORS ((short)256)
 
@@ -95,6 +100,9 @@ extern struct system_information_data *system_information;
 
 void global_idle_proc(void);
 void handle_game_key(EventRecord *event, short key);
+
+// LP addition for handling XML stuff:
+XML_ElementParser *Cheats_GetParser();
 
 /* ---------- prototypes/SHAPES.C */
 
