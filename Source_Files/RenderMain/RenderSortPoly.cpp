@@ -64,7 +64,7 @@ RenderSortPolyClass::RenderSortPolyClass():
 
 
 // Resizes all the objects defined inside
-void RenderSortPolyClass::Resize(int NumPolygons)
+void RenderSortPolyClass::Resize(size_t NumPolygons)
 {
 	polygon_index_to_sorted_node.resize(NumPolygons);
 }
@@ -177,7 +177,7 @@ void RenderSortPolyClass::sort_render_tree()
 			
 //			dprintf("removed polygon #%d (#%d aliases)", leaf->polygon_index, alias_count);
 			
-			int Length = SortedNodes.size();
+			size_t Length = SortedNodes.size();
 			POINTER_DATA OldSNPointer = POINTER_CAST(&SortedNodes.front());
 				
 			// Add a dummy object and check if the pointer got changed
@@ -189,7 +189,7 @@ void RenderSortPolyClass::sort_render_tree()
 			if (NewSNPointer != OldSNPointer)
 			{
 				// Update what uses the sorted-node pointers
-				for (int k=0; k<Length; k++) {
+				for (size_t k=0; k<Length; k++) {
 					sorted_node = &SortedNodes[k];
 					polygon_index_to_sorted_node[sorted_node->polygon_index]= sorted_node;
 				}
@@ -312,7 +312,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				if (j!=NONE) /* if the endpoint was not a duplicate */
 				{
 					/* expand the array, if necessary, and add the new endpoint */
-					int Length = AccumulatedEndpointClips.size();
+					size_t Length = AccumulatedEndpointClips.size();
 					AccumulatedEndpointClips.push_back(NULL);
 					assert(AccumulatedEndpointClips.size() <= 32767);		// Originally a short value
 					if (j!=Length) memmove(&AccumulatedEndpointClips[j+1], &AccumulatedEndpointClips[j],
@@ -390,7 +390,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				if (left_clip->x<view->screen_width && right_clip->x>0 && left_clip->x<right_clip->x)
 				{
 					// LP change: clipping windows are in growable list
-					int Length = ClippingWindows.size();
+					size_t Length = ClippingWindows.size();
 					POINTER_DATA OldCWPointer = POINTER_CAST(&ClippingWindows.front());
 					
 					// Add a dummy object and check if the pointer got changed
@@ -402,13 +402,13 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					if (NewCWPointer != OldCWPointer)
 					{
 						// Get the clipping windows and sorted nodes into sync; no render objects yet
-						for (int k=0; k<Length; k++)
+						for (size_t k=0; k<Length; k++)
 						{
 							clipping_window_data &ClippingWindow = ClippingWindows[k];
 							if (ClippingWindow.next_window != NULL)
 								ClippingWindow.next_window = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(ClippingWindow.next_window) - OldCWPointer));
 						}
-						for (unsigned k=0; k<SortedNodes.size(); k++)
+						for (size_t k=0; k<SortedNodes.size(); k++)
 						{
 							sorted_node_data &SortedNode = SortedNodes[k];
 							if (SortedNode.clipping_windows != NULL)
@@ -447,14 +447,14 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 /* does not care if the given line_clips are sorted or not */
 void RenderSortPolyClass::calculate_vertical_clip_data(
 	line_clip_data **accumulated_line_clips,
-	short accumulated_line_clip_count,
+	size_t accumulated_line_clip_count,
 	clipping_window_data *window,
 	short x0,
 	short x1)
 {
 	if (x0<x1)
 	{
-		short i, x;
+		short x;
 		line_clip_data *highest_line, *locally_highest_line, *line;
 	
 		/* get the highest top clip covering the requested horizontal run */		
@@ -464,7 +464,7 @@ void RenderSortPolyClass::calculate_vertical_clip_data(
 		{
 			locally_highest_line= NULL;
 			
-			for (i= 0;i<accumulated_line_clip_count;++i)
+			for (size_t i= 0;i<accumulated_line_clip_count;++i)
 			{
 				line= accumulated_line_clips[i];
 				
@@ -498,7 +498,7 @@ void RenderSortPolyClass::calculate_vertical_clip_data(
 		{
 			locally_highest_line= NULL; /* means lowest */
 			
-			for (i= 0;i<accumulated_line_clip_count;++i)
+			for (size_t i= 0;i<accumulated_line_clip_count;++i)
 			{
 				line= accumulated_line_clips[i];
 				

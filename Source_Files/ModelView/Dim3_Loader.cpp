@@ -197,8 +197,8 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	{
 		// Are all the normals zero?
 		bool AllZero = true;
-		int NumNormVals = Model.Normals.size();
-		for (int k=0; k<NumNormVals; k++)
+		size_t NumNormVals = Model.Normals.size();
+		for (size_t k=0; k<NumNormVals; k++)
 		{
 			if (Model.Normals[k] != 0)
 			{
@@ -224,7 +224,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	// Work out the sorted order for the bones; be sure not to repeat this if already done.
 	if (BoneIndices.empty() && !Model.Bones.empty())
 	{
-		int NumBones = Model.Bones.size();
+		size_t NumBones = Model.Bones.size();
 		BoneIndices.resize(NumBones);
 		fill(BoneIndices.begin(),BoneIndices.end(),NONE);	// No bones listed -- yet
 		vector<Model3D_Bone> SortedBones(NumBones);
@@ -234,12 +234,12 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		
 		// Add the bones, one by one;
 		// the bone stack's height is originally zero
-		int StackTop = -1;
-		for (int ib=0; ib<NumBones; ib++)
+		size_t StackTop = -1;
+		for (size_t ib=0; ib<NumBones; ib++)
 		{		
 			// Scan down the bone stack to find a bone that's the parent of some unlisted bone;
-			int ibsrch = NumBones;	// "Bone not found" value
-			int ibstck = -1;		// Empty stack
+			size_t ibsrch = NumBones;	// "Bone not found" value
+			size_t ibstck = -1;		// Empty stack
 			for (ibstck=StackTop; ibstck>=0; ibstck--)
 			{
 				// Note: the bone stack is indexed relative to the original,
@@ -274,7 +274,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 					
 					// Check if the parent is not one of the bones
 					char *ParentTag = BoneOwnTags[ibsrch].Tag1;
-					int ibsx;
+					size_t ibsx;
 					for (ibsx=0; ibsx<NumBones; ibsx++)
 					{
 						if (strncmp(ParentTag,BoneOwnTags[ibsx].Tag0,BoneTagSize)==0)
@@ -305,11 +305,11 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 			BonesUsed[ibsrch] = true;
 			
 			// Index for remapping
-			BoneIndices[ibsrch] = ib;
+			BoneIndices[ibsrch] = (size_t)ib;
 		}
 		
 		// Reorder the bones
-		for (int ib=0; ib<NumBones; ib++)
+		for (size_t ib=0; ib<NumBones; ib++)
 			SortedBones[BoneIndices[ib]] = Model.Bones[ib];
 		
 		// Put them back into the model in one step
@@ -319,7 +319,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 		for (unsigned iv=0; iv<Model.VtxSources.size(); iv++)
 		{
 			Model3D_VertexSource& VS = Model.VtxSources[iv];
-			int ibsx;
+			size_t ibsx;
 			char *Tag;
 			
 			Tag = VertexBoneTags[iv].Tag0;
@@ -703,13 +703,13 @@ bool XML_TriVertexParser::AttributesDone()
 	float NSQ = Norm_X*Norm_X + Norm_Y*Norm_Y + Norm_Z*Norm_Z;
 	if (NSQ != 0)
 	{
-		float NMult = 1/sqrt(NSQ);
+		float NMult = (float)(1/sqrt(NSQ));
 		Norm_X *= NMult;
 		Norm_Y *= NMult;
 		Norm_Z *= NMult;
 	}
 
-	GLushort Index = ModelPtr->VertIndices.size();
+	GLushort Index = ((GLushort)ModelPtr->VertIndices.size());
 	ModelPtr->VertIndices.push_back(Index);
 	ModelPtr->VtxSrcIndices.push_back(ID);
 	ModelPtr->TxtrCoords.push_back(Txtr_X);
@@ -742,7 +742,7 @@ bool XML_FrameParser::Start()
 {
 	// Be sure to have the right number of frame members --
 	// and blank them out
-	int NumBones = ModelPtr->Bones.size();
+	size_t NumBones = ModelPtr->Bones.size();
 	ReadFrame.resize(NumBones);
 	objlist_clear(&ReadFrame[0],NumBones);
 	
@@ -768,7 +768,7 @@ bool XML_FrameParser::End()
 {
 	// Some of the data was set up by child elements, so all the processing
 	// can be back here.
-	for (int b=0; b<ReadFrame.size(); b++)
+	for (size_t b=0; b<ReadFrame.size(); b++)
 		ModelPtr->Frames.push_back(ReadFrame[b]);
 	
 	FrameTags.push_back(NT);
@@ -871,8 +871,8 @@ bool XML_FrameBoneParser::HandleAttribute(const char *Tag, const char *Value)
 bool XML_FrameBoneParser::AttributesDone()
 {
 	// Place the bone info into the appropriate temporary-array location
-	int NumBones = BoneOwnTags.size();
-	int ib;
+	size_t NumBones = BoneOwnTags.size();
+	size_t ib;
 	for (ib=0; ib<NumBones; ib++)
 	{
 		// Compare tag to bone's self tag
@@ -905,7 +905,7 @@ bool XML_SequenceParser::End()
 	{
 		ModelPtr->SeqFrmPointers.push_back(0);
 	}
-	ModelPtr->SeqFrmPointers.push_back(ModelPtr->SeqFrames.size());
+	ModelPtr->SeqFrmPointers.push_back((GLushort)(ModelPtr->SeqFrames.size()));
 	return true;
 }
 
@@ -989,14 +989,14 @@ bool XML_SeqFrameParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"name"))
 	{
 		// Find which frame
-		int ifr;
-		int NumFrames = FrameTags.size();
+		size_t ifr;
+		size_t NumFrames = FrameTags.size();
 		for (ifr=0; ifr<NumFrames; ifr++)
 		{
 			if (strncmp(Value,FrameTags[ifr].Tag,BoneTagSize) == 0) break;
 		}
 		if (ifr >= NumFrames) ifr = NONE;
-		Data.Frame = ifr;
+		Data.Frame = (GLshort)ifr;
 		return true;
 	}
 	else if (StringsEqual(Tag,"time"))

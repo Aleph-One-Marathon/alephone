@@ -27,8 +27,8 @@ struct GM_Random
 	uint32 KISS() {return ((MWC()^CONG())+SHR3());}
 	uint32 LFIB4() {t[c]=t[c]+t[c+58]+t[c+119]+t[c+178]; return t[++c];}
 	uint32 SWB() {t[c+237]=(x=t[c+15])-(y=t[c]+(x<y)); return t[++c];}
-	float UNI() {return (KISS()*2.328306e-10);}
-	float VNI() {return (((int32) KISS())*4.656613e-10);}
+	float UNI() {return (float)(KISS()*2.328306e-10);}
+	float VNI() {return (float)(((int32) KISS())*4.656613e-10);}
 
 	/*
 		Random seeds must be used to reset z, w, jsr, jcong and

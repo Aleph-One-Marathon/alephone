@@ -155,7 +155,7 @@ typedef void (*element_clicked_callback_t)(w_players_in_game2* inWPIG2, // widge
                                            bool inTeam,                 // team?  (or player)
                                            bool inGraph,                // postgame carnage report?
                                            bool inScores,               // showing scores?  (or carnage)
-                                           int inDrawIndex,             // starting with 0 at left
+                                           size_t inDrawIndex,             // starting with 0 at left
                                            int inPlayerIndexOrTeamColor); // meaning depends on inTeam
 
 class w_players_in_game2 : public widget {
@@ -198,19 +198,19 @@ protected:
     bool        draw_carnage_graph;
     vector<int>	players_on_team[NUMBER_OF_TEAM_COLORS];	// (note array of vectors) hold indices into player_entries
     net_rank    net_rankings[MAXIMUM_NUMBER_OF_PLAYERS];
-    int         num_valid_net_rankings;
+    size_t         num_valid_net_rankings;
     int         selected_player;
     bool        clump_players_by_team;
     bool        draw_scores_not_carnage;
 
     // Local methods
-    void draw_player_icon(SDL_Surface* s, int rank_index, int center_x) const;
+    void draw_player_icon(SDL_Surface* s, size_t rank_index, int center_x) const;
     void draw_player_icons_separately(SDL_Surface* s) const;
     void draw_player_icons_clumped(SDL_Surface* s) const;
     void draw_player_names_separately(SDL_Surface* s, TextLayoutHelper& ioTextLayoutHelper) const;
     void draw_player_names_clumped(SDL_Surface* s, TextLayoutHelper& ioTextLayoutHelper) const;
     int  find_maximum_bar_value() const;
-    void draw_bar_or_bars(SDL_Surface* s, int rank_index, int center_x, int maximum_value, vector<bar_info>& outBarInfos) const;
+    void draw_bar_or_bars(SDL_Surface* s, size_t rank_index, int center_x, int maximum_value, vector<bar_info>& outBarInfos) const;
     void draw_bars_separately(SDL_Surface* s, vector<bar_info>& outBarInfos) const;
     void draw_bars_clumped(SDL_Surface* s, vector<bar_info>& outBarInfos) const;
     void draw_bar_labels(SDL_Surface* s, const vector<bar_info>& inBarInfos, TextLayoutHelper& ioTextLayoutHelper) const;
@@ -283,7 +283,7 @@ private:
 
     entry_point         mEntryPoint;
     short               mGameType;
-    int                 mCurrentIndex;
+    size_t                 mCurrentIndex;
     vector<entry_point> mEntryPoints;
 };
 

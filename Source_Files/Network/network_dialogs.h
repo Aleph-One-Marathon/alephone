@@ -236,7 +236,7 @@ extern void draw_new_graph(DialogPtr dialog);
 extern void draw_player_graph(DialogPtr dialog, short index);
 extern void get_net_color(short index, RGBColor *color);
 
-extern short calculate_max_kills(short num_players);
+extern short calculate_max_kills(size_t num_players);
 extern void draw_totals_graph(DialogPtr dialog);
 extern void calculate_rankings(struct net_rank *ranks, short num_players);
 extern int rank_compare(void const *rank1, void const *rank2);

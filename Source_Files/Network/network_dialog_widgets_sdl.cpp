@@ -56,11 +56,11 @@
 // Well, w_found_players ought to be using a set<> or similar anyway, much more natural.
 // Shrug, this was what I came up with before I knew anything about STL, and I'm too lazy to change it.
 template<class T>
-static const int
+static const size_t
 find_item_index_in_vector(const T& inItem, const vector<T>& inVector) {
     typename vector<T>::const_iterator 	i	= inVector.begin();
     typename vector<T>::const_iterator 	end	= inVector.end();
-    int				index	= 0;
+    size_t				index	= 0;
 
     while(i != end) {
         if(*i == inItem)
@@ -93,7 +93,7 @@ w_found_players::found_player(const SSLP_ServiceInstance* player) {
 
 void
 w_found_players::lost_player(const SSLP_ServiceInstance* player) {
-    int theIndex = find_item_index_in_vector(player, found_players);
+    size_t theIndex = find_item_index_in_vector(player, found_players);
     
     if(theIndex == -1)
         return;	// didn't know about it anyway
@@ -140,14 +140,14 @@ w_found_players::list_player(const SSLP_ServiceInstance* player) {
 
 void
 w_found_players::unlist_player(const SSLP_ServiceInstance* player) {
-    int theIndex = find_item_index_in_vector(player, listed_players);
+    size_t theIndex = find_item_index_in_vector(player, listed_players);
 
     if(theIndex == -1)
         return;
 
     listed_players.erase(listed_players.begin() + theIndex);
     
-    int old_top_item = top_item;
+    size_t old_top_item = top_item;
     
     num_items = listed_players.size();
     new_items();
@@ -253,10 +253,10 @@ w_chat_history::append_chat_entry(const player_info* player, const char* chat_te
         
 
 	// For looping
-	int characters_left;
-	int characters_that_fit;
-	int first_char_next_line;
-	int last_char_this_line;
+	size_t characters_left;
+	size_t characters_that_fit;
+	size_t first_char_next_line;
+	size_t last_char_this_line;
 
 	// Intentional assignment - loop while there are characters to consider.
 	while((characters_left = strlen(text_buf)) > 0) {
@@ -464,36 +464,36 @@ get_name_y_offset() { return postgame_layout ? kPostgameNameTotalOffset : kNorma
 // == WI + .5W / N
 // == W*(2I + 1) / 2N
 static inline int
-get_wide_spaced_center_offset(int left_x, int available_width, int index, int num_items) {
-    return left_x + (((2 * index + 1) * available_width) / (2 * num_items));
+get_wide_spaced_center_offset(int left_x, int available_width, size_t index, size_t num_items) {
+    return left_x + (((2 * (int)index + 1) * available_width) / (2 * (int)num_items));
 }
 
 // for the left:
 // I/N * W
 // == WI/N
 static inline int
-get_wide_spaced_left_offset(int left_x, int available_width, int index, int num_items) {
-    return left_x + ((index * available_width) / num_items);
+get_wide_spaced_left_offset(int left_x, int available_width, size_t index, size_t num_items) {
+    return left_x + (((int)index * available_width) / (int)num_items);
 }
 
 // width is easy...
 // note though that the actual distances between left_offsets may vary slightly from this width due to rounding.
 static inline int
-get_wide_spaced_width(int available_width, int num_items) {
-    return available_width / num_items;
+get_wide_spaced_width(int available_width, size_t num_items) {
+    return available_width / (int)num_items;
 }
 
 
 // Horizontal layout centers single player at 1/2 the width; two players at 1/3 and 2/3; three at 1/4, 2/4, 3/4....
 // Doing (I * W) / N rather than the more natural (I/N) * W may give more accurate results with integer math.
 static inline int
-get_close_spaced_center_offset(int left_x, int available_width, int index, int num_items) {
-    return left_x + (((index + 1) * available_width) / (num_items + 1));
+get_close_spaced_center_offset(int left_x, int available_width, size_t index, size_t num_items) {
+    return left_x + ((((int)index + 1) * available_width) / ((int)num_items + 1));
 }
 
 static inline int
-get_close_spaced_width(int available_width, int num_items) {
-    return available_width / (num_items + 1);
+get_close_spaced_width(int available_width, size_t num_items) {
+    return available_width / ((int)num_items + 1);
 }
 
 
@@ -637,7 +637,7 @@ w_players_in_game2::click(int x, int) {
     if(draw_carnage_graph) {
 
         if(clump_players_by_team) {
-            for(int i = 0; i < num_valid_net_rankings; i++) {
+            for(size_t i = 0; i < num_valid_net_rankings; i++) {
                 if(ABS(x - get_wide_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings))
                         < (get_wide_spaced_width(rect.w, num_valid_net_rankings) / 2))
                 {
@@ -651,7 +651,7 @@ w_players_in_game2::click(int x, int) {
         }
         
         else {
-            for(int i = 0; i < num_valid_net_rankings; i++) {
+            for(size_t i = 0; i < num_valid_net_rankings; i++) {
                 if(ABS(x - get_close_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings))
                         < (get_close_spaced_width(rect.w, num_valid_net_rankings) / 2))
                 {
@@ -685,7 +685,7 @@ w_players_in_game2::set_graph_data(const net_rank* inRankings, int inNumRankings
 
 
 void
-w_players_in_game2::draw_player_icon(SDL_Surface* s, int rank_index, int center_x) const {
+w_players_in_game2::draw_player_icon(SDL_Surface* s, size_t rank_index, int center_x) const {
     // Note, player images will not be re-fetched unless the brightness has *changed* since last draw.
     PlayerImage* theImage = player_entries[net_rankings[rank_index].player_index].player_image;
     if(selected_player != NONE && selected_player != rank_index)
@@ -701,7 +701,7 @@ void
 w_players_in_game2::draw_player_icons_separately(SDL_Surface* s) const {
     if(draw_carnage_graph) {
         // Draw in sorted order (according to net_rankings)
-        for(int i = 0; i < num_valid_net_rankings; i++) {
+        for(size_t i = 0; i < num_valid_net_rankings; i++) {
             int center_x = get_close_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings);
 
             draw_player_icon(s, i, center_x);
@@ -709,8 +709,8 @@ w_players_in_game2::draw_player_icons_separately(SDL_Surface* s) const {
     }
     else {
         // Draw in "natural order" (according to topology)
-        int theNumPlayers = player_entries.size();
-        for(int i = 0; i < theNumPlayers; i++) {
+        size_t theNumPlayers = player_entries.size();
+        for(size_t i = 0; i < theNumPlayers; i++) {
             int center_x = get_close_spaced_center_offset(rect.x, rect.w, i, theNumPlayers);
             player_entries[i].player_image->drawAt(s, center_x, rect.y + get_player_y_offset());
         }
@@ -725,15 +725,15 @@ w_players_in_game2::draw_player_icons_clumped(SDL_Surface* s) const {
     int	width_per_team = get_wide_spaced_width(rect.w, num_valid_net_rankings);
  
     // Walk through teams, drawing each batch.   
-    for(int i = 0; i < num_valid_net_rankings; i++) {
+    for(size_t i = 0; i < num_valid_net_rankings; i++) {
         int team_left_x = get_wide_spaced_left_offset(rect.x, rect.w, i, num_valid_net_rankings);
         
-        int theNumberOfPlayersOnThisTeam = players_on_team[net_rankings[i].color].size();
+        size_t theNumberOfPlayersOnThisTeam = players_on_team[net_rankings[i].color].size();
 
         assert(theNumberOfPlayersOnThisTeam > 0);
         
         // Walk through players on a team to draw a batch.
-        for(int j = 0; j < theNumberOfPlayersOnThisTeam; j++) {
+        for(size_t j = 0; j < theNumberOfPlayersOnThisTeam; j++) {
             int player_center_x = get_close_spaced_center_offset(team_left_x, width_per_team, j, theNumberOfPlayersOnThisTeam);
             
             // Note, player images will not be re-fetched unless the brightness has *changed* since last draw.
@@ -756,9 +756,9 @@ w_players_in_game2::draw_player_names_separately(SDL_Surface* s, TextLayoutHelpe
     // Now let's draw the names.  Let's take care to offset names vertically if they would
     // overlap (or come too close as defined by kNameMargin), so it's more readable.
 
-    int theNumPlayers = draw_carnage_graph ? num_valid_net_rankings : player_entries.size();
+    size_t theNumPlayers = draw_carnage_graph ? num_valid_net_rankings : player_entries.size();
     
-    for(int i = 0; i < theNumPlayers; i++) {
+    for(size_t i = 0; i < theNumPlayers; i++) {
         int center_x = get_close_spaced_center_offset(rect.x, rect.w, i, theNumPlayers);
         const player_entry2* theEntry = draw_carnage_graph ? &player_entries[net_rankings[i].player_index] : &player_entries[i];
         int name_x = center_x - (theEntry->name_width / 2);
@@ -782,15 +782,15 @@ w_players_in_game2::draw_player_names_clumped(SDL_Surface* s, TextLayoutHelper& 
     // overlap (or come too close as defined by kNameMargin), so it's more readable.
 
     // Walk through teams, drawing each batch.   
-    for(int i = 0; i < num_valid_net_rankings; i++) {
+    for(size_t i = 0; i < num_valid_net_rankings; i++) {
         int team_center_x = get_wide_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings);
         
-        int theNumberOfPlayersOnThisTeam = players_on_team[net_rankings[i].color].size();
+        size_t theNumberOfPlayersOnThisTeam = players_on_team[net_rankings[i].color].size();
 
         assert(theNumberOfPlayersOnThisTeam > 0);
         
         // Walk through players on a team to draw a batch.
-        for(int j = 0; j < theNumberOfPlayersOnThisTeam; j++) {
+        for(size_t j = 0; j < theNumberOfPlayersOnThisTeam; j++) {
     
             const player_entry2* theEntry = &(player_entries[players_on_team[net_rankings[i].color][j]]);
             int name_x = team_center_x - (theEntry->name_width / 2);
@@ -823,14 +823,14 @@ w_players_in_game2::find_maximum_bar_value() const {
     else {
         // Note this does the right thing for suicide bars as well.
         if(draw_scores_not_carnage) {
-            for(int i = 0; i < num_valid_net_rankings; i++) {
+            for(size_t i = 0; i < num_valid_net_rankings; i++) {
                 if(net_rankings[i].game_ranking > theMaxValue)
                     theMaxValue = net_rankings[i].game_ranking;
                 if(net_rankings[i].game_ranking < theMinValue)
                     theMinValue = net_rankings[i].game_ranking;
             }
         } else {
-            for(int i = 0; i < num_valid_net_rankings; i++) {
+            for(size_t i = 0; i < num_valid_net_rankings; i++) {
                 if(net_rankings[i].kills > theMaxValue)
                     theMaxValue = net_rankings[i].kills;
                 if(net_rankings[i].deaths > theMaxValue)
@@ -857,7 +857,7 @@ struct bar_info {
 };
 
 void
-w_players_in_game2::draw_bar_or_bars(SDL_Surface* s, int rank_index, int center_x, int maximum_value, vector<bar_info>& outBarInfos) const {
+w_players_in_game2::draw_bar_or_bars(SDL_Surface* s, size_t rank_index, int center_x, int maximum_value, vector<bar_info>& outBarInfos) const {
     // Draw score bar
     if(draw_scores_not_carnage) {
         bar_info 	theBarInfo;
@@ -951,7 +951,7 @@ w_players_in_game2::draw_bars_separately(SDL_Surface* s, vector<bar_info>& outBa
     int theMaxValue = find_maximum_bar_value();
     
     // Draw the bars.
-    for(int i = 0; i < num_valid_net_rankings; i++) {
+    for(size_t i = 0; i < num_valid_net_rankings; i++) {
         int center_x = get_close_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings);
 
         draw_bar_or_bars(s, i, center_x + kBarOffsetX, theMaxValue, outBarInfos);
@@ -965,10 +965,10 @@ w_players_in_game2::draw_bars_clumped(SDL_Surface* s, vector<bar_info>& outBarIn
     int theMaxValue = find_maximum_bar_value();
     
     // Walk through teams, drawing each batch.   
-    for(int i = 0; i < num_valid_net_rankings; i++) {
-        int team_center_x = rect.x + ((2*i + 1) * rect.w) / (2 * num_valid_net_rankings);
+    for(size_t i = 0; i < num_valid_net_rankings; i++) {
+        int team_center_x = (int)(rect.x + ((2*i + 1) * rect.w) / (2 * num_valid_net_rankings));
         
-        int theNumberOfPlayersOnThisTeam = players_on_team[net_rankings[i].color].size();
+        size_t theNumberOfPlayersOnThisTeam = players_on_team[net_rankings[i].color].size();
 
         assert(theNumberOfPlayersOnThisTeam > 0);
 
@@ -986,7 +986,7 @@ w_players_in_game2::draw_bars_clumped(SDL_Surface* s, vector<bar_info>& outBarIn
 
 void
 w_players_in_game2::draw_carnage_totals(SDL_Surface* s) const {
-    for(int i = 0; i < num_valid_net_rankings; i++) {
+    for(size_t i = 0; i < num_valid_net_rankings; i++) {
         int center_x;
         if(clump_players_by_team)
             center_x = get_wide_spaced_center_offset(rect.x, rect.w, i, num_valid_net_rankings);
@@ -1043,9 +1043,9 @@ w_players_in_game2::draw_carnage_legend(SDL_Surface* s) const {
 
 void
 w_players_in_game2::draw_bar_labels(SDL_Surface* s, const vector<bar_info>& inBarInfos, TextLayoutHelper& ioTextLayoutHelper) const {
-    int theNumberOfLabels = inBarInfos.size();
+    size_t theNumberOfLabels = inBarInfos.size();
 
-    for(int i = 0; i < theNumberOfLabels; i++) {
+    for(size_t i = 0; i < theNumberOfLabels; i++) {
         const bar_info& theBarInfo = inBarInfos[i];
         
         int theStringWidth = text_width(theBarInfo.label_text.c_str(), font, style);
@@ -1322,7 +1322,7 @@ void
 w_entry_point_selector::event(SDL_Event &e) {
 	if (e.type == SDL_KEYDOWN) {
 		if (e.key.keysym.sym == SDLK_LEFT || e.key.keysym.sym == SDLK_RIGHT) {
-            int theNumberOfEntryPoints = mEntryPoints.size();
+            size_t theNumberOfEntryPoints = mEntryPoints.size();
 
             if(theNumberOfEntryPoints > 1) {
                 int theDesiredOffset = (e.key.keysym.sym == SDLK_LEFT) ? -1 : 1;

@@ -219,7 +219,7 @@ public:
 	
 	// Resizes all the objects defined inside;
 	// the resizing is lazy
-	void Resize(int NumEndpoints, int NumLines);
+	void Resize(size_t NumEndpoints, size_t NumLines);
 	
 	// Builds the visibility tree
  	void build_render_tree();

@@ -116,7 +116,7 @@ static bool NormalizeNormal(GLfloat *Normal)
 	
 	if (NormalSqr <= 0) return false;
 	
-	GLfloat NormalRecip = 1/sqrt(NormalSqr);
+	GLfloat NormalRecip = (GLfloat)(1/sqrt(NormalSqr));
 	
 	Normal[0] *= NormalRecip;
 	Normal[1] *= NormalRecip;
@@ -163,7 +163,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 		// The really interesting stuff
 		{
 			// First, create a list of per-polygon normals
-			unsigned NumPolys = NumVI()/3;
+			size_t NumPolys = NumVI()/3;
 			vector<FlaggedVector> PerPolygonNormalList(NumPolys);
 			
 			GLushort *IndxPtr = VIBase();
@@ -191,7 +191,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 			}
 			
 			// Create a list of per-vertex normals
-			unsigned NumVerts = Positions.size()/3;
+			size_t NumVerts = Positions.size()/3;
 			vector<FlaggedVector> PerVertexNormalList(NumVerts);
 			objlist_clear(&PerVertexNormalList[0],NumVerts);
 			IndxPtr = VIBase();
@@ -451,7 +451,7 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 	// which is the case for boned models.
 	if (!VtxSources.empty())
 	{
-		int NormSize = Normals.size();
+		size_t NormSize = Normals.size();
 		if (NormSize > 0)
 		{
 			NormSources.resize(NormSize);
@@ -468,13 +468,13 @@ void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 // From the position data
 void Model3D::FindBoundingBox()
 {
-	int NumVertices = Positions.size()/3;
+	size_t NumVertices = Positions.size()/3;
 	if (NumVertices > 0)
 	{
 		// Find the min and max of the positions:
 		VecCopy(&Positions[0],BoundingBox[0]);
 		VecCopy(&Positions[0],BoundingBox[1]);
-		for (int i=1; i<NumVertices; i++)
+		for (size_t i=1; i<NumVertices; i++)
 		{
 			GLfloat *Pos = &Positions[3*i];
 			for (int ib=0; ib<3; ib++)
@@ -620,19 +620,19 @@ bool Model3D::FindPositions_Neutral(bool UseModelTransform)
 	
 	// Straight copy of the vertices:
 	
-	int NumVertices = VtxSrcIndices.size();
+	size_t NumVertices = VtxSrcIndices.size();
 	Positions.resize(3*NumVertices);
 	
 	GLfloat *PP = PosBase();
 	GLushort *IP = VtxSIBase();
 	
-	int NumVtxSources = VtxSources.size();
+	size_t NumVtxSources = VtxSources.size();
 	
 	if (UseModelTransform)
 	{
-		for (int k=0; k<NumVertices; k++, IP++, PP+=3)
+		for (size_t k=0; k<NumVertices; k++, IP++, PP+=3)
 		{
-			int VSIndex = *IP;
+			size_t VSIndex = *IP;
 			if (VSIndex >= 0 && VSIndex < NumVtxSources)
 			{
 				Model3D_VertexSource& VS = VtxSources[VSIndex];
@@ -647,9 +647,9 @@ bool Model3D::FindPositions_Neutral(bool UseModelTransform)
 	}
 	else
 	{
-		for (int k=0; k<NumVertices; k++, IP++)
+		for (size_t k=0; k<NumVertices; k++, IP++)
 		{
-			int VSIndex = *IP;
+			size_t VSIndex = *IP;
 			if (VSIndex >= 0 && VSIndex < NumVtxSources)
 			{
 				Model3D_VertexSource& VS = VtxSources[VSIndex];
@@ -674,8 +674,8 @@ bool Model3D::FindPositions_Neutral(bool UseModelTransform)
 	{
 		GLfloat *NormPtr = NormBase();
 		GLfloat *NormBasePtr = NormSrcBase();
-		int NumNorms = NormSources.size()/3;
-		for (int k=0; k<NumNorms; k++, NormPtr+=3, NormBasePtr+=3)
+		size_t NumNorms = NormSources.size()/3;
+		for (size_t k=0; k<NumNorms; k++, NormPtr+=3, NormBasePtr+=3)
 		{
 			TransformVector(NormPtr, NormBasePtr, TransformNorm);			
 		}
@@ -696,12 +696,12 @@ bool Model3D::FindPositions_Frame(bool UseModelTransform,
 	
 	if (Frames.empty()) return false;
 	
-	int NumBones = Bones.size();
+	size_t NumBones = Bones.size();
 	if (FrameIndex < 0 || NumBones*FrameIndex >= Frames.size()) return false;
 	
 	if (InverseVSIndices.empty()) BuildInverseVSIndices();
 	
-	int NumVertices = VtxSrcIndices.size();
+	size_t NumVertices = VtxSrcIndices.size();
 	Positions.resize(3*NumVertices);
 	
 	// Set sizes:
@@ -713,14 +713,14 @@ bool Model3D::FindPositions_Frame(bool UseModelTransform,
 	Model3D_Frame *AddlFramePtr = &Frames[NumBones*AddlFrameIndex];
 	
 	// Find the individual-bone transformation matrices:
-	for (unsigned ib=0; ib<NumBones; ib++)
+	for (size_t ib=0; ib<NumBones; ib++)
 		FindBoneTransform(BoneMatrices[ib],Bones[ib],
 			FramePtr[ib],MixFrac,AddlFramePtr[ib]);
 	
 	// Find the cumulative-bone transformation matrices:
 	int StackIndx = -1;
-	int Parent = NONE;
-	for (unsigned ib=0; ib<NumBones; ib++)
+	size_t Parent = NONE;
+	for (size_t ib=0; ib<NumBones; ib++)
 	{
 		Model3D_Bone& Bone = Bones[ib];
 		
@@ -740,7 +740,7 @@ bool Model3D::FindPositions_Frame(bool UseModelTransform,
 		}
 		
 		// Do the transform!
-		if (Parent >= 0)
+		if (Parent != NONE)
 		{
 			Model3D_Transform Res;
 			TMatMultiply(Res,BoneMatrices[Parent],BoneMatrices[ib]);
@@ -822,14 +822,14 @@ bool Model3D::FindPositions_Frame(bool UseModelTransform,
 	if (UseModelTransform)
 	{
 		GLfloat *PP = PosBase();
-		for (int k=0; k<Positions.size()/3; k++, PP+=3)
+		for (size_t k=0; k<Positions.size()/3; k++, PP+=3)
 		{
 			GLfloat Position[3];
 			TransformPoint(Position,PP,TransformPos);
 			VecCopy(Position,PP);
 		}
 		GLfloat *NP = NormBase();
-		for (int k=0; k<Normals.size()/3; k++, NP+=3)
+		for (size_t k=0; k<Normals.size()/3; k++, NP+=3)
 		{
 			GLfloat Normal[3];
 			TransformVector(Normal,NP,TransformNorm);
@@ -884,9 +884,9 @@ bool Model3D::FindPositions_Sequence(bool UseModelTransform, GLshort SeqIndex,
 	else
 		obj_copy(TTot,TSF);
 	
-	int NumVerts = Positions.size()/3;
+	size_t NumVerts = Positions.size()/3;
 	GLfloat *Pos = PosBase();
-	for (int iv=0; iv<NumVerts; iv++)
+	for (size_t iv=0; iv<NumVerts; iv++)
 	{
 		GLfloat NewPos[3];
 		TransformPoint(NewPos,Pos,TTot);
@@ -904,7 +904,7 @@ bool Model3D::FindPositions_Sequence(bool UseModelTransform, GLshort SeqIndex,
 			obj_copy(TTot,TSF);
 				
 		GLfloat *Norm = NormBase();
-		for (int iv=0; iv<NumVerts; iv++)
+		for (size_t iv=0; iv<NumVerts; iv++)
 		{
 			GLfloat NewNorm[3];
 			TransformVector(NewNorm,Norm,TTot);

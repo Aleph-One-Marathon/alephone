@@ -93,7 +93,7 @@ RenderVisTreeClass::RenderVisTreeClass():
 
 
 // Resizes all the objects defined inside
-void RenderVisTreeClass::Resize(int NumEndpoints, int NumLines)
+void RenderVisTreeClass::Resize(size_t NumEndpoints, size_t NumLines)
 {
 	endpoint_x_coordinates.resize(NumEndpoints);
 	line_clip_indexes.resize(NumLines);
@@ -244,7 +244,7 @@ void RenderVisTreeClass::cast_render_ray(
 				// "parent", "siblings" and "children" are pointers to members,
 				// "reference" is a pointer to a member with an offset.
 				// Cast the pointers to whatever size of integer the system uses.
-				int Length = Nodes.size();
+				size_t Length = Nodes.size();
 				POINTER_DATA OldNodePointer = POINTER_CAST(&Nodes.front());
 				
 				// Add a dummy object and check if the pointer got changed
@@ -255,7 +255,7 @@ void RenderVisTreeClass::cast_render_ray(
 
 				if (NewNodePointer != OldNodePointer)				
 				{
-					for (int k=0; k<Length; k++)
+					for (size_t k=0; k<Length; k++)
 					{
 						node_data &Node = Nodes[k];
 						// If NULL, then these pointers were already copied.
@@ -695,9 +695,10 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	line_clip_data Dummy;
 	Dummy.flags = 0;			// Fake initialization to shut up CW
 	LineClips.push_back(Dummy);
-	unsigned int Length = LineClips.size();
+	size_t Length = LineClips.size();
 	assert(Length <= 32767);
-	short LastIndex = Length-1;
+	assert(Length >= 1);
+	size_t LastIndex = Length-1;
 	
 	line_data *line= get_line_data(line_index);
 	// LP change: relabeling p0 and p1 so as not to conflict with later use
@@ -738,8 +739,8 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 		long x0= view->half_screen_width + (p0.y*view->world_to_screen_x)/p0.x;
 		long x1= view->half_screen_width + (p1.y*view->world_to_screen_x)/p1.x;
 	
-		data->x0= PIN(x0, 0, view->screen_width);
-		data->x1= PIN(x1, 0, view->screen_width);
+		data->x0= (short)PIN(x0, 0, view->screen_width);
+		data->x1= (short)PIN(x1, 0, view->screen_width);
 		if (data->x1<data->x0) SWAP(data->x0, data->x1);
 		if (data->x1>data->x0)
 		{
@@ -816,9 +817,10 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	endpoint_clip_data Dummy;
 	Dummy.flags = 0;			// Fake initialization to shut up CW
 	EndpointClips.push_back(Dummy);
-	unsigned int Length = EndpointClips.size();
+	size_t Length = EndpointClips.size();
 	assert(Length <= 32767);
-	short LastIndex = Length-1;
+	assert(Length >= 1);
+	size_t LastIndex = Length-1;
 
 	endpoint_data *endpoint= get_endpoint_data(endpoint_index);
 	endpoint_clip_data *data= &EndpointClips[LastIndex];
@@ -850,9 +852,9 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	// assert(TEST_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed));
 	x= endpoint_x_coordinates[endpoint_index];
 
-	data->x= PIN(x, 0, view->screen_width);
+	data->x= (short)PIN(x, 0, view->screen_width);
 	
-	return LastIndex;
+	return (short)LastIndex;
 }
 
 // LP addition: resetters for some of the lists:

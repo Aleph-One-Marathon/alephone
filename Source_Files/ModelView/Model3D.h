@@ -160,7 +160,7 @@ struct Model3D
 	// the list is a list of triangles.
 	vector<GLushort> VertIndices;
 	GLushort *VIBase() {return &VertIndices[0];}
-	int NumVI() {return VertIndices.size();}
+	size_t NumVI() {return VertIndices.size();}
 	
 	// Frame array: each member is actually the transform to do on each bone;
 	// each frame has [number of bones] of these.
@@ -169,7 +169,7 @@ struct Model3D
 	
 	// True number of frames: the above number divided by the number of bones;
 	// return zero if no bones
-	int TrueNumFrames() {return Bones.empty() ? 0 : (Frames.size()/Bones.size());}
+	size_t TrueNumFrames() {return Bones.empty() ? 0 : (Frames.size()/Bones.size());}
 	
 	// Sequence frames:
 	vector<Model3D_SeqFrame> SeqFrames;

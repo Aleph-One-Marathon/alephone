@@ -246,7 +246,7 @@ inline GLuint Convert_16to32(uint16 InPxl)
 	Chan = FiveToEight(InPxl >> 5);
 	OutPxl |= Chan << 8;
 	// Blue
-	Chan = FiveToEight(InPxl);
+	Chan = FiveToEight(InPxl & 0x1F);
 	OutPxl |= Chan << 16;
 #else
 	// Alpha preset
@@ -270,16 +270,16 @@ inline GLuint Convert_16to32(uint16 InPxl)
 // Make floating-point colors
 inline void MakeFloatColor(RGBColor& InColor, GLfloat *OutColor)
 {
-	OutColor[0] = InColor.red/65535.0;
-	OutColor[1] = InColor.green/65535.0;
-	OutColor[2] = InColor.blue/65535.0;
+	OutColor[0] = InColor.red/65535.0F;
+	OutColor[1] = InColor.green/65535.0F;
+	OutColor[2] = InColor.blue/65535.0F;
 }
 
 inline void MakeFloatColor(rgb_color& InColor, GLfloat *OutColor)
 {
-	OutColor[0] = InColor.red/65535.0;
-	OutColor[1] = InColor.green/65535.0;
-	OutColor[2] = InColor.blue/65535.0;
+	OutColor[0] = InColor.red/65535.0F;
+	OutColor[1] = InColor.green/65535.0F;
+	OutColor[2] = InColor.blue/65535.0F;
 }
 
 /*

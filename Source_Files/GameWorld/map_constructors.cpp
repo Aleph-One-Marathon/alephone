@@ -529,17 +529,17 @@ void precalculate_map_indexes(
 			//	line_indexes, &line_count, endpoint_indexes, &endpoint_count, polygon_indexes,
 			//	&polygon_count);
 			
-			short line_count = LineIndices.size();
+			size_t line_count = LineIndices.size();
 			short *line_indexes = &LineIndices[0];
-			short endpoint_count = EndpointIndices.size();
+			size_t endpoint_count = EndpointIndices.size();
 			short *endpoint_indexes = &EndpointIndices[0];
 			
-			for (int i=0;i<line_count;++i)	
+			for (size_t i=0;i<line_count;++i)	
 			{
 				add_map_index(line_indexes[i], &polygon->line_exclusion_zone_count);
 			}
 			
-			for (int i=0;i<endpoint_count;++i)
+			for (size_t i=0;i<endpoint_count;++i)
 			{
 				add_map_index(endpoint_indexes[i], &polygon->point_exclusion_zone_count);
 			}
@@ -553,9 +553,9 @@ void precalculate_map_indexes(
 //			if (polygon_index==155) dprintf("polygon index #%d has %d neighbors:;dm %x %x;", polygon_index, polygon_count, polygon_indexes, sizeof(short)*polygon_count);
 			
 			short *polygon_indexes = &PolygonIndices[0];
-			short polygon_count = PolygonIndices.size();
+			size_t polygon_count = PolygonIndices.size();
 
-			for (int i=0;i<polygon_count;++i)
+			for (size_t i=0;i<polygon_count;++i)
 			{
 				add_map_index(polygon_indexes[i], &polygon->neighbor_count);
 			}

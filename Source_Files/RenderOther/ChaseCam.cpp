@@ -71,7 +71,7 @@ bool ChaseCam_Initialize()
 	// Of course...
 	ChaseCam_Reset();
 
-	return ChaseCam_SetActive(TEST_FLAG(GetChaseCamData().Flags,_ChaseCam_OnWhenEntering));
+	return ChaseCam_SetActive(TEST_FLAG(GetChaseCamData().Flags,_ChaseCam_OnWhenEntering) != 0);
 }
 
 // This function resets the chase cam, in case one has entered a level,

@@ -148,7 +148,7 @@ static light_definition *get_light_definition(
 
 
 light_data *get_light_data(
-	const short light_index)
+	const size_t light_index)
 {
 	struct light_data *light = GetMemberWithBounds(lights,light_index,MAXIMUM_LIGHTS_PER_MAP);
 	
@@ -232,7 +232,7 @@ void update_lights(
 }
 
 bool get_light_status(
-	short light_index)
+	size_t light_index)
 {
 	struct light_data *light= get_light_data(light_index);
 	// LP change: idiot-proofing
@@ -263,7 +263,7 @@ bool get_light_status(
 }
 
 bool set_light_status(
-	short light_index,
+	size_t light_index,
 	bool new_status)
 {
 	struct light_data *light= get_light_data(light_index);
@@ -314,7 +314,7 @@ bool set_tagged_light_statuses(
 }
 
 _fixed get_light_intensity(
-	short light_index)
+	size_t light_index)
 {
 	// LP change: idiot-proofing / fallback
 	light_data *light = get_light_data(light_index);

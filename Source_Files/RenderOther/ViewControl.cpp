@@ -53,7 +53,7 @@ const int AnyFrame = -1;
 static float FOV_Normal = 80;
 static float FOV_ExtraVision = 130;
 static float FOV_TunnelVision = 30;
-static float FOV_ChangeRate = 1.66666667;	// this is 50 degrees/s
+static float FOV_ChangeRate = 1.66666667F;	// this is 50 degrees/s
 static bool FOV_FixHorizontalNotVertical = false;
 
 // Defaults:

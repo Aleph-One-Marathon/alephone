@@ -210,14 +210,14 @@ struct fade_effect_definition fade_effect_definitions[NUMBER_OF_FADE_EFFECT_TYPE
 
 static float actual_gamma_values[NUMBER_OF_GAMMA_LEVELS]=
 {
-	1.3,
-	1.15,
-	1.0, // default
-	0.95,
-	0.90,
-	0.85,
-	0.77,
-	0.70
+	1.3F,
+	1.15F,
+	1.0F, // default
+	0.95F,
+	0.90F,
+	0.85F,
+	0.77F,
+	0.70F
 };
 
 /* ---------- private prototypes */

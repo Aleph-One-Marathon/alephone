@@ -42,7 +42,7 @@ struct ModelRenderShader
 	// but also the number of vertices, the normals, the vertex positions,
 	// and the vertex-lighting color values, in that order.
 	// The normals and the positions are in model coordinates.
-	void (* LightingCallback)(void *, int, GLfloat *, GLfloat *, GLfloat *);
+	void (* LightingCallback)(void *, size_t, GLfloat *, GLfloat *, GLfloat *);
 	void *LightingCallbackData;
 	
 	ModelRenderShader() {obj_clear(*this);}

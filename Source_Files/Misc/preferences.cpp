@@ -1024,8 +1024,8 @@ void WriteXML_PasString(FILE *F, const char *Prefix, const unsigned char *String
 void WriteXML_CString(FILE *F, const char *Prefix, const char *String, int MaxLen, const char *Suffix)
 {
 	fprintf(F,"%s",Prefix);
-	int Len = strlen(String);
-	for (int k=0; k<Len; k++)
+	size_t Len = strlen(String);
+	for (size_t k=0; k<Len; k++)
 		WriteXML_Char(F,String[k]);
 	fprintf(F,"%s",Suffix);
 }

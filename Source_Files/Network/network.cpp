@@ -363,8 +363,8 @@ enum {
 // settings.  I have set these pretty low, which favors adding latency over allowing choppiness.  I suppose
 // these could be made more dynamically settable (via MML or dialog-box) to let users decide where they want
 // the tradeoff, but I doubt most really care to tweak such settings themselves.
-const float	kNeedToIncreaseLatencyThreshhold = .1;
-const float	kNeedToDecreaseLatencyThreshhold = -.95;
+const float	kNeedToIncreaseLatencyThreshhold = .1F;
+const float	kNeedToDecreaseLatencyThreshhold = -.95F;
 
 static int	sAdaptiveLatencySamples[kAdaptiveLatencyWindowSize];	// sample buffer, used much like a circular queue.
 static int	sAdaptiveLatencyWindowEdge;	// so we know where in the sample buffer our window starts/ends
@@ -556,8 +556,8 @@ static void NetProcessIncomingBuffer(void *buffer, long buffer_size, long sequen
 // distribution-processing function (currently, NetProcessLossyDistribution is the only one).
 static void NetDDPPacketHandler(DDPPacketBufferPtr packet);
 
-static long NetPacketSize(NetPacketPtr packet);
-static void NetBuildRingPacket(DDPFramePtr frame, byte *data, short data_size, long sequence);
+static size_t NetPacketSize(NetPacketPtr packet);
+static void NetBuildRingPacket(DDPFramePtr frame, byte *data, size_t data_size, long sequence);
 static void NetBuildFirstRingPacket(DDPFramePtr frame, long sequence);
 static void NetRebuildRingPacket(DDPFramePtr frame, short tag, long sequence);
 static void NetAddFlagsToPacket(NetPacketPtr packet);
@@ -594,8 +594,8 @@ static void process_flags(NetPacketPtr packet_data);
 /*  must become the gatherer. */
 static void drop_upring_player(void);
 
-static void *receive_stream_data(long *length, OSErr *receive_error);
-static OSErr send_stream_data(void *data, long length);
+static void *receive_stream_data(size_t *length, OSErr *receive_error);
+static OSErr send_stream_data(void *data, size_t length);
 
 /* ADSP Packets.. */
 
@@ -2260,12 +2260,12 @@ static void NetLocalAddrBlock(
 #endif					// this, anyway... right??  So maybe it's not that big a deal.......
 }
 
-static long NetPacketSize(
+static size_t NetPacketSize(
 	NetPacketPtr  packet)
 {
         // ZZZ: "register"... how quaint... I wonder if the compiler they used was really not smart enough on its own?
         // Welp, doesn't hurt to give hints anyway, we'll leave it.  :)
-	register long   size = 0;
+	register size_t   size = 0;
 	register short  i;
         
 /*	ZZZ: should not do this now, data was already converted elsewhere and we've been passed the unpacked version.
@@ -2369,7 +2369,7 @@ static void NetBuildFirstRingPacket(
 static void NetBuildRingPacket(
 	DDPFramePtr frame,
 	byte *data,
-	short data_size,
+	size_t data_size,
 	long sequence)
 {
         NetPacketHeader		header_storage;
@@ -2827,7 +2827,7 @@ static void drop_upring_player(
         uint32*		action_flags		= &packet_data->action_flags[0];
         uint32*		action_flags_NET	= (uint32*) (ringFrame->data + sizeof(NetPacketHeader_NET) + sizeof(NetPacket_NET));
 
-        short		data_size		= NetPacketSize(packet_data);
+        size_t		data_size		= NetPacketSize(packet_data);
 
         netcpy(action_flags, action_flags_NET, data_size);
   
@@ -3075,7 +3075,7 @@ OSErr NetDistributeGameDataToAllPlayers(
 byte *NetReceiveGameData(bool do_physics)
 {
 	byte *map_buffer= NULL;
-	long map_length;
+	size_t map_length;
 	uint32 ticks;
 	OSErr error= noErr;
 	bool timed_out= false;
@@ -3097,7 +3097,7 @@ byte *NetReceiveGameData(bool do_physics)
 	else
 	{
 		byte *physics_buffer= NULL;
-		long physics_length;
+		size_t physics_length;
 
 		/* Receiving map.. */
 		set_progress_dialog_message(_receiving_physics);
@@ -3192,7 +3192,7 @@ static short NetSizeofLocalQueue(
 }
 
 static void *receive_stream_data(
-	long *length,
+	size_t *length,
 	OSErr *receive_error)
 {
 	OSErr error;
@@ -3219,12 +3219,10 @@ static void *receive_stream_data(
 			
 			if (buffer)
 			{
-				long offset;
-			
 				// we transfer the map in chunks, since ADSP can only transfer 64K at a time.
-				for (offset = 0; !error && offset < *length; offset += STREAM_TRANSFER_CHUNK_SIZE)
+				for (size_t offset = 0; !error && offset < *length; offset += STREAM_TRANSFER_CHUNK_SIZE)
 				{
-					uint16 expected_count;
+					size_t expected_count;
 										
 					expected_count = MIN(STREAM_TRANSFER_CHUNK_SIZE, *length - offset);
 					
@@ -3250,7 +3248,7 @@ static void *receive_stream_data(
 
 static OSErr send_stream_data(
 	void *data,
-	long length)
+	size_t length)
 {
 	OSErr error;
 
@@ -3259,21 +3257,21 @@ static OSErr send_stream_data(
         long	length_NET;
 
 #if HAVE_SDL_NET
-        length_NET = SDL_SwapBE32(length);
+        length_NET = SDL_SwapBE32((long)length);
 #else
-        length_NET = length;
+        length_NET = (long)length;
 #endif
 
 	error= NetSendStreamPacket(_stream_size_packet, &length_NET);
 
 	if(!error)
 	{
-		long offset, length_written= 0;
+		size_t offset, length_written= 0;
 	
 		// ready or not, here it comes, in smaller chunks
 		for (offset = 0; !error && offset < length; offset += STREAM_TRANSFER_CHUNK_SIZE)
 		{
-			uint16 adsp_count;
+			size_t adsp_count;
 			
 			adsp_count = MIN(STREAM_TRANSFER_CHUNK_SIZE, length - offset);
 

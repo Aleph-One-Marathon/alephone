@@ -946,8 +946,7 @@ void s_Set_Tag_State(script_instruction inst)
 
 void s_Get_Tag_State(script_instruction inst)
 {
-
-	short light_index;
+	size_t light_index;
 	struct light_data *light;
 	struct platform_data *platform;
 	short platform_index;
@@ -2108,9 +2107,9 @@ void s_Get_Fog_Color(script_instruction inst)
 	
 	rgb_color& Color = OGL_GetFogData(OGL_Fog_AboveLiquid)->Color;
 	
-	set_variable(int(inst.op1),Color.red/65535.0);
-	set_variable(int(inst.op2),Color.green/65535.0);
-	set_variable(int(inst.op3),Color.blue/65535.0);
+	set_variable(int(inst.op1),Color.red/65535.0F);
+	set_variable(int(inst.op2),Color.green/65535.0F);
+	set_variable(int(inst.op3),Color.blue/65535.0F);
 
 }
 
@@ -2199,9 +2198,9 @@ void s_Get_UnderFog_Color(script_instruction inst)
 	
 	rgb_color& Color = OGL_GetFogData(OGL_Fog_BelowLiquid)->Color;
 	
-	set_variable(int(inst.op1),Color.red/65535.0);
-	set_variable(int(inst.op2),Color.green/65535.0);
-	set_variable(int(inst.op3),Color.blue/65535.0);
+	set_variable(int(inst.op1),Color.red/65535.0F);
+	set_variable(int(inst.op2),Color.green/65535.0F);
+	set_variable(int(inst.op3),Color.blue/65535.0F);
 
 }
 
@@ -2523,8 +2522,8 @@ void s_Monster_Move(script_instruction inst)
 void s_Monster_Select(script_instruction inst)
 {
 	//we are using IntersectedObjects
-	int found, i;
-	int objectCount;
+	int found;
+	size_t i, objectCount;
 	struct monster_data * theMonster;
 	short type, where;
 //	dprintf("Selecting...\n");

@@ -259,7 +259,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			if (x0<x1 && y0<y1)
 			{
 				// LP Change:
-				int Length = RenderObjects.size();
+				size_t Length = RenderObjects.size();
 				POINTER_DATA OldROPointer = POINTER_CAST(&RenderObjects.front());
 				
 				// Add a dummy object and check if the pointer got changed
@@ -271,13 +271,13 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				if (NewROPointer != OldROPointer)
 				{
 					// Get the render objects and sorted nodes into sync
-					for (int k=0; k<Length; k++)
+					for (size_t k=0; k<Length; k++)
 					{
 						render_object_data &RenderObject = RenderObjects[k];
 						if (RenderObject.next_object != NULL)
 							RenderObject.next_object = (render_object_data *)(NewROPointer + (POINTER_CAST(RenderObject.next_object) - OldROPointer));
 					}
-					for (unsigned k=0; k<SortedNodes.size(); k++)
+					for (size_t k=0; k<SortedNodes.size(); k++)
 					{
 						sorted_node_data &SortedNode = SortedNodes[k];
 						if (SortedNode.interior_objects != NULL)
@@ -751,7 +751,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 				if (x0[left]<x1[right]) /* found one between x0[left] and x1[right] */
 				{
 					/* allocate it */
-					int Length = ClippingWindows.size();
+					size_t Length = ClippingWindows.size();
 					POINTER_DATA OldCWPointer = POINTER_CAST(&ClippingWindows.front());
 					
 					// Add a dummy object and check if the pointer got changed
@@ -764,13 +764,13 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 					{
 						// Get the sorted nodes into sync
 						// Also, the render objects and the parent window
-						for (int k=0; k<Length; k++)
+						for (size_t k=0; k<Length; k++)
 						{
 							clipping_window_data &ClippingWindow = ClippingWindows[k];
 							if (ClippingWindow.next_window != NULL)
 								ClippingWindow.next_window = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(ClippingWindow.next_window) - OldCWPointer));
 						}
-						for (unsigned k=0; k<SortedNodes.size(); k++)
+						for (size_t k=0; k<SortedNodes.size(); k++)
 						{
 							sorted_node_data &SortedNode = SortedNodes[k];
 							if (SortedNode.clipping_windows != NULL)
@@ -891,16 +891,16 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	// these are converted into binary numbers for the index
 	GLfloat ExpandedBB[8][3];
 	
-	GLfloat BB00C = ScaledCosine*BoundingBox[0][0];
-	GLfloat BB00S = ScaledSine*BoundingBox[0][0];
-	GLfloat BB01C = ScaledCosine*BoundingBox[0][1];
-	GLfloat BB01S = ScaledSine*BoundingBox[0][1];
-	GLfloat BB02 = Scale*BoundingBox[0][2];
-	GLfloat BB10C = ScaledCosine*BoundingBox[1][0];
-	GLfloat BB10S = ScaledSine*BoundingBox[1][0];
-	GLfloat BB11C = ScaledCosine*BoundingBox[1][1];
-	GLfloat BB11S = ScaledSine*BoundingBox[1][1];
-	GLfloat BB12 = Scale*BoundingBox[1][2];
+	GLfloat BB00C = (float)ScaledCosine*BoundingBox[0][0];
+	GLfloat BB00S = (float)ScaledSine*BoundingBox[0][0];
+	GLfloat BB01C = (float)ScaledCosine*BoundingBox[0][1];
+	GLfloat BB01S = (float)ScaledSine*BoundingBox[0][1];
+	GLfloat BB02 = (float)Scale*BoundingBox[0][2];
+	GLfloat BB10C = (float)ScaledCosine*BoundingBox[1][0];
+	GLfloat BB10S = (float)ScaledSine*BoundingBox[1][0];
+	GLfloat BB11C = (float)ScaledCosine*BoundingBox[1][1];
+	GLfloat BB11S = (float)ScaledSine*BoundingBox[1][1];
+	GLfloat BB12 = (float)Scale*BoundingBox[1][2];
 	
 	// 000, 001
 	ExpandedBB[0][0] = ExpandedBB[1][0] = BB00C - BB01S;
@@ -927,9 +927,9 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	ExpandedBB[7][2] = BB12;
 	
 	// Shift by the object's position
-	GLfloat X0 = TransformedPosition.x;
-	GLfloat Y0 = TransformedPosition.y;
-	GLfloat Z0 = TransformedPosition.z;
+	GLfloat X0 = (float)TransformedPosition.x;
+	GLfloat Y0 = (float)TransformedPosition.y;
+	GLfloat Z0 = (float)TransformedPosition.z;
 	for (int k=0; k<8; k++)
 	{
 		ExpandedBB[k][0] += X0;
@@ -1016,7 +1016,7 @@ void FindProjectedBoundingBox(GLfloat BoundingBox[2][3],
 	double DistRecip = 1.0/double(isqrt(uint32(DistSq + 0.5)));
 	
 	// Rotate it to get to the object's internal coordinates
-	Direction[0] = DistRecip*(  X0*Cosine + Y0*Sine);
-	Direction[1] = DistRecip*(- X0*Sine + Y0*Cosine);
-	Direction[2] = DistRecip*Z0;
+	Direction[0] = (float)(DistRecip*(  X0*Cosine + Y0*Sine));
+	Direction[1] = (float)(DistRecip*(- X0*Sine + Y0*Cosine));
+	Direction[2] = (float)(DistRecip*Z0);
 }

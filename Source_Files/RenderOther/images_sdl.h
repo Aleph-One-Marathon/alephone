@@ -418,7 +418,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 					SDL_RWseek(p, 4, SEEK_CUR);		// pmBaseAddr
 				uint16 row_bytes = SDL_ReadBE16(p);	// the upper 2 bits are flags
 				//printf(" row_bytes %04x\n", row_bytes);
-				bool is_pixmap = row_bytes & 0x8000;
+				bool is_pixmap = ((row_bytes & 0x8000) != 0);
 				row_bytes &= 0x3fff;
 				uint16 top = SDL_ReadBE16(p);
 				uint16 left = SDL_ReadBE16(p);

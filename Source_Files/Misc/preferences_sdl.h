@@ -60,10 +60,10 @@
 #include <math.h>    // logf and expf, for sensitivity slider (ZZZ)
 // JTP: GCC3.1 on OSX was lacking these functions in math.h
 #ifndef logf
-#define logf log
+#define logf(x) ((float)log(x))
 #endif
 #ifndef expf
-#define expf exp
+#define expf(x) ((float)exp(x))
 #endif
 
 #ifdef HAVE_UNISTD_H

@@ -47,7 +47,7 @@ RGBColor system_colors[NUM_SYSTEM_COLORS] =
 void build_color_table(color_table *table, LoadedResource &clut)
 {
 	// Open stream to CLUT resource
-	SDL_RWops *p = SDL_RWFromMem(clut.GetPointer(), clut.GetLength());
+	SDL_RWops *p = SDL_RWFromMem(clut.GetPointer(), (int)clut.GetLength());
 	assert(p);
 
 	// Check number of colors

@@ -920,12 +920,12 @@ void add_error(vector<error_def>& error_log, short error, int offset)
 
 void report_errors(vector<error_def>& error_log)
 {
-	int x;
+	size_t x;
 	char error_string[64];
 	FileSpecifier FileSpec;
 	OpenedFile OFile;
 	
-	int length = error_log.size();
+	size_t length = error_log.size();
 	
 	if (error_count <= 0)
 		return;
@@ -999,7 +999,7 @@ void parse_script(char *input, vector<script_instruction>& instruction_list)
 {
 	bool done = false;
 	char current_line[256];
-	int offset = 0;
+	size_t offset = 0;
 	int line_count = 0;
 	//char **blats = NULL;
 	char blats[MAXBLATS][64];

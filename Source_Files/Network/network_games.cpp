@@ -191,12 +191,11 @@ void initialize_net_game(
 		case _game_of_defense:
 			// calculate the center of the hill
 			{
-				long x, y;
-				short count;
+				long x = 0, y = 0;
+				short count = 0;
 				struct polygon_data *polygon;
 				short polygon_index;
 				
-				count= x= y= 0;
 				for (polygon_index= 0, polygon= map_polygons; polygon_index<dynamic_world->polygon_count; ++polygon_index, ++polygon)
 				{
 					if (polygon->type==_polygon_is_hill)

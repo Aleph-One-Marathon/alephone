@@ -449,21 +449,21 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  			glBegin(GL_POLYGON);
  			
  			glTexCoord2f(Left,Top);
-  			glVertex2f(0,-ascent_p);
+  			glVertex2f(0,(GLfloat)-ascent_p);
   			
  			glTexCoord2f(Right,Top);
-  			glVertex2f(Width,-ascent_p);
+  			glVertex2f(Width,(GLfloat)-ascent_p);
   			
  			glTexCoord2f(Right,Bottom);
- 			glVertex2f(Width,descent_p);
+ 			glVertex2f(Width,(GLfloat)descent_p);
  			
  			glTexCoord2f(Left,Bottom);
-			glVertex2f(0,descent_p);
+			glVertex2f(0,(GLfloat)descent_p);
 			
 			glEnd();
 			
 			// Move to the next glyph's position
-			glTranslatef(Width-Pad,0,0);
+			glTranslatef((GLfloat)(Width-Pad),0,0);
 			
  			glEndList();
  			
@@ -493,8 +493,8 @@ void FontSpecifier::OGL_Render(const char *Text)
 
 	glBindTexture(GL_TEXTURE_2D,TxtrID);
 	
-	int Len = MIN(strlen(Text),255);
-	for (int k=0; k<Len; k++)
+	size_t Len = MIN(strlen(Text),255);
+	for (size_t k=0; k<Len; k++)
 	{
 		unsigned char c = Text[k];
 		glCallList(DispList+c);
@@ -590,7 +590,7 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	glTranslatef(x, y, 0);
+	glTranslatef((GLfloat)x, (GLfloat)y, 0);
 	OGL_Render(text_to_draw);
 	glPopMatrix();
 }

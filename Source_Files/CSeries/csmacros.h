@@ -73,7 +73,7 @@ Aug 27, 2000 (Loren Petrich):
 	and then perform the appropriate action.
 */
 
-template<class T> T* GetMemberWithBounds(T* Array, const int Index, const int Number)
+template<class T> T* GetMemberWithBounds(T* Array, const size_t Index, const size_t Number)
 {
 	// Bounds checking
 	if (!(Index>=0 && Index<Number)) return NULL;
@@ -94,19 +94,19 @@ template<class T> T* GetMemberWithBounds(T* Array, const int Index, const int Nu
 template<class T> void obj_copy(T& destination, const T& source)
 	{memcpy(&destination, &source, sizeof(T));}
 
-template<class T> void objlist_copy(T* destination, const T* source, int num_objects)
+template<class T> void objlist_copy(T* destination, const T* source, size_t num_objects)
 	{memcpy(destination, source, num_objects*sizeof(T));}
 
 template<class T> void obj_set(T& object, int value)
 	{memset(&object, value, sizeof(T));}
 
-template<class T> void objlist_set(T* object_list, int value, int num_objects)
+template<class T> void objlist_set(T* object_list, int value, size_t num_objects)
 	{memset(object_list, value, num_objects*sizeof(T));}
 
 template<class T> void obj_clear(T& object)
 	{obj_set(object, 0);}
 
-template<class T> void objlist_clear(T* object_list, int num_objects)
+template<class T> void objlist_clear(T* object_list, size_t num_objects)
 	{objlist_set(object_list, 0, num_objects);}
 
 #endif

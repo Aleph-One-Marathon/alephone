@@ -30,8 +30,6 @@
 #include "network_data_formats.h"
 #include "Packing.h"
 
-#pragma mark game_info
-
 void
 netcpy(game_info_NET* dest, const game_info* src)
 {
@@ -70,14 +68,6 @@ netcpy(game_info* dest, const game_info_NET* src)
 	assert(S == src->data + SIZEOF_game_info);
 }
 
-#pragma mark -
-
-
-
-
-
-#pragma mark player_info
-
 void
 netcpy(player_info_NET* dest, const player_info* src)
 {
@@ -102,14 +92,6 @@ netcpy(player_info* dest, const player_info_NET* src)
 	assert(S == src->data + SIZEOF_player_info);
 }
 
-#pragma mark -
-
-
-
-
-
-#pragma mark NetPacketHeader
-
 void
 netcpy(NetPacketHeader_NET* dest, const NetPacketHeader* src)
 {
@@ -127,14 +109,6 @@ netcpy(NetPacketHeader* dest, const NetPacketHeader_NET* src)
 	StreamToValue(S,dest->sequence);
 	assert(S == src->data + SIZEOF_NetPacketHeader);
 }
-
-#pragma mark -
-
-
-
-
-
-#pragma mark NetPacket
 
 void
 netcpy(NetPacket_NET* dest, const NetPacket* src)
@@ -162,35 +136,19 @@ netcpy(NetPacket* dest, const NetPacket_NET* src)
 	assert(S == src->data + SIZEOF_NetPacket);
 }
 
-#pragma mark -
-
-
-
-
-
-#pragma mark Action Flags
-
 // (if not ALEPHONE_LITTLE_ENDIAN, this is unnecessary as memcpy is used instead.)
 #ifdef ALEPHONE_LITTLE_ENDIAN
 void
 netcpy(uint32* dest, const uint32* src, size_t length) {
     assert(length % sizeof(uint32) == 0);
     
-    int	num_items = length / sizeof(uint32);
+    size_t	num_items = length / sizeof(uint32);
 	
 	uint8 *S = (uint8 *)dest;
 	ListToStream(S,src,num_items);
 	assert(S == (uint8 *)dest + length);
 }
 #endif
-
-#pragma mark -
-
-
-
-
-
-#pragma mark NetDistributionPacket
 
 void
 netcpy(NetDistributionPacket_NET* dest, const NetDistributionPacket* src)
@@ -212,14 +170,6 @@ netcpy(NetDistributionPacket* dest, const NetDistributionPacket_NET* src)
 	assert(S == src->data + SIZEOF_NetDistributionPacket);
 }
 
-#pragma mark -
-
-
-
-
-
-#pragma mark IPaddress
-
 // IP addresses are always in network byte order - do not swap
 void
 netcpy(IPaddress_NET* dest, const IPaddress* src)
@@ -237,14 +187,6 @@ netcpy(IPaddress* dest, const IPaddress_NET* src) {
 	S += 4;
 	memcpy(&dest->port,S,2);	// 16-bit integer
 }
-
-#pragma mark -
-
-
-
-
-
-#pragma mark NetPlayer
 
 void
 netcpy(NetPlayer_NET* dest, const NetPlayer* src)
@@ -287,14 +229,6 @@ netcpy(NetPlayer* dest, const NetPlayer_NET* src)
 
 	assert(S == src->data + SIZEOF_NetPlayer);
 }
-
-#pragma mark -
-
-
-
-
-
-#pragma mark NetTopology
 
 void
 netcpy(NetTopology_NET* dest, const NetTopology* src)
@@ -342,14 +276,6 @@ netcpy(NetTopology* dest, const NetTopology_NET* src)
 	assert(S == src->data + SIZEOF_NetTopology);
 }
 
-#pragma mark -
-
-
-
-
-
-#pragma mark gather_player_data
-
 void
 netcpy(gather_player_data_NET* dest, const gather_player_data* src)
 {
@@ -365,14 +291,6 @@ netcpy(gather_player_data* dest, const gather_player_data_NET* src)
 	StreamToValue(S,dest->new_local_player_identifier);
 	assert(S == src->data + SIZEOF_gather_player_data);
 }
-
-#pragma mark -
-
-
-
-
-
-#pragma mark accept_gather_data
 
 void
 netcpy(accept_gather_data_NET* dest, const accept_gather_data* src)
@@ -396,15 +314,7 @@ netcpy(accept_gather_data* dest, const accept_gather_data_NET* src)
 	assert(S == src->data + SIZEOF_accept_gather_data);
 }
 
-#pragma mark -
-
-
-
-
-
 #ifdef NETWORK_CHAT
-#pragma mark NetChatMessage
-
 void
 netcpy(NetChatMessage_NET* dest, const NetChatMessage* src)
 {
@@ -424,14 +334,6 @@ netcpy(NetChatMessage* dest, const NetChatMessage_NET* src)
 }
 
 #endif // NETWORK_CHAT
-
-#pragma mark -
-
-
-
-
-
-#pragma mark network_audio_header
 
 void
 netcpy(network_audio_header_NET* dest, const network_audio_header* src) {

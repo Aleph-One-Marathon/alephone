@@ -99,7 +99,7 @@ unsigned char *pstrncpy(unsigned char *dest, const unsigned char *source, size_t
 	size_t source_count = source[0];
 	if (total_byte_count <= source_count) {
 		// copy truncated
-		dest[0] = total_byte_count - 1;
+		dest[0] = (unsigned char)total_byte_count - 1;
 		memcpy(&dest[1], &source[1], dest[0]);
 		return dest;
 	} else {
@@ -142,11 +142,11 @@ char *a1_p2cstr(unsigned char* inoutStringBuffer)
 // In-place conversion of Cstring to Pstring.  Quietly truncates string to 255 chars.
 unsigned char *a1_c2pstr(char *inoutStringBuffer)
 {
-	int length = strlen(inoutStringBuffer);
+	size_t length = strlen(inoutStringBuffer);
 	if (length > 255)
 		length = 255;
 	memmove(&inoutStringBuffer[1], inoutStringBuffer, length);
-	inoutStringBuffer[0] = length;
+	inoutStringBuffer[0] = (char)length;
 	return (unsigned char *)inoutStringBuffer;
 }
 
@@ -167,9 +167,9 @@ char *csprintf(char *buffer, const char *format, ...)
 
 static void c2pstr(char *s)
 {
-	int length = strlen(s);
+	size_t length = strlen(s);
 	memmove(s + 1, s, length);
-	s[0] = length;
+	s[0] = (char)length;
 }
 
 unsigned char *psprintf(unsigned char *buffer, const char *format, ...)

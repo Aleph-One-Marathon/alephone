@@ -479,7 +479,7 @@ struct LightingDataStruct
 static LightingDataStruct LightingData;
 
 // Shader callback for lighting
-static void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors);
+static void LightingCallback(void *Data, size_t NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors);
 
 // Set up the shader data
 static void SetupShaders();
@@ -918,9 +918,9 @@ bool OGL_StartMain()
 	if (FogActive())
 	{
 		glEnable(GL_FOG);
-		CurrFogColor[0] = CurrFog->Color.red/65535.0;
-		CurrFogColor[1] = CurrFog->Color.green/65535.0;
-		CurrFogColor[2] = CurrFog->Color.blue/65535.0;
+		CurrFogColor[0] = CurrFog->Color.red/65535.0F;
+		CurrFogColor[1] = CurrFog->Color.green/65535.0F;
+		CurrFogColor[2] = CurrFog->Color.blue/65535.0F;
 		CurrFogColor[3] = 0;
 		if (IsInfravisionActive())
 		{
@@ -930,7 +930,7 @@ bool OGL_StartMain()
 				FindInfravisionVersion(LoadedWallTexture,CurrFogColor);
 		}
 		glFogfv(GL_FOG_COLOR,CurrFogColor);
-		glFogf(GL_FOG_DENSITY,1.0/MAX(1,WORLD_ONE*CurrFog->Depth));
+		glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
 	}
 	else
 		glDisable(GL_FOG);
@@ -940,9 +940,9 @@ bool OGL_StartMain()
 	if (TEST_FLAG(ConfigureData.Flags,OGL_Flag_VoidColor))
 	{
 		RGBColor& VoidColor = ConfigureData.VoidColor;
-		GLfloat Red = VoidColor.red/65535.0;
-		GLfloat Green = VoidColor.green/65535.0;
-		GLfloat Blue = VoidColor.blue/65535.0;
+		GLfloat Red = VoidColor.red/65535.0F;
+		GLfloat Green = VoidColor.green/65535.0F;
+		GLfloat Blue = VoidColor.blue/65535.0F;
 		
 		// The color of the void will be the color of fog
 		if (FogActive())
@@ -962,7 +962,7 @@ bool OGL_StartMain()
 	// are to ensure that all the bits overlap.
 	// Also do flat static if requested;
 	// done once per frame to avoid visual inconsistencies
-	UseFlatStatic = TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatStatic);
+	UseFlatStatic = (TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatStatic) != 0);
 	if (UseFlatStatic)
 	{
 		// Made this per-sprite
@@ -1003,9 +1003,9 @@ bool OGL_EndMain()
 	glColor3f(0,0,0);
 	glBegin(GL_LINE_LOOP);
 	glVertex2f(0.5,0.5);
-	glVertex2f(0.5,ViewHeight-0.5);
-	glVertex2f(ViewWidth-0.5,ViewHeight-0.5);
-	glVertex2f(ViewWidth-0.5,0.5);
+	glVertex2f(0.5F,ViewHeight-0.5F);
+	glVertex2f(ViewWidth-0.5F,ViewHeight-0.5F);
+	glVertex2f(ViewWidth-0.5F,0.5F);
 	glEnd();
 		
 	return true;
@@ -1100,8 +1100,8 @@ bool OGL_SetView(view_data &View)
 	glLoadMatrixd(CenteredWorld_2_MaraEye);
 	
 	// Set the view direction
-	ViewDir[0] = Cosine;
-	ViewDir[1] = Sine;
+	ViewDir[0] = (float)Cosine;
+	ViewDir[1] = (float)Sine;
 	ModelRenderObject.ViewDirection[2] = 0;	// Always stays the same
 
 	// Do a translation and then save;
@@ -2489,7 +2489,7 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 		// The opacity is controlled by the transfer data; its value is guessed from
 		// the rendering source code (render.c, scottish_textures.c, low_level_textures.c)
 		Color[0] = Color[1] = Color[2] = 0;
-		Color[3] = 1 - RenderRectangle.transfer_data/32.0;
+		Color[3] = 1 - RenderRectangle.transfer_data/32.0F;
 		IsInvisible = true;
 		IsGlowmappable = false;
 	}
@@ -2662,7 +2662,7 @@ void StaticModeShader(void *Data)
 
 
 
-void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors)
+void LightingCallback(void *Data, size_t NumVerts, GLfloat *Normals, GLfloat *Positions, GLfloat *Colors)
 {
 	LightingDataStruct *LPtr = (LightingDataStruct *)Data;
 
@@ -2741,7 +2741,7 @@ void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Posit
 	case OGL_MLight_Fast:
 	{
 		GLfloat *el0 = LPtr->Colors[0], *el1 = LPtr->Colors[1], *el2 = LPtr->Colors[2];
-		for (int k=0; k<NumVerts; k++)
+		for (size_t k=0; k<NumVerts; k++)
 		{
 			GLfloat N0 = *(Normals++);
 			GLfloat N1 = *(Normals++);
@@ -2759,7 +2759,7 @@ void LightingCallback(void *Data, int NumVerts, GLfloat *Normals, GLfloat *Posit
 	NoFade = true;
 	case OGL_MLight_Indiv:
 	{
-		for (int k=0; k<NumVerts; k++, Normals += 3, Positions +=3, Colors +=NumCPlanes)
+		for (size_t k=0; k<NumVerts; k++, Normals += 3, Positions +=3, Colors +=NumCPlanes)
 		{
 			GLfloat *Dir = LPtr->Dir;
 			GLfloat Depth = LPtr->ProjDistance + (Dir[0]*Positions[0] + Dir[1]*Positions[1]);
@@ -2833,9 +2833,9 @@ bool OGL_RenderCrosshairs()
 	// What color; make 50% transparent (Alexander Strange's idea)
 	// Changed it to use the crosshairs data
 	GLfloat Color[4];
-	Color[0] = Crosshairs.Color.red/65535.;
-	Color[1] = Crosshairs.Color.green/65535.;
-	Color[2] = Crosshairs.Color.blue/65535.;
+	Color[0] = Crosshairs.Color.red/65535.0F;
+	Color[1] = Crosshairs.Color.green/65535.0F;
+	Color[2] = Crosshairs.Color.blue/65535.0F;
 	Color[3] = Crosshairs.Opacity;
 	glColor4fv(Color);
 	
@@ -2865,14 +2865,14 @@ bool OGL_RenderCrosshairs()
 		// (only the positive-side lines got shown)
 		
 		glBegin(GL_LINES);
-		glVertex2f(- Crosshairs.FromCenter + 1, 0);
-		glVertex2f(- Crosshairs.FromCenter - Crosshairs.Length + 1, 0);
-		glVertex2f(0, - Crosshairs.FromCenter + 1);
-		glVertex2f(0, - Crosshairs.FromCenter - Crosshairs.Length + 1);
-		glVertex2f(Crosshairs.FromCenter - 1, 0);
-		glVertex2f(Crosshairs.FromCenter + Crosshairs.Length - 1, 0);
-		glVertex2f(0, Crosshairs.FromCenter - 1);
-		glVertex2f(0, Crosshairs.FromCenter + Crosshairs.Length - 1);
+		glVertex2f(- Crosshairs.FromCenter + 1.0F, 0.0F);
+		glVertex2f(- Crosshairs.FromCenter - Crosshairs.Length + 1.0F, 0.0F);
+		glVertex2f(0.0F, - Crosshairs.FromCenter + 1.0F);
+		glVertex2f(0.0F, - Crosshairs.FromCenter - Crosshairs.Length + 1.0F);
+		glVertex2f(Crosshairs.FromCenter - 1.0F, 0.0F);
+		glVertex2f(Crosshairs.FromCenter + Crosshairs.Length - 1.0F, 0.0F);
+		glVertex2f(0.0F, Crosshairs.FromCenter - 1.0F);
+		glVertex2f(0.0F, Crosshairs.FromCenter + Crosshairs.Length - 1.0F);
 		glEnd();
 		break;
 	
@@ -2974,7 +2974,7 @@ bool OGL_RenderText(short BaseX, short BaseY, const char *Text)
 	*/
 	
 	glLoadIdentity();
-	glTranslatef(BaseX+1,BaseY+1,Depth);
+	glTranslatef(BaseX+1.0F,BaseY+1.0F,Depth);
 	glCallList(TextDisplayList);
 	
 	// Foreground

@@ -264,9 +264,9 @@ inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int clip_le
 
 // Draw text at given position in frame buffer, return width
 template <class T>
-inline static int draw_text(const uint8 *text, int length, int x, int y, T *p, int pitch, int clip_left, int clip_top, int clip_right, int clip_bottom, uint32 pixel, const sdl_font_info *font, uint16 style)
+inline static int draw_text(const uint8 *text, size_t length, int x, int y, T *p, int pitch, int clip_left, int clip_top, int clip_right, int clip_bottom, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
-	bool oblique = style & styleItalic;
+	bool oblique = ((style & styleItalic) != 0);
 	int total_width = 0;
 
 	uint8 c;
@@ -306,7 +306,7 @@ inline static int draw_text(const uint8 *text, int length, int x, int y, T *p, i
 }
 
 // Draw text at given coordinates, return total width
-int draw_text(SDL_Surface *s, const char *text, int length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
+int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
 	if (font == NULL)
 		return 0;

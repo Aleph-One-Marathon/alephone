@@ -144,8 +144,8 @@ void close_progress_dialog(
 }
 
 void draw_progress_bar(
-	long sent, 
-	long total)
+	size_t sent, 
+	size_t total)
 {
 	Rect bounds;
 	Handle item;

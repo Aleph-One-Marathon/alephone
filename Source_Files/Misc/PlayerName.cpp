@@ -67,8 +67,9 @@ static XML_SimpleStringParser PlayerNameParser;
 XML_ElementParser *PlayerName_GetParser()
 {
 	const char DefaultPlayerName[] = "Marathon Player";
-	int Length = strlen(DefaultPlayerName);
-	PlayerName[0] = Length;
+	size_t Length = strlen(DefaultPlayerName);
+	assert(Length == (char) Length);
+	PlayerName[0] = (char)Length;
 	memcpy(PlayerName+1,DefaultPlayerName,Length);
 	
 	return &PlayerNameParser;

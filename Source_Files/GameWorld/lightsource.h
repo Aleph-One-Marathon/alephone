@@ -172,14 +172,14 @@ struct static_light_data *get_defaults_for_light_type(short type);
 
 void update_lights(void);
 
-bool get_light_status(short light_index);
-bool set_light_status(short light_index, bool active);
+bool get_light_status(size_t light_index);
+bool set_light_status(size_t light_index, bool active);
 bool set_tagged_light_statuses(short tag, bool new_status);
 
-_fixed get_light_intensity(short light_index);
+_fixed get_light_intensity(size_t light_index);
 
 light_data *get_light_data(
-	const short light_index);
+	const size_t light_index);
 
 uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count);
 uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count);

@@ -777,7 +777,7 @@ uint16 translate_projectile(
 	world_point3d intersection;
 	world_distance media_height;
 	short line_index;
-	short intersected_object_count;
+	size_t intersected_object_count;
 	short contact;
 	uint16 flags= 0;
 
@@ -950,10 +950,9 @@ uint16 translate_projectile(
 		world_distance distance_traveled;
 		world_distance best_radius = 0;
 		short best_intersection_object = NONE;
-		short i;
 		
 		distance_traveled= distance2d((world_point2d *)old_location, (world_point2d *)new_location);
-		for (i=0;i<intersected_object_count;++i)
+		for (size_t i=0;i<intersected_object_count;++i)
 		{
 			// LP change:
 			struct object_data *object= get_object_data(IntersectedObjects[i]);
@@ -1063,7 +1062,7 @@ uint16 translate_projectile(
 bool ProjectileIsGuided(short Type)
 {
 	projectile_definition *definition = get_projectile_definition(Type);
-	return (definition->flags&_guided != 0);
+	return ((definition->flags&_guided) != 0);
 }
 
 

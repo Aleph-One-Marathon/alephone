@@ -1752,7 +1752,8 @@ static bool begin_game(
 				entry.level_number= 0;
 			}
 	
-			entry.level_name[0] = starts[0].identifier = 0;
+			entry.level_name[0] = 0;
+			starts[0].identifier = 0;
                         //AS: make things clearer
                         memset(entry.level_name,0,66);
 

@@ -1842,8 +1842,7 @@ bool point_is_monster_visible(
 	world_point2d *p,
 	int32 *distance)
 {
-	short  i;
-	short  object_count;
+	size_t  object_count;
 	
 	*distance = INT32_MAX; /* infinite */
 	
@@ -1852,7 +1851,7 @@ bool point_is_monster_visible(
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, polygon_index, false);
 	object_count = IntersectedObjects.size();
 	
-	for (i=0;i<object_count;++i)
+	for (size_t i=0;i<object_count;++i)
 	{
 		// LP change:
 		struct object_data *object= get_object_data(IntersectedObjects[i]);

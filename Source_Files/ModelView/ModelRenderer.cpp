@@ -418,7 +418,7 @@ void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumSh
 		for (int q=0; q<NumShaders; q++)
 		{
 			SetupRenderPass(Model,Shaders[q]);
-			glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,Model.VIBase());
+			glDrawElements(GL_TRIANGLES,(GLsizei)Model.NumVI(),GL_UNSIGNED_SHORT,Model.VIBase());
 		}
 		return;			
 	}
@@ -429,12 +429,12 @@ void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumSh
 	// (which can store polygons and depth-sort them in its hardware)
 	
 	// Find the centroids:
-	int NumTriangles = Model.NumVI()/3;
+	size_t NumTriangles = Model.NumVI()/3;
 	CentroidDepths.resize(NumTriangles);
 	Indices.resize(NumTriangles);
 	
 	GLushort *VIPtr = Model.VIBase();
-	for (int k=0; k<NumTriangles; k++)
+	for (size_t k=0; k<NumTriangles; k++)
 	{
 		GLfloat Sum[3] = {0, 0, 0};
 		for (int v=0; v<3; v++)
@@ -454,7 +454,7 @@ void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumSh
 	Values = &CentroidDepths[0];
 	SORT_INDEX_TYPE *IndxPtr = &Indices[0];
 	// IndexedQuickSort(IndxPtr,IndxPtr + (NumTriangles - 1));
-	GNU_IndexedQuickSort(IndxPtr,NumTriangles);
+	GNU_IndexedQuickSort(IndxPtr,(SORT_INDEX_TYPE)NumTriangles);
 	
 	// Optimization: a single nonseparable shader can be rendered as if it was separable,
 	// though it must still be depth-sorted.
@@ -468,7 +468,7 @@ void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumSh
 		{
 			SortedVertIndices.resize(Model.NumVI());
 			GLushort *DestTriangle = &SortedVertIndices[0];
-			for (int k=0; k<NumTriangles; k++)
+			for (size_t k=0; k<NumTriangles; k++)
 			{
 				GLushort *SourceTriangle = &Model.VertIndices[3*Indices[k]];
 				// Copy-over unrolled for speed
@@ -482,13 +482,13 @@ void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumSh
 		SetupRenderPass(Model,Shaders[q]);
 				
 		// Go!
-		glDrawElements(GL_TRIANGLES,Model.NumVI(),GL_UNSIGNED_SHORT,&SortedVertIndices[0]);
+		glDrawElements(GL_TRIANGLES,(GLsizei)Model.NumVI(),GL_UNSIGNED_SHORT,&SortedVertIndices[0]);
 	}
 	
 	if (NumSeparableShaders < NumShaders)
 	{
 		// Multishader case: each triangle separately
-		for (int k=0; k<NumTriangles; k++)
+		for (size_t k=0; k<NumTriangles; k++)
 		{
 			GLushort *Triangle = &Model.VertIndices[3*Indices[k]];
 			for (int q=NumSeparableShaders; q<NumShaders; q++)
@@ -521,9 +521,9 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 	// Check whether to use external lighting
 	if (Shader.LightingCallback && !Model.Normals.empty() && TEST_FLAG(Shader.Flags,ExtLight))
 	{
-		int NumVerts = Model.Positions.size()/3;
-		int NumCPlanes = TEST_FLAG(Shader.Flags,EL_SemiTpt) ? 4 : 3;
-		int NumCValues = NumCPlanes*NumVerts;
+		size_t NumVerts = Model.Positions.size()/3;
+		size_t NumCPlanes = TEST_FLAG(Shader.Flags,EL_SemiTpt) ? 4 : 3;
+		size_t NumCValues = NumCPlanes*NumVerts;
 		ExtLightColors.resize(NumCValues);
 		
 		Shader.LightingCallback(Shader.LightingCallbackData,
@@ -535,12 +535,12 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 			GLfloat *ColorPtr = Model.ColBase();
 			if (NumCPlanes == 3)
 			{
-				for (int k=0; k<NumCValues; k++, ExtColorPtr++, ColorPtr++)
+				for (size_t k=0; k<NumCValues; k++, ExtColorPtr++, ColorPtr++)
 					(*ExtColorPtr) *= (*ColorPtr);
 			}
 			else if (NumCPlanes == 4)
 			{
-				for (int k=0; k<NumVerts; k++)
+				for (size_t k=0; k<NumVerts; k++)
 				{
 					for (int chn=0; chn<3; chn++)
 					{
@@ -554,7 +554,7 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 		}
 		
 		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(NumCPlanes,GL_FLOAT,0,&ExtLightColors[0]);
+		glColorPointer((GLint)NumCPlanes,GL_FLOAT,0,&ExtLightColors[0]);
 	}
 	else
 	{

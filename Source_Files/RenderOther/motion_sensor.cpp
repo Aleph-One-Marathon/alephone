@@ -360,10 +360,10 @@ void HUD_Class::draw_network_compass(void)
 	short new_state= get_network_compass_state(motion_sensor_player_index);
 	short difference= (new_state^network_compass_state)|new_state;
 	
-	if (difference&_network_compass_nw) draw_or_erase_unclipped_shape(36, 36, compass_shapes, new_state&_network_compass_nw);
-	if (difference&_network_compass_ne) draw_or_erase_unclipped_shape(61, 36, compass_shapes+1, new_state&_network_compass_ne);
-	if (difference&_network_compass_se) draw_or_erase_unclipped_shape(61, 61, compass_shapes+3, new_state&_network_compass_se);
-	if (difference&_network_compass_sw) draw_or_erase_unclipped_shape(36, 61, compass_shapes+2, new_state&_network_compass_sw);
+	if (difference&_network_compass_nw) draw_or_erase_unclipped_shape(36, 36, compass_shapes, (new_state&_network_compass_nw) != 0);
+	if (difference&_network_compass_ne) draw_or_erase_unclipped_shape(61, 36, compass_shapes+1, (new_state&_network_compass_ne) != 0);
+	if (difference&_network_compass_se) draw_or_erase_unclipped_shape(61, 61, compass_shapes+3, (new_state&_network_compass_se) != 0);
+	if (difference&_network_compass_sw) draw_or_erase_unclipped_shape(36, 61, compass_shapes+2, (new_state&_network_compass_sw) != 0);
 	
 	network_compass_state= new_state;
 }

@@ -240,7 +240,7 @@ static vector<TextureOptionsEntry> TOList[NUMBER_OF_COLLECTIONS];
 // If it is clear, then an ALL_CLUTS texture-options entry had been used.
 // This is OK because the maximum reasonable number of texture-option entries per collection
 // is around 10*256 or 2560, much less than 32K.
-const int16 Specific_CLUT_Flag = 0x8000;
+const uint16 Specific_CLUT_Flag = 0x8000;
 static vector<int16> TOHash[NUMBER_OF_COLLECTIONS];
 
 // Hash-table size and function
@@ -481,7 +481,7 @@ void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixel
 				uint32 Red = uint32(PxlPtr[0]);
 				uint32 Green = uint32(PxlPtr[1]);
 				uint32 Blue = uint32(PxlPtr[2]);
-				Opacity = (Red + Green + Blue)/3.0;
+				Opacity = (Red + Green + Blue)/3.0F;
 			}
 			break;
 			
@@ -490,7 +490,7 @@ void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixel
 				uint32 Red = uint32(PxlPtr[0]);
 				uint32 Green = uint32(PxlPtr[1]);
 				uint32 Blue = uint32(PxlPtr[2]);
-				Opacity = MAX(MAX(Red,Green),Blue);
+				Opacity = (float)MAX(MAX(Red,Green),Blue);
 			}
 			break;
 		
@@ -810,9 +810,9 @@ void OGL_ModelData::Load()
 	MatIdentity(RotMatrix);
 	
 	MatIdentity(IndivRotMatrix);
-	Angle = Degree2Radian*XRot;
-	Cosine = cos(Angle);
-	Sine = sin(Angle);
+	Angle = (float)Degree2Radian*XRot;
+	Cosine = (float)cos(Angle);
+	Sine = (float)sin(Angle);
 	IndivRotMatrix[1][1] = Cosine;
 	IndivRotMatrix[1][2] = - Sine;
 	IndivRotMatrix[2][1] = Sine;
@@ -821,9 +821,9 @@ void OGL_ModelData::Load()
 	MatCopy(NewRotMatrix,RotMatrix);
 	
 	MatIdentity(IndivRotMatrix);
-	Angle = Degree2Radian*YRot;
-	Cosine = cos(Angle);
-	Sine = sin(Angle);
+	Angle = (float)Degree2Radian*YRot;
+	Cosine = (float)cos(Angle);
+	Sine = (float)sin(Angle);
 	IndivRotMatrix[2][2] = Cosine;
 	IndivRotMatrix[2][0] = - Sine;
 	IndivRotMatrix[0][2] = Sine;
@@ -832,9 +832,9 @@ void OGL_ModelData::Load()
 	MatCopy(NewRotMatrix,RotMatrix);
 	
 	MatIdentity(IndivRotMatrix);
-	Angle = Degree2Radian*ZRot;
-	Cosine = cos(Angle);
-	Sine = sin(Angle);
+	Angle = (float)Degree2Radian*ZRot;
+	Cosine = (float)cos(Angle);
+	Sine = (float)sin(Angle);
 	IndivRotMatrix[0][0] = Cosine;
 	IndivRotMatrix[0][1] = - Sine;
 	IndivRotMatrix[1][0] = Sine;
@@ -909,9 +909,9 @@ void OGL_ModelData::Load()
 	else
 	{
 		// Static model
-		int NumVerts = Model.Positions.size()/3;
+		size_t NumVerts = Model.Positions.size()/3;
 		
-		for (int k=0; k<NumVerts; k++)
+		for (size_t k=0; k<NumVerts; k++)
 		{
 			GLfloat *Pos = Model.PosBase() + 3*k;
 			GLfloat NewPos[3];
@@ -921,8 +921,8 @@ void OGL_ModelData::Load()
 			Pos[2] = NewPos[2] + ZShift;
 		}
 		
-		int NumNorms = Model.Normals.size()/3;
-		for (int k=0; k<NumNorms; k++)
+		size_t NumNorms = Model.Normals.size()/3;
+		for (size_t k=0; k<NumNorms; k++)
 		{
 			GLfloat *Norms = Model.NormBase() + 3*k;
 			GLfloat NewNorms[3];
@@ -1147,28 +1147,28 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	}
 	else if (StringsEqual(Tag,"normal_image"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.NormalColors.resize(nchars);
 		memcpy(&Data.NormalColors[0],Value,nchars);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_mask"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.NormalMask.resize(nchars);
 		memcpy(&Data.NormalMask[0],Value,nchars);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_image"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.GlowColors.resize(nchars);
 		memcpy(&Data.GlowColors[0],Value,nchars);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_mask"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.GlowMask.resize(nchars);
 		memcpy(&Data.GlowMask[0],Value,nchars);
 		return true;
@@ -1276,28 +1276,28 @@ bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"normal_image"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.NormalColors.resize(nchars);
 		memcpy(&Data.NormalColors[0],Value,nchars);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_mask"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.NormalMask.resize(nchars);
 		memcpy(&Data.NormalMask[0],Value,nchars);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_image"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.GlowColors.resize(nchars);
 		memcpy(&Data.GlowColors[0],Value,nchars);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_mask"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.GlowMask.resize(nchars);
 		memcpy(&Data.GlowMask[0],Value,nchars);
 		return true;
@@ -1548,28 +1548,28 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"file"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.ModelFile.resize(nchars);
 		memcpy(&Data.ModelFile[0],Value,nchars);
 		return true;
 	}
 	else if (StringsEqual(Tag,"file1"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.ModelFile1.resize(nchars);
 		memcpy(&Data.ModelFile1[0],Value,nchars);
 		return true;
 	}
 	else if (StringsEqual(Tag,"file2"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.ModelFile2.resize(nchars);
 		memcpy(&Data.ModelFile2[0],Value,nchars);
 		return true;
 	}
 	else if (StringsEqual(Tag,"type"))
 	{
-		int nchars = strlen(Value)+1;
+		size_t nchars = strlen(Value)+1;
 		Data.ModelType.resize(nchars);
 		memcpy(&Data.ModelType[0],Value,nchars);
 		return true;
@@ -1604,7 +1604,7 @@ bool XML_ModelDataParser::End()
 		
 		// Ought to sort, then compare, for correct results
 		bool AllEqual = true;
-		for (int q=0; q<SequenceMap.size(); q++)
+		for (size_t q=0; q<SequenceMap.size(); q++)
 		{
 			SequenceMapEntry& MS = MdlIter->SequenceMap[q];
 			SequenceMapEntry& S = SequenceMap[q];

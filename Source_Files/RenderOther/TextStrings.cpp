@@ -341,13 +341,13 @@ void TS_PutCString(short ID, short Index, const char *String)
         // Create a PString of the incoming CString, truncate to fit
         unsigned char	thePStringStagingBuffer[256];
 
-        int theStringLength = strlen(String);
+        size_t theStringLength = strlen(String);
 
         if(theStringLength > 255)
             theStringLength = 255;
 
         // Fill in the string length.
-        thePStringStagingBuffer[0] = theStringLength;
+        thePStringStagingBuffer[0] = (char)theStringLength;
         
         // Copy exactly the string bytes (no termination etc.)
         memcpy(&(thePStringStagingBuffer[1]), String, theStringLength);

@@ -1142,13 +1142,13 @@ update_carnage_summary(
     float   minutes;
     float   kpm;
     float   dpm;
-    long    total_kills;
-    long    total_deaths;
+    long    total_kills = 0;
+    long    total_deaths = 0;
 	char    kill_string_format[65];
     char    death_string_format[65];
     char    suicide_string_format[65];
     
-    for (i = total_kills = total_deaths = 0; i < num_players; i++)
+    for (i = 0; i < num_players; i++)
 	{
 		if (do_totals || i != suicide_index)
 			total_kills += ranks[i].kills;
@@ -1171,7 +1171,7 @@ update_carnage_summary(
 	TextFace(0); TextFont(0); TextSize(0);
 #endif
 
-	minutes = ((float)dynamic_world->tick_count / TICKS_PER_SECOND) / 60.0;
+	minutes = ((float)dynamic_world->tick_count / TICKS_PER_SECOND) / 60.0F;
 	if (minutes > 0) kpm = total_kills / minutes;
 	else kpm = 0;
 	getcstr(kill_string_format, strNET_STATS_STRINGS, strTOTAL_KILLS_STRING);
@@ -1245,10 +1245,10 @@ draw_new_graph(DialogPtr dialog) {
 // (ZZZ annotation:) Find the highest player vs. player kills
 // (so all player vs. player graphs can be at the same scale)
 short calculate_max_kills(
-	short num_players)
+	size_t num_players)
 {
 	short  max_kills = 0;
-	short  i, j;
+	size_t  i, j;
 	
 	for (i = 0; i < num_players; i++)
 	{

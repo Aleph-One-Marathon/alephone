@@ -1044,7 +1044,7 @@ void load_media(
 		media_data TempMedia;
 		_medias = unpack_media_data(_medias,&TempMedia,1);
 		
-		short new_index = new_media(&TempMedia);
+		size_t new_index = new_media(&TempMedia);
 		assert(new_index==ii);
 	}
 }

@@ -162,13 +162,13 @@ int load_script(int text_id)
 
 
 // LP addition:
-int load_script_data(void *Data, int DataLen)
+int load_script_data(void *Data, size_t DataLen)
 {
 	if (!is_pfhortran_on())	/* we can't do too much if the pfhortran isn't running */
 		return script_FALSE;
 		
 	char *origsrc = (char *)Data;
-	int origlen = DataLen;
+	size_t origlen = DataLen;
 	
 	clean_up_script();
 	

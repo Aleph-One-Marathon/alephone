@@ -72,7 +72,7 @@ struct res_file_t {
 	}
 
 	bool read_map(void);
-	int count_resources(uint32 type) const;
+	size_t count_resources(uint32 type) const;
 	void get_resource_id_list(uint32 type, vector<int> &ids) const;
 	bool get_resource(uint32 type, int id, LoadedResource &rsrc) const;
 	bool get_ind_resource(uint32 type, int index, LoadedResource &rsrc) const;
@@ -363,7 +363,7 @@ void use_res_file(SDL_RWops *file)
  *  Count number of resources of given type
  */
 
-int res_file_t::count_resources(uint32 type) const
+size_t res_file_t::count_resources(uint32 type) const
 {
 	type_map_t::const_iterator i = types.find(type);
 	if (i == types.end())
@@ -372,14 +372,14 @@ int res_file_t::count_resources(uint32 type) const
 		return i->second.size();
 }
 
-int count_1_resources(uint32 type)
+size_t count_1_resources(uint32 type)
 {
 	return (*cur_res_file_t)->count_resources(type);
 }
 
-int count_resources(uint32 type)
+size_t count_resources(uint32 type)
 {
-	int count = 0;
+	size_t count = 0;
 	list<res_file_t *>::const_iterator i = cur_res_file_t, begin = res_file_list.begin();
 	while (true) {
 		count += (*i)->count_resources(type);

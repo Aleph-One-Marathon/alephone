@@ -63,7 +63,7 @@ class RenderSortPolyClass
 	clipping_window_data *build_clipping_windows(node_data *ChainBegin);
 
 	void calculate_vertical_clip_data(line_clip_data **accumulated_line_clips,
-		short accumulated_line_clip_count, clipping_window_data *window, short x0, short x1);
+		size_t accumulated_line_clip_count, clipping_window_data *window, short x0, short x1);
 		
 public:
 	
@@ -86,7 +86,7 @@ public:
 	
 	// Resizes all the objects defined inside;
 	// the resizing is lazy
-	void Resize(int NumPolygons);
+	void Resize(size_t NumPolygons);
 
 	// Does the sorting
 	void sort_render_tree();

@@ -314,14 +314,14 @@ void OverheadMap_OGL_Class::draw_thing(
 	const int NumCircleVertices = 8;
 	const GLfloat CircleShape[NumCircleVertices][2] =
 	{
-		{-0.75,-0.3},
-		{-0.75,0.3},
-		{-0.3,0.75},
-		{0.3,0.75},
-		{0.75,0.3},
-		{0.75,-0.3},
-		{0.3,-0.75},
-		{-0.3,-0.75}
+		{-0.75F,-0.3F},
+		{-0.75F,0.3F},
+		{-0.3F,0.75F},
+		{0.3F,0.75F},
+		{0.75F,0.3F},
+		{0.75F,-0.3F},
+		{0.3F,-0.75F},
+		{-0.3F,-0.75F}
 	};
 	
 	// Let OpenGL do the transformation work
@@ -361,8 +361,8 @@ void OverheadMap_OGL_Class::draw_player(
 	GLfloat PlayerShape[3][2];
 	
 	double rear_theta_rads = rear_theta*(8*atan(1.0)/FULL_CIRCLE);
-	float rear_x = rear*cos(rear_theta_rads);
-	float rear_y = rear*sin(rear_theta_rads);
+	float rear_x = (float)(rear*cos(rear_theta_rads));
+	float rear_y = (float)(rear*sin(rear_theta_rads));
 	PlayerShape[0][0] = front;
 	PlayerShape[0][1] = 0;
 	PlayerShape[1][0] = rear_x;
@@ -374,7 +374,7 @@ void OverheadMap_OGL_Class::draw_player(
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glTranslatef(center.x,center.y,0);
-	glRotatef(facing*(360.0/FULL_CIRCLE),0,0,1);
+	glRotatef(facing*(360.0F/FULL_CIRCLE),0,0,1);
 	float scale = 1/float(1 << shrink);
 	glScalef(scale,scale,1);
 	glVertexPointer(2,GL_FLOAT,0,PlayerShape[0]);
@@ -439,6 +439,6 @@ void OverheadMap_OGL_Class::draw_path(
 void OverheadMap_OGL_Class::finish_path()
 {
 	glVertexPointer(2,GL_SHORT,sizeof(world_point2d),&PathPoints.front());
-	glDrawArrays(GL_LINE_STRIP,0,PathPoints.size());
+	glDrawArrays(GL_LINE_STRIP,0,(GLsizei)(PathPoints.size()));
 }
 #endif // def HAVE_OPENGL

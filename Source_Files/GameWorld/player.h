@@ -446,7 +446,7 @@ player_shape_definitions* get_player_shape_definitions();
 short player_identifier_to_player_index(short player_identifier);
 
 player_data *get_player_data(
-	const short player_index);
+	const size_t player_index);
 
 short monster_index_to_player_index(short monster_index);
 

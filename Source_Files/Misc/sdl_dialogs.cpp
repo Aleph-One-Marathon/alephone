@@ -732,7 +732,7 @@ void play_dialog_sound(int which)
  *  Dialog constructor
  */
 
-dialog::dialog() : active_widget(NULL), active_widget_num(-1), done(false),
+dialog::dialog() : active_widget(NULL), active_widget_num(UNONE), done(false),
             cursor_was_visible(false), parent_dialog(NULL),
             processing_function(NULL)
 {
@@ -903,7 +903,7 @@ void dialog::deactivate_currently_active_widget(bool draw)
 			draw_widget(active_widget);
 
         active_widget = NULL;
-        active_widget_num = NONE;
+        active_widget_num = UNONE;
 	}
 }
 
@@ -912,10 +912,11 @@ void dialog::deactivate_currently_active_widget(bool draw)
  *  Activate widget
  */
 
-void dialog::activate_widget(int num, bool draw)
+void dialog::activate_widget(size_t num, bool draw)
 {
 	if (num == active_widget_num)
 		return;
+	// BUG: may crash if num==UNONE or NONE
 	if (!widgets[num]->is_selectable())
 		return;
 
@@ -939,7 +940,7 @@ void dialog::activate_widget(int num, bool draw)
 
 void dialog::activate_first_widget(void)
 {
-	for (unsigned i=0; i<widgets.size(); i++) {
+	for (size_t i=0; i<widgets.size(); i++) {
 		if (widgets[i]->is_selectable()) {
 			activate_widget(i, false);
 			break;
@@ -954,7 +955,8 @@ void dialog::activate_first_widget(void)
 
 void dialog::activate_next_widget(void)
 {
-	int i = active_widget_num;
+	size_t i = active_widget_num;
+	// BUG: infinate loop if active_widget_num == UNONE or NONE
 	do {
 		i++;
 		if (i >= int(widgets.size()))
@@ -970,7 +972,8 @@ void dialog::activate_next_widget(void)
 
 void dialog::activate_prev_widget(void)
 {
-	int i = active_widget_num;
+	size_t i = active_widget_num;
+	// BUG: infinate loop if active_widget_num == UNONE or NONE
 	do {
 		if (i == 0)
 			i = widgets.size() - 1;
@@ -1076,6 +1079,7 @@ void dialog::event(SDL_Event &e)
 			int x = e.motion.x, y = e.motion.y;
 			int num = find_widget(x, y);
 			if (num >= 0) {
+				assert(num == (size_t)num);
 				activate_widget(num);
 				widget *w = widgets[num];
 				w->mouse_move(x - rect.x - w->rect.x, y - rect.y - w->rect.y);

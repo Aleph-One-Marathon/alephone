@@ -239,7 +239,7 @@ draw_score_bars(DialogPtr dialog, struct net_rank *ranks, short bar_count) {
 // User clicked on a postgame carnage report element.  If it was a player and we're showing Total Carnage
 // or a player vs player graph, switch to showing a player vs player graph according to the player clicked.
 static void
-respond_to_element_clicked(w_players_in_game2* inWPIG2, bool inTeam, bool inGraph, bool inScore, int inDrawIndex,
+respond_to_element_clicked(w_players_in_game2* inWPIG2, bool inTeam, bool inGraph, bool inScore, size_t inDrawIndex,
                            int inPlayerIndexOrTeamColor) {
     if(inGraph && !inTeam && !inScore) {
         w_select*   theGraphMenu = dynamic_cast<w_select*>(inWPIG2->get_owning_dialog()->get_widget_by_id(iGRAPH_POPUP));
@@ -668,7 +668,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 
 	d.add(new w_spacer());
 
-	w_toggle *aliens_w = new w_toggle("Aliens", network_preferences->game_options & _monsters_replenish);
+	w_toggle *aliens_w = new w_toggle("Aliens", (network_preferences->game_options & _monsters_replenish) != 0);
         aliens_w->set_identifier(iUNLIMITED_MONSTERS);
 	d.add(aliens_w);
 
@@ -676,7 +676,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
     realtime_audio_w->set_identifier(iREAL_TIME_SOUND);
     d.add(realtime_audio_w);
 
-	w_toggle *live_w = new w_toggle("Live Carnage Reporting", network_preferences->game_options & _live_network_stats);
+	w_toggle *live_w = new w_toggle("Live Carnage Reporting", (network_preferences->game_options & _live_network_stats) != 0);
         live_w->set_identifier(iREALTIME_NET_STATS);
 	d.add(live_w);
 
@@ -689,15 +689,15 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
         drop_w->set_identifier(iBURN_ITEMS_ON_DEATH);
 	d.add(drop_w);
 
-	w_toggle *sensor_w = new w_toggle("Disable Motion Sensor", network_preferences->game_options & _motion_sensor_does_not_work);
+	w_toggle *sensor_w = new w_toggle("Disable Motion Sensor", (network_preferences->game_options & _motion_sensor_does_not_work) != 0);
         sensor_w->set_identifier(iMOTION_SENSOR_DISABLED);
 	d.add(sensor_w);
 
-	w_toggle *pen_die_w = new w_toggle("Penalize Dying (10 seconds)", network_preferences->game_options & _dying_is_penalized);
+	w_toggle *pen_die_w = new w_toggle("Penalize Dying (10 seconds)", (network_preferences->game_options & _dying_is_penalized) != 0);
         pen_die_w->set_identifier(iDYING_PUNISHED);
 	d.add(pen_die_w);
 
-	w_toggle *pen_sui_w = new w_toggle("Penalize Suicide (15 seconds)", network_preferences->game_options & _suicide_is_penalized);
+	w_toggle *pen_sui_w = new w_toggle("Penalize Suicide (15 seconds)", (network_preferences->game_options & _suicide_is_penalized) != 0);
         pen_sui_w->set_identifier(iSUICIDE_PUNISHED);
 	d.add(pen_sui_w);
 
@@ -1403,7 +1403,7 @@ void close_progress_dialog(void)
 //    sProgressBar	= NULL;
 }
 
-void draw_progress_bar(long sent, long total)
+void draw_progress_bar(size_t sent, size_t total)
 {
 //printf("draw_progress_bar %ld, %ld", sent, total);
 }

@@ -75,7 +75,7 @@ vector<media_data> MediaList;
 
 /* ---------- private prototypes */
 
-static void update_one_media(short media_index, bool force_update);
+static void update_one_media(size_t media_index, bool force_update);
 
 /* ---------- globals */
 
@@ -87,7 +87,7 @@ static media_definition *get_media_definition(
 /* ---------- code */
 
 media_data *get_media_data(
-	const short media_index)
+	const size_t media_index)
 {
 	struct media_data *media = GetMemberWithBounds(medias,media_index,MAXIMUM_MEDIAS_PER_MAP);
 	
@@ -106,11 +106,11 @@ media_definition *get_media_definition(
 
 
 // light_index must be loaded
-short new_media(
+size_t new_media(
 	struct media_data *initializer)
 {
 	struct media_data *media;
-	short media_index;
+	size_t media_index;
 	
 	for (media_index= 0, media= medias; media_index<MAXIMUM_MEDIAS_PER_MAP; ++media_index, ++media)
 	{
@@ -145,7 +145,7 @@ bool media_in_environment(
 void update_medias(
 	void)
 {
-	short media_index;
+	size_t media_index;
 	struct media_data *media;
 	
 	for (media_index= 0, media= medias; media_index<MAXIMUM_MEDIAS_PER_MAP; ++media_index, ++media)
@@ -242,7 +242,7 @@ bool IsMediaDangerous(short media_index)
 /* ---------- private code */
 
 static void update_one_media(
-	short media_index,
+	size_t media_index,
 	bool force_update)
 {
 	struct media_data *media= get_media_data(media_index);
@@ -280,10 +280,10 @@ if (force_update || !(dynamic_world->tick_count&definition->shape_frequency))
 // LP addition: count number of media types used,
 // for better Infinity compatibility when saving games.
 // Fixed countdown bug in parallel with similar bug in map.cpp
-short count_number_of_medias_used()
+size_t count_number_of_medias_used()
 {
-	short number_used = MAXIMUM_MEDIAS_PER_MAP; // Take care of the case of all slots being used
-	for (short media_index=MAXIMUM_MEDIAS_PER_MAP-1; media_index>=0; media_index--)
+	size_t number_used = MAXIMUM_MEDIAS_PER_MAP; // Take care of the case of all slots being used
+	for (size_t media_index=MAXIMUM_MEDIAS_PER_MAP-1; media_index>=0; media_index--)
 	{
 		if (!SLOT_IS_USED(medias + media_index))
 		{

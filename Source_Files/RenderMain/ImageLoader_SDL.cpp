@@ -111,7 +111,7 @@ SDL_Surface *s = NULL;
 					float Green = float(*p++);
 					float Blue = float(*p++);
 					p++;
-					float Opacity = (Red + Green + Blue) / 3.0;
+					float Opacity = (Red + Green + Blue) / 3.0F;
 					q[3] = PIN(int(Opacity + 0.5), 0, 255);
 					q += 4;
 				}

@@ -45,8 +45,8 @@ extern void close_res_file(SDL_RWops *file);
 extern SDL_RWops *cur_res_file(void);
 extern void use_res_file(SDL_RWops *file);
 
-extern int count_1_resources(uint32 type);
-extern int count_resources(uint32 type);
+extern size_t count_1_resources(uint32 type);
+extern size_t count_resources(uint32 type);
 
 extern void get_1_resource_id_list(uint32 type, vector<int> &ids);
 extern void get_resource_id_list(uint32 type, vector<int> &ids);

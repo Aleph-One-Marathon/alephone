@@ -80,7 +80,7 @@ const int SIZEOF_ChunkHeaderData = 6;
 // For read-in chunks
 vector<uint8> ChunkBuffer;
 inline uint8 *ChunkBufferBase() {return &ChunkBuffer[0];}
-inline int ChunkBufferSize() {return ChunkBuffer.size();}
+inline size_t ChunkBufferSize() {return ChunkBuffer.size();}
 inline void SetChunkBufferSize(int Size) {ChunkBuffer.resize(Size);}
 
 // Local prototypes;

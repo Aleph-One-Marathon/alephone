@@ -143,7 +143,7 @@ extern vector<media_data> MediaList;
 
 /* --------- prototypes/MEDIA.C */
 
-short new_media(struct media_data *data);
+size_t new_media(struct media_data *data);
 
 void update_medias(void);
 
@@ -158,11 +158,11 @@ bool IsMediaDangerous(short media_type);
 bool media_in_environment(short media_type, short environment_code);
 
 media_data *get_media_data(
-	const short media_index);
+	const size_t media_index);
 
 // LP addition: count number of media types used,
 // for better Infinity compatibility when saving games
-short count_number_of_medias_used();
+size_t count_number_of_medias_used();
 
 // LP: routines for packing and unpacking the data from streams of bytes
 

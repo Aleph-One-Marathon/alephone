@@ -150,7 +150,9 @@ bool XML_Configure::DoParse()
 			XML_ParserFree(Parser);
 			return false;
 		}
-		if (!XML_Parse(Parser, Buffer, BufLen, LastOne))
+
+		// Expat should really be using size_t for BufLen
+		if (!XML_Parse(Parser, Buffer, (int)BufLen, LastOne))
 		{
 			// Report a parse error
 			ReportParseError(

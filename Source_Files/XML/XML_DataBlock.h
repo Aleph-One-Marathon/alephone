@@ -53,7 +53,7 @@ class XML_DataBlock: public XML_Configure
 public:
 
 	// Parse a data block:
-	bool ParseData(char *_Buffer, int _BufLen)
+	bool ParseData(char *_Buffer, size_t _BufLen)
 		{Buffer = _Buffer; BufLen = _BufLen; return DoParse();}
 		
 	// Pointer to name of XML-code source for error-message convenience (C string)

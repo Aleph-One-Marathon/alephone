@@ -130,7 +130,7 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			break;
 		
 		case _randomize_fader_type:
-			UseFlatStatic = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic);
+			UseFlatStatic = (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) != 0);
 			if (UseFlatStatic)
 			{
 				for (int c=0; c<3; c++)

@@ -341,7 +341,7 @@ static void adjust_player_physics(monster_data *me);
 /* ---------- code */
 
 player_data *get_player_data(
-	const short player_index)
+	const size_t player_index)
 {
 	player_data *data = GetMemberWithBounds(players,player_index,dynamic_world->player_count);
 	vassert(data,

@@ -1372,7 +1372,7 @@ static void build_shading_tables16(
 
 #ifdef SDL
 	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
-	bool is_opengl = SDL_GetVideoSurface()->flags & SDL_OPENGL;
+	bool is_opengl = ((SDL_GetVideoSurface()->flags & SDL_OPENGL) != 0);
 #endif
 	
 	start= 0, count= 0;
@@ -1417,7 +1417,7 @@ static void build_shading_tables32(
 	
 #ifdef SDL
 	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
-	bool is_opengl = SDL_GetVideoSurface()->flags & SDL_OPENGL;
+	bool is_opengl = ((SDL_GetVideoSurface()->flags & SDL_OPENGL) != 0);
 #endif
 
 	start= 0, count= 0;
@@ -1716,7 +1716,7 @@ static void build_collection_tinting_table(
 		// LP addition: OpenGL support
 		rgb_color &Color = tint_colors16[tint_color];
 #ifdef HAVE_OPENGL
-		OGL_SetInfravisionTint(collection_index,true,Color.red/65535.0,Color.green/65535.0,Color.blue/65535.0);
+		OGL_SetInfravisionTint(collection_index,true,Color.red/65535.0F,Color.green/65535.0F,Color.blue/65535.0F);
 #endif
 		switch (bit_depth)
 		{

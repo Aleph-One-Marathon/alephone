@@ -562,7 +562,7 @@ bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
 #ifdef __WIN32__
 	// For cross-platform compatibility reasons, "NameWithPath" uses Unix path
 	// syntax, so we have to convert it to MS-DOS syntax here (replacing '/' by '\')
-	for (int k=0; k<rel_path.size(); k++)
+	for (size_t k=0; k<rel_path.size(); k++)
 		if (rel_path[k] == '/')
 			rel_path[k] = '\\';
 #endif

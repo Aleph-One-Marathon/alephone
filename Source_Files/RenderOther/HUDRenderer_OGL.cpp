@@ -186,7 +186,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		glScissor(dest.left, dest.bottom, 640, 160);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
-		glTranslatef(dest.left, dest.top - 320, 0.0);
+		glTranslatef((GLfloat)(dest.left), (GLfloat)(dest.top - 320), 0.0);
 		HUD_OGL.update_everything(time_elapsed);
 		glPopMatrix();
 
@@ -261,13 +261,13 @@ void HUD_OGL_Class::DrawShape(shape_descriptor shape, screen_rectangle *dest, sc
 	glDisable(GL_BLEND);
 	TMgr.RenderNormal();
 	glBegin(GL_TRIANGLE_FAN);
-		glTexCoord2f(U_Offset, V_Offset);
+		glTexCoord2f((GLfloat)U_Offset, (GLfloat)V_Offset);
 		glVertex2i(x, y);
-		glTexCoord2f(U_Offset + U_Scale, V_Offset);
+		glTexCoord2f((GLfloat)(U_Offset + U_Scale), (GLfloat)V_Offset);
 		glVertex2i(x + width, y);
-		glTexCoord2f(U_Offset + U_Scale, V_Offset + V_Scale);
+		glTexCoord2f((GLfloat)(U_Offset + U_Scale), (GLfloat)(V_Offset + V_Scale));
 		glVertex2i(x + width, y + height);
-		glTexCoord2f(U_Offset, V_Offset + V_Scale);
+		glTexCoord2f((GLfloat)U_Offset, (GLfloat)(V_Offset + V_Scale));
 		glVertex2i(x, y + height);
 	glEnd();
 }
@@ -301,13 +301,13 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 		glDisable(GL_BLEND);
 	TMgr.RenderNormal();
 	glBegin(GL_TRIANGLE_FAN);
-		glTexCoord2f(U_Offset, V_Offset);
+		glTexCoord2f((GLfloat)U_Offset, (GLfloat)V_Offset);
 		glVertex2i(x, y);
-		glTexCoord2f(U_Offset + U_Scale, V_Offset);
+		glTexCoord2f((GLfloat)(U_Offset + U_Scale), (GLfloat)V_Offset);
 		glVertex2i(x + width, y);
-		glTexCoord2f(U_Offset + U_Scale, V_Offset + V_Scale);
+		glTexCoord2f((GLfloat)(U_Offset + U_Scale), (GLfloat)(V_Offset + V_Scale));
 		glVertex2i(x + width, y + height);
-		glTexCoord2f(U_Offset, V_Offset + V_Scale);
+		glTexCoord2f((GLfloat)U_Offset, (GLfloat)(V_Offset + V_Scale));
 		glVertex2i(x, y + height);
 	glEnd();
 }
@@ -326,7 +326,7 @@ void HUD_OGL_Class::DrawText(const char *text, screen_rectangle *dest, short fla
 {
 	// Get color
 	const rgb_color &c = get_interface_color(text_color);
-	glColor3f(c.red / 65535.0, c.green / 65535.0, c.blue / 65535.0);
+	glColor3f(c.red / 65535.0F, c.green / 65535.0F, c.blue / 65535.0F);
 
 	// Get font information
 	FontSpecifier &FontData = get_interface_font(font_id);
@@ -344,7 +344,7 @@ void HUD_OGL_Class::FillRect(screen_rectangle *r, short color_index)
 {
 	// Get color
 	const rgb_color &c = get_interface_color(color_index);
-	glColor3f(c.red / 65535.0, c.green / 65535.0, c.blue / 65535.0);
+	glColor3f(c.red / 65535.0F, c.green / 65535.0F, c.blue / 65535.0F);
 
 	// Draw rectangle
 	glDisable(GL_TEXTURE_2D);
@@ -360,7 +360,7 @@ void HUD_OGL_Class::FrameRect(screen_rectangle *r, short color_index)
 {
 	// Get color
 	const rgb_color &c = get_interface_color(color_index);
-	glColor3f(c.red / 65535.0, c.green / 65535.0, c.blue / 65535.0);
+	glColor3f(c.red / 65535.0F, c.green / 65535.0F, c.blue / 65535.0F);
 
 	// Draw rectangle
 	glDisable(GL_TEXTURE_2D);

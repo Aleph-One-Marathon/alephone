@@ -117,7 +117,7 @@ static LevelScriptHeader *CurrScriptPtr = NULL;
 static vector<FileSpecifier> Playlist;
 
 // Which song is now playing?
-static int SongNumber = 0;
+static size_t SongNumber = 0;
 
 // Whether the order is random, and a random-number generator
 static bool RandomOrder = false;
@@ -294,7 +294,7 @@ void GeneralRunScript(int LevelIndex)
 		
 		// Data to parse (either MML or Pfhortran)
 		char *Data = NULL;
-		int DataLen = 0;
+		size_t DataLen = 0;
 		
 		// First, try to load a resource (only for scripts)
 		LoadedResource ScriptRsrc;
@@ -401,7 +401,7 @@ FileSpecifier *GetLevelMusic()
 	if (Playlist.empty()) return NULL;
 	
 	// Only one song to play
-	int NumSongs = Playlist.size();
+	size_t NumSongs = Playlist.size();
 	if (NumSongs == 1) return &Playlist[0];
 	
 	if (RandomOrder)
@@ -487,7 +487,7 @@ bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"file"))
 	{
-		int vlen = strlen(Value) + 1;
+		size_t vlen = strlen(Value) + 1;
 		Cmd.FileSpec.resize(vlen);
 		memcpy(&Cmd.FileSpec[0],Value,vlen);
 		ObjectWasFound = true;

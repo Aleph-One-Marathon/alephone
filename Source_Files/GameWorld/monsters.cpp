@@ -1073,8 +1073,7 @@ bool possible_intersecting_monsters(
 	// Skip this step if neighbor indexes were not found
 	if (!neighbor_indexes) return found_solid_object;
 
-	short i;
-	for (i=0;i<polygon->neighbor_count;++i)
+	for (short i=0;i<polygon->neighbor_count;++i)
 	{
 		struct polygon_data *neighboring_polygon= get_polygon_data(*neighbor_indexes++);
 		
@@ -1200,17 +1199,16 @@ short legal_player_move(
 	struct monster_data *monster= get_monster_data(monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
 	world_point3d *old_location= &object->location;
-	short monster_count;
+	size_t monster_count;
 	world_distance radius, height;
 	short obstacle_index= NONE;
-	short i;
 
 	get_monster_dimensions(monster_index, &radius, &height);	
 	
 	IntersectedObjects.clear();
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
 	monster_count = IntersectedObjects.size();
-	for (i=0;i<monster_count;++i)
+	for (size_t i=0;i<monster_count;++i)
 	{
 		struct object_data *obstacle= get_object_data(IntersectedObjects[i]);
 		world_distance obstacle_radius, obstacle_height;
@@ -1273,17 +1271,16 @@ short legal_monster_move(
 	struct monster_data *monster= get_monster_data(monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
 //	world_point2d *old_location= (world_point2d *) &object->location;
-	short monster_count;
+	size_t monster_count;
 	world_distance radius, height;
 	short obstacle_index= NONE;
-	short i;
 
 	get_monster_dimensions(monster_index, &radius, &height);	
 	
 	IntersectedObjects.clear();
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, object->polygon, true);
 	monster_count= IntersectedObjects.size();
-	for (i=0;i<monster_count;++i)
+	for (size_t i=0;i<monster_count;++i)
 	{
 		struct object_data *obstacle= get_object_data(IntersectedObjects[i]);
 		world_distance obstacle_radius, obstacle_height;
@@ -1349,15 +1346,14 @@ void damage_monsters_in_radius(
 	world_distance radius,
 	struct damage_definition *damage)
 {
-	short i;
-	short object_count;
+	size_t object_count;
 
 	(void) (primary_target_index);
 	
 	IntersectedObjects.clear();
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, epicenter_polygon_index, false);
 	object_count= IntersectedObjects.size();
-	for (i=0;i<object_count;++i)
+	for (size_t i=0;i<object_count;++i)
 	{
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
 		world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&object->location);

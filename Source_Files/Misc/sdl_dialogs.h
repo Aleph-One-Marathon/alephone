@@ -104,7 +104,7 @@ private:
 	void draw_widget(widget *w, bool do_update = true) const;
     void deactivate_currently_active_widget(bool draw = true);
 	void activate_first_widget(void);
-	void activate_widget(int num, bool draw = true);
+	void activate_widget(size_t num, bool draw = true);
 	void activate_prev_widget(void);
 	int find_widget(int x, int y);
 	void event(SDL_Event &e);
@@ -115,7 +115,7 @@ private:
 	vector<widget *> widgets;	// List of widgets
 
 	widget *active_widget;		// Pointer to active widget
-	int active_widget_num;		// Number of active widget
+	size_t active_widget_num;		// Number of active widget
 
 	int result;					// Dialog result code
 	bool done;					// Flag: dialog done

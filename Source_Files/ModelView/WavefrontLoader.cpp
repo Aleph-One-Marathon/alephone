@@ -576,7 +576,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 
 char *CompareToKeyword(char *Keyword)
 {
-	unsigned KWLen = strlen(Keyword);
+	size_t KWLen = strlen(Keyword);
 	
 	if (InputLine.size() < KWLen) return NULL;
 	

@@ -98,10 +98,10 @@ template<class T> inline static void StreamToList(uint8* &Stream, T* List, int C
 }
 
 
-template<class T> inline static void ListToStream(uint8* &Stream, T* List, int Count)
+template<class T> inline static void ListToStream(uint8* &Stream, T* List, size_t Count)
 {
     T* ValuePtr = List;
-    for (int k=0; k<Count; k++)
+    for (size_t k=0; k<Count; k++)
         ValueToStream(Stream,*(ValuePtr++));
 }
 
