@@ -1,0 +1,112 @@
+--[[
+	Indirect Kills Only v1.0
+	Woody Zenfell, III
+	
+	This script does not allow players to damage each other by conventional (direct) means,
+	but it still awards kills.  Players may only be hurt by themselves or by non-players.
+
+	The script distinguishes between "polygons of doom" and "normal polygons".
+	"Polygons of Doom" exist so that the level can take its time and kill
+	wayward players in amusing ways, but the proper aggressor will still be
+	credited appropriately.
+
+	A player is remembered as a victim's aggressor by hitting the victim for a minimum
+	amount of damage while the victim either has no remembered aggressor or is in a normal
+	polygon and has touched the floor of a normal polygon since the previous aggressor hit him.
+	The aggressor is forgotten when the victim dies or stands on the floor of a normal polygon
+	for a long enough time.
+	
+	When a player dies, a kill is awarded to the remembered aggressor.  A level-induced death
+	or suicide, as appropriate, is awarded if there is no remembered aggressor.
+	
+	
+	I am donating this work to the public domain.
+	
+	August 3, 2003:
+		Created.
+]]
+
+
+local kNone = -1
+
+local kTicksBeforeForgetWounder	= 30
+local kMinimumDamageForWounder	= 60 -- aggressor must deal at least this much damage to become wounder
+
+local sMostRecentWounder	= {} -- which player will get credit for the kill?
+local sTicksBeforeForgetWounder	= {} -- how many more ticks need player stand on "normal" ground before wounder forgotten?
+
+
+local kMinimumNonDoomPolygonFloorHeight = 0
+
+local function is_player_in_polygon_of_doom(inPlayerIndex)
+	return get_polygon_floor_height(get_player_polygon(inPlayerIndex)) < kMinimumNonDoomPolygonFloorHeight
+end
+
+
+local function can_wounder_change(inPlayerIndex)
+	return (not sMostRecentWounder[inPlayerIndex])	-- can change if no wounder remembered
+		or (not is_player_in_polygon_of_doom(inPlayerIndex) and sTicksBeforeForgetWounder[inPlayerIndex] < kTicksBeforeForgetWounder) -- can change if in normal poly and player touched normal ground
+end
+
+
+local function forget_wounder(inVictimIndex)
+	sMostRecentWounder[inVictimIndex] = nil
+	sTicksBeforeForgetWounder[inVictimIndex] = nil
+end
+
+
+local function set_new_wounder(inVictimIndex, inAggressorIndex)
+	sMostRecentWounder[inVictimIndex] = inAggressorIndex
+	sTicksBeforeForgetWounder[inVictimIndex] = kTicksBeforeForgetWounder
+end
+
+
+local function is_player_above_floor(inPlayerIndex)
+	local _,_,thePlayerHeight = get_player_position(inPlayerIndex)
+	return thePlayerHeight > get_polygon_floor_height(get_player_polygon(inPlayerIndex))
+end
+
+
+function idle()
+	for thePlayer, theTicks in sTicksBeforeForgetWounder do
+		if (not is_player_in_polygon_of_doom(thePlayer)) and (not is_player_above_floor(thePlayer)) then
+			if(theTicks > 0) then
+				sTicksBeforeForgetWounder[thePlayer] = theTicks - 1
+			else
+				forget_wounder(thePlayer)
+			end
+		end
+	end
+end -- idle
+
+
+function player_damaged(inVictim, inAggressor, _, inDamageType, inDamageAmount)
+	if (inAggressor ~= kNone) and (inAggressor ~= inVictim) then
+		-- undo the damage done
+		if(inDamageType ~= _damage_oxygen_drain) then
+			set_life(inVictim, get_life(inVictim) + inDamageAmount)
+		else
+			set_oxygen(inVictim, get_oxygen(inVictim) + inDamageAmount)
+		end
+
+		-- remember the wounder, if appropriate
+		if (inDamageAmount >= kMinimumDamageForWounder) and can_wounder_change(inVictim) then
+			set_new_wounder(inVictim, inAggressor)
+		end
+	end
+end -- player_damaged
+
+
+function player_killed(inVictim, inAggressor, _)
+	if (inAggressor == kNone) or (inAggressor == inVictim) then
+		if(sMostRecentWounder[inVictim]) then
+			-- take away the level kill or suicide just awarded
+			award_kills(inAggressor, inVictim, -1)
+			
+			-- award kill to wounder
+			award_kills(sMostRecentWounder[inVictim], inVictim, 1)
+		end
+	end
+	
+	forget_wounder(inVictim)
+end -- player_killed
