@@ -864,7 +864,12 @@ const float CVals[CIndxRange] = {0, 0.25, 0.5, 0.75, 1};
 
 void SetBackgroundColor()
 {
-	glClearColor(CVals[RedIndx],CVals[GreenIndx],CVals[BlueIndx],1);
+	// static GLfloat Red = CVals[RedIndx];
+	// static GLfloat Green = CVals[GreenIndx];
+	// static GLfloat Blue = CVals[BlueIndx];
+	// static GLfloat Alpha = 1;
+	// glClearColor(Red,Green,Blue,Alpha);
+	// glClearColor(CVals[RedIndx],CVals[GreenIndx],CVals[BlueIndx],1);
 }
 
 // Update the color-selection menus
@@ -1007,7 +1012,8 @@ int main(int argc, char **argv)
 	UpdateVertexSplitMenu();
 	
 	// Create a GLUT Color Picker
-	
+	// LP: suppressed because glClearColor() is broken
+	#ifdef USE_BACKGROUND_COLOR
 	// Create color-component submenus
 	RedMenu = glutCreateMenu(SetRedSelection);
 	glutAddMenuEntry("0",0);
@@ -1038,14 +1044,17 @@ int main(int argc, char **argv)
 	glutAddSubMenu("Red", RedMenu);
 	glutAddSubMenu("Green", GreenMenu);
 	glutAddSubMenu("Blue", BlueMenu);
-		
+	#endif
+	
 	// Create right-button menu:
 	int RightButtonMenu = glutCreateMenu(RightButtonAction);
 	glutAddSubMenu("Load Model...", ModelMenu);
 	glutAddSubMenu("Load Skin...", SkinMenu);
 	glutAddSubMenu("Normal Type", NormalTypeMenu);
 	glutAddSubMenu("Vertex-Split Threshold", VertexSplitMenu);
+	#ifdef USE_BACKGROUND_COLOR
 	glutAddSubMenu("Background Color", ColorMenu);
+	#endif
   	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	
 	glutMainLoop();
