@@ -243,7 +243,7 @@ struct random_sound_image_data // 32 bytes
 	
 	short unused[3];
 };
-const int SIZEOF_random_sound_image_data = 16;
+const int SIZEOF_random_sound_image_data = 32;
 
 /* ---------- object structure */
 // LP change: made this settable from the resource fork
@@ -685,6 +685,7 @@ struct object_frequency_definition
 	short random_count;    // maximum random occurences of the object
 	word random_chance;    // in (0, 65535]
 };
+const int SIZEOF_object_frequency_definition = 12;
 
 /* ---------- map */
 
