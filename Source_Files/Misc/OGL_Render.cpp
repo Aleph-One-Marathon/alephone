@@ -108,6 +108,10 @@ Jan 31, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for AGL.h
 	Added accessors for datafields now opaque in Carbon
 	Added a check to make sure AGL_SWAP_RECT is enabled before we try to disable it, trying to squash a bug that occasionally pops up
+
+Feb 3, 2002 (Br'fin (Jeremy Parsons) and Loren Petrich):
+	Centered OpenGL displays under Carbon OS X
+	Fixed AGL_SWAP_RECT spamming of OS X console
 */
 
 #include <vector>
@@ -490,7 +494,8 @@ bool OGL_ClearScreen()
 		{
 			if(!aglDisable(RenderContext,AGL_SWAP_RECT))
 			{
-				dprintf("aglDisable failed: AGL Error: %s\n", aglErrorString(aglGetError()));
+				// Will ignore this; not sure why it's failing
+				// dprintf("aglDisable failed: AGL Error: %s\n", aglErrorString(aglGetError()));
 			}
 		}
 #endif
@@ -562,6 +567,24 @@ bool OGL_StartRun()
 		aglDestroyContext(RenderContext);
 		return false;
 	}
+	
+	// Fixes console spamming in Br'fin's Carbon version
+	Rect portBounds;
+#if defined(TARGET_API_MAC_CARBON)
+	GetPortBounds(WindowPtr, &portBounds);
+#else
+	portBounds = WindowPtr->portRect;
+#endif
+	
+	GLint RectBounds[4];
+	RectBounds[0] = 0;
+	RectBounds[1] = 0;
+	RectBounds[2] = portBounds.right - portBounds.left;
+	RectBounds[3] = portBounds.bottom - portBounds.top;
+	
+	aglEnable(RenderContext, AGL_BUFFER_RECT);
+	aglSetInteger(RenderContext, AGL_BUFFER_RECT, RectBounds);
+	
 #endif
 	
 	// Set up some OpenGL stuff: these will be the defaults for this rendering context
