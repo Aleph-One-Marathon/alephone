@@ -687,8 +687,8 @@ void display_main_menu(
         short X0 = portRect.right;
         short Y0 = portRect.bottom;
 #else
-        short X0 = port-portRect.right;
-        short Y0 = port-portRect.bottom;
+        short X0 = port->portRect.right;
+        short Y0 = port->portRect.bottom;
 #endif
 #elif defined(SDL)
         // JTP: This works, but I don't know correctness
