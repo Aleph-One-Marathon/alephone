@@ -148,9 +148,8 @@ void *LoadedResource::GetPointer(bool DoDetach)
 
 void LoadedResource::SetData(void *data, size_t length)
 {
-// this is untested... - CB
 	Unload();
-	PtrToHand(data, RsrcHandle, length);
+	PtrToHand(data, &RsrcHandle, length);
 	free(data);
 }
 
