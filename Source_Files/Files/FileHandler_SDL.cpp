@@ -647,7 +647,8 @@ void FileSpecifier::canonicalize_path(void)
 #endif
 
 	// Remove trailing '/'
-	if (!name.empty() && name[name.size()-1] == PATH_SEP)
+	// ZZZ: only if we're not naming the root directory /
+	if (!name.empty() && name[name.size()-1] == PATH_SEP && name.size() != 1)
 		name.erase(name.size()-1, 1);
 }
 
@@ -692,6 +693,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 #else
 
 	DIR *d = opendir(GetPath());
+
 	if (d == NULL) {
 		err = errno;
 		return false;
