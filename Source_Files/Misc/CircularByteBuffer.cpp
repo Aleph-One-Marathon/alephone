@@ -64,6 +64,49 @@ CircularByteBuffer::enqueueBytes(const void* inBytes, unsigned int inByteCount)
 }
 
 
+void*
+CircularByteBuffer::enqueueBytesNoCopyStart(unsigned int inByteCount, void** outFirstBytes, unsigned int* outFirstByteCount,
+			      void** outSecondBytes, unsigned int* outSecondByteCount)
+{
+	void* theFirstBytes = NULL;
+	void* theSecondBytes = NULL;
+	unsigned int theFirstByteCount = 0;
+	unsigned int theSecondByteCount = 0;
+	
+	if(inByteCount > 0)
+	{
+		assert(inByteCount <= getRemainingSpace());
+
+		std::pair<unsigned int, unsigned int> theChunkSizes = splitIntoChunks(inByteCount, mWriteIndex, mQueueSize);
+
+		theFirstBytes = &(mData[getWriteIndex()]);
+		theFirstByteCount = theChunkSizes.first;
+		theSecondByteCount = theChunkSizes.second;
+		theSecondBytes = (theSecondByteCount > 0) ? mData : NULL;
+	}
+
+	if(outFirstBytes != NULL)
+		*outFirstBytes = theFirstBytes;
+
+	if(outFirstByteCount != NULL)
+		*outFirstByteCount = theFirstByteCount;
+
+	if(outSecondBytes != NULL)
+		*outSecondBytes = theSecondBytes;
+
+	if(outSecondByteCount != NULL)
+		*outSecondByteCount = theSecondByteCount;
+}
+
+
+void
+CircularByteBuffer::enqueueBytesNoCopyFinish(unsigned int inActualByteCount)
+{
+	if(inActualByteCount > 0)
+		advanceWriteIndex(inActualByteCount);
+}
+
+
 void
 CircularByteBuffer::peekBytes(void* outBytes, unsigned int inByteCount)
 {
@@ -81,4 +124,39 @@ CircularByteBuffer::peekBytes(void* outBytes, unsigned int inByteCount)
 		if(theChunkSizes.second > 0)
 			memcpy(&(theBytes[theChunkSizes.first]), mData, theChunkSizes.second);
 	}
+}
+
+
+void
+CircularByteBuffer::peekBytesNoCopy(unsigned int inByteCount, const void** outFirstBytes, unsigned int* outFirstByteCount,
+				    const void** outSecondBytes, unsigned int* outSecondByteCount)
+{
+	void* theFirstBytes = NULL;
+	void* theSecondBytes = NULL;
+	unsigned int theFirstByteCount = 0;
+	unsigned int theSecondByteCount = 0;
+	
+	if(inByteCount > 0)
+	{
+		assert(inByteCount <= getCountOfElements());
+
+		std::pair<unsigned int, unsigned int> theChunkSizes = splitIntoChunks(inByteCount, mReadIndex, mQueueSize);
+
+		theFirstBytes = &(mData[getReadIndex()]);
+		theFirstByteCount = theChunkSizes.first;
+		theSecondByteCount = theChunkSizes.second;
+		theSecondBytes = (theSecondByteCount > 0) ? mData : NULL;
+	}
+
+	if(outFirstBytes != NULL)
+		*outFirstBytes = theFirstBytes;
+
+	if(outFirstByteCount != NULL)
+		*outFirstByteCount = theFirstByteCount;
+
+	if(outSecondBytes != NULL)
+		*outSecondBytes = theSecondBytes;
+
+	if(outSecondByteCount != NULL)
+		*outSecondByteCount = theSecondByteCount;	
 }
