@@ -62,7 +62,6 @@ September 17, 2004 (jkvw):
 #include "screen_drawing.h"
 
 #include "network_games.h"
-//#include "network_stream.h"
 #include "network_lookup_sdl.h"
 #include "network_private.h" // actually only need "network_dialogs_private.h"
 
