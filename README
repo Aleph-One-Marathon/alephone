@@ -444,10 +444,6 @@ them:
    the title screen are nonfunctional)
  - Support for named fonts and TrueType fonts
 
-And a list of known bugs:
-
- - OpenGL multitexturing crashes NVIDIA GLX 0.9-6 and Mesa GL, reason unknown
-
 If you find a bug that's not already in the list above, please submit it
 using the bug database on SourceForge:
 

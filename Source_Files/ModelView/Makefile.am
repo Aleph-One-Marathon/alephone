@@ -1,3 +1,3 @@
 ## Process this file with automake to produce Makefile.in 
 
-SUBDIRS = CSeries Expat Network Pfhortran ModelView Misc
+EXTRA_DIST = Model3D.h

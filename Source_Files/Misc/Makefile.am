@@ -57,7 +57,7 @@ EXTRA_alephone_SOURCES = computer_interface_sdl.cpp images_sdl.cpp \
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries \
   -I$(top_srcdir)/Source_Files/Expat -I$(top_srcdir)/Source_Files/Network \
-  -I$(top_srcdir)/Source_Files/Pfhortran
+  -I$(top_srcdir)/Source_Files/Pfhortran -I$(top_srcdir)/Source_Files/ModelView
 
 # Data directories
 confpaths.h: Makefile

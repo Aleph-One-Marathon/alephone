@@ -464,7 +464,7 @@ bool OGL_StartRun()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
-	OnePassMultitexturing = TEST_FLAG(ConfigureData.Flags,OGL_Flag_SnglPass) != 0;
+	OnePassMultitexturing = false;
 	// Texture 0 is the default one; texture 1 is the additional texture
 #ifdef GL_ARB_multitexture
 	if (OnePassMultitexturing)

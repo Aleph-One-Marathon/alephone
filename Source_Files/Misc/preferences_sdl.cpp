@@ -318,8 +318,6 @@ static void opengl_dialog(void *arg)
 	d.add(landscape_w);
 	w_toggle *fog_w = new w_toggle("Fog", prefs.Flags & OGL_Flag_Fog);
 	d.add(fog_w);
-	w_toggle *multi_w = new w_toggle("Multitexturing", prefs.Flags & OGL_Flag_SnglPass);
-	d.add(multi_w);
 	w_toggle *static_w = new w_toggle("Static Effect", !(prefs.Flags & OGL_Flag_FlatStatic));
 	d.add(static_w);
 	w_toggle *fader_w = new w_toggle("Color Effects", prefs.Flags & OGL_Flag_Fader);
@@ -345,7 +343,6 @@ static void opengl_dialog(void *arg)
 		if (zbuffer_w->get_selection()) flags |= OGL_Flag_ZBuffer;
 		if (!(landscape_w->get_selection())) flags |= OGL_Flag_FlatLand;
 		if (fog_w->get_selection()) flags |= OGL_Flag_Fog;
-		if (multi_w->get_selection()) flags |= OGL_Flag_SnglPass;
 		if (!(static_w->get_selection())) flags |= OGL_Flag_FlatStatic;
 		if (fader_w->get_selection()) flags |= OGL_Flag_Fader;
 		if (liq_w->get_selection()) flags |= OGL_Flag_LiqSeeThru;

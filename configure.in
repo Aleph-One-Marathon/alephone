@@ -102,6 +102,7 @@ Source_Files/Expat/Makefile
 Source_Files/Misc/Makefile
 Source_Files/Network/Makefile
 Source_Files/Pfhortran/Makefile
+Source_Files/ModelView/Makefile
 tools/Makefile
 data/Makefile
 data/default_theme/Makefile

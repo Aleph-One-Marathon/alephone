@@ -116,13 +116,14 @@ enum
 	OGL_Flag_VoidColor	= 0x0002,	// Whether to color the void
 	OGL_Flag_FlatLand	= 0x0004,	// Whether to use flat-textured landscapes
 	OGL_Flag_Fog		= 0x0008,	// Whether to make fog
-	OGL_Flag_2DGraphics	= 0x0010,	// Whether to pipe 2D graphics through OpenGL
-	OGL_Flag_FlatStatic	= 0x0020,	// Whether to make the "static" effect look flat
-	OGL_Flag_Fader		= 0x0040,	// Whether to do the fader effects in OpenGL
-	OGL_Flag_LiqSeeThru	= 0x0080,	// Whether the liquids can be seen through
-	OGL_Flag_Map		= 0x0100,	// Whether to do the overhead map with OpenGL
-	OGL_Flag_TextureFix	= 0x0200,	// Whether to apply a texture fix for old Apple OpenGL
-	OGL_Flag_HUD		= 0x0400,	// Whether to do the HUD with OpenGL
+	// 0x0010 was OGL_Flag_SnglPass, now reserved
+	OGL_Flag_2DGraphics	= 0x0020,	// Whether to pipe 2D graphics through OpenGL
+	OGL_Flag_FlatStatic	= 0x0040,	// Whether to make the "static" effect look flat
+	OGL_Flag_Fader		= 0x0080,	// Whether to do the fader effects in OpenGL
+	OGL_Flag_LiqSeeThru	= 0x0100,	// Whether the liquids can be seen through
+	OGL_Flag_Map		= 0x0200,	// Whether to do the overhead map with OpenGL
+	OGL_Flag_TextureFix	= 0x0400,	// Whether to apply a texture fix for old Apple OpenGL
+	OGL_Flag_HUD		= 0x0800,	// Whether to do the HUD with OpenGL
 };
 
 struct OGL_ConfigureData
