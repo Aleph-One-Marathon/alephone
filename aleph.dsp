@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"builds/aleph.exe" /pdbtype:sept
 # SUBTRACT LINK32 /profile /map
 
 !ENDIF 
@@ -256,6 +256,10 @@ SOURCE=.\Source_Files\Misc\game_window.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Source_Files\Misc\game_window_sdl.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Source_Files\Misc\ImageLoader_SDL.cpp
 # End Source File
 # Begin Source File
@@ -269,6 +273,10 @@ SOURCE=.\Source_Files\Misc\import_definitions.cpp
 # Begin Source File
 
 SOURCE=.\Source_Files\Misc\interface.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\Misc\interface_sdl.cpp
 # End Source File
 # Begin Source File
 
@@ -325,6 +333,10 @@ SOURCE=.\Source_Files\Misc\OGL_Setup.cpp
 # Begin Source File
 
 SOURCE=.\Source_Files\Misc\OGL_Textures.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\Misc\OGL_Win32.cpp
 # End Source File
 # Begin Source File
 
@@ -416,6 +428,22 @@ SOURCE=.\Source_Files\Misc\screen_drawing.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Source_Files\Misc\screen_sdl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\Misc\sdl_dialogs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\Misc\sdl_fonts.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\Misc\sdl_widgets.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Source_Files\Misc\shapes.cpp
 # End Source File
 # Begin Source File
@@ -424,7 +452,11 @@ SOURCE=.\Source_Files\Misc\ShapesParser.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Source_Files\Misc\shell.cpp
+SOURCE=.\Source_Files\Misc\shell_misc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\Misc\shell_sdl.cpp
 # End Source File
 # Begin Source File
 
@@ -484,7 +516,23 @@ SOURCE=.\Source_Files\Misc\XML_LevelScript.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Source_Files\Misc\XML_Loader_SDL.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Source_Files\Misc\XML_MakeRoot.cpp
+# End Source File
+# End Group
+# Begin Group "Network"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\Source_Files\Network\network_dummy.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\Network\network_games.cpp
 # End Source File
 # End Group
 # End Group
@@ -1155,6 +1203,10 @@ SOURCE=.\Source_Files\Pfhortran\script_parser.h
 SOURCE=.\Source_Files\Pfhortran\scripting.h
 # End Source File
 # End Group
+# Begin Group "Network H"
+
+# PROP Default_Filter ""
+# End Group
 # End Group
 # Begin Group "Resource Files"
 
@@ -1162,7 +1214,19 @@ SOURCE=.\Source_Files\Pfhortran\scripting.h
 # End Group
 # Begin Source File
 
+SOURCE=.\SDL\lib\SDL.lib
+# End Source File
+# Begin Source File
+
 SOURCE=.\SDL\lib\SDLmain.lib
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\VC98\Lib\GLU32.LIB
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\VC98\Lib\OPENGL32.LIB
 # End Source File
 # End Target
 # End Project
