@@ -600,7 +600,7 @@ void read_line(char *input, char output[256])
 
 	if (strlen(input) == 0 || *(input-1) == 0x11)
 		{
-		output[0] = EOF;
+		output[0] = (char)EOF;
 		return;
 		}
 	
@@ -765,7 +765,7 @@ script_instruction *parse_script(char *input)
 	{
 		read_line(input + offset, current_line);
 		
-		if (current_line[0] == EOF)
+		if (current_line[0] == (char)EOF)
 			done = true;
 		else
 		{
@@ -819,7 +819,7 @@ script_instruction *parse_script(char *input)
 	{
 		read_line(input + offset, current_line);
 		
-		if (current_line[0] == EOF)
+		if (current_line[0] == (char)EOF)
 			done = true;
 		else
 		{
