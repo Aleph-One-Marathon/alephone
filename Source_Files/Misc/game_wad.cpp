@@ -1892,35 +1892,35 @@ boolean process_map_wad(
 	// LP addition: load the physics-model chunks (all fixed-size)
 	bool PhysicsModelLoaded = false;
 	
-#ifdef mac	//!! most of these structures have non-portable alignment requirements; to be fixed later
+// #ifdef mac	//!! most of these structures have non-portable alignment requirements; to be fixed later
 	data= (unsigned char *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
-	count = data_length/get_monster_defintion_size();
-	assert(count*get_monster_defintion_size() == data_length);
+	count = data_length/SIZEOF_monster_definition;
+	assert(count*SIZEOF_monster_definition == data_length);
 	assert(count <= NUMBER_OF_MONSTER_TYPES);
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
-		memcpy(monster_definitions,data,data_length);
+		unpack_monster_definition(data,count);
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, EFFECTS_PHYSICS_TAG, &data_length);
-	count = data_length/get_effect_defintion_size();
-	assert(count*get_effect_defintion_size() == data_length);
+	count = data_length/SIZEOF_effect_definition;
+	assert(count*SIZEOF_effect_definition == data_length);
 	assert(count <= NUMBER_OF_EFFECT_TYPES);
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
-		memcpy(effect_definitions,data,data_length);
+		unpack_effect_definition(data,count);
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, PROJECTILE_PHYSICS_TAG, &data_length);
-	count = data_length/get_projectile_definition_size();
-	assert(count*get_projectile_definition_size() == data_length);
+	count = data_length/SIZEOF_projectile_definition;
+	assert(count*SIZEOF_projectile_definition == data_length);
 	assert(count <= NUMBER_OF_PROJECTILE_TYPES);
 	if (data_length > 0)
 	{
 		PhysicsModelLoaded = true;
-		memcpy(projectile_definitions,data,data_length);
+		unpack_projectile_definition(data,count);
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, PHYSICS_PHYSICS_TAG, &data_length);
@@ -1942,7 +1942,7 @@ boolean process_map_wad(
 		PhysicsModelLoaded = true;
 		memcpy(weapon_definitions,data,data_length);
 	}
-#endif
+// #endif
 	
 	// LP addition: Reload the physics model if it had been loaded in the previous level,
 	// but not in the current level. This avoids the persistent-physics bug.
@@ -1973,6 +1973,21 @@ boolean process_map_wad(
 		memcpy(automap_lines,data,data_length);
 		data= (unsigned char *)extract_type_from_wad(wad, AUTOMAP_POLYGONS, &data_length);
 		memcpy(automap_polygons,data,data_length);
+
+		data= (unsigned char *)extract_type_from_wad(wad, MONSTERS_STRUCTURE_TAG, &data_length);
+		count= data_length/SIZEOF_monster_data;
+		assert(count*SIZEOF_monster_data==data_length);
+		unpack_monster_data(data,monsters,count);
+
+		data= (unsigned char *)extract_type_from_wad(wad, EFFECTS_STRUCTURE_TAG, &data_length);
+		count= data_length/SIZEOF_effect_data;
+		assert(count*SIZEOF_effect_data==data_length);
+		unpack_effect_data(data,effects,count);
+
+		data= (unsigned char *)extract_type_from_wad(wad, PROJECTILES_STRUCTURE_TAG, &data_length);
+		count= data_length/SIZEOF_projectile_data;
+		assert(count*SIZEOF_projectile_data==data_length);
+		unpack_projectile_data(data,projectiles,count);
 		
 		complete_restoring_level(wad);
 	} else {
@@ -2216,9 +2231,9 @@ struct save_game_data save_data[]=
 	{ OBJECT_STRUCTURE_TAG, SIZEOF_object_data, TRUE }, // FALSE },
 	{ AUTOMAP_LINES, sizeof(byte), TRUE }, // FALSE },
 	{ AUTOMAP_POLYGONS, sizeof(byte), TRUE }, // FALSE },
-	{ MONSTERS_STRUCTURE_TAG, sizeof(struct monster_data), FALSE },
-	{ EFFECTS_STRUCTURE_TAG, sizeof(struct effect_data), FALSE },
-	{ PROJECTILES_STRUCTURE_TAG, sizeof(struct projectile_data), FALSE },
+	{ MONSTERS_STRUCTURE_TAG, SIZEOF_monster_data, TRUE }, // FALSE },
+	{ EFFECTS_STRUCTURE_TAG, SIZEOF_effect_data, TRUE }, // FALSE },
+	{ PROJECTILES_STRUCTURE_TAG, SIZEOF_projectile_data, TRUE }, // FALSE },
 	{ PLATFORM_STRUCTURE_TAG, sizeof(struct platform_data), FALSE },
 	{ WEAPON_STATE_TAG, sizeof(byte), FALSE },
 	{ TERMINAL_STATE_TAG, sizeof(byte), FALSE }
@@ -2351,15 +2366,15 @@ static void *tag_to_global_array_and_size(
 		// LP addition: handling of physics models
 		case MONSTER_PHYSICS_TAG:
 			array= monster_definitions;
-			*size= NUMBER_OF_MONSTER_TYPES*get_monster_defintion_size();
+			*size= NUMBER_OF_MONSTER_TYPES*SIZEOF_monster_definition;
 			break;
 		case EFFECTS_PHYSICS_TAG:
 			array= effect_definitions;
-			*size= NUMBER_OF_EFFECT_TYPES*get_effect_defintion_size();
+			*size= NUMBER_OF_EFFECT_TYPES*SIZEOF_effect_definition;
 			break;
 		case PROJECTILE_PHYSICS_TAG:
 			array= projectile_definitions;
-			*size= NUMBER_OF_PROJECTILE_TYPES*get_projectile_definition_size();
+			*size= NUMBER_OF_PROJECTILE_TYPES*SIZEOF_projectile_definition;
 			break;
 		case PHYSICS_PHYSICS_TAG:
 			array= physics_models;
