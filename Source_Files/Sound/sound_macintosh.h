@@ -152,7 +152,6 @@ static void set_sound_manager_status(
 				_sm_globals->sound_source= (_sm_parameters->flags&_16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
 				_sm_globals->base_sound_definitions= sound_definitions + _sm_globals->sound_source*number_of_sound_definitions;
 
-				GetDefaultOutputVolume(&_sm_globals->old_sound_volume);
 				SetDefaultOutputVolume(sound_level_to_sound_volume(_sm_parameters->volume));
 				
 				for (i= 0, channel= _sm_globals->channels; i<_sm_globals->total_channel_count; ++i, ++channel)
@@ -336,6 +335,18 @@ static void initialize_machine_sound_manager(
 					_sm_parameters->flags= 0;
 					_sm_initialized= _sm_active= true;
 					GetDefaultOutputVolume(&_sm_globals->old_sound_volume);
+
+#if TARGET_API_MAC_CARBON
+					// JTP: There appears to be a problem where even if I get the default volume, then set it
+					// atexit, we still miss the original volume and change further, softer in my experience
+					// though others may get louder.
+					// Let's try and find this delta and actually fix our stored volume with it to fix it...
+					// If this all works with no glitch, then the delta will be 0 anyhow...
+					int32 glitched_volume;
+					SetDefaultOutputVolume(_sm_globals->old_sound_volume);
+					GetDefaultOutputVolume(&glitched_volume);
+					_sm_globals->old_sound_volume+= (_sm_globals->old_sound_volume - glitched_volume);
+#endif
 					
 					set_sound_manager_parameters(parameters);
 				}
