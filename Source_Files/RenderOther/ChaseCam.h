@@ -26,6 +26,7 @@
 #ifndef _CHASE_CAM
 #define _CHASE_CAM
 
+#include "world.h"
 
 enum // Chase-cam flags
 

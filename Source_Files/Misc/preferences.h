@@ -52,6 +52,7 @@ Apr 10, 2003 (Woody Zenfell):
 #include "ChaseCam.h"
 #include "Crosshairs.h"
 #include "OGL_Setup.h"
+#include "shell.h"
 
 
 /* New preferences junk */
