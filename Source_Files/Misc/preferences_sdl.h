@@ -23,6 +23,9 @@
  *  preferences_sdl.cpp - Preferences handling, SDL specific stuff
  *
  *  Written in 2000 by Christian Bauer
+ *
+ *  Feb 27, 2002 (Woody Zenfell):
+ *    Now allowing selection of OpenGL or software renderer, and doing separate config boxes for each.
  */
 
 #ifndef _SDL_PREFERNCES_
@@ -286,13 +289,9 @@ static const char *gamma_labels[9] = {
 };
 
 // ZZZ: reworked dialog slightly to allow selection of OpenGL and to configure renderers.
-// Note that w_select should handle correctly the case when an index is out-of-range.  Note
-// also that shell_sdl forces the renderer to software ifndef HAVE_OPENGL.
 static const char* renderer_labels[] = {
         "Software",
-#ifdef HAVE_OPENGL
         "OpenGL",
-#endif
         NULL
 };
 
@@ -376,6 +375,10 @@ static void graphics_dialog(void *arg)
 
     w_select* renderer_w = new w_select("Rendering System", graphics_preferences->screen_mode.acceleration, renderer_labels);
     renderer_w->set_identifier(iRENDERING_SYSTEM);
+#ifndef HAVE_OPENGL
+    renderer_w->set_selection(_no_acceleration);
+    renderer_w->set_enabled(false);
+#endif
     d.add(renderer_w);
 
 	w_select *size_w = new w_select("Screen Size", graphics_preferences->screen_mode.size, size_labels);
@@ -388,11 +391,14 @@ static void graphics_dialog(void *arg)
     d.add(new w_spacer());
     d.add(new w_button("RENDERING OPTIONS", rendering_options_dialog_demux, &d));
     d.add(new w_spacer());
-
+#ifdef HAVE_OPENGL
     d.add(new w_static_text("Warning: switching renderers is currently a bit buggy."));
     d.add(new w_static_text("If you switch, consider quitting and restarting Aleph One."));
-
+#else
+    d.add(new w_static_text("This copy of Aleph One was built without OpenGL support."));
+#endif
     d.add(new w_spacer());
+
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
@@ -415,6 +421,13 @@ static void graphics_dialog(void *arg)
         int renderer = renderer_w->get_selection();
         if(renderer != graphics_preferences->screen_mode.acceleration) {
             graphics_preferences->screen_mode.acceleration = renderer;
+
+            // ZZZ: disable fading under Mac OS X software rendering
+#if defined(__APPLE__) && defined(__MACH__) && defined(HAVE_OPENGL)
+            extern bool option_nogamma;
+            option_nogamma = true;
+#endif
+
             changed = true;
         }
 

@@ -378,6 +378,12 @@ static void initialize_application(void)
 		graphics_preferences->screen_mode.fullscreen = false;
 	write_preferences();
 
+// ZZZ: disable gamma fading in Mac OS X software rendering
+#if defined(__APPLE__) && defined(__MACH__)
+        if(graphics_preferences->screen_mode.acceleration == _no_acceleration)
+            option_nogamma = true;
+#endif
+
 	// Initialize everything
 	initialize_fonts();
 	initialize_sound_manager(sound_preferences);
