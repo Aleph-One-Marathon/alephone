@@ -12,6 +12,9 @@
 
 Jan 5, 2001 (Loren Petrich):
 	Added a "file" field, for containing font filenames
+
+Jan 14, 2001 (Loren Petrich):
+	Removed the style definitions; will use styleNormal, styleBold, etc. from csfonts.h 
 */
 
 
@@ -26,11 +29,6 @@ Jan 5, 2001 (Loren Petrich):
 struct FontSpecifier
 {
 	enum {
-		// Text styles (additive); these are MacOS style-flag values
-		Normal = 0,
-		Bold = 1,
-		Italic = 2,
-		Underline = 4,
 		// How many characters
 		NameSetLen = 64
 	};

@@ -40,11 +40,13 @@ Dec 17, 2000 (Loren Petrich):
 #include "cseries.h"
 
 #ifdef HAVE_OPENGL
-# ifdef mac
-#  include <agl.h>
-# else
-#  include <GL/gl.h>
-# endif
+
+#if defined(mac)
+#include <agl.h>
+#elif defined(SDL)
+#include <GL/gl.h>
+#endif
+
 #endif
 
 #include "shape_descriptors.h"

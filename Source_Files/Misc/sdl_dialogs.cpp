@@ -207,7 +207,7 @@ static XML_DColorParser TextEntryColorParser(TEXT_ENTRY_COLOR, 3);
 class XML_DFontParser : public XML_ElementParser {
 public:
 	XML_DFontParser(int i) : XML_ElementParser("font"), idx(i) {}
-
+	
 	bool Start()
 	{
 		have_id = have_size = false;

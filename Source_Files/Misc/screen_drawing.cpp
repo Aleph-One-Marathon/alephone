@@ -84,13 +84,13 @@ static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES] =
 // static struct interface_font_info interface_fonts = 
 static FontSpecifier InterfaceFonts[NUMBER_OF_INTERFACE_FONTS] =
 {
-	{"Monaco",   9, FontSpecifier::Bold,  "#4"},
-	{"Monaco",   9, FontSpecifier::Bold,  "#4"},
-	{"Monaco",   9, FontSpecifier::Bold,  "#4"},
-	{"Monaco",   9, FontSpecifier::Normal,"#4"},
-	{"Courier", 12, FontSpecifier::Normal,"#22"},
-	{"Courier", 14, FontSpecifier::Bold,  "#22"},
-	{"Monaco",   9, FontSpecifier::Normal,"#4"}
+	{"Monaco",   9, styleBold,  "#4"},
+	{"Monaco",   9, styleBold,  "#4"},
+	{"Monaco",   9, styleBold,  "#4"},
+	{"Monaco",   9, styleNormal,"#4"},
+	{"Courier", 12, styleNormal,"#22"},
+	{"Courier", 14, styleBold,  "#22"},
+	{"Monaco",   9, styleNormal,"#4"}
 };
 
 

@@ -151,12 +151,13 @@ void FontSpecifier::Update()
 	}
 	
 	// Simply implements format "#<value>"; may want to generalize this
-	short id;
-	sscanf(File+1, "%hd", &id);
+	ID = 0;
+	sscanf(File+1,"%hd",&ID);
+	assert(ID != 0);
 	
 	// Actual loading
 	TextSpec Spec;
-	Spec.font = id;
+	Spec.font = ID;
 	Spec.size = Size;
 	Spec.style = Style;
 	Info = load_font(Spec);
@@ -170,6 +171,7 @@ void FontSpecifier::Update()
 
 // Defined in screen_drawing_sdl.cpp
 extern int text_width(const char *text, const sdl_font_info *font, uint16 style);
+extern int char_width(uint8 c, const sdl_font_info *font, uint16 style);
 
 int FontSpecifier::TextWidth(char *Text)
 {
@@ -218,19 +220,22 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	GetFont(&OldFont);
 	
 	Use();
-	FontInfo Info;
-	GetFontInfo(&Info);
+	FontInfo MFInfo;
+	GetFontInfo(&MFInfo);
 	
-	Ascent = Info.ascent;
-	Descent = Info.descent;
+	Ascent = MFInfo.ascent;
+	Descent = MFInfo.descent;
 	for (int k=0; k<256; k++)
 		Widths[k] = CharWidth(k);
 	
 	SetFont(&OldFont);
 
 #elif defined(SDL)
-	// Get the font widths with SDL
-	return;
+	Ascent = Info->ascent;
+	Descent = Info->descent;
+	for (int k = 0; k < 256; k++)
+		Widths[k] = char_width(k, Info, Style);
+	
 #endif
 		
 	// Put some padding around each glyph so as to avoid clipping it
@@ -314,6 +319,31 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 
 #elif defined(SDL)
 	// Render the font glyphs into the SDL surface
+	SDL_Surface *FontSurface = SDL_CreateRGBSurface(SDL_HWSURFACE, TxtrWidth, TxtrHeight, 32, 
+														0xFF, 0xFF, 0xFF, 0xFF);
+	if (SDL_MUSTLOCK(FontSurface))
+		SDL_LockSurface(FontSurface);
+	
+	// Set background to black
+	SDL_FillRect(FontSurface, NULL, SDL_MapRGB(FontSurface->format, 0, 0, 0));
+	Uint32 White = SDL_MapRGB(FontSurface->format, 0xFF, 0xFF, 0xFF);
+	
+	// Copy to surface
+	for (int k = 0; k <= LastLine; k++)
+	{
+		int Which = CharStarts[k];
+		int VPos = (k * GlyphHeight) + Ascent;
+		int HPos = Pad;
+		for (int m = 0; m < CharCounts[k]; m++)
+		{
+			// Make a C string out of the character
+			char Text[2];
+			Text[0] = Which;
+			Text[1] = 0;
+			::draw_text(FontSurface, Text, HPos, VPos, White, Info, Style);
+			HPos += Widths[Which++];
+		}
+	}
 #endif
  	
  	// Non-MacOS-specific: allocate the texture buffer
@@ -335,7 +365,6 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  			*(DstPxl++) = 0xff;	// Base color: white (will be modified with glColorxxx())
  			*(DstPxl++) = *SrcPxl;
  			SrcPxl += 4;
- 			// *(DstPxl++) = *(SrcPxl++);
  		}
  	}
  	
@@ -345,6 +374,25 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 
 #elif defined(SDL)
 	// Copy the SDL surface into the OpenGL texture
+	uint8 *PixBase = FontSurface->pixels;
+	int Stride = FontSurface->pitch;
+ 	
+ 	for (int k=0; k<TxtrHeight; k++)
+ 	{
+ 		uint8 *SrcPxl = PixBase + k*Stride + 1;	// Use one of the middle channels (red or green or blue)
+ 		uint8 *DstPxl = OGL_Texture + 2*k*TxtrWidth;
+ 		for (int m=0; m<TxtrWidth; m++)
+ 		{
+ 			*(DstPxl++) = 0xff;	// Base color: white (will be modified with glColorxxx())
+ 			*(DstPxl++) = *SrcPxl;
+ 			SrcPxl += 4;
+  		}
+ 	}
+	
+	// Clean up
+	if (SDL_MUSTLOCK(FontSurface))
+		SDL_UnlockSurface(FontSurface);
+	SDL_FreeSurface(FontSurface);
 #endif
 	
 	// OpenGL stuff starts here 	
