@@ -151,7 +151,7 @@ FileError find_other_entries_that_reference_checksum(
 	private_data.base_checksum= checksum;
 	
 	/* Clear out the find_file pb */
-	memset(&pb, 0, sizeof(struct find_file_pb));
+	objlist_clear(pb);
 	
 	/* Set the information */
 	pb.version= 0;
@@ -248,7 +248,7 @@ OSErr get_directories_parID(
 	OSErr error;
 
 	/* Clear it.  Always a good thing */
-	memset(&pb, 0, sizeof(pb));
+	obj_clear(pb);
 	pb.dirInfo.ioNamePtr= directory->name;
 	pb.dirInfo.ioVRefNum= directory->vRefNum;
 	pb.dirInfo.ioDrDirID= directory->parID;
