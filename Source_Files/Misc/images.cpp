@@ -506,33 +506,21 @@ bool image_file_t::make_rsrc_from_pict(void *data, long length, LoadedResource &
 		
 		PtrToHand(clut, (Handle *)&clut_handle, 8 + 256 * 8);
 		
-		tmp_ptr = NewPtrClear((bounds.right - bounds.left) * (bounds.bottom - bounds.top));
-		BlockMove((uint8 *)data + 10, tmp_ptr, GetPtrSize(tmp_ptr));
-		
-		QTNewGWorldFromPtr(&gworld, k8IndexedPixelFormat, &bounds, clut_handle, NULL, 0, tmp_ptr, head->bounds.right - head->bounds.left);
+		QTNewGWorldFromPtr(&gworld, k8IndexedPixelFormat, &bounds, clut_handle, NULL, 0, (uint8 *)data + 10, head->bounds.right - head->bounds.left);
 		
 		free(clut);
 		DisposeHandle((Handle)clut_handle);
 	}
 	else if (head->depth == 16)
 	{
-		tmp_ptr = NewPtrClear(((bounds.right - bounds.left) * (bounds.bottom - bounds.top)) * 2);
-		BlockMove((uint8 *)data + 10, tmp_ptr, GetPtrSize(tmp_ptr));
-		
 		QTNewGWorldFromPtr(&gworld, k16BE555PixelFormat, &bounds, NULL, NULL, 0, (uint8 *)data + 10, (head->bounds.right - head->bounds.left) * 2);
 	}
 	else if (head->depth == 24)
 	{
-		tmp_ptr = NewPtrClear(((bounds.right - bounds.left) * (bounds.bottom - bounds.top)) * 3);
-		BlockMove((uint8 *)data + 10, tmp_ptr, GetPtrSize(tmp_ptr));
-		
 		QTNewGWorldFromPtr(&gworld, k24RGBPixelFormat, &bounds, NULL, NULL, 0, (uint8 *)data + 10, (head->bounds.right - head->bounds.left) * 3);
 	}
 	else if (head->depth == 32)
 	{
-		tmp_ptr = NewPtrClear(((bounds.right - bounds.left) * (bounds.bottom - bounds.top)) * 4);
-		BlockMove((uint8 *)data + 10, tmp_ptr, GetPtrSize(tmp_ptr));
-		
 		QTNewGWorldFromPtr(&gworld, k32ARGBPixelFormat, &bounds, NULL, NULL, 0, (uint8 *)data + 10, (head->bounds.right - head->bounds.left) * 4);
 	}
 	else
