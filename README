@@ -74,6 +74,13 @@ Unix:
 
    $ alephone
 
+  If you have installed the Marathon Demo data RPM packages, start Aleph One
+  like this
+
+   $ /usr/share/AlephOne_m2_demo/start
+  or
+   $ /usr/share/AlephOne_minf_demo/start
+
 BeOS:
   To start Aleph One, double click the "AlephOne" application icon. If you want
   to specify arguments or see error messages, you will have to start it from the

@@ -9,13 +9,12 @@ URL: http://www.uni-mainz.de/~bauec002/A1Main.html
 Vendor: Bungie Software Corporation
 BuildRoot: %{_tmppath}/%{name}-root
 BuildArchitectures: noarch
-Requires: AlephOne >= 0.11
 Provides: AlephOne-core-data
 # not relocatable because of absolute paths in "start" script
 
 %description
 This package contains shape, sound, and map information from Bungie
-Software's Marathon 2 Demo. It can be used as AlephOne's ``core data''--
+Software's Marathon 2 Demo. It can be used as AlephOne's "core data"--
 the foundation upon which other maps can be built -- in addition to
 providing the Marathon 2 Demo itself, a fun (if short) series of levels.
 
@@ -40,6 +39,7 @@ tar zxf %{_sourcedir}/AlephOne-m2-demo.tar.gz
 %{_prefix}/share/AlephOne_m2_demo/Shapes
 %{_prefix}/share/AlephOne_m2_demo/Sounds
 %{_prefix}/share/AlephOne_m2_demo/MML/*.mml
+%{_prefix}/share/AlephOne_m2_demo/MML
 
 
 %changelog

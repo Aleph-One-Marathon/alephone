@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 			unpack_directory_data(p, &d);
 
 			printf("  level name '%s'\n", d.level_name);
-			printf("  mission flags:\n");
+			printf("  mission flags 0x%08x:\n", d.mission_flags);
 			if (d.mission_flags == 0)
 				printf("    none\n");
 			else {
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 				if (d.mission_flags & _mission_rescue)
 					printf("    rescue\n");
 			}
-			printf("  environment flags:\n");
+			printf("  environment flags 0x%08x:\n", d.environment_flags);
 			if (d.environment_flags == 0)
 				printf("    none\n");
 			else {
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 				if (d.environment_flags & _environment_low_gravity)
 					printf("    low gravity\n");
 			}
-			printf("  entry point flags:\n");
+			printf("  entry point flags 0x%08x:\n", d.entry_point_flags);
 			if (d.entry_point_flags == 0)
 				printf("    none\n");
 			else {

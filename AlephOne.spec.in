@@ -57,9 +57,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/alephone
 %{_datadir}/AlephOne/Fonts
 %{_datadir}/AlephOne/MML/*.mml
+%{_datadir}/AlephOne/MML
 %{_datadir}/AlephOne/Themes/Default/*.bmp
 %{_datadir}/AlephOne/Themes/Default/resources
 %{_datadir}/AlephOne/Themes/Default/theme.mml
+%{_datadir}/AlephOne/Themes/Default
 
 %changelog
 * Thu Oct  5 2000 Christian Bauer <Christian.Bauer@uni-mainz.de>
