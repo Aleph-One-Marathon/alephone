@@ -273,8 +273,8 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 				else
 				{
 					// Overdamped case
-					float NewDampAbs = fabsf(New_Damping);
-					BadValue = ((NewDampAbs + sqrtf(-New_Spring)) >= 1);
+					float NewDampAbs = fabs(New_Damping);
+					BadValue = ((NewDampAbs + sqrt(-New_Spring)) >= 1);
 					if (BadValue)
 					{
 						float Temp = 1 - NewDampAbs;
