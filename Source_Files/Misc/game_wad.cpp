@@ -1210,16 +1210,22 @@ bool save_game_file(FileSpecifier& File)
 	revert_game_data.game_is_from_disk= true;
 	revert_game_data.SavedGame = File;
 	
-	// LP: add a file here
+	// LP: add a file here; use temporary file for a safe save.
+	// Write into the temporary file first
+	FileSpecifier TempFile;
+	DirectorySpecifier TempFileDir;
+	File.ToDirectory(TempFileDir);
+	TempFile.FromDirectory(TempFileDir);
+	TempFile.SetName("savetemp.dat",NONE);
 	
 	/* Fill in the default wad header */
-	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
+	fill_default_wad_header(TempFile, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
 		
 	/* Assume that we confirmed on save as... */
-	if (create_wadfile(File,_typecode_savegame))
+	if (create_wadfile(TempFile,_typecode_savegame))
 	{
 		OpenedFile SaveFile;
-		if(open_wad_file_for_writing(File,SaveFile))
+		if(open_wad_file_for_writing(TempFile,SaveFile))
 		{
 			/* Write out the new header */
 			if (write_wad_header(SaveFile, &header))
@@ -1259,6 +1265,18 @@ bool save_game_file(FileSpecifier& File)
 
 			err = SaveFile.GetError();
 			close_wad_file(SaveFile);
+		}
+		
+		// LP addition: exchange with temporary file;
+		// create target file if necessary
+		if (!err)
+		{
+			if (!File.Exists())
+				create_wadfile(File,_typecode_savegame);
+			
+			TempFile.Exchange(File);
+			TempFile.Delete();
+			err = TempFile.GetError();
 		}
 	}
 	
