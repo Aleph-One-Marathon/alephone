@@ -106,9 +106,10 @@ ActionQueues::enqueueActionFlags(
 	{
 		queue->buffer[queue->write_index]= *action_flags++;
 		queue->write_index= (queue->write_index+1) % mQueueSize;
-		if (queue->write_index==queue->read_index) dprintf("blew player %d’s queue at %p;g;", player_index, queue);
+		if (queue->write_index==queue->read_index)
+			fdprintf("blew player %d’s queue", player_index);
 	}
-
+	
 	return;
 }
 
@@ -134,6 +135,7 @@ ActionQueues::dequeueActionFlags(
 	{
 		// None to be read
 		action_flags= 0;
+		fdprintf("dequeueing empty ActionQueue for player %d", player_index);
 	}
 	else
 	{
