@@ -400,16 +400,18 @@ void ModelRenderer::Render(Model3D& Model, bool Use_Z_Buffer, ModelRenderShader 
 	GLushort *VIPtr = Model.VIBase();
 	for (int k=0; k<NumTriangles; k++)
 	{
-		GLfloat Sum = 0;
+		GLfloat Sum[3] = {0, 0, 0};
 		for (int v=0; v<3; v++)
 		{
 			GLfloat *Pos = &Model.Positions[3*(*VIPtr)];
-			for (int w=0; w<3; w++)
-				Sum += Pos[w]*ViewDirection[w];
+			Sum[0] += Pos[0];
+			Sum[1] += Pos[1];
+			Sum[2] += Pos[2];
 			VIPtr++;
 		}
 		Indices[k] = k;
-		CentroidDepths[k] = Sum;
+		CentroidDepths[k] =
+			Sum[0]*ViewDirection[0] + Sum[1]*ViewDirection[1] + Sum[2]*ViewDirection[2];
 	}
 	
 	// Sort!
