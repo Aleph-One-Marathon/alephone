@@ -485,7 +485,7 @@ static void default_player_preferences(
 {
 	struct player_preferences_data *prefs=(struct player_preferences_data *)preferences;
 
-	memset(prefs, 0, sizeof(struct player_preferences_data));
+	obj_clear(*prefs);
 
 #ifdef mac
 	GetDateTime(&prefs->last_time_ran);
@@ -1169,10 +1169,10 @@ static void hit_input_item(
 			{
 				short key_codes[NUMBER_OF_KEYS];
 				
-				memcpy(key_codes, preferences->keycodes, NUMBER_OF_KEYS*sizeof(short));
+				objlist_copy(key_codes, preferences->keycodes, NUMBER_OF_KEYS);
 				if(configure_key_setup(key_codes))
 				{
-					memcpy(preferences->keycodes, key_codes, NUMBER_OF_KEYS*sizeof(short));
+					objlist_copy(preferences->keycodes, key_codes, NUMBER_OF_KEYS);
 					set_keys(key_codes);
 				}
 			}
@@ -1224,14 +1224,14 @@ static void default_environment_preferences(
 {
 	struct environment_preferences_data *prefs= (struct environment_preferences_data *)preferences;
 
-	memset(prefs, NONE, sizeof(struct environment_preferences_data));
+	obj_set(*prefs, NONE);
 
 	FileSpecifier DefaultFile;
 	
 	get_default_map_spec(DefaultFile);
 	prefs->map_checksum= read_wad_file_checksum(DefaultFile);
 #ifdef mac
-	memcpy(&prefs->map_file, &DefaultFile.GetSpec(), sizeof(FSSpec));
+	obj_copy(prefs->map_file, DefaultFile.GetSpec());
 #else
 	DefaultFile.GetName(prefs->map_file);
 #endif
@@ -1239,7 +1239,7 @@ static void default_environment_preferences(
 	get_default_physics_spec(DefaultFile);
 	prefs->physics_checksum= read_wad_file_checksum(DefaultFile);
 #ifdef mac
-	memcpy(&prefs->physics_file, &DefaultFile.GetSpec(), sizeof(FSSpec));
+	obj_copy(prefs->physics_file, DefaultFile.GetSpec());
 #else
 	DefaultFile.GetName(prefs->physics_file);
 #endif
@@ -1249,7 +1249,7 @@ static void default_environment_preferences(
 	prefs->shapes_mod_date = DefaultFile.GetDate();
 	// prefs->shapes_mod_date= get_file_modification_date(&DefaultFile.Spec);
 #ifdef mac
-	memcpy(&prefs->shapes_file, &DefaultFile.GetSpec(), sizeof(FSSpec));
+	obj_copy(prefs->shapes_file, DefaultFile.GetSpec());
 #else
 	DefaultFile.GetName(prefs->shapes_file);
 #endif
@@ -1259,7 +1259,7 @@ static void default_environment_preferences(
 	prefs->sounds_mod_date = DefaultFile.GetDate();
 	// prefs->sounds_mod_date= get_file_modification_date(&DefaultFile.Spec);
 #ifdef mac
-	memcpy(&prefs->sounds_file, &DefaultFile.GetSpec(), sizeof(FSSpec));
+	obj_copy(prefs->sounds_file, DefaultFile.GetSpec());
 #else
 	DefaultFile.GetName(prefs->sounds_file);
 #endif
