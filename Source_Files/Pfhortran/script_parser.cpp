@@ -303,7 +303,7 @@ bool P_HashTable::GetEntry(const char *String, float& val, short& mode)
 		// Is it possible to proceed any further?
 		size_t NextIndx = Table[Indx].NextIndx;
 		
-		if (NextIndx == NONE)
+		if (NextIndx == UNONE)
 		{
 			// Can't do so; we didn't find it
 			// fdprintf("!!! %s",String);

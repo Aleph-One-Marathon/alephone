@@ -2730,6 +2730,7 @@ void s_Monster_Set_Weakness(script_instruction inst)
 		monsterIndex = (short)get_variable(int(inst.op1));
 		damageType = (int16)get_variable(int(inst.op2));
 		theValue = (int)inst.op3;
+		break;
 	case 5:
 		monsterIndex = (short)get_variable(int(inst.op1));
 		damageType = (int16)inst.op2;
@@ -2829,6 +2830,7 @@ void s_Monster_Set_Friend(script_instruction inst)
 		monsterIndex = (short)get_variable(int(inst.op1));
 		monsterClass = (int16)get_variable(int(inst.op2));
 		theValue = (int)inst.op3;
+		break;
 	case 5:
 		monsterIndex = (short)get_variable(int(inst.op1));
 		monsterClass = (int16)inst.op2;
@@ -2930,6 +2932,7 @@ void s_Monster_Set_Enemy(script_instruction inst)
 		monsterIndex = (short)get_variable(int(inst.op1));
 		monsterClass = (int16)get_variable(int(inst.op2));
 		theValue = (int)inst.op3;
+		break;
 	case 5:
 		monsterIndex = (short)get_variable(int(inst.op1));
 		monsterClass = (int16)inst.op2;
@@ -2987,6 +2990,7 @@ void s_Monster_Get_Item(script_instruction inst)
 	case 3:
 	case 7:
 		monsterIndex = (short)get_variable(int(inst.op1));
+		break;
 	default:
 		dprintf("First and second arguments of Monster_Get_Item must be variables\n");
 	return; 
@@ -3072,11 +3076,12 @@ void s_Get_Monster_Poly(script_instruction inst)
 {
 	int monster_index;
 	
-	if (inst.mode != 4) return;
+	if (inst.mode != 3 && inst.mode != 7) return;
 	
 	monster_index = int(get_variable(int(inst.op1)));
 	
-	struct monster_data *theMonster = get_monster_data(monster_index);
+	struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+	if(!SLOT_IS_USED(theMonster)) return;
 	struct object_data *object= get_object_data(theMonster->object_index);
 	
 	set_variable(int(inst.op2), object->polygon);
@@ -3516,19 +3521,22 @@ void s_Monster_Get_Action(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 2:
+		case 6:
 			monster_index = int(inst.op1);
 			break;
 		
 		case 3:
+		case 7:
 			monster_index = int(get_variable(int(inst.op1)));
 			break;
 		
 		default:
-			dprintf("Argument 1 of Monster_Get_Action must be a variable\n");
+			dprintf("Argument 2 of Monster_Get_Action must be a variable\n");
 			return;
 	}
 	
-	struct monster_data *theMonster = get_monster_data(monster_index);
+	struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+	if(!SLOT_IS_USED(theMonster)) return;
 	if (theMonster)
 		set_variable(int(inst.op2), theMonster->action);
 }
@@ -3540,19 +3548,21 @@ void s_Monster_Get_Mode(script_instruction inst)
 	switch(inst.mode)
 	{
 		case 2:
+		case 6:
 			monster_index = int(inst.op1);
 			break;
 		
 		case 3:
+		case 7:
 			monster_index = int(get_variable(int(inst.op1)));
 			break;
 		
 		default:
-			dprintf("Argument 1 of Monster_Get_Mode must be a variable\n");
+			dprintf("Argument 2 of Monster_Get_Mode must be a variable\n");
 			return;
 	}
 	
-	struct monster_data *theMonster = get_monster_data(monster_index);
+	struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if (theMonster && SLOT_IS_USED(theMonster))
 		set_variable(int(inst.op2), theMonster->mode);
 }
@@ -3576,7 +3586,7 @@ void s_Monster_Get_Vitality(script_instruction inst)
 			return;
 	}
 	
-	struct monster_data *theMonster = get_monster_data(monster_index);
+	struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if (theMonster && SLOT_IS_USED(theMonster))
 		set_variable(int(inst.op2), theMonster->vitality);
 }
@@ -3613,7 +3623,7 @@ void s_Monster_Set_Vitality(script_instruction inst)
 			return;
 	}
 	
-	struct monster_data *theMonster = get_monster_data(monster_index);
+	struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if (theMonster && SLOT_IS_USED(theMonster))
 		theMonster->vitality = vitality;	
 }
