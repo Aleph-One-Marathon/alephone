@@ -1,13 +1,14 @@
 /*
 Created 5-20-03 by Matthew Hielscher
 Controls the loading and execution of Lua scripts.
+
+Matthew Hielscher, 05-28-03
+    Changed the error code to be much more graceful (no more quitting after an error)
+    Also incorporated tiennou's functions
 */
 
-static int dummy;
-
-#include "cseries.h"
-
 #ifdef HAVE_LUA
+
 extern "C"
 {
     #include "lua.h"
@@ -17,7 +18,9 @@ extern "C"
 
 #include <string>
 using namespace std;
+#include <stdlib.h>
 
+#include "cseries.h"
 #include "screen.h"
 #include "tags.h"
 #include "player.h"
@@ -32,8 +35,12 @@ using namespace std;
 #include "monsters.h"
 #include "flood_map.h"
 #include "vbl.h"
+#include "fades.h"
+#include "physics_models.h"
+#include "Crosshairs.h"
 #include "OGL_Setup.h"
 #include "mysound.h"
+#include "world.h"
 
 #include "script_instructions.h"
 #include "lua_script.h"
@@ -42,9 +49,12 @@ using namespace std;
 #include "item_definitions.h"
 #include "monster_definitions.h"
 
+// LP: used by several functions here
+const float AngleConvert = 360/float(FULL_CIRCLE);
+
 // Steal all this stuff
 extern bool ready_weapon(short player_index, short weapon_index);
-extern void DisplayText(short BaseX, short BaseY, const char *Text);
+extern void DisplayText(short BaseX, short BaseY, char *Text);
 
 extern void advance_monster_path(short monster_index);
 extern long monster_pathfinding_cost_function(short source_polygon_index, short line_index,
@@ -54,6 +64,10 @@ extern void set_monster_mode(short monster_index, short new_mode, short target_i
 
 extern void ShootForTargetPoint(bool ThroughWalls, world_point3d& StartPosition, world_point3d& EndPosition, short& Polygon);
 extern void select_next_best_weapon(short player_index);
+extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
+extern void draw_panels();
+
+extern bool MotionSensorActive;
 
 struct monster_pathfinding_data
 {
@@ -65,6 +79,8 @@ struct monster_pathfinding_data
 
 extern ActionQueues *sPfhortranActionQueues;
 extern struct view_data *world_view;
+extern struct static_data *static_world;
+extern short old_size;
 
 // globals
 lua_State *state;
@@ -75,6 +91,8 @@ static vector<short> IntersectedObjects;
 vector<lua_camera> lua_cameras;
 int number_of_cameras = 0;
 
+uint32 *action_flags;
+
 double FindLinearValue(double startValue, double endValue, double timeRange, double timeTaken)
 {
     return (((endValue-startValue)/timeRange)*timeTaken)+startValue;
@@ -83,9 +101,9 @@ double FindLinearValue(double startValue, double endValue, double timeRange, dou
 world_point3d FindLinearValue(world_point3d startPoint, world_point3d endPoint, double timeRange, double timeTaken)
 {
     world_point3d realPoint;
-    realPoint.x = (((double)(endPoint.x-startPoint.x)/timeRange)*timeTaken)+startPoint.x;
-    realPoint.y = (((double)(endPoint.y-startPoint.y)/timeRange)*timeTaken)+startPoint.y;
-    realPoint.z = (((double)(endPoint.z-startPoint.z)/timeRange)*timeTaken)+startPoint.z;
+    realPoint.x = static_cast<int16>(((double)(endPoint.x-startPoint.x)/timeRange)*timeTaken)+startPoint.x;
+    realPoint.y = static_cast<int16>(((double)(endPoint.y-startPoint.y)/timeRange)*timeTaken)+startPoint.y;
+    realPoint.z = static_cast<int16>(((double)(endPoint.z-startPoint.z)/timeRange)*timeTaken)+startPoint.z;
     return realPoint;
 }
 
@@ -123,7 +141,8 @@ void L_Call_Init()
         lua_pop(state, 1);
         return;
     }
-    lua_call(state, 0, 0);
+    if (lua_pcall(state, 0, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
 void L_Call_Idle()
@@ -137,10 +156,11 @@ void L_Call_Idle()
         lua_pop(state, 1);
         return;
     }
-    lua_call(state, 0, 0);
+    if (lua_pcall(state, 0, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
-void L_Call_Tag_Switch(short tag)
+void L_Call_Tag_Switch(short tag, short player_index)
 {
     if (!lua_running)
         return;
@@ -152,10 +172,12 @@ void L_Call_Tag_Switch(short tag)
         return;
     }
     lua_pushnumber(state, tag);
-    lua_call(state, 1, 0);
+    lua_pushnumber(state, player_index);
+    if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
-void L_Call_Light_Switch(short light)
+void L_Call_Light_Switch(short light, short player_index)
 {
     if (!lua_running)
         return;
@@ -167,10 +189,12 @@ void L_Call_Light_Switch(short light)
         return;
     }
     lua_pushnumber(state, light);
-    lua_call(state, 1, 0);
+    lua_pushnumber(state, player_index);
+    if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
-void L_Call_Platform_Switch(short platform)
+void L_Call_Platform_Switch(short platform, short player_index)
 {
     if (!lua_running)
         return;
@@ -182,10 +206,12 @@ void L_Call_Platform_Switch(short platform)
         return;
     }
     lua_pushnumber(state, platform);
-    lua_call(state, 1, 0);
+    lua_pushnumber(state, player_index);
+    if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
-void L_Call_Terminal_Enter(short terminal_id)
+void L_Call_Terminal_Enter(short terminal_id, short player_index)
 {
     if (!lua_running)
         return;
@@ -197,10 +223,12 @@ void L_Call_Terminal_Enter(short terminal_id)
         return;
     }
     lua_pushnumber(state, terminal_id);
-    lua_call(state, 1, 0);
+    lua_pushnumber(state, player_index);
+    if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
-void L_Call_Terminal_Exit(short terminal_id)
+void L_Call_Terminal_Exit(short terminal_id, short player_index)
 {
     if (!lua_running)
         return;
@@ -212,10 +240,12 @@ void L_Call_Terminal_Exit(short terminal_id)
         return;
     }
     lua_pushnumber(state, terminal_id);
-    lua_call(state, 1, 0);
+    lua_pushnumber(state, player_index);
+    if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
-void L_Call_Pattern_Buffer(short buffer_id)
+void L_Call_Pattern_Buffer(short buffer_id, short player_index)
 {
     if (!lua_running)
         return;
@@ -227,10 +257,12 @@ void L_Call_Pattern_Buffer(short buffer_id)
         return;
     }
     lua_pushnumber(state, buffer_id);
-    lua_call(state, 1, 0);
+    lua_pushnumber(state, player_index);
+    if (lua_pcall(state, 2, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
-void L_Call_Got_Item(short type)
+void L_Call_Got_Item(short type, short player_index)
 {
     if (!lua_running)
         return;
@@ -242,7 +274,9 @@ void L_Call_Got_Item(short type)
         return;
     }
     lua_pushnumber(state, type);
-    lua_call(state, 1, 0);
+    lua_pushnumber(state, player_index);
+    if (lua_pcall(state, 1, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
 void L_Call_Light_Activated(short index)
@@ -257,7 +291,8 @@ void L_Call_Light_Activated(short index)
         return;
     }
     lua_pushnumber(state, index);
-    lua_call(state, 1, 0);
+    if (lua_pcall(state, 1, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
 void L_Call_Platform_Activated(short index)
@@ -272,7 +307,8 @@ void L_Call_Platform_Activated(short index)
         return;
     }
     lua_pushnumber(state, index);
-    lua_call(state, 1, 0);
+    if (lua_pcall(state, 1, 0, 0)==LUA_ERRRUN)
+        logError(lua_tostring(state,-1));
 }
 
 static int L_Number_of_Players(lua_State *L)
@@ -280,55 +316,81 @@ static int L_Number_of_Players(lua_State *L)
     lua_pushnumber(L, dynamic_world->player_count);
     return 1;
 }
+static int L_Local_Player_Index(lua_State *L)
+{
+    lua_pushnumber(L, local_player_index);
+    return 1;
+}
+
+static int L_Player_To_Monster_Index(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "player_to_monster_index: incorrect argument type");
+        lua_error(L);
+    }
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "player_to_monster_index: invalid player index");
+        lua_error(L);
+    }
+    player_data *player = get_player_data(player_index);
+    lua_pushnumber(L, player->monster_index);
+    return 1;
+}
+
 
 static int L_Screen_Print(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isstring(L,2))
     {
-        logError("screen_print: incorrect argument type");
         lua_pushstring(L, "screen_print: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
     if (local_player_index != player_index)
         return 0;
     screen_printf(lua_tostring(L, 2));
     return 0;
 }
-
+/*
 static int L_Display_Text(lua_State *L)
 {
-    if (!lua_isnumber(L,1) || !lua_isstring(L,2) || !lua_isnumber(L,3) || !lua_isnumber(L,3))
+    if (!lua_isnumber(L,1) || !lua_isstring(L,2) || !lua_isnumber(L,3) || !lua_isnumber(L,4))
     {
-        logError("display_text: incorrect argument type");
         lua_pushstring(L, "display_text: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
     if (local_player_index != player_index)
         return 0;
-    short x = lua_tonumber(L,3);
-    short y = lua_tonumber(L,4);
+    short x = static_cast<int>(lua_tonumber(L,3));
+    short y = static_cast<int>(lua_tonumber(L,4));
     DisplayText(x, y, lua_tostring(L, 2));
     screen_printf(lua_tostring(L,2));
     return 0;
 }
-
+*/
 static int L_Inflict_Damage(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
-        logError("inflict_damage: incorrect argument type");
         lua_pushstring(L, "inflict_damage: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "inflict_damage: invalid player index");
+        lua_error(L);
+    }
     player_data *player = get_player_data(player_index);
     if (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player))
         return 0;
 
     struct damage_definition damage;
-    float temp = lua_tonumber(L,2);
+    float temp = static_cast<int>(lua_tonumber(L,2));
 
     damage.flags= _alien_damage;
     damage.type= _damage_crushing;
@@ -345,11 +407,15 @@ static int L_Enable_Player(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {	
-        logError("enable_player: incorrect argument type");
         lua_pushstring(L, "enable_player: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "enable_player: invalid player index");
+        lua_error(L);
+    }
     player_data *player = get_player_data(player_index);
     
     if (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player))
@@ -362,11 +428,15 @@ static int L_Disable_Player(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {	
-        logError("disable_player: incorrect argument type");
         lua_pushstring(L, "disable_player: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "disable_player: invalid player index");
+        lua_error(L);
+    }
     player_data *player = get_player_data(player_index);
     
     if (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player))
@@ -380,7 +450,7 @@ static int L_Kill_Script(lua_State *L)
     lua_running = false;
     return 0;
 }
-/* This is not worth its trouble for now.
+
 static int L_Hide_Interface(lua_State *L)
 {
     if (!lua_isnumber(L,1))
@@ -388,10 +458,9 @@ static int L_Hide_Interface(lua_State *L)
         lua_pushstring(L, "hide_interface: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    player_data *player = get_player_data(player_index);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
     
-    if (local_player != player)
+    if (local_player_index != player_index)
         return 0;
     
     screen_mode_data *the_mode;
@@ -414,10 +483,9 @@ static int L_Show_Interface(lua_State *L)
         lua_pushstring(L, "show_interface: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    player_data *player = get_player_data(player_index);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
     
-    if (local_player != player)
+    if (local_player_index != player_index)
         return 0;
     
     screen_mode_data *the_mode;
@@ -432,17 +500,16 @@ static int L_Show_Interface(lua_State *L)
     
     return 0;
 }
-*/
+
 static int L_Set_Tag_State(lua_State *L)
 {
-    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    if (!lua_isnumber(L,1))
     {	
-        logError("set_tag_state: incorrect argument type");
         lua_pushstring(L, "set_tag_state: incorrect argument type");
         lua_error(L);
     }
-    int tag = lua_tonumber(L,1);
-    int tag_state = lua_tonumber(L,2);
+    int tag = static_cast<int>(lua_tonumber(L,1));
+    bool tag_state = lua_toboolean(L,2);
     
     set_tagged_light_statuses(int16(tag), (tag_state < -0.5) || (tag_state > 0.5));
     try_and_change_tagged_platform_states(int16(tag), (tag_state < -0.5) || (tag_state > 0.5)); 
@@ -463,11 +530,10 @@ static int L_Get_Tag_State(lua_State *L)
     
     if (!lua_isnumber(L,1))
     {	
-        logError("get_tag_state: incorrect argument type");
         lua_pushstring(L, "get_tag_state: incorrect argument type");
         lua_error(L);
     }
-    tag = lua_tonumber(L,1);
+    tag = static_cast<int>(lua_tonumber(L,1));
     
     for (light_index= 0, light= lights; light_index<MAXIMUM_LIGHTS_PER_MAP; ++light_index, ++light)
     {
@@ -496,11 +562,7 @@ static int L_Get_Tag_State(lua_State *L)
     
     }
     
-    if (changed)
-        lua_pushnumber(L, 1);
-    else
-        lua_pushnumber(L, 0);
-    
+    lua_pushboolean(L, changed);
     return 1;
 }
 
@@ -508,13 +570,17 @@ static int L_Get_Life(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {	
-        logError("get_life: incorrect argument type");
         lua_pushstring(L, "get_life: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "get_life: invalid player index");
+        lua_error(L);
+    }
+        
     player_data *player = get_player_data(player_index);
-    
     lua_pushnumber(L, player->suit_energy);
     return 1;
 }
@@ -523,12 +589,17 @@ static int L_Set_Life(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
-        logError("set_life: incorrect argument type");
         lua_pushstring(L, "set_life: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    int energy = lua_tonumber(L,2);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int energy = static_cast<int>(lua_tonumber(L,2));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "set_life: invalid player index");
+        lua_error(L);
+    }
+    
     player_data *player = get_player_data(player_index);
     
     player->suit_energy = energy;
@@ -540,11 +611,16 @@ static int L_Get_Oxygen(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {	
-        logError("get_oxygen: incorrect argument type");
         lua_pushstring(L, "get_oxygen: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "get_oxygen: invalid player index");
+        lua_error(L);
+    }
+    
     player_data *player = get_player_data(player_index);
     
     lua_pushnumber(L, player->suit_oxygen);
@@ -555,12 +631,17 @@ static int L_Set_Oxygen(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
-        logError("set_oxygen: incorrect argument type");
         lua_pushstring(L, "set_oxygen: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    int oxygen = lua_tonumber(L,2);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int oxygen = static_cast<int>(lua_tonumber(L,2));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "set_oxygen: invalid player index");
+        lua_error(L);
+    }
+    
     player_data *player = get_player_data(player_index);
     
     player->suit_oxygen = oxygen;
@@ -570,14 +651,19 @@ static int L_Set_Oxygen(lua_State *L)
 
 static int L_Add_Item(lua_State *L)
 {
-    if (!lua_isnumber(L,1) || !lua_tonumber(L,2))
+    if (!lua_isnumber(L,1) || !static_cast<int>(lua_tonumber(L,2)))
     {	
-        logError("add_item: incorrect argument type");
         lua_pushstring(L, "add_item: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    int item = lua_tonumber(L,2);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int item = static_cast<int>(lua_tonumber(L,2));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "add_item: invalid player index");
+        lua_error(L);
+    }
+    
     player_data *player = get_player_data(player_index);
     
     if (!try_and_add_player_item(player_identifier_to_player_index(player->identifier), item))
@@ -589,12 +675,16 @@ static int L_Remove_Item(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
-        logError("remove_item: incorrect argument type");
         lua_pushstring(L, "remove_item: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    int item_type = lua_tonumber(L,2);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int item_type = static_cast<int>(lua_tonumber(L,2));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "remove_item: invalid player index");
+        lua_error(L);
+    }
     player_data *player = get_player_data(player_index);
     
     struct item_definition *definition= get_item_definition_external(item_type);
@@ -612,14 +702,18 @@ static int L_Remove_Item(lua_State *L)
 
 static int L_Select_Weapon(lua_State *L)
 {
-    if (!lua_isnumber(L,1) || !lua_tonumber(L,2))
+    if (!lua_isnumber(L,1) || !static_cast<int>(lua_tonumber(L,2)))
     {	
-        logError("select_weapon: incorrect argument type");
         lua_pushstring(L, "select_weapon: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    int weapon_index = lua_tonumber(L,2);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int weapon_index = static_cast<int>(lua_tonumber(L,2));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "select_weapon: invalid player index");
+        lua_error(L);
+    }
     
     ready_weapon(player_index, weapon_index);
     return 0;
@@ -629,11 +723,10 @@ static int L_Set_Fog_Depth(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {	
-        logError("set_fog_depth: incorrect argument type");
         lua_pushstring(L, "set_fog_depth: incorrect argument type");
         lua_error(L);
     }
-    float depth = lua_tonumber(L,1);
+    float depth = static_cast<int>(lua_tonumber(L,1));
     OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = depth;
     return 0;
 }
@@ -642,13 +735,12 @@ static int L_Set_Fog_Color(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
     {	
-        logError("set_fog_color: incorrect argument type");
         lua_pushstring(L, "set_fog_color: incorrect argument type");
         lua_error(L);
     }
-    float r = lua_tonumber(L,1);
-    float g = lua_tonumber(L,2);
-    float b = lua_tonumber(L,3);
+    float r = static_cast<float>(lua_tonumber(L,1));
+    float g = static_cast<float>(lua_tonumber(L,2));
+    float b = static_cast<float>(lua_tonumber(L,3));
     
     rgb_color& Color = OGL_GetFogData(OGL_Fog_AboveLiquid)->Color;
     Color.red = PIN(int(65535*r+0.5),0,65535);
@@ -676,11 +768,10 @@ static int L_Set_Underwater_Fog_Depth(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {	
-        logError("set_underwater_fog_depth: incorrect argument type");
         lua_pushstring(L, "set_underwater_fog_depth: incorrect argument type");
         lua_error(L);
     }
-    float depth = lua_tonumber(L,1);
+    float depth = static_cast<int>(lua_tonumber(L,1));
     OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = depth;
     return 0;
 }
@@ -689,13 +780,12 @@ static int L_Set_Underwater_Fog_Color(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
     {	
-        logError("set_underwater_fog_color: incorrect argument type");
         lua_pushstring(L, "set_underwater_fog_color: incorrect argument type");
         lua_error(L);
     }
-    float r = lua_tonumber(L,1);
-    float g = lua_tonumber(L,2);
-    float b = lua_tonumber(L,3);
+    float r = static_cast<int>(lua_tonumber(L,1));
+    float g = static_cast<int>(lua_tonumber(L,2));
+    float b = static_cast<int>(lua_tonumber(L,3));
     
     rgb_color& Color = OGL_GetFogData(OGL_Fog_AboveLiquid)->Color;
     Color.red = PIN(int(65535*r+0.5),0,65535);
@@ -721,14 +811,18 @@ static int L_Get_Underwater_Fog_Color(lua_State *L)
 
 static int L_Teleport_Player(lua_State *L)
 {
-    if (!lua_isnumber(L,1) || !lua_tonumber(L,2))
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
-        logError("teleport_player: incorrect argument type");
         lua_pushstring(L, "teleport_player: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    int dest = lua_tonumber(L,2);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int dest = static_cast<int>(lua_tonumber(L,2));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "teleport_player: invalid player index");
+        lua_error(L);
+    }
     player_data *player = get_player_data(player_index);
     monster_data *monster= get_monster_data(player->monster_index);
     
@@ -749,22 +843,20 @@ static int L_New_Monster(lua_State *L)
     int args = lua_gettop(L);
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
-        logError("new_monster: incorrect argument type");
         lua_pushstring(L, "new_monster: incorrect argument type");
         lua_error(L);
     }
-    short monster_type = lua_tonumber(L,1);
-    short polygon = lua_tonumber(L,2);
+    short monster_type = static_cast<int>(lua_tonumber(L,1));
+    short polygon = static_cast<int>(lua_tonumber(L,2));
     short facing = 0;
     if (args > 2)
     {
         if (!lua_isnumber(L,3))
         {	
-            logError("new_monster: incorrect argument type");
             lua_pushstring(L, "new_monster: incorrect argument type");
             lua_error(L);
         }
-        short facing = lua_tonumber(L,3);
+        facing = static_cast<int>(lua_tonumber(L,3));
     }
     
     object_location theLocation;
@@ -794,11 +886,9 @@ static int L_New_Monster(lua_State *L)
         return 0;
     lua_pushnumber(L, index);
     
-    const float AngleConvert = 360/float(FULL_CIRCLE);
-    
     monster_data *monster = get_monster_data(index);
     object_data *object = get_object_data(monster->object_index);
-    object->facing = normalize_angle((double)facing/AngleConvert);
+    object->facing = normalize_angle(static_cast<int>((double)facing/AngleConvert));
     
     return 1;
 }
@@ -807,61 +897,65 @@ static int L_Activate_Monster(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {	
-        logError("activate_monster: incorrect argument type");
         lua_pushstring(L, "activate_monster: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
     if (monster_index == -1)
         return 0;
     struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-    if(SLOT_IS_USED(monster))
+    if (!SLOT_IS_USED(monster))
     {
-        if(MONSTER_IS_ACTIVE(monster))
-            activate_monster(monster_index);
+        lua_pushstring(L, "activate_monster: invalid monster index");
+        lua_error(L);
     }
     return 0;
+    if(!MONSTER_IS_ACTIVE(monster))
+        activate_monster(monster_index);
 }
 
 static int L_Deactivate_Monster(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {	
-        logError("deactivate_monster: incorrect argument type");
         lua_pushstring(L, "deactivate_monster: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
     if (monster_index == -1)
         return 0;
     struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-    if(SLOT_IS_USED(monster))
+    if (!SLOT_IS_USED(monster))
     {
-        if(MONSTER_IS_ACTIVE(monster))
-            deactivate_monster(monster_index);
+        lua_pushstring(L, "deactivate_monster: invalid monster index");
+        lua_error(L);
     }
     return 0;
+    if(MONSTER_IS_ACTIVE(monster))
+        deactivate_monster(monster_index);
 }
 
 static int L_Damage_Monster(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
-        logError("damage_monster: incorrect argument type");
         lua_pushstring(L, "damage_monster: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int damage_amount = lua_tonumber(L,2);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int damage_amount = static_cast<int>(lua_tonumber(L,2));
     int damage_type = -1;
     if (lua_gettop(L) == 3 && lua_isnumber(L,3))
-        damage_type = lua_tonumber(L,3);
+        damage_type = static_cast<int>(lua_tonumber(L,3));
     if (monster_index == -1)
-        return 0;
+    {
+        lua_pushstring(L, "damage_monster: invalid monster index");
+        lua_error(L);
+    }
     
     struct damage_definition theDamage;
     struct monster_data *theMonster;
-    if (damage_type != -1)
+    if (damage_type != NONE)
         theDamage.type = damage_type;
     else
         theDamage.type = _damage_fist;
@@ -871,8 +965,11 @@ static int L_Damage_Monster(lua_State *L)
     theDamage.scale = 65536;
     
     theMonster= GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-    if(!SLOT_IS_USED(theMonster))
-        return 0;
+    if (!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "damage_monster: invalid monster index");
+        lua_error(L);
+    }
     damage_monster(monster_index, NONE, NONE, &(get_monster_data(monster_index)->sound_location), &theDamage);
     return 0;
 }
@@ -881,19 +978,21 @@ static int L_Attack_Monster(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
-        logError("attack_monster: incorrect argument type");
         lua_pushstring(L, "attack_monster: incorrect argument type");
         lua_error(L);
     }
-    int attacker_index = lua_tonumber(L,1);
-    int target_index = lua_tonumber(L,2);
+    int attacker_index = static_cast<int>(lua_tonumber(L,1));
+    int target_index = static_cast<int>(lua_tonumber(L,2));
     
     struct monster_data *bully, *poorHelplessVictim;
-    if(attacker_index == -1 || target_index ==-1) return 0;	
+    if(attacker_index == NONE || target_index == NONE) return 0;	
     bully = GetMemberWithBounds(monsters,attacker_index,MAXIMUM_MONSTERS_PER_MAP);
     poorHelplessVictim = GetMemberWithBounds(monsters,target_index,MAXIMUM_MONSTERS_PER_MAP);
-    if(!SLOT_IS_USED(bully) || !SLOT_IS_USED(poorHelplessVictim))
-        return 0;
+    if (!SLOT_IS_USED(bully) || !SLOT_IS_USED(poorHelplessVictim))
+    {
+        lua_pushstring(L, "attack_monster: invalid monster index");
+        lua_error(L);
+    }
     change_monster_target(attacker_index, target_index);
     
     return 0;
@@ -903,12 +1002,11 @@ static int L_Move_Monster(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
-        logError("move_monster: incorrect argument type");
         lua_pushstring(L, "move_monster: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int polygon = lua_tonumber(L,2);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int polygon = static_cast<int>(lua_tonumber(L,2));
     
     world_point2d *theEnd;
     struct monster_pathfinding_data thePath;
@@ -916,7 +1014,11 @@ static int L_Move_Monster(lua_State *L)
     struct monster_definition *theDef;
     struct object_data *theObject;
     
-    if(monster_index == -1) return 0;
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "move_monster: invalid monster index");
+        lua_error(L);
+    }
     theRealMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
     if(!SLOT_IS_USED(theRealMonster)) return 0;		//we must have a legal monster
     theDef = get_monster_definition_external(theRealMonster->type);
@@ -954,12 +1056,11 @@ static int L_Select_Monster(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {	
-        logError("select_monster: incorrect argument type");
         lua_pushstring(L, "select_monster: incorrect argument type");
         lua_error(L);
     }
-    int monster_type = lua_tonumber(L,1);
-    int polygon = lua_tonumber(L,2);
+    int monster_type = static_cast<int>(lua_tonumber(L,1));
+    int polygon = static_cast<int>(lua_tonumber(L,2));
     
     //we are using IntersectedObjects
     int found;
@@ -982,22 +1083,24 @@ static int L_Select_Monster(lua_State *L)
             }
         }
     }
-    lua_pushnumber(L, -1);
-    return 1;
+    return 0;
 }
 
 static int L_Get_Monster_Polygon(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {
-        logError("get_monster_polygon: incorrect argument type");
         lua_pushstring(L, "get_monster_polygon: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
     
     struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-    if(!SLOT_IS_USED(theMonster)) return 0;
+    if(!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "get_monster_polygon: invalid monster index");
+        lua_error(L);
+    }
     struct object_data *object= get_object_data(theMonster->object_index);
     
     lua_pushnumber(L, object->polygon);
@@ -1008,24 +1111,72 @@ static int L_Get_Monster_Immunity(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
-        logError("get_monster_immunity: incorrect argument type");
         lua_pushstring(L, "get_monster_immunity: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int damage_type = lua_tonumber(L,2);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+
+    int damage_type = static_cast<int>(lua_tonumber(L,2));
     
     struct monster_data *theMonster;
     struct monster_definition *theDef;
-    if(monster_index == -1) return 0;
-    theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-    if(SLOT_IS_USED(theMonster))
+    if(monster_index == -1)
     {
-        theDef = get_monster_definition_external(theMonster->type);
-        lua_pushnumber(L, theDef->immunities & 1<<damage_type);
+        lua_pushstring(L, "get_monster_immunity: invalid monster index");
+        lua_error(L);
     }
-    else
-        lua_pushnumber(L, 0);
+    theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+    if (!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "get_monster_immunity: invalid monster index");
+        lua_error(L);
+    }
+    theDef = get_monster_definition_external(theMonster->type);
+    lua_pushboolean(L, theDef->immunities & 1<<damage_type);
+    return 1;
+}
+    
+static int L_Get_Monster_Position(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_monster_position: incorrect argument type");
+        lua_error(L);
+    }
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    
+    struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+    if(!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "get_monster_position: invalid monster index");
+        lua_error(L);
+    }
+    struct object_data *object= get_object_data(theMonster->object_index);
+    
+    lua_pushnumber(L, object->location.x);
+    lua_pushnumber(L, object->location.y);
+    lua_pushnumber(L, object->location.z);
+    return 3;
+}
+
+static int L_Get_Monster_Facing(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_monster_facing: incorrect argument type");
+        lua_error(L);
+    }
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    
+    struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+    if(!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "get_monster_facing: invalid monster index");
+        lua_error(L);
+    }
+    struct object_data *object= get_object_data(theMonster->object_index);
+    
+    lua_pushnumber(L, object->facing);
     return 1;
 }
 
@@ -1033,60 +1184,66 @@ static int L_Set_Monster_Immunity(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
     {
-        logError("set_monster_immunity: incorrect argument type");
         lua_pushstring(L, "set_monster_immunity: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int damage_type = lua_tonumber(L,2);
-    int immune = lua_tonumber(L,3);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int damage_type = static_cast<int>(lua_tonumber(L,2));
+    bool immune = lua_toboolean(L,3);
     
     struct monster_data *theMonster;
     struct monster_definition *theDef;
     
-    if(monster_index == -1) return 0;
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "set_monster_immunity: invalid monster index");
+        lua_error(L);
+    }
     theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
     if(SLOT_IS_USED(theMonster))
     {
-        if(immune == 1)
-        {
-            theDef = get_monster_definition_external(theMonster->type);
-            theDef->immunities = theDef->immunities | 1<<damage_type;
-            return 0;
-        }
-        if(immune == 0)
-        {
-            theDef = get_monster_definition_external(theMonster->type);
-            theDef->immunities = theDef->immunities & ~(1<<damage_type);
-            return 0;
-        }
-        dprintf("Invulnerability value must be 0 or 1\n");
+        lua_pushstring(L, "set_monster_immunity: invalid monster index");
+        lua_error(L);
     }
-    return 0;
+    if(immune)
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        theDef->immunities = theDef->immunities | 1<<damage_type;
+        return 0;
+    }
+    else
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        theDef->immunities = theDef->immunities & ~(1<<damage_type);
+        return 0;
+    }
 }
 
 static int L_Get_Monster_Weakness(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
-        logError("get_monster_weakness: incorrect argument type");
         lua_pushstring(L, "get_monster_weakness: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int damage_type = lua_tonumber(L,2);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int damage_type = static_cast<int>(lua_tonumber(L,2));
     
     struct monster_data *theMonster;
     struct monster_definition *theDef;
-    if(monster_index == -1) return 0;
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "get_monster_weakness: invalid monster index");
+        lua_error(L);
+    }
     theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
     if(SLOT_IS_USED(theMonster))
     {
-        theDef = get_monster_definition_external(theMonster->type);
-        lua_pushnumber(L, theDef->weaknesses & 1<<damage_type);
+        lua_pushstring(L, "get_monster_weakness: invalid monster index");
+        lua_error(L);
     }
-    else
-        lua_pushnumber(L, 0);
+    theDef = get_monster_definition_external(theMonster->type);
+    lua_pushboolean(L, theDef->weaknesses & 1<<damage_type);
     return 1;
 }
 
@@ -1094,60 +1251,67 @@ static int L_Set_Monster_Weakness(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
     {
-        logError("set_monster_weakness: incorrect argument type");
         lua_pushstring(L, "set_monster_weakness: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int damage_type = lua_tonumber(L,2);
-    int weak = lua_tonumber(L,3);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int damage_type = static_cast<int>(lua_tonumber(L,2));
+    bool weak = lua_toboolean(L,3);
     
     struct monster_data *theMonster;
     struct monster_definition *theDef;
     
-    if(monster_index == -1) return 0;
+        logError("get_monster_weakness: incorrect argument type");
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "set_monster_weakness: invalid monster index");
+        lua_error(L);
+    }
     theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
     if(SLOT_IS_USED(theMonster))
     {
-        if(weak == 1)
-        {
-            theDef = get_monster_definition_external(theMonster->type);
-            theDef->weaknesses = theDef->weaknesses | 1<<damage_type;
-            return 0;
-        }
-        if(weak == 0)
-        {
-            theDef = get_monster_definition_external(theMonster->type);
-            theDef->weaknesses = theDef->weaknesses & ~(1<<damage_type);
-            return 0;
-        }
-        dprintf("Weakness value must be 0 or 1\n");
+        lua_pushstring(L, "set_monster_weakness: invalid monster index");
+        lua_error(L);
     }
-    return 0;
+    if(weak)
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        theDef->weaknesses = theDef->weaknesses | 1<<damage_type;
+        return 0;
+    }
+    else
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        theDef->weaknesses = theDef->weaknesses & ~(1<<damage_type);
+        return 0;
+    }
 }
 
 static int L_Get_Monster_Friend(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
-        logError("get_monster_friend: incorrect argument type");
         lua_pushstring(L, "get_monster_friend: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int friend_type = lua_tonumber(L,2);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int friend_type = static_cast<int>(lua_tonumber(L,2));
     
     struct monster_data *theMonster;
     struct monster_definition *theDef;
-    if(monster_index == -1) return 0;
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "get_monster_friend: invalid monster index");
+        lua_error(L);
+    }
     theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
     if(SLOT_IS_USED(theMonster))
     {
-        theDef = get_monster_definition_external(theMonster->type);
-        lua_pushnumber(L, theDef->friends & 1<<friend_type);
+        lua_pushstring(L, "get_monster_friend: invalid monster index");
+        lua_error(L);
     }
-    else
-        lua_pushnumber(L, 0);
+    theDef = get_monster_definition_external(theMonster->type);
+    lua_pushboolean(L, theDef->friends & 1<<friend_type);
     return 1;
 }
 
@@ -1155,60 +1319,68 @@ static int L_Set_Monster_Friend(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
     {
-        logError("set_monster_friend: incorrect argument type");
         lua_pushstring(L, "set_monster_friend: incorrect argument type");
         lua_error(L);
+    return 0;
     }
-    int monster_index = lua_tonumber(L,1);
-    int friend_type = lua_tonumber(L,2);
-    int friendly = lua_tonumber(L,3);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int friend_type = static_cast<int>(lua_tonumber(L,2));
+    bool friendly = lua_toboolean(L,3);
     
     struct monster_data *theMonster;
+        logError("get_monster_friend: incorrect argument type");
     struct monster_definition *theDef;
     
-    if(monster_index == -1) return 0;
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "set_monster_friend: invalid monster index");
+        lua_error(L);
+    }
     theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
     if(SLOT_IS_USED(theMonster))
     {
-        if(friendly == 1)
-        {
-            theDef = get_monster_definition_external(theMonster->type);
-            theDef->friends = theDef->friends | 1<<friend_type;
-            return 0;
-        }
-        if(friendly == 0)
-        {
-            theDef = get_monster_definition_external(theMonster->type);
-            theDef->friends = theDef->friends & ~(1<<friend_type);
-            return 0;
-        }
-        dprintf("Friendliness value must be 0 or 1\n");
+        lua_pushstring(L, "set_monster_friend: invalid monster index");
+        lua_error(L);
     }
-    return 0;
+    if(friendly)
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        theDef->friends = theDef->friends | 1<<friend_type;
+        return 0;
+    }
+    else
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        theDef->friends = theDef->friends & ~(1<<friend_type);
+        return 0;
+    }
 }
 
 static int L_Get_Monster_Enemy(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
-        logError("get_monster_enemy: incorrect argument type");
         lua_pushstring(L, "get_monster_enemy: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int enemy_type = lua_tonumber(L,2);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int enemy_type = static_cast<int>(lua_tonumber(L,2));
     
     struct monster_data *theMonster;
     struct monster_definition *theDef;
-    if(monster_index == -1) return 0;
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "get_monster_enemy: invalid monster index");
+        lua_error(L);
+    }
     theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
     if(SLOT_IS_USED(theMonster))
     {
-        theDef = get_monster_definition_external(theMonster->type);
-        lua_pushnumber(L, theDef->enemies & 1<<enemy_type);
+        lua_pushstring(L, "get_monster_enemy: invalid monster index");
+        lua_error(L);
     }
-    else
-        lua_pushnumber(L, 0);
+    theDef = get_monster_definition_external(theMonster->type);
+    lua_pushboolean(L, theDef->enemies & 1<<enemy_type);
     return 1;
 }
 
@@ -1216,59 +1388,66 @@ static int L_Set_Monster_Enemy(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
     {
-        logError("set_monster_enemy: incorrect argument type");
         lua_pushstring(L, "set_monster_enemy: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int enemy_type = lua_tonumber(L,2);
-    int hostile = lua_tonumber(L,3);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int enemy_type = static_cast<int>(lua_tonumber(L,2));
+    bool hostile = lua_toboolean(L,3);
     
     struct monster_data *theMonster;
     struct monster_definition *theDef;
+    return 0;
     
-    if(monster_index == -1) return 0;
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "set_monster_enemy: invalid monster index");
+        lua_error(L);
+    }
     theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
     if(SLOT_IS_USED(theMonster))
     {
-        if(hostile == 1)
-        {
-            theDef = get_monster_definition_external(theMonster->type);
-            theDef->enemies = theDef->enemies | 1<<enemy_type;
-            return 0;
-        }
-        if(hostile == 0)
-        {
-            theDef = get_monster_definition_external(theMonster->type);
-            theDef->enemies = theDef->enemies & ~(1<<enemy_type);
-            return 0;
-        }
-        dprintf("Enemy value must be 0 or 1\n");
+        lua_pushstring(L, "set_monster_enemy: invalid monster index");
+        lua_error(L);
     }
-    return 0;
+    if(hostile)
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        theDef->enemies = theDef->enemies | 1<<enemy_type;
+        return 0;
+    }
+    else
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        theDef->enemies = theDef->enemies & ~(1<<enemy_type);
+        return 0;
+    }
 }
 
 static int L_Get_Monster_Item(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {
-        logError("get_monster_item: incorrect argument type");
         lua_pushstring(L, "get_monster_item: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
     
     struct monster_data *theMonster;
     struct monster_definition *theDef;
-    if(monster_index == -1) return 0;
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "get_monster_item: invalid monster index");
+        lua_error(L);
+    }
     theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
     if(SLOT_IS_USED(theMonster))
     {
-        theDef = get_monster_definition_external(theMonster->type);
-        lua_pushnumber(L, theDef->carrying_item_type);
+        lua_pushstring(L, "get_monster_item: invalid monster index");
+        lua_error(L);
     }
-    else
-        lua_pushnumber(L, 0);
+    theDef = get_monster_definition_external(theMonster->type);
+    lua_pushnumber(L, theDef->carrying_item_type);
     return 1;
 }
 
@@ -1276,23 +1455,28 @@ static int L_Set_Monster_Item(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
     {
-        logError("set_monster_item: incorrect argument type");
         lua_pushstring(L, "set_monster_item: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int item_type = lua_tonumber(L,2);
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int item_type = static_cast<int>(lua_tonumber(L,2));
     
     struct monster_data *theMonster;
     struct monster_definition *theDef;
     
-    if(monster_index == -1) return 0;
-    theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-    if(SLOT_IS_USED(theMonster))
+    if(monster_index == NONE)
     {
-        theDef = get_monster_definition_external(theMonster->type);
-        theDef->carrying_item_type = item_type;
+        lua_pushstring(L, "set_monster_item: invalid monster index");
+        lua_error(L);
     }
+    theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+    if (!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "set_monster_item: invalid monster index");
+        lua_error(L);
+    }
+    theDef = get_monster_definition_external(theMonster->type);
+    theDef->carrying_item_type = item_type;
     return 0;
 }
 
@@ -1300,12 +1484,25 @@ static int L_Get_Monster_Action(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {
-        logError("get_monster_action: incorrect argument type");
         lua_pushstring(L, "get_monster_action: incorrect argument type");
         lua_error(L);
     }
     int monster_index = lua_tonumber(L,1);
+    if(monster_index == -1)
+    {
+        lua_pushstring(L, "get_monster_immunity: invalid monster index");
+        lua_error(L);
+    }
     
+    struct monster_data *theMonster;
+    struct monster_definition *theDef;
+    
+    theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+    if (!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "get_monster_action: invalid monster index");
+        lua_error(L);
+    }
     struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if(!SLOT_IS_USED(monster)) return 0;
 	if (monster)
@@ -1320,12 +1517,15 @@ static int L_Get_Monster_Mode(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {
-        logError("get_monster_mode: incorrect argument type");
         lua_pushstring(L, "get_monster_mode: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    if(monster_index == -1)
+    {
+        lua_pushstring(L, "get_monster_mode: invalid monster index");
+        lua_error(L);
+    }
     struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if(!SLOT_IS_USED(monster)) return 0;
 	if (monster)
@@ -1340,12 +1540,15 @@ static int L_Get_Monster_Vitality(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {
-        logError("get_monster_vitality: incorrect argument type");
         lua_pushstring(L, "get_monster_vitality: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "get_monster_vitality: invalid monster index");
+        lua_error(L);
+    }
     struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if(!SLOT_IS_USED(monster)) return 0;
 	if (monster)
@@ -1360,31 +1563,89 @@ static int L_Set_Monster_Vitality(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
-        logError("set_monster_vitality: incorrect argument type");
         lua_pushstring(L, "set_monster_vitality: incorrect argument type");
         lua_error(L);
     }
-    int monster_index = lua_tonumber(L,1);
-    int vitality = lua_tonumber(L,2);
-    
+    int monster_index = static_cast<int>(lua_tonumber(L,1));
+    int vitality = static_cast<int>(lua_tonumber(L,2));
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "set_monster_vitality: invalid monster index");
+        lua_error(L);
+    }
     struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if(!SLOT_IS_USED(monster)) return 0;
 	if (monster)
 		monster->vitality = vitality;
-        return 0;
+	return 1;
+}
+
+// should modify all values needed for a Matrix-style slowdown shot ;)
+// this includes monster_data as well and monster_definition entries
+static int L_Set_Monster_Global_Speed(lua_State *L)
+{
+	#warning The patching did not work properly; this will have to be fixed
+	return 0;
+}
+/*
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	{
+		lua_pushstring(L, "set_monster_global_speed: incorrect argument type");
+	lua_error(L);
+	}
+	int monster_index = static_cast<int>(lua_tonumber(L,1));
+	double scale = static_cast<double>(lua_tonumber(L,2));
+	if (scale < 0)
+		{}
+	
+    struct monster_data *theMonster;
+    struct monster_definition *theDef;
+    if(monster_index == NONE)
+    {
+        lua_pushstring(L, "set_monster_vitality: invalid monster index");
+        lua_error(L);
+    }
+    theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+    if (!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "set_monster_vitality: invalid monster index");
+        lua_error(L);
+    }
+    if(SLOT_IS_USED(theMonster))
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        *//*def: external_velocity_scale, speed, gravity, attack_frequency,
+                sound_pitch
+           data: external_velocity, vertical_velocity *//*
+        theDef->external_velocity_scale *= scale;
+        theDef->speed *= scale;
+        theDef->gravity *= scale;
+        theDef->attack_frequency /= scale;
+        theDef->sound_pitch *= scale;
+        theMonster->external_velocity *= scale;
+        theMonster->vertical_velocity *= scale;
+    }
+    theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+    if (!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "set_monster_item: invalid monster index");
+        lua_error(L);
+    }
+    theDef = get_monster_definition_external(theMonster->type);
+    theDef->carrying_item_type = item_type;
+    return 0;
 }
 
 static int L_Play_Sound(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
     {
-        logError("play_sound: incorrect argument type");
         lua_pushstring(L, "play_sound: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    int sound_index = lua_tonumber(L,2);
-    float pitch = lua_tonumber(L,3);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    int sound_index = static_cast<int>(lua_tonumber(L,2));
+    float pitch = static_cast<float>(lua_tonumber(L,3));
     
     if (local_player_index != player_index)
         return 0;
@@ -1396,26 +1657,83 @@ static int L_Play_Sound(lua_State *L)
 static int L_Get_Player_Polygon(lua_State *L)
 {
     if (!lua_isnumber(L,1))
+    
+    struct monster_data *theMonster;
+    struct monster_definition *theDef;
+    if(monster_index == NONE)
     {
-        logError("get_player_polygon: incorrect argument type");
+        lua_pushstring(L, "get_player_polgyon: invalid monster index");
+        lua_error(L);
+    }
+    theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+    if (!SLOT_IS_USED(theMonster))
+    {
+        lua_pushstring(L, "get_player_polgyon: invalid monster index");
+        lua_error(L);
+    }
+    if(SLOT_IS_USED(theMonster))
+    {
+        theDef = get_monster_definition_external(theMonster->type);
+        /* def: external_velocity_scale, speed, gravity, attack_frequency,
+                sound_pitch
+           data: external_velocity, vertical_velocity *//*
+        theDef->external_velocity_scale *= scale;
+        theDef->speed *= scale;
+        theDef->gravity *= scale;
+        theDef->attack_frequency /= scale;
+        theDef->sound_pitch *= scale;
+        theMonster->external_velocity *= scale;
+        theMonster->vertical_velocity *= scale;
+    }
+    return 0;
+    {
         lua_pushstring(L, "get_player_polygon: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "get_player_polygon: invalid player index");
+        lua_error(L);
+    }
     player_data *player = get_player_data(player_index);
     lua_pushnumber(L, player->supporting_polygon_index);
     return 1;
+}
+*/
+static int L_Get_Player_Position(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_player_position: incorrect argument type");
+        lua_error(L);
+    }
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "get_player_position: invalid player index");
+        lua_error(L);
+    }
+    player_data *player = get_player_data(player_index);
+    lua_pushnumber(L, (double)player->location.x/WORLD_ONE);
+    lua_pushnumber(L, (double)player->location.y/WORLD_ONE);
+    lua_pushnumber(L, (double)player->location.z/WORLD_ONE);
+    return 3;
 }
 
 static int L_Player_Is_Dead(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {
-        logError("player_is_dead: incorrect argument type");
         lua_pushstring(L, "player_is_dead: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "player_is_dead: invalid player index");
+        lua_error(L);
+    }
     player_data *player = get_player_data(player_index);
     
     if (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player))
@@ -1429,13 +1747,17 @@ static int L_Player_Control(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
     {
-        logError("play_control: incorrect argument type");
-        lua_pushstring(L, "play_control: incorrect argument type");
+        lua_pushstring(L, "player_control: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
-    int move_type = lua_tonumber(L,2);
-    int value = lua_tonumber(L,3);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "player_control: invalid player index");
+        lua_error(L);
+    }
+    int move_type = static_cast<int>(lua_tonumber(L,2));
+    int value = static_cast<int>(lua_tonumber(L,3));
     player_data *player = get_player_data(player_index);
     
     // uses the Pfhortran action queue
@@ -1446,72 +1768,119 @@ static int L_Player_Control(lua_State *L)
     
     // Put the enqueuing of the action flags in one place in the code,
     // so it will be easier to change if necessary
-    uint32 action_flags = 0;
+    // LP: changed to reallocate-on-expand code;
+    // "static" values are remembered from one call to the next
+    static uint32 *action_flags = NULL;
+    static int prev_value = 0;
+    if (value > prev_value)
+    {
+    	if (action_flags) delete []action_flags;
+    	action_flags = new uint32[value];
+	}
+    prev_value = value;
+    
+	/*
+		case move_player:
+			if (!lua_isnumber(L,3) || !lua_isnumber(L,4) || !lua_isnumber(L,5))
+			{
+				lua_pushstring(L, "player_control: incorrect argument type for move_player");
+				lua_error(L);
+           }
+           break;
+ 
+		case turn_player:
+          if (!lua_isnumber(L,3) || !lua_isnumber(L,4))
+           {
+				lua_pushstring(L, "player_control: incorrect argument type for turn_player");
+				lua_error(L);
+          }
+           
+           yaw = static_cast<int16>(lua_tonumber(L,3));
+           pitch = static_cast<int16>(lua_tonumber(L,4));
+           
+           player->facing = yaw;
+           player->elevation = pitch;
+           
+		break;
+           
+		case look_at:
+           if (!lua_isnumber(L,3) || !lua_isnumber(L,4) || !lua_isnumber(L,5))
+           {
+				lua_pushstring(L, "player_control: incorrect argument type for look_at");
+				lua_error(L);
+           }
+           
+           world_point3d look;
+           look.x = static_cast<int16>(lua_tonumber(L, 3));
+           look.y = static_cast<int16>(lua_tonumber(L, 4));
+           look.z = static_cast<int16>(lua_tonumber(L, 5));
+           
+           yaw = arctangent(ABS(look.x-player->location.x), ABS(look.y-player->location.y));
+           pitch = arctangent(ABS(look.x-player->location.x),ABS(look.z-player->location.z));
+           
+           player->facing = yaw;
+           player->elevation = pitch;
+           
+		break;
+		*/
+	
     bool DoAction = false;
     
     switch(move_type)
     {
         case 0:
-            action_flags = _moving_forward;
+            action_flags[0] = _moving_forward;
             DoAction = true;
         break;
         
         case 1:
-            action_flags = _moving_backward;
+            action_flags[0] = _moving_backward;
             DoAction = true;
         break;
         
         case 2:
-            action_flags = _sidestepping_left;
+            action_flags[0] = _sidestepping_left;
             DoAction = true;
         break;
         
         case 3:
-            action_flags = _sidestepping_right;
+            action_flags[0] = _sidestepping_right;
             DoAction = true;
         break;
         
         case 4:
-            action_flags = _turning_left;
+            action_flags[0] = _turning_left;
             DoAction = true;
         break;
         
         case 5:
-            action_flags = _turning_right;
+            action_flags[0] = _turning_right;
             DoAction = true;
         break;
         
         case 6:
-            action_flags = _looking_up;
+            action_flags[0] = _looking_up;
             DoAction = true;
         break;
         
         case 7:
-            action_flags = _looking_down;
+            action_flags[0] = _looking_down;
             DoAction = true;
         break;
         
         case 8:
-            action_flags = _action_trigger_state;
+            action_flags[0] = _action_trigger_state;
             DoAction = true;
         break;
         
         case 9:
-            action_flags = _left_trigger_state;
+            action_flags[0] = _left_trigger_state;
             DoAction = true;
         break;
         
         case 10:
-            action_flags = _right_trigger_state;
+            action_flags[0] = _right_trigger_state;
             DoAction = true;
-        break;
-        
-        case 11: // start using pfhortran_action_queue
-            SET_PLAYER_IS_PFHORTRAN_CONTROLLED_STATUS(player, true);
-        break;
-        
-        case 12: // stop using pfhortran_action_queue
-            SET_PLAYER_IS_PFHORTRAN_CONTROLLED_STATUS(player, false);
         break;
         
         case 13: // reset pfhortran_action_queue
@@ -1524,9 +1893,10 @@ static int L_Player_Control(lua_State *L)
     
     if (DoAction)
     {
-        GetPfhortranActionQueues()->enqueueActionFlags(player_index, &action_flags, value);
-        if (PLAYER_IS_PFHORTRAN_CONTROLLED(player))
-            increment_heartbeat_count(value);
+		for (int i=1; i<value; i++)
+			action_flags[i] = action_flags[0];    	
+    	
+		GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, value);
     }
     return 0;
 }
@@ -1551,33 +1921,28 @@ static int L_Add_Path_Point(lua_State *L)
 {
     if (lua_gettop(L) < 6)
     {
-        logError("add_path_point: too few arguments");
         lua_pushstring(L, "add_path_point: too few arguments");
         lua_error(L);
     }
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
-        logError("add_path_point: incorrect argument type");
         lua_pushstring(L, "add_path_point: incorrect argument type");
         lua_error(L);
     }
-    int camera_index = lua_tonumber(L,1);
+    int camera_index = static_cast<int>(lua_tonumber(L,1));
     if (camera_index > number_of_cameras-1)
     {
-        logError("add_path_point: bad camera index");
         lua_pushstring(L, "add_path_point: bad camera index");
         lua_error(L);
     }
-    int polygon = lua_tonumber(L,2);
-    world_point3d point = {lua_tonumber(L,3)*WORLD_ONE, lua_tonumber(L,4)*WORLD_ONE, lua_tonumber(L,5)*WORLD_ONE};
-    long time = lua_tonumber(L,6);
-
-    timed_point tp;
-    tp.polygon = polygon;
-    tp.point = point;
-    tp.delta_time = time;
-
-    lua_cameras[camera_index].path.path_points.push_back(tp);
+    int polygon = static_cast<int>(lua_tonumber(L,2));
+    world_point3d point = {static_cast<int>(lua_tonumber(L,3))*WORLD_ONE, static_cast<int>(lua_tonumber(L,4))*WORLD_ONE, static_cast<int>(lua_tonumber(L,5))*WORLD_ONE};
+    long time = static_cast<long>(lua_tonumber(L,6));
+    int point_index = lua_cameras[camera_index].path.path_points.size();
+    lua_cameras[camera_index].path.path_points.resize(point_index+1);
+    lua_cameras[camera_index].path.path_points[point_index].polygon = polygon;
+    lua_cameras[camera_index].path.path_points[point_index].point = point;
+    lua_cameras[camera_index].path.path_points[point_index].delta_time = time;
     return 0;
 }
 
@@ -1585,37 +1950,30 @@ static int L_Add_Path_Angle(lua_State *L)
 {
     if (lua_gettop(L) < 4)
     {
-        logError("add_path_angle: too few arguments");
         lua_pushstring(L, "add_path_angle: too few arguments");
         lua_error(L);
     }
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
-        logError("add_path_angle: incorrect argument type");
         lua_pushstring(L, "add_path_angle: incorrect argument type");
         lua_error(L);
     }
-    int camera_index = lua_tonumber(L,1);
+    int camera_index = static_cast<int>(lua_tonumber(L,1));
     if (camera_index > number_of_cameras-1)
     {
-        logError("add_path_angle: bad camera index");
         lua_pushstring(L, "add_path_angle: bad camera index");
         lua_error(L);
     }
-    int yaw = lua_tonumber(L,2);
-    int pitch = lua_tonumber(L,3);
-    long time = lua_tonumber(L,4);
+    int yaw = static_cast<int>(lua_tonumber(L,2));
+    int pitch = static_cast<int>(lua_tonumber(L,3));
+        logError("add_path_point: incorrect argument type");
+    long time = static_cast<int>(lua_tonumber(L,4));
     int angle_index = lua_cameras[camera_index].path.path_angles.size();
     
-    const float AngleConvert = 360/float(FULL_CIRCLE);
-    
-    timed_angle ta;
-
-    ta.yaw = yaw/AngleConvert;
-    ta.pitch = pitch/AngleConvert;
-    ta.delta_time = time;
-    lua_cameras[camera_index].path.path_angles.push_back(ta);
-
+    lua_cameras[camera_index].path.path_angles.resize(angle_index+1);
+    lua_cameras[camera_index].path.path_angles[angle_index].yaw = static_cast<short>(yaw/AngleConvert);
+    lua_cameras[camera_index].path.path_angles[angle_index].pitch = static_cast<short>(pitch/AngleConvert);
+    lua_cameras[camera_index].path.path_angles[angle_index].delta_time = time;
     return 0;
 }
 
@@ -1623,17 +1981,15 @@ static int L_Activate_Camera(lua_State *L)
 {
     if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
     {
-        logError("activate_camera: incorrect argument type");
         lua_pushstring(L, "activate_camera: incorrect argument type");
         lua_error(L);
     }
-    int player_index = lua_tonumber(L,1);
+    int player_index = static_cast<int>(lua_tonumber(L,1));
     if (local_player_index != player_index)
         return 0;
-    int camera_index = lua_tonumber(L,2);
+    int camera_index = static_cast<int>(lua_tonumber(L,2));
     if (camera_index > number_of_cameras-1)
     {
-        logError("activate_camera: bad camera index");
         lua_pushstring(L, "activate_camera: bad camera index");
         lua_error(L);
     }
@@ -1650,14 +2006,12 @@ static int L_Deactivate_Camera(lua_State *L)
 {
     if (!lua_isnumber(L,1))
     {
-        logError("deactivate_camera: incorrect argument type");
         lua_pushstring(L, "deactivate_camera: incorrect argument type");
         lua_error(L);
     }
-    int camera_index = lua_tonumber(L,1);
+    int camera_index = static_cast<int>(lua_tonumber(L,1));
     if (camera_index > number_of_cameras-1)
     {
-        logError("deactivate_camera: bad camera index");
         lua_pushstring(L, "deactivate_camera: bad camera index");
         lua_error(L);
     }
@@ -1666,17 +2020,327 @@ static int L_Deactivate_Camera(lua_State *L)
     lua_cameras[camera_index].path.last_point_time = 0;
     lua_cameras[camera_index].path.last_angle_time = 0;
     return 0;
+        logError("add_path_angle: incorrect argument type");
+}
+
+static int L_Crosshairs_Active(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        logError("add_path_angle: bad camera index");
+        lua_pushstring(L, "crosshairs_active: incorrect argument type");
+        lua_error(L);
+    }
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (local_player_index != player_index)
+        return 0;
+    
+    lua_pushnumber(L, Crosshairs_IsActive());
+    return 1;
+}
+
+static int L_Set_Crosshairs_State(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isboolean(L,2))
+    {
+        lua_pushstring(L, "set_crosshairs_state: incorrect argument type");
+        lua_error(L);
+    }
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    bool state = lua_toboolean(L,2);
+    if (local_player_index != player_index)
+        logError("activate_camera: incorrect argument type");
+        return 0;
+    
+    Crosshairs_SetActive(state);
+    return 0;
+}
+
+static int L_Zoom_Active(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "zoom_active: incorrect argument type");
+        lua_error(L);
+    }
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    if (player_index < 0 || player_index >= dynamic_world->player_count)
+    {
+        lua_pushstring(L, "player_is_dead: invalid player index");
+        lua_error(L);
+    }
+    if (local_player_index != player_index)
+        return 0;
+    
+    lua_pushnumber(L, GetTunnelVision());
+    return 1;
+}
+
+static int L_Set_Zoom_State(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isboolean(L,2))
+    {
+        lua_pushstring(L, "set_zoom_state: incorrect argument type");
+        lua_error(L);
+    }
+    int player_index = static_cast<int>(lua_tonumber(L,1));
+    bool state = lua_toboolean(L,2);
+    if (local_player_index != player_index)
+        return 0;
+    
+    SetTunnelVision(state);
+    return 0;
+}
+
+static int L_Set_Motion_Sensor_State(lua_State *L)
+{
+    if(!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "set_motion_sensor_state: incorrect argument type");
+        lua_error(L);
+    }
+    
+    short player_index = static_cast<short>(lua_tonumber(L,1));
+    /*
+    Useless... There is no way to disable the motion sensor of a given player,
+      it's just a flag in HUD Renderer
+    */
+    /* MH: on the contrary, it's better to have it disable a single player's
+        motion sensor and do nothing for the others, right?
+    */
+    bool state = lua_toboolean(L,2);
+    if (state)
+        MotionSensorActive = true;
+    else
+        MotionSensorActive = false;
+    return 0;
+}
+    
+static int L_Get_Motion_Sensor_State(lua_State *L)
+{
+    /* MH: here we can return the true state if the local player
+        is the player referenced, or just return the default value
+        (could possibly screw some things up)
+    */
+    if(!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_motion_sensor_state: incorrect argument type");
+        lua_error(L);
+    }
+    short player_index = static_cast<short>(lua_tonumber(L,1));
+    if (local_player_index != player_index)
+        return 0;
+    
+    lua_pushboolean(L, MotionSensorActive);
+    return 1;
+}
+
+static int L_Set_Platform_State(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "set_platform_state: incorrect argument type");
+        lua_error(L);
+    }
+    
+    short polygon_index = static_cast<short>(lua_tonumber(L,1));
+    bool state = lua_toboolean(L,2);
+    
+    struct polygon_data *polygon = get_polygon_data(polygon_index);
+    if (polygon)
+    {
+      if (polygon->type == _polygon_is_platform)
+      {
+          try_and_change_platform_state(short(polygon->permutation), state);
+          assume_correct_switch_position(_panel_is_platform_switch, short(polygon->permutation), state);
+      }
+    }
+    return 0;
+}
+
+static int L_Get_Platform_State(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_platform_state: incorrect argument type");
+        lua_error(L);
+    }
+
+    short polygon_index = static_cast<short>(lua_tonumber(L,1));
+
+    struct polygon_data *polygon = get_polygon_data(polygon_index);
+    if (polygon)
+    {
+    if (polygon->type == _polygon_is_platform)
+      {
+          lua_pushboolean(L,(PLATFORM_IS_ACTIVE(get_platform_data(short(polygon->permutation)))));
+          return 1;
+      }
+    }
+    return 0;
+}
+
+static int L_Set_Light_State(lua_State *L)
+{
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {
+        lua_pushstring(L, "set_light_state: incorrect argument type");
+        lua_error(L);
+    }
+
+    size_t light_index = static_cast<size_t>(lua_tonumber(L,1));
+    bool state = lua_toboolean(L,2);
+
+    set_light_status(light_index, state);
+    assert(light_index == static_cast<size_t>(static_cast<short>(light_index)));
+    assume_correct_switch_position(_panel_is_light_switch, static_cast<short>(light_index), state);
+    return 0;
+}
+
+static int L_Get_Light_State(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_light_state: incorrect argument type");
+        lua_error(L);
+    }
+    
+    size_t light_index = static_cast<size_t>(lua_tonumber(L, 1));
+    
+    lua_pushboolean(L, get_light_status(light_index));
+    return 1;
+    
+}
+
+static int L_Start_Fade(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "start_fade: incorrect argument type");
+        lua_error(L);
+    }
+    
+    int fade_index = static_cast<int>(lua_tonumber(L, 1));
+    
+    start_fade(fade_index);
+    return 0;
+}
+
+static int L_Set_Platform_Player_Control(lua_State *L)
+{
+    if (!lua_isnumber(L,1)) // boolean value can be any type, even nil
+    {
+        lua_pushstring(L, "set_platform_player_control: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    bool state = lua_toboolean(L,2);
+    
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon)
+    {
+      if (polygon->type == _polygon_is_platform)
+      {
+          struct platform_data *platform = get_platform_data(polygon->permutation);
+          if (platform)
+          {
+              SET_PLATFORM_IS_PLAYER_CONTROLLABLE(platform, state);
+          }
+      }
+    }
+    return 0;
+}
+
+static int L_Get_Platform_Player_Control(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_platform_player_control: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon)
+    {
+      if (polygon->type == _polygon_is_platform)
+      {
+          struct platform_data *platform = get_platform_data(polygon->permutation);
+          if (platform)
+          {
+              lua_pushboolean(L, PLATFORM_IS_PLAYER_CONTROLLABLE(platform));
+              return 1;
+          }
+      }
+    }
+    return 0;
+}
+
+static int L_Set_Platform_Monster_Control(lua_State *L)
+{
+    if (!lua_isnumber(L,1)) // boolean value can be any type, even nil
+    {
+        lua_pushstring(L, "set_platform_monster_control: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    bool state = lua_toboolean(L,2);
+    
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon)
+    {
+      if (polygon->type == _polygon_is_platform)
+      {
+          struct platform_data *platform = get_platform_data(polygon->permutation);
+          if (platform)
+          {
+              SET_PLATFORM_IS_MONSTER_CONTROLLABLE(platform, state);
+          }
+      }
+    }
+    return 0;
+}
+
+static int L_Get_Platform_Monster_Control(lua_State *L)
+{
+    if (!lua_isnumber(L,1))
+    {
+        lua_pushstring(L, "get_platform_monster_control: incorrect argument type");
+        lua_error(L);
+    }
+
+    int polygon_index = static_cast<int>(lua_tonumber(L,1));
+    struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+    if (polygon)
+    {
+      if (polygon->type == _polygon_is_platform)
+      {
+          struct platform_data *platform = get_platform_data(polygon->permutation);
+          if (platform)
+          {
+              lua_pushboolean(L, PLATFORM_IS_MONSTER_CONTROLLABLE(platform));
+              return 1;
+          }
+      }
+    }
+    return 0;
 }
 
 void RegisterLuaFunctions()
 {
+	lua_register(state, "local_player_index", L_Local_Player_Index);
+	lua_register(state, "player_to_monster_index", L_Player_To_Monster_Index);
     lua_register(state, "number_of_players", L_Number_of_Players);
     lua_register(state, "screen_print", L_Screen_Print);
-    lua_register(state, "display_text", L_Display_Text);
+    //lua_register(state, "display_text", L_Display_Text);
     lua_register(state, "inflict_damage", L_Inflict_Damage);
     lua_register(state, "enable_player", L_Enable_Player);
     lua_register(state, "disable_player", L_Disable_Player);
     lua_register(state, "kill_script", L_Kill_Script);
+	lua_register(state, "hide_interface", L_Hide_Interface);
+	lua_register(state, "show_interface", L_Show_Interface);
     lua_register(state, "get_tag_state", L_Get_Tag_State);
     lua_register(state, "set_tag_state", L_Set_Tag_State);
     lua_register(state, "get_life", L_Get_Life);
@@ -1686,6 +2350,10 @@ void RegisterLuaFunctions()
     lua_register(state, "add_item", L_Add_Item);
     lua_register(state, "remove_item", L_Remove_Item);
     lua_register(state, "select_weapon", L_Select_Weapon);
+	lua_register(state, "set_platform_state", L_Set_Platform_State);
+	lua_register(state, "get_platform_state", L_Get_Platform_State);
+	lua_register(state, "set_light_state", L_Set_Light_State);
+	lua_register(state, "get_light_state", L_Get_Light_State);
     lua_register(state, "set_fog_depth", L_Set_Fog_Depth);
     lua_register(state, "set_fog_color", L_Set_Fog_Color);
     lua_register(state, "get_fog_depth", L_Get_Fog_Depth);
@@ -1702,6 +2370,8 @@ void RegisterLuaFunctions()
     lua_register(state, "attack_monster", L_Attack_Monster);
     lua_register(state, "move_monster", L_Move_Monster);
     lua_register(state, "select_monster", L_Select_Monster);
+	lua_register(state, "get_monster_position", L_Get_Monster_Position);
+	lua_register(state, "get_monster_facing", L_Get_Monster_Facing);
     lua_register(state, "get_monster_polygon", L_Get_Monster_Polygon);
     lua_register(state, "get_monster_immunity", L_Get_Monster_Immunity);
     lua_register(state, "set_monster_immunity", L_Set_Monster_Immunity);
@@ -1717,8 +2387,16 @@ void RegisterLuaFunctions()
     lua_register(state, "get_monster_mode", L_Get_Monster_Mode);
     lua_register(state, "get_monster_vitality", L_Get_Monster_Vitality);
     lua_register(state, "set_monster_vitality", L_Set_Monster_Vitality);
-    lua_register(state, "play_sound", L_Play_Sound);
-    lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
+    //lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
+    lua_register(state, "set_platform_monster_control", L_Set_Platform_Monster_Control);
+    lua_register(state, "get_platform_monster_control", L_Get_Platform_Monster_Control);
+	lua_register(state, "get_player_position", L_Get_Player_Position);
+    //lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
+	//lua_register(state, "set_player_global_speed", L_Set_Player_Global_Speed);
+	lua_register(state, "set_platform_player_control", L_Set_Platform_Player_Control);
+	lua_register(state, "get_platform_player_control", L_Get_Platform_Player_Control);
+	lua_register(state, "set_motion_sensor_state", L_Set_Motion_Sensor_State);
+	lua_register(state, "get_motion_sensor_state", L_Get_Motion_Sensor_State);
     lua_register(state, "player_is_dead", L_Player_Is_Dead);
     lua_register(state, "player_control", L_Player_Control);
     lua_register(state, "create_camera", L_Create_Camera);
@@ -1726,6 +2404,12 @@ void RegisterLuaFunctions()
     lua_register(state, "add_path_angle", L_Add_Path_Angle);
     lua_register(state, "activate_camera", L_Activate_Camera);
     lua_register(state, "deactivate_camera", L_Deactivate_Camera);
+	lua_register(state, "crosshairs_active", L_Crosshairs_Active);
+	lua_register(state, "set_crosshairs_state", L_Set_Crosshairs_State);
+	lua_register(state, "zoom_active", L_Zoom_Active);
+	lua_register(state, "set_zoom_state", L_Set_Zoom_State);
+	//lua_register(state, "play_sound", L_Play_Sound);
+	lua_register(state, "start_fade", L_Start_Fade);
 }
 
 void DeclareLuaConstants()
@@ -1769,7 +2453,7 @@ bool LoadLuaScript(const char *buffer, size_t len)
     RegisterLuaFunctions();
     DeclareLuaConstants();
     
-    lua_loaded = status==0;
+    lua_loaded = (status==0);
     return lua_loaded;
 }
 
@@ -1778,9 +2462,8 @@ bool RunLuaScript()
     if (!lua_loaded)
         return false;
     int result = lua_pcall(state, 0, LUA_MULTRET, 0);
-    if (result==0)
-        lua_running = true;
-    return result==0;
+    lua_running = (result==0);
+    return lua_running;
 }
 
 void CloseLuaScript()
@@ -1795,8 +2478,6 @@ void CloseLuaScript()
 
 bool UseLuaCameras()
 {
-    //const float AngleConvert = 360/float(FULL_CIRCLE);	//tiennou: unused !
-    
     if (!lua_running)
         return false;
 
@@ -1813,8 +2494,8 @@ bool UseLuaCameras()
                 short angle_index = lua_cameras[i].path.current_angle_index;
                 if (angle_index != -1 && angle_index != lua_cameras[i].path.path_angles.size()-1)
                 {
-                    world_view->yaw = normalize_angle(FindLinearValue(lua_cameras[i].path.path_angles[angle_index].yaw, lua_cameras[i].path.path_angles[angle_index+1].yaw, lua_cameras[i].path.path_angles[angle_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time));
-                    world_view->pitch = normalize_angle(FindLinearValue(lua_cameras[i].path.path_angles[angle_index].pitch, lua_cameras[i].path.path_angles[angle_index+1].pitch, lua_cameras[i].path.path_angles[angle_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time));
+                    world_view->yaw = normalize_angle(static_cast<short>(FindLinearValue(lua_cameras[i].path.path_angles[angle_index].yaw, lua_cameras[i].path.path_angles[angle_index+1].yaw, lua_cameras[i].path.path_angles[angle_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time)));
+                    world_view->pitch = normalize_angle(static_cast<short>(FindLinearValue(lua_cameras[i].path.path_angles[angle_index].pitch, lua_cameras[i].path.path_angles[angle_index+1].pitch, lua_cameras[i].path.path_angles[angle_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time)));
                 }
                 else if (angle_index == lua_cameras[i].path.path_angles.size()-1)
                 {
