@@ -517,6 +517,28 @@ GetListBoxListHandle( ControlHandle control, ListHandle* list )
 
 #include "csalerts.h"
 
+
+AutoNibWindow::AutoNibWindow(IBNibRef Nib, CFStringRef Name)
+{
+	OSStatus err;
+	
+	err = CreateWindowFromNib(Nib,Name,&w);
+	
+	const int BufferSize = 192;	// Smaller than 256, the size of "temporary"
+	char Buffer[BufferSize];
+	if (err != noErr)
+	{
+		CFStringGetCString(Name, Buffer, BufferSize, kCFStringEncodingMacRoman);
+		Buffer[BufferSize-1] = 0; // Null terminator byte
+	}	
+	vassert(err == noErr,
+		csprintf(temporary,"CreateWindowFromNib error: %d for window %s",err,Buffer));
+}
+
+
+AutoNibWindow::~AutoNibWindow() {DisposeWindow(w);}
+
+
 ControlRef GetCtrlFromWindow(WindowRef DlgWindow, uint32 Signature, uint32 ID)
 {
 	OSStatus err;
@@ -536,7 +558,11 @@ ControlRef GetCtrlFromWindow(WindowRef DlgWindow, uint32 Signature, uint32 ID)
 
 #include <stdio.h>
 
-void BuildMenu(ControlRef MenuCtrl, bool (*BuildMenuItem)(int,uint8 *,bool &,void *), void *BuildMenuData)
+void BuildMenu(
+	ControlRef MenuCtrl,
+	bool (*BuildMenuItem)(int,uint8 *,bool &,void *),
+	void *BuildMenuData
+	)
 {
 	// Extract the menu
 	MenuRef Menu = GetControlPopupMenuHandle(MenuCtrl);
@@ -567,32 +593,41 @@ void BuildMenu(ControlRef MenuCtrl, bool (*BuildMenuItem)(int,uint8 *,bool &,voi
 struct ModalDialogHandlerData
 {
 	WindowRef DlgWindow;
-	void (*DlgHandler)(int,void *);
+	void (*DlgHandler)(ParsedControl &,void *);
 	void *DlgData;
+	bool IsOK;	// Return whether OK was pressed
 };
 
 static pascal OSStatus ModalDialogHandler(
-	EventHandlerCallRef HandlerCallRef, EventRef Event, void *Data)
+	EventHandlerCallRef HandlerCallRef,
+	EventRef Event,
+	void *Data
+	)
 {
 	(void)(HandlerCallRef);
 	
 	OSStatus err;
-	ControlRef Control;
+	ParsedControl Ctrl;
+	
 	err = GetEventParameter(Event,
 		kEventParamDirectObject,typeControlRef,
-		NULL, sizeof(ControlRef), NULL, &Control);
+		NULL, sizeof(ControlRef), NULL, &Ctrl.Ctrl);
 	vassert(err == noErr, csprintf(temporary,"GetEventParameter error: %d",err));
 	
-	ControlID CtrlID;
-	err = GetControlID(Control,&CtrlID);
+	err = GetControlID(Ctrl.Ctrl,&Ctrl.ID);
 	vassert(err == noErr, csprintf(temporary,"GetControlID error: %d",err));
 
 	ModalDialogHandlerData *HDPtr = (ModalDialogHandlerData *)(Data);
 	if (HDPtr->DlgHandler)
-		HDPtr->DlgHandler(CtrlID.id,HDPtr->DlgData);
+		HDPtr->DlgHandler(Ctrl,HDPtr->DlgData);
 	
-	if (CtrlID.id == iOK || CtrlID.id == iCANCEL)
+	// For quitting the dialog box
+	if (Ctrl.ID.id == iOK || Ctrl.ID.id == iCANCEL)
 	{
+		// Which one pressed
+		HDPtr->IsOK = (Ctrl.ID.id == iOK);
+		
+		// Done with the window
 		QuitAppModalLoopForWindow(HDPtr->DlgWindow);
 		HideWindow(HDPtr->DlgWindow);
 	}
@@ -601,16 +636,18 @@ static pascal OSStatus ModalDialogHandler(
 }
 
 
-// Runs a modal dialog; needs:
-//   Dialog window
-//   Dialog handler; will respond to every hit of a control item
-void RunModalDialog(WindowRef DlgWindow, void (*DlgHandler)(int,void *), void *DlgData)
+bool RunModalDialog(
+	WindowRef DlgWindow,
+	void (*DlgHandler)(ParsedControl &,void *),
+	void *DlgData
+	)
 {
 	OSStatus err;
 	ModalDialogHandlerData HandlerData;
 	HandlerData.DlgWindow = DlgWindow;
 	HandlerData.DlgHandler = DlgHandler;
 	HandlerData.DlgData = DlgData;
+	HandlerData.IsOK = false;
 	
 	const int NumEventTypes = 1;
 	const EventTypeSpec EventTypes[NumEventTypes] =
@@ -628,6 +665,8 @@ void RunModalDialog(WindowRef DlgWindow, void (*DlgHandler)(int,void *), void *D
 	RunAppModalLoopForWindow(DlgWindow);
 	
 	DisposeEventHandlerUPP(HandlerUPP);
+	
+	return HandlerData.IsOK;
 }
 
 #endif

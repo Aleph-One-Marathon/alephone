@@ -148,11 +148,29 @@ extern void set_dialog_header_proc(
 // For Carbon-events dialogs
 #ifdef USES_NIBS
 
+// Auto-allocated window loaded from a nib;
+// it will automatically deallocate the window when it goes out of scope
+
+class AutoNibWindow
+{
+	WindowRef w;
+public:
+
+	AutoNibWindow(IBNibRef Nib, CFStringRef Name);
+	~AutoNibWindow();
+
+	WindowRef operator()() {return w;}
+};
+
 // Gets a control reference from:
 //   Window reference
 //   Signature (check the Interface Builder)
 //   Control ID (check the Interface Builder)
-ControlRef GetCtrlFromWindow(WindowRef DlgWindow, uint32 Signature, uint32 ID);
+ControlRef GetCtrlFromWindow(
+	WindowRef DlgWindow,
+	uint32 Signature,
+	uint32 ID
+	);
 
 // Builds a popup menu with the help of:
 //   The menu's control ref
@@ -165,7 +183,17 @@ ControlRef GetCtrlFromWindow(WindowRef DlgWindow, uint32 Signature, uint32 ID);
 //     True: use the string and the initial-selection boolean
 //     False: ignore both and stop adding menu items
 //   Default for initial value is 1
-void BuildMenu(ControlRef MenuCtrl, bool (*BuildMenuItem)(int,uint8 *,bool &,void *), void *BuildMenuData);
+void BuildMenu(
+	ControlRef MenuCtrl,
+	bool (*BuildMenuItem)(int,uint8 *,bool &,void *),
+	void *BuildMenuData = NULL
+	);
+
+struct ParsedControl
+{
+	ControlRef Ctrl;
+	ControlID ID;
+};
 
 // Runs a modal dialog; needs:
 //   Dialog window
@@ -174,7 +202,12 @@ void BuildMenu(ControlRef MenuCtrl, bool (*BuildMenuItem)(int,uint8 *,bool &,voi
 //     User data
 //   Dialog user data; passed to the dialog handler
 // There are always two special dialog numbers: iOK (1) and iCANCEL (2)
-void RunModalDialog(WindowRef DlgWindow, void (*DlgHandler)(int,void *), void *DlgData);
+// Will return 'true' if iOK was pressed and 'false' otherwise
+bool RunModalDialog(
+	WindowRef DlgWindow,
+	void (*DlgHandler)(ParsedControl &,void *) = NULL,
+	void *DlgData = NULL
+	);
 
 #endif
 
