@@ -189,22 +189,6 @@ struct endpoint_owner_data
 	short first_line_index, line_index_count;
 };
 
-struct saved_static_platform_data /* 32 bytes */
-{
-	int16 type;
-	int16 speed, delay;
-	world_distance maximum_height, minimum_height; /* if NONE then calculated in some reasonable way */
-
-	uint16 static_flags_hi, static_flags_lo;
-	
-	int16 polygon_index;
-	
-	int16 tag;
-	
-	int16 unused[7];
-};
-const int SIZEOF_saved_static_platform_data = 32;
-
 struct static_platform_data /* size platform-dependant */
 {
 	int16 type;
@@ -219,7 +203,93 @@ struct static_platform_data /* size platform-dependant */
 	
 	int16 unused[7];
 };
+const int SIZEOF_static_platform_data = 32;
 
+#ifdef CB
+struct saved_static_platform_data /* 32 bytes */
+{
+	int16 type;
+	int16 speed, delay;
+	world_distance maximum_height, minimum_height; /* if NONE then calculated in some reasonable way */
+
+	uint16 static_flags_hi, static_flags_lo;
+	
+	int16 polygon_index;
+	
+	int16 tag;
+	
+	int16 unused[7];
+};
+#endif
+const int SIZEOF_saved_static_platform_data = 32;
+
+#ifdef LP
+// Misaligned 4-byte value (static_flags) split in it
+struct saved_static_platform /* 32 bytes */
+{
+	int16 type;
+	int16 speed, delay;
+	world_distance maximum_height, minimum_height; /* if NONE then calculated in some reasonable way */
+
+	uint16 static_flags[2];
+	
+	int16 polygon_index;
+	
+	int16 tag;
+	
+	int16 unused[7];
+};
+#endif
+
+struct platform_data /* 140 bytes */
+{
+	short type;
+	unsigned long static_flags;
+	short speed, delay;
+	world_distance minimum_floor_height, maximum_floor_height;
+	world_distance minimum_ceiling_height, maximum_ceiling_height;
+	long xxx; // was empty line
+	short polygon_index;
+	uint16 dynamic_flags;
+	world_distance floor_height, ceiling_height;
+	short ticks_until_restart; /* if weÕre not moving but are active, this is our delay until we move again */
+
+	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
+
+	short parent_platform_index; /* the platform_index which activated us, if any */
+	
+	short tag;
+	
+	short unused[22];
+};
+const int SIZEOF_platform_data = 140;
+
+#ifdef LP
+// Misaligned 4-byte values (static_flags) split in it
+struct saved_platform/* 140 bytes */
+{
+	int16 type;
+	uint16 static_flags[2];
+	int16 speed, delay;
+	world_distance minimum_floor_height, maximum_floor_height;
+	world_distance minimum_ceiling_height, maximum_ceiling_height;
+	
+	int16 polygon_index;
+	uint16 dynamic_flags;
+	world_distance floor_height, ceiling_height;
+	int16 ticks_until_restart; /* if weÕre not moving but are active, this is our delay until we move again */
+
+	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
+
+	int16 parent_platform_index; /* the platform_index which activated us, if any */
+	
+	int16 tag;
+	
+	int16 unused[22];
+};
+#endif
+
+#ifdef CB
 struct saved_platform_data /* 140 bytes */
 {
 	int16 type;
@@ -241,29 +311,8 @@ struct saved_platform_data /* 140 bytes */
 	
 	int16 unused[22];
 };
+#endif
 const int SIZEOF_saved_platform_data = 140;
-
-struct platform_data /* size platform-dependant */
-{
-	short type;
-	unsigned long static_flags;
-	short speed, delay;
-	world_distance minimum_floor_height, maximum_floor_height;
-	world_distance minimum_ceiling_height, maximum_ceiling_height;
-	
-	short polygon_index;
-	uint16 dynamic_flags;
-	world_distance floor_height, ceiling_height;
-	short ticks_until_restart; /* if weÕre not moving but are active, this is our delay until we move again */
-
-	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
-
-	short parent_platform_index; /* the platform_index which activated us, if any */
-	
-	short tag;
-	
-	short unused[22];
-};
 
 /* --------- globals */
 
@@ -305,11 +354,29 @@ boolean platform_is_at_initial_state(short platform_index);
 
 short get_platform_moving_sound(short platform_index);
 
+inline struct platform_data *get_platform_data(
+	short platform_index)
+{
+	struct platform_data *platform = GetMemberWithBounds(platforms,platform_index,dynamic_world->platform_count);
+	
+	vassert(platform, csprintf(temporary, "platform index #%d is out of range", platform_index));
+	
+	return platform;
+}
+
+/*
 #ifdef DEBUG
 struct platform_data *get_platform_data(short platform_index);
 #else
 #define get_platform_data(i) (platforms+(i))
 #endif
+*/
+
+// Split and join the misaligned 4-byte values
+void pack_platform_data(platform_data& source, saved_platform& dest);
+void unpack_platform_data(saved_platform& source, platform_data& dest);
+void pack_static_platform_data(static_platform_data& source, saved_static_platform& dest);
+void unpack_static_platform_data(saved_static_platform& source, static_platform_data& dest);
 
 // LP change: added platform-parser export
 XML_ElementParser *Platforms_GetParser();
