@@ -69,6 +69,7 @@ This element has no attributes and contains these child elements:
 <li><a href="#view">View Element: &lt;view&gt;</a>
 <li><a href="#weapons">Weapons Element: &lt;weapons&gt;</a>
 <li><a href="#items">Items Element: &lt;items&gt;</a>
+<li><a href="#damage_kicks">Damage-Kicks Element: &lt;damage_kicks&gt;</a>
 <li><a href="#scenery">Scenery Element: &lt;scenery&gt;</a>
 <li><a href="#landscapes">Landscapes Element: &lt;landscapes&gt;</a>
 <li><a href="#textureloading">Texture-Loading Element: &lt;texture_loading&gt;</a>
@@ -1191,6 +1192,21 @@ environment types:
 The item shape can be specified with a <a href="#shape">shape</a>
 child element, which can be blank (&lt;shape/&gt;).
 <p>
+
+<hr>
+
+<h3><a name="damage_kicks">Damage-Kicks Element: &lt;damage_kicks&gt;</a></h3>
+
+This element specifies the velocity impulse that some damage type will produce.
+The kick for each damage type is specified with a &lt;kick&gt; child element,
+which has these attributes:
+<ul>
+<li>index: which "true" damage type (mandatory)
+<li>base: quantity of kick that is always present
+<li>mult: how much to multiply the damage amount by to obtain an additional kick
+<li>vertical: indicates whether the kick will have a vertical component
+in addition to a horizontal one (<a href="#boolean">boolean</a>)
+</ul>
 
 <hr>
 
