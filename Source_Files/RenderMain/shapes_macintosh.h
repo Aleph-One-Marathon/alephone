@@ -75,9 +75,11 @@ static void initialize_pixmap_handler()
 	(*hollow_pixmap)->pixelSize= 8;
 	(*hollow_pixmap)->cmpCount= 1;
 	(*hollow_pixmap)->cmpSize= (*hollow_pixmap)->pixelSize;
+/*
 #if !defined(USE_CARBON_ACCESSORS)
 	(*hollow_pixmap)->pmReserved= 0;
 #endif
+*/
 }
 
 

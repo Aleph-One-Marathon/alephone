@@ -136,6 +136,9 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include <algorithm>	// pair<>, for_each()
 
 #include "cseries.h"
+#include "world.h"
+#include "shell.h"
+#include "preferences.h"
 
 #ifdef HAVE_OPENGL
 
@@ -148,8 +151,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #   include <OpenGL/gl.h>
 #   include <OpenGL/glu.h>
 # elif defined mac
-#   include "gl.h"
-#   include "glu.h"
+#   include <gl.h>
+#   include <glu.h>
 # else
 #   include <GL/gl.h>
 #   include <GL/glu.h>
@@ -158,7 +161,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 
 
 #ifdef mac
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <AGL/agl.h>
 #else
 #include <agl.h>
@@ -3133,12 +3136,14 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	if (!UseBackBuffer) glDrawBuffer(GL_FRONT);
 	
 	// Where the image comes from
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	Rect ImgBounds;
 	GetPortBounds(BufferPtr, &ImgBounds);
+/*
 #else
 	Rect& ImgBounds = ((CGrafPtr)BufferPtr)->portRect;
 #endif
+*/
 	
 	// Number of source bytes (destination bytes = 4)
 	short NumSrcBytes = bit_depth/8;

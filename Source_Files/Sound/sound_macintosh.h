@@ -50,10 +50,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 		in place of use of unsupported get/setRateCmd
 */
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
 #else
-#include <FixMath.h>
+//#include <FixMath.h>
 #include <MediaHandlers.h>
 #endif
 

@@ -60,15 +60,17 @@ static OTNotifyUPP		sNotifierUPP;
 OSErr
 NetDDPOpen() {
     OSStatus theResult;
+/*
 #ifndef __MACH__
     // This seems to not exist in Mac OS X but is probably needed for Mac OS 9 etc.
     // Not sure what preprocessor symbol to test against.
     theResult = InitOpenTransport();
 #else
+*/
     theResult = InitOpenTransportInContext(kInitOTForApplicationMask, NULL);
     if(theResult == kEINVALErr)	// seems to return this if I init twice - not sure about in Mac OS 9
         theResult = noErr;
-#endif
+//#endif
     
     // According to Inside Mac: Networking with OT, this will automatically patch ExitToShell
     // to make sure CloseOpenTransport() is called.
@@ -160,11 +162,13 @@ NetDDPOpenSocket(short* outSocketNumber, PacketHandlerProcPtr inPacketHandler) {
     OSStatus		theResult;
 
     // Synchronously create the endpoint
+/*
 #ifndef __MACH__
     sEndpoint = OTOpenEndpoint(OTCreateConfiguration(kUDPName), kReserved, &theEndpointInfo, &theResult);
 #else
+*/
     sEndpoint = OTOpenEndpointInContext(OTCreateConfiguration(kUDPName), kReserved, &theEndpointInfo, &theResult, NULL);
-#endif
+//#endif
     
     if(theResult != noErr) {
         logError1("NetDDPOpenSocket: OTOpenEndpoint error (%d)", theResult);

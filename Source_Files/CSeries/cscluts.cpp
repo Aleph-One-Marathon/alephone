@@ -25,11 +25,13 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #include <stddef.h>
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <Quickdraw.h>
 #include <Memory.h>
+*/
 #endif
 
 #include "cscluts.h"

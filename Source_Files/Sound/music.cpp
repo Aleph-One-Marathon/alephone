@@ -64,7 +64,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 // no need for them in the PowerPC MacOS or anywhere else
 
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <quicktime/Quicktime.h>
 #else
 #include <Movies.h>
@@ -252,6 +252,7 @@ void PreloadMusic()
 /* If channel is null, we don't initialize */
 bool initialize_music_handler(FileSpecifier& SongFile)
 {
+/*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 	// In case the old player doesn't get initialized...
 	music_state.initialized= false;
@@ -259,6 +260,7 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 	// Check on whether we'll be using it
 	UsingOldPlayer = (SongFile.GetType() == _typecode_music);
 #endif
+*/
 	
 	// LP: using Quicktime to play the movie if available
 	if (UseNewPlayer())
@@ -267,7 +269,8 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 		IntroMusicFile = SongFile;
 		return true;
 	}
-	
+
+/*	
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 	// Just in case the initial music was skipped and we want to go straight to a level...
 	UsingOldPlayer = false;
@@ -282,7 +285,7 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 	// Boolean is_folder, was_aliased;
 	// ResolveAliasFile((FSSpec *)song_file, true, &is_folder, &was_aliased);
 	
-	/* Does the file exist? */
+	*//* Does the file exist? *//*
 	// LP change: using a file object
 	if(SongFile.Open(music_state.OFile))
 	{
@@ -305,7 +308,7 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 		music_state.next_song_index= NONE;
 		music_state.completion_proc= NewFilePlayCompletionProc(file_play_completion_routine);
 		music_state.ticks_at_last_update= TickCount();
-		/* Allocate our buffer */
+		*//* Allocate our buffer *//*
 		music_state.sound_buffer_size= kDefaultSoundBufferSize;
 		music_state.sound_buffer= NULL;
 			
@@ -315,6 +318,7 @@ bool initialize_music_handler(FileSpecifier& SongFile)
 		atexit(shutdown_music_handler);
 	}
 #endif
+*/
 
 	return false;
 }
@@ -352,6 +356,7 @@ void queue_song(
 		return;
 	}
 
+/*
 #if !defined(SUPRESS_MACOS_CLASSIC)
 	if (music_state.initialized && get_sound_volume())
 	{
@@ -364,8 +369,8 @@ void queue_song(
 		{
 			if (music_playing())
 			{
-				/* By setting the song_index after we tell it to fade, we will */
-				/*  cause the new song to start at the end of the fade. */
+				*//* By setting the song_index after we tell it to fade, we will *//*
+				*//*  cause the new song to start at the end of the fade. *//*
 				fade_out_music(10*MACINTOSH_TICKS_PER_SECOND);
 				music_state.song_index= song_index;
 			}
@@ -373,18 +378,19 @@ void queue_song(
 			{
 				assert(music_state.state==_no_song_playing);
 		
-				/* Must be done everytime in case Jason killed it in sound.c */
+				*//* Must be done everytime in case Jason killed it in sound.c *//*
 				music_state.channel->userInfo= (long)(&music_state);
 				music_state.song_index= song_index;
 				music_state.state= _delaying_for_loop;
 				music_state.phase= 1;
 				music_state.ticks_at_last_update= TickCount();
 				music_state.flags &= ~_song_completed;
-				/* next time through we will start.. */
+				*//* next time through we will start.. *//*
 			}
 		}
 	}
 #endif
+*/
 }
 
 void fade_out_music(
@@ -396,6 +402,7 @@ void fade_out_music(
 		return;
 	}
 
+/*
 #if !defined(SUPRESS_MACOS_CLASSIC)
 	if(music_playing())
 	{
@@ -408,6 +415,7 @@ void fade_out_music(
 		music_state.song_index= NONE;
 	}
 #endif
+*/
 }
 
 void music_idle_proc(
@@ -472,6 +480,7 @@ void music_idle_proc(
 		return;
 	}
 
+/*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 	if(music_state.initialized && music_state.state != _no_song_playing)
 	{
@@ -482,7 +491,7 @@ void music_idle_proc(
 			case _delaying_for_loop:
 				if((music_state.phase-=ticks_elapsed)<=0)
 				{
-					/* Start playing.. */
+					*//* Start playing.. *//*
 					OSErr error;
 
 					music_state.sound_buffer_size= kDefaultSoundBufferSize;
@@ -518,12 +527,12 @@ void music_idle_proc(
 				{
 					if((music_state.phase-=ticks_elapsed)<=0 || (music_state.flags & _song_completed))
 					{
-						/* oops. we are done.. */
+						*//* oops. we are done.. *//*
 						stop_music();
 						music_state.state= _no_song_playing;
 						if(music_state.song_index != NONE)
 						{
-							/* Start the new song playing.. */
+							*//* Start the new song playing.. *//*
 							queue_song(music_state.song_index);
 						}
 					} else {
@@ -533,13 +542,13 @@ void music_idle_proc(
 							SndCommand command;
 							OSErr error;
 							
-							/* Only do this a few times.. */
+							*//* Only do this a few times.. *//*
 							music_state.fade_interval_ticks= music_state.fade_interval_duration;
 	
-							/* Set the sound volume */
+							*//* Set the sound volume *//*
 							new_volume= (0x100*music_state.phase)/music_state.fade_duration;
 
-							/* set the sound volume */
+							*//* set the sound volume *//*
 							command.cmd= volumeCmd;
 							command.param1= 0;
 							command.param2= BUILD_STEREO_VOLUME(new_volume, new_volume);
@@ -551,7 +560,7 @@ void music_idle_proc(
 				break;
 			
 			default:
-				/* Don't change states until song_completed flag is set. */
+				*//* Don't change states until song_completed flag is set. *//*
 				if(music_state.flags & _song_completed)
 				{
 					struct song_definition *song= get_song_definition(music_state.song_index);
@@ -572,6 +581,7 @@ void music_idle_proc(
 		music_state.ticks_at_last_update= TickCount();
 	}
 #endif
+*/
 }
 
 void stop_music(
@@ -589,7 +599,8 @@ void stop_music(
 		}
 		return;
 	}
-	
+
+/*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 	if (music_state.initialized && music_state.state != _no_song_playing)
 	{
@@ -603,7 +614,7 @@ void stop_music(
 		music_state.sound_buffer= NULL;
 	}
 #endif
-	
+*/
 	// Set up for doing level music, which needs the new player
 	UsingOldPlayer = false;
 }
@@ -621,13 +632,14 @@ void pause_music(bool pause)
 		}
 		return;
 	}
-	
+
+/*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 	if(music_playing())
 	{
 		bool pause_it= false;
 
-		/* If they want us to pause, and it is not already paused. */
+		*//* If they want us to pause, and it is not already paused. *//*
 		if(pause)
 		{
 			if(!(music_state.flags & _song_paused))
@@ -643,7 +655,7 @@ void pause_music(bool pause)
 			}
 		}
 
-		/* SndPauseFilePlay is a toggle */
+		*//* SndPauseFilePlay is a toggle *//*
 		if(pause_it)
 		{
 			OSErr error;
@@ -653,12 +665,14 @@ void pause_music(bool pause)
 		}
 	}
 #endif
+*/
 }
 
 bool music_playing(void)
 {
 	if (UseNewPlayer()) return QTMMPlaying;
-		
+
+/*
 #if !defined(SUPRESS_MACOS_CLASSIC)
 	bool playing= false;
 	
@@ -670,8 +684,9 @@ bool music_playing(void)
 
 	return playing;
 #else
+*/
 	return false;
-#endif
+//#endif
 }
 
 /* --------------- private code */
@@ -679,7 +694,8 @@ static void shutdown_music_handler(
 	void)
 {
 	if (UseNewPlayer()) return;
-	
+
+/*
 #if !defined(SUPRESS_MACOS_CLASSIC)
 	if(music_state.initialized)
 	{
@@ -688,6 +704,7 @@ static void shutdown_music_handler(
 		// FSClose(music_state.song_file_refnum);
 	}
 #endif
+*/
 }
 
 static pascal void file_play_completion_routine(

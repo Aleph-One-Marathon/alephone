@@ -32,11 +32,11 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 */
 
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
     #include <quicktime/QuickTimeComponents.h>
 #else
-#include <QDOffscreen.h>
+//#include <QDOffscreen.h>
 #include <QuickTimeComponents.h>
 #endif
 #include "ImageLoader.h"

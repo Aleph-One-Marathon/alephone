@@ -24,10 +24,12 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <Events.h>
+*/
 #endif
 
 #include "cstypes.h"

@@ -45,10 +45,11 @@ April 16, 2003 (Woody Zenfell):
         (will let enviroprefs find M2-typed stuff)
 */
 #if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
 	#include <Carbon/Carbon.h>
 #endif
 #include <string.h>
+#include "csalerts.h"
 #include "tags.h"
 #include <map>
 

@@ -144,8 +144,9 @@ static bool TextureConfigureDialog(short WhichTexture)
 	SetControlValue(BasedOn_CHdl, WhichTexture+1);
 	
 	// Edit the title
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	MenuHandle BasedOn_MHdl = GetControlPopupMenuHandle(BasedOn_CHdl);
+/*
 #else
 	HLock(Handle(BasedOn_CHdl));
 	ControlRecord *PopupPtr = *BasedOn_CHdl;
@@ -156,6 +157,7 @@ static bool TextureConfigureDialog(short WhichTexture)
 	
 	MenuHandle BasedOn_MHdl = PPD->mHandle;
 #endif
+*/
 	Str255 WhichTxtrLabel;
 	GetMenuItemText(BasedOn_MHdl,WhichTexture+1,WhichTxtrLabel);
 	
@@ -163,15 +165,16 @@ static bool TextureConfigureDialog(short WhichTexture)
 	GetDialogItem(Dialog, WhichOne_Item, &ItemType, &WhichOne_Hdl, &Bounds);
 	SetDialogItemText(WhichOne_Hdl,WhichTxtrLabel);
 	
+/*
 #if !defined(USE_CARBON_ACCESSORS)
 	HUnlock(CtrlDataHdl);
 	HUnlock(Handle(BasedOn_CHdl));
 #endif
-	
+*/	
 	short WhichAltTxtr;	// Which alternative one selected
 	
 	// Reveal it
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
 	WindowRef frontWindow = ActiveNonFloatingWindow();
@@ -180,11 +183,12 @@ static bool TextureConfigureDialog(short WhichTexture)
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
 #endif
+/*
 #else
 	SelectWindow(Dialog);
 	ShowWindow(Dialog);
 #endif
-	
+*/	
 	bool WillQuit = false;
 	bool IsOK = false;
 
@@ -233,18 +237,20 @@ static bool TextureConfigureDialog(short WhichTexture)
 	}
 	
 	// Clean up
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 # if USE_SHEETS
 	HideSheetWindow(GetDialogWindow(Dialog));
 # else
 	HideWindow(GetDialogWindow(Dialog));
 # endif
+/*
 #else
 	HideWindow(Dialog);
 #endif
+*/
 	DisposeDialog(Dialog);
 
-#if defined(USE_CARBON_ACCESSORS) && USE_SHEETS
+#if /*defined(USE_CARBON_ACCESSORS) &&*/ USE_SHEETS
 	SelectWindow(frontWindow);
 #endif
 	return IsOK;
@@ -333,11 +339,13 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		
 	ControlHandle ColorVoidSwatch_CHdl;
 	GetDialogItem(Dialog, ColorVoidSwatch_Item, &ItemType, (Handle *)&ColorVoidSwatch_CHdl, &Bounds);
-#if defined(TARGET_API_MAC_CARBON)
+//#if defined(TARGET_API_MAC_CARBON)
 	UserItemUPP PaintSwatchUPP = NewUserItemUPP(PaintSwatch);
+/*
 #else
 	UserItemUPP PaintSwatchUPP = NewUserItemProc(PaintSwatch);
 #endif
+*/
 	SetDialogItem(Dialog, ColorVoidSwatch_Item, ItemType, Handle(PaintSwatchUPP), &Bounds);
 	
 	MacCheckbox FlatColorLandscapes_CB(Dialog, FlatColorLandscapes_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatLand));
@@ -367,7 +375,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			LscpColors[il][ie] = Data.LscpColors[il][ie];
 	
 	// Reveal it
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
@@ -375,10 +383,12 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
 #endif
+/*
 #else
 	SelectWindow(Dialog);
 	ShowWindow(Dialog);
 #endif
+*/
 	
 	bool WillQuit = false;
 	bool IsOK = false;
@@ -491,16 +501,18 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	}
 	
 	// Clean up
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	HideSheetWindow(GetDialogWindow(Dialog));
 #else
 	HideWindow(GetDialogWindow(Dialog));
 #endif
+/*
 #else
 	HideWindow(Dialog);
 #endif
-	DisposeRoutineDescriptor(UniversalProcPtr(PaintSwatchUPP));
+*/
+	DisposeUserItemUPP(PaintSwatchUPP);
 	DisposeDialog(Dialog);
 	
 	return IsOK;

@@ -138,10 +138,10 @@ shortening radii on low-volume ambient sound sorces would be a good idea
 #include <stdlib.h>
 
 #ifdef mac
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <quicktime/Quicktime.h>
 #else
-#include <Gestalt.h>
+// #include <Gestalt.h>
 #include <Movies.h>
 #endif
 #endif

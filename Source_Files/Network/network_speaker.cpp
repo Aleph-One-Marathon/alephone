@@ -96,7 +96,7 @@ static SndDoubleBackUPP doubleback_routine_descriptor;
 static void fill_buffer_with_static(byte *buffer, short count);
 static void fill_double_buffer_with_static(SndDoubleBufferPtr buffer);
 
-static pascal void network_speaker_doubleback_procedure(SndChannelPtr channel, SndDoubleBufferPtr doubleBufferPtr);
+static /*pascal*/ void network_speaker_doubleback_procedure(SndChannelPtr channel, SndDoubleBufferPtr doubleBufferPtr);
 void fill_network_speaker_buffer(SndDoubleBufferPtr doubleBufferPtr);
 static void silence_network_speaker();
 static void reset_network_speaker();
@@ -374,24 +374,30 @@ static void fill_buffer_with_static(
 // ZZZ: Sorry, but it seems Apple's CarbonSndPlayDoubleBuffer stuff wants a plain
 // C function pointer, not a UPP or anything.
 static
+/*
 #if !defined(TARGET_API_MAC_CARBON)
 pascal
 #endif
+*/
 void network_speaker_doubleback_procedure(
 	SndChannelPtr channel,
 	SndDoubleBufferPtr doubleBufferPtr)
 {
+/*
 #ifdef env68k
-	long old_a5= set_a5(channel->userInfo); /* set our a5 world */
+	long old_a5= set_a5(channel->userInfo); *//* set our a5 world *//*
 #else
+*/
 	(void)channel;
-#endif
+//#endif
 	
 	fill_network_speaker_buffer(doubleBufferPtr);
-	
+
+/*	
 #ifdef env68k
-	set_a5(old_a5); /* restore a5 */
+	set_a5(old_a5); *//* restore a5 *//*
 #endif
+*/
 }
 
 void fill_network_speaker_buffer(

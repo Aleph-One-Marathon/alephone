@@ -48,8 +48,10 @@ Jul 31, 2002 (Loren Petrich)
 
 #include <stdlib.h>
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <quicktime/Quicktime.h>
+#else
+#include <Movies.h>
 #endif
 #include "interface.h"
 #include "shell.h"
@@ -143,7 +145,7 @@ void initialize_images_manager(void)
 	
 	if (!file.Exists())
 		alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
-
+	
 	if (!ImagesFile.open_file(file))
 		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
 
@@ -182,7 +184,7 @@ bool image_file_t::open_file(FileSpecifier &file)
 	
 	// Try to open as a resource file
 	if (!file.Open(rsrc_file)) {
-
+	
 		// This failed, maybe it's a wad file (M2 Win95 style)
 		if (!open_wad_file_for_reading(file, wad_file)
 		 || !read_wad_header(wad_file, &wad_hdr)) {

@@ -26,10 +26,12 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #ifndef _MY_32BIT_QUICKDRAW_
 #define _MY_32BIT_QUICKDRAW_
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <QDOffscreen.h>
+*/
 #endif
 
 

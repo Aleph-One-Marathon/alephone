@@ -52,7 +52,7 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 #endif
 
 #ifdef mac
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
 #else
 #include <Files.h>

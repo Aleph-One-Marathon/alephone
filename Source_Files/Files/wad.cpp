@@ -367,6 +367,7 @@ void fill_default_wad_header(
 	obj_clear(*header);
 	header->version= wadfile_version;
 	header->data_version= data_version;
+/*
 #if defined(mac) && !defined(USE_CARBON_ACCESSORS)
 	// JTP: Why is it forming a pascal string and immediately calling p2cstr on it?
 	// LP: being sure to create a Pascal-format filename
@@ -376,8 +377,9 @@ void fill_default_wad_header(
 	strncpy(header->file_name+1,Name,MAXIMUM_WADFILE_NAME_LENGTH-1);
 	p2cstr((unsigned char *)header->file_name);
 #else
+*/
 	File.GetName(header->file_name);
-#endif
+//#endif
 	header->wad_count= wad_count;
 	header->application_specific_directory_data_size= application_directory_data_size;					
 

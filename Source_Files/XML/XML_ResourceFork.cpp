@@ -85,12 +85,14 @@ const int MaxErrorsToShow = 7;
 // Reports an interpretation error
 void XML_ResourceFork::ReportInterpretError(const char *ErrorString)
 {
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	CopyCStringToPascal(ErrorString, (unsigned char *)temporary);
+/*
 #else
 	strncpy(temporary,ErrorString,255);
 	c2pstr(temporary);
 #endif
+*/
 	ParamText(ptemporary,0,0,0);
 	if (GetNumInterpretErrors() < MaxErrorsToShow)
 		Alert(NonFatalErrorAlert,NULL);

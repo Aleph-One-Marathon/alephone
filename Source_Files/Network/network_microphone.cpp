@@ -39,6 +39,7 @@ Feb 1, 2003 (Woody Zenfell):
 
 #include "cseries.h"
 
+/*
 #if !defined(TARGET_API_MAC_CARBON) && !defined(SDL)
 #include <SoundInput.h>
 #include <AIFF.h>
@@ -46,6 +47,7 @@ Feb 1, 2003 (Woody Zenfell):
 #else
 #include <Carbon/Carbon.h>
 #endif
+*/
 
 #include "shell.h"
 #include "network_sound.h"

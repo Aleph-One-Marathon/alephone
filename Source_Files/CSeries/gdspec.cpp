@@ -41,12 +41,14 @@ Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 
 #include <stdlib.h>
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <Dialogs.h>
 #include <Palettes.h>
 #include <Devices.h>
+*/
 #endif
 
 #include "cstypes.h"
@@ -326,11 +328,13 @@ static pascal Boolean device_filter(
 		case inContent:
 			where=event->where;
 			GetPort(&saveport);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 			SetPort(GetWindowPort(GetDialogWindow(dlg)));
+/*
 #else
 			SetPort(dlg);
 #endif
+*/
 			GlobalToLocal(&where);
 			item=FindDialogItem(dlg,where)+1;
 			switch (item) {
@@ -435,16 +439,18 @@ void display_device_dialog(
 	GetDialogItem(dlg,itemColorsRadio,&it,&ih,&ir);
 	colorsradio=(ControlHandle)ih;
 	SetControlValue((spec->flags&1<<gdDevType) ? colorsradio : graysradio,1);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	SetThemeWindowBackground(GetDialogWindow(dlg), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(dlg), ActiveNonFloatingWindow());
 #else
 	ShowWindow(GetDialogWindow(dlg));
 #endif
+/*
 #else
 	ShowWindow(dlg);
 #endif
+*/
 	for (done=false; !done; ) {
 		ModalDialog(device_filter_upp,&hit);
 		switch (hit) {
@@ -462,15 +468,17 @@ void display_device_dialog(
 			break;
 		}
 	}
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	HideSheetWindow(GetDialogWindow(dlg));
 #else
 	HideWindow(GetDialogWindow(dlg));
 #endif
+/*
 #else
 	HideWindow(dlg);
 #endif
+*/
 	if (hit==itemOKButton) {
 		spec->slot=GetSlotFromGDevice(devices[curix].dev);
 		spec->flags=GetControlValue(colorsradio) ? 1<<gdDevType : 0;

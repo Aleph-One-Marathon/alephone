@@ -347,15 +347,17 @@ static void update_fps_display(SDL_Surface *s)
 		GetPort(&old_port);
 		SetPort(port);
 		Font.Use();
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 		Rect portRect;
 		GetPortBounds(port, &portRect);
 		short X0 = portRect.left;
 		short Y0 = portRect.bottom;
+/*
 #else
 		short X0 = port->portRect.left;
 		short Y0 = port->portRect.bottom;
 #endif
+*/
 #elif defined(SDL)
 		DisplayTextDest = s;
 		DisplayTextFont = Font.Info;
@@ -397,15 +399,17 @@ static void DisplayPosition(SDL_Surface *s)
 	GetPort(&old_port);
 	SetPort(port);
 	Font.Use();
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	Rect portRect;
 	GetPortBounds(port, &portRect);
 	short X0 = portRect.left;
 	short Y0 = portRect.top;
+/*
 #else
 	short X0 = port->portRect.left;
 	short Y0 = port->portRect.top;
 #endif
+*/
 #elif defined(SDL)
 	DisplayTextDest = s;
 	DisplayTextFont = Font.Info;
@@ -462,15 +466,17 @@ static void DisplayMessages(SDL_Surface *s)
 	GetPort(&old_port);
 	SetPort(port);
 	Font.Use();
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	Rect portRect;
 	GetPortBounds(port, &portRect);
 	short X0 = portRect.left;
 	short Y0 = portRect.top;
+/*
 #else
 	short X0 = port->portRect.left;
 	short Y0 = port->portRect.top;
 #endif
+*/
 #elif defined(SDL)
 	DisplayTextDest = s;
 	DisplayTextFont = Font.Info;

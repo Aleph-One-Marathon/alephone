@@ -57,7 +57,7 @@ Feb 13, 2003 (Woody Zenfell):
 */
 
 #include "macintosh_cseries.h"
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <quicktime/Quicktime.h>
 #else
 #include <Movies.h>
@@ -111,9 +111,9 @@ enum { /* Cheat level dialog */
 
 /* -------- local prototypes */
 // static bool machine_has_quicktime(void);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 static void draw_picture_into_gworld(GWorldPtr gworld, PicHandle picture);
-#endif
+//#endif
 
 /* -------- code */
 void do_preferences(
@@ -154,9 +154,11 @@ short get_level_number_from_user(
 	short item_type;
 	Rect bounds;
 	ControlHandle SelectorHdl;
+/*
 #if !defined(USE_CARBON_ACCESSORS)
 	struct PopupPrivateData **privateHndl;
 #endif
+*/
 	MenuHandle mHandle;
 	
 	index = 0; maximum_level_number= 0;
@@ -169,13 +171,14 @@ short get_level_number_from_user(
 	GetDialogItem(dialog, iLEVEL_SELECTOR, &item_type, 
 		(Handle *) &SelectorHdl, &bounds);
 	assert(SelectorHdl);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	mHandle= GetControlPopupMenuHandle(SelectorHdl);
+/*
 #else
 	privateHndl= (PopupPrivateData **) ((*SelectorHdl)->contrlData);
 	mHandle= (*privateHndl)->mHandle;
 #endif
-	
+*/	
 	// Get rid of old contents
 	while(CountMenuItems(mHandle)) DeleteMenuItem(mHandle, 1);
 	
@@ -470,15 +473,17 @@ bool try_for_event(
 			{
 				try_for_event= true;
 
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 				RgnHandle updateRgn = NewRgn();
 				GetWindowRegion(GetWindowFromPort(GetScreenGrafPort()), kWindowUpdateRgn, updateRgn);
 				if (suppress_background_events() && 
-					EmptyRgn(updateRgn)) 
+					EmptyRgn(updateRgn))
+/*
 #else
 				if (suppress_background_events() && 
 					EmptyRgn(((WindowPeek)GetScreenGrafPort())->updateRgn)) 
 #endif
+*/
 					// && consecutive_getosevent_calls<MAXIMUM_CONSECUTIVE_GETOSEVENT_CALLS)
 				{
 					*use_waitnext= false;
@@ -487,9 +492,9 @@ bool try_for_event(
 					*use_waitnext= true;
 					consecutive_getosevent_calls= 0;
 				}
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 				DisposeRgn(updateRgn);
-#endif
+//#endif
 		
 				last_xnextevent_call= TickCount();
 			}
@@ -682,13 +687,15 @@ void show_movie(
 							dispBounds.bottom= short(PlaybackSize*RECTANGLE_HEIGHT(&dispBounds) + 0.5);
 							
 							/* ‚enter... */
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 							Rect screenBounds;
 							GetPortBounds(GetScreenGrafPort(), &screenBounds);
 							AdjustRect(&screenBounds, &dispBounds, &dispBounds, centerRect);
+/*
 #else
 							AdjustRect(&GetScreenGrafPort()->portRect, &dispBounds, &dispBounds, centerRect);
 #endif
+*/
 							OffsetRect(&dispBounds, dispBounds.left<0 ? -dispBounds.left : 0, dispBounds.top<0 ? -dispBounds.top : 0);
 							SetMovieBox(movie, &dispBounds);
 							

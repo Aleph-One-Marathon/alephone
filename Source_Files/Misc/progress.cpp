@@ -75,30 +75,36 @@ void open_progress_dialog(
 	assert(progress_data.control);
 #else
 // Old code, draws a pretty plain meter
-#if defined(TARGET_API_MAC_CARBON)
+//#if defined(TARGET_API_MAC_CARBON)
 	progress_data.progress_bar_upp= NewUserItemUPP(draw_distribute_progress);
+/*
 #else
 	progress_data.progress_bar_upp= NewUserItemProc(draw_distribute_progress);
 #endif
+*/
 	assert(progress_data.progress_bar_upp);
 
 	GetPort(&progress_data.old_port);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	SetPort(GetWindowPort(GetDialogWindow(progress_data.dialog)));
+/*
 #else
 	SetPort(progress_data.dialog);
 #endif
+*/
 	GetDialogItem(progress_data.dialog, iPROGRESS_BAR, &item_type, &item_handle, &item_box);
 	SetDialogItem(progress_data.dialog, iPROGRESS_BAR, item_type, (Handle) progress_data.progress_bar_upp, &item_box);
 #endif
 	/* Set the message.. */
 	set_progress_dialog_message(message_id);
 
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	ShowWindow(GetDialogWindow(progress_data.dialog));
+/*
 #else
 	ShowWindow(progress_data.dialog);
 #endif
+*/
 	DrawDialog(progress_data.dialog);
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -189,11 +195,13 @@ static pascal void draw_distribute_progress(
 	GrafPtr old_port;
 	
 	GetPort(&old_port);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+/*
 #else
 	SetPort(dialog);
 #endif
+*/
 	
 	GetDialogItem(dialog, item_num, &item_type, &item_handle, &item_box);
 	PenNormal();

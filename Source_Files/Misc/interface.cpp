@@ -325,7 +325,7 @@ void initialize_game_state(
 	game_state.main_menu_display_count= 0;
 
 	toggle_menus(false);
-
+	
 	display_introduction();
 }
 
@@ -1118,15 +1118,17 @@ void display_main_menu(
         SetPort(port);
 
         Font.Use();
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
         Rect portRect;
         GetPortBounds(port, &portRect);
         short X0 = portRect.right;
         short Y0 = portRect.bottom;
+/*
 #else
         short X0 = port->portRect.right;
         short Y0 = port->portRect.bottom;
 #endif
+*/
 #elif defined(SDL)
         // JTP: This works, but I don't know correctness
         SDL_Surface *world_pixels = SDL_GetVideoSurface();

@@ -62,11 +62,13 @@ May 16, 2002 (Woody Zenfell):
 #include "preferences.h"
 
 /* macintosh includes */
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <ApplicationServices/ApplicationServices.h>
 #else
+/*
 #include <CursorDevices.h>
 #include <Traps.h>
+*/
 #endif
 
 #ifdef env68k
@@ -80,8 +82,9 @@ May 16, 2002 (Woody Zenfell):
 
 static void get_mouse_location(Point *where);
 static void set_mouse_location(Point where);
-#if defined(TARGET_API_MAC_CARBON)
+//#if defined(TARGET_API_MAC_CARBON)
 static pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandler, EventRef theEvent, void* userData);
+/*
 #endif
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 static CursorDevicePtr find_mouse_device(void);
@@ -99,16 +102,21 @@ extern pascal OSErr CrsrDevMoveTo(CursorDevicePtr ourDevice, long absX, long abs
 #define MTemp *((Point *)0x0828)
 #define CrsrNewCouple *((short *)0x08ce)
 #endif
+*/
 
 /* ---------- globals */
 
+/*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 static CursorDevicePtr mouse_device = NULL;
 #endif
+*/
 static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
+/*
 #if !defined(TARGET_API_MAC_CARBON)
 static bool snapshot_button_state;
 #else
+*/
 #define MAX_BUTTONS 3
 static bool snapshot_button_state[MAX_BUTTONS];
 static int snapshot_delta_scrollwheel;
@@ -116,27 +124,31 @@ static MPCriticalRegionID CE_MouseLock;
 static int _CE_delta_x, _CE_delta_y, _CE_delta_scrollwheel;
 static EventHandlerUPP _CEMouseTrackerUPP;
 static EventHandlerRef _CEMouseTracker;
-#endif
+//#endif
 /* ---------- code */
 
 void enter_mouse(
 	short type)
 {
 	(void) (type);
-	
+
+/*	
 #if !defined(SUPPRESS_MACOS_CLASSIC)
-	mouse_device= find_mouse_device(); /* will use cursor device manager if non-NULL */
+	mouse_device= find_mouse_device(); *//* will use cursor device manager if non-NULL *//*
 #endif
 
 #ifndef env68k
-	// vwarn(mouse_device, "no valid mouse/trackball device;g;"); /* must use cursor device manager on non-68k */
+	// vwarn(mouse_device, "no valid mouse/trackball device;g;"); *//* must use cursor device manager on non-68k *//*
 #endif
-	
+*/	
+
 	snapshot_delta_yaw= snapshot_delta_pitch= snapshot_delta_velocity= false;
+/*
 #if !defined(TARGET_API_MAC_CARBON)	
 	snapshot_button_state= false;
 
 #else
+*/
 	for(int i = 0; i < MAX_BUTTONS; i++)
 		snapshot_button_state[i] = false;
 	snapshot_delta_scrollwheel = 0;
@@ -153,7 +165,7 @@ void enter_mouse(
 	InstallApplicationEventHandler (_CEMouseTrackerUPP,
 		5, mouseEvents, NULL, &_CEMouseTracker);
 	MPCreateCriticalRegion(&CE_MouseLock);
-#endif
+//#endif
 }
 
 void test_mouse(
@@ -164,7 +176,8 @@ void test_mouse(
 	_fixed *delta_velocity)
 {
 	(void) (type);
-	
+
+/*	
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 	// Idiot-proofing in case of an absent mouse
 	if (mouse_device == NULL)
@@ -179,12 +192,13 @@ void test_mouse(
 #if !defined(TARGET_API_MAC_CARBON)
 	if (snapshot_button_state) *action_flags|= _left_trigger_state;
 #else
+*/
 	if (snapshot_button_state[0]) *action_flags|= _left_trigger_state;
 	if (snapshot_button_state[1]) *action_flags|= _right_trigger_state;
 	if (snapshot_delta_scrollwheel > 0) *action_flags|= _cycle_weapons_forward;
 	else if (snapshot_delta_scrollwheel < 0) *action_flags|= _cycle_weapons_backward;
 	snapshot_delta_scrollwheel = 0;
-#endif	
+//#endif	
 	*delta_yaw= snapshot_delta_yaw;
 	*delta_pitch= snapshot_delta_pitch;
 	*delta_velocity= snapshot_delta_velocity;
@@ -203,12 +217,12 @@ void exit_mouse(
 {
 	(void) (type);
 
-#if defined(TARGET_API_MAC_CARBON)
+//#if defined(TARGET_API_MAC_CARBON)
 	RemoveEventHandler(_CEMouseTracker);
 	DisposeEventHandlerUPP(_CEMouseTrackerUPP);
 	_CEMouseTrackerUPP = NULL;
 	MPDeleteCriticalRegion(CE_MouseLock);
-#endif
+//#endif
 }
 
 /* 1200 pixels per second is the highest possible mouse velocity */
@@ -275,9 +289,11 @@ void mouse_idle(
 				break;
 		}
 		
+/*
 #if !defined(TARGET_API_MAC_CARBON)
 		snapshot_button_state= Button();
 #else
+*/
 		// It works for the primary...
 		snapshot_button_state[0] = Button();
 		
@@ -287,7 +303,7 @@ void mouse_idle(
 			_CE_delta_scrollwheel = 0;
 			MPExitCriticalRegion(CE_MouseLock);
 		}
-#endif
+//#endif
 		last_tick_count= tick_count;
 		
 //		dprintf("%08x %08x %08x;g;", snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity);
@@ -301,7 +317,7 @@ static void get_mouse_location(
 	Point *where)
 {
 
-#if defined(TARGET_API_MAC_CARBON)
+//#if defined(TARGET_API_MAC_CARBON)
 	if(MPEnterCriticalRegion(CE_MouseLock, kDurationImmediate) == noErr)
 	{
 		where->h = CENTER_MOUSE_X + _CE_delta_x;
@@ -315,6 +331,7 @@ static void get_mouse_location(
 		where->h = CENTER_MOUSE_X;
 		where->v = CENTER_MOUSE_Y;
 	}
+/*
 #else
 	if (mouse_device)
 	{
@@ -328,13 +345,17 @@ static void get_mouse_location(
 //		LocalToGlobal(where);
 	}
 #endif
+*/
 }
 
 static void set_mouse_location(
 	Point where)
 {
-#if defined(TARGET_API_MAC_CARBON)
+//#if defined(TARGET_API_MAC_CARBON)
+	#if defined(HAVE_CORE_GRAPHICS)
 	CGWarpMouseCursorPosition(CGPointMake(where.h, where.v));
+	#endif
+/*
 #else
 	if (mouse_device)
 	{
@@ -349,6 +370,7 @@ static void set_mouse_location(
 		CrsrNewCouple= 0xffff;
 	}
 #endif
+*/
 }
 
 #if defined(TARGET_API_MAC_CARBON)
@@ -405,7 +427,9 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 				// Carbon tells us when the mouse moves, but CoreGraphics gets the delta
 				case kEventMouseMoved:
 				case kEventMouseDragged:
+					#if defined(HAVE_CORE_GRAPHICS)
 					CGGetLastMouseDelta(&CGx, &CGy);
+					#endif
 					OSStatus err;
 					if((err = MPEnterCriticalRegion(CE_MouseLock, kDurationForever)) == noErr)
 					{
@@ -414,7 +438,9 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 						MPExitCriticalRegion(CE_MouseLock);
 					}
 					err = noErr;
+					#if defined(HAVE_CORE_GRAPHICS)
 					CGWarpMouseCursorPosition(CGPointMake(CENTER_MOUSE_X, CENTER_MOUSE_Y));
+					#endif
 					break;
 
 				case kEventMouseDown:
@@ -455,6 +481,7 @@ pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nextHandle
 }
 #endif
 
+/*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
 static CursorDevicePtr find_mouse_device(
 	void)
@@ -473,7 +500,7 @@ static CursorDevicePtr find_mouse_device(
 	return device;
 }
 
-/* ---------- from IM */
+*//* ---------- from IM *//*
 
 static bool trap_available(short trap_num)
 {
@@ -506,3 +533,4 @@ static short num_toolbox_traps(void)
 		return 0x0400;
 }
 #endif
+*/

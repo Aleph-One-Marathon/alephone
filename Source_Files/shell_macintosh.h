@@ -140,9 +140,10 @@ Apr 29, 2002 (Loren Petrich):
 	Added test for pressing modifier keys on startup
 */
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <quicktime/Quicktime.h>
 #else
+#include <Movies.h>
 #include <exception.h>
 #endif
 
@@ -282,13 +283,15 @@ static bool ModifierKeysPressed();
 
 /* ---------- code */
 
-#if defined(TARGET_API_MAC_CARBON)
+//#if defined(TARGET_API_MAC_CARBON)
 int main(
 	void)
+/*
 #else
 void main(
 	void)
 #endif
+*/
 {	
 	// LP: on Christian Bauer's suggestion, I've enclosed the code in a try-catch block
 	try
@@ -338,22 +341,26 @@ static void initialize_application_heap(
 	// For telling the screen-frequency dialog not to show
 	ModifierKeysInitiallyPressed = ModifierKeysPressed();
 
+/*
 #if !defined(TARGET_API_MAC_CARBON)
 	MaxApplZone();
 #endif
+*/
 	MoreMasters();
 	MoreMasters();
 	MoreMasters();
 	MoreMasters();
 
+/*
 #if !defined(TARGET_API_MAC_CARBON)
 	InitGraf(&qd.thePort);
 	InitFonts();
 	InitWindows();
 	InitMenus();
 	TEInit();
-	InitDialogs(0); /* resume procedure ignored for multifinder and >=system 7.0 */
+	InitDialogs(0); *//* resume procedure ignored for multifinder and >=system 7.0 *//*
 #endif
+*/
 	InitCursor();
 #if defined(TARGET_API_MAC_CARBON) && defined(__MACH__) && defined(CARBON_USE_QUARTZ_RENDERING)
 #if MAC_OS_X_VERSION_10_2 <= MAC_OS_X_VERSION_MAX_ALLOWED
@@ -402,11 +409,13 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 
 	SetCursor(*GetCursor(watchCursor));
 
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	SetQDGlobalsRandomSeed(TickCount());
+/*
 #else
 	qd.randSeed = TickCount();
 #endif
+*/
 
 #ifdef PERFORMANCE
 	{
@@ -452,18 +461,20 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 			// Get next path specification; quit when one has found an empty one
 
 			unsigned char PathSpec[256];
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 			Str255 pascalPathSpec;
 			GetIndString(pascalPathSpec,PathID,i+1);	// Zero-based to one-based indexing
 			
 			// Make a C string from this Pascal string
 			CopyPascalStringToC(pascalPathSpec, (char *)PathSpec);
+/*
 #else
 			GetIndString(PathSpec,PathID,i+1);	// Zero-based to one-based indexing
 			
 			// Make a C string from this Pascal string
 			p2cstr(PathSpec);
 #endif
+*/
 			//fdprintf("Dir Path = %s",PathSpec);
 			
 			DirectorySpecifier DirSpec;
@@ -487,7 +498,8 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 
 	initialize_marathon_music_handler();
 	initialize_ISp(); /* BT: Added April 16, 2000 ISp: Initialize Input Sprockets */
-
+	
+	int k = 0;
 	initialize_keyboard_controller();
 	initialize_screen(&graphics_preferences->screen_mode, ModifierKeysInitiallyPressed);
 	initialize_marathon();
@@ -497,21 +509,23 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	initialize_fades();
 
 	kill_screen_saver();
-
+	
 	set_dialog_header_proc(marathon_dialog_header_proc);
 	initialize_images_manager();
-
+	
 	/* Load the environment.. */
 	load_environment_from_preferences();
-
+	
 	initialize_game_state();
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	Cursor arrow;
 	GetQDGlobalsArrow(&arrow);
 	SetCursor(&arrow);
+/*
 #else
 	SetCursor(&qd.arrow);
 #endif
+*/
 }
 
 void handle_game_key(
@@ -1142,11 +1156,13 @@ static void marathon_dialog_header_proc(
 	DialogPtr dialog,
 	Rect *frame)
 {
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	long refCon= GetWRefCon(GetDialogWindow(dialog));
+/*
 #else
 	long refCon= GetWRefCon(dialog);
 #endif
+*/
 	
 	if (refCon>=FIRST_DIALOG_REFCON && refCon<=LAST_DIALOG_REFCON)
 	{
@@ -1292,18 +1308,22 @@ void update_any_window(
 	GrafPtr old_port;
 
 	GetPort(&old_port);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	SetPort(GetWindowPort(window));
+/*
 #else
 	SetPort(window);
 #endif
+*/
 	BeginUpdate(window);
 
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	if(window==GetWindowFromPort(GetScreenGrafPort()))
+/*
 #else
 	if(window==(WindowPtr)GetScreenGrafPort())
 #endif
+*/
 	{
 		update_game_window(window, event);
 	}
@@ -1317,11 +1337,13 @@ void activate_any_window(
 	EventRecord *event,
 	bool active)
 {
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	if(window==GetWindowFromPort(GetScreenGrafPort()))
+/*
 #else
 	if(window==(WindowPtr)GetScreenGrafPort())
 #endif
+*/
 	{
 		activate_screen_window(window, event, active);
 	}
@@ -1389,13 +1411,15 @@ static void process_event(
 						else
 						{
 							// whatever is necessary to update it
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 							Rect portRect;
 							GetPortBounds(GetScreenGrafPort(), &portRect);
 							InvalWindowRect(GetWindowFromPort(GetScreenGrafPort()), &portRect);
+/*
 #else
 							InvalRect(&GetScreenGrafPort()->portRect);
 #endif
+*/
 						}
 					}
 					else

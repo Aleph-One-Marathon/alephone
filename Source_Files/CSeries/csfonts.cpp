@@ -24,11 +24,13 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 // LP: not sure who originally wrote these cseries files: Bo Lindbergh?
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <Resources.h>
 #include <Quickdraw.h>
+*/
 #endif
 
 #include "csfonts.h"
@@ -67,15 +69,17 @@ void GetFont(
 	GrafPtr port;
 
 	GetPort(&port);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	spec->font=GetPortTextFont(port);
 	spec->style=GetPortTextFace(port);
 	spec->size=GetPortTextSize(port);
+/*
 #else
 	spec->font=port->txFont;
 	spec->style=port->txFace;
 	spec->size=port->txSize;
 #endif
+*/
 }
 
 void SetFont(

@@ -32,9 +32,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #define mac
 #endif
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
 #else
+/*
 #include <Events.h>
 #include <AppleEvents.h>
 #include <Aliases.h>
@@ -49,6 +50,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include <TextUtils.h>
 #include <PictUtils.h>
 #include <Lists.h>
+*/
 #endif
 
 // JTP: Move after includes to not stomp on Carbon.h's use of DEBUG

@@ -68,13 +68,15 @@ void _restore_port(
 	void)
 {
 	// LP: kludge for recognizing when one had been drawing into the HUD
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	if (destination_graphics_port == (GrafPtr)HUD_Buffer)
 		SetOrigin(0,0);
+/*
 #else
 	if (destination_graphics_port == (GrafPort *)HUD_Buffer)
 		SetOrigin(0,0);
 #endif
+*/
 	assert(old_graphics_port && old_graphics_device && destination_graphics_port);
 	SetGWorld(old_graphics_port, old_graphics_device);
 	old_graphics_port= NULL;
@@ -134,15 +136,17 @@ void _draw_screen_shape(
 	}
 
 	assert(destination_graphics_port);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	CopyBits((BitMapPtr) *pixmap, GetPortBitMapForCopyBits(destination_graphics_port),
 		&actual_source, (Rect *) destination, srcCopy, (RgnHandle) nil);
 	/* flush part of the port */
 	FlushGrafPortRect(destination_graphics_port, *(Rect*)destination);
+/*
 #else
 	CopyBits((BitMapPtr) *pixmap, &destination_graphics_port->portBits,
 		&actual_source, (Rect *) destination, srcCopy, (RgnHandle) nil);
 #endif
+*/
 
 	/* Restore the colors.. */
 	RGBForeColor(&old_fore);
@@ -235,15 +239,17 @@ void _draw_screen_shape_at_x_y(
 	
 	/* Slam the puppy...  */
 	assert(destination_graphics_port);
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	CopyBits((BitMapPtr) *pixmap, GetPortBitMapForCopyBits(destination_graphics_port),
 		&(*pixmap)->bounds, &destination, srcCopy, (RgnHandle) nil);
 	/* flush part of the port */
 	FlushGrafPortRect(destination_graphics_port, destination);
+/*
 #else
 	CopyBits((BitMapPtr) *pixmap, &destination_graphics_port->portBits, //&screen_window->portBits,
 		&(*pixmap)->bounds, &destination, srcCopy, (RgnHandle) nil);
 #endif
+*/
 
 	/* Restore the colors.. */
 	RGBForeColor(&old_fore);
@@ -485,14 +491,16 @@ void _draw_screen_text(
 void _erase_screen(
 	short color_index)
 {
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	Rect rect;
 	GetPortBounds(GetScreenGrafPort(), &rect);
 	_fill_rect((screen_rectangle *)&rect, color_index);
+/*
 #else
 	_fill_rect((screen_rectangle *) &GetScreenGrafPort()->portRect, color_index);
 #endif
-#if defined(TARGET_API_MAC_CARBON)
+*/
+//#if defined(TARGET_API_MAC_CARBON)
 	CGrafPtr curPort;
 	GetPort(&curPort);
 	if (QDIsPortBuffered(curPort))
@@ -505,7 +513,7 @@ void _erase_screen(
 		// Try and wait for the screen to redraw
 		RunCurrentEventLoop(kEventDurationSecond/4);
 	}
-#endif
+//#endif
 }
 
 short _get_font_line_height(

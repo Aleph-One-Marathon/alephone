@@ -81,7 +81,7 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #endif
 
 #if defined(mac)
-# if defined(TARGET_API_MAC_CARBON)
+# if defined(EXPLICIT_CARBON_HEADER)
 #  include <OpenGL/gl.h>
 #  include <AGL/agl.h>
 # else

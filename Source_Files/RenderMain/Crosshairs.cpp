@@ -179,11 +179,13 @@ bool Crosshairs_Render(GrafPtr Context, Rect &ViewRect)
 // If no view rectangle is explicitly specified
 bool Crosshairs_Render(GrafPtr Context)
 {
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	Rect portRect;
 	GetPortBounds(Context, &portRect);
 	return Crosshairs_Render(Context, portRect);
+/*
 #else
 	return Crosshairs_Render(Context,Context->portRect);
 #endif
+*/
 }

@@ -26,11 +26,13 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #include <string.h>
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <Errors.h>
 #include <Processes.h>
+*/
 #endif
 
 #include "csfiles.h"
@@ -77,7 +79,7 @@ extern OSErr get_my_fsspec(
 	pir.processInfoLength=sizeof pir;
 	pir.processName=NULL;
 	pir.processAppSpec=spec;
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(APPLICATION_IS_BUNDLED)
 	OSStatus err = GetProcessInformation(&psn,&pir);
 	if(err == noErr)
 	{

@@ -94,8 +94,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #   include <OpenGL/gl.h>
 #   include <OpenGL/glu.h>
 # elif defined mac
-#   include "gl.h"
-#   include "glu.h"
+#   include <gl.h>
+#   include <glu.h>
 # else
 #   include <GL/gl.h>
 #   include <GL/glu.h>
@@ -103,7 +103,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #endif
 
 #ifdef mac
-# if defined(TARGET_API_MAC_CARBON)
+# if defined(EXPLICIT_CARBON_HEADER)
 #  include <AGL/agl.h>
 # else
 #  include <agl.h>

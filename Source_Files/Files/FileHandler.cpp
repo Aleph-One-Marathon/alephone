@@ -50,13 +50,15 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 */
 
 #if defined(mac) || ( defined(SDL) && defined(SDL_RFORK_HACK) )
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <string.h>
 #include <Aliases.h>
 #include <Folders.h>
 #include <Navigation.h>
+*/
 #endif
 #include <algorithm>
 #include "cseries.h"
@@ -617,6 +619,7 @@ bool FileSpecifier::Open(OpenedFile& OFile, bool Writable)
 bool FileSpecifier::Open(OpenedResourceFile& OFile, bool Writable)
 {
 	OFile.Close();
+	Spec.name[Spec.name[0]+1] = 0;
 	
 	if (!ResolveFile(Spec)) return false;
         short RefNum;
@@ -726,9 +729,10 @@ bool FileSpecifier::ReadDialog(int Type, char *Prompt)
 	
 	} else {
 	
-#if defined(SUPPRESS_MACOS_CLASSIC)
+//#if defined(SUPPRESS_MACOS_CLASSIC)
 	// No Standard File under MacOS X
 	assert(0);
+/*
 #else
 	StandardFileReply Reply;
 	short NumTypes;
@@ -747,6 +751,7 @@ bool FileSpecifier::ReadDialog(int Type, char *Prompt)
 	SetSpec(Reply.sfFile);
 	
 #endif
+*/
 	}
 	
 	return true;
@@ -783,8 +788,9 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 	
 	} else {
 	
-#if defined(SUPPRESS_MACOS_CLASSIC)
+//#if defined(SUPPRESS_MACOS_CLASSIC)
 	assert(0);
+/*
 #else
 	Str31 PasPrompt, PasDefaultName;
 	StandardFileReply Reply;
@@ -803,7 +809,7 @@ bool FileSpecifier::WriteDialog(int Type, char *Prompt, char *DefaultName)
 	
 	SetSpec(Reply.sfFile);
 #endif	
-		
+*/	
 	}
 	
 	return true;
@@ -854,20 +860,24 @@ static bool confirm_save_choice(
 				assert(dialog);
 				
 				/* Move the window to the proper location.. */
-#if defined(USE_CARBON_ACCESSORS)                                
+//#if defined(USE_CARBON_ACCESSORS)                                
 				MoveWindow(GetDialogWindow(dialog), frame.left+REPLACE_H_OFFSET, 
 					frame.top+REPLACE_V_OFFSET, false);
+/*
 #else
 				MoveWindow((WindowPtr) dialog, frame.left+REPLACE_H_OFFSET, 
 					frame.top+REPLACE_V_OFFSET, false);
 #endif
+*/
 
 				/* Show the window. */
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 				ShowWindow(GetDialogWindow(dialog));			
+/*
 #else
 				ShowWindow((WindowPtr) dialog);			
 #endif
+*/
 				do {
 					ModalDialog(get_general_filter_upp(), &item_hit);
 				} while(item_hit > iCANCEL);
@@ -892,8 +902,11 @@ static bool confirm_save_choice(
 	return pass_through;
 }
 
+/*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
+*/
 /* load_file_reply is valid.. */
+/*
 static pascal short custom_put_hook(
 	short item, 
 	DialogPtr theDialog,
@@ -917,6 +930,7 @@ static pascal short custom_put_hook(
 	return item;
 }
 #endif
+*/
 
 bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 {
@@ -948,8 +962,9 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 	SetSpec(temp);
 	
 	} else {
-#if defined(SUPPRESS_MACOS_CLASSIC)
+//#if defined(SUPPRESS_MACOS_CLASSIC)
 	assert(0);
+/*
 #else
 	
 	Str31 PasPrompt, PasDefaultName;
@@ -964,25 +979,25 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 		PasDefaultName[0] = 0;
 	
 	DlgHookYDUPP dlgHook;
-	Point top_left= {-1, -1}; /* auto center */
+	Point top_left= {-1, -1}; *//* auto center *//*
 	
-	/* Create the UPP's */
+	*//* Create the UPP's *//*
 	dlgHook= NewDlgHookYDProc(custom_put_hook);
 	assert(dlgHook);
 	
-	/* The drawback of this method-> I don't get a New Folder button. */
-	/* If this is terribly annoying, I will add the Sys7 only code. */
+	*//* The drawback of this method-> I don't get a New Folder button. *//*
+	*//* If this is terribly annoying, I will add the Sys7 only code. *//*
 	CustomPutFile(PasPrompt, 
 		PasDefaultName, &Reply, 0, top_left, dlgHook, NULL, NULL, NULL, &Reply.sfFile);
 
-	/* Free them... */
+	*//* Free them... *//*
 	DisposeRoutineDescriptor((UniversalProcPtr) dlgHook);
 	
 	if (!Reply.sfGood) return false;
 	
 	SetSpec(Reply.sfFile);
 #endif
-		
+*/
 	}
 	
 	return true;

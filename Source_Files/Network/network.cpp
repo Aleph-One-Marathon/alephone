@@ -105,6 +105,7 @@ clearly this is all broken until we have packet types
 #include "mytm.h"	// ZZZ: both versions use mytm now
 // for screen_printf()
 #include "shell.h"
+#include "preferences.h"
 
 #if defined(SDL) || HAVE_SDL_NET
 #include "sdl_network.h"

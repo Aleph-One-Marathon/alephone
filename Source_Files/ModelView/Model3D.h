@@ -33,7 +33,7 @@ using namespace std;
 # if defined (__APPLE__) && defined (__MACH__)
 #   include <OpenGL/gl.h>
 # elif defined mac
-#   include "gl.h"
+#   include <gl.h>
 # else
 #  ifdef WIN32
 #   include <wtypes.h>	// for POINT, so we can include wingdi.h

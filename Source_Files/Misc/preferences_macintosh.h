@@ -89,7 +89,7 @@ April 19, 2003 (Woody Zenfell):
         Environment prefs now can show many more items; elements labelled by containing folder
 */
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <CoreServices/CoreServices.h>
 #endif
 
@@ -866,13 +866,15 @@ static void setup_environment_dialog(
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iSOUNDS, first_item),
 			_typecode_sounds, preferences->sounds_mod_date, preferences->sounds_file);
 
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 		Cursor arrow;
 		GetQDGlobalsArrow(&arrow);
 		SetCursor(&arrow);
+/*
 #else
 		SetCursor(&qd.arrow);
 #endif
+*/
 	} else {
 		assert(false);
 	}
@@ -976,15 +978,19 @@ static void set_popup_enabled_state(
 	GetDialogItem(dialog, item_number, &item_type, (Handle *) &control, &bounds);
 	assert(item_type&ctrlItem);
 
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	menu= GetControlPopupMenuHandle(control);
+/*
 #else
+	*/
 	/* I don't know how to assert that it is a popup control... <sigh> */
+	/*
 	privateHndl= (PopupPrivateData **) ((*control)->contrlData);
 	assert(privateHndl);
 	
 	menu= (*privateHndl)->mHandle;
 #endif
+*/
 	assert(menu);
 	
 #if defined(TARGET_API_MAC_CARBON)
@@ -1440,9 +1446,11 @@ static MenuHandle get_popup_menu_handle(
 	DialogPtr dialog,
 	short item)
 {
+/*
 #if !defined(USE_CARBON_ACCESSORS)
 	struct PopupPrivateData **privateHndl;
 #endif
+*/
 	MenuHandle menu;
 	short item_type;
 	ControlHandle control;
@@ -1451,15 +1459,19 @@ static MenuHandle get_popup_menu_handle(
 	/* Add the maps.. */
 	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
 
-#if defined(USE_CARBON_ACCESSORS)
+//#if defined(USE_CARBON_ACCESSORS)
 	menu= GetControlPopupMenuHandle(control);
+/*
 #else
+	*/
 	/* I don't know how to assert that it is a popup control... <sigh> */
+	/*
 	privateHndl= (PopupPrivateData **) ((*control)->contrlData);
 	assert(privateHndl);
 
 	menu= (*privateHndl)->mHandle;
 #endif
+*/
 	assert(menu);
 
 	return menu;

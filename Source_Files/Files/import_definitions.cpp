@@ -36,6 +36,8 @@ Aug 31, 2000 (Loren Petrich):
 #include "game_wad.h"
 #include "wad.h"
 #include "game_errors.h"
+#include "shell.h"
+#include "preferences.h"
 #include "FileHandler.h"
 
 // LP: get all the unpacker definitions

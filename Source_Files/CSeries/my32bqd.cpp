@@ -27,12 +27,14 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "my32bqd.h"
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <LowMem.h>
 #include <Video.h>
 #include <Devices.h>
+*/
 #endif
 
 void initialize_my_32bqd(void)
@@ -151,6 +153,7 @@ enum eMenuBarState
 	SHOWING
 };
 
+#include "csalerts.h"
 #include "csstrings.h"
 
 static eMenuBarState mbarstate = UNKNOWN;
@@ -192,8 +195,9 @@ void LowLevelSetEntries(
 	short count0,
 	ColorSpec *specs)
 {
-#if defined(SUPPRESS_MACOS_CLASSIC)
+//#if defined(SUPPRESS_MACOS_CLASSIC)
 	assert(0);
+/*
 #else
 	GDHandle dev;
 	VDSetEntryRecord se;
@@ -212,4 +216,5 @@ void LowLevelSetEntries(
 	*(VDSetEntryRecord **)pb.csParam=&se;
 	PBControlSync((ParmBlkPtr)&pb);
 #endif
+*/
 }

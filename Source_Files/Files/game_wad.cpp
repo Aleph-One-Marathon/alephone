@@ -98,6 +98,8 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "lightsource.h"
 #include "media.h"
 #include "weapons.h"
+#include "shell.h"
+#include "preferences.h"
 #include "FileHandler.h"
 
 #include "editor.h"

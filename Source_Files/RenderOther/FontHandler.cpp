@@ -44,7 +44,7 @@ Jan 12, 2001 (Loren Petrich):
 # if defined (__APPLE__) && defined (__MACH__)
 #   include <OpenGL/gl.h>
 # elif defined mac
-#   include "gl.h"
+#   include <gl.h>
 # else
 #  include <GL/gl.h>
 # endif

@@ -23,20 +23,23 @@
 	
 	Much of the QuickDraw 3D code uses code inspired by
 	Brian Greenstone's utility 3DMF Mapper; some of it is actually copied.
+	
+May 4, 2003 (Loren Petrich):
+	QD3D changed to Quesa
 */
 
-#include <QD3D.h>
-#include <QD3DGroup.h>
-#include <QD3DIO.h>
-#include <QD3DStorage.h>
-#include <QD3DErrors.h>
-#include <QD3DShader.h>
-#include <QD3DCamera.h>
-#include <QD3DMath.h>
-#include <QD3DLight.h>
-#include <QD3DExtension.h>
-#include <QD3DRenderer.h>
-#include <QD3DGeometry.h>
+#include <Quesa.h>
+#include <QuesaGroup.h>
+#include <QuesaIO.h>
+#include <QuesaStorage.h>
+#include <QuesaErrors.h>
+#include <QuesaShader.h>
+#include <QuesaCamera.h>
+#include <QuesaMath.h>
+#include <QuesaLight.h>
+#include <QuesaExtension.h>
+#include <QuesaRenderer.h>
+#include <QuesaGeometry.h>
 
 #include <ctype.h>
 #include <stdlib.h>

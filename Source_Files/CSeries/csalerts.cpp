@@ -28,11 +28,13 @@ April 22, 2003 (Woody Zenfell):
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(TARGET_API_MAC_CARBON)
+#if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
+/*
 #else
 #include <Dialogs.h>
 #include <TextUtils.h>
+*/
 #endif
 
 #include "csalerts.h"
