@@ -3,9 +3,9 @@
 #define _CSERIES_FONTS_
 
 typedef struct TextSpec {
-	short font;
-	unsigned short style;
-	short size;
+	int16 font;
+	uint16 style;
+	int16 size;
 } TextSpec;
 
 extern void GetNewTextSpec(

@@ -74,9 +74,11 @@ typedef GDSpec *GDSpecPtr;
 #define noErr 0
 #define pascal
 
-#define kFontIDMonaco 0
+#define kFontIDMonaco 4
 #define normal 0
 #define bold 1
+#define italic 2
+#define underline 4
 
 
 /*
