@@ -140,7 +140,7 @@ enum // cheat tags
 struct keyword_data
 {
 	short tag;
-	char *keyword; /* in uppercase */
+	char keyword[MAXIMUM_KEYWORD_LENGTH+1]; /* in uppercase */
 };
 
 /* ---------- globals */
@@ -399,6 +399,63 @@ static void handle_keyword(
 // #endif
 
 
+class XML_CheatKeywordParser: public XML_ElementParser
+{
+	bool IsPresent;
+	int Index;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	bool HandleString(const char *String, int Length);
+	
+	XML_CheatKeywordParser(): XML_ElementParser("keyword") {}
+};
+
+bool XML_CheatKeywordParser::Start()
+{
+	IsPresent = false;
+	return true;
+}
+
+bool XML_CheatKeywordParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"index") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%d",Index,0,int(NUMBER_OF_KEYWORDS-1)))
+		{
+			IsPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_CheatKeywordParser::AttributesDone()
+{
+	return IsPresent;
+}
+
+bool XML_CheatKeywordParser::HandleString(const char *String, int Length)
+{
+	// OK because of call-by-value
+	Length = MIN(Length,MAXIMUM_KEYWORD_LENGTH);
+	
+	char *DestString = keywords[Index].keyword;
+	objlist_clear(DestString,MAXIMUM_KEYWORD_LENGTH+1);
+	for (int c=0; c<Length; c++, String++, DestString++)
+		*DestString = toupper(*String);
+	
+	return true;
+}
+
+
+static XML_CheatKeywordParser CheatKeywordParser;
+
+
 // LP addition: XML support for controlling whether cheats are active
 class XML_CheatsParser: public XML_ElementParser
 {
@@ -415,6 +472,14 @@ bool XML_CheatsParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return ReadBooleanValue(Value,CheatsActive);
 	}
+	else if (strcmp(Tag,"mac_keymod") == 0)
+	{
+#ifdef mac
+		return (ReadNumericalValue(Value,"%hu",CheatCodeModMask));
+#else
+		return true;
+#endif
+	}
 	UnrecognizedTag();
 	return false;
 }
@@ -424,5 +489,6 @@ static XML_CheatsParser CheatsParser;
 
 XML_ElementParser *Cheats_GetParser()
 {
+	CheatsParser.AddChild(&CheatKeywordParser);
 	return &CheatsParser;
 }

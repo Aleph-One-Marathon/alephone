@@ -172,6 +172,9 @@ static bool HasNavServices = false;
 // Necessary to to indicate whether or not to create a dialog box.
 static bool AppServicesInited = false;
 
+// The modifier for typing in cheat codes
+static short CheatCodeModMask = controlKey;
+
 /* ---------- externs that I couldn't fit into the #include heirarchy nicely */
 extern bool load_and_start_game(FileSpecifier& File);
 extern bool handle_open_replay(FileSpecifier& File);
@@ -409,7 +412,7 @@ void handle_game_key(
 	
 // LP change: implementing Benad's "cheats always on"
 // #ifndef FINAL
-	if (!game_is_networked && (event->modifiers & controlKey))
+	if (!game_is_networked && (event->modifiers & CheatCodeModMask))
 	{
 		short type_of_cheat;
 		
