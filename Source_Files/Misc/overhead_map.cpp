@@ -271,7 +271,11 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 bool OGL_MapActive = false;
 
 // Software rendering
+#ifdef mac
+static OverheadMap_QD_Class OverheadMap_SW;
+#else
 static OverheadMap_SDL_Class OverheadMap_SW;
+#endif
 // OpenGL rendering
 #ifdef HAVE_OPENGL
 static OverheadMap_OGL_Class OverheadMap_OGL;
