@@ -17,6 +17,10 @@ Feb 15, 2000 (Loren Petrich):
 
 April 16, 2000 (Loren Petrich):
 	Made the incorrect-count vwarms optional
+
+Aug 29, 2000 (Loren Petrich):
+	Created packing and unpacking functions for all the
+		externally-accessible data types defined here
 */
 
 const bool DoIncorrectCountVWarn = false;
@@ -1043,7 +1047,7 @@ void unpack_line_data(uint8 *Stream, line_data *Objects, int Count)
 		StreamToValue(S,ObjPtr->clockwise_polygon_owner);
 		StreamToValue(S,ObjPtr->counterclockwise_polygon_owner);
 		
-		S += 2*6;
+		S += 6*2;
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_line_data);
@@ -1069,7 +1073,7 @@ void pack_line_data(uint8 *Stream, line_data *Objects, int Count)
 		ValueToStream(S,ObjPtr->clockwise_polygon_owner);
 		ValueToStream(S,ObjPtr->counterclockwise_polygon_owner);
 		
-		S += 2*6;
+		S += 6*2;
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_line_data);
@@ -1148,7 +1152,7 @@ void unpack_side_data(uint8 *Stream, side_data *Objects, int Count)
 		
 		StreamToValue(S,ObjPtr->ambient_delta);
 		
-		S += 2*1;
+		S += 1*2;
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_side_data);
@@ -1186,7 +1190,7 @@ void pack_side_data(uint8 *Stream, side_data *Objects, int Count)
 		
 		ValueToStream(S,ObjPtr->ambient_delta);
 		
-		S += 2*6;
+		S += 1*2;
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_side_data);
@@ -1248,7 +1252,7 @@ void unpack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
 		StreamToValue(S,ObjPtr->ambient_sound_image_index);
 		StreamToValue(S,ObjPtr->random_sound_image_index);
 		
-		S += 2*1;
+		S += 1*2;
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_polygon_data);
@@ -1310,9 +1314,228 @@ void pack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
 		ValueToStream(S,ObjPtr->ambient_sound_image_index);
 		ValueToStream(S,ObjPtr->random_sound_image_index);
 		
-		S += 2*1;
+		S += 1*2;
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_polygon_data);
 }
 
+void unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count)
+{
+	uint8* S = Stream;
+	map_annotation* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		
+		StreamToValue(S,ObjPtr->location.x);
+		StreamToValue(S,ObjPtr->location.y);
+		StreamToValue(S,ObjPtr->polygon_index);
+		
+		StreamToBytes(S,ObjPtr->text,MAXIMUM_ANNOTATION_TEXT_LENGTH);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_map_annotation);
+}
+
+void pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count)
+{
+	uint8* S = Stream;
+	map_annotation* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		
+		ValueToStream(S,ObjPtr->location.x);
+		ValueToStream(S,ObjPtr->location.y);
+		ValueToStream(S,ObjPtr->polygon_index);
+		
+		BytesToStream(S,ObjPtr->text,MAXIMUM_ANNOTATION_TEXT_LENGTH);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_map_annotation);
+}
+
+
+void unpack_map_object(uint8 *Stream, map_object* Objects, int Count)
+{
+	uint8* S = Stream;
+	map_object* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->index);
+		StreamToValue(S,ObjPtr->facing);
+		StreamToValue(S,ObjPtr->polygon_index);
+		StreamToValue(S,ObjPtr->location.x);
+		StreamToValue(S,ObjPtr->location.y);
+		StreamToValue(S,ObjPtr->location.z);
+		StreamToValue(S,ObjPtr->flags);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_map_object);
+}
+
+void pack_map_object(uint8 *Stream, map_object* Objects, int Count)
+{
+	uint8* S = Stream;
+	map_object* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->index);
+		ValueToStream(S,ObjPtr->facing);
+		ValueToStream(S,ObjPtr->polygon_index);
+		ValueToStream(S,ObjPtr->location.x);
+		ValueToStream(S,ObjPtr->location.y);
+		ValueToStream(S,ObjPtr->location.z);
+		ValueToStream(S,ObjPtr->flags);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_map_object);
+}
+
+
+void unpack_static_data(uint8 *Stream, static_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	static_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->environment_code);
+		
+		StreamToValue(S,ObjPtr->physics_model);
+		StreamToValue(S,ObjPtr->song_index);
+		StreamToValue(S,ObjPtr->mission_flags);
+		StreamToValue(S,ObjPtr->environment_flags);
+		
+		S += 4*2;
+		
+		StreamToBytes(S,ObjPtr->level_name,LEVEL_NAME_LENGTH);
+		StreamToValue(S,ObjPtr->entry_point_flags);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_static_data);
+}
+
+
+void pack_static_data(uint8 *Stream, static_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	static_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->environment_code);
+		
+		ValueToStream(S,ObjPtr->physics_model);
+		ValueToStream(S,ObjPtr->song_index);
+		ValueToStream(S,ObjPtr->mission_flags);
+		ValueToStream(S,ObjPtr->environment_flags);
+		
+		S += 4*2;
+		
+		BytesToStream(S,ObjPtr->level_name,LEVEL_NAME_LENGTH);
+		ValueToStream(S,ObjPtr->entry_point_flags);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_static_data);
+}
+
+void unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	ambient_sound_image_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->sound_index);
+		StreamToValue(S,ObjPtr->volume);
+		
+		S += 5*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_ambient_sound_image_data);
+}
+
+void pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	ambient_sound_image_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->sound_index);
+		ValueToStream(S,ObjPtr->volume);
+		
+		S += 5*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_ambient_sound_image_data);
+}
+
+
+void unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	random_sound_image_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->sound_index);
+
+		StreamToValue(S,ObjPtr->volume);
+		StreamToValue(S,ObjPtr->delta_volume);
+		StreamToValue(S,ObjPtr->period);
+		StreamToValue(S,ObjPtr->delta_period);
+		StreamToValue(S,ObjPtr->direction);
+		StreamToValue(S,ObjPtr->delta_direction);
+		StreamToValue(S,ObjPtr->pitch);
+		StreamToValue(S,ObjPtr->delta_pitch);
+		
+		StreamToValue(S,ObjPtr->phase);
+		
+		S += 3*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_random_sound_image_data);
+}
+
+void pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	random_sound_image_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->sound_index);
+
+		ValueToStream(S,ObjPtr->volume);
+		ValueToStream(S,ObjPtr->delta_volume);
+		ValueToStream(S,ObjPtr->period);
+		ValueToStream(S,ObjPtr->delta_period);
+		ValueToStream(S,ObjPtr->direction);
+		ValueToStream(S,ObjPtr->delta_direction);
+		ValueToStream(S,ObjPtr->pitch);
+		ValueToStream(S,ObjPtr->delta_pitch);
+		
+		ValueToStream(S,ObjPtr->phase);
+		
+		S += 3*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_random_sound_image_data);
+}
