@@ -51,15 +51,16 @@ namespace AStream
       char _M_name[_M_bufsize];
 	};
 	
+	template <typename T>
 	class basic_astream
 	{
 	private:
-		uint8 *_M_stream_begin;
-		uint8 *_M_stream_end;
+		T *_M_stream_begin;
+		T *_M_stream_end;
 		iostate _M_state;
 		iostate _M_exception;
 	protected:
-		uint8 *_M_stream_pos;
+		T *_M_stream_pos;
 		bool
 		bound_check(uint32 __delta) throw(AStream::failure);
 		
@@ -100,7 +101,7 @@ namespace AStream
 		exceptions(iostate except)
 		{ _M_exception= except; }
 		
-		basic_astream(uint8* __stream, uint32 __length, uint32 __offset) :
+		basic_astream(T* __stream, uint32 __length, uint32 __offset) :
 			_M_stream_begin(__stream),
 			_M_stream_end(__stream + __length),
 			_M_state(goodbit),
@@ -114,11 +115,11 @@ namespace AStream
 
 /* Input Streams, deserializing */
 
-class AIStream : public AStream::basic_astream
+class AIStream : public AStream::basic_astream<const uint8>
 {
 public:
-	AIStream(uint8* __stream, uint32 __length, uint32 __offset) :
-		AStream::basic_astream(__stream, __length, __offset) {}
+	AIStream(const uint8* __stream, uint32 __length, uint32 __offset) :
+		AStream::basic_astream<const uint8>(__stream, __length, __offset) {}
 
 	uint32
 	tellg() const
@@ -177,7 +178,7 @@ public:
 class AIStreamBE : public AIStream
 {
 public:
-	AIStreamBE(uint8* __stream, uint32 __length, uint32 __offset = 0) :
+	AIStreamBE(const uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AIStream(__stream, __length, __offset) {};
   
 	AIStream&
@@ -196,7 +197,7 @@ public:
 class AIStreamLE : public AIStream
 {
 public:
-	AIStreamLE(uint8* __stream, uint32 __length, uint32 __offset = 0) :
+	AIStreamLE(const uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AIStream(__stream, __length, __offset) {};
   
 	AIStream&
@@ -214,11 +215,11 @@ public:
 
 /* Output Streams, serializing */
 
-class AOStream : public AStream::basic_astream
+class AOStream : public AStream::basic_astream<uint8>
 {
 public:
 	AOStream(uint8* __stream, uint32 __length, uint32 __offset) :
-		AStream::basic_astream(__stream, __length, __offset) {}
+		AStream::basic_astream<uint8>(__stream, __length, __offset) {}
 
 	uint32
 	tellp() const

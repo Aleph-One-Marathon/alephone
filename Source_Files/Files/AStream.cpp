@@ -278,7 +278,8 @@ AOStream& AOStreamLE::operator<<(int32 value)
 	return operator<<(uint32(value));
 }
 
-bool AStream::basic_astream::bound_check(uint32 delta)
+template<typename T>
+bool AStream::basic_astream<T>::bound_check(uint32 delta)
 	throw(AStream::failure)
 {
 	if(_M_stream_pos + delta > _M_stream_end)
