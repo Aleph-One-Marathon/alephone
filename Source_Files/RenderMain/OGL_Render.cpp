@@ -787,7 +787,7 @@ void PreloadWallTexture(const TextureWithTransferMode& inTexture)
         int16			transfer_mode	= inTexture.second;
 
 	// In case of an empty side
-	if (texture == NONE) return;
+	if (texture == UNONE) return;
 
 	// Infravision is usually inactive when entering or restoring a level.
 	bool IsInfravision = false;

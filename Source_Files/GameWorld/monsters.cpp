@@ -1472,7 +1472,7 @@ void damage_monster(
 					else
 					{
 						if ((damage->type==_damage_explosion || damage->type==_damage_crushing || (FLAG(damage->type)&definition->weaknesses) ||
-							definition->soft_dying_shape==NONE) && definition->hard_dying_shape!=NONE && !(definition->flags&_monster_has_delayed_hard_death))
+							definition->soft_dying_shape==UNONE) && definition->hard_dying_shape!=UNONE && !(definition->flags&_monster_has_delayed_hard_death))
 						{
 							action= _monster_is_dying_hard;
 						}
@@ -2492,12 +2492,12 @@ void set_monster_action(
 			default: dprintf("what is monster action #%d?", action); assert(false); break;
 		}
 		
-		shape= shape==NONE ? NONE : BUILD_DESCRIPTOR(definition->collection, shape);
+		shape= shape==UNONE ? UNONE : BUILD_DESCRIPTOR(definition->collection, shape);
 	}
 
-	if (shape!=NONE)
+	if (shape!=UNONE)
 	{
-		/* only set the action of the shape is not NONE */
+		/* only set the action of the shape is not UNONE */
 		monster->action= action;
 		set_object_shape_and_transfer_mode(monster->object_index, shape, NONE);
 
@@ -2527,10 +2527,10 @@ static void kill_monster(
 	switch (monster->action)
 	{
 		case _monster_is_dying_soft:
-			shape= definition->soft_dead_shapes==NONE ? NONE : BUILD_DESCRIPTOR(definition->collection, definition->soft_dead_shapes);
+			shape= definition->soft_dead_shapes==UNONE ? UNONE : BUILD_DESCRIPTOR(definition->collection, definition->soft_dead_shapes);
 			break;
 		case _monster_is_dying_hard:
-			shape= definition->hard_dead_shapes==NONE ? NONE : BUILD_DESCRIPTOR(definition->collection, definition->hard_dead_shapes);
+			shape= definition->hard_dead_shapes==UNONE ? UNONE : BUILD_DESCRIPTOR(definition->collection, definition->hard_dead_shapes);
 			break;
 		case _monster_is_dying_flaming:
 			shape= FLAMING_DEAD_SHAPE;
@@ -2575,7 +2575,7 @@ static void kill_monster(
 	}
 	
 	/* stuff in an appropriate dead shape (or remove our object if we donÕt have a dead shape) */
-	if (shape==NONE)
+	if (shape==UNONE)
 	{
 		remove_map_object(monster->object_index);
 	}

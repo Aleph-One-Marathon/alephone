@@ -44,6 +44,7 @@ snprintf(char* inBuffer, size_t inBufferSize, const char* inFormat, ...) {
 // This could, like, fprintf out to a file and check the file size, or maybe we could
 // legally lift a whole vsnprintf() implementation from somewhere (GNU std library?)
 // Anyway at least we'll try to give a warning if we overrun.
+#ifndef HAVE_VSNPRINTF
 int
 vsnprintf(char* inBuffer, size_t inBufferSize, const char* inFormat, va_list inArgs) {
     int theResult = vsprintf(inBuffer, inFormat, inArgs);
@@ -59,3 +60,4 @@ vsnprintf(char* inBuffer, size_t inBufferSize, const char* inFormat, va_list inA
 
     return theResult;
 }
+#endif // !HAVE_VSNPRINTF

@@ -103,9 +103,8 @@ clearly this is all broken until we have packet types
 #include "map.h"       // for TICKS_PER_SECOND and "struct entry_point"
 #include "interface.h" // for transfering map
 #include "mytm.h"	// ZZZ: both versions use mytm now
-// for screen_printf()
-#include "shell.h"
-#include "preferences.h"
+#include "shell.h" // for screen_printf()
+#include "preferences.h" // for network_preferences and environment_preferences
 
 #if defined(SDL) || HAVE_SDL_NET
 #include "sdl_network.h"

@@ -121,8 +121,8 @@ struct weapon_interface_data weapon_interface_definitions[10] =
 		0, 0,
 		false,
 		{
-			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, NONE, NONE, true},
-			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, NONE, NONE, true}
+			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, UNONE, UNONE, true},
+			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, UNONE, UNONE, true}
 		}
 	},
 	
@@ -178,7 +178,7 @@ struct weapon_interface_data weapon_interface_definitions[10] =
 		false,
 		{
 			{ _uses_bullets, 385, 376, 2, 1, 16, 49, BUILD_DESCRIPTOR(_collection_interface, _missile), BUILD_DESCRIPTOR(_collection_interface, _missile_casing), true},
-			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, NONE, NONE, true }
+			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, UNONE, UNONE, true }
 		}
 	},
 
@@ -573,7 +573,7 @@ bool XML_AmmoDisplayParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"bullet_shape"))
 	{
-		if (ReadInt16Value(Value,Data.bullet))
+		if (ReadUInt16Value(Value,Data.bullet))
 		{
 			IsPresent[7] = true;
 			return true;
@@ -582,7 +582,7 @@ bool XML_AmmoDisplayParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"empty_shape"))
 	{
-		if (ReadInt16Value(Value,Data.empty_bullet))
+		if (ReadUInt16Value(Value,Data.empty_bullet))
 		{
 			IsPresent[8] = true;
 			return true;

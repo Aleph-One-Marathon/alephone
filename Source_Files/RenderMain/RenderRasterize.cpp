@@ -233,7 +233,7 @@ void RenderRasterizerClass::render_tree()
 								break;
 						}
 						
-						if (side->transparent_texture.texture!=NONE)
+						if (side->transparent_texture.texture!=UNONE)
 						{
 							surface.lightsource_index= side->transparent_lightsource_index;
 							surface.h0= MAX(line->highest_adjacent_floor, floor_surface.height) - view->origin.z;
@@ -313,7 +313,7 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 	// LP addition: animated-texture support
 	// Extra variable defined so as not to edit the original texture
 	shape_descriptor Texture = AnimTxtr_Translate(surface->texture);
-	if (Texture!=NONE)
+	if (Texture!=UNONE)
 	{
 		struct polygon_definition textured_polygon;
 		flagged_world_point2d vertices[MAXIMUM_VERTICES_PER_WORLD_POLYGON];
@@ -424,7 +424,7 @@ void RenderRasterizerClass::render_node_side(
 	// LP addition: animated-texture support
 	// Extra variable defined so as not to edit the original texture
 	shape_descriptor Texture = AnimTxtr_Translate(surface->texture_definition->texture);
-	if (h>surface->h0 && Texture!=NONE)
+	if (h>surface->h0 && Texture!=UNONE)
 	{
 		struct polygon_definition textured_polygon;
 		flagged_world_point2d posts[2];
@@ -434,8 +434,8 @@ void RenderRasterizerClass::render_node_side(
 	
 		/* initialize the two posts of our trapezoid */
 		vertex_count= 2;
-		posts[0].x= surface->p0.i, posts[0].y= surface->p0.j, posts[0].flags= 0;
-		posts[1].x= surface->p1.i, posts[1].y= surface->p1.j, posts[1].flags= 0;
+		posts[0].x= surface->p0.i; posts[0].y= surface->p0.j; posts[0].flags= 0;
+		posts[1].x= surface->p1.i; posts[1].y= surface->p1.j; posts[1].flags= 0;
 	
 		/* clip to left and right sides of the cone (must happen in the same order as horizontal polygons) */
 		vertex_count= xy_clip_line(posts, vertex_count, &window->left, _clip_left);

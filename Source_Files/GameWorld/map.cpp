@@ -2071,8 +2071,8 @@ static short _new_map_object(
 			
 			MARK_SLOT_AS_USED(object);
 				
-			/* Objects with a shape of NONE are invisible. */
-			if(shape==NONE)
+			/* Objects with a shape of UNONE are invisible. */
+			if(shape==UNONE)
 			{
 				SET_OBJECT_INVISIBILITY(object, true);
 			}

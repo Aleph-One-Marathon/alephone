@@ -3913,13 +3913,13 @@ void s_Get_Platform_Height(script_instruction inst)
 void s_Timer_Start(script_instruction inst)
 {
 	if (inst.mode != 0) return;
-	pfhortran_timer = (long)get_heartbeat_count;
+	pfhortran_timer = get_heartbeat_count();
 }
 
 void s_Timer_Get(script_instruction inst)
 {
 	if (inst.mode != 1) return;
-	set_variable(int(inst.op1), (long)get_heartbeat_count - pfhortran_timer);
+	set_variable(int(inst.op1), static_cast<float>(get_heartbeat_count() - pfhortran_timer));
 }
 
 void s_Timer_Stop(script_instruction inst)

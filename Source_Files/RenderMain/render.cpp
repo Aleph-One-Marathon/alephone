@@ -385,8 +385,6 @@ void render_view(
 	struct view_data *view,
 	struct bitmap_definition *destination)
 {
-	(void) (destination);
-	
 	update_view_data(view);
 
 	/* clear the render flags */

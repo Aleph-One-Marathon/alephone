@@ -49,7 +49,7 @@ struct item_definition
 static struct item_definition item_definitions[]=
 {
 	/* Knife */
-	{_weapon, 0, 0, NONE, 1, 0},
+	{_weapon, 0, 0, UNONE, 1, 0},
 
 	// pistol and ammo
 	{_weapon, 1, 2, BUILD_DESCRIPTOR(_collection_items, 0), 2, 0},
@@ -75,7 +75,7 @@ static struct item_definition item_definitions[]=
 
 	// alien weapon and ammunition
 	{_weapon, 16, 16, BUILD_DESCRIPTOR(_collection_items, 13), 1, 0}, 
-	{_ammunition, 17, 18, NONE, 999, 0}, 
+	{_ammunition, 17, 18, UNONE, 999, 0}, 
 	
 	// flamethrower and ammo
 	{_weapon, 19, 19, BUILD_DESCRIPTOR(_collection_items, 10), 1, _environment_vacuum}, 

@@ -24,7 +24,10 @@
 	This contains the definitions of all the OpenGL models and skins
 */
 
+#include "cseries.h"
 #include "OGL_Model_Def.h"
+
+#include <cmath>
 
 #include "Dim3_Loader.h"
 #include "StudioLoader.h"

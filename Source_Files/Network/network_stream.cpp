@@ -52,6 +52,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #include "network_modem.h"
 #endif
 
+#include "preferences.h"
 #include "network_stream.h"
 
 #include "shell.h" //--> only for system_information!

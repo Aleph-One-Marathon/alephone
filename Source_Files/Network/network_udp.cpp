@@ -28,18 +28,19 @@
  */
 
 #ifdef __MWERKS__
-#include 	<stdlib.h>
-#include 	<extras.h>
+#include <stdlib.h>
+#include <extras.h>
 #endif
 
 #include "cseries.h"
 #include "sdl_network.h"
-#include	"network_private.h"
+#include "network_private.h"
+#include "preferences.h"
 
-#include	<SDL_thread.h>
+#include <SDL_thread.h>
 
-#include	"thread_priority_sdl.h"
-#include	"mytm.h" // mytm_mutex stuff
+#include "thread_priority_sdl.h"
+#include "mytm.h" // mytm_mutex stuff
 
 // Global variables (most comments and "sSomething" variables are ZZZ)
 // Storage for incoming packet data

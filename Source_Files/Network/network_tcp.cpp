@@ -42,6 +42,7 @@
 #include "cseries.h"
 #include "sdl_network.h"
 
+#include "preferences.h"
 #include "Logging.h"
 
 

@@ -25,6 +25,7 @@
 	the OpenGL substitute textures for the walls and the sprites
 */
 
+#include "cseries.h"
 #include "OGL_Subst_Texture_Def.h"
 
 

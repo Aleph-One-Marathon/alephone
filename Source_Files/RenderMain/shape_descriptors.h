@@ -34,7 +34,7 @@ Feb 3, 2000 (Loren Petrich):
 
 /* ---------- types */
 
-typedef short shape_descriptor; /* [clut.3] [collection.5] [shape.8] */
+typedef uint16 shape_descriptor; /* [clut.3] [collection.5] [shape.8] */
 
 #define DESCRIPTOR_SHAPE_BITS 8
 #define DESCRIPTOR_COLLECTION_BITS 5

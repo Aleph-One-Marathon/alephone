@@ -133,8 +133,8 @@ sdl_font_info *load_font(const TextSpec &spec)
 
 				// Read font information
 				SDL_RWseek(p, 2, SEEK_CUR);
-				info->first_character = SDL_ReadBE16(p);
-				info->last_character = SDL_ReadBE16(p);
+				info->first_character = static_cast<uint8>(SDL_ReadBE16(p));
+				info->last_character = static_cast<uint8>(SDL_ReadBE16(p));
 				SDL_RWseek(p, 2, SEEK_CUR);
 				info->maximum_kerning = SDL_ReadBE16(p);
 				SDL_RWseek(p, 2, SEEK_CUR);

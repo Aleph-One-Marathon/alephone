@@ -50,7 +50,9 @@ namespace std {};
 #elif __MVCPP__
 
 using namespace std;	// Visual C++ doesn't like that other way of using the namespace.
-#define for if(false) {} else for // solves a bug in MSVC for the "redeclared" initializers used in for loops.
+#if _MSC_VER < 1300
+#define for if(false) {} else for // solves a bug in MSVC prior to MSVC7 for the "redeclared" initializers used in for loops.
+#endif
 
 //#define		VERSION		"1.0"
 

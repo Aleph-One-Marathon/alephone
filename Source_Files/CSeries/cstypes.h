@@ -25,7 +25,7 @@
 
 #include <limits.h>
 
-// IR note: consts in hearders are slow and eat TOC space.
+// IR note: consts in headers are slow and eat TOC space.
 //const int NONE = -1;
 enum {
 	NONE = -1,

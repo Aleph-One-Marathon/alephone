@@ -292,7 +292,7 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 						}
 	
 						case _object_is_projectile:
-							if ((GET_GAME_OPTIONS()&_overhead_map_shows_projectiles) && object->shape!=NONE)
+							if ((GET_GAME_OPTIONS()&_overhead_map_shows_projectiles) && object->shape!=UNONE)
 							{
 								thing_type= _projectile_thing;
 							}

@@ -111,6 +111,8 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "game_errors.h"
 #include "computer_interface.h" // for loading/saving terminal state.
 #include "images.h"
+#include "shell.h"
+#include "preferences.h"
 
 // LP change: added chase-cam init and render allocation
 #include "ChaseCam.h"
@@ -913,7 +915,7 @@ void load_sides(
 	{
 		if(version==MARATHON_ONE_DATA_VERSION)
 		{
-			map_sides[loop].transparent_texture.texture= NONE;
+			map_sides[loop].transparent_texture.texture= UNONE;
 			map_sides[loop].ambient_delta= 0;
 		}
 		++sides;

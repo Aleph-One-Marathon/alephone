@@ -230,7 +230,7 @@ void AnimTxtr_Update()
 // Does animated-texture translation in place
 shape_descriptor AnimTxtr_Translate(shape_descriptor Texture)
 {
-	if (Texture == NONE) return NONE;
+	if (Texture == UNONE) return UNONE;
 	
 	// Pull out frame and collection ID's:
 	short Frame = GET_DESCRIPTOR_SHAPE(Texture);
@@ -247,8 +247,8 @@ shape_descriptor AnimTxtr_Translate(shape_descriptor Texture)
 		if (ATIter->Translate(Frame)) break;
 	
 	// Check the frame for being in range
-	if (Frame < 0) return NONE;
-	if (Frame >= get_number_of_collection_frames(Collection)) return NONE;
+	if (Frame < 0) return UNONE;
+	if (Frame >= get_number_of_collection_frames(Collection)) return UNONE;
 	
 	// All done:
 	CollCT = BUILD_COLLECTION(Collection,ColorTable);

@@ -48,11 +48,14 @@ Jul 31, 2002 (Loren Petrich)
 
 #include <stdlib.h>
 
+#if defined(mac)
 #if defined(EXPLICIT_CARBON_HEADER)
-    #include <quicktime/Quicktime.h>
+#  include <quicktime/Quicktime.h>
 #else
-#include <Movies.h>
+#  include <Movies.h>
 #endif
+#endif
+
 #include "interface.h"
 #include "shell.h"
 #include "images.h"

@@ -304,7 +304,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		6, 3, /* dying hard (popping), dying soft (falling) */
 		5, 5, /* hard dead frames, soft dead frames */
 		1, 1, /* stationary shape, moving shape (no permutations) */
-		NONE, NONE, /* teleport in shape, teleport out shape */
+		UNONE, UNONE, /* teleport in shape, teleport out shape */
 		
 		2*TICKS_PER_SECOND, /* attack frequency (for both melee and ranged attacks) */
 		
@@ -353,7 +353,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		4, 3, /* dying hard (popping), dying soft (falling) */
 		5, 5, /* hard dead frames, soft dead frames */
 		1, 1, /* stationary shape, moving shape (no permutations) */
-		NONE, NONE, /* teleport in shape, teleport out shape */
+		UNONE, UNONE, /* teleport in shape, teleport out shape */
 		
 		2*TICKS_PER_SECOND, /* attack frequency (for both melee and ranged attacks) */
 		
@@ -402,7 +402,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		6, 4, /* dying hard (popping), dying soft (falling) */
 		5, 5, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape (no permutations) */
-		NONE, NONE, /* teleport in shape, teleport out shape */
+		UNONE, UNONE, /* teleport in shape, teleport out shape */
 		
 		2*TICKS_PER_SECOND, /* attack frequency (for both melee and ranged attacks) */
 		
@@ -455,8 +455,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		7, /* being hit */
-		NONE, 2, /* dying hard (popping), dying soft (falling) */
-		NONE, NONE, /* hard dead frames, soft dead frames */
+		UNONE, 2, /* dying hard (popping), dying soft (falling) */
+		UNONE, UNONE, /* hard dead frames, soft dead frames */
 		0, 3, /* stationary shape, moving shape */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -510,8 +510,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		7, /* being hit */
-		NONE, 2, /* dying hard (popping), dying soft (falling) */
-		NONE, NONE, /* hard dead frames, soft dead frames */
+		UNONE, 2, /* dying hard (popping), dying soft (falling) */
+		UNONE, UNONE, /* hard dead frames, soft dead frames */
 		0, 3, /* stationary shape, moving shape */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -565,8 +565,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		7, /* being hit */
-		NONE, 2, /* dying hard (popping), dying soft (falling) */
-		NONE, NONE, /* hard dead frames, soft dead frames */
+		UNONE, 2, /* dying hard (popping), dying soft (falling) */
+		UNONE, UNONE, /* hard dead frames, soft dead frames */
 		0, 3, /* stationary shape, moving shape */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -620,8 +620,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		7, /* being hit */
-		NONE, 2, /* dying hard (popping), dying soft (falling) */
-		NONE, NONE, /* hard dead frames, soft dead frames */
+		UNONE, 2, /* dying hard (popping), dying soft (falling) */
+		UNONE, UNONE, /* hard dead frames, soft dead frames */
 		0, 3, /* stationary shape, moving shape */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1088,10 +1088,10 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		WORLD_ONE, {_damage_explosion, _alien_damage, 80, 40, FIXED_ONE}, /* shrapnel radius, shrapnel damage  */
 		
 		10, /* being hit */
-		11, NONE, /* dying hard (popping), dying soft (falling) */
+		11, UNONE, /* dying hard (popping), dying soft (falling) */
 		4, 0, /* hard dead frames, soft dead frames */
 		6, 0, /* stationary shape, moving shape */
-		8, NONE, /* teleport in shape, teleport out shape */
+		8, UNONE, /* teleport in shape, teleport out shape */
 		
 		2*TICKS_PER_SECOND, /* attack frequency (for both melee and ranged attacks) */
 		
@@ -1138,7 +1138,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		
 		0, /* being hit */
 		3, 2, /* dying hard (popping), dying soft (falling) */
-		4, NONE, /* hard dead frames, soft dead frames */
+		4, UNONE, /* hard dead frames, soft dead frames */
 		0, 0, /* stationary shape, moving shape (no permutations) */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1193,7 +1193,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		
 		0, /* being hit */
 		3, 2, /* dying hard (popping), dying soft (falling) */
-		4, NONE, /* hard dead frames, soft dead frames */
+		4, UNONE, /* hard dead frames, soft dead frames */
 		0, 0, /* stationary shape, moving shape (no permutations) */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1248,7 +1248,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		
 		0, /* being hit */
 		3, 2, /* dying hard (popping), dying soft (falling) */
-		4, NONE, /* hard dead frames, soft dead frames */
+		4, UNONE, /* hard dead frames, soft dead frames */
 		0, 0, /* stationary shape, moving shape (no permutations) */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1303,7 +1303,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		
 		0, /* being hit */
 		3, 2, /* dying hard (popping), dying soft (falling) */
-		4, NONE, /* hard dead frames, soft dead frames */
+		4, UNONE, /* hard dead frames, soft dead frames */
 		0, 0, /* stationary shape, moving shape (no permutations) */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1358,7 +1358,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		
 		0, /* being hit */
 		3, 2, /* dying hard (popping), dying soft (falling) */
-		4, NONE, /* hard dead frames, soft dead frames */
+		4, UNONE, /* hard dead frames, soft dead frames */
 		0, 0, /* stationary shape, moving shape (no permutations) */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1412,8 +1412,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		WORLD_ONE, {_damage_explosion, _alien_damage, 60, 0, FIXED_ONE}, /* shrapnel radius, shrapnel damage */
 		
 		0, /* being hit */
-		3, NONE, /* dying hard (popping), dying soft (falling) */
-		5, NONE, /* hard dead frames, soft dead frames */
+		3, UNONE, /* dying hard (popping), dying soft (falling) */
+		5, UNONE, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1467,8 +1467,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		WORLD_ONE, {_damage_explosion, _alien_damage, 60, 0, FIXED_ONE}, /* shrapnel radius, shrapnel damage */
 		
 		0, /* being hit */
-		3, NONE, /* dying hard (popping), dying soft (falling) */
-		5, NONE, /* hard dead frames, soft dead frames */
+		3, UNONE, /* dying hard (popping), dying soft (falling) */
+		5, UNONE, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1522,8 +1522,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		WORLD_ONE, {_damage_explosion, _alien_damage, 60, 0, FIXED_ONE}, /* shrapnel radius, shrapnel damage */
 		
 		0, /* being hit */
-		3, NONE, /* dying hard (popping), dying soft (falling) */
-		5, NONE, /* hard dead frames, soft dead frames */
+		3, UNONE, /* dying hard (popping), dying soft (falling) */
+		5, UNONE, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1583,8 +1583,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		WORLD_ONE, {_damage_explosion, _alien_damage, 60, 0, FIXED_ONE}, /* shrapnel radius, shrapnel damage */
 		
 		0, /* being hit */
-		3, NONE, /* dying hard (popping), dying soft (falling) */
-		5, NONE, /* hard dead frames, soft dead frames */
+		3, UNONE, /* dying hard (popping), dying soft (falling) */
+		5, UNONE, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -1864,7 +1864,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		4, /* being hit */
-		NONE, 3, /* dying hard (popping), dying soft (falling) */
+		UNONE, 3, /* dying hard (popping), dying soft (falling) */
 		0, 7, /* hard dead frames, soft dead frames */
 		1, 0, /* stationary shape, moving shape */
 		1, 1, /* teleport in shape, teleport out shape */
@@ -1926,7 +1926,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		4, /* being hit */
-		NONE, 3, /* dying hard (popping), dying soft (falling) */
+		UNONE, 3, /* dying hard (popping), dying soft (falling) */
 		0, 7, /* hard dead frames, soft dead frames */
 		1, 0, /* stationary shape, moving shape */
 		1, 1, /* teleport in shape, teleport out shape */
@@ -1988,8 +1988,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		3*WORLD_ONE, {_damage_explosion, _alien_damage, 140, 40, FIXED_ONE}, /* shrapnel radius, shrapnel damage */
 		
 		0, /* being hit */
-		3, NONE, /* dying hard (popping), dying soft (falling) */
-		5, NONE, /* hard dead frames, soft dead frames */
+		3, UNONE, /* dying hard (popping), dying soft (falling) */
+		5, UNONE, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape */
 		0, 0, /* teleport in shape, teleport out shape */
 		
@@ -2049,7 +2049,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		4*WORLD_ONE, {_damage_explosion, _alien_damage, 140, 50, FIXED_ONE}, /* shrapnel radius, shrapnel damage */
 		
 		7, /* being hit */
-		3, NONE, /* dying hard (popping), dying soft (falling) */
+		3, UNONE, /* dying hard (popping), dying soft (falling) */
 		6, 8, /* hard dead frames, soft dead frames */
 		1, 0, /* stationary shape, moving shape (no permutations) */
 		1, 1, /* teleport in shape, teleport out shape */
@@ -2104,10 +2104,10 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		12, /* being hit */
-		NONE, 3, /* dying hard (popping), dying soft (falling) */
-		NONE, 4, /* hard dead frames, soft dead frames */
+		UNONE, 3, /* dying hard (popping), dying soft (falling) */
+		UNONE, 4, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape */
-		NONE, NONE, /* teleport in shape, teleport out shape */
+		UNONE, UNONE, /* teleport in shape, teleport out shape */
 		
 		2*TICKS_PER_SECOND, /* attack frequency (for both melee and ranged attacks) */
 		
@@ -2165,10 +2165,10 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		12, /* being hit */
-		NONE, 3, /* dying hard (popping), dying soft (falling) */
-		NONE, 4, /* hard dead frames, soft dead frames */
+		UNONE, 3, /* dying hard (popping), dying soft (falling) */
+		UNONE, 4, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape */
-		NONE, NONE, /* teleport in shape, teleport out shape */
+		UNONE, UNONE, /* teleport in shape, teleport out shape */
 		
 		TICKS_PER_SECOND/2, /* attack frequency (for both melee and ranged attacks) */
 		
@@ -2220,10 +2220,10 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		12, /* being hit */
-		NONE, 3, /* dying hard (popping), dying soft (falling) */
-		NONE, 4, /* hard dead frames, soft dead frames */
+		UNONE, 3, /* dying hard (popping), dying soft (falling) */
+		UNONE, 4, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape */
-		NONE, NONE, /* teleport in shape, teleport out shape */
+		UNONE, UNONE, /* teleport in shape, teleport out shape */
 		
 		TICKS_PER_SECOND, /* attack frequency (for both melee and ranged attacks) */
 		
@@ -2281,8 +2281,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		3, /* being hit */
-		NONE, 6, /* dying hard (popping), dying soft (falling) */
-		NONE, NONE, /* hard dead frames, soft dead frames */
+		UNONE, 6, /* dying hard (popping), dying soft (falling) */
+		UNONE, UNONE, /* hard dead frames, soft dead frames */
 		0, 0, /* stationary shape, moving shape */
 		8, 8, /* teleport in shape, teleport out shape */
 		
@@ -2336,8 +2336,8 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		3, /* being hit */
-		NONE, 6, /* dying hard (popping), dying soft (falling) */
-		NONE, NONE, /* hard dead frames, soft dead frames */
+		UNONE, 6, /* dying hard (popping), dying soft (falling) */
+		UNONE, UNONE, /* hard dead frames, soft dead frames */
 		0, 0, /* stationary shape, moving shape */
 		8, 8, /* teleport in shape, teleport out shape */
 		
@@ -2392,7 +2392,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, /* door retry mask */
 		5*WORLD_ONE, {_damage_explosion, _alien_damage, 350, 50, FIXED_ONE}, /* shrapnel radius, shrapnel damage */
 		
-		NONE, /* being hit */
+		UNONE, /* being hit */
 		6, 5, /* dying hard (popping), dying soft (falling) */
 		8, 8, /* hard dead frames, soft dead frames */
 		0, 0, /* stationary shape, moving shape */
@@ -2455,7 +2455,7 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, /* door retry mask */
 		5*WORLD_ONE, {_damage_explosion, _alien_damage, 350, 50, FIXED_ONE}, /* shrapnel radius, shrapnel damage */
 		
-		NONE, /* being hit */
+		UNONE, /* being hit */
 		6, 5, /* dying hard (popping), dying soft (falling) */
 		8, 8, /* hard dead frames, soft dead frames */
 		0, 0, /* stationary shape, moving shape */
@@ -2628,10 +2628,10 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		NONE, {NONE, 0, 0, 0}, /* shrapnel radius, shrapnel damage */
 		
 		12, /* being hit */
-		NONE, 3, /* dying hard (popping), dying soft (falling) */
-		NONE, 4, /* hard dead frames, soft dead frames */
+		UNONE, 3, /* dying hard (popping), dying soft (falling) */
+		UNONE, 4, /* hard dead frames, soft dead frames */
 		0, 1, /* stationary shape, moving shape */
-		NONE, NONE, /* teleport in shape, teleport out shape */
+		UNONE, UNONE, /* teleport in shape, teleport out shape */
 		
 		TICKS_PER_SECOND, /* attack frequency (for both melee and ranged attacks) */
 		
@@ -2858,10 +2858,10 @@ struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 		WORLD_ONE, {_damage_explosion, _alien_damage, 80, 40, FIXED_ONE}, /* shrapnel radius, shrapnel damage  */
 		
 		10, /* being hit */
-		11, NONE, /* dying hard (popping), dying soft (falling) */
+		11, UNONE, /* dying hard (popping), dying soft (falling) */
 		4, 0, /* hard dead frames, soft dead frames */
 		6, 0, /* stationary shape, moving shape */
-		8, NONE, /* teleport in shape, teleport out shape */
+		8, UNONE, /* teleport in shape, teleport out shape */
 		
 		2*TICKS_PER_SECOND, /* attack frequency (for both melee and ranged attacks) */
 		

@@ -273,8 +273,8 @@ void recalculate_redundant_line_data(
 		landscaped= true;
 	}
 	
-	if ((clockwise_side && clockwise_side->transparent_texture.texture!=NONE) ||
-		(counterclockwise_side && counterclockwise_side->transparent_texture.texture!=NONE))
+	if ((clockwise_side && clockwise_side->transparent_texture.texture!=UNONE) ||
+		(counterclockwise_side && counterclockwise_side->transparent_texture.texture!=UNONE))
 	{
 		transparent_texture= true;
 	}

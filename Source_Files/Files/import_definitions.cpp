@@ -39,6 +39,8 @@ Aug 31, 2000 (Loren Petrich):
 #include "shell.h"
 #include "preferences.h"
 #include "FileHandler.h"
+#include "shell.h"
+#include "preferences.h"
 
 // LP: get all the unpacker definitions
 #include "monsters.h"
