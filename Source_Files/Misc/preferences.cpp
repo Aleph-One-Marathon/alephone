@@ -397,35 +397,6 @@ static bool validate_graphics_preferences(
 	}
 
 #ifdef mac
-	if (preferences->screen_mode.acceleration==_valkyrie_acceleration)
-	{
-		if (hardware_acceleration_code(&preferences->device_spec) != _valkyrie_acceleration)
-		{
-			preferences->screen_mode.size= _100_percent;
-			preferences->screen_mode.bit_depth = 8;
-			preferences->screen_mode.high_resolution = false;
-			preferences->screen_mode.acceleration = _no_acceleration;
-			changed= true;
-		} else {
-			if(preferences->screen_mode.high_resolution)
-			{
-				preferences->screen_mode.high_resolution= false;
-				changed= true;
-			}
-			
-			if(preferences->screen_mode.bit_depth != 16)
-			{
-				preferences->screen_mode.bit_depth= 16;
-				changed= true;
-			}
-			
-			if(preferences->screen_mode.draw_every_other_line)
-			{
-				preferences->screen_mode.draw_every_other_line= false;
-				changed= true;
-			}
-		}
-	}
 
 	if (preferences->screen_mode.bit_depth==32 && !machine_supports_32bit(&preferences->device_spec))
 	{
@@ -433,9 +404,9 @@ static bool validate_graphics_preferences(
 		changed= true;
 	}
 
-	/* Don't change out of 16 bit if we are in valkyrie mode. */	
-	if (preferences->screen_mode.acceleration!=_valkyrie_acceleration
-		&& preferences->screen_mode.bit_depth==16 && !machine_supports_16bit(&preferences->device_spec))
+	/* Don't change out of 16 bit if we are in valkyrie mode. */
+	// LP: good riddance to that old video card :-P
+	if (preferences->screen_mode.bit_depth==16 && !machine_supports_16bit(&preferences->device_spec))
 	{
 		preferences->screen_mode.bit_depth= 8;
 		changed= true;
