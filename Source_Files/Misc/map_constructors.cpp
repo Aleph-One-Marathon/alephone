@@ -17,6 +17,10 @@ Feb 15, 2000 (Loren Petrich):
 
 April 16, 2000 (Loren Petrich):
 	Made the incorrect-count vwarms optional
+
+Aug 29, 2000 (Loren Petrich):
+	Created packing and unpacking functions for all the
+		externally-accessible data types defined here
 */
 
 const bool DoIncorrectCountVWarn = false;
@@ -25,6 +29,7 @@ const bool DoIncorrectCountVWarn = false;
 #include "cseries.h"
 #include "map.h"
 #include "flood_map.h"
+#include "Packing.h"
 
 /*
 maps of one polygon don’t have their impassability information computed
@@ -976,62 +981,894 @@ void touch_polygon(
 }
 #endif
 
-// Split and join the misaligned 4-byte values
 
-#include <string.h>
-
-void pack_side_data(side_data& source, saved_side& dest)
+uint8 *unpack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 {
-	dest.type = source.type;
-	dest.flags = source.flags;
+	uint8* S = Stream;
+	endpoint_data* ObjPtr = Objects;
 	
-	dest.primary_texture = source.primary_texture;
-	dest.secondary_texture = source.secondary_texture;
-	dest.transparent_texture = source.transparent_texture;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->highest_adjacent_floor_height);
+		StreamToValue(S,ObjPtr->lowest_adjacent_ceiling_height);
+		
+		StreamToValue(S,ObjPtr->vertex.x);
+		StreamToValue(S,ObjPtr->vertex.y);
+		StreamToValue(S,ObjPtr->transformed.x);
+		StreamToValue(S,ObjPtr->transformed.y);
+		
+		StreamToValue(S,ObjPtr->supporting_polygon_index);
+	}
 	
-	dest.exclusion_zone = source.exclusion_zone;
-	
-	dest.control_panel_type = source.control_panel_type;
-	dest.control_panel_permutation = source.control_panel_permutation;
-	
-	dest.primary_transfer_mode = source.primary_transfer_mode;
-	dest.secondary_transfer_mode = source.secondary_transfer_mode;
-	dest.transparent_transfer_mode = source.transparent_transfer_mode;
-	
-	dest.polygon_index = source.polygon_index;
-	dest.line_index = source.line_index;
-	
-	dest.primary_lightsource_index = source.primary_lightsource_index;
-	dest.secondary_lightsource_index = source.secondary_lightsource_index;
-	dest.transparent_lightsource_index = source.transparent_lightsource_index;
-	
-	memcpy(dest.ambient_delta,&source.ambient_delta,4);
+	assert((S - Stream) == Count*SIZEOF_endpoint_data);
+	return S;
 }
 
-void unpack_side_data(saved_side& source, side_data& dest)
+uint8 *pack_endpoint_data(uint8 *Stream, endpoint_data *Objects, int Count)
 {
-	dest.type = source.type;
-	dest.flags = source.flags;
+	uint8* S = Stream;
+	endpoint_data* ObjPtr = Objects;
 	
-	dest.primary_texture = source.primary_texture;
-	dest.secondary_texture = source.secondary_texture;
-	dest.transparent_texture = source.transparent_texture;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->highest_adjacent_floor_height);
+		ValueToStream(S,ObjPtr->lowest_adjacent_ceiling_height);
+		
+		ValueToStream(S,ObjPtr->vertex.x);
+		ValueToStream(S,ObjPtr->vertex.y);
+		ValueToStream(S,ObjPtr->transformed.x);
+		ValueToStream(S,ObjPtr->transformed.y);
+		
+		ValueToStream(S,ObjPtr->supporting_polygon_index);
+	}
 	
-	dest.exclusion_zone = source.exclusion_zone;
+	assert((S - Stream) == Count*SIZEOF_endpoint_data);
+	return S;
+}
+
+
+uint8 *unpack_line_data(uint8 *Stream, line_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	line_data* ObjPtr = Objects;
 	
-	dest.control_panel_type = source.control_panel_type;
-	dest.control_panel_permutation = source.control_panel_permutation;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToList(S,ObjPtr->endpoint_indexes,2);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->length);
+		StreamToValue(S,ObjPtr->highest_adjacent_floor);
+		StreamToValue(S,ObjPtr->lowest_adjacent_ceiling);
+		
+		StreamToValue(S,ObjPtr->clockwise_polygon_side_index);
+		StreamToValue(S,ObjPtr->counterclockwise_polygon_side_index);
+		
+		StreamToValue(S,ObjPtr->clockwise_polygon_owner);
+		StreamToValue(S,ObjPtr->counterclockwise_polygon_owner);
+		
+		S += 6*2;
+	}
 	
-	dest.primary_transfer_mode = source.primary_transfer_mode;
-	dest.secondary_transfer_mode = source.secondary_transfer_mode;
-	dest.transparent_transfer_mode = source.transparent_transfer_mode;
+	assert((S - Stream) == Count*SIZEOF_line_data);
+	return S;
+}
+
+uint8 *pack_line_data(uint8 *Stream, line_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	line_data* ObjPtr = Objects;
 	
-	dest.polygon_index = source.polygon_index;
-	dest.line_index = source.line_index;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ListToStream(S,ObjPtr->endpoint_indexes,2);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->length);
+		ValueToStream(S,ObjPtr->highest_adjacent_floor);
+		ValueToStream(S,ObjPtr->lowest_adjacent_ceiling);
+		
+		ValueToStream(S,ObjPtr->clockwise_polygon_side_index);
+		ValueToStream(S,ObjPtr->counterclockwise_polygon_side_index);
+		
+		ValueToStream(S,ObjPtr->clockwise_polygon_owner);
+		ValueToStream(S,ObjPtr->counterclockwise_polygon_owner);
+		
+		S += 6*2;
+	}
 	
-	dest.primary_lightsource_index = source.primary_lightsource_index;
-	dest.secondary_lightsource_index = source.secondary_lightsource_index;
-	dest.transparent_lightsource_index = source.transparent_lightsource_index;
+	assert((S - Stream) == Count*SIZEOF_line_data);
+	return S;
+}
+
+
+inline void StreamToSideTxtr(uint8* &S, side_texture_definition& Object)
+{
+	StreamToValue(S,Object.x0);
+	StreamToValue(S,Object.y0);
+	StreamToValue(S,Object.texture);
+}
+
+inline void SideTxtrToStream(uint8* &S, side_texture_definition& Object)
+{
+	ValueToStream(S,Object.x0);
+	ValueToStream(S,Object.y0);
+	ValueToStream(S,Object.texture);	
+}
+
+
+void StreamToSideExclZone(uint8* &S, side_exclusion_zone& Object)
+{
+	StreamToValue(S,Object.e0.x);
+	StreamToValue(S,Object.e0.y);
+	StreamToValue(S,Object.e1.x);
+	StreamToValue(S,Object.e1.y);
+	StreamToValue(S,Object.e2.x);
+	StreamToValue(S,Object.e2.y);
+	StreamToValue(S,Object.e3.x);
+	StreamToValue(S,Object.e3.y);
+}
+
+void SideExclZoneToStream(uint8* &S, side_exclusion_zone& Object)
+{
+	ValueToStream(S,Object.e0.x);
+	ValueToStream(S,Object.e0.y);
+	ValueToStream(S,Object.e1.x);
+	ValueToStream(S,Object.e1.y);
+	ValueToStream(S,Object.e2.x);
+	ValueToStream(S,Object.e2.y);
+	ValueToStream(S,Object.e3.x);
+	ValueToStream(S,Object.e3.y);
+}
+
+
+uint8 *unpack_side_data(uint8 *Stream, side_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	side_data* ObjPtr = Objects;
 	
-	memcpy(&dest.ambient_delta,source.ambient_delta,4);
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToSideTxtr(S,ObjPtr->primary_texture);
+		StreamToSideTxtr(S,ObjPtr->secondary_texture);
+		StreamToSideTxtr(S,ObjPtr->transparent_texture);
+		
+		StreamToSideExclZone(S,ObjPtr->exclusion_zone);
+		
+		StreamToValue(S,ObjPtr->control_panel_type);
+		StreamToValue(S,ObjPtr->control_panel_permutation);
+		
+		StreamToValue(S,ObjPtr->primary_transfer_mode);
+		StreamToValue(S,ObjPtr->secondary_transfer_mode);
+		StreamToValue(S,ObjPtr->transparent_transfer_mode);
+		
+		StreamToValue(S,ObjPtr->polygon_index);
+		StreamToValue(S,ObjPtr->line_index);
+		
+		StreamToValue(S,ObjPtr->primary_lightsource_index);
+		StreamToValue(S,ObjPtr->secondary_lightsource_index);
+		StreamToValue(S,ObjPtr->transparent_lightsource_index);
+		
+		StreamToValue(S,ObjPtr->ambient_delta);
+		
+		S += 1*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_side_data);
+	return S;
+}
+
+uint8 *pack_side_data(uint8 *Stream, side_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	side_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->flags);
+		
+		SideTxtrToStream(S,ObjPtr->primary_texture);
+		SideTxtrToStream(S,ObjPtr->secondary_texture);
+		SideTxtrToStream(S,ObjPtr->transparent_texture);
+		
+		SideExclZoneToStream(S,ObjPtr->exclusion_zone);
+		
+		ValueToStream(S,ObjPtr->control_panel_type);
+		ValueToStream(S,ObjPtr->control_panel_permutation);
+		
+		ValueToStream(S,ObjPtr->primary_transfer_mode);
+		ValueToStream(S,ObjPtr->secondary_transfer_mode);
+		ValueToStream(S,ObjPtr->transparent_transfer_mode);
+		
+		ValueToStream(S,ObjPtr->polygon_index);
+		ValueToStream(S,ObjPtr->line_index);
+		
+		ValueToStream(S,ObjPtr->primary_lightsource_index);
+		ValueToStream(S,ObjPtr->secondary_lightsource_index);
+		ValueToStream(S,ObjPtr->transparent_lightsource_index);
+		
+		ValueToStream(S,ObjPtr->ambient_delta);
+		
+		S += 1*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_side_data);
+	return S;
+}
+
+
+uint8 *unpack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	polygon_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->permutation);
+		
+		StreamToValue(S,ObjPtr->vertex_count);
+		StreamToList(S,ObjPtr->endpoint_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		StreamToList(S,ObjPtr->line_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		StreamToValue(S,ObjPtr->floor_texture);
+		StreamToValue(S,ObjPtr->ceiling_texture);
+		StreamToValue(S,ObjPtr->floor_height);
+		StreamToValue(S,ObjPtr->ceiling_height);
+		StreamToValue(S,ObjPtr->floor_lightsource_index);
+		StreamToValue(S,ObjPtr->ceiling_lightsource_index);
+		
+		StreamToValue(S,ObjPtr->area);
+		
+		StreamToValue(S,ObjPtr->first_object);
+		
+		StreamToValue(S,ObjPtr->first_exclusion_zone_index);
+		StreamToValue(S,ObjPtr->line_exclusion_zone_count);
+		StreamToValue(S,ObjPtr->point_exclusion_zone_count);
+		
+		StreamToValue(S,ObjPtr->floor_transfer_mode);
+		StreamToValue(S,ObjPtr->ceiling_transfer_mode);
+		
+		StreamToList(S,ObjPtr->adjacent_polygon_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		StreamToValue(S,ObjPtr->first_neighbor_index);
+		StreamToValue(S,ObjPtr->neighbor_count);
+		
+		StreamToValue(S,ObjPtr->center.x);
+		StreamToValue(S,ObjPtr->center.y);
+		
+		StreamToList(S,ObjPtr->side_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		StreamToValue(S,ObjPtr->floor_origin.x);
+		StreamToValue(S,ObjPtr->floor_origin.y);
+		StreamToValue(S,ObjPtr->ceiling_origin.x);
+		StreamToValue(S,ObjPtr->ceiling_origin.y);
+		
+		StreamToValue(S,ObjPtr->media_index);
+		StreamToValue(S,ObjPtr->media_lightsource_index);
+		
+		StreamToValue(S,ObjPtr->sound_source_indexes);
+		
+		StreamToValue(S,ObjPtr->ambient_sound_image_index);
+		StreamToValue(S,ObjPtr->random_sound_image_index);
+		
+		S += 1*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_polygon_data);
+	return S;
+}
+
+uint8 *pack_polygon_data(uint8 *Stream, polygon_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	polygon_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->permutation);
+		
+		ValueToStream(S,ObjPtr->vertex_count);
+		ListToStream(S,ObjPtr->endpoint_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		ListToStream(S,ObjPtr->line_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		ValueToStream(S,ObjPtr->floor_texture);
+		ValueToStream(S,ObjPtr->ceiling_texture);
+		ValueToStream(S,ObjPtr->floor_height);
+		ValueToStream(S,ObjPtr->ceiling_height);
+		ValueToStream(S,ObjPtr->floor_lightsource_index);
+		ValueToStream(S,ObjPtr->ceiling_lightsource_index);
+		
+		ValueToStream(S,ObjPtr->area);
+		
+		ValueToStream(S,ObjPtr->first_object);
+		
+		ValueToStream(S,ObjPtr->first_exclusion_zone_index);
+		ValueToStream(S,ObjPtr->line_exclusion_zone_count);
+		ValueToStream(S,ObjPtr->point_exclusion_zone_count);
+		
+		ValueToStream(S,ObjPtr->floor_transfer_mode);
+		ValueToStream(S,ObjPtr->ceiling_transfer_mode);
+		
+		ListToStream(S,ObjPtr->adjacent_polygon_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		ValueToStream(S,ObjPtr->first_neighbor_index);
+		ValueToStream(S,ObjPtr->neighbor_count);
+		
+		ValueToStream(S,ObjPtr->center.x);
+		ValueToStream(S,ObjPtr->center.y);
+		
+		ListToStream(S,ObjPtr->side_indexes,MAXIMUM_VERTICES_PER_POLYGON);
+		
+		ValueToStream(S,ObjPtr->floor_origin.x);
+		ValueToStream(S,ObjPtr->floor_origin.y);
+		ValueToStream(S,ObjPtr->ceiling_origin.x);
+		ValueToStream(S,ObjPtr->ceiling_origin.y);
+		
+		ValueToStream(S,ObjPtr->media_index);
+		ValueToStream(S,ObjPtr->media_lightsource_index);
+		
+		ValueToStream(S,ObjPtr->sound_source_indexes);
+		
+		ValueToStream(S,ObjPtr->ambient_sound_image_index);
+		ValueToStream(S,ObjPtr->random_sound_image_index);
+		
+		S += 1*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_polygon_data);
+	return S;
+}
+
+
+uint8 *unpack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count)
+{
+	uint8* S = Stream;
+	map_annotation* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		
+		StreamToValue(S,ObjPtr->location.x);
+		StreamToValue(S,ObjPtr->location.y);
+		StreamToValue(S,ObjPtr->polygon_index);
+		
+		StreamToBytes(S,ObjPtr->text,MAXIMUM_ANNOTATION_TEXT_LENGTH);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_map_annotation);
+	return S;
+}
+
+uint8 *pack_map_annotation(uint8 *Stream, map_annotation* Objects, int Count)
+{
+	uint8* S = Stream;
+	map_annotation* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		
+		ValueToStream(S,ObjPtr->location.x);
+		ValueToStream(S,ObjPtr->location.y);
+		ValueToStream(S,ObjPtr->polygon_index);
+		
+		BytesToStream(S,ObjPtr->text,MAXIMUM_ANNOTATION_TEXT_LENGTH);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_map_annotation);
+	return S;
+}
+
+
+uint8 *unpack_map_object(uint8 *Stream, map_object* Objects, int Count)
+{
+	uint8* S = Stream;
+	map_object* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->index);
+		StreamToValue(S,ObjPtr->facing);
+		StreamToValue(S,ObjPtr->polygon_index);
+		StreamToValue(S,ObjPtr->location.x);
+		StreamToValue(S,ObjPtr->location.y);
+		StreamToValue(S,ObjPtr->location.z);
+		
+		StreamToValue(S,ObjPtr->flags);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_map_object);
+	return S;
+}
+
+uint8 *pack_map_object(uint8 *Stream, map_object* Objects, int Count)
+{
+	uint8* S = Stream;
+	map_object* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->index);
+		ValueToStream(S,ObjPtr->facing);
+		ValueToStream(S,ObjPtr->polygon_index);
+		ValueToStream(S,ObjPtr->location.x);
+		ValueToStream(S,ObjPtr->location.y);
+		ValueToStream(S,ObjPtr->location.z);
+		
+		ValueToStream(S,ObjPtr->flags);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_map_object);
+	return S;
+}
+
+
+uint8 *unpack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count)
+{
+	uint8* S = Stream;
+	object_frequency_definition* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->initial_count);
+		StreamToValue(S,ObjPtr->minimum_count);
+		StreamToValue(S,ObjPtr->maximum_count);
+		
+		StreamToValue(S,ObjPtr->random_count);
+		StreamToValue(S,ObjPtr->random_chance);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_object_frequency_definition);
+	return S;
+}
+
+uint8 *pack_object_frequency_definition(uint8 *Stream, object_frequency_definition* Objects, int Count)
+{
+	uint8* S = Stream;
+	object_frequency_definition* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->initial_count);
+		ValueToStream(S,ObjPtr->minimum_count);
+		ValueToStream(S,ObjPtr->maximum_count);
+		
+		ValueToStream(S,ObjPtr->random_count);
+		ValueToStream(S,ObjPtr->random_chance);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_object_frequency_definition);
+	return S;
+}
+
+
+uint8 *unpack_static_data(uint8 *Stream, static_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	static_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->environment_code);
+		
+		StreamToValue(S,ObjPtr->physics_model);
+		StreamToValue(S,ObjPtr->song_index);
+		StreamToValue(S,ObjPtr->mission_flags);
+		StreamToValue(S,ObjPtr->environment_flags);
+		
+		S += 4*2;
+		
+		StreamToBytes(S,ObjPtr->level_name,LEVEL_NAME_LENGTH);
+		StreamToValue(S,ObjPtr->entry_point_flags);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_static_data);
+	return S;
+}
+
+uint8 *pack_static_data(uint8 *Stream, static_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	static_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->environment_code);
+		
+		ValueToStream(S,ObjPtr->physics_model);
+		ValueToStream(S,ObjPtr->song_index);
+		ValueToStream(S,ObjPtr->mission_flags);
+		ValueToStream(S,ObjPtr->environment_flags);
+		
+		S += 4*2;
+		
+		BytesToStream(S,ObjPtr->level_name,LEVEL_NAME_LENGTH);
+		ValueToStream(S,ObjPtr->entry_point_flags);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_static_data);
+	return S;
+}
+
+
+uint8 *unpack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	ambient_sound_image_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->sound_index);
+		StreamToValue(S,ObjPtr->volume);
+		
+		S += 5*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_ambient_sound_image_data);
+	return S;
+}
+
+uint8 *pack_ambient_sound_image_data(uint8 *Stream, ambient_sound_image_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	ambient_sound_image_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->sound_index);
+		ValueToStream(S,ObjPtr->volume);
+		
+		S += 5*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_ambient_sound_image_data);
+	return S;
+}
+
+
+uint8 *unpack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	random_sound_image_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->sound_index);
+
+		StreamToValue(S,ObjPtr->volume);
+		StreamToValue(S,ObjPtr->delta_volume);
+		StreamToValue(S,ObjPtr->period);
+		StreamToValue(S,ObjPtr->delta_period);
+		StreamToValue(S,ObjPtr->direction);
+		StreamToValue(S,ObjPtr->delta_direction);
+		StreamToValue(S,ObjPtr->pitch);
+		StreamToValue(S,ObjPtr->delta_pitch);
+		
+		StreamToValue(S,ObjPtr->phase);
+		
+		S += 3*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_random_sound_image_data);
+	return S;
+}
+
+uint8 *pack_random_sound_image_data(uint8 *Stream, random_sound_image_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	random_sound_image_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->sound_index);
+
+		ValueToStream(S,ObjPtr->volume);
+		ValueToStream(S,ObjPtr->delta_volume);
+		ValueToStream(S,ObjPtr->period);
+		ValueToStream(S,ObjPtr->delta_period);
+		ValueToStream(S,ObjPtr->direction);
+		ValueToStream(S,ObjPtr->delta_direction);
+		ValueToStream(S,ObjPtr->pitch);
+		ValueToStream(S,ObjPtr->delta_pitch);
+		
+		ValueToStream(S,ObjPtr->phase);
+		
+		S += 3*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_random_sound_image_data);
+	return S;
+}
+
+
+static void StreamToGameData(uint8* &S, game_data& Object)
+{
+	StreamToValue(S,Object.game_time_remaining);
+	StreamToValue(S,Object.game_type);
+	StreamToValue(S,Object.game_options);
+	StreamToValue(S,Object.kill_limit);
+	StreamToValue(S,Object.initial_random_seed);
+	StreamToValue(S,Object.difficulty_level);
+	StreamToList(S,Object.parameters,2);
+}
+
+static void GameDataToStream(uint8* &S, game_data& Object)
+{
+	ValueToStream(S,Object.game_time_remaining);
+	ValueToStream(S,Object.game_type);
+	ValueToStream(S,Object.game_options);
+	ValueToStream(S,Object.kill_limit);
+	ValueToStream(S,Object.initial_random_seed);
+	ValueToStream(S,Object.difficulty_level);
+	ListToStream(S,Object.parameters,2);
+}
+
+
+uint8 *unpack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	dynamic_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->tick_count);
+
+		StreamToValue(S,ObjPtr->random_seed);
+
+		StreamToGameData(S,ObjPtr->game_information);
+		
+		StreamToValue(S,ObjPtr->player_count);
+		StreamToValue(S,ObjPtr->speaking_player_index);
+		
+		S += 2;
+		StreamToValue(S,ObjPtr->platform_count);
+		StreamToValue(S,ObjPtr->endpoint_count);
+		StreamToValue(S,ObjPtr->line_count);
+		StreamToValue(S,ObjPtr->side_count);
+		StreamToValue(S,ObjPtr->polygon_count);
+		StreamToValue(S,ObjPtr->lightsource_count);
+		StreamToValue(S,ObjPtr->map_index_count);
+		StreamToValue(S,ObjPtr->ambient_sound_image_count);
+		StreamToValue(S,ObjPtr->random_sound_image_count);
+		
+		StreamToValue(S,ObjPtr->object_count);
+		StreamToValue(S,ObjPtr->monster_count);
+		StreamToValue(S,ObjPtr->projectile_count);
+		StreamToValue(S,ObjPtr->effect_count);
+		StreamToValue(S,ObjPtr->light_count);
+		
+		StreamToValue(S,ObjPtr->default_annotation_count);
+		StreamToValue(S,ObjPtr->personal_annotation_count);
+		
+		StreamToValue(S,ObjPtr->initial_objects_count);
+		
+		StreamToValue(S,ObjPtr->garbage_object_count);
+		
+		StreamToValue(S,ObjPtr->last_monster_index_to_get_time);
+		StreamToValue(S,ObjPtr->last_monster_index_to_build_path);
+		
+		StreamToValue(S,ObjPtr->new_monster_mangler_cookie);
+		StreamToValue(S,ObjPtr->new_monster_vanishing_cookie);	
+		
+		StreamToValue(S,ObjPtr->civilians_killed_by_players);
+		
+		StreamToList(S,ObjPtr->random_monsters_left,MAXIMUM_OBJECT_TYPES);
+		StreamToList(S,ObjPtr->current_monster_count,MAXIMUM_OBJECT_TYPES);
+		StreamToList(S,ObjPtr->random_items_left,MAXIMUM_OBJECT_TYPES);
+		StreamToList(S,ObjPtr->current_item_count,MAXIMUM_OBJECT_TYPES);
+
+		StreamToValue(S,ObjPtr->current_level_number);
+		
+		StreamToValue(S,ObjPtr->current_civilian_causalties);
+		StreamToValue(S,ObjPtr->current_civilian_count);
+		StreamToValue(S,ObjPtr->total_civilian_causalties);
+		StreamToValue(S,ObjPtr->total_civilian_count);
+		
+		StreamToValue(S,ObjPtr->game_beacon.x);
+		StreamToValue(S,ObjPtr->game_beacon.y);
+		StreamToValue(S,ObjPtr->game_player_index);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_dynamic_data);
+	return S;
+}
+
+uint8 *pack_dynamic_data(uint8 *Stream, dynamic_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	dynamic_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->tick_count);
+
+		ValueToStream(S,ObjPtr->random_seed);
+
+		GameDataToStream(S,ObjPtr->game_information);
+		
+		ValueToStream(S,ObjPtr->player_count);
+		ValueToStream(S,ObjPtr->speaking_player_index);
+		
+		S += 2;
+		ValueToStream(S,ObjPtr->platform_count);
+		ValueToStream(S,ObjPtr->endpoint_count);
+		ValueToStream(S,ObjPtr->line_count);
+		ValueToStream(S,ObjPtr->side_count);
+		ValueToStream(S,ObjPtr->polygon_count);
+		ValueToStream(S,ObjPtr->lightsource_count);
+		ValueToStream(S,ObjPtr->map_index_count);
+		ValueToStream(S,ObjPtr->ambient_sound_image_count);
+		ValueToStream(S,ObjPtr->random_sound_image_count);
+		
+		ValueToStream(S,ObjPtr->object_count);
+		ValueToStream(S,ObjPtr->monster_count);
+		ValueToStream(S,ObjPtr->projectile_count);
+		ValueToStream(S,ObjPtr->effect_count);
+		ValueToStream(S,ObjPtr->light_count);
+		
+		ValueToStream(S,ObjPtr->default_annotation_count);
+		ValueToStream(S,ObjPtr->personal_annotation_count);
+		
+		ValueToStream(S,ObjPtr->initial_objects_count);
+		
+		ValueToStream(S,ObjPtr->garbage_object_count);
+		
+		ValueToStream(S,ObjPtr->last_monster_index_to_get_time);
+		ValueToStream(S,ObjPtr->last_monster_index_to_build_path);
+		
+		ValueToStream(S,ObjPtr->new_monster_mangler_cookie);
+		ValueToStream(S,ObjPtr->new_monster_vanishing_cookie);	
+		
+		ValueToStream(S,ObjPtr->civilians_killed_by_players);
+		
+		ListToStream(S,ObjPtr->random_monsters_left,MAXIMUM_OBJECT_TYPES);
+		ListToStream(S,ObjPtr->current_monster_count,MAXIMUM_OBJECT_TYPES);
+		ListToStream(S,ObjPtr->random_items_left,MAXIMUM_OBJECT_TYPES);
+		ListToStream(S,ObjPtr->current_item_count,MAXIMUM_OBJECT_TYPES);
+
+		ValueToStream(S,ObjPtr->current_level_number);
+		
+		ValueToStream(S,ObjPtr->current_civilian_causalties);
+		ValueToStream(S,ObjPtr->current_civilian_count);
+		ValueToStream(S,ObjPtr->total_civilian_causalties);
+		ValueToStream(S,ObjPtr->total_civilian_count);
+		
+		ValueToStream(S,ObjPtr->game_beacon.x);
+		ValueToStream(S,ObjPtr->game_beacon.y);
+		ValueToStream(S,ObjPtr->game_player_index);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_dynamic_data);
+	return S;
+}
+
+
+uint8 *unpack_object_data(uint8 *Stream, object_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	object_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->location.x);
+		StreamToValue(S,ObjPtr->location.y);
+		StreamToValue(S,ObjPtr->location.z);
+		StreamToValue(S,ObjPtr->polygon);
+		
+		StreamToValue(S,ObjPtr->facing);
+		
+		StreamToValue(S,ObjPtr->shape);
+		
+		StreamToValue(S,ObjPtr->sequence);
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->transfer_mode);
+		StreamToValue(S,ObjPtr->transfer_period);
+		StreamToValue(S,ObjPtr->transfer_phase);
+		StreamToValue(S,ObjPtr->permutation);
+		
+		StreamToValue(S,ObjPtr->next_object);
+		StreamToValue(S,ObjPtr->parasitic_object);
+		
+		StreamToValue(S,ObjPtr->sound_pitch);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_object_data);
+	return S;
+}
+
+uint8 *pack_object_data(uint8 *Stream, object_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	object_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->location.x);
+		ValueToStream(S,ObjPtr->location.y);
+		ValueToStream(S,ObjPtr->location.z);
+		ValueToStream(S,ObjPtr->polygon);
+		
+		ValueToStream(S,ObjPtr->facing);
+		
+		ValueToStream(S,ObjPtr->shape);
+		
+		ValueToStream(S,ObjPtr->sequence);
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->transfer_mode);
+		ValueToStream(S,ObjPtr->transfer_period);
+		ValueToStream(S,ObjPtr->transfer_phase);
+		ValueToStream(S,ObjPtr->permutation);
+		
+		ValueToStream(S,ObjPtr->next_object);
+		ValueToStream(S,ObjPtr->parasitic_object);
+		
+		ValueToStream(S,ObjPtr->sound_pitch);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_object_data);
+	return S;
+}
+
+
+uint8 *unpack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count)
+{
+	uint8* S = Stream;
+	damage_definition* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->base);
+		StreamToValue(S,ObjPtr->random);
+		StreamToValue(S,ObjPtr->scale);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_damage_definition);
+	return S;
+}
+
+uint8 *pack_damage_definition(uint8 *Stream, damage_definition* Objects, int Count)
+{
+	uint8* S = Stream;
+	damage_definition* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->base);
+		ValueToStream(S,ObjPtr->random);
+		ValueToStream(S,ObjPtr->scale);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_damage_definition);
+	return S;
 }

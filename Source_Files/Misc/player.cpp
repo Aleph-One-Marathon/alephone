@@ -73,6 +73,9 @@ Jul 1, 2000 (Loren Petrich):
 
 Jul 10, 2000 (Loren Petrich):
 	Changed calculate_player_team() slightly; no more first vassert()
+
+Aug 31, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 #include "cseries.h"
@@ -99,6 +102,7 @@ Jul 10, 2000 (Loren Petrich):
 
 // LP addition:
 #include "ChaseCam.h"
+#include "Packing.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -432,7 +436,7 @@ void reset_player_queues(
 /* queue an action flag on the given player’s queue (no zombies allowed) */
 void queue_action_flags(
 	short player_index,
-	long *action_flags,
+	int32 *action_flags,
 	short count)
 {
 	struct player_data *player= get_player_data(player_index);
@@ -1832,6 +1836,242 @@ static void try_and_strip_player_items(
 	}
 	
 	return;
+}
+
+
+static void StreamToPhysVars(uint8* &S, physics_variables& Object)
+{
+		StreamToValue(S,Object.head_direction);
+		StreamToValue(S,Object.last_direction);
+		StreamToValue(S,Object.direction);
+		StreamToValue(S,Object.elevation);
+		StreamToValue(S,Object.angular_velocity);
+		StreamToValue(S,Object.vertical_angular_velocity);	
+		StreamToValue(S,Object.velocity);
+		StreamToValue(S,Object.perpendicular_velocity);
+		StreamToValue(S,Object.last_position.x);
+		StreamToValue(S,Object.last_position.y);
+		StreamToValue(S,Object.last_position.z);
+		StreamToValue(S,Object.position.x);
+		StreamToValue(S,Object.position.y);
+		StreamToValue(S,Object.position.z);
+		StreamToValue(S,Object.actual_height);
+		
+		StreamToValue(S,Object.adjusted_pitch);
+		StreamToValue(S,Object.adjusted_yaw);
+
+		StreamToValue(S,Object.external_velocity.i);
+		StreamToValue(S,Object.external_velocity.j);
+		StreamToValue(S,Object.external_velocity.k);
+		StreamToValue(S,Object.external_angular_velocity);
+		
+		StreamToValue(S,Object.step_phase);
+		StreamToValue(S,Object.step_amplitude);	
+		
+		StreamToValue(S,Object.floor_height);
+		StreamToValue(S,Object.ceiling_height);	
+		StreamToValue(S,Object.media_height);
+		
+		StreamToValue(S,Object.action);
+		StreamToValue(S,Object.old_flags);	
+		StreamToValue(S,Object.flags);
+}
+
+static void PhysVarsToStream(uint8* &S, physics_variables& Object)
+{
+		ValueToStream(S,Object.head_direction);
+		ValueToStream(S,Object.last_direction);
+		ValueToStream(S,Object.direction);
+		ValueToStream(S,Object.elevation);
+		ValueToStream(S,Object.angular_velocity);
+		ValueToStream(S,Object.vertical_angular_velocity);	
+		ValueToStream(S,Object.velocity);
+		ValueToStream(S,Object.perpendicular_velocity);
+		ValueToStream(S,Object.last_position.x);
+		ValueToStream(S,Object.last_position.y);
+		ValueToStream(S,Object.last_position.z);
+		ValueToStream(S,Object.position.x);
+		ValueToStream(S,Object.position.y);
+		ValueToStream(S,Object.position.z);
+		ValueToStream(S,Object.actual_height);
+		
+		ValueToStream(S,Object.adjusted_pitch);
+		ValueToStream(S,Object.adjusted_yaw);
+
+		ValueToStream(S,Object.external_velocity.i);
+		ValueToStream(S,Object.external_velocity.j);
+		ValueToStream(S,Object.external_velocity.k);
+		ValueToStream(S,Object.external_angular_velocity);
+		
+		ValueToStream(S,Object.step_phase);
+		ValueToStream(S,Object.step_amplitude);	
+		
+		ValueToStream(S,Object.floor_height);
+		ValueToStream(S,Object.ceiling_height);	
+		ValueToStream(S,Object.media_height);
+		
+		ValueToStream(S,Object.action);
+		ValueToStream(S,Object.old_flags);	
+		ValueToStream(S,Object.flags);
+}
+
+
+inline void StreamToDamRec(uint8* &S, damage_record& Object)
+{
+		StreamToValue(S,Object.damage);
+		StreamToValue(S,Object.kills);
+}
+
+static void DamRecToStream(uint8* &S, damage_record& Object)
+{
+		ValueToStream(S,Object.damage);
+		ValueToStream(S,Object.kills);
+}
+
+
+uint8 *unpack_player_data(uint8 *Stream, player_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	player_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->identifier);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->color);
+		StreamToValue(S,ObjPtr->team);
+		StreamToBytes(S,ObjPtr->name,MAXIMUM_PLAYER_NAME_LENGTH+2);
+		
+		StreamToValue(S,ObjPtr->location.x);
+		StreamToValue(S,ObjPtr->location.y);
+		StreamToValue(S,ObjPtr->location.z);
+		StreamToValue(S,ObjPtr->camera_location.x);
+		StreamToValue(S,ObjPtr->camera_location.y);
+		StreamToValue(S,ObjPtr->camera_location.z);	
+		StreamToValue(S,ObjPtr->camera_polygon_index);
+		StreamToValue(S,ObjPtr->facing);
+		StreamToValue(S,ObjPtr->elevation);
+		StreamToValue(S,ObjPtr->supporting_polygon_index);
+		StreamToValue(S,ObjPtr->last_supporting_polygon_index);
+		
+		StreamToValue(S,ObjPtr->suit_energy);
+		StreamToValue(S,ObjPtr->suit_oxygen);
+		
+		StreamToValue(S,ObjPtr->monster_index);
+		StreamToValue(S,ObjPtr->object_index);
+		
+		StreamToValue(S,ObjPtr->weapon_intensity_decay);
+		StreamToValue(S,ObjPtr->weapon_intensity);
+		
+		StreamToValue(S,ObjPtr->invisibility_duration);
+		StreamToValue(S,ObjPtr->invincibility_duration);
+		StreamToValue(S,ObjPtr->infravision_duration);	
+		StreamToValue(S,ObjPtr->extravision_duration);
+		
+		StreamToValue(S,ObjPtr->delay_before_teleport);
+		StreamToValue(S,ObjPtr->teleporting_phase);
+		StreamToValue(S,ObjPtr->teleporting_destination);
+		StreamToValue(S,ObjPtr->interlevel_teleport_phase);
+		
+		StreamToList(S,ObjPtr->items,NUMBER_OF_ITEMS);
+		
+		StreamToValue(S,ObjPtr->interface_flags);
+		StreamToValue(S,ObjPtr->interface_decay);
+		
+		StreamToPhysVars(S,ObjPtr->variables);
+		
+		StreamToDamRec(S,ObjPtr->total_damage_given);
+		for (int k=0; k<MAXIMUM_NUMBER_OF_PLAYERS; k++)
+			StreamToDamRec(S,ObjPtr->damage_taken[k]);
+		StreamToDamRec(S,ObjPtr->monster_damage_taken);
+		StreamToDamRec(S,ObjPtr->monster_damage_given);
+		
+		StreamToValue(S,ObjPtr->reincarnation_delay);
+		
+		StreamToValue(S,ObjPtr->control_panel_side_index);
+		
+		StreamToValue(S,ObjPtr->ticks_at_last_successful_save);
+		
+		StreamToList(S,ObjPtr->netgame_parameters,2);
+		
+		S += 256*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_player_data);
+	return S;
+}
+uint8 *pack_player_data(uint8 *Stream, player_data *Objects, int Count)
+{
+	uint8* S = Stream;
+	player_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->identifier);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->color);
+		ValueToStream(S,ObjPtr->team);
+		BytesToStream(S,ObjPtr->name,MAXIMUM_PLAYER_NAME_LENGTH+2);
+		
+		ValueToStream(S,ObjPtr->location.x);
+		ValueToStream(S,ObjPtr->location.y);
+		ValueToStream(S,ObjPtr->location.z);
+		ValueToStream(S,ObjPtr->camera_location.x);
+		ValueToStream(S,ObjPtr->camera_location.y);
+		ValueToStream(S,ObjPtr->camera_location.z);	
+		ValueToStream(S,ObjPtr->camera_polygon_index);
+		ValueToStream(S,ObjPtr->facing);
+		ValueToStream(S,ObjPtr->elevation);
+		ValueToStream(S,ObjPtr->supporting_polygon_index);
+		ValueToStream(S,ObjPtr->last_supporting_polygon_index);
+		
+		ValueToStream(S,ObjPtr->suit_energy);
+		ValueToStream(S,ObjPtr->suit_oxygen);
+		
+		ValueToStream(S,ObjPtr->monster_index);
+		ValueToStream(S,ObjPtr->object_index);
+		
+		ValueToStream(S,ObjPtr->weapon_intensity_decay);
+		ValueToStream(S,ObjPtr->weapon_intensity);
+		
+		ValueToStream(S,ObjPtr->invisibility_duration);
+		ValueToStream(S,ObjPtr->invincibility_duration);
+		ValueToStream(S,ObjPtr->infravision_duration);	
+		ValueToStream(S,ObjPtr->extravision_duration);
+		
+		ValueToStream(S,ObjPtr->delay_before_teleport);
+		ValueToStream(S,ObjPtr->teleporting_phase);
+		ValueToStream(S,ObjPtr->teleporting_destination);
+		ValueToStream(S,ObjPtr->interlevel_teleport_phase);
+		
+		ListToStream(S,ObjPtr->items,NUMBER_OF_ITEMS);
+		
+		ValueToStream(S,ObjPtr->interface_flags);
+		ValueToStream(S,ObjPtr->interface_decay);
+		
+		PhysVarsToStream(S,ObjPtr->variables);
+		
+		DamRecToStream(S,ObjPtr->total_damage_given);
+		for (int k=0; k<MAXIMUM_NUMBER_OF_PLAYERS; k++)
+			DamRecToStream(S,ObjPtr->damage_taken[k]);
+		DamRecToStream(S,ObjPtr->monster_damage_taken);
+		DamRecToStream(S,ObjPtr->monster_damage_given);
+		
+		ValueToStream(S,ObjPtr->reincarnation_delay);
+		
+		ValueToStream(S,ObjPtr->control_panel_side_index);
+		
+		ValueToStream(S,ObjPtr->ticks_at_last_successful_save);
+		
+		ListToStream(S,ObjPtr->netgame_parameters,2);
+		
+		S += 256*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_player_data);
+	return S;
 }
 
 

@@ -14,6 +14,9 @@ Feb 6, 2000 (Loren Petrich):
 
 May 26, 2000 (Loren Petrich):
 	Added XML support for configuring various weapon features
+
+Aug 31, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 /* enums for player.c */
@@ -70,6 +73,11 @@ struct weapon_display_information
 	boolean flip_horizontal, flip_vertical;
 };
 
+// For external access:
+const int SIZEOF_weapon_definition = 134;
+
+const int SIZEOF_player_weapon_data = 472;
+
 /* ----------------- prototypes */
 /* called once at startup */
 void initialize_weapon_manager(void);
@@ -80,6 +88,7 @@ void initialize_player_weapons_for_new_game(short player_index);
 /* initialize the given players weapons-> called after creating a player */
 void initialize_player_weapons(short player_index);
 
+// Old external-access stuff: superseded by the packing and unpacking routines below
 void *get_weapon_array(void);
 long calculate_weapon_array_length(void);
 
@@ -121,9 +130,16 @@ short get_player_weapon_ammo_count(short player_index, short which_weapon, short
 void debug_print_weapon_status(void);
 #endif
 
-// LP additions: get weapon-definition size and number of weapon types
-int get_weapon_defintion_size();
-int get_number_of_weapons();
+// LP: to pack and unpack this data;
+// these do not make the definitions visible to the outside world
+
+uint8 *unpack_player_weapon_data(uint8 *Stream, int Count);
+uint8 *pack_player_weapon_data(uint8 *Stream, int Count);
+uint8 *unpack_weapon_definition(uint8 *Stream, int Count);
+uint8 *pack_weapon_definition(uint8 *Stream, int Count);
+
+// LP additions: get number of weapon types;
+int get_number_of_weapon_types();
 
 // LP addition: XML-parser support
 XML_ElementParser *Weapons_GetParser();

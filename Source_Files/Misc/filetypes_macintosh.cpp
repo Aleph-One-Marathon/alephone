@@ -49,4 +49,9 @@ void initialize_typecodes()
 
 
 // Accessor
-OSType get_typecode(int which) {return typecodes[which];}
+OSType get_typecode(int which)
+{
+	if (which < 0) return '????';
+	else if (which >= NUMBER_OF_TYPECODES) return '????';
+	return typecodes[which];
+}

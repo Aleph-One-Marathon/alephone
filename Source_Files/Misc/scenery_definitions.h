@@ -29,7 +29,7 @@ struct scenery_definition
 	
 	world_distance radius, height;
 	
-	short destroyed_effect;
+	int16 destroyed_effect;
 	shape_descriptor destroyed_shape;
 };
 

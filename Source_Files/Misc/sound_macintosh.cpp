@@ -102,7 +102,7 @@ void set_sound_manager_status(
 				if (_sm_globals->available_flags&_extra_memory_flag) _sm_globals->total_buffer_size*= 2;
 
 				_sm_globals->sound_source= (_sm_parameters->flags&_16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
-				_sm_globals->base_sound_definitions= sound_definitions + _sm_globals->sound_source*NUMBER_OF_SOUND_DEFINITIONS;
+				_sm_globals->base_sound_definitions= sound_definitions + _sm_globals->sound_source*number_of_sound_definitions;
 
 				GetDefaultOutputVolume(&_sm_globals->old_sound_volume);
 				SetDefaultOutputVolume(sound_level_to_sound_volume(_sm_parameters->volume));
@@ -163,110 +163,6 @@ void set_sound_manager_status(
 	}
 	
 	return;
-}
-
-bool open_sound_file(FileSpecifier& File)
-	// FSSpec *spec)
-{
-	// LP: rewrote the whole g*dd*mn thing
-	if (!(sound_definitions && _sm_globals)) return false;
-	
-	if (!File.Open(SoundFile)) return false;
-
-	struct sound_file_header header;
-	if (!SoundFile.ReadObject(header))
-	{
-		SoundFile.Close();
-		return false;
-	}
-
-	if (header.version!=SOUND_FILE_VERSION ||
-		header.tag!=SOUND_FILE_TAG ||
-		header.sound_count!=NUMBER_OF_SOUND_DEFINITIONS ||
-		header.source_count!=NUMBER_OF_SOUND_SOURCES)
-	{
-		SoundFile.Close();
-		return false;
-	}
-
-	if (!SoundFile.ReadObjectList(NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS,sound_definitions))
-	{
-		SoundFile.Close();
-		return false;
-	}
-	
-	return true;
-	
-	/*
-	OSErr error= noErr;
-
-// _sm_initialized is the wrong thing to test since
-// initialize_machine_sound_manager calls us before setting it to true
-//	if (_sm_initialized) 
-	if (sound_definitions && _sm_globals)
-	{
-		// short refNum;
-		
-		// LP: using file object instead
-		SoundFile.Close();
-		SoundFile.GetSpec(*spec);
-		if (SoundFile.Open(FileSpecifier::C_Sound))
-		// LP addition: resolving sounds file if it was an alias
-		Boolean is_folder, was_aliased;
-		ResolveAliasFile((FSSpec *)spec, TRUE, &is_folder, &was_aliased);
-		
-		error= FSpOpenDF(spec, fsRdPerm, &refNum);
-		if (error==noErr)
-		{
-			long count;
-	
-			// read header		
-			{
-				struct sound_file_header header;
-				
-				if (SoundFile.ReadObject(header))
-				count= sizeof(struct sound_file_header);
-				error= FSRead(refNum, &count, (void *) &header);
-				if (error==noErr)
-				{
-					error = noErr;
-					if (header.version!=SOUND_FILE_VERSION ||
-						header.tag!=SOUND_FILE_TAG ||
-						header.sound_count!=NUMBER_OF_SOUND_DEFINITIONS ||
-						header.source_count!=NUMBER_OF_SOUND_SOURCES)
-					{
-						// dprintf("sound file discarded %p 0x%x '%4s' #%d/#%d;g;", &header, header.version, &header.tag, header.sound_count, NUMBER_OF_SOUND_DEFINITIONS);
-						error= -1;
-					}
-				}
-			}
-			if (error == noErr) error = SoundFile.Err;
-			
-			if (error==noErr)
-			{
-				// count= NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS*sizeof(struct sound_definition);
-				SoundFile.ReadObjectList(NUMBER_OF_SOUND_SOURCES*NUMBER_OF_SOUND_DEFINITIONS,sound_definitions);
-				error = SoundFile.Err;
-				// error= FSRead(refNum, &count, sound_definitions);
-				if (error==noErr)
-				{
-				}
-			}
-			
-			if (error!=noErr)
-			{
-				SoundFile.Close();
-				// FSClose(refNum);
-				// refNum= -1;
-			}
-	
-			// close_sound_file();
-			// _sm_globals->sound_file_refnum= refNum;
-		}
-	}
-		
-	return error;
-	*/
 }
 
 boolean adjust_sound_volume_up(

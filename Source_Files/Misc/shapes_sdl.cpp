@@ -13,6 +13,9 @@
 extern void get_default_shapes_spec(FileSpecifier &File);
 
 
+// LP: now in shapes.cpp
+#if 0
+
 /*
  *  Open shapes file, read collection headers
  */
@@ -40,7 +43,7 @@ void open_shapes_file(FileSpecifier &File)
 		h->shading_tables = NULL;
 	}
 }
-
+#endif
 
 /*
  *  Initialize shapes handling
@@ -98,6 +101,9 @@ SDL_Surface *get_shape_surface(int shape)
 	return s;
 }
 
+
+// LP: now in shapes.c
+#if 0
 
 /*
  *  Load collection
@@ -369,3 +375,5 @@ static void unload_collection(struct collection_header *header)
 	header->collection = NULL;
 	header->shading_tables = NULL;
 }
+
+#endif

@@ -46,12 +46,14 @@ static boolean polygon_is_valid_for_object_drop(world_point2d *location, short p
  * Function: load_placement_data
  * Purpose:  called by game_wad.c to get the placement information for the map.
  *
+ * LP: changed to unpack the placement data from a stream of bytes
+ *
  *************************************************************************************************/
 void load_placement_data(
-	struct object_frequency_definition *monsters, 
-	struct object_frequency_definition *items)
+	uint8 *_monsters, 
+	uint8 *_items)
 {
-	assert(monsters != NULL && items != NULL);
+	assert(_monsters != NULL && _items != NULL);
 	assert(NUMBER_OF_MONSTER_TYPES<=MAXIMUM_OBJECT_TYPES);
 	assert(NUMBER_OF_DEFINED_ITEMS<=MAXIMUM_OBJECT_TYPES);
 
@@ -62,10 +64,14 @@ void load_placement_data(
 	objlist_clear(object_placement_info, 2*MAXIMUM_OBJECT_TYPES);
 
 	/* Copy them in */
+	unpack_object_frequency_definition(_monsters, monster_placement_info, MAXIMUM_OBJECT_TYPES);
+	unpack_object_frequency_definition(_items, item_placement_info, MAXIMUM_OBJECT_TYPES);
+	/*
 	objlist_copy(monster_placement_info, monsters, MAXIMUM_OBJECT_TYPES);
 	byte_swap_object_list(monster_placement_info, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
 	objlist_copy(item_placement_info, items, MAXIMUM_OBJECT_TYPES);
 	byte_swap_object_list(item_placement_info, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
+	*/
 	
 	// Clears the data for monster #0, the Marine
 	obj_clear(*monster_placement_info);

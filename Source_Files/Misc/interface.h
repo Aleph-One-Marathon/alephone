@@ -289,7 +289,7 @@ void process_collection_sounds(short colleciton_code, void (*process_sound)(shor
 
 #define mark_collection_for_loading(c) mark_collection((c), TRUE)
 #define mark_collection_for_unloading(c) mark_collection((c), FALSE)
-void mark_collection(short collection_code, boolean loading);
+void mark_collection(short collection_code, bool loading);
 void strip_collection(short collection_code);
 void load_collections(void);
 void unload_all_collections(void);
@@ -324,7 +324,7 @@ boolean get_keyboard_controller_status(void);
 void pause_keyboard_controller(boolean active);
 long get_heartbeat_count(void);
 void sync_heartbeat_count(void);
-void process_action_flags(short player_identifier, long *action_flags, short count);
+void process_action_flags(short player_identifier, int32 *action_flags, short count);
 void rewind_recording(void);
 void stop_recording(void);
 void stop_replay(void);

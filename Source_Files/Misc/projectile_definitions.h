@@ -41,22 +41,22 @@ enum /* projectile flags */
 
 struct projectile_definition
 {
-	short collection, shape; /* collection can be NONE (invisible) */
-	short detonation_effect, media_detonation_effect;
-	short contrail_effect, ticks_between_contrails, maximum_contrails; /* maximum of NONE is infinite */
-	short media_projectile_promotion;
+	int16 collection, shape; /* collection can be NONE (invisible) */
+	int16 detonation_effect, media_detonation_effect;
+	int16 contrail_effect, ticks_between_contrails, maximum_contrails; /* maximum of NONE is infinite */
+	int16 media_projectile_promotion;
 
 	world_distance radius; /* can be zero and will still hit */
 	world_distance area_of_effect; /* one target if ==0 */
 	struct damage_definition damage;
 
-	unsigned long flags;
+	uint32 flags;
 
 	world_distance speed;
 	world_distance maximum_range;
 
 	fixed sound_pitch;	
-	short flyby_sound, rebound_sound;
+	int16 flyby_sound, rebound_sound;
 };
 
 /* ---------- projectile definitions */

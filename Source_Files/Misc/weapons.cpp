@@ -45,6 +45,13 @@ Jul 1, 2000 (Loren Petrich):
 
 Jul 1, 2000 (Loren Petrich):
 	Added Benad's changes
+
+Aug 31, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
+
+Sep 3, 2000 (Loren Petrich):
+	Suppressed "assert(weapon_type!=NUMBER_OF_WEAPONS);" in a search-for-which-weapon loop;
+	some physics models get to this without causing other trouble
 */
 
 #include "cseries.h"
@@ -57,6 +64,8 @@ Jul 1, 2000 (Loren Petrich):
 #include "items.h"
 #include "monsters.h"
 #include "game_window.h"
+
+#include "Packing.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -217,35 +226,6 @@ inline struct shell_casing_definition *get_shell_casing_definition(
 	
 	return definition;
 }
-
-/*
-#ifdef DEBUG
-static struct player_weapon_data *get_player_weapon_data(
-	short player_index)
-{
-	assert(player_index>=0 && player_index<get_maximum_number_of_players());
-	return (player_weapons_array+player_index);
-}
-
-static struct weapon_definition *get_weapon_definition(
-	short weapon_type)
-{
-	assert(weapon_type>=0 && weapon_type<NUMBER_OF_WEAPONS);
-	return weapon_definitions+weapon_type;
-}
-
-static struct shell_casing_definition *get_shell_casing_definition(
-	short type)
-{
-	assert(type>=0&&type<NUMBER_OF_SHELL_CASING_TYPES);
-	return shell_casing_definitions+type;
-}
-#else
-#define get_player_weapon_data(index) (player_weapons_array+(index))
-#define get_weapon_definition(index) (weapon_definitions+(index))
-#define get_shell_casing_definition(index) (shell_casing_definitions+(index))
-#endif
-*/
 
 /* ------------- local prototypes */
 static void reset_trigger_data(short player_index, short weapon_type, short which_trigger);
@@ -513,6 +493,7 @@ void process_new_item_for_reloading(
 					/* Load the weapons */
 					if(definition->weapon_class==_twofisted_pistol_class)
 					{
+						// Skip over unrecognized ones
 						assert(definition->item_type>=0 && definition->item_type<NUMBER_OF_ITEMS);
 						if(player->items[definition->item_type]>1)
 						{
@@ -597,7 +578,8 @@ void process_new_item_for_reloading(
 					break; /* Out of the for loop */
 				}
 			}
-			assert(weapon_type!=NUMBER_OF_WEAPONS);
+			// One comes here if a weapon had not been on one of the list 
+			// assert(weapon_type!=NUMBER_OF_WEAPONS);
 			break;
 
 		case _ammunition:
@@ -1375,6 +1357,7 @@ boolean get_weapon_display_information(
 				/* setup the positioning information */
 				high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 					shape_index));
+				assert(high_level_data);
 				vassert(frame>=0 && frame<high_level_data->frames_per_view,
 					csprintf(temporary, "frame: %d max: %d trigger: %d state: %d count: %d phase: %d", 
 					frame, high_level_data->frames_per_view,
@@ -3082,6 +3065,8 @@ static void calculate_ticks_from_shapes(
 		
 			high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection,
 				definition->firing_shape));
+			// Skip over if the sequence is nonexistent
+			if(!high_level_data) continue;
 
 			total_ticks= high_level_data->ticks_per_frame*high_level_data->frames_per_view;
 				
@@ -3124,6 +3109,8 @@ static void calculate_ticks_from_shapes(
 		
 			high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 				definition->reloading_shape));
+			// Skip over if the sequence is nonexistent
+			if(!high_level_data) continue;
 	
 			total_ticks= high_level_data->ticks_per_frame*high_level_data->frames_per_view;
 			definition->await_reload_ticks= 0;
@@ -3974,6 +3961,8 @@ static boolean get_shell_casing_display_data(
 					struct shell_casing_definition *definition= get_shell_casing_definition(shell_casing->type);
 					struct shape_animation_data *high_level_data=
 						get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, definition->shape));
+					// Skip over if the sequence is nonexistent
+					if(!high_level_data) continue;
 					
 					// animate it
 					if ((shell_casing->frame+= 1)>=high_level_data->frames_per_view) shell_casing->frame= 0;
@@ -3995,9 +3984,248 @@ static boolean get_shell_casing_display_data(
 	return valid;
 }
 
+
+inline void StreamToTrigData(uint8* &S, trigger_data& Object)
+{
+	StreamToValue(S,Object.state);
+	StreamToValue(S,Object.phase);
+	StreamToValue(S,Object.rounds_loaded);
+	StreamToValue(S,Object.shots_fired);
+	StreamToValue(S,Object.shots_hit);
+	StreamToValue(S,Object.ticks_since_last_shot);
+	StreamToValue(S,Object.ticks_firing);
+	StreamToValue(S,Object.sequence);
+}
+
+inline void TrigDataToStream(uint8* &S, trigger_data& Object)
+{
+	ValueToStream(S,Object.state);
+	ValueToStream(S,Object.phase);
+	ValueToStream(S,Object.rounds_loaded);
+	ValueToStream(S,Object.shots_fired);
+	ValueToStream(S,Object.shots_hit);
+	ValueToStream(S,Object.ticks_since_last_shot);
+	ValueToStream(S,Object.ticks_firing);
+	ValueToStream(S,Object.sequence);
+}
+
+
+inline void StreamToWeapData(uint8* &S, weapon_data& Object)
+{
+	StreamToValue(S,Object.weapon_type);
+	StreamToValue(S,Object.flags);
+	StreamToValue(S,Object.unused);
+	for (int k=0; k<NUMBER_OF_TRIGGERS; k++)
+		StreamToTrigData(S,Object.triggers[k]);
+}
+
+inline void WeapDataToStream(uint8* &S, weapon_data& Object)
+{
+	ValueToStream(S,Object.weapon_type);
+	ValueToStream(S,Object.flags);
+	ValueToStream(S,Object.unused);
+	for (int k=0; k<NUMBER_OF_TRIGGERS; k++)
+		TrigDataToStream(S,Object.triggers[k]);
+}
+
+
+inline void StreamToShellData(uint8* &S, shell_casing_data& Object)
+{
+	StreamToValue(S,Object.type);
+	StreamToValue(S,Object.frame);
+		
+	StreamToValue(S,Object.flags);
+	
+	StreamToValue(S,Object.x);
+	StreamToValue(S,Object.y);
+	StreamToValue(S,Object.vx);
+	StreamToValue(S,Object.vy);
+}
+
+inline void ShellDataToStream(uint8* &S, shell_casing_data& Object)
+{
+	ValueToStream(S,Object.type);
+	ValueToStream(S,Object.frame);
+	
+	ValueToStream(S,Object.flags);
+	
+	ValueToStream(S,Object.x);
+	ValueToStream(S,Object.y);
+	ValueToStream(S,Object.vx);
+	ValueToStream(S,Object.vy);
+}
+
+
+uint8 *unpack_player_weapon_data(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	player_weapon_data* ObjPtr = player_weapons_array;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->current_weapon);
+		StreamToValue(S,ObjPtr->desired_weapon);
+		for (int m=0; m<NUMBER_OF_WEAPONS; m++)
+			StreamToWeapData(S,ObjPtr->weapons[m]);
+		for (int m=0; m<MAXIMUM_SHELL_CASINGS; m++)
+			StreamToShellData(S,ObjPtr->shell_casings[m]);
+	}
+	assert((S - Stream) == Count*SIZEOF_player_weapon_data);
+	return S;
+}
+
+uint8 *pack_player_weapon_data(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	player_weapon_data* ObjPtr = player_weapons_array;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->current_weapon);
+		ValueToStream(S,ObjPtr->desired_weapon);
+		for (int m=0; m<NUMBER_OF_WEAPONS; m++)
+			WeapDataToStream(S,ObjPtr->weapons[m]);
+		for (int m=0; m<MAXIMUM_SHELL_CASINGS; m++)
+			ShellDataToStream(S,ObjPtr->shell_casings[m]);
+	}
+	assert((S - Stream) == Count*SIZEOF_player_weapon_data);
+	return S;
+}
+
+inline void StreamToTrigDefData(uint8* &S, trigger_definition& Object)
+{
+	StreamToValue(S,Object.rounds_per_magazine);
+	StreamToValue(S,Object.ammunition_type);	
+	StreamToValue(S,Object.ticks_per_round);
+	StreamToValue(S,Object.recovery_ticks);
+	StreamToValue(S,Object.charging_ticks);
+	StreamToValue(S,Object.recoil_magnitude);
+	StreamToValue(S,Object.firing_sound);
+	StreamToValue(S,Object.click_sound);
+	StreamToValue(S,Object.charging_sound);	
+	StreamToValue(S,Object.shell_casing_sound);
+	StreamToValue(S,Object.reloading_sound);
+	StreamToValue(S,Object.charged_sound);
+	StreamToValue(S,Object.projectile_type);
+	StreamToValue(S,Object.theta_error);
+	StreamToValue(S,Object.dx);
+	StreamToValue(S,Object.dz);
+	StreamToValue(S,Object.shell_casing_type);
+	StreamToValue(S,Object.burst_count);
+}
+
+inline void TrigDefDataToStream(uint8* &S, trigger_definition& Object)
+{
+	ValueToStream(S,Object.rounds_per_magazine);
+	ValueToStream(S,Object.ammunition_type);	
+	ValueToStream(S,Object.ticks_per_round);
+	ValueToStream(S,Object.recovery_ticks);
+	ValueToStream(S,Object.charging_ticks);
+	ValueToStream(S,Object.recoil_magnitude);
+	ValueToStream(S,Object.firing_sound);
+	ValueToStream(S,Object.click_sound);
+	ValueToStream(S,Object.charging_sound);	
+	ValueToStream(S,Object.shell_casing_sound);
+	ValueToStream(S,Object.reloading_sound);
+	ValueToStream(S,Object.charged_sound);
+	ValueToStream(S,Object.projectile_type);
+	ValueToStream(S,Object.theta_error);
+	ValueToStream(S,Object.dx);
+	ValueToStream(S,Object.dz);
+	ValueToStream(S,Object.shell_casing_type);
+	ValueToStream(S,Object.burst_count);
+}
+
+
+uint8 *unpack_weapon_definition(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	weapon_definition* ObjPtr = weapon_definitions;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->item_type);
+		StreamToValue(S,ObjPtr->powerup_type);	
+		StreamToValue(S,ObjPtr->weapon_class);
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->firing_light_intensity);
+		StreamToValue(S,ObjPtr->firing_intensity_decay_ticks);
+		
+		StreamToValue(S,ObjPtr->idle_height);
+		StreamToValue(S,ObjPtr->bob_amplitude);
+		StreamToValue(S,ObjPtr->kick_height);	
+		StreamToValue(S,ObjPtr->reload_height);
+		StreamToValue(S,ObjPtr->idle_width);
+		StreamToValue(S,ObjPtr->horizontal_amplitude);
+		
+		StreamToValue(S,ObjPtr->collection);
+		StreamToValue(S,ObjPtr->idle_shape);
+		StreamToValue(S,ObjPtr->firing_shape);
+		StreamToValue(S,ObjPtr->reloading_shape);
+		StreamToValue(S,ObjPtr->unused);
+		StreamToValue(S,ObjPtr->charging_shape);
+		StreamToValue(S,ObjPtr->charged_shape);
+		
+		StreamToValue(S,ObjPtr->ready_ticks);
+		StreamToValue(S,ObjPtr->await_reload_ticks);
+		StreamToValue(S,ObjPtr->loading_ticks);
+		StreamToValue(S,ObjPtr->finish_loading_ticks);
+		StreamToValue(S,ObjPtr->powerup_ticks);
+		
+		for (int m=0; m<NUMBER_OF_TRIGGERS; m++)
+			StreamToTrigDefData(S,ObjPtr->weapons_by_trigger[m]);
+	}
+	assert((S - Stream) == Count*SIZEOF_weapon_definition);
+	return S;
+}
+
+uint8 *pack_weapon_definition(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	weapon_definition* ObjPtr = weapon_definitions;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->item_type);
+		ValueToStream(S,ObjPtr->powerup_type);	
+		ValueToStream(S,ObjPtr->weapon_class);
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->firing_light_intensity);
+		ValueToStream(S,ObjPtr->firing_intensity_decay_ticks);
+		
+		ValueToStream(S,ObjPtr->idle_height);
+		ValueToStream(S,ObjPtr->bob_amplitude);
+		ValueToStream(S,ObjPtr->kick_height);	
+		ValueToStream(S,ObjPtr->reload_height);
+		ValueToStream(S,ObjPtr->idle_width);
+		ValueToStream(S,ObjPtr->horizontal_amplitude);
+		
+		ValueToStream(S,ObjPtr->collection);
+		ValueToStream(S,ObjPtr->idle_shape);
+		ValueToStream(S,ObjPtr->firing_shape);
+		ValueToStream(S,ObjPtr->reloading_shape);
+		ValueToStream(S,ObjPtr->unused);
+		ValueToStream(S,ObjPtr->charging_shape);
+		ValueToStream(S,ObjPtr->charged_shape);
+		
+		ValueToStream(S,ObjPtr->ready_ticks);
+		ValueToStream(S,ObjPtr->await_reload_ticks);
+		ValueToStream(S,ObjPtr->loading_ticks);
+		ValueToStream(S,ObjPtr->finish_loading_ticks);
+		ValueToStream(S,ObjPtr->powerup_ticks);
+		
+		for (int m=0; m<NUMBER_OF_TRIGGERS; m++)
+			TrigDefDataToStream(S,ObjPtr->weapons_by_trigger[m]);
+	}
+	assert((S - Stream) == Count*SIZEOF_weapon_definition);
+	return S;
+}
+
+
 // LP additions: get weapon-definition size and number of weapon types
-int get_weapon_defintion_size() {return sizeof(struct weapon_definition);}
-int get_number_of_weapons() {return NUMBER_OF_WEAPONS;}
+int get_number_of_weapon_types() {return NUMBER_OF_WEAPONS;}
 
 
 class XML_ShellCasingParser: public XML_ElementParser

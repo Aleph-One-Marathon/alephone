@@ -17,12 +17,16 @@ June 2, 2000 (Loren Petrich):
 
 July 1, 2000 (Loren Petrich):
 	Modified light accessors to be more C++-like
+
+Aug 29, 2000 (Loren Petrich):
+	Added packing routines for the light data; also moved old light stuff (M1) here
 */
 
 #include "cseries.h"
 
 #include "map.h"
 #include "lightsource.h"
+#include "Packing.h"
 
 #ifdef env68k
 #pragma segment marathon
@@ -470,62 +474,220 @@ static fixed flicker_lighting_proc(
 }
 
 
-// Split and join the misaligned 4-byte values
-
-#include <string.h>
-
-inline void pack_lighting_function(lighting_function_specification& source, saved_lighting_function& dest)
+uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count)
 {
-	dest.function = source.function;
+	uint8* S = Stream;
+	old_light_data* ObjPtr = Objects;
 	
-	dest.period = source.period;
-	dest.delta_period = source.delta_period;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->mode);
+		StreamToValue(S,ObjPtr->phase);
+		
+		StreamToValue(S,ObjPtr->minimum_intensity);
+		StreamToValue(S,ObjPtr->maximum_intensity);
+		StreamToValue(S,ObjPtr->period);
+		
+		StreamToValue(S,ObjPtr->intensity);
+		
+		S += 5*2;
+	}
 	
-	memcpy(dest.intensity,&source.intensity,4);
-	memcpy(dest.delta_intensity,&source.delta_intensity,4);
+	assert((S - Stream) == Count*SIZEOF_old_light_data);
+	return S;
 }
 
-inline void unpack_lighting_function(saved_lighting_function& source, lighting_function_specification& dest)
+uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count)
 {
-	dest.function = source.function;
+	uint8* S = Stream;
+	old_light_data* ObjPtr = Objects;
 	
-	dest.period = source.period;
-	dest.delta_period = source.delta_period;
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->mode);
+		ValueToStream(S,ObjPtr->phase);
+		
+		ValueToStream(S,ObjPtr->minimum_intensity);
+		ValueToStream(S,ObjPtr->maximum_intensity);
+		ValueToStream(S,ObjPtr->period);
+		
+		ValueToStream(S,ObjPtr->intensity);
+		
+		S += 5*2;
+	}
 	
-	memcpy(&dest.intensity,source.intensity,4);
-	memcpy(&dest.delta_intensity,source.delta_intensity,4);
+	assert((S - Stream) == Count*SIZEOF_old_light_data);
+	return S;
 }
 
-void pack_light_data(static_light_data& source, saved_static_light& dest)
+static void StreamToLightSpec(uint8* &S, lighting_function_specification& Object)
 {
-	dest.type = source.type;
-	dest.flags = source.flags;
+	StreamToValue(S,Object.function);
 	
-	dest.phase = source.phase;
-	
-	pack_lighting_function(source.primary_active,dest.primary_active);
-	pack_lighting_function(source.secondary_active,dest.secondary_active);
-	pack_lighting_function(source.becoming_active,dest.becoming_active);
-	pack_lighting_function(source.primary_inactive,dest.primary_inactive);
-	pack_lighting_function(source.secondary_inactive,dest.secondary_inactive);
-	pack_lighting_function(source.becoming_inactive,dest.becoming_inactive);
-	
-	dest.tag = source.tag;
+	StreamToValue(S,Object.period);
+	StreamToValue(S,Object.delta_period);
+	StreamToValue(S,Object.intensity);
+	StreamToValue(S,Object.delta_intensity);
 }
 
-void unpack_light_data(saved_static_light& source, static_light_data& dest)
+static void LightSpecToStream(uint8* &S, lighting_function_specification& Object)
 {
-	dest.type = source.type;
-	dest.flags = source.flags;
+	ValueToStream(S,Object.function);
 	
-	dest.phase = source.phase;
-	
-	unpack_lighting_function(source.primary_active,dest.primary_active);
-	unpack_lighting_function(source.secondary_active,dest.secondary_active);
-	unpack_lighting_function(source.becoming_active,dest.becoming_active);
-	unpack_lighting_function(source.primary_inactive,dest.primary_inactive);
-	unpack_lighting_function(source.secondary_inactive,dest.secondary_inactive);
-	unpack_lighting_function(source.becoming_inactive,dest.becoming_inactive);
-	
-	dest.tag = source.tag;
+	ValueToStream(S,Object.period);
+	ValueToStream(S,Object.delta_period);
+	ValueToStream(S,Object.intensity);
+	ValueToStream(S,Object.delta_intensity);
 }
+
+
+uint8 *unpack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	static_light_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->type);
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->phase);
+
+		StreamToLightSpec(S,ObjPtr->primary_active);
+		StreamToLightSpec(S,ObjPtr->secondary_active);
+		StreamToLightSpec(S,ObjPtr->becoming_active);
+		StreamToLightSpec(S,ObjPtr->primary_inactive);
+		StreamToLightSpec(S,ObjPtr->secondary_inactive);
+		StreamToLightSpec(S,ObjPtr->becoming_inactive);
+
+		StreamToValue(S,ObjPtr->tag);
+		
+		S += 4*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_static_light_data);
+	return S;
+}
+
+uint8 *pack_static_light_data(uint8 *Stream, static_light_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	static_light_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->type);
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->phase);
+
+		LightSpecToStream(S,ObjPtr->primary_active);
+		LightSpecToStream(S,ObjPtr->secondary_active);
+		LightSpecToStream(S,ObjPtr->becoming_active);
+		LightSpecToStream(S,ObjPtr->primary_inactive);
+		LightSpecToStream(S,ObjPtr->secondary_inactive);
+		LightSpecToStream(S,ObjPtr->becoming_inactive);
+
+		ValueToStream(S,ObjPtr->tag);
+		
+		S += 4*2;
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_static_light_data);
+	return S;
+}
+
+
+uint8 *unpack_light_data(uint8 *Stream, light_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	light_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->state);
+		
+		StreamToValue(S,ObjPtr->intensity);
+		
+		StreamToValue(S,ObjPtr->phase);
+		StreamToValue(S,ObjPtr->period);
+		StreamToValue(S,ObjPtr->initial_intensity);
+		StreamToValue(S,ObjPtr->final_intensity);
+		
+		S += 4*2;
+		
+		S = unpack_static_light_data(S,&ObjPtr->static_data,1);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_light_data);
+	return S;
+}
+
+uint8 *pack_light_data(uint8 *Stream, light_data* Objects, int Count)
+{
+	uint8* S = Stream;
+	light_data* ObjPtr = Objects;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->state);
+		
+		ValueToStream(S,ObjPtr->intensity);
+		
+		ValueToStream(S,ObjPtr->phase);
+		ValueToStream(S,ObjPtr->period);
+		ValueToStream(S,ObjPtr->initial_intensity);
+		ValueToStream(S,ObjPtr->final_intensity);
+		
+		S += 4*2;
+		
+		S = pack_static_light_data(S,&ObjPtr->static_data,1);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_light_data);
+	return S;
+}
+
+
+void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data* OldLights, int Count)
+{
+	// LP: code taken from game_wad.c and somewhat modified
+	
+	old_light_data *OldLtPtr = OldLights;
+	static_light_data *NewLtPtr = NewLights;
+	
+	for (int k = 0; k < Count; k++, OldLtPtr++, NewLtPtr++)
+	{
+		/* As time goes on, we should add functions below to make the lights */
+		/*  behave more like their bacward compatible cousins. */
+
+		/* Do the best we can.. */
+		switch(OldLtPtr->type)
+		{
+		case _light_is_normal:
+		case _light_is_annoying:
+		case _light_is_energy_efficient:
+		case _light_is_rheostat:
+		case _light_is_flourescent:
+			obj_copy(*NewLtPtr,*get_defaults_for_light_type(_normal_light));
+			break;
+			
+		case _light_is_strobe:
+		case _light_flickers:
+		case _light_pulsates:
+			obj_copy(*NewLtPtr,*get_defaults_for_light_type(_strobe_light));
+			break;
+		
+		default:
+			assert(false);
+			break;
+		}
+	}
+}
+

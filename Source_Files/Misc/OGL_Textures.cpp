@@ -26,6 +26,11 @@
 Jul 10, 2000:
 
 	Fixed crashing bug when OpenGL is inactive with ResetTextures()
+
+Sep 9, 2000:
+
+	Restored old fix for AppleGL texturing as an option; this fix consists of setting
+	the minimum size of a texture to be 128.
 */
 
 #include <GL/gl.h>
@@ -44,53 +49,6 @@ Jul 10, 2000:
 #include "OGL_Textures.h"
 
 
-// Standard type assignments;
-// this is done because of special concerns with rendering
-// each of the different kinds of textures
-const short TextureTypes[NUMBER_OF_COLLECTIONS] =
-{
-	NONE,					// Interface (what one sees in the HUD)
-	OGL_Txtr_WeaponsInHand,	// Weapons in Hand
-	
-	OGL_Txtr_Inhabitant,	// Juggernaut
-	OGL_Txtr_Inhabitant,	// Tick
-	OGL_Txtr_Inhabitant,	// Explosion effects
-	OGL_Txtr_Inhabitant,	// Hunter
-	OGL_Txtr_Inhabitant,	// Player
-	
-	OGL_Txtr_Inhabitant,	// Items
-	OGL_Txtr_Inhabitant,	// Trooper
-	OGL_Txtr_Inhabitant,	// Fighter
-	OGL_Txtr_Inhabitant,	// S'pht'Kr
-	OGL_Txtr_Inhabitant,	// F'lickta
-	
-	OGL_Txtr_Inhabitant,	// Bob
-	OGL_Txtr_Inhabitant,	// VacBob
-	OGL_Txtr_Inhabitant,	// Enforcer
-	OGL_Txtr_Inhabitant,	// Drone
-	OGL_Txtr_Inhabitant,	// S'pht
-	
-	OGL_Txtr_Wall,			// Water
-	OGL_Txtr_Wall,			// Lava
-	OGL_Txtr_Wall,			// Sewage
-	OGL_Txtr_Wall,			// Jjaro
-	OGL_Txtr_Wall,			// Pfhor
-
-	OGL_Txtr_Inhabitant,	// Water Scenery
-	OGL_Txtr_Inhabitant,	// Lava Scenery
-	OGL_Txtr_Inhabitant,	// Sewage Scenery
-	OGL_Txtr_Inhabitant,	// Jjaro Scenery
-	OGL_Txtr_Inhabitant,	// Pfhor Scenery
-	
-	OGL_Txtr_Landscape,		// Day
-	OGL_Txtr_Landscape,		// Night
-	OGL_Txtr_Landscape,		// Moon
-	OGL_Txtr_Landscape,		// Outer Space
-	
-	OGL_Txtr_Inhabitant		// Cyborg
-};
-
-
 // Texture mapping
 struct TxtrTypeInfoData
 {
@@ -100,8 +58,8 @@ struct TxtrTypeInfoData
 	GLenum ColorFormat;			// OpenGL parameter for stored color format (RGBA8, etc.)
 };
 
-static TxtrTypeInfoData TxtrTypeInfoList[OGL_NUMBER_OF_TEXTURE_TYPES];
 
+static TxtrTypeInfoData TxtrTypeInfoList[OGL_NUMBER_OF_TEXTURE_TYPES];
 
 
 // Infravision: use algorithm (red + green + blue)/3 to compose intensity,
@@ -189,22 +147,25 @@ void TextureState::Reset()
 }
 
 
-static CollBitmapTextureState* TextureStateSets[MAXIMUM_COLLECTIONS];
+// Will distinguish by texture type as well as by collection;
+// this is because different rendering modes deserve different treatment.
+static CollBitmapTextureState* TextureStateSets[OGL_NUMBER_OF_TEXTURE_TYPES][MAXIMUM_COLLECTIONS];
 
 
 // Initialize the texture accounting
 void OGL_StartTextures()
 {
 	// Initialize the texture accounting proper
-	for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
-	{
-		bool CollectionPresent = is_collection_present(ic);
-		short NumberOfBitmaps =
-			CollectionPresent ? get_number_of_collection_bitmaps(ic) : 0;
-		TextureStateSets[ic] =
-			(CollectionPresent && NumberOfBitmaps) ?
-				(new CollBitmapTextureState[NumberOfBitmaps]) : 0;
-	}
+	for (int it=0; it<OGL_NUMBER_OF_TEXTURE_TYPES; it++)
+		for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
+		{
+			bool CollectionPresent = is_collection_present(ic);
+			short NumberOfBitmaps =
+				CollectionPresent ? get_number_of_collection_bitmaps(ic) : 0;
+			TextureStateSets[it][ic] =
+				(CollectionPresent && NumberOfBitmaps) ?
+					(new CollBitmapTextureState[NumberOfBitmaps]) : 0;
+		}
 	
 	// Initialize the texture-type info
 	const int NUMBER_OF_NEAR_FILTERS = 2;
@@ -265,8 +226,9 @@ void OGL_StartTextures()
 void OGL_StopTextures()
 {
 	// Clear the texture accounting
-	for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
-		if (TextureStateSets[ic]) delete []TextureStateSets[ic];
+	for (int it=0; it<OGL_NUMBER_OF_TEXTURE_TYPES; it++)
+		for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
+			if (TextureStateSets[it][ic]) delete []TextureStateSets[it][ic];
 }
 
 
@@ -363,7 +325,7 @@ static void MakeAverage(int Length, GLuint *Buffer)
 	It uses the transfer mode and the transfer data to work out
 	what transfer modes to use (invisibility is a special case of tinted)
 */
-bool TextureManager::Setup(int TextureType0, int TextureType1)
+bool TextureManager::Setup()
 {
 
 	// Parse the shape descriptor and check on whether the texture type
@@ -374,21 +336,13 @@ bool TextureManager::Setup(int TextureType0, int TextureType1)
 	Frame = GET_DESCRIPTOR_SHAPE(ShapeDesc);
 	Bitmap = get_bitmap_index(Collection,Frame);
 	
-	TextureType = TextureTypes[Collection];
-	if (TextureType == NONE) return false;
-	
-	bool TextureOK = false;	
-	if (TextureType == TextureType0) TextureOK = true;
-	else if (TextureType == TextureType1) TextureOK = true;	
-	if (!TextureOK) return false;
-	
 	// Tinted mode is only used for invisibility, and infravision will make objects visible
 	if (TransferMode == _static_transfer) CTable = SILHOUETTE_BITMAP_SET;
 	else if (TransferMode == _tinted_transfer) CTable = SILHOUETTE_BITMAP_SET;
 	else if (InfravisionActive) CTable = INFRAVISION_BITMAP_SET;
 	
 	// Get the texture-state info: first, per-collection, then per-bitmap
-	CollBitmapTextureState *CBTSList = TextureStateSets[Collection];
+	CollBitmapTextureState *CBTSList = TextureStateSets[TextureType][Collection];
 	if (CBTSList == NULL) return false;
 	CollBitmapTextureState& CBTS = CBTSList[Bitmap];
 	
@@ -486,6 +440,12 @@ inline int NextPowerOfTwo(int n)
 }
 
 
+inline bool WhetherTextureFix()
+{
+	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
+	return (TEST_FLAG(ConfigureData.Flags,OGL_Flag_TextureFix) != 0);
+}
+
 bool TextureManager::SetupTextureGeometry()
 {
 	// How many rows (scanlines) and columns
@@ -549,10 +509,12 @@ bool TextureManager::SetupTextureGeometry()
 			TxtrHeight = NextPowerOfTwo(BaseTxtrHeight+2);
 			
 			// This kludge no longer necessary
-			/*
-			TxtrWidth = MAX(TxtrWidth,128);
-			TxtrHeight = MAX(TxtrHeight,128);
-			*/
+			// Restored due to some people still having AppleGL 1.1.2
+			if (WhetherTextureFix())
+			{
+				TxtrWidth = MAX(TxtrWidth,128);
+				TxtrHeight = MAX(TxtrHeight,128);
+			}
 						
 			// Offsets
 			WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
@@ -985,20 +947,21 @@ void OGL_ResetTextures()
 	if (!OGL_IsActive()) return;
 	
 	// Reset the textures:
-	for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
-	{
-		bool CollectionPresent = is_collection_present(ic);
-		short NumberOfBitmaps =
-			CollectionPresent ? get_number_of_collection_bitmaps(ic) : 0;
-		
-		CollBitmapTextureState *CBTSSet = TextureStateSets[ic];
-		for (int ib=0; ib<NumberOfBitmaps; ib++)
+	for (int it=0; it<OGL_NUMBER_OF_TEXTURE_TYPES; it++)
+		for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
 		{
-			TextureState *TSSet = CBTSSet[ib].CTStates;
-			for (int ist=0; ist<NUMBER_OF_OPENGL_BITMAP_SETS; ist++)
-				TSSet[ist].Reset();
+			bool CollectionPresent = is_collection_present(ic);
+			short NumberOfBitmaps =
+				CollectionPresent ? get_number_of_collection_bitmaps(ic) : 0;
+			
+			CollBitmapTextureState *CBTSSet = TextureStateSets[it][ic];
+			for (int ib=0; ib<NumberOfBitmaps; ib++)
+			{
+				TextureState *TSSet = CBTSSet[ib].CTStates;
+				for (int ist=0; ist<NUMBER_OF_OPENGL_BITMAP_SETS; ist++)
+					TSSet[ist].Reset();
+			}
 		}
-	}
 }
 
 

@@ -73,6 +73,9 @@ struct view_terminal_data {
 	short vertical_offset;
 };
 
+// External-data size of current terminal state
+const int SIZEOF_player_terminal_data = 20;
+
 extern byte *map_terminal_data;
 extern long map_terminal_data_length;
 
@@ -97,6 +100,20 @@ void *get_terminal_information_array(void);
 long calculate_terminal_information_length(void);
 
 extern void byte_swap_terminal_data(uint8 *data, int length);
+
+// LP: to pack and unpack this data;
+// these hide the unpacked data from the outside world.
+// "Map terminal" means the terminal data read in from the map;
+// "player terminal" means the terminal state for each player.
+// For the map terminal data, the "count" is number of packed bytes.
+
+uint8 *unpack_map_terminal_data(uint8 *Stream, int Count);
+uint8 *pack_map_terminal_data(uint8 *Stream, int Count);
+uint8 *unpack_player_terminal_data(uint8 *Stream, int Count);
+uint8 *pack_player_terminal_data(uint8 *Stream, int Count);
+
+int calculate_packed_terminal_data_length();
+
 
 #ifdef PREPROCESSING_CODE
 struct static_preprocessed_terminal_data *preprocess_text(char *text, short length);

@@ -26,6 +26,7 @@ struct bitmap_definition
 	
 	pixel8 *row_addresses[1];
 };
+const int SIZEOF_bitmap_definition = 30;
 
 /* ---------- prototypes/TEXTURES.C */
 

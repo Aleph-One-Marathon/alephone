@@ -144,46 +144,46 @@ enum /* monster speeds (world_distance per tick); also used for projectiles */
 
 struct attack_definition
 {
-	short type;
-	short repetitions;
+	int16 type;
+	int16 repetitions;
 	angle error; /* ±error is added to the firing angle */
 	world_distance range; /* beyond which we cannot attack */
-	short attack_shape; /* attack occurs when keyframe is displayed */
+	int16 attack_shape; /* attack occurs when keyframe is displayed */
 	
 	world_distance dx, dy, dz; /* +dy is right, +dx is out, +dz is up */
 };
 
 struct monster_definition /* <128 bytes */
 {
-	short collection;
+	int16 collection;
 	
-	short vitality;
-	unsigned long immunities, weaknesses;
-	unsigned long flags;
+	int16 vitality;
+	uint32 immunities, weaknesses;
+	uint32 flags;
 
-	long _class; /* our class */
-	long friends, enemies; /* bit fields of what classes we consider friendly and what types we donÕt like */
+	int32 _class; /* our class */
+	int32 friends, enemies; /* bit fields of what classes we consider friendly and what types we donÕt like */
 
 	fixed sound_pitch;
-	short activation_sound, friendly_activation_sound, clear_sound;
-	short kill_sound, apology_sound, friendly_fire_sound;
-	short flaming_sound; /* the scream we play when we go down in flames */
-	short random_sound, random_sound_mask; /* if moving and locked play this sound if we get time and our mask comes up */
+	int16 activation_sound, friendly_activation_sound, clear_sound;
+	int16 kill_sound, apology_sound, friendly_fire_sound;
+	int16 flaming_sound; /* the scream we play when we go down in flames */
+	int16 random_sound, random_sound_mask; /* if moving and locked play this sound if we get time and our mask comes up */
 
-	short carrying_item_type; /* an item type we might drop if we donÕt explode */
+	int16 carrying_item_type; /* an item type we might drop if we donÕt explode */
 
 	world_distance radius, height;
 	world_distance preferred_hover_height;
 	world_distance minimum_ledge_delta, maximum_ledge_delta;
 	fixed external_velocity_scale;
-	short impact_effect, melee_impact_effect, contrail_effect;
+	int16 impact_effect, melee_impact_effect, contrail_effect;
 
-	short half_visual_arc, half_vertical_visual_arc;
+	int16 half_visual_arc, half_vertical_visual_arc;
 	world_distance visual_range, dark_visual_range;
-	short intelligence;
-	short speed, gravity, terminal_velocity;
-	short door_retry_mask;
-	short shrapnel_radius; /* no shrapnel if NONE */
+	int16 intelligence;
+	int16 speed, gravity, terminal_velocity;
+	int16 door_retry_mask;
+	int16 shrapnel_radius; /* no shrapnel if NONE */
 	struct damage_definition shrapnel_damage;
 
 	shape_descriptor hit_shapes;
@@ -195,7 +195,7 @@ struct monster_definition /* <128 bytes */
 	/* which type of attack the monster actually uses is determined at attack time; typically
 		melee attacks will occur twice as often as ranged attacks because the monster will be
 		stopped (and stationary monsters attack twice as often as moving ones) */
-	short attack_frequency;
+	int16 attack_frequency;
 	struct attack_definition melee_attack;
 	struct attack_definition ranged_attack;
 };

@@ -91,6 +91,7 @@ Aug 22, 2000 (Loren Petrich):
 #include "screen.h"
 
 #include "images.h"
+#include "Packing.h"
 
 //CP Addition: scripting support
 #include "scripting.h"
@@ -199,34 +200,41 @@ struct text_face_data {
 };
 const int SIZEOF_text_face_data = 6;
 
+// This is externally visible, so its external size is defined in the header file
 struct player_terminal_data
 {
-	short flags;
-	short phase;
-	short state;
-	short current_group;
-	short level_completion_state;
-	short current_line;
-	short maximum_line;
-	short terminal_id;
-	long last_action_flag;
+	int16 flags;
+	int16 phase;
+	int16 state;
+	int16 current_group;
+	int16 level_completion_state;
+	int16 current_line;
+	int16 maximum_line;
+	int16 terminal_id;
+	int32 last_action_flag;
 };
 
 struct terminal_key {
-	short keycode;
-	short offset;
-	short mask;
-	long action_flag;
+	int16 keycode;
+	int16 offset;
+	int16 mask;
+	int32 action_flag;
 };
 
 struct font_dimensions {
-	short lines_per_screen;
-	short character_width;
+	int16 lines_per_screen;
+	int16 character_width;
 };
 
 /* globals - I would really like to make these static to computer_interface.c, but game_wad.c needs them */
 byte *map_terminal_data;
 long map_terminal_data_length;
+
+// LP addition: pointer to unpacked map-terminal data if the unpacking had padded it;
+// it is maintained as a separate pointer so that it can be deallocated safely,
+// unlike map_terminal_data, which is allocated from some allocator
+// defined in map.h and used in game_wad.cpp
+static byte *unpacked_map_terminal_data = NULL;
 
 // LP addition: this is for getting the clipping rectangle to revert to
 // when done with drawing the terminal text
@@ -335,7 +343,7 @@ static void decode_text(struct static_preprocessed_terminal_data *terminal_text)
 /* ------------ machine-specific code */
 
 #if defined(mac)
-#include "computer_interface_macintosh.c"
+#include "computer_interface_mac.cpp"
 #elif defined(SDL)
 #include "computer_interface_sdl.cpp"
 #endif
@@ -390,11 +398,6 @@ void enter_computer_interface(
 	short text_number, 
 	short completion_flag)
 {
-	// LP: verify object sizes:
-	assert(sizeof(static_preprocessed_terminal_data) == SIZEOF_static_preprocessed_terminal_data);
-	assert(sizeof(terminal_groupings) == SIZEOF_terminal_groupings);
-	assert(sizeof(text_face_data) == SIZEOF_text_face_data);
-	
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
 	struct player_data *player= get_player_data(player_index);
 	// LP addition: if there is no terminal-data chunk, then just make the logon sound and quit
@@ -514,7 +517,8 @@ void *get_terminal_data_for_save_game(
 long calculate_terminal_data_length(
 	void)
 {
-	long length= dynamic_world->player_count*sizeof(struct player_terminal_data);
+	dprintf("%d %d",sizeof(player_terminal_data),SIZEOF_player_terminal_data);
+	long length= dynamic_world->player_count*SIZEOF_player_terminal_data;
 	
 	return length;
 }
@@ -2598,3 +2602,198 @@ void byte_swap_terminal_data(uint8 *data, int length)
 		length -= d->total_length;
 	}
 }
+
+// The data structures here may be padded; find out how much in total.
+static int TotalPadding()
+{
+	static_preprocessed_terminal_data& Header = *((static_preprocessed_terminal_data *)map_terminal_data);
+	return
+			(sizeof(static_preprocessed_terminal_data) - SIZEOF_static_preprocessed_terminal_data) +
+		Header.grouping_count*(sizeof(terminal_groupings) - SIZEOF_terminal_groupings) +
+		Header.font_changes_count*(sizeof(text_face_data) - SIZEOF_text_face_data);
+}
+
+// Calculates by finding out how much the initial data had been padded
+int calculate_packed_terminal_data_length()
+{
+	// The quantity map_terminal_data_length is the unpacked length
+	return map_terminal_data_length - TotalPadding();
+}
+
+
+uint8 *unpack_map_terminal_data(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	
+	// Set the total length to its packed value
+	map_terminal_data_length = Count;
+	
+	// Initial unpack: necessary to do this to get the sizes of the rest of the stuff
+	static_preprocessed_terminal_data Header;
+	StreamToValue(S,Header.total_length);
+	StreamToValue(S,Header.flags);
+	StreamToValue(S,Header.lines_per_page);
+	StreamToValue(S,Header.grouping_count);
+	StreamToValue(S,Header.font_changes_count);
+	assert((S - Stream) == SIZEOF_static_preprocessed_terminal_data);
+	
+	// map_terminal_data had already been allocated to the packed size;
+	// reallocate to the unpacked size if necessary
+	int Padding = TotalPadding();
+	if (Padding > 0)
+	{
+		if (unpacked_map_terminal_data) delete []unpacked_map_terminal_data;
+		map_terminal_data_length += Padding;
+		unpacked_map_terminal_data = new byte[map_terminal_data_length];
+		map_terminal_data = unpacked_map_terminal_data;
+	}
+	
+	// Copy the header into the unpacked stream
+	byte *UnpackedStream = map_terminal_data;
+	int HeaderLength = sizeof(static_preprocessed_terminal_data);
+	memcpy(UnpackedStream,&Header,HeaderLength);
+	UnpackedStream += HeaderLength;
+	
+	// Unpack the rest...
+	
+	terminal_groupings *USTermGroup = (terminal_groupings *)UnpackedStream;
+	byte *S1 = S;
+	for (int k=0; k<Header.grouping_count; k++, USTermGroup++)
+	{
+		StreamToValue(S,USTermGroup->flags);
+		StreamToValue(S,USTermGroup->type);
+		StreamToValue(S,USTermGroup->permutation);
+		StreamToValue(S,USTermGroup->start_index);
+		StreamToValue(S,USTermGroup->length);
+		StreamToValue(S,USTermGroup->maximum_line_count);
+	}
+	assert((S - S1) == Header.grouping_count*SIZEOF_terminal_groupings);
+	
+	text_face_data *USTextFace = (text_face_data *)USTermGroup;
+	byte *S2 = S;
+	for (int k=0; k<Header.font_changes_count; k++, USTextFace++)
+	{
+		StreamToValue(S,USTextFace->index);
+		StreamToValue(S,USTextFace->face);
+		StreamToValue(S,USTextFace->color);
+	}
+	assert((S - S2) == Header.font_changes_count*SIZEOF_text_face_data);
+	
+	// Simply blast in the rest of the text.
+	UnpackedStream = (byte *)USTextFace;
+	int RemainingBytes = Count - (UnpackedStream - map_terminal_data);
+	if (RemainingBytes < 0)
+	{
+		// Idiot-proofing...
+		map_terminal_data_length -= RemainingBytes;
+		RemainingBytes = 0;
+	}
+	memcpy(UnpackedStream,S,RemainingBytes);
+	S += RemainingBytes;
+	
+	return S;
+}
+
+uint8 *pack_map_terminal_data(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	
+	// Set the total length to its packed value
+	map_terminal_data_length = Count;
+	
+	// Start with the header, of course:
+	byte *UnpackedStream = map_terminal_data;
+	static_preprocessed_terminal_data& Header = *((static_preprocessed_terminal_data *)UnpackedStream);
+	ValueToStream(S,Header.total_length);
+	ValueToStream(S,Header.flags);
+	ValueToStream(S,Header.lines_per_page);
+	ValueToStream(S,Header.grouping_count);
+	ValueToStream(S,Header.font_changes_count);
+	assert((S - Stream) == SIZEOF_static_preprocessed_terminal_data);
+	UnpackedStream += sizeof(static_preprocessed_terminal_data);
+	
+	// Won't bother about the allocated terminal data
+	
+	// Pack the rest...
+	
+	terminal_groupings *USTermGroup = (terminal_groupings *)UnpackedStream;
+	byte *S1 = S;
+	for (int k=0; k<Header.grouping_count; k++, USTermGroup++)
+	{
+		ValueToStream(S,USTermGroup->flags);
+		ValueToStream(S,USTermGroup->type);
+		ValueToStream(S,USTermGroup->permutation);
+		ValueToStream(S,USTermGroup->start_index);
+		ValueToStream(S,USTermGroup->length);
+		ValueToStream(S,USTermGroup->maximum_line_count);
+	}
+	assert((S - S1) == Header.grouping_count*SIZEOF_terminal_groupings);
+	
+	text_face_data *USTextFace = (text_face_data *)USTermGroup;
+	byte *S2 = S;
+	for (int k=0; k<Header.font_changes_count; k++, USTextFace++)
+	{
+		ValueToStream(S,USTextFace->index);
+		ValueToStream(S,USTextFace->face);
+		ValueToStream(S,USTextFace->color);
+	}
+	assert((S - S2) == Header.font_changes_count*SIZEOF_text_face_data);
+	
+	// Simply blast in the rest of the text.
+	UnpackedStream = (byte *)USTextFace;
+	int RemainingBytes = Count - (UnpackedStream - map_terminal_data);
+	if (RemainingBytes < 0)
+	{
+		RemainingBytes = 0;
+	}
+	memcpy(S,UnpackedStream,RemainingBytes);
+	S += RemainingBytes;
+	
+	return S;
+}
+
+
+uint8 *unpack_player_terminal_data(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	player_terminal_data* ObjPtr = player_terminals;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->flags);
+		StreamToValue(S,ObjPtr->phase);
+		StreamToValue(S,ObjPtr->state);
+		StreamToValue(S,ObjPtr->current_group);
+		StreamToValue(S,ObjPtr->level_completion_state);
+		StreamToValue(S,ObjPtr->current_line);
+		StreamToValue(S,ObjPtr->maximum_line);
+		StreamToValue(S,ObjPtr->terminal_id);
+		StreamToValue(S,ObjPtr->last_action_flag);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_player_terminal_data);
+	return S;
+}
+
+uint8 *pack_player_terminal_data(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	player_terminal_data* ObjPtr = player_terminals;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->flags);
+		ValueToStream(S,ObjPtr->phase);
+		ValueToStream(S,ObjPtr->state);
+		ValueToStream(S,ObjPtr->current_group);
+		ValueToStream(S,ObjPtr->level_completion_state);
+		ValueToStream(S,ObjPtr->current_line);
+		ValueToStream(S,ObjPtr->maximum_line);
+		ValueToStream(S,ObjPtr->terminal_id);
+		ValueToStream(S,ObjPtr->last_action_flag);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_player_terminal_data);
+	return S;
+}
+

@@ -185,8 +185,8 @@ enum /* dynamic platform flags */
 
 struct endpoint_owner_data
 {
-	short first_polygon_index, polygon_index_count;
-	short first_line_index, line_index_count;
+	int16 first_polygon_index, polygon_index_count;
+	int16 first_line_index, line_index_count;
 };
 
 struct static_platform_data /* size platform-dependant */
@@ -243,24 +243,24 @@ struct saved_static_platform /* 32 bytes */
 
 struct platform_data /* 140 bytes */
 {
-	short type;
-	unsigned long static_flags;
-	short speed, delay;
+	int16 type;
+	uint32 static_flags;
+	int16 speed, delay;
 	world_distance minimum_floor_height, maximum_floor_height;
 	world_distance minimum_ceiling_height, maximum_ceiling_height;
-	long xxx; // was empty line
-	short polygon_index;
+	
+	int16 polygon_index;
 	uint16 dynamic_flags;
 	world_distance floor_height, ceiling_height;
-	short ticks_until_restart; /* if we’re not moving but are active, this is our delay until we move again */
+	int16 ticks_until_restart; /* if we’re not moving but are active, this is our delay until we move again */
 
 	struct endpoint_owner_data endpoint_owners[MAXIMUM_VERTICES_PER_POLYGON];
 
-	short parent_platform_index; /* the platform_index which activated us, if any */
+	int16 parent_platform_index; /* the platform_index which activated us, if any */
 	
-	short tag;
+	int16 tag;
 	
-	short unused[22];
+	int16 unused[22];
 };
 const int SIZEOF_platform_data = 140;
 
@@ -372,11 +372,13 @@ struct platform_data *get_platform_data(short platform_index);
 #endif
 */
 
-// Split and join the misaligned 4-byte values
-void pack_platform_data(platform_data& source, saved_platform& dest);
-void unpack_platform_data(saved_platform& source, platform_data& dest);
-void pack_static_platform_data(static_platform_data& source, saved_static_platform& dest);
-void unpack_static_platform_data(saved_static_platform& source, static_platform_data& dest);
+// LP: to pack and unpack this data;
+// these do not make the definitions visible to the outside world
+
+uint8 *unpack_static_platform_data(uint8 *Stream, static_platform_data *Objects, int Count);
+uint8 *pack_static_platform_data(uint8 *Stream, static_platform_data *Objects, int Count);
+uint8 *unpack_platform_data(uint8 *Stream, platform_data *Objects, int Count);
+uint8 *pack_platform_data(uint8 *Stream, platform_data *Objects, int Count);
 
 // LP change: added platform-parser export
 XML_ElementParser *Platforms_GetParser();

@@ -25,6 +25,9 @@ Feb 6, 2000 (Loren Petrich):
 Feb 20, 2000 (Loren Petrich):
 	Fixed chase-cam behavior: DROP_DEAD_HEIGHT is effectively zero for it.
 	Also, set up-and-down bob to zero when it is active.
+
+Aug 31, 2000 (Loren Petrich):
+	Added stuff for unpacking and packing
 */
 
 /*
@@ -54,6 +57,7 @@ running backwards shouldn’t mean doom in a fistfight
 
 // LP addition:
 #include "ChaseCam.h"
+#include "Packing.h"
 
 #include <string.h>
 
@@ -959,6 +963,91 @@ static void physics_update(
 	return;
 }
 
-// LP addition: get physics-definition size and number of physics models (restricted sense)
-int get_physics_definition_size() {return sizeof(struct physics_constants);}
+
+uint8 *unpack_physics_constants(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	physics_constants* ObjPtr = physics_models;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->maximum_forward_velocity);
+		StreamToValue(S,ObjPtr->maximum_backward_velocity);
+		StreamToValue(S,ObjPtr->maximum_perpendicular_velocity);
+		StreamToValue(S,ObjPtr->acceleration);
+		StreamToValue(S,ObjPtr->deceleration);
+		StreamToValue(S,ObjPtr->airborne_deceleration);
+		StreamToValue(S,ObjPtr->gravitational_acceleration);
+		StreamToValue(S,ObjPtr->climbing_acceleration);
+		StreamToValue(S,ObjPtr->terminal_velocity);
+		StreamToValue(S,ObjPtr->external_deceleration);
+
+		StreamToValue(S,ObjPtr->angular_acceleration);
+		StreamToValue(S,ObjPtr->angular_deceleration);
+		StreamToValue(S,ObjPtr->maximum_angular_velocity);
+		StreamToValue(S,ObjPtr->angular_recentering_velocity);
+		StreamToValue(S,ObjPtr->fast_angular_velocity);
+		StreamToValue(S,ObjPtr->fast_angular_maximum);
+		StreamToValue(S,ObjPtr->maximum_elevation);
+		StreamToValue(S,ObjPtr->external_angular_deceleration);
+		
+		StreamToValue(S,ObjPtr->step_delta);
+		StreamToValue(S,ObjPtr->step_amplitude);
+		StreamToValue(S,ObjPtr->radius);
+		StreamToValue(S,ObjPtr->height);
+		StreamToValue(S,ObjPtr->dead_height);
+		StreamToValue(S,ObjPtr->camera_height);
+		StreamToValue(S,ObjPtr->splash_height);
+		
+		StreamToValue(S,ObjPtr->half_camera_separation);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_physics_constants);
+	return S;
+}
+
+uint8 *pack_physics_constants(uint8 *Stream, int Count)
+{
+	uint8* S = Stream;
+	physics_constants* ObjPtr = physics_models;
+	
+	for (int k = 0; k < Count; k++, ObjPtr++)
+	{
+		ValueToStream(S,ObjPtr->maximum_forward_velocity);
+		ValueToStream(S,ObjPtr->maximum_backward_velocity);
+		ValueToStream(S,ObjPtr->maximum_perpendicular_velocity);
+		ValueToStream(S,ObjPtr->acceleration);
+		ValueToStream(S,ObjPtr->deceleration);
+		ValueToStream(S,ObjPtr->airborne_deceleration);
+		ValueToStream(S,ObjPtr->gravitational_acceleration);
+		ValueToStream(S,ObjPtr->climbing_acceleration);
+		ValueToStream(S,ObjPtr->terminal_velocity);
+		ValueToStream(S,ObjPtr->external_deceleration);
+
+		ValueToStream(S,ObjPtr->angular_acceleration);
+		ValueToStream(S,ObjPtr->angular_deceleration);
+		ValueToStream(S,ObjPtr->maximum_angular_velocity);
+		ValueToStream(S,ObjPtr->angular_recentering_velocity);
+		ValueToStream(S,ObjPtr->fast_angular_velocity);
+		ValueToStream(S,ObjPtr->fast_angular_maximum);
+		ValueToStream(S,ObjPtr->maximum_elevation);
+		ValueToStream(S,ObjPtr->external_angular_deceleration);
+		
+		ValueToStream(S,ObjPtr->step_delta);
+		ValueToStream(S,ObjPtr->step_amplitude);
+		ValueToStream(S,ObjPtr->radius);
+		ValueToStream(S,ObjPtr->height);
+		ValueToStream(S,ObjPtr->dead_height);
+		ValueToStream(S,ObjPtr->camera_height);
+		ValueToStream(S,ObjPtr->splash_height);
+		
+		ValueToStream(S,ObjPtr->half_camera_separation);
+	}
+	
+	assert((S - Stream) == Count*SIZEOF_physics_constants);
+	return S;
+}
+
+
+// LP addition: get number of physics models (restricted sense)
 int get_number_of_physics_models() {return NUMBER_OF_PHYSICS_MODELS;}

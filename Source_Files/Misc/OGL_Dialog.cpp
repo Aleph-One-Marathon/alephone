@@ -12,6 +12,10 @@
 	Jun 11, 2000 (Loren Petrich):
 	Use a class created for the checkboxes.
 	Also added "see through liquids" option
+
+Sep 9, 2000:
+
+	Added checkbox for AppleGL texturing fix
 */
 
 #include "cseries.h"
@@ -48,6 +52,7 @@ enum
 	Fader_Item = 32,
 	LiquidSeeThru_Item = 33,
 	Map_Item = 34,
+	TextureFix_Item = 35,
 	
 	ColorPicker_PromptStrings = 200,
 	ColorVoid_String = 0,
@@ -331,6 +336,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	MacCheckbox FaderEffect_CB(Dialog, Fader_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fader) != 0);
 	MacCheckbox SeeThruLiquids_CB(Dialog, LiquidSeeThru_Item, TEST_FLAG(Data.Flags,OGL_Flag_LiqSeeThru) != 0);
 	MacCheckbox Map_CB(Dialog, Map_Item, TEST_FLAG(Data.Flags,OGL_Flag_Map) != 0);
+	MacCheckbox TextureFix_CB(Dialog, TextureFix_Item, TEST_FLAG(Data.Flags,OGL_Flag_TextureFix) != 0);
 	
 	// Load the colors into temporaries
 	VoidColor = Data.VoidColor;
@@ -417,6 +423,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			if (FaderEffect_CB.ToggleIfHit(ItemHit)) break;
 			if (SeeThruLiquids_CB.ToggleIfHit(ItemHit)) break;
 			if (Map_CB.ToggleIfHit(ItemHit)) break;
+			if (TextureFix_CB.ToggleIfHit(ItemHit)) break;
 			
 			ile = 0;
 			Escape = false;
@@ -460,6 +467,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		SET_FLAG(Data.Flags,OGL_Flag_Fader,FaderEffect_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_LiqSeeThru,SeeThruLiquids_CB.GetState());
 		SET_FLAG(Data.Flags,OGL_Flag_Map,Map_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_TextureFix,TextureFix_CB.GetState());
 		Data.VoidColor = VoidColor;
 		for (int il=0; il<4; il++)
 			for (int ie=0; ie<2; ie++)

@@ -25,12 +25,12 @@ enum /* flags */
 
 struct effect_definition
 {
-	short collection, shape;
+	int16 collection, shape;
 
 	fixed sound_pitch;
 	
 	uint16 flags;
-	short delay, delay_sound;
+	int16 delay, delay_sound;
 };
 
 /* ---------- effect definitions */

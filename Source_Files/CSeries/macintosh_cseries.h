@@ -4,6 +4,7 @@
 
 #define mac
 #define HAVE_OPENGL
+#define BIG_ENDIAN
 #define DEBUG
 
 #include <Events.h>

@@ -92,7 +92,6 @@ class TextureManager
 	short Bitmap;
 
 	// Info transmitted from the setting-up phase
-	int TextureType;
 	bool IsGlowing;
 			
 	// Width and height and whether to do RLE
@@ -148,12 +147,13 @@ public:
 	short TransferMode;
 	short TransferData;
 	bool IsShadeless;
+	short TextureType;
 	
 	// The width of a landscape texture will be 2^(-Landscape_AspRatExp) * (the height)
 	short Landscape_AspRatExp;
 	
 	// Sets up all the texture stuff:	
-	bool Setup(int TextureType0, int TextureType1=BadTextureType);
+	bool Setup();
 	
 	// Results:
 	

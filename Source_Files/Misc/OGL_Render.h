@@ -19,6 +19,7 @@ July 8, 2000:
 
 #include "OGL_Setup.h"
 
+
 // These functions return whether OpenGL is active;
 // if OpenGL is not present, it will never be active.
 

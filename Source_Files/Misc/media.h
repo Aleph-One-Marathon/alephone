@@ -18,6 +18,9 @@ June 3, 2000 (Loren Petrich):
 
 July 1, 2000 (Loren Petrich):
 	Inlined the media accessors; added map.h here to define SLOT_IS_USED
+
+Aug 29, 2000 (Loren Petrich):
+	Added packing and unpacking routines
 */
 
 #include "map.h"
@@ -150,6 +153,11 @@ struct media_data *get_media_data(short media_index);
 // LP addition: count number of media types used,
 // for better Infinity compatibility when saving games
 short count_number_of_medias_used();
+
+// LP: routines for packing and unpacking the data from streams of bytes
+
+uint8 *unpack_media_data(uint8 *Stream, media_data* Objects, int Count);
+uint8 *pack_media_data(uint8 *Stream, media_data* Objects, int Count);
 
 // LP change: added liquid-parser export
 XML_ElementParser *Liquids_GetParser();
