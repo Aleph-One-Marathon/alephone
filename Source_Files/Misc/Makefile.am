@@ -2,14 +2,16 @@
 
 noinst_LIBRARIES = libmisc.a
 
-libmisc_a_SOURCES = ActionQueues.h alephversion.h CircularQueue.h game_errors.h \
+libmisc_a_SOURCES = ActionQueues.h alephversion.h CircularByteBuffer.h \
+  CircularQueue.h game_errors.h \
   interface.h interface_menus.h key_definitions.h Logging.h PlayerImage_sdl.h \
   PlayerName.h preferences.h preferences_private.h preferences_sdl.h \
   preferences_widgets_sdl.h progress.h Random.h sdl_dialogs.h sdl_network.h \
   sdl_widgets.h thread_priority_sdl.h vbl_definitions.h vbl.h VecOps.h \
   WindowedNthElementFinder.h \
   \
-  ActionQueues.cpp game_errors.cpp interface.cpp interface_sdl.cpp \
+  ActionQueues.cpp CircularByteBuffer.cpp game_errors.cpp \
+  interface.cpp interface_sdl.cpp \
   Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp \
   preferences_widgets_sdl.cpp sdl_dialogs.cpp sdl_widgets.cpp \
   thread_priority_sdl_dummy.cpp vbl.cpp vbl_sdl.cpp
