@@ -148,6 +148,7 @@ static void reallocate_world_pixels(int width, int height);
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
 static void update_fps_display(SDL_Surface *s);
 static void DisplayPosition(SDL_Surface *s);
+static void DisplayMessages(SDL_Surface *s);
 #ifdef MOVED_OUT
 static void set_overhead_map_status(bool status);
 static void set_terminal_status(bool status);
@@ -599,7 +600,8 @@ void render_screen(short ticks_elapsed)
 		update_fps_display(world_pixels);
 		DisplayPosition(world_pixels);
 	}
-
+	DisplayMessages(world_pixels);
+	
 #ifdef HAVE_OPENGL
 	// Set OpenGL viewport to whole window (so HUD will be in the right position)
 	OGL_SetWindow(sr, sr, true);
@@ -878,6 +880,30 @@ static void DisplayPosition(SDL_Surface *s)
 	sprintf(temporary, "Pitch   = %8.3f", AngleConvert * Angle);
 	draw_text(world_pixels, temporary, 5, Y, pixel, info_display_font, styleNormal);
 	//!! OpenGL
+}
+
+
+static void DisplayMessages(SDL_Surface *s)
+{	
+	// Get color
+	uint32 pixel = SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff);
+
+	// Print position to screen
+	int Y = 15, LineSpacing = 16;
+	if (ShowPosition) Y += 6*LineSpacing;	// Make room for the position data
+	
+	for (int k=0; k<NumScreenMessages; k++)
+	{
+		int Which = (MostRecentMessage+NumScreenMessages-k) % NumScreenMessages;
+		while (Which < 0)
+			Which += NumScreenMessages;
+		ScreenMessage& Message = Messages[Which];
+		if (Message.TimeRemaining <= 0) continue;
+		Message.TimeRemaining--;
+		
+		draw_text(world_pixels, Message.Text, 5, Y, pixel, info_display_font, styleNormal);
+		Y += LineSpacing;
+	}
 }
 
 
