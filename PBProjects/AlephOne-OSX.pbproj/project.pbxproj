@@ -3838,7 +3838,7 @@
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = "/usr/local/lib \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\"";
-				OPTIMIZATION_CFLAGS = "-fast -ftracer -mupdate -freduce-all-givs -mcpu=750 -mtune=750";
+				OPTIMIZATION_CFLAGS = "-Os -frename-registers -finline-functions -funroll-loops -mtune=750 -mcpu=750 -mpowerpc-gfxopt -mupdate ";
 				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -DHAVE_UNISTD_H -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA -DSPEEX\n";
 				OTHER_LDFLAGS = "-flat_namespace -llua -llualib -lspeex";
 				OTHER_REZFLAGS = "";
