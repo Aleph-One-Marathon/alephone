@@ -9,8 +9,8 @@
 
 using namespace std;
 
-#include <vector>
 #include <GL/gl.h>
+#include <vector>
 
 
 struct Model3D
