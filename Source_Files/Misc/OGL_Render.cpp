@@ -82,7 +82,10 @@ Nov 18, 2000 (Loren Petrich):
 	Added support for landscape vertical repeats
 
 Dec 17, 2000 (Loren Petrich):
-	Moved fog parameters into OGL_Setup.cpp
+	Moved fog parameters into OGL_Setup.cpp;
+	changed "fog is on" in preferences to "fog is allowed"
+	Added "current fog color" so that landscapes will be correctly colored
+	in infravision mode.
 */
 
 #include <vector.h>
@@ -316,6 +319,9 @@ inline bool FogActive()
 	bool FogAllowed = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog) != 0;
 	return FogPresent && FogAllowed;
 }
+
+// Current fog color; may be different from the fog color above because of infravision being on
+static GLfloat CurrFogColor[4];
 
 
 // Stipple patterns for that static look
@@ -613,17 +619,16 @@ bool OGL_StartMain()
 	if (FogActive())
 	{
 		glEnable(GL_FOG);
-		GLfloat TempColor[4];
 		for (int k=0; k<4; k++)
-			TempColor[k] = FogColor[k];
+			CurrFogColor[k] = FogColor[k];
 		if (IsInfravisionActive())
 		{
 			if (LandscapesLoaded)
-				FindInfravisionVersion(_collection_landscape1+static_world->song_index,TempColor);
+				FindInfravisionVersion(_collection_landscape1+static_world->song_index,CurrFogColor);
 			else
-				FindInfravisionVersion(LoadedWallTexture,TempColor);
+				FindInfravisionVersion(LoadedWallTexture,CurrFogColor);
 		}
-		glFogfv(GL_FOG_COLOR,TempColor);
+		glFogfv(GL_FOG_COLOR,CurrFogColor);
 		glFogf(GL_FOG_DENSITY,1.0/MAX(1,WORLD_ONE*FogDepth));
 	}
 	else
@@ -641,9 +646,9 @@ bool OGL_StartMain()
 		// The color of the void will be the color of fog
 		if (FogActive())
 		{
-			Red = FogColor[0];
-			Green = FogColor[1];
-			Blue = FogColor[2];
+			Red = CurrFogColor[0];
+			Green = CurrFogColor[1];
+			Blue = CurrFogColor[2];
 		}
 		
 		glClearColor(Red,Green,Blue,0);
@@ -1543,7 +1548,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 		glDisable(GL_TEXTURE_2D);
 		
 		// Set up the color
-		glColor3fv(FogColor);
+		glColor3fv(CurrFogColor);
 		
 		// Set up blending mode: opaque
 		glDisable(GL_ALPHA_TEST);
