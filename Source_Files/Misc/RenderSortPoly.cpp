@@ -5,6 +5,8 @@
 	August 6, 2000
 	
 	Contains the sorting of polygons into depth order; from render.c
+	
+	Made [view_data *view] a member and removed it as an argument
 */
 
 #include <string.h>
@@ -28,7 +30,8 @@ RenderSortPolyClass::RenderSortPolyClass():
 	SortedNodes(MAXIMUM_SORTED_NODES),
 	AccumulatedEndpointClips(MAXIMUM_CLIPS_PER_NODE),
 	AccumulatedLineClips(MAXIMUM_CLIPS_PER_NODE),
-	RVPtr(NULL)	// Idiot-proofing
+	view(NULL),	// Idiot-proofing
+	RVPtr(NULL)
 {}
 
 
@@ -71,17 +74,17 @@ pick a leaf polygon
 // Win32-version value:
 // #define MAXIMUM_NODE_ALIASES 32
 
-void RenderSortPolyClass::sort_render_tree(
-	view_data *view)
+void RenderSortPolyClass::sort_render_tree()
 {
-	assert(RVPtr);	// Idiot-proofing
-	struct node_data *leaf, *last_leaf;
+	assert(view);	// Idiot-proofing
+	assert(RVPtr);
+	node_data *leaf, *last_leaf;
 	// LP: reference to simplify the code
 	GrowableList<node_data>& Nodes = RVPtr->Nodes;
 
 	initialize_sorted_render_tree();
 	
-	leaf= (struct node_data *) NULL;
+	leaf= NULL;
 	do
 	{
 		// LP change: no more growable list of aliases,
@@ -91,7 +94,7 @@ void RenderSortPolyClass::sort_render_tree(
 		struct node_data *aliases[MAXIMUM_NODE_ALIASES];
 		*/
 		boolean leaf_has_children= FALSE; /* i.e., itÕs not a leaf */
-		struct node_data *node;
+		node_data *node;
 
 		/* if we donÕt have a leaf, find one */
 		if (!leaf)
@@ -206,7 +209,7 @@ void RenderSortPolyClass::sort_render_tree(
 		}
 		else /* this is a leaf, and we can remove it from the tree */
 		{
-			struct sorted_node_data *sorted_node;
+			sorted_node_data *sorted_node;
 			short alias;
 			
 //			dprintf("removed polygon #%d (#%d aliases)", leaf->polygon_index, alias_count);
@@ -230,10 +233,10 @@ void RenderSortPolyClass::sort_render_tree(
 			*/
 			
 			sorted_node->polygon_index= leaf->polygon_index;
-			sorted_node->interior_objects= (struct render_object_data *) NULL;
-			sorted_node->exterior_objects= (struct render_object_data *) NULL;
+			sorted_node->interior_objects= NULL;
+			sorted_node->exterior_objects= NULL;
 			// LP change: using polygon-sorted node chain
-			sorted_node->clipping_windows= build_clipping_windows(view, FoundNode);
+			sorted_node->clipping_windows= build_clipping_windows(FoundNode);
 			/*
 			sorted_node->clipping_windows= build_clipping_windows(view, aliases, alias_count);
 			*/
@@ -274,10 +277,10 @@ void RenderSortPolyClass::sort_render_tree(
 	return;
 }
 
+/* ---------- initializing and calculating clip data */
 
 /* be sure to examine all of a nodeÕs parents for clipping information (gak!) */
 clipping_window_data *RenderSortPolyClass::build_clipping_windows(
-	view_data *view,
 	// LP change: using node chain instead
 	node_data *ChainBegin)
 	// struct node_data **node_list,
@@ -289,10 +292,10 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	// short accumulated_line_clip_count= 0, accumulated_endpoint_clip_count= 0;
 	// struct line_clip_data *accumulated_line_clips[MAXIMUM_CLIPS_PER_NODE];
 	// struct endpoint_clip_data *accumulated_endpoint_clips[MAXIMUM_CLIPS_PER_NODE];
-	struct clipping_window_data *first_clipping_window= (struct clipping_window_data *) NULL;
-	struct clipping_window_data *last_clipping_window;
-	struct endpoint_clip_data *endpoint;
-	struct line_clip_data *line;
+	clipping_window_data *first_clipping_window= NULL;
+	clipping_window_data *last_clipping_window;
+	endpoint_clip_data *endpoint;
+	line_clip_data *line;
 	short x0, x1; /* ignoring what clipping parameters weÕve gotten, this is the left and right borders of this node on the screen */
 	short i, j, k;
 	// LP: references to simplify the code
@@ -305,7 +308,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 		of the window are sloppy */
 	{
 		// LP change: look at beginning of chain
-		struct polygon_data *polygon= get_polygon_data(ChainBegin->polygon_index); /* all these nodes should be the same */
+		polygon_data *polygon= get_polygon_data(ChainBegin->polygon_index); /* all these nodes should be the same */
 		// struct polygon_data *polygon= get_polygon_data((*node_list)->polygon_index); /* all these nodes should be the same */
 		
 		x0= SHORT_MAX, x1= SHORT_MIN;
@@ -344,7 +347,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	for (node_data *ChainNode = ChainBegin; ChainNode; ChainNode = ChainNode->PS_Shared)
 	// for (k= 0;k<node_count;++k)
 	{
-		struct node_data *node;
+		node_data *node;
 		
 		// LP change: use chain node as starting point
 		for (node= ChainNode;node;node= node->parent) /* examine this node and all parents! */
@@ -383,7 +386,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					assert(AccumulatedEndpointClips.Add());
 					assert(AccumulatedEndpointClips.GetLength() <= 32767);		// Originally a short value
 					if (j!=Length) memmove(&AccumulatedEndpointClips[j+1], &AccumulatedEndpointClips[j],
-						(Length-j)*sizeof(struct endpoint_clip_data *));
+						(Length-j)*sizeof(endpoint_clip_data *));
 					AccumulatedEndpointClips[j]= endpoint;
 					/*
 					assert(accumulated_endpoint_clip_count<MAXIMUM_CLIPS_PER_NODE);
@@ -435,7 +438,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 	/* build the clipping windows */
 	{
 		short state= _looking_for_left_clip;
-		struct endpoint_clip_data *left_clip, *right_clip;
+		endpoint_clip_data *left_clip, *right_clip;
 
 		// LP change:
 		for (i= 0;i<AccumulatedEndpointClips.GetLength();++i)
@@ -507,7 +510,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 								SortedNode.clipping_windows = (clipping_window_data *)(NewCWPointer + (POINTER_CAST(SortedNode.clipping_windows) - OldCWPointer));
 						}
 					}
-					struct clipping_window_data *window= &ClippingWindows[Length];
+					clipping_window_data *window= &ClippingWindows[Length];
 					// struct clipping_window_data *window= next_clipping_window++;
 					
 					/* handle maintaining the linked list of clipping windows */
@@ -531,7 +534,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					calculate_vertical_clip_data(accumulated_line_clips, accumulated_line_clip_count, window,
 						MAX(x0, window->x0), MIN(x1, window->x1));
 					*/
-					window->next_window= (struct clipping_window_data *) NULL;
+					window->next_window= NULL;
 				}
 				
 				state= _looking_for_left_clip;
@@ -553,14 +556,14 @@ void RenderSortPolyClass::calculate_vertical_clip_data(
 	if (x0<x1)
 	{
 		short i, x;
-		struct line_clip_data *highest_line, *locally_highest_line, *line;
+		line_clip_data *highest_line, *locally_highest_line, *line;
 	
 		/* get the highest top clip covering the requested horizontal run */		
 		x= x0;
-		highest_line= (struct line_clip_data *) NULL;
+		highest_line= NULL;
 		do
 		{
-			locally_highest_line= (struct line_clip_data *) NULL;
+			locally_highest_line= NULL;
 			
 			for (i= 0;i<accumulated_line_clip_count;++i)
 			{
@@ -591,10 +594,10 @@ void RenderSortPolyClass::calculate_vertical_clip_data(
 	
 		/* get the lowest bottom clip covering the requested horizontal run */	
 		x= x0;
-		highest_line= (struct line_clip_data *) NULL;
+		highest_line= NULL;
 		do
 		{
-			locally_highest_line= (struct line_clip_data *) NULL; /* means lowest */
+			locally_highest_line= NULL; /* means lowest */
 			
 			for (i= 0;i<accumulated_line_clip_count;++i)
 			{

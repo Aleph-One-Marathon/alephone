@@ -5,18 +5,16 @@
 	August 6, 2000
 	
 	Contains the placement of inhabitant objects into the sorted polygons; from render.c
+	
+	Made [view_data *view] a member and removed it as an argument
 */
 
 #include <string.h>
 #include "map.h"
-#include "interface.h"
 #include "lightsource.h"
 #include "media.h"
 #include "RenderPlaceObjs.h"
 
-// Externed from render.c
-extern void instantiate_rectangle_transfer_mode(view_data *view,
-	rectangle_definition *rectangle, short transfer_mode, fixed transfer_phase);
 
 // LP: "recommended" sizes of stuff in growable lists
 #define MAXIMUM_RENDER_OBJECTS 72
@@ -25,7 +23,8 @@ extern void instantiate_rectangle_transfer_mode(view_data *view,
 // Inits everything
 RenderPlaceObjsClass::RenderPlaceObjsClass():
 	RenderObjects(MAXIMUM_RENDER_OBJECTS),
-	RVPtr(NULL),	// Idiot-proofing
+	view(NULL),	// Idiot-proofing
+	RVPtr(NULL),
 	RSPtr(NULL)
 {}
 
@@ -47,12 +46,12 @@ void RenderPlaceObjsClass::initialize_render_object_list()
 
 /* walk our sorted polygon lists, adding every object in every polygon to the render_object list,
 	in depth order */
-void RenderPlaceObjsClass::build_render_object_list(
-	view_data *view)
+void RenderPlaceObjsClass::build_render_object_list()
 {
-	assert(RVPtr);	// Idiot-proofing
+	assert(view);	// Idiot-proofing
+	assert(RVPtr);
 	assert(RSPtr);
-	struct sorted_node_data *sorted_node;
+	sorted_node_data *sorted_node;
 	// LP: reference to simplify the code
 	GrowableList<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 
@@ -62,16 +61,16 @@ void RenderPlaceObjsClass::build_render_object_list(
 	for (sorted_node= SortedNodes.RevBegin();sorted_node>SortedNodes.RevEnd();--sorted_node)
 	// for (sorted_node= next_sorted_node-1;sorted_node>=sorted_nodes;--sorted_node)
 	{
-		struct polygon_data *polygon= get_polygon_data(sorted_node->polygon_index);
+		polygon_data *polygon= get_polygon_data(sorted_node->polygon_index);
 		fixed ambient_intensity= get_light_intensity(polygon->floor_lightsource_index);
 		short object_index= polygon->first_object;
 		
 		while (object_index!=NONE)
 		{
 			short base_node_count;
-			struct sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
+			sorted_node_data *base_nodes[MAXIMUM_OBJECT_BASE_NODES];
 			// LP change:
-			struct render_object_data *render_object= build_render_object(view, (long_point3d *) NULL, ambient_intensity, base_nodes, &base_node_count, object_index);
+			render_object_data *render_object= build_render_object(NULL, ambient_intensity, base_nodes, &base_node_count, object_index);
 			// struct render_object_data *render_object= build_render_object(view, (world_point3d *) NULL, ambient_intensity, base_nodes, &base_node_count, object_index);
 			
 			if (render_object)
@@ -89,15 +88,14 @@ void RenderPlaceObjsClass::build_render_object_list(
 
 // LP change: make it better able to do long-distance views
 render_object_data *RenderPlaceObjsClass::build_render_object(
-	view_data *view,
 	long_point3d *origin, // world_point3d *origin,
 	fixed ambient_intensity,
 	sorted_node_data **base_nodes,
 	short *base_node_count,
 	short object_index)
 {
-	struct render_object_data *render_object= (struct render_object_data *) NULL;
-	struct object_data *object= get_object_data(object_index);
+	render_object_data *render_object= NULL;
+	object_data *object= get_object_data(object_index);
 	// LP: reference to simplify the code
 	GrowableList<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
 	
@@ -138,9 +136,9 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 		if (transformed_origin.x>MINIMUM_OBJECT_DISTANCE)
 		{
 			short x0, x1, y0, y1;
-			struct shape_and_transfer_mode data;
-			struct shape_information_data *shape_information;
-			struct shape_information_data scaled_shape_information; // if necessary
+			shape_and_transfer_mode data;
+			shape_information_data *shape_information;
+			shape_information_data scaled_shape_information; // if necessary
 			
 			get_object_shape_and_transfer_mode(&view->origin, object_index, &data);
 			shape_information= rescale_shape_information(
@@ -150,7 +148,7 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 			/* if the caller wants it, give him the left and right extents of this shape */
 			if (base_nodes)
 			{
-				*base_node_count= build_base_node_list(view, object->polygon, &object->location,
+				*base_node_count= build_base_node_list(object->polygon, &object->location,
 					shape_information->world_left, shape_information->world_right, base_nodes);
 			}
 			
@@ -245,18 +243,18 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 
 				if (view->shading_mode==_shading_infravision) render_object->rectangle.flags|= _SHADELESS_BIT;
 				
-				render_object->next_object= (struct render_object_data *) NULL;
+				render_object->next_object= NULL;
 				if (object->parasitic_object!=NONE)
 				{
-					struct render_object_data *parasitic_render_object;
+					render_object_data *parasitic_render_object;
 					// LP change:
 					long_point3d parasitic_origin= transformed_origin;
 					// world_point3d parasitic_origin= transformed_origin;
 					
 					parasitic_origin.z+= shape_information->world_y0;
 					parasitic_origin.y+= shape_information->world_x0;
-					parasitic_render_object= build_render_object(view, &parasitic_origin, ambient_intensity,
-						(struct sorted_node_data **) NULL, (short *) NULL, object->parasitic_object);
+					parasitic_render_object= build_render_object(&parasitic_origin, ambient_intensity,
+						NULL, NULL, object->parasitic_object);
 					
 					if (parasitic_render_object)
 					{
@@ -290,10 +288,10 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	sorted_node_data **base_nodes,
 	short base_node_count)
 {
-	struct render_object_data *render_object, *last_new_render_object;
-	struct render_object_data *deep_render_object= (struct render_object_data *) NULL;
-	struct render_object_data *shallow_render_object= (struct render_object_data *) NULL;
-	struct sorted_node_data *desired_node;
+	render_object_data *render_object, *last_new_render_object;
+	render_object_data *deep_render_object= NULL;
+	render_object_data *shallow_render_object= NULL;
+	sorted_node_data *desired_node;
 	short i;
 	// LP: reference to simplify the code
 	GrowableList<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
@@ -349,7 +347,7 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	{
 		/* we tried to sort too close to the front of the node list */
 		desired_node= shallow_render_object->node;
-		deep_render_object= (struct render_object_data *) NULL;
+		deep_render_object= NULL;
 	}
 	else
 	{
@@ -357,11 +355,11 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 		{
 			/* we tried to sort too close to the back of the node list */
 			desired_node= deep_render_object->node;
-			shallow_render_object= (struct render_object_data *) NULL;
+			shallow_render_object= NULL;
 		}
 		else
 		{
-			deep_render_object= shallow_render_object= (struct render_object_data *) NULL;
+			deep_render_object= shallow_render_object= NULL;
 		}
 	}
 	
@@ -388,7 +386,7 @@ void RenderPlaceObjsClass::sort_render_object_into_tree(
 	{
 //		if (shallow_render_object)
 		{
-			struct render_object_data **reference;
+			render_object_data **reference;
 			
 			/* find the reference to the shallow_render_object in the node list first (or the
 				first object which is closer than new_render_object) */
@@ -423,7 +421,6 @@ enum /* build_base_node_list() states */
 	now bail if we can’t find a way out of the polygon we are given; usually this happens
 	when we’re moving along gridlines */
 short RenderPlaceObjsClass::build_base_node_list(
-	view_data *view,
 	short origin_polygon_index,
 	world_point3d *origin,
 	world_distance left_distance,
@@ -471,7 +468,7 @@ short RenderPlaceObjsClass::build_base_node_list(
 		/* move toward the given destination accumulating polygon indexes */
 		do
 		{
-			struct polygon_data *polygon= get_polygon_data(polygon_index);
+			polygon_data *polygon= get_polygon_data(polygon_index);
 			short state= _looking_for_first_nonzero_vertex; /* really: testing first vertex state (we don’t have zero vertices) */
 			short vertex_index= 0, vertex_delta= 1; /* start searching clockwise from vertex zero */
 			world_point2d *vertex, *next_vertex;
@@ -555,6 +552,8 @@ short RenderPlaceObjsClass::build_base_node_list(
 	return base_node_count;
 }
 
+/* ---------- initializing and calculating clip data */
+
 /* find the lowest bottom clip and the highest top clip of all nodes this object crosses.  then
 	locate all left and right sides and compile them into one (or several) aggregate windows with
 	the same top and bottom */
@@ -563,7 +562,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 	sorted_node_data **base_nodes,
 	short base_node_count)
 {
-	struct clipping_window_data *first_window= (struct clipping_window_data *) NULL;
+	clipping_window_data *first_window= NULL;
 	// LP: references to simplify the code
 	GrowableList<clipping_window_data>& ClippingWindows = RVPtr->ClippingWindows;
 	GrowableList<sorted_node_data>& SortedNodes = RSPtr->SortedNodes;
@@ -579,7 +578,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 		short y0, y1;
 		short left, right, left_count, right_count;
 		short x0[MAXIMUM_OBJECT_BASE_NODES], x1[MAXIMUM_OBJECT_BASE_NODES]; /* sorted, left to right */
-		struct clipping_window_data *window;
+		clipping_window_data *window;
 		world_distance depth= render_object->rectangle.depth;
 		
 		/* find the upper and lower bounds of the windows; we could do a better job than this by

@@ -5,6 +5,8 @@
 	August 6, 2000
 	
 	Contains the finding of the visibility tree for rendering; from render.c
+	
+	Made [view_data *view] a member and removed it as an argument
 */
 
 #include "map.h"
@@ -59,7 +61,8 @@ RenderVisTreeClass::RenderVisTreeClass():
 	LineClips(MAXIMUM_LINE_CLIPS),
 	EndpointClips(MAXIMUM_ENDPOINT_CLIPS),
 	ClippingWindows(MAXIMUM_CLIPPING_WINDOWS),
-	Nodes(MAXIMUM_NODES)
+	Nodes(MAXIMUM_NODES),
+	view(NULL)	// Idiot-proofing
 {}
 
 
@@ -88,25 +91,26 @@ void RenderVisTreeClass::PUSH_POLYGON_INDEX(short polygon_index)
 }
 
 // Main routine
-void RenderVisTreeClass::build_render_tree(
-	view_data *view)
+void RenderVisTreeClass::build_render_tree()
 {
+	assert(view);	// Idiot-proofing
+
 	/* initialize the queue where we remember polygons we need to fire at */
-	initialize_polygon_queue(view);
+	initialize_polygon_queue();
 
 	/* initialize our node list to contain the root, etc. */
-	initialize_render_tree(view);
+	initialize_render_tree();
 	
 	/* reset clipping buffers */
-	initialize_clip_data(view);
+	initialize_clip_data();
 	
 	// LP change:
 	// Adjusted for long-vector handling
 	long_vector2d view_edge;
 	short_to_long_2d(view->left_edge,view_edge);
-	cast_render_ray(view, &view_edge, NONE, Nodes.Begin(), _counterclockwise_bias);
+	cast_render_ray(&view_edge, NONE, Nodes.Begin(), _counterclockwise_bias);
 	short_to_long_2d(view->right_edge,view_edge);
-	cast_render_ray(view, &view_edge, NONE, Nodes.Begin(), _clockwise_bias);
+	cast_render_ray(&view_edge, NONE, Nodes.Begin(), _clockwise_bias);
 	/*
 	cast_render_ray(view, &view->left_edge, NONE, nodes, _counterclockwise_bias);
 	cast_render_ray(view, &view->right_edge, NONE, nodes, _clockwise_bias);
@@ -118,14 +122,14 @@ void RenderVisTreeClass::build_render_tree(
 		short vertex_index;
 		short polygon_index= PolygonQueue[--polygon_queue_size];
 		// short polygon_index= polygon_queue[--polygon_queue_size];
-		struct polygon_data *polygon= get_polygon_data(polygon_index);
+		polygon_data *polygon= get_polygon_data(polygon_index);
 		
 		assert(!POLYGON_IS_DETACHED(polygon));
 		
 		for (vertex_index=0;vertex_index<polygon->vertex_count;++vertex_index)
 		{
 			short endpoint_index= polygon->endpoint_indexes[vertex_index];
-			struct endpoint_data *endpoint= get_endpoint_data(endpoint_index);
+			endpoint_data *endpoint= get_endpoint_data(endpoint_index);
 			
 			if (!TEST_RENDER_FLAG(endpoint_index, _endpoint_has_been_visited))
 			{
@@ -164,7 +168,7 @@ void RenderVisTreeClass::build_render_tree(
 				if ((view->right_edge.i*vector.j - view->right_edge.j*vector.i)<=0 && (view->left_edge.i*vector.j - view->left_edge.j*vector.i)>=0)
 				{
 					// LP change:
-					cast_render_ray(view, &vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, Nodes.Begin(), _no_bias);
+					cast_render_ray(&vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, Nodes.Begin(), _no_bias);
 					// cast_render_ray(view, &vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, nodes, _no_bias);
 				}
 				
@@ -176,10 +180,10 @@ void RenderVisTreeClass::build_render_tree(
 	return;
 }
 
+/* ---------- building the render tree */
 
 // LP change: make it better able to do long-distance views
 void RenderVisTreeClass::cast_render_ray(
-	view_data *view,
 	long_vector2d *vector, // world_vector2d *vector,
 	short endpoint_index,
 	node_data *parent, /* nodes==root */
@@ -199,13 +203,13 @@ void RenderVisTreeClass::cast_render_ray(
 		{
 			if (clip_flags&_split_render_ray)
 			{
-				cast_render_ray(view, vector, endpoint_index, parent, _clockwise_bias);
-				cast_render_ray(view, vector, endpoint_index, parent, _counterclockwise_bias);
+				cast_render_ray(vector, endpoint_index, parent, _clockwise_bias);
+				cast_render_ray(vector, endpoint_index, parent, _counterclockwise_bias);
 			}
 		}
 		else
 		{
-			struct node_data **node_reference, *node;
+			node_data **node_reference, *node;
 			
 			/* find the old node referencing this polygon transition or build one */
 			for (node_reference= &parent->children;
@@ -325,7 +329,7 @@ void RenderVisTreeClass::cast_render_ray(
 				short i;
 				
 				if (!TEST_RENDER_FLAG(clipping_line_index, _line_has_clip_data))
-					calculate_line_clipping_information(view, clipping_line_index, clip_flags);
+					calculate_line_clipping_information(clipping_line_index, clip_flags);
 				clipping_line_index= line_clip_indexes[clipping_line_index];
 				
 				for (i=0;
@@ -342,7 +346,7 @@ void RenderVisTreeClass::cast_render_ray(
 			/* update endpoint clipping information for this node if we have a valid endpoint with clip */
 			if (clipping_endpoint_index!=NONE && (clip_flags&(_clip_left|_clip_right)))
 			{
-				clipping_endpoint_index= calculate_endpoint_clipping_information(view, clipping_endpoint_index, clip_flags);
+				clipping_endpoint_index= calculate_endpoint_clipping_information(clipping_endpoint_index, clip_flags);
 				
 				if (node->clipping_endpoint_count<MAXIMUM_CLIPPING_ENDPOINTS_PER_NODE)
 					node->clipping_endpoints[node->clipping_endpoint_count++]= clipping_endpoint_index;
@@ -356,8 +360,7 @@ void RenderVisTreeClass::cast_render_ray(
 	return;
 }
 
-void RenderVisTreeClass::initialize_polygon_queue(
-	view_data *view)
+void RenderVisTreeClass::initialize_polygon_queue()
 {
 	(void) (view);
 	
@@ -376,7 +379,7 @@ word RenderVisTreeClass::next_polygon_along_line(
 	short *clipping_line_index, /* NONE on exit if this polygon transition wasn’t accross an elevation line */
 	short bias)
 {
-	struct polygon_data *polygon= get_polygon_data(*polygon_index);
+	polygon_data *polygon= get_polygon_data(*polygon_index);
 	short next_polygon_index, crossed_line_index, crossed_side_index;
 	boolean passed_through_solid_vertex= FALSE;
 	short vertex_index, vertex_delta;
@@ -508,7 +511,7 @@ word RenderVisTreeClass::next_polygon_along_line(
 	
 	if (crossed_line_index!=NONE)
 	{
-		struct line_data *line= get_line_data(crossed_line_index);
+		line_data *line= get_line_data(crossed_line_index);
 
 		/* add the line we crossed to the automap */
 		ADD_LINE_TO_AUTOMAP(crossed_line_index);
@@ -522,7 +525,7 @@ word RenderVisTreeClass::next_polygon_along_line(
 		if (LINE_IS_TRANSPARENT(line) && next_polygon_index != NONE)
 		// if (LINE_IS_TRANSPARENT(line))
 		{
-			struct polygon_data *next_polygon= get_polygon_data(next_polygon_index);
+			polygon_data *next_polygon= get_polygon_data(next_polygon_index);
 			
 			if (line->highest_adjacent_floor>next_polygon->floor_height ||
 				line->highest_adjacent_floor>polygon->floor_height) clip_flags|= _clip_down; /* next polygon floor is lower */
@@ -553,7 +556,7 @@ word RenderVisTreeClass::decide_where_vertex_leads(
 	word clip_flags,
 	short bias)
 {
-	struct polygon_data *polygon= get_polygon_data(*polygon_index);
+	polygon_data *polygon= get_polygon_data(*polygon_index);
 	short endpoint_index= polygon->endpoint_indexes[endpoint_index_in_polygon_list];
 	short index;
 	
@@ -582,8 +585,8 @@ word RenderVisTreeClass::decide_where_vertex_leads(
 	
 	if (index!=NONE)
 	{
-		struct line_data *line;
-		struct world_point2d *vertex;
+		line_data *line;
+		world_point2d *vertex;
 		// LP change:
 		CROSSPROD_TYPE cross_product;
 		// long cross_product;
@@ -632,13 +635,12 @@ word RenderVisTreeClass::decide_where_vertex_leads(
 	return clip_flags;
 }
 
-void RenderVisTreeClass::initialize_render_tree(
-	view_data *view)
+void RenderVisTreeClass::initialize_render_tree()
 {
 	// LP change: using growable list
 	Nodes.ResetLength();
 	Nodes.Add();
-	INITIALIZE_NODE(Nodes.Begin(), view->origin_polygon_index, 0, (struct node_data *) NULL, (struct node_data **) NULL);
+	INITIALIZE_NODE(Nodes.Begin(), view->origin_polygon_index, 0, NULL, NULL);
 	/*
 	node_count= 1;
 	next_node= nodes+1;
@@ -648,9 +650,9 @@ void RenderVisTreeClass::initialize_render_tree(
 	return;
 }
 
+/* ---------- initializing and calculating clip data */
 
-void RenderVisTreeClass::initialize_clip_data(
-	struct view_data *view)
+void RenderVisTreeClass::initialize_clip_data()
 {
 	// LP change:
 	ResetEndpointClips();
@@ -661,7 +663,7 @@ void RenderVisTreeClass::initialize_clip_data(
 	
 	/* set two default endpoint clips (left and right sides of screen) */
 	{
-		struct endpoint_clip_data *endpoint;
+		endpoint_clip_data *endpoint;
 		
 		// LP change:
 		endpoint= &EndpointClips[indexLEFT_SIDE_OF_SCREEN];
@@ -692,7 +694,7 @@ void RenderVisTreeClass::initialize_clip_data(
 	/* set default line clip (top and bottom of screen) */
 	{
 		// LP change:
-		struct line_clip_data *line= &LineClips[indexTOP_AND_BOTTOM_OF_SCREEN];
+		line_clip_data *line= &LineClips[indexTOP_AND_BOTTOM_OF_SCREEN];
 		// struct line_clip_data *line= line_clips + indexTOP_AND_BOTTOM_OF_SCREEN;
 
 		line->flags= _clip_up|_clip_down;
@@ -718,7 +720,6 @@ void RenderVisTreeClass::initialize_clip_data(
 }
 
 void RenderVisTreeClass::calculate_line_clipping_information(
-	view_data *view,
 	short line_index,
 	word clip_flags)
 {
@@ -728,12 +729,12 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 	assert(Length <= 32767);
 	short LastIndex = Length-1;
 	
-	struct line_data *line= get_line_data(line_index);
+	line_data *line= get_line_data(line_index);
 	// LP change: relabeling p0 and p1 so as not to conflict with later use
 	world_point2d p0_orig= get_endpoint_data(line->endpoint_indexes[0])->vertex;
 	world_point2d p1_orig= get_endpoint_data(line->endpoint_indexes[1])->vertex;
 	// LP addition: place for new line data
-	struct line_clip_data *data= &LineClips[LastIndex];
+	line_clip_data *data= &LineClips[LastIndex];
 	// struct line_clip_data *data= next_line_clip++;
 
 	/* it’s possible (in fact, likely) that this line’s endpoints have not been transformed yet,
@@ -844,7 +845,6 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 /* we can actually rely on the given endpoint being transformed because we only set clipping
 	information for endpoints we’re aiming at, and we transform endpoints before firing at them */
 short RenderVisTreeClass::calculate_endpoint_clipping_information(
-	view_data *view,
 	short endpoint_index,
 	word clip_flags)
 {
@@ -854,9 +854,9 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 	assert(Length <= 32767);
 	short LastIndex = Length-1;
 
-	struct endpoint_data *endpoint= get_endpoint_data(endpoint_index);
+	endpoint_data *endpoint= get_endpoint_data(endpoint_index);
 	// LP change:
-	struct endpoint_clip_data *data= &EndpointClips[LastIndex];
+	endpoint_clip_data *data= &EndpointClips[LastIndex];
 	// struct endpoint_clip_data *data= next_endpoint_clip++;
 	long x;
 

@@ -8,8 +8,8 @@
 	
 	Defines a class for sorting the polygons into appropriate depth order; from render.c
 	Works from RenderVisTree stuff.
-
-
+	
+	Made [view_data *view] a member and removed it as an argument
 */
 
 #include "GrowableList.h"
@@ -38,7 +38,7 @@ class RenderSortPolyClass
 
 	void initialize_sorted_render_tree();
 	
-	clipping_window_data *build_clipping_windows(view_data *view, node_data *ChainBegin);
+	clipping_window_data *build_clipping_windows(node_data *ChainBegin);
 
 	void calculate_vertical_clip_data(line_clip_data **accumulated_line_clips,
 		short accumulated_line_clip_count, clipping_window_data *window, short x0, short x1);
@@ -58,7 +58,8 @@ public:
 	GrowableList<endpoint_clip_data *> AccumulatedEndpointClips;
 	GrowableList<line_clip_data *> AccumulatedLineClips;
 
-	// Pointer to calculated visibility tree
+	// Pointers to view and calculated visibility tree
+	view_data *view;
 	RenderVisTreeClass *RVPtr;
 	
 	// Resizes all the objects defined inside;
@@ -66,7 +67,7 @@ public:
 	void Resize(int NumPolygons);
 
 	// Does the sorting
-	void sort_render_tree(view_data *view);
+	void sort_render_tree();
   	
   	// Inits everything
  	RenderSortPolyClass();

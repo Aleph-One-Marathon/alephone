@@ -7,6 +7,8 @@
 	August 6, 2000
 	
 	Defines a class for doing rendering visibility; from render.c
+	
+	Made [view_data *view] a member and removed it as an argument
 */
 
 #include "GrowableList.h"
@@ -140,24 +142,24 @@ class RenderVisTreeClass
 	// Turned preprocessor macro into function
 	void PUSH_POLYGON_INDEX(short polygon_index);
 	
-	void initialize_polygon_queue(view_data *view);
+	void initialize_polygon_queue();
 	
-	void initialize_render_tree(view_data *view);
+	void initialize_render_tree();
 	
-	void initialize_clip_data(view_data *view);
+	void initialize_clip_data();
 	
 	word next_polygon_along_line(short *polygon_index, world_point2d *origin, long_vector2d *vector,
 		short *clipping_endpoint_index, short *clipping_line_index, short bias);
 	
-	void cast_render_ray(view_data *view, long_vector2d *vector, short endpoint_index,
+	void cast_render_ray(long_vector2d *vector, short endpoint_index,
 		node_data *parent, short bias);
 	
 	word decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
 		world_point2d *origin, long_vector2d *vector, word clip_flags, short bias);
 
-	void calculate_line_clipping_information(view_data *view, short line_index, word clip_flags);
+	void calculate_line_clipping_information(short line_index, word clip_flags);
 	
-	short calculate_endpoint_clipping_information(view_data *view, short endpoint_index, word clip_flags);
+	short calculate_endpoint_clipping_information(short endpoint_index, word clip_flags);
 	
 	void ResetEndpointClips(void);
 	
@@ -190,12 +192,15 @@ public:
 	// Length changed in cast_render_ray() and initialize_render_tree()
 	GrowableList<node_data> Nodes;
 	
+	// Pointer to view
+	view_data *view;
+	
 	// Resizes all the objects defined inside;
 	// the resizing is lazy
 	void Resize(int NumEndpoints, int NumLines);
 	
 	// Builds the visibility tree
- 	void build_render_tree(view_data *view);
+ 	void build_render_tree();
  	
   	// Inits everything
  	RenderVisTreeClass();

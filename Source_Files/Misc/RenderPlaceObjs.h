@@ -8,13 +8,14 @@
 	
 	Defines a class for placing inhabitants in appropriate rendering order; from render.c
 	Works from RenderSortPoly stuff.
-
-
+	
+	Made [view_data *view] a member and removed it as an argument
 */
 
 #include "GrowableList.h"
 #include "ResizableList.h"
 #include "world.h"
+#include "interface.h"
 #include "render.h"
 #include "RenderSortPoly.h"
 
@@ -40,14 +41,14 @@ class RenderPlaceObjsClass
 
 	void initialize_render_object_list();
 	
-	render_object_data *build_render_object(struct view_data *view, long_point3d *origin,
+	render_object_data *build_render_object(long_point3d *origin,
 		fixed ambient_intensity, sorted_node_data **base_nodes, short *base_node_count,
 		short object_index);
 	
 	void sort_render_object_into_tree(render_object_data *new_render_object,
 		sorted_node_data **base_nodes, short base_node_count);
 
-	short build_base_node_list(view_data *view, short origin_polygon_index,
+	short build_base_node_list(short origin_polygon_index,
 		world_point3d *origin, world_distance left_distance, world_distance right_distance,
 		sorted_node_data **base_nodes);
 	
@@ -64,11 +65,12 @@ public:
 	// keep SortedNodes in sync
 	GrowableList<render_object_data> RenderObjects;
 	
-	// Pointers to calculated visibility tree and sorted polygons
+	// Pointers to view and calculated visibility tree and sorted polygons
+	view_data *view;
 	RenderVisTreeClass *RVPtr;
 	RenderSortPolyClass *RSPtr;
 	
-	void build_render_object_list(view_data *view);
+	void build_render_object_list();
 	
   	// Inits everything
  	RenderPlaceObjsClass();
