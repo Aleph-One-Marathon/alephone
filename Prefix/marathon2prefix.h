@@ -26,6 +26,9 @@ Jan 31, 2002 (Loren Petrich):
 // App is in a bundle; this is to get away from resource forks
 #define APPLICATION_IS_BUNDLED
 
+// Using the new GUI.nib file
+#define USES_NIBS
+
 // check environs
 /*
 #if __POWERPC__
