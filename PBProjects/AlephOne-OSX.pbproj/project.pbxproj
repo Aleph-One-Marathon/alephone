@@ -154,15 +154,16 @@
 		};
 		29B97314FDCFA39411CA2CEA = {
 			children = (
+				F53AB44B01F3CB1D01EF2901,
 				F52214490136C0C401000001,
 				29B97317FDCFA39411CA2CEA,
 				29B97323FDCFA39411CA2CEA,
 				19C28FACFE9D520D11CA2CBB,
-				F5830B3801E7769D01BA387C,
-				F5830B3901E7769D01BA387C,
-				F5830B3A01E7769D01BA387C,
 				F5830B4001E776DE01BA387C,
 				F59FB19D01E780DF01BBE912,
+				F53AB44C01F3CB1E01EF2901,
+				F53AB44D01F3CB1E01EF2901,
+				F53AB44E01F3CB1E01EF2901,
 			);
 			isa = PBXGroup;
 			name = "SDL Application";
@@ -201,9 +202,8 @@
 			);
 			buildSettings = {
 				DEBUGGING_SYMBOLS = NO;
-				FRAMEWORK_SEARCH_PATHS = "\"$(HOME)/Library/Frameworks\"";
-				HEADER_SEARCH_PATHS = "/System/Library/Frameworks/OpenGL.framework/Headers \"$(HOME)/Library/Frameworks/SDL_image.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL.framework/Headers\" \"$(HOME)/Library/Frameworks/SDL_net.framework/Headers\"";
-				INSTALL_PATH = /Applications;
+				FRAMEWORK_SEARCH_PATHS = "/Library/Frameworks \"$(HOME)/Library/Frameworks\"";
+				HEADER_SEARCH_PATHS = "/System/Library/Frameworks/OpenGL.framework/Headers /Library/Frameworks/SDL_image.framework/Headers /Library/Frameworks/SDL.framework/Headers /Library/Frameworks/SDL_net.framework/Headers";
 				LIBRARY_SEARCH_PATHS = "";
 				OPTIMIZATION_CFLAGS = "-O1";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -D__DARWIN__ -DMACOSX";
@@ -218,7 +218,6 @@
 			);
 			isa = PBXApplicationTarget;
 			name = "AlephOne-SDL-0.12.0";
-			productInstallPath = /Applications;
 			productName = "SDL Application";
 			productReference = 17587328FF379C6511CA2CBB;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -232,7 +231,7 @@
 	<key>CFBundleGetInfoString</key>
 	<string>Aleph One SDL Test for OS X</string>
 	<key>CFBundleIconFile</key>
-	<string></string>
+	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.bungie.source.AlephOneSDL</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -407,6 +406,7 @@
 			files = (
 				089C165EFE840E0CC02AAC07,
 				00F9DA5500AC763A7F000001,
+				F53AB44F01F3CB1E01EF2901,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
@@ -532,11 +532,11 @@
 		29B9732DFDCFA39411CA2CEA = {
 			buildActionMask = 2147483647;
 			files = (
-				F5830B3C01E7769D01BA387C,
-				F5830B3D01E7769D01BA387C,
-				F5830B3E01E7769D01BA387C,
 				F5830B4101E776DE01BA387C,
 				F59FB19E01E780DF01BBE912,
+				F53AB45001F3CB1E01EF2901,
+				F53AB45101F3CB1E01EF2901,
+				F53AB45201F3CB1E01EF2901,
 			);
 			isa = PBXFrameworksBuildPhase;
 			name = "Frameworks & Libraries";
@@ -4399,38 +4399,49 @@
 			name = Headers;
 			refType = 4;
 		};
-		F5830B3801E7769D01BA387C = {
-			isa = PBXFrameworkReference;
-			name = SDL.framework;
-			path = /Users/astrange/Library/Frameworks/SDL.framework;
-			refType = 0;
+		F53AB44B01F3CB1D01EF2901 = {
+			isa = PBXFileReference;
+			path = AlephOne.icns;
+			refType = 4;
 		};
-		F5830B3901E7769D01BA387C = {
+		F53AB44C01F3CB1E01EF2901 = {
 			isa = PBXFrameworkReference;
 			name = SDL_image.framework;
-			path = /Users/astrange/Library/Frameworks/SDL_image.framework;
+			path = /Library/Frameworks/SDL_image.framework;
 			refType = 0;
 		};
-		F5830B3A01E7769D01BA387C = {
+		F53AB44D01F3CB1E01EF2901 = {
 			isa = PBXFrameworkReference;
 			name = SDL_net.framework;
-			path = /Users/astrange/Library/Frameworks/SDL_net.framework;
+			path = /Library/Frameworks/SDL_net.framework;
 			refType = 0;
 		};
-		F5830B3C01E7769D01BA387C = {
-			fileRef = F5830B3801E7769D01BA387C;
+		F53AB44E01F3CB1E01EF2901 = {
+			isa = PBXFrameworkReference;
+			name = SDL.framework;
+			path = /Library/Frameworks/SDL.framework;
+			refType = 0;
+		};
+		F53AB44F01F3CB1E01EF2901 = {
+			fileRef = F53AB44B01F3CB1D01EF2901;
 			isa = PBXBuildFile;
 			settings = {
 			};
 		};
-		F5830B3D01E7769D01BA387C = {
-			fileRef = F5830B3901E7769D01BA387C;
+		F53AB45001F3CB1E01EF2901 = {
+			fileRef = F53AB44C01F3CB1E01EF2901;
 			isa = PBXBuildFile;
 			settings = {
 			};
 		};
-		F5830B3E01E7769D01BA387C = {
-			fileRef = F5830B3A01E7769D01BA387C;
+		F53AB45101F3CB1E01EF2901 = {
+			fileRef = F53AB44D01F3CB1E01EF2901;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F53AB45201F3CB1E01EF2901 = {
+			fileRef = F53AB44E01F3CB1E01EF2901;
 			isa = PBXBuildFile;
 			settings = {
 			};
