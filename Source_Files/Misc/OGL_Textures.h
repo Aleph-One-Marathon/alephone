@@ -5,6 +5,9 @@
 	March 12, 2000
 
 	This contains functions for handling the texture management for OpenGL.
+
+Nov 18, 2000 (Loren Petrich):
+	Added support for landscape vertical repeats
 */
 
 #ifndef _OGL_TEXTURES
@@ -152,6 +155,7 @@ public:
 	short TransferData;
 	bool IsShadeless;
 	short TextureType;
+	bool LandscapeVertRepeat;
 	
 	// The width of a landscape texture will be 2^(-Landscape_AspRatExp) * (the height)
 	short Landscape_AspRatExp;
