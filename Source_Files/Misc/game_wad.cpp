@@ -1394,9 +1394,18 @@ bool process_map_wad(
 
 	/* Extract the game difficulty info.. */
 	data= (uint8 *)extract_type_from_wad(wad, ITEM_PLACEMENT_STRUCTURE_TAG, &data_length);
-	assert(data_length == 2*MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition);
+	// In case of an absent placement chunk...
+	if (data_length == 0)
+	{
+		data = new uint8[2*MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition];
+		memset(data,0,2*MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition);
+	}
+	else
+		assert(data_length == 2*MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition);
 	load_placement_data(data + MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition, data);
-
+	if (data_length == 0)
+		delete []data;
+	
 	/* Extract the terminal data. */
 	data= (uint8 *)extract_type_from_wad(wad, TERMINAL_DATA_TAG, &data_length);
 	load_terminal_data(data, data_length);
