@@ -13,7 +13,7 @@
  *	Because of 2 things. First of all, Packing.h was less clear then it should
  *	have been, the choice between Big Endian and Little Endian was made at the
  *	time the file was included. And the actual elements used from the file don't
- *	specify endian explicitly. Second of all, I wanted the _M_stream_pos elements to be
+ *	specify endian explicitly. Second of all, I wanted the stream elements to be
  *	clearly typed and encapsulated.
  *
  *  Created by Br'fin on Wed Nov 27 2002.
@@ -21,9 +21,7 @@
  */
 #include "AStream.h"
 
-// LP: added this to define memcpy()
 using namespace std;
-
 
 AIStream& AIStream::operator>>(uint8 &value)
 	throw(AStream::failure)
