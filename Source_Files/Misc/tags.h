@@ -36,6 +36,9 @@ Aug 22, 2000 (Loren Petrich):
 
 Aug 28, 2000 (Loren Petrich):
 	get_typecode() now defaults to '????' for unrecognized typecodes
+
+Mar 14, 2001 (Loren Petrich):
+	Added a music filetype
 */
 
 #define MAXIMUM_LEVEL_NAME_SIZE 64
@@ -53,6 +56,7 @@ enum {
 	_typecode_patch,
 	_typecode_images,
 	_typecode_preferences,
+	_typecode_music,
 	_typecode_theme,	// pseudo type code
 	NUMBER_OF_TYPECODES
 };

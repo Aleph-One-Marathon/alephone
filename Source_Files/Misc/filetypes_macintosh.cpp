@@ -16,6 +16,9 @@ Aug 21, 2000 (Loren Petrich):
 
 Nov 29, 2000 (Loren Petrich):
 	Made copying of FTyp resources more reasonable; partial ones are now copied correctly
+
+Mar 14, 2001 (Loren Petrich):
+	Added a music filetype
 */
 
 #include <string.h>
@@ -34,7 +37,8 @@ static OSType typecodes[NUMBER_OF_TYPECODES] = {
 	 'snd°',	// Sounds typecode: originally 'snd2'; changed for M° compatibility
 	 'pat°',	// Patch typecode: originally 'pat2'; changed for M° compatibility
 	 'img2',	// Images typecode
-	 'pref'		// Preferences typecode
+	 'pref',	// Preferences typecode
+	 'mus2'		// Music typecode
 };
 
 
