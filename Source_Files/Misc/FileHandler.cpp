@@ -243,7 +243,7 @@ void FileSpecifier::SetName(char *Name, int Type)
 
 void FileSpecifier::SetSpec(FSSpec& _Spec)
 {
-	memcpy(&Spec,&_Spec,sizeof(FSSpec));
+	obj_copy(Spec,_Spec);
 }
 
 // Parent directories:
@@ -429,7 +429,7 @@ static boolean confirm_save_choice(
 	Rect frame;
 
 	/* Clear! */
-	memset(&pb, 0, sizeof(HFileParam));
+	obj_clear(pb);
 	pb.ioNamePtr= file->name;
 	pb.ioVRefNum= file->vRefNum;
 	pb.ioDirID= file->parID;
@@ -559,7 +559,7 @@ TimeType FileSpecifier::GetDate()
 	OSErr error;
 	TimeType modification_date= 0;
 	
-	memset(&pb, 0, sizeof(pb));
+	obj_clear(pb);
 	pb.hFileInfo.ioVRefNum= Spec.vRefNum;
 	pb.hFileInfo.ioNamePtr= Spec.name;
 	pb.hFileInfo.ioDirID= Spec.parID;
@@ -595,7 +595,7 @@ bool FileSpecifier::GetFreeSpace(unsigned long& FreeSpace)
 	// Code cribbed from vbl_macintosh.c
 	HParamBlockRec  parms;
 
-	memset(&parms, 0, sizeof(HParamBlockRec));	
+	obj_clear(parms);	
 	parms.volumeParam.ioCompletion = NULL;
 	parms.volumeParam.ioVolIndex = 0;
 	parms.volumeParam.ioNamePtr = ptemporary;
