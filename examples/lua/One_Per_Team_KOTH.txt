@@ -1,6 +1,6 @@
 
 --[[
-	One-Per-Team KOTH v1.0
+	One-Per-Team KOTH v1.1
 	Woody Zenfell, III
 
 	I am donating this work to the public domain.
@@ -12,6 +12,9 @@
 
 	July 24, 2003:
 		Created.
+
+	July 30, 2003: (v1.1)
+		Revised to use new use_lua_compass(player_index, bool).
 ]]
 
 
@@ -79,18 +82,7 @@ function idle()
 		end
 
 		if(compassShouldBeActive ~= sPlayerCompassActive[thePlayer]) then
-
-			if(thePlayer == local_player_index()) then
-
-				local shouldUseLuaCompass = false;
-
-				if(compassShouldBeActive == false) then
-					shouldUseLuaCompass = true;
-				end
-
-				use_lua_compass(shouldUseLuaCompass);
-			end
-
+			use_lua_compass(thePlayer, ~compassShouldBeActive);
 			sPlayerCompassActive[thePlayer] = compassShouldBeActive;
 		end
 	end
