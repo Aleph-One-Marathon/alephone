@@ -157,8 +157,8 @@ static void build_shading_tables32(struct rgb_color_value *colors, short color_c
 static void build_global_shading_table16(void);
 static void build_global_shading_table32(void);
 
-static boolean get_next_color_run(struct rgb_color_value *colors, short color_count, short *start, short *count);
-static boolean new_color_run(struct rgb_color_value *_new, struct rgb_color_value *last);
+static bool get_next_color_run(struct rgb_color_value *colors, short color_count, short *start, short *count);
+static bool new_color_run(struct rgb_color_value *_new, struct rgb_color_value *last);
 
 static long get_shading_table_size(short collection_code);
 
@@ -169,11 +169,12 @@ static void build_tinting_table32(struct rgb_color_value *colors, short color_co
 
 static void precalculate_bit_depth_constants(void);
 
-static boolean collection_loaded(struct collection_header *header);
+static bool collection_loaded(struct collection_header *header);
 static void unload_collection(struct collection_header *header);
 static void unlock_collection(struct collection_header *header);
 static void lock_collection(struct collection_header *header);
-static boolean load_collection(short collection_index, boolean strip);
+static bool load_collection(short collection_index, bool strip);
+static byte *unpack_collection(byte *collection, int32 length, bool strip);
 
 static void debug_shapes_memory(void);
 
@@ -193,7 +194,7 @@ static struct collection_header *get_collection_header(short collection_index);
 static struct collection_definition *get_collection_definition(short collection_index);
 static void *get_collection_shading_tables(short collection_index, short clut_index);
 static void *get_collection_tint_tables(short collection_index, short tint_index);
-// static void *collection_offset(struct collection_definition *definition, long offset);
+static void *collection_offset(struct collection_definition *definition, long offset);
 static struct rgb_color_value *get_collection_colors(short collection_index, short clut_number);
 static struct high_level_shape_definition *get_high_level_shape_definition(short collection_index, short high_level_shape_index);
 static struct low_level_shape_definition *get_low_level_shape_definition(short collection_index, short low_level_shape_index);
@@ -258,7 +259,8 @@ void open_shapes_file(FileSpecifier& File)
 			
 			S += 6*2;
 			
-			ObjPtr->Definition = NULL;	// so unloading can work properly
+			ObjPtr->collection = NULL;	// so unloading can work properly
+			ObjPtr->shading_tables = NULL;	// so unloading can work properly
 		}
 		
 		assert((S - CollHdrStream) == Count*SIZEOF_collection_header);
@@ -278,9 +280,9 @@ static void shutdown_shape_handler(void)
 }
 
 
-static boolean load_collection(
+static bool load_collection(
 	short collection_index,
-	boolean strip)
+	bool strip)
 {
 	struct collection_header *header= get_collection_header(collection_index);
 	byte *collection = NULL, *shading_tables = NULL;
@@ -300,21 +302,71 @@ static boolean load_collection(
 	if (!collection && error==noErr) error = memory_error();
 	vwarn(error==noErr, csprintf(temporary, "read_object_from_file() got error #%d", error));
 	
-	// Set all the memory to unused
-	header->Definition = NULL;
-	header->Colors = NULL;
-	header->Sequences = NULL;
-	header->Frames = NULL;
-	header->Bitmaps = NULL;
-	
 	if (collection)
 	{
-		// Unpack the collection header first, of course
-		assert(SIZEOF_collection_definition <= length);
+		header->collection = (collection_definition *)unpack_collection(collection,length,strip);
 		
-		header->Definition = new collection_definition;
-		collection_definition& Definition = *header->Definition;
+		// No longer needed!
+		delete []collection;
 		
+		// header->collection= (collection_definition *) collection;
+		
+		/* allocate enough space for this collectionÕs shading tables */
+		if (strip)
+		{
+			shading_tables = NULL;
+		}
+		else
+		{
+			collection_definition *definition = header->collection;
+			shading_tables = new byte[get_shading_table_size(collection_index)*definition->clut_count +
+				shading_table_size*NUMBER_OF_TINT_TABLES];
+			if ((error= memory_error())==noErr)
+			{
+				assert(shading_tables);
+			}
+		}
+		
+		header->shading_tables= shading_tables;
+	}
+	else
+	{
+		error= memory_error();
+//		vhalt(csprintf(temporary, "couldnÕt load collection #%d (error==#%d)", collection_index, error));
+	}
+
+	/* if any errors ocurred, free whatever memory we used */
+	if (error!=noErr)
+	{
+		unload_collection(header);
+	}
+	
+	return error==noErr ? TRUE : FALSE;
+}
+
+const int POINTER_SIZE = sizeof(void *);
+const int POINTER_BITS = 2;
+
+static int AdjustToPointerBoundary(int x)
+{
+	return ((((x-1) >> POINTER_BITS) + 1) << POINTER_BITS);
+}
+
+// Creates an unpacked collection and puts it into a long, flat stream like the original.
+byte *unpack_collection(byte *collection, int32 length, bool strip)
+{
+	assert((1 << POINTER_BITS) == POINTER_SIZE);
+
+	// Set up blank values of these quantities
+	byte *NewCollection = NULL;
+	int32 *OffsetTable = NULL;
+	
+	try
+	{
+		// First, unpack the header into a temporary area
+		if (length < SIZEOF_collection_definition) throw 13666;
+		
+		collection_definition Definition;
 		uint8 *SBase = collection;
 		uint8 *S = collection;
 		
@@ -343,15 +395,58 @@ static boolean load_collection(
 		S += 253*2;
 		assert((S - SBase) == SIZEOF_collection_definition);
 		
-		// Get the colors		
-		assert(Definition.color_count >= 0);
-		assert(Definition.clut_count >= 0);
-		int TotalColors = Definition.color_count * Definition.clut_count;
-		header->Colors = new rgb_color_value[TotalColors];
+		// We have enough information to estimate the size of the unpack collection chunk!
+		int32 NewSize = length;
 		
-		assert(Definition.color_table_offset >= 0);
-		assert(Definition.color_table_offset + TotalColors*SIZEOF_rgb_color_value <= length);
-		rgb_color_value *Colors = header->Colors;
+		// The header:
+		NewSize += (sizeof(collection_definition) - SIZEOF_collection_definition) + POINTER_SIZE;
+		
+		// The colors:
+		if (!(Definition.color_count >= 0)) throw 13666;
+		if (!(Definition.clut_count >= 0)) throw 13666;
+		int TotalColors = Definition.color_count * Definition.clut_count;
+		NewSize += TotalColors*(sizeof(rgb_color_value) - SIZEOF_rgb_color_value) + POINTER_SIZE;
+		
+		// The sequence-offset table:
+		NewSize += POINTER_SIZE;
+		
+		// The sequence data:
+		if (!(Definition.high_level_shape_count >= 0)) throw 13666;
+		NewSize += Definition.high_level_shape_count*
+			((sizeof(high_level_shape_definition) - SIZEOF_high_level_shape_definition) + POINTER_SIZE);
+		
+		if (!strip)
+		{
+			// The frame-offset table:
+			NewSize += POINTER_SIZE;
+			
+			// The frame data:
+			if (!(Definition.low_level_shape_count >= 0)) throw 13666;
+			NewSize += Definition.low_level_shape_count*
+				((sizeof(low_level_shape_definition) - SIZEOF_low_level_shape_definition) + POINTER_SIZE);
+			
+			// The bitmap-offset table:
+			NewSize += POINTER_SIZE;
+			
+			// The bitmap data:
+			if (!(Definition.bitmap_count >= 0)) throw 13666;
+			NewSize += Definition.bitmap_count*
+				((sizeof(bitmap_definition) - SIZEOF_bitmap_definition) + POINTER_SIZE);
+		}
+		
+		// Blank out the new chunk and copy in the new header
+		NewCollection = new byte[NewSize];
+		memset(NewCollection,0,NewSize);
+		int32 NewCollLocation = 0;
+		memcpy(NewCollection, &Definition, sizeof(collection_definition));
+		collection_definition& NewDefinition = *((collection_definition *)NewCollection);
+		NewDefinition.size = NewSize;
+		NewCollLocation += AdjustToPointerBoundary(sizeof(collection_definition));
+		
+		// Copy in the colors
+		if (!(Definition.color_table_offset >= 0)) throw 13666;
+		if (!(Definition.color_table_offset + TotalColors*SIZEOF_rgb_color_value <= length)) throw 13666;
+		rgb_color_value *Colors = (rgb_color_value *)(NewCollection + NewCollLocation);
 		SBase = S = collection + Definition.color_table_offset;
 		for (int k = 0; k < TotalColors; k++, Colors++)
 		{
@@ -361,39 +456,38 @@ static boolean load_collection(
 			StreamToValue(S,Colors->green);
 			StreamToValue(S,Colors->blue);
 		}
-		assert((S - SBase) == TotalColors*SIZEOF_rgb_color_value);
+		assert((S - SBase) == TotalColors*SIZEOF_rgb_color_value);	
+		NewDefinition.color_table_offset = NewCollLocation;
+		NewCollLocation += AdjustToPointerBoundary(TotalColors*sizeof(rgb_color_value));
 		
-		// Pointers will be cleared unless allocated 
-		assert(Definition.high_level_shape_count >= 0);
-		header->Sequences = new high_level_shape_definition *[Definition.high_level_shape_count];
-		objlist_clear(header->Sequences,Definition.high_level_shape_count);
+		// Copy in the sequence offsets
+		if (!(Definition.high_level_shape_offset_table_offset >= 0)) throw 13666;
+		if (!(Definition.high_level_shape_offset_table_offset +
+			Definition.high_level_shape_count*sizeof(int32) <= length)) throw 13666;
+		OffsetTable = new int32[Definition.high_level_shape_count + 1];
 		
-		// Need the sequence offsets here;
-		// these will be used to indicate how much to read per sequence,
-		// so put the next-data offset at the end
-		assert(Definition.high_level_shape_offset_table_offset >= 0);
-		assert(Definition.high_level_shape_offset_table_offset +
-			Definition.high_level_shape_count*sizeof(int32) <= length);
-		int32 *SeqOffsets = new int32[Definition.high_level_shape_count + 1];
 		S = collection + Definition.high_level_shape_offset_table_offset;
-		StreamToList(S,SeqOffsets,Definition.high_level_shape_count);
-		SeqOffsets[Definition.high_level_shape_count] = Definition.low_level_shape_offset_table_offset;
+		StreamToList(S,OffsetTable,Definition.high_level_shape_count);
+		OffsetTable[Definition.high_level_shape_count] =
+			Definition.low_level_shape_offset_table_offset;
 		
-		assert(SeqOffsets[0] >= 0);
+		if (!(OffsetTable[0] >= 0)) throw 13666;
 		for (int k=0; k<Definition.high_level_shape_count; k++)
-			assert(SeqOffsets[k+1] - SeqOffsets[k] >= SIZEOF_high_level_shape_definition);
-		assert(SeqOffsets[Definition.high_level_shape_count] <= length);
+			if (!(OffsetTable[k+1] - OffsetTable[k] >= SIZEOF_high_level_shape_definition)) throw 13666;
+		if (!(OffsetTable[Definition.high_level_shape_count] <= length)) throw 13666;
 		
+		NewDefinition.high_level_shape_offset_table_offset = NewCollLocation;
+		int32 *NewOffsetPtr = (int32 *)(NewCollection + NewCollLocation);
+		NewCollLocation += AdjustToPointerBoundary(sizeof(int32)*Definition.high_level_shape_count);
+		
+		// Copy in the sequences
 		for (int k=0; k<Definition.high_level_shape_count; k++)
 		{
-			SBase = S = collection + SeqOffsets[k];
-			uint8 *SNext = collection + SeqOffsets[k+1];
+			SBase = S = collection + OffsetTable[k];
+			uint8 *SNext = collection + OffsetTable[k+1];
 			
-			long NewSize = (SNext - S) +
-				(sizeof(high_level_shape_definition) - SIZEOF_high_level_shape_definition);
-			header->Sequences[k] = (high_level_shape_definition *)(new byte[NewSize]);
-			
-			high_level_shape_definition& Sequence = *header->Sequences[k];
+			high_level_shape_definition& Sequence =
+				*((high_level_shape_definition *)(NewCollection + NewCollLocation));
 			
 			StreamToValue(S,Sequence.type);
 			StreamToValue(S,Sequence.flags);
@@ -423,85 +517,53 @@ static boolean load_collection(
 			assert((S - SBase) == SIZEOF_high_level_shape_definition);
 			
 			// Do the remaining frame indices
-			long NumFrameIndxs = (SNext - S)/2;
+			long NumFrameIndxs = (SNext - S)/sizeof(int16);
 			StreamToList(S,Sequence.low_level_shape_indexes+1,NumFrameIndxs);
 			
-			// Check if it is necessary to allocate some extra space;
-			// number_of_views type 2 (_animated2to8) is rather screwy.
-			// In some shapes files, it has two views associated with it,
-			// while the code says it ought to have 8 views
-			int TrueNumViews;
-			switch (Sequence.number_of_views)
-			{
-				case _unanimated:
-				case _animated1:
-					TrueNumViews = 1;
-					break;
-				
-				case _animated3to4: /* front, quarter and side views only */
-				case _animated4:
-					TrueNumViews = 4;
-					break;
-					
-				case _animated3to5:
-				case _animated5:
-					TrueNumViews = 5;
-					break;
-				
-				case _animated2to8:
-				case _animated5to8:
-				case _animated8:
-					TrueNumViews = 8;
-					break;
-					
-				default:
-					vassert(false,csprintf(temporary,"Unrecognized view-count type: %d",Sequence.number_of_views));
-			}
-			
-			int TrueNumFrameIndxs = TrueNumViews*Sequence.frames_per_view;
-			if (NumFrameIndxs < TrueNumFrameIndxs)
-			{
-				int OldSize = (S - SBase);
-				int NewSize = OldSize + sizeof(short)*(TrueNumFrameIndxs - NumFrameIndxs);
-				byte *NewSequence = new byte[NewSize];
-				memcpy(NewSequence,header->Sequences[k],OldSize);
-				memset(NewSequence+OldSize,0,NewSize-OldSize);
-				delete []header->Sequences[k];
-				header->Sequences[k] = (high_level_shape_definition *)NewSequence;
-			}
+			// Set the offset pointer appropriately:
+			*(NewOffsetPtr++) = NewCollLocation;
+			NewCollLocation +=
+				AdjustToPointerBoundary(sizeof(high_level_shape_definition) + NumFrameIndxs*sizeof(int16));
 		}
 		
-		delete []SeqOffsets;
+		delete []OffsetTable;
+		OffsetTable = NULL;
 		
 		if (strip)
 		{
-			Definition.low_level_shape_count = 0;
-			Definition.bitmap_count = 0;
+			NewDefinition.low_level_shape_count = 0;
+			NewDefinition.bitmap_count = 0;
 		}
 		else
 		{
-			// Get the frame offsets
-			assert(Definition.low_level_shape_count >= 0);
-			assert(Definition.low_level_shape_offset_table_offset >= 0);
-			assert(Definition.low_level_shape_offset_table_offset +
-				Definition.low_level_shape_count*sizeof(int32) <= length);
-			int32 *FrmOffsets = new int32[Definition.low_level_shape_count + 1];
+			// Copy in the frame offsets
+			if (!(Definition.low_level_shape_count >= 0)) throw 13666;
+			if (!(Definition.low_level_shape_offset_table_offset >= 0)) throw 13666;
+			if (!(Definition.low_level_shape_offset_table_offset +
+				Definition.low_level_shape_count*sizeof(int32) <= length)) throw 13666;
+			int32 *OffsetTable = new int32[Definition.low_level_shape_count + 1];
+			
 			S = collection + Definition.low_level_shape_offset_table_offset;
-			StreamToList(S,FrmOffsets,Definition.low_level_shape_count);
-			FrmOffsets[Definition.low_level_shape_count] = Definition.bitmap_offset_table_offset;
-			header->Frames = new low_level_shape_definition[Definition.low_level_shape_count];
+			StreamToList(S,OffsetTable,Definition.low_level_shape_count);
+			OffsetTable[Definition.low_level_shape_count] = Definition.bitmap_offset_table_offset;
 			
-			assert(FrmOffsets[0] >= 0);
+			if (!(OffsetTable[0] >= 0)) throw 13666;
 			for (int k=0; k<Definition.low_level_shape_count; k++)
-				assert(FrmOffsets[k+1] - FrmOffsets[k] >= SIZEOF_low_level_shape_definition);
-			assert(FrmOffsets[Definition.low_level_shape_count] <= length);
+				if (!(OffsetTable[k+1] - OffsetTable[k] >= SIZEOF_low_level_shape_definition)) throw 13666;
+			if (!(OffsetTable[Definition.low_level_shape_count] <= length)) throw 13666;
+		
+			NewDefinition.low_level_shape_offset_table_offset = NewCollLocation;
+			NewOffsetPtr = (int32 *)(NewCollection + NewCollLocation);
+			NewCollLocation += AdjustToPointerBoundary(sizeof(int32)*Definition.low_level_shape_count);
 			
+			// Copy in the frames
 			for (int k=0; k<Definition.low_level_shape_count; k++)
 			{
-				SBase = S = collection + FrmOffsets[k];
-				uint8 *SNext = collection + FrmOffsets[k+1];
+				SBase = S = collection + OffsetTable[k];
+				uint8 *SNext = collection + OffsetTable[k+1];
 						
-				low_level_shape_definition& Frame = header->Frames[k];
+				low_level_shape_definition& Frame = 
+					*((low_level_shape_definition *)(NewCollection + NewCollLocation));
 				
 				StreamToValue(S,Frame.flags);
 				
@@ -525,39 +587,43 @@ static boolean load_collection(
 				S += 4*2;
 				
 				assert((S - SBase) == SIZEOF_low_level_shape_definition);
+				
+				// Set the offset pointer appropriately:
+				*(NewOffsetPtr++) = NewCollLocation;
+				NewCollLocation += AdjustToPointerBoundary(sizeof(low_level_shape_definition));
 			}
 			
-			delete []FrmOffsets;
+			delete []OffsetTable;
+			OffsetTable = NULL;
 			
-			// Need the bitmap offsets here
-			assert(Definition.bitmap_count >= 0);
-			header->Bitmaps = new bitmap_definition *[Definition.bitmap_count];
-			objlist_clear(header->Bitmaps,Definition.bitmap_count);
+			// Copy in the the bitmap offsets
+			if (!(Definition.bitmap_count >= 0)) throw 13666;
+			if (!(Definition.bitmap_offset_table_offset >= 0)) throw 13666;
+			if (!(Definition.bitmap_offset_table_offset +
+				Definition.bitmap_count*sizeof(int32) <= length)) throw 13666;
+			OffsetTable = new int32[Definition.bitmap_count + 1];
 			
-			assert(Definition.bitmap_offset_table_offset >= 0);
-			assert(Definition.bitmap_offset_table_offset +
-				Definition.bitmap_count*sizeof(int32) <= length);
-			int32 *BtmpOffsets = new int32[Definition.bitmap_count + 1];
 			S = collection + Definition.bitmap_offset_table_offset;
-			StreamToList(S,BtmpOffsets,Definition.bitmap_count);
-			BtmpOffsets[Definition.bitmap_count] = length;
+			StreamToList(S,OffsetTable,Definition.bitmap_count);
+			OffsetTable[Definition.bitmap_count] = length;
 			
-			assert(BtmpOffsets[0] >= 0);
+			if (!(OffsetTable[0] >= 0)) throw 13666;
 			for (int k=0; k<Definition.bitmap_count; k++)
-				assert(BtmpOffsets[k+1] - BtmpOffsets[k] >= SIZEOF_bitmap_definition);
-			assert(BtmpOffsets[Definition.bitmap_count] <= length);
+				if (!(OffsetTable[k+1] - OffsetTable[k] >= SIZEOF_bitmap_definition)) throw 13666;
+			if (!(OffsetTable[Definition.bitmap_count] <= length)) throw 13666;
+		
+			NewDefinition.bitmap_offset_table_offset = NewCollLocation;
+			NewOffsetPtr = (int32 *)(NewCollection + NewCollLocation);
+			NewCollLocation += AdjustToPointerBoundary(sizeof(int32)*Definition.bitmap_count);
 			
+			// Get the bitmaps
 			for (int k=0; k<Definition.bitmap_count; k++)
 			{
-				SBase = S = collection + BtmpOffsets[k];
-				uint8 *SNext = collection + BtmpOffsets[k+1];
+				SBase = S = collection + OffsetTable[k];
+				uint8 *SNext = collection + OffsetTable[k+1];
 				
-				long NewSize = (SNext - S) +
-					(sizeof(bitmap_definition) - SIZEOF_bitmap_definition);
-				header->Bitmaps[k] = (bitmap_definition *)(new byte[NewSize]);
-				assert(header->Bitmaps[k]);
-				
-				bitmap_definition& Bitmap = *header->Bitmaps[k];
+				bitmap_definition& Bitmap =
+					*((bitmap_definition *)(NewCollection + NewCollLocation));
 				
 				StreamToValue(S,Bitmap.width);
 				StreamToValue(S,Bitmap.height);
@@ -576,47 +642,29 @@ static boolean load_collection(
 				// Do all the other stuff; don't bother to try to process it
 				long RemainingBytes = (SNext - S);
 				StreamToBytes(S,Bitmap.row_addresses+1,RemainingBytes);
+			
+				// Set the offset pointer appropriately:
+				*(NewOffsetPtr++) = NewCollLocation;
+				NewCollLocation +=
+					AdjustToPointerBoundary(sizeof(bitmap_definition) + RemainingBytes);
 			}
 			
-			delete []BtmpOffsets;
+			delete []OffsetTable;
+			OffsetTable = NULL;
 			
-			// No longer needed!
-			delete []collection;
-		}
-		
-		// header->collection= (collection_definition *) collection;
-		
-		/* allocate enough space for this collectionÕs shading tables */
-		if (strip)
-		{
-			shading_tables = NULL;
-		}
-		else
-		{
-			shading_tables = new byte[get_shading_table_size(collection_index)*Definition.clut_count +
-				shading_table_size*NUMBER_OF_TINT_TABLES];
-			if ((error= memory_error())==noErr)
-			{
-				assert(shading_tables);
-			}
-		}
-		
-		header->shading_tables= shading_tables;
+			// Just in case I miscalculated...
+			assert(NewCollLocation <= NewSize);
+		}	
 	}
-	else
+	catch(int n)
 	{
-		error= memory_error();
-//		vhalt(csprintf(temporary, "couldnÕt load collection #%d (error==#%d)", collection_index, error));
+		if (NewCollection) delete []NewCollection;
 	}
-
-	/* if any errors ocurred, free whatever memory we used */
-	if (error!=noErr)
-	{
-		unload_collection(header);
-	}
+	if (OffsetTable) delete []OffsetTable;
 	
-	return error==noErr ? TRUE : FALSE;
+	return NewCollection;
 }
+
 
 static void unload_collection(
 	struct collection_header *header)
@@ -624,66 +672,19 @@ static void unload_collection(
 	// assert(header->collection);
 	
 	/* unload collection */
-	// if (header->collection) delete []header->collection;
-	// header->collection = NULL;
-	if (header->Definition)
-	{
-		collection_definition& Definition = *header->Definition;
-		
-		// Delete the other stuff first, since it needs the header size
-		if (header->Colors)
-		{
-			delete []header->Colors;
-			header->Colors = NULL;
-		}
-		if (header->Sequences)
-		{
-			for (int k=0; k<Definition.high_level_shape_count; k++)
-				if (header->Sequences[k]) delete []header->Sequences[k];
-			delete []header->Sequences;
-			header->Sequences = NULL;
-		}
-		if (header->Frames)
-		{
-			delete []header->Frames;
-			header->Frames = NULL;
-		}
-		if (header->Bitmaps)
-		{
-			for (int k=0; k<Definition.bitmap_count; k++)
-				if (header->Bitmaps[k]) delete []header->Bitmaps[k];
-			delete []header->Bitmaps;
-			header->Bitmaps = NULL;
-		}
-		
-		delete header->Definition;
-		header->Definition = NULL;
-	}
+	if (header->collection) delete []header->collection;
+	header->collection = NULL;
+	
 	if (header->shading_tables) delete []header->shading_tables;
 	header->shading_tables = NULL;
 	
 	return;
 }
 
-/*
-static byte *make_stripped_collection(byte *collection)
-{
-	long StrippedLength =
-		((collection_definition *)collection)->low_level_shape_offset_table_offset;
-	byte *new_collection = new byte[StrippedLength];
-	memcpy(new_collection, collection, StrippedLength);
-	((collection_definition *)new_collection)->low_level_shape_count= 0;
-	((collection_definition *)new_collection)->bitmap_count= 0;
-	
-	return new_collection;
-}
-*/
-
-static boolean collection_loaded(
+static bool collection_loaded(
 	struct collection_header *header)
 {
-	return header->Definition ? TRUE : FALSE;
-	// return header->collection ? TRUE : FALSE;
+	return header->collection ? TRUE : FALSE;
 }
 
 
@@ -745,7 +746,7 @@ void unload_all_collections(
 
 void mark_collection(
 	short collection_code,
-	boolean loading)
+	bool loading)
 {
 	if (collection_code!=NONE)
 	{
@@ -1510,13 +1511,13 @@ static void build_global_shading_table32(
 	return;
 }
 
-static boolean get_next_color_run(
+static bool get_next_color_run(
 	struct rgb_color_value *colors,
 	short color_count,
 	short *start,
 	short *count)
 {
-	boolean not_done= FALSE;
+	bool not_done= FALSE;
 	struct rgb_color_value last_color;
 	
 	if (*start+*count<color_count)
@@ -1540,7 +1541,7 @@ static boolean get_next_color_run(
 	return not_done;
 }
 
-static boolean new_color_run(
+static bool new_color_run(
 	struct rgb_color_value *_new,
 	struct rgb_color_value *last)
 {
@@ -1835,22 +1836,19 @@ static struct collection_header *get_collection_header(
 	*/
 }
 
-/*
 static void *collection_offset(
 	struct collection_definition *definition,
 	long offset)
 {
-	vassert(offset>=0 && offset<definition->size,
-		csprintf(temporary, "asked for offset #%d/#%d", offset, definition->size));
-
+	if (!(offset>=0 && offset<definition->size)) return NULL;
+	
 	return ((byte *)definition) + offset;
 }
-*/
 
 static struct collection_definition *get_collection_definition(
 	short collection_index)
 {
-	struct collection_definition *collection= get_collection_header(collection_index)->Definition;
+	struct collection_definition *collection= get_collection_header(collection_index)->collection;
 	
 	return collection;
 }
@@ -1859,105 +1857,59 @@ static struct rgb_color_value *get_collection_colors(
 	short collection_index,
 	short clut_number)
 {
-	collection_header *header = get_collection_header(collection_index);
-	collection_definition *definition = header->Definition;
-	if (!definition) return NULL;
-	
-	return GetMemberWithBounds(header->Colors,
-		clut_number*definition->color_count,
-			definition->clut_count*definition->color_count);
-	
-	/*
-	struct collection_definition *definition= _get_collection_definition(collection_index);
+	struct collection_definition *definition= get_collection_definition(collection_index);
 
-	assert(clut_number>=0&&clut_number<definition->clut_count);
+	if (!(clut_number>=0&&clut_number<definition->clut_count)) return NULL;
 	
 	return (struct rgb_color_value *) collection_offset(definition, definition->color_table_offset+clut_number*sizeof(struct rgb_color_value)*definition->color_count);
-	*/
 }
 
 static struct high_level_shape_definition *get_high_level_shape_definition(
 	short collection_index,
 	short high_level_shape_index)
 {
-	collection_header *header = get_collection_header(collection_index);
-	collection_definition *definition = header->Definition;
-	if (!definition) return NULL;
-
-	// Watch out for extra indirection!
-	high_level_shape_definition** ShapePP = 
-		GetMemberWithBounds(header->Sequences,
-			high_level_shape_index,
-				definition->high_level_shape_count);
-	
-	if (!ShapePP) return NULL;
-	
-	return *ShapePP;
-
-/*
 	struct collection_definition *definition= get_collection_definition(collection_index);
 	long *offset_table;
 	
-	vassert(high_level_shape_index>=0&&high_level_shape_index<definition->high_level_shape_count,
-		csprintf(temporary, "asked for high-level shape %d/%d, collection %d", high_level_shape_index, definition->high_level_shape_count, collection_index));
+	if (!(high_level_shape_index>=0&&high_level_shape_index<definition->high_level_shape_count))
+		return NULL;
 	
 	offset_table= (long *) collection_offset(definition, definition->high_level_shape_offset_table_offset);
+	if (!offset_table) return NULL;
+	
 	return (struct high_level_shape_definition *) collection_offset(definition, offset_table[high_level_shape_index]);
-*/
 }
 
 static struct low_level_shape_definition *get_low_level_shape_definition(
 	short collection_index,
 	short low_level_shape_index)
 {
-	collection_header *header = get_collection_header(collection_index);
-	collection_definition *definition = header->Definition;
-	if (!definition) return NULL;
-	
-	return GetMemberWithBounds(header->Frames,
-		low_level_shape_index,
-			definition->low_level_shape_count);
-	
-/*
 	struct collection_definition *definition= get_collection_definition(collection_index);
 	long *offset_table;
 
-	vassert(low_level_shape_index>=0 && low_level_shape_index<definition->low_level_shape_count,
-		csprintf(temporary, "asked for low-level shape %d/%d, collection %d", low_level_shape_index, definition->low_level_shape_count, collection_index));
+	if (!(low_level_shape_index>=0 && low_level_shape_index<definition->low_level_shape_count))
+		return NULL;
 	
 	offset_table= (long *) collection_offset(definition, definition->low_level_shape_offset_table_offset);
+	if (!offset_table) return NULL;
+	
 	return (struct low_level_shape_definition *) collection_offset(definition, offset_table[low_level_shape_index]);
-*/
 }
 
 static struct bitmap_definition *get_bitmap_definition(
 	short collection_index,
 	short bitmap_index)
 {
-	collection_header *header = get_collection_header(collection_index);
-	collection_definition *definition = header->Definition;
-	if (!definition) return NULL;	
-	
-	// Watch out for extra indirection!
-	bitmap_definition** BitmapPP = 
-		GetMemberWithBounds(header->Bitmaps,
-			bitmap_index,
-				definition->bitmap_count);
-	
-	if (!BitmapPP) return NULL;
-	
-	return *BitmapPP;
-	
-/*
 	struct collection_definition *definition= get_collection_definition(collection_index);
 	long *offset_table;
 
-	vassert(bitmap_index>=0 && bitmap_index<definition->bitmap_count,
-		csprintf(temporary, "asked for collection #%d bitmap #%d/#%d", collection_index, bitmap_index, definition->bitmap_count));
+	if (!(bitmap_index>=0 && bitmap_index<definition->bitmap_count))
+		return NULL;
 	
 	offset_table= (long *) collection_offset(definition, definition->bitmap_offset_table_offset);
+	if (!offset_table) return NULL;
+	
 	return (struct bitmap_definition *) collection_offset(definition, offset_table[bitmap_index]);
-*/
 }
 
 static void *get_collection_shading_tables(
