@@ -4,7 +4,10 @@
 	
 	It will get resized in a lazy fashion.
 	
-	Jan 30, 2000 (Loren Petrich):
+Jul 30, 2000 (Loren Petrich)
+
+Aug 13, 2000 (Loren Petrich):
+	Implemented Christian Bauer bug fix: a destructor is now a "real" destructor.
 */
 
 
@@ -70,7 +73,8 @@ public:
 	T* RevEnd() {return (List - 1);}
 	
 	// Destructor
-	ResizableList() {delete[]List;}
+	// Christian Bauer bug fix:
+	~ResizableList() {delete[]List;}
 };
 
 
