@@ -1,0 +1,119 @@
+#ifndef _RENDER_RASTERIZER_CLASS_
+#define _RENDER_RASTERIZER_CLASS_
+/*
+	
+	Rendering Clipping/Rasterization Class
+	by Loren Petrich,
+	August 7, 2000
+	
+	Defines a class for doing rasterization from the prepared lists of objects; from render.c
+	
+	Made [view_data *view] a member and removed it as an argument
+	Doing the setup and rasterization of each object through a RasterizerClass object
+*/
+
+#include "GrowableList.h"
+#include "ResizableList.h"
+#include "world.h"
+#include "render.h"
+#include "RenderSortPoly.h"
+#include "RenderPlaceObjs.h"
+#include "Rasterizer.h"
+
+
+/* ---------- flagged world points */
+
+struct flagged_world_point2d /* for floors */
+{
+	// LP change: made this more long-distance friendly
+	long x, y;
+	// world_distance x, y;
+	word flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
+};
+
+struct flagged_world_point3d /* for ceilings */
+{
+	// LP change: made this more long-distance friendly
+	long x, y;
+	world_distance z;
+	// world_distance x, y, z;
+	word flags; /* _clip_left, _clip_right, _clip_top, _clip_bottom are valid */
+};
+
+
+/* ---------- vertical surface definition */
+
+/* it’s not worth putting this into the side_data structure, although the transfer mode should
+	be in the side_texture_definition structure */
+struct vertical_surface_data
+{
+	short lightsource_index;
+	fixed ambient_delta; /* a delta to the lightsource’s intensity, then pinned to [0,FIXED_ONE] */
+	
+	world_distance length;
+	world_distance h0, h1, hmax; /* h0<h1; hmax<=h1 and is the height where this wall side meets the ceiling */
+	// LP change: made this more long-distance friendly
+	long_vector2d p0, p1; /* will transform into left, right points on the screen (respectively) */
+	// world_point2d p0, p1; /* will transform into left, right points on the screen (respectively) */
+	
+	struct side_texture_definition *texture_definition;
+	short transfer_mode;
+};
+
+
+class RenderRasterizerClass
+{
+	// Auxiliary data and routines:
+	
+	// LP change: indicate whether the void is present on one side;
+	// useful for suppressing semitransparency to the void
+		void render_node_floor_or_ceiling(bitmap_definition *destination,
+		clipping_window_data *window, polygon_data *polygon, horizontal_surface_data *surface,
+		bool void_present);
+	void render_node_side(bitmap_definition *destination,
+		clipping_window_data *window, vertical_surface_data *surface,
+		bool void_present);
+
+	// LP change: add "other side of media" flag, to indicate that the sprite will be rendered
+	// on the opposite side of the liquid surface from the viewpoint, instead of the same side.
+	void render_node_object(bitmap_definition *destination,
+		render_object_data *object, bool other_side_of_media);
+
+	// LP changes for better long-distance support
+	
+	short xy_clip_horizontal_polygon(flagged_world_point2d *vertices, short vertex_count,
+		long_vector2d *line, word flag);
+	
+	void xy_clip_flagged_world_points(flagged_world_point2d *p0, flagged_world_point2d *p1,
+		flagged_world_point2d *clipped, long_vector2d *line);
+	
+	short z_clip_horizontal_polygon(flagged_world_point2d *vertices, short vertex_count,
+		long_vector2d *line, world_distance height, word flag);
+	
+	void z_clip_flagged_world_points(flagged_world_point2d *p0, flagged_world_point2d *p1,
+		world_distance height, flagged_world_point2d *clipped, long_vector2d *line);
+	
+	short xz_clip_vertical_polygon(flagged_world_point3d *vertices, short vertex_count,
+		long_vector2d *line, word flag);
+	
+	void xz_clip_flagged_world_points(flagged_world_point3d *p0, flagged_world_point3d *p1,
+		flagged_world_point3d *clipped, long_vector2d *line);
+	
+	short xy_clip_line(flagged_world_point2d *posts, short vertex_count,
+		long_vector2d *line, word flag);
+	
+public:
+	
+	// Pointers to view and sorted polygons
+	view_data *view;
+	RenderSortPolyClass *RSPtr;
+	RasterizerClass *RasPtr;
+	
+	void render_tree(bitmap_definition *destination);
+	
+  	// Inits everything
+ 	RenderRasterizerClass();
+};
+
+
+#endif
