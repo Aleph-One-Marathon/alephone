@@ -324,7 +324,7 @@ void display_device_dialog(
 	small.top=(ir.top+ir.bottom-height)/2;
 	small.right=small.left+width;
 	small.bottom=small.top+height;
-	devices=(dev_info *)malloc(cnt*sizeof (dev_info));
+	devices= new dev_info[cnt];
 	assert(devices);
 	devcnt=cnt;
 	i=0;
@@ -373,7 +373,7 @@ void display_device_dialog(
 		spec->slot=GetSlotFromGDevice(devices[curix].dev);
 		spec->flags=GetControlValue(colorsradio) ? 1<<gdDevType : 0;
 	}
-	free(devices);
+	delete []devices;
 	DisposeDialog(dlg);
 }
 

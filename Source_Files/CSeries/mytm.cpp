@@ -65,7 +65,7 @@ myTMTaskPtr myTMSetup(
 {
 	myTMTaskPtr result;
 
-	result=(myTMTask *)malloc(sizeof (myTMTask));
+	result= new myTMTask;
 	if (!result)
 		return result;
 	result->task.tmAddr=timer_upp;
@@ -89,7 +89,7 @@ myTMTaskPtr myXTMSetup(
 {
 	myTMTaskPtr result;
 
-	result=(myTMTask *)malloc(sizeof (myTMTask));
+	result= new myTMTask;
 	if (!result)
 		return result;
 	result->task.tmAddr=timer_upp;
@@ -113,7 +113,7 @@ myTMTaskPtr myTMRemove(
 	if (!task)
 		return NULL;
 	RmvTime((QElemPtr)task);
-	free(task);
+	delete task;
 	return NULL;
 }
 
