@@ -120,8 +120,8 @@ struct music_data {
 #define kDefaultSoundBufferSize (500*KILO)
 #define BUILD_STEREO_VOLUME(l, r) ((((long)(r))<<16)|(l))
 
-static struct song_definition *get_song_definition(	
-	short index);
+//static struct song_definition *get_song_definition(	
+//	short index);
 
 /* ----------------- globals */
 static music_data music_state;
@@ -150,10 +150,11 @@ inline short GetQTMusicVolume() {return short(double(0x100)*GetOverallMusicVolum
 inline bool UseNewPlayer() {return machine_has_quicktime() && !UsingOldPlayer;}
 
 /* ----------------- local prototypes */
+#if 0
 static void shutdown_music_handler(void);
 static pascal void file_play_completion_routine(SndChannelPtr channel);
 static void allocate_music_channel(void);
-static short get_sound_volume(void);
+#endif
 
 static void PlayMusic(FileSpecifier& SongFile);
 static void StartMusic();
@@ -161,13 +162,14 @@ static void PreloadMusic();
 
 /* ----------------- code */
 
+#if 0
 song_definition *get_song_definition(	
 	short index)
 {
 	assert(index>=0 && index<NUMBER_OF_SONGS);
 	return songs+index;
 }
-
+#endif
 
 // LP: Quicktime music player...
 
@@ -690,6 +692,7 @@ bool music_playing(void)
 }
 
 /* --------------- private code */
+#if 0
 static void shutdown_music_handler(
 	void)
 {
@@ -730,6 +733,7 @@ static void allocate_music_channel(
 //		warn(music_state->channel);
 	}
 }
+#endif
 
 #include "world.h"
 #include "map.h"
@@ -741,11 +745,13 @@ extern struct sound_manager_parameters *sound_preferences;
 // #include "preferences.h"
 
 /* Non reusable stuff */
+#if 0
 static short get_sound_volume(
 	void)
 {
 	return sound_preferences->volume;
 }
+#endif
 
 // LP: added music volume
 static double GetOverallMusicVolume()
