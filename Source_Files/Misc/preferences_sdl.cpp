@@ -4,6 +4,14 @@
  *  Written in 2000 by Christian Bauer
  */
 
+#ifndef _SDL_PREFERNCES_
+#define _SDL_PREFERNCES_
+
+#ifdef __MVCPP__
+#include "sdl_cseries.h"
+#include "shape_descriptors.h"
+#endif
+
 #include "sdl_dialogs.h"
 #include "sdl_fonts.h"
 #include "sdl_widgets.h"
@@ -21,6 +29,16 @@
 
 #ifdef __WIN32__
 #include <windows.h> // for GetUserName()
+#endif
+
+#ifdef __MVCPP__
+
+#include "world.h"
+#include "shell.h"
+#include "preferences.h"
+#include "mysound.h"
+#include "wad.h"
+
 #endif
 
 
@@ -954,3 +972,5 @@ static void environment_dialog(void *arg)
 	if (theme_changed)
 		parent->quit(0);	// Quit the parent dialog so it won't draw in the old theme
 }
+
+#endif

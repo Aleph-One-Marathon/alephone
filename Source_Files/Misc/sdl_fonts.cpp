@@ -57,8 +57,8 @@ sdl_font_info *load_font(const TextSpec &spec)
 	// Look for ID/size in list of loaded fonts
 	id_and_size_t id_and_size(spec.font, spec.size);
 	font_list_t::const_iterator it = font_list.find(id_and_size);
-	if (it != font_list.end()) {	// already loaded
-		info = it->second;
+	if (*it != *(font_list.end()) ) {	// already loaded
+		info = (*it).second;
 		info->ref_count++;
 		return info;
 	}
@@ -166,13 +166,13 @@ void unload_font(sdl_font_info *info)
 	// Look for font in list of loaded fonts
 	font_list_t::const_iterator i = font_list.begin(), end = font_list.end();
 	while (i != end) {
-		if (i->second == info) {
+		if ((*i).second == info) {
 
 			// Found, decrement reference counter and delete
 			info->ref_count--;
 			if (info->ref_count <= 0) {
 				delete info;
-				font_list.erase(i->first);
+				font_list.erase((*i).first);
 				return;
 			}
 		}

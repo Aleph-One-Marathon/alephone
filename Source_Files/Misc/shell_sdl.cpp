@@ -4,6 +4,41 @@
  *  Written in 2000 by Christian Bauer
  */
 
+#ifdef __MVCPP__
+
+#include "sdl_cseries.h"
+#include "SDL_rwops.h"
+#include "shell.h"
+#include "world.h"
+#include "XML_ParseTreeRoot.h"
+#include "interface.h"
+#include "preferences.h"
+#include "screen.h"
+#include "mysound.h"
+#include "vbl.h"
+#include "map.h"
+#include "screen_drawing.h"
+#include "computer_interface.h"
+#include "fades.h"
+#include "images.h"
+#include "music.h"
+#include "player.h"
+#include "interface_menus.h"
+#include "items.h"
+
+static void main_event_loop(void);
+
+extern bool CheatsActive;
+
+extern int process_keyword_key(char key);
+//extern short get_item_kind(short item_id);
+
+void global_idle_proc(void);
+void handle_keyword(int type_of_cheat);
+void free_and_unlock_memory(void);
+
+#endif
+
 #include "XML_Loader_SDL.h"
 #include "resource_manager.h"
 #include "sdl_dialogs.h"
@@ -35,7 +70,6 @@
 #ifdef __WIN32__
 #include <windows.h>
 #endif
-
 
 // Data directories
 vector<DirectorySpecifier> data_search_path;	// List of directories in which data files are searched for

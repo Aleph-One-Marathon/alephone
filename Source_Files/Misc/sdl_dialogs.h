@@ -15,6 +15,13 @@ class sdl_font_info;
 class FileSpecifier;
 
 
+#ifdef __MVCPP__
+#include "sdl_cseries.h"
+#include "sdl_video.h"
+#include "sdl_events.h"
+//#include "sdl_widgets.h"
+#endif
+
 /*
  *  Definitions
  */

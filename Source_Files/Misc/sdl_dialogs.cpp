@@ -21,7 +21,9 @@
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
 
-
+#ifdef __MVCPP__
+#include <string>
+#endif
 // Global variables
 dialog *top_dialog = NULL;
 
@@ -37,10 +39,24 @@ static sdl_font_info *dialog_font[NUM_DIALOG_FONTS];
 static SDL_Color dialog_color[NUM_DIALOG_COLORS];
 static int dialog_space[NUM_DIALOG_SPACES];
 
+#ifdef __MVCPP__			// VC++ doesn't like the other way -- throws an error about a default constructor.
+
+struct dialog_image_spec_stru
+{
+	string name;
+	bool scale;
+};
+
+static dialog_image_spec_stru dialog_image_spec[NUM_DIALOG_IMAGES];
+
+#else
+
 static struct {
 	string name;
 	bool scale;
 } dialog_image_spec[NUM_DIALOG_IMAGES];
+
+#endif
 
 static SDL_Surface *dialog_image[NUM_DIALOG_IMAGES];
 

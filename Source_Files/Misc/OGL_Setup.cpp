@@ -57,7 +57,7 @@ Apr 27, 2001 (Loren Petrich):
 #include "ColorParser.h"
 
 #ifdef __WIN32__
-#include "OGL_Win32.cpp"
+#include "OGL_Win32.h"
 #endif
 
 // Whether or not OpenGL is present and usable
