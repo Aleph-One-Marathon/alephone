@@ -264,12 +264,7 @@ void initialize_preferences(
                             Alert(FatalErrorAlert,NULL);
                             ExitToShell();
 #elif defined(SDL)
-<<<<<<< preferences.cpp
-                            fprintf(stderr, "There were preferences-file parsing errors");
-                            exit(0);
-=======
-			fprintf(stderr, "There were preferences-file parsing errors\n");
->>>>>>> 1.43
+                            fprintf(stderr, "There were preferences-file parsing errors\n");
 #endif
                         }
                     }
