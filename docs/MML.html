@@ -868,7 +868,8 @@ The index is which one of these liquid types:
 This kind of element specifies various player-character features,
 such as starting energy, starting oxygen, rebellion-map stripped energy
 (specified with attributes), and starting items, damage types,
-and powerup durations and item assignments (specified with child elements).
+powerup durations and item assignments (specified with child elements),
+and shapes (player collection and sequences for various states).
 The attributes are:
 <ul>
 <li>energy: how much to start with (default: 150)
@@ -952,6 +953,54 @@ It has these attributes
 If one turns some ammo or other non-powerup item into a powerup, be sure to set its item type to be "powerup"
 with the <a href="#items">items</a> element.
 <p>
+
+Player shapes can be set with an element of &lt;shape&gt;, which differs from the usual element with that name;
+the player shapes have an overall collection and various sequences,
+and each element will set either that collection or one of the sequences.
+It has these attributes, all of which are mandatory:
+<ul>
+<li>type: overall type of shape value
+<li>subtype: more specific type: depends on which overall type
+<li>value: the shape value to use
+</ul>
+<p>
+
+The types and subtypes have these values:
+<ol type=1 start=1000>
+<li>Collection and Death Sequences
+<ol type=1 start=1000>
+<li>Collection (default: 6)
+<li>Hard dying (default: 9)
+<li>Soft dying (default: 8)
+<li>Hard dead (default: 11)
+<li>Soft dead (default: 10)
+</ol>
+<li>Leg Sequences (player actions)
+<ol type=1 start=1000>
+<li>Stationary (default: 7)
+<li>Walking (default: 0)
+<li>Running (default: 0)
+<li>Sliding (default: 24)
+<li>Airborne (default: 23)
+</ol>
+<li>Idle-Weapon Torso Sequences
+<li>Charging-Weapon Torso Sequences
+<li>Firing-Weapon Torso Sequences
+<ol type=1 start=1000>
+<li>Fists (defaults: 1, 1, 2)
+<li>Pistol (defaults: 3, 3, 4)
+<li>Fusion Pistol (defaults: 20, 21, 22)
+<li>Assault Rifle (defaults: 26, 26, 27)
+<li>Rocket Launcher (defaults: 14, 14, 15)
+<li>Flamethrower (defaults: 12, 12, 13)
+<li>Alien Weapon (defaults: 31, 31, 32)
+<li>Shotgun (defaults: 16, 16, 17)
+<li>Ball (defaults: 28, 28, 28)
+<li>SMG (defaults: 33, 33, 34)
+<li>Two Pistols (defaults: 5, 5, 6)
+<li>Two Shotguns (defaults: 18, 18, 19)
+</ol>
+</ol>
 
 <hr>
 
