@@ -122,7 +122,7 @@ void OverheadMap_QD_Class::draw_player(
 		MoveTo(triangle[2].x, triangle[2].y);
 		for (i=0;i<3;++i) LineTo(triangle[i].x, triangle[i].y);
 		ClosePoly();
-		PenSize(1, 1);
+		PenSize(1, 1);		// LP: need only 1-pixel thickness of line
 		FillPoly(polygon, &qd.black);
 		FramePoly(polygon);	// LP addition: perimeter drawing makes small version easier to see
 		KillPoly(polygon);
