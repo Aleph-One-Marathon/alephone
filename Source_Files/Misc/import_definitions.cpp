@@ -40,11 +40,10 @@ static void import_physics_wad_data(struct wad_data *wad);
 /* ---------- code */
 void set_physics_file(FileSpecifier& File)
 {
-#ifdef mac
-	PhysicsFileSpec.CopySpec(File);
-#else
 	PhysicsFileSpec = File;
-#endif
+	// memcpy(&physics_file, file, sizeof(FileDesc));
+	
+	return;
 }
 
 void set_to_default_physics_file(

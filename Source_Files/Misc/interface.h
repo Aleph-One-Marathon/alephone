@@ -30,6 +30,7 @@ May 1, 2000 (Loren Petrich): Added XML parser object for the infravision stuff.
 May 16, 2000 (Loren Petrich): Added XML parser for the control panels
 */
 
+#include "FileHandler.h"
 #include "XML_ElementParser.h"
 
 /* ---------- constants */
@@ -371,6 +372,12 @@ void import_definition_structures(void);
 
 /* ---------- prototypes/KEYBOARD_DIALOG.C */
 boolean configure_key_setup(short *keycodes);
+
+/* --------- from PREPROCESS_MAP_MAC.C */
+void get_default_map_spec(FileSpecifier& File);
+void get_default_physics_spec(FileSpecifier& File);
+void get_default_sounds_spec(FileSpecifier& File);
+void get_default_shapes_spec(FileSpecifier& File);
 
 // LP change: resets field of view to whatever the player had had when reviving
 void ResetFieldOfView();

@@ -44,6 +44,10 @@ June 15, 2000 (Loren Petrich):
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Aug 25, 2000 (Loren Petrich):
+	Cleared errors (game_errors.c/h) produced by Pfhortran
+	and by checking on a scenario's image files
 */
 
 // This needs to do the right thing on save game, which is storing the precalculated crap.
@@ -323,12 +327,15 @@ void *get_map_for_net_transfer(
 /* This takes a cstring */
 void set_map_file(FileSpecifier& File)
 {
-#ifdef mac
-	MapFileSpec.CopySpec(File);
-#else
 	MapFileSpec = File;
-#endif
+	// memcpy(&current_map_file, file, sizeof(FileDesc));
+	
 	set_scenario_images_file(File);
+	// set_scenario_images_file(file);
+
+	// Don't care whether there was an error when checking on the file's scenario images
+	clear_game_error();
+
 	file_is_set= TRUE;
 }
 
@@ -349,7 +356,8 @@ boolean use_map_file(
 	FileSpecifier File;
 	boolean success= FALSE;
 
-	if(find_wad_file_that_has_checksum(File, SCENARIO_FILE_TYPE, strPATHS, checksum))
+	if(find_wad_file_that_has_checksum(File, _typecode_scenario, strPATHS, checksum))
+	// if(find_wad_file_that_has_checksum(&file, SCENARIO_FILE_TYPE, strPATHS, checksum))
 	{
 		set_map_file(File);
 		success= TRUE;
@@ -367,7 +375,6 @@ boolean load_level_from_map(
 	short index_to_load;
 	boolean restoring_game= FALSE;
 	short error= 0;
-
 	if(file_is_set)
 	{
 		/* Determine what we are trying to do.. */
@@ -378,7 +385,10 @@ boolean load_level_from_map(
 		} else {
 			index_to_load= level_index;
 		}
-	
+		
+//		file_handle= open_union_wad_file_for_reading(&current_map_file);
+//		if(file_handle!=0)
+
 		OpenedFile MapFile;
 		if (open_wad_file_for_reading(MapFileSpec,MapFile))
 		{
@@ -407,9 +417,18 @@ boolean load_level_from_map(
 		
 			/* Close the file.. */
 			close_wad_file(MapFile);
+			
+			// LP: carry over errors
+			short SavedType, SavedError;
+			SavedError = get_game_error(&SavedType);
+			
 			//CP Addition: load any scripts available
-			if (load_script(1000+level_index) < 0)
+			// if (load_script(1000+level_index) < 0)
 				;  //this sucks.
+			
+			// Restore carried-over error so that Pfhortran errors
+			// will not cause trouble
+			set_game_error(SavedType,SavedError);
 		} else {
 			// error code has been set..
 		}
@@ -570,8 +589,8 @@ boolean new_game(
 #ifdef SDL
 	get_savegame_filedesc(revert_game_data.SavedGame);
 #else
-	revert_game_data.SavedGame.SetFileToApp();
-	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),FileSpecifier::C_Save);
+	revert_game_data.SavedGame.SetToApp();
+	revert_game_data.SavedGame.SetName(getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME),_typecode_savegame);
 #endif
 
 	/* Set the random seed. */
@@ -1164,18 +1183,15 @@ boolean load_game_from_file(FileSpecifier& File)
 
 	/* Setup for a revert.. */
 	revert_game_data.game_is_from_disk = TRUE;
-#ifdef mac
-	revert_game_data.SavedGame.CopySpec(File);
-#else
+	
 	revert_game_data.SavedGame = File;
-#endif
-
+	// memcpy(&revert_game_data.saved_game, file, sizeof(FileDesc));
+	
 	/* Use the save game file.. */
 	set_map_file(File);
 	
 	/* Load the level from the map */
 	success= load_level_from_map(NONE); /* Save games are ALWAYS index NONE */
-
 	if (success)
 	{
 		unsigned long parent_checksum;
@@ -1260,11 +1276,8 @@ boolean revert_game(
 
 void get_current_saved_game_name(FileSpecifier& File)
 {
-#ifdef mac
-	File.CopySpec(revert_game_data.SavedGame);
-#else
 	File = revert_game_data.SavedGame;
-#endif
+	// memcpy(file_name, revert_game_data.saved_game.name, revert_game_data.saved_game.name[0]+1);
 }
 
 /* The current mapfile should be set to the save game file... */
@@ -1282,11 +1295,9 @@ boolean save_game_file(FileSpecifier& File)
 
 	/* Setup to revert the game properly */
 	revert_game_data.game_is_from_disk= TRUE;
-#ifdef mac
-	revert_game_data.SavedGame.CopySpec(File);
-#else
+
 	revert_game_data.SavedGame = File;
-#endif
+	// memcpy(&revert_game_data.saved_game, file, sizeof(FileDesc));
 	
 	// LP: add a file here
 	
@@ -1294,7 +1305,9 @@ boolean save_game_file(FileSpecifier& File)
 	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
 		
 	/* Assume that we confirmed on save as... */
-	if (create_wadfile(File,FileSpecifier::C_Save))
+	// err= create_wadfile(file, SAVE_GAME_TYPE);
+	if (create_wadfile(File,_typecode_savegame))
+	// if(!err)
 	{
 		OpenedFile SaveFile;
 		if(open_wad_file_for_writing(File,SaveFile))

@@ -40,6 +40,10 @@ May 13, 2000 (Loren Petrich):
 
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler
+
+Aug 24, 2000 (Loren Petrich):
+	Added source selector to calculate_picture_clut(), in order to better deal with
+	object-oriented file handlers
 */
 
 // NEED VISIBLE FEEDBACK WHEN APPLETALK IS NOT AVAILABLE!!!
@@ -406,11 +410,9 @@ extern boolean handle_open_replay(FileSpecifier& File);
 
 boolean handle_open_replay(FileSpecifier& File)
 {
-#ifdef mac
-	DraggedReplayFile.CopySpec(File);
-#else
 	DraggedReplayFile = File;
-#endif
+	// dragged_replay_file= *replay_file;
+	
 	return begin_game(_replay_from_file, FALSE);
 }
 
@@ -1603,7 +1605,7 @@ static void display_screen(
 		}
 
 		assert(!current_picture_clut);
-		current_picture_clut= calculate_picture_clut(pict_resource_number);
+		current_picture_clut= calculate_picture_clut(CLUTSource_Images,pict_resource_number);
 		current_picture_clut_depth= interface_bit_depth;
 
 		if(current_picture_clut)
@@ -1729,7 +1731,7 @@ static void try_and_display_chapter_screen(
 
 		/* Fade the screen to black.. */
 		assert(!current_picture_clut);
-		current_picture_clut= calculate_picture_clut(pict_resource_number);
+		current_picture_clut= calculate_picture_clut(CLUTSource_Scenario,pict_resource_number);
 		current_picture_clut_depth= interface_bit_depth;
 		
 		if (current_picture_clut)
@@ -1874,7 +1876,7 @@ void interface_fade_out(
 		if(current_picture_clut_depth != interface_bit_depth)
 		{
 			free(current_picture_clut);
-			current_picture_clut= calculate_picture_clut(pict_resource_number);
+			current_picture_clut= calculate_picture_clut(CLUTSource_Images,pict_resource_number);
 			current_picture_clut_depth= interface_bit_depth;
 		}
 		
