@@ -51,8 +51,9 @@ struct Model3D_VertexSource
 };
 
 
-// Bone definition: neutral position is assumed to be zero rotation.
-// 
+// Bone definition: the bones are in order of traversal, with the bone tree
+// specified with pushing and popping of bones on the stack.
+// There is an assumed root bone below all the others.
 struct Model3D_Bone
 {
 	enum
@@ -66,7 +67,8 @@ struct Model3D_Bone
 	// Tomb-Raider-like system for traversing a tree with reference to a stack of bones;
 	// "pop" removes a bone from that stack and makes it the current one, while
 	// "push" adds the current bone to that stack.
-	// Popping an empty stack means reaching the assumed root bone.
+	// The pop is done before the push if both are present;
+	// both are done before using the bone.
 	GLushort Flags;
 };
 
