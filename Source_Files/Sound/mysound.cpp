@@ -308,7 +308,7 @@ struct sound_manager_globals
 	long total_buffer_size;
 
 	short sound_source; // 8-bit, 16-bit
-	struct sound_definition *base_sound_definitions;
+	struct sound_definition *base_sound_definitions, *used_sound_definitions;
 	
 	uint16 available_flags;
 	
@@ -451,7 +451,9 @@ static void update_ambient_sound_sources(void);
 struct sound_definition *get_sound_definition(
 	const short sound_index)
 {
-	return GetMemberWithBounds(_sm_globals->base_sound_definitions,sound_index,number_of_sound_definitions);
+	sound_definition *rv = GetMemberWithBounds(_sm_globals->used_sound_definitions,sound_index,number_of_sound_definitions);
+	if (_sm_globals->sound_source == _16bit_22k_source && rv && rv->permutations == 0) rv = GetMemberWithBounds(_sm_globals->base_sound_definitions,sound_index,number_of_sound_definitions);
+	return rv;
 }
 
 struct ambient_sound_definition *get_ambient_sound_definition(
@@ -605,7 +607,8 @@ bool open_sound_file(FileSpecifier& File)
 	_sm_globals->sound_source= (_sm_parameters->flags&_16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
 	if (header.source_count == 1)
 		_sm_globals->sound_source = _8bit_22k_source;
-	_sm_globals->base_sound_definitions= sound_definitions + _sm_globals->sound_source*number_of_sound_definitions;
+	_sm_globals->base_sound_definitions= sound_definitions;
+	_sm_globals->used_sound_definitions= sound_definitions + (_sm_globals->sound_source == _16bit_22k_source)?sound_definitions:0;
 		
 	// Load MML resources in file
 	// Be sure to ignore not-found errors
@@ -1108,10 +1111,10 @@ static short _release_least_useful_sound(
 {
 	short sound_index, least_used_sound_index= NONE;
 	struct sound_definition *least_used_definition= (struct sound_definition *) NULL;
-	struct sound_definition *definition;
 
-	for (sound_index= 0, definition= _sm_globals->base_sound_definitions; sound_index<number_of_sound_definitions; ++sound_index, ++definition)
+	for (sound_index= 0; sound_index<number_of_sound_definitions; ++sound_index)
 	{
+		struct sound_definition *definition = get_sound_definition(sound_index);
 		// if (definition->handle && (!least_used_definition || least_used_definition->last_played>definition->last_played))
 		if (definition->ptr && (!least_used_definition || least_used_definition->last_played>definition->last_played))
 		{

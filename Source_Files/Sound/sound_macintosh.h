@@ -148,8 +148,9 @@ static void set_sound_manager_status(
 				if (_sm_globals->available_flags&_extra_extra_memory_flag) _sm_globals->total_buffer_size*= 2;
 				
 				_sm_globals->sound_source= (_sm_parameters->flags&_16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
-				_sm_globals->base_sound_definitions= sound_definitions + _sm_globals->sound_source*number_of_sound_definitions;
-
+				_sm_globals->base_sound_definitions= sound_definitions;
+				_sm_globals->used_sound_definitions= sound_definitions + (_sm_globals->sound_source == _16bit_22k_source)?sound_definitions:0;
+				
 				SetDefaultOutputVolume(sound_level_to_sound_volume(_sm_parameters->volume));
 				
 				for (i= 0, channel= _sm_globals->channels; i<_sm_globals->total_channel_count; ++i, ++channel)
