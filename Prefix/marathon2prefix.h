@@ -9,18 +9,19 @@ Jan 31, 2002 (Loren Petrich):
 
 // include MacHeaders
 
-#include <MacHeaders.h>
+#include <MacHeadersCarbon.h>
 
 // define mac
 
-#ifdef macintosh
+// #ifdef macintosh
+#define macintosh
 #define mac
-#undef TARGET_API_MAC_CARBON
+// #define TARGET_API_MAC_CARBON
 #define HAVE_SDL_NET 1
-#endif
+// #endif
 
 // check environs
-
+/*
 #if __POWERPC__
 #define envppc
 #elif __CFM68K__
@@ -28,6 +29,7 @@ Jan 31, 2002 (Loren Petrich):
 #else
 #define env68k
 #endif
+*/
 
 // Both CodeWarrior and OSX gcc have it
 #define HAVE_SNPRINTF 1
