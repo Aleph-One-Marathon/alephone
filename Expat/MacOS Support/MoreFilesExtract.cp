@@ -1,7 +1,6 @@
 // Here is my extraction of the MoreFiles routines:
 // Note: TextUtils.h contains some C<->Pascal routines
 
-#include <TextUtils.h>
 #include "MoreFilesExtract.h"
 
 

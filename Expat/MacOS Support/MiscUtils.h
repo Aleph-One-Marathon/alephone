@@ -4,7 +4,6 @@
 
 
 // These are from the Standard Template Library
-#include <algobase.h>
 #include <algorithm.h>
 
 // Get the standard namespace
