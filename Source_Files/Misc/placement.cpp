@@ -59,14 +59,15 @@ void load_placement_data(
 	monster_placement_info = object_placement_info+MAXIMUM_OBJECT_TYPES;
 
 	/* Clear the arrays */
-	memset(object_placement_info, 0, sizeof(object_placement_info));
+	objlist_clear(object_placement_info, 2*MAXIMUM_OBJECT_TYPES);
 
 	/* Copy them in */
 	objlist_copy(monster_placement_info, monsters, MAXIMUM_OBJECT_TYPES);
 	byte_swap_object_list(monster_placement_info, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
 	objlist_copy(item_placement_info, items, MAXIMUM_OBJECT_TYPES);
 	byte_swap_object_list(item_placement_info, MAXIMUM_OBJECT_TYPES, _bs_object_frequency_definition);
-
+	
+	// Clears the data for monster #0, the Marine
 	obj_clear(*monster_placement_info);
 
 #ifdef DEBUG
