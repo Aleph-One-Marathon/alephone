@@ -146,6 +146,10 @@ Apr 29, 2002 (Loren Petrich):
 #include <exception.h>
 #endif
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include "macintosh_cseries.h"
 #include "my32bqd.h"
 
