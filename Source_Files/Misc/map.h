@@ -549,7 +549,7 @@ struct saved_side /* 64 bytes */
 	int16 secondary_lightsource_index;
 	int16 transparent_lightsource_index;
 
-	int16 ambient_delta_hi, ambient_delta_lo;
+	uint16 ambient_delta_hi, ambient_delta_lo;
 
 	int16 unused[1];
 };
@@ -689,7 +689,7 @@ struct saved_lighting_function_specification /* 7*2 == 14 bytes */
 	int16 function;
 	
 	int16 period, delta_period;
-	int16 intensity_hi, intensity_lo, delta_intensity_hi, delta_intensity_lo;
+	uint16 intensity_hi, intensity_lo, delta_intensity_hi, delta_intensity_lo;
 };
 
 struct saved_static_light_data /* 8*2 + 6*14 == 100 bytes */
