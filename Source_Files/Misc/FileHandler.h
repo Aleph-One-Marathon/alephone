@@ -248,6 +248,10 @@ public:
 	void Set_vRefNum(short _vRefNum) {vRefNum = _vRefNum;}
 	void Set_parID(long _parID) {parID = _parID;}
 	
+	// Can go to subdirectory of subdirectory;
+	// uses Unix-style path syntax (/ instead of : as the separator)
+	bool SetToSubdirectory(const char *NameWithPath);
+	
 	// Set special directories:
 	bool SetToAppParent();
 	bool SetToPreferencesParent();
