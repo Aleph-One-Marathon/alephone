@@ -334,7 +334,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  		{
  			MoveTo(HPos,VPos);
  			DrawChar(Which);
- 			HPos += widths_p[Which++];
+ 			HPos += widths_p[static_cast<int>(Which++)];
  		}
  	}
 

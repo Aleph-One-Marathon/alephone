@@ -107,7 +107,7 @@ public:
 	int TextWidth(const char *Text);
 
 	// Get width of one character
-	int CharWidth(char c) const { return Widths[c]; }
+	int CharWidth(char c) const { return Widths[static_cast<int>(c)]; }
 	
 #ifdef HAVE_OPENGL	
 	// Reset the OpenGL fonts; its arg indicates whether this is for starting an OpenGL session
