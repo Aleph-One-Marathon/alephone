@@ -14,17 +14,15 @@ Mar 12, 2000 (Loren Petrich):
 	for the convenience of OpenGL rendering;
 	also added object indices to the sprite.
 	Weapons in hand have a special index.
+
+Aug 9, 2000 (Loren Petrich):
+	A few obsolete constants deleted;
+	rendering functions moved to Rasterizer_SW.h
 */
 
 #include "shape_descriptors.h"
 
-#define WEAPON_OBJECT_INDEX -32768
-
 /* ---------- constants */
-
-/* maximum width and height of screen for allocating tables, etc. */
-#define MAXIMUM_SCREEN_WIDTH 640
-#define MAXIMUM_SCREEN_HEIGHT 480
 
 enum /* transfer modes */
 {
@@ -165,15 +163,17 @@ extern short number_of_shading_tables, shading_table_fractional_bits, shading_ta
 /* ---------- prototypes/SCOTTISH_TEXTURES.C */
 
 void allocate_texture_tables(void);
-
+// Now defined in Renderizer_SW_Class:
+/*
 void texture_rectangle(struct rectangle_definition *rectangle, struct bitmap_definition *screen, struct view_data *view);
 void texture_horizontal_polygon(struct polygon_definition *polygon, struct bitmap_definition *screen, struct view_data *view);
 void texture_vertical_polygon(struct polygon_definition *polygon, struct bitmap_definition *screen, struct view_data *view);
-
+*/
 /* ---------- prototypes/SPHERE.C */
-
+// LP: Interesting historical note... something that will interest Hamish Sinclair
+/*
 void allocate_spherical_decision_table(void);
 void precalculate_spherical_decision_table(short texture_width, short texture_height, short r);
 void texture_sphere(fixed phase, struct bitmap_definition *texture, struct bitmap_definition *destination, void *shading_tables);
-
+*/
 #endif
