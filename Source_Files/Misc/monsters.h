@@ -332,6 +332,11 @@ short get_monster_melee_impact_effect(short monster_index);
 
 bool live_aliens_on_map(void);
 
+// LP: will set player view attributes when trying to shoot a guided projectile.
+void SetPlayerViewAttribs(int16 half_visual_arc, int16 half_vertical_visual_arc,
+	world_distance visual_range, world_distance dark_visual_range);
+
+
 // LP: to pack and unpack this data;
 // these do not make the definitions visible to the outside world
 

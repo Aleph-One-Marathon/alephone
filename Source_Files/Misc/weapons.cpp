@@ -84,6 +84,7 @@ Feb 1, 2001 (Loren Petrich):
 #include "game_window.h"
 
 #include "Packing.h"
+#include "shell.h"
 
 #include <string.h>
 #include <stdlib.h>

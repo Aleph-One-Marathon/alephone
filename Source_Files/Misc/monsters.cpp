@@ -385,6 +385,9 @@ void move_monsters(
 				{
 					struct monster_definition *definition= get_monster_definition(monster->type);
 					short animation_flags;
+					
+					// AlexJLS patch: effect of dangerous polygons
+					cause_polygon_damage(object->polygon,monster_index);
 	
 					/* clear the recovering from hit flag, mark the monster as not idle */	
 					SET_MONSTER_IDLE_STATUS(monster, false);
@@ -3399,6 +3402,18 @@ static long nearest_goal_cost_function(
 	if (destination_polygon->type==_polygon_is_zone_border) cost= -1;
 	
 	return cost;
+}
+
+
+// LP: will set player view attributes when trying to shoot a guided projectile.
+void SetPlayerViewAttribs(int16 half_visual_arc, int16 half_vertical_visual_arc,
+	world_distance visual_range, world_distance dark_visual_range)
+{
+	monster_definition& PlayerAsMonster = monster_definitions[_monster_marine];
+	PlayerAsMonster.half_visual_arc = half_visual_arc;
+	PlayerAsMonster.half_vertical_visual_arc = half_vertical_visual_arc;
+	PlayerAsMonster.visual_range = visual_range;
+	PlayerAsMonster.dark_visual_range = dark_visual_range;
 }
 
 

@@ -378,7 +378,14 @@ short new_player(
 	/* give the player his initial items */
 	give_player_initial_items(player_index);
 	try_and_strip_player_items(player_index);
-
+	
+	// AlexJLS patch: make the player active, so guided weapons can work
+	monster_data *me = get_monster_data(player->monster_index);
+	SET_MONSTER_ACTIVE_STATUS(me,true);
+	
+	// LP: Fix the player physics so that guided missiles will work correctly
+	SetPlayerViewAttribs(QUARTER_CIRCLE,QUARTER_CIRCLE/3,31*WORLD_ONE,15*WORLD_ONE);
+		
 	return player_index;
 }
 
@@ -530,6 +537,9 @@ void update_players(
 				// kills invincible players, too
 				detonate_projectile(&player->location, player->camera_polygon_index, _projectile_minor_fusion_dispersal,
 					NONE, NONE, 10*FIXED_ONE);
+				
+				// AlexJLS patch: effect of dangerous polygons
+				cause_polygon_damage(player->supporting_polygon_index,player_index);
 			}
 			
 			action_flags= 0;

@@ -423,6 +423,10 @@ short calculate_damage(
 #define MINOR_OUCH_DAMAGE 15
 #define MAJOR_OUCH_DAMAGE 7
 
+// LP temp fix: assignments are intended to approximate Marathon 1 (minor = lava, major = PfhorSlime)
+#define _damage_polygon _damage_lava
+#define _damage_major_polygon _damage_goo
+
 void cause_polygon_damage(
 	short polygon_index,
 	short monster_index)
@@ -431,7 +435,7 @@ void cause_polygon_damage(
 	struct monster_data *monster= get_monster_data(monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
 
-#if 0
+// #if 0
 	if ((polygon->type==_polygon_is_minor_ouch && !(dynamic_world->tick_count&MINOR_OUCH_FREQUENCY) && object->location.z==polygon->floor_height) ||
 		(polygon->type==_polygon_is_major_ouch && !(dynamic_world->tick_count&MAJOR_OUCH_FREQUENCY)))
 	{
@@ -445,7 +449,7 @@ void cause_polygon_damage(
 		
 		damage_monster(monster_index, NONE, NONE, (world_point3d *) NULL, &damage);
 	}
-#endif
+// #endif
 	
 	return;
 }

@@ -576,6 +576,7 @@ const int SIZEOF_side_data = 64;
 
 #define MAXIMUM_VERTICES_PER_POLYGON 8
 
+// LP/AlexJLS change: added Marathon 1 polygon damage and glue stuff
 enum /* polygon types */
 {
 	_polygon_is_normal,
@@ -596,7 +597,12 @@ enum /* polygon types */
 	_polygon_is_dual_monster_trigger,
 	_polygon_is_item_trigger, /* activates all items in this zone */
 	_polygon_must_be_explored,
-	_polygon_is_automatic_exit /* if success conditions are met, causes automatic transport too next level */
+	_polygon_is_automatic_exit, /* if success conditions are met, causes automatic transport too next level */
+	_polygon_is_minor_ouch,
+	_polygon_is_major_ouch,
+	_polygon_is_glue,
+	_polygon_is_glue_trigger,
+	_polygon_is_superglue
 };
 
 #define POLYGON_IS_DETACHED_BIT 0x4000
