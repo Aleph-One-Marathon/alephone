@@ -273,9 +273,6 @@ static void PreferencesHandler(ParsedControl &Ctrl, void *UserData)
 		switch(Ctrl.ID.id)
 		{
 		case iSET_KEYS:
-#ifndef USE_SHEETS
-			HideWindow(HDPtr->Window);
-#endif
 			{
 				short key_codes[NUMBER_OF_KEYS];
 				
@@ -286,9 +283,6 @@ static void PreferencesHandler(ParsedControl &Ctrl, void *UserData)
 					set_keys(key_codes);
 				}
 			}
-#ifndef USE_SHEETS
-			ShowWindow(HDPtr->Window);
-#endif
 		}
 	}
 }
@@ -783,13 +777,7 @@ static void hit_graphics_item(
 	switch(GLOBAL_TO_LOCAL_DITL(item_hit, first_item))
 	{
 		case iCHOOSE_MONITOR:
-#ifndef USE_SHEETS
-			HideWindow(GetDialogWindow(dialog));
-#endif
 			display_device_dialog(&preferences->device_spec);
-#ifndef USE_SHEETS
-			ShowWindow(GetDialogWindow(dialog));
-#endif
 			/* We resetup because the new device might not support millions, etc.. */
 			break;
 		
@@ -838,13 +826,7 @@ static void hit_graphics_item(
 			break;
 		
 		case iOPENGL_OPTIONS:
-#ifndef USE_SHEETS
-			HideWindow(GetDialogWindow(dialog));
-#endif
 			OGL_ConfigureDialog(preferences->OGL_Configure);
-#ifndef USE_SHEETS
-			ShowWindow(GetDialogWindow(dialog));
-#endif
 			break;
 		
 		case iFILL_SCREEN:
@@ -937,23 +919,11 @@ static void hit_player_item(
 		
 		// LP additions:
 		case iCHASE_CAM:
-#ifndef USE_SHEETS
-			HideWindow(GetDialogWindow(dialog));
-#endif
 			Configure_ChaseCam(preferences->ChaseCam);
-#ifndef USE_SHEETS
-			ShowWindow(GetDialogWindow(dialog));
-#endif
 			break;
 			
 		case iCROSSHAIRS:
-#ifndef USE_SHEETS
-			HideWindow(GetDialogWindow(dialog));
-#endif
 			Configure_Crosshairs(preferences->Crosshairs);
-#ifndef USE_SHEETS
-			ShowWindow(GetDialogWindow(dialog));
-#endif
 			break;
 	}
 }
