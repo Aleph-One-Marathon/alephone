@@ -7,6 +7,9 @@
 	Contains the sorting of polygons into depth order; from render.c
 	
 	Made [view_data *view] a member and removed it as an argument
+
+Sept. 15, 2000 (Loren Petrich)
+	Changed a dprintf/assert to a vassert in build_clipping_windows()
 */
 
 #include "cseries.h"
@@ -480,8 +483,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 				
 				default:
 					// LP change:
-					dprintf("render.c: build_clipping_windows(): bad state: %d",state);
-					assert(false);
+					vassert(false,csprintf(temporary,"RenderSortPoly.cpp: build_clipping_windows(): bad state: %d",state));
 					// halt();
 			}
 
