@@ -14,6 +14,7 @@
 #include "FileHandler.h"
 #include "ImageLoader.h"
 #include "ModelRenderer.h"
+#include "StudioLoader.h"
 #include "WavefrontLoader.h"
 
 
@@ -90,7 +91,8 @@ ModelRenderShader Shaders[2];
 
 // For loading models and skins
 enum {
-	ModelWavefront = 1
+	ModelWavefront = 1,
+	ModelStudio
 };
 const int LoadSkinItem = 1;
 
@@ -98,6 +100,7 @@ void LoadModelAction(int ModelType)
 {
 	// Get the model file
 	FileSpecifier File;
+	bool Success = false;
 	
 	// Specialize the dialog for what kind of model file
 	switch(ModelType)
@@ -105,9 +108,15 @@ void LoadModelAction(int ModelType)
 	case ModelWavefront:
 		TypeCode = 'TEXT';
 		if (File.ReadDialog(1,"Model Type: Alias|Wavefront"))
-			LoadModel_Wavefront(File, Model);
-		break;	
+			Success = LoadModel_Wavefront(File, Model);
+		break;
+	case ModelStudio:
+		if (File.ReadDialog(-1,"Model Type: 3D Studio Max"))
+			Success = LoadModel_Studio(File, Model);
+		break;
 	}
+	
+	if (!Success) Model.Clear();
 	
 	glutSetWindow(MainWindowID);
 	char Name[256];
@@ -119,6 +128,16 @@ void LoadModelAction(int ModelType)
 	Model.FindBoundingBox();
 	Model.NormalizeNormals();
 	ResizeMainWindow(glutGet(GLUT_WINDOW_WIDTH),glutGet(GLUT_WINDOW_HEIGHT));
+	
+	// Dump stats
+	printf("Vertex Positions: %d\n",Model.Positions.size()/3);
+	printf("Txtr Coords: %d\n",Model.TxtrCoords.size()/2);
+	printf("Normals: %d\n",Model.Normals.size()/3);
+	printf("Colors: %d\n",Model.Colors.size()/3);
+	printf("Triangles: %d\n",Model.VertIndices.size()/3);
+	printf("Bounding Box\n");
+	for (int c=0; c<3; c++)
+		printf("%9f %9f\n",Model.BoundingBox[0][c],Model.BoundingBox[1][c]);
 }
 
 // Z-Buffering
@@ -522,7 +541,10 @@ int main(int argc, char **argv)
 	
 	// See if QT and NavSvcs (MacOS) are present
 	InitMacServices();
+	
+	// Direct debug output to the console:
 	SetDebugOutput_Wavefront(stdout);
+	SetDebugOutput_Studio(stdout);
 
 	// Set up shader object
 	Shaders[0].Flags = 0;
@@ -547,6 +569,7 @@ int main(int argc, char **argv)
 	// Create model and skin menu items
 	int ModelMenu = glutCreateMenu(LoadModelAction);
 	glutAddMenuEntry("Alias-Wavefront...",ModelWavefront);
+	glutAddMenuEntry("3D Studio Max...",ModelStudio);
 
 	int SkinMenu = glutCreateMenu(LoadSkinAction);
 	glutAddMenuEntry("Colors...",ImageLoader_Colors);
