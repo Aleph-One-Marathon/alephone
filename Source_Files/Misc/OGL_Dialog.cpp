@@ -192,12 +192,7 @@ static bool TextureConfigureDialog(OGL_Texture_Configure *TxtrConfigList, short 
 	Str255 WhichTxtrLabel;
 	GetMenuItemText(BasedOnMenu, WhichTexture+1, WhichTxtrLabel);
 	
-	SetControlData(WhichOneCtrl,
-		kControlLabelPart,
-		kControlStaticTextTextTag,
-		WhichTxtrLabel[0],
-		WhichTxtrLabel+1
-		);
+	SetStaticPascalText(WhichOneCtrl,WhichTxtrLabel);
 	
 	TextureConfigDlgHandlerData HandlerData;
 	HandlerData.TxtrConfigList = TxtrConfigList;
