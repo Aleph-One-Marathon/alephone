@@ -799,40 +799,57 @@ void allocate_map_for_counts(
 	short line_count)
 {
 	long cumulative_length= 0;
-	long automap_line_length, automap_polygon_length, map_index_length;
+	long automap_line_count, automap_polygon_count, map_index_count;
+	// long automap_line_length, automap_polygon_length, map_index_length;
 
 	/* Give the map indexes a whole bunch of memory (cause we can't calculate it) */
-	map_index_length= (polygon_count*32+1024)*sizeof(int16);
+	// map_index_length= (polygon_count*32+1024)*sizeof(int16);
+	map_index_count= (polygon_count*32+1024);
 	
 	/* Automap lines. */
-	automap_line_length= (line_count/8+((line_count%8)?1:0))*sizeof(byte);
+	// automap_line_length= (line_count/8+((line_count%8)?1:0))*sizeof(byte);
+	automap_line_count= (line_count/8+((line_count%8)?1:0));
 	
 	/* Automap Polygons */
-	automap_polygon_length= (polygon_count/8+((polygon_count%8)?1:0))*sizeof(byte);
+	// automap_polygon_length= (polygon_count/8+((polygon_count%8)?1:0))*sizeof(byte);
+	automap_polygon_count= (polygon_count/8+((polygon_count%8)?1:0));
 
-	cumulative_length+= polygon_count*sizeof(struct polygon_data);
-	cumulative_length+= side_count*sizeof(struct side_data);
-	cumulative_length+= endpoint_count*sizeof(struct endpoint_data);
-	cumulative_length+= line_count*sizeof(struct line_data);
-	cumulative_length+= map_index_length;
-	cumulative_length+= automap_line_length;
-	cumulative_length+= automap_polygon_length;
+	// cumulative_length+= polygon_count*sizeof(struct polygon_data);
+	// cumulative_length+= side_count*sizeof(struct side_data);
+	// cumulative_length+= endpoint_count*sizeof(struct endpoint_data);
+	// cumulative_length+= line_count*sizeof(struct line_data);
+	// cumulative_length+= map_index_length;
+	// cumulative_length+= automap_line_length;
+	// cumulative_length+= automap_polygon_length;
 
 	/* Okay, we now have the length.  Allocate our block.. */
-	reallocate_map_structure_memory(cumulative_length);
+	// reallocate_map_structure_memory(cumulative_length);
 
 	/* Tell the recalculation data how big it is.. */
-	set_map_index_buffer_size(map_index_length);
+	// set_map_index_buffer_size(map_index_length);
 
 	/* Setup our pointers. */
-	map_polygons= (struct polygon_data *) get_map_structure_chunk(polygon_count*sizeof(struct polygon_data));
-	map_sides= (struct side_data *) get_map_structure_chunk(side_count*sizeof(struct side_data));
-	map_endpoints= (struct endpoint_data *) get_map_structure_chunk(endpoint_count*sizeof(struct endpoint_data));
-	map_lines= (struct line_data *) get_map_structure_chunk(line_count*sizeof(struct line_data));
-	map_indexes= (short *) get_map_structure_chunk(map_index_length);
-	automap_lines= (uint8 *) get_map_structure_chunk(automap_line_length);
-	automap_polygons= (uint8 *) get_map_structure_chunk(automap_polygon_length);
-
+	// map_polygons= (struct polygon_data *) get_map_structure_chunk(polygon_count*sizeof(struct polygon_data));
+	// map_sides= (struct side_data *) get_map_structure_chunk(side_count*sizeof(struct side_data));
+	// map_endpoints= (struct endpoint_data *) get_map_structure_chunk(endpoint_count*sizeof(struct endpoint_data));
+	// map_lines= (struct line_data *) get_map_structure_chunk(line_count*sizeof(struct line_data));
+	// map_indexes= (short *) get_map_structure_chunk(map_index_length);
+	// automap_lines= (uint8 *) get_map_structure_chunk(automap_line_length);
+	// automap_polygons= (uint8 *) get_map_structure_chunk(automap_polygon_length);
+	
+	// Most of the other stuff: reallocate here
+	EndpointList.resize(endpoint_count);
+	LineList.resize(line_count);
+	SideList.resize(side_count);
+	PolygonList.resize(polygon_count);
+	AutomapLineList.resize(automap_line_count);
+	AutomapPolygonList.resize(automap_polygon_count);
+	// Map indexes: start off with none of them (of course),
+	// but reserve a size equal to the map index length
+	MapIndexList.clear();
+	MapIndexList.reserve(map_index_count);
+	dynamic_world->map_index_count= 0;
+	
 	return;
 }
 
@@ -992,7 +1009,8 @@ void load_annotations(
 
 void load_objects(uint8 *map_objects, short count)
 {
-	assert(count>=0 && count<=MAXIMUM_SAVED_OBJECTS);
+	// assert(count>=0 && count<=MAXIMUM_SAVED_OBJECTS);
+	SavedObjectList.resize(count);
 	unpack_map_object(map_objects,saved_objects,count);
 	dynamic_world->initial_objects_count= count;
 }
@@ -1518,6 +1536,7 @@ bool process_map_wad(
 		data= (uint8 *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
 		count= data_length/sizeof(short);
 		assert(count*sizeof(short)==data_length);
+		MapIndexList.resize(count);
 		StreamToList(data,map_indexes,count);
 		
 		data= (uint8 *)extract_type_from_wad(wad, PLAYER_STRUCTURE_TAG, &data_length);
@@ -1532,6 +1551,8 @@ bool process_map_wad(
 		data= (uint8 *)extract_type_from_wad(wad, OBJECT_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_object_data;
 		assert(count*SIZEOF_object_data==data_length);
+		vassert(count <= MAXIMUM_OBJECTS_PER_MAP,
+			csprintf(temporary,"Number of map objects %d > limit %d",count,MAXIMUM_OBJECTS_PER_MAP));
 		unpack_object_data(data,objects,count);
 		
 		// Unpacking is E-Z here...
@@ -1543,16 +1564,22 @@ bool process_map_wad(
 		data= (uint8 *)extract_type_from_wad(wad, MONSTERS_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_monster_data;
 		assert(count*SIZEOF_monster_data==data_length);
+		vassert(count <= MAXIMUM_MONSTERS_PER_MAP,
+			csprintf(temporary,"Number of monsters %d > limit %d",count,MAXIMUM_MONSTERS_PER_MAP));
 		unpack_monster_data(data,monsters,count);
 
 		data= (uint8 *)extract_type_from_wad(wad, EFFECTS_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_effect_data;
 		assert(count*SIZEOF_effect_data==data_length);
+		vassert(count <= MAXIMUM_EFFECTS_PER_MAP,
+			csprintf(temporary,"Number of effects %d > limit %d",count,MAXIMUM_EFFECTS_PER_MAP));
 		unpack_effect_data(data,effects,count);
 
 		data= (uint8 *)extract_type_from_wad(wad, PROJECTILES_STRUCTURE_TAG, &data_length);
 		count= data_length/SIZEOF_projectile_data;
 		assert(count*SIZEOF_projectile_data==data_length);
+		vassert(count <= MAXIMUM_PROJECTILES_PER_MAP,
+			csprintf(temporary,"Number of projectiles %d > limit %d",count,MAXIMUM_PROJECTILES_PER_MAP));
 		unpack_projectile_data(data,projectiles,count);
 		
 		data= (uint8 *)extract_type_from_wad(wad, PLATFORM_STRUCTURE_TAG, &data_length);
@@ -1654,8 +1681,9 @@ static void load_redundant_map_data(
 {
 	if (redundant_data)
 	{
-		assert(redundant_data && map_indexes);
+		// assert(redundant_data && map_indexes);
 		uint8 *Stream = (uint8 *)redundant_data;
+		MapIndexList.resize(count);
 		StreamToList(Stream,map_indexes,count);
 		dynamic_world->map_index_count= count;
 	}
@@ -1676,7 +1704,7 @@ static void load_redundant_map_data(
 			have_been_warned= true;
 		}
 #endif
-
+		
 		recalculate_redundant_map();
 		precalculate_map_indexes();
 	}

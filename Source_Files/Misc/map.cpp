@@ -145,6 +145,8 @@ static struct environment_definition environment_definitions[]=
 struct static_data *static_world = NULL;
 struct dynamic_data *dynamic_world = NULL;
 
+// These are allocated here because the numbers of these objects vary as a game progresses.
+vector<effect_data> EffectList(MAXIMUM_EFFECTS_PER_MAP);
 vector<object_data> ObjectList(MAXIMUM_OBJECTS_PER_MAP);
 vector<monster_data> MonsterList(MAXIMUM_MONSTERS_PER_MAP);
 vector<projectile_data> ProjectileList(MAXIMUM_PROJECTILES_PER_MAP);
@@ -152,11 +154,15 @@ vector<projectile_data> ProjectileList(MAXIMUM_PROJECTILES_PER_MAP);
 // struct monster_data *monsters = NULL;
 // struct projectile_data *projectiles = NULL;
 
+vector<endpoint_data> EndpointList;
+vector<line_data> LineList;
+vector<side_data> SideList;
+vector<polygon_data> PolygonList;
 vector<platform_data> PlatformList;
-struct polygon_data *map_polygons = NULL;
-struct side_data *map_sides = NULL;
-struct line_data *map_lines = NULL;
-struct endpoint_data *map_endpoints = NULL;
+// struct polygon_data *map_polygons = NULL;
+// struct side_data *map_sides = NULL;
+// struct line_data *map_lines = NULL;
+// struct endpoint_data *map_endpoints = NULL;
 // struct platform_data *platforms = NULL;
 
 vector<ambient_sound_image_data> AmbientSoundImageList;
@@ -164,15 +170,19 @@ vector<random_sound_image_data> RandomSoundImageList;
 // struct ambient_sound_image_data *ambient_sound_images = NULL;
 // struct random_sound_image_data *random_sound_images = NULL;
 
-short *map_indexes = NULL;
+vector<int16> MapIndexList;
+// short *map_indexes = NULL;
 
-byte *automap_lines = NULL;
-byte *automap_polygons = NULL;
+vector<uint8> AutomapLineList;
+vector<uint8> AutomapPolygonList;
+// byte *automap_lines = NULL;
+// byte *automap_polygons = NULL;
 
 vector<map_annotation> MapAnnotationList;
 // struct map_annotation *map_annotations = NULL;
 
-struct map_object *saved_objects = NULL;
+vector<map_object> SavedObjectList;
+// struct map_object *saved_objects = NULL;
 struct item_placement_data *placement_information = NULL;
 
 bool game_is_networked = false;
@@ -223,7 +233,7 @@ void allocate_map_memory(
 
 	obj_clear(map_structure_memory);
 	reallocate_map_structure_memory(DEFAULT_MAP_MEMORY_SIZE);
-
+	
 	// platforms= new platform_data[MAXIMUM_PLATFORMS_PER_MAP];
 	// assert(platforms);
 
@@ -232,8 +242,7 @@ void allocate_map_memory(
 	// assert(ambient_sound_images && random_sound_images);
 	
 	// map_annotations= new map_annotation[MAXIMUM_ANNOTATIONS_PER_MAP];
-	saved_objects= new map_object[MAXIMUM_SAVED_OBJECTS];
-	assert(saved_objects);
+	// saved_objects= new map_object[MAXIMUM_SAVED_OBJECTS];
 	// assert(map_annotations && saved_objects);
 
 	allocate_player_memory();
@@ -287,12 +296,12 @@ void initialize_map_for_new_level(
 	objlist_clear(objects,  ObjectList.size());
 
 	/* Note that these pointers just point into a larger structure, so this is not a bad thing */
-	map_polygons= NULL;
-	map_sides= NULL;
-	map_lines= NULL;
-	map_endpoints= NULL;
-	automap_lines= NULL;
-	automap_polygons= NULL;
+	// map_polygons= NULL;
+	// map_sides= NULL;
+	// map_lines= NULL;
+	// map_endpoints= NULL;
+	// automap_lines= NULL;
+	// automap_polygons= NULL;
 
 	return;
 }

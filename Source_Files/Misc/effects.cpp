@@ -44,9 +44,7 @@ ryan reports get_object_data() failing on effect->data after a teleport effect t
 /* import effect definition constants, structures and globals */
 #include "effect_definitions.h"
 
-// Turned the list of active effects into a variable array
-
-vector<effect_data> EffectList(MAXIMUM_EFFECTS_PER_MAP);
+// Moved the definition over to map.cpp
 
 // struct effect_data *effects = NULL;
 

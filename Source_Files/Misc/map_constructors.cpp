@@ -518,9 +518,7 @@ void precalculate_map_indexes(
 {
 	short polygon_index;
 	struct polygon_data *polygon;
-
-//	dynamic_world->map_index_count= 0;
-
+	
 	for (polygon_index=0,polygon=map_polygons;polygon_index<dynamic_world->polygon_count;++polygon,++polygon_index)
 	{
 		if (!POLYGON_IS_DETACHED(polygon)) /* weÕll handle detached polygons during the second pass */
@@ -1056,6 +1054,10 @@ static void add_map_index(
 	short index,
 	short *count)
 {
+	MapIndexList.push_back(index);
+	dynamic_world->map_index_count++;
+	*count += 1;
+	/*
 	if (dynamic_world->map_index_count<map_index_buffer_count)
 	{
 		if (DoIncorrectCountVWarn)
@@ -1063,6 +1065,7 @@ static void add_map_index(
 		map_indexes[dynamic_world->map_index_count++]= index;
 		*count+= 1;
 	}
+	*/
 	
 	return;
 }

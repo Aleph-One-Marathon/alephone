@@ -109,7 +109,7 @@ const int SIZEOF_damage_definition = 12;
 
 /* ---------- saved objects (initial map locations, etc.) */
 
-#define MAXIMUM_SAVED_OBJECTS 384
+// #define MAXIMUM_SAVED_OBJECTS 384
 
 enum /* map object types */
 {
@@ -908,10 +908,22 @@ extern vector<object_data> ObjectList;
 
 // extern struct object_data *objects;
 
-extern struct polygon_data *map_polygons;
-extern struct side_data *map_sides;
-extern struct line_data *map_lines;
-extern struct endpoint_data *map_endpoints;
+extern vector<endpoint_data> EndpointList;
+#define map_endpoints (&EndpointList[0])
+
+extern vector<line_data> LineList;
+#define map_lines (&LineList[0])
+
+extern vector<side_data> SideList;
+#define map_sides (&SideList[0])
+
+extern vector<polygon_data> PolygonList;
+#define map_polygons (&PolygonList[0])
+
+// extern struct polygon_data *map_polygons;
+// extern struct side_data *map_sides;
+// extern struct line_data *map_lines;
+// extern struct endpoint_data *map_endpoints;
 
 extern vector<ambient_sound_image_data> AmbientSoundImageList;
 #define MAXIMUM_AMBIENT_SOUND_IMAGES_PER_MAP (AmbientSoundImageList.size())
@@ -924,17 +936,30 @@ extern vector<random_sound_image_data> RandomSoundImageList;
 // extern struct ambient_sound_image_data *ambient_sound_images;
 // extern struct random_sound_image_data *random_sound_images;
 
-extern int16 *map_indexes;
+extern vector<int16> MapIndexList;
+#define map_indexes (&MapIndexList[0])
 
-extern byte *automap_lines;
-extern byte *automap_polygons;
+// extern int16 *map_indexes;
+
+extern vector<uint8> AutomapLineList;
+#define automap_lines (&AutomapLineList[0])
+
+extern vector<uint8> AutomapPolygonList;
+#define automap_polygons (&AutomapPolygonList[0]) 
+
+// extern byte *automap_lines;
+// extern byte *automap_polygons;
 
 extern vector<map_annotation> MapAnnotationList;
 #define MAXIMUM_ANNOTATIONS_PER_MAP (MapAnnotationList.size())
 #define map_annotations (&MapAnnotationList[0])
 
+extern vector<map_object> SavedObjectList;
+#define MAXIMUM_SAVED_OBJECTS (SavedObjectList.size())
+#define saved_objects (&SavedObjectList[0])
+
 // extern struct map_annotation *map_annotations;
-extern struct map_object *saved_objects;
+// extern struct map_object *saved_objects;
 
 extern bool game_is_networked; /* true if this is a network game */
 
