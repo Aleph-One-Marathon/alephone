@@ -58,8 +58,8 @@
 template<class T>
 static const int
 find_item_index_in_vector(const T& inItem, const vector<T>& inVector) {
-    vector<T>::const_iterator 	i	= inVector.begin();
-    vector<T>::const_iterator 	end	= inVector.end();
+    typename vector<T>::const_iterator 	i	= inVector.begin();
+    typename vector<T>::const_iterator 	end	= inVector.end();
     int				index	= 0;
 
     while(i != end) {

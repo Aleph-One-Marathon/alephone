@@ -609,7 +609,7 @@ public:
 protected:
 	void draw_items(SDL_Surface *s) const
 	{
-		vector<T>::const_iterator i = items.begin() + top_item;
+		typename vector<T>::const_iterator i = items.begin() + top_item;
 		int x = rect.x + get_dialog_space(LIST_L_SPACE);
 		int y = rect.y + get_dialog_space(LIST_T_SPACE);
 		int width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
@@ -620,7 +620,7 @@ protected:
 	const vector<T> &items;	// List of items
 
 private:
-	virtual void draw_item(vector<T>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const = 0;
+	virtual void draw_item(typename vector<T>::const_iterator i, SDL_Surface *s, int x, int y, int width, bool selected) const = 0;
 };
 
 
@@ -634,8 +634,8 @@ private:
 class w_levels : public w_list<entry_point> {
 public:
 	w_levels(const vector<entry_point> &items, dialog *d);
-    w_levels(const vector<entry_point>& items, dialog* d, int inWidth,
-        int inNumLines, int inSelectedItem, bool in_show_level_numbers);
+	w_levels(const vector<entry_point>& items, dialog* d, int inWidth,
+	int inNumLines, int inSelectedItem, bool in_show_level_numbers);
 
 	void item_selected(void);
 
@@ -643,7 +643,7 @@ public:
 
 private:
 	dialog *parent;
-    bool    show_level_numbers;
+	bool    show_level_numbers;
 };
 
 #endif

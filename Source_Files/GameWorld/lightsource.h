@@ -73,15 +73,6 @@ struct lighting_function_specification /* 7*2 == 14 bytes */
 	_fixed intensity, delta_intensity;
 };
 
-// Misaligned 4-byte values (intensity, delta_intensity) split in it
-struct saved_lighting_function /* 7*2 == 14 bytes */
-{
-	int16 function;
-	
-	int16 period, delta_period;
-	uint16 intensity[2], delta_intensity[2];
-};
-
 enum /* static flags */
 {
 	_light_is_initially_active,
@@ -110,22 +101,6 @@ struct static_light_data /* size platform-specific */
 	int16 unused[4];
 };
 const int SIZEOF_static_light_data = 100;
-
-// Misaligned 4-byte values (in lighting_function_specification) split in it
-struct saved_static_light /* 8*2 + 6*14 == 100 bytes */
-{
-	int16 type;
-	uint16 flags;
-
-	int16 phase; // initializer, so lights may start out-of-phase with each other
-	
-	struct saved_lighting_function primary_active, secondary_active, becoming_active;
-	struct saved_lighting_function primary_inactive, secondary_inactive, becoming_inactive;
-	
-	int16 tag;
-	
-	int16 unused[4];
-};
 
 /* ---------- dynamic light data */
 
@@ -205,10 +180,6 @@ _fixed get_light_intensity(short light_index);
 
 light_data *get_light_data(
 	const short light_index);
-
-// Split and join the misaligned 4-byte values
-uint8 *pack_light_data(static_light_data& source, saved_static_light& dest);
-uint8 *unpack_light_data(saved_static_light& source, static_light_data& dest);
 
 uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count);
 uint8 *pack_old_light_data(uint8 *Stream, old_light_data* Objects, int Count);
