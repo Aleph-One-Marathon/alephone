@@ -28,6 +28,8 @@ Oct 13, 2000 (Loren Petrich):
 	also modified get_scenery_definition to return NULL for out-of-range scenery
 */
 
+#include "cseries.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <vector>

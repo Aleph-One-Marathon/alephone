@@ -6,6 +6,8 @@
 	This is for handling the player's name in netgames
 */
 
+#include "cseries.h"
+
 #include "PlayerName.h"
 #include <string.h>
 

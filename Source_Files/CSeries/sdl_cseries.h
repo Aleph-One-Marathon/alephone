@@ -18,6 +18,9 @@
 
 #define DEBUG
 
+// mwcc doesn't accept "using namespace std;" otherwise
+namespace std {};
+
 
 /*
  *  Endianess definitions

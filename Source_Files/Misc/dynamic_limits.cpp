@@ -9,6 +9,8 @@ Feb 19, 2000 (Loren Petrich):
 	Added local and global monster-buffer upper limits (collision checking)
 */
 
+#include "cseries.h"
+
 #include <string.h>
 #include "dynamic_limits.h"
 

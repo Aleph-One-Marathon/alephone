@@ -6,6 +6,8 @@
 	This is the base-class implementation of these objects
 */
 
+#include "cseries.h"
+
 #include <string.h>
 #include <ctype.h>
 #include "XML_ElementParser.h"
