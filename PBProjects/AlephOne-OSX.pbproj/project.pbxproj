@@ -611,6 +611,8 @@
 				F5CF585B024599B701A80001,
 				F50D2BD702F86DDA01000105,
 				F5D11AE60326A93E01000105,
+				3DAC27AD03DC9D1C00000104,
+				3DAC27B303DC9D5600000104,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -767,6 +769,9 @@
 				F5CC94530240DE0F01A80001,
 				F5CC94540240DE0F01A80001,
 				F5837193031EEE0201000105,
+				3DAC27AB03DC9D1C00000104,
+				3DAC27AC03DC9D1C00000104,
+				3DAC27B203DC9D5600000104,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -788,6 +793,111 @@
 //292
 //293
 //294
+//3D0
+//3D1
+//3D2
+//3D3
+//3D4
+		3DAC27A503DC9D1C00000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = DefaultStringSets.cpp;
+			path = /Users/astrange/aleph/Source_Files/Misc/DefaultStringSets.cpp;
+			refType = 0;
+		};
+		3DAC27A603DC9D1C00000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = Logging.cpp;
+			path = /Users/astrange/aleph/Source_Files/Misc/Logging.cpp;
+			refType = 0;
+		};
+		3DAC27A703DC9D1C00000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = Logging.h;
+			path = /Users/astrange/aleph/Source_Files/Misc/Logging.h;
+			refType = 0;
+		};
+		3DAC27A803DC9D1C00000104 = {
+			fileRef = 3DAC27A503DC9D1C00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DAC27A903DC9D1C00000104 = {
+			fileRef = 3DAC27A603DC9D1C00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DAC27AA03DC9D1C00000104 = {
+			fileRef = 3DAC27A703DC9D1C00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DAC27AB03DC9D1C00000104 = {
+			fileRef = 3DAC27A503DC9D1C00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DAC27AC03DC9D1C00000104 = {
+			fileRef = 3DAC27A603DC9D1C00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DAC27AD03DC9D1C00000104 = {
+			fileRef = 3DAC27A703DC9D1C00000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DAC27AE03DC9D5600000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = snprintf.cpp;
+			path = /Users/astrange/aleph/Source_Files/CSeries/snprintf.cpp;
+			refType = 0;
+		};
+		3DAC27AF03DC9D5600000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = snprintf.h;
+			path = /Users/astrange/aleph/Source_Files/CSeries/snprintf.h;
+			refType = 0;
+		};
+		3DAC27B003DC9D5600000104 = {
+			fileRef = 3DAC27AE03DC9D5600000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DAC27B103DC9D5600000104 = {
+			fileRef = 3DAC27AF03DC9D5600000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DAC27B203DC9D5600000104 = {
+			fileRef = 3DAC27AE03DC9D5600000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		3DAC27B303DC9D5600000104 = {
+			fileRef = 3DAC27AF03DC9D5600000104;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+//3D0
+//3D1
+//3D2
+//3D3
+//3D4
 //4A0
 //4A1
 //4A2
@@ -2269,6 +2379,7 @@
 				F5574EEE01F4EB1E01FEABBD,
 				F5574EEF01F4EB1E01FEABBD,
 				F5C8AFE50207387301A80001,
+				3DAC27AE03DC9D5600000104,
 			);
 			isa = PBXGroup;
 			name = CSeries;
@@ -2276,6 +2387,7 @@
 		};
 		F522144B0136C0C401000001 = {
 			children = (
+				3DAC27AF03DC9D5600000104,
 				F522111D0136A4DD01000001,
 				F522111E0136A4DD01000001,
 				F522111F0136A4DD01000001,
@@ -2338,6 +2450,8 @@
 				F5CC94280240DB8801A80001,
 				F5CC94290240DB8801A80001,
 				F5A00022023FDA1601A80001,
+				3DAC27A503DC9D1C00000104,
+				3DAC27A603DC9D1C00000104,
 				F52211EB0136A6FD01000001,
 				F522120A0136A6FD01000001,
 				F522120B0136A6FD01000001,
@@ -2360,6 +2474,7 @@
 				F5A00027023FDA6101A80001,
 				F5A00029023FDA7601A80001,
 				F52211CF0136A6FD01000001,
+				3DAC27A703DC9D1C00000104,
 				F522120C0136A6FD01000001,
 				F52212190136A6FD01000001,
 				F52211AE0136A6FD01000001,
@@ -2890,6 +3005,8 @@
 				F5FA5D2A0248632901A80001,
 				F50D2BD602F86DDA01000105,
 				F5D11AE50326A93E01000105,
+				3DAC27AA03DC9D1C00000104,
+				3DAC27B103DC9D5600000104,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3046,6 +3163,9 @@
 				F5CC94660240DE0F01A80001,
 				F5CC94670240DE0F01A80001,
 				F5837192031EEE0201000105,
+				3DAC27A803DC9D1C00000104,
+				3DAC27A903DC9D1C00000104,
+				3DAC27B003DC9D5600000104,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
