@@ -453,6 +453,15 @@
 				F5FDA08A0200C577013D663B,
 				F5FDA08B0200C577013D663B,
 				F5CFAD3B0200F9D201D80110,
+				F521E8050213680301A80001,
+				F521E8060213680301A80001,
+				F521E8070213680301A80001,
+				F521E8080213680301A80001,
+				F521E8090213680301A80001,
+				F521E80A0213680301A80001,
+				F521E80B0213680301A80001,
+				F521E80F021369E301A80001,
+				F521E810021369E301A80001,
 			);
 			isa = PBXHeadersBuildPhase;
 			name = Headers;
@@ -662,6 +671,114 @@
 //F52
 //F53
 //F54
+		F51E8E2C0212A3E701A80001 = {
+			fileRef = F522124F0136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51E8E2D0212A3E701A80001 = {
+			fileRef = F52212430136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51E8E2E0212A3E701A80001 = {
+			fileRef = F52212310136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51E8E2F0212A3E701A80001 = {
+			fileRef = F52212360136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51E8E300212A3E701A80001 = {
+			fileRef = F522120D0136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51E8E310212A3E701A80001 = {
+			fileRef = F52211D00136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51E8E320212A3E701A80001 = {
+			fileRef = F52211BC0136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51E8E330212A3E701A80001 = {
+			fileRef = F52212480136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F51E8E360212A6F201A80001 = {
+			fileRef = F52211830136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F521E8050213680301A80001 = {
+			fileRef = F52212320136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F521E8060213680301A80001 = {
+			fileRef = F52212360136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F521E8070213680301A80001 = {
+			fileRef = F522120E0136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F521E8080213680301A80001 = {
+			fileRef = F52211D00136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F521E8090213680301A80001 = {
+			fileRef = F52211BD0136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F521E80A0213680301A80001 = {
+			fileRef = F52211840136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F521E80B0213680301A80001 = {
+			fileRef = F52212440136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F521E80F021369E301A80001 = {
+			fileRef = F522124A0136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F521E810021369E301A80001 = {
+			fileRef = F52212500136A6FD01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F52211190136A41F01000001 = {
 			children = (
 				F522139B0136AC1601000001,
@@ -734,8 +851,8 @@
 		F52211260136A4DD01000001 = {
 			isa = PBXFileReference;
 			name = csmisc.h;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/CSeries/csmisc.h;
-			refType = 0;
+			path = ../Source_Files/CSeries/csmisc.h;
+			refType = 2;
 		};
 		F52211270136A4DD01000001 = {
 			isa = PBXFileReference;
@@ -1027,14 +1144,14 @@
 		};
 		F52211830136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = computer_interface_mac.cpp;
-			path = ../Source_Files/Misc/computer_interface_mac.cpp;
+			name = computer_interface_mac.h;
+			path = ../Source_Files/Misc/computer_interface_mac.h;
 			refType = 2;
 		};
 		F52211840136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = computer_interface_sdl.cpp;
-			path = ../Source_Files/Misc/computer_interface_sdl.cpp;
+			name = computer_interface_sdl.h;
+			path = ../Source_Files/Misc/computer_interface_sdl.h;
 			refType = 2;
 		};
 		F52211850136A6FD01000001 = {
@@ -1358,14 +1475,14 @@
 		F52211BC0136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = images_macintosh.h;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/images_macintosh.h;
-			refType = 0;
+			path = ../Source_Files/Misc/images_macintosh.h;
+			refType = 2;
 		};
 		F52211BD0136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = images_sdl.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/images_sdl.h;
-			refType = 0;
+			name = images_sdl.h;
+			path = ../Source_Files/Misc/images_sdl.h;
+			refType = 2;
 		};
 		F52211BE0136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -1480,9 +1597,9 @@
 		};
 		F52211D00136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = low_level_textures.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/low_level_textures.h;
-			refType = 0;
+			name = low_level_textures.h;
+			path = ../Source_Files/Misc/low_level_textures.h;
+			refType = 2;
 		};
 		F52211D10136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -1822,15 +1939,15 @@
 		};
 		F522120D0136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = preferences_macintosh.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/preferences_macintosh.h;
-			refType = 0;
+			name = preferences_macintosh.h;
+			path = ../Source_Files/Misc/preferences_macintosh.h;
+			refType = 2;
 		};
 		F522120E0136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = preferences_sdl.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/preferences_sdl.h;
-			refType = 0;
+			name = preferences_sdl.h;
+			path = ../Source_Files/Misc/preferences_sdl.h;
+			refType = 2;
 		};
 		F522120F0136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2020,15 +2137,15 @@
 		};
 		F52212310136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = screen_drawing_macintosh.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/screen_drawing_macintosh.h;
-			refType = 0;
+			name = screen_drawing_macintosh.h;
+			path = ../Source_Files/Misc/screen_drawing_macintosh.h;
+			refType = 2;
 		};
 		F52212320136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = screen_drawing_sdl.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/screen_drawing_sdl.h;
-			refType = 0;
+			name = screen_drawing_sdl.h;
+			path = ../Source_Files/Misc/screen_drawing_sdl.h;
+			refType = 2;
 		};
 		F52212330136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2050,9 +2167,9 @@
 		};
 		F52212360136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = screen_shared.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/screen_shared.h;
-			refType = 0;
+			name = screen_shared.h;
+			path = ../Source_Files/Misc/screen_shared.h;
+			refType = 2;
 		};
 		F52212380136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2123,14 +2240,14 @@
 		F52212430136A6FD01000001 = {
 			isa = PBXFileReference;
 			name = shapes_macintosh.h;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/shapes_macintosh.h;
-			refType = 0;
+			path = ../Source_Files/Misc/shapes_macintosh.h;
+			refType = 2;
 		};
 		F52212440136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = shapes_sdl.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/shapes_sdl.h;
-			refType = 0;
+			name = shapes_sdl.h;
+			path = ../Source_Files/Misc/shapes_sdl.h;
+			refType = 2;
 		};
 		F52212450136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2152,9 +2269,9 @@
 		};
 		F52212480136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = shell_macintosh.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/shell_macintosh.h;
-			refType = 0;
+			name = shell_macintosh.h;
+			path = ../Source_Files/Misc/shell_macintosh.h;
+			refType = 2;
 		};
 		F52212490136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2164,9 +2281,9 @@
 		};
 		F522124A0136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = shell_sdl.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/shell_sdl.h;
-			refType = 0;
+			name = shell_sdl.h;
+			path = ../Source_Files/Misc/shell_sdl.h;
+			refType = 2;
 		};
 		F522124B0136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -2194,15 +2311,15 @@
 		};
 		F522124F0136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = sound_macintosh.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/sound_macintosh.h;
-			refType = 0;
+			name = sound_macintosh.h;
+			path = ../Source_Files/Misc/sound_macintosh.h;
+			refType = 2;
 		};
 		F52212500136A6FD01000001 = {
 			isa = PBXFileReference;
-			name = sound_sdl.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/sound_sdl.h;
-			refType = 0;
+			name = sound_sdl.h;
+			path = ../Source_Files/Misc/sound_sdl.h;
+			refType = 2;
 		};
 		F52212510136A6FD01000001 = {
 			isa = PBXFileReference;
@@ -4181,8 +4298,6 @@
 				F52212740136A6FD01000001,
 				F52212760136A6FD01000001,
 				F52211850136A6FD01000001,
-				F52211830136A6FD01000001,
-				F52211840136A6FD01000001,
 				F52211860136A6FD01000001,
 				F522118A0136A6FD01000001,
 				F522118B0136A6FD01000001,
@@ -4200,8 +4315,6 @@
 				F52211990136A6FD01000001,
 				F52211B00136A6FD01000001,
 				F52211BE0136A6FD01000001,
-				F52211BC0136A6FD01000001,
-				F52211BD0136A6FD01000001,
 				F52211C00136A6FD01000001,
 				F52211C40136A6FD01000001,
 				F52211C10136A6FD01000001,
@@ -4209,7 +4322,6 @@
 				F52211C90136A6FD01000001,
 				F52211CC0136A6FD01000001,
 				F52211CD0136A6FD01000001,
-				F52211D00136A6FD01000001,
 				F52211D60136A6FD01000001,
 				F52211D70136A6FD01000001,
 				F52211D90136A6FD01000001,
@@ -4227,8 +4339,6 @@
 				F52212060136A6FD01000001,
 				F52212080136A6FD01000001,
 				F522120F0136A6FD01000001,
-				F522120D0136A6FD01000001,
-				F522120E0136A6FD01000001,
 				F52212110136A6FD01000001,
 				F52212120136A6FD01000001,
 				F52212130136A6FD01000001,
@@ -4239,22 +4349,13 @@
 				F522122D0136A6FD01000001,
 				F52212380136A6FD01000001,
 				F52212350136A6FD01000001,
-				F52212360136A6FD01000001,
 				F52212330136A6FD01000001,
-				F52212310136A6FD01000001,
-				F52212320136A6FD01000001,
 				F522123A0136A6FD01000001,
 				F522123C0136A6FD01000001,
 				F522123F0136A6FD01000001,
 				F52212450136A6FD01000001,
-				F52212430136A6FD01000001,
-				F52212440136A6FD01000001,
 				F522124B0136A6FD01000001,
-				F52212480136A6FD01000001,
 				F52212490136A6FD01000001,
-				F522124A0136A6FD01000001,
-				F522124F0136A6FD01000001,
-				F52212500136A6FD01000001,
 				F52212540136A6FD01000001,
 				F52212590136A6FD01000001,
 				F52212570136A6FD01000001,
@@ -4323,6 +4424,8 @@
 				F52212770136A6FD01000001,
 				F522119D0136A6FD01000001,
 				F522119F0136A6FD01000001,
+				F52211830136A6FD01000001,
+				F52211840136A6FD01000001,
 				F52211A10136A6FD01000001,
 				F52211A40136A6FD01000001,
 				F52211A50136A6FD01000001,
@@ -4336,12 +4439,15 @@
 				F52211AF0136A6FD01000001,
 				F52211B20136A6FD01000001,
 				F52211BF0136A6FD01000001,
+				F52211BC0136A6FD01000001,
+				F52211BD0136A6FD01000001,
 				F52211C20136A6FD01000001,
 				F52211C50136A6FD01000001,
 				F52211C80136A6FD01000001,
 				F52211CA0136A6FD01000001,
 				F52211CB0136A6FD01000001,
 				F52211CE0136A6FD01000001,
+				F52211D00136A6FD01000001,
 				F52211D20136A6FD01000001,
 				F52211D80136A6FD01000001,
 				F52211DA0136A6FD01000001,
@@ -4358,6 +4464,8 @@
 				F52212070136A6FD01000001,
 				F52212090136A6FD01000001,
 				F52212100136A6FD01000001,
+				F522120D0136A6FD01000001,
+				F522120E0136A6FD01000001,
 				F52212140136A6FD01000001,
 				F52212150136A6FD01000001,
 				F52212170136A6FD01000001,
@@ -4368,6 +4476,9 @@
 				F522122E0136A6FD01000001,
 				F52212300136A6FD01000001,
 				F52212340136A6FD01000001,
+				F52212310136A6FD01000001,
+				F52212320136A6FD01000001,
+				F52212360136A6FD01000001,
 				F52212390136A6FD01000001,
 				F522123B0136A6FD01000001,
 				F522123D0136A6FD01000001,
@@ -4375,9 +4486,15 @@
 				F52212400136A6FD01000001,
 				F52212410136A6FD01000001,
 				F52212420136A6FD01000001,
+				F52212430136A6FD01000001,
+				F52212440136A6FD01000001,
 				F522124C0136A6FD01000001,
+				F52212480136A6FD01000001,
+				F522124A0136A6FD01000001,
 				F522124D0136A6FD01000001,
 				F522124E0136A6FD01000001,
+				F522124F0136A6FD01000001,
+				F52212500136A6FD01000001,
 				F52212510136A6FD01000001,
 				F52212550136A6FD01000001,
 				F52212560136A6FD01000001,
@@ -4742,6 +4859,15 @@
 				F53674BD0201528F01A80001,
 				F53674BE0201528F01A80001,
 				F53674BF0201528F01A80001,
+				F51E8E2C0212A3E701A80001,
+				F51E8E2D0212A3E701A80001,
+				F51E8E2E0212A3E701A80001,
+				F51E8E2F0212A3E701A80001,
+				F51E8E300212A3E701A80001,
+				F51E8E310212A3E701A80001,
+				F51E8E320212A3E701A80001,
+				F51E8E330212A3E701A80001,
+				F51E8E360212A6F201A80001,
 			);
 			isa = PBXHeadersBuildPhase;
 			name = Headers;
@@ -4753,6 +4879,14 @@
 				F536740102014D5901A80001,
 				F536740202014D5901A80001,
 				F536740302014D5901A80001,
+				F552047902173FFA01A80001,
+				F552047A02173FFA01A80001,
+				F552047B02173FFA01A80001,
+				F552047C02173FFA01A80001,
+				F552047D02173FFA01A80001,
+				F552047E02173FFA01A80001,
+				F552047F02173FFA01A80001,
+				F552048002173FFA01A80001,
 			);
 			isa = PBXResourcesBuildPhase;
 			name = "Bundle Resources";
@@ -5215,8 +5349,8 @@
 		F536742802014FC301A80001 = {
 			isa = PBXFileReference;
 			name = csdialogs_macintosh.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/CSeries/csdialogs_macintosh.cpp;
-			refType = 0;
+			path = ../Source_Files/CSeries/csdialogs_macintosh.cpp;
+			refType = 2;
 		};
 		F536742902014FC301A80001 = {
 			fileRef = F536742802014FC301A80001;
@@ -5227,8 +5361,8 @@
 		F536742A02014FE101A80001 = {
 			isa = PBXFileReference;
 			name = mytm_macintosh.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/CSeries/mytm_macintosh.cpp;
-			refType = 0;
+			path = ../Source_Files/CSeries/mytm_macintosh.cpp;
+			refType = 2;
 		};
 		F536742C0201508B01A80001 = {
 			fileRef = F522115C0136A66601000001;
@@ -6687,6 +6821,54 @@
 			settings = {
 			};
 		};
+		F552047902173FFA01A80001 = {
+			fileRef = F5CFAD3D0200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F552047A02173FFA01A80001 = {
+			fileRef = F5CFAD3E0200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F552047B02173FFA01A80001 = {
+			fileRef = F5CFAD3F0200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F552047C02173FFA01A80001 = {
+			fileRef = F5CFAD400200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F552047D02173FFA01A80001 = {
+			fileRef = F5CFAD410200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F552047E02173FFA01A80001 = {
+			fileRef = F5CFAD420200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F552047F02173FFA01A80001 = {
+			fileRef = F5CFAD430200FA6B01D80110;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		F552048002173FFA01A80001 = {
+			fileRef = 089C165CFE840E0CC02AAC07;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		F5574EEE01F4EB1E01FEABBD = {
 			isa = PBXFileReference;
 			name = csdialogs_sdl.cpp;
@@ -6714,8 +6896,8 @@
 		F5574EF201F4EBD401FEABBD = {
 			isa = PBXFileReference;
 			name = PlayerImage_sdl.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/PlayerImage_sdl.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/PlayerImage_sdl.cpp;
+			refType = 2;
 		};
 		F5574EF301F4EBD401FEABBD = {
 			fileRef = F5574EF201F4EBD401FEABBD;
@@ -6738,8 +6920,8 @@
 		F5574EF601F4EC8501FEABBD = {
 			isa = PBXFileReference;
 			name = thread_priority_sdl_macosx.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Misc/thread_priority_sdl_macosx.cpp;
-			refType = 0;
+			path = ../Source_Files/Misc/thread_priority_sdl_macosx.cpp;
+			refType = 2;
 		};
 		F5574EF701F4EC8501FEABBD = {
 			fileRef = F5574EF601F4EC8501FEABBD;
@@ -6750,8 +6932,8 @@
 		F5574EF801F4ECD701FEABBD = {
 			isa = PBXFileReference;
 			name = network_data_formats.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Network/network_data_formats.cpp;
-			refType = 0;
+			path = ../Source_Files/Network/network_data_formats.cpp;
+			refType = 2;
 		};
 		F5574EF901F4ECD801FEABBD = {
 			fileRef = F5574EF801F4ECD701FEABBD;
@@ -6762,8 +6944,8 @@
 		F5574EFA01F4ED0A01FEABBD = {
 			isa = PBXFileReference;
 			name = network_dialog_widgets_sdl.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Network/network_dialog_widgets_sdl.cpp;
-			refType = 0;
+			path = ../Source_Files/Network/network_dialog_widgets_sdl.cpp;
+			refType = 2;
 		};
 		F5574EFB01F4ED0B01FEABBD = {
 			fileRef = F5574EFA01F4ED0A01FEABBD;
@@ -6774,8 +6956,8 @@
 		F5574EFC01F4ED4801FEABBD = {
 			isa = PBXFileReference;
 			name = SDL_netx.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Network/SDL_netx.cpp;
-			refType = 0;
+			path = ../Source_Files/Network/SDL_netx.cpp;
+			refType = 2;
 		};
 		F5574EFD01F4ED4901FEABBD = {
 			fileRef = F5574EFC01F4ED4801FEABBD;
@@ -6786,8 +6968,8 @@
 		F5574EFE01F4ED6501FEABBD = {
 			isa = PBXFileReference;
 			name = SSLP_limited.cpp;
-			path = /Volumes/StorePartition/DevStuff/cvsroot/aleph/Source_Files/Network/SSLP_limited.cpp;
-			refType = 0;
+			path = ../Source_Files/Network/SSLP_limited.cpp;
+			refType = 2;
 		};
 		F5574EFF01F4ED6501FEABBD = {
 			fileRef = F5574EFE01F4ED6501FEABBD;
