@@ -2,9 +2,13 @@
 	XML-Resource-Fork-Parser Implementation
 	by Loren Petrich,
 	April 15, 2000
+
+Nov 29, 2000 (Loren Petrich):
+	Put in STL's sorter (more efficient than the stupidsort I had used)
 */
 
 
+#include <algorithm.h>
 #include <string.h>
 #include "cseries.h"
 #include "XML_ResourceFork.h"
@@ -111,20 +115,8 @@ bool XML_ResourceFork::ParseResourceSet(ResType Type)
 	
 	SetResLoad(true);
 	
-	// Do a stupid sort; I'll let Rhys Hill put in a better sorter :-)
-	for (int ir1=0; ir1<NumResources; ir1++)
-	{
-		for (int ir2=NumResources-1; ir2>ir1; ir2--)
-		{
-			short ID1 = IDList[ir2-1];
-			short ID2 = IDList[ir2];
-			if (ID1 > ID2)
-			{
-				IDList[ir2-1] = ID2;
-				IDList[ir2] = ID1;
-			}
-		}
-	}
+	// Using a better sorter; STL will succeed where Rhys Hill had failed :-)
+	sort(IDList,IDList+NumResources);
 	
 	// Now get the resources
 	for (int ir=0; ir<NumResources; ir++)
