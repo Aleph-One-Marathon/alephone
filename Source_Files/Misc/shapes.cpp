@@ -866,8 +866,8 @@ struct shape_information_data *extended_get_shape_information(
 	AdjustedFrame = *low_level_shape;
 	AdjustedFrame.world_left = low_level_shape->world_left + TxtrOpts->Left;
 	AdjustedFrame.world_right = low_level_shape->world_left + TxtrOpts->Right;
-	AdjustedFrame.world_top = low_level_shape->world_top + TxtrOpts->Bottom;
-	AdjustedFrame.world_bottom = low_level_shape->world_top + TxtrOpts->Top;
+	AdjustedFrame.world_top = low_level_shape->world_top - TxtrOpts->Top;
+	AdjustedFrame.world_bottom = low_level_shape->world_top - TxtrOpts->Bottom;
 	
 	return (struct shape_information_data *) &AdjustedFrame;
 #else
