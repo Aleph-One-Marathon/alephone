@@ -1476,12 +1476,31 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 		OSErr Err = PBGetCatInfo(&PB, false);
 		if (Err != noErr) break;
 		
+		// Skip if the first character is a period
+		// (the Unix-land convention for an invisible file)
+		// or if the filename is empty;
+		// be sure to advance to the next file if so
+		if ((DummySpec.Spec.name[0] < 1) || (DummySpec.Spec.name[1] == '.'))
+		{
+			FileIndex++;
+			continue;
+		}
+		
 		bool IsDir = (PB.hFileInfo.ioFlAttrib & 0x10) != 0;
 		
 		// First order of business: set the directory or parent-directory ID appropriately
 		if (IsDir)
 		{
 			DummySpec.Spec.parID = PB.dirInfo.ioDrDirID;
+			
+			// Check for invisibility in the Finder;
+			// if invisible, advance to the next file
+			if (PB.dirInfo.ioDrUsrWds.frFlags & kIsInvisible)
+			{
+				FileIndex++;
+				continue;
+			}
+			
 			DummySpec.Type = TypedSpec::Directory;
 			
 			// Add!
@@ -1491,6 +1510,15 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 		else
 		{
 			DummySpec.Spec.parID = ParentDir;
+			
+			// Check for invisibility in the Finder;
+			// if invisible, advance to the next file
+			if (PB.hFileInfo.ioFlFndrInfo.fdFlags & kIsInvisible)
+			{
+				FileIndex++;
+				continue;
+			}
+			
 			OSType Type = PB.hFileInfo.ioFlFndrInfo.fdType;
 			if (Type == 'TEXT' || Type=='MML ')
 			{
@@ -1515,8 +1543,8 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 	}
 	
 	// DEBUG
-	// for (int q=0; q<SpecList.size(); q++)
-	// {
+	//for (int q=0; q<SpecList.size(); q++)
+	//{
 	//	TypedSpec& Spec = SpecList[q];
 	//	int len = Spec.Spec.name[0];
 	//	memcpy(temporary,Spec.Spec.name+1,len);
@@ -1527,6 +1555,16 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 	// Do STL index sort
 	CompareTS.SpecListIter = SpecList.begin();
 	sort(SpecIndices.begin(),SpecIndices.end(),CompareTS);
+	
+	// DEBUG
+	//for (int q=0; q<SpecIndices.size(); q++)
+	//{
+	//	TypedSpec& Spec = SpecList[SpecIndices[q]];
+	//	int len = Spec.Spec.name[0];
+	//	memcpy(temporary,Spec.Spec.name+1,len);
+	//	temporary[len] = 0;
+	//	fdprintf("Type = %hd  parID = %d  Name = %s",Spec.Type,Spec.Spec.parID,temporary);
+	//}
 	
 	for (FileIndex=0; FileIndex<SpecIndices.size(); FileIndex++)
 	{
